@@ -1,0 +1,90 @@
+#!/usr/bin/perl
+
+use strict;
+
+my ($projectName, $majVer, $minVer);
+my @content;
+
+#------------------
+#Get version number
+#------------------
+open(FILE,"../makeVar") or die "Can not open file: $!";
+@content = <FILE>;
+close(FILE);
+
+foreach my $line(@content) {
+    if ($line =~ /^TARGET_MAJVERSION:= (\d+)/) {
+        $majVer = $1;
+    }
+    
+    if ($line =~ /^TARGET_MINVERSION:= (\d+)/) {
+        $minVer = $1;
+    }   
+}
+
+#---------------------------
+#Walk through directory tree
+#---------------------------
+opendir(DIR,"..") or die "Can not open DIR: $!";
+my @dirs = readdir(DIR);
+closedir(DIR);
+
+my $INSTALLDIR="$ENV{AGNI_LOCAL_ROOT}/ICL/${majVer}.${minVer}";
+
+if (!-e "$INSTALLDIR"){
+    print "make dir: $INSTALLDIR\n";
+    system "mkdir -p $INSTALLDIR";
+    }
+
+if (!-e "$INSTALLDIR/lib"){
+    print "make dir: $INSTALLDIR/lib\n";
+    system "mkdir $INSTALLDIR/lib";
+    }
+
+if (!-e "$INSTALLDIR/include"){
+    print "make dir: $INSTALLDIR/include\n";
+    system "mkdir $INSTALLDIR/include";
+    }
+
+if (!-e "$INSTALLDIR/doc"){
+    print "make dir: $INSTALLDIR/doc\n";
+    system "mkdir $INSTALLDIR/doc";
+    }
+
+system "cp ./BashSrc $INSTALLDIR";
+system "cp ./packageVar $INSTALLDIR";
+
+system "cp -R ../ICLCore/src/boost $INSTALLDIR/include";
+
+foreach my $entry(@dirs) {
+    if ($entry !~ /^\./ ){        
+        if (opendir(DIR,"../".$entry)) {
+            while (my $subentry=readdir(DIR)) {
+                if ($subentry eq 'src'){
+                    print "---- Copying header files: $entry/$subentry\n";
+                    system "cp ../$entry/$subentry/*.h $INSTALLDIR/include"
+                    }
+                elsif ($subentry eq 'lib'){
+                    print "---- Copying libraries: $entry/$subentry\n";
+                    system "cp -d ../$entry/$subentry/*.so* $INSTALLDIR/lib";
+                    system "cp -d ../$entry/$subentry/*.a $INSTALLDIR/lib";
+                    }
+                elsif ($subentry eq 'doc'){
+                    if (!-e "$INSTALLDIR/doc/$entry"){                   
+                        ($projectName) = $entry =~ /.*\/(.+?)$/;
+                        if (!$projectName) {
+                            $projectName = $entry;
+                        }
+                        system "mkdir $INSTALLDIR/doc/$projectName";
+                    }
+                    print "---- Copying documentation: $entry/$subentry\n";
+                    system "cp -r ../$entry/$subentry/documentation/* $INSTALLDIR/doc/$projectName";
+                    }
+                elsif ($subentry !~ /^\./ ){
+                    push(@dirs,"$entry/$subentry");
+                }
+            }
+            closedir (DIR);
+        }
+    }
+}

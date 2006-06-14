@@ -1,0 +1,369 @@
+#
+#   makeRoot
+#
+
+# Don't change anything  between the '####' lines!
+###############################################################################
+# This variable identify the inclusion of the makeRoot
+MAKEROOT_DEFINED= TRUE
+###############################################################################
+
+#------------------------------------------------------------------------------
+# Shell commands
+#------------------------------------------------------------------------------
+
+# This prefix is used to avoid the commands echos
+# Note: defining this variable with empty value enable commands echoing.
+#       defining this variable with the value:
+#               echo ""
+#       prints out what makefiles would execute without executing the commands.
+PRE_CMD=@
+
+# Make tool
+CMD_MAKE=${MAKE}
+
+# Documentation tool used
+CMD_DOCC=doxygen
+
+# Compiler used for C
+CMD_CC=gcc
+
+# Compiler used for C++
+CMD_CCPP=g++
+
+# Archive used
+CMD_AR=ar
+
+# Linker used
+CMD_LD=ld
+
+# RanLib used
+CMD_RANLIB=ranlib
+
+# Makedepend used
+CMD_DEPC=makedepend
+
+# Echo command
+CMD_ECHO=echo
+
+# Stop make execution with failure
+CMD_EXIT_FAIL=exit 1
+
+# Stop make execution
+CMD_EXIT=exit 1
+
+# Tar command for tar file creation
+CMD_TAR=tar cfv
+
+# Tar command for tar file extraction
+CMD_UNTAR=tar xvf
+
+# Tar command for zip-tar file creation
+CMD_GTAR=tar cfvz
+
+# Tar command for zip-tar file extraction
+CMD_GUNTAR=tar xzvf
+
+# Last command for makefile rules
+CMD_FINAL=${CMD_ECHO} ""
+
+# Tr command line editor (translate/delete character)
+CMD_DTR=tr
+
+# Remove file
+CMD_RM=rm -f
+
+# Remove directory (and sub-tree)
+CMD_RMDIR=rm -f -r
+
+# Move file/directory
+CMD_MV=mv
+
+# Copy file/directory
+CMD_CP=cp
+
+# Change directory
+CMD_CD=cd
+
+# Create a soft-link
+CMD_LN=ln -sf
+
+# Create a directory
+CMD_MKDIR=mkdir
+
+# Change file mode
+CMD_CHMOD=chmod
+
+# Don't change anything  between the '####' lines!
+###############################################################################
+# System check that defines the following variables
+#
+# SYSTEM_INFO : autogen config.guess output
+# ARCH_TYPE   : architecture type (e.g. sparc, i686, ...)
+# VENDOR_NAME : vendor name (e.g. pc, sun, ...)
+# OS_TYPE     : operating system's type (e.g. unix, windows, ...)
+# OS_NAME     : operating system's name (e.g. linux, sun2.8, ...)
+#
+
+# NOTE: To speed up makefiles execution please, copy config.guess in your
+# directory and define the following variable in your .crsrc file:
+#  setenv CONFIG_GUESS_OUT `config.guess`
+#  setenv CONFIG_GUESS_ID `config.guess|tr -c "[A-Za-z0-9\-]" "_"`
+#
+ifeq "${CONFIG_GUESS_OUT}" ""
+ SYSTEM_INFO= $(shell config.guess)
+else
+ SYSTEM_INFO= ${CONFIG_GUESS_OUT}
+endif
+
+ifeq "${CONFIG_GUESS_ID}" ""
+  SYSTEM_ID= $(patsubst %_,%,$(subst -, ,$(shell echo ${SYSTEM_INFO}|${CMD_DTR} -c "[A-Za-z0-9\-]" "_")))
+else
+  SYSTEM_ID= $(patsubst %_,%,$(subst -, ,${CONFIG_GUESS_ID}))
+endif
+
+ARCH_TYPE= $(word 1, ${SYSTEM_ID})
+VENDOR_NAME= $(word 2, ${SYSTEM_ID})
+OS_NAME= $(word 3, ${SYSTEM_ID})
+
+ifeq "$(findstring windows,${OS_NAME})" "windows"
+ OS_TYPE= windows
+else
+ OS_TYPE= unix
+endif
+
+ifeq "${HOSTINFO}" ""
+ HOST_INFO=unknownHost/unknownCompiler/unknownGlibc
+else
+ HOST_INFO=${HOSTINFO}
+endif
+
+
+###############################################################################
+
+#------------------------------------------------------------------------------
+# OS-dipendent Shell commands
+#------------------------------------------------------------------------------
+
+
+
+#------------------------------------------------------------------------------
+# Version variables
+#------------------------------------------------------------------------------
+
+# Please specify the current version subdivided in:
+#   TARGET_MAJVERSION the major version number (e.g. 1 for version 1.0)
+#   TARGET_MINVERSION the minor version number (e.g. 0 for version 1.0)
+TARGET_MAJVERSION:= 0
+TARGET_MINVERSION:= 0
+
+#------------------------------------------------------------------------------
+# Structural variables
+#------------------------------------------------------------------------------
+
+# Please list here the directory names that sould be excluded
+# by the recursive make call
+SKIP_DIRECTORIES:=
+
+# Please put here the directory that has to be executed first
+DIR_PRIORITY:=
+
+# Please put here the directory that has to be executed last
+DIR_LOWPRIORITY:=
+
+# List of targets executed by the "all" rule in the generic makefiles
+ALL_EXEC_LIST:= obj lib exe doc
+
+#------------------------------------------------------------------------------
+# Compilers variables
+#------------------------------------------------------------------------------
+
+# Please set here the modality used for pakageVar inlcusion
+# This vairable takes the values: DYNAMIC or STATIC
+AGNI_INHERIT_MODE:= DYNAMIC
+
+# Please add here all the directories with absolute path
+# (e.g. -I/usr/local/include) that contain include files needed by the sources.
+ABS_INCLUDES:=
+
+# Please add here all the directories with relative path
+# (e.g. -I../MyModule/src) that contain include files needed by the sources.
+REL_INCLUDES:=
+
+# Please add here all the directories with absolute path
+# (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
+ABS_LIBRARIES:=
+
+# Please add here all the directories with relative path
+# (e.g. -L../MyLib/lib)
+REL_LIBRARIES:=
+
+# Please add here all the objects with absolute path
+# that are needed by the executables.
+ABS_OBJECTS:=
+
+# Please add here all the objects with relative path
+# that are needed by the executables.
+REL_OBJECTS:=
+
+# Assign the value TRUE to this flag in order to force the
+# usage of the C++ compiler (any other value different from
+# TRUE means: do not force C++ compiler)
+FORCE_CPP:=TRUE
+
+# Debug flag
+DEBUG:=
+
+# Debug status
+# This variable takes two values: TRUE or FALSE
+DEBUG_ON:= TRUE
+
+# Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
+CDEFINES:=
+
+# Flags for C compiler
+# Removing -Wall -pedantic will be punished severely!!!
+CFLAGS:= -Wall -pedantic -std=c99
+
+# Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
+CPPDEFINES:=
+
+# Flags for C++ compiler
+# Removing -Wall -pedantic will be punished severely!!!
+CPPFLAGS:= -Wall -pedantic
+
+# Flags for archive
+ARFLAGS:= rv
+
+# Flags for static library linker
+LDFLAGS:=
+
+# Flags for dynamic library linker
+LDDYNFLAGS:= -shared 
+
+# Flags for makedepend tool
+MKDEPFLAGS:= -fmakeDepend
+
+# Flags for make
+EXTRAMAKEFLAGS:= -s
+
+# Prefix string to be placed before each target name
+TARGET_PREFIX:=
+
+# Postfix string to be placed after each target name
+TARGET_POSTFIX:=
+
+# C file extension
+SOURCE_C_EXT:= c
+
+# C++ file extension
+SOURCE_CPP_EXT:= cpp
+
+# Shared objects extension
+LIBRARIES_SO_EXT:= so
+
+#Dynamic library extension
+ifeq "${OS_NAME}" "windows"
+  LIBRARIES_SO_EXT:= dll
+endif
+ifeq "${OS_NAME}" "cygwin"
+  LIBRARIES_SO_EXT:= dll
+endif
+
+#-----------------------------------------------
+# Rule: all (needed, must be the first)
+#-----------------------------------------------
+all: ;
+
+#-----------------------------------------------
+# Rule: printvar
+#-----------------------------------------------
+
+printvar:
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} "SYSTEM_INFO:      #${SYSTEM_INFO}#"
+	${PRE_CMD}${CMD_ECHO} "ARCH_TYPE:        #${ARCH_TYPE}#"
+	${PRE_CMD}${CMD_ECHO} "VENDOR_NAME:      #${VENDOR_NAME}#"
+	${PRE_CMD}${CMD_ECHO} "OS_TYPE:          #${OS_TYPE}#"
+	${PRE_CMD}${CMD_ECHO} "OS_NAME:          #${OS_NAME}#"
+	${PRE_CMD}${CMD_ECHO} "HOST_INFO:        #${HOST_INFO}#"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} "PROJECT_NAME:     #${PROJECT_NAME}#"
+	${PRE_CMD}${CMD_ECHO} "TARGET_LIB:       #${TARGET_LIB}#"
+	${PRE_CMD}${CMD_ECHO} "TARGET_EXE:       #${TARGET_EXE}#"
+	${PRE_CMD}${CMD_ECHO} "TARGET_INSTALL:   #${TARGET_INSTALL}#"
+	${PRE_CMD}${CMD_ECHO} "TARGET_MAJVERSION:#${TARGET_MAJVERSION}#"
+	${PRE_CMD}${CMD_ECHO} "TARGET_MINVERSION:#${TARGET_MINVERSION}#"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} "AGNI_INHERIT_MODE: #${AGNI_INHERIT_MODE}#"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} "ABS_INCLUDES:     #${ABS_INCLUDES}#"
+	${PRE_CMD}${CMD_ECHO} "REL_INCLUDES:     #${REL_INCLUDES}#"
+	${PRE_CMD}${CMD_ECHO} "ABS_OBJECTS:      #${ABS_OBJECTS}#"
+	${PRE_CMD}${CMD_ECHO} "REL_OBJECTS:      #${REL_OBJECTS}#"
+	${PRE_CMD}${CMD_ECHO} "ABS_LIBRARIES:    #${ABS_LIBRARIES}#"
+	${PRE_CMD}${CMD_ECHO} "REL_LIBRARIES:    #${REL_LIBRARIES}#"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} "FORCE_CPP:        #${FORCE_CPP}#"
+	${PRE_CMD}${CMD_ECHO} "DEBUG:            #${DEBUG}#"
+	${PRE_CMD}${CMD_ECHO} "DEBUG_ON:         #${DEBUG_ON}#"
+	${PRE_CMD}${CMD_ECHO} "CDEFINES:         #"${CDEFINES}"#"
+	${PRE_CMD}${CMD_ECHO} "CFLAGS:           #${CFLAGS}#"
+	${PRE_CMD}${CMD_ECHO} "CPPDEFINES:       #"${CPPDEFINES}"#"
+	${PRE_CMD}${CMD_ECHO} "CPPFLAGS:         #${CPPFLAGS}#"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} "ARFLAGS:          #${ARFLAGS}#"
+	${PRE_CMD}${CMD_ECHO} "LDFLAGS:          #${LDFLAGS}#"
+	${PRE_CMD}${CMD_ECHO} "LDDYNFLAGS:       #${LDDYNFLAGS}#"
+	${PRE_CMD}${CMD_ECHO} "MKDEPFLAGS:       #${MKDEPFLAGS}#"
+	${PRE_CMD}${CMD_ECHO} "EXTRAMAKEFLAGS:   #${EXTRAMAKEFLAGS}#"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} "SKIP_DIRECTORIES: #${SKIP_DIRECTORIES}#"
+	${PRE_CMD}${CMD_ECHO} "DIR_PRIORITY:     #${DIR_PRIORITY}#"
+	${PRE_CMD}${CMD_ECHO} "DIR_LOWPRIORITY:  #${DIR_LOWPRIORITY}#"
+	${PRE_CMD}${CMD_ECHO} "ALL_EXEC_LIST:    #${ALL_EXEC_LIST}#"
+	${PRE_CMD}${CMD_ECHO} ""
+
+#-----------------------------------------------
+# Rule: help
+#-----------------------------------------------
+help:
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} "This make file has the following commands:"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " doc         : makes the directory: doc/"
+	${PRE_CMD}${CMD_ECHO} " cleandoc    : clear what doc made"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " obj         : makes the directory: src/ obj/"
+	${PRE_CMD}${CMD_ECHO} " cleanobj    : clear what obj made"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " lib         : makes the directory: lib/"
+	${PRE_CMD}${CMD_ECHO} " cleanlib    : clear what lib made"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " exe         : makes the directory: examples/ test/ bin/"
+	${PRE_CMD}${CMD_ECHO} " cleanexe    : clear what exe made"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " install     : makes the directory: install/"
+	${PRE_CMD}${CMD_ECHO} " cleaninstall: clear what install made"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " all         : (default target) makes the commands: ${ALL_EXEC_LIST}"
+	${PRE_CMD}${CMD_ECHO} " cleanall    : clear what all made"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " clean       : recursive deep clean"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " depend      : makes dependency for source files"
+	${PRE_CMD}${CMD_ECHO} " cleandepend : clear what depend made"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " printvar    : print all variables from top to current directory"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " printtype   : print the makefile type"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " help        : this help text"
+	${PRE_CMD}${CMD_ECHO} ""
+
+
+
+
+
+

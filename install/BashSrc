@@ -1,0 +1,51 @@
+#
+#   BashSrc
+#
+
+# To use it, please source this file in a script file that 
+# starts your application.
+
+# Please, set here the project name.
+# (e.g. DisplayWindow )  
+PROJECT_NAME=ICL
+
+# Please, set here the full project version.
+# (e.g. 1.0 )
+FULL_VERSION=3.0
+
+# Please, set here the start installation directory.
+# (e.g. ${AGNI_GLOBAL_ROOT}/Modules )
+PROJECT_START_PATH=${AGNI_LOCAL_ROOT}
+
+# Please, set here extra run-time library path (for shared objects only)
+# (e.g. /usr/lib:usr/local/gnu/lib )
+EXTRA_LD_LIBRARY_PATH=""
+
+# Please, set here the inherited projects (separated by space)
+# (e.g. "${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/BashSrc" )
+INHERITED_PROJECTS=""
+
+# Please, don't forget to set the appropriate AGNI_GLOBAL_ROOT 
+# in your environment.
+
+
+# Do not change anything below this line
+###############################################################################
+
+if ((`echo ${LD_LIBRARY_PATH} | grep -e"/${PROJECT_NAME}/${FULL_VERSION}/" | wc -c` == 0)); then
+
+  # Run-time libraries paths
+  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PROJECT_START_PATH}/${PROJECT_NAME}/${FULL_VERSION}/lib
+
+  # Extra libraries path  
+  if ["${EXTRA_LD_LIBRARY_PATH}" != ""]; then
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${EXTRA_LD_LIBRARY_PATH}
+  fi
+
+  # Source all inherited projects
+  for i in $INHERITED_PROJECTS ; do
+    source $i
+  done
+
+fi
+
