@@ -37,27 +37,6 @@ ICL<Type>::ICL(int iWidth,
 
 //----------------------------------------------------------------------------
 template<class Type>
-ICL<Type>::ICL(vector<int> vecWidth, 
-               vector<int> vecHeight)
-{
-  //---- Log Message ----
-  DEBUG_LOG4("Konstruktor: ICL(vector<int>,vector<int>) -> " << this);
-  
-  //---- Variable definiton/ initialisation ----
-  m_iChannels = vecWidth.size();
-  m_ppChannels.resize(m_iChannels);
-
-  //---- ICL Channel memory allocation ----
-  for(int i=0;i<m_iChannels;i++)
-    m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(vecWidth[i],
-                                                         vecHeight[i]));
-
-  //---- Get type id ----
-  setVarType();
-}
-
-//----------------------------------------------------------------------------
-template<class Type>
 ICL<Type>::ICL(const ICL<Type>& tSrc)
 {
   //---- Log Message ----
@@ -113,6 +92,12 @@ ICL<Type>& ICL<Type>::operator=(const ICL<Type>& tSrc)
   //---- return ----
   return *this;
 }
+  
+template<class Type>
+Type& ICL<Type>::operator()(int iX, int iY, int iChannel)
+{
+  return m_ppChannels[iChannel](iX,iY);
+}  
 
 // }}} 
 
@@ -364,30 +349,6 @@ ICL<Type>::renewICL(int iNewWidth, int iNewHeight, int iNumNewChannels)
 
 //----------------------------------------------------------------------------
 template<class Type>
-void 
-ICL<Type>::renewICL(vector<int> vecNewWidth, 
-                    vector<int> vecNewHeight)
-{
-  //---- Log Message ----
-  DEBUG_LOG4("renewICL(vector<int>, vector<int>)"); 
-
-  //---- Make referenced channels independent before resize ----
-  detach(); 
-  deleteChannels ();
-  
-  m_ppChannels.resize(vecNewWidth.size());
-  m_iChannels = vecNewWidth.size();    
-  
-  for(int i=0;i<m_iChannels;i++)
-  {
-    m_ppChannels[i] = 
-      ICLChannelPtr (new ICLChannel<Type>(vecNewWidth[i],
-                                          vecNewHeight[i]));
-  }
-}
-
-//----------------------------------------------------------------------------
-template<class Type>
 inline
 void ICL<Type>::replaceChannel(int iIndexA, 
                                int iIndexB, 
@@ -407,13 +368,13 @@ void ICL<Type>::replaceChannel(int iIndexA,
 
 //--------------------------------------------------------------------------
 template<class Type>
-ICL<DEPTH32>
+ICL<iclfloat>
 ICL<Type>::convertTo32Bit() const
 {
   //---- Log Message ----
   DEBUG_LOG4("convertTo32Bit()");
   
-  ICL<DEPTH32> tImg(getWidth(0),getHeight(0),m_iChannels);
+  ICL<iclfloat> tImg(getWidth(0),getHeight(0),m_iChannels);
   
   //---- convert ----
   for(int i=0;i<m_iChannels;i++)
@@ -422,7 +383,7 @@ ICL<Type>::convertTo32Bit() const
     
     for(int x=0;x<getWidth(i);x++)
       for(int y=0;y<getHeight(i);y++)
-        tImg.setPixel(x,y,i,(DEPTH32) m_ppChannels[i]->getPixel(x,y));    
+        tImg.setPixel(x,y,i,(iclfloat) m_ppChannels[i]->getPixel(x,y));    
   }
   
   return tImg;
@@ -431,10 +392,10 @@ ICL<Type>::convertTo32Bit() const
 //--------------------------------------------------------------------------
 template<class Type>
 void
-ICL<Type>::convertTo32Bit(ICL<DEPTH32> &tImg) const
+ICL<Type>::convertTo32Bit(ICL<iclfloat> &tImg) const
 {
   //---- Log Message ----
-  DEBUG_LOG4("convertTo32Bit(ICL<DEPTH32> &)");
+  DEBUG_LOG4("convertTo32Bit(ICL<iclfloat> &)");
   
   //---- resize image if necessary ----
   tImg.resizeICL(getWidth(0),getHeight(0),m_iChannels);
@@ -446,25 +407,25 @@ ICL<Type>::convertTo32Bit(ICL<DEPTH32> &tImg) const
     
     for(int x=0;x<getWidth(i);x++)
       for(int y=0;y<getHeight(i);y++)
-        tImg.setPixel(x,y,i,(DEPTH32) m_ppChannels[i]->getPixel(x,y));
+        tImg.setPixel(x,y,i,(iclfloat) m_ppChannels[i]->getPixel(x,y));
   }
 }
 
 //--------------------------------------------------------------------------
 template<class Type>
-ICL<DEPTH8>
+ICL<iclbyte>
 ICL<Type>::convertTo8Bit() const
 {
   //---- Log Message ----
   DEBUG_LOG4("convertTo8Bit()");
   
-  ICL<DEPTH8> tImg(getWidth(0),getHeight(0),m_iChannels);
+  ICL<iclbyte> tImg(getWidth(0),getHeight(0),m_iChannels);
   
   for(int i=0;i<m_iChannels;i++)
   {
     for(int x=0;x<getWidth(i);x++)
       for(int y=0;y<getHeight(i);y++)
-        tImg.setPixel(x,y,i,(DEPTH8) m_ppChannels[i]->getPixel(x,y));    
+        tImg.setPixel(x,y,i,(iclbyte) m_ppChannels[i]->getPixel(x,y));    
   }
 
   return tImg;
@@ -473,10 +434,10 @@ ICL<Type>::convertTo8Bit() const
 //--------------------------------------------------------------------------
 template<class Type>
 void
-ICL<Type>::convertTo8Bit(ICL<DEPTH8> &tImg) const
+ICL<Type>::convertTo8Bit(ICL<iclbyte> &tImg) const
 {
   //---- Log Message ----
-  DEBUG_LOG4("convertTo8Bit(ICL<DEPTH8> &)");
+  DEBUG_LOG4("convertTo8Bit(ICL<iclbyte> &)");
   
   //---- resize image if necessary ----
   tImg.resizeICL(getWidth(0),getHeight(0),m_iChannels);
@@ -486,102 +447,22 @@ ICL<Type>::convertTo8Bit(ICL<DEPTH8> &tImg) const
   {  
     for(int x=0;x<getWidth(i);x++)
       for(int y=0;y<getHeight(i);y++)
-        tImg.setPixel(x,y,i,(DEPTH8) m_ppChannels[i]->getPixel(x,y));
+        tImg.setPixel(x,y,i,(iclbyte) m_ppChannels[i]->getPixel(x,y));
   }
-}
-
-// }}} 
-
-// {{{  Set functions: 
-//----------------------------------------------------------------------------
-template<class Type>
-inline
-void 
-ICL<Type>::setPixel(int iX, int iY, int iChannel,Type value)
-{
-  m_ppChannels[iChannel]->setPixel(iX,iY,value);
-}
-
-//----------------------------------------------------------------------------
-template<class Type>
-inline
-void 
-ICL<Type>::setPixel(int iX, int iY, Type* pValue)
-{
-  for(int i=0;i<m_iChannels;i++)
-    m_ppChannels[i]->setPixel(iX,iY,pValue[i]);
-}
-
-//----------------------------------------------------------------------------
-template<class Type>
-void ICL<Type>::setVarType()
-{
-  //---- Detect var type ----
-  m_sVarType = typeid(Type).name();
 }
 
 // }}} 
 
 // {{{  Get Functions: 
-
-//----------------------------------------------------------------------------
-template<class Type>
-vector<int>
-ICL<Type>::getHeight() const
-{
-  //---- Variable initilisation ----
-  vector<int> vecHeight;
-  vecHeight.clear();
-  
-  //---- Main ----
-  for (int i=0;i<m_iChannels;i++)
-  {
-    vecHeight.push_back(getHeight(i));
-  }
-
-  //---- return----
-  return vecHeight;
-}
-
-//----------------------------------------------------------------------------
-template<class Type>
-vector<int>
-ICL<Type>::getWidth() const
-{
-  //---- Variable initilisation ----
-  vector<int> vecWidth;
-  vecWidth.clear();
-  
-  //---- Main ----
-  for (int i=0;i<m_iChannels;i++)
-  {
-    vecWidth.push_back(getWidth(i));
-  }
-  
-  //---- return----
-  return vecWidth;
-}
-
 //----------------------------------------------------------------------------
 template<class Type>
 void
-ICL<Type>::getChannelData(vector<Type> &vecTarget, int iChannel) const
+ICL<Type>::getDataVec(vector<Type> &vecTarget, int iChannel) const
 {
   //---- Get channel data ----
-  std::copy(m_ppChannels[iChannel]->getDataPtrBegin(),
-            m_ppChannels[iChannel]->getDataPtrEnd(),
+  std::copy(m_ppChannels[iChannel]->getDataBegin(),
+            m_ppChannels[iChannel]->getDataEnd(),
             vecTarget.begin());
-}
-  
-//----------------------------------------------------------------------------
-template<class Type>
-inline
-void 
-ICL<Type>::getPixel(int iX, int iY, Type* ptTarget) const
-{
-  //---- Get the pixel value ----
-  for(int i=0;i<m_iChannels;i++)
-    ptTarget[i] = m_ppChannels[i]->getPixel(iX,iY);
 }
 
 //----------------------------------------------------------------------------
@@ -604,113 +485,13 @@ ICL<Type>::getChannelRoiOffset(int* piXOffset, int* piYOffset, int iChannel)
   *piYOffset = m_ppChannels[iChannel]->getRoiYOffset();
 }
 
-//----------------------------------------------------------------------------
-template<class Type>
-int ICL<Type>::getFilteredPixel(int iX, 
-                                int iY, 
-                                bool* pbMask,
-                                Type* ptTarget) const 
-{
-  //---- Variable initialization ----
-  int iCounter =0;
-  
-  //---- Get pixel values ----
-  for(int i=0;i<m_iChannels;i++)
-    if(pbMask[i]) 
-    {
-      ptTarget[iCounter]=getPixel(iX,iY,i);
-      iCounter++;
-    }
-  
-  return iCounter; 
-}
-
-//--------------------------------------------------------------------------
-template<class Type>
-void
-ICL<Type>::getRegion(int iCenterMode,
-                     int iX, 
-                     int iY, 
-                     int iRegionWidth, 
-                     int iRegionHeight,
-                     ICL<Type> &oTarget)
-{
-  //---- Log Message ----
-  DEBUG_LOG3("void getRegion(int,int,int,int,int,ICL<Type>)");
-  
-  //---- Allocate memory ----
-  Type tmpPix;
-  int iWidth = 0;
-  int iHeight = 0;
-
-  //---- Initilaize new ICL ----
-  oTarget.renewICL(iRegionWidth,iRegionHeight,m_iChannels);
-  
-  switch(iCenterMode)
-  {
-    case 0:
-      //---- iX, iY specify the lower left corner of the image region ----
-      //CHECK_COORDINATE(this,(iX+iRegionWidth-1),(iY+iRegionHeight-1));   
-      break;
-      
-    case 1:
-      iWidth = getWidth(0);
-      iHeight = getHeight(0);
-
-      //---- calc new iX, iY position ----
-      iX = (int)floor(0.5*iWidth) - (int)floor(0.5*iRegionWidth);
-      iY = (int)floor(0.5*iHeight) - (int)floor(0.5*iRegionHeight);
-      
-      break;
-  }
-  
-  //---- Log Message: parameter summary ----
-  DEBUG_LOG2("getRegion: Parameter summary:");
-  DEBUG_LOG2("-----------------------------");
-  DEBUG_LOG2("iCenterMode  : " << iCenterMode);
-  DEBUG_LOG2("iX (Offset)  : " << iX);
-  DEBUG_LOG2("iY (Offset)  : " << iY);
-  DEBUG_LOG2("iWidth (src) : " << iWidth);
-  DEBUG_LOG2("iHeight (src): " << iHeight);
-  DEBUG_LOG2("iRegionWidth : " << iRegionWidth);
-  DEBUG_LOG2("iRegionHeight: " << iRegionHeight);
-  
-  //---- get image region ----
-  for (int x=0;x<iRegionWidth;x++)
-    for (int y=0;y<iRegionHeight;y++)
-      for(int i=0;i<m_iChannels;i++)
-      {
-        tmpPix = getPixel(x+iX,y+iY,i);
-        oTarget.setPixel(x,y,i,tmpPix);
-      }
-}
-
-//----------------------------------------------------------------------------
-template<class Type> 
-inline
-int ICL<Type>::getVarType() const
-{
-  //---- Initialize Variables ----
-  int iType;
-  iType = 0;
-  
-  //---- Var type to int ----
-  if (m_sVarType == "h")
-    iType = 8;
-  else if (m_sVarType == "f")
-    iType = 32;
-  
-  //---- return value ----
-  return iType;
-}
-
 // }}} 
 
 // {{{  basic image manipulation: 
 
 //--------------------------------------------------------------------------
 template<class Type>
-void ICL<Type>::clear(int iChannel) 
+void ICL<Type>::clear(int iChannel, Type tValue) 
 {
   //---- Log Message ----
   DEBUG_LOG4("clear()");
@@ -718,12 +499,12 @@ void ICL<Type>::clear(int iChannel)
   if(iChannel == -1) 
   {
     for(int i=0;i<m_iChannels;i++) 
-      m_ppChannels[i]->clear();
+      m_ppChannels[i]->clear(tValue);
   }
   else 
-    m_ppChannels[iChannel]->clear();
+    m_ppChannels[iChannel]->clear(tValue);
 }
-
+/*
 //--------------------------------------------------------------------------
 template<class Type>
 void
@@ -802,50 +583,7 @@ ICL<Type>::scale(float fFactor, int method, ICL<Type> *img) const
     }
   }
 }
-
-//--------------------------------------------------------------------------
-template<class Type>
-void
-ICL<Type>::scaleRange(vector<Type> scaleFactor, 
-                      int iChannel)
-{  
-  //---- scale ----
-  if (iChannel == -1)
-  {
-    for(int i=0;i<getChannels();i++)
-    {
-      m_ppChannels[i]->scaleRange(scaleFactor[i]);    
-    }
-  }
-  else
-  { 
-    m_ppChannels[iChannel]->scaleRange(scaleFactor[iChannel]);
-  }
-}
-
-//--------------------------------------------------------------------------
-template<class Type>
-ICL<Type>
-ICL<Type>::mask(ICL<Type> &mask)
-{
-  int iWidth = getWidth(0);
-  int iHeight = getHeight(0);
-  
-  ICL<Type> maskedImage(iWidth, iHeight ,m_iChannels);
-  
-  for (int z=0;z<m_iChannels;z++)
-    for (int y=0;y<iHeight;y++)
-      for (int x=0;x<iWidth;x++)
-      {
-        if (mask.getPixel(x,y,0) != 0)
-          maskedImage.setPixel(x,y,z,this->getPixel(x,y,z));
-        else
-          maskedImage.setPixel(x,y,z,0);
-      }
-  
-  return maskedImage;
-}
-
+*/
 // }}}
   
 // {{{  Auxillary functions
@@ -943,7 +681,12 @@ ICL<Type>::isEqual(int iNewWidth, int iNewHeight, int iNumNewChannels)
 // }}}
 
 
-template class ICL<DEPTH8>;
-template class ICL<DEPTH32>;
+template class ICL<iclbyte>;
+template class ICL<iclfloat>;
+
+//class ICL8u : public ICL<iclbyte>{};
+//typedef struct ICL<iclbyte> ICL8u;
+//typedef struct ICL<iclfloat> ICL32f;
+
 
 } //namespace ICL

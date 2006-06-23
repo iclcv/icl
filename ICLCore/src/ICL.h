@@ -11,7 +11,7 @@
 #define ICL_H
 
 //-------- includes --------
-#include "ICLMacros.h"
+#include "ICLBase.h"
 #include "ICLChannel.h"
 #include <cmath>
 #include <typeinfo>
@@ -29,7 +29,7 @@ namespace ICL {
    @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de)
 **/
 template <class Type>
-class ICL
+class ICL : public ICLBase
 {
  protected:
   typedef typename ICLChannel<Type>::AutoPtr ICLChannelPtr;
@@ -118,6 +118,12 @@ class ICL
       @param tSource Reference to source object. 
   **/
   ICL& operator=(const ICL<Type>& tSource);
+
+  //--------------------------------------------------------------------------
+  /** operator()
+  **/
+  inline
+  Type& operator()(int iX, int iY, int iChannel);
 
   //@}
 
@@ -233,27 +239,27 @@ class ICL
   /** Return a copy of the object with depth 32 bit.      
       @return Copy of the object with depth 32 bit 
   **/
-  ICL<DEPTH32> convertTo32Bit() const ;
+  ICL<iclfloat> convertTo32Bit() const ;
   
   //--------------------------------------------------------------------------
-  /** Place the DEPTH32 copy of the image into an existing image.      
+  /** Place the iclfloat copy of the image into an existing image.      
       @param tImg The result after the convertion process
       @return -
   **/
-  void convertTo32Bit(ICL<DEPTH32> &tImg) const ;
+  void convertTo32Bit(ICL<iclfloat> &tImg) const ;
   
   //--------------------------------------------------------------------------
   /** Return a copy of the object with depth 8 bit. Information may be lost!
       @return Copy of the object with depth 8 bit 
   **/
-  ICL<DEPTH8> convertTo8Bit() const;
+  ICL<iclbyte> convertTo8Bit() const;
 
   //--------------------------------------------------------------------------
-  /** Place the DEPTH8 copy of the image into an existing image.      
+  /** Place the iclbyte copy of the image into an existing image.      
       @param tImg The result after the convertion process
       @return -
   **/
-  void convertTo8Bit(ICL<DEPTH8> &tImg) const;
+  void convertTo8Bit(ICL<iclbyte> &tImg) const;
   
   //@}
 /* }}} */
@@ -308,12 +314,11 @@ class ICL
 
   //@{
   //--------------------------------------------------------------------------
-  /** Moves the data from the specified channel to the target
-      The data will be in row-by-row order.
-      @param ptTarget Pointer to the source data
-      @param iChannel Channel to fill
+  /** Copy the data from the specified channel to the target stl vector
+      @param ptTarget The stl vector
+      @param iChannel Copy the data from the channel iChannel
   **/
-  void getChannelData(vector<Type> &ptTarget, int iChannel) const;
+  void getDataVec(vector<Type> &ptTarget, int iChannel) const;
 
   //--------------------------------------------------------------------------
   /** Gets the value of one pixel. The value of the pixel is an
@@ -427,18 +432,9 @@ class ICL
       direct access to the channel data memory.
       @param iChannel Channel to get data from
   **/
-  typename vector<Type>::iterator getChannelDataPtr(int iChannel) 
+  Type* getData(int iChannel) 
     { 
-      return (m_ppChannels[iChannel]->getDataPtrBegin());
-    }
-  
-  //--------------------------------------------------------------------------
-  /** Returns the data vector.
-      @param iChannel Channel to get data from
-  **/
-  vector<Type>* getChannelDataVec(int iChannel) 
-    {
-      return (m_ppChannels[iChannel]->getDataVec());
+      return (m_ppChannels[iChannel]->getDataBegin());
     }
   
   //--------------------------------------------------------------------------
@@ -501,7 +497,7 @@ class ICL
   /** Sets the pixels of one or all channels to zero
       @param iChannel Channel to fill with zero (default: -1 = all)
   **/
-  void clear(int iChannel = -1);
+  void clear(int iChannel = -1, Type tValue = 0);
 
   //--------------------------------------------------------------------------
   /** Scale image by factor fFactor. Using different methods 
@@ -512,16 +508,7 @@ class ICL
       @param fFactor Scaling factor
       @param method Scaling method 
   **/
-  void scale(float fFactor, int method, ICL<Type> *img) const;
-
-  //--------------------------------------------------------------------------
-  /** Scale each pixel in channel with the given factor. 
-      @param factor 
-      @param channel Scale channel CHANNEL
-                     \li channel = -1 scale all channels [default]
-  **/
-  void scaleRange(vector<Type> factor, 
-                  int channel = -1);
+  //void scale(float fFactor, int method, ICL<Type> *img) const;
 
   //--------------------------------------------------------------------------
   /** Scale the channel min/ max range to the new range tMin, tMax. 
@@ -532,12 +519,6 @@ class ICL
   **/
   void scaleRange(float tMin, float tMax, int channel = -1);
 
-  //--------------------------------------------------------------------------
-  /** Mask this image with a given mask
-      @param mask The mask image
-  **/
-  ICL<Type> mask(ICL<Type> &mask);
-  
   //@}
 
 /* }}} */

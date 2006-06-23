@@ -36,8 +36,8 @@ class ICLChannelInfo
   int m_iImageRoiXOffset, m_iImageRoiYOffset;
   
  public:
-  friend class ICLChannel<DEPTH8>;
-  friend class ICLChannel<DEPTH32>;
+  //friend class ICLChannel<iclbyte>;
+  //friend class ICLChannel<iclfloat>;
   
   ICLChannelInfo() {};
   ~ICLChannelInfo() {};
@@ -50,7 +50,7 @@ class ICLChannelInfo
       @param iWidth The image width in pixel
       @param iHeight The image height in pixel
   **/
-  void setImageSize(int iWidth, int iHeight) 
+  void setSize(int iWidth, int iHeight) 
     {
       m_iImageWidth = iWidth;
       m_iImageHeight = iHeight;
@@ -68,7 +68,7 @@ class ICLChannelInfo
       @param iWidth The image roi width in pixel
       @param iHeight The image roi height in pixel
   **/
-  void setImageRoi(int iWidth, int iHeight) 
+  void setRoi(int iWidth, int iHeight) 
     {
       m_iImageRoiWidth = iWidth;
       m_iImageRoiHeight = iHeight;
@@ -81,7 +81,7 @@ class ICLChannelInfo
       @param iXOffset The x - offset 
       @param iYOffset The y - offset
   **/
-  void setImageRoiOffset(int iXOffset, int iYOffset) 
+  void setRoiOffset(int iXOffset, int iYOffset) 
     {
       m_iImageRoiXOffset = iXOffset;
       m_iImageRoiYOffset = iYOffset;
@@ -92,7 +92,7 @@ class ICLChannelInfo
       @param -
       @return The image roi width in pixel
   **/
-  int getImageRoiWidth() 
+  int getRoiWidth() const
     {
       //---- Return the image roi width 
       return m_iImageRoiWidth;
@@ -103,7 +103,7 @@ class ICLChannelInfo
       @param -
       @return The image roi height in pixel
   **/
-  int getImageRoiHeight() 
+  int getRoiHeight() const
     {
       //---- Return the image height
       return m_iImageRoiHeight;
@@ -114,7 +114,7 @@ class ICLChannelInfo
       @param -
       @return The image roi height in pixel
   **/
-  int getImageRoiXOffset() 
+  int getRoiXOffset() const
     {
       //---- Return the image height
       return m_iImageRoiXOffset;
@@ -125,7 +125,7 @@ class ICLChannelInfo
       @param -
       @return The image roi height in pixel
   **/
-  int getImageRoiYOffset() 
+  int getRoiYOffset() const
     {
       //---- Return the image height
       return m_iImageRoiYOffset;
@@ -136,7 +136,7 @@ class ICLChannelInfo
       @param -
       @return The image width in pixel
   **/
-  int getImageWidth() 
+  int getWidth() const
     {
       //---- Return the image width 
       return m_iImageWidth;
@@ -147,7 +147,7 @@ class ICLChannelInfo
       @param -
       @return The image height in pixel
   **/
-  int getImageHeight() 
+  int getHeight() const
     {
       //---- Return the image height
       return m_iImageHeight;
@@ -158,7 +158,7 @@ class ICLChannelInfo
       @param -
       @return The image dimension in pixel
   **/
-  int getImageDim() 
+  int getDim() const
     {
       //---- Return the image dim
       return m_iImageDim;
@@ -183,18 +183,15 @@ class ICLChannel
   
  protected:
   //------------------------------------------------------------------------
-  /** Image depth in bit (8 or 32) **/
-  int m_iDepth;
-  
   /** Array containing image data (row-by-row).**/
-  vector<Type> m_ptData;
+  Type *m_ptData;
   
   /** Array of pointers to the beginning of each row. **/
-  vector<typename vector<Type>::iterator> m_pptRow;
+  Type **m_pptRow;
   
  public:
   typedef boost::shared_ptr<ICLChannel<Type> > AutoPtr;
-
+  
   //--------------------------------------------------------------------------
   //Info object
   ICLChannelInfo m_oInfo;
@@ -220,7 +217,7 @@ class ICLChannel
 
   //@}
   /* }}} */
-  
+                                      
   /* {{{ class operator */
   //@{
   //--------------------------------------------------------------------------
@@ -296,74 +293,66 @@ class ICLChannel
   /** Return pointer of the selected row.
       @param iRow Arg index of row
   **/
-  typename vector<Type>::iterator 
-  getRowPtr(int iRow) const {return m_pptRow[iRow];}
+  Type* getRowPtr(int iRow) const {return m_pptRow[iRow];}
   
   //--------------------------------------------------------------------------
-  /** Return the iterator to the begin of the data. 
+  /** Return the pointer to the begin of the data. 
       @return The beginning of the data vector **/
-  typename vector<Type>::iterator
-  getDataPtrBegin() { return m_ptData.begin();}
+  Type* getDataBegin() { return m_ptData;}
 
   //--------------------------------------------------------------------------
-  /** Return the data vector. 
-      @return The pointer to the data vector **/
-  vector<Type>*
-  getDataVec() { return &m_ptData;}
-
-  //--------------------------------------------------------------------------
-  /** Return the iterator to the begin of the data. 
+  /** Return the pointer to the end of the data. 
       @return The beginning of the data vector **/
-  typename vector<Type>::iterator 
-  getDataPtrEnd() { return m_ptData.end();}
+  Type* 
+  getDataEnd() { return m_ptData+m_oInfo.getDim();}
 
   //--------------------------------------------------------------------------
   /** Returns the width of the image channel
       @return Width of channel
   **/
-  int getWidth() const { return m_oInfo.m_iImageWidth;}
+  int getWidth() const { return m_oInfo.getWidth();}
   
   //--------------------------------------------------------------------------
   /** Returns the  height of the image channel
       @return height of image channel
   **/
-  int getHeight() const { return m_oInfo.m_iImageHeight;}
+  int getHeight() const { return m_oInfo.getHeight();}
 
   //--------------------------------------------------------------------------
   /** Returns the  dimension of the image channel (width*height)
       @return height of image channel
   **/
-  int getDim() const { return m_oInfo.m_iImageDim;}
+  int getDim() const { return m_oInfo.getDim();}
   
   //--------------------------------------------------------------------------
   /** Returns the width of the image channel roi
       @return Width of channel roi
   **/
-  int getRoiWidth() const { return m_oInfo.m_iImageRoiWidth;}
+  int getRoiWidth() const { return m_oInfo.getRoiWidth();}
   
   //--------------------------------------------------------------------------
   /** Returns the  height of the image channel roi
       @return height of image channel roi
   **/
-  int getRoiHeight() const { return m_oInfo.m_iImageRoiHeight;}
+  int getRoiHeight() const { return m_oInfo.getRoiHeight();}
 
   //--------------------------------------------------------------------------
   /** Returns the XOffset of the image channel roi
       @return Width of channel roi
   **/
-  int getRoiXOffset() const { return m_oInfo.m_iImageRoiXOffset;}
+  int getRoiXOffset() const { return m_oInfo.getRoiXOffset();}
   
   //--------------------------------------------------------------------------
   /** Returns the YOffset of the image channel roi
       @return height of image channel roi
   **/
-  int getRoiYOffset() const { return m_oInfo.m_iImageRoiYOffset;}
+  int getRoiYOffset() const { return m_oInfo.getRoiYOffset();}
 
   //--------------------------------------------------------------------------
   /** Returns the depth in bit of the image channel
       @return Depth of image channel in bit
   **/
-  int getDepth() const { return m_iDepth;}
+  //int getDepth() const { return m_iDepth;}
   
   //@}
 
@@ -375,9 +364,9 @@ class ICLChannel
 
   //--------------------------------------------------------------------------
   /** Set each pixel to zero. **/
-  void clear()
+  void clear(Type tValue = 0)
     { 
-      fill(m_ptData.begin(), m_ptData.end(), 0);
+      fill(m_ptData, m_ptData+m_oInfo.getDim(), tValue);
     };
   
   //--------------------------------------------------------------------------
@@ -394,7 +383,7 @@ class ICLChannel
   **/
   void setImageRoi(int iNewRoiWidth, int iNewRoiHeight)
     {
-      m_oInfo.setImageRoi(iNewRoiWidth, iNewRoiHeight);
+      m_oInfo.setRoi(iNewRoiWidth, iNewRoiHeight);
     }
   
   //--------------------------------------------------------------------------
@@ -404,7 +393,7 @@ class ICLChannel
   **/
   void setImageRoiOffset(int iXOffset, int iYOffset)
     {
-      m_oInfo.setImageRoiOffset(iXOffset, iYOffset);
+      m_oInfo.setRoiOffset(iXOffset, iYOffset);
     }
   
   //--------------------------------------------------------------------------

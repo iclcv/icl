@@ -5,17 +5,21 @@
 
 namespace ICL {
   
-#define DEPTH32 float
-#define DEPTH8  unsigned char
+typedef float iclfloat;
+typedef unsigned char iclbyte;
   
 #define ICL_TRUE 1
 #define ICL_FALSE 0
-
+  
 #define IMAGETYPE_PGM 0
 #define IMAGETYPE_PPM 1
 #define IMAGETYPE_ICL 2
   
 #define ICL_SELECT_ALL -1
+ 
+enum icldepth{depth8u, depth32f};
+enum iclformat{formatRGB, formatHLS, formatGray, formatMatrix};
+ 
 
 /* {{{ Error log */
 
@@ -26,10 +30,7 @@ namespace ICL {
   
 /* {{{ Debug Level */
 
-/* The following DebugMacro(Message) can be activated by defining
-DEBUGLEVEL_1..5 at the beginning of one single file of source code or by
-defining it global.
-*/
+//---- The following DebugMessage can be activated by defining DEBUGLEVEL_1..5
 //---- Debug Level 1 ----
 #if (defined(DEBUGLEVEL_1) || defined(DEBUGLEVEL_2) || defined (DEBUGLEVEL_3) ||     defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5)) 
 #define DEBUG_LOG1(x) \
@@ -69,6 +70,34 @@ defining it global.
 #else
 #define DEBUG_LOG5(x)
 #endif // DEBUGLEVEL 5
+
+/* }}} */
+
+/* {{{ Global functions */
+
+//-------------------------------------------------------------------------- 
+  /** getFormat **/
+  int getChannelsOfFormat(iclformat eFormat)
+    {
+      switch (eFormat)
+      {
+        case formatRGB:
+        case formatHLS:
+          return 3;
+          break;
+
+        case formatGray:
+          return 1;
+          break;
+
+        case formatMatrix:
+          return 1;
+          break;
+          
+        default:
+          return 1;
+      }
+    }
 
 /* }}} */
 

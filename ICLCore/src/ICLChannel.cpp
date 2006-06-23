@@ -20,24 +20,22 @@ ICLChannel<Type>::ICLChannel(int iWidth, int iHeight)
   DEBUG_LOG4("Konstruktor: ICLChannel(int,int) -> " << this);
 
   //---- Variable definition ----
-  typename vector<Type>::iterator dataIter;
-
-  //---- Variable initialization ----
-  this->m_iDepth = 8 * sizeof(Type);
+  Type* tmpPtr;
   
-  m_oInfo.setImageSize(iWidth, iHeight);
-  m_oInfo.setImageRoi(iWidth, iHeight);
+  //---- Variable initialisation ----
+  m_oInfo.setSize(iWidth, iHeight);
+  m_oInfo.setRoi(iWidth, iHeight);
   
-  //---- Alloccate memory ----
-  m_ptData.resize(m_oInfo.getImageDim());
-  m_pptRow.resize(m_oInfo.getImageHeight());
+  //---- Allocate memory ----
+  m_ptData = new Type[m_oInfo.getDim()];
+  m_pptRow = new Type*[m_oInfo.getHeight()];
   
-  dataIter = m_ptData.begin();
+  tmpPtr = m_ptData;
   
-  for(int i=0; i<m_oInfo.m_iImageHeight; i++)
+  for(int i=0; i<m_oInfo.getHeight(); i++)
   {
-    m_pptRow[i] = dataIter;
-    dataIter += m_oInfo.m_iImageWidth;
+    m_pptRow[i] = tmpPtr;
+    tmpPtr += m_oInfo.getWidth();
   }
   
   //---- Set all pixel to zero ----
@@ -54,31 +52,30 @@ ICLChannel<Type>::ICLChannel(const ICLChannel<Type>& tSrc)
              << this);
   
   //---- Variable definition ----
-  typename vector<Type>::iterator dataIter;
-
+  Type* tmpPtr;
+  
   //---- Variable initialisation ----
-  m_oInfo.setImageSize(tSrc.m_oInfo.m_iImageWidth, 
-                       tSrc.m_oInfo.m_iImageHeight);
-  m_iDepth = tSrc.m_iDepth;
-  m_oInfo.setImageRoi(tSrc.m_oInfo.m_iImageWidth, 
-                      tSrc.m_oInfo.m_iImageHeight);
+  m_oInfo.setSize(tSrc.m_oInfo.getWidth(), 
+                  tSrc.m_oInfo.getHeight());
+  m_oInfo.setRoi(tSrc.m_oInfo.getWidth(), 
+                 tSrc.m_oInfo.getHeight());
   
   //---- Alloccate memory ----
-  m_ptData.resize(m_oInfo.m_iImageDim);
-  m_pptRow.resize(m_oInfo.m_iImageHeight);
+  m_ptData = new Type[m_oInfo.getDim()];
+  m_pptRow = new Type *[m_oInfo.getHeight()];
   
-  dataIter = m_ptData.begin();
+  tmpPtr = m_ptData;
   
-  for(int i=0; i<m_oInfo.m_iImageHeight; i++)
+  for(int i=0; i<m_oInfo.getHeight(); i++)
   {
-    m_pptRow[i] = dataIter;
-    dataIter += m_oInfo.m_iImageWidth;
+    m_pptRow[i] = tmpPtr;
+    tmpPtr += m_oInfo.getWidth();
   }
   
   //---- Copy data from source channel----
-  std::copy(tSrc.m_ptData.begin(),
-            tSrc.m_ptData.end(), 
-            m_ptData.begin() );
+  std::copy(tSrc.m_ptData,
+            (tSrc.m_ptData)+m_oInfo.getDim(), 
+            m_ptData);
 }
 
 //---------------------------------------------------------------------------
@@ -87,6 +84,10 @@ ICLChannel<Type>::~ICLChannel()
 {
   //---- Log Message ----
   DEBUG_LOG4("Destruktor: ICLChannel() -> " << this);
+
+  //---- free memory ----
+  delete [] m_ptData;
+  delete [] m_pptRow;
   
 }
 
@@ -100,12 +101,12 @@ ICLChannel<Type>::getMin() const
 {
   //---- Log Message ----
   DEBUG_LOG4("getMin()"); 
-  
-  //---- Varaibale definition ----
-  typename vector<Type>::const_iterator iter;
 
+  //---- Varaibale definition ----
+  Type *iter;
+  
   //---- Compute min element  ----
-  iter = min_element(m_ptData.begin(), m_ptData.end());
+  iter = min_element(m_ptData, m_ptData+m_oInfo.getDim());
   
   //---- Log Message ----
   DEBUG_LOG3("min value " << *iter); 
@@ -122,12 +123,12 @@ ICLChannel<Type>::getMax() const
 {
   //---- Log Message ----
   DEBUG_LOG4("getMax()"); 
-
+  
   //---- Variable definition ----
-  typename vector<Type>::const_iterator iter;
+  Type *iter;
   
   //---- Compute max value ----
-  iter = max_element(m_ptData.begin(), m_ptData.end());
+  iter = max_element(m_ptData, m_ptData+m_oInfo.getDim());
   
   //---- return ----
   return *iter;
@@ -146,27 +147,30 @@ void ICLChannel<Type>::resize(int iNewWidth, int iNewHeight)
   DEBUG_LOG4("resize(int, int)"); 
   
   //---- Check if resize is meaningful ----
-  if (((m_oInfo.m_iImageWidth != iNewWidth) || 
-       (m_oInfo.m_iImageHeight != iNewHeight)) &&
+  if (((m_oInfo.getWidth() != iNewWidth) || 
+       (m_oInfo.getHeight() != iNewHeight)) &&
       (iNewWidth*iNewHeight > 0 ) )
   {
     //---- Variable defifniton ----
-    typename vector<Type>::iterator dataIter;
+    Type* tmpPtr;
     
     //---- set new size ----
-    m_oInfo.setImageSize(iNewWidth, iNewHeight);
-    m_oInfo.setImageRoi(iNewWidth, iNewHeight);
+    m_oInfo.setSize(iNewWidth, iNewHeight);
+    m_oInfo.setRoi(iNewWidth, iNewHeight);
     
     //---- Allocate memory -----
-    m_ptData.resize(m_oInfo.m_iImageDim);
-    m_pptRow.resize(m_oInfo.m_iImageHeight);
+    delete [] m_ptData;
+    delete [] m_pptRow;
     
-    dataIter = m_ptData.begin();
+    m_ptData = new Type[m_oInfo.getDim()];
+    m_pptRow = new Type *[m_oInfo.getHeight()];
     
-    for(int i=0; i<m_oInfo.m_iImageHeight; i++)
+    tmpPtr = m_ptData;
+    
+    for(int i=0; i<m_oInfo.getHeight(); i++)
     {
-      m_pptRow[i] = dataIter;
-      dataIter += m_oInfo.m_iImageWidth;
+      m_pptRow[i] = tmpPtr;
+      tmpPtr += m_oInfo.getWidth();
     }
     
     //---- Set all pixel to zero ----
@@ -182,8 +186,8 @@ void ICLChannel<Type>::scaleRange(Type scaleFactor)
   DEBUG_LOG3("scaleRange(Type)");
   
   //---- scale ----
-  for(int y=0;y<m_oInfo.m_iImageHeight;y++)
-    for(int x=0;x<m_oInfo.m_iImageWidth;x++)
+  for(int y=0;y<m_oInfo.getHeight();y++)
+    for(int x=0;x<m_oInfo.getWidth();x++)
       (m_pptRow[y])[x] = (m_pptRow[y])[x] * scaleFactor;
 }
 
@@ -201,8 +205,8 @@ void ICLChannel<Type>::scaleRange(float fNewMin,
   float fShift  = (fMax * fNewMin - fMin * fNewMax) / (fMax - fMin);
   
   //---- Compute new value ----
-  for(int x=0;x<m_oInfo.m_iImageWidth;x++)
-    for(int y=0;y<m_oInfo.m_iImageHeight;y++)
+  for(int x=0;x<m_oInfo.getWidth();x++)
+    for(int y=0;y<m_oInfo.getHeight();y++)
     {
       float fPixel = getPixel(x,y);
       fPixel=fPixel*fScale+fShift;
@@ -217,8 +221,8 @@ void ICLChannel<Type>::scaleRange(float fNewMin,
 
 // }}} 
 
-template class ICLChannel<DEPTH8>;  /* 8bit channel */
-template class ICLChannel<DEPTH32>; /* 32bit channel */
+template class ICLChannel<iclbyte>;
+template class ICLChannel<iclfloat>;
 
 } //namespace ICL
 
