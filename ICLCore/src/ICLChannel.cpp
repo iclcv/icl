@@ -19,25 +19,13 @@ ICLChannel<Type>::ICLChannel(int iWidth, int iHeight)
   //---- Log Message ----
   DEBUG_LOG4("Konstruktor: ICLChannel(int,int) -> " << this);
 
-  //---- Variable definition ----
-  Type* tmpPtr;
-  
   //---- Variable initialisation ----
   m_oInfo.setSize(iWidth, iHeight);
   m_oInfo.setRoi(iWidth, iHeight);
   
   //---- Allocate memory ----
   m_ptData = new Type[m_oInfo.getDim()];
-  m_pptRow = new Type*[m_oInfo.getHeight()];
-  
-  tmpPtr = m_ptData;
-  
-  for(int i=0; i<m_oInfo.getHeight(); i++)
-  {
-    m_pptRow[i] = tmpPtr;
-    tmpPtr += m_oInfo.getWidth();
-  }
-  
+
   //---- Set all pixel to zero ----
   clear();
 }
@@ -51,9 +39,6 @@ ICLChannel<Type>::ICLChannel(const ICLChannel<Type>& tSrc)
   DEBUG_LOG4("Konstruktor: ICLChannel(const ICLChannel<Type>&) -> "
              << this);
   
-  //---- Variable definition ----
-  Type* tmpPtr;
-  
   //---- Variable initialisation ----
   m_oInfo.setSize(tSrc.m_oInfo.getWidth(), 
                   tSrc.m_oInfo.getHeight());
@@ -62,16 +47,7 @@ ICLChannel<Type>::ICLChannel(const ICLChannel<Type>& tSrc)
   
   //---- Alloccate memory ----
   m_ptData = new Type[m_oInfo.getDim()];
-  m_pptRow = new Type *[m_oInfo.getHeight()];
-  
-  tmpPtr = m_ptData;
-  
-  for(int i=0; i<m_oInfo.getHeight(); i++)
-  {
-    m_pptRow[i] = tmpPtr;
-    tmpPtr += m_oInfo.getWidth();
-  }
-  
+   
   //---- Copy data from source channel----
   std::copy(tSrc.m_ptData,
             (tSrc.m_ptData)+m_oInfo.getDim(), 
@@ -87,7 +63,6 @@ ICLChannel<Type>::~ICLChannel()
 
   //---- free memory ----
   delete [] m_ptData;
-  delete [] m_pptRow;
   
 }
 
@@ -151,27 +126,15 @@ void ICLChannel<Type>::resize(int iNewWidth, int iNewHeight)
        (m_oInfo.getHeight() != iNewHeight)) &&
       (iNewWidth*iNewHeight > 0 ) )
   {
-    //---- Variable defifniton ----
-    Type* tmpPtr;
-    
+  
     //---- set new size ----
     m_oInfo.setSize(iNewWidth, iNewHeight);
     m_oInfo.setRoi(iNewWidth, iNewHeight);
     
     //---- Allocate memory -----
     delete [] m_ptData;
-    delete [] m_pptRow;
-    
+     
     m_ptData = new Type[m_oInfo.getDim()];
-    m_pptRow = new Type *[m_oInfo.getHeight()];
-    
-    tmpPtr = m_ptData;
-    
-    for(int i=0; i<m_oInfo.getHeight(); i++)
-    {
-      m_pptRow[i] = tmpPtr;
-      tmpPtr += m_oInfo.getWidth();
-    }
     
     //---- Set all pixel to zero ----
     clear();
@@ -187,8 +150,13 @@ void ICLChannel<Type>::scaleRange(Type scaleFactor)
   
   //---- scale ----
   for(int y=0;y<m_oInfo.getHeight();y++)
-    for(int x=0;x<m_oInfo.getWidth();x++)
-      (m_pptRow[y])[x] = (m_pptRow[y])[x] * scaleFactor;
+    {
+      for(int x=0;x<m_oInfo.getWidth();x++)
+        {
+          (*this)(x,y)*=scaleFactor;
+        }
+    }
+
 }
 
 //--------------------------------------------------------------------------
@@ -206,16 +174,18 @@ void ICLChannel<Type>::scaleRange(float fNewMin,
   
   //---- Compute new value ----
   for(int x=0;x<m_oInfo.getWidth();x++)
-    for(int y=0;y<m_oInfo.getHeight();y++)
     {
-      float fPixel = getPixel(x,y);
-      fPixel=fPixel*fScale+fShift;
-      if(fPixel<=fNewMin)
-        fPixel=fNewMin;
-      else if(fPixel>=fNewMax)
-        fPixel=fNewMax;
-      
-      setPixel(x,y,Type(fPixel));
+      for(int y=0;y<m_oInfo.getHeight();y++)
+        {
+          iclfloat fPixel = static_cast<iclfloat>((*this)(x,y));
+          fPixel=fPixel*fScale+fShift;
+          if(fPixel<=fNewMin)
+            fPixel=fNewMin;
+          else if(fPixel>=fNewMax)
+            fPixel=fNewMax;
+          
+          (*this)(x,y) = static_cast<Type>(fPixel);
+        }
     }  
 }
 

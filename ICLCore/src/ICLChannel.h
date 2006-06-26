@@ -15,7 +15,7 @@
 #include <vector>
 #include <iterator>
 #include <boost/shared_ptr.hpp>
-#include "ICLMacros.h"
+#include "ICLCore.h"
 
 //---- Use the following namespaces as default ----
 using namespace std;
@@ -178,26 +178,21 @@ class ICLChannelInfo
 template <class Type> 
 class ICLChannel
 {   
-  //------------------------------------------------------------------------
- private:
-  
- protected:
-  //------------------------------------------------------------------------
-  /** Array containing image data (row-by-row).**/
+  protected:
+
+  /// Array containing image data (row-by-row)
   Type *m_ptData;
   
-  /** Array of pointers to the beginning of each row. **/
-  Type **m_pptRow;
-  
- public:
+  public:
+  /// internally used for AutoPtrs
   typedef boost::shared_ptr<ICLChannel<Type> > AutoPtr;
   
-  //--------------------------------------------------------------------------
-  //Info object
+  
+  ///Info object
   ICLChannelInfo m_oInfo;
   
   /* {{{ Konstruktor/ Destruktor: */
-  //@{
+  //@{ @name Constructors and Destructors
   //-------------------------------------------------------------------------- 
   /** Allocates memory for an image channel of the specified width and height.
       @param iWidth Image channel width
@@ -205,60 +200,61 @@ class ICLChannel
   **/
   ICLChannel(int iWidth, int iHeight);
 
-  //-------------------------------------------------------------------------- 
+  /// Copy constructor 
   /** Copy constructor - generates a copy of the source channel
       @param tSource Source image channel
   **/
   ICLChannel(const ICLChannel<Type>& tSource);
   
-  //-------------------------------------------------------------------------- 
-  /** Destructor **/
+  
+  /// Destructor
   ~ICLChannel();
 
   //@}
   /* }}} */
                                       
   /* {{{ class operator */
-  //@{
-  //--------------------------------------------------------------------------
-  /** Get or Set the pixel at position (x,y)
-      @param iX x-coordinate of the pixel
+  //@{ @name class operators
+  /// Get or Set the pixel at position (x,y)
+  /** @param iX x-coordinate of the pixel
       @param iY y-coordinate of the pixel
       @return -
   **/
   Type& operator() (int iX, int iY) const
     {
-      return (m_pptRow[iY])[iX];
+      return m_ptData[iX+m_oInfo.getWidth()*iY];
     }
   
   //@}
   /* }}} */
 
   /* {{{ Set functions: */
-  //@{
+  //@{ @name setter functions
   //--------------------------------------------------------------------------
   /** Assigns a new value to the pixel at the specified position.
       @param iX x-coordinate of the pixel
       @param iY y-coordinate of the pixel
       @param tValue New pixel value at position
   **/
+  /*
   void setPixel(int iX, int iY, Type tValue)
-    {
-      //---- Set pixel to value ----
-      (m_pptRow[iY])[iX] = tValue;
-    }
-  
+  {
+  //---- Set pixel to value ----
+  (m_pptRow[iY])[iX] = tValue;
+  }
+  */
   //--------------------------------------------------------------------------
   /** Copies data from pSource to row iRow.
       @param pSrc An STL vector with the src data
       @param iRow Index of row
   **/
+  /*
   void setRowData(vector<Type> pSrc,int iRow)
-    {
-      //---- Copy ----
-      std::copy(pSrc.begin(), pSrc.end(), getRowPtr(iRow));
-    } 
-  
+  {
+  //---- Copy ----
+  std::copy(pSrc.begin(), pSrc.end(), getRowPtr(iRow));
+  } 
+  */
   //@}
 /* }}} */
 
@@ -271,21 +267,23 @@ class ICLChannel
       @param iY y-coordinate of the pixel
       @return Value at pixel position
   **/
+  /*
   Type getPixel(int iX, int iY) const
-    {
-      //---- Return pixel value at position ----
-      return (m_pptRow[iY])[iX];
-    }
-  
-  //--------------------------------------------------------------------------
-  /** Returns minimal pixel value
-      @return Minimal pixel value
+  {
+  //---- Return pixel value at position ----
+  return (m_pptRow[iY])[iX];
+  }
+  */
+
+
+
+  /// Returns minimal pixel value
+  /** @return Minimal pixel value
   **/
   Type getMin() const;
   
-  //--------------------------------------------------------------------------
-  /** Returns maximal pixel value  
-      @return Maximal pixel value
+  /// Returns maximal pixel value  
+  /** @return Maximal pixel value
   **/
   Type getMax() const; 
 
@@ -293,58 +291,51 @@ class ICLChannel
   /** Return pointer of the selected row.
       @param iRow Arg index of row
   **/
-  Type* getRowPtr(int iRow) const {return m_pptRow[iRow];}
+  //Type* getRowPtr(int iRow) const {return m_pptRow[iRow];}
   
-  //--------------------------------------------------------------------------
-  /** Return the pointer to the begin of the data. 
-      @return The beginning of the data vector **/
+  /// Return the pointer to the begin of the data. 
+  /** @return The beginning of the data vector 
+  **/
   Type* getDataBegin() { return m_ptData;}
 
-  //--------------------------------------------------------------------------
-  /** Return the pointer to the end of the data. 
-      @return The beginning of the data vector **/
+  /// Return the pointer to the end of the data.
+  /** @return The beginning of the data vector 
+  **/
   Type* 
   getDataEnd() { return m_ptData+m_oInfo.getDim();}
 
-  //--------------------------------------------------------------------------
-  /** Returns the width of the image channel
-      @return Width of channel
+  /// Returns the width of the image channel
+  /** @return Width of channel
   **/
   int getWidth() const { return m_oInfo.getWidth();}
   
-  //--------------------------------------------------------------------------
-  /** Returns the  height of the image channel
-      @return height of image channel
+  /// Returns the  height of the image channel
+  /** @return height of image channel
   **/
   int getHeight() const { return m_oInfo.getHeight();}
 
-  //--------------------------------------------------------------------------
-  /** Returns the  dimension of the image channel (width*height)
-      @return height of image channel
+  /// Returns the  dimension of the image channel (width*height)
+  /** @return height of image channel
   **/
   int getDim() const { return m_oInfo.getDim();}
   
-  //--------------------------------------------------------------------------
-  /** Returns the width of the image channel roi
-      @return Width of channel roi
+  /// Returns the width of the image channel roi
+  /** @return Width of channel roi
   **/
   int getRoiWidth() const { return m_oInfo.getRoiWidth();}
   
-  //--------------------------------------------------------------------------
-  /** Returns the  height of the image channel roi
-      @return height of image channel roi
+  /// Returns the  height of the image channel roi
+  /** @return height of image channel roi
   **/
   int getRoiHeight() const { return m_oInfo.getRoiHeight();}
 
-  //--------------------------------------------------------------------------
-  /** Returns the XOffset of the image channel roi
-      @return Width of channel roi
+  /// Returns the XOffset of the image channel roi
+  /** @return Width of channel roi
   **/
   int getRoiXOffset() const { return m_oInfo.getRoiXOffset();}
   
-  //--------------------------------------------------------------------------
-  /** Returns the YOffset of the image channel roi
-      @return height of image channel roi
+  /// Returns the YOffset of the image channel roi
+  /** @return height of image channel roi
   **/
   int getRoiYOffset() const { return m_oInfo.getRoiYOffset();}
 
@@ -362,23 +353,22 @@ class ICLChannel
 
   //@{
 
-  //--------------------------------------------------------------------------
-  /** Set each pixel to zero. **/
+   /// Set each pixel to a specific value.
+  /** @param tValue destination 
+  **/
   void clear(Type tValue = 0)
     { 
       fill(m_ptData, m_ptData+m_oInfo.getDim(), tValue);
     };
   
-  //--------------------------------------------------------------------------
-  /** Resizes the channel to the new width and height.
-      @param iNewWidth New width
+  /// Resizes the channel to the new width and height.
+  /** @param iNewWidth New width
       @param iNewHeight New height
   **/
   void resize(int iNewWidth, int iNewHeight);
 
-  //--------------------------------------------------------------------------
-  /** Sets the channel roi to the new roi-width and roi-height.
-      @param iNewRoiWidth New roi-width
+  /// Sets the channel roi to the new roi-width and roi-height.
+  /** @param iNewRoiWidth New roi-width
       @param iNewRoiHeight New roi-height
   **/
   void setImageRoi(int iNewRoiWidth, int iNewRoiHeight)
@@ -386,8 +376,8 @@ class ICLChannel
       m_oInfo.setRoi(iNewRoiWidth, iNewRoiHeight);
     }
   
-  //--------------------------------------------------------------------------
-  /** Sets the channel roi to the new roi-width and roi-height.
+  /// Sets the channel roi to the new roi-width and roi-height.
+  /** 
       @param iXOffset The x-psoition 
       @param iYOffset The y-position
   **/
@@ -396,19 +386,20 @@ class ICLChannel
       m_oInfo.setRoiOffset(iXOffset, iYOffset);
     }
   
-  //--------------------------------------------------------------------------
+  /// Scales each pixel value with scaleFactor.
   /** Scales each pixel value with scaleFactor.
       @param scaleFactor
   **/
   void scaleRange(Type scaleFactor);
   
-  //--------------------------------------------------------------------------
-  /** Scales pixel values from given min/max values to new min/max values.
-      Values exceeding the given range are set to the new min/max values.
+  /// Scales pixel values from given min/max values to new min/max values.
+  /** Values exceeding the given range are set to the new min/max values.
       For an automatic scaling use the results of  min(),max() as as arguments.
       (Defining a range allows to compare different images.)
-      @param tNewMin, tNewMax, New min/max values
-      @param tMin,    tMax,    Assumed min/max values
+      @param tNewMin destination minimum value
+      @param tNewMax destination maximum value
+      @param tMin current minimum value
+      @param tMax current maximum value
   **/
   void scaleRange(float tNewMin, float tNewMax, float tMin, float tMax);
 

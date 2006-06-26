@@ -1,33 +1,30 @@
 #ifndef ICLMACROS_H
 #define ICLMACROS_H
 
-#include <stdio.h>
+#include <iostream>
 
-namespace ICL {
-  
-typedef float iclfloat;
-typedef unsigned char iclbyte;
-  
-#define ICL_TRUE 1
-#define ICL_FALSE 0
-  
-#define IMAGETYPE_PGM 0
-#define IMAGETYPE_PPM 1
-#define IMAGETYPE_ICL 2
-  
-#define ICL_SELECT_ALL -1
- 
-enum icldepth{depth8u, depth32f};
-enum iclformat{formatRGB, formatHLS, formatGray, formatMatrix};
- 
+using namespace std;
 
+// overhead !
+//#define ICL_TRUE 1
+//#define ICL_FALSE 0
+
+// move to the output-routines ! 
+//#define IMAGETYPE_PGM 0
+//#define IMAGETYPE_PPM 1
+//#define IMAGETYPE_ICL 2
+
+// ok, but not used!
+//#define ICL_SELECT_ALL -1
+
+  
 /* {{{ Error log */
 
 #define ERROR_LOG(x) \
-{ cerr << "ERROR: [" __FILE__ ":" << __LINE__ << "] " << x << "\n" << ends; } 
+{ cerr << "ERROR: [" __FILE__ ":" << __FUNCTION__ << ",line:" << __LINE__ << "] " << x << "\n" << ends; exit(-1);} 
 
 /* }}} */
-  
+
 /* {{{ Debug Level */
 
 //---- The following DebugMessage can be activated by defining DEBUGLEVEL_1..5
@@ -72,35 +69,6 @@ enum iclformat{formatRGB, formatHLS, formatGray, formatMatrix};
 #endif // DEBUGLEVEL 5
 
 /* }}} */
+                                              
 
-/* {{{ Global functions */
-
-//-------------------------------------------------------------------------- 
-  /** getFormat **/
-  int getChannelsOfFormat(iclformat eFormat)
-    {
-      switch (eFormat)
-      {
-        case formatRGB:
-        case formatHLS:
-          return 3;
-          break;
-
-        case formatGray:
-          return 1;
-          break;
-
-        case formatMatrix:
-          return 1;
-          break;
-          
-        default:
-          return 1;
-      }
-    }
-
-/* }}} */
-
-} //namepace ICL 
-
-#endif //ICLMACROS_H
+#endif 

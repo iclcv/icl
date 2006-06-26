@@ -16,29 +16,41 @@ namespace ICL {
 
 //----------------------------------------------------------------------------
 template<class Type>
-ICL<Type>::ICL(int iWidth, 
-               int iHeight, 
-               int iChannels)
-{
+ICL<Type>::ICL(int iWidth,int iHeight,int iChannels):
+  ICLBase(iWidth,iHeight,iChannels,iclGetDepth<Type>()){
   //---- Log Message ----
   DEBUG_LOG4("Konstruktor: ICL(int,int,int) -> " << this);
   
   //---- Variable definiton/ initialisation ----
-  m_iChannels = iChannels;
   m_ppChannels.resize(m_iChannels);
   
   //---- ICL Channel memory allocation ----
   for(int i=0;i<m_iChannels;i++)
     m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight));
-  
-  //---- Get type id ----
-  setVarType();
 } 
 
 //----------------------------------------------------------------------------
 template<class Type>
-ICL<Type>::ICL(const ICL<Type>& tSrc)
+ICL<Type>::ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels):
+  ICLBase(iWidth,iHeight,eFormat,iclGetDepth<Type>(),iChannels){
+  //---- Log Message ----
+  DEBUG_LOG4("Konstruktor: ICL(int,int,int) -> " << this);
+  
+  //---- Variable definiton/ initialisation ----
+  m_ppChannels.resize(m_iChannels);
+  
+  //---- ICL Channel memory allocation ----
+  for(int i=0;i<m_iChannels;i++)
+    m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight));
+} 
+
+ 
+//----------------------------------------------------------------------------
+template<class Type>
+ICL<Type>::ICL(const ICL<Type>& tSrc):
+  ICLBase(tSrc.getWidth(),tSrc.getHeight(),tSrc.getFormat(),tSrc.getDepth(),tSrc.getChannels())
 {
+
   //---- Log Message ----
   DEBUG_LOG4("Konstruktor: ICL(const ICL<Type>&) -> " << this);
   
@@ -51,8 +63,7 @@ ICL<Type>::ICL(const ICL<Type>& tSrc)
             tSrc.m_ppChannels.end(),
             m_ppChannels.begin());
   
-  //---- Get type id ----
-  setVarType();
+  
 }
 
 //----------------------------------------------------------------------------
@@ -81,6 +92,10 @@ ICL<Type>& ICL<Type>::operator=(const ICL<Type>& tSrc)
   this->deleteChannels();
   
   //---- Assign new channels to ICL ----
+  this->m_iWidth = tSrc.getWidth();
+  this->m_iHeight = tSrc.getHeight();
+  this->m_eFormat = tSrc.getFormat();
+  this->m_eDepth = tSrc.getDepth();
   this->m_iChannels = tSrc.getChannels();  
   this->m_ppChannels.resize(this->m_iChannels);
   
@@ -94,9 +109,9 @@ ICL<Type>& ICL<Type>::operator=(const ICL<Type>& tSrc)
 }
   
 template<class Type>
-Type& ICL<Type>::operator()(int iX, int iY, int iChannel)
+Type& ICL<Type>::operator()(int iX, int iY, int iChannel) const
 {
-  return m_ppChannels[iChannel](iX,iY);
+  return (*m_ppChannels[iChannel])(iX,iY);
 }  
 
 // }}} 
@@ -106,36 +121,39 @@ Type& ICL<Type>::operator()(int iX, int iY, int iChannel)
 //----------------------------------------------------------------------------
 template<class Type>
 ICL<Type>* 
-ICL<Type>::deepCopy(ICL<Type>* pToICL)
+ICL<Type>::deepCopy(ICL<Type>* poDst) const
 {
   //---- Log Message ----
   DEBUG_LOG4("deepCopy(ICL<Type>*)"); 
 
   //---- Allocate memory ----
-  if (pToICL == NULL) 
+  if (poDst == NULL) 
   {
-    pToICL = new ICL<Type> (*this);
+    poDst = new ICL<Type> (*this);
   } 
   else 
   {
     //---- release old channels in destination ----
-    pToICL->m_ppChannels.clear();
+    poDst->m_ppChannels.clear();
     
     //---- and set to new values ----
-    pToICL->m_ppChannels.resize(m_iChannels);
-    pToICL->m_iChannels = m_iChannels;
+    poDst->m_ppChannels.resize(m_iChannels);
+    poDst->m_iChannels = m_iChannels;
+    poDst->m_iWidth = m_iWidth;
+    poDst->m_iHeight = m_iHeight;
+    poDst->m_eFormat = m_eFormat;
     
     //---- Shallow copy of source channels ----
     std::copy(this->m_ppChannels.begin(), 
               this->m_ppChannels.end(),
-              pToICL->m_ppChannels.begin());
+              poDst->m_ppChannels.begin());
   }
   
   //---- Make ICL independent ----
-  pToICL->detach();
+  poDst->detach();
   
   //---- return ----
-  return pToICL;
+  return poDst;
 }
 
 //----------------------------------------------------------------------------
@@ -145,24 +163,23 @@ void ICL<Type>::detach(int iIndex)
   //---- Log Message ----
   DEBUG_LOG4("detach()");
   
-  if (m_iChannels > 0)
-  {
-    //---- Make the whole ICL independent ----
-    if(iIndex == -1)
+  
+  //---- Make the whole ICL independent ----
+  if(iIndex == -1)
     {
       for(int i=0;i<m_iChannels;i++) 
-      {
-        m_ppChannels[i] = 
-          ICLChannelPtr(new ICLChannel<Type>(*m_ppChannels[i]));
-      }
+        {
+          m_ppChannels[i] = 
+            ICLChannelPtr(new ICLChannel<Type>(*m_ppChannels[i]));
+        }
     }
-    //---- Make a specific channel independent ----
-    else
+  //---- Make a specific channel independent ----
+  else
     {
       m_ppChannels[iIndex] 
         = ICLChannelPtr (new ICLChannel<Type>(*m_ppChannels[iIndex]));
     }
-  }
+  
 }
 
 //----------------------------------------------------------------------------
@@ -195,13 +212,13 @@ ICL<Type>::removeChannel(int iChannel)
 //----------------------------------------------------------------------------
 template<class Type>
 void
-ICL<Type>::appendICL(const ICL<Type>& pExternal)
+ICL<Type>::appendICL(ICL<Type> *poSrc)
 {
   //---- Log Message ----
   DEBUG_LOG4("appendImage(const ICL<Type>&)"); 
   
   //---- Variable initialisation ----
-  int iNumExternChannels = pExternal.m_iChannels;
+  int iNumExternChannels = poSrc->m_iChannels;
   int iNumInternChannels = m_iChannels;
   vector<ICLChannelPtr> vecTmp(iNumInternChannels+iNumExternChannels);
   
@@ -214,8 +231,8 @@ ICL<Type>::appendICL(const ICL<Type>& pExternal)
   //---- Manage new ICL ----
   m_ppChannels = vecTmp;
   
-  std::copy(pExternal.m_ppChannels.begin(),
-            pExternal.m_ppChannels.end(),
+  std::copy(poSrc->m_ppChannels.begin(),
+            poSrc->m_ppChannels.end(),
             m_ppChannels.begin()+iNumInternChannels);
   
   m_iChannels += iNumExternChannels;
@@ -224,7 +241,7 @@ ICL<Type>::appendICL(const ICL<Type>& pExternal)
 //----------------------------------------------------------------------------
 template<class Type>
 void
-ICL<Type>::appendChannel(int iChannel, const ICL<Type>& srcICL) 
+ICL<Type>::appendChannel(int iChannel, ICL<Type> *poSrc) 
 {
   //---- Log Message ----
   DEBUG_LOG4("appendChannel(int,const ICL<Type>&)");
@@ -242,7 +259,7 @@ ICL<Type>::appendChannel(int iChannel, const ICL<Type>& srcICL)
   
   //---- Manage new ICL ----
   m_ppChannels = vecTmp;
-  m_ppChannels[m_iChannels] = srcICL.m_ppChannels[iChannel];
+  m_ppChannels[m_iChannels] = poSrc->m_ppChannels[iChannel];
   m_iChannels++;
 }
 
@@ -255,39 +272,48 @@ ICL<Type>::swapChannels(int iIndexA, int iIndexB)
   DEBUG_LOG4("swapChannels(int,int)"); 
   std::swap(m_ppChannels[iIndexA], m_ppChannels[iIndexB]);
 }
-
 //----------------------------------------------------------------------------
 template<class Type>
 void 
-ICL<Type>::resizeChannel(int iNewWidth, int iNewHeight, int iChannel)
+ICL<Type>::scale(int iNewWidth, 
+                 int iNewHeight,
+                 iclscalemode eScaleMode)
 {
+  
   //---- Log Message ----
-  DEBUG_LOG4("resizeChannel(int,int.int)"); 
+  DEBUG_LOG4("resize(int,int,iclscalemode)"); 
   
-  //---- Make a referenced channel independent before resize ----
-  detach(iChannel);
+  //---- estimate destination values in respect to defaults ----
+  if(iNewWidth < 0)iNewWidth = m_iWidth;
+  if(iNewHeight < 0)iNewHeight = m_iHeight;
   
-  //---- Resize ICL channel ----
-  m_ppChannels[iChannel] 
-    = ICLChannelPtr (new ICLChannel<Type>(iNewWidth,iNewHeight));
+  if(isEqual(iNewWidth,iNewHeight,m_iChannels))
+    {
+      return;    
+    }  
+  else
+    {
+      ICL<Type> oTmp(iNewWidth,iNewHeight,m_eFormat,m_iChannels);
+      smartCopy(&oTmp,eScaleMode);
+      (*this)=oTmp;
+    }
 }
 
 
+
 //----------------------------------------------------------------------------
 template<class Type>
 void 
-ICL<Type>::resizeICL(int iNewWidth, int iNewHeight, int iNumNewChannels)
+ICL<Type>::setNumChannels(int iNumNewChannels)
 {
   //---- Log Message ----
-  DEBUG_LOG4("resizeICL(int,int.int)"); 
+  DEBUG_LOG4("setNumChannels(int)"); 
 
-  //----- Initialize variables ----
-  int iNumChannels = m_iChannels;
-  
+   
   //---- reduce number of channels ----
-  if(iNumNewChannels < iNumChannels)
+  if(iNumNewChannels < m_iChannels)
   {
-    for (int i=iNumChannels-1;i>=iNumNewChannels;i--)
+    for (int i=m_iChannels-1;i>=iNumNewChannels;i--)
     {
       //---- Make a referenced channel independent before resize ----
       detach(i);
@@ -297,7 +323,7 @@ ICL<Type>::resizeICL(int iNewWidth, int iNewHeight, int iNumNewChannels)
     }
   }
   //---- Extend number of channels ----
-  else if (iNumNewChannels > iNumChannels)
+  else if (iNumNewChannels > m_iChannels)
   {
     //---- Allocate new memory for data ----
     vector<ICLChannelPtr> vecChannelsNew(iNumNewChannels);
@@ -308,9 +334,9 @@ ICL<Type>::resizeICL(int iNewWidth, int iNewHeight, int iNumNewChannels)
               vecChannelsNew.begin());
     
     //---- Manage new ICL ----
-    for(int i=iNumChannels;i<iNumNewChannels;i++)
+    for(int i=m_iChannels;i<iNumNewChannels;i++)
       vecChannelsNew[i] 
-        = ICLChannelPtr (new ICLChannel<Type>(iNewWidth,iNewHeight));
+        = ICLChannelPtr (new ICLChannel<Type>(getWidth(),getHeight()));
     
     //---- free memory ----
     m_ppChannels.clear();
@@ -330,7 +356,7 @@ ICL<Type>::renewICL(int iNewWidth, int iNewHeight, int iNumNewChannels)
   DEBUG_LOG4("renewICL(int,int.int)"); 
 
   //---- Execution necessary ??? ----
-  if (isEqual(iNewWidth, iNewHeight, iNumNewChannels) == ICL_FALSE)
+  if (!isEqual(iNewWidth, iNewHeight, iNumNewChannels))
   {
     //---- Make referenced channels independent before resize ----
     detach(); 
@@ -352,14 +378,14 @@ template<class Type>
 inline
 void ICL<Type>::replaceChannel(int iIndexA, 
                                int iIndexB, 
-                               const ICL<Type>& srcICL) 
+                               ICL<Type>  *poSrc) 
 {
   //---- Log Message ----
   DEBUG_LOG4("replaceChannel(int,int,const ICL<Type>&)");
   
   //---- replace channel ----
   m_ppChannels[iIndexA] = ICLChannelPtr(); 
-  m_ppChannels[iIndexA] = srcICL.m_ppChannels[iIndexB];
+  m_ppChannels[iIndexA] = poSrc->m_ppChannels[iIndexB];
 }
 
 // }}} 
@@ -368,222 +394,200 @@ void ICL<Type>::replaceChannel(int iIndexA,
 
 //--------------------------------------------------------------------------
 template<class Type>
-ICL<iclfloat>
-ICL<Type>::convertTo32Bit() const
+ICL32f*
+ICL<Type>::convertTo32Bit(ICL32f *poDst) const
 {
   //---- Log Message ----
   DEBUG_LOG4("convertTo32Bit()");
   
-  ICL<iclfloat> tImg(getWidth(0),getHeight(0),m_iChannels);
+  if(!poDst)poDst = new ICL32f(getWidth(),getHeight(),getFormat(),getChannels());
+  poDst->detach();
   
   //---- convert ----
-  for(int i=0;i<m_iChannels;i++)
-  {
-    tImg.resizeChannel(getWidth(i),getHeight(i),i);
-    
-    for(int x=0;x<getWidth(i);x++)
-      for(int y=0;y<getHeight(i);y++)
-        tImg.setPixel(x,y,i,(iclfloat) m_ppChannels[i]->getPixel(x,y));    
-  }
+  for(int c=0;c<m_iChannels;c++)
+    {
+    for(int x=0;x<m_iWidth;x++)
+      {
+      for(int y=0;y<m_iHeight;y++)
+        {
+          (*poDst)(x,y,c) = static_cast<iclfloat>((*this)(x,y,c));
+        }
+      }
+    }
   
-  return tImg;
+  return poDst;
 }
 
 //--------------------------------------------------------------------------
 template<class Type>
-void
-ICL<Type>::convertTo32Bit(ICL<iclfloat> &tImg) const
-{
-  //---- Log Message ----
-  DEBUG_LOG4("convertTo32Bit(ICL<iclfloat> &)");
-  
-  //---- resize image if necessary ----
-  tImg.resizeICL(getWidth(0),getHeight(0),m_iChannels);
-  
-  //---- convert ----
-  for(int i=0;i<m_iChannels;i++)
-  {
-    tImg.resizeChannel(getWidth(i),getHeight(i),i);
-    
-    for(int x=0;x<getWidth(i);x++)
-      for(int y=0;y<getHeight(i);y++)
-        tImg.setPixel(x,y,i,(iclfloat) m_ppChannels[i]->getPixel(x,y));
-  }
-}
-
-//--------------------------------------------------------------------------
-template<class Type>
-ICL<iclbyte>
-ICL<Type>::convertTo8Bit() const
+ICL8u*
+ICL<Type>::convertTo8Bit(ICL8u *poDst) const
 {
   //---- Log Message ----
   DEBUG_LOG4("convertTo8Bit()");
   
-  ICL<iclbyte> tImg(getWidth(0),getHeight(0),m_iChannels);
-  
-  for(int i=0;i<m_iChannels;i++)
-  {
-    for(int x=0;x<getWidth(i);x++)
-      for(int y=0;y<getHeight(i);y++)
-        tImg.setPixel(x,y,i,(iclbyte) m_ppChannels[i]->getPixel(x,y));    
-  }
-
-  return tImg;
-}
-
-//--------------------------------------------------------------------------
-template<class Type>
-void
-ICL<Type>::convertTo8Bit(ICL<iclbyte> &tImg) const
-{
-  //---- Log Message ----
-  DEBUG_LOG4("convertTo8Bit(ICL<iclbyte> &)");
-  
-  //---- resize image if necessary ----
-  tImg.resizeICL(getWidth(0),getHeight(0),m_iChannels);
+  if(!poDst)poDst = new ICL8u(getWidth(),getHeight(),getFormat(),getChannels());
+  poDst->detach();
   
   //---- convert ----
-  for(int i=0;i<m_iChannels;i++)
-  {  
-    for(int x=0;x<getWidth(i);x++)
-      for(int y=0;y<getHeight(i);y++)
-        tImg.setPixel(x,y,i,(iclbyte) m_ppChannels[i]->getPixel(x,y));
-  }
+  for(int c=0;c<m_iChannels;c++)
+    {
+    for(int x=0;x<m_iWidth;x++)
+      {
+      for(int y=0;y<m_iHeight;y++)
+        {
+          (*poDst)(x,y,c) = static_cast<iclbyte>((*this)(x,y,c));
+        }
+      }
+    }
+  
+  return poDst;
 }
 
 // }}} 
 
 // {{{  Get Functions: 
-//----------------------------------------------------------------------------
-template<class Type>
-void
-ICL<Type>::getDataVec(vector<Type> &vecTarget, int iChannel) const
-{
-  //---- Get channel data ----
-  std::copy(m_ppChannels[iChannel]->getDataBegin(),
-            m_ppChannels[iChannel]->getDataEnd(),
-            vecTarget.begin());
-}
 
-//----------------------------------------------------------------------------
 template<class Type>
 inline
-void
-ICL<Type>::getChannelRoi(int* piWidth, int* piHeight, int iChannel)
+void 
+ICL<Type>::getROI(int &riX, int &riY, int &riWidth, int &riHeight) const
 {
-  *piWidth = m_ppChannels[iChannel]->getRoiWidth();
-  *piHeight = m_ppChannels[iChannel]->getRoiHeight();
+  //---- Log Message ----
+  DEBUG_LOG4("getROI(int&,int&,int&,int&)");
+  
+  for(int c=0;c<m_iChannels;c++)
+    {
+      riX = m_ppChannels[c]->getRoiXOffset();
+      riY = m_ppChannels[c]->getRoiYOffset();
+      riWidth = m_ppChannels[c]->getRoiWidth();
+      riHeight = m_ppChannels[c]->getRoiHeight();
+    }
 }
 
-//----------------------------------------------------------------------------
 template<class Type>
 inline
-void
-ICL<Type>::getChannelRoiOffset(int* piXOffset, int* piYOffset, int iChannel)
+void 
+ICL<Type>::getROIOffset(int &riX, int &riY) const
 {
-  *piXOffset = m_ppChannels[iChannel]->getRoiXOffset();
-  *piYOffset = m_ppChannels[iChannel]->getRoiYOffset();
+  //---- Log Message ----
+  DEBUG_LOG4("getROIOffset(int&,int&)");
+
+  for(int c=0;c<m_iChannels;c++)
+    {
+      riX = m_ppChannels[c]->getRoiXOffset();
+      riY = m_ppChannels[c]->getRoiYOffset();
+    }
 }
 
-// }}} 
+template<class Type>
+inline
+void 
+ICL<Type>::getROISize(int &riWidth, int &riHeight) const
+{
 
-// {{{  basic image manipulation: 
+  //---- Log Message ----
+  DEBUG_LOG4("getROISize(int&,int&)");
+  
+  for(int c=0;c<m_iChannels;c++)
+    {
+      riWidth = m_ppChannels[c]->getRoiWidth();
+      riHeight = m_ppChannels[c]->getRoiHeight();
+    }
+}
 
-//--------------------------------------------------------------------------
+
+
 template<class Type>
 void ICL<Type>::clear(int iChannel, Type tValue) 
 {
   //---- Log Message ----
-  DEBUG_LOG4("clear()");
+  DEBUG_LOG4("clear(int, type)");
   
   if(iChannel == -1) 
-  {
-    for(int i=0;i<m_iChannels;i++) 
-      m_ppChannels[i]->clear(tValue);
-  }
+    {
+      for(int i=0;i<m_iChannels;i++) 
+        m_ppChannels[i]->clear(tValue);
+    }
   else 
-    m_ppChannels[iChannel]->clear(tValue);
+    {
+      m_ppChannels[iChannel]->clear(tValue);
+    }
 }
-/*
+
 //--------------------------------------------------------------------------
 template<class Type>
-void
-ICL<Type>::scale(float fFactor, int method, ICL<Type> *img) const
+ICL<Type>*
+ICL<Type>::smartCopy(ICL<Type> *poDst,iclscalemode eScaleMode) const
 {
   //---- Log Message ----
-  DEBUG_LOG4("scale(float, int)");
+  DEBUG_LOG4("smartCopy(ICL,iclscalemode)");
+  
+  //---- deep copy case -----
+  if(!poDst || isEqual(poDst->getWidth(),poDst->getHeight(),poDst->getChannels())){
+    return deepCopy(poDst); 
+  }
   
   //---- Variable initilazation ----
-  float fXStep,fYStep;
-
-  fXStep = 0;
-  fYStep = 0;
+  float fXStep = ((float)getWidth()-1)/(float)(poDst->getWidth()); 
+  float fYStep = ((float)getHeight()-1)/(float)(poDst->getHeight());
   
-  img->renewICL(1,1,getChannels());
+  int iNChannels = m_iChannels < poDst->getChannels() ? m_iChannels : poDst->getChannels();
   
   //---- scale ICL ----
-  for(int c=0;c<img->getChannels();c++)
-  {
-    //---- Average ----  
-    if (method!=2) 
+  for(int c=0;c<iNChannels;c++)
     {
-      img->resizeChannel((int)floor(fFactor * (float)getWidth(c)),
-                        (int)floor(fFactor * (float)getHeight(c)), 
-                        c);
-      
-      fXStep = ((float)getWidth(c)-1)/(float)(img->getWidth(c)); 
-      fYStep = ((float)getHeight(c)-1)/(float)(img->getHeight(c));
-    }
-    
-    //---- Take the correct scaling method ----
-    switch(method) 
-    {
-      case 0: //---- Simple ----
-        for(int x=0;x<img->getWidth(c);x++)
-          for(int y=0;y<img->getHeight(c);y++)
-            img->setPixel(x,y,c,getPixel((int)rint(x*fXStep), 
-                                        (int)rint(y*fYStep),c));
-        break;
-      case 1: //---- BiLinInter ----
-        for(int x=0;x<img->getWidth(c);x++)
-          for(int y=0;y<img->getHeight(c);y++)
-            img->setPixel(x,y,c,interpolate((fXStep/2) + x*fXStep, 
-                                           (fYStep/2)+y*fYStep,c));
-        break;
-      case 2: //---- Average ----
-        if (fFactor>=1.0) 
+      //---- Take the correct scaling method ----
+      switch(eScaleMode) 
         {
-          DEBUG_LOG1("Illegal scaleFactor for average Scaling!");
-          exit(0);
-        } 
-        else 
-        {
-          int   iStep=(int) floor(1.0/fFactor);
-          float sum,sq_factor=1.0/float(iStep*iStep);
-          img->resizeChannel((int)floor(float(getWidth(c))/float(iStep)),
-                            (int)floor(float(getHeight(c))/float(iStep)), 
-                            c);
-          for(int x=0;x<img->getWidth(c);x++)
+          case interpolateNN: 
+            for(int x=0;x<poDst->getWidth();x++)
+              for(int y=0;y<poDst->getHeight();y++)
+                (*poDst)(x,y,c)=(*this)((int)rint(x*fXStep),(int)rint(y*fYStep),c);
+            break;
+          case interpolateBL: 
+            for(int x=0;x<poDst->getWidth();x++)
+              for(int y=0;y<poDst->getHeight();y++)
+                (*poDst)(x,y,c)=interpolate((fXStep/2)+ x*fXStep,(fYStep/2)+y*fYStep,c);
+            break;
+          case interpolateAV: 
+            ERROR_LOG("not yet implemented for Region Average");
+            break;
+            /*
+            if (fFactor>=1.0) 
+            {
+            DEBU_LOG1("Illegal scaleFactor for average Scaling!");
+            exit(0);
+            } 
+            else 
+            {
+            int   iStep=(int) floor(1.0/fFactor);
+            float sum,sq_factor=1.0/float(iStep*iStep);
+            img->resizeChannel((int)floor(float(getWidth(c))/float(iStep)),
+            (int)floor(float(getHeight(c))/float(iStep)), 
+            c);
+            for(int x=0;x<img->getWidth(c);x++)
             for(int y=0;y<img->getHeight(c);y++)
             {
-              sum=0;
-              for(int a=0;a<iStep;a++)
-                for(int b=0;b<iStep;b++)
-                  sum+=(float)getPixel(x*iStep+a, y*iStep+b,c);
-              img->setPixel(x,y,c,(Type) (sum*sq_factor));
+            sum=0;
+            for(int a=0;a<iStep;a++)
+            for(int b=0;b<iStep;b++)
+            sum+=(float)getPixel(x*iStep+a, y*iStep+b,c);
+            img->setPixel(x,y,c,(Type) (sum*sq_factor));
             }
-          
-        }     
-        break;
-        
-      default:
-        ERROR_LOG("Illegal operation selected!");
-        exit(0);
-        break;
+            
+            }     
+            break;
+            */
+          default:
+            ERROR_LOG("Illegal operation selected!");
+            break;
+        }
     }
-  }
+  return poDst;
 }
-*/
+
+
 // }}}
   
 // {{{  Auxillary functions
@@ -606,10 +610,10 @@ ICL<Type>::interpolate(float fX, float fY, int iChannel) const
   }
   else
   {
-    fY1=(float)getPixel((int)floor(fX), (int)floor(fY), iChannel);
-    fY4=(float)getPixel((int)floor(fX), (int)ceil(fY), iChannel);
-    fY3=(float)getPixel((int)ceil(fX), (int)ceil(fY), iChannel);
-    fY2=(float)getPixel((int)ceil(fX), (int)floor(fY), iChannel);
+    fY1=(float)(*this)((int)floor(fX), (int)floor(fY), iChannel);
+    fY4=(float)(*this)((int)floor(fX), (int)ceil(fY), iChannel);
+    fY3=(float)(*this)((int)ceil(fX), (int)ceil(fY), iChannel);
+    fY2=(float)(*this)((int)ceil(fX), (int)floor(fY), iChannel);
     fT=fX-floor(fX);
     fU=fY-floor(fY);
   }
@@ -617,7 +621,7 @@ ICL<Type>::interpolate(float fX, float fY, int iChannel) const
   fReturn=(1-fT)*(1-fU)*fY1+ fT*(1-fU)*fY2 + fT*fU*fY3 + (1-fT)*fU*fY4;
   
   //---- return ----
-  if(getVarType() == 8)
+  if(m_eDepth == depth8u)
     return (Type) rint(fReturn);
   else
     return (Type) fReturn;
@@ -628,7 +632,7 @@ template<class Type>
 void
 ICL<Type>::scaleRange(float tMin, float tMax, int iChannel)
 {
-  DEBUG_LOG4("Scale image");
+  DEBUG_LOG4("scaleRange(float,float,iChannel");
   
   if (iChannel == -1)
   {
@@ -654,27 +658,30 @@ ICL<Type>::scaleRange(float tMin, float tMax, int iChannel)
 //--------------------------------------------------------------------------
 template<class Type>
 int
-ICL<Type>::isEqual(int iNewWidth, int iNewHeight, int iNumNewChannels)
+ICL<Type>::isEqual(int iNewWidth, int iNewHeight, int iNewNumChannels) const
 {
-  if (iNumNewChannels != m_iChannels)
-  {
+  return m_iWidth == iNewWidth && m_iHeight == iNewHeight && m_iChannels == iNewNumChannels;
+    /*
+    if (iNumNewChannels != m_iChannels)
+    {
     cout << "isEqual != Channel (" <<iNumNewChannels<<"/"<<m_iChannels<<")"<< endl;
     return ICL_FALSE;
-  }
-
-  for (int i=0;i<m_iChannels;i++)
-  {
-    if ( (iNewWidth != getWidth(i)) ||
-         (iNewHeight != getHeight(i)) )
-    {
-      cout << "isEqual != Channel(" << i << ")" << endl;   
-      cout << "iNewWidth: " << iNewWidth << "/ " << getWidth(i) << endl;
-      cout << "iNewHeight: " << iNewHeight << "/ " << getHeight(i) << endl;
-      return ICL_FALSE;
     }
-  }
+    
+    for (int i=0;i<m_iChannels;i++)
+    {
+    if ( (iNewWidth != getWidth(i)) ||
+    (iNewHeight != getHeight(i)) )
+    {
+    cout << "isEqual != Channel(" << i << ")" << endl;   
+    cout << "iNewWidth: " << iNewWidth << "/ " << getWidth(i) << endl;
+    cout << "iNewHeight: " << iNewHeight << "/ " << getHeight(i) << endl;
+    return ICL_FALSE;
+    }
+    }
   
-  return ICL_TRUE;
+    return ICL_TRUE;
+    */
   
 }
 
@@ -683,10 +690,5 @@ ICL<Type>::isEqual(int iNewWidth, int iNewHeight, int iNumNewChannels)
 
 template class ICL<iclbyte>;
 template class ICL<iclfloat>;
-
-//class ICL8u : public ICL<iclbyte>{};
-//typedef struct ICL<iclbyte> ICL8u;
-//typedef struct ICL<iclfloat> ICL32f;
-
 
 } //namespace ICL
