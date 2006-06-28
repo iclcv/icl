@@ -182,6 +182,9 @@ class ICLChannel
 
   /// Array containing image data (row-by-row)
   Type *m_ptData;
+
+  /// This flag indicates if data-buffer has to be deleted in the destructor
+  bool m_bDeleteData;
   
   public:
   /// internally used for AutoPtrs
@@ -193,12 +196,22 @@ class ICLChannel
   
   /* {{{ Konstruktor/ Destruktor: */
   //@{ @name Constructors and Destructors
-  //-------------------------------------------------------------------------- 
-  /** Allocates memory for an image channel of the specified width and height.
+  /// Base constructor creates a channel with specified width,height and optional shared data
+  /** This Baseconstructor works in two different ways:
+      - if ptData is NULL (default), then the constructor allocates memory for 
+        an image channel of the specified width and height. The memory will
+        be freed in the ICLChannels constructor        
+      - else ptData (not NULL) is used as forign data, so ptData has to 
+        be of size iWidth*iHeight, and it must not be deleted as long as
+        the image stays valid. In this case, internally a flag is set,
+        that indicates that the memory is not owned by this channel, so
+        it has not to be freed in the destuctor.
+      
       @param iWidth Image channel width
       @param iHeight Image channel height
+      @param ptData pointer to data allocated elsewhere
   **/
-  ICLChannel(int iWidth, int iHeight);
+  ICLChannel(int iWidth, int iHeight, Type *ptData=0);
 
   /// Copy constructor 
   /** Copy constructor - generates a copy of the source channel
@@ -260,7 +273,7 @@ class ICLChannel
 
   /* {{{ Get functions: */
 
-  //@{
+  //@{ @name getter functions
   //--------------------------------------------------------------------------
   /** Return the value of the pixel at the position (x,y).
       @param iX x-coordinate of the pixel
@@ -351,7 +364,7 @@ class ICLChannel
   
   /* {{{ basic channel functions: */
 
-  //@{
+  //@{ @name manipulation functions
 
    /// Set each pixel to a specific value.
   /** @param tValue destination 

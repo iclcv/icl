@@ -14,7 +14,7 @@ namespace ICL {
 // {{{  Konstruktor/ Destruktor: 
 //----------------------------------------------------------------------------
 template <class Type> 
-ICLChannel<Type>::ICLChannel(int iWidth, int iHeight)
+ICLChannel<Type>::ICLChannel(int iWidth, int iHeight, Type *ptData)
 {
   //---- Log Message ----
   DEBUG_LOG4("Konstruktor: ICLChannel(int,int) -> " << this);
@@ -24,7 +24,10 @@ ICLChannel<Type>::ICLChannel(int iWidth, int iHeight)
   m_oInfo.setRoi(iWidth, iHeight);
   
   //---- Allocate memory ----
-  m_ptData = new Type[m_oInfo.getDim()];
+  m_ptData = ptData ? ptData : new Type[m_oInfo.getDim()];
+
+  //---- Enshure data will be deleted ----
+  m_bDeleteData = ptData ? 1 : 0;
 
   //---- Set all pixel to zero ----
   clear();
@@ -45,8 +48,11 @@ ICLChannel<Type>::ICLChannel(const ICLChannel<Type>& tSrc)
   m_oInfo.setRoi(tSrc.m_oInfo.getWidth(), 
                  tSrc.m_oInfo.getHeight());
   
-  //---- Alloccate memory ----
+  //---- Alloccate memory (if needed) ----
   m_ptData = new Type[m_oInfo.getDim()];
+
+  //---- Enshure data will be deleted ----
+  m_bDeleteData = 1;
    
   //---- Copy data from source channel----
   std::copy(tSrc.m_ptData,
@@ -62,7 +68,10 @@ ICLChannel<Type>::~ICLChannel()
   DEBUG_LOG4("Destruktor: ICLChannel() -> " << this);
 
   //---- free memory ----
-  delete [] m_ptData;
+  if(m_bDeleteData = 1)
+    {
+      delete [] m_ptData;
+    }
   
 }
 

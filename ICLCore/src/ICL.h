@@ -1,10 +1,10 @@
  /*
   ICL.h
 
-  Written by: Michael Götting (2004)
+  Written by: Michael Götting and Christof Elbrechter (2006)
               University of Bielefeld
               AG Neuroinformatik
-              mgoettin@techfak.uni-bielefeld.de
+              {mgoettin,celbrech}@techfak.uni-bielefeld.de
 */
 
 #ifndef ICL_H
@@ -24,9 +24,10 @@ namespace ICL {
 
 //-------- ICL class definition --------
 /**
-   @short ICL implements an arry of ICLChannel images with an arbitrary number 
+   @short ICL implements an array of ICLChannel images with an arbitrary number 
           of image channels.
-   @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de)
+   @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
+   @author Christof Elbrechter (celbrech@TechFak.Uni-Bielefeld.de)
 **/
 template <class Type>
 class ICL : public ICLBase
@@ -94,6 +95,20 @@ class ICL : public ICLBase
                        eFormat is formatRGB iChannels is set to 3)
   **/
   ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels = -1);
+ 
+  /// Creates an image with specified size, number of channels, format, using shared data pointers as channel data
+  /** @param iWidth width of the image
+      @param iHeight height of the image
+      @param eFormat (color)-format of the image
+      @param iChannels channel count of the image (if -1, then the channel
+                       count is calculated from the given format (E.g. if
+                       eFormat is formatRGB iChannels is set to 3)
+      @param pptData holds a pointer to channel data pointers. pptData must
+                     have size iChannels. The data must not be deleted during
+                     the "lifetime" of the ICL.
+  **/
+  ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels, Type** pptData);
+
   /// Copy constructor
   /** creates a flat copy of the source images
       the new image will contain a flat copy of 
@@ -145,7 +160,7 @@ class ICL : public ICLBase
   /* }}} */
   
   /* {{{ moving / scaling image data */
-  //@{ //@name movins / scaling image data
+  //@{ //@name moving / scaling image data
 
   /// perform a deep copy into an optional destination image)
   /** Returns an independent exact copy of the object. 

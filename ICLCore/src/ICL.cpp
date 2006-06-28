@@ -44,6 +44,21 @@ ICL<Type>::ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels):
     m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight));
 } 
 
+
+//----------------------------------------------------------------------------
+template<class Type>
+ICL<Type>::ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels, Type** pptData):
+  ICLBase(iWidth,iHeight,eFormat,iclGetDepth<Type>(),iChannels){
+  //---- Log Message ----
+  DEBUG_LOG4("Konstruktor: ICL(int,int,int) -> " << this);
+  
+  //---- Variable definiton/ initialisation ----
+  m_ppChannels.resize(m_iChannels);
+  
+  //---- ICL Channel using shared memory ----
+  for(int i=0;i<m_iChannels;i++)
+    m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight,pptData[i]));
+} 
  
 //----------------------------------------------------------------------------
 template<class Type>
@@ -65,6 +80,10 @@ ICL<Type>::ICL(const ICL<Type>& tSrc):
   
   
 }
+
+
+
+
 
 //----------------------------------------------------------------------------
 template<class Type>

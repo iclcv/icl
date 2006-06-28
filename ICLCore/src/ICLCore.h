@@ -1,7 +1,15 @@
 #ifndef ICLCORE_H
 #define ICLCORE_H
 
+// comment int to ensure IPP optimiziations
+// the flag may defined as compilier option also
+//#define WITH_IPP_OPTIMIZATION
+
+
 #include "ICLMacros.h"
+#ifdef WITH_IPP_OPTIMIZATION
+#include <ipp.h>
+#endif
 
 /// The ICL-namespace
 /**
@@ -11,11 +19,19 @@ are based on the ICLCore classes.
 **/
 namespace ICL {
   
+#ifdef WITH_IPP_OPTIMIZATION
+  /// 32Bit floating point type for the ICL 
+  typedef Ipp32f iclfloat;
+
+  /// 8Bit unsigned integer type for the ICL 
+  typedef Ipp8u iclbyte;
+#else
   /// 32Bit floating point type for the ICL 
   typedef float iclfloat;
 
   /// 8Bit unsigned integer type for the ICL 
   typedef unsigned char iclbyte;
+#endif
   
   /// determines the pixeltype of an image (8Bit-int or 32Bit-float) 
   enum icldepth{
