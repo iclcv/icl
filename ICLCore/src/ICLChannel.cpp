@@ -94,7 +94,7 @@ ICLChannel<Type>::getMin() const
   
   //---- Log Message ----
   DEBUG_LOG3("min value " << *iter); 
-  
+
   //---- return ----
   return *iter;
 }

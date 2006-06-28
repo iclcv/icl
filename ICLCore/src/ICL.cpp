@@ -175,6 +175,103 @@ ICL<Type>::deepCopy(ICL<Type>* poDst) const
   return poDst;
 }
 
+//--------------------------------------------------------------------------
+template<class Type>
+ICL<Type>*
+ICL<Type>::scaledCopy(ICL<Type> *poDst,iclscalemode eScaleMode) const
+{
+  //---- Log Message ----
+  DEBUG_LOG4("smartCopy(ICL,iclscalemode)");
+  
+  //---- deep copy case -----
+  if(!poDst || isEqual(poDst->getWidth(),poDst->getHeight(),poDst->getChannels())){
+    return deepCopy(poDst); 
+  }
+  
+  int iNChannels = m_iChannels < poDst->getChannels() ? m_iChannels : poDst->getChannels();
+  
+#ifdef WITH_IPP_OPTIMIZATION
+  for(int c=0;c<iNChannels;c++)
+    {
+      if(getDepth()==depth8u)
+        {
+          ippiResize_8u_C1R(ippData8u(c),ippSize(),ippStep(),ippRoi(),
+                            poDst->ippData8u(c),poDst->ippStep(),poDst->ippRoiSize(),
+                            (double)poDst->getWidth()/(double)getWidth(),
+                            (double)poDst->getHeight()/(double)getHeight(),
+                            (int)eScaleMode);
+        }else{
+          ippiResize_32f_C1R(ippData32f(c),ippSize(),ippStep(),ippRoi(),
+                             poDst->ippData32f(c),poDst->ippStep(),poDst->ippRoiSize(),
+                             (double)poDst->getWidth()/(double)getWidth(),
+                             (double)poDst->getHeight()/(double)getHeight(),
+                             (int)eScaleMode);
+        }
+    } 
+  
+#else
+
+  //---- Variable initilazation ----
+  float fXStep = ((float)getWidth()-1)/(float)(poDst->getWidth()); 
+  float fYStep = ((float)getHeight()-1)/(float)(poDst->getHeight());
+
+  //---- scale ICL ----
+  for(int c=0;c<iNChannels;c++)
+    {
+      //---- Take the correct scaling method ----
+      switch(eScaleMode) 
+        {
+          case interpolateNN: 
+            for(int x=0;x<poDst->getWidth();x++)
+              for(int y=0;y<poDst->getHeight();y++)
+                (*poDst)(x,y,c)=(*this)((int)rint(x*fXStep),(int)rint(y*fYStep),c);
+            break;
+          case interpolateLIN: 
+            for(int x=0;x<poDst->getWidth();x++)
+              for(int y=0;y<poDst->getHeight();y++)
+                (*poDst)(x,y,c)=interpolate((fXStep/2)+ x*fXStep,(fYStep/2)+y*fYStep,c);
+            break;
+          case interpolateRA: 
+            ERROR_LOG("not yet implemented for Region Average");
+            break;
+            /*
+            if (fFactor>=1.0) 
+            {
+            DEBU_LOG1("Illegal scaleFactor for average Scaling!");
+            exit(0);
+            } 
+            else 
+            {
+            int   iStep=(int) floor(1.0/fFactor);
+            float sum,sq_factor=1.0/float(iStep*iStep);
+            img->resizeChannel((int)floor(float(getWidth(c))/float(iStep)),
+            (int)floor(float(getHeight(c))/float(iStep)), 
+            c);
+            for(int x=0;x<img->getWidth(c);x++)
+            for(int y=0;y<img->getHeight(c);y++)
+            {
+            sum=0;
+            for(int a=0;a<iStep;a++)
+            for(int b=0;b<iStep;b++)
+            sum+=(float)getPixel(x*iStep+a, y*iStep+b,c);
+            img->setPixel(x,y,c,(Type) (sum*sq_factor));
+            }
+            
+            }     
+            break;
+            */
+          default:
+            ERROR_LOG("Illegal operation selected!");
+            break;
+        }
+    }
+  
+#endif
+  
+  return poDst;
+}
+
+
 //----------------------------------------------------------------------------
 template<class Type>
 void ICL<Type>::detach(int iIndex)
@@ -300,7 +397,7 @@ ICL<Type>::scale(int iNewWidth,
 {
   
   //---- Log Message ----
-  DEBUG_LOG4("resize(int,int,iclscalemode)"); 
+  DEBUG_LOG4("scale(int,int,iclscalemode)"); 
   
   //---- estimate destination values in respect to defaults ----
   if(iNewWidth < 0)iNewWidth = m_iWidth;
@@ -313,12 +410,34 @@ ICL<Type>::scale(int iNewWidth,
   else
     {
       ICL<Type> oTmp(iNewWidth,iNewHeight,m_eFormat,m_iChannels);
-      smartCopy(&oTmp,eScaleMode);
+      scaledCopy(&oTmp,eScaleMode);
       (*this)=oTmp;
     }
 }
 
-
+//----------------------------------------------------------------------------
+template<class Type>
+void 
+ICL<Type>::resize(int iWidth,int iHeight)
+{
+  
+  //---- Log Message ----
+  DEBUG_LOG4("resize(int,int)"); 
+  
+  //---- estimate destination values in respect to defaults ----
+  if(iWidth < 0)iWidth = m_iWidth;
+  if(iHeight < 0)iHeight = m_iHeight;
+  
+  if(isEqual(iWidth,iHeight,m_iChannels))
+    {
+      return;
+    }
+  
+  for(int i=0;i<m_iChannels;i++)
+    {
+      m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight));
+    }
+}
 
 //----------------------------------------------------------------------------
 template<class Type>
@@ -420,21 +539,29 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
   DEBUG_LOG4("convertTo32Bit()");
   
   if(!poDst)poDst = new ICL32f(getWidth(),getHeight(),getFormat(),getChannels());
-  poDst->detach();
+  // not neccesary ! poDst->detach();
   
-  //---- convert ----
-  for(int c=0;c<m_iChannels;c++)
+  if(m_eDepth == depth8u)
     {
-    for(int x=0;x<m_iWidth;x++)
-      {
-      for(int y=0;y<m_iHeight;y++)
+      for(int c=0;c<m_iChannels;c++)
         {
-          (*poDst)(x,y,c) = static_cast<iclfloat>((*this)(x,y,c));
+#ifdef WITH_IPP_OPTIMIZATION
+          ippiConvert_8u32f_C1R(ippData8u(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),poDst->ippRoiSize());
+#else
+          int iDim = m_iWidth* m_iHeight;
+          iclbyte *pucSrc =  reinterpret_cast<iclbyte*>(getDataPtr(c));
+          iclfloat *pfDst = reinterpret_cast<iclfloat*>(poDst->getDataPtr(c));
+          for(int i=0;i<iDim;i++){
+            pfDst[i]=static_cast<iclfloat>(pucSrc[i]);
+          }
+#endif
         }
-      }
+      return poDst;
     }
-  
-  return poDst;
+  else
+    {
+      return asIcl32f()->deepCopy();
+    }  
 }
 
 //--------------------------------------------------------------------------
@@ -446,27 +573,85 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
   DEBUG_LOG4("convertTo8Bit()");
   
   if(!poDst)poDst = new ICL8u(getWidth(),getHeight(),getFormat(),getChannels());
-  poDst->detach();
-  
-  //---- convert ----
-  for(int c=0;c<m_iChannels;c++)
+  // not neccesary ! poDst->detach();
+  if(m_eDepth == depth32f)
     {
-    for(int x=0;x<m_iWidth;x++)
-      {
-      for(int y=0;y<m_iHeight;y++)
+      for(int c=0;c<m_iChannels;c++)
         {
-          (*poDst)(x,y,c) = static_cast<iclbyte>((*this)(x,y,c));
+#ifdef WITH_IPP_OPTIMIZATION
+          ippiConvert_32f8u_C1R(ippData32f(c),ippStep(),poDst->ippData8u(c),poDst->ippStep(),poDst->ippRoiSize(),ippRndNear);
+#else
+          int iDim = m_iWidth* m_iHeight;
+          iclfloat *pfSrc = reinterpret_cast<iclfloat*>(getDataPtr(c));
+          iclbyte *pucDst =  reinterpret_cast<iclbyte*>(poDst->getDataPtr(c));
+          for(int i=0;i<iDim;i++){
+            pucDst[i]=static_cast<iclbyte>(pfSrc[i]);
+          }
+#endif
         }
-      }
+      return poDst;
     }
-  
-  return poDst;
+  else
+    {
+      return asIcl8u()->deepCopy();
+    }  
+ 
 }
 
 // }}} 
 
-// {{{  Get Functions: 
+// {{{  Getter Functions: 
 
+// ---------------------------------------------------------------------
+template<class Type> 
+Type 
+ICL<Type>::getMax(int iChannel) const
+{
+#ifdef WITH_IPP_OPTIMIZATION
+  if(m_eDepth == depth8u)
+    {
+      iclbyte ucMax;
+      ippiMax_8u_C1R(ippData8u(iChannel),ippStep(),ippRoiSize(),&ucMax);
+      return static_cast<Type>(ucMax);
+    }
+  else
+    {
+      iclfloat fMax;
+      ippiMax_32f_C1R(ippData32f(iChannel),ippStep(),ippRoiSize(),&fMax);
+      return static_cast<Type>(fMax);
+    }
+                     
+#else
+  return m_ppChannels[iChannel]->getMax();
+#endif
+}
+
+// ---------------------------------------------------------------------  
+template<class Type>
+Type 
+ICL<Type>::getMin(int iChannel) const
+{
+#ifdef WITH_IPP_OPTIMIZATION
+  if(m_eDepth == depth8u)
+    {
+      iclbyte ucMin;
+      ippiMin_8u_C1R(ippData8u(iChannel),ippStep(),ippRoiSize(),&ucMin);
+      return static_cast<Type>(ucMin);
+    }
+  else
+    {
+      iclfloat fMin;
+      ippiMin_32f_C1R(ippData32f(iChannel),ippStep(),ippRoiSize(),&fMin);
+      return static_cast<Type>(fMin);
+    }
+                     
+#else
+  return m_ppChannels[iChannel]->getMin();
+#endif
+}
+  
+
+// ---------------------------------------------------------------------
 template<class Type>
 inline
 void 
@@ -484,6 +669,7 @@ ICL<Type>::getROI(int &riX, int &riY, int &riWidth, int &riHeight) const
     }
 }
 
+// ---------------------------------------------------------------------
 template<class Type>
 inline
 void 
@@ -498,7 +684,7 @@ ICL<Type>::getROIOffset(int &riX, int &riY) const
       riY = m_ppChannels[c]->getRoiYOffset();
     }
 }
-
+// ---------------------------------------------------------------------
 template<class Type>
 inline
 void 
@@ -515,8 +701,7 @@ ICL<Type>::getROISize(int &riWidth, int &riHeight) const
     }
 }
 
-
-
+// ---------------------------------------------------------------------
 template<class Type>
 void ICL<Type>::clear(int iChannel, Type tValue) 
 {
@@ -534,82 +719,11 @@ void ICL<Type>::clear(int iChannel, Type tValue)
     }
 }
 
-//--------------------------------------------------------------------------
-template<class Type>
-ICL<Type>*
-ICL<Type>::smartCopy(ICL<Type> *poDst,iclscalemode eScaleMode) const
-{
-  //---- Log Message ----
-  DEBUG_LOG4("smartCopy(ICL,iclscalemode)");
-  
-  //---- deep copy case -----
-  if(!poDst || isEqual(poDst->getWidth(),poDst->getHeight(),poDst->getChannels())){
-    return deepCopy(poDst); 
-  }
-  
-  //---- Variable initilazation ----
-  float fXStep = ((float)getWidth()-1)/(float)(poDst->getWidth()); 
-  float fYStep = ((float)getHeight()-1)/(float)(poDst->getHeight());
-  
-  int iNChannels = m_iChannels < poDst->getChannels() ? m_iChannels : poDst->getChannels();
-  
-  //---- scale ICL ----
-  for(int c=0;c<iNChannels;c++)
-    {
-      //---- Take the correct scaling method ----
-      switch(eScaleMode) 
-        {
-          case interpolateNN: 
-            for(int x=0;x<poDst->getWidth();x++)
-              for(int y=0;y<poDst->getHeight();y++)
-                (*poDst)(x,y,c)=(*this)((int)rint(x*fXStep),(int)rint(y*fYStep),c);
-            break;
-          case interpolateBL: 
-            for(int x=0;x<poDst->getWidth();x++)
-              for(int y=0;y<poDst->getHeight();y++)
-                (*poDst)(x,y,c)=interpolate((fXStep/2)+ x*fXStep,(fYStep/2)+y*fYStep,c);
-            break;
-          case interpolateAV: 
-            ERROR_LOG("not yet implemented for Region Average");
-            break;
-            /*
-            if (fFactor>=1.0) 
-            {
-            DEBU_LOG1("Illegal scaleFactor for average Scaling!");
-            exit(0);
-            } 
-            else 
-            {
-            int   iStep=(int) floor(1.0/fFactor);
-            float sum,sq_factor=1.0/float(iStep*iStep);
-            img->resizeChannel((int)floor(float(getWidth(c))/float(iStep)),
-            (int)floor(float(getHeight(c))/float(iStep)), 
-            c);
-            for(int x=0;x<img->getWidth(c);x++)
-            for(int y=0;y<img->getHeight(c);y++)
-            {
-            sum=0;
-            for(int a=0;a<iStep;a++)
-            for(int b=0;b<iStep;b++)
-            sum+=(float)getPixel(x*iStep+a, y*iStep+b,c);
-            img->setPixel(x,y,c,(Type) (sum*sq_factor));
-            }
-            
-            }     
-            break;
-            */
-          default:
-            ERROR_LOG("Illegal operation selected!");
-            break;
-        }
-    }
-  return poDst;
-}
 
 
 // }}}
   
-// {{{  Auxillary functions
+// {{{  Auxillary and basic image manipulation functions
 
 template<class Type>
 Type

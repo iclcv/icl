@@ -68,7 +68,7 @@ class ICL : public ICLBase
 /* }}} */
 
  public:
-  /* {{{ Konstructors / Destructors: */
+  /* {{{ Constructors / Destructors: */
 
   //@{
   /// Creates an image with specified number of channels and size.    
@@ -138,7 +138,7 @@ class ICL : public ICLBase
   ICL<Type>& operator=(const ICL<Type>& tSource);
 
   /// function-operator (provides access to the pixel data)
-  /** This operator has to be used, to access the pixeldata of the image
+  /** This operator has to be used, to access the pixel data of the image
       e.g. copy of image data:
       <pre>
       ICL8u oA(320,240,1),oB(320,240,1);
@@ -149,7 +149,7 @@ class ICL : public ICLBase
       }
       </pre>
       @param iX X-Position of the referenced pixel
-      @param iY Y-Posttion of the referenced pixel
+      @param iY Y-Position of the referenced pixel
       @param iChannel channel index
   **/
   inline
@@ -165,13 +165,13 @@ class ICL : public ICLBase
   /// perform a deep copy into an optional destination image)
   /** Returns an independent exact copy of the object. 
       @param poDst Destination image for the copied data 
-                   if NULL, then a new image is created and retuned
+                   if NULL, then a new image is created and returned
       @return Pointer to new independent ICL object
   **/
   ICL<Type>* deepCopy(ICL<Type>* poDst = NULL) const;
 
-  /// _s_m_a_r_t_ copy of the image data (scaling on demand)
-  /** the smart copy function performes a deep copy of the image data
+  /// returns a scaled copy of the image data (scaling on demand) (IPP-OPTIMIZED)
+  /** the function performs a deep copy of the image data
       into another image. If the given image is not NULL, it's size
       is taken to calculate a scaling factor to scale the image into
       the destination. 
@@ -181,24 +181,23 @@ class ICL : public ICLBase
       @param poDst destination image (if NULL) than it is created new with
                    with identical size of this image.
       @param eScaleMode defines the interpolation mode, that is used for the scaling
-                        operation. (if interpolateNon, the image becomes black)
+                        operation.
                         possible modes are:
-                           - interpolateNon --> no interpolation (image will become black)
-                           - interpolateNN  --> nearest neightbour interpolation (fastest)
-                           - interpolateBL  --> bilinear interpolation
-                           - interpolateAV  --> region avarage 
+                           - interpolateNN  --> nearest neighbor interpolation (fastest)
+                           - interpolateLIN  --> bilinear interpolation
+                           - interpolateRA  --> region average 
       @see iclscalemode
       @see resize
       @see deepCopy
   **/
-  ICL<Type>* smartCopy(ICL<Type> *poDst, iclscalemode eScaleMode=interpolateNN) const;
+  ICL<Type>* scaledCopy(ICL<Type> *poDst, iclscalemode eScaleMode=interpolateNN) const;
   
                   
   /* }}} */
 
-  /* {{{ class organisation / channel management */
+  /* {{{ class organization / channel management */
 
-  //@{ //@name organisation and channel management
+  //@{ //@name organization and channel management
 
   
   
@@ -285,13 +284,13 @@ class ICL : public ICLBase
   /* {{{ Type conversion iclbyte/iclfloat */
   //@{ @name type conversion
   
-  /// Return a copy of the object with depth 32 bit.  
+  /// Return a copy of the object with depth 32 bit. (IPP-OPTIMIZED)
   /** @param poDst destination image (if NULL, then a new image is created) 
       @return Copy of the object with depth 32 bit 
   **/
   ICL32f *convertTo32Bit(ICL32f* poDst = NULL) const ;
   
-  /// Return a copy of the object with depth 8 bit
+  /// Return a copy of the object with depth 8 bit (IPP-OPTIMIZED)
   /** Waring: Information may be lost!
       @param poDst destination image (if NULL, then a new image is created) 
       @return Copy of the object with depth 8 bit 
@@ -332,21 +331,15 @@ class ICL : public ICLBase
 
   //@{ @name getter functions
   
-  /// Returns max pixel value of channel iChannel
+  /// Returns max pixel value of channel iChannel (IPP-OPTIMIZED)
   /** @param iChannel Index of channel
   **/
-  Type getMax(int iChannel) const
-    {
-      return m_ppChannels[iChannel]->getMax();
-    }
+  inline Type getMax(int iChannel) const;
   
-  /// Returns min pixel value of channel iChannel
+  /// Returns min pixel value of channel iChannel (IPP-OPTIMIZED)
   /** @param iChannel Index of channel 
   **/
-  Type getMin(int iChannel) const
-    {
-      return m_ppChannels[iChannel]->getMin();
-    }
+  inline Type getMin(int iChannel) const;
   
   /// Returns pointer to the specified channel data
   /** This method provides
@@ -396,11 +389,8 @@ class ICL : public ICLBase
 
   //@{ @name basic image manipulations
 
-  /// perform a smart resize operation of the images 
-  /** Optional it allows to keep the image
-      data during this information, which means, that the channels
-      are scaled internally.
-      Scaling the channels is only perfomed on demand.
+  /// perform a scaling operation of the images (keeping the data) (IPP-OPTIMIZED)
+  /** Scaling the channels is only performed on demand.
       @param iNewWidth destination width for the scaling operation 
                        (if set to -1 then the original width is used)
       @param iNewHeight destination height for the scaling operation
@@ -408,14 +398,15 @@ class ICL : public ICLBase
       @param eScaleMode defines the interpolation mode, that is used for the scaling
                           operation. (if interpolateNon, the image becomes black)
                           possible modes are:
-                           - interpolateNon --> no interpolation (image will become black)
-                           - interpolateNN  --> nearest neightbour interpolation (fastest)
-                           - interpolateBL  --> bilinear interpolation
-                           - interpolateAV  --> region avarage 
+                           - interpolateNN  --> nearest neighbor interpolation (fastest)
+                           - interpolateLIN  --> bilinear interpolation
+                           - interpolateRA  --> region average 
       @see iclscalemode
- 
+      @see resize
   **/
   void scale(int iNewWidth, int iNewHeight, iclscalemode eScaleMode=interpolateNN);
+ 
+ 
   
   /// Sets the pixels of one or all channels to a specified value
   /** @param tValue destination value
@@ -423,17 +414,192 @@ class ICL : public ICLBase
    **/
   void clear(int iChannel = -1, Type tValue = 0);
   
-  /// Scale the channel min/ max range to the new range tMin, tMax. 
+  /// Scale the channel min/ max range to the new range tMin, tMax.
   /** @param fMin new mininum value for the channel
       @param fMax new maximum value for the channel
       @param iChannel channel index (if set to -1, then operation is 
                       performed on all channels)
   **/
-  void scaleRange(float fMin=0.0, float fMax=255.0, int iChannel = -1);
+  void scaleRange(float fMin=0.0, float fMax=255.0, int iChannel = -1); 
 
   //@}
 
 /* }}} */
+
+#ifdef WITH_IPP_OPTIMIZATION
+                                     
+  /* {{{ IPP-compability functions */
+
+  //@{ @name IPP-compability-functions prefix:ipp
+  /// returns the image pointer to the bottom left corner of the images ROI
+  /** if IPP functions are using image ROIs, than the initial data pointer
+      needs to point not the bottom left pixel of the image, but the bottom left
+      pixel of the images ROI:
+      <pre>
+
+      image: (o=roi)              
+      ..............                    ..............x<--getDataEnd()
+      ....oooooooo..                    ....oooooooo..
+      ....oooooooo..       ippData(): ----->xooooooo..
+      ..............                    ..............
+      ..............  getDataBegin(): ->x.............
+      </pre>
+  
+      @param iChannel selects a specific channel
+      @return "ROI'ed" image data pointer
+  */
+  Type *ippData(int iChannel) const
+    {
+      return getData(iChannel)+m_ppChannels[iChannel]->m_oInfo.getRoiOffset();
+    }
+
+  /// returns the data pointer (in respect to the images roi) as iclbyte*
+  /** When implementing ipp-accelerated template functions, you may need
+      the functions ippData8u and ippData32f to get type-save data pointers.
+      Regard the following example:
+      <pre>
+      template<class T>
+      void scale_image_with_ipp(ICL<T> *a, ICL<T> *b)
+      {
+         for(int c=0;c<a->getChannels();c++)
+         {
+            if(a->getDepth() == depth8u)
+            {
+               ippScale_8u_C1R(a->ippData(c),...);           
+            }
+            else
+            {
+               ippScale_32f_C1R(a->ippData(c),...);                  
+            }
+         }
+      }
+      </pre>
+      This looks fine first, but the compiler will complain about wrong types!
+      Although due to dynamic type checking (if(a->getDepth()...) no error
+      would occur during runtime, the functions ippScale_8u_... and ippScale_32f_...
+      are compiled for template type T=iclfloat and T=iclbyte. So if T is iclbyte
+      the ippScale_32f_...-call is not allowed, and is not compilable.
+      The following code example will explain, how the functions ippData8u and 
+      ippData32f can be used to avoid these complications:
+     
+      <pre>
+      template<class T>
+      void scale_image_with_ipp(ICL<T> *a, ICL<T> *b)
+      {
+         for(int c=0;c<a->getChannels();c++)
+         {
+            if(a->getDepth() == depth8u)
+            {
+               ippScale_8u_C1R(a->ippData8u(c),...);           
+            }
+            else
+            {
+               ippScale_32f_C1R(a->ippData32(c),...);                  
+            }
+         }
+      }
+      </pre>
+      This example causes no compile errors at all, and also, 
+      due to dynamic type checking (if(a->getDepth()...), 
+      no runtime error will occur.
+      
+      It is strongly recommended to use ICLBase class to avoid these problems.
+      As ICLBase is not a template, it's not necessary to implement functions
+      as templates:
+      <pre>
+      
+      void scale_image_with_ipp(ICLBase *a, ICLBase *b)
+      {
+         if(a->getDepth() != b->getDepht())
+         {
+            error or type conversion....
+         }
+         for(int c=0;c<a->getChannels();c++)
+         {
+            if(a->getDepth() == depth8u)
+            {
+               ippScale_8u_C1R(a->asIcl8u()->ippData(c),...);           
+            }
+            else
+            {
+               ippScale_32f_C1R(a->asIcl32f()->ippData(c),...);                  
+            }
+         }
+      }
+      </pre>
+      
+      @param iChannel selects a specific channel
+      @return data pointer casted to iclbyte* (without type check)
+  
+  **/
+  Ipp8u *ippData8u(int iChannel) const
+    {
+      return reinterpret_cast<iclbyte*>(ippData(iChannel));
+    }
+  
+  /// returns the data pointer (in respect to the images roi) as iclfloat*
+  /** This function behaves essentially like the above function
+      @param iChannel selects a specific channel
+      @return data pointer casted to iclbyte* (without type check)
+  **/
+  Ipp32f *ippData32f(int iChannel) const
+    {
+      return reinterpret_cast<iclfloat*>(ippData(iChannel));
+    }
+  /// returns the roi size in Ippi compatible format IppiSize
+  /** @return roi size of the channel
+  **/
+  IppiSize ippRoiSize() const
+    {
+      IppiSize oSize = {m_ppChannels[0]->m_oInfo.getRoiWidth(),
+                        m_ppChannels[0]->m_oInfo.getRoiHeight()}; 
+      return oSize; 
+    }
+
+  /// returns the roi offset in Ippi compatible format IppiPoint
+  /** @return roi offset of the channel
+  **/
+  IppiPoint ippRoiOffset() const
+    {
+      IppiPoint oOffset = {m_ppChannels[0]->m_oInfo.getRoiXOffset(),
+                           m_ppChannels[0]->m_oInfo.getRoiYOffset()};
+      return oOffset;
+    }
+
+  /// returns the roi-rect of this channel in Ippi compatible format IppiRect
+  /** @return roi-rect of the channel
+  **/
+  IppiRect ippRoi() const
+    {
+      IppiRect oRoi = {m_ppChannels[0]->m_oInfo.getRoiXOffset(),
+                       m_ppChannels[0]->m_oInfo.getRoiYOffset(),
+                       m_ppChannels[0]->m_oInfo.getRoiWidth(),
+                       m_ppChannels[0]->m_oInfo.getRoiHeight()};
+      return oRoi;
+    }
+
+  /// returns the line width in bytes of the image
+  /** @return "step" of image line
+  **/
+  int ippStep() const
+    {
+      return (m_eDepth == depth8u ? sizeof(iclbyte) : sizeof(iclfloat)) * getWidth();
+    }
+  
+  /// returns the size of the image in Ippi compatible format IppiSize
+  /** @return size of the image  
+  **/
+  IppiSize ippSize() const
+    {
+      IppiSize oSize = {getWidth(),getHeight()};
+      return oSize; 
+    }
+
+ //@}
+  /* }}} */
+ 
+#endif
+
 
 }; // class
 

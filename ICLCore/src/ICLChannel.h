@@ -120,32 +120,24 @@ class ICLChannelInfo
       return m_iImageRoiXOffset;
     }
 
-  //--------------------------------------------------------------------------
-  /** Get the image roi YOffset.
-      @param -
-      @return The image roi height in pixel
+  /// Get the image roi YOffset.
+  /** @return The image roi height in pixel
   **/
   int getRoiYOffset() const
     {
-      //---- Return the image height
       return m_iImageRoiYOffset;
     }
 
-  //--------------------------------------------------------------------------
-  /** Get the image width.
-      @param -
-      @return The image width in pixel
+  /// Get the image width.
+  /** @return The image width in pixel
   **/
   int getWidth() const
     {
-      //---- Return the image width 
       return m_iImageWidth;
     }
   
-  //--------------------------------------------------------------------------
-  /** Get the image height.
-      @param -
-      @return The image height in pixel
+  /// Get the image height.
+  /** @return The image height in pixel
   **/
   int getHeight() const
     {
@@ -153,15 +145,24 @@ class ICLChannelInfo
       return m_iImageHeight;
     }
   
-  //--------------------------------------------------------------------------
-  /** Get the image dimension (width*height).
-      @param -
-      @return The image dimension in pixel
+  /// Get the image dimension (width*height).
+  /** @return The image dimension in pixel
   **/
   int getDim() const
     {
       //---- Return the image dim
       return m_iImageDim;
+    }
+
+  /// returns the data offset, for handling channels with ROI set.
+  /** The returned value can be added to the images data ptr - 
+      The result pointer points the bottom-left pixel of the ROI
+      in the image.
+      @return the ROI data offset
+  **/
+  int getRoiOffset() const
+    {
+      return m_iImageRoiXOffset + m_iImageWidth * m_iImageRoiYOffset;      
     }
   
 };
@@ -314,8 +315,7 @@ class ICLChannel
   /// Return the pointer to the end of the data.
   /** @return The beginning of the data vector 
   **/
-  Type* 
-  getDataEnd() { return m_ptData+m_oInfo.getDim();}
+  Type* getDataEnd() { return m_ptData+m_oInfo.getDim();}
 
   /// Returns the width of the image channel
   /** @return Width of channel
@@ -352,15 +352,12 @@ class ICLChannel
   **/
   int getRoiYOffset() const { return m_oInfo.getRoiYOffset();}
 
-  //--------------------------------------------------------------------------
-  /** Returns the depth in bit of the image channel
-      @return Depth of image channel in bit
-  **/
-  //int getDepth() const { return m_iDepth;}
-  
   //@}
+  /* }}} */ 
+  
 
-/* }}} */
+
+
   
   /* {{{ basic channel functions: */
 

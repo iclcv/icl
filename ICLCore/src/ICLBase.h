@@ -162,9 +162,9 @@ namespace ICL {
       /** 
       @return ICL8u* instance of this image
       **/
-      ICL8u* asIcl8u()
+      ICL8u* asIcl8u() const
         {
-          return reinterpret_cast<ICL8u*>(this);
+          return reinterpret_cast<ICL8u*>((void*)this);
         }
   
 
@@ -172,9 +172,9 @@ namespace ICL {
       /**
       @return ICL32f* instance of this image
       **/
-      ICL32f* asIcl32f()
+      ICL32f* asIcl32f() const
         {
-          return reinterpret_cast<ICL32f*>(this);
+          return reinterpret_cast<ICL32f*>((void*)this);
         }
       //@}
 

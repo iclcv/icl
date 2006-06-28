@@ -25,3 +25,4 @@ int iclGetChannelsOfFormat(iclformat eFormat)
         return 1;
     }
 }
+
