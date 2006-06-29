@@ -20,7 +20,7 @@
 using namespace std;
 
 //---- ICL in its own namespace ----
-namespace ICL {
+namespace icl {
 
 //-------- ICL class definition --------
 /**
@@ -595,7 +595,7 @@ class ICL : public ICLBase
 
 }; // class
 
-} //namespace ICL
+} //namespace icl
 
 #endif //ICL_H
 

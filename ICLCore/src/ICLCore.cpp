@@ -1,7 +1,7 @@
 #include "ICLCore.h"
 #include "ICL.h"
 
-namespace ICL{
+namespace icl{
   
   int iclGetChannelsOfFormat(iclformat eFormat)
   {

@@ -9,7 +9,7 @@
 
 #include "ICLBase.h"
 
-namespace ICL {
+namespace icl {
 
 // {{{  Konstruktor/ Destruktor: 
 
@@ -57,6 +57,6 @@ void ICLBase::setFormat(iclformat eFormat)
 
 
 
-} //namespace ICL
+} //namespace icl
 
 

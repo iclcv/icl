@@ -110,7 +110,7 @@ This namespace is dedicated for ICLCore- and
 all additional Computer-Vision packages, that 
 are based on the ICLCore classes.
 **/
-namespace ICL {
+namespace icl {
 
   //forward declaration
   class ICLBase;

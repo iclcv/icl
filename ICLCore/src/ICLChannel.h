@@ -21,7 +21,7 @@
 using namespace std;
 
 //---- ICL in its own namespace ----
-namespace ICL {
+namespace icl {
 
 //---- Foreward deklaration ----
 template <class Type> class ICLChannel;
@@ -421,6 +421,6 @@ class ICLChannel
 
 /* }}} */
 
-} //namespace ICL
+} //namespace icl
 
 #endif //ICLCHANNEL_H

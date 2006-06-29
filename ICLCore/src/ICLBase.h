@@ -21,7 +21,7 @@ AG Neuroinformatik
 
 using namespace std;
 
-namespace ICL {
+namespace icl {
   
 
   /// forward declaration of the ICL-class

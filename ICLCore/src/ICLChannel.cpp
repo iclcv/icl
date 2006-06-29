@@ -9,7 +9,7 @@
 
 #include "ICLChannel.h"
 
-namespace ICL {
+namespace icl {
 
 // {{{  Konstruktor/ Destruktor: 
 //----------------------------------------------------------------------------
@@ -203,6 +203,6 @@ void ICLChannel<Type>::scaleRange(float fNewMin,
 template class ICLChannel<iclbyte>;
 template class ICLChannel<iclfloat>;
 
-} //namespace ICL
+} //namespace icl
 
 

@@ -10,7 +10,7 @@
 #include "ICL.h"
 
 //---- ICL in its own namespace ----
-namespace ICL {
+namespace icl {
 
 // {{{  Konstruktor/ Destruktor: 
 
@@ -865,4 +865,4 @@ ICL<Type>::scaleRange(float tMin, float tMax, int iChannel)
 template class ICL<iclbyte>;
 template class ICL<iclfloat>;
 
-} //namespace ICL
+} //namespace icl
