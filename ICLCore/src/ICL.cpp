@@ -139,8 +139,8 @@ Type& ICL<Type>::operator()(int iX, int iY, int iChannel) const
 
 //----------------------------------------------------------------------------
 template<class Type>
-ICL<Type>* 
-ICL<Type>::deepCopy(ICL<Type>* poDst) const
+ICLBase*
+ICL<Type>::deepCopy(ICLBase* poDst) const
 {
   //---- Log Message ----
   DEBUG_LOG4("deepCopy(ICL<Type>*)"); 
@@ -152,33 +152,49 @@ ICL<Type>::deepCopy(ICL<Type>* poDst) const
   } 
   else 
   {
-    //---- release old channels in destination ----
-    poDst->m_ppChannels.clear();
-    
-    //---- and set to new values ----
-    poDst->m_ppChannels.resize(m_iChannels);
-    poDst->m_iChannels = m_iChannels;
-    poDst->m_iWidth = m_iWidth;
-    poDst->m_iHeight = m_iHeight;
-    poDst->m_eFormat = m_eFormat;
-    
-    //---- Shallow copy of source channels ----
-    std::copy(this->m_ppChannels.begin(), 
-              this->m_ppChannels.end(),
-              poDst->m_ppChannels.begin());
+    if(!poDst->isEqual(getWidth(),getHeight(),getChannels()))
+    {
+      printf("error in deep copy! image size or channel count is different!\n");
+      return poDst;
+    }
+    if(poDst->getDepth() == getDepth())
+      {
+        poDst->setNumChannels(0);
+        if(getDepth() == depth8u)
+          {
+            poDst->asIcl8u()->append(this->asIcl8u());
+          }
+        else
+          {
+            poDst->asIcl32f()->append(this->asIcl32f());
+          }
+        poDst->setFormat(getFormat());
+       
+      }
+    else
+      {
+        if(poDst->getDepth()==depth8u)
+          {
+            return convertTo8Bit(poDst->asIcl8u());
+          }
+        else
+          {
+            return convertTo32Bit(poDst->asIcl32f());
+          }
+      }
   }
   
   //---- Make ICL independent ----
   poDst->detach();
-  
+   
   //---- return ----
   return poDst;
 }
 
 //--------------------------------------------------------------------------
 template<class Type>
-ICL<Type>*
-ICL<Type>::scaledCopy(ICL<Type> *poDst,iclscalemode eScaleMode) const
+ICLBase*
+ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
 {
   //---- Log Message ----
   DEBUG_LOG4("smartCopy(ICL,iclscalemode)");
@@ -187,6 +203,24 @@ ICL<Type>::scaledCopy(ICL<Type> *poDst,iclscalemode eScaleMode) const
   if(!poDst || isEqual(poDst->getWidth(),poDst->getHeight(),poDst->getChannels())){
     return deepCopy(poDst); 
   }
+  
+  //---- type conversion case -----------
+  if(getDepth() != poDst->getDepth())
+    {
+      if(poDst->getDepth() == depth8u)
+        {
+          ICL8u oTmp(poDst->getWidth(),poDst->getHeight(),poDst->getChannels());
+          scaledCopy(&oTmp,eScaleMode);
+          oTmp.deepCopy(poDst);
+        }
+      else
+        {
+          ICL32f oTmp(poDst->getWidth(),poDst->getHeight(),poDst->getChannels());
+          scaledCopy(&oTmp,eScaleMode);
+          oTmp.deepCopy(poDst);
+        }
+      return poDst;
+    }    
   
   int iNChannels = m_iChannels < poDst->getChannels() ? m_iChannels : poDst->getChannels();
   
@@ -328,30 +362,56 @@ ICL<Type>::removeChannel(int iChannel)
 //----------------------------------------------------------------------------
 template<class Type>
 void
-ICL<Type>::appendICL(ICL<Type> *poSrc)
+ICL<Type>::append(ICL<Type> *poSrc)
 {
   //---- Log Message ----
   DEBUG_LOG4("appendImage(const ICL<Type>&)"); 
-  
-  //---- Variable initialisation ----
-  int iNumExternChannels = poSrc->m_iChannels;
-  int iNumInternChannels = m_iChannels;
-  vector<ICLChannelPtr> vecTmp(iNumInternChannels+iNumExternChannels);
-  
-  //---- copy channels from internal ICL ----
-  std::copy (m_ppChannels.begin(), m_ppChannels.end(), vecTmp.begin());
-  
-  //---- clear  old stuff ----
-  m_ppChannels.clear();
-  
-  //---- Manage new ICL ----
-  m_ppChannels = vecTmp;
-  
-  std::copy(poSrc->m_ppChannels.begin(),
-            poSrc->m_ppChannels.end(),
-            m_ppChannels.begin()+iNumInternChannels);
-  
-  m_iChannels += iNumExternChannels;
+
+  if(m_iChannels > 0)
+    { 
+      //---- ensure identical image size
+      if(poSrc->getWidth() != getWidth() || poSrc->getHeight() != getHeight())
+        {
+          printf("error in ICL::append: image sizes are different! \n");
+          return;
+        }
+      for(int i=0;i<poSrc->m_iChannels;i++){
+        m_ppChannels.push_back(poSrc->m_ppChannels[i]); 
+        m_iChannels++;
+      }
+      
+      /*
+      //---- Variable initialisation ----
+      int iNumExternChannels = poSrc->m_iChannels;
+      int iNumInternChannels = m_iChannels;
+      
+      vector<ICLChannelPtr> vecTmp(iNumInternChannels+iNumExternChannels);
+      
+      //---- copy channels from internal ICL ----
+      std::copy (m_ppChannels.begin(), m_ppChannels.end(), vecTmp.begin());
+      
+      //---- clear  old stuff ----
+      m_ppChannels.clear();
+      
+      //---- Manage new ICL ----
+      m_ppChannels = vecTmp;
+      
+      std::copy(poSrc->m_ppChannels.begin(),
+      poSrc->m_ppChannels.end(),
+      m_ppChannels.begin()+iNumInternChannels);
+      m_iChannels += iNumExternChannels;
+      */
+      
+     
+    }
+  else
+    {
+      // cheep copy
+      m_ppChannels = poSrc->m_ppChannels;
+      m_iChannels = (int)(m_ppChannels.size());
+      m_iWidth = poSrc->m_iWidth;
+      m_iHeight = poSrc->m_iHeight;      
+    }
 } 
 
 //----------------------------------------------------------------------------
@@ -488,26 +548,34 @@ ICL<Type>::setNumChannels(int iNumNewChannels)
 //----------------------------------------------------------------------------
 template<class Type>
 void 
-ICL<Type>::renewICL(int iNewWidth, int iNewHeight, int iNumNewChannels)
+ICL<Type>::renew(int iNewWidth, int iNewHeight, int iNewNumChannels)
 {
   //---- Log Message ----
   DEBUG_LOG4("renewICL(int,int.int)"); 
 
+  if(iNewWidth < 0)iNewWidth = m_iWidth;
+  if(iNewHeight < 0)iNewHeight = m_iHeight;
+  if(iNewNumChannels < 0)iNewNumChannels = m_iChannels;
+  
   //---- Execution necessary ??? ----
-  if (!isEqual(iNewWidth, iNewHeight, iNumNewChannels))
+  if (!isEqual(iNewWidth, iNewHeight, iNewNumChannels))
   {
     //---- Make referenced channels independent before resize ----
-    detach(); 
-    deleteChannels ();
+    // ?? detach(); 
+    // ?? deleteChannels ();
     
-    m_ppChannels.resize(iNumNewChannels);
-    m_iChannels = iNumNewChannels;    
+    m_ppChannels.resize(iNewNumChannels);
+    m_iChannels = iNewNumChannels;    
     
-    for(int i=0;i<iNumNewChannels;i++)
+    for(int i=0;i<iNewNumChannels;i++)
     {
       m_ppChannels[i] = 
         ICLChannelPtr (new ICLChannel<Type>(iNewWidth,iNewHeight));
     }
+  }
+  else
+  {
+    detach();    
   }
 }
 
@@ -560,7 +628,7 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
     }
   else
     {
-      return asIcl32f()->deepCopy();
+      return asIcl32f()->deepCopy()->asIcl32f();
     }  
 }
 
@@ -593,7 +661,7 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
     }
   else
     {
-      return asIcl8u()->deepCopy();
+      return asIcl8u()->deepCopy()->asIcl8u();
     }  
  
 }
@@ -789,34 +857,7 @@ ICL<Type>::scaleRange(float tMin, float tMax, int iChannel)
 }
 
 //--------------------------------------------------------------------------
-template<class Type>
-int
-ICL<Type>::isEqual(int iNewWidth, int iNewHeight, int iNewNumChannels) const
-{
-  return m_iWidth == iNewWidth && m_iHeight == iNewHeight && m_iChannels == iNewNumChannels;
-    /*
-    if (iNumNewChannels != m_iChannels)
-    {
-    cout << "isEqual != Channel (" <<iNumNewChannels<<"/"<<m_iChannels<<")"<< endl;
-    return ICL_FALSE;
-    }
-    
-    for (int i=0;i<m_iChannels;i++)
-    {
-    if ( (iNewWidth != getWidth(i)) ||
-    (iNewHeight != getHeight(i)) )
-    {
-    cout << "isEqual != Channel(" << i << ")" << endl;   
-    cout << "iNewWidth: " << iNewWidth << "/ " << getWidth(i) << endl;
-    cout << "iNewHeight: " << iNewHeight << "/ " << getHeight(i) << endl;
-    return ICL_FALSE;
-    }
-    }
-  
-    return ICL_TRUE;
-    */
-  
-}
+
 
 // }}}
 

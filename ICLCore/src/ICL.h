@@ -55,17 +55,7 @@ class ICL : public ICLBase
   **/
   Type interpolate(float fX,float fY,int iChannel=0) const;
   
-  //
-  /** Check if the width and height and channel of a given ICL is equal
-      @param iNewWidth compare value for the image width
-      @param iNewHeight compare value for the image height
-      @param iNewNumChannels compare value for the channel count
-      @return Return 1 if the 2 ICL objects are equal otherwise 0
-              
-  **/
-  int isEqual(int iNewWidth, int iNewHeight, int iNewNumChannels) const;
-  
-/* }}} */
+  /* }}} */
 
  public:
   /* {{{ Constructors / Destructors: */
@@ -168,7 +158,7 @@ class ICL : public ICLBase
                    if NULL, then a new image is created and returned
       @return Pointer to new independent ICL object
   **/
-  ICL<Type>* deepCopy(ICL<Type>* poDst = NULL) const;
+  virtual ICLBase* deepCopy(ICLBase* poDst = NULL) const;
 
   /// returns a scaled copy of the image data (scaling on demand) (IPP-OPTIMIZED)
   /** the function performs a deep copy of the image data
@@ -190,7 +180,7 @@ class ICL : public ICLBase
       @see resize
       @see deepCopy
   **/
-  ICL<Type>* scaledCopy(ICL<Type> *poDst, iclscalemode eScaleMode=interpolateNN) const;
+  virtual ICLBase* scaledCopy(ICLBase *poDst, iclscalemode eScaleMode=interpolateNN) const;
   
                   
   /* }}} */
@@ -207,18 +197,18 @@ class ICL : public ICLBase
       be detached. If the legal index channel is set to -1 the whole ICL 
       becomes independent.)
   **/
-  void detach(int iIndex = -1);
+  virtual void detach(int iIndex = -1);
   
   /// Removes a specified channel.
   /** @param iChannel Index of channel to remove
   **/
-  void removeChannel(int iChannel);
+  virtual void removeChannel(int iChannel);
   
   /// Append channels of external ICL to the existing ICL. 
   /** Both objects will share their data (cheap copy). 
       @param poSrc source ICL<Type>
   **/
-  void appendICL(ICL<Type>* poSrc);
+  void append(ICL<Type>* poSrc);
   
   /// Appends the channel iChannel of an external image to the current image
   /** Both objects will share their data (cheap copy). 
@@ -232,7 +222,7 @@ class ICL : public ICLBase
   /** @param iIndexA Index of channel A;
       @param iIndexB Index of channel B
   **/
-  void swapChannels(int iIndexA, int iIndexB);
+  virtual void swapChannels(int iIndexA, int iIndexB);
   
   /// Replace the channel A of this image with the channel B another image. 
   /** Both images must have the same width and height.
@@ -251,30 +241,32 @@ class ICL : public ICLBase
       @param iNewNumChannels new channel count
       @see resize
   **/
-  void setNumChannels(int iNewNumChannels);
+  virtual void setNumChannels(int iNewNumChannels);
 
  
  
   /// creates a hole new ICL internally
-  /** Change the number of ICL channels and the size. The channels have all the
-      same width and height. All the data within the ICL will be lost. Already
-      shared data will be detached before renew the ICL structure.
-      @param iNewWidth New image width
-      @param iNewHeight New image height
-      @param iNewNumChannel New channel number 
+  /** Change the number of ICL channels and the size. The function works
+      on demand: If the image has already the correct parameters, the
+      channels are detached. 
+      same width and height. All the data within the ICL will be lost. 
+      @param iNewWidth New image width (if < 0, the orignal width is used)
+      @param iNewHeight New image height (if < 0, the orignal height is used)
+      @param iNewNumChannel New channel number (if < 0, the orignal 
+             channel count is used)
   **/
-  void renewICL(int iNewWidth, int iNewHeight,int iNewNumChannel);
+  virtual void renew(int iNewWidth, int iNewHeight,int iNewNumChannel);
 
   /// resizes the image to new values
   /** operation is performed on demand - if image
       has already size iNewWidth,iNewHeight, then
-      the image values are set to 0 only. For resizing
+      nothing is done at all. For resizing
       operation with scaling of the image data use scale
-      @param iNewWidth new image width
-      @param iNewHeight new image height
+      @param iNewWidth new image width (if < 0, the orignal width is used)
+      @param iNewHeight new image height (if < 0, the orignal height is used)
       @see scale
   **/
-  void resize(int iNewWidth, int iNewHeight);
+  virtual void resize(int iNewWidth, int iNewHeight);
   
   
   //@}
@@ -288,14 +280,14 @@ class ICL : public ICLBase
   /** @param poDst destination image (if NULL, then a new image is created) 
       @return Copy of the object with depth 32 bit 
   **/
-  ICL32f *convertTo32Bit(ICL32f* poDst = NULL) const ;
+  virtual ICL32f *convertTo32Bit(ICL32f* poDst = NULL) const ;
   
   /// Return a copy of the object with depth 8 bit (IPP-OPTIMIZED)
   /** Waring: Information may be lost!
       @param poDst destination image (if NULL, then a new image is created) 
       @return Copy of the object with depth 8 bit 
   **/
-  ICL8u *convertTo8Bit(ICL8u* poDst = NULL) const;
+  virtual ICL8u *convertTo8Bit(ICL8u* poDst = NULL) const;
 
    //@}
   /* }}} */
@@ -309,19 +301,19 @@ class ICL : public ICLBase
       @param iWidth width of the ROI
       @param iHeight height of the ROI
   **/
-  void setROI(int iX, int iY,int iWidth,int iHeight);
+  virtual void setROI(int iX, int iY,int iWidth,int iHeight);
   
   /// set the ROI- (region of interests) offset to a specified point
   /** @param iX X-Offset of the ROI
       @param iY Y-Offset of the ROI
   **/
-  void setROIOffset(int iX, int iY);
+  virtual void setROIOffset(int iX, int iY);
   
   /// set the ROI- (region of interests) size to a specified dimension
   /** @param iWidth width of the ROI
       @param iHeight height of the ROI      
   **/
-  void setROISize(int iWidth, int iHeight);
+  virtual void setROISize(int iWidth, int iHeight);
   
   //@}
 
@@ -367,19 +359,19 @@ class ICL : public ICLBase
       @param riWidth reference to store the width value of the roi
       @param riHeight reference to store the height value of the roi
   **/
-  void getROI(int &riX, int &riY, int &riWidth, int &riHeight) const;
+  virtual void getROI(int &riX, int &riY, int &riWidth, int &riHeight) const;
 
   /// Gets the ROI- (region of interests) offset of this image
   /** @param riX reference to store the x value of the roi
       @param riY reference to store the y value of the roi
   **/
-  void getROIOffset(int &riX, int &riY) const;
+  virtual void getROIOffset(int &riX, int &riY) const;
   
   /// Gets the ROI- (region of interests) size of this image
   /** @param riWidth reference to store the width value of the roi
       @param riHeight reference to store the height value of the roi
   **/
-  void getROISize(int &riWidth, int &riHeight) const;
+  virtual void getROISize(int &riWidth, int &riHeight) const;
 
   //@}
 
@@ -404,7 +396,7 @@ class ICL : public ICLBase
       @see iclscalemode
       @see resize
   **/
-  void scale(int iNewWidth, int iNewHeight, iclscalemode eScaleMode=interpolateNN);
+  virtual void scale(int iNewWidth, int iNewHeight, iclscalemode eScaleMode=interpolateNN);
  
  
   
@@ -420,7 +412,7 @@ class ICL : public ICLBase
       @param iChannel channel index (if set to -1, then operation is 
                       performed on all channels)
   **/
-  void scaleRange(float fMin=0.0, float fMax=255.0, int iChannel = -1); 
+  virtual void scaleRange(float fMin=0.0, float fMax=255.0, int iChannel = -1); 
 
   //@}
 
@@ -532,7 +524,7 @@ class ICL : public ICLBase
       @return data pointer casted to iclbyte* (without type check)
   
   **/
-  Ipp8u *ippData8u(int iChannel) const
+  virtual Ipp8u *ippData8u(int iChannel) const
     {
       return reinterpret_cast<iclbyte*>(ippData(iChannel));
     }
@@ -542,14 +534,14 @@ class ICL : public ICLBase
       @param iChannel selects a specific channel
       @return data pointer casted to iclbyte* (without type check)
   **/
-  Ipp32f *ippData32f(int iChannel) const
+  virtual Ipp32f *ippData32f(int iChannel) const
     {
       return reinterpret_cast<iclfloat*>(ippData(iChannel));
     }
   /// returns the roi size in Ippi compatible format IppiSize
   /** @return roi size of the channel
   **/
-  IppiSize ippRoiSize() const
+  virtual IppiSize ippRoiSize() const
     {
       IppiSize oSize = {m_ppChannels[0]->m_oInfo.getRoiWidth(),
                         m_ppChannels[0]->m_oInfo.getRoiHeight()}; 
@@ -559,7 +551,7 @@ class ICL : public ICLBase
   /// returns the roi offset in Ippi compatible format IppiPoint
   /** @return roi offset of the channel
   **/
-  IppiPoint ippRoiOffset() const
+  virtual IppiPoint ippRoiOffset() const
     {
       IppiPoint oOffset = {m_ppChannels[0]->m_oInfo.getRoiXOffset(),
                            m_ppChannels[0]->m_oInfo.getRoiYOffset()};
@@ -569,7 +561,7 @@ class ICL : public ICLBase
   /// returns the roi-rect of this channel in Ippi compatible format IppiRect
   /** @return roi-rect of the channel
   **/
-  IppiRect ippRoi() const
+  virtual IppiRect ippRoi() const
     {
       IppiRect oRoi = {m_ppChannels[0]->m_oInfo.getRoiXOffset(),
                        m_ppChannels[0]->m_oInfo.getRoiYOffset(),
@@ -581,7 +573,7 @@ class ICL : public ICLBase
   /// returns the line width in bytes of the image
   /** @return "step" of image line
   **/
-  int ippStep() const
+  virtual int ippStep() const
     {
       return (m_eDepth == depth8u ? sizeof(iclbyte) : sizeof(iclfloat)) * getWidth();
     }
@@ -589,7 +581,7 @@ class ICL : public ICLBase
   /// returns the size of the image in Ippi compatible format IppiSize
   /** @return size of the image  
   **/
-  IppiSize ippSize() const
+  virtual IppiSize ippSize() const
     {
       IppiSize oSize = {getWidth(),getHeight()};
       return oSize; 

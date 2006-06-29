@@ -111,6 +111,9 @@ all additional Computer-Vision packages, that
 are based on the ICLCore classes.
 **/
 namespace ICL {
+
+  //forward declaration
+  class ICLBase;
   
 #ifdef WITH_IPP_OPTIMIZATION
   /// 32Bit floating point type for the ICL 
@@ -159,6 +162,22 @@ namespace ICL {
 #endif
   /* {{{ Global functions */
 
+  /// ensures that an image has the specified depth
+  /** This function will delete the original image pointed by (*ppoImage)
+      and create a new one with identical parameters, if the given depth
+      parameter is not the images depth.
+      @param ppoImage pointer to the image-pointer
+      @param eDepth destination depth of the image
+  **/
+  void iclEnsureDepth(ICLBase **ppoImage, icldepth eDepth);
+
+  /// ensures that two images have the same size, channel count, depth, and format
+  /** @param ppoDst points the destination ICLBase*. If the images depth has to be
+                    converted, then a new ICLCore* is created, at (*ppoDst).
+      @param poSrc source image. All params of this image are extracted to define
+                   the destination parameters for *ppoDst.  
+  **/
+  void iclEnsureCompatible(ICLBase **ppoDst, ICLBase *poSrc);
   
   /// determines the count of channels, for each color format
   /** @param eFormat source format which channel count should be returned
@@ -166,6 +185,8 @@ namespace ICL {
   **/
   int iclGetChannelsOfFormat(iclformat eFormat);
 
+  
+  
   /// call iclGetDepth<T> inside of an ICL function to get associated Depth as int
   /**
   @return depth associated with the Type value
