@@ -126,12 +126,6 @@ ICL<Type>& ICL<Type>::operator=(const ICL<Type>& tSrc)
   //---- return ----
   return *this;
 }
-  
-template<class Type>
-Type& ICL<Type>::operator()(int iX, int iY, int iChannel) const
-{
-  return (*m_ppChannels[iChannel])(iX,iY);
-}  
 
 // }}} 
 

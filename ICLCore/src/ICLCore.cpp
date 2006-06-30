@@ -3,6 +3,18 @@
 
 namespace icl{
   
+  ICLBase *iclNew(icldepth eDepth, int iWidth, int iHeight, iclformat eFormat, int iChannels)
+  {
+    if(eDepth == depth8u)
+      {
+        return new ICL8u(iWidth,iHeight,eFormat,iChannels);
+      }
+    else
+      {
+        return new ICL32f(iWidth,iHeight,eFormat,iChannels);
+      }
+  }
+
   int iclGetChannelsOfFormat(iclformat eFormat)
   {
     switch (eFormat)
@@ -27,49 +39,75 @@ namespace icl{
       }
   }
 
+  string iclTranslateFormat(iclformat eFormat)
+  {
+    switch(eFormat)
+      {
+        case formatRGB: return "rgb";
+        case formatHLS: return "hls";
+        case formatLAB: return "lab";
+        case formatYUV: return "yuv";
+        case formatGray: return "gray";
+        case formatMatrix: return "matrix";
+        default: return "undefined format";        
+      }
+  }
+ 
+  iclformat iclTranslateFormat(string sFormat)
+  {
+    if(sFormat.length()<=0)
+      {
+        printf("warning iclTranslateFormatString(string) got \"\"-string\n ");
+        return formatMatrix;
+      }
+    switch(sFormat[0])
+      {
+        case 'r': return formatRGB;
+        case 'h': return formatHLS;
+        case 'l': return formatLAB;
+        case 'y': return formatYUV;
+        case 'g': return formatGray;
+        case 'm': return formatMatrix;
+        default: return formatMatrix;
+      }
+  }
+
   void iclEnsureDepth(ICLBase ** ppoImage, icldepth eDepth)
   {
     if(!*ppoImage)
       {
-        printf("warning iclEnshureDepth got NULL-image pointer \n");
-        return;
+        *ppoImage = iclNew(eDepth,1,1,formatMatrix);
       }
-    if((*ppoImage)->getDepth() == eDepth)
+    if((*ppoImage)->getDepth() != eDepth)
       {
-        return;
-      }
-    if(eDepth == depth8u)
-      {
-        ICL8u *poNewImage = new ICL8u((*ppoImage)->getWidth(),
-                                      (*ppoImage)->getHeight(),
-                                      (*ppoImage)->getFormat(),
-                                      (*ppoImage)->getChannels());
+        ICLBase *poNew = iclNew(eDepth,
+                                (*ppoImage)->getWidth(),
+                                (*ppoImage)->getHeight(),
+                                (*ppoImage)->getFormat(),
+                                (*ppoImage)->getChannels());
+        
         delete *ppoImage;
-        *ppoImage = poNewImage;
+        *ppoImage = poNew;     
       }
-    else
-      {
-        ICL32f *poNewImage = new ICL32f((*ppoImage)->getWidth(),
-                                        (*ppoImage)->getHeight(),
-                                        (*ppoImage)->getFormat(),
-                                        (*ppoImage)->getChannels());
-        delete *ppoImage;
-        *ppoImage = poNewImage;
-      }
-
   }
 
   void iclEnsureCompatible(ICLBase **ppoDst, ICLBase *poSrc)
   {
+    if(!poSrc)
+      {
+        printf("error in iclEnsureCompatible: source image is NULL!\n"); exit(-1);
+      }
     if(!*ppoDst)
       {
-        printf("warning iclEnshureCompatible got NULL-image pointer \n");
-        return;
+        *ppoDst = iclNew(poSrc->getDepth(),
+                         poSrc->getWidth(),
+                         poSrc->getHeight(),
+                         poSrc->getFormat(),
+                         poSrc->getChannels());
       }
     iclEnsureDepth(ppoDst,poSrc->getDepth());
     (*ppoDst)->setNumChannels(poSrc->getChannels());
     (*ppoDst)->setFormat(poSrc->getFormat());
     (*ppoDst)->resize(poSrc->getWidth(),poSrc->getHeight());
   }
-
 }

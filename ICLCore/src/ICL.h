@@ -143,7 +143,10 @@ class ICL : public ICLBase
       @param iChannel channel index
   **/
   inline
-  Type& operator()(int iX, int iY, int iChannel) const;
+  Type& operator()(int iX, int iY, int iChannel) const
+    {
+      return (*m_ppChannels[iChannel])(iX,iY);
+    }
 
   //@}
 

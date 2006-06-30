@@ -18,14 +18,25 @@ It consists of two main classes:
   - type of pixels (see <b>Data-Types</b>)
   - (color)-format (see <b>(Color)-Formats</b>)
   - raw image data
+  - Region of Interest (see <b>Region of Interests</b> (ROI))
+  - [access to IPP-compability functions] (see <b>IPP-Optimization</b>)
 
   It has no public constructors so it has to be used as interface
-  class for the derived template classes ICL<Type>
+  class for the derived template classes ICL<Type>.
+  Most of the functions in the ICLBase class are purely virtual which
+  implies, that they have to be implemented in the derived classes.
 - <b>ICL</b>: The <i>working</i> image class implemented as a template,
   where the datatype of each pixel value is the template parameter.
-  This class provides some additional image information:
+  Internally each ICL<T> object holds a list of so called
+  ICLChannels, which are defined by a class of the same name.
+  The ICL class provides some additional image information and
+  access functions:
   - type-save image data
-  - Region of Interest (see <b>Region of Interests</b> (ROI))
+  - access to single pixel values using the ()-operator
+    
+In addition to the classes ICL and ICLBase, the ICLCore package
+provides some utility functions, that facilitates woking with 
+these classes (see icl -namespace for more details).
   
 @see ICLBase, ICL
 
@@ -38,8 +49,8 @@ which enables the programmer to compose existing ICLChannels
 The <i>composed</i> new ICL-Image will share the 
 image data with the original ICL, so modifications on it 
 will effect as well the original images, as the composed one.
-If it is necessary the image is independent from other images, you
-may call the detach-method, which replaces the image channels with
+If it is necessary that the image is independent from other images, you
+may call the detach-method, which replaces the "shared" image channels with
 new independent ones.
 
 @see ICL, ICLChannel
@@ -100,6 +111,7 @@ adaption are performed:
 */
 
 #include "ICLMacros.h"
+#include <string>
 #ifdef WITH_IPP_OPTIMIZATION
 #include <ipp.h>
 #endif
@@ -162,17 +174,73 @@ namespace icl {
 #endif
   /* {{{ Global functions */
 
+
+  /// creats a new ICLBase by abstacting about the depth parameter
+  /** This function is essention for the abstaction mechanism about 
+      ICL images underlying depth. In many cases you might have an
+      ICLBase*, wich must be initialized with parameters width, height,
+      channel count and - which is the problem - the depth. The
+      default solution is to insert an if statement. Look at the 
+      following Example, that shows the implementation of a class
+      construktor.
+      <pre>
+      class Foo{
+         public:
+         Foo(...,icldepth eDepth,...):
+             poImage(eDepth==depth8u ? new ICL8u(...) : new ICL32f(...)){
+         }
+         private:
+         ICLBase *poImage;         
+      };
+      </pre>
+      This will work, but the "?:"-statement make the code hardly readable.
+      The following code extract will show the advantage of using the iclNew
+      function:
+      <pre>
+      class Foo{
+         public:
+         Foo(...,icldepth eDepth,...):
+             poImage(iclNew(eDepth,...)){
+         }
+         private:
+         ICLBase *poImage;         
+      };
+      The readability of the code is much better.
+      </pre>
+  
+      @param eDepth depth of the image that should be created
+      @param iWidth width of the new image
+      @param iHeight height of the new image
+      @param eFormat format of the new image
+      @param iChannels channel count of the new image. If < 0,
+                       then the channel count associated with 
+                       eFormat is used
+      @return the new ICLBase* with underlying ICL<Type>, where
+              Type is depending on the first parameter eDepth
+  **/
+  ICLBase *iclNew(icldepth eDepth=depth8u, 
+                  int iWidth=1, 
+                  int iHeight=1, 
+                  iclformat eFormat=formatMatrix,
+                  int iChannels = -1);
+
+
+  
   /// ensures that an image has the specified depth
   /** This function will delete the original image pointed by (*ppoImage)
       and create a new one with identical parameters, if the given depth
-      parameter is not the images depth.
+      parameter is not the images depth. If the fiven image pointer
+      (*ppoImage) is NULL, then a new image is created with size 1x1,
+      one channel and specified depth.
       @param ppoImage pointer to the image-pointer
       @param eDepth destination depth of the image
   **/
   void iclEnsureDepth(ICLBase **ppoImage, icldepth eDepth);
 
   /// ensures that two images have the same size, channel count, depth, and format
-  /** @param ppoDst points the destination ICLBase*. If the images depth has to be
+  /** If the given dst image image is 0 than it is created as a clone of
+      of poSrc.
+      @param ppoDst points the destination ICLBase*. If the images depth has to be
                     converted, then a new ICLCore* is created, at (*ppoDst).
       @param poSrc source image. All params of this image are extracted to define
                    the destination parameters for *ppoDst.  
@@ -185,8 +253,26 @@ namespace icl {
   **/
   int iclGetChannelsOfFormat(iclformat eFormat);
 
+
+  /// returns a string representation of an iclformat enum
+  /** @param eFormat iclformat enum which string repr. is asked 
+      @return string representation of eFormat
+  **/
+  string iclTranslateFormat(iclformat eFormat);  
   
-  
+  /// returns an iclformat enum, specified by a string 
+  /** This functions implements the opposite direction to the above function,
+      which means, that:
+      <pre>
+      iclTranslateFormat(iclTranslateFormat(x)) == x
+      </pre>
+      If x is a string or an iclformat enum.
+      @param sFormat string representation of the format 
+                     which should be returned
+      @return iclformat, that corresponds to sFormat
+  **/
+  iclformat iclTranslateFormat(string sFormat);
+
   /// call iclGetDepth<T> inside of an ICL function to get associated Depth as int
   /**
   @return depth associated with the Type value
