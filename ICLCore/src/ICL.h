@@ -345,7 +345,18 @@ class ICL : public ICLBase
     { 
       return (m_ppChannels[iChannel]->getDataBegin());
     }
+  
+  /// Returns a pointer to the end of the channel data
+  /** This method provides
+      direct access to the channel data memory.
+      @param iChannel Channel to get data from
+  **/
+  Type* getDataEnd(int iChannel) const
+    { 
+      return (m_ppChannels[iChannel]->getDataEnd());
+    }
 
+  
   /// return the raw- data pointer of an image channel
   /** This function is inherited from the base class ICLBase
       @param iChannel determines the channel which's dataptr should
