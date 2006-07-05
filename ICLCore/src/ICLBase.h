@@ -144,7 +144,7 @@ namespace icl {
       /** this function is implemented in the ICL-template class
       @see ICL
       **/
-      virtual ICLBase* scaledCopy(ICLBase *poDst, iclscalemode eScaleMode=interpolateNN) const;
+      virtual ICLBase* scaledCopy(ICLBase *poDst, iclscalemode eScaleMode=interpolateNN) const=0;
       //@}
 
       /* }}} */
@@ -275,7 +275,7 @@ namespace icl {
       /// Return a copy of the object with depth 8 bit (IPP-OPTIMIZED)
       /** @see ICL*/
       virtual ICL8u *convertTo8Bit(ICL8u* poDst = NULL) const=0;
-      
+        
       //@}
       //@{ @name [EIF for Region of Interest handling]
       
@@ -384,14 +384,26 @@ namespace icl {
       //@{
       /// sets the format associated with channels of the image
       /**
-      The new format value must be compatible to the channel count.
-      For example formatRGB may is only compatible to 3-channel images.
+      The channel count of the image is set to the channel count
+      asociated with the set format, if they differ.
+      E.g an image with one channel will have 3 channels after
+      a setFormat(formatRGB) - call.
       @param eFormat new format value
       @see getChannelsOfFormat
       **/
       void setFormat(iclformat eFormat);
       //@}
 
+      /* }}} */
+
+      /* {{{ utility functions */
+      //@{ @name utility functions
+      /// prints the image to std-out
+      /** @param sTitle optional title, that can be printed before
+                        printing the image parameters
+      **/
+      void print(string sTitle="image");
+      //@}
       /* }}} */
 
       protected:

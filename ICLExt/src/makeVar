@@ -1,31 +1,17 @@
 #
 #   makeVar
 #
+
 # Don't change anything between the '####' lines!
 ###############################################################################
--include ${_DOT_DOT}makeRoot
-ifneq "${MAKEROOT_DEFINED}" "TRUE"
-  _DOT_DOT:= ../${_DOT_DOT}
-  -include ${_DOT_DOT}makeVar
-endif
+_DOT_DOT:= ../${_DOT_DOT}
+-include ${_DOT_DOT}makeVar
+-include makeDepend
 ###############################################################################
 
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
 
-# This variable sets the inclusion modality for packageVar
-# Values are: DYNAMIC (for the inclusion of shared object) and
-# STATIC (for the inclusion of static libraries)
-AGNI_INHERIT_MODE:= DYNAMIC
-
-# Please include here the inherited projects
-# (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
-
-# Please specify the current version subdivided in:
-#   TARGET_MAJVERSION the major version number (e.g. 1 for version 1.0)
-#   TARGET_MINVERSION the minor version number (e.g. 0 for version 1.0)
-TARGET_MAJVERSION:= 3
-TARGET_MINVERSION:= 0
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -33,7 +19,8 @@ ABS_INCLUDES:= ${ABS_INCLUDES}
 
 # Please add here all the directories with relative path
 # (e.g. -I../MyModule/src) that contain include files needed by the sources.
-REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
+REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
+               -I../src
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
@@ -49,38 +36,23 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 
 # Please add here all the objects with relative path
 # that are needed by the executables.
-REL_OBJECTS:= $(REL_OBJECTS:%=../%)
+REL_OBJECTS:= $(REL_OBJECTS:%=../%) \
+              ../obj/*.o
 
 # Debug flag
 DEBUG:= ${DEBUG}
 
-# Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
+# Compilation definesfor C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES}
 
 # Flags for C compiler
 CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-#CPPDEFINES:= ${CPPDEFINES} 
-CPPDEFINES:=${CPPDEFINES} -DWITH_IPP_OPTIMIZATION
-             
+CPPDEFINES:= ${CPPDEFINES}
 
 # Flags for C++ compiler
-CPPFLAGS:= ${CPPFLAGS} \
-           -O3
+CPPFLAGS:= ${CPPFLAGS}
 
-# Flags for archive
-ARFLAGS:= ${ARFLAGS}
 
-# Flags for static library linker
-LDFLAGS:= ${LDFLAGS}
-
-# Flags for dynamic library linker
-LDDYNFLAGS:= ${LDDYNFLAGS}
-
-# Change the linker to g++
-CMD_LD=g++
-
-#Set the priority level
-DIR_PRIORITY:=ICL
 

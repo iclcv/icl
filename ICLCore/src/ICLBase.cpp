@@ -50,12 +50,24 @@ void ICLBase::setFormat(iclformat eFormat)
   DEBUG_LOG4("setFormat(iclformat)" << this);
   int nChannels = iclGetChannelsOfFormat(eFormat);
   if(nChannels != m_iChannels){
-    ERROR_LOG("incompatible channel count");
+    setNumChannels(nChannels);
   }
   m_eFormat=eFormat;
 }
 
+void ICLBase::print(string sTitle)
+{
+  printf(   " -----------------------------------------\n"
+            "| image: %s\n"
+            "| width: %d, height: %d, channels: %d\n"
+            "| depth: %s, format: %s\n"
+            " -----------------------------------------\n",
+            sTitle.c_str(),
+            getWidth(),getHeight(),getChannels(),
+            getDepth()==depth8u ? "depth8u" : "depth32f",iclTranslateFormat(m_eFormat).c_str()
+        );
 
+}
 
 } //namespace icl
 

@@ -155,8 +155,13 @@ class ICL : public ICLBase
   /* {{{ moving / scaling image data */
   //@{ //@name moving / scaling image data
 
-  /// perform a deep copy into an optional destination image)
-  /** Returns an independent exact copy of the object. 
+  /// perform a deep copy (given destination image is resized on demand)
+  /** Returns an independent exact copy of the object. If the given destination
+      image is not NULL, then deepCopy ensures, that is has a compatible
+      size to this, by resizing destination image on demand. 
+      <b>WARNING:</b> If the destination image has another depth, then this image,
+      the deepCopy will internally call <b>convertTo8Bit</b> or <b>convertTo32Bit</b> 
+      depending on the the images and the destination images icldepth.
       @param poDst Destination image for the copied data 
                    if NULL, then a new image is created and returned
       @return Pointer to new independent ICL object
@@ -171,6 +176,9 @@ class ICL : public ICLBase
       If the count of channels of this image and the destination image
       do not match, then the scaling operation is only performed
       on the minimum of both images channel counts.
+      <b>WARNING:</b> If the destination image has another depth than the image,
+      then internally a temporary buffer is created, to scale and convert the
+      image in two steps. This will hardly <b>slow down performace</b>.
       @param poDst destination image (if NULL) than it is created new with
                    with identical size of this image.
       @param eScaleMode defines the interpolation mode, that is used for the scaling
@@ -280,13 +288,17 @@ class ICL : public ICLBase
   //@{ @name type conversion
   
   /// Return a copy of the object with depth 32 bit. (IPP-OPTIMIZED)
-  /** @param poDst destination image (if NULL, then a new image is created) 
+  /** If the given destination image poDst is not NULL, than it's size is
+      adapted to the images size on demand.
+      @param poDst destination image (if NULL, then a new image is created) 
       @return Copy of the object with depth 32 bit 
   **/
   virtual ICL32f *convertTo32Bit(ICL32f* poDst = NULL) const ;
   
   /// Return a copy of the object with depth 8 bit (IPP-OPTIMIZED)
-  /** Waring: Information may be lost!
+  /** <b>Waring: Information may be lost!</b>
+      If the given destination image poDst is not NULL, than it's size is
+      adapted to the images size on demand.
       @param poDst destination image (if NULL, then a new image is created) 
       @return Copy of the object with depth 8 bit 
   **/
@@ -329,12 +341,12 @@ class ICL : public ICLBase
   /// Returns max pixel value of channel iChannel (IPP-OPTIMIZED)
   /** @param iChannel Index of channel
   **/
-  inline Type getMax(int iChannel) const;
+  Type getMax(int iChannel) const;
   
   /// Returns min pixel value of channel iChannel (IPP-OPTIMIZED)
   /** @param iChannel Index of channel 
   **/
-  inline Type getMin(int iChannel) const;
+  Type getMin(int iChannel) const;
   
   /// Returns pointer to the specified channel data
   /** This method provides

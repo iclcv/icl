@@ -143,27 +143,21 @@ ICL<Type>::deepCopy(ICLBase* poDst) const
   if (poDst == NULL) 
   {
     poDst = new ICL<Type> (*this);
+    poDst->detach();
+    return poDst;
   } 
   else 
   {
-    if(!poDst->isEqual(getWidth(),getHeight(),getChannels()))
-    {
-      printf("error in deep copy! image size or channel count is different!\n");
-      return poDst;
-    }
+    poDst->renew(m_iWidth,m_iHeight,m_iChannels);
+    poDst->setFormat(m_eFormat);
+
     if(poDst->getDepth() == getDepth())
       {
-        poDst->setNumChannels(0);
-        if(getDepth() == depth8u)
+        for(int c=0;c<m_iChannels;c++)
           {
-            poDst->asIcl8u()->append(this->asIcl8u());
+            memcpy(poDst->getDataPtr(c),getDataPtr(c),m_iWidth*m_iHeight*sizeof(Type));
           }
-        else
-          {
-            poDst->asIcl32f()->append(this->asIcl32f());
-          }
-        poDst->setFormat(getFormat());
-       
+        return poDst;
       }
     else
       {
@@ -178,11 +172,6 @@ ICL<Type>::deepCopy(ICLBase* poDst) const
       }
   }
   
-  //---- Make ICL independent ----
-  poDst->detach();
-   
-  //---- return ----
-  return poDst;
 }
 
 //--------------------------------------------------------------------------
@@ -250,14 +239,34 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
       switch(eScaleMode) 
         {
           case interpolateNN: 
-            for(int x=0;x<poDst->getWidth();x++)
-              for(int y=0;y<poDst->getHeight();y++)
-                (*poDst)(x,y,c)=(*this)((int)rint(x*fXStep),(int)rint(y*fYStep),c);
+            if(poDst->getDepth()==depth8u){
+              for(int x=0;x<poDst->getWidth();x++){
+                for(int y=0;y<poDst->getHeight();y++){
+                  (*(poDst->asIcl8u()))(x,y,c)=static_cast<iclbyte>((*this)((int)rint(x*fXStep),(int)rint(y*fYStep),c));
+                }
+              }
+            }else{
+              for(int x=0;x<poDst->getWidth();x++){
+                for(int y=0;y<poDst->getHeight();y++){
+                  (*(poDst->asIcl32f()))(x,y,c)=static_cast<iclfloat>((*this)((int)rint(x*fXStep),(int)rint(y*fYStep),c));
+                }
+              }
+            }
             break;
           case interpolateLIN: 
-            for(int x=0;x<poDst->getWidth();x++)
-              for(int y=0;y<poDst->getHeight();y++)
-                (*poDst)(x,y,c)=interpolate((fXStep/2)+ x*fXStep,(fYStep/2)+y*fYStep,c);
+            if(poDst->getDepth()==depth8u){
+              for(int x=0;x<poDst->getWidth();x++){
+                for(int y=0;y<poDst->getHeight();y++){
+                  (*(poDst->asIcl8u()))(x,y,c)=static_cast<iclbyte>(interpolate((fXStep/2)+ x*fXStep,(fYStep/2)+y*fYStep,c));
+                }
+              }
+            }else{
+              for(int x=0;x<poDst->getWidth();x++){
+                for(int y=0;y<poDst->getHeight();y++){
+                  (*(poDst->asIcl32f()))(x,y,c)=static_cast<iclfloat>(interpolate((fXStep/2)+ x*fXStep,(fYStep/2)+y*fYStep,c));
+                }
+              }
+            }
             break;
           case interpolateRA: 
             ERROR_LOG("not yet implemented for Region Average");
@@ -491,6 +500,8 @@ ICL<Type>::resize(int iWidth,int iHeight)
     {
       m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight));
     }
+  m_iWidth = iWidth;
+  m_iHeight = iHeight;
 }
 
 //----------------------------------------------------------------------------
@@ -500,7 +511,6 @@ ICL<Type>::setNumChannels(int iNumNewChannels)
 {
   //---- Log Message ----
   DEBUG_LOG4("setNumChannels(int)"); 
-
    
   //---- reduce number of channels ----
   if(iNumNewChannels < m_iChannels)
@@ -566,6 +576,9 @@ ICL<Type>::renew(int iNewWidth, int iNewHeight, int iNewNumChannels)
       m_ppChannels[i] = 
         ICLChannelPtr (new ICLChannel<Type>(iNewWidth,iNewHeight));
     }
+    m_iWidth = iNewWidth;
+    m_iHeight = iNewHeight;
+    m_iChannels = iNewNumChannels;
   }
   else
   {
@@ -600,7 +613,12 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
   //---- Log Message ----
   DEBUG_LOG4("convertTo32Bit()");
   
-  if(!poDst)poDst = new ICL32f(getWidth(),getHeight(),getFormat(),getChannels());
+  if(!poDst){
+    poDst = new ICL32f(getWidth(),getHeight(),getFormat(),getChannels());
+  }else{
+    poDst->renew(m_iWidth,m_iHeight,m_iChannels);
+    poDst->setFormat(m_eFormat);
+  }
   // not neccesary ! poDst->detach();
   
   if(m_eDepth == depth8u)
@@ -622,7 +640,7 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
     }
   else
     {
-      return asIcl32f()->deepCopy()->asIcl32f();
+      return asIcl32f()->deepCopy(poDst)->asIcl32f();
     }  
 }
 
@@ -634,7 +652,12 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
   //---- Log Message ----
   DEBUG_LOG4("convertTo8Bit()");
   
-  if(!poDst)poDst = new ICL8u(getWidth(),getHeight(),getFormat(),getChannels());
+  if(!poDst){
+    poDst = new ICL8u(getWidth(),getHeight(),getFormat(),getChannels());
+  }else{
+    poDst->renew(m_iWidth,m_iHeight,m_iChannels);
+    poDst->setFormat(m_eFormat);
+  }
   // not neccesary ! poDst->detach();
   if(m_eDepth == depth32f)
     {
@@ -655,7 +678,7 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
     }
   else
     {
-      return asIcl8u()->deepCopy()->asIcl8u();
+      return asIcl8u()->deepCopy(poDst)->asIcl8u();
     }  
  
 }
@@ -722,12 +745,16 @@ ICL<Type>::getROI(int &riX, int &riY, int &riWidth, int &riHeight) const
   //---- Log Message ----
   DEBUG_LOG4("getROI(int&,int&,int&,int&)");
   
-  for(int c=0;c<m_iChannels;c++)
+  if(m_iChannels > 0)
     {
-      riX = m_ppChannels[c]->getRoiXOffset();
-      riY = m_ppChannels[c]->getRoiYOffset();
-      riWidth = m_ppChannels[c]->getRoiWidth();
-      riHeight = m_ppChannels[c]->getRoiHeight();
+      riX = m_ppChannels[0]->getRoiXOffset();
+      riY = m_ppChannels[0]->getRoiYOffset();
+      riWidth = m_ppChannels[0]->getRoiWidth();
+      riHeight = m_ppChannels[0]->getRoiHeight();
+    }
+  else
+    {
+      ERROR_LOG("getROI channel count is 0 \n");
     }
 }
 
@@ -740,10 +767,14 @@ ICL<Type>::getROIOffset(int &riX, int &riY) const
   //---- Log Message ----
   DEBUG_LOG4("getROIOffset(int&,int&)");
 
-  for(int c=0;c<m_iChannels;c++)
+  if(m_iChannels > 0)
     {
-      riX = m_ppChannels[c]->getRoiXOffset();
-      riY = m_ppChannels[c]->getRoiYOffset();
+      riX = m_ppChannels[0]->getRoiXOffset();
+      riY = m_ppChannels[0]->getRoiYOffset();
+    }
+  else
+    {
+      ERROR_LOG("getROIOffset channel count is 0 \n");
     }
 }
 // ---------------------------------------------------------------------
@@ -756,10 +787,14 @@ ICL<Type>::getROISize(int &riWidth, int &riHeight) const
   //---- Log Message ----
   DEBUG_LOG4("getROISize(int&,int&)");
   
-  for(int c=0;c<m_iChannels;c++)
+  if(m_iChannels > 0)
     {
-      riWidth = m_ppChannels[c]->getRoiWidth();
-      riHeight = m_ppChannels[c]->getRoiHeight();
+      riWidth = m_ppChannels[0]->getRoiWidth();
+      riHeight = m_ppChannels[0]->getRoiHeight();
+    }
+  else
+    {
+      ERROR_LOG("getROISize channel count is 0 \n");
     }
 }
 
@@ -785,6 +820,45 @@ void ICL<Type>::clear(int iChannel, Type tValue)
 
 // }}}
   
+// {{{  Setter Function:
+  
+template<class Type> 
+void 
+ICL<Type>::
+setROI(int iX, int iY,int iWidth,int iHeight)
+{
+  for(int i=0;i<m_iChannels;i++)
+    {
+      m_ppChannels[i]->setImageRoi(iWidth,iHeight);
+      m_ppChannels[i]->setImageRoiOffset(iX,iY);
+    }
+}
+  
+template<class Type> 
+void 
+ICL<Type>::
+setROIOffset(int iX, int iY)
+{
+  for(int i=0;i<m_iChannels;i++)
+    {
+      m_ppChannels[i]->setImageRoiOffset(iX,iY);
+    }
+}
+  
+template<class Type> 
+void 
+ICL<Type>::
+setROISize(int iWidth, int iHeight)
+{
+  for(int i=0;i<m_iChannels;i++)
+    {
+      m_ppChannels[i]->setImageRoi(iWidth,iHeight);
+    }
+}
+  
+
+// }}}
+
 // {{{  Auxillary and basic image manipulation functions
 
 template<class Type>
