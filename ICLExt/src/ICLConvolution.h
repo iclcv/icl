@@ -56,7 +56,7 @@ namespace icl{
   /** This function works essentially like the above function
       @param poSrc source image
       @param poDst destination image
-      @param pfMask convolution kernel as iclbyte* (dimension iMaskW*iMaskH)
+      @param pucMask convolution kernel as iclbyte* (dimension iMaskW*iMaskH)
       @param iMaskW width of the convolution kernel
       @param iMaskH height of the convolution kernel
   */

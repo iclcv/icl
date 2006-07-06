@@ -122,7 +122,7 @@ namespace icl{
       (++m)%=poMask->getChannels();
     }
     
-    icl_morph_roi_intern(poSrc,-iMaskW/2,-iMaskH/2);
+    icl_morph_roi_intern(poSrc,iMaskW/2,iMaskH/2);
 #else
   printf("iclConv is just supported if WITH_IPP_OPTIMIZATION is defined \n");
 #endif

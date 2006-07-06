@@ -17,7 +17,7 @@ ICLBase::ICLBase(int iWidth,
                  int iHeight, 
                  int iChannels, 
                  icldepth eDepth):
-  m_iWidth(iWidth),m_iHeight(iHeight),m_iChannels(iChannels),m_eDepth(eDepth)
+  m_iWidth(iWidth),m_iHeight(iHeight),m_iChannels(iChannels),m_eFormat(formatMatrix),m_eDepth(eDepth)
 {
   DEBUG_LOG4("Konstruktor: ICLBase() -> " << this);
   
@@ -57,14 +57,19 @@ void ICLBase::setFormat(iclformat eFormat)
 
 void ICLBase::print(string sTitle)
 {
+  int iX,iY,iW,iH;
+  getROI(iX,iY,iW,iH);
   printf(   " -----------------------------------------\n"
             "| image: %s\n"
             "| width: %d, height: %d, channels: %d\n"
             "| depth: %s, format: %s\n"
+            "| ROI: x: %d, y: %d, w: %d, h: %d \n"
             " -----------------------------------------\n",
             sTitle.c_str(),
             getWidth(),getHeight(),getChannels(),
-            getDepth()==depth8u ? "depth8u" : "depth32f",iclTranslateFormat(m_eFormat).c_str()
+            getDepth()==depth8u ? "depth8u" : "depth32f",iclTranslateFormat(m_eFormat).c_str(),
+            iX,iY,iW,iH
+            
         );
 
 }

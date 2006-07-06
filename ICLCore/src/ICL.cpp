@@ -26,7 +26,10 @@ ICL<Type>::ICL(int iWidth,int iHeight,int iChannels):
   
   //---- ICL Channel memory allocation ----
   for(int i=0;i<m_iChannels;i++)
-    m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight));
+    {
+      m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight));
+    }
+  m_eFormat = formatMatrix;
 } 
 
 //----------------------------------------------------------------------------
@@ -205,10 +208,10 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
       return poDst;
     }    
   
-  int iNChannels = m_iChannels < poDst->getChannels() ? m_iChannels : poDst->getChannels();
+  poDst->setNumChannels( getChannels() );
   
 #ifdef WITH_IPP_OPTIMIZATION
-  for(int c=0;c<iNChannels;c++)
+  for(int c=0;c<m_iChannels;c++)
     {
       if(getDepth()==depth8u)
         {
@@ -233,7 +236,7 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
   float fYStep = ((float)getHeight()-1)/(float)(poDst->getHeight());
 
   //---- scale ICL ----
-  for(int c=0;c<iNChannels;c++)
+  for(int c=0;c<m_iChannels;c++)
     {
       //---- Take the correct scaling method ----
       switch(eScaleMode) 

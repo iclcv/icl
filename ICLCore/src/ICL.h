@@ -174,8 +174,8 @@ class ICL : public ICLBase
       is taken to calculate a scaling factor to scale the image into
       the destination. 
       If the count of channels of this image and the destination image
-      do not match, then the scaling operation is only performed
-      on the minimum of both images channel counts.
+      do not match, then count of destination image channels will be
+      adapted to this' count of image channels.
       <b>WARNING:</b> If the destination image has another depth than the image,
       then internally a temporary buffer is created, to scale and convert the
       image in two steps. This will hardly <b>slow down performace</b>.

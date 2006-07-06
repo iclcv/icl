@@ -22,6 +22,8 @@ ICLChannel<Type>::ICLChannel(int iWidth, int iHeight, Type *ptData)
   //---- Variable initialisation ----
   m_oInfo.setSize(iWidth, iHeight);
   m_oInfo.setRoi(iWidth, iHeight);
+  m_oInfo.setRoiOffset(0,0);
+  
   
   //---- Allocate memory ----
   m_ptData = ptData ? ptData : new Type[m_oInfo.getDim()];
@@ -47,6 +49,7 @@ ICLChannel<Type>::ICLChannel(const ICLChannel<Type>& tSrc)
                   tSrc.m_oInfo.getHeight());
   m_oInfo.setRoi(tSrc.m_oInfo.getWidth(), 
                  tSrc.m_oInfo.getHeight());
+  m_oInfo.setRoiOffset(tSrc.m_oInfo.getRoiXOffset(),tSrc.m_oInfo.getRoiYOffset());
   
   //---- Alloccate memory (if needed) ----
   m_ptData = new Type[m_oInfo.getDim()];
@@ -139,6 +142,7 @@ void ICLChannel<Type>::resize(int iNewWidth, int iNewHeight)
     //---- set new size ----
     m_oInfo.setSize(iNewWidth, iNewHeight);
     m_oInfo.setRoi(iNewWidth, iNewHeight);
+    m_oInfo.setRoiOffset(0,0);
     
     //---- Allocate memory -----
     delete [] m_ptData;

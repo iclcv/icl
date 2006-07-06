@@ -19,7 +19,7 @@ All Formats are suppored in the two ICL-dephts float (32-Bit) and unsigned char 
 ///@name Color Conversion functions
 //@{
 
-/// Color-Conversion function 
+/// Color-Conversion function
 /**
 The image formats are not checked, so an error will occur, if poDst or
 poSrc have not compatible formats.
