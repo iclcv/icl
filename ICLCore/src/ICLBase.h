@@ -17,7 +17,10 @@ AG Neuroinformatik
 // That are not accessing the underlying data type
 // of the derived ICL-Template-Class are included
 // as abstract function in the base class
-#define WITH_EXPANDED_BASE_INTERFACE
+
+// comment in to ensure usage of expanded base interface
+// the flag may defined as compiler option also
+//#define WITH_EXPANDED_BASE_INTERFACE
 
 using namespace std;
 

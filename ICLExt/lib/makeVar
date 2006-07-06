@@ -4,23 +4,17 @@
 
 # Don't change anything between the '####' lines!
 ###############################################################################
--include ${_DOT_DOT}makeRoot
-ifneq "${MAKEROOT_DEFINED}" "TRUE"
-  _DOT_DOT:= ../${_DOT_DOT}
-  -include ${_DOT_DOT}makeVar
-endif
+_DOT_DOT:=../${_DOT_DOT}
+-include ${_DOT_DOT}makeVar
 ###############################################################################
 
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
 
-# This variable sets the inclusion modality for packageVar
-# Values are: DYNAMIC (for the inclusion of shared object) and
-# STATIC (for the inclusion of static libraries)
-AGNI_INHERIT_MODE:= DYNAMIC
 
-# Please include here the inherited projects
-# (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
+# Please specify here the library name (without "lib" prefix
+# and ".a"/".so"/".lib" extension)
+TARGET_LIB:= ${PROJECT_NAME}
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -44,12 +38,13 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 
 # Please add here all the objects with relative path
 # that are needed by the executables.
-REL_OBJECTS:= $(REL_OBJECTS:%=../%)
+REL_OBJECTS:= $(REL_OBJECTS:%=../%) \
+              ../obj/*.o
 
 # Debug flag
 DEBUG:= ${DEBUG}
 
-# Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
+# Compilation defines (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES}
 
 # Flags for C compiler
@@ -59,19 +54,13 @@ CFLAGS:= ${CFLAGS}
 CPPDEFINES:= ${CPPDEFINES}
 
 # Flags for C++ compiler
-CPPFLAGS:= ${CPPFLAGS} -Wno-long-long
+CPPFLAGS:= ${CPPFLAGS}
 
 # Flags for archive
 ARFLAGS:= ${ARFLAGS}
 
-# Flags for static library linker
-LDFLAGS:= ${LDFLAGS}
-
-# Flags for dynamic library linker
+# Flags for static dynamic linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
-
-
-
 
 
 
