@@ -47,6 +47,8 @@ namespace icl{
       }else{
         poNextSrcImage->scaledCopy(poDst);
       }      
+    }else if(iNeedColorConversion){
+      iclcc(poDst,poNextSrcImage);
     }
   }
 

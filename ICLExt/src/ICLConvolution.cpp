@@ -70,6 +70,7 @@ namespace icl{
                                pfBuf,
                                poMask->ippRoiSize(),
                                oAnchor);
+                
             delete pfBuf;
           }
       }
