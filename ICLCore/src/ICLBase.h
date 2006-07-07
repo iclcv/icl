@@ -12,17 +12,6 @@ AG Neuroinformatik
     
 #include "ICLCore.h"
 
-// **NEW**: this is out-dated ! 
-// define WITH_EXPANDED_BASE_INTERFACE to make the
-// ICLBase class more powerful. All functions, that
-// That are not accessing the underlying data type
-// of the derived ICL-Template-Class are included
-// as abstract function in the base class
-
-// comment in to ensure usage of expanded base interface
-// the flag may defined as compiler option also
-//#define WITH_EXPANDED_BASE_INTERFACE
-
 using namespace std;
 
 namespace icl {
@@ -59,15 +48,12 @@ namespace icl {
   \section EIF Expanded Interface Functions [EIF]
   A new feature of the ICLBase class are the so called 
   Expanded Interface Functions or short "EIF". 
-  <b>**NEW**:</b> Former the ICLBase had to be compiled
-  with WITH_EXPANDED_BASE_INTERFACE defined, to achieve,
-  that all functions of the ICL class, which's 
+  <b>**NEW**:</b> To achieve,
+  that all functions of the ICL class, which 
   interfaces are independed from the depth that is used,
   are included as "abstract" functions into the ICLBase
-  class interface. <b>This is now the default, as it 
-  transpired, that working without the EIF functions 
-  had to much disadvantages.</b> 
-  So <b>now</b> all basic image operations like resizing
+  class interface.
+  So all basic image operations like resizing
   or changing the channel count, can be performed 
   without any knowledge of the underlying depth.
   <h3>Example</h3>
@@ -166,7 +152,7 @@ namespace icl {
       if the argument iChannel is defined, then the width of
       a specific channel is returned. This allows derived classes
       to contain channels with different resolutions
-      @param iChannel determines the channel which's width should be
+      @param iChannel determines the channel which width should be
       returned.
       @return width of the image/selected channel
       **/
@@ -180,7 +166,7 @@ namespace icl {
       /** if the argument iChannel is defined, then the width of
           a specific channel is returned. This allows derived classes
           to contain channels with different resolutions
-          @param iChannel determines the channel which's height should be
+          @param iChannel determines the channel which height should be
                           returned.
           @return height of the image/selected channel
       **/
@@ -229,7 +215,7 @@ namespace icl {
       **/
       int isEqual(int iNewWidth, int iNewHeight, int iNewNumChannels) const
         {
-          return m_iWidth == iNewWidth && m_iHeight == iNewHeight && m_iChannels == iNewNumChannels;
+          return (m_iWidth == iNewWidth) && (m_iHeight == iNewHeight) && (m_iChannels == iNewNumChannels);
           
         }
       
@@ -239,7 +225,7 @@ namespace icl {
 
       /* {{{ abstract functions (implemented in the ICL class)*/
 
-      //@{ @name [EIF for data access] (now default)
+      //@{ @name [EIF for data access]
       
       /// returns a pointer to first data element
       /** @see ICL*/
@@ -272,7 +258,7 @@ namespace icl {
       virtual void resize(int iNewWidth, int iNewHeight)=0;
       
       //@}
-      //@{ @name [EIF for type conversion] (now default)
+      //@{ @name [EIF for type conversion]
 
       /// Return a copy of the object with depth 32 bit. (IPP-OPTIMIZED)
       /** @see ICL*/
@@ -283,7 +269,7 @@ namespace icl {
       virtual ICL8u *convertTo8Bit(ICL8u* poDst = NULL) const=0;
         
       //@}
-      //@{ @name [EIF for Region of Interest handling] now default
+      //@{ @name [EIF for Region of Interest handling]
       
       /// sets the ROI (region of interests) to a specified rect
       /** @see ICL*/
@@ -310,7 +296,7 @@ namespace icl {
       virtual void getROISize(int &riWidth, int &riHeight) const=0;
 
       //@}
-      //@{ @name [EIF for low basic image processing routines] (now default)
+      //@{ @name [EIF for low basic image processing routines]
       
       /// perform a scaling operation of the images (keeping the data) (IPP-OPTIMIZED)
       /** @see ICL*/

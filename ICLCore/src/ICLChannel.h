@@ -202,7 +202,7 @@ class ICLChannel
       - if ptData is NULL (default), then the constructor allocates memory for 
         an image channel of the specified width and height. The memory will
         be freed in the ICLChannels constructor        
-      - else ptData (not NULL) is used as forign data, so ptData has to 
+      - else ptData (not NULL) is used as foreign data, so ptData has to 
         be of size iWidth*iHeight, and it must not be deleted as long as
         the image stays valid. In this case, internally a flag is set,
         that indicates that the memory is not owned by this channel, so
@@ -242,55 +242,32 @@ class ICLChannel
   //@}
   /* }}} */
 
-  /* {{{ Set functions: */
-  //@{ @name setter functions
-  //--------------------------------------------------------------------------
-  /** Assigns a new value to the pixel at the specified position.
-      @param iX x-coordinate of the pixel
-      @param iY y-coordinate of the pixel
-      @param tValue New pixel value at position
-  **/
-  /*
-  void setPixel(int iX, int iY, Type tValue)
-  {
-  //---- Set pixel to value ----
-  (m_pptRow[iY])[iX] = tValue;
-  }
-  */
-  //--------------------------------------------------------------------------
-  /** Copies data from pSource to row iRow.
-      @param pSrc An STL vector with the src data
-      @param iRow Index of row
-  **/
-  /*
-  void setRowData(vector<Type> pSrc,int iRow)
-  {
-  //---- Copy ----
-  std::copy(pSrc.begin(), pSrc.end(), getRowPtr(iRow));
-  } 
-  */
-  //@}
-/* }}} */
+  /* {{{ setter functions */
 
-  /* {{{ Get functions: */
+  /// Sets the channel roi to the new roi-width and roi-height.
+  /** @param iNewRoiWidth New roi-width
+      @param iNewRoiHeight New roi-height
+  **/
+  void setImageRoi(int iNewRoiWidth, int iNewRoiHeight)
+    {
+      m_oInfo.setRoi(iNewRoiWidth, iNewRoiHeight);
+    }
+  
+  /// Sets the channel roi to the new roi-width and roi-height.
+  /** 
+      @param iXOffset The x-psoition 
+      @param iYOffset The y-position
+  **/
+  void setImageRoiOffset(int iXOffset, int iYOffset)
+    {
+      m_oInfo.setRoiOffset(iXOffset, iYOffset);
+    }
+
+/* }}} */
+  
+  /* {{{ getter functions: */
 
   //@{ @name getter functions
-  //--------------------------------------------------------------------------
-  /** Return the value of the pixel at the position (x,y).
-      @param iX x-coordinate of the pixel
-      @param iY y-coordinate of the pixel
-      @return Value at pixel position
-  **/
-  /*
-  Type getPixel(int iX, int iY) const
-  {
-  //---- Return pixel value at position ----
-  return (m_pptRow[iY])[iX];
-  }
-  */
-
-
-
   /// Returns minimal pixel value
   /** @return Minimal pixel value
   **/
@@ -301,12 +278,6 @@ class ICLChannel
   **/
   Type getMax() const; 
 
-  //-------------------------------------------------------------------------- 
-  /** Return pointer of the selected row.
-      @param iRow Arg index of row
-  **/
-  //Type* getRowPtr(int iRow) const {return m_pptRow[iRow];}
-  
   /// Return the pointer to the begin of the data. 
   /** @return The beginning of the data vector 
   **/
@@ -354,11 +325,7 @@ class ICLChannel
 
   //@}
   /* }}} */ 
-  
-
-
-
-  
+    
   /* {{{ basic channel functions: */
 
   //@{ @name manipulation functions
@@ -377,25 +344,6 @@ class ICLChannel
   **/
   void resize(int iNewWidth, int iNewHeight);
 
-  /// Sets the channel roi to the new roi-width and roi-height.
-  /** @param iNewRoiWidth New roi-width
-      @param iNewRoiHeight New roi-height
-  **/
-  void setImageRoi(int iNewRoiWidth, int iNewRoiHeight)
-    {
-      m_oInfo.setRoi(iNewRoiWidth, iNewRoiHeight);
-    }
-  
-  /// Sets the channel roi to the new roi-width and roi-height.
-  /** 
-      @param iXOffset The x-psoition 
-      @param iYOffset The y-position
-  **/
-  void setImageRoiOffset(int iXOffset, int iYOffset)
-    {
-      m_oInfo.setRoiOffset(iXOffset, iYOffset);
-    }
-  
   /// Scales each pixel value with scaleFactor.
   /** Scales each pixel value with scaleFactor.
       @param scaleFactor

@@ -24,11 +24,10 @@ ICLChannel<Type>::ICLChannel(int iWidth, int iHeight, Type *ptData)
   m_oInfo.setRoi(iWidth, iHeight);
   m_oInfo.setRoiOffset(0,0);
   
-  
   //---- Allocate memory ----
   m_ptData = ptData ? ptData : new Type[m_oInfo.getDim()];
 
-  //---- Enshure data will be deleted ----
+  //---- Ensure data will be deleted ----
   m_bDeleteData = ptData ? 1 : 0;
 
   //---- Set all pixel to zero ----
@@ -49,12 +48,13 @@ ICLChannel<Type>::ICLChannel(const ICLChannel<Type>& tSrc)
                   tSrc.m_oInfo.getHeight());
   m_oInfo.setRoi(tSrc.m_oInfo.getWidth(), 
                  tSrc.m_oInfo.getHeight());
-  m_oInfo.setRoiOffset(tSrc.m_oInfo.getRoiXOffset(),tSrc.m_oInfo.getRoiYOffset());
+  m_oInfo.setRoiOffset(tSrc.m_oInfo.getRoiXOffset(),
+                       tSrc.m_oInfo.getRoiYOffset());
   
   //---- Alloccate memory (if needed) ----
   m_ptData = new Type[m_oInfo.getDim()];
 
-  //---- Enshure data will be deleted ----
+  //---- Ensure data will be deleted ----
   m_bDeleteData = 1;
    
   //---- Copy data from source channel----
@@ -169,7 +169,6 @@ void ICLChannel<Type>::scaleRange(Type scaleFactor)
           (*this)(x,y)*=scaleFactor;
         }
     }
-
 }
 
 //--------------------------------------------------------------------------
@@ -180,7 +179,7 @@ void ICLChannel<Type>::scaleRange(float fNewMin,
                                   float fMax)
 {
   //---- Log Message ----
-  DEBUG_LOG3("scaleRange(Type, Type, Type, Type");
+  DEBUG_LOG3("scaleRange(float, float, float, float");
   
   float fScale  = (fNewMax - fNewMin) / (fMax - fMin);
   float fShift  = (fMax * fNewMin - fMin * fNewMax) / (fMax - fMin);

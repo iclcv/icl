@@ -172,8 +172,9 @@ namespace icl {
   };
 
 #endif
-  /* {{{ Global functions */
 
+
+/* {{{ Global functions */
 
   /// creats a new ICLBase by abstacting about the depth parameter
   /** This function is essention for the abstaction mechanism about 
@@ -295,5 +296,7 @@ namespace icl {
   }
   
 }
+
+/* }}} */
 
 #endif

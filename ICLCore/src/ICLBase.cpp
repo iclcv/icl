@@ -19,8 +19,7 @@ ICLBase::ICLBase(int iWidth,
                  icldepth eDepth):
   m_iWidth(iWidth),m_iHeight(iHeight),m_iChannels(iChannels),m_eFormat(formatMatrix),m_eDepth(eDepth)
 {
-  DEBUG_LOG4("Konstruktor: ICLBase() -> " << this);
-  
+  DEBUG_LOG4("Konstruktor: ICLBase() -> " << this); 
 }
 
 ICLBase::ICLBase(int iWidth, 
@@ -32,8 +31,7 @@ ICLBase::ICLBase(int iWidth,
   m_iChannels((iChannels < 0) ? iclGetChannelsOfFormat(eFormat) : iChannels),
   m_eFormat(eFormat),m_eDepth(eDepth)
 {
-  DEBUG_LOG4("Konstruktor: ICLBase() -> " << this);
-  
+  DEBUG_LOG4("Konstruktor: ICLBase() -> " << this); 
 }
 
 
@@ -45,6 +43,8 @@ ICLBase::~ICLBase()
 
 // }}} 
 
+// {{{ setter functions
+
 void ICLBase::setFormat(iclformat eFormat)
 {
   DEBUG_LOG4("setFormat(iclformat)" << this);
@@ -54,6 +54,10 @@ void ICLBase::setFormat(iclformat eFormat)
   }
   m_eFormat=eFormat;
 }
+
+// }}}
+
+// {{{ utillity functions
 
 void ICLBase::print(string sTitle)
 {
@@ -71,8 +75,9 @@ void ICLBase::print(string sTitle)
             iX,iY,iW,iH
             
         );
-
 }
+
+// }}}
 
 } //namespace icl
 

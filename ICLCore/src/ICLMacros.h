@@ -5,19 +5,6 @@
 
 using namespace std;
 
-// overhead !
-//#define ICL_TRUE 1
-//#define ICL_FALSE 0
-
-// move to the output-routines ! 
-//#define IMAGETYPE_PGM 0
-//#define IMAGETYPE_PPM 1
-//#define IMAGETYPE_ICL 2
-
-// ok, but not used!
-//#define ICL_SELECT_ALL -1
-
-  
 /* {{{ Error log */
 
 #define ERROR_LOG(x) \
@@ -27,9 +14,9 @@ using namespace std;
 
 /* {{{ Debug Level */
 
-//---- The following DebugMessage can be activated by defining DEBUGLEVEL_1..5
+//---- The following DebugMessage can be activated by defining DEBUGLEVEL_{1..5}
 //---- Debug Level 1 ----
-#if (defined(DEBUGLEVEL_1) || defined(DEBUGLEVEL_2) || defined (DEBUGLEVEL_3) ||     defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5)) 
+#if (defined(DEBUGLEVEL_1) || defined(DEBUGLEVEL_2) || defined (DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5)) 
 #define DEBUG_LOG1(x) \
 { cerr << "[" __FILE__ ":" << __LINE__ << "] " << x << "\n" << ends; } 
 #else
@@ -37,7 +24,7 @@ using namespace std;
 #endif // DEBUGLEVEL 1
 
 //---- Debug Level 2 ----
-#if (defined(DEBUGLEVEL_2) || defined(DEBUGLEVEL_3) ||                               defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5))
+#if (defined(DEBUGLEVEL_2) || defined(DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5))
 #define DEBUG_LOG2(x) \
 { cerr << "[" __FILE__ ":" << __LINE__ << "] " << x << "\n" << ends; } 
 #else

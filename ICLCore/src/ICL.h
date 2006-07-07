@@ -36,7 +36,7 @@ class ICL : public ICLBase
   /// internally used type for the channel vector
   typedef typename ICLChannel<Type>::AutoPtr ICLChannelPtr;
   
-  /// internal used storage for the image channels
+  /// internally used storage for the image channels
   vector<ICLChannelPtr> m_ppChannels;
   
   /* {{{ Auxillary function */
@@ -69,13 +69,6 @@ class ICL : public ICLBase
   **/
   ICL(int iWidth=1, int iHeight=1, int iChannels=1);
  
-  /// Creates an image with specified number of channels and size.    
-  /** the format of the image will be set to "iclMatrix"
-      @param iWidth Width of image
-      @param iHeight Height of image
-      @param iChannels Number of Channels 
-  **/
-  
   /// Creates an image with specified size, number of channels and format
   /** @param iWidth width of the image
       @param iHeight height of the image
@@ -170,7 +163,7 @@ class ICL : public ICLBase
 
   /// returns a scaled copy of the image data (scaling on demand) (IPP-OPTIMIZED)
   /** the function performs a deep copy of the image data
-      into another image. If the given image is not NULL, it's size
+      into another image. If the given image is not NULL, its size
       is taken to calculate a scaling factor to scale the image into
       the destination. 
       If the count of channels of this image and the destination image
@@ -180,7 +173,7 @@ class ICL : public ICLBase
       then internally a temporary buffer is created, to scale and convert the
       image in two steps. This will hardly <b>slow down performace</b>.
       @param poDst destination image (if NULL) than it is created new with
-                   with identical size of this image.
+                   identical size of this image.
       @param eScaleMode defines the interpolation mode, that is used for the scaling
                         operation.
                         possible modes are:
@@ -199,8 +192,6 @@ class ICL : public ICLBase
   /* {{{ class organization / channel management */
 
   //@{ //@name organization and channel management
-
-  
   
   /// Makes the image channels inside the ICL independent from other ICL.
   /** @param iIndex index of the channel, that should be detached.
@@ -254,13 +245,11 @@ class ICL : public ICLBase
   **/
   virtual void setNumChannels(int iNewNumChannels);
 
- 
- 
   /// creates a hole new ICL internally
   /** Change the number of ICL channels and the size. The function works
       on demand: If the image has already the correct parameters, the
       channels are detached. 
-      same width and height. All the data within the ICL will be lost. 
+      Same width and height. <b>All the data within the ICL will be lost.<\b> 
       @param iNewWidth New image width (if < 0, the orignal width is used)
       @param iNewHeight New image height (if < 0, the orignal height is used)
       @param iNewNumChannel New channel number (if < 0, the orignal 
@@ -416,9 +405,9 @@ class ICL : public ICLBase
       @param eScaleMode defines the interpolation mode, that is used for the scaling
                           operation. (if interpolateNon, the image becomes black)
                           possible modes are:
-                           - interpolateNN  --> nearest neighbor interpolation (fastest)
+                           - interpolateNN   --> nearest neighbor interpolation (fastest)
                            - interpolateLIN  --> bilinear interpolation
-                           - interpolateRA  --> region average 
+                           - interpolateRA   --> region average 
       @see iclscalemode
       @see resize
   **/
@@ -427,8 +416,8 @@ class ICL : public ICLBase
  
   
   /// Sets the pixels of one or all channels to a specified value
-  /** @param tValue destination value
-      @param iChannel Channel to fill with zero (default: -1 = all)
+  /** @param iChannel Channel to fill with zero (default: -1 = all)
+      @param tValue destination value (default: 0)
    **/
   void clear(int iChannel = -1, Type tValue = 0);
   

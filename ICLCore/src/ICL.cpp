@@ -80,13 +80,7 @@ ICL<Type>::ICL(const ICL<Type>& tSrc):
   std::copy(tSrc.m_ppChannels.begin(), 
             tSrc.m_ppChannels.end(),
             m_ppChannels.begin());
-  
-  
 }
-
-
-
-
 
 //----------------------------------------------------------------------------
 template<class Type>
@@ -164,7 +158,7 @@ ICL<Type>::deepCopy(ICLBase* poDst) const
       }
     else
       {
-        if(poDst->getDepth()==depth8u)
+        if(poDst->getDepth() == depth8u)
           {
             return convertTo8Bit(poDst->asIcl8u());
           }
@@ -174,7 +168,6 @@ ICL<Type>::deepCopy(ICLBase* poDst) const
           }
       }
   }
-  
 }
 
 //--------------------------------------------------------------------------
@@ -256,6 +249,7 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
               }
             }
             break;
+          
           case interpolateLIN: 
             if(poDst->getDepth()==depth8u){
               for(int x=0;x<poDst->getWidth();x++){
@@ -271,35 +265,11 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
               }
             }
             break;
+          
           case interpolateRA: 
             ERROR_LOG("not yet implemented for Region Average");
             break;
-            /*
-            if (fFactor>=1.0) 
-            {
-            DEBU_LOG1("Illegal scaleFactor for average Scaling!");
-            exit(0);
-            } 
-            else 
-            {
-            int   iStep=(int) floor(1.0/fFactor);
-            float sum,sq_factor=1.0/float(iStep*iStep);
-            img->resizeChannel((int)floor(float(getWidth(c))/float(iStep)),
-            (int)floor(float(getHeight(c))/float(iStep)), 
-            c);
-            for(int x=0;x<img->getWidth(c);x++)
-            for(int y=0;y<img->getHeight(c);y++)
-            {
-            sum=0;
-            for(int a=0;a<iStep;a++)
-            for(int b=0;b<iStep;b++)
-            sum+=(float)getPixel(x*iStep+a, y*iStep+b,c);
-            img->setPixel(x,y,c,(Type) (sum*sq_factor));
-            }
-            
-            }     
-            break;
-            */
+          
           default:
             ERROR_LOG("Illegal operation selected!");
             break;
@@ -319,7 +289,6 @@ void ICL<Type>::detach(int iIndex)
   //---- Log Message ----
   DEBUG_LOG4("detach()");
   
-  
   //---- Make the whole ICL independent ----
   if(iIndex == -1)
     {
@@ -334,8 +303,7 @@ void ICL<Type>::detach(int iIndex)
     {
       m_ppChannels[iIndex] 
         = ICLChannelPtr (new ICLChannel<Type>(*m_ppChannels[iIndex]));
-    }
-  
+    } 
 }
 
 //----------------------------------------------------------------------------
@@ -374,50 +342,27 @@ ICL<Type>::append(ICL<Type> *poSrc)
   DEBUG_LOG4("appendImage(const ICL<Type>&)"); 
 
   if(m_iChannels > 0)
-    { 
-      //---- ensure identical image size
-      if(poSrc->getWidth() != getWidth() || poSrc->getHeight() != getHeight())
-        {
-          printf("error in ICL::append: image sizes are different! \n");
-          return;
-        }
-      for(int i=0;i<poSrc->m_iChannels;i++){
-        m_ppChannels.push_back(poSrc->m_ppChannels[i]); 
-        m_iChannels++;
-      }
-      
-      /*
-      //---- Variable initialisation ----
-      int iNumExternChannels = poSrc->m_iChannels;
-      int iNumInternChannels = m_iChannels;
-      
-      vector<ICLChannelPtr> vecTmp(iNumInternChannels+iNumExternChannels);
-      
-      //---- copy channels from internal ICL ----
-      std::copy (m_ppChannels.begin(), m_ppChannels.end(), vecTmp.begin());
-      
-      //---- clear  old stuff ----
-      m_ppChannels.clear();
-      
-      //---- Manage new ICL ----
-      m_ppChannels = vecTmp;
-      
-      std::copy(poSrc->m_ppChannels.begin(),
-      poSrc->m_ppChannels.end(),
-      m_ppChannels.begin()+iNumInternChannels);
-      m_iChannels += iNumExternChannels;
-      */
-      
-     
-    }
-  else
+  { 
+    //---- ensure identical image size
+    if(poSrc->getWidth() != getWidth() || poSrc->getHeight() != getHeight())
     {
-      // cheep copy
-      m_ppChannels = poSrc->m_ppChannels;
-      m_iChannels = (int)(m_ppChannels.size());
-      m_iWidth = poSrc->m_iWidth;
-      m_iHeight = poSrc->m_iHeight;      
+      ERROR_LOG("error in ICL::append: image sizes are different!");
+      return;
     }
+    
+    for(int i=0;i<poSrc->m_iChannels;i++){
+      m_ppChannels.push_back(poSrc->m_ppChannels[i]); 
+      m_iChannels++;
+    }      
+  }
+  else
+  {
+    // cheep copy
+    m_ppChannels = poSrc->m_ppChannels;
+    m_iChannels = (int)(m_ppChannels.size());
+    m_iWidth = poSrc->m_iWidth;
+    m_iHeight = poSrc->m_iHeight;      
+  }
 } 
 
 //----------------------------------------------------------------------------
@@ -428,21 +373,36 @@ ICL<Type>::appendChannel(int iChannel, ICL<Type> *poSrc)
   //---- Log Message ----
   DEBUG_LOG4("appendChannel(int,const ICL<Type>&)");
   
-  //---- append channel ----
-  vector<ICLChannelPtr> vecTmp(m_iChannels+1);
-  
-  //---- Shallow copy of source channels ----
-  std::copy (m_ppChannels.begin(), 
-             m_ppChannels.end(), 
-             vecTmp.begin());
-  
-  //---- Delete old stuff ----
-  m_ppChannels.clear();
-  
-  //---- Manage new ICL ----
-  m_ppChannels = vecTmp;
-  m_ppChannels[m_iChannels] = poSrc->m_ppChannels[iChannel];
-  m_iChannels++;
+  if(m_iChannels > 0)
+  { 
+    //---- ensure identical image size
+    if(poSrc->getWidth() != getWidth() || poSrc->getHeight() != getHeight())
+    {
+      ERROR_LOG("error in ICL::append: image sizes are different!");
+      return;
+    }
+    
+    m_ppChannels.push_back(poSrc->m_ppChannels[iChannel]); 
+    m_iChannels++;
+    
+    /*
+    //---- append channel ----
+    vector<ICLChannelPtr> vecTmp(m_iChannels+1);
+    
+    //---- Shallow copy of source channels ----
+    std::copy (m_ppChannels.begin(), 
+               m_ppChannels.end(), 
+               vecTmp.begin());
+    
+    //---- Delete old stuff ----
+    m_ppChannels.clear();
+    
+    //---- Manage new ICL ----
+    m_ppChannels = vecTmp;
+    m_ppChannels[m_iChannels] = poSrc->m_ppChannels[iChannel];
+    m_iChannels++;
+    */
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -454,20 +414,20 @@ ICL<Type>::swapChannels(int iIndexA, int iIndexB)
   DEBUG_LOG4("swapChannels(int,int)"); 
   std::swap(m_ppChannels[iIndexA], m_ppChannels[iIndexB]);
 }
+
 //----------------------------------------------------------------------------
 template<class Type>
 void 
 ICL<Type>::scale(int iNewWidth, 
                  int iNewHeight,
                  iclscalemode eScaleMode)
-{
-  
+{  
   //---- Log Message ----
   DEBUG_LOG4("scale(int,int,iclscalemode)"); 
   
   //---- estimate destination values in respect to defaults ----
-  if(iNewWidth < 0)iNewWidth = m_iWidth;
-  if(iNewHeight < 0)iNewHeight = m_iHeight;
+  if(iNewWidth < 0) iNewWidth = m_iWidth;
+  if(iNewHeight < 0) iNewHeight = m_iHeight;
   
   if(isEqual(iNewWidth,iNewHeight,m_iChannels))
     {
@@ -491,8 +451,8 @@ ICL<Type>::resize(int iWidth,int iHeight)
   DEBUG_LOG4("resize(int,int)"); 
   
   //---- estimate destination values in respect to defaults ----
-  if(iWidth < 0)iWidth = m_iWidth;
-  if(iHeight < 0)iHeight = m_iHeight;
+  if(iWidth < 0) iWidth = m_iWidth;
+  if(iHeight < 0) iHeight = m_iHeight;
   
   if(isEqual(iWidth,iHeight,m_iChannels))
     {
@@ -503,6 +463,7 @@ ICL<Type>::resize(int iWidth,int iHeight)
     {
       m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight));
     }
+  
   m_iWidth = iWidth;
   m_iHeight = iHeight;
 }
@@ -616,35 +577,40 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
   //---- Log Message ----
   DEBUG_LOG4("convertTo32Bit()");
   
-  if(!poDst){
+  if(!poDst)
+  {
     poDst = new ICL32f(getWidth(),getHeight(),getFormat(),getChannels());
-  }else{
+  }
+  else
+  {
     poDst->renew(m_iWidth,m_iHeight,m_iChannels);
     poDst->setFormat(m_eFormat);
   }
+  
   // not neccesary ! poDst->detach();
   
   if(m_eDepth == depth8u)
+  {
+    for(int c=0;c<m_iChannels;c++)
     {
-      for(int c=0;c<m_iChannels;c++)
-        {
 #ifdef WITH_IPP_OPTIMIZATION
-          ippiConvert_8u32f_C1R(ippData8u(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),poDst->ippRoiSize());
+      ippiConvert_8u32f_C1R(ippData8u(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),poDst->ippRoiSize());
 #else
-          int iDim = m_iWidth* m_iHeight;
-          iclbyte *pucSrc =  reinterpret_cast<iclbyte*>(getDataPtr(c));
-          iclfloat *pfDst = reinterpret_cast<iclfloat*>(poDst->getDataPtr(c));
-          for(int i=0;i<iDim;i++){
-            pfDst[i]=static_cast<iclfloat>(pucSrc[i]);
-          }
+      int iDim = m_iWidth * m_iHeight;
+      iclbyte *pucSrc =  reinterpret_cast<iclbyte*>(getDataPtr(c));
+      iclfloat *pfDst = reinterpret_cast<iclfloat*>(poDst->getDataPtr(c));
+      for(int i=0;i<iDim;i++)
+      {
+        pfDst[i]=static_cast<iclfloat>(pucSrc[i]);
+      }
 #endif
-        }
-      return poDst;
     }
+    return poDst;
+  }
   else
-    {
-      return asIcl32f()->deepCopy(poDst)->asIcl32f();
-    }  
+  {
+    return asIcl32f()->deepCopy(poDst)->asIcl32f();
+  }  
 }
 
 //--------------------------------------------------------------------------
@@ -927,11 +893,7 @@ ICL<Type>::scaleRange(float tMin, float tMax, int iChannel)
   }
 }
 
-//--------------------------------------------------------------------------
-
-
 // }}}
-
 
 template class ICL<iclbyte>;
 template class ICL<iclfloat>;
