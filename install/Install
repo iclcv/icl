@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
+use Data::Dumper;
 
 my ($projectName, $majVer, $minVer);
 my @content;
@@ -54,7 +55,7 @@ if (!-e "$INSTALLDIR/doc"){
 system "cp ./BashSrc $INSTALLDIR";
 system "cp ./packageVar $INSTALLDIR";
 
-system "cp -R ../ICLCore/src/boost $INSTALLDIR/include 2> /dev/null";
+system "cp -R ../ICLCore/src/boost/ $INSTALLDIR/include/ 2> /dev/null";
 
 foreach my $entry(@dirs) {
     if ($entry !~ /^\./ ){        
@@ -78,7 +79,6 @@ foreach my $entry(@dirs) {
                         system "mkdir $INSTALLDIR/doc/$projectName";
                     }
                     print "---- Copying documentation: $entry/$subentry\n";
-                    #system "cp -r ../$entry/$subentry/documentation/* $INSTALLDIR/doc/$projectName";
                     system "cp -r ../$entry/$subentry/documentation/* $INSTALLDIR/doc/$entry";
                     }
                 elsif ($subentry !~ /^\./ ){
@@ -89,3 +89,8 @@ foreach my $entry(@dirs) {
         }
     }
 }
+
+#---------------------
+# Remove all .svn dirs
+#---------------------
+system "find $INSTALLDIR -name '.svn' -exec rm -Rf {} \\; 2> /dev/null";
