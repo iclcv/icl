@@ -2,13 +2,13 @@
 #include "ICLcc.h"
 
 namespace icl{
-  IclConverter::IclConverter():m_poDepthBuffer(0),m_poSizeBuffer(0){}
-  IclConverter::~IclConverter(){
+  ICLConverter::ICLConverter():m_poDepthBuffer(0),m_poSizeBuffer(0){}
+  ICLConverter::~ICLConverter(){
     if(m_poDepthBuffer)delete m_poDepthBuffer;
     if(m_poSizeBuffer)delete m_poSizeBuffer;
   }
 
-  void IclConverter::convert(ICLBase *poDst, ICLBase *poSrc){
+  void ICLConverter::convert(ICLBase *poDst, ICLBase *poSrc){
     iclformat eSrcFmt = poSrc->getFormat();
     iclformat eDstFmt = poDst->getFormat();
     icldepth eSrcDepth = poSrc->getDepth();

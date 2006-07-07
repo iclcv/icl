@@ -6,21 +6,21 @@
 namespace icl{
   /// Color Converter Object
   /**
-  The IclConverter wrapps color conversion function from iclcc.h
+  The ICLConverter wrapps color conversion function from iclcc.h
   into an Object, which contains all necessary Buffers for converting images.
   In addition to that it brings the functionality for scaling images.
-  Scaling and converting do not have to debar each other - the IclConverter
+  Scaling and converting do not have to debar each other - the ICLConverter
   is able to scale images internally, or to convert them internally into
   another depth before converting.
   */
-  class IclConverter{
+  class ICLConverter{
     public:
     
     /// Base constructor
-    IclConverter();
+    ICLConverter();
 
     /// Destructors
-    ~IclConverter();
+    ~ICLConverter();
 
     /// conversion function
     /**
