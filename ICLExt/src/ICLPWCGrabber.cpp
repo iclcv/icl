@@ -406,34 +406,33 @@ void ICLPWCGrabber::grab(ICLBase *poOutput){
  
   iclbyte *pucPwcData = usbvflg_buf[iDevice] + usbvflg_vmbuf[iDevice].offsets[use_frame];
   
+
+  iclbyte *pU = pucPwcData+iWidth*iHeight;
+  iclbyte *pV = pucPwcData+(int)(1.25*iWidth*iHeight);
+  int iW2 = iWidth/2;
+
+#ifndef WITH_IPP_OPTINIZATION
+  typedef struct _IppiSize { int width,height; } IppiSize;
+#endif
+  
+  IppiSize oSize = {iWidth,iHeight};
+  IppiSize oSize2 ={iWidth/2,iHeight/2};
+  iclbyte *pUDst = pucFlippedYUVData+iWidth*iHeight;
+  iclbyte *pVDst = pucFlippedYUVData+(int)(1.25*iWidth*iHeight);
+ 
+  MIRROR_HORZ(pucPwcData,iWidth*sizeof(iclbyte),pucFlippedYUVData,oSize);
+  MIRROR_HORZ(pU,iW2*sizeof(iclbyte),pUDst,oSize2);
+  MIRROR_HORZ(pV,iW2*sizeof(iclbyte),pVDst,oSize2);
  
   if(poOutput->getFormat() == formatRGB &&
      poOutput->getDepth() == depth8u &&
      poOutput->getWidth() == iWidth &&
      poOutput->getHeight() == iHeight ){
     
-    iclbyte *pU = pucPwcData+iWidth*iHeight;
-    iclbyte *pV = pucPwcData+(int)(1.25*iWidth*iHeight);
-    int iW2 = iWidth/2;
-
-#ifndef WITH_IPP_OPTINIZATION
-    typedef struct _IppiSize { int width,height; } IppiSize;
-#endif
-
-    IppiSize oSize = {iWidth,iHeight};
-    IppiSize oSize2 ={iWidth/2,iHeight/2};
-    iclbyte *pUDst = pucFlippedYUVData+iWidth*iHeight;
-    iclbyte *pVDst = pucFlippedYUVData+(int)(1.25*iWidth*iHeight);
- 
-    // ?? mirror just in the rgb-8 case ?
-    MIRROR_HORZ(pucPwcData,iWidth*sizeof(iclbyte),pucFlippedYUVData,oSize);
-    MIRROR_HORZ(pU,iW2*sizeof(iclbyte),pUDst,oSize2);
-    MIRROR_HORZ(pV,iW2*sizeof(iclbyte),pVDst,oSize2);
-    
     convertYUV420ToRGB8(poOutput->asIcl8u(),pucFlippedYUVData,iWidth,iHeight);
- 
+    
   }else{
-    convertYUV420ToRGB8(poRGB8Image,pucPwcData,iWidth,iHeight);
+    convertYUV420ToRGB8(poRGB8Image,pucFlippedYUVData,iWidth,iHeight);
     oConverter.convert(poOutput,poRGB8Image);
   }
 
