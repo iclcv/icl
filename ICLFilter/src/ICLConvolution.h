@@ -4,8 +4,44 @@
 #include "ICL.h"
 
 namespace icl{
-  //@{ @name Image Convolution
   
+  /// ICL-class for Image convolution
+  /***/
+  class ICLConvolution {
+    public:
+    enum iclkernel { kernelSobelX, 
+                     kernelSobelY, 
+                     kernelGauss3x3, 
+                     kernelGauss5x5, 
+                     kernelLaplace,
+                     kernelCustom   };
+    
+    ICLConvolution(iclkernel eKernel);
+    ICLConvolution(ICLBase *poKernel);
+    ICLConvolution(iclfloat *pfKernel, int iW, int iH, int iBufferData=1);
+    ICLConvolution(int *piKernel, int iW, int iH);
+    ~ICLConvolution();
+    
+
+    void apply(ICLBase *poSrc, ICLBase *poDst);
+    
+    private:
+
+    static int KERNEL_SOBEL_X[9];
+    static int KERNEL_SOBEL_Y[9];
+    static float KERNEL_GAUSS_3x3[9];
+    static float KERNEL_GAUSS_5x5[25];
+    static int KERNEL_LAPLACE[9];
+  
+    float *pfKernel;
+    int *piKernel;
+    int iW;
+    int iH;
+    bool bDeleteData;
+    iclkernel eKernel;
+  };
+  
+  //@{ @name Image Convolution
   /// Convolution with source image, destination image and mask (IPP-OPTIMIZED)
   /** The iclConv function provides functionality for generic image filter procedures.
       To guarantee compability to the IPP optimized functions, also the C++ fallback
@@ -39,31 +75,7 @@ namespace icl{
       @param poSrc source image
       @param poDst destination image
       @param poMask convolution kernel
-  */
-  void iclConv(ICLBase *poSrc, ICLBase *poDst, ICLBase *poMask);
-   
-  /// Convolution with source image, destination image and iclfloat mask (IPP-OPTIMIZED)
-  /** This function works essentially like the above function
-      @param poSrc source image
-      @param poDst destination image
-      @param pfMask convolution kernel as iclfloat* (dimension iMaskW*iMaskH)
-      @param iMaskW width of the convolution kernel
-      @param iMaskH height of the convolution kernel
-  */
-  void iclConv(ICLBase *poSrc, ICLBase *poDst, iclfloat *pfMask, int iMaskW, int iMaskH);
-  
-  /// Convolution with source image, destination image and iclbyte mask (IPP-OPTIMIZED)
-  /** This function works essentially like the above function
-      @param poSrc source image
-      @param poDst destination image
-      @param pucMask convolution kernel as iclbyte* (dimension iMaskW*iMaskH)
-      @param iMaskW width of the convolution kernel
-      @param iMaskH height of the convolution kernel
-  */
-  void iclConv(ICLBase *poSrc, ICLBase *poDst, iclbyte *pucMask, int iMaskW, int iMaskH);
-  
-  //@}
+  **/
 }
-
 
 #endif
