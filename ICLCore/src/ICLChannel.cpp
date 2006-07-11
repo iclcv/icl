@@ -28,7 +28,7 @@ ICLChannel<Type>::ICLChannel(int iWidth, int iHeight, Type *ptData)
   m_ptData = ptData ? ptData : new Type[m_oInfo.getDim()];
 
   //---- Ensure data will be deleted ----
-  m_bDeleteData = ptData ? 1 : 0;
+  m_bDeleteData = ptData ? 0 : 1;
 
   //---- Set all pixel to zero ----
   clear();
@@ -71,7 +71,7 @@ ICLChannel<Type>::~ICLChannel()
   DEBUG_LOG4("Destruktor: ICLChannel() -> " << this);
 
   //---- free memory ----
-  if(m_bDeleteData = 1)
+  if(m_bDeleteData == 1)
     {
       delete [] m_ptData;
     }

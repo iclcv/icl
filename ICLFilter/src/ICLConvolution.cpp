@@ -132,19 +132,10 @@ namespace icl{
   void ICLConvolution::apply(ICLBase *poSrc, ICLBase *poDst)
   {
     DEBUG_LOG4("ICLConvolution::apply(ICLBase *,ICLBase*)");
-    
+   
     if(poSrc->getDepth() != poDst->getDepth())
       {
         ERROR_LOG("ICLConvolution::apply: source and destination depth must be equal!");
-      }
-    if(poSrc->ippRoiSize().width  != poDst->ippRoiSize().width || 
-       poSrc->ippRoiSize().height != poDst->ippRoiSize().height)
-      {
-        ERROR_LOG("ICLConvolution::apply: source and destination roi sizes must be equal!");
-      }
-    if(poSrc->getChannels()!=poDst->getChannels())
-      {
-        ERROR_LOG("ICLConvolution::apply: source and destination channel count must be equal!");
       }
     
     IppiPoint oAnchor = { iW/2, iH/2 };
@@ -152,6 +143,9 @@ namespace icl{
     
     icl_morph_roi_intern(poSrc,-iW/2,-iH/2);    
     
+    int iSrcRoiW, iSrcRoiH;
+    poSrc->getROISize(iSrcRoiW,iSrcRoiH);
+    poDst->renew(iSrcRoiW,iSrcRoiH,poSrc->getChannels());    
     
     if(poSrc->getDepth() == depth8u)
       {

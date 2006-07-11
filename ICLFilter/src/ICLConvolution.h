@@ -6,7 +6,10 @@
 namespace icl{
   
   /// ICL-class for Image convolution
-  /***/
+  /**
+  - Problems using integer kernels -> fallback to c++ implementation
+  
+  */
   class ICLConvolution {
     public:
     enum iclkernel { kernelSobelX, 
@@ -22,7 +25,18 @@ namespace icl{
     ICLConvolution(int *piKernel, int iW, int iH);
     ~ICLConvolution();
     
-
+    /// performs the convolution operation on the image
+    /** The destination image is automatically set up to 
+        correct size and its channel count is set to the
+        source images channel count.
+        The size of the destination image becomes:
+        <pre>
+        width = src.width-kernel.width/2
+        height = src.height-kernel.height/2
+        </pre>
+        @param poSrc source image
+        @param poDst destination image
+    */
     void apply(ICLBase *poSrc, ICLBase *poDst);
     
     private:

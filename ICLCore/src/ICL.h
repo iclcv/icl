@@ -10,25 +10,25 @@
 #ifndef ICL_H
 #define ICL_H
 
-//-------- includes --------
 #include "ICLBase.h"
 #include "ICLChannel.h"
+#include "ICLPixel.h"
 #include <cmath>
 #include <typeinfo>
 
-//-------- namespace --------
 using namespace std;
 
-//---- ICL in its own namespace ----
 namespace icl {
 
-//-------- ICL class definition --------
-/**
-   @short ICL implements an array of ICLChannel images with an arbitrary number 
-          of image channels.
-   @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
-   @author Christof Elbrechter (celbrech@TechFak.Uni-Bielefeld.de)
-**/
+
+ 
+ 
+
+  ///ICL implements an array of ICLChannel images with an arbitrary number of channels
+  /**
+  @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
+  @author Christof Elbrechter (celbrech@TechFak.Uni-Bielefeld.de)
+  **/
 template <class Type>
 class ICL : public ICLBase
 {
@@ -433,6 +433,55 @@ class ICL : public ICLBase
 
 /* }}} */
 
+  /* {{{ pixel-access using pixel-iterator */
+
+  //@{ @name pixel access using roi iterator                                
+  /// type definition for roi iterator
+  typedef ICLPixel<Type> iterator;
+
+  /// type definition for the roi-end iterator
+  typedef ICLEndPixel enditerator;
+
+  /// returns the iterator for the image roi
+  /** The followin example taken from ICLPixel.h will show
+      the iterator usage:
+      <pre>
+      void channel_threshold_inplace(ICL8u &im, int tetta)
+      {
+         for(int c=0;c<3;c++)
+         {
+            for(ICL8u::iterator p=im.begin(c);p!=im.end(c);p++)
+            {
+              *p = *p > tetta ? 255 : 0;
+            }
+         }
+      }
+  </pre>
+      @param iChannel selected channel index
+      @return roi-iterator
+      @see ICLPixel
+      @see end
+  */
+  inline iterator begin(int iChannel)
+    {
+      int iX,iY,iW,_;
+      getROI(iX,iY,iW,_);
+      return iterator(iX,iY,getData(iChannel),m_iWidth,iW);
+    }
+
+  /// return the iterator to the roi end
+  /** @param iChannel selected channel index
+      @return roi-end-iterator
+      @see ICLPixel
+      @see begin
+  */
+  inline enditerator end(int iChannel)
+    {
+      return (m_ppChannels[iChannel]->getRoiHeight())+(m_ppChannels[iChannel]->getRoiYOffset());
+    }
+
+  /* }}} */
+  //@}
 #ifdef WITH_IPP_OPTIMIZATION
                                      
   /* {{{ IPP-compability functions */

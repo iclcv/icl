@@ -99,33 +99,23 @@ void ICLPWCGrabber::grab(ICLBase *poOutput){
     convertYUV420ToRGB8(poOutput->asIcl8u(),pucFlippedYUVData,iWidth,iHeight);
     
   }else if(poOutput->getFormat() == formatYUV){ // not yet tested
-    printf("a01 \n");
-    ICL8u oTmpSrc_Y(iWidth,iHeight,formatMatrix,1,&pucPwcData);
-    printf("a02 \n");
-    ICL8u oTmpSrc_U(iWidth/2,iHeight/2,formatMatrix,1,&pU);
-    printf("a03 \n");
-    ICL8u oTmpSrc_V(iWidth/2,iHeight/2,formatMatrix,1,&pV);
-    printf("a04 \n");
+    DEBUG_LOG4("ICLConvolution not working \n");
+    ICL8u oTmpSrc_Y(iWidth,iHeight,formatMatrix,1,&pucFlippedYUVData);
+    ICL8u oTmpSrc_U(iWidth/2,iHeight/2,formatMatrix,1,&pUDst);
+    ICL8u oTmpSrc_V(iWidth/2,iHeight/2,formatMatrix,1,&pVDst);
+    
     if(poOutput->getDepth()==depth8u){
-      printf("a1 \n");
       iclbyte *pucTmpY = poOutput->asIcl8u()->getData(0);
-      printf("a2 \n");
       iclbyte *pucTmpU = poOutput->asIcl8u()->getData(1);
-      printf("a3 \n");
       iclbyte *pucTmpV = poOutput->asIcl8u()->getData(2);
-      printf("a4 \n");
+      
       ICL8u oTmpDst_Y(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pucTmpY);
-      printf("a5 \n");
       ICL8u oTmpDst_U(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pucTmpU);
-      printf("a6 \n");
       ICL8u oTmpDst_V(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pucTmpV);
-      printf("a7 \n");
+      
       oTmpSrc_Y.deepCopy(&oTmpDst_Y);
-      printf("a8 \n");
       oTmpSrc_U.scaledCopy(&oTmpDst_U);
-      printf("a9 \n");
       oTmpSrc_V.scaledCopy(&oTmpDst_V);
-      printf("a10 \n");
     }else{
       iclfloat *pfTmpY = poOutput->asIcl32f()->getData(0);
       iclfloat *pfTmpU = poOutput->asIcl32f()->getData(1);
@@ -141,7 +131,7 @@ void ICLPWCGrabber::grab(ICLBase *poOutput){
     convertYUV420ToRGB8(poRGB8Image,pucFlippedYUVData,iWidth,iHeight);
     oConverter.convert(poOutput,poRGB8Image);
   }
-
+  printf("here \n");
   
   // hier geht er flöten bei formatYUV -->irgentwie destructor ...
   pthread_mutex_unlock(&usb_frame_mutex[iDevice]);
