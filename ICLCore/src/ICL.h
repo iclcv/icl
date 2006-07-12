@@ -155,6 +155,8 @@ class ICL : public ICLBase
       <b>WARNING:</b> If the destination image has another depth, then this image,
       the deepCopy will internally call <b>convertTo8Bit</b> or <b>convertTo32Bit</b> 
       depending on the the images and the destination images icldepth.
+      <b>The images ROI will not be regarded</b>, to copy just the ROI into another
+      image use deepCopyROI(ICLBase *poDst.) or scaledCopyROI(ICLBase *poDst).
       @param poDst Destination image for the copied data 
                    if NULL, then a new image is created and returned
       @return Pointer to new independent ICL object
@@ -172,6 +174,8 @@ class ICL : public ICLBase
       <b>WARNING:</b> If the destination image has another depth than the image,
       then internally a temporary buffer is created, to scale and convert the
       image in two steps. This will hardly <b>slow down performace</b>.
+      <b>The images ROI will not be regarded</b>, to copy just the ROI into another
+      image use deepCopyROI(ICLBase *poDst.) or scaledCopyROI(ICLBase *poDst).
       @param poDst destination image (if NULL) than it is created new with
                    identical size of this image.
       @param eScaleMode defines the interpolation mode, that is used for the scaling
@@ -186,6 +190,15 @@ class ICL : public ICLBase
   **/
   virtual ICLBase* scaledCopy(ICLBase *poDst, iclscalemode eScaleMode=interpolateNN) const;
   
+  /// copies the image data in the images ROI into the destination images ROI
+  /** TODO: TEXT
+  **/
+  virtual ICLBase *deepCopyROI(ICLBase *poDst = NULL) const;
+  
+  /// scales the image data in the image ROI into the destination images ROI
+  /** TODO: TEXT
+  **/
+  virtual ICLBase *scaledCopyROI(ICLBase *poDst = NULL) const;
                   
   /* }}} */
 
@@ -248,8 +261,10 @@ class ICL : public ICLBase
   /// creates a hole new ICL internally
   /** Change the number of ICL channels and the size. The function works
       on demand: If the image has already the correct parameters, the
-      channels are detached. 
-      Same width and height. <b>All the data within the ICL will be lost.<\b> 
+      channels are <b>not</b> detached, so you can call renew every time
+      you must ensure, that the image has the determined size and channel
+      count. If the size must be adapted: <b>All the data within 
+      the ICL will be lost.<\b> 
       @param iNewWidth New image width (if < 0, the orignal width is used)
       @param iNewHeight New image height (if < 0, the orignal height is used)
       @param iNewNumChannel New channel number (if < 0, the orignal 

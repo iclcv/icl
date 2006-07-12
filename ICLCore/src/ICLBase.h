@@ -139,8 +139,20 @@ namespace icl {
       @see ICL
       **/
       virtual ICLBase* scaledCopy(ICLBase *poDst, iclscalemode eScaleMode=interpolateNN) const=0;
-      //@}
+    
 
+      /// copies the image data in the images ROI into the destination images ROI
+      /** this function is implemented in the ICL-template class
+      @see ICL
+      **/
+      virtual ICLBase *deepCopyROI(ICLBase *poDst = NULL) const=0;
+
+      /// scales the image data in the image ROI into the destination images ROI
+      /** this function is implemented in the ICL-template class
+      @see ICL
+      **/
+      virtual ICLBase *scaledCopyROI(ICLBase *poDst = NULL) const=0;
+      //@}
       /* }}} */
 
       /* {{{ getter functions */
@@ -295,6 +307,20 @@ namespace icl {
       /** @see ICL*/
       virtual void getROISize(int &riWidth, int &riHeight) const=0;
 
+      /// returns if the image has a ROI that is smaller then the image
+      inline int hasROI() const
+        {
+          int iX,iY,iW,iH;
+          getROI(iX,iY,iW,iH);
+          return (iX==0 && iY==0 && iW==m_iWidth && iH == m_iHeight);
+        }
+      
+      /// resetur the image ROI to the hole image size with offset (0,0)
+      inline void delROI() 
+        {
+          setROI(0,0,m_iWidth,m_iHeight);
+        }
+      
       //@}
       //@{ @name [EIF for low basic image processing routines]
       

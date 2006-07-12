@@ -8,6 +8,7 @@
 */
 
 #include "ICLBase.h"
+#include "ICL.h"
 
 namespace icl {
 
@@ -67,14 +68,25 @@ void ICLBase::print(string sTitle)
             "| image: %s\n"
             "| width: %d, height: %d, channels: %d\n"
             "| depth: %s, format: %s\n"
-            "| ROI: x: %d, y: %d, w: %d, h: %d \n"
-            " -----------------------------------------\n",
+            "| ROI: x: %d, y: %d, w: %d, h: %d \n",        
             sTitle.c_str(),
             getWidth(),getHeight(),getChannels(),
             getDepth()==depth8u ? "depth8u" : "depth32f",iclTranslateFormat(m_eFormat).c_str(),
             iX,iY,iW,iH
             
         );
+  if(m_eDepth == depth8u){
+    for(int i=0;i<m_iChannels;i++){
+      printf("| channel: %d, min: %d, max:%d \n",i,asIcl8u()->getMin(i),asIcl8u()->getMax(i));
+    }
+  }else{
+    for(int i=0;i<m_iChannels;i++){
+      printf("| channel: %d, min: %f, max:%f \n",i,asIcl32f()->getMin(i),asIcl32f()->getMax(i));
+    }
+  }
+  printf(" -----------------------------------------\n");
+ 
+
 }
 
 // }}}

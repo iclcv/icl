@@ -31,7 +31,10 @@ ICLChannel<Type>::ICLChannel(int iWidth, int iHeight, Type *ptData)
   m_bDeleteData = ptData ? 0 : 1;
 
   //---- Set all pixel to zero ----
-  clear();
+  if(!ptData) 
+    {
+      clear();
+    }
 }
 
 

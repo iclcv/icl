@@ -9,8 +9,8 @@ namespace icl{
   /**
   The ICLPWCGrabber provides basic abilities for grabbing images from Phillips
   USB Webcams (that are using the PWC Kernel module). The Grabber will create
-  an interlan grabber thread, that grabs continously images into an internal 
-  ring-buffer. This will not slow down the processer performance much, as the
+  an internal grabber thread, that grabs continously images into an internal 
+  ring-buffer. This will not slow down the processor performance much, as the
   grabber thread sleeps during that time, that is needed to transfer each
   single frame from the camera. The transfer uses dma (direct memory access) 
   for best performance (i think).
@@ -19,16 +19,27 @@ namespace icl{
   The transformation from the YUV-420 format is not a default part of the
   iclcc color conversion function, because it deals with images, that are
   composed of channels with different sizes. 
-  A dedicated conversion function: convertYUV420ToRGB8 is used instead.
-  If the destination image has not formatRGB or not depth8, then the conversion
-  result is buffered into an internal buffer image of that format and depth,
-  and followed by a conversion call from the buffer into the destination image
+  A dedicated conversion function: <i>convertYUV420ToRGB8</i> which is IPP-
+  optimized if the WITH_IPP_OPTIMIZATION flag is defined, is used instead.
+  ICLs color conversion routines do not support conversion from any to 
+  to any format, so not all destination formats are supported directly.
+  Directly supported formats are:
+   - <b>formatRGB with depth8u</b> In this case <i>convertYUV420ToRGB8</i> is
+     used to convert directly into the output buffer image.
+   - <b>formatYUV</b> in this case no color conversion is necessary. The output
+     data buffer is just filled with: a copy of the Y-channel, and a scaled 
+     copy of the U/V channel.
+  
+  This time, if the destination image has another then one of this formats, 
+  the conversion result is buffered into an internal buffer image with formatRGB 
+  and depth8u, followed by a conversion call from the buffer into the destination image
   using the ICLConverter.  
+  @see ICLConverter
   */
   class ICLPWCGrabber{
     public:
     
-    /// Base constructor with parameters for width, heigth, imagetype, grabbing rate and grabbing device
+    /// Base constructor with parameters for width, height, image type, grabbing rate and grabbing device
     /**
     @param iWidth destination image width
     @param iHeight destination image height
@@ -57,7 +68,7 @@ namespace icl{
     float fFps;
     
     ICL8u *poRGB8Image;
-    ICLConverter oConverter;
+    ICLConverter oConverter,oConverterHalfSize;
     iclbyte *pucFlippedYUVData;
   };
   

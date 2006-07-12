@@ -49,7 +49,10 @@ namespace icl{
       }      
     }else if(iNeedColorConversion){
       iclcc(poDst,poNextSrcImage);
+    }else if(!iNeedDepthConversion){
+      poNextSrcImage->deepCopy(poDst);
     }
+    
   }
 
 

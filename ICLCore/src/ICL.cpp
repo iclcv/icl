@@ -138,36 +138,37 @@ ICL<Type>::deepCopy(ICLBase* poDst) const
 
   //---- Allocate memory ----
   if (poDst == NULL) 
-  {
-    poDst = new ICL<Type> (*this);
-    poDst->detach();
-    return poDst;
-  } 
-  else 
-  {
-    poDst->renew(m_iWidth,m_iHeight,m_iChannels);
-    poDst->setFormat(m_eFormat);
+    {
+      poDst = new ICL<Type>(m_iWidth,m_iHeight,m_eFormat,m_iChannels);
+    }
+  else
+    {
+      poDst->renew(m_iWidth,m_iHeight,m_iChannels);
+      poDst->setFormat(m_eFormat);
+    }
+  int iX,iY,iW,iH;
+  getROI(iX,iY,iW,iH);
+  poDst->setROI(iX,iY,iW,iH);
 
-    if(poDst->getDepth() == getDepth())
-      {
-        for(int c=0;c<m_iChannels;c++)
-          {
-            memcpy(poDst->getDataPtr(c),getDataPtr(c),m_iWidth*m_iHeight*sizeof(Type));
-          }
-        return poDst;
-      }
-    else
-      {
-        if(poDst->getDepth() == depth8u)
-          {
-            return convertTo8Bit(poDst->asIcl8u());
-          }
-        else
-          {
-            return convertTo32Bit(poDst->asIcl32f());
-          }
-      }
-  }
+  if(poDst->getDepth() == getDepth())
+    {
+      for(int c=0;c<m_iChannels;c++)
+        {
+          memcpy(poDst->getDataPtr(c),getDataPtr(c),m_iWidth*m_iHeight*sizeof(Type));
+        }
+      return poDst;
+    }
+  else
+    {
+      if(poDst->getDepth() == depth8u)
+        {
+          return convertTo8Bit(poDst->asIcl8u());
+        }
+      else
+        {
+          return convertTo32Bit(poDst->asIcl32f());
+        }
+    }
 }
 
 //--------------------------------------------------------------------------
@@ -202,19 +203,22 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
     }    
   
   poDst->setNumChannels( getChannels() );
-  
+  poDst->delROI();
+    
 #ifdef WITH_IPP_OPTIMIZATION
+  IppiRect oHoleImageROI = {0,0,m_iWidth,m_iHeight};
+
   for(int c=0;c<m_iChannels;c++)
     {
       if(getDepth()==depth8u)
         {
-          ippiResize_8u_C1R(ippData8u(c),ippSize(),ippStep(),ippRoi(),
+          ippiResize_8u_C1R(ippData8u(c),ippSize(),ippStep(),oHoleImageROI,
                             poDst->ippData8u(c),poDst->ippStep(),poDst->ippRoiSize(),
                             (double)poDst->getWidth()/(double)getWidth(),
                             (double)poDst->getHeight()/(double)getHeight(),
                             (int)eScaleMode);
         }else{
-          ippiResize_32f_C1R(ippData32f(c),ippSize(),ippStep(),ippRoi(),
+          ippiResize_32f_C1R(ippData32f(c),ippSize(),ippStep(),oHoleImageROI,
                              poDst->ippData32f(c),poDst->ippStep(),poDst->ippRoiSize(),
                              (double)poDst->getWidth()/(double)getWidth(),
                              (double)poDst->getHeight()/(double)getHeight(),
@@ -518,35 +522,27 @@ template<class Type>
 void 
 ICL<Type>::renew(int iNewWidth, int iNewHeight, int iNewNumChannels)
 {
-  //---- Log Message ----
   DEBUG_LOG4("renewICL(int,int.int)"); 
 
   if(iNewWidth < 0)iNewWidth = m_iWidth;
   if(iNewHeight < 0)iNewHeight = m_iHeight;
   if(iNewNumChannels < 0)iNewNumChannels = m_iChannels;
   
-  //---- Execution necessary ??? ----
+  
+  //---- only on demand ------
   if (!isEqual(iNewWidth, iNewHeight, iNewNumChannels))
   {
-    //---- Make referenced channels independent before resize ----
-    // ?? detach(); 
-    // ?? deleteChannels ();
-    
     m_ppChannels.resize(iNewNumChannels);
-    m_iChannels = iNewNumChannels;    
-    
-    for(int i=0;i<iNewNumChannels;i++)
-    {
-      m_ppChannels[i] = 
-        ICLChannelPtr (new ICLChannel<Type>(iNewWidth,iNewHeight));
-    }
     m_iWidth = iNewWidth;
     m_iHeight = iNewHeight;
     m_iChannels = iNewNumChannels;
-  }
-  else
-  {
-    detach();    
+
+    for(int i=0;i<iNewNumChannels;i++)
+      {
+        m_ppChannels[i] = 
+          ICLChannelPtr (new ICLChannel<Type>(iNewWidth,iNewHeight));
+      }
+    
   }
 }
 
@@ -587,14 +583,13 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
     poDst->setFormat(m_eFormat);
   }
   
-  // not neccesary ! poDst->detach();
-  
   if(m_eDepth == depth8u)
   {
     for(int c=0;c<m_iChannels;c++)
     {
 #ifdef WITH_IPP_OPTIMIZATION
-      ippiConvert_8u32f_C1R(ippData8u(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),poDst->ippRoiSize());
+      IppiSize oHoleImageROI = {m_iWidth,m_iHeight};
+      ippiConvert_8u32f_C1R(ippData8u(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),oHoleImageROI);
 #else
       int iDim = m_iWidth * m_iHeight;
       iclbyte *pucSrc =  reinterpret_cast<iclbyte*>(getDataPtr(c));
@@ -633,7 +628,8 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
       for(int c=0;c<m_iChannels;c++)
         {
 #ifdef WITH_IPP_OPTIMIZATION
-          ippiConvert_32f8u_C1R(ippData32f(c),ippStep(),poDst->ippData8u(c),poDst->ippStep(),poDst->ippRoiSize(),ippRndNear);
+          IppiSize oHoleImageROI = {m_iWidth,m_iHeight};
+          ippiConvert_32f8u_C1R(ippData32f(c),ippStep(),poDst->ippData8u(c),poDst->ippStep(),oHoleImageROI,ippRndNear);
 #else
           int iDim = m_iWidth* m_iHeight;
           iclfloat *pfSrc = reinterpret_cast<iclfloat*>(getDataPtr(c));
@@ -650,6 +646,24 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
       return asIcl8u()->deepCopy(poDst)->asIcl8u();
     }  
  
+}
+template<class Type>
+ICLBase*
+ICL<Type>::deepCopyROI(ICLBase *poDst) const
+{
+  (void)poDst;
+  printf("not yet implemented !");
+  return 0;
+}
+  
+ 
+template<class Type>
+ICLBase*
+ICL<Type>::scaledCopyROI(ICLBase *poDst) const
+{
+  (void)poDst;
+  printf("not yet implemented !");
+  return 0;
 }
 
 // }}} 

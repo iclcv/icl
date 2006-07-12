@@ -99,7 +99,7 @@ void ICLPWCGrabber::grab(ICLBase *poOutput){
     convertYUV420ToRGB8(poOutput->asIcl8u(),pucFlippedYUVData,iWidth,iHeight);
     
   }else if(poOutput->getFormat() == formatYUV){ // not yet tested
-    DEBUG_LOG4("ICLConvolution not working \n");
+    
     ICL8u oTmpSrc_Y(iWidth,iHeight,formatMatrix,1,&pucFlippedYUVData);
     ICL8u oTmpSrc_U(iWidth/2,iHeight/2,formatMatrix,1,&pUDst);
     ICL8u oTmpSrc_V(iWidth/2,iHeight/2,formatMatrix,1,&pVDst);
@@ -113,28 +113,29 @@ void ICLPWCGrabber::grab(ICLBase *poOutput){
       ICL8u oTmpDst_U(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pucTmpU);
       ICL8u oTmpDst_V(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pucTmpV);
       
-      oTmpSrc_Y.deepCopy(&oTmpDst_Y);
+      oTmpSrc_Y.scaledCopy(&oTmpDst_Y);
       oTmpSrc_U.scaledCopy(&oTmpDst_U);
       oTmpSrc_V.scaledCopy(&oTmpDst_V);
+
     }else{
       iclfloat *pfTmpY = poOutput->asIcl32f()->getData(0);
       iclfloat *pfTmpU = poOutput->asIcl32f()->getData(1);
       iclfloat *pfTmpV = poOutput->asIcl32f()->getData(2);
+      
       ICL32f oTmpDst_Y(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pfTmpY);
       ICL32f oTmpDst_U(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pfTmpU);
       ICL32f oTmpDst_V(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pfTmpV);
-      oTmpSrc_Y.deepCopy(&oTmpDst_Y);
-      oTmpSrc_U.scaledCopy(&oTmpDst_U);
-      oTmpSrc_V.scaledCopy(&oTmpDst_V);
+
+      oConverter.convert(&oTmpDst_Y,&oTmpSrc_Y);
+      oConverterHalfSize.convert(&oTmpDst_U,&oTmpSrc_U);
+      oConverterHalfSize.convert(&oTmpDst_V,&oTmpSrc_V);
     }
   }else{
     convertYUV420ToRGB8(poRGB8Image,pucFlippedYUVData,iWidth,iHeight);
     oConverter.convert(poOutput,poRGB8Image);
   }
-  printf("here \n");
-  
-  // hier geht er flöten bei formatYUV -->irgentwie destructor ...
   pthread_mutex_unlock(&usb_frame_mutex[iDevice]);
+
 }
 
 
