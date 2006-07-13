@@ -2,6 +2,11 @@
 
 namespace icl{
 
+#ifndef WITH_IPP_OPTIMIZATION
+  typedef struct IppiPoint_ {int x,y;} IppiPoint;
+  typedef struct IppiSize_ {int width,height;} IppiSize;
+#endif
+  
   void icl_morph_roi_intern(ICLBase *poImage, int iHorz, int iVert)
   {
     DEBUG_LOG4("icl_morph_roi_intern(ICLBase*,int,int)");
@@ -12,6 +17,15 @@ namespace icl{
     
     poImage->getROISize(a,b);
     poImage->setROISize(a+2*iHorz,b+2*iVert);
+  }
+
+  int icl_is_convertable_to_int_intern(float *pfData, int iLen)
+  {
+    for(int i=0;i<iLen;i++)
+      {
+        if(pfData[i] == (float)((int)pfData[i])) return 0;
+      }    
+    return 1;
   }
   
   ICLConvolution::ICLConvolution(iclkernel eKernel):
@@ -38,9 +52,7 @@ namespace icl{
         piKernel = KERNEL_LAPLACE;
         break;
       default:
-        piKernel = KERNEL_ID;
-        iW=1;
-        iH=1;
+        ERROR_LOG("unsupported kernel type");
         break;        
     }
 #endif
@@ -64,29 +76,52 @@ namespace icl{
     else
       {
         pfKernel = new float[iW*iH];
+        if(icl_is_convertable_to_int_intern(poKernel->asIcl32f()->getData(0),iW*iH))
+          {
+            piKernel = new int[iW*iH];
+          }
         for(int i=0;i<iW*iH;i++)
           {
             pfKernel[i]=(poKernel->asIcl32f()->getData(0))[i];
+            if(piKernel)piKernel[i]=(int)pfKernel[i];
           }
       }
   }
   ICLConvolution::ICLConvolution(iclfloat *pfKernel, int iW, int iH, int iBufferData):
-    pfKernel(iBufferData?new float[iW*iH]:pfKernel),piKernel(0),
-    iW(iW),iH(iH),bDeleteData(iBufferData),eKernel(kernelCustom)
+    pfKernel(0),piKernel(0), iW(iW),iH(iH),bDeleteData(iBufferData),eKernel(kernelCustom)
   {
     DEBUG_LOG4("ICLConvolution::ICLConvolution(iclfloat*,int,int)");
-    if(iBufferData) memcpy(this->pfKernel,pfKernel,iW*iH*sizeof(float));    
+    if(iBufferData){
+      this->pfKernel = new float[iW*iH];
+      memcpy(this->pfKernel,pfKernel,iW*iH*sizeof(float));    
+      if(icl_is_convertable_to_int_intern(pfKernel,iW*iH))
+        {
+          piKernel = new int[iW*iH];
+          for(int i=0;i<iW*iH;i++)
+            {
+              piKernel[i]=(int)pfKernel[i];
+            }
+        }     
+    }else{
+      this->pfKernel = pfKernel;
+    }
   }
   
-  ICLConvolution::ICLConvolution(int *piKernel, int iW, int iH):
-    pfKernel(new float[iW*iH]),piKernel(new int[iW*iH]),
+  ICLConvolution::ICLConvolution(int *piKernel, int iW, int iH, int iBufferData):
+    pfKernel(0),piKernel(0),
     iW(iW),iH(iH),bDeleteData(1),eKernel(kernelCustom)
   {
     DEBUG_LOG4("ICLConvolution::ICLConvolution(int*,int,int)");
     memcpy(this->pfKernel,pfKernel,iW*iH*sizeof(float)); 
-    for(int i=0;i<iW*iH;i++)
-      {
-        pfKernel[i]=piKernel[i];
+      if(iBufferData){
+        this->piKernel = new int[iW*iH];
+        this->pfKernel = new float[iW*iH];
+        memcpy(this->piKernel,piKernel,iW*iH*sizeof(int));    
+        for(int i=0;i<iW*iH;i++){
+          pfKernel[i]=(float)piKernel[i];
+        }
+      }else{
+        this->piKernel = piKernel;
       }
   }
     
@@ -98,37 +133,82 @@ namespace icl{
     }
   }
   
-#ifdef WITH_IPP_OPTIMIZATION
 
-#define CONV_8u(S,D,C,K,KS,A) ippiFilter_8u_C1R(S->ippData8u(c),\
-                                               S->ippStep(),    \
-                                               D->ippData8u(c), \
-                                               D->ippStep(),    \
-                                               D->ippRoiSize(), \
+#define IPP_CONV_8u(S,D,C,K,KS,A) ippiFilter_8u_C1R(S->ippData8u(c),\
+                                               S->ippStep(),        \
+                                               D->ippData8u(c),     \
+                                               D->ippStep(),        \
+                                               D->ippRoiSize(),     \
                                                K,KS,A,1);
 
-#define CONV32_8u(S,D,C,K,KS,A) ippiFilter32f_8u_C1R(S->ippData8u(c),   \
-                                                    S->ippStep(),       \
-                                                    D->ippData8u(c),    \
-                                                    D->ippStep(),       \
-                                                    D->ippRoiSize(),    \
+#define IPP_CONV32_8u(S,D,C,K,KS,A) ippiFilter32f_8u_C1R(S->ippData8u(c),\
+                                                    S->ippStep(),        \
+                                                    D->ippData8u(c),     \
+                                                    D->ippStep(),        \
+                                                    D->ippRoiSize(),     \
                                                     K,KS,A);
 
-#define CONV_32f(S,D,C,K,KS,A) ippiFilter_32f_C1R(S->ippData32f(c),     \
+#define IPP_CONV_32f(S,D,C,K,KS,A) ippiFilter_32f_C1R(S->ippData32f(c), \
                                                   S->ippStep(),         \
                                                   D->ippData32f(c),     \
                                                   D->ippStep(),         \
                                                   D->ippRoiSize(),      \
                                                   K,KS,A);              \
   
-#else
-#define CONV_8u(S,D,C,K,KS,A) (void)S;(void)D;(void)C;(void)K;(void)KS;(void)A;     \
-                               ERROR_LOG("convolution not yet implemented without IPP");
+  template<class T, class M>
+  void 
+  generic_conv(ICLBase *poSrcIn, ICLBase *poDstIn, M* pmMask, int iKernelW, int iKernelH, int iChannel)
+  {
+    ICL<T> *poSrc = reinterpret_cast<ICL<T>*>(poSrcIn);
+    ICL<T> *poDst = reinterpret_cast<ICL<T>*>(poDstIn);
 
-#define CONV32_8u(a,b,c,d,e,f) CONV_8u(a,b,c,d,e,f)
+    // iterator through the source image
+    ICLPixel<T> p_src = poSrc->begin(iChannel);
+   
+    // accumulator for each pixel result
+    M buf; 
 
-#define CONV_32f(a,b,c,d,e,f) CONV_8u(a,b,c,d,e,f)
-#endif
+    // pixel distances from the kernel anchor to the kernel borders
+    int iTop = (int)floor((float)iKernelH/2);
+    int iLeft = (int)floor((float)iKernelW/2);
+    int iBottom = iKernelH-iTop-1;
+    int iRight = iKernelW-iLeft-1;
+
+    // move the kernel into the kernel center
+    pmMask+=iLeft+iTop*iKernelW;
+    
+    // buffer som tmp variables 
+    int iW = poSrc->getWidth();
+    T *ptSrc = poSrc->getData(iChannel);
+
+    // apply convolution on the source image
+    for(ICLPixel<T> p_dst = poDst->begin(iChannel);p_dst!=poDst->end(iChannel);p_dst++,p_src++)
+      {
+        buf = 0;
+        for(int x=-iLeft;x<=iRight;x++){
+          for(int y=-iTop;y<=iBottom;y++){
+            buf += (M)ptSrc[p_src.x+x+(p_src.y+y)*iW]*(M)pmMask[x+y*iKernelW]; 
+          }
+        }
+        
+        // this is not necessary i think
+        buf = buf<0 ? 0 : buf > 255 ? 255 : buf;
+        *p_dst = static_cast<T>(buf);
+      }    
+  }
+  
+
+#define C_CONV_8u(S,D,C,K,KS) generic_conv<iclbyte,int>(S,D,K,KS.width,KS.height,C);
+  
+#define C_CONV32_8u(S,D,C,K,KS) generic_conv<iclbyte,iclfloat>(S,D,K,KS.width,KS.height,C);
+
+#define C_CONV_32f(S,D,C,K,KS) generic_conv<iclfloat,iclfloat>(S,D,K,KS.width,KS.height,C);
+
+#define C_CONV8_32f(S,D,C,K,KS) generic_conv<iclfloat,int>(S,D,K,KS.width,KS.height,C);
+
+
+
+
   void ICLConvolution::apply(ICLBase *poSrc, ICLBase *poDst)
   {
     DEBUG_LOG4("ICLConvolution::apply(ICLBase *,ICLBase*)");
@@ -137,8 +217,11 @@ namespace icl{
       {
         ERROR_LOG("ICLConvolution::apply: source and destination depth must be equal!");
       }
-    
+
+#ifdef WITH_IPP_OPTIMIZATION
     IppiPoint oAnchor = { iW/2, iH/2 };
+#endif
+
     IppiSize oKernelSize = { iW, iH };
     
     icl_morph_roi_intern(poSrc,-iW/2,-iH/2);    
@@ -153,22 +236,44 @@ namespace icl{
           {
             for(int c=0;c<poSrc->getChannels();c++)
               {
-                CONV_8u(poSrc,poDst,c,piKernel,oKernelSize,oAnchor);
+#ifdef WITH_IPP_OPTIMIZATION
+                IPP_CONV_8u(poSrc,poDst,c,piKernel,oKernelSize,oAnchor);
+#else
+                C_CONV_8u(poSrc,poDst,c,piKernel,oKernelSize);
+#endif
               }
           }
-        else
+        else // use float kernel as fallback
           {
             for(int c=0;c<poSrc->getChannels();c++)
               {
-                CONV32_8u(poSrc,poDst,c,pfKernel,oKernelSize,oAnchor);
+#ifdef WITH_IPP_OPTIMIZATION
+                IPP_CONV32_8u(poSrc,poDst,c,pfKernel,oKernelSize,oAnchor);
+#else
+                C_CONV32_8u(poSrc,poDst,c,pfKernel,oKernelSize);
+#endif
               }
           }
       }
     else // depth of image is 32f
       {
-        for(int c=0;c<poSrc->getChannels();c++)
+        if(pfKernel)
           {
-            CONV_32f(poSrc,poDst,c,pfKernel,oKernelSize,oAnchor);
+            for(int c=0;c<poSrc->getChannels();c++)
+              {
+#ifdef WITH_IPP_OPTIMIZATION
+                IPP_CONV_32f(poSrc,poDst,c,pfKernel,oKernelSize,oAnchor);
+#else
+                C_CONV_32f(poSrc,poDst,c,pfKernel,oKernelSize);
+#endif
+              }
+          }
+        else // use integer kernel as fallback (NOT IPP-OPTIMIZED)
+          {
+            for(int c=0;c<poSrc->getChannels();c++)
+              {
+                C_CONV8_32f(poSrc,poDst,c,piKernel,oKernelSize);          
+              }
           }
         
       }
@@ -177,22 +282,22 @@ namespace icl{
   }
   
   int ICLConvolution::KERNEL_SOBEL_X[9] = { 1,  0, -1,
-                                          2,  0, -2,
-                                          1,  0, -1   };
+                                            2,  0, -2,
+                                            1,  0, -1   };
   
   int ICLConvolution::KERNEL_SOBEL_Y[9] = {  1,  2,  1,
-                                           0,  0,  0,
-                                           -1, -2, -1  };
+                                             0,  0,  0,
+                                            -1, -2, -1  };
   
   float ICLConvolution::KERNEL_GAUSS_3x3[9] = { 1.0/16 , 2.0/16, 1.0/16,
-                                              2.0/16 , 4.0/16, 2.0/16,
-                                              1.0/16 , 2.0/16, 1.0/16  };
+                                                2.0/16 , 4.0/16, 2.0/16,
+                                                1.0/16 , 2.0/16, 1.0/16  };
   
   float ICLConvolution::KERNEL_GAUSS_5x5[25] = { 2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571,
-                                              7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
-                                             12.0/571, 52.0/571, 127.0/571, 52.0/571, 12.0/571,
-                                              7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
-                                              2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571 };
+                                                 7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
+                                                12.0/571, 52.0/571, 127.0/571, 52.0/571, 12.0/571,
+                                                 7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
+                                                 2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571 };
   
   int ICLConvolution::KERNEL_LAPLACE[9] = { 1, 1, 1,
                                             1,-8, 1,
