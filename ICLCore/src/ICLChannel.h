@@ -248,7 +248,7 @@ class ICLChannel
   /** @param iNewRoiWidth New roi-width
       @param iNewRoiHeight New roi-height
   **/
-  void setImageRoi(int iNewRoiWidth, int iNewRoiHeight)
+  void setROISize(int iNewRoiWidth, int iNewRoiHeight)
     {
       m_oInfo.setRoi(iNewRoiWidth, iNewRoiHeight);
     }
@@ -258,12 +258,33 @@ class ICLChannel
       @param iXOffset The x-psoition 
       @param iYOffset The y-position
   **/
-  void setImageRoiOffset(int iXOffset, int iYOffset)
+  void setROIOffset(int iXOffset, int iYOffset)
     {
       m_oInfo.setRoiOffset(iXOffset, iYOffset);
     }
-
-/* }}} */
+  
+  /// Sets the channel ROI to new geometry
+  /** @param iNewRoiWidth New roi-width
+      @param iNewRoiHeight New roi-height
+      @param iXOffset The x-psoition 
+      @param iYOffset The y-position
+  **/
+  void setROI(int iXOffset, int iYOffset, int iNewRoiWidth, int iNewRoiHeight)
+    {
+      m_oInfo.setRoi(iNewRoiWidth, iNewRoiHeight);
+      m_oInfo.setRoiOffset(iXOffset, iYOffset);
+    }
+  
+  /// sets the channel ROI to new geometry
+  /** @param vecROI contains the new geometry {iX,iY,iW,iH} 
+  **/
+  void setROIRect(std::vector<int> vecROI)
+    {
+      m_oInfo.setRoiOffset(vecROI[0], vecROI[1]);
+      m_oInfo.setRoi(vecROI[2], vecROI[3]);
+    }
+  
+  /* }}} */
   
   /* {{{ getter functions: */
 
@@ -306,23 +327,64 @@ class ICLChannel
   /// Returns the width of the image channel roi
   /** @return Width of channel roi
   **/
-  int getRoiWidth() const { return m_oInfo.getRoiWidth();}
+  int getROIWidth() const { return m_oInfo.getRoiWidth();}
   
   /// Returns the  height of the image channel roi
   /** @return height of image channel roi
   **/
-  int getRoiHeight() const { return m_oInfo.getRoiHeight();}
+  int getROIHeight() const { return m_oInfo.getRoiHeight();}
 
   /// Returns the XOffset of the image channel roi
   /** @return Width of channel roi
   **/
-  int getRoiXOffset() const { return m_oInfo.getRoiXOffset();}
+  int getROIXOffset() const { return m_oInfo.getRoiXOffset();}
   
   /// Returns the YOffset of the image channel roi
   /** @return height of image channel roi
   **/
-  int getRoiYOffset() const { return m_oInfo.getRoiYOffset();}
+  int getROIYOffset() const { return m_oInfo.getRoiYOffset();}
 
+  /// Copies the ROI size into the destination references
+  /** @param riW reference to store the ROI width
+      @param riH reference to store the ROI height
+  **/
+  void getROISize(int &riW, int &riH) const
+    {
+      riW = getROIWidth();
+      riH = getROIHeight();
+    }
+
+  /// Copies the ROI Offset into the destination references
+  /** @param riX reference to store the ROI x offset
+      @param riY reference to store the ROI y offset
+  **/
+  void getROIOffset(int &riX, int &riY) const
+    {
+      riX = getROIXOffset();
+      riY = getROIYOffset();
+    }
+  /// Copies the ROI Geometry into the destination references
+  /** @param riX reference to store the ROI x offset
+      @param riY reference to store the ROI y offset
+      @param riW reference to store the ROI width
+      @param riH reference to store the ROI height
+  **/
+  void getROI(int &riX, int &riY, int &riW, int &riH) const
+    {
+      riX = getROIXOffset();
+      riY = getROIYOffset();
+      riW = getROIWidth();
+      riH = getROIHeight();
+    }
+
+  /// Returns the current ROI as a 4-parameter rect {x,y,w,h}
+  /** @return current roi rect **/
+  std::vector<int> getROIRect() const
+    {
+      std::vector<int> oRect(4);
+      getROI(oRect[0],oRect[1],oRect[2],oRect[3]);
+      return oRect;
+    }
   //@}
   /* }}} */ 
     

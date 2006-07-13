@@ -11,6 +11,7 @@ AG Neuroinformatik
 #define ICLBASE_H
     
 #include "ICLCore.h"
+#include <vector>
 
 using namespace std;
 
@@ -295,6 +296,10 @@ namespace icl {
       /** @see ICL*/
       virtual void setROISize(int iWidth, int iHeight)=0;
 
+      /// set the ROI rectangle geometry to [x,y,w,h]
+      /**  @see ICL*/
+      virtual void setROIRect(std::vector<int> oRect)=0;
+
       /// Gets the ROI (region of interests) of this image
       /** @see ICL*/
       virtual void getROI(int &riX, int &riY, int &riWidth, int &riHeight) const=0;
@@ -306,6 +311,10 @@ namespace icl {
       /// Gets the ROI- (region of interests) size of this image
       /** @see ICL*/
       virtual void getROISize(int &riWidth, int &riHeight) const=0;
+
+       /// Gets the ROI (region of interests) of this image
+      /** @see ICL*/
+      virtual std::vector<int> getROIRect() const=0;
 
       /// returns if the image has a ROI that is smaller then the image
       inline int hasROI() const

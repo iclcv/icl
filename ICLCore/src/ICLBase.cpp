@@ -21,6 +21,10 @@ ICLBase::ICLBase(int iWidth,
   m_iWidth(iWidth),m_iHeight(iHeight),m_iChannels(iChannels),m_eFormat(formatMatrix),m_eDepth(eDepth)
 {
   DEBUG_LOG4("Konstruktor: ICLBase() -> " << this); 
+  if(m_iChannels <= 0)
+    {
+      ERROR_LOG("channel count must be > 0");
+    }
 }
 
 ICLBase::ICLBase(int iWidth, 
@@ -33,6 +37,10 @@ ICLBase::ICLBase(int iWidth,
   m_eFormat(eFormat),m_eDepth(eDepth)
 {
   DEBUG_LOG4("Konstruktor: ICLBase() -> " << this); 
+  if(m_iChannels <= 0)
+    {
+      ERROR_LOG("channel count must be > 0");
+    }
 }
 
 

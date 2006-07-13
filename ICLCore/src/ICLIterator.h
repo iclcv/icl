@@ -66,6 +66,20 @@ namespace icl{
 
   The ICLPixel<Type> is defined in the ICL<Type> as iterator.
   This offers an intuitive "std-lib-like" use.
+
+  <h3>Using the ICLPixel as ROW-iterator</h3>
+  The ICLPixel can be used as ROW-iterator too. The following example
+  will explain usage:
+  <pre>
+  void copy_channel_roi_row_by_row(ICL8u &src, ICL8u &dst, int iChannel)
+  {
+     for(ICL8u::iterator s=src.begin(iChannel),d=dst.begin(iChannel) ;s!=src.end(iChannel);d.y++,s.y++)
+     {
+        memcpy(d.getData(),s.getData(),s.getRowLen()*sizeof(iclbyte));
+     }
+  }
+  </pre>
+  
   */
   template <class Type>
     class ICLPixel{
@@ -79,8 +93,8 @@ namespace icl{
         @param iRoiW width of the images ROI
     */
     ICLPixel(int iXStart,int iYStart,Type *ptData, int iImageW, int iRoiW):
-      x(iXStart),y(iYStart),val(ptData[iXStart+iImageW*iYStart]),ptData(ptData),
-      iImageW(iImageW),iXEnd(iXStart+iRoiW),iDX(iImageW-iRoiW){}
+      x(iXStart),y(iYStart),ptData(ptData),
+      iImageW(iImageW),iXEnd(iXStart+iRoiW),iXStart(iXStart){}
     
     /// current x location of the pixel (with image origin)
     int x;
@@ -94,7 +108,7 @@ namespace icl{
     */
     inline Type &operator*()
       {
-        return val;
+        return ptData[x+iImageW*y];
       }
     
     /// moves to the next pixel position
@@ -122,28 +136,40 @@ namespace icl{
        current pixel data. If the end of a line is reached, then
        the position is set to the beginning of the next line.
     */
+    inline void operator++(int i)
+      {
+        (void)i;
+        x++;
+        if(x>=iXEnd){
+          x=iXStart;
+          y++;
+        }     
+      }
+    /// prefix as the above postfix
     inline void operator++()
       {
         x++;
-        if(x>iXEnd){
-          x-=iDX;
+        if(x>=iXEnd){
+          x=iXStart;
           y++;
-        }
-        val = ptData[x+iImageW*y];
+        }     
       }
     /// to check if pixel is still inside the ROI
     /** @see operator++ */
     inline int operator!=(ICLEndPixel end)
       {
         return y!=end;
+      }    
+      private:
+
+    inline int getRowLen()
+      {
+        return iXEnd-iXStart;
       }
     
-      private:
-    
     /// internal reference for the current pixel value
-    Type &val;
     Type *ptData;
-    int iImageW,iXEnd,iDX;
+    int iImageW,iXEnd,iXStart;
   };
 }
 #endif

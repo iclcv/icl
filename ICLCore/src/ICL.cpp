@@ -285,6 +285,45 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
   return poDst;
 }
 
+template<class Type>
+ICLBase*
+ICL<Type>::deepCopyROI(ICLBase *poDst) const
+{
+  if(!poDst) return deepCopy();
+  int iW,iH,iDstW,iDstH;
+  getROISize(iW,iH);
+  poDst->getROISize(iDstW,iDstH);
+  if(iW!=iDstW || iH != iDstH)
+    {
+      ERROR_LOG("roi size of source and destination must be equal");
+    }
+  poDst->setNumChannels(getChannels());
+  
+  for(int c=0;c<m_iChannels;c++)
+    {
+      if(m_eDepth == poDst->getDepth())
+        {
+          
+        }
+      else
+        {
+          
+        }
+    }
+  (void)poDst;
+  printf("not yet implemented !");
+  return 0;
+}
+  
+ 
+template<class Type>
+ICLBase*
+ICL<Type>::scaledCopyROI(ICLBase *poDst) const
+{
+  (void)poDst;
+  printf("not yet implemented !");
+  return 0;
+}
 
 //----------------------------------------------------------------------------
 template<class Type>
@@ -318,23 +357,32 @@ ICL<Type>::removeChannel(int iChannel)
   //---- Log Message ----
   DEBUG_LOG4("removeChannel(int)"); 
   
+  if(m_iChannels < 2)
+    {
+      ERROR_LOG("removing the last channel is not allowed!");
+    }
+  
+  m_ppChannels.erase(m_ppChannels.begin()+iChannel);
+  
+  /*
   //---- create new channel array ----
   vector<ICLChannelPtr> vecTmp(m_iChannels-1);
   
   //---- remove selected channel ----
   m_ppChannels[iChannel] = ICLChannelPtr();
-
+  
   std::copy (m_ppChannels.begin(), 
-             m_ppChannels.begin()+iChannel, 
-             vecTmp.begin());
+  m_ppChannels.begin()+iChannel, 
+  vecTmp.begin());
   std::copy (m_ppChannels.begin()+iChannel+1, 
-             m_ppChannels.end(),
-             vecTmp.begin()+iChannel);
+  m_ppChannels.end(),
+  vecTmp.begin()+iChannel);
   --m_iChannels;
-
+  
   //---- clear old channel array and assign new ----
   m_ppChannels.clear();
   m_ppChannels = vecTmp;
+  */
 }
 
 //----------------------------------------------------------------------------
@@ -345,28 +393,19 @@ ICL<Type>::append(ICL<Type> *poSrc)
   //---- Log Message ----
   DEBUG_LOG4("appendImage(const ICL<Type>&)"); 
 
-  if(m_iChannels > 0)
-  { 
-    //---- ensure identical image size
-    if(poSrc->getWidth() != getWidth() || poSrc->getHeight() != getHeight())
+  
+  //---- ensure identical image size
+  if(poSrc->getWidth() != getWidth() || poSrc->getHeight() != getHeight())
     {
       ERROR_LOG("error in ICL::append: image sizes are different!");
       return;
     }
-    
-    for(int i=0;i<poSrc->m_iChannels;i++){
-      m_ppChannels.push_back(poSrc->m_ppChannels[i]); 
-      m_iChannels++;
-    }      
-  }
-  else
-  {
-    // cheep copy
-    m_ppChannels = poSrc->m_ppChannels;
-    m_iChannels = (int)(m_ppChannels.size());
-    m_iWidth = poSrc->m_iWidth;
-    m_iHeight = poSrc->m_iHeight;      
-  }
+  
+  for(int i=0;i<poSrc->m_iChannels;i++){
+    m_ppChannels.push_back(poSrc->m_ppChannels[i]); 
+    m_ppChannels[m_iChannels]->setROIRect(getROIRect());
+    m_iChannels++;
+  }      
 } 
 
 //----------------------------------------------------------------------------
@@ -377,36 +416,17 @@ ICL<Type>::appendChannel(int iChannel, ICL<Type> *poSrc)
   //---- Log Message ----
   DEBUG_LOG4("appendChannel(int,const ICL<Type>&)");
   
-  if(m_iChannels > 0)
-  { 
-    //---- ensure identical image size
-    if(poSrc->getWidth() != getWidth() || poSrc->getHeight() != getHeight())
+  
+  //---- ensure identical image size
+  if(poSrc->getWidth() != getWidth() || poSrc->getHeight() != getHeight())
     {
       ERROR_LOG("error in ICL::append: image sizes are different!");
       return;
     }
-    
-    m_ppChannels.push_back(poSrc->m_ppChannels[iChannel]); 
-    m_iChannels++;
-    
-    /*
-    //---- append channel ----
-    vector<ICLChannelPtr> vecTmp(m_iChannels+1);
-    
-    //---- Shallow copy of source channels ----
-    std::copy (m_ppChannels.begin(), 
-               m_ppChannels.end(), 
-               vecTmp.begin());
-    
-    //---- Delete old stuff ----
-    m_ppChannels.clear();
-    
-    //---- Manage new ICL ----
-    m_ppChannels = vecTmp;
-    m_ppChannels[m_iChannels] = poSrc->m_ppChannels[iChannel];
-    m_iChannels++;
-    */
-  }
+  
+  m_ppChannels.push_back(poSrc->m_ppChannels[iChannel]); 
+  m_ppChannels[m_iChannels]->setROIRect(getROIRect());
+  m_iChannels++;
 }
 
 //----------------------------------------------------------------------------
@@ -479,6 +499,11 @@ ICL<Type>::setNumChannels(int iNumNewChannels)
 {
   //---- Log Message ----
   DEBUG_LOG4("setNumChannels(int)"); 
+
+  if(iNumNewChannels <= 0)
+    {
+      ERROR_LOG("channel count must be > 0");
+    }
    
   //---- reduce number of channels ----
   if(iNumNewChannels < m_iChannels)
@@ -495,6 +520,16 @@ ICL<Type>::setNumChannels(int iNumNewChannels)
   //---- Extend number of channels ----
   else if (iNumNewChannels > m_iChannels)
   {
+
+    int iNew = iNumNewChannels - m_iChannels;
+    for(int i=0;i<iNew;i++)
+      {
+        m_ppChannels.push_back(ICLChannelPtr (new ICLChannel<Type>(getWidth(),getHeight())));
+        m_ppChannels[m_iChannels]->setROIRect(getROIRect());
+        m_iChannels++;
+      }
+    
+    /*
     //---- Allocate new memory for data ----
     vector<ICLChannelPtr> vecChannelsNew(iNumNewChannels);
     
@@ -514,6 +549,7 @@ ICL<Type>::setNumChannels(int iNumNewChannels)
     //---- Assign data ----
     m_ppChannels = vecChannelsNew;
     m_iChannels = iNumNewChannels;
+    */
   }
 }
 
@@ -527,24 +563,21 @@ ICL<Type>::renew(int iNewWidth, int iNewHeight, int iNewNumChannels)
   if(iNewWidth < 0)iNewWidth = m_iWidth;
   if(iNewHeight < 0)iNewHeight = m_iHeight;
   if(iNewNumChannels < 0)iNewNumChannels = m_iChannels;
-  
-  
-  //---- only on demand ------
-  if (!isEqual(iNewWidth, iNewHeight, iNewNumChannels))
-  {
-    m_ppChannels.resize(iNewNumChannels);
-    m_iWidth = iNewWidth;
-    m_iHeight = iNewHeight;
-    m_iChannels = iNewNumChannels;
 
-    for(int i=0;i<iNewNumChannels;i++)
-      {
-        m_ppChannels[i] = 
-          ICLChannelPtr (new ICLChannel<Type>(iNewWidth,iNewHeight));
-      }
-    
-  }
+  if(m_iChannels == 0)
+    {
+      ERROR_LOG("channel count must be > 0");
+    }
+  if(iNewWidth != getWidth() || iNewHeight != getHeight())
+    {
+      resize(iNewWidth,iNewHeight);
+    }
+  if(getChannels() == iNewNumChannels)
+    {
+      setNumChannels(iNewNumChannels);
+    }
 }
+
 
 //----------------------------------------------------------------------------
 template<class Type>
@@ -583,17 +616,22 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
     poDst->setFormat(m_eFormat);
   }
   
+  int iX,iY,iW,iH;
+  getROI(iX,iY,iW,iH);
+  poDst->setROI(iX,iY,iW,iH);
+  
   if(m_eDepth == depth8u)
   {
     for(int c=0;c<m_iChannels;c++)
     {
-#ifdef WITH_IPP_OPTIMIZATION
-      IppiSize oHoleImageROI = {m_iWidth,m_iHeight};
-      ippiConvert_8u32f_C1R(ippData8u(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),oHoleImageROI);
-#else
-      int iDim = m_iWidth * m_iHeight;
       iclbyte *pucSrc =  reinterpret_cast<iclbyte*>(getDataPtr(c));
       iclfloat *pfDst = reinterpret_cast<iclfloat*>(poDst->getDataPtr(c));
+#ifdef WITH_IPP_OPTIMIZATION
+      IppiSize oHoleImageROI = {m_iWidth,m_iHeight};
+      ippiConvert_8u32f_C1R(pucSrc,ippStep(),pfDst,poDst->ippStep(),oHoleImageROI);
+#else
+      int iDim = m_iWidth * m_iHeight;
+      
       for(int i=0;i<iDim;i++)
       {
         pfDst[i]=static_cast<iclfloat>(pucSrc[i]);
@@ -616,24 +654,31 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
   //---- Log Message ----
   DEBUG_LOG4("convertTo8Bit()");
   
-  if(!poDst){
-    poDst = new ICL8u(getWidth(),getHeight(),getFormat(),getChannels());
-  }else{
-    poDst->renew(m_iWidth,m_iHeight,m_iChannels);
-    poDst->setFormat(m_eFormat);
-  }
-  // not neccesary ! poDst->detach();
+  if(!poDst)
+    {
+      poDst = new ICL8u(getWidth(),getHeight(),getFormat(),getChannels());
+    }
+  else
+    {
+      poDst->renew(m_iWidth,m_iHeight,m_iChannels);
+      poDst->setFormat(m_eFormat);
+    }
+  
+  int iX,iY,iW,iH;
+  getROI(iX,iY,iW,iH);
+  poDst->setROI(iX,iY,iW,iH);
+ 
   if(m_eDepth == depth32f)
     {
       for(int c=0;c<m_iChannels;c++)
         {
-#ifdef WITH_IPP_OPTIMIZATION
-          IppiSize oHoleImageROI = {m_iWidth,m_iHeight};
-          ippiConvert_32f8u_C1R(ippData32f(c),ippStep(),poDst->ippData8u(c),poDst->ippStep(),oHoleImageROI,ippRndNear);
-#else
-          int iDim = m_iWidth* m_iHeight;
           iclfloat *pfSrc = reinterpret_cast<iclfloat*>(getDataPtr(c));
           iclbyte *pucDst =  reinterpret_cast<iclbyte*>(poDst->getDataPtr(c));
+#ifdef WITH_IPP_OPTIMIZATION
+          IppiSize oHoleImageROI = {m_iWidth,m_iHeight};
+          ippiConvert_32f8u_C1R(pfSrc,ippStep(),pucDst,poDst->ippStep(),oHoleImageROI,ippRndNear);
+#else
+          int iDim = m_iWidth* m_iHeight;
           for(int i=0;i<iDim;i++){
             pucDst[i]=static_cast<iclbyte>(pfSrc[i]);
           }
@@ -646,24 +691,6 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
       return asIcl8u()->deepCopy(poDst)->asIcl8u();
     }  
  
-}
-template<class Type>
-ICLBase*
-ICL<Type>::deepCopyROI(ICLBase *poDst) const
-{
-  (void)poDst;
-  printf("not yet implemented !");
-  return 0;
-}
-  
- 
-template<class Type>
-ICLBase*
-ICL<Type>::scaledCopyROI(ICLBase *poDst) const
-{
-  (void)poDst;
-  printf("not yet implemented !");
-  return 0;
 }
 
 // }}} 
@@ -730,10 +757,7 @@ ICL<Type>::getROI(int &riX, int &riY, int &riWidth, int &riHeight) const
   
   if(m_iChannels > 0)
     {
-      riX = m_ppChannels[0]->getRoiXOffset();
-      riY = m_ppChannels[0]->getRoiYOffset();
-      riWidth = m_ppChannels[0]->getRoiWidth();
-      riHeight = m_ppChannels[0]->getRoiHeight();
+      m_ppChannels[0]->getROI(riX,riY,riWidth,riHeight);
     }
   else
     {
@@ -752,8 +776,7 @@ ICL<Type>::getROIOffset(int &riX, int &riY) const
 
   if(m_iChannels > 0)
     {
-      riX = m_ppChannels[0]->getRoiXOffset();
-      riY = m_ppChannels[0]->getRoiYOffset();
+      m_ppChannels[0]->getROIOffset(riX,riY);
     }
   else
     {
@@ -767,19 +790,34 @@ void
 ICL<Type>::getROISize(int &riWidth, int &riHeight) const
 {
 
-  //---- Log Message ----
   DEBUG_LOG4("getROISize(int&,int&)");
   
   if(m_iChannels > 0)
     {
-      riWidth = m_ppChannels[0]->getRoiWidth();
-      riHeight = m_ppChannels[0]->getRoiHeight();
+      m_ppChannels[0]->getROISize(riWidth,riHeight);
     }
   else
     {
       ERROR_LOG("getROISize channel count is 0 \n");
     }
 }
+
+template<class Type>
+inline
+std::vector<int> 
+ICL<Type>::getROIRect() const
+{
+  DEBUG_LOG4("getROIRect()");
+   if(m_iChannels > 0)
+    {
+      return m_ppChannels[0]->getROIRect();
+    }
+  else
+    {
+      ERROR_LOG("getROISize channel count is 0 \n");
+    }
+}
+
 
 // ---------------------------------------------------------------------
 template<class Type>
@@ -799,8 +837,6 @@ void ICL<Type>::clear(int iChannel, Type tValue)
     }
 }
 
-
-
 // }}}
   
 // {{{  Setter Function:
@@ -812,8 +848,7 @@ setROI(int iX, int iY,int iWidth,int iHeight)
 {
   for(int i=0;i<m_iChannels;i++)
     {
-      m_ppChannels[i]->setImageRoi(iWidth,iHeight);
-      m_ppChannels[i]->setImageRoiOffset(iX,iY);
+      m_ppChannels[i]->setROI(iX,iY,iWidth,iHeight);
     }
 }
   
@@ -824,7 +859,7 @@ setROIOffset(int iX, int iY)
 {
   for(int i=0;i<m_iChannels;i++)
     {
-      m_ppChannels[i]->setImageRoiOffset(iX,iY);
+      m_ppChannels[i]->setROIOffset(iX,iY);
     }
 }
   
@@ -835,10 +870,20 @@ setROISize(int iWidth, int iHeight)
 {
   for(int i=0;i<m_iChannels;i++)
     {
-      m_ppChannels[i]->setImageRoi(iWidth,iHeight);
+      m_ppChannels[i]->setROISize(iWidth,iHeight);
     }
 }
+
+template<class Type> 
+void 
+ICL<Type>::setROIRect(std::vector<int> oRect)
+{
+  for(int i=0;i<m_iChannels;i++)
+    {
+      m_ppChannels[i]->setROIRect(oRect);
+    }
   
+}
 
 // }}}
 

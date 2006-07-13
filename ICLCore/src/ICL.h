@@ -334,6 +334,10 @@ class ICL : public ICLBase
   **/
   virtual void setROISize(int iWidth, int iHeight);
   
+  /// sets the ROI (region of interests) to a specified rect
+  /** @param oRect new ROI parameters [x,y,w,h]*/
+  virtual void setROIRect(std::vector<int> oRect);
+  
   //@}
 
 /* }}} */
@@ -403,6 +407,12 @@ class ICL : public ICLBase
   **/
   virtual void getROISize(int &riWidth, int &riHeight) const;
 
+  /// Gets the ROI (region of interests) of this image
+  /** @return current ROI rect as [x,y,w,h] */
+  virtual std::vector<int> getROIRect() const;
+
+  
+ 
   //@}
 
   /* }}} */
@@ -492,7 +502,7 @@ class ICL : public ICLBase
   */
   inline enditerator end(int iChannel)
     {
-      return (m_ppChannels[iChannel]->getRoiHeight())+(m_ppChannels[iChannel]->getRoiYOffset());
+      return (m_ppChannels[iChannel]->getROIHeight())+(m_ppChannels[iChannel]->getROIYOffset());
     }
 
   /* }}} */
