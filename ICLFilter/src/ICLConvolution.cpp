@@ -138,21 +138,21 @@ namespace icl{
                                                S->ippStep(),        \
                                                D->ippData8u(c),     \
                                                D->ippStep(),        \
-                                               D->ippRoiSize(),     \
+                                               D->ippROISize(),     \
                                                K,KS,A,1);
 
 #define IPP_CONV32_8u(S,D,C,K,KS,A) ippiFilter32f_8u_C1R(S->ippData8u(c),\
                                                     S->ippStep(),        \
                                                     D->ippData8u(c),     \
                                                     D->ippStep(),        \
-                                                    D->ippRoiSize(),     \
+                                                    D->ippROISize(),     \
                                                     K,KS,A);
 
 #define IPP_CONV_32f(S,D,C,K,KS,A) ippiFilter_32f_C1R(S->ippData32f(c), \
                                                   S->ippStep(),         \
                                                   D->ippData32f(c),     \
                                                   D->ippStep(),         \
-                                                  D->ippRoiSize(),      \
+                                                  D->ippROISize(),      \
                                                   K,KS,A);              \
   
   template<class T, class M>
