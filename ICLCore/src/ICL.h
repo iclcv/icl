@@ -630,7 +630,7 @@ class ICL : public ICLBase
   /// returns the roi size in Ippi compatible format IppiSize
   /** @return roi size of the channel
   **/
-  virtual IppiSize ippRoiSize() const
+  virtual IppiSize ippROISize() const
     {
       IppiSize oSize = {m_ppChannels[0]->m_oInfo.getRoiWidth(),
                         m_ppChannels[0]->m_oInfo.getRoiHeight()}; 
@@ -640,7 +640,7 @@ class ICL : public ICLBase
   /// returns the roi offset in Ippi compatible format IppiPoint
   /** @return roi offset of the channel
   **/
-  virtual IppiPoint ippRoiOffset() const
+  virtual IppiPoint ippROIOffset() const
     {
       IppiPoint oOffset = {m_ppChannels[0]->m_oInfo.getRoiXOffset(),
                            m_ppChannels[0]->m_oInfo.getRoiYOffset()};
@@ -650,7 +650,7 @@ class ICL : public ICLBase
   /// returns the roi-rect of this channel in Ippi compatible format IppiRect
   /** @return roi-rect of the channel
   **/
-  virtual IppiRect ippRoi() const
+  virtual IppiRect ippROI() const
     {
       IppiRect oRoi = {m_ppChannels[0]->m_oInfo.getRoiXOffset(),
                        m_ppChannels[0]->m_oInfo.getRoiYOffset(),

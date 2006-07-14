@@ -233,13 +233,13 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
       if(getDepth()==depth8u)
         {
           ippiResize_8u_C1R(ippData8u(c),ippSize(),ippStep(),oHoleImageROI,
-                            poDst->ippData8u(c),poDst->ippStep(),poDst->ippRoiSize(),
+                            poDst->ippData8u(c),poDst->ippStep(),poDst->ippROISize(),
                             (double)poDst->getWidth()/(double)getWidth(),
                             (double)poDst->getHeight()/(double)getHeight(),
                             (int)eScaleMode);
         }else{
           ippiResize_32f_C1R(ippData32f(c),ippSize(),ippStep(),oHoleImageROI,
-                             poDst->ippData32f(c),poDst->ippStep(),poDst->ippRoiSize(),
+                             poDst->ippData32f(c),poDst->ippStep(),poDst->ippROISize(),
                              (double)poDst->getWidth()/(double)getWidth(),
                              (double)poDst->getHeight()/(double)getHeight(),
                              (int)eScaleMode);
@@ -328,29 +328,45 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
       if(m_eDepth == poDst->getDepth())
         {
           if(m_eDepth == depth8u){
+#ifndef WITH_IPP_OPTIMIZATION
             for(ICL8u::iterator s=asIcl8u()->begin(c),d=poDst->asIcl8u()->begin(c); s!=asIcl8u()->end(c);d.y++,s.y++){
               memcpy(&*d,&*s,s.getRowLen()*sizeof(iclbyte));
             }
+#else
+            ippiCopy_8u_C1R(ippData8u(c),ippStep(),poDst->ippData8u(c),poDst->ippStep(),ippROISize());
+#endif
           }else{
+#ifndef WITH_IPP_OPTIMIZATION
             for(ICL32f::iterator s=asIcl32f()->begin(c),d=poDst->asIcl32f()->begin(c); s!=asIcl32f()->end(c);d.y++,s.y++){
               memcpy(&*d,&*s,s.getRowLen()*sizeof(iclfloat));
             }
+#else
+             ippiCopy_32f_C1R(ippData32f(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),ippROISize());
+#endif
           }
         }
       else
         {
           if(m_eDepth == depth8u){
+#ifndef WITH_IPP_OPTIMIZATION
             ICL8u::iterator s=asIcl8u()->begin(c);
             ICL32f::iterator d=poDst->asIcl32f()->begin(c);
             for(;s!=asIcl8u()->end(c);d++,s++){
               *d = static_cast<iclfloat>(*s);
             }
+#else
+            ippiConvert_8u32f_C1R(ippData8u(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),ippROISize());
+#endif
           }else{
+#ifndef WITH_IPP_OPTIMIZATION
             ICL32f::iterator s=asIcl32f()->begin(c);
             ICL8u::iterator d=poDst->asIcl8u()->begin(c);
             for(;s!=asIcl32f()->end(c);d++,s++){
               *d = static_cast<iclbyte>(*s);
             }
+#else
+            ippiConvert_32f8u_C1R(ippData32f(c),ippStep(),poDst->ippData8u(c),poDst->ippStep(),ippROISize(),ippRndNear);
+#endif
           }
         }
     }
@@ -785,13 +801,13 @@ ICL<Type>::getMax(int iChannel) const
   if(m_eDepth == depth8u)
     {
       iclbyte ucMax;
-      ippiMax_8u_C1R(ippData8u(iChannel),ippStep(),ippRoiSize(),&ucMax);
+      ippiMax_8u_C1R(ippData8u(iChannel),ippStep(),ippROISize(),&ucMax);
       return static_cast<Type>(ucMax);
     }
   else
     {
       iclfloat fMax;
-      ippiMax_32f_C1R(ippData32f(iChannel),ippStep(),ippRoiSize(),&fMax);
+      ippiMax_32f_C1R(ippData32f(iChannel),ippStep(),ippROISize(),&fMax);
       return static_cast<Type>(fMax);
     }
                      
@@ -811,13 +827,13 @@ ICL<Type>::getMin(int iChannel) const
   if(m_eDepth == depth8u)
     {
       iclbyte ucMin;
-      ippiMin_8u_C1R(ippData8u(iChannel),ippStep(),ippRoiSize(),&ucMin);
+      ippiMin_8u_C1R(ippData8u(iChannel),ippStep(),ippROISize(),&ucMin);
       return static_cast<Type>(ucMin);
     }
   else
     {
       iclfloat fMin;
-      ippiMin_32f_C1R(ippData32f(iChannel),ippStep(),ippRoiSize(),&fMin);
+      ippiMin_32f_C1R(ippData32f(iChannel),ippStep(),ippROISize(),&fMin);
       return static_cast<Type>(fMin);
     }
                      

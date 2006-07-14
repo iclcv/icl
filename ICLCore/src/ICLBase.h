@@ -355,15 +355,15 @@ namespace icl {
 
       /// returns the ROI size in IPP-compatible format
       /** @see ICL*/
-      virtual IppiSize ippRoiSize() const=0;
+      virtual IppiSize ippROISize() const=0;
 
       /// returns the ROI offset in IPP-compatible format
       /** @see ICL*/
-      virtual IppiPoint ippRoiOffset() const=0;
+      virtual IppiPoint ippROIOffset() const=0;
 
       /// returns the ROI rect in IPP-compatible format
       /** @see ICL*/
-      virtual IppiRect ippRoi() const=0;
+      virtual IppiRect ippROI() const=0;
 
       /// returns the line width in bytes 
       /** @see ICL*/
