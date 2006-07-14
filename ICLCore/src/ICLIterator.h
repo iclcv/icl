@@ -12,7 +12,7 @@ namespace icl{
   /**
   The ICLIterator is a utility to iterate line by line over
   all pixels of an ICLs ROI. The following ascii image 
-  show an image roi.
+  shows an images ROI.
   <pre>
     1st pixel
       |
@@ -29,8 +29,8 @@ namespace icl{
   </pre>
   
   For image operation like thresholding or filters,
-  it is necessary perform calculation for each roi
-  pixel. To achieve that the programmer needs to
+  it is necessary perform calculation for each ROI-
+  pixel. To achieve that, the programmer needs to
   Take care about:
      - xoffset
      - yoffset
@@ -56,16 +56,16 @@ namespace icl{
   </pre>
 
   The ROIs end(c) is represented by a single integer value
-  "typedef'ed" to ICLEndIterator. This in has the value of the first
-  not-valid y-value for a pixel: If the last line is finished,
+  "typedef'ed" to ICLEndIterator, which the value of the first
+  invalid y-value for a ROI-pixel: If the last line is finished,
   the ++-operator will increase y to this value, and
   <pre>
   p!=im.end(c)
   </pre>
-  will return false, which will force the loop to be finished.
+  will return false, which will end the loop.
 
   The ICLIterator<Type> is defined in the ICL<Type> as iterator.
-  This offers an intuitive "std-lib-like" use.
+  This offers an intuitive "stdlib-like" use.
 
   <h3>Using the ICLIterator as ROW-iterator</h3>
   The ICLIterator can be used as ROW-iterator too. The following example
@@ -79,6 +79,62 @@ namespace icl{
      }
   }
   </pre>
+
+  <h2>Performance:Efficiency</h2>
+  There are 3 major ways to access the pixel data of an image.
+  - using the (x,y,channel) -operator
+  - using the ICLIterator
+  - working directly with the channel data
+
+  Each method has its on advantages and disadvatages:
+  - the (x,y,channel) operator is very intuitive and it can be used
+    to write code that functionality is very transparent to 
+    other programmers. The disadvantages are, the fact, that it
+    does not take care about the images ROI, and it is 
+    <b>very slow</b>.
+  - the ICLIterator works on single channels, so a single iterator
+    provides only <b>linear</b>(line by line) access to each pixel.
+    It major advantage is - that it handels the ROI internally, and
+    that it is up to 5 times faster then working with the 
+    (x,y,channel)-operator
+  - the fastes way to process the image data is work directly
+    with the data pointer received from image.getData(channel).
+    In this case the programmer himself needs to take care about
+    The images ROI.
+
+  <h2>Performace:In Values</h2>
+  The following example shows use of the different techniques
+  to set image data of a single channel image to the value 42.
+  (Times: 1.4Mhz Pentium-M machine with 512 MB-Ram, SuSe-Linux 9.3)
+  <pre>
+  // create a VERY large image
+  ICL8u im(10000,10000,1);
+  
+  // 1st working with the image data (time: ~280ms)
+  iclbyte *pucData = im.getData(0);
+  for(int i=0;i<im.getWidth()*im.getHeight();i++){
+     pucData[i]=42;
+  }
+
+  // 2nd working with the iterator (time: ~650ms)
+  for(ICL8u::iterator it=im.begin(0);it!=im.end(0);it++){
+    *it = 42;
+  }
+
+  // 3rd working with the (x,y,channel)-operator (time: ~2280)
+  for(int x=0;x<im.getWidth();x++){
+    for(int y=0;y<im.getHeight();y++){
+      im(x,y,0) = 42;
+    }
+  }
+
+  // for coparison:memset (time: ~150ms)
+  memset(pucData,42,im.getWidth()*im.getHeight());
+  
+  </pre>
+  <b>Note</b> Working directly on the image data, is fast in this case,
+  as the implemented algorithm does not use the pixels position (x,y)
+  
   
   */
   template <class Type>

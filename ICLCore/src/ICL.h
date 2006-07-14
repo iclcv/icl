@@ -131,6 +131,14 @@ class ICL : public ICLBase
          }
       }
       </pre>
+      <h3>Efficiency</h3>
+      Although the ()-operator is compiled inline, and optimized,
+      It is very slow. A measurement with a "-O3" binary brought the result
+      That pixle access is up to 10 times faster when working
+      directly with a channel data pointer. Nevertheless, the ()-operator
+      is provided in the ICL-class, as it offers a very intuitive access
+      to the pixel data. 
+  
       @param iX X-Position of the referenced pixel
       @param iY Y-Position of the referenced pixel
       @param iChannel channel index
@@ -190,13 +198,43 @@ class ICL : public ICLBase
   **/
   virtual ICLBase* scaledCopy(ICLBase *poDst, iclscalemode eScaleMode=interpolateNN) const;
   
-  /// copies the image data in the images ROI into the destination images ROI
-  /** TODO: TEXT
+  /// copies the image data in the images ROI into the destination images ROI (IPP-OPTIMIZED)
+  /** This function will copy the content of the images ROI into the
+      destination images ROI. The ROIs must have equal dimensions - an error will
+      exit the program otherwise. If the given destination image is NULL (by default),
+      deepCopyROI will create a new image, with identical channel count, depth and
+      format. This image has the size of the source images ROI-size, and will contain
+      the source images' ROI data.
+
+      <h3>Efficiency</h3>
+      The copy calls of the ROIs are performed line by line, using <b>memcpy</b>.
+      This will speedup performance for huge ROIs (width>100) by up to 50%. 
+
+      <h3>Depth conversion</h3>
+      The deep copy function supports IPP-OPTIMIZED depth conversion.
+      
   **/
   virtual ICLBase *deepCopyROI(ICLBase *poDst = NULL) const;
   
-  /// scales the image data in the image ROI into the destination images ROI
-  /** TODO: TEXT
+  /// scales the image data in the image ROI into the destination images ROI (IPP-OPTIMIZED)
+  /** This function copies ROI data from one image into the ROI of another one. If the source
+      and destination ROIs have different sizes the moved data is scaled.
+      If the destination image is NULL or the ROIs have identical sized, deepCopyROI is called.
+  
+      <h3>Efficiency</h3>
+      The IPP-OPTIMIZED implementation is <b>very fast</b> - as the used ippResize-function
+      uses as well source ROI as destination ROI by default. <b>Note</b> that the non
+      OPTIMIZED function is just a fallback implementation to provided identical functionality
+      to the optimized implementation. As scaledCopy, this fallback implementation uses
+      a temporary image buffer, to perform the operation.
+      @param poDst destination image (if NULL) than it is created new with
+                   identical size of this images ROI size.
+      @param eScaleMode defines the interpolation mode, that is used for the scaling
+                        operation.
+                        possible modes are:
+                           - interpolateNN  --> nearest neighbor interpolation (fastest)
+                           - interpolateLIN  --> bilinear interpolation
+                           - interpolateRA  --> region average 
   **/
   virtual ICLBase *scaledCopyROI(ICLBase *poDst = NULL, iclscalemode eScaleMode=interpolateNN) const;
                   
@@ -481,7 +519,9 @@ class ICL : public ICLBase
             }
          }
       }
-  </pre>
+      </pre>
+      <b>Note:</b> The performance hints illustrated in the
+      ICLIterator documentation.
       @param iChannel selected channel index
       @return roi-iterator
       @see ICLIterator
