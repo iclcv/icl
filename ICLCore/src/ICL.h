@@ -198,7 +198,7 @@ class ICL : public ICLBase
   /// scales the image data in the image ROI into the destination images ROI
   /** TODO: TEXT
   **/
-  virtual ICLBase *scaledCopyROI(ICLBase *poDst = NULL) const;
+  virtual ICLBase *scaledCopyROI(ICLBase *poDst = NULL, iclscalemode eScaleMode=interpolateNN) const;
                   
   /* }}} */
 

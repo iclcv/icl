@@ -71,7 +71,7 @@ void ICLBase::setFormat(iclformat eFormat)
 
 // {{{ utillity functions
 
-void ICLBase::print(string sTitle)
+void ICLBase::print(string sTitle) const
 {
   int iX,iY,iW,iH;
   getROI(iX,iY,iW,iH);

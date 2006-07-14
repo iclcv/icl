@@ -152,7 +152,7 @@ namespace icl {
       /** this function is implemented in the ICL-template class
       @see ICL
       **/
-      virtual ICLBase *scaledCopyROI(ICLBase *poDst = NULL) const=0;
+      virtual ICLBase *scaledCopyROI(ICLBase *poDst = NULL, iclscalemode eScaleMode=interpolateNN) const=0;
       //@}
       /* }}} */
 
@@ -428,7 +428,7 @@ namespace icl {
       /** @param sTitle optional title, that can be printed before
                         printing the image parameters
       **/
-      void print(string sTitle="image");
+      void print(string sTitle="image") const;
       //@}
       /* }}} */
 

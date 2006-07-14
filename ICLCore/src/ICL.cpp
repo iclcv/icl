@@ -207,38 +207,32 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
   //---- type conversion case -----------
   if(getDepth() != poDst->getDepth())
     {
-      if(poDst->getDepth() == depth8u)
-        {
-          ICL8u oTmp(poDst->getWidth(),poDst->getHeight(),poDst->getChannels());
-          scaledCopy(&oTmp,eScaleMode);
-          oTmp.deepCopy(poDst);
-        }
-      else
-        {
-          ICL32f oTmp(poDst->getWidth(),poDst->getHeight(),poDst->getChannels());
-          scaledCopy(&oTmp,eScaleMode);
-          oTmp.deepCopy(poDst);
-        }
+      ICLBase *poTmp = iclNew(getDepth(),poDst->getWidth(),poDst->getHeight(),formatMatrix,poDst->getChannels());
+      scaledCopy(poTmp,eScaleMode);
+      poTmp->deepCopy(poDst);
+      delete poTmp;
       return poDst;
-    }    
+    }
   
   poDst->setNumChannels( getChannels() );
+  poDst->setFormat( getFormat() );
   poDst->delROI();
     
 #ifdef WITH_IPP_OPTIMIZATION
+ 
   IppiRect oHoleImageROI = {0,0,m_iWidth,m_iHeight};
-
+ 
   for(int c=0;c<m_iChannels;c++)
     {
       if(getDepth()==depth8u)
         {
-          ippiResize_8u_C1R(ippData8u(c),ippSize(),ippStep(),oHoleImageROI,
+          ippiResize_8u_C1R((Ipp8u*)getDataPtr(c),ippSize(),ippStep(),oHoleImageROI,
                             poDst->ippData8u(c),poDst->ippStep(),poDst->ippROISize(),
                             (double)poDst->getWidth()/(double)getWidth(),
                             (double)poDst->getHeight()/(double)getHeight(),
                             (int)eScaleMode);
         }else{
-          ippiResize_32f_C1R(ippData32f(c),ippSize(),ippStep(),oHoleImageROI,
+          ippiResize_32f_C1R((Ipp32f*)getDataPtr(c),ippSize(),ippStep(),oHoleImageROI,
                              poDst->ippData32f(c),poDst->ippStep(),poDst->ippROISize(),
                              (double)poDst->getWidth()/(double)getWidth(),
                              (double)poDst->getHeight()/(double)getHeight(),
@@ -313,16 +307,20 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
   // {{{ open
 
 {
-  if(!poDst) return deepCopy();
-  int iW,iH,iDstW,iDstH;
+  int iW,iH;
   getROISize(iW,iH);
+  if(!poDst){
+    poDst = iclNew(getDepth(),iW,iH,getFormat(),getChannels());
+  }else{
+    poDst->setNumChannels(getChannels());
+    poDst->setFormat(getFormat());
+  }
+  int iDstW,iDstH;
   poDst->getROISize(iDstW,iDstH);
   if(iW!=iDstW || iH != iDstH)
     {
       ERROR_LOG("roi size of source and destination must be equal");
     }
-  poDst->setNumChannels(getChannels());
-  
   for(int c=0;c<m_iChannels;c++)
     {
       if(m_eDepth == poDst->getDepth())
@@ -377,13 +375,66 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
   
 //----------------------------------------------------------------------------
 template<class Type> ICLBase*
-ICL<Type>::scaledCopyROI(ICLBase *poDst) const
+ICL<Type>::scaledCopyROI(ICLBase *poDst, iclscalemode eScaleMode) const
   // {{{ open
-
 {
-  (void)poDst;
-  printf("not yet implemented !");
-  return 0;
+  //---- deep copy case -----
+  if(!poDst){
+    return deepCopyROI(poDst); 
+  }
+
+  //---- deep copy ROI case -----
+  int iW,iH,iDstW,iDstH;
+  getROISize(iW,iH);
+  poDst->getROISize(iDstW,iDstH);
+  if(iW==iDstW && iH == iDstH){
+    return deepCopyROI(poDst);
+  }
+  
+  //---- type conversion case -----------
+  if(getDepth() != poDst->getDepth())
+    {
+      ICLBase *poTmp = iclNew(getDepth(),iW,iH,formatMatrix,poDst->getChannels());
+      scaledCopyROI(poTmp,eScaleMode);
+      poTmp->deepCopyROI(poDst);
+      delete poTmp;
+      return poDst;
+    }    
+  
+  poDst->setNumChannels( getChannels() );
+  
+#ifdef WITH_IPP_OPTIMIZATION
+  for(int c=0;c<m_iChannels;c++)
+    {
+      if(getDepth()==depth8u)
+        {
+          ippiResize_8u_C1R(ippData8u(c),ippSize(),ippStep(),ippROI(),
+                            poDst->ippData8u(c),poDst->ippStep(),poDst->ippROISize(),
+                            (double)iDstW/iW,
+                            (double)iDstH/iH,
+                            (int)eScaleMode);
+        }else{
+          ippiResize_32f_C1R(ippData32f(c),ippSize(),ippStep(),ippROI(),
+                             poDst->ippData32f(c),poDst->ippStep(),poDst->ippROISize(),
+                             (double)iDstW/(double)iW,
+                             (double)iDstH/(double)iH,
+                             (int)eScaleMode);
+        }
+    }   
+#else
+  /// _VERY_ slow fallback implementation
+ 
+  ICLBase * poROITmp = iclNew(getDepth(),iW,iH,formatMatrix,m_iChannels);
+  ICLBase * poDstTmp = iclNew(getDepth(),iDstW,iDstH,formatMatrix,m_iChannels);
+  
+  deepCopyROI(poROITmp);
+  poROITmp->scaledCopy(poDstTmp,eScaleMode);
+  poDstTmp->deepCopyROI(poDst);
+  
+  delete poROITmp;
+  delete poDstTmp; 
+#endif
+  return poDst;
 }
 
 // }}}
@@ -660,7 +711,7 @@ ICL<Type>::renew(int iNewWidth, int iNewHeight, int iNewNumChannels)
     {
       resize(iNewWidth,iNewHeight);
     }
-  if(getChannels() == iNewNumChannels)
+  if(getChannels() != iNewNumChannels)
     {
       setNumChannels(iNewNumChannels);
     }
