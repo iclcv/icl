@@ -162,9 +162,6 @@ namespace icl{
     ICL<T> *poSrc = reinterpret_cast<ICL<T>*>(poSrcIn);
     ICL<T> *poDst = reinterpret_cast<ICL<T>*>(poDstIn);
 
-    // iterator through the source image
-    ICLPixel<T> p_src = poSrc->begin(iChannel);
-   
     // accumulator for each pixel result
     M buf; 
 
@@ -182,7 +179,9 @@ namespace icl{
     T *ptSrc = poSrc->getData(iChannel);
 
     // apply convolution on the source image
-    for(ICLPixel<T> p_dst = poDst->begin(iChannel);p_dst!=poDst->end(iChannel);p_dst++,p_src++)
+    for(ICLIterator<T> p_dst = poDst->begin(iChannel), p_src = poSrc->begin(iChannel);
+        p_dst!=poDst->end(iChannel);
+        p_dst++,p_src++)
       {
         buf = 0;
         for(int x=-iLeft;x<=iRight;x++){
@@ -228,8 +227,9 @@ namespace icl{
     
     int iSrcRoiW, iSrcRoiH;
     poSrc->getROISize(iSrcRoiW,iSrcRoiH);
+
     poDst->renew(iSrcRoiW,iSrcRoiH,poSrc->getChannels());    
-    
+  
     if(poSrc->getDepth() == depth8u)
       {
         if(piKernel)

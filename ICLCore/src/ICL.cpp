@@ -9,7 +9,6 @@
 
 #include "ICL.h"
 
-//---- ICL in its own namespace ----
 namespace icl {
 
 // {{{  Konstruktor/ Destruktor: 
@@ -17,6 +16,8 @@ namespace icl {
 //----------------------------------------------------------------------------
 template<class Type>
 ICL<Type>::ICL(int iWidth,int iHeight,int iChannels):
+  // {{{ open
+
   ICLBase(iWidth,iHeight,iChannels,iclGetDepth<Type>()){
   //---- Log Message ----
   DEBUG_LOG4("Konstruktor: ICL(int,int,int) -> " << this);
@@ -32,9 +33,13 @@ ICL<Type>::ICL(int iWidth,int iHeight,int iChannels):
   m_eFormat = formatMatrix;
 } 
 
+  // }}}
+
 //----------------------------------------------------------------------------
 template<class Type>
 ICL<Type>::ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels):
+  // {{{ open
+
   ICLBase(iWidth,iHeight,eFormat,iclGetDepth<Type>(),iChannels){
   //---- Log Message ----
   DEBUG_LOG4("Konstruktor: ICL(int,int,int) -> " << this);
@@ -47,10 +52,13 @@ ICL<Type>::ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels):
     m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight));
 } 
 
+  // }}}
 
 //----------------------------------------------------------------------------
 template<class Type>
 ICL<Type>::ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels, Type** pptData):
+  // {{{ open
+
   ICLBase(iWidth,iHeight,eFormat,iclGetDepth<Type>(),iChannels){
   //---- Log Message ----
   DEBUG_LOG4("Konstruktor: ICL(int,int,int) -> " << this);
@@ -62,13 +70,16 @@ ICL<Type>::ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels, Type**
   for(int i=0;i<m_iChannels;i++)
     m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight,pptData[i]));
 } 
+
+  // }}}
  
 //----------------------------------------------------------------------------
 template<class Type>
 ICL<Type>::ICL(const ICL<Type>& tSrc):
-  ICLBase(tSrc.getWidth(),tSrc.getHeight(),tSrc.getFormat(),tSrc.getDepth(),tSrc.getChannels())
+  // {{{ open
+    ICLBase(tSrc.getWidth(),tSrc.getHeight(),tSrc.getFormat(),tSrc.getDepth(),tSrc.getChannels())
 {
-
+  
   //---- Log Message ----
   DEBUG_LOG4("Konstruktor: ICL(const ICL<Type>&) -> " << this);
   
@@ -82,9 +93,13 @@ ICL<Type>::ICL(const ICL<Type>& tSrc):
             m_ppChannels.begin());
 }
 
+  // }}}
+
 //----------------------------------------------------------------------------
 template<class Type>
 ICL<Type>::~ICL()
+  // {{{ open
+
 {
   //---- Log Message ----
   DEBUG_LOG4("Destruktor: ICL() -> " << this);
@@ -92,6 +107,8 @@ ICL<Type>::~ICL()
   //---- Delete channels ----
   deleteChannels ();
 }
+
+  // }}}
 
 // }}} 
 
@@ -129,9 +146,10 @@ ICL<Type>& ICL<Type>::operator=(const ICL<Type>& tSrc)
 // {{{  class organisation : 
 
 //----------------------------------------------------------------------------
-template<class Type>
-ICLBase*
+template<class Type> ICLBase*
 ICL<Type>::deepCopy(ICLBase* poDst) const
+  // {{{ open
+
 {
   //---- Log Message ----
   DEBUG_LOG4("deepCopy(ICL<Type>*)"); 
@@ -146,10 +164,9 @@ ICL<Type>::deepCopy(ICLBase* poDst) const
       poDst->renew(m_iWidth,m_iHeight,m_iChannels);
       poDst->setFormat(m_eFormat);
     }
-  int iX,iY,iW,iH;
-  getROI(iX,iY,iW,iH);
-  poDst->setROI(iX,iY,iW,iH);
-
+  
+  poDst->setROIRect(getROIRect());
+  
   if(poDst->getDepth() == getDepth())
     {
       for(int c=0;c<m_iChannels;c++)
@@ -171,10 +188,13 @@ ICL<Type>::deepCopy(ICLBase* poDst) const
     }
 }
 
+  // }}}
+
 //--------------------------------------------------------------------------
-template<class Type>
-ICLBase*
+template<class Type> ICLBase*
 ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
+  // {{{ open
+
 {
   //---- Log Message ----
   DEBUG_LOG4("smartCopy(ICL,iclscalemode)");
@@ -285,9 +305,13 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
   return poDst;
 }
 
-template<class Type>
-ICLBase*
+// }}}
+
+//--------------------------------------------------------------------------
+template<class Type> ICLBase*
 ICL<Type>::deepCopyROI(ICLBase *poDst) const
+  // {{{ open
+
 {
   if(!poDst) return deepCopy();
   int iW,iH,iDstW,iDstH;
@@ -303,31 +327,56 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
     {
       if(m_eDepth == poDst->getDepth())
         {
-          
+          if(m_eDepth == depth8u){
+            for(ICL8u::iterator s=asIcl8u()->begin(c),d=poDst->asIcl8u()->begin(c); s!=asIcl8u()->end(c);d.y++,s.y++){
+              memcpy(&*d,&*s,s.getRowLen()*sizeof(iclbyte));
+            }
+          }else{
+            for(ICL32f::iterator s=asIcl32f()->begin(c),d=poDst->asIcl32f()->begin(c); s!=asIcl32f()->end(c);d.y++,s.y++){
+              memcpy(&*d,&*s,s.getRowLen()*sizeof(iclfloat));
+            }
+          }
         }
       else
         {
-          
+          if(m_eDepth == depth8u){
+            ICL8u::iterator s=asIcl8u()->begin(c);
+            ICL32f::iterator d=poDst->asIcl32f()->begin(c);
+            for(;s!=asIcl8u()->end(c);d++,s++){
+              *d = static_cast<iclfloat>(*s);
+            }
+          }else{
+            ICL32f::iterator s=asIcl32f()->begin(c);
+            ICL8u::iterator d=poDst->asIcl8u()->begin(c);
+            for(;s!=asIcl32f()->end(c);d++,s++){
+              *d = static_cast<iclbyte>(*s);
+            }
+          }
         }
     }
-  (void)poDst;
-  printf("not yet implemented !");
-  return 0;
+  return poDst;
 }
+
+// }}}
   
- 
-template<class Type>
-ICLBase*
+//----------------------------------------------------------------------------
+template<class Type> ICLBase*
 ICL<Type>::scaledCopyROI(ICLBase *poDst) const
+  // {{{ open
+
 {
   (void)poDst;
   printf("not yet implemented !");
   return 0;
 }
 
+// }}}
+
 //----------------------------------------------------------------------------
-template<class Type>
-void ICL<Type>::detach(int iIndex)
+template<class Type> void
+ICL<Type>::detach(int iIndex)
+  // {{{ open
+
 {
   //---- Log Message ----
   DEBUG_LOG4("detach()");
@@ -349,20 +398,25 @@ void ICL<Type>::detach(int iIndex)
     } 
 }
 
+// }}}
+
 //----------------------------------------------------------------------------
-template<class Type>
-void
+template<class Type> void
 ICL<Type>::removeChannel(int iChannel)
+  // {{{ open
+
 {
   //---- Log Message ----
   DEBUG_LOG4("removeChannel(int)"); 
   
   if(m_iChannels < 2)
     {
-      ERROR_LOG("removing the last channel is not allowed!");
+      ERROR_LOG("removing the last remaining channel is not allowed!");
     }
   
   m_ppChannels.erase(m_ppChannels.begin()+iChannel);
+
+  m_iChannels--;
   
   /*
   //---- create new channel array ----
@@ -385,10 +439,13 @@ ICL<Type>::removeChannel(int iChannel)
   */
 }
 
+// }}}
+
 //----------------------------------------------------------------------------
-template<class Type>
-void
+template<class Type> void
 ICL<Type>::append(ICL<Type> *poSrc)
+  // {{{ open
+
 {
   //---- Log Message ----
   DEBUG_LOG4("appendImage(const ICL<Type>&)"); 
@@ -408,10 +465,13 @@ ICL<Type>::append(ICL<Type> *poSrc)
   }      
 } 
 
+// }}}
+
 //----------------------------------------------------------------------------
-template<class Type>
-void
+template<class Type> void
 ICL<Type>::appendChannel(int iChannel, ICL<Type> *poSrc) 
+  // {{{ open
+
 {
   //---- Log Message ----
   DEBUG_LOG4("appendChannel(int,const ICL<Type>&)");
@@ -429,22 +489,26 @@ ICL<Type>::appendChannel(int iChannel, ICL<Type> *poSrc)
   m_iChannels++;
 }
 
+// }}}
+
 //----------------------------------------------------------------------------
-template<class Type>
-void 
+template<class Type> void 
 ICL<Type>::swapChannels(int iIndexA, int iIndexB)
+  // {{{ open
+
 {
   //---- Log Message ----
   DEBUG_LOG4("swapChannels(int,int)"); 
   std::swap(m_ppChannels[iIndexA], m_ppChannels[iIndexB]);
 }
 
+// }}}
+
 //----------------------------------------------------------------------------
-template<class Type>
-void 
-ICL<Type>::scale(int iNewWidth, 
-                 int iNewHeight,
-                 iclscalemode eScaleMode)
+template<class Type> void
+ICL<Type>::scale(int iNewWidth,int iNewHeight,iclscalemode eScaleMode)
+  // {{{ open
+
 {  
   //---- Log Message ----
   DEBUG_LOG4("scale(int,int,iclscalemode)"); 
@@ -465,10 +529,13 @@ ICL<Type>::scale(int iNewWidth,
     }
 }
 
+// }}}
+
 //----------------------------------------------------------------------------
-template<class Type>
-void 
+template<class Type> void
 ICL<Type>::resize(int iWidth,int iHeight)
+  // {{{ open
+
 {
   
   //---- Log Message ----
@@ -492,10 +559,13 @@ ICL<Type>::resize(int iWidth,int iHeight)
   m_iHeight = iHeight;
 }
 
+// }}}
+
 //----------------------------------------------------------------------------
-template<class Type>
-void 
+template<class Type> void
 ICL<Type>::setNumChannels(int iNumNewChannels)
+  // {{{ open
+
 {
   //---- Log Message ----
   DEBUG_LOG4("setNumChannels(int)"); 
@@ -511,9 +581,8 @@ ICL<Type>::setNumChannels(int iNumNewChannels)
     for (int i=m_iChannels-1;i>=iNumNewChannels;i--)
     {
       //---- Make a referenced channel independent before resize ----
-      detach(i);
+      detach(i); // ?? this will take a deep copy of the channel
       
-      //---- Remove channel----
       removeChannel(i);
     }
   }
@@ -553,10 +622,13 @@ ICL<Type>::setNumChannels(int iNumNewChannels)
   }
 }
 
+// }}}
+
 //----------------------------------------------------------------------------
-template<class Type>
-void 
+template<class Type> void
 ICL<Type>::renew(int iNewWidth, int iNewHeight, int iNewNumChannels)
+  // {{{ open
+
 {
   DEBUG_LOG4("renewICL(int,int.int)"); 
 
@@ -578,13 +650,13 @@ ICL<Type>::renew(int iNewWidth, int iNewHeight, int iNewNumChannels)
     }
 }
 
+// }}}
 
 //----------------------------------------------------------------------------
-template<class Type>
-inline
-void ICL<Type>::replaceChannel(int iIndexA, 
-                               int iIndexB, 
-                               ICL<Type>  *poSrc) 
+template<class Type> inline void 
+ICL<Type>::replaceChannel(int iIndexA,int iIndexB,ICL<Type>  *poSrc) 
+  // {{{ open
+
 {
   //---- Log Message ----
   DEBUG_LOG4("replaceChannel(int,int,const ICL<Type>&)");
@@ -594,16 +666,19 @@ void ICL<Type>::replaceChannel(int iIndexA,
   m_ppChannels[iIndexA] = poSrc->m_ppChannels[iIndexB];
 }
 
+// }}}
+
+
 // }}} 
 
 // {{{  Type converter: 
 
 //--------------------------------------------------------------------------
-template<class Type>
-ICL32f*
+template<class Type> ICL32f*
 ICL<Type>::convertTo32Bit(ICL32f *poDst) const
+// {{{ open
+
 {
-  //---- Log Message ----
   DEBUG_LOG4("convertTo32Bit()");
   
   if(!poDst)
@@ -646,12 +721,14 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
   }  
 }
 
+  // }}}
+
 //--------------------------------------------------------------------------
-template<class Type>
-ICL8u*
+template<class Type> ICL8u*
 ICL<Type>::convertTo8Bit(ICL8u *poDst) const
+  // {{{ open
+
 {
-  //---- Log Message ----
   DEBUG_LOG4("convertTo8Bit()");
   
   if(!poDst)
@@ -693,14 +770,16 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
  
 }
 
+  // }}}
+
 // }}} 
 
 // {{{  Getter Functions: 
 
 // ---------------------------------------------------------------------
-template<class Type> 
-Type 
+template<class Type> Type 
 ICL<Type>::getMax(int iChannel) const
+  // {{{ open
 {
 #ifdef WITH_IPP_OPTIMIZATION
   if(m_eDepth == depth8u)
@@ -721,10 +800,12 @@ ICL<Type>::getMax(int iChannel) const
 #endif
 }
 
+  // }}}
+
 // ---------------------------------------------------------------------  
-template<class Type>
-Type 
+template<class Type> Type 
 ICL<Type>::getMin(int iChannel) const
+  // {{{ open
 {
 #ifdef WITH_IPP_OPTIMIZATION
   if(m_eDepth == depth8u)
@@ -744,15 +825,15 @@ ICL<Type>::getMin(int iChannel) const
   return m_ppChannels[iChannel]->getMin();
 #endif
 }
-  
 
+  // }}}
+  
 // ---------------------------------------------------------------------
-template<class Type>
-inline
-void 
+template<class Type> inline void 
 ICL<Type>::getROI(int &riX, int &riY, int &riWidth, int &riHeight) const
+  // {{{ open
+
 {
-  //---- Log Message ----
   DEBUG_LOG4("getROI(int&,int&,int&,int&)");
   
   if(m_iChannels > 0)
@@ -765,13 +846,13 @@ ICL<Type>::getROI(int &riX, int &riY, int &riWidth, int &riHeight) const
     }
 }
 
+  // }}}
+
 // ---------------------------------------------------------------------
-template<class Type>
-inline
-void 
+template<class Type> inline void 
 ICL<Type>::getROIOffset(int &riX, int &riY) const
+  // {{{ open
 {
-  //---- Log Message ----
   DEBUG_LOG4("getROIOffset(int&,int&)");
 
   if(m_iChannels > 0)
@@ -783,13 +864,15 @@ ICL<Type>::getROIOffset(int &riX, int &riY) const
       ERROR_LOG("getROIOffset channel count is 0 \n");
     }
 }
-// ---------------------------------------------------------------------
-template<class Type>
-inline
-void 
-ICL<Type>::getROISize(int &riWidth, int &riHeight) const
-{
 
+  // }}}
+
+// ---------------------------------------------------------------------
+template<class Type> inline void 
+ICL<Type>::getROISize(int &riWidth, int &riHeight) const
+  // {{{ open
+
+{
   DEBUG_LOG4("getROISize(int&,int&)");
   
   if(m_iChannels > 0)
@@ -802,10 +885,13 @@ ICL<Type>::getROISize(int &riWidth, int &riHeight) const
     }
 }
 
-template<class Type>
-inline
-std::vector<int> 
+  // }}}
+
+// ---------------------------------------------------------------------
+template<class Type> inline std::vector<int> 
 ICL<Type>::getROIRect() const
+  // {{{ open
+
 {
   DEBUG_LOG4("getROIRect()");
    if(m_iChannels > 0)
@@ -818,55 +904,47 @@ ICL<Type>::getROIRect() const
     }
 }
 
+  // }}}
 
-// ---------------------------------------------------------------------
-template<class Type>
-void ICL<Type>::clear(int iChannel, Type tValue) 
-{
-  //---- Log Message ----
-  DEBUG_LOG4("clear(int, type)");
-  
-  if(iChannel == -1) 
-    {
-      for(int i=0;i<m_iChannels;i++) 
-        m_ppChannels[i]->clear(tValue);
-    }
-  else 
-    {
-      m_ppChannels[iChannel]->clear(tValue);
-    }
-}
+
 
 // }}}
   
 // {{{  Setter Function:
   
-template<class Type> 
-void 
-ICL<Type>::
-setROI(int iX, int iY,int iWidth,int iHeight)
+// ---------------------------------------------------------------------  
+template<class Type> void 
+ICL<Type>::setROI(int iX, int iY,int iWidth,int iHeight)
+  // {{{ open
+
 {
   for(int i=0;i<m_iChannels;i++)
     {
       m_ppChannels[i]->setROI(iX,iY,iWidth,iHeight);
     }
 }
+
+  // }}}
   
-template<class Type> 
-void 
-ICL<Type>::
-setROIOffset(int iX, int iY)
+// ---------------------------------------------------------------------  
+template<class Type> void 
+ICL<Type>::setROIOffset(int iX, int iY)
+  // {{{ open
+
 {
   for(int i=0;i<m_iChannels;i++)
     {
       m_ppChannels[i]->setROIOffset(iX,iY);
     }
 }
+
+  // }}}
   
-template<class Type> 
-void 
-ICL<Type>::
-setROISize(int iWidth, int iHeight)
+// ---------------------------------------------------------------------  
+template<class Type> void 
+ICL<Type>::setROISize(int iWidth, int iHeight)
+  // {{{ open
+
 {
   for(int i=0;i<m_iChannels;i++)
     {
@@ -874,9 +952,13 @@ setROISize(int iWidth, int iHeight)
     }
 }
 
-template<class Type> 
-void 
+  // }}}
+
+// ---------------------------------------------------------------------  
+template<class Type> void 
 ICL<Type>::setROIRect(std::vector<int> oRect)
+  // {{{ open
+
 {
   for(int i=0;i<m_iChannels;i++)
     {
@@ -885,14 +967,17 @@ ICL<Type>::setROIRect(std::vector<int> oRect)
   
 }
 
+  // }}}
+
 // }}}
 
 // {{{  Auxillary and basic image manipulation functions
 
-template<class Type>
-Type
+template<class Type> Type
 ICL<Type>::interpolate(float fX, float fY, int iChannel) const
 {
+  // {{{ open
+
   //---- Variable iitilization ----
   float fY1,fY2,fY3,fY4,fT,fU;
   float fReturn;
@@ -924,10 +1009,13 @@ ICL<Type>::interpolate(float fX, float fY, int iChannel) const
     return (Type) fReturn;
 }
 
+  // }}}
+
 //--------------------------------------------------------------------------
-template<class Type>
-void
+template<class Type> void
 ICL<Type>::scaleRange(float tMin, float tMax, int iChannel)
+  // {{{ open
+
 {
   DEBUG_LOG4("scaleRange(float,float,iChannel");
   
@@ -951,6 +1039,30 @@ ICL<Type>::scaleRange(float tMin, float tMax, int iChannel)
                                        m_ppChannels[iChannel]->getMax() );
   }
 }
+
+// }}}
+
+// ---------------------------------------------------------------------
+template<class Type>
+void ICL<Type>::clear(int iChannel, Type tValue) 
+  // {{{ open
+
+{
+  //---- Log Message ----
+  DEBUG_LOG4("clear(int, type)");
+  
+  if(iChannel == -1) 
+    {
+      for(int i=0;i<m_iChannels;i++) 
+        m_ppChannels[i]->clear(tValue);
+    }
+  else 
+    {
+      m_ppChannels[iChannel]->clear(tValue);
+    }
+}
+
+  // }}}
 
 // }}}
 

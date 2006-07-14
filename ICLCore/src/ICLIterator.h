@@ -1,16 +1,16 @@
-#ifndef ICLPIXEL_H
-#define ICLPIXEL_H
+#ifndef ICLITERATOR_H
+#define ICLITERATOR_H
 
 #include "ICLCore.h"
 
 namespace icl{
   /// used to determine the upper right corner images roi
-  typedef int ICLEndPixel;
+  typedef int ICLEndIterator;
   
 
-  /// Pixel class used to iterate over an ICLs ROI pixels
+  /// Iterator class used to iterate over an ICLs ROI pixels
   /**
-  The ICLPixel is a utility to iterate line by line over
+  The ICLIterator is a utility to iterate line by line over
   all pixels of an ICLs ROI. The following ascii image 
   show an image roi.
   <pre>
@@ -40,7 +40,7 @@ namespace icl{
      - check of the last valid pixel position
 
   the following code example shows how to
-  handle image ROIs using the ICLPixel image iterator
+  handle image ROIs using the ICLIterator image iterator
   
   <pre>
   void channel_threshold_inplace(ICL8u &im, int tetta)
@@ -56,7 +56,7 @@ namespace icl{
   </pre>
 
   The ROIs end(c) is represented by a single integer value
-  "typedef'ed" to ICLEndPixel. This in has the value of the first
+  "typedef'ed" to ICLEndIterator. This in has the value of the first
   not-valid y-value for a pixel: If the last line is finished,
   the ++-operator will increase y to this value, and
   <pre>
@@ -64,46 +64,46 @@ namespace icl{
   </pre>
   will return false, which will force the loop to be finished.
 
-  The ICLPixel<Type> is defined in the ICL<Type> as iterator.
+  The ICLIterator<Type> is defined in the ICL<Type> as iterator.
   This offers an intuitive "std-lib-like" use.
 
-  <h3>Using the ICLPixel as ROW-iterator</h3>
-  The ICLPixel can be used as ROW-iterator too. The following example
+  <h3>Using the ICLIterator as ROW-iterator</h3>
+  The ICLIterator can be used as ROW-iterator too. The following example
   will explain usage:
   <pre>
   void copy_channel_roi_row_by_row(ICL8u &src, ICL8u &dst, int iChannel)
   {
      for(ICL8u::iterator s=src.begin(iChannel),d=dst.begin(iChannel) ;s!=src.end(iChannel);d.y++,s.y++)
      {
-        memcpy(d.getData(),s.getData(),s.getRowLen()*sizeof(iclbyte));
+        memcpy(&*d,&*s,s.getRowLen()*sizeof(iclbyte));
      }
   }
   </pre>
   
   */
   template <class Type>
-    class ICLPixel{
+    class ICLIterator{
       public:
     /// Default Constructor
-    /** Creates an ICLPixel object with Type "Type"
+    /** Creates an ICLIterator object with Type "Type"
         @param iXStart x offset of the images ROI
         @param iYStart y offset of the images ROI
         @param ptData pointer to the corresponding channel data
         @param iImageW width of the corresponding image
         @param iRoiW width of the images ROI
     */
-    ICLPixel(int iXStart,int iYStart,Type *ptData, int iImageW, int iRoiW):
+    ICLIterator(int iXStart,int iYStart,Type *ptData, int iImageW, int iRoiW):
       x(iXStart),y(iYStart),ptData(ptData),
       iImageW(iImageW),iXEnd(iXStart+iRoiW),iXStart(iXStart){}
     
-    /// current x location of the pixel (with image origin)
+    /// current x location of the iterator (with image origin)
     int x;
 
-    /// current y location of the pixel (with image origin)
+    /// current y location of the iterator (with image origin)
     int y;
 
     /// retuns a reference of the current pixel value
-    /** changes on *p (p is of type ICLPixel) will effect
+    /** changes on *p (p is of type ICLIterator) will effect
         the image data       
     */
     inline Type &operator*()
@@ -111,12 +111,12 @@ namespace icl{
         return ptData[x+iImageW*y];
       }
     
-    /// moves to the next pixel position
+    /// moves to the next iterator position
     /** The image ROI will be scanned line by line
-        beginning on the bottom left pixel.
+        beginning on the bottom left iterator.
        <pre>
 
-           +--'I' is the first invalid pixel
+           +--'I' is the first invalid iterator
            |  (p!=image.end() will become false)
     .......V.................
     .......I.................
@@ -154,18 +154,17 @@ namespace icl{
           y++;
         }     
       }
-    /// to check if pixel is still inside the ROI
+    /// to check if iterator is still inside the ROI
     /** @see operator++ */
-    inline int operator!=(ICLEndPixel end)
+    inline int operator!=(ICLEndIterator end)
       {
         return y!=end;
       }    
-      private:
-
     inline int getRowLen()
       {
         return iXEnd-iXStart;
       }
+      private:
     
     /// internal reference for the current pixel value
     Type *ptData;

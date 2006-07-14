@@ -57,10 +57,13 @@ ICLBase::~ICLBase()
 void ICLBase::setFormat(iclformat eFormat)
 {
   DEBUG_LOG4("setFormat(iclformat)" << this);
-  int nChannels = iclGetChannelsOfFormat(eFormat);
-  if(nChannels != m_iChannels){
-    setNumChannels(nChannels);
-  }
+  if(eFormat != formatMatrix)
+    {
+      int nChannels = iclGetChannelsOfFormat(eFormat);
+      if(nChannels != m_iChannels){
+        setNumChannels(nChannels);
+      }
+    }
   m_eFormat=eFormat;
 }
 

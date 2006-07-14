@@ -1,6 +1,6 @@
-#include "ICLPixel.h"
+#include "ICLIterator.h"
 
 namespace icl{
-  template class ICLPixel<iclbyte>;
-  template class ICLPixel<iclfloat>;
+  template class ICLIterator<iclbyte>;
+  template class ICLIterator<iclfloat>;
 }

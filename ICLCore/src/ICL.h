@@ -12,7 +12,7 @@
 
 #include "ICLBase.h"
 #include "ICLChannel.h"
-#include "ICLPixel.h"
+#include "ICLIterator.h"
 #include <cmath>
 #include <typeinfo>
 
@@ -462,13 +462,13 @@ class ICL : public ICLBase
 
   //@{ @name pixel access using roi iterator                                
   /// type definition for roi iterator
-  typedef ICLPixel<Type> iterator;
+  typedef ICLIterator<Type> iterator;
 
   /// type definition for the roi-end iterator
-  typedef ICLEndPixel enditerator;
+  typedef ICLEndIterator enditerator;
 
   /// returns the iterator for the image roi
-  /** The followin example taken from ICLPixel.h will show
+  /** The following example taken from ICLIterator.h will show
       the iterator usage:
       <pre>
       void channel_threshold_inplace(ICL8u &im, int tetta)
@@ -484,7 +484,7 @@ class ICL : public ICLBase
   </pre>
       @param iChannel selected channel index
       @return roi-iterator
-      @see ICLPixel
+      @see ICLIterator
       @see end
   */
   inline iterator begin(int iChannel)
@@ -497,7 +497,7 @@ class ICL : public ICLBase
   /// return the iterator to the roi end
   /** @param iChannel selected channel index
       @return roi-end-iterator
-      @see ICLPixel
+      @see ICLIterator
       @see begin
   */
   inline enditerator end(int iChannel)
