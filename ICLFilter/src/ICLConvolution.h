@@ -1,6 +1,7 @@
 #ifndef ICLCONVOLUTION_H
 #define ICLCONVOLUTION_H
 
+#include "ICLFilter.h"
 #include "ICL.h"
 
 namespace icl{
@@ -44,10 +45,32 @@ namespace icl{
 
   <h3>case images: depth32f </h3>
   In this case, a float kernel is preferred. If it is not available, the
-  fallback integer-kernel is used. But note, that convolution of float images
-  with integer kernel is <b>not IPP-OPTIMIZED</b> and will be very slow by
-  comparison.
- 
+  fallback integer-kernel must be used. As convolution operations of float
+  images with integer kernels are not supported by the IPP, the kernel is
+  konverted internally into a temporary float-buffer, which is released after
+  the convolution operation. This will speed up performance in comparison
+  with the fallback C-implementation by a factor about 10.
+
+  <h3>Benchmarks</h3>
+  The IPP-optimized functions are <b>VERY</b> fast in comparison to the 
+  fallback C++ implementations. The optimized 3x3 convolution functions
+  provided by the IPP are more then 20 times faster. Here are some benchmarks:
+  - arbitrary 3x3-convolution 1000x1000 single channel image (IPP-OPTIMIZED)
+     - iclbyte images & int kernel <b>~11.6ms</b>
+     - iclfloat images & int kernel <b>~11.1ms</b>
+     - iclbyte images & iclfloat kernel <b>~13.5ms</b>
+     - iclfloat-image & iclfloat kernel <b>~11.3ms</b>
+  - fixed 3x3 convolution 1000x1000 single channel sobelx (IPP-OPTIMIZED)
+     - iclbyte images & int mask <b>~4ms (!!!)</b>
+     - iclbyte images & iclfloat mask <b>~8ms (!!!)</b>
+  - arbitrary 3x3-convolution 1000x1000 single channel image (C++-Fallback)
+     - iclbyte images & int kernel <b>~81ms</b>
+     - iclfloat images & int kernel <b>~370ms</b>
+     - iclbyte images & iclfloat kernel <b>~230ms</b>
+     - iclfloat-image & iclfloat kernel <b>~86ms</b>
+
+  
+  
   <h2>Buffering Kernels</h2>
   In some applications the ICLConvolution object has to be created
   during runtime. If the filter-kernel is created elsewhere, and it
@@ -57,7 +80,7 @@ namespace icl{
   given kernel pointer, an additional flag <b>iBufferData</b> can be set
   in two Constructors.
   */
-  class ICLConvolution {
+  class ICLConvolution : public ICLFilter{
     public:
     /// this enum contains several predefined convolution kernels
     /** <h3>kernelSobleX</h3>
@@ -186,7 +209,9 @@ namespace icl{
                            be buffered.
     */
     ICLConvolution(int *piKernel, int iW, int iH,int iBufferData=1);
-    ~ICLConvolution();
+
+    /// Destructor
+    virtual ~ICLConvolution();
     
     /// performs the convolution operation on the image
     /** The destination image is automatically set up to 
@@ -200,7 +225,7 @@ namespace icl{
         @param poSrc source image
         @param poDst destination image
     */
-    void apply(ICLBase *poSrc, ICLBase *poDst);
+    virtual void apply(ICLBase *poSrc, ICLBase *poDst);
     
     private:
 
