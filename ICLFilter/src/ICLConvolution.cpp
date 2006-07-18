@@ -187,6 +187,11 @@ namespace icl{
         p_dst!=poDst->end(iChannel);
         p_dst++,p_src++)
       {
+         buf = 0;
+         ICLIterator<T> srcIt (p_src, 3, 3);
+         for (M* pMask=pmMask; srcIt.inRegion(); srcIt++, pMask++)
+            buf += *pmMask * *srcIt;
+         }
         buf = 0;
         for(int x=-iLeft;x<=iRight;x++){
           for(int y=-iTop;y<=iBottom;y++){

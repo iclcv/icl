@@ -43,42 +43,73 @@ namespace icl{
   handle image ROIs using the ICLIterator image iterator
   
   <pre>
-  void channel_threshold_inplace(ICL8u &im, int tetta)
+  void channel_threshold_inplace(ICL8u &im, int iTetta, int iChannel)
   {
-    for(int c=0;c<3;c++)
-    {
-       for(ICL8u::iterator p=im.begin(c);p!=im.end(c);p++)
-       {
-         *p = *p > tetta ? 255 : 0;
-       }
-    }
+      for(ICL8u::iterator p=im.begin(c)  ; p.inRegion() ; p++)
+      {
+          *p = *p > tetta ? 255 : 0;
+      }
+     
   }
   </pre>
-
-  The ROIs end(c) is represented by a single integer value
-  "typedef'ed" to ICLEndIterator, which the value of the first
-  invalid y-value for a ROI-pixel: If the last line is finished,
-  the ++-operator will increase y to this value, and
-  <pre>
-  p!=im.end(c)
-  </pre>
-  will return false, which will end the loop.
-
   The ICLIterator<Type> is defined in the ICL<Type> as iterator.
   This offers an intuitive "stdlib-like" use.
 
   <h3>Using the ICLIterator as ROW-iterator</h3>
   The ICLIterator can be used as ROW-iterator too. The following example
   will explain usage:
+  
   <pre>
   void copy_channel_roi_row_by_row(ICL8u &src, ICL8u &dst, int iChannel)
   {
-     for(ICL8u::iterator s=src.begin(iChannel),d=dst.begin(iChannel) ;s!=src.end(iChannel);d.y++,s.y++)
+     for(ICL8u::iterator s=src.begin(iChannel),d=dst.begin(iChannel) ; s.inRegion() ; d.incLine(), s.incLine())
      {
-        memcpy(&*d,&*s,s.getRowLen()*sizeof(iclbyte));
+        memcpy(&*d,&*s,s.getROIWidth()*sizeof(iclbyte));
      }
   }
   </pre>
+
+  <h3> Using Nested ICLIterators for Neighbourhood operations </h3>
+
+  void channel_convolution_3x3(ICL8u &src, ICL8u &dst,iclbyte *pucMask, int iChannel)
+  {
+  ICL8u::iterator s=src.begin(iChannel);
+     ICL8u::iterator d(s, 3, 3);
+     while(s.inRegion())
+     {
+        iclbyte *m = pucMask;
+        iclbyte *ucBuf = 0;
+        for( d.reinit(s) ; d.inRegion(); d++)
+        {
+           ucBuf += (*d) * (*m);
+        }
+        *s = ucBuf;
+        s++;
+     }
+    
+  
+  }
+
+  
+
+  void channel_convolution_3x3(ICL8u &src, ICL8u &dst,iclbyte *pucMask, int iChannel)
+  {
+     ICL8u::iterator s=src.begin(iChannel);
+     ICL8u::iterator d(s, 3, 3);
+     while(s.inRegion())
+     {
+        iclbyte *m = pucMask;
+        iclbyte *ucBuf = 0;
+        for( d.reinit(s) ; d.inRegion(); d++)
+        {
+           ucBuf += (*d) * (*m);
+        }
+        *s = ucBuf;
+        s++;
+     }
+    
+  
+  }
 
   <h2>Performance:Efficiency</h2>
   There are 3 major ways to access the pixel data of an image.
@@ -139,33 +170,66 @@ namespace icl{
   */
   template <class Type>
     class ICLIterator{
-      public:
-    /// Default Constructor
-    /** Creates an ICLIterator object with Type "Type"
-        @param iXStart x offset of the images ROI
-        @param iYStart y offset of the images ROI
-        @param ptData pointer to the corresponding channel data
-        @param iImageW width of the corresponding image
-        @param iRoiW width of the images ROI
-    */
-    ICLIterator(int iXStart,int iYStart,Type *ptData, int iImageW, int iRoiW):
-      x(iXStart),y(iYStart),ptData(ptData),
-      iImageW(iImageW),iXEnd(iXStart+iRoiW),iXStart(iXStart){}
-    
-    /// current x location of the iterator (with image origin)
-    int x;
+    public:
+     /// Default Constructor
+     /** Creates an ICLIterator object with Type "Type"
+         @param ptData pointer to the corresponding channel data
+         @param iXPos x offset of the images ROI
+         @param iYPos y offset of the images ROI
+         @param iImageWidth width of the corresponding image
+         @param iRoiWidth width of the images ROI
+         @param iRoiHeight width of the images ROI
+     */
+    ICLIterator(Type *ptData, int iXPos,int iYPos,int iImageWidth, int iROIWidth, int iROIHeight):
+       m_iImageWidth(iImageWidth),
+       m_iROIWidth(iROIWidth), 
+       m_iROIHeight(iROIHeight), 
+       m_iLineStep(m_iImageWidth - m_iROIWidth),
+       m_ptDataOrigin(ptData),
+       m_ptDataCurr(ptData),
+       m_ptDataEnd(ptData+iROIWidth+iROIHeight*iImageWidth),
+       m_ptCurrLineEnd(ptData+iRoiWidth){}
 
-    /// current y location of the iterator (with image origin)
-    int y;
+    /// 2nd Constructor to create sub-regions of an ICL-image
+    /** This 2nd constructor creates a sub-region iterator, which may be
+        used e.g. for arbitrary neighbourhood operations like 
+        lineare filters, medians, ...
+        See the ICLIterator description for more detail.        
+        @param roOrigin reference to source Iterator Object
+        @param iRoiWidth width of the images ROI
+        @param iRoiHeight width of the images ROI
+    */
+
+    ICLIterator(const ICLIterator<Type> &roOrigin,int iROIWidth, int iROIHeight):
+       m_iImageWidth(roOrigin.m_iImageWidth),
+       m_iROIWidth(iROIWidth),
+       m_iROIHeight(iROIHeight),
+       m_iLineStep(m_iImageWidth - m_iROIWidth)
+       m_ptDataOrigin(roOrigin.m_ptDataOrigin),
+       m_ptDataCurr(roOrigin.m_ptDataCurr-(iROIWidth/2)-(iROIHeight/2)*m_iImageWidth),
+       m_ptDataEnd(ptData+iROIWidth+iROIHeight*m_iImageWidth),
+       m_ptCurrLineEnd(ptData+iROIWidth){}
+    
+    /// moves the origin of the Iterator to given position
+    /** @param x new x position
+        @param x new y position
+    */
+    inline void reinit(const ICLIterator<Type> &roOrigin)
+       {
+          // EVALUATE !!!
+          m_ptDataCurr = roOrigin.m_ptDataCurr-(m_iROIWidth/2)-(m_iROIHeight/2)*m_iImageWidth;
+          m_ptDataEnd =  m_ptData+m_iROIWidth+iROIHeight*m_iImageWidth;
+          m_ptCurrLineEnd = m_ptData+m_iROIWidth;
+       }
 
     /// retuns a reference of the current pixel value
     /** changes on *p (p is of type ICLIterator) will effect
         the image data       
     */
-    inline Type &operator*()
-      {
-        return ptData[x+iImageW*y];
-      }
+    inline Type &operator*() const
+       {
+          return *m_ptDataCurr;
+       }
     
     /// moves to the next iterator position
     /** The image ROI will be scanned line by line
@@ -173,7 +237,7 @@ namespace icl{
        <pre>
 
            +--'I' is the first invalid iterator
-           |  (p!=image.end() will become false)
+           |  (p.inRegion() will become false)
     .......V.................
     .......I.................
     .......++++++++X<---------- last valid pixel
@@ -192,39 +256,89 @@ namespace icl{
        current pixel data. If the end of a line is reached, then
        the position is set to the beginning of the next line.
     */
-    inline void operator++(int i)
-      {
-        (void)i;
-        x++;
-        if(x>=iXEnd){
-          x=iXStart;
-          y++;
-        }     
-      }
-    /// prefix as the above postfix
-    inline void operator++()
-      {
-        x++;
-        if(x>=iXEnd){
-          x=iXStart;
-          y++;
-        }     
-      }
+    inline operator ++(int i)
+       {
+          if ( m_ptDataCurr == m_ptDataLineEnd)
+             {
+                m_ptData += m_iLineStep;
+                m_ptDataLineEnd += m_iImageWidth;
+             }
+          else
+             {
+                m_ptData++;
+             }
+       }
+ 
     /// to check if iterator is still inside the ROI
     /** @see operator++ */
-    inline int operator!=(ICLEndIterator end)
-      {
-        return y!=end;
-      }    
-    inline int getRowLen()
-      {
-        return iXEnd-iXStart;
-      }
-      private:
+    inline bool inRegion() const
+       {
+          return m_ptDataCurr < m_ptDataEnd;          
+       }
+
+    /// returns the length of each row processed by this iterator
+    /** @return row length 
+     */
+    inline int getROIWidth() const
+       {
+          return m_iROIWidth;
+       }
     
-    /// internal reference for the current pixel value
-    Type *ptData;
-    int iImageW,iXEnd,iXStart;
+    inline int getROIHeight() const
+       {
+          return m_iROIHeight();
+       }
+    
+    /// moved the pixel vertically forward
+    /** current x value is hold, the current y-value is
+        incremented by iLines
+        @param iLines amount of lines to jump over
+    */
+    inline void incRow(int iLines=1) 
+       {
+          m_ptDataCurr += iLines * m_iImageWidth;
+          m_ptDataLineEnd += iLines * m_iImageWidth;
+       }
+
+    /// returns the current x position of the iterator (image-coordinates)
+    /** @return current x postion*/
+    inline int x()
+       {
+          return (m_ptDataCurr-m_ptDataOrigin) % m_iImageWidth;
+       }
+
+    /// returns the current y position of the iterator (image-coordinates)
+    /** @return current y postion*/
+    inline int y()
+       {
+          return (m_ptDataCurr-m_ptDataOrigin) / m_iImageWidth;
+       }       
+    private:
+    /// corresponding images width
+    int m_iImageWidth;
+    
+    /// corresponding images ROI width
+    int m_iROIWidth;
+
+    /// corresponding images ROI height
+    int m_iROIHeight;
+
+    /// result of m_iImageWidth - m_iROIWidth
+    int m_iLineStep;
+
+    /// pointer to the image data pointer (bottom left pixel)
+    Type *m_ptDataOrigin;
+
+    /// pointer to the current data element
+    Type *m_ptDataCurr;
+
+    /// pointer to the first invalid pixel of ptDataOrigin
+    Type *m_ptDataEnd;
+
+    /// pointer to the first invalid pixel of the current line
+    Type *m_ptCurrLineEnd;
+
+    
   };
 }
 #endif
