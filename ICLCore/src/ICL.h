@@ -502,24 +502,23 @@ class ICL : public ICLBase
   /// type definition for roi iterator
   typedef ICLIterator<Type> iterator;
 
-  /// type definition for the roi-end iterator
-  typedef ICLEndIterator enditerator;
-
   /// returns the iterator for the image roi
   /** The following example taken from ICLIterator.h will show
       the iterator usage:
-      <pre>
-      void channel_threshold_inplace(ICL8u &im, int tetta)
-      {
-         for(int c=0;c<3;c++)
-         {
-            for(ICL8u::iterator p=im.begin(c);p!=im.end(c);p++)
-            {
-              *p = *p > tetta ? 255 : 0;
-            }
-         }
-      }
-      </pre>
+       <pre>
+       void channel_convolution_3x3(ICL8u &src, ICL8u &dst,iclbyte *pucMask, int iChannel)
+       {
+           for(ICL8u::iterator s=src.begin(iChannel), d(s,3,3) ; s.inRegion() ; s++)
+           {
+               iclbyte *m = pucMask;
+               (*s) = 0;
+               for( d.reinit(s) ; d.inRegion(); d++,m++)
+               {
+                   (*s) += (*d) * (*m);
+               }
+           }
+       }
+       </pre>
       <b>Note:</b> The performance hints illustrated in the
       ICLIterator documentation.
       @param iChannel selected channel index
@@ -529,20 +528,9 @@ class ICL : public ICLBase
   */
   inline iterator begin(int iChannel)
     {
-      int iX,iY,iW,_;
-      getROI(iX,iY,iW,_);
-      return iterator(iX,iY,getData(iChannel),m_iWidth,iW);
-    }
-
-  /// return the iterator to the roi end
-  /** @param iChannel selected channel index
-      @return roi-end-iterator
-      @see ICLIterator
-      @see begin
-  */
-  inline enditerator end(int iChannel)
-    {
-      return (m_ppChannels[iChannel]->getROIHeight())+(m_ppChannels[iChannel]->getROIYOffset());
+      int iX,iY,iROIWidth,iROIHeight;
+      getROI(iX,iY,iROIWidth,iROIHeight);
+      return iterator(getData(iChannel),iX,iY,m_iWidth,iROIWidth,iROIHeight);
     }
 
   /* }}} */

@@ -4,10 +4,6 @@
 #include "ICLCore.h"
 
 namespace icl{
-  /// used to determine the upper right corner images roi
-  typedef int ICLEndIterator;
-  
-
   /// Iterator class used to iterate over an ICLs ROI pixels
   /**
   The ICLIterator is a utility to iterate line by line over
@@ -71,45 +67,44 @@ namespace icl{
 
   <h3> Using Nested ICLIterators for Neighbourhood operations </h3>
 
+  <pre>
   void channel_convolution_3x3(ICL8u &src, ICL8u &dst,iclbyte *pucMask, int iChannel)
   {
-  ICL8u::iterator s=src.begin(iChannel);
-     ICL8u::iterator d(s, 3, 3);
-     while(s.inRegion())
+     for(ICL8u::iterator s=src.begin(iChannel) ; s.inRegion() ; s++)
      {
         iclbyte *m = pucMask;
-        iclbyte *ucBuf = 0;
-        for( d.reinit(s) ; d.inRegion(); d++)
+        (*s) = 0;
+        for(ICL8u::iterator d(s, 3, 3); d.inRegion(); d++,m++)
         {
-           ucBuf += (*d) * (*m);
+           (*s) += (*d) * (*m);
         }
-        *s = ucBuf;
-        s++;
-     }
-    
-  
+     }  
   }
+  </pre>
 
-  
-
+  This code implements a single channel image convolution operation. As the inner loop is
+  not optimized, for each source pixel s, a new subregion iterator d is allocated on the stack.
+  This will slow down the execution. So for small masks (e.g. 3x3) it is recommended to 
+  use the following implementation style:
+ 
+  <pre>
   void channel_convolution_3x3(ICL8u &src, ICL8u &dst,iclbyte *pucMask, int iChannel)
   {
-     ICL8u::iterator s=src.begin(iChannel);
-     ICL8u::iterator d(s, 3, 3);
-     while(s.inRegion())
+     for(ICL8u::iterator s=src.begin(iChannel), d(s,3,3) ; s.inRegion() ; s++)
      {
         iclbyte *m = pucMask;
-        iclbyte *ucBuf = 0;
-        for( d.reinit(s) ; d.inRegion(); d++)
+        (*s) = 0;
+        for( d.reinit(s) ; d.inRegion(); d++,m++)
         {
-           ucBuf += (*d) * (*m);
+           (*s) += (*d) * (*m);
         }
-        *s = ucBuf;
-        s++;
      }
-    
-  
-  }
+   }
+   </pre>
+
+   This implementation uses the ICLIterators <b>reinit</b> function to
+   make the subregion of d be centered to the current (s.x(),s.y()) 
+   coordinates. 
 
   <h2>Performance:Efficiency</h2>
   There are 3 major ways to access the pixel data of an image.
@@ -188,7 +183,7 @@ namespace icl{
        m_ptDataOrigin(ptData),
        m_ptDataCurr(ptData),
        m_ptDataEnd(ptData+iROIWidth+iROIHeight*iImageWidth),
-       m_ptCurrLineEnd(ptData+iRoiWidth){}
+       m_ptCurrLineEnd(ptData+iROIWidth){}
 
     /// 2nd Constructor to create sub-regions of an ICL-image
     /** This 2nd constructor creates a sub-region iterator, which may be
@@ -204,11 +199,11 @@ namespace icl{
        m_iImageWidth(roOrigin.m_iImageWidth),
        m_iROIWidth(iROIWidth),
        m_iROIHeight(iROIHeight),
-       m_iLineStep(m_iImageWidth - m_iROIWidth)
+       m_iLineStep(m_iImageWidth - m_iROIWidth),
        m_ptDataOrigin(roOrigin.m_ptDataOrigin),
        m_ptDataCurr(roOrigin.m_ptDataCurr-(iROIWidth/2)-(iROIHeight/2)*m_iImageWidth),
-       m_ptDataEnd(ptData+iROIWidth+iROIHeight*m_iImageWidth),
-       m_ptCurrLineEnd(ptData+iROIWidth){}
+       m_ptDataEnd(m_ptDataCurr+iROIWidth+iROIHeight*m_iImageWidth),
+       m_ptCurrLineEnd(m_ptDataCurr+iROIWidth){}
     
     /// moves the origin of the Iterator to given position
     /** @param x new x position
@@ -218,8 +213,8 @@ namespace icl{
        {
           // EVALUATE !!!
           m_ptDataCurr = roOrigin.m_ptDataCurr-(m_iROIWidth/2)-(m_iROIHeight/2)*m_iImageWidth;
-          m_ptDataEnd =  m_ptData+m_iROIWidth+iROIHeight*m_iImageWidth;
-          m_ptCurrLineEnd = m_ptData+m_iROIWidth;
+          m_ptDataEnd =  m_ptDataCurr+m_iROIWidth+m_iROIHeight*m_iImageWidth;
+          m_ptCurrLineEnd = m_ptDataCurr+m_iROIWidth;
        }
 
     /// retuns a reference of the current pixel value
@@ -256,16 +251,16 @@ namespace icl{
        current pixel data. If the end of a line is reached, then
        the position is set to the beginning of the next line.
     */
-    inline operator ++(int i)
+    inline void operator ++(int i)
        {
-          if ( m_ptDataCurr == m_ptDataLineEnd)
+          if ( m_ptDataCurr == m_ptCurrLineEnd )
              {
-                m_ptData += m_iLineStep;
-                m_ptDataLineEnd += m_iImageWidth;
+                m_ptDataCurr += m_iLineStep;
+                m_ptCurrLineEnd += m_iImageWidth;
              }
           else
              {
-                m_ptData++;
+                m_ptDataCurr++;
              }
        }
  
@@ -286,7 +281,7 @@ namespace icl{
     
     inline int getROIHeight() const
        {
-          return m_iROIHeight();
+          return m_iROIHeight;
        }
     
     /// moved the pixel vertically forward
@@ -297,7 +292,7 @@ namespace icl{
     inline void incRow(int iLines=1) 
        {
           m_ptDataCurr += iLines * m_iImageWidth;
-          m_ptDataLineEnd += iLines * m_iImageWidth;
+          m_ptCurrLineEnd += iLines * m_iImageWidth;
        }
 
     /// returns the current x position of the iterator (image-coordinates)

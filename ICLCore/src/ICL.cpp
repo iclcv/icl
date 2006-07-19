@@ -327,16 +327,16 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
         {
           if(m_eDepth == depth8u){
 #ifndef WITH_IPP_OPTIMIZATION
-            for(ICL8u::iterator s=asIcl8u()->begin(c),d=poDst->asIcl8u()->begin(c); s!=asIcl8u()->end(c);d.y++,s.y++){
-              memcpy(&*d,&*s,s.getRowLen()*sizeof(iclbyte));
+            for(ICL8u::iterator s=asIcl8u()->begin(c),d=poDst->asIcl8u()->begin(c); s.inRegion();s.incRow(),d.incRow()){
+              memcpy(&*d,&*s,s.getROIWidth()*sizeof(iclbyte));
             }
 #else
             ippiCopy_8u_C1R(ippData8u(c),ippStep(),poDst->ippData8u(c),poDst->ippStep(),ippROISize());
 #endif
           }else{
 #ifndef WITH_IPP_OPTIMIZATION
-            for(ICL32f::iterator s=asIcl32f()->begin(c),d=poDst->asIcl32f()->begin(c); s!=asIcl32f()->end(c);d.y++,s.y++){
-              memcpy(&*d,&*s,s.getRowLen()*sizeof(iclfloat));
+             for(ICL32f::iterator s=asIcl32f()->begin(c),d=poDst->asIcl32f()->begin(c); s.inRegion();s.incRow(),d.incRow()){
+              memcpy(&*d,&*s,s.getROIWidth()*sizeof(iclfloat));
             }
 #else
              ippiCopy_32f_C1R(ippData32f(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),ippROISize());
@@ -349,7 +349,7 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
 #ifndef WITH_IPP_OPTIMIZATION
             ICL8u::iterator s=asIcl8u()->begin(c);
             ICL32f::iterator d=poDst->asIcl32f()->begin(c);
-            for(;s!=asIcl8u()->end(c);d++,s++){
+            for(;s.inRegion();d++,s++){
               *d = static_cast<iclfloat>(*s);
             }
 #else
@@ -359,7 +359,7 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
 #ifndef WITH_IPP_OPTIMIZATION
             ICL32f::iterator s=asIcl32f()->begin(c);
             ICL8u::iterator d=poDst->asIcl8u()->begin(c);
-            for(;s!=asIcl32f()->end(c);d++,s++){
+            for(;s.inRegion();d++,s++){
               *d = static_cast<iclbyte>(*s);
             }
 #else
