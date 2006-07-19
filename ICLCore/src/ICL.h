@@ -505,20 +505,20 @@ class ICL : public ICLBase
   /// returns the iterator for the image roi
   /** The following example taken from ICLIterator.h will show
       the iterator usage:
-       <pre>
-       void channel_convolution_3x3(ICL8u &src, ICL8u &dst,iclbyte *pucMask, int iChannel)
-       {
-           for(ICL8u::iterator s=src.begin(iChannel), d(s,3,3) ; s.inRegion() ; s++)
-           {
-               iclbyte *m = pucMask;
-               (*s) = 0;
-               for( d.reinit(s) ; d.inRegion(); d++,m++)
-               {
-                   (*s) += (*d) * (*m);
-               }
-           }
-       }
-       </pre>
+      <pre>
+      void channel_convolution_3x3(ICL32f &src, ICL32f &dst,iclfloat *pfMask, int iChannel)
+      { 
+         for(ICL32f::iterator s=src.begin(iChannel) d=dst.begin() ; s.inRegion() ; s++,d++)
+         {
+            iclfloat *m = pfMask;
+            (*d) = 0;
+            for(ICL32f::iterator sR(s, 3, 3); sR.inRegion(); sR++,m++)
+            {
+               (*d) += (*sR) * (*m);
+            }
+         }  
+      }
+      </pre>
       <b>Note:</b> The performance hints illustrated in the
       ICLIterator documentation.
       @param iChannel selected channel index

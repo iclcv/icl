@@ -11,8 +11,34 @@ namespace icl{
 
   // }}}
   
+  // {{{ fixed convolution masks
+
+  int ICLConvolution::KERNEL_SOBEL_X[9] = { 1,  0, -1,
+                                            2,  0, -2,
+                                            1,  0, -1   };
+  
+  int ICLConvolution::KERNEL_SOBEL_Y[9] = {  1,  2,  1,
+                                             0,  0,  0,
+                                            -1, -2, -1  };
+  
+  float ICLConvolution::KERNEL_GAUSS_3x3[9] = { 1.0/16 , 2.0/16, 1.0/16,
+                                                2.0/16 , 4.0/16, 2.0/16,
+                                                1.0/16 , 2.0/16, 1.0/16  };
+  
+  float ICLConvolution::KERNEL_GAUSS_5x5[25] = { 2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571,
+                                                 7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
+                                                12.0/571, 52.0/571, 127.0/571, 52.0/571, 12.0/571,
+                                                 7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
+                                                 2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571 };
+  
+  int ICLConvolution::KERNEL_LAPLACE[9] = { 1, 1, 1,
+                                            1,-8, 1,
+                                            1, 1, 1} ;
+
+  // }}}
+
+  // {{{ icl_is_convertable_to_int_intern
   int icl_is_convertable_to_int_intern(float *pfData, int iLen)
-    // {{{ open
   {
     // tests if an element of the given float* has decimals
     // if it does: return 0, else 1
@@ -155,64 +181,38 @@ namespace icl{
 
   // }}}
  
-  // {{{ help functions
-
-  // C++-fall back function for generic convolution 
-  template<class T, class M> void 
-  generic_conv(ICLBase *poSrcIn, ICLBase *poDstIn, M* pmMask, int iKernelW, int iKernelH, int iChannel)
-     // {{{ open
-
+  // {{{ C++ - generic convolution
+  template<class ImageT, class KernelT, class BufferT> void 
+  generic_conv(ICLBase *poSrcIn, ICLBase *poDstIn, KernelT* pmMask, int iKernelW, int iKernelH, int c)
   {
-    ICL<T> *poSrc = reinterpret_cast<ICL<T>*>(poSrcIn);
-    ICL<T> *poDst = reinterpret_cast<ICL<T>*>(poDstIn);
+    ICL<ImageT> *poS = reinterpret_cast<ICL<ImageT>*>(poSrcIn);
+    ICL<ImageT> *poD = reinterpret_cast<ICL<ImageT>*>(poDstIn);
 
-    // accumulator for each pixel result
-    M buf; 
+    // accumulator for each pixel result of Type M
+    BufferT buffer; 
 
-    // pixel distances from the kernel anchor to the kernel borders
-    int iTop = (int)floor((float)iKernelH/2);
-    int iLeft = (int)floor((float)iKernelW/2);
-    int iBottom = iKernelH-iTop-1;
-    int iRight = iKernelW-iLeft-1;
-
-    // move the kernel into the kernel center
-    pmMask+=iLeft+iTop*iKernelW;
-    
-    // buffer som tmp variables 
-    int iW = poSrc->getWidth();
-    T *ptSrc = poSrc->getData(iChannel);
-
-    // apply convolution on the source image
-    for(ICLIterator<T> p_dst = poDst->begin(iChannel), p_src = poSrc->begin(iChannel);
-        p_dst!=poDst->end(iChannel);
-        p_dst++,p_src++)
+    // pointer to the mask
+    KernelT *m;
+    for(ICLIterator<ImageT> s=poS->begin(c), d=poD->begin(c) ; s.inRegion() ; s++, d++)
       {
-         buf = 0;
-         ICLIterator<T> srcIt (p_src, 3, 3);
-         for (M* pMask=pmMask; srcIt.inRegion(); srcIt++, pMask++)
-            buf += *pmMask * *srcIt;
-         }
-        buf = 0;
-        for(int x=-iLeft;x<=iRight;x++){
-          for(int y=-iTop;y<=iBottom;y++){
-            buf += (M)ptSrc[p_src.x+x+(p_src.y+y)*iW]*(M)pmMask[x+y*iKernelW]; 
-          }
-        }
-        
-        // this is not necessary i think
-        buf = buf<0 ? 0 : buf > 255 ? 255 : buf;
-        *p_dst = static_cast<T>(buf);
-      }    
+        m = pmMask;
+        buffer = 0;
+        for(ICLIterator<ImageT> sR(s,iKernelW,iKernelH) ; sR.inRegion(); sR++, m++)
+          {
+            buffer += (*m) * (*sR);
+          } 
+        *d =  static_cast<ImageT>(buffer<0 ? 0 : buffer > 255 ? 255 : buffer);
+      }
   }
 
   // }}}
 
   // {{{ C_CONV-calls
 
-#define C_CONV_8u(S,D,C,K,KS) generic_conv<iclbyte,int>(S,D,K,KS.width,KS.height,C);
-#define C_CONV32_8u(S,D,C,K,KS) generic_conv<iclbyte,iclfloat>(S,D,K,KS.width,KS.height,C);
-#define C_CONV_32f(S,D,C,K,KS) generic_conv<iclfloat,iclfloat>(S,D,K,KS.width,KS.height,C);
-#define C_CONV8_32f(S,D,C,K,KS) generic_conv<iclfloat,int>(S,D,K,KS.width,KS.height,C);
+#define C_CONV_8u(S,D,C,K,KS) generic_conv<iclbyte,int,int>(S,D,K,KS.width,KS.height,C);
+#define C_CONV32_8u(S,D,C,K,KS) generic_conv<iclbyte,iclfloat,iclfloat>(S,D,K,KS.width,KS.height,C);
+#define C_CONV_32f(S,D,C,K,KS) generic_conv<iclfloat,iclfloat,iclfloat>(S,D,K,KS.width,KS.height,C);
+#define C_CONV8_32f(S,D,C,K,KS) generic_conv<iclfloat,int,iclfloat>(S,D,K,KS.width,KS.height,C);
 
   // }}}
 
@@ -241,7 +241,7 @@ namespace icl{
 
   // }}}
 
-  // {{{ code to apply the "fixed" convolution methods of the IPPI
+  // {{{ "fixed" ippi-convolution calls
 
 #ifdef WITH_IPP_OPTIMIZATION
 
@@ -297,11 +297,8 @@ namespace icl{
 
   // }}}
 
-  // }}}
-
+   // {{{ apply(ICLBase*, ICLBase*)
   void ICLConvolution::apply(ICLBase *poSrc, ICLBase *poDst)
-    // {{{ open
-
   {
     DEBUG_LOG4("ICLConvolution::apply(ICLBase *,ICLBase*)");
    
@@ -415,31 +412,7 @@ namespace icl{
 
   // }}}
   
-  // {{{ fixed convolution masks
-
-  int ICLConvolution::KERNEL_SOBEL_X[9] = { 1,  0, -1,
-                                            2,  0, -2,
-                                            1,  0, -1   };
   
-  int ICLConvolution::KERNEL_SOBEL_Y[9] = {  1,  2,  1,
-                                             0,  0,  0,
-                                            -1, -2, -1  };
-  
-  float ICLConvolution::KERNEL_GAUSS_3x3[9] = { 1.0/16 , 2.0/16, 1.0/16,
-                                                2.0/16 , 4.0/16, 2.0/16,
-                                                1.0/16 , 2.0/16, 1.0/16  };
-  
-  float ICLConvolution::KERNEL_GAUSS_5x5[25] = { 2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571,
-                                                 7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
-                                                12.0/571, 52.0/571, 127.0/571, 52.0/571, 12.0/571,
-                                                 7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
-                                                 2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571 };
-  
-  int ICLConvolution::KERNEL_LAPLACE[9] = { 1, 1, 1,
-                                            1,-8, 1,
-                                            1, 1, 1} ;
-
-  // }}}
 
    
 

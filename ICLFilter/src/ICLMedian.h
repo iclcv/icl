@@ -11,7 +11,7 @@ namespace icl{
     ~ICLMedian();
     virtual void apply(ICLBase *poSrc, ICLBase *poDst);
     private:
-    int iWidth,iHeight;
+    int m_iWidth,m_iHeight;
   };
 }
 

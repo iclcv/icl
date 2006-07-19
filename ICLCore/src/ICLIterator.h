@@ -7,7 +7,7 @@ namespace icl{
   /// Iterator class used to iterate over an ICLs ROI pixels
   /**
   The ICLIterator is a utility to iterate line by line over
-  all pixels of an ICLs ROI. The following ascii image 
+  all pixels of an ICLs ROI. The following ASCII image 
   shows an images ROI.
   <pre>
     1st pixel
@@ -65,46 +65,31 @@ namespace icl{
   }
   </pre>
 
-  <h3> Using Nested ICLIterators for Neighbourhood operations </h3>
+  <h3> Using Nested ICLIterators for Neighborhood operations </h3>
+
+  In addition to the above functionalities, ICLIterators can be used for
+  arbitrary image neighborhood operations like convolution, median or
+  erosion. The following example explains how to create so called sub-region
+  iterators, that work on a symmetrical neighborhood around a higher lever
+  ICLIterator.
 
   <pre>
-  void channel_convolution_3x3(ICL8u &src, ICL8u &dst,iclbyte *pucMask, int iChannel)
+  void channel_convolution_3x3(ICL32f &src, ICL32f &dst,iclfloat *pfMask, int iChannel)
   {
-     for(ICL8u::iterator s=src.begin(iChannel) ; s.inRegion() ; s++)
+     for(ICL32f::iterator s=src.begin(iChannel) d=dst.begin() ; s.inRegion() ; s++,d++)
      {
-        iclbyte *m = pucMask;
-        (*s) = 0;
-        for(ICL8u::iterator d(s, 3, 3); d.inRegion(); d++,m++)
+        iclfloat *m = pfMask;
+        (*d) = 0;
+        for(ICL32f::iterator sR(s, 3, 3); sR.inRegion(); sR++,m++)
         {
-           (*s) += (*d) * (*m);
+           (*d) += (*sR) * (*m);
         }
      }  
   }
   </pre>
 
-  This code implements a single channel image convolution operation. As the inner loop is
-  not optimized, for each source pixel s, a new subregion iterator d is allocated on the stack.
-  This will slow down the execution. So for small masks (e.g. 3x3) it is recommended to 
-  use the following implementation style:
- 
-  <pre>
-  void channel_convolution_3x3(ICL8u &src, ICL8u &dst,iclbyte *pucMask, int iChannel)
-  {
-     for(ICL8u::iterator s=src.begin(iChannel), d(s,3,3) ; s.inRegion() ; s++)
-     {
-        iclbyte *m = pucMask;
-        (*s) = 0;
-        for( d.reinit(s) ; d.inRegion(); d++,m++)
-        {
-           (*s) += (*d) * (*m);
-        }
-     }
-   }
-   </pre>
+  This code implements a single channel image convolution operation. 
 
-   This implementation uses the ICLIterators <b>reinit</b> function to
-   make the subregion of d be centered to the current (s.x(),s.y()) 
-   coordinates. 
 
   <h2>Performance:Efficiency</h2>
   There are 3 major ways to access the pixel data of an image.
@@ -112,54 +97,66 @@ namespace icl{
   - using the ICLIterator
   - working directly with the channel data
 
-  Each method has its on advantages and disadvatages:
+  Each method has its on advantages and disadvantages:
   - the (x,y,channel) operator is very intuitive and it can be used
-    to write code that functionality is very transparent to 
-    other programmers. The disadvantages are, the fact, that it
-    does not take care about the images ROI, and it is 
-    <b>very slow</b>.
-  - the ICLIterator works on single channels, so a single iterator
-    provides only <b>linear</b>(line by line) access to each pixel.
-    It major advantage is - that it handels the ROI internally, and
-    that it is up to 5 times faster then working with the 
-    (x,y,channel)-operator
-  - the fastes way to process the image data is work directly
+    to write code whiches functionality is very transparent to 
+    other programmers. The disadvantages are:
+    - no implicit ROI - support
+    - <b>very slow</b>
+  - the ICLIterator moves pixel-by-pixel, line-by-line over
+    a single image channel. It is highly optimized for processing
+    each pixel of an images ROI without respect to the particular
+    pixel position in in the image.
+    Its advantages are:
+     - internal optimized ROI handling
+     - direct access to sub-ROIS
+     - fast (nearly 10 times faster then the (x,y,channel)-operator
+  - the fastest way to process the image data is work directly
     with the data pointer received from image.getData(channel).
     In this case the programmer himself needs to take care about
-    The images ROI.
+    The images ROI. This is only recommended, if no ROI-support
+    should be provided.
 
-  <h2>Performace:In Values</h2>
+  <h2>Performance:In Values</h2>
   The following example shows use of the different techniques
-  to set image data of a single channel image to the value 42.
+  to set image data of a single channel image to a static value.
   (Times: 1.4Mhz Pentium-M machine with 512 MB-Ram, SuSe-Linux 9.3)
   <pre>
   // create a VERY large image
-  ICL8u im(10000,10000,1);
+  int iW = 10000, iH=10000;
+  ICL8u im(iW,iH,1);
+
+  // 1st working with the image data (time: ~210/360ms)
+  // pointer style (~210ms)
+  for(iclbyte *p= im.getData(0), *d=p+iW*iH ; p<d; ){
+     *p++ = 5;
+  }
   
-  // 1st working with the image data (time: ~280ms)
+  // index style (~360ms)
   iclbyte *pucData = im.getData(0);
   for(int i=0;i<im.getWidth()*im.getHeight();i++){
      pucData[i]=42;
   }
 
-  // 2nd working with the iterator (time: ~650ms)
-  for(ICL8u::iterator it=im.begin(0);it!=im.end(0);it++){
+  // 2nd working with the iterator (time: ~280ms) (further implementation ~650ms)
+  for(ICL8u::iterator it=im.begin(0) ; it.inRegion() ; it++){
     *it = 42;
   }
 
-  // 3rd working with the (x,y,channel)-operator (time: ~2280)
+  // 3rd working with the (x,y,channel)-operator (time: ~2400)
   for(int x=0;x<im.getWidth();x++){
     for(int y=0;y<im.getHeight();y++){
       im(x,y,0) = 42;
     }
   }
 
-  // for coparison:memset (time: ~150ms)
+  // for comparison: memset (time: ~140ms)
   memset(pucData,42,im.getWidth()*im.getHeight());
   
   </pre>
-  <b>Note</b> Working directly on the image data, is fast in this case,
-  as the implemented algorithm does not use the pixels position (x,y)
+  <b>Note</b> Working directly on the image data, is fast for 
+  algorithms that are not using the pixels position (x,y) or the
+  images ROI.
   
   
   */
@@ -179,16 +176,16 @@ namespace icl{
        m_iImageWidth(iImageWidth),
        m_iROIWidth(iROIWidth), 
        m_iROIHeight(iROIHeight), 
-       m_iLineStep(m_iImageWidth - m_iROIWidth),
+       m_iLineStep(m_iImageWidth - m_iROIWidth + 1),
        m_ptDataOrigin(ptData),
-       m_ptDataCurr(ptData),
-       m_ptDataEnd(ptData+iROIWidth+iROIHeight*iImageWidth),
-       m_ptCurrLineEnd(ptData+iROIWidth){}
+       m_ptDataCurr(ptData+iXPos+iYPos*iImageWidth),
+       m_ptDataEnd(m_ptDataCurr+iROIWidth+(iROIHeight-1)*iImageWidth),
+       m_ptCurrLineEnd(m_ptDataCurr+iROIWidth-1){}
 
     /// 2nd Constructor to create sub-regions of an ICL-image
     /** This 2nd constructor creates a sub-region iterator, which may be
-        used e.g. for arbitrary neighbourhood operations like 
-        lineare filters, medians, ...
+        used e.g. for arbitrary neighborhood operations like 
+        linear filters, medians, ...
         See the ICLIterator description for more detail.        
         @param roOrigin reference to source Iterator Object
         @param iRoiWidth width of the images ROI
@@ -199,24 +196,12 @@ namespace icl{
        m_iImageWidth(roOrigin.m_iImageWidth),
        m_iROIWidth(iROIWidth),
        m_iROIHeight(iROIHeight),
-       m_iLineStep(m_iImageWidth - m_iROIWidth),
+       m_iLineStep(m_iImageWidth - m_iROIWidth + 1),
        m_ptDataOrigin(roOrigin.m_ptDataOrigin),
        m_ptDataCurr(roOrigin.m_ptDataCurr-(iROIWidth/2)-(iROIHeight/2)*m_iImageWidth),
-       m_ptDataEnd(m_ptDataCurr+iROIWidth+iROIHeight*m_iImageWidth),
-       m_ptCurrLineEnd(m_ptDataCurr+iROIWidth){}
+       m_ptDataEnd(m_ptDataCurr+iROIWidth+(iROIHeight-1)*m_iImageWidth),
+       m_ptCurrLineEnd(m_ptDataCurr+iROIWidth-1){}
     
-    /// moves the origin of the Iterator to given position
-    /** @param x new x position
-        @param x new y position
-    */
-    inline void reinit(const ICLIterator<Type> &roOrigin)
-       {
-          // EVALUATE !!!
-          m_ptDataCurr = roOrigin.m_ptDataCurr-(m_iROIWidth/2)-(m_iROIHeight/2)*m_iImageWidth;
-          m_ptDataEnd =  m_ptDataCurr+m_iROIWidth+m_iROIHeight*m_iImageWidth;
-          m_ptCurrLineEnd = m_ptDataCurr+m_iROIWidth;
-       }
-
     /// retuns a reference of the current pixel value
     /** changes on *p (p is of type ICLIterator) will effect
         the image data       
@@ -253,17 +238,18 @@ namespace icl{
     */
     inline void operator ++(int i)
        {
-          if ( m_ptDataCurr == m_ptCurrLineEnd )
-             {
-                m_ptDataCurr += m_iLineStep;
-                m_ptCurrLineEnd += m_iImageWidth;
-             }
-          else
-             {
-                m_ptDataCurr++;
-             }
+         (void)i;
+         if ( m_ptDataCurr == m_ptCurrLineEnd )
+           {
+             m_ptDataCurr += m_iLineStep;
+             m_ptCurrLineEnd += m_iImageWidth;
+           }
+         else
+           {
+             m_ptDataCurr++;
+           }
        }
- 
+    
     /// to check if iterator is still inside the ROI
     /** @see operator++ */
     inline bool inRegion() const
@@ -296,14 +282,14 @@ namespace icl{
        }
 
     /// returns the current x position of the iterator (image-coordinates)
-    /** @return current x postion*/
+    /** @return current x position*/
     inline int x()
        {
           return (m_ptDataCurr-m_ptDataOrigin) % m_iImageWidth;
        }
 
     /// returns the current y position of the iterator (image-coordinates)
-    /** @return current y postion*/
+    /** @return current y position*/
     inline int y()
        {
           return (m_ptDataCurr-m_ptDataOrigin) / m_iImageWidth;

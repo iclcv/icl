@@ -64,12 +64,10 @@ namespace icl{
      - iclbyte images & int mask <b>~4ms (!!!)</b>
      - iclbyte images & iclfloat mask <b>~8ms (!!!)</b>
   - arbitrary 3x3-convolution 1000x1000 single channel image (C++-Fallback)
-     - iclbyte images & int kernel <b>~81ms</b>
-     - iclfloat images & int kernel <b>~370ms</b>
-     - iclbyte images & iclfloat kernel <b>~230ms</b>
-     - iclfloat-image & iclfloat kernel <b>~86ms</b>
-
-  
+     - iclbyte images & int kernel <b>~56ms</b> (further implem. ~81ms)
+     - iclfloat images & int kernel <b>~76ms</b> (further implem. ~370ms)
+     - iclbyte images & iclfloat kernel <b>~135ms</b> (further implem. ~230ms)
+     - iclfloat-image & iclfloat kernel <b>~60ms</b> (further implem. ~60ms)
   
   <h2>Buffering Kernels</h2>
   In some applications the ICLConvolution object has to be created
