@@ -21,14 +21,14 @@ namespace icl{
   
   // {{{ Macro IPP_MEDIAN(S,D,C,MSIZE,ANCHOR,DEPTH)
 
-#define IPP_MEDIAN(S,D,MSIZE,ANCHOR,DEPTH)                  \
-  for(int c=0;c<S->getChannels();c++){                      \
-     ippiMedian_ ## DEPTH ## _C1R(S->ippData ## DEPTH(C),   \
-                                  S->ippStep(),             \
-                                  D->ippData ## DEPTH(C),   \
-                                  D->ippStep(),             \
-                                  D->ippROISize(),          \
-                                  MSIZE,ANCHOR);            \
+#define IPP_MEDIAN(S,D,MSIZE,ANCHOR,DEPTH)                     \
+  for(int c=0;c<S->getChannels();c++){                         \
+     ippiFilterMedian_ ## DEPTH ## _C1R(S->ippData ## DEPTH(c),\
+                                  S->ippStep(),                \
+                                  D->ippData ## DEPTH(c),      \
+                                  D->ippStep(),                \
+                                  D->ippROISize(),             \
+                                  MSIZE,ANCHOR);               \
   }
 
   // }}}
@@ -73,6 +73,8 @@ namespace icl{
     poSrc->getROISize(iSrcRoiW,iSrcRoiH);
     poDst->renew(iSrcRoiW,iSrcRoiH,poSrc->getChannels());  
 
+    m_iWidth = ((m_iWidth)/2)*2+1;
+    m_iHeight = ((m_iHeight)/2)*2+1;
     // }}}
 
     // {{{ median
@@ -84,18 +86,17 @@ namespace icl{
     if(poSrc->getDepth() == depth8u)
       {
 #ifdef WITH_IPP_OPTIMIZATION 
-        IPP_MEDIAN(poSrc,poDst,c,oMaskSize,oAnchor,32f);      
+        IPP_MEDIAN(poSrc,poDst,oMaskSize,oAnchor,8u);      
 #else
         C_MEDIAN(poSrc,poDst,8u,iclbyte);
 #endif
       }
     else
       {
-#ifdef WITH_IPP_OPTIMIZATION 
-        IPP_MEDIAN(poSrc,poDst,c,oMaskSize,oAnchor,8u);
-#else
-        C_MEDIAN(poSrc,poDst,32f,iclfloat);
-#endif
+        // no ipp-optimization available, as the 
+        // fast median algorithm uses the "histogramm"
+        // based algorithm ...
+        C_MEDIAN(poSrc,poDst,32f,iclfloat); 
       }
 
   // }}}
