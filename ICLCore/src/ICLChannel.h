@@ -14,7 +14,8 @@
 #include <iostream>
 #include <vector>
 #include <iterator>
-#include <boost/shared_ptr.hpp>
+//#include <boost/shared_ptr.hpp>
+#include "ICLAutoPtr.h"
 #include "ICLCore.h"
 
 //---- Use the following namespaces as default ----
@@ -189,8 +190,8 @@ class ICLChannel
   
   public:
   /// internally used for AutoPtrs
-  typedef boost::shared_ptr<ICLChannel<Type> > AutoPtr;
-  
+  //typedef boost::shared_ptr<ICLChannel<Type> > AutoPtr;
+  typedef ICLAutoPtr<ICLChannel<Type> > AutoPtr;
   
   ///Info object
   ICLChannelInfo m_oInfo;

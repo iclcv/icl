@@ -5,6 +5,14 @@
 
 using namespace std;
 
+/* {{{ ICLASSERT */
+#define ICLASSERT(X)                                                              \
+  if(!(X)){                                                                       \
+    printf("ICLASSERT error in %s:%d \"%s\"==NULL\n",__FUNCTION__,__LINE__,#X);   \
+    exit(-1);                                                                     \
+  }
+/* }}} */
+
 /* {{{ Error log */
 
 #define ERROR_LOG(x) \
