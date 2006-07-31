@@ -1,0 +1,110 @@
+#
+#   makefile
+#
+
+# Don't change anything below this line!
+###############################################################################
+
+# Do not assign anything to this variable
+_DOT_DOT=
+
+ifeq "${_CURR_DIR}" ""
+ _CURR_DIR=.
+endif
+
+PROJECT_NAME:= $(notdir $(shell cd ..;pwd))
+
+include makeVar
+
+ifneq "${DEBUG_ON}" "TRUE"
+ DEBUG:=
+endif
+
+_TARGET_NAME_LIB=${TARGET_PREFIX}${TARGET_LIB}${TARGET_POSTFIX}
+_TARGET_FULL_VER=${TARGET_MAJVERSION}.${TARGET_MINVERSION}
+_TARGET_VER=${TARGET_MAJVERSION}
+
+TARGET_SO_LIB=${_TARGET_NAME_LIB}.so.${_TARGET_FULL_VER}
+TARGET_AR_LIB=${_TARGET_NAME_LIB}.${_TARGET_FULL_VER}.a
+
+#-----------------------------------------------
+# Rule: all & cleanall & clean & printtype
+#-----------------------------------------------
+all: lib
+
+cleanall: cleanlib
+
+clean: cleanall
+
+printtype:
+	${PRE_CMD}${CMD_ECHO} "Type: MakeLibrary"
+
+#-----------------------------------------------
+# Rule: lib & cleanlib
+#-----------------------------------------------
+lib: ${MAKE_PRECOND} ${TARGET_SO_LIB} ${MAKE_POSTCOND}
+	${PRE_CMD}${CMD_FINAL}
+
+${TARGET_SO_LIB}: ${TARGET_AR_LIB}
+	${PRE_CMD}${CMD_ECHO} "Building shared library from: ${_CURR_DIR}/$@"
+	${PRE_CMD}${CMD_LD} ${LDDYNFLAGS} -o $@ \
+                  ${REL_OBJECTS} ${ABS_OBJECTS} ${REL_LIBRARIES} ${ABS_LIBRARIES}
+	${PRE_CMD}${CMD_LN} $@ ${_TARGET_NAME_LIB}.so.${_TARGET_VER}
+	${PRE_CMD}${CMD_LN} $@ ${_TARGET_NAME_LIB}.so
+
+
+${TARGET_AR_LIB}: ${REL_OBJECTS} ${ABS_OBJECTS}
+	${PRE_CMD}${CMD_ECHO} "Building arc library from: ${_CURR_DIR}/$@"
+	${PRE_CMD}${CMD_AR} ${ARFLAGS} $@ ${REL_OBJECTS} ${ABS_OBJECTS}
+	${PRE_CMD}${CMD_RANLIB} $@
+	${PRE_CMD}${CMD_LN} $@ ${_TARGET_NAME_LIB}.${_TARGET_VER}.a
+	${PRE_CMD}${CMD_LN} $@ ${_TARGET_NAME_LIB}.a
+	${PRE_CMD}${CMD_FINAL}
+
+${REL_OBJECTS} ${ABS_OBJECTS}:
+	${PRE_CMD}${CMD_ECHO} "Error: recompile first the objects not expanded: ${_CURR_DIR}"
+	${PRE_CMD}${CMD_ECHO} ${REL_OBJECTS} ${ABS_OBJECTS}
+	${PRE_CMD}${CMD_EXIT_FAIL}
+
+cleanlib: _cleanlib_First ${MORE_CLEAN}
+	${PRE_CMD}${CMD_FINAL}
+
+_cleanlib_First:
+	${PRE_CMD}${CMD_ECHO} "Cleaning library from: ${_CURR_DIR}"
+	${PRE_CMD}${CMD_RM} ${_TARGET_NAME_LIB}.*
+	${PRE_CMD}${CMD_RM} *~ *.bak
+
+#-----------------------------------------------
+# Rule: % (default rule)
+# Note: This rule must be the last one!
+#-----------------------------------------------
+%: ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
