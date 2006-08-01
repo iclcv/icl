@@ -20,7 +20,7 @@ AGNI_INHERIT_MODE:= DYNAMIC
 
 # Please include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
-include ${IPPROOT}/packageVar
+include ${IPPROOT}/IPP/5.0/packageVar
 
 # Please specify the current version subdivided in:
 #   TARGET_MAJVERSION the major version number (e.g. 1 for version 1.0)
@@ -52,6 +52,10 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 # that are needed by the executables.
 REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
+# Debug status
+# This variable takes two values: TRUE or FALSE
+DEBUG_ON:=FALSE
+
 # Debug flag
 DEBUG:= ${DEBUG}
 
@@ -62,12 +66,12 @@ CDEFINES:= ${CDEFINES}
 CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-#CPPDEFINES:= ${CPPDEFINES}  \
-#               -DWITH_IPP_OPTIMIZATION \
-#               -DICLTIME
-
 CPPDEFINES:= ${CPPDEFINES}  \
+             -DWITH_IPP_OPTIMIZATION \
              -DICLTIME
+
+#CPPDEFINES:= ${CPPDEFINES}  \
+#             -DICLTIME
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS} \

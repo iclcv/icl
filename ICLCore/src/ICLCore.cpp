@@ -3,16 +3,20 @@
 
 namespace icl{
   
-  ICLBase *iclNew(icldepth eDepth, int iWidth, int iHeight, iclformat eFormat, int iChannels)
+  ICLBase *iclNew(icldepth eDepth, 
+                  int iWidth, 
+                  int iHeight, 
+                  iclformat eFormat, 
+                  int iChannels)
   {
     if(eDepth == depth8u)
-      {
-        return new ICL8u(iWidth,iHeight,eFormat,iChannels);
-      }
+    {
+      return new ICL8u(iWidth,iHeight,eFormat,iChannels);
+    }
     else
-      {
-        return new ICL32f(iWidth,iHeight,eFormat,iChannels);
-      }
+    {
+      return new ICL32f(iWidth,iHeight,eFormat,iChannels);
+    }
   }
 
   int iclGetChannelsOfFormat(iclformat eFormat)
@@ -75,36 +79,36 @@ namespace icl{
   void iclEnsureDepth(ICLBase ** ppoImage, icldepth eDepth)
   {
     if(!*ppoImage)
-      {
-        *ppoImage = iclNew(eDepth,1,1,formatMatrix);
-      }
+    {
+      *ppoImage = iclNew(eDepth,1,1,formatMatrix);
+    }
     if((*ppoImage)->getDepth() != eDepth)
-      {
-        ICLBase *poNew = iclNew(eDepth,
-                                (*ppoImage)->getWidth(),
-                                (*ppoImage)->getHeight(),
-                                (*ppoImage)->getFormat(),
-                                (*ppoImage)->getChannels());
-        
-        delete *ppoImage;
-        *ppoImage = poNew;     
-      }
+    {
+      ICLBase *poNew = iclNew(eDepth,
+                              (*ppoImage)->getWidth(),
+                              (*ppoImage)->getHeight(),
+                              (*ppoImage)->getFormat(),
+                              (*ppoImage)->getChannels());
+      
+      delete *ppoImage;
+      *ppoImage = poNew;     
+    }
   }
-
+  
   void iclEnsureCompatible(ICLBase **ppoDst, ICLBase *poSrc)
   {
     if(!poSrc)
-      {
-        printf("error in iclEnsureCompatible: source image is NULL!\n"); exit(-1);
-      }
+    {
+      printf("error in iclEnsureCompatible: source image is NULL!\n"); exit(-1);
+    }
     if(!*ppoDst)
-      {
-        *ppoDst = iclNew(poSrc->getDepth(),
-                         poSrc->getWidth(),
-                         poSrc->getHeight(),
-                         poSrc->getFormat(),
-                         poSrc->getChannels());
-      }
+    {
+      *ppoDst = iclNew(poSrc->getDepth(),
+                       poSrc->getWidth(),
+                       poSrc->getHeight(),
+                       poSrc->getFormat(),
+                       poSrc->getChannels());
+    }
     iclEnsureDepth(ppoDst,poSrc->getDepth());
     (*ppoDst)->setNumChannels(poSrc->getChannels());
     (*ppoDst)->setFormat(poSrc->getFormat());

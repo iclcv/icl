@@ -212,11 +212,11 @@ REL_OBJECTS:=
 FORCE_CPP:=TRUE
 
 # Debug flag
-DEBUG:=
+DEBUG:= -g
 
 # Debug status
 # This variable takes two values: TRUE or FALSE
-DEBUG_ON:= TRUE
+DEBUG_ON:=TRUE
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:=

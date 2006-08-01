@@ -301,8 +301,8 @@ class ICL : public ICLBase
       on demand: If the image has already the correct parameters, the
       channels are <b>not</b> detached, so you can call renew every time
       you must ensure, that the image has the determined size and channel
-      count. If the size must be adapted: <b>All the data within 
-      the ICL will be lost.<\b> 
+      count. If the size must be adapted: <b> All the data within 
+      the ICL will be lost. <\b>
       @param iNewWidth New image width (if < 0, the orignal width is used)
       @param iNewHeight New image height (if < 0, the orignal height is used)
       @param iNewNumChannel New channel number (if < 0, the orignal 

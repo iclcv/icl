@@ -169,8 +169,8 @@ namespace icl{
          @param iXPos x offset of the images ROI
          @param iYPos y offset of the images ROI
          @param iImageWidth width of the corresponding image
-         @param iRoiWidth width of the images ROI
-         @param iRoiHeight width of the images ROI
+         @param iROIWidth width of the images ROI
+         @param iROIHeight width of the images ROI
      */
     ICLIterator(Type *ptData, int iXPos,int iYPos,int iImageWidth, int iROIWidth, int iROIHeight):
        m_iImageWidth(iImageWidth),
@@ -188,8 +188,8 @@ namespace icl{
         linear filters, medians, ...
         See the ICLIterator description for more detail.        
         @param roOrigin reference to source Iterator Object
-        @param iRoiWidth width of the images ROI
-        @param iRoiHeight width of the images ROI
+        @param iROIWidth width of the images ROI
+        @param iROIHeight width of the images ROI
     */
 
     ICLIterator(const ICLIterator<Type> &roOrigin,int iROIWidth, int iROIHeight):

@@ -12,7 +12,7 @@
 
 namespace icl {
 
-// {{{  Konstruktor/ Destruktor: 
+// {{{ Konstruktor/ Destruktor: 
 
 ICLBase::ICLBase(int iWidth, 
                  int iHeight, 

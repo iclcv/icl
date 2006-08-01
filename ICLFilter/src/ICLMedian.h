@@ -176,7 +176,7 @@ namespace icl{
         and <i>dilated</i> afterwards.
 
         @param poSrc source image
-        @param poDSt destination image
+        @param poDst destination image
     */
     virtual void apply(ICLBase *poSrc, ICLBase *poDst);
     private:
