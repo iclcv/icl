@@ -20,7 +20,7 @@ AGNI_INHERIT_MODE:= DYNAMIC
 
 # Please include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
-include ${IPPROOT}/IPP/5.0/packageVar
+include ${IPP_ROOT}/5.0/packageVar
 
 # Please specify the current version subdivided in:
 #   TARGET_MAJVERSION the major version number (e.g. 1 for version 1.0)
@@ -74,8 +74,16 @@ CPPDEFINES:= ${CPPDEFINES}  \
 #             -DICLTIME
 
 # Flags for C++ compiler
-CPPFLAGS:= ${CPPFLAGS} \
-           -O3
+CPPFLAGS:= ${CPPFLAGS}
+
+# Debugging and Optimization options
+ifeq "$(DEBUG_ON)" "TRUE"
+     CFLAGS += $(DEBUG)
+     CPPFLAGS += $(DEBUG)
+else
+     CFLAGS += -O3
+     CPPFLAGS += -O3
+endif
 
 # Flags for archive
 ARFLAGS:= ${ARFLAGS}
