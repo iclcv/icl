@@ -11,14 +11,14 @@
 
 namespace icl {
 
-// {{{  Konstruktor/ Destruktor: 
+// {{{  construtors and desctructor
 
 //----------------------------------------------------------------------------
 template<class Type>
 ICL<Type>::ICL(int iWidth,int iHeight,int iChannels):
   // {{{ open
 
-  ICLBase(iWidth,iHeight,iChannels,iclGetDepth<Type>()){
+  ICLBase(iWidth,iHeight,formatMatrix,iclGetDepth<Type>(),iChannels){
   //---- Log Message ----
   DEBUG_LOG4("Konstruktor: ICL(int,int,int) -> " << this);
   
@@ -30,7 +30,6 @@ ICL<Type>::ICL(int iWidth,int iHeight,int iChannels):
     {
       m_ppChannels[i] = ICLChannelPtr(new ICLChannel<Type>(iWidth,iHeight));
     }
-  m_eFormat = formatMatrix;
 } 
 
   // }}}
@@ -77,7 +76,8 @@ ICL<Type>::ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels, Type**
 template<class Type>
 ICL<Type>::ICL(const ICL<Type>& tSrc):
   // {{{ open
-    ICLBase(tSrc.getWidth(),tSrc.getHeight(),tSrc.getFormat(),tSrc.getDepth(),tSrc.getChannels())
+    ICLBase(tSrc.getWidth(),tSrc.getHeight(),
+            tSrc.getFormat(),tSrc.getDepth(),tSrc.getChannels())
 {
   
   //---- Log Message ----
@@ -112,7 +112,7 @@ ICL<Type>::~ICL()
 
 // }}} 
 
-// {{{  class operator 
+// {{{  assign operator: shallow copy
 
 //----------------------------------------------------------------------------
 template<class Type>
@@ -169,9 +169,10 @@ ICL<Type>::deepCopy(ICLBase* poDst) const
   
   if(poDst->getDepth() == getDepth())
     {
+      int nByteSize = m_iWidth * m_iHeight * sizeof(Type);
       for(int c=0;c<m_iChannels;c++)
         {
-          memcpy(poDst->getDataPtr(c),getDataPtr(c),m_iWidth*m_iHeight*sizeof(Type));
+          memcpy(poDst->getDataPtr(c), getDataPtr(c), nByteSize);
         }
       return poDst;
     }
@@ -484,26 +485,6 @@ ICL<Type>::removeChannel(int iChannel)
   m_ppChannels.erase(m_ppChannels.begin()+iChannel);
 
   m_iChannels--;
-  
-  /*
-  //---- create new channel array ----
-  vector<ICLChannelPtr> vecTmp(m_iChannels-1);
-  
-  //---- remove selected channel ----
-  m_ppChannels[iChannel] = ICLChannelPtr();
-  
-  std::copy (m_ppChannels.begin(), 
-  m_ppChannels.begin()+iChannel, 
-  vecTmp.begin());
-  std::copy (m_ppChannels.begin()+iChannel+1, 
-  m_ppChannels.end(),
-  vecTmp.begin()+iChannel);
-  --m_iChannels;
-  
-  //---- clear old channel array and assign new ----
-  m_ppChannels.clear();
-  m_ppChannels = vecTmp;
-  */
 }
 
 // }}}
@@ -647,9 +628,6 @@ ICL<Type>::setNumChannels(int iNumNewChannels)
   {
     for (int i=m_iChannels-1;i>=iNumNewChannels;i--)
     {
-      //---- Make a referenced channel independent before resize ----
-      detach(i); // ?? this will take a deep copy of the channel
-      
       removeChannel(i);
     }
   }
@@ -664,28 +642,6 @@ ICL<Type>::setNumChannels(int iNumNewChannels)
         m_ppChannels[m_iChannels]->setROIRect(getROIRect());
         m_iChannels++;
       }
-    
-    /*
-    //---- Allocate new memory for data ----
-    vector<ICLChannelPtr> vecChannelsNew(iNumNewChannels);
-    
-    //---- Copy pointer from old ICL ----
-    std::copy(m_ppChannels.begin(),
-              m_ppChannels.end(),
-              vecChannelsNew.begin());
-    
-    //---- Manage new ICL ----
-    for(int i=m_iChannels;i<iNumNewChannels;i++)
-      vecChannelsNew[i] 
-        = ICLChannelPtr (new ICLChannel<Type>(getWidth(),getHeight()));
-    
-    //---- free memory ----
-    m_ppChannels.clear();
-
-    //---- Assign data ----
-    m_ppChannels = vecChannelsNew;
-    m_iChannels = iNumNewChannels;
-    */
   }
 }
 
@@ -729,7 +685,6 @@ ICL<Type>::replaceChannel(int iIndexA,int iIndexB,ICL<Type>  *poSrc)
   DEBUG_LOG4("replaceChannel(int,int,const ICL<Type>&)");
   
   //---- replace channel ----
-  m_ppChannels[iIndexA] = ICLChannelPtr(); 
   m_ppChannels[iIndexA] = poSrc->m_ppChannels[iIndexB];
 }
 
@@ -766,18 +721,14 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
   {
     for(int c=0;c<m_iChannels;c++)
     {
-      iclbyte *pucSrc =  reinterpret_cast<iclbyte*>(getDataPtr(c));
+      iclbyte *pucSrc = reinterpret_cast<iclbyte*>(getDataPtr(c));
       iclfloat *pfDst = reinterpret_cast<iclfloat*>(poDst->getDataPtr(c));
 #ifdef WITH_IPP_OPTIMIZATION
-      IppiSize oHoleImageROI = {m_iWidth,m_iHeight};
-      ippiConvert_8u32f_C1R(pucSrc,ippStep(),pfDst,poDst->ippStep(),oHoleImageROI);
+      IppiSize oWholeImageROI = {m_iWidth,m_iHeight};
+      ippiConvert_8u32f_C1R(pucSrc,ippStep(),pfDst,poDst->ippStep(),oWholeImageROI);
 #else
       int iDim = m_iWidth * m_iHeight;
-      
-      for(int i=0;i<iDim;i++)
-      {
-        pfDst[i]=static_cast<iclfloat>(pucSrc[i]);
-      }
+      std::copy (pucSrc, pucSrc + iDim, pfDst);
 #endif
     }
     return poDst;
@@ -823,9 +774,7 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
           ippiConvert_32f8u_C1R(pfSrc,ippStep(),pucDst,poDst->ippStep(),oHoleImageROI,ippRndNear);
 #else
           int iDim = m_iWidth* m_iHeight;
-          for(int i=0;i<iDim;i++){
-            pucDst[i]=static_cast<iclbyte>(pfSrc[i]);
-          }
+          std::copy (pfSrc, pfSrc + iDim, pucDst);
 #endif
         }
       return poDst;
@@ -834,7 +783,6 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
     {
       return asIcl8u()->deepCopy(poDst)->asIcl8u();
     }  
- 
 }
 
   // }}}
@@ -1045,7 +993,7 @@ ICL<Type>::interpolate(float fX, float fY, int iChannel) const
 {
   // {{{ open
 
-  //---- Variable iitilization ----
+  //---- Variable initialization ----
   float fY1,fY2,fY3,fY4,fT,fU;
   float fReturn;
   
@@ -1092,18 +1040,14 @@ ICL<Type>::scaleRange(float tMin, float tMax, int iChannel)
     {
       DEBUG_LOG4("Scale channel :" << i);
       
-      m_ppChannels[i]->scaleRange(tMin,
-                                  tMax,
-                                  m_ppChannels[i]->getMin(),
-                                  m_ppChannels[i]->getMax() );
+      m_ppChannels[i]->scaleRange(tMin, tMax,
+                                  getMin(i), getMax(i));
     }
   }
   else
   {
-    m_ppChannels[iChannel]->scaleRange(tMin,
-                                       tMax,
-                                       m_ppChannels[iChannel]->getMin(),
-                                       m_ppChannels[iChannel]->getMax() );
+    m_ppChannels[iChannel]->scaleRange(tMin, tMax,
+                                       getMin(iChannel), getMax(iChannel));
   }
 }
 

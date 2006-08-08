@@ -59,7 +59,7 @@ CFLAGS:= ${CFLAGS}
 CPPDEFINES:= ${CPPDEFINES}
 
 # Flags for C++ compiler
-CPPFLAGS:= ${CPPFLAGS} -Wno-long-long
+CPPFLAGS:= ${CPPFLAGS}
 
 # Flags for archive
 ARFLAGS:= ${ARFLAGS}

@@ -35,60 +35,21 @@ namespace icl {
    - width 
    - height
    - channel count
-   - depth (currently depth8 for 
-            iclbyte-images and 
-            depth32 for iclfloat-images)
-   - format (color)-format, that is associated with 
-            images channels (see section "ICL Color Formats"
-            on the mainpage)
-   - data (virtually) getDataPtr(int) provides "virtual" 
-            access for the data as void*. The functions are 
-            implented in the inherited classes ICL<iclbyte>
-            and ICL<iclfloat>
+   - depth:  depth8 for iclbyte or depth32 for iclfloat-images
+   - format: color-format associated with images channels 
+             (see section "ICL Color Formats")
+   - data:  getDataPtr(int) returns image data form nth channel 
+            as void pointer. The function is implented in the 
+            inherited classes ICL<iclbyte> and ICL<iclfloat>, 
+            which also provide type-safe access functions, 
+            e.g. getData (int).
    
-  \section EIF Expanded Interface Functions [EIF]
-  A new feature of the ICLBase class are the so called 
-  Expanded Interface Functions or short "EIF". 
-  <b>**NEW**:</b> To achieve,
-  that all functions of the ICL class, which 
-  interfaces are independed from the depth that is used,
-  are included as "abstract" functions into the ICLBase
-  class interface.
-  So all basic image operations like resizing
-  or changing the channel count, can be performed 
-  without any knowledge of the underlying depth.
-  <h3>Example</h3>
-  Take a look at the following code:
-  <pre>
-  void any_function(ICLBase *poBase){
-     // what ever this function does, imagine
-     // it has to enshure a special size of the image
-     if(poBase->getDepth()==depth8()){
-        poBase->asIcl8()->resize(256,256);
-     }else{
-        poBase->asIcl32()->resize(256,256);
-     }
-     ...
-  }
-  </pre>
-  This will work fine, but the casting operations could be
-  left out, if the "resize" function is a member of ICLBase.
-  In this case, the code can be reduced to:
-  <pre>
-  void any_function(ICLBase *poBase){
-     poBase->resize(256,256);
-     ...
-  }
-  </pre>
-  This will let you produce a better understandable code.
+  \section How to use the ICLBase class.
+  Because ICLBase is an abstract class, there can be no objects
+  instantiated from this class. It merely provides a common interface
+  to methods provided by the inherited class ICL<iclbyte> and ICL<iclfloat>.
 
-
-  \section Work
-  The ICLBase class has no public constructor, as it has 
-  virtual functions. 
-  It may be used for generic image-
-  processing functions. The following example should
-  explain how to work with ICLBase class.
+  The following example should explain how to work with ICLBase class.
   
   <pre>
   void special_function_8(ICL32f* poICL32f){...}
@@ -114,7 +75,34 @@ namespace icl {
      }
   } 
   </pre>
+
+  Many operations on the ICL image class are conceptually independent
+  on the concrete pixel type, e.g. recombining channels or resizing. 
+  For these operations the ICLBase class provides abstract or implemented
+  methods ensuring a common and type-independent interface.
+
+  For example, to resize an image, one can easily write:
+  <pre>
+  void any_function(ICLBase *poBase){
+     poBase->resize(256,256);
+     ...
+  }
+  </pre>
+  instead of the more complicated and confusing code:
+  <pre>
+  void any_function(ICLBase *poBase){
+     // what ever this function does, imagine
+     // it has to enshure a special size of the image
+     if(poBase->getDepth()==depth8()){
+        poBase->asIcl8()->resize(256,256);
+     }else{
+        poBase->asIcl32()->resize(256,256);
+     }
+     ...
+  }
+  </pre>
   **/ 
+
   class ICLBase
     {   
       public:
@@ -137,7 +125,7 @@ namespace icl {
       
       /// copies (or scales if necessary) the image data into the destination image and performs a
       /** this function is implemented in the ICL-template class
-      @see ICL
+          @see ICL
       **/
       virtual ICLBase* scaledCopy(ICLBase *poDst, iclscalemode eScaleMode=interpolateNN) const=0;
     
@@ -434,22 +422,12 @@ namespace icl {
 
       protected:
 
-      /* {{{ Constructors  */
+      /* {{{ Constructor  */
 
-      ///@name Constructors 
-      //@{
-      /// Creates an ICLBase Object with specified width, height, channel count and depth 
+      /// Creates an ICLBase object with specified width, height, format, depth and channel count
       /** 
-      TODO: put some information here!
-      **/
-      ICLBase(int iWidth=1, 
-              int iHeight=1, 
-              int iChannels=1, 
-              icldepth eDepth=depth8u);
-      
-      /// Creates an ICLBase Object with specified width, height, format, depth and channel count
-      /** 
-      TODO: put some information here!
+      If channel count is <= 0, the number of channels is computed 
+      automatically from format.
       **/
       ICLBase(int iWidth, 
               int iHeight, 
@@ -457,10 +435,6 @@ namespace icl {
               icldepth eDepth=depth8u,
               int iChannels=-1);
       
-     
-      
-      //@}
-
       /* }}} */
 
       /* {{{ data */

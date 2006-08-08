@@ -109,9 +109,12 @@ namespace icl{
                        poSrc->getFormat(),
                        poSrc->getChannels());
     }
-    iclEnsureDepth(ppoDst,poSrc->getDepth());
-    (*ppoDst)->setNumChannels(poSrc->getChannels());
-    (*ppoDst)->setFormat(poSrc->getFormat());
-    (*ppoDst)->resize(poSrc->getWidth(),poSrc->getHeight());
+    else 
+    {
+       iclEnsureDepth(ppoDst,poSrc->getDepth());
+       (*ppoDst)->setNumChannels(poSrc->getChannels());
+       (*ppoDst)->setFormat(poSrc->getFormat());
+       (*ppoDst)->resize(poSrc->getWidth(),poSrc->getHeight());
+    }
   }
 }

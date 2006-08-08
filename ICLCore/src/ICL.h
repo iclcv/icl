@@ -20,11 +20,7 @@ using namespace std;
 
 namespace icl {
 
-
- 
- 
-
-  ///ICL implements an array of ICLChannel images with an arbitrary number of channels
+  /// ICL implements an array of ICLChannel images with an arbitrary number of channels
   /**
   @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
   @author Christof Elbrechter (celbrech@TechFak.Uni-Bielefeld.de)
@@ -58,7 +54,7 @@ class ICL : public ICLBase
   /* }}} */
 
  public:
-  /* {{{ Constructors / Destructors: */
+  /* {{{ constructors / destructor: */
 
   //@{
   /// Creates an image with specified number of channels and size.    
@@ -93,7 +89,7 @@ class ICL : public ICLBase
   ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels, Type** pptData);
 
   /// Copy constructor
-  /** creates a flat copy of the source images
+  /** creates a flat copy of the source image
       the new image will contain a flat copy of 
       all channels of the source image.
       @param tSrc Reference of instance to copy 
@@ -120,7 +116,7 @@ class ICL : public ICLBase
   **/
   ICL<Type>& operator=(const ICL<Type>& tSource);
 
-  /// function-operator (provides access to the pixel data)
+  /// pixel access operator
   /** This operator has to be used, to access the pixel data of the image
       e.g. copy of image data:
       <pre>
@@ -133,8 +129,8 @@ class ICL : public ICLBase
       </pre>
       <h3>Efficiency</h3>
       Although the ()-operator is compiled inline, and optimized,
-      It is very slow. A measurement with a "-O3" binary brought the result
-      That pixle access is up to 10 times faster when working
+      it is very slow. A measurement with a "-O3" binary brought the result
+      That pixel access is up to 10 times faster when working
       directly with a channel data pointer. Nevertheless, the ()-operator
       is provided in the ICL-class, as it offers a very intuitive access
       to the pixel data. 
@@ -163,8 +159,9 @@ class ICL : public ICLBase
       <b>WARNING:</b> If the destination image has another depth, then this image,
       the deepCopy will internally call <b>convertTo8Bit</b> or <b>convertTo32Bit</b> 
       depending on the the images and the destination images icldepth.
-      <b>The images ROI will not be regarded</b>, to copy just the ROI into another
-      image use deepCopyROI(ICLBase *poDst.) or scaledCopyROI(ICLBase *poDst).
+      <b>The images ROI will not be regarded</b>, to copy just the ROI 
+      into another image use deepCopyROI(ICLBase *poDst.) or 
+      scaledCopyROI(ICLBase *poDst).
       @param poDst Destination image for the copied data 
                    if NULL, then a new image is created and returned
       @return Pointer to new independent ICL object
@@ -179,11 +176,13 @@ class ICL : public ICLBase
       If the count of channels of this image and the destination image
       do not match, then count of destination image channels will be
       adapted to this' count of image channels.
-      <b>WARNING:</b> If the destination image has another depth than the image,
-      then internally a temporary buffer is created, to scale and convert the
-      image in two steps. This will hardly <b>slow down performace</b>.
-      <b>The images ROI will not be regarded</b>, to copy just the ROI into another
-      image use deepCopyROI(ICLBase *poDst.) or scaledCopyROI(ICLBase *poDst).
+      <b>WARNING:</b> If the destination image has another depth than 
+      the image, then internally a temporary buffer is created, to scale 
+      and convert the image in two steps. This will hardly <b>slow down 
+      performace</b>.
+      <b>The images ROI will not be regarded</b>, to copy just the ROI 
+      into another image use deepCopyROI(ICLBase *poDst.) or 
+      scaledCopyROI(ICLBase *poDst).
       @param poDst destination image (if NULL) than it is created new with
                    identical size of this image.
       @param eScaleMode defines the interpolation mode, that is used for the scaling
@@ -298,11 +297,11 @@ class ICL : public ICLBase
 
   /// creates a hole new ICL internally
   /** Change the number of ICL channels and the size. The function works
-      on demand: If the image has already the correct parameters, the
-      channels are <b>not</b> detached, so you can call renew every time
-      you must ensure, that the image has the determined size and channel
-      count. If the size must be adapted: <b> All the data within 
-      the ICL will be lost. <\b>
+      on demand: If the image has already the correct size and number of
+      channels, nothing is done at all. This allows you to call renew ()
+      always when you want to ensure a specific image size.
+      If the size must be adapted: 
+      <b> All the data within the ICL will be lost. </b> 
       @param iNewWidth New image width (if < 0, the orignal width is used)
       @param iNewHeight New image height (if < 0, the orignal height is used)
       @param iNewNumChannel New channel number (if < 0, the orignal 

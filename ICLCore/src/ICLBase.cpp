@@ -12,20 +12,7 @@
 
 namespace icl {
 
-// {{{ Konstruktor/ Destruktor: 
-
-ICLBase::ICLBase(int iWidth, 
-                 int iHeight, 
-                 int iChannels, 
-                 icldepth eDepth):
-  m_iWidth(iWidth),m_iHeight(iHeight),m_iChannels(iChannels),m_eFormat(formatMatrix),m_eDepth(eDepth)
-{
-  DEBUG_LOG4("Konstruktor: ICLBase() -> " << this); 
-  if(m_iChannels <= 0)
-    {
-      ERROR_LOG("channel count must be > 0");
-    }
-}
+// {{{ constructor/ destructor: 
 
 ICLBase::ICLBase(int iWidth, 
                  int iHeight, 
@@ -33,21 +20,16 @@ ICLBase::ICLBase(int iWidth,
                  icldepth eDepth,
                  int iChannels):
   m_iWidth(iWidth),m_iHeight(iHeight),
-  m_iChannels((iChannels < 0) ? iclGetChannelsOfFormat(eFormat) : iChannels),
+  m_iChannels((iChannels <= 0) ? iclGetChannelsOfFormat(eFormat) : iChannels),
   m_eFormat(eFormat),m_eDepth(eDepth)
 {
   DEBUG_LOG4("Konstruktor: ICLBase() -> " << this); 
-  if(m_iChannels <= 0)
-    {
-      ERROR_LOG("channel count must be > 0");
-    }
 }
 
 
 ICLBase::~ICLBase()
 {
-  DEBUG_LOG4("Destruktor: ICLBase() -> " << this);
-  
+  DEBUG_LOG4("Destruktor: ICLBase() -> " << this); 
 }
 
 // }}} 

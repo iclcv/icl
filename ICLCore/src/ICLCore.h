@@ -9,10 +9,19 @@
 /** 
 \mainpage Image-Component-Library (ICLCore) 
 \section Overview
-The ICL is a C++ Image-Library, designed for Computer-Vision Tasks.
-It consists of two main classes:
-- <b>ICLBase</b>: The <b>base</b> image- class providing basic 
-  information about the image structure:
+
+The ICL is a C++ Image-Library, designed for Computer-Vision Tasks. It
+supports multi-channel images with a depth of 8bit or 32bit. Despite of the
+different image depth, most methods of an image class have common code. Hence,
+the two different pixel formats are implemented by a template class
+<b>ICL<imagedepth></b>. Methods which are independent on the image depth are
+provided by a common base class, named <b>ICLBase</b>. This allows easy and
+type-clean wrapping of both template classes within frameworks such as Neo/NST
+or TDI.
+
+Hence, the Library provides two basic image classes: 
+- <b>ICLBase</b>: The <b>abstract base</b> class providing common, 
+  but depth-independent information about the image structure:
   - size (in pixels)
   - channel count  (see <b>Channel-Concept</b>)
   - type of pixels (see <b>Data-Types</b>)
@@ -25,7 +34,8 @@ It consists of two main classes:
   class for the derived template classes ICL<Type>.
   Most of the functions in the ICLBase class are purely virtual which
   implies, that they have to be implemented in the derived classes.
-- <b>ICL</b>: The <i>working</i> image class implemented as a template,
+
+- <b>ICL</b>: The <i>proper</i> image classes implemented as a template,
   where the datatype of each pixel value is the template parameter.
   Internally each ICL<T> object holds a list of so called
   ICLChannels, which are defined by a class of the same name.
@@ -60,13 +70,13 @@ This time the ICL is optimized for two different data types:
 - <b>iclbyte</b> 8bit unsigned integer
 - <b>iclfloat</b> 32bit float
 
-ICL-classes are predefined for these to types:
+ICL-classes are predefined for these two types:
 - ICL<iclfloat> : public ICLBase
 - ICL<iclbyte> : public ICLBase
 
 Each of these data types has several advantages/disadvantages. The greatest
-disadvantage of the iclbyte, is its bounded range to {0,1,...,255},
-which has the effect, that all information has to be scaled to these
+disadvantage of the iclbyte, is its bounded range (0,1,...,255),
+which has the effect, that all information has to be scaled to this
 range, and all image processing functions must take care that
 no range-overflow occurs during calculation. Furthermore
 the limited range may cause loss of information - particular in 
@@ -82,30 +92,33 @@ An ICLBase image provides some information about the (Color)-format, that
 is associated with the image data represented by the images channels. Color
 is written in brackets, as not all available formats imply color-information.
 The most known Color-Space is probably the RGB-color-space. 
-If the an ICLBase image has the format formatRGB, than this implies the following:
+If the an ICLBase image has the format formatRGB, than this implies the 
+following:
 - the image has exactly 3 channels
 - the first channel contains RED-Data in range [0,255]
 - the second channel contains GREEN-Data in range [0,255]
 - the third channel contains BLUE-Data in range [0,255]
 
-All additional implemented ICL-Packages may use this information. The currently 
-available icl-formats are member of the struct iclformat.
+All additional implemented ICL-Packages may use this information. 
+The currently available icl-formats are member of the struct iclformat.
 A special format: formatMatrix may be used for arbitrary purpose.
 
 @see iclformat
 
 \section IPP-Optimization
-The IPP Intel Performance Primitives is a c-library that contains highly optimized
-and hardware accelerated functions for image processing, and other numerical problems.
-To provide access to IPP/IPPI functionalities, the ICLCore library can be 
-compiled with <b>WITH_IPP_OPTIMIZATIONS</b> defined. In this case, the following
-adaption are performed:
+The IPP Intel Performance Primitives is a c-library that contains highly 
+optimized and hardware accelerated functions for image processing, and 
+other numerical problems for all processors providing the SSE command set, 
+i.e. most new Intel and AMD processors.
+To provide access to IPP/IPPI functionality, the ICLCore library can be 
+compiled with <b>WITH_IPP_OPTIMIZATIONS</b> defined. In this case, the 
+following adaptions are performed:
 - the icl data types iclfloat and iclbyte are defined as the ipp compatible
   type Ipp32f and Ipp8u.
 - some of the builtin ICL functions, like scaling or converting to another type
   are accelerated using equivalent ipp-function calls.
-- some additional <i>ipp-compability functions</i> are included into the class interface
-  of ICLChannel and ICL<Type>.
+- some additional <i>ipp-compability functions</i> are included into the 
+  class interface of ICLChannel and ICL<Type>.
 
 @see ICL, ICLChannel
 */
@@ -149,12 +162,12 @@ namespace icl {
   
   /// determines the color-format, that is associated with the images channels 
   enum iclformat{
-    formatRGB, /**< (red,green,blue)-colors pace */
-    formatHLS, /**< (hue,lightness,saturation)-colors pace (also know as HSI) */
-    formatLAB, /**< (lightness,a*,b*)-colors pace */
-    formatYUV, /**< (Y,u,v)-colors pace */
+    formatRGB, /**< (red,green,blue) colors pace */
+    formatHLS, /**< (hue,lightness,saturation) color space (also know as HSI) */
+    formatLAB, /**< (lightness,a*,b*) color space */
+    formatYUV, /**< (Y,u,v) color space */
     formatGray, /**< n-channel gray image range of values is [0,255] as default */
-    formatMatrix /**< n-channel image without a specified colors pace. */
+    formatMatrix /**< n-channel image without a specified color space. */
   };
 
 #ifdef WITH_IPP_OPTIMIZATION
@@ -170,13 +183,12 @@ namespace icl {
     interpolateLIN, /**< bilinear interpolation */
     interpolateRA   /**< region-average interpolation */
   };
-
 #endif
 
 
 /* {{{ Global functions */
 
-  /// creats a new ICLBase by abstacting about the depth parameter
+  /// creates a new ICLBase by abstacting about the depth parameter
   /** This function is essention for the abstaction mechanism about 
       ICL images underlying depth. In many cases you might have an
       ICLBase*, wich must be initialized with parameters width, height,
