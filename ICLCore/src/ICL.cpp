@@ -159,7 +159,7 @@ ICL<Type>::deepCopy(ICLBase* poDst) const
     {
       poDst = new ICL<Type>(m_iWidth,m_iHeight,m_eFormat,m_iChannels);
     }
-  else
+  else if(poDst->getDepth() == getDepth())
     {
       poDst->renew(m_iWidth,m_iHeight,m_iChannels);
       poDst->setFormat(m_eFormat);

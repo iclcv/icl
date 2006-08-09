@@ -117,6 +117,14 @@ namespace icl {
       /* {{{ data exchange functions */
 
       //@{ @name data exchange functions
+      /// Create a shallow copy of the image.
+      /** It exploits the given destination image if possible,
+          i.e. if the pixel depth matches. Else this image is released
+          and a new one is created.
+      **/
+      virtual ICLBase* shallowCopy(ICLBase* poDst = NULL) const;
+
+      //@{ @name data exchange functions
       /// copies the image data into the destination image
       /** this function is implemented in the ICL-template class
           @see ICL

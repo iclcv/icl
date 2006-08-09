@@ -50,7 +50,7 @@ class ICL : public ICLBase
       @return Value of the specified point
   **/
   Type interpolate(float fX,float fY,int iChannel=0) const;
-  
+
   /* }}} */
 
  public:

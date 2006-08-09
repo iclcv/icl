@@ -53,6 +53,15 @@ void ICLBase::setFormat(iclformat eFormat)
 
 // {{{ utillity functions
 
+ICLBase* ICLBase::shallowCopy(ICLBase* poDst) const {
+   iclEnsureDepth (&poDst, getDepth ());
+   if (getDepth() == depth8u)
+      *poDst->asIcl8u() = *this->asIcl8u();
+   else
+      *poDst->asIcl32f() = *this->asIcl32f();
+   return poDst;
+}
+
 void ICLBase::print(string sTitle) const
 {
   int iX,iY,iW,iH;
