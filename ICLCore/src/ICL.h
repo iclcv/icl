@@ -36,8 +36,7 @@ class ICL : public ICLBase
     /* {{{ open class definition*/
     {   
       public:
-      friend class ICL<iclfloat>;
-      friend class ICL<iclbyte>;
+      friend class ICL<T>;
      
       private:
       /* {{{ members */
