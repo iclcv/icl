@@ -12,7 +12,9 @@
 
 #include <time.h>
 #include <sys/time.h>
-#include "ICL.h"
+#include <vector>
+#include <string>
+#include <ICLMacros.h>
 
 using namespace std;
 

@@ -38,11 +38,13 @@ Hence, the Library provides two basic image classes:
 - <b>ICL</b>: The <i>proper</i> image classes implemented as a template,
   where the datatype of each pixel value is the template parameter.
   Internally each ICL<T> object holds a list of so called
-  ICLChannels, which are defined by a class of the same name.
+  ICLChannels, which are defined by an internal class of the same name.
   The ICL class provides some additional image information and
   access functions:
   - type-save image data
   - access to single pixel values using the ()-operator
+  - access to all pixels of the set image ROI using the 
+    ICLIterator (see <b>ICLIterator</b> class reference)
     
 In addition to the classes ICL and ICLBase, the ICLCore package
 provides some utility functions, that facilitates woking with 
@@ -53,15 +55,19 @@ these classes (see icl -namespace for more details).
 
 \section Channel-Concept
 The ICL treats images as a stack of image slices -- <b>channels</b>.
-An ICLChannel can be a part of several images at the same time, 
+An ICLChannel (as mentioned above: represented by an internal class)
+can be a part of several images at the same time, 
 which enables the programmer to compose existing ICLChannels 
 (located as member of some existing ICL) to another new image.
 The <i>composed</i> new ICL-Image will share the 
 image data with the original ICL, so modifications on it 
 will effect as well the original images, as the composed one.
-If it is necessary that the image is independent from other images, you
-may call the detach-method, which replaces the "shared" image channels with
-new independent ones.
+If it is necessary that the image is independent from other images, the
+programmer may call the detach-method, which replaces 
+the "shared" image channels with new independent ones. The shared
+channels are stored using the boost-like auto pointer class ICLAutoPointer.
+Thus the programmer does not have to take care about releasing
+<i>no further used</i> image channels.
 
 @see ICL, ICLChannel
 
@@ -71,8 +77,8 @@ This time the ICL is optimized for two different data types:
 - <b>iclfloat</b> 32bit float
 
 ICL-classes are predefined for these two types:
-- ICL<iclfloat> : public ICLBase
-- ICL<iclbyte> : public ICLBase
+- ICL<iclfloat> : public ICLBase <b>typedef'd to ICL32f</b>
+- ICL<iclbyte> : public ICLBase <b>typedef'd to ICL8u</b>
 
 Each of these data types has several advantages/disadvantages. The greatest
 disadvantage of the iclbyte, is its bounded range (0,1,...,255),
@@ -100,7 +106,7 @@ following:
 - the third channel contains BLUE-Data in range [0,255]
 
 All additional implemented ICL-Packages may use this information. 
-The currently available icl-formats are member of the struct iclformat.
+The currently available icl-formats are member of the enum iclformat.
 A special format: formatMatrix may be used for arbitrary purpose.
 
 @see iclformat
@@ -121,10 +127,94 @@ following adaptions are performed:
   class interface of ICLChannel and ICL<Type>.
 
 @see ICL, ICLChannel
+
+\section _DEBUG_MACROS_ How to use LOG-Macros in the ICL
+The ICLUtils package contains the ICLMacros.h header file,
+which provides the common debug macros for ICL classes. The debug system
+knows 6 different debug levels (0-5). Level depended debug messages
+can be written to std::out using the <b>DEBUG_LOG\<LEVEL\></b>-macro.
+The set debug level (0 by default) regulates the verboseness of the 
+ICL library. The debug levels (0-5) are characterized as follows:
+
+<h3>ICL debug levels</h3>
+      <table>
+         <tr>  
+            <td><b>level</b></td>
+            <td><b>macro</b></td>
+            <td><b>description</b></td>
+         </tr><tr>  
+            <td><b>level 0</b></td>    
+            <td>ERROR_LOG(x)</td>
+            <td> <b>(default)</b> Only critical error messages 
+                 will be written to std::err. If an exception 
+                 that occurred may cause a program crash, then 
+                 an error message should be written. 
+            </td>
+         </tr><tr> 
+            <td><b>level 1</b></td>    
+            <td>WARNING_LOG(x)</td>
+            <td> Also non critical waring will be written (now to 
+                 std::out. Exceptions, that are notified with the
+                 WARNING_LOG template may not cause a program crash.
+            </td>
+         </tr><tr>  
+            <td><b>level 2</b></td>    
+            <td>FUNCTION_LOG(x)</td>
+            <td> The next debug level will notify each function call
+                 by printing an according message to std::out. Take
+                 care to use the FUNCTION_LOG template in each function
+                 you implement for the ICL
+            </td>
+         </tr><tr>  
+            <td><b>level 3</b></td>    
+            <td>SECTION_LOG(x)</td>
+            <td> Sections of functions (like initialization-section,
+                 working-section or end-section) should be commented 
+                 using the SECTION_LOG macro
+            </td>
+         </tr><tr>  
+            <td><b>level 4</b></td>    
+            <td>SUBSECTION_LOG(x)</td>
+            <td> Subsections of functions may be commented 
+                 using the SUBSECTION_LOG macro
+            </td>
+         </tr><tr>  
+            <td><b>level 5</b></td>    
+            <td>LOOP_LOG(x)</td>
+            <td> Debug messages that occur in long loops, e.g. while
+                 iteration over all image pixels, may be written using the
+                 LOOP_LOG macro. Note, that these messages can slow down 
+                 the iteration time to less then 0.1%.
+            </td>
+         </tr>
+      </table>
+
+The following example will show how to use the DEBUG-Macros 
+provided in ICLMacros.h
+  <pre>
+  int sum_vec(int *piVec, int len){
+     FUNCTION_LOG("int *, int");
+     ICLASSERT(piVec); // calls ERROR_LOG
+
+     SECTION_LOG("temp. variale allocation");
+     int sum = 0;
+
+     SECTION_LOG("starting loop");
+     for(int i=0;i<len;i++){
+        LOOP_LOG("addition loop, index: " << i << "curr. value: " << sum);
+        sum += piVec[i];
+        // WARNING_LOG e.g. for range overflow for the int accumulator "sum"
+      }
+     SECTION_LOG("return sum");
+     return sum;
+  }
+  </pre>
+@see ICLMacros.h
 */
 
 #include "ICLMacros.h"
 #include <string>
+#include <vector>
 #ifdef WITH_IPP_OPTIMIZATION
 #include <ipp.h>
 #endif
@@ -259,6 +349,28 @@ namespace icl {
                    the destination parameters for *ppoDst.  
   **/
   void iclEnsureCompatible(ICLBase **ppoDst, ICLBase *poSrc);
+
+  /// ensures that two images have the same size, channel count, depth, and format
+  /** If the given dst image image is 0 than it is created as a clone of
+      of poSrc.
+      @param ppoDst points the destination ICLBase*. If the images depth has to be
+                    converted, then a new ICLCore* is created, at (*ppoDst).
+      @param eDepth destination depth
+      @param iWidth destination width
+      @param iHeight destination height
+      @param eFormat destination format
+      @param iChannelCount destination channel count. (If -1, then the channel count
+                           is extracted from the given eFormat
+      @param vecROI destination ROI-rect (if vecROI.size() is not 4, then the new
+                    ROI is set to the hole image size)
+  **/
+  void iclEnsureCompatible(ICLBase **ppoDst,
+                           icldepth eDepth, 
+                           int iWidth, 
+                           int iHeight, 
+                           iclformat eFormat, 
+                           int iChannelCount=-1,
+                           std::vector<int> vecROI = std::vector<int>(0));
   
   /// determines the count of channels, for each color format
   /** @param eFormat source format which channel count should be returned

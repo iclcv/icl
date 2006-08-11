@@ -101,20 +101,41 @@ namespace icl{
     {
       printf("error in iclEnsureCompatible: source image is NULL!\n"); exit(-1);
     }
+    iclEnsureCompatible(ppoDst,
+                        poSrc->getDepth(),
+                        poSrc->getWidth(),
+                        poSrc->getHeight(),
+                        poSrc->getFormat(),
+                        poSrc->getChannels(),
+                        poSrc->getROIRect());
+  }
+
+  void iclEnsureCompatible(ICLBase **ppoDst,
+                           icldepth eDepth,
+                           int iWidth,
+                           int iHeight,
+                           iclformat eFormat,
+                           int iChannelCount,
+                           std::vector<int> vecROI)
+  {
     if(!*ppoDst)
     {
-      *ppoDst = iclNew(poSrc->getDepth(),
-                       poSrc->getWidth(),
-                       poSrc->getHeight(),
-                       poSrc->getFormat(),
-                       poSrc->getChannels());
+      *ppoDst = iclNew(eDepth,iWidth,iHeight,eFormat,iChannelCount);
     }
     else 
     {
-       iclEnsureDepth(ppoDst,poSrc->getDepth());
-       (*ppoDst)->setNumChannels(poSrc->getChannels());
-       (*ppoDst)->setFormat(poSrc->getFormat());
-       (*ppoDst)->resize(poSrc->getWidth(),poSrc->getHeight());
+       iclEnsureDepth(ppoDst,eDepth);
+       (*ppoDst)->setNumChannels(iChannelCount<0?iclGetChannelsOfFormat(eFormat):iChannelCount);
+       (*ppoDst)->setFormat(eFormat);
+       (*ppoDst)->resize(iWidth, iHeight);
     }
+    if(vecROI.size()==4)
+      {
+        (*ppoDst)->setROIRect(vecROI);
+      }
+    else
+      {
+        (*ppoDst)->delROI();
+      }
   }
 }

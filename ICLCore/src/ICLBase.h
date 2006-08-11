@@ -165,9 +165,9 @@ namespace icl {
       returned.
       @return width of the image/selected channel
       **/
-      int getWidth(int iChannel = 0)  const
+      int getWidth()  const
         {
-          (void)iChannel;
+          FUNCTION_LOG("");
           return m_iWidth;
         }
   
@@ -180,10 +180,20 @@ namespace icl {
           @return height of the image/selected channel
       **/
 
-      int getHeight(int iChannel = 0) const
+      int getHeight() const
         {
-          (void)iChannel;
+          FUNCTION_LOG("");
           return m_iHeight;
+        }
+
+      /// returns the pixelcount of each channel
+      /** @ return width * height
+      
+      */
+      int getDim() const
+        {
+          FUNCTION_LOG("");
+          return m_iWidth * m_iHeight;
         }
 
 
@@ -193,6 +203,7 @@ namespace icl {
       **/
       int getChannels() const
         {
+          FUNCTION_LOG("");
           return m_iChannels;
         }
 
@@ -204,6 +215,7 @@ namespace icl {
       **/
       icldepth getDepth() const
         {
+          FUNCTION_LOG("");
           return m_eDepth;
         }
 
@@ -214,6 +226,7 @@ namespace icl {
       **/
       iclformat getFormat() const
         {
+          FUNCTION_LOG("");
           return m_eFormat;
         }
 
@@ -224,12 +237,36 @@ namespace icl {
       **/
       int isEqual(int iNewWidth, int iNewHeight, int iNewNumChannels) const
         {
+          FUNCTION_LOG("isEqual("<<iNewWidth<<","<< iNewHeight << ","<< iNewNumChannels<< ")");
           return (m_iWidth == iNewWidth) && (m_iHeight == iNewHeight) && (m_iChannels == iNewNumChannels);
           
         }
+      //@}@{ @name [getter functions for ROI handling]
+      
+      /// Gets the ROI (region of interests) of this image
+      /** @see ICL*/
+      void getROI(int &riX, int &riY, int &riWidth, int &riHeight) const;
+      
+      /// Gets the ROI- (region of interests) offset of this image
+      /** @see ICL*/
+      void getROIOffset(int &riX, int &riY) const;
+      
+      /// Gets the ROI- (region of interests) size of this image
+      /** @see ICL*/
+      void getROISize(int &riWidth, int &riHeight) const;
+
+       /// Gets the ROI (region of interests) of this image
+      /** @see ICL*/
+      std::vector<int> getROIRect() const;
+
+      /// returns if the image has a ROI that is smaller then the image
+      int hasROI() const;
+      
+      /// resetur the image ROI to the hole image size with offset (0,0)
+      void delROI();
       
       //@}
-
+      
       /* }}} */
 
       /* {{{ abstract functions (implemented in the ICL class)*/
@@ -278,55 +315,7 @@ namespace icl {
       virtual ICL8u *convertTo8Bit(ICL8u* poDst = NULL) const=0;
         
       //@}
-      //@{ @name [EIF for Region of Interest handling]
-      
-      /// sets the ROI (region of interests) to a specified rect
-      /** @see ICL*/
-      virtual void setROI(int iX, int iY,int iWidth,int iHeight)=0;
-      
-      /// set the ROI- (region of interests) offset to a specified point
-      /** @see ICL*/
-      virtual void setROIOffset(int iX, int iY)=0;
-      
-      /// set the ROI- (region of interests) size to a specified dimension
-      /** @see ICL*/
-      virtual void setROISize(int iWidth, int iHeight)=0;
-
-      /// set the ROI rectangle geometry to [x,y,w,h]
-      /**  @see ICL*/
-      virtual void setROIRect(std::vector<int> oRect)=0;
-
-      /// Gets the ROI (region of interests) of this image
-      /** @see ICL*/
-      virtual void getROI(int &riX, int &riY, int &riWidth, int &riHeight) const=0;
-      
-      /// Gets the ROI- (region of interests) offset of this image
-      /** @see ICL*/
-      virtual void getROIOffset(int &riX, int &riY) const=0;
-      
-      /// Gets the ROI- (region of interests) size of this image
-      /** @see ICL*/
-      virtual void getROISize(int &riWidth, int &riHeight) const=0;
-
-       /// Gets the ROI (region of interests) of this image
-      /** @see ICL*/
-      virtual std::vector<int> getROIRect() const=0;
-
-      /// returns if the image has a ROI that is smaller then the image
-      inline int hasROI() const
-        {
-          int iX,iY,iW,iH;
-          getROI(iX,iY,iW,iH);
-          return (iX==0 && iY==0 && iW==m_iWidth && iH == m_iHeight);
-        }
-      
-      /// resetur the image ROI to the hole image size with offset (0,0)
-      inline void delROI() 
-        {
-          setROI(0,0,m_iWidth,m_iHeight);
-        }
-      
-      //@}
+    
       //@{ @name [EIF for low basic image processing routines]
       
       /// perform a scaling operation of the images (keeping the data) (IPP-OPTIMIZED)
@@ -336,6 +325,10 @@ namespace icl {
       /// Scale the channel min/ max range to the new range tMin, tMax.
       /** @see ICL*/
       virtual void scaleRange(float fMin=0.0, float fMax=255.0, int iChannel = -1)=0;
+
+      /// Scales pixel values from given min/max values to new min/max values.
+      /** @see ICL */
+      virtual void scaleRange(float tNewMin, float tNewMax, float tMin, float tMax, int iChannel = -1)=0;
 
       //@}
       //@{ @name [EIF for IPP compability] (only if WITH_IPP_OPTIMIZATION is defined)
@@ -384,6 +377,7 @@ namespace icl {
       **/
       ICL8u* asIcl8u() const
         {
+          FUNCTION_LOG("");
           return reinterpret_cast<ICL8u*>((void*)this);
         }
   
@@ -394,6 +388,7 @@ namespace icl {
       **/
       ICL32f* asIcl32f() const
         {
+          FUNCTION_LOG("");
           return reinterpret_cast<ICL32f*>((void*)this);
         }
       //@}
@@ -402,7 +397,7 @@ namespace icl {
 
       /* {{{ setter functions */
 
-      ///@name setter functions
+      ///@name setter functions (including ROI handling)
       //@{
       /// sets the format associated with channels of the image
       /**
@@ -414,6 +409,23 @@ namespace icl {
       @see getChannelsOfFormat
       **/
       void setFormat(iclformat eFormat);
+
+      /// sets the ROI (region of interests) to a specified rect
+      /** @see ICL*/
+      void setROI(int iX, int iY,int iWidth,int iHeight);
+      
+      /// set the ROI- (region of interests) offset to a specified point
+      /** @see ICL*/
+      void setROIOffset(int iX, int iY);
+      
+      /// set the ROI- (region of interests) size to a specified dimension
+      /** @see ICL*/
+      void setROISize(int iWidth, int iHeight);
+
+      /// set the ROI rectangle geometry to [x,y,w,h]
+      /**  @see ICL*/
+      void setROIRect(std::vector<int> oRect);
+
       //@}
 
       /* }}} */
@@ -462,6 +474,8 @@ namespace icl {
       /// depth of the image (depth8 for iclbyte/depth32 for iclfloat)
       icldepth m_eDepth;
 
+      /// internal storage of the ROI parameters
+      std::vector<int> m_vecROI;
       /* }}} */
     };
 }

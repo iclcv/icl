@@ -98,5 +98,5 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 CMD_LD=g++
 
 #Set the priority level
-DIR_PRIORITY:=ICLCore ICLCC
+DIR_PRIORITY:=ICLUtils ICLCore ICLCC
 
