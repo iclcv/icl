@@ -99,7 +99,7 @@ namespace icl{
   {
     if(!poSrc)
     {
-      ERROR_LOG("error in iclEnsureCompatible: source image is NULL!");
+       ERROR_LOG ("source image is NULL");
     }
     iclEnsureCompatible(ppoDst,
                         poSrc->getDepth(),

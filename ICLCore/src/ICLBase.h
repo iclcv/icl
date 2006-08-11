@@ -124,7 +124,6 @@ namespace icl {
       **/
       virtual ICLBase* shallowCopy(ICLBase* poDst = NULL) const;
 
-      //@{ @name data exchange functions
       /// copies the image data into the destination image
       /** this function is implemented in the ICL-template class
           @see ICL
@@ -156,30 +155,14 @@ namespace icl {
 
       ///@name getter functions
       //@{
-      /// return the images width
-      /**
-      if the argument iChannel is defined, then the width of
-      a specific channel is returned. This allows derived classes
-      to contain channels with different resolutions
-      @param iChannel determines the channel which width should be
-      returned.
-      @return width of the image/selected channel
-      **/
+      /// return width of the images
       int getWidth()  const
         {
           FUNCTION_LOG("");
           return m_iWidth;
         }
   
-      /// return the images height
-      /** if the argument iChannel is defined, then the width of
-          a specific channel is returned. This allows derived classes
-          to contain channels with different resolutions
-          @param iChannel determines the channel which height should be
-                          returned.
-          @return height of the image/selected channel
-      **/
-
+      /// return height of the images
       int getHeight() const
         {
           FUNCTION_LOG("");
@@ -241,7 +224,8 @@ namespace icl {
           return (m_iWidth == iNewWidth) && (m_iHeight == iNewHeight) && (m_iChannels == iNewNumChannels);
           
         }
-      //@}@{ @name [getter functions for ROI handling]
+      //@}
+      //@{ @name [getter functions for ROI handling]
       
       /// Gets the ROI (region of interests) of this image
       /** @see ICL*/
@@ -260,13 +244,13 @@ namespace icl {
       const std::vector<int>& getROI() const;
 
       /// returns if the image has a ROI that is smaller then the image
-      int hasROI() const;
+      int hasFullROI() const;
       
       /// resetur the image ROI to the hole image size with offset (0,0)
       void delROI();
       
       //@}
-      
+
       /* }}} */
 
       /* {{{ abstract functions (implemented in the ICL class)*/
@@ -284,7 +268,7 @@ namespace icl {
       /** @see ICL*/
       virtual void detach(int iIndex = -1)=0;
       /// Removes a specified channel.
-       /** @see ICL*/
+      /** @see ICL*/
       virtual void removeChannel(int iChannel)=0;
       
       /// Swap channel A and B

@@ -11,8 +11,9 @@ MAKEROOT_DEFINED= TRUE
 CONFIG_GUESS_OUT?=i686-pc-linux-gnu
 CONFIG_GUESS_ID?=i686-pc-linux-gnu_
 AGNI_LOCAL_ROOT?=/vol/stereovision
-ICL_ROOT?=$AGNI_LOCAL_ROOT/ICL/3.0
+ICL_ROOT?=$(AGNI_LOCAL_ROOT)/ICL/3.0
 IPP_ROOT?=/vol/stereovision/extern/IPP
+export AGNI_LOCAL_ROOT
 
 #------------------------------------------------------------------------------
 # Shell commands

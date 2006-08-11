@@ -17,6 +17,7 @@ namespace icl {
 template<class Type>
 ICL<Type>::ICL(int iWidth,int iHeight,int iChannels):
   // {{{ open
+
   ICLBase(iWidth,iHeight,formatMatrix,iclGetDepth<Type>(),iChannels){
   FUNCTION_LOG("ICL(" << iWidth <<","<< iHeight <<","<< iChannels << ")  this:" << this );
   
@@ -76,14 +77,6 @@ ICL<Type>::ICL(const ICL<Type>& tSrc):
   m_iChannels = tSrc.getChannels();
   m_vecChannels = tSrc.m_vecChannels;
   m_vecROI = tSrc.m_vecROI;
-  /* 
-  OLD!!!
-  m_vecChannels.resize(m_iChannels);
-  //---- Shallow copy of source channels ----
-  std::copy(tSrc.m_vecChannels.begin(), 
-  tSrc.m_vecChannels.end(),
-  m_vecChannels.begin());
-  */
 }
 
   // }}}
@@ -116,14 +109,6 @@ ICL<Type>& ICL<Type>::operator=(const ICL<Type>& tSrc)
   m_iChannels = tSrc.getChannels();  
   m_vecChannels = tSrc.m_vecChannels;
   m_vecROI = tSrc.m_vecROI;
-
-  /*OLD
-  m_vecChannels->resize(this->m_iChannels);
-  //---- Shallow copy of source channels ----
-  std::copy(tSrc.m_vecChannels.begin(), 
-  tSrc.m_vecChannels.end(),
-  this->m_vecChannels.begin());
-  */
 
   return *this;
 }
@@ -628,24 +613,10 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
 {
   FUNCTION_LOG("convertTo32Bit(ICL32f*)");
   
-  ICLBase *poDstB = static_cast<ICLBase*>(poDst);
-  iclEnsureCompatible(&poDstB,depth32f,m_iWidth,m_iHeight,m_eFormat,m_iChannels, m_vecROI);
-  
-  /* OLD
-  if(!poDst)
-  {
-  poDst = new ICL32f(getWidth(),getHeight(),getFormat(),getChannels());
-  }
-  else
-  {
-  poDst->renew(m_iWidth,m_iHeight,m_iChannels);
-  poDst->setFormat(m_eFormat);
-  }
-  int iX,iY,iW,iH;
-  getROI(iX,iY,iW,iH);
-  poDst->setROI(iX,iY,iW,iH);
-  */
-  
+  ICLBase *poDstBase = static_cast<ICLBase*>(poDst);
+  iclEnsureCompatible(&poDstBase,depth32f,m_iWidth,m_iHeight,m_eFormat,m_iChannels, m_vecROI);
+  poDst = poDstBase->asIcl32f(); // should only be needed in case of of poDst == NULL
+
   if(m_eDepth == depth8u)
   {
     for(int c=0;c<m_iChannels;c++)
@@ -675,28 +646,15 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
 //--------------------------------------------------------------------------
 template<class Type> ICL8u*
 ICL<Type>::convertTo8Bit(ICL8u *poDst) const
-  // {{{ open
+// {{{ open
 {
 
   FUNCTION_LOG("convertTo8Bit(ICL8u*)");
-  ICLBase *poDstB = static_cast<ICLBase*>(poDst);
-  iclEnsureCompatible(&poDstB,depth8u,m_iWidth,m_iHeight,m_eFormat,m_iChannels, m_vecROI);
-  
-  /* OLD
-  if(!poDst)
-  {
-  poDst = new ICL8u(getWidth(),getHeight(),getFormat(),getChannels());
-  }
-  else
-  {
-  poDst->renew(m_iWidth,m_iHeight,m_iChannels);
-  poDst->setFormat(m_eFormat);
-  }
-  int iX,iY,iW,iH;
-  getROI(iX,iY,iW,iH);
-  poDst->setROI(iX,iY,iW,iH);
-  */
-  
+
+  ICLBase *poDstBase = static_cast<ICLBase*>(poDst);
+  iclEnsureCompatible(&poDstBase,depth8u,m_iWidth,m_iHeight,m_eFormat,m_iChannels, m_vecROI);
+  poDst = poDstBase->asIcl8u(); // should only be needed in case of of poDst == NULL
+
   if(m_eDepth == depth32f)
     {
       for(int c=0;c<m_iChannels;c++)

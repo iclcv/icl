@@ -99,12 +99,18 @@ void ICLBase::print(string sTitle) const
 
 // {{{ ROI functions
 
-  void ICLBase::setROI(int iX, int iY,int iW,int iH){
+  void ICLBase::setROI(int iX,int iY, int iW,int iH){
     FUNCTION_LOG("setROI("<< iX <<"," << iY << "," << iW << "," << iH << ")");
-    m_vecROI[2] = std::min (std::max (0, iW), getWidth());
-    m_vecROI[3] = std::min (std::max (0, iH), getHeight());
-    m_vecROI[0] = std::min (std::max (0, iX), getWidth() - m_vecROI[2]);
-    m_vecROI[1] = std::min (std::max (0, iY), getHeight() - m_vecROI[3]); 
+
+    if (iW <= 0) iW = getWidth () + iW;
+    if (iH <= 0) iH = getHeight () + iH;
+    m_vecROI[2] = iW = std::min (std::max (1, iW), getWidth());
+    m_vecROI[3] = iH = std::min (std::max (1, iH), getHeight());
+
+    if (iX < 0) iX = getWidth () - iW + iX;
+    if (iY < 0) iY = getHeight () - iH + iY;
+    m_vecROI[0] = iX = std::min (std::max (0, iX), getWidth() - iW);
+    m_vecROI[1] = iY = std::min (std::max (0, iY), getHeight() - iH);
   }
 
   void ICLBase::setROIOffset(int iX, int iY){
@@ -148,7 +154,7 @@ void ICLBase::print(string sTitle) const
     return m_vecROI;
   }
   
-  int ICLBase::hasROI() const
+  int ICLBase::hasFullROI() const
   {
     FUNCTION_LOG("");    
     return ( m_vecROI[0]==0 &&  m_vecROI[1]==0 &&  m_vecROI[2]==m_iWidth &&  m_vecROI[3] == m_iHeight);
