@@ -412,19 +412,21 @@ class ICL : public ICLBase
   /// Return a copy of the object with depth 32 bit. (IPP-OPTIMIZED)
   /** If the given destination image poDst is not NULL, than it's size is
       adapted to the images size on demand.
-      @param poDst destination image (if NULL, then a new image is created) 
+      @param poDst destination image (if NULL, then a new image is created as 
+                   a deep copy of the source image) 
       @return Copy of the object with depth 32 bit 
   **/
-  virtual ICL32f *convertTo32Bit(ICL32f* poDst = NULL) const ;
+  virtual ICL32f *convertTo32Bit(ICL32f* poDst) const ;
  
   /// Return a copy of the object with depth 8 bit (IPP-OPTIMIZED)
   /** <b>Waring: Information may be lost!</b>
       If the given destination image poDst is not NULL, than it's size is
       adapted to the images size on demand.
-      @param poDst destination image (if NULL, then a new image is created) 
+      @param poDst destination image (if NULL, then a new image is created as 
+                   a deep copy of the source image) 
       @return Copy of the object with depth 8 bit 
   **/
-  virtual ICL8u *convertTo8Bit(ICL8u* poDst = NULL) const;
+  virtual ICL8u *convertTo8Bit(ICL8u* poDst) const;
 
    //@}
   /* }}} */

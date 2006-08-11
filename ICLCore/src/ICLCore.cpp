@@ -107,7 +107,7 @@ namespace icl{
                         poSrc->getHeight(),
                         poSrc->getFormat(),
                         poSrc->getChannels(),
-                        poSrc->getROIRect());
+                        poSrc->getROI());
   }
 
   void iclEnsureCompatible(ICLBase **ppoDst,
@@ -131,7 +131,7 @@ namespace icl{
     }
     if(vecROI.size()==4)
       {
-        (*ppoDst)->setROIRect(vecROI);
+        (*ppoDst)->setROI(vecROI);
       }
     else
       {

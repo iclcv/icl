@@ -257,7 +257,7 @@ namespace icl {
 
        /// Gets the ROI (region of interests) of this image
       /** @see ICL*/
-      std::vector<int> getROIRect() const;
+      const std::vector<int>& getROI() const;
 
       /// returns if the image has a ROI that is smaller then the image
       int hasROI() const;
@@ -308,11 +308,11 @@ namespace icl {
 
       /// Return a copy of the object with depth 32 bit. (IPP-OPTIMIZED)
       /** @see ICL*/
-      virtual ICL32f *convertTo32Bit(ICL32f* poDst = NULL) const=0;
+      virtual ICL32f *convertTo32Bit(ICL32f* poDst) const=0;
   
       /// Return a copy of the object with depth 8 bit (IPP-OPTIMIZED)
       /** @see ICL*/
-      virtual ICL8u *convertTo8Bit(ICL8u* poDst = NULL) const=0;
+      virtual ICL8u *convertTo8Bit(ICL8u* poDst) const=0;
         
       //@}
     
@@ -424,7 +424,7 @@ namespace icl {
 
       /// set the ROI rectangle geometry to [x,y,w,h]
       /**  @see ICL*/
-      void setROIRect(std::vector<int> oRect);
+      void setROI(const std::vector<int>& oRect);
 
       //@}
 

@@ -669,7 +669,10 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
       IppiSize oWholeImageROI = {m_iWidth,m_iHeight};
       ippiConvert_8u32f_C1R(pucSrc,ippStep(),pfDst,poDst->ippStep(),oWholeImageROI);
 #else
-      std::copy (pucSrc, pucSrc + getDim(), pfDst);
+      iclbyte *pucSrcEnd = pucSrc+getDim();
+      while(pucSrc!=pucSrcEnd){
+        *pfDst++ = static_cast<iclbyte>(*pucSrc++);
+      }
 #endif
     }
     return poDst;
@@ -717,7 +720,10 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
           IppiSize oHoleImageROI = {m_iWidth,m_iHeight};
           ippiConvert_32f8u_C1R(pfSrc,ippStep(),pucDst,poDst->ippStep(),oHoleImageROI,ippRndNear);
 #else
-          std::copy (pfSrc, pfSrc + getDim(), pucDst);
+          iclfloat *pfSrcEnd = pfSrc+getDim();
+          while(pfSrc!=pfSrcEnd){
+            *pucDst++ = static_cast<iclbyte>(*pfSrc++);
+          }
 #endif
         }
       return poDst;
@@ -807,6 +813,7 @@ ICL<Type>::getMin(int iChannel) const
 template<class Type> void 
 ICL<Type>::getMinMax(int iChannel, Type &rtMin, Type &rtMax) const
   // {{{ open
+
 {
   FUNCTION_LOG("getMinMax(" << iChannel << ",int&, int&)");
 #ifdef WITH_IPP_OPTIMIZATION
@@ -828,7 +835,11 @@ ICL<Type>::getMinMax(int iChannel, Type &rtMin, Type &rtMax) const
 #else
   Type *ptData = getData(iChannel);
   Type *ptDataEnd = ptData+getDim();
-  if(ptData == ptDataEnd)return 0;
+  if(ptData == ptDataEnd){
+    rtMin = 0;
+    rtMax = 0;
+    return;
+  }
   rtMin = *ptData;
   rtMax = *ptData++;
   while(ptData != ptDataEnd)
@@ -838,6 +849,7 @@ ICL<Type>::getMinMax(int iChannel, Type &rtMin, Type &rtMax) const
     }
 #endif
 }
+
 // }}}
 
 // }}}

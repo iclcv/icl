@@ -117,7 +117,7 @@ void ICLBase::print(string sTitle) const
     setROI(m_vecROI[0],m_vecROI[1],iWidth,iHeight);
   }
 
-  void ICLBase::setROIRect(std::vector<int> oROIRect){
+  void ICLBase::setROI(const std::vector<int> &oROIRect){
     FUNCTION_LOG("");    
     ICLASSERT_RETURN(oROIRect.size() == 4);
     setROI(oROIRect[0],oROIRect[1],oROIRect[2],oROIRect[3]);
@@ -143,7 +143,7 @@ void ICLBase::print(string sTitle) const
     riHeight = m_vecROI[3];
   }
 
-  std::vector<int> ICLBase::getROIRect() const{
+  const std::vector<int>& ICLBase::getROI() const{
     FUNCTION_LOG("");    
     return m_vecROI;
   }

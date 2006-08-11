@@ -68,10 +68,6 @@ CFLAGS:= ${CFLAGS}
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CPPDEFINES:= ${CPPDEFINES}  \
              -DWITH_IPP_OPTIMIZATION \
-             -DICLTIME
-
-#CPPDEFINES:= ${CPPDEFINES}  \
-#             -DICLTIME
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}

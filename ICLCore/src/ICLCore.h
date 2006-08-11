@@ -340,8 +340,8 @@ namespace icl {
   **/
   void iclEnsureDepth(ICLBase **ppoImage, icldepth eDepth);
 
-  /// ensures that two images have the same size, channel count, depth, and format
-  /** If the given dst image image is 0 than it is created as a clone of
+  /// ensures that two images have the same size, channel count, depth, format and ROI
+  /** If the given dst image image is 0 than it is created as a clone  (deep copy) of
       of poSrc.
       @param ppoDst points the destination ICLBase*. If the images depth has to be
                     converted, then a new ICLCore* is created, at (*ppoDst).
@@ -350,8 +350,8 @@ namespace icl {
   **/
   void iclEnsureCompatible(ICLBase **ppoDst, ICLBase *poSrc);
 
-  /// ensures that two images have the same size, channel count, depth, and format
-  /** If the given dst image image is 0 than it is created as a clone of
+  /// ensures that two images have the same size, channel count, depth, format and ROI
+  /** If the given dst image image is 0 than it is created as a clone  (deep copy) of
       of poSrc.
       @param ppoDst points the destination ICLBase*. If the images depth has to be
                     converted, then a new ICLCore* is created, at (*ppoDst).
