@@ -218,7 +218,7 @@ REL_OBJECTS:=
 FORCE_CPP:=TRUE
 
 # Debug flag
-DEBUG:= -g3 -O0
+DEBUG:= -g -O0
 
 # Debug status
 # This variable takes two values: TRUE or FALSE

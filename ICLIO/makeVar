@@ -41,8 +41,7 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 # (e.g. -L../MyLib/lib)
 REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
                 -L../ICLCore/lib -lICLCore \
-                -L../ICLCC/lib -lICLCC \
-                -L../ICLUtils/lib -lICLUtils  
+                -L../ICLCC/lib -lICLCC
 
 # Please add here all the objects with absolute path
 # that are needed by the executables.
@@ -62,7 +61,8 @@ CDEFINES:= ${CDEFINES}
 CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CPPDEFINES:= ${CPPDEFINES}
+CPPDEFINES:= ${CPPDEFINES} \
+             -DDEBUGLEVEL_4
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS} -Wno-long-long

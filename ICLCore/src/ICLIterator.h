@@ -163,8 +163,19 @@ namespace icl{
   template <class Type>
     class ICLIterator{
     public:
-     /// Default Constructor
-     /** Creates an ICLIterator object with Type "Type"
+    /** Creates an ICLIterator object */
+    /// Default Constructor
+    ICLIterator():
+       m_iImageWidth(0),
+       m_iROIWidth(0), 
+       m_iROIHeight(0), 
+       m_iLineStep(0),
+       m_ptDataOrigin(0),
+       m_ptDataCurr(0),
+       m_ptDataEnd(0),
+       m_ptCurrLineEnd(0){}
+    
+     /** 2nd Constructor creates an ICLIterator object with Type "Type"
          @param ptData pointer to the corresponding channel data
          @param iXPos x offset of the images ROI
          @param iYPos y offset of the images ROI
@@ -182,7 +193,7 @@ namespace icl{
        m_ptDataEnd(m_ptDataCurr+iROIWidth+(iROIHeight-1)*iImageWidth),
        m_ptCurrLineEnd(m_ptDataCurr+iROIWidth-1){}
 
-    /// 2nd Constructor to create sub-regions of an ICL-image
+    /// 3nd Constructor to create sub-regions of an ICL-image
     /** This 2nd constructor creates a sub-region iterator, which may be
         used e.g. for arbitrary neighborhood operations like 
         linear filters, medians, ...

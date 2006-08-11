@@ -2,7 +2,7 @@
 
 namespace icl{
 
-  // {{{ typedef of Ippi<Point|Size> if  WITH_IPP_OPTIMIZATION is not defined
+  // {{{ typedef of Ippi<Point|Size> if WITH_IPP_OPTIMIZATION is not defined
 
 #ifndef WITH_IPP_OPTIMIZATION
   typedef struct IppiPoint_ {int x,y;} IppiPoint;
@@ -297,7 +297,7 @@ namespace icl{
 
   // }}}
 
-   // {{{ apply(ICLBase*, ICLBase*)
+  // {{{ apply(ICLBase*, ICLBase*)
   void ICLConvolution::apply(ICLBase *poSrc, ICLBase *poDst)
   {
     DEBUG_LOG4("ICLConvolution::apply(ICLBase *,ICLBase*)");
@@ -411,9 +411,5 @@ namespace icl{
   }
 
   // }}}
-  
-  
-
-   
 
 }

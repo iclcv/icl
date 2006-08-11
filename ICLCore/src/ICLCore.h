@@ -234,7 +234,7 @@ namespace icl {
   /// 32Bit floating point type for the ICL 
   typedef Ipp32f iclfloat;
 
-  /// 8Bit unsigned integer type for the ICL 
+  /// 8Bit unsigned integer type for the ICL
   typedef Ipp8u iclbyte;
 #else
   /// 32Bit floating point type for the ICL 
@@ -418,6 +418,13 @@ namespace icl {
   static icldepth iclGetDepth<iclfloat>(){
     return depth32f;
   }
+
+  /// determine the sizeof value of an ICL deph
+  /**
+     @return sizeof value associated with the Type value
+  **/
+  int iclGetSizeof(icldepth eDepth);
+
   
 }
 

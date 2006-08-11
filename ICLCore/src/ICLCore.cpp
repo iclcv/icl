@@ -61,21 +61,21 @@ namespace icl{
   {
     if(sFormat.length()<=0)
       {
-        printf("warning iclTranslateFormatString(string) got \"\"-string\n ");
+        ERROR_LOG("warning iclTranslateFormatString(string) got \"\"-string");
         return formatMatrix;
       }
     switch(sFormat[0])
-      {
-        case 'r': return formatRGB;
-        case 'h': return formatHLS;
-        case 'l': return formatLAB;
-        case 'y': return formatYUV;
-        case 'g': return formatGray;
-        case 'm': return formatMatrix;
-        default: return formatMatrix;
-      }
+    {
+      case 'r': return formatRGB;
+      case 'h': return formatHLS;
+      case 'l': return formatLAB;
+      case 'y': return formatYUV;
+      case 'g': return formatGray;
+      case 'm': return formatMatrix;
+      default: return formatMatrix;
+    }
   }
-
+  
   void iclEnsureDepth(ICLBase ** ppoImage, icldepth eDepth)
   {
     if(!*ppoImage)
@@ -99,7 +99,7 @@ namespace icl{
   {
     if(!poSrc)
     {
-      printf("error in iclEnsureCompatible: source image is NULL!\n"); exit(-1);
+      ERROR_LOG("error in iclEnsureCompatible: source image is NULL!");
     }
     iclEnsureCompatible(ppoDst,
                         poSrc->getDepth(),
@@ -138,4 +138,20 @@ namespace icl{
         (*ppoDst)->delROI();
       }
   }
-}
+
+  int iclGetSizeof(icldepth eDepth)
+  {
+    switch(eDepth)
+    {
+      case depth8u:
+        return sizeof(iclbyte);
+        break;
+      case depth32f:
+        return sizeof(iclfloat);
+        break;
+      default:
+        ERROR_LOG("Unknown icl depth");
+        return 0;
+    }
+  }
+} //namespace

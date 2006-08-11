@@ -5,6 +5,7 @@
 
 using namespace std;
 
+namespace icl {
 /* {{{ Debug Level */
 
 //---- The following DebugMessage can be activated by defining DEBUGLEVEL_{0..5}
@@ -97,5 +98,5 @@ using namespace std;
     ERROR_LOG("ICL ASSERTION ERROR:" << #X << "(returning!)"); \
     return VALUE;                                              \
   }
-
-#endif 
+}
+#endif //ICLMACROS_H

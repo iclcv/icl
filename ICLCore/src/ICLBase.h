@@ -208,7 +208,7 @@ namespace icl {
         }
 
 
-      /// retruns the depth (depth8u or depth32f)
+      /// returns the depth (depth8u or depth32f)
       /** 
           @return image depth ()
           @see icldepth

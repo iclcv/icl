@@ -39,8 +39,7 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)
 REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
-        -L../ICLCore/lib -lICLCore \
-        -L../ICLUtils/lib -lICLUtils  
+        -L../ICLCore/lib -lICLCore
 
 # Please add here all the objects with absolute path
 # that are needed by the executables.

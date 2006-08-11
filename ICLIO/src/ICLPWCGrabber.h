@@ -56,8 +56,8 @@ namespace icl{
         the format of poDst. If poDst has depth8u and formatRGB, then, 
         the image data is directly converted from the PWC-"mbuf" into the
         destination images data.
-        @param poDst destination image. If it has formatMatrix, than it will be converted to
-                     to formatRGB for best performance. 
+        @param poDst destination image. If it has formatMatrix, than it will be
+                     converted to formatRGB for best performance. 
     **/    
     void grab(ICLBase *poDst);
     

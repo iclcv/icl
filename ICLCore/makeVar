@@ -29,7 +29,7 @@ ABS_INCLUDES:= ${ABS_INCLUDES}
 # Please add here all the directories with relative path
 # (e.g. -I../MyModule/src) that contain include files needed by the sources.
 REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
-        -I../ICLUtils/src
+               -I../ICLUtils/src
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
@@ -37,8 +37,7 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)
-REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
-        -L../ICLUtils/lib -lICLUtils
+REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%)
 
 # Please add here all the objects with absolute path
 # that are needed by the executables.
@@ -46,7 +45,8 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 
 # Please add here all the objects with relative path
 # that are needed by the executables.
-REL_OBJECTS:= $(REL_OBJECTS:%=../%)
+REL_OBJECTS:= $(REL_OBJECTS:%=../%) \
+              ../ICLUtils/obj/*
 
 # Debug flag
 DEBUG:= ${DEBUG}
