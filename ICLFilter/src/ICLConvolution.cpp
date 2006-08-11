@@ -300,14 +300,10 @@ namespace icl{
   // {{{ apply(ICLBase*, ICLBase*)
   void ICLConvolution::apply(ICLBase *poSrc, ICLBase *poDst)
   {
-    DEBUG_LOG4("ICLConvolution::apply(ICLBase *,ICLBase*)");
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(poSrc->getDepth() == poDst->getDepth());
    
     // {{{ prepare destination image
-
-    if(poSrc->getDepth() != poDst->getDepth())
-      {
-        ERROR_LOG("ICLConvolution::apply: source and destination depth must be equal!");
-      }
 
 #ifdef WITH_IPP_OPTIMIZATION
     IppiPoint oAnchor = { iW/2, iH/2 };
@@ -315,12 +311,20 @@ namespace icl{
 
     IppiSize oKernelSize = { iW, iH };
     
-    morphROI(poSrc,-iW/2,-iH/2);    
+    morphROI(poSrc,-iW/2,-iH/2);  
+
     
     int iSrcRoiW, iSrcRoiH;
     poSrc->getROISize(iSrcRoiW,iSrcRoiH);
 
     poDst->renew(iSrcRoiW,iSrcRoiH,poSrc->getChannels());  
+
+    printf("---------------info in ICLConv:apply--------------\n");
+    poSrc->print("src image");
+    poDst->print("dst image");
+    printf("Kernel = %d x %d \n",iW,iH);
+    printf("--------------------------------------------------\n");
+
 
     // }}}
 

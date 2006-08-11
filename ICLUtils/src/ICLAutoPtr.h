@@ -51,26 +51,27 @@ namespace icl{
       private:
       T *e; /**< corresponding data element */
       int *c; /**< reference counters */
+      bool d; /**< deletion flag (indicates if the hold data must be deleted) */
       
       /// save reference counter increment
       void inc() { if(c) (*c)++; }
 
       /// save reference counter decrement (cleanup on demand)
-      void dec() { if(c && *c){ if(! (--(*c))){ delete e; delete c; }}} 
+      void dec() { if(c && *c){ if(! (--(*c))){ if(d){delete e;} delete c; }}} 
 
       /// sets e and c
-      void set(T *e,int *c) {this->e=e; this->c=c;}
+      void set(T *e,int *c, bool d) {this->e=e; this->c=c; this->d=d;}
          
       public:
   
       /// e and c will become NULL
-      ICLAutoPtr(): e(0),c(0){}    
+      ICLAutoPtr(): e(0),c(0),d(0){}    
       
       /// e is given, reference counter is set to 1
-      ICLAutoPtr(T *e ): e(e), c(new int(1)){}
+      ICLAutoPtr(T *e, bool b=1): e(e), c(new int(1)),d(d){}
       
       /// e and c is copied from r, reference counter is increased by 1
-      ICLAutoPtr(const ICLAutoPtr<T>& r): e(r.e), c(r.c) { inc(); }
+      ICLAutoPtr(const ICLAutoPtr<T>& r): e(r.e), c(r.c), d(r.d){ inc(); }
       
       /// sets the pointer to hold another reference
       /** If the new reference r.e is identical to the current
@@ -85,7 +86,7 @@ namespace icl{
         {
           if(r.e == e) return *this;
           dec();
-          set(r.e,r.c);
+          set(r.e,r.c,r.d);
           inc();
           return *this;
         }
@@ -98,6 +99,12 @@ namespace icl{
           terminate the program with -1;
       */
       T &operator* () const { ICLASSERT(e); return *e; }
+
+      /// returns the pointer to the data
+      /** If the element pointer is null, an error will
+          terminate the program with -1;
+      */
+      T* get () const { return e; }
 
       /// returns the currently hold element
       /** If the element pointer is null, an error will

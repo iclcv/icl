@@ -30,95 +30,8 @@ class ICL : public ICLBase
 {
  protected:
   
-  /// Internally used channel representation
-  template <class T> 
-  class ICLChannel
-    /* {{{ open class definition*/
-    {   
-      public:
-      friend class ICL<T>;
-     
-      private:
-      /* {{{ members */
-
-      /// back pointer to the parent ICLBase object
-      ICLBase *m_poParent;
-      
-      /// Array containing image data (row-by-row)
-      T *m_ptData;
-
-      /// This flag indicates if data-buffer has to be deleted in the destructor
-      bool m_bDeleteData;
-
-      /* }}} */
-      public:
-      /* {{{ Konstruktor/ Destruktor: */
-      //@{ @name Constructors and Destructors
-      /// Base constructor creates a channel with specified width,height and optional shared data
-      /** This Baseconstructor works in two different ways:
-      - if ptData is NULL (default), then the constructor allocates memory for 
-        an image channel of the specified width and height. The memory will
-        be freed in the ICLChannels constructor        
-      - else ptData (not NULL) is used as foreign data, so ptData has to 
-        be of size iWidth*iHeight, and it must not be deleted as long as
-        the image stays valid. In this case, internally a flag is set,
-        that indicates that the memory is not owned by this channel, so
-        it has not to be freed in the destuctor.
-      
-      @param iWidth Image channel width
-      @param iHeight Image channel height
-      @param ptData pointer to data allocated elsewhere
-      **/
-      ICLChannel(ICLBase *poParent, T *ptData=0):
-        m_poParent(poParent),
-        m_ptData(ptData ? ptData : new T[poParent->getDim()]),
-        m_bDeleteData(ptData ? 0 : 1)
-        {
-          FUNCTION_LOG("");
-          if(!ptData) clear();
-        }
-      
-      /// Copy constructor 
-      /** Copy constructor - generates a copy of the source channel
-          @param tSource Source image channel
-      **/
-      ICLChannel(const ICLChannel<T>& tSrc):
-        m_poParent(tSrc.m_poParent),
-        m_ptData(new T[tSrc.m_poParent->getDim()]),
-        m_bDeleteData(1)
-        {
-          FUNCTION_LOG("");
-          std::copy(tSrc.m_ptData,(tSrc.m_ptData)+m_poParent->getDim(),m_ptData);
-        }
-      
-      /// Destructor
-      ~ICLChannel(){
-        if(m_bDeleteData == 1)
-          {
-            FUNCTION_LOG("");
-            delete [] m_ptData;
-          }
-      }
-
-      //@}
-      /* }}} */
-      /* {{{ basic channel functions: */
-      //@{ @name manipulation functions
-      /// Set each pixel to a specific value.
-      /** @param tValue destination 
-      **/
-      void clear(Type tValue = 0)
-        { 
-          FUNCTION_LOG("");
-          fill(m_ptData, m_ptData+m_poParent->getDim(), tValue);
-        }
-      /* }}} */
-    };
-
-  /* }}} */
-  
   /// internally used storage for the image channels
-  vector<ICLAutoPtr<ICLChannel<Type> > > m_vecChannels;
+  vector<ICLAutoPtr<Type> > m_vecChannels;
   
   /* {{{ Auxillary function */
 
@@ -130,6 +43,8 @@ class ICL : public ICLBase
   **/
   Type interpolate(float fX,float fY,int iChannel=0) const;
 
+  /// creates a new deep copy of a specified Type*
+  ICLAutoPtr<Type> createChannel(Type *ptDataToCopy=0) const;
   /* }}} */
                                 
  public:
@@ -220,7 +135,7 @@ class ICL : public ICLBase
   **/
   Type& operator()(int iX, int iY, int iChannel) const
     {
-      return m_vecChannels[iChannel]->m_ptData[iX+m_iWidth*iY];
+      return getData(iChannel)[iX+m_iWidth*iY];
     }
 
   //@}
@@ -459,7 +374,7 @@ class ICL : public ICLBase
   **/
   Type* getData(int iChannel) const
     { 
-      return (m_vecChannels[iChannel]->m_ptData);
+      return m_vecChannels[iChannel].get();
     }
   
   /// Returns a pointer to the end of the channel data

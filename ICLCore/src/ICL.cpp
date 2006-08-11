@@ -23,7 +23,7 @@ ICL<Type>::ICL(int iWidth,int iHeight,int iChannels):
   //---- ICL Channel memory allocation ----
   for(int i=0;i<m_iChannels;i++)
     {
-      m_vecChannels.push_back(ICLAutoPtr<ICLChannel<Type> >(new ICLChannel<Type>(this)));
+      m_vecChannels.push_back(createChannel());
     }
 } 
 
@@ -40,7 +40,7 @@ ICL<Type>::ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels):
    //---- ICL Channel memory allocation ----
   for(int i=0;i<m_iChannels;i++)
     {
-      m_vecChannels.push_back(ICLAutoPtr<ICLChannel<Type> >(new ICLChannel<Type>(this)));
+      m_vecChannels.push_back(createChannel());
     }
 } 
 
@@ -57,7 +57,7 @@ ICL<Type>::ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels, Type**
   //---- ICL Channel memory allocation ----
   for(int i=0;i<m_iChannels;i++)
     {
-      m_vecChannels.push_back(ICLAutoPtr<ICLChannel<Type> >(new ICLChannel<Type>(this,pptData[i])));
+       m_vecChannels.push_back(ICLAutoPtr<Type>(*pptData++,0));
     }
 } 
 
@@ -75,6 +75,7 @@ ICL<Type>::ICL(const ICL<Type>& tSrc):
   
   m_iChannels = tSrc.getChannels();
   m_vecChannels = tSrc.m_vecChannels;
+  m_vecROI = tSrc.m_vecROI;
   /* 
   OLD!!!
   m_vecChannels.resize(m_iChannels);
@@ -141,20 +142,6 @@ ICL<Type>::deepCopy(ICLBase* poDst) const
 
   iclEnsureCompatible(&poDst,(ICLBase*)this);
 
-  /* OLD
-  //---- Allocate memory ----
-  if (poDst == NULL) 
-  {
-  poDst = new ICL<Type>(m_iWidth,m_iHeight,m_eFormat,m_iChannels);
-  }
-  else if(poDst->getDepth() == getDepth())
-  {
-  poDst->renew(m_iWidth,m_iHeight,m_iChannels);
-  poDst->setFormat(m_eFormat);
-  }
-  poDst->setROIRect(getROIRect());
-  */
-  
   if(poDst->getDepth() == getDepth())
     {
       for(int c=0;c<m_iChannels;c++)
@@ -449,8 +436,7 @@ ICL<Type>::detach(int iIndex)
   //---- Make the whole ICL independent ----
   for(int i=iIndex<0?0:iIndex, iEnd=iIndex<0?m_iChannels:iIndex+1;i<iEnd;i++) 
     {
-      m_vecChannels[i] = 
-        ICLAutoPtr<ICLChannel<Type> >(new ICLChannel<Type>(*m_vecChannels[i]));
+      m_vecChannels[i] = createChannel (getData(i));
     }
 }
 
@@ -558,11 +544,10 @@ ICL<Type>::resize(int iWidth,int iHeight)
       m_iHeight = iHeight;
       for(int i=0;i<m_iChannels;i++)
         {
-          m_vecChannels[i] = ICLAutoPtr<ICLChannel<Type> >(new ICLChannel<Type>(this));
+          m_vecChannels[i] = createChannel ();
         }
     }
   delROI();
-  
 }
 
 // }}}
@@ -594,7 +579,7 @@ ICL<Type>::setNumChannels(int iNumNewChannels)
     int iNew = iNumNewChannels - m_iChannels;
     for(int i=0;i<iNew;i++)
       {
-        m_vecChannels.push_back(ICLAutoPtr<ICLChannel<Type> >(new ICLChannel<Type>(this)));
+        m_vecChannels.push_back(createChannel());
         m_iChannels++;
       }
   }
@@ -625,6 +610,8 @@ ICL<Type>::replaceChannel(int iIndexA,int iIndexB,ICL<Type>  *poSrc)
   // {{{ open
 {
   FUNCTION_LOG("");
+  ICLASSERT_RETURN(iIndexA < getChannels());
+  ICLASSERT_RETURN(iIndexB < poSrc->getChannels());
   m_vecChannels[iIndexA] = poSrc->m_vecChannels[iIndexB];
 }
 // }}}
@@ -889,6 +876,17 @@ ICL<Type>::interpolate(float fX, float fY, int iChannel) const
 }
 
   // }}}
+template<class Type>
+ICLAutoPtr<Type> ICL<Type>::createChannel(Type *ptDataToCopy) const
+{
+  Type *ptNewData =  new Type[getDim()];
+  if(ptDataToCopy){
+    memcpy(ptNewData,ptDataToCopy,getDim()*sizeof(Type));
+  }else{
+    fill(ptNewData,ptNewData+getDim(),0);
+  }
+  return ICLAutoPtr<Type>(ptNewData);
+}
 
 //--------------------------------------------------------------------------
 template<class Type> void
@@ -942,17 +940,12 @@ void ICL<Type>::clear(int iChannel, Type tValue)
   //---- Log Message ----
   FUNCTION_LOG("clear(" << iChannel << "," << tValue << ")");
   
-  if(iChannel == -1) 
-    {
-      for(int i=0;i<m_iChannels;i++) 
-        m_vecChannels[i]->clear(tValue);
-    }
-  else 
-    {
-      m_vecChannels[iChannel]->clear(tValue);
-    }
+  
+  int iEnd = (iChannel<0)?m_iChannels:iChannel+1;
+  for(int i=iChannel<0?0:iChannel;i<iEnd ;i++) {
+    fill(getData(i),getData(i)+getDim(),tValue);
+  }
 }
-
   // }}}
 
 // }}}
