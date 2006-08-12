@@ -159,14 +159,14 @@ namespace icl {
       int getWidth()  const
         {
           FUNCTION_LOG("");
-          return m_iWidth;
+          return m_oSize.width;
         }
   
       /// return height of the images
       int getHeight() const
         {
           FUNCTION_LOG("");
-          return m_iHeight;
+          return m_oSize.height;
         }
 
       /// returns the pixelcount of each channel
@@ -176,7 +176,7 @@ namespace icl {
       int getDim() const
         {
           FUNCTION_LOG("");
-          return m_iWidth * m_iHeight;
+          return m_oSize.width * m_oSize.height;
         }
 
 
@@ -221,32 +221,46 @@ namespace icl {
       int isEqual(int iNewWidth, int iNewHeight, int iNewNumChannels) const
         {
           FUNCTION_LOG("isEqual("<<iNewWidth<<","<< iNewHeight << ","<< iNewNumChannels<< ")");
-          return (m_iWidth == iNewWidth) && (m_iHeight == iNewHeight) && (m_iChannels == iNewNumChannels);
+          return (m_oSize.width == iNewWidth) && (m_oSize.height == iNewHeight) && (m_iChannels == iNewNumChannels);
           
         }
       //@}
       //@{ @name [getter functions for ROI handling]
       
-      /// Gets the ROI (region of interests) of this image
+      /// Gets the ROI of this image
       /** @see ICL*/
+      void getROI(ICLpoint &offset, ICLsize &size) const;
+      /// Gets the ROI of this image, componentwise
       void getROI(int &riX, int &riY, int &riWidth, int &riHeight) const;
-      
-      /// Gets the ROI- (region of interests) offset of this image
-      /** @see ICL*/
-      void getROIOffset(int &riX, int &riY) const;
-      
-      /// Gets the ROI- (region of interests) size of this image
-      /** @see ICL*/
-      void getROISize(int &riWidth, int &riHeight) const;
 
-       /// Gets the ROI (region of interests) of this image
+      /// Gets the ROI offset of this image
       /** @see ICL*/
-      const std::vector<int>& getROI() const;
+      void getROIOffset(ICLpoint &offset) const {
+         offset = m_oROIoffset;
+      }
+      /// Gets the ROI offset of this image
+      const ICLpoint& getROIOffset () const {return m_oROIoffset;}
+      /// Gets the ROI offset of this image, componentwise
+      void getROIOffset(int &riX, int &riY) const {
+         riX = m_oROIoffset.x; riY = m_oROIoffset.y;
+      }
+      
+      /// Gets the ROI size of this image
+      /** @see ICL*/
+      void getROISize(ICLsize &size) const {
+         size = m_oROIsize;
+      }
+      /// Gets the ROI size of this image
+      const ICLsize& getROISize () const {return m_oROIsize;}
+      /// Gets the ROI size of this image, componentwise
+      void getROISize(int &riWidth, int &riHeight) const {
+         riWidth = m_oROIsize.width; riHeight = m_oROIsize.height;
+      }
 
       /// returns if the image has a ROI that is smaller then the image
       int hasFullROI() const;
       
-      /// resetur the image ROI to the hole image size with offset (0,0)
+      /// resetur the image ROI to the whole image size with offset (0,0)
       void delROI();
       
       //@}
@@ -261,6 +275,14 @@ namespace icl {
       /** @see ICL*/
       virtual void* getDataPtr(int iChannel) const = 0;
     
+      /// returns a pointer to the channel data ROI, assuming given or own ROI
+      /** @see ICL*/
+      virtual iclbyte  *roiData8u(int iChannel, const ICLpoint* poROIoffset = 0) const=0;
+ 
+      /// returns a pointer to the channel data ROI, assuming given or own ROI
+      /** @see ICL*/
+      virtual iclfloat *roiData32f(int iChannel, const ICLpoint* poROIoffset = 0) const=0;
+
       //@}
       //@{ @name [EIF for channel management] (now default)
 
@@ -318,37 +340,27 @@ namespace icl {
       //@{ @name [EIF for IPP compability] (only if WITH_IPP_OPTIMIZATION is defined)
       
 #ifdef WITH_IPP_OPTIMIZATION
-      /// returns a pointer to the channel data as Ipp8u*
-      /** @see ICL*/
-      virtual Ipp8u *ippData8u(int iChannel) const=0;
- 
-      /// returns a pointer to the channel data as Ipp32f*
-      /** @see ICL*/
-      virtual Ipp32f *ippData32f(int iChannel) const=0;
-
-      /// returns the ROI size in IPP-compatible format
-      /** @see ICL*/
-      virtual IppiSize ippROISize() const=0;
-
-      /// returns the ROI offset in IPP-compatible format
-      /** @see ICL*/
-      virtual IppiPoint ippROIOffset() const=0;
-
       /// returns the ROI rect in IPP-compatible format
       /** @see ICL*/
-      virtual IppiRect ippROI() const=0;
+      virtual IppiRect getROI() const {
+         IppiRect oRoi = {m_oROIoffset.x,m_oROIoffset.y,
+                          m_oROIsize.width,m_oROIsize.height};
+         return oRoi;
+      }
 
       /// returns the line width in bytes 
       /** @see ICL*/
-      virtual int ippStep() const=0;
+      virtual int ippStep() const
+        {
+          return (m_eDepth == depth8u ? sizeof(iclbyte) : sizeof(iclfloat)) * getWidth();
+        }
 
-      /// returns the image size in IPP-compatible format
-      /** @see ICL*/
-      virtual IppiSize ippSize() const=0;
-
-      //@}
+      /// alias for getROISize
+      virtual IppiSize ippSize() const { return getROISize(); }
 
 #endif //WITH_IPP_OPTIMIZATION
+
+      //@}
 
       /* }}} */
 
@@ -394,21 +406,32 @@ namespace icl {
       **/
       void setFormat(iclformat eFormat);
 
-      /// sets the ROI (region of interests) to a specified rect
-      /** @see ICL*/
-      void setROI(int iX, int iY,int iWidth,int iHeight);
+      /// sets the ROI to a specified rect
+      /** negative values are allowed and are interpreted relative
+          to image size or upper left corner appropriately. */
+      void setROI(int iX, int iY, int iWidth, int iHeight);
+      /// sets the ROI to a specified rect <b>without any check</b>
+      void setROI(const ICLpoint &oOffset, const ICLsize &oSize);
       
-      /// set the ROI- (region of interests) offset to a specified point
+      /// set the ROI offset to a specified point
       /** @see ICL*/
-      void setROIOffset(int iX, int iY);
+      void setROIOffset(int iX, int iY) {
+         setROI(iX,iY,m_oROIsize.width,m_oROIsize.height);
+      }
+      /// set the ROI offset to a specified point
+      void setROIOffset(const ICLpoint &oOffset) {
+         setROI(oOffset.x, oOffset.y, m_oROIsize.width, m_oROIsize.height);
+      }
       
-      /// set the ROI- (region of interests) size to a specified dimension
+      /// set the ROI size to a specified dimension
       /** @see ICL*/
-      void setROISize(int iWidth, int iHeight);
-
-      /// set the ROI rectangle geometry to [x,y,w,h]
-      /**  @see ICL*/
-      void setROI(const std::vector<int>& oRect);
+      void setROISize(int iWidth, int iHeight) {
+         setROI(m_oROIoffset.x, m_oROIoffset.y, iWidth, iHeight);
+      }
+      /// set the ROI size to a specified dimension
+      void setROISize(const ICLsize &oSize) {
+         setROI(m_oROIoffset.x, m_oROIoffset.y, oSize.width, oSize.height);
+      }
 
       //@}
 
@@ -443,14 +466,11 @@ namespace icl {
 
       /* {{{ data */
 
-      /// width of the image                                    
-      int m_iWidth;
-
-      /// height of the image
-      int m_iHeight;
-
       /// channel count of the image
       int m_iChannels;
+
+      /// size of image: width x height
+      ICLsize m_oSize;
 
       /// (color)-format associated with the images channels
       iclformat m_eFormat;
@@ -458,8 +478,10 @@ namespace icl {
       /// depth of the image (depth8 for iclbyte/depth32 for iclfloat)
       icldepth m_eDepth;
 
-      /// internal storage of the ROI parameters
-      std::vector<int> m_vecROI;
+      // internal storage of the ROI parameters
+      ICLpoint m_oROIoffset; //< ROI offset
+      ICLsize  m_oROIsize;   //< ROI size
+
       /* }}} */
     };
 }

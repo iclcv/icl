@@ -1,0 +1,10 @@
+RH:
+I changed already ROI data storage to use ICLpoint and ICLsize structs.
+In order to become thread-safe, filter operations should not actually change
+the source images ROI, but assume its own, eventually modified version.
+For this purpose roiData (iChannel, ICLpoint* poOffset=0) provides an additional
+default argument (poOffset) now. This is already changed for IPP version
+of ICLMedian and ICLConvolution.
+
+What should be done for the fallback solution, i.e. ICLIterator???
+I would suspect, this needs change as well.

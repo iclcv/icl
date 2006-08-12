@@ -135,7 +135,7 @@ class ICL : public ICLBase
   **/
   Type& operator()(int iX, int iY, int iChannel) const
     {
-      return getData(iChannel)[iX+m_iWidth*iY];
+      return getData(iChannel)[iX+m_oSize.width*iY];
     }
 
   //@}
@@ -398,6 +398,129 @@ class ICL : public ICLBase
       return getData(iChannel);
     }
   
+  /// returns the image pointer to the bottom left corner of the images ROI
+  /** if IPP functions are using image ROIs, than the initial data pointer
+      needs to point not the bottom left pixel of the image, but the bottom left
+      pixel of the images ROI:
+      <pre>
+
+      image: (o=roi)              
+      ..............                    ..............x<--getDataEnd()
+      ....oooooooo..                    ....oooooooo..
+      ....oooooooo..       roiData(): ----->xooooooo..
+      ..............                    ..............
+      ..............  getDataBegin(): ->x.............
+      </pre>
+  
+      @param iChannel selects a specific channel
+      @param poROIoffset allows to override internal ROI
+      @return "ROI'ed" image data pointer
+  */
+  Type *roiData(int iChannel, const ICLpoint* poROIoffset = 0) const
+    {
+      FUNCTION_LOG("roiData(" << iChannel << ")");
+      if (!poROIoffset) poROIoffset = &m_oROIoffset;
+      return getData(iChannel) + poROIoffset->x + poROIoffset->y * m_oSize.width;
+    }
+
+  /// returns the data pointer (in respect to the images roi) as iclbyte*
+  /** When implementing ipp-accelerated template functions, you may need
+      the functions roiData8u and roiData32f to get type-save data pointers.
+      Regard the following example:
+      <pre>
+      template<class T>
+      void scale_image_with_ipp(ICL<T> *a, ICL<T> *b)
+      {
+         for(int c=0;c<a->getChannels();c++)
+         {
+            if(a->getDepth() == depth8u)
+            {
+               ippScale_8u_C1R(a->roiData(c),...);           
+            }
+            else
+            {
+               ippScale_32f_C1R(a->roiData(c),...);                  
+            }
+         }
+      }
+      </pre>
+      This looks fine first, but the compiler will complain about wrong types!
+      Although due to dynamic type checking (if(a->getDepth()...) no error
+      would occur during runtime, the functions ippScale_8u_... and ippScale_32f_...
+      are compiled for template type T=iclfloat and T=iclbyte. So if T is iclbyte
+      the ippScale_32f_...-call is not allowed, and is not compilable.
+      The following code example will explain, how the functions roiData8u and 
+      roiData32f can be used to avoid these complications:
+     
+      <pre>
+      template<class T>
+      void scale_image_with_ipp(ICL<T> *a, ICL<T> *b)
+      {
+         for(int c=0;c<a->getChannels();c++)
+         {
+            if(a->getDepth() == depth8u)
+            {
+               ippScale_8u_C1R(a->roiData8u(c),...);           
+            }
+            else
+            {
+               ippScale_32f_C1R(a->roiData32(c),...);                  
+            }
+         }
+      }
+      </pre>
+      This example causes no compile errors at all, and also, 
+      due to dynamic type checking (if(a->getDepth()...), 
+      no runtime error will occur.
+      
+      It is strongly recommended to use ICLBase class to avoid these problems.
+      As ICLBase is not a template, it's not necessary to implement functions
+      as templates:
+      <pre>
+      
+      void scale_image_with_ipp(ICLBase *a, ICLBase *b)
+      {
+         if(a->getDepth() != b->getDepht())
+         {
+            error or type conversion....
+         }
+         for(int c=0;c<a->getChannels();c++)
+         {
+            if(a->getDepth() == depth8u)
+            {
+               ippScale_8u_C1R(a->asIcl8u()->roiData(c),...);           
+            }
+            else
+            {
+               ippScale_32f_C1R(a->asIcl32f()->roiData(c),...);                  
+            }
+         }
+      }
+      </pre>
+      
+      @param iChannel selects a specific channel
+      @param poROIoffset allows to override internal ROI
+      @return data pointer casted to iclbyte* (without type check)
+  
+  **/
+  virtual Ipp8u *roiData8u(int iChannel, const ICLpoint* poROIoffset = 0) const
+    {
+      FUNCTION_LOG("roiData8u(" << iChannel << ")");
+      return reinterpret_cast<iclbyte*>(roiData(iChannel, poROIoffset));
+    }
+  
+  /// returns the data pointer (in respect to the images roi) as iclfloat*
+  /** This function behaves essentially like the above function
+      @param iChannel selects a specific channel
+      @param poROIoffset allows to override internal ROI
+      @return data pointer casted to iclbyte* (without type check)
+  **/
+  virtual Ipp32f *roiData32f(int iChannel, const ICLpoint* poROIoffset = 0) const
+    {
+      FUNCTION_LOG("roiData32f(" << iChannel << ")");
+      return reinterpret_cast<iclfloat*>(roiData(iChannel, poROIoffset));
+    }
+
   //@}
 
   /* }}} */
@@ -490,187 +613,10 @@ class ICL : public ICLBase
   inline iterator begin(int iChannel)
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
-      return iterator(getData(iChannel),m_vecROI[0],m_vecROI[1],m_iWidth,m_vecROI[2],m_vecROI[3]);
+      return iterator(getData(iChannel),m_oROIoffset.x,m_oROIoffset.y,m_oSize.width,m_oROIsize.width,m_oROIsize.height);
     }
   //@}
   /* }}} */
-                                               
-#ifdef WITH_IPP_OPTIMIZATION
-                                     
-  /* {{{ IPP-compability functions */
-
-  //@{ @name IPP-compability-functions prefix:ipp
-  /// returns the image pointer to the bottom left corner of the images ROI
-  /** if IPP functions are using image ROIs, than the initial data pointer
-      needs to point not the bottom left pixel of the image, but the bottom left
-      pixel of the images ROI:
-      <pre>
-
-      image: (o=roi)              
-      ..............                    ..............x<--getDataEnd()
-      ....oooooooo..                    ....oooooooo..
-      ....oooooooo..       ippData(): ----->xooooooo..
-      ..............                    ..............
-      ..............  getDataBegin(): ->x.............
-      </pre>
-  
-      @param iChannel selects a specific channel
-      @return "ROI'ed" image data pointer
-  */
-  Type *ippData(int iChannel) const
-    {
-      FUNCTION_LOG("ippData(" << iChannel << ")");
-      return getData(iChannel)+m_vecROI[0]+m_vecROI[1]*m_iWidth;
-    }
-
-  /// returns the data pointer (in respect to the images roi) as iclbyte*
-  /** When implementing ipp-accelerated template functions, you may need
-      the functions ippData8u and ippData32f to get type-save data pointers.
-      Regard the following example:
-      <pre>
-      template<class T>
-      void scale_image_with_ipp(ICL<T> *a, ICL<T> *b)
-      {
-         for(int c=0;c<a->getChannels();c++)
-         {
-            if(a->getDepth() == depth8u)
-            {
-               ippScale_8u_C1R(a->ippData(c),...);           
-            }
-            else
-            {
-               ippScale_32f_C1R(a->ippData(c),...);                  
-            }
-         }
-      }
-      </pre>
-      This looks fine first, but the compiler will complain about wrong types!
-      Although due to dynamic type checking (if(a->getDepth()...) no error
-      would occur during runtime, the functions ippScale_8u_... and ippScale_32f_...
-      are compiled for template type T=iclfloat and T=iclbyte. So if T is iclbyte
-      the ippScale_32f_...-call is not allowed, and is not compilable.
-      The following code example will explain, how the functions ippData8u and 
-      ippData32f can be used to avoid these complications:
-     
-      <pre>
-      template<class T>
-      void scale_image_with_ipp(ICL<T> *a, ICL<T> *b)
-      {
-         for(int c=0;c<a->getChannels();c++)
-         {
-            if(a->getDepth() == depth8u)
-            {
-               ippScale_8u_C1R(a->ippData8u(c),...);           
-            }
-            else
-            {
-               ippScale_32f_C1R(a->ippData32(c),...);                  
-            }
-         }
-      }
-      </pre>
-      This example causes no compile errors at all, and also, 
-      due to dynamic type checking (if(a->getDepth()...), 
-      no runtime error will occur.
-      
-      It is strongly recommended to use ICLBase class to avoid these problems.
-      As ICLBase is not a template, it's not necessary to implement functions
-      as templates:
-      <pre>
-      
-      void scale_image_with_ipp(ICLBase *a, ICLBase *b)
-      {
-         if(a->getDepth() != b->getDepht())
-         {
-            error or type conversion....
-         }
-         for(int c=0;c<a->getChannels();c++)
-         {
-            if(a->getDepth() == depth8u)
-            {
-               ippScale_8u_C1R(a->asIcl8u()->ippData(c),...);           
-            }
-            else
-            {
-               ippScale_32f_C1R(a->asIcl32f()->ippData(c),...);                  
-            }
-         }
-      }
-      </pre>
-      
-      @param iChannel selects a specific channel
-      @return data pointer casted to iclbyte* (without type check)
-  
-  **/
-  virtual Ipp8u *ippData8u(int iChannel) const
-    {
-      FUNCTION_LOG("ippData8u(" << iChannel << ")");
-      return reinterpret_cast<iclbyte*>(ippData(iChannel));
-    }
-  
-  /// returns the data pointer (in respect to the images roi) as iclfloat*
-  /** This function behaves essentially like the above function
-      @param iChannel selects a specific channel
-      @return data pointer casted to iclbyte* (without type check)
-  **/
-  virtual Ipp32f *ippData32f(int iChannel) const
-    {
-      FUNCTION_LOG("ippData32f(" << iChannel << ")");
-      return reinterpret_cast<iclfloat*>(ippData(iChannel));
-    }
-  /// returns the roi size in Ippi compatible format IppiSize
-  /** @return roi size of the channel
-  **/
-  virtual IppiSize ippROISize() const
-    {
-      FUNCTION_LOG("");
-      IppiSize oSize = {m_vecROI[2],m_vecROI[3]};
-      return oSize; 
-    }
-
-  /// returns the roi offset in Ippi compatible format IppiPoint
-  /** @return roi offset of the channel
-  **/
-  virtual IppiPoint ippROIOffset() const
-    {
-      FUNCTION_LOG("");
-      IppiPoint oOffset = {m_vecROI[0],m_vecROI[1]};
-      return oOffset;
-    }
-
-  /// returns the roi-rect of this channel in Ippi compatible format IppiRect
-  /** @return roi-rect of the channel
-  **/
-  virtual IppiRect ippROI() const
-    {
-      IppiRect oRoi = {m_vecROI[0],m_vecROI[1],m_vecROI[2],m_vecROI[3]};
-      return oRoi;
-    }
-
-  /// returns the line width in bytes of the image
-  /** @return "step" of image line
-  **/
-  virtual int ippStep() const
-    {
-      FUNCTION_LOG("");
-      return (m_eDepth == depth8u ? sizeof(iclbyte) : sizeof(iclfloat)) * getWidth();
-    }
-  
-  /// returns the size of the image in Ippi compatible format IppiSize
-  /** @return size of the image  
-  **/
-  virtual IppiSize ippSize() const
-    {
-      FUNCTION_LOG("");
-      IppiSize oSize = {getWidth(),getHeight()};
-      return oSize; 
-    }
-
- //@}
-  /* }}} */
-                                       
-#endif
-  
                                        
 };// class
   

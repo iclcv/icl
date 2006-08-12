@@ -95,28 +95,14 @@ namespace icl{
     }
   }
   
-  void iclEnsureCompatible(ICLBase **ppoDst, ICLBase *poSrc)
-  {
-    if(!poSrc)
-    {
-       ERROR_LOG ("source image is NULL");
-    }
-    iclEnsureCompatible(ppoDst,
-                        poSrc->getDepth(),
-                        poSrc->getWidth(),
-                        poSrc->getHeight(),
-                        poSrc->getFormat(),
-                        poSrc->getChannels(),
-                        poSrc->getROI());
-  }
-
   void iclEnsureCompatible(ICLBase **ppoDst,
                            icldepth eDepth,
                            int iWidth,
                            int iHeight,
                            iclformat eFormat,
                            int iChannelCount,
-                           std::vector<int> vecROI)
+                           const ICLpoint* const poROIoffset,
+                           const ICLsize*  const poROIsize)
   {
     if(!*ppoDst)
     {
@@ -129,15 +115,19 @@ namespace icl{
        (*ppoDst)->setFormat(eFormat);
        (*ppoDst)->resize(iWidth, iHeight);
     }
-    if(vecROI.size()==4)
-      {
-        (*ppoDst)->setROI(vecROI);
-      }
-    else
-      {
-        (*ppoDst)->delROI();
-      }
+    (*ppoDst)->delROI();
+    if (poROIoffset) (*ppoDst)->setROIOffset (*poROIoffset);
+    if (poROIsize) (*ppoDst)->setROISize (*poROIsize);
   }
+
+  void iclEnsureCompatible(ICLBase **ppoDst, ICLBase *poSrc) {
+     if(!poSrc) { ERROR_LOG ("source image is NULL"); }
+     iclEnsureCompatible(ppoDst,poSrc->getDepth(),
+                         poSrc->getWidth(),poSrc->getHeight(),
+                         poSrc->getFormat(),poSrc->getChannels(),
+                         &poSrc->getROIOffset(),&poSrc->getROISize());
+  }
+
 
   int iclGetSizeof(icldepth eDepth)
   {

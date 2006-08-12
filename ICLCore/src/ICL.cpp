@@ -76,7 +76,8 @@ ICL<Type>::ICL(const ICL<Type>& tSrc):
   
   m_iChannels = tSrc.getChannels();
   m_vecChannels = tSrc.m_vecChannels;
-  m_vecROI = tSrc.m_vecROI;
+  m_oROIoffset = tSrc.m_oROIoffset;
+  m_oROIsize = tSrc.m_oROIsize;
 }
 
   // }}}
@@ -102,13 +103,13 @@ ICL<Type>& ICL<Type>::operator=(const ICL<Type>& tSrc)
   FUNCTION_LOG("");
   
   //---- Assign new channels to ICL ----
-  m_iWidth = tSrc.getWidth();
-  m_iHeight = tSrc.getHeight();
+  m_oSize = tSrc.m_oSize;
   m_eFormat = tSrc.getFormat();
   m_eDepth = tSrc.getDepth();
   m_iChannels = tSrc.getChannels();  
   m_vecChannels = tSrc.m_vecChannels;
-  m_vecROI = tSrc.m_vecROI;
+  m_oROIoffset = tSrc.m_oROIoffset;
+  m_oROIsize = tSrc.m_oROIsize;
 
   return *this;
 }
@@ -182,21 +183,21 @@ ICL<Type>::scaledCopy(ICLBase *poDst,iclscalemode eScaleMode) const
     
 #ifdef WITH_IPP_OPTIMIZATION
  
-  IppiRect oHoleImageROI = {0,0,m_iWidth,m_iHeight};
+  IppiRect oWholeImageROI = {0,0,m_oSize.width,m_oSize.height};
  
   for(int c=0;c<m_iChannels;c++)
     {
       SUBSECTION_LOG("channel: "<< c);
       if(getDepth()==depth8u)
         {
-          ippiResize_8u_C1R((Ipp8u*)getDataPtr(c),ippSize(),ippStep(),oHoleImageROI,
-                            poDst->ippData8u(c),poDst->ippStep(),poDst->ippROISize(),
+          ippiResize_8u_C1R((Ipp8u*)getDataPtr(c),ippSize(),ippStep(),oWholeImageROI,
+                            poDst->roiData8u(c),poDst->ippStep(),poDst->getROISize(),
                             (double)poDst->getWidth()/(double)getWidth(),
                             (double)poDst->getHeight()/(double)getHeight(),
                             (int)eScaleMode);
         }else{
-          ippiResize_32f_C1R((Ipp32f*)getDataPtr(c),ippSize(),ippStep(),oHoleImageROI,
-                             poDst->ippData32f(c),poDst->ippStep(),poDst->ippROISize(),
+          ippiResize_32f_C1R((Ipp32f*)getDataPtr(c),ippSize(),ippStep(),oWholeImageROI,
+                             poDst->roiData32f(c),poDst->ippStep(),poDst->getROISize(),
                              (double)poDst->getWidth()/(double)getWidth(),
                              (double)poDst->getHeight()/(double)getHeight(),
                              (int)eScaleMode);
@@ -299,7 +300,7 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
               memcpy(&*d,&*s,s.getROIWidth()*sizeof(iclbyte));
             }
 #else
-            ippiCopy_8u_C1R(ippData8u(c),ippStep(),poDst->ippData8u(c),poDst->ippStep(),ippROISize());
+            ippiCopy_8u_C1R(roiData8u(c),ippStep(),poDst->roiData8u(c),poDst->ippStep(),getROISize());
 #endif
           }else{
 #ifndef WITH_IPP_OPTIMIZATION
@@ -307,7 +308,7 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
               memcpy(&*d,&*s,s.getROIWidth()*sizeof(iclfloat));
             }
 #else
-             ippiCopy_32f_C1R(ippData32f(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),ippROISize());
+             ippiCopy_32f_C1R(roiData32f(c),ippStep(),poDst->roiData32f(c),poDst->ippStep(),getROISize());
 #endif
           }
         }
@@ -321,7 +322,7 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
               *d = static_cast<iclfloat>(*s);
             }
 #else
-            ippiConvert_8u32f_C1R(ippData8u(c),ippStep(),poDst->ippData32f(c),poDst->ippStep(),ippROISize());
+            ippiConvert_8u32f_C1R(roiData8u(c),ippStep(),poDst->roiData32f(c),poDst->ippStep(),getROISize());
 #endif
           }else{
 #ifndef WITH_IPP_OPTIMIZATION
@@ -331,7 +332,7 @@ ICL<Type>::deepCopyROI(ICLBase *poDst) const
               *d = static_cast<iclbyte>(*s);
             }
 #else
-            ippiConvert_32f8u_C1R(ippData32f(c),ippStep(),poDst->ippData8u(c),poDst->ippStep(),ippROISize(),ippRndNear);
+            ippiConvert_32f8u_C1R(roiData32f(c),ippStep(),poDst->roiData8u(c),poDst->ippStep(),getROISize(),ippRndNear);
 #endif
           }
         }
@@ -379,14 +380,14 @@ ICL<Type>::scaledCopyROI(ICLBase *poDst, iclscalemode eScaleMode) const
     {
       if(getDepth()==depth8u)
         {
-          ippiResize_8u_C1R(ippData8u(c),ippSize(),ippStep(),ippROI(),
-                            poDst->ippData8u(c),poDst->ippStep(),poDst->ippROISize(),
+          ippiResize_8u_C1R(roiData8u(c),ippSize(),ippStep(),getROI(),
+                            poDst->roiData8u(c),poDst->ippStep(),poDst->getROISize(),
                             (double)iDstW/iW,
                             (double)iDstH/iH,
                             (int)eScaleMode);
         }else{
-          ippiResize_32f_C1R(ippData32f(c),ippSize(),ippStep(),ippROI(),
-                             poDst->ippData32f(c),poDst->ippStep(),poDst->ippROISize(),
+          ippiResize_32f_C1R(roiData32f(c),ippSize(),ippStep(),getROI(),
+                             poDst->roiData32f(c),poDst->ippStep(),poDst->getROISize(),
                              (double)iDstW/(double)iW,
                              (double)iDstH/(double)iH,
                              (int)eScaleMode);
@@ -498,8 +499,8 @@ ICL<Type>::scale(int iNewWidth,int iNewHeight,iclscalemode eScaleMode)
   FUNCTION_LOG("");
   
   //---- estimate destination values in respect to defaults ----
-  if(iNewWidth < 0) iNewWidth = m_iWidth;
-  if(iNewHeight < 0) iNewHeight = m_iHeight;
+  if(iNewWidth < 0) iNewWidth = m_oSize.width;
+  if(iNewHeight < 0) iNewHeight = m_oSize.height;
   
   if(! isEqual(iNewWidth,iNewHeight,m_iChannels))
     {
@@ -520,13 +521,13 @@ ICL<Type>::resize(int iWidth,int iHeight)
   FUNCTION_LOG("");
   
   //---- estimate destination values in respect to defaults ----
-  if(iWidth < 0) iWidth = m_iWidth;
-  if(iHeight < 0) iHeight = m_iHeight;
+  if(iWidth < 0) iWidth = m_oSize.width;
+  if(iHeight < 0) iHeight = m_oSize.height;
   
   if(!isEqual(iWidth,iHeight,m_iChannels))
     {
-      m_iWidth = iWidth;
-      m_iHeight = iHeight;
+      m_oSize.width = iWidth;
+      m_oSize.height = iHeight;
       for(int i=0;i<m_iChannels;i++)
         {
           m_vecChannels[i] = createChannel ();
@@ -579,8 +580,8 @@ ICL<Type>::renew(int iNewWidth, int iNewHeight, int iNewNumChannels)
 {
   FUNCTION_LOG("");
 
-  if(iNewWidth < 0)iNewWidth = m_iWidth;
-  if(iNewHeight < 0)iNewHeight = m_iHeight;
+  if(iNewWidth < 0)iNewWidth = m_oSize.width;
+  if(iNewHeight < 0)iNewHeight = m_oSize.height;
   if(iNewNumChannels < 0)iNewNumChannels = m_iChannels;
 
   resize(iNewWidth,iNewHeight);
@@ -614,7 +615,8 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
   FUNCTION_LOG("convertTo32Bit(ICL32f*)");
   
   ICLBase *poDstBase = static_cast<ICLBase*>(poDst);
-  iclEnsureCompatible(&poDstBase,depth32f,m_iWidth,m_iHeight,m_eFormat,m_iChannels, m_vecROI);
+  iclEnsureCompatible(&poDstBase,depth32f,m_oSize.width,m_oSize.height,
+                      m_eFormat,m_iChannels, &m_oROIoffset, &m_oROIsize);
   poDst = poDstBase->asIcl32f(); // should only be needed in case of of poDst == NULL
 
   if(m_eDepth == depth8u)
@@ -624,7 +626,7 @@ ICL<Type>::convertTo32Bit(ICL32f *poDst) const
       iclbyte *pucSrc = reinterpret_cast<iclbyte*>(getDataPtr(c));
       iclfloat *pfDst = reinterpret_cast<iclfloat*>(poDst->getDataPtr(c));
 #ifdef WITH_IPP_OPTIMIZATION
-      IppiSize oWholeImageROI = {m_iWidth,m_iHeight};
+      IppiSize oWholeImageROI = {m_oSize.width,m_oSize.height};
       ippiConvert_8u32f_C1R(pucSrc,ippStep(),pfDst,poDst->ippStep(),oWholeImageROI);
 #else
       iclbyte *pucSrcEnd = pucSrc+getDim();
@@ -652,7 +654,8 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
   FUNCTION_LOG("convertTo8Bit(ICL8u*)");
 
   ICLBase *poDstBase = static_cast<ICLBase*>(poDst);
-  iclEnsureCompatible(&poDstBase,depth8u,m_iWidth,m_iHeight,m_eFormat,m_iChannels, m_vecROI);
+  iclEnsureCompatible(&poDstBase,depth8u,m_oSize.width,m_oSize.height,
+                      m_eFormat,m_iChannels, &m_oROIoffset, &m_oROIsize);
   poDst = poDstBase->asIcl8u(); // should only be needed in case of of poDst == NULL
 
   if(m_eDepth == depth32f)
@@ -662,8 +665,8 @@ ICL<Type>::convertTo8Bit(ICL8u *poDst) const
           iclfloat *pfSrc = reinterpret_cast<iclfloat*>(getDataPtr(c));
           iclbyte *pucDst =  reinterpret_cast<iclbyte*>(poDst->getDataPtr(c));
 #ifdef WITH_IPP_OPTIMIZATION
-          IppiSize oHoleImageROI = {m_iWidth,m_iHeight};
-          ippiConvert_32f8u_C1R(pfSrc,ippStep(),pucDst,poDst->ippStep(),oHoleImageROI,ippRndNear);
+          IppiSize oWholeImageROI = {m_oSize.width,m_oSize.height};
+          ippiConvert_32f8u_C1R(pfSrc,ippStep(),pucDst,poDst->ippStep(),oWholeImageROI,ippRndNear);
 #else
           iclfloat *pfSrcEnd = pfSrc+getDim();
           while(pfSrc!=pfSrcEnd){
@@ -695,13 +698,13 @@ ICL<Type>::getMax(int iChannel) const
   if(m_eDepth == depth8u)
     {
       iclbyte ucMax;
-      ippiMax_8u_C1R(ippData8u(iChannel),ippStep(),ippROISize(),&ucMax);
+      ippiMax_8u_C1R(roiData8u(iChannel),ippStep(),getROISize(),&ucMax);
       return static_cast<Type>(ucMax);
     }
   else
     {
       iclfloat fMax;
-      ippiMax_32f_C1R(ippData32f(iChannel),ippStep(),ippROISize(),&fMax);
+      ippiMax_32f_C1R(roiData32f(iChannel),ippStep(),getROISize(),&fMax);
       return static_cast<Type>(fMax);
     }
 #else
@@ -729,13 +732,13 @@ ICL<Type>::getMin(int iChannel) const
   if(m_eDepth == depth8u)
     {
       iclbyte ucMin;
-      ippiMin_8u_C1R(ippData8u(iChannel),ippStep(),ippROISize(),&ucMin);
+      ippiMin_8u_C1R(roiData8u(iChannel),ippStep(),getROISize(),&ucMin);
       return static_cast<Type>(ucMin);
     }
   else
     {
       iclfloat fMin;
-      ippiMin_32f_C1R(ippData32f(iChannel),ippStep(),ippROISize(),&fMin);
+      ippiMin_32f_C1R(roiData32f(iChannel),ippStep(),getROISize(),&fMin);
       return static_cast<Type>(fMin);
     }
                      
@@ -765,14 +768,14 @@ ICL<Type>::getMinMax(int iChannel, Type &rtMin, Type &rtMax) const
   if(m_eDepth == depth8u)
     {
       iclbyte ucMin, ucMax;
-      ippiMinMax_8u_C1R(ippData8u(iChannel),ippStep(),ippROISize(),&ucMin, &ucMax);
+      ippiMinMax_8u_C1R(roiData8u(iChannel),ippStep(),getROISize(),&ucMin, &ucMax);
       rtMin = static_cast<Type>(ucMin);
       rtMax = static_cast<Type>(ucMax);
     }
   else
     {
       iclfloat fMin,fMax;
-      ippiMinMax_32f_C1R(ippData32f(iChannel),ippStep(),ippROISize(),&fMin, &fMax);
+      ippiMinMax_32f_C1R(roiData32f(iChannel),ippStep(),getROISize(),&fMin, &fMax);
       rtMin =  static_cast<Type>(fMin);
       rtMax =  static_cast<Type>(fMax);
     }

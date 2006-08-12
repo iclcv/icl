@@ -19,13 +19,13 @@ ICLBase::ICLBase(int iWidth,
                  iclformat eFormat,
                  icldepth eDepth,
                  int iChannels):
-  m_iWidth(iWidth),m_iHeight(iHeight),
   m_iChannels((iChannels <= 0) ? iclGetChannelsOfFormat(eFormat) : iChannels),
-  m_eFormat(eFormat),m_eDepth(eDepth),
-  m_vecROI(std::vector<int>(4))
+  m_eFormat(eFormat),m_eDepth(eDepth)
 {
-  FUNCTION_LOG("ICLBase("<< iWidth <<","<< iHeight <<","<< iclTranslateformat(eFormat) <<","<< (int)eDepth << "," << iChannels << ")  this:" << this); 
-  setROI(0,0,iWidth,iHeight);
+  FUNCTION_LOG("ICLBase("<< iWidth <<","<< iHeight <<","<< iclTranslateformat(eFormat) 
+               <<","<< (int)eDepth << "," << iChannels << ")  this:" << this); 
+  m_oSize.width = iWidth; m_oSize.height = iHeight;
+  delROI();
 }
 
 
@@ -104,66 +104,38 @@ void ICLBase::print(string sTitle) const
 
     if (iW <= 0) iW = getWidth () + iW;
     if (iH <= 0) iH = getHeight () + iH;
-    m_vecROI[2] = iW = std::min (std::max (1, iW), getWidth());
-    m_vecROI[3] = iH = std::min (std::max (1, iH), getHeight());
+    m_oROIsize.width = iW = std::min (std::max (1, iW), getWidth());
+    m_oROIsize.height = iH = std::min (std::max (1, iH), getHeight());
 
     if (iX < 0) iX = getWidth () - iW + iX;
     if (iY < 0) iY = getHeight () - iH + iY;
-    m_vecROI[0] = iX = std::min (std::max (0, iX), getWidth() - iW);
-    m_vecROI[1] = iY = std::min (std::max (0, iY), getHeight() - iH);
+    m_oROIoffset.x = iX = std::min (std::max (0, iX), getWidth() - iW);
+    m_oROIoffset.y = iY = std::min (std::max (0, iY), getHeight() - iH);
   }
-
-  void ICLBase::setROIOffset(int iX, int iY){
-    FUNCTION_LOG("setROIOffset("<< iX << "," << iY << ")");
-    setROI(iX,iY,m_vecROI[2],m_vecROI[3]);
+  void ICLBase::setROI(const ICLpoint &oOffset, const ICLsize &oSize) {
+     m_oROIoffset = oOffset;
+     m_oROIsize = oSize;
   }
-  
-  void ICLBase::setROISize(int iWidth, int iHeight){
-    FUNCTION_LOG("setROISize("<< iWidth << "," << iHeight << ")");
-    setROI(m_vecROI[0],m_vecROI[1],iWidth,iHeight);
-  }
-
-  void ICLBase::setROI(const std::vector<int> &oROIRect){
-    FUNCTION_LOG("");    
-    ICLASSERT_RETURN(oROIRect.size() == 4);
-    setROI(oROIRect[0],oROIRect[1],oROIRect[2],oROIRect[3]);
+  void ICLBase::delROI() {
+     m_oROIoffset.x = m_oROIoffset.y = 0;
+     m_oROIsize = m_oSize;
   }
   
+  void ICLBase::getROI(ICLpoint &offset, ICLsize &size) const {
+     offset = m_oROIoffset;
+     size = m_oROIsize;
+  }
   void ICLBase::getROI(int &riX, int &riY, int &riWidth, int &riHeight) const{
     FUNCTION_LOG("");    
-    riX = m_vecROI[0];
-    riY = m_vecROI[1];
-    riWidth = m_vecROI[2];
-    riHeight = m_vecROI[3];
+    riX = m_oROIoffset.x; riY = m_oROIoffset.y;
+    riWidth = m_oROIsize.width; riHeight = m_oROIsize.height;
   }
       
-  void ICLBase::getROIOffset(int &riX, int &riY) const{
-    FUNCTION_LOG("");    
-    riX = m_vecROI[0];
-    riY = m_vecROI[1];
-  }
-      
-  void ICLBase::getROISize(int &riWidth, int &riHeight) const{
-    FUNCTION_LOG("");        
-    riWidth = m_vecROI[2];
-    riHeight = m_vecROI[3];
-  }
-
-  const std::vector<int>& ICLBase::getROI() const{
-    FUNCTION_LOG("");    
-    return m_vecROI;
-  }
-  
   int ICLBase::hasFullROI() const
   {
     FUNCTION_LOG("");    
-    return ( m_vecROI[0]==0 &&  m_vecROI[1]==0 &&  m_vecROI[2]==m_iWidth &&  m_vecROI[3] == m_iHeight);
-  }
-  
-  void ICLBase::delROI()
-  { 
-    FUNCTION_LOG("");    
-    setROI(0,0,m_iWidth,m_iHeight);
+    return (m_oROIoffset.x==0 &&  m_oROIoffset.y==0 && 
+            m_oROIsize.width==m_oSize.width &&  m_oROIsize.height == m_oSize.height);
   }
   
 // }}}

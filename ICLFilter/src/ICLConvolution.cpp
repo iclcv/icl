@@ -1,15 +1,6 @@
 #include "ICLConvolution.h"
 
 namespace icl{
-
-  // {{{ typedef of Ippi<Point|Size> if WITH_IPP_OPTIMIZATION is not defined
-
-#ifndef WITH_IPP_OPTIMIZATION
-  typedef struct IppiPoint_ {int x,y;} IppiPoint;
-  typedef struct IppiSize_ {int width,height;} IppiSize;
-#endif
-
-  // }}}
   
   // {{{ fixed convolution masks
 
@@ -56,10 +47,11 @@ namespace icl{
   ICLConvolution::ICLConvolution(iclkernel eKernel):
     // {{{ open
 
-    pfKernel(0),piKernel(0),iW(3),iH(3),bDeleteData(0),eKernel(eKernel){
+    pfKernel(0),piKernel(0),bDeleteData(0),eKernel(eKernel){
     DEBUG_LOG4("ICLConvolution::ICLConvolution(iclkernel)");
 
 #ifndef WITH_IPP_OPTIMIZATION
+    setMask (3,3);
     switch(eKernel){
       case kernelSobelX:
         piKernel = KERNEL_SOBEL_X;
@@ -72,8 +64,7 @@ namespace icl{
         break;
       case kernelGauss5x5:
         pfKernel = KERNEL_GAUSS_5x5;
-        iW=5;
-        iH=5;
+        setMask (5,5);
         break;
       case kernelLaplace:
         piKernel = KERNEL_LAPLACE;
@@ -89,16 +80,16 @@ namespace icl{
 
   ICLConvolution::ICLConvolution(ICLBase *poKernel):
     // {{{ open
-
-    pfKernel(0),piKernel(0),iW(poKernel->getWidth()),iH(poKernel->getHeight()),
-    bDeleteData(1),eKernel(kernelCustom)
+    ICLFilter (poKernel->getWidth(), poKernel->getHeight()),
+    pfKernel(0),piKernel(0),bDeleteData(1),eKernel(kernelCustom)
   {
     DEBUG_LOG4("ICLConvolution::ICLConvolution(ICLBase*)");
+    int iDim = oMaskSize.width * oMaskSize.height;
     if(poKernel->getDepth()==depth8u)
       {
-        piKernel = new int[iW*iH]; 
-        pfKernel = new float[iW*iH];
-        for(int i=0;i<iW*iH;i++)
+        piKernel = new int[iDim]; 
+        pfKernel = new float[iDim];
+        for(int i=0;i<iDim;i++)
           {
             piKernel[i]=(poKernel->asIcl8u()->getData(0))[i];
             pfKernel[i]=piKernel[i];
@@ -106,12 +97,12 @@ namespace icl{
       }
     else
       {
-        pfKernel = new float[iW*iH];
-        if(icl_is_convertable_to_int_intern(poKernel->asIcl32f()->getData(0),iW*iH))
+        pfKernel = new float[iDim];
+        if(icl_is_convertable_to_int_intern(poKernel->asIcl32f()->getData(0),iDim))
           {
-            piKernel = new int[iW*iH];
+            piKernel = new int[iDim];
           }
-        for(int i=0;i<iW*iH;i++)
+        for(int i=0;i<iDim;i++)
           {
             pfKernel[i]=(poKernel->asIcl32f()->getData(0))[i];
             if(piKernel)piKernel[i]=(int)pfKernel[i];
@@ -123,17 +114,18 @@ namespace icl{
 
   ICLConvolution::ICLConvolution(iclfloat *pfKernel, int iW, int iH, int iBufferData):
     // {{{ open
-
-    pfKernel(0),piKernel(0), iW(iW),iH(iH),bDeleteData(iBufferData),eKernel(kernelCustom)
+    ICLFilter (iW, iH),
+    pfKernel(0),piKernel(0),bDeleteData(iBufferData),eKernel(kernelCustom)
   {
     DEBUG_LOG4("ICLConvolution::ICLConvolution(iclfloat*,int,int)");
     if(iBufferData){
-      this->pfKernel = new float[iW*iH];
-      memcpy(this->pfKernel,pfKernel,iW*iH*sizeof(float));    
-      if(icl_is_convertable_to_int_intern(pfKernel,iW*iH))
+      int iDim = oMaskSize.width * oMaskSize.height;
+      this->pfKernel = new float[iDim];
+      memcpy(this->pfKernel,pfKernel,iDim*sizeof(float));    
+      if(icl_is_convertable_to_int_intern(pfKernel,iDim))
         {
-          piKernel = new int[iW*iH];
-          for(int i=0;i<iW*iH;i++)
+          piKernel = new int[iDim];
+          for(int i=0;i<iDim;i++)
             {
               piKernel[i]=(int)pfKernel[i];
             }
@@ -147,17 +139,16 @@ namespace icl{
   
   ICLConvolution::ICLConvolution(int *piKernel, int iW, int iH, int iBufferData):
     // {{{ open
-
-    pfKernel(0),piKernel(0),
-    iW(iW),iH(iH),bDeleteData(iBufferData),eKernel(kernelCustom)
+    ICLFilter (iW, iH),
+    pfKernel(0),piKernel(0),bDeleteData(iBufferData),eKernel(kernelCustom)
   {
     DEBUG_LOG4("ICLConvolution::ICLConvolution(int*,int,int)");
-    memcpy(this->pfKernel,pfKernel,iW*iH*sizeof(float)); 
-      if(iBufferData){
-        this->piKernel = new int[iW*iH];
-        this->pfKernel = new float[iW*iH];
-        memcpy(this->piKernel,piKernel,iW*iH*sizeof(int));    
-        for(int i=0;i<iW*iH;i++){
+    if(iBufferData){
+        int iDim = oMaskSize.width * oMaskSize.height;
+        this->piKernel = new int[iDim];
+        this->pfKernel = new float[iDim];
+        memcpy(this->piKernel,piKernel,iDim*sizeof(int));    
+        for(int i=0;i<iDim;i++){
           pfKernel[i]=(float)piKernel[i];
         }
       }else{
@@ -218,25 +209,25 @@ namespace icl{
 
   // {{{ IPP_CONV-calls
 
-#define IPP_CONV_8u(S,D,C,K,KS,A) ippiFilter_8u_C1R(S->ippData8u(c),\
+#define IPP_CONV_8u(S,D,C,K,KS,A) ippiFilter_8u_C1R(S->roiData8u(c),\
                                                S->ippStep(),        \
-                                               D->ippData8u(c),     \
+                                               D->roiData8u(c),     \
                                                D->ippStep(),        \
-                                               D->ippROISize(),     \
+                                               D->getROISize(),     \
                                                K,KS,A,1);
 
-#define IPP_CONV32_8u(S,D,C,K,KS,A) ippiFilter32f_8u_C1R(S->ippData8u(c),\
+#define IPP_CONV32_8u(S,D,C,K,KS,A) ippiFilter32f_8u_C1R(S->roiData8u(c),\
                                                     S->ippStep(),        \
-                                                    D->ippData8u(c),     \
+                                                    D->roiData8u(c),     \
                                                     D->ippStep(),        \
-                                                    D->ippROISize(),     \
+                                                    D->getROISize(),     \
                                                     K,KS,A);
 
-#define IPP_CONV_32f(S,D,C,K,KS,A) ippiFilter_32f_C1R(S->ippData32f(c), \
+#define IPP_CONV_32f(S,D,C,K,KS,A) ippiFilter_32f_C1R(S->roiData32f(c), \
                                                   S->ippStep(),         \
-                                                  D->ippData32f(c),     \
+                                                  D->roiData32f(c),     \
                                                   D->ippStep(),         \
-                                                  D->ippROISize(),      \
+                                                  D->getROISize(),      \
                                                   K,KS,A);              \
 
   // }}}
@@ -247,11 +238,11 @@ namespace icl{
 
   // parameter list for an ipp call without IppiMaskSize arg
 #define PARAM_LIST_A(DEPTH)         \
-      poSrc->ippData ## DEPTH(c),   \
+      poSrc->roiData ## DEPTH(c, &poDst->getROIOffset()),   \
       poSrc->ippStep(),             \
-      poDst->ippData ## DEPTH(c),   \
+      poDst->roiData ## DEPTH(c),   \
       poDst->ippStep(),             \
-      poSrc->ippROISize()          
+      poSrc->getROISize()          
   // parameter list for an ipp call WITH IppiMaskSize arg
 #define PARAM_LIST_B(DEPTH)         \
       PARAM_LIST_A(DEPTH),          \
@@ -298,33 +289,20 @@ namespace icl{
   // }}}
 
   // {{{ apply(ICLBase*, ICLBase*)
-  void ICLConvolution::apply(ICLBase *poSrc, ICLBase *poDst)
+  ICLBase* ICLConvolution::apply(ICLBase *poSrc, ICLBase *poDst)
   {
     FUNCTION_LOG("");
-    ICLASSERT_RETURN(poSrc->getDepth() == poDst->getDepth());
    
     // {{{ prepare destination image
 
-#ifdef WITH_IPP_OPTIMIZATION
-    IppiPoint oAnchor = { iW/2, iH/2 };
-#endif
-
-    IppiSize oKernelSize = { iW, iH };
-    
-    morphROI(poSrc,-iW/2,-iH/2);  
-
-    
-    int iSrcRoiW, iSrcRoiH;
-    poSrc->getROISize(iSrcRoiW,iSrcRoiH);
-
-    poDst->renew(iSrcRoiW,iSrcRoiH,poSrc->getChannels());  
+    poDst = prepare (poSrc, poDst);
+    if (!adaptROI (poSrc, poDst)) return poDst;
 
     printf("---------------info in ICLConv:apply--------------\n");
     poSrc->print("src image");
     poDst->print("dst image");
-    printf("Kernel = %d x %d \n",iW,iH);
+    printf("Kernel = %d x %d \n",oMaskSize.width,oMaskSize.height);
     printf("--------------------------------------------------\n");
-
 
     // }}}
 
@@ -333,14 +311,12 @@ namespace icl{
 #ifdef WITH_IPP_OPTIMIZATION
     if(eKernel != kernelCustom){
       ipp_fixed_conv(poSrc,poDst,poSrc->getDepth(),eKernel);
-      morphROI(poSrc,iW/2,iH/2);
-      return;
+      return poDst;
     }
 #endif
 
     // }}}
 
-    
     if(poSrc->getDepth() == depth8u)
       // {{{ [depth8u-case:] open
 
@@ -350,9 +326,9 @@ namespace icl{
             for(int c=0;c<poSrc->getChannels();c++)
               {
 #ifdef WITH_IPP_OPTIMIZATION
-                IPP_CONV_8u(poSrc,poDst,c,piKernel,oKernelSize,oAnchor);
+                IPP_CONV_8u(poSrc,poDst,c,piKernel,oMaskSize,oAnchor);
 #else
-                C_CONV_8u(poSrc,poDst,c,piKernel,oKernelSize);
+                C_CONV_8u(poSrc,poDst,c,piKernel,oMaskSize);
 #endif
               }
           }
@@ -361,9 +337,9 @@ namespace icl{
             for(int c=0;c<poSrc->getChannels();c++)
               {
 #ifdef WITH_IPP_OPTIMIZATION
-                IPP_CONV32_8u(poSrc,poDst,c,pfKernel,oKernelSize,oAnchor);
+                IPP_CONV32_8u(poSrc,poDst,c,pfKernel,oMaskSize,oAnchor);
 #else
-                C_CONV32_8u(poSrc,poDst,c,pfKernel,oKernelSize);
+                C_CONV32_8u(poSrc,poDst,c,pfKernel,oMaskSize);
 #endif
               }
           }
@@ -379,17 +355,18 @@ namespace icl{
             for(int c=0;c<poSrc->getChannels();c++)
               {
 #ifdef WITH_IPP_OPTIMIZATION
-                IPP_CONV_32f(poSrc,poDst,c,pfKernel,oKernelSize,oAnchor);
+                IPP_CONV_32f(poSrc,poDst,c,pfKernel,oMaskSize,oAnchor);
 #else
-                C_CONV_32f(poSrc,poDst,c,pfKernel,oKernelSize);
+                C_CONV_32f(poSrc,poDst,c,pfKernel,oMaskSize);
 #endif
               }
           }
         else // fallback to C-implementatino is 10 times slower! -> tmp conversion of the kernel data
           {
 #ifdef WITH_IPP_OPTIMIZATION
-            float *pfKernelTmp = new float[iW*iH];
-            for(int i=0;i<iW*iH;i++)
+            int iDim = oMaskSize.width * oMaskSize.height;
+            float *pfKernelTmp = new float[iDim];
+            for(int i=0;i<iDim;i++)
               {
                 pfKernelTmp[i]=piKernel[i];
               }
@@ -397,9 +374,9 @@ namespace icl{
             for(int c=0;c<poSrc->getChannels();c++)
               {
 #ifdef WITH_IPP_OPTIMIZATION
-                IPP_CONV_32f(poSrc,poDst,c,pfKernelTmp,oKernelSize,oAnchor);
+                IPP_CONV_32f(poSrc,poDst,c,pfKernelTmp,oMaskSize,oAnchor);
 #else
-                C_CONV8_32f(poSrc,poDst,c,piKernel,oKernelSize);  
+                C_CONV8_32f(poSrc,poDst,c,piKernel,oMaskSize);  
 #endif
               }
 #ifdef WITH_IPP_OPTIMIZATION
@@ -411,7 +388,7 @@ namespace icl{
 
     // }}}
     
-    morphROI(poSrc,iW/2,iH/2);
+    return poDst;
   }
 
   // }}}

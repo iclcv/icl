@@ -156,14 +156,8 @@ namespace icl{
     */
     ICLMedian(int iWidth=3, int iHeight=3);
 
-    /// Destructor
-    virtual ~ICLMedian();
-    
     /// applies the median operation on poSrc and stores the result in poDst
-    /** poDst and poSrc must be of the same depth - the programm will exit with
-        -1 if not. The size and channel count of poDst is adapted to 
-        work correctly together with the kernel size, and the source images 
-        ROI:
+    /** The depth, channel count and size of poDst is adapted to poSrc' ROI:
         - channel count of poDst is set to the channel count of poSrc
         - width of poDst is set to W-MW/2 where W is the ROI width of poSrc
           and MW is the used mask width.
@@ -178,11 +172,8 @@ namespace icl{
         @param poSrc source image
         @param poDst destination image
     */
-    virtual void apply(ICLBase *poSrc, ICLBase *poDst);
+    virtual ICLBase* apply(ICLBase *poSrc, ICLBase *poDst);
     private:
-
-    /// internal storage for the mask size
-    int m_iWidth,m_iHeight;
   };
 }
 

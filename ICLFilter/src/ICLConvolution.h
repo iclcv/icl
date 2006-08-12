@@ -25,10 +25,7 @@ namespace icl{
   The destination image must be of the same size as this temporary ROI, and
   is resized automatically if it has a different size. Furthermore the channel 
   count and the depth of source and destination image must be equal. 
-  In case of different channel count, the channel count of the destination image
-  is adapted to the channel count of the source image. If the depth of source 
-  and destination do not match, an error message is shown, and the program will 
-  be aborted with exit(-1).
+  These values are automatically adapted for the destination image if not matching.
   
   <h2>Efficiency (IPP-Optimized)</h2>
   All possible filter operations can be divided in 4 cases, depending on the
@@ -47,7 +44,7 @@ namespace icl{
   In this case, a float kernel is preferred. If it is not available, the
   fallback integer-kernel must be used. As convolution operations of float
   images with integer kernels are not supported by the IPP, the kernel is
-  konverted internally into a temporary float-buffer, which is released after
+  converted internally into a temporary float-buffer, which is released after
   the convolution operation. This will speed up performance in comparison
   with the fallback C-implementation by a factor about 10.
 
@@ -64,7 +61,7 @@ namespace icl{
      - iclbyte images & int mask <b>~4ms (!!!)</b>
      - iclbyte images & iclfloat mask <b>~8ms (!!!)</b>
   - arbitrary 3x3-convolution 1000x1000 single channel image (C++-Fallback)
-     - iclbyte images & int kernel <b>~56ms</b> (further implem. ~81ms)
+     - iclbyte images & int kernel <b>~56ms</b> (further implem. ~81ms) ???
      - iclfloat images & int kernel <b>~76ms</b> (further implem. ~370ms)
      - iclbyte images & iclfloat kernel <b>~135ms</b> (further implem. ~230ms)
      - iclfloat-image & iclfloat kernel <b>~60ms</b> (further implem. ~60ms)
@@ -223,7 +220,7 @@ namespace icl{
         @param poSrc source image
         @param poDst destination image
     */
-    virtual void apply(ICLBase *poSrc, ICLBase *poDst);
+    virtual ICLBase* apply(ICLBase *poSrc, ICLBase *poDst);
     
     private:
 
@@ -248,12 +245,6 @@ namespace icl{
     /// internal storage for the kernels depth32s data
     int *piKernel;
     
-    /// internal storage of the filter width
-    int iW;
-
-    /// internal storage of the filter height
-    int iH;
-
     /// internal flag, that indicates, if the contained data is owned by this object
     bool bDeleteData;
     

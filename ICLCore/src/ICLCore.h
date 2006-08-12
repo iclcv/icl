@@ -11,22 +11,25 @@
 \section Overview
 
 The ICL is a C++ Image-Library, designed for Computer-Vision Tasks. It
-supports multi-channel images with a depth of 8bit or 32bit. Despite of the
-different image depth, most methods of an image class have common code. Hence,
-the two different pixel formats are implemented by a template class
-<b>ICL<imagedepth></b>. Methods which are independent on the image depth are
-provided by a common base class, named <b>ICLBase</b>. This allows easy and
-type-clean wrapping of both template classes within frameworks such as Neo/NST
-or TDI.
+supports multi-channel images with a depth of 8bit or 32bit. All channels
+within the image share a common size and region of interest (ROI). This allows
+to handle color images as 3-channel ICL images for example.
+
+Despite of the different image depth, most methods of an image class have
+common code. Hence, the two different pixel formats are implemented by a
+template class <b>ICL<imagedepth></b>. Methods which are independent on the
+image depth are provided by a common base class, named <b>ICLBase</b>. This
+allows easy and type-clean wrapping of both template classes within frameworks
+such as Neo/NST or TDI.
 
 Hence, the Library provides two basic image classes: 
 - <b>ICLBase</b>: The <b>abstract base</b> class providing common, 
   but depth-independent information about the image structure:
   - size (in pixels)
-  - channel count  (see <b>Channel-Concept</b>)
-  - type of pixels (see <b>Data-Types</b>)
-  - (color)-format (see <b>(Color)-Formats</b>)
-  - raw image data
+  - channel count  (see <b>channel concept</b>)
+  - type of pixels (see <b>data types</b>)
+  - color format (see <b>color formats</b>)
+  - raw image data access
   - Region of Interest (see <b>Region of Interests</b> (ROI))
   - [access to IPP-compability functions] (see <b>IPP-Optimization</b>)
 
@@ -35,45 +38,41 @@ Hence, the Library provides two basic image classes:
   Most of the functions in the ICLBase class are purely virtual which
   implies, that they have to be implemented in the derived classes.
 
-- <b>ICL</b>: The <i>proper</i> image classes implemented as a template,
+- <b>ICL</b>: The <i>proper</i> image class is implemented as a template,
   where the datatype of each pixel value is the template parameter.
-  Internally each ICL<T> object holds a list of so called
-  ICLChannels, which are defined by an internal class of the same name.
-  The ICL class provides some additional image information and
-  access functions:
-  - type-save image data
+  Internally each ICL<T> object holds a std::vector of pointers to the channel
+  data. The ICL class provides some additional image information and access
+  functions:
+  - type-save image data access
   - access to single pixel values using the ()-operator
-  - access to all pixels of the set image ROI using the 
-    ICLIterator (see <b>ICLIterator</b> class reference)
+  - access to all ROI pixels using the ICLIterator 
+  (see <b>ICLIterator</b> class reference)
     
 In addition to the classes ICL and ICLBase, the ICLCore package
-provides some utility functions, that facilitates woking with 
-these classes (see icl -namespace for more details).
+provides some utility functions, that facilitates working with 
+these classes (see icl namespace for more details).
   
 @see ICLBase, ICL
 
-
 \section Channel-Concept
-The ICL treats images as a stack of image slices -- <b>channels</b>.
-An ICLChannel (as mentioned above: represented by an internal class)
-can be a part of several images at the same time, 
-which enables the programmer to compose existing ICLChannels 
-(located as member of some existing ICL) to another new image.
-The <i>composed</i> new ICL-Image will share the 
-image data with the original ICL, so modifications on it 
-will effect as well the original images, as the composed one.
-If it is necessary that the image is independent from other images, the
-programmer may call the detach-method, which replaces 
-the "shared" image channels with new independent ones. The shared
-channels are stored using the boost-like auto pointer class ICLAutoPointer.
-Thus the programmer does not have to take care about releasing
-<i>no further used</i> image channels.
+The ICL treats images as a stack of image slices -- <b>channels</b>.  Channels
+can be shared by multiple ICL images, which is especially important for fast
+shallow images copies. Actually, it is possible to freely compose existing
+channels (within several "parent images") to another new image.  
+
+Attention: The newly <i>composed</i> image shares its channel data with
+the original images, such that modifications will effect all images equally.
+In order to get an independent image a deepCopy as well as a detach method
+are provided. The latter replaces the "shared" image channel(s) with new 
+independent ones. Shared channel data are stored using the boost-like 
+shared pointer class ICLAutoPointer, which realizes a garbage collector
+automatically releasing <i>unused</i> image channels.
 
 @see ICL, ICLChannel
 
 \section Data-Types
-This time the ICL is optimized for two different data types:
-- <b>iclbyte</b> 8bit unsigned integer
+Currently the ICL provides two different data types:
+- <b>iclbyte</b> 8bit unsigned char
 - <b>iclfloat</b> 32bit float
 
 ICL-classes are predefined for these two types:
@@ -93,12 +92,12 @@ larger memory usage.
  
 @see icldepth, iclbyte, iclfloat
 
-\section Color-Formats
-An ICLBase image provides some information about the (Color)-format, that
+\section Color Formats
+An ICLBase image provides some information about the (color) format, that
 is associated with the image data represented by the images channels. Color
 is written in brackets, as not all available formats imply color-information.
-The most known Color-Space is probably the RGB-color-space. 
-If the an ICLBase image has the format formatRGB, than this implies the 
+The most known color space is probably the RGB color space. 
+If an ICLBase image has the format <i>formatRGB</i>, than this implies the 
 following:
 - the image has exactly 3 channels
 - the first channel contains RED-Data in range [0,255]
@@ -106,7 +105,7 @@ following:
 - the third channel contains BLUE-Data in range [0,255]
 
 All additional implemented ICL-Packages may use this information. 
-The currently available icl-formats are member of the enum iclformat.
+The currently available ICL formats are member of the enum iclformat.
 A special format: formatMatrix may be used for arbitrary purpose.
 
 @see iclformat
@@ -221,9 +220,8 @@ provided in ICLMacros.h
 
 /// The ICL-namespace
 /**
-This namespace is dedicated for ICLCore- and
-all additional Computer-Vision packages, that 
-are based on the ICLCore classes.
+This namespace is dedicated for ICLCore- and all additional Computer-Vision
+packages, that are based on the ICLCore classes.
 **/
 namespace icl {
 
@@ -236,12 +234,20 @@ namespace icl {
 
   /// 8Bit unsigned integer type for the ICL
   typedef Ipp8u iclbyte;
+
+  /// size and point structure
+  typedef IppiPoint ICLpoint;
+  typedef IppiSize  ICLsize;
 #else
   /// 32Bit floating point type for the ICL 
   typedef float iclfloat;
 
   /// 8Bit unsigned integer type for the ICL 
   typedef unsigned char iclbyte;
+
+  /// size and point structure
+  typedef struct ICLpoint_ {int x,y;} ICLpoint;
+  typedef struct ICLsize_ {int width,height;} ICLsize;
 #endif
   
   /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
@@ -361,8 +367,9 @@ namespace icl {
       @param eFormat destination format
       @param iChannelCount destination channel count. (If -1, then the channel count
                            is extracted from the given eFormat
-      @param vecROI destination ROI-rect (if vecROI.size() is not 4, then the new
-                    ROI is set to the hole image size)
+      @param poROIoffset destination ROI offset
+      @param poROIsize   destination ROI size
+      If the ROI parameters are not given, the ROI will comprise the whole image.
   **/
   void iclEnsureCompatible(ICLBase **ppoDst,
                            icldepth eDepth, 
@@ -370,7 +377,8 @@ namespace icl {
                            int iHeight, 
                            iclformat eFormat, 
                            int iChannelCount=-1,
-                           std::vector<int> vecROI = std::vector<int>(0));
+                           const ICLpoint* const poROIoffset=0,
+                           const ICLsize*  const poROIsize=0);
   
   /// determines the count of channels, for each color format
   /** @param eFormat source format which channel count should be returned
@@ -425,7 +433,6 @@ namespace icl {
   **/
   int iclGetSizeof(icldepth eDepth);
 
-  
 }
 
 /* }}} */
