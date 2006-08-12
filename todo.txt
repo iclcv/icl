@@ -8,3 +8,142 @@ of ICLMedian and ICLConvolution.
 
 What should be done for the fallback solution, i.e. ICLIterator???
 I would suspect, this needs change as well.
+
+
+
+Hi Robert,
+
+habe soeben mal die Änderungen an den ICLBase / ICL Interface begutachtet.
+
+Positiv:
+---------
+Das Verwenden der structs ICLpoint und ICLsize macht den Umgang in viele Situationen
+sicherlich einfacher, und es ensteht nicht das Problem mit dem Größen-Check des verwendeten
+Vektors.
+
+Nicht so gut:
+-------------
+finde ich, dass (nicht nur dadurch) das Klassen Interface ein wenig fragmentiert geworden ist, da
+  -  zum einen sehr viele unterschiedliche ROI Funktionen zur Verfügung stehen
+     welche größtenteils redundante Zugriffe realisieren.
+  -  nicht so wirklich klar ist, was nun im ippInterface ist, und was nicht.
+  -  sehr viele unterschiedliche Funktionen zur Verfügung stehen um an die daten zu kommen
+
+Mein Vorschlag um das Klasseninterface zu vereinfachen:
+-------------------------------------------------------
+von den ippXXX Funktionen  sind ja eh nicht mehr viele übrig geblieben -- dann werfen wir die doch
+einfach ganz raus!
+
+1.)wir führen noch einen neuen Typ ein:
+#ifdef WITH_IPP_OPTIMIZATION
+typedef IppiRect ICLRect;
+#else
+typedef struct ICLrect_ {int x,y,width,height;} ICLrect;
+#endif
+
+2.) der interne Speicher der ROI wird in einen rect struct gespeichert
+ICLrect m_oROI;
+
+3.) das Interface beschränken wir dann auf
+const ICLrect& getROI() const;   // kann dann auch in ipp-funktionen eingesetzt werden
+ICLpoint getROIOffset() const;   // hier wird ein neues object zurückgegeben
+ICLsize getROISize() const;      // hier auch
+//------------------------------------------------
+void setROI(const ICLRect &roROI);
+void setROIOffset(const ICLPoint &roOffset);
+void setROISize(const ICLsize &roSize);
+
+(klar, wenn nicht die komplette ROI verwendet wird, müssen Daten erstellt und
+kopiert werden, aber ich glaube bei diesen [int,int]-structs wird dass die performanz
+kaum - wenn nicht garnicht - beinflussen.)
+
+
+4.)Aufrämen der vielen unterschiedlichen getDataXXX - funktionen
+
+ICLBase:
+--------
+virtual void getDataPtr(int iChannel) = 0; // wie bisher implementiert in der ICL<Type>
+
+void getROIData8u(int iChannel){ 
+     return ((iclbyte*)getDataPtr())+m_oROI.x+m_iWidht*m_oROI.y;  // braucht gar nicht virtual zu sein
+}
+void getROIData8u(int iChannel, const ICLpoint &roOffset){
+     return ((iclbyte*)getDataPtr())+roOffset.x+m_iWidht*roOffset.y;
+}
+void getROIData32f(int iChannel){ 
+     return ((iclfloat*)getDataPtr())+m_oROI.x+m_iWidht*m_oROI.y;  // braucht gar nicht virtual zu sein
+}
+void getROIData32f(int iChannel, const ICLpoint &roOffset){
+     return ((iclfloat*)getDataPtr())+roOffset.x+m_iWidht*roOffset.y;
+}
+
+vielleicht nehmen wir diese typ-spezifischen funktionen einfach raus (siehe folgendes Bsp.:)
+
+void tu_was_mit_ipp(ICLBase *p, int channel){
+     if(p->getDepth()==depth8u){
+        ippiSowiso(p->getROIData8u(channel),...);
+     }else{
+        ippiSowiso(p->getROIData32f(channel),...);
+     }
+}
+
+void tu_was_mit_ipp_NEU(ICLBase *p, int channel){
+     if(p->getDepth()==depth8u){
+        ippiSowiso(p->asICL8u()->getROIData(channel),...);
+     }else{
+        ippiSowiso(p->asICL32f()->getROIData(channel),...);
+     }
+}
+
+
+
+ICL<Type>:
+---------
+virtual void* getDataPtr(int iChannel){
+     return m_vecChannels[iChanel].get();        
+}
+T* getData(int iChannel) {
+   return (T*)getDataPtr(iChannel);   
+}
+T* getROIData(int iChannel){
+   return ((T*)getDataPtr())+m_oROI.x+m_iWidht*m_oROI.y;  // braucht gar nicht virtual zu sein
+}
+T* getROIData(int iChannel, const ICLpoint &roOffset){
+   return ((iclfloat*)getDataPtr())+roOffset.x+m_iWidht*roOffset.y;   
+}
+// ich fände hier die  "const ICLpoint &roOffset" - variante besser als die mit den "const ICLpoint *"
+// da dieses dann konsitent zu den anderen ROI-funktionen bleibt.
+
+
+
+5.) Anschliessend müssen noch die letzen ippXXX - Funktionen rausgeworfen und
+durch entsprechende nicht "NUR-ipp" Funktionen ersetzet werden.
+
+int ippStep() const; wird ersetzt durch        int getLineStep() const; // oder so
+IppiSize ippSize() const; wird ersetzt durch   ICLsize getSize() const;
+
+
+6.) vielleicht noch zusätzlich;
+(ist nur ein vorschlag, hat nichts mit dem Rest zu tun)
+
+aktuell:
+ICL32f *convertTo32Bit(ICL32f *poDst);
+ICL8u *convertTo8Bit(ICL8u *poDst);
+ICL32f *asIcl32f();
+ICL8u *asIcl8u();
+
+die convert-funktionen haben den großen Nachteil, dass 32Bit in dem Funktionsnamen
+spätestens Probleme bringt, wenn wir auch noch ICL<int> erzeugen wollen.
+daher wäre mein Vorschlag:
+ICL32f *to32f( ICL32f *poDst );
+ICL8u *to8u( ICL8u *poDst );
+ICL32f *as32f();
+ICL8u *as8u();
+
+
+sind 'nen Haufen Änderungen -- vielleicht findest Du ja auch ein paar 
+Aspekte davon Sinnvoll. Am besten wir besprechen alles noch mal am Montag 
+zu dritt.
+
+viele liebe Grüße,
+Christof

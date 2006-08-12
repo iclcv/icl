@@ -900,8 +900,7 @@ void ICL<Type>::clear(int iChannel, Type tValue)
 {
   //---- Log Message ----
   FUNCTION_LOG("clear(" << iChannel << "," << tValue << ")");
-  
-  
+    
   int iEnd = (iChannel<0)?m_iChannels:iChannel+1;
   for(int i=iChannel<0?0:iChannel;i<iEnd ;i++) {
     fill(getData(i),getData(i)+getDim(),tValue);
