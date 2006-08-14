@@ -1,28 +1,28 @@
-#include "ICLConvolution.h"
+#include "Convolution.h"
 
 namespace icl{
   
   // {{{ fixed convolution masks
 
-  int ICLConvolution::KERNEL_SOBEL_X[9] = { 1,  0, -1,
+  int Convolution::KERNEL_SOBEL_X[9] = { 1,  0, -1,
                                             2,  0, -2,
                                             1,  0, -1   };
   
-  int ICLConvolution::KERNEL_SOBEL_Y[9] = {  1,  2,  1,
+  int Convolution::KERNEL_SOBEL_Y[9] = {  1,  2,  1,
                                              0,  0,  0,
                                             -1, -2, -1  };
   
-  float ICLConvolution::KERNEL_GAUSS_3x3[9] = { 1.0/16 , 2.0/16, 1.0/16,
+  float Convolution::KERNEL_GAUSS_3x3[9] = { 1.0/16 , 2.0/16, 1.0/16,
                                                 2.0/16 , 4.0/16, 2.0/16,
                                                 1.0/16 , 2.0/16, 1.0/16  };
   
-  float ICLConvolution::KERNEL_GAUSS_5x5[25] = { 2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571,
+  float Convolution::KERNEL_GAUSS_5x5[25] = { 2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571,
                                                  7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
                                                 12.0/571, 52.0/571, 127.0/571, 52.0/571, 12.0/571,
                                                  7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
                                                  2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571 };
   
-  int ICLConvolution::KERNEL_LAPLACE[9] = { 1, 1, 1,
+  int Convolution::KERNEL_LAPLACE[9] = { 1, 1, 1,
                                             1,-8, 1,
                                             1, 1, 1} ;
 
@@ -35,7 +35,7 @@ namespace icl{
     // if it does: return 0, else 1
     for(int i=0;i<iLen;i++)
       {
-        if(pfData[i] == (float)((int)pfData[i])) return 0;
+        if(pfData[i] != (float)((int)pfData[i])) return 0;
       }    
     return 1;
   }
@@ -44,11 +44,11 @@ namespace icl{
   
   // {{{ Constructors / Destructor
 
-  ICLConvolution::ICLConvolution(iclkernel eKernel):
+  Convolution::Convolution(iclkernel eKernel):
     // {{{ open
 
     pfKernel(0),piKernel(0),bDeleteData(0),eKernel(eKernel){
-    DEBUG_LOG4("ICLConvolution::ICLConvolution(iclkernel)");
+    DEBUG_LOG4("Convolution::Convolution(iclkernel)");
 
 #ifndef WITH_IPP_OPTIMIZATION
     setMask (3,3);
@@ -78,12 +78,12 @@ namespace icl{
 
   // }}}
 
-  ICLConvolution::ICLConvolution(ICLBase *poKernel):
+  Convolution::Convolution(ImgI *poKernel):
     // {{{ open
-    ICLFilter (poKernel->getWidth(), poKernel->getHeight()),
+    Filter (poKernel->getWidth(), poKernel->getHeight()),
     pfKernel(0),piKernel(0),bDeleteData(1),eKernel(kernelCustom)
   {
-    DEBUG_LOG4("ICLConvolution::ICLConvolution(ICLBase*)");
+    DEBUG_LOG4("Convolution::Convolution(ImgI*)");
     int iDim = oMaskSize.width * oMaskSize.height;
     if(poKernel->getDepth()==depth8u)
       {
@@ -112,12 +112,12 @@ namespace icl{
 
   // }}}
 
-  ICLConvolution::ICLConvolution(iclfloat *pfKernel, int iW, int iH, int iBufferData):
+  Convolution::Convolution(iclfloat *pfKernel, int iW, int iH, int iBufferData):
     // {{{ open
-    ICLFilter (iW, iH),
+    Filter (iW, iH),
     pfKernel(0),piKernel(0),bDeleteData(iBufferData),eKernel(kernelCustom)
   {
-    DEBUG_LOG4("ICLConvolution::ICLConvolution(iclfloat*,int,int)");
+    DEBUG_LOG4("Convolution::Convolution(iclfloat*,int,int)");
     if(iBufferData){
       int iDim = oMaskSize.width * oMaskSize.height;
       this->pfKernel = new float[iDim];
@@ -137,12 +137,12 @@ namespace icl{
 
   // }}}
   
-  ICLConvolution::ICLConvolution(int *piKernel, int iW, int iH, int iBufferData):
+  Convolution::Convolution(int *piKernel, int iW, int iH, int iBufferData):
     // {{{ open
-    ICLFilter (iW, iH),
+    Filter (iW, iH),
     pfKernel(0),piKernel(0),bDeleteData(iBufferData),eKernel(kernelCustom)
   {
-    DEBUG_LOG4("ICLConvolution::ICLConvolution(int*,int,int)");
+    DEBUG_LOG4("Convolution::Convolution(int*,int,int)");
     if(iBufferData){
         int iDim = oMaskSize.width * oMaskSize.height;
         this->piKernel = new int[iDim];
@@ -158,10 +158,10 @@ namespace icl{
 
   // }}}
     
-  ICLConvolution::~ICLConvolution(){
+  Convolution::~Convolution(){
     // {{{ open
 
-    DEBUG_LOG4("~ICLConvolution");
+    DEBUG_LOG4("~Convolution");
     if(bDeleteData){
       if(piKernel)delete piKernel;
       if(pfKernel)delete pfKernel;
@@ -174,21 +174,21 @@ namespace icl{
  
   // {{{ C++ - generic convolution
   template<class ImageT, class KernelT, class BufferT> void 
-  generic_conv(ICLBase *poSrcIn, ICLBase *poDstIn, KernelT* pmMask, int iKernelW, int iKernelH, int c)
+  generic_conv(ImgI *poSrcIn, ImgI *poDstIn, KernelT* pmMask, int iKernelW, int iKernelH, int c)
   {
-    ICL<ImageT> *poS = reinterpret_cast<ICL<ImageT>*>(poSrcIn);
-    ICL<ImageT> *poD = reinterpret_cast<ICL<ImageT>*>(poDstIn);
+    Img<ImageT> *poS = reinterpret_cast<Img<ImageT>*>(poSrcIn);
+    Img<ImageT> *poD = reinterpret_cast<Img<ImageT>*>(poDstIn);
 
     // accumulator for each pixel result of Type M
     BufferT buffer; 
 
     // pointer to the mask
     KernelT *m;
-    for(ICLIterator<ImageT> s=poS->begin(c), d=poD->begin(c) ; s.inRegion() ; s++, d++)
+    for(ImgIterator<ImageT> s=poS->begin(c), d=poD->begin(c) ; s.inRegion() ; s++, d++)
       {
         m = pmMask;
         buffer = 0;
-        for(ICLIterator<ImageT> sR(s,iKernelW,iKernelH) ; sR.inRegion(); sR++, m++)
+        for(ImgIterator<ImageT> sR(s,iKernelW,iKernelH) ; sR.inRegion(); sR++, m++)
           {
             buffer += (*m) * (*sR);
           } 
@@ -250,7 +250,7 @@ namespace icl{
       
   // the hole code for a single case xxx:{...} statement
 #define A_CASE(THECASE,FILTER,MSIZE,PLIST_TYPE)                                 \
-  case ICLConvolution::kernel ## THECASE:{                                      \
+  case Convolution::kernel ## THECASE:{                                      \
     IppiMaskSize oMaskSize = (IppiMaskSize)(11*MSIZE);                          \
     (void)oMaskSize;                                                            \
     if(eDepth == depth8u){                                                      \
@@ -266,7 +266,7 @@ namespace icl{
   }
   
   // internally used function, that applies ipp-optimized "fixed" convolution operations on images
-  void ipp_fixed_conv(ICLBase *poSrc, ICLBase *poDst, icldepth eDepth, ICLConvolution::iclkernel eKernel)
+  void ipp_fixed_conv(ImgI *poSrc, ImgI *poDst, icldepth eDepth, Convolution::iclkernel eKernel)
   {
     switch(eKernel)
       {   
@@ -288,8 +288,8 @@ namespace icl{
 
   // }}}
 
-  // {{{ apply(ICLBase*, ICLBase*)
-  ICLBase* ICLConvolution::apply(ICLBase *poSrc, ICLBase *poDst)
+  // {{{ apply(ImgI*, ImgI*)
+  ImgI* Convolution::apply(ImgI *poSrc, ImgI *poDst)
   {
     FUNCTION_LOG("");
    

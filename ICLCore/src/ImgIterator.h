@@ -4,10 +4,10 @@
 #include "ICLCore.h"
 
 namespace icl{
-  /// Iterator class used to iterate over an ICLs ROI pixels
+  /// Iterator class used to iterate over an Imgs ROI pixels
   /**
-  The ICLIterator is a utility to iterate line by line over
-  all pixels of an ICLs ROI. The following ASCII image 
+  The ImgIterator is a utility to iterate line by line over
+  all pixels of an Imgs ROI. The following ASCII image 
   shows an images ROI.
   <pre>
     1st pixel
@@ -36,51 +36,51 @@ namespace icl{
      - check of the last valid pixel position
 
   the following code example shows how to
-  handle image ROIs using the ICLIterator image iterator
+  handle image ROIs using the ImgIterator image iterator
   
   <pre>
-  void channel_threshold_inplace(ICL8u &im, int iTetta, int iChannel)
+  void channel_threshold_inplace(Img8u &im, int iTetta, int iChannel)
   {
-      for(ICL8u::iterator p=im.begin(c)  ; p.inRegion() ; p++)
+      for(Img8u::iterator p=im.begin(c)  ; p.inRegion() ; p++)
       {
           *p = *p > tetta ? 255 : 0;
       }
      
   }
   </pre>
-  The ICLIterator<Type> is defined in the ICL<Type> as iterator.
+  The ImgIterator<Type> is defined in the Img<Type> as iterator.
   This offers an intuitive "stdlib-like" use.
 
-  <h3>Using the ICLIterator as ROW-iterator</h3>
-  The ICLIterator can be used as ROW-iterator too. The following example
+  <h3>Using the ImgIterator as ROW-iterator</h3>
+  The ImgIterator can be used as ROW-iterator too. The following example
   will explain usage:
   
   <pre>
-  void copy_channel_roi_row_by_row(ICL8u &src, ICL8u &dst, int iChannel)
+  void copy_channel_roi_row_by_row(Img8u &src, Img8u &dst, int iChannel)
   {
-     for(ICL8u::iterator s=src.begin(iChannel),d=dst.begin(iChannel) ; s.inRegion() ; d.incLine(), s.incLine())
+     for(Img8u::iterator s=src.begin(iChannel),d=dst.begin(iChannel) ; s.inRegion() ; d.incLine(), s.incLine())
      {
         memcpy(&*d,&*s,s.getROIWidth()*sizeof(iclbyte));
      }
   }
   </pre>
 
-  <h3> Using Nested ICLIterators for Neighborhood operations </h3>
+  <h3> Using Nested ImgIterators for Neighborhood operations </h3>
 
-  In addition to the above functionalities, ICLIterators can be used for
+  In addition to the above functionalities, ImgIterators can be used for
   arbitrary image neighborhood operations like convolution, median or
   erosion. The following example explains how to create so called sub-region
   iterators, that work on a symmetrical neighborhood around a higher lever
-  ICLIterator.
+  ImgIterator.
 
   <pre>
-  void channel_convolution_3x3(ICL32f &src, ICL32f &dst,iclfloat *pfMask, int iChannel)
+  void channel_convolution_3x3(Img32f &src, Img32f &dst,iclfloat *pfMask, int iChannel)
   {
-     for(ICL32f::iterator s=src.begin(iChannel) d=dst.begin() ; s.inRegion() ; s++,d++)
+     for(Img32f::iterator s=src.begin(iChannel) d=dst.begin() ; s.inRegion() ; s++,d++)
      {
         iclfloat *m = pfMask;
         (*d) = 0;
-        for(ICL32f::iterator sR(s, 3, 3); sR.inRegion(); sR++,m++)
+        for(Img32f::iterator sR(s, 3, 3); sR.inRegion(); sR++,m++)
         {
            (*d) += (*sR) * (*m);
         }
@@ -94,7 +94,7 @@ namespace icl{
   <h2>Performance:Efficiency</h2>
   There are 3 major ways to access the pixel data of an image.
   - using the (x,y,channel) -operator
-  - using the ICLIterator
+  - using the ImgIterator
   - working directly with the channel data
 
   Each method has its on advantages and disadvantages:
@@ -103,7 +103,7 @@ namespace icl{
     other programmers. The disadvantages are:
     - no implicit ROI - support
     - <b>very slow</b>
-  - the ICLIterator moves pixel-by-pixel, line-by-line over
+  - the ImgIterator moves pixel-by-pixel, line-by-line over
     a single image channel. It is highly optimized for processing
     each pixel of an images ROI without respect to the particular
     pixel position in in the image.
@@ -124,7 +124,7 @@ namespace icl{
   <pre>
   // create a VERY large image
   int iW = 10000, iH=10000;
-  ICL8u im(iW,iH,1);
+  Img8u im(iW,iH,1);
 
   // 1st working with the image data (time: ~210/360ms)
   // pointer style (~210ms)
@@ -139,7 +139,7 @@ namespace icl{
   }
 
   // 2nd working with the iterator (time: ~280ms) (further implementation ~650ms)
-  for(ICL8u::iterator it=im.begin(0) ; it.inRegion() ; it++){
+  for(Img8u::iterator it=im.begin(0) ; it.inRegion() ; it++){
     *it = 42;
   }
 
@@ -161,11 +161,11 @@ namespace icl{
   
   */
   template <class Type>
-    class ICLIterator{
+    class ImgIterator{
     public:
-    /** Creates an ICLIterator object */
+    /** Creates an ImgIterator object */
     /// Default Constructor
-    ICLIterator():
+    ImgIterator():
        m_iImageWidth(0),
        m_iROIWidth(0), 
        m_iROIHeight(0), 
@@ -175,7 +175,7 @@ namespace icl{
        m_ptDataEnd(0),
        m_ptCurrLineEnd(0){}
     
-     /** 2nd Constructor creates an ICLIterator object with Type "Type"
+     /** 2nd Constructor creates an ImgIterator object with Type "Type"
          @param ptData pointer to the corresponding channel data
          @param iXPos x offset of the images ROI
          @param iYPos y offset of the images ROI
@@ -183,7 +183,7 @@ namespace icl{
          @param iROIWidth width of the images ROI
          @param iROIHeight width of the images ROI
      */
-    ICLIterator(Type *ptData, int iXPos,int iYPos,int iImageWidth, int iROIWidth, int iROIHeight):
+    ImgIterator(Type *ptData, int iXPos,int iYPos,int iImageWidth, int iROIWidth, int iROIHeight):
        m_iImageWidth(iImageWidth),
        m_iROIWidth(iROIWidth), 
        m_iROIHeight(iROIHeight), 
@@ -193,17 +193,17 @@ namespace icl{
        m_ptDataEnd(m_ptDataCurr+iROIWidth+(iROIHeight-1)*iImageWidth),
        m_ptCurrLineEnd(m_ptDataCurr+iROIWidth-1){}
 
-    /// 3nd Constructor to create sub-regions of an ICL-image
+    /// 3nd Constructor to create sub-regions of an Img-image
     /** This 2nd constructor creates a sub-region iterator, which may be
         used e.g. for arbitrary neighborhood operations like 
         linear filters, medians, ...
-        See the ICLIterator description for more detail.        
+        See the ImgIterator description for more detail.        
         @param roOrigin reference to source Iterator Object
         @param iROIWidth width of the images ROI
         @param iROIHeight width of the images ROI
     */
 
-    ICLIterator(const ICLIterator<Type> &roOrigin,int iROIWidth, int iROIHeight):
+    ImgIterator(const ImgIterator<Type> &roOrigin,int iROIWidth, int iROIHeight):
        m_iImageWidth(roOrigin.m_iImageWidth),
        m_iROIWidth(iROIWidth),
        m_iROIHeight(iROIHeight),
@@ -214,7 +214,7 @@ namespace icl{
        m_ptCurrLineEnd(m_ptDataCurr+iROIWidth-1){}
     
     /// retuns a reference of the current pixel value
-    /** changes on *p (p is of type ICLIterator) will effect
+    /** changes on *p (p is of type ImgIterator) will effect
         the image data       
     */
     inline Type &operator*() const

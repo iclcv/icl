@@ -1,6 +1,6 @@
-#include "ICLMedian.h"
-#include "ICLIterator.h"
-#include "ICL.h"
+#include "Median.h"
+#include "ImgIterator.h"
+#include "Img.h"
 #include <vector>
 #include <algorithm>
 
@@ -8,8 +8,8 @@ namespace icl{
   
   // {{{ Constructor / Destructor
 
-  ICLMedian::ICLMedian(int iWidth, int iHeight):
-     ICLFilter ((iWidth/2)*2+1, (iHeight/2)*2+1) {
+  Median::Median(int iWidth, int iHeight):
+     Filter ((iWidth/2)*2+1, (iHeight/2)*2+1) {
      if(iWidth <= 0 || iHeight<=0){
         ERROR_LOG("illegal width/height: " << iWidth << "/" << iHeight);
         setMask (3, 3); // set some sensible default
@@ -34,8 +34,8 @@ namespace icl{
   
   // {{{ Macro C_MEDIAN(S,D,DEPTH,TYPE)
 #define C_MEDIAN(S,D,DEPTH,TYPE)                                                                                        \
-  ICL ## DEPTH *poS = S->asIcl ## DEPTH();                                                                              \
-  ICL ## DEPTH *poD = D->asIcl ## DEPTH();                                                                              \
+  Img ## DEPTH *poS = S->asIcl ## DEPTH();                                                                              \
+  Img ## DEPTH *poD = D->asIcl ## DEPTH();                                                                              \
                                                                                                                         \
   std::vector<TYPE> oList(oMaskSize.width * oMaskSize.height);                                                                        \
   std::vector<TYPE>::iterator itList = oList.begin();                                                                   \
@@ -43,9 +43,9 @@ namespace icl{
                                                                                                                         \
   for(int c=0;c<poSrc->getChannels();c++)                                                                               \
   {                                                                                                                     \
-      for(ICLIterator<TYPE> s=poS->begin(c), d=poD->begin(c); s.inRegion() ; s++, d++ )                                 \
+      for(ImgIterator<TYPE> s=poS->begin(c), d=poD->begin(c); s.inRegion() ; s++, d++ )                                 \
       {                                                                                                                 \
-         for(ICLIterator<TYPE> sR(s,oMaskSize.width,oMaskSize.height); sR.inRegion(); sR++, itList++)                                 \
+         for(ImgIterator<TYPE> sR(s,oMaskSize.width,oMaskSize.height); sR.inRegion(); sR++, itList++)                                 \
            {                                                                                                            \
               *itList = *sR;                                                                                            \
            }                                                                                                            \
@@ -57,7 +57,7 @@ namespace icl{
   
   // }}}
 
-  ICLBase* ICLMedian::apply(ICLBase *poSrc, ICLBase *poDst)
+  ImgI* Median::apply(ImgI *poSrc, ImgI *poDst)
   {
     FUNCTION_LOG("");
 

@@ -1,5 +1,5 @@
  /*
-  ICL.h
+  Img.h
 
   Written by: Michael Götting and Christof Elbrechter (2006)
               University of Bielefeld
@@ -7,12 +7,12 @@
               {mgoettin,celbrech}@techfak.uni-bielefeld.de
 */
 
-#ifndef ICL_H
-#define ICL_H
+#ifndef Img_H
+#define Img_H
 
-#include "ICLBase.h"
-#include "ICLIterator.h"
-#include "ICLAutoPtr.h"
+#include "ImgI.h"
+#include "ImgIterator.h"
+#include "SmartPtr.h"
 #include <cmath>
 #include <algorithm>
 
@@ -20,18 +20,18 @@ using namespace std;
 
 namespace icl {
 
-  /// ICL implements an array of ICLChannel images with an arbitrary number of channels
+  /// Img implements an array of ImgChannel images with an arbitrary number of channels
   /**
   @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
   @author Christof Elbrechter (celbrech@TechFak.Uni-Bielefeld.de)
   **/
 template <class Type>
-class ICL : public ICLBase
+class Img : public ImgI
 {
  protected:
   
   /// internally used storage for the image channels
-  vector<ICLAutoPtr<Type> > m_vecChannels;
+  vector<SmartPtr<Type> > m_vecChannels;
   
   /* {{{ Auxillary function */
 
@@ -44,7 +44,7 @@ class ICL : public ICLBase
   Type interpolate(float fX,float fY,int iChannel=0) const;
 
   /// creates a new deep copy of a specified Type*
-  ICLAutoPtr<Type> createChannel(Type *ptDataToCopy=0) const;
+  SmartPtr<Type> createChannel(Type *ptDataToCopy=0) const;
   /* }}} */
                                 
  public:
@@ -57,7 +57,7 @@ class ICL : public ICLBase
       @param iHeight Height of image
       @param iChannels Number of Channels 
   **/
-  ICL(int iWidth=1, int iHeight=1, int iChannels=1);
+  Img(const Size &s, int iChannels=1);
  
   /// Creates an image with specified size, number of channels and format
   /** @param iWidth width of the image
@@ -67,7 +67,7 @@ class ICL : public ICLBase
                        count is calculated from the given format (E.g. if
                        eFormat is formatRGB iChannels is set to 3)
   **/
-  ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels = -1);
+  Img(const Size &s, iclformat eFormat, int iChannels = -1);
  
   /// Creates an image with specified size, number of channels, format, using shared data pointers as channel data
   /** @param iWidth width of the image
@@ -78,9 +78,9 @@ class ICL : public ICLBase
                        eFormat is formatRGB iChannels is set to 3)
       @param pptData holds a pointer to channel data pointers. pptData must
                      have size iChannels. The data must not be deleted during
-                     the "lifetime" of the ICL.
+                     the "lifetime" of the Img.
   **/
-  ICL(int iWidth, int iHeight, iclformat eFormat, int iChannels, Type** pptData);
+  Img(const Size &s, iclformat eFormat, int iChannels, Type** pptData);
 
   /// Copy constructor
   /** creates a flat copy of the source image
@@ -88,11 +88,11 @@ class ICL : public ICLBase
       all channels of the source image.
       @param tSrc Reference of instance to copy 
   **/
-  ICL(const ICL<Type>& tSrc);
+  Img(const Img<Type>& tSrc);
   
   
   /// Destructor
-  ~ICL();
+  ~Img();
   
   //@}
 
@@ -108,13 +108,13 @@ class ICL : public ICLBase
       source image.      
       @param tSource Reference to source object. 
   **/
-  ICL<Type>& operator=(const ICL<Type>& tSource);
+  Img<Type>& operator=(const Img<Type>& tSource);
 
   /// pixel access operator
   /** This operator has to be used, to access the pixel data of the image
       e.g. copy of image data:
       <pre>
-      ICL8u oA(320,240,1),oB(320,240,1);
+      Img8u oA(320,240,1),oB(320,240,1);
       for(int x=0;x<320;x++){
          for(int y=0;y<240;y++){
             oB(x,y,0)=oA(x,y,0);
@@ -126,7 +126,7 @@ class ICL : public ICLBase
       it is very slow. A measurement with a "-O3" binary brought the result
       That pixel access is up to 10 times faster when working
       directly with a channel data pointer. Nevertheless, the ()-operator
-      is provided in the ICL-class, as it offers a very intuitive access
+      is provided in the Img-class, as it offers a very intuitive access
       to the pixel data. 
   
       @param iX X-Position of the referenced pixel
@@ -153,13 +153,13 @@ class ICL : public ICLBase
       the deepCopy will internally call <b>convertTo8Bit</b> or <b>convertTo32Bit</b> 
       depending on the the images and the destination images icldepth.
       <b>The images ROI will not be regarded</b>, to copy just the ROI 
-      into another image use deepCopyROI(ICLBase *poDst.) or 
-      scaledCopyROI(ICLBase *poDst).
+      into another image use deepCopyROI(ImgI *poDst.) or 
+      scaledCopyROI(ImgI *poDst).
       @param poDst Destination image for the copied data 
                    if NULL, then a new image is created and returned
-      @return Pointer to new independent ICL object
+      @return Pointer to new independent Img object
   **/
-  virtual ICLBase* deepCopy(ICLBase* poDst = NULL) const;
+  virtual ImgI* deepCopy(ImgI** ppoDst = NULL) const;
 
   /// returns a scaled copy of the image data (scaling on demand) (IPP-OPTIMIZED)
   /** the function performs a deep copy of the image data
@@ -174,8 +174,8 @@ class ICL : public ICLBase
       and convert the image in two steps. This will hardly <b>slow down 
       performace</b>.
       <b>The images ROI will not be regarded</b>, to copy just the ROI 
-      into another image use deepCopyROI(ICLBase *poDst.) or 
-      scaledCopyROI(ICLBase *poDst).
+      into another image use deepCopyROI(ImgI *poDst.) or 
+      scaledCopyROI(ImgI *poDst).
       @param poDst destination image (if NULL) than it is created new with
                    identical size of this image.
       @param eScaleMode defines the interpolation mode, that is used for the scaling
@@ -188,7 +188,7 @@ class ICL : public ICLBase
       @see resize
       @see deepCopy
   **/
-  virtual ICLBase* scaledCopy(ICLBase *poDst, iclscalemode eScaleMode=interpolateNN) const;
+  virtual ImgI* scaledCopy(ImgI **ppoDst, iclscalemode eScaleMode=interpolateNN) const;
   
   /// copies the image data in the images ROI into the destination images ROI (IPP-OPTIMIZED)
   /** This function will copy the content of the images ROI into the
@@ -206,7 +206,7 @@ class ICL : public ICLBase
       The deep copy function supports IPP-OPTIMIZED depth conversion.
       
   **/
-  virtual ICLBase *deepCopyROI(ICLBase *poDst = NULL) const;
+  virtual ImgI *deepCopyROI(ImgI **ppoDst = NULL) const;
   
   /// scales the image data in the image ROI into the destination images ROI (IPP-OPTIMIZED)
   /** This function copies ROI data from one image into the ROI of another one. If the source
@@ -228,7 +228,7 @@ class ICL : public ICLBase
                            - interpolateLIN  --> bilinear interpolation
                            - interpolateRA  --> region average 
   **/
-  virtual ICLBase *scaledCopyROI(ICLBase *poDst = NULL, iclscalemode eScaleMode=interpolateNN) const;
+  virtual ImgI *scaledCopyROI(ImgI **ppoDst = NULL, iclscalemode eScaleMode=interpolateNN) const;
                   
   /* }}} */
                                          
@@ -236,10 +236,10 @@ class ICL : public ICLBase
 
   //@{ //@name organization and channel management
   
-  /// Makes the image channels inside the ICL independent from other ICL.
+  /// Makes the image channels inside the Img independent from other Img.
   /** @param iIndex index of the channel, that should be detached.
       (If iIndex is an legal channel index only the corresponding channel will 
-      be detached. If the legal index channel is set to -1 the whole ICL 
+      be detached. If the legal index channel is set to -1 the whole Img 
       becomes independent.)
   **/
   virtual void detach(int iIndex = -1);
@@ -249,12 +249,12 @@ class ICL : public ICLBase
   **/
   virtual void removeChannel(int iChannel);
   
-  /// Append channels of external ICL to the existing ICL. 
+  /// Append channels of external Img to the existing Img. 
   /** Both objects will share their data (cheap copy). 
       @param oSrc source image
       @param iChannel channel to append (or all, if < 0)
   **/
-  void append(const ICL<Type>& oSrc, int iChannel=-1);
+  void append(const Img<Type>& oSrc, int iChannel=-1);
   
   /// Swap channel A and B
   /** @param iIndexA Index of channel A;
@@ -266,10 +266,10 @@ class ICL : public ICLBase
   /** Both images must have the same width and height.
       @param iThisIndex channel to replace
       @param iOtherIndex channel to replace with
-      @param oOtherICL Image that contains the new channel
+      @param oOtherImg Image that contains the new channel
   **/
   void replaceChannel(int iThisIndex, 
-                      const ICL<Type>& oOtherICL, int iOtherIndex);
+                      const Img<Type>& oOtherImg, int iOtherIndex);
 
   /// sets the channel count to a new value
   /** This function works only on demand, that means, that
@@ -280,19 +280,19 @@ class ICL : public ICLBase
   **/
   virtual void setNumChannels(int iNewNumChannels);
 
-  /// creates a hole new ICL internally
-  /** Change the number of ICL channels and the size. The function works
+  /// creates a hole new Img internally
+  /** Change the number of Img channels and the size. The function works
       on demand: If the image has already the correct size and number of
       channels, nothing is done at all. This allows you to call renew ()
       always when you want to ensure a specific image size.
       If the size must be adapted: 
-      <b> All the data within the ICL will be lost. </b> 
+      <b> All the data within the Img will be lost. </b> 
       @param iNewWidth New image width (if < 0, the orignal width is used)
       @param iNewHeight New image height (if < 0, the orignal height is used)
       @param iNewNumChannel New channel number (if < 0, the orignal 
              channel count is used)
   **/
-  virtual void renew(int iNewWidth, int iNewHeight,int iNewNumChannel);
+  virtual void renew(const Size &s, int iNewNumChannel);
 
   /// resizes the image to new values
   /** operation is performed on demand - if image
@@ -306,7 +306,7 @@ class ICL : public ICLBase
       @param iNewHeight new image height (if < 0, the orignal height is used)
       @see scale
   **/
-  virtual void resize(int iNewWidth, int iNewHeight);
+  virtual void resize(const Size &s);
   
   
   //@}
@@ -323,7 +323,7 @@ class ICL : public ICLBase
                    a deep copy of the source image) 
       @return Copy of the object with depth 32 bit 
   **/
-  virtual ICL32f *convertTo32Bit(ICL32f* poDst) const ;
+  //virtual Img32f *convertTo32Bit(Img32f* poDst) const ;
  
   /// Return a copy of the object with depth 8 bit (IPP-OPTIMIZED)
   /** <b>Waring: Information may be lost!</b>
@@ -333,7 +333,7 @@ class ICL : public ICLBase
                    a deep copy of the source image) 
       @return Copy of the object with depth 8 bit 
   **/
-  virtual ICL8u *convertTo8Bit(ICL8u* poDst) const;
+  //virtual Img8u *convertTo8Bit(Img8u* poDst) const;
 
    //@}
   /* }}} */
@@ -364,29 +364,35 @@ class ICL : public ICLBase
       direct access to the channel data memory.
       @param iChannel Channel to get data from
   **/
+
+  virtual int getLineStep() const{
+    return getSize().width*sizeof(Type);
+  }
   Type* getData(int iChannel) const
     { 
+      FUNCTION_LOG("");
       return m_vecChannels[iChannel].get();
     }
   
-  /// Returns a pointer to the end of the channel data
-  /** This method provides
-      direct access to the channel data memory.
-      @param iChannel Channel to get data from
-  **/
-  Type* getDataEnd(int iChannel) const
-    { 
-      return getData(iChannel)+getDim();
-    }
+  Type *getROIData(int iChannel) const{
+    FUNCTION_LOG("");
+    return getData(iChannel) + m_oROIOffset.x + (m_oROIOffset.y * m_oSize.width);
+  }
 
-  
+  Type *getROIData(int iChannel, const Point &p) const{
+    FUNCTION_LOG("");
+    return getData(iChannel) + p.x + (p.y * m_oSize.width);
+  }
+
+
   /// return the raw- data pointer of an image channel
-  /** This function is inherited from the base class ICLBase
+  /** This function is inherited from the base class ImgI
       @param iChannel determines the channel which's dataptr should
                       be returned
   **/
   virtual void* getDataPtr(int iChannel) const
     {
+      FUNCTION_LOG("");
       return getData(iChannel);
     }
   
@@ -408,20 +414,14 @@ class ICL : public ICLBase
       @param poROIoffset allows to override internal ROI
       @return "ROI'ed" image data pointer
   */
-  Type *roiData(int iChannel, const ICLpoint* poROIoffset = 0) const
-    {
-      FUNCTION_LOG("roiData(" << iChannel << ")");
-      if (!poROIoffset) poROIoffset = &m_oROIoffset;
-      return getData(iChannel) + poROIoffset->x + poROIoffset->y * m_oSize.width;
-    }
-
+ 
   /// returns the data pointer (in respect to the images roi) as iclbyte*
   /** When implementing ipp-accelerated template functions, you may need
       the functions roiData8u and roiData32f to get type-save data pointers.
       Regard the following example:
       <pre>
       template<class T>
-      void scale_image_with_ipp(ICL<T> *a, ICL<T> *b)
+      void scale_image_with_ipp(Img<T> *a, Img<T> *b)
       {
          for(int c=0;c<a->getChannels();c++)
          {
@@ -446,7 +446,7 @@ class ICL : public ICLBase
      
       <pre>
       template<class T>
-      void scale_image_with_ipp(ICL<T> *a, ICL<T> *b)
+      void scale_image_with_ipp(Img<T> *a, Img<T> *b)
       {
          for(int c=0;c<a->getChannels();c++)
          {
@@ -465,12 +465,12 @@ class ICL : public ICLBase
       due to dynamic type checking (if(a->getDepth()...), 
       no runtime error will occur.
       
-      It is strongly recommended to use ICLBase class to avoid these problems.
-      As ICLBase is not a template, it's not necessary to implement functions
+      It is strongly recommended to use ImgI class to avoid these problems.
+      As ImgI is not a template, it's not necessary to implement functions
       as templates:
       <pre>
       
-      void scale_image_with_ipp(ICLBase *a, ICLBase *b)
+      void scale_image_with_ipp(ImgI *a, ImgI *b)
       {
          if(a->getDepth() != b->getDepht())
          {
@@ -495,23 +495,7 @@ class ICL : public ICLBase
       @return data pointer casted to iclbyte* (without type check)
   
   **/
-  virtual iclbyte *roiData8u(int iChannel, const ICLpoint* poROIoffset = 0) const
-    {
-      FUNCTION_LOG("roiData8u(" << iChannel << ")");
-      return reinterpret_cast<iclbyte*>(roiData(iChannel, poROIoffset));
-    }
-  
-  /// returns the data pointer (in respect to the images roi) as iclfloat*
-  /** This function behaves essentially like the above function
-      @param iChannel selects a specific channel
-      @param poROIoffset allows to override internal ROI
-      @return data pointer casted to iclbyte* (without type check)
-  **/
-  virtual iclfloat *roiData32f(int iChannel, const ICLpoint* poROIoffset = 0) const
-    {
-      FUNCTION_LOG("roiData32f(" << iChannel << ")");
-      return reinterpret_cast<iclfloat*>(roiData(iChannel, poROIoffset));
-    }
+  // WEG!!! virtual iclbyte *roiData8u(int iChannel, const Point* poROIoffset = 0) const
 
   //@}
 
@@ -536,7 +520,7 @@ class ICL : public ICLBase
       @see iclscalemode
       @see resize
   **/
-  virtual void scale(int iNewWidth, int iNewHeight, iclscalemode eScaleMode=interpolateNN);
+  virtual void scale(const Size &s, iclscalemode eScaleMode=interpolateNN);
  
  
   
@@ -576,19 +560,19 @@ class ICL : public ICLBase
 
   //@{ @name pixel access using roi iterator                                
   /// type definition for roi iterator
-  typedef ICLIterator<Type> iterator;
+  typedef ImgIterator<Type> iterator;
 
   /// returns the iterator for the image roi
-  /** The following example taken from ICLIterator.h will show
+  /** The following example taken from ImgIterator.h will show
       the iterator usage:
       <pre>
-      void channel_convolution_3x3(ICL32f &src, ICL32f &dst,iclfloat *pfMask, int iChannel)
+      void channel_convolution_3x3(Img32f &src, Img32f &dst,iclfloat *pfMask, int iChannel)
       { 
-         for(ICL32f::iterator s=src.begin(iChannel) d=dst.begin() ; s.inRegion() ; s++,d++)
+         for(Img32f::iterator s=src.begin(iChannel) d=dst.begin() ; s.inRegion() ; s++,d++)
          {
             iclfloat *m = pfMask;
             (*d) = 0;
-            for(ICL32f::iterator sR(s, 3, 3); sR.inRegion(); sR++,m++)
+            for(Img32f::iterator sR(s, 3, 3); sR.inRegion(); sR++,m++)
             {
                (*d) += (*sR) * (*m);
             }
@@ -596,17 +580,24 @@ class ICL : public ICLBase
       }
       </pre>
       <b>Note:</b> The performance hints illustrated in the
-      ICLIterator documentation.
+      ImgIterator documentation.
       @param iChannel selected channel index
       @return roi-iterator
-      @see ICLIterator
+      @see ImgIterator
       @see end
   */
-  inline iterator begin(int iChannel)
+  inline iterator getIterator(int iChannel)
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
-      return iterator(getData(iChannel),m_oROIoffset.x,m_oROIoffset.y,m_oSize.width,m_oROIsize.width,m_oROIsize.height);
+      return iterator(getData(iChannel),m_oSize.width,Rect(Point(0,0),m_oSize));
     }
+  /// TODO Comment !!
+  inline iterator getROIIterator(int iChannel)
+    {
+      FUNCTION_LOG("begin(" << iChannel << ")");
+      return iterator(getData(iChannel),m_oSize.width,getROI());
+    } 
+ 
   //@}
   /* }}} */
                                        
@@ -615,5 +606,5 @@ class ICL : public ICLBase
   
 } //namespace icl
 
-#endif //ICL_H
+#endif //Img_H
 

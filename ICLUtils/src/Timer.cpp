@@ -1,5 +1,5 @@
 /*
-  ICLTimer.cpp
+  Timer.cpp
 
   Written by: Michael Götting (2006)
               University of Bielefeld
@@ -7,14 +7,14 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "ICLTimer.h"
+#include "Timer.h"
 
 //---- ICL in its own namespace ----
 namespace icl {
 
 // {{{ Konstruktor/ Destruktor
 
-ICLTimer::ICLTimer(string timerName, int iTimerMode)
+Timer::Timer(string timerName, int iTimerMode)
 {
   FUNCTION_LOG("name: " << timerName << "mode: " << iTimerMode);
   m_sTimerName = timerName;
@@ -25,20 +25,20 @@ ICLTimer::ICLTimer(string timerName, int iTimerMode)
 
 // {{{ Timer functions
 
-void ICLTimer::startTimer()
+void Timer::startTimer()
 {
   FUNCTION_LOG("");
   m_vecTime.clear();
   m_vecTime.push_back(getTime());
 }
 
-void ICLTimer::stopSubTimer()
+void Timer::stopSubTimer()
 {
   FUNCTION_LOG("");
   m_vecTime.push_back(getTime());
 }
 
-void ICLTimer::stopTimer()
+void Timer::stopTimer()
 {
   FUNCTION_LOG("");
 
@@ -84,7 +84,7 @@ void ICLTimer::stopTimer()
 
 // {{{ Misc. functions
 
-long ICLTimer::getTime()
+long Timer::getTime()
 {
   FUNCTION_LOG("");
   long currTime = 0;

@@ -82,21 +82,10 @@ zugehörige Objektinstanz mitspeichern.
 
 
   /*NEU*/
-  ICL::begin() ersetzen durch getIterator() und getROIIterator();
-
-
-
-
-
-
-
-
-
-
-
+  ICL::begin() ersetzen durch getIterator() und getROIIterator(); /// ok!
 
   /**
-
+  ImgI Q
   OLD:::::::::::::::::::::::::::::::::::::::::::::::::::::. ab hier
   */
 Hi Robert,
@@ -178,6 +167,12 @@ void tu_was_mit_ipp_NEU(ICLBase *p, int channel){
 asIcl8u/32f -> asIcl<iclbyte> / asIcl<iclfloat>
 // eventuell trotzdem alias behalten?
 
+/***
+convertToICL<T>
+asICL<T>
+
+*/
+
 ICL<Type>:
 ---------
 virtual void* getDataPtr(int iChannel){
@@ -190,7 +185,7 @@ T* getROIData(int iChannel){
    return getData() + m_oROI.x+m_iWidht*m_oROI.y;
 }
 T* getROIData(int iChannel, const ICLpoint &roOffset){
-   return getData + roOffset.x+m_iWidht*roOffset.y;   
+return getData + roOffset.x+m_iWidht*roOffset.y;   /// hier rein!
 }
 // ich fände hier die  "const ICLpoint &roOffset" - variante besser als die mit den "const ICLpoint *"
 // da dieses dann konsitent zu den anderen ROI-funktionen bleibt. OK.

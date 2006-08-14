@@ -1,11 +1,11 @@
 #ifndef ICL_FILTER_H
 #define ICL_FILTER_H
 
-#include <ICLBase.h>
+#include <ImgI.h>
 
 namespace icl {
   /// Abstract class interface for filter classes
-  /** The ICLFilter class builds a base class for all ICL filter
+  /** The Filter class builds a base class for all ICL filter
       operations. Each filter operation is performed on the ROI
       of the source image only. The destination image is <em>always</em>
       adapted in its depth, number of channels and size to the 
@@ -24,28 +24,28 @@ namespace icl {
       filter operation thread safe.
   
       The actual filter operation is performed by the virtual method
-      ICLBase* apply(ICLBase* poSrc, ICLBase* poDst). The return value
+      ImgI* apply(ImgI* poSrc, ImgI* poDst). The return value
       is neccessary, because poDst may be changed in depth, which actually
       allocated a new image instance, which is returned.
 
       <h3>Currently implemented Filters</h3>
-      - ICLConvolution 
-      - ICLMedian (in work!)
+      - Convolution 
+      - Median (in work!)
       - ICLMorphologicalOps (in work!)
   */
-  class ICLFilter{
+  class Filter{
     public:
-    virtual ~ICLFilter() {};
+    virtual ~Filter() {};
     
     /// Applies the individual filter operation on the source image
     /** @param poSrc source image
     @param  poDst destination image
     @return the destination image (eventually converted in depth)
     */
-    virtual ICLBase* apply(ICLBase *poSrc, ICLBase *poDst) = 0;
+    virtual ImgI* apply(ImgI *poSrc, ImgI *poDst) = 0;
 
     protected:
-    ICLFilter(int iWidth=1, int iHeight=1) {
+    Filter(int iWidth=1, int iHeight=1) {
        setMask (iWidth, iHeight);
     }
 
@@ -57,7 +57,7 @@ namespace icl {
     }
 
     /// prepare filter operation: ensure compatible image format and size
-    ICLBase* prepare (ICLBase *poSrc, ICLBase *poDst) {
+    ImgI* prepare (ImgI *poSrc, ImgI *poDst) {
        iclEnsureCompatible (&poDst, poSrc);
        return poDst;
     }
@@ -72,13 +72,13 @@ namespace icl {
     @param poDst image whose ROI is actually changed
     @return whether a valid ROI remains
     */
-    bool adaptROI(ICLBase *poSrc, ICLBase *poDst);
+    bool adaptROI(ImgI *poSrc, ImgI *poDst);
 
     protected:
-    ICLsize  oMaskSize; //< size of filter mask
-    ICLpoint oAnchor;   //< anchor of filter mask
-    ICLsize  oROIsize;  //< used ROI size
-    ICLpoint oROIoffset; //< used ROI offset
+    Size  oMaskSize; //< size of filter mask
+    Point oAnchor;   //< anchor of filter mask
+    Size  oROIsize;  //< used ROI size
+    Point oROIoffset; //< used ROI offset
   };
 }
 #endif

@@ -2,25 +2,25 @@
 #define ICLAUTOPTR_H
 
 #include <stdlib.h>
-#include "ICLMacros.h"
+#include "Macros.h"
 
 namespace icl{
   
   /// AutoPtr class used for channel management
-  /** The operation of the ICLAutoPtr class is copied from the 
+  /** The operation of the SmartPtr class is copied from the 
       previously used boost/shared_ptr template class.
       This re-implementation makes the ICLCore (and depending
       packages) independent from the boost headers.
 
-      <h2>How an ICLAutoPtr works</h2>
+      <h2>How an SmartPtr works</h2>
       In contrast with the auto pointers provided by the stdlib
-      an ICLAutoPtr has an internal reference counter, which is
+      an SmartPtr has an internal reference counter, which is
       used to care about the deletion of the hold reference.
-      The following example shows how to use the ICLAutoPtr class.
+      The following example shows how to use the SmartPtr class.
 
       <pre>
       class MyClass{...};
-      typedef ICLAutoPtr<MyClass> aptr_t;
+      typedef SmartPtr<MyClass> aptr_t;
 
       //create an array of empty auto pointers
       aptr_t array[100];
@@ -46,7 +46,7 @@ namespace icl{
       </pre>
   */
   template<class T> 
-    class ICLAutoPtr
+    class SmartPtr
     {
       private:
       T *e; /**< corresponding data element */
@@ -65,13 +65,13 @@ namespace icl{
       public:
   
       /// e and c will become NULL
-      ICLAutoPtr(): e(0),c(0),d(0){}    
+      SmartPtr(): e(0),c(0),d(0){}    
       
       /// e is given, reference counter is set to 1
-      ICLAutoPtr(T *e, bool b=1): e(e), c(new int(1)),d(d){}
+      SmartPtr(T *e, bool b=1): e(e), c(new int(1)),d(d){}
       
       /// e and c is copied from r, reference counter is increased by 1
-      ICLAutoPtr(const ICLAutoPtr<T>& r): e(r.e), c(r.c), d(r.d){ inc(); }
+      SmartPtr(const SmartPtr<T>& r): e(r.e), c(r.c), d(r.d){ inc(); }
       
       /// sets the pointer to hold another reference
       /** If the new reference r.e is identical to the current
@@ -82,7 +82,7 @@ namespace icl{
           copied from the given r. At the end, the copied reference
           counter is increased by 1.
       */
-      ICLAutoPtr<T> &operator=(const ICLAutoPtr<T>& r)
+      SmartPtr<T> &operator=(const SmartPtr<T>& r)
         {
           if(r.e == e) return *this;
           dec();
@@ -92,7 +92,7 @@ namespace icl{
         }
 
       /// decreases the reference counter (cleanup on demand)
-      ~ICLAutoPtr() { dec(); }
+      ~SmartPtr() { dec(); }
         
       /// returns a reference of the currently hold element
       /** If the element pointer is null, an error will

@@ -1,8 +1,8 @@
 #ifndef ICLMEDIAN_H
 #define ICLMEDIAN_H
 
-#include <ICLBase.h>
-#include <ICLFilter.h>
+#include <ImgI.h>
+#include <Filter.h>
 
 namespace icl{
 
@@ -19,19 +19,19 @@ namespace icl{
       This algorithm runs in O(w*h*N*log(N)) where (w,h) is the
       size of source images ROI, and N=n*n is the mask size used.
       The following code extract explains the operation of the
-      fallback algorithm in ICL-style notation for a single
-      channel image, and ICL8u type (the real implementation
+      fallback algorithm in Img-style notation for a single
+      channel image, and Img8u type (the real implementation
       uses some special optimizations, that are not mentioned
       further):
       <pre>
 
-      void channel_median_8u(ICL8u &src, ICL8u &dst, int w, int h, int c)
+      void channel_median_8u(Img8u &src, Img8u &dst, int w, int h, int c)
       {
           std::vector<iclbyte> list;
           
-          for(ICL8u::iterator s=src.begin(c), d=dst.begin(c); s.inRegion() ; s++, d++ )
+          for(Img8u::iterator s=src.begin(c), d=dst.begin(c); s.inRegion() ; s++, d++ )
           {
-              for(ICL8u::iterator sR(s,w,h); sR.inRegion(); sR++)
+              for(Img8u::iterator sR(s,w,h); sR.inRegion(); sR++)
               {
                  list.push_back(*sR);
               }
@@ -54,9 +54,9 @@ namespace icl{
 
       <h2>Mask-Sizes</h2>
       Although the fallback C++ implementation can work with
-      arbitrary mask sizes, the ICLMedian will internally use
+      arbitrary mask sizes, the Median will internally use
       odd mask dimension like 3x3 or 5x7. If an even width or
-      height parameter is given to the ICLMedian constructor,
+      height parameter is given to the Median constructor,
       the next higher odd value is used.
 
       <h2>Benchmarks</h2>
@@ -116,17 +116,17 @@ namespace icl{
       - mask size 3x51 <b>~4700ms</b> 
 
     <h2>Example</h2>
-    Here is an examle, how to use the ICLMedian object.
+    Here is an examle, how to use the Median object.
 
     <pre>
     // create source and destination image
-    ICL8u src(640,480,3), dst;
+    Img8u src(640,480,3), dst;
   
     // acquire some image data
     ...
   
     // create the median object
-    ICLMedian m(5,5);
+    Median m(5,5);
 
     // apply the median on the images - first call (slow)
     // source image is renewed to 640x480x3 (memory allocation)
@@ -147,14 +147,14 @@ namespace icl{
     }
     </pre>
   */
-  class ICLMedian : public ICLFilter{
+  class Median : public Filter{
     public:
 
     /// Constructor that creates a median filter object, with specified mask size
     /** @param iWidth width of mask to use (if even, the iWidth+1 is used)
         @param iHeight height of mask to use (if even, the iHeight+1 is used)
     */
-    ICLMedian(int iWidth=3, int iHeight=3);
+    Median(int iWidth=3, int iHeight=3);
 
     /// applies the median operation on poSrc and stores the result in poDst
     /** The depth, channel count and size of poDst is adapted to poSrc' ROI:
@@ -172,7 +172,7 @@ namespace icl{
         @param poSrc source image
         @param poDst destination image
     */
-    virtual ICLBase* apply(ICLBase *poSrc, ICLBase *poDst);
+    virtual ImgI* apply(ImgI *poSrc, ImgI *poDst);
     private:
   };
 }

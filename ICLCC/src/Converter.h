@@ -1,26 +1,26 @@
-#ifndef TDIICL_IMAGECONVERTER_H
-#define TDIICL_IMAGECONVERTER_H
+#ifndef ICLCONVERTER_H
+#define ICLCONVERTER_H
 
-#include <ICL.h>
+#include <Img.h>
 
 namespace icl{
   /// Color Converter Object
   /**
-  The ICLConverter wrapps color conversion function from iclcc.h
+  The ImgConverter wrapps color conversion function from iclcc.h
   into an Object, which contains all necessary Buffers for converting images.
   In addition to that it brings the functionality for scaling images.
-  Scaling and converting do not have to debar each other - the ICLConverter
+  Scaling and converting do not have to debar each other - the Converter
   is able to scale images internally, or to convert them internally into
   another depth before converting.
   */
-  class ICLConverter{
+  class Converter{
     public:
     
     /// Base constructor
-    ICLConverter();
+    Converter();
 
     /// Destructors
-    ~ICLConverter();
+    ~Converter();
 
     /// conversion function
     /**
@@ -29,10 +29,10 @@ namespace icl{
     @param poDst destination image
     @param poSrc source image
     */
-    void convert(ICLBase *poDst, ICLBase *poSrc);
+    void convert(ImgI *poDst, ImgI *poSrc);
 
     private:
-    ICLBase *m_poDepthBuffer,*m_poSizeBuffer;
+    ImgI *m_poDepthBuffer,*m_poSizeBuffer;
   };
 }
 

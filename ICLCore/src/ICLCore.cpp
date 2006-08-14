@@ -1,25 +1,29 @@
 #include "ICLCore.h"
-#include "ICL.h"
+#include "Img.h"
 
 namespace icl{
   
-  ICLBase *iclNew(icldepth eDepth, 
-                  int iWidth, 
-                  int iHeight, 
-                  iclformat eFormat, 
-                  int iChannels)
+  ImgI *imgNew(icldepth eDepth, 
+               const Size& s,
+               iclformat eFormat, 
+               int iChannels,
+               const Rect &oROI)
   {
+    ImgI *poNew = 0;
     if(eDepth == depth8u)
-    {
-      return new ICL8u(iWidth,iHeight,eFormat,iChannels);
-    }
+      {
+        poNew =  new Img8u(s,eFormat,iChannels);
+      }
     else
-    {
-      return new ICL32f(iWidth,iHeight,eFormat,iChannels);
-    }
+      {
+        poNew = new Img32f(s,eFormat,iChannels);
+      } 
+    
+    if(oROI) poNew->setROI(oROI);
+    return poNew;
   }
 
-  int iclGetChannelsOfFormat(iclformat eFormat)
+  int getChannelsOfFormat(iclformat eFormat)
   {
     switch (eFormat)
       {
@@ -43,7 +47,7 @@ namespace icl{
       }
   }
 
-  string iclTranslateFormat(iclformat eFormat)
+  string translateFormat(iclformat eFormat)
   {
     switch(eFormat)
       {
@@ -57,7 +61,7 @@ namespace icl{
       }
   }
  
-  iclformat iclTranslateFormat(string sFormat)
+  iclformat translateFormat(string sFormat)
   {
     if(sFormat.length()<=0)
       {
@@ -76,60 +80,62 @@ namespace icl{
     }
   }
   
-  void iclEnsureDepth(ICLBase ** ppoImage, icldepth eDepth)
+  void ensureDepth(ImgI ** ppoImage, icldepth eDepth)
   {
     if(!*ppoImage)
     {
-      *ppoImage = iclNew(eDepth,1,1,formatMatrix);
+      *ppoImage = imgNew(eDepth);
     }
     if((*ppoImage)->getDepth() != eDepth)
     {
-      ICLBase *poNew = iclNew(eDepth,
-                              (*ppoImage)->getWidth(),
-                              (*ppoImage)->getHeight(),
-                              (*ppoImage)->getFormat(),
-                              (*ppoImage)->getChannels());
+      ImgI *poNew = imgNew(eDepth,
+                           (*ppoImage)->getSize(),
+                           (*ppoImage)->getFormat(),
+                           (*ppoImage)->getChannels(),
+                           (*ppoImage)->getROI());
       
       delete *ppoImage;
       *ppoImage = poNew;     
     }
   }
   
-  void iclEnsureCompatible(ICLBase **ppoDst,
-                           icldepth eDepth,
-                           int iWidth,
-                           int iHeight,
-                           iclformat eFormat,
-                           int iChannelCount,
-                           const ICLpoint* const poROIoffset,
-                           const ICLsize*  const poROIsize)
+  void ensureCompatible(ImgI **ppoDst,
+                        icldepth eDepth,
+                        const Size &s,
+                        iclformat eFormat,
+                        int iChannelCount,
+                        const Rect &r)
   {
     if(!*ppoDst)
     {
-      *ppoDst = iclNew(eDepth,iWidth,iHeight,eFormat,iChannelCount);
+      *ppoDst = imgNew(eDepth,s,eFormat,iChannelCount);
     }
     else 
     {
-       iclEnsureDepth(ppoDst,eDepth);
-       (*ppoDst)->setNumChannels(iChannelCount<0?iclGetChannelsOfFormat(eFormat):iChannelCount);
+       ensureDepth(ppoDst,eDepth);
+       (*ppoDst)->setNumChannels(iChannelCount<0?getChannelsOfFormat(eFormat):iChannelCount);
        (*ppoDst)->setFormat(eFormat);
-       (*ppoDst)->resize(iWidth, iHeight);
+       (*ppoDst)->resize(s);
     }
-    (*ppoDst)->delROI();
-    if (poROIoffset) (*ppoDst)->setROIOffset (*poROIoffset);
-    if (poROIsize) (*ppoDst)->setROISize (*poROIsize);
+
+    if(r){
+      (*ppoDst)->setROI(r);
+    }else{
+      (*ppoDst)->setFullROI();
+    }
   }
 
-  void iclEnsureCompatible(ICLBase **ppoDst, ICLBase *poSrc) {
+  void ensureCompatible(ImgI **ppoDst, ImgI *poSrc) {
      if(!poSrc) { ERROR_LOG ("source image is NULL"); }
-     iclEnsureCompatible(ppoDst,poSrc->getDepth(),
-                         poSrc->getWidth(),poSrc->getHeight(),
-                         poSrc->getFormat(),poSrc->getChannels(),
-                         &poSrc->getROIOffset(),&poSrc->getROISize());
+     ensureCompatible(ppoDst,poSrc->getDepth(),
+                         poSrc->getSize(),
+                         poSrc->getFormat(),
+                         poSrc->getChannels(),
+                         poSrc->getROI());
   }
 
 
-  int iclGetSizeof(icldepth eDepth)
+  int getSizeOf(icldepth eDepth)
   {
     switch(eDepth)
     {

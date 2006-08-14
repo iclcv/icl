@@ -1,14 +1,14 @@
 #ifndef ICLCONVOLUTION_H
 #define ICLCONVOLUTION_H
 
-#include "ICLFilter.h"
-#include "ICL.h"
+#include "Filter.h"
+#include "Img.h"
 
 namespace icl{
   
-  /// ICL-class for Image convolution
+  /// Img-class for Image convolution
   /**
-  The ICLConvolution class provides functionality for generic linear image filter 
+  The Convolution class provides functionality for generic linear image filter 
   procedures. To guarantee compatibility to the IPP optimized functions, also the 
   C++ fallback implementations are working with the IPPs ROI-conventions:
       
@@ -31,7 +31,7 @@ namespace icl{
   All possible filter operations can be divided in 4 cases, depending on the
   source and destination images depths and the depth of the used filter kernel.
   Possible image depths are depth8u and depth32f (the two supported types of
-  ICL-images). Supported kernel depths are depth32f and <b>32-bit signed 
+  Img-images). Supported kernel depths are depth32f and <b>32-bit signed 
   integer</b> (called depth32s) (depth8u-kernels, will be converted 
   internally into this depth). Note the differences of the following cases: 
   
@@ -67,15 +67,15 @@ namespace icl{
      - iclfloat-image & iclfloat kernel <b>~60ms</b> (further implem. ~60ms)
   
   <h2>Buffering Kernels</h2>
-  In some applications the ICLConvolution object has to be created
+  In some applications the Convolution object has to be created
   during runtime. If the filter-kernel is created elsewhere, and it
-  is persistent over the <i>lifetime</i> of the ICLConvolution object,
-  it may not be necessary to copy the kernel deeply into an ICLConvolution-
-  internal buffer. To make the ICLConvolution object just using a
+  is persistent over the <i>lifetime</i> of the Convolution object,
+  it may not be necessary to copy the kernel deeply into an Convolution-
+  internal buffer. To make the Convolution object just using a
   given kernel pointer, an additional flag <b>iBufferData</b> can be set
   in two Constructors.
   */
-  class ICLConvolution : public ICLFilter{
+  class Convolution : public Filter{
     public:
     /// this enum contains several predefined convolution kernels
     /** <h3>kernelSobleX</h3>
@@ -157,12 +157,12 @@ namespace icl{
       kernelCustom  /*!< used for all other user defined kernels */ 
     };
     
-    /// Creates an ICLConvolution object with a fixed predefined filter type
+    /// Creates an Convolution object with a fixed predefined filter type
     /** @param eKernel determines the filter type (kernelCustom is not allowed here!)
     */
-    ICLConvolution(iclkernel eKernel);
+    Convolution(iclkernel eKernel);
 
-    /// Creates an ICLConvolution object with given custom convolution kernel
+    /// Creates an Convolution object with given custom convolution kernel
     /** If the given kernel is of depth8u, then its data and size will be buffered
         as well in depth32f, as in 32-bit signed integer (depth32s) representation.
         Otherwise (kernel: depth32f) it is buffered in the internal depth32f buffer.
@@ -172,9 +172,9 @@ namespace icl{
         filter on depth8u images, this will speed up performance.
         @param poKernel custom convolution kernel
     */
-    ICLConvolution(ICLBase *poKernel);
+    Convolution(ImgI *poKernel);
 
-    /// Creates an ICLConvolution object with the given custom kernel
+    /// Creates an Convolution object with the given custom kernel
     /** This constructor behaves essentially as the above one, up till the
         convolution kernel is given in POD (plain old data) types.
         Furthermore it has an additional parameter, whiches default may
@@ -182,8 +182,8 @@ namespace icl{
         of the giver kernel data is made. This will speed up the construction
         time of the object rapidly. The user has to take care, that
         the kernel data is persistent as long as apply calls on the 
-        ICLConvoluion objects are preformed. The given pointer is not
-        owned by the ICLConvolution object, so it will not delete it
+        ImgConvoluion objects are preformed. The given pointer is not
+        owned by the Convolution object, so it will not delete it
         at the destruction time.
         @param pfKernel convolution kernel data
         @param iW convolution kernel width
@@ -192,9 +192,9 @@ namespace icl{
                            buffered internally. By default given data will
                            be buffered.
     */
-    ICLConvolution(iclfloat *pfKernel, int iW, int iH, int iBufferData=1);
+    Convolution(iclfloat *pfKernel, int iW, int iH, int iBufferData=1);
 
-    /// Creates an ICLConvolution object with the given custom kernel
+    /// Creates an Convolution object with the given custom kernel
     /** This constructor behaves essentially like the above one.
         @param piKernel convolution kernel data
         @param iW convolution kernel width
@@ -203,10 +203,10 @@ namespace icl{
                            buffered internally. By default given data will
                            be buffered.
     */
-    ICLConvolution(int *piKernel, int iW, int iH,int iBufferData=1);
+    Convolution(int *piKernel, int iW, int iH,int iBufferData=1);
 
     /// Destructor
-    virtual ~ICLConvolution();
+    virtual ~Convolution();
     
     /// performs the convolution operation on the image
     /** The destination image is automatically set up to 
@@ -220,7 +220,7 @@ namespace icl{
         @param poSrc source image
         @param poDst destination image
     */
-    virtual ICLBase* apply(ICLBase *poSrc, ICLBase *poDst);
+    virtual ImgI* apply(ImgI *poSrc, ImgI *poDst);
     
     private:
 

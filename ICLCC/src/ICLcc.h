@@ -1,7 +1,7 @@
 #ifndef ICLIMAGE_COLOR_CONVERSION_H
 #define ICLIMAGE_COLOR_CONVERSION_H
 
-#include "ICL.h"
+#include "Img.h"
 
 namespace icl{
 
@@ -12,7 +12,7 @@ Color Spaces are:
 - RGB 
 - HLS (Hue, Lightness, Saturation) also know als HSV-color model width different channel order
 
-All Formats are suppored in the two ICL-dephts float (32-Bit) and unsigned char (8Bit)
+All Formats are suppored in the two Img-dephts float (32-Bit) and unsigned char (8Bit)
 */
 
 
@@ -26,7 +26,7 @@ poSrc have not compatible formats.
 @param poDst destination image
 @param poSrc source image
 */
-void iclcc(ICLBase *poDst, ICLBase *poSrc);
+void iclcc(ImgI *poDst, ImgI *poSrc);
   
 
 /// Convert an image of GRAY8-Format to any other format
@@ -34,49 +34,49 @@ void iclcc(ICLBase *poDst, ICLBase *poSrc);
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromGray8(ICLBase *poDst, ICLBase *poSrc);
+void convertFromGray8(ImgI *poDst, ImgI *poSrc);
 
 /// Convert an image of GRAY32-Format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromGray32(ICLBase *poDst, ICLBase *poSrc);
+void convertFromGray32(ImgI *poDst, ImgI *poSrc);
 
 /// Convert an image of RGB8-Format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromRGB8(ICLBase *poDst, ICLBase *poSrc);
+void convertFromRGB8(ImgI *poDst, ImgI *poSrc);
 
 /// Convert an image of RGB32-Format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromRGB32(ICLBase *poDst, ICLBase *poSrc);
+void convertFromRGB32(ImgI *poDst, ImgI *poSrc);
 
 /// Convert an image of YUV8-Format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromYUV8(ICLBase *poDst,ICLBase *poSrc);
+void convertFromYUV8(ImgI *poDst,ImgI *poSrc);
 
 /// Convert an image of YUV32-Format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromYUV32(ICLBase *poDst,ICLBase *poSrc);
+void convertFromYUV32(ImgI *poDst,ImgI *poSrc);
 
 /// Convert an image of LAB8-Format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromLAB8(ICLBase *poDst,ICLBase *poSrc);
+void convertFromLAB8(ImgI *poDst,ImgI *poSrc);
 
 /// Convert an image of LAB32-Format to any other format
 /**
@@ -84,34 +84,34 @@ void convertFromLAB8(ICLBase *poDst,ICLBase *poSrc);
 @param poSrc source image
 */
 
-void convertFromLAB32(ICLBase *poDst,ICLBase *poSrc);
+void convertFromLAB32(ImgI *poDst,ImgI *poSrc);
 /// Convert an image of RGBA8-Format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromRGBA8(ICLBase *poDst, ICLBase *poSrc);
+void convertFromRGBA8(ImgI *poDst, ImgI *poSrc);
 
 /// Convert an image of RGBA32-Format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromRGBA32(ICLBase *poDst, ICLBase *poSrc);
+void convertFromRGBA32(ImgI *poDst, ImgI *poSrc);
 
 /// Convert an image of HLS8-Format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromHLS8(ICLBase *poDst, ICLBase *poSrc);
+void convertFromHLS8(ImgI *poDst, ImgI *poSrc);
 
 /// Convert an image of HLS32-Format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromHLS32(ICLBase *poDst, ICLBase *poSrc);
+void convertFromHLS32(ImgI *poDst, ImgI *poSrc);
 
 /// Convert an image in YUV420-Format to RGB8 Format (ippi accelerated)
 /**
@@ -121,7 +121,7 @@ has half X- and half Y-resolution. The data pointer has iW*iH*1.5 elements)
 @param iW image width, associated with the source data pointer
 @param iH image hieght, associated with the source data pointer
 */
-void convertYUV420ToRGB8(ICL8u* poDst, unsigned char *pucSrc, int iW, int iH);
+void convertYUV420ToRGB8(Img8u* poDst, unsigned char *pucSrc, int iW, int iH);
 
 
 //@}

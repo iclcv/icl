@@ -1,8 +1,8 @@
-#include "ICLFilter.h"
+#include "Filter.h"
 
 namespace icl{
 
-  bool ICLFilter::adaptROI(ICLBase *poSrc, ICLBase *poDst)
+  bool Filter::adaptROI(ImgI *poSrc, ImgI *poDst)
   {
     FUNCTION_LOG("");
 

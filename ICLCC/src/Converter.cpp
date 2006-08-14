@@ -1,14 +1,14 @@
-#include "ICLConverter.h"
+#include "Converter.h"
 #include "ICLcc.h"
 
 namespace icl{
-  ICLConverter::ICLConverter():m_poDepthBuffer(0),m_poSizeBuffer(0){}
-  ICLConverter::~ICLConverter(){
+  Converter::Converter():m_poDepthBuffer(0),m_poSizeBuffer(0){}
+  Converter::~Converter(){
     if(m_poDepthBuffer)delete m_poDepthBuffer;
     if(m_poSizeBuffer)delete m_poSizeBuffer;
   }
 
-  void ICLConverter::convert(ICLBase *poDst, ICLBase *poSrc){
+  void Converter::convert(ImgI *poDst, ImgI *poSrc){
     iclformat eSrcFmt = poSrc->getFormat();
     iclformat eDstFmt = poDst->getFormat();
     icldepth eSrcDepth = poSrc->getDepth();
@@ -18,7 +18,7 @@ namespace icl{
     int iNeedColorConversion = eSrcFmt != formatMatrix && eDstFmt != formatMatrix && eSrcFmt != eDstFmt;
     
     //---- convert depth ----------------- 
-    ICLBase *poNextSrcImage=poSrc;
+    ImgI *poNextSrcImage=poSrc;
     if(iNeedDepthConversion){ 
       // test if other convesion steps will follow:
       if(iNeedSizeConversion || iNeedColorConversion){

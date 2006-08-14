@@ -1,13 +1,13 @@
 #ifndef ICLPWCGRABBER_H
 #define ICLPWCGRABBER_H
 
-#include "ICLConverter.h"
+#include "Converter.h"
 
 namespace icl{
   
   /// Camera Grabber for Phillips Webcams
   /**
-  The ICLPWCGrabber provides basic abilities for grabbing images from Phillips
+  The PWCGrabber provides basic abilities for grabbing images from Phillips
   USB Webcams (that are using the PWC Kernel module). The Grabber will create
   an internal grabber thread, that grabs continously images into an internal 
   ring-buffer. This will not slow down the processor performance much, as the
@@ -33,10 +33,10 @@ namespace icl{
   This time, if the destination image has another then one of this formats, 
   the conversion result is buffered into an internal buffer image with formatRGB 
   and depth8u, followed by a conversion call from the buffer into the destination image
-  using the ICLConverter.  
-  @see ICLConverter
+  using the Converter.  
+  @see Converter
   */
-  class ICLPWCGrabber{
+  class PWCGrabber{
     public:
     
     /// Base constructor with parameters for width, height, image type, grabbing rate and grabbing device
@@ -46,10 +46,10 @@ namespace icl{
     @param fFps grabbing rate
     @param iDevice USB grabbing device {0,1,2,3}
     */
-    ICLPWCGrabber(int iWidth=320, int iHeight=240,float fFps=30, int iDevice=0);
+    PWCGrabber(int iWidth=320, int iHeight=240,float fFps=30, int iDevice=0);
     
     /// Destructor
-    ~ICLPWCGrabber();
+    ~PWCGrabber();
     
     /// grabbing function, 
     /** grabs the next pwc image into an internal buffer, and converts it into 
@@ -59,7 +59,7 @@ namespace icl{
         @param poDst destination image. If it has formatMatrix, than it will be
                      converted to formatRGB for best performance. 
     **/    
-    void grab(ICLBase *poDst);
+    void grab(ImgI *poDst);
     
     private:
     
@@ -67,8 +67,8 @@ namespace icl{
     int iDevice;
     float fFps;
     
-    ICL8u *poRGB8Image;
-    ICLConverter oConverter,oConverterHalfSize;
+    Img8u *poRGB8Image;
+    Converter oConverter,oConverterHalfSize;
     iclbyte *pucFlippedYUVData;
   };
   
