@@ -251,18 +251,11 @@ class ICL : public ICLBase
   
   /// Append channels of external ICL to the existing ICL. 
   /** Both objects will share their data (cheap copy). 
-      @param poSrc source ICL<Type>
+      @param oSrc source image
+      @param iChannel channel to append (or all, if < 0)
   **/
-  void append(ICL<Type>* poSrc);
+  void append(const ICL<Type>& oSrc, int iChannel=-1);
   
-  /// Appends the channel iChannel of an external image to the current image
-  /** Both objects will share their data (cheap copy). 
-      @param iChannel Channel index to append
-      @param poSrc ICL<Type> that contains the source channel 
-  **/
-  void appendChannel(int iChannel, 
-                     ICL<Type> *poSrc);
-
   /// Swap channel A and B
   /** @param iIndexA Index of channel A;
       @param iIndexB Index of channel B
@@ -271,13 +264,12 @@ class ICL : public ICLBase
   
   /// Replace the channel A of this image with the channel B another image. 
   /** Both images must have the same width and height.
-      @param iThisIndexA Channel to replace
-      @param iOtherIndexB Channel to replace with
-      @param poOtherICL Image pointer that contains the new channel
+      @param iThisIndex channel to replace
+      @param iOtherIndex channel to replace with
+      @param oOtherICL Image that contains the new channel
   **/
-  void replaceChannel(int iThisIndexA, 
-                      int iOtherIndexB, 
-                      ICL<Type>* poOtherICL);
+  void replaceChannel(int iThisIndex, 
+                      const ICL<Type>& oOtherICL, int iOtherIndex);
 
   /// sets the channel count to a new value
   /** This function works only on demand, that means, that
@@ -503,7 +495,7 @@ class ICL : public ICLBase
       @return data pointer casted to iclbyte* (without type check)
   
   **/
-  virtual Ipp8u *roiData8u(int iChannel, const ICLpoint* poROIoffset = 0) const
+  virtual iclbyte *roiData8u(int iChannel, const ICLpoint* poROIoffset = 0) const
     {
       FUNCTION_LOG("roiData8u(" << iChannel << ")");
       return reinterpret_cast<iclbyte*>(roiData(iChannel, poROIoffset));
@@ -515,7 +507,7 @@ class ICL : public ICLBase
       @param poROIoffset allows to override internal ROI
       @return data pointer casted to iclbyte* (without type check)
   **/
-  virtual Ipp32f *roiData32f(int iChannel, const ICLpoint* poROIoffset = 0) const
+  virtual iclfloat *roiData32f(int iChannel, const ICLpoint* poROIoffset = 0) const
     {
       FUNCTION_LOG("roiData32f(" << iChannel << ")");
       return reinterpret_cast<iclfloat*>(roiData(iChannel, poROIoffset));

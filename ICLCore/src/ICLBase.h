@@ -155,6 +155,9 @@ namespace icl {
 
       ///@name getter functions
       //@{
+      /// return size of the images
+      const ICLsize& getSize() const { return m_oSize; }
+
       /// return width of the images
       int getWidth()  const
         {

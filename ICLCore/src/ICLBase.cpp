@@ -141,5 +141,3 @@ void ICLBase::print(string sTitle) const
 // }}}
 
 } //namespace icl
-
-

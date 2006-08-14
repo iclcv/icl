@@ -444,34 +444,18 @@ ICL<Type>::removeChannel(int iChannel)
 
 //----------------------------------------------------------------------------
 template<class Type> void
-ICL<Type>::append(ICL<Type> *poSrc)
+ICL<Type>::append(const ICL<Type>& oSrc, int iIndex)
   // {{{ open
 {
   FUNCTION_LOG("");
+  ICLASSERT_RETURN(oSrc.getWidth() == getWidth() && 
+                   oSrc.getHeight() == getHeight());
   
-  ICLASSERT_RETURN(poSrc->getWidth() == getWidth());
-  ICLASSERT_RETURN(poSrc->getHeight() == getHeight());
-  
-  for(int i=0;i<poSrc->m_iChannels;i++,m_iChannels++){
-    m_vecChannels.push_back(poSrc->m_vecChannels[i]); 
-  }      
-} 
-
-// }}}
-
-//----------------------------------------------------------------------------
-template<class Type> void
-ICL<Type>::appendChannel(int iChannel, ICL<Type> *poSrc) 
-  // {{{ open
-{
-  FUNCTION_LOG("appendChannel("<< iChannel <<",ICL<Type>*)");
-  
-  ICLASSERT_RETURN(poSrc->getWidth() == getWidth());
-  ICLASSERT_RETURN(poSrc->getHeight() == getHeight());
-  ICLASSERT_RETURN(iChannel < poSrc->getChannels());
-  
-  m_vecChannels.push_back(poSrc->m_vecChannels[iChannel]); 
-  m_iChannels++;
+  for(int i = iIndex < 0 ? 0 : iIndex, iEnd = iIndex < 0 ? m_iChannels : iIndex+1;
+      i < iEnd; i++) {
+     m_vecChannels.push_back(oSrc.m_vecChannels[i]); 
+  }
+  m_iChannels = m_vecChannels.size();
 }
 
 // }}}
@@ -482,8 +466,8 @@ ICL<Type>::swapChannels(int iIndexA, int iIndexB)
   // {{{ open
 {
   FUNCTION_LOG("swapChannels("<<iIndexA<<","<< iIndexB<< ")");
-  ICLASSERT_RETURN(iIndexA < getChannels());
-  ICLASSERT_RETURN(iIndexB < getChannels());
+  ICLASSERT_RETURN(iIndexA >= 0 && iIndexA < getChannels());
+  ICLASSERT_RETURN(iIndexB >= 0 && iIndexB < getChannels());
 
   std::swap(m_vecChannels[iIndexA], m_vecChannels[iIndexB]);
 }
@@ -592,13 +576,13 @@ ICL<Type>::renew(int iNewWidth, int iNewHeight, int iNewNumChannels)
 
 //----------------------------------------------------------------------------
 template<class Type> inline void 
-ICL<Type>::replaceChannel(int iIndexA,int iIndexB,ICL<Type>  *poSrc) 
+ICL<Type>::replaceChannel(int iThisIndex, const ICL<Type>& oSrc, int iOtherIndex) 
   // {{{ open
 {
   FUNCTION_LOG("");
-  ICLASSERT_RETURN(iIndexA < getChannels());
-  ICLASSERT_RETURN(iIndexB < poSrc->getChannels());
-  m_vecChannels[iIndexA] = poSrc->m_vecChannels[iIndexB];
+  ICLASSERT_RETURN(iThisIndex >= 0 && iThisIndex < getChannels());
+  ICLASSERT_RETURN(iOtherIndex >= 0 && iOtherIndex < oSrc.getChannels());
+  m_vecChannels[iThisIndex] = oSrc.m_vecChannels[iOtherIndex];
 }
 // }}}
 
