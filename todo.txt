@@ -51,6 +51,15 @@ ICLBase* ICLMedian::apply (ICLBase* poSrc, ICLBase* poDst) {
    return poDst;
 }
 
+/**
+evtl: 
+apply(ICLBase *poSrc, ICLBase **ppoDst); --> das hätte dann zur folge, dass prepare auch 
+                                             mit angepasst werden müsste
+
+am besten dann prepare macht adapt roi gleich mit
+*/
+
+
 Noch schöner wäre es, wenn man für die Typdifferenzierung nicht die Hilfsklasse
 bräuchte, sondern direkt template-Methods in einer nicht-template Klasse
 machen könnte:
@@ -70,6 +79,26 @@ In der std oder mindestens in boost gibt es aber Funktoren, die aus
 Klassen-Methoden klassenunabhängige Funktionen machen, indem sie die
 zugehörige Objektinstanz mitspeichern. 
 
+
+
+  /*NEU*/
+  ICL::begin() ersetzen durch getIterator() und getROIIterator();
+
+
+
+
+
+
+
+
+
+
+
+
+  /**
+
+  OLD:::::::::::::::::::::::::::::::::::::::::::::::::::::. ab hier
+  */
 Hi Robert,
 
 habe soeben mal die Änderungen an den ICLBase / ICL Interface begutachtet.
@@ -102,6 +131,7 @@ typedef struct ICLrect_ {int x,y,width,height;} ICLrect;
 
 2.) der interne Speicher der ROI wird in einen rect struct gespeichert
 ICLrect m_oROI;
+// besser als size und offset behalten
 
 3.) das Interface beschränken wir dann auf
 const ICLrect& getROI() const;   // kann dann auch in ipp-funktionen eingesetzt werden
@@ -188,7 +218,7 @@ die convert-funktionen haben den großen Nachteil, dass 32Bit in dem Funktionsnam
 spätestens Probleme bringt, wenn wir auch noch ICL<int> erzeugen wollen.
 daher wäre mein Vorschlag:
 ICL32f *to32f( ICL32f *poDst );
-ICL8u *to8u( ICL8u *poDst );
+ICL8u *to8u( ICL8u *poDst ); // also besser mit convertXXXX
 ICL32f *as32f();
 ICL8u *as8u();
 // Korrekt. Siehe oben convertToIcl<iclfloat|iclbyte>
