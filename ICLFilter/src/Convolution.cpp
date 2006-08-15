@@ -266,7 +266,7 @@ namespace icl{
   }
   
   // internally used function, that applies ipp-optimized "fixed" convolution operations on images
-  void ipp_fixed_conv(ImgI *poSrc, ImgI *poDst, icldepth eDepth, Convolution::iclkernel eKernel)
+  void ipp_fixed_conv(ImgI *poSrc, ImgI *poDst, Depth eDepth, Convolution::iclkernel eKernel)
   {
     switch(eKernel)
       {   

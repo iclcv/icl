@@ -15,8 +15,9 @@ namespace icl {
 // {{{ constructor / destructor 
 
   ImgI::ImgI(const Size &s,
-             iclformat eFormat,
-             icldepth eDepth,
+             Format eFormat,
+             Depth
+ eDepth,
              int iChannels):
     m_iChannels((iChannels <= 0) ? getChannelsOfFormat(eFormat) : iChannels),
     m_oSize(s),
@@ -42,7 +43,7 @@ ImgI::~ImgI()
 
 // {{{ setter functions
 
-void ImgI::setFormat(iclformat eFormat)
+void ImgI::setFormat(Format eFormat)
 {
   FUNCTION_LOG("setFormat(" << translateFormat(eFormat) << ")");
   if(eFormat != formatMatrix)
@@ -65,11 +66,11 @@ void ImgI::shallowCopy(ImgI** ppoDst) const {
   
   if (getDepth() == depth8u)
     {
-      *poDst->asImg<iclbyte>() = *this->asImg<iclbyte>();
+      *(*ppoDst)->asImg<iclbyte>() = *this->asImg<iclbyte>();
     }
   else
     {
-      *poDst->asImg<iclfloat>() = *this->asImg<iclfloat>();
+      *(*ppoDst)->asImg<iclfloat>() = *this->asImg<iclfloat>();
     }
   
 }
@@ -93,7 +94,7 @@ void ImgI::print(string sTitle) const
     }
   }else{
     for(int i=0;i<m_iChannels;i++){
-      printf("| channel: %d, min: %f, max:%f \n",i,asImg<iclfloat>()->getMin(i),asImg<iclfloat>->getMax(i));
+      printf("| channel: %d, min: %f, max:%f \n",i,asImg<iclfloat>()->getMin(i),asImg<iclfloat>()->getMax(i));
     }
   }
   printf(" -----------------------------------------\n");
@@ -105,25 +106,33 @@ void ImgI::print(string sTitle) const
 
 // {{{ ROI functions
 
-void setROISSize(const Size &s){
+void ImgI::setROISize(const Size &s){
   FUNCTION_LOG("setROISize("<< s.width << "," << s.height << ")");
 
-  int iW = s.width <=  0 ? getSize.width()  + s.width;
-  int iH = s.height <= 0 ? getSize.height() + s.height;
+  int iW = s.width <=  0 ? getSize().width  + s.width  : s.width;
+  int iH = s.height <= 0 ? getSize().height + s.height : s.height;
   m_oROISize.width  = std::min (std::max (1, iW), getSize().width);
   m_oROISize.height = std::min (std::max (1, iH), getSize().height);
 }
 
-void setROIOffset(const Point &p){
+void ImgI::setROIOffset(const Point &p){
   FUNCTION_LOG("setROIOffset("<< p.x << "," << p.y << ")");
   
-  if (p.x < 0) p.x = getSize().width  - getROISize().width  + p.x;
-  if (p.y < 0) p.y = getSize().height - getROISize().height + p.y;
-  m_oROIOffset.x =  std::min (std::max (0, iX), getSize().width  - getROISize().width);
-  m_oROIOffset.y =  std::min (std::max (0, iY), getSize().height - getROISize().height);
+  int x = p.x < 0 ? getSize().width  - getROISize().width  + p.x : p.x;
+  int y = p.y < 0 ? getSize().height - getROISize().height + p.y : p.y;
+  m_oROIOffset.x =  std::min (std::max (0, x), getSize().width  - getROISize().width);
+  m_oROIOffset.y =  std::min (std::max (0, y), getSize().height - getROISize().height);
 }
 
 
 // }}}
+
+template <class T>
+Img<T> *ImgI::convertTo( Img<T>* poDst) const {
+  return poDst;
+}
+
+  template Img<iclbyte>* ImgI::convertTo<iclbyte>(Img<iclbyte>*) const;
+  template Img<iclfloat>* ImgI::convertTo<iclfloat>(Img<iclfloat>*) const;
 
 } //namespace icl

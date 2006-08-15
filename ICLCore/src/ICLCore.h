@@ -1,29 +1,24 @@
 #ifndef ICLCORE_H
 #define ICLCORE_H
 
-// comment in to ensure IPP optimizations
-// the flag may defined as compiler option also
-//#define WITH_IPP_OPTIMIZATION
-
-
 /** 
-\mainpage Image-Component-Library (ICLCore) 
+\mainpage ICL (Image-Component-Library) : ICLCore 
 \section Overview
 
-The Img is a C++ Image-Library, designed for Computer-Vision Tasks. It
-supports multi-channel images with a depth of 8bit or 32bit. All channels
-within the image share a common size and region of interest (ROI). This allows
-to handle color images as 3-channel Img images for example.
+The ICL is a C++ Image-Library, designed for Computer-Vision tasks. It
+supports multi-channel images (class ImgI/Img) with a depth of 8bit integer or 32bit floats.
+All channels within the image share a common size and region of 
+interest (ROI). This allows to handle color images as 3-channel images for example.
 
 Despite of the different image depth, most methods of an image class have
 common code. Hence, the two different pixel formats are implemented by a
 template class <b>Img<imagedepth></b>. Methods which are independent on the
-image depth are provided by a common base class, named <b>ImgI</b>. This
+image depth are provided by a common interface class, named <b>ImgI</b>. This
 allows easy and type-clean wrapping of both template classes within frameworks
 such as Neo/NST or TDI.
 
 Hence, the Library provides two basic image classes: 
-- <b>ImgI</b>: The <b>abstract base</b> class providing common, 
+- <b>ImgI</b>: The <b>abstract interface</b> class providing common, 
   but depth-independent information about the image structure:
   - size (in pixels)
   - channel count  (see <b>channel concept</b>)
@@ -31,24 +26,25 @@ Hence, the Library provides two basic image classes:
   - color format (see <b>color formats</b>)
   - raw image data access
   - Region of Interest (see <b>Region of Interests</b> (ROI))
-  - [access to IPP-compability functions] (see <b>IPP-Optimization</b>)
 
   It has no public constructors so it has to be used as interface
   class for the derived template classes Img<Type>.
   Most of the functions in the ImgI class are purely virtual which
-  implies, that they have to be implemented in the derived classes.
+  implies, that they are implemented in the derived classes Img<T>.
 
 - <b>Img</b>: The <i>proper</i> image class is implemented as a template,
   where the datatype of each pixel value is the template parameter.
-  Internally each Img<T> object holds a std::vector of pointers to the channel
+  Internally each Img<T> object holds a std::vector of so called smart 
+  pointers (class SmartPtr in the ICLUtils package) to the channel
   data. The Img class provides some additional image information and access
   functions:
-  - type-save image data access
+  - type-save image data access ( using the functions 
+    getData(int channel) and getROIData(int channel)
   - access to single pixel values using the ()-operator
-  - access to all ROI pixels using the ImgIterator 
+  - access to all Image/all ROI pixels using the ImgIterator 
   (see <b>ImgIterator</b> class reference)
     
-In addition to the classes Img and ImgI, the ImgCore package
+In addition to the classes Img and ImgI, the ICLCore package
 provides some utility functions, that facilitates working with 
 these classes (see icl namespace for more details).
   
@@ -66,7 +62,7 @@ the original images, such that modifications will effect all images equally.
 In order to get an independent image a deepCopy as well as a detach method
 are provided. The latter replaces the "shared" image channel(s) with new 
 independent ones. Shared channel data are stored using the boost-like 
-shared pointer class ImgAutoPointer, which realizes a garbage collector
+shared pointer class SmartPtr, which realizes a garbage collector
 automatically releasing <i>unused</i> image channels.
 
 @see Img, ImgChannel
@@ -91,7 +87,7 @@ The advantage of integer values is, that computation is faster
 than using float values, not at least because of the 4-Times 
 larger memory usage.
  
-@see icldepth, iclbyte, iclfloat
+@see Depth, iclbyte, iclfloat
 
 \section Color Formats
 An ImgI image provides some information about the (color) format, that
@@ -105,11 +101,11 @@ following:
 - the second channel contains GREEN-Data in range [0,255]
 - the third channel contains BLUE-Data in range [0,255]
 
-All additional implemented Img-Packages may use this information. 
-The currently available Img formats are member of the enum iclformat.
+All additional implemented Img-Packages may/should use this information. 
+The currently available Img formats are member of the enum Format.
 A special format: formatMatrix may be used for arbitrary purpose.
 
-@see iclformat
+@see Format
 
 \section IPP-Optimization
 The IPP Intel Performance Primitives is a c-library that contains highly 
@@ -121,20 +117,22 @@ compiled with <b>WITH_IPP_OPTIMIZATIONS</b> defined. In this case, the
 following adaptions are performed:
 - the icl data types iclfloat and iclbyte are defined as the ipp compatible
   type Ipp32f and Ipp8u.
+- the classes Size, Point and Rect are derived from the corresponding ipp-
+  structs IppiSize, IppiPoint and IppiRect. Hence the the programme will
+  be able to uses the ICL-stucts Size, Point and Rect everywhere whare 
+  the ipp-structs are needed
 - some of the builtin Img functions, like scaling or converting to another type
   are accelerated using equivalent ipp-function calls.
-- some additional <i>ipp-compability functions</i> are included into the 
-  class interface of ImgChannel and Img<Type>.
 
 @see Img, ImgChannel
 
 \section _DEBUG_MACROS_ How to use LOG-Macros in the Img
-The ImgUtils package contains the ImgMacros.h header file,
-which provides the common debug macros for Img classes. The debug system
+The ICLUtils package contains the Macros.h header file,
+which provides the common debug macros for ICL classes. The debug system
 knows 6 different debug levels (0-5). Level depended debug messages
 can be written to std::out using the <b>DEBUG_LOG\<LEVEL\></b>-macro.
 The set debug level (0 by default) regulates the verboseness of the 
-Img library. The debug levels (0-5) are characterized as follows:
+ICL library. The debug levels (0-5) are characterized as follows:
 
 <h3>Img debug levels</h3>
       <table>
@@ -213,6 +211,11 @@ provided in ImgMacros.h
 */
 
 #include "Macros.h"
+#include "Size.h"
+#include "Point.h"
+#include "Rect.h"
+
+
 #include <string>
 #include <vector>
 #ifdef WITH_IPP_OPTIMIZATION
@@ -244,71 +247,14 @@ namespace icl {
   typedef unsigned char iclbyte;
 #endif
 
-
-#ifndef WITH_IPP_OPTIMIZATION
-  struct IppiPoint {int x,y;};
-  struct IppiSize {int width,height;};
-  struct IppiRect {int x,y,width,height;};
-#endif
-
-
-  /// Point class of the ICL used e.g. for the Images ROI offset
-  class Point : public IppiPoint{
-    public:
-    Point(){ this->x = 0; this->y = 0;}
-    Point(const Point& p){ this->x = p.x; this->y = p.y; }
-    Point(int x,int y){this->x = x;this->y = y;}
-  };
-
-  /// Size class of the ICL
-  class Size : public IppiSize{
-    public:
-    Size(){this->width = 0;this->height = 0;}
-    Size(const Size &s){ this->width = s.width;this->height = s.height; }
-    Size(int width,int height){ this->width = width; this->height = height; }
-    bool operator==(const Size &s) const {return width==s.width && height==s.height;}
-  };
-  
-  /// Rectangle class of the ICL used e.g. for the Images ROI-rect
-  class Rect : public IppiRect{
-    public:
-    Rect(){
-      this->x = 0;
-      this->y = 0;
-      this->width = 0;
-      this->height = 0;
-    }
-    Rect(int x, int y, int width, int height){
-      this->x = x;
-      this->y = y;
-      this->width = width;
-      this->height = height;
-    }
-    Rect(const Point &p, const Size &s){
-      this->x = p.x;
-      this->y = p.y;
-      this->width = s.width;
-      this->height = s.height;
-    } 
-    Rect(const Rect &r){
-      this->x = r.x;
-      this->y = r.y;
-      this->width = r.width;
-      this->height = r.height;
-    }
-    operator bool() const{
-      return x || y || width || height;
-    }
-  };
-  
   /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
-  enum icldepth{
+  enum Depth{
     depth8u  = 8, /**< 8Bit unsigned integer values range {0,1,...255} */
     depth32f = 32 /**< 32Bit floating point values */
   };
   
   /// determines the color-format, that is associated with the images channels 
-  enum iclformat{
+  enum Format{
     formatRGB, /**< (red,green,blue) colors pace */
     formatHLS, /**< (hue,lightness,saturation) color space (also know as HSI) */
     formatLAB, /**< (lightness,a*,b*) color space */
@@ -318,14 +264,14 @@ namespace icl {
   };
 
 #ifdef WITH_IPP_OPTIMIZATION
-  enum iclscalemode{
+  enum ScaleMode{
     interpolateNN=IPPI_INTER_NN,      /**< nearest neighbor interpolation */
     interpolateLIN=IPPI_INTER_LINEAR, /**< bilinear interpolation */
     interpolateRA=IPPI_INTER_SUPER    /**< region-average interpolation */
   };
 #else
   /// for scaling of Img images theses functions are provided
-  enum iclscalemode{
+  enum ScaleMode{
     interpolateNN,  /**< nearest neighbor interpolation */
     interpolateLIN, /**< bilinear interpolation */
     interpolateRA   /**< region-average interpolation */
@@ -346,7 +292,7 @@ namespace icl {
       <pre>
       class Foo{
          public:
-         Foo(...,icldepth eDepth,...):
+         Foo(...,Depth eDepth,...):
              poImage(eDepth==depth8u ? new Img8u(...) : new Img32f(...)){
          }
          private:
@@ -359,7 +305,7 @@ namespace icl {
       <pre>
       class Foo{
          public:
-         Foo(...,icldepth eDepth,...):
+         Foo(...,Depth eDepth,...):
              poImage(iclNew(eDepth,...)){
          }
          private:
@@ -377,9 +323,9 @@ namespace icl {
       @return the new ImgI* with underlying Img<Type>, where
               Type is depending on the first parameter eDepth
   **/
-  ImgI *imgNew(icldepth eDepth=depth8u, 
+  ImgI *imgNew(Depth eDepth=depth8u, 
                const Size& s=Size(1,1),
-               iclformat eFormat=formatMatrix,
+               Format eFormat=formatMatrix,
                int iChannels = -1,
                const Rect &oROI=Rect());
 
@@ -394,7 +340,7 @@ namespace icl {
       @param ppoImage pointer to the image-pointer
       @param eDepth destination depth of the image
   **/
-  void ensureDepth(ImgI **ppoImage, icldepth eDepth);
+  void ensureDepth(ImgI **ppoImage, Depth eDepth);
 
   /// ensures that two images have the same size, channel count, depth, format and ROI
   /** If the given dst image image is 0 than it is created as a clone  (deep copy) of
@@ -422,9 +368,9 @@ namespace icl {
       If the ROI parameters are not given, the ROI will comprise the whole image.
   **/
   void ensureCompatible(ImgI **ppoDst,
-                        icldepth eDepth, 
+                        Depth eDepth, 
                         const Size& s,
-                        iclformat eFormat, 
+                        Format eFormat, 
                         int iChannelCount=-1,
                         const Rect &r=Rect());
   
@@ -432,46 +378,46 @@ namespace icl {
   /** @param eFormat source format which channel count should be returned
       @return channel count of format eFormat
   **/
-  int getChannelsOfFormat(iclformat eFormat);
+  int getChannelsOfFormat(Format eFormat);
 
 
-  /// returns a string representation of an iclformat enum
-  /** @param eFormat iclformat enum which string repr. is asked 
+  /// returns a string representation of an Format enum
+  /** @param eFormat Format enum which string repr. is asked 
       @return string representation of eFormat
   **/
-  string translateFormat(iclformat eFormat);  
+  string translateFormat(Format eFormat);  
   
-  /// returns an iclformat enum, specified by a string 
+  /// returns an Format enum, specified by a string 
   /** This functions implements the opposite direction to the above function,
       which means, that:
       <pre>
       iclTranslateFormat(iclTranslateFormat(x)) == x
       </pre>
-      If x is a string or an iclformat enum.
+      If x is a string or an Format enum.
       @param sFormat string representation of the format 
                      which should be returned
-      @return iclformat, that corresponds to sFormat
+      @return Format, that corresponds to sFormat
   **/
-  iclformat translateFormat(string sFormat);
+  Format translateFormat(string sFormat);
 
   /// call iclGetDepth<T> inside of an Img function to get associated Depth as int
   /**
   @return depth associated with the Type value
   **/
   template<class T> 
-  static icldepth getDepth(){
+  static Depth getDepth(){
     return depth8u;
   }
 
   /// specialized function for depth8u
   template<> 
-  static icldepth getDepth<iclbyte>(){
+  static Depth getDepth<iclbyte>(){
     return depth8u;
   }
   
   /// specialized function for depth32f
   template<> 
-  static icldepth getDepth<iclfloat>(){
+  static Depth getDepth<iclfloat>(){
     return depth32f;
   }
 
@@ -479,7 +425,7 @@ namespace icl {
   /**
      @return sizeof value associated with the Type value
   **/
-  int getSizeOf(icldepth eDepth);
+  int getSizeOf(Depth eDepth);
 
 }
 

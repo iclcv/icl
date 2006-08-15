@@ -183,15 +183,15 @@ namespace icl{
          @param iROIWidth width of the images ROI
          @param iROIHeight width of the images ROI
      */
-    ImgIterator(Type *ptData, int iXPos,int iYPos,int iImageWidth, int iROIWidth, int iROIHeight):
+    ImgIterator(Type *ptData,int iImageWidth,const Rect &roROI):
        m_iImageWidth(iImageWidth),
-       m_iROIWidth(iROIWidth), 
-       m_iROIHeight(iROIHeight), 
+       m_iROIWidth(roROI.width), 
+       m_iROIHeight(roROI.height), 
        m_iLineStep(m_iImageWidth - m_iROIWidth + 1),
        m_ptDataOrigin(ptData),
-       m_ptDataCurr(ptData+iXPos+iYPos*iImageWidth),
-       m_ptDataEnd(m_ptDataCurr+iROIWidth+(iROIHeight-1)*iImageWidth),
-       m_ptCurrLineEnd(m_ptDataCurr+iROIWidth-1){}
+       m_ptDataCurr(ptData+roROI.x+roROI.y*iImageWidth),
+       m_ptDataEnd(m_ptDataCurr+m_iROIWidth+(m_iROIHeight-1)*m_iImageWidth),
+       m_ptCurrLineEnd(m_ptDataCurr+m_iROIWidth-1){}
 
     /// 3nd Constructor to create sub-regions of an Img-image
     /** This 2nd constructor creates a sub-region iterator, which may be
@@ -203,15 +203,15 @@ namespace icl{
         @param iROIHeight width of the images ROI
     */
 
-    ImgIterator(const ImgIterator<Type> &roOrigin,int iROIWidth, int iROIHeight):
+    ImgIterator(const ImgIterator<Type> &roOrigin, const Size &s):
        m_iImageWidth(roOrigin.m_iImageWidth),
-       m_iROIWidth(iROIWidth),
-       m_iROIHeight(iROIHeight),
+       m_iROIWidth(s.width),
+       m_iROIHeight(s.height),
        m_iLineStep(m_iImageWidth - m_iROIWidth + 1),
        m_ptDataOrigin(roOrigin.m_ptDataOrigin),
-       m_ptDataCurr(roOrigin.m_ptDataCurr-(iROIWidth/2)-(iROIHeight/2)*m_iImageWidth),
-       m_ptDataEnd(m_ptDataCurr+iROIWidth+(iROIHeight-1)*m_iImageWidth),
-       m_ptCurrLineEnd(m_ptDataCurr+iROIWidth-1){}
+       m_ptDataCurr(roOrigin.m_ptDataCurr-(m_iROIWidth/2)-(m_iROIHeight/2)*m_iImageWidth),
+       m_ptDataEnd(m_ptDataCurr+m_iROIWidth+(m_iROIHeight-1)*m_iImageWidth),
+       m_ptCurrLineEnd(m_ptDataCurr+m_iROIWidth-1){}
     
     /// retuns a reference of the current pixel value
     /** changes on *p (p is of type ImgIterator) will effect

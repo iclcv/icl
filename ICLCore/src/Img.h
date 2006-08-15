@@ -67,7 +67,7 @@ class Img : public ImgI
                        count is calculated from the given format (E.g. if
                        eFormat is formatRGB iChannels is set to 3)
   **/
-  Img(const Size &s, iclformat eFormat, int iChannels = -1);
+  Img(const Size &s, Format eFormat, int iChannels = -1);
  
   /// Creates an image with specified size, number of channels, format, using shared data pointers as channel data
   /** @param iWidth width of the image
@@ -80,7 +80,7 @@ class Img : public ImgI
                      have size iChannels. The data must not be deleted during
                      the "lifetime" of the Img.
   **/
-  Img(const Size &s, iclformat eFormat, int iChannels, Type** pptData);
+  Img(const Size &s, Format eFormat, int iChannels, Type** pptData);
 
   /// Copy constructor
   /** creates a flat copy of the source image
@@ -151,7 +151,7 @@ class Img : public ImgI
       size to this, by resizing destination image on demand. 
       <b>WARNING:</b> If the destination image has another depth, then this image,
       the deepCopy will internally call <b>convertTo8Bit</b> or <b>convertTo32Bit</b> 
-      depending on the the images and the destination images icldepth.
+      depending on the the images and the destination images Depth.
       <b>The images ROI will not be regarded</b>, to copy just the ROI 
       into another image use deepCopyROI(ImgI *poDst.) or 
       scaledCopyROI(ImgI *poDst).
@@ -159,7 +159,7 @@ class Img : public ImgI
                    if NULL, then a new image is created and returned
       @return Pointer to new independent Img object
   **/
-  virtual ImgI* deepCopy(ImgI** ppoDst = NULL) const;
+  virtual ImgI* deepCopy(ImgI* poDst = NULL) const;
 
   /// returns a scaled copy of the image data (scaling on demand) (IPP-OPTIMIZED)
   /** the function performs a deep copy of the image data
@@ -184,11 +184,11 @@ class Img : public ImgI
                            - interpolateNN  --> nearest neighbor interpolation (fastest)
                            - interpolateLIN  --> bilinear interpolation
                            - interpolateRA  --> region average 
-      @see iclscalemode
+      @see ScaleMode
       @see resize
       @see deepCopy
   **/
-  virtual ImgI* scaledCopy(ImgI **ppoDst, iclscalemode eScaleMode=interpolateNN) const;
+  virtual ImgI* scaledCopy(ImgI *poDst, ScaleMode eScaleMode=interpolateNN) const;
   
   /// copies the image data in the images ROI into the destination images ROI (IPP-OPTIMIZED)
   /** This function will copy the content of the images ROI into the
@@ -206,7 +206,7 @@ class Img : public ImgI
       The deep copy function supports IPP-OPTIMIZED depth conversion.
       
   **/
-  virtual ImgI *deepCopyROI(ImgI **ppoDst = NULL) const;
+  virtual ImgI *deepCopyROI(ImgI *poDst = NULL) const;
   
   /// scales the image data in the image ROI into the destination images ROI (IPP-OPTIMIZED)
   /** This function copies ROI data from one image into the ROI of another one. If the source
@@ -228,7 +228,7 @@ class Img : public ImgI
                            - interpolateLIN  --> bilinear interpolation
                            - interpolateRA  --> region average 
   **/
-  virtual ImgI *scaledCopyROI(ImgI **ppoDst = NULL, iclscalemode eScaleMode=interpolateNN) const;
+  virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, ScaleMode eScaleMode=interpolateNN) const;
                   
   /* }}} */
                                          
@@ -517,10 +517,10 @@ class Img : public ImgI
                            - interpolateNN   --> nearest neighbor interpolation (fastest)
                            - interpolateLIN  --> bilinear interpolation
                            - interpolateRA   --> region average 
-      @see iclscalemode
+      @see ScaleMode
       @see resize
   **/
-  virtual void scale(const Size &s, iclscalemode eScaleMode=interpolateNN);
+  virtual void scale(const Size &s, ScaleMode eScaleMode=interpolateNN);
  
  
   

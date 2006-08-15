@@ -120,6 +120,8 @@ namespace icl {
       /** It exploits the given destination image if possible,
           i.e. if the pixel depth matches. Else this image is released
           and a new one is created.
+
+      NEE! vielleicht doch besser konform zu den anderen deepCopy fkts bleiben
       **/
       virtual void shallowCopy(ImgI** ppoDst = NULL) const;
 
@@ -127,26 +129,26 @@ namespace icl {
       /** this function is implemented in the Img-template class
           @see Img
       **/
-      virtual ImgI* deepCopy(ImgI** ppoDst = NULL) const=0;
+      virtual ImgI* deepCopy(ImgI* poDst = NULL) const=0;
       
       /// copies (or scales if necessary) the image data into the destination image and performs a
       /** this function is implemented in the Img-template class
           @see Img
       **/
-      virtual ImgI* scaledCopy(ImgI **ppoDst, iclscalemode eScaleMode=interpolateNN) const=0;
+      virtual ImgI* scaledCopy(ImgI *poDst, ScaleMode eScaleMode=interpolateNN) const=0;
     
 
       /// copies the image data in the images ROI into the destination images ROI
       /** this function is implemented in the Img-template class
       @see Img
       **/
-      virtual ImgI *deepCopyROI(ImgI **ppoDst = NULL) const=0;
+      virtual ImgI *deepCopyROI(ImgI *poDst = NULL) const=0;
 
       /// scales the image data in the image ROI into the destination images ROI
       /** this function is implemented in the Img-template class
       @see Img
       **/
-      virtual ImgI *scaledCopyROI(ImgI **ppoDst = NULL, iclscalemode eScaleMode=interpolateNN) const=0;
+      virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, ScaleMode eScaleMode=interpolateNN) const=0;
       //@}
       /* }}} */
 
@@ -184,9 +186,9 @@ namespace icl {
       /// returns the depth (depth8u or depth32f)
       /** 
           @return image depth ()
-          @see icldepth
+          @see Depth
       **/
-      icldepth getDepth() const
+      Depth getDepth() const
         {
           FUNCTION_LOG("");
           return m_eDepth;
@@ -195,9 +197,9 @@ namespace icl {
       /// returns the current (color)-format of this image
       /** 
           @return current (color)-format
-          @see iclformat
+          @see Format
       **/
-      iclformat getFormat() const
+      Format getFormat() const
         {
           FUNCTION_LOG("");
           return m_eFormat;
@@ -213,7 +215,7 @@ namespace icl {
       **/
       int isEqual(const Size &s,int nChannels) const
         {
-          FUNCTION_LOG("isEqual("<<s.width<<","<< s.height << ","<< iNewNumChannels<< ")");
+          FUNCTION_LOG("isEqual("<<s.width<<","<< s.height << ","<< nChannels << ")");
           return (m_oSize == s) && (m_iChannels == nChannels);
           
         }
@@ -318,7 +320,7 @@ namespace icl {
       
       /// perform a scaling operation of the images (keeping the data) (IPP-OPTIMIZED)
       /** @see Img*/
-      virtual void scale(const Size& s, iclscalemode eScaleMode=interpolateNN)=0;
+      virtual void scale(const Size& s, ScaleMode eScaleMode=interpolateNN)=0;
       
       /// Scale the channel min/ max range to the new range tMin, tMax.
       /** @see Img*/
@@ -339,12 +341,15 @@ namespace icl {
       /** 
       @return Img8u* instance of this image
       **/
-      // template <class T>
-      //Img<T> *asImg<T>()
-      //  {
-      //    FUNCTION_LOG("");
-      //    return reinterpret_cast<Img<T>*>((void*)this);
-      //  }
+      
+      template <class T>
+      Img<T> *asImg() const{
+        return reinterpret_cast<Img<T>*>((void*)this);
+      }
+
+      template <class T>
+      Img<T> *convertTo( Img<T>* poDst=NULL ) const;
+
       //@}
 
       /* }}} */
@@ -362,7 +367,7 @@ namespace icl {
       @param eFormat new format value
       @see getChannelsOfFormat
       **/
-      void setFormat(iclformat eFormat);
+      void setFormat(Format eFormat);
       //@}
 
       /* }}} */
@@ -387,8 +392,8 @@ namespace icl {
       automatically from format.
       **/
       ImgI(const Size &s,
-           iclformat eFormat, 
-           icldepth eDepth=depth8u,
+           Format eFormat, 
+           Depth eDepth=depth8u,
            int iChannels=-1);
       
       /* }}} */
@@ -402,10 +407,10 @@ namespace icl {
       Size m_oSize;
 
       /// (color)-format associated with the images channels
-      iclformat m_eFormat;
+      Format m_eFormat;
 
       /// depth of the image (depth8 for iclbyte/depth32 for iclfloat)
-      icldepth m_eDepth;
+      Depth m_eDepth;
 
       // internal storage of the ROI parameters
       Point m_oROIOffset; //< ROI offset

@@ -9,12 +9,12 @@ namespace icl{
   }
 
   void Converter::convert(ImgI *poDst, ImgI *poSrc){
-    iclformat eSrcFmt = poSrc->getFormat();
-    iclformat eDstFmt = poDst->getFormat();
-    icldepth eSrcDepth = poSrc->getDepth();
-    icldepth eDstDepth = poDst->getDepth();
+    Format eSrcFmt = poSrc->getFormat();
+    Format eDstFmt = poDst->getFormat();
+    Depth eSrcDepth = poSrc->getDepth();
+    Depth eDstDepth = poDst->getDepth();
     int iNeedDepthConversion = eSrcDepth!=eDstDepth;
-    int iNeedSizeConversion = poDst->getWidth() != poSrc->getWidth() || poDst->getHeight() != poSrc->getHeight();
+    int iNeedSizeConversion = poDst->getSize() != poSrc->getSize();
     int iNeedColorConversion = eSrcFmt != formatMatrix && eDstFmt != formatMatrix && eSrcFmt != eDstFmt;
     
     //---- convert depth ----------------- 
@@ -22,9 +22,9 @@ namespace icl{
     if(iNeedDepthConversion){ 
       // test if other convesion steps will follow:
       if(iNeedSizeConversion || iNeedColorConversion){
-        iclEnsureDepth(&m_poDepthBuffer,eDstDepth);
+        ensureDepth(&m_poDepthBuffer,eDstDepth);
         m_poDepthBuffer->setFormat(eSrcFmt);
-        m_poDepthBuffer->resize(poNextSrcImage->getWidth(),poNextSrcImage->getHeight());
+        m_poDepthBuffer->resize(poNextSrcImage->getSize());
         poNextSrcImage->deepCopy(m_poDepthBuffer);
         poNextSrcImage=m_poDepthBuffer;
       }else{
@@ -36,8 +36,8 @@ namespace icl{
     //---- convert size ----------------- 
     if(iNeedSizeConversion){
       if(iNeedColorConversion){
-        iclEnsureDepth(&m_poSizeBuffer,poNextSrcImage->getDepth());
-        m_poSizeBuffer->renew(poDst->getWidth(),poDst->getHeight(),poDst->getChannels());
+        ensureDepth(&m_poSizeBuffer,poNextSrcImage->getDepth());
+        m_poSizeBuffer->renew(poDst->getSize(),poDst->getChannels());
         m_poSizeBuffer->setFormat(eSrcFmt);
         poNextSrcImage->scaledCopy(m_poSizeBuffer);
         //---- convert color ----------------- 

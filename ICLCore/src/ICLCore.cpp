@@ -3,9 +3,9 @@
 
 namespace icl{
   
-  ImgI *imgNew(icldepth eDepth, 
+  ImgI *imgNew(Depth eDepth, 
                const Size& s,
-               iclformat eFormat, 
+               Format eFormat, 
                int iChannels,
                const Rect &oROI)
   {
@@ -23,7 +23,7 @@ namespace icl{
     return poNew;
   }
 
-  int getChannelsOfFormat(iclformat eFormat)
+  int getChannelsOfFormat(Format eFormat)
   {
     switch (eFormat)
       {
@@ -47,7 +47,7 @@ namespace icl{
       }
   }
 
-  string translateFormat(iclformat eFormat)
+  string translateFormat(Format eFormat)
   {
     switch(eFormat)
       {
@@ -61,7 +61,7 @@ namespace icl{
       }
   }
  
-  iclformat translateFormat(string sFormat)
+  Format translateFormat(string sFormat)
   {
     if(sFormat.length()<=0)
       {
@@ -80,7 +80,7 @@ namespace icl{
     }
   }
   
-  void ensureDepth(ImgI ** ppoImage, icldepth eDepth)
+  void ensureDepth(ImgI ** ppoImage, Depth eDepth)
   {
     if(!*ppoImage)
     {
@@ -100,9 +100,9 @@ namespace icl{
   }
   
   void ensureCompatible(ImgI **ppoDst,
-                        icldepth eDepth,
+                        Depth eDepth,
                         const Size &s,
-                        iclformat eFormat,
+                        Format eFormat,
                         int iChannelCount,
                         const Rect &r)
   {
@@ -135,7 +135,7 @@ namespace icl{
   }
 
 
-  int getSizeOf(icldepth eDepth)
+  int getSizeOf(Depth eDepth)
   {
     switch(eDepth)
     {

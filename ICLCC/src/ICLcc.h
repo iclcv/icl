@@ -121,7 +121,7 @@ has half X- and half Y-resolution. The data pointer has iW*iH*1.5 elements)
 @param iW image width, associated with the source data pointer
 @param iH image hieght, associated with the source data pointer
 */
-void convertYUV420ToRGB8(Img8u* poDst, unsigned char *pucSrc, int iW, int iH);
+void convertYUV420ToRGB8(Img8u* poDst, unsigned char *pucSrc, const Size &s);
 
 
 //@}
