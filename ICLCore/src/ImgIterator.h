@@ -181,7 +181,7 @@ namespace icl{
      /** 2nd Constructor creates an ImgIterator object with Type "Type"
          @param ptData pointer to the corresponding channel data
          @param iImageWidth width of the corresponding image
-         @param r ROI rect for the iterator
+         @param roROI ROI rect for the iterator
      */
     ImgIterator(Type *ptData,int iImageWidth,const Rect &roROI):
        m_iImageWidth(iImageWidth),

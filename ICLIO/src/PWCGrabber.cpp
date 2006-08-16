@@ -165,7 +165,7 @@ int                     usbvflg_maxwidth[4]; /* maximal width (obtained from har
 struct video_mbuf       usbvflg_vmbuf[4];
 struct video_mmap       usbvflg_params[4][2];
 struct video_channel    usbvflg_vchan[4];
-iclbyte           *usbvflg_buf[]={NULL,NULL,NULL,NULL};
+icl8u           *usbvflg_buf[]={NULL,NULL,NULL,NULL};
 int                     usbvflg_useframe[]={-1,-1,-1,-1};
 double                  usbvflg_starttime; 
 double                  usbvflg_diff_time=0;
@@ -282,13 +282,12 @@ void save_setparams(int device){
 // }}}
 
 
-PWCGrabber::PWCGrabber(int iWidth,
-                             int iHeight,
-                             float fFps,
-                             int iDevice):
-  iWidth(iWidth),iHeight(iHeight),iDevice(iDevice),fFps(fFps),
-  poRGB8Image(new Img8u(iWidth,iHeight,formatRGB)),
-  pucFlippedYUVData(new iclbyte[(int)(1.5*iWidth*iHeight)]){
+PWCGrabber::PWCGrabber(const Size &s,
+                       float fFps,
+                       int iDevice):
+  iWidth(s.width),iHeight(s.height),iDevice(iDevice),fFps(fFps),
+  poRGB8Image(new Img8u(s,formatRGB)),
+  pucFlippedYUVData(new icl8u[(int)(1.5*s.getDim())]){
   
   usb_image_widths[iDevice]=iWidth;
   usb_image_heights[iDevice]=iHeight;
@@ -346,7 +345,7 @@ PWCGrabber::PWCGrabber(int iWidth,
      PWC_DEBUG_CALL(ioctl(usbvflg_fd[iDevice], VIDIOCGMBUF, &usbvflg_vmbuf[iDevice]),"error getting video-membuffer" );
 
      /* Alloc memory for snapshot  */
-     usbvflg_buf[iDevice]=(iclbyte *)mmap(0,usbvflg_vmbuf[iDevice].size, 
+     usbvflg_buf[iDevice]=(icl8u *)mmap(0,usbvflg_vmbuf[iDevice].size, 
                                                PROT_READ|PROT_WRITE,
                                                MAP_SHARED, usbvflg_fd[iDevice],0);
     
@@ -404,11 +403,11 @@ void PWCGrabber::grab(ImgI *poOutput){
   int use_frame=usbvflg_useframe[iDevice];
 
  
-  iclbyte *pucPwcData = usbvflg_buf[iDevice] + usbvflg_vmbuf[iDevice].offsets[use_frame];
+  icl8u *pucPwcData = usbvflg_buf[iDevice] + usbvflg_vmbuf[iDevice].offsets[use_frame];
   
 
-  iclbyte *pU = pucPwcData+iWidth*iHeight;
-  iclbyte *pV = pucPwcData+(int)(1.25*iWidth*iHeight);
+  icl8u *pU = pucPwcData+iWidth*iHeight;
+  icl8u *pV = pucPwcData+(int)(1.25*iWidth*iHeight);
   int iW2 = iWidth/2;
 
 #ifndef WITH_IPP_OPTINIZATION
@@ -417,54 +416,54 @@ void PWCGrabber::grab(ImgI *poOutput){
   
   IppiSize oSize = {iWidth,iHeight};
   IppiSize oSize2 ={iWidth/2,iHeight/2};
-  iclbyte *pUDst = pucFlippedYUVData+iWidth*iHeight;
-  iclbyte *pVDst = pucFlippedYUVData+(int)(1.25*iWidth*iHeight);
+  icl8u *pUDst = pucFlippedYUVData+iWidth*iHeight;
+  icl8u *pVDst = pucFlippedYUVData+(int)(1.25*iWidth*iHeight);
  
-  MIRROR_HORZ(pucPwcData,iWidth*sizeof(iclbyte),pucFlippedYUVData,oSize);
-  MIRROR_HORZ(pU,iW2*sizeof(iclbyte),pUDst,oSize2);
-  MIRROR_HORZ(pV,iW2*sizeof(iclbyte),pVDst,oSize2);
+  MIRROR_HORZ(pucPwcData,iWidth*sizeof(icl8u),pucFlippedYUVData,oSize);
+  MIRROR_HORZ(pU,iW2*sizeof(icl8u),pUDst,oSize2);
+  MIRROR_HORZ(pV,iW2*sizeof(icl8u),pVDst,oSize2);
  
   if(poOutput->getFormat() == formatRGB &&
      poOutput->getDepth() == depth8u &&
-     poOutput->getWidth() == iWidth &&
-     poOutput->getHeight() == iHeight ){
+     poOutput->getSize().width == iWidth &&
+     poOutput->getSize().height == iHeight ){
     
-    convertYUV420ToRGB8(poOutput->asIcl8u(),pucFlippedYUVData,iWidth,iHeight);
+    convertYUV420ToRGB8(poOutput->asImg<icl8u>(),pucFlippedYUVData,Size(iWidth,iHeight));
     
   }else if(poOutput->getFormat() == formatYUV){ // not yet tested
     
-    Img8u oTmpSrc_Y(iWidth,iHeight,formatMatrix,1,&pucFlippedYUVData);
-    Img8u oTmpSrc_U(iWidth/2,iHeight/2,formatMatrix,1,&pUDst);
-    Img8u oTmpSrc_V(iWidth/2,iHeight/2,formatMatrix,1,&pVDst);
+    Img8u oTmpSrc_Y(Size(iWidth,iHeight),formatMatrix,1,&pucFlippedYUVData);
+    Img8u oTmpSrc_U(Size(iWidth/2,iHeight/2),formatMatrix,1,&pUDst);
+    Img8u oTmpSrc_V(Size(iWidth/2,iHeight/2),formatMatrix,1,&pVDst);
     
     if(poOutput->getDepth()==depth8u){
-      iclbyte *pucTmpY = poOutput->asIcl8u()->getData(0);
-      iclbyte *pucTmpU = poOutput->asIcl8u()->getData(1);
-      iclbyte *pucTmpV = poOutput->asIcl8u()->getData(2);
+      icl8u *pucTmpY = poOutput->asImg<icl8u>()->getData(0);
+      icl8u *pucTmpU = poOutput->asImg<icl8u>()->getData(1);
+      icl8u *pucTmpV = poOutput->asImg<icl8u>()->getData(2);
       
-      Img8u oTmpDst_Y(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pucTmpY);
-      Img8u oTmpDst_U(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pucTmpU);
-      Img8u oTmpDst_V(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pucTmpV);
+      Img8u oTmpDst_Y(poOutput->getSize(),formatMatrix,1,&pucTmpY);
+      Img8u oTmpDst_U(poOutput->getSize(),formatMatrix,1,&pucTmpU);
+      Img8u oTmpDst_V(poOutput->getSize(),formatMatrix,1,&pucTmpV);
       
       oTmpSrc_Y.scaledCopy(&oTmpDst_Y);
       oTmpSrc_U.scaledCopy(&oTmpDst_U);
       oTmpSrc_V.scaledCopy(&oTmpDst_V);
 
     }else{
-      iclfloat *pfTmpY = poOutput->asIcl32f()->getData(0);
-      iclfloat *pfTmpU = poOutput->asIcl32f()->getData(1);
-      iclfloat *pfTmpV = poOutput->asIcl32f()->getData(2);
+      icl32f *pfTmpY = poOutput->asImg<icl32f>()->getData(0);
+      icl32f *pfTmpU = poOutput->asImg<icl32f>()->getData(1);
+      icl32f *pfTmpV = poOutput->asImg<icl32f>()->getData(2);
       
-      Img32f oTmpDst_Y(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pfTmpY);
-      Img32f oTmpDst_U(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pfTmpU);
-      Img32f oTmpDst_V(poOutput->getWidth(),poOutput->getHeight(),formatMatrix,1,&pfTmpV);
+      Img32f oTmpDst_Y(poOutput->getSize(),formatMatrix,1,&pfTmpY);
+      Img32f oTmpDst_U(poOutput->getSize(),formatMatrix,1,&pfTmpU);
+      Img32f oTmpDst_V(poOutput->getSize(),formatMatrix,1,&pfTmpV);
 
       oConverter.convert(&oTmpDst_Y,&oTmpSrc_Y);
       oConverterHalfSize.convert(&oTmpDst_U,&oTmpSrc_U);
       oConverterHalfSize.convert(&oTmpDst_V,&oTmpSrc_V);
     }
   }else{
-    convertYUV420ToRGB8(poRGB8Image,pucFlippedYUVData,iWidth,iHeight);
+    convertYUV420ToRGB8(poRGB8Image,pucFlippedYUVData,Size(iWidth,iHeight));
     oConverter.convert(poOutput,poRGB8Image);
   }
   pthread_mutex_unlock(&usb_frame_mutex[iDevice]);

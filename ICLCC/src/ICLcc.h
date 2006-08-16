@@ -118,8 +118,7 @@ void convertFromHLS32(ImgI *poDst, ImgI *poSrc);
 @param poDst destination image
 @param pucSrc pointer to source data (data is in YUV420 format, which is planar and which's U- and V-channel
 has half X- and half Y-resolution. The data pointer has iW*iH*1.5 elements)
-@param iW image width, associated with the source data pointer
-@param iH image hieght, associated with the source data pointer
+@param s image size 
 */
 void convertYUV420ToRGB8(Img8u* poDst, unsigned char *pucSrc, const Size &s);
 

@@ -302,7 +302,7 @@ class Img : public ImgI
   
   /// Append channels of external Img to the existing Img. 
   /** Both objects will share their data (cheap copy). 
-      @param oSrc source image
+      @param poSrc source image
       @param iChannel channel to append (or all, if < 0)
   **/
   void append(Img<Type> *poSrc, int iChannel=-1);
@@ -337,8 +337,7 @@ class Img : public ImgI
       always when you want to ensure a specific image size.
       If the size must be adapted: 
       <b> All the data within the Img will be lost. </b> 
-      @param iNewWidth New image width (if < 0, the orignal width is used)
-      @param iNewHeight New image height (if < 0, the orignal height is used)
+      @param s new image size  (if x or y is < 0, the orignal width/height is used)
       @param iNewNumChannel New channel number (if < 0, the orignal 
              channel count is used)
   **/
@@ -352,8 +351,7 @@ class Img : public ImgI
       <b>Note:</b> The ROI of the image is set to the hole
       image using delROI(), notwithstanding if a resize
       operation was performed or not.
-      @param iNewWidth new image width (if < 0, the orignal width is used)
-      @param iNewHeight new image height (if < 0, the orignal height is used)
+      @param s new image size  (if x or y is < 0, the orignal width/height is used)
       @see scale
   **/
   virtual void resize(const Size &s);
@@ -387,11 +385,7 @@ class Img : public ImgI
   **/
   void getMinMax(Type &rtMin, Type &rtMax, int iChannel=-1) const;
 
-  /// Returns pointer to the specified channel data
-  /** This method provides
-      direct access to the channel data memory.
-      @param iChannel Channel to get data from
-  **/
+  /// Returns the width of an image line in bytes
   virtual int getLineStep() const{
     return getSize().width*sizeof(Type);
   }

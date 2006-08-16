@@ -41,12 +41,11 @@ namespace icl{
     
     /// Base constructor with parameters for width, height, image type, grabbing rate and grabbing device
     /**
-    @param iWidth destination image width
-    @param iHeight destination image height
+    @param s size of grabbed images
     @param fFps grabbing rate
     @param iDevice USB grabbing device {0,1,2,3}
     */
-    PWCGrabber(int iWidth=320, int iHeight=240,float fFps=30, int iDevice=0);
+    PWCGrabber(const Size &s,float fFps=30, int iDevice=0);
     
     /// Destructor
     ~PWCGrabber();
@@ -69,7 +68,7 @@ namespace icl{
     
     Img8u *poRGB8Image;
     Converter oConverter,oConverterHalfSize;
-    iclbyte *pucFlippedYUVData;
+    icl8u *pucFlippedYUVData;
   };
   
 }

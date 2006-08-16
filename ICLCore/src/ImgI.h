@@ -185,8 +185,7 @@ namespace icl {
       virtual int getLineStep() const = 0;
 
       /// returns if two images have same size, and channel count
-      /** @param iNewWidth image width to test
-          @param iNewHeight image height to test
+      /** @param s size to test
           @param nChannels channel count to test
       **/
       int isEqual(const Size &s,int nChannels) const
@@ -400,6 +399,9 @@ namespace icl {
       automatically from format using the getChannelsOfFormat function from the icl namespace.
       @param s size of the ImgI
       @param eFormat (color)-format of the image
+      @param eDepth depth of the image (depth8u or depth32f)
+      @param iChannels channel count of the image (if -1, then the channel count is derived
+                       from the set format e.g. formatRGB-> 3 channels )
       **/
       ImgI(const Size &s,
            format eFormat, 
