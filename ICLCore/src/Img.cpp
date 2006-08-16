@@ -1,5 +1,3 @@
-// {{{ <Replaced missing fold top mark>
-
 /*
   Img.cpp
 
@@ -289,62 +287,69 @@ Img<Type>::deepCopyROI(ImgI *poDst) const
       ERROR_LOG("roi size of source and destination must be equal");
       return poDst;
     }
-  for(int c=0;c<m_iChannels;c++)
-    {
-      if(m_eDepth == poDst->getDepth())
-        {
-          if(m_eDepth == depth8u){
+  for(int c=0;c<m_iChannels;c++) {
+     deepCopyROI (poDst, c, c);
+  }
+  return poDst;
+}
+
+// }}}
+
+template<class Type> void
+Img<Type>::deepCopyROI(ImgI *poDst, int iSrcChannel, int iDstChannel) const
+  // {{{ open
+{
+  FUNCTION_LOG("");
+
+  if(m_eDepth == poDst->getDepth()) {
+     if(m_eDepth == depth8u){
 #ifndef WITH_IPP_OPTIMIZATION
-            for(Img8u::iterator s=asImg<icl8u>()->getROIIterator(c),d=poDst->asImg<icl8u>()->getROIIterator(c); s.inRegion();s.incRow(),d.incRow()){
-              memcpy(&*d,&*s,s.getROIWidth()*sizeof(icl8u));
-            }
+        Img8u::iterator s=asImg<icl8u>()->getROIIterator(iSrcChannel);
+        Img8u::iterator d=poDst->asImg<icl8u>()->getROIIterator(iDstChannel);
+        for(; s.inRegion();s.incRow(),d.incRow()){
+           memcpy(&*d,&*s,s.getROIWidth()*sizeof(icl8u));
+        }
 #else
-            ippiCopy_8u_C1R(asImg<icl8u>()->getROIData(c),getLineStep(),
-                            poDst->asImg<icl8u>()->getROIData(c),poDst->getLineStep(),
-                            getROISize());
+        ippiCopy_8u_C1R(asImg<icl8u>()->getROIData(iSrcChannel),getLineStep(),
+                        poDst->asImg<icl8u>()->getROIData(iDstChannel),poDst->getLineStep(),
+                        getROISize());
 #endif
-          }else{
+     } else {
 #ifndef WITH_IPP_OPTIMIZATION
-             for(Img32f::iterator s=asImg<icl32f>()->getROIIterator(c),d=poDst->asImg<icl32f>()->getROIIterator(c); s.inRegion();s.incRow(),d.incRow()){
-              memcpy(&*d,&*s,s.getROIWidth()*sizeof(icl32f));
-            }
+        Img32f::iterator s=asImg<icl32f>()->getROIIterator(iSrcChannel);
+        Img32f::iterator d=poDst->asImg<icl32f>()->getROIIterator(iDstChannel);
+        for(; s.inRegion();s.incRow(),d.incRow()){
+           memcpy(&*d,&*s,s.getROIWidth()*sizeof(icl32f));
+        }
 #else
-             ippiCopy_32f_C1R(asImg<icl32f>()->getROIData(c),getLineStep(),
-                              poDst->asImg<icl32f>()->getROIData(c),poDst->getLineStep(),
+        ippiCopy_32f_C1R(asImg<icl32f>()->getROIData(iSrcChannel),getLineStep(),
+                         poDst->asImg<icl32f>()->getROIData(iDstChannel),poDst->getLineStep(),
+                         getROISize());
+#endif
+     }
+  } else { // differing depth
+     if(m_eDepth == depth8u){
+#ifndef WITH_IPP_OPTIMIZATION
+        Img8u::iterator  s=asImg<icl8u>()->getROIIterator(iSrcChannel);
+        Img32f::iterator d=poDst->asImg<icl32f>()->getROIIterator(iDstChannel);
+        for(;s.inRegion();++d,++s) *d = static_cast<icl32f>(*s);
+#else
+        ippiConvert_8u32f_C1R(asImg<icl8u>()->getROIData(iSrcChannel),getLineStep(),
+                              poDst->asImg<icl32f>()->getROIData(iDstChannel),poDst->getLineStep(),
                               getROISize());
 #endif
-          }
-        }
-      else
-        {
-          if(m_eDepth == depth8u){
+     } else {
 #ifndef WITH_IPP_OPTIMIZATION
-            Img8u::iterator s=asImg<icl8u>()->getROIIterator(c);
-            Img32f::iterator d=poDst->asImg<icl32f>()->getROIIterator(c);
-            for(;s.inRegion();d++,s++){
-              *d = static_cast<icl32f>(*s);
-            }
+        Img32f::iterator s=poDst->asImg<icl32f>()->getROIIterator(iSrcChannel);
+        Img8u::iterator  d=poDst->asImg<icl8u>()->getROIIterator(iDstChannel);
+        for(;s.inRegion();++d,++s) *d = static_cast<icl8u>(*s);
 #else
-            ippiConvert_8u32f_C1R(asImg<icl8u>()->getROIData(c),getLineStep(),
-                                  poDst->asImg<icl32f>()->getROIData(c),poDst->getLineStep(),
-                                  getROISize());
+        ippiConvert_32f8u_C1R(asImg<icl32f>()->getROIData(iSrcChannel),getLineStep(),
+                              poDst->asImg<icl8u>()->getROIData(iDstChannel),poDst->getLineStep(),
+                              getROISize(),ippRndNear);
 #endif
-          }else{
-#ifndef WITH_IPP_OPTIMIZATION
-            Img32f::iterator s=asImg<icl32f>()->getROIIterator(c);
-            Img8u::iterator d=poDst->asImg<icl8u>()->getROIIterator(c);
-            for(;s.inRegion();d++,s++){
-              *d = static_cast<icl8u>(*s);
-            }
-#else
-            ippiConvert_32f8u_C1R(asImg<icl32f>()->getROIData(c),getLineStep(),
-                                  poDst->asImg<icl8u>()->getROIData(c),poDst->getLineStep(),
-                                  getROISize(),ippRndNear);
-#endif
-          }
-        }
-    }
-  return poDst;
+     }
+  }
 }
 
 // }}}

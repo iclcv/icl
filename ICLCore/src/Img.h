@@ -260,6 +260,8 @@ class Img : public ImgI
       
   **/
   virtual ImgI *deepCopyROI(ImgI *poDst = NULL) const;
+  /// deep copy a single channel from source ROI to destination ROI
+  virtual void  deepCopyROI(ImgI *poDst, int iSrcChannel, int iDstChannel) const;
   
   /// scales the image data in the image ROI into the destination images ROI (IPP-OPTIMIZED)
   /** This function copies ROI data from one image into the ROI of another one. If the source
