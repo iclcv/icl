@@ -210,8 +210,8 @@ Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
 #else
 
   //---- Variable initilazation ----
-  float fXStep = ((float)getWidth()-1)/(float)(poDst->getWidth()); 
-  float fYStep = ((float)getHeight()-1)/(float)(poDst->getHeight());
+  float fXStep = ((float)getSize().width-1)/(float)(poDst->getSize().width); 
+  float fYStep = ((float)getSize().height-1)/(float)(poDst->getSize().height);
 
   //---- scale Img ----
   for(int c=0;c<m_iChannels;c++)
@@ -222,15 +222,15 @@ Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
         {
           case interpolateNN: 
             if(poDst->getDepth()==depth8u){
-              for(int x=0;x<poDst->getWidth();x++){
-                for(int y=0;y<poDst->getHeight();y++){
+              for(int x=0;x<poDst->getSize().width;x++){
+                for(int y=0;y<poDst->getSize().height;y++){
                   LOOP_LOG("interpolateNN: x:"<< x << " y:" << y);
                   (*(poDst->asImg<icl8u>()))(x,y,c)=static_cast<icl8u>((*this)((int)rint(x*fXStep),(int)rint(y*fYStep),c));
                 }
               }
             }else{
-              for(int x=0;x<poDst->getWidth();x++){
-                for(int y=0;y<poDst->getHeight();y++){
+              for(int x=0;x<poDst->getSize().width;x++){
+                for(int y=0;y<poDst->getSize().height;y++){
                   LOOP_LOG("interpolateNN: x:"<< x << " y:" << y);
                   (*(poDst->asImg<icl32f>()))(x,y,c)=static_cast<icl32f>((*this)((int)rint(x*fXStep),(int)rint(y*fYStep),c));
                 }
@@ -240,14 +240,14 @@ Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
           
           case interpolateLIN: 
             if(poDst->getDepth()==depth8u){
-              for(int x=0;x<poDst->getWidth();x++){
-                for(int y=0;y<poDst->getHeight();y++){
+              for(int x=0;x<poDst->getSize().width;x++){
+                for(int y=0;y<poDst->getSize().height;y++){
                   (*(poDst->asImg<icl8u>()))(x,y,c)=static_cast<icl8u>(interpolate((fXStep/2)+ x*fXStep,(fYStep/2)+y*fYStep,c));
                 }
               }
             }else{
-              for(int x=0;x<poDst->getWidth();x++){
-                for(int y=0;y<poDst->getHeight();y++){
+              for(int x=0;x<poDst->getSize().width;x++){
+                for(int y=0;y<poDst->getSize().height;y++){
                   (*(poDst->asImg<icl32f>()))(x,y,c)=static_cast<icl32f>(interpolate((fXStep/2)+ x*fXStep,(fYStep/2)+y*fYStep,c));
                 }
               }
@@ -295,7 +295,7 @@ Img<Type>::deepCopyROI(ImgI *poDst) const
         {
           if(m_eDepth == depth8u){
 #ifndef WITH_IPP_OPTIMIZATION
-            for(Img8u::iterator s=asImg<icl8u>()->begin(c),d=poDst->asImg<icl8u>()->begin(c); s.inRegion();s.incRow(),d.incRow()){
+            for(Img8u::iterator s=asImg<icl8u>()->getROIIterator(c),d=poDst->asImg<icl8u>()->getROIIterator(c); s.inRegion();s.incRow(),d.incRow()){
               memcpy(&*d,&*s,s.getROIWidth()*sizeof(icl8u));
             }
 #else
@@ -305,7 +305,7 @@ Img<Type>::deepCopyROI(ImgI *poDst) const
 #endif
           }else{
 #ifndef WITH_IPP_OPTIMIZATION
-             for(Img32f::iterator s=asImg<icl32f>()->begin(c),d=poDst->asImg<icl32f>()->begin(c); s.inRegion();s.incRow(),d.incRow()){
+             for(Img32f::iterator s=asImg<icl32f>()->getROIIterator(c),d=poDst->asImg<icl32f>()->getROIIterator(c); s.inRegion();s.incRow(),d.incRow()){
               memcpy(&*d,&*s,s.getROIWidth()*sizeof(icl32f));
             }
 #else
@@ -319,8 +319,8 @@ Img<Type>::deepCopyROI(ImgI *poDst) const
         {
           if(m_eDepth == depth8u){
 #ifndef WITH_IPP_OPTIMIZATION
-            Img8u::iterator s=asImg<icl8u>()->begin(c);
-            Img32f::iterator d=poDst->asImg<icl32f>()->begin(c);
+            Img8u::iterator s=asImg<icl8u>()->getROIIterator(c);
+            Img32f::iterator d=poDst->asImg<icl32f>()->getROIIterator(c);
             for(;s.inRegion();d++,s++){
               *d = static_cast<icl32f>(*s);
             }
@@ -331,8 +331,8 @@ Img<Type>::deepCopyROI(ImgI *poDst) const
 #endif
           }else{
 #ifndef WITH_IPP_OPTIMIZATION
-            Img32f::iterator s=asImg<icl32f>()->begin(c);
-            Img8u::iterator d=poDst->asImg<icl8u>()->begin(c);
+            Img32f::iterator s=asImg<icl32f>()->getROIIterator(c);
+            Img8u::iterator d=poDst->asImg<icl8u>()->getROIIterator(c);
             for(;s.inRegion();d++,s++){
               *d = static_cast<icl8u>(*s);
             }
@@ -395,8 +395,8 @@ Img<Type>::scaledCopyROI(ImgI *poDst, scalemode eScaleMode) const
 #else
   /// _VERY_ slow fallback implementation
  
-  ImgI * poROITmp = imgNew(getDepth(),iW,iH,formatMatrix,m_iChannels);
-  ImgI * poDstTmp = imgNew(getDepth(),iDstW,iDstH,formatMatrix,m_iChannels);
+  ImgI * poROITmp = imgNew(getDepth(),getROISize(),formatMatrix,m_iChannels);
+  ImgI * poDstTmp = imgNew(getDepth(),poDst->getROISize(),formatMatrix,m_iChannels);
   
   deepCopyROI(poROITmp);
   poROITmp->scaledCopy(poDstTmp,eScaleMode);
