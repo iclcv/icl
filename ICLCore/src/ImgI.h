@@ -26,7 +26,9 @@ namespace icl {
   /// typedef for 32bit float images
   typedef Img<iclfloat> Img32f;
   
+
   /// ImgI is the Image-Interface class that provides save access to underlying Img-template
+  /* {{{ ImgI class documentation */
   /**
   \section Class
   The ImgI class provides access to the following basic image features:
@@ -87,6 +89,7 @@ namespace icl {
   </pre>
 
   **/ 
+  /* }}} */
   class ImgI
     {   
       public:
@@ -103,7 +106,7 @@ namespace icl {
       //@{ @name functions for data exchange
       /* {{{ open */
 
-      /// creates a shallow copy of the image.
+      /// creates a shallow copy of the image (shared channels).
       /** It exploits the given destination image if possible,
           i.e. if the pixel depth matches. Else this image is released
           and a new one is created.
@@ -226,8 +229,8 @@ namespace icl {
           setROIOffset and setROISize below. */
       void setROI(const Rect &r){
         FUNCTION_LOG("");
-        m_oROIOffset = Point(r.x,r.y);
-        m_oROISize   = Size(r.width,r.height);
+        setROISize(Size(r.width,r.height));
+        setROIOffset(Point(r.x,r.y));
       }
       /// fast and direct setting of ROI without any checks
       /** sets ROI offset and size to specified arguments without any checks. 

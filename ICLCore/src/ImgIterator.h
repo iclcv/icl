@@ -4,10 +4,10 @@
 #include "ICLCore.h"
 
 namespace icl{
-  /// Iterator class used to iterate over an Imgs ROI pixels
+  /// Iterator class used to iterate over an Images (ROI-)pixels
   /**
   The ImgIterator is a utility to iterate line by line over
-  all pixels of an Imgs ROI. The following ASCII image 
+  all pixels of <a subrect/all pixles> of an image. The following ASCII image 
   shows an images ROI.
   <pre>
     1st pixel
@@ -36,12 +36,12 @@ namespace icl{
      - check of the last valid pixel position
 
   the following code example shows how to
-  handle image ROIs using the ImgIterator image iterator
+  handle image ROIs using the ImgIterator
   
   <pre>
   void channel_threshold_inplace(Img8u &im, int iTetta, int iChannel)
   {
-      for(Img8u::iterator p=im.begin(c)  ; p.inRegion() ; p++)
+      for(Img8u::iterator p=im.getROIIterator(c)  ; p.inRegion() ; p++)
       {
           *p = *p > tetta ? 255 : 0;
       }
@@ -58,7 +58,10 @@ namespace icl{
   <pre>
   void copy_channel_roi_row_by_row(Img8u &src, Img8u &dst, int iChannel)
   {
-     for(Img8u::iterator s=src.begin(iChannel),d=dst.begin(iChannel) ; s.inRegion() ; d.incLine(), s.incLine())
+     for(Img8u::iterator s=src.getROIIterator(iChannel),
+                         d=dst.getROIIterator(iChannel) ;
+         s.inRegion() ; 
+         d.incLine(), s.incLine())
      {
         memcpy(&*d,&*s,s.getROIWidth()*sizeof(iclbyte));
      }
@@ -70,13 +73,13 @@ namespace icl{
   In addition to the above functionalities, ImgIterators can be used for
   arbitrary image neighborhood operations like convolution, median or
   erosion. The following example explains how to create so called sub-region
-  iterators, that work on a symmetrical neighborhood around a higher lever
+  iterators, that work on a symmetrical neighborhood around a higher level
   ImgIterator.
 
   <pre>
   void channel_convolution_3x3(Img32f &src, Img32f &dst,iclfloat *pfMask, int iChannel)
   {
-     for(Img32f::iterator s=src.begin(iChannel) d=dst.begin() ; s.inRegion() ; s++,d++)
+     for(Img32f::iterator s=src.getROIIterator(iChannel) d=dst.getROIIterator() ; s.inRegion() ; s++,d++)
      {
         iclfloat *m = pfMask;
         (*d) = 0;
@@ -177,11 +180,8 @@ namespace icl{
     
      /** 2nd Constructor creates an ImgIterator object with Type "Type"
          @param ptData pointer to the corresponding channel data
-         @param iXPos x offset of the images ROI
-         @param iYPos y offset of the images ROI
          @param iImageWidth width of the corresponding image
-         @param iROIWidth width of the images ROI
-         @param iROIHeight width of the images ROI
+         @param r ROI rect for the iterator
      */
     ImgIterator(Type *ptData,int iImageWidth,const Rect &roROI):
        m_iImageWidth(iImageWidth),

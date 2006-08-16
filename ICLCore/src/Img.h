@@ -30,11 +30,18 @@ class Img : public ImgI
 {
  protected:
   
+  // @{ @name data
+  /* {{{ open */
   /// internally used storage for the image channels
   vector<SmartPtr<Type> > m_vecChannels;
-  
-  /* {{{ Auxillary function */
+  // @}
+  /* }}} */
 
+  // @{ @name auxillary functions
+  /* {{{ open */
+
+                  
+                  
   /** Bilinear interpolation for 'subpixel' values.
       @param fX X coordinate of the pixel
       @param fY Y coordinate of the pixel
@@ -44,24 +51,66 @@ class Img : public ImgI
   Type interpolate(float fX,float fY,int iChannel=0) const;
 
   /// creates a new deep copy of a specified Type*
+  /** if the give Type* ptDataToCopy is not NULL, the data addressed from it, 
+      is copied deeply into the new created data pointer
+  **/
   SmartPtr<Type> createChannel(Type *ptDataToCopy=0) const;
+
+  /// returns the start index for a channel loop
+  /** In many functions like deleteChannel, clear or scaleRange, 
+      it has to be swiched over two cases:
+      - if given channel index is -1, then it has to be iterated over all
+        image channels
+      - else only the given image channel has to be touched
+      
+      To avoid code doublication, one can use the following for-loop
+      <pre>
+      void foo(int iChannel){
+         for(int i = iIndex < 0 ? 0 : iIndex, iEnd = iIndex < 0 ? m_iChannels : iIndex+1;
+             i < iEnd; 
+             i++) 
+         {
+             // do something
+         }
+      </pre>
+      When using the get<Start|End>Index functions the loop becomes much more
+      readable:
+      <pre>
+      void foo(int iChannel){
+         for(int i=getStartIndex(iIndex), iEnd=getEndIndex(iIndex); i<iEnd ;i++){
+         {
+             // do something
+         }
+      </pre>
+      @param iIndex channel index
+      @return start index for for-loops
+      @see getEndIndex
+  **/
+  int getStartIndex(int iIndex) const { return iIndex < 0 ? 0 : iIndex; }
+
+  /// returns the end index for a channel loop
+  /** this function behaves essentially like the above function 
+      @param iIndex channel index
+      @return end index for for-loops
+      @see getStartIndex
+  */
+  int getEndIndex(int iIndex) const { return iIndex < 0 ? getChannels() : iIndex+1; }
+  // @}
   /* }}} */
                                 
  public:
-  /* {{{ constructors / destructor: */
+  // @{ @name constructors / destructor
+  /* {{{ open */
 
-  //@{
   /// Creates an image with specified number of channels and size.    
   /** the format of the image will be set to "iclMatrix"
-      @param iWidth Width of image
-      @param iHeight Height of image
+      @param s size of the new image
       @param iChannels Number of Channels 
   **/
   Img(const Size &s, int iChannels=1);
  
   /// Creates an image with specified size, number of channels and format
-  /** @param iWidth width of the image
-      @param iHeight height of the image
+  /** @param s size of the new image
       @param eFormat (color)-format of the image
       @param iChannels channel count of the image (if -1, then the channel
                        count is calculated from the given format (E.g. if
@@ -70,15 +119,16 @@ class Img : public ImgI
   Img(const Size &s, Format eFormat, int iChannels = -1);
  
   /// Creates an image with specified size, number of channels, format, using shared data pointers as channel data
-  /** @param iWidth width of the image
-      @param iHeight height of the image
+  /** @param s size of the new image
       @param eFormat (color)-format of the image
       @param iChannels channel count of the image (if -1, then the channel
                        count is calculated from the given format (E.g. if
                        eFormat is formatRGB iChannels is set to 3)
       @param pptData holds a pointer to channel data pointers. pptData must
                      have size iChannels. The data must not be deleted during
-                     the "lifetime" of the Img.
+                     the "lifetime" of the Img. Call detach after the 
+                     constructor call, to induce the Img to allocate own memory
+                     for the image data.
   **/
   Img(const Size &s, Format eFormat, int iChannels, Type** pptData);
 
@@ -95,12 +145,10 @@ class Img : public ImgI
   ~Img();
   
   //@}
-
   /* }}} */
-                                              
-  /* {{{ class operator */
-
-  //@{ @name class operators
+  
+  //@{ @name operators
+  /* {{{ open */
 
   /// Assign operator (flat copy of channels)
   /** Both images will share their channel data. 
@@ -111,10 +159,10 @@ class Img : public ImgI
   Img<Type>& operator=(const Img<Type>& tSource);
 
   /// pixel access operator
-  /** This operator has to be used, to access the pixel data of the image
+  /** This operator may be used, to access the pixel data of the image
       e.g. copy of image data:
       <pre>
-      Img8u oA(320,240,1),oB(320,240,1);
+      Img8u oA(Size(320,240),1),oB(Size(320,240),1);
       for(int x=0;x<320;x++){
          for(int y=0;y<240;y++){
             oB(x,y,0)=oA(x,y,0);
@@ -123,11 +171,16 @@ class Img : public ImgI
       </pre>
       <h3>Efficiency</h3>
       Although the ()-operator is compiled inline, and optimized,
-      it is very slow. A measurement with a "-O3" binary brought the result
-      That pixel access is up to 10 times faster when working
-      directly with a channel data pointer. Nevertheless, the ()-operator
-      is provided in the Img-class, as it offers a very intuitive access
-      to the pixel data. 
+      it is very slow, as it has to select a channel internally 
+      (array access) followed by the data access of the selected 
+      channel (return array[x+w*y]). A measurement with a "-O3" 
+      binary brought the result that pixel access is up to 10 times 
+      faster when working directly with a channel data pointer. 
+      Nevertheless, the ()-operator is provided in the Img-class, 
+      as it offers a very intuitive access to the pixel data. 
+      <b>Note:</b> The also provided ImgIterator provides an 
+      additional ROI handling mechanism and is more than 5 times 
+      faster. @see ImgIterator @see getIterator() @see getROIIterator()
   
       @param iX X-Position of the referenced pixel
       @param iY Y-Position of the referenced pixel
@@ -139,20 +192,19 @@ class Img : public ImgI
     }
 
   //@}
-
   /* }}} */
   
-  /* {{{ moving / scaling image data */
-  //@{ //@name moving / scaling image data
+  //@{ @name moving / scaling image data
+  /* {{{ open  */
 
-  /// perform a deep copy (given destination image is resized on demand)
-  /** Returns an independent exact copy of the object. If the given destination
+  /// perform a deep copy (given destination image is resized on demand) (IPP-OPTIMIZED)
+  /** Returns an independent exact copy of the object (except for the depth, which
+      is fixed if poDst is not NULL). If the given destination
       image is not NULL, then deepCopy ensures, that is has a compatible
       size to this, by resizing destination image on demand. 
       <b>WARNING:</b> If the destination image has another depth, then this image,
-      the deepCopy will internally call <b>convertTo8Bit</b> or <b>convertTo32Bit</b> 
-      depending on the the images and the destination images Depth.
-      <b>The images ROI will not be regarded</b>, to copy just the ROI 
+      the deepCopy will internally call <b>convertTo8<dest-depth>(poDst)</b>.
+     <b>The images ROI will not be regarded</b>, to copy just the ROI 
       into another image use deepCopyROI(ImgI *poDst.) or 
       scaledCopyROI(ImgI *poDst).
       @param poDst Destination image for the copied data 
@@ -192,8 +244,9 @@ class Img : public ImgI
   
   /// copies the image data in the images ROI into the destination images ROI (IPP-OPTIMIZED)
   /** This function will copy the content of the images ROI into the
-      destination images ROI. The ROIs must have equal dimensions - an error will
-      exit the program otherwise. If the given destination image is NULL (by default),
+      destination images ROI. The ROIs must have equal dimensions - if not, then then poDst 
+      is returned imediately without performing any operation, and a warning is written to 
+      std::out. If the given destination image is NULL (by default),
       deepCopyROI will create a new image, with identical channel count, depth and
       format. This image has the size of the source images ROI-size, and will contain
       the source images' ROI data.
@@ -203,7 +256,7 @@ class Img : public ImgI
       This will speedup performance for huge ROIs (width>100) by up to 50%. 
 
       <h3>Depth conversion</h3>
-      The deep copy function supports IPP-OPTIMIZED depth conversion.
+      The deepCopyROI function supports IPP-OPTIMIZED depth conversion.
       
   **/
   virtual ImgI *deepCopyROI(ImgI *poDst = NULL) const;
@@ -217,8 +270,7 @@ class Img : public ImgI
       The IPP-OPTIMIZED implementation is <b>very fast</b> - as the used ippResize-function
       uses as well source ROI as destination ROI by default. <b>Note</b> that the non
       OPTIMIZED function is just a fallback implementation to provided identical functionality
-      to the optimized implementation. As scaledCopy, this fallback implementation uses
-      a temporary image buffer, to perform the operation.
+      to the optimized implementation which uses a temporary image buffer, to perform the operation.
       @param poDst destination image (if NULL) than it is created new with
                    identical size of this images ROI size.
       @param eScaleMode defines the interpolation mode, that is used for the scaling
@@ -231,10 +283,9 @@ class Img : public ImgI
   virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, ScaleMode eScaleMode=interpolateNN) const;
                   
   /* }}} */
-                                         
-  /* {{{ class organization / channel management */
-
-  //@{ //@name organization and channel management
+  
+  //@{ @name organization and channel management                                       
+  /* {{{ open */
   
   /// Makes the image channels inside the Img independent from other Img.
   /** @param iIndex index of the channel, that should be detached.
@@ -254,7 +305,7 @@ class Img : public ImgI
       @param oSrc source image
       @param iChannel channel to append (or all, if < 0)
   **/
-  void append(const Img<Type>& oSrc, int iChannel=-1);
+  void append(Img<Type> *poSrc, int iChannel=-1);
   
   /// Swap channel A and B
   /** @param iIndexA Index of channel A;
@@ -266,10 +317,9 @@ class Img : public ImgI
   /** Both images must have the same width and height.
       @param iThisIndex channel to replace
       @param iOtherIndex channel to replace with
-      @param oOtherImg Image that contains the new channel
+      @param poOtherImg Image that contains the new channel
   **/
-  void replaceChannel(int iThisIndex, 
-                      const Img<Type>& oOtherImg, int iOtherIndex);
+  void replaceChannel(int iThisIndex, Img<Type> *poOtherImg, int iOtherIndex);
 
   /// sets the channel count to a new value
   /** This function works only on demand, that means, that
@@ -312,36 +362,10 @@ class Img : public ImgI
   //@}
 
   /* }}} */
-                                                     
-  /* {{{ Type conversion iclbyte/iclfloat */
-  //@{ @name type conversion
   
-  /// Return a copy of the object with depth 32 bit. (IPP-OPTIMIZED)
-  /** If the given destination image poDst is not NULL, than it's size is
-      adapted to the images size on demand.
-      @param poDst destination image (if NULL, then a new image is created as 
-                   a deep copy of the source image) 
-      @return Copy of the object with depth 32 bit 
-  **/
-  //virtual Img32f *convertTo32Bit(Img32f* poDst) const ;
- 
-  /// Return a copy of the object with depth 8 bit (IPP-OPTIMIZED)
-  /** <b>Waring: Information may be lost!</b>
-      If the given destination image poDst is not NULL, than it's size is
-      adapted to the images size on demand.
-      @param poDst destination image (if NULL, then a new image is created as 
-                   a deep copy of the source image) 
-      @return Copy of the object with depth 8 bit 
-  **/
-  //virtual Img8u *convertTo8Bit(Img8u* poDst) const;
+  //@{ @name getter functions                                                   
+  /* {{{ open */
 
-   //@}
-  /* }}} */
-                                              
-  /* {{{ Getter Functions */
-
-  //@{ @name getter functions
-  
   /// Returns max pixel value of channel iChannel (IPP-OPTIMIZED)
   /** @param iChannel Index of channel
   **/
@@ -364,23 +388,65 @@ class Img : public ImgI
       direct access to the channel data memory.
       @param iChannel Channel to get data from
   **/
-
   virtual int getLineStep() const{
     return getSize().width*sizeof(Type);
   }
+
+  /// returns a Type save data data pointer to the channel data origin
+  /** If the channel index is not valid (<0 or >= getChannels) NULL 
+      is returned and an error is written to std::err
+      @param iChannel specifies the channel 
+      @return data origin pointer to the specified channel 
+  */
   Type* getData(int iChannel) const
     { 
       FUNCTION_LOG("");
+      ICLASSERT_RETURN_VAL( iChannel >= 0 , 0);
+      ICLASSERT_RETURN_VAL( iChannel < getChannels() , 0);
       return m_vecChannels[iChannel].get();
     }
   
+  /// returns a Type save data pointer to the first pixel within the images roi
+  /** The following ASCII image shows an images ROI.
+      <pre>
+                            1st roi-pixel
+                              |
+                          ....|....................         ---
+                          ....|..ooooooooo......... ---      |
+                          ....|..ooooooooo.........  |       |
+                          ....|..ooooooooo......... roi-h  image-h
+          1st image pixel ....|..ooooooooo.........  |       |
+               |          ....+->xoooooooo......... ---      |
+               +--------->x........................         ---
+                                 |-roi-w-|
+                          |---------image-w-------|
+  
+     </pre>
+     <b>Note:</b> most ipp-function require the ROI-data pointer
+     @param iChannel specifies the channel
+     @return roi data pointer
+  */
   Type *getROIData(int iChannel) const{
     FUNCTION_LOG("");
+    ICLASSERT_RETURN_VAL( iChannel >= 0 ,0);
+    ICLASSERT_RETURN_VAL( iChannel < getChannels() ,0);
     return getData(iChannel) + m_oROIOffset.x + (m_oROIOffset.y * m_oSize.width);
   }
 
+  /// returns the data pointer to a pixel with defined offset
+  /** In some functions like filters, it might be necessary to change the images
+      ROI parameters before applying the underlying image operation. 
+      Temporarily changing the images ROI parameters causes problems in
+      multi-threaded environments. To avoid this, this function provides
+      access to a data pointer to an abitrary notional ROI-offset
+      @param iChannel selects the channel
+      @param p notional ROI offset
+      @return data pointer with notional ROI offset p
+  **/
   Type *getROIData(int iChannel, const Point &p) const{
     FUNCTION_LOG("");
+    ICLASSERT_RETURN_VAL( iChannel >= 0 ,0);
+    ICLASSERT_RETURN_VAL( iChannel < getChannels() ,0);
     return getData(iChannel) + p.x + (p.y * m_oSize.width);
   }
 
@@ -389,128 +455,28 @@ class Img : public ImgI
   /** This function is inherited from the base class ImgI
       @param iChannel determines the channel which's dataptr should
                       be returned
+      @return raw data pointer
   **/
   virtual void* getDataPtr(int iChannel) const
     {
       FUNCTION_LOG("");
+      ICLASSERT_RETURN_VAL( iChannel >= 0 ,0);
+      ICLASSERT_RETURN_VAL( iChannel < getChannels() ,0);
       return getData(iChannel);
     }
   
-  /// returns the image pointer to the bottom left corner of the images ROI
-  /** if IPP functions are using image ROIs, than the initial data pointer
-      needs to point not the bottom left pixel of the image, but the bottom left
-      pixel of the images ROI:
-      <pre>
-
-      image: (o=roi)              
-      ..............                    ..............x<--getDataEnd()
-      ....oooooooo..                    ....oooooooo..
-      ....oooooooo..       roiData(): ----->xooooooo..
-      ..............                    ..............
-      ..............  getDataBegin(): ->x.............
-      </pre>
-  
-      @param iChannel selects a specific channel
-      @param poROIoffset allows to override internal ROI
-      @return "ROI'ed" image data pointer
-  */
- 
-  /// returns the data pointer (in respect to the images roi) as iclbyte*
-  /** When implementing ipp-accelerated template functions, you may need
-      the functions roiData8u and roiData32f to get type-save data pointers.
-      Regard the following example:
-      <pre>
-      template<class T>
-      void scale_image_with_ipp(Img<T> *a, Img<T> *b)
-      {
-         for(int c=0;c<a->getChannels();c++)
-         {
-            if(a->getDepth() == depth8u)
-            {
-               ippScale_8u_C1R(a->roiData(c),...);           
-            }
-            else
-            {
-               ippScale_32f_C1R(a->roiData(c),...);                  
-            }
-         }
-      }
-      </pre>
-      This looks fine first, but the compiler will complain about wrong types!
-      Although due to dynamic type checking (if(a->getDepth()...) no error
-      would occur during runtime, the functions ippScale_8u_... and ippScale_32f_...
-      are compiled for template type T=iclfloat and T=iclbyte. So if T is iclbyte
-      the ippScale_32f_...-call is not allowed, and is not compilable.
-      The following code example will explain, how the functions roiData8u and 
-      roiData32f can be used to avoid these complications:
-     
-      <pre>
-      template<class T>
-      void scale_image_with_ipp(Img<T> *a, Img<T> *b)
-      {
-         for(int c=0;c<a->getChannels();c++)
-         {
-            if(a->getDepth() == depth8u)
-            {
-               ippScale_8u_C1R(a->roiData8u(c),...);           
-            }
-            else
-            {
-               ippScale_32f_C1R(a->roiData32(c),...);                  
-            }
-         }
-      }
-      </pre>
-      This example causes no compile errors at all, and also, 
-      due to dynamic type checking (if(a->getDepth()...), 
-      no runtime error will occur.
-      
-      It is strongly recommended to use ImgI class to avoid these problems.
-      As ImgI is not a template, it's not necessary to implement functions
-      as templates:
-      <pre>
-      
-      void scale_image_with_ipp(ImgI *a, ImgI *b)
-      {
-         if(a->getDepth() != b->getDepht())
-         {
-            error or type conversion....
-         }
-         for(int c=0;c<a->getChannels();c++)
-         {
-            if(a->getDepth() == depth8u)
-            {
-               ippScale_8u_C1R(a->asIcl8u()->roiData(c),...);           
-            }
-            else
-            {
-               ippScale_32f_C1R(a->asIcl32f()->roiData(c),...);                  
-            }
-         }
-      }
-      </pre>
-      
-      @param iChannel selects a specific channel
-      @param poROIoffset allows to override internal ROI
-      @return data pointer casted to iclbyte* (without type check)
-  
-  **/
-  // WEG!!! virtual iclbyte *roiData8u(int iChannel, const Point* poROIoffset = 0) const
-
   //@}
-
   /* }}} */
   
-  /* {{{ basic image manipulation: */
-
   //@{ @name basic image manipulations
+  /* {{{ open */
+
+  
 
   /// perform a scaling operation of the images (keeping the data) (IPP-OPTIMIZED)
   /** Scaling the channels is only performed on demand.
-      @param iNewWidth destination width for the scaling operation 
-                       (if set to -1 then the original width is used)
-      @param iNewHeight destination height for the scaling operation
-                       (if set to -1 then the original height is used)
+      @param s size of the destination image, if s.width is -1, then only the height
+               of the image is adapted. The same is valid for s.height.
       @param eScaleMode defines the interpolation mode, that is used for the scaling
                           operation. (if interpolateNon, the image becomes black)
                           possible modes are:
@@ -525,7 +491,7 @@ class Img : public ImgI
  
   
   /// Sets the pixels of one or all channels to a specified value
-  /** @param iChannel Channel to fill with zero (default: -1 = all)
+  /** @param iChannel Channel to fill with zero (default: -1 = all channels)
       @param tValue destination value (default: 0)
    **/
   void clear(int iChannel = -1, Type tValue = 0);
@@ -555,14 +521,14 @@ class Img : public ImgI
   //@}
 
 /* }}} */
-                                       
-  /* {{{ pixel-access using pixel-iterator */
+  
+  //@{ @name pixel access using roi iterator                                                                     
+  /* {{{ open */
 
-  //@{ @name pixel access using roi iterator                                
   /// type definition for roi iterator
   typedef ImgIterator<Type> iterator;
 
-  /// returns the iterator for the image roi
+  /// returns the iterator for the hole image 
   /** The following example taken from ImgIterator.h will show
       the iterator usage:
       <pre>
@@ -582,19 +548,28 @@ class Img : public ImgI
       <b>Note:</b> The performance hints illustrated in the
       ImgIterator documentation.
       @param iChannel selected channel index
-      @return roi-iterator
+      @return iterator
       @see ImgIterator
       @see end
   */
   inline iterator getIterator(int iChannel)
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
+      ICLASSERT_RETURN_VAL(iChannel >=0 , iterator());
+      ICLASSERT_RETURN_VAL(iChannel < getChannels() ,iterator());
       return iterator(getData(iChannel),m_oSize.width,Rect(Point(0,0),m_oSize));
     }
-  /// TODO Comment !!
+  /// returns an iterator to an images ROI pixles
+  /** this function behaves essentially like the above function 
+      @param iChannel selects a channel
+      @return roi-iterator
+      @see getIterator
+  */
   inline iterator getROIIterator(int iChannel)
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
+      ICLASSERT_RETURN_VAL(iChannel >=0 , iterator());
+      ICLASSERT_RETURN_VAL(iChannel < getChannels() ,iterator());
       return iterator(getData(iChannel),m_oSize.width,getROI());
     } 
  

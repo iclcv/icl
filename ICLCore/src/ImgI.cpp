@@ -28,7 +28,7 @@ namespace icl {
     FUNCTION_LOG("ImgI(" << s.width 
                  << "," << s.height 
                  << "," << translateformat(eFormat) 
-                 << "," << (eDepth==depth8u) ? "depth8u" : "depth32f" 
+                 << "," << (eDepth==depth8u) ? (char*)"depth8u" : (char*)"depth32f" 
                  << "," << iChannels << ")  this:" << this); 
     
   }

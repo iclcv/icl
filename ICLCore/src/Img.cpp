@@ -21,7 +21,7 @@ Img<Type>::Img(const Size &s,int iChannels):
   // {{{ open
 
   ImgI(s,formatMatrix,icl::getDepth<Type>(),iChannels){
-  FUNCTION_LOG("Img(" << s.width <<","<< w.height <<","<< iChannels << ")  this:" << this );
+  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << iChannels << ")  this:" << this );
   
   //---- Img Channel memory allocation ----
   for(int i=0;i<m_iChannels;i++)
@@ -416,10 +416,10 @@ Img<Type>::detach(int iIndex)
   // {{{ open
 {
   FUNCTION_LOG("detach(" << iIndex << ")");
-  ICLASSERT(iIndex < getChannels());
+  ICLASSERT_RETURN(iIndex < getChannels());
   
   //---- Make the whole Img independent ----
-  for(int i=iIndex<0?0:iIndex, iEnd=iIndex<0?m_iChannels:iIndex+1;i<iEnd;i++) 
+  for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++)
     {
       m_vecChannels[i] = createChannel (getData(i));
     }
@@ -443,16 +443,17 @@ Img<Type>::removeChannel(int iChannel)
 
 //----------------------------------------------------------------------------
 template<class Type> void
-Img<Type>::append(const Img<Type>& oSrc, int iIndex)
+Img<Type>::append(Img<Type> *poSrc, int iIndex)
   // {{{ open
 {
   FUNCTION_LOG("");
-  ICLASSERT_RETURN(oSrc.getSize() == getSize() );
+  ICLASSERT_RETURN( poSrc );
+  ICLASSERT_RETURN( poSrc->getSize() == getSize() );
   
-  for(int i = iIndex < 0 ? 0 : iIndex, iEnd = iIndex < 0 ? m_iChannels : iIndex+1;
-      i < iEnd; i++) {
-     m_vecChannels.push_back(oSrc.m_vecChannels[i]); 
-  }
+  for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++)
+    {
+      m_vecChannels.push_back(poSrc->m_vecChannels[i]); 
+    }
   m_iChannels = m_vecChannels.size();
 }
 
@@ -567,13 +568,13 @@ Img<Type>::renew(const Size &s, int iNewNumChannels)
 
 //----------------------------------------------------------------------------
 template<class Type> inline void 
-Img<Type>::replaceChannel(int iThisIndex, const Img<Type>& oSrc, int iOtherIndex) 
+Img<Type>::replaceChannel(int iThisIndex, Img<Type>* poSrc, int iOtherIndex) 
   // {{{ open
 {
   FUNCTION_LOG("");
   ICLASSERT_RETURN(iThisIndex >= 0 && iThisIndex < getChannels());
-  ICLASSERT_RETURN(iOtherIndex >= 0 && iOtherIndex < oSrc.getChannels());
-  m_vecChannels[iThisIndex] = oSrc.m_vecChannels[iOtherIndex];
+  ICLASSERT_RETURN(iOtherIndex >= 0 && iOtherIndex < poSrc->getChannels());
+  m_vecChannels[iThisIndex] = poSrc->m_vecChannels[iOtherIndex];
 }
 // }}}
 
@@ -873,14 +874,14 @@ Img<Type>::scaleRange(float fNewMin,float fNewMax,float fMin,float fMax, int iCh
 
 // ---------------------------------------------------------------------
 template<class Type>
-void Img<Type>::clear(int iChannel, Type tValue) 
+void Img<Type>::clear(int iIndex, Type tValue) 
   // {{{ open
 {
   //---- Log Message ----
-  FUNCTION_LOG("clear(" << iChannel << "," << tValue << ")");
-    
-  int iEnd = (iChannel<0)?m_iChannels:iChannel+1;
-  for(int i=iChannel<0?0:iChannel;i<iEnd ;i++) {
+  FUNCTION_LOG("clear(" << iIndex << "," << tValue << ")");
+  ICLASSERT_RETURN( iIndex < getChannels() );  
+  
+  for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++){
     fill(getData(i),getData(i)+getDim(),tValue);
   }
 }

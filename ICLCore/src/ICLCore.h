@@ -250,7 +250,7 @@ namespace icl {
   /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
   enum Depth{
     depth8u  = 0, /**< 8Bit unsigned integer values range {0,1,...255} */
-    depth32f = 1  /**< 32Bit floating point values */
+    depth32f = 1 /**< 32Bit floating point values */
   };
   
   /// determines the color-format, that is associated with the images channels 
@@ -360,7 +360,6 @@ namespace icl {
                     converted, then a new ImgCore* is created, at (*ppoDst).
       @param eDepth destination depth
       @param s destination image size
-      @param iHeight destination height
       @param eFormat destination format
       @param iChannelCount destination channel count. (If -1, then the channel count
                            is extracted from the given eFormat
