@@ -193,23 +193,23 @@ namespace icl{
        m_ptDataEnd(m_ptDataCurr+m_iROIWidth+(m_iROIHeight-1)*m_iImageWidth),
        m_ptCurrLineEnd(m_ptDataCurr+m_iROIWidth-1){}
 
-    /// 3nd Constructor to create sub-regions of an Img-image
-    /** This 2nd constructor creates a sub-region iterator, which may be
+    /// 3rd Constructor to create sub-regions of an Img-image
+    /** This 3rd constructor creates a sub-region iterator, which may be
         used e.g. for arbitrary neighborhood operations like 
         linear filters, medians, ...
         See the ImgIterator description for more detail.        
         @param roOrigin reference to source Iterator Object
-        @param iROIWidth width of the images ROI
-        @param iROIHeight width of the images ROI
+        @param s mask size
+        @param a mask anchor
     */
 
-    ImgIterator(const ImgIterator<Type> &roOrigin, const Size &s):
+    ImgIterator(const ImgIterator<Type> &roOrigin, const Size &s, const Point &a):
        m_iImageWidth(roOrigin.m_iImageWidth),
        m_iROIWidth(s.width),
        m_iROIHeight(s.height),
        m_iLineStep(m_iImageWidth - m_iROIWidth + 1),
        m_ptDataOrigin(roOrigin.m_ptDataOrigin),
-       m_ptDataCurr(roOrigin.m_ptDataCurr-(m_iROIWidth/2)-(m_iROIHeight/2)*m_iImageWidth),
+       m_ptDataCurr(roOrigin.m_ptDataCurr - a.x - a.y*m_iImageWidth),
        m_ptDataEnd(m_ptDataCurr+m_iROIWidth+(m_iROIHeight-1)*m_iImageWidth),
        m_ptCurrLineEnd(m_ptDataCurr+m_iROIWidth-1){}
     
@@ -247,9 +247,8 @@ namespace icl{
        current pixel data. If the end of a line is reached, then
        the position is set to the beginning of the next line.
     */
-    inline void operator ++(int i)
+    inline ImgIterator& operator++()
        {
-         (void)i;
          if ( m_ptDataCurr == m_ptCurrLineEnd )
            {
              m_ptDataCurr += m_iLineStep;
@@ -259,8 +258,17 @@ namespace icl{
            {
              m_ptDataCurr++;
            }
+         return *this;
        }
-    
+    /* postfix operator++ if needed at all:
+    inline ImgIterator operator++(int)
+       {
+         ImgIterator current (*this);
+         ++(*this); // call prefix operator
+         return current; // return previous
+       }
+    */
+
     /// to check if iterator is still inside the ROI
     /** @see operator++ */
     inline bool inRegion() const

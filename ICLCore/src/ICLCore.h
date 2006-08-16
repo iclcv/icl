@@ -250,7 +250,7 @@ namespace icl {
   /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
   enum Depth{
     depth8u  = 0, /**< 8Bit unsigned integer values range {0,1,...255} */
-    depth32f = 1 /**< 32Bit floating point values */
+    depth32f = 1  /**< 32Bit floating point values */
   };
   
   /// determines the color-format, that is associated with the images channels 

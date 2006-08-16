@@ -853,7 +853,7 @@ Img<Type>::scaleRange(float fNewMin,float fNewMax,float fMin,float fMax, int iCh
   int iChannelEnd = iChannel < 0 ? getChannels() : iChannel+1;
   for(int c = (iChannel<0) ? 0 : iChannel; c < iChannelEnd ;c++)
     {
-      for(iterator p=getROIIterator(c);p.inRegion();p++)
+      for(iterator p=getROIIterator(c); p.inRegion(); ++p)
         {
           fPixel = static_cast<iclfloat>(*p);
           fPixel=fPixel*fScale+fShift;
