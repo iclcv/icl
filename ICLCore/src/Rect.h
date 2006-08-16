@@ -109,12 +109,14 @@ namespace icl{
 
     /// intersection of two Rects (NOT IMPLEMENTED)
     Rect operator&(const Rect &r) const {
+      (void)r;
       printf("ERROR!!! Rect::intersection operator & is not yet implemented \n");
       return Rect();
     }
     
     /// union of two Rects (NOT IMPLEMENTED)
     Rect operator|(const Rect &r) const {
+      (void)r;
       printf("ERROR!!! Rect::union operaotr | is not yet implemented \n");
       return Rect();
     }
@@ -128,6 +130,7 @@ namespace icl{
     
     /// returns if a Rect containes another rect (NOT IMPLEMENTED)
     bool contains(const Rect &r){
+      (void)r;
       printf("ERROR!!! Rect::contains is not yet implemented \n");
       return Rect();
     }
