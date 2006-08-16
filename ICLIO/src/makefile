@@ -83,24 +83,28 @@ _cleanobj_First:
 ifeq "${FORCE_CPP}" "TRUE"
 
 depend:
-	${PRE_CMD}${CMD_ECHO} "Building dependency from: ${_CURR_DIR}"
+	${PRE_CMD}${CMD_ECHO} "Building dependencies from: ${_CURR_DIR}"
 	${PRE_CMD}${CMD_RM} makeDepend
-	${PRE_CMD}${CMD_ECHO} > makeDepend
-	${PRE_CMD}${CMD_DEPC} ${MKDEPFLAGS} -p../obj/${TARGET_PREFIX} \
-                    ${ABS_INCLUDES} ${REL_INCLUDES} ${_SOURCES_FILENAME} \
-                    ${CPPFLAGS} ${CPPsDEFINES}
-	${CMD_FINAL}
-
+	${PRE_CMD}for file in ${_SOURCES_FILENAME} ; do \
+	  ${CMD_ECHO} "  $$file" ; \
+		$(CMD_CCPP) $(CXXFLAGS) ${CPPDEFINES} ${ABS_INCLUDES} ${REL_INCLUDES} \
+	    $$file -MT ../obj/$${file%.*}.o -MM -o .depend ; \
+	  cat .depend >> makeDepend ; \
+	done
+	${CMD_RM} .depend
 else
 
 depend:
-	${PRE_CMD}${CMD_ECHO} "Building dependency from: ${_CURR_DIR}"
+	${PRE_CMD}${CMD_ECHO} "Building dependencies from: ${_CURR_DIR}"
 	${PRE_CMD}${CMD_RM} makeDepend
-	${PRE_CMD}${CMD_ECHO} > makeDepend
-	${PRE_CMD}${CMD_DEPC} ${MKDEPFLAGS} -p../obj/${TARGET_PREFIX} \
-                    ${ABS_INCLUDES} ${REL_INCLUDES} ${_SOURCES_FILENAME} \
-                    ${CFLAGS} ${CDEFINES}
-	${CMD_FINAL}
+	${PRE_CMD}for file in ${_SOURCES_FILENAME} ; do \
+	  ${CMD_ECHO} "  $$file" ; \
+		$(CMD_CC) $(CFLAGS) ${CDEFINES} ${ABS_INCLUDES} ${REL_INCLUDES} \
+	    $$file -MM -o .depend ; \
+	  cat .depend >> makeDepend ; \
+	done
+	${PRE_CMD}${CMD_RM} .depend
+	${CMD_RM} .depend
 
 endif
 
@@ -114,47 +118,3 @@ cleandepend:
 # Note: This rule must be the last one!
 #-----------------------------------------------
 %: ;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
