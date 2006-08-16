@@ -260,14 +260,17 @@ namespace icl{
            }
          return *this;
        }
-    /* postfix operator++ if needed at all:
+    /// TODOS !!!!
+    /** postfix operator++ if needed at all:
+        TODO: test SPEED as  this has to be copied and 
+        without optimization deleted
+    **/
     inline ImgIterator operator++(int)
        {
          ImgIterator current (*this);
          ++(*this); // call prefix operator
          return current; // return previous
        }
-    */
 
     /// to check if iterator is still inside the ROI
     /** @see operator++ */
