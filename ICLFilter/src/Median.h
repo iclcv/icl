@@ -27,7 +27,7 @@ namespace icl{
       <pre>
       void channel_median_8u(Img8u &src, Img8u &dst, int w, int h, int c)
       {
-          std::vector<iclbyte> list;
+          std::vector<icl8u> list;
           
           for(Img8u::iterator s=src.begin(c), d=dst.begin(c); s.inRegion() ; s++, d++ )
           {
@@ -70,14 +70,14 @@ namespace icl{
             <td><b>51x3</b></td>
             <td><b>3x51</b></td> 
          </tr><tr>  
-            <td><b>iclbyte, ipp</b></td>    
+            <td><b>icl8u, ipp</b></td>    
             <td>~5ms</td>
             <td>~32ms</td>
             <td>~434ms</td>
             <td>~38ms</td>
             <td>~430ms</td>
          </tr><tr> 
-            <td><b>iclbyte, c++</b></td>  
+            <td><b>icl8u, c++</b></td>  
             <td>~146ms</td> 
             <td>~334ms</td>
             <td>~84000ms</td>
@@ -94,21 +94,21 @@ namespace icl{
       </table>
 
       <h3>Details</h3>
-      <h3>Test A 1000x1000 iclbyte-image with IPP</h3>
+      <h3>Test A 1000x1000 icl8u-image with IPP</h3>
       - mask size 3x3 <b>~5ms</b> (highly optimized)
       - mask size 5x5 <b>~32ms</b>
       - mask size 51x51 <b>~434ms</b> (still usable!)
       - mask size 51x3 <b>~38ms</b>
       - mask size 3x51 <b>~430ms</b> (mask height specifies time usage)
 
-      <h3>Test B 1000x1000 iclbyte-image no IPP</h3>
+      <h3>Test B 1000x1000 icl8u-image no IPP</h3>
       - mask size 3x3 <b>~146ms</b> (30 times slower)
       - mask size 5x5 <b>~334ms</b>
       - mask size 51x51 <b>~84000ms</b> (unusable!)
       - mask size 51x3 <b>~3500ms</b>
       - mask size 3x51 <b>~3500ms</b> 
 
-      <h3>Test C 1000x1000 iclfloat-image (no IPP for floats)</h3>
+      <h3>Test C 1000x1000 icl32f-image (no IPP for floats)</h3>
       - mask size 3x3 <b>~181ms</b> (no special optimization)
       - mask size 5x5 <b>~464ms</b> 
       - mask size 51x51 <b>~115000ms</b> (unusable!)

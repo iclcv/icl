@@ -104,7 +104,7 @@ namespace icl{
 
   // }}}
 
-  Convolution::Convolution(Kernel eKernel) :
+  Convolution::Convolution(kernel eKernel) :
      // {{{ open
 
      pfKernel(0), piKernel(0), m_bBuffered(true), m_eKernel(eKernel)
@@ -183,7 +183,7 @@ namespace icl{
 
   // }}}
 
-  Convolution::Convolution (iclfloat *pfKernel, const Size &size,
+  Convolution::Convolution (icl32f *pfKernel, const Size &size,
                             bool bBufferData) :
     // {{{ open
      Filter (size),
@@ -241,9 +241,9 @@ namespace icl{
   // {{{ generic ipp convolution
 
   template<>
-  void Convolution::ippGenericConv<iclbyte, int> (ImgI *poSrc, ImgI *poDst) {
-     Img<iclbyte> *poS = poSrc->asImg<iclbyte>();
-     Img<iclbyte> *poD = poDst->asImg<iclbyte>();
+  void Convolution::ippGenericConv<icl8u, int> (ImgI *poSrc, ImgI *poDst) {
+     Img<icl8u> *poS = poSrc->asImg<icl8u>();
+     Img<icl8u> *poD = poDst->asImg<icl8u>();
      for(int c=0; c < poSrc->getChannels(); c++) {
         ippiFilter_8u_C1R (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
                            poD->getROIData (c), poD->getLineStep(), 
@@ -251,9 +251,9 @@ namespace icl{
      }
   }
   template<>
-  void Convolution::ippGenericConv<iclbyte, float> (ImgI *poSrc, ImgI *poDst) {
-     Img<iclbyte> *poS = poSrc->asImg<iclbyte>();
-     Img<iclbyte> *poD = poDst->asImg<iclbyte>();
+  void Convolution::ippGenericConv<icl8u, float> (ImgI *poSrc, ImgI *poDst) {
+     Img<icl8u> *poS = poSrc->asImg<icl8u>();
+     Img<icl8u> *poD = poDst->asImg<icl8u>();
      for(int c=0; c < poSrc->getChannels(); c++) {
         ippiFilter32f_8u_C1R (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
                               poD->getROIData (c), poD->getLineStep(), 
@@ -261,9 +261,9 @@ namespace icl{
      }
   }
   template<>
-  void Convolution::ippGenericConv<iclfloat, float> (ImgI *poSrc, ImgI *poDst) {
-     Img<iclfloat> *poS = poSrc->asImg<iclfloat>();
-     Img<iclfloat> *poD = poDst->asImg<iclfloat>();
+  void Convolution::ippGenericConv<icl32f, float> (ImgI *poSrc, ImgI *poDst) {
+     Img<icl32f> *poS = poSrc->asImg<icl32f>();
+     Img<icl32f> *poD = poDst->asImg<icl32f>();
      for(int c=0; c < poSrc->getChannels(); c++) {
         ippiFilter_32f_C1R (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
                             poD->getROIData (c), poD->getLineStep(), 
@@ -345,15 +345,15 @@ namespace icl{
 
   void Convolution::setMethodPointers () {
 #ifdef WITH_IPP_OPTIMIZATION 
-     aGenericConvs[depth8u][depth8u]   = &Convolution::ippGenericConv<iclbyte,int>;
-     aGenericConvs[depth8u][depth32f]  = &Convolution::ippGenericConv<iclbyte,float>;
+     aGenericConvs[depth8u][depth8u]   = &Convolution::ippGenericConv<icl8u,int>;
+     aGenericConvs[depth8u][depth32f]  = &Convolution::ippGenericConv<icl8u,float>;
      aGenericConvs[depth32f][depth8u]  = 0;
-     aGenericConvs[depth32f][depth32f] = &Convolution::ippGenericConv<iclfloat,float>;
+     aGenericConvs[depth32f][depth32f] = &Convolution::ippGenericConv<icl32f,float>;
 #else
-     aGenericConvs[depth8u][depth8u]   = &Convolution::cGenericConv<iclbyte,int>;
-     aGenericConvs[depth8u][depth32f]  = &Convolution::cGenericConv<iclbyte,float>;
+     aGenericConvs[depth8u][depth8u]   = &Convolution::cGenericConv<icl8u,int>;
+     aGenericConvs[depth8u][depth32f]  = &Convolution::cGenericConv<icl8u,float>;
      aGenericConvs[depth32f][depth8u]  = 0;
-     aGenericConvs[depth32f][depth32f] = &Convolution::cGenericConv<iclfloat,float>;
+     aGenericConvs[depth32f][depth32f] = &Convolution::cGenericConv<icl32f,float>;
 #endif     
   }
 
@@ -372,12 +372,12 @@ namespace icl{
     if (m_eKernel != kernelCustom) {
        if (poSrc->getDepth () == depth8u) {
           // distinguish between different ipp function interfaces
-          if (pFixed8u) this->ippFixedConv<iclbyte> (poSrc, *ppoDst, pFixed8u);
-          else this->ippFixedConvMask<iclbyte> (poSrc, *ppoDst, pFixed8uMask);
+          if (pFixed8u) this->ippFixedConv<icl8u> (poSrc, *ppoDst, pFixed8u);
+          else this->ippFixedConvMask<icl8u> (poSrc, *ppoDst, pFixed8uMask);
        } else {
           // distinguish between different ipp function interfaces
-          if (pFixed32f) this->ippFixedConv<iclfloat> (poSrc, *ppoDst, pFixed32f);
-          else this->ippFixedConvMask<iclfloat> (poSrc, *ppoDst, pFixed32fMask);
+          if (pFixed32f) this->ippFixedConv<icl32f> (poSrc, *ppoDst, pFixed32f);
+          else this->ippFixedConvMask<icl32f> (poSrc, *ppoDst, pFixed32fMask);
        }
        return;
     }

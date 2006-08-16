@@ -53,18 +53,18 @@ namespace icl{
   fallback C++ implementations. The optimized 3x3 convolution functions
   provided by the IPP are more then 20 times faster. Here are some benchmarks:
   - arbitrary 3x3-convolution 1000x1000 single channel image (IPP-OPTIMIZED)
-     - iclbyte images & int kernel <b>~11.6ms</b>
-     - iclfloat images & int kernel <b>~11.1ms</b>
-     - iclbyte images & iclfloat kernel <b>~13.5ms</b>
-     - iclfloat-image & iclfloat kernel <b>~11.3ms</b>
+     - icl8u images & int kernel <b>~11.6ms</b>
+     - icl32f images & int kernel <b>~11.1ms</b>
+     - icl8u images & icl32f kernel <b>~13.5ms</b>
+     - icl32f-image & icl32f kernel <b>~11.3ms</b>
   - fixed 3x3 convolution 1000x1000 single channel sobelx (IPP-OPTIMIZED)
-     - iclbyte images & int mask <b>~4ms (!!!)</b>
-     - iclbyte images & iclfloat mask <b>~8ms (!!!)</b>
+     - icl8u images & int mask <b>~4ms (!!!)</b>
+     - icl8u images & icl32f mask <b>~8ms (!!!)</b>
   - arbitrary 3x3-convolution 1000x1000 single channel image (C++-Fallback)
-     - iclbyte images & int kernel <b>~56ms</b> (further implem. ~81ms) ???
-     - iclfloat images & int kernel <b>~76ms</b> (further implem. ~370ms)
-     - iclbyte images & iclfloat kernel <b>~135ms</b> (further implem. ~230ms)
-     - iclfloat-image & iclfloat kernel <b>~60ms</b> (further implem. ~60ms)
+     - icl8u images & int kernel <b>~56ms</b> (further implem. ~81ms) ???
+     - icl32f images & int kernel <b>~76ms</b> (further implem. ~370ms)
+     - icl8u images & icl32f kernel <b>~135ms</b> (further implem. ~230ms)
+     - icl32f-image & icl32f kernel <b>~60ms</b> (further implem. ~60ms)
   
   <h2>Buffering Kernels</h2>
   In some applications the Convolution object has to be created
@@ -148,7 +148,7 @@ namespace icl{
     
       
     */
-    enum Kernel { 
+    enum kernel { 
       kernelGauss3x3,  /*!< 3x3 approximation of a Gaussian */
       kernelGauss5x5,  /*!< 5x5 approximation of a Gaussian */
       kernelSobelX3x3, /*!< 3x3 sobel x filter */
@@ -164,7 +164,7 @@ namespace icl{
     /** @param eKernel determines the filter type 
         (kernelCustom is not allowed here!)
     */
-    Convolution(Kernel eKernel);
+    Convolution(kernel eKernel);
 
     /// create Convolution object from ROI of given image
     /** If the given kernel is of depth8u, then its data will be buffered 
@@ -177,7 +177,7 @@ namespace icl{
         filter on depth8u images, this will speed up performance.
         @param poKernel custom convolution kernel
     */
-    Convolution(iclfloat *pfKernel, const Size& size, bool bBufferData=true);
+    Convolution(icl32f *pfKernel, const Size& size, bool bBufferData=true);
 
     /// Creates an Convolution object with the given custom kernel
     /** This constructor behaves essentially like the above one.
@@ -235,8 +235,8 @@ namespace icl{
     bool   m_bBuffered;
 
     /// kernel type
-    Kernel m_eKernel;
-    Depth  m_eKernelDepth;
+    kernel m_eKernel;
+    depth  m_eKernelDepth;
 
     /// checks whether float array can be interpreted as int
     bool isConvertableToInt (float *pfData, int iLen);
@@ -298,12 +298,12 @@ namespace icl{
 
 /*
   template<> 
-  iclbyte Convolution::castResult<iclbyte, int> (const int value) const {
-     return static_cast<iclbyte>(value < 0 ? 0 : value > 255 ? 255 : value);
+  icl8u Convolution::castResult<icl8u, int> (const int value) const {
+     return static_cast<icl8u>(value < 0 ? 0 : value > 255 ? 255 : value);
   }
   template<>
-  iclbyte Convolution::castResult<iclbyte,float> (const float value) const {
-     return static_cast<iclbyte>(value < 0. ? 0 : value > 255. ? 255 : value);
+  icl8u Convolution::castResult<icl8u,float> (const float value) const {
+     return static_cast<icl8u>(value < 0. ? 0 : value > 255. ? 255 : value);
   }
 */
 #endif
