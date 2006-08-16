@@ -14,8 +14,8 @@ namespace icl{
       magnitude.
       The fallback implementation uses the naive algorithm
       of sorting all N pixel values inside the median mask,
-      and setting the destination pixel value to the N/2-the
-      element of the sorted pixel list.
+      and setting the destination pixel value to the mid-element
+      of the sorted pixel list.
       This algorithm runs in O(w*h*N*log(N)) where (w,h) is the
       size of source images ROI, and N=n*n is the mask size used.
       The following code extract explains the operation of the
@@ -23,8 +23,8 @@ namespace icl{
       channel image, and Img8u type (the real implementation
       uses some special optimizations, that are not mentioned
       further):
-      <pre>
 
+      <pre>
       void channel_median_8u(Img8u &src, Img8u &dst, int w, int h, int c)
       {
           std::vector<iclbyte> list;
@@ -48,7 +48,7 @@ namespace icl{
    
 
       <h2>No IPP for floats</h2>
-      This time the IPP supports no 2D-median filtering for
+      Currently the IPP supports no 2D-median filtering for
       Ipp32f type, so the C++-fallback is used then.
 
 
@@ -120,17 +120,17 @@ namespace icl{
 
     <pre>
     // create source and destination image
-    Img8u src(640,480,3), dst;
+    Img8u src(640,480,3), *poDst=0;
   
     // acquire some image data
     ...
   
     // create the median object
-    Median m(5,5);
+    Median m(Size(5,5));
 
     // apply the median on the images - first call (slow)
-    // source image is renewed to 640x480x3 (memory allocation)
-    m.apply(&src,&dst);
+    // destination image is renewed to 640x480x3 (memory allocation)
+    m.apply(&src,&poDst);
 
     // enter iteration loop 
     while(1)
@@ -140,7 +140,7 @@ namespace icl{
 
         // apply the median filter (now fast, as no memory
         // allocation must be performed)
-        m.apply(&src,&dst);
+        m.apply(&src,&poDst);
 
         // further processing steps
         ...
@@ -148,32 +148,37 @@ namespace icl{
     </pre>
   */
   class Median : public Filter{
-    public:
+  public:
 
     /// Constructor that creates a median filter object, with specified mask size
-    /** @param iWidth width of mask to use (if even, the iWidth+1 is used)
-        @param iHeight height of mask to use (if even, the iHeight+1 is used)
+    /** @param maskSize of odd width and height
+        Even width or height is increased to next higher odd value.
     */
-    Median(int iWidth=3, int iHeight=3);
+    Median (const Size &maskSize);
+
+    /// Change mask size
+    void setMask (Size size);
 
     /// applies the median operation on poSrc and stores the result in poDst
     /** The depth, channel count and size of poDst is adapted to poSrc' ROI:
-        - channel count of poDst is set to the channel count of poSrc
-        - width of poDst is set to W-MW/2 where W is the ROI width of poSrc
-          and MW is the used mask width.
-        - height of poDst is set to H-MH/2 where H is he ROI height of poSrc
-          and MH is the used mask height.
-        
-        To avoid problems with the execution of the median operations on the
-        src image, the source images ROI is <i>eroded</i> by MW/2 pixel on
-        both sides and MH/2 pixels on top and bottom, before the function call
-        and <i>dilated</i> afterwards.
 
         @param poSrc source image
         @param poDst destination image
     */
-    virtual ImgI* apply(ImgI *poSrc, ImgI *poDst);
-    private:
+    void apply(ImgI *poSrc, ImgI **ppoDst);
+
+  protected:
+    typedef void (Median::*applyMethod)(ImgI *poSrc, ImgI *poDst); 
+    applyMethod aMethods[2];
+
+#ifdef WITH_IPP_OPTIMIZATION 
+    template<typename T>
+       void ippMedian (ImgI *poSrc, ImgI *poDst);
+    template<typename T>
+       void ippMedianFixed (ImgI *poSrc, ImgI *poDst);
+#endif
+    template<typename T>
+       void cMedian (ImgI *poSrc, ImgI *poDst);
   };
 }
 

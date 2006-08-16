@@ -148,23 +148,28 @@ namespace icl{
     
       
     */
-    enum iclkernel { 
-      kernelSobelX, /*!< sobel x filter */
-      kernelSobelY, /*!< sobel y filter */
-      kernelGauss3x3, /*!< 3x3-approximation of a Gaussian */
-      kernelGauss5x5, /*!< 5x5-approximation of a Gaussian */
-      kernelLaplace, /*!< approximation of the 2nd derivation */
+    enum Kernel { 
+      kernelGauss3x3,  /*!< 3x3 approximation of a Gaussian */
+      kernelGauss5x5,  /*!< 5x5 approximation of a Gaussian */
+      kernelSobelX3x3, /*!< 3x3 sobel x filter */
+      kernelSobelX5x5, /*!< 5x5 sobel x filter */
+      kernelSobelY3x3, /*!< 3x3 sobel y filter */
+      kernelSobelY5x5, /*!< 5x5 sobel y filter */
+      kernelLaplace3x3, /*!< 3x3 approximation of the 2nd derivation */
+      kernelLaplace5x5, /*!< 5x5 approximation of the 2nd derivation */
       kernelCustom  /*!< used for all other user defined kernels */ 
     };
     
-    /// Creates an Convolution object with a fixed predefined filter type
-    /** @param eKernel determines the filter type (kernelCustom is not allowed here!)
+    /// create Convolution object with a fixed predefined filter type
+    /** @param eKernel determines the filter type 
+        (kernelCustom is not allowed here!)
     */
-    Convolution(iclkernel eKernel);
+    Convolution(Kernel eKernel);
 
-    /// Creates an Convolution object with given custom convolution kernel
-    /** If the given kernel is of depth8u, then its data and size will be buffered
-        as well in depth32f, as in 32-bit signed integer (depth32s) representation.
+    /// create Convolution object from ROI of given image
+    /** If the given kernel is of depth8u, then its data will be buffered 
+        internally both as depth32f and depth32s (32-bit signed integer).
+
         Otherwise (kernel: depth32f) it is buffered in the internal depth32f buffer.
         If it is possible to use signed integer values also (if the given float
         buffer contains no floats with decimals) then an additional depth32s buffer
@@ -172,38 +177,20 @@ namespace icl{
         filter on depth8u images, this will speed up performance.
         @param poKernel custom convolution kernel
     */
-    Convolution(ImgI *poKernel);
-
-    /// Creates an Convolution object with the given custom kernel
-    /** This constructor behaves essentially as the above one, up till the
-        convolution kernel is given in POD (plain old data) types.
-        Furthermore it has an additional parameter, whiches default may
-        be overridden with "0". In this case no internal <i>snapshot</i>
-        of the giver kernel data is made. This will speed up the construction
-        time of the object rapidly. The user has to take care, that
-        the kernel data is persistent as long as apply calls on the 
-        ImgConvoluion objects are preformed. The given pointer is not
-        owned by the Convolution object, so it will not delete it
-        at the destruction time.
-        @param pfKernel convolution kernel data
-        @param iW convolution kernel width
-        @param iH convolution kernel height
-        @param iBufferData flag that indicates, if given data should be 
-                           buffered internally. By default given data will
-                           be buffered.
-    */
-    Convolution(iclfloat *pfKernel, int iW, int iH, int iBufferData=1);
+    Convolution(iclfloat *pfKernel, const Size& size, bool bBufferData=true);
 
     /// Creates an Convolution object with the given custom kernel
     /** This constructor behaves essentially like the above one.
+        The first element of piKernel is assumed to contain a normalization 
+        factor, by which the scalar product of kernel and image mask is divided.
+        Usually it is the sum of purely possitive kernel entries or it equals 1.
+
         @param piKernel convolution kernel data
-        @param iW convolution kernel width
-        @param iH convolution kernel height
-        @param iBufferData flag that indicates, if given data should be 
-                           buffered internally. By default given data will
-                           be buffered.
+        @param size kernel mask size
+        @param bBufferData flag that indicates, if given data should be 
+        buffered internally. By default given data will be buffered.
     */
-    Convolution(int *piKernel, int iW, int iH,int iBufferData=1);
+    Convolution(int *piKernel, const Size& size, bool bBufferData=true);
 
     /// Destructor
     virtual ~Convolution();
@@ -220,38 +207,106 @@ namespace icl{
         @param poSrc source image
         @param poDst destination image
     */
-    virtual ImgI* apply(ImgI *poSrc, ImgI *poDst);
+    virtual void apply(ImgI *poSrc, ImgI **ppoDst);
     
     private:
 
     /// internal storage for the sobel-x filter kernel
-    static int KERNEL_SOBEL_X[9];
+    static int KERNEL_SOBEL_X_3x3[10];
 
     /// internal storage for the sobel-y filter kernel
-    static int KERNEL_SOBEL_Y[9];
+    static int KERNEL_SOBEL_Y_3x3[10];
 
     /// internal storage for the gauss 3x3 filter kernel
-    static float KERNEL_GAUSS_3x3[9];
+    static int KERNEL_GAUSS_3x3[10];
 
     /// internal storage for the gauss 5x5 filter kernel
-    static float KERNEL_GAUSS_5x5[25];
+    static int KERNEL_GAUSS_5x5[26];
 
     /// internal storage for the Laplace filter kernel
-    static int KERNEL_LAPLACE[9];
+    static int KERNEL_LAPLACE_3x3[10];
   
-    /// internal storage for the kernels depth32f data
+    /// storage of the kernel data
     float *pfKernel;
+    /// storage of the kernel data
+    int   *piKernel;
     
-    /// internal storage for the kernels depth32s data
-    int *piKernel;
-    
-    /// internal flag, that indicates, if the contained data is owned by this object
-    bool bDeleteData;
-    
-    /// current kernel type
-    iclkernel eKernel;
+    /// indicates that data is buffered
+    bool   m_bBuffered;
+
+    /// kernel type
+    Kernel m_eKernel;
+    Depth  m_eKernelDepth;
+
+    /// checks whether float array can be interpreted as int
+    bool isConvertableToInt (float *pfData, int iLen);
+    /// copy external int kernel to internal float buffer
+    void copyIntToFloatKernel (int iDim);
+    /// create kernel buffers
+    void bufferKernel (float *pfKernel);
+    void bufferKernel (int *piKernel);
+
+    /// array of image- and kernel-type selective generic convolution methods
+    void (Convolution::*aGenericConvs[2][2])(ImgI *poSrc, ImgI *poDst); 
+    /// set those method pointers
+    void setMethodPointers ();
+
+#ifdef WITH_IPP_OPTIMIZATION 
+    template<typename ImgT, typename KernelT>
+       void ippGenericConv (ImgI *poSrc, ImgI *poDst);
+    template<typename T>
+       void ippFixedConv (ImgI *poSrc, ImgI *poDst,
+                          IppStatus (*pMethod)(const T* pSrc, int srcStep,
+                                               T* pDst, int dstStep, IppiSize));
+    template<typename T>
+       void ippFixedConvMask (ImgI *poSrc, ImgI *poDst,
+                              IppStatus (*pMethod)(const T* pSrc, int srcStep,
+                                                   T* pDst, int dstStep, 
+                                                   IppiSize, IppiMaskSize));
+
+    /// function pointer for ipp fixed convolution, depth8u image
+    IppStatus (*pFixed8u)(const Ipp8u* pSrc, int srcStep,
+                              Ipp8u* pDst, int dstStep, 
+                              IppiSize roiSize);
+    /// function pointer for ipp fixed convolution, depth8u image, mask size parameter
+    IppStatus (*pFixed8uMask)(const Ipp8u* pSrc, int srcStep,
+                                  Ipp8u* pDst, int dstStep, 
+                                  IppiSize roiSize, IppiMaskSize mask);
+    /// function pointer for ipp fixed convolution, depth32f image
+    IppStatus (*pFixed32f)(const Ipp32f* pSrc, int srcStep,
+                           Ipp32f* pDst, int dstStep, 
+                           IppiSize roiSize);
+    /// function pointer for ipp fixed convolution, depth32f image, mask size parameter
+    IppStatus (*pFixed32fMask)(const Ipp32f* pSrc, int srcStep,
+                               Ipp32f* pDst, int dstStep, 
+                               IppiSize roiSize, IppiMaskSize mask);
+
+#else
+    template<typename ImgT, typename KernelT>
+       void cGenericConv (ImgI *poSrc, ImgI *poDst);
+
+    template<typename KernelT> const KernelT* getKernel() const;
+    template<typename ImgT, typename KernelT> ImgT castResult(const KernelT value) {
+       return static_cast<ImgT>(value);
+    }
+#endif
   };
-  
+
+#ifndef WITH_IPP_OPTIMIZATION 
+  template<> const int* Convolution::getKernel<int>()     const {return piKernel;}
+  template<> const float* Convolution::getKernel<float>() const {return pfKernel;}
+
+/*
+  template<> 
+  iclbyte Convolution::castResult<iclbyte, int> (const int value) const {
+     return static_cast<iclbyte>(value < 0 ? 0 : value > 255 ? 255 : value);
+  }
+  template<>
+  iclbyte Convolution::castResult<iclbyte,float> (const float value) const {
+     return static_cast<iclbyte>(value < 0. ? 0 : value > 255. ? 255 : value);
+  }
+*/
+#endif
 }
 
 #endif

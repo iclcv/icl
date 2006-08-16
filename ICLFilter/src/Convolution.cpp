@@ -2,395 +2,397 @@
 
 namespace icl{
   
+  /* To improve performance in access to the kernel data, we may create an
+     internal buffer of the kernel data. This is done, if the user explicitly
+     requests buffering, providing the bBufferData flag in the constructor. In
+     this case already the constructor creates new kernel arrays piKernel
+     and pfKernel within the methods <em>bufferKernel()</em>. Additionally
+     the flag m_bBuffered is set to true.
+     Not that a external float pointer can only be buffered as int* piKernel
+     if the data can be interpreted as integers.
+
+     If data is not buffered, we create a suitable piKernel or pfKernel buffer
+     only on demand within the apply method. eKernelDepth indentifies which
+     of the two buffers (pfKernel or piKernel) is external. 
+
+     Because IPP (as well as the fallback implementation) does not provide a method
+     to convolute a float image with an int kernel, we always use a float
+     kernel in this case, which has to be copied from an external int kernel
+     for every application.
+  */
   // {{{ fixed convolution masks
 
-  int Convolution::KERNEL_SOBEL_X[9] = { 1,  0, -1,
-                                            2,  0, -2,
-                                            1,  0, -1   };
+  // first element specifies normalization factor
+  int Convolution::KERNEL_SOBEL_X_3x3[10] = { 1,
+                                              1,  0, -1,
+                                              2,  0, -2,
+                                              1,  0, -1 };
   
-  int Convolution::KERNEL_SOBEL_Y[9] = {  1,  2,  1,
-                                             0,  0,  0,
-                                            -1, -2, -1  };
+  int Convolution::KERNEL_SOBEL_Y_3x3[10] = {  1, 
+                                               1,  2,  1,
+                                               0,  0,  0,
+                                              -1, -2, -1  };
   
-  float Convolution::KERNEL_GAUSS_3x3[9] = { 1.0/16 , 2.0/16, 1.0/16,
-                                                2.0/16 , 4.0/16, 2.0/16,
-                                                1.0/16 , 2.0/16, 1.0/16  };
+  int Convolution::KERNEL_GAUSS_3x3[10] = { 16,
+                                            1, 2, 1,
+                                            2, 4, 2,
+                                            1, 2, 1 };
   
-  float Convolution::KERNEL_GAUSS_5x5[25] = { 2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571,
-                                                 7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
-                                                12.0/571, 52.0/571, 127.0/571, 52.0/571, 12.0/571,
-                                                 7.0/571, 31.0/571,  52.0/571, 31.0/571,  7.0/571,
-                                                 2.0/571,  7.0/571,  12.0/571,  7.0/571,  2.0/571 };
+  int Convolution::KERNEL_GAUSS_5x5[26] = { 571,
+                                            2,  7,  12,  7,  2,
+                                            7, 31,  52, 31,  7,
+                                           12, 52, 127, 52, 12,
+                                            7, 31,  52, 31,  7,
+                                            2,  7,  12,  7,  2 };
   
-  int Convolution::KERNEL_LAPLACE[9] = { 1, 1, 1,
-                                            1,-8, 1,
-                                            1, 1, 1} ;
-
+  int Convolution::KERNEL_LAPLACE_3x3[10] = { 1,
+                                              1, 1, 1,
+                                              1,-8, 1,
+                                              1, 1, 1} ;
+   
   // }}}
 
-  // {{{ icl_is_convertable_to_int_intern
-  int icl_is_convertable_to_int_intern(float *pfData, int iLen)
+  // {{{ isConvertableToInt
+
+  bool Convolution::isConvertableToInt (float *pfData, int iLen)
   {
-    // tests if an element of the given float* has decimals
-    // if it does: return 0, else 1
-    for(int i=0;i<iLen;i++)
-      {
-        if(pfData[i] != (float)((int)pfData[i])) return 0;
-      }    
-    return 1;
+     // tests if an element of the given float* has decimals
+     // if it does: return 0, else 1
+     for(int i=0;i<iLen;i++)
+        if (pfData[i] != nearbyintf (pfData[i])) return false;
+     return true;
   }
 
   // }}}
   
   // {{{ Constructors / Destructor
+   
+  // {{{ buffering kernel data
 
-  Convolution::Convolution(iclkernel eKernel):
-    // {{{ open
+  void Convolution::copyIntToFloatKernel (int iDim) {
+     if (!pfKernel) pfKernel = new float[iDim];
+     register int   *pi=piKernel+1, *piEnd=pi+iDim;
+     register float *pf=pfKernel;
+     // first element of piKernel contains normalization factor:
+     for (; pi < piEnd; ++pi, ++pf)
+        *pf = (float) *pi / (float) *piKernel;
+  }
 
-    pfKernel(0),piKernel(0),bDeleteData(0),eKernel(eKernel){
-    DEBUG_LOG4("Convolution::Convolution(iclkernel)");
+  // initially create buffer array (within constructor only)
+  void Convolution::bufferKernel (float *pfKernelExt) {
+     int iDim = oMaskSize.width * oMaskSize.height;
+     
+     pfKernel = new float[iDim];
+     std::copy (pfKernelExt, pfKernelExt+iDim, pfKernel);
+     if (isConvertableToInt (pfKernelExt, iDim)) {
+        // first element contains normalization factor
+        piKernel = new int[iDim+1]; piKernel[0] = 1;
 
+        register float *pf=pfKernelExt, *pfEnd=pfKernelExt+iDim;
+        register int   *pi=piKernel;
+        for (; pf < pfEnd; ++pfEnd, ++pi) *pi = (int) *pf;
+     }
+  }
+  // initially create buffer array (within constructor only)
+  void Convolution::bufferKernel (int *piKernelExt) {
+     int iDim = oMaskSize.width * oMaskSize.height;
+
+     piKernel = new int[iDim+1];
+     std::copy (piKernelExt, piKernelExt+iDim+1, piKernel);
+     copyIntToFloatKernel (iDim);
+  }
+
+  // }}}
+
+  Convolution::Convolution(Kernel eKernel) :
+     // {{{ open
+
+     pfKernel(0), piKernel(0), m_bBuffered(true), m_eKernel(eKernel)
+  {
+     FUNCTION_LOG("");
+     
 #ifndef WITH_IPP_OPTIMIZATION
-    setMask (3,3);
-    switch(eKernel){
-      case kernelSobelX:
-        piKernel = KERNEL_SOBEL_X;
-        break;
-      case kernelSobelY:
-        piKernel = KERNEL_SOBEL_Y;
-        break;
-      case kernelGauss3x3:
-        pfKernel = KERNEL_GAUSS_3x3;
-        break;
-      case kernelGauss5x5:
-        pfKernel = KERNEL_GAUSS_5x5;
-        setMask (5,5);
-        break;
-      case kernelLaplace:
-        piKernel = KERNEL_LAPLACE;
-        break;
-      default:
-        ERROR_LOG("unsupported kernel type");
-        break;        
-    }
+     int nSize = 3;
+     switch(m_eKernel) {
+       case kernelSobelX3x3:
+          piKernel = KERNEL_SOBEL_X_3x3; break;
+       case kernelSobelY3x3:
+          piKernel = KERNEL_SOBEL_Y_3x3; break;
+       case kernelGauss3x3:
+          piKernel = KERNEL_GAUSS_3x3; break;
+       case kernelGauss5x5:
+          piKernel = KERNEL_GAUSS_5x5; nSize = 5; break;
+       case kernelLaplace3x3:
+          piKernel = KERNEL_LAPLACE_3x3; break;
+       default:
+          ERROR_LOG("unsupported kernel type");
+          piKernel = KERNEL_GAUSS_3x3;
+          break;     
+     }
+     setMask (Size(nSize, nSize));
+
+     // create buffer for pfKernel:
+     copyIntToFloatKernel (oMaskSize.width * oMaskSize.height);
+     // set method pointers to generic convolution methods
+     setMethodPointers ();
+#else
+     pFixed8u = 0; pFixed8uMask = 0; pFixed32f = 0; pFixed32fMask = 0;
+     int nSize = 3;
+     switch (m_eKernel) {
+       case kernelSobelX3x3:
+          pFixed8u  = ippiFilterSobelHoriz_8u_C1R;
+          pFixed32f = ippiFilterSobelHoriz_32f_C1R;
+          break;
+       case kernelSobelX5x5:
+          // attention: pFixed8uMask stays undefined
+          pFixed32fMask = ippiFilterSobelHorizMask_32f_C1R;
+          nSize = 5;
+          break;
+       case kernelSobelY3x3:
+          pFixed8u  = ippiFilterSobelVert_8u_C1R;
+          pFixed32f = ippiFilterSobelVert_32f_C1R;
+          break;
+       case kernelSobelY5x5:
+          // attention: pFixed8uMask stays undefined
+          pFixed32fMask = ippiFilterSobelVertMask_32f_C1R;
+          nSize = 5;
+          break;
+       case kernelGauss5x5:
+          nSize = 5;
+       case kernelGauss3x3:
+          pFixed8uMask = ippiFilterGauss_8u_C1R;
+          pFixed32fMask = ippiFilterGauss_32f_C1R;
+          break;
+       case kernelLaplace5x5:
+          nSize = 5;
+       case kernelLaplace3x3:
+          pFixed8uMask = ippiFilterLaplace_8u_C1R;
+          pFixed32fMask = ippiFilterLaplace_32f_C1R;
+          break;
+       default:
+          ERROR_LOG("unsupported kernel type");
+          m_eKernel = kernelGauss3x3;
+          pFixed8uMask = ippiFilterGauss_8u_C1R;
+          pFixed32fMask = ippiFilterGauss_32f_C1R;
+          break;     
+     }
+     // set mask size
+     setMask (Size(nSize, nSize));
 #endif
   }
 
   // }}}
 
-  Convolution::Convolution(ImgI *poKernel):
+  Convolution::Convolution (iclfloat *pfKernel, const Size &size,
+                            bool bBufferData) :
     // {{{ open
-    Filter (poKernel->getWidth(), poKernel->getHeight()),
-    pfKernel(0),piKernel(0),bDeleteData(1),eKernel(kernelCustom)
+     Filter (size),
+     pfKernel(0), piKernel(0), m_bBuffered(bBufferData), 
+     m_eKernel(kernelCustom), m_eKernelDepth(depth32f)
   {
-    DEBUG_LOG4("Convolution::Convolution(ImgI*)");
-    int iDim = oMaskSize.width * oMaskSize.height;
-    if(poKernel->getDepth()==depth8u)
-      {
-        piKernel = new int[iDim]; 
-        pfKernel = new float[iDim];
-        for(int i=0;i<iDim;i++)
-          {
-            piKernel[i]=(poKernel->asIcl8u()->getData(0))[i];
-            pfKernel[i]=piKernel[i];
-          }
-      }
-    else
-      {
-        pfKernel = new float[iDim];
-        if(icl_is_convertable_to_int_intern(poKernel->asIcl32f()->getData(0),iDim))
-          {
-            piKernel = new int[iDim];
-          }
-        for(int i=0;i<iDim;i++)
-          {
-            pfKernel[i]=(poKernel->asIcl32f()->getData(0))[i];
-            if(piKernel)piKernel[i]=(int)pfKernel[i];
-          }
-      }
-  }
-
-  // }}}
-
-  Convolution::Convolution(iclfloat *pfKernel, int iW, int iH, int iBufferData):
-    // {{{ open
-    Filter (iW, iH),
-    pfKernel(0),piKernel(0),bDeleteData(iBufferData),eKernel(kernelCustom)
-  {
-    DEBUG_LOG4("Convolution::Convolution(iclfloat*,int,int)");
-    if(iBufferData){
-      int iDim = oMaskSize.width * oMaskSize.height;
-      this->pfKernel = new float[iDim];
-      memcpy(this->pfKernel,pfKernel,iDim*sizeof(float));    
-      if(icl_is_convertable_to_int_intern(pfKernel,iDim))
-        {
-          piKernel = new int[iDim];
-          for(int i=0;i<iDim;i++)
-            {
-              piKernel[i]=(int)pfKernel[i];
-            }
-        }     
-    }else{
-      this->pfKernel = pfKernel;
-    }
+     FUNCTION_LOG("");
+     
+     if (bBufferData) bufferKernel (pfKernel);
+     else this->pfKernel = pfKernel;
+     setMethodPointers ();
   }
 
   // }}}
   
-  Convolution::Convolution(int *piKernel, int iW, int iH, int iBufferData):
-    // {{{ open
-    Filter (iW, iH),
-    pfKernel(0),piKernel(0),bDeleteData(iBufferData),eKernel(kernelCustom)
+  Convolution::Convolution(int *piKernel, const Size &size, 
+                           bool bBufferData) :
+     // {{{ open
+     Filter (size),
+     pfKernel(0), piKernel(0), m_bBuffered(bBufferData), 
+     m_eKernel(kernelCustom), m_eKernelDepth(depth8u)
   {
-    DEBUG_LOG4("Convolution::Convolution(int*,int,int)");
-    if(iBufferData){
-        int iDim = oMaskSize.width * oMaskSize.height;
-        this->piKernel = new int[iDim];
-        this->pfKernel = new float[iDim];
-        memcpy(this->piKernel,piKernel,iDim*sizeof(int));    
-        for(int i=0;i<iDim;i++){
-          pfKernel[i]=(float)piKernel[i];
-        }
-      }else{
-        this->piKernel = piKernel;
-      }
+     FUNCTION_LOG("");
+     
+     if (bBufferData) bufferKernel (piKernel);
+     else this->piKernel = piKernel;
+     setMethodPointers ();
   }
 
   // }}}
-    
-  Convolution::~Convolution(){
-    // {{{ open
 
-    DEBUG_LOG4("~Convolution");
-    if(bDeleteData){
-      if(piKernel)delete piKernel;
-      if(pfKernel)delete pfKernel;
-    }
+  Convolution::~Convolution(){
+     // {{{ open
+
+     FUNCTION_LOG("");
+
+     // free allocated kernel buffers
+     if (m_bBuffered) { // can delete both buffers
+        delete[] pfKernel;
+        // in case of special kernel and no ipp usage
+        // piKernel points to static class data
+        if (m_eKernel != kernelCustom) delete[] piKernel;
+     } else {
+        if (m_eKernelDepth == depth8u)  delete[] pfKernel;
+        if (m_eKernelDepth == depth32f) delete[] piKernel;
+     }
   }
 
   // }}}
 
   // }}}
  
-  // {{{ C++ - generic convolution
-  template<class ImageT, class KernelT, class BufferT> void 
-  generic_conv(ImgI *poSrcIn, ImgI *poDstIn, KernelT* pmMask, int iKernelW, int iKernelH, int c)
+#ifdef WITH_IPP_OPTIMIZATION 
+
+  // {{{ generic ipp convolution
+
+  template<>
+  void Convolution::ippGenericConv<iclbyte, int> (ImgI *poSrc, ImgI *poDst) {
+     Img<iclbyte> *poS = poSrc->asImg<iclbyte>();
+     Img<iclbyte> *poD = poDst->asImg<iclbyte>();
+     for(int c=0; c < poSrc->getChannels(); c++) {
+        ippiFilter_8u_C1R (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
+                           poD->getROIData (c), poD->getLineStep(), 
+                           poD->getROISize(), piKernel+1, oMaskSize, oAnchor, *piKernel);
+     }
+  }
+  template<>
+  void Convolution::ippGenericConv<iclbyte, float> (ImgI *poSrc, ImgI *poDst) {
+     Img<iclbyte> *poS = poSrc->asImg<iclbyte>();
+     Img<iclbyte> *poD = poDst->asImg<iclbyte>();
+     for(int c=0; c < poSrc->getChannels(); c++) {
+        ippiFilter32f_8u_C1R (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
+                              poD->getROIData (c), poD->getLineStep(), 
+                              poD->getROISize(), pfKernel, oMaskSize, oAnchor);
+     }
+  }
+  template<>
+  void Convolution::ippGenericConv<iclfloat, float> (ImgI *poSrc, ImgI *poDst) {
+     Img<iclfloat> *poS = poSrc->asImg<iclfloat>();
+     Img<iclfloat> *poD = poDst->asImg<iclfloat>();
+     for(int c=0; c < poSrc->getChannels(); c++) {
+        ippiFilter_32f_C1R (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
+                            poD->getROIData (c), poD->getLineStep(), 
+                            poD->getROISize(), pfKernel, oMaskSize, oAnchor);
+     }
+  }
+
+  // }}}
+   
+  // {{{ fixed ipp convolution
+
+  template<typename T>
+  void Convolution::ippFixedConv (ImgI *poSrc, ImgI *poDst, 
+                                  IppStatus (*pMethod)(const T* pSrc, int srcStep,
+                                                       T* pDst, int dstStep, 
+                                                       IppiSize roiSize)) {
+     Img<T> *poS = poSrc->asImg<T>();
+     Img<T> *poD = poDst->asImg<T>();
+     
+     for(int c=0; c < poSrc->getChannels(); c++) {
+        pMethod (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
+                 poD->getROIData (c), poD->getLineStep(), 
+                 poD->getROISize());
+     }
+  }
+  template<typename T>
+  void Convolution::ippFixedConvMask (ImgI *poSrc, ImgI *poDst, 
+                                      IppStatus (*pMethod)(const T* pSrc, int srcStep,
+                                                           T* pDst, int dstStep, 
+                                                           IppiSize roiSize, IppiMaskSize mask)) {
+     IppiMaskSize eMaskSize = (IppiMaskSize)(11 * oMaskSize.width);
+     Img<T> *poS = poSrc->asImg<T>();
+     Img<T> *poD = poDst->asImg<T>();
+     
+     for(int c=0; c < poSrc->getChannels(); c++) {
+        pMethod(poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
+                poD->getROIData (c), poD->getLineStep(), 
+                poD->getROISize(), eMaskSize);
+     }
+  }
+
+  // }}}
+
+#else
+
+  // {{{ generic fallback convolution
+  template<typename ImageT, typename KernelT>
+  void Convolution::cGenericConv (ImgI *poSrc, ImgI *poDst)
   {
-    Img<ImageT> *poS = reinterpret_cast<Img<ImageT>*>(poSrcIn);
-    Img<ImageT> *poD = reinterpret_cast<Img<ImageT>*>(poDstIn);
+    Img<ImageT> *poS = poSrc->asImg<ImageT>();
+    Img<ImageT> *poD = poDst->asImg<ImageT>();
 
     // accumulator for each pixel result of Type M
-    BufferT buffer; 
+    KernelT buffer; 
 
     // pointer to the mask
-    KernelT *m;
-    for(ImgIterator<ImageT> s=poS->begin(c), d=poD->begin(c) ; s.inRegion() ; s++, d++)
-      {
-        m = pmMask;
-        buffer = 0;
-        for(ImgIterator<ImageT> sR(s,iKernelW,iKernelH) ; sR.inRegion(); sR++, m++)
+    const KernelT *m;
+
+    for(int c=0; c < poSrc->getChannels(); c++) {
+       for(ImgIterator<ImageT> s (poS->getData(c), poS->getSize().width, poD->getROI()),
+              d=poD->getROIIterator(c); 
+           s.inRegion(); ++s, ++d)
+       {
+          m = this->getKernel<KernelT>(); buffer = 0;
+          for(ImgIterator<ImageT> sR(s,oMaskSize,oAnchor); sR.inRegion(); ++sR, ++m)
           {
-            buffer += (*m) * (*sR);
-          } 
-        *d =  static_cast<ImageT>(buffer<0 ? 0 : buffer > 255 ? 255 : buffer);
-      }
+             buffer += (*m) * (*sR);
+          }
+          *d = castResult<ImageT, KernelT>(buffer);
+       }
+    }
   }
 
   // }}}
 
-  // {{{ C_CONV-calls
-
-#define C_CONV_8u(S,D,C,K,KS) generic_conv<iclbyte,int,int>(S,D,K,KS.width,KS.height,C);
-#define C_CONV32_8u(S,D,C,K,KS) generic_conv<iclbyte,iclfloat,iclfloat>(S,D,K,KS.width,KS.height,C);
-#define C_CONV_32f(S,D,C,K,KS) generic_conv<iclfloat,iclfloat,iclfloat>(S,D,K,KS.width,KS.height,C);
-#define C_CONV8_32f(S,D,C,K,KS) generic_conv<iclfloat,int,iclfloat>(S,D,K,KS.width,KS.height,C);
-
-  // }}}
-
-  // {{{ IPP_CONV-calls
-
-#define IPP_CONV_8u(S,D,C,K,KS,A) ippiFilter_8u_C1R(S->roiData8u(c),\
-                                               S->ippStep(),        \
-                                               D->roiData8u(c),     \
-                                               D->ippStep(),        \
-                                               D->getROISize(),     \
-                                               K,KS,A,1);
-
-#define IPP_CONV32_8u(S,D,C,K,KS,A) ippiFilter32f_8u_C1R(S->roiData8u(c),\
-                                                    S->ippStep(),        \
-                                                    D->roiData8u(c),     \
-                                                    D->ippStep(),        \
-                                                    D->getROISize(),     \
-                                                    K,KS,A);
-
-#define IPP_CONV_32f(S,D,C,K,KS,A) ippiFilter_32f_C1R(S->roiData32f(c), \
-                                                  S->ippStep(),         \
-                                                  D->roiData32f(c),     \
-                                                  D->ippStep(),         \
-                                                  D->getROISize(),      \
-                                                  K,KS,A);              \
-
-  // }}}
-
-  // {{{ "fixed" ippi-convolution calls
-
-#ifdef WITH_IPP_OPTIMIZATION
-
-  // parameter list for an ipp call without IppiMaskSize arg
-#define PARAM_LIST_A(DEPTH)         \
-      poSrc->roiData ## DEPTH(c, &poDst->getROIOffset()),   \
-      poSrc->ippStep(),             \
-      poDst->roiData ## DEPTH(c),   \
-      poDst->ippStep(),             \
-      poSrc->getROISize()          
-  // parameter list for an ipp call WITH IppiMaskSize arg
-#define PARAM_LIST_B(DEPTH)         \
-      PARAM_LIST_A(DEPTH),          \
-      oMaskSize
-      
-  // the hole code for a single case xxx:{...} statement
-#define A_CASE(THECASE,FILTER,MSIZE,PLIST_TYPE)                                 \
-  case Convolution::kernel ## THECASE:{                                      \
-    IppiMaskSize oMaskSize = (IppiMaskSize)(11*MSIZE);                          \
-    (void)oMaskSize;                                                            \
-    if(eDepth == depth8u){                                                      \
-      for(int c=0;c<poSrc->getChannels();c++){                                  \
-        ippiFilter ## FILTER ## _8u_C1R(PARAM_LIST_ ## PLIST_TYPE(8u));         \
-      }                                                                         \
-    }else{                                                                      \
-      for(int c=0;c<poSrc->getChannels();c++){                                  \
-        ippiFilter ## FILTER ## _32f_C1R(PARAM_LIST_ ## PLIST_TYPE(32f));       \
-      }                                                                         \
-    }                                                                           \
-    return;                                                                     \
-  }
-  
-  // internally used function, that applies ipp-optimized "fixed" convolution operations on images
-  void ipp_fixed_conv(ImgI *poSrc, ImgI *poDst, Depth eDepth, Convolution::iclkernel eKernel)
-  {
-    switch(eKernel)
-      {   
-        A_CASE(SobelX,SobelHoriz,3,A);
-        A_CASE(SobelY,SobelVert,3,A);
-        A_CASE(Gauss3x3,Gauss,3,B);
-        A_CASE(Gauss5x5,Gauss,5,B);
-        A_CASE(Laplace,Laplace,3,B);
-
-        default:
-          ERROR_LOG("unsupported kernel type");
-          return;
-      }
-  }
-#undef A_CASE
-#undef PARAM_LIST_A
-#undef PARAM_LIST_B
 #endif
 
+  // {{{ setMethodPointers
+
+  void Convolution::setMethodPointers () {
+#ifdef WITH_IPP_OPTIMIZATION 
+     aGenericConvs[depth8u][depth8u]   = &Convolution::ippGenericConv<iclbyte,int>;
+     aGenericConvs[depth8u][depth32f]  = &Convolution::ippGenericConv<iclbyte,float>;
+     aGenericConvs[depth32f][depth8u]  = 0;
+     aGenericConvs[depth32f][depth32f] = &Convolution::ippGenericConv<iclfloat,float>;
+#else
+     aGenericConvs[depth8u][depth8u]   = &Convolution::cGenericConv<iclbyte,int>;
+     aGenericConvs[depth8u][depth32f]  = &Convolution::cGenericConv<iclbyte,float>;
+     aGenericConvs[depth32f][depth8u]  = 0;
+     aGenericConvs[depth32f][depth32f] = &Convolution::cGenericConv<iclfloat,float>;
+#endif     
+  }
+
   // }}}
 
-  // {{{ apply(ImgI*, ImgI*)
-  ImgI* Convolution::apply(ImgI *poSrc, ImgI *poDst)
+  void Convolution::apply(ImgI *poSrc, ImgI **ppoDst)
   {
     FUNCTION_LOG("");
-   
-    // {{{ prepare destination image
 
-    poDst = prepare (poSrc, poDst);
-    if (!adaptROI (poSrc, poDst)) return poDst;
+    if (!prepare (poSrc, ppoDst)) return;
 
-    printf("---------------info in ICLConv:apply--------------\n");
-    poSrc->print("src image");
-    poDst->print("dst image");
-    printf("Kernel = %d x %d \n",oMaskSize.width,oMaskSize.height);
-    printf("--------------------------------------------------\n");
-
-    // }}}
-
-    // {{{ check for "fixed" kernels
-
-#ifdef WITH_IPP_OPTIMIZATION
-    if(eKernel != kernelCustom){
-      ipp_fixed_conv(poSrc,poDst,poSrc->getDepth(),eKernel);
-      return poDst;
+    /* We must carefully match the image depth to the
+       available kernel depth(s).
+    */
+#ifdef WITH_IPP_OPTIMIZATION 
+    if (m_eKernel != kernelCustom) {
+       if (poSrc->getDepth () == depth8u) {
+          // distinguish between different ipp function interfaces
+          if (pFixed8u) this->ippFixedConv<iclbyte> (poSrc, *ppoDst, pFixed8u);
+          else this->ippFixedConvMask<iclbyte> (poSrc, *ppoDst, pFixed8uMask);
+       } else {
+          // distinguish between different ipp function interfaces
+          if (pFixed32f) this->ippFixedConv<iclfloat> (poSrc, *ppoDst, pFixed32f);
+          else this->ippFixedConvMask<iclfloat> (poSrc, *ppoDst, pFixed32fMask);
+       }
+       return;
     }
 #endif
 
-    // }}}
-
-    if(poSrc->getDepth() == depth8u)
-      // {{{ [depth8u-case:] open
-
-      {
-        if(piKernel)
-          {
-            for(int c=0;c<poSrc->getChannels();c++)
-              {
-#ifdef WITH_IPP_OPTIMIZATION
-                IPP_CONV_8u(poSrc,poDst,c,piKernel,oMaskSize,oAnchor);
-#else
-                C_CONV_8u(poSrc,poDst,c,piKernel,oMaskSize);
-#endif
-              }
-          }
-        else // use float kernel as fallback
-          {
-            for(int c=0;c<poSrc->getChannels();c++)
-              {
-#ifdef WITH_IPP_OPTIMIZATION
-                IPP_CONV32_8u(poSrc,poDst,c,pfKernel,oMaskSize,oAnchor);
-#else
-                C_CONV32_8u(poSrc,poDst,c,pfKernel,oMaskSize);
-#endif
-              }
-          }
-      }
-
-    // }}}
-    else 
-      // {{{ [depth32f-case:] open
-
-      {
-        if(pfKernel)
-          {
-            for(int c=0;c<poSrc->getChannels();c++)
-              {
-#ifdef WITH_IPP_OPTIMIZATION
-                IPP_CONV_32f(poSrc,poDst,c,pfKernel,oMaskSize,oAnchor);
-#else
-                C_CONV_32f(poSrc,poDst,c,pfKernel,oMaskSize);
-#endif
-              }
-          }
-        else // fallback to C-implementatino is 10 times slower! -> tmp conversion of the kernel data
-          {
-#ifdef WITH_IPP_OPTIMIZATION
-            int iDim = oMaskSize.width * oMaskSize.height;
-            float *pfKernelTmp = new float[iDim];
-            for(int i=0;i<iDim;i++)
-              {
-                pfKernelTmp[i]=piKernel[i];
-              }
-#endif            
-            for(int c=0;c<poSrc->getChannels();c++)
-              {
-#ifdef WITH_IPP_OPTIMIZATION
-                IPP_CONV_32f(poSrc,poDst,c,pfKernelTmp,oMaskSize,oAnchor);
-#else
-                C_CONV8_32f(poSrc,poDst,c,piKernel,oMaskSize);  
-#endif
-              }
-#ifdef WITH_IPP_OPTIMIZATION
-            delete pfKernelTmp;
-#endif
-          }
-        
-      }
-
-    // }}}
-    
-    return poDst;
+    if (m_bBuffered || 
+        poSrc->getDepth () == m_eKernelDepth ||
+        m_eKernelDepth == depth32f)
+       (this->*(aGenericConvs[poSrc->getDepth()][m_eKernelDepth])) (poSrc, *ppoDst);
+    else { 
+       // data has to be copied from (external) int* kernel to internal float buffer first
+       copyIntToFloatKernel (oMaskSize.width * oMaskSize.height);
+       // use float kernel always
+       (this->*(aGenericConvs[poSrc->getDepth()][depth32f])) (poSrc, *ppoDst);
+    }
   }
 
-  // }}}
-
-}
+} // namespace icl
