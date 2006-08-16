@@ -249,8 +249,8 @@ namespace icl {
 
   /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
   enum Depth{
-    depth8u  = 8, /**< 8Bit unsigned integer values range {0,1,...255} */
-    depth32f = 32 /**< 32Bit floating point values */
+    depth8u  = 0, /**< 8Bit unsigned integer values range {0,1,...255} */
+    depth32f = 1 /**< 32Bit floating point values */
   };
   
   /// determines the color-format, that is associated with the images channels 
@@ -281,14 +281,14 @@ namespace icl {
 
 /* {{{ Global functions */
 
-  /// creates a new ImgI by abstacting about the depth parameter
+  /// creates a new ImgI by abstacting from the depth parameter
   /** This function is essention for the abstaction mechanism about 
-      Img images underlying depth. In many cases you might have an
-      ImgI*, wich must be initialized with parameters width, height,
+      Img image classes  underlying depth. In many cases you might have an
+      ImgI*, wich must be initialized with parameters size,
       channel count and - which is the problem - the depth. The
       default solution is to insert an if statement. Look at the 
       following Example, that shows the implementation of a class
-      construktor.
+      constructor.
       <pre>
       class Foo{
          public:
@@ -320,6 +320,7 @@ namespace icl {
       @param iChannels channel count of the new image. If < 0,
                        then the channel count associated with 
                        eFormat is used
+      @param oROI ROI rectangle of the new image
       @return the new ImgI* with underlying Img<Type>, where
               Type is depending on the first parameter eDepth
   **/
@@ -334,7 +335,7 @@ namespace icl {
   /// ensures that an image has the specified depth
   /** This function will delete the original image pointed by (*ppoImage)
       and create a new one with identical parameters, if the given depth
-      parameter is not the images depth. If the fiven image pointer
+      parameter is not the images depth. If the given image pointer
       (*ppoImage) is NULL, then a new image is created with size 1x1,
       one channel and specified depth.
       @param ppoImage pointer to the image-pointer
@@ -343,7 +344,7 @@ namespace icl {
   void ensureDepth(ImgI **ppoImage, Depth eDepth);
 
   /// ensures that two images have the same size, channel count, depth, format and ROI
-  /** If the given dst image image is 0 than it is created as a clone  (deep copy) of
+  /** If the given dst image image is 0 than it is created as a (deep copy) of
       of poSrc.
       @param ppoDst points the destination ImgI*. If the images depth has to be
                     converted, then a new ImgCore* is created, at (*ppoDst).
@@ -353,26 +354,25 @@ namespace icl {
   void ensureCompatible(ImgI **ppoDst, ImgI *poSrc);
 
   /// ensures that two images have the same size, channel count, depth, format and ROI
-  /** If the given dst image image is 0 than it is created as a clone  (deep copy) of
+  /** If the given dst image image is 0 than it is created as a (deep copy) of
       of poSrc.
       @param ppoDst points the destination ImgI*. If the images depth has to be
                     converted, then a new ImgCore* is created, at (*ppoDst).
       @param eDepth destination depth
-      @param iWidth destination width
+      @param s destination image size
       @param iHeight destination height
       @param eFormat destination format
       @param iChannelCount destination channel count. (If -1, then the channel count
                            is extracted from the given eFormat
-      @param poROIoffset destination ROI offset
-      @param poROIsize   destination ROI size
-      If the ROI parameters are not given, the ROI will comprise the whole image.
+      @param roROI destination images ROI rectangle. If the ROI parameters are not 
+                   given, the ROI will comprise the whole image.
   **/
   void ensureCompatible(ImgI **ppoDst,
                         Depth eDepth, 
                         const Size& s,
                         Format eFormat, 
                         int iChannelCount=-1,
-                        const Rect &r=Rect());
+                        const Rect &roROI=Rect());
   
   /// determines the count of channels, for each color format
   /** @param eFormat source format which channel count should be returned
@@ -391,7 +391,7 @@ namespace icl {
   /** This functions implements the opposite direction to the above function,
       which means, that:
       <pre>
-      iclTranslateFormat(iclTranslateFormat(x)) == x
+      translateFormat(translateFormat(x)) == x
       </pre>
       If x is a string or an Format enum.
       @param sFormat string representation of the format 
@@ -400,7 +400,7 @@ namespace icl {
   **/
   Format translateFormat(string sFormat);
 
-  /// call iclGetDepth<T> inside of an Img function to get associated Depth as int
+  /// call getDepth<T> inside of an Img function to get associated depth as Depth-enum
   /**
   @return depth associated with the Type value
   **/
@@ -421,7 +421,7 @@ namespace icl {
     return depth32f;
   }
 
-  /// determine the sizeof value of an Img deph
+  /// determine the sizeof value of an Img depht value
   /**
      @return sizeof value associated with the Type value
   **/

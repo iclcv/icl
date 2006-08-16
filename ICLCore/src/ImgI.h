@@ -26,27 +26,25 @@ namespace icl {
   /// typedef for 32bit float images
   typedef Img<iclfloat> Img32f;
   
-  /// Base Img-Class
+  /// ImgI is the Image-Interface class that provides save access to underlying Img-template
   /**
   \section Class
-  The ImgI class provides access to the following basic 
-  image features:
-   - width 
-   - height
+  The ImgI class provides access to the following basic image features:
+   - image size 
    - channel count
    - depth:  depth8 for iclbyte or depth32 for iclfloat-images
    - format: color-format associated with images channels 
              (see section "Img Color Formats")
-   - data:  getDataPtr(int) returns image data form nth channel 
+   - raw data:  getDataPtr(int) returns image data form nth channel 
             as void pointer. The function is implented in the 
             inherited classes Img<iclbyte> and Img<iclfloat>, 
             which also provide type-safe access functions, 
             e.g. getData (int).
    
   \section How to use the ImgI class.
-  Because ImgI is an abstract class, there can be no objects
-  instantiated from this class. It merely provides a common interface
-  to methods provided by the inherited class Img<iclbyte> and Img<iclfloat>.
+  As the ImgI is an abstract class, no ImgI objects can be instantiated
+  It merely provides a common interface to methods provided by the 
+  inherited class Img<iclbyte> and Img<iclfloat>.
 
   The following example should explain how to work with ImgI class.
   
@@ -56,9 +54,9 @@ namespace icl {
   
   void generic_function(ImgI *poImage){
      if(poImage->getDepth()==depth8u){
-        special_function_8(poImage->asIcl8());
+        special_function_8(poImage->asImg<iclbyte>());
      }else{
-        special_function_32(poImage->asIcl32());
+        special_function_32(poImage->asImg<iclfloat>());
      }
   }
   </pre>
@@ -68,9 +66,9 @@ namespace icl {
 
   void generic_function(ImgI *poImage){
      if(poImage->getDepth()==depth8u){
-        template_function<iclbyte>(poImage->asIcl8());
+        template_function<iclbyte>(poImage->asImg<iclbyte>);
      }else{
-        template_function<iclfloat>(poImage->asIcl32());
+        template_function<iclfloat>(poImage->asImg<iclfloat>);
      }
   } 
   </pre>
@@ -83,45 +81,33 @@ namespace icl {
   For example, to resize an image, one can easily write:
   <pre>
   void any_function(ImgI *poBase){
-     poBase->resize(256,256);
+     poBase->resize(Size(256,256));
      ...
   }
   </pre>
-  instead of the more complicated and confusing code:
-  <pre>
-  void any_function(ImgI *poBase){
-     // what ever this function does, imagine
-     // it has to enshure a special size of the image
-     if(poBase->getDepth()==depth8()){
-        poBase->asIcl8()->resize(256,256);
-     }else{
-        poBase->asIcl32()->resize(256,256);
-     }
-     ...
-  }
-  </pre>
-  **/ 
 
+  **/ 
   class ImgI
     {   
       public:
-
-      /* {{{ Destructor */
-      //@{ name Destructor
+      
+      //@{ @name Destructor
+      /* {{{ open */
+    
       /// Destructor
       virtual ~ImgI();
+      
       //@}
-      /* }}} */
-
-      /* {{{ data exchange functions */
-
-      //@{ @name data exchange functions
-      /// Create a shallow copy of the image.
+      /* }}} */ 
+      
+      //@{ @name functions for data exchange
+      /* {{{ open
+      
+      /// creates a shallow copy of the image.
       /** It exploits the given destination image if possible,
           i.e. if the pixel depth matches. Else this image is released
           and a new one is created.
-
-      NEE! vielleicht doch besser konform zu den anderen deepCopy fkts bleiben
+          @param ppoDst destination image (if Null, a new one is created)
       **/
       virtual void shallowCopy(ImgI** ppoDst = NULL) const;
 
@@ -152,19 +138,16 @@ namespace icl {
       //@}
       /* }}} */
 
-      /* {{{ getter functions */
+      //@{ @name getter functions
+      /* {{{ open */
 
-      ///@{ @name getter functions
-
-      /// return size of the images
+      /// returns the size of the images
       const Size& getSize() const {
         FUNCTION_LOG(""); 
         return m_oSize; 
       }
       
       /// returns the pixelcount of each channel
-      /** @ return width * height
-      */
       int getDim() const
         {
           FUNCTION_LOG("");
@@ -173,9 +156,6 @@ namespace icl {
 
 
       /// returns the channel count of the image
-      /**
-          @return count of channels
-      **/
       int getChannels() const
         {
           FUNCTION_LOG("");
@@ -184,10 +164,6 @@ namespace icl {
 
 
       /// returns the depth (depth8u or depth32f)
-      /** 
-          @return image depth ()
-          @see Depth
-      **/
       Depth getDepth() const
         {
           FUNCTION_LOG("");
@@ -195,23 +171,19 @@ namespace icl {
         }
 
       /// returns the current (color)-format of this image
-      /** 
-          @return current (color)-format
-          @see Format
-      **/
       Format getFormat() const
         {
           FUNCTION_LOG("");
           return m_eFormat;
         }
 
-      /// TODO!!! for ipp- function calls
+      /// returns the lenght of an image line in bytes (width*sizeof(Type))
       virtual int getLineStep() const = 0;
 
       /// returns if two images have same size, and channel count
       /** @param iNewWidth image width to test
           @param iNewHeight image height to test
-          @param iNewNumChannels image channel count to test
+          @param nChannels channel count to test
       **/
       int isEqual(const Size &s,int nChannels) const
         {
@@ -220,40 +192,50 @@ namespace icl {
           
         }
       //@}
-      //@{ @name [getter functions for ROI handling]
+      /* }}} */
       
-      /// Gets the ROI of this image
-      /** @see Img*/
+      //@{ @name ROI handling functions
+      /* {{{ open */
       
-      /// TODO comment
+      /// returns the images ROI rectangle
       Rect getROI() const{
         FUNCTION_LOG("");
         return Rect(m_oROIOffset,m_oROISize);
       }
 
-      /// TODO comment
+      /// returns the images ROI offset
       const Point& getROIOffset() const{
         FUNCTION_LOG("");
         return m_oROIOffset;
       }
 
-      /// TODO comment
+      /// returns the images ROI size
       const Size& getROISize() const{
         FUNCTION_LOG("");
         return m_oROISize;
       }
      
-      /// TODO comment
+      /// sets the images ROI to a given rectangle (
+      /** If the given rect will not fit into the image, the rect parameters
+          are adapted. Negative rect parameters are treated as differences to
+          the hole image size. E.g. a rect of (5,5,-10-10) sets the ROI to the
+          inner sub image with a 5-pixel margin. (-5,-5,5,5) set up the ROI to
+          the upper right 5x5 corner. An identicel mechanism is implemented 
+          for the following two function setROIOffset and setROISize.
+          @param r new ROI rectangle
+      **/
       void setROI(const Rect &r){
         FUNCTION_LOG("");
         setROIOffset(Point(r.x,r.y));
         setROISize(Size(r.width,r.height));
       }
 
-      /// TODO comment
+      /// sets the image ROI offset to a given point
+      /** for more deails look at the above function setROI */
       void setROIOffset(const Point &p);
       
-      /// TODO comment
+      /// sets the image ROI size to a given Size
+      /** for more deails look at the above function setROI */
       void setROISize(const Size &s);
      
       /// returns ROISize == ImageSize
@@ -270,23 +252,25 @@ namespace icl {
       }
       
       //@}
-
       /* }}} */
 
-      /* {{{ abstract functions (implemented in the Img class)*/
-
-      //@{ @name Raw-data access
+      //@{ @name data access
+      /* {{{ open */
       
       /// returns a pointer to first data element
       /** @see Img*/
       virtual void* getDataPtr(int iChannel) const = 0;
     
-     
-      //@} @{ @name Channel Management
+      //@} 
+      /* }}} */
+      
+      //@{ @name class organisation
+      /* {{{ open */
 
-      /// Makes the image channels inside the Img independent from other Img.
+      /// Makes the image channels independent from other images.
       /** @see Img*/
       virtual void detach(int iIndex = -1)=0;
+
       /// Removes a specified channel.
       /** @see Img*/
       virtual void removeChannel(int iChannel)=0;
@@ -299,26 +283,39 @@ namespace icl {
       /** @see Img*/
       virtual void setNumChannels(int iNewNumChannels)=0;
 
-      /// creates a hole new Img internally
+      /// creates a hole new Img internally (image data will be lost)
       /** @see Img*/
       virtual void renew(const Size &s, int iNewNumChannel)=0;
 
-      /// resizes the image to new values
+      /// resizes the image to new values (image data is scaled)
       /** @see Img*/
       virtual void resize(const Size &s)=0;
-      
-      //@}
-      //@{ @name Type conversion functions
 
-      /// Return a copy of the object with depth 32 bit. (IPP-OPTIMIZED)
-      /** @see Img*/
-      //template<class T>
-      //virtual Img<T> *convertTo<T>(Img<T>* poDst) const=0;
-      //@}
-    
-      //@{ @name Basic image processing functions
+      /// sets the format associated with channels of the image
+      /**
+      The channel count of the image is set to the channel count
+      asociated with the set format, if they differ.
+      E.g an image with one channel will have 3 channels after
+      a setFormat(formatRGB) - call.
+      @param eFormat new format value
+      @see getChannelsOfFormat
+      **/
+      void setFormat(Format eFormat);
       
-      /// perform a scaling operation of the images (keeping the data) (IPP-OPTIMIZED)
+      //@}
+      /* }}} */
+
+      //@{ @name Type conversion functions
+      /* {{{ */
+
+      
+      // @}
+      /* }}} */
+
+      //@{ @name image processing functions
+      /* {{{ open */
+      
+      /// performs an inplace scaling operation of each pixel value (IPP-OPTIMIZED)
       /** @see Img*/
       virtual void scale(const Size& s, ScaleMode eScaleMode=interpolateNN)=0;
       
@@ -330,53 +327,39 @@ namespace icl {
       /** @see Img */
       virtual void scaleRange(float tNewMin, float tNewMax, float tMin, float tMax, int iChannel = -1)=0;
 
-      //@}
- 
+      //@} 
       /* }}} */
 
-      /* {{{ accessing underlying r_e_a_l classes */
+      //@{ @name accessing underlying Img classes 
+      /* {{{ open */
 
-      //@{ @name accessing underlying r_e_a_l classes
-      /// returns an Img8u* intstance of this image
+      /// returns an Img<T>* intstance of this image (internal: reinterpret_cast)
       /** 
-      @return Img8u* instance of this image
+      @return Img<T>* instance of this image
       **/
-      
       template <class T>
       Img<T> *asImg() const{
         return reinterpret_cast<Img<T>*>((void*)this);
       }
 
+      /// returns an Img<T> instance of this image (type-conversion or deep copy)
+      /** If the requested type differs from the actual image type, then a type
+          conversion is performed to transfer the image data to poDst. Else
+          deepCopy is called, to transfer the image data. If poDst is NULL, it
+          is created with identical parameters, except for the images depth, which
+          is given by the template parameter T
+      */
       template <class T>
       Img<T> *convertTo( Img<T>* poDst=NULL ) const;
 
       //@}
-
       /* }}} */
 
-      /* {{{ setter functions */
-
-      ///@name setter functions (including ROI handling)
-      //@{
-      /// sets the format associated with channels of the image
-      /**
-      The channel count of the image is set to the channel count
-      asociated with the set format, if they differ.
-      E.g an image with one channel will have 3 channels after
-      a setFormat(formatRGB) - call.
-      @param eFormat new format value
-      @see getChannelsOfFormat
-      **/
-      void setFormat(Format eFormat);
-      //@}
-
-      /* }}} */
-
-      /* {{{ utility functions */
       //@{ @name utility functions
+      /* {{{ open */
       /// prints the image to std-out
       /** @param sTitle optional title, that can be printed before
-                        printing the image parameters
+          printing the image parameters to identify the message.
       **/
       void print(string sTitle="image") const;
       //@}
@@ -388,8 +371,10 @@ namespace icl {
 
       /// Creates an ImgI object with specified width, height, format, depth and channel count
       /** 
-      If channel count is <= 0, the number of channels is computed 
-      automatically from format.
+      If channel count is <= 0 (default), the number of channels is computed 
+      automatically from format using the getChannelsOfFormat function from the icl namespace.
+      @param s size of the ImgI
+      @param eFormat (color)-format of the image
       **/
       ImgI(const Size &s,
            Format eFormat, 

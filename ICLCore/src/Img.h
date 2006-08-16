@@ -20,7 +20,7 @@ using namespace std;
 
 namespace icl {
 
-  /// Img implements an array of ImgChannel images with an arbitrary number of channels
+  /// The Img class implements the ImgI Image interface with type specific functionalities
   /**
   @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
   @author Christof Elbrechter (celbrech@TechFak.Uni-Bielefeld.de)
