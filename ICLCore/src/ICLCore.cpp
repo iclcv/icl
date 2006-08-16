@@ -3,9 +3,9 @@
 
 namespace icl{
   
-  ImgI *imgNew(Depth eDepth, 
+  ImgI *imgNew(depth eDepth, 
                const Size& s,
-               Format eFormat, 
+               format eFormat, 
                int iChannels,
                const Rect &oROI)
   {
@@ -23,7 +23,7 @@ namespace icl{
     return poNew;
   }
 
-  int getChannelsOfFormat(Format eFormat)
+  int getChannelsOfFormat(format eFormat)
   {
     switch (eFormat)
       {
@@ -47,7 +47,7 @@ namespace icl{
       }
   }
 
-  string translateFormat(Format eFormat)
+  string translateFormat(format eFormat)
   {
     switch(eFormat)
       {
@@ -61,7 +61,7 @@ namespace icl{
       }
   }
  
-  Format translateFormat(string sFormat)
+  format translateFormat(string sFormat)
   {
     if(sFormat.length()<=0)
       {
@@ -80,7 +80,7 @@ namespace icl{
     }
   }
   
-  void ensureDepth(ImgI ** ppoImage, Depth eDepth)
+  void ensureDepth(ImgI ** ppoImage, depth eDepth)
   {
     if(!*ppoImage)
     {
@@ -100,9 +100,9 @@ namespace icl{
   }
   
   void ensureCompatible(ImgI **ppoDst,
-                        Depth eDepth,
+                        depth eDepth,
                         const Size &s,
-                        Format eFormat,
+                        format eFormat,
                         int iChannelCount,
                         const Rect &r)
   {
@@ -135,15 +135,15 @@ namespace icl{
   }
 
 
-  int getSizeOf(Depth eDepth)
+  int getSizeOf(depth eDepth)
   {
     switch(eDepth)
     {
       case depth8u:
-        return sizeof(iclbyte);
+        return sizeof(icl8u);
         break;
       case depth32f:
-        return sizeof(iclfloat);
+        return sizeof(icl32f);
         break;
       default:
         ERROR_LOG("Unknown icl depth");

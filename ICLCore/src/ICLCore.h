@@ -69,15 +69,15 @@ automatically releasing <i>unused</i> image channels.
 
 \section Data-Types
 Currently the Img provides two different data types:
-- <b>iclbyte</b> 8bit unsigned char
-- <b>iclfloat</b> 32bit float
+- <b>icl8u</b> 8bit unsigned char
+- <b>icl32f</b> 32bit float
 
 Img-classes are predefined for these two types:
-- Img<iclfloat> : public ImgI <b>typedef'd to Img32f</b>
-- Img<iclbyte> : public ImgI <b>typedef'd to Img8u</b>
+- Img<icl32f> : public ImgI <b>typedef'd to Img32f</b>
+- Img<icl8u> : public ImgI <b>typedef'd to Img8u</b>
 
 Each of these data types has several advantages/disadvantages. The greatest
-disadvantage of the iclbyte, is its bounded range (0,1,...,255),
+disadvantage of the icl8u, is its bounded range (0,1,...,255),
 which has the effect, that all information has to be scaled to this
 range, and all image processing functions must take care that
 no range-overflow occurs during calculation. Furthermore
@@ -87,7 +87,7 @@ The advantage of integer values is, that computation is faster
 than using float values, not at least because of the 4-Times 
 larger memory usage.
  
-@see Depth, iclbyte, iclfloat
+@see Depth, icl8u, icl32f
 
 \section Color Formats
 An ImgI image provides some information about the (color) format, that
@@ -115,7 +115,7 @@ i.e. most new Intel and AMD processors.
 To provide access to IPP/IPPI functionality, the ImgCore library can be 
 compiled with <b>WITH_IPP_OPTIMIZATIONS</b> defined. In this case, the 
 following adaptions are performed:
-- the icl data types iclfloat and iclbyte are defined as the ipp compatible
+- the icl data types icl32f and icl8u are defined as the ipp compatible
   type Ipp32f and Ipp8u.
 - the classes Size, Point and Rect are derived from the corresponding ipp-
   structs IppiSize, IppiPoint and IppiRect. Hence the the programme will
@@ -234,27 +234,27 @@ namespace icl {
   
 #ifdef WITH_IPP_OPTIMIZATION
   /// 32Bit floating point type for the ICL 
-  typedef Ipp32f iclfloat;
+  typedef Ipp32f icl32f;
 
   /// 8Bit unsigned integer type for the ICL
-  typedef Ipp8u iclbyte;
+  typedef Ipp8u icl8u;
 
 #else
   /// 32Bit floating point type for the ICL 
-  typedef float iclfloat;
+  typedef float icl32f;
 
   /// 8Bit unsigned integer type for the ICL 
-  typedef unsigned char iclbyte;
+  typedef unsigned char icl8u;
 #endif
 
   /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
-  enum Depth{
+  enum depth{
     depth8u  = 0, /**< 8Bit unsigned integer values range {0,1,...255} */
     depth32f = 1 /**< 32Bit floating point values */
   };
   
   /// determines the color-format, that is associated with the images channels 
-  enum Format{
+  enum format{
     formatRGB, /**< (red,green,blue) colors pace */
     formatHLS, /**< (hue,lightness,saturation) color space (also know as HSI) */
     formatLAB, /**< (lightness,a*,b*) color space */
@@ -264,14 +264,14 @@ namespace icl {
   };
 
 #ifdef WITH_IPP_OPTIMIZATION
-  enum ScaleMode{
+  enum scalemode{
     interpolateNN=IPPI_INTER_NN,      /**< nearest neighbor interpolation */
     interpolateLIN=IPPI_INTER_LINEAR, /**< bilinear interpolation */
     interpolateRA=IPPI_INTER_SUPER    /**< region-average interpolation */
   };
 #else
   /// for scaling of Img images theses functions are provided
-  enum ScaleMode{
+  enum scalemode{
     interpolateNN,  /**< nearest neighbor interpolation */
     interpolateLIN, /**< bilinear interpolation */
     interpolateRA   /**< region-average interpolation */
@@ -324,9 +324,9 @@ namespace icl {
       @return the new ImgI* with underlying Img<Type>, where
               Type is depending on the first parameter eDepth
   **/
-  ImgI *imgNew(Depth eDepth=depth8u, 
+  ImgI *imgNew(depth eDepth=depth8u, 
                const Size& s=Size(1,1),
-               Format eFormat=formatMatrix,
+               format eFormat=formatMatrix,
                int iChannels = -1,
                const Rect &oROI=Rect());
 
@@ -341,7 +341,7 @@ namespace icl {
       @param ppoImage pointer to the image-pointer
       @param eDepth destination depth of the image
   **/
-  void ensureDepth(ImgI **ppoImage, Depth eDepth);
+  void ensureDepth(ImgI **ppoImage, depth eDepth);
 
   /// ensures that two images have the same size, channel count, depth, format and ROI
   /** If the given dst image image is 0 than it is created as a (deep copy) of
@@ -367,9 +367,9 @@ namespace icl {
                    given, the ROI will comprise the whole image.
   **/
   void ensureCompatible(ImgI **ppoDst,
-                        Depth eDepth, 
+                        depth eDepth, 
                         const Size& s,
-                        Format eFormat, 
+                        format eFormat, 
                         int iChannelCount=-1,
                         const Rect &roROI=Rect());
   
@@ -377,14 +377,14 @@ namespace icl {
   /** @param eFormat source format which channel count should be returned
       @return channel count of format eFormat
   **/
-  int getChannelsOfFormat(Format eFormat);
+  int getChannelsOfFormat(format eFormat);
 
 
   /// returns a string representation of an Format enum
   /** @param eFormat Format enum which string repr. is asked 
       @return string representation of eFormat
   **/
-  string translateFormat(Format eFormat);  
+  string translateFormat(format eFormat);  
   
   /// returns an Format enum, specified by a string 
   /** This functions implements the opposite direction to the above function,
@@ -397,26 +397,26 @@ namespace icl {
                      which should be returned
       @return Format, that corresponds to sFormat
   **/
-  Format translateFormat(string sFormat);
+  format translateFormat(string sFormat);
 
   /// call getDepth<T> inside of an Img function to get associated depth as Depth-enum
   /**
   @return depth associated with the Type value
   **/
   template<class T> 
-  static Depth getDepth(){
+  static depth getDepth(){
     return depth8u;
   }
 
   /// specialized function for depth8u
   template<> 
-  static Depth getDepth<iclbyte>(){
+  static depth getDepth<icl8u>(){
     return depth8u;
   }
   
   /// specialized function for depth32f
   template<> 
-  static Depth getDepth<iclfloat>(){
+  static depth getDepth<icl32f>(){
     return depth32f;
   }
 
@@ -424,7 +424,7 @@ namespace icl {
   /**
      @return sizeof value associated with the Type value
   **/
-  int getSizeOf(Depth eDepth);
+  int getSizeOf(depth eDepth);
 
 }
 

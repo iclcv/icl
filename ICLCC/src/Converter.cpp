@@ -9,10 +9,10 @@ namespace icl{
   }
 
   void Converter::convert(ImgI *poDst, ImgI *poSrc){
-    Format eSrcFmt = poSrc->getFormat();
-    Format eDstFmt = poDst->getFormat();
-    Depth eSrcDepth = poSrc->getDepth();
-    Depth eDstDepth = poDst->getDepth();
+    format eSrcFmt = poSrc->getFormat();
+    format eDstFmt = poDst->getFormat();
+    depth eSrcDepth = poSrc->getDepth();
+    depth eDstDepth = poDst->getDepth();
     int iNeedDepthConversion = eSrcDepth!=eDstDepth;
     int iNeedSizeConversion = poDst->getSize() != poSrc->getSize();
     int iNeedColorConversion = eSrcFmt != formatMatrix && eDstFmt != formatMatrix && eSrcFmt != eDstFmt;

@@ -63,7 +63,7 @@ namespace icl{
          s.inRegion() ; 
          d.incLine(), s.incLine())
      {
-        memcpy(&*d,&*s,s.getROIWidth()*sizeof(iclbyte));
+        memcpy(&*d,&*s,s.getROIWidth()*sizeof(icl8u));
      }
   }
   </pre>
@@ -77,11 +77,11 @@ namespace icl{
   ImgIterator.
 
   <pre>
-  void channel_convolution_3x3(Img32f &src, Img32f &dst,iclfloat *pfMask, int iChannel)
+  void channel_convolution_3x3(Img32f &src, Img32f &dst,icl32f *pfMask, int iChannel)
   {
      for(Img32f::iterator s=src.getROIIterator(iChannel) d=dst.getROIIterator() ; s.inRegion() ; s++,d++)
      {
-        iclfloat *m = pfMask;
+        icl32f *m = pfMask;
         (*d) = 0;
         for(Img32f::iterator sR(s, 3, 3); sR.inRegion(); sR++,m++)
         {
@@ -131,12 +131,12 @@ namespace icl{
 
   // 1st working with the image data (time: ~210/360ms)
   // pointer style (~210ms)
-  for(iclbyte *p= im.getData(0), *d=p+iW*iH ; p<d; ){
+  for(icl8u *p= im.getData(0), *d=p+iW*iH ; p<d; ){
      *p++ = 5;
   }
   
   // index style (~360ms)
-  iclbyte *pucData = im.getData(0);
+  icl8u *pucData = im.getData(0);
   for(int i=0;i<im.getWidth()*im.getHeight();i++){
      pucData[i]=42;
   }

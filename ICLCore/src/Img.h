@@ -116,7 +116,7 @@ class Img : public ImgI
                        count is calculated from the given format (E.g. if
                        eFormat is formatRGB iChannels is set to 3)
   **/
-  Img(const Size &s, Format eFormat, int iChannels = -1);
+  Img(const Size &s, format eFormat, int iChannels = -1);
  
   /// Creates an image with specified size, number of channels, format, using shared data pointers as channel data
   /** @param s size of the new image
@@ -130,7 +130,7 @@ class Img : public ImgI
                      constructor call, to induce the Img to allocate own memory
                      for the image data.
   **/
-  Img(const Size &s, Format eFormat, int iChannels, Type** pptData);
+  Img(const Size &s, format eFormat, int iChannels, Type** pptData);
 
   /// Copy constructor
   /** creates a flat copy of the source image
@@ -236,11 +236,11 @@ class Img : public ImgI
                            - interpolateNN  --> nearest neighbor interpolation (fastest)
                            - interpolateLIN  --> bilinear interpolation
                            - interpolateRA  --> region average 
-      @see ScaleMode
+      @see scalemode
       @see resize
       @see deepCopy
   **/
-  virtual ImgI* scaledCopy(ImgI *poDst, ScaleMode eScaleMode=interpolateNN) const;
+  virtual ImgI* scaledCopy(ImgI *poDst, scalemode eScaleMode=interpolateNN) const;
   
   /// copies the image data in the images ROI into the destination images ROI (IPP-OPTIMIZED)
   /** This function will copy the content of the images ROI into the
@@ -280,7 +280,7 @@ class Img : public ImgI
                            - interpolateLIN  --> bilinear interpolation
                            - interpolateRA  --> region average 
   **/
-  virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, ScaleMode eScaleMode=interpolateNN) const;
+  virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, scalemode eScaleMode=interpolateNN) const;
                   
   /* }}} */
   
@@ -367,21 +367,25 @@ class Img : public ImgI
   /* {{{ open */
 
   /// Returns max pixel value of channel iChannel (IPP-OPTIMIZED)
-  /** @param iChannel Index of channel
+  /** @param iChannel Index of channel (if -1 then the maximum 
+                      of all channels is calculated)
   **/
-  Type getMax(int iChannel) const;
+  Type getMax(int iChannel=-1) const;
   
   /// Returns min pixel value of channel iChannel (IPP-OPTIMIZED)
-  /** @param iChannel Index of channel 
+  /** @param iChannel Index of channel (if -1 then the minimum 
+                      of all channels is calculated)
   **/
-  Type getMin(int iChannel) const;
+  Type getMin(int iChannel=-1) const;
   
   /// Returns min and max pixel value of channel iChannel (IPP-OPTIMIZED)
-  /** @param iChannel Index of channel
-      @param rtMin reference to store the min value 
+  /** @param rtMin reference to store the min value 
       @param rtMax reference to store the max value
+      @param iChannel Index of channel (if -1 then the maximum and 
+                      then minium of all channels is calculated)
+     
   **/
-  void getMinMax(int iChannel, Type &rtMin, Type &rtMax) const;
+  void getMinMax(Type &rtMin, Type &rtMax, int iChannel=-1) const;
 
   /// Returns pointer to the specified channel data
   /** This method provides
@@ -483,10 +487,10 @@ class Img : public ImgI
                            - interpolateNN   --> nearest neighbor interpolation (fastest)
                            - interpolateLIN  --> bilinear interpolation
                            - interpolateRA   --> region average 
-      @see ScaleMode
+      @see scalemode
       @see resize
   **/
-  virtual void scale(const Size &s, ScaleMode eScaleMode=interpolateNN);
+  virtual void scale(const Size &s, scalemode eScaleMode=interpolateNN);
  
  
   
@@ -532,11 +536,11 @@ class Img : public ImgI
   /** The following example taken from ImgIterator.h will show
       the iterator usage:
       <pre>
-      void channel_convolution_3x3(Img32f &src, Img32f &dst,iclfloat *pfMask, int iChannel)
+      void channel_convolution_3x3(Img32f &src, Img32f &dst,icl32f *pfMask, int iChannel)
       { 
          for(Img32f::iterator s=src.begin(iChannel) d=dst.begin() ; s.inRegion() ; s++,d++)
          {
-            iclfloat *m = pfMask;
+            icl32f *m = pfMask;
             (*d) = 0;
             for(Img32f::iterator sR(s, 3, 3); sR.inRegion(); sR++,m++)
             {

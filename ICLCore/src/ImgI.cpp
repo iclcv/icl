@@ -15,9 +15,8 @@ namespace icl {
 // {{{ constructor / destructor 
 
   ImgI::ImgI(const Size &s,
-             Format eFormat,
-             Depth
- eDepth,
+             format eFormat,
+             depth eDepth,
              int iChannels):
     m_iChannels((iChannels <= 0) ? getChannelsOfFormat(eFormat) : iChannels),
     m_oSize(s),
@@ -43,7 +42,7 @@ ImgI::~ImgI()
 
 // {{{ setter functions
 
-void ImgI::setFormat(Format eFormat)
+void ImgI::setFormat(format eFormat)
 {
   FUNCTION_LOG("setFormat(" << translateFormat(eFormat) << ")");
   if(eFormat != formatMatrix)
@@ -66,11 +65,11 @@ void ImgI::shallowCopy(ImgI** ppoDst) const {
   
   if (getDepth() == depth8u)
     {
-      *(*ppoDst)->asImg<iclbyte>() = *this->asImg<iclbyte>();
+      *(*ppoDst)->asImg<icl8u>() = *this->asImg<icl8u>();
     }
   else
     {
-      *(*ppoDst)->asImg<iclfloat>() = *this->asImg<iclfloat>();
+      *(*ppoDst)->asImg<icl32f>() = *this->asImg<icl32f>();
     }
   
 }
@@ -90,11 +89,11 @@ void ImgI::print(string sTitle) const
             getROI().x, getROI().y,getROI().width, getROI().height);
   if(m_eDepth == depth8u){
     for(int i=0;i<m_iChannels;i++){
-      printf("| channel: %d, min: %d, max:%d \n",i,asImg<iclbyte>()->getMin(i),asImg<iclbyte>()->getMax(i));
+      printf("| channel: %d, min: %d, max:%d \n",i,asImg<icl8u>()->getMin(i),asImg<icl8u>()->getMax(i));
     }
   }else{
     for(int i=0;i<m_iChannels;i++){
-      printf("| channel: %d, min: %f, max:%f \n",i,asImg<iclfloat>()->getMin(i),asImg<iclfloat>()->getMax(i));
+      printf("| channel: %d, min: %f, max:%f \n",i,asImg<icl32f>()->getMin(i),asImg<icl32f>()->getMax(i));
     }
   }
   printf(" -----------------------------------------\n");
@@ -127,12 +126,64 @@ void ImgI::setROIOffset(const Point &p){
 
 // }}}
 
+// {{{ convertTo - template
+
 template <class T>
 Img<T> *ImgI::convertTo( Img<T>* poDst) const {
+  FUNCTION_LOG("");
+ 
+  ImgI *poDstI = static_cast<ImgI*>(poDst); 
+  if(!poDstI || icl::getDepth<T>() == getDepth()){
+    return (Img<T>*)deepCopy(poDstI);
+  }
+ 
+  poDstI->resize(getSize());
+  poDstI->setFormat(getFormat());
+  poDstI->setNumChannels(getChannels());
+  poDstI->setROI(getROI());
+   
+  if(getDepth() == depth32f)
+    {
+      for(int c=0;c<getChannels();c++)
+        {
+          icl32f *pfSrc = asImg<icl32f>()->getData(c);
+          icl8u *pucDst = poDstI->asImg<icl8u>()->getData(c);
+          
+#ifdef WITH_IPP_OPTIMIZATION
+          ippiConvert_32f8u_C1R(pfSrc,getLineStep(),pucDst,poDst->getLineStep(),getSize(),ippRndNear);
+#else
+          icl32f *pfSrcEnd = pfSrc+getDim();
+          while(pfSrc!=pfSrcEnd){
+            *pucDst++ = static_cast<icl8u>(*pfSrc++);
+          }
+#endif        
+        }
+    }
+  else /// this->getDepth == depth8u
+    {
+      for(int c=0;c<getChannels();c++)
+        {
+          icl8u *pucSrc = asImg<icl8u>()->getData(c);
+          icl32f *pfDst = poDst->asImg<icl32f>()->getData(c);
+          
+#ifdef WITH_IPP_OPTIMIZATION
+          ippiConvert_8u32f_C1R(pucSrc,getLineStep(),pfDst,poDst->getLineStep(),getSize());
+#else
+          icl8u *pucSrcEnd = pucSrc+getDim();
+          while(pucSrc!=pucSrcEnd){
+            *pfDst++ = static_cast<icl32f>(*pucSrc++);
+          }
+#endif
+        }    
+    }
   return poDst;
 }
+  
+  template Img<icl8u>* ImgI::convertTo<icl8u>(Img<icl8u>*) const;
+  template Img<icl32f>* ImgI::convertTo<icl32f>(Img<icl32f>*) const;
 
-  template Img<iclbyte>* ImgI::convertTo<iclbyte>(Img<iclbyte>*) const;
-  template Img<iclfloat>* ImgI::convertTo<iclfloat>(Img<iclfloat>*) const;
+  // }}}
 
 } //namespace icl
+
+

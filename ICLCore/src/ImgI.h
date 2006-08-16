@@ -21,10 +21,10 @@ namespace icl {
   template<class T> class Img;
 
   /// typedef for 8bit integer images
-  typedef Img<iclbyte> Img8u;
+  typedef Img<icl8u> Img8u;
 
   /// typedef for 32bit float images
-  typedef Img<iclfloat> Img32f;
+  typedef Img<icl32f> Img32f;
   
 
   /// ImgI is the Image-Interface class that provides save access to underlying Img-template
@@ -34,19 +34,19 @@ namespace icl {
   The ImgI class provides access to the following basic image features:
    - image size 
    - channel count
-   - depth:  depth8 for iclbyte or depth32 for iclfloat-images
+   - depth:  depth8 for icl8u or depth32 for icl32f-images
    - format: color-format associated with images channels 
              (see section "Img Color Formats")
    - raw data:  getDataPtr(int) returns image data form nth channel 
             as void pointer. The function is implented in the 
-            inherited classes Img<iclbyte> and Img<iclfloat>, 
+            inherited classes Img<icl8u> and Img<icl32f>, 
             which also provide type-safe access functions, 
             e.g. getData (int).
    
   \section How to use the ImgI class.
   As the ImgI is an abstract class, no ImgI objects can be instantiated
   It merely provides a common interface to methods provided by the 
-  inherited class Img<iclbyte> and Img<iclfloat>.
+  inherited class Img<icl8u> and Img<icl32f>.
 
   The following example should explain how to work with ImgI class.
   
@@ -56,9 +56,9 @@ namespace icl {
   
   void generic_function(ImgI *poImage){
      if(poImage->getDepth()==depth8u){
-        special_function_8(poImage->asImg<iclbyte>());
+        special_function_8(poImage->asImg<icl8u>());
      }else{
-        special_function_32(poImage->asImg<iclfloat>());
+        special_function_32(poImage->asImg<icl32f>());
      }
   }
   </pre>
@@ -68,9 +68,9 @@ namespace icl {
 
   void generic_function(ImgI *poImage){
      if(poImage->getDepth()==depth8u){
-        template_function<iclbyte>(poImage->asImg<iclbyte>);
+        template_function<icl8u>(poImage->asImg<icl8u>);
      }else{
-        template_function<iclfloat>(poImage->asImg<iclfloat>);
+        template_function<icl32f>(poImage->asImg<icl32f>);
      }
   } 
   </pre>
@@ -124,7 +124,7 @@ namespace icl {
       /** this function is implemented in the Img-template class
           @see Img
       **/
-      virtual ImgI* scaledCopy(ImgI *poDst, ScaleMode eScaleMode=interpolateNN) const=0;
+      virtual ImgI* scaledCopy(ImgI *poDst, scalemode eScaleMode=interpolateNN) const=0;
     
 
       /// copies the image data in the images ROI into the destination images ROI
@@ -137,7 +137,7 @@ namespace icl {
       /** this function is implemented in the Img-template class
       @see Img
       **/
-      virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, ScaleMode eScaleMode=interpolateNN) const=0;
+      virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, scalemode eScaleMode=interpolateNN) const=0;
       //@}
 
       /* }}} */
@@ -168,14 +168,14 @@ namespace icl {
 
 
       /// returns the depth (depth8u or depth32f)
-      Depth getDepth() const
+      depth getDepth() const
         {
           FUNCTION_LOG("");
           return m_eDepth;
         }
 
       /// returns the current (color)-format of this image
-      Format getFormat() const
+      format getFormat() const
         {
           FUNCTION_LOG("");
           return m_eFormat;
@@ -325,7 +325,7 @@ namespace icl {
       @param eFormat new format value
       @see getChannelsOfFormat
       **/
-      void setFormat(Format eFormat);
+      void setFormat(format eFormat);
       
       //@}
       /* }}} */
@@ -342,7 +342,7 @@ namespace icl {
       
       /// performs an inplace scaling operation of each pixel value (IPP-OPTIMIZED)
       /** @see Img*/
-      virtual void scale(const Size& s, ScaleMode eScaleMode=interpolateNN)=0;
+      virtual void scale(const Size& s, scalemode eScaleMode=interpolateNN)=0;
       
       /// Scale the channel min/ max range to the new range tMin, tMax.
       /** @see Img*/
@@ -402,8 +402,8 @@ namespace icl {
       @param eFormat (color)-format of the image
       **/
       ImgI(const Size &s,
-           Format eFormat, 
-           Depth eDepth=depth8u,
+           format eFormat, 
+           depth eDepth=depth8u,
            int iChannels=-1);
       
       /* }}} */
@@ -417,10 +417,10 @@ namespace icl {
       Size m_oSize;
 
       /// (color)-format associated with the images channels
-      Format m_eFormat;
+      format m_eFormat;
 
-      /// depth of the image (depth8 for iclbyte/depth32 for iclfloat)
-      Depth m_eDepth;
+      /// depth of the image (depth8 for icl8u/depth32 for icl32f)
+      depth m_eDepth;
 
       // internal storage of the ROI parameters
       Point m_oROIOffset; //< ROI offset
