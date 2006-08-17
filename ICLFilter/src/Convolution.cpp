@@ -332,7 +332,7 @@ namespace icl{
           {
              buffer += (*m) * (*sR);
           }
-          *d = castResult<ImageT, KernelT>(buffer);
+          *d = Cast<KernelT, ImageT>::cast(buffer);
        }
     }
   }

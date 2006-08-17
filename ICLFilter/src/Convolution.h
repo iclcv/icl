@@ -286,26 +286,12 @@ namespace icl{
        void cGenericConv (ImgI *poSrc, ImgI *poDst);
 
     template<typename KernelT> const KernelT* getKernel() const;
-    template<typename ImgT, typename KernelT> ImgT castResult(const KernelT value) {
-       return static_cast<ImgT>(value);
-    }
 #endif
   };
 
 #ifndef WITH_IPP_OPTIMIZATION 
-  template<> const int* Convolution::getKernel<int>()     const {return piKernel;}
-  template<> const float* Convolution::getKernel<float>() const {return pfKernel;}
-
-/*
-  template<> 
-  icl8u Convolution::castResult<icl8u, int> (const int value) const {
-     return static_cast<icl8u>(value < 0 ? 0 : value > 255 ? 255 : value);
-  }
-  template<>
-  icl8u Convolution::castResult<icl8u,float> (const float value) const {
-     return static_cast<icl8u>(value < 0. ? 0 : value > 255. ? 255 : value);
-  }
-*/
+  template<> inline const int* Convolution::getKernel<int>()     const {return piKernel;}
+  template<> inline const float* Convolution::getKernel<float>() const {return pfKernel;}
 #endif
 }
 
