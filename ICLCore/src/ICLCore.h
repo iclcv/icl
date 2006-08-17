@@ -426,7 +426,7 @@ namespace icl {
   template<typename srcT>
   struct Cast<srcT, icl8u> {
      static icl8u cast (srcT v) {
-        return static_cast<icl8u>(std::max ((srcT) 255, std::min ((srcT) 0, v)));
+        return static_cast<icl8u>(std::min ((srcT) 255, std::max ((srcT) 0, v)));
      }
   };
   template<typename T>
