@@ -35,15 +35,10 @@ namespace icl{
           break;
           
         case formatGray:
-          return 1;
-          break;
-          
         case formatMatrix:
-          return 1;
-          break;
-          
         default:
           return 1;
+          break;
       }
   }
 
@@ -113,7 +108,8 @@ namespace icl{
     else 
     {
        ensureDepth(ppoDst,eDepth);
-       (*ppoDst)->setNumChannels(iChannelCount<0?getChannelsOfFormat(eFormat):iChannelCount);
+       if (iChannelCount < 0) iChannelCount = getChannelsOfFormat(eFormat);
+       (*ppoDst)->setNumChannels(iChannelCount);
        (*ppoDst)->setFormat(eFormat);
        (*ppoDst)->resize(s);
     }

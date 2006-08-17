@@ -399,32 +399,40 @@ namespace icl {
   **/
   format translateFormat(string sFormat);
 
-  /// call getDepth<T> inside of an Img function to get associated depth as Depth-enum
-  /**
-  @return depth associated with the Type value
-  **/
+  /// getDepth<T> returns to depth enum associated to type T
   template<class T> 
-  static depth getDepth(){
-    return depth8u;
-  }
+  static depth getDepth() { return depth8u; }
 
-  /// specialized function for depth8u
+  /// getDepth<T> returns to depth enum associated to type T
   template<> 
-  static depth getDepth<icl8u>(){
-    return depth8u;
-  }
+  static depth getDepth<icl8u>() { return depth8u; }
   
-  /// specialized function for depth32f
+  /// getDepth<T> returns to depth enum associated to type T
   template<> 
-  static depth getDepth<icl32f>(){
-    return depth32f;
-  }
+  static depth getDepth<icl32f>() { return depth32f; }
 
-  /// determine the sizeof value of an Img depht value
-  /**
-     @return sizeof value associated with the Type value
-  **/
+  /// return sizeof value for the given depth type
   int getSizeOf(depth eDepth);
+
+  /// Casting operator
+  /** Use Cast<srcT, dstT>::cast (value) to cast values safely from
+      one srcT type to dstT. If destination type is icl8u, the source
+      value is clipped to the range [0..255].
+  */
+  template<typename srcT, typename dstT> 
+  struct Cast {
+     static dstT cast (srcT v) {return static_cast<dstT>(v);}
+  };
+  template<typename srcT>
+  struct Cast<srcT, icl8u> {
+     static icl8u cast (srcT v) {
+        return static_cast<icl8u>(std::max ((srcT) 255, std::min ((srcT) 0, v)));
+     }
+  };
+  template<typename T>
+  struct Cast<T, T> {
+     static T cast (T v) {return v;}
+  };
 
 }
 
