@@ -574,6 +574,7 @@ class Img : public ImgI
     } 
  
   //@}
+
   /* }}} */
                                        
 };// class

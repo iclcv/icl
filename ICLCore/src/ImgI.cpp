@@ -24,14 +24,23 @@ namespace icl {
     m_eDepth(eDepth),
     m_oROISize(s)
   {
-    FUNCTION_LOG("ImgI(" << s.width 
-                 << "," << s.height 
-                 << "," << translateformat(eFormat) 
-                 << "," << (eDepth==depth8u) ? (char*)"depth8u" : (char*)"depth32f" 
-                 << "," << iChannels << ")  this:" << this); 
-    
+    if(eDepth==depth8u) 
+    {
+      FUNCTION_LOG("ImgI(" << s.width 
+                   << "," << s.height 
+                   << "," << translateFormat(eFormat) 
+                   << ", depth8u"
+                   << "," << iChannels << ")  this:" << this); 
+    }
+    else
+    {
+      FUNCTION_LOG("ImgI(" << s.width 
+                   << "," << s.height 
+                   << "," << translateFormat(eFormat) 
+                   << ", depth32f" 
+                   << "," << iChannels << ")  this:" << this); 
+    }
   }
-
 
 ImgI::~ImgI()
 {
