@@ -49,7 +49,7 @@ namespace icl{
     class SmartPtr
     {
       private:
-      T *e; /**< corresponding data element */
+      T   *e; /**< corresponding data element */
       int *c; /**< reference counters */
       bool d; /**< deletion flag (indicates if the hold data must be deleted) */
       
@@ -57,10 +57,21 @@ namespace icl{
       void inc() { if(c) (*c)++; }
 
       /// save reference counter decrement (cleanup on demand)
-      void dec() { if(c && *c){ if(! (--(*c))){ if(d){delete e;} delete c; }}} 
+      void dec() { 
+         if(c && *c) { 
+            if ( --(*c) == 0) { 
+               if(d) delete[] e; 
+               delete c;
+            }
+         }
+      }
 
       /// sets e and c
-      void set(T *e,int *c, bool d) {this->e=e; this->c=c; this->d=d;}
+      void set(T *e,int *c, bool d) {
+         this->e=e; 
+         this->c=c; 
+         this->d=d;
+      }
          
       public:
   
@@ -68,7 +79,7 @@ namespace icl{
       SmartPtr(): e(0),c(0),d(0){}    
       
       /// e is given, reference counter is set to 1
-      SmartPtr(T *e, bool b=1): e(e), c(new int(1)),d(d){}
+      SmartPtr(T *pData, bool bOwn=true): e(pData), c(new int(1)),d(bOwn){}
       
       /// e and c is copied from r, reference counter is increased by 1
       SmartPtr(const SmartPtr<T>& r): e(r.e), c(r.c), d(r.d){ inc(); }
