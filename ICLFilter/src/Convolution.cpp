@@ -56,6 +56,7 @@ namespace icl{
 
   bool Convolution::isConvertableToInt (float *pfData, int iLen)
   {
+    FUNCTION_LOG("");
      // tests if an element of the given float* has decimals
      // if it does: return 0, else 1
      for(int i=0;i<iLen;i++)
@@ -70,6 +71,7 @@ namespace icl{
   // {{{ buffering kernel data
 
   void Convolution::copyIntToFloatKernel (int iDim) {
+    FUNCTION_LOG("");
      if (!pfKernel) pfKernel = new float[iDim];
      register int   *pi=piKernel+1, *piEnd=pi+iDim;
      register float *pf=pfKernel;
@@ -80,21 +82,26 @@ namespace icl{
 
   // initially create buffer array (within constructor only)
   void Convolution::bufferKernel (float *pfKernelExt) {
+    FUNCTION_LOG("");
      int iDim = oMaskSize.width * oMaskSize.height;
-     
      pfKernel = new float[iDim];
      std::copy (pfKernelExt, pfKernelExt+iDim, pfKernel);
+     
      if (isConvertableToInt (pfKernelExt, iDim)) {
         // first element contains normalization factor
-        piKernel = new int[iDim+1]; piKernel[0] = 1;
+          piKernel = new int[iDim+1]; piKernel[0] = 1;
 
         register float *pf=pfKernelExt, *pfEnd=pfKernelExt+iDim;
-        register int   *pi=piKernel;
-        for (; pf < pfEnd; ++pfEnd, ++pi) *pi = (int) *pf;
+        register int   *pi=piKernel+1;
+        for (; pf < pfEnd; ++pf, ++pi){
+          *pi = (int) *pf;
+        }
+
      }
   }
   // initially create buffer array (within constructor only)
   void Convolution::bufferKernel (int *piKernelExt) {
+    FUNCTION_LOG("");
      int iDim = oMaskSize.width * oMaskSize.height;
 
      piKernel = new int[iDim+1];
