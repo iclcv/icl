@@ -152,25 +152,13 @@ endif
 # OS-dipendent Shell commands
 #------------------------------------------------------------------------------
 
-
-
-#------------------------------------------------------------------------------
-# Version variables
-#------------------------------------------------------------------------------
-
-# Please specify the current version subdivided in:
-#   TARGET_MAJVERSION the major version number (e.g. 1 for version 1.0)
-#   TARGET_MINVERSION the minor version number (e.g. 0 for version 1.0)
-TARGET_MAJVERSION:= 0
-TARGET_MINVERSION:= 0
-
 #------------------------------------------------------------------------------
 # Structural variables
 #------------------------------------------------------------------------------
 
 # Please list here the directory names that sould be excluded
 # by the recursive make call
-SKIP_DIRECTORIES:=
+SKIP_DIRECTORIES:=make
 
 # Please put here the directory that has to be executed first
 DIR_PRIORITY:=
@@ -179,7 +167,7 @@ DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
 
 # List of targets executed by the "all" rule in the generic makefiles
-ALL_EXEC_LIST:= obj lib exe doc
+ALL_EXEC_LIST:= obj lib exe
 
 #------------------------------------------------------------------------------
 # Compilers variables

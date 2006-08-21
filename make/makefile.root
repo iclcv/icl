@@ -14,6 +14,8 @@ else
  _CURR_DIR+=
 endif
 
+PROJECT_NAME:= $(notdir $(shell pwd))
+
 include makeVar
 
 _DIRECTORY_LIST:=$(filter-out ${SKIP_DIRECTORIES},$(subst /makefile,,$(wildcard */makefile)))

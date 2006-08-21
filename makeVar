@@ -13,20 +13,24 @@ endif
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
 
-# This variable sets the inclusion modality for packageVar
-# Values are: DYNAMIC (for the inclusion of shared object) and
-# STATIC (for the inclusion of static libraries)
-AGNI_INHERIT_MODE:= DYNAMIC
-
-# Please include here the inherited projects
-# (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
-include ${IPP_ROOT}/5.0/packageVar
+# Please specify here the name of the root project
+# (! Very important for the install routine !)
+PROJECT_ROOT_NAME:=ICL
 
 # Please specify the current version subdivided in:
 #   TARGET_MAJVERSION the major version number (e.g. 1 for version 1.0)
 #   TARGET_MINVERSION the minor version number (e.g. 0 for version 1.0)
 TARGET_MAJVERSION:= 3
 TARGET_MINVERSION:= 0
+
+# Please include here the inherited projects
+# (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
+include ${IPP_ROOT}/5.0/packageVar
+
+# This variable sets the inclusion modality for packageVar
+# Values are: DYNAMIC (for the inclusion of shared object) and
+# STATIC (for the inclusion of static libraries)
+AGNI_INHERIT_MODE:= DYNAMIC
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.

@@ -12,7 +12,7 @@ ifeq "${_CURR_DIR}" ""
  _CURR_DIR=.
 endif
 
-PROJECT_NAME:= $(notdir $(shell cd ..;pwd))
+include ../makeVar
 
 #-----------------------------------------------
 # Rule: all
@@ -23,8 +23,8 @@ all: install
 # Rule: installProj
 #-----------------------------------------------
 install:
-	echo "**** Installing Project ****"
-	./Install
+	echo "**** Installing Project: ${PROJECT_ROOT_NAME} ****"
+	./Install ${PROJECT_ROOT_NAME}
 
 #-----------------------------------------------
 # Rule: % (default rule)

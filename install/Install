@@ -5,6 +5,7 @@ use Data::Dumper;
 
 my ($projectName, $majVer, $minVer);
 my @content;
+my $projectRootName = $ARGV[0];
 
 #------------------
 #Get version number
@@ -30,7 +31,7 @@ opendir(DIR,"..") or die "Can not open DIR: $!";
 my @dirs = readdir(DIR);
 closedir(DIR);
 
-my $INSTALLDIR="$ENV{AGNI_LOCAL_ROOT}/ICL/${majVer}.${minVer}";
+my $INSTALLDIR="$ENV{AGNI_LOCAL_ROOT}/${projectRootName}/${majVer}.${minVer}";
 
 if (!-e "$INSTALLDIR"){
     print "make dir: $INSTALLDIR\n";
@@ -54,8 +55,6 @@ if (!-e "$INSTALLDIR/doc"){
 
 system "cp ./BashSrc $INSTALLDIR";
 system "cp ./packageVar $INSTALLDIR";
-
-system "cp -R ../ICLCore/src/boost/ $INSTALLDIR/include/ 2> /dev/null";
 
 foreach my $entry(@dirs) {
     if ($entry !~ /^\./ ){        
