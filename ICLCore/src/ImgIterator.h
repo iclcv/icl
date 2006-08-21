@@ -222,7 +222,7 @@ namespace icl{
           return *m_ptDataCurr;
        }
     
-    /// moves to the next iterator position
+    /// moves to the next iterator position (Prefix ++it)
     /** The image ROI will be scanned line by line
         beginning on the bottom left iterator.
        <pre>

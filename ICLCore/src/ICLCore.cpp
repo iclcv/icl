@@ -109,7 +109,7 @@ namespace icl{
     {
        ensureDepth(ppoDst,eDepth);
        if (iChannelCount < 0) iChannelCount = getChannelsOfFormat(eFormat);
-       (*ppoDst)->setNumChannels(iChannelCount);
+       (*ppoDst)->setChannels(iChannelCount);
        (*ppoDst)->setFormat(eFormat);
        (*ppoDst)->resize(s);
     }

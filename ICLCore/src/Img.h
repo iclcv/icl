@@ -40,17 +40,7 @@ class Img : public ImgI
   // @{ @name auxillary functions
   /* {{{ open */
 
-                  
-                  
-  /** Bilinear interpolation for 'subpixel' values.
-      @param fX X coordinate of the pixel
-      @param fY Y coordinate of the pixel
-      @param iChannel Channel index (default 0)
-      @return Value of the specified point
-  **/
-  Type interpolate(float fX,float fY,int iChannel=0) const;
-
-  /// creates a new deep copy of a specified Type*
+   /// creates a new deep copy of a specified Type*
   /** if the give Type* ptDataToCopy is not NULL, the data addressed from it, 
       is copied deeply into the new created data pointer
   **/
@@ -95,7 +85,9 @@ class Img : public ImgI
       @see getStartIndex
   */
   int getEndIndex(int iIndex) const { return iIndex < 0 ? getChannels() : iIndex+1; }
+
   // @}
+
   /* }}} */
                                 
  public:
@@ -114,7 +106,10 @@ class Img : public ImgI
       @param eFormat (color)-format of the image
       @param iChannels channel count of the image (if -1, then the channel
                        count is calculated from the given format (E.g. if
-                       eFormat is formatRGB iChannels is set to 3)
+                       eFormat is formatRGB iChannels is set to 3.
+                       If a non-matrix format is given, then the channel count
+                       <b>must</b>  match  to the given format - if not, a 
+                       warning is written to std::out)
   **/
   Img(const Size &s, format eFormat, int iChannels = -1);
  
@@ -123,7 +118,10 @@ class Img : public ImgI
       @param eFormat (color)-format of the image
       @param iChannels channel count of the image (if -1, then the channel
                        count is calculated from the given format (E.g. if
-                       eFormat is formatRGB iChannels is set to 3)
+                       eFormat is formatRGB iChannels is set to 3.
+                       If a non-matrix format is given, then the channel count
+                       <b>must</b>  match  to the given format - if not, a 
+                       warning is written to std::out)
       @param pptData holds a pointer to channel data pointers. pptData must
                      have size iChannels. The data must not be deleted during
                      the "lifetime" of the Img. Call detach after the 
@@ -192,19 +190,20 @@ class Img : public ImgI
     }
 
   //@}
+
   /* }}} */
   
   //@{ @name moving / scaling image data
   /* {{{ open  */
 
   /// perform a deep copy (given destination image is resized on demand) (IPP-OPTIMIZED)
-  /** Returns an independent exact copy of the object (except for the depth, which
+  /** Returns an independent exact copy of the object (<b>except for the depth</b>, which
       is fixed if poDst is not NULL). If the given destination
       image is not NULL, then deepCopy ensures, that is has a compatible
       size to this, by resizing destination image on demand. 
-      <b>WARNING:</b> If the destination image has another depth, then this image,
-      the deepCopy will internally call <b>convertTo8<dest-depth>(poDst)</b>.
-     <b>The images ROI will not be regarded</b>, to copy just the ROI 
+      <b>WARNING:</b> If the destination image has another depth, then 
+      <b>convertTo<dest-depth>(poDst)</b> will be called.
+      <b>The images ROI will not be regarded</b>, to copy just the ROI 
       into another image use deepCopyROI(ImgI *poDst.) or 
       scaledCopyROI(ImgI *poDst).
       @param poDst Destination image for the copied data 
@@ -260,8 +259,11 @@ class Img : public ImgI
       
   **/
   virtual ImgI *deepCopyROI(ImgI *poDst = NULL) const;
-  /// deep copy a single channel from source ROI to destination ROI
-  virtual void  deepCopyROI(ImgI *poDst, int iSrcChannel, int iDstChannel) const;
+
+  
+
+  template <class T>
+  void deepCopyROI(Img<T> *poDst) const;
   
   /// scales the image data in the image ROI into the destination images ROI (IPP-OPTIMIZED)
   /** This function copies ROI data from one image into the ROI of another one. If the source
@@ -298,12 +300,23 @@ class Img : public ImgI
   virtual void detach(int iIndex = -1);
   
   /// Removes a specified channel.
-  /** @param iChannel Index of channel to remove
+  /** If a non-matrix format image looses a channel,
+      the new channel count will not match to the channel count,
+      that is asociated with the current format. In this case, a
+      waring is written to std::out, and the format will be set to 
+      formatMatrix implicitly.
+      @param iChannel Index of channel to remove
   **/
   virtual void removeChannel(int iChannel);
   
   /// Append channels of external Img to the existing Img. 
   /** Both objects will share their data (cheap copy). 
+      If a non-matrix format image gets new channels using it's 
+      append method,
+      the new channel count will not match to the channel count,
+      that is asociated with the current format. In this case, a
+      waring is written to std::out, and the format will be set to 
+      formatMatrix implicitly.
       @param poSrc source image
       @param iChannel channel to append (or all, if < 0)
   **/
@@ -326,11 +339,15 @@ class Img : public ImgI
   /// sets the channel count to a new value
   /** This function works only on demand, that means, that
       channels will only be created/deleted, if the new 
-      channel count differs from the current.
+      channel count differs from the current. If the current
+      image has a non-matrix format, then the new channel count
+      must match to the channel count asociated with this format.
+      If not, a warning is written to std::out, and the format is
+      set to formatMatrix).
       @param iNewNumChannels new channel count
       @see resize
   **/
-  virtual void setNumChannels(int iNewNumChannels);
+  virtual void setChannels(int iNewNumChannels);
 
   /// creates a hole new Img internally
   /** Change the number of Img channels and the size. The function works
@@ -339,6 +356,9 @@ class Img : public ImgI
       always when you want to ensure a specific image size.
       If the size must be adapted: 
       <b> All the data within the Img will be lost. </b> 
+      If the new channel count does not match to the
+      channel count asociated with the images format, a warning is
+      written to std::out, and the format is set to formatMatrix)
       @param s new image size  (if x or y is < 0, the orignal width/height is used)
       @param iNewNumChannel New channel number (if < 0, the orignal 
              channel count is used)
@@ -579,7 +599,195 @@ class Img : public ImgI
                                        
 };// class
   
-  
+/* {{{ global functions */
+
+/// copies/converts the data from one image to another image (IPP-OPTIMIZED)
+/** The deepCopyChannel function is a higher lever wrapper for the 
+    icl::copy(..) function. It extracts the data pointers and data dimension
+    from the source- and destination image to call icl::copy(..)
+    @param src source image
+    @param srcC source images channel
+    @param dst destination image
+    @param dstC destination image channel
+**/ 
+template<class S,class D> 
+  inline void deepCopyChannel(Img<S> *src, int srcC, Img<D> *dst, int dstC){
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN( src && dst );
+  ICLASSERT_RETURN( src->getSize() == dst->getSize() );
+  copy<S,D>(src->getData(srcC),src->getData(srcC)+src->getDim(),dst->getData(dstC));
+}
+
+
+/// sets an abitrary image ROI to a given value
+/** This function is used as basic operation for higher level image operation like
+    Img<T>::clear(T value).
+    @param im image
+    @param c channel
+    @param clearVal value for the cleard pixels
+    @param offs lower left point for the to-be-cleared region
+    @param size size of the to-be-cleared region
+*/ 
+template<class T>
+inline void clearChannelROI(Img<T> *im, int c, T clearVal, const Point &offs, const Size &size){
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN( im );
+  for(ImgIterator<T> it(im->getROIData(c,offs),im.getSize().width,Rect(offs,size));it.inRegion(); ++it)
+    {
+      *it = clearVal;
+    }  
+}
+
+#ifdef WITH_IPP_OPTIMIZATION
+/// IPP-OPTIMIZED specialization for icl8u clearing (using ippiSet)
+template <>
+inline void clearChannelROI(Img<icl8u> *im, int c, icl8u clearVal, const Point &offs, const Size &size){
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN( im );
+  ippiSet_8u_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
+}
+
+/// IPP-OPTIMIZED specialization for icl32f clearing (using ippiSet)
+template <>
+inline void clearChannelROI(Img<icl32f> *im, int c, icl32f clearVal, const Point &offs, const Size &size){
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN( im );
+  ippiSet_32f_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
+}
+#endif
+
+//@{ @name deeo copy of channel ROIs 
+/// copies/converts the ROI data from one image to the ROI of another image (IPP-OPTIMIZED)
+/** This function is used by all other deepCopyROI functions interanally. 
+    It copies / converts ROI image data to another images ROI using the
+    icl::copy(..) function line by line or, in case of IPP-optimization enabled,
+    corresponding ippCopy/ippConvert Calls (see the following specialized template 
+    functions also).
+    @param src source image
+    @param srcC source image channel
+    @param srcOffs source images ROI-offset (src->getROIOffset() is <b>not</b> regarded)
+    @param srcSize source images ROI-size (src->getROISize() is <b>not</b> regarded)
+    @param dst destination image      
+    @param dstC destination image channel
+    @param dstOffs destination images ROI-offset (dst->getROIOffset() is <b>not</b> regarded)
+    @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
+    @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
+**/
+template <class S,class D>
+inline void deepCopyChannelROI(Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                               Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize)
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( srcSize == dstSize );
+    
+    ImgIterator<S> itSrc(src->getROIData(srcC,srcOffs),src->getSize().width,Rect(srcOffs,srcSize));
+    ImgIterator<D> itDst(dst->getROIData(dstC,dstOffs),dst->getSize().width,Rect(dstOffs,dstSize));
+    
+    for(;itSrc.inRegion();itSrc.incRow(),itDst.incRow()){
+      copy<S,D>(&*itSrc,&*itSrc+srcSize.width,&*itDst);
+    }
+  }
+ 
+ 
+#ifdef WITH_IPP_OPTIMIZATION
+/// IPP-OPTIMIZED specialization for icl8u to icl8u ROI copy (using ippiCopy)
+template <>
+inline void deepCopyChannelROI(Img<icl8u> *s,int sC, const Point &sO, const Size &sSize,
+                               Img<icl8u> *d,int dC, const Point &dO, const Size &dSize)
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( s && d );
+    ICLASSERT_RETURN( sSize == dSize );
+    ippiCopy_8u_C1R(s->getROIData(sC,sO),s->getLineStep(),d->getROIData(dC,dO),d->getLineStep(),sSize);
+  } 
+ 
+/// IPP-OPTIMIZED specialization for icl32f to icl32f ROI copy (using ippiCopy)
+template <>
+inline void deepCopyChannelROI(Img<icl32f> *s,int sC, const Point &sO, const Size &sSize,
+                               Img<icl32f> *d,int dC, const Point &dO, const Size &dSize)
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( s && d );
+    ICLASSERT_RETURN( sSize == dSize );
+    ippiCopy_32f_C1R(s->getROIData(sC,sO),s->getLineStep(),d->getROIData(dC,dO),d->getLineStep(),sSize);
+  }
+ 
+/// IPP-OPTIMIZED specialization for icl8u to icl32f ROI conversion (using ippiConvert)
+template <>
+inline void deepCopyChannelROI(Img<icl8u> *s, int sC, const Point &sO, const Size &sSize,
+                               Img<icl32f> *d,int dC, const Point &dO, const Size &dSize)
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( s && d );
+    ICLASSERT_RETURN( sSize == dSize );
+    ippiConvert_8u32f_C1R(s->getROIData(sC,sO),s->getLineStep(),d->getROIData(dC,dO),d->getLineStep(),sSize);
+  }  
+ 
+   /// IPP-OPTIMIZED specialization for icl32f to icl8u ROI copy (using ippiConvert)
+template <>
+  inline void deepCopyChannelROI(Img<icl32f> *s, int sC, const Point &sO, const Size &sSize,
+                                  Img<icl8u>  *d,int dC, const Point &dO, const Size &dSize)
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( s && d );
+    ICLASSERT_RETURN( sSize == dSize );
+    ippiConvert_32f8u_C1R(s->getROIData(sC,sO),s->getLineStep(),d->getROIData(dC,dO),d->getLineStep(),sSize,ippRndNear);
+  }
+#endif // WITH_IPP_OPTIMIZATION
+
+//@}
+
+//@{ @name scaling of channel ROIs 
+/// sclaes an image channels ROI into another images ROI (with implicit type conversion) (IPP-OPTIMIZED)
+/** This function provides all neccessary funcionalities for scaling images. Please regard, that the fallback-
+    implementation is very slow. Only scaling operations with identical source and destination type 
+    is optimized by correspongind ippResize calls (see also the specialized template functions).
+    @param src source image
+    @param srcC source image channel
+    @param srcOffs source images ROI-offset (src->getROIOffset() is <b>not</b> regarded)
+    @param srcSize source images ROI-size (src->getROISize() is <b>not</b> regarded)
+    @param dst destination image      
+    @param dstC destination image channel
+    @param dstOffs destination images ROI-offset (dst->getROIOffset() is <b>not</b> regarded)
+    @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
+    @param eScaleMode scaling mode to use (nearest neighbour, linear, or region-average)
+**/
+template<class S,class D> 
+void scaleChannelROI(Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                     Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+                     scalemode eScaleMode);
+
+/// IPP-OPTIMIZED specialization for icl32f to icl32f ROI sclaing (using ippiResize)
+template<>
+inline void scaleChannelROI(Img<icl8u> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                            Img<icl8u> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+                            scalemode eScaleMode)
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( src && dst );
+    
+    ippiResize_8u_C1R(src->getROIData(srcC,srcOffs),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
+                      dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
+                      (float)dstSize.width/(float)srcSize.width,(float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
+  }
+
+/// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
+template<>
+inline void scaleChannelROI(Img<icl32f> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                            Img<icl32f> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+                            scalemode eScaleMode)
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( src && dst );
+    
+    ippiResize_32f_C1R(src->getROIData(srcC,srcOffs),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
+                       dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
+                       (float)dstSize.width/(float)srcSize.width,(float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
+  }
+
+/* }}} */ 
+ 
 } //namespace icl
 
 #endif //Img_H

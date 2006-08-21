@@ -228,9 +228,6 @@ This namespace is dedicated for ICLCore- and all additional Computer-Vision
 packages, that are based on the ICLCore classes.
 **/
 namespace icl {
-
-  //forward declaration
-  class ImgI;
   
 #ifdef WITH_IPP_OPTIMIZATION
   /// 32Bit floating point type for the ICL 
@@ -246,6 +243,19 @@ namespace icl {
   /// 8Bit unsigned integer type for the ICL 
   typedef unsigned char icl8u;
 #endif
+
+  //forward declaration for the Image interface
+  class ImgI;
+
+  /// forward declaration of the Img-class
+  template<class T> class Img;
+
+  /// typedef for 8bit integer images
+  typedef Img<icl8u> Img8u;
+
+  /// typedef for 32bit float images
+  typedef Img<icl32f> Img32f;
+
 
   /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
   enum depth{
@@ -278,6 +288,29 @@ namespace icl {
   };
 #endif
 
+/* {{{ Global classes*/
+  
+  /// Casting operator
+  /** Use Cast<srcT, dstT>::cast (value) to cast values safely from
+      one srcT type to dstT. If destination type is icl8u, the source
+      value is clipped to the range [0..255].
+  */
+  template<typename srcT, typename dstT> 
+  struct Cast {
+     static dstT cast (srcT v) {return static_cast<dstT>(v);}
+  };
+  template<typename srcT>
+  struct Cast<srcT, icl8u> {
+     static icl8u cast (srcT v) {
+        return static_cast<icl8u>(std::min ((srcT) 255, std::max ((srcT) 0, v)));
+     }
+  };
+  template<typename T>
+  struct Cast<T, T> {
+     static T cast (T v) {return v;}
+  };
+
+/* }}} */
 
 /* {{{ Global functions */
 
@@ -399,43 +432,68 @@ namespace icl {
   **/
   format translateFormat(string sFormat);
 
+  /// returns a string representation for a depth value
+  inline string translateDepth(depth eDepth){
+    return eDepth == depth8u ? "depth8u" : "depth32f";
+  }
+  
+  /// creates a depth value form a depth string
+  inline depth translateDepth(string sDepth){
+    return sDepth == "depth8u" ? depth8u : depth32f;
+  }
+
   /// getDepth<T> returns to depth enum associated to type T
   template<class T> 
-  static depth getDepth() { return depth8u; }
+  inline depth getDepth() { return depth8u; }
 
   /// getDepth<T> returns to depth enum associated to type T
   template<> 
-  static depth getDepth<icl8u>() { return depth8u; }
+  inline depth getDepth<icl8u>() { return depth8u; }
   
   /// getDepth<T> returns to depth enum associated to type T
   template<> 
-  static depth getDepth<icl32f>() { return depth32f; }
+  inline depth getDepth<icl32f>() { return depth32f; }
 
   /// return sizeof value for the given depth type
   int getSizeOf(depth eDepth);
 
-  /// Casting operator
-  /** Use Cast<srcT, dstT>::cast (value) to cast values safely from
-      one srcT type to dstT. If destination type is icl8u, the source
-      value is clipped to the range [0..255].
-  */
-  template<typename srcT, typename dstT> 
-  struct Cast {
-     static dstT cast (srcT v) {return static_cast<dstT>(v);}
-  };
-  template<typename srcT>
-  struct Cast<srcT, icl8u> {
-     static icl8u cast (srcT v) {
-        return static_cast<icl8u>(std::min ((srcT) 255, std::max ((srcT) 0, v)));
-     }
-  };
-  template<typename T>
-  struct Cast<T, T> {
-     static T cast (T v) {return v;}
-  };
 
-}
+  /// moves value from source to destination array (with casting on demand)
+  template <class srcT,class dstT>
+  inline void copy(srcT *poSrcStart, srcT *poSrcEnd, dstT *poDst){
+    while(poSrcStart != poSrcEnd) *poDst++ = Cast<srcT,dstT>::cast(*poSrcStart++);
+  }
 
-/* }}} */
+#ifdef WITH_IPP_OPTIMIZATION
+  template<>
+  inline void copy<icl8u,icl32f>(icl8u *poSrcStart, icl8u *poSrcEnd, icl32f *poDst){
+    ippsConvert_8u32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+  template <>
+  inline void copy<icl32f,icl8u>(icl32f *poSrcStart, icl32f *poSrcEnd, icl8u *poDst){
+    ippsConvert_32f8u_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,1);
+  } 
+  template <>
+  inline void copy<icl8u,icl8u>(icl8u *poSrcStart, icl8u *poSrcEnd, icl8u *poDst){
+    ippsCopy_8u(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+  template <>
+  inline void copy<icl32f,icl32f>(icl32f *poSrcStart, icl32f *poSrcEnd, icl32f *poDst){
+    ippsCopy_32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+#else
+  template <T>
+  inline void copy<T>(T *poSrcStart, T *poSrcEnd, T *poDst){
+    memcpy(poDst,poSrcStart,(poSrcEnd-poSrcStart)*sizeof(T));
+  }
+#endif
+
+ 
+                          
+ 
+
+  /* }}} */
+
+} // namespace icl
 
 #endif

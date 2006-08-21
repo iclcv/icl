@@ -24,21 +24,17 @@ namespace icl {
     m_eDepth(eDepth),
     m_oROISize(s)
   {
-    if(eDepth==depth8u) 
-    {
-      FUNCTION_LOG("ImgI(" << s.width 
-                   << "," << s.height 
-                   << "," << translateFormat(eFormat) 
-                   << ", depth8u"
-                   << "," << iChannels << ")  this:" << this); 
-    }
-    else
-    {
-      FUNCTION_LOG("ImgI(" << s.width 
-                   << "," << s.height 
-                   << "," << translateFormat(eFormat) 
-                   << ", depth32f" 
-                   << "," << iChannels << ")  this:" << this); 
+    FUNCTION_LOG("ImgI(" << s.width 
+                 << "," << s.height 
+                 << "," << translateFormat(eFormat) 
+                 << ", "<< translateDepth(eDepth) 
+                 << "," << iChannels << ")  this:" << this); 
+    
+    // use assert call !!
+    if(iChannels > 0){
+      if(eFormat != formatMatrix && getChannelsOfFormat(eFormat) != iChannels){
+        WARNING_LOG("channel count does not match with format");
+      }
     }
   }
 
@@ -58,7 +54,7 @@ void ImgI::setFormat(format eFormat)
     {
       int nChannels = getChannelsOfFormat(eFormat);
       if(nChannels != m_iChannels){
-        setNumChannels(nChannels);
+        setChannels(nChannels);
       }
     }
   m_eFormat=eFormat;
@@ -141,50 +137,17 @@ template <class T>
 Img<T> *ImgI::convertTo( Img<T>* poDst) const {
   FUNCTION_LOG("");
  
-  ImgI *poDstI = static_cast<ImgI*>(poDst); 
-  if(!poDstI || icl::getDepth<T>() == getDepth()){
-    return (Img<T>*)deepCopy(poDstI);
+  if(!poDst) poDst = new Img<T>(Size(1,1),1);
+  poDst->resize(getSize());
+  poDst->setFormat(getFormat());
+  poDst->setChannels(getChannels());
+  poDst->setROI(getROI());
+  
+  if(getDepth() == depth8u){
+    for(int c=0;c<getChannels();c++) deepCopyChannel<icl8u,T>(asImg<icl8u>(),c,poDst,c);
+  }else{
+    for(int c=0;c<getChannels();c++) deepCopyChannel<icl32f,T>(asImg<icl32f>(),c,poDst,c);
   }
- 
-  poDstI->resize(getSize());
-  poDstI->setFormat(getFormat());
-  poDstI->setNumChannels(getChannels());
-  poDstI->setROI(getROI());
-   
-  if(getDepth() == depth32f)
-    {
-      for(int c=0;c<getChannels();c++)
-        {
-          icl32f *pfSrc = asImg<icl32f>()->getData(c);
-          icl8u *pucDst = poDstI->asImg<icl8u>()->getData(c);
-          
-#ifdef WITH_IPP_OPTIMIZATION
-          ippiConvert_32f8u_C1R(pfSrc,getLineStep(),pucDst,poDst->getLineStep(),getSize(),ippRndNear);
-#else
-          icl32f *pfSrcEnd = pfSrc+getDim();
-          while(pfSrc!=pfSrcEnd){
-            *pucDst++ = static_cast<icl8u>(*pfSrc++);
-          }
-#endif        
-        }
-    }
-  else /// this->getDepth == depth8u
-    {
-      for(int c=0;c<getChannels();c++)
-        {
-          icl8u *pucSrc = asImg<icl8u>()->getData(c);
-          icl32f *pfDst = poDst->asImg<icl32f>()->getData(c);
-          
-#ifdef WITH_IPP_OPTIMIZATION
-          ippiConvert_8u32f_C1R(pucSrc,getLineStep(),pfDst,poDst->getLineStep(),getSize());
-#else
-          icl8u *pucSrcEnd = pucSrc+getDim();
-          while(pucSrc!=pucSrcEnd){
-            *pfDst++ = static_cast<icl32f>(*pucSrc++);
-          }
-#endif
-        }    
-    }
   return poDst;
 }
   
@@ -194,5 +157,3 @@ Img<T> *ImgI::convertTo( Img<T>* poDst) const {
   // }}}
 
 } //namespace icl
-
-

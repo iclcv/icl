@@ -22,6 +22,30 @@ namespace icl{
 #endif
   
   /// Rectangle class of the ICL used e.g. for the Images ROI-rect
+  /** Please take care of the following conventions when using
+      Rects in the ICL library:
+      <pre>
+                      
+           |-------- width ---------->|
+      ....................................... 
+      ....................................... 
+      .....oooooooooooooooooooooooooooo......  ___
+      .....oooooooooooooooooooooooooooo......  /|\
+      .....oooooooooooooooooooooooooooo......   |
+      .....oooooooooooooooooooooooooooo......   |
+      .....oooooooooooooooooooooooooooo...... height
+      .....oooooooooooooooooooooooooooo......   |
+      .....oooooooooooooooooooooooooooo......   |
+      .....oooooooooooooooooooooooooooo......   |
+      ..+->Xooooooooooooooooooooooooooo......  _|_
+      ..|....................................
+      ..|....................................
+        |
+     origin(x,y)
+      </pre>
+  
+  */
+  
   class Rect : public IppiRect{
     public:
     /// creates a (0,0,0,0) Rect
@@ -134,6 +158,38 @@ namespace icl{
       printf("ERROR!!! Rect::contains is not yet implemented \n");
       return Rect();
     }
+
+    /// returns lower left point of the rect
+    Point ll() const {
+      return Point(x,y);
+    }
+    /// returns upper left point of the rect
+    Point ul() const {
+      return Point(x,y+height);
+    }
+    /// returns lower right point of the rect
+    Point lr() const {
+      return Point(x+width,y);
+    }
+    /// returns upper right point of the rect
+    Point ur() const {
+      return Point(x+width,y+height);
+    }
+
+    /// returns the left border position
+    int left() const { return x; }
+
+    /// returns the right border position
+    int right() const { return x+width; }
+
+    /// returns the position of the bottom border
+    int bottom() const { return y; }
+
+    /// returns the position of the upper border 
+    int top() const { return y+height; }
+
+    /// returns the size of the rect
+    Size size() const { return Size(width,height); }
   };
 
 } // namespace icl

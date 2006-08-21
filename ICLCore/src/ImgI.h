@@ -17,15 +17,7 @@ using namespace std;
 namespace icl {
   
 
-  /// forward declaration of the Img-class
-  template<class T> class Img;
 
-  /// typedef for 8bit integer images
-  typedef Img<icl8u> Img8u;
-
-  /// typedef for 32bit float images
-  typedef Img<icl32f> Img32f;
-  
 
   /// ImgI is the Image-Interface class that provides save access to underlying Img-template
   /* {{{ ImgI class documentation */
@@ -305,7 +297,7 @@ namespace icl {
 
       /// sets the channel count to a new value
       /** @see Img*/
-      virtual void setNumChannels(int iNewNumChannels)=0;
+      virtual void setChannels(int iNewNumChannels)=0;
 
       /// creates a hole new Img internally (image data will be lost)
       /** @see Img*/
@@ -329,13 +321,6 @@ namespace icl {
       //@}
       /* }}} */
 
-      //@{ @name Type conversion functions
-      /* {{{ */
-
-      
-      // @}
-      /* }}} */
-
       //@{ @name image processing functions
       /* {{{ open */
       
@@ -354,7 +339,7 @@ namespace icl {
       //@} 
       /* }}} */
 
-      //@{ @name accessing underlying Img classes 
+      //@{ @name asImg<T> and convertTo<T>
       /* {{{ open */
 
       /// returns an Img<T>* intstance of this image (internal: reinterpret_cast)
@@ -371,7 +356,14 @@ namespace icl {
           conversion is performed to transfer the image data to poDst. Else
           deepCopy is called, to transfer the image data. If poDst is NULL, it
           is created with identical parameters, except for the images depth, which
-          is given by the template parameter T
+          is given by the template parameter T.
+          (For developers: The convertTo function builds the base function for
+          other higher level funtions like deepCopy. Internally it calls the
+          icl namespace function deepCopyChannel, which decides if data has to
+          be copied or converted.)
+          @param poDst destination image. If NULL, then a deep copy of the current
+                       image is returned
+          @see deepCopy
       */
       template <class T>
       Img<T> *convertTo( Img<T>* poDst=NULL ) const;

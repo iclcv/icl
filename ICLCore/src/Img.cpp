@@ -123,32 +123,13 @@ Img<Type>::deepCopy(ImgI* poDst) const
 
 {
   FUNCTION_LOG("");
-
-  if(!poDst){
-    poDst = imgNew(getDepth(),getSize(),getFormat(),getChannels(),getROI());
+  
+  if(!poDst) poDst = imgNew(getDepth());
+  if(poDst->getDepth() == depth8u){
+    return convertTo<icl8u>(poDst->asImg<icl8u>());
   }else{
-    ensureCompatible(&poDst,poDst->getDepth(),getSize(),getFormat(),getChannels(),getROI());
+    return convertTo<icl32f>(poDst->asImg<icl32f>());
   }
-
-  if(poDst->getDepth() == getDepth())
-    {
-      for(int c=0;c<m_iChannels;c++)
-        {
-          memcpy(poDst->getDataPtr(c), getDataPtr(c), getDim()*sizeof(Type));
-        }
-      return poDst;
-    }
-  else
-    {
-      if(poDst->getDepth() == depth8u)
-        {
-          return convertTo<icl8u>(poDst->asImg<icl8u>());
-        }
-      else
-        {
-          return convertTo<icl32f>(poDst->asImg<icl32f>());
-        }
-    }
 }
 
   // }}}
@@ -157,113 +138,38 @@ Img<Type>::deepCopy(ImgI* poDst) const
 template<class Type> ImgI*
 Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
   // {{{ open
-
 {
   FUNCTION_LOG("");
   
-  //---- deep copy case -----
   if(!poDst || isEqual(poDst->getSize(),poDst->getChannels())){
     SECTION_LOG("deep copy case");
     return deepCopy(poDst); 
   }
-  
-  //---- type conversion case -----------
-  if(getDepth() != poDst->getDepth())
-    {
-      SECTION_LOG("type conversion case");
-      ImgI *poTmp = imgNew(getDepth(),poDst->getSize(),formatMatrix,poDst->getChannels());
-      scaledCopy(poTmp,eScaleMode);
-      poTmp->deepCopy(poDst);
-      delete poTmp;
-      return poDst;
-    }
-  
-  SECTION_LOG("scaling case");
-  poDst->setNumChannels( getChannels() );
-  poDst->setFormat( getFormat() );
-    
-#ifdef WITH_IPP_OPTIMIZATION
- 
-  Rect oFullROI(Point(0,0),getSize());
- 
-  for(int c=0;c<m_iChannels;c++)
-    {
-      SUBSECTION_LOG("channel: "<< c);
-      if(getDepth()==depth8u)
-        {
-          ippiResize_8u_C1R(asImg<icl8u>()->getData(c),getSize(),getLineStep(),oFullROI,
-                            poDst->asImg<icl8u>()->getData(c),poDst->getLineStep(),poDst->getROISize(),
-                            (double)poDst->getSize().width/(double)getSize().width,
-                            (double)poDst->getSize().height/(double)getSize().height,
-                            (int)eScaleMode);
-        }else{
-          ippiResize_32f_C1R(asImg<icl32f>()->getData(c),getSize(),getLineStep(),oFullROI,
-                             poDst->asImg<icl32f>()->getData(c),poDst->getLineStep(),poDst->getROISize(),                            
-                             (double)poDst->getSize().width/(double)getSize().width,
-                             (double)poDst->getSize().height/(double)getSize().height,
-                             (int)eScaleMode);
-        }
-    } 
-  
-#else
 
-  //---- Variable initilazation ----
-  float fXStep = ((float)getSize().width-1)/(float)(poDst->getSize().width); 
-  float fYStep = ((float)getSize().height-1)/(float)(poDst->getSize().height);
+  poDst->setFormat(getFormat());
+  poDst->setChannels(getChannels());
 
-  //---- scale Img ----
-  for(int c=0;c<m_iChannels;c++)
-    {
-      SUBSECTION_LOG("channel: "<< c);
-      //---- Take the correct scaling method ----
-      switch(eScaleMode) 
-        {
-          case interpolateNN: 
-            if(poDst->getDepth()==depth8u){
-              for(int x=0;x<poDst->getSize().width;x++){
-                for(int y=0;y<poDst->getSize().height;y++){
-                  LOOP_LOG("interpolateNN: x:"<< x << " y:" << y);
-                  (*(poDst->asImg<icl8u>()))(x,y,c)=static_cast<icl8u>((*this)((int)rint(x*fXStep),(int)rint(y*fYStep),c));
-                }
-              }
-            }else{
-              for(int x=0;x<poDst->getSize().width;x++){
-                for(int y=0;y<poDst->getSize().height;y++){
-                  LOOP_LOG("interpolateNN: x:"<< x << " y:" << y);
-                  (*(poDst->asImg<icl32f>()))(x,y,c)=static_cast<icl32f>((*this)((int)rint(x*fXStep),(int)rint(y*fYStep),c));
-                }
-              }
-            }
-            break;
-          
-          case interpolateLIN: 
-            if(poDst->getDepth()==depth8u){
-              for(int x=0;x<poDst->getSize().width;x++){
-                for(int y=0;y<poDst->getSize().height;y++){
-                  (*(poDst->asImg<icl8u>()))(x,y,c)=static_cast<icl8u>(interpolate((fXStep/2)+ x*fXStep,(fYStep/2)+y*fYStep,c));
-                }
-              }
-            }else{
-              for(int x=0;x<poDst->getSize().width;x++){
-                for(int y=0;y<poDst->getSize().height;y++){
-                  (*(poDst->asImg<icl32f>()))(x,y,c)=static_cast<icl32f>(interpolate((fXStep/2)+ x*fXStep,(fYStep/2)+y*fYStep,c));
-                }
-              }
-            }
-            break;
-          
-          case interpolateRA: 
-            ERROR_LOG("not yet implemented for Region Average");
-            break;
-          
-          default:
-            ERROR_LOG("Illegal operation selected!");
-            break;
-        }
+  if(getDepth() == depth8u){
+    if(poDst->getDepth() ==  depth8u){
+      for(int c=0;c<getChannels();c++){
+        scaleChannelROI<icl8u,icl8u>(asImg<icl8u>(),c,Point::zero,getSize(),poDst->asImg<icl8u>(),c,Point::zero,poDst->getSize(),eScaleMode);
+      }
+    }else{
+      for(int c=0;c<getChannels();c++){
+        scaleChannelROI<icl8u,icl32f>(asImg<icl8u>(),c,Point::zero,getSize(),poDst->asImg<icl32f>(),c,Point::zero,poDst->getSize(),eScaleMode);
+      }
     }
-  
-#endif
-  
+  }else{
+    if(poDst->getDepth() ==  depth8u){
+      for(int c=0;c<getChannels();c++){
+        scaleChannelROI<icl32f,icl8u>(asImg<icl32f>(),c,Point::zero,getSize(),poDst->asImg<icl8u>(),c,Point::zero,poDst->getSize(),eScaleMode);
+      }
+    }else{
+      for(int c=0;c<getChannels();c++){
+        scaleChannelROI<icl32f,icl32f>(asImg<icl32f>(),c,Point::zero,getSize(),poDst->asImg<icl32f>(),c,Point::zero,poDst->getSize(),eScaleMode);
+      }
+    }  
+  }
   return poDst;
 }
 
@@ -279,137 +185,77 @@ Img<Type>::deepCopyROI(ImgI *poDst) const
   if(!poDst){
     poDst = imgNew(getDepth(),getROISize(),getFormat(),getChannels());
   }else{
-    poDst->setNumChannels(getChannels());
+    poDst->setChannels(getChannels());
     poDst->setFormat(getFormat());
   }
-  if(getROISize() != poDst->getROISize())
-    {
-      ERROR_LOG("roi size of source and destination must be equal");
-      return poDst;
-    }
+  ICLASSERT_RETURN_VAL( getROISize() == poDst->getROISize() , poDst);
+
   for(int c=0;c<m_iChannels;c++) {
-     deepCopyROI (poDst, c, c);
+    if(getDepth()==depth8u){
+      if(poDst->getDepth()==depth8u){
+        deepCopyChannelROI<icl8u,icl8u>(this->asImg<icl8u>(),  c, getROIOffset(),       getROISize(),
+                                        poDst->asImg<icl8u>(), c, poDst->getROIOffset(),poDst->getROISize());
+      }else{
+        deepCopyChannelROI<icl8u,icl32f>(this->asImg<icl8u>(),  c, getROIOffset(),       getROISize(),
+                                         poDst->asImg<icl32f>(), c, poDst->getROIOffset(),poDst->getROISize());
+      }
+    }else{
+      if(poDst->getDepth()==depth8u){
+        deepCopyChannelROI<icl32f,icl8u>(this->asImg<icl32f>(), c, getROIOffset(),       getROISize(),
+                                        poDst->asImg<icl8u>(),  c, poDst->getROIOffset(),poDst->getROISize());
+      }else{
+        deepCopyChannelROI<icl32f,icl32f>(this->asImg<icl32f>(), c, getROIOffset(),       getROISize(),
+                                         poDst->asImg<icl32f>(), c, poDst->getROIOffset(),poDst->getROISize());
+      }
+    }
   }
   return poDst;
 }
+  // }}}
 
-// }}}
-
-template<class Type> void
-Img<Type>::deepCopyROI(ImgI *poDst, int iSrcChannel, int iDstChannel) const
-  // {{{ open
-{
-  FUNCTION_LOG("");
-
-  if(m_eDepth == poDst->getDepth()) {
-     if(m_eDepth == depth8u){
-#ifndef WITH_IPP_OPTIMIZATION
-        Img8u::iterator s=asImg<icl8u>()->getROIIterator(iSrcChannel);
-        Img8u::iterator d=poDst->asImg<icl8u>()->getROIIterator(iDstChannel);
-        for(; s.inRegion();s.incRow(),d.incRow()){
-           memcpy(&*d,&*s,s.getROIWidth()*sizeof(icl8u));
-        }
-#else
-        ippiCopy_8u_C1R(asImg<icl8u>()->getROIData(iSrcChannel),getLineStep(),
-                        poDst->asImg<icl8u>()->getROIData(iDstChannel),poDst->getLineStep(),
-                        getROISize());
-#endif
-     } else {
-#ifndef WITH_IPP_OPTIMIZATION
-        Img32f::iterator s=asImg<icl32f>()->getROIIterator(iSrcChannel);
-        Img32f::iterator d=poDst->asImg<icl32f>()->getROIIterator(iDstChannel);
-        for(; s.inRegion();s.incRow(),d.incRow()){
-           memcpy(&*d,&*s,s.getROIWidth()*sizeof(icl32f));
-        }
-#else
-        ippiCopy_32f_C1R(asImg<icl32f>()->getROIData(iSrcChannel),getLineStep(),
-                         poDst->asImg<icl32f>()->getROIData(iDstChannel),poDst->getLineStep(),
-                         getROISize());
-#endif
-     }
-  } else { // differing depth
-     if(m_eDepth == depth8u){
-#ifndef WITH_IPP_OPTIMIZATION
-        Img8u::iterator  s=asImg<icl8u>()->getROIIterator(iSrcChannel);
-        Img32f::iterator d=poDst->asImg<icl32f>()->getROIIterator(iDstChannel);
-        for(;s.inRegion();++d,++s) *d = static_cast<icl32f>(*s);
-#else
-        ippiConvert_8u32f_C1R(asImg<icl8u>()->getROIData(iSrcChannel),getLineStep(),
-                              poDst->asImg<icl32f>()->getROIData(iDstChannel),poDst->getLineStep(),
-                              getROISize());
-#endif
-     } else {
-#ifndef WITH_IPP_OPTIMIZATION
-        Img32f::iterator s=poDst->asImg<icl32f>()->getROIIterator(iSrcChannel);
-        Img8u::iterator  d=poDst->asImg<icl8u>()->getROIIterator(iDstChannel);
-        for(;s.inRegion();++d,++s) *d = static_cast<icl8u>(*s);
-#else
-        ippiConvert_32f8u_C1R(asImg<icl32f>()->getROIData(iSrcChannel),getLineStep(),
-                              poDst->asImg<icl8u>()->getROIData(iDstChannel),poDst->getLineStep(),
-                              getROISize(),ippRndNear);
-#endif
-     }
-  }
-}
-
-// }}}
-  
 //----------------------------------------------------------------------------
 template<class Type> ImgI*
 Img<Type>::scaledCopyROI(ImgI *poDst, scalemode eScaleMode) const
   // {{{ open
 {
-
   FUNCTION_LOG("");
   
-  //---- deep copy case -----
   if(!poDst || getROISize() == poDst->getROISize()){
     return deepCopyROI(poDst); 
   }
 
-  //---- type conversion case -----------
-  if(getDepth() != poDst->getDepth())
-    {
-      ImgI *poTmp = imgNew(getDepth(),poDst->getROISize(),formatMatrix,poDst->getChannels());
-      scaledCopyROI(poTmp,eScaleMode);
-      poTmp->deepCopyROI(poDst);
-      delete poTmp;
-      return poDst;
-    }    
-  
-  poDst->setNumChannels( getChannels() );
-  
-#ifdef WITH_IPP_OPTIMIZATION
-  for(int c=0;c<m_iChannels;c++)
-    {
-      if(getDepth()==depth8u)
-        {
-          ippiResize_8u_C1R(asImg<icl8u>()->getROIData(c),getSize(),getLineStep(),getROI(),
-                            poDst->asImg<icl8u>()->getROIData(c),poDst->getLineStep(),poDst->getROISize(),
-                            (double)poDst->getROISize().width/getROISize().width,
-                            (double)poDst->getROISize().height/getROISize().height,
-                            (int)eScaleMode);
-        }else{
-          ippiResize_32f_C1R(asImg<icl32f>()->getROIData(c),getSize(),getLineStep(),getROI(),
-                             poDst->asImg<icl32f>()->getROIData(c),poDst->getLineStep(),poDst->getROISize(),
-                             (double)poDst->getROISize().width/getROISize().width,
-                             (double)poDst->getROISize().height/getROISize().height,
-                             (int)eScaleMode);
-        }
-    }   
-#else
-  /// _VERY_ slow fallback implementation
- 
-  ImgI * poROITmp = imgNew(getDepth(),getROISize(),formatMatrix,m_iChannels);
-  ImgI * poDstTmp = imgNew(getDepth(),poDst->getROISize(),formatMatrix,m_iChannels);
-  
-  deepCopyROI(poROITmp);
-  poROITmp->scaledCopy(poDstTmp,eScaleMode);
-  poDstTmp->deepCopyROI(poDst);
-  
-  delete poROITmp;
-  delete poDstTmp; 
-#endif
+  poDst->setFormat(getFormat());
+  poDst->setChannels(getChannels());
+
+  if(getDepth() == depth8u){
+    if(poDst->getDepth() ==  depth8u){
+      for(int c=0;c<getChannels();c++){
+        scaleChannelROI<icl8u,icl8u>(asImg<icl8u>(),c,getROIOffset(),getROISize(),
+                                     poDst->asImg<icl8u>(),c,poDst->getROIOffset(), poDst->getROISize(),
+                                     eScaleMode);
+      }
+    }else{
+      for(int c=0;c<getChannels();c++){
+        scaleChannelROI<icl8u,icl32f>(asImg<icl8u>(),c,getROIOffset(),getROISize(),
+                                      poDst->asImg<icl32f>(),c,poDst->getROIOffset(), poDst->getROISize(),
+                                      eScaleMode);
+      }
+    }
+  }else{
+    if(poDst->getDepth() ==  depth8u){
+      for(int c=0;c<getChannels();c++){
+        scaleChannelROI<icl32f,icl8u>(asImg<icl32f>(),c,getROIOffset(),getROISize(),
+                                      poDst->asImg<icl8u>(),c,poDst->getROIOffset(), poDst->getROISize(),
+                                      eScaleMode);
+      }
+    }else{
+      for(int c=0;c<getChannels();c++){
+        scaleChannelROI<icl32f,icl32f>(asImg<icl32f>(),c,getROIOffset(),getROISize(),
+                                       poDst->asImg<icl32f>(),c,poDst->getROIOffset(), poDst->getROISize(),
+                                       eScaleMode);
+      }
+    }  
+  }
   return poDst;
 }
 
@@ -439,6 +285,11 @@ Img<Type>::removeChannel(int iChannel)
 {
   FUNCTION_LOG("removeChannel(" << iChannel << ")");
   ICLASSERT_RETURN(iChannel < getChannels());
+
+  if(getFormat() != formatMatrix){
+    WARNING_LOG("format was set to formatMatrix to ensure compability");
+    setFormat(formatMatrix);
+  }
   
   m_vecChannels.erase(m_vecChannels.begin()+iChannel);
   m_iChannels--;
@@ -454,6 +305,11 @@ Img<Type>::append(Img<Type> *poSrc, int iIndex)
   FUNCTION_LOG("");
   ICLASSERT_RETURN( poSrc );
   ICLASSERT_RETURN( poSrc->getSize() == getSize() );
+
+  if(getFormat() != formatMatrix){
+    WARNING_LOG("format was set to formatMatrix to ensure compability");
+    setFormat(formatMatrix);
+  }
   
   for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++)
     {
@@ -525,16 +381,16 @@ Img<Type>::resize(const Size &s)
 
 //----------------------------------------------------------------------------
 template<class Type> void
-Img<Type>::setNumChannels(int iNumNewChannels)
+Img<Type>::setChannels(int iNumNewChannels)
   // {{{ open
 {
   FUNCTION_LOG("");
-
-  if(iNumNewChannels < 0)
-    {
-      ERROR_LOG("channel count must be >= 0");
-      return;
-    }
+  ICLASSERT_RETURN(iNumNewChannels >= 0);
+  
+  if(getChannels() != iNumNewChannels && getFormat() != formatMatrix){
+    WARNING_LOG("format was set to formatMatrix to ensure compability");
+    setFormat(formatMatrix);
+  }
   
   //---- reduce number of channels ----
   if(iNumNewChannels < m_iChannels)
@@ -566,7 +422,7 @@ Img<Type>::renew(const Size &s, int iNewNumChannels)
   FUNCTION_LOG("");
   
   resize(Size(s.width<0?getSize().width:s.width, s.height<0?getSize().height:s.height));
-  setNumChannels(iNewNumChannels<0?getChannels():iNewNumChannels);
+  setChannels(iNewNumChannels<0?getChannels():iNewNumChannels);
 }
 
 // }}}
@@ -584,91 +440,6 @@ Img<Type>::replaceChannel(int iThisIndex, Img<Type>* poSrc, int iOtherIndex)
 // }}}
 
 // }}}
-
-// {{{  Type converter: 
-
-//--------------------------------------------------------------------------
-
-/********************************************************************** evtl direkt nach IclI.cpp
-template<class Type> Img32f*
-Img<Type>::convertTo32Bit(Img32f *poDst) const
-// {{{ open
-
-{
-  FUNCTION_LOG("convertTo32Bit(Img32f*)");
-  
-  ImgI *poDstBase = static_cast<ImgI*>(poDst);
-  iclEnsureCompatible(&poDstBase,depth32f,m_oSize.width,m_oSize.height,
-                      m_eFormat,m_iChannels, &m_oROIOffset, &m_oROISize);
-  poDst = poDstBase->asImg<icl32f>(); // should only be needed in case of of poDst == NULL
-
-  if(m_eDepth == depth8u)
-  {
-    for(int c=0;c<m_iChannels;c++)
-    {
-      icl8u *pucSrc = reinterpret_cast<icl8u*>(getDataPtr(c));
-      icl32f *pfDst = reinterpret_cast<icl32f*>(poDst->getDataPtr(c));
-#ifdef WITH_IPP_OPTIMIZATION
-      IppiSize oWholeImageROI = {m_oSize.width,m_oSize.height};
-      ippiConvert_8u32f_C1R(pucSrc,ippStep(),pfDst,poDst->ippStep(),oWholeImageROI);
-#else
-      icl8u *pucSrcEnd = pucSrc+getDim();
-      while(pucSrc!=pucSrcEnd){
-        *pfDst++ = static_cast<icl8u>(*pucSrc++);
-      }
-#endif
-    }
-    return poDst;
-  }
-  else
-  {
-    return asImg<icl32f>()->deepCopy(poDst)->asImg<icl32f>();
-  }  
-}
-
-  // }}}
-
-//--------------------------------------------------------------------------
-template<class Type> Img8u*
-Img<Type>::convertTo8Bit(Img8u *poDst) const
-// {{{ open
-{
-
-  FUNCTION_LOG("convertTo8Bit(Img8u*)");
-
-  ImgI *poDstBase = static_cast<ImgI*>(poDst);
-  iclEnsureCompatible(&poDstBase,depth8u,m_oSize.width,m_oSize.height,
-                      m_eFormat,m_iChannels, &m_oROIOffset, &m_oROISize);
-  poDst = poDstBase->asImg<icl8u>(); // should only be needed in case of of poDst == NULL
-
-  if(m_eDepth == depth32f)
-    {
-      for(int c=0;c<m_iChannels;c++)
-        {
-          icl32f *pfSrc = reinterpret_cast<icl32f*>(getDataPtr(c));
-          icl8u *pucDst =  reinterpret_cast<icl8u*>(poDst->getDataPtr(c));
-#ifdef WITH_IPP_OPTIMIZATION
-          IppiSize oWholeImageROI = {m_oSize.width,m_oSize.height};
-          ippiConvert_32f8u_C1R(pfSrc,ippStep(),pucDst,poDst->ippStep(),oWholeImageROI,ippRndNear);
-#else
-          icl32f *pfSrcEnd = pfSrc+getDim();
-          while(pfSrc!=pfSrcEnd){
-            *pucDst++ = static_cast<icl8u>(*pfSrc++);
-          }
-#endif
-        }
-      return poDst;
-    }
-  else
-    {
-      return asImg<icl8u>()->deepCopy(poDst)->asImg<icl8u>();
-    }  
-}
-
-*****************************************************************************************************/
-  // }}}
-
-// }}} 
 
 // {{{  Getter Functions: 
 
@@ -823,41 +594,8 @@ Img<Type>::getMinMax(Type &rtMin, Type &rtMax, int iChannel) const
 
 // }}}
 
-// {{{  Auxillary and basic image manipulation functions
+// {{{  Auxillary  functions 
 
-template<class Type> Type
-Img<Type>::interpolate(float fX, float fY, int iChannel) const
-{
-  // {{{ open
-  LOOP_LOG("(" << fX << "," << fY << "," << iChannel << ")");
-
-  //---- Variable initialization ----
-  float fY1,fY2,fY3,fY4,fT,fU;
-  float fReturn;
-  
-  fY1 = fY2 = fY3 = fY4 = fT = fU = 0;
-  
-  //---- interpolate  ----
-  ICLASSERT_RETURN_VAL((int)ceil(fX) < getSize().width, 0);
-  ICLASSERT_RETURN_VAL((int)ceil(fY) < getSize().height, 0);
-
-  fY1=(float)(*this)((int)floor(fX), (int)floor(fY), iChannel);
-  fY4=(float)(*this)((int)floor(fX), (int)ceil(fY), iChannel);
-  fY3=(float)(*this)((int)ceil(fX), (int)ceil(fY), iChannel);
-  fY2=(float)(*this)((int)ceil(fX), (int)floor(fY), iChannel);
-  fT=fX-floor(fX);
-  fU=fY-floor(fY);
-  
-  fReturn=(1-fT)*(1-fU)*fY1+ fT*(1-fU)*fY2 + fT*fU*fY3 + (1-fT)*fU*fY4;
-  
-  //---- return ----
-  if(m_eDepth == depth8u)
-    return (Type) rint(fReturn);
-  else
-    return (Type) fReturn;
-}
-
-  // }}}
 template<class Type>
 SmartPtr<Type> Img<Type>::createChannel(Type *ptDataToCopy) const
 {
@@ -870,6 +608,9 @@ SmartPtr<Type> Img<Type>::createChannel(Type *ptDataToCopy) const
   return SmartPtr<Type>(ptNewData);
 }
 
+  // }}}
+
+// {{{  Basic image manipulation functions
 //--------------------------------------------------------------------------
 template<class Type> void
 Img<Type>::scaleRange(float fMin, float fMax, int iChannel)
@@ -924,12 +665,103 @@ void Img<Type>::clear(int iIndex, Type tValue)
   ICLASSERT_RETURN( iIndex < getChannels() );  
   
   for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++){
-    fill(getData(i),getData(i)+getDim(),tValue);
+    clearChannelROI(this,i,tValue,Point::zero,getSize());
   }
 }
   // }}}
 
 // }}}
+
+// {{{ Global functions
+
+
+// utility function used internally for type save access to image
+// pixels (nearest neighbour interpolation) 
+template<class S,class D>
+inline D _elemNN(S* ps, int x, int y, float fSX, float fSY, int w)
+{
+  return Cast<S,D>::cast(ps[(int)((round(fSX*x)) + round(fSY*y*w))]);
+}
+
+// utility function used internally for type save access to image
+// pixels (linear interpolation) 
+template<class S,class D>
+inline D _elemLIN(S* ps, int x, int y, float fSX, float fSY, int w)
+{
+  int xll = (int)floor(fSX*x);
+  int yll = (int)floor(fSY*y);
+
+  float fT=fSX*x-xll;
+  float fU=fSY*y-yll;
+
+  float a = (float)ps[xll+xll*w];
+  float b = (float)ps[xll+(xll+1)*w];
+  float c = (float)ps[(xll+1)+(xll+1)*w];
+  float d = (float)ps[(xll+1)+xll*w];
+  
+  return Cast<float,D>::cast((1-fT)*(1-fU)*a+ fT*(1-fU)*b + fT*fU*c + (1-fT)*fU*d);
+}
+
+// utility function used internally for type save access to image
+// pixels (region average interpolation) 
+template<class S, class D>
+inline D _elemRA(S* ps, int x, int y, float fSX, float fSY, int w)
+{
+  ERROR_LOG("region average interpolation is not yet implemented!");
+  return (D)0;
+}
+
+// scale channel ROI function for abitrary image scaling operations
+template<class S,class D> 
+void scaleChannelROI(Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                     Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+                     scalemode eScaleMode)
+{
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN( src && dst );
+  
+  int iSrcW = src->getSize().width;
+  float fSX = ((float)srcSize.width-1)/(float)(dstSize.width); 
+  float fSY = ((float)srcSize.height-1)/(float)(dstSize.height);
+
+  ImgIterator<D> itDst(dst->getROIData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
+  S* ps = src->getROIData(srcC,srcOffs);
+
+  switch(eScaleMode) 
+    {
+      case interpolateNN:
+        for(; itDst.inRegion();++itDst) *itDst = _elemNN<S,D>(ps,itDst.y(),itDst.y(),fSX,fSY,iSrcW);
+        break;
+      case interpolateLIN:
+        for(; itDst.inRegion();++itDst) *itDst = _elemLIN<S,D>(ps,itDst.y(),itDst.y(),fSX,fSY,iSrcW);        
+        break;
+      case interpolateRA:
+        for(; itDst.inRegion();++itDst) *itDst = _elemRA<S,D>(ps,itDst.y(),itDst.y(),fSX,fSY,iSrcW);        
+        break;
+      default:
+        ERROR_LOG("unknown interpoation method!");
+    }
+}
+
+
+#ifndef WITH_IPP_OPTIMIZATION
+template void scaleChannelROI<icl8u,icl8u>(Img<icl8u>    *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                                           Img<icl8u>    *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+                                           scalemode eScaleMode);
+template void scaleChannelROI<icl32f,icl32f>(Img<icl32f> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                                             Img<icl32f> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+                                             scalemode eScaleMode);
+#endif
+
+template void scaleChannelROI<icl8u,icl32f>(Img<icl8u>   *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                                            Img<icl32f>  *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+                                            scalemode eScaleMode);
+template void scaleChannelROI<icl32f,icl8u>(Img<icl32f>  *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                                            Img<icl8u>   *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+                                            scalemode eScaleMode);
+
+// }}}
+
 
 template class Img<icl8u>;
 template class Img<icl32f>;
