@@ -149,26 +149,14 @@ Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
   poDst->setFormat(getFormat());
   poDst->setChannels(getChannels());
 
-  if(getDepth() == depth8u){
-    if(poDst->getDepth() ==  depth8u){
-      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<icl8u,icl8u>(asImg<icl8u>(),c,Point::zero,getSize(),poDst->asImg<icl8u>(),c,Point::zero,poDst->getSize(),eScaleMode);
-      }
-    }else{
-      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<icl8u,icl32f>(asImg<icl8u>(),c,Point::zero,getSize(),poDst->asImg<icl32f>(),c,Point::zero,poDst->getSize(),eScaleMode);
-      }
-    }
+  if(poDst->getDepth() ==  depth8u){
+     for(int c=0;c<getChannels();c++){
+        scaleChannelROI<Type,icl8u>(this,c,Point::zero,getSize(),poDst->asImg<icl8u>(),c,Point::zero,poDst->getSize(),eScaleMode);
+     }
   }else{
-    if(poDst->getDepth() ==  depth8u){
-      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<icl32f,icl8u>(asImg<icl32f>(),c,Point::zero,getSize(),poDst->asImg<icl8u>(),c,Point::zero,poDst->getSize(),eScaleMode);
-      }
-    }else{
-      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<icl32f,icl32f>(asImg<icl32f>(),c,Point::zero,getSize(),poDst->asImg<icl32f>(),c,Point::zero,poDst->getSize(),eScaleMode);
-      }
-    }  
+     for(int c=0;c<getChannels();c++){
+        scaleChannelROI<Type,icl32f>(this,c,Point::zero,getSize(),poDst->asImg<icl32f>(),c,Point::zero,poDst->getSize(),eScaleMode);
+     }
   }
   return poDst;
 }
@@ -190,24 +178,16 @@ Img<Type>::deepCopyROI(ImgI *poDst) const
   }
   ICLASSERT_RETURN_VAL( getROISize() == poDst->getROISize() , poDst);
 
-  for(int c=0;c<m_iChannels;c++) {
-    if(getDepth()==depth8u){
-      if(poDst->getDepth()==depth8u){
-        deepCopyChannelROI<icl8u,icl8u>(this->asImg<icl8u>(),  c, getROIOffset(),       getROISize(),
-                                        poDst->asImg<icl8u>(), c, poDst->getROIOffset(),poDst->getROISize());
-      }else{
-        deepCopyChannelROI<icl8u,icl32f>(this->asImg<icl8u>(),  c, getROIOffset(),       getROISize(),
-                                         poDst->asImg<icl32f>(), c, poDst->getROIOffset(),poDst->getROISize());
-      }
-    }else{
-      if(poDst->getDepth()==depth8u){
-        deepCopyChannelROI<icl32f,icl8u>(this->asImg<icl32f>(), c, getROIOffset(),       getROISize(),
-                                        poDst->asImg<icl8u>(),  c, poDst->getROIOffset(),poDst->getROISize());
-      }else{
-        deepCopyChannelROI<icl32f,icl32f>(this->asImg<icl32f>(), c, getROIOffset(),       getROISize(),
-                                         poDst->asImg<icl32f>(), c, poDst->getROIOffset(),poDst->getROISize());
-      }
-    }
+  if(poDst->getDepth()==depth8u){
+     for(int c=0;c<m_iChannels;c++) {
+        deepCopyChannelROI<Type,icl8u>(this,  c, getROIOffset(),       getROISize(),
+                                       poDst->asImg<icl8u>(), c, poDst->getROIOffset(),poDst->getROISize());
+     }
+  }else{
+     for(int c=0;c<m_iChannels;c++) {
+        deepCopyChannelROI<Type,icl32f>(this,  c, getROIOffset(),       getROISize(),
+                                        poDst->asImg<icl32f>(), c, poDst->getROIOffset(),poDst->getROISize());
+     }
   }
   return poDst;
 }
@@ -227,34 +207,18 @@ Img<Type>::scaledCopyROI(ImgI *poDst, scalemode eScaleMode) const
   poDst->setFormat(getFormat());
   poDst->setChannels(getChannels());
 
-  if(getDepth() == depth8u){
-    if(poDst->getDepth() ==  depth8u){
-      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<icl8u,icl8u>(asImg<icl8u>(),c,getROIOffset(),getROISize(),
-                                     poDst->asImg<icl8u>(),c,poDst->getROIOffset(), poDst->getROISize(),
-                                     eScaleMode);
-      }
-    }else{
-      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<icl8u,icl32f>(asImg<icl8u>(),c,getROIOffset(),getROISize(),
-                                      poDst->asImg<icl32f>(),c,poDst->getROIOffset(), poDst->getROISize(),
-                                      eScaleMode);
-      }
-    }
+  if(poDst->getDepth() ==  depth8u){
+     for(int c=0;c<getChannels();c++){
+        scaleChannelROI<Type,icl8u>(this,c,getROIOffset(),getROISize(),
+                                    poDst->asImg<icl8u>(),c,poDst->getROIOffset(), poDst->getROISize(),
+                                    eScaleMode);
+     }
   }else{
-    if(poDst->getDepth() ==  depth8u){
-      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<icl32f,icl8u>(asImg<icl32f>(),c,getROIOffset(),getROISize(),
-                                      poDst->asImg<icl8u>(),c,poDst->getROIOffset(), poDst->getROISize(),
-                                      eScaleMode);
-      }
-    }else{
-      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<icl32f,icl32f>(asImg<icl32f>(),c,getROIOffset(),getROISize(),
-                                       poDst->asImg<icl32f>(),c,poDst->getROIOffset(), poDst->getROISize(),
-                                       eScaleMode);
-      }
-    }  
+     for(int c=0;c<getChannels();c++){
+        scaleChannelROI<Type,icl32f>(this,c,getROIOffset(),getROISize(),
+                                     poDst->asImg<icl32f>(),c,poDst->getROIOffset(), poDst->getROISize(),
+                                     eScaleMode);
+     }
   }
   return poDst;
 }

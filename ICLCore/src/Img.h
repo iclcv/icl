@@ -611,7 +611,7 @@ class Img : public ImgI
     @param dstC destination image channel
 **/ 
 template<class S,class D> 
-  inline void deepCopyChannel(Img<S> *src, int srcC, Img<D> *dst, int dstC){
+  inline void deepCopyChannel(const Img<S> *src, int srcC, Img<D> *dst, int dstC){
   FUNCTION_LOG("");
   ICLASSERT_RETURN( src && dst );
   ICLASSERT_RETURN( src->getSize() == dst->getSize() );
@@ -674,7 +674,7 @@ inline void clearChannelROI(Img<icl32f> *im, int c, icl32f clearVal, const Point
     @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
 **/
 template <class S,class D>
-inline void deepCopyChannelROI(Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+inline void deepCopyChannelROI(const Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
                                Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize)
   {
     FUNCTION_LOG("");
@@ -693,7 +693,7 @@ inline void deepCopyChannelROI(Img<S> *src,int srcC, const Point &srcOffs, const
 #ifdef WITH_IPP_OPTIMIZATION
 /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI copy (using ippiCopy)
 template <>
-inline void deepCopyChannelROI(Img<icl8u> *s,int sC, const Point &sO, const Size &sSize,
+inline void deepCopyChannelROI(const Img<icl8u> *s,int sC, const Point &sO, const Size &sSize,
                                Img<icl8u> *d,int dC, const Point &dO, const Size &dSize)
   {
     FUNCTION_LOG("");
@@ -704,7 +704,7 @@ inline void deepCopyChannelROI(Img<icl8u> *s,int sC, const Point &sO, const Size
  
 /// IPP-OPTIMIZED specialization for icl32f to icl32f ROI copy (using ippiCopy)
 template <>
-inline void deepCopyChannelROI(Img<icl32f> *s,int sC, const Point &sO, const Size &sSize,
+inline void deepCopyChannelROI(const Img<icl32f> *s,int sC, const Point &sO, const Size &sSize,
                                Img<icl32f> *d,int dC, const Point &dO, const Size &dSize)
   {
     FUNCTION_LOG("");
@@ -715,7 +715,7 @@ inline void deepCopyChannelROI(Img<icl32f> *s,int sC, const Point &sO, const Siz
  
 /// IPP-OPTIMIZED specialization for icl8u to icl32f ROI conversion (using ippiConvert)
 template <>
-inline void deepCopyChannelROI(Img<icl8u> *s, int sC, const Point &sO, const Size &sSize,
+inline void deepCopyChannelROI(const Img<icl8u> *s, int sC, const Point &sO, const Size &sSize,
                                Img<icl32f> *d,int dC, const Point &dO, const Size &dSize)
   {
     FUNCTION_LOG("");
@@ -726,8 +726,8 @@ inline void deepCopyChannelROI(Img<icl8u> *s, int sC, const Point &sO, const Siz
  
    /// IPP-OPTIMIZED specialization for icl32f to icl8u ROI copy (using ippiConvert)
 template <>
-  inline void deepCopyChannelROI(Img<icl32f> *s, int sC, const Point &sO, const Size &sSize,
-                                  Img<icl8u>  *d,int dC, const Point &dO, const Size &dSize)
+  inline void deepCopyChannelROI(const Img<icl32f> *s, int sC, const Point &sO, const Size &sSize,
+                                 Img<icl8u>  *d,int dC, const Point &dO, const Size &dSize)
   {
     FUNCTION_LOG("");
     ICLASSERT_RETURN( s && d );
@@ -754,13 +754,13 @@ template <>
     @param eScaleMode scaling mode to use (nearest neighbour, linear, or region-average)
 **/
 template<class S,class D> 
-void scaleChannelROI(Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+void scaleChannelROI(const Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
                      Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
                      scalemode eScaleMode);
 
 /// IPP-OPTIMIZED specialization for icl32f to icl32f ROI sclaing (using ippiResize)
 template<>
-inline void scaleChannelROI(Img<icl8u> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+inline void scaleChannelROI(const Img<icl8u> *src,int srcC, const Point &srcOffs, const Size &srcSize,
                             Img<icl8u> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
                             scalemode eScaleMode)
   {
@@ -774,7 +774,7 @@ inline void scaleChannelROI(Img<icl8u> *src,int srcC, const Point &srcOffs, cons
 
 /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
 template<>
-inline void scaleChannelROI(Img<icl32f> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+inline void scaleChannelROI(const Img<icl32f> *src,int srcC, const Point &srcOffs, const Size &srcSize,
                             Img<icl32f> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
                             scalemode eScaleMode)
   {
