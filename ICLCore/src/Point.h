@@ -52,6 +52,8 @@ namespace icl{
 
     // scales the Point inplace with a scalar
     Point& operator*=(double d) {x=(int)((double)x*d); y=(int)((double)y*d); return *this;};
+
+    static const Point zero;
   };
   
 } // namespace icl
