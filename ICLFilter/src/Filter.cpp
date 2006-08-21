@@ -2,16 +2,32 @@
 
 namespace icl{
 
-  bool Filter::adaptROI(ImgI *poSrc, ImgI *poDst)
+  bool Filter::prepare (ImgI *poSrc, ImgI **ppoDst) {
+     FUNCTION_LOG("");
+
+     Point oROIoffset; //< to-be-used ROI offset
+     Size  oROIsize;   //< to-be-used ROI size
+     if (!adaptROI (poSrc, oROIoffset, oROIsize)) return false;
+
+     if (bClipToROI) {
+        ensureCompatible (ppoDst, poSrc->getDepth(), oROIsize, 
+                          poSrc->getFormat(), poSrc->getChannels(),
+                          Rect (Point::zero, oROIsize));
+     } else {
+        ensureCompatible (ppoDst, poSrc);
+        (*ppoDst)->setROI (oROIoffset, oROIsize);
+     }
+     return true;
+  }
+
+  bool Filter::adaptROI(ImgI *poSrc, Point& oROIoffset, Size& oROIsize)
   {
     FUNCTION_LOG("");
 
     const Size& oSize = poSrc->getSize ();
-    Size  oROIsize;   //< to-be-used ROI size
-    Point oROIoffset; //< to-be-used ROI offset
-
     poSrc->getROI (oROIoffset, oROIsize);
     int a;
+
     if (oROIoffset.x < oAnchor.x) oROIoffset.x = oAnchor.x;
     if (oROIoffset.y < oAnchor.y) oROIoffset.y = oAnchor.y;
     if (oROIsize.width > (a=oSize.width - (oROIoffset.x + oMaskSize.width - oAnchor.x - 1)))
@@ -20,8 +36,6 @@ namespace icl{
        oROIsize.height = a;
 
     if (oROIsize.width < 1 || oROIsize.height < 1) return false;
-    
-    poDst->setROI (oROIoffset, oROIsize);
     return true;
   }
 }

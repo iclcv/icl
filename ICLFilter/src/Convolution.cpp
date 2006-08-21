@@ -287,9 +287,9 @@ namespace icl{
                                   IppStatus (*pMethod)(const T* pSrc, int srcStep,
                                                        T* pDst, int dstStep, 
                                                        IppiSize roiSize)) {
-     Img<T> *poS = poSrc->asImg<T>();
-     Img<T> *poD = poDst->asImg<T>();
-     
+     Img<T> *poS = (Img<T>*) poSrc;
+     Img<T> *poD = (Img<T>*) poDst;
+
      for(int c=0; c < poSrc->getChannels(); c++) {
         pMethod (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
                  poD->getROIData (c), poD->getLineStep(), 
@@ -302,8 +302,8 @@ namespace icl{
                                                            T* pDst, int dstStep, 
                                                            IppiSize roiSize, IppiMaskSize mask)) {
      IppiMaskSize eMaskSize = (IppiMaskSize)(11 * oMaskSize.width);
-     Img<T> *poS = poSrc->asImg<T>();
-     Img<T> *poD = poDst->asImg<T>();
+     Img<T> *poS = (Img<T>*) poSrc;
+     Img<T> *poD = (Img<T>*) poDst;
      
      for(int c=0; c < poSrc->getChannels(); c++) {
         pMethod(poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
@@ -320,8 +320,8 @@ namespace icl{
   template<typename ImageT, typename KernelT>
   void Convolution::cGenericConv (ImgI *poSrc, ImgI *poDst)
   {
-    Img<ImageT> *poS = poSrc->asImg<ImageT>();
-    Img<ImageT> *poD = poDst->asImg<ImageT>();
+    Img<ImageT> *poS = (Img<ImageT>*) poSrc;
+    Img<ImageT> *poD = (Img<ImageT>*) poDst;
 
     // accumulator for each pixel result of Type M
     KernelT buffer; 
@@ -380,11 +380,11 @@ namespace icl{
        if (poSrc->getDepth () == depth8u) {
           // distinguish between different ipp function interfaces
           if (pFixed8u) this->ippFixedConv<icl8u> (poSrc, *ppoDst, pFixed8u);
-          else this->ippFixedConvMask<icl8u> (poSrc, *ppoDst, pFixed8uMask);
+          else if (pFixed8uMask) this->ippFixedConvMask<icl8u> (poSrc, *ppoDst, pFixed8uMask);
        } else {
           // distinguish between different ipp function interfaces
           if (pFixed32f) this->ippFixedConv<icl32f> (poSrc, *ppoDst, pFixed32f);
-          else this->ippFixedConvMask<icl32f> (poSrc, *ppoDst, pFixed32fMask);
+          else if (pFixed32fMask) this->ippFixedConvMask<icl32f> (poSrc, *ppoDst, pFixed32fMask);
        }
        return;
     }

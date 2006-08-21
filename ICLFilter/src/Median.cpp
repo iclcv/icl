@@ -49,8 +49,8 @@ namespace icl{
   // {{{ Fallback Implementation
   template<typename T>
   void Median::cMedian (ImgI *poSrc, ImgI *poDst) {
-     Img<T> *poS = poSrc->asImg<T>();
-     Img<T> *poD = poDst->asImg<T>();
+     Img<T> *poS = (Img<T>*) poSrc;
+     Img<T> *poD = (Img<T>*) poDst;
 
      std::vector<T> oList(oMaskSize.width * oMaskSize.height);
      typename std::vector<T>::iterator itList = oList.begin();

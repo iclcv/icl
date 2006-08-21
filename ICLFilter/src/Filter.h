@@ -33,7 +33,17 @@ namespace icl {
   class Filter{
     public:
     virtual ~Filter() {};
-    
+    /// Change handling of border around ROI of source image
+    /** Either the destination images size can be reduced to the source
+        images ROI (where the filter is applied only) or the source
+        images size can be kept for the destination, where the border
+        around the ROI is left unchanged (with possibly undefined values).
+        While the first case is the default, the latter case requires some
+        subsequent operation to fill the border with useful values, e.g.
+        fixed (black) pixels or extending the out ROI rim into the border.
+    */
+    void setClipToROI (bool bClip) { this->bClipToROI = bClip; }
+
     /// Applies the individual filter operation on the source image
     /** @param poSrc source image
         @param  poDst destination image
@@ -41,8 +51,8 @@ namespace icl {
     virtual void apply(ImgI *poSrc, ImgI **ppoDst) = 0;
 
     protected:
-    Filter() : oMaskSize(1,1), oAnchor (0,0) {}
-    Filter(const Size &size) {
+    Filter() : oMaskSize(1,1), oAnchor (0,0), bClipToROI(true) {}
+    Filter(const Size &size) : bClipToROI(true) {
        setMask (size);
     }
 
@@ -52,10 +62,7 @@ namespace icl {
     }
 
     /// prepare filter operation: ensure compatible image format and size
-    bool prepare (ImgI *poSrc, ImgI **ppoDst) {
-       ensureCompatible (ppoDst, poSrc);
-       return adaptROI (poSrc, *ppoDst);
-    }
+    bool prepare (ImgI *poSrc, ImgI **ppoDst);
     
     /// shrink source image ROI if neccessary
     /** This functions adapts the to-be-used ROI of the source image, 
@@ -67,11 +74,12 @@ namespace icl {
     @param poDst image whose ROI is actually changed
     @return whether a valid ROI remains
     */
-    bool adaptROI(ImgI *poSrc, ImgI *poDst);
+    bool adaptROI(ImgI *poSrc, Point& oROIoffset, Size& oROIsize);
 
     protected:
-    Size  oMaskSize; //< size of filter mask
-    Point oAnchor;   //< anchor of filter mask
+    Size  oMaskSize;  //< size of filter mask
+    Point oAnchor;    //< anchor of filter mask
+    bool  bClipToROI; //< reduce destination image's size to source ROI
   };
 }
 #endif
