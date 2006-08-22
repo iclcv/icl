@@ -677,8 +677,8 @@ inline D _elemRA(S* ps, int x, int y, float fSX, float fSY, int w)
 
 // scale channel ROI function for abitrary image scaling operations
 template<class S,class D> 
-void scaleChannelROI(Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                     Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+void scaleChannelROI(const Img<S> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                     Img<D> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                      scalemode eScaleMode)
 {
   FUNCTION_LOG("");
@@ -707,22 +707,26 @@ void scaleChannelROI(Img<S> *src,int srcC, const Point &srcOffs, const Size &src
     }
 }
 
-
+// explicit template instantiation
 #ifndef WITH_IPP_OPTIMIZATION
-template void scaleChannelROI<icl8u,icl8u>(Img<icl8u>    *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                                           Img<icl8u>    *dst,int dstC, const Point &dstOffs, const Size &dstSize,
-                                           scalemode eScaleMode);
-template void scaleChannelROI<icl32f,icl32f>(Img<icl32f> *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                                             Img<icl32f> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
-                                             scalemode eScaleMode);
+template void 
+scaleChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                             Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                             scalemode eScaleMode);
+template void 
+scaleChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                               Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                               scalemode eScaleMode);
 #endif
 
-template void scaleChannelROI<icl8u,icl32f>(Img<icl8u>   *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                                            Img<icl32f>  *dst,int dstC, const Point &dstOffs, const Size &dstSize,
-                                            scalemode eScaleMode);
-template void scaleChannelROI<icl32f,icl8u>(Img<icl32f>  *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                                            Img<icl8u>   *dst,int dstC, const Point &dstOffs, const Size &dstSize,
-                                            scalemode eScaleMode);
+template void 
+scaleChannelROI<icl8u,icl32f>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                              Img<icl32f>  *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                              scalemode eScaleMode);
+template void 
+scaleChannelROI<icl32f,icl8u>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                              Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                              scalemode eScaleMode);
 
 // }}}
 

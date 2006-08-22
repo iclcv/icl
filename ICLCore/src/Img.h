@@ -758,10 +758,10 @@ void scaleChannelROI(const Img<S> *src,int srcC, const Point &srcOffs, const Siz
                      Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
                      scalemode eScaleMode);
 
-/// IPP-OPTIMIZED specialization for icl32f to icl32f ROI sclaing (using ippiResize)
-template<>
-inline void scaleChannelROI(const Img<icl8u> *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                            Img<icl8u> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+/// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
+template<> inline void 
+scaleChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                            Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                             scalemode eScaleMode)
   {
     FUNCTION_LOG("");
@@ -772,10 +772,10 @@ inline void scaleChannelROI(const Img<icl8u> *src,int srcC, const Point &srcOffs
                       (float)dstSize.width/(float)srcSize.width,(float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
   }
 
-/// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
-template<>
-inline void scaleChannelROI(const Img<icl32f> *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                            Img<icl32f> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+/// IPP-OPTIMIZED specialization for icl32f to icl32f ROI sclaing (using ippiResize)
+template<> inline void 
+scaleChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                            Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                             scalemode eScaleMode)
   {
     FUNCTION_LOG("");
