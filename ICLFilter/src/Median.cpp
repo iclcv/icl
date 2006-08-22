@@ -23,7 +23,7 @@ namespace icl{
   template<>
   void Median::ippMedian<icl8u> (ImgI *poSrc, ImgI *poDst) {
      for(int c=0; c < poSrc->getChannels(); c++) {
-        ippiFilterMedian_8u_C1R(poSrc->asImg<icl8u>()->getROIData (c, poDst->getROIOffset()), 
+        ippiFilterMedian_8u_C1R(poSrc->asImg<icl8u>()->getROIData (c, this->oROIoffset), 
                                 poSrc->getLineStep(),
                                 poDst->asImg<icl8u>()->getROIData (c), 
                                 poDst->getLineStep(), 
@@ -35,7 +35,7 @@ namespace icl{
   void Median::ippMedianFixed<icl8u> (ImgI *poSrc, ImgI *poDst) {
      IppiMaskSize mask = oMaskSize.width == 3 ? ippMskSize3x3 : ippMskSize5x5;
      for(int c=0; c < poSrc->getChannels(); c++) {
-        ippiFilterMedianCross_8u_C1R(poSrc->asImg<icl8u>()->getROIData (c, poDst->getROIOffset()), 
+        ippiFilterMedianCross_8u_C1R(poSrc->asImg<icl8u>()->getROIData (c, this->oROIoffset), 
                                      poSrc->getLineStep(),
                                      poDst->asImg<icl8u>()->getROIData (c), 
                                      poDst->getLineStep(), 
@@ -58,7 +58,8 @@ namespace icl{
      
      for (int c=0;c<poSrc->getChannels();c++)
      {
-        for (ImgIterator<T> s (poS->getData(c), poS->getSize().width, poDst->getROI()),
+        for (ImgIterator<T> s (poS->getData(c), poS->getSize().width, 
+                               Rect (this->oROIoffset, poD->getROISize())),
                             d=poD->getROIIterator(c); s.inRegion(); ++s, ++d)
         {
            for(ImgIterator<T> sR(s,oMaskSize,oAnchor); sR.inRegion(); ++sR, ++itList)

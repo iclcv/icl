@@ -73,9 +73,3 @@ LDFLAGS:= ${LDFLAGS}
 # Flags for dynamic library linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
-
-
-
-
-
-

@@ -168,8 +168,7 @@ namespace icl{
     void apply(ImgI *poSrc, ImgI **ppoDst);
 
   protected:
-    typedef void (Median::*applyMethod)(ImgI *poSrc, ImgI *poDst); 
-    applyMethod aMethods[2];
+    void (Median::*aMethods[2])(ImgI *poSrc, ImgI *poDst); 
 
 #ifdef WITH_IPP_OPTIMIZATION 
     template<typename T>

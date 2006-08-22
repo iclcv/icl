@@ -252,7 +252,7 @@ namespace icl{
      Img<icl8u> *poS = poSrc->asImg<icl8u>();
      Img<icl8u> *poD = poDst->asImg<icl8u>();
      for(int c=0; c < poSrc->getChannels(); c++) {
-        ippiFilter_8u_C1R (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
+        ippiFilter_8u_C1R (poS->getROIData (c, this->oROIoffset), poS->getLineStep(),
                            poD->getROIData (c), poD->getLineStep(), 
                            poD->getROISize(), piKernel+1, oMaskSize, oAnchor, *piKernel);
      }
@@ -262,7 +262,7 @@ namespace icl{
      Img<icl8u> *poS = poSrc->asImg<icl8u>();
      Img<icl8u> *poD = poDst->asImg<icl8u>();
      for(int c=0; c < poSrc->getChannels(); c++) {
-        ippiFilter32f_8u_C1R (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
+        ippiFilter32f_8u_C1R (poS->getROIData (c, this->oROIoffset), poS->getLineStep(),
                               poD->getROIData (c), poD->getLineStep(), 
                               poD->getROISize(), pfKernel, oMaskSize, oAnchor);
      }
@@ -272,7 +272,7 @@ namespace icl{
      Img<icl32f> *poS = poSrc->asImg<icl32f>();
      Img<icl32f> *poD = poDst->asImg<icl32f>();
      for(int c=0; c < poSrc->getChannels(); c++) {
-        ippiFilter_32f_C1R (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
+        ippiFilter_32f_C1R (poS->getROIData (c, this->oROIoffset), poS->getLineStep(),
                             poD->getROIData (c), poD->getLineStep(), 
                             poD->getROISize(), pfKernel, oMaskSize, oAnchor);
      }
@@ -291,7 +291,7 @@ namespace icl{
      Img<T> *poD = (Img<T>*) poDst;
 
      for(int c=0; c < poSrc->getChannels(); c++) {
-        pMethod (poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
+        pMethod (poS->getROIData (c, this->oROIoffset), poS->getLineStep(),
                  poD->getROIData (c), poD->getLineStep(), 
                  poD->getROISize());
      }
@@ -306,7 +306,7 @@ namespace icl{
      Img<T> *poD = (Img<T>*) poDst;
      
      for(int c=0; c < poSrc->getChannels(); c++) {
-        pMethod(poS->getROIData (c, poD->getROIOffset()), poS->getLineStep(),
+        pMethod(poS->getROIData (c, this->oROIoffset), poS->getLineStep(),
                 poD->getROIData (c), poD->getLineStep(), 
                 poD->getROISize(), eMaskSize);
      }
@@ -330,7 +330,8 @@ namespace icl{
     const KernelT *m;
 
     for(int c=0; c < poSrc->getChannels(); c++) {
-       for(ImgIterator<ImageT> s (poS->getData(c), poS->getSize().width, poD->getROI()),
+       for(ImgIterator<ImageT> s (poS->getData(c), poS->getSize().width, 
+                                  Rect (this->oROIoffset, poD->getROISize())),
               d=poD->getROIIterator(c); 
            s.inRegion(); ++s, ++d)
        {

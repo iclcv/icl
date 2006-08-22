@@ -5,7 +5,6 @@ namespace icl{
   bool Filter::prepare (ImgI *poSrc, ImgI **ppoDst) {
      FUNCTION_LOG("");
 
-     Point oROIoffset; //< to-be-used ROI offset
      Size  oROIsize;   //< to-be-used ROI size
      if (!adaptROI (poSrc, oROIoffset, oROIsize)) return false;
 
