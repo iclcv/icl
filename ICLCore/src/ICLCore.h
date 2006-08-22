@@ -51,6 +51,18 @@ these classes (see icl namespace for more details).
 
 @see ImgI, Img
 
+\section SEC_DATA_ORIGN Data Origin
+Common image formats like png or bmp are following the convention,
+that the image origin is the <b>upper left</b> corner of the image.
+As many other frameworks like <b>IPP</b> (see section IPP-Optimization)
+or the Qt-framework (www.trolltech.com) are following this convention too,
+the data origin of ICL images should always be associated with the
+upper left corner of the image.
+Although most image operations like scaling, filters or thresholding do
+not care about the associations the user has with the images content,
+this standard will be very useful for I/O-routines or image visualization
+and - not least - whenever discussing about ICL images.
+
 \section Channel-Concept
 The Img treats images as a stack of image slices -- <b>channels</b>.  Channels
 can be shared by multiple Img images, which is especially important for fast

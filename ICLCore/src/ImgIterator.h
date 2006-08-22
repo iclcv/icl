@@ -13,11 +13,11 @@ namespace icl{
     1st pixel
       |
   ....|.................... 
-  ....|..ooooooooo......... ---
-  ....|..ooooooooo.........  |
-  ....|..ooooooooo......... iRoiH
-  ....|..ooooooooo.........  |
-  ....+->xoooooooo......... ---
+  ....+->Xoooooooo......... ---
+  .......ooooooooo.........  |
+  .......ooooooooo......... iRoiH
+  .......ooooooooo.........  |
+  .......ooooooooo......... ---
   ......................... 
          |-iRoiW-|
   |---------iImageW-------|
@@ -227,18 +227,20 @@ namespace icl{
         beginning on the bottom left iterator.
        <pre>
 
-           +--'I' is the first invalid iterator
-           |  (p.inRegion() will become false)
+           +-- begin here (index 0)
+           |  
+    .......|.................
     .......V.................
-    .......I.................
+    .......012+-->+8<---------- first line wrap after 
+    .......9++++++++.........   this pixel (index 8)
+    .......+++++++++.........
+    .......+++++++++.........
     .......++++++++X<---------- last valid pixel
-    .......+++++++++.........
-    .......+++++++++.........
-    .......9++++++++.........
-    ....+->0++-->++8.........
-    ....|....................
-        |
-       begin here
+    ....+->I.................
+        |  
+    'I' is the first invalid iterator
+    (p.inRegion() will become false)
+  
 
        </pre>
        
@@ -260,10 +262,10 @@ namespace icl{
            }
          return *this;
        }
-    /// TODOS !!!!
-    /** postfix operator++ if needed at all:
-        TODO: test SPEED as  this has to be copied and 
-        without optimization deleted
+    /** postfix operator++ (used -O3 to avoid
+        loss of performace when using the "it++"-operator
+        In most cases the "++it"-operator will ensure
+        best performace.
     **/
     inline ImgIterator operator++(int)
        {

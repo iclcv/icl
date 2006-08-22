@@ -12,7 +12,15 @@ namespace icl{
       This re-implementation makes the ICLCore (and depending
       packages) independent from the boost headers.
 
-      <h2>How an SmartPtr works</h2>
+      <b>Important:</b> The data of a SmartPtr is released
+      using <b>delete []</b>. Take care, that data given to
+      the SmartPtr is created with <b>new T[count]</b> - particularly
+      single objects on the heep must be created with new T[1].
+      <em>delete []</em>-calls on pointers allocated with <em>new</em>
+      or <em>malloc</em> will cause memory corruptions.
+     
+  
+      <h2>How a SmartPtr works</h2>
       In contrast with the auto pointers provided by the stdlib
       an SmartPtr has an internal reference counter, which is
       used to care about the deletion of the hold reference.
@@ -27,7 +35,7 @@ namespace icl{
 
       // fill up the first element of the array with a reference 
       // (of type MyClass*) 
-      array[0] = aptr_t(new MyClass(...));
+      array[0] = aptr_t(new MyClass[1]); // do _N_O_T_ use non-array-constructors!!
 
       // fill the other elements of the array with the 
       // SAME reference
@@ -78,8 +86,8 @@ namespace icl{
       /// e and c will become NULL
       SmartPtr(): e(0),c(0),d(0){}    
       
-      /// e is given, reference counter is set to 1
-      SmartPtr(T *pData, bool bOwn=true): e(pData), c(new int(1)),d(bOwn){}
+      /// ptData is given, reference counter is set to 1
+      SmartPtr(T *ptData, bool bOwn=true): e(ptData), c(new int(1)),d(bOwn){}
       
       /// e and c is copied from r, reference counter is increased by 1
       SmartPtr(const SmartPtr<T>& r): e(r.e), c(r.c), d(r.d){ inc(); }

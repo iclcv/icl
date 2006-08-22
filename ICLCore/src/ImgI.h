@@ -203,7 +203,7 @@ namespace icl {
         size   = m_oROISize;
       }
 
-      /// returns the images ROI offset
+      /// returns the images ROI offset (upper left corner)
       const Point& getROIOffset() const{
         FUNCTION_LOG("");
         return m_oROIOffset;
@@ -417,7 +417,7 @@ namespace icl {
       depth m_eDepth;
 
       // internal storage of the ROI parameters
-      Point m_oROIOffset; //< ROI offset
+      Point m_oROIOffset; //< ROI offset (upper left corner)
       Size  m_oROISize;   //< ROI size
 
       /* }}} */

@@ -5,10 +5,10 @@ namespace icl{
 #ifndef WITH_IPP_OPTIMIZATION
   /// fallback implementation for the IppiRect struct, defined in the ippi lib
   struct IppiRect {
-    /// xpos
+    /// xpos of upper left corner
     int x;
     
-    /// ypos
+    /// ypos of upper left corner
     int y;
 
     /// width
@@ -26,22 +26,17 @@ namespace icl{
       Rects in the ICL library:
       <pre>
                       
-           |-------- width ---------->|
-      ....................................... 
-      ....................................... 
-      .....oooooooooooooooooooooooooooo......  ___
-      .....oooooooooooooooooooooooooooo......  /|\
-      .....oooooooooooooooooooooooooooo......   |
-      .....oooooooooooooooooooooooooooo......   |
-      .....oooooooooooooooooooooooooooo...... height
-      .....oooooooooooooooooooooooooooo......   |
-      .....oooooooooooooooooooooooooooo......   |
-      .....oooooooooooooooooooooooooooo......   |
-      ..+->Xooooooooooooooooooooooooooo......  _|_
-      ..|....................................
-      ..|....................................
-        |
-     origin(x,y)
+                  |------ width ------>|
+                ............................ 
+                ............................ 
+  origin(x,y)---->Xooooooooooooooooooooo....  ___
+                ..oooooooooooooooooooooo....  /|\
+                ..oooooooooooooooooooooo....   |
+                ..oooooooooooooooooooooo.... height
+                ..oooooooooooooooooooooo....   | 
+                ..oooooooooooooooooooooo....  _|_
+                ............................
+                ............................
       </pre>
   
   */
@@ -160,19 +155,19 @@ namespace icl{
     }
 
     /// returns lower left point of the rect
-    Point ll() const {
+    Point ul() const {
       return Point(x,y);
     }
     /// returns upper left point of the rect
-    Point ul() const {
+    Point ll() const {
       return Point(x,y+height);
     }
     /// returns lower right point of the rect
-    Point lr() const {
+    Point ur() const {
       return Point(x+width,y);
     }
     /// returns upper right point of the rect
-    Point ur() const {
+    Point lr() const {
       return Point(x+width,y+height);
     }
 
@@ -183,10 +178,10 @@ namespace icl{
     int right() const { return x+width; }
 
     /// returns the position of the bottom border
-    int bottom() const { return y; }
+    int bottom() const { return y+height; }
 
     /// returns the position of the upper border 
-    int top() const { return y+height; }
+    int top() const { return y; }
 
     /// returns the size of the rect
     Size size() const { return Size(width,height); }

@@ -6,19 +6,22 @@ namespace icl{
   void ImgBorder::fixed(Img<T> *im, T* val){
     FUNCTION_LOG("");
     ICLASSERT_RETURN( im );
+    Rect roi = im->getROI();
+    Size s = im->getSize();
      for(int c=0;c<im->getChannels();c++){
       // top
-      clearChannelROI<T>(im,c,val[c], Point(0,im->getROIOffset().y),
-                         Size(im->getSize().width,im->getSize().height-im->getROI().top()));
+      clearChannelROI<T>(im,c,val[c], Point(0,roi.top()),
+                         Size(s.width,s.height-roi.top()));
       // bottom
       clearChannelROI<T>(im,c,val[c], Point::zero,
-                         Size(im->getSize().width,im->getROIOffset().y));
+                         Size(s.width,roi.bottom()));
       // left
-      clearChannelROI<T>(im,c,val[c], Point(0,im->getROIOffset().y),
-                         Size(im->getROIOffset().x,im->getROISize().height));
+      clearChannelROI<T>(im,c,val[c], Point(0,roi.bottom()),
+                         Size(roi.left(),roi.height));
       // right
-      clearChannelROI<T>(im,c,val[c], im->getROI().lr(),
-                         Size(im->getSize().width-im->getROI().right(),im->getROISize().height));
+      clearChannelROI<T>(im,c,val[c], roi.lr(),
+                         Size(s.width-roi.right(),roi.height) );
+
     }    
   }
   
