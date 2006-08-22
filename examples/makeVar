@@ -78,9 +78,5 @@ LDFLAGS:= ${LDFLAGS}
 # Flags for dynamic library linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
-
-
-
-
-
-
+# Set the priority level
+DIR_PRIORITY:=src

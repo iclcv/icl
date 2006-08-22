@@ -1,25 +1,6 @@
 #
 #   makefile
 #
-#   Copyright (C) 2002 by
-#   Honda R&D EUROPE (DEUTSCHLAND) GmbH,
-#   Future Technology Research
-#   Carl-Legien Str. 30
-#   63073 Offenbach/Main
-#   Germany
-#
-#   UNPUBLISHED PROPRIETARY MATERIAL.
-#   ALL RIGHTS RESERVED.
-#
-#   Author: Antonello Ceravola & Mark Dunn & Julian Eggert
-#
-#   Date: September 13, 2002
-#
-#   BUG: Dependency are not correct for windows executable;
-#        the ".exe" is missing in the "./%" rules
-#
-#
-
 # Don't change anything below this line!
 ###############################################################################
 
@@ -46,7 +27,7 @@ ifneq "${DEBUG_ON}" "TRUE"
 endif
 
 _SOURCES_FILENAME = $(wildcard *.${_SOURCES_EXT})
-TARGET_EXE = $(_SOURCES_FILENAME:%.${_SOURCES_EXT}=./${TARGET_PREFIX}%${TARGET_POSTFIX})
+TARGET_EXE = $(_SOURCES_FILENAME:%.${_SOURCES_EXT}=../bin/${TARGET_PREFIX}%${TARGET_POSTFIX})
 
 #-----------------------------------------------
 # Rule: all & cleanall & clean & printtype
@@ -68,7 +49,7 @@ exe: ${MAKE_PRECOND} ${TARGET_EXE} ${MAKE_POSTCOND}
 
 ifeq "${FORCE_CPP}" "TRUE"
 
-./${TARGET_PREFIX}%: %.${_SOURCES_EXT} ${REL_OBJECTS} ${ABS_OBJECTS}
+../bin/${TARGET_PREFIX}%: %.${_SOURCES_EXT} ${REL_OBJECTS} ${ABS_OBJECTS}
 	${PRE_CMD}${CMD_ECHO} "Building examples from: ${_CURR_DIR}/$@"
 	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${LDFLAGS} ${DEBUG} ${CPPDEFINES} -o $@ $< \
                     ${REL_INCLUDES} ${ABS_INCLUDES} \
@@ -76,7 +57,7 @@ ifeq "${FORCE_CPP}" "TRUE"
                     ${REL_LIBRARIES} ${ABS_LIBRARIES}
 else
 
-./${TARGET_PREFIX}%: %.${_SOURCES_EXT} ${REL_OBJECTS} ${ABS_OBJECTS}
+../bin/${TARGET_PREFIX}%: %.${_SOURCES_EXT} ${REL_OBJECTS} ${ABS_OBJECTS}
 	${PRE_CMD}${CMD_ECHO} "Building examples from: ${_CURR_DIR}/$@"
 	${PRE_CMD}${CMD_CC} ${CFLAGS} ${LDFLAGS} ${DEBUG} ${CDEFINES} -o $@ $< \
                   ${REL_INCLUDES} ${ABS_INCLUDES} \
@@ -103,36 +84,44 @@ endif
 	${PRE_CMD}${CMD_RM} *~ *.bak
 
 #-----------------------------------------------
+# Rule: depend & cleandepend
+#-----------------------------------------------
+
+ifeq "${FORCE_CPP}" "TRUE"
+
+depend:
+	${PRE_CMD}${CMD_ECHO} "Building dependencies from: ${_CURR_DIR}"
+	${PRE_CMD}${CMD_RM} makeDepend
+	${PRE_CMD}for file in ${_SOURCES_FILENAME} ; do \
+	  ${CMD_ECHO} "  $$file" ; \
+		$(CMD_CCPP) $(CXXFLAGS) ${CPPDEFINES} ${ABS_INCLUDES} ${REL_INCLUDES} \
+	    $$file -MT ../obj/$${file%.*}.o -MM -o .depend ; \
+	  cat .depend >> makeDepend ; \
+	done
+	${CMD_RM} .depend
+else
+
+depend:
+	${PRE_CMD}${CMD_ECHO} "Building dependencies from: ${_CURR_DIR}"
+	${PRE_CMD}${CMD_RM} makeDepend
+	${PRE_CMD}for file in ${_SOURCES_FILENAME} ; do \
+	  ${CMD_ECHO} "  $$file" ; \
+		$(CMD_CC) $(CFLAGS) ${CDEFINES} ${ABS_INCLUDES} ${REL_INCLUDES} \
+	    $$file -MM -o .depend ; \
+	  cat .depend >> makeDepend ; \
+	done
+	${PRE_CMD}${CMD_RM} .depend
+	${CMD_RM} .depend
+
+endif
+
+cleandepend:
+	${PRE_CMD}${CMD_ECHO} "Cleaning dependency from: ${_CURR_DIR}"
+	${PRE_CMD}${CMD_RM} makeDepend
+	${PRE_CMD}${CMD_FINAL}
+
+#-----------------------------------------------
 # Rule: % (default rule)
 # Note: This rule must be the last one!
 #-----------------------------------------------
 %: ;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
