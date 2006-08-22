@@ -330,20 +330,15 @@ namespace icl{
     //---- Write data ----
     for (int i=0;i<iNumImages;i++)
     {
-      /*
-      streamOutputImage.write ((char*) poTmpImg->getDataPtr(i),
-      iDim*getSizeOf(poSrc->getDepth()));
-      */
       int iW = poSrc->getSize().width;
-      if(poSrc->getDepth() == depth8u){
+      
+      if(poSrc->getDepth() == depth8u)
+      {
         icl8u *pucData = poSrc->asImg<icl8u>()->getData(i);
-        for(int line=poSrc->getSize().height-1;line>=0;line--){
+        
+        for(int line=poSrc->getSize().height-1;line>=0;line--)
+        {
           streamOutputImage.write ((char*) pucData+line*iW,iW*sizeof(icl8u));
-        }
-      }else{
-        icl32f *pfData = poSrc->asImg<icl32f>()->getData(i);
-        for(int line=poSrc->getSize().height-1;line>=0;line--){
-          streamOutputImage.write ((char*) pfData+line*iW,iW*sizeof(icl32f));
         }
       }
     } 
