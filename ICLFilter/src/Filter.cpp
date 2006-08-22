@@ -29,11 +29,18 @@ namespace icl{
 
     if (oROIoffset.x < oAnchor.x) oROIoffset.x = oAnchor.x;
     if (oROIoffset.y < oAnchor.y) oROIoffset.y = oAnchor.y;
-    if (oROIsize.width > (a=oSize.width - (oROIoffset.x + oMaskSize.width - oAnchor.x - 1)))
+    if (oROIsize.width > (a=oSize.width - (oROIoffset.x + oMaskSize.width - oAnchor.x - 1))) {
        oROIsize.width = a;
-    if (oROIsize.height > (a=oSize.height - (oROIoffset.y + oMaskSize.height - oAnchor.y - 1)))
+#ifdef WITH_IPP_OPTIMIZATION // workaround for IPP bug (anchor not correctly handled)
+       if (oMaskSize.width % 2 == 0) oROIsize.width--;
+#endif
+    }
+    if (oROIsize.height > (a=oSize.height - (oROIoffset.y + oMaskSize.height - oAnchor.y - 1))) {
        oROIsize.height = a;
-
+#ifdef WITH_IPP_OPTIMIZATION // workaround for IPP bug (anchor not correctly handled)
+       if (oMaskSize.height % 2 == 0) oROIsize.height--;
+#endif
+    }
     if (oROIsize.width < 1 || oROIsize.height < 1) return false;
     return true;
   }

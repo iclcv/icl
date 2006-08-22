@@ -6,47 +6,33 @@
 
 namespace icl{
   
-  /// Img-class for Image convolution
+  /// Class for Image convolutions
   /**
-  The Convolution class provides functionality for generic linear image filter 
-  procedures. To guarantee compatibility to the IPP optimized functions, also the 
-  C++ fallback implementations are working with the IPPs ROI-conventions:
-      
-  <h2>Conventions (IPP)</h2>
-  Let the source image image size be (W,H) and the mask size (M,N), then
-  the convolution operation can only be performed on some inner rect of
-  the source image. This inner rect is defined by the source images ROI-size.
-  To ease using of iclConv, the ROI-size of the source image is made smaller
-  before the operation and reset to its former size afterwards.
-  The amount of pixels, that must be <i>eroded</i> before applying the convolution
-  on the source image depends on the size of the mask, that is used.
-  As the mask is anchored at the center-point, the ROI size is reduced by 
-  (M/2,N/2) and enlarged by the same values after the operation.
-  The destination image must be of the same size as this temporary ROI, and
-  is resized automatically if it has a different size. Furthermore the channel 
-  count and the depth of source and destination image must be equal. 
-  These values are automatically adapted for the destination image if not matching.
-  
+  The Convolution class provides functionality for any kind of convolution
+  filters. As most other filter operations, it operates on the source images
+  ROI only. Because the filter mask has to fit into the image at every point
+  of the ROI, the ROI is eventually <em>shrinked</em> as described in base
+  class Filter.
+
   <h2>Efficiency (IPP-Optimized)</h2>
+
   All possible filter operations can be divided in 4 cases, depending on the
-  source and destination images depths and the depth of the used filter kernel.
-  Possible image depths are depth8u and depth32f (the two supported types of
-  Img-images). Supported kernel depths are depth32f and <b>32-bit signed 
-  integer</b> (called depth32s) (depth8u-kernels, will be converted 
-  internally into this depth). Note the differences of the following cases: 
+  source and destination images depths and the depth of the used filter
+  kernel.  Possible image depths are depth8u and depth32f. Supported kernel
+  depths are depth32f and <b>32-bit signed integer</b> (called depth32s)
+  (depth8u-kernels, will be converted internally into this depth). Note the
+  differences of the following cases:
   
   <h3>case images: depth8u </h3>
   In this case, an integer kernel is preferred. That means, that an integer
-  kernel will be used, if it's available. This will speed up performance:
-  TODO: percent?
+  kernel will be used, if available. Using a float kernel causes a marginal
+  decline in performance.
 
   <h3>case images: depth32f </h3>
   In this case, a float kernel is preferred. If it is not available, the
   fallback integer-kernel must be used. As convolution operations of float
   images with integer kernels are not supported by the IPP, the kernel is
-  converted internally into a temporary float-buffer, which is released after
-  the convolution operation. This will speed up performance in comparison
-  with the fallback C-implementation by a factor about 10.
+  converted internally into a float-kernel. 
 
   <h3>Benchmarks</h3>
   The IPP-optimized functions are <b>VERY</b> fast in comparison to the 
@@ -70,12 +56,13 @@ namespace icl{
   In some applications the Convolution object has to be created
   during runtime. If the filter-kernel is created elsewhere, and it
   is persistent over the <i>lifetime</i> of the Convolution object,
-  it may not be necessary to copy the kernel deeply into an Convolution-
-  internal buffer. To make the Convolution object just using a
+  it may not be necessary to deeply copy the kernel into an internal buffer
+  of the Convolution object. To make the Convolution object just using a
   given kernel pointer, an additional flag <b>iBufferData</b> can be set
   in two Constructors.
   */
-  class Convolution : public Filter{
+
+  class Convolution : public Filter {
     public:
     /// this enum contains several predefined convolution kernels
     /** <h3>kernelSobleX</h3>
@@ -166,20 +153,26 @@ namespace icl{
     */
     Convolution(kernel eKernel);
 
-    /// create Convolution object from ROI of given image
-    /** If the given kernel is of depth8u, then its data will be buffered 
-        internally both as depth32f and depth32s (32-bit signed integer).
+    /// Default constructor
+    Convolution();
 
-        Otherwise (kernel: depth32f) it is buffered in the internal depth32f buffer.
-        If it is possible to use signed integer values also (if the given float
-        buffer contains no floats with decimals) then an additional depth32s buffer
-        is created, and filled with the casted values. In case of applying the
-        filter on depth8u images, this will speed up performance.
-        @param poKernel custom convolution kernel
+    /// Creates a Convolution object with the given custom kernel
+    /** Create an instance of the Convolution object, which uses the given kernel.
+        If the parameter bBufferData is given, the kernel data is internally buffered
+        both as float and as an int array (if possible). If the kernel should not be
+        buffered, the pointer to the kernel data is stored directly. In this case
+        it is assumed, that the pointer stays valid as long as apply() is called.
+        The ownership for pfKernel is <b>not transfered</b> to the Convolution object,
+        rather the owner is responsible to release this pointer properly.
+
+        @param pfKernel convolution kernel data
+        @param size kernel mask size
+        @param bBufferData flag that indicates, if given data should be 
+        buffered internally. By default given data will be buffered.
     */
     Convolution(icl32f *pfKernel, const Size& size, bool bBufferData=true);
 
-    /// Creates an Convolution object with the given custom kernel
+    /// Creates a Convolution object with the given custom kernel
     /** This constructor behaves essentially like the above one.
         The first element of piKernel is assumed to contain a normalization 
         factor, by which the scalar product of kernel and image mask is divided.
@@ -196,19 +189,20 @@ namespace icl{
     virtual ~Convolution();
     
     /// performs the convolution operation on the image
-    /** The destination image is automatically set up to 
-        correct size and its channel count is set to the
-        source images channel count.
-        The size of the destination image becomes:
-        <pre>
-        width = src.width-kernel.width/2
-        height = src.height-kernel.height/2
-        </pre>
-        @param poSrc source image
-        @param poDst destination image
+    /** The destination image is automatically set up to correct size and its
+        channel count is set to the source images channel count.  
+        @param poSrc  source image
+        @param ppoDst destination image
     */
     virtual void apply(ImgI *poSrc, ImgI **ppoDst);
     
+    /// change kernel
+    void setKernel (int *piKernel, const Size& size, bool bBufferData=true);
+    /// change kernel
+    void setKernel (icl32f *pfKernel, const Size& size, bool bBufferData=true);
+    /// retrieve kernel pointer
+    template<typename KernelT> const KernelT* getKernel() const;
+
     private:
 
     /// internal storage for the sobel-x filter kernel
@@ -245,11 +239,11 @@ namespace icl{
     /// create kernel buffers
     void bufferKernel (float *pfKernel);
     void bufferKernel (int *piKernel);
+    /// release kernel buffers
+    void releaseBuffers ();
 
     /// array of image- and kernel-type selective generic convolution methods
-    void (Convolution::*aGenericConvs[2][2])(ImgI *poSrc, ImgI *poDst); 
-    /// set those method pointers
-    void setMethodPointers ();
+    static void (Convolution::*aGenericConvs[2][2])(ImgI *poSrc, ImgI *poDst); 
 
 #ifdef WITH_IPP_OPTIMIZATION 
     template<typename ImgT, typename KernelT>
@@ -270,8 +264,8 @@ namespace icl{
                               IppiSize roiSize);
     /// function pointer for ipp fixed convolution, depth8u image, mask size parameter
     IppStatus (*pFixed8uMask)(const Ipp8u* pSrc, int srcStep,
-                                  Ipp8u* pDst, int dstStep, 
-                                  IppiSize roiSize, IppiMaskSize mask);
+                              Ipp8u* pDst, int dstStep, 
+                              IppiSize roiSize, IppiMaskSize mask);
     /// function pointer for ipp fixed convolution, depth32f image
     IppStatus (*pFixed32f)(const Ipp32f* pSrc, int srcStep,
                            Ipp32f* pDst, int dstStep, 
@@ -284,15 +278,35 @@ namespace icl{
 #else
     template<typename ImgT, typename KernelT>
        void cGenericConv (ImgI *poSrc, ImgI *poDst);
-
-    template<typename KernelT> const KernelT* getKernel() const;
 #endif
   };
 
-#ifndef WITH_IPP_OPTIMIZATION 
-  template<> inline const int* Convolution::getKernel<int>()     const {return piKernel;}
-  template<> inline const float* Convolution::getKernel<float>() const {return pfKernel;}
-#endif
+  template<> inline const int* 
+  Convolution::getKernel<int>()   const {return piKernel;}
+  template<> inline const float* 
+  Convolution::getKernel<float>() const {return pfKernel;}
+
+
+  /// Convolution using the ROI of an ICL image as its kernel
+  /** Sometimes it is useful to use the ROI of an ICL image directly as the
+      convolution kernel, e.g. for template matching. Because the ROI may be
+      smaller than the image itself, the DynamicConvolution class maintains
+      an internal buffer poKernelBuf of this ROI only. Its first channel is
+      directly set as the (unbuffered) kernel data of the underlying Convolution
+      class.
+  */
+  class DynamicConvolution : protected Convolution {
+  public:
+     DynamicConvolution (const ImgI* poKernel = 0);
+     virtual ~DynamicConvolution ();
+
+     void setKernel (const ImgI* poKernel);
+     Filter::setClipToROI;
+     Convolution::apply;
+  private:
+     icl::Img<icl::icl32f> *poKernelBuf;
+  };
+
 }
 
 #endif

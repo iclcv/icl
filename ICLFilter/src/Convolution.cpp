@@ -8,7 +8,7 @@ namespace icl{
      this case already the constructor creates new kernel arrays piKernel
      and pfKernel within the methods <em>bufferKernel()</em>. Additionally
      the flag m_bBuffered is set to true.
-     Not that a external float pointer can only be buffered as int* piKernel
+     Note, that an external float pointer can only be buffered as int* piKernel
      if the data can be interpreted as integers.
 
      If data is not buffered, we create a suitable piKernel or pfKernel buffer
@@ -84,19 +84,19 @@ namespace icl{
   void Convolution::bufferKernel (float *pfKernelExt) {
     FUNCTION_LOG("");
      int iDim = oMaskSize.width * oMaskSize.height;
-     pfKernel = new float[iDim];
+     if (!pfKernel) pfKernel = new float[iDim];
      std::copy (pfKernelExt, pfKernelExt+iDim, pfKernel);
      
      if (isConvertableToInt (pfKernelExt, iDim)) {
         // first element contains normalization factor
-          piKernel = new int[iDim+1]; piKernel[0] = 1;
-
+        if (!piKernel) piKernel = new int[iDim+1]; 
+        piKernel[0] = 1;
+          
         register float *pf=pfKernelExt, *pfEnd=pfKernelExt+iDim;
         register int   *pi=piKernel+1;
-        for (; pf < pfEnd; ++pf, ++pi){
+        for (; pf < pfEnd; ++pf, ++pi) {
           *pi = (int) *pf;
         }
-
      }
   }
   // initially create buffer array (within constructor only)
@@ -104,9 +104,64 @@ namespace icl{
     FUNCTION_LOG("");
      int iDim = oMaskSize.width * oMaskSize.height;
 
-     piKernel = new int[iDim+1];
+     if (!piKernel) piKernel = new int[iDim+1];
      std::copy (piKernelExt, piKernelExt+iDim+1, piKernel);
      copyIntToFloatKernel (iDim);
+  }
+
+  // }}}
+
+  // {{{ setKernel
+
+  void Convolution::setKernel (icl32f *pfKernel, const Size& size, bool bBufferData) {
+     if (size != oMaskSize ||
+         m_eKernel != kernelCustom ||
+         m_bBuffered != bBufferData ||
+         m_eKernelDepth != depth32f ||
+         (this->pfKernel == 0 && this->piKernel == 0)) {
+        // major mismatch: do not reuse buffers at all
+        releaseBuffers ();
+
+        // set new values
+        setMask (size);
+        m_eKernel = kernelCustom;
+        m_eKernelDepth = depth32f;
+        m_bBuffered = bBufferData;
+
+        // buffer data
+        if (bBufferData) bufferKernel (pfKernel);
+        else this->pfKernel = pfKernel;
+     } else if (m_bBuffered) {
+        // simply use new kernel pointer
+        this->pfKernel = pfKernel;
+     } else { // buffered case
+        bufferKernel(pfKernel);
+     }
+  }
+  void Convolution::setKernel (int *piKernel, const Size& size, bool bBufferData) {
+     if (size != oMaskSize ||
+         m_eKernel != kernelCustom ||
+         m_bBuffered != bBufferData ||
+         m_eKernelDepth != depth8u ||
+         (this->pfKernel == 0 && this->piKernel == 0)) {
+        // major mismatch: do not reuse buffers at all
+        releaseBuffers ();
+
+        // set new values
+        setMask (size);
+        m_eKernel = kernelCustom;
+        m_eKernelDepth = depth8u;
+        m_bBuffered = bBufferData;
+
+        // buffer data
+        if (bBufferData) bufferKernel (piKernel);
+        else this->piKernel = piKernel;
+     } else if (m_bBuffered) {
+        // simply use new kernel pointer
+        this->piKernel = piKernel;
+     } else { // buffered case
+        bufferKernel(piKernel);
+     }
   }
 
   // }}}
@@ -114,12 +169,12 @@ namespace icl{
   Convolution::Convolution(kernel eKernel) :
      // {{{ open
 
-     pfKernel(0), piKernel(0), m_bBuffered(true), m_eKernel(eKernel)
+     pfKernel(0), piKernel(0), m_bBuffered(true), m_eKernel(eKernel), m_eKernelDepth(depth8u)
   {
      FUNCTION_LOG("");
      
 #ifndef WITH_IPP_OPTIMIZATION
-     int nSize = 3;
+     int nSize = 3; 
      switch(m_eKernel) {
        case kernelSobelX3x3:
           piKernel = KERNEL_SOBEL_X_3x3; break;
@@ -140,8 +195,6 @@ namespace icl{
 
      // create buffer for pfKernel:
      copyIntToFloatKernel (oMaskSize.width * oMaskSize.height);
-     // set method pointers to generic convolution methods
-     setMethodPointers ();
 #else
      pFixed8u = 0; pFixed8uMask = 0; pFixed32f = 0; pFixed32fMask = 0;
      int nSize = 3;
@@ -190,18 +243,26 @@ namespace icl{
 
   // }}}
 
+  Convolution::Convolution () :
+     // {{{ open
+     Filter (Size(INT_MAX, INT_MAX)), // huge kernel size -> prepare returns false
+     pfKernel(0), piKernel(0), m_bBuffered(false), 
+     m_eKernel(kernelCustom), m_eKernelDepth(depth8u)
+  {
+     FUNCTION_LOG("");
+  }
+
+  // }}}
+
   Convolution::Convolution (icl32f *pfKernel, const Size &size,
                             bool bBufferData) :
-    // {{{ open
+     // {{{ open
      Filter (size),
-     pfKernel(0), piKernel(0), m_bBuffered(bBufferData), 
+     pfKernel(0), piKernel(0), m_bBuffered(!bBufferData), 
      m_eKernel(kernelCustom), m_eKernelDepth(depth32f)
   {
      FUNCTION_LOG("");
-     
-     if (bBufferData) bufferKernel (pfKernel);
-     else this->pfKernel = pfKernel;
-     setMethodPointers ();
+     setKernel(pfKernel, size, bBufferData);
   }
 
   // }}}
@@ -210,33 +271,34 @@ namespace icl{
                            bool bBufferData) :
      // {{{ open
      Filter (size),
-     pfKernel(0), piKernel(0), m_bBuffered(bBufferData), 
+     pfKernel(0), piKernel(0), m_bBuffered(!bBufferData), 
      m_eKernel(kernelCustom), m_eKernelDepth(depth8u)
   {
      FUNCTION_LOG("");
-     
-     if (bBufferData) bufferKernel (piKernel);
-     else this->piKernel = piKernel;
-     setMethodPointers ();
+     setKernel(piKernel, size, bBufferData);
   }
 
   // }}}
 
-  Convolution::~Convolution(){
-     // {{{ open
-
-     FUNCTION_LOG("");
-
+  void Convolution::releaseBuffers () {
      // free allocated kernel buffers
      if (m_bBuffered) { // can delete both buffers
         delete[] pfKernel;
         // in case of special kernel and no ipp usage
         // piKernel points to static class data
-        if (m_eKernel != kernelCustom) delete[] piKernel;
+        if (m_eKernel == kernelCustom) delete[] piKernel;
      } else {
         if (m_eKernelDepth == depth8u)  delete[] pfKernel;
         if (m_eKernelDepth == depth32f) delete[] piKernel;
      }
+     pfKernel = 0; piKernel = 0;
+  }
+
+  Convolution::~Convolution(){
+     // {{{ open
+
+     FUNCTION_LOG("");
+     releaseBuffers();
   }
 
   // }}}
@@ -349,23 +411,26 @@ namespace icl{
 
 #endif
 
-  // {{{ setMethodPointers
+  // {{{ static MethodPointers aGenericConvs
 
-  void Convolution::setMethodPointers () {
+  // array of image- and kernel-type selective generic convolution methods
+  void (Convolution::*Convolution::aGenericConvs[2][2])(ImgI *poSrc, ImgI *poDst) = {
 #ifdef WITH_IPP_OPTIMIZATION 
-     aGenericConvs[depth8u][depth8u]   = &Convolution::ippGenericConv<icl8u,int>;
-     aGenericConvs[depth8u][depth32f]  = &Convolution::ippGenericConv<icl8u,float>;
-     aGenericConvs[depth32f][depth8u]  = 0;
-     aGenericConvs[depth32f][depth32f] = &Convolution::ippGenericConv<icl32f,float>;
+     &Convolution::ippGenericConv<icl8u,int>,    // 8u - 8u
+     &Convolution::ippGenericConv<icl8u,float>,  // 8u - 32f
+     0,                                          // 32f - 8u
+     &Convolution::ippGenericConv<icl32f,float>  // 32f - 32f
 #else
-     aGenericConvs[depth8u][depth8u]   = &Convolution::cGenericConv<icl8u,int>;
-     aGenericConvs[depth8u][depth32f]  = &Convolution::cGenericConv<icl8u,float>;
-     aGenericConvs[depth32f][depth8u]  = 0;
-     aGenericConvs[depth32f][depth32f] = &Convolution::cGenericConv<icl32f,float>;
+     &Convolution::cGenericConv<icl8u,int>,    // 8u - 8u
+     &Convolution::cGenericConv<icl8u,float>,  // 8u - 32f
+     0,                                        // 32f - 8u
+     &Convolution::cGenericConv<icl32f,float>  // 32f - 32f
 #endif     
-  }
+  };
 
   // }}}
+
+  // {{{ Convolution::apply (ImgI *poSrc, ImgI **ppoDst)
 
   void Convolution::apply(ImgI *poSrc, ImgI **ppoDst)
   {
@@ -391,16 +456,54 @@ namespace icl{
     }
 #endif
 
-    if (m_bBuffered || 
-        poSrc->getDepth () == m_eKernelDepth ||
-        m_eKernelDepth == depth32f)
+    if (poSrc->getDepth () == m_eKernelDepth || m_eKernelDepth == depth32f) {
        (this->*(aGenericConvs[poSrc->getDepth()][m_eKernelDepth])) (poSrc, *ppoDst);
-    else { 
-       // data has to be copied from (external) int* kernel to internal float buffer first
-       copyIntToFloatKernel (oMaskSize.width * oMaskSize.height);
+    } else { // 32f image and int* kernel case, which is not supported directly
+       if (!m_bBuffered) {
+          // data has to be copied from (external) int* kernel to internal float buffer first
+          copyIntToFloatKernel (oMaskSize.width * oMaskSize.height);
+       }
        // use float kernel always
        (this->*(aGenericConvs[poSrc->getDepth()][depth32f])) (poSrc, *ppoDst);
     }
   }
+
+  // }}}
+
+
+  // {{{ DynamicConvolution
+
+  DynamicConvolution::DynamicConvolution (const ImgI* poKernel) : 
+     Convolution ()
+  {
+     poKernelBuf = new icl::Img<icl32f>(Size(3,3), 1);
+     if (poKernel) setKernel (poKernel);
+  }
+  
+  DynamicConvolution::~DynamicConvolution () {
+     delete poKernelBuf;
+  }
+
+  void DynamicConvolution::setKernel (const ImgI* poKernel) {
+     ICLASSERT_RETURN(poKernel->getChannels() > 0);
+
+     // resize kernel buffer if necessary
+     if (poKernel->getROISize() != poKernelBuf->getSize())
+        poKernelBuf->resize (poKernel->getROISize());
+
+     // copy data from poKernel's ROI to poKernelBuf
+     if (poKernel->getDepth () == depth8u) {
+        deepCopyChannelROI<icl8u,icl32f> 
+           (poKernel->asImg<icl8u>(), 0, poKernel->getROIOffset(), poKernel->getROISize(),
+            poKernelBuf, 0, Point::zero, poKernelBuf->getSize());
+     } else {
+        deepCopyChannelROI<icl32f,icl32f> 
+           (poKernel->asImg<icl32f>(), 0, poKernel->getROIOffset(), poKernel->getROISize(),
+            poKernelBuf, 0, Point::zero, poKernelBuf->getSize());
+     }
+     Convolution::setKernel (poKernelBuf->getData(0), poKernelBuf->getSize(), false);
+  }
+
+  // }}}
 
 } // namespace icl
