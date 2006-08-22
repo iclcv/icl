@@ -121,15 +121,21 @@ namespace icl {
 
       /// copies the image data in the images ROI into the destination images ROI
       /** this function is implemented in the Img-template class
-      @see Img
+          @see Img
       **/
       virtual ImgI *deepCopyROI(ImgI *poDst = NULL) const=0;
 
       /// scales the image data in the image ROI into the destination images ROI
       /** this function is implemented in the Img-template class
-      @see Img
+          @see Img
       **/
       virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, scalemode eScaleMode=interpolateNN) const=0;
+
+      /// flipps the image on the given axis into the destination image (IPP-OPTIMIZED)
+       /** this function is implemented in the Img-template class
+           @see Img
+       **/ 
+      virtual ImgI *flippedCopyROI(ImgI *poDst = NULL, axis eAxis = axisVert) const=0; 
       //@}
 
       /* }}} */

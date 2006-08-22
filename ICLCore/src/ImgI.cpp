@@ -79,6 +79,7 @@ void ImgI::shallowCopy(ImgI** ppoDst) const {
   
 }
 
+
 void ImgI::print(string sTitle) const
 {
   FUNCTION_LOG(sTitle);

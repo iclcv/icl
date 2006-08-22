@@ -300,6 +300,12 @@ namespace icl {
   };
 #endif
 
+  /// for flipping of images
+  enum axis{
+    axisHorz, /**> horizontal image axis */
+    axisVert  /**> vertical image axis */
+  };
+
 /* {{{ Global classes*/
   
   /// Casting operator

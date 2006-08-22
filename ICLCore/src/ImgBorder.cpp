@@ -10,16 +10,16 @@ namespace icl{
     Size s = im->getSize();
      for(int c=0;c<im->getChannels();c++){
       // top
-      clearChannelROI<T>(im,c,val[c], Point(0,roi.top()),
-                         Size(s.width,s.height-roi.top()));
+      clearChannelROI<T>(im,c,val[c], Point::zero,        
+                         Size(s.width,roi.top()));
       // bottom
-      clearChannelROI<T>(im,c,val[c], Point::zero,
-                         Size(s.width,roi.bottom()));
-      // left
       clearChannelROI<T>(im,c,val[c], Point(0,roi.bottom()),
+                         Size(s.width,s.height-roi.bottom()));
+      // left
+      clearChannelROI<T>(im,c,val[c], Point(0,roi.top()),
                          Size(roi.left(),roi.height));
       // right
-      clearChannelROI<T>(im,c,val[c], roi.lr(),
+      clearChannelROI<T>(im,c,val[c], roi.ur(),
                          Size(s.width-roi.right(),roi.height) );
 
     }    

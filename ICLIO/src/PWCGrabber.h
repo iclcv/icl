@@ -68,7 +68,6 @@ namespace icl{
     
     Img8u *poRGB8Image;
     Converter oConverter,oConverterHalfSize;
-    icl8u *pucFlippedYUVData;
   };
   
 }

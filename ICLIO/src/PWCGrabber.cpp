@@ -286,8 +286,7 @@ PWCGrabber::PWCGrabber(const Size &s,
                        float fFps,
                        int iDevice):
   iWidth(s.width),iHeight(s.height),iDevice(iDevice),fFps(fFps),
-  poRGB8Image(new Img8u(s,formatRGB)),
-  pucFlippedYUVData(new icl8u[(int)(1.5*s.getDim())]){
+  poRGB8Image(new Img8u(s,formatRGB)){
   
   usb_image_widths[iDevice]=iWidth;
   usb_image_heights[iDevice]=iHeight;
@@ -377,20 +376,9 @@ PWCGrabber::PWCGrabber(const Size &s,
 
 PWCGrabber::~PWCGrabber(){
   delete poRGB8Image;
-  delete pucFlippedYUVData;
   
   // delete pwc ...
 }
-
-#ifdef USE_IPP_OPTIMIZATION
-#define MIRROR_HORZ(S,STEP,D,SIZE) ippiMirror_8u_C1R(S,STEP,D,STEP,SIZE,ippAxsHorizontal)
-#else
-#define MIRROR_HORZ(S,STEP,D,SIZE)                              \
-   for(int y=0;y<SIZE.height;y++){                              \
-     memcpy(D+(SIZE.height-y-1)*STEP,S+STEP*y,STEP);            \
-  }                                             
-
-#endif
 
 void PWCGrabber::grab(ImgI *poOutput){
  
@@ -405,36 +393,22 @@ void PWCGrabber::grab(ImgI *poOutput){
  
   icl8u *pucPwcData = usbvflg_buf[iDevice] + usbvflg_vmbuf[iDevice].offsets[use_frame];
   
-
-  icl8u *pU = pucPwcData+iWidth*iHeight;
-  icl8u *pV = pucPwcData+(int)(1.25*iWidth*iHeight);
-  int iW2 = iWidth/2;
-
-#ifndef WITH_IPP_OPTINIZATION
-  typedef struct _IppiSize { int width,height; } IppiSize;
-#endif
+  icl8u *pY = pucPwcData;
+  icl8u *pU = pY+iWidth*iHeight;
+  icl8u *pV = pY+(int)(1.25*iWidth*iHeight);
   
-  IppiSize oSize = {iWidth,iHeight};
-  IppiSize oSize2 ={iWidth/2,iHeight/2};
-  icl8u *pUDst = pucFlippedYUVData+iWidth*iHeight;
-  icl8u *pVDst = pucFlippedYUVData+(int)(1.25*iWidth*iHeight);
- 
-  MIRROR_HORZ(pucPwcData,iWidth*sizeof(icl8u),pucFlippedYUVData,oSize);
-  MIRROR_HORZ(pU,iW2*sizeof(icl8u),pUDst,oSize2);
-  MIRROR_HORZ(pV,iW2*sizeof(icl8u),pVDst,oSize2);
- 
   if(poOutput->getFormat() == formatRGB &&
      poOutput->getDepth() == depth8u &&
      poOutput->getSize().width == iWidth &&
      poOutput->getSize().height == iHeight ){
     
-    convertYUV420ToRGB8(poOutput->asImg<icl8u>(),pucFlippedYUVData,Size(iWidth,iHeight));
+    convertYUV420ToRGB8(poOutput->asImg<icl8u>(),pY,Size(iWidth,iHeight));
     
   }else if(poOutput->getFormat() == formatYUV){ // not yet tested
     
-    Img8u oTmpSrc_Y(Size(iWidth,iHeight),formatMatrix,1,&pucFlippedYUVData);
-    Img8u oTmpSrc_U(Size(iWidth/2,iHeight/2),formatMatrix,1,&pUDst);
-    Img8u oTmpSrc_V(Size(iWidth/2,iHeight/2),formatMatrix,1,&pVDst);
+    Img8u oTmpSrc_Y(Size(iWidth,iHeight),formatMatrix,1,&pY);
+    Img8u oTmpSrc_U(Size(iWidth/2,iHeight/2),formatMatrix,1,&pU);
+    Img8u oTmpSrc_V(Size(iWidth/2,iHeight/2),formatMatrix,1,&pV);
     
     if(poOutput->getDepth()==depth8u){
       icl8u *pucTmpY = poOutput->asImg<icl8u>()->getData(0);
@@ -463,7 +437,7 @@ void PWCGrabber::grab(ImgI *poOutput){
       oConverterHalfSize.convert(&oTmpDst_V,&oTmpSrc_V);
     }
   }else{
-    convertYUV420ToRGB8(poRGB8Image,pucFlippedYUVData,Size(iWidth,iHeight));
+    convertYUV420ToRGB8(poRGB8Image,pY,Size(iWidth,iHeight));
     oConverter.convert(poOutput,poRGB8Image);
   }
   pthread_mutex_unlock(&usb_frame_mutex[iDevice]);

@@ -285,10 +285,27 @@ class Img : public ImgI
                            - interpolateRA  --> region average 
   **/
   virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, scalemode eScaleMode=interpolateNN) const;
-                  
+          
+  /// flipps the image on the given axis into the destination image (IPP-OPTIMIZED)
+  /** If the destination images roi is not equal to the source images ROI,
+      no operation is performed at all, and poDst will be returned. If
+      the given destination image is NULL, it is created with the size
+      of the source images roi. All other parameters (channel count, format,...
+      of the destination image are copied from the source image.
+
+      <h2>Performace</h2>
+      Only flipping images with identical depths is IPP-OPTIMIZED, so flipping
+      with an internal depth conversion will be very slow in coparison. Flipping
+      an image on the vertical axis is accelerated by using memcpy on each image
+      line.
+      @param poDst destination image if NULL, it is created
+      @param eAxis axis to flip (axisVert or axisHorz)
+      @return poDst
+  */
+  virtual ImgI *flippedCopyROI(ImgI *poDst = NULL, axis eAxis = axisVert) const; 
   /* }}} */
   
-  //@{ @name organization and channel management                                       
+  //@{ @name organization and channel management                               
   /* {{{ open */
   
   /// Makes the image channels inside the Img independent from other Img.
@@ -383,7 +400,7 @@ class Img : public ImgI
 
   /* }}} */
   
-  //@{ @name getter functions                                                   
+  //@{ @name getter functions                                                  
   /* {{{ open */
 
   /// Returns max pixel value of channel iChannel (IPP-OPTIMIZED)
@@ -542,7 +559,7 @@ class Img : public ImgI
 
 /* }}} */
   
-  //@{ @name pixel access using roi iterator                                                                     
+  //@{ @name pixel access using roi iterator           
   /* {{{ open */
 
   /// type definition for roi iterator
@@ -763,6 +780,8 @@ template<> inline void
 scaleChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                             Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                             scalemode eScaleMode)
+  /* {{{ open */
+
   {
     FUNCTION_LOG("");
     ICLASSERT_RETURN( src && dst );
@@ -772,11 +791,15 @@ scaleChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOf
                       (float)dstSize.width/(float)srcSize.width,(float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
   }
 
+/* }}} */
+
 /// IPP-OPTIMIZED specialization for icl32f to icl32f ROI sclaing (using ippiResize)
 template<> inline void 
 scaleChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                             Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                             scalemode eScaleMode)
+  /* {{{ open */
+
   {
     FUNCTION_LOG("");
     ICLASSERT_RETURN( src && dst );
@@ -785,6 +808,132 @@ scaleChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &sr
                        dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
                        (float)dstSize.width/(float)srcSize.width,(float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
   }
+
+/* }}} */
+
+
+
+
+/// fallback implementation for horizontal image flipping (slow)
+template <class S, class D> inline void 
+flipHorzChannelROI(const Img<S>*  src, int srcC, const Point &srcOffs, const Size &srcSize,
+                   Img<D> *dst, int dstC, const Point &dstOffs, const Size &dstSize){
+  /* {{{ open */
+
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN( src && dst );
+  ICLASSERT_RETURN( srcSize == dstSize);
+  
+  for(int x=0,xDst=dstOffs.x+dstSize.width;x<srcSize.width;x++)
+    {
+      for(int y=0;y<srcSize.height;y++)
+        {
+          (*dst)(xDst-x,xDst-y,dstC) = Cast<S,D>::cast( (*src)(x+srcOffs.x,y+srcOffs.y,srcC) );
+        }
+    }  
+}
+
+/* }}} */
+
+/// fallback implementation for vertical image flipping (using memcpy line by line)
+template <class S, class D> inline void 
+flipVertChannelROI(const Img<S>*  src, int srcC, const Point &srcOffs, const Size &srcSize,
+                   Img<D> *dst, int dstC, const Point &dstOffs, const Size &dstSize){
+  /* {{{ open */
+
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN( src && dst );
+  ICLASSERT_RETURN( srcSize == dstSize);
+  
+  ImgIterator<D> itDst(dst->getData(srcC),dst->getSize().width,Rect(dstOffs,dstSize));
+  itDst.incRow(dstSize.height-1);
+  for(ImgIterator<S> itSrc(src->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
+      itSrc.inRegion();
+      itSrc.incRow(),itDst.incRow(-1))
+    {
+      copy<S,D>(&*itSrc,(&*itSrc)+srcSize.width, &*itDst);
+    }  
+}
+
+/* }}} */
+
+
+#ifdef WITH_IPP_OPTIMIZATION
+/// IPP-OPTIMIZED specialization for icl8u horizontal image flipping (using ippiMirror_8u)
+template <> void
+inline flipHorzChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize)
+  /* {{{ open */
+
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( srcSize == dstSize );
+    
+    ippiMirror_8u_C1R(src->getROIData(srcC,srcOffs),src->getLineStep(),
+                      dst->getROIData(dstOffs),dst->getLineStep(),srcSize,ippAxsHorizontal);
+    
+  }
+
+/* }}} */
+
+/// IPP-OPTIMIZED specialization for icl32f horizontal image flipping (using ippiMirror_8s <-!!)
+template <> void
+inline flipHorzChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                    Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize)
+  /* {{{ open */
+
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( srcSize == dstSize );
+    
+    ippiMirror_32s_C1R((Ipp32s*)(src->getROIData(srcC,srcOffs)),src->getLineStep(),
+                      (Ipp32s*)(dst->getROIData(dstOffs)),dst->getLineStep(),srcSize,ippAxsHorizontal);
+    
+  }
+
+/* }}} */
+
+/// IPP-OPTIMIZED specialization for icl8u vertical image flippint (using ippiMirror_32s <-!!)
+template <> void
+inline flipVertChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                  Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize)
+  /* {{{ open */
+
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( srcSize == dstSize );
+    
+    // treat the 32bit float values as 32bit int values
+    ippiMirror_8u_C1R(src->getROIData(srcC,srcOffs),src->getLineStep(),
+                      dst->getROIData(dstOffs),dst->getLineStep(),srcSize,ippAxsVertical);
+    
+  }
+
+/* }}} */
+
+/// IPP-OPTIMIZED specialization for icl32f vertical image flippint (using ippiMirror_32s <-!!)
+template <> void
+inline flipVertChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                  Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize)
+  /* {{{ open */
+
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( srcSize == dstSize );
+    
+    // treat the 32bit float values as 32bit int values
+    ippiMirror_32s_C1R((Ipp32s*)(src->getROIData(srcC,srcOffs)),src->getLineStep(),
+                      (Ipp32s*)(dst->getROIData(dstOffs)),dst->getLineStep(),srcSize,ippAxsVertical);
+    
+  }
+
+ /* }}} */
+
+#endif
 
 /* }}} */ 
  
