@@ -128,13 +128,3 @@ depend_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} depend -C $(subst depend_,,$@)\
               "_CURR_DIR=$(subst depend_,${strip ${_CURR_DIR}}/,$@)"
 
-
-
-
-
-
-
-
-
-
-

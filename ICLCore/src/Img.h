@@ -649,7 +649,7 @@ template<class T>
 inline void clearChannelROI(Img<T> *im, int c, T clearVal, const Point &offs, const Size &size){
   FUNCTION_LOG("");
   ICLASSERT_RETURN( im );
-  for(ImgIterator<T> it(im->getROIData(c,offs),im.getSize().width,Rect(offs,size));it.inRegion(); ++it)
+  for(ImgIterator<T> it(im->getROIData(c,offs),im->getSize().width,Rect(offs,size));it.inRegion(); ++it)
     {
       *it = clearVal;
     }  
@@ -776,6 +776,7 @@ void scaleChannelROI(const Img<S> *src,int srcC, const Point &srcOffs, const Siz
                      scalemode eScaleMode);
 
 /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
+#ifdef WITH_IPP_OPTIMIZATION
 template<> inline void 
 scaleChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                             Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
@@ -808,7 +809,7 @@ scaleChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &sr
                        dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
                        (float)dstSize.width/(float)srcSize.width,(float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
   }
-
+#endif
 /* }}} */
 
 

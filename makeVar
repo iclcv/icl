@@ -70,8 +70,7 @@ CDEFINES:= ${CDEFINES}
 CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CPPDEFINES:= ${CPPDEFINES}  \
-             -DWITH_IPP_OPTIMIZATION 
+CPPDEFINES:= ${CPPDEFINES} -DWITH_IPP_OPTIMIZATION
 #CPPDEFINES := ${CPPDEFINES} -DDEBUGLEVEL_2
 
 # Flags for C++ compiler
@@ -82,8 +81,8 @@ ifeq "$(DEBUG_ON)" "TRUE"
      CFLAGS += $(DEBUG)
      CPPFLAGS += $(DEBUG)
 else
-     CFLAGS += -O3
-     CPPFLAGS += -O3
+     CFLAGS += -O3 -DNDEBUG
+     CPPFLAGS += -O3 -DNDEBUG
 endif
 
 # Flags for archive
@@ -98,5 +97,6 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 # Change the linker to g++
 CMD_LD=g++
 
-#Set the priority level
+# Set the priority level
 DIR_PRIORITY:=ICLUtils ICLCore ICLCC
+DIR_LOWPRIORITY:=examples

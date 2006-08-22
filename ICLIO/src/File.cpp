@@ -302,7 +302,6 @@ namespace icl{
     ImgI* poTmpImg;
     
     int iNumImages = poSrc->getChannels();       
-    int iDim = poSrc->getDim();
     
     //---- Convert to Gray format ----
     if (poSrc->getFormat() != formatGray)

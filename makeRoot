@@ -164,7 +164,7 @@ SKIP_DIRECTORIES:=make
 DIR_PRIORITY:=
 
 # Please put here the directory that has to be executed last
-DIR_LOWPRIORITY:=examples
+DIR_LOWPRIORITY:=
 
 # List of targets executed by the "all" rule in the generic makefiles
 ALL_EXEC_LIST:= obj lib exe

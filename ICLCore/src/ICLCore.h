@@ -327,6 +327,10 @@ namespace icl {
   struct Cast<T, T> {
      static T cast (T v) {return v;}
   };
+  template<>
+  struct Cast<icl8u, icl8u> {
+     static icl8u cast (icl8u v) {return v;}
+  };
 
 /* }}} */
 
@@ -500,8 +504,8 @@ namespace icl {
     ippsCopy_32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
   }
 #else
-  template <T>
-  inline void copy<T>(T *poSrcStart, T *poSrcEnd, T *poDst){
+  template <typename T>
+  inline void copy(T *poSrcStart, T *poSrcEnd, T *poDst){
     memcpy(poDst,poSrcStart,(poSrcEnd-poSrcStart)*sizeof(T));
   }
 #endif

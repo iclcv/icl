@@ -54,5 +54,3 @@ CPPDEFINES:= ${CPPDEFINES}
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
 
-
-
