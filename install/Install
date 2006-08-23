@@ -33,6 +33,15 @@ closedir(DIR);
 
 my $INSTALLDIR="$ENV{AGNI_LOCAL_ROOT}/${projectRootName}/${majVer}.${minVer}";
 
+#---- Remove old install tree before installing the new one ----
+print "---- Remove header files in: $INSTALLDIR/include \n";
+system "rm $INSTALLDIR/include/*.h";
+print "---- Remove libraries in: $INSTALLDIR/lib \n";
+system "rm $INSTALLDIR/lib/*";
+print "---- Remove docs in: $INSTALLDIR/doc \n";
+system "rm -R $INSTALLDIR/doc/*";
+
+#---- Install new library----
 if (!-e "$INSTALLDIR"){
     print "make dir: $INSTALLDIR\n";
     system "mkdir -p $INSTALLDIR";

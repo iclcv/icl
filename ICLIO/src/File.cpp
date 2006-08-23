@@ -112,7 +112,7 @@ namespace icl{
     
     //---- Build file name ----
     sFileName = buildFileName();
-        
+    
     //---- Determine file format ----
     checkFileType(sFileName, m_eFileFormat, m_eFormat);
     
@@ -296,6 +296,7 @@ namespace icl{
   //--------------------------------------------------------------------------
   void File::writeAsPGM(ImgI *poSrc, ofstream &streamOutputImage) {
     // {{{ open
+
     FUNCTION_LOG("");
     
     //---- Initialise variables ----
@@ -333,7 +334,7 @@ namespace icl{
                                iDim*getSizeOf(poSrc->getDepth()));
     }
   }
-  
+
 // }}}
 
   //--------------------------------------------------------------------------
