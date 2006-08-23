@@ -1,0 +1,138 @@
+#
+#   makefile
+#
+#   Copyright (C) 2002 by
+#   Honda R&D EUROPE (DEUTSCHLAND) GmbH,
+#   Future Technology Research
+#   Carl-Legien Str. 30
+#   63073 Offenbach/Main
+#   Germany
+#
+#   UNPUBLISHED PROPRIETARY MATERIAL.
+#   ALL RIGHTS RESERVED.
+#
+#   Author: Antonello Ceravola & Mark Dunn & Julian Eggert
+#
+#   Date: September 13, 2002
+#
+#   BUG: Dependency are not correct for windows executable;
+#        the ".exe" is missing in the "./%" rules
+#
+#
+
+# Don't change anything below this line!
+###############################################################################
+
+# Do not assign anything to this variable
+_DOT_DOT=
+
+ifeq "${_CURR_DIR}" ""
+ _CURR_DIR=.
+endif
+
+PROJECT_NAME:= $(notdir $(shell cd ..;pwd))
+
+include makeVar
+
+ifeq "$(wildcard *.${SOURCE_CPP_EXT})" ""
+ _SOURCES_EXT = ${SOURCE_C_EXT}
+else
+ _SOURCES_EXT = ${SOURCE_CPP_EXT}
+ FORCE_CPP:= TRUE
+endif
+
+ifneq "${DEBUG_ON}" "TRUE"
+ DEBUG:=
+endif
+
+_SOURCES_FILENAME = $(wildcard *.${_SOURCES_EXT})
+TARGET_EXE = $(_SOURCES_FILENAME:%.${_SOURCES_EXT}=./${TARGET_PREFIX}%${TARGET_POSTFIX})
+
+#-----------------------------------------------
+# Rule: all & cleanall & clean & printtype
+#-----------------------------------------------
+all: exe
+
+cleanall: cleanexe 
+
+clean: cleanall
+
+printtype:
+	${PRE_CMD}${CMD_ECHO} "Type: MakeBinary"
+
+#-----------------------------------------------
+# Rule: exe & cleanexe
+#-----------------------------------------------
+exe: ${MAKE_PRECOND} ${TARGET_EXE} ${MAKE_POSTCOND}
+	${PRE_CMD}${CMD_FINAL}
+
+ifeq "${FORCE_CPP}" "TRUE"
+
+./${TARGET_PREFIX}%: %.${_SOURCES_EXT} ${REL_OBJECTS} ${ABS_OBJECTS}
+	${PRE_CMD}${CMD_ECHO} "Building examples from: ${_CURR_DIR}/$@"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${LDFLAGS} ${DEBUG} ${CPPDEFINES} -o $@ $< \
+                    ${REL_INCLUDES} ${ABS_INCLUDES} \
+                    ${REL_OBJECTS} ${ABS_OBJECTS} \
+                    ${REL_LIBRARIES} ${ABS_LIBRARIES}
+else
+
+./${TARGET_PREFIX}%: %.${_SOURCES_EXT} ${REL_OBJECTS} ${ABS_OBJECTS}
+	${PRE_CMD}${CMD_ECHO} "Building examples from: ${_CURR_DIR}/$@"
+	${PRE_CMD}${CMD_CC} ${CFLAGS} ${LDFLAGS} ${DEBUG} ${CDEFINES} -o $@ $< \
+                  ${REL_INCLUDES} ${ABS_INCLUDES} \
+                  ${REL_OBJECTS} ${ABS_OBJECTS} \
+                  ${REL_LIBRARIES} ${ABS_LIBRARIES}
+
+endif
+
+${REL_OBJECTS} ${ABS_OBJECTS}:
+	${PRE_CMD}${CMD_ECHO} "Error: recompile first the objects not expanded: ${_CURR_DIR}"
+	${PRE_CMD}${CMD_ECHO} ${REL_OBJECTS} ${ABS_OBJECTS}
+	${PRE_CMD}${CMD_EXIT_FAIL}
+
+cleanexe: _cleanexe_First ${MORE_CLEAN}
+	${PRE_CMD}${CMD_FINAL}
+
+_cleanexe_First:
+	${PRE_CMD}${CMD_ECHO} "Cleaning examples from: ${_CURR_DIR}"
+ifeq "${OS_TYPE}" "Windows"
+	${PRE_CMD}${CMD_RM} $(TARGET_EXE:%=%.exe)
+else
+	${PRE_CMD}${CMD_RM} ${TARGET_EXE}
+endif
+	${PRE_CMD}${CMD_RM} *~ *.bak
+
+#-----------------------------------------------
+# Rule: % (default rule)
+# Note: This rule must be the last one!
+#-----------------------------------------------
+%: ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
