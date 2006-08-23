@@ -673,7 +673,7 @@ inline void clearChannelROI(Img<icl32f> *im, int c, icl32f clearVal, const Point
 }
 #endif
 
-//@{ @name deeo copy of channel ROIs 
+//@{ @name deep copy of channel ROIs 
 /// copies/converts the ROI data from one image to the ROI of another image (IPP-OPTIMIZED)
 /** This function is used by all other deepCopyROI functions interanally. 
     It copies / converts ROI image data to another images ROI using the

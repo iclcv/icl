@@ -28,8 +28,9 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)
-REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%)
-
+REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
+                -L../lib -lICLIO
+               
 # Please add here all the objects with absolute path
 # that are needed by the executables.
 ABS_OBJECTS:= ${ABS_OBJECTS}

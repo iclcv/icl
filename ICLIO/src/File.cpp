@@ -206,7 +206,7 @@ namespace icl{
                             iDim*getSizeOf(poDst->getDepth()));
     }
   }
-
+  
     // }}}
 
   //--------------------------------------------------------------------------
@@ -300,7 +300,7 @@ namespace icl{
     
     //---- Initialise variables ----
     ImgI* poTmpImg;
-    
+    int iDim = poSrc->getDim();
     int iNumImages = poSrc->getChannels();       
     
     //---- Convert to Gray format ----
@@ -329,20 +329,11 @@ namespace icl{
     //---- Write data ----
     for (int i=0;i<iNumImages;i++)
     {
-      int iW = poSrc->getSize().width;
-      
-      if(poSrc->getDepth() == depth8u)
-      {
-        icl8u *pucData = poSrc->asImg<icl8u>()->getData(i);
-        
-        for(int line=poSrc->getSize().height-1;line>=0;line--)
-        {
-          streamOutputImage.write ((char*) pucData+line*iW,iW*sizeof(icl8u));
-        }
-      }
-    } 
+      streamOutputImage.write ((char*) poSrc->getDataPtr(i),
+                               iDim*getSizeOf(poSrc->getDepth()));
+    }
   }
-
+  
 // }}}
 
   //--------------------------------------------------------------------------
