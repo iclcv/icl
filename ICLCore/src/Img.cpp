@@ -263,7 +263,7 @@ Img<Type>::flippedCopyROI(ImgI *poDst, axis eAxis) const
   }
   return poDst;  
 }
-  /// }}}
+  // }}}
 
 
 //----------------------------------------------------------------------------
@@ -446,153 +446,137 @@ Img<Type>::replaceChannel(int iThisIndex, Img<Type>* poSrc, int iOtherIndex)
 
 // {{{  Getter Functions: 
 
-// ---------------------------------------------------------------------
+// {{{     getMax
 template<class Type> Type 
-Img<Type>::getMax(int iChannel) const
-  // {{{ open
+Img<Type>::getMax() const
 {
-  FUNCTION_LOG("getMax(" << iChannel << ")");
-  ICLASSERT_RETURN_VAL( iChannel < getChannels() ,0);
-  ICLASSERT_RETURN_VAL( getChannels() > 0 ,0);
-  if(iChannel < 0 ){
-    Type tMax = getMax(0);
-    for(int i=1;i<getChannels();i++){
-      tMax = std::max(tMax,getMax(i));
-    }
-    return tMax;    
-  }
-  
-#ifdef WITH_IPP_OPTIMIZATION
-  if(m_eDepth == depth8u)
-    {
-      icl8u ucMax;
-      ippiMax_8u_C1R(asImg<icl8u>()->getROIData(iChannel),getLineStep(),getROISize(),&ucMax);
-      return static_cast<Type>(ucMax);
-    }
-  else
-    {
-      icl32f fMax;
-      ippiMax_32f_C1R(asImg<icl32f>()->getROIData(iChannel),getLineStep(),getROISize(),&fMax);
-      return static_cast<Type>(fMax);
-    }
-#else
-  Type *ptData = getData(iChannel);
-  Type *ptDataEnd = ptData+getDim();
-  if(ptData == ptDataEnd)return 0;
-  Type tMax = *ptData++;
-  while(ptData != ptDataEnd)
-    {
-      tMax = std::max(tMax,*ptData++);
-    }
-  return tMax;
-#endif
+  FUNCTION_LOG("");
+
+  if (getChannels() == 0) return 0;
+  Type tMax = getMax(0);
+  for(int i=1;i<getChannels();i++)
+     tMax = std::max(tMax,getMax(i));
+  return tMax;    
 }
 
-  // }}}
-
-// ---------------------------------------------------------------------  
+#ifndef WITH_IPP_OPTIMIZATION
 template<class Type> Type 
-Img<Type>::getMin(int iChannel) const
-  // {{{ open
-{
-  FUNCTION_LOG("getMin(" << iChannel<< ")");
-  ICLASSERT_RETURN_VAL( iChannel < getChannels() ,0);
-  ICLASSERT_RETURN_VAL( getChannels() > 0 ,0);
-
-  if(iChannel < 0 ){
-    Type tMin = getMin(0);
-    for(int i=1;i<getChannels();i++){
-      tMin = std::min(tMin,getMin(i));
-    }
-    return tMin;    
-  }
-
-
-#ifdef WITH_IPP_OPTIMIZATION
-  if(m_eDepth == depth8u)
-    {
-      icl8u ucMin;
-      ippiMin_8u_C1R(asImg<icl8u>()->getROIData(iChannel),getLineStep(),getROISize(),&ucMin);
-      return static_cast<Type>(ucMin);
-    }
-  else
-    {
-      icl32f fMin;
-      ippiMin_32f_C1R(asImg<icl32f>()->getROIData(iChannel),getLineStep(),getROISize(),&fMin);
-      return static_cast<Type>(fMin);
-    }
-                     
+Img<Type>::getMax(int iChannel) const {
+   FUNCTION_LOG("iChannel: " << iChannel);
+   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
+   return std::max_element (getData(iChannel), getData(iChannel) + getDim());
+}
 #else
-  Type *ptData = getData(iChannel);
-  Type *ptDataEnd = ptData+getDim();
-  if(ptData == ptDataEnd)return 0;
-  Type tMin = *ptData++;
-  while(ptData != ptDataEnd)
-    {
-      tMin = std::min(tMin,*ptData++);
-    }
-  return tMin;
+template<> icl8u
+Img<icl8u>::getMax(int iChannel) const {
+   FUNCTION_LOG("iChannel: " << iChannel);
+   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
+   icl8u vMax;
+   ippiMax_8u_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax);
+   return vMax;
+}
+template<> icl32f
+Img<icl32f>::getMax(int iChannel) const {
+   FUNCTION_LOG("iChannel: " << iChannel);
+   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
+   icl32f vMax;
+   ippiMax_32f_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax);
+   return vMax;
+}
 #endif
+// }}}
+
+// {{{     getMin
+template<class Type> Type 
+Img<Type>::getMin() const
+{
+  FUNCTION_LOG("");
+
+  if (getChannels() == 0) return 0;
+  Type tMin = getMin(0);
+  for(int i=1;i<getChannels();i++)
+     tMin = std::min(tMin,getMin(i));
+  return tMin;    
 }
 
-  // }}}
-  
-// ---------------------------------------------------------------------  
-template<class Type> void 
-Img<Type>::getMinMax(Type &rtMin, Type &rtMax, int iChannel) const
-  // {{{ open
-{
-  FUNCTION_LOG("getMinMax(" << iChannel << ",int&, int&)");
-  ICLASSERT_RETURN( iChannel < getChannels() );
-  ICLASSERT_RETURN( getChannels() > 0 );
-
-  if(iChannel < 0 ){
-    Type tMin,tMax;
-    getMinMax(tMin,tMax,0);
-    for(int i=1;i<getChannels();i++){
-      Type tMinC,tMaxC;
-      getMinMax(tMinC,tMaxC,i);
-      tMin = std::min(tMin,tMinC);
-      tMax = std::max(tMax,tMaxC);
-    }
-    return;
-  }
-
-
-#ifdef WITH_IPP_OPTIMIZATION
-  if(m_eDepth == depth8u)
-    {
-      icl8u ucMin, ucMax;
-      ippiMinMax_8u_C1R(asImg<icl8u>()->getROIData(iChannel),getLineStep(),getROISize(),&ucMin, &ucMax);
-      rtMin = static_cast<Type>(ucMin);
-      rtMax = static_cast<Type>(ucMax);
-    }
-  else
-    {
-      icl32f fMin,fMax;
-      ippiMinMax_32f_C1R(asImg<icl32f>()->getROIData(iChannel),getLineStep(),getROISize(),&fMin, &fMax);
-      rtMin =  static_cast<Type>(fMin);
-      rtMax =  static_cast<Type>(fMax);
-    }
-                     
+#ifndef WITH_IPP_OPTIMIZATION
+template<class Type> Type 
+Img<Type>::getMin(int iChannel) const {
+   FUNCTION_LOG("iChannel: " << iChannel);
+   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
+   return std::min_element (getData(iChannel), getData(iChannel) + getDim());
+}
 #else
-  Type *ptData = getData(iChannel);
-  Type *ptDataEnd = ptData+getDim();
-  if(ptData == ptDataEnd){
-    rtMin = 0;
-    rtMax = 0;
-    return;
+template<> icl8u
+Img<icl8u>::getMin(int iChannel) const {
+   FUNCTION_LOG("iChannel: " << iChannel);
+   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
+   icl8u vMin;
+   ippiMin_8u_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin);
+   return vMin;
+}
+template<> icl32f
+Img<icl32f>::getMin(int iChannel) const {
+   FUNCTION_LOG("iChannel: " << iChannel);
+   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
+   icl32f vMin;
+   ippiMin_32f_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin);
+   return vMin;
+}
+#endif
+// }}}
+  
+// {{{     getMinMax
+template<class Type> void
+Img<Type>::getMinMax(Type &rtMin, Type &rtMax) const
+{
+  FUNCTION_LOG("");
+
+  if (getChannels() == 0) {
+     rtMin=rtMax=0;
+     return;
   }
-  rtMin = *ptData;
-  rtMax = *ptData++;
-  while(ptData != ptDataEnd)
-    {
+
+  Type tMin, tMax; getMinMax(rtMin, rtMax, 0);
+  for(int i=1;i<getChannels();i++) {
+     getMinMax(tMin, tMax, i);
+     rtMin = std::min(rtMin,tMin);
+     rtMax = std::max(rtMax,tMax);
+  }
+}
+
+#ifndef WITH_IPP_OPTIMIZATION
+template<class Type> void
+Img<Type>::getMinMax(Type &rtMin, Type &rtMax, int iChannel) const {
+   FUNCTION_LOG("iChannel: " << iChannel);
+   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
+
+   Type *ptData = getData(iChannel);
+   Type *ptDataEnd = ptData+getDim();
+   if (ptData == ptDataEnd){
+      rtMin = rtMax = 0;
+      return;
+   }
+   rtMin = rtMax = *ptData; ++ptData;
+   for (++ptData; ptData != ptDataEnd; ++ptData) {
       rtMin = std::min(rtMin,*ptData);
-      rtMax = std::max(rtMin,*ptData++);
-    }
-#endif
+      rtMax = std::max(rtMin,*ptData);
+   }
 }
-
+#else
+template<> void
+Img<icl8u>::getMinMax(icl8u &vMin, icl8u &vMax, int iChannel) const {
+   FUNCTION_LOG("iChannel: " << iChannel);
+   ICLASSERT_RETURN(0 <= iChannel && iChannel < getChannels());
+   ippiMinMax_8u_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin,&vMax);
+}
+template<> void
+Img<icl32f>::getMinMax(icl32f &vMin, icl32f &vMax, int iChannel) const {
+   FUNCTION_LOG("iChannel: " << iChannel);
+   ICLASSERT_RETURN(0 <= iChannel && iChannel < getChannels());
+   ippiMinMax_32f_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin,&vMax);
+}
+#endif
 // }}}
 
 // }}}
@@ -611,50 +595,85 @@ SmartPtr<Type> Img<Type>::createChannel(Type *ptDataToCopy) const
   return SmartPtr<Type>(ptNewData);
 }
 
-  // }}}
-
-// {{{  Basic image manipulation functions
-//--------------------------------------------------------------------------
-template<class Type> void
-Img<Type>::scaleRange(float fMin, float fMax, int iChannel)
-  // {{{ open
-
-{
-  FUNCTION_LOG("scaleRange(" << fMin << "," << fMax << "," << iChannel << ")");
-  Type tMin, tMax;
-  getMinMax(tMin,tMax,iChannel);
-  scaleRange(fMin,fMax,static_cast<float>(tMin),static_cast<float>(tMax),iChannel);
+template<class Type>
+Type Img<Type>::operator()(float fX, float fY, int iChannel, scalemode eScaleMode) const {
+   switch(eScaleMode) {
+     case 0: return Cast<float, Type>::cast (subPixelNN (fX, fY, iChannel));
+     case 1: return Cast<float, Type>::cast (subPixelLIN (fX, fY, iChannel));
+     default: 
+        ERROR_LOG ("interpolation method not yet implemented!");
+        return Cast<float, Type>::cast (subPixelLIN (fX, fY, iChannel));
+   }
 }
 
 // }}}
 
-template <class Type> void 
-Img<Type>::scaleRange(float fNewMin,float fNewMax,float fMin,float fMax, int iChannel)
-  // {{{ open
-{
-  FUNCTION_LOG("scaleRange(" << fNewMin << "," << fNewMax << ","<< fMin << "," << fMax << "," << iChannel << ")");
-  
-  float fScale  = (fNewMax - fNewMin) / (fMax - fMin);
-  float fShift  = (fMax * fNewMin - fMin * fNewMax) / (fMax - fMin);
-  icl32f fPixel;
-  int iChannelEnd = iChannel < 0 ? getChannels() : iChannel+1;
-  for(int c = (iChannel<0) ? 0 : iChannel; c < iChannelEnd ;c++)
-    {
-      for(iterator p=getROIIterator(c); p.inRegion(); ++p)
-        {
-          fPixel = static_cast<icl32f>(*p);
-          fPixel=fPixel*fScale+fShift;
-          if(fPixel<=fNewMin)
-            fPixel=fNewMin;
-          else if(fPixel>=fNewMax)
-            fPixel=fNewMax;
-          
-          *p = static_cast<Type>(fPixel);
-          
-        }
-    }
- 
+// {{{  Basic image manipulation functions
+
+// {{{   scaleRange wrappers
+
+template<class Type> void
+Img<Type>::scaleRange(float fNewMin, float fNewMax) {
+   Type tMin, tMax;
+   getMinMax(tMin,tMax);
+   scaleRange(fNewMin,fNewMax, tMin,tMax);
 }
+template<class Type> void
+Img<Type>::scaleRange(float fNewMin,float fNewMax, float fMin,float fMax) {
+   for (int c=0; c < getChannels(); ++c)
+      scaleRange(fNewMin,fNewMax, fMin,fMax, c);
+}
+
+template<class Type> void
+Img<Type>::scaleRange(float fNewMin, float fNewMax, int iChannel) {
+   FUNCTION_LOG("");
+   ICLASSERT_RETURN(iChannel >= 0 && iChannel < getChannels());
+
+   Type tMin, tMax;
+   getMinMax(tMin,tMax,iChannel);
+   scaleRange(fNewMin,fNewMax, tMin,tMax, iChannel);
+}
+
+// }}}
+
+// {{{   scaleRange main methods
+
+#ifndef WITH_IPP_OPTIMIZATION
+template <class Type> void 
+Img<Type>::scaleRange(float fNewMin, float fNewMax,
+                      float fMin, float fMax, int iChannel) {
+   float fScale  = (fNewMax - fNewMin) / (fMax - fMin);
+   float fShift  = (fMax * fNewMin - fMin * fNewMax) / (fMax - fMin);
+
+   for(iterator p=getROIIterator(iChannel); p.inRegion(); ++p) {
+      fPixel = fShift + (float)(*p) * fScale;
+      if (fPixel <= fNewMin) fPixel=fNewMin;
+      else if(fPixel >= fNewMax) fPixel=fNewMax;
+      
+      *p = Cast<float, Type> (fPixel);
+   }
+}
+#else
+template<> void 
+Img<icl8u>::scaleRange(float fNewMin, float fNewMax,
+                       float fMin, float fMax, int iChannel) {
+   icl8u tFac   = Cast<float, icl8u>::cast(fNewMax - fNewMin);
+   icl8u tNorm  = Cast<float, icl8u>::cast(fMax - fMin);
+   icl8u tShift = Cast<float, icl8u>::cast((fMax * fNewMin - fMin * fNewMax) / (fNewMax - fNewMin));
+   
+   ippiMulC_8u_C1IRSfs (tFac, getROIData(iChannel), getLineStep(), getROISize(), tNorm);
+   ippiAddC_8u_C1IRSfs (tShift, getROIData(iChannel), getLineStep(), getROISize(), 1);
+}
+template <> void 
+Img<icl32f>::scaleRange(float fNewMin, float fNewMax,
+                        float fMin, float fMax, int iChannel) {
+   icl32f tFac   = (fNewMax - fNewMin) / (fMax - fMin);
+   icl32f tShift = (fMax * fNewMin - fMin * fNewMax) / (fMax - fMin);
+   
+   ippiMulC_32f_C1IR (tFac, getROIData(iChannel), getLineStep(), getROISize());
+   ippiAddC_32f_C1IR (tShift, getROIData(iChannel), getLineStep(), getROISize());
+}
+#endif
 
 // }}}
 
@@ -677,43 +696,8 @@ void Img<Type>::clear(int iIndex, Type tValue)
 
 // {{{  Global functions
 
-// {{{ --->scaleChannelROI
+// {{{    scaleChannelROI
 
-// utility function used internally for type save access to image
-// pixels (nearest neighbour interpolation) 
-template<class S,class D>
-inline D _elemNN(S* ps, int x, int y, float fSX, float fSY, int w)
-{
-  return Cast<S,D>::cast(ps[(int)((round(fSX*x)) + round(fSY*y*w))]);
-}
-
-// utility function used internally for type save access to image
-// pixels (linear interpolation) 
-template<class S,class D>
-inline D _elemLIN(S* ps, int x, int y, float fSX, float fSY, int w)
-{
-  int xll = (int)floor(fSX*x);
-  int yll = (int)floor(fSY*y);
-
-  float fT=fSX*x-xll;
-  float fU=fSY*y-yll;
-
-  float a = (float)ps[xll+xll*w];
-  float b = (float)ps[xll+(xll+1)*w];
-  float c = (float)ps[(xll+1)+(xll+1)*w];
-  float d = (float)ps[(xll+1)+xll*w];
-  
-  return Cast<float,D>::cast((1-fT)*(1-fU)*a+ fT*(1-fU)*b + fT*fU*c + (1-fT)*fU*d);
-}
-
-// utility function used internally for type save access to image
-// pixels (region average interpolation) 
-template<class S, class D>
-inline D _elemRA(S* ps, int x, int y, float fSX, float fSY, int w)
-{
-  ERROR_LOG("region average interpolation is not yet implemented!");
-  return (D)0;
-}
 
 // scale channel ROI function for abitrary image scaling operations
 template<class S,class D> 
@@ -724,27 +708,28 @@ void scaleChannelROI(const Img<S> *src, int srcC, const Point &srcOffs, const Si
   FUNCTION_LOG("");
   ICLASSERT_RETURN( src && dst );
   
-  int iSrcW = src->getSize().width;
   float fSX = ((float)srcSize.width-1)/(float)(dstSize.width); 
   float fSY = ((float)srcSize.height-1)/(float)(dstSize.height);
-
   ImgIterator<D> itDst(dst->getROIData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-  S* ps = src->getROIData(srcC,srcOffs);
 
-  switch(eScaleMode) 
-    {
-      case interpolateNN:
-        for(; itDst.inRegion();++itDst) *itDst = _elemNN<S,D>(ps,itDst.y(),itDst.y(),fSX,fSY,iSrcW);
-        break;
-      case interpolateLIN:
-        for(; itDst.inRegion();++itDst) *itDst = _elemLIN<S,D>(ps,itDst.y(),itDst.y(),fSX,fSY,iSrcW);        
-        break;
-      case interpolateRA:
-        for(; itDst.inRegion();++itDst) *itDst = _elemRA<S,D>(ps,itDst.y(),itDst.y(),fSX,fSY,iSrcW);        
-        break;
-      default:
-        ERROR_LOG("unknown interpoation method!");
-    }
+  switch(eScaleMode) {
+    case interpolateNN:
+       for(; itDst.inRegion(); ++itDst) 
+          *itDst = Cast<float, D>::cast (src->subPixelNN (fSX * (float)itDst.x(), 
+                                                          fSY * (float)itDst.y(), srcC));
+       break;
+    case interpolateLIN:
+       for(; itDst.inRegion(); ++itDst) 
+          *itDst = Cast<float, D>::cast (src->subPixelLIN (fSX * (float)itDst.x(), 
+                                                           fSY * (float)itDst.y(), srcC));
+       break;
+    default:
+       ERROR_LOG("unknown interpoation method!");
+       for(; itDst.inRegion(); ++itDst) 
+          *itDst = Cast<float, D>::cast (src->subPixelNN (fSX * (float)itDst.x(), 
+                                                          fSY * (float)itDst.y(), srcC));
+       break;
+  }
 }
 
 // explicit template instantiation
@@ -767,6 +752,7 @@ template void
 scaleChannelROI<icl32f,icl8u>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                               Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                               scalemode eScaleMode);
+
 
 // }}}
 

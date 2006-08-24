@@ -306,7 +306,7 @@ namespace icl {
     axisVert  /**> vertical image axis */
   };
 
-/* {{{ Global classes*/
+/* {{{ Global classes */
   
   /// Casting operator
   /** Use Cast<srcT, dstT>::cast (value) to cast values safely from

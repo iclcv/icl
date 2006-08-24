@@ -336,11 +336,13 @@ namespace icl {
       
       /// Scale the channel min/ max range to the new range tMin, tMax.
       /** @see Img*/
-      virtual void scaleRange(float fMin=0.0, float fMax=255.0, int iChannel = -1)=0;
+      virtual void scaleRange(float fNewMin=0.0, float fNewMax=255.0)=0;
+      virtual void scaleRange(float fNewMin, float fNewMax, int iChannel)=0;
 
       /// Scales pixel values from given min/max values to new min/max values.
       /** @see Img */
-      virtual void scaleRange(float tNewMin, float tNewMax, float tMin, float tMax, int iChannel = -1)=0;
+      virtual void scaleRange(float tNewMin, float tNewMax, float tMin, float tMax)=0;
+      virtual void scaleRange(float tNewMin, float tNewMax, float tMin, float tMax, int iChannel)=0;
 
       //@} 
       /* }}} */

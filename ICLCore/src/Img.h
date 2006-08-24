@@ -32,9 +32,11 @@ class Img : public ImgI
   
   // @{ @name data
   /* {{{ open */
+
   /// internally used storage for the image channels
   vector<SmartPtr<Type> > m_vecChannels;
   // @}
+
   /* }}} */
 
   // @{ @name auxillary functions
@@ -189,6 +191,37 @@ class Img : public ImgI
       return getData(iChannel)[iX+m_oSize.width*iY];
     }
 
+  /// sub-pixel access using nearest neighbour interpolation
+  float subPixelNN(float fX, float fY, int iChannel) const {
+     return (*this)((int)round(fX), (int)round(fY), iChannel);
+  }
+  /// sub-pixel access using linear interpolation
+  float subPixelLIN(float fX, float fY, int iChannel) const {
+     float fX0 = fX - floor(fX), fX1 = 1.0 - fX0;
+     float fY0 = fY - floor(fY), fY1 = 1.0 - fY0;
+     int xll = (int) floor(fX);
+     int yll = (int) floor(fY);
+   
+     Type* pLL = getData(iChannel) + xll + yll * m_oSize.width;
+     float a = *pLL;        //  a b
+     float b = *(++pLL);    //  c d
+     pLL += m_oSize.width;
+     float d = *pLL;
+     float c = *(--pLL);
+     
+//     return fX1*fY1*a + fX0*fY1*b + fX0*fY0*d + fX1*fY0*c;
+     return fX1 * (fY1*a + fY0*c) + fX0 * (fY1*b + fY0*d);
+  }
+  
+  /// sub-pixel access using region average interpolation
+  float subPixelRA(float fX, float fY, int iChannel) const {
+     ERROR_LOG ("region average interpolation is not yet implemented!");
+     return subPixelLIN (fX, fY, iChannel);
+  }
+
+  /// sub-pixel access operator, uses given interpolation method
+  Type operator()(float fX, float fY, int iChannel, scalemode eMode) const;
+  
   //@}
 
   /* }}} */
@@ -261,10 +294,6 @@ class Img : public ImgI
   virtual ImgI *deepCopyROI(ImgI *poDst = NULL) const;
 
   
-
-  template <class T>
-  void deepCopyROI(Img<T> *poDst) const;
-  
   /// scales the image data in the image ROI into the destination images ROI (IPP-OPTIMIZED)
   /** This function copies ROI data from one image into the ROI of another one. If the source
       and destination ROIs have different sizes the moved data is scaled.
@@ -303,6 +332,7 @@ class Img : public ImgI
       @return poDst
   */
   virtual ImgI *flippedCopyROI(ImgI *poDst = NULL, axis eAxis = axisVert) const; 
+
   /* }}} */
   
   //@{ @name organization and channel management                               
@@ -403,26 +433,30 @@ class Img : public ImgI
   //@{ @name getter functions                                                  
   /* {{{ open */
 
-  /// Returns max pixel value of channel iChannel (IPP-OPTIMIZED)
-  /** @param iChannel Index of channel (if -1 then the maximum 
-                      of all channels is calculated)
+  /// Returns max pixel value of channel iChannel within ROI
+  /** @param iChannel Index of channel
   **/
-  Type getMax(int iChannel=-1) const;
+  Type getMax(int iChannel) const;
   
-  /// Returns min pixel value of channel iChannel (IPP-OPTIMIZED)
-  /** @param iChannel Index of channel (if -1 then the minimum 
-                      of all channels is calculated)
+  /// Returns min pixel value of channel iChannel within ROI
+  /** @param iChannel Index of channel
   **/
-  Type getMin(int iChannel=-1) const;
+  Type getMin(int iChannel) const;
   
-  /// Returns min and max pixel value of channel iChannel (IPP-OPTIMIZED)
+  /// Returns min and max pixel values of channel iChannel within ROI
   /** @param rtMin reference to store the min value 
       @param rtMax reference to store the max value
-      @param iChannel Index of channel (if -1 then the maximum and 
-                      then minium of all channels is calculated)
-     
+      @param iChannel Index of channel
   **/
-  void getMinMax(Type &rtMin, Type &rtMax, int iChannel=-1) const;
+  void getMinMax(Type &rtMin, Type &rtMax, int iChannel) const;
+
+  /// return maximal pixel value over all channels (restricted to ROI)
+  Type getMin() const;
+  /// return minimal pixel value over all channels (restricted to ROI)
+  Type getMax() const;
+  /// return minimal and maximal pixel values over all channels (restricted to ROI)
+  void getMinMax(Type &rtMin, Type &rtMax) const;
+
 
   /// Returns the width of an image line in bytes
   virtual int getLineStep() const{
@@ -534,12 +568,12 @@ class Img : public ImgI
   void clear(int iChannel = -1, Type tValue = 0);
   
   /// Scale the channel min/ max range to the new range tMin, tMax.
-  /** @param fMin new mininum value for the channel
-      @param fMax new maximum value for the channel
+  /** @param tNewMin new mininum value for the channel
+      @param tNewMax new maximum value for the channel
       @param iChannel channel index (if set to -1, then operation is 
                       performed on all channels)
   **/
-  virtual void scaleRange(float fMin=0.0, float fMax=255.0, int iChannel = -1); 
+  virtual void scaleRange(float fNewMin, float fNewMax, int iChannel);
 
   /// Scales pixel values from given min/max values to new min/max values.
   /** Values exceeding the given range are set to the new min/max values.
@@ -552,8 +586,15 @@ class Img : public ImgI
       @param iChannel channel index (if set to -1, then operation is 
                       performed on all channels)
   **/
-  virtual void scaleRange(float tNewMin, float tNewMax, float tMin, float tMax, int iChannel=-1);
+  virtual void scaleRange(float fNewMin, float fNewMax,
+                          float fNewMin, float fNewMax, int iChannel);
 
+  /// Scale pixel values uniformly on all channels
+  virtual void scaleRange(float fMin=0.0, float fMax=255.0);
+  /// Scale pixel values uniformly on all channels
+  virtual void scaleRange(float fNewMin, float fNewMax, 
+                          float fMin, float fMax);
+  
 
   //@}
 
@@ -615,6 +656,7 @@ class Img : public ImgI
   /* }}} */
                                        
 };// class
+
   
 /* {{{ global functions */
 
@@ -811,8 +853,6 @@ scaleChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &sr
   }
 #endif
 /* }}} */
-
-
 
 
 /// fallback implementation for horizontal image flipping (slow)
