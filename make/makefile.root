@@ -1,5 +1,6 @@
+# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
 #
-#   makefile
+#   makefile.root: recursive descend
 #
 
 # Don't change anything below this line!

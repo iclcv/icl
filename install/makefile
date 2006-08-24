@@ -1,3 +1,4 @@
+# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
 #
 #   makefile
 #

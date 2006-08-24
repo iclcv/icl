@@ -1,5 +1,6 @@
+# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
 #
-#   makefile
+#   makefile.src: build objects ../obj/*.o from sources
 #
 
 # Don't change anything below this line!
