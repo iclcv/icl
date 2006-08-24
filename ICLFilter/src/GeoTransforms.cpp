@@ -40,19 +40,26 @@ namespace icl {
    }
 
    void Mirror::apply (ImgI *poSrc, ImgI **ppoDst) {
+      Point oROIOffset;
       if (bOnlyROI) {
          oSrcOffset = poSrc->getROIOffset();
-         oDstOffset = Point::zero;
+         oROIOffset = oDstOffset = Point::zero;
          oSize = poSrc->getROISize();
       } else {
          oDstOffset = oSrcOffset = Point::zero;
          oSize = poSrc->getSize();
+
+         oROIOffset = poSrc->getROIOffset();
+         if (eAxis == axisHorizontal || eAxis == axisBoth) 
+            oROIOffset.y = oSize.height - oROIOffset.y - poSrc->getROISize().height;
+         if (eAxis == axisVertical || eAxis == axisBoth) 
+            oROIOffset.x = oSize.width - oROIOffset.x - poSrc->getROISize().width;
       }
 
       ensureCompatible (ppoDst, poSrc->getDepth(), oSize, 
                         poSrc->getFormat(), poSrc->getChannels(),
-                        Rect (bOnlyROI ? Point::zero : poSrc->getROIOffset(), oSize));
-
+                        Rect (oROIOffset, poSrc->getROISize()));
+      
       (this->*(aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);
    }
 
@@ -64,10 +71,10 @@ namespace icl {
    template<>
    void Affine::affine<icl8u> (ImgI *poSrc, ImgI *poDst) {
       for(int c=0; c < poSrc->getChannels(); c++) {
-         ippiWarpAffine_8u_C1R (poSrc->asImg<icl8u>()->getROIData (c),
+         ippiWarpAffine_8u_C1R (poSrc->asImg<icl8u>()->getData (c),
                                 poSrc->getSize(), poSrc->getLineStep(), 
-//                                Rect (Point::zero, poSrc->getSize()),
-                                poSrc->getROI(),
+//                                poSrc->getROI(),
+                                Rect (Point::zero, poSrc->getSize()),
                                 poDst->asImg<icl8u>()->getData (c), 
                                 poDst->getLineStep(), poDst->getROI(), 
                                 T, eInterpolate);
@@ -78,6 +85,7 @@ namespace icl {
       for(int c=0; c < poSrc->getChannels(); c++) {
          ippiWarpAffine_32f_C1R (poSrc->asImg<icl32f>()->getData (c),
                                  poSrc->getSize(), poSrc->getLineStep(), 
+//                                 poSrc->getROI(),
                                  Rect (Point::zero, poSrc->getSize()),
                                  poDst->asImg<icl32f>()->getData (c), 
                                  poDst->getLineStep(), poDst->getROI(), 
@@ -132,10 +140,10 @@ namespace icl {
                                  double& xShift, double& yShift) {
       double aMin[2], aMax[2], aCur[2];
       // compute corners of the ROI rectangle
-      double aRect[4][2] = {roi.x, roi.y,
-                            roi.x + roi.width, roi.y, 
-                            roi.x + roi.width, roi.y + roi.height,
-                            roi.x, roi.y + roi.height};
+      double aRect[4][2] = {{roi.x, roi.y},
+                            {roi.x + roi.width, roi.y},
+                            {roi.x + roi.width, roi.y + roi.height},
+                            {roi.x, roi.y + roi.height}};
 
       // apply transform to each corner off the ROI rectangle
       // shift is smallest x and y coordinate of this transform
@@ -156,97 +164,15 @@ namespace icl {
       double xShift, yShift;
       Size   oSize;
 
-      double quad[4][2];
-      ippiGetAffineQuad(poSrc->getROI(), quad, T);
-      printf ("\n\n%f %f     %f %f\n", quad[0][0],quad[0][1], quad[1][0],quad[1][1]);
-      printf ("%f %f     %f %f\n", quad[2][0],quad[2][1], quad[3][0],quad[3][1]);
-      ippiGetAffineBound(poSrc->getROI(), quad, T);
-      printf ("bounds:\n %f %f  -  %f %f\n", quad[0][0],quad[0][1],quad[1][0],quad[1][1]);
-      printf ("%d %d  -  %d %d\n", (*ppoDst)->getROIOffset().x, (*ppoDst)->getROIOffset().y,
-              (*ppoDst)->getROISize().width, (*ppoDst)->getROISize().height);
-
       getShiftAndSize (poSrc->getROI(), oSize, xShift, yShift);
       translate (-xShift, -yShift);
-      printf ("shift: %f %f\n", xShift, yShift);
       ensureCompatible (ppoDst, poSrc->getDepth(), oSize, 
                         poSrc->getFormat(), poSrc->getChannels());
-
-      ippiGetAffineQuad(poSrc->getROI(), quad, T);
-      printf ("\n%f %f     %f %f\n", quad[0][0],quad[0][1], quad[1][0],quad[1][1]);
-      printf ("%f %f     %f %f\n", quad[2][0],quad[2][1], quad[3][0],quad[3][1]);
-      ippiGetAffineBound(poSrc->getROI(), quad, T);
-      printf ("bounds:\n%f %f  -  %f %f\n", quad[0][0],quad[0][1],quad[1][0],quad[1][1]);
-      printf ("%d %d  -  %d %d\n", (*ppoDst)->getROIOffset().x, (*ppoDst)->getROIOffset().y,
-              (*ppoDst)->getROISize().width, (*ppoDst)->getROISize().height);
 
       (this->*(aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);
       translate (xShift, yShift);
    }
 
 // }}}
-#if 0
-// {{{ Rotate
 
-#ifdef WITH_IPP_OPTIMIZATION 
-   template<>
-   void Rotate::rotate<icl8u> (ImgI *poSrc, ImgI *poDst) {
-      for(int c=0; c < poSrc->getChannels(); c++) {
-         ippiRotate_8u_C1R (poSrc->asImg<icl8u>()->getROIData (c),
-                            poSrc->getSize(), poSrc->getLineStep(), poSrc->getROI(),
-                            poDst->asImg<icl8u>()->getData (c), 
-                            poDst->getLineStep(), poDst->getROI(), dAngle, xShift, yShift, 
-                            eInterpolate);
-      }
-   }
-   template<>
-   void Rotate::rotate<icl32f> (ImgI *poSrc, ImgI *poDst) {
-      for(int c=0; c < poSrc->getChannels(); c++) {
-         ippiRotate_32f_C1R (poSrc->asImg<icl32f>()->getROIData (c),
-                             poSrc->getSize(), poSrc->getLineStep(), poSrc->getROI(),
-                             poDst->asImg<icl32f>()->getData (c), 
-                             poDst->getLineStep(), poDst->getROI(), dAngle, xShift, yShift, 
-                             eInterpolate);
-      }
-   }
-#else
-#warning "fallback for Rotate::rotate not yet implemented"
-   template<typename T>
-   void Rotate::rotate (ImgI *poSrc, ImgI *poDst) {
-      ERROR_LOG ("not yet implemented");
-   }
-#endif
-
-   Rotate::Rotate (double dAngle, scalemode eInterpolate) :
-      dAngle (dAngle), eInterpolate (eInterpolate)
-   {
-      this->aMethods[depth8u] = &Rotate::rotate<icl8u>;
-      this->aMethods[depth32f] = &Rotate::rotate<icl32f>;
-   }
-
-   void Rotate::apply (ImgI *poSrc, ImgI **ppoDst) {
-      double bounds[2][2];
-#ifdef WITH_IPP_OPTIMIZATION
-      // center of rotation is center of ROI
-      xShift = 0.5 * (double) poSrc->getROISize().width;
-      xShift += poSrc->getROIOffset().x;
-      yShift = 0.5 * (double) poSrc->getROISize().height;
-      yShift += poSrc->getROIOffset().y;
-
-      // compute necessary shift
-      ippiGetRotateShift (xShift, yShift, dAngle, &xShift, &yShift);
-      // compute bounding box for destination image
-      ippiGetRotateBound (poSrc->getROI(), bounds, dAngle, xShift, yShift);
-#else
-#warning "fallback for Rotate:apply not yet implemented"
-#endif
-      Size oSize ((int) ceil(bounds[1][0] - bounds[0][0]), 
-                  (int) ceil(bounds[1][1] - bounds[0][1]));
-      ensureCompatible (ppoDst, poSrc->getDepth(), oSize, 
-                        poSrc->getFormat(), poSrc->getChannels());
-
-      (this->*(aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);
-   }
-
-// }}}
-#endif
 } // namespace icl

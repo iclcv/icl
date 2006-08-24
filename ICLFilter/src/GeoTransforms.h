@@ -89,35 +89,7 @@ namespace icl {
    };
 
 /* }}} */
-#if 0
-/* {{{ Rotate */
 
-   /// Class to rotate images
-   class Rotate : public GeoTransform {
-   public:
-      /// Constructor
-      Rotate (double dAngle, scalemode eInterpolate=interpolateLIN);
-
-      /// change rotation angle
-      void setAngle (double dAngle) {this->dAngle = dAngle;}
-
-      /// Applies the rotate transform to the images
-      virtual void apply (ImgI *poSrc, ImgI **ppoDst);
-
-   protected:
-      /// array of class methods used to transform depth8u and depth32f images
-      void (Rotate::*aMethods[2])(ImgI *poSrc, ImgI *poDst); 
-
-      template<typename T>
-      void rotate (ImgI *poSrc, ImgI *poDst);
-
-   private:
-      double    dAngle, xShift, yShift;
-      scalemode eInterpolate;
-   };
-
-/* }}} */
-#endif
 /* {{{ Rotate */
 
    /// Class to rotate images

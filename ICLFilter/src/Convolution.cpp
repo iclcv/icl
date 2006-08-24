@@ -416,15 +416,15 @@ namespace icl{
   // array of image- and kernel-type selective generic convolution methods
   void (Convolution::*Convolution::aGenericConvs[2][2])(ImgI *poSrc, ImgI *poDst) = {
 #ifdef WITH_IPP_OPTIMIZATION 
-     &Convolution::ippGenericConv<icl8u,int>,    // 8u - 8u
-     &Convolution::ippGenericConv<icl8u,float>,  // 8u - 32f
-     0,                                          // 32f - 8u
-     &Convolution::ippGenericConv<icl32f,float>  // 32f - 32f
+     {&Convolution::ippGenericConv<icl8u,int>,    // 8u - 8u
+      &Convolution::ippGenericConv<icl8u,float>},  // 8u - 32f
+     {0,                                          // 32f - 8u
+      &Convolution::ippGenericConv<icl32f,float>}  // 32f - 32f
 #else
-     &Convolution::cGenericConv<icl8u,int>,    // 8u - 8u
-     &Convolution::cGenericConv<icl8u,float>,  // 8u - 32f
-     0,                                        // 32f - 8u
-     &Convolution::cGenericConv<icl32f,float>  // 32f - 32f
+     {&Convolution::cGenericConv<icl8u,int>,    // 8u - 8u
+      &Convolution::cGenericConv<icl8u,float>},  // 8u - 32f
+     {0,                                        // 32f - 8u
+      &Convolution::cGenericConv<icl32f,float>}  // 32f - 32f
 #endif     
   };
 
