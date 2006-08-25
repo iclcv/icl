@@ -20,7 +20,6 @@ int main()
   catch (ICLException& e)
   {
     e.report();
-    exit(1);
   }
   
   //---- Write data to file ----

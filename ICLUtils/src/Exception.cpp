@@ -21,5 +21,8 @@ namespace icl {
     
     cout << "ICL Exception: " << m_sMessage << endl;
   }
-  
+
+  const char* ICLException::what() const throw() {
+    return m_sMessage.c_str();
+  }
 } // namespace icl

@@ -26,7 +26,7 @@ namespace icl {
   public:
     ICLException( string msg );
     virtual ~ICLException() throw() {};
-    
+    virtual const char* what() const throw();
     void report();
   };
  
