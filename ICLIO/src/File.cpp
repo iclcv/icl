@@ -194,6 +194,7 @@ namespace icl{
   //--------------------------------------------------------------------------
   void File::readFromPGM(ImgI* poDst, ifstream &streamInputImage) {     
     // {{{ open
+
     FUNCTION_LOG("(ICLBase*)");
     
     //---- Variable definition ----
@@ -206,7 +207,7 @@ namespace icl{
                             iDim*getSizeOf(poDst->getDepth()));
     }
   }
-  
+
     // }}}
 
   //--------------------------------------------------------------------------

@@ -180,6 +180,7 @@ int                     usb_image_widths[4];
 int                     usb_image_heights[4];
 // }}}
 // {{{ usb_grabber_funct
+
 void usb_grabber_funct(void *data ){
   int device=*(int*)data;
   int use_frame=0;
@@ -281,17 +282,70 @@ void save_setparams(int device){
 }
 // }}}
 
-
 PWCGrabber::PWCGrabber(const Size &s,
                        float fFps,
                        int iDevice):
   iWidth(s.width),iHeight(s.height),iDevice(iDevice),fFps(fFps),
   poRGB8Image(new Img8u(s,formatRGB)){
   
+  init();
+}
+
+PWCGrabber::~PWCGrabber(){
+  delete poRGB8Image;
+  
+  usbvflg_opencount[iDevice]--;
+  if (usbvflg_verbosity>1)
+    fprintf(stderr,"destructor leaving %d instances for /dev/video%d\n",
+            usbvflg_opencount[iDevice],iDevice);
+  
+  // ---- deleting last instance of grabber ----
+  if (usbvflg_opencount[iDevice] == 0) { 
+    if (pthread_cancel(usb_grabber_thread[iDevice])<0) { /* kill thread */
+      printf("Error: Cancel pthread: %s\n",strerror(errno));
+    }
+    
+    if (pthread_join(usb_grabber_thread[iDevice],NULL)<0) {  /* wait */
+      printf("Error: Cancel pthread: %s\n",strerror(errno));
+    }
+  
+    if (pthread_mutex_destroy(&usb_frame_mutex[iDevice])<0) {
+      printf("Error: Mutex destroy frame: %s\n",strerror(errno));
+    }
+    
+    if (pthread_mutex_destroy(&usb_semph_mutex[iDevice])<0) {
+      printf("Error: Mutex destroy semph: %s\n",strerror(errno));
+    }
+    
+    if (sem_destroy(&usb_new_pictures[iDevice])<0) {
+      printf("Error: Sem destroy: %s\n",strerror(errno));
+    }
+    
+    if (usbvflg_verbosity) {
+      printf("thread stuff destroyed\n");
+    }
+
+    if (usbvflg_fd[iDevice]>=0) {  /* close */
+      close(usbvflg_fd[iDevice]);          
+      if (usbvflg_verbosity) {
+        printf("closing /dev/video%d\n",iDevice);
+      }
+     
+      if (usbvflg_buf[iDevice]) { /* munmap */
+        munmap(usbvflg_buf[iDevice],usbvflg_vmbuf[iDevice].size);
+        
+        if (usbvflg_verbosity)
+          printf("unmapping memory for /dev/video%d\n",iDevice);
+      }
+    }
+  }
+}
+
+void PWCGrabber::init() {
+  // {{{ open
+
   usb_image_widths[iDevice]=iWidth;
   usb_image_heights[iDevice]=iHeight;
-  
-   // {{{ PWC - Init
 
   static char *sollname="Philips 740 webcam";
   struct timeval zeit;
@@ -314,7 +368,7 @@ PWCGrabber::PWCGrabber(const Size &s,
 
      usbvflg_maxwidth[iDevice]=vcap.maxwidth;
 
-     PWC_DEBUG(strcmp(vcap.name,sollname),"Wrong hareware name (need something like \"/dev/video0)\"");
+     PWC_DEBUG(strcmp(vcap.name,sollname),"Wrong hardware name (need something like \"/dev/video0)\"");
 
      PWC_DEBUG_CALL(ioctl(usbvflg_fd[iDevice], VIDIOCGWIN, &vwin),"error getting video-window");
 
@@ -371,78 +425,79 @@ PWCGrabber::PWCGrabber(const Size &s,
    //width=vwin.width; 
    //height=vwin.height;
    usbvflg_opencount[iDevice]++;
+
    // }}}
 }
 
-PWCGrabber::~PWCGrabber(){
-  delete poRGB8Image;
-  
-  // delete pwc ...
-}
-
-void PWCGrabber::grab(ImgI *poOutput){
+ImgI* PWCGrabber::grab(ImgI *poOutput){
  
   pthread_mutex_lock(&usb_semph_mutex[iDevice]);
   sem_wait(&usb_new_pictures[iDevice]); 
   pthread_mutex_unlock(&usb_semph_mutex[iDevice]);
   
-  
   pthread_mutex_lock(&usb_frame_mutex[iDevice]);
   int use_frame=usbvflg_useframe[iDevice];
 
- 
   icl8u *pucPwcData = usbvflg_buf[iDevice] + usbvflg_vmbuf[iDevice].offsets[use_frame];
   
   icl8u *pY = pucPwcData;
   icl8u *pU = pY+iWidth*iHeight;
   icl8u *pV = pY+(int)(1.25*iWidth*iHeight);
   
-  if(poOutput->getFormat() == formatRGB &&
-     poOutput->getDepth() == depth8u &&
-     poOutput->getSize().width == iWidth &&
-     poOutput->getSize().height == iHeight ){
-    
-    convertYUV420ToRGB8(poOutput->asImg<icl8u>(),pY,Size(iWidth,iHeight));
-    
-  }else if(poOutput->getFormat() == formatYUV){ // not yet tested
-    
-    Img8u oTmpSrc_Y(Size(iWidth,iHeight),formatMatrix,1,&pY);
-    Img8u oTmpSrc_U(Size(iWidth/2,iHeight/2),formatMatrix,1,&pU);
-    Img8u oTmpSrc_V(Size(iWidth/2,iHeight/2),formatMatrix,1,&pV);
-    
-    if(poOutput->getDepth()==depth8u){
-      icl8u *pucTmpY = poOutput->asImg<icl8u>()->getData(0);
-      icl8u *pucTmpU = poOutput->asImg<icl8u>()->getData(1);
-      icl8u *pucTmpV = poOutput->asImg<icl8u>()->getData(2);
+  if(poOutput) {
+    if(poOutput->getFormat() == formatRGB &&
+       poOutput->getDepth() == depth8u &&
+       poOutput->getSize().width == iWidth &&
+       poOutput->getSize().height == iHeight ){
       
-      Img8u oTmpDst_Y(poOutput->getSize(),formatMatrix,1,&pucTmpY);
-      Img8u oTmpDst_U(poOutput->getSize(),formatMatrix,1,&pucTmpU);
-      Img8u oTmpDst_V(poOutput->getSize(),formatMatrix,1,&pucTmpV);
+      convertYUV420ToRGB8(poOutput->asImg<icl8u>(),pY,Size(iWidth,iHeight));
       
-      oTmpSrc_Y.scaledCopy(&oTmpDst_Y);
-      oTmpSrc_U.scaledCopy(&oTmpDst_U);
-      oTmpSrc_V.scaledCopy(&oTmpDst_V);
-
+    }else if(poOutput->getFormat() == formatYUV){ // not yet tested
+      
+      Img8u oTmpSrc_Y(Size(iWidth,iHeight),formatMatrix,1,&pY);
+      Img8u oTmpSrc_U(Size(iWidth/2,iHeight/2),formatMatrix,1,&pU);
+      Img8u oTmpSrc_V(Size(iWidth/2,iHeight/2),formatMatrix,1,&pV);
+      
+      if(poOutput->getDepth()==depth8u){
+        icl8u *pucTmpY = poOutput->asImg<icl8u>()->getData(0);
+        icl8u *pucTmpU = poOutput->asImg<icl8u>()->getData(1);
+        icl8u *pucTmpV = poOutput->asImg<icl8u>()->getData(2);
+        
+        Img8u oTmpDst_Y(poOutput->getSize(),formatMatrix,1,&pucTmpY);
+        Img8u oTmpDst_U(poOutput->getSize(),formatMatrix,1,&pucTmpU);
+        Img8u oTmpDst_V(poOutput->getSize(),formatMatrix,1,&pucTmpV);
+        
+        oTmpSrc_Y.scaledCopy(&oTmpDst_Y);
+        oTmpSrc_U.scaledCopy(&oTmpDst_U);
+        oTmpSrc_V.scaledCopy(&oTmpDst_V);
+        
+      }else{
+        icl32f *pfTmpY = poOutput->asImg<icl32f>()->getData(0);
+        icl32f *pfTmpU = poOutput->asImg<icl32f>()->getData(1);
+        icl32f *pfTmpV = poOutput->asImg<icl32f>()->getData(2);
+        
+        Img32f oTmpDst_Y(poOutput->getSize(),formatMatrix,1,&pfTmpY);
+        Img32f oTmpDst_U(poOutput->getSize(),formatMatrix,1,&pfTmpU);
+        Img32f oTmpDst_V(poOutput->getSize(),formatMatrix,1,&pfTmpV);
+        
+        oConverter.convert(&oTmpDst_Y,&oTmpSrc_Y);
+        oConverterHalfSize.convert(&oTmpDst_U,&oTmpSrc_U);
+        oConverterHalfSize.convert(&oTmpDst_V,&oTmpSrc_V);
+      }
     }else{
-      icl32f *pfTmpY = poOutput->asImg<icl32f>()->getData(0);
-      icl32f *pfTmpU = poOutput->asImg<icl32f>()->getData(1);
-      icl32f *pfTmpV = poOutput->asImg<icl32f>()->getData(2);
-      
-      Img32f oTmpDst_Y(poOutput->getSize(),formatMatrix,1,&pfTmpY);
-      Img32f oTmpDst_U(poOutput->getSize(),formatMatrix,1,&pfTmpU);
-      Img32f oTmpDst_V(poOutput->getSize(),formatMatrix,1,&pfTmpV);
-
-      oConverter.convert(&oTmpDst_Y,&oTmpSrc_Y);
-      oConverterHalfSize.convert(&oTmpDst_U,&oTmpSrc_U);
-      oConverterHalfSize.convert(&oTmpDst_V,&oTmpSrc_V);
+      convertYUV420ToRGB8(poRGB8Image,pY,Size(iWidth,iHeight));
+      oConverter.convert(poOutput,poRGB8Image);
     }
-  }else{
-    convertYUV420ToRGB8(poRGB8Image,pY,Size(iWidth,iHeight));
-    oConverter.convert(poOutput,poRGB8Image);
+
+    pthread_mutex_unlock(&usb_frame_mutex[iDevice]);
   }
-  pthread_mutex_unlock(&usb_frame_mutex[iDevice]);
-
+  else {
+    convertYUV420ToRGB8(poRGB8Image,pY,Size(iWidth,iHeight));
+    pthread_mutex_unlock(&usb_frame_mutex[iDevice]);
+    return poRGB8Image;
+  }
+ 
+  return 0;
 }
 
-
-}
+} //namespace icl

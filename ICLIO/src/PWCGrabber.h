@@ -1,6 +1,7 @@
 #ifndef ICLPWCGRABBER_H
 #define ICLPWCGRABBER_H
 
+#include "Grabber.h"
 #include "Converter.h"
 
 namespace icl{
@@ -36,7 +37,7 @@ namespace icl{
   using the Converter.  
   @see Converter
   */
-  class PWCGrabber{
+  class PWCGrabber : public Grabber {
     public:
     
     /// Base constructor with parameters for width, height, image type, grabbing rate and grabbing device
@@ -58,7 +59,7 @@ namespace icl{
         @param poDst destination image. If it has formatMatrix, than it will be
                      converted to formatRGB for best performance. 
     **/    
-    void grab(ImgI *poDst);
+    ImgI* grab(ImgI *poDst=0);
     
     private:
     
@@ -68,6 +69,8 @@ namespace icl{
     
     Img8u *poRGB8Image;
     Converter oConverter,oConverterHalfSize;
+
+    void init();
   };
   
 }
