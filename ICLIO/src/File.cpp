@@ -122,7 +122,8 @@ namespace icl{
     
     if(!streamInputImage)
     {
-      ERROR_LOG("Can't open file: " << sFileName);
+      //ERROR_LOG("Can't open file: " << sFileName);
+      throw ICLException ("Can't open file");
     }
     
     //---- Analyse file header ----

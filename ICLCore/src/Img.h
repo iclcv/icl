@@ -13,6 +13,7 @@
 #include "ImgI.h"
 #include "ImgIterator.h"
 #include "SmartPtr.h"
+#include "Exception.h"
 #include <cmath>
 #include <algorithm>
 
