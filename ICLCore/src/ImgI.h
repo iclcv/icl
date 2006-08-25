@@ -16,9 +16,6 @@ using namespace std;
 
 namespace icl {
   
-
-
-
   /// ImgI is the Image-Interface class that provides save access to underlying Img-template
   /* {{{ ImgI class documentation */
   /**
@@ -104,7 +101,10 @@ namespace icl {
           and a new one is created.
           @param ppoDst destination image (if Null, a new one is created)
       **/
-      virtual void shallowCopy(ImgI** ppoDst = NULL) const;
+      void shallowCopy(ImgI** ppoDst) const;
+
+      /// creates a shallow copy of selected channels of this image
+      bool shallowCopy(ImgI** ppoDst, const int* const piStart, const int* const piEnd) const;
 
       /// copies the image data into the destination image
       /** this function is implemented in the Img-template class
@@ -131,7 +131,7 @@ namespace icl {
       **/
       virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, scalemode eScaleMode=interpolateNN) const=0;
 
-      /// flipps the image on the given axis into the destination image (IPP-OPTIMIZED)
+      /// flips the image about the given axis into the destination image (IPP-OPTIMIZED)
        /** this function is implemented in the Img-template class
            @see Img
        **/ 
@@ -305,10 +305,6 @@ namespace icl {
       /** @see Img*/
       virtual void setChannels(int iNewNumChannels)=0;
 
-      /// creates a hole new Img internally (image data will be lost)
-      /** @see Img*/
-      virtual void renew(const Size &s, int iNewNumChannel)=0;
-
       /// resizes the image to new values (image data is scaled)
       /** @see Img*/
       virtual void resize(const Size &s)=0;
@@ -330,9 +326,12 @@ namespace icl {
       //@{ @name image processing functions
       /* {{{ open */
       
-      /// performs an inplace scaling operation of each pixel value (IPP-OPTIMIZED)
+      /// performs an inplace resize operation on the image (IPP-OPTIMIZED)
       /** @see Img*/
       virtual void scale(const Size& s, scalemode eScaleMode=interpolateNN)=0;
+      /// performs an inplace mirror operation
+      /** @see Img*/
+      virtual void mirror(axis eAxis, bool bOnlyROI=false)=0;
       
       /// Scale the channel min/ max range to the new range tMin, tMax.
       /** @see Img*/

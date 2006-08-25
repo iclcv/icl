@@ -302,8 +302,15 @@ namespace icl {
 
   /// for flipping of images
   enum axis{
+#ifdef WITH_IPP_OPTIMIZATION
+    axisHorz=ippAxsHorizontal, /**> horizontal image axis */
+    axisVert=ippAxsVertical,   /**> vertical image axis */
+    axisBoth=ippAxsBoth        /**> flip both axis */
+#else
     axisHorz, /**> horizontal image axis */
     axisVert  /**> vertical image axis */
+    axisBoth  /**> flip both axis */
+#endif
   };
 
 /* {{{ Global classes */

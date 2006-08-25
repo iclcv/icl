@@ -146,6 +146,7 @@ class Img : public ImgI
   ~Img();
   
   //@}
+
   /* }}} */
   
   //@{ @name operators
@@ -316,7 +317,7 @@ class Img : public ImgI
   **/
   virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, scalemode eScaleMode=interpolateNN) const;
           
-  /// flipps the image on the given axis into the destination image (IPP-OPTIMIZED)
+  /// flips the image on the given axis into the destination image (IPP-OPTIMIZED)
   /** If the destination images roi is not equal to the source images ROI,
       no operation is performed at all, and poDst will be returned. If
       the given destination image is NULL, it is created with the size
@@ -397,22 +398,6 @@ class Img : public ImgI
   **/
   virtual void setChannels(int iNewNumChannels);
 
-  /// creates a hole new Img internally
-  /** Change the number of Img channels and the size. The function works
-      on demand: If the image has already the correct size and number of
-      channels, nothing is done at all. This allows you to call renew ()
-      always when you want to ensure a specific image size.
-      If the size must be adapted: 
-      <b> All the data within the Img will be lost. </b> 
-      If the new channel count does not match to the
-      channel count asociated with the images format, a warning is
-      written to std::out, and the format is set to formatMatrix)
-      @param s new image size  (if x or y is < 0, the orignal width/height is used)
-      @param iNewNumChannel New channel number (if < 0, the orignal 
-             channel count is used)
-  **/
-  virtual void renew(const Size &s, int iNewNumChannel);
-
   /// resizes the image to new values
   /** operation is performed on demand - if image
       has already size iNewWidth,iNewHeight, then
@@ -425,7 +410,6 @@ class Img : public ImgI
       @see scale
   **/
   virtual void resize(const Size &s);
-  
   
   //@}
 
@@ -545,7 +529,7 @@ class Img : public ImgI
 
   
 
-  /// perform a scaling operation of the images (keeping the data) (IPP-OPTIMIZED)
+  /// perform an inplace resize of the image (keeping the data) (IPP-OPTIMIZED)
   /** Scaling the channels is only performed on demand.
       @param s size of the destination image, if s.width is -1, then only the height
                of the image is adapted. The same is valid for s.height.
@@ -559,7 +543,11 @@ class Img : public ImgI
       @see resize
   **/
   virtual void scale(const Size &s, scalemode eScaleMode=interpolateNN);
- 
+
+  /// perform an inplace mirror operation on the image
+  virtual void mirror(axis eAxis, bool bOnlyROI=false);
+  /// perform an inplace mirror operation on the image
+  void mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize);
  
   
   /// Sets the pixels of one or all channels to a specified value
@@ -569,8 +557,8 @@ class Img : public ImgI
   void clear(int iChannel = -1, Type tValue = 0);
   
   /// Scale the channel min/ max range to the new range tMin, tMax.
-  /** @param tNewMin new mininum value for the channel
-      @param tNewMax new maximum value for the channel
+  /** @param fNewMin new mininum value for the channel
+      @param fNewMax new maximum value for the channel
       @param iChannel channel index (if set to -1, then operation is 
                       performed on all channels)
   **/
@@ -580,10 +568,10 @@ class Img : public ImgI
   /** Values exceeding the given range are set to the new min/max values.
       For an automatic scaling use the results of  min(),max() as as arguments.
       (Defining a range allows to compare different images.)
-      @param tNewMin destination minimum value
-      @param tNewMax destination maximum value
-      @param tMin current minimum value
-      @param tMax current maximum value
+      @param fNewMin destination minimum value
+      @param fNewMax destination maximum value
+      @param fMin current minimum value
+      @param fMax current maximum value
       @param iChannel channel index (if set to -1, then operation is 
                       performed on all channels)
   **/
@@ -656,10 +644,12 @@ class Img : public ImgI
 
   /* }}} */
                                        
-};// class
+};// class Img<Type>
 
   
 /* {{{ global functions */
+
+/* {{{   deepCopyChannel */
 
 /// copies/converts the data from one image to another image (IPP-OPTIMIZED)
 /** The deepCopyChannel function is a higher lever wrapper for the 
@@ -671,13 +661,16 @@ class Img : public ImgI
     @param dstC destination image channel
 **/ 
 template<class S,class D> 
-  inline void deepCopyChannel(const Img<S> *src, int srcC, Img<D> *dst, int dstC){
+inline void deepCopyChannel(const Img<S> *src, int srcC, Img<D> *dst, int dstC){
   FUNCTION_LOG("");
   ICLASSERT_RETURN( src && dst );
   ICLASSERT_RETURN( src->getSize() == dst->getSize() );
   copy<S,D>(src->getData(srcC),src->getData(srcC)+src->getDim(),dst->getData(dstC));
 }
 
+/* }}} */
+
+/* {{{   clearChannelROI */
 
 /// sets an abitrary image ROI to a given value
 /** This function is used as basic operation for higher level image operation like
@@ -689,13 +682,14 @@ template<class S,class D>
     @param size size of the to-be-cleared region
 */ 
 template<class T>
-inline void clearChannelROI(Img<T> *im, int c, T clearVal, const Point &offs, const Size &size){
+inline void clearChannelROI(Img<T> *im, int c, T clearVal, const Point &offs, const Size &size) {
   FUNCTION_LOG("");
   ICLASSERT_RETURN( im );
-  for(ImgIterator<T> it(im->getROIData(c,offs),im->getSize().width,Rect(offs,size));it.inRegion(); ++it)
-    {
-      *it = clearVal;
-    }  
+  for(ImgIterator<T> it(im->getROIData(c,offs),im->getSize().width,Rect(offs,size));
+      it.inRegion(); ++it)
+  {
+     *it = clearVal;
+  }  
 }
 
 #ifdef WITH_IPP_OPTIMIZATION
@@ -715,6 +709,10 @@ inline void clearChannelROI(Img<icl32f> *im, int c, icl32f clearVal, const Point
   ippiSet_32f_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
 }
 #endif
+
+/* }}} */
+
+/* {{{   deepCopyChannelROI */
 
 //@{ @name deep copy of channel ROIs 
 /// copies/converts the ROI data from one image to the ROI of another image (IPP-OPTIMIZED)
@@ -798,6 +796,10 @@ template <>
 
 //@}
 
+/* }}} */
+
+/* {{{   scaledCopyChannelROI */
+
 //@{ @name scaling of channel ROIs 
 /// sclaes an image channels ROI into another images ROI (with implicit type conversion) (IPP-OPTIMIZED)
 /** This function provides all neccessary funcionalities for scaling images. Please regard, that the fallback-
@@ -814,16 +816,16 @@ template <>
     @param eScaleMode scaling mode to use (nearest neighbour, linear, or region-average)
 **/
 template<class S,class D> 
-void scaleChannelROI(const Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                     Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
-                     scalemode eScaleMode);
+void scaledCopyChannelROI(const Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                          Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+                          scalemode eScaleMode);
 
 /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
 #ifdef WITH_IPP_OPTIMIZATION
 template<> inline void 
-scaleChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                            Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
-                            scalemode eScaleMode)
+scaledCopyChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                  Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                                  scalemode eScaleMode)
   /* {{{ open */
 
   {
@@ -839,9 +841,9 @@ scaleChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOf
 
 /// IPP-OPTIMIZED specialization for icl32f to icl32f ROI sclaing (using ippiResize)
 template<> inline void 
-scaleChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                            Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
-                            scalemode eScaleMode)
+scaledCopyChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                    Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                                    scalemode eScaleMode)
   /* {{{ open */
 
   {
@@ -855,127 +857,56 @@ scaleChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &sr
 #endif
 /* }}} */
 
-
-/// fallback implementation for horizontal image flipping (slow)
-template <class S, class D> inline void 
-flipHorzChannelROI(const Img<S>*  src, int srcC, const Point &srcOffs, const Size &srcSize,
-                   Img<D> *dst, int dstC, const Point &dstOffs, const Size &dstSize){
-  /* {{{ open */
-
-  FUNCTION_LOG("");
-  ICLASSERT_RETURN( src && dst );
-  ICLASSERT_RETURN( srcSize == dstSize);
-  
-  for(int x=0,xDst=dstOffs.x+dstSize.width;x<srcSize.width;x++)
-    {
-      for(int y=0;y<srcSize.height;y++)
-        {
-          (*dst)(xDst-x,xDst-y,dstC) = Cast<S,D>::cast( (*src)(x+srcOffs.x,y+srcOffs.y,srcC) );
-        }
-    }  
-}
-
 /* }}} */
 
-/// fallback implementation for vertical image flipping (using memcpy line by line)
-template <class S, class D> inline void 
-flipVertChannelROI(const Img<S>*  src, int srcC, const Point &srcOffs, const Size &srcSize,
-                   Img<D> *dst, int dstC, const Point &dstOffs, const Size &dstSize){
-  /* {{{ open */
+/* {{{   flippedCopyChannelROI */
 
-  FUNCTION_LOG("");
-  ICLASSERT_RETURN( src && dst );
-  ICLASSERT_RETURN( srcSize == dstSize);
-  
-  ImgIterator<D> itDst(dst->getData(srcC),dst->getSize().width,Rect(dstOffs,dstSize));
-  itDst.incRow(dstSize.height-1);
-  for(ImgIterator<S> itSrc(src->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-      itSrc.inRegion();
-      itSrc.incRow(),itDst.incRow(-1))
-    {
-      copy<S,D>(&*itSrc,(&*itSrc)+srcSize.width, &*itDst);
-    }  
-}
-
-/* }}} */
-
-
+/// mirror copy ROI data from one image to the ROI of another image (IPP-OPTIMIZED)
+/** This function is used by flippedCopyROI and Mirror operator.
+    @param eAxis mirror axis (axisHorz, axisVert or axisBoth)
+    @param src source image
+    @param srcC source image channel
+    @param srcOffs source images ROI-offset (src->getROIOffset() is <b>not</b> regarded)
+    @param srcSize source images ROI-size (src->getROISize() is <b>not</b> regarded)
+    @param dst destination image      
+    @param dstC destination image channel
+    @param dstOffs destination images ROI-offset (dst->getROIOffset() is <b>not</b> regarded)
+    @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
+    @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
+**/
+template <class T>
+void flippedCopyChannelROI(axis eAxis,
+                           const Img<T> *src,int srcC, const Point &srcOffs, const Size &srcSize,
+                           Img<T> *dst,int dstC, const Point &dstOffs, const Size &dstSize);
+ 
 #ifdef WITH_IPP_OPTIMIZATION
-/// IPP-OPTIMIZED specialization for icl8u horizontal image flipping (using ippiMirror_8u)
+/// IPP-OPTIMIZED specialization for icl8u image flipping
 template <> void
-inline flipHorzChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                                Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize)
-  /* {{{ open */
+inline flippedCopyChannelROI<icl8u>(axis eAxis, 
+                                    const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                    Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
+   FUNCTION_LOG("");
+   ICLASSERT_RETURN( src && dst );
+   ICLASSERT_RETURN( srcSize == dstSize );
+   
+   ippiMirror_8u_C1R(src->getROIData(srcC,srcOffs),src->getLineStep(),
+                     dst->getROIData(dstC,dstOffs),dst->getLineStep(),srcSize,(IppiAxis) eAxis);
+}
 
-  {
-    FUNCTION_LOG("");
-    ICLASSERT_RETURN( src && dst );
-    ICLASSERT_RETURN( srcSize == dstSize );
-    
-    ippiMirror_8u_C1R(src->getROIData(srcC,srcOffs),src->getLineStep(),
-                      dst->getROIData(dstOffs),dst->getLineStep(),srcSize,ippAxsHorizontal);
-    
-  }
-
-/* }}} */
-
-/// IPP-OPTIMIZED specialization for icl32f horizontal image flipping (using ippiMirror_8s <-!!)
+/// IPP-OPTIMIZED specialization for icl8u image flipping
 template <> void
-inline flipHorzChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                                    Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize)
-  /* {{{ open */
-
-  {
-    FUNCTION_LOG("");
-    ICLASSERT_RETURN( src && dst );
-    ICLASSERT_RETURN( srcSize == dstSize );
-    
-    ippiMirror_32s_C1R((Ipp32s*)(src->getROIData(srcC,srcOffs)),src->getLineStep(),
-                      (Ipp32s*)(dst->getROIData(dstOffs)),dst->getLineStep(),srcSize,ippAxsHorizontal);
-    
-  }
-
-/* }}} */
-
-/// IPP-OPTIMIZED specialization for icl8u vertical image flippint (using ippiMirror_32s <-!!)
-template <> void
-inline flipVertChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                                  Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize)
-  /* {{{ open */
-
-  {
-    FUNCTION_LOG("");
-    ICLASSERT_RETURN( src && dst );
-    ICLASSERT_RETURN( srcSize == dstSize );
-    
-    // treat the 32bit float values as 32bit int values
-    ippiMirror_8u_C1R(src->getROIData(srcC,srcOffs),src->getLineStep(),
-                      dst->getROIData(dstOffs),dst->getLineStep(),srcSize,ippAxsVertical);
-    
-  }
-
-/* }}} */
-
-/// IPP-OPTIMIZED specialization for icl32f vertical image flippint (using ippiMirror_32s <-!!)
-template <> void
-inline flipVertChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                                  Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize)
-  /* {{{ open */
-
-  {
-    FUNCTION_LOG("");
-    ICLASSERT_RETURN( src && dst );
-    ICLASSERT_RETURN( srcSize == dstSize );
-    
-    // treat the 32bit float values as 32bit int values
-    ippiMirror_32s_C1R((Ipp32s*)(src->getROIData(srcC,srcOffs)),src->getLineStep(),
-                      (Ipp32s*)(dst->getROIData(dstOffs)),dst->getLineStep(),srcSize,ippAxsVertical);
-    
-  }
-
- /* }}} */
-
+inline flippedCopyChannelROI<icl32f>(axis eAxis, 
+                                     const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                     Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
+   FUNCTION_LOG("");
+   ICLASSERT_RETURN( src && dst );
+   ICLASSERT_RETURN( srcSize == dstSize );
+   
+   ippiMirror_32s_C1R((Ipp32s*) src->getROIData(srcC,srcOffs),src->getLineStep(),
+                      (Ipp32s*) dst->getROIData(dstC,dstOffs),dst->getLineStep(),srcSize,(IppiAxis) eAxis);
+}
 #endif
+/* }}} */
 
 /* }}} */ 
  

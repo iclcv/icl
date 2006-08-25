@@ -5,32 +5,15 @@ namespace icl {
 
 // {{{ Mirror
 
-#ifdef WITH_IPP_OPTIMIZATION 
-   template<>
-   void Mirror::mirror<icl8u> (ImgI *poSrc, ImgI *poDst) {
-      for(int c=0; c < poSrc->getChannels(); c++) {
-         ippiMirror_8u_C1R (poSrc->asImg<icl8u>()->getROIData (c, oSrcOffset), 
-                            poSrc->getLineStep(),
-                            poDst->asImg<icl8u>()->getROIData (c, oDstOffset), 
-                            poDst->getLineStep(), oSize, (IppiAxis) eAxis);
-      }
-   }
-   template<>
-   void Mirror::mirror<icl32f> (ImgI *poSrc, ImgI *poDst) {
-      for(int c=0; c < poSrc->getChannels(); c++) {
-         ippiMirror_32s_C1R ((Ipp32s*) poSrc->asImg<icl32f>()->getROIData (c, oSrcOffset), 
-                             poSrc->getLineStep(),
-                             (Ipp32s*) poDst->asImg<icl32f>()->getROIData (c, oDstOffset), 
-                             poDst->getLineStep(), oSize, (IppiAxis) eAxis);
-      }
-   }
-#else
-#warning "fallback for Mirror::mirror not yet implemented"
    template<typename T>
    void Mirror::mirror (ImgI *poSrc, ImgI *poDst) {
-      ERROR_LOG ("not yet implemented");
+      Img<T> *poS = (Img<T>*) poSrc;
+      Img<T> *poD = (Img<T>*) poDst;
+      for(int c=0; c < poSrc->getChannels(); c++) {
+         flippedCopyChannelROI (eAxis, poS, c, oSrcOffset, oSize,
+                                poD, c, oDstOffset, oSize);
+      }
    }
-#endif
 
    Mirror::Mirror (axis eAxis, bool bOnlyROI) :
       eAxis (eAxis), bOnlyROI (bOnlyROI) 
@@ -50,9 +33,9 @@ namespace icl {
          oSize = poSrc->getSize();
 
          oROIOffset = poSrc->getROIOffset();
-         if (eAxis == axisHorizontal || eAxis == axisBoth) 
+         if (eAxis == axisHorz || eAxis == axisBoth) 
             oROIOffset.y = oSize.height - oROIOffset.y - poSrc->getROISize().height;
-         if (eAxis == axisVertical || eAxis == axisBoth) 
+         if (eAxis == axisVert || eAxis == axisBoth) 
             oROIOffset.x = oSize.width - oROIOffset.x - poSrc->getROISize().width;
       }
 

@@ -151,11 +151,13 @@ Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
 
   if(poDst->getDepth() ==  depth8u){
      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<Type,icl8u>(this,c,Point::zero,getSize(),poDst->asImg<icl8u>(),c,Point::zero,poDst->getSize(),eScaleMode);
+        scaledCopyChannelROI<Type,icl8u>(this,c,Point::zero,getSize(),
+                                         poDst->asImg<icl8u>(),c,Point::zero,poDst->getSize(),eScaleMode);
      }
   }else{
      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<Type,icl32f>(this,c,Point::zero,getSize(),poDst->asImg<icl32f>(),c,Point::zero,poDst->getSize(),eScaleMode);
+        scaledCopyChannelROI<Type,icl32f>(this,c,Point::zero,getSize(),
+                                          poDst->asImg<icl32f>(),c,Point::zero,poDst->getSize(),eScaleMode);
      }
   }
   return poDst;
@@ -209,15 +211,15 @@ Img<Type>::scaledCopyROI(ImgI *poDst, scalemode eScaleMode) const
 
   if(poDst->getDepth() ==  depth8u){
      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<Type,icl8u>(this,c,getROIOffset(),getROISize(),
-                                    poDst->asImg<icl8u>(),c,poDst->getROIOffset(), poDst->getROISize(),
-                                    eScaleMode);
+        scaledCopyChannelROI<Type,icl8u>(this,c,getROIOffset(),getROISize(),
+                                         poDst->asImg<icl8u>(),c,poDst->getROIOffset(), poDst->getROISize(),
+                                         eScaleMode);
      }
   }else{
      for(int c=0;c<getChannels();c++){
-        scaleChannelROI<Type,icl32f>(this,c,getROIOffset(),getROISize(),
-                                     poDst->asImg<icl32f>(),c,poDst->getROIOffset(), poDst->getROISize(),
-                                     eScaleMode);
+        scaledCopyChannelROI<Type,icl32f>(this,c,getROIOffset(),getROISize(),
+                                          poDst->asImg<icl32f>(),c,poDst->getROIOffset(), poDst->getROISize(),
+                                          eScaleMode);
      }
   }
   return poDst;
@@ -231,40 +233,34 @@ Img<Type>::flippedCopyROI(ImgI *poDst, axis eAxis) const
 {
   FUNCTION_LOG("");
   if(!poDst) poDst = imgNew(icl::getDepth<Type>(),getROISize(),getFormat(),getChannels());
-  ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize() ,poDst);
-  
+  ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize() ,poDst);  
   poDst->setChannels(getChannels());
 
-  if(poDst->getDepth() == depth8u){
-    if(eAxis == axisHorz){
-      for(int c=0;c<getChannels();c++){
-        flipVertChannelROI<Type,icl8u>(this,c,getROIOffset(),getROISize(),
-                                       poDst->asImg<icl8u>(),c,poDst->getROIOffset(),poDst->getROISize());
-      
-      }
-    }else{
-      for(int c=0;c<getChannels();c++){
-        flipHorzChannelROI<Type,icl8u>(this,c,getROIOffset(),getROISize(),
-                                       poDst->asImg<icl8u>(),c,poDst->getROIOffset(),poDst->getROISize());
-      }    
-    }
-  }else{
-    if(eAxis == axisHorz){
-      for(int c=0;c<getChannels();c++){
-        flipVertChannelROI<Type,icl32f>(this,c,getROIOffset(),getROISize(),
-                                       poDst->asImg<icl32f>(),c,poDst->getROIOffset(),poDst->getROISize());
-      }
-    }else{
-      for(int c=0;c<getChannels();c++){
-        flipHorzChannelROI<Type,icl32f>(this,c,getROIOffset(),getROISize(),
-                                        poDst->asImg<icl32f>(),c,poDst->getROIOffset(),poDst->getROISize());
-      }    
-    }  
+  if (poDst->getDepth() == this->getDepth()) {
+     for(int c=0;c<getChannels();c++) {
+        flippedCopyChannelROI (eAxis, this, c, getROIOffset(), getROISize(),
+                               poDst->asImg<Type>(), c, poDst->getROIOffset(),poDst->getROISize());
+     }
+  } else {
+     if (poDst->getDepth() == depth8u) {
+        Img<icl8u> *pD = poDst->asImg<icl8u>();
+        for(int c=0;c<getChannels();c++) {
+           deepCopyChannelROI (this, c, getROIOffset(), getROISize(),
+                               pD, c, poDst->getROIOffset(),poDst->getROISize());
+           pD->mirror (eAxis, c, poDst->getROIOffset(),poDst->getROISize());
+        }
+     } else {
+        Img<icl32f> *pD = poDst->asImg<icl32f>();
+        for(int c=0;c<getChannels();c++) {
+           deepCopyChannelROI (this, c, getROIOffset(), getROISize(),
+                               pD, c, poDst->getROIOffset(),poDst->getROISize());
+           pD->mirror (eAxis, c, poDst->getROIOffset(),poDst->getROISize());
+        }
+     }
   }
   return poDst;  
 }
   // }}}
-
 
 //----------------------------------------------------------------------------
 template<class Type> void
@@ -362,6 +358,101 @@ Img<Type>::scale(const Size &s,scalemode eScaleMode)
 
 //----------------------------------------------------------------------------
 template<class Type> void
+Img<Type>::mirror(axis eAxis, bool bOnlyROI)
+  // {{{ open
+{
+   const Point& oOffset = bOnlyROI ? getROIOffset() : Point::zero;
+   const Size&  oSize   = bOnlyROI ? getROISize() : getSize();
+   for (int c=0; c < getChannels(); ++c) {
+      this->mirror (eAxis, c, oOffset, oSize);
+   }
+}
+// }}}
+
+template<class Type> void
+Img<Type>::mirror(axis eAxis, int iChannel, 
+                  const Point& oOffset, const Size& oSize)
+  // {{{ open
+{  
+  FUNCTION_LOG("");
+  
+  static const int aiDstStep[] = {1,-1,-1};
+  int   iRows, iCols, iLineWarpS, iLineWarpD;
+  register Type *s=0, *d=0, *e=0, *eLine; /* source pointer, destination pointer, 
+                                             end pointer, line end pointer */
+  switch (eAxis) {
+    case axisHorz:
+       /* .....................
+          ....s->++++++++++l...
+          ....+++++++++++++....
+          ....e------------....
+          ....*************....
+          ....d->**********....
+          .....................
+       */
+
+       iRows = oSize.height/2; 
+       iCols = oSize.width;
+       iLineWarpS = m_oSize.width - iCols;
+       iLineWarpD = -iLineWarpS;
+       s = getROIData (iChannel, oOffset);
+       d = getROIData (iChannel, Point (oOffset.x, oOffset.y + oSize.height - 1));
+       e = s + iRows * m_oSize.width;
+    case axisVert:
+       /* .....................
+          ....s->++++|l*<-d....
+          ....+++++++|*****....
+          ....+++++++|*****....
+          ....+++++++|*****....
+          ....+++++++|*****....
+          ....e................
+       */
+       iRows = oSize.height;
+       iCols = oSize.width/2; 
+       iLineWarpD = iLineWarpS = m_oSize.width - iCols;
+       s = getROIData (iChannel, oOffset);
+       d = getROIData (iChannel, Point (oOffset.x + oSize.width - 1, oOffset.y));
+       e = s + iRows * m_oSize.width;
+    case axisBoth: 
+       /* .....................
+          ....s->++++++++++l...
+          ....+++++++++++++....
+          ....+++++++e*****....
+          ....*************....
+          ....**********<-d....
+          .....................
+       */
+
+       iRows = oSize.height/2;
+       iCols = oSize.width;
+       iLineWarpS = m_oSize.width - iCols;
+       iLineWarpD = -iLineWarpS;
+       s = getROIData (iChannel, oOffset);
+       d = getROIData (iChannel, Point (oOffset.x + oSize.width - 1, oOffset.y));
+       e = s + iRows * m_oSize.width;
+       if (oSize.height % 2) { // odd ROI height
+          iRows++;
+          e += oSize.width/2;
+       }
+  }
+  if (iRows == 0 || iCols == 0) return;
+
+  eLine = s + iCols;
+  do {
+     std::swap (*s, *d);
+     ++s; d += aiDstStep[eAxis];
+     if (s == eLine) {
+        eLine += m_oSize.width; // end of line pointer jumps whole image width
+        s += iLineWarpS;        // source pointer jumps iLineWarpS
+        d += iLineWarpD;
+     }
+  } while (s != e);
+}
+
+// }}}
+
+//----------------------------------------------------------------------------
+template<class Type> void
 Img<Type>::resize(const Size &s)
   // {{{ open
 
@@ -413,19 +504,6 @@ Img<Type>::setChannels(int iNumNewChannels)
         m_iChannels++;
       }
   }
-}
-
-// }}}
-
-//----------------------------------------------------------------------------
-template<class Type> void
-Img<Type>::renew(const Size &s, int iNewNumChannels)
-  // {{{ open
-{
-  FUNCTION_LOG("");
-  
-  resize(Size(s.width<0?getSize().width:s.width, s.height<0?getSize().height:s.height));
-  setChannels(iNewNumChannels<0?getChannels():iNewNumChannels);
 }
 
 // }}}
@@ -696,14 +774,14 @@ void Img<Type>::clear(int iIndex, Type tValue)
 
 // {{{  Global functions
 
-// {{{    scaleChannelROI
+// {{{    scaledCopyChannelROI
 
 
 // scale channel ROI function for abitrary image scaling operations
 template<class S,class D> 
-void scaleChannelROI(const Img<S> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                     Img<D> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
-                     scalemode eScaleMode)
+void scaledCopyChannelROI(const Img<S> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                          Img<D> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                          scalemode eScaleMode)
 {
   FUNCTION_LOG("");
   ICLASSERT_RETURN( src && dst );
@@ -735,24 +813,121 @@ void scaleChannelROI(const Img<S> *src, int srcC, const Point &srcOffs, const Si
 // explicit template instantiation
 #ifndef WITH_IPP_OPTIMIZATION
 template void 
-scaleChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                             Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
-                             scalemode eScaleMode);
+scaledCopyChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                  Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                                  scalemode eScaleMode);
 template void 
-scaleChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                               Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
-                               scalemode eScaleMode);
+scaledCopyChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                    Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                                    scalemode eScaleMode);
 #endif
 
 template void 
-scaleChannelROI<icl8u,icl32f>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                              Img<icl32f>  *dst, int dstC, const Point &dstOffs, const Size &dstSize,
-                              scalemode eScaleMode);
+scaledCopyChannelROI<icl8u,icl32f>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                   Img<icl32f>  *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                                   scalemode eScaleMode);
 template void 
-scaleChannelROI<icl32f,icl8u>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                              Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
-                              scalemode eScaleMode);
+scaledCopyChannelROI<icl32f,icl8u>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                   Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                                   scalemode eScaleMode);
 
+
+// }}}
+
+// {{{    flippedCopyChannelROI
+
+#ifndef WITH_IPP_OPTIMIZATION
+// mirror copy ROI of one image to the ROI of the other (for selected channel)
+template<class T>
+void flippedCopyChannelROI(axis eAxis,
+                           const Img<S> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                           Img<D> *dst, int dstC, const Point &dstOffs, const Size &dstSize)
+{  
+  FUNCTION_LOG("");
+  
+  static const int aiDstStep[] = {1,-1,-1};
+  int   iRows, iCols, iLineWarpS, iLineWarpD;
+  register Type *s=0, *d=0, *e=0, *eLine; /* source pointer, destination pointer, 
+                                             end pointer, line end pointer */
+  switch (eAxis) {
+    case axisHorz:
+       /* .....................
+          ....s->++++++++++l...
+          ....+++++++++++++....
+          ....e------------....
+          ....*************....
+          ....d->**********....
+          .....................
+       */
+
+       iRows = oSize.height/2; 
+       iCols = oSize.width;
+       iLineWarpS = m_oSize.width - iCols;
+       iLineWarpD = -iLineWarpS;
+       s = getROIData (iChannel, oOffset);
+       d = getROIData (iChannel, Point (oOffset.x, oOffset.y + oSize.height - 1));
+       e = s + iRows * m_oSize.width;
+    case axisVert:
+       /* .....................
+          ....s->++++|l*<-d....
+          ....+++++++|*****....
+          ....+++++++|*****....
+          ....+++++++|*****....
+          ....+++++++|*****....
+          ....e................
+       */
+       iRows = oSize.height;
+       iCols = oSize.width/2; 
+       iLineWarpD = iLineWarpS = m_oSize.width - iCols;
+       s = getROIData (iChannel, oOffset);
+       d = getROIData (iChannel, Point (oOffset.x + oSize.width - 1, oOffset.y));
+       e = s + iRows * m_oSize.width;
+    case axisBoth: 
+       /* .....................
+          ....s->++++++++++l...
+          ....+++++++++++++....
+          ....+++++++e*****....
+          ....*************....
+          ....**********<-d....
+          .....................
+       */
+
+       iRows = oSize.height/2;
+       iCols = oSize.width;
+       iLineWarpS = m_oSize.width - iCols;
+       iLineWarpD = -iLineWarpS;
+       s = getROIData (iChannel, oOffset);
+       d = getROIData (iChannel, Point (oOffset.x + oSize.width - 1, oOffset.y));
+       e = s + iRows * m_oSize.width;
+       if (oSize.height % 2) { // odd ROI height
+          iRows++;
+          e += oSize.width/2;
+       }
+  }
+  if (iRows == 0 || iCols == 0) return;
+
+  eLine = s + iCols;
+  do {
+     *s = *d;
+     ++s; d += aiDstStep[eAxis];
+     if (s == eLine) {
+        eLine += m_oSize.width; // end of line pointer jumps whole image width
+        s += iLineWarpS;        // source pointer jumps iLineWarpS
+        d += iLineWarpD;
+     }
+  } while (s != e);
+}
+
+// explicit template instantiation
+template void 
+flippedCopyChannelROI<icl8u>(axis eAxis, 
+                             const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                             Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
+template void 
+flippedCopyChannelROI<icl32f>(axis eAxis,
+                              const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                              Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
+#endif
 
 // }}}
 

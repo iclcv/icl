@@ -37,7 +37,8 @@ namespace icl{
     if(iNeedSizeConversion){
       if(iNeedColorConversion){
         ensureDepth(&m_poSizeBuffer,poNextSrcImage->getDepth());
-        m_poSizeBuffer->renew(poDst->getSize(),poDst->getChannels());
+        m_poSizeBuffer->setChannels (poDst->getChannels());
+        m_poSizeBuffer->resize(poDst->getSize());
         m_poSizeBuffer->setFormat(eSrcFmt);
         poNextSrcImage->scaledCopy(m_poSizeBuffer);
         //---- convert color ----------------- 

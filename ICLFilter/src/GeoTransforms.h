@@ -20,12 +20,6 @@ namespace icl {
    /// Class to mirror images vertically or horizontally
    class Mirror : public GeoTransform {
    public:
-      enum axis {
-         axisHorizontal,
-         axisVertical,
-         axisBoth
-      };
-
       /// Constructor
       Mirror (axis eAxis, bool bOnlyROI=true);
 

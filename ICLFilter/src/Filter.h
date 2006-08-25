@@ -52,8 +52,8 @@ namespace icl {
     void setClipToROI (bool bClip) { this->bClipToROI = bClip; }
 
     /// Applies the individual filter operation on the source image
-    /** @param poSrc source image
-        @param  poDst destination image
+    /** @param poSrc  source image
+        @param ppoDst pointer to destination image
     */
     virtual void apply(ImgI *poSrc, ImgI **ppoDst) = 0;
 
@@ -71,14 +71,15 @@ namespace icl {
     /// prepare filter operation: ensure compatible image format and size
     bool prepare (ImgI *poSrc, ImgI **ppoDst);
     
-    /// shrink source image ROI if neccessary
-    /** This functions adapts the to-be-used ROI of the source image, 
+    /// compute neccessary ROI offset and size
+    /** This functions computes the to-be-used ROI for the source image, 
         such that the filter mask of given size (oMaskSize) fits everywhere
         into the image if placed arbitrarily within the ROI.
-        The original ROI of the source image is not changed. 
-        The used ROI is stored in oROIsize and oROIoffset.
-    @param poSrc image whose ROI is adapted
-    @param poDst image whose ROI is actually changed
+        The original ROI of the source image is not changed, instead the
+        adapted ROI is returned in parameters oROIsize and oROIoffset.
+    @param poSrc  image whose ROI is adapted
+    @param oROIoffset  new ROI offset
+    @param oROIsize    new ROI size
     @return whether a valid ROI remains
     */
     bool adaptROI(ImgI *poSrc, Point& oROIoffset, Size& oROIsize);

@@ -162,8 +162,8 @@ namespace icl{
     /// applies the median operation on poSrc and stores the result in poDst
     /** The depth, channel count and size of poDst is adapted to poSrc' ROI:
 
-        @param poSrc source image
-        @param poDst destination image
+        @param poSrc  source image
+        @param ppoDst pointer to destination image
     */
     void apply(ImgI *poSrc, ImgI **ppoDst);
 

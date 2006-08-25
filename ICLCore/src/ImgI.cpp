@@ -68,15 +68,38 @@ void ImgI::shallowCopy(ImgI** ppoDst) const {
   FUNCTION_LOG("");
   ensureDepth (ppoDst, getDepth ());
   
-  if (getDepth() == depth8u)
-    {
-      *(*ppoDst)->asImg<icl8u>() = *this->asImg<icl8u>();
-    }
-  else
-    {
-      *(*ppoDst)->asImg<icl32f>() = *this->asImg<icl32f>();
-    }
-  
+  if (getDepth() == depth8u) {
+     *(*ppoDst)->asImg<icl8u>() = *this->asImg<icl8u>();
+  } else {
+     *(*ppoDst)->asImg<icl32f>() = *this->asImg<icl32f>();
+  }
+  (*ppoDst)->setROI (getROIOffset(), getROISize());
+}
+
+bool ImgI::shallowCopy(ImgI** ppoDst, const int* const piStart, const int* const piEnd) const {
+  FUNCTION_LOG("");
+  ensureDepth (ppoDst, getDepth ());
+  (*ppoDst)->setChannels (0);
+  (*ppoDst)->resize (getSize());
+  (*ppoDst)->setFormat (formatMatrix);
+
+  if (getDepth() == depth8u) {
+     Img<icl8u> *pSrc = this->asImg<icl8u>();
+     Img<icl8u> *pDst = (*ppoDst)->asImg<icl8u>();
+     for (const int* it=piStart; it < piEnd; ++it) {
+        if (*it < 0 || *it >= getChannels()) return false;
+        pDst->append (pSrc, *it);
+     }
+  } else {
+     Img<icl32f> *pSrc = this->asImg<icl32f>();
+     Img<icl32f> *pDst = (*ppoDst)->asImg<icl32f>();
+     for (const int* it=piStart; it < piEnd; ++it) {
+        if (*it < 0 || *it >= getChannels()) return false;
+        pDst->append (pSrc, *it);
+     }
+  }
+  (*ppoDst)->setROI (getROIOffset(), getROISize());
+  return true;
 }
 
 
