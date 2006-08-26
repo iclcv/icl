@@ -370,6 +370,9 @@ class Img : public ImgI
       @param iChannel channel to append (or all, if < 0)
   **/
   void append(Img<Type> *poSrc, int iChannel=-1);
+  /// Append selected channels from source image
+  void append(Img<Type> *poSrc, 
+              const int* const piStart, const int* const piEnd);
   
   /// Swap channel A and B
   /** @param iIndexA Index of channel A;
@@ -457,8 +460,7 @@ class Img : public ImgI
   Type* getData(int iChannel) const
     { 
       FUNCTION_LOG("");
-      ICLASSERT_RETURN_VAL( iChannel >= 0 , 0);
-      ICLASSERT_RETURN_VAL( iChannel < getChannels() , 0);
+      ICLASSERT_RETURN_VAL( iChannel >= 0 && iChannel < getChannels(), 0);
       return m_vecChannels[iChannel].get();
     }
   
@@ -548,7 +550,6 @@ class Img : public ImgI
   virtual void mirror(axis eAxis, bool bOnlyROI=false);
   /// perform an inplace mirror operation on the image
   void mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize);
- 
   
   /// Sets the pixels of one or all channels to a specified value
   /** @param iChannel Channel to fill with zero (default: -1 = all channels)
@@ -910,6 +911,24 @@ inline flippedCopyChannelROI<icl32f>(axis eAxis,
 
 /* }}} */ 
  
+#ifdef WITH_IPP_OPTIMIZATION
+/// IPP-OPTIMIZED specialization for icl8u mirror
+template <>
+inline void Img<icl8u>::mirror(axis eAxis, int iChannel, 
+                               const Point &oOffset, const Size &oSize) {
+   ippiMirror_8u_C1IR(getROIData(iChannel,oOffset), 
+                      getLineStep(), oSize, (IppiAxis) eAxis);
+}
+
+/// IPP-OPTIMIZED specialization for icl32f mirror
+template <>
+inline void Img<icl32f>::mirror(axis eAxis, int iChannel, 
+                                const Point &oOffset, const Size &oSize) {
+   ippiMirror_32s_C1IR((Ipp32s*) getROIData(iChannel,oOffset), 
+                       getLineStep(), oSize, (IppiAxis) eAxis);
+}
+#endif
+
 } //namespace icl
 
 #endif //Img_H

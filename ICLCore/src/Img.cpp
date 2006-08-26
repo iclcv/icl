@@ -232,7 +232,7 @@ Img<Type>::flippedCopyROI(ImgI *poDst, axis eAxis) const
   // {{{ open
 {
   FUNCTION_LOG("");
-  if(!poDst) poDst = imgNew(icl::getDepth<Type>(),getROISize(),getFormat(),getChannels());
+  if(!poDst) poDst = imgNew(getDepth(),getROISize(),getFormat(),getChannels());
   ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize() ,poDst);  
   poDst->setChannels(getChannels());
 
@@ -305,17 +305,44 @@ Img<Type>::append(Img<Type> *poSrc, int iIndex)
 {
   FUNCTION_LOG("");
   ICLASSERT_RETURN( poSrc );
+  ICLASSERT_RETURN( iIndex >= 0 && iIndex < poSrc->getChannels() );
   ICLASSERT_RETURN( poSrc->getSize() == getSize() );
 
-  if(getFormat() != formatMatrix){
+  if (m_eFormat != formatMatrix) {
     WARNING_LOG("format was set to formatMatrix to ensure compability");
-    setFormat(formatMatrix);
+    m_eFormat = formatMatrix;
   }
   
-  for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++)
-    {
-      m_vecChannels.push_back(poSrc->m_vecChannels[i]); 
-    }
+  std::copy (poSrc->m_vecChannels.begin() + getStartIndex(iIndex),
+             poSrc->m_vecChannels.begin() + getEndIndex(iIndex),
+             back_inserter(m_vecChannels));  
+  m_iChannels = m_vecChannels.size();
+}
+
+// }}}
+
+template<class Type> void
+Img<Type>::append(Img<Type> *poSrc, 
+                  const int* const piStart, const int* const piEnd) 
+  // {{{ open
+{
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN( poSrc );
+  ICLASSERT_RETURN( poSrc->getSize() == getSize() );
+
+  if (m_eFormat != formatMatrix) {
+    WARNING_LOG("format was set to formatMatrix to ensure compability");
+    m_eFormat = formatMatrix;
+  }
+  
+  const int iMaxChannels = poSrc->getChannels();
+  for (const int* it=piStart; it < piEnd; ++it) {
+     if (*it < 0 || *it >= iMaxChannels) {
+        ERROR_LOG ("channel index out of range: " << *it);
+     } else {
+        m_vecChannels.push_back (poSrc->m_vecChannels[*it]);
+     }
+  }
   m_iChannels = m_vecChannels.size();
 }
 
@@ -398,6 +425,7 @@ Img<Type>::mirror(axis eAxis, int iChannel,
        s = getROIData (iChannel, oOffset);
        d = getROIData (iChannel, Point (oOffset.x, oOffset.y + oSize.height - 1));
        e = s + iRows * m_oSize.width;
+       break;
     case axisVert:
        /* .....................
           ....s->++++|l*<-d....
@@ -413,6 +441,7 @@ Img<Type>::mirror(axis eAxis, int iChannel,
        s = getROIData (iChannel, oOffset);
        d = getROIData (iChannel, Point (oOffset.x + oSize.width - 1, oOffset.y));
        e = s + iRows * m_oSize.width;
+       break;
     case axisBoth: 
        /* .....................
           ....s->++++++++++l...
@@ -428,12 +457,14 @@ Img<Type>::mirror(axis eAxis, int iChannel,
        iLineWarpS = m_oSize.width - iCols;
        iLineWarpD = -iLineWarpS;
        s = getROIData (iChannel, oOffset);
-       d = getROIData (iChannel, Point (oOffset.x + oSize.width - 1, oOffset.y));
+       d = getROIData (iChannel, Point (oOffset.x + oSize.width - 1, 
+                                        oOffset.y + oSize.height - 1));
        e = s + iRows * m_oSize.width;
        if (oSize.height % 2) { // odd ROI height
           iRows++;
           e += oSize.width/2;
        }
+       break;
   }
   if (iRows == 0 || iCols == 0) return;
 
@@ -477,33 +508,28 @@ Img<Type>::resize(const Size &s)
 template<class Type> void
 Img<Type>::setChannels(int iNumNewChannels)
   // {{{ open
+
 {
+  if (iNumNewChannels == m_iChannels) return;
   FUNCTION_LOG("");
   ICLASSERT_RETURN(iNumNewChannels >= 0);
   
-  if(getChannels() != iNumNewChannels && getFormat() != formatMatrix){
-    WARNING_LOG("format was set to formatMatrix to ensure compability");
-    setFormat(formatMatrix);
+  if (getFormat() != formatMatrix) {
+     WARNING_LOG("format was set to formatMatrix to ensure compability");
+     m_eFormat=formatMatrix;
   }
   
-  //---- reduce number of channels ----
-  if(iNumNewChannels < m_iChannels)
-  {
-    for (int i=m_iChannels-1;i>=iNumNewChannels;i--)
-    {
-      removeChannel(i);
-    }
-  }
-  //---- Extend number of channels ----
-  else if (iNumNewChannels > m_iChannels)
-  {
-    int iNew = iNumNewChannels - m_iChannels;
-    for(int i=0;i<iNew;i++)
-      {
+  if(iNumNewChannels < m_iChannels) {
+     //---- reduce number of channels ----
+     m_vecChannels.erase(m_vecChannels.begin() + iNumNewChannels, 
+                         m_vecChannels.end());
+  } else {
+     //---- Extend number of channels ----
+     m_vecChannels.reserve (iNumNewChannels);
+     for(; m_iChannels < iNumNewChannels; ++m_iChannels)
         m_vecChannels.push_back(createChannel());
-        m_iChannels++;
-      }
   }
+  m_iChannels = m_vecChannels.size();
 }
 
 // }}}
@@ -867,6 +893,7 @@ void flippedCopyChannelROI(axis eAxis,
        s = getROIData (iChannel, oOffset);
        d = getROIData (iChannel, Point (oOffset.x, oOffset.y + oSize.height - 1));
        e = s + iRows * m_oSize.width;
+       break;
     case axisVert:
        /* .....................
           ....s->++++|l*<-d....
@@ -880,8 +907,10 @@ void flippedCopyChannelROI(axis eAxis,
        iCols = oSize.width/2; 
        iLineWarpD = iLineWarpS = m_oSize.width - iCols;
        s = getROIData (iChannel, oOffset);
-       d = getROIData (iChannel, Point (oOffset.x + oSize.width - 1, oOffset.y));
+       d = getROIData (iChannel, Point (oOffset.x + oSize.width - 1, 
+                                        oOffset.y + oSize.height - 1));
        e = s + iRows * m_oSize.width;
+       break;
     case axisBoth: 
        /* .....................
           ....s->++++++++++l...
@@ -903,6 +932,7 @@ void flippedCopyChannelROI(axis eAxis,
           iRows++;
           e += oSize.width/2;
        }
+       break;
   }
   if (iRows == 0 || iCols == 0) return;
 

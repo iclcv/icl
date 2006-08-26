@@ -99,12 +99,13 @@ namespace icl {
       /** It exploits the given destination image if possible,
           i.e. if the pixel depth matches. Else this image is released
           and a new one is created.
-          @param ppoDst destination image (if Null, a new one is created)
+          @param poDst destination image (if Null, a new one is created)
       **/
-      void shallowCopy(ImgI** ppoDst) const;
+      ImgI* shallowCopy(ImgI* poDst = NULL) const;
 
       /// creates a shallow copy of selected channels of this image
-      bool shallowCopy(ImgI** ppoDst, const int* const piStart, const int* const piEnd) const;
+      ImgI* shallowCopy(const int* const piStart, const int* const piEnd,
+                        ImgI* poDst = NULL) const;
 
       /// copies the image data into the destination image
       /** this function is implemented in the Img-template class

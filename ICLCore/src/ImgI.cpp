@@ -14,29 +14,20 @@ namespace icl {
 
 // {{{ constructor / destructor 
 
-  ImgI::ImgI(const Size &s,
-             format eFormat,
-             depth eDepth,
-             int iChannels):
-    m_iChannels((iChannels <= 0) ? getChannelsOfFormat(eFormat) : iChannels),
-    m_oSize(s),
-    m_eFormat(eFormat),
-    m_eDepth(eDepth),
-    m_oROISize(s)
-  {
-    FUNCTION_LOG("ImgI(" << s.width 
-                 << "," << s.height 
-                 << "," << translateFormat(eFormat) 
-                 << ", "<< translateDepth(eDepth) 
-                 << "," << iChannels << ")  this:" << this); 
-    
-    // use assert call !!
-    if(iChannels > 0){
-      if(eFormat != formatMatrix && getChannelsOfFormat(eFormat) != iChannels){
-        WARNING_LOG("channel count does not match with format");
-      }
-    }
-  }
+ImgI::ImgI(const Size &s, format eFormat, depth eDepth, int iChannels):
+   m_iChannels(eFormat == formatMatrix ? (std::max(0, iChannels)) 
+               : getChannelsOfFormat(eFormat)),
+   m_oSize(s), m_eFormat(eFormat), m_eDepth(eDepth), m_oROISize(s)
+{
+   FUNCTION_LOG("ImgI(" << s.width 
+                << "," << s.height 
+                << "," << translateFormat(eFormat) 
+                << ", "<< translateDepth(eDepth) 
+                << "," << iChannels << ")  this:" << this); 
+   
+   ICLASSERT_RETURN ( eFormat == formatMatrix ||
+                      getChannelsOfFormat (eFormat) == m_iChannels );
+}
 
 ImgI::~ImgI()
 {
@@ -50,13 +41,12 @@ ImgI::~ImgI()
 void ImgI::setFormat(format eFormat)
 {
   FUNCTION_LOG("setFormat(" << translateFormat(eFormat) << ")");
-  if(eFormat != formatMatrix)
-    {
-      int nChannels = getChannelsOfFormat(eFormat);
-      if(nChannels != m_iChannels){
+  if (eFormat != formatMatrix) {
+     int nChannels = getChannelsOfFormat(eFormat);
+     if(nChannels != m_iChannels){
         setChannels(nChannels);
-      }
-    }
+     }
+  }
   m_eFormat=eFormat;
 }
 
@@ -64,42 +54,40 @@ void ImgI::setFormat(format eFormat)
 
 // {{{ utillity functions
 
-void ImgI::shallowCopy(ImgI** ppoDst) const {
+ImgI* ImgI::shallowCopy(ImgI* poDst) const {
   FUNCTION_LOG("");
-  ensureDepth (ppoDst, getDepth ());
+  // create image with zero channels
+  if (!poDst) poDst = imgNew(getDepth(),getSize(),formatMatrix,0);
+  else ensureDepth (&poDst, getDepth ());
   
   if (getDepth() == depth8u) {
-     *(*ppoDst)->asImg<icl8u>() = *this->asImg<icl8u>();
+     *poDst->asImg<icl8u>() = *this->asImg<icl8u>();
   } else {
-     *(*ppoDst)->asImg<icl32f>() = *this->asImg<icl32f>();
+     *poDst->asImg<icl32f>() = *this->asImg<icl32f>();
   }
-  (*ppoDst)->setROI (getROIOffset(), getROISize());
+  poDst->setROI (getROIOffset(), getROISize());
+  return poDst;
 }
 
-bool ImgI::shallowCopy(ImgI** ppoDst, const int* const piStart, const int* const piEnd) const {
+ImgI* ImgI::shallowCopy(const int* const piStart, const int* const piEnd,
+                        ImgI* poDst) const {
   FUNCTION_LOG("");
-  ensureDepth (ppoDst, getDepth ());
-  (*ppoDst)->setChannels (0);
-  (*ppoDst)->resize (getSize());
-  (*ppoDst)->setFormat (formatMatrix);
+  // create image with zero channels
+  if (!poDst) poDst = imgNew(getDepth(),getSize(),formatMatrix,0);
+  else {
+     poDst->setChannels (0);
+     ensureDepth (&poDst, getDepth ());
+     poDst->m_oSize = this->getSize();
+     poDst->m_eFormat = formatMatrix;
+  }
 
   if (getDepth() == depth8u) {
-     Img<icl8u> *pSrc = this->asImg<icl8u>();
-     Img<icl8u> *pDst = (*ppoDst)->asImg<icl8u>();
-     for (const int* it=piStart; it < piEnd; ++it) {
-        if (*it < 0 || *it >= getChannels()) return false;
-        pDst->append (pSrc, *it);
-     }
+     poDst->asImg<icl8u>()->append (this->asImg<icl8u>(), piStart, piEnd);
   } else {
-     Img<icl32f> *pSrc = this->asImg<icl32f>();
-     Img<icl32f> *pDst = (*ppoDst)->asImg<icl32f>();
-     for (const int* it=piStart; it < piEnd; ++it) {
-        if (*it < 0 || *it >= getChannels()) return false;
-        pDst->append (pSrc, *it);
-     }
+     poDst->asImg<icl32f>()->append (this->asImg<icl32f>(), piStart, piEnd);
   }
-  (*ppoDst)->setROI (getROIOffset(), getROISize());
-  return true;
+  poDst->setROI (getROIOffset(), getROISize());
+  return poDst;
 }
 
 
