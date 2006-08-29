@@ -190,7 +190,7 @@ namespace icl{
        m_iLineStep(m_iImageWidth - m_iROIWidth + 1),
        m_ptDataOrigin(ptData),
        m_ptDataCurr(ptData+roROI.x+roROI.y*iImageWidth),
-       m_ptDataEnd(m_ptDataCurr+m_iROIWidth+(m_iROIHeight-1)*m_iImageWidth),
+       m_ptDataEnd(m_iROIWidth ? m_ptDataCurr+m_iROIWidth+(m_iROIHeight-1)*m_iImageWidth : m_ptDataCurr),
        m_ptCurrLineEnd(m_ptDataCurr+m_iROIWidth-1){}
 
     /// 3rd Constructor to create sub-regions of an Img-image
@@ -210,7 +210,7 @@ namespace icl{
        m_iLineStep(m_iImageWidth - m_iROIWidth + 1),
        m_ptDataOrigin(roOrigin.m_ptDataOrigin),
        m_ptDataCurr(roOrigin.m_ptDataCurr - a.x - a.y*m_iImageWidth),
-       m_ptDataEnd(m_ptDataCurr+m_iROIWidth+(m_iROIHeight-1)*m_iImageWidth),
+       m_ptDataEnd(m_iROIWidth ? m_ptDataCurr+m_iROIWidth+(m_iROIHeight-1)*m_iImageWidth : m_ptDataCurr),
        m_ptCurrLineEnd(m_ptDataCurr+m_iROIWidth-1){}
     
     /// retuns a reference of the current pixel value

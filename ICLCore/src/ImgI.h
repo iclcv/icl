@@ -222,21 +222,18 @@ namespace icl {
         return m_oROISize;
       }
      
-      /// fast and direct setting of ROI to a given rectangle
-      /** setting of ROI rectangle without any checks. Compare
-          setROIOffset and setROISize below. */
+      /// sets the image ROI to the given rectangle
       void setROI(const Rect &r){
         FUNCTION_LOG("");
         setROISize(Size(r.width,r.height));
         setROIOffset(Point(r.x,r.y));
       }
-      /// fast and direct setting of ROI without any checks
-      /** sets ROI offset and size to specified arguments without any checks. 
-          Compare setROIOffset and setROISize below. */
+      
+      /// sets the image ROI to the given offset and size
       void setROI(const Point &offset, const Size &size){
         FUNCTION_LOG("");
-        m_oROIOffset = offset;
-        m_oROISize   = size;
+        setROISize(size);
+        setROIOffset(offset);
       }
 
       /// sets the image ROI offset to a given point

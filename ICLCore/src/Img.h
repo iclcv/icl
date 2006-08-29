@@ -692,7 +692,7 @@ template<class T>
 inline void clearChannelROI(Img<T> *im, int c, T clearVal, const Point &offs, const Size &size) {
   FUNCTION_LOG("");
   ICLASSERT_RETURN( im );
-  for(ImgIterator<T> it(im->getROIData(c,offs),im->getSize().width,Rect(offs,size));
+  for(ImgIterator<T> it(im->getData(c),im->getSize().width,Rect(offs,size));
       it.inRegion(); ++it)
   {
      *it = clearVal;
@@ -746,8 +746,8 @@ inline void deepCopyChannelROI(const Img<S> *src,int srcC, const Point &srcOffs,
     ICLASSERT_RETURN( src && dst );
     ICLASSERT_RETURN( srcSize == dstSize );
     
-    ImgIterator<S> itSrc(src->getROIData(srcC,srcOffs),src->getSize().width,Rect(srcOffs,srcSize));
-    ImgIterator<D> itDst(dst->getROIData(dstC,dstOffs),dst->getSize().width,Rect(dstOffs,dstSize));
+    ImgIterator<S> itSrc(src->getData(srcC),src->getSize().width,Rect(srcOffs,srcSize));
+    ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
     
     for(;itSrc.inRegion();itSrc.incRow(),itDst.incRow()){
       copy<S,D>(&*itSrc,&*itSrc+srcSize.width,&*itDst);

@@ -470,7 +470,6 @@ static bool getMirrorPointers (axis eAxis, bool bInplace,
 
          if (bInplace && oSize.height % 2) { // odd ROI height
             iRows++;
-            //(char*)e += iByteSize * (oSize.width/2);
             e = (char*)e + iByteSize * (oSize.width/2);
          }
          break;
@@ -841,7 +840,7 @@ void scaledCopyChannelROI(const Img<S> *src, int srcC, const Point &srcOffs, con
   
   float fSX = ((float)srcSize.width-1)/(float)(dstSize.width); 
   float fSY = ((float)srcSize.height-1)/(float)(dstSize.height);
-  ImgIterator<D> itDst(dst->getROIData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
+  ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
 
   switch(eScaleMode) {
     case interpolateNN:

@@ -20,19 +20,21 @@ namespace icl{
     Rect roi = im->getROI();
     Size s = im->getSize();
      for(int c=0;c<im->getChannels();c++){
-      // top
-      clearChannelROI<T>(im,c,val[c], Point::zero,        
-                         Size(s.width,roi.top()));
-      // bottom
-      clearChannelROI<T>(im,c,val[c], Point(0,roi.bottom()),
-                         Size(s.width,s.height-roi.bottom()));
-      // left
-      clearChannelROI<T>(im,c,val[c], Point(0,roi.top()),
-                         Size(roi.left(),roi.height));
-      // right
-      clearChannelROI<T>(im,c,val[c], roi.ur(),
-                         Size(s.width-roi.right(),roi.height) );
-
+       // top
+       //       clearChannelROI<T>(im,c,val[c], Point::zero,        
+       //                   Size(s.width,roi.top()));
+       // bottom
+       //clearChannelROI<T>(im,c,val[c], Point(0,roi.bottom()),
+       //                   Size(s.width,s.height-roi.bottom()));
+       // left
+       printf("clear::left %d %d %d %d \n",0,roi.top(),roi.left(),roi.height);
+       clearChannelROI<T>(im,c,val[c], Point(0,roi.top()),
+                          Size(roi.left(),roi.height));
+       
+       // right
+       //clearChannelROI<T>(im,c,val[c], roi.ur(),
+       //                   Size(s.width-roi.right(),roi.height) );
+     
     }    
   }
   
