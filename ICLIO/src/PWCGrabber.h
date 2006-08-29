@@ -69,6 +69,7 @@ namespace icl{
     
     Img8u *poRGB8Image;
     Converter oConverter,oConverterHalfSize;
+    //unsigned char *m_pucFlippedData;
 
     void init();
   };

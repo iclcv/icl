@@ -15,7 +15,7 @@ namespace icl {
 // {{{ constructor / destructor 
 
 ImgI::ImgI(const Size &s, format eFormat, depth eDepth, int iChannels):
-   m_iChannels(eFormat == formatMatrix ? (std::max(0, iChannels)) 
+   m_iChannels(eFormat == formatMatrix ? (std::max(getChannelsOfFormat(eFormat), iChannels)) 
                : getChannelsOfFormat(eFormat)),
    m_oSize(s), m_eFormat(eFormat), m_eDepth(eDepth), m_oROISize(s)
 {

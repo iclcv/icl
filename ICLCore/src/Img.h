@@ -324,6 +324,12 @@ class Img : public ImgI
       of the source images roi. All other parameters (channel count, format,...
       of the destination image are copied from the source image.
 
+      <h2>Avoid axis confusions</h2>
+      When speaking about flipping images and horizontal/vertical axis, it is not
+      implicitly clear, what is meant: flipping <em>along</em> - or flipping <em>about</em>
+      the axis. The ICL will follow the terms of the ipp, where
+      flipping <b><em>about</em></b> used. (see ippi_Mirror_<..> manual)      
+
       <h2>Performace</h2>
       Only flipping images with identical depths is IPP-OPTIMIZED, so flipping
       with an internal depth conversion will be very slow in coparison. Flipping
@@ -333,7 +339,7 @@ class Img : public ImgI
       @param eAxis axis to flip (axisVert or axisHorz)
       @return poDst
   */
-  virtual ImgI *flippedCopyROI(ImgI *poDst = NULL, axis eAxis = axisVert) const; 
+  virtual ImgI *flippedCopyROI(ImgI *poDst = NULL, axis eAxis = axisHorz) const; 
 
   /* }}} */
   
@@ -909,8 +915,7 @@ inline flippedCopyChannelROI<icl32f>(axis eAxis,
 #endif
 /* }}} */
 
-/* }}} */ 
- 
+/* {{{   mirror */ 
 #ifdef WITH_IPP_OPTIMIZATION
 /// IPP-OPTIMIZED specialization for icl8u mirror
 template <>
@@ -928,6 +933,9 @@ inline void Img<icl32f>::mirror(axis eAxis, int iChannel,
                        getLineStep(), oSize, (IppiAxis) eAxis);
 }
 #endif
+/* }}} */ 
+
+/* }}} */ 
 
 } //namespace icl
 

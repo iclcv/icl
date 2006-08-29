@@ -286,13 +286,15 @@ PWCGrabber::PWCGrabber(const Size &s,
                        float fFps,
                        int iDevice):
   iWidth(s.width),iHeight(s.height),iDevice(iDevice),fFps(fFps),
-  poRGB8Image(new Img8u(s,formatRGB)){
+  poRGB8Image(new Img8u(s,formatRGB)){ 
+  // m_pucFlippedData(new unsigned char[(int)(1.5*iWidth*iHeight)]){
   
   init();
 }
 
 PWCGrabber::~PWCGrabber(){
   delete poRGB8Image;
+  //delete m_pucFlippedData;
   
   usbvflg_opencount[iDevice]--;
   if (usbvflg_verbosity>1)
@@ -443,6 +445,32 @@ ImgI* PWCGrabber::grab(ImgI *poOutput){
   icl8u *pY = pucPwcData;
   icl8u *pU = pY+iWidth*iHeight;
   icl8u *pV = pY+(int)(1.25*iWidth*iHeight);
+
+  /*  // <flip>
+  icl8u *pYfl = m_pucFlippedData;
+  icl8u *pUfl = pYfl+iWidth*iHeight;
+  icl8u *pVfl = pYfl+(int)(1.25*iWidth*iHeight);
+ 
+  Size s(iWidth,iHeight);
+  Size s2(iWidth/2,iHeight/2);
+  
+  Img8u ySrc(s,formatMatrix,1,&pY);
+  Img8u uSrc(s2,formatMatrix,1,&pU);
+  Img8u vSrc(s2,formatMatrix,1,&pV);
+
+  Img8u yFlipped(s,formatMatrix,1,&pYfl);
+  Img8u uFlipped(s2,formatMatrix,1,&pUfl);
+  Img8u vFlipped(s2,formatMatrix,1,&pVfl);
+  
+  ySrc.flippedCopyROI(&yFlipped);
+  uSrc.flippedCopyROI(&uFlipped);
+  vSrc.flippedCopyROI(&vFlipped);
+  
+  pY = pYfl;
+  pU = pUfl;
+  pV = pVfl;
+  */
+  // </flip>
   
   if(poOutput) {
     if(poOutput->getFormat() == formatRGB &&
