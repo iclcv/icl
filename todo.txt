@@ -1,0 +1,44 @@
+ICLIO:
+readFile "object*ver*.*"
+writeFile "object#.jpg"
+FireWire::grab
+
+ICLCore:
+deepCopyChannelROI (depth conversion case): use ippiScale instead of ippiConvert to preserve range
+
+addChannelROIs (c, a, b): c = a + b  // c may equal a or/and b
+multChannelROIs (c, a, b): c = a * b // c may equal a or/and b
+
+
+Units: 
+Clip: fasse alle ippiThreshold*Val Funktionen zusammen (mit threshold=value):
+ lower bound: %f
+ upper bound: %f 
+
+Compare: fasse alle ippiCompare* Funktionen zusammen:
+ pixel-wise compare operation:
+   pixel1 < = > pixel2 | value
+   eps for equal:
+
+MaskedCopy:
+
+WienerFilter
+MedianColor
+Canny edge detector
+
+WeightedSum: s = sum_i w_i * c_i
+Product
+Logical Operations
+
+skin color
+
+find peaks
+
+proximity: ippi(SqrDistance[Full|Same|Valid]_Norm | 
+                CrossCorr[Full|Same|Valid]_Norm[Level])
+
+Blob Tracking
+
+
+applications:
+Yvonne's hand gesture recognition
