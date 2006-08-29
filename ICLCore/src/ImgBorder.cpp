@@ -2,6 +2,17 @@
 
 namespace icl{
 
+  /** clear strategy:
+              (top)
+       tttttttttttttttttttttt
+       tttttttttttttttttttttt
+       lll.................rr
+ (left)lll.....(image-.....rr(right)
+       lll......ROI).......rr 
+       lll.................rr
+       bbbbbbbbbbbbbbbbbbbbbb
+              (bottom)
+  */
   template<class T>
   void ImgBorder::fixed(Img<T> *im, T* val){
     FUNCTION_LOG("");
@@ -93,24 +104,88 @@ namespace icl{
     
     if(poImage->getDepth() == depth8u){
 #ifdef WITH_IPP_OPTIMIZATION
-    for(int c=0;c<poImage->getChannels();c++){
-      ippiCopyReplicateBorder_8u_C1IR(poImage->asImg<icl8u>()->getROIData(c),poImage->getLineStep(),
-                                      poImage->getROISize(),poImage->getSize(), 
-                                      poImage->getROIOffset().x,poImage->getROIOffset().y);
-    }
+      for(int c=0;c<poImage->getChannels();c++){
+        ippiCopyReplicateBorder_8u_C1IR(poImage->asImg<icl8u>()->getROIData(c),poImage->getLineStep(),
+                                        poImage->getROISize(),poImage->getSize(), 
+                                        poImage->getROIOffset().x,poImage->getROIOffset().y);
+      }
 #else
-    _copy_border(poImage->asImg<icl8u>());
+      _copy_border(poImage->asImg<icl8u>());
 #endif
-  }else{
-    _copy_border(poImage->asImg<icl32f>());
+    }else{
+#ifdef WITH_IPP_OPTIMIZATION
+      for(int c=0;c<poImage->getChannels();c++){ /// icl32f-case using Ipp32s method
+        ippiCopyReplicateBorder_32s_C1IR((Ipp32s*)(poImage->asImg<icl8u>()->getROIData(c)),poImage->getLineStep(),
+                                         poImage->getROISize(),poImage->getSize(), 
+                                         poImage->getROIOffset().x,poImage->getROIOffset().y);
+      }
+#else
+      _copy_border(poImage->asImg<icl32f>());
+#endif
+    }
   }
-}
   
-  void ImgBorder::fromOther(ImgI *poImage, ImgI* poOther){
+  /** copy strategy:
+              (top)
+       tttttttttttttttttttttt
+       tttttttttttttttttttttt
+       lll.................rr
+ (left)lll.....(image-.....rr(right)
+       lll......ROI).......rr 
+       lll.................rr
+       bbbbbbbbbbbbbbbbbbbbbb
+              (bottom)
+  */
+  void ImgBorder::fromOther(ImgI *dst, ImgI* src){
     FUNCTION_LOG("");
-    ICLASSERT_RETURN( poImage && poOther );
-    ICLASSERT_RETURN( poImage->getSize() ==  poOther->getSize() );
-    printf("not yet implemented \n");
+    ICLASSERT_RETURN( dst && src );
+    ICLASSERT_RETURN( dst->isEqual(src->getSize(),src->getChannels()) );
+
+    Rect roi = dst->getROI();
+    Size s = dst->getSize();
+    
+    Point offs[4] = { 
+      Point::zero,              // top
+      Point(0,roi.bottom()),    // bottom
+      Point(0,roi.top()),       // left
+      roi.ur()                  // right
+    };
+    Size size[4] = {                
+      Size(s.width,roi.top()),               // top
+      Size(s.width,s.height-roi.bottom()),   // bottom
+      Size(roi.left(),roi.height),           // left
+      Size(s.width-roi.right(),roi.height)   // right
+    };
+    
+    if(src->getDepth() == depth8u){
+      if(dst->getDepth() == depth8u){
+        for(int c=0;c<dst->getChannels();c++){
+          for(int i=0;i<4;i++){
+            deepCopyChannelROI<icl8u,icl8u>(src->asImg<icl8u>(),c,offs[i],size[i],dst->asImg<icl8u>(),c,offs[i],size[i]);
+          }
+        }
+      }else{
+        for(int c=0;c<dst->getChannels();c++){
+          for(int i=0;i<4;i++){
+            deepCopyChannelROI<icl8u,icl32f>(src->asImg<icl8u>(),c,offs[i],size[i],dst->asImg<icl32f>(),c,offs[i],size[i]);
+          }
+        }
+      }
+    }else{ // src is depth32f
+      if(dst->getDepth() == depth8u){
+        for(int c=0;c<dst->getChannels();c++){
+          for(int i=0;i<4;i++){
+            deepCopyChannelROI<icl32f,icl8u>(src->asImg<icl32f>(),c,offs[i],size[i],dst->asImg<icl8u>(),c,offs[i],size[i]);
+          }
+        }
+      }else{
+        for(int c=0;c<dst->getChannels();c++){
+          for(int i=0;i<4;i++){
+            deepCopyChannelROI<icl32f,icl32f>(src->asImg<icl32f>(),c,offs[i],size[i],dst->asImg<icl32f>(),c,offs[i],size[i]);
+          }
+        }
+      }
+    } 
   }
 
 }

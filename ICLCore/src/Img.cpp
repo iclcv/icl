@@ -470,7 +470,8 @@ static bool getMirrorPointers (axis eAxis, bool bInplace,
 
          if (bInplace && oSize.height % 2) { // odd ROI height
             iRows++;
-            (char*)e += iByteSize * (oSize.width/2);
+            //(char*)e += iByteSize * (oSize.width/2);
+            e = (char*)e + iByteSize * (oSize.width/2);
          }
          break;
    }
