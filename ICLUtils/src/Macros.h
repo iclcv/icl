@@ -2,10 +2,12 @@
 #define ICLMACROS_H
 
 #include <iostream>
+#include <stdlib.h>
 
 using namespace std;
 
 namespace icl {
+
 /* {{{ Debug Level */
 
 //---- The following DebugMessage can be activated by defining DEBUGLEVEL_{0..5}

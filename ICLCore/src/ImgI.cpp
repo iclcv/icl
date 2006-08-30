@@ -124,11 +124,17 @@ void ImgI::print(string sTitle) const
 
 void ImgI::setROISize(const Size &s){
   FUNCTION_LOG("setROISize("<< s.width << "," << s.height << ")");
-
+  
   int iW = s.width <=  0 ? getSize().width  + s.width  : s.width;
   int iH = s.height <= 0 ? getSize().height + s.height : s.height;
+
+  m_oROISize.width =  clip(iW,0,getSize().width-getROIOffset().x);
+  m_oROISize.height =  clip(iH,0,getSize().height-getROIOffset().y);
+
+  /*
   m_oROISize.width  = std::min (std::max (1, iW), getSize().width);
   m_oROISize.height = std::min (std::max (1, iH), getSize().height);
+  */
 }
 
 void ImgI::setROIOffset(const Point &p){
@@ -136,8 +142,14 @@ void ImgI::setROIOffset(const Point &p){
   
   int x = p.x < 0 ? getSize().width  - getROISize().width  + p.x : p.x;
   int y = p.y < 0 ? getSize().height - getROISize().height + p.y : p.y;
+
+  m_oROIOffset.x =  clip(x,0,getSize().width-getROISize().width);
+  m_oROIOffset.y =  clip(y,0,getSize().height-getROISize().height);
+  
+ /*
   m_oROIOffset.x =  std::min (std::max (0, x), getSize().width  - getROISize().width);
   m_oROIOffset.y =  std::min (std::max (0, y), getSize().height - getROISize().height);
+  */
 }
 
 

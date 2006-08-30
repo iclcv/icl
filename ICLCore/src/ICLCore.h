@@ -313,6 +313,14 @@ namespace icl {
 #endif
   };
 
+  /* {{{ basic global functions */
+
+  /// clips a value into the range [tMin,tMax]
+  template <class T>
+  inline T clip(T tX, T tMin, T tMax){ return tX < tMin ? tMin : tX > tMax ? tMax : tX; }
+ 
+  /* }}} */
+
 /* {{{ Global classes */
   
   /// Casting operator
@@ -327,7 +335,8 @@ namespace icl {
   template<typename srcT>
   struct Cast<srcT, icl8u> {
      static icl8u cast (srcT v) {
-        return static_cast<icl8u>(std::min ((srcT) 255, std::max ((srcT) 0, v)));
+       //return static_cast<icl8u>(std::min ((srcT) 255, std::max ((srcT) 0, v)));
+       return static_cast<icl8u>(clip<srcT>(v,0,255));
      }
   };
   template<typename T>
