@@ -3,7 +3,7 @@
 #---------------------------------------------------------------------------
 # Project related configuration options
 #---------------------------------------------------------------------------
-PROJECT_NAME           = "ICL (Image Component Library)"
+PROJECT_NAME           = "ICLFilter (ICL Filter)"
 PROJECT_NUMBER         = 
 OUTPUT_DIRECTORY       = ./documentation/
 CREATE_SUBDIRS         = NO

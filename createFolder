@@ -1,0 +1,57 @@
+#!/bin/bash
+
+if [ $# -ne 1 ] ; then
+  echo -e "Empty foldername"
+  echo -e "(e.g.) ./createFolder ICLTestFolder"
+  exit 1
+fi
+
+
+# Create folder root dir
+echo "Creating folder $1:"
+mkdir -p ./$1
+cp ./make/makeVar.root ./$1/makeVar
+ln -s ../make/makefile.root ./$1/makefile
+
+# Create folder doc dir
+echo -n "Creating sub folder doc ... "
+mkdir -p ./$1/doc
+cp ./make/makeVar.doc ./$1/doc/makeVar
+ln -s ../../make/makefile.doc ./$1/doc/makefile
+cp ./make/doxyfile ./$1/doc/doxyfile
+echo "done"
+
+# Create folder lib dir
+echo -n "Creating sub folder lib ... "
+mkdir -p ./$1/lib
+cp ./make/makeVar.lib ./$1/lib/makeVar
+ln -s ../../make/makefile.lib ./$1/lib/makefile
+echo "done"
+
+# Create folder src dir
+echo -n "Creating sub folder src ... "
+mkdir -p ./$1/src
+cp ./make/makeVar.src ./$1/src/makeVar
+ln -s ../../make/makefile.src ./$1/src/makefile
+echo "done"
+
+# Create folder obj dir
+echo -n "Creating sub folder obj ... "
+mkdir -p ./$1/obj
+echo "done"
+
+# Create folder test dir
+echo -n "Creating sub folder test ... "
+mkdir -p ./$1/test
+cp ./make/makeVar.test ./$1/test/makeVar
+ln -s ../../make/makefile.test ./$1/test/makefile
+echo "done"
+
+
+
+
+
+
+
+
+
