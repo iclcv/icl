@@ -195,31 +195,13 @@ class Img : public ImgI
 
   /// sub-pixel access using nearest neighbour interpolation
   float subPixelNN(float fX, float fY, int iChannel) const {
-     return (*this)((int)round(fX), (int)round(fY), iChannel);
+     return (*this)((int)fX, (int)fY, iChannel);
   }
   /// sub-pixel access using linear interpolation
-  float subPixelLIN(float fX, float fY, int iChannel) const {
-     float fX0 = fX - floor(fX), fX1 = 1.0 - fX0;
-     float fY0 = fY - floor(fY), fY1 = 1.0 - fY0;
-     int xll = (int) floor(fX);
-     int yll = (int) floor(fY);
-   
-     Type* pLL = getData(iChannel) + xll + yll * m_oSize.width;
-     float a = *pLL;        //  a b
-     float b = *(++pLL);    //  c d
-     pLL += m_oSize.width;
-     float d = *pLL;
-     float c = *(--pLL);
-     
-//     return fX1*fY1*a + fX0*fY1*b + fX0*fY0*d + fX1*fY0*c;
-     return fX1 * (fY1*a + fY0*c) + fX0 * (fY1*b + fY0*d);
-  }
+  float subPixelLIN(float fX, float fY, int iChannel) const;
   
   /// sub-pixel access using region average interpolation
-  float subPixelRA(float fX, float fY, int iChannel) const {
-     ERROR_LOG ("region average interpolation is not yet implemented!");
-     return subPixelLIN (fX, fY, iChannel);
-  }
+  float subPixelRA(float fX, float fY, int iChannel) const;
 
   /// sub-pixel access operator, uses given interpolation method
   Type operator()(float fX, float fY, int iChannel, scalemode eMode) const;

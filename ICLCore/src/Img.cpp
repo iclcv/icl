@@ -725,6 +725,33 @@ SmartPtr<Type> Img<Type>::createChannel(Type *ptDataToCopy) const
   return SmartPtr<Type>(ptNewData);
 }
 
+
+// sub-pixel access using linear interpolation
+template<class Type>
+float Img<Type>::subPixelLIN(float fX, float fY, int iChannel) const {
+   float fX0 = fX - floor(fX), fX1 = 1.0 - fX0;
+   float fY0 = fY - floor(fY), fY1 = 1.0 - fY0;
+   int xll = (int) fX;
+   int yll = (int) fY;
+   
+   Type* pLL = getData(iChannel) + xll + yll * m_oSize.width;
+   float a = *pLL;        //  a b
+   float b = *(++pLL);    //  c d
+   pLL += m_oSize.width;
+   float d = *pLL;
+   float c = *(--pLL);
+   
+// return fX1*fY1*a + fX0*fY1*b + fX0*fY0*d + fX1*fY0*c;
+   return fX1 * (fY1*a + fY0*c) + fX0 * (fY1*b + fY0*d);
+}
+  
+// sub-pixel access using region average interpolation
+template<class Type>
+float Img<Type>::subPixelRA(float fX, float fY, int iChannel) const {
+   ERROR_LOG ("region average interpolation is not yet implemented!");
+   return subPixelLIN (fX, fY, iChannel);
+}
+
 template<class Type>
 Type Img<Type>::operator()(float fX, float fY, int iChannel, scalemode eScaleMode) const {
    switch(eScaleMode) {
@@ -839,28 +866,36 @@ void scaledCopyChannelROI(const Img<S> *src, int srcC, const Point &srcOffs, con
 {
   FUNCTION_LOG("");
   ICLASSERT_RETURN( src && dst );
-  
-  float fSX = ((float)srcSize.width-1)/(float)(dstSize.width); 
-  float fSY = ((float)srcSize.height-1)/(float)(dstSize.height);
+  float fSX = ((float)srcSize.width)/(float)(dstSize.width); 
+  float fSY = ((float)srcSize.height)/(float)(dstSize.height);
+
+  float (Img<S>::*subPixelMethod)(float fX, float fY, int iChannel) const;
+  switch(eScaleMode) {
+     case interpolateNN:
+        subPixelMethod = &Img<S>::subPixelNN;
+        break;
+     case interpolateLIN:
+        fSX = ((float)srcSize.width-1)/(float)(dstSize.width); 
+        fSY = ((float)srcSize.height-1)/(float)(dstSize.height);
+        subPixelMethod = &Img<S>::subPixelLIN;
+        break;
+     default:
+        ERROR_LOG("unknown interpoation method!");
+        subPixelMethod = &Img<S>::subPixelNN;
+        break;
+  }
+
   ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
 
-  switch(eScaleMode) {
-    case interpolateNN:
-       for(; itDst.inRegion(); ++itDst) 
-          *itDst = Cast<float, D>::cast (src->subPixelNN (fSX * (float)itDst.x(), 
-                                                          fSY * (float)itDst.y(), srcC));
-       break;
-    case interpolateLIN:
-       for(; itDst.inRegion(); ++itDst) 
-          *itDst = Cast<float, D>::cast (src->subPixelLIN (fSX * (float)itDst.x(), 
-                                                           fSY * (float)itDst.y(), srcC));
-       break;
-    default:
-       ERROR_LOG("unknown interpoation method!");
-       for(; itDst.inRegion(); ++itDst) 
-          *itDst = Cast<float, D>::cast (src->subPixelNN (fSX * (float)itDst.x(), 
-                                                          fSY * (float)itDst.y(), srcC));
-       break;
+  int xD = 0;
+  int yD = 0;
+  float yS = srcOffs.y + fSY * yD;
+  for(; itDst.inRegion(); ++itDst) {
+     *itDst = Cast<float, D>::cast ((src->*subPixelMethod)(srcOffs.x + fSX * xD, yS, srcC));
+     if (++xD == dstSize.width) {
+        yS = srcOffs.y + fSY * ++yD;
+        xD = 0;
+     }
   }
 }
 
