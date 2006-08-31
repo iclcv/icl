@@ -792,7 +792,8 @@ Img<icl8u>::scaleRange(float fNewMin, float fNewMax,
    icl8u tShift = Cast<float, icl8u>::cast((fMax * fNewMin - fMin * fNewMax) / (fNewMax - fNewMin));
    
    ippiMulC_8u_C1IRSfs (tFac, getROIData(iChannel), getLineStep(), getROISize(), tNorm);
-   ippiAddC_8u_C1IRSfs (tShift, getROIData(iChannel), getLineStep(), getROISize(), 1);
+   if (tShift != 0)
+      ippiAddC_8u_C1IRSfs (tShift, getROIData(iChannel), getLineStep(), getROISize(), 1);
 }
 template <> void 
 Img<icl32f>::scaleRange(float fNewMin, float fNewMax,
@@ -801,7 +802,8 @@ Img<icl32f>::scaleRange(float fNewMin, float fNewMax,
    icl32f tShift = (fMax * fNewMin - fMin * fNewMax) / (fMax - fMin);
    
    ippiMulC_32f_C1IR (tFac, getROIData(iChannel), getLineStep(), getROISize());
-   ippiAddC_32f_C1IR (tShift, getROIData(iChannel), getLineStep(), getROISize());
+   if (tShift != 0)
+      ippiAddC_32f_C1IR (tShift, getROIData(iChannel), getLineStep(), getROISize());
 }
 #endif
 

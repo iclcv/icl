@@ -222,41 +222,54 @@ namespace icl {
         return m_oROISize;
       }
      
-      /// sets the image ROI to the given rectangle
-      void setROI(const Rect &r){
-        FUNCTION_LOG("");
-        setROISize(Size(r.width,r.height));
-        setROIOffset(Point(r.x,r.y));
+      /// sets the image ROI offset to the given value
+      void setROIOffset(const Point &offset) {
+         ICLASSERT_RETURN (offset.x >= 0 && offset.x + m_oROISize.width <= m_oSize.width &&
+                           offset.y >= 0 && offset.y + m_oROISize.height <= m_oSize.height);
+         m_oROIOffset = offset;
       }
       
-      /// sets the image ROI to the given offset and size
+      /// sets the image ROI size to the given value
+      void setROISize(const Size &size) {
+         ICLASSERT_RETURN (size.width >= 1 && m_oROIOffset.x + size.width  <= m_oSize.width &&
+                           size.width >= 1 && m_oROIOffset.y + size.height <= m_oSize.height);
+         m_oROISize = size;
+      }
+      
+      /// set both image ROI offset and size
       void setROI(const Point &offset, const Size &size){
-        FUNCTION_LOG("");
-        setROISize(size);
-        setROIOffset(offset);
+         ICLASSERT_RETURN (offset.x >= 0 && size.width >= 1 && offset.x + size.width  <= m_oSize.width &&
+                           offset.y >= 0 && size.width >= 1 && offset.y + size.height <= m_oSize.height);
+         m_oROIOffset = offset;
+         m_oROISize   = size;
       }
 
-      /// sets the image ROI offset to a given point
-      /** While the methods setROI(rect) and setROI(offset,size) directly
-          set the images ROI from the given arguments, the following separate
-          methods provide a check for validity of the given arguments, which
-          are adapted to meaningful values otherwise.
-          Additionally, negative values are interpreted relative to the
-          whole image size resp. the upper right corner of the image.
+      /// sets the image ROI to the given rectangle
+      void setROI(const Rect &r) {
+         setROI (Point(r.x,r.y), Size(r.width,r.height));
+      }
 
-          E.g. an offset (5,5) with size (-10,-10) sets the ROI to the
-          inner sub image with a 5-pixel margin. offset(-5,-5) and size (5,5) 
-          sets the ROI to the upper right 5x5 corner. 
-          Attention: If both size and offset are changed in series,
-          the calling order should be: setROISize before setROIOffset,
-          because the latter refers to the existing ROI size.
+      /** While the methods setROI, setROIOffset and setROISize directly set
+          the images ROI from the given arguments, the following methods adapt the
+          the ROI parameters to assure a valid ROI. Negative values are interpreted 
+          relative to the whole image size resp. the upper right corner of the image.
+
+          E.g. an offset (5,5) with size (-10,-10) sets the ROI to the inner
+          sub image with a 5-pixel margin. offset(-5,-5) and size (5,5) sets
+          the ROI to the upper right 5x5 corner. 
       **/
-      /** for more deails look at the above function setROI */
-      void setROIOffset(const Point &offset);
+      /// checks, eventually adapts and finally sets the image ROI offset
+      void setROIOffsetAdaptive(const Point &offset);
       
-      /// sets the image ROI size to a given Size
-      /** for more deails look at the above function setROIOffset */
-      void setROISize(const Size &size);
+      /// checks, eventually adapts and finally sets the image ROI size
+      void setROISizeAdaptive(const Size &size);
+
+      /// checks, eventually adapts and finally sets the image ROI size
+      void setROIAdaptive(const Rect &r) {
+         m_oROIOffset = Point::zero;
+         setROISizeAdaptive (Size(r.width,r.height));
+         setROIOffsetAdaptive (Point(r.x,r.y));
+      }
      
       /// returns ROISize == ImageSize
       int hasFullROI() const {

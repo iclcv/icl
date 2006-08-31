@@ -107,7 +107,7 @@ namespace icl{
     ifstream streamInputImage;
     string sFileName;
     Converter oConv;
-    ImgI *poInImg;
+    ImgI *poInImg = 0;
     clear();
     
     //---- Build file name ----
