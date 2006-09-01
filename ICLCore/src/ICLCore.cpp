@@ -34,6 +34,10 @@ namespace icl{
           return 3;
           break;
           
+        case formatChroma:
+          return 2;
+          break;
+          
         case formatGray:
         case formatMatrix:
         default:
@@ -52,6 +56,7 @@ namespace icl{
         case formatYUV: return "yuv";
         case formatGray: return "gray";
         case formatMatrix: return "matrix";
+        case formatChroma: return "chroma";
         default: return "undefined format";        
       }
   }
@@ -71,6 +76,7 @@ namespace icl{
       case 'y': return formatYUV;
       case 'g': return formatGray;
       case 'm': return formatMatrix;
+      case 'c': return formatChroma;
       default: return formatMatrix;
     }
   }

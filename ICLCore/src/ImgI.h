@@ -194,11 +194,12 @@ namespace icl {
           
         }
       //@}
+
       /* }}} */
       
       //@{ @name ROI handling functions
       /* {{{ open */
-      
+
       /// returns the images ROI rectangle
       Rect getROI() const{
         FUNCTION_LOG("");
@@ -285,6 +286,7 @@ namespace icl {
       }
       
       //@}
+
       /* }}} */
 
       //@{ @name data access
@@ -332,6 +334,7 @@ namespace icl {
       void setFormat(format eFormat);
       
       //@}
+
       /* }}} */
 
       //@{ @name image processing functions
@@ -417,7 +420,7 @@ namespace icl {
            format eFormat, 
            depth eDepth=depth8u,
            int iChannels=-1);
-      
+
       /* }}} */
 
       /* {{{ data */

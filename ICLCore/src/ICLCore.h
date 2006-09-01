@@ -282,7 +282,8 @@ namespace icl {
     formatLAB, /**< (lightness,a*,b*) color space */
     formatYUV, /**< (Y,u,v) color space */
     formatGray, /**< n-channel gray image range of values is [0,255] as default */
-    formatMatrix /**< n-channel image without a specified color space. */
+    formatMatrix, /**< n-channel image without a specified color space. */
+    formatChroma /**< 2 channel chromaticity color space */
   };
 
 #ifdef WITH_IPP_OPTIMIZATION
