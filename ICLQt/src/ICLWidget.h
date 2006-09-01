@@ -55,6 +55,7 @@ namespace icl{
     virtual void mouseMoveEvent(QMouseEvent *e);
     virtual void enterEvent(QEvent *e);
     virtual void leaveEvent(QEvent *e);
+    virtual void resizeEvent(QResizeEvent *e);
     void childChanged(int id, void *val);
     
     void setImage(ImgI *poImage);

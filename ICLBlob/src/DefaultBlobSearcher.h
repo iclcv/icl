@@ -23,7 +23,7 @@ namespace icl{
                     const vector<icl8u> &gs, 
                     const vector<icl8u> &bs,
                     const icl8u thresholds[3],
-                    RatingCombinationType rct); 
+                    RatingCombinationType rct=rctOR); 
 
 
     protected:

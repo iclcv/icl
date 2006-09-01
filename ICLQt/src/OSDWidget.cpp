@@ -216,8 +216,10 @@ namespace icl{
  
  OSDWidget::~OSDWidget(){
    // {{{ open
-
-  }
+   for(wvec::iterator it=m_vecChilds.begin();it!= m_vecChilds.end();++it){
+     delete *it;
+   }
+ }
     // }}}
  
  void OSDWidget::keyPressed(int key, int  x, int y){(void)x;(void)y;(void)key;}

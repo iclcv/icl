@@ -1,6 +1,7 @@
 #include "ICLWidget.h"
 #include <QImage>
 #include <QPainter>
+#include <QResizeEvent>
 
 #include "OSD.h"
 
@@ -106,6 +107,18 @@ namespace icl{
     m_iMouseY = -1;
    
     up();
+  }
+
+  // }}}
+  void ICLWidget::resizeEvent(QResizeEvent *e){
+    // {{{ open
+    QSize oNewSize = e->size();
+    if(m_poOSD && isVisible()){
+      delete m_poOSD;
+      delete m_poShowOSD;
+      m_poOSD = new OSD(0,QRect(3,3,w()-10,h()-10),this,0);
+      m_poShowOSD = new OSDButton(SHOW_OSD_ID,QRect(w()-52,h()-16,50,14),this,0,"options");
+    }
   }
 
   // }}}
