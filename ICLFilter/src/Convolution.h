@@ -260,8 +260,8 @@ namespace icl{
 
     /// function pointer for ipp fixed convolution, depth8u image
     IppStatus (*pFixed8u)(const Ipp8u* pSrc, int srcStep,
-                              Ipp8u* pDst, int dstStep, 
-                              IppiSize roiSize);
+                          Ipp8u* pDst, int dstStep, 
+                          IppiSize roiSize);
     /// function pointer for ipp fixed convolution, depth8u image, mask size parameter
     IppStatus (*pFixed8uMask)(const Ipp8u* pSrc, int srcStep,
                               Ipp8u* pDst, int dstStep, 

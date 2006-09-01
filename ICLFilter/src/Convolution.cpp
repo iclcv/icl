@@ -447,10 +447,12 @@ namespace icl{
           // distinguish between different ipp function interfaces
           if (pFixed8u) this->ippFixedConv<icl8u> (poSrc, *ppoDst, pFixed8u);
           else if (pFixed8uMask) this->ippFixedConvMask<icl8u> (poSrc, *ppoDst, pFixed8uMask);
+          else ERROR_LOG ("IPP fixed filter not implemented for depth8u");
        } else {
           // distinguish between different ipp function interfaces
           if (pFixed32f) this->ippFixedConv<icl32f> (poSrc, *ppoDst, pFixed32f);
           else if (pFixed32fMask) this->ippFixedConvMask<icl32f> (poSrc, *ppoDst, pFixed32fMask);
+          else ERROR_LOG ("IPP fixed filter not implemented for depth32f");
        }
        return;
     }
