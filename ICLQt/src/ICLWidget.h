@@ -138,7 +138,7 @@ namespace icl{
     
     private:
     Options op;
-    QMutex m_oMutex;
+    QMutex m_oMutex, m_oOSDMutex;
     ImgI *m_poImage;
 #ifndef USE_OPENGL_ACCELERATION
     QImage m_oQImage;

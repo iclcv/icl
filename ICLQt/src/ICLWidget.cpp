@@ -50,11 +50,13 @@ namespace icl{
       default: aiDown[1] = 1; break;
     }
    
+     m_oOSDMutex.lock();
     if(m_poCurrOSD && m_poCurrOSD->mouseOver(e->x(),e->y())){
       m_iMouseX = e->x();
       m_iMouseY = e->y();
       m_poCurrOSD->_mousePressed(e->x(),e->y(),e->button());
     }
+    m_oOSDMutex.unlock();
     up();
   }
   // }}}
@@ -65,27 +67,33 @@ namespace icl{
       case Qt::RightButton: aiDown[2]=0; break;
       default: aiDown[1] = 0; break;
     }
+    m_oOSDMutex.lock();
     if(m_poCurrOSD){
       m_iMouseX = e->x();
       m_iMouseY = e->y();
       m_poCurrOSD->_mouseReleased(e->x(),e->y(),e->button());
     }
+    m_oOSDMutex.unlock();
     up();
   }
   // }}}
   void ICLWidget::mouseMoveEvent(QMouseEvent *e){
     // {{{ open
+    m_oOSDMutex.lock();
     if(m_poCurrOSD && m_poCurrOSD->mouseOver(e->x(),e->y())){
       m_iMouseX = e->x();
       m_iMouseY = e->y();
       m_poCurrOSD->_mouseMoved(e->x(),e->y(),aiDown);
     }
+    m_oOSDMutex.unlock();
+
     up();
   }
   // }}}
   void ICLWidget::enterEvent(QEvent *e){
     // {{{ open
     (void)e;
+    m_oOSDMutex.lock();
     if(!m_poOSD){
       m_poOSD = new OSD(0,QRect(3,3,w()-10,h()-10),this,0);
       m_poShowOSD = new OSDButton(SHOW_OSD_ID,QRect(w()-52,h()-16,50,14),this,0,"options");
@@ -93,6 +101,7 @@ namespace icl{
     if(m_poCurrOSD == 0){
       m_poCurrOSD = m_poShowOSD;
     }
+    m_oOSDMutex.unlock();
     up();
   }
 
@@ -100,9 +109,11 @@ namespace icl{
   void ICLWidget::leaveEvent(QEvent *e){
     // {{{ open
     (void)e;
+    m_oOSDMutex.lock();
     if(m_poCurrOSD == m_poShowOSD){
       m_poCurrOSD = 0;
     }
+    m_oOSDMutex.unlock();
     m_iMouseX = -1;
     m_iMouseY = -1;
    
@@ -112,13 +123,23 @@ namespace icl{
   // }}}
   void ICLWidget::resizeEvent(QResizeEvent *e){
     // {{{ open
-    QSize oNewSize = e->size();
+    QSize s = e->size();
+
+    m_oOSDMutex.lock();
     if(m_poOSD && isVisible()){
+      int iLastOSD = 0; // none
+      if(m_poCurrOSD == m_poOSD) iLastOSD = 1; // osd
+      else if(m_poCurrOSD == m_poShowOSD) iLastOSD = 2; // show osd
+      m_poCurrOSD = 0;
       delete m_poOSD;
       delete m_poShowOSD;
-      m_poOSD = new OSD(0,QRect(3,3,w()-10,h()-10),this,0);
-      m_poShowOSD = new OSDButton(SHOW_OSD_ID,QRect(w()-52,h()-16,50,14),this,0,"options");
+      m_poOSD = new OSD(0,QRect(3,3,s.width()-10,s.height()-10),this,0);
+      m_poShowOSD = new OSDButton(SHOW_OSD_ID,QRect(s.width()-52,s.height()-16,50,14),this,0,"options");
+
+      if(iLastOSD == 1) m_poCurrOSD = m_poOSD;
+      else if(iLastOSD == 2) m_poCurrOSD = m_poShowOSD;
     }
+    m_oOSDMutex.unlock();
   }
 
   // }}}
@@ -220,10 +241,12 @@ namespace icl{
       drawRect(poPainter,r,QColor(0,0,0),QColor(0,0,0));
       drawStr(poPainter,"no image",r);      
     }    
+    m_oOSDMutex.lock();
     if(m_poCurrOSD){
       poPainter->setFont(QFont("Arial",11));
       m_poCurrOSD->_drawSelf(poPainter,m_iMouseX,m_iMouseY,aiDown);
     }
+    m_oOSDMutex.unlock();
   }
 
   // }}}
@@ -340,6 +363,7 @@ namespace icl{
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glOrtho(0, QGLWidget::width(),QGLWidget::height(), 0, -999999, 999999);
+    glViewport(0,0,QGLWidget::width(),QGLWidget::height());
     glColorMask(1,1,1,1); 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
