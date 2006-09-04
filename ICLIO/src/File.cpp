@@ -537,17 +537,16 @@ namespace icl{
     headerParameter.push_back("ImageDepth");
     headerParameter.push_back("Format");
     m_iNumChannels = 1;
+    m_iNumImages = 1;
     m_eDepth = depth8u;
     
     //---- Read the first line of the header ----
     getline(streamInputImage, sTmpLine);
     
     // {{{ Read special header info
-
-    getline(streamInputImage, sTmpLine);
-    
     do
     {
+      getline(streamInputImage, sTmpLine);
       //---- Analyse comment line in header ----
       SECTION_LOG("Check and analyse comment");
       splitString(sTmpLine," ",vecSubString);
@@ -629,8 +628,6 @@ namespace icl{
           } // switch
         } // if
       } // for 
-      
-      getline(streamInputImage,sTmpLine);
     } while(sTmpLine[0] == '#'); 
 
     // }}}
