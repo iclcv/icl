@@ -122,6 +122,25 @@ has half X- and half Y-resolution. The data pointer has iW*iH*1.5 elements)
 */
 void convertYUV420ToRGB8(Img8u* poDst, unsigned char *pucSrc, const Size &s);
 
+/// Convert an 4 channel Img8u into Qts ARGB32 interleaved format 
+/** @param pucDst destination data pointer of size
+                  poSrc->getDim()*4
+    @param poSrc source image with 4 channels
+*/ 
+ void convertToARGB32Interleaved(unsigned char *pucDst, Img8u *poSrc);
+
+ /// Convert an 4 channel Img32f into Qts ARGB32 interleaved format 
+ /** This function will first convert the given Img32f poSrc into the 
+     buffer image poBuffer. Then it will call the above method, to convert the
+     buffer data into pucDst. If the buffer is not valid, the method will
+     return immediately.
+     @param pucDst destination data pointer of size
+                   poSrc->getDim()*4
+     @param poSrc source image with 4 channels
+     @param poBuffer buffer to use for internal depth conversion.
+ */ 
+ void convertToARGB32Interleaved(unsigned char *pucDst, Img32f *poSrc, Img8u *poBuffer);
+
 
 //@}
 ///@name Function for Converting into HLS-Colorspace (Hue, Lightnes, Saturation)
