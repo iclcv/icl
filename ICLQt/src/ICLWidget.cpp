@@ -4,7 +4,7 @@
 #include <QResizeEvent>
 
 #include "OSD.h"
-
+#include "ICLcc.h"
 #include "Img.h"
 #include "Timer.h"
 
@@ -14,19 +14,17 @@ namespace icl{
   
   ICLWidget::ICLWidget(QWidget *poParent):ParentWidgetClass(poParent),
     // {{{ open Constructor definition
-    m_poImage(imgNew()),
+    m_poImage(new Img8u(Size(1,1),4)),
     m_poOSD(0),m_poCurrOSD(0),m_poShowOSD(0),m_iMouseX(-1), m_iMouseY(-1){
    
     setParent(poParent);
     setMouseTracking(true);
 
-#ifndef USE_OPENGL_ACCELERATION 
     for(int i=0;i<256;i++){
       m_oColorTable.push_back(qRgb(i,i,i));
     }
     setAttribute(Qt::WA_PaintOnScreen); 
     setAttribute(Qt::WA_NoBackground);
-#endif
 
     op.fm = fmHoldAR;
     op.rm = rmOn;
@@ -186,28 +184,100 @@ namespace icl{
     up();
   }
   // }}}
-
-  void ICLWidget::setImage(ImgI *poInputImage){
+  void ICLWidget::setImage(ImgI *input){
     // {{{ open
     if(!op.on){
-      up();
       return;
     }
- 
-    if(!poInputImage){
+    if(!input){
+      m_oMutex.lock();    
+      m_oQImage = QImage();
+      m_oMutex.unlock();
       return;
     }
-
+    
     m_oMutex.lock();    
-    bufferImg(poInputImage);
-#ifndef USE_OPENGL_ACCELERATION   
-    convertImg(m_poImage,m_oQImage);
-#endif
-
+    Size s = input->getSize();
+        
+    Img8u *in8u = input->getDepth()==depth8u ? input->asImg<icl8u>() : 0;
+    Img32f *in32f = input->getDepth()==depth32f ? input->asImg<icl32f>() : 0;
+    
+    if(op.c<0){
+      if(in8u){
+        switch(input->getChannels()){
+          case 2: // use r and b
+            m_poImage->resize(s);
+            m_poImage->replaceChannel(0,in8u,1);
+            m_poImage->clear(1,0);               // green = 0
+            m_poImage->replaceChannel(2,in8u,0);
+            m_poImage->clear(3,255);
+            break;
+          case 3: // flip r and b
+            m_poImage->resize(s); 
+            m_poImage->replaceChannel(0,in8u,2);
+            m_poImage->replaceChannel(1,in8u,1);
+            m_poImage->replaceChannel(2,in8u,0);
+            m_poImage->clear(3,255);
+            break;
+          case 4: // using rgba for visualization
+            m_poImage->resize(s); 
+            m_poImage->replaceChannel(0,in8u,2);
+            m_poImage->replaceChannel(1,in8u,1);
+            m_poImage->replaceChannel(2,in8u,0);
+            m_poImage->replaceChannel(3,in8u,3);
+            break;
+          default: // 1 or 5+ channels showin channel 0 as gray image
+            op.c=0;
+            break;
+        }
+      }else{
+        switch(input->getChannels()){
+          case 2: // use r and b
+            m_poImage->resize(s);
+            deepCopyChannel(in32f,1,m_poImage,0); // blue = green(1)
+            m_poImage->clear(1,0);               // green = 0
+            deepCopyChannel(in32f,0,m_poImage,2); // red = red(0)
+            m_poImage->clear(3,255);
+            break;
+          case 3: // flip r and b
+            m_poImage->resize(s); 
+            deepCopyChannel(in32f,2,m_poImage,0); 
+            deepCopyChannel(in32f,1,m_poImage,1); 
+            deepCopyChannel(in32f,0,m_poImage,2); 
+            m_poImage->clear(3,255);
+            break;
+          case 4: // using rgba for visualization
+            m_poImage->resize(s); 
+            deepCopyChannel(in32f,2,m_poImage,0); 
+            deepCopyChannel(in32f,1,m_poImage,1); 
+            deepCopyChannel(in32f,0,m_poImage,2); 
+            deepCopyChannel(in32f,3,m_poImage,3); 
+            break;
+          default: // 1 or 5+ channels showin channel 0 as gray image
+            op.c=0;
+            break;
+         }      
+      }
+    }
+    if(op.c<0){ //creating rgba QImage
+      if(m_oQImage.width() != s.width || m_oQImage.height() != s.height || m_oQImage.format() != QImage::Format_ARGB32){
+        m_oQImage = QImage(QSize(s.width,s.height),QImage::Format_ARGB32);
+      }
+      convertToARGB32Interleaved(m_oQImage.bits(),m_poImage);
+    }else{
+      if(m_oQImage.width() != s.width || m_oQImage.height() != s.height || m_oQImage.format() != QImage::Format_Indexed8){
+        m_oQImage = QImage(QSize(s.width,s.height),QImage::Format_Indexed8);
+        m_oQImage.setColorTable(m_oColorTable);
+      }
+      if(in8u){
+        copy(in8u->getData(op.c),in8u->getData(op.c)+in8u->getDim(),m_oQImage.bits());
+      }else{
+        copy(in32f->getData(op.c),in32f->getData(op.c)+in32f->getDim(),m_oQImage.bits());
+      }
+    }
     m_oMutex.unlock();
-    up();
   }
-
+  
   // }}}
   void ICLWidget::up(){
     // {{{ open
@@ -227,20 +297,31 @@ namespace icl{
   }
 
   // }}}
-
-  void ICLWidget::paint2D(QPainter *poPainter){
+  Size ICLWidget::getImageSize(){
     // {{{ open
 
-    int _w = w();
-    int _h = h();
-    QRect r(0,0,_w,_h);
-    if(!op.on){
-      drawRect(poPainter,r,QColor(0,0,0),QColor(0,0,0));
-      drawStr(poPainter,"disabled",r);      
-    }else if(!m_poImage){  
-      drawRect(poPainter,r,QColor(0,0,0),QColor(0,0,0));
-      drawStr(poPainter,"no image",r);      
-    }    
+    m_oMutex.lock();
+    Size s;
+    if(m_poImage){
+      s = m_poImage->getSize(); 
+    }else{
+      s = Size(w(),h());
+    }
+    m_oMutex.unlock();
+    return s;
+  }
+
+  // }}}
+  Rect ICLWidget::getImageRect(){
+    // {{{ open
+    return computeImageRect(getImageSize(),Size(w(),h()),op.fm);
+  }
+
+  // }}}
+  
+  void ICLWidget::drawOSD(QPainter *poPainter){
+    // {{{ open
+
     m_oOSDMutex.lock();
     if(m_poCurrOSD){
       poPainter->setFont(QFont("Arial",11));
@@ -253,136 +334,43 @@ namespace icl{
   void ICLWidget::paintEvent(QPaintEvent *poEvent){
     // {{{ open
     (void)poEvent;
-
 #ifdef USE_OPENGL_ACCELERATION
-    // make this images gl context to the current one
     makeCurrent();
-    
-    // create a QPainter but delete all changings on the GL-Engine
-    pushCurrentState();
-    QPainter oPainter;
-    oPainter.begin((QGLWidget*)this);
-    popCurrentState();
-    
-    // paint the image using openGL
-    paintGL();
-
-    // restore the painters changing on the GL-Engine
-    restoreQPainterInitialization();
-    
-    // paint 2D stuff 
-    paint2D(&oPainter);
-   
-    
-    // undo the changings on the PROJECTION_MATRIX, done by restoreQPainterInitialization()
-    glPopMatrix();
-    
-    // finish drawing (this will call glFlush(),...)
-    oPainter.end();
-#else
+#endif
     QPainter oPainter;
     oPainter.begin(this);
-
-    // draw the image
-    m_oMutex.lock();
-    // convert the image to rgba8-interleaved
-
-    if(!m_oQImage.isNull()){
-      Rect r = computeImageRect(m_poImage->getSize(),Size(w(),h()),op.fm);
-      oPainter.drawImage(QRect(r.x,r.y,r.width,r.height),m_oQImage);
-    }
-
-    m_oMutex.unlock();
-
-    // draw the OSD
-    paint2D(&oPainter);
-    oPainter.end();
-#endif
-  }
-
-  // }}}
- 
-#ifdef USE_OPENGL_ACCELERATION
-  void ICLWidget::initializeGL (){
-    // {{{ open
-
-    // this initializations should accelerate 
-    // the GL-Pixel engine
-    glDisable(GL_ALPHA_TEST);
-    glDisable(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_DITHER);
-    glDisable(GL_FOG);
-    glDisable(GL_LIGHTING);
-    glDisable(GL_LOGIC_OP);
-    glDisable(GL_STENCIL_TEST);
-    glDisable(GL_TEXTURE_1D);
-    glDisable(GL_TEXTURE_2D);
-    glPixelTransferi(GL_MAP_COLOR, GL_FALSE);
     
-  }    
+    drawImage(&oPainter);
+    
+    customPaintEvent(&oPainter);
+    
+    drawOSD(&oPainter);
+      
+    oPainter.end();
+  }
 
   // }}}
-  void ICLWidget::paintGL (){
+  void ICLWidget::drawImage(QPainter *poPainter){
     // {{{ open
+    int _w = w();
+    int _h = h();
+    QRect r(0,0,_w,_h);
+
     m_oMutex.lock();
-    if(!op.on || !m_poImage){
-      m_oMutex.unlock();
-      return;
-    }
-    drawImgGL(m_poImage,op.fm,-1);
-    m_oMutex.unlock();
-  }
-
-  // }}}
-  void ICLWidget::pushCurrentState(){
-    // {{{ open
-
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-  }
-
-  // }}}
-  void ICLWidget::popCurrentState(){
-  // {{{ open
-
-    glPopAttrib();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-  }
-
-  // }}}
-  void ICLWidget::restoreQPainterInitialization(){
-    // {{{ open
-
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glOrtho(0, QGLWidget::width(),QGLWidget::height(), 0, -999999, 999999);
-    glViewport(0,0,QGLWidget::width(),QGLWidget::height());
-    glColorMask(1,1,1,1); 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-  }
-
-  // }}}
-  void ICLWidget::setPackAllignment(int iImageW, icl::depth eDepth){
-    // {{{ open
-
-    GLenum E = GL_UNPACK_ALIGNMENT;
-    if(eDepth == depth32f){
-      if(!(iImageW % 2)) glPixelStorei(E,8);
-      else glPixelStorei(E,4);
+    if(!op.on){
+      drawRect(poPainter,r,QColor(0,0,0),QColor(0,0,0));
+      drawStr(poPainter,"disabled",r);    
+    }else if(!m_oQImage.isNull()){
+      if(op.rm == rmOff || op.c < 0){
+        setBiasAndScale(0.0,1.0);
+      }
+      Rect r = computeImageRect(m_poImage->getSize(),Size(w(),h()),op.fm);
+      poPainter->drawImage(QRect(r.x,r.y,r.width,r.height),m_oQImage);
     }else{
-      if(!(iImageW % 8)) glPixelStorei(E,8);
-      else if(!(iImageW % 4)) glPixelStorei(E,4);
-      else if(!(iImageW % 2)) glPixelStorei(E,2);
-      else glPixelStorei(E,1);
-    }    
+      drawRect(poPainter,r,QColor(0,0,0),QColor(0,0,0));
+      drawStr(poPainter,"no image",r);      
+    }
+    m_oMutex.unlock();
   }
 
   // }}}
@@ -404,187 +392,6 @@ namespace icl{
   }
 
   // }}}
-  void ICLWidget::setupPixelEngine(int iImageW, int iImageH, fitmode eFitMode){
-    // {{{ open
-    Rect r = computeImageRect(Size(iImageW,iImageH),Size(w(),h()),eFitMode);
-    glPixelZoom((float)r.width/iImageW,(float)r.height/iImageH);
-    glRasterPos2f((2*(float)r.x/w())-1.0,(2*(float)r.y/h())-1.0);
-  }
-
-  // }}}
-  void ICLWidget::setBiasAndScaleForChannel(int iDepth, int iChannel){
-    // {{{ open
-
-    float fMin, fMax;
-    unsigned char ucMin, ucMax;
-    if(iChannel == -1){
-      int aiBiases[3] = {GL_RED_BIAS,GL_GREEN_BIAS,GL_BLUE_BIAS};
-      int aiScales[3] = {GL_RED_SCALE,GL_GREEN_SCALE,GL_BLUE_SCALE};
-      if(iDepth == 8){
-        for(int i=0;i<3;i++){
-
-          m_poImage->asImg<icl8u>()->getMinMax(ucMin,ucMax,i);
-
-          float fScale = 255.0/(float)(ucMax-ucMin);
-          glPixelTransferf(aiBiases[i],-fScale*ucMin);
-          glPixelTransferf(aiScales[i],fScale);
-        }
-      }else{
-        for(int i=0;i<3;i++){
-
-          m_poImage->asImg<icl32f>()->getMinMax(fMin,fMax,i);
-
-          float fScale = 1.0/(fMax-fMin);
-          glPixelTransferf(aiBiases[i],-fScale*fMin);
-          glPixelTransferf(aiScales[i],fScale);
-        }        
-      }
-    }else if(iChannel >= 0){
-      if(iDepth == 8){
-        m_poImage->asImg<icl8u>()->getMinMax(ucMin,ucMax,iChannel);
-
-        float fScale = 255.0/(float)(ucMax-ucMin);
-        setBiasAndScale(-fScale*ucMin,fScale);
-      }else{
-
-        m_poImage->asImg<icl32f>()->getMinMax(fMin,fMax,iChannel);
-        
-        float fScale = 1.0/(fMax-fMin);
-        setBiasAndScale(-fScale*fMin,fScale);
-      }
-    }   
-  }
-
-  // }}}
-  void ICLWidget::drawImgGL(ImgI *poImage, fitmode eFitMode, int iChannel){
-    // {{{ open
-  
-    glColorMask(1,1,1,1);
-    glClearColor(0,0,0,1);
-    glClear(GL_COLOR_BUFFER_BIT);
-    
-    if(!poImage)return;
-    Size s = poImage->getSize();
-    icl::depth d = poImage->getDepth();
-
-    setupPixelEngine(s.width,s.height,eFitMode);
-
-    setPackAllignment(s.width, poImage->getDepth());
-    
-
-    if(op.rm == rmOff || iChannel < 0){
-      setBiasAndScale(0.0,d==depth32f  ?  1.0/255.0 :  1.0);
-    }else{
-      setBiasAndScaleForChannel(d==depth8u ? 8 : 32, iChannel);
-    }
-
-    // drawing of the image using openGL's glDrawPixels
-    GLenum eGlFormat = d == depth8u ? GL_UNSIGNED_BYTE : GL_FLOAT;
-
-    if(iChannel < 0){
-      if(poImage->getChannels()>=3){
-        glColorMask(1,0,0,1);
-        glDrawPixels(s.width,s.height,GL_RED,eGlFormat,poImage->getDataPtr(0));
-        glColorMask(0,1,0,1);
-        glDrawPixels(s.width,s.height,GL_GREEN,eGlFormat,poImage->getDataPtr(1));
-        glColorMask(0,0,1,1);
-        glDrawPixels(s.width,s.height,GL_BLUE,eGlFormat,poImage->getDataPtr(2));
-      }else if (poImage->getChannels()==1){
-        // gray-images can be draw, using the GL_LUMINANCE parameter
-        glColorMask(1,1,1,1);
-        glDrawPixels(s.width,s.height,GL_LUMINANCE,eGlFormat,poImage->getDataPtr(0));
-      }
-    }else{
-      // gray-images from sigle channels can be draw, using the GL_LUMINANCE parameter
-      glColorMask(1,1,1,1);
-      glDrawPixels(s.width,s.height,GL_LUMINANCE,eGlFormat,poImage->getDataPtr(iChannel/*todo check*/));
-    }
-  }
-
-  // }}}
-#else
- 
-  void ICLWidget::convertImg(ImgI* src,QImage &dst){
-    // {{{ open
-    if(src->getDepth() == depth8u){
-      if(src->getChannels()>=3){
-        if(src->getSize() != Size(dst.width(),dst.height()) || dst.format() != QImage::Format_ARGB32){
-          dst = QImage(QSize(src->getSize().width,src->getSize().height),QImage::Format_ARGB32);
-        }
-        
-        uchar *dstData = dst.bits();
-        icl8u *srcData0 = src->asImg<icl8u>()->getData(0);
-        icl8u *srcData1 = src->asImg<icl8u>()->getData(1);
-        icl8u *srcData2 = src->asImg<icl8u>()->getData(2);
-        uchar *dstDataEnd = dstData+src->getDim()*4;
-        for(; dstData != dstDataEnd; ++srcData0, ++srcData1, ++srcData2){
-        
-          *dstData++ = *srcData0;
-          *dstData++ = *srcData1;
-          *dstData++ = *srcData2;
-          *dstData++ = 255;
-        }
-      }else{
-        if(src->getSize() != Size(dst.width(),dst.height()) || dst.format() != QImage::Format_Indexed8){
-          dst = QImage(QSize(src->getSize().width,src->getSize().height),QImage::Format_Indexed8);
-          dst.setColorTable(m_oColorTable);
-        }        
-        uchar *dstData = dst.bits();
-        icl8u *srcData0 = src->asImg<icl8u>()->getData(0);
-        uchar *dstDataEnd = dstData+src->getDim();
-        for(; dstData != dstDataEnd; ++srcData0,++dstData){
-          *dstData = *srcData0;
-        }
-      }
-    }else{
-        if(src->getChannels()>=3){
-        if(src->getSize() != Size(dst.width(),dst.height()) || dst.format() != QImage::Format_ARGB32){
-          dst = QImage(QSize(src->getSize().width,src->getSize().height),QImage::Format_ARGB32);
-        }
-        
-        uchar *dstData = dst.bits();
-        icl32f *srcData0 = src->asImg<icl32f>()->getData(0);
-        icl32f *srcData1 = src->asImg<icl32f>()->getData(1);
-        icl32f *srcData2 = src->asImg<icl32f>()->getData(2);
-        uchar *dstDataEnd = dstData+src->getDim()*4;
-        for(; dstData != dstDataEnd; ++srcData0, ++srcData1, ++srcData2){
-          *dstData++ = 255;
-          *dstData++ = Cast<icl32f,uchar>::cast(*srcData0);
-          *dstData++ = Cast<icl32f,uchar>::cast(*srcData1);
-          *dstData++ = Cast<icl32f,uchar>::cast(*srcData2);
-        }
-      }else{
-        if(src->getSize() != Size(dst.width(),dst.height()) || dst.format() != QImage::Format_Indexed8){
-          dst = QImage(QSize(src->getSize().width,src->getSize().height),QImage::Format_Indexed8);
-          dst.setColorTable(m_oColorTable);
-        }        
-        uchar *dstData = dst.bits();
-        icl32f *srcData0 = src->asImg<icl32f>()->getData(0);
-        uchar *dstDataEnd = dstData+src->getDim();
-        for(; dstData != dstDataEnd; ++srcData0,++dstData){
-          *dstData = Cast<icl32f,uchar>::cast(*srcData0);
-        }
-      }
-    }
-  }
-  // }}}
-#endif
-
-  void ICLWidget::bufferImg(ImgI* poSrc){
-    // {{{ open
-    ImgI** ppoDst = &m_poImage;
-    
-    ensureCompatible(ppoDst,poSrc);
-    
-    Rect aoR[2] = { poSrc->getROI(), (*ppoDst)->getROI() };
-    poSrc->setFullROI();
-    (*ppoDst)->setFullROI();
-    poSrc->flippedCopyROI(*ppoDst,axisHorz);
-    poSrc->setROI(aoR[0]);
-    (*ppoDst)->setROI(aoR[1]);
-  }
-  // }}}
-
   void ICLWidget::drawStr(QPainter *poPainter,QString s, QRect r,int iFontSize, QColor c, QFont f){
     // {{{ open
     poPainter->setPen(c);
@@ -603,7 +410,6 @@ namespace icl{
   }
 
   // }}}
-
   Rect ICLWidget::computeImageRect(Size oImageSize, Size oWidgetSize, fitmode eFitMode){
     // {{{ open
 
@@ -642,7 +448,6 @@ namespace icl{
   }
 
   // }}}
- 
   std::vector<QString> ICLWidget::getImageInfo(){
     // {{{ open
 

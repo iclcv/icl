@@ -7,11 +7,10 @@
 
 #ifdef USE_OPENGL_ACCELERATION
 #include <QGLWidget>
-#else
+#endif
 #include <QImage>
 #include <QVector>
 #include <QWidget>
-#endif
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QFont>
@@ -56,17 +55,19 @@ namespace icl{
     virtual void enterEvent(QEvent *e);
     virtual void leaveEvent(QEvent *e);
     virtual void resizeEvent(QResizeEvent *e);
-    void childChanged(int id, void *val);
+    virtual void childChanged(int id, void *val);
     
     void setImage(ImgI *poImage);
-    
-    /// openGL-drawing
+   
+ 
+    /// drawing
     virtual void paintEvent(QPaintEvent *poEvent);
+    /// additiona custom drawings (between image and osd)
+    virtual void customPaintEvent(QPainter *poPainter){}
+    /// final drawing of the osd
+    void drawOSD(QPainter *poPainter);
   
-     /// returns the current fitmode
-    fitmode getFitMode(){return op.fm;}
-
-    std::vector<QString> getImageInfo();
+  
 
     struct Options{
       fitmode fm;
@@ -89,61 +90,31 @@ namespace icl{
 
     // sets the current fitmode
     void setFitMode(fitmode fm){ op.fm = fm; }
-
     // sets the current rangemode
     void setRangeMode(rangemode rm){ op.rm = rm; }
-
+    /// returns the current image size of the widget size if the image is null
+    Size getImageSize();
+    /// returns the current image rect
+    Rect getImageRect();
+    fitmode getFitMode(){return op.fm;}
+    std::vector<QString> getImageInfo();
+    
     protected:
-#ifdef USE_OPENGL_ACCELERATION
-    /// openGL-initialisation 
-    virtual void initializeGL();
-
-    virtual void paintGL();
-
-    /// -1 -> set up r,g and b channel separately
-    void setBiasAndScaleForChannel(int iDepth, int iChannel=-1);
-
     /// sets up all 3 gl channels to given bias and scale
     void setBiasAndScale(float fBiasRGB, float fScaleRGB);
-
-    /// sets up the gl raster pos and scale-variables depending on current oImageRect
-    void setupPixelEngine(int iImageW, int iImageH, fitmode eFitMode);
-
-    void setPackAllignment(int iImageW, icl::depth eDepth);
-
-    void pushCurrentState();
-    
-    void popCurrentState();
-    
-    void restoreQPainterInitialization();
-
-    void drawImgGL(ImgI *poImage, fitmode eFitMode, int iChannel);
-
-#else
-    
-    void convertImg(ImgI* src,QImage &dst);
-    
-#endif    
-
     Rect computeImageRect(Size oImageSize, Size oWidgetSize, fitmode eFitMode);
 
-    void bufferImg(ImgI* poSrc);
-
-    void paint2D(QPainter *poPainter);
-
+    void drawImage(QPainter *poPainter);
     void drawStr(QPainter *poPainter,QString s, QRect r, int iFontSize = 18, QColor c=QColor(255,255,255),QFont f=QFont("Arial",18));
     void drawRect(QPainter *poPainter,QRect r,QColor cBorder, QColor cFill);
 
-   
     
     private:
     Options op;
     QMutex m_oMutex, m_oOSDMutex;
-    ImgI *m_poImage;
-#ifndef USE_OPENGL_ACCELERATION
+    Img8u *m_poImage;
     QImage m_oQImage;
     QVector<QRgb> m_oColorTable;
-#endif  
     Converter m_oConverter;
 
     OSDWidget *m_poOSD;
