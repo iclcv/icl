@@ -79,7 +79,7 @@ int main(){
   t.setROI(Rect((i++)*s.width,0,100,100));
   Threshold::ltgtVal(&im,&t,150,0,150,255); 
 
-  File("./treshold_results.pgm").write(t.convertTo<icl8u>()); system("xv ./treshold_results.pgm &"); 
+  File("./threshold_results.pgm").write(t.convertTo<icl8u>()); system("xv ./threshold_results.pgm &"); 
 
   printf("Original colors are [0,100,200,255]\n");
   printf(": Image order is: \n");

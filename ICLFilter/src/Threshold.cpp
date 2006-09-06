@@ -3,114 +3,120 @@
 
 namespace icl{
 
-  // {{{ C++ fallback "ThreshFunc"-classes
+  // {{{ C++ fallback ThreshOp classes
   
-  template <class S, class D> class ThreshFunc{
+  template <class S, class D> class ThreshOpLT {
     // {{{ open
 
   public:
-    ThreshFunc(S s1, S s2=0, S s3=0, S s4=0): 
-      s1(s1),s2(s2),s3(s3),s4(s4),
-      d1(Cast<S,D>::cast(s1)),d2(Cast<S,D>::cast(s2)),
-      d3(Cast<S,D>::cast(s3)),d4(Cast<S,D>::cast(s4)){}
-    virtual ~ThreshFunc(){}
-    virtual inline D threshold(S val) const {return D(0);}
-  protected:
-    S s1,s2,s3,s4;
-    D d1,d2,d3,d4;
+    ThreshOpLT (S t) : threshold(t) {}
+    inline D operator()(S val) const { 
+      return Cast<S,D>::cast(val < threshold ? threshold : val);
+    }
+  private:
+     S threshold;
   };
 
   // }}}
-  template <class S, class D> class ThreshFuncLT : public ThreshFunc<S,D>{ 
+  template <class S, class D> class ThreshOpGT {
     // {{{ open
 
   public:
-    ThreshFuncLT(S t):ThreshFunc<S,D>(t){}
-    virtual inline D threshold(S val) const { 
-      return val< ThreshFunc<S,D>::s1 ? ThreshFunc<S,D>::d1 : Cast<S,D>::cast(val) ; 
+    ThreshOpGT (S t) : threshold(t) {}
+    inline D operator()(S val) const { 
+      return Cast<S,D>::cast(val > threshold ? threshold : val);
     }
+  private:
+     S threshold;
   };
 
   // }}}
-  template <class S, class D> struct ThreshFuncGT : public ThreshFunc<S,D>{
+  template <class S, class D> class ThreshOpLTGT {
+    // {{{ open
+  public:
+    ThreshOpLTGT(S tLow, S tUp) : tLow(tLow), tUp(tUp) {}
+    inline D operator()(S val) const { 
+       if (val < tLow) return Cast<S,D>::cast(tLow);
+       if (val > tUp)  return Cast<S,D>::cast(tUp);
+       return Cast<S,D>::cast(val);
+    }
+  private:
+    S tLow, tUp;
+  };
+
+  // }}}
+
+  template <class S, class D> class ThreshOpLTVal {
     // {{{ open
 
-    ThreshFuncGT(S t):ThreshFunc<S,D>(t){};
-    virtual inline D threshold(S val) const{ 
-      return val>ThreshFunc<S,D>::s1 ? ThreshFunc<S,D>::d1 : Cast<S,D>::cast(val) ; 
+  public:
+    ThreshOpLTVal (S t, D v) : threshold(t), value(v) {}
+    inline D operator()(S val) const { 
+      if (val < threshold) return value;
+      return Cast<S,D>::cast(val);
     }
+  private:
+     S threshold;
+     D value;
   };
 
   // }}}
-  template <class S, class D> struct ThreshFuncLTGT : public ThreshFunc<S,D>{
+  template <class S, class D> class ThreshOpGTVal {
     // {{{ open
 
-    ThreshFuncLTGT(S t1,S t2):ThreshFunc<S,D>(t1,t2){};
-    virtual inline D threshold(S val) const{ 
-      return val<ThreshFunc<S,D>::s1 ? ThreshFunc<S,D>::d1 : val>ThreshFunc<S,D>::s2 ? ThreshFunc<S,D>::d2 : Cast<S,D>::cast(val) ; 
+  public:
+    ThreshOpGTVal (S t, D v) : threshold(t), value(v) {}
+    inline D operator()(S val) const { 
+      if (val > threshold) return value;
+      return Cast<S,D>::cast(val);
     }
+  private:
+     S threshold;
+     D value;
   };
 
   // }}}
-  template <class S, class D> struct ThreshFuncLTVal : public ThreshFunc<S,D>{
+  template <class S, class D> class ThreshOpLTGTVal {
     // {{{ open
-
-    ThreshFuncLTVal(S t, S v):ThreshFunc<S,D>(t,v){};
-    virtual inline D threshold(S val) const{ 
-      return val<ThreshFunc<S,D>::s1 ? ThreshFunc<S,D>::d2 : Cast<S,D>::cast(val) ; 
+  public:
+    ThreshOpLTGTVal(S tLow, D vLow, S tUp, D vUp) : 
+       tLow(tLow), tUp(tUp), vLow(vLow), vUp(vUp) {}
+    inline D operator()(S val) const { 
+       if (val < tLow) return vLow;
+       if (val > tUp)  return vUp;
+       return Cast<S,D>::cast(val);
     }
-  };
-
-  // }}}
-  template <class S, class D> struct ThreshFuncGTVal : public ThreshFunc<S,D>{
-    // {{{ open
-
-    ThreshFuncGTVal(S t, S v):ThreshFunc<S,D>(t,v){};
-    virtual inline D threshold(S val) const {
-      return val> ThreshFunc<S,D>::s1 ? ThreshFunc<S,D>::d2 : Cast<S,D>::cast(val) ; 
-    }
-  };
-
-  // }}}
-  template <class S, class D> struct ThreshFuncLTGTVal : public ThreshFunc<S,D>{
-    // {{{ open
-
-    ThreshFuncLTGTVal(S t1, S v1, S t2, S v2):ThreshFunc<S,D>(t1,v1,t2,v2){};
-    virtual inline D threshold(S val)const { 
-      return val<ThreshFunc<S,D>::s1 ? ThreshFunc<S,D>::d2 : val>ThreshFunc<S,D>::s3 ? ThreshFunc<S,D>::d4 : Cast<S,D>::cast(val) ; 
-    }
+  private:
+    S tLow, tUp;
+    D vLow, vUp;
   };
 
   // }}}
 
-
   // }}}
 
-  // {{{ arbitrary-type C++ fallback function
+  // {{{ C++ fallback threshold function for all threshold operations
   
-  template <class S, class D>
-  inline void fallbackThreshold(Img<S> *src, Img<D> *dst,const ThreshFunc<S,D> &f){
-    // {{{ open
+  template <class S, class D, class ThresholdOp>
+  void fallbackThreshold(Img<S> *src, Img<D> *dst, const ThresholdOp &threshold) {
     ICLASSERT_RETURN( src && dst );
     ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
     for(int c=std::min(src->getChannels(), dst->getChannels()) - 1; c >= 0; --c) {
       ImgIterator<S> itSrc = src->getROIIterator(c);
       ImgIterator<D> itDst = dst->getROIIterator(c);
       for(;itSrc.inRegion(); ++itSrc, ++itDst){
-        *itDst = f.threshold(*itSrc);
+        *itDst = threshold(*itSrc);
       }
     }
   }
 
   // }}}
-  
-  // }}}
 
 #ifdef WITH_IPP_OPTIMIZATION
-  // {{{ ippi-function call templates (sit down before open)
+  // {{{ ippi-function call templates
 
   template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, T)>
-  inline void ippiThresholdCall_1T(Img<T> *src, Img<T> *dst, T t){
+  inline void ippiThresholdCall_1T(const Img<T> *src, Img<T> *dst, T t){
     // {{{ open
 
     for (int c=std::min(src->getChannels(), dst->getChannels()) - 1; c >= 0; --c) {
@@ -123,7 +129,7 @@ namespace icl{
   // }}}
 
   template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, T, T)>
-  inline void ippiThresholdCall_2T(Img<T> *src, Img<T> *dst, T t1, T t2){  
+  inline void ippiThresholdCall_2T(const Img<T> *src, Img<T> *dst, T t1, T t2){  
     // {{{ open
     for (int c=std::min(src->getChannels(), dst->getChannels()) - 1; c >= 0; --c) {
       ippiFunc (src->getROIData (c), src->getLineStep(),
@@ -135,7 +141,7 @@ namespace icl{
   // }}}
  
  template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, T, T, T, T)>
-  inline void ippiThresholdCall_4T(Img<T> *src, Img<T> *dst, T t1,T t2, T t3, T t4){
+  inline void ippiThresholdCall_4T(const Img<T> *src, Img<T> *dst, T t1,T t2, T t3, T t4){
     // {{{ open
     for (int c=std::min(src->getChannels(), dst->getChannels()) - 1; c >= 0; --c) {
       ippiFunc (src->getROIData (c), src->getLineStep(),
@@ -148,162 +154,143 @@ namespace icl{
 
  // }}}
   
-  // {{{ "Direct" template specializations without Val postfix
+  // {{{ template specializations without Val postfix
 
   template <>
-  void Threshold::Direct::lt<icl8u>(Img8u *src,Img8u *dst, icl8u t){
+  void Threshold::lt<icl8u>(const Img8u *src,Img8u *dst, icl8u t){
     ippiThresholdCall_1T<icl8u, ippiThreshold_LT_8u_C1R> (src, dst, t);
   }
   template <>
-  void Threshold::Direct::lt<icl32f>(Img32f *src,Img32f *dst, icl32f t){
+  void Threshold::lt<icl32f>(const Img32f *src,Img32f *dst, icl32f t){
     ippiThresholdCall_1T<icl32f, ippiThreshold_LT_32f_C1R> (src, dst, t);
   }
   template <>
-  void Threshold::Direct::gt<icl8u>(Img8u *src,Img8u *dst, icl8u t){
+  void Threshold::gt<icl8u>(const Img8u *src,Img8u *dst, icl8u t){
     ippiThresholdCall_1T<icl8u, ippiThreshold_GT_8u_C1R> (src, dst, t);
   }
   template <>
-  void Threshold::Direct::gt<icl32f>(Img32f *src,Img32f *dst, icl32f t){
+  void Threshold::gt<icl32f>(const Img32f *src,Img32f *dst, icl32f t){
     ippiThresholdCall_1T<icl32f, ippiThreshold_GT_32f_C1R> (src, dst, t);
   }
   template <>
-  void Threshold::Direct::ltgt<icl8u>(Img8u *src,Img8u *dst, icl8u tMin, icl8u tMax){
+  void Threshold::ltgt<icl8u>(const Img8u *src,Img8u *dst, icl8u tMin, icl8u tMax){
     ippiThresholdCall_1T<icl8u, ippiThreshold_LT_8u_C1R> (src, dst, tMin);
     ippiThresholdCall_1T<icl8u, ippiThreshold_GT_8u_C1R> (src, dst, tMax);
   }
   template <>
-  void Threshold::Direct::ltgt<icl32f>(Img32f *src,Img32f *dst, icl32f tMin, icl32f tMax){
+  void Threshold::ltgt<icl32f>(const Img32f *src,Img32f *dst, icl32f tMin, icl32f tMax){
     ippiThresholdCall_1T<icl32f, ippiThreshold_LT_32f_C1R> (src, dst, tMin);
     ippiThresholdCall_1T<icl32f, ippiThreshold_GT_32f_C1R> (src, dst, tMax);
   }
-  // function with val
 
   // }}}
  
-  // {{{ "Direct" template specialization with Val postfix
+  // {{{ template specializations with Val postfix
 
   template <>
-  void Threshold::Direct::ltVal<icl8u>(Img8u *src,Img8u *dst, icl8u t, icl8u val){
+  void Threshold::ltVal<icl8u>(const Img8u *src,Img8u *dst, icl8u t, icl8u val){
     ippiThresholdCall_2T<icl8u, ippiThreshold_LTVal_8u_C1R> (src, dst, t, val);
   }
   template <>
-  void Threshold::Direct::ltVal<icl32f>(Img32f *src,Img32f *dst, icl32f t, icl32f val){
+  void Threshold::ltVal<icl32f>(const Img32f *src,Img32f *dst, icl32f t, icl32f val){
     ippiThresholdCall_2T<icl32f, ippiThreshold_LTVal_32f_C1R> (src, dst, t, val);
   }
   template <>
-  void Threshold::Direct::gtVal<icl8u>(Img8u *src,Img8u *dst, icl8u t, icl8u val){
+  void Threshold::gtVal<icl8u>(const Img8u *src,Img8u *dst, icl8u t, icl8u val){
     ippiThresholdCall_2T<icl8u, ippiThreshold_GTVal_8u_C1R> (src, dst, t,val);
   }
   template <>
-  void Threshold::Direct::gtVal<icl32f>(Img32f *src,Img32f *dst, icl32f t, icl32f val){
+  void Threshold::gtVal<icl32f>(const Img32f *src,Img32f *dst, icl32f t, icl32f val){
     ippiThresholdCall_2T<icl32f, ippiThreshold_GTVal_32f_C1R> (src, dst, t,val);
   }
   template <>
-  void Threshold::Direct::ltgtVal<icl8u>(Img8u *src,Img8u *dst, icl8u tMin,icl8u minVal, icl8u tMax,icl8u maxVal){
+  void Threshold::ltgtVal<icl8u>(const Img8u *src,Img8u *dst, icl8u tMin,icl8u minVal, icl8u tMax,icl8u maxVal){
     ippiThresholdCall_4T<icl8u, ippiThreshold_LTValGTVal_8u_C1R> (src, dst, tMin, minVal, tMax, maxVal);
   }
   template <>
-  void Threshold::Direct::ltgtVal<icl32f>(Img32f *src,Img32f *dst, icl32f tMin,icl32f minVal, icl32f tMax, icl32f maxVal){
+  void Threshold::ltgtVal<icl32f>(const Img32f *src,Img32f *dst, icl32f tMin,icl32f minVal, icl32f tMax, icl32f maxVal){
     ippiThresholdCall_4T<icl32f, ippiThreshold_LTValGTVal_32f_C1R> (src, dst, tMin, minVal, tMax, maxVal);
 
   }
 
   // }}}
 #else
-  // {{{ "Direct" fallback functions without Val postfix
+  // {{{ template specializations without Val postfix (fallback)
 
   template <>
-  void Threshold::Direct::lt<icl8u>(Img8u *src,Img8u *dst, icl8u t){
-    fallbackThreshold<icl8u,icl8u>(src->asImg<icl8u>(), dst->asImg<icl8u>(),ThreshFuncLT<icl8u,icl8u>(t));
+  void Threshold::lt<icl8u>(Img8u *src,Img8u *dst, icl8u t){
+    fallbackThreshold (src, dst, ThreshOpLT<icl8u,icl8u>(t));
   }
   template <>
-  void Threshold::Direct::lt<icl32f>(Img32f *src,Img32f *dst, icl32f t){
-    fallbackThreshold(src->asImg<icl32f>(), dst->asImg<icl32f>(),ThreshFuncLT<icl32f,icl32f>(t));
+  void Threshold::lt<icl32f>(Img32f *src,Img32f *dst, icl32f t){
+    fallbackThreshold (src, dst, ThreshOpLT<icl32f,icl32f>(t));
   }
   template <>
-  void Threshold::Direct::gt<icl8u>(Img8u *src,Img8u *dst, icl8u t){
-    fallbackThreshold<icl8u,icl8u>(src->asImg<icl8u>(), dst->asImg<icl8u>(),ThreshFuncGT<icl8u,icl8u>(t));
+  void Threshold::gt<icl8u>(Img8u *src,Img8u *dst, icl8u t){
+    fallbackThreshold (src, dst, ThreshOpGT<icl8u,icl8u>(t));
   }
   template <>
-  void Threshold::Direct::gt<icl32f>(Img32f *src,Img32f *dst, icl32f t){
-    fallbackThreshold(src->asImg<icl32f>(), dst->asImg<icl32f>(),ThreshFuncLT<icl32f,icl32f>(t));
+  void Threshold::gt<icl32f>(Img32f *src,Img32f *dst, icl32f t){
+    fallbackThreshold (src, dst, ThreshOpLT<icl32f,icl32f>(t));
   }
   template <>
-  void Threshold::Direct::ltgt<icl8u>(Img8u *src,Img8u *dst, icl8u tMin, icl8u tMax){
-    fallbackThreshold<icl8u,icl8u>(src->asImg<icl8u>(), dst->asImg<icl8u>(),ThreshFuncLTGT<icl8u,icl8u>(tMin,tMax));
+  void Threshold::ltgt<icl8u>(Img8u *src,Img8u *dst, icl8u tMin, icl8u tMax){
+    fallbackThreshold (src, dst, ThreshOpLTGT<icl8u,icl8u>(tMin,tMax));
   }
   template <>
-  void Threshold::Direct::ltgt<icl32f>(Img32f *src,Img32f *dst, icl32f tMin, icl32f tMax){
-    fallbackThreshold<icl32f,icl32f>(src->asImg<icl32f>(), dst->asImg<icl32f>(),ThreshFuncLTGT<icl32f,icl32f>(tMin,tMax));
+  void Threshold::ltgt<icl32f>(Img32f *src,Img32f *dst, icl32f tMin, icl32f tMax){
+    fallbackThreshold (src, dst, ThreshOpLTGT<icl32f,icl32f>(tMin,tMax));
   }
-  
+
   // }}}
   
-  // {{{ "Direct" fallback functions with Val postfix
+  // {{{ template specializations with Val postfix (fallback)
 
   template <>
-  void Threshold::Direct::ltVal<icl8u>(Img8u *src,Img8u *dst, icl8u t, icl8u val){
-    fallbackThreshold<icl8u,icl8u>(src->asImg<icl8u>(), dst->asImg<icl8u>(),ThreshFuncLTVal<icl8u,icl8u>(t,val));
+  void Threshold::ltVal<icl8u>(Img8u *src,Img8u *dst, icl8u t, icl8u val){
+    fallbackThreshold (src, dst, ThreshOpLTVal<icl8u,icl8u>(t,val));
   }
   template <>
-  void Threshold::Direct::ltVal<icl32f>(Img32f *src,Img32f *dst, icl32f t, icl32f val){
-    fallbackThreshold<icl32f,icl32f>(src->asImg<icl32f>(), dst->asImg<icl32f>(),ThreshFuncLTVal<icl32f,icl32f>(t,val));
+  void Threshold::ltVal<icl32f>(Img32f *src,Img32f *dst, icl32f t, icl32f val){
+    fallbackThreshold (src, dst, ThreshOpLTVal<icl32f,icl32f>(t,val));
   }
   template <>
-  void Threshold::Direct::gtVal<icl8u>(Img8u *src,Img8u *dst, icl8u t, icl8u val){
-    fallbackThreshold<icl8u,icl8u>(src->asImg<icl8u>(), dst->asImg<icl8u>(),ThreshFuncGTVal<icl8u,icl8u>(t,val));
+  void Threshold::gtVal<icl8u>(Img8u *src,Img8u *dst, icl8u t, icl8u val){
+    fallbackThreshold (src, dst, ThreshOpGTVal<icl8u,icl8u>(t,val));
   }
   template <>
-  void Threshold::Direct::gtVal<icl32f>(Img32f *src,Img32f *dst, icl32f t, icl32f val){
-    fallbackThreshold<icl32f,icl32f>(src->asImg<icl32f>(), dst->asImg<icl32f>(),ThreshFuncGTVal<icl32f,icl32f>(t,val));
+  void Threshold::gtVal<icl32f>(Img32f *src,Img32f *dst, icl32f t, icl32f val){
+    fallbackThreshold (src, dst, ThreshOpGTVal<icl32f,icl32f>(t,val));
   }
   template <>
-  void Threshold::Direct::ltgtVal<icl8u>(Img8u *src,Img8u *dst, icl8u tMin,icl8u minVal, icl8u tMax,icl8u maxVal){
-    fallbackThreshold<icl8u,icl8u>(src->asImg<icl8u>(), dst->asImg<icl8u>(),ThreshFuncLTGTVal<icl8u,icl8u>(tMin,minVal,tMax,maxVal));
+  void Threshold::ltgtVal<icl8u>(Img8u *src,Img8u *dst, icl8u tMin,icl8u minVal, icl8u tMax,icl8u maxVal){
+    fallbackThreshold (src, dst, ThreshOpLTGTVal<icl8u,icl8u>(tMin,minVal,tMax,maxVal));
   }
   template <>
-  void Threshold::Direct::ltgtVal<icl32f>(Img32f *src,Img32f *dst, icl32f tMin,icl32f minVal, icl32f tMax, icl32f maxVal){
-    fallbackThreshold<icl32f,icl32f>(src->asImg<icl32f>(), dst->asImg<icl32f>(),ThreshFuncLTGTVal<icl32f,icl32f>(tMin,minVal,tMax,maxVal));
+  void Threshold::ltgtVal<icl32f>(Img32f *src,Img32f *dst, icl32f tMin,icl32f minVal, icl32f tMax, icl32f maxVal){
+    fallbackThreshold (src, dst, ThreshOpLTGTVal<icl32f,icl32f>(tMin,minVal,tMax,maxVal));
   }
   // }}}
 #endif
 
-  // {{{ "Direct "explicit template instantination
+  // {{{ ImgI* versions
 
-  template void Threshold::Direct::lt<icl8u>(Img8u*,Img8u*,icl8u);
-  template void Threshold::Direct::gt<icl8u>(Img8u*,Img8u*,icl8u);
-  template void Threshold::Direct::ltgt<icl8u>(Img8u*,Img8u*,icl8u,icl8u);
-  template void Threshold::Direct::ltVal<icl8u>(Img8u*,Img8u*,icl8u,icl8u);
-  template void Threshold::Direct::gtVal<icl8u>(Img8u*,Img8u*,icl8u,icl8u);
-  template void Threshold::Direct::ltgtVal<icl8u>(Img8u*,Img8u*,icl8u,icl8u,icl8u,icl8u);
-
-  template void Threshold::Direct::lt<icl32f>(Img32f*,Img32f*,icl32f);
-  template void Threshold::Direct::gt<icl32f>(Img32f*,Img32f*,icl32f);
-  template void Threshold::Direct::ltgt<icl32f>(Img32f*,Img32f*,icl32f,icl32f);
-  template void Threshold::Direct::ltVal<icl32f>(Img32f*,Img32f*,icl32f,icl32f);
-  template void Threshold::Direct::gtVal<icl32f>(Img32f*,Img32f*,icl32f,icl32f);
-  template void Threshold::Direct::ltgtVal<icl32f>(Img32f*,Img32f*,icl32f,icl32f,icl32f,icl32f);
-
-  // }}}
-
-  // {{{ non-template functions
-
-  void Threshold::lt(ImgI *src, ImgI *dst, icl32f t){
+  void Threshold::lt(const ImgI *src, ImgI *dst, icl32f t){
     // {{{ open
 
     icl8u t8u = Cast<icl32f,icl8u>::cast(t);
     switch(src->getDepth()+10*dst->getDepth()){
       case 0 : // 8u->8u
-        Direct::lt(src->asImg<icl8u>(), dst->asImg<icl8u>(),t8u);
+        lt(src->asImg<icl8u>(), dst->asImg<icl8u>(),t8u);
         break;
       case 10: // 8u->32f
-        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshFuncLT<icl8u,icl32f>(t8u));
+        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshOpLT<icl8u,icl32f>(t8u));
         break;
       case 1: // 32f->8u
-        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshFuncLT<icl32f,icl8u>(t));
+        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshOpLT<icl32f,icl8u>(t));
         break;
       case 11: // 32f->32f
-        Direct::lt(src->asImg<icl32f>(), dst->asImg<icl32f>(),t);
+        lt(src->asImg<icl32f>(), dst->asImg<icl32f>(),t);
         break;
       default: return;
     }
@@ -311,22 +298,22 @@ namespace icl{
 
   // }}}
   
-  void Threshold::gt(ImgI *src, ImgI *dst, icl32f t){
+  void Threshold::gt(const ImgI *src, ImgI *dst, icl32f t){
     // {{{ open
 
     icl8u t8u = Cast<icl32f,icl8u>::cast(t);
     switch(src->getDepth()+10*dst->getDepth()){
       case 0 : // 8u->8u
-        Direct::gt(src->asImg<icl8u>(), dst->asImg<icl8u>(),t8u);
+        gt(src->asImg<icl8u>(), dst->asImg<icl8u>(),t8u);
         break;
       case 10: // 8u->32f
-        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshFuncGT<icl8u,icl32f>(t8u));
+        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshOpGT<icl8u,icl32f>(t8u));
         break;
       case 1: // 32f->8u
-        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshFuncGT<icl32f,icl8u>(t));
+        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshOpGT<icl32f,icl8u>(t));
         break;
       case 11: // 32f->32f
-        Direct::gt(src->asImg<icl32f>(), dst->asImg<icl32f>(),t);
+        gt(src->asImg<icl32f>(), dst->asImg<icl32f>(),t);
         break;
       default: return;
     }
@@ -334,23 +321,23 @@ namespace icl{
 
   // }}}
   
-  void Threshold::ltgt(ImgI *src, ImgI *dst, icl32f tMin, icl32f tMax){
+  void Threshold::ltgt(const ImgI *src, ImgI *dst, icl32f tMin, icl32f tMax){
     // {{{ open
 
     icl8u tMin8u = Cast<icl32f,icl8u>::cast(tMin);
     icl8u tMax8u = Cast<icl32f,icl8u>::cast(tMax);
     switch(src->getDepth()+10*dst->getDepth()){
       case 0 : // 8u->8u
-        Direct::ltgt(src->asImg<icl8u>(), dst->asImg<icl8u>(),tMin8u,tMax8u);
+        ltgt(src->asImg<icl8u>(), dst->asImg<icl8u>(),tMin8u,tMax8u);
         break;
       case 10: // 8u->32f
-        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshFuncLTGT<icl8u,icl32f>(tMin8u,tMax8u));
+        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshOpLTGT<icl8u,icl32f>(tMin8u,tMax8u));
         break;
       case 1: // 32f->8u
-        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshFuncLTGT<icl32f,icl8u>(tMin,tMax));
+        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshOpLTGT<icl32f,icl8u>(tMin,tMax));
         break;
       case 11: // 32f->32f
-        Direct::ltgt(src->asImg<icl32f>(), dst->asImg<icl32f>(),tMin,tMax);
+        ltgt(src->asImg<icl32f>(), dst->asImg<icl32f>(),tMin,tMax);
         break;
       default: return;
     }
@@ -358,23 +345,23 @@ namespace icl{
 
   // }}}
    
-  void Threshold::ltVal(ImgI *src, ImgI *dst, icl32f t, icl32f val){
+  void Threshold::ltVal(const ImgI *src, ImgI *dst, icl32f t, icl32f val){
     // {{{ open
 
     icl8u t8u = Cast<icl32f,icl8u>::cast(t);
     icl8u val8u = Cast<icl32f,icl8u>::cast(val);
     switch(src->getDepth()+10*dst->getDepth()){
       case 0 : // 8u->8u
-        Direct::ltVal(src->asImg<icl8u>(), dst->asImg<icl8u>(),t8u,val8u);
+        ltVal(src->asImg<icl8u>(), dst->asImg<icl8u>(),t8u,val8u);
         break;
       case 10: // 8u->32f
-        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshFuncLTVal<icl8u,icl32f>(t8u,val8u));
+        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshOpLTVal<icl8u,icl32f>(t8u,val8u));
         break;
       case 1: // 32f->8u
-        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshFuncLTVal<icl32f,icl8u>(t,val));
+        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshOpLTVal<icl32f,icl8u>(t,val8u));
         break;
       case 11: // 32f->32f
-        Direct::ltVal(src->asImg<icl32f>(), dst->asImg<icl32f>(),t,val);
+        ltVal(src->asImg<icl32f>(), dst->asImg<icl32f>(),t,val);
         break;
       default: return;
     }
@@ -382,23 +369,23 @@ namespace icl{
 
   // }}}
   
-  void Threshold::gtVal(ImgI *src, ImgI *dst, icl32f t, icl32f val){
+  void Threshold::gtVal(const ImgI *src, ImgI *dst, icl32f t, icl32f val){
     // {{{ open
 
     icl8u t8u = Cast<icl32f,icl8u>::cast(t);
     icl8u val8u = Cast<icl32f,icl8u>::cast(val);
     switch(src->getDepth()+10*dst->getDepth()){
       case 0 : // 8u->8u
-        Direct::gtVal(src->asImg<icl8u>(), dst->asImg<icl8u>(),t8u,val8u);
+        gtVal(src->asImg<icl8u>(), dst->asImg<icl8u>(),t8u,val8u);
         break;
       case 10: // 8u->32f
-        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshFuncGTVal<icl8u,icl32f>(t8u,val8u));
+        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshOpGTVal<icl8u,icl32f>(t8u,val8u));
         break;
       case 1: // 32f->8u
-        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshFuncGTVal<icl32f,icl8u>(t,val));
+        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshOpGTVal<icl32f,icl8u>(t,val8u));
         break;
       case 11: // 32f->32f
-        Direct::gtVal(src->asImg<icl32f>(), dst->asImg<icl32f>(),t,val);
+        gtVal(src->asImg<icl32f>(), dst->asImg<icl32f>(),t,val);
         break;
       default: return;
     }
@@ -406,7 +393,7 @@ namespace icl{
 
   // }}}
  
-  void Threshold::ltgtVal(ImgI *src, ImgI *dst, icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal){
+  void Threshold::ltgtVal(const ImgI *src, ImgI *dst, icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal){
     // {{{ open
 
     icl8u tMin8u = Cast<icl32f,icl8u>::cast(tMin);
@@ -417,16 +404,16 @@ namespace icl{
 
     switch(src->getDepth()+10*dst->getDepth()){
       case 0 : // 8u->8u
-        Direct::ltgtVal(src->asImg<icl8u>(), dst->asImg<icl8u>(),tMin8u,minVal8u,tMax8u, maxVal8u);
+        ltgtVal(src->asImg<icl8u>(), dst->asImg<icl8u>(),tMin8u,minVal8u,tMax8u, maxVal8u);
         break;
       case 10: // 8u->32f
-        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshFuncLTGTVal<icl8u,icl32f>(tMin8u,minVal8u,tMax8u, maxVal8u));
+        fallbackThreshold<icl8u,icl32f>(src->asImg<icl8u>(), dst->asImg<icl32f>(),ThreshOpLTGTVal<icl8u,icl32f>(tMin8u,minVal8u,tMax8u, maxVal8u));
         break;
       case 1: // 32f->8u
-        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshFuncLTGTVal<icl32f,icl8u>(tMin,minVal,tMax,maxVal));
+        fallbackThreshold<icl32f,icl8u>(src->asImg<icl32f>(), dst->asImg<icl8u>(),ThreshOpLTGTVal<icl32f,icl8u>(tMin,minVal8u,tMax,maxVal8u));
         break;
       case 11: // 32f->32f
-        Direct::ltgtVal(src->asImg<icl32f>(), dst->asImg<icl32f>(),tMin,minVal,tMax,maxVal);
+        ltgtVal(src->asImg<icl32f>(), dst->asImg<icl32f>(),tMin,minVal,tMax,maxVal);
         break;
       default: return;
     }
@@ -438,6 +425,3 @@ namespace icl{
   
   
 } // namespace icl
-
-
-
