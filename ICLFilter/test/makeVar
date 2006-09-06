@@ -21,7 +21,9 @@ ABS_INCLUDES:= ${ABS_INCLUDES}
 # Please add here all the directories with relative path
 # (e.g. -I../MyModule/src) that contain include files needed by the sources.
 REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
-               -I../src
+		-I../src \
+		-I../../ICLIO/src \
+		-I../../ICLCC/src
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
@@ -30,8 +32,9 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)
 REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
-                -L../lib -lICLFilter
-               
+		-L../lib -lICLFilter \
+		-L../../ICLIO/lib -lICLIO \
+		-L../../ICLCC/lib -lICLCC 
 # Please add here all the objects with absolute path
 # that are needed by the executables.
 ABS_OBJECTS:= ${ABS_OBJECTS}
