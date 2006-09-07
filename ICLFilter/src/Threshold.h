@@ -27,41 +27,42 @@ namespace icl{
   class Threshold {
   public:
     /// less than thresholding
-    static void lt(const ImgI *src, ImgI*dst, float threshold);
+    static void lt(const ImgI *poSrc, ImgI **ppoDst, float threshold);
     /// greater than thresholding
-    static void gt(const ImgI *src, ImgI*dst, float threshold);
+    static void gt(const ImgI *poSrc, ImgI **ppoDst, float threshold);
     /// less than and greater than thresholding
-    static void ltgt(const ImgI *src, ImgI*dst, float low, float hi);
+    static void ltgt(const ImgI *poSrc, ImgI **ppoDst, float low, float hi);
     /// less than thresholding with explicit set value
-    static void ltVal(const ImgI *src, ImgI*dst, float threshold, float val);
+    static void ltVal(const ImgI *poSrc, ImgI **ppoDst, float threshold, float val);
     /// greater than thresholding with explicit set value
-    static void gtVal(const ImgI *src, ImgI*dst, float threshold, float val);
+    static void gtVal(const ImgI *poSrc, ImgI **ppoDst, float threshold, float val);
     /// less than and greater than thresholding with explicit set values
-    static void ltgtVal(const ImgI *src, ImgI*dst, float low, float lowVal, float hi, float hiVal);
+    static void ltgtVal(const ImgI *poSrc, ImgI **ppoDst, 
+                        float low, float lowVal, float hi, float hiVal);
 
     /// less than thresholding
     template <typename T>
-    static void lt(const Img<T> *src, Img<T> *dst, T tThreshold);
+    static void lt(const Img<T> *poSrc, Img<T> *poDst, T tThreshold);
       
     /// greater than thresholding
     template <typename T>
-    static void gt(const Img<T> *src, Img<T> *dst, T tThreshold);
+    static void gt(const Img<T> *poSrc, Img<T> *poDst, T tThreshold);
       
     /// less than and greater than thresholding
     template <typename T>
-    static void ltgt(const Img<T>  *src, Img<T> *dst, T tLowerThreshold, T tUpperThreshold);
+    static void ltgt(const Img<T>  *poSrc, Img<T> *poDst, T tLowerThreshold, T tUpperThreshold);
       
     /// less than thresholding with explicit set value
     template <typename T>
-    static void ltVal(const Img<T> *src, Img<T> *dst, T tThreshold, T tVal);
+    static void ltVal(const Img<T> *poSrc, Img<T> *poDst, T tThreshold, T tVal);
       
     /// greater than thresholding with explicit set value
     template <typename T>
-    static void gtVal(const Img<T> *src, Img<T> *dst, T tThreshold, T tVal);
+    static void gtVal(const Img<T> *poSrc, Img<T> *poDst, T tThreshold, T tVal);
       
     /// less than and greater than thresholding with explicit set values
     template <typename T>
-    static void ltgtVal(const Img<T> *src, Img<T> *dst, T tLow, T tLowVal, T tHi, T tHiVal);
+    static void ltgtVal(const Img<T> *poSrc, Img<T> *poDst, T tLow, T tLowVal, T tHi, T tHiVal);
   };
 
 } // namespace icl

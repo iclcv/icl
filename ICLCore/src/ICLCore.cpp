@@ -127,15 +127,22 @@ namespace icl{
     }
   }
 
-  void ensureCompatible(ImgI **ppoDst, ImgI *poSrc) {
-     if(!poSrc) { ERROR_LOG ("source image is NULL"); }
+  void ensureCompatible(ImgI **ppoDst, const ImgI *poSrc) {
+     ICLASSERT_RETURN (poSrc);
      ensureCompatible(ppoDst,poSrc->getDepth(),
-                         poSrc->getSize(),
-                         poSrc->getFormat(),
-                         poSrc->getChannels(),
-                         poSrc->getROI());
+                      poSrc->getSize(),
+                      poSrc->getFormat(),
+                      poSrc->getChannels(),
+                      poSrc->getROI());
   }
 
+  void ensureCompatibleROI(ImgI **ppoDst, const ImgI *poSrc) {
+     ICLASSERT_RETURN (poSrc);
+     ensureCompatible(ppoDst,poSrc->getDepth(),
+                      poSrc->getROISize(),
+                      poSrc->getFormat(),
+                      poSrc->getChannels());
+  }
 
   int getSizeOf(depth eDepth)
   {

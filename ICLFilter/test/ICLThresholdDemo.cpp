@@ -60,26 +60,26 @@ int main(){
   im.scale(Size(100,100));
   
   Size s = im.getSize();
-  Img32f t(Size(s.width*7,s.height),1);
+  Img8u t(Size(s.width*7,s.height),1);
   int i=0;
 
   t.setROI(Rect((i++)*s.width,0,100,100));
   im.deepCopyROI(&t);
   t.setROI(Rect((i++)*s.width,0,100,100));
 
-  Threshold::lt(&im,&t,150); 
+  Threshold::lt(&im, &t, (icl8u) 150); 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::gt(&im,&t,150); 
+  Threshold::gt(&im, &t, (icl8u) 150); 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::ltgt(&im,&t,100,200); 
+  Threshold::ltgt(&im, &t, (icl8u) 100, (icl8u) 200); 
+  t.setROI(Rect((i++)*s.width, 0,100,100));
+  Threshold::ltVal(&im, &t, (icl8u) 150, (icl8u) 0); 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::ltVal(&im,&t,150,0); 
+  Threshold::gtVal(&im, &t, (icl8u) 150, (icl8u) 255); 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::gtVal(&im,&t,150,255); 
-  t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::ltgtVal(&im,&t,150,0,150,255); 
+  Threshold::ltgtVal(&im, &t, (icl8u) 150, (icl8u) 0, (icl8u) 150, (icl8u) 255); 
 
-  File("./threshold_results.pgm").write(t.convertTo<icl8u>()); system("xv ./threshold_results.pgm &"); 
+  File("./threshold_results.pgm").write(&t); system("xv ./threshold_results.pgm &"); 
 
   printf("Original colors are [0,100,200,255]\n");
   printf(": Image order is: \n");

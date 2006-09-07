@@ -414,36 +414,49 @@ namespace icl {
   **/
   void ensureDepth(ImgI **ppoImage, depth eDepth);
 
-  /// ensures that two images have the same size, channel count, depth, format and ROI
-  /** If the given dst image image is 0 than it is created as a (deep copy) of
-      of poSrc.
-      @param ppoDst points the destination ImgI*. If the images depth has to be
-                    converted, then a new ImgCore* is created, at (*ppoDst).
-      @param poSrc source image. All params of this image are extracted to define
-                   the destination parameters for *ppoDst.  
-  **/
-  void ensureCompatible(ImgI **ppoDst, ImgI *poSrc);
-
-  /// ensures that two images have the same size, channel count, depth, format and ROI
-  /** If the given dst image image is 0 than it is created as a (deep copy) of
-      of poSrc.
-      @param ppoDst points the destination ImgI*. If the images depth has to be
-                    converted, then a new ImgCore* is created, at (*ppoDst).
-      @param eDepth destination depth
-      @param s destination image size
-      @param eFormat destination format
-      @param iChannelCount destination channel count. (If -1, then the channel count
-                           is extracted from the given eFormat
-      @param roROI destination images ROI rectangle. If the ROI parameters are not 
-                   given, the ROI will comprise the whole image.
+  /// ensures that an image has given depth, size, format, number of channels and ROI
+  /** If the given pointer to the destination image is 0, a new image with appropriate
+      properties is created. Else the image properties are checked and adapted to the new
+      values if neccessary.
+      @param ppoDst  points the destination ImgI*. If the images depth has to be
+                     converted, then a new Img<T>* is created at (*ppoDst).
+      @param eDepth  desired image depth
+      @param size    desired image size
+      @param eFormat desired format
+      @param iChannelCount desired number of channels, if eFormat == formatMatrix
+                           for other format, the number of channels is determined by the format
+      @param roROI   desired ROI rectangle. If the ROI parameters are not given, 
+                     the ROI will comprise the whole image.
   **/
   void ensureCompatible(ImgI **ppoDst,
                         depth eDepth, 
-                        const Size& s,
+                        const Size& size,
                         format eFormat, 
                         int iChannelCount=-1,
                         const Rect &roROI=Rect());
   
+  /// ensures that the destination image gets same depth, size, channel count, depth, format and ROI as source image
+  /** If the given pointer to the destination image is 0, a new image is created as a deep copy of poSrc.
+      Else the image properties are checked and adapted to the new values if neccessary.
+      @param ppoDst points the destination ImgI*. If the images depth has to be
+                    converted, then a new Img<T>* is created, at (*ppoDst).
+      @param poSrc  source image. All params of this image are extracted to define
+                    the destination parameters for *ppoDst.  
+  **/
+  void ensureCompatible(ImgI **ppoDst, const ImgI *poSrc);
+
+  /// ensures that the destination image gets same depth, ROI size, channel count, depth and format as source image
+  /** If the given pointer to the destination image is 0, a new image is created as deepCopyROI of poSrc.
+      Else the image properties are checked and adapted to the new values if neccessary. 
+      In comparison to ensureCompatible, the source images ROI size instead of its size determines the destination
+      images size. This function is useful for many filter operations operating on the ROI of an image.
+      @param ppoDst points the destination ImgI*. If the images depth has to be
+                    converted, then a new Img<T>* is created, at (*ppoDst).
+      @param poSrc  source image. All params of this image are extracted to define
+                    the destination parameters for *ppoDst.  
+  **/
+  void ensureCompatibleROI(ImgI **ppoDst, const ImgI *poSrc);
+
   /// determines the count of channels, for each color format
   /** @param eFormat source format which channel count should be returned
       @return channel count of format eFormat
