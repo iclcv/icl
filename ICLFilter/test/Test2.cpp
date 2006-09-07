@@ -4,6 +4,7 @@
 using namespace icl;
 
 struct Base{ 
+  virtual ~Base() {}
   virtual inline int f(int c) const{    return c > 5 ? c : 5; } 
 };
 
