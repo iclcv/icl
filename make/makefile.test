@@ -35,6 +35,7 @@ PROJECT_NAME:= $(notdir $(shell cd ..;pwd))
 
 include makeVar
 
+# Checks if the project is composed by C or C++ source files
 ifeq "$(wildcard *.${SOURCE_CPP_EXT})" ""
  _SOURCES_EXT = ${SOURCE_C_EXT}
 else
@@ -43,7 +44,7 @@ else
 endif
 
 ifneq "${DEBUG_ON}" "TRUE"
- DEBUG:=
+ DEBUG:=${NODEBUG}
 endif
 
 _SOURCES_FILENAME = $(wildcard *.${_SOURCES_EXT})
@@ -108,32 +109,3 @@ endif
 # Note: This rule must be the last one!
 #-----------------------------------------------
 %: ;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

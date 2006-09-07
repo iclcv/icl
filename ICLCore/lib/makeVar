@@ -42,21 +42,6 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 REL_OBJECTS:= $(REL_OBJECTS:%=../%) \
               ../obj/*.o
 
-# Debug flag
-DEBUG:= ${DEBUG}
-
-# Compilation defines (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CDEFINES:= ${CDEFINES}
-
-# Flags for C compiler
-CFLAGS:= ${CFLAGS}
-
-# Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CPPDEFINES:= ${CPPDEFINES}
-
-# Flags for C++ compiler
-CPPFLAGS:= ${CPPFLAGS}
-
 # Flags for archive
 ARFLAGS:= ${ARFLAGS}
 
@@ -64,4 +49,7 @@ ARFLAGS:= ${ARFLAGS}
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
 
-
+# Set the priority level
+DIR_PRIORITY:=
+DIR_LOWPRIORITY:=
+SKIP_DIRECTORIES:=

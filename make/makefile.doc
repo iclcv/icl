@@ -17,10 +17,6 @@ PROJECT_NAME:= $(notdir $(shell cd ..;pwd))
 
 include makeVar
 
-ifneq "${DEBUG_ON}" "TRUE"
- DEBUG:=
-endif
-
 #-----------------------------------------------
 # Rule: all & cleanall & clean & printtype
 #-----------------------------------------------

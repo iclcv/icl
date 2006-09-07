@@ -2,6 +2,7 @@
 #
 #   makeVar
 #
+
 # Don't change anything between the '####' lines!
 ###############################################################################
 -include ${_DOT_DOT}makeRoot
@@ -61,30 +62,23 @@ REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 # This variable takes two values: TRUE or FALSE
 DEBUG_ON:=TRUE
 
-# Debug flag
-DEBUG:= ${DEBUG}
+# Debugging flags
+DEBUG:=-O0 -g3
+# Non-Debugging flags
+NODEBUG:=-O4 -DNDEBUG
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CDEFINES:= ${CDEFINES}
+CDEFINES:= ${CDEFINES} -DWITH_IPP_OPTIMIZATION
+#CDEFINES:= ${CDEFINES} -DDEBUGLEVEL_2
 
 # Flags for C compiler
 CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CPPDEFINES:= ${CPPDEFINES} -DWITH_IPP_OPTIMIZATION
-#CPPDEFINES := ${CPPDEFINES} -DDEBUGLEVEL_2
+CPPDEFINES:= ${CDEFINES}
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
-
-# Debugging and Optimization options
-ifeq "$(DEBUG_ON)" "TRUE"
-     CFLAGS += $(DEBUG)
-     CPPFLAGS += $(DEBUG)
-else
-     CFLAGS += -O3 -DNDEBUG
-     CPPFLAGS += -O3 -DNDEBUG
-endif
 
 # Flags for archive
 ARFLAGS:= ${ARFLAGS}

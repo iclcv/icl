@@ -47,8 +47,14 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 # that are needed by the executables.
 REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
-# Debug flag
+# Debug status
+# This variable takes two values: TRUE or FALSE
+DEBUG_ON:=TRUE
+
+# Debugging flags
 DEBUG:= ${DEBUG}
+# Non-Debugging flags
+NODEBUG:= ${NODEBUG}
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES}
@@ -72,7 +78,7 @@ LDFLAGS:= ${LDFLAGS}
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
 
-
-
-
-
+# Set the priority level
+DIR_PRIORITY:=
+DIR_LOWPRIORITY:=
+SKIP_DIRECTORIES:=

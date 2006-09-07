@@ -5,7 +5,7 @@
 
 # Don't change anything between the '####' lines!
 ###############################################################################
-_DOT_DOT:= ../${_DOT_DOT}
+_DOT_DOT:=../${_DOT_DOT}
 -include ${_DOT_DOT}makeVar
 -include makeDepend
 ###############################################################################
@@ -40,10 +40,16 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 REL_OBJECTS:= $(REL_OBJECTS:%=../%) \
               ../obj/*.o
 
-# Debug flag
-DEBUG:= ${DEBUG}
+# Debug status
+# This variable takes two values: TRUE or FALSE
+DEBUG_ON:=${DEBUG_ON}
 
-# Compilation definesfor C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
+# Debugging flags
+DEBUG:= ${DEBUG}
+# Non-Debugging flags
+NODEBUG:= ${NODEBUG}
+
+# Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES}
 
 # Flags for C compiler
@@ -56,4 +62,7 @@ CPPDEFINES:= ${CPPDEFINES}
 CPPFLAGS:= ${CPPFLAGS}
 
 
-
+# Set the priority level
+DIR_PRIORITY:=
+DIR_LOWPRIORITY:=
+SKIP_DIRECTORIES:=
