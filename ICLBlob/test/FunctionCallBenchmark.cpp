@@ -85,10 +85,9 @@ int main(){
          *d = matchProp(*it0,*it1,*it2);
       }
    }
-   oTimer.stopTimer();
+   oTimer.stopSubTimer("transfer of pixel values");
 
    printf("fixed sized array         ");
-   oTimer.startTimer();
    for(int i=0;i<NTIMES;i++){
       ImgIterator<T> ait[3] = {it0=im.getIterator(0),
                                it1=im.getIterator(1),
@@ -101,10 +100,9 @@ int main(){
          *d = matchPropA(ait);
       }
    }
-   oTimer.stopTimer();
+   oTimer.stopSubTimer("fixed sized array");
 
    printf("fixed sized vector        ");
-   oTimer.startTimer();
    for(int i=0;i<NTIMES;i++){
       it0 = im.getIterator(0);
       it1 = im.getIterator(1);
@@ -122,10 +120,9 @@ int main(){
          *d = matchPropV(its);
       }
    }
-   oTimer.stopTimer();
+   oTimer.stopSubTimer("fixed sized vector");
 
    printf("variable sized vector     ");
-   oTimer.startTimer();
    for(int i=0;i<NTIMES;i++){
       it0 = im.getIterator(0);
       it1 = im.getIterator(1);
@@ -145,5 +142,5 @@ int main(){
          *d = matchPropVL(start, end);
       }
    }
-   oTimer.stopTimer();
+   oTimer.stopTimer("variable sized vector");
 }

@@ -78,12 +78,12 @@ int main(){
   for(int i=0;i<N;i++){
     test_c(src, 1,2,3,4,5,6,dst);
   }
-  t.stopTimer();
+  t.stopTimer("First timer");
   
   t.startTimer();
   for(int i=0;i<N;i++){
     test_ipp(src,tmp1, tmp2, 1,2,3,4,5,6,dst);
   }
-  t.stopTimer();
+  t.stopTimer("Second timer");
   return 0;
 }
