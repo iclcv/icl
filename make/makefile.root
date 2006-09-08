@@ -30,8 +30,10 @@ _DIRECTORY_ORDER:=$(filter ${_DIRECTORY_LIST},${DIR_PRIORITY}) \
 all: ${ALL_EXEC_LIST}
 
 cleanall: $(ALL_EXEC_LIST:%=clean%)
+	${PRE_CMD}${CMD_FINAL}
 
 clean: $(_DIRECTORY_ORDER:%=clean_%)
+	${PRE_CMD}${CMD_FINAL}
 
 clean_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} clean -C $(subst clean_,,$@)\
@@ -129,3 +131,8 @@ depend_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} depend -C $(subst depend_,,$@)\
               "_CURR_DIR=$(subst depend_,${strip ${_CURR_DIR}}/,$@)"
 
+cleandepend: $(_DIRECTORY_ORDER:%=cleandepend_%)
+
+cleandepend_%:
+	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} cleandepend -C $(subst cleandepend_,,$@)\
+              "_CURR_DIR=$(subst cleandepend_,${strip ${_CURR_DIR}}/,$@)"

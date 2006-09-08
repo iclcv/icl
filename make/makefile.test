@@ -93,7 +93,6 @@ ${REL_OBJECTS} ${ABS_OBJECTS}:
 	${PRE_CMD}${CMD_EXIT_FAIL}
 
 cleanexe: _cleanexe_First ${MORE_CLEAN}
-	${PRE_CMD}${CMD_FINAL}
 
 _cleanexe_First:
 	${PRE_CMD}${CMD_ECHO} "Cleaning examples from: ${_CURR_DIR}"

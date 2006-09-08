@@ -64,7 +64,6 @@ ${REL_OBJECTS} ${ABS_OBJECTS}:
 	${PRE_CMD}${CMD_EXIT_FAIL}
 
 cleanlib: _cleanlib_First ${MORE_CLEAN}
-	${PRE_CMD}${CMD_FINAL}
 
 _cleanlib_First:
 	${PRE_CMD}${CMD_ECHO} "Cleaning library from: ${_CURR_DIR}"

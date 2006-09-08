@@ -67,17 +67,17 @@ int main(){
   im.deepCopyROI(&t);
   t.setROI(Rect((i++)*s.width,0,100,100));
 
-  Threshold::lt(&im, &t, (icl8u) 150); 
+  Threshold::lt(&im, &t, 150); 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::gt(&im, &t, (icl8u) 150); 
+  Threshold::gt(&im, &t, 150); 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::ltgt(&im, &t, (icl8u) 100, (icl8u) 200); 
+  Threshold::ltgt(&im, &t, 100, 200); 
   t.setROI(Rect((i++)*s.width, 0,100,100));
-  Threshold::ltVal(&im, &t, (icl8u) 150, (icl8u) 0); 
+  Threshold::ltVal(&im, &t, 150, 0); 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::gtVal(&im, &t, (icl8u) 150, (icl8u) 255); 
+  Threshold::gtVal(&im, &t, 150, 255); 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::ltgtVal(&im, &t, (icl8u) 150, (icl8u) 0, (icl8u) 150, (icl8u) 255); 
+  Threshold::ltgtVal(&im, &t, 150, 0, 150, 255); 
 
   File("./threshold_results.pgm").write(&t); system("xv ./threshold_results.pgm &"); 
 

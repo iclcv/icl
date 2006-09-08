@@ -40,7 +40,6 @@ _doc_Build:
 	${PRE_CMD}${CMD_FINAL}
 
 cleandoc: _cleandoc_First ${MORE_CLEAN}
-	${PRE_CMD}${CMD_FINAL}
 
 _cleandoc_First:
 	${PRE_CMD}${CMD_ECHO} "Cleaning documentation from: ${_CURR_DIR}"

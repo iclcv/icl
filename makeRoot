@@ -24,6 +24,7 @@ export AGNI_LOCAL_ROOT
 #       defining this variable with the value:
 #               echo ""
 #       prints out what makefiles would execute without executing the commands.
+# To become completely verbose, undefine PRE_CMD as well as remove -s from EXTRAMAKEFLAGS below
 PRE_CMD=@
 
 # Make tool
@@ -51,7 +52,7 @@ CMD_RANLIB=ranlib
 CMD_DEPC=makedepend
 
 # Echo command
-CMD_ECHO=echo
+CMD_ECHO=@echo
 
 # Stop make execution with failure
 CMD_EXIT_FAIL=exit 1
@@ -360,9 +361,3 @@ help:
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} " help        : this help text"
 	${PRE_CMD}${CMD_ECHO} ""
-
-
-
-
-
-

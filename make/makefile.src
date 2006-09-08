@@ -70,7 +70,6 @@ endif
 	${PRE_CMD}${CMD_MKDIR} ../obj
 
 cleanobj: _cleanobj_First ${MORE_CLEAN}
-	${PRE_CMD}${CMD_FINAL}
 
 _cleanobj_First:
 	${PRE_CMD}${CMD_ECHO} "Cleaning objects from: ${_CURR_DIR}"
@@ -87,10 +86,10 @@ depend:
 	${PRE_CMD}${CMD_ECHO} "Building dependencies from: ${_CURR_DIR}"
 	${PRE_CMD}${CMD_RM} makeDepend
 	${PRE_CMD}for file in ${_SOURCES_FILENAME} ; do \
-	  ${CMD_ECHO} "  $$file" ; \
+	   echo "  $$file" ; \
 		$(CMD_CCPP) $(CXXFLAGS) ${CPPDEFINES} ${ABS_INCLUDES} ${REL_INCLUDES} \
 	    $$file -MT ../obj/$${file%.*}.o -MM -o .depend ; \
-	  cat .depend >> makeDepend ; \
+	   cat .depend >> makeDepend ; \
 	done
 	${CMD_RM} .depend
 else
@@ -99,7 +98,7 @@ depend:
 	${PRE_CMD}${CMD_ECHO} "Building dependencies from: ${_CURR_DIR}"
 	${PRE_CMD}${CMD_RM} makeDepend
 	${PRE_CMD}for file in ${_SOURCES_FILENAME} ; do \
-	  ${CMD_ECHO} "  $$file" ; \
+	   echo "  $$file" ; \
 		$(CMD_CC) $(CFLAGS) ${CDEFINES} ${ABS_INCLUDES} ${REL_INCLUDES} \
 	    $$file -MM -o .depend ; \
 	  cat .depend >> makeDepend ; \

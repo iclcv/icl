@@ -10,11 +10,6 @@ addChannelROIs (c, a, b): c = a + b  // c may equal a or/and b
 multChannelROIs (c, a, b): c = a * b // c may equal a or/and b
 
 
-Units: 
-Clip: fasse alle ippiThreshold*Val Funktionen zusammen (mit threshold=value):
- lower bound: %f
- upper bound: %f 
-
 Compare: fasse alle ippiCompare* Funktionen zusammen:
  pixel-wise compare operation:
    pixel1 < = > pixel2 | value

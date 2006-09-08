@@ -1,7 +1,7 @@
 /*
   Timer.cpp
 
-  Written by: Michael GÃ¶tting (2006)
+  Written by: Michael Götting (2006)
               University of Bielefeld
               AG Neuroinformatik
               mgoettin@techfak.uni-bielefeld.de
@@ -42,10 +42,11 @@ void Timer::stopTimer()
 {
   FUNCTION_LOG("");
 
-  long lTmpTimeDiff = 0;
+  long int lTmpTimeDiff = 0;
   
   m_vecTime.push_back(getTime());
   
+  if (m_vecTime.size() > 2) {
   for (unsigned int i=1;i<m_vecTime.size();i++)
   {
     lTmpTimeDiff = m_vecTime[i] - m_vecTime[i-1];
@@ -63,6 +64,7 @@ void Timer::stopTimer()
         break;
     }
   }    
+  }
   
   lTmpTimeDiff = m_vecTime[m_vecTime.size()-1] - m_vecTime[0];
   
@@ -84,30 +86,20 @@ void Timer::stopTimer()
 
 // {{{ Misc. functions
 
-long Timer::getTime()
+long int Timer::getTime()
 {
   FUNCTION_LOG("");
-  long currTime = 0;
-  
   struct timeval tv;
-  
   gettimeofday( &tv, 0 );
-  time_t a = time(0);
-  tm *t=localtime(&a);
   
   switch (m_iTimerMode)
   {
     case 0:
-      currTime  = 3600000 * t->tm_hour + 60000 * t->tm_min +
-        1000 * t->tm_sec + tv.tv_usec / 1000;
-      break;
+      return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 
-    case 1:
-      currTime = 60000000 * t->tm_min + 1000000 * t->tm_sec + tv.tv_usec;
-      break;
+    default:
+      return tv.tv_sec * 1000000 + tv.tv_usec;
   }
-  
-  return currTime;
 }
 
 // }}}
