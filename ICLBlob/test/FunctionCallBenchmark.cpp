@@ -43,16 +43,21 @@ inline float matchPropV(const itvec &pixel){
    return (float)(dh+ds+di)/765.0;
 }
 
-inline float matchPropVL(itvec::const_iterator &it, itvec::const_iterator &end){
+inline float matchPropVL(itvec::const_iterator it, const itvec::const_iterator& end){
+
    //loop
    int *pt=aiT;
    float sum=0;
    // N*[4*"*" 1*"=" 1*"-", 1*"if" 3*"++"] == 30 Op
-  
+#if 1
    for(;it!=end; ++it, ++pt) {
       sum += (*(*(*it))) - (*pt);
    }
-   
+#else
+   sum = (*(*(*it))) - (*pt); ++it; ++pt;
+   sum += (*(*(*it))) - (*pt); ++it; ++pt;
+   sum += (*(*(*it))) - (*pt);
+#endif
    return (float)(sum)/765.0;
 }
 
