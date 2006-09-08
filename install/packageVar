@@ -39,12 +39,13 @@ else
 #       -lDisplayWindow )
 # (e.g. extra library like: -L/usr/lib -lpthreads )
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-                -L${AGNI_LOCAL_ROOT}/ICL/3.0/lib 
+                -L${AGNI_LOCAL_ROOT}/ICL/3.0/lib \
                 -lICLCore \
                 -lICLCC \
                 -lICLIO \
                 -lICLQt \
-                -lICLBlob
+                -lICLBlob \
+                -lICLFilter
 
 # Please, do not remove this endif statement
 endif
