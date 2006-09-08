@@ -25,7 +25,7 @@ class Timer
  private:
   int m_iTimerMode;
   vector<long int> m_vecTime;
-  string m_sTimerName;
+  vector<string> m_vecTimerName;
   
   long int getTime();
   
@@ -33,10 +33,9 @@ class Timer
 /* {{{ Konstruktor/ Destruktor */
   //@{ @name Constructors
   ///Construct the Timerr class.      
-  /** @param timerName Set the timer name (only for info)
-      @param iTimerMode Select the output format (0 = ms, 1 = ns)
+  /** @param iTimerMode Select the output format (0 = ms, 1 = ns)
   **/
-  Timer(string timerName="icl timer", int iTimerMode=0);
+  Timer(int iTimerMode=0);
 
 /* }}} */
 
@@ -45,6 +44,7 @@ class Timer
   //--------------------------------------------------------------------------
   ///Start the time measurement 
   /** 
+      @param timerName Set the timer name (only for user information)
       @sa stopTimer
   **/
   void startTimer();
@@ -53,16 +53,17 @@ class Timer
   /// Set a sub timer.
   /** Each sub time is printed at the end of the whole time
       measure process (stopTimer).
+      @param timerName Set the timer name (only for user information)
       @sa stopTimer
   **/
-  void stopSubTimer();
+  void stopSubTimer(string sName);
   
   //--------------------------------------------------------------------------
   /// Stop the time measurement and print the complete working time
   /** 
       @sa stopSubTimer
   **/
-    void stopTimer();
+    void stopTimer(string sName);
 
 /* }}} */
 

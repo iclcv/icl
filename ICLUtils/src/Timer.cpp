@@ -14,11 +14,13 @@ namespace icl {
 
 // {{{ Konstruktor/ Destruktor
 
-Timer::Timer(string timerName, int iTimerMode)
+Timer::Timer(int iTimerMode)
 {
-  FUNCTION_LOG("name: " << timerName << "mode: " << iTimerMode);
-  m_sTimerName = timerName;
+  FUNCTION_LOG("Timer mode: " << iTimerMode);
   m_iTimerMode = iTimerMode;
+
+  m_vecTime.clear();
+  m_vecTimerName.clear();
 }
 
 // }}}
@@ -27,43 +29,49 @@ Timer::Timer(string timerName, int iTimerMode)
 
 void Timer::startTimer()
 {
-  FUNCTION_LOG("");
-  m_vecTime.clear();
+  FUNCTION_LOG("string");
   m_vecTime.push_back(getTime());
+  m_vecTimerName.push_back("_START_");
 }
 
-void Timer::stopSubTimer()
+void Timer::stopSubTimer(string sName)
 {
   FUNCTION_LOG("");
   m_vecTime.push_back(getTime());
+  m_vecTimerName.push_back(sName);  
 }
 
-void Timer::stopTimer()
+void Timer::stopTimer(string sName)
 {
-  FUNCTION_LOG("");
+  FUNCTION_LOG("string");
 
   long int lTmpTimeDiff = 0;
   
   m_vecTime.push_back(getTime());
+  m_vecTimerName.push_back(sName);  
+
+  cout << endl;
+  cout << " ------------------------------------------- " << endl;
+  cout << " --             Time measure              -- " << endl;
   
   if (m_vecTime.size() > 2) {
-  for (unsigned int i=1;i<m_vecTime.size();i++)
-  {
-    lTmpTimeDiff = m_vecTime[i] - m_vecTime[i-1];
-  
-    switch(m_iTimerMode)
+    for (unsigned int i=1;i<m_vecTime.size();i++)
     {
-      case 0:
-        cout << " [" << m_sTimerName << "]" << " Computing time (Part " << i 
-             << ") = " << lTmpTimeDiff << " ms" << endl;
-        break;
-        
-      case 1:
-        cout << " [" << m_sTimerName << "]" << " Computing time (Part " << i 
-             << ") = " << lTmpTimeDiff << " ns" << endl;
-        break;
-    }
-  }    
+      lTmpTimeDiff = m_vecTime[i] - m_vecTime[i-1];
+      
+      switch(m_iTimerMode)
+      {
+        case 0:
+          cout << " --  [" << m_vecTimerName[i] << "] -> Time: " 
+               << lTmpTimeDiff << " ms" << endl;
+          break;
+          
+        case 1:
+          cout << " --  [" << m_vecTimerName[i] << "] -> Time: "
+               << lTmpTimeDiff << " ns" << endl;
+          break;
+      }
+    }    
   }
   
   lTmpTimeDiff = m_vecTime[m_vecTime.size()-1] - m_vecTime[0];
@@ -71,15 +79,16 @@ void Timer::stopTimer()
   switch(m_iTimerMode)
   {
     case 0:
-      cout << " [" << m_sTimerName << "]" << " Computing time (Complete) = " 
-           << lTmpTimeDiff << " ms" << endl;
+      cout << " ------------------------------------------- " << endl;
+      cout << " [ --- ] -> Complete time: " << lTmpTimeDiff << " ms" << endl;
       break;
       
     case 1:
-      cout << " [" << m_sTimerName << "]" << " Computing time (Complete) = "
-           << lTmpTimeDiff << " ns" << endl;
+      cout << " ------------------------------------------- " << endl;
+      cout << " [ --- ] -> Complete time: " << lTmpTimeDiff << " ns" << endl;
       break;
   }
+  cout << endl;
 }
 
 // }}}
@@ -94,10 +103,10 @@ long int Timer::getTime()
   
   switch (m_iTimerMode)
   {
-    case 0:
+    case 0: //ms
       return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-
-    default:
+      
+    default: //ns
       return tv.tv_sec * 1000000 + tv.tv_usec;
   }
 }
