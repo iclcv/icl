@@ -10,22 +10,22 @@
 namespace icl{
  
   class OSD : public OSDWidget{
-    typedef std::map<QString,OSDWidget*> pmap;
+    typedef std::map<string,OSDWidget*> pmap;
     public:
-    OSD(int id, QRect r,ImageWidget* poIW , OSDWidget *poParent);
+    OSD(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent);
 
     protected:
     virtual void childChanged(int id, void *val);
-    void setActive(QString sName);
-    void setImageInfo(std::vector<QString> info);
+    void setActive(string sName);
+    void setImageInfo(std::vector<string> info);
 
     /* {{{ help functions */
 
-    QRect getNavRect();
-    QRect getMainRect();
-    QRect getSubRect(int i, int iMax);
-    QRect getBottomRectMain();
-    QRect getBottomRectExit();
+    Rect getNavRect();
+    Rect getMainRect();
+    Rect getSubRect(int i, int iMax);
+    Rect getBottomRectMain();
+    Rect getBottomRectExit();
 
     /* }}} */
     /* {{{ members */

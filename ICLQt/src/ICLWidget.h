@@ -19,6 +19,7 @@
 #include <QMutex>
 
 #include "Converter.h"
+#include "GLPaintEngine.h"
 
 using namespace icl;
 
@@ -61,11 +62,11 @@ namespace icl{
    
  
     /// drawing
-    virtual void paintEvent(QPaintEvent *poEvent);
+    virtual void paintGL();
     /// additiona custom drawings (between image and osd)
-    virtual void customPaintEvent(QPainter *poPainter){}
+    virtual void customPaintEvent(GLPaintEngine *e){(void)e;}
     /// final drawing of the osd
-    void drawOSD(QPainter *poPainter);
+    void drawOSD(GLPaintEngine *e);
   
   
 
@@ -97,25 +98,20 @@ namespace icl{
     /// returns the current image rect
     Rect getImageRect();
     fitmode getFitMode(){return op.fm;}
-    std::vector<QString> getImageInfo();
+    std::vector<string> getImageInfo();
     
     protected:
     /// sets up all 3 gl channels to given bias and scale
     void setBiasAndScale(float fBiasRGB, float fScaleRGB);
     Rect computeImageRect(Size oImageSize, Size oWidgetSize, fitmode eFitMode);
 
-    void drawImage(QPainter *poPainter);
-    void drawStr(QPainter *poPainter,QString s, QRect r, int iFontSize = 18, QColor c=QColor(255,255,255),QFont f=QFont("Arial",18));
-    void drawRect(QPainter *poPainter,QRect r,QColor cBorder, QColor cFill);
-
-    
+    void drawImage(GLPaintEngine *e);
+       
     private:
     Options op;
     QMutex m_oMutex, m_oOSDMutex;
-    Img8u *m_poImage;
-    QImage m_oQImage;
-    QVector<QRgb> m_oColorTable;
-    Converter m_oConverter;
+
+    ImgI *m_poImage;
 
     OSDWidget *m_poOSD;
     OSDWidget *m_poCurrOSD;

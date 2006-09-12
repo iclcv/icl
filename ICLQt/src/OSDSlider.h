@@ -7,9 +7,9 @@ namespace icl{
   
   class OSDSlider : public OSDWidget{
     public:
-    OSDSlider(int id, QRect r,ImageWidget* poIW , OSDWidget *poParent,int min, int max, int curr);
+    OSDSlider(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent,int min, int max, int curr);
     virtual ~OSDSlider(){}
-    virtual void drawSelf(QPainter *poPainter,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
+    virtual void drawSelf(GLPaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
     virtual void mouseMoved(int _x, int _y, int downmask[3]);
     virtual void mousePressed(int _x, int _y, int button);
     virtual void mouseReleased(int x, int y, int button);    
@@ -19,9 +19,9 @@ namespace icl{
     
     protected:
     int m_iMin, m_iMax,m_iCurr,m_iGripY,m_iGripH;
-    QString m_sText;
+    string m_sText;
     
-    QRect m_oBar,m_oText,m_oGrip;
+    Rect m_oBar,m_oText,m_oGrip;
     
     static const float s_fTextFrac;
     static const float s_13;

@@ -61,13 +61,13 @@ namespace icl{
 
   // }}}
 
-  OSD::OSD(int id, QRect r,ImageWidget* poIW , OSDWidget *poParent):
+  OSD::OSD(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent):
     // {{{ open
 
     OSDWidget(id,r,poIW,poParent),m_iCurrID(-1){
     
     // NAV-Bar-------------------------------------------------------------
-    std::vector<QString> vec, vecShort;
+    std::vector<string> vec, vecShort;
     std::vector<int> vecIDs;
     vec.push_back("main");vecShort.push_back("MA");vecIDs.push_back(NAV_MAIN_ID);
     vec.push_back("adjust");vecShort.push_back("A");vecIDs.push_back(NAV_ADJUST_ID);
@@ -136,18 +136,18 @@ namespace icl{
 
     // MENU-Menu
     w = new OSDWidget(MENU_ID,getMainRect(),poIW,this);
-    QRect r0 = getSubRect(1,7);
-    w->addChild(new OSDLabel(MENU_FILL_RGB_LABEL_ID,QRect(r0.x(),r0.y(),r0.width()/2-1,r0.height()),m_poIW,this,"fill(R,G,B):"));
-    w->addChild(new OSDLabel(MENU_BORDER_RGB_LABEL_ID,QRect(r0.x()+r0.width()/2+1,r0.y(),r0.width()/2-1,r0.height()),m_poIW,this,"edge(R,G,B):"));
+    Rect r0 = getSubRect(1,7);
+    w->addChild(new OSDLabel(MENU_FILL_RGB_LABEL_ID,Rect(r0.x,r0.y,r0.width/2-1,r0.height),m_poIW,this,"fill(R,G,B):"));
+    w->addChild(new OSDLabel(MENU_BORDER_RGB_LABEL_ID,Rect(r0.x+r0.width/2+1,r0.y,r0.width/2-1,r0.height),m_poIW,this,"edge(R,G,B):"));
     r0 = getSubRect(2,7);
-    w->addChild(new OSDSlider(MENU_FILL_R_SLIDER_ID,QRect(r0.x(),r0.y(),r0.width()/2-1,r0.height()),m_poIW,this,0,255,s_iFillR));
-    w->addChild(new OSDSlider(MENU_BORDER_R_SLIDER_ID,QRect(r0.x()+r0.width()/2+1,r0.y(),r0.width()/2-1,r0.height()),m_poIW,this,0,255,s_iBorderR));
+    w->addChild(new OSDSlider(MENU_FILL_R_SLIDER_ID,Rect(r0.x,r0.y,r0.width/2-1,r0.height),m_poIW,this,0,255,s_iFillR));
+    w->addChild(new OSDSlider(MENU_BORDER_R_SLIDER_ID,Rect(r0.x+r0.width/2+1,r0.y,r0.width/2-1,r0.height),m_poIW,this,0,255,s_iBorderR));
     r0 = getSubRect(3,7);
-    w->addChild(new OSDSlider(MENU_FILL_G_SLIDER_ID,QRect(r0.x(),r0.y(),r0.width()/2-1,r0.height()),m_poIW,this,0,255,s_iFillG));
-    w->addChild(new OSDSlider(MENU_BORDER_G_SLIDER_ID,QRect(r0.x()+r0.width()/2+1,r0.y(),r0.width()/2-1,r0.height()),m_poIW,this,0,255,s_iBorderG));
+    w->addChild(new OSDSlider(MENU_FILL_G_SLIDER_ID,Rect(r0.x,r0.y,r0.width/2-1,r0.height),m_poIW,this,0,255,s_iFillG));
+    w->addChild(new OSDSlider(MENU_BORDER_G_SLIDER_ID,Rect(r0.x+r0.width/2+1,r0.y,r0.width/2-1,r0.height),m_poIW,this,0,255,s_iBorderG));
     r0 = getSubRect(4,7);
-    w->addChild(new OSDSlider(MENU_FILL_B_SLIDER_ID,QRect(r0.x(),r0.y(),r0.width()/2-1,r0.height()),m_poIW,this,0,255,s_iFillB));
-    w->addChild(new OSDSlider(MENU_BORDER_B_SLIDER_ID,QRect(r0.x()+r0.width()/2+1,r0.y(),r0.width()/2-1,r0.height()),m_poIW,this,0,255,s_iBorderB));
+    w->addChild(new OSDSlider(MENU_FILL_B_SLIDER_ID,Rect(r0.x,r0.y,r0.width/2-1,r0.height),m_poIW,this,0,255,s_iFillB));
+    w->addChild(new OSDSlider(MENU_BORDER_B_SLIDER_ID,Rect(r0.x+r0.width/2+1,r0.y,r0.width/2-1,r0.height),m_poIW,this,0,255,s_iBorderB));
 
     w->addChild(new OSDLabel(MENU_ALPHA_LABEL_ID,getSubRect(6,7),m_poIW,this,"alpha:"));
     w->addChild(new OSDSlider(MENU_ALPHA_SLIDER_ID,getSubRect(7,7),m_poIW,this,0,255,s_iAlpha));
@@ -227,7 +227,7 @@ namespace icl{
 
   // }}}
 
-  void OSD::setActive(QString sName){
+  void OSD::setActive(string sName){
     // {{{ open
 
     if(m_iCurrID >= 0) removeChild(m_iCurrID);
@@ -238,49 +238,49 @@ namespace icl{
 
   // }}}
 
-  QRect OSD::getNavRect(){ 
+  Rect OSD::getNavRect(){ 
     // {{{ open
 
-    return QRect(x()+MARGIN,y()+MARGIN,w()-2*MARGIN,NAV_H); 
+    return Rect(x()+MARGIN,y()+MARGIN,w()-2*MARGIN,NAV_H); 
   }
 
   // }}}
 
-  QRect OSD::getMainRect(){
+  Rect OSD::getMainRect(){
     // {{{ open
 
-    return QRect(x()+MARGIN,y()+MARGIN+GAP+NAV_H,w()-2*MARGIN,h()-2*MARGIN-2*GAP-NAV_H-BOTTOM_H); 
+    return Rect(x()+MARGIN,y()+MARGIN+GAP+NAV_H,w()-2*MARGIN,h()-2*MARGIN-2*GAP-NAV_H-BOTTOM_H); 
   }
 
   // }}}
 
-  QRect OSD::getSubRect(int i, int iMax){
+  Rect OSD::getSubRect(int i, int iMax){
     // {{{ open
 
-    QRect m = getMainRect();
-    int h = (int)round((float)m.height()/(float)(iMax+1));
-    return QRect(m.x(),m.y()+i*h,m.width(),h-2);
+    Rect m = getMainRect();
+    int h = (int)round((float)m.height/(float)(iMax+1));
+    return Rect(m.x,m.y+i*h,m.width,h-2);
   } 
 
   // }}}
 
-  QRect OSD::getBottomRectMain(){
+  Rect OSD::getBottomRectMain(){
     // {{{ open
 
-    return QRect(x()+w()-MARGIN-GAP-2*BOTTOM_W,y()+h()-MARGIN-BOTTOM_H,BOTTOM_W,BOTTOM_H);
+    return Rect(x()+w()-MARGIN-GAP-2*BOTTOM_W,y()+h()-MARGIN-BOTTOM_H,BOTTOM_W,BOTTOM_H);
   }
 
   // }}}
   
-  QRect OSD::getBottomRectExit(){
+  Rect OSD::getBottomRectExit(){
     // {{{ open
 
-    return QRect(x()+w()-MARGIN-BOTTOM_W,y()+h()-MARGIN-BOTTOM_H,BOTTOM_W,BOTTOM_H); 
+    return Rect(x()+w()-MARGIN-BOTTOM_W,y()+h()-MARGIN-BOTTOM_H,BOTTOM_W,BOTTOM_H); 
   }
 
   // }}}
 
-  void OSD::setImageInfo(std::vector<QString> info){
+  void OSD::setImageInfo(std::vector<string> info){
     // {{{ open
     if(m_iCurrID == INFO_ID){
       OSDLabel *w = (OSDLabel*)(m_mapPanels["info"]);

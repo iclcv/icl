@@ -9,15 +9,15 @@ namespace icl{
   
   class OSDLabel : public OSDWidget{
     public:
-    OSDLabel(int id, QRect r,ImageWidget* poIW , OSDWidget *poParent, QString sText);
-    virtual void drawSelf(QPainter *poPainter,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
-    void setMultiText(std::vector<QString> smultitext);
+    OSDLabel(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent, string sText);
+    virtual void drawSelf(GLPaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
+    void setMultiText(std::vector<string> smultitext);
     
     protected:
-    QString m_sText;
+    string m_sText;
 
     int m_iContainsMultiText;
-    std::vector<QString> m_vecMultiText;
+    std::vector<string> m_vecMultiText;
   };
 } // namespace
 

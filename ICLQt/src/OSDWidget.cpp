@@ -16,12 +16,12 @@ namespace icl{
 
   // }}}
 
- OSDWidget::OSDWidget(int id, QRect r, ImageWidget *poIW,OSDWidget *poParent):
+ OSDWidget::OSDWidget(int id, Rect r, ImageWidget *poIW,OSDWidget *poParent):
    // {{{ open
 
     m_poParent(poParent),m_oRect(r), m_iID(id), m_poIW(poIW){
     if(poParent){
-      m_oRect = QRect(this->x()+poParent->x(),this->y()+poParent->y(),w(),h());
+      m_oRect = Rect(this->x()+poParent->x(),this->y()+poParent->y(),w(),h());
     }
   }
 
@@ -75,12 +75,12 @@ namespace icl{
   }
 
   // }}}
- void OSDWidget::_drawSelf(QPainter *poPainter,int x, int y, int downmask[3]){
+ void OSDWidget::_drawSelf(GLPaintEngine *e,int x, int y, int downmask[3]){
    // {{{ open
 
-    drawSelf(poPainter,x,y,mouseOver(x,y),mouseOverChild(x,y),downmask);    
+    drawSelf(e,x,y,mouseOver(x,y),mouseOverChild(x,y),downmask);    
     for(wvec::iterator it=m_vecChilds.begin();it!= m_vecChilds.end();++it){
-      (*it)->_drawSelf(poPainter,x,y,downmask);
+      (*it)->_drawSelf(e,x,y,downmask);
     }    
   }
 
@@ -99,7 +99,7 @@ namespace icl{
 
   // }}}
  
- void OSDWidget::setCol(QPainter *poPainter, int fill,int border,int over, int pressed){
+ void OSDWidget::setCol(GLPaintEngine *e, int fill,int border,int over, int pressed){
    // {{{ open
 #define __CLIP(X) (X)>255?255:(X)
     int iFillAdd = 0;
@@ -114,77 +114,78 @@ namespace icl{
       }
     }
     if(border){
-      poPainter->setPen(QColor(__CLIP(s_iBorderR+iBorderAdd),__CLIP(s_iBorderG+iBorderAdd),__CLIP(s_iBorderB+iBorderAdd),s_iAlpha));
+      e->color(__CLIP(s_iBorderR+iBorderAdd),__CLIP(s_iBorderG+iBorderAdd),__CLIP(s_iBorderB+iBorderAdd),s_iAlpha);
     }else{
-      poPainter->setPen(Qt::NoPen);
+      e->color(0,0,0,0);
     }
     if(fill){
-      poPainter->setBrush(QColor(__CLIP(s_iFillR+iFillAdd),__CLIP(s_iFillG+iFillAdd),__CLIP(s_iFillB+iFillAdd),s_iAlpha));
+      e->fill(__CLIP(s_iFillR+iFillAdd),__CLIP(s_iFillG+iFillAdd),__CLIP(s_iFillB+iFillAdd),s_iAlpha);
     }else{
-      poPainter->setBrush(Qt::NoBrush);
+      e->fill(0,0,0,0);
     }
 #undef __CLIP
   }
 
   // }}}
- void OSDWidget::drawBG(QPainter *poPainter,int drawFill,int drawBorder, int hovered,int  pressed){
+ void OSDWidget::drawBG(GLPaintEngine *e,int drawFill,int drawBorder, int hovered,int  pressed){
    // {{{ open
 
-    drawRect(poPainter,m_oRect,drawFill, drawBorder, hovered, pressed);
+    drawRect(e,m_oRect,drawFill, drawBorder, hovered, pressed);
   }
 
   // }}}
- void OSDWidget::drawRect(QPainter *poPainter, QRect r,int drawFill,int  drawBorder, int hovered, int pressed){
+ void OSDWidget::drawRect(GLPaintEngine *e, Rect r,int drawFill,int  drawBorder, int hovered, int pressed){
    // {{{ open
 
-    setCol(poPainter,drawFill, drawBorder, hovered, pressed);
-    poPainter->drawRect(r);    
-    poPainter->setPen(Qt::NoPen);
+    setCol(e,drawFill, drawBorder, hovered, pressed);
+    e->rect(r);    
+    e->color(0,0,0,0);
     int d = 2;
-    poPainter->drawRect(r.x()+d,r.y()+2, r.width()-2*d, r.height()-2*d);
+    e->rect(Rect(r.x+d,r.y+d, r.width-2*d, r.height-2*d));
   }     
 
   // }}}
- void OSDWidget::drawCircle(QPainter *poPainter, QRect r,int drawFill, int drawBorder, int hovered, int pressed){
+ void OSDWidget::drawCircle(GLPaintEngine *e, Rect r,int drawFill, int drawBorder, int hovered, int pressed){
    // {{{ open
-
-    setCol(poPainter,drawFill, drawBorder, hovered, pressed);
-    poPainter->drawEllipse(r);
+    setCol(e,drawFill, drawBorder, hovered, pressed);
+    e->ellipse(r);
   }
 
   // }}}
- void OSDWidget::drawText(QPainter *poPainter, QRect r,QString sText, int hovered, int pressed,int highlighted){
+ void OSDWidget::drawText(GLPaintEngine *e, Rect r,string sText, int hovered, int pressed,int highlighted){
    // {{{ open
     (void)hovered; (void)pressed;
     if(highlighted){
-      poPainter->setPen(QColor(255,255,255,100));
+      e->color(255,255,255,100);
       
-      int x=r.x();
-      int y=r.y();
-      int w=r.width();
-      int h=r.height();
-    
-      poPainter->drawText(QRect(x-1,y-1,w,h),Qt::AlignCenter,sText);
-      poPainter->drawText(QRect(x,y-1,w,h),Qt::AlignCenter,sText);
-      poPainter->drawText(QRect(x+1,y-1,w,h),Qt::AlignCenter,sText);
-      poPainter->drawText(QRect(x-1,y,w,h),Qt::AlignCenter,sText);
-      poPainter->drawText(QRect(x+1,y,w,h),Qt::AlignCenter,sText);
-      poPainter->drawText(QRect(x-1,y+1,w,h),Qt::AlignCenter,sText);
-      poPainter->drawText(QRect(x,y+1,w,h),Qt::AlignCenter,sText);
-      poPainter->drawText(QRect(x+1,y+1,w,h),Qt::AlignCenter,sText);
+      int x=r.x;
+      int y=r.y;
+      int w=r.width;
+      int h=r.height;
+
+      
+
+      e->text(Rect(x-1,y-1,w,h),sText,GLPaintEngine::Centered);
+      e->text(Rect(x,y-1,w,h),sText,GLPaintEngine::Centered);
+      e->text(Rect(x+1,y-1,w,h),sText,GLPaintEngine::Centered);
+      e->text(Rect(x-1,y,w,h),sText,GLPaintEngine::Centered);
+      e->text(Rect(x+1,y,w,h),sText,GLPaintEngine::Centered);
+      e->text(Rect(x-1,y+1,w,h),sText,GLPaintEngine::Centered);
+      e->text(Rect(x,y+1,w,h),sText,GLPaintEngine::Centered);
+      e->text(Rect(x+1,y+1,w,h),sText,GLPaintEngine::Centered);
     }
-    poPainter->setPen(QColor(255,255,255,255));
-    poPainter->drawText(r,Qt::AlignCenter,sText);
+    e->color(255,255,255);
+    e->text(r,sText,GLPaintEngine::Centered);
   }
 
   // }}}
  
- void OSDWidget::drawSelf(QPainter *poPainter,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
+ void OSDWidget::drawSelf(GLPaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
    // {{{ open
 
     (void)x; (void)y; (void)downmask;
     if(!hasChilds()){
-      drawBG(poPainter,0,1,mouseOver && !mouseOverChild,downmask[0]||downmask[1]||downmask[3]);
+      drawBG(e,0,1,mouseOver && !mouseOverChild,downmask[0]||downmask[1]||downmask[3]);
     }
   }
 
@@ -192,7 +193,7 @@ namespace icl{
  int OSDWidget::mouseOver(int x, int y){
    // {{{ open
 
-    return m_oRect.contains(x,y);
+    return QRect(m_oRect.x,m_oRect.y,m_oRect.width,m_oRect.height).contains(x,y);
   }
 
   // }}}
@@ -230,17 +231,17 @@ namespace icl{
   int OSDWidget::getID(){ return m_iID; }
   OSDWidget *OSDWidget::getParent(){ return m_poParent; }
   const wvec& OSDWidget::getChilds(){ return m_vecChilds; }
-  const QRect& OSDWidget::getRect(){ return m_oRect; }
+  const Rect& OSDWidget::getRect(){ return m_oRect; }
   int OSDWidget::getChildCount(){ return (int)m_vecChilds.size(); }
   int OSDWidget::hasChilds(){ return getChildCount()>0; }
-  int OSDWidget::contains(int x, int y){ return m_oRect.contains(x,y); }
-  int OSDWidget::x(){ return m_oRect.x(); }
-  int OSDWidget::y(){ return m_oRect.y(); }
-  int OSDWidget::w(){ return m_oRect.width(); }
-  int OSDWidget::h(){ return m_oRect.height(); }
+  int OSDWidget::contains(int x, int y){ return QRect(m_oRect.x,m_oRect.y,m_oRect.width,m_oRect.height).contains(x,y); }
+  int OSDWidget::x(){ return m_oRect.x; }
+  int OSDWidget::y(){ return m_oRect.y; }
+  int OSDWidget::w(){ return m_oRect.width; }
+  int OSDWidget::h(){ return m_oRect.height; }
    
   void OSDWidget::addChild(OSDWidget *c){ m_vecChilds.push_back(c); }
-  void OSDWidget::setRect(QRect oRect){ m_oRect = oRect; }
+  void OSDWidget::setRect(Rect oRect){ m_oRect = oRect; }
 
   
 }// namespace icl
