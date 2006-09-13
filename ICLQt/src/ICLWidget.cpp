@@ -243,7 +243,7 @@ namespace icl{
     
     m_oOSDMutex.lock();
     if(m_poCurrOSD){
-      e->font("Arial",40);
+      e->font("Arial",14);
       m_poCurrOSD->_drawSelf(e,m_iMouseX,m_iMouseY,aiDown);
     }
     m_oOSDMutex.unlock();

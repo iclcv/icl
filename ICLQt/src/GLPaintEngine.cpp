@@ -172,9 +172,11 @@ namespace icl{
     painter.drawText(QPoint(0,img.height()-1),text.c_str());
     painter.end();
     
-    printf("drawing text at %d %d %d %d  (mode=%s)\n",r.x,r.y,r.width,r.height,
-           mode==Justify ? "justify" : mode == NoAlign ? "no align" : "centered");
     image(r,img,mode);
+    
+    color(255,255,255);
+    fill(0,0,0,0);
+    rect(r);
   }
 
   // }}}
@@ -188,12 +190,10 @@ namespace icl{
         glRasterPos2i(r.x,r.y-r.height+s.height);
         break;
       case Centered:
+        glRasterPos2i(r.x+(r.width-s.width)/2,r.y+(r.height-s.height)/2);
         glPixelZoom(1.0,-1.0);      
-        glRasterPos2i(r.x+(r.width-s.width)/2,r.y-r.height+s.height+(r.height-s.height)/2);
         break;
       case Justify:
-        //DEF:  glPixelZoom((GLfloat)r.width/s.width,(GLfloat)r.height/s.height);
-        //      glRasterPos2i(r.x,(int)(r.y+(s.height*(GLfloat)r.height/s.height)));
         glPixelZoom((GLfloat)r.width/s.width,-(GLfloat)r.height/s.height);
         glRasterPos2i(r.x,(int)(r.y-r.height+(s.height*(GLfloat)r.height/s.height)));
         break;
