@@ -13,15 +13,13 @@ using namespace icl;
 class MyThread : public QThread{
 public:
   virtual void run(){
-    Img8u image(Size(640,480),3);
     while(1){
-      //widget->setImage(grabber->grab());
-      widget->setImage(&image);
+      widget->setImage(grabber->grab());
       widget->update();
-      usleep(1000*1000);
+      //usleep(1000*1000);
     }
   }
-  //  PWCGrabber *grabber;
+  PWCGrabber *grabber;
   ICLWidget *widget;
 };
 
@@ -31,7 +29,7 @@ int main(int nArgs, char **ppcArg){
   MyThread x;
   x.widget = new ICLWidget(0);
   x.widget->setGeometry(200,200,640,480);
-  //  x.grabber = new PWCGrabber(Size(640,480));
+  x.grabber = new PWCGrabber(Size(640,480));
   x.widget->show();
 
   x.start();

@@ -21,7 +21,7 @@ public:
       widget->reset();
       widget->rel();
      
-      for(int i=0;i<1000;i++){
+      for(int i=0;i<100;i++){
         x = (1+sin(t/100.+i*i))/2;
         y = (1+cos(t/120.+i))/2;
         
