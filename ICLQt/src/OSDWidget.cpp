@@ -193,7 +193,7 @@ namespace icl{
  int OSDWidget::mouseOver(int x, int y){
    // {{{ open
 
-    return QRect(m_oRect.x,m_oRect.y,m_oRect.width,m_oRect.height).contains(x,y);
+    return m_oRect.contains(x,y);
   }
 
   // }}}

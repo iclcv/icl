@@ -4,7 +4,7 @@
 #include "OSDWidget.h"
 
 namespace icl{
-  
+  /// implementation of a Slider widgets
   class OSDSlider : public OSDWidget{
     public:
     OSDSlider(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent,int min, int max, int curr);
@@ -21,7 +21,7 @@ namespace icl{
     int m_iMin, m_iMax,m_iCurr,m_iGripY,m_iGripH;
     string m_sText;
     
-    Rect m_oBar,m_oText,m_oGrip;
+    Rect m_oBar,m_oText,m_oGrip,m_oProgress;
     
     static const float s_fTextFrac;
     static const float s_13;

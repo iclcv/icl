@@ -4,6 +4,7 @@
 #include "OSDWidget.h"
 
 namespace icl{
+  /// implementation of an ordinary OSD-button
   class OSDButton : public OSDWidget{
     public:
     OSDButton(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent, string sText, int iToggable=0);

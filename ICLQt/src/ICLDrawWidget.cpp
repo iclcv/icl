@@ -1,11 +1,12 @@
 #include "ICLDrawWidget.h"
-#include <QPainter>
+#include "GLPaintEngine.h"
+#include "ImgI.h"
 
 namespace icl{
   
   /// internally used classes
   struct ICLDrawWidget::State{
-    // {{{ open struct
+    // {{{  struct
 
     bool aa;             // antializing on
     bool rel;            // relative or absolut coords
@@ -22,8 +23,8 @@ namespace icl{
     // {{{ open struct
 
     virtual ~DrawCommand(){}
-    virtual void exec(QPainter *p, State* s){
-      (void)p; (void)s; 
+    virtual void exec(GLPaintEngine *e, State* s){
+      (void)e; (void)s; 
       printf("drawCommand :: exec \n");
     }
   };
@@ -35,28 +36,34 @@ namespace icl{
   class IntelligentDrawCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
   protected:
-    QPointF tP(float x, float y, ICLDrawWidget::State *s){
-      return QPointF(tX(x,s),tY(y,s));
+    Point tP(float x, float y, ICLDrawWidget::State *s){
+      return Point(tX(x,s),tY(y,s));
     }  
-    QRectF tR(float x, float y, float w, float h, ICLDrawWidget::State *s){
-      QRectF r;
-      r.setTopLeft(tP(x,y,s));
-      r.setBottomRight(tP(x+w,y+h,s));
-      return r;
+    Rect tR(float x, float y, float w, float h, ICLDrawWidget::State *s){
+      Point a = tP(x,y,s);
+      Point b = tP(x+w,y+h,s);
+      return Rect(a,Size(b.x-a.x,b.y-a.y));
     }
-    QSizeF tS(float w, float h, ICLDrawWidget::State *s){
+    Size tS(float w, float h, ICLDrawWidget::State *s){
       if(s->rel)
-        return QSizeF(w*s->rect.width,h*s->rect.height);
+        return Size((int)(w*s->rect.width),(int)(h*s->rect.height));
       else
-        return QSizeF((w*s->rect.width)/s->imsize.width,(h*s->rect.height)/s->imsize.height);
+        return Size((int)((w*s->rect.width)/s->imsize.width),(int)((h*s->rect.height)/s->imsize.height));
     }
-    float tX(float x, ICLDrawWidget::State *s){
+    int tX(float x, ICLDrawWidget::State *s){
+      return (int)tXF(x,s);
+    }
+    int tY(float x, ICLDrawWidget::State *s){
+      return (int)tYF(x,s);
+    }
+    
+    float tXF(float x, ICLDrawWidget::State *s){
       if(s->rel)
         return tmb(x,s->rect.width,s->rect.x);
       else
         return t(x, s->imsize.width, s->rect.width, 0, s->rect.x);
     }
-    float tY(float y, ICLDrawWidget::State *s){
+    float tYF(float y, ICLDrawWidget::State *s){
       if(s->rel)
         return tmb(y,s->rect.height,s->rect.y);
       else
@@ -107,7 +114,7 @@ namespace icl{
   // }}}
 
   // }}}
-
+  
   // {{{ geometric commands ( point, line, rect, ellipse )
 
   class PointCommand : public DrawCommand2F{
@@ -115,8 +122,8 @@ namespace icl{
 
     public:
     PointCommand(float x, float y):DrawCommand2F(x,y){};
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      p->drawPoint(tP(m_fA,m_fB,s));
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      e->point(tP(m_fA,m_fB,s));
     }
   };
 
@@ -129,8 +136,8 @@ namespace icl{
     LineCommand(float x1, float y1, float x2, float y2):
     DrawCommand4F(x1,y1,x2,y2){
     }
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      p->drawLine(tP(m_fA,m_fB,s),tP(m_fC,m_fD,s));
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      e->line(tP(m_fA,m_fB,s),tP(m_fC,m_fD,s));
     }
   };
 
@@ -141,8 +148,8 @@ namespace icl{
   public:
     RectCommand(float x, float y, float w, float h):
       DrawCommand4F(x,y,w,h){}
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      p->drawRect(tR(m_fA,m_fB,m_fC,m_fD,s));
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      e->rect(tR(m_fA,m_fB,m_fC,m_fD,s));
     }
   };
 
@@ -153,42 +160,42 @@ namespace icl{
   public:
     EllipseCommand(float x, float y, float w, float h):
       DrawCommand4F(x,y,w,h){}
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      p->drawEllipse(tR(m_fA,m_fB,m_fC,m_fD,s));
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      e->ellipse(tR(m_fA,m_fB,m_fC,m_fD,s));
     }
   };
-
-  // }}}
+ // }}}
 
   class SymCommand : public IntelligentDrawCommand{
     // {{{ open
   public:
     SymCommand(float x, float y, ICLDrawWidget::Sym s):
       m_fX(x),m_fY(y),m_eS(s){}
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      QRectF r(tP(m_fX,m_fY,s),tS(s->symsize.width(),s->symsize.height(),s));
-      r.translate(-r.width()/2,-r.height()/2);
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      Rect r(tP(m_fX,m_fY,s),tS(s->symsize.width(),s->symsize.height(),s));
+      r.x-=r.width/2;
+      r.y-=r.height/2;
       switch(m_eS){
         case ICLDrawWidget::symRect:
-          p->drawRect(r);
+          e->rect(r);
           break;
         case ICLDrawWidget::symCircle:
-          p->drawEllipse(r);
+          e->ellipse(r);
           break;
         case ICLDrawWidget::symCross:
-          p->drawLine(r.topLeft(), r.bottomRight());
-          p->drawLine(r.bottomLeft(), r.topRight());
+          e->line(r.ul(), r.lr());
+          e->line(r.ll(), r.ur());
           break;
         case ICLDrawWidget::symPlus:
-          p->drawLine( QPointF( (r.x()+r.right())/2, r.y() ),
-                               QPointF( (r.x()+r.right())/2, r.bottom() ) );
-          p->drawLine( QPointF( r.x(), (r.y()+r.bottom())/2 ),
-                               QPointF( r.right(), (r.y()+r.bottom())/2 ) );
+          e->line( Point( (r.x+r.right())/2, r.y ),
+                   Point( (r.x+r.right())/2, r.bottom() ) );
+          e->line( Point( r.x, (r.y+r.bottom())/2 ),
+                   Point( r.right(), (r.y+r.bottom())/2 ) );
           break;
         case ICLDrawWidget::symTriangle:
-          p->drawLine( QPointF( (r.x()+r.right())/2, r.y() ), r.bottomLeft() );
-          p->drawLine( QPointF( (r.x()+r.right())/2, r.y() ), r.bottomRight() );
-          p->drawLine( r.bottomLeft(), r.bottomRight() );
+          e->line( Point( (r.x+r.right())/2, r.y ), r.ul() );
+          e->line( Point( (r.x+r.right())/2, r.y ), r.lr() );
+          e->line( r.ll(), r.lr() );
           break;
       }
     }
@@ -198,34 +205,54 @@ namespace icl{
 
   // }}}
 
-  // }}}
-
-  // {{{ state commands( (no)edge, (no)fill, abs, rel, clear, setimagesize)
-
-  class EdgeCommand : public ICLDrawWidget::DrawCommand{
+  class ImageCommand : public DrawCommand4F{
     // {{{ open
+
   public:
-    EdgeCommand(int r, int g, int b, int alpha):
-      m_oColor(r,g,b,alpha){}
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      (void)s;
-      p->setPen(m_oColor);
+    ImageCommand(ImgI *image, float x, float y, float w, float h):
+      DrawCommand4F(x,y,w,h), m_poImage(0){
+      ensureCompatible(&m_poImage,image);
+      image->deepCopy(m_poImage);
     }
-    QColor m_oColor;
+    virtual ~ImageCommand(){
+      if(m_poImage)delete m_poImage;
+    }
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      e->image(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),m_poImage,GLPaintEngine::Justify);
+    }
+    ImgI *m_poImage;
   };
 
   // }}}
 
-  class FillCommand : public ICLDrawWidget::DrawCommand{
+  // }}}
+
+  // {{{ state commands( (no)edge, (no)fill, abs, rel, clear, setimagesize)
+
+ 
+
+  class EdgeCommand : public DrawCommand4F{
+    // {{{ open
+  public:
+    EdgeCommand(int r, int g, int b, int alpha):
+      DrawCommand4F(r,g,b,alpha){}
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      (void)s;
+      e->color((int)m_fA,(int)m_fB,(int)m_fC,(int)m_fD);
+    }
+  };
+
+  // }}}
+
+  class FillCommand : public DrawCommand4F{
     // {{{ open
   public:
     FillCommand(int r, int g, int b, int alpha):
-      m_oColor(r,g,b,alpha){}
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
+      DrawCommand4F(r,g,b,alpha){}
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
       (void)s;
-      p->setBrush(m_oColor);
+      e->fill((int)m_fA,(int)m_fB,(int)m_fC,(int)m_fD);
     }
-    QColor m_oColor;
   };
 
   // }}}
@@ -233,9 +260,9 @@ namespace icl{
   class NoEdgeCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
   public:
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
       (void)s;
-      p->setPen(Qt::NoPen);
+      e->color(0,0,0,0);
     }
   };
 
@@ -244,9 +271,9 @@ namespace icl{
   class NoFillCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
   public:
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
       (void)s;
-      p->setBrush(Qt::NoBrush);
+      e->fill(0,0,0,0);
     }
   };
 
@@ -255,8 +282,8 @@ namespace icl{
   class AbsCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
 
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      (void)p;
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      (void)e;
       s->rel = false;
     }
   };
@@ -266,29 +293,31 @@ namespace icl{
   class RelCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
 
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      (void)p;
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      (void)e;
       s->rel = true;
     }
   };
 
   // }}}
   
-  class ClearCommand : public ICLDrawWidget::DrawCommand{
+  class ClearCommand : public DrawCommand4F{
     // {{{ open
     
   public:
     ClearCommand(int r, int g, int b, int alpha):
-      m_oColor(r,g,b,alpha){}
+      DrawCommand4F(r,g,b,alpha){}
     
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      p->save();
-      p->setBrush(m_oColor);
-      p->drawRect(0,0,s->size.width,s->size.height);
-      p->restore();
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      int aiFill[4],aiLine[4];
+      e->getFill(aiFill);
+      e->getColor(aiLine);
+      e->fill((int)m_fA,(int)m_fB,(int)m_fC,(int)m_fD);
+      e->color(0,0,0,0);
+      e->rect(Rect(0,0,s->size.width,s->size.height));
+      e->fill(aiFill[0],aiFill[1],aiFill[2],aiFill[3]);
+      e->color(aiLine[0],aiLine[1],aiLine[2],aiLine[3]);
     }
-  protected:
-    QColor m_oColor;
   };
 
   // }}}
@@ -297,8 +326,8 @@ namespace icl{
     // {{{ open
   public:
     SetImageSizeCommand(const Size &s):m_oSize(s){}
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      (void)p;
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      (void)e;
       s->imsize = m_oSize;
     }
   protected:
@@ -312,8 +341,8 @@ namespace icl{
 
   public:
     SymSizeCommand(float w, float h) : m_fW(w), m_fH(h){}
-    virtual void exec(QPainter *p, ICLDrawWidget::State *s){
-      (void)p;
+    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+      (void)e;
       s->symsize = QSizeF(m_fW,m_fH);
     }
   protected:
@@ -344,7 +373,10 @@ namespace icl{
     // }}}
   
   // {{{ commands: line, sym, rel, ...
-
+  void ICLDrawWidget::image(ImgI *image,float x, float y, float w, float h){
+    m_vecCommands.push_back(new ImageCommand(image,x,y,w,h));
+  }
+  
   void ICLDrawWidget::line(float x1, float y1, float x2, float y2){
     m_vecCommands.push_back(new LineCommand(x1,y1,x2,y2));
   }
@@ -398,23 +430,20 @@ namespace icl{
 
     // }}}
 
-  void ICLDrawWidget::initializeCustomPaintEvent(QPainter *poPainter){
+  void ICLDrawWidget::initializeCustomPaintEvent(GLPaintEngine *e){
     // {{{ open
-
-    (void)poPainter;
+    (void)e;
   }
 
     // }}}
-  void ICLDrawWidget::finishCustomPaintEvent(QPainter *poPainter){
+  void ICLDrawWidget::finishCustomPaintEvent(GLPaintEngine *e){
     // {{{ open
-
-    (void)poPainter;
+    (void)e;
   }
 
     // }}}
-  void ICLDrawWidget::customPaintEvent(QPainter *poPainter){
+  void ICLDrawWidget::customPaintEvent(GLPaintEngine *e){
     // {{{ open
-
     m_oCommandMutex.lock();
     Rect r = getImageRect();
     m_poState->aa = false;
@@ -425,11 +454,11 @@ namespace icl{
     m_poState->symsize = QSizeF(5,5);
     memset(m_poState->bg,0,4*sizeof(unsigned char));
 
-    initializeCustomPaintEvent(poPainter);
+    initializeCustomPaintEvent(e);
     for(std::vector<DrawCommand*>::iterator it = m_vecCommands.begin();it!= m_vecCommands.end();++it){
-      (*it)->exec(poPainter,m_poState);
+      (*it)->exec(e,m_poState);
     }
-    finishCustomPaintEvent(poPainter);
+    finishCustomPaintEvent(e);
     m_oCommandMutex.unlock();
   }
 

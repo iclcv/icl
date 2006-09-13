@@ -91,7 +91,7 @@ namespace icl{
     m_oOSDMutex.lock();
     if(!m_poOSD){
       m_poOSD = new OSD(0,Rect(3,3,w()-10,h()-10),this,0);
-      m_poShowOSD = new OSDButton(SHOW_OSD_ID,Rect(w()-52,h()-16,50,14),this,0,"options");
+      m_poShowOSD = new OSDButton(SHOW_OSD_ID,Rect(width()-80,height()-23,75,18),this,0,"menu");
     }
     if(m_poCurrOSD == 0){
       m_poCurrOSD = m_poShowOSD;
@@ -126,10 +126,13 @@ namespace icl{
       if(m_poCurrOSD == m_poOSD) iLastOSD = 1; // osd
       else if(m_poCurrOSD == m_poShowOSD) iLastOSD = 2; // show osd
       m_poCurrOSD = 0;
+      
+      int iLastShownID = ((OSD*)m_poOSD)->getCurrID();
       delete m_poOSD;
       delete m_poShowOSD;
       m_poOSD = new OSD(0,Rect(3,3,s.width()-10,s.height()-10),this,0);
-      m_poShowOSD = new OSDButton(SHOW_OSD_ID,Rect(s.width()-52,s.height()-16,50,14),this,0,"options");
+      m_poShowOSD = new OSDButton(SHOW_OSD_ID,Rect(s.width()-80,s.height()-23,75,18),this,0,"menu");
+      ((OSD*)m_poOSD)->setCurrID(iLastShownID);
 
       if(iLastOSD == 1) m_poCurrOSD = m_poOSD;
       else if(iLastOSD == 2) m_poCurrOSD = m_poShowOSD;
@@ -243,7 +246,8 @@ namespace icl{
     
     m_oOSDMutex.lock();
     if(m_poCurrOSD){
-      e->font("Arial",14);
+      float m = std::min(((float)std::min(w(),h()))/100,6.0f);
+      e->font("Arial",(int)(2*m)+5,GLPaintEngine::DemiBold);
       m_poCurrOSD->_drawSelf(e,m_iMouseX,m_iMouseY,aiDown);
     }
     m_oOSDMutex.unlock();
@@ -252,13 +256,14 @@ namespace icl{
   // }}}
  
   void ICLWidget::paintGL(){
+    // {{{
     GLPaintEngine e(this);
+
     drawImage(&e);
     customPaintEvent(&e);
     drawOSD(&e);
   }
-
-  // }}}
+  // }}} 
   void ICLWidget::drawImage(GLPaintEngine *e){
     // {{{ open
     int _w = w();
@@ -275,33 +280,13 @@ namespace icl{
       return;
     }
     
-    setBiasAndScale(0.0,m_poImage->getDepth() == depth8u ? 1.0 : 1.0/255);
+    e->bci(op.brightness,op.contrast,op.intensity);
     e->image( computeImageRect(m_poImage->getSize(),Size(w(),h()),op.fm) , m_poImage, GLPaintEngine::Justify);
     m_oMutex.unlock();
   }
 
   // }}}
-  void ICLWidget::setBiasAndScale(float fBiasRGB, float fScaleRGB){
-    // {{{ open
-    fBiasRGB+=(float)(op.brightness)/255.0;
-    if(op.contrast){
-      // not yet implemented
-    }else{
-      // not yet implemented
-    }
-#ifdef USE_OPENGL_ACCELERATION  
-    glPixelTransferf(GL_RED_SCALE,fScaleRGB);
-    glPixelTransferf(GL_GREEN_SCALE,fScaleRGB);
-    glPixelTransferf(GL_BLUE_SCALE,fScaleRGB);
-    glPixelTransferf(GL_RED_BIAS,fBiasRGB);
-    glPixelTransferf(GL_GREEN_BIAS,fBiasRGB);
-    glPixelTransferf(GL_BLUE_BIAS,fBiasRGB);
-#endif
-  }
-
-  // }}}
-  
-  // }}}
+ 
   Rect ICLWidget::computeImageRect(Size oImageSize, Size oWidgetSize, fitmode eFitMode){
     // {{{ open
 

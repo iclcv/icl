@@ -9,10 +9,14 @@
 
 namespace icl{
  
+  /// Complex Widgets, that is used in the ICLWidget
   class OSD : public OSDWidget{
     typedef std::map<string,OSDWidget*> pmap;
     public:
     OSD(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent);
+
+    int getCurrID();
+    void setCurrID(int id);
 
     protected:
     virtual void childChanged(int id, void *val);
@@ -114,7 +118,7 @@ namespace icl{
     static const int MARGIN = 2;
     static const int NAV_H = 18;
     static const int BOTTOM_H = 18;
-    static const int BOTTOM_W = 30;
+    static const int BOTTOM_W = 50;
 
     /* }}} */
   };

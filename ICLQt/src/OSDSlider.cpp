@@ -19,6 +19,7 @@ namespace icl{
     m_iGripH = _h+4;
     m_iGripY = y()+(h()-m_iGripH)/2;
     m_oGrip = Rect(valToPos(curr)-s_iGripW/2,m_iGripY,s_iGripW,m_iGripH);
+    m_oProgress = Rect(m_oBar.x,m_oBar.y,m_oGrip.x-m_oBar.x+m_oGrip.width/2,m_oBar.height-1);
   }
   
   void OSDSlider::drawSelf(GLPaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
@@ -29,6 +30,17 @@ namespace icl{
     drawText(e,m_oText,QString::number(m_iCurr).toLatin1().data(),mouseOver && !mouseOverChild, downmask[0]|| downmask[1]|| downmask[2]);
     
     drawCircle(e, m_oGrip,1,1,m_oGrip.contains(x,y),m_iSliderHovered);
+    
+    e->color(0,0,0,0);
+    e->fill(255,255,255,100);
+    if(m_oProgress.width > 2){
+      e->rect(m_oProgress);
+    }
+    
+    e->fill(255,255,255,200);
+    for(int d=1;d<2;d++){
+      e->ellipse(Rect(m_oGrip.x+d,m_oGrip.y+d,m_oGrip.width-2*d,m_oGrip.height-2*d));
+    }
   }
     
   void OSDSlider::mouseMoved(int _x, int _y, int downmask[3]){
@@ -36,6 +48,7 @@ namespace icl{
     if(m_iSliderHovered && _x >= m_oBar.x){
       m_iCurr = posToVal(_x);
       m_oGrip = Rect(valToPos(m_iCurr)-s_iGripW/2,m_iGripY,s_iGripW,m_iGripH);
+      m_oProgress = Rect(m_oBar.x,m_oBar.y,m_oGrip.x-m_oBar.x+m_oGrip.width/2,m_oBar.height-1);
       childChanged(m_iID,&m_iCurr);
     }      
   }
@@ -47,6 +60,7 @@ namespace icl{
     }else if(m_oBar.contains(_x,_y)){
       m_iCurr = posToVal(_x);
       m_oGrip = Rect(_x-s_iGripW/2,y()+h()/2-m_iGripH/2,s_iGripW,m_iGripH);
+      m_oProgress = Rect(m_oBar.x,m_oBar.y,m_oGrip.x-m_oBar.x+m_oGrip.width/2,m_oBar.height-1);
       childChanged(m_iID,&m_iCurr);
     }
   }

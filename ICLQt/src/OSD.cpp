@@ -226,6 +226,19 @@ namespace icl{
   }
 
   // }}}
+  int OSD::getCurrID(){
+    return m_iCurrID;
+  }
+  void OSD::setCurrID(int id){
+    for(pmap::iterator it = m_mapPanels.begin();it!=m_mapPanels.end();++it){
+      if((*it).second->getID() == id){
+        if(m_iCurrID >= 0) removeChild(m_iCurrID);
+        addChild((*it).second);
+        m_iCurrID = id;
+        return;
+      }
+    }
+  }
 
   void OSD::setActive(string sName){
     // {{{ open

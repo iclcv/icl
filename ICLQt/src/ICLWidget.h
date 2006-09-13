@@ -2,6 +2,7 @@
 #define ICLWIDGET_H
 
 // comment out only if No acceleration is available
+// fall back is not yet implemented
 #define USE_OPENGL_ACCELERATION
 
 
@@ -61,7 +62,7 @@ namespace icl{
     void setImage(ImgI *poImage);
    
  
-    /// drawing
+    /// drawing using openGL
     virtual void paintGL();
     /// additiona custom drawings (between image and osd)
     virtual void customPaintEvent(GLPaintEngine *e){(void)e;}
@@ -102,9 +103,7 @@ namespace icl{
     
     protected:
     /// sets up all 3 gl channels to given bias and scale
-    void setBiasAndScale(float fBiasRGB, float fScaleRGB);
     Rect computeImageRect(Size oImageSize, Size oWidgetSize, fitmode eFitMode);
-
     void drawImage(GLPaintEngine *e);
        
     private:

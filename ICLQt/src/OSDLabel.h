@@ -7,6 +7,7 @@
 
 namespace icl{
   
+  /// Implementation of a ordinary label widget
   class OSDLabel : public OSDWidget{
     public:
     OSDLabel(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent, string sText);
