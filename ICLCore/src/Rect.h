@@ -2,6 +2,8 @@
 #define ICL_RECT_H
 
 namespace icl{
+
+  
 #ifndef WITH_IPP_OPTIMIZATION
   /// fallback implementation for the IppiRect struct, defined in the ippi lib
   struct IppiRect {
@@ -152,6 +154,10 @@ namespace icl{
       (void)r;
       printf("ERROR!!! Rect::contains is not yet implemented \n");
       return Rect();
+    }
+    
+    bool contains(int x, int y){
+      return this->x<=x && right()>=x && this->y<=y && bottom()>=y;
     }
 
     /// returns lower left point of the rect
