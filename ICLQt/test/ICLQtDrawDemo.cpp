@@ -25,19 +25,19 @@ public:
         x = (1+sin(t/100.+i*i))/2;
         y = (1+cos(t/120.+i))/2;
         
-        widget->edge(255,0,0,20);
+        widget->color(255,0,0,20);
         widget->line(0,0,x,y);
-        widget->edge(0,255,0,20);
+        widget->color(0,255,0,20);
         widget->line(1,0,x,y);
-        widget->edge(0,0,255,20);
+        widget->color(0,0,255,20);
         widget->line(1,1,x,y);
-        widget->edge(0,255,255,20);
+        widget->color(0,255,255,20);
         widget->line(0,1,x,y);
         widget->fill(255,255,255,128);
-        widget->edge(255,0,255,128);
+        widget->color(255,0,255,128);
         
         widget->fill(255,255,255,20);
-        widget->edge(255,255,255,150);
+        widget->color(255,255,255,150);
 
 
         float w = sin(x+y)/10.;
