@@ -47,6 +47,7 @@ namespace icl{
     void rel();
     
     void image(ImgI *image, float x, float y, float w, float h);
+    void text(string text, float x, float y, float w=-1, float h=-1);
     void point(float x, float y); 
     void line(float x1, float y1, float x2, float y2);
     void rect(float x, float y, float w, float h);
@@ -54,9 +55,9 @@ namespace icl{
     void sym(float x, float y, Sym s);
     void symsize(float w, float h=-1); // if h==-1, h = w;
 
-    void edge(int r, int g, int b, int alpha = 255);
+    void color(int r, int g, int b, int alpha = 255);
     void fill(int r, int g, int b, int alpha = 255);
-    void noedge();
+    void nocolor();
     void nofill();
     void clear(int r=0, int g=0, int b=0, int alpha = 255);
     void reset();

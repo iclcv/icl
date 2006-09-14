@@ -21,8 +21,8 @@
 
 #include "Converter.h"
 #include "GLPaintEngine.h"
-
-using namespace icl;
+#include "MouseInteractionInfo.h"
+#include "MouseInteractionReceiver.h"
 
 namespace icl{
   class OSDWidget;
@@ -36,9 +36,15 @@ namespace icl{
   typedef QWidget ParentWidgetClass;
 #endif  
   
-  
   /// Intern used class for openGL-based image visualisation componets, embedded into an ICLGuiModule
   class ICLWidget : public ParentWidgetClass{
+    Q_OBJECT
+    public slots:
+    void setImage(ImgI *poImage);
+    
+    signals:
+    void mouseEvent(MouseInteractionInfo *info);
+
     public:
     enum fitmode   { fmFit = 0, 
                      fmHoldAR = 1,
@@ -46,6 +52,8 @@ namespace icl{
     
     enum rangemode { rmOn = 1 , 
                      rmOff = 2        };
+    
+    
     
     /// Constructor
     ICLWidget(QWidget *poParent);
@@ -59,9 +67,6 @@ namespace icl{
     virtual void resizeEvent(QResizeEvent *e);
     virtual void childChanged(int id, void *val);
     
-    void setImage(ImgI *poImage);
-   
- 
     /// drawing using openGL
     virtual void paintGL();
     /// additiona custom drawings (between image and osd)
@@ -69,8 +74,6 @@ namespace icl{
     /// final drawing of the osd
     void drawOSD(GLPaintEngine *e);
   
-  
-
     struct Options{
       fitmode fm;
       rangemode rm;
@@ -106,7 +109,13 @@ namespace icl{
     Rect computeImageRect(Size oImageSize, Size oWidgetSize, fitmode eFitMode);
     void drawImage(GLPaintEngine *e);
        
+    
     private:
+
+    // help function for creating the current mouse interactio info
+    MouseInteractionInfo *updateMouseInfo(MouseInteractionInfo::Type type);
+    MouseInteractionInfo m_oMouseInfo;
+   
     Options op;
     QMutex m_oMutex, m_oOSDMutex;
 

@@ -12,10 +12,12 @@
 namespace icl{  
   const int ICLWidget::SHOW_OSD_ID;
   
-  ICLWidget::ICLWidget(QWidget *poParent):ParentWidgetClass(poParent),
-    // {{{ open Constructor definition
-    m_poImage(imgNew()),
-    m_poOSD(0),m_poCurrOSD(0),m_poShowOSD(0),m_iMouseX(-1), m_iMouseY(-1){
+  // {{{ Constructor
+
+  ICLWidget::ICLWidget(QWidget *poParent):
+    // {{{ open
+    ParentWidgetClass(poParent),m_poImage(imgNew()),  m_poOSD(0),
+    m_poCurrOSD(0),m_poShowOSD(0),m_iMouseX(-1), m_iMouseY(-1){
    
     setParent(poParent);
     setMouseTracking(true);
@@ -36,10 +38,14 @@ namespace icl{
   }
 
   // }}}
-  
+
+  // }}}
+
+  // {{{ mouse<Press|Release|Move|Enter|Release>()- and resizeEvent
+
   void ICLWidget::mousePressEvent(QMouseEvent *e){
     // {{{ open
-     switch(e->button()){
+    switch(e->button()){
       case Qt::LeftButton: aiDown[0]=1; break;
       case Qt::RightButton: aiDown[2]=1; break;
       default: aiDown[1] = 1; break;
@@ -50,45 +56,74 @@ namespace icl{
       m_iMouseX = e->x();
       m_iMouseY = e->y();
       m_poCurrOSD->_mousePressed(e->x(),e->y(),e->button());
+    }else{
+      /// emitting signal
+      emit mouseEvent(updateMouseInfo(MouseInteractionInfo::pressEvent));
     }
     m_oOSDMutex.unlock();
     up();
+
+    
   }
+
   // }}}
+
   void ICLWidget::mouseReleaseEvent(QMouseEvent *e){
     // {{{ open
+
     switch(e->button()){
       case Qt::LeftButton: aiDown[0]=0; break;
       case Qt::RightButton: aiDown[2]=0; break;
       default: aiDown[1] = 0; break;
     }
     m_oOSDMutex.lock();
+    m_iMouseX = e->x();
+    m_iMouseY = e->y();
     if(m_poCurrOSD){
-      m_iMouseX = e->x();
-      m_iMouseY = e->y();
       m_poCurrOSD->_mouseReleased(e->x(),e->y(),e->button());
     }
+    if(!m_poCurrOSD->mouseOver(e->x(),e->y())){
+      /// emitting signal
+      emit mouseEvent(updateMouseInfo(MouseInteractionInfo::releaseEvent));
+    }
+
     m_oOSDMutex.unlock();
     up();
+
+    
   }
+
   // }}}
+  
   void ICLWidget::mouseMoveEvent(QMouseEvent *e){
     // {{{ open
+
     m_oOSDMutex.lock();
+    m_iMouseX = e->x();
+    m_iMouseY = e->y();
     if(m_poCurrOSD && m_poCurrOSD->mouseOver(e->x(),e->y())){
-      m_iMouseX = e->x();
-      m_iMouseY = e->y();
       m_poCurrOSD->_mouseMoved(e->x(),e->y(),aiDown);
+    }else{
+      /// emitting signal
+      if(aiDown[0] || aiDown[1] || aiDown[2]){
+        emit mouseEvent(updateMouseInfo(MouseInteractionInfo::dragEvent));
+      }else{
+        emit mouseEvent(updateMouseInfo(MouseInteractionInfo::moveEvent));
+      }
     }
     m_oOSDMutex.unlock();
-
     up();
   }
+
   // }}}
+  
   void ICLWidget::enterEvent(QEvent *e){
     // {{{ open
+
     (void)e;
     m_oOSDMutex.lock();
+    m_iMouseX = -1;
+    m_iMouseY = -1;
     if(!m_poOSD){
       m_poOSD = new OSD(0,Rect(3,3,w()-10,h()-10),this,0);
       m_poShowOSD = new OSDButton(SHOW_OSD_ID,Rect(width()-80,height()-23,75,18),this,0,"menu");
@@ -98,11 +133,15 @@ namespace icl{
     }
     m_oOSDMutex.unlock();
     up();
+
+    emit mouseEvent(updateMouseInfo(MouseInteractionInfo::enterEvent));
   }
 
   // }}}
+  
   void ICLWidget::leaveEvent(QEvent *e){
     // {{{ open
+
     (void)e;
     m_oOSDMutex.lock();
     if(m_poCurrOSD == m_poShowOSD){
@@ -113,11 +152,14 @@ namespace icl{
     m_iMouseY = -1;
    
     up();
+    emit mouseEvent(updateMouseInfo(MouseInteractionInfo::leaveEvent));
   }
 
   // }}}
+  
   void ICLWidget::resizeEvent(QResizeEvent *e){
     // {{{ open
+
     QSize s = e->size();
 
     m_oOSDMutex.lock();
@@ -142,8 +184,13 @@ namespace icl{
 
   // }}}
 
+  // }}}
+  
+  // {{{ childChanged() and setImage()
+
   void ICLWidget::childChanged(int id, void *val){  
     // {{{ open
+
     (void)val;
     switch(id){
       case SHOW_OSD_ID:
@@ -183,9 +230,12 @@ namespace icl{
     }
     up();
   }
+
   // }}}
+  
   void ICLWidget::setImage(ImgI *input){
     // {{{ open
+
     if(!op.on || !input){
       return;
     }
@@ -199,51 +249,16 @@ namespace icl{
     }
     m_oMutex.unlock();    
   }
-  
-  // }}}
-  void ICLWidget::up(){
-    // {{{ open
-    update();
-  }
 
   // }}}
-  int ICLWidget::w(){
-    // {{{ open
-    return width();
-  }
-
-  // }}}
-  int ICLWidget::h(){
-    // {{{ open
-    return height();
-  }
-
-  // }}}
-  Size ICLWidget::getImageSize(){
-    // {{{ open
-
-    m_oMutex.lock();
-    Size s;
-    if(m_poImage){
-      s = m_poImage->getSize(); 
-    }else{
-      s = Size(w(),h());
-    }
-    m_oMutex.unlock();
-    return s;
-  }
-
-  // }}}
-  Rect ICLWidget::getImageRect(){
-    // {{{ open
-    return computeImageRect(getImageSize(),Size(w(),h()),op.fm);
-  }
 
   // }}}
   
+  // {{{ drawOSD(), drawImage() and paintGL()
+
   void ICLWidget::drawOSD(GLPaintEngine *e){
     // {{{ open
-    
+
     m_oOSDMutex.lock();
     if(m_poCurrOSD){
       float m = std::min(((float)std::min(w(),h()))/100,6.0f);
@@ -252,10 +267,12 @@ namespace icl{
     }
     m_oOSDMutex.unlock();
   }
-  
+
   // }}}
- 
+  
   void ICLWidget::paintGL(){
+    // {{{ open
+
     // {{{
     GLPaintEngine e(this);
 
@@ -263,9 +280,12 @@ namespace icl{
     customPaintEvent(&e);
     drawOSD(&e);
   }
-  // }}} 
+
+  // }}}
+   
   void ICLWidget::drawImage(GLPaintEngine *e){
     // {{{ open
+
     int _w = w();
     int _h = h();
     Rect r(0,0,_w,_h);
@@ -286,7 +306,83 @@ namespace icl{
   }
 
   // }}}
- 
+
+  // }}}
+
+  // {{{ getImage<Info|Rect|Size>() up(), w() and h()
+
+  std::vector<string> ICLWidget::getImageInfo(){
+    // {{{ open
+
+    std::vector<string> info;
+    ImgI* i = m_poImage;
+    if(!i){
+      info.push_back("Image is NULL");
+      return info;
+    }
+    info.push_back(string("depth:   ")+translateDepth(i->getDepth()).c_str());
+    info.push_back(string("size:    ")+QString::number(i->getSize().width).toLatin1().data()+" x "+
+                   QString::number(i->getSize().height).toLatin1().data());
+    info.push_back(string("channels:")+QString::number(i->getChannels()).toLatin1().data());
+    info.push_back(string("format:  ")+translateFormat(i->getFormat()).c_str());
+    if(i->hasFullROI()){
+      info.push_back("roi:   full");
+    }else{
+      char ac[200];
+      Rect r = i->getROI();
+      sprintf(ac,"roi:   ((%d,%d),(%d x %d))",r.x,r.y,r.width,r.height);
+      info.push_back(ac);
+    }
+    if(i->getDepth()==depth8u){
+      for(int a=0;a<i->getChannels();a++){
+        char ac[200];
+        sprintf(ac,"channel %d, min:%d, max:%d",a,i->asImg<icl8u>()->getMin(a),i->asImg<icl8u>()->getMax(a));
+        info.push_back(ac);
+      }
+    }else{
+      for(int a=0;a<i->getChannels();a++){
+        char ac[200];
+        sprintf(ac,"channel %d, min:%f, max:%f",a,i->asImg<icl32f>()->getMin(a),i->asImg<icl32f>()->getMax(a));
+        info.push_back(ac);
+      }
+    }
+    return info;
+  }
+
+  // }}}
+
+  void ICLWidget::up(){  update(); }
+  int ICLWidget::w(){ return width(); }
+  int ICLWidget::h(){ return height(); }
+
+  Size ICLWidget::getImageSize(){
+    // {{{ open
+
+    m_oMutex.lock();
+    Size s;
+    if(m_poImage){
+      s = m_poImage->getSize(); 
+    }else{
+      s = Size(w(),h());
+    }
+    m_oMutex.unlock();
+    return s;
+  }
+
+  // }}}
+
+  Rect ICLWidget::getImageRect(){
+    // {{{ open
+
+    return computeImageRect(getImageSize(),Size(w(),h()),op.fm);
+  }
+
+  // }}}
+
+  // }}}
+
+  // {{{ private utility functions computeImageRect() and updateMouseInfo()
+
   Rect ICLWidget::computeImageRect(Size oImageSize, Size oWidgetSize, fitmode eFitMode){
     // {{{ open
 
@@ -325,43 +421,42 @@ namespace icl{
   }
 
   // }}}
-  std::vector<string> ICLWidget::getImageInfo(){
-    // {{{ open
 
-    std::vector<string> info;
-    ImgI* i = m_poImage;
-    if(!i){
-      info.push_back("Image is NULL");
-      return info;
-    }
-    info.push_back(string("depth:   ")+translateDepth(i->getDepth()).c_str());
-    info.push_back(string("size:    ")+QString::number(i->getSize().width).toLatin1().data()+" x "+
-                   QString::number(i->getSize().height).toLatin1().data());
-    info.push_back(string("channels:")+QString::number(i->getChannels()).toLatin1().data());
-    info.push_back(string("format:  ")+translateFormat(i->getFormat()).c_str());
-    if(i->hasFullROI()){
-      info.push_back("roi:   full");
-    }else{
-      char ac[200];
-      Rect r = i->getROI();
-      sprintf(ac,"roi:   ((%d,%d),(%d x %d))",r.x,r.y,r.width,r.height);
-      info.push_back(ac);
-    }
-    if(i->getDepth()==depth8u){
-      for(int a=0;a<i->getChannels();a++){
-        char ac[200];
-        sprintf(ac,"channel %d, min:%d, max:%d",a,i->asImg<icl8u>()->getMin(a),i->asImg<icl8u>()->getMax(a));
-        info.push_back(ac);
+  MouseInteractionInfo *ICLWidget::updateMouseInfo(MouseInteractionInfo::Type type){
+    // {{{ open
+    m_oMouseInfo.type = type;
+    m_oMouseInfo.widgetX = m_iMouseX;
+    m_oMouseInfo.widgetY = m_iMouseY;
+    memcpy(m_oMouseInfo.downmask,aiDown,3*sizeof(int));
+    
+    m_oMutex.lock();
+    Rect r = computeImageRect(m_poImage->getSize(), Size(w(),h()), op.fm);
+    if(m_poImage && op.on && r.contains(m_iMouseX, m_iMouseY)){
+      float boxX = m_iMouseX - r.x;
+      float boxY = m_iMouseY - r.y;
+      
+      m_oMouseInfo.imageX = (int)round((boxX*(m_poImage->getSize().width))/r.width);
+      m_oMouseInfo.imageY = (int)round((boxY*(m_poImage->getSize().height))/r.height);
+      m_oMouseInfo.color.resize(0);
+      if(m_poImage->getDepth() == depth8u){
+        for(int c=0;c<m_poImage->getChannels();c++){
+          m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl8u>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
+        }        
+      }else{
+        for(int c=0;c<m_poImage->getChannels();c++){
+          m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl32f>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
+        }
       }
     }else{
-      for(int a=0;a<i->getChannels();a++){
-        char ac[200];
-        sprintf(ac,"channel %d, min:%f, max:%f",a,i->asImg<icl32f>()->getMin(a),i->asImg<icl32f>()->getMax(a));
-        info.push_back(ac);
-      }
+      m_oMouseInfo.imageX = -1;
+      m_oMouseInfo.imageY = -1;
+      m_oMouseInfo.color.resize(0);
     }
-    return info;
+    m_oMutex.unlock();
+    return &m_oMouseInfo;
   }
+
+  // }}}
 
   // }}}
 

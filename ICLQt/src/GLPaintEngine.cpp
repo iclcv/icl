@@ -206,7 +206,16 @@ namespace icl{
     
     setupPixelTransfer(depth8u,0,0,0);
     glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-    setupRasterEngine(r, Size(img.width(),img.height()),mode);
+    
+
+    if(mode == NoAlign){
+      // specialized for no alligned text rendering: 2*img.height() makes the text origin be
+      // lower left and not upper left
+      setupRasterEngine(Rect(r.x,r.y,img.width(),2*img.height()), Size(img.width(),img.height()),mode);
+    }else{
+      setupRasterEngine(r, Size(img.width(),img.height()),mode);
+    }
+    
     glDrawPixels(img.width(),img.height(),GL_RGBA,GL_UNSIGNED_BYTE,img.bits());
   }
 

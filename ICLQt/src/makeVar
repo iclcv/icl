@@ -66,3 +66,32 @@ CPPFLAGS:= ${CPPFLAGS}
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
 SKIP_DIRECTORIES:=
+
+# Additional rules for creation of Meta objects
+
+../obj/moc_ICLWidget.o : ICLWidget.h ICLWidget.cpp
+	${PRE_CMD} rm -rf moc_ICLWidget.cpp
+	${PRE_CMD}${CMD_ECHO} "creating moc file moc_ICLWidget.cpp [specialized]"
+	${PRE_CMD}${QTDIR}/bin/moc -o moc_ICLWidget.cpp ICLWidget.h
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/moc_ICLWidget.cpp [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c moc_ICLWidget.cpp -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}
+
+../obj/ICLWidget.o : ICLWidget.cpp ICLWidget.h ../obj/moc_ICLWidget.o
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}
+
+
+../obj/moc_MouseInteractionReceiver.o : MouseInteractionReceiver.h MouseInteractionReceiver.cpp
+	${PRE_CMD} rm -rf moc_MouseInteractionReceiver.cpp
+	${PRE_CMD}${CMD_ECHO} "creating moc file moc_MouseInteractionReceiver.cpp [specialized]"
+	${PRE_CMD}${QTDIR}/bin/moc -o moc_MouseInteractionReceiver.cpp MouseInteractionReceiver.h
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/moc_MouseInteractionReceiver.cpp [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c moc_MouseInteractionReceiver.cpp -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}
+
+../obj/MouseInteractionReceiver.o : MouseInteractionReceiver.cpp MouseInteractionReceiver.h ../obj/moc_MouseInteractionReceiver.o
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}
