@@ -171,18 +171,18 @@ namespace icl{
     static const GLfloat D_ARC = (2*M_PI)/NSTEPS;
     glBegin(GL_POLYGON);
     for(int i=0;i<NSTEPS;i++){
-      GLfloat arc = i*D_ARC;
-      glVertex2f(cx+cos(arc)*w2,cy+sin(arc)*h2);
+      float arc = i*D_ARC;
+      glVertex2f(cx+std::cos(arc)*w2,cy+std::sin(arc)*h2);
     }
     glEnd();
     
     glColor4fv(m_afLineColor);
     glBegin(GL_LINE_STRIP);
     for(int i=0;i<NSTEPS;i++){
-      GLfloat arc = i*D_ARC;
-      glVertex2f(cx+cos(arc)*w2,cy+sin(arc)*h2);
+      float arc = i*D_ARC;
+      glVertex2f(cx+std::cos(arc)*w2,cy+std::sin(arc)*h2);
     }
-    glVertex2f(cx+cos(0)*w2,cy+sin(0)*h2);
+    glVertex2f(cx+std::cos(float(0))*w2,cy+std::sin(float(0))*h2);
     glEnd();
   }
 
