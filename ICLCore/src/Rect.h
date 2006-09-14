@@ -152,8 +152,7 @@ namespace icl{
     /// returns if a Rect containes another rect (NOT IMPLEMENTED)
     bool contains(const Rect &r){
       (void)r;
-      printf("ERROR!!! Rect::contains is not yet implemented \n");
-      return Rect();
+      return x<=r.x && y <= r.y && right() >= r.right() && bottom() >= r.bottom();
     }
     
     bool contains(int x, int y){

@@ -138,6 +138,7 @@ Img<Type>::deepCopy(ImgI* poDst) const
 template<class Type> ImgI*
 Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
   // {{{ open
+
 {
   FUNCTION_LOG("");
   
@@ -324,6 +325,7 @@ Img<Type>::append(Img<Type> *poSrc, int iIndex)
 template<class Type> void
 Img<Type>::append(Img<Type> *poSrc, 
                   const int* const piStart, const int* const piEnd) 
+
   // {{{ open
 {
   FUNCTION_LOG("");
@@ -371,8 +373,7 @@ Img<Type>::scale(const Size &s,scalemode eScaleMode)
   FUNCTION_LOG("");
   
   Size oNewSize(s.width<0?getSize().width:s.width, s.height<0?getSize().height:s.height);
-  //---- estimate destination values in respect to defaults ----
-  
+
   if(! isEqual(oNewSize, m_iChannels))
     {
       Img<Type> oTmp(oNewSize,m_eFormat,m_iChannels);
@@ -397,14 +398,20 @@ Img<Type>::mirror(axis eAxis, bool bOnlyROI)
 // }}}
 
 static inline void* getPointerOffset (const void* begin, int x, int y, int iByteSize, int iLineLen) {
+  // {{{ open
+
    return ((char*)begin) + iByteSize * (x + y*iLineLen);
 }
+
+  // }}}
 static bool getMirrorPointers (axis eAxis, bool bInplace, 
                                const void* srcBegin, const void* dstBegin, int iByteSize,
                                const Point& oSrcOffset, int iSrcLineStep, 
                                const Point& oDstOffset, int iDstLineStep, const Size& oSize,
                                void** pS, void** pD, void** pE, void** pELine,
                                int& iLineWarpS, int& iLineWarpD) {
+  // {{{ open
+
    void *&s=*pS, *&d=*pD, *&e=*pE, *&eLine=*pELine;
    int iRows, iCols;
    int iSrcLineLen = iSrcLineStep / iByteSize;
@@ -479,6 +486,8 @@ static bool getMirrorPointers (axis eAxis, bool bInplace,
 
    return (iRows != 0 && iCols != 0);
 }
+
+  // }}}
 
 template<class Type> void
 Img<Type>::mirror(axis eAxis, int iChannel, 
