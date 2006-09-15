@@ -117,12 +117,12 @@ namespace icl{
       if(image->getDepth() == depth8u){
         icl8u tMin,tMax;
         image->asImg<icl8u>()->getMinMax(tMin,tMax);
-        fScaleRGB  = 255.0/(tMax-tMin);
+        fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
         fBiasRGB = (- fScaleRGB * tMin)/255.0;
       }else{
         icl32f tMin,tMax;
         image->asImg<icl32f>()->getMinMax(tMin,tMax);
-        fScaleRGB  = 255.0/(tMax-tMin);
+        fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
         fBiasRGB = (- fScaleRGB * tMin)/255.0;
         fScaleRGB /= 255.0;
       }
