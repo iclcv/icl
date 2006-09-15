@@ -122,6 +122,18 @@ installdoc_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} installdoc -C $(subst installdoc_,,$@)\
               "_CURR_DIR=$(subst installdoc_,${strip ${_CURR_DIR}}/,$@)"
 
+installlink: $(_DIRECTORY_ORDER:%=installlink_%)
+
+installlink_%:
+	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} installlink -C $(subst installlink_,,$@)\
+              "_CURR_DIR=$(subst installlink_,${strip ${_CURR_DIR}}/,$@)"
+
+installall: $(_DIRECTORY_ORDER:%=installall_%)
+
+installall_%:
+	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} installall -C $(subst installall_,,$@)\
+              "_CURR_DIR=$(subst installall_,${strip ${_CURR_DIR}}/,$@)"
+
 cleaninstall: $(_DIRECTORY_ORDER:%=cleaninstall_%)
 
 cleaninstall_%:

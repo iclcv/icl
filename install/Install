@@ -1,11 +1,17 @@
 #!/usr/bin/perl
 
 use strict;
+use Cwd;
 use Data::Dumper;
+use File::Find;
 
 my ($projectName, $majVer, $minVer);
 my @content;
 my $projectRootName = $ARGV[0];
+my $installMode = $ARGV[1]; # 0: remove & install all (include, lib, doc)
+                            # 1: remove & install include, lib
+                            # 2: remove & install doc
+                            # 3: remove & install as link include, lib
 
 #------------------
 #Get version number
@@ -34,12 +40,19 @@ closedir(DIR);
 my $INSTALLDIR="$ENV{AGNI_LOCAL_ROOT}/${projectRootName}/${majVer}.${minVer}";
 
 #---- Remove old install tree before installing the new one ----
-print "---- Remove header files in: $INSTALLDIR/include \n";
-system "rm $INSTALLDIR/include/*.h";
-print "---- Remove libraries in: $INSTALLDIR/lib \n";
-system "rm $INSTALLDIR/lib/*";
+if ($installMode == 0 || $installMode == 1 || $installMode == 3) {
+    print "---- Remove header files in: $INSTALLDIR/include \n";
+    system "rm $INSTALLDIR/include/*.h";
+    print "---- Remove libraries in: $INSTALLDIR/lib \n";
+    system "rm $INSTALLDIR/lib/*";
+}
 
-#---- Install new library----
+if ($installMode == 0 || $installMode == 2) {
+    print "---- Remove docs in: $INSTALLDIR/doc \n";
+    system "rm -R $INSTALLDIR/doc/*";
+}
+
+#---- Create directory tree ----
 if (!-e "$INSTALLDIR"){
     print "make dir: $INSTALLDIR\n";
     system "mkdir -p $INSTALLDIR";
@@ -55,24 +68,66 @@ if (!-e "$INSTALLDIR/include"){
     system "mkdir $INSTALLDIR/include";
     }
 
+if (!-e "$INSTALLDIR/doc"){
+    print "make dir: $INSTALLDIR/doc\n";
+    system "mkdir $INSTALLDIR/doc";
+}
+
+#---- Copy content to install dir ----
 system "cp ./BashSrc $INSTALLDIR";
 system "cp ./packageVar $INSTALLDIR";
 
 foreach my $entry(@dirs) {
     if ($entry !~ /^\./ ){        
         if (opendir(DIR,"../".$entry)) {
+            my $curdir=&Cwd::cwd();
             while (my $subentry=readdir(DIR)) {
-                if ($subentry eq 'src'){
-                    print "---- Copying header files: $entry/$subentry\n";
-                    system "cp ../$entry/$subentry/*.h $INSTALLDIR/include"
+                if ($installMode == 0 || $installMode == 1) { 
+                    if ($subentry eq 'src'){
+                        print "---- Copying header files: $entry/$subentry\n";
+                        system "cp ../$entry/$subentry/*.h $INSTALLDIR/include"
+                        }
+                    elsif ($subentry eq 'lib'){
+                        print "---- Copying libraries: $entry/$subentry\n";
+                        system "cp -d ../$entry/$subentry/*.so* $INSTALLDIR/lib";
+                        system "cp -d ../$entry/$subentry/*.a $INSTALLDIR/lib";
                     }
-                elsif ($subentry eq 'lib'){
-                    print "---- Copying libraries: $entry/$subentry\n";
-                    system "cp -d ../$entry/$subentry/*.so* $INSTALLDIR/lib";
-                    system "cp -d ../$entry/$subentry/*.a $INSTALLDIR/lib";
+                    elsif ($subentry !~ /^\./ ){
+                        push(@dirs,"$entry/$subentry");
                     }
-                elsif ($subentry !~ /^\./ ){
-                    push(@dirs,"$entry/$subentry");
+                }
+                if ($installMode == 3) {
+                    if ($subentry eq 'src'){
+                        my @allHeaders = ();
+                        &File::Find::find( sub {push @allHeaders, $_;}, 
+                                           "$curdir/../$entry/$subentry/*.h" );
+                        print "---- Linking header files: $entry/$subentry\n";
+                        system "ln -s $curdir/../$entry/$subentry/*.h $INSTALLDIR/include"
+                        }
+                    elsif ($subentry eq 'lib'){
+                        print "---- Linking libraries: $entry/$subentry\n";
+                        system "ln -s $curdir/../$entry/$subentry/*.so* $INSTALLDIR/lib";
+                        system "ln -s $curdir/../$entry/$subentry/*.a $INSTALLDIR/lib";
+                    }
+                    elsif ($subentry !~ /^\./ ){
+                        push(@dirs,"$entry/$subentry");
+                    }
+                }
+                if ($installMode == 0 || $installMode == 2) {
+                    if ($subentry eq 'doc'){
+                        if (!-e "$INSTALLDIR/doc/$entry"){                   
+                            ($projectName) = $entry =~ /.*\/(.+?)$/;
+                            if (!$projectName) {
+                                $projectName = $entry;
+                            }
+                            system "mkdir $INSTALLDIR/doc/$projectName";
+                        }
+                        print "---- Copying documentation: $entry/$subentry\n";
+                        system "cp -r ../$entry/$subentry/documentation/* $INSTALLDIR/doc/$entry";
+                    }
+                    elsif ($subentry !~ /^\./ ){
+                        push(@dirs,"$entry/$subentry");
+                    }
                 }
             }
             closedir (DIR);
