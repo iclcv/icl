@@ -22,7 +22,7 @@ void eval(const char *text,char *p, int N, Timer &t, const Base &a){
       *pp = a.f(*pp);
     }
   }
-  t.stopTimer();
+  t.stopTimer("Part 1");
 }
 void eval(const char *text,char *p, int N, Timer &t, const Direct &a){
   printf("%s \n",text);
@@ -34,7 +34,7 @@ void eval(const char *text,char *p, int N, Timer &t, const Direct &a){
       *pp = a.f(*pp);
     }
   }
-  t.stopTimer();
+  t.stopTimer("Part 2");
 }
 struct ExtBase : public Base{
   virtual inline int f(int c) const{ return c > 6 ? c : 6; }

@@ -34,10 +34,8 @@ closedir(DIR);
 my $INSTALLDIR="$ENV{AGNI_LOCAL_ROOT}/${projectRootName}/${majVer}.${minVer}";
 
 #---- Remove old install tree before installing the new one ----
-print "---- Remove header files in: $INSTALLDIR/include \n";
-system "rm $INSTALLDIR/include/*.h";
-print "---- Remove libraries in: $INSTALLDIR/lib \n";
-system "rm $INSTALLDIR/lib/*";
+print "---- Remove docs in: $INSTALLDIR/doc \n";
+system "rm -R $INSTALLDIR/doc/*";
 
 #---- Install new library----
 if (!-e "$INSTALLDIR"){
@@ -45,32 +43,26 @@ if (!-e "$INSTALLDIR"){
     system "mkdir -p $INSTALLDIR";
     }
 
-if (!-e "$INSTALLDIR/lib"){
-    print "make dir: $INSTALLDIR/lib\n";
-    system "mkdir $INSTALLDIR/lib";
+if (!-e "$INSTALLDIR/doc"){
+    print "make dir: $INSTALLDIR/doc\n";
+    system "mkdir $INSTALLDIR/doc";
     }
-
-if (!-e "$INSTALLDIR/include"){
-    print "make dir: $INSTALLDIR/include\n";
-    system "mkdir $INSTALLDIR/include";
-    }
-
-system "cp ./BashSrc $INSTALLDIR";
-system "cp ./packageVar $INSTALLDIR";
 
 foreach my $entry(@dirs) {
     if ($entry !~ /^\./ ){        
         if (opendir(DIR,"../".$entry)) {
             while (my $subentry=readdir(DIR)) {
-                if ($subentry eq 'src'){
-                    print "---- Copying header files: $entry/$subentry\n";
-                    system "cp ../$entry/$subentry/*.h $INSTALLDIR/include"
+                if ($subentry eq 'doc'){
+                    if (!-e "$INSTALLDIR/doc/$entry"){                   
+                        ($projectName) = $entry =~ /.*\/(.+?)$/;
+                        if (!$projectName) {
+                            $projectName = $entry;
+                        }
+                        system "mkdir $INSTALLDIR/doc/$projectName";
                     }
-                elsif ($subentry eq 'lib'){
-                    print "---- Copying libraries: $entry/$subentry\n";
-                    system "cp -d ../$entry/$subentry/*.so* $INSTALLDIR/lib";
-                    system "cp -d ../$entry/$subentry/*.a $INSTALLDIR/lib";
-                    }
+                    print "---- Copying documentation: $entry/$subentry\n";
+                    system "cp -r ../$entry/$subentry/documentation/* $INSTALLDIR/doc/$entry";
+                }
                 elsif ($subentry !~ /^\./ ){
                     push(@dirs,"$entry/$subentry");
                 }

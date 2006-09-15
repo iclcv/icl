@@ -13,6 +13,9 @@ _DOT_DOT:=../${_DOT_DOT}
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
 
+# Please include here the inherited projects
+# (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
+include $(QTDIR)/packageVar
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -23,7 +26,8 @@ ABS_INCLUDES:= ${ABS_INCLUDES}
 REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
 		-I../src \
 		-I../../ICLIO/src \
-		-I../../ICLCC/src
+		-I../../ICLCC/src \
+		-I../../ICLQt/src
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
@@ -34,7 +38,9 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
 		-L../lib -lICLFilter \
 		-L../../ICLIO/lib -lICLIO \
-		-L../../ICLCC/lib -lICLCC 
+		-L../../ICLCC/lib -lICLCC \
+		-L../../ICLQt/lib -lICLQt
+
 # Please add here all the objects with absolute path
 # that are needed by the executables.
 ABS_OBJECTS:= ${ABS_OBJECTS}
@@ -45,7 +51,7 @@ REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug status
 # This variable takes two values: TRUE or FALSE
-DEBUG_ON:=FALSE
+DEBUG_ON:=TRUE
 
 # Debugging flags
 DEBUG:= ${DEBUG}

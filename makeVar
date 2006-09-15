@@ -69,7 +69,6 @@ NODEBUG:=-O4 -DNDEBUG
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES} -DWITH_IPP_OPTIMIZATION
-#CDEFINES:= ${CDEFINES} -DDEBUGLEVEL_2
 
 # Flags for C compiler
 CFLAGS:= ${CFLAGS}
@@ -93,6 +92,7 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 CMD_LD=g++
 
 # Set the priority level
-DIR_PRIORITY:=ICLUtils ICLCore ICLCC
+DIR_PRIORITY:=ICLUtils ICLCore ICLMath ICLCC
 DIR_LOWPRIORITY:=examples
 SKIP_DIRECTORIES += $(shell if [ ! "`qmake --version 2>&1 | grep "Using Qt version 4."`" ] ; then echo ICLQt ; fi)
+

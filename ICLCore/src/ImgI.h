@@ -18,6 +18,7 @@ namespace icl {
   
   /// ImgI is the Image-Interface class that provides save access to underlying Img-template
   /* {{{ ImgI class documentation */
+
   /**
   \section Class
   The ImgI class provides access to the following basic image features:
@@ -78,6 +79,7 @@ namespace icl {
   </pre>
 
   **/ 
+
   /* }}} */
   class ImgI
     {   

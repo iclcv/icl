@@ -74,7 +74,7 @@ cleanobj: _cleanobj_First ${MORE_CLEAN}
 _cleanobj_First:
 	${PRE_CMD}${CMD_ECHO} "Cleaning objects from: ${_CURR_DIR}"
 	${PRE_CMD}${CMD_RM} ../obj/${TARGET_PREFIX}*.o
-	${PRE_CMD}${CMD_RM} *~ *.bak
+	${PRE_CMD}${CMD_RM} *~ *.bak moc_*
 
 #-----------------------------------------------
 # Rule: depend & cleandepend

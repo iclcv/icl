@@ -24,7 +24,8 @@ export AGNI_LOCAL_ROOT
 #       defining this variable with the value:
 #               echo ""
 #       prints out what makefiles would execute without executing the commands.
-# To become completely verbose, undefine PRE_CMD as well as remove -s from EXTRAMAKEFLAGS below
+# To become completely verbose, undefine PRE_CMD as well as remove -s 
+# from EXTRAMAKEFLAGS below
 PRE_CMD=@
 
 # Make tool
@@ -344,7 +345,6 @@ help:
 	${PRE_CMD}${CMD_ECHO} " exe         : makes the directory: examples/ test/ bin/"
 	${PRE_CMD}${CMD_ECHO} " cleanexe    : clear what exe made"
 	${PRE_CMD}${CMD_ECHO} ""
-	${PRE_CMD}${CMD_ECHO} " install     : makes the directory: install/"
 	${PRE_CMD}${CMD_ECHO} " cleaninstall: clear what install made"
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} " all         : (default target) makes the commands: ${ALL_EXEC_LIST}"
@@ -356,6 +356,12 @@ help:
 	${PRE_CMD}${CMD_ECHO} " cleandepend : clear what depend made"
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} " printvar    : print all variables from top to current directory"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " install     : remove and install all include and "
+	${PRE_CMD}${CMD_ECHO} "               library files to ${AGNI_LOCAL_ROOT}/*"
+	${PRE_CMD}${CMD_ECHO} ""
+	${PRE_CMD}${CMD_ECHO} " installdoc  : remove and install all documentation"
+	${PRE_CMD}${CMD_ECHO} "               files to ${AGNI_LOCAL_ROOT}/*"
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} " printtype   : print the makefile type"
 	${PRE_CMD}${CMD_ECHO} ""

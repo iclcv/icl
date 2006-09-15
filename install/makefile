@@ -27,6 +27,10 @@ install:
 	echo "**** Installing Project: ${PROJECT_ROOT_NAME} ****"
 	./Install ${PROJECT_ROOT_NAME}
 
+installdoc:
+	echo "**** Installing Project documentation for: ${PROJECT_ROOT_NAME} ****"
+	./InstallDoc ${PROJECT_ROOT_NAME}
+
 #-----------------------------------------------
 # Rule: % (default rule)
 # Note: This rule must be the last one!

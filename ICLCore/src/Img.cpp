@@ -866,7 +866,6 @@ void Img<Type>::clear(int iIndex, Type tValue)
 
 // {{{    scaledCopyChannelROI
 
-
 // scale channel ROI function for abitrary image scaling operations
 template<class S,class D> 
 void scaledCopyChannelROI(const Img<S> *src, int srcC, const Point &srcOffs, const Size &srcSize,
@@ -928,7 +927,6 @@ template void
 scaledCopyChannelROI<icl32f,icl8u>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                    Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                                    scalemode eScaleMode);
-
 
 // }}}
 
