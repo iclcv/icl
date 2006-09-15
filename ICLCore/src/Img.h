@@ -870,8 +870,8 @@ void flippedCopyChannelROI(axis eAxis,
  
 #ifdef WITH_IPP_OPTIMIZATION
 /// IPP-OPTIMIZED specialization for icl8u image flipping
-template <> void
-inline flippedCopyChannelROI<icl8u>(axis eAxis, 
+template <>
+inline void flippedCopyChannelROI<icl8u>(axis eAxis, 
                                     const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                     Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
    FUNCTION_LOG("");
@@ -883,8 +883,8 @@ inline flippedCopyChannelROI<icl8u>(axis eAxis,
 }
 
 /// IPP-OPTIMIZED specialization for icl8u image flipping
-template <> void
-inline flippedCopyChannelROI<icl32f>(axis eAxis, 
+template <>
+inline void flippedCopyChannelROI<icl32f>(axis eAxis, 
                                      const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                      Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
    FUNCTION_LOG("");

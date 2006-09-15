@@ -20,7 +20,7 @@ public:
   {
     widget->setGeometry(200,200,640,480);
     widget->show();
-    QThread::connect(widget,SIGNAL(mouseEvent(MouseInteractionInfo*)),
+    QThread::connect((ICLDrawWidget*)widget,SIGNAL(mouseEvent(MouseInteractionInfo*)),
                      (MouseInteractionReceiver*)this,SLOT(mouseInteraction(MouseInteractionInfo*)));
   }
   
