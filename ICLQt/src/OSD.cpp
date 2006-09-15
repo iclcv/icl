@@ -127,8 +127,15 @@ namespace icl{
     m_mapPanels["fitmode"]= w;
     
     
-    m_mapPanels["channels"]=new OSDWidget(CHANNELS_ID,getMainRect(),poIW,this);
-    m_mapPanels["capture"]=new OSDWidget(CAPTURE_ID,getMainRect(),poIW,this);      
+    w = new OSDWidget(CHANNELS_ID,getMainRect(),poIW,this);
+    w->addChild(new OSDLabel(CHANNELS_LABEL_ID,getSubRect(2,8),m_poIW,this,"select a channel:"));
+    w->addChild(new OSDSlider(CHANNELS_SLIDER_ID,getSubRect(3,8),m_poIW,this,-1,4,-1));
+    m_mapPanels["channels"]=w;
+    
+
+    w = new OSDWidget(CAPTURE_ID,getMainRect(),poIW,this);  
+    w->addChild(new OSDLabel(CAPTURE_LABEL_ID,getSubRect(2,3),m_poIW,this,"comming soon!"));
+    m_mapPanels["capture"]=w;
     
     // INFO-Menu
     m_mapPanels["info"]=new OSDLabel(INFO_ID,getMainRect(),poIW,this,"info");

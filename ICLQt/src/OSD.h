@@ -89,7 +89,12 @@ namespace icl{
     /* }}} */
 
     static const int CHANNELS_ID = 500;
+    static const int CHANNELS_SLIDER_ID = 501;
+    static const int CHANNELS_LABEL_ID = 502;
+    
+    
     static const int CAPTURE_ID = 600;
+    static const int CAPTURE_LABEL_ID = 600;
     static const int INFO_ID = 700;
     
     /* {{{ MENU constants */

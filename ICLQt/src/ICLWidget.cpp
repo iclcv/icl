@@ -225,9 +225,22 @@ namespace icl{
       case OSD::ADJUST_INTENSITY_SLIDER_ID:
         op.intensity = *(int*)val;
         break;
+      case OSD::ADJUST_MODE_NONE_ID:
+        op.rm = rmOff;
+        break;
+      case OSD::ADJUST_MODE_MANUAL_ID:
+        op.rm = rmOn;
+        break;
+      case OSD::ADJUST_MODE_AUTO_ID:
+        op.rm = rmAuto;
+        break;
+      case OSD::CHANNELS_SLIDER_ID:
+        op.c = *(int*)val;
+        break;
       default:
         break;
     }
+
     up();
   }
 
@@ -244,8 +257,17 @@ namespace icl{
     if(op.c<0){
       ensureCompatible(&m_poImage,input);
       input->deepCopy(m_poImage);
-    }else{ // copy the specific image channel
-      
+    }else if(op.c < input->getChannels()){ // copy the specific image channel
+      ensureCompatible(&m_poImage,input->getDepth(),input->getSize(),formatMatrix,1);
+      switch(input->getDepth()){
+        case depth8u: deepCopyChannel(input->asImg<icl8u>(),op.c,m_poImage->asImg<icl8u>(),0); break;
+        case depth32f: deepCopyChannel(input->asImg<icl32f>(),op.c,m_poImage->asImg<icl32f>(),0); break;
+      }
+    }else{
+      if(m_poImage){
+        delete m_poImage;
+        m_poImage = 0;
+      }
     }
     m_oMutex.unlock();    
   }
@@ -299,8 +321,18 @@ namespace icl{
       m_oMutex.unlock();
       return;
     }
+    switch(op.rm){
+      case rmOff:
+        e->bci();
+        break;
+      case rmOn:
+        e->bci(op.brightness,op.contrast,op.intensity);
+        break;
+      case rmAuto:
+        e->bciAuto();
+        break;
+    }
     
-    e->bci(op.brightness,op.contrast,op.intensity);
     e->image( computeImageRect(m_poImage->getSize(),Size(w(),h()),op.fm) , m_poImage, GLPaintEngine::Justify);
     m_oMutex.unlock();
   }

@@ -11,7 +11,7 @@ namespace icl{
   GLPaintEngine::GLPaintEngine(QGLWidget *widget):
     // {{{ open
 
-    m_poWidget(widget), m_oFont(QFont("Arial",30)){
+    m_poWidget(widget),m_bBCIAutoFlag(false), m_oFont(QFont("Arial",30)){
     
     widget->makeCurrent();
     
@@ -108,7 +108,31 @@ namespace icl{
     Size s = image->getSize();
     setupRasterEngine(r,s,mode);
     setPackAlignment(image->getDepth(),s.width);
-    setupPixelTransfer(image->getDepth(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
+   
+    if(!m_bBCIAutoFlag){
+      setupPixelTransfer(image->getDepth(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
+    }else{
+      // automatic adjustment of brightness and contrast
+      float fScaleRGB,fBiasRGB;
+      if(image->getDepth() == depth8u){
+        icl8u tMin,tMax;
+        image->asImg<icl8u>()->getMinMax(tMin,tMax);
+        fScaleRGB  = 255.0/(tMax-tMin);
+        fBiasRGB = (- fScaleRGB * tMin)/255.0;
+      }else{
+        icl32f tMin,tMax;
+        image->asImg<icl32f>()->getMinMax(tMin,tMax);
+        fScaleRGB  = 255.0/(tMax-tMin);
+        fBiasRGB = (- fScaleRGB * tMin)/255.0;
+        fScaleRGB /= 255.0;
+      }
+      glPixelTransferf(GL_RED_SCALE,fScaleRGB);
+      glPixelTransferf(GL_GREEN_SCALE,fScaleRGB);
+      glPixelTransferf(GL_BLUE_SCALE,fScaleRGB);
+      glPixelTransferf(GL_RED_BIAS,fBiasRGB);
+      glPixelTransferf(GL_GREEN_BIAS,fBiasRGB);
+      glPixelTransferf(GL_BLUE_BIAS,fBiasRGB);
+    }
   
     GLenum datatype = image->getDepth() == depth8u ? GL_UNSIGNED_BYTE : GL_FLOAT;
     static GLenum CHANNELS[4] = {GL_RED,GL_GREEN,GL_BLUE,GL_ALPHA};
@@ -120,6 +144,7 @@ namespace icl{
       }
       glColorMask(1,1,1,1);
     }else if(image->getChannels() > 0){
+      
       glColorMask(1,1,1,0);
       glDrawPixels(s.width,s.height,GL_LUMINANCE,datatype,image->getDataPtr(0));
     }
@@ -226,6 +251,15 @@ namespace icl{
     m_aiBCI[0]=brightness;
     m_aiBCI[1]=contrast;
     m_aiBCI[2]=intensity;
+    m_bBCIAutoFlag = false;
+  }
+
+  // }}}
+
+  void GLPaintEngine::bciAuto(){
+    // {{{ open
+
+    m_bBCIAutoFlag = true;
   }
 
   // }}}
@@ -283,11 +317,16 @@ namespace icl{
   // }}}
   void GLPaintEngine::setupPixelTransfer(depth d, int brightness, int contrast, int intensity){
     // {{{ open
-
-    (void)contrast; (void)intensity;
-    float fBiasRGB =(float)brightness/255.0;
+    (void)intensity;
+    float fBiasRGB = (float)brightness/255.0;
     float fScaleRGB = d == depth8u ? 1.0 : 1.0/255;
-    
+        
+    float c = (float)contrast/255;
+    if(c>0) c*=10;
+    fScaleRGB*=(1.0+c);
+    fBiasRGB-=c/2;
+
+   
     glPixelTransferf(GL_RED_SCALE,fScaleRGB);
     glPixelTransferf(GL_GREEN_SCALE,fScaleRGB);
     glPixelTransferf(GL_BLUE_SCALE,fScaleRGB);

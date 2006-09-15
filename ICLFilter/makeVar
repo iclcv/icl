@@ -32,8 +32,7 @@ ABS_INCLUDES:= ${ABS_INCLUDES}
 REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
         -I../ICLCore/src \
         -I../ICLUtils/src \
-				-I../ICLCC/src \
-				-I../ICLMath/src
+	-I../ICLCC/src \
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
@@ -43,8 +42,7 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 # (e.g. -L../MyLib/lib)
 REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
         -L../ICLCore/lib -lICLCore \
-				-L../ICLCC/lib -lICLCC \
-				-L../ICLMath/lib -lICLMath
+	-L../ICLCC/lib -lICLCC \
 
 # Please add here all the objects with absolute path
 # that are needed by the executables.

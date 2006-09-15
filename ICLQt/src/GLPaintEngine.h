@@ -56,7 +56,8 @@ namespace icl{
     void text(const Rect &r, const string text, AlignMode mode = Centered);
 
     /// brightness-constrast intensity adjustment (for images only)
-    void bci(int brightness, int contrast=0, int intensity=0);
+    void bci(int brightness=0, int contrast=0, int intensity=0);
+    void bciAuto();
     
     void getColor(int *piColor);
     void getFill(int *piColor);
@@ -71,6 +72,7 @@ namespace icl{
     float m_afLineColor[4];
     float m_afFillColor[4];
     int m_aiBCI[3];
+    bool m_bBCIAutoFlag;
 
     QFont m_oFont;
   };

@@ -50,8 +50,10 @@ namespace icl{
                      fmHoldAR = 1,
                      fmNoScale = 2    };
     
-    enum rangemode { rmOn = 1 , 
-                     rmOff = 2        };
+    enum rangemode { rmOn = 1 ,  /**< range settings of the sliders are used */ 
+                     rmOff = 2 , /**< no range adjustment is used */
+                     rmAuto };   /**< automatic range adjustment */
+                    
     
     
     
@@ -120,10 +122,11 @@ namespace icl{
     QMutex m_oMutex, m_oOSDMutex;
 
     ImgI *m_poImage;
-
+    
     OSDWidget *m_poOSD;
     OSDWidget *m_poCurrOSD;
     OSDButton *m_poShowOSD;
+
     int aiDown[3];
     int m_iMouseX, m_iMouseY;
 
