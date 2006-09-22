@@ -1,5 +1,5 @@
-#ifndef DEF_BLOB_SEARCHER_H
-#define DEF_BLOB_SEARCHER_H
+#ifndef DEF_COLOR_BLOB_SEARCHER_H
+#define DEF_COLOR_BLOB_SEARCHER_H
 
 #include "ColorBlobSearcher.h"
 #include "PixelRatingGroup.h"
@@ -9,23 +9,29 @@
 
 
 namespace icl{
-  
-  class DefaultBlobSearcher : public ColorBlobSearcher8u<bool>{
+
+   
+  class DefaultColorBlobSearcher : public ColorBlobSearcher<icl8u,bool,float>{
     public:
     enum RatingCombinationType { rctOR, rctAND };
     
-    DefaultBlobSearcher(const Size &imageSize);
-    virtual ~DefaultBlobSearcher();
+    DefaultColorBlobSearcher(const Size &imageSize);
+    virtual ~DefaultColorBlobSearcher();
     
     typedef vector<FastMedianList> fmlVec;
 
-    void addNewBlob(const vector<icl8u> &rs,
-                    const vector<icl8u> &gs, 
-                    const vector<icl8u> &bs,
-                    const icl8u thresholds[3],
-                    RatingCombinationType rct=rctOR); 
+    int addNewBlob(const vector<icl8u> &rs,
+                   const vector<icl8u> &gs, 
+                   const vector<icl8u> &bs,
+                   const icl8u thresholds[3],
+                   RatingCombinationType rct=rctOR); 
 
+    // just passing to the parent class
+    virtual const FoundBlobVector &search(Img8u *poImage, Img8u *poMask);
 
+    // returns the current image size of this 
+    const Size &getImageSize() const;
+    void setImageSize(const Size &size);
     protected:
     
     virtual void prepareForNewImage(Img8u *poImage, Img8u *poMask);
@@ -37,28 +43,11 @@ namespace icl{
     
     private:
     
-    Size m_iImageSize;
+    Size m_oImageSize;
     fmlVec m_vecXMedianLists;
     fmlVec m_vecYMedianLists;
 
-    class RGBPixelRating : public PixelRating<icl8u,bool>{
-      public:
-      RGBPixelRating(const icl8u ref[3], const icl8u thresh[3]);
-      virtual bool rate(icl8u r, icl8u g, icl8u b);
-      
-      protected:
-      icl8u m_aucThresholds[3];
-    };
     
-    class RatingGroupOR : public PixelRatingGroup<icl8u,bool>{
-      public:
-      virtual bool combineRatings(const vector<bool> &rvecSubRatings );
-    };
-    
-    class RatingGroupAND : public PixelRatingGroup<icl8u,bool>{
-      public:
-      virtual bool combineRatings(const vector<bool> &rvecSubRatings );
-    };
   };
 }
 #endif

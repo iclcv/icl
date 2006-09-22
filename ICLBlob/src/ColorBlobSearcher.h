@@ -81,17 +81,19 @@ namespace icl{
 
     virtual ~ColorBlobSearcher();
 
-    void addPR(const PixelRating<PixelType, RatingType> &pr);
+    int addPR(const PixelRating<PixelType, RatingType> &pr);
     void removePR(int iIndex);
     int getNumPR() const;
 
     virtual const FoundBlobVector &search(Img<PixelType> *poImage, Img8u *poMask);
 
+    const PixelRatingVector &getAllPixelRatings() const;
+
     protected:
     
     virtual void prepareForNewImage(Img<PixelType> *poImage, Img8u *poMask);
     virtual void storeResult(int iPRIndex, int x, int y, RatingType rating)=0;
-    virtual void evaluateResults(const ColorBlobSearcher::FoundBlobVector &roResultDestination)=0;
+    virtual void evaluateResults(ColorBlobSearcher::FoundBlobVector &roResultDestination)=0;
     virtual void feedback(const ColorBlobSearcher::FoundBlobVector &roLastResults, Img<PixelType> *poImage);
     
     virtual void pixelRatingAdded(const pixelrating &pr);
@@ -101,20 +103,6 @@ namespace icl{
     
     PixelRatingVector m_vecPixelRatings;
     FoundBlobVector m_vecFoundBlobs;
-  };
-
-  /// Specialized colorBlobSearcher for icl8u Images and float blobratings
-  template <class RatingType>
-  class ColorBlobSearcher8u : public ColorBlobSearcher<icl8u,RatingType,float>{
-    public:
-    virtual ~ColorBlobSearcher8u(){}
-  };
-  
-  /// Specialized colorBlobSearcher for icl8u Images and float blobratings
-  template <class RatingType>
-  class ColorBlobSearcher32f : public ColorBlobSearcher<icl32f,RatingType,float>{
-    public:
-    virtual ~ColorBlobSearcher32f(){}
   };
 }
 

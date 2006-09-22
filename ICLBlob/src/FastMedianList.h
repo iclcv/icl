@@ -11,7 +11,20 @@ namespace icl{
       m_iSize(size),m_iT2(t2),m_iT3(t3),m_iT4(t4), m_piTable(size ? new int[size]: 0){
       clear();
     }
-
+    inline FastMedianList(const FastMedianList &l):
+      m_iSize(l.m_iSize),m_iT2(l.m_iT2),m_iT3(l.m_iT3),m_iT4(l.m_iT4){
+      m_piTable = m_iSize ? new int[m_iSize] : 0;
+      clear();
+    }
+    inline FastMedianList &operator=(const FastMedianList &l){
+      m_iSize = l.m_iSize;
+      m_iT2   = l.m_iT2;
+      m_iT3   = l.m_iT3;
+      m_iT4   = l.m_iT4;
+      m_piTable = m_iSize ? new int[m_iSize] : 0;
+      clear();
+      return *this;
+    }
     inline ~FastMedianList(){
       if(m_piTable) delete [] m_piTable;
     }

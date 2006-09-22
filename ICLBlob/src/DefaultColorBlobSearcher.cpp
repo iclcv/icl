@@ -3,21 +3,70 @@
 
 namespace icl{
 
-  // {{{ DefaultBlobSearcher
+  // {{{ RGBPixelRating
 
-  DefaultBlobSearcher::DefaultBlobSearcher(const Size &imageSize):m_iImageSize(imageSize){
+  class RGBPixelRating : public PixelRating<icl8u,bool>{
+  public:
+    RGBPixelRating(const icl8u ref[3], const icl8u thresh[3]):
+      PixelRating<icl8u,bool>(ref[0],ref[1],ref[2]){
+      m_ucThresh0 = thresh[0];
+      m_ucThresh1 = thresh[1];
+      m_ucThresh2 = thresh[2];
+    }
+    virtual bool rate(icl8u r, icl8u g, icl8u b){
+      return  
+        abs(m_ref0-r) < m_ucThresh0 &&
+        abs(m_ref1-g) < m_ucThresh1 &&
+        abs(m_ref2-b) < m_ucThresh2;
+    }
+    
+  protected:
+    icl8u m_ucThresh0, m_ucThresh1, m_ucThresh2;
+  };
+
+  // }}}
+    
+  // {{{ RatingGroupOR
+
+  struct RatingGroupOR : public PixelRatingGroup<icl8u,bool>{
+    virtual bool combineRatings(const vector<bool> &ratings){
+      for(vector<bool>::const_iterator it = ratings.begin();it!=ratings.end(); ++it){
+        if(*it)return true;
+      }
+      return false;
+    }
+  };
+
+  // }}}
+  
+  // {{{ RatingGroupAND
+
+  struct RatingGroupAND : public PixelRatingGroup<icl8u,bool>{
+    virtual bool combineRatings(const vector<bool> &ratings){
+      for(vector<bool>::const_iterator it = ratings.begin();it!=ratings.end(); ++it){
+        if(!(*it))return false;
+      }
+      return true;
+    }
+  };
+
+  // }}}
+
+  // {{{ DefaultColorBlobSearcher
+
+  DefaultColorBlobSearcher::DefaultColorBlobSearcher(const Size &imageSize):m_oImageSize(imageSize){
     // {{{ open
   }
   // }}}
 
-  DefaultBlobSearcher::~DefaultBlobSearcher(){
+  DefaultColorBlobSearcher::~DefaultColorBlobSearcher(){
     // {{{ open
 
   }
 
   // }}}
   
-  void DefaultBlobSearcher::prepareForNewImage(Img8u *poImage, Img8u *poMask){
+  void DefaultColorBlobSearcher::prepareForNewImage(Img8u *poImage, Img8u *poMask){
     // {{{ open
 
     (void)poImage; (void)poMask;
@@ -29,7 +78,7 @@ namespace icl{
 
   // }}}
   
-  void DefaultBlobSearcher::storeResult(int iPRIndex, int x, int y, bool rating){
+  void DefaultColorBlobSearcher::storeResult(int iPRIndex, int x, int y, bool rating){
     // {{{ open
 
     if(rating){
@@ -40,26 +89,25 @@ namespace icl{
 
   // }}}
 
-  void DefaultBlobSearcher::evaluateResults( DefaultBlobSearcher::FoundBlobVector &dst ){
+  void DefaultColorBlobSearcher::evaluateResults(DefaultColorBlobSearcher::FoundBlobVector &dst ){
     // {{{ open
-
+    dst.clear();
     for(int i=0;i<getNumPR();i++){
-      dst[i]= foundblob(m_vecXMedianLists[i].median(),m_vecYMedianLists[i].median(),i,0);
+      dst.push_back(foundblob(m_vecXMedianLists[i].median(),m_vecYMedianLists[i].median(),i,0));
     }
   }
 
   // }}}
   
-  void DefaultBlobSearcher::pixelRatingAdded(const DefaultBlobSearcher::pixelrating &pr){
+  void DefaultColorBlobSearcher::pixelRatingAdded(const DefaultColorBlobSearcher::pixelrating &pr){
     // {{{ open
-
-    m_vecXMedianLists.push_back(FastMedianList(m_iImageSize.width));
-    m_vecYMedianLists.push_back(FastMedianList(m_iImageSize.height));
+    m_vecXMedianLists.push_back(FastMedianList(m_oImageSize.width));
+    m_vecYMedianLists.push_back(FastMedianList(m_oImageSize.height));
   }
 
   // }}}
 
-  void DefaultBlobSearcher::pixelRatingRemoved(const DefaultBlobSearcher::pixelrating &pr, int index){
+  void DefaultColorBlobSearcher::pixelRatingRemoved(const DefaultColorBlobSearcher::pixelrating &pr, int index){
     // {{{ open
 
     (void)pr;
@@ -69,11 +117,19 @@ namespace icl{
 
   // }}}
 
-  void DefaultBlobSearcher::addNewBlob(const vector<icl8u> &rs, 
-                                       const vector<icl8u> &gs,
-                                       const vector<icl8u> &bs,     
-                                       const icl8u thresholds[3],
-                                       DefaultBlobSearcher::RatingCombinationType rct){
+  const DefaultColorBlobSearcher::FoundBlobVector &DefaultColorBlobSearcher::search(Img8u *poImage, Img8u *poMask){
+    // {{{ open
+
+    return ColorBlobSearcher<icl8u,bool,float>::search(poImage,poMask);  
+  }
+
+  // }}}
+
+  int DefaultColorBlobSearcher::addNewBlob(const vector<icl8u> &rs, 
+                                            const vector<icl8u> &gs,
+                                            const vector<icl8u> &bs,     
+                                            const icl8u thresholds[3],
+                                            DefaultColorBlobSearcher::RatingCombinationType rct){
     // {{{ open
     PixelRatingGroup<icl8u,bool> rg;
     if(rct == rctOR) rg = RatingGroupOR();
@@ -85,53 +141,36 @@ namespace icl{
       ref[1] = gs[i];
       ref[2] = bs[i];
       rg.addPR(RGBPixelRating(ref,thresholds));
-    }    
+    }  
+    return addPR(rg);
   }
 
   // }}}
 
-
-
-  // }}}
-
-  
-  // {{{ DefaultBlobSearcher::RGBPixelRating
-
-  DefaultBlobSearcher::RGBPixelRating::RGBPixelRating(const icl8u ref[3], const icl8u thresh[3]):
-    PixelRating<icl8u,bool>(ref[0],ref[1],ref[2]){
-    m_aucThresholds[0] = thresh[0];
-    m_aucThresholds[1] = thresh[1];
-    m_aucThresholds[2] = thresh[2];
-  }
-  
-  bool DefaultBlobSearcher::RGBPixelRating::rate(icl8u r, icl8u g, icl8u b){
-    return r-m_ref0 < m_aucThresholds[0] &&
-           g-m_ref1 < m_aucThresholds[1] &&
-           b-m_ref2 < m_aucThresholds[2];
+  const Size &DefaultColorBlobSearcher::getImageSize() const {
+    // {{{ open
+    return m_oImageSize;
   }
 
   // }}}
   
-  // {{{ DefaultBlobSearcher::RatingGroupOR
-
-  bool DefaultBlobSearcher::RatingGroupOR::combineRatings(const vector<bool> &ratings){
-    for(vector<bool>::const_iterator it = ratings.begin();it!=ratings.end(); ++it){
-      if(*it)return true;
+  void DefaultColorBlobSearcher::setImageSize(const Size &size){
+    // {{{ open
+    if(m_oImageSize != size){
+      m_oImageSize = size;
+      uint nPixelRatings = m_vecXMedianLists.size();
+      m_vecXMedianLists.clear();
+      m_vecYMedianLists.clear();
+      for(uint i=0;i<nPixelRatings;i++){
+        m_vecXMedianLists.push_back(FastMedianList(m_oImageSize.width));
+        m_vecYMedianLists.push_back(FastMedianList(m_oImageSize.height));
+      }    
     }
-    return false;
   }
 
   // }}}
 
-  // {{{ DefaultBlobSearcher::RatingGroupAND
-
-  bool DefaultBlobSearcher::RatingGroupAND::combineRatings(const vector<bool> &ratings){
-    for(vector<bool>::const_iterator it = ratings.begin();it!=ratings.end(); ++it){
-      if(!(*it))return false;
-    }
-    return true;
-  }
-
   // }}}
 
+ 
 }
