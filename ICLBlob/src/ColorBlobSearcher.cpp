@@ -3,7 +3,8 @@
 namespace icl{
   
   template <typename PixelType,typename RatingType,typename BlobRatingType>
-  const vector<FoundBlob<BlobRatingType> > &ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::search(Img<PixelType> *poImage, Img8u *poMask){
+  const vector<FoundBlob<BlobRatingType> > &ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::
+  search(Img<PixelType> *poImage, Img8u *poMask){
     
     ICLASSERT_RETURN_VAL( poImage->getChannels() == 3 , m_vecFoundBlobs );
     icl8u *mask = 0;
@@ -41,7 +42,7 @@ namespace icl{
             storeResult(d,x,y,m_vecPixelRatings[d].rate(pt0[i],pt1[i],pt2[i]));
           }
         }
-      }        
+      }
     }
     evaluateResults(m_vecFoundBlobs);
     

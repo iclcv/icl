@@ -14,6 +14,11 @@ namespace icl{
       m_ucThresh2 = thresh[2];
     }
     virtual bool rate(icl8u r, icl8u g, icl8u b){
+      printf("RGBPIXELRATING: \n"
+             "r=%d g=%d b=%d \n"
+             "thresh=(%d,%d,%d)\n"
+             "ref=(%d,%d,%d)\n"
+             ,r,g,b,m_ucThresh0, m_ucThresh1, m_ucThresh2,m_ref0,m_ref1,m_ref2);
       return  
         abs(m_ref0-r) < m_ucThresh0 &&
         abs(m_ref1-g) < m_ucThresh1 &&

@@ -1,6 +1,8 @@
 #ifndef PIXEL_RATING_H
 #define PIXEL_RATING_H
 
+#include <stdio.h>
+
 namespace icl{
   
   /// Function object that produces a reference-color-based pixel rating
@@ -13,8 +15,11 @@ namespace icl{
       m_ref0(tRef0),m_ref1(tRef1),m_ref2(tRef2){}
     
     virtual ~PixelRating(){}
-    virtual  RatingType rate(PixelType t0, PixelType t1, PixelType t2){
-      (void)t0; (void)t1; (void)t2; return RatingType(0); }
+    virtual  RatingType rate(PixelType t0, PixelType t1, PixelType t2)=0;
+      /*{
+      printf("here \n");
+      (void)t0; (void)t1; (void)t2; return RatingType(0); 
+      }*/
     
     protected:
     
