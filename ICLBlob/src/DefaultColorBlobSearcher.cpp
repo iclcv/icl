@@ -7,26 +7,21 @@ namespace icl{
 
   class RGBPixelRating : public PixelRating<icl8u,bool>{
   public:
-    RGBPixelRating(const icl8u ref[3], const icl8u thresh[3]):
-      PixelRating<icl8u,bool>(ref[0],ref[1],ref[2]){
-      m_ucThresh0 = thresh[0];
-      m_ucThresh1 = thresh[1];
-      m_ucThresh2 = thresh[2];
+    RGBPixelRating(const icl8u ref[3], const icl8u thresh[3]){
+      for(int i=0;i<3;i++){
+        this->thresh[i] = thresh[i];
+        this->ref[i]=ref[i];
+      }
     }
-    virtual bool rate(icl8u r, icl8u g, icl8u b){
-      printf("RGBPIXELRATING: \n"
-             "r=%d g=%d b=%d \n"
-             "thresh=(%d,%d,%d)\n"
-             "ref=(%d,%d,%d)\n"
-             ,r,g,b,m_ucThresh0, m_ucThresh1, m_ucThresh2,m_ref0,m_ref1,m_ref2);
-      return  
-        abs(m_ref0-r) < m_ucThresh0 &&
-        abs(m_ref1-g) < m_ucThresh1 &&
-        abs(m_ref2-b) < m_ucThresh2;
-    }
+  virtual bool rate(icl8u r, icl8u g, icl8u b){
+    return 
+      abs(ref[0]-r) < thresh[0] &&
+      abs(ref[1]-g) < thresh[1] &&
+      abs(ref[2]-b) < thresh[2];
+  }
     
   protected:
-    icl8u m_ucThresh0, m_ucThresh1, m_ucThresh2;
+    icl8u thresh[3],ref[3];
   };
 
   // }}}
@@ -104,7 +99,7 @@ namespace icl{
 
   // }}}
   
-  void DefaultColorBlobSearcher::pixelRatingAdded(const DefaultColorBlobSearcher::pixelrating &pr){
+  void DefaultColorBlobSearcher::pixelRatingAdded(DefaultColorBlobSearcher::pixelrating *pr){
     // {{{ open
     m_vecXMedianLists.push_back(FastMedianList(m_oImageSize.width));
     m_vecYMedianLists.push_back(FastMedianList(m_oImageSize.height));
@@ -112,10 +107,9 @@ namespace icl{
 
   // }}}
 
-  void DefaultColorBlobSearcher::pixelRatingRemoved(const DefaultColorBlobSearcher::pixelrating &pr, int index){
+  void DefaultColorBlobSearcher::pixelRatingRemoved(int index){
     // {{{ open
 
-    (void)pr;
     m_vecXMedianLists.erase(m_vecXMedianLists.begin()+index);
     m_vecYMedianLists.erase(m_vecYMedianLists.begin()+index);
   } 
@@ -130,24 +124,25 @@ namespace icl{
 
   // }}}
 
-  int DefaultColorBlobSearcher::addNewBlob(const vector<icl8u> &rs, 
-                                            const vector<icl8u> &gs,
-                                            const vector<icl8u> &bs,     
-                                            const icl8u thresholds[3],
-                                            DefaultColorBlobSearcher::RatingCombinationType rct){
+  int DefaultColorBlobSearcher::addSubSearcher(const vector<icl8u> &rs, 
+                                               const vector<icl8u> &gs,
+                                               const vector<icl8u> &bs,     
+                                               const icl8u thresholds[3],
+                                               DefaultColorBlobSearcher::RatingCombinationType rct){
     // {{{ open
-    PixelRatingGroup<icl8u,bool> rg;
-    if(rct == rctOR) rg = RatingGroupOR();
-    else rg = RatingGroupAND();
+    PixelRatingGroup<icl8u,bool> *rg;
+    if(rct == rctOR) rg = new RatingGroupOR();
+    else rg = new RatingGroupAND();
                        
     icl8u ref[3];
     for(uint i=0;i<rs.size() && i<gs.size() && i<bs.size(); i++){
       ref[0] = rs[i];
       ref[1] = gs[i];
       ref[2] = bs[i];
-      rg.addPR(RGBPixelRating(ref,thresholds));
+      rg->addPR(new RGBPixelRating(ref,thresholds));
     }  
-    return addPR(rg);
+    addPR(rg);
+    return getNumPR() -1;
   }
 
   // }}}

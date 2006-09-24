@@ -20,11 +20,11 @@ namespace icl{
     
     typedef vector<FastMedianList> fmlVec;
 
-    int addNewBlob(const vector<icl8u> &rs,
-                   const vector<icl8u> &gs, 
-                   const vector<icl8u> &bs,
-                   const icl8u thresholds[3],
-                   RatingCombinationType rct=rctOR); 
+    int addSubSearcher(const vector<icl8u> &rs,
+                       const vector<icl8u> &gs, 
+                       const vector<icl8u> &bs,
+                       const icl8u thresholds[3],
+                       RatingCombinationType rct=rctOR); 
 
     // just passing to the parent class
     virtual const FoundBlobVector &search(Img8u *poImage, Img8u *poMask);
@@ -36,10 +36,10 @@ namespace icl{
     
     virtual void prepareForNewImage(Img8u *poImage, Img8u *poMask);
     virtual void storeResult(int iPRIndex, int x, int y, bool rating);
-    virtual void evaluateResults(FoundBlobVector &roResultDestination);
+    virtual void evaluateResults(FoundBlobVector &resultDestination);
 
-    virtual void pixelRatingAdded(const pixelrating &pr);
-    virtual void pixelRatingRemoved(const pixelrating &pr, int index);
+    virtual void pixelRatingAdded(pixelrating *pr);
+    virtual void pixelRatingRemoved(int index);
     
     private:
     

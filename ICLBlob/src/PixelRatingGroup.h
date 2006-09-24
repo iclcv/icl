@@ -3,6 +3,7 @@
 
 #include "PixelRating.h"
 #include <vector>
+using std::vector;
 
 namespace icl{
   
@@ -10,34 +11,59 @@ namespace icl{
   template<class PixelType,class RatingType>
   class PixelRatingGroup : public PixelRating<PixelType,RatingType>{
 
+    protected:
+    /// internaly used type definition for the containded pixelratings
     typedef PixelRating<PixelType,RatingType> pixelrating;
-    typedef std::vector<pixelrating> PixelRatingVector;
+    
+    /// internally used type definition for then member vector of pixelratings 
+    typedef std::vector<pixelrating*> PixelRatingVector;
     
     public:
-    virtual RatingType rate(PixelType t0, PixelType t1, PixelType t2){
-      for(uint i=0;i<m_vecSubDis.size();i++){
-        m_vecSubResults[i] = m_vecSubDis[i].rate(t0,t1,t2);
+    /// overwritten rate-function, calls combineRatings with all sub-results
+    virtual RatingType rate(PixelType a, PixelType b, PixelType c){
+      for(uint i=0;i<m_vecPR.size();++i){
+        m_vecSubResults[i] = m_vecPR[i]->rate(a,b,c);
       }
       return combineRatings(m_vecSubResults);
-    } 
-    virtual RatingType combineRatings(const vector<RatingType> &rvecSubRatings ){
-      (void)rvecSubRatings;
+    }
+    /// deletes all contained pixelratings
+    virtual ~PixelRatingGroup(){
+      for(uint i=0;i<m_vecPR.size();++i){
+        delete m_vecPR[i];
+      }
+    }
+    
+    /// this function has to be idividualized
+    virtual RatingType combineRatings(const vector<RatingType> &vec ){
+      (void)vec;
       return RatingType();
     }
     
-    void addPR(const pixelrating &subRating){
+    /// adds a new pixelrating to the group (which takes possession of it)
+    virtual void addPR(pixelrating *p){
       m_vecSubResults.push_back(0);
-      m_vecSubDis.push_back(subRating);
+      m_vecPR.push_back(p);
     }
     
-    void removePR(int iIndex){
-      m_vecSubResults.erase(m_vecSubResults.begin()+iIndex);    
-      m_vecSubDis.erase(m_vecSubDis.begin()+iIndex);
+    /// removed and deletes the pixelrating at index
+    int removePR(int index){
+      if(index < (int)m_vecPR.size() ) {
+        m_vecSubResults.erase(m_vecSubResults.begin()+index);    
+        delete *(m_vecPR.begin()+index);
+        m_vecPR.erase(m_vecPR.begin()+index);
+        return 1;
+      }else{
+        return 0;
+      }
+    }
+
+    int getNumPR(){
+      return m_vecPR.size();
     }
     
-    private:
+    protected:
     vector<RatingType> m_vecSubResults;
-    PixelRatingVector m_vecSubDis;
+    PixelRatingVector m_vecPR;
   };
 }
 

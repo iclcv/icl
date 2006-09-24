@@ -1,7 +1,7 @@
 #ifndef COLOR_BLOB_SEARCHER_H
 #define COLOR_BLOB_SEARCHER_H
 
-#include "PixelRating.h"
+#include "PixelRatingGroup.h"
 #include "FoundBlob.h"
 #include <vector>
 #include "Macros.h"
@@ -72,36 +72,30 @@ namespace icl{
   
   */
   template <class PixelType,class RatingType,class BlobRatingType>
-  class ColorBlobSearcher {
+  class ColorBlobSearcher : public PixelRatingGroup<PixelType,RatingType>{
     public:
     typedef FoundBlob<BlobRatingType> foundblob;
     typedef vector<foundblob> FoundBlobVector;
     typedef PixelRating<PixelType,RatingType> pixelrating;
-    typedef vector<pixelrating> PixelRatingVector;
-
+    typedef std::vector<pixelrating*> PixelRatingVector;
+   
     virtual ~ColorBlobSearcher();
-
-    int addPR(const PixelRating<PixelType, RatingType> &pr);
-    void removePR(int iIndex);
-    int getNumPR() const;
-
     virtual const FoundBlobVector &search(Img<PixelType> *poImage, Img8u *poMask);
 
-    const PixelRatingVector &getAllPixelRatings() const;
-
-    protected:
+    virtual void addPR(pixelrating *p);
+    virtual void removePR(int index);
     
+    protected:
     virtual void prepareForNewImage(Img<PixelType> *poImage, Img8u *poMask);
     virtual void storeResult(int iPRIndex, int x, int y, RatingType rating)=0;
-    virtual void evaluateResults(ColorBlobSearcher::FoundBlobVector &roResultDestination)=0;
-    virtual void feedback(const ColorBlobSearcher::FoundBlobVector &roLastResults, Img<PixelType> *poImage);
+    virtual void evaluateResults(FoundBlobVector &destination)=0;
+    virtual void feedback(const FoundBlobVector &results, Img<PixelType> *poImage);
     
-    virtual void pixelRatingAdded(const pixelrating &pr);
-    virtual void pixelRatingRemoved(const pixelrating &pr, int index);
+    virtual void pixelRatingAdded(pixelrating *pr);
+    virtual void pixelRatingRemoved(int index);
     
     private:
     
-    PixelRatingVector m_vecPixelRatings;
     FoundBlobVector m_vecFoundBlobs;
   };
 }

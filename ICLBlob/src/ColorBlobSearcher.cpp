@@ -28,8 +28,8 @@ namespace icl{
         for(x = oRoi.x; x<oRoi.right();x++){
           i = x+y*iImageW;
           if(mask[i]){
-            for(d=0;d<(int)m_vecPixelRatings.size();d++){
-              storeResult(d,x,y,m_vecPixelRatings[d].rate(pt0[i],pt1[i],pt2[i]));
+            for(d=0;d<(int)PixelRatingGroup<PixelType,RatingType>::m_vecPR.size();d++){
+              storeResult(d,x,y,PixelRatingGroup<PixelType,RatingType>::m_vecPR[d]->rate(pt0[i],pt1[i],pt2[i]));
             }
           }
         }
@@ -38,8 +38,8 @@ namespace icl{
       for(y =oRoi.y; y<oRoi.bottom();y++){
         for(x = oRoi.x; x<oRoi.right();x++){
           i = x+y*iImageW;
-          for(d=0;d<(int)m_vecPixelRatings.size();d++){
-            storeResult(d,x,y,m_vecPixelRatings[d].rate(pt0[i],pt1[i],pt2[i]));
+          for(d=0;d<(int)PixelRatingGroup<PixelType,RatingType>::m_vecPR.size();d++){
+            storeResult(d,x,y,PixelRatingGroup<PixelType,RatingType>::m_vecPR[d]->rate(pt0[i],pt1[i],pt2[i]));
           }
         }
       }
@@ -50,53 +50,36 @@ namespace icl{
   }
 
   template <class PixelType,class RatingType,class BlobRatingType>
-  int ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::addPR(const PixelRating<PixelType, RatingType> &pr){
-    m_vecPixelRatings.push_back(pr);
+  void ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::addPR(PixelRating<PixelType, RatingType> *pr){
+    PixelRatingGroup<PixelType,RatingType>::addPR(pr);
     pixelRatingAdded(pr);
-    m_vecFoundBlobs.resize(m_vecPixelRatings.size());
-    return m_vecPixelRatings.size()-1;
   }
 
   template <class PixelType,class RatingType,class BlobRatingType>
-  const std::vector<PixelRating<PixelType,RatingType> >&
-  ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::getAllPixelRatings() const{
-    return m_vecPixelRatings;
-  }
-
-  
-  template <class PixelType,class RatingType,class BlobRatingType>
-  void ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::removePR(int iIndex){
-    if((int)m_vecPixelRatings.size()>iIndex){
-      PixelRating<PixelType,RatingType> pr = m_vecPixelRatings[iIndex];
-      m_vecPixelRatings.erase(m_vecPixelRatings.begin()+iIndex);
-      pixelRatingRemoved(pr,iIndex);
-      m_vecFoundBlobs.resize(m_vecPixelRatings.size());
+  void ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::removePR(int index){
+    if( PixelRatingGroup<PixelType,RatingType>::removePR(index) ){
+      pixelRatingRemoved(index);
     }
   }
   
   template <class PixelType,class RatingType,class BlobRatingType>
-  void ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::feedback(const FoundBlobVector &roLastResults, Img<PixelType> *poImage){
-    (void)roLastResults; (void)poImage;
+  void ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::feedback(const FoundBlobVector &results, Img<PixelType> *image){
+    (void)results; (void)image;
   }
   
   template <class PixelType,class RatingType,class BlobRatingType>
   ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::~ColorBlobSearcher(){}
 
   template <class PixelType,class RatingType,class BlobRatingType>
-  void ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::pixelRatingAdded(const PixelRating<PixelType, RatingType> &pr){
+  void ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::pixelRatingAdded(PixelRating<PixelType, RatingType> *pr){
     (void)pr;
   }
 
   template <class PixelType,class RatingType,class BlobRatingType>
-  void ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::pixelRatingRemoved(const PixelRating<PixelType, RatingType> &pr, int index){
-    (void)pr;(void)index;
+  void ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::pixelRatingRemoved(int index){
+    (void)index;
   }
 
-  template <class PixelType,class RatingType,class BlobRatingType>
-  int ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::getNumPR() const {
-    return  (int)(m_vecPixelRatings.size());
-  }
-  
   template <class PixelType,class RatingType,class BlobRatingType>
   void ColorBlobSearcher<PixelType,RatingType,BlobRatingType>::prepareForNewImage(Img<PixelType> *poImage, Img8u *poMask) {
     (void)poImage; (void)poMask;
