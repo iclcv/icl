@@ -6,7 +6,7 @@ use Data::Dumper;
 use File::Find;
 
 my ($projectName, $majVer, $minVer);
-my @content;
+my (@content, @allProjectNames);
 my $projectRootName = $ARGV[0];
 my $installMode = $ARGV[1]; # 0: remove & install all (include, lib, doc)
                             # 1: remove & install include, lib
@@ -120,6 +120,7 @@ foreach my $entry(@dirs) {
                             if (!$projectName) {
                                 $projectName = $entry;
                             }
+                            push(@allProjectNames, $projectName);
                             system "mkdir $INSTALLDIR/doc/$projectName";
                         }
                         print "---- Copying documentation: $entry/$subentry\n";
@@ -135,7 +136,61 @@ foreach my $entry(@dirs) {
     }
 }
 
+if ($installMode == 0 || $installMode == 2) {
+    generate_documentation($INSTALLDIR, @allProjectNames);
+}
+
 #---------------------
 # Remove all .svn dirs
 #---------------------
 system "find $INSTALLDIR -name '.svn' -exec rm -Rf {} \\; 2> /dev/null";
+
+exit(0);
+
+#----------------------------------------------------------------------------- 
+sub generate_documentation {
+    my ($INSTALLDIR, @projects) = @_;
+    my $menuTable = "";
+    
+    #---- Copy static documentation files ----
+    system "mkdir $INSTALLDIR/doc/html";
+    system "cp -r ../doc/html/* $INSTALLDIR/doc/html";
+    
+    #---- Generate menu content ----
+    @projects = sort(@projects);
+    $menuTable .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n";
+    $menuTable .= "<html>\n";
+    $menuTable .= "<head>\n";
+    $menuTable .= "<meta http-equiv=\"Content-Language\" content=\"de\">\n";
+    $menuTable .= "<meta http-equiv=\"Content-Type\"\n";
+    $menuTable .= "content=\"text/html; charset=windows-1252\">\n";
+    $menuTable .= "<title>Menu</title>\n";
+    $menuTable .= "<base target=\"Inhalt\">\n";
+    $menuTable .= "</head>\n";
+    $menuTable .= "<body>\n";
+    $menuTable .= "<div align=\"center\">\n";
+    $menuTable .= "<table border=\"0\" width=\"100%\" id=\"table1\" bgcolor=\"#C0C0C0\" cellspacing=\"1\" cellpadding=\"0\">\n";
+    $menuTable .= "<tr>\n";
+    $menuTable .= "<td>\n";
+    $menuTable .= "<div align=\"center\">\n";
+    $menuTable .= "<table border=\"0\" width=\"100%\" id=\"table2\" bgcolor=\"#C0C0C0\" cellspacing=\"4\" cellpadding=\"0\"\n";
+    $menuTable .= "<tr>\n";
+    $menuTable .= "<td>\n";
+    $menuTable .= "<p align=\"center\"><font color=\"#000080\"><u><b>Main menu</b></u>\n";
+    $menuTable .= "</td>\n";
+    $menuTable .= "</tr>\n";
+
+    foreach my $project (@projects) {
+        $menuTable .= "<tr><td> <a href=\"../".$project."/html/index.html\" target=\"Hauptframe\">".$project."</a></td>\n";
+    }
+    
+    $menuTable .= "</table>\n";
+    $menuTable .= "<br>\n";
+    $menuTable .= "</body>\n";
+    $menuTable .= "</html>\n";
+    
+    #---- Write menu.html ----
+    open(FILE, ">$INSTALLDIR/doc/html/menu.html") or die "cannot write to menu.html:$!";
+    print FILE $menuTable;
+    close(FILE);
+}
