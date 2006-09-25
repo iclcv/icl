@@ -1,39 +1,49 @@
+Michael:
 ICLIO:
 readFile "object*ver*.*"
 writeFile "object#.jpg"
 FireWire::grab
 
-ICLCore:
-deepCopyChannelROI (depth conversion case): use ippiScale instead of ippiConvert to preserve range
-
-addChannelROIs (c, a, b): c = a + b  // c may equal a or/and b
-multChannelROIs (c, a, b): c = a * b // c may equal a or/and b
+skin color
 
 
+Andre:
 Compare: fasse alle ippiCompare* Funktionen zusammen:
  pixel-wise compare operation:
    pixel1 < = > pixel2 | value
    eps for equal:
 
-MaskedCopy:
+attention map: weighted sum of channels:
+weightedSum (ImgI, Img<32f>, vector<float> weights)
 
+Logical Operations
+And, Or, Xor, Not (+ constant Funktion mit anderer Signatur) in Klasse Logical
+
+/*
+add (Img<8u> src1, int iC1, Point o1, 
+     Img<8u> src2, int iC2, Point o2,
+     Img<8u> dst , int iD,  Point od, Size roiSize)
+
+addChannelROIs (c, a, b): c = a + b  // c may equal a or/and b
+multChannelROIs (c, a, b): c = a * b // c may equal a or/and b
+*/
+
+
+MaskedCopy
 WienerFilter
 MedianColor
 Canny edge detector
 
-WeightedSum: s = sum_i w_i * c_i
-Product
-Logical Operations
-
-skin color
-
-find peaks
-
 proximity: ippi(SqrDistance[Full|Same|Valid]_Norm | 
                 CrossCorr[Full|Same|Valid]_Norm[Level])
 
-Blob Tracking
+morphologische Operatoren
 
+find peaks (Rückfrage)
+
+
+Christof:
+Blob Tracking
 
 applications:
 Yvonne's hand gesture recognition
