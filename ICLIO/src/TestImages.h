@@ -13,12 +13,10 @@ namespace icl{
         - house
         - tree
     */
-    template<class T> 
-    Img<T> 
-    create(string name, const Size &size=Size(320,240),format f=formatRGB);
+    static ImgI* create(string name, const Size &size=Size(320,240),format f=formatRGB, depth d=depth8u);
 
     /// writes the image to the disc an shows it using xv.
-    void xv(ImgI *image, string tmpName="./tmp_image.pgm",long msec_to_rm_call=1000);
+    static void xv(ImgI *image, string tmpName="./tmp_image.ppm",long msec_to_rm_call=1000);
   };
 }
 

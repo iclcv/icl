@@ -41,6 +41,8 @@ namespace iclxpm{
   g_mapXPMColors["darkSlateGrey"]=XPMColor(47,79,79);
   g_mapXPMColors["slateGrey"]=XPMColor(112,128,144);
   g_mapXPMColors["grey"]=XPMColor(190,190,190);
+  g_mapXPMColors["gray"]=XPMColor(190,190,190);
+  g_mapXPMColors["gray100"]=XPMColor(240,240,240);
   g_mapXPMColors["gainsboro"]=XPMColor(220,220,220);
   g_mapXPMColors["white"]=XPMColor(255,255,255);
 
@@ -72,10 +74,11 @@ namespace iclxpm{
   g_mapXPMColors["darkGreen"]=XPMColor(0,100,0);  
   g_mapXPMColors["seaGreen"]=XPMColor(46,139,87);  
   g_mapXPMColors["limeGreen"]=XPMColor(50,205,50);  
-  g_mapXPMColors["gree"]=XPMColor(0,255,0);  
+  g_mapXPMColors["green"]=XPMColor(0,255,0);  
   g_mapXPMColors["paleGreen"]=XPMColor(152,251,152);
   
   g_mapXPMColors["navyBlue"]=XPMColor(0,0,128);
+  g_mapXPMColors["navy"]=XPMColor(0,0,128);
   g_mapXPMColors["blue"]=XPMColor(0,0,255);
   g_mapXPMColors["dodgerBlue"]=XPMColor(30,144,255);
   g_mapXPMColors["skyBlue"]=XPMColor(135,206,235);
@@ -99,8 +102,7 @@ namespace iclxpm{
   
   XPMColor getHexColor(string s,bool &ok){
     // {{{ open
-  
-  if(s.length()==6){
+    if(s.length()==6){
     int ai[6]={0,0,0,0,0,0};
     for(int i=0;i<6;i++){
       if(g_mapHexLut.find(s[i]) != g_mapHexLut.end()){
@@ -109,13 +111,30 @@ namespace iclxpm{
         ok=0;
         return XPMColor();
       }
-      ok = 1;
-      return XPMColor(ai[1]+16*ai[0],ai[3]+16*ai[2],ai[5]+16*ai[4]);
     }
+    ok = 1;
+    return XPMColor(ai[1]+16*ai[0],ai[3]+16*ai[2],ai[5]+16*ai[4]);
   }
   ok=0;
   return XPMColor();
 }
+
+  // }}}
+  
+  XPMColor getGrayColor(string s, bool &ok){
+    // {{{ open
+
+    if(s.find("gray",0)== 0){
+      string n = &(s[4]);
+      if(n.length() > 0){
+        int g = atoi(n.c_str());
+        ok = 1;
+        return XPMColor(g,g,g);
+      }
+    }    
+    ok = 0;
+    return XPMColor();
+  }
 
   // }}}
   
@@ -131,11 +150,14 @@ namespace iclxpm{
   if(s[0]=='#'){
     s=&(s[1]);
   }
-  c = getHexColor(s,ok);
-  if(ok)return c;
   if(g_mapXPMColors.find(s) != g_mapXPMColors.end()){
     return g_mapXPMColors[s];
   }
+  c = getHexColor(s,ok);
+  if(ok)return c;
+  c = getGrayColor(s,ok);
+  if(ok) return c;
+ 
   printf("no color found for [%s] \n",s.c_str());
   return XPMColor();    
 }
@@ -435,7 +457,7 @@ namespace iclxpm{
 
   // paring image content
   for(int y=0;y<h;y++){
-    for(char *line = *p++; line; line++){
+    for(char *line = *p++; *line; line++, ++it[0], ++it[1], ++it[2]){
       XPMColor c = lut[(int)(*line)];
       *(it[0]) = c.r;
       *(it[1]) = c.g;
@@ -452,12 +474,11 @@ namespace icl{
   
   using namespace iclxpm;
   
-  template<class T>  Img<T>* 
-  create(string name, const Size &size=Size(320,240),format f=formatRGB){
+  ImgI* TestImages::create(string name, const Size& size,format f, depth d){
     // {{{ open
 
     Converter conv;
-    Img<T> *dst = new Img<T>(size,f);
+    ImgI *dst = imgNew(d,size,f);
     Img8u *src = 0;
     if(name == "women"){
       src = read_xpm(ppc_woman_xpm);
@@ -476,15 +497,15 @@ namespace icl{
 
   // }}}
 
-  void xv(ImgI *image, string name, long msec){
+  void TestImages::xv(ImgI *image, string name, long msec){
     // {{{ open
 
     File(name).write(image);
     system(string("xv ").append(name).append(" &").c_str());
     usleep(msec*1000);
-    system(string("rm ").append(name).c_str());
+    system(string("rm -rf ").append(name).c_str());
   }
 
   // }}}
-
+ 
 }
