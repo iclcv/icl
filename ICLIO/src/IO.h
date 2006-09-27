@@ -27,15 +27,24 @@ namespace icl {
     ioFormatPGM, /**< The native PGM image gray format */
     ioFormatPPM, /**< The native PPM image color format */
     ioFormatSEQ, /**< */
-    ioFormatICL  /**< */
+    ioFormatICL, /**< */
+    ioFormatJPG  /**< The native JPG image format */
   };
   
-  ///Determine different reader modes
-  enum readermode {
-    singleMode,
-    objectMode,
-    objectImageMode,
-    sequenceMode
+  struct info 
+  {
+    int iW;
+    int iH;
+    int iNumChannels, iNumImages;
+    float iOriginalMin, iOriginalMax;
+    streampos streamPos;
+    string sFileName;
+    string sFileType;
+    depth eDepth;
+    format eFormat;
+    ioformat eFileFormat;
+    Size oImgSize;
+    Rect oROI;
   };
   
   ///Split a given string
@@ -47,9 +56,7 @@ namespace icl {
   string number2String(int i);
      
   ///Check for file type
-  void checkFileType(string sFileName, 
-                     ioformat &eIOFormat,
-                     format &eFormat);
+  void checkFileType(info &oImgInfo);
   
 }//namespace icl
 

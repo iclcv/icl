@@ -525,7 +525,7 @@ ImgI* PWCGrabber::grab(ImgI *poOutput){
     return poRGB8Image;
   }
  
-  return 0;
+  return poOutput;
 }
 
 } //namespace icl

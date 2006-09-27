@@ -61,7 +61,6 @@ CPPDEFINES:= ${CPPDEFINES}
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
 
-
 # Set the priority level
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=

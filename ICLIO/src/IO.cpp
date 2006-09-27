@@ -61,44 +61,42 @@ namespace icl {
   }
   
   // }}}
-
-
+  
   //--------------------------------------------------------------------------
-  void checkFileType(string sFileName,
-                     ioformat &eFileFormat,
-                     format &eFormat) 
-  {
-    // {{{ open
-    FUNCTION_LOG("(string, iclioformat, format)");
+  void checkFileType(info &oImgInfo) {
+    // {{{ open 
 
-    //---- Initialization ----
-    vector<string> vecFileSep;
-    
-    splitString(sFileName,".",vecFileSep);
-    
-    if (vecFileSep.back() == "pgm")
+    FUNCTION_LOG("(info &)");
+
+    if (oImgInfo.sFileType == "pgm")
     {
-      DEBUG_LOG4("Detect pgm image");
-      eFileFormat = ioFormatPGM;
-      eFormat = formatGray;
+      SECTION_LOG("Detect pgm image");
+      oImgInfo.eFileFormat = ioFormatPGM;
+      oImgInfo.eFormat = formatGray;
     }
-    else if (vecFileSep.back() == "ppm")
+    else if (oImgInfo.sFileType == "ppm")
     {
-      DEBUG_LOG4("Detect ppm image");
-      eFileFormat = ioFormatPPM;
-      eFormat = formatRGB;
+      SECTION_LOG("Detect ppm image");
+      oImgInfo.eFileFormat = ioFormatPPM;
+      oImgInfo.eFormat = formatRGB;
     }
-    else if (vecFileSep.back() == "seq")
+    else if (oImgInfo.sFileType == "seq")
     {
-      DEBUG_LOG4("seq file");
-      eFileFormat = ioFormatPPM;
-      eFormat = formatMatrix;
+      SECTION_LOG("Detect sequence file");
+      oImgInfo.eFileFormat = ioFormatPPM;
+      oImgInfo.eFormat = formatMatrix;
     }
-    else if (vecFileSep.back() == "icl")
+    else if (oImgInfo.sFileType == "icl")
     {
-      DEBUG_LOG4("icl file");
-      eFileFormat = ioFormatICL;
-      eFormat = formatMatrix;
+      SECTION_LOG("Detect icl image");
+      oImgInfo.eFileFormat = ioFormatICL;
+      oImgInfo.eFormat = formatMatrix;
+    }
+    else if (oImgInfo.sFileType == "jpg")
+    {
+      SECTION_LOG("Detect jpg image");
+      oImgInfo.eFileFormat = ioFormatJPG;
+      oImgInfo.eFormat = formatRGB;
     }
     else
     {
@@ -106,6 +104,8 @@ namespace icl {
     } 
   }
   
-  // }}}
+// }}}
+
+
   
 }//namespace
