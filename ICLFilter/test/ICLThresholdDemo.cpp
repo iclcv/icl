@@ -1,6 +1,6 @@
 #include "Threshold.h"
 #include "Img.h"
-#include "File.h"
+#include "FileWrite.h"
 
 using namespace icl;
 
@@ -79,7 +79,7 @@ int main(){
   t.setROI(Rect((i++)*s.width,0,100,100));
   Threshold::ltgtVal(&im, &t, 150, 0, 150, 255); 
 
-  File("./threshold_results.pgm").write(&t); system("xv ./threshold_results.pgm &"); 
+  FileWrite("./threshold_results.pgm").write(&t); system("xv ./threshold_results.pgm &"); 
 
   printf("Original colors are [0,100,200,255]\n");
   printf(": Image order is: \n");
