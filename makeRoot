@@ -6,7 +6,6 @@
 ###############################################################################
 # This variable identify the inclusion of the makeRoot
 MAKEROOT_DEFINED= TRUE
-SRC_ROOT=${_DOT_DOT}
 ###############################################################################
 
 CONFIG_GUESS_OUT?=i686-pc-linux-gnu

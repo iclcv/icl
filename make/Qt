@@ -1,3 +1,4 @@
+# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
 #
 #   packageVar
 #
@@ -41,7 +42,7 @@ else
 #       -lDisplayWindow )
 # (e.g. extra library like: -L/usr/lib -lpthreads )
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-                -L${QTDIR}/lib \
+                -L${QTDIR}/lib -Wl,-rpath -Wl,${QTDIR}/lib \
                 -lQtCore \
                 -lQtGui \
                 -lQtOpenGL \

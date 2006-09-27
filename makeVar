@@ -9,6 +9,14 @@
 ifneq "${MAKEROOT_DEFINED}" "TRUE"
   _DOT_DOT:= ../${_DOT_DOT}
   -include ${_DOT_DOT}makeVar
+else
+
+ifeq "${_DOT_DOT}" ""
+_DOT_DOT=.
+endif
+
+SRC_ROOT=${_DOT_DOT}
+PKGS=$(SRC_ROOT)/make/
 endif
 ###############################################################################
 
@@ -27,7 +35,7 @@ TARGET_MINVERSION:= 0
 
 # Please include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
-include ${IPP_ROOT}/5.0/packageVar
+include $(PKGS)/IPP
 
 # This variable sets the inclusion modality for packageVar
 # Values are: DYNAMIC (for the inclusion of shared object) and
