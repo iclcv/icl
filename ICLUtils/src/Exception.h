@@ -14,19 +14,17 @@
 #include "Macros.h"
 #include <exception>
 
-using namespace std;
-
 namespace icl {
   
   class ICLException : public std::exception
   {
   private:
-    string m_sMessage;
+    std::string m_sMessage;
     
   public:
-    ICLException( string msg );
+    ICLException( std::string msg ) throw() : m_sMessage(msg) {}
     virtual ~ICLException() throw() {};
-    virtual const char* what() const throw();
+    virtual const char* what() const throw() {return m_sMessage.c_str();}
     void report();
   };
  

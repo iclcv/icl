@@ -9,10 +9,12 @@
 
 #include "IO.h"
 
+using namespace std;
+
 namespace icl {
   //--------------------------------------------------------------------------
-  void splitString(const string line, 
-                   const char* sep,
+  void splitString(const string& line, 
+                   const string& separators,
                    vector<string> &words) 
   {
     // {{{ open
@@ -23,9 +25,9 @@ namespace icl {
     words.clear();
 
     //---- Split into substrings ----
-    while ((a = line.find_first_not_of(sep, a)) != std::string::npos) 
+    while ((a = line.find_first_not_of(separators, a)) != std::string::npos) 
     {
-      e = line.find_first_of(sep, a);
+      e = line.find_first_of(separators, a);
       if (e != std::string::npos) 
       {
         if (line.substr(a, e-a)[0] != '#')

@@ -1,6 +1,8 @@
 #include "ICLCore.h"
 #include "Img.h"
 
+using namespace std;
+
 namespace icl{
   
   ImgI *imgNew(depth eDepth, 
@@ -61,7 +63,7 @@ namespace icl{
       }
   }
  
-  format translateFormat(string sFormat)
+  format translateFormat(const string& sFormat)
   {
     if(sFormat.length()<=0)
       {

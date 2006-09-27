@@ -16,16 +16,14 @@
 #include <string>
 #include <Macros.h>
 
-using namespace std;
-
 namespace icl {
 
 class Timer
 {
  private:
   int m_iTimerMode;
-  vector<long int> m_vecTime;
-  vector<string> m_vecTimerName;
+  std::vector<long int> m_vecTime;
+  std::vector<std::string> m_vecTimerName;
   
   long int getTime();
   
@@ -56,20 +54,20 @@ class Timer
       @param timerName Set the timer name (only for user information)
       @sa stopTimer
   **/
-  void stopSubTimer(string sName = "no name");
+  void stopSubTimer(std::string sName = "no name");
   
   //--------------------------------------------------------------------------
   /// Stop the time measurement and print the complete working time
   /** 
       @sa stopSubTimer
   **/
-    void stopTimer(string sName = "no name");
+    void stopTimer(std::string sName = "no name");
 
     /// alias for startTimer
     void start(){ startTimer(); }
     
     /// alias for stopTimer
-    void stop(string sName = "no name" ){ stopTimer(sName) ;}
+    void stop(std::string sName = "no name" ){ stopTimer(sName) ;}
 /* }}} */
 
 }; //class Timer

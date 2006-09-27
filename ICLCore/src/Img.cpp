@@ -323,9 +323,7 @@ Img<Type>::append(Img<Type> *poSrc, int iIndex)
 // }}}
 
 template<class Type> void
-Img<Type>::append(Img<Type> *poSrc, 
-                  const int* const piStart, const int* const piEnd) 
-
+Img<Type>::append(Img<Type> *poSrc, const std::vector<int>& vChannels)
   // {{{ open
 {
   FUNCTION_LOG("");
@@ -338,7 +336,8 @@ Img<Type>::append(Img<Type> *poSrc,
   }
   
   const int iMaxChannels = poSrc->getChannels();
-  for (const int* it=piStart; it < piEnd; ++it) {
+  for (std::vector<int>::const_iterator it=vChannels.begin(), end=vChannels.end();
+       it != end; ++it) {
      if (*it < 0 || *it >= iMaxChannels) {
         ERROR_LOG ("channel index out of range: " << *it);
      } else {
@@ -729,7 +728,7 @@ SmartPtr<Type> Img<Type>::createChannel(Type *ptDataToCopy) const
   if(ptDataToCopy){
     memcpy(ptNewData,ptDataToCopy,getDim()*sizeof(Type));
   }else{
-    fill(ptNewData,ptNewData+getDim(),0);
+    std::fill(ptNewData,ptNewData+getDim(),0);
   }
   return SmartPtr<Type>(ptNewData);
 }

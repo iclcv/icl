@@ -19,8 +19,6 @@
 The ICLIO subtree functions supporting all IO options for the ICL library
 **/
 
-using namespace std;
-
 namespace icl {
   ///Determine the supported file formats for load and save functions
   enum ioformat {
@@ -37,9 +35,9 @@ namespace icl {
     int iH;
     int iNumChannels, iNumImages;
     float iOriginalMin, iOriginalMax;
-    streampos streamPos;
-    string sFileName;
-    string sFileType;
+    std::streampos streamPos;
+    std::string sFileName;
+    std::string sFileType;
     depth eDepth;
     format eFormat;
     ioformat eFileFormat;
@@ -48,12 +46,12 @@ namespace icl {
   };
   
   ///Split a given string
-  void splitString(const string line, 
-                   const char* sep, 
-                   vector<string> &words); 
+  void splitString(const std::string& line, 
+                   const std::string& separators,
+                   std::vector<std::string> &words); 
 
   ///Convert a string to int
-  string number2String(int i);
+  std::string number2String(int i);
      
   ///Check for file type
   void checkFileType(info &oImgInfo);

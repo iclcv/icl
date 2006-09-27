@@ -474,7 +474,7 @@ namespace icl{
   
   using namespace iclxpm;
   
-  ImgI* TestImages::create(string name, const Size& size,format f, depth d){
+  ImgI* TestImages::create(const string& name, const Size& size,format f, depth d){
     // {{{ open
 
     Converter conv;
@@ -497,7 +497,7 @@ namespace icl{
 
   // }}}
 
-  void TestImages::xv(ImgI *image, string name, long msec){
+  void TestImages::xv(ImgI *image, const string& name, long msec){
     // {{{ open
 
     FileWrite(name).write(image);

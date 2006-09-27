@@ -4,8 +4,6 @@
 #include <iostream>
 #include <stdlib.h>
 
-using namespace std;
-
 namespace icl {
 
 /* {{{ Debug Level */
@@ -18,7 +16,7 @@ namespace icl {
 //---- Debug Level 0 ----
 #if (defined(DEBUGLEVEL_0) ||defined(DEBUGLEVEL_1) || defined(DEBUGLEVEL_2) || defined (DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5)) 
 #define DEBUG_LOG0(x) \
-{ cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << "\n" << ends; } 
+{ std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; } 
 #else
 #define DEBUG_LOG0(x)
 #endif // DEBUGLEVEL 0
@@ -26,7 +24,7 @@ namespace icl {
 //---- Debug Level 1 ----
 #if (defined(DEBUGLEVEL_1) || defined(DEBUGLEVEL_2) || defined (DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5)) 
 #define DEBUG_LOG1(x) \
-{ cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << "\n" << ends; } 
+{ std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; } 
 #else
 #define DEBUG_LOG1(x)
 #endif // DEBUGLEVEL 1
@@ -34,7 +32,7 @@ namespace icl {
 //---- Debug Level 2 ----
 #if (defined(DEBUGLEVEL_2) || defined(DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5))
 #define DEBUG_LOG2(x) \
-{ cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << "\n" << ends; } 
+{ std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; } 
 #else
 #define DEBUG_LOG2(x)
 #endif // DEBUGLEVEL 2
@@ -42,7 +40,7 @@ namespace icl {
 //---- Debug Level 3 ----
 #if (defined(DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5))
 #define DEBUG_LOG3(x) \
-{ cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << "\n" << ends; }
+{ std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; }
 #else
 #define DEBUG_LOG3(x)
 #endif // DEBUGLEVEL 3
@@ -50,7 +48,7 @@ namespace icl {
 //---- Debug Level 4 ----
 #if (defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5))
 #define DEBUG_LOG4(x) \
-{ cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << "\n" << ends; }
+{ std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; }
 #else
 #define DEBUG_LOG4(x)
 #endif // DEBUGLEVEL 4
@@ -58,7 +56,7 @@ namespace icl {
 //---- Debug Level 5 ----
 #if (defined(DEBUGLEVEL_5))
 #define DEBUG_LOG5(x) \
-{ cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << "\n" << ends; }
+{ std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; }
 #else
 #define DEBUG_LOG5(x)
 #endif // DEBUGLEVEL 5

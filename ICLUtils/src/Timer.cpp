@@ -8,6 +8,7 @@
 */
 
 #include "Timer.h"
+using namespace std;
 
 //---- ICL in its own namespace ----
 namespace icl {

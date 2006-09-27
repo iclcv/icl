@@ -227,9 +227,7 @@ provided in ImgMacros.h
 #include "Point.h"
 #include "Rect.h"
 
-
 #include <string>
-#include <vector>
 #ifdef WITH_IPP_OPTIMIZATION
 #include <ipp.h>
 #endif
@@ -468,7 +466,7 @@ namespace icl {
   /** @param eFormat Format enum which string repr. is asked 
       @return string representation of eFormat
   **/
-  string translateFormat(format eFormat);  
+  std::string translateFormat(format eFormat);  
   
   /// returns an Format enum, specified by a string 
   /** This functions implements the opposite direction to the above function,
@@ -481,15 +479,15 @@ namespace icl {
                      which should be returned
       @return Format, that corresponds to sFormat
   **/
-  format translateFormat(string sFormat);
+  format translateFormat(const std::string& sFormat);
 
   /// returns a string representation for a depth value
-  inline string translateDepth(depth eDepth){
+  inline std::string translateDepth(depth eDepth){
     return eDepth == depth8u ? "depth8u" : "depth32f";
   }
   
   /// creates a depth value form a depth string
-  inline depth translateDepth(string sDepth){
+  inline depth translateDepth(const std::string& sDepth){
     return sDepth == "depth8u" ? depth8u : depth32f;
   }
 

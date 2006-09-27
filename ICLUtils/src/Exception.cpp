@@ -11,18 +11,10 @@
 
 namespace icl {
 
-  ICLException::ICLException( string msg ) 
-  {
-    m_sMessage = msg;    
-  }
-  
   void ICLException::report() {
-    FUNCTION_LOG("");
-    
-    cout << "ICL Exception: " << m_sMessage << endl;
+     FUNCTION_LOG("");
+     
+     std::cout << "ICL Exception: " << m_sMessage << std::endl;
   }
 
-  const char* ICLException::what() const throw() {
-    return m_sMessage.c_str();
-  }
 } // namespace icl

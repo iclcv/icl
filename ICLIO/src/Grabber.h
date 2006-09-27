@@ -13,22 +13,15 @@
 #include "ImgI.h" 
 #include "IO.h"
 
-using namespace std;
-
 namespace icl {
 
-/// The ICLGrabber base class
-/**
-   bla bla bla
-**/
-
+/// Common interface class for all grabbers
 class Grabber
   {
   public:
-    Grabber();
-    virtual ~Grabber();
-    virtual ImgI* grab(ImgI *poDst)=0;
-    
+     Grabber() {}
+     virtual ~Grabber() {}
+     virtual ImgI* grab(ImgI *poDst)=0;
   }; //class
  
 }//namespace icl

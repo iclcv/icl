@@ -1,7 +1,7 @@
 #ifndef ICL_SIZE_H
 #define ICL_SIZE_H
 
-namespace icl{
+namespace icl {
 #ifndef WITH_IPP_OPTIMIZATION
   /// fallback implementation for the IppiSize struct, defined in the ippi lib
   struct IppiSize {

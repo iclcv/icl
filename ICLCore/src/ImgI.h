@@ -10,9 +10,8 @@ AG Neuroinformatik
 #ifndef ICLBASE_H
 #define ICLBASE_H
     
+#include <vector>
 #include "ICLCore.h"
-
-using namespace std;
 
 namespace icl {
   
@@ -106,8 +105,7 @@ namespace icl {
       ImgI* shallowCopy(ImgI* poDst = NULL) const;
 
       /// creates a shallow copy of selected channels of this image
-      ImgI* shallowCopy(const int* const piStart, const int* const piEnd,
-                        ImgI* poDst = NULL) const;
+      ImgI* shallowCopy(const std::vector<int>& vChannels, ImgI* poDst = NULL) const;
 
       /// copies the image data into the destination image
       /** this function is implemented in the Img-template class
@@ -400,7 +398,7 @@ namespace icl {
       /** @param sTitle optional title, that can be printed before
           printing the image parameters to identify the message.
       **/
-      void print(string sTitle="image") const;
+      void print(const std::string sTitle="image") const;
       //@}
       /* }}} */
 

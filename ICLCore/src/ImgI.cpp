@@ -10,6 +10,8 @@
 #include "ImgI.h"
 #include "Img.h"
 
+using namespace std;
+
 namespace icl {
 
 // {{{ constructor / destructor 
@@ -69,8 +71,7 @@ ImgI* ImgI::shallowCopy(ImgI* poDst) const {
   return poDst;
 }
 
-ImgI* ImgI::shallowCopy(const int* const piStart, const int* const piEnd,
-                        ImgI* poDst) const {
+ImgI* ImgI::shallowCopy(const std::vector<int>& vChannels, ImgI* poDst) const {
   FUNCTION_LOG("");
   // create image with zero channels
   if (!poDst) poDst = imgNew(getDepth(),getSize(),formatMatrix,0);
@@ -82,16 +83,16 @@ ImgI* ImgI::shallowCopy(const int* const piStart, const int* const piEnd,
   }
 
   if (getDepth() == depth8u) {
-     poDst->asImg<icl8u>()->append (this->asImg<icl8u>(), piStart, piEnd);
+     poDst->asImg<icl8u>()->append (this->asImg<icl8u>(), vChannels);
   } else {
-     poDst->asImg<icl32f>()->append (this->asImg<icl32f>(), piStart, piEnd);
+     poDst->asImg<icl32f>()->append (this->asImg<icl32f>(), vChannels);
   }
   poDst->setROI (getROIOffset(), getROISize());
   return poDst;
 }
 
 
-void ImgI::print(string sTitle) const
+void ImgI::print(const string sTitle) const
 {
   FUNCTION_LOG(sTitle);
   printf(   " -----------------------------------------\n"

@@ -17,8 +17,6 @@
 #include <cmath>
 #include <algorithm>
 
-using namespace std;
-
 namespace icl {
 
   /// The Img class implements the ImgI Image interface with type specific functionalities
@@ -35,7 +33,7 @@ class Img : public ImgI
   /* {{{ open */
 
   /// internally used storage for the image channels
-  vector<SmartPtr<Type> > m_vecChannels;
+  std::vector<SmartPtr<Type> > m_vecChannels;
   // @}
 
   /* }}} */
@@ -327,7 +325,7 @@ class Img : public ImgI
   
   //@{ @name organization and channel management                               
   /* {{{ open */
-  
+
   /// Makes the image channels inside the Img independent from other Img.
   /** @param iIndex index of the channel, that should be detached.
       (If iIndex is an legal channel index only the corresponding channel will 
@@ -359,8 +357,7 @@ class Img : public ImgI
   **/
   void append(Img<Type> *poSrc, int iChannel=-1);
   /// Append selected channels from source image
-  void append(Img<Type> *poSrc, 
-              const int* const piStart, const int* const piEnd);
+  void append(Img<Type> *poSrc, const std::vector<int>& vChannels);
   
   /// Swap channel A and B
   /** @param iIndexA Index of channel A;

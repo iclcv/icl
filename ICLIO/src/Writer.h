@@ -12,8 +12,6 @@
 
 #include "ImgI.h" 
 
-using namespace std;
-
 namespace icl {
 
 /// The ICLGrabber base class
