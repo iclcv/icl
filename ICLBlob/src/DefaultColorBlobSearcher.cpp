@@ -93,7 +93,11 @@ namespace icl{
     // {{{ open
     dst.clear();
     for(int i=0;i<getNumPR();i++){
-      dst.push_back(foundblob(m_vecXMedianLists[i].median(),m_vecYMedianLists[i].median(),i,0));
+      if(m_vecCet[i] == cetMedian ){
+        dst.push_back(foundblob(m_vecXMedianLists[i].median(),m_vecYMedianLists[i].median(),i,0));
+      }else{
+        dst.push_back(foundblob(m_vecXMedianLists[i].mean(),m_vecYMedianLists[i].mean(),i,0));
+      }
     }
   }
 
@@ -112,6 +116,7 @@ namespace icl{
 
     m_vecXMedianLists.erase(m_vecXMedianLists.begin()+index);
     m_vecYMedianLists.erase(m_vecYMedianLists.begin()+index);
+    m_vecCet.erase(m_vecCet.begin()+index);
   } 
 
   // }}}
@@ -128,12 +133,13 @@ namespace icl{
                                                const vector<icl8u> &gs,
                                                const vector<icl8u> &bs,     
                                                const icl8u thresholds[3],
-                                               DefaultColorBlobSearcher::RatingCombinationType rct){
+                                               DefaultColorBlobSearcher::RatingCombinationType rct,
+                                               DefaultColorBlobSearcher::CenterEstimationType cet ){
     // {{{ open
     PixelRatingGroup<icl8u,bool> *rg;
     if(rct == rctOR) rg = new RatingGroupOR();
     else rg = new RatingGroupAND();
-                       
+                  
     icl8u ref[3];
     for(uint i=0;i<rs.size() && i<gs.size() && i<bs.size(); i++){
       ref[0] = rs[i];
@@ -142,6 +148,7 @@ namespace icl{
       rg->addPR(new RGBPixelRating(ref,thresholds));
     }  
     addPR(rg);
+    m_vecCet.push_back(cet);
     return getNumPR() -1;
   }
 
