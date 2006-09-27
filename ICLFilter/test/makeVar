@@ -15,7 +15,7 @@ _DOT_DOT:=../${_DOT_DOT}
 
 # Please include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
-include $(QTDIR)/packageVar
+#include $(SRC_ROOT)/Qt.packageVar
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.

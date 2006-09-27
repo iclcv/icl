@@ -94,5 +94,7 @@ CMD_LD=g++
 # Set the priority level
 DIR_PRIORITY:=ICLUtils ICLCore ICLMath ICLCC
 DIR_LOWPRIORITY:=examples
-SKIP_DIRECTORIES += $(shell if [ ! "`qmake --version 2>&1 | grep "Using Qt version 4."`" ] ; then echo ICLQt ; fi)
+ifeq "(shell $QTDIR/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
+SKIP_DIRECTORIES += ICLQt
+endif
 

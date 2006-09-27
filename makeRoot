@@ -6,6 +6,7 @@
 ###############################################################################
 # This variable identify the inclusion of the makeRoot
 MAKEROOT_DEFINED= TRUE
+SRC_ROOT=${_DOT_DOT}
 ###############################################################################
 
 CONFIG_GUESS_OUT?=i686-pc-linux-gnu
@@ -14,6 +15,11 @@ AGNI_LOCAL_ROOT?=/vol/stereovision
 ICL_ROOT?=$(AGNI_LOCAL_ROOT)/ICL/3.0
 IPP_ROOT?=/vol/stereovision/extern/IPP
 export AGNI_LOCAL_ROOT
+
+QTVER:=$(shell test -x $(QTDIR)/bin/qmake && $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')
+ifeq "$(QTVER)" ""
+QTDIR=/vol/qt/qt4.1.4
+endif
 
 #------------------------------------------------------------------------------
 # Shell commands
