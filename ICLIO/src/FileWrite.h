@@ -24,6 +24,7 @@ class FileWrite : public Writer
 {
  public:
   FileWrite(string sPrefix, string sDir, string sType, int iObjNum = 1);
+  FileWrite(string sFileName);
   
   void write(ImgI* poSrc);
   

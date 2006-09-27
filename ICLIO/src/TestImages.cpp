@@ -5,7 +5,7 @@
 #include <map>
 #include <Img.h>
 #include <Size.h>
-#include <File.h>
+#include <FileWrite.h>
 #include <stdlib.h>
 
 using std::vector;
@@ -500,7 +500,7 @@ namespace icl{
   void TestImages::xv(ImgI *image, string name, long msec){
     // {{{ open
 
-    File(name).write(image);
+    FileWrite(name).write(image);
     system(string("xv ").append(name).append(" &").c_str());
     usleep(msec*1000);
     system(string("rm -rf ").append(name).c_str());

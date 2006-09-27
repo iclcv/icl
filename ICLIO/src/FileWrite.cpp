@@ -26,6 +26,22 @@ namespace icl{
   }
 
 // }}}
+
+  //--------------------------------------------------------------------------
+  FileWrite::FileWrite(string sFileName) {
+    // {{{ open 
+
+    FUNCTION_LOG("(string, string, string)");
+    
+    //---- Set write mode ----
+    vector<string> vecSubs;
+    m_iWriteMode = 1;
+    splitString(sFileName,".",vecSubs);
+    m_oInfo.sFileName = vecSubs.front();
+    m_oInfo.sFileType = vecSubs.back();
+  }
+
+// }}}
   
   //--------------------------------------------------------------------------
   void FileWrite::write(ImgI *poSrc) {
@@ -228,6 +244,10 @@ namespace icl{
         sFileName = m_oInfo.sFileName + number2String(m_iCurrObj) + 
           "." + m_oInfo.sFileType;
         m_iCurrObj++;
+        break;
+
+      case 1:
+        sFileName = m_oInfo.sFileName + "." + m_oInfo.sFileType;
         break;
         
       default:
