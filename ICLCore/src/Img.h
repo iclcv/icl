@@ -102,7 +102,7 @@ class Img : public ImgI
       @param s size of the new image
       @param iChannels Number of Channels 
   **/
-  Img(const Size &s, int iChannels=1);
+  Img(const Size &s = Size(1,1), int iChannels=1);
  
   /// Creates an image with specified size, number of channels and format
   /** @param s size of the new image
