@@ -24,20 +24,21 @@ namespace icl {
     struct dirent *oEntry;
     char cTmp[255];
     m_iImgCnt = 0;
-
+    
     if (sDir.size() == 0) {
       sDir = ".";
     }
-    
     //---- Read content ----
     DIR *oDir = opendir(sDir.c_str());
+    cout << sDir.c_str() << endl;
             
     do
     {
       oEntry = readdir(oDir);
+      cout << oEntry << endl;
       if (oEntry) {
         string sTmpName(oEntry->d_name);
-
+                
         if (sTmpName.rfind(sFilter,sTmpName.size()) != string::npos) {
           if(sTmpName.find(sFileName,0) != string::npos) {
             m_vecFileName.push_back(sDir+"/"+sTmpName);
@@ -142,6 +143,7 @@ namespace icl {
       oInfo.sFileType = sSubStr.back();
       checkFileType(oInfo);
       readHeader(oInfo);
+      cout << oInfo.iNumChannels << endl;
       poInImg = imgNew(oInfo.eDepth,oInfo.oImgSize,oInfo.eFormat,
                        oInfo.iNumChannels,oInfo.oROI);
 
@@ -260,7 +262,8 @@ namespace icl {
                       
                     case formatGray:
                     case formatMatrix: 
-                      oImgInfo.iNumChannels=oImgInfo.iNumImages = iNumFeature;
+                      oImgInfo.iNumChannels = iNumFeature;
+                      oImgInfo.iNumImages = iNumFeature;
                       break;
                       
                     default:
@@ -324,10 +327,17 @@ namespace icl {
         LOOP_LOG("Maximum pixel read");
         
         // }}}
+        
+        //---- Change format ? ----
+        if (oImgInfo.iNumChannels > 1) {
+          oImgInfo.eFormat = formatMatrix;
+        }
+        
+        //---- Save stream position ----
         oImgInfo.streamPos = oImageStream.tellg();
         oImageStream.close();
       }
-// }}}
+      // }}}
         break;
         
       case ioFormatJPG:
@@ -407,7 +417,7 @@ namespace icl {
   template <class Type>
   void FileRead::readPPM(Img<Type> &oDst, info &oImgInfo) {     
     // {{{ open
-    
+
     FUNCTION_LOG("(Img<Type>, string, info &)");
     
     //---- Variable definition ----
@@ -444,13 +454,13 @@ namespace icl {
     }  
     oDst.setROI(oTmpROI);
   }
-  
+
   // }}}
 
   //--------------------------------------------------------------------------
   void FileRead::bufferImages() {     
     // {{{ open
-    
+
     FUNCTION_LOG("()");
     
     //---- Variable definition ----
@@ -478,7 +488,7 @@ namespace icl {
       }
     }
   }
-  
+
   // }}}
 
 } // namespace icl
