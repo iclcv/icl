@@ -27,7 +27,6 @@ REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
 		-I../src \
 		-I../../ICLIO/src \
 		-I../../ICLCC/src \
-		-I../../ICLQt/src
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
@@ -39,7 +38,6 @@ REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
 		-L../lib -lICLFilter \
 		-L../../ICLIO/lib -lICLIO \
 		-L../../ICLCC/lib -lICLCC \
-		-L../../ICLQt/lib -lICLQt
 
 # Please add here all the objects with absolute path
 # that are needed by the executables.
