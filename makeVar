@@ -16,7 +16,7 @@ _DOT_DOT=.
 endif
 
 SRC_ROOT=${_DOT_DOT}
-PKGS=$(SRC_ROOT)/make/
+PKGS=$(SRC_ROOT)/packages/
 endif
 ###############################################################################
 

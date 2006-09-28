@@ -17,7 +17,7 @@ export AGNI_LOCAL_ROOT
 
 QTVER:=$(shell test -x $(QTDIR)/bin/qmake && $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')
 ifeq "$(QTVER)" ""
-QTDIR=/vol/qt/qt4.1.4
+QTDIR=/vol/qt/4.1.4
 endif
 
 #------------------------------------------------------------------------------
