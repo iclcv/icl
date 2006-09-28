@@ -73,6 +73,50 @@ namespace icl {
 // }}}
 
   //--------------------------------------------------------------------------
+  FileRead::FileRead(string sFileName, bool bBuffer) :
+    m_bBufferImages(bBuffer) {
+    // {{{ open
+
+    FUNCTION_LOG("(string, bool)");
+    
+    //---- Initialise variables ----
+    ifstream streamInputImage;
+    vector<string> vecSubs;
+    char cTmp[255];
+    m_iImgCnt = 0;
+
+    splitString(sFileName,".",vecSubs);
+    string sFileType = vecSubs.back();
+    
+    //---- Read files ----
+    if (sFileType == "seq") {
+      streamInputImage.open(sFileName.c_str(),ios::in);
+      if(!streamInputImage)
+      {
+        ERROR_LOG("Can't open sequence file: " << sFileName);
+      }
+      
+      while(streamInputImage)
+      {
+        streamInputImage.getline(cTmp, 255);
+        m_vecFileName.push_back(cTmp);
+      }      
+      streamInputImage.close();
+    }
+    else
+    {
+      m_vecFileName.push_back(sFileName);
+    }
+    
+    //---- Buffer images ----
+    if (m_bBufferImages) {
+      bufferImages();
+    }
+  }
+
+// }}}
+
+  //--------------------------------------------------------------------------
   FileRead::FileRead(string sObjPrefix, string sFileType, string sDir,
                      int iObjStart, int iObjEnd,
                      int iImageStart, int iImageEnd, bool bBuffer) :
@@ -143,7 +187,7 @@ namespace icl {
       oInfo.sFileType = sSubStr.back();
       checkFileType(oInfo);
       readHeader(oInfo);
-      cout << oInfo.iNumChannels << endl;
+
       poInImg = imgNew(oInfo.eDepth,oInfo.oImgSize,oInfo.eFormat,
                        oInfo.iNumChannels,oInfo.oROI);
 

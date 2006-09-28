@@ -39,6 +39,12 @@ class FileRead : public Grabber
   **/
   FileRead(string sFileName, string sDir, string sFilter, bool bBuffer = 0);
   
+  ///Load images from file at specific location
+  /** @param sFileName The complete filename (DIR/NAME.TYPE)
+      @param bBuffer Switch image buffering On/ Off [default = OFF]
+  **/
+  FileRead(string sFileName, bool bBuffer = 0);
+  
   ///Load objects and images in an specific range from file 
   /** @param sObjPrefix The filename prefix
       @param sFilter The file type (ppm, pgm)
