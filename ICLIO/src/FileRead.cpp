@@ -25,9 +25,12 @@ namespace icl {
     char cTmp[255];
     m_iImgCnt = 0;
 
+    if (sDir.size() == 0) {
+      sDir = ".";
+    }
+    
     //---- Read content ----
     DIR *oDir = opendir(sDir.c_str());
-    cout << sDir << endl;
             
     do
     {
@@ -79,6 +82,10 @@ namespace icl {
     
     //---- Initialise variables ----
     m_iImgCnt = 0;
+    
+    if (sDir.size() == 0) {
+      sDir = ".";
+    }
     
     //---- Build filename ----
     for (int i=iObjStart;i<=iObjEnd;i++) {

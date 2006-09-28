@@ -11,7 +11,6 @@
 #define ICLFILEREAD_H
 
 #include "Grabber.h"
-#include "Writer.h"
 #include "stdlib.h"
 #include "Converter.h"
 #include <fstream>
@@ -28,7 +27,7 @@ namespace icl {
 /**
    @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
 **/
-class FileRead : public Grabber, public Writer
+class FileRead : public Grabber
 {
  public:
   // @{ @name constructors / destructor
@@ -36,9 +35,9 @@ class FileRead : public Grabber, public Writer
   /** @param sFileName The filename
       @param sDir The directory to read the files from
       @param sFilter The file type (ppm, pgm)
-      @param bBuffer Switch image buffering On/ Off
+      @param bBuffer Switch image buffering On/ Off [default = OFF]
   **/
-  FileRead(string sFileName, string sDir, string sFilter, bool bBuffer);
+  FileRead(string sFileName, string sDir, string sFilter, bool bBuffer = 0);
   
   ///Load objects and images in an specific range from file 
   /** @param sObjPrefix The filename prefix
@@ -48,17 +47,15 @@ class FileRead : public Grabber, public Writer
       @param iObjStart End with object iObjEnd
       @param iImageStart Start with image iImageStart
       @param iImageEnd End with object iImageEnd
-      @param bBuffer Switch image buffering On/ Off
+      @param bBuffer Switch image buffering On/ Off [default = OFF]
   **/
   FileRead(string sObjPrefix, string sFileType, string sDir,
-       int iObjStart, int iObjEnd,
-       int iImageStart, int iImageEnd, bool bBuffer);
+           int iObjStart, int iObjEnd,
+           int iImageStart, int iImageEnd, 
+           bool bBuffer = 0);
 
   ///Grab the next image from file/ buffer
   ImgI* grab(ImgI* poDst=0);
-  
-  ///Write the current image to file
-  void write(ImgI* poSrc) {};
   
   ///Set image buffering on/ off. 
   /**
