@@ -1,7 +1,6 @@
 #include "Compare.h"
 #include "Img.h"
-#include "File.h"
-
+#include "FileWrite.h"
 using namespace icl;
 
 static char *apc[38]={ // 40 x 38
@@ -93,7 +92,7 @@ int main(){
   t.setROI(Rect((i++)*s.width,0,100,100));
   Compare::compEqualEpsC(&im2,175,&t,25);
 
-  File("./threshold_results.pgm").write(&t); system("xv ./threshold_results.pgm &"); 
+  FileWrite("./threshold_results.pgm").write(&t); system("xv ./threshold_results.pgm &"); 
 
   printf("Original colors are im1:[0,100,200,255] and im2:[50,150,200,254] \n");
   printf(": Image order is: \n");
