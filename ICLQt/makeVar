@@ -22,7 +22,9 @@ AGNI_INHERIT_MODE:= DYNAMIC
 
 # Please include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
-include $(PKGS)/Qt
+include ${PACKAGES}/Qt
+include ${PACKAGES}/ICLCore
+include ${PACKAGES}/ICLCC
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -30,10 +32,7 @@ ABS_INCLUDES:= ${ABS_INCLUDES}
 
 # Please add here all the directories with relative path
 # (e.g. -I../MyModule/src) that contain include files needed by the sources.
-REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
-        -I../ICLCore/src \
-        -I../ICLUtils/src \
-				-I../ICLCC/src
+REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
@@ -41,9 +40,7 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)
-REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
-        -L../ICLCore/lib -lICLCore \
-        -L../ICLCC/lib -lICLCC	
+REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%)
 
 # Please add here all the objects with absolute path
 # that are needed by the executables.
@@ -63,8 +60,7 @@ CDEFINES:= ${CDEFINES}
 CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CPPDEFINES:= ${CPPDEFINES} \
-	-DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED 
+CPPDEFINES:= ${CPPDEFINES}
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
@@ -77,35 +73,3 @@ LDFLAGS:= ${LDFLAGS}
 
 # Flags for dynamic library linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
-
-#g++ -Wl,-rpath,/usr/local/Trolltech/Qt-4.1.3/lib -shared 
-#-Wl,-soname,libiclwidget.so.1 -o libiclwidget.so.1.0.0 
-#lib/iclwidget.o lib/osdbutton.o lib/osd.o lib/osdlabel.o lib/osdnavbar.o lib/osdslider.o lib/osdwidget.o
-#-L/usr/local/Trolltech/Qt-4.1.3/lib -L/usr/X11R6/lib 
-#-L/usr/local/intel/IPP/5.0/sharedlib -lippcore -lippi -lipps -lippsr -lippcv -lippm -lippcc -lguide 
-#-L/home/celbrech/share/ICL/3.0/lib/ -lICLCore -lICLIO -lICLCC -lICLFilter 
-#-lcoremodules -L/home/celbrech/projects/tdiframework/lib -lframework -ltdiosc -loscpack -ltditcp -lxblob 
-#-lQtOpenGL_debug -L/install/qt-x11-opensource-src-4.1.3/lib 
-#-L/usr/X11R6/lib 
-#-lQtGui_debug -lpng -lSM -lICE -lXi -lXrender -lXrandr -lXcursor -lXinerama 
-#-lfreetype -lfontconfig -lXext -lX11 -lQtCore_debug -lz -lm -lpthread -ldl -lGLU -lGL
-
-
-
-# ja
- #-DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED 
- #-I($QTDIR)/include/QtCore -I($QTDIR)/include/QtGui -I($QTDIR)/include/QtOpenGL
-#bestimmt
-
-
-#nein 
-  #g++ -c -pipe -DWITH_IPP_OPTIMIZATION -O3 -Wno-deprecated -g -Wall -W -D_REENTRANT 
-
-#vielleicht
-  #-fPIC
-  #-I/usr/local/Trolltech/Qt-4.1.3/mkspecs/linux-g++ 
-  #-I/usr/local/Trolltech/Qt-4.1.3/include/QtCore 
-  #-I/usr/local/Trolltech/Qt-4.1.3/include/QtGui 
-  #-I/usr/local/Trolltech/Qt-4.1.3/include/QtOpenGL 
-  #-I/usr/local/Trolltech/Qt-4.1.3/include
-

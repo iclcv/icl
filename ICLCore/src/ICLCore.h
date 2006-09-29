@@ -368,7 +368,7 @@ namespace icl {
          ImgI *poImage;         
       };
       </pre>
-      This will work, but the "?:"-statement make the code hardly readable.
+      This will work, but the "?:"-statement makes the code hardly readable.
       The following code extract will show the advantage of using the iclNew
       function:
       <pre>
@@ -436,6 +436,9 @@ namespace icl {
   /// ensures that the destination image gets same depth, size, channel count, depth, format and ROI as source image
   /** If the given pointer to the destination image is 0, a new image is created as a deep copy of poSrc.
       Else the image properties are checked and adapted to the new values if neccessary.
+      <b>Note:</b> If the destination images depth differs from the source images depth, it is adapted by
+      deleting the <em>old</em> destination pointer by calling <em>delete *ppoDst</em> and creating a
+      <em>brand new</em> Img<T> where T is the destination images depth.
       @param ppoDst points the destination ImgI*. If the images depth has to be
                     converted, then a new Img<T>* is created, at (*ppoDst).
       @param poSrc  source image. All params of this image are extracted to define
@@ -443,8 +446,11 @@ namespace icl {
   **/
   void ensureCompatible(ImgI **ppoDst, const ImgI *poSrc);
 
-  /// ensures that the destination image gets same depth, ROI size, channel count, depth and format as source image
-  /** If the given pointer to the destination image is 0, a new image is created as deepCopyROI of poSrc.
+  /// ensures that the destination image is compatible to the source images ROI
+  /** In contrast to enshureCompatible, this function will set the destination images size
+      to the size of the source images ROI. As enshureCompatible, the channel count, the depth and the format
+      is adapted to the source images parameters.
+      If the given pointer to the destination image is 0, a new image is created as deepCopyROI of poSrc.
       Else the image properties are checked and adapted to the new values if neccessary. 
       In comparison to ensureCompatible, the source images ROI size instead of its size determines the destination
       images size. This function is useful for many filter operations operating on the ROI of an image.
@@ -454,6 +460,10 @@ namespace icl {
                     the destination parameters for *ppoDst.  
   **/
   void ensureCompatibleROI(ImgI **ppoDst, const ImgI *poSrc);
+
+
+  /// TODO write some documentation
+  void ensureCompatibleDynamic(ImgI **ppoDst, const ImgI *poSrc, bool clipToROI);
 
   /// determines the count of channels, for each color format
   /** @param eFormat source format which channel count should be returned

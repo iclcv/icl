@@ -22,6 +22,7 @@ AGNI_INHERIT_MODE:= DYNAMIC
 
 # Please include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
+include ${PACKAGES}/ICLUtils
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -29,8 +30,7 @@ ABS_INCLUDES:= ${ABS_INCLUDES}
 
 # Please add here all the directories with relative path
 # (e.g. -I../MyModule/src) that contain include files needed by the sources.
-REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
-               -I../ICLUtils/src
+REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.

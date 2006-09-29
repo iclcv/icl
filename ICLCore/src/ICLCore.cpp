@@ -142,6 +142,15 @@ namespace icl{
                       poSrc->getFormat(),
                       poSrc->getChannels());
   }
+  
+  void ensureCompatibleDynamic(ImgI **ppoDst, const ImgI *poSrc, bool clipToROI){
+    ensureDepth(ppoDst,poSrc->getDepth());
+    printf("not yet implemented \n");
+    
+#warning enshureCompatibleDynamic .. is not yet implemented
+
+  }
+
 
   int getSizeOf(depth eDepth)
   {

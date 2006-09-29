@@ -5,7 +5,8 @@ namespace icl {
 #define ICL_COMP_ZERO 0
 #define ICL_COMP_NONZERO 255
 
-// {{{ C++ fallback for 8u EPS  needed with and without ipp optimization
+  // {{{ C++ fallback for 8u EPS  needed with and without ipp optimization
+  
   template <typename T> class CompareOpEqEps {
     // {{{ open
   public:
@@ -14,10 +15,11 @@ namespace icl {
     }
   };
   // }}}
+  
+  template <typename T>
+  void fallbackCompareEps(const Img<T> *src1, const Img<T> *src2, Img8u *dst, T eps) {
+    // {{{ open
 
-template <typename T>
-  void fallbackCompareEps(const Img<T> *src1, const Img<T> *src2, Img8u *dst,
-                       T eps) {
     ICLASSERT_RETURN( src1 && src2 && dst );
     ICLASSERT_RETURN( src1->getROISize() == src2->getROISize() );
     ICLASSERT_RETURN( src1->getROISize() == dst->getROISize() );
@@ -34,9 +36,13 @@ template <typename T>
       }
     }
   }
+
+  // }}}
+  
   template <typename T>
-  void fallbackCompareEpsC(const Img<T> *src, T value, Img8u *dst,
-                        T eps) {
+  void fallbackCompareEpsC(const Img<T> *src, T value, Img8u *dst,T eps) {
+    // {{{ open
+
     ICLASSERT_RETURN( src && dst );
     ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
     ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
@@ -45,22 +51,33 @@ template <typename T>
       ImgIterator<T> itSrc = const_cast<Img<T>*>(src)->getROIIterator(c);
       ImgIterator<icl8u> itDst = dst->getROIIterator(c);
       for(;itSrc.inRegion(); ++itSrc, ++itDst){
-          *itDst = Cast<T,icl8u>::cast(compare(*itSrc,value,eps));
+        *itDst = Cast<T,icl8u>::cast(compare(*itSrc,value,eps));
       }
     }
   }
 
+  // }}}
 
   void Compare::compEqualEps(const Img8u *src1, const Img8u *src2,Img8u *dst, icl8u eps)
+    // {{{ open
+
   {
     fallbackCompareEps<icl8u>(src1, src2, dst, eps);
   }
+
+  // }}}
+
   void Compare::compEqualEpsC(const Img8u *src1, icl8u value,Img8u *dst, icl8u eps)
+    // {{{ open
+
   {
     fallbackCompareEpsC<icl8u>(src1, value, dst, eps);
   }  
-// }}}
 
+  // }}}
+  
+  // }}}
+  
 #ifdef WITH_IPP_OPTIMIZATION
 
   // {{{ ippi-function call templates
@@ -68,9 +85,8 @@ template <typename T>
 
   template <typename T, IppStatus (*ippiFunc) (const T*, int, const T*, int, icl8u*, int, IppiSize, IppCmpOp)>
   inline void ippiCompareCall(const Img<T> *src1, const Img<T> *src2, Img8u *dst, Compare::compareop cmpop)
-  {
     // {{{ open
-    
+  {  
     ICLASSERT_RETURN( src1 && src2 && dst );
     ICLASSERT_RETURN( src1->getROISize() == src2->getROISize() );
     ICLASSERT_RETURN( src1->getROISize() == dst->getROISize() );
@@ -87,8 +103,9 @@ template <typename T>
   // }}}
   template <IppStatus (*ippiFunc) (const icl32f*, int, const icl32f*, int, icl8u*, int, IppiSize, icl32f)>
   inline void ippiCompareCallEps(const Img32f *src1, const Img32f *src2, Img8u *dst, icl32f eps)
-  {
     // {{{ open
+  {
+    
 
     ICLASSERT_RETURN( src1 && src2 && dst );
     ICLASSERT_RETURN( src1->getROISize() == src2->getROISize() );
@@ -104,12 +121,10 @@ template <typename T>
     }
   }
   // }}}
- 
   template <typename T, IppStatus (*ippiFunc) (const T*, int, T, icl8u*, int, IppiSize, IppCmpOp)>
   inline void ippiCompareCCall(const Img<T> *src, T value, Img8u *dst, Compare::compareop cmpop)
-  {
     // {{{ open
-
+  {
     ICLASSERT_RETURN( src && dst );
     ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
     ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
@@ -142,7 +157,10 @@ template <typename T>
 
   // }}}
   // }}}
-  // {{{ function specializations without Val postfix
+    
+  // }}}
+
+  // {{{ compare 
 
   
   void Compare::comp(const Img8u *src1,const Img8u *src2,Img8u *dst, Compare::compareop cmpop)
@@ -158,8 +176,9 @@ template <typename T>
   {
     ippiCompareCallEps<ippiCompareEqualEps_32f_C1R> (src1,src2, dst, eps);
   }
-	// }}}
-  // {{{ function specializations with Val postfix
+  // }}}
+
+  // {{{ compareC
    
   void Compare::compC(const Img8u *src, icl8u value, Img8u *dst, Compare::compareop cmpop)
   {
@@ -177,7 +196,55 @@ template <typename T>
   }
   // }}}
 
-#else
+  
+#else // NO IPP_OPTIMISATION
+
+  // {{{ fall-function call templates
+
+  template <typename T, class CompareOps>
+  void fallbackCompare(const Img<T> *src1, const Img<T> *src2, Img8u *dst, const CompareOps &compare)
+    // {{{ open
+
+  {
+    ICLASSERT_RETURN( src1 && src2 && dst );
+    ICLASSERT_RETURN( src1->getROISize() == src2->getROISize() );
+    ICLASSERT_RETURN( src1->getROISize() == dst->getROISize() );
+    ICLASSERT_RETURN( src1->getChannels() == src2->getChannels() );
+    ICLASSERT_RETURN( src1->getChannels() == dst->getChannels() );
+    for(int c=src1->getChannels()-1; c >= 0; --c) {
+      ImgIterator<T> itSrc1 = const_cast<Img<T>*>(src1)->getROIIterator(c);
+      ImgIterator<T> itSrc2 = const_cast<Img<T>*>(src2)->getROIIterator(c);
+      ImgIterator<icl8u> itDst = dst->getROIIterator(c);
+      for(;itSrc1.inRegion(); ++itSrc1, ++itSrc2, ++itDst){
+        *itDst = Cast<T,icl8u>::cast(compare(*itSrc1,*itSrc2));
+      }
+    }
+  }
+
+  // }}}
+  template <typename T, class CompareOps>
+  void fallbackCompareC(const Img<T> *src, T value, Img8u *dst, const CompareOps &compare)
+    // {{{ open
+
+  {
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
+    ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
+
+    for(int c=src->getChannels()-1; c >= 0; --c) {
+      ImgIterator<T> itSrc = const_cast<Img<T>*>(src)->getROIIterator(c);
+      ImgIterator<icl8u> itDst = dst->getROIIterator(c);
+      for(;itSrc.inRegion(); ++itSrc, ++itDst){
+        *itDst = Cast<T,icl8u>::cast(compare(*itSrc,value));
+        //*itDst = Cast<T,icl8u>::cast(CompareOpEq<T>(*itSrc,value));
+      }
+    }
+  }
+
+  // }}}
+
+  // }}}
+  
   // {{{ C++ fallback CompareOp classes
    
   template <typename T> class CompareOpEq {
@@ -189,7 +256,6 @@ template <typename T>
     }
   };
   // }}}
-
   
   template <typename T> class CompareOpLess {
     // {{{ open
@@ -233,46 +299,12 @@ template <typename T>
   };
   // }}}
   // }}}
-	// {{{ bla
-  template <typename T, class CompareOps>
-  void fallbackCompare(const Img<T> *src1, const Img<T> *src2, Img8u *dst,
-                       const CompareOps &compare)
-  {
-    ICLASSERT_RETURN( src1 && src2 && dst );
-    ICLASSERT_RETURN( src1->getROISize() == src2->getROISize() );
-    ICLASSERT_RETURN( src1->getROISize() == dst->getROISize() );
-    ICLASSERT_RETURN( src1->getChannels() == src2->getChannels() );
-    ICLASSERT_RETURN( src1->getChannels() == dst->getChannels() );
-    for(int c=src1->getChannels()-1; c >= 0; --c) {
-      ImgIterator<T> itSrc1 = const_cast<Img<T>*>(src1)->getROIIterator(c);
-      ImgIterator<T> itSrc2 = const_cast<Img<T>*>(src2)->getROIIterator(c);
-      ImgIterator<icl8u> itDst = dst->getROIIterator(c);
-      for(;itSrc1.inRegion(); ++itSrc1, ++itSrc2, ++itDst){
-        *itDst = Cast<T,icl8u>::cast(compare(*itSrc1,*itSrc2));
-      }
-    }
-  }
-  template <typename T, class CompareOps>
-  void fallbackCompareC(const Img<T> *src, T value, Img8u *dst,
-                        const CompareOps &compare)
-  {
-    ICLASSERT_RETURN( src && dst );
-    ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
-    ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
+	  
+  // {{{ C++ comp, compC and compEqualEps
 
-    for(int c=src->getChannels()-1; c >= 0; --c) {
-      ImgIterator<T> itSrc = const_cast<Img<T>*>(src)->getROIIterator(c);
-      ImgIterator<icl8u> itDst = dst->getROIIterator(c);
-      for(;itSrc.inRegion(); ++itSrc, ++itDst){
-          *itDst = Cast<T,icl8u>::cast(compare(*itSrc,value));
-          //*itDst = Cast<T,icl8u>::cast(CompareOpEq<T>(*itSrc,value));
-      }
-    }
-  }
-  
-  // }}} bla
-	// {{{ lba
   void Compare::comp(const Img8u *src1,const Img8u *src2,Img8u *dst, compareop cmpop)
+    // {{{ open
+
   {
     switch (cmpop){
       case Compare::compareEq:
@@ -287,7 +319,11 @@ template <typename T>
         fallbackCompare (src1, src2, dst, CompareOpGreaterEq<icl8u>()); break;
     }
   }
+
+  // }}}
   void Compare::comp(const Img32f *src1, const Img32f *src2, Img8u *dst, compareop cmpop)
+    // {{{ open
+
   {
     switch (cmpop){
       case Compare::compareEq:
@@ -302,7 +338,11 @@ template <typename T>
         fallbackCompare (src1, src2, dst, CompareOpGreaterEq<icl32f>()); break;
     }
   }
+
+  // }}}
   void Compare::compC(const Img8u *src, icl8u value, Img8u *dst, compareop cmpop)
+    // {{{ open
+
   {
     switch (cmpop){
       case Compare::compareEq:
@@ -317,7 +357,11 @@ template <typename T>
         fallbackCompareC (src, value, dst, CompareOpGreaterEq<icl8u>()); break;
     }
   }
+
+  // }}}
   void Compare::compC(const Img32f *src, icl32f value, Img8u *dst, compareop cmpop)
+    // {{{ open
+
   {
     switch (cmpop){
       case Compare::compareEq:
@@ -332,80 +376,82 @@ template <typename T>
         fallbackCompareC (src, value, dst, CompareOpGreaterEq<icl32f>()); break;
     }
   }
-  /// short im header
-  /** extejkfjd
-      dfd
-      sdfsd
-  */
 
+  // }}}
   void Compare::compEqualEps(const Img32f *src1, const Img32f *src2,Img8u *dst, icl32f eps)
+    // {{{ open
+
   {
     fallbackCompareEps<icl32f>(src1, src2, dst, eps);
   }
+
+  // }}}
   void Compare::compEqualEpsC(const Img32f *src1, icl32f value,Img8u *dst, icl32f eps)
+    // {{{ open
+
   {
     fallbackCompareEpsC<icl32f>(src1, value, dst, eps);
   }
+
+  // }}}
+
+  // }}}
+
   
-
-  // }}} lba
-
 #endif
 
-  // {{{ ImgI* versions
+  // {{{ ImgI* functions 
+  
   void Compare::comp(const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst, Compare::compareop cmpop)
-  {
-
     // {{{ open
+  {
     ICLASSERT_RETURN(poSrc1 && poSrc2);
     ICLASSERT_RETURN( poSrc1->getROISize() == poSrc2->getROISize() );
     ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
     ensureCompatibleROI (ppoDst, poSrc1);
+    
     if (poSrc1->getDepth () == depth8u)
       comp(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),cmpop);
     else
       comp(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl8u>(),cmpop);
   }
   // }}}
-
+  
   void Compare::compC(const ImgI *poSrc, icl32f value, ImgI **ppoDst, Compare::compareop cmpop)
-  {
-
     // {{{ open
+  {
     ensureCompatibleROI (ppoDst, poSrc);
     if (poSrc->getDepth () == depth8u)
       compC(poSrc->asImg<icl8u>(),Cast<icl32f,icl8u>::cast(value),(*ppoDst)->asImg<icl8u>(),cmpop);
     else
       compC(poSrc->asImg<icl32f>(),value,(*ppoDst)->asImg<icl8u>(),cmpop);
   }
-
   // }}}
-
-   
+  
   void Compare::compEqualEpsC(const ImgI *poSrc, icl32f value, ImgI **ppoDst, icl32f eps)
-  {
-
     // {{{ open
+  {
     ensureCompatibleROI (ppoDst, poSrc);
     if (poSrc->getDepth () == depth8u)
       compEqualEpsC(poSrc->asImg<icl8u>(),Cast<icl32f,icl8u>::cast(value),(*ppoDst)->asImg<icl8u>(),Cast<icl32f,icl8u>::cast(eps));
     else
-    compEqualEpsC(poSrc->asImg<icl32f>(),value,(*ppoDst)->asImg<icl8u>(),eps);
+      compEqualEpsC(poSrc->asImg<icl32f>(),value,(*ppoDst)->asImg<icl8u>(),eps);
   }
   // }}}
+  
   void Compare::compEqualEps(const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst, icl32f eps)
-  {
-
     // {{{ open
+  {
     ICLASSERT_RETURN(poSrc1 && poSrc2);
     ICLASSERT_RETURN( poSrc1->getROISize() == poSrc2->getROISize() );
     ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
     ensureCompatibleROI (ppoDst, poSrc1);
     if (poSrc1->getDepth () == depth8u)
-       compEqualEps(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),Cast<icl32f,icl8u>::cast(eps));
+      compEqualEps(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),Cast<icl32f,icl8u>::cast(eps));
     else
       compEqualEps(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl8u>(),eps);
   }
   // }}}
-// }}}
+  
+  // }}}
 }

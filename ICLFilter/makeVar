@@ -22,6 +22,8 @@ AGNI_INHERIT_MODE:= DYNAMIC
 
 # Please include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
+include ${PACKAGES}/ICLCore
+include ${PACKAGES}/ICLCC
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -29,10 +31,7 @@ ABS_INCLUDES:= ${ABS_INCLUDES}
 
 # Please add here all the directories with relative path
 # (e.g. -I../MyModule/src) that contain include files needed by the sources.
-REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
-        -I../ICLCore/src \
-        -I../ICLUtils/src \
-	-I../ICLCC/src \
+REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
@@ -40,9 +39,7 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)
-REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
-        -L../ICLCore/lib -lICLCore \
-	-L../ICLCC/lib -lICLCC \
+REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%)
 
 # Please add here all the objects with absolute path
 # that are needed by the executables.
@@ -62,8 +59,8 @@ CDEFINES:= ${CDEFINES}
 CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-#CPPDEFINES:= ${CPPDEFINES}
-CPPDEFINES=
+CPPDEFINES:= ${CPPDEFINES}
+
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
 

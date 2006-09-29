@@ -8,8 +8,9 @@ using namespace icl;
 
 class MyThread : public QThread{
 public:
-  MyThread():widget(new ICLWidget(0)),
-             grabber(new PWCGrabber(Size(640,480)))
+  MyThread():
+    widget(new ICLWidget(0)),
+    grabber(new PWCGrabber(Size(640,480)))
   {
     widget->setGeometry(200,200,640,480);
     widget->show();
@@ -23,6 +24,7 @@ public:
   ICLWidget *widget;
   PWCGrabber *grabber;
 };
+
 
 int main(int nArgs, char **ppcArg){
   QApplication a(nArgs,ppcArg);

@@ -16,7 +16,7 @@ _DOT_DOT=.
 endif
 
 SRC_ROOT=${_DOT_DOT}
-PKGS=$(SRC_ROOT)/packages/
+PACKAGES=$(SRC_ROOT)/packages/
 endif
 ###############################################################################
 
@@ -35,7 +35,7 @@ TARGET_MINVERSION:= 0
 
 # Please include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
-include $(PKGS)/IPP
+# moved to ICLCore include $(PKGS)/IPP
 
 # This variable sets the inclusion modality for packageVar
 # Values are: DYNAMIC (for the inclusion of shared object) and
