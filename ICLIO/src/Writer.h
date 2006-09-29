@@ -15,18 +15,12 @@
 namespace icl {
 
 /// The ICLGrabber base class
-/**
-   bla bla bla
-**/
-
-class Writer
-  {
+class Writer {
   public:
-    Writer();
-    virtual ~Writer();
-    virtual void write(ImgI *poDst)=0;
-    
-  }; //class
+     Writer() {}
+     virtual ~Writer() {}
+     virtual void write(ImgI *poDst)=0;
+}; //class
  
 }//namespace icl
 

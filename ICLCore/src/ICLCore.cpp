@@ -34,17 +34,14 @@ namespace icl{
         case formatLAB:
         case formatYUV:
           return 3;
-          break;
           
         case formatChroma:
           return 2;
-          break;
           
         case formatGray:
         case formatMatrix:
         default:
           return 1;
-          break;
       }
   }
 

@@ -68,7 +68,7 @@ REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug status
 # This variable takes two values: TRUE or FALSE
-DEBUG_ON:=FALSE
+DEBUG_ON:=TRUE
 
 # Debugging flags
 DEBUG:=-O0 -g3
@@ -102,7 +102,7 @@ CMD_LD=g++
 # Set the priority level
 DIR_PRIORITY:=ICLUtils ICLCore ICLMath ICLCC
 DIR_LOWPRIORITY:=examples
-ifeq "(shell $QTDIR/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
+ifeq "$(HAVE_QT)" ""
 SKIP_DIRECTORIES += ICLQt
 endif
 

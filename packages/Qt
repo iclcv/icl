@@ -10,6 +10,10 @@
 ifeq "${QT_MAKEVAR}" ""
 QT_MAKEVAR=QT_MAKEVAR
 
+# we need Qt 4
+QTVER:=$(shell test -x $(QTDIR)/bin/qmake && $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')
+ifneq "$(QTVER)" ""
+
 # Please, include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/globalVar )
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar )
@@ -68,4 +72,5 @@ CPPFLAGS:= ${CPPFLAGS}
 
 # Please, don't forget to set the appropriate AGNI_GLOBAL_ROOT in your environment.
 
-endif
+endif # Qt4 test
+endif # QT_MAKEVAR

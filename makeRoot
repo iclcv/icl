@@ -1,3 +1,4 @@
+# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
 #
 #   makeRoot
 #
@@ -15,9 +16,13 @@ ICL_ROOT?=$(AGNI_LOCAL_ROOT)/ICL/3.0
 IPP_ROOT?=/vol/stereovision/extern/IPP
 export AGNI_LOCAL_ROOT
 
-QTVER:=$(shell test -x $(QTDIR)/bin/qmake && $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')
-ifeq "$(QTVER)" ""
+# try whether useful QTDIR is already set
+ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
 QTDIR=/vol/qt/4.1.4
+endif
+# try whether QTDIR contains QT 4 now
+ifneq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
+HAVE_QT=TRUE
 endif
 
 #------------------------------------------------------------------------------
