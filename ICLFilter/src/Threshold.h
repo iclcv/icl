@@ -41,9 +41,13 @@ namespace icl{
       static void ltgtVal(const ImgI *poSrc, ImgI **ppoDst, 
                           float low, float lowVal, float hi, float hiVal);
 
+      /// calls ltgtVal with low=hi=threshold, lowVal = 0 and hiVal=255
+      static void binarize(const ImgI *poSrc, ImgI **ppoDst, float threshold);
 
-      /// less than thresholding
+      /// less than thresholding (Img8u type)
       static void lt(const Img8u *poSrc, Img8u *poDst, icl8u tThreshold);
+
+      /// less than thresholding (Img32f type)
       static void lt(const Img32f *poSrc, Img32f *poDst, icl32f tThreshold);
       
       /// greater than thresholding

@@ -306,6 +306,14 @@ namespace icl {
 
    // }}}
 
+   void Threshold::binarize(const ImgI *poSrc, ImgI **ppoDst, float t){
+     // {{{ open
+
+     ltgtVal(poSrc,ppoDst,t,0,t,255);
+   }
+
+  // }}}
+
 // }}}
   
   
