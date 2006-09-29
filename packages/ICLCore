@@ -1,0 +1,71 @@
+# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
+#
+#   makeVar
+#
+
+ifeq "${ICLCore_MAKEVAR}" ""
+ICLCore_MAKEVAR=ICLCore_MAKEVAR
+
+# Add here your project settings, plese specify each entry in a separated
+# line (use backslash to continue the lines).
+
+# Please include here the inherited packages
+# (e.g. include ${Packages}/Utils)
+include ${PACKAGES}/IPP
+include ${PACKAGES}/ICLUtils
+
+# Please add here all the directories with absolute path
+# (e.g. -I/usr/local/include) that contain include files needed by the sources.
+ABS_INCLUDES:= ${ABS_INCLUDES} \
+	-I${SRC_ROOT}/ICLCore/src
+
+# Please add here all the directories with relative path
+# (e.g. -I../MyModule/src) that contain include files needed by the sources.
+REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
+
+# Please add here all the directories with absolute path
+# (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
+ABS_LIBRARIES:= ${ABS_LIBRARIES} \
+	-L${SRC_ROOT}/ICLCore/lib -lICLCore
+
+# Please add here all the directories with relative path
+# (e.g. -L../MyLib/lib)
+REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%)
+
+# Please add here all the objects with absolute path
+# that are needed by the executables.
+ABS_OBJECTS:= ${ABS_OBJECTS}
+
+# Please add here all the objects with relative path
+# that are needed by the executables.
+REL_OBJECTS:= $(REL_OBJECTS:%=../%)
+
+# Debug flag
+DEBUG:= ${DEBUG}
+
+# Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
+CDEFINES:= ${CDEFINES}
+
+# Flags for C compiler
+CFLAGS:= ${CFLAGS}
+
+# Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
+CPPDEFINES:= ${CPPDEFINES}
+
+# Flags for C++ compiler
+CPPFLAGS:= ${CPPFLAGS}
+
+# Flags for archive
+ARFLAGS:= ${ARFLAGS}
+
+# Flags for static library linker
+LDFLAGS:= ${LDFLAGS}
+
+# Flags for dynamic library linker
+LDDYNFLAGS:= ${LDDYNFLAGS}
+
+endif #ICLCore defined
+
+
+
+
