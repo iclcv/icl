@@ -1,1 +1,1 @@
-../../make/makefile.test
+../../make/makefile.examples
