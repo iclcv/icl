@@ -1,6 +1,7 @@
 #include "Convolution.h"
+#include "Img.h"
 
-namespace icl{
+namespace icl {
   
   /* To improve performance in access to the kernel data, we may create an
      internal buffer of the kernel data. This is done, if the user explicitly
@@ -245,7 +246,7 @@ namespace icl{
 
   Convolution::Convolution () :
      // {{{ open
-     Filter (Size(INT_MAX, INT_MAX)), // huge kernel size -> prepare returns false
+     FilterMask (Size(INT_MAX, INT_MAX)), // huge kernel size -> prepare returns false
      pfKernel(0), piKernel(0), m_bBuffered(false), 
      m_eKernel(kernelCustom), m_eKernelDepth(depth8u)
   {
@@ -257,7 +258,7 @@ namespace icl{
   Convolution::Convolution (icl32f *pfKernel, const Size &size,
                             bool bBufferData) :
      // {{{ open
-     Filter (size),
+     FilterMask (size),
      pfKernel(0), piKernel(0), m_bBuffered(!bBufferData), 
      m_eKernel(kernelCustom), m_eKernelDepth(depth32f)
   {
@@ -270,7 +271,7 @@ namespace icl{
   Convolution::Convolution(int *piKernel, const Size &size, 
                            bool bBufferData) :
      // {{{ open
-     Filter (size),
+     FilterMask (size),
      pfKernel(0), piKernel(0), m_bBuffered(!bBufferData), 
      m_eKernel(kernelCustom), m_eKernelDepth(depth8u)
   {
@@ -436,7 +437,7 @@ namespace icl{
   {
     FUNCTION_LOG("");
 
-    if (!prepare (poSrc, ppoDst)) return;
+    if (!prepare (ppoDst, poSrc)) return;
 
     /* We must carefully match the image depth to the
        available kernel depth(s).

@@ -80,17 +80,17 @@ int main(){
 	t.setROI(Rect((i++)*s.width,0,100,100));
   im2.deepCopyROI(&t);
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Compare::comp(&im,&im2,&t,Compare::compareEq);
+  Compare::compare(&im,&im2,&t,Compare::compareEq);
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Compare::compC(&im,100,&t,Compare::compareEq);
+  Compare::compareC(&im,100,&t,Compare::compareEq);
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Compare::compC(&im2,50,&t,Compare::compareLessEq);
+  Compare::compareC(&im2,50,&t,Compare::compareLessEq);
   t.setROI(Rect((i++)*s.width, 0,100,100));
-  Compare::compEqualEps(&im,&im2,&t,2);
+  Compare::equalEps(&im,&im2,&t,2);
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Compare::compEqualEpsC(&im,228,&t,30);
+  Compare::equalEpsC(&im,228,&t,30);
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Compare::compEqualEpsC(&im2,175,&t,25);
+  Compare::equalEpsC(&im2,175,&t,25);
 
   FileWrite("./threshold_results.pgm").write(&t); system("xv ./threshold_results.pgm &"); 
 

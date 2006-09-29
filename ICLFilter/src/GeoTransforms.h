@@ -1,41 +1,30 @@
 #ifndef ICL_GEOTRANSFORMS_H
 #define ICL_GEOTRANSFORMS_H
 
-#include <ImgI.h>
+#include <Filter.h>
 
 namespace icl {
-
-   /// Base class for geometric transformations
-   class GeoTransform {
-   public:
-      /// Destructor
-      virtual ~GeoTransform () {};
-
-      /// Applies the specific transform to the images
-      virtual void apply (ImgI *poSrc, ImgI **ppoDst) = 0;
-   };
 
 /* {{{ Mirror */
 
    /// Class to mirror images vertically or horizontally
-   class Mirror : public GeoTransform {
+   class Mirror : public Filter {
    public:
       /// Constructor
-      Mirror (axis eAxis, bool bOnlyROI=true);
+      Mirror (axis eAxis);
 
       /// Applies the mirror transform to the images
-      virtual void apply (ImgI *poSrc, ImgI **ppoDst);
+      void apply (const ImgI *poSrc, ImgI **ppoDst);
 
    protected:
       /// array of class methods used to transform depth8u and depth32f images
-      void (Mirror::*aMethods[2])(ImgI *poSrc, ImgI *poDst); 
+      void (Mirror::*aMethods[2])(const ImgI *poSrc, ImgI *poDst); 
 
       template<typename T>
-      void mirror (ImgI *poSrc, ImgI *poDst);
+      void mirror (const ImgI *poSrc, ImgI *poDst);
 
    private:
       axis  eAxis;
-      bool  bOnlyROI;
       Size  oSize;
       Point oSrcOffset, oDstOffset;
    };
@@ -45,7 +34,7 @@ namespace icl {
 /* {{{ Affine */
 
    /// Class to apply an arbitrary series of affine transformations
-   class Affine : public GeoTransform {
+   class Affine : public Filter {
    public:
       /// Constructor
       Affine (scalemode eInterpolate=interpolateLIN);
@@ -61,14 +50,14 @@ namespace icl {
       }
 
       /// Applies the affine transform to the image
-      virtual void apply (ImgI *poSrc, ImgI **ppoDst);
+      void apply (const ImgI *poSrc, ImgI **ppoDst);
 
    protected:
       /// array of class methods used to transform depth8u and depth32f images
-      void (Affine::*aMethods[2])(ImgI *poSrc, ImgI *poDst); 
+      void (Affine::*aMethods[2])(const ImgI *poSrc, ImgI *poDst); 
 
       template<typename T>
-      void affine (ImgI *poSrc, ImgI *poDst);
+      void affine (const ImgI *poSrc, ImgI *poDst);
 
    private:
       void applyT (const double p[2], double aResult[2]);

@@ -7,8 +7,10 @@
 
 # Please, replace "((PACKAGENAME))" with the project name
 # (e.g. DISPLAYWINDOW_MAKEVAR )
-ifeq "${IPP_MAKEVAR}" ""
-IPP_MAKEVAR=IPP_MAKEVAR
+ifeq "${IPP_MAKEVAR}" "" # include only once
+IPP_MAKEVAR=IPP_MAKEVAR  # include only once
+# include only if IPP is desired
+ifneq (,$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES)))
 
 # Please, include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/globalVar )
@@ -30,7 +32,6 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 
 # Please, do not remove the else statement
 else
-
 
 # Please, place here the lib directory of the project
 # and the library name. Add extra library path with
@@ -68,4 +69,5 @@ CPPFLAGS:= ${CPPFLAGS}
 
 # Please, don't forget to set the appropriate AGNI_GLOBAL_ROOT in your environment.
 
-endif
+endif # IPP desired
+endif # only once

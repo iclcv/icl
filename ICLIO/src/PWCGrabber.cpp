@@ -19,8 +19,7 @@
 #define PWC_DEBUG(X,S) if((X)) {printf("pwc-debug:[%s]\n",S);return;}
 #define PWC_DEBUG_CALL(X,S) if((X)<0){printf("pwc-debug:[%s]\n",S);return;}
 
-namespace icl{
-
+namespace icl {
 
 // {{{ PWC-IOCTL
 

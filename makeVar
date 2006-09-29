@@ -35,7 +35,6 @@ TARGET_MINVERSION:= 0
 
 # Please include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
-# moved to ICLCore include $(PKGS)/IPP
 
 # This variable sets the inclusion modality for packageVar
 # Values are: DYNAMIC (for the inclusion of shared object) and
@@ -100,9 +99,8 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 CMD_LD=g++
 
 # Set the priority level
-DIR_PRIORITY:=ICLUtils ICLCore ICLMath ICLCC
+DIR_PRIORITY:=ICLUtils ICLCore ICLCC
 DIR_LOWPRIORITY:=examples
 ifeq "$(HAVE_QT)" ""
 SKIP_DIRECTORIES += ICLQt
 endif
-

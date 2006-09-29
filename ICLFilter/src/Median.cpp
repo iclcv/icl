@@ -4,7 +4,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace icl{
+namespace icl {
   
   // {{{ Constructor / Destructor
 
@@ -21,7 +21,7 @@ namespace icl{
 
 #ifdef WITH_IPP_OPTIMIZATION 
   template<>
-  void Median::ippMedian<icl8u> (ImgI *poSrc, ImgI *poDst) {
+  void Median::ippMedian<icl8u> (const ImgI *poSrc, ImgI *poDst) {
      for(int c=0; c < poSrc->getChannels(); c++) {
         ippiFilterMedian_8u_C1R(poSrc->asImg<icl8u>()->getROIData (c, this->oROIoffset), 
                                 poSrc->getLineStep(),
@@ -32,7 +32,7 @@ namespace icl{
   }
 
   template<>
-  void Median::ippMedianFixed<icl8u> (ImgI *poSrc, ImgI *poDst) {
+  void Median::ippMedianFixed<icl8u> (const ImgI *poSrc, ImgI *poDst) {
      IppiMaskSize mask = oMaskSize.width == 3 ? ippMskSize3x3 : ippMskSize5x5;
      for(int c=0; c < poSrc->getChannels(); c++) {
         ippiFilterMedianCross_8u_C1R(poSrc->asImg<icl8u>()->getROIData (c, this->oROIoffset), 
@@ -48,7 +48,7 @@ namespace icl{
 
   // {{{ Fallback Implementation
   template<typename T>
-  void Median::cMedian (ImgI *poSrc, ImgI *poDst) {
+  void Median::cMedian (const ImgI *poSrc, ImgI *poDst) {
      Img<T> *poS = (Img<T>*) poSrc;
      Img<T> *poD = (Img<T>*) poDst;
 
@@ -83,7 +83,7 @@ namespace icl{
      maskSize.width  = (maskSize.width/2)*2 + 1;
      maskSize.height = (maskSize.height/2)*2 + 1;
 
-     Filter::setMask (maskSize);
+     FilterMask::setMask (maskSize);
 #ifdef WITH_IPP_OPTIMIZATION 
      // for 3x3 and 5x5 mask their exists special routines
      if (maskSize.width == 3 && maskSize.height == 3)
@@ -102,11 +102,11 @@ namespace icl{
 
   // }}}
 
-  void Median::apply(ImgI *poSrc, ImgI **ppoDst)
+  void Median::apply(const ImgI *poSrc, ImgI **ppoDst)
   {
     FUNCTION_LOG("");
 
-    if (!prepare (poSrc, ppoDst)) return;
+    if (!prepare (ppoDst, poSrc)) return;
     (this->*(aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);
   }
 }

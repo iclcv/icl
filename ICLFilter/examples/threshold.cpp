@@ -21,7 +21,7 @@ int main(int nArgs, char **ppcArg){
   ImgI *dst   = 0;
 
   // Perform binarization
-  Threshold::binarize(image,&dst,127);
+  Threshold().binarize(image,&dst,127);
   
   // WRITE the image
   FileWrite(dstName).write(dst);

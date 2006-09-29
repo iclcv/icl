@@ -1,9 +1,9 @@
 #ifndef THRESHOLD_H
 #define THRESHOLD_H
 
-#include "Img.h"
+#include "Filter.h"
 
-namespace icl{
+namespace icl {
   
    /// Class for thresholding operations
    /** Essentially there are two different types of Threshold functions:
@@ -25,24 +25,28 @@ namespace icl{
       
        <h2>Benchmarks</h2>
    */
-   class Threshold {
+   class Threshold : public Filter {
    public:
       /// less than thresholding
-      static void lt(const ImgI *poSrc, ImgI **ppoDst, float threshold);
+      void lt(const ImgI *poSrc, ImgI **ppoDst, float threshold);
       /// greater than thresholding
-      static void gt(const ImgI *poSrc, ImgI **ppoDst, float threshold);
+      void gt(const ImgI *poSrc, ImgI **ppoDst, float threshold);
       /// less than and greater than thresholding
-      static void ltgt(const ImgI *poSrc, ImgI **ppoDst, float low, float hi);
+      void ltgt(const ImgI *poSrc, ImgI **ppoDst, float low, float hi);
       /// less than thresholding with explicit set value
-      static void ltVal(const ImgI *poSrc, ImgI **ppoDst, float threshold, float val);
+      void ltVal(const ImgI *poSrc, ImgI **ppoDst, float threshold, float val);
       /// greater than thresholding with explicit set value
-      static void gtVal(const ImgI *poSrc, ImgI **ppoDst, float threshold, float val);
+      void gtVal(const ImgI *poSrc, ImgI **ppoDst, float threshold, float val);
       /// less than and greater than thresholding with explicit set values
-      static void ltgtVal(const ImgI *poSrc, ImgI **ppoDst, 
-                          float low, float lowVal, float hi, float hiVal);
+      void ltgtVal(const ImgI *poSrc, ImgI **ppoDst, 
+                   float low, float lowVal, float hi, float hiVal);
 
       /// calls ltgtVal with low=hi=threshold, lowVal = 0 and hiVal=255
-      static void binarize(const ImgI *poSrc, ImgI **ppoDst, float threshold);
+      void binarize(const ImgI *poSrc, ImgI **ppoDst, float threshold) {
+         ltgtVal(poSrc,ppoDst,threshold,0,threshold,255);
+      }
+
+
 
       /// less than thresholding (Img8u type)
       static void lt(const Img8u *poSrc, Img8u *poDst, icl8u tThreshold);

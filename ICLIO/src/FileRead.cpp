@@ -8,106 +8,84 @@
 */
 
 #include "FileRead.h"
+#include <wordexp.h>
 
 namespace icl {
 
   //--------------------------------------------------------------------------
-  FileRead::FileRead(string sFileName, string sDir, 
-                     string sFilter, bool bBuffer) :
-    m_bBufferImages(bBuffer) {
+  FileRead::FileRead(string sPattern, bool bBuffer)
     // {{{ open
+    : m_bBufferImages(bBuffer), m_iImgCnt (0)
+  {
+    FUNCTION_LOG("(string, bool)");
+    
+    wordexp_t match;
+    char **ppcFiles;
+    char *pcType;
 
+    // TODO: translate error into human-readable form (and report them)
+    // TODO: remove newlines from sPattern first
+    if (wordexp (sPattern.c_str(), &match, 0) != 0) 
+       throw ICLException ("illegal pattern string");
+
+    ppcFiles = match.we_wordv;
+    for (unsigned int i=0; i < match.we_wordc; ++i) {
+       printf("%s\n", ppcFiles[i]);
+       // retrieve file type
+       if ( !(pcType = strrchr (ppcFiles[i], '.')) ) continue;
+       if (strcmp (++pcType, "seq") == 0) readSequenceFile (ppcFiles[i]);
+       else m_vecFileName.push_back(ppcFiles[i]);
+    }
+    wordfree(&match);
+    if (!m_vecFileName.size ()) throw ICLException ("empty file list");
+
+    //---- buffer images ----
+    if (m_bBufferImages) bufferImages();
+  }
+// }}}
+
+  //--------------------------------------------------------------------------
+  FileRead::FileRead(string sFileName, string sDir, 
+                     string sFilter, bool bBuffer)
+    // {{{ open
+    : m_bBufferImages(bBuffer), m_iImgCnt (0)
+  {
     FUNCTION_LOG("(string sFileName, string sDir, string sFilter)");
     
     //---- Initialise variables ----
-    ifstream streamInputImage;
     struct dirent *oEntry;
-    char cTmp[255];
-    m_iImgCnt = 0;
     
     if (sDir.size() == 0) {
       sDir = ".";
     }
-    //---- Read content ----
+
+    //---- read directory content ----
     DIR *oDir = opendir(sDir.c_str());
-    cout << sDir.c_str() << endl;
-            
+    if (!oDir) return;
+
     do
     {
       oEntry = readdir(oDir);
       cout << oEntry << endl;
       if (oEntry) {
         string sTmpName(oEntry->d_name);
-                
+        string sFileName;
+
         if (sTmpName.rfind(sFilter,sTmpName.size()) != string::npos) {
-          if(sTmpName.find(sFileName,0) != string::npos) {
-            m_vecFileName.push_back(sDir+"/"+sTmpName);
-            LOOP_LOG ("File: " << m_vecFileName.back());
-          }
+           if(sTmpName.find(sFileName,0) != string::npos) {
+              sFileName = sDir + "/" + sTmpName;
+              LOOP_LOG ("File: " << sFileName);
+           }
         }
-        
-        if (sFilter == "seq") {
-          streamInputImage.open(sFileName.c_str(),ios::in);
-          if(!streamInputImage)
-          {
-            ERROR_LOG("Can't open sequence file: " << sFileName);
-          }
-          
-          while(streamInputImage)
-          {
-            streamInputImage.getline(cTmp, 255);
-            m_vecFileName.push_back(cTmp);
-          }      
-          streamInputImage.close();
-        }
+
+        //---- add file(s) ----
+        if (sFilter == "seq") readSequenceFile (sFileName);
+        else m_vecFileName.push_back(sFileName);
       }
     } while (oEntry);
     closedir(oDir);
-    
-    //---- Buffer images ----
-    if (m_bBufferImages) {
-      bufferImages();
-    }
-  }
+    if (!m_vecFileName.size ()) throw ICLException ("empty file list");
 
-// }}}
-
-  //--------------------------------------------------------------------------
-  FileRead::FileRead(string sFileName, bool bBuffer) :
-    m_bBufferImages(bBuffer) {
-    // {{{ open
-
-    FUNCTION_LOG("(string, bool)");
-    
-    //---- Initialise variables ----
-    ifstream streamInputImage;
-    vector<string> vecSubs;
-    char cTmp[255];
-    m_iImgCnt = 0;
-
-    splitString(sFileName,".",vecSubs);
-    string sFileType = vecSubs.back();
-    
-    //---- Read files ----
-    if (sFileType == "seq") {
-      streamInputImage.open(sFileName.c_str(),ios::in);
-      if(!streamInputImage)
-      {
-        ERROR_LOG("Can't open sequence file: " << sFileName);
-      }
-      
-      while(streamInputImage)
-      {
-        streamInputImage.getline(cTmp, 255);
-        m_vecFileName.push_back(cTmp);
-      }      
-      streamInputImage.close();
-    }
-    else
-    {
-      m_vecFileName.push_back(sFileName);
-    }
-    
     //---- Buffer images ----
     if (m_bBufferImages) {
       bufferImages();
@@ -119,14 +97,11 @@ namespace icl {
   //--------------------------------------------------------------------------
   FileRead::FileRead(string sObjPrefix, string sFileType, string sDir,
                      int iObjStart, int iObjEnd,
-                     int iImageStart, int iImageEnd, bool bBuffer) :
-    m_bBufferImages(bBuffer) {    
+                     int iImageStart, int iImageEnd, bool bBuffer)
     // {{{ open 
-
+    : m_bBufferImages(bBuffer), m_iImgCnt (0)
+  {
     FUNCTION_LOG("(string, string, string, int, int ,int ,int, bool)");
-    
-    //---- Initialise variables ----
-    m_iImgCnt = 0;
     
     if (sDir.size() == 0) {
       sDir = ".";
@@ -142,7 +117,8 @@ namespace icl {
         LOOP_LOG ("File: " << m_vecFileName.back());
       }
     }
-    
+    if (!m_vecFileName.size ()) throw ICLException ("empty file list");
+
     //---- Buffer images ----
     if (m_bBufferImages) {
       bufferImages();
@@ -151,6 +127,27 @@ namespace icl {
   
 // }}}
   
+  //--------------------------------------------------------------------------
+  void FileRead::readSequenceFile (const std::string& sFileName) 
+     // {{{ open
+  {
+     char cTmp[255];
+     ifstream streamSeq (sFileName.c_str(),ios::in);
+
+     if(!streamSeq)
+     {
+        ERROR_LOG("Can't open sequence file: " << sFileName);
+     }
+      
+     while(streamSeq)
+     {
+        streamSeq.getline(cTmp, 255);
+        m_vecFileName.push_back(cTmp);
+     }      
+     streamSeq.close();
+  }
+// }}}
+
   //--------------------------------------------------------------------------
   ImgI* FileRead::grab(ImgI* poDst) {
     // {{{ open 
@@ -165,11 +162,8 @@ namespace icl {
     
     //---- Grab image ----
     if (m_bBufferImages) {
-        poInImg = &*m_iterImgBuffer;
-        if (m_iterImgBuffer != m_vecImgBuffer.end()-1 ) {
-          m_iterImgBuffer++;
-        }
-        else {
+        poInImg = &(*m_iterImgBuffer);
+        if (++m_iterImgBuffer == m_vecImgBuffer.end()) {
           m_iterImgBuffer = m_vecImgBuffer.begin();
         }
     }
@@ -252,7 +246,7 @@ namespace icl {
         headerParameter.push_back("Format");
         
         //---- Set default values ----
-        oImgInfo.iNumChannels = 1;
+        oImgInfo.iNumChannels = getChannelsOfFormat (oImgInfo.eFormat);
         oImgInfo.iNumImages = 1;
         oImgInfo.eDepth = depth8u;
         
@@ -373,7 +367,7 @@ namespace icl {
         // }}}
         
         //---- Change format ? ----
-        if (oImgInfo.iNumChannels > 1) {
+        if (oImgInfo.iNumImages > 1) {
           oImgInfo.eFormat = formatMatrix;
         }
         
@@ -476,8 +470,6 @@ namespace icl {
     
     //---- Read data ---
     oImageStream.seekg(oImgInfo.streamPos);
-    Rect oTmpROI = oDst.getROI();
-    oDst.setFullROI();
         
     typename Img<Type>::iterator itR;
     typename Img<Type>::iterator itG;
@@ -496,7 +488,6 @@ namespace icl {
         *itB = oImageStream.get();
       }
     }  
-    oDst.setROI(oTmpROI);
   }
 
   // }}}

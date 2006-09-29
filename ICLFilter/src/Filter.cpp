@@ -1,47 +1,33 @@
 #include "Filter.h"
+#include "Macros.h"
 
-namespace icl{
+namespace icl {
 
-  bool Filter::prepare (ImgI *poSrc, ImgI **ppoDst) {
-     FUNCTION_LOG("");
+   /// check+adapt destination images parameters against given values
+   bool Filter::prepare (ImgI **ppoDst, depth eDepth, 
+                         const Size &imgSize, format eFormat, int nChannels, 
+                         const Rect& roi) {
+      ICLASSERT_RETURN_VAL (ppoDst, false);
+      if (bCheckOnly) {
+         ImgI* dst = *ppoDst;
+         ICLASSERT_RETURN_VAL (dst && 
+                               dst->getDepth() == eDepth && 
+                               dst->getChannels () == nChannels &&
+                               dst->getFormat () == eFormat &&
+                               dst->getROISize () == roi.size(), false);
+      } else {
+         ensureCompatible (ppoDst, eDepth, imgSize, eFormat, 
+                           nChannels, roi);
+      }
+      return true;
+   }
+   
+   /// check+adapt destination images parameters against values from source image
+   bool Filter::prepare (ImgI **ppoDst, const ImgI *poSrc) {
+      const Rect& roi = bClipToROI ? Rect (Point::zero, poSrc->getROISize ())
+         : poSrc->getROI();
+      return prepare (ppoDst, poSrc->getDepth(), poSrc->getSize(),
+                      poSrc->getFormat(), poSrc->getChannels (), roi);
+   }
 
-     Size  oROIsize;   //< to-be-used ROI size
-     if (!adaptROI (poSrc, oROIoffset, oROIsize)) return false;
-
-     if (bClipToROI) {
-        ensureCompatible (ppoDst, poSrc->getDepth(), oROIsize, 
-                          poSrc->getFormat(), poSrc->getChannels(),
-                          Rect (Point::zero, oROIsize));
-     } else {
-        ensureCompatible (ppoDst, poSrc);
-        (*ppoDst)->setROI (oROIoffset, oROIsize);
-     }
-     return true;
-  }
-
-  bool Filter::adaptROI(ImgI *poSrc, Point& oROIoffset, Size& oROIsize)
-  {
-    FUNCTION_LOG("");
-
-    const Size& oSize = poSrc->getSize ();
-    poSrc->getROI (oROIoffset, oROIsize);
-    int a;
-
-    if (oROIoffset.x < oAnchor.x) oROIoffset.x = oAnchor.x;
-    if (oROIoffset.y < oAnchor.y) oROIoffset.y = oAnchor.y;
-    if (oROIsize.width > (a=oSize.width - (oROIoffset.x + oMaskSize.width - oAnchor.x - 1))) {
-       oROIsize.width = a;
-#ifdef WITH_IPP_OPTIMIZATION // workaround for IPP bug (anchor not correctly handled)
-       if (oMaskSize.width % 2 == 0) oROIsize.width--;
-#endif
-    }
-    if (oROIsize.height > (a=oSize.height - (oROIoffset.y + oMaskSize.height - oAnchor.y - 1))) {
-       oROIsize.height = a;
-#ifdef WITH_IPP_OPTIMIZATION // workaround for IPP bug (anchor not correctly handled)
-       if (oMaskSize.height % 2 == 0) oROIsize.height--;
-#endif
-    }
-    if (oROIsize.width < 1 || oROIsize.height < 1) return false;
-    return true;
-  }
 }

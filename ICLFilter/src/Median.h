@@ -1,10 +1,9 @@
 #ifndef ICLMEDIAN_H
 #define ICLMEDIAN_H
 
-#include <ImgI.h>
-#include <Filter.h>
+#include <FilterMask.h>
 
-namespace icl{
+namespace icl {
 
   /// Class that provides median filter abilities
   /** The median class provides the ability for arbitrary
@@ -147,7 +146,7 @@ namespace icl{
     }
     </pre>
   */
-  class Median : public Filter{
+  class Median : public FilterMask {
   public:
 
     /// Constructor that creates a median filter object, with specified mask size
@@ -165,19 +164,19 @@ namespace icl{
         @param poSrc  source image
         @param ppoDst pointer to destination image
     */
-    void apply(ImgI *poSrc, ImgI **ppoDst);
+    void apply(const ImgI *poSrc, ImgI **ppoDst);
 
   protected:
-    void (Median::*aMethods[2])(ImgI *poSrc, ImgI *poDst); 
+    void (Median::*aMethods[2])(const ImgI *poSrc, ImgI *poDst); 
 
 #ifdef WITH_IPP_OPTIMIZATION 
     template<typename T>
-       void ippMedian (ImgI *poSrc, ImgI *poDst);
+       void ippMedian (const ImgI *poSrc, ImgI *poDst);
     template<typename T>
-       void ippMedianFixed (ImgI *poSrc, ImgI *poDst);
+       void ippMedianFixed (const ImgI *poSrc, ImgI *poDst);
 #endif
     template<typename T>
-       void cMedian (ImgI *poSrc, ImgI *poDst);
+       void cMedian (const ImgI *poSrc, ImgI *poDst);
   };
 }
 

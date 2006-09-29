@@ -1,10 +1,9 @@
 #ifndef ICLCONVOLUTION_H
 #define ICLCONVOLUTION_H
 
-#include "Filter.h"
-#include "Img.h"
+#include "FilterMask.h"
 
-namespace icl{
+namespace icl {
   
   /// Class for Image convolutions
   /**
@@ -62,7 +61,7 @@ namespace icl{
   in two Constructors.
   */
 
-  class Convolution : public Filter {
+  class Convolution : public FilterMask {
     public:
     /// this enum contains several predefined convolution kernels
     /** <h3>kernelSobleX</h3>
@@ -301,7 +300,8 @@ namespace icl{
      virtual ~DynamicConvolution ();
 
      void setKernel (const ImgI* poKernel);
-     Filter::setClipToROI;
+     Convolution::setClipToROI;
+     Convolution::setCheckOnly;
      Convolution::apply;
   private:
      icl::Img<icl::icl32f> *poKernelBuf;

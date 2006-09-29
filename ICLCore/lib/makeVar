@@ -18,14 +18,6 @@ _DOT_DOT:=../${_DOT_DOT}
 TARGET_LIB:= ${PROJECT_NAME}
 
 # Please add here all the directories with absolute path
-# (e.g. -I/usr/local/include) that contain include files needed by the sources.
-ABS_INCLUDES:= ${ABS_INCLUDES}
-
-# Please add here all the directories with relative path
-# (e.g. -I../MyModule/src) that contain include files needed by the sources.
-REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
-
-# Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
 ABS_LIBRARIES:= ${ABS_LIBRARIES}
 

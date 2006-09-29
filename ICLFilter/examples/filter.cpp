@@ -1,8 +1,10 @@
+#include "Img.h"
 #include "Median.h"
 #include "Convolution.h"
-#include <stdio.h>
-#include <Timer.h>
 #include "Threshold.h"
+#include "Timer.h"
+
+#include <stdio.h>
 
 using namespace icl;
 

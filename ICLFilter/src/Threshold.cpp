@@ -1,5 +1,5 @@
 #include "Threshold.h"
-#include "Macros.h"
+#include "Img.h"
 
 namespace icl {
 
@@ -107,54 +107,54 @@ namespace icl {
 #else
    // {{{ C++ fallback ThreshOp classes
   
-  template <typename T> class ThreshOpLTVal {
-    // {{{ open
+   template <typename T> class ThreshOpLTVal {
+      // {{{ open
 
-  public:
-    ThreshOpLTVal (T t, T v) : threshold(t), value(v) {}
-    inline T operator()(T val) const { 
-      if (val < threshold) return value;
-      return val;
-    }
-  private:
-     T threshold;
-     T value;
-  };
+   public:
+      ThreshOpLTVal (T t, T v) : threshold(t), value(v) {}
+      inline T operator()(T val) const { 
+         if (val < threshold) return value;
+         return val;
+      }
+   private:
+      T threshold;
+      T value;
+   };
 
-  // }}}
-  template <typename T> class ThreshOpGTVal {
-    // {{{ open
+   // }}}
+   template <typename T> class ThreshOpGTVal {
+      // {{{ open
 
-  public:
-    ThreshOpGTVal (T t, T v) : threshold(t), value(v) {}
-    inline T operator()(T val) const { 
-      if (val > threshold) return value;
-      return val;
-    }
-  private:
-     T threshold;
-     T value;
-  };
+   public:
+      ThreshOpGTVal (T t, T v) : threshold(t), value(v) {}
+      inline T operator()(T val) const { 
+         if (val > threshold) return value;
+         return val;
+      }
+   private:
+      T threshold;
+      T value;
+   };
 
-  // }}}
-  template <typename T> class ThreshOpLTGTVal {
-    // {{{ open
-  public:
-    ThreshOpLTGTVal(T tLow, T vLow, T tUp, T vUp) : 
-       tLow(tLow), tUp(tUp), vLow(vLow), vUp(vUp) {}
-    inline T operator()(T val) const { 
-       if (val < tLow) return vLow;
-       if (val > tUp)  return vUp;
-       return val;
-    }
-  private:
-    T tLow, tUp;
-    T vLow, vUp;
-  };
+   // }}}
+   template <typename T> class ThreshOpLTGTVal {
+      // {{{ open
+   public:
+      ThreshOpLTGTVal(T tLow, T vLow, T tUp, T vUp) : 
+         tLow(tLow), tUp(tUp), vLow(vLow), vUp(vUp) {}
+      inline T operator()(T val) const { 
+         if (val < tLow) return vLow;
+         if (val > tUp)  return vUp;
+         return val;
+      }
+   private:
+      T tLow, tUp;
+      T vLow, vUp;
+   };
 
-  // }}}
+   // }}}
 
-  // }}}
+   // }}}
 
    // {{{ C++ fallback threshold function for all threshold operations
   
@@ -228,10 +228,10 @@ namespace icl {
 
    // {{{ ImgI* versions
 
-   void Threshold::lt(const ImgI *poSrc, ImgI **ppoDst, icl32f t) {
+   void Threshold::lt(const ImgI *poSrc, ImgI **ppoDst, icl32f t)
       // {{{ open
-
-      ensureCompatibleROI (ppoDst, poSrc);
+   {
+      if (!Filter::prepare (ppoDst, poSrc)) return;
       if (poSrc->getDepth () == depth8u)
          lt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t));
       else 
@@ -240,10 +240,10 @@ namespace icl {
 
    // }}}
   
-   void Threshold::gt(const ImgI *poSrc, ImgI **ppoDst, icl32f t) {
+   void Threshold::gt(const ImgI *poSrc, ImgI **ppoDst, icl32f t)
       // {{{ open
-
-      ensureCompatibleROI (ppoDst, poSrc);
+   {
+      if (!Filter::prepare (ppoDst, poSrc)) return;
       if (poSrc->getDepth () == depth8u)
          gt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t));
       else 
@@ -252,10 +252,10 @@ namespace icl {
 
    // }}}
   
-   void Threshold::ltgt(const ImgI *poSrc, ImgI **ppoDst, icl32f tMin, icl32f tMax) {
+   void Threshold::ltgt(const ImgI *poSrc, ImgI **ppoDst, icl32f tMin, icl32f tMax)
       // {{{ open
-
-      ensureCompatibleROI (ppoDst, poSrc);
+   {
+      if (!Filter::prepare (ppoDst, poSrc)) return;
       if (poSrc->getDepth () == depth8u)
          ltgt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), 
               Cast<icl32f,icl8u>::cast(tMin), Cast<icl32f,icl8u>::cast(tMax));
@@ -265,10 +265,10 @@ namespace icl {
 
    // }}}
   
-   void Threshold::ltVal(const ImgI *poSrc, ImgI **ppoDst, icl32f t, icl32f val) {
+   void Threshold::ltVal(const ImgI *poSrc, ImgI **ppoDst, icl32f t, icl32f val)
       // {{{ open
-
-      ensureCompatibleROI (ppoDst, poSrc);
+   {
+      if (!Filter::prepare (ppoDst, poSrc)) return;
       if (poSrc->getDepth () == depth8u)
          ltVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), 
                Cast<icl32f,icl8u>::cast(t), Cast<icl32f,icl8u>::cast(val));
@@ -278,10 +278,10 @@ namespace icl {
 
    // }}}
   
-   void Threshold::gtVal(const ImgI *poSrc, ImgI **ppoDst, icl32f t, icl32f val) {
+   void Threshold::gtVal(const ImgI *poSrc, ImgI **ppoDst, icl32f t, icl32f val)
       // {{{ open
-
-      ensureCompatibleROI (ppoDst, poSrc);
+   {
+      if (!Filter::prepare (ppoDst, poSrc)) return;
       if (poSrc->getDepth () == depth8u)
          gtVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), 
                Cast<icl32f,icl8u>::cast(t), Cast<icl32f,icl8u>::cast(val));
@@ -292,10 +292,10 @@ namespace icl {
    // }}}
   
    void Threshold::ltgtVal(const ImgI *poSrc, ImgI **ppoDst, 
-                           icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal) {
+                           icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal)
       // {{{ open
-
-      ensureCompatibleROI (ppoDst, poSrc);
+   {
+      if (!Filter::prepare (ppoDst, poSrc)) return;
       if (poSrc->getDepth () == depth8u)
          ltgtVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), 
                  Cast<icl32f,icl8u>::cast(tMin), Cast<icl32f,icl8u>::cast(minVal), 
@@ -306,15 +306,6 @@ namespace icl {
 
    // }}}
 
-   void Threshold::binarize(const ImgI *poSrc, ImgI **ppoDst, float t){
-     // {{{ open
-
-     ltgtVal(poSrc,ppoDst,t,0,t,255);
-   }
-
-  // }}}
-
-// }}}
-  
+// }}}  
   
 } // namespace icl

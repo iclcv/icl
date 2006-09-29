@@ -71,6 +71,8 @@ class FileRead : public Grabber
   **/
   
  protected:
+  void readSequenceFile(const std::string& sFileName);
+
   void readHeader(info &oImgInfo);
 
   template <class Type>
