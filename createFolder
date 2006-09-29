@@ -41,10 +41,10 @@ mkdir -p ./$1/obj
 echo "done"
 
 # Create folder test dir
-echo -n "Creating sub folder test ... "
-mkdir -p ./$1/test
-cp ./make/makeVar.test ./$1/test/makeVar
-ln -s ../../make/makefile.test ./$1/test/makefile
+echo -n "Creating sub folder examples ... "
+mkdir -p ./$1/examples
+cp ./make/makeVar.examples ./$1/test/makeVar
+ln -s ../../make/makefile.examples ./$1/test/makefile
 echo "done"
 
 
