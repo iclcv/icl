@@ -1,9 +1,10 @@
 Michael:
 grabbing of images reallocates memory all the time, if in dynamic size mode
-additionally assigning poDst = Grabber::grab () is a memory leak (only in non-buffering mode)
+assigning poDst = Grabber::grab () is a memory leak (only in non-buffering mode)
 
 make install* does not check SKIP_DIRS variable (tries to install libICLQt)
-on install: create icl_config.h, defining WITH_IPP_OPTIMIZATION if compiled with
+on install: create ICL packageVar dynamically based upon used configuration,
+i.e. add/leave IPP, Qt, replace AGNI_LOCAL_ROOT by explicit name
 
 ICLIO:
 readFile "object*ver*.*"

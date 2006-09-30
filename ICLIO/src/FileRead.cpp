@@ -7,10 +7,22 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "FileRead.h"
+#include <stdlib.h>
 #include <wordexp.h>
+#include <dirent.h>
+#include <algorithm>
+#include <fstream>
+
+#include <FileRead.h>
+#include <Converter.h>
+
+using namespace std;
 
 namespace icl {
+
+  inline void replace_newline (string::value_type& c) {
+     if (c == '\n') c = ' ';
+  }
 
   //--------------------------------------------------------------------------
   FileRead::FileRead(string sPattern, bool bBuffer)
@@ -23,10 +35,25 @@ namespace icl {
     char **ppcFiles;
     char *pcType;
 
-    // TODO: translate error into human-readable form (and report them)
-    // TODO: remove newlines from sPattern first
-    if (wordexp (sPattern.c_str(), &match, 0) != 0) 
-       throw ICLException ("illegal pattern string");
+    // remove newlines from sPattern
+    std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
+
+    // search for file matching the pattern(s)
+    switch (wordexp (sPattern.c_str(), &match, WRDE_UNDEF)) {
+       case 0: break;
+       case WRDE_BADCHAR: 
+          throw ICLException ("illegal chars in pattern (|, &, ;, <, >, (, ), {, }");
+          break;
+       case WRDE_BADVAL:
+          throw ICLException ("encountered undefined shell variable");
+          break;
+       case WRDE_NOSPACE:
+          throw ICLException ("out of memory");
+          break;
+       case WRDE_SYNTAX:
+          throw ICLException ("syntax error, e.g. unbalanced parentheses or quotes");
+          break;
+    }
 
     ppcFiles = match.we_wordv;
     for (unsigned int i=0; i < match.we_wordc; ++i) {
@@ -45,8 +72,8 @@ namespace icl {
 // }}}
 
   //--------------------------------------------------------------------------
-  FileRead::FileRead(string sFileName, string sDir, 
-                     string sFilter, bool bBuffer)
+  FileRead::FileRead(const string& sFilePrefix, string sDir, 
+                     const string& sFilter, bool bBuffer)
     // {{{ open
     : m_bBufferImages(bBuffer), m_iImgCnt (0)
   {
@@ -71,11 +98,10 @@ namespace icl {
         string sTmpName(oEntry->d_name);
         string sFileName;
 
-        if (sTmpName.rfind(sFilter,sTmpName.size()) != string::npos) {
-           if(sTmpName.find(sFileName,0) != string::npos) {
-              sFileName = sDir + "/" + sTmpName;
-              LOOP_LOG ("File: " << sFileName);
-           }
+        if (sTmpName.rfind(sFilter,sTmpName.size()) != string::npos &&
+            sTmpName.find(sFilePrefix,0) != string::npos) {
+           sFileName = sDir + "/" + sTmpName;
+           LOOP_LOG ("File: " << sFileName);
         }
 
         //---- add file(s) ----
@@ -95,7 +121,7 @@ namespace icl {
 // }}}
 
   //--------------------------------------------------------------------------
-  FileRead::FileRead(string sObjPrefix, string sFileType, string sDir,
+  FileRead::FileRead(const string& sObjPrefix, const string& sFileType, string sDir,
                      int iObjStart, int iObjEnd,
                      int iImageStart, int iImageEnd, bool bBuffer)
     // {{{ open 

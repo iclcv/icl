@@ -98,6 +98,37 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 # Change the linker to g++
 CMD_LD=g++
 
+
+############################# check for IPP ############################
+ifeq "$(wildcard $(IPP_ROOT)/5.0/sharedlib/libipp*.so)" ""
+ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
+ifeq "$(_WARN_IPP)" ""
+_WARN_IPP=done # warn only once
+export _WARN_IPP
+$(warning "IPP is not available. Its usage is switched off.")
+endif
+CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
+CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
+endif
+endif
+
+############################# check for QT 4 ############################
+# try whether useful QTDIR is already set
+ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
+QTDIR=/vol/qt/4.1.4
+endif
+# try whether QTDIR contains QT 4 now
+ifneq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
+HAVE_QT=TRUE
+else
+ifeq "$(_WARN_QT)" ""
+_WARN_QT=done # warn only once
+export _WARN_QT
+$(warning "Qt version 4 is not available. Qt-specific targets are not built.")
+endif
+endif
+
+
 # Set the priority level
 DIR_PRIORITY:=ICLUtils ICLCore ICLCC
 DIR_LOWPRIORITY:=examples

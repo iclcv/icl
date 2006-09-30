@@ -21,13 +21,5 @@ namespace icl {
       }
       return true;
    }
-   
-   /// check+adapt destination images parameters against values from source image
-   bool Filter::prepare (ImgI **ppoDst, const ImgI *poSrc) {
-      const Rect& roi = bClipToROI ? Rect (Point::zero, poSrc->getROISize ())
-         : poSrc->getROI();
-      return prepare (ppoDst, poSrc->getDepth(), poSrc->getSize(),
-                      poSrc->getFormat(), poSrc->getChannels (), roi);
-   }
 
 }

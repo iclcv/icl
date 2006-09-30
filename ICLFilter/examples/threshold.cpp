@@ -10,7 +10,8 @@ void xv(string s){
 
 int main(int nArgs, char **ppcArg){
   if(nArgs < 3){
-    printf("to few arguments \n");
+    printf("too few arguments \n");
+    printf("usage: %s srcfile dstfile\n", ppcArg[0]);
     exit(-1);
   }
   string srcName = ppcArg[1];

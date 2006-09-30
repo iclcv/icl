@@ -10,16 +10,9 @@
 #ifndef ICLFILEREAD_H
 #define ICLFILEREAD_H
 
-#include "Grabber.h"
-#include "stdlib.h"
-#include "Converter.h"
-#include <fstream>
+#include <Grabber.h>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <dirent.h>
-
-using namespace std;
 
 namespace icl {
  
@@ -31,19 +24,20 @@ class FileRead : public Grabber
 {
  public:
   // @{ @name constructors / destructor
+  ///Load images from files specified with shell-like regular expression
+  /** @param sPattern shell expression describing file location(s)
+      @param bBuffer Switch image buffering On/ Off [default = OFF]
+  **/
+   FileRead(std::string sPattern, bool bBuffer = 0);
+  
   ///Load images from file at specific location
-  /** @param sFileName The filename
+  /** @param sFilePrefix a prefix for the filenames to search
       @param sDir The directory to read the files from
       @param sFilter The file type (ppm, pgm)
       @param bBuffer Switch image buffering On/ Off [default = OFF]
   **/
-  FileRead(string sFileName, string sDir, string sFilter, bool bBuffer = 0);
-  
-  ///Load images from file at specific location
-  /** @param sFileName The complete filename (DIR/NAME.TYPE)
-      @param bBuffer Switch image buffering On/ Off [default = OFF]
-  **/
-  FileRead(string sFileName, bool bBuffer = 0);
+  FileRead(const std::string& sFilePrefix, std::string sDir, 
+           const std::string& sFilter, bool bBuffer = 0);
   
   ///Load objects and images in an specific range from file 
   /** @param sObjPrefix The filename prefix
@@ -55,7 +49,8 @@ class FileRead : public Grabber
       @param iImageEnd End with object iImageEnd
       @param bBuffer Switch image buffering On/ Off [default = OFF]
   **/
-  FileRead(string sObjPrefix, string sFileType, string sDir,
+  FileRead(const std::string& sObjPrefix, const std::string& sFileType, 
+           std::string sDir,
            int iObjStart, int iObjEnd,
            int iImageStart, int iImageEnd, 
            bool bBuffer = 0);
@@ -86,9 +81,9 @@ class FileRead : public Grabber
   void readPPM(Img<Type> &oDst, info &oImgInfo);
   
   void bufferImages();
-  vector <string> m_vecFileName;
-  vector<Img<icl8u> > m_vecImgBuffer;
-  vector<Img<icl8u> >::iterator m_iterImgBuffer;
+  std::vector <std::string> m_vecFileName;
+  std::vector<Img<icl8u> > m_vecImgBuffer;
+  std::vector<Img<icl8u> >::iterator m_iterImgBuffer;
   
   bool m_bBufferImages;
   unsigned int m_iImgCnt;

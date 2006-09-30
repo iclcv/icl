@@ -386,7 +386,7 @@ namespace icl {
       ICLASSERT_RETURN( poSrc1->getROISize() == poSrc2->getROISize() );
       ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
 
-      if (!Filter::prepare (ppoDst, poSrc1)) return;
+      if (!Filter::prepare (ppoDst, poSrc1, depth8u)) return;
       if (poSrc1->getDepth () == depth8u)
          compare(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),cmpOp);
       else
@@ -401,7 +401,7 @@ namespace icl {
       ICLASSERT_RETURN( poSrc1->getROISize() == poSrc2->getROISize() );
       ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
 
-      if (!Filter::prepare (ppoDst, poSrc1)) return;
+      if (!Filter::prepare (ppoDst, poSrc1, depth8u)) return;
       if (poSrc1->getDepth () == depth8u)
          equalEps(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),
                   (*ppoDst)->asImg<icl8u>(),Cast<icl32f,icl8u>::cast(eps));
@@ -414,7 +414,7 @@ namespace icl {
    void Compare::compareC(const ImgI *poSrc, icl32f value, ImgI **ppoDst, Compare::op cmpOp)
       // {{{ open
    {
-      if (!Filter::prepare (ppoDst, poSrc)) return;
+      if (!Filter::prepare (ppoDst, poSrc, depth8u)) return;
       if (poSrc->getDepth () == depth8u)
          compareC(poSrc->asImg<icl8u>(),Cast<icl32f,icl8u>::cast(value),(*ppoDst)->asImg<icl8u>(),cmpOp);
       else
@@ -425,7 +425,7 @@ namespace icl {
    void Compare::equalEpsC(const ImgI *poSrc, icl32f value, ImgI **ppoDst, icl32f eps)
       // {{{ open
    {
-      if (!Filter::prepare (ppoDst, poSrc)) return;
+      if (!Filter::prepare (ppoDst, poSrc, depth8u)) return;
       if (poSrc->getDepth () == depth8u)
          equalEpsC(poSrc->asImg<icl8u>(),Cast<icl32f,icl8u>::cast(value),
                    (*ppoDst)->asImg<icl8u>(),Cast<icl32f,icl8u>::cast(eps));

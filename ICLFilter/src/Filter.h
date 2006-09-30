@@ -41,9 +41,31 @@ namespace icl {
      /// bCheckOnly mode ignores the given imgSize
      bool prepare (ImgI **ppoDst, depth eDepth, const Size &imgSize, 
                    format eFormat, int nChannels, const Rect& roi);
-     /// adapt destination image to properties of given source image
-     bool prepare (ImgI **ppoDst, const ImgI *poSrc);
 
+     /// check+adapt destination image to properties of given source image
+     bool prepare (ImgI **ppoDst, const ImgI *poSrc) {
+        return prepare (ppoDst, poSrc->getDepth(), chooseSize (poSrc),
+                        poSrc->getFormat(), poSrc->getChannels (), chooseROI (poSrc));
+     }
+
+     /// check+adapt destination image to properties of given source image
+     /// but use explicitly given depth
+     bool prepare (ImgI **ppoDst, const ImgI *poSrc, depth eDepth) {
+        return prepare (ppoDst, eDepth, chooseSize (poSrc),
+                        poSrc->getFormat(), poSrc->getChannels (), chooseROI (poSrc));
+     }
+
+     /// return to-be-used image size depending on bClipToROI
+     const Size& chooseSize (const ImgI *poSrc) {
+        return bClipToROI ? poSrc->getROISize () : poSrc->getSize ();
+     }
+     /// return to-be-used ROI depending on bClipToROI
+     const Rect chooseROI (const ImgI *poSrc) {
+        return bClipToROI ? Rect (Point::zero, poSrc->getROISize ())
+                          : poSrc->getROI();
+     }
+
+  protected:
      bool bClipToROI, bCheckOnly;
   };
 }
