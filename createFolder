@@ -1,20 +1,36 @@
 #!/bin/bash
 
 if [ $# -ne 1 ] ; then
-  echo -e "Empty foldername"
-  echo -e "(e.g.) ./createFolder ICLTestFolder"
+  echo -e "usage:\n\tcreateFolder foldername"
+  echo -e "\t(e.g.) ./createFolder ICLTestFolder"
   exit 1
 fi
 
+if [ -d $1 ] ; then
+    echo "error: foldername $1 does already exist"
+    exit 1
+fi
+
+LIST=`echo "make install packages ICLCore ICLFilter"`
+for T in $LIST ; do 
+    echo "testing $T" ;
+    if [ ! -d $T ] ; then  
+        echo "error: the current folder ('$PWD') seems not to be"
+        echo "       the ICL base directory (missing directory: $T"
+        exit 1 ; 
+    fi ;
+done
+    
 
 # Create folder root dir
-echo "Creating folder $1:"
+echo "Creating folder $1:                     "
 mkdir -p ./$1
 cp ./make/makeVar.root ./$1/makeVar
 ln -s ../make/makefile.root ./$1/makefile
+echo "done"
 
 # Create folder doc dir
-echo -n "Creating sub folder doc ... "
+echo -n "Creating sub folder doc ...          "
 mkdir -p ./$1/doc
 cp ./make/makeVar.doc ./$1/doc/makeVar
 ln -s ../../make/makefile.doc ./$1/doc/makefile
@@ -22,32 +38,35 @@ cp ./make/doxyfile ./$1/doc/doxyfile
 echo "done"
 
 # Create folder lib dir
-echo -n "Creating sub folder lib ... "
+echo -n "Creating sub folder lib ...          "
 mkdir -p ./$1/lib
 cp ./make/makeVar.lib ./$1/lib/makeVar
 ln -s ../../make/makefile.lib ./$1/lib/makefile
 echo "done"
 
 # Create folder src dir
-echo -n "Creating sub folder src ... "
+echo -n "Creating sub folder src ...          "
 mkdir -p ./$1/src
 cp ./make/makeVar.src ./$1/src/makeVar
 ln -s ../../make/makefile.src ./$1/src/makefile
 echo "done"
 
 # Create folder obj dir
-echo -n "Creating sub folder obj ... "
+echo -n "Creating sub folder obj ...          "
 mkdir -p ./$1/obj
 echo "done"
 
 # Create folder test dir
-echo -n "Creating sub folder examples ... "
+echo -n "Creating sub folder examples ...     "
 mkdir -p ./$1/examples
 cp ./make/makeVar.examples ./$1/examples/makeVar
 ln -s ../../make/makefile.examples ./$1/examples/makefile
 echo "done"
 
-
+# Create a packageVar in packages
+echo -n "Creating packageVar packages/$1...   "
+sed "s|PACKAGE_NAME|$1|g" make/makeVar.packages > packages/$1
+echo "done"
 
 
 
