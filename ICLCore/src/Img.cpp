@@ -303,10 +303,12 @@ Img<Type>::removeChannel(int iChannel)
 template<class Type> void
 Img<Type>::append(Img<Type> *poSrc, int iIndex)
   // {{{ open
+
 {
   FUNCTION_LOG("");
   ICLASSERT_RETURN( poSrc );
-  ICLASSERT_RETURN( iIndex >= 0 && iIndex < poSrc->getChannels() );
+  // iIndex < 0 is ok and means all channels
+  ICLASSERT_RETURN( iIndex < poSrc->getChannels() ); 
   ICLASSERT_RETURN( poSrc->getSize() == getSize() );
 
   if (m_eFormat != formatMatrix) {
@@ -314,8 +316,8 @@ Img<Type>::append(Img<Type> *poSrc, int iIndex)
     m_eFormat = formatMatrix;
   }
   
-  std::copy (poSrc->m_vecChannels.begin() + getStartIndex(iIndex),
-             poSrc->m_vecChannels.begin() + getEndIndex(iIndex),
+  std::copy (poSrc->m_vecChannels.begin() + poSrc->getStartIndex(iIndex),
+             poSrc->m_vecChannels.begin() + poSrc->getEndIndex(iIndex),
              back_inserter(m_vecChannels));  
   m_iChannels = m_vecChannels.size();
 }
