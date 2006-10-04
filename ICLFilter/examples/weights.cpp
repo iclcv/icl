@@ -26,6 +26,7 @@ int main(){
   aaws.ws(&im,&t,weights);
   printf("\nImage Ch1: 2, 3.5, 7, 2.3\n");
   printf("Image Ch2: 1, 4, 2.5, 1.7\n");
+  printf("weights:2, 2.1\n");
   for(ImgIterator<icl32f> it = t.getIterator(0);it.inRegion();++it){
     printf("%f,",*it);
   }
