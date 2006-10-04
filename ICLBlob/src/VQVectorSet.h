@@ -9,7 +9,7 @@ namespace icl{
     public:
     VQVectorSet(float *data, int dim, bool deepCopyData):m_iDim(dim){
       if(deepCopyData){
-        m_pfData = new float[dim];
+        m_pfData = new float[2*dim];
         memcpy(m_pfData,data,2*dim*sizeof(float));
         m_bDeleteDataFlag = true;
       }else{
@@ -20,7 +20,7 @@ namespace icl{
     VQVectorSet():
       m_pfData(0),m_iDim(0),m_bDeleteDataFlag(0){}
     VQVectorSet(int dim):
-      m_pfData(new float[dim]),m_iDim(dim),m_bDeleteDataFlag(true){}
+      m_pfData(new float[2*dim]),m_iDim(dim),m_bDeleteDataFlag(true){}
     ~VQVectorSet(){
       if(m_bDeleteDataFlag) delete [] m_pfData;
     }
@@ -31,10 +31,11 @@ namespace icl{
     
     void resize(int dim){
       ICLASSERT_RETURN( dim );
-      if(dim !=m_iDim){
-        if(m_bDeleteDataFlag) delete [] m_pfData;
-        m_pfData = new float(dim);
+      if(dim !=m_iDim || !m_bDeleteDataFlag){
+        if(m_bDeleteDataFlag && m_pfData) delete [] m_pfData;
+        m_pfData = new float[2*dim];
         m_iDim = dim;
+        m_bDeleteDataFlag = true;
       }
     }
     private:

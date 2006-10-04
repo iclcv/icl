@@ -71,12 +71,14 @@ namespace icl{
   const VQVectorSet &VQ2D::run(int k, int maxSteps, float mmqe, float &qe){
     // {{{ open
 
+    srand48(time(0));
+   
     // temporary variables
     int n = m_poData->dim();
     float *data = m_poData->data();
     m_poCenters->resize(k);
     float *centers = m_poCenters->data();
-    
+
     // check if all parameters are valid!
     ICLASSERT_RETURN_VAL( k>=0 ,*m_poCenters);
     ICLASSERT_RETURN_VAL( n>=0 ,*m_poCenters);
@@ -87,10 +89,12 @@ namespace icl{
     for(int p=0 ; p<k ; ++p){
       copy_elem(data,rnd(n-1),centers,p);
     } 
-    
+   
+
     std::vector<float> vecx(k),vecy(k); // mean x/y accumulators
     std::vector<int> vecn(k); // cluster size counters
 
+    
     for(int step = 0 ; step<maxSteps ; ++step){
       float errBuf(0);
       
@@ -103,13 +107,13 @@ namespace icl{
       ** 1.Step calculating voronoi cells **************
       *************************************************/
       for(int i = 0 ; i<n; ++i){
-        int iNN = nn(data,n,centers+2*i,errBuf);
+        int iNN = nn(centers,k,data+2*i,errBuf);
         qe += errBuf;
         vecx[iNN] += data[2*i];
         vecy[iNN] += data[2*i+1];
         vecn[iNN]++;
       }
-      
+ 
       // test if minimum quantisation error has already been reached
       if(qe/n <= mmqe) break;
       
@@ -125,19 +129,67 @@ namespace icl{
           centers[2*i+1]= vecy[i]/vecn[i];
         }     
       }
+      
     }
     qe/=n;
     return *m_poCenters;
-}
-
-
+  }
   // }}}
 
-  const VQClusterInfo &VQ2D::run2(int centers, int steps, float mmqe,float &qe){
+  const VQClusterInfo &VQ2D::features(){
     // {{{ open
-    return *m_poClusterInfo;
+    int k = m_poCenters->dim();
+    int n = m_poData->dim();
+    VQVectorSet &centers = *m_poCenters;
+    VQVectorSet &data = *m_poData;
+    VQClusterInfo &info = *m_poClusterInfo;
+    info.resize(k);
+    info.clear();
+    
+    float err, *p;
+    int inn;
+    for(int i=0;i<n;i++){
+      inn = nn(centers.data(),k,data[i],err);
+      p = data[i];
+      info.addElem(inn,p[0],p[1]);
+      info.error(inn)+=err;
+    }
+    float x,y,mxx,mxy,myy,l1,l2;
+    for(int i=0 ; i<k ;  i++){
+      int s = info.size(i);
+      info.error(i)/=s;
+      for(int j=0 ; j<s ; j++){
+        x = info.elem(i,j)[0];
+        y = info.elem(i,j)[1];
+        //mx += x;
+        //my += y;
+        mxx += x*x;
+        myy += y*y;
+        mxy += x*y;
+      }
+      mxx/=s;
+      mxy/=s;
+      myy/=s;
+
+      info.center(i)[0] = (centers[i])[0];//mx/s;
+      info.center(i)[1] = (centers[i])[1];//my/s;
+      
+      l1 = (mxx+myy)/2 + sqrt( pow(mxx-myy,2)/4 +mxy*mxy );
+      l2 = (mxx+myy)/2 - sqrt( pow(mxx-myy,2)/4 +mxy*mxy );
+      
+      info.pcainfo(i)[0] = atan2(l1-mxx, mxy);       
+      info.pcainfo(i)[1] = sqrt(l1);
+      info.pcainfo(i)[2] = sqrt(l2);
+    }
+    return info;
+  }
+  // }}}
+  
+  const VQVectorSet &VQ2D::centers(){
+    // {{{ open
+
+    return *m_poCenters; 
   }
 
   // }}}
-
 }

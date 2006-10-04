@@ -12,7 +12,10 @@ _DOT_DOT:=../${_DOT_DOT}
 
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
-
+include ${PACKAGES}/ICLQt
+include ${PACKAGES}/ICLIO
+include ${PACKAGES}/ICLCC
+include ${PACKAGES}/ICLBlob
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -20,10 +23,7 @@ ABS_INCLUDES:= ${ABS_INCLUDES}
 
 # Please add here all the directories with relative path
 # (e.g. -I../MyModule/src) that contain include files needed by the sources.
-REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
-		-I../src \
-		-I../../ICLIO/src \
-		-I../../ICLCC/src \
+REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
@@ -31,10 +31,8 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)
-REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
-		-L../../ICLIO/lib -lICLIO \
-		-L../../ICLCC/lib -lICLCC \
-		-L../../ICLBlob/lib -lICLBlob
+REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%)
+
 # Please add here all the objects with absolute path
 # that are needed by the executables.
 ABS_OBJECTS:= ${ABS_OBJECTS}

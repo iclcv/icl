@@ -20,12 +20,10 @@ namespace icl{
         @param qe quantisation error */
     const VQVectorSet &run(int centers, int steps, float mmqe, float &qe);
     
-    /// retruns all available information of the blobs
-    /** @param centers count of prototypes to use 
-        @param max. count of steps to perform 
-        @param mmqe mininum mean qauntisation error 
-        @param qe quantisation error */
-    const VQClusterInfo &run2(int centers, int steps, float mmqe,float &qe);
+    /// calculates advanced features like local pca
+    const VQClusterInfo &features();
+
+    const VQVectorSet &centers();
     
     protected:
     VQVectorSet *m_poCenters;
