@@ -55,15 +55,12 @@ class FileRead : public Grabber
            int iImageStart, int iImageEnd, 
            bool bBuffer = 0);
 
+  ///Destructor for FileRead
+  ~FileRead() throw() {}
+  
   ///Grab the next image from file/ buffer
   ImgI* grab(ImgI* poDst=0);
   
-  ///Set image buffering on/ off. 
-  /**
-     If image buffering is on, all images pre-loaded and buffered in memory.
-     This may cause a slower initialisation but speed up the image access
-     during runtime.
-  **/
   
  protected:
   void readSequenceFile(const std::string& sFileName);
@@ -74,12 +71,6 @@ class FileRead : public Grabber
   void readData(Img<Type> &oImg, info &oImgInfo);
   
  private:
-  template <class Type>
-  void readPGM(Img<Type> &oDst, info &oImgInfo);
-
-  template <class Type>
-  void readPPM(Img<Type> &oDst, info &oImgInfo);
-  
   void bufferImages();
   std::vector <std::string> m_vecFileName;
   std::vector<Img<icl8u> > m_vecImgBuffer;
@@ -87,6 +78,7 @@ class FileRead : public Grabber
   
   bool m_bBufferImages;
   unsigned int m_iImgCnt;
+  ImgI *m_poInImg;
   
 }; // class FileRead
  

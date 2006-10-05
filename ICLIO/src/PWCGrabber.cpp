@@ -286,12 +286,13 @@ PWCGrabber::PWCGrabber(const Size &s,
                        int iDevice):
   iWidth(s.width),iHeight(s.height),iDevice(iDevice),fFps(fFps),
   poRGB8Image(new Img8u(s,formatRGB)){ 
-  // m_pucFlippedData(new unsigned char[(int)(1.5*iWidth*iHeight)]){
   
   init();
 }
 
-PWCGrabber::~PWCGrabber(){
+PWCGrabber::~PWCGrabber() throw() {
+  // {{{ open 
+ 
   delete poRGB8Image;
   //delete m_pucFlippedData;
   
@@ -302,11 +303,11 @@ PWCGrabber::~PWCGrabber(){
   
   // ---- deleting last instance of grabber ----
   if (usbvflg_opencount[iDevice] == 0) { 
-    if (pthread_cancel(usb_grabber_thread[iDevice])<0) { /* kill thread */
+    if (pthread_cancel(usb_grabber_thread[iDevice])<0) { // kill thread
       printf("Error: Cancel pthread: %s\n",strerror(errno));
     }
     
-    if (pthread_join(usb_grabber_thread[iDevice],NULL)<0) {  /* wait */
+    if (pthread_join(usb_grabber_thread[iDevice],NULL)<0) {  // wait
       printf("Error: Cancel pthread: %s\n",strerror(errno));
     }
   
@@ -326,13 +327,13 @@ PWCGrabber::~PWCGrabber(){
       printf("thread stuff destroyed\n");
     }
 
-    if (usbvflg_fd[iDevice]>=0) {  /* close */
+    if (usbvflg_fd[iDevice]>=0) {  // close
       close(usbvflg_fd[iDevice]);          
       if (usbvflg_verbosity) {
         printf("closing /dev/video%d\n",iDevice);
       }
      
-      if (usbvflg_buf[iDevice]) { /* munmap */
+      if (usbvflg_buf[iDevice]) { // munmap
         munmap(usbvflg_buf[iDevice],usbvflg_vmbuf[iDevice].size);
         
         if (usbvflg_verbosity)
@@ -341,6 +342,8 @@ PWCGrabber::~PWCGrabber(){
     }
   }
 }
+
+// }}}
 
 void PWCGrabber::init() {
   // {{{ open
@@ -426,12 +429,12 @@ void PWCGrabber::init() {
    //width=vwin.width; 
    //height=vwin.height;
    usbvflg_opencount[iDevice]++;
-
-   // }}}
 }
+   // }}}
 
 ImgI* PWCGrabber::grab(ImgI *poOutput){
- 
+  // {{{ open 
+
   pthread_mutex_lock(&usb_semph_mutex[iDevice]);
   sem_wait(&usb_new_pictures[iDevice]); 
   pthread_mutex_unlock(&usb_semph_mutex[iDevice]);
@@ -526,5 +529,7 @@ ImgI* PWCGrabber::grab(ImgI *poOutput){
  
   return poOutput;
 }
+
+// }}}
 
 } //namespace icl

@@ -27,7 +27,8 @@ namespace icl {
   //--------------------------------------------------------------------------
   FileRead::FileRead(string sPattern, bool bBuffer)
     // {{{ open
-    : m_bBufferImages(bBuffer), m_iImgCnt (0)
+    : m_bBufferImages(bBuffer), 
+      m_iImgCnt (0)
   {
     FUNCTION_LOG("(string, bool)");
     
@@ -57,7 +58,7 @@ namespace icl {
 
     ppcFiles = match.we_wordv;
     for (unsigned int i=0; i < match.we_wordc; ++i) {
-       printf("%s\n", ppcFiles[i]);
+       LOOP_LOG(ppcFiles[i]);
        // retrieve file type
        if ( !(pcType = strrchr (ppcFiles[i], '.')) ) continue;
        if (strcmp (++pcType, "seq") == 0) readSequenceFile (ppcFiles[i]);
@@ -75,7 +76,8 @@ namespace icl {
   FileRead::FileRead(const string& sFilePrefix, string sDir, 
                      const string& sFilter, bool bBuffer)
     // {{{ open
-    : m_bBufferImages(bBuffer), m_iImgCnt (0)
+    : m_bBufferImages(bBuffer), 
+      m_iImgCnt (0)
   {
     FUNCTION_LOG("(string sFileName, string sDir, string sFilter)");
     
@@ -86,48 +88,55 @@ namespace icl {
       sDir = ".";
     }
 
-    //---- read directory content ----
+    //---- Read directory content ----
     DIR *oDir = opendir(sDir.c_str());
-    if (!oDir) return;
-
-    do
-    {
-      oEntry = readdir(oDir);
-      cout << oEntry << endl;
-      if (oEntry) {
-        string sTmpName(oEntry->d_name);
-        string sFileName;
-
-        if (sTmpName.rfind(sFilter,sTmpName.size()) != string::npos &&
-            sTmpName.find(sFilePrefix,0) != string::npos) {
-           sFileName = sDir + "/" + sTmpName;
-           LOOP_LOG ("File: " << sFileName);
+    if(oDir) {
+      do
+      {
+        oEntry = readdir(oDir);
+        if (oEntry) {
+          string sTmpName(oEntry->d_name);
+          string sFileName;
+          
+          if (sTmpName.rfind(sFilter,sTmpName.size()) != string::npos &&
+              sTmpName.find(sFilePrefix,0) != string::npos) {
+            sFileName = sDir + "/" + sTmpName;
+            LOOP_LOG ("File: " << sFileName);
+          }
+          
+          //---- add file(s) ----
+          if (sFilter == "seq") readSequenceFile (sFileName);
+          else m_vecFileName.push_back(sFileName);
         }
-
-        //---- add file(s) ----
-        if (sFilter == "seq") readSequenceFile (sFileName);
-        else m_vecFileName.push_back(sFileName);
+      } while (oEntry);
+      closedir(oDir);
+      
+      if (!m_vecFileName.size()) throw ICLException ("empty file list");
+      
+      //---- Buffer images ----
+      if (m_bBufferImages) {
+        bufferImages();
       }
-    } while (oEntry);
-    closedir(oDir);
-    if (!m_vecFileName.size ()) throw ICLException ("empty file list");
-
-    //---- Buffer images ----
-    if (m_bBufferImages) {
-      bufferImages();
+    }
+    else {
+      throw ICLException("Can't find directory");
     }
   }
-
+    
 // }}}
 
   //--------------------------------------------------------------------------
-  FileRead::FileRead(const string& sObjPrefix, const string& sFileType, string sDir,
-                     int iObjStart, int iObjEnd,
+  FileRead::FileRead(const string& sObjPrefix, const string& sFileType, 
+                     string sDir, int iObjStart, int iObjEnd,
                      int iImageStart, int iImageEnd, bool bBuffer)
     // {{{ open 
-    : m_bBufferImages(bBuffer), m_iImgCnt (0)
+    : m_bBufferImages(bBuffer), 
+    m_iImgCnt (0)
   {
     FUNCTION_LOG("(string, string, string, int, int ,int ,int, bool)");
+   
+    //---- Initialise variables ----
+    ifstream streamInputImage;
     
     if (sDir.size() == 0) {
       sDir = ".";
@@ -141,37 +150,24 @@ namespace icl {
                                 "__" + number2String(j) + 
                                 "." + sFileType);
         LOOP_LOG ("File: " << m_vecFileName.back());
+        
+        //---- Check for existing file ----
+        streamInputImage.open(m_vecFileName.back().c_str(),ios::in);
+        if(!streamInputImage)
+        {
+          throw ICLException ("Image file not found!");
+        }
+        streamInputImage.close();
       }
     }
-    if (!m_vecFileName.size ()) throw ICLException ("empty file list");
-
+    if (!m_vecFileName.size ()) throw ICLException ("Empty file list");
+    
     //---- Buffer images ----
     if (m_bBufferImages) {
       bufferImages();
     }
   }
   
-// }}}
-  
-  //--------------------------------------------------------------------------
-  void FileRead::readSequenceFile (const std::string& sFileName) 
-     // {{{ open
-  {
-     char cTmp[255];
-     ifstream streamSeq (sFileName.c_str(),ios::in);
-
-     if(!streamSeq)
-     {
-        ERROR_LOG("Can't open sequence file: " << sFileName);
-     }
-      
-     while(streamSeq)
-     {
-        streamSeq.getline(cTmp, 255);
-        m_vecFileName.push_back(cTmp);
-     }      
-     streamSeq.close();
-  }
 // }}}
 
   //--------------------------------------------------------------------------
@@ -182,20 +178,20 @@ namespace icl {
 
     //---- Variable definition ----
     Converter oConv;
-    ImgI *poInImg = 0;
     info oInfo;
     vector<string> sSubStr;
     
     //---- Grab image ----
     if (m_bBufferImages) {
-        poInImg = &(*m_iterImgBuffer);
+        m_poInImg = &(*m_iterImgBuffer);
         if (++m_iterImgBuffer == m_vecImgBuffer.end()) {
           m_iterImgBuffer = m_vecImgBuffer.begin();
         }
     }
     else {
       oInfo.sFileName = m_vecFileName[m_iImgCnt];
-      
+      SECTION_LOG("Grab image:" << oInfo.sFileName);
+            
       if (m_iImgCnt == m_vecFileName.size()-1) {
         m_iImgCnt = 0;
       }
@@ -208,30 +204,32 @@ namespace icl {
       checkFileType(oInfo);
       readHeader(oInfo);
 
-      poInImg = imgNew(oInfo.eDepth,oInfo.oImgSize,oInfo.eFormat,
-                       oInfo.iNumChannels,oInfo.oROI);
-
+      ensureCompatible(&m_poInImg, oInfo.eDepth, oInfo.oImgSize, 
+                       oInfo.eFormat, oInfo.iNumChannels, oInfo.oROI);
+                
       switch (oInfo.eDepth)
       {
         case depth8u:
-          readData(*(poInImg->asImg<icl8u>()), oInfo);
+          readData(*(m_poInImg->asImg<icl8u>()), oInfo);
           break;
           
         case depth32f:
-          readData(*(poInImg->asImg<icl32f>()), oInfo);
+          readData(*(m_poInImg->asImg<icl32f>()), oInfo);
           break;
 
         default:
-          readData(*(poInImg->asImg<icl8u>()), oInfo);
+          readData(*(m_poInImg->asImg<icl8u>()), oInfo);
       }
     }
 
     //---- Convert to output format ----
     if (poDst) {
-      oConv.convert(poDst, poInImg);
+      oConv.convert(poDst, m_poInImg);
+      return poDst;
     }
-
-    return poInImg;
+    else {
+      return m_poInImg;
+    }
   }
 
 // }}}
@@ -252,7 +250,7 @@ namespace icl {
         vector<string> vecSubString;
         vector<string>::iterator vecSubStringIter;
         vector<string> headerParameter;
-        string sTmpLine;
+        string sTmpLine, sMagicNumber;
         int iNumFeature = 0;
         
         enum headerInfo{
@@ -271,23 +269,37 @@ namespace icl {
         headerParameter.push_back("ImageDepth");
         headerParameter.push_back("Format");
         
-        //---- Set default values ----
-        oImgInfo.iNumChannels = getChannelsOfFormat (oImgInfo.eFormat);
-        oImgInfo.iNumImages = 1;
-        oImgInfo.eDepth = depth8u;
-        
-        //---- Open file ----
+         //---- Open file ----
         oImageStream.open(oImgInfo.sFileName.c_str(),ios::in | ios::binary);
         if(!oImageStream)
         {
           throw ICLException ("Can't open file");
         }
-        
-        //---- Read the first line of the header ----
-        getline(oImageStream, sTmpLine);
+
+        //---- Read the magic number  ----
+        getline(oImageStream, sMagicNumber);
+        cout << sMagicNumber << endl;
+
+        //---- Set image format ----
+        if (sMagicNumber.find("P6",0) != string::npos) {
+          SECTION_LOG("Set format RGB");
+          oImgInfo.eFormat = formatRGB;
+        }
+        else if (sMagicNumber.find("P5",0) != string::npos) {
+          SECTION_LOG("Set format GRAY");
+          oImgInfo.eFormat = formatGray;
+        }
+        else {
+          SECTION_LOG("Set format MATRIX");
+          oImgInfo.eFormat = formatMatrix;
+        }
+
+        //---- Set default values ----
+        oImgInfo.iNumChannels = getChannelsOfFormat(oImgInfo.eFormat);
+        oImgInfo.iNumImages = 1;
+        oImgInfo.eDepth = depth8u;
         
         // {{{ Read special header info
-
         do
         {
           getline(oImageStream, sTmpLine);
@@ -322,12 +334,25 @@ namespace icl {
                     case formatRGB:
                       oImgInfo.iNumChannels = iNumFeature*3;
                       oImgInfo.iNumImages = iNumFeature;
+                      
+                      //---- Is num channels in depence to the format ----
+                      if (getChannelsOfFormat(oImgInfo.eFormat) != 
+                          oImgInfo.iNumChannels) {
+                        oImgInfo.eFormat = formatMatrix;
+                      }
+                      
                       break;
                       
                     case formatGray:
                     case formatMatrix: 
                       oImgInfo.iNumChannels = iNumFeature;
                       oImgInfo.iNumImages = iNumFeature;
+                      
+                      //---- Is num channels in depence to the format ----
+                      if (getChannelsOfFormat(oImgInfo.eFormat) != 
+                          oImgInfo.iNumChannels) {
+                        oImgInfo.eFormat = formatMatrix;
+                      }
                       break;
                       
                     default:
@@ -392,11 +417,6 @@ namespace icl {
         
         // }}}
         
-        //---- Change format ? ----
-        if (oImgInfo.iNumImages > 1) {
-          oImgInfo.eFormat = formatMatrix;
-        }
-        
         //---- Save stream position ----
         oImgInfo.streamPos = oImageStream.tellg();
         oImageStream.close();
@@ -421,20 +441,80 @@ namespace icl {
     // {{{ open
     FUNCTION_LOG("(Img<icl8u>, string, info &)");
     
+    ifstream oImageStream;
+      
     switch (oImgInfo.eFileFormat)
     {
       case ioFormatPGM:
+      {
         SECTION_LOG("Start reading image:");
-        readPGM(oImg, oImgInfo);
-        break;
+        // {{{ Read data
+
+        //---- Open file ----
+        oImageStream.open(oImgInfo.sFileName.c_str(),
+                                   ios::in | ios::binary);
+        if(!oImageStream)
+        {
+          throw ICLException ("Can't open file");
+        }
         
+        //---- Read data ----
+        oImageStream.seekg(oImgInfo.streamPos);
+        int iDim = oImgInfo.oImgSize.getDim();
+        
+        for (int i=0;i<oImgInfo.iNumImages;i++)
+        {
+          oImageStream.read((char*) oImg.getData(i), 
+                            iDim * sizeof(Type));
+        }
+        
+        oImageStream.close();
+
+        // }}}
+        break;
+      }
+      
       case ioFormatPPM:
+      {
         SECTION_LOG("Start reading image:");
-        readPPM(oImg, oImgInfo);    
-        break;
+        // {{{ Read data
+
+        //---- Open file ----
+        oImageStream.open(oImgInfo.sFileName.c_str(),
+                                   ios::in | ios::binary);
+        if(!oImageStream)
+        {
+          throw ICLException ("Can't open file");
+        }
         
+        //---- Read data ---
+        oImageStream.seekg(oImgInfo.streamPos);
+        
+        typename Img<Type>::iterator itR;
+        typename Img<Type>::iterator itG;
+        typename Img<Type>::iterator itB;
+        
+        for (int i=0;i<oImgInfo.iNumImages;i++)
+        {
+          itR = oImg.getIterator(i*3);
+          itG = oImg.getIterator(i*3+1);
+          itB = oImg.getIterator(i*3+2);
+          
+          for(; itR.inRegion(); itR++,itG++,itB++)
+          {
+            *itR = oImageStream.get();
+            *itG = oImageStream.get();
+            *itB = oImageStream.get();
+          }
+        }  
+
+// }}}
+        break;
+      }
+      
       case ioFormatICL:
         SECTION_LOG("Start reading image:");
+        ERROR_LOG("Implementation missing");
         break;
         
       default:
@@ -442,79 +522,6 @@ namespace icl {
     } 
   }
 
-
-  // }}}
-
-  //--------------------------------------------------------------------------
-  template <class Type>
-  void FileRead::readPGM(Img<Type> &oDst, info &oImgInfo) {     
-    // {{{ open
-    
-    FUNCTION_LOG("(Img<Type>, info &)");
-    
-    //---- Variable definition ----
-    ifstream oImageStream;
-    int iDim = oImgInfo.oImgSize.getDim();
-    
-    //---- Open file ----
-    oImageStream.open(oImgInfo.sFileName.c_str(),ios::in | ios::binary);
-
-    if(!oImageStream)
-    {
-      throw ICLException ("Can't open file");
-    }
-    
-    //---- Read data ----
-    oImageStream.seekg(oImgInfo.streamPos);
-    for (int i=0;i<oImgInfo.iNumImages;i++)
-    {
-      oImageStream.read((char*) oDst.getData(i), 
-                        iDim * sizeof(Type));
-    }
-
-    oImageStream.close();
-  }
-  
-    // }}}
-  
-  //--------------------------------------------------------------------------
-  template <class Type>
-  void FileRead::readPPM(Img<Type> &oDst, info &oImgInfo) {     
-    // {{{ open
-
-    FUNCTION_LOG("(Img<Type>, string, info &)");
-    
-    //---- Variable definition ----
-    ifstream oImageStream;
-    
-    //---- Open file ----
-    oImageStream.open(oImgInfo.sFileName.c_str(),ios::in | ios::binary);
-    if(!oImageStream)
-    {
-      throw ICLException ("Can't open file");
-    }
-    
-    //---- Read data ---
-    oImageStream.seekg(oImgInfo.streamPos);
-        
-    typename Img<Type>::iterator itR;
-    typename Img<Type>::iterator itG;
-    typename Img<Type>::iterator itB;
-    
-    for (int i=0;i<oImgInfo.iNumImages;i++)
-    {
-      itR = oDst.getIterator(i*3);
-      itG = oDst.getIterator(i*3+1);
-      itB = oDst.getIterator(i*3+2);
-      
-      for(; itR.inRegion(); itR++,itG++,itB++)
-      {
-        *itR = oImageStream.get();
-        *itG = oImageStream.get();
-        *itB = oImageStream.get();
-      }
-    }  
-  }
 
   // }}}
 
@@ -544,6 +551,7 @@ namespace icl {
         //---- Resize image ----
         m_vecImgBuffer[i].setChannels(oInfo.iNumChannels);
         m_vecImgBuffer[i].resize(oInfo.oImgSize);
+
         //---- Read image data ----
         readData(m_vecImgBuffer[i], oInfo);
       }
@@ -551,5 +559,26 @@ namespace icl {
   }
 
   // }}}
+  
+  //--------------------------------------------------------------------------
+  void FileRead::readSequenceFile (const std::string& sFileName) 
+     // {{{ open
+  {
+     char cTmp[255];
+     ifstream streamSeq (sFileName.c_str(),ios::in);
+
+     if(!streamSeq)
+     {
+        ERROR_LOG("Can't open sequence file: " << sFileName);
+     }
+      
+     while(streamSeq)
+     {
+        streamSeq.getline(cTmp, 255);
+        m_vecFileName.push_back(cTmp);
+     }      
+     streamSeq.close();
+  }
+// }}}
 
 } // namespace icl

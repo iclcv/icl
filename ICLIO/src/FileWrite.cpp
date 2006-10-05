@@ -35,10 +35,20 @@ namespace icl{
     
     //---- Set write mode ----
     vector<string> vecSubs;
+
     m_iWriteMode = 1;
     splitString(sFileName,".",vecSubs);
-    m_oInfo.sFileName = vecSubs.front();
-    m_oInfo.sFileType = vecSubs.back();
+
+    int iTmpPos = sFileName.rfind(".",sFileName.size());
+    
+    //sFileName.copy(m_oInfo.sFileName, iTmpPos);
+
+    //sFileName.copy(m_oInfo.sFileType.c_str(),
+    //             3,
+    //             sFileName.find_last_of(".",sFileName.size()));
+
+    cout << m_oInfo.sFileName << endl;
+    cout << m_oInfo.sFileType << endl;
   }
 
 // }}}
@@ -54,6 +64,7 @@ namespace icl{
     
     //----Build file name ----
     string sFileName = buildFileName();
+    cout << sFileName << endl;
     
     //---- Open output stream ----
     SECTION_LOG("Save image: " << m_oInfo.sFileName<<"."<<m_oInfo.sFileType);

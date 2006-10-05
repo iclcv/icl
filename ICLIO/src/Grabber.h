@@ -12,15 +12,16 @@
 
 #include "ImgI.h" 
 #include "IO.h"
+#include "Exception.h"
 
 namespace icl {
 
 /// Common interface class for all grabbers
-class Grabber
+  class Grabber : public ICLException
   {
   public:
      Grabber() {}
-     virtual ~Grabber() {}
+     virtual ~Grabber() throw () {}
      virtual ImgI* grab(ImgI *poDst)=0;
   }; //class
  

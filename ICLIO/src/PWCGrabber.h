@@ -38,18 +38,18 @@ namespace icl{
   @see Converter
   */
   class PWCGrabber : public Grabber {
-    public:
+  public:
     
     /// Base constructor with parameters for width, height, image type, grabbing rate and grabbing device
     /**
-    @param s size of grabbed images
-    @param fFps grabbing rate
-    @param iDevice USB grabbing device {0,1,2,3}
+       @param s size of grabbed images
+       @param fFps grabbing rate
+       @param iDevice USB grabbing device {0,1,2,3}
     */
     PWCGrabber(const Size &s,float fFps=30, int iDevice=0);
     
     /// Destructor
-    ~PWCGrabber();
+    ~PWCGrabber() throw();
     
     /// grabbing function, 
     /** grabs the next pwc image into an internal buffer, and converts it into 
@@ -61,15 +61,12 @@ namespace icl{
     **/    
     ImgI* grab(ImgI *poDst=0);
     
-    private:
-    
-    int iWidth, iHeight;
-    int iDevice;
+  private:   
+    int iWidth, iHeight, iDevice;
     float fFps;
     
     Img8u *poRGB8Image;
     Converter oConverter,oConverterHalfSize;
-    //unsigned char *m_pucFlippedData;
 
     void init();
   };

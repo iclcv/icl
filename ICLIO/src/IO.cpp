@@ -72,37 +72,32 @@ namespace icl {
 
     if (oImgInfo.sFileType == "pgm")
     {
-      SECTION_LOG("Detect pgm image");
+      SECTION_LOG("Detect pgm file");
       oImgInfo.eFileFormat = ioFormatPGM;
-      oImgInfo.eFormat = formatGray;
     }
     else if (oImgInfo.sFileType == "ppm")
     {
-      SECTION_LOG("Detect ppm image");
+      SECTION_LOG("Detect ppm file");
       oImgInfo.eFileFormat = ioFormatPPM;
-      oImgInfo.eFormat = formatRGB;
     }
     else if (oImgInfo.sFileType == "seq")
     {
       SECTION_LOG("Detect sequence file");
       oImgInfo.eFileFormat = ioFormatPPM;
-      oImgInfo.eFormat = formatMatrix;
     }
     else if (oImgInfo.sFileType == "icl")
     {
-      SECTION_LOG("Detect icl image");
+      SECTION_LOG("Detect icl file");
       oImgInfo.eFileFormat = ioFormatICL;
-      oImgInfo.eFormat = formatMatrix;
     }
     else if (oImgInfo.sFileType == "jpg")
     {
-      SECTION_LOG("Detect jpg image");
+      SECTION_LOG("Detect jpg file");
       oImgInfo.eFileFormat = ioFormatJPG;
-      oImgInfo.eFormat = formatRGB;
     }
     else
     {
-      ERROR_LOG("This file format is not supported by the ICL");
+      ICLException("This file type is unsupported by the ICL");
     } 
   }
   
