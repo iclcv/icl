@@ -10,21 +10,17 @@
 #ifndef ICLGRABBER_H
 #define ICLGRABBER_H
 
-#include "ImgI.h" 
-#include "IO.h"
-#include "Exception.h"
-
 namespace icl {
+  class ImgI;
 
-/// Common interface class for all grabbers
-  class Grabber : public ICLException
-  {
+  /// Common interface class for all grabbers
+  class Grabber {
   public:
      Grabber() {}
-     virtual ~Grabber() throw () {}
+     virtual ~Grabber() {}
      virtual ImgI* grab(ImgI *poDst)=0;
-  }; //class
+  }; // class
  
-}//namespace icl
+} // namespace icl
 
 #endif

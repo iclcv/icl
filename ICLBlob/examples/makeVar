@@ -12,7 +12,6 @@ _DOT_DOT:=../${_DOT_DOT}
 
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
-include ${PACKAGES}/ICLQt
 include ${PACKAGES}/ICLIO
 include ${PACKAGES}/ICLCC
 include ${PACKAGES}/ICLBlob

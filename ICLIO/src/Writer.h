@@ -10,17 +10,16 @@
 #ifndef ICLWRITER_H
 #define ICLWRITER_H
 
-#include "ImgI.h" 
-
 namespace icl {
+  class ImgI;
 
-/// The ICLGrabber base class
-class Writer {
+  /// The ICLGrabber base class
+  class Writer {
   public:
      Writer() {}
      virtual ~Writer() {}
      virtual void write(ImgI *poDst)=0;
-}; //class
+  }; //class
  
 }//namespace icl
 

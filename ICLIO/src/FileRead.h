@@ -11,6 +11,7 @@
 #define ICLFILEREAD_H
 
 #include <Grabber.h>
+#include <IO.h>
 #include <string>
 #include <vector>
 
@@ -56,7 +57,7 @@ class FileRead : public Grabber
            bool bBuffer = 0);
 
   ///Destructor for FileRead
-  ~FileRead() throw() {}
+  ~FileRead() {}
   
   ///Grab the next image from file/ buffer
   ImgI* grab(ImgI* poDst=0);

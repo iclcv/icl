@@ -11,30 +11,27 @@
 #define ICLFILEWRITE_H
 
 #include <fstream>
-#include "Converter.h"
-#include "Writer.h"
-#include <ImgI.h>
+#include <Writer.h>
+#include <Converter.h>
 #include <IO.h>
-
-using namespace std;
 
 namespace icl {
 
 class FileWrite : public Writer
 {
  public:
-  FileWrite(string sPrefix, string sDir, string sType, int iObjNum = 1);
-  FileWrite(string sFileName);
+  FileWrite(std::string sPrefix, std::string sDir, std::string sType, int iObjNum = 1);
+  FileWrite(std::string sFileName);
   
   void write(ImgI* poSrc);
   
   void setObjID(int iID) { m_iCurrObj = iID;}
   
  private:
-  void writeAsPGM(ImgI *poSrc, ofstream &streamOutputImage);
-  void writeAsPPM(ImgI *poSrc, ofstream &streamOutputImage);
-  void writeAsMatrix(ImgI *poSrc, ofstream &streamOutputImage);
-  string buildFileName();
+  void writeAsPGM(ImgI *poSrc, std::ofstream &streamOutputImage);
+  void writeAsPPM(ImgI *poSrc, std::ofstream &streamOutputImage);
+  void writeAsMatrix(ImgI *poSrc, std::ofstream &streamOutputImage);
+  std::string buildFileName();
   
   Converter m_oConverter;
   info m_oInfo;

@@ -6,6 +6,9 @@
 ifeq "${ICLQt_MAKEVAR}" ""
 ICLQt_MAKEVAR=ICLQt_MAKEVAR
 
+#include only, if QT is available
+ifneq "$(HAVE_QT)" ""
+
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
 
@@ -65,8 +68,7 @@ LDFLAGS:= ${LDFLAGS}
 # Flags for dynamic library linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
+endif #QT4 is available
 
 endif #ICLCC defined
-
-
 

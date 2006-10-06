@@ -8,8 +8,12 @@
 */
 
 #include "FileWrite.h"
+#include "Converter.h"
+#include <ImgI.h>
 
-namespace icl{
+using namespace std;
+
+namespace icl {
 
   //--------------------------------------------------------------------------
   FileWrite::FileWrite(string sPrefix,string sDir, 
