@@ -3,6 +3,7 @@
 #include "FileRead.h"
 
 using namespace icl;
+using namespace std;
 
 void xv(string s){
   system(string("xv ").append(s).append("&").c_str());
