@@ -1,7 +1,7 @@
 #include "WeightedSum.h"
 namespace icl {
 
-#ifdef WITH_IPP_OPTIMIZATIONP
+#ifdef WITH_IPP_OPTIMIZATION
 
   // {{{ ippi-function call templates
 
