@@ -208,18 +208,52 @@ template <typename T,typename R>
 #endif
 
   // {{{ ImgI* versions
-/*
-  void WeightedSum::ws (ImgI *poSrc, ImgI **ppoDst, const std::vector<float> weights)
+  
+  void Logical::Not (const ImgI *poSrc, ImgI **ppoDst)
   {
 
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc)) return;
     if (poSrc->getDepth () == depth8u)
-      ws(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>(),weights);
+      Not(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
     else
-      ws(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(),weights);
+      Not(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
   }
+  void Logical::And (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
+  {
+    // {{{ open
+    if (!Filter::prepare (ppoDst, poSrc1, poSrc2)) return;
+    if (poSrc1->getDepth ()!=poSrc1->getDepth ())return;
+    if (poSrc1->getDepth () == depth8u)
+      And(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+    else
+      And(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+  }
+
+  void Logical::Or (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
+  {
+    // {{{ open
+    if (!Filter::prepare (ppoDst, poSrc1, poSrc2)) return;
+    if (poSrc1->getDepth ()!=poSrc1->getDepth ())return;
+    if (poSrc1->getDepth () == depth8u)
+      Or(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+    else
+      Or(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+  }
+
+  void Logical::Xor (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
+  {
+    // {{{ open
+    if (!Filter::prepare (ppoDst, poSrc1, poSrc2)) return;
+    if (poSrc1->getDepth ()!=poSrc1->getDepth ())return;
+    if (poSrc1->getDepth () == depth8u)
+      Xor(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+    else
+      Xor(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+  }
+
+  
   // }}}
-  */
+  
 // }}}
 }
