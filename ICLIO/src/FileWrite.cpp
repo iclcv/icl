@@ -41,16 +41,24 @@ namespace icl {
     vector<string> vecSubs;
 
     m_iWriteMode = 1;
+    
     splitString(sFileName,".",vecSubs);
 
-    int iTmpPos = sFileName.rfind(".",sFileName.size());
-    
-    //sFileName.copy(m_oInfo.sFileName, iTmpPos);
-
-    //sFileName.copy(m_oInfo.sFileType.c_str(),
-    //             3,
-    //             sFileName.find_last_of(".",sFileName.size()));
-
+    if(vecSubs.size() == 2){
+      m_oInfo.sFileName = vecSubs[0];
+      m_oInfo.sFileType = vecSubs[1];
+    }else{
+      printf("Ooops something went wrong!\n");
+    }
+      /*
+      int iTmpPos = sFileName.rfind(".",sFileName.size());
+      
+      m_oInfo.sFileName = sFileName.substr(0,iTmpPos);
+      sFileName.copy(m_oInfo.sFileName.c_str(), iTmpPos);
+      sFileName.copy(m_oInfo.sFileType.c_str(),
+      3,
+      sFileName.find_last_of(".",sFileName.size()));
+      */
     cout << m_oInfo.sFileName << endl;
     cout << m_oInfo.sFileType << endl;
   }
