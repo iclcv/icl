@@ -2,7 +2,6 @@
 #include "Img.h"
 namespace icl {
 
-#ifdef WITH_IPP_OPTIMIZATION
 // {{{ not for all (the implementation of the IPP icl32f version for NOT uses the fallback, because no IPP version is aviable)
 template <typename T,typename R>
   void fallbacklogicalNot(const Img<T> *src, Img<T> *dst)
@@ -19,7 +18,9 @@ template <typename T,typename R>
       }
     }
   }
+    // }}}
 // }}}
+#ifdef WITH_IPP_OPTIMIZATION
   // {{{ ippi-function call templates
 
 template <typename T,typename R, IppStatus (*ippiFunc) (const R*, int, const R*, int, R*, int, IppiSize)>
