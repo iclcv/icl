@@ -222,7 +222,7 @@ template <typename T,typename R>
   void Logical::And (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
   {
     // {{{ open
-    if (!Filter::prepare (ppoDst, poSrc1, poSrc2)) return;
+    if (!Filter::prepare (ppoDst, poSrc1)) return;
     if (poSrc1->getDepth ()!=poSrc1->getDepth ())return;
     if (poSrc1->getDepth () == depth8u)
       And(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
@@ -233,7 +233,7 @@ template <typename T,typename R>
   void Logical::Or (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
   {
     // {{{ open
-    if (!Filter::prepare (ppoDst, poSrc1, poSrc2)) return;
+    if (!Filter::prepare (ppoDst, poSrc1)) return;
     if (poSrc1->getDepth ()!=poSrc1->getDepth ())return;
     if (poSrc1->getDepth () == depth8u)
       Or(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
@@ -244,7 +244,7 @@ template <typename T,typename R>
   void Logical::Xor (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
   {
     // {{{ open
-    if (!Filter::prepare (ppoDst, poSrc1, poSrc2)) return;
+    if (!Filter::prepare (ppoDst, poSrc1)) return;
     if (poSrc1->getDepth ()!=poSrc1->getDepth ())return;
     if (poSrc1->getDepth () == depth8u)
       Xor(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
