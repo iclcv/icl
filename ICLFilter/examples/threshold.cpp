@@ -2,6 +2,7 @@
 #include "FileWrite.h"
 #include "FileRead.h"
 
+using namespace std;
 using namespace icl;
 using namespace std;
 

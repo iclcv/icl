@@ -22,10 +22,24 @@ namespace icl {
     std::string m_sMessage;
     
   public:
-    ICLException( std::string msg ) throw() : m_sMessage(msg) {}
+    ICLException (std::string msg) throw() : m_sMessage(msg) {}
     virtual ~ICLException() throw() {};
     virtual const char* what() const throw() {return m_sMessage.c_str();}
     void report();
+  };
+
+  class ICLInvalidFileFormat : public ICLException {
+  public:
+    ICLInvalidFileFormat () throw() : 
+       ICLException (std::string("invalid file format")) {}
+    virtual ~ICLInvalidFileFormat() throw() {};
+  };
+
+  class FileOpenException : public ICLException {
+  public:
+    FileOpenException (const std::string& sFileName) throw() : 
+       ICLException (std::string("Can't open file: ") + sFileName) {}
+    virtual ~FileOpenException() throw() {};
   };
  
 }

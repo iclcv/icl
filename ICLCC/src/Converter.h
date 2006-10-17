@@ -4,25 +4,24 @@
 #include <Img.h>
 
 namespace icl{
-  /// Color Converter Object
+  /// General Image Converter
   /**
-  The ImgConverter wrapps color conversion function from iclcc.h
-  into an Object, which contains all necessary Buffers for converting images.
-  In addition to that it brings the functionality for scaling images.
-  Scaling and converting do not have to debar each other - the Converter
-  is able to scale images internally, or to convert them internally into
-  another depth before converting.
+  The Converter wraps and summarizes all image conversion routines,
+  including depth change, scaling and color conversion. It provides all
+  neccessary buffers to do several of these changes in series. Simply
+  provide the desired output format to poDst of the convert function,
+  and this method will select the appropriate conversion steps.
   */
-  class Converter{
+  class Converter {
     public:
     
-    /// Base constructor
-    Converter();
+    /// constructor
+    Converter(bool bROIOnly=false);
 
-    /// Destructors
+    /// destructor
     ~Converter();
 
-    /// conversion function
+    /// image conversion function
     /**
     Although this function looks like the iclcc function located in the 
     iclcc.h,  it brings some additional functionalities (see class description).
@@ -33,6 +32,7 @@ namespace icl{
 
     private:
     ImgI *m_poDepthBuffer,*m_poSizeBuffer;
+    bool  m_bROIOnly;
   };
 }
 

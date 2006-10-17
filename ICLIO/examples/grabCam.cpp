@@ -11,7 +11,7 @@ int main()
   PWCGrabber cam(Size(320,240));
   
   ImgI* poImg = imgNew(depth8u,Size(320,240));
-  FileWrite ioWrite("outImg","./demoImages","ppm");
+  FileWrite ioWrite("demoImages/outImg##.ppm");
   
   cam.grab(poImg);
   ioWrite.write(poImg);

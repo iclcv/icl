@@ -369,13 +369,13 @@ namespace icl {
       };
       </pre>
       This will work, but the "?:"-statement makes the code hardly readable.
-      The following code extract will show the advantage of using the iclNew
+      The following code extract will show the advantage of using the imgNew
       function:
       <pre>
       class Foo{
          public:
          Foo(...,Depth eDepth,...):
-             poImage(iclNew(eDepth,...)){
+             poImage(imgNew(eDepth,...)){
          }
          private:
          ImgI *poImage;         

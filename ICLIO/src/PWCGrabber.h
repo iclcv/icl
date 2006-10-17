@@ -49,7 +49,7 @@ namespace icl{
     PWCGrabber(const Size &s,float fFps=30, int iDevice=0);
     
     /// Destructor
-    ~PWCGrabber() throw();
+    ~PWCGrabber();
     
     /// grabbing function, 
     /** grabs the next pwc image into an internal buffer, and converts it into 
@@ -59,7 +59,7 @@ namespace icl{
         @param poDst destination image. If it has formatMatrix, than it will be
                      converted to formatRGB for best performance. 
     **/    
-    ImgI* grab(ImgI *poDst=0);
+    virtual ImgI* grab(ImgI *poDst=0);
     
   private:   
     int iWidth, iHeight, iDevice;

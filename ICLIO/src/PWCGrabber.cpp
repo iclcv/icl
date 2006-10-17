@@ -290,7 +290,7 @@ PWCGrabber::PWCGrabber(const Size &s,
   init();
 }
 
-PWCGrabber::~PWCGrabber() throw() {
+PWCGrabber::~PWCGrabber() {
   // {{{ open 
  
   delete poRGB8Image;
@@ -448,32 +448,6 @@ ImgI* PWCGrabber::grab(ImgI *poOutput){
   icl8u *pU = pY+iWidth*iHeight;
   icl8u *pV = pY+(int)(1.25*iWidth*iHeight);
 
-  /*  // <flip>
-  icl8u *pYfl = m_pucFlippedData;
-  icl8u *pUfl = pYfl+iWidth*iHeight;
-  icl8u *pVfl = pYfl+(int)(1.25*iWidth*iHeight);
- 
-  Size s(iWidth,iHeight);
-  Size s2(iWidth/2,iHeight/2);
-  
-  Img8u ySrc(s,formatMatrix,1,&pY);
-  Img8u uSrc(s2,formatMatrix,1,&pU);
-  Img8u vSrc(s2,formatMatrix,1,&pV);
-
-  Img8u yFlipped(s,formatMatrix,1,&pYfl);
-  Img8u uFlipped(s2,formatMatrix,1,&pUfl);
-  Img8u vFlipped(s2,formatMatrix,1,&pVfl);
-  
-  ySrc.flippedCopyROI(&yFlipped);
-  uSrc.flippedCopyROI(&uFlipped);
-  vSrc.flippedCopyROI(&vFlipped);
-  
-  pY = pYfl;
-  pU = pUfl;
-  pV = pVfl;
-  */
-  // </flip>
-  
   if(poOutput) {
     if(poOutput->getFormat() == formatRGB &&
        poOutput->getDepth() == depth8u &&

@@ -1,7 +1,7 @@
 /*
   FileRead.cpp
 
-  Written by: Michael Götting (2006)
+  Written by: Michael Götting, Robert Haschke (2006)
               University of Bielefeld
               AG Neuroinformatik
               mgoettin@techfak.uni-bielefeld.de
@@ -10,8 +10,11 @@
 #include <stdlib.h>
 #include <wordexp.h>
 #include <dirent.h>
-#include <algorithm>
+#include <zlib.h>
+#include <stdio.h>
+
 #include <fstream>
+#include <sstream>
 
 #include <FileRead.h>
 #include <Converter.h>
@@ -25,16 +28,12 @@ namespace icl {
   }
 
   //--------------------------------------------------------------------------
-  FileRead::FileRead(string sPattern, bool bBuffer)
+  FileRead::FileRead(string sPattern) throw (ICLException) 
     // {{{ open
-    : m_bBufferImages(bBuffer), 
-      m_iImgCnt (0)
+
   {
-    FUNCTION_LOG("(string, bool)");
-    
     wordexp_t match;
     char **ppcFiles;
-    char *pcType;
 
     // remove newlines from sPattern
     std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
@@ -58,504 +57,190 @@ namespace icl {
 
     ppcFiles = match.we_wordv;
     for (unsigned int i=0; i < match.we_wordc; ++i) {
-       LOOP_LOG(ppcFiles[i]);
-       // retrieve file type
-       if ( !(pcType = strrchr (ppcFiles[i], '.')) ) continue;
-       if (strcmp (++pcType, "seq") == 0) readSequenceFile (ppcFiles[i]);
-       else m_vecFileName.push_back(ppcFiles[i]);
+       bool bGzipped;
+       switch (getFileType (ppcFiles[i], bGzipped)) {
+         case ioFormatSEQ: readSequenceFile (ppcFiles[i]); break;
+         case ioFormatUnknown: break; // skip unknown file types
+         default:
+            m_vecFileName.push_back(ppcFiles[i]);
+            break;
+       }
     }
     wordfree(&match);
-    if (!m_vecFileName.size ()) throw ICLException ("empty file list");
 
-    //---- buffer images ----
-    if (m_bBufferImages) bufferImages();
+    this->init ();
   }
+
 // }}}
 
   //--------------------------------------------------------------------------
-  FileRead::FileRead(const string& sFilePrefix, string sDir, 
-                     const string& sFilter, bool bBuffer)
-    // {{{ open
-    : m_bBufferImages(bBuffer), 
-      m_iImgCnt (0)
+  FileRead::FileRead(const string& sPrefix, const string& sType, 
+                     int iObjStart, int iObjEnd, int iImageStart, int iImageEnd)
+     throw (ICLException) 
+     // {{{ open 
+
   {
-    FUNCTION_LOG("(string sFileName, string sDir, string sFilter)");
-    
-    //---- Initialise variables ----
-    struct dirent *oEntry;
-    
-    if (sDir.size() == 0) {
-      sDir = ".";
-    }
+     ostringstream ossFile;
+     ossFile << "." << sType;
+     bool bDummy;
 
-    //---- Read directory content ----
-    DIR *oDir = opendir(sDir.c_str());
-    if(oDir) {
-      do
-      {
-        oEntry = readdir(oDir);
-        if (oEntry) {
-          string sTmpName(oEntry->d_name);
-          string sFileName;
-          
-          if (sTmpName.rfind(sFilter,sTmpName.size()) != string::npos &&
-              sTmpName.find(sFilePrefix,0) != string::npos) {
-            sFileName = sDir + "/" + sTmpName;
-            LOOP_LOG ("File: " << sFileName);
-          }
-          
-          //---- add file(s) ----
-          if (sFilter == "seq") readSequenceFile (sFileName);
-          else m_vecFileName.push_back(sFileName);
+     ioformat eFormat = getFileType (ossFile.str(), bDummy);
+     if (eFormat == ioFormatSEQ || eFormat == ioFormatUnknown)
+        throw ICLException (string("not supported file type ") + sType);
+
+     //---- Build filename ----
+     for (int i=iObjStart;i<=iObjEnd;i++) {
+        for (int j=iImageStart;j<=iImageEnd;j++) {
+           ossFile.clear ();
+           ossFile << sPrefix << i << "__" << j << "." << sType;
+           m_vecFileName.push_back(ossFile.str());
         }
-      } while (oEntry);
-      closedir(oDir);
-      
-      if (!m_vecFileName.size()) throw ICLException ("empty file list");
-      
-      //---- Buffer images ----
-      if (m_bBufferImages) {
-        bufferImages();
-      }
-    }
-    else {
-      throw ICLException("Can't find directory");
-    }
+     }
+
+     this->init ();
   }
-    
+
 // }}}
 
   //--------------------------------------------------------------------------
-  FileRead::FileRead(const string& sObjPrefix, const string& sFileType, 
-                     string sDir, int iObjStart, int iObjEnd,
-                     int iImageStart, int iImageEnd, bool bBuffer)
-    // {{{ open 
-    : m_bBufferImages(bBuffer), 
-    m_iImgCnt (0)
+  void FileRead::init() throw (ICLException) 
+     // {{{ open
   {
-    FUNCTION_LOG("(string, string, string, int, int ,int ,int, bool)");
-   
-    //---- Initialise variables ----
-    ifstream streamInputImage;
-    
-    if (sDir.size() == 0) {
-      sDir = ".";
-    }
-    
-    //---- Build filename ----
-    for (int i=iObjStart;i<=iObjEnd;i++) {
-      for (int j=iImageStart;j<=iImageEnd;j++) {
-        m_vecFileName.push_back(sDir +"/"+ sObjPrefix + 
-                                number2String(i) + 
-                                "__" + number2String(j) + 
-                                "." + sFileType);
-        LOOP_LOG ("File: " << m_vecFileName.back());
-        
-        //---- Check for existing file ----
-        streamInputImage.open(m_vecFileName.back().c_str(),ios::in);
-        if(!streamInputImage)
-        {
-          throw ICLException ("Image file not found!");
-        }
-        streamInputImage.close();
-      }
-    }
-    if (!m_vecFileName.size ()) throw ICLException ("Empty file list");
-    
-    //---- Buffer images ----
-    if (m_bBufferImages) {
-      bufferImages();
-    }
+     m_bBuffered = false;
+     m_iCurImg   = 0;
+     m_poCurImg  = 0;
+     if (m_vecFileName.size () == 0)
+        throw ICLException ("empty file list");
+
+     // setup the jpeg error routine once
+     jpgCinfo.err = jpeg_std_error(&jpgErr);
+     jpgErr.error_exit = icl_jpeg_error_exit;
   }
-  
-// }}}
+  // }}}
 
   //--------------------------------------------------------------------------
-  ImgI* FileRead::grab(ImgI* poDst) {
+  FileRead::~FileRead ()
+     // {{{ open
+  {
+     for (ImageBuffer::iterator it=m_vecImgBuffer.begin(), 
+             end=m_vecImgBuffer.end(); it != end; ++it)
+        delete *it;
+
+     if (!m_bBuffered) delete m_poCurImg;
+  }
+
+  // }}}
+
+#if 0
+  // overriding default operator= behaviour in order to correctly handle the image pointer
+  FileRead& FileRead::operator= (const FileRead& src) {
+     if (!m_bBuffered) delete this->m_poCurImg;
+     memcpy (this, &src, sizeof (FileRead));
+     this->m_poCurImg = 0;
+     return *this;
+  }
+#else
+#warning "Implement FileRead::operator= correctly! memcpy is false, because of other class members"
+#endif
+
+  //--------------------------------------------------------------------------
+  ImgI* FileRead::grab(ImgI* poDst) 
+    throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
     // {{{ open 
 
-    FUNCTION_LOG("(ImgI*)");
-
-    //---- Variable definition ----
-    Converter oConv;
-    info oInfo;
-    vector<string> sSubStr;
-    
-    //---- Grab image ----
-    if (m_bBufferImages) {
-        m_poInImg = &(*m_iterImgBuffer);
-        if (++m_iterImgBuffer == m_vecImgBuffer.end()) {
-          m_iterImgBuffer = m_vecImgBuffer.begin();
-        }
+    if (m_bBuffered) {
+       m_poCurImg = m_vecImgBuffer[m_iCurImg];
+    } else {
+       readImage (m_vecFileName[m_iCurImg], &m_poCurImg);
     }
-    else {
-      oInfo.sFileName = m_vecFileName[m_iImgCnt];
-      SECTION_LOG("Grab image:" << oInfo.sFileName);
-            
-      if (m_iImgCnt == m_vecFileName.size()-1) {
-        m_iImgCnt = 0;
-      }
-      else {
-        m_iImgCnt++;
-      }
-      
-      splitString(oInfo.sFileName, ".", sSubStr);
-      oInfo.sFileType = sSubStr.back();
-      checkFileType(oInfo);
-      readHeader(oInfo);
-
-      ensureCompatible(&m_poInImg, oInfo.eDepth, oInfo.oImgSize, 
-                       oInfo.eFormat, oInfo.iNumChannels, oInfo.oROI);
-                
-      switch (oInfo.eDepth)
-      {
-        case depth8u:
-          readData(*(m_poInImg->asImg<icl8u>()), oInfo);
-          break;
-          
-        case depth32f:
-          readData(*(m_poInImg->asImg<icl32f>()), oInfo);
-          break;
-
-        default:
-          readData(*(m_poInImg->asImg<icl8u>()), oInfo);
-      }
-    }
+    // forward to next image
+    next ();
 
     //---- Convert to output format ----
     if (poDst) {
-      oConv.convert(poDst, m_poInImg);
-      return poDst;
-    }
-    else {
-      return m_poInImg;
+       Converter oConv;
+       oConv.convert(poDst, m_poCurImg);
+       return poDst;
+    } else {
+       return m_poCurImg;
     }
   }
 
 // }}}
+
+  //--------------------------------------------------------------------------
+
+  void FileRead::readImage(const string& sFileName, ImgI** ppoDst) 
+    throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
+    // {{{ open 
+
+    //---- Variable definition ----
+    FileInfo oInfo (sFileName);
+    // set some defaults
+    oInfo.oROI = Rect(); // full ROI
+
+    try {
+       switch (oInfo.eFileFormat) {
+         case ioFormatPNM:
+         case ioFormatICL:
+            readHeaderPNM (oInfo);
+            ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
+                              oInfo.eFormat, oInfo.iNumChannels, oInfo.oROI);
+            readDataPNM (*ppoDst, oInfo);
+            break;
+         case ioFormatJPG:
+            readHeaderJPG (oInfo);
+            ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
+                              oInfo.eFormat, oInfo.iNumChannels, oInfo.oROI);
+            readDataJPG ((*ppoDst)->asImg<icl8u>(), oInfo);
+            break;
+         default:
+            throw ICLException (string("not supported file type"));
+       }
+    } catch (ICLException &e) {
+       if (oInfo.fp) closeFile (oInfo);
+       throw;
+    }
+    closeFile (oInfo);
+  }
+  // }}}
   
   //--------------------------------------------------------------------------
-  void FileRead::readHeader(info &oImgInfo) {
-    // {{{ open
-    FUNCTION_LOG("");
-    
-    switch (oImgInfo.eFileFormat) {
-      case ioFormatPPM:
-      case ioFormatPGM:
-      {
-        // {{{ Read PPM/ PGM header
-
-        //---- Variable initialisation ----
-        ifstream oImageStream;
-        vector<string> vecSubString;
-        vector<string>::iterator vecSubStringIter;
-        vector<string> headerParameter;
-        string sTmpLine, sMagicNumber;
-        int iNumFeature = 0;
-        
-        enum headerInfo{
-          original_min,
-          original_max,
-          NumFeatures,
-          ROI,
-          ImageDepth,
-          Format
-        };
-        
-        headerParameter.push_back("original_min");
-        headerParameter.push_back("original_max");
-        headerParameter.push_back("NumFeatures");
-        headerParameter.push_back("ROI");
-        headerParameter.push_back("ImageDepth");
-        headerParameter.push_back("Format");
-        
-         //---- Open file ----
-        oImageStream.open(oImgInfo.sFileName.c_str(),ios::in | ios::binary);
-        if(!oImageStream)
-        {
-          throw ICLException ("Can't open file");
-        }
-
-        //---- Read the magic number  ----
-        getline(oImageStream, sMagicNumber);
-        cout << sMagicNumber << endl;
-
-        //---- Set image format ----
-        if (sMagicNumber.find("P6",0) != string::npos) {
-          SECTION_LOG("Set format RGB");
-          oImgInfo.eFormat = formatRGB;
-        }
-        else if (sMagicNumber.find("P5",0) != string::npos) {
-          SECTION_LOG("Set format GRAY");
-          oImgInfo.eFormat = formatGray;
-        }
-        else {
-          SECTION_LOG("Set format MATRIX");
-          oImgInfo.eFormat = formatMatrix;
-        }
-
-        //---- Set default values ----
-        oImgInfo.iNumChannels = getChannelsOfFormat(oImgInfo.eFormat);
-        oImgInfo.iNumImages = 1;
-        oImgInfo.eDepth = depth8u;
-        
-        // {{{ Read special header info
-        do
-        {
-          getline(oImageStream, sTmpLine);
-          //---- Analyse comment line in header ----
-          SECTION_LOG("Check and analyse comment");
-          splitString(sTmpLine," ",vecSubString);
-          
-          for (unsigned int i=0;i<headerParameter.size();i++)
-          {
-            vecSubStringIter = find(vecSubString.begin(), 
-                                    vecSubString.end(),
-                                    headerParameter[i]);
-            
-            if (vecSubStringIter != vecSubString.end())
-            {
-              switch(i)
-              {
-                case original_min:
-                  oImgInfo.iOriginalMin=atof((*(++vecSubStringIter)).c_str());
-                  LOOP_LOG("Set OriginalMin to: " << oImgInfo.iOriginalMin);
-                  break;
-                  
-                case original_max:
-                  oImgInfo.iOriginalMax=atof((*(++vecSubStringIter)).c_str());
-                  LOOP_LOG("Set OriginalMax to: " << oImgInfo.iOriginalMax);
-                  break;
-                  
-                case NumFeatures:
-                  iNumFeature = atoi((*(++vecSubStringIter)).c_str());
-                  switch (oImgInfo.eFormat)
-                  {
-                    case formatRGB:
-                      oImgInfo.iNumChannels = iNumFeature*3;
-                      oImgInfo.iNumImages = iNumFeature;
-                      
-                      //---- Is num channels in depence to the format ----
-                      if (getChannelsOfFormat(oImgInfo.eFormat) != 
-                          oImgInfo.iNumChannels) {
-                        oImgInfo.eFormat = formatMatrix;
-                      }
-                      
-                      break;
-                      
-                    case formatGray:
-                    case formatMatrix: 
-                      oImgInfo.iNumChannels = iNumFeature;
-                      oImgInfo.iNumImages = iNumFeature;
-                      
-                      //---- Is num channels in depence to the format ----
-                      if (getChannelsOfFormat(oImgInfo.eFormat) != 
-                          oImgInfo.iNumChannels) {
-                        oImgInfo.eFormat = formatMatrix;
-                      }
-                      break;
-                      
-                    default:
-                      ERROR_LOG("Currently HLS, LAB, YUV not supported");
-                  }
-                  
-                  LOOP_LOG("Set NumChannels to: " << oImgInfo.iNumChannels);
-                  LOOP_LOG("Set NumImages to  : " << oImgInfo.iNumImages);
-                  break;    
-                  
-                case ROI:
-                  oImgInfo.oROI.x = atoi(vecSubString[1].c_str());
-                  oImgInfo.oROI.y = atoi(vecSubString[2].c_str());
-                  oImgInfo.oROI.width = atoi(vecSubString[3].c_str());
-                  oImgInfo.oROI.height = atoi(vecSubString[4].c_str());
-                  
-                  LOOP_LOG("Set ROIOffset (x): "<< oImgInfo.oROI.x);
-                  LOOP_LOG("Set ROIOffset (y): "<< oImgInfo.oROI.y);
-                  LOOP_LOG("Set ROISize   (W): "<< oImgInfo.oROI.width);
-                  LOOP_LOG("Set ROISize   (H): "<< oImgInfo.oROI.height);
-                  
-                  break;
-                  
-                case ImageDepth:
-                  if (vecSubString[1].find("depth8u",0) != string::npos) {
-                    oImgInfo.eDepth = depth8u;
-                    LOOP_LOG("ImageDepth: depth8u");
-                  }
-                  else if (vecSubString[1].find("depth32f",0)!=string::npos) {
-                    oImgInfo.eDepth = depth32f;
-                    LOOP_LOG("ImageDepth: depth32f");
-                  }
-                  else {
-                    ERROR_LOG("Unknown image depth (Trying default depth)");
-                    oImgInfo.eDepth = depth8u;
-                  }
-                  break;
-                  
-                case Format:
-                  oImgInfo.eFormat = translateFormat(vecSubString[1].c_str());
-                  LOOP_LOG("Set format to: << translateFormat(oImgInfo.eFormat)");
-                  
-              } // switch
-            } // if
-          } // for 
-        } while(sTmpLine[0] == '#'); 
-
-        // }}}
-        
-        // {{{ Read image size
-        
-        splitString(sTmpLine," ",vecSubString);    
-        oImgInfo.oImgSize.width = atoi(vecSubString[0].c_str());;
-        oImgInfo.oImgSize.height = atoi(vecSubString[1].c_str()) /
-          oImgInfo.iNumImages;
-        LOOP_LOG("Image width set to : " << oImgInfo.oImgSize.width);
-        LOOP_LOG("Image height set to: " << oImgInfo.oImgSize.height);
-        
-        getline(oImageStream,sTmpLine);
-        splitString(sTmpLine," ",vecSubString);
-        LOOP_LOG("Maximum pixel read");
-        
-        // }}}
-        
-        //---- Save stream position ----
-        oImgInfo.streamPos = oImageStream.tellg();
-        oImageStream.close();
-      }
-      // }}}
-        break;
-        
-      case ioFormatJPG:
-        
-        break;
-
-      default:
-        ERROR_LOG("Unsupported image format");
-    }
-  }
-
-  // }}}
-
-  //--------------------------------------------------------------------------
-  template <class Type>
-  void FileRead::readData(Img<Type> &oImg, info &oImgInfo) {
-    // {{{ open
-    FUNCTION_LOG("(Img<icl8u>, string, info &)");
-    
-    ifstream oImageStream;
-      
-    switch (oImgInfo.eFileFormat)
-    {
-      case ioFormatPGM:
-      {
-        SECTION_LOG("Start reading image:");
-        // {{{ Read data
-
-        //---- Open file ----
-        oImageStream.open(oImgInfo.sFileName.c_str(),
-                                   ios::in | ios::binary);
-        if(!oImageStream)
-        {
-          throw ICLException ("Can't open file");
-        }
-        
-        //---- Read data ----
-        oImageStream.seekg(oImgInfo.streamPos);
-        int iDim = oImgInfo.oImgSize.getDim();
-        
-        for (int i=0;i<oImgInfo.iNumImages;i++)
-        {
-          oImageStream.read((char*) oImg.getData(i), 
-                            iDim * sizeof(Type));
-        }
-        
-        oImageStream.close();
-
-        // }}}
-        break;
-      }
-      
-      case ioFormatPPM:
-      {
-        SECTION_LOG("Start reading image:");
-        // {{{ Read data
-
-        //---- Open file ----
-        oImageStream.open(oImgInfo.sFileName.c_str(),
-                                   ios::in | ios::binary);
-        if(!oImageStream)
-        {
-          throw ICLException ("Can't open file");
-        }
-        
-        //---- Read data ---
-        oImageStream.seekg(oImgInfo.streamPos);
-        
-        typename Img<Type>::iterator itR;
-        typename Img<Type>::iterator itG;
-        typename Img<Type>::iterator itB;
-        
-        for (int i=0;i<oImgInfo.iNumImages;i++)
-        {
-          itR = oImg.getIterator(i*3);
-          itG = oImg.getIterator(i*3+1);
-          itB = oImg.getIterator(i*3+2);
-          
-          for(; itR.inRegion(); itR++,itG++,itB++)
-          {
-            *itR = oImageStream.get();
-            *itG = oImageStream.get();
-            *itB = oImageStream.get();
-          }
-        }  
-
-// }}}
-        break;
-      }
-      
-      case ioFormatICL:
-        SECTION_LOG("Start reading image:");
-        ERROR_LOG("Implementation missing");
-        break;
-        
-      default:
-        ERROR_LOG("Could not read data");
-    } 
-  }
-
-
-  // }}}
-
-  //--------------------------------------------------------------------------
-  void FileRead::bufferImages() {     
+  FileRead::FileList FileRead::bufferImages (bool bStopOnError) throw ()
     // {{{ open
 
-    FUNCTION_LOG("()");
-    
-    //---- Variable definition ----
-    vector<string> sSubStr;
-    info oInfo;
-        
-    //---- Buffer images ----
-    if (m_bBufferImages) {
-      m_vecImgBuffer.resize(m_vecFileName.size());
-      m_iterImgBuffer = m_vecImgBuffer.begin();
-      
-      for (unsigned int i=0;i<m_vecImgBuffer.size();i++) {
-        //---- Read image header ----
-        oInfo.sFileName = m_vecFileName[i];
-        splitString(oInfo.sFileName, ".", sSubStr);
-        oInfo.sFileType = sSubStr.back();
-        checkFileType(oInfo);
-        readHeader(oInfo);
-        
-        //---- Resize image ----
-        m_vecImgBuffer[i].setChannels(oInfo.iNumChannels);
-        m_vecImgBuffer[i].resize(oInfo.oImgSize);
+  {
+     FileList vecErrorList;
+     if (m_bBuffered) return vecErrorList; // do not buffer twice
 
-        //---- Read image data ----
-        readData(m_vecImgBuffer[i], oInfo);
-      }
-    }
+     // if we enter buffering mode and already read images by calling grab
+     // we must free the internally allocated image first
+     if (m_poCurImg && !m_bBuffered) { delete m_poCurImg; m_poCurImg = 0; }
+    
+     // clear buffer from previous trial
+     for (ImageBuffer::iterator it=m_vecImgBuffer.begin(), 
+             end=m_vecImgBuffer.end(); it != end; ++it)
+        delete *it;
+     m_vecImgBuffer.clear();
+
+     for (FileList::iterator it=m_vecFileName.begin(), end=m_vecFileName.end();
+          it != end; ++it) {
+        m_poCurImg = 0; // force reallocation of new image pointer
+        try {
+           readImage (*it, &m_poCurImg);
+        } catch (ICLException &e) {
+           // in any case, report the error
+           vecErrorList.push_back (*it);
+           if (bStopOnError) return vecErrorList;
+           // create some dummy image to insert to buffer vector
+           if (!m_poCurImg) m_poCurImg = imgNew (depth8u, Size(1,1), formatGray);
+        }
+        m_vecImgBuffer.push_back (m_poCurImg);
+     }
+
+     // only on successful reading of all images
+     m_bBuffered = true;
+     return vecErrorList;
   }
 
   // }}}
@@ -564,7 +249,7 @@ namespace icl {
   void FileRead::readSequenceFile (const std::string& sFileName) 
      // {{{ open
   {
-     char cTmp[255];
+     string sFile;
      ifstream streamSeq (sFileName.c_str(),ios::in);
 
      if(!streamSeq)
@@ -572,13 +257,285 @@ namespace icl {
         ERROR_LOG("Can't open sequence file: " << sFileName);
      }
       
-     while(streamSeq)
-     {
-        streamSeq.getline(cTmp, 255);
-        m_vecFileName.push_back(cTmp);
-     }      
+     while(streamSeq) {
+        getline (streamSeq, sFile);
+        m_vecFileName.push_back(sFile);
+     }
      streamSeq.close();
   }
 // }}}
+
+  //--------------------------------------------------------------------------
+  void FileRead::readHeaderPNM (FileInfo &oInfo) {
+    // {{{ open
+
+    openFile (oInfo, "rb"); // open file for reading
+    char acBuf[1024];
+    istringstream iss;
+
+    //---- Read the magic number  ----
+    if (!gzgets (oInfo.fp, acBuf, 1024) ||
+        acBuf[0] != 'P') throw ICLInvalidFileFormat();
+    switch (acBuf[1]) {
+      case '6': oInfo.eFormat = formatRGB; break;
+      case '5': oInfo.eFormat = formatGray; break;
+      default: throw ICLInvalidFileFormat();
+    }
+
+    //---- Set default values ----
+    oInfo.iNumChannels = getChannelsOfFormat(oInfo.eFormat);
+    oInfo.iNumImages = 1;
+    oInfo.eDepth = depth8u;
+        
+    // {{{ Read special header info
+
+    do {
+       if (!gzgets (oInfo.fp, acBuf, 1024)) throw ICLInvalidFileFormat();
+       if (acBuf[0] != '#') break;
+
+       // process comment
+       iss.str (acBuf+1);
+       string sKey, sValue;
+       iss >> sKey;
+
+       if (sKey == "NumFeatures" || sKey == "NumImages") {
+          iss >> oInfo.iNumImages;
+          oInfo.iNumChannels *= oInfo.iNumImages;
+       } else if (sKey == "ROI") {
+          iss >> oInfo.oROI.x;
+          iss >> oInfo.oROI.y;
+          iss >> oInfo.oROI.width;
+          iss >> oInfo.oROI.height;
+          continue;
+       } else if (sKey == "ImageDepth") {
+          // ignore image depth for all formats but ICL
+          if (!oInfo.eFileFormat == ioFormatICL) return;
+          iss >> sValue;
+          if (sValue == "depth8u") oInfo.eDepth = depth8u;
+          else if (sValue == "depth32f") oInfo.eDepth = depth32f;
+          else { ERROR_LOG("Unknown image depth: " + sValue); }
+          continue;
+       } else if (sKey == "Format") {
+          iss >> sValue;
+          oInfo.eFormat = translateFormat(sValue.c_str());
+       }
+       
+       //---- Is num channels in depence to the format ----
+       if (getChannelsOfFormat(oInfo.eFormat) != oInfo.iNumChannels)
+          oInfo.eFormat = formatMatrix;
+       
+    } while (true);
+
+    // }}}
+    
+    // read image size
+    iss.str (acBuf);
+    iss >> oInfo.oImgSize.width;
+    iss >> oInfo.oImgSize.height;
+    oInfo.oImgSize.height = oInfo.oImgSize.height / oInfo.iNumImages;
+
+    // skip line with maximal pixel value
+    if (!gzgets (oInfo.fp, acBuf, 1024)) throw ICLInvalidFileFormat();
+  }
+
+  // }}}
+
+  //--------------------------------------------------------------------------
+  void FileRead::readDataPNM(ImgI* poImg, FileInfo &oInfo) {
+    // {{{ open
+
+    if (oInfo.iNumImages == oInfo.iNumChannels ||
+        oInfo.eFileFormat == ioFormatICL) {
+       // file format is non-interleaved, i.e. grayscale or icl proprietary
+       int iDim = poImg->getDim () * getSizeOf (poImg->getDepth ());
+       for (int i=0;i<oInfo.iNumChannels;i++) {
+          if (gzread (oInfo.fp, poImg->getDataPtr(i), iDim) != iDim)
+             throw ICLInvalidFileFormat ();
+       }
+    } else if (poImg->getDepth() == depth8u) {
+       // file format is interleaved, i.e. RGB or something similar
+       Img8u *poImg8u = poImg->asImg<icl8u>();
+       int iLines = oInfo.oImgSize.height;
+       int iDim   = 3 * oInfo.oImgSize.width;
+       icl8u *pcBuf = new icl8u[iDim];
+       icl8u *pc;
+
+       for (int i=0;i<oInfo.iNumImages;i++) {
+          icl8u *pcR = poImg8u->getData (i*3);
+          icl8u *pcG = poImg8u->getData (i*3+1);
+          icl8u *pcB = poImg8u->getData (i*3+2);
+          for (int l=0; l<iLines; l++) {
+             if (gzread (oInfo.fp, pcBuf, iDim) != iDim)
+                throw ICLInvalidFileFormat ();
+             pc=pcBuf;
+             for (int c=0; c<oInfo.oImgSize.width; ++c, ++pcR, ++pcG, ++pcB) {
+                *pcR = *pc++;
+                *pcG = *pc++;
+                *pcB = *pc++;
+             } // for cols (deinterleave)
+          } // for lines
+       } // for images
+       delete[] pcBuf;
+    } else {
+       ERROR_LOG ("This should not happen.");
+    }
+  }
+
+  // }}}
+
+
+ 
+  //--------------------------------------------------------------------------
+  void FileRead::readHeaderJPG (FileInfo &oInfo) {
+     // {{{ open
+
+     openFile (oInfo, "rb"); // open file for reading
+
+     /* SETUP ERROR HANDLING:
+      *
+      * Our example here shows how to override the "error_exit" method so that
+      * control is returned to the library's caller when a fatal error occurs,
+      * rather than calling exit() as the standard error_exit method does.
+      *
+      * We use C's setjmp/longjmp facility to return control.  This means that the
+      * routine which calls the JPEG library must first execute a setjmp() call to
+      * establish the return point.  We want the replacement error_exit to do a
+      * longjmp().  But we need to make the setjmp buffer accessible to the
+      * error_exit routine.  To do this, we use a private extension of the
+      * standard JPEG error handler object.
+      */
+
+     if (setjmp(jpgErr.setjmp_buffer)) {
+        /* If we get here, the JPEG code has signaled an error.
+         * We need to clean up the JPEG object and signal the error to the caller */
+        jpeg_destroy_decompress(&jpgCinfo);
+        throw ICLInvalidFileFormat();
+     }
+
+     /* Step 1: Initialize the JPEG decompression object. */
+     jpeg_create_decompress(&jpgCinfo);
+
+     /* Step 2: specify data source (eg, a file) */
+     jpeg_stdio_src(&jpgCinfo, (FILE*) oInfo.fp);
+
+     /* Step 3: read file parameters with jpeg_read_header() */
+     (void) jpeg_read_header(&jpgCinfo, TRUE);
+
+     /* Step 4: set parameters for decompression */
+
+     /* Step 5: Start decompressor */
+     (void) jpeg_start_decompress(&jpgCinfo);
+
+     /* After jpeg_start_decompress() we have the correct scaled
+      * output image dimensions available, as well as the output colormap
+      * if we asked for color quantization.
+      */
+
+     oInfo.eDepth = depth8u; // can only read depth8u
+     oInfo.oImgSize.width  = jpgCinfo.output_width;
+     oInfo.oImgSize.height = jpgCinfo.output_height;
+     switch (jpgCinfo.out_color_space) {
+       case JCS_GRAYSCALE: oInfo.eFormat = formatGray; break;
+       case JCS_RGB: oInfo.eFormat = formatRGB; break;
+       case JCS_YCbCr: oInfo.eFormat = formatYUV; break;
+       default: throw ICLException("unknown color space");
+     }
+     oInfo.iNumChannels = getChannelsOfFormat (oInfo.eFormat);
+  }
+
+  // }}}
+
+  //--------------------------------------------------------------------------
+  void FileRead::readDataJPG(Img<icl8u>* poImg, FileInfo &oInfo)
+     // {{{ open
+
+  {
+     icl8u *pcBuf = 0;
+     // update jump context to allow proper throw
+     if (setjmp(jpgErr.setjmp_buffer)) {
+        /* If we get here, the JPEG code has signaled an error.
+         * We need to clean up the JPEG object and signal the error to the caller */
+        jpeg_destroy_decompress(&jpgCinfo);
+        if (oInfo.iNumChannels == 3) delete[] pcBuf;
+        throw ICLInvalidFileFormat();
+     }
+
+     ICLASSERT (jpgCinfo.output_components == oInfo.iNumChannels);
+     int iRowDim = jpgCinfo.output_width * jpgCinfo.output_components;
+     icl8u *pcR, *pcG, *pcB;
+
+     if (oInfo.iNumChannels == 1) pcBuf = poImg->getData (0);
+     else if (oInfo.iNumChannels == 3) {
+        pcBuf = new icl8u[iRowDim];
+        pcR = poImg->getData (0);
+        pcG = poImg->getData (1);
+        pcB = poImg->getData (2);
+     }
+     else {ERROR_LOG ("This should not happen."); return;}
+
+     /* Step 6: while (scan lines remain to be read) */
+     /*           jpeg_read_scanlines(...); */
+     while (jpgCinfo.output_scanline < jpgCinfo.output_height) {
+        /* jpeg_read_scanlines expects an array of pointers to scanlines.
+         * Here the array is only one element long, but you could ask for
+         * more than one scanline at a time if that's more convenient.
+         */
+        (void) jpeg_read_scanlines(&jpgCinfo, &pcBuf, 1);
+
+        if (oInfo.iNumChannels == 1) pcBuf += iRowDim;
+        else { // deinterleave three channel data
+           icl8u *pc = pcBuf;
+           for (int c=0; c<oInfo.oImgSize.width; ++c, ++pcR, ++pcG, ++pcB) {
+              *pcR = *pc++;
+              *pcG = *pc++;
+              *pcB = *pc++;
+           }
+        }
+     }
+
+     /* Step 7: Finish decompression */
+     (void) jpeg_finish_decompress(&jpgCinfo);
+
+     /* At this point you may want to check to see whether any corrupt-data
+      * warnings occurred (test whether jpgErr.pub.num_warnings is nonzero).
+      */
+
+     /* Step 8: Release JPEG decompression object */
+     jpeg_destroy_decompress(&jpgCinfo);
+     if (oInfo.iNumChannels == 3) delete[] pcBuf;
+  }
+
+  // }}}
+
+
+  bool FileRead::findFile (const std::string& sFile, FileList::iterator& itList) {
+     // search starting from itList to end
+     FileList::iterator found = find (itList, m_vecFileName.end(), sFile);
+     if (found != m_vecFileName.end()) 
+        itList = found;
+     // search second part from begin to itList
+     else if ( (found = find (m_vecFileName.begin(), itList, sFile)) != itList)
+        itList = found;
+     else return false; // item not found
+     return true;
+  }
+
+  void FileRead::removeFiles (const FileList& vecFiles) {
+     FileList::iterator itList = m_vecFileName.begin();
+     for (FileList::const_iterator itDel=vecFiles.begin (), end=vecFiles.end();
+          itDel != end; ++itDel) {
+        if (findFile (*itDel, itList)) {
+           if (m_bBuffered) {
+              // delete image at corresponding position
+              ImageBuffer::iterator itBuf 
+                 = m_vecImgBuffer.begin() + (itList-m_vecFileName.begin());
+              delete *itBuf;
+              m_vecImgBuffer.erase (itBuf);
+           }
+           // as well as file name itself
+           m_vecFileName.erase (itList);
+        }
+     }
+  }
 
 } // namespace icl

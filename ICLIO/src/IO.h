@@ -10,41 +10,61 @@
 #ifndef ICLIO_H
 #define ICLIO_H
 
-#include "Img.h"
-#include <sstream>
-#include <vector>
+#include <string>
+#include <ImgI.h>
+#include <Exception.h>
 
-/// The ICLIO library
-/**
-The ICLIO subtree functions supporting all IO options for the ICL library
-**/
+extern "C" {
+#include <jerror.h>
+#include <jpeglib.h>
+#include <setjmp.h>
+}
+
+/// Provide some common functionality for all file accessing classes
 
 namespace icl {
-  ///Determine the supported file formats for load and save functions
+
+  struct FileInfo;
+
+  /// Determine the supported file formats for load and save functions
   enum ioformat {
-    ioFormatPGM, /**< The native PGM image gray format */
-    ioFormatPPM, /**< The native PPM image color format */
-    ioFormatSEQ, /**< */
-    ioFormatICL, /**< */
-    ioFormatJPG  /**< The native JPG image format */
+     ioFormatUnknown = -2,
+     ioFormatSEQ = -1, //< file list
+     ioFormatPNM, //< PNM file format (gray/pgm or rgb/ppm
+     ioFormatICL, //< proprietary format, equals pnm for icl8u, but allows icl32f as well
+     ioFormatJPG  //< JPG image format
   };
   
-  struct info 
-  {
-    int iW;
-    int iH;
-    int iNumChannels, iNumImages;
-    float iOriginalMin, iOriginalMax;
-    std::streampos streamPos;
-    std::string sFileName;
-    std::string sFileType;
-    depth eDepth;
-    format eFormat;
-    ioformat eFileFormat;
-    Size oImgSize;
-    Rect oROI;
+  /// Check for file type
+  ioformat getFileType (const std::string &sFileName, bool& bGzipped);
+  void openFile (FileInfo& oInfo, const char *pcMode) throw (FileOpenException);
+  void closeFile (FileInfo& oInfo);
+
+
+  struct FileInfo {
+     depth  eDepth;
+     format eFormat;
+     int    iNumImages;
+     int    iNumChannels;
+     Size   oImgSize;
+     Rect   oROI;
+     std::string sFileName;
+     ioformat eFileFormat;
+     bool     bGzipped;
+     void*    fp;
+
+     FileInfo (const std::string& sFileName) : sFileName (sFileName) {
+        eFileFormat = getFileType (sFileName, bGzipped);
+        fp = 0;
+     }
   };
-  
+
+  void icl_jpeg_error_exit (j_common_ptr cinfo);
+  struct icl_jpeg_error_mgr : jpeg_error_mgr {
+     jmp_buf setjmp_buffer;	/* for return to caller */
+  };
+
+#if 0  
   ///Split a given string
   void splitString(const std::string& line, 
                    const std::string& separators,
@@ -52,10 +72,8 @@ namespace icl {
 
   ///Convert a string to int
   std::string number2String(int i);
-     
-  ///Check for file type
-  void checkFileType(info &oImgInfo);
-  
-}//namespace icl
+#endif
+
+} //namespace icl
 
 #endif

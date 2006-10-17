@@ -9,9 +9,9 @@ int main()
 {
   //---- Allocate variables ----
   ImgI* poImg = imgNew(depth8u,Size(144,144));
-  
-  FileRead ioRead("mask","./demoImages","pgm",0);
-  FileWrite ioWrite("outMask","./demoImages","pgm");
+
+  FileRead  ioRead("demoImages/mask*.pgm");
+  FileWrite ioWrite("demoImages/outmask##.pgm");
   
   ioRead.grab(poImg);
   ioWrite.write(poImg);
@@ -20,5 +20,8 @@ int main()
   ioWrite.write(poImg);
 
   ioRead.grab(poImg);
+  ioWrite.setFileName ("demoImages/outmask##.jpg");
   ioWrite.write(poImg);
+
+  delete poImg; poImg = 0;
 }

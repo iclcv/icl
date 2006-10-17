@@ -1,284 +1,290 @@
 /*
   FileWrite.cpp
 
-  Written by: Michael Götting (2006)
-              University of Bielefeld
-              AG Neuroinformatik
-              mgoettin@techfak.uni-bielefeld.de
+  Written by: Michael Götting, Robert Haschke (2006)
+  University of Bielefeld
+  AG Neuroinformatik
+  mgoettin@techfak.uni-bielefeld.de
 */
 
 #include "FileWrite.h"
-#include "Converter.h"
-#include <ImgI.h>
+#include "IO.h"
+#include <zlib.h>
+#include <sstream>
 
 using namespace std;
 
 namespace icl {
 
-  //--------------------------------------------------------------------------
-  FileWrite::FileWrite(string sPrefix,string sDir, 
-                       string sType, int iObjNum) {
-    // {{{ open 
+   //--------------------------------------------------------------------------
+   void FileWrite::setFileName (const string& sFileName) throw (ICLException)
+      // {{{ open 
+   {
+      string::size_type iSuffixPos;
+      string::size_type iTmpPos = sFileName.rfind ('.');
+      if (iTmpPos == string::npos) 
+         throw ICLException ("cannot detect file type");
 
-    FUNCTION_LOG("(string, string, string)");
+      string sType = sFileName.substr (iTmpPos);
+      if (sType == ".gz" && iTmpPos > 0) { // search further for file type
+         iSuffixPos = sFileName.rfind ('.', iTmpPos-1);
+         sType = sFileName.substr (iSuffixPos);
+      } else iSuffixPos = iTmpPos;
 
-    //---- Set write mode ----
-    m_iWriteMode = 0;
-    m_iCurrObj = iObjNum;
-    m_oInfo.sFileName = sDir + "/" + sPrefix;
-    m_oInfo.sFileType = sType;
-  }
-
-// }}}
-
-  //--------------------------------------------------------------------------
-  FileWrite::FileWrite(string sFileName) {
-    // {{{ open 
-
-    FUNCTION_LOG("(string, string, string)");
-    
-    //---- Set write mode ----
-    vector<string> vecSubs;
-
-    m_iWriteMode = 1;
-    
-    splitString(sFileName,".",vecSubs);
-
-    if(vecSubs.size() == 2){
-      m_oInfo.sFileName = vecSubs[0];
-      m_oInfo.sFileType = vecSubs[1];
-    }else{
-      printf("Ooops something went wrong!\n");
-    }
-      /*
-      int iTmpPos = sFileName.rfind(".",sFileName.size());
-      
-      m_oInfo.sFileName = sFileName.substr(0,iTmpPos);
-      sFileName.copy(m_oInfo.sFileName.c_str(), iTmpPos);
-      sFileName.copy(m_oInfo.sFileType.c_str(),
-      3,
-      sFileName.find_last_of(".",sFileName.size()));
-      */
-    cout << m_oInfo.sFileName << endl;
-    cout << m_oInfo.sFileType << endl;
-  }
-
-// }}}
-  
-  //--------------------------------------------------------------------------
-  void FileWrite::write(ImgI *poSrc) {
-    // {{{ open
-
-    FUNCTION_LOG("(ImgI*)");
-    
-    //---- Initialise variables ----
-    ofstream streamOutputImage;
-    
-    //----Build file name ----
-    string sFileName = buildFileName();
-    cout << sFileName << endl;
-    
-    //---- Open output stream ----
-    SECTION_LOG("Save image: " << m_oInfo.sFileName<<"."<<m_oInfo.sFileType);
-    streamOutputImage.open(sFileName.c_str(),ios::out | ios::binary);
-    
-    if(!streamOutputImage)
-    {
-      ERROR_LOG ("Can't write file: " << m_oInfo.sFileName);
-    }
-    
-    //---- Determine file format ----
-    checkFileType(m_oInfo);
-    
-    //---- Write data ----
-    switch (m_oInfo.eFormat)
-    {
-      case formatGray:
-        writeAsPGM(poSrc, streamOutputImage);
-        break;
-        
-      case formatRGB:
-        writeAsPPM(poSrc, streamOutputImage);
-        break;
-        
-      case formatMatrix:
-        writeAsMatrix(poSrc, streamOutputImage);
-        break;
-        
-      default:
-        ERROR_LOG("This file format is not supported by the ICL");
-    }
-    
-    streamOutputImage.close();
-  }
-
-// }}}
-  
-  //--------------------------------------------------------------------------
-  void FileWrite::writeAsPGM(ImgI *poSrc, ofstream &streamOutputImage) {
-    // {{{ open
-
-    FUNCTION_LOG("");
-    
-    //---- Initialise variables ----
-    ImgI* poTmpImg;
-    int iDim = poSrc->getDim();
-    int iNumImages = poSrc->getChannels();       
-    
-    //---- Convert to Gray format ----
-    if (poSrc->getFormat() != formatGray)
-    { 
-      poTmpImg = imgNew(depth8u, poSrc->getSize(),
-                        formatGray, poSrc->getChannels());
-      m_oConverter.convert(poTmpImg, poSrc);
-    } 
-    else
-    {
-      poTmpImg = poSrc;
-    }
-    
-    //---- Write header ----
-    streamOutputImage << "P5" << endl;    
-    streamOutputImage << "# Format " << translateFormat(m_oInfo.eFormat) << 
-      endl;
-    streamOutputImage << "# NumFeatures " << iNumImages << endl;
-    streamOutputImage << "# ImageDepth depth8u" << endl;
-    
-    streamOutputImage << poTmpImg->getSize().width << " " 
-                        << poTmpImg->getSize().height * iNumImages << endl;
-    //streamOutputImage << poTmpImg->asImg<icl8u>()->getMax() << endl;
-    streamOutputImage << "255" << endl;
-    
-    //---- Write data ----
-    for (int i=0;i<iNumImages;i++)
-    {
-      streamOutputImage.write ((char*) poSrc->getDataPtr(i),
-                               iDim*getSizeOf(poSrc->getDepth()));
-    }
-  }
-
-// }}}
-
-  //--------------------------------------------------------------------------
-  void FileWrite::writeAsPPM(ImgI *poSrc, ofstream &streamOutputImage) {
-    // {{{ open
-    FUNCTION_LOG("");
-    
-    //---- Initialise variables ----
-    ImgI* poTmpImg;
-    int iNumImages =  poSrc->getChannels()/3;
-    
-    //---- Convert to Gray format ----
-    if (poSrc->getFormat() != formatRGB)
-    { 
-      poTmpImg = imgNew(depth8u, poSrc->getSize(),
-                        formatRGB, poSrc->getChannels());
-      m_oConverter.convert(poTmpImg, poSrc);
-    } 
-    else
-    {
-      poTmpImg = poSrc;
-    }
-    
-    //---- Write file header ----
-    streamOutputImage << "P6" << endl;    
-    streamOutputImage << "# Format " << translateFormat(m_oInfo.eFormat) << 
-      endl;
-    streamOutputImage << "# NumFeatures " << iNumImages << endl;
-    streamOutputImage << "# ImageDepth depth8u" << endl;
-        
-    streamOutputImage << poTmpImg->getSize().width << " " 
-                        << poTmpImg->getSize().height * iNumImages << endl;;
-    //streamOutputImage << poTmpImg->asImg<icl8u>()->getMax() << endl;
-    streamOutputImage << "255" << endl;
-    
-    //---- Write data ----
-    poTmpImg->setFullROI();
-    
-    for (int i=0;i<iNumImages;i++)
-    {
-      ImgIterator<icl8u> itR=poTmpImg->asImg<icl8u>()->getIterator(i*3);
-      ImgIterator<icl8u> itG=poTmpImg->asImg<icl8u>()->getIterator(i*3+1);
-      ImgIterator<icl8u> itB=poTmpImg->asImg<icl8u>()->getIterator(i*3+2);
-      
-      for(; itR.inRegion(); itR++,itG++,itB++)
-      {
-        streamOutputImage.put(*itR);
-        streamOutputImage.put(*itG);
-        streamOutputImage.put(*itB);
+      // check for supported file type
+      bool bGzipped;
+      if (getFileType (sType, bGzipped) < 0) {
+         throw ICLException ("not supported file type: " + sType);
       }
-    }
-  }
-  // }}}
 
-  //--------------------------------------------------------------------------
-  void FileWrite::writeAsMatrix(ImgI *poSrc, ofstream &streamOutputImage) {
-    // {{{ open
-    FUNCTION_LOG("");
-    
-    //---- Initialise variables ----
-    int iNumImages = poSrc->getChannels();       
-    int iDim = poSrc->getDim();
-    
-    //---- Write header ----
-    streamOutputImage << "P5" << endl;    
-    streamOutputImage << "# Format " << translateFormat(m_oInfo.eFormat) << 
-      endl;
-    streamOutputImage << "# NumFeatures " << iNumImages << endl;
-    
-    switch(m_oInfo.eDepth)
-    {
-      case depth8u:
-        streamOutputImage << "# ImageDepth depth8u" << endl;
-        break;
-      case depth32f:
-        streamOutputImage << "# ImageDepth depth32f" << endl;
-        break;
-    }
+      ICLASSERT (iSuffixPos < sFileName.size());
 
-    streamOutputImage << poSrc->getSize().width << " " 
-                        << poSrc->getSize().height * iNumImages << endl;
-    //streamOutputImage << poSrc->asImg<icl8u>()->getMax() << endl;
-    streamOutputImage << "255" << endl;
+      // check for hashes      
+      unsigned int nHashes = 0;
+      for (string::const_reverse_iterator start (sFileName.begin() + iSuffixPos),
+              it = start, end = sFileName.rend(); it != end; ++it) {
+         if (*it != '#') {
+            // first pos without hash, count hashes
+            nHashes = it - start;
+            break;
+         }
+      }
+
+      // set variables
+      nCounterDigits = nHashes;
+      nCounter = 1;
+      sFileSuffix = sType;
+      sFilePrefix = nCounterDigits ? sFileName.substr (0, iSuffixPos-nHashes) : sFileName;
+   }
+// }}}
+
+   //--------------------------------------------------------------------------
+   string FileWrite::buildFileName()
+      // {{{ open
+   {
+      // if counting is disabled, sFilePrefix contains the whole file name
+      if (nCounterDigits == 0) return sFilePrefix;
+      
+      ostringstream oss; oss.fill('0'); oss.width(nCounterDigits);
+      oss << sFilePrefix << nCounter << sFileSuffix; 
+      nCounter++;
+      return oss.str ();
+   }
+// }}}
+
+   //--------------------------------------------------------------------------
+   void FileWrite::write(ImgI *poSrc) throw (FileOpenException, ICLException) {
+      // {{{ open
+
+      FileInfo oInfo (buildFileName()); // create file info
+      openFile (oInfo, "wb"); // open file for writing
+      
+      ImgI *poImg = poSrc;
+      if (poSrc->getDepth () != depth8u && oInfo.eFileFormat != ioFormatICL) {
+         // image needs to be converted to depth8u
+         poImg = poSrc->convertTo<icl8u> (&m_oImg8u);
+      } // otherwise, use poSrc directly
+      
+      try {
+         // write file
+         switch (oInfo.eFileFormat) {
+           case ioFormatPNM: 
+           case ioFormatICL:
+              writePNM (poImg, oInfo);
+              break;
+           case ioFormatJPG:
+              writeJPG (poImg->asImg<icl8u>(), oInfo);
+              break;
+           default: break;
+         }
+         closeFile (oInfo);
+      } catch (ICLException &e) {
+         closeFile (oInfo);
+         throw;
+      }
+   }
+
+// }}}
+  
+   //--------------------------------------------------------------------------
+   void FileWrite::writePNM(ImgI *poSrc, const FileInfo& oInfo) {
+      // {{{ open
+
+      // check exact file type first:
+      // pgm: write separate channels below each other as pgm image (P5)
+      // ppm: require a multiple of 3 of channels, write as ppm image (P6)
+      // pnm: write 3-channel color images as pnm image (P6),
+      //      all other formats as pnm (P5)
+      // icl: write channels consecutively
+
+      bool bPPM=false;
+      int  iNumImages = poSrc->getChannels ();
+      string sType = sFileSuffix.substr (1, 3);
+      if (sType == "ppm") {
+         bPPM = (poSrc->getChannels () % 3 == 0);
+         if (!bPPM) throw ICLException ("Image cannot be written as ppm.");
+      } else if (sType == "pnm") {
+         bPPM = (poSrc->getChannels () == 3 && 
+                 getChannelsOfFormat (poSrc->getFormat()) == 3);
+      }
+      if (bPPM) iNumImages = iNumImages / 3;
+        
+      ICLException writeError ("Error writing file.");
+
+      //---- Write header ----
+      char acBuf[1024];
+      // magic number
+      sprintf (acBuf, "%s\n", bPPM ? "P6" : "P5");
+      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+      // format
+      sprintf (acBuf, "# Format %s\n", translateFormat(poSrc->getFormat()).c_str());
+      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+      // number of images
+      sprintf (acBuf, "# NumFeatures %d\n", iNumImages);
+      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+      // image depth
+      sprintf (acBuf, "# ImageDepth %s\n", translateDepth(poSrc->getDepth()).c_str());
+      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+      // ROI
+      Rect roi = poSrc->getROI ();
+      sprintf (acBuf, "# ROI %d %d %d %d\n", roi.x, roi.y, roi.width, roi.height);
+      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
     
-    //---- Write data ----
-    for (int i=0;i<iNumImages;i++)
-    {
-      streamOutputImage.write ((char*) poSrc->getDataPtr(i),
-                               iDim*getSizeOf(poSrc->getDepth()));
-    } 
-  }
+      // image size
+      sprintf (acBuf, "%d %d\n%d\n", 
+               poSrc->getSize().width, poSrc->getSize().height * iNumImages, 255);
+      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+
+
+      // write image data
+      if (bPPM) { // file format is interleaved, i.e. RGB or something similar
+         Img8u *poImg8u = poSrc->asImg<icl8u>();
+         const Size& size = poSrc->getSize();
+         int iDim   = 3 * size.width;
+         icl8u *pcBuf = new icl8u[iDim];
+         icl8u *pc;
+        
+         for (int i=0;i<iNumImages;i++) {
+            icl8u *pcR = poImg8u->getData (i*3);
+            icl8u *pcG = poImg8u->getData (i*3+1);
+            icl8u *pcB = poImg8u->getData (i*3+2);
+            for (int l=0; l<size.height; l++) {
+               pc=pcBuf;
+               for (int c=0; c<size.width; ++c, ++pcR, ++pcG, ++pcB) {
+                  *pc++ = *pcR;
+                  *pc++ = *pcG;
+                  *pc++ = *pcB;
+               } // for rows (interleave)
+
+               if (gzwrite (oInfo.fp, pcBuf, iDim) != iDim)
+                  throw writeError;
+            } // for lines
+         } // for images
+      } else { // write all channels separately
+         int iDim = poSrc->getDim () * getSizeOf(poSrc->getDepth());
+         for (int i=0;i<iNumImages;i++) {
+            if (gzwrite (oInfo.fp, poSrc->getDataPtr (i), iDim) != iDim) 
+               throw writeError;
+         }
+      }
+   }
 
 // }}}
 
-  //--------------------------------------------------------------------------
-  string FileWrite::buildFileName() {
-    // {{{ open
+   //--------------------------------------------------------------------------
+   void FileWrite::writeJPG(Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality) {
+      // {{{ open
+      J_COLOR_SPACE jCS;
+      switch (poSrc->getFormat ()) {
+        case formatGray: jCS = JCS_GRAYSCALE; break;
+        case formatYUV:  jCS = JCS_YCbCr; break;
+        case formatRGB:  jCS = JCS_RGB; break;
+        default: 
+           throw ICLException (translateFormat (poSrc->getFormat()) + 
+                               string (" not supported by jpeg"));
+      }
 
-    FUNCTION_LOG("");
-    
-    //---- Variable initialisation----
-    string sFileName;
-    
-    //---- Build file name ----
-    switch(m_iWriteMode)
-    {
-      case 0:
-        sFileName = m_oInfo.sFileName + number2String(m_iCurrObj) + 
-          "." + m_oInfo.sFileType;
-        m_iCurrObj++;
-        break;
+      ICLException writeError ("Error writing file.");
+      struct jpeg_compress_struct jpgCinfo;
+      struct icl_jpeg_error_mgr   jpgErr;
+      icl8u *pcBuf=0;
 
-      case 1:
-        sFileName = m_oInfo.sFileName + "." + m_oInfo.sFileType;
-        break;
-        
-      default:
-        ERROR_LOG("Unsupported reader mode");
-    }
-    
-    return sFileName;
-  }
+      // Step 1: Set up the error handler first, in case initialization fails
+      jpgCinfo.err = jpeg_std_error(&jpgErr);
+      if (setjmp(jpgErr.setjmp_buffer)) {
+         /* If we get here, the JPEG code has signaled an error.
+          * We need to clean up the JPEG object and signal the error to the caller */
+         if (pcBuf) delete[] pcBuf;
+         jpeg_destroy_compress(&jpgCinfo);
+         throw writeError;
+      }
+
+      /* Now we can initialize the JPEG compression object. */
+      jpeg_create_compress(&jpgCinfo);
+
+      // Step 2: specify data destination
+      jpeg_stdio_dest(&jpgCinfo, (FILE*) oInfo.fp);
+
+      /* Step 3: set parameters for compression */
+      jpgCinfo.image_width  = poSrc->getSize().width;
+      jpgCinfo.image_height = poSrc->getSize().height;
+      jpgCinfo.input_components = poSrc->getChannels(); // # of color components 
+      jpgCinfo.in_color_space = jCS; 	/* colorspace of input image */
+
+      /* Now use the library's routine to set default compression parameters.
+       * (You must set at least jpgCinfo.in_color_space before calling this,
+       * since the defaults depend on the source color space.) */
+      jpeg_set_defaults(&jpgCinfo);
+
+      /* Now you can set any non-default parameters you wish to.
+       * Here we just illustrate the use of quality (quantization table) scaling: */
+      jpeg_set_quality(&jpgCinfo, iQuality, TRUE /* limit to baseline-JPEG values */);
+
+      /* Step 4: Start compressor */
+      /* TRUE ensures that we will write a complete interchange-JPEG file.
+       * Pass TRUE unless you are very sure of what you're doing. */
+      jpeg_start_compress(&jpgCinfo, TRUE);
+
+      /* Step 5: while (scan lines remain to be written) */
+      if (poSrc->getChannels () == 1) {
+         int iLineStep = poSrc->getSize().width;
+         // grayscale image, can handover image channels directly
+         while (jpgCinfo.next_scanline < jpgCinfo.image_height) {
+            icl8u *pcBuf = poSrc->getData (0) + jpgCinfo.next_scanline*iLineStep;
+            (void) jpeg_write_scanlines(&jpgCinfo, &pcBuf, 1);
+         }
+      } else {
+         // file format is interleaved, i.e. RGB or something similar
+         const Size& size = poSrc->getSize();
+         int iNumImages = 1;
+         int iDim       = 3 * size.width;
+         icl8u *pc;
+
+         pcBuf = new icl8u[iDim];
+         for (int i=0;i<iNumImages;i++) {
+            icl8u *pcR = poSrc->getData (i*3);
+            icl8u *pcG = poSrc->getData (i*3+1);
+            icl8u *pcB = poSrc->getData (i*3+2);
+            for (int l=0; l<size.height; l++) {
+               pc=pcBuf;
+               for (int c=0; c<size.width; ++c, ++pcR, ++pcG, ++pcB) {
+                  *pc++ = *pcR;
+                  *pc++ = *pcG;
+                  *pc++ = *pcB;
+               } // for rows (interleave)
+               (void) jpeg_write_scanlines(&jpgCinfo, &pcBuf, 1);
+            } // for lines
+         } // for images
+         delete[] pcBuf; pcBuf = 0;
+      }
+
+      /* Step 6: Finish compression */
+      jpeg_finish_compress(&jpgCinfo);
+
+      /* Step 7: release JPEG compression object */
+      jpeg_destroy_compress(&jpgCinfo);
+   }
+
 // }}}
 
 } //namespace 

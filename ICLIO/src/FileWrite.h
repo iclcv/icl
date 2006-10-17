@@ -10,35 +10,43 @@
 #ifndef ICLFILEWRITE_H
 #define ICLFILEWRITE_H
 
-#include <fstream>
 #include <Writer.h>
-#include <Converter.h>
-#include <IO.h>
+#include <Img.h>
 
 namespace icl {
+   struct FileInfo;
 
-class FileWrite : public Writer
-{
- public:
-  FileWrite(std::string sPrefix, std::string sDir, std::string sType, int iObjNum = 1);
-  FileWrite(std::string sFileName);
-  
-  void write(ImgI* poSrc);
-  
-  void setObjID(int iID) { m_iCurrObj = iID;}
-  
- private:
-  void writeAsPGM(ImgI *poSrc, std::ofstream &streamOutputImage);
-  void writeAsPPM(ImgI *poSrc, std::ofstream &streamOutputImage);
-  void writeAsMatrix(ImgI *poSrc, std::ofstream &streamOutputImage);
-  std::string buildFileName();
-  
-  Converter m_oConverter;
-  info m_oInfo;
-  int m_iWriteMode;
-  int m_iCurrObj;
-  
-}; //class
+   /// write ICL images to file
+   /** The FileWrite class supports writing to PNM, JPG and the proprietary
+       ICL image format. The format is choosen according to the file type
+       extension of the file name. The proprietary ICL format supports writing
+       image depths other than depth8u. In all other cases the image is
+       converted to depth8u first.
+       If the filename as the pattern prefix##.filetype, the hashes (##)
+       are replaced by a number continously incremented on every write
+       operation.
+   */
+
+   class FileWrite : public Writer {
+   public: 
+      /// Constructor
+      FileWrite(const std::string& sFileName) {setFileName (sFileName);}
+
+      void setFileName (const std::string& sFileName) throw (ICLException);
+      void setCounter (int iID) {nCounter = iID;}
+
+      void write(ImgI* poSrc) throw (FileOpenException, ICLException);
+    
+   private:
+      void writePNM (ImgI *poSrc, const FileInfo& oInfo);
+      void writeJPG (Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality=85);
+      std::string buildFileName ();
+
+      std::string sFilePrefix, sFileSuffix;
+      int         nCounterDigits;
+      int         nCounter;
+      Img<icl8u>  m_oImg8u;
+   }; //class
 
 } //namespace icl
 #endif //ICLFILEWRITE_H

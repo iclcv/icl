@@ -1,8 +1,10 @@
-#include "Converter.h"
 #include "ICLcc.h"
+#include "Converter.h"
 
 namespace icl{
-  Converter::Converter():m_poDepthBuffer(0),m_poSizeBuffer(0){}
+  Converter::Converter(bool bROIOnly) : 
+     m_poDepthBuffer(0), m_poSizeBuffer(0), m_bROIOnly(bROIOnly) {}
+
   Converter::~Converter(){
     if(m_poDepthBuffer)delete m_poDepthBuffer;
     if(m_poSizeBuffer)delete m_poSizeBuffer;
@@ -13,44 +15,59 @@ namespace icl{
     format eDstFmt = poDst->getFormat();
     depth eSrcDepth = poSrc->getDepth();
     depth eDstDepth = poDst->getDepth();
+    Size  srcSize   = m_bROIOnly ? poSrc->getROISize() : poSrc->getSize();
+
     int iNeedDepthConversion = eSrcDepth!=eDstDepth;
-    int iNeedSizeConversion = poDst->getSize() != poSrc->getSize();
-    int iNeedColorConversion = eSrcFmt != formatMatrix && eDstFmt != formatMatrix && eSrcFmt != eDstFmt;
+    int iNeedSizeConversion  = poDst->getSize() != srcSize;
+    int iNeedColorConversion = eSrcFmt != formatMatrix && 
+                               eDstFmt != formatMatrix && 
+                               eSrcFmt != eDstFmt;
     
     //---- convert depth ----------------- 
-    ImgI *poNextSrcImage=poSrc;
+    ImgI *poCurSrc=poSrc;
     if(iNeedDepthConversion){ 
       // test if other convesion steps will follow:
       if(iNeedSizeConversion || iNeedColorConversion){
-        ensureDepth(&m_poDepthBuffer,eDstDepth);
-        m_poDepthBuffer->setFormat(eSrcFmt);
-        m_poDepthBuffer->resize(poNextSrcImage->getSize());
-        poNextSrcImage->deepCopy(m_poDepthBuffer);
-        poNextSrcImage=m_poDepthBuffer;
+         // if other conversion steps follow, we first convert the depth
+         // and store the result in an intermediate buffer: m_poDepthBuffer
+         ensureCompatible(&m_poDepthBuffer,eDstDepth,srcSize,eSrcFmt,
+                          poCurSrc->getChannels());
+         if (m_bROIOnly) poCurSrc->deepCopyROI(m_poDepthBuffer);
+         else poCurSrc->deepCopy(m_poDepthBuffer);
+         poCurSrc=m_poDepthBuffer;
       }else{
-        poNextSrcImage->deepCopy(poDst);
-        return;
+         // if only depth conversion is desired, we can simply call deepCopy
+         if (m_bROIOnly) poCurSrc->deepCopyROI(poDst);
+         else poCurSrc->deepCopy(poDst);
+         return;
       }
     }
 
     //---- convert size ----------------- 
     if(iNeedSizeConversion){
       if(iNeedColorConversion){
-        ensureDepth(&m_poSizeBuffer,poNextSrcImage->getDepth());
-        m_poSizeBuffer->setChannels (poDst->getChannels());
-        m_poSizeBuffer->resize(poDst->getSize());
-        m_poSizeBuffer->setFormat(eSrcFmt);
-        poNextSrcImage->scaledCopy(m_poSizeBuffer);
-        //---- convert color ----------------- 
-        iclcc(poDst,m_poSizeBuffer);
+        // if color conversion follows, we scale the image into the buffer
+        // m_poSizeBuffer first
+        ensureCompatible (&m_poSizeBuffer,poCurSrc->getDepth(), 
+                          poDst->getSize(), eSrcFmt, poCurSrc->getChannels());
+        if (m_bROIOnly) poCurSrc->scaledCopyROI(m_poSizeBuffer);
+        else poCurSrc->scaledCopy(m_poSizeBuffer);
+        poCurSrc=m_poSizeBuffer;
       }else{
-        poNextSrcImage->scaledCopy(poDst);
-      }      
-    }else if(iNeedColorConversion){
-      iclcc(poDst,poNextSrcImage);
-    }else if(!iNeedDepthConversion){
-      poNextSrcImage->deepCopy(poDst);
+        // if only scaling is desired, we can return after it
+        if (m_bROIOnly) poCurSrc->scaledCopyROI(poDst);
+        else poCurSrc->scaledCopy(poDst);
+        return;
+      }     
     }
-    
+
+    if(iNeedColorConversion){
+       //---- convert color finally ----------------- 
+       iclcc(poDst,poCurSrc);
+       return;
+    }
+
+    //---- no changed needed at all: do deep / shallow copy
+    poCurSrc->shallowCopy(poDst);
   }
 }
