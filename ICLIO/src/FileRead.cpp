@@ -102,6 +102,24 @@ namespace icl {
 
 // }}}
 
+  FileRead::FileRead(const FileRead& other) : m_poCurImg(0) {
+     *this = other;
+  }
+
+  FileRead& FileRead::operator=(const FileRead& other) {
+     if (!this->m_bBuffered) delete this->m_poCurImg;
+     this->m_vecFileName = other.m_vecFileName;
+     this->m_vecImgBuffer = other.m_vecImgBuffer;
+     this->m_bBuffered = other.m_bBuffered;
+     this->m_iCurImg = other.m_iCurImg;
+     this->m_poCurImg = 0;
+
+     // setup the jpeg error routine once
+     jpgCinfo.err = jpeg_std_error(&jpgErr);
+     jpgErr.error_exit = icl_jpeg_error_exit;
+     return *this;
+  }
+
   //--------------------------------------------------------------------------
   void FileRead::init() throw (ICLException) 
      // {{{ open
@@ -130,18 +148,6 @@ namespace icl {
   }
 
   // }}}
-
-#if 0
-  // overriding default operator= behaviour in order to correctly handle the image pointer
-  FileRead& FileRead::operator= (const FileRead& src) {
-     if (!m_bBuffered) delete this->m_poCurImg;
-     memcpy (this, &src, sizeof (FileRead));
-     this->m_poCurImg = 0;
-     return *this;
-  }
-#else
-#warning "Implement FileRead::operator= correctly! memcpy is false, because of other class members"
-#endif
 
   //--------------------------------------------------------------------------
   ImgI* FileRead::grab(ImgI* poDst) 

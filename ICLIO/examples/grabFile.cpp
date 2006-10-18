@@ -23,5 +23,12 @@ int main()
   ioWrite.setFileName ("demoImages/outmask##.jpg");
   ioWrite.write(poImg);
 
+  ioRead = FileRead ("demoImages/*.jpg");
+  ioRead.grab(poImg);
+
+  FileRead io (ioRead);
+  io.grab (poImg);
+  ioWrite.write(poImg);
+
   delete poImg; poImg = 0;
 }

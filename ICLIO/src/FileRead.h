@@ -48,6 +48,9 @@ namespace icl {
                   int iObjStart, int iObjEnd, int iImageStart, int iImageEnd)
             throw (ICLException);
 
+         FileRead(const FileRead& other);
+         FileRead& operator=(const FileRead& other);
+
          ///Destructor
          virtual ~FileRead ();
 
