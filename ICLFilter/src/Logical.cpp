@@ -21,6 +21,23 @@ template <typename T, IppStatus (*ippiFunc) (const T*, int, const T*, int, T*, i
                 dst->getROISize());
     }
   }
+
+template <typename T, IppStatus (*ippiFunc) (const T*, int, const T, T*, int, IppiSize)>
+  inline void ippiAndOrXorCallC(const Img<T> *src, T value, Img<T> *dst)
+  {
+    // {{{ open
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
+    ICLASSERT_RETURN( src->getChannels()==dst->getChannels());
+    for (int c=src->getChannels()-1; c >= 0; --c) {
+      ippiFunc (src->getROIData (c), src->getLineStep(),
+                value,
+                dst->getROIData (c), dst->getLineStep(),
+                dst->getROISize());
+    }
+  }
+
+
   // }}}
 template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize)>
   inline void ippiNotCall(const Img<T> *src, Img<T> *dst)
@@ -59,6 +76,20 @@ template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize)>
   {
     ippiNotCall<icl8u,ippiNot_8u_C1R>(src,dst);
   }
+
+  void Logical::AndC (const Img8u *src, const icl8u value, Img8u *dst)
+  {
+    ippiAndOrXorCallC<icl8u,ippiAndC_8u_C1R>(src,value,dst);
+  }
+  void Logical::OrC (const Img8u *src, const icl8u value, Img8u *dst)
+  {
+    ippiAndOrXorCallC<icl8u,ippiOrC_8u_C1R>(src,value,dst);
+  }
+  void Logical::XorC (const Img8u *src, const icl8u value, Img8u *dst)
+  {
+    ippiAndOrXorCallC<icl8u,ippiXorC_8u_C1R>(src,value,dst);
+  }
+
 /* no support for ICL32s
   void Logical::And (const Img32f *src1, const Img32f *src2, Img32f *dst)
   {
@@ -118,6 +149,26 @@ template <typename T>
       }
     }
   }
+    // }}}
+
+template <typename T,class LogicalOp>
+  void fallbacklogicalAndOrXorC(const Img<T> *src, const T value, Img<T> *dst,const LogicalOp &op)
+    // {{{ open
+  {
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
+    ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
+    for(int c=src->getChannels()-1; c >= 0; --c) {
+      ImgIterator<T> itSrc = const_cast<Img<T>*>(src)->getROIIterator(c);
+      ImgIterator<T> itDst = dst->getROIIterator(c);
+      for(;itSrc.inRegion(); ++itSrc, ++itDst){
+        *itDst = op(*itSrc,value);
+      }
+    }
+  }
+    // }}}
+
+
 
 
 template <typename T> class AndOp {
@@ -166,6 +217,19 @@ template <typename T> class XorOp {
   void Logical::Not (const Img8u *src, Img8u *dst)
   {
     fallbacklogicalNot<icl8u>(src, dst);
+  }
+
+  void Logical::AndC (const Img8u *src, const icl8u value, Img8u *dst)
+  {
+    fallbacklogicalAndOrXorC<icl8u>(src, value,dst,AndOp<icl8u>());
+  }
+  void Logical::OrC (const Img8u *src, const icl8u value, Img8u *dst)
+  {
+    fallbacklogicalAndOrXorC<icl8u>(src, value,dst,OrOp<icl8u>());
+  }
+  void Logical::XorC (const Img8u *src, const icl8u value, Img8u *dst)
+  {
+    fallbacklogicalAndOrXorC<icl8u>(src, value,dst,XorOp<icl8u>());
   }
 /* no support for floats
   void Logical::And (const Img32f *src1, const Img32f *src2, Img32f *dst)
@@ -227,6 +291,33 @@ template <typename T> class XorOp {
     if (!Filter::prepare (ppoDst, poSrc1)) return;
     Xor(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
   }
+
+
+  void Logical::AndC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst)
+  {
+    // {{{ open
+    ICLASSERT_RETURN( poSrc->getDepth() == depth8u);
+    if (!Filter::prepare (ppoDst, poSrc)) return;
+    AndC(poSrc->asImg<icl8u>(),value,(*ppoDst)->asImg<icl8u>());
+  }
+
+  void Logical::OrC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst)
+  {
+    // {{{ open
+    ICLASSERT_RETURN( poSrc->getDepth() == depth8u);
+    if (!Filter::prepare (ppoDst, poSrc)) return;
+    OrC(poSrc->asImg<icl8u>(),value,(*ppoDst)->asImg<icl8u>());
+  }
+
+  void Logical::XorC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst)
+  {
+    // {{{ open
+    ICLASSERT_RETURN( poSrc->getDepth() == depth8u);
+    if (!Filter::prepare (ppoDst, poSrc)) return;
+    XorC(poSrc->asImg<icl8u>(),value,(*ppoDst)->asImg<icl8u>());
+  }
+
+
 
   
   // }}}

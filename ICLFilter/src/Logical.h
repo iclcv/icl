@@ -15,6 +15,11 @@ namespace icl {
       static void Or  (const Img8u  *src1, const Img8u  *src2, Img8u  *dst);
       static void Xor (const Img8u  *src1, const Img8u  *src2, Img8u  *dst);
       static void Not (const Img8u  *src, Img8u  *dst);
+
+      static void AndC (const Img8u *src, const icl8u value, Img8u *dst);
+      static void OrC (const Img8u *src, const icl8u value, Img8u *dst);
+      static void XorC (const Img8u *src, const icl8u value, Img8u *dst);
+
 /* no support for floats
       static void And (const Img32f *src1, const Img32f *src2, Img32f *dst);
       static void Or  (const Img32f *src1, const Img32f *src2, Img32f *dst);
@@ -25,6 +30,10 @@ namespace icl {
       void Or  (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst);
       void Xor (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst);
       void Not (const ImgI *poSrc, ImgI **ppoDst);
+
+      void AndC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst);
+      void OrC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst);
+      void XorC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst);
    };
 } // namespace icl
 
