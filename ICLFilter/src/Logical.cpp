@@ -21,6 +21,7 @@ template <typename T, IppStatus (*ippiFunc) (const T*, int, const T*, int, T*, i
                 dst->getROISize());
     }
   }
+    // }}}
 
 template <typename T, IppStatus (*ippiFunc) (const T*, int, const T, T*, int, IppiSize)>
   inline void ippiAndOrXorCallC(const Img<T> *src, T value, Img<T> *dst)
@@ -36,9 +37,8 @@ template <typename T, IppStatus (*ippiFunc) (const T*, int, const T, T*, int, Ip
                 dst->getROISize());
     }
   }
-
-
   // }}}
+
 template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize)>
   inline void ippiNotCall(const Img<T> *src, Img<T> *dst)
   {
@@ -56,10 +56,8 @@ template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize)>
 
 
   // }}}
+
   // {{{ function specializations
-
-
-
   void Logical::And (const Img8u *src1, const Img8u *src2, Img8u *dst)
   {
     ippiAndOrXorCall<icl8u,ippiAnd_8u_C1R>(src1,src2,dst);
@@ -262,6 +260,8 @@ template <typename T> class XorOp {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     Not(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
   }
+    // }}}
+
   void Logical::And (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
   {
     // {{{ open
@@ -271,6 +271,7 @@ template <typename T> class XorOp {
     if (!Filter::prepare (ppoDst, poSrc1)) return;
     And(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
   }
+    // }}}
 
   void Logical::Or (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
   {
@@ -281,6 +282,7 @@ template <typename T> class XorOp {
     if (!Filter::prepare (ppoDst, poSrc1)) return;
     Or(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
   }
+    // }}}
 
   void Logical::Xor (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
   {
@@ -291,7 +293,7 @@ template <typename T> class XorOp {
     if (!Filter::prepare (ppoDst, poSrc1)) return;
     Xor(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
   }
-
+    // }}}
 
   void Logical::AndC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst)
   {
@@ -300,6 +302,7 @@ template <typename T> class XorOp {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     AndC(poSrc->asImg<icl8u>(),value,(*ppoDst)->asImg<icl8u>());
   }
+    // }}}
 
   void Logical::OrC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst)
   {
@@ -308,6 +311,7 @@ template <typename T> class XorOp {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     OrC(poSrc->asImg<icl8u>(),value,(*ppoDst)->asImg<icl8u>());
   }
+    // }}}
 
   void Logical::XorC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst)
   {
@@ -316,11 +320,7 @@ template <typename T> class XorOp {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     XorC(poSrc->asImg<icl8u>(),value,(*ppoDst)->asImg<icl8u>());
   }
-
-
-
-  
-  // }}}
+    // }}}
   
 // }}}
 }
