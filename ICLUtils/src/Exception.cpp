@@ -8,6 +8,7 @@
 */
 
 #include "Exception.h"
+#include "Macros.h"
 
 namespace icl {
 

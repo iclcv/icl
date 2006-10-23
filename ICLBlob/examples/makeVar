@@ -14,6 +14,7 @@ _DOT_DOT:=../${_DOT_DOT}
 # line (use backslash to continue the lines).
 include ${PACKAGES}/ICLIO
 include ${PACKAGES}/ICLCC
+include ${PACKAGES}/ICLQt
 include ${PACKAGES}/ICLBlob
 
 # Please add here all the directories with absolute path

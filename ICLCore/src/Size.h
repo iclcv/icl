@@ -19,18 +19,20 @@ namespace icl {
   /// Size class of the ICL
   class Size : public IppiSize{
     public:
+    /// null is w=0, h=0
+    static const Size null;
     
-    /// creates a (0,0) size
-    Size(){this->width = 0;this->height = 0;}
-
     /// deep copy of another Size
-    Size(const Size &s){ this->width = s.width;this->height = s.height; }
+    Size(const Size &s=null){ this->width = s.width;this->height = s.height; }
     
     /// creates a specified size
     Size(int width,int height){ this->width = width; this->height = height; }
 
     /// reutuns (width||height) as bool
-    operator bool(){ return width || height; }
+    operator bool() const { return width || height; }
+
+    /// returns !(bool)(*this)
+    bool operator!() const { return !(bool)(*this); } 
 
     /// checks if two sizes are equal
     bool operator==(const Size &s) const {return width==s.width && height==s.height;}

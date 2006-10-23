@@ -95,41 +95,48 @@ class Img : public ImgI
   // @{ @name constructors / destructor
   /* {{{ open */
 
+  /// creates a new image specified by the given param struct
+  /** @param params initializing image parameters, if null, then a 
+      null image is created  
+  */
+  Img(const ImgParams &params = ImgParams::null);
+  
   /// Creates an image with specified number of channels and size.    
   /** the format of the image will be set to "iclMatrix"
-      @param s size of the new image
-      @param iChannels Number of Channels 
+      @param size image size
+      @param channels Number of Channels 
   **/
-  Img(const Size &s = Size(1,1), int iChannels=1);
+  Img(const Size &size, int channels);
  
   /// Creates an image with specified size, number of channels and format
   /** @param s size of the new image
       @param eFormat (color)-format of the image
-      @param iChannels channel count of the image (if -1, then the channel
-                       count is calculated from the given format (E.g. if
-                       eFormat is formatRGB iChannels is set to 3.
-                       If a non-matrix format is given, then the channel count
-                       <b>must</b>  match  to the given format - if not, a 
-                       warning is written to std::out)
   **/
-  Img(const Size &s, format eFormat, int iChannels = -1);
+  Img(const Size &s, format fmt);
  
-  /// Creates an image with specified size, number of channels, format, using shared data pointers as channel data
-  /** @param s size of the new image
-      @param eFormat (color)-format of the image
-      @param iChannels channel count of the image (if -1, then the channel
-                       count is calculated from the given format (E.g. if
-                       eFormat is formatRGB iChannels is set to 3.
-                       If a non-matrix format is given, then the channel count
-                       <b>must</b>  match  to the given format - if not, a 
-                       warning is written to std::out)
-      @param pptData holds a pointer to channel data pointers. pptData must
-                     have size iChannels. The data must not be deleted during
-                     the "lifetime" of the Img. Call detach after the 
-                     constructor call, to induce the Img to allocate own memory
-                     for the image data.
+  /// Creates an image with specified size and format, using shared data pointers as channel data
+  /** The channel count is set to the channel count that is asociated with given the format
+      @param size new image size
+      @param format (color)-format of the image
+      @param pptData holds a pointer to channel data pointers. pptData must contain 
+                     enough Type-pointers for the given format. The data must not be 
+                     deleted during the "lifetime" of the Img. Call detach after the 
+                     constructor call, to induce the Img to allocate own memory for 
+                     the image data.
   **/
-  Img(const Size &s, format eFormat, int iChannels, Type** pptData);
+  Img(const Size &size, format format, Type** pptData);
+  
+  /// Creates an image with specified size and channel count, using shared data pointers as channel data
+  /** the format is set to formatMatrix
+      @param size new image size
+      @param channels channel count of the image (format is set to "formatMatrix")
+      @param pptData holds a pointer to channel data pointers. pptData must contain 
+                     enough Type-pointers for the given format. The data must not be 
+                     deleted during the "lifetime" of the Img. Call detach after the 
+                     constructor call, to induce the Img to allocate own memory for 
+                     the image data.
+  **/
+  Img(const Size &size, int channels, Type** pptData);
 
   /// Copy constructor
   /** creates a flat copy of the source image
@@ -188,7 +195,7 @@ class Img : public ImgI
   **/
   Type& operator()(int iX, int iY, int iChannel) const
     {
-      return getData(iChannel)[iX+m_oSize.width*iY];
+      return getData(iChannel)[iX+getWidth()*iY];
     }
 
   /// sub-pixel access using nearest neighbour interpolation
@@ -355,9 +362,12 @@ class Img : public ImgI
       @param poSrc source image
       @param iChannel channel to append (or all, if < 0)
   **/
-  void append(Img<Type> *poSrc, int iChannel=-1);
-  /// Append selected channels from source image
-  void append(Img<Type> *poSrc, const std::vector<int>& vChannels);
+  void append(Img<Type> *src, int iChannel=-1);
+  
+  /// Append a set of selected channels from source image
+  /** @param src source image
+      @param dst vChannels vector of channels indices*/
+  void append(Img<Type> *src, const std::vector<int>& vChannels);
   
   /// Swap channel A and B
   /** @param iIndexA Index of channel A;
@@ -397,7 +407,7 @@ class Img : public ImgI
       @param s new image size  (if x or y is < 0, the orignal width/height is used)
       @see scale
   **/
-  virtual void resize(const Size &s);
+  virtual void setSize(const Size &s);
   
   //@}
 
@@ -473,7 +483,7 @@ class Img : public ImgI
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL( iChannel >= 0 ,0);
     ICLASSERT_RETURN_VAL( iChannel < getChannels() ,0);
-    return getData(iChannel) + m_oROIOffset.x + (m_oROIOffset.y * m_oSize.width);
+    return getData(iChannel) + m_oParams.getPixelOffset();
   }
 
   /// returns the data pointer to a pixel with defined offset
@@ -490,7 +500,7 @@ class Img : public ImgI
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL( iChannel >= 0 ,0);
     ICLASSERT_RETURN_VAL( iChannel < getChannels() ,0);
-    return getData(iChannel) + p.x + (p.y * m_oSize.width);
+    return getData(iChannel) + p.x + (p.y * getWidth());
   }
 
 
@@ -509,6 +519,7 @@ class Img : public ImgI
     }
   
   //@}
+
   /* }}} */
   
   //@{ @name basic image manipulations
@@ -533,7 +544,8 @@ class Img : public ImgI
 
   /// perform an inplace mirror operation on the image
   virtual void mirror(axis eAxis, bool bOnlyROI=false);
-  /// perform an inplace mirror operation on the image
+  
+  /// perform an inplace mirror operation on the image of a given rect
   void mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize);
   
   /// Sets the pixels of one or all channels to a specified value
@@ -610,7 +622,7 @@ class Img : public ImgI
       FUNCTION_LOG("begin(" << iChannel << ")");
       ICLASSERT_RETURN_VAL(iChannel >=0 , iterator());
       ICLASSERT_RETURN_VAL(iChannel < getChannels() ,iterator());
-      return iterator(getData(iChannel),m_oSize.width,Rect(Point(0,0),m_oSize));
+      return iterator(getData(iChannel),getWidth(),Rect(Point::zero,getSize()));
     }
   /// returns an iterator to an images ROI pixles
   /** this function behaves essentially like the above function 
@@ -623,7 +635,7 @@ class Img : public ImgI
       FUNCTION_LOG("begin(" << iChannel << ")");
       ICLASSERT_RETURN_VAL(iChannel >=0 , iterator());
       ICLASSERT_RETURN_VAL(iChannel < getChannels() ,iterator());
-      return iterator(getData(iChannel),m_oSize.width,getROI());
+      return iterator(getData(iChannel),getWidth(),getROI());
     } 
  
   //@}
@@ -808,14 +820,14 @@ void scaledCopyChannelROI(const Img<S> *src,int srcC, const Point &srcOffs, cons
 
 /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
 #ifdef WITH_IPP_OPTIMIZATION
-template<> inline void 
+ template<> inline void 
 scaledCopyChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                   Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                                   scalemode eScaleMode)
   /* {{{ open */
 
   {
-    FUNCTION_LOG("");
+    FUNCTION_LOG("IPP-VERSION");
     ICLASSERT_RETURN( src && dst );
     
     ippiResize_8u_C1R(src->getROIData(srcC,srcOffs),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
@@ -833,16 +845,16 @@ scaledCopyChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Poin
   /* {{{ open */
 
   {
-    FUNCTION_LOG("");
+    FUNCTION_LOG("IPP-VERSION");
     ICLASSERT_RETURN( src && dst );
     
     ippiResize_32f_C1R(src->getROIData(srcC,srcOffs),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
                        dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
                        (float)dstSize.width/(float)srcSize.width,(float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
   }
-#endif
-/* }}} */
 
+/* }}} */
+#endif
 /* }}} */
 
 /* {{{   flippedCopyChannelROI */
@@ -919,4 +931,3 @@ inline void Img<icl32f>::mirror(axis eAxis, int iChannel,
 } //namespace icl
 
 #endif //Img_H
-

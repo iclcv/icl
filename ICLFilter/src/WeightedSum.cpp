@@ -37,7 +37,7 @@ namespace icl {
     ICLASSERT_RETURN( dst->getChannels() == 1);
     
     Img32f* src32 = getImg32fCopy (src,m_oDepthBuf);
-    m_oAccuBuf.resize(dst->getROISize());
+    m_oAccuBuf.setSize(dst->getROISize());
     ippiMulC_32f_C1R(src32->getROIData (0), src32->getLineStep(),weights[0],dst->getROIData (0), dst->getLineStep(),dst->getROISize());
     for (int c=1; c <src32->getChannels(); c++) {
       ippiMulC_32f_C1R(src32->getROIData (c), src32->getLineStep(),weights[c],m_oAccuBuf.getROIData (0), m_oAccuBuf.getLineStep(),m_oAccuBuf.getROISize());

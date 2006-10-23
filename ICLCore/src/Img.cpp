@@ -15,67 +15,84 @@ namespace icl {
 
 //----------------------------------------------------------------------------
 template<class Type>
+Img<Type>::Img(const ImgParams &params):
+  // {{{ open
+  ImgI(icl::getDepth<Type>(),params){
+  FUNCTION_LOG("Img(params)");
+  
+  for(int i=0;i<getChannels();i++) {
+    m_vecChannels.push_back(createChannel());
+  }
+} 
+
+  // }}}
+
+//----------------------------------------------------------------------------
+template<class Type>
 Img<Type>::Img(const Size &s,int iChannels):
   // {{{ open
 
-  ImgI(s,formatMatrix,icl::getDepth<Type>(),iChannels){
+  ImgI(icl::getDepth<Type>(),ImgParams(s,iChannels)){
   FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << iChannels << ")  this:" << this );
   
-  //---- Img Channel memory allocation ----
-  for(int i=0;i<m_iChannels;i++)
-    {
-      m_vecChannels.push_back(createChannel());
-    }
+  for(int i=0;i<getChannels();i++) {
+    m_vecChannels.push_back(createChannel());
+  }
 } 
 
   // }}}
 
 //----------------------------------------------------------------------------
 template<class Type>
-Img<Type>::Img(const Size& s, format eFormat, int iChannels):
+Img<Type>::Img(const Size& s, format eFormat):
   // {{{ open
-
-  ImgI(s,eFormat,icl::getDepth<Type>(),iChannels){
-  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) <<","<< iChannels << ")  this:" << this );
+  ImgI(icl::getDepth<Type>(),ImgParams(s,eFormat)){
+  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ")  this:" << this );
   
-   //---- Img Channel memory allocation ----
-  for(int i=0;i<m_iChannels;i++)
-    {
-      m_vecChannels.push_back(createChannel());
-    }
+  for(int i=0;i<getChannels();i++) {
+    m_vecChannels.push_back(createChannel());
+  }
 } 
 
   // }}}
 
 //----------------------------------------------------------------------------
 template<class Type>
-Img<Type>::Img(const Size &s, format eFormat, int iChannels, Type** pptData):
+Img<Type>::Img(const Size &s, int iChannels, Type** pptData):
   // {{{ open
-  ImgI(s,eFormat,icl::getDepth<Type>(),iChannels){
-
-  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) <<","<< iChannels << ",Type**)  this:" << this);
-   
-  //---- Img Channel memory allocation ----
-  for(int i=0;i<m_iChannels;i++)
-    {
-       m_vecChannels.push_back(SmartPtr<Type>(*pptData++,0));
-    }
+  ImgI(icl::getDepth<Type>(),ImgParams(s,iChannels)){
+  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  iChannels << ",Type**)  this:" << this);
+  
+  for(int i=0;i<getChannels();i++){
+    m_vecChannels.push_back(SmartPtr<Type>(*pptData++,0));
+  }
 } 
 
   // }}}
- 
+
+//----------------------------------------------------------------------------
+template<class Type>
+Img<Type>::Img(const Size &s, format eFormat, Type** pptData):
+  // {{{ open
+  ImgI(icl::getDepth<Type>(),ImgParams(s,eFormat)){
+  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ",Type**)  this:" << this);
+   
+  for(int i=0;i<getChannels();i++){
+    m_vecChannels.push_back(SmartPtr<Type>(*pptData++,0));
+  }
+} 
+
+  // }}}
+
 //----------------------------------------------------------------------------
 template<class Type>
 Img<Type>::Img(const Img<Type>& tSrc):
   // {{{ open
 
-    ImgI(tSrc.getSize(),tSrc.getFormat(),tSrc.getDepth(),tSrc.getChannels())
+    ImgI(tSrc.getDepth(),tSrc.getParams())
 {
   FUNCTION_LOG("this: " << this);
-  
   m_vecChannels = tSrc.m_vecChannels;
-  m_oROIOffset = tSrc.m_oROIOffset;
-  m_oROISize = tSrc.m_oROISize;
 }
 
   // }}}
@@ -101,13 +118,8 @@ Img<Type>& Img<Type>::operator=(const Img<Type>& tSrc)
   FUNCTION_LOG("");
   
   //---- Assign new channels to Img ----
-  m_oSize = tSrc.m_oSize;
-  m_eFormat = tSrc.getFormat();
-  m_eDepth = tSrc.getDepth();
-  m_iChannels = tSrc.getChannels();  
+  setParams(tSrc.getParams());
   m_vecChannels = tSrc.m_vecChannels;
-  m_oROIOffset = tSrc.m_oROIOffset;
-  m_oROISize = tSrc.m_oROISize;
 
   return *this;
 }
@@ -170,11 +182,13 @@ Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
 template<class Type> ImgI*
 Img<Type>::deepCopyROI(ImgI *poDst) const
   // {{{ open
+
 {
   FUNCTION_LOG("");
 
   if(!poDst){
-    poDst = imgNew(getDepth(),getROISize(),getFormat(),getChannels());
+    poDst = imgNew(getDepth(),getROISize(),getChannels());
+    poDst->setFormat(getFormat());
   }else{
     poDst->setChannels(getChannels());
     poDst->setFormat(getFormat());
@@ -182,24 +196,26 @@ Img<Type>::deepCopyROI(ImgI *poDst) const
   ICLASSERT_RETURN_VAL( getROISize() == poDst->getROISize() , poDst);
 
   if(poDst->getDepth()==depth8u){
-     for(int c=0;c<m_iChannels;c++) {
+     for(int c=0;c<getChannels();c++) {
         deepCopyChannelROI<Type,icl8u>(this,  c, getROIOffset(),       getROISize(),
                                        poDst->asImg<icl8u>(), c, poDst->getROIOffset(),poDst->getROISize());
      }
   }else{
-     for(int c=0;c<m_iChannels;c++) {
+     for(int c=0;c<getChannels();c++) {
         deepCopyChannelROI<Type,icl32f>(this,  c, getROIOffset(),       getROISize(),
                                         poDst->asImg<icl32f>(), c, poDst->getROIOffset(),poDst->getROISize());
      }
   }
   return poDst;
 }
+
   // }}}
 
 //----------------------------------------------------------------------------
 template<class Type> ImgI*
 Img<Type>::scaledCopyROI(ImgI *poDst, scalemode eScaleMode) const
   // {{{ open
+
 {
   FUNCTION_LOG("");
   
@@ -231,9 +247,14 @@ Img<Type>::scaledCopyROI(ImgI *poDst, scalemode eScaleMode) const
 template<class Type> ImgI*
 Img<Type>::flippedCopyROI(ImgI *poDst, axis eAxis) const
   // {{{ open
+
 {
   FUNCTION_LOG("");
-  if(!poDst) poDst = imgNew(getDepth(),getROISize(),getFormat(),getChannels());
+  if(!poDst){
+    poDst = imgNew(getDepth(),getROISize(),getChannels());
+    poDst->setFormat(getFormat());
+  }
+  
   ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize() ,poDst);  
   poDst->setChannels(getChannels());
 
@@ -261,6 +282,7 @@ Img<Type>::flippedCopyROI(ImgI *poDst, axis eAxis) const
   }
   return poDst;  
 }
+
   // }}}
 
 //----------------------------------------------------------------------------
@@ -284,17 +306,19 @@ Img<Type>::detach(int iIndex)
 template<class Type> void
 Img<Type>::removeChannel(int iChannel)
   // {{{ open
+
 {
   FUNCTION_LOG("removeChannel(" << iChannel << ")");
   ICLASSERT_RETURN(iChannel < getChannels());
 
   if(getFormat() != formatMatrix){
     WARNING_LOG("format was set to formatMatrix to ensure compability");
+    WARNING_LOG("avoid this waring by setting the format to \"formatMatrix\" before");
     setFormat(formatMatrix);
   }
   
   m_vecChannels.erase(m_vecChannels.begin()+iChannel);
-  m_iChannels--;
+  setChannels(getChannels()-1);
 }
 
 // }}}
@@ -311,15 +335,16 @@ Img<Type>::append(Img<Type> *poSrc, int iIndex)
   ICLASSERT_RETURN( iIndex < poSrc->getChannels() ); 
   ICLASSERT_RETURN( poSrc->getSize() == getSize() );
 
-  if (m_eFormat != formatMatrix) {
+  if (getFormat() != formatMatrix) {
     WARNING_LOG("format was set to formatMatrix to ensure compability");
-    m_eFormat = formatMatrix;
+    WARNING_LOG("avoid this waring by setting the format to \"formatMatrix\" before");
+    setFormat(formatMatrix);
   }
   
   std::copy (poSrc->m_vecChannels.begin() + poSrc->getStartIndex(iIndex),
              poSrc->m_vecChannels.begin() + poSrc->getEndIndex(iIndex),
              back_inserter(m_vecChannels));  
-  m_iChannels = m_vecChannels.size();
+  setChannels(m_vecChannels.size());
 }
 
 // }}}
@@ -327,14 +352,16 @@ Img<Type>::append(Img<Type> *poSrc, int iIndex)
 template<class Type> void
 Img<Type>::append(Img<Type> *poSrc, const std::vector<int>& vChannels)
   // {{{ open
+
 {
   FUNCTION_LOG("");
   ICLASSERT_RETURN( poSrc );
   ICLASSERT_RETURN( poSrc->getSize() == getSize() );
 
-  if (m_eFormat != formatMatrix) {
+  if (getFormat() != formatMatrix) {
     WARNING_LOG("format was set to formatMatrix to ensure compability");
-    m_eFormat = formatMatrix;
+    WARNING_LOG("avoid this waring by setting the format to \"formatMatrix\" before");
+    setFormat(formatMatrix);
   }
   
   const int iMaxChannels = poSrc->getChannels();
@@ -346,7 +373,7 @@ Img<Type>::append(Img<Type> *poSrc, const std::vector<int>& vChannels)
         m_vecChannels.push_back (poSrc->m_vecChannels[*it]);
      }
   }
-  m_iChannels = m_vecChannels.size();
+  setChannels(m_vecChannels.size());
 }
 
 // }}}
@@ -373,11 +400,12 @@ Img<Type>::scale(const Size &s,scalemode eScaleMode)
 {  
   FUNCTION_LOG("");
   
-  Size oNewSize(s.width<0?getSize().width:s.width, s.height<0?getSize().height:s.height);
+  Size oNewSize(s.width<0?getWidth():s.width, s.height<0?getHeight():s.height);
 
-  if(! isEqual(oNewSize, m_iChannels))
+  if(! isEqual(oNewSize,getChannels()))
     {
-      Img<Type> oTmp(oNewSize,m_eFormat,m_iChannels);
+      Img<Type> oTmp(oNewSize,getChannels());
+      oTmp.setFormat(getFormat());
       scaledCopy(&oTmp,eScaleMode);
       (*this)=oTmp;
     }
@@ -390,6 +418,7 @@ template<class Type> void
 Img<Type>::mirror(axis eAxis, bool bOnlyROI)
   // {{{ open
 {
+  FUNCTION_LOG("");
    const Point& oOffset = bOnlyROI ? getROIOffset() : Point::zero;
    const Size&  oSize   = bOnlyROI ? getROISize() : getSize();
    for (int c=0; c < getChannels(); ++c) {
@@ -400,8 +429,8 @@ Img<Type>::mirror(axis eAxis, bool bOnlyROI)
 
 static inline void* getPointerOffset (const void* begin, int x, int y, int iByteSize, int iLineLen) {
   // {{{ open
-
-   return ((char*)begin) + iByteSize * (x + y*iLineLen);
+  FUNCTION_LOG("");
+  return ((char*)begin) + iByteSize * (x + y*iLineLen);
 }
 
   // }}}
@@ -412,7 +441,7 @@ static bool getMirrorPointers (axis eAxis, bool bInplace,
                                void** pS, void** pD, void** pE, void** pELine,
                                int& iLineWarpS, int& iLineWarpD) {
   // {{{ open
-
+  FUNCTION_LOG("");
    void *&s=*pS, *&d=*pD, *&e=*pE, *&eLine=*pELine;
    int iRows, iCols;
    int iSrcLineLen = iSrcLineStep / iByteSize;
@@ -509,8 +538,8 @@ Img<Type>::mirror(axis eAxis, int iChannel,
      std::swap (*s, *d);
      ++s; d += aiDstStep[eAxis];
      if (s == eLine) {
-        eLine += m_oSize.width; // end of line pointer jumps whole image width
-        s += iLineWarpS;        // source pointer jumps iLineWarpS
+        eLine += getWidth(); // end of line pointer jumps whole image width
+        s += iLineWarpS;     // source pointer jumps iLineWarpS
         d += iLineWarpD;
      }
   } while (s != e);
@@ -520,7 +549,7 @@ Img<Type>::mirror(axis eAxis, int iChannel,
 
 //----------------------------------------------------------------------------
 template<class Type> void
-Img<Type>::resize(const Size &s)
+Img<Type>::setSize(const Size &s)
   // {{{ open
 
 {
@@ -529,13 +558,12 @@ Img<Type>::resize(const Size &s)
   Size oNewSize(s.width<0?getSize().width:s.width, s.height<0?getSize().height:s.height);
   //---- estimate destination values in respect to defaults ----
   
-  if (oNewSize != m_oSize) {
-     m_oSize = oNewSize;
-     for(int i=0;i<m_iChannels;i++) {
-        m_vecChannels[i] = createChannel ();
-     }
+  if (oNewSize != getSize()) {
+    m_oParams.setSize(oNewSize);
+    for(int i=0;i<getChannels();i++) {
+      m_vecChannels[i] = createChannel ();
+    }
   }
-  setFullROI();
 }
 
 // }}}
@@ -544,28 +572,22 @@ Img<Type>::resize(const Size &s)
 template<class Type> void
 Img<Type>::setChannels(int iNumNewChannels)
   // {{{ open
-
 {
-  if (iNumNewChannels == m_iChannels) return;
   FUNCTION_LOG("");
   ICLASSERT_RETURN(iNumNewChannels >= 0);
+  if (iNumNewChannels == getChannels()) return;
   
-  if (getFormat() != formatMatrix) {
-     WARNING_LOG("format was set to formatMatrix to ensure compability");
-     m_eFormat=formatMatrix;
-  }
-  
-  if(iNumNewChannels < m_iChannels) {
-     //---- reduce number of channels ----
-     m_vecChannels.erase(m_vecChannels.begin() + iNumNewChannels, 
-                         m_vecChannels.end());
-  } else {
+  if(iNumNewChannels < getChannels()) {
+    //---- reduce number of channels ----
+    m_vecChannels.erase(m_vecChannels.begin() + iNumNewChannels, 
+                        m_vecChannels.end());
+  }else{
      //---- Extend number of channels ----
      m_vecChannels.reserve (iNumNewChannels);
-     for(; m_iChannels < iNumNewChannels; ++m_iChannels)
+     for(int i=getChannels();i < iNumNewChannels; ++i)
         m_vecChannels.push_back(createChannel());
   }
-  m_iChannels = m_vecChannels.size();
+  m_oParams.setChannels(m_vecChannels.size());
 }
 
 // }}}
@@ -584,7 +606,7 @@ Img<Type>::replaceChannel(int iThisIndex, Img<Type>* poSrc, int iOtherIndex)
 
 // }}}
 
-// {{{  Getter Functions: 
+// {{{  Get Min/Max functions: 
 
 // {{{     getMax
 template<class Type> Type 
@@ -725,45 +747,63 @@ Img<icl32f>::getMinMax(icl32f &vMin, icl32f &vMax, int iChannel) const {
 
 template<class Type>
 SmartPtr<Type> Img<Type>::createChannel(Type *ptDataToCopy) const
+  // {{{ open
 {
-  Type *ptNewData =  new Type[getDim()];
+  FUNCTION_LOG("");
+  int dim = getDim();
+  if(!dim){
+    return SmartPtr<Type>();
+  }
+  Type *ptNewData =  new Type[dim];
   if(ptDataToCopy){
     memcpy(ptNewData,ptDataToCopy,getDim()*sizeof(Type));
   }else{
-    std::fill(ptNewData,ptNewData+getDim(),0);
+    std::fill(ptNewData,ptNewData+dim,0);
   }
   return SmartPtr<Type>(ptNewData);
 }
+
+  // }}}
 
 
 // sub-pixel access using linear interpolation
 template<class Type>
 float Img<Type>::subPixelLIN(float fX, float fY, int iChannel) const {
+  // {{{ open
+
    float fX0 = fX - floor(fX), fX1 = 1.0 - fX0;
    float fY0 = fY - floor(fY), fY1 = 1.0 - fY0;
    int xll = (int) fX;
    int yll = (int) fY;
    
-   Type* pLL = getData(iChannel) + xll + yll * m_oSize.width;
+   Type* pLL = getData(iChannel) + xll + yll * getWidth();
    float a = *pLL;        //  a b
    float b = *(++pLL);    //  c d
-   pLL += m_oSize.width;
+   pLL += getWidth();
    float d = *pLL;
    float c = *(--pLL);
    
 // return fX1*fY1*a + fX0*fY1*b + fX0*fY0*d + fX1*fY0*c;
    return fX1 * (fY1*a + fY0*c) + fX0 * (fY1*b + fY0*d);
 }
+
+  // }}}
   
 // sub-pixel access using region average interpolation
 template<class Type>
 float Img<Type>::subPixelRA(float fX, float fY, int iChannel) const {
+  // {{{ open
+
    ERROR_LOG ("region average interpolation is not yet implemented!");
    return subPixelLIN (fX, fY, iChannel);
 }
 
+  // }}}
+
 template<class Type>
 Type Img<Type>::operator()(float fX, float fY, int iChannel, scalemode eScaleMode) const {
+  // {{{ open
+
    switch(eScaleMode) {
      case 0: return Cast<float, Type>::cast (subPixelNN (fX, fY, iChannel));
      case 1: return Cast<float, Type>::cast (subPixelLIN (fX, fY, iChannel));
@@ -772,6 +812,8 @@ Type Img<Type>::operator()(float fX, float fY, int iChannel, scalemode eScaleMod
         return Cast<float, Type>::cast (subPixelLIN (fX, fY, iChannel));
    }
 }
+
+  // }}}
 
 // }}}
 
@@ -900,15 +942,16 @@ void scaledCopyChannelROI(const Img<S> *src, int srcC, const Point &srcOffs, con
   int yD = 0;
   float yS = srcOffs.y + fSY * yD;
   for(; itDst.inRegion(); ++itDst) {
-     *itDst = Cast<float, D>::cast ((src->*subPixelMethod)(srcOffs.x + fSX * xD, yS, srcC));
-     if (++xD == dstSize.width) {
-        yS = srcOffs.y + fSY * ++yD;
-        xD = 0;
-     }
+    *itDst = Cast<float, D>::cast ((src->*subPixelMethod)(srcOffs.x + fSX * xD, yS, srcC));
+    if (++xD == dstSize.width) {
+      yS = srcOffs.y + fSY * ++yD;
+      xD = 0;
+    }
   }
 }
 
 // explicit template instantiation
+
 #ifndef WITH_IPP_OPTIMIZATION
 template void 
 scaledCopyChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,

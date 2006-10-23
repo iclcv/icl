@@ -90,7 +90,8 @@ int testmy(){
     }
   }
   t.stopSubTimer();
-
+  src.print("src");
+  dst.print("dst");
   for(int i=0;i<N;i++){
     Threshold::lt(&src,&dst,tetta);
   }

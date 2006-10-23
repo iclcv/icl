@@ -16,20 +16,15 @@ namespace icl {
 
 // {{{ constructor / destructor 
 
-ImgI::ImgI(const Size &s, format eFormat, depth eDepth, int iChannels):
-   m_iChannels(eFormat == formatMatrix ? std::max(0, iChannels) 
-               : getChannelsOfFormat(eFormat)),
-   m_oSize(s), m_eFormat(eFormat), m_eDepth(eDepth), m_oROISize(s)
-{
-   FUNCTION_LOG("ImgI(" << s.width 
-                << "," << s.height 
-                << "," << translateFormat(eFormat) 
-                << ", "<< translateDepth(eDepth) 
-                << "," << iChannels << ")  this:" << this); 
-   
-   ICLASSERT_RETURN ( eFormat == formatMatrix ||
-                      getChannelsOfFormat (eFormat) == m_iChannels );
-}
+  ImgI::ImgI(depth d, const ImgParams &params):
+    m_oParams(params),m_eDepth(d)
+  {
+    FUNCTION_LOG("ImgI(" << getWidth()
+                 << "," << getHeight()
+                 << "," << translateFormat(getFormat()) 
+                 << ", "<< translateDepth(getDepth()) 
+                 << "," << getChannels() << ")  this:" << this); 
+  }
 
 ImgI::~ImgI()
 {
@@ -38,57 +33,41 @@ ImgI::~ImgI()
 
 // }}} 
 
-// {{{ setter functions
-
-void ImgI::setFormat(format eFormat)
-{
-  FUNCTION_LOG("setFormat(" << translateFormat(eFormat) << ")");
-  if (eFormat != formatMatrix) {
-     int nChannels = getChannelsOfFormat(eFormat);
-     if(nChannels != m_iChannels){
-        setChannels(nChannels);
-     }
-  }
-  m_eFormat=eFormat;
-}
-
-// }}}
-
 // {{{ utillity functions
 
-ImgI* ImgI::shallowCopy(ImgI* poDst) const {
+ImgI* ImgI::shallowCopy(ImgI** ppoDst) const {
   FUNCTION_LOG("");
   // create image with zero channels
-  if (!poDst) poDst = imgNew(getDepth(),getSize(),formatMatrix,0);
-  else ensureDepth (&poDst, getDepth ());
+  if (!*ppoDst) *ppoDst = imgNew(getDepth(),getParams());
+  else ensureDepth (ppoDst, getDepth ());
   
   if (getDepth() == depth8u) {
-     *poDst->asImg<icl8u>() = *this->asImg<icl8u>();
+     *(*ppoDst)->asImg<icl8u>() = *this->asImg<icl8u>();
   } else {
-     *poDst->asImg<icl32f>() = *this->asImg<icl32f>();
+     *(*ppoDst)->asImg<icl32f>() = *this->asImg<icl32f>();
   }
-  poDst->setROI (getROIOffset(), getROISize());
-  return poDst;
+  (*ppoDst)->setROI (getROI());
+  return *ppoDst;
 }
 
-ImgI* ImgI::shallowCopy(const std::vector<int>& vChannels, ImgI* poDst) const {
+ImgI* ImgI::shallowCopy(const std::vector<int>& vChannels, ImgI** ppoDst) const {
   FUNCTION_LOG("");
   // create image with zero channels
-  if (!poDst) poDst = imgNew(getDepth(),getSize(),formatMatrix,0);
+  if (!*ppoDst) *ppoDst = imgNew(getDepth(),getSize(),0);
   else {
-     poDst->setChannels (0);
-     ensureDepth (&poDst, getDepth ());
-     poDst->m_oSize = this->getSize();
-     poDst->m_eFormat = formatMatrix;
+     (*ppoDst)->setChannels (0);
+     ensureDepth (ppoDst, getDepth ());
+     (*ppoDst)->setSize(getSize());
+     (*ppoDst)->setFormat(formatMatrix);
   }
 
   if (getDepth() == depth8u) {
-     poDst->asImg<icl8u>()->append (this->asImg<icl8u>(), vChannels);
+     (*ppoDst)->asImg<icl8u>()->append (this->asImg<icl8u>(), vChannels);
   } else {
-     poDst->asImg<icl32f>()->append (this->asImg<icl32f>(), vChannels);
+     (*ppoDst)->asImg<icl32f>()->append (this->asImg<icl32f>(), vChannels);
   }
-  poDst->setROI (getROIOffset(), getROISize());
-  return poDst;
+  (*ppoDst)->setROI (getROI());
+  return *ppoDst;
 }
 
 
@@ -103,14 +82,14 @@ void ImgI::print(const string sTitle) const
             sTitle.c_str(),
             getSize().width,getSize().height,getChannels(),
             getDepth()==depth8u ? "depth8u" : "depth32f",
-            translateFormat(m_eFormat).c_str(),
+            translateFormat(getFormat()).c_str(),
             getROI().x, getROI().y,getROI().width, getROI().height);
   if(m_eDepth == depth8u){
-    for(int i=0;i<m_iChannels;i++){
+    for(int i=0;i<getChannels();i++){
       printf("| channel: %d, min: %d, max:%d \n",i,asImg<icl8u>()->getMin(i),asImg<icl8u>()->getMax(i));
     }
   }else{
-    for(int i=0;i<m_iChannels;i++){
+    for(int i=0;i<getChannels();i++){
       printf("| channel: %d, min: %f, max:%f \n",i,asImg<icl32f>()->getMin(i),asImg<icl32f>()->getMax(i));
     }
   }
@@ -121,41 +100,14 @@ void ImgI::print(const string sTitle) const
 
 // }}}
 
-// {{{ ROI functions
-
-void ImgI::setROISizeAdaptive(const Size &s){
-  FUNCTION_LOG("setROISize("<< s.width << "," << s.height << ")");
-  
-  int iW = s.width <=  0 ? getSize().width  + s.width  : s.width;
-  int iH = s.height <= 0 ? getSize().height + s.height : s.height;
-
-  m_oROISize.width  =  clip(iW, 1, getSize().width  - getROIOffset().x);
-  m_oROISize.height =  clip(iH, 1, getSize().height - getROIOffset().y);
-}
-
-void ImgI::setROIOffsetAdaptive(const Point &p){
-  FUNCTION_LOG("setROIOffset("<< p.x << "," << p.y << ")");
-  
-  int x = p.x < 0 ? getSize().width  - getROISize().width  + p.x : p.x;
-  int y = p.y < 0 ? getSize().height - getROISize().height + p.y : p.y;
-
-  m_oROIOffset.x =  clip(x,0,getSize().width-getROISize().width);
-  m_oROIOffset.y =  clip(y,0,getSize().height-getROISize().height);
-}
-
-// }}}
-
 // {{{ convertTo - template
 
 template <class T>
 Img<T> *ImgI::convertTo( Img<T>* poDst) const {
   FUNCTION_LOG("");
  
-  if(!poDst) poDst = new Img<T>(Size(1,1),1);
-  poDst->resize(getSize());
-  poDst->setFormat(getFormat());
-  poDst->setChannels(getChannels());
-  poDst->setROI(getROI());
+  if(!poDst) poDst = new Img<T>(getParams());
+  else poDst->setParams(getParams());
   
   if(getDepth() == depth8u){
     for(int c=0;c<getChannels();c++) deepCopyChannel<icl8u,T>(asImg<icl8u>(),c,poDst,c);
@@ -169,5 +121,30 @@ template Img<icl8u>* ImgI::convertTo<icl8u>(Img<icl8u>*) const;
 template Img<icl32f>* ImgI::convertTo<icl32f>(Img<icl32f>*) const;
 
 // }}}
+
+// {{{ setFormat
+void ImgI::setFormat(format fmt){
+  FUNCTION_LOG("");
+  int newcc = getChannelsOfFormat(fmt);
+  if(fmt != formatMatrix && newcc != getChannels()){
+    setChannels(newcc);
+  }
+  m_oParams.setFormat(fmt);
+}
+
+// }}}
+
+// {{{ setParams
+
+void ImgI::setParams(const ImgParams &params){
+  FUNCTION_LOG("");
+  setChannels(params.getChannels());
+  setSize(params.getSize());
+  setFormat(params.getFormat());
+  setROI(params.getROI());
+}
+
+// }}}
+
 
 } //namespace icl

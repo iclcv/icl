@@ -68,6 +68,6 @@ namespace icl{
     }
 
     //---- no changed needed at all: do deep / shallow copy
-    poCurSrc->shallowCopy(poDst);
+    poCurSrc->deepCopy(poDst);
   }
 }

@@ -11,7 +11,6 @@
 #define ICLEXCEPTION_H
 
 #include <iostream>
-#include "Macros.h"
 #include <exception>
 
 namespace icl {
@@ -22,26 +21,33 @@ namespace icl {
     std::string m_sMessage;
     
   public:
-    ICLException (std::string msg) throw() : m_sMessage(msg) {}
+    ICLException (const std::string &msg) throw() : m_sMessage(msg) {}
     virtual ~ICLException() throw() {};
     virtual const char* what() const throw() {return m_sMessage.c_str();}
     void report();
   };
 
+  //TODO: rename to InvalidFileFormatException
   class ICLInvalidFileFormat : public ICLException {
   public:
     ICLInvalidFileFormat () throw() : 
        ICLException (std::string("invalid file format")) {}
-    virtual ~ICLInvalidFileFormat() throw() {};
+    virtual ~ICLInvalidFileFormat() throw() {}
   };
 
   class FileOpenException : public ICLException {
   public:
     FileOpenException (const std::string& sFileName) throw() : 
        ICLException (std::string("Can't open file: ") + sFileName) {}
-    virtual ~FileOpenException() throw() {};
+    virtual ~FileOpenException() throw() {}
   };
  
+  class InvalidImgParamException : public ICLException {
+    public:
+    InvalidImgParamException(const std::string &param) throw():
+      ICLException(std::string("Invalid Img-Parameter: ")+param) {}
+    virtual ~InvalidImgParamException() throw() {}
+  };
 }
 
 #endif // ICLEXCEPTION

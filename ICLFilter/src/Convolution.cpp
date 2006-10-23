@@ -492,7 +492,7 @@ namespace icl {
 
      // resize kernel buffer if necessary
      if (poKernel->getROISize() != poKernelBuf->getSize())
-        poKernelBuf->resize (poKernel->getROISize());
+        poKernelBuf->setSize (poKernel->getROISize());
 
      // copy data from poKernel's ROI to poKernelBuf
      if (poKernel->getDepth () == depth8u) {

@@ -7,10 +7,10 @@ using namespace icl;
 
 int main() 
 {
-  //---- Allocate variables ----
-  PWCGrabber cam(Size(320,240));
   
-  ImgI* poImg = imgNew(depth8u,Size(320,240));
+  PWCGrabber cam(Size(320,240));
+  ImgI* poImg = imgNew(depth8u,Size(320,240),formatRGB);
+
   FileWrite ioWrite("demoImages/outImg##.ppm");
   
   cam.grab(poImg);

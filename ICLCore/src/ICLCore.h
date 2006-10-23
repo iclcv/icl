@@ -223,14 +223,11 @@ provided in ImgMacros.h
 */
 
 #include "Macros.h"
-#include "Size.h"
-#include "Point.h"
-#include "Rect.h"
-
+#include "ICLTypes.h"
+#include "ImgParams.h"
 #include <string>
-#ifdef WITH_IPP_OPTIMIZATION
-#include <ipp.h>
-#endif
+
+
 
 /// The ICL-namespace
 /**
@@ -238,81 +235,8 @@ This namespace is dedicated for ICLCore- and all additional Computer-Vision
 packages, that are based on the ICLCore classes.
 **/
 namespace icl {
-  
-#ifdef WITH_IPP_OPTIMIZATION
-  /// 32Bit floating point type for the ICL 
-  typedef Ipp32f icl32f;
 
-  /// 8Bit unsigned integer type for the ICL
-  typedef Ipp8u icl8u;
-
-#else
-  /// 32Bit floating point type for the ICL 
-  typedef float icl32f;
-
-  /// 8Bit unsigned integer type for the ICL 
-  typedef unsigned char icl8u;
-#endif
-
-  //forward declaration for the Image interface
-  class ImgI;
-
-  /// forward declaration of the Img-class
-  template<class T> class Img;
-
-  /// typedef for 8bit integer images
-  typedef Img<icl8u> Img8u;
-
-  /// typedef for 32bit float images
-  typedef Img<icl32f> Img32f;
-
-
-  /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
-  enum depth{
-    depth8u  = 0, /**< 8Bit unsigned integer values range {0,1,...255} */
-    depth32f = 1 /**< 32Bit floating point values */
-  };
-  
-  /// determines the color-format, that is associated with the images channels 
-  enum format{
-    formatRGB, /**< (red,green,blue) colors pace */
-    formatHLS, /**< (hue,lightness,saturation) color space (also know as HSI) */
-    formatLAB, /**< (lightness,a*,b*) color space */
-    formatYUV, /**< (Y,u,v) color space */
-    formatGray, /**< n-channel gray image range of values is [0,255] as default */
-    formatMatrix, /**< n-channel image without a specified color space. */
-    formatChroma /**< 2 channel chromaticity color space */
-  };
-
-#ifdef WITH_IPP_OPTIMIZATION
-  enum scalemode{
-    interpolateNN=IPPI_INTER_NN,      /**< nearest neighbor interpolation */
-    interpolateLIN=IPPI_INTER_LINEAR, /**< bilinear interpolation */
-    interpolateRA=IPPI_INTER_SUPER    /**< region-average interpolation */
-  };
-#else
-  /// for scaling of Img images theses functions are provided
-  enum scalemode{
-    interpolateNN,  /**< nearest neighbor interpolation */
-    interpolateLIN, /**< bilinear interpolation */
-    interpolateRA   /**< region-average interpolation */
-  };
-#endif
-
-  /// for flipping of images
-  enum axis{
-#ifdef WITH_IPP_OPTIMIZATION
-    axisHorz=ippAxsHorizontal, /**> horizontal image axis */
-    axisVert=ippAxsVertical,   /**> vertical image axis */
-    axisBoth=ippAxsBoth        /**> flip both axis */
-#else
-    axisHorz, /**> horizontal image axis */
-    axisVert, /**> vertical image axis */
-    axisBoth  /**> flip both axis */
-#endif
-  };
-
-  /* {{{ basic global functions */
+/* {{{ clip function*/
 
   /// clips a value into the range [tMin,tMax]
   template <class T>
@@ -320,7 +244,7 @@ namespace icl {
  
   /* }}} */
 
-/* {{{ Global classes */
+/* {{{ Cast class */
   
   /// Casting operator
   /** Use Cast<srcT, dstT>::cast (value) to cast values safely from
@@ -350,14 +274,14 @@ namespace icl {
 
 /* {{{ Global functions */
 
-  /// creates a new ImgI by abstacting from the depth parameter
-  /** This function is essention for the abstaction mechanism about 
-      Img image classes  underlying depth. In many cases you might have an
-      ImgI*, wich must be initialized with parameters size,
-      channel count and - which is the problem - the depth. The
-      default solution is to insert an if statement. Look at the 
-      following Example, that shows the implementation of a class
-      constructor.
+/// creates a new ImgI by abstacting from the depth parameter
+/** This function is essention for the abstaction mechanism about 
+    Img image classes  underlying depth. In many cases you might have an
+    ImgI*, wich must be initialized with parameters size,
+    channel count and - which is the problem - the depth. The
+    default solution is to insert an if statement. Look at the 
+    following Example, that shows the implementation of a class
+    constructor.
       <pre>
       class Foo{
          public:
@@ -391,13 +315,21 @@ namespace icl {
                        eFormat is used
       @param oROI ROI rectangle of the new image
       @return the new ImgI* with underlying Img<Type>, where
-              Type is depending on the first parameter eDepth
+      Type is depending on the first parameter eDepth
   **/
-  ImgI *imgNew(depth eDepth=depth8u, 
-               const Size& s=Size(1,1),
-               format eFormat=formatMatrix,
-               int iChannels = -1,
-               const Rect &oROI=Rect());
+  ImgI *imgNew( depth d=depth8u, const ImgParams &params = ImgParams::null);
+  
+  /// creates a new Img (see the above function for more details)
+  inline ImgI *imgNew(depth d, const Size& size, format fmt, const Rect &roi=Rect::null){
+    FUNCTION_LOG("");
+    return imgNew(d,ImgParams(size,fmt,roi));
+  }
+
+  /// creates a new Img (see the above function for more details)
+  inline ImgI *imgNew(depth d, const Size& size, int channels=1, const Rect &roi=Rect::null){
+    FUNCTION_LOG("");
+    return imgNew(d,ImgParams(size,channels,roi));
+  }
 
 
   
@@ -412,26 +344,31 @@ namespace icl {
   **/
   void ensureDepth(ImgI **ppoImage, depth eDepth);
 
-  /// ensures that an image has given depth, size, format, number of channels and ROI
+  /// ensures that an image has given depth, size, number of channels and ROI
   /** If the given pointer to the destination image is 0, a new image with appropriate
       properties is created. Else the image properties are checked and adapted to the new
       values if neccessary.
-      @param ppoDst  points the destination ImgI*. If the images depth has to be
-                     converted, then a new Img<T>* is created at (*ppoDst).
-      @param eDepth  desired image depth
-      @param size    desired image size
-      @param eFormat desired format
-      @param iChannelCount desired number of channels, if eFormat == formatMatrix
-                           for other format, the number of channels is determined by the format
-      @param roROI   desired ROI rectangle. If the ROI parameters are not given, 
-                     the ROI will comprise the whole image.
+      @param dst points the destination ImgI*. If the images depth hasa to be
+                 converted, then a new Img<T>* is created at (*dst).
+      @param d desired image depth
+      @param size desired image size
+      @param channels desired number of channels, if eFormat == formatMatrix
+                      for other format, the number of channels is determined by the format
+      @param roi desired ROI rectangle. If the ROI parameters are not given, 
+                 the ROI will comprise the whole image.
   **/
-  void ensureCompatible(ImgI **ppoDst,
-                        depth eDepth, 
-                        const Size& size,
-                        format eFormat, 
-                        int iChannelCount=-1,
-                        const Rect &roROI=Rect());
+  void ensureCompatible(ImgI **dst, depth d,const Size& size,int channels, const Rect &roi=Rect::null);
+
+  /// ensures that an image has given depth, size, format and ROI
+  void ensureCompatible(ImgI **dst, depth d,const Size& size, format fmt, const Rect &roi=Rect::null);
+  
+  /// ensures that an image has given parameters 
+  /** The given format must be compatible to the given channel count.
+      <b>If not:</b> The format is set to "formatMatrix" and an exception is thrown.
+  */
+  void ensureCompatible(ImgI **dst, depth d, const Size &size, format fmt, int channels, const Rect &roi=Rect::null);
+  /// ensures that an image has given depth and parameters
+  void ensureCompatible(ImgI **dst, depth d,const ImgParams &params);
   
   /// ensures that the destination image gets same depth, size, channel count, depth, format and ROI as source image
   /** If the given pointer to the destination image is 0, a new image is created as a deep copy of poSrc.
@@ -444,13 +381,13 @@ namespace icl {
       @param poSrc  source image. All params of this image are extracted to define
                     the destination parameters for *ppoDst.  
   **/
-  void ensureCompatible(ImgI **ppoDst, const ImgI *poSrc);
+  void ensureCompatible(ImgI **dst, const ImgI *src);
 
   /// determines the count of channels, for each color format
   /** @param eFormat source format which channel count should be returned
       @return channel count of format eFormat
   **/
-  int getChannelsOfFormat(format eFormat);
+  int getChannelsOfFormat(format fmt);
 
 
   /// returns a string representation of an Format enum
@@ -474,11 +411,13 @@ namespace icl {
 
   /// returns a string representation for a depth value
   inline std::string translateDepth(depth eDepth){
+    FUNCTION_LOG("");
     return eDepth == depth8u ? "depth8u" : "depth32f";
   }
   
   /// creates a depth value form a depth string
   inline depth translateDepth(const std::string& sDepth){
+    FUNCTION_LOG("");
     return sDepth == "depth8u" ? depth8u : depth32f;
   }
 

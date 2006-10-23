@@ -17,11 +17,11 @@ namespace icl{
   /// Point class of the ICL used e.g. for the Images ROI offset
   class Point : public IppiPoint{
     public:
-    /// create a (0,0) Point 
-    Point(){ this->x = 0; this->y = 0;}
+    /// zero Point is x=0, y=0
+    static const Point zero;
 
     /// deep copy of a Point
-    Point(const Point& p){ this->x = p.x; this->y = p.y; }
+    Point(const Point& p=zero){ this->x = p.x; this->y = p.y; }
 
     /// create a special point
     Point(int x,int y){this->x = x;this->y = y;}
@@ -53,7 +53,6 @@ namespace icl{
     // scales the Point inplace with a scalar
     Point& operator*=(double d) {x=(int)((double)x*d); y=(int)((double)y*d); return *this;};
 
-    static const Point zero;
   };
   
 } // namespace icl

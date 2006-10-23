@@ -12,6 +12,7 @@ AG Neuroinformatik
     
 #include <vector>
 #include "ICLCore.h"
+#include "ImgParams.h"
 
 namespace icl {
   
@@ -100,12 +101,15 @@ namespace icl {
       /** It exploits the given destination image if possible,
           i.e. if the pixel depth matches. Else this image is released
           and a new one is created.
-          @param poDst destination image (if Null, a new one is created)
+          @p
+          @param ppoDst destination image (if Null, a new one is created)
       **/
-      ImgI* shallowCopy(ImgI* poDst = NULL) const;
+      ImgI* shallowCopy(ImgI** ppoDst = NULL) const;
 
       /// creates a shallow copy of selected channels of this image
-      ImgI* shallowCopy(const std::vector<int>& vChannels, ImgI* poDst = NULL) const;
+      /** @param channelIndices vector containing channel indices to copy
+          @param ppoDst destination image (if Null, a new one is created)*/
+      ImgI* shallowCopy(const std::vector<int>& channelIndices, ImgI** ppoDst = NULL) const;
 
       /// copies the image data into the destination image
       /** this function is implemented in the Img-template class
@@ -144,41 +148,29 @@ namespace icl {
       //@{ @name getter functions
       /* {{{ open */
 
+      /// returns all params in terms of a const ImgParams reference
+      /** This enables the programmer to write
+          <pre>
+          imageA.setParams(imageB.getParams());
+          </pre>
+      */
+      const ImgParams &getParams() const{ return m_oParams; }
       /// returns the size of the images
-      const Size& getSize() const {
-        FUNCTION_LOG(""); 
-        return m_oSize; 
-      }
+
+      // returns the images size
+      const Size& getSize() const { return m_oParams.getSize(); }
       
       /// returns the pixelcount of each channel
-      int getDim() const
-        {
-          FUNCTION_LOG("");
-          return m_oSize.width * m_oSize.height;
-        }
-
+      int getDim() const { return m_oParams.getDim(); }
 
       /// returns the channel count of the image
-      int getChannels() const
-        {
-          FUNCTION_LOG("");
-          return m_iChannels;
-        }
-
+      int getChannels() const { return m_oParams.getChannels(); }
 
       /// returns the depth (depth8u or depth32f)
-      depth getDepth() const
-        {
-          FUNCTION_LOG("");
-          return m_eDepth;
-        }
+      depth getDepth() const { return m_eDepth; }
 
       /// returns the current (color)-format of this image
-      format getFormat() const
-        {
-          FUNCTION_LOG("");
-          return m_eFormat;
-        }
+      format getFormat() const { return m_oParams.getFormat(); }
 
       /// returns the lenght of an image line in bytes (width*sizeof(Type))
       virtual int getLineStep() const = 0;
@@ -187,12 +179,18 @@ namespace icl {
       /** @param s size to test
           @param nChannels channel count to test
       **/
-      int isEqual(const Size &s,int nChannels) const
+      bool isEqual(const Size &s, int nChannels) const
         {
           FUNCTION_LOG("isEqual("<<s.width<<","<< s.height << ","<< nChannels << ")");
-          return (m_oSize == s) && (m_iChannels == nChannels);
-          
+          return (getSize() == s) && (getChannels() == nChannels);
         }
+      
+      /// checks if the image has the given parameters
+      bool isEqual(const ImgParams &params){
+        FUNCTION_LOG("");
+        return m_oParams == params;
+      }
+      
       //@}
 
       /* }}} */
@@ -201,89 +199,67 @@ namespace icl {
       /* {{{ open */
 
       /// returns the images ROI rectangle
-      Rect getROI() const{
-        FUNCTION_LOG("");
-        return Rect(m_oROIOffset,m_oROISize);
-      }
-      void getROI(Point& offset, Size& size) const {
-        FUNCTION_LOG("");
-        offset = m_oROIOffset;
-        size   = m_oROISize;
-      }
+      const Rect &getROI() const{ return m_oParams.getROI(); }
+      
+      /// copies the current ROI into the given offset and size refereces
+      void getROI(Point& offset, Size& size) const { m_oParams.getROI(offset,size); }
 
       /// returns the images ROI offset (upper left corner)
-      const Point& getROIOffset() const{
-        FUNCTION_LOG("");
-        return m_oROIOffset;
-      }
+      Point getROIOffset() const{ return m_oParams.getROIOffset(); }
 
       /// returns the images ROI size
-      const Size& getROISize() const{
-        FUNCTION_LOG("");
-        return m_oROISize;
-      }
+      Size getROISize() const{ return m_oParams.getROISize(); }
+
+      /// returns the images ROI width
+      int getROIWidth() const{ return m_oParams.getROIWidth(); }
+
+      /// returns the images ROI height
+      int getROIHeight() const{ return m_oParams.getROIHeight(); }
+      
+      /// returns the images ROI XOffset
+      int getROIXOffset() const{ return m_oParams.getROIXOffset(); }
+
+      /// returns the images ROI YOffset
+      int getROIYOffset() const{ return m_oParams.getROIYOffset(); }
+
+      /// returns the images width
+      int getWidth() const { return m_oParams.getWidth(); }
+
+      /// returns the images height
+      int getHeight() const { return m_oParams.getHeight(); }
      
+      /// sets all image parameters in order channels,size,format,roi
+      void setParams(const ImgParams &params);
+
       /// sets the image ROI offset to the given value
-      void setROIOffset(const Point &offset) {
-         ICLASSERT_RETURN (offset.x >= 0 && offset.x + m_oROISize.width <= m_oSize.width &&
-                           offset.y >= 0 && offset.y + m_oROISize.height <= m_oSize.height);
-         m_oROIOffset = offset;
-      }
+      void setROIOffset(const Point &offset) { m_oParams.setROIOffset(offset); }
       
       /// sets the image ROI size to the given value
-      void setROISize(const Size &size) {
-         ICLASSERT_RETURN (size.width >= 1 && m_oROIOffset.x + size.width  <= m_oSize.width &&
-                           size.width >= 1 && m_oROIOffset.y + size.height <= m_oSize.height);
-         m_oROISize = size;
-      }
+      void setROISize(const Size &size) { m_oParams.setROISize(size); }
       
       /// set both image ROI offset and size
-      void setROI(const Point &offset, const Size &size){
-         ICLASSERT_RETURN (offset.x >= 0 && size.width >= 1 && offset.x + size.width  <= m_oSize.width &&
-                           offset.y >= 0 && size.width >= 1 && offset.y + size.height <= m_oSize.height);
-         m_oROIOffset = offset;
-         m_oROISize   = size;
-      }
-
+      void setROI(const Point &offset, const Size &size){ m_oParams.setROI(offset,size); }
+      
       /// sets the image ROI to the given rectangle
-      void setROI(const Rect &r) {
-         setROI (Point(r.x,r.y), Size(r.width,r.height));
-      }
+      void setROI(const Rect &roi) { m_oParams.setROI(roi); }
 
-      /** While the methods setROI, setROIOffset and setROISize directly set
-          the images ROI from the given arguments, the following methods adapt the
-          the ROI parameters to assure a valid ROI. Negative values are interpreted 
-          relative to the whole image size resp. the upper right corner of the image.
-
-          E.g. an offset (5,5) with size (-10,-10) sets the ROI to the inner
-          sub image with a 5-pixel margin. offset(-5,-5) and size (5,5) sets
-          the ROI to the upper right 5x5 corner. 
-      **/
-      /// checks, eventually adapts and finally sets the image ROI offset
-      void setROIOffsetAdaptive(const Point &offset);
+      /// checks, eventually adapts and finally sets the image ROI size
+      /** @see ImgParams*/
+      void setROIOffsetAdaptive(const Point &offset) { m_oParams.setROIOffsetAdaptive(offset); }
       
       /// checks, eventually adapts and finally sets the image ROI size
-      void setROISizeAdaptive(const Size &size);
+      /** @see ImgParams*/
+      void setROISizeAdaptive(const Size &size){ m_oParams.setROISizeAdaptive(size); }
 
       /// checks, eventually adapts and finally sets the image ROI size
-      void setROIAdaptive(const Rect &r) {
-         m_oROIOffset = Point::zero;
-         setROISizeAdaptive (Size(r.width,r.height));
-         setROIOffsetAdaptive (Point(r.x,r.y));
-      }
+      /** @see ImgParams*/
+      void setROIAdaptive(const Rect &roi) { m_oParams.setROIAdaptive(roi); }
      
       /// returns ROISize == ImageSize
-      int hasFullROI() const {
-        FUNCTION_LOG("");
-        return m_oROISize == m_oSize;
-      };
+      int hasFullROI() const { return m_oParams.hasFullROI(); }
       
       /// resets the image ROI to the whole image size with offset (0,0)
-      void setFullROI() {
-        FUNCTION_LOG("");
-        m_oROIOffset = Point();
-        m_oROISize = m_oSize;
-      }
+      void setFullROI() { m_oParams.setFullROI(); }
       
       //@}
 
@@ -320,7 +296,7 @@ namespace icl {
 
       /// resizes the image to new values (image data is scaled)
       /** @see Img*/
-      virtual void resize(const Size &s)=0;
+      virtual void setSize(const Size &s)=0;
 
       /// sets the format associated with channels of the image
       /**
@@ -331,7 +307,7 @@ namespace icl {
       @param eFormat new format value
       @see getChannelsOfFormat
       **/
-      void setFormat(format eFormat);
+      void setFormat(format fmt);
       
       //@}
 
@@ -410,36 +386,30 @@ namespace icl {
       /** 
       If channel count is <= 0 (default), the number of channels is computed 
       automatically from format using the getChannelsOfFormat function from the icl namespace.
-      @param s size of the ImgI
+      @param depth image depth
       @param eFormat (color)-format of the image
       @param eDepth depth of the image (depth8u or depth32f)
       @param iChannels channel count of the image (if -1, then the channel count is derived
                        from the set format e.g. formatRGB-> 3 channels )
       **/
-      ImgI(const Size &s,
-           format eFormat, 
-           depth eDepth=depth8u,
-           int iChannels=-1);
+      ImgI(depth d, const ImgParams& params);
 
       /* }}} */
 
       /* {{{ data */
 
-      /// channel count of the image
-      int m_iChannels;
-
-      /// size of image: width x height
-      Size m_oSize;
-
-      /// (color)-format associated with the images channels
-      format m_eFormat;
+      /// all image params
+      /** the params class consists of 
+          - image size
+          - number of image channels
+          - image format
+          - image ROI      
+      */
+      ImgParams m_oParams;
 
       /// depth of the image (depth8 for icl8u/depth32 for icl32f)
       depth m_eDepth;
 
-      // internal storage of the ROI parameters
-      Point m_oROIOffset; //< ROI offset (upper left corner)
-      Size  m_oROISize;   //< ROI size
 
       /* }}} */
     };

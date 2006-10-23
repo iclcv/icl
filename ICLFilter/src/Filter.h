@@ -56,7 +56,7 @@ namespace icl {
      }
 
      /// return to-be-used image size depending on bClipToROI
-     const Size& chooseSize (const ImgI *poSrc) {
+     const Size chooseSize (const ImgI *poSrc) {
         return bClipToROI ? poSrc->getROISize () : poSrc->getSize ();
      }
      /// return to-be-used ROI depending on bClipToROI

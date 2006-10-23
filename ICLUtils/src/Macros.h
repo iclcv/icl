@@ -98,5 +98,14 @@ namespace icl {
     ERROR_LOG("ICL ASSERTION ERROR:" << #X << "(returning!)"); \
     return VALUE;                                              \
   }
-}
+
+#define ICLASSERT_THROW(X,OBJ)      \
+  if(!(X)){                         \
+    throw OBJ;                      \
+  }
+
+
+}// namespace icl
+
+
 #endif //ICLMACROS_H

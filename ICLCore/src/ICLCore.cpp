@@ -1,74 +1,67 @@
 #include "ICLCore.h"
 #include "Img.h"
+#include "Exception.h"
 
 using namespace std;
 
 namespace icl{
   
-  ImgI *imgNew(depth eDepth, 
-               const Size& s,
-               format eFormat, 
-               int iChannels,
-               const Rect &oROI)
-  {
-    ImgI *poNew = 0;
-    if(eDepth == depth8u)
-      {
-        poNew =  new Img8u(s,eFormat,iChannels);
-      }
-    else
-      {
-        poNew = new Img32f(s,eFormat,iChannels);
-      } 
-    
-    if(oROI) poNew->setROI(oROI);
-    return poNew;
+  ImgI *imgNew(depth d, const ImgParams &params){
+    // {{{ open
+
+    if(d == depth8u) return new Img8u(params);
+    else return new Img32f(params);
   }
 
-  int getChannelsOfFormat(format eFormat)
-  {
-    switch (eFormat)
-      {
-        case formatRGB:
-        case formatHLS:
-        case formatLAB:
-        case formatYUV:
-          return 3;
-          
-        case formatChroma:
-          return 2;
-          
-        case formatGray:
-        case formatMatrix:
-        default:
-          return 1;
-      }
+  // }}}
+
+  int getChannelsOfFormat(format eFormat){
+    // {{{ open
+
+    switch (eFormat){
+      case formatRGB:
+      case formatHLS:
+      case formatLAB:
+      case formatYUV:
+        return 3;
+        
+      case formatChroma:
+        return 2;
+        
+      case formatGray:
+      case formatMatrix:
+      default:
+        return 1;
+    }
   }
 
-  string translateFormat(format eFormat)
-  {
-    switch(eFormat)
-      {
-        case formatRGB: return "rgb";
-        case formatHLS: return "hls";
-        case formatLAB: return "lab";
-        case formatYUV: return "yuv";
-        case formatGray: return "gray";
-        case formatMatrix: return "matrix";
-        case formatChroma: return "chroma";
-        default: return "undefined format";        
-      }
+  // }}}
+
+  string translateFormat(format eFormat){
+    // {{{ open
+
+    switch(eFormat){
+      case formatRGB: return "rgb";
+      case formatHLS: return "hls";
+      case formatLAB: return "lab";
+      case formatYUV: return "yuv";
+      case formatGray: return "gray";
+      case formatMatrix: return "matrix";
+      case formatChroma: return "chroma";
+      default: return "undefined format";        
+    }
   }
+
+  // }}}
  
-  format translateFormat(const string& sFormat)
-  {
-    if(sFormat.length()<=0)
-      {
-        ERROR_LOG("warning iclTranslateFormatString(string) got \"\"-string");
-        return formatMatrix;
-      }
-    switch(sFormat[0])
-    {
+  format translateFormat(const string& sFormat){
+    // {{{ open
+
+    if(sFormat.length()<=0){
+      ERROR_LOG("warning iclTranslateFormatString(string) got \"\"-string");
+      return formatMatrix;
+    }
+    switch(sFormat[0]){
       case 'r': return formatRGB;
       case 'h': return formatHLS;
       case 'l': return formatLAB;
@@ -79,66 +72,83 @@ namespace icl{
       default: return formatMatrix;
     }
   }
+
+  // }}}
   
-  void ensureDepth(ImgI ** ppoImage, depth eDepth)
-  {
-    if(!*ppoImage)
-    {
-      *ppoImage = imgNew(eDepth);
+  void ensureDepth(ImgI ** ppoImage, depth d){
+    // {{{ open
+
+    if(!*ppoImage){
+      *ppoImage = imgNew(d);
     }
-    if((*ppoImage)->getDepth() != eDepth)
-    {
-      ImgI *poNew = imgNew(eDepth,
-                           (*ppoImage)->getSize(),
-                           (*ppoImage)->getFormat(),
-                           (*ppoImage)->getChannels(),
-                           (*ppoImage)->getROI());
-      
+    else if((*ppoImage)->getDepth() != d){
+      ImgI *poNew = imgNew(d,(*ppoImage)->getParams());
       delete *ppoImage;
       *ppoImage = poNew;     
     }
   }
+
+  // }}}
   
-  void ensureCompatible(ImgI **ppoDst,
-                        depth eDepth,
-                        const Size &s,
-                        format eFormat,
-                        int iChannelCount,
-                        const Rect &r)
-  {
-    if(!*ppoDst)
-    {
-      *ppoDst = imgNew(eDepth,s,eFormat,iChannelCount);
-    }
-    else 
-    {
-       ensureDepth(ppoDst,eDepth);
-       if (iChannelCount < 0) iChannelCount = getChannelsOfFormat(eFormat);
-       (*ppoDst)->setChannels(iChannelCount);
-       (*ppoDst)->setFormat(eFormat);
-       (*ppoDst)->resize(s);
-    }
+  void ensureCompatible(ImgI **ppoDst, depth d, const ImgParams &params){
+    // {{{ open
 
-    if(r){
-      (*ppoDst)->setROI(r);
+    if(!*ppoDst){
+      *ppoDst = imgNew(d,params);
     }else{
-      (*ppoDst)->setFullROI();
+      ensureDepth(ppoDst,d);
+      (*ppoDst)->setParams(params);
     }
   }
 
-  void ensureCompatible(ImgI **ppoDst, const ImgI *poSrc) {
-     ICLASSERT_RETURN (poSrc);
-     ensureCompatible(ppoDst,poSrc->getDepth(),
-                      poSrc->getSize(),
-                      poSrc->getFormat(),
-                      poSrc->getChannels(),
-                      poSrc->getROI());
+  // }}}
+  
+  void ensureCompatible(ImgI **ppoDst,depth d,const Size &size,format fmt, const Rect &roi){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    ensureCompatible(ppoDst,d,ImgParams(size,fmt,roi));
   }
 
-  int getSizeOf(depth eDepth)
-  {
-    switch(eDepth)
-    {
+  // }}}
+
+  void ensureCompatible(ImgI **ppoDst,depth d,const Size &size,int cc, const Rect &roi){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    ensureCompatible(ppoDst,d,ImgParams(size,cc,roi));
+  }
+
+  // }}}
+
+  void ensureCompatible(ImgI **dst, depth d, const Size &size, format fmt, int channels, const Rect &roi){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    if(fmt != formatMatrix && getChannelsOfFormat(fmt) != channels){
+      ensureCompatible(dst,d,size,channels,roi);
+      throw InvalidImgParamException("channela and format");
+    }else{
+      ensureCompatible(dst,d,size,channels,roi);
+      (*dst)->setFormat(fmt);
+    }
+  }
+
+  // }}}
+
+  void ensureCompatible(ImgI **dst, const ImgI *src){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    ensureCompatible(dst,src->getDepth(),src->getParams());
+  }
+
+  // }}}
+  
+  int getSizeOf(depth eDepth){
+    // {{{ open
+
+    switch(eDepth){
       case depth8u:
         return sizeof(icl8u);
         break;
@@ -150,4 +160,7 @@ namespace icl{
         return 0;
     }
   }
+
+  // }}}
+
 } //namespace

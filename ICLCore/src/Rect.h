@@ -1,12 +1,17 @@
 #ifndef ICL_RECT_H
 #define ICL_RECT_H
 
+#include "Point.h"
+#include "Size.h"
+#include <stdio.h>
+
 namespace icl{
 
   
 #ifndef WITH_IPP_OPTIMIZATION
   /// fallback implementation for the IppiRect struct, defined in the ippi lib
   struct IppiRect {
+
     /// xpos of upper left corner
     int x;
     
@@ -45,13 +50,9 @@ namespace icl{
   
   class Rect : public IppiRect{
     public:
-    /// creates a (0,0,0,0) Rect
-    Rect(){
-      this->x = 0;
-      this->y = 0;
-      this->width = 0;
-      this->height = 0;
-    }
+    
+    /// null Rect is w=0, h=0, x=0, y=0
+    static const Rect null;
     
     /// creates a defined Rect
     Rect(int x, int y, int width, int height){
@@ -70,7 +71,7 @@ namespace icl{
     } 
     
     /// create a deep copy of a rect
-    Rect(const Rect &r){
+    Rect(const Rect &r=null){
       this->x = r.x;
       this->y = r.y;
       this->width = r.width;
@@ -81,6 +82,9 @@ namespace icl{
       return x || y || width || height;
     }
 
+    /// returns !(bool)(*this)
+    bool operator!() const { return !(bool)(*this); } 
+    
     /// checks if two rects are equal
     bool operator==(const Rect &s) const {
       return x==s.x && y==s.y && width==s.width && height==s.height;

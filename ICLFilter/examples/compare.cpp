@@ -1,6 +1,8 @@
 #include "Compare.h"
 #include "Img.h"
 #include "FileWrite.h"
+#include "TestImages.h"
+
 using namespace icl;
 
 static char *apc[38]={ // 40 x 38
@@ -68,16 +70,20 @@ int main(){
     }  
   }
 
+  printf("-------------->scaling images \n");
   im.scale(Size(100,100));
+  printf("-------------->first images scaled \n");
   im2.scale(Size(100,100));
+  printf("-------------->second images scaled \n");
   
   Size s = im.getSize();
   Img8u t(Size(s.width*8,s.height),1);
   int i=0;
-
+  
+  printf("started operations \n");
   t.setROI(Rect((i++)*s.width,0,100,100));
   im.deepCopyROI(&t);
-	t.setROI(Rect((i++)*s.width,0,100,100));
+  t.setROI(Rect((i++)*s.width,0,100,100));
   im2.deepCopyROI(&t);
   t.setROI(Rect((i++)*s.width,0,100,100));
   Compare::compare(&im,&im2,&t,Compare::compareEq);
@@ -92,10 +98,16 @@ int main(){
   t.setROI(Rect((i++)*s.width,0,100,100));
   Compare::equalEpsC(&im2,175,&t,25);
 
-  FileWrite("threshold_results.pgm").write(&t); system("xv ./threshold_results.pgm &"); 
+  printf("showing results\n");
+  TestImages::xv(&t,"result_image.pgm",500);
 
   printf("Original colors are im1:[0,100,200,255] and im2:[50,150,200,254] \n");
   printf(": Image order is: \n");
-  printf("ori. im1 - ori. im2  - comp(im1,im2,eq) - compC(im1,100,eq) - compC(im2,50,lesseq) - compEqualEps(im1,im2,2) - compEqualEpsC(im1,228,30) - compEqualEpsC(im2,175,,25)\n");
+  printf("ori. im1 - ori. im2  - comp(im1,im2,eq)"
+         " - compC(im1,100,eq) - compC(im2,50,lesseq)"
+         "- compEqualEps(im1,im2,2) -"
+         "compEqualEpsC(im1,228,30) -"
+         " compEqualEpsC(im2,175,,25)\n");
+  
   return 0;
 }
