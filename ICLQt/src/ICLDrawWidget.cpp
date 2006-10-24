@@ -7,7 +7,7 @@ namespace icl{
   /// internally used classes
   struct ICLDrawWidget::State{
     // {{{  struct
-
+    State(){}
     bool aa;             // antializing on
     bool rel;            // relative or absolut coords
     Rect rect;           // current image rect
