@@ -218,7 +218,7 @@ namespace icl{
     QRect br = m.boundingRect(text.c_str());
     QImage img;
     
-    img = QImage(br.width()+2,br.height()+6,QImage::Format_ARGB32);
+    img = QImage(br.width()+2,br.height()+2,QImage::Format_ARGB32);
     img.fill(0);
     QPainter painter(&img);
     painter.setFont(m_oFont);
@@ -226,7 +226,8 @@ namespace icl{
                            (int)(m_afLineColor[1]*255),
                            (int)(m_afLineColor[0]*255),
                            std::min(254,(int)(m_afLineColor[3]*255)) ));
-    painter.drawText(QPoint(0,img.height()-4),text.c_str());
+   
+    painter.drawText(QPoint(1,img.height()-m.descent()-1),text.c_str());
     painter.end();
     
     setupPixelTransfer(depth8u,0,0,0);
@@ -235,7 +236,7 @@ namespace icl{
 
     if(mode == NoAlign){
       // specialized for no alligned text rendering: 2*img.height() makes the text origin be
-      // lower left and not upper left
+      // lower left and not upper left [??]
       setupRasterEngine(Rect(r.x,r.y,img.width(),2*img.height()), Size(img.width(),img.height()),mode);
     }else{
       setupRasterEngine(r, Size(img.width(),img.height()),mode);
