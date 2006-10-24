@@ -548,11 +548,12 @@ class Img : public ImgI
   /// perform an inplace mirror operation on the image of a given rect
   void mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize);
   
-  /// Sets the pixels of one or all channels to a specified value
+  /// Sets the ROI pixels of one or all channels to a specified value
   /** @param iChannel Channel to fill with zero (default: -1 = all channels)
       @param tValue destination value (default: 0)
+      @param bROIOnly if set false, the whole image is set to tValue
    **/
-  void clear(int iChannel = -1, Type tValue = 0);
+  void clear(int iChannel = -1, Type tValue = 0, bool bROIOnly=true);
   
   /// Scale the channel min/ max range to the new range tMin, tMax.
   /** @param fNewMin new mininum value for the channel

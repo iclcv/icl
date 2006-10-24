@@ -890,15 +890,17 @@ Img<icl32f>::scaleRange(float fNewMin, float fNewMax,
 
 // ---------------------------------------------------------------------
 template<class Type>
-void Img<Type>::clear(int iIndex, Type tValue) 
+void Img<Type>::clear(int iIndex, Type tValue, bool bROIOnly) 
   // {{{ open
 {
   //---- Log Message ----
   FUNCTION_LOG("clear(" << iIndex << "," << tValue << ")");
   ICLASSERT_RETURN( iIndex < getChannels() );  
   
+  Point offs = bROIOnly ? getROIOffset() : Point::zero;
+  Size size = bROIOnly ? getROISize() : getSize();
   for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++){
-    clearChannelROI(this,i,tValue,Point::zero,getSize());
+    clearChannelROI(this,i,tValue,offs,size);
   }
 }
   // }}}
