@@ -43,6 +43,13 @@ namespace icl{
     /** @see setup*/
     ImgParams(const Size &size, format fmt, const Rect &roi = Rect::null );
 
+    /// creates and ImgParams object with all given parameters
+    /** Note that channels and format are <b>not independent</b>. Hence, if the given
+        channel count is not compatible to the given format, an exception is thrown.
+        @see setup
+    */
+    ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null );    
+
     /// creates an ImgParams object with specified size, format and roi given as POD-Types
     /** channel count is adapted to the given format
         @see setup
@@ -55,6 +62,13 @@ namespace icl{
     */
     ImgParams(int width, int height, int channels, int roiX=0, int roiY=0, int roiWidth = 0, int roiHeight = 0);
 
+
+    /// creates an ImgParams object with ALL possible parameters
+    /** Note that channels and format are <b>not independent</b>. Hence, if the given
+        channel count is not compatible to the given format, an exception is thrown.
+        @see setup
+    */
+    ImgParams(int width, int height, int channels, format fmt, int roiX=0, int roiY=0, int roiWidth=0, int roiHeight=0);
     /// converts an ImgParam object into a boolean value
     /** this function enables the programmer to test and ImgParam object ip
         for being valid with 

@@ -31,6 +31,15 @@ namespace icl{
 
   // }}}
 
+  ImgParams::ImgParams(const Size &size,int channels,format fmt, const Rect &roi ){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    setup(size,fmt,channels,roi);
+  }
+
+  // }}}
+
   ImgParams::ImgParams(int width, int height, format fmt, int roiX, int roiY, int roiWidth, int roiHeight){
     // {{{ open
 
@@ -45,6 +54,15 @@ namespace icl{
 
     FUNCTION_LOG("");
     setup(Size(width,height),formatMatrix, channels, Rect(roiX,roiY,roiWidth, roiHeight));
+  }
+
+  // }}}
+
+  ImgParams::ImgParams(int width, int height, int channels, format fmt,int roiX, int roiY, int roiWidth, int roiHeight){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    setup(Size(width,height),fmt, channels, Rect(roiX,roiY,roiWidth, roiHeight));
   }
 
   // }}}

@@ -44,6 +44,22 @@ Img<Type>::Img(const Size &s,int iChannels):
 
 //----------------------------------------------------------------------------
 template<class Type>
+Img<Type>::Img(const Size &s,int iChannels, format fmt):
+  // {{{ open
+
+  ImgI(icl::getDepth<Type>(),ImgParams(s,iChannels,fmt)){
+  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << 
+               iChannels << "," << translateFormat(fmt) << ")  this:" << this );
+  
+  for(int i=0;i<getChannels();i++) {
+    m_vecChannels.push_back(createChannel());
+  }
+} 
+
+  // }}}
+
+//----------------------------------------------------------------------------
+template<class Type>
 Img<Type>::Img(const Size& s, format eFormat):
   // {{{ open
   ImgI(icl::getDepth<Type>(),ImgParams(s,eFormat)){
@@ -62,6 +78,21 @@ Img<Type>::Img(const Size &s, int iChannels, Type** pptData):
   // {{{ open
   ImgI(icl::getDepth<Type>(),ImgParams(s,iChannels)){
   FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  iChannels << ",Type**)  this:" << this);
+  
+  for(int i=0;i<getChannels();i++){
+    m_vecChannels.push_back(SmartPtr<Type>(*pptData++,0));
+  }
+} 
+
+  // }}}
+
+//----------------------------------------------------------------------------
+template<class Type>
+Img<Type>::Img(const Size &s, int iChannels,format fmt, Type** pptData):
+  // {{{ open
+  ImgI(icl::getDepth<Type>(),ImgParams(s,iChannels,fmt)){
+  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  iChannels << 
+               "," << translateFormat(fmt) << ",Type**)  this:" << this);
   
   for(int i=0;i<getChannels();i++){
     m_vecChannels.push_back(SmartPtr<Type>(*pptData++,0));

@@ -114,6 +114,16 @@ class Img : public ImgI
   **/
   Img(const Size &s, format fmt);
  
+  /// Crates an image with given size, channel count and format
+  /** Note: channel count and format depend on each other, so if
+      the given channel count and the given format are not compatible,
+      an exception is thrown
+      @param s size of the image
+      @param channels channel count of the image (must be compatible to fmt)
+      @param fmt format of the image (must be compatble to channels)
+  */
+  Img(const Size &s, int channels, format fmt);
+  
   /// Creates an image with specified size and format, using shared data pointers as channel data
   /** The channel count is set to the channel count that is asociated with given the format
       @param size new image size
@@ -137,6 +147,20 @@ class Img : public ImgI
                      the image data.
   **/
   Img(const Size &size, int channels, Type** pptData);
+
+  /// Crates an image with given size, channel count and format
+  /** Note: channel count and format depend on each other, so if
+      the given channel count and the given format are not compatible,
+      an exception is thrown
+      @param s size of the image
+      @param channels channel count of the image (must be compatible to fmt)
+      @param fmt format of the image (must be compatble to channels)
+      @param pptData array of data pointers, which are used as shared 
+                     pointers. Ensure, that these pointers are persistent
+                     during the lifetime of the image, or call detach, to
+                     make the image ollocate it own memory for the data
+  */
+  Img(const Size &size, int channels, format fmt, Type** pptData);
 
   /// Copy constructor
   /** creates a flat copy of the source image
