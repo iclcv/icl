@@ -730,7 +730,8 @@ Img<Type>::getMinMax(Type &rtMin, Type &rtMax) const
      return;
   }
 
-  Type tMin, tMax; getMinMax(rtMin, rtMax, 0);
+  Type tMin, tMax; 
+  getMinMax(rtMin, rtMax, 0);
   for(int i=1;i<getChannels();i++) {
      getMinMax(tMin, tMax, i);
      rtMin = std::min(rtMin,tMin);

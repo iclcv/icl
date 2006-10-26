@@ -16,19 +16,21 @@ int main(int nArgs, char **ppcArg){
     printf("usage: %s srcfile dstfile\n", ppcArg[0]);
     exit(-1);
   }
+
   string srcName = ppcArg[1];
   string dstName = ppcArg[2];
   
   // READ the image
-  ImgI *image = FileRead(srcName).grab();
+  FileRead reader(srcName);
+  ImgI *image = reader.grab();
   ImgI *dst   = 0;
-
+  
   // Perform binarization
   Threshold().binarize(image,&dst,127);
   
   // WRITE the image
   FileWrite(dstName).write(dst);
-
+  
   // show images using xv
   xv(srcName);
   xv(dstName);  

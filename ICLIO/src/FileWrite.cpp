@@ -82,9 +82,11 @@ namespace icl {
       ImgI *poImg = poSrc;
       if (poSrc->getDepth () != depth8u && oInfo.eFileFormat != ioFormatICL) {
          // image needs to be converted to depth8u
-         poImg = poSrc->convertTo<icl8u> (&m_oImg8u);
+        poImg = poSrc->convertTo<icl8u> (&m_oImg8u);
       } // otherwise, use poSrc directly
-      
+
+      poImg->print();
+
       try {
          // write file
          switch (oInfo.eFileFormat) {

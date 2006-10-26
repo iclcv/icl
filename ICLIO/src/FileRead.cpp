@@ -75,9 +75,9 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   FileRead::FileRead(const string& sPrefix, const string& sType, 
-                     int iObjStart, int iObjEnd, int iImageStart, int iImageEnd)
-     throw (ICLException) 
-     // {{{ open 
+                     int iObjStart, int iObjEnd, 
+                     int iImageStart, int iImageEnd) throw (ICLException) 
+    // {{{ open 
 
   {
      ostringstream ossFile;
@@ -101,12 +101,16 @@ namespace icl {
   }
 
 // }}}
-
+  
+  //--------------------------------------------------------------------------
   FileRead::FileRead(const FileRead& other) : m_poCurImg(0) {
      *this = other;
   }
-
+  
+  //--------------------------------------------------------------------------
   FileRead& FileRead::operator=(const FileRead& other) {
+    // {{{ open
+
      if (!this->m_bBuffered) delete this->m_poCurImg;
      this->m_vecFileName = other.m_vecFileName;
      this->m_vecImgBuffer = other.m_vecImgBuffer;
@@ -120,6 +124,21 @@ namespace icl {
      return *this;
   }
 
+// }}}
+
+  //--------------------------------------------------------------------------
+  FileRead::~FileRead ()
+     // {{{ open
+  {
+     for (ImageBuffer::iterator it=m_vecImgBuffer.begin(), 
+             end=m_vecImgBuffer.end(); it != end; ++it)
+        delete *it;
+
+     if (!m_bBuffered) delete m_poCurImg;
+  }
+
+  // }}}
+  
   //--------------------------------------------------------------------------
   void FileRead::init() throw (ICLException) 
      // {{{ open
@@ -137,19 +156,6 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  FileRead::~FileRead ()
-     // {{{ open
-  {
-     for (ImageBuffer::iterator it=m_vecImgBuffer.begin(), 
-             end=m_vecImgBuffer.end(); it != end; ++it)
-        delete *it;
-
-     if (!m_bBuffered) delete m_poCurImg;
-  }
-
-  // }}}
-
-  //--------------------------------------------------------------------------
   ImgI* FileRead::grab(ImgI* poDst) 
     throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
     // {{{ open 
@@ -159,6 +165,7 @@ namespace icl {
     } else {
        readImage (m_vecFileName[m_iCurImg], &m_poCurImg);
     }
+    
     // forward to next image
     next ();
 
@@ -168,20 +175,21 @@ namespace icl {
        oConv.convert(poDst, m_poCurImg);
        return poDst;
     } else {
-       return m_poCurImg;
+      m_poCurImg->print("in grab");
+      return m_poCurImg;
     }
   }
 
-// }}}
+  // }}}
 
   //--------------------------------------------------------------------------
-
   void FileRead::readImage(const string& sFileName, ImgI** ppoDst) 
     throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
     // {{{ open 
 
     //---- Variable definition ----
     FileInfo oInfo (sFileName);
+
     // set some defaults
     oInfo.oROI = Rect(); // full ROI
 
@@ -389,8 +397,6 @@ namespace icl {
 
   // }}}
 
-
- 
   //--------------------------------------------------------------------------
   void FileRead::readHeaderJPG (FileInfo &oInfo) {
      // {{{ open
@@ -513,8 +519,11 @@ namespace icl {
 
   // }}}
 
+  //--------------------------------------------------------------------------
+  bool FileRead::findFile (const std::string& sFile,
+                           FileList::iterator& itList) {
+    // {{{ open
 
-  bool FileRead::findFile (const std::string& sFile, FileList::iterator& itList) {
      // search starting from itList to end
      FileList::iterator found = find (itList, m_vecFileName.end(), sFile);
      if (found != m_vecFileName.end()) 
@@ -526,7 +535,12 @@ namespace icl {
      return true;
   }
 
+// }}}
+
+  //--------------------------------------------------------------------------
   void FileRead::removeFiles (const FileList& vecFiles) {
+    // {{{ open
+
      FileList::iterator itList = m_vecFileName.begin();
      for (FileList::const_iterator itDel=vecFiles.begin (), end=vecFiles.end();
           itDel != end; ++itDel) {
@@ -543,5 +557,7 @@ namespace icl {
         }
      }
   }
+
+// }}}
 
 } // namespace icl
