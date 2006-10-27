@@ -6,7 +6,8 @@ namespace icl {
       Size oROIsize;   //< to-be-used ROI size
       if (!computeROI (poSrc, oROIoffset, oROIsize)) return false;
 
-      return Filter::prepare (ppoDst, poSrc->getDepth(), poSrc->getSize(),
+      return Filter::prepare (ppoDst, poSrc->getDepth(), 
+                              bClipToROI ? oROIsize : poSrc->getSize(),
                               poSrc->getFormat(), poSrc->getChannels (), 
                               Rect (bClipToROI ? Point::zero : oROIoffset, oROIsize));
    }

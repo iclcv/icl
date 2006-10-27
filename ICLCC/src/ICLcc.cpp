@@ -9,12 +9,12 @@ namespace icl{
 #ifdef WITH_IPP_OPTIMIZATION
 // {{{ convert,set, and copy channels using IPP
 
-#define CONVERT_8U32F(S,SC,D,DC) ippiConvert_8u32f_C1R(S->asImg<icl8u>()->getROIData(SC),S->getLineStep(),D->asImg<icl32f>()->getROIData(DC),D->getLineStep(),D->getROISize())
-#define CONVERT_32F8U(S,SC,D,DC) ippiConvert_32f8u_C1R(S->asImg<icl32f>()->getROIData(SC),S->getLineStep(),D->asImg<icl8u>()->getROIData(DC),D->getLineStep(),D->getROISize(),ippRndZero)   
-#define SET_32F(V,D,DC) ippiSet_32f_C1R(V,D->asImg<icl32f>()->getROIData(DC),D->getLineStep(),D->getROISize());
-#define SET_8U(V,D,DC) ippiSet_8u_C1R(V,D->asImg<icl8u>()->getROIData(DC),D->getLineStep(),D->getROISize());
-#define COPY_8U(S,SC,D,DC) ippiCopy_8u_C1R(S->asImg<icl8u>()->getROIData(SC),S->getLineStep(),D->asImg<icl8u>()->getROIData(DC),D->getLineStep(),D->getROISize())  
-#define COPY_32F(S,SC,D,DC) ippiCopy_32f_C1R(S->asImg<icl32f>()->getROIData(SC),S->getLineStep(),D->asImg<icl32f>()->getROIData(DC),D->getLineStep(),D->getROISize())  
+#define CONVERT_8U32F(S,SC,D,DC) ippiConvert_8u32f_C1R(S->asImg<icl8u>()->getData(SC),S->getLineStep(),D->asImg<icl32f>()->getData(DC),D->getLineStep(),D->getSize())
+#define CONVERT_32F8U(S,SC,D,DC) ippiConvert_32f8u_C1R(S->asImg<icl32f>()->getData(SC),S->getLineStep(),D->asImg<icl8u>()->getData(DC),D->getLineStep(),D->getSize(),ippRndZero)   
+#define SET_32F(V,D,DC) ippiSet_32f_C1R(V,D->asImg<icl32f>()->getData(DC),D->getLineStep(),D->getSize());
+#define SET_8U(V,D,DC) ippiSet_8u_C1R(V,D->asImg<icl8u>()->getData(DC),D->getLineStep(),D->getSize());
+#define COPY_8U(S,SC,D,DC) ippiCopy_8u_C1R(S->asImg<icl8u>()->getData(SC),S->getLineStep(),D->asImg<icl8u>()->getData(DC),D->getLineStep(),D->getSize())  
+#define COPY_32F(S,SC,D,DC) ippiCopy_32f_C1R(S->asImg<icl32f>()->getData(SC),S->getLineStep(),D->asImg<icl32f>()->getData(DC),D->getLineStep(),D->getSize())  
 
 // }}}
 #else

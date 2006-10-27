@@ -18,7 +18,9 @@ namespace icl{
     Size  srcSize   = m_bROIOnly ? poSrc->getROISize() : poSrc->getSize();
 
     int iNeedDepthConversion = eSrcDepth!=eDstDepth;
-    int iNeedSizeConversion  = poDst->getSize() != srcSize;
+    int iNeedSizeConversion  = poDst->getSize() != srcSize ||
+                               // cropping only:
+                               (m_bROIOnly && poSrc->getSize() != poDst->getSize());
     int iNeedColorConversion = eSrcFmt != formatMatrix && 
                                eDstFmt != formatMatrix && 
                                eSrcFmt != eDstFmt;
@@ -68,6 +70,6 @@ namespace icl{
     }
 
     //---- no changed needed at all: do deep / shallow copy
-    poCurSrc->deepCopy(poDst);
+    poCurSrc->shallowCopy(&poDst);
   }
 }
