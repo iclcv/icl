@@ -103,12 +103,12 @@ namespace icl {
           and a new one is created.
           @param poDst destination image (if Null, a new one is created)
       **/
-      ImgI* shallowCopy(ImgI* poDst = NULL) const;
+      ImgI* shallowCopy(ImgI** ppoDst = NULL) const;
 
       /// creates a shallow copy of selected channels of this image
       /** @param channelIndices vector containing channel indices to copy
           @param poDst destination image (if Null, a new one is created)*/
-      ImgI* shallowCopy(const std::vector<int>& channelIndices, ImgI* poDst = NULL) const;
+      ImgI* shallowCopy(const std::vector<int>& channelIndices, ImgI** ppoDst = NULL) const;
 
       /// copies the image data into the destination image
       /** this function is implemented in the Img-template class

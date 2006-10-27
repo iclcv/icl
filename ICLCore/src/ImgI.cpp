@@ -35,8 +35,11 @@ ImgI::~ImgI()
 
 // {{{ utillity functions
 
-ImgI* ImgI::shallowCopy(ImgI* poDst) const {
+ImgI* ImgI::shallowCopy(ImgI** ppoDst) const {
   FUNCTION_LOG("");
+
+  ImgI* poDst = ppoDst ? *ppoDst : 0;
+
   // create image with zero channels
   if (!poDst) poDst = imgNew(getDepth(),getSize(),0,getROI());
   else ensureDepth (&poDst, getDepth ());
@@ -46,11 +49,16 @@ ImgI* ImgI::shallowCopy(ImgI* poDst) const {
   } else {
      *poDst->asImg<icl32f>() = *this->asImg<icl32f>();
   }
+
+  if (ppoDst) *ppoDst = poDst;
   return poDst;
 }
 
-ImgI* ImgI::shallowCopy(const std::vector<int>& vChannels, ImgI* poDst) const {
+ImgI* ImgI::shallowCopy(const std::vector<int>& vChannels, ImgI** ppoDst) const {
   FUNCTION_LOG("");
+
+  ImgI* poDst = ppoDst ? *ppoDst : 0;
+
   // create image with zero channels
   if (!poDst) poDst = imgNew(getDepth(),getSize(),0,getROI());
   else {
@@ -65,6 +73,8 @@ ImgI* ImgI::shallowCopy(const std::vector<int>& vChannels, ImgI* poDst) const {
   } else {
      poDst->asImg<icl32f>()->append (this->asImg<icl32f>(), vChannels);
   }
+
+  if (ppoDst) *ppoDst = poDst;
   return poDst;
 }
 
