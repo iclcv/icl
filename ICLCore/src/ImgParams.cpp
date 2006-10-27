@@ -5,66 +5,28 @@
 namespace icl{
   const ImgParams ImgParams::null(0,0,0,0,0,0,0);
 
-  ImgParams::ImgParams(const ImgParams &params){
+  ImgParams::ImgParams(const Size &size, format fmt, const Rect &roi) {
     // {{{ open
-    FUNCTION_LOG("");
-    setup(params.getSize(), params.getFormat(), params.getChannels(), params.getROI());
+    setup(size,fmt,getChannelsOfFormat(fmt),roi); 
   }
-  
-  // }}}
-
-  ImgParams::ImgParams(const Size &size, format fmt, const Rect &roi){
-    // {{{ open
-
-    FUNCTION_LOG("");
-    setup(size,fmt,getChannelsOfFormat(fmt),roi);
-  }
-
-  // }}}
-
-  ImgParams::ImgParams(const Size &size,int channels, const Rect &roi ){
-    // {{{ open
-
-    FUNCTION_LOG("");
-    setup(size,formatMatrix,channels,roi);
-  }
-
-  // }}}
-
-  ImgParams::ImgParams(const Size &size,int channels,format fmt, const Rect &roi ){
-    // {{{ open
-
-    FUNCTION_LOG("");
-    setup(size,fmt,channels,roi);
-  }
-
   // }}}
 
   ImgParams::ImgParams(int width, int height, format fmt, int roiX, int roiY, int roiWidth, int roiHeight){
     // {{{ open
-
-    FUNCTION_LOG("");
-    setup(Size(width,height),fmt,getChannelsOfFormat(fmt),Rect(roiX,roiY,roiWidth, roiHeight));
+    setup(Size(width,height),fmt,getChannelsOfFormat(fmt),Rect(roiX,roiY,roiWidth,roiHeight));
   }
-
   // }}}
   
   ImgParams::ImgParams(int width, int height, int channels, int roiX, int roiY, int roiWidth, int roiHeight){
     // {{{ open
-
-    FUNCTION_LOG("");
-    setup(Size(width,height),formatMatrix, channels, Rect(roiX,roiY,roiWidth, roiHeight));
+    setup(Size(width,height),formatMatrix, channels, Rect(roiX,roiY,roiWidth,roiHeight));
   }
-
   // }}}
 
-  ImgParams::ImgParams(int width, int height, int channels, format fmt,int roiX, int roiY, int roiWidth, int roiHeight){
+  ImgParams::ImgParams(int width, int height, int channels, format fmt, int roiX, int roiY, int roiWidth, int roiHeight){
     // {{{ open
-
-    FUNCTION_LOG("");
-    setup(Size(width,height),fmt, channels, Rect(roiX,roiY,roiWidth, roiHeight));
+    setup(Size(width,height),fmt, channels, Rect(roiX,roiY,roiWidth,roiHeight));
   }
-
   // }}}
 
   bool ImgParams::operator==(const ImgParams &other) const{
@@ -125,7 +87,6 @@ namespace icl{
       m_eFormat = formatMatrix;
     }
     m_iChannels = channels;
-
   }
 
   // }}}

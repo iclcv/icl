@@ -198,13 +198,13 @@ namespace icl {
          case ioFormatICL:
             readHeaderPNM (oInfo);
             ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
-                              oInfo.eFormat, oInfo.iNumChannels, oInfo.oROI);
+                              oInfo.iNumChannels, oInfo.eFormat, oInfo.oROI);
             readDataPNM (*ppoDst, oInfo);
             break;
          case ioFormatJPG:
             readHeaderJPG (oInfo);
             ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
-                              oInfo.eFormat, oInfo.iNumChannels, oInfo.oROI);
+                              oInfo.iNumChannels, oInfo.eFormat, oInfo.oROI);
             readDataJPG ((*ppoDst)->asImg<icl8u>(), oInfo);
             break;
          default:

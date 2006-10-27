@@ -4,9 +4,9 @@
 #include "Point.h"
 #include "Size.h"
 #include <stdio.h>
+#include <algorithm>
 
-namespace icl{
-
+namespace icl {
   
 #ifndef WITH_IPP_OPTIMIZATION
   /// fallback implementation for the IppiRect struct, defined in the ippi lib
@@ -132,31 +132,34 @@ namespace icl{
     /// returns width*height
     int getDim() const {return width*height;}
 
-    /// intersection of two Rects (NOT IMPLEMENTED)
+    /// intersection of two Rects
     Rect operator&(const Rect &r) const {
-      (void)r;
-      printf("ERROR!!! Rect::intersection operator & is not yet implemented \n");
-      return Rect();
+       Point ul (std::max (x, r.x), std::max (y, r.y));
+       Point lr (std::min (right(), r.right()), std::min (bottom(), r.bottom()));
+       Rect result (ul.x, ul.y, lr.x-ul.x+1, lr.y-ul.y+1);
+       if (result.width > 0 && result.height > 0) return result;
+       else return null;
     }
     
-    /// union of two Rects (NOT IMPLEMENTED)
+    /// union of two Rects
     Rect operator|(const Rect &r) const {
-      (void)r;
-      printf("ERROR!!! Rect::union operaotr | is not yet implemented \n");
-      return Rect();
+       Point ul (std::min (x, r.x), std::min (y, r.y));
+       Point lr (std::max (right(), r.right()), std::max (bottom(), r.bottom()));
+       return Rect (ul.x, ul.y, lr.x-ul.x+1, lr.y-ul.y+1);
     }
     
-    /// rects with negative sizes are normalized to Positive sizes (NOT IMPLEMENTED)
+    /// rects with negative sizes are normalized to Positive sizes
     /** e.g. the rect (5,5,-5,-5) is normalized to (0,0,5,5) */
-    Rect nomalized(){
-      printf("ERROR!!! Rect::normalized is not yet implemented \n");
-      return Rect();
+    Rect nomalized() const {
+       Rect r (*this);
+       if (r.width < 0) {r.x += r.width; r.width = -r.width; }
+       if (r.height < 0) {r.y += r.height; r.height = -r.height; }
+       return r;
     }
     
     /// returns if a Rect containes another rect (NOT IMPLEMENTED)
-    bool contains(const Rect &r){
-      (void)r;
-      return x<=r.x && y <= r.y && right() >= r.right() && bottom() >= r.bottom();
+    bool contains(const Rect &r) const {
+       return x<=r.x && y <= r.y && right() >= r.right() && bottom() >= r.bottom();
     }
     
     bool contains(int x, int y){

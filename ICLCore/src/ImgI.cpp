@@ -35,39 +35,37 @@ ImgI::~ImgI()
 
 // {{{ utillity functions
 
-ImgI* ImgI::shallowCopy(ImgI** ppoDst) const {
+ImgI* ImgI::shallowCopy(ImgI* poDst) const {
   FUNCTION_LOG("");
   // create image with zero channels
-  if (!*ppoDst) *ppoDst = imgNew(getDepth(),getParams());
-  else ensureDepth (ppoDst, getDepth ());
+  if (!poDst) poDst = imgNew(getDepth(),getSize(),0,getROI());
+  else ensureDepth (&poDst, getDepth ());
   
   if (getDepth() == depth8u) {
-     *(*ppoDst)->asImg<icl8u>() = *this->asImg<icl8u>();
+     *poDst->asImg<icl8u>() = *this->asImg<icl8u>();
   } else {
-     *(*ppoDst)->asImg<icl32f>() = *this->asImg<icl32f>();
+     *poDst->asImg<icl32f>() = *this->asImg<icl32f>();
   }
-  (*ppoDst)->setROI (getROI());
-  return *ppoDst;
+  return poDst;
 }
 
-ImgI* ImgI::shallowCopy(const std::vector<int>& vChannels, ImgI** ppoDst) const {
+ImgI* ImgI::shallowCopy(const std::vector<int>& vChannels, ImgI* poDst) const {
   FUNCTION_LOG("");
   // create image with zero channels
-  if (!*ppoDst) *ppoDst = imgNew(getDepth(),getSize(),0);
+  if (!poDst) poDst = imgNew(getDepth(),getSize(),0,getROI());
   else {
-     (*ppoDst)->setChannels (0);
-     ensureDepth (ppoDst, getDepth ());
-     (*ppoDst)->setSize(getSize());
-     (*ppoDst)->setFormat(formatMatrix);
+     poDst->setChannels (0);
+     ensureDepth (&poDst, getDepth ());
+     poDst->setSize(getSize());
+     poDst->setROI (getROI());
   }
 
   if (getDepth() == depth8u) {
-     (*ppoDst)->asImg<icl8u>()->append (this->asImg<icl8u>(), vChannels);
+     poDst->asImg<icl8u>()->append (this->asImg<icl8u>(), vChannels);
   } else {
-     (*ppoDst)->asImg<icl32f>()->append (this->asImg<icl32f>(), vChannels);
+     poDst->asImg<icl32f>()->append (this->asImg<icl32f>(), vChannels);
   }
-  (*ppoDst)->setROI (getROI());
-  return *ppoDst;
+  return poDst;
 }
 
 

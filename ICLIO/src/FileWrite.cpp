@@ -19,6 +19,7 @@ namespace icl {
    //--------------------------------------------------------------------------
    void FileWrite::setFileName (const string& sFileName) throw (ICLException)
       // {{{ open 
+
    {
       string::size_type iSuffixPos;
       string::size_type iTmpPos = sFileName.rfind ('.');
@@ -56,6 +57,7 @@ namespace icl {
       sFileSuffix = sType;
       sFilePrefix = nCounterDigits ? sFileName.substr (0, iSuffixPos-nHashes) : sFileName;
    }
+
 // }}}
 
    //--------------------------------------------------------------------------
@@ -84,8 +86,6 @@ namespace icl {
          // image needs to be converted to depth8u
         poImg = poSrc->convertTo<icl8u> (&m_oImg8u);
       } // otherwise, use poSrc directly
-
-      poImg->print();
 
       try {
          // write file

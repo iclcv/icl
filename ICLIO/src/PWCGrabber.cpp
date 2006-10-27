@@ -458,18 +458,18 @@ ImgI* PWCGrabber::grab(ImgI *poOutput){
       
     }else if(poOutput->getFormat() == formatYUV){ // not yet tested
       
-      Img8u oTmpSrc_Y(Size(iWidth,iHeight),1,&pY);
-      Img8u oTmpSrc_U(Size(iWidth/2,iHeight/2),1,&pU);
-      Img8u oTmpSrc_V(Size(iWidth/2,iHeight/2),1,&pV);
+      Img8u oTmpSrc_Y(Size(iWidth,iHeight),    1,std::vector<icl8u*>(1, pY));
+      Img8u oTmpSrc_U(Size(iWidth/2,iHeight/2),1,std::vector<icl8u*>(1, pU));
+      Img8u oTmpSrc_V(Size(iWidth/2,iHeight/2),1,std::vector<icl8u*>(1, pV));
       
       if(poOutput->getDepth()==depth8u){
         icl8u *pucTmpY = poOutput->asImg<icl8u>()->getData(0);
         icl8u *pucTmpU = poOutput->asImg<icl8u>()->getData(1);
         icl8u *pucTmpV = poOutput->asImg<icl8u>()->getData(2);
         
-        Img8u oTmpDst_Y(poOutput->getSize(),1,&pucTmpY);
-        Img8u oTmpDst_U(poOutput->getSize(),1,&pucTmpU);
-        Img8u oTmpDst_V(poOutput->getSize(),1,&pucTmpV);
+        Img8u oTmpDst_Y(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpY));
+        Img8u oTmpDst_U(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpU));
+        Img8u oTmpDst_V(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpV));
         
         oTmpSrc_Y.scaledCopy(&oTmpDst_Y);
         oTmpSrc_U.scaledCopy(&oTmpDst_U);
@@ -480,9 +480,9 @@ ImgI* PWCGrabber::grab(ImgI *poOutput){
         icl32f *pfTmpU = poOutput->asImg<icl32f>()->getData(1);
         icl32f *pfTmpV = poOutput->asImg<icl32f>()->getData(2);
         
-        Img32f oTmpDst_Y(poOutput->getSize(),1,&pfTmpY);
-        Img32f oTmpDst_U(poOutput->getSize(),1,&pfTmpU);
-        Img32f oTmpDst_V(poOutput->getSize(),1,&pfTmpV);
+        Img32f oTmpDst_Y(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpY));
+        Img32f oTmpDst_U(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpU));
+        Img32f oTmpDst_V(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpV));
         
         oConverter.convert(&oTmpDst_Y,&oTmpSrc_Y);
         oConverterHalfSize.convert(&oTmpDst_U,&oTmpSrc_U);

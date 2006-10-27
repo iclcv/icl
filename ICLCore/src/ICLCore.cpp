@@ -103,31 +103,13 @@ namespace icl{
 
   // }}}
   
-  void ensureCompatible(ImgI **ppoDst,depth d,const Size &size,format fmt, const Rect &roi){
-    // {{{ open
-
-    FUNCTION_LOG("");
-    ensureCompatible(ppoDst,d,ImgParams(size,fmt,roi));
-  }
-
-  // }}}
-
-  void ensureCompatible(ImgI **ppoDst,depth d,const Size &size,int cc, const Rect &roi){
-    // {{{ open
-
-    FUNCTION_LOG("");
-    ensureCompatible(ppoDst,d,ImgParams(size,cc,roi));
-  }
-
-  // }}}
-
-  void ensureCompatible(ImgI **dst, depth d, const Size &size, format fmt, int channels, const Rect &roi){
+  void ensureCompatible(ImgI **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi){
     // {{{ open
 
     FUNCTION_LOG("");
     if(fmt != formatMatrix && getChannelsOfFormat(fmt) != channels){
       ensureCompatible(dst,d,size,channels,roi);
-      throw InvalidImgParamException("channela and format");
+      throw InvalidImgParamException("channels and format");
     }else{
       ensureCompatible(dst,d,size,channels,roi);
       (*dst)->setFormat(fmt);
@@ -138,13 +120,10 @@ namespace icl{
 
   void ensureCompatible(ImgI **dst, const ImgI *src){
     // {{{ open
-
-    FUNCTION_LOG("");
     ensureCompatible(dst,src->getDepth(),src->getParams());
   }
-
   // }}}
-  
+
   int getSizeOf(depth eDepth){
     // {{{ open
 

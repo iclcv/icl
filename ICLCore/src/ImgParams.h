@@ -33,22 +33,25 @@ namespace icl{
     /** @see setup
         @see null   
     */
-    ImgParams(const ImgParams &params=null);
+    ImgParams(const ImgParams &params=null)
+       { setup(params.getSize(), params.getFormat(), params.getChannels(), params.getROI()); }
     
     /// creates an ImgParams object with specified size, channels, roi and formatMatrix
-    /** @see setupt */
-    ImgParams(const Size &size,int channels, const Rect &roi = Rect::null );
+    /** @see setup */
+    ImgParams(const Size &size, int channels, const Rect &roi = Rect::null)
+       { setup(size,formatMatrix,channels,roi); }
 
     /// creates an ImgParams object with specified size, channels, roi and format
     /** @see setup*/
-    ImgParams(const Size &size, format fmt, const Rect &roi = Rect::null );
+    ImgParams(const Size &size, format fmt, const Rect &roi = Rect::null);
 
-    /// creates and ImgParams object with all given parameters
+    /// creates an ImgParams object with all given parameters
     /** Note that channels and format are <b>not independent</b>. Hence, if the given
         channel count is not compatible to the given format, an exception is thrown.
         @see setup
     */
-    ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null );    
+    ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null)
+       { setup(size,fmt,channels,roi); }
 
     /// creates an ImgParams object with specified size, format and roi given as POD-Types
     /** channel count is adapted to the given format
@@ -91,9 +94,9 @@ namespace icl{
     /** The initialisation function does <em>all the magic</em> that is necessary to
         setup all parameters correctly. There are two issues, that must be treated in 
         a special way:
-        1. size must be positive in {0,inf}x{0,inf}
+        1. size must be positive in [0,inf) x [0,inf)
         2. set up the format and channel count correctly
-        3. enshure, that the roi has a valid size and position
+        3. ensure, that the roi has a valid size and position
 
 
         <h3>Format and Channel Count</h3>
@@ -105,27 +108,26 @@ namespace icl{
         "formatRGB" has three channels). The association is performed by the global 
         icl-namespace function <em>getChannelsOfFormat</em> (see the functions documentation
         for more details. If the given format is "formatMatrix", then the channel count is
-        checked to be positive (in {0,inf}) to avoid errors, that would occur, if e.g. -5
+        checked to be positive (in [0,inf)) to avoid errors, that would occur, if e.g. -5
         channels are allocated at runtime.
      
-        <h3>Enshure a Valid ROI Size</h3>
-        In total, there are three problems, that need to be tackled when the ROI
-        is set.
-        - <b>check if the given roi is null:</b> if the given roi is <em>null<em> (this
+        <h3>Ensure a Valid ROI Size</h3>
+        In total, there are three problems, that need to be tackled when the ROI is set.
+        - <b>Check if the given roi is null:</b> if the given roi is <em>null<em> (this
           means the rect has offset (0,0) and size (0,0)), then the objects ROI is
           set up to cover the whole image rect (offset (0,0) and size 
           (image-width,image-height)). If it is <b>not</b> <em>null</em>, the following two
           issues must be regarded.
-        - <b>check if the given offset is inside of the image:</b> This should be
+        - <b>Check if the given offset is inside of the image:</b> This should be
           self-evident. If the offset is outside the image rect, it is set to (0,0), and
           furthermore a specific <b>exception</b> is thrown.
-        - <b>check if the given roi size is valid:</b> This can be devided into two parts:
-          1. the ROI size must be positive (in {0,inf}x{0,inf}) if not, the roi is set to null
-             (whole image) and an error is thrown
-          2. the ROI must <em>fit</em> into the image else the ROI is set to null (whole image)
-             and an error is trown
+        - <b>Check if the given roi size is valid:</b> This can be devided into two parts:
+          1. The ROI size must be positive (in [0,inf) x [0,inf)). 
+             If not, the roi is set to null (whole image) and an error is thrown.
+          2. The ROI must <em>fit</em> into the image. 
+             Otherwise the ROI is set to null (whole image) and an error is thrown.
     */
-    void setup(const Size &size, format fmt, int channels,const Rect &roi);
+    void setup(const Size &size, format fmt, int channels, const Rect &roi);
 
     /// sets the size to the current value (and resets the roi to null)
     void setSize(const Size &size);
@@ -137,39 +139,38 @@ namespace icl{
     void setChannels(int channels);
     
     /// sets the image ROI offset to the given value
-    /** if the offset is not inside of the image or the new offset causes
-        the roi not fit into the image nothing is done, and an exception is
-        thrown
+    /** If the offset is not inside of the image or the new offset causes the roi 
+        not to fit into the image, nothing is done, and an exception is thrown.
     */
     void setROIOffset(const Point &offset);
          
     /// sets the image ROI size to the given value
-    /** if the new roi size causes the roi not to fit into the image, nothing is done,
+    /** If the new roi size causes the roi not to fit into the image, nothing is done
         and an exception is thrown
     */
     void setROISize(const Size &roisize);
      
     /// set both image ROI offset and size
     /** This function evaluates if the new offset is inside of the image, as well as
-        if the resulting roi does fit into the image
+        if the resulting roi does fit into the image.
     */
     void setROI(const Point &offset, const Size &roisize);
     
     /// sets the image ROI to the given rectangle
-    /** if the given rect is Rect::null, then the roi is set to the whole image size
+    /** If the given rect is Rect::null, then the roi is set to the whole image size
         see the above function
     */
     void setROI(const Rect &roi);
    
     /// as setROIOffset, but if checks for negative parameters
     /** While the methods setROI, setROIOffset and setROISize directly set
-        the images ROI from the given arguments, the following methods adapt the
-        the ROI parameters to assure a valid ROI. Negative values are interpreted 
-        relative to the whole image size resp. the upper right corner of the image.
+        the images ROI from the given arguments (if possible), the following methods 
+        adapt the ROI parameters to assure a valid ROI. Negative values are interpreted 
+        relative to the whole image size resp. the lower right corner of the image.
     
         E.g. an offset (5,5) with size (-10,-10) sets the ROI to the inner
         sub image with a 5-pixel margin. offset(-5,-5) and size (5,5) sets
-        the ROI to the upper right 5x5 corner. 
+        the ROI to the lower right 5x5 corner. 
     **/
     void setROIOffsetAdaptive(const Point &offset);
       
@@ -186,7 +187,7 @@ namespace icl{
     void setFullROI(){ FUNCTION_LOG(""); setROI(Rect::null); }
 
     /// returns the objects size
-    const Size &getSize() const { FUNCTION_LOG("");  return m_oSize;  }
+    const Size& getSize() const { FUNCTION_LOG("");  return m_oSize;  }
     
     /// returns the objects channel count
     int getChannels() const { FUNCTION_LOG(""); return m_iChannels; }
@@ -195,16 +196,19 @@ namespace icl{
     format getFormat() const { FUNCTION_LOG(""); return m_eFormat; }
     
     /// returns the objects ROI rect
-    const Rect &getROI() const { FUNCTION_LOG(""); return m_oROI; }
+    const Rect& getROI() const { FUNCTION_LOG(""); return m_oROI; }
     
     /// copies the roi parameters into the given structs offset and size
-    void getROI(Point &offset, Size &size) const { FUNCTION_LOG(""); offset=getROIOffset(); size = getROISize(); } 
+    void getROI(Point &offset, Size &size) const { 
+       FUNCTION_LOG(""); 
+       offset=getROIOffset(); size = getROISize(); 
+    } 
 
     /// returns the objects ROI offset
-    Point getROIOffset() const { FUNCTION_LOG(""); return m_oROI.ul(); }
+    const Point getROIOffset() const { FUNCTION_LOG(""); return m_oROI.ul(); }
 
     /// returns the objects ROI size 
-    Size getROISize() const{ FUNCTION_LOG(""); return m_oROI.size(); }
+    const Size getROISize() const{ FUNCTION_LOG(""); return m_oROI.size(); }
 
     /// returns the objects image width
     int getWidth() const {  FUNCTION_LOG(""); return m_oSize.width; }
@@ -245,7 +249,6 @@ namespace icl{
 
     /// image roi
     Rect m_oROI;
-
   };
 }
 

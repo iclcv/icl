@@ -4,9 +4,10 @@
 #include "Filter.h"
 #include "Img.h"
 namespace icl {
-   /// Class for logical operations
+   /// Class for bitwise logical operations on pixel values.
    /** 
-       Does a binary logcical combination of
+       Supported operations include And, Or, Xor, Not. Clearly all logical operations
+       are only supported on integer typed images, i.e. icl8u.
    */
 
    class Logical : public Filter {
@@ -26,12 +27,6 @@ namespace icl {
       /// Performs a bitwise XOR operation on each pixel with a constant.
       static void XorC (const Img8u *src, const icl8u value, Img8u *dst);
 
-/* no support for floats
-      static void And (const Img32f *src1, const Img32f *src2, Img32f *dst);
-      static void Or  (const Img32f *src1, const Img32f *src2, Img32f *dst);
-      static void Xor (const Img32f *src1, const Img32f *src2, Img32f *dst);
-      static void Not (const Img32f *src, Img32f *dst);
-*/
       /// Combines corresponding pixels of two image buffers by a bitwise AND operation (ImgI Version).
       void And (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst);
       /// Combines corresponding pixels of two image buffers by a bitwise OR operation (ImgI Version).

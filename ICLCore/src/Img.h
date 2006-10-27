@@ -134,7 +134,7 @@ class Img : public ImgI
                      constructor call, to induce the Img to allocate own memory for 
                      the image data.
   **/
-  Img(const Size &size, format format, Type** pptData);
+  Img(const Size &size, format format, const std::vector<Type*>& vptData);
   
   /// Creates an image with specified size and channel count, using shared data pointers as channel data
   /** the format is set to formatMatrix
@@ -146,7 +146,7 @@ class Img : public ImgI
                      constructor call, to induce the Img to allocate own memory for 
                      the image data.
   **/
-  Img(const Size &size, int channels, Type** pptData);
+  Img(const Size &size, int channels, const std::vector<Type*>& vptData);
 
   /// Crates an image with given size, channel count and format
   /** Note: channel count and format depend on each other, so if
@@ -160,7 +160,7 @@ class Img : public ImgI
                      during the lifetime of the image, or call detach, to
                      make the image ollocate it own memory for the data
   */
-  Img(const Size &size, int channels, format fmt, Type** pptData);
+  Img(const Size &size, int channels, format fmt, const std::vector<Type*>& vptData);
 
   /// Copy constructor
   /** creates a flat copy of the source image

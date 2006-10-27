@@ -101,15 +101,14 @@ namespace icl {
       /** It exploits the given destination image if possible,
           i.e. if the pixel depth matches. Else this image is released
           and a new one is created.
-          @p
-          @param ppoDst destination image (if Null, a new one is created)
+          @param poDst destination image (if Null, a new one is created)
       **/
-      ImgI* shallowCopy(ImgI** ppoDst = NULL) const;
+      ImgI* shallowCopy(ImgI* poDst = NULL) const;
 
       /// creates a shallow copy of selected channels of this image
       /** @param channelIndices vector containing channel indices to copy
-          @param ppoDst destination image (if Null, a new one is created)*/
-      ImgI* shallowCopy(const std::vector<int>& channelIndices, ImgI** ppoDst = NULL) const;
+          @param poDst destination image (if Null, a new one is created)*/
+      ImgI* shallowCopy(const std::vector<int>& channelIndices, ImgI* poDst = NULL) const;
 
       /// copies the image data into the destination image
       /** this function is implemented in the Img-template class
@@ -382,16 +381,7 @@ namespace icl {
 
       /* {{{ Constructor  */
 
-      /// Creates an ImgI object with specified width, height, format, depth and channel count
-      /** 
-      If channel count is <= 0 (default), the number of channels is computed 
-      automatically from format using the getChannelsOfFormat function from the icl namespace.
-      @param depth image depth
-      @param eFormat (color)-format of the image
-      @param eDepth depth of the image (depth8u or depth32f)
-      @param iChannels channel count of the image (if -1, then the channel count is derived
-                       from the set format e.g. formatRGB-> 3 channels )
-      **/
+      /// Creates an ImgI object with specified image parameters 
       ImgI(depth d, const ImgParams& params);
 
       /* }}} */

@@ -16,8 +16,8 @@ namespace icl {
                                dst->getFormat () == eFormat &&
                                dst->getROISize () == roi.size(), false);
       } else {
-         ensureCompatible (ppoDst, eDepth, imgSize, eFormat, 
-                           nChannels, roi);
+         ensureCompatible (ppoDst, eDepth, imgSize, 
+                           nChannels, eFormat, roi);
       }
       return true;
    }

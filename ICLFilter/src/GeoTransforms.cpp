@@ -149,7 +149,7 @@ namespace icl {
       getShiftAndSize (poSrc->getROI(), oSize, xShift, yShift);
       translate (-xShift, -yShift);
       ensureCompatible (ppoDst, poSrc->getDepth(), oSize, 
-                        poSrc->getFormat(), poSrc->getChannels());
+                        poSrc->getChannels(), poSrc->getFormat());
 
       (this->*(aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);
       translate (xShift, yShift);

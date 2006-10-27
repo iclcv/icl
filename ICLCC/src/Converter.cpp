@@ -30,8 +30,8 @@ namespace icl{
       if(iNeedSizeConversion || iNeedColorConversion){
          // if other conversion steps follow, we first convert the depth
          // and store the result in an intermediate buffer: m_poDepthBuffer
-         ensureCompatible(&m_poDepthBuffer,eDstDepth,srcSize,eSrcFmt,
-                          poCurSrc->getChannels());
+         ensureCompatible(&m_poDepthBuffer,eDstDepth,srcSize,
+                          poCurSrc->getChannels(),eSrcFmt);
          if (m_bROIOnly) poCurSrc->deepCopyROI(m_poDepthBuffer);
          else poCurSrc->deepCopy(m_poDepthBuffer);
          poCurSrc=m_poDepthBuffer;
@@ -49,7 +49,7 @@ namespace icl{
         // if color conversion follows, we scale the image into the buffer
         // m_poSizeBuffer first
         ensureCompatible (&m_poSizeBuffer,poCurSrc->getDepth(), 
-                          poDst->getSize(), eSrcFmt, poCurSrc->getChannels());
+                          poDst->getSize(), poCurSrc->getChannels(), eSrcFmt);
         if (m_bROIOnly) poCurSrc->scaledCopyROI(m_poSizeBuffer);
         else poCurSrc->scaledCopy(m_poSizeBuffer);
         poCurSrc=m_poSizeBuffer;

@@ -274,15 +274,15 @@ namespace icl {
 
 /* {{{ Global functions */
 
-/// creates a new ImgI by abstacting from the depth parameter
-/** This function is essention for the abstaction mechanism about 
-    Img image classes  underlying depth. In many cases you might have an
-    ImgI*, wich must be initialized with parameters size,
-    channel count and - which is the problem - the depth. The
-    default solution is to insert an if statement. Look at the 
-    following Example, that shows the implementation of a class
-    constructor.
-      <pre>
+/// create a new image instance of the given depth type and with given parameters
+/** This function provides a common interface to instantiate images of 
+    arbitrary depth, selecting the appropriate constructor of the derived class
+    Img<T>. 
+
+    Instead of selecting the correct constructor by yourself, you can simply
+    call this common constructor function. To illustrate the advantage, look
+    at the following example:
+    <pre>
       class Foo{
          public:
          Foo(...,Depth eDepth,...):
@@ -291,11 +291,10 @@ namespace icl {
          private:
          ImgI *poImage;         
       };
-      </pre>
-      This will work, but the "?:"-statement makes the code hardly readable.
-      The following code extract will show the advantage of using the imgNew
-      function:
-      <pre>
+    </pre>
+    This will work, but the "?:"-statement makes the code hardly readable.
+    The following code extract will show the advantage of using the imgNew instantiator:
+    <pre>
       class Foo{
          public:
          Foo(...,Depth eDepth,...):
@@ -304,30 +303,27 @@ namespace icl {
          private:
          ImgI *poImage;         
       };
-      The readability of the code is much better.
-      </pre>
+    </pre>
+    The readability of the code is much better.
   
-      @param eDepth depth of the image that should be created
-      @param s size of the new image
-      @param eFormat format of the new image
-      @param iChannels channel count of the new image. If < 0,
-                       then the channel count associated with 
-                       eFormat is used
-      @param oROI ROI rectangle of the new image
-      @return the new ImgI* with underlying Img<Type>, where
-      Type is depending on the first parameter eDepth
+    @param eDepth depth of the image that should be created
+    @param params struct containing all neccessary parameters like:
+    @param size: size of the new image
+    @param fmt:  format of the new image
+    @param channels: number of channels (of an formatMatrix-type image)
+    @param roi:  ROI rectangle of the new image
+    @return the new ImgI* with underlying Img<Type>, where
+            Type is depending on the first parameter eDepth
   **/
-  ImgI *imgNew( depth d=depth8u, const ImgParams &params = ImgParams::null);
+  ImgI *imgNew(depth d=depth8u, const ImgParams &params = ImgParams::null);
   
   /// creates a new Img (see the above function for more details)
   inline ImgI *imgNew(depth d, const Size& size, format fmt, const Rect &roi=Rect::null){
-    FUNCTION_LOG("");
     return imgNew(d,ImgParams(size,fmt,roi));
   }
 
   /// creates a new Img (see the above function for more details)
   inline ImgI *imgNew(depth d, const Size& size, int channels=1, const Rect &roi=Rect::null){
-    FUNCTION_LOG("");
     return imgNew(d,ImgParams(size,channels,roi));
   }
 
@@ -344,6 +340,9 @@ namespace icl {
   **/
   void ensureDepth(ImgI **ppoImage, depth eDepth);
 
+  /// ensures that an image has given depth and parameters
+  void ensureCompatible(ImgI **dst, depth d,const ImgParams &params);
+
   /// ensures that an image has given depth, size, number of channels and ROI
   /** If the given pointer to the destination image is 0, a new image with appropriate
       properties is created. Else the image properties are checked and adapted to the new
@@ -357,18 +356,18 @@ namespace icl {
       @param roi desired ROI rectangle. If the ROI parameters are not given, 
                  the ROI will comprise the whole image.
   **/
-  void ensureCompatible(ImgI **dst, depth d,const Size& size,int channels, const Rect &roi=Rect::null);
+  inline void ensureCompatible(ImgI **dst, depth d,const Size& size,int channels, const Rect &roi=Rect::null)
+     { ensureCompatible(dst,d,ImgParams(size,channels,roi)); }
 
   /// ensures that an image has given depth, size, format and ROI
-  void ensureCompatible(ImgI **dst, depth d,const Size& size, format fmt, const Rect &roi=Rect::null);
+  inline void ensureCompatible(ImgI **dst, depth d,const Size& size, format fmt, const Rect &roi=Rect::null)
+     { ensureCompatible(dst,d,ImgParams(size,fmt,roi)); }
   
   /// ensures that an image has given parameters 
   /** The given format must be compatible to the given channel count.
       <b>If not:</b> The format is set to "formatMatrix" and an exception is thrown.
   */
-  void ensureCompatible(ImgI **dst, depth d, const Size &size, format fmt, int channels, const Rect &roi=Rect::null);
-  /// ensures that an image has given depth and parameters
-  void ensureCompatible(ImgI **dst, depth d,const ImgParams &params);
+  void ensureCompatible(ImgI **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi=Rect::null);
   
   /// ensures that the destination image gets same depth, size, channel count, depth, format and ROI as source image
   /** If the given pointer to the destination image is 0, a new image is created as a deep copy of poSrc.
@@ -411,13 +410,11 @@ namespace icl {
 
   /// returns a string representation for a depth value
   inline std::string translateDepth(depth eDepth){
-    FUNCTION_LOG("");
     return eDepth == depth8u ? "depth8u" : "depth32f";
   }
   
   /// creates a depth value form a depth string
   inline depth translateDepth(const std::string& sDepth){
-    FUNCTION_LOG("");
     return sDepth == "depth8u" ? depth8u : depth32f;
   }
 

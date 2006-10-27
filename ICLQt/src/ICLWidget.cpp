@@ -258,7 +258,7 @@ namespace icl{
       ensureCompatible(&m_poImage,input);
       input->deepCopy(m_poImage);
     }else if(op.c < input->getChannels()){ // copy the specific image channel
-      ensureCompatible(&m_poImage,input->getDepth(),input->getSize(),formatMatrix,1);
+      ensureCompatible(&m_poImage,input->getDepth(),input->getSize(),1,formatMatrix);
       switch(input->getDepth()){
         case depth8u: deepCopyChannel(input->asImg<icl8u>(),op.c,m_poImage->asImg<icl8u>(),0); break;
         case depth32f: deepCopyChannel(input->asImg<icl32f>(),op.c,m_poImage->asImg<icl32f>(),0); break;

@@ -44,6 +44,20 @@ Img<Type>::Img(const Size &s,int iChannels):
 
 //----------------------------------------------------------------------------
 template<class Type>
+Img<Type>::Img(const Size& s, format eFormat):
+  // {{{ open
+  ImgI(icl::getDepth<Type>(),ImgParams(s,eFormat)){
+  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ")  this:" << this );
+  
+  for(int i=0;i<getChannels();i++) {
+    m_vecChannels.push_back(createChannel());
+  }
+} 
+
+  // }}}
+
+//----------------------------------------------------------------------------
+template<class Type>
 Img<Type>::Img(const Size &s,int iChannels, format fmt):
   // {{{ open
 
@@ -60,42 +74,32 @@ Img<Type>::Img(const Size &s,int iChannels, format fmt):
 
 //----------------------------------------------------------------------------
 template<class Type>
-Img<Type>::Img(const Size& s, format eFormat):
+Img<Type>::Img(const Size &s, int channels, const std::vector<Type*>& vptData) :
   // {{{ open
-  ImgI(icl::getDepth<Type>(),ImgParams(s,eFormat)){
-  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ")  this:" << this );
+  ImgI(icl::getDepth<Type>(),ImgParams(s,channels)) {
+  ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
+  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  channels << ",Type**)  this:" << this);
   
-  for(int i=0;i<getChannels();i++) {
-    m_vecChannels.push_back(createChannel());
+  typename std::vector<Type*>::const_iterator it = vptData.begin();
+  for(int i=0; i<getChannels(); ++i, ++it) {
+     m_vecChannels.push_back(SmartPtr<Type>(*it,false));
   }
-} 
+}
 
   // }}}
 
 //----------------------------------------------------------------------------
 template<class Type>
-Img<Type>::Img(const Size &s, int iChannels, Type** pptData):
+Img<Type>::Img(const Size &s, int channels, format fmt, const std::vector<Type*>& vptData) :
   // {{{ open
-  ImgI(icl::getDepth<Type>(),ImgParams(s,iChannels)){
-  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  iChannels << ",Type**)  this:" << this);
-  
-  for(int i=0;i<getChannels();i++){
-    m_vecChannels.push_back(SmartPtr<Type>(*pptData++,0));
-  }
-} 
-
-  // }}}
-
-//----------------------------------------------------------------------------
-template<class Type>
-Img<Type>::Img(const Size &s, int iChannels,format fmt, Type** pptData):
-  // {{{ open
-  ImgI(icl::getDepth<Type>(),ImgParams(s,iChannels,fmt)){
-  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  iChannels << 
+  ImgI(icl::getDepth<Type>(),ImgParams(s,channels,fmt)){
+  ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
+  FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  channels << 
                "," << translateFormat(fmt) << ",Type**)  this:" << this);
   
-  for(int i=0;i<getChannels();i++){
-    m_vecChannels.push_back(SmartPtr<Type>(*pptData++,0));
+  typename std::vector<Type*>::const_iterator it = vptData.begin();
+  for(int i=0; i<getChannels(); ++i, ++it) {
+     m_vecChannels.push_back(SmartPtr<Type>(*it,false));
   }
 } 
 
@@ -103,13 +107,15 @@ Img<Type>::Img(const Size &s, int iChannels,format fmt, Type** pptData):
 
 //----------------------------------------------------------------------------
 template<class Type>
-Img<Type>::Img(const Size &s, format eFormat, Type** pptData):
+Img<Type>::Img(const Size &s, format eFormat, const std::vector<Type*>& vptData) :
   // {{{ open
   ImgI(icl::getDepth<Type>(),ImgParams(s,eFormat)){
+  ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
   FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ",Type**)  this:" << this);
    
-  for(int i=0;i<getChannels();i++){
-    m_vecChannels.push_back(SmartPtr<Type>(*pptData++,0));
+  typename std::vector<Type*>::const_iterator it = vptData.begin();
+  for(int i=0; i<getChannels(); ++i, ++it) {
+     m_vecChannels.push_back(SmartPtr<Type>(*it,false));
   }
 } 
 
@@ -149,7 +155,7 @@ Img<Type>& Img<Type>::operator=(const Img<Type>& tSrc)
   FUNCTION_LOG("");
   
   //---- Assign new channels to Img ----
-  setParams(tSrc.getParams());
+  m_oParams = tSrc.getParams ();
   m_vecChannels = tSrc.m_vecChannels;
 
   return *this;
@@ -193,7 +199,7 @@ Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
   poDst->setFormat(getFormat());
   poDst->setChannels(getChannels());
 
-  if(poDst->getDepth() ==  depth8u){
+  if(poDst->getDepth() == depth8u){
      for(int c=0;c<getChannels();c++){
         scaledCopyChannelROI<Type,icl8u>(this,c,Point::zero,getSize(),
                                          poDst->asImg<icl8u>(),c,Point::zero,poDst->getSize(),eScaleMode);
@@ -218,8 +224,8 @@ Img<Type>::deepCopyROI(ImgI *poDst) const
   FUNCTION_LOG("");
 
   if(!poDst){
-    poDst = imgNew(getDepth(),getROISize(),getChannels());
-    poDst->setFormat(getFormat());
+    poDst = imgNew(getDepth(),
+                   ImgParams(getROISize(),getFormat(),getChannels()));
   }else{
     poDst->setChannels(getChannels());
     poDst->setFormat(getFormat());
@@ -257,7 +263,7 @@ Img<Type>::scaledCopyROI(ImgI *poDst, scalemode eScaleMode) const
   poDst->setFormat(getFormat());
   poDst->setChannels(getChannels());
 
-  if(poDst->getDepth() ==  depth8u){
+  if(poDst->getDepth() == depth8u){
      for(int c=0;c<getChannels();c++){
         scaledCopyChannelROI<Type,icl8u>(this,c,getROIOffset(),getROISize(),
                                          poDst->asImg<icl8u>(),c,poDst->getROIOffset(), poDst->getROISize(),
@@ -282,12 +288,12 @@ Img<Type>::flippedCopyROI(ImgI *poDst, axis eAxis) const
 {
   FUNCTION_LOG("");
   if(!poDst){
-    poDst = imgNew(getDepth(),getROISize(),getChannels());
-    poDst->setFormat(getFormat());
+    poDst = imgNew(getDepth(),
+                   ImgParams(getROISize(),getFormat(),getChannels()));
+  } else {
+    ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize() ,poDst);  
+    poDst->setChannels(getChannels());
   }
-  
-  ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize() ,poDst);  
-  poDst->setChannels(getChannels());
 
   if (poDst->getDepth() == this->getDepth()) {
      for(int c=0;c<getChannels();c++) {
@@ -340,16 +346,10 @@ Img<Type>::removeChannel(int iChannel)
 
 {
   FUNCTION_LOG("removeChannel(" << iChannel << ")");
-  ICLASSERT_RETURN(iChannel < getChannels());
+  ICLASSERT_RETURN(iChannel >=0 && iChannel < getChannels());
 
-  if(getFormat() != formatMatrix){
-    WARNING_LOG("format was set to formatMatrix to ensure compability");
-    WARNING_LOG("avoid this waring by setting the format to \"formatMatrix\" before");
-    setFormat(formatMatrix);
-  }
-  
   m_vecChannels.erase(m_vecChannels.begin()+iChannel);
-  setChannels(getChannels()-1);
+  m_oParams.setChannels(m_vecChannels.size());
 }
 
 // }}}
@@ -366,16 +366,10 @@ Img<Type>::append(Img<Type> *poSrc, int iIndex)
   ICLASSERT_RETURN( iIndex < poSrc->getChannels() ); 
   ICLASSERT_RETURN( poSrc->getSize() == getSize() );
 
-  if (getFormat() != formatMatrix) {
-    WARNING_LOG("format was set to formatMatrix to ensure compability");
-    WARNING_LOG("avoid this waring by setting the format to \"formatMatrix\" before");
-    setFormat(formatMatrix);
-  }
-  
   std::copy (poSrc->m_vecChannels.begin() + poSrc->getStartIndex(iIndex),
              poSrc->m_vecChannels.begin() + poSrc->getEndIndex(iIndex),
              back_inserter(m_vecChannels));  
-  setChannels(m_vecChannels.size());
+  m_oParams.setChannels(m_vecChannels.size());
 }
 
 // }}}
@@ -389,12 +383,6 @@ Img<Type>::append(Img<Type> *poSrc, const std::vector<int>& vChannels)
   ICLASSERT_RETURN( poSrc );
   ICLASSERT_RETURN( poSrc->getSize() == getSize() );
 
-  if (getFormat() != formatMatrix) {
-    WARNING_LOG("format was set to formatMatrix to ensure compability");
-    WARNING_LOG("avoid this waring by setting the format to \"formatMatrix\" before");
-    setFormat(formatMatrix);
-  }
-  
   const int iMaxChannels = poSrc->getChannels();
   for (std::vector<int>::const_iterator it=vChannels.begin(), end=vChannels.end();
        it != end; ++it) {
@@ -404,7 +392,7 @@ Img<Type>::append(Img<Type> *poSrc, const std::vector<int>& vChannels)
         m_vecChannels.push_back (poSrc->m_vecChannels[*it]);
      }
   }
-  setChannels(m_vecChannels.size());
+  m_oParams.setChannels(m_vecChannels.size());
 }
 
 // }}}

@@ -1,31 +1,15 @@
 Michael:
-grabbing of images reallocates memory all the time, if in dynamic size mode
-assigning poDst = Grabber::grab () is a memory leak (only in non-buffering mode)
-
 make install* does not check SKIP_DIRS variable (tries to install libICLQt)
 on install: create ICL packageVar dynamically based upon used configuration,
 i.e. add/leave IPP, Qt, replace AGNI_LOCAL_ROOT by explicit name
 
 ICLIO:
-readFile "object*ver*.*"
-writeFile "object#.jpg"
 FireWire::grab
 
 skin color
 
 
 Andre:
-Compare: fasse alle ippiCompare* Funktionen zusammen:
- pixel-wise compare operation:
-   pixel1 < = > pixel2 | value
-   eps for equal:
-
-attention map: weighted sum of channels:
-weightedSum (ImgI, Img<32f>, vector<float> weights)
-
-Logical Operations
-And, Or, Xor, Not (+ constant Funktion mit anderer Signatur) in Klasse Logical
-
 /*
 add (Img<8u> src1, int iC1, Point o1, 
      Img<8u> src2, int iC2, Point o2,
@@ -37,7 +21,6 @@ multChannelROIs (c, a, b): c = a * b // c may equal a or/and b
 
 
 MaskedCopy
-WienerFilter
 MedianColor
 Canny edge detector
 
