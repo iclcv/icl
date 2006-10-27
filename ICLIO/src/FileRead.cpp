@@ -175,7 +175,6 @@ namespace icl {
        oConv.convert(poDst, m_poCurImg);
        return poDst;
     } else {
-      m_poCurImg->print("in grab");
       return m_poCurImg;
     }
   }
