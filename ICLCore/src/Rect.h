@@ -136,7 +136,7 @@ namespace icl {
     Rect operator&(const Rect &r) const {
        Point ul (std::max (x, r.x), std::max (y, r.y));
        Point lr (std::min (right(), r.right()), std::min (bottom(), r.bottom()));
-       Rect result (ul.x, ul.y, lr.x-ul.x+1, lr.y-ul.y+1);
+       Rect result (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
        if (result.width > 0 && result.height > 0) return result;
        else return null;
     }
@@ -145,7 +145,7 @@ namespace icl {
     Rect operator|(const Rect &r) const {
        Point ul (std::min (x, r.x), std::min (y, r.y));
        Point lr (std::max (right(), r.right()), std::max (bottom(), r.bottom()));
-       return Rect (ul.x, ul.y, lr.x-ul.x+1, lr.y-ul.y+1);
+       return Rect (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
     }
     
     /// rects with negative sizes are normalized to Positive sizes

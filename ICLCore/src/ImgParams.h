@@ -79,17 +79,122 @@ namespace icl{
         if(ip)
         </pre>
     */
-    operator bool() const{ FUNCTION_LOG(""); return (*this)==null; }
+    operator bool() const{ return (*this)==null; }
     
     /// returns !(bool)(*this)
-    bool operator!() const{ FUNCTION_LOG(""); return !(bool)(*this); }
+    bool operator!() const{ return !(bool)(*this); }
 
     /// returns !(*this==other)
-    bool operator!=(const ImgParams &other) const{ FUNCTION_LOG(""); return !((*this)==other); } 
+    bool operator!=(const ImgParams &other) const{ return !((*this)==other); } 
 
     /// test is all parameters (size, roi, channels, format) are identical
     bool operator==(const ImgParams &other) const;
     
+    /// sets the size to the current value (and resets the roi to null)
+    void setSize(const Size &size);
+   
+    /// sets the format to the given format (the channel count is adapted on demand)
+    void setFormat(format fmt);
+
+    /// sets the channels to the given channel count (format is set to "formatMatrix" on demand)
+    void setChannels(int channels);
+    
+    /// sets the image ROI offset to the given value
+    /** If the offset is not inside of the image or the new offset causes the roi 
+        not to fit into the image, nothing is done, and an exception is thrown.
+    */
+    void setROIOffset(const Point &offset);
+         
+    /// sets the image ROI size to the given value
+    /** If the new roi size causes the roi not to fit into the image, nothing is done
+        and an exception is thrown
+    */
+    void setROISize(const Size &roisize);
+     
+    /// set both image ROI offset and size
+    /** This function evaluates if the new offset is inside of the image, as well as
+        if the resulting roi does fit into the image.
+    */
+    void setROI(const Point &offset, const Size &roisize);
+    
+    /// sets the image ROI to the given rectangle
+    void setROI(const Rect &roi) { setROI (roi.ul(),roi.size()); }
+   
+    /// as setROIOffset, but if checks for negative parameters
+    /** While the methods setROI, setROIOffset and setROISize directly set
+        the images ROI from the given arguments (if possible), the following methods 
+        adapt the ROI parameters to assure a valid ROI. Negative values are interpreted 
+        relative to the whole image size resp. the lower right corner of the image.
+    
+        E.g. an offset (5,5) with size (-10,-10) sets the ROI to the inner
+        sub image with a 5-pixel margin. offset(-5,-5) and size (5,5) sets
+        the ROI to the lower right 5x5 corner. 
+    **/
+    void setROIOffsetAdaptive(const Point &offset);
+      
+    /// checks, eventually adapts and finally sets the image ROI size
+    void setROISizeAdaptive(const Size &size);
+
+    /// checks, eventually adapts and finally sets the image ROI size
+    void setROIAdaptive(const Rect &r);
+     
+    /// returns ROISize == ImageSize
+    int hasFullROI() const { return m_oROI.size() == m_oSize;}
+
+    /// sets the ROI to 0,0,image-width,image-height
+    void setFullROI(){ setROI(Point::zero, getSize()); }
+
+    /// returns the objects size
+    const Size& getSize() const { return m_oSize;  }
+    
+    /// returns the objects channel count
+    int getChannels() const { return m_iChannels; }
+
+    /// returns the object format
+    format getFormat() const { return m_eFormat; }
+    
+    /// returns the objects ROI rect
+    const Rect& getROI() const { return m_oROI; }
+    
+    /// copies the roi parameters into the given structs offset and size
+    void getROI(Point &offset, Size &size) const { 
+       offset=getROIOffset(); size = getROISize(); 
+    } 
+
+    /// returns the objects ROI offset
+    const Point getROIOffset() const { return m_oROI.ul(); }
+
+    /// returns the objects ROI size 
+    const Size getROISize() const{ return m_oROI.size(); }
+
+    /// returns the objects image width
+    int getWidth() const { return m_oSize.width; }
+    
+    /// return the objects image height
+    int getHeight() const{ return m_oSize.height; }
+
+    /// returns ROI-dependent pixel offset, to address the upper left ROI pixel
+    int getPixelOffset() const { return m_oROI.x+m_oROI.y*getWidth(); }
+
+    /// returns the ROI width of the object
+    int getROIWidth() const{ return m_oROI.width; }
+
+    /// returns the ROI height of the object
+    int getROIHeight() const{ return m_oROI.height; }
+
+    /// returns the ROI X-Offset of the object
+    int getROIXOffset() const{ return m_oROI.x; }
+
+    /// returns the ROI Y-Offset of the object
+    int getROIYOffset() const { return m_oROI.y; }
+
+    /// returns the count of image pixels (width*height)
+    int getDim() const { return getSize().getDim(); }
+
+    /// returns the count of ROI pixels ( ROI_width*ROI_height )
+    int getROIDim() const { return getROISize().getDim(); }
+
+    private:
     /// initialisation function 
     /** The initialisation function does <em>all the magic</em> that is necessary to
         setup all parameters correctly. There are two issues, that must be treated in 
@@ -129,115 +234,7 @@ namespace icl{
     */
     void setup(const Size &size, format fmt, int channels, const Rect &roi);
 
-    /// sets the size to the current value (and resets the roi to null)
-    void setSize(const Size &size);
-   
-    /// sets the format to the given format (the channel count is adapted on demand)
-    void setFormat(format fmt);
 
-    /// sets the channels to the given channel count (format is set to "formatMatrix" on demand)
-    void setChannels(int channels);
-    
-    /// sets the image ROI offset to the given value
-    /** If the offset is not inside of the image or the new offset causes the roi 
-        not to fit into the image, nothing is done, and an exception is thrown.
-    */
-    void setROIOffset(const Point &offset);
-         
-    /// sets the image ROI size to the given value
-    /** If the new roi size causes the roi not to fit into the image, nothing is done
-        and an exception is thrown
-    */
-    void setROISize(const Size &roisize);
-     
-    /// set both image ROI offset and size
-    /** This function evaluates if the new offset is inside of the image, as well as
-        if the resulting roi does fit into the image.
-    */
-    void setROI(const Point &offset, const Size &roisize);
-    
-    /// sets the image ROI to the given rectangle
-    /** If the given rect is Rect::null, then the roi is set to the whole image size
-        see the above function
-    */
-    void setROI(const Rect &roi);
-   
-    /// as setROIOffset, but if checks for negative parameters
-    /** While the methods setROI, setROIOffset and setROISize directly set
-        the images ROI from the given arguments (if possible), the following methods 
-        adapt the ROI parameters to assure a valid ROI. Negative values are interpreted 
-        relative to the whole image size resp. the lower right corner of the image.
-    
-        E.g. an offset (5,5) with size (-10,-10) sets the ROI to the inner
-        sub image with a 5-pixel margin. offset(-5,-5) and size (5,5) sets
-        the ROI to the lower right 5x5 corner. 
-    **/
-    void setROIOffsetAdaptive(const Point &offset);
-      
-    /// checks, eventually adapts and finally sets the image ROI size
-    void setROISizeAdaptive(const Size &size);
-
-    /// checks, eventually adapts and finally sets the image ROI size
-    void setROIAdaptive(const Rect &r);
-     
-    /// returns ROISize == ImageSize
-    int hasFullROI() const { FUNCTION_LOG(""); return m_oROI.size() == m_oSize;}
-
-    /// sets the ROI to 0,0,image-width,image-height
-    void setFullROI(){ FUNCTION_LOG(""); setROI(Rect::null); }
-
-    /// returns the objects size
-    const Size& getSize() const { FUNCTION_LOG("");  return m_oSize;  }
-    
-    /// returns the objects channel count
-    int getChannels() const { FUNCTION_LOG(""); return m_iChannels; }
-
-    /// returns the object format
-    format getFormat() const { FUNCTION_LOG(""); return m_eFormat; }
-    
-    /// returns the objects ROI rect
-    const Rect& getROI() const { FUNCTION_LOG(""); return m_oROI; }
-    
-    /// copies the roi parameters into the given structs offset and size
-    void getROI(Point &offset, Size &size) const { 
-       FUNCTION_LOG(""); 
-       offset=getROIOffset(); size = getROISize(); 
-    } 
-
-    /// returns the objects ROI offset
-    const Point getROIOffset() const { FUNCTION_LOG(""); return m_oROI.ul(); }
-
-    /// returns the objects ROI size 
-    const Size getROISize() const{ FUNCTION_LOG(""); return m_oROI.size(); }
-
-    /// returns the objects image width
-    int getWidth() const {  FUNCTION_LOG(""); return m_oSize.width; }
-    
-    /// return the objects image height
-    int getHeight() const{  FUNCTION_LOG(""); return m_oSize.height; }
-
-    /// returns ROI-dependent pixel offset, to address the upper left ROI pixel
-    int getPixelOffset() const { FUNCTION_LOG(""); return m_oROI.x+m_oROI.y*getWidth(); }
-
-    /// returns the ROI width of the object
-    int getROIWidth() const{ FUNCTION_LOG(""); return m_oROI.width; }
-
-    /// returns the ROI height of the object
-    int getROIHeight() const{ FUNCTION_LOG(""); return m_oROI.height; }
-
-    /// returns the ROI X-Offset of the object
-    int getROIXOffset() const{ FUNCTION_LOG(""); return m_oROI.x; }
-
-    /// returns the ROI Y-Offset of the object
-    int getROIYOffset() const { FUNCTION_LOG(""); return m_oROI.y; }
-
-    /// returns the count of image pixels (width*height)
-    int getDim() const { return getSize().getDim(); }
-
-    /// returns the count of ROI pixels ( ROI_width*ROI_height )
-    int getROIDim() const { return getROISize().getDim(); }
-
-    private:
     /// image size
     Size m_oSize;
 

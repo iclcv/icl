@@ -210,6 +210,16 @@ Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
                                           poDst->asImg<icl32f>(),c,Point::zero,poDst->getSize(),eScaleMode);
      }
   }
+
+  float fScaleX = ((float)poDst->getSize().width)/(float)(getSize().width); 
+  float fScaleY = ((float)poDst->getSize().height)/(float)(getSize().height);
+  Rect roi = getROI();
+  roi.x = (int)(fScaleX * roi.x);
+  roi.y = (int)(fScaleY * roi.y); 
+  roi.width  = (int)(fScaleX * roi.width);
+  roi.height = (int)(fScaleY * roi.height);
+  roi = roi & Rect (Point::zero, poDst->getSize());
+  poDst->setROI (roi);
   return poDst;
 }
 

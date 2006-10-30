@@ -855,9 +855,11 @@ scaledCopyChannelROI<icl8u,icl8u>(const Img<icl8u> *src, int srcC, const Point &
     FUNCTION_LOG("IPP-VERSION");
     ICLASSERT_RETURN( src && dst );
     
-    ippiResize_8u_C1R(src->getROIData(srcC,srcOffs),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
+    // attention: for source image IPP wants indeed the *image* origin
+    ippiResize_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
                       dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
-                      (float)dstSize.width/(float)srcSize.width,(float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
+                      (float)dstSize.width/(float)srcSize.width,
+                      (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
   }
 
 /* }}} */
@@ -873,9 +875,11 @@ scaledCopyChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Poin
     FUNCTION_LOG("IPP-VERSION");
     ICLASSERT_RETURN( src && dst );
     
-    ippiResize_32f_C1R(src->getROIData(srcC,srcOffs),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
+    // attention: for source image IPP wants indeed the *image* origin
+    ippiResize_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
                        dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
-                       (float)dstSize.width/(float)srcSize.width,(float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
+                       (float)dstSize.width/(float)srcSize.width,
+                       (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
   }
 
 /* }}} */

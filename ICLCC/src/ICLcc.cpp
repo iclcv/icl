@@ -52,11 +52,13 @@ static const icl32f fDefaultSaturation = ucDefaultSaturation;
   
 void iclcc(ImgI *poDst, ImgI *poSrc){
   // {{{ open
+  ICLASSERT_RETURN (poDst->getSize() == poSrc->getSize());
 
   if(poSrc->getFormat()==formatMatrix || poDst->getFormat()==formatMatrix){
     printf("error in iclcc: formatMatrix is not allowed here!\n");
     return;
   }
+
   if(poSrc->getDepth()==depth8u){
     switch(poSrc->getFormat()){
       case formatGray: convertFromGray8(poDst,poSrc); break;
@@ -76,6 +78,7 @@ void iclcc(ImgI *poDst, ImgI *poSrc){
       default: return;
     }
   }
+  poDst->setROI (poSrc->getROI());
 }
 
 // }}}

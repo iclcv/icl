@@ -103,6 +103,15 @@ else
 endif
 	${PRE_CMD}${CMD_RM} *~ *.bak
 
+run: ${TARGET_EXE}
+	@for i in ${TARGET_EXE} ; do \
+		echo "######################################" ; \
+		echo "running $$i" ; \
+		$$i ; \
+		echo ; \
+		read -p "press enter" ; \
+	done
+
 #-----------------------------------------------
 # Rule: % (default rule)
 # Note: This rule must be the last one!

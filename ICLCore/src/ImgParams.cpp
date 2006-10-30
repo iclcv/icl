@@ -53,7 +53,8 @@ namespace icl{
     m_oSize = size;
     m_eFormat = fmt;
     m_iChannels = channels;
-    setROI(roi);
+    if (roi) setROI(roi); // set given roi if non-empty
+    else setROI (Point::zero, size); // or set full ROI
   }
 
   // }}}
@@ -64,7 +65,7 @@ namespace icl{
     FUNCTION_LOG("");
     ICLASSERT_THROW( size.width>=0 && size.height>=0 ,InvalidImgParamException("size"));
     m_oSize = size;
-    setROI(Rect::null);
+    setFullROI();
   }
 
   // }}}
@@ -104,16 +105,12 @@ namespace icl{
 
   // }}}
       
-  void ImgParams::setROISize(const Size &roisize) {
+  void ImgParams::setROISize(const Size &size) {
     // {{{ open
 
     FUNCTION_LOG("");
-    Size size(roisize);
-    if(!(size)){
-      size = m_oSize;
-    }
-    ICLASSERT_THROW(size.width >= 1 && getROIXOffset() + size.width  <= getWidth() &&
-                    size.width >= 1 && getROIYOffset() + size.height <= getHeight(),
+    ICLASSERT_THROW(size.width >= 0 && getROIXOffset() + size.width  <= getWidth() &&
+                    size.width >= 0 && getROIYOffset() + size.height <= getHeight(),
                     InvalidImgParamException("roi-size"));
     m_oROI.width = size.width;
     m_oROI.height = size.height;
@@ -121,16 +118,12 @@ namespace icl{
 
   // }}}
   
-  void ImgParams::setROI(const Point &offset, const Size &roisize){
+  void ImgParams::setROI(const Point &offset, const Size &size){
     // {{{ open
 
     FUNCTION_LOG("");
-    Size size(roisize);
-    if( !(size) ){
-      size = m_oSize;
-    }
-    ICLASSERT_THROW(offset.x >= 0 && size.width >= 1 && offset.x + size.width  <= m_oSize.width &&
-                    offset.y >= 0 && size.width >= 1 && offset.y + size.height <= m_oSize.height,
+    ICLASSERT_THROW(offset.x >= 0 && size.width >= 0 && offset.x + size.width  <= m_oSize.width &&
+                    offset.y >= 0 && size.height >= 0 && offset.y + size.height <= m_oSize.height,
                     InvalidImgParamException("roi"));
     m_oROI.x = offset.x;
     m_oROI.y = offset.y;
@@ -140,22 +133,6 @@ namespace icl{
 
   // }}}
 
-  void ImgParams::setROI(const Rect &roi) {
-    // {{{ open
-
-    FUNCTION_LOG("");
-    if(roi){
-      setROI (roi.ul(),roi.size());
-    }else{
-      m_oROI.x = 0;
-      m_oROI.y = 0;
-      m_oROI.width = m_oSize.width;
-      m_oROI.height = m_oSize.height;
-    }
-  }
-
-  // }}}
-  
   void ImgParams::setROISizeAdaptive(const Size &s){
     // {{{ open
 

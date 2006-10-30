@@ -154,3 +154,12 @@ cleandepend: $(_DIRECTORY_ORDER:%=cleandepend_%)
 cleandepend_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} cleandepend -C $(subst cleandepend_,,$@)\
               "_CURR_DIR=$(subst cleandepend_,${strip ${_CURR_DIR}}/,$@)"
+
+#-----------------------------------------------
+# Rule: run (examples)
+#-----------------------------------------------
+run: $(_DIRECTORY_ORDER:%=run_%)
+
+run_%:
+	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} run -C $(subst run_,,$@)\
+              "_CURR_DIR=$(subst run_,${strip ${_CURR_DIR}}/,$@)"
