@@ -22,7 +22,7 @@ namespace icl{
     m_oProgress = Rect(m_oBar.x,m_oBar.y,m_oGrip.x-m_oBar.x+m_oGrip.width/2,m_oBar.height-1);
   }
   
-  void OSDSlider::drawSelf(GLPaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
+  void OSDSlider::drawSelf(PaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
     (void)x; (void)y;(void)mouseOver;(void)mouseOverChild; (void)downmask;
     
     drawRect(e,m_oBar,1,1,mouseOver && !mouseOverChild,0);

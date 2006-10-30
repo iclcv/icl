@@ -1,6 +1,7 @@
 #include "OSD.h"
 #include "ICLWidget.h"
 
+using std::string;
 namespace icl{
  
   // {{{ static constants

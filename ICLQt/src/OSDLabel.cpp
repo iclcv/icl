@@ -1,12 +1,13 @@
 #include "OSDLabel.h"
 
+using std::string;
 namespace icl{
 
   OSDLabel::OSDLabel(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent, string sText):
     OSDWidget(id,r,poIW,poParent),m_sText(sText),m_iContainsMultiText(0){
   }
   
-  void OSDLabel::drawSelf(GLPaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
+  void OSDLabel::drawSelf(PaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
     (void)x; (void)y;(void)mouseOver;(void)mouseOverChild; (void)downmask;
     drawBG(e,1,1,0,0);
     if(m_iContainsMultiText){

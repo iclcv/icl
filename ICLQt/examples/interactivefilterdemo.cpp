@@ -10,7 +10,7 @@
 #include <Timer.h>
 
 using namespace icl;
-
+using namespace std;
 class MyThread : public QThread, public MouseInteractionReceiver{
 public:
   MyThread():widget(new ICLDrawWidget(0)),

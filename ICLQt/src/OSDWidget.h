@@ -8,7 +8,7 @@
 #include <vector>
 #include <map>
 
-#include "GLPaintEngine.h"
+#include "PaintEngine.h"
 
 namespace icl{
   
@@ -75,7 +75,7 @@ namespace icl{
 
     //@{ @name custom event processing of this widget
     /// drawing functions
-    virtual void drawSelf(GLPaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
+    virtual void drawSelf(PaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
 
     /// key event handling with given key and given mouse coords
     virtual void keyPressed(int key, int  x, int y);
@@ -94,7 +94,7 @@ namespace icl{
     void _mouseMoved(int x, int y, int downmask[3]);
     void _mousePressed(int x, int y, int button);
     void _mouseReleased(int x, int y, int button);
-    void _drawSelf(GLPaintEngine *e, int x, int y, int downmask[3]);
+    void _drawSelf(PaintEngine *e, int x, int y, int downmask[3]);
     
     // @}@{ @name bottom up event handling
     virtual void childChanged(int id, void *val=0);
@@ -154,19 +154,19 @@ namespace icl{
     // @}@{ @name utility function for drawing primitives 
     
     /// draws the background of the widgets with givent parameters
-    void drawBG(GLPaintEngine *e,int drawFill,int drawBorder, int over,int  pressed);
+    void drawBG(PaintEngine *e,int drawFill,int drawBorder, int over,int  pressed);
     
     /// draws a rect with given parameters
-    static void drawRect(GLPaintEngine *e, Rect r,int drawFill,int  drawBorder, int over, int pressed);
+    static void drawRect(PaintEngine *e, Rect r,int drawFill,int  drawBorder, int over, int pressed);
 
     /// draws a ellipse with given parameters
-    static void drawCircle(GLPaintEngine *e, Rect r,int drawFill, int drawBorder, int over, int pressed);
+    static void drawCircle(PaintEngine *e, Rect r,int drawFill, int drawBorder, int over, int pressed);
 
     /// draws a string with given parameters
-    static void drawText(GLPaintEngine *e, Rect r,string sText, int over, int pressed, int highlighted=0);
+    static void drawText(PaintEngine *e, Rect r,std::string sText, int over, int pressed, int highlighted=0);
 
     /// sets up the currently used color ot the widget 
-    static void setCol(GLPaintEngine *e, int fill, int border, int over, int pressed);
+    static void setCol(PaintEngine *e, int fill, int border, int over, int pressed);
     
     /// static parameters that specify appearance or the widgest
     static int s_iAlpha,s_iBorderR,s_iBorderG, s_iBorderB,s_iFillR,s_iFillG,s_iFillB,s_iHoveredAdd,s_iPressedAdd;

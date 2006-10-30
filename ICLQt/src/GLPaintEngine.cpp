@@ -4,7 +4,7 @@
 #include <QFontMetrics>
 #include <QPainter>
 
-
+using std::string;
 
 namespace icl{
 
@@ -49,16 +49,16 @@ namespace icl{
   }
 
   // }}}
-  void  GLPaintEngine::font(string name, int size, TextWeight weight, TextStyle style){
+  void  GLPaintEngine::font(string name, int size, PaintEngine::TextWeight weight, PaintEngine::TextStyle style){
     // {{{ open
     m_oFont.setFamily(name.c_str());
     m_oFont.setPointSize(size);
-    m_oFont.setStyle(style == StyleNormal ? QFont::StyleNormal :
-                     style == StyleItalic ? QFont::StyleItalic : QFont::StyleOblique);
-    m_oFont.setWeight(weight == Light ? QFont::Light :
-                      weight == Normal ? QFont::Normal :
-                      weight == DemiBold ? QFont::DemiBold :
-                      weight == Bold ? QFont::Bold : QFont::Black);
+    m_oFont.setStyle(style == PaintEngine::StyleNormal ? QFont::StyleNormal :
+                     style == PaintEngine::StyleItalic ? QFont::StyleItalic : QFont::StyleOblique);
+    m_oFont.setWeight(weight == PaintEngine::Light ? QFont::Light :
+                      weight == PaintEngine::Normal ? QFont::Normal :
+                      weight == PaintEngine::DemiBold ? QFont::DemiBold :
+                      weight == PaintEngine::Bold ? QFont::Bold : QFont::Black);
   }
 
   // }}}
@@ -103,7 +103,7 @@ namespace icl{
   }
 
   // }}}
-  void GLPaintEngine::image(const Rect &r,ImgI *image, AlignMode mode){
+  void GLPaintEngine::image(const Rect &r,ImgI *image, PaintEngine::AlignMode mode){
     // {{{ open
     Size s = image->getSize();
     setupRasterEngine(r,s,mode);
@@ -151,7 +151,7 @@ namespace icl{
   }
 
   // }}}
-  void GLPaintEngine::image(const Rect &r,const QImage &image, AlignMode mode){
+  void GLPaintEngine::image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode){
     // {{{ open
     setupPixelTransfer(depth8u,m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
     glPixelStorei(GL_UNPACK_ALIGNMENT,4);
@@ -212,7 +212,7 @@ namespace icl{
   }
 
   // }}}
-  void GLPaintEngine::text(const Rect &r, const string text, AlignMode mode){
+  void GLPaintEngine::text(const Rect &r, const string text, PaintEngine::AlignMode mode){
     // {{{ open
     QFontMetrics m(m_oFont);
     QRect br = m.boundingRect(text.c_str());
@@ -234,7 +234,7 @@ namespace icl{
     glPixelStorei(GL_UNPACK_ALIGNMENT,4);
     
 
-    if(mode == NoAlign){
+    if(mode == PaintEngine::NoAlign){
       // specialized for no alligned text rendering: 2*img.height() makes the text origin be
       // lower left and not upper left [??]
       setupRasterEngine(Rect(r.x,r.y,img.width(),2*img.height()), Size(img.width(),img.height()),mode);
@@ -282,19 +282,19 @@ namespace icl{
   // }}}
   
 
-  void GLPaintEngine::setupRasterEngine(const Rect& r, const Size &s, AlignMode mode){
+  void GLPaintEngine::setupRasterEngine(const Rect& r, const Size &s, PaintEngine::AlignMode mode){
     // {{{ open
 
     switch(mode){
-      case NoAlign:
+      case PaintEngine::NoAlign:
         glPixelZoom(1.0,-1.0);
         glRasterPos2i(r.x,r.y-r.height+s.height);
         break;
-      case Centered:
+      case PaintEngine::Centered:
         glRasterPos2i(r.x+(r.width-s.width)/2,r.y+(r.height-s.height)/2);
         glPixelZoom(1.0,-1.0);      
         break;
-      case Justify:
+      case PaintEngine::Justify:
         glPixelZoom((GLfloat)r.width/s.width,-(GLfloat)r.height/s.height);
         glRasterPos2i(r.x,(int)(r.y-r.height+(s.height*(GLfloat)r.height/s.height)));
         break;

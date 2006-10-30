@@ -8,7 +8,13 @@
 #include "Img.h"
 #include "Timer.h"
 
+#ifdef USE_OPENGL_ACCELERATION
+#include "GLPaintEngine.h"
+#else
+#include "QtPaintEngine.h"
+#endif
 
+using std::string;
 namespace icl{  
   const int ICLWidget::SHOW_OSD_ID;
   
@@ -21,9 +27,11 @@ namespace icl{
    
     setParent(poParent);
     setMouseTracking(true);
-
+    // TODO what is optimal for the non-GL class
+#ifdef USE_OPENGL_ACCELERATION
     setAttribute(Qt::WA_PaintOnScreen); 
     setAttribute(Qt::WA_NoBackground);
+#endif
 
     op.fm = fmHoldAR;
     op.rm = rmOn;
@@ -278,13 +286,13 @@ namespace icl{
   
   // {{{ drawOSD(), drawImage() and paintGL()
 
-  void ICLWidget::drawOSD(GLPaintEngine *e){
+  void ICLWidget::drawOSD(PaintEngine *e){
     // {{{ open
 
     m_oOSDMutex.lock();
     if(m_poCurrOSD){
       float m = std::min(((float)std::min(w(),h()))/100,6.0f);
-      e->font("Arial",(int)(2*m)+5,GLPaintEngine::DemiBold);
+      e->font("Arial",(int)(2*m)+5,PaintEngine::DemiBold);
       m_poCurrOSD->_drawSelf(e,m_iMouseX,m_iMouseY,aiDown);
     }
     m_oOSDMutex.unlock();
@@ -292,6 +300,7 @@ namespace icl{
 
   // }}}
   
+#ifdef USE_OPENGL_ACCELERATION
   void ICLWidget::paintGL(){
     // {{{ open
 
@@ -304,10 +313,24 @@ namespace icl{
   }
 
   // }}}
-   
-  void ICLWidget::drawImage(GLPaintEngine *e){
+#else
+  void ICLWidget::paintEvent(QPaintEvent *evt){
     // {{{ open
+    (void)evt;
 
+    QtPaintEngine e(this);
+    
+    drawImage(&e);
+    customPaintEvent(&e);
+    drawOSD(&e);
+  }
+
+  // }}}
+#endif
+  void ICLWidget::drawImage(PaintEngine *e){
+    // {{{ open
+    
+    if(!m_poImage || !m_poImage->getDim()) return;
     int _w = w();
     int _h = h();
     Rect r(0,0,_w,_h);
@@ -317,7 +340,7 @@ namespace icl{
       e->fill(0,0,0,255);
       e->rect(r);
       e->color(255,255,255);
-      e->text(r,m_poImage ? "disabled" : "image is null", GLPaintEngine::Centered);
+      e->text(r,m_poImage ? "disabled" : "image is null", PaintEngine::Centered);
       m_oMutex.unlock();
       return;
     }
@@ -332,8 +355,8 @@ namespace icl{
         e->bciAuto();
         break;
     }
-    
-    e->image( computeImageRect(m_poImage->getSize(),Size(w(),h()),op.fm) , m_poImage, GLPaintEngine::Justify);
+ 
+    e->image( computeImageRect(m_poImage->getSize(),Size(w(),h()),op.fm) , m_poImage, PaintEngine::Justify);
     m_oMutex.unlock();
   }
 
@@ -343,7 +366,7 @@ namespace icl{
 
   // {{{ getImage<Info|Rect|Size>() up(), w() and h()
 
-  std::vector<string> ICLWidget::getImageInfo(){
+  std::vector<std::string> ICLWidget::getImageInfo(){
     // {{{ open
 
     std::vector<string> info;

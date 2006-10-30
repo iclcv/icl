@@ -11,7 +11,7 @@ namespace icl{
  
   /// Complex Widgets, that is used in the ICLWidget
   class OSD : public OSDWidget{
-    typedef std::map<string,OSDWidget*> pmap;
+    typedef std::map<std::string,OSDWidget*> pmap;
     public:
     OSD(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent);
 
@@ -20,8 +20,8 @@ namespace icl{
 
     protected:
     virtual void childChanged(int id, void *val);
-    void setActive(string sName);
-    void setImageInfo(std::vector<string> info);
+    void setActive(std::string sName);
+    void setImageInfo(std::vector<std::string> info);
 
     /* {{{ help functions */
 

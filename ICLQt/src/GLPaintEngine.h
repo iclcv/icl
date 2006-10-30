@@ -1,26 +1,15 @@
 #ifndef GLPAINT_ENGINE_H
 #define GLPAINT_ENGINE_H
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "PaintEngine.h"
 
-#include "Point.h"
-#include "Size.h"
-#include "Rect.h"
-#include "ICLCore.h"
-
-#include <string>
-#include <QImage>
 #include <QFont>
 
-using std::string;
-
+// forward declaration of the parent class
 class QGLWidget;
+
 namespace icl{
 
-  /// Forward declaration of the ImgI class
-  class ImgI;
-    
   /// Paint engine to be used in QGLWigets for a high performance image visualization
   /** The GLPaintEngine provides a QPainter like interface for drawing
       2D-OpenGL primitives directly into a OpenGL graphics context. 
@@ -34,36 +23,37 @@ namespace icl{
   
       @see ICL/trunk/ICLQt/test/ICLDrawDemo for more details
   */
-  class GLPaintEngine{
+  class GLPaintEngine : public PaintEngine{
     public:
-    enum AlignMode {NoAlign, Centered, Justify};
-    enum TextWeight {Light, Normal, DemiBold, Bold, Black};
-    enum TextStyle {StyleNormal, StyleItalic, StyleOblique };
-    GLPaintEngine(QGLWidget *widget);
-    ~GLPaintEngine();
-    
-    void color(int r, int g, int b, int a=255);
-    void fill(int r, int g, int b, int a=255);
-    void fontsize(int size);
-    void font(string name, int size = -1, TextWeight weight = Normal, TextStyle style = StyleNormal);
 
-    void line(const Point &a, const Point &b);
-    void point(const Point &p);
-    void image(const Rect &r,ImgI *image, AlignMode mode = Justify);
-    void image(const Rect &r,const QImage &image, AlignMode mode = Justify);
-    void rect(const Rect &r);
-    void ellipse(const Rect &r);
-    void text(const Rect &r, const string text, AlignMode mode = Centered);
+    GLPaintEngine(QGLWidget *widget);
+    virtual ~GLPaintEngine();
+    
+    virtual void color(int r, int g, int b, int a=255);
+    virtual void fill(int r, int g, int b, int a=255);
+    virtual void fontsize(int size);
+    virtual void font(std::string name, 
+                      int size = -1, 
+                      PaintEngine::TextWeight weight = PaintEngine::Normal, 
+                      PaintEngine::TextStyle style = PaintEngine::StyleNormal);
+
+    virtual void line(const Point &a, const Point &b);
+    virtual void point(const Point &p);
+    virtual void image(const Rect &r,ImgI *image, PaintEngine::AlignMode mode = PaintEngine::Justify);
+    virtual void image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify);
+    virtual void rect(const Rect &r);
+    virtual void ellipse(const Rect &r);
+    virtual void text(const Rect &r, const std::string text, PaintEngine::AlignMode mode = PaintEngine::Centered);
 
     /// brightness-constrast intensity adjustment (for images only)
-    void bci(int brightness=0, int contrast=0, int intensity=0);
-    void bciAuto();
+    virtual void bci(int brightness=0, int contrast=0, int intensity=0);
+    virtual void bciAuto();
     
-    void getColor(int *piColor);
-    void getFill(int *piColor);
+    virtual void getColor(int *piColor);
+    virtual void getFill(int *piColor);
 
     protected:
-    void setupRasterEngine(const Rect& r, const Size &s, AlignMode mode);
+    void setupRasterEngine(const Rect& r, const Size &s, PaintEngine::AlignMode mode);
     void setPackAlignment(depth d, int linewidth);
     void setupPixelTransfer(depth d, int brightness, int contrast, int intensity);
 

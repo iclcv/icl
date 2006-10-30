@@ -1,5 +1,6 @@
 #include "OSDButton.h"
 
+using std::string;
 namespace icl{
 
   OSDButton::OSDButton(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent, string sText, int iToggable):
@@ -7,7 +8,7 @@ namespace icl{
   }
   
   
-  void OSDButton::drawSelf(GLPaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
+  void OSDButton::drawSelf(PaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
     (void)x; (void)y;
     drawBG(e,1,1,mouseOver && !mouseOverChild, downmask[0]|| downmask[1]|| downmask[2]);
     if(m_iIsToggled){

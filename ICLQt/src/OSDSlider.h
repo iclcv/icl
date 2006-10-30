@@ -9,7 +9,7 @@ namespace icl{
     public:
     OSDSlider(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent,int min, int max, int curr);
     virtual ~OSDSlider(){}
-    virtual void drawSelf(GLPaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
+    virtual void drawSelf(PaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
     virtual void mouseMoved(int _x, int _y, int downmask[3]);
     virtual void mousePressed(int _x, int _y, int button);
     virtual void mouseReleased(int x, int y, int button);    
@@ -19,7 +19,7 @@ namespace icl{
     
     protected:
     int m_iMin, m_iMax,m_iCurr,m_iGripY,m_iGripH;
-    string m_sText;
+    std::string m_sText;
     
     Rect m_oBar,m_oText,m_oGrip,m_oProgress;
     

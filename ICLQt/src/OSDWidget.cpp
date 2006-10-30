@@ -1,10 +1,16 @@
 #include "OSDWidget.h"
 #include "ICLWidget.h"
 
+using std::string;
+
 namespace icl{
  // {{{ static variables
 
+#ifdef USE_OPENGL_ACCELERATION
   int OSDWidget::s_iAlpha = 160;
+#else
+  int OSDWidget::s_iAlpha = 255;
+#endif
   int OSDWidget::s_iBorderR = 0;
   int OSDWidget::s_iBorderG = 120;
   int OSDWidget::s_iBorderB = 255;
@@ -75,7 +81,7 @@ namespace icl{
   }
 
   // }}}
- void OSDWidget::_drawSelf(GLPaintEngine *e,int x, int y, int downmask[3]){
+ void OSDWidget::_drawSelf(PaintEngine *e,int x, int y, int downmask[3]){
    // {{{ open
 
     drawSelf(e,x,y,mouseOver(x,y),mouseOverChild(x,y),downmask);    
@@ -99,7 +105,7 @@ namespace icl{
 
   // }}}
  
- void OSDWidget::setCol(GLPaintEngine *e, int fill,int border,int over, int pressed){
+ void OSDWidget::setCol(PaintEngine *e, int fill,int border,int over, int pressed){
    // {{{ open
 #define __CLIP(X) (X)>255?255:(X)
     int iFillAdd = 0;
@@ -127,14 +133,14 @@ namespace icl{
   }
 
   // }}}
- void OSDWidget::drawBG(GLPaintEngine *e,int drawFill,int drawBorder, int hovered,int  pressed){
+ void OSDWidget::drawBG(PaintEngine *e,int drawFill,int drawBorder, int hovered,int  pressed){
    // {{{ open
 
     drawRect(e,m_oRect,drawFill, drawBorder, hovered, pressed);
   }
 
   // }}}
- void OSDWidget::drawRect(GLPaintEngine *e, Rect r,int drawFill,int  drawBorder, int hovered, int pressed){
+ void OSDWidget::drawRect(PaintEngine *e, Rect r,int drawFill,int  drawBorder, int hovered, int pressed){
    // {{{ open
 
     setCol(e,drawFill, drawBorder, hovered, pressed);
@@ -145,14 +151,14 @@ namespace icl{
   }     
 
   // }}}
- void OSDWidget::drawCircle(GLPaintEngine *e, Rect r,int drawFill, int drawBorder, int hovered, int pressed){
+ void OSDWidget::drawCircle(PaintEngine *e, Rect r,int drawFill, int drawBorder, int hovered, int pressed){
    // {{{ open
     setCol(e,drawFill, drawBorder, hovered, pressed);
     e->ellipse(r);
   }
 
   // }}}
- void OSDWidget::drawText(GLPaintEngine *e, Rect r,string sText, int hovered, int pressed,int highlighted){
+ void OSDWidget::drawText(PaintEngine *e, Rect r,string sText, int hovered, int pressed,int highlighted){
    // {{{ open
     (void)hovered; (void)pressed;
     if(highlighted){
@@ -165,22 +171,22 @@ namespace icl{
 
       
 
-      e->text(Rect(x-1,y-1,w,h),sText,GLPaintEngine::Centered);
-      e->text(Rect(x,y-1,w,h),sText,GLPaintEngine::Centered);
-      e->text(Rect(x+1,y-1,w,h),sText,GLPaintEngine::Centered);
-      e->text(Rect(x-1,y,w,h),sText,GLPaintEngine::Centered);
-      e->text(Rect(x+1,y,w,h),sText,GLPaintEngine::Centered);
-      e->text(Rect(x-1,y+1,w,h),sText,GLPaintEngine::Centered);
-      e->text(Rect(x,y+1,w,h),sText,GLPaintEngine::Centered);
-      e->text(Rect(x+1,y+1,w,h),sText,GLPaintEngine::Centered);
+      e->text(Rect(x-1,y-1,w,h),sText,PaintEngine::Centered);
+      e->text(Rect(x,y-1,w,h),sText,PaintEngine::Centered);
+      e->text(Rect(x+1,y-1,w,h),sText,PaintEngine::Centered);
+      e->text(Rect(x-1,y,w,h),sText,PaintEngine::Centered);
+      e->text(Rect(x+1,y,w,h),sText,PaintEngine::Centered);
+      e->text(Rect(x-1,y+1,w,h),sText,PaintEngine::Centered);
+      e->text(Rect(x,y+1,w,h),sText,PaintEngine::Centered);
+      e->text(Rect(x+1,y+1,w,h),sText,PaintEngine::Centered);
     }
     e->color(255,255,255);
-    e->text(r,sText,GLPaintEngine::Centered);
+    e->text(r,sText,PaintEngine::Centered);
   }
 
   // }}}
  
- void OSDWidget::drawSelf(GLPaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
+ void OSDWidget::drawSelf(PaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]){
    // {{{ open
 
     (void)x; (void)y; (void)downmask;

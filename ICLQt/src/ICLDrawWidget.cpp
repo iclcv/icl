@@ -1,7 +1,8 @@
 #include "ICLDrawWidget.h"
-#include "GLPaintEngine.h"
+#include "PaintEngine.h"
 #include "ImgI.h"
 
+using std::string;
 namespace icl{
   
   /// internally used classes
@@ -23,7 +24,7 @@ namespace icl{
     // {{{ open struct
 
     virtual ~DrawCommand(){}
-    virtual void exec(GLPaintEngine *e, State* s){
+    virtual void exec(PaintEngine *e, State* s){
       (void)e; (void)s; 
       printf("drawCommand :: exec \n");
     }
@@ -122,7 +123,7 @@ namespace icl{
 
     public:
     PointCommand(float x, float y):DrawCommand2F(x,y){};
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       e->point(tP(m_fA,m_fB,s));
     }
   };
@@ -136,7 +137,7 @@ namespace icl{
     LineCommand(float x1, float y1, float x2, float y2):
     DrawCommand4F(x1,y1,x2,y2){
     }
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       e->line(tP(m_fA,m_fB,s),tP(m_fC,m_fD,s));
     }
   };
@@ -148,7 +149,7 @@ namespace icl{
   public:
     RectCommand(float x, float y, float w, float h):
       DrawCommand4F(x,y,w,h){}
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       e->rect(tR(m_fA,m_fB,m_fC,m_fD,s));
     }
   };
@@ -160,7 +161,7 @@ namespace icl{
   public:
     EllipseCommand(float x, float y, float w, float h):
       DrawCommand4F(x,y,w,h){}
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       e->ellipse(tR(m_fA,m_fB,m_fC,m_fD,s));
     }
   };
@@ -171,7 +172,7 @@ namespace icl{
   public:
     SymCommand(float x, float y, ICLDrawWidget::Sym s):
       m_fX(x),m_fY(y),m_eS(s){}
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       Rect r(tP(m_fX,m_fY,s),tS(s->symsize.width(),s->symsize.height(),s));
       r.x-=r.width/2;
       r.y-=r.height/2;
@@ -217,8 +218,8 @@ namespace icl{
     virtual ~ImageCommand(){
       if(m_poImage)delete m_poImage;
     }
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
-      e->image(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),m_poImage,GLPaintEngine::Justify);
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      e->image(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),m_poImage,PaintEngine::Justify);
     }
     ImgI *m_poImage;
   };
@@ -229,14 +230,14 @@ namespace icl{
     // {{{ open
 
   public:
-    TextCommand(string text, float x, float y, float w, float h):
+    TextCommand(std::string text, float x, float y, float w, float h):
       DrawCommand4F(x,y,w,h),text(text){
     }
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       if(m_fC == -1 || m_fD == -1){
-        e->text(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),text,GLPaintEngine::NoAlign);
+        e->text(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),text,PaintEngine::NoAlign);
       }else{
-        e->text(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),text,GLPaintEngine::Justify);
+        e->text(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),text,PaintEngine::Justify);
       }
     }
   protected:
@@ -255,7 +256,7 @@ namespace icl{
   public:
     EdgeCommand(int r, int g, int b, int alpha):
       DrawCommand4F(r,g,b,alpha){}
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)s;
       e->color((int)m_fA,(int)m_fB,(int)m_fC,(int)m_fD);
     }
@@ -268,7 +269,7 @@ namespace icl{
   public:
     FillCommand(int r, int g, int b, int alpha):
       DrawCommand4F(r,g,b,alpha){}
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)s;
       e->fill((int)m_fA,(int)m_fB,(int)m_fC,(int)m_fD);
     }
@@ -279,7 +280,7 @@ namespace icl{
   class NoEdgeCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
   public:
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)s;
       e->color(0,0,0,0);
     }
@@ -290,7 +291,7 @@ namespace icl{
   class NoFillCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
   public:
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)s;
       e->fill(0,0,0,0);
     }
@@ -301,7 +302,7 @@ namespace icl{
   class AbsCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
 
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)e;
       s->rel = false;
     }
@@ -312,7 +313,7 @@ namespace icl{
   class RelCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
 
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)e;
       s->rel = true;
     }
@@ -327,7 +328,7 @@ namespace icl{
     ClearCommand(int r, int g, int b, int alpha):
       DrawCommand4F(r,g,b,alpha){}
     
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       int aiFill[4],aiLine[4];
       e->getFill(aiFill);
       e->getColor(aiLine);
@@ -345,7 +346,7 @@ namespace icl{
     // {{{ open
   public:
     SetImageSizeCommand(const Size &s):m_oSize(s){}
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)e;
       s->imsize = m_oSize;
     }
@@ -360,7 +361,7 @@ namespace icl{
 
   public:
     SymSizeCommand(float w, float h) : m_fW(w), m_fH(h){}
-    virtual void exec(GLPaintEngine *e, ICLDrawWidget::State *s){
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)e;
       s->symsize = QSizeF(m_fW,m_fH);
     }
@@ -453,18 +454,18 @@ namespace icl{
 
     // }}}
 
-  void ICLDrawWidget::initializeCustomPaintEvent(GLPaintEngine *e){
+  void ICLDrawWidget::initializeCustomPaintEvent(PaintEngine *e){
     // {{{ open
   }
 
     // }}}
-  void ICLDrawWidget::finishCustomPaintEvent(GLPaintEngine *e){
+  void ICLDrawWidget::finishCustomPaintEvent(PaintEngine *e){
     // {{{ open
     (void)e;
   }
 
     // }}}
-  void ICLDrawWidget::customPaintEvent(GLPaintEngine *e){
+  void ICLDrawWidget::customPaintEvent(PaintEngine *e){
     // {{{ open
     m_oCommandMutex.lock();
     Rect r = getImageRect();
@@ -475,7 +476,7 @@ namespace icl{
     m_poState->imsize = getImageSize();
     m_poState->symsize = QSizeF(5,5);
     memset(m_poState->bg,0,4*sizeof(unsigned char));
-    e->font("Arial",8,GLPaintEngine::DemiBold);
+    e->font("Arial",8,PaintEngine::DemiBold);
     e->color(255,255,255);
     e->fill(0,0,0);
     initializeCustomPaintEvent(e);

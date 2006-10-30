@@ -14,7 +14,7 @@ namespace icl{
       an own ID, short-text and expaned-text.
   */
   class OSDNavBar : public OSDWidget{
-    typedef std::vector<string> svec;
+    typedef std::vector<std::string> svec;
     typedef std::vector<int> ivec;
 
     public:

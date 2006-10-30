@@ -47,7 +47,7 @@ namespace icl{
     void rel();
     
     void image(ImgI *image, float x, float y, float w, float h);
-    void text(string text, float x, float y, float w=-1, float h=-1);
+    void text(std::string text, float x, float y, float w=-1, float h=-1);
     void point(float x, float y); 
     void line(float x1, float y1, float x2, float y2);
     void rect(float x, float y, float w, float h);
@@ -68,9 +68,9 @@ namespace icl{
     void setPseudoImage(Size s);
     
     
-    virtual void customPaintEvent(GLPaintEngine *e);
-    virtual void initializeCustomPaintEvent(GLPaintEngine *e);
-    virtual void finishCustomPaintEvent(GLPaintEngine *e);
+    virtual void customPaintEvent(PaintEngine *e);
+    virtual void initializeCustomPaintEvent(PaintEngine *e);
+    virtual void finishCustomPaintEvent(PaintEngine *e);
 
     
     class State;

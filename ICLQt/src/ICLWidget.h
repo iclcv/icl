@@ -3,12 +3,15 @@
 
 // comment out only if No acceleration is available
 // fall back is not yet implemented
-#define USE_OPENGL_ACCELERATION
+//#define USE_OPENGL_ACCELERATION
 
 
 #ifdef USE_OPENGL_ACCELERATION
 #include <QGLWidget>
+#else
+#include <QWidget>
 #endif
+
 #include <QImage>
 #include <QVector>
 #include <QWidget>
@@ -20,7 +23,8 @@
 #include <QMutex>
 
 #include "Converter.h"
-#include "GLPaintEngine.h"
+#include "PaintEngine.h"
+
 #include "MouseInteractionInfo.h"
 #include "MouseInteractionReceiver.h"
 
@@ -69,13 +73,18 @@ namespace icl{
     virtual void resizeEvent(QResizeEvent *e);
     virtual void childChanged(int id, void *val);
     
+#ifdef USE_OPENGL_ACCELERATION
     /// drawing using openGL
     virtual void paintGL();
+#else
+    virtual void paintEvent(QPaintEvent *e);
+#endif
+
     /// additiona custom drawings (between image and osd)
-    virtual void customPaintEvent(GLPaintEngine *e){(void)e;}
+    virtual void customPaintEvent(PaintEngine *e){(void)e;}
     /// final drawing of the osd
-    void drawOSD(GLPaintEngine *e);
-  
+    void drawOSD(PaintEngine *e);
+    
     struct Options{
       fitmode fm;
       rangemode rm;
@@ -104,13 +113,14 @@ namespace icl{
     /// returns the current image rect
     Rect getImageRect();
     fitmode getFitMode(){return op.fm;}
-    std::vector<string> getImageInfo();
+    std::vector<std::string> getImageInfo();
     
     protected:
     /// sets up all 3 gl channels to given bias and scale
     Rect computeImageRect(Size oImageSize, Size oWidgetSize, fitmode eFitMode);
-    void drawImage(GLPaintEngine *e);
-       
+
+
+    void drawImage(PaintEngine *e);
     
     private:
 
