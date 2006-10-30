@@ -48,8 +48,6 @@ public:
           ImgI *dst = new Img8u(Size(100,100),formatRGB);
           conv.apply(image,&dst);         
           widget->image(dst,x-100,y-100,200,200);
-          dst->print("dst");
-          image->print("image");
           if(dst) delete dst;
           widget->nofill();
           widget->color(0,0,0);

@@ -49,7 +49,7 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug flag
-DEBUG:= ${DEBUG}
+DEBUG:=${DEBUG}
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES}
@@ -72,3 +72,4 @@ LDFLAGS:= ${LDFLAGS}
 # Flags for dynamic library linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
+DEBUG_ON:=FALSE
