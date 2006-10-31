@@ -13,6 +13,101 @@
 
 namespace icl{
 
+  // {{{ hidden memory management data and functions
+
+  namespace qimageconverter{
+    static int g_iRC(0);
+    static QVector<QRgb> g_qvecPalette;
+    
+    static std::vector<icl32f> g_vecBuffer32f;
+    static std::map<int,std::vector<icl32f> > g_mapBuffer32f;
+    static std::vector<icl8u> g_vecBuffer8u;
+    static std::map<int,std::vector<icl8u> > g_mapBuffer8u;
+
+    static Img8u g_ImgBuffer8u;    
+    
+    void inc(){
+      // {{{ open
+
+      g_iRC++;
+    }
+
+    // }}}
+    void dec(){
+      // {{{ open
+
+      g_iRC--;
+      if(!g_iRC){
+        g_qvecPalette.clear();
+        g_vecBuffer32f.clear();
+        g_vecBuffer8u.clear();
+        for(std::map<int,std::vector<icl32f> >::iterator it = g_mapBuffer32f.begin();
+            it!=g_mapBuffer32f.end(); ++it){
+          (*it).second.clear();
+        }
+        for(std::map<int,std::vector<icl8u> >::iterator it = g_mapBuffer8u.begin();
+            it!=g_mapBuffer8u.end(); ++it){
+          (*it).second.clear();
+        }
+      }
+    }
+
+    // }}}
+  
+    void ensureQImage(QImage *&qimage, int w, int h, QImage::Format f){
+      // {{{ open
+
+    if(!g_qvecPalette.size()){ for(int i=0;i<255;++i)g_qvecPalette.push_back(qRgb(i,i,i)); }
+    
+    if(!qimage){
+      qimage = new QImage(w,h,f);
+      if(f == QImage::Format_Indexed8){
+        qimage->setColorTable(g_qvecPalette);
+      }
+    }
+    else{
+      if(qimage->width() != w || qimage->height() != h || qimage->format() != f){
+        *qimage = QImage(w,h,f);
+        if(f == QImage::Format_Indexed8){
+          qimage->setColorTable(g_qvecPalette);
+        }
+      }
+    }    
+  }
+
+  // }}}
+    icl32f *getBuffer32f(unsigned int size, int id=0){
+      // {{{ open
+    if(!id){
+      if(g_vecBuffer32f.size() < size) g_vecBuffer32f.resize(size);
+      return &(g_vecBuffer32f[0]);
+    }else{
+      std::vector<icl32f> &ref = g_mapBuffer32f[id];
+      if(ref.size() < size) ref.resize(size);
+      return &(ref[0]);
+    }
+  }
+
+  // }}}
+    icl8u *getBuffer8u(unsigned int size,int id=0){
+      // {{{ open
+    if(!id){
+      if(g_vecBuffer8u.size() < size) g_vecBuffer8u.resize(size);
+      return &(g_vecBuffer8u[0]);
+    }else{
+      std::vector<icl8u> &ref = g_mapBuffer8u[id];
+      if(ref.size() < size) ref.resize(size);
+      return &(ref[0]);
+    }
+  }
+
+  // }}}
+  }
+  
+  using namespace qimageconverter;
+
+  // }}}
+
   // {{{ defines
 
 #define IDX8U 0
@@ -36,6 +131,7 @@ namespace icl{
     m_poImgBuffer32f(0),
     m_poQImageBuffer(0){
     STU=STF=STQ=undefined;
+    inc();
   }
 
   // }}}
@@ -48,6 +144,7 @@ namespace icl{
     m_poQImageBuffer(0)
   {
     setImage(image);
+    inc();
   }
 
   // }}}
@@ -60,6 +157,7 @@ namespace icl{
     m_poQImageBuffer(0)
   {
     setQImage(qimage);
+    inc();
   }
 
   // }}}
@@ -70,6 +168,7 @@ namespace icl{
     if(m_poImgBuffer8u) delete m_poImgBuffer8u;
     if(m_poImgBuffer32f) delete m_poImgBuffer32f;
     if(m_poQImageBuffer) delete m_poQImageBuffer;
+    dec();
   }
 
   // }}}
@@ -161,73 +260,16 @@ namespace icl{
 
   // }}}
 
-  // {{{ global utility functions
-
-  void ensureQImage(QImage *&qimage, int w, int h, QImage::Format f){
-    // {{{ open
-
-    static QVector<QRgb> palette;
-    if(!palette.size()){ for(int i=0;i<255;++i)palette.push_back(qRgb(i,i,i)); }
-    
-    if(!qimage){
-      qimage = new QImage(w,h,f);
-      if(f == QImage::Format_Indexed8){
-        qimage->setColorTable(palette);
-      }
-    }
-    else{
-      if(qimage->width() != w || qimage->height() != h || qimage->format() != f){
-        *qimage = QImage(w,h,f);
-        if(f == QImage::Format_Indexed8){
-          qimage->setColorTable(palette);
-        }
-      }
-    }    
-  }
-
-  // }}}
-  icl32f *getBuffer32f(unsigned int size, int id=0){
-    // {{{ open
-    if(!id){
-      static std::vector<icl32f> buffer;
-      if(buffer.size() < size) buffer.resize(size);
-      return &(buffer[0]);
-    }else{
-      static std::map<int,std::vector<icl32f> > buffer;
-      std::vector<icl32f> &ref = buffer[id];
-      if(ref.size() < size) ref.resize(size);
-      return &(ref[0]);
-    }
-  }
-
-  // }}}
-  icl8u *getBuffer8u(unsigned int size,int id=0){
-    // {{{ open
-    if(!id){
-      static std::vector<icl8u> buffer;
-      if(buffer.size() < size) buffer.resize(size);
-      return &(buffer[0]);
-    }else{
-      static std::map<int,std::vector<icl8u> > buffer;
-      std::vector<icl8u> &ref = buffer[id];
-      if(ref.size() < size) ref.resize(size);
-      return &(ref[0]);
-    }
-  }
-
-  // }}}
-
-  // }}}
+  // {{{ XXXToYYY-Functions
 
   const QImage *QImageConverter::img32fToQImage(Img32f *image, QImage *&qimage){
     // {{{ open
-    printf("not yet implemented \n");
-    
-    return qimage;
+    ICLASSERT_RETURN_VAL( image && image->getChannels() > 0, 0);
+    image->convertTo<icl8u>(&g_ImgBuffer8u);
+    return img8uToQImage(&g_ImgBuffer8u,qimage);
   }
-
-  // }}}
-
+    // }}}
+  
   const QImage *QImageConverter::img8uToQImage(Img8u *image, QImage *&qimage){
     // {{{ open
 
@@ -318,6 +360,7 @@ namespace icl{
 
   // }}}
 
+  // }}}
   
 }
 
