@@ -134,7 +134,7 @@ namespace icl{
                                                const vector<icl8u> &bs,     
                                                const icl8u thresholds[3],
                                                DefaultColorBlobSearcher::RatingCombinationType rct,
-                                               DefaultColorBlobSearcher::CenterEstimationType cet ){
+                                               DefaultColorBlobSearcher::CenterEstimationType cet){
     // {{{ open
     PixelRatingGroup<icl8u,bool> *rg;
     if(rct == rctOR) rg = new RatingGroupOR();
@@ -149,6 +149,7 @@ namespace icl{
     }  
     addPR(rg);
     m_vecCet.push_back(cet);
+    
     return getNumPR() -1;
   }
 

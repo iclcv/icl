@@ -11,7 +11,7 @@ namespace icl{
     FoundBlob():m_iX(0),m_iY(0),m_iID(-1),m_tRating(BlobRatingType(0)){}
     
     FoundBlob(int x, int y, int id, BlobRatingType rating):
-      m_iX(x),m_iY(y),m_iID(0),m_tRating(rating){  }
+      m_iX(x),m_iY(y),m_iID(id),m_tRating(rating){  }
     
     int x(){ return m_iX; }
     

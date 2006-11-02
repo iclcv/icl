@@ -27,7 +27,7 @@ namespace icl{
                        const vector<icl8u> &bs,
                        const icl8u thresholds[3],
                        RatingCombinationType rct=rctOR,
-                       CenterEstimationType cet=cetMedian ); 
+                       CenterEstimationType cet=cetMedian);
 
     // just passing to the parent class
     virtual const FoundBlobVector &search(Img8u *poImage, Img8u *poMask);
@@ -50,8 +50,6 @@ namespace icl{
     fmlVec m_vecXMedianLists;
     fmlVec m_vecYMedianLists;
     cetVec m_vecCet;
-    
-
     
   };
 }

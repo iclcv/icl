@@ -12,15 +12,11 @@ namespace icl{
       mask = poMask->getData(0);
       ICLASSERT_RETURN_VAL( poImage->getSize() == poMask->getSize() , m_vecFoundBlobs );
     }
-    
     prepareForNewImage(poImage,poMask);
-    
     PixelType *pt0 = poImage->getData(0);
     PixelType *pt1 = poImage->getData(1);
     PixelType *pt2 = poImage->getData(2);
-
     Rect oRoi = poImage->getROI();
-    
     int x,y,i,d;
     int iImageW = poImage->getSize().width;
     if(mask){
@@ -45,7 +41,6 @@ namespace icl{
       }
     }
     evaluateResults(m_vecFoundBlobs);
-    
     return m_vecFoundBlobs;
   }
 

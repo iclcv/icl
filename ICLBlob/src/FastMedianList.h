@@ -77,6 +77,9 @@ namespace icl{
     
     inline int mean(){
       int m=0;
+      
+      if (!m_iCount) return 0;
+      
       for(int i=0;i<m_iSize;i++){
         m+=m_piTable[i]*i;
       }
