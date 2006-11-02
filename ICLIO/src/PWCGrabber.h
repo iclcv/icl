@@ -40,16 +40,21 @@ namespace icl{
   class PWCGrabber : public Grabber {
   public:
     
-    /// Base constructor with parameters for width, height, image type, grabbing rate and grabbing device
-    /**
+    /// Base constructor
+    PWCGrabber(void);
+    PWCGrabber(const Size &s, float fFps=30, int iDevice = 0); // Deprecated contstructor: use the default contructor instead and call init(..) to get initialization results
+    
+    /// Destructor
+    ~PWCGrabber(void);
+    
+    /// init function
+    /** initializes a camera on /dev/video<iDevice>. be sure that you call init(..) and init(..) returns true
+        before calling grab(..)
        @param s size of grabbed images
        @param fFps grabbing rate
        @param iDevice USB grabbing device {0,1,2,3}
-    */
-    PWCGrabber(const Size &s,float fFps=30, int iDevice=0);
-    
-    /// Destructor
-    ~PWCGrabber();
+    **/
+    bool init(const Size &s,float fFps=30, int iDevice = 0);
     
     /// grabbing function, 
     /** grabs the next pwc image into an internal buffer, and converts it into 
@@ -62,13 +67,12 @@ namespace icl{
     virtual ImgI* grab(ImgI *poDst=0);
     
   private:   
-    int iWidth, iHeight, iDevice;
-    float fFps;
+    int m_iWidth, m_iHeight, m_iDevice;
+    float m_fFps;
     
-    Img8u *poRGB8Image;
-    Converter oConverter,oConverterHalfSize;
+    Img8u *m_poRGB8Image;
+    Converter m_oConverter,m_oConverterHalfSize;
 
-    void init();
   };
   
 }
