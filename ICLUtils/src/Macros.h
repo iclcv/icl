@@ -69,6 +69,9 @@ namespace icl {
 /** uncritical log messages, that may cause calculation errors*/
 #define WARNING_LOG(x) DEBUG_LOG1("WARNING: " << x);
 
+/** uncritical log messages, for global information*/
+#define INFO_LOG(x) DEBUG_LOG1("INFO: " << x);
+
 /** notification of function calls*/
 #define FUNCTION_LOG(x) DEBUG_LOG2("FUNCTION: " << x);
 
