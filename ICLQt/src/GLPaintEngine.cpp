@@ -172,12 +172,11 @@ namespace icl{
     glEnd();
     
     glColor4fv(m_afLineColor);
-    glBegin(GL_LINE_STRIP);
+    glBegin(GL_LINE_LOOP);
     glVertex2f((GLfloat)r.x,(GLfloat)r.y);
     glVertex2f((GLfloat)r.right(),(GLfloat)r.y);
     glVertex2f((GLfloat)r.right(),(GLfloat)r.bottom());
     glVertex2f((GLfloat)r.x,(GLfloat)r.bottom());
-    glVertex2f((GLfloat)r.x,(GLfloat)r.y);
     glEnd();
     
     point(Point(r.right(),r.top()));
