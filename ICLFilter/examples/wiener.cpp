@@ -1,44 +1,27 @@
 #include "Wiener.h"
-#include "FileWrite.h"
 #include "FileRead.h"
+#include "TestImages.h"
 
 using namespace std;
 using namespace icl;
-using namespace std;
-
-void xv(string s){
-  system(string("xv ").append(s).append("&").c_str());
-}
 
 int main(int nArgs, char **ppcArg){
-  if(nArgs < 3){
-    printf("too few arguments \n");
-    printf("usage: %s srcfile dstfile\n", ppcArg[0]);
-    exit(-1);
-  }
-  string srcName = ppcArg[1];
-  string dstName = ppcArg[2];
+   ImgI *src, *dst=0;
+   string srcName("");
+   string dstName("wiener.ppm.gz");
+   if (nArgs > 2) dstName = ppcArg[2];
+   if (nArgs > 1) {
+      // read image from file
+      FileRead reader(ppcArg[1]);
+      src = reader.grab();
+   } else src = TestImages::create("women");
+
+   // apply wiener filter
+   Size mask (3,3);
+   Wiener(mask).apply (src,&dst,0.5);
   
-  // READ the image
-	FileRead reader(srcName);
-  ImgI *image = reader.grab();
-  ImgI *dst   = 0;
+   // write and display the image
+   TestImages::xv (dst, dstName);
 
-
-  // Perform binarization
-  icl32f* noise =new icl32f[1];
-  noise[0]=0.5;
-  Size masksize;
-  masksize.width=3;
-  masksize.height=3;
-  Wiener(masksize).FilterWiener(image,&dst,noise);
-  
-  // WRITE the image
-  FileWrite(dstName).write(dst);
-
-  // show images using xv
-  xv(srcName);
-  xv(dstName);  
-
-  return 0;
+   return 0;
 }

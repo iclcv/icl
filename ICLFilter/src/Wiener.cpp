@@ -3,61 +3,58 @@
 
 namespace icl {
 
-  // {{{ Constructor / Destructor
-
-  Wiener::Wiener (const Size& maskSize) {
-    if (maskSize.width <= 0 || maskSize.height<=0) {
-      ERROR_LOG("illegal width/height: " << maskSize.width << "/" << maskSize.height);
-      setMask (Size(3,3));
-    } else setMask (maskSize);
-  }
-  // }}}
-  void Wiener::setMask (Size maskSize) {
-    // make maskSize odd:
-    maskSize.width  = (maskSize.width/2)*2 + 1;
-    maskSize.height = (maskSize.height/2)*2 + 1;
-    FilterMask::setMask (maskSize);
-  }
+   // Constructor
+   Wiener::Wiener (const Size& maskSize) {
+#ifdef WITH_IPP_OPTIMIZATION
+      if (maskSize.width <= 0 || maskSize.height<=0) {
+         ERROR_LOG("illegal width/height: " << maskSize.width << "/" << maskSize.height);
+         setMask (Size(3,3));
+      } else setMask (maskSize);
+#else
+      throw ("Wiener Filter only implemented with IPP usage.");
+#endif
+   }
 
 #ifdef WITH_IPP_OPTIMIZATION
-  template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint, icl32f, icl8u*)>
-  void Wiener::ippiWienerCall (const Img<T> *src, Img<T> *dst,icl32f* noise) {
-    int pBufferSize;
-    ippiFilterWienerGetBufferSize(dst->getROISize(), oMaskSize, 1, &pBufferSize);
-    m_oBuf = new icl8u[pBufferSize];
-    for(int c=0; c < src->getChannels(); c++) {
-        ippiFunc(src->getROIData (c, this->oROIoffset),
-                 src->getLineStep(),
-                 dst->getROIData (c),
-                 dst->getLineStep(),
-                 dst->getROISize(), oMaskSize, oAnchor,
-                 noise,
-                 m_oBuf);
-    };
-    delete[] m_oBuf;
-  }
+// {{{ IPP version
 
-  void Wiener::FilterWiener(const Img8u *src, Img8u *dst, icl32f *noise){
-    ippiWienerCall<icl8u,ippiFilterWiener_8u_C1R> (src,dst,noise);
-  };
-  void Wiener::FilterWiener(const Img32f *src, Img32f *dst, icl32f *noise){
-    ippiWienerCall<icl32f,ippiFilterWiener_32f_C1R> (src,dst,noise);
-  };
-  // {{{ ImgI* version
+   template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint, float[], icl8u*)>
+   void Wiener::ippiWienerCall (const ImgI *poSrc, ImgI *poDst, float fNoise) {
+      Img<T> *src = (Img<T>*) poSrc;
+      Img<T> *dst = (Img<T>*) poDst;
 
-   void Wiener::FilterWiener (const ImgI *poSrc, ImgI **ppoDst, icl32f *noise)
-      // {{{ open
-   {
+      int iBufferSize;
+      ippiFilterWienerGetBufferSize(dst->getROISize(), oMaskSize, 1, &iBufferSize);
+      vBuffer.reserve (iBufferSize);
+
+      for(int c=src->getChannels()-1; c>=0; --c) {
+         ippiFunc(src->getROIData (c, this->oROIoffset), src->getLineStep(),
+                  dst->getROIData (c), dst->getLineStep(),
+                  dst->getROISize(), oMaskSize, oAnchor, &fNoise, &vBuffer[0]);
+      };
+   }
+
+// }}}
+#endif
+
+   void (Wiener::*Wiener::aFilterVariants[2])(const ImgI *poSrc, ImgI *poDst, float) = {
+#ifdef WITH_IPP_OPTIMIZATION 
+      &Wiener::ippiWienerCall<icl8u,ippiFilterWiener_8u_C1R>, // 8u
+      &Wiener::ippiWienerCall<icl32f,ippiFilterWiener_32f_C1R>  // 32f
+#else
+      0, 
+      0
+#endif     
+   };
+
+   // {{{ Wiener::apply (ImgI *poSrc, ImgI **ppoDst, float fNoise)
+
+   void Wiener::apply (const ImgI *poSrc, ImgI **ppoDst, float fNoise) {
      FUNCTION_LOG("");
      if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       FilterWiener(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),noise);
-     else
-       FilterWiener(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(),noise);
+     (this->*(aFilterVariants[poSrc->getDepth()])) (poSrc, *ppoDst, fNoise);
    }
-   // }}}
-
+   
   // }}}
-#endif
 
 }

@@ -1,38 +1,26 @@
 #include "Threshold.h"
-#include "FileWrite.h"
 #include "FileRead.h"
+#include "TestImages.h"
 
 using namespace std;
 using namespace icl;
 
-void xv(string s){
-  system(string("xv ").append(s).append("&").c_str());
-}
-
 int main(int nArgs, char **ppcArg){
-  if(nArgs < 3){
-    printf("too few arguments \n");
-    printf("usage: %s srcfile dstfile\n", ppcArg[0]);
-    exit(-1);
-  }
-
-  string srcName = ppcArg[1];
-  string dstName = ppcArg[2];
-  
-  // READ the image
-  FileRead reader(srcName);
-  ImgI *image = reader.grab();
-  ImgI *dst   = 0;
+   ImgI *src, *dst=0;
+   string srcName("");
+   string dstName("wiener.ppm.gz");
+   if (nArgs > 2) dstName = ppcArg[2];
+   if (nArgs > 1) {
+      // read image from file
+      FileRead reader(ppcArg[1]);
+      src = reader.grab();
+   } else src = TestImages::create("women");
   
   // Perform binarization
-  Threshold().binarize(image,&dst,127);
+  Threshold().binarize(src,&dst,127);
   
-  // WRITE the image
-  FileWrite(dstName).write(dst);
-  
-  // show images using xv
-  xv(srcName);
-  xv(dstName);  
+  // write and display the image
+  TestImages::xv (dst, dstName);
 
   return 0;
 }
