@@ -1,8 +1,6 @@
 #include "Img.h"
 #include "Median.h"
 #include "Convolution.h"
-#include "Threshold.h"
-#include "Timer.h"
 
 #include <stdio.h>
 
@@ -70,39 +68,7 @@ void test (icl::depth eDepth) {
 }
 
 
-int testmy(){
-  Img8u src(Size(1000,1000),1),dst(Size(1000,1000),1);
-  Timer t;
-  printf("Threshold Benchmark!");
-  int N = 100;
-  int tetta = 77;
-
-  for(int i=0;i<N;i++){
-    for(Img8u::iterator s=src.getIterator(0),d=dst.getIterator(0);s.inRegion();++s,++d){
-      (*d) = (*s) > tetta ? 255 : 0;
-    }
-  }
-
-  t.start();
-  for(int i=0;i<N;i++){
-    for(Img8u::iterator s=src.getIterator(0),d=dst.getIterator(0);s.inRegion();++s,++d){
-      (*d) = (*s) > tetta ? 255 : 0;
-    }
-  }
-  t.stopSubTimer();
-  src.print("src");
-  dst.print("dst");
-  for(int i=0;i<N;i++){
-    Threshold::lt(&src,&dst,tetta);
-  }
-  t.stop();
-
-
-  
-  return 0;
-}
 int main (int argc, char *argv[]) {
-  return testmy();
    test (depth8u);
    test (depth32f);
 }

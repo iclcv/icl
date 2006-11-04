@@ -1,6 +1,5 @@
 #include "Compare.h"
 #include "Img.h"
-#include "FileWrite.h"
 #include "TestImages.h"
 
 using namespace icl;
@@ -72,34 +71,41 @@ int main(){
 
   printf("-------------->scaling images \n");
   im.scale(Size(100,100));
-  printf("-------------->first images scaled \n");
+  printf("-------------->first image scaled \n");
   im2.scale(Size(100,100));
-  printf("-------------->second images scaled \n");
+  printf("-------------->second image scaled \n");
   
-  Size s = im.getSize();
-  Img8u t(Size(s.width*8,s.height),1);
-  int i=0;
-  
+  Size size = im.getSize();
+  Img8u target(Size(size.width*8,size.height),1);
+
+  int i=0;  
   printf("started operations \n");
-  t.setROI(Rect((i++)*s.width,0,100,100));
-  im.deepCopyROI(&t);
-  t.setROI(Rect((i++)*s.width,0,100,100));
-  im2.deepCopyROI(&t);
-  t.setROI(Rect((i++)*s.width,0,100,100));
-  Compare::compare(&im,&im2,&t,Compare::compareEq);
-  t.setROI(Rect((i++)*s.width,0,100,100));
-  Compare::compareC(&im,100,&t,Compare::compareEq);
-  t.setROI(Rect((i++)*s.width,0,100,100));
-  Compare::compareC(&im2,50,&t,Compare::compareLessEq);
-  t.setROI(Rect((i++)*s.width, 0,100,100));
-  Compare::equalEps(&im,&im2,&t,2);
-  t.setROI(Rect((i++)*s.width,0,100,100));
-  Compare::equalEpsC(&im,228,&t,30);
-  t.setROI(Rect((i++)*s.width,0,100,100));
-  Compare::equalEpsC(&im2,175,&t,25);
+  target.setROI(Rect((i++)*size.width,0,100,100));
+  im.deepCopyROI(&target); // copy first source image
+
+  target.setROI(Rect((i++)*size.width,0,100,100));
+  im2.deepCopyROI(&target); // copy second source image
+
+  target.setROI(Rect((i++)*size.width,0,100,100));
+  Compare::compare(&im,&im2,&target,Compare::compareEq);
+
+  target.setROI(Rect((i++)*size.width,0,100,100));
+  Compare::compareC(&im,100,&target,Compare::compareEq);
+
+  target.setROI(Rect((i++)*size.width,0,100,100));
+  Compare::compareC(&im2,50,&target,Compare::compareLessEq);
+
+  target.setROI(Rect((i++)*size.width, 0,100,100));
+  Compare::equalEps(&im,&im2,&target,2);
+
+  target.setROI(Rect((i++)*size.width,0,100,100));
+  Compare::equalEpsC(&im,228,&target,30);
+
+  target.setROI(Rect((i++)*size.width,0,100,100));
+  Compare::equalEpsC(&im2,175,&target,25);
 
   printf("showing results\n");
-  TestImages::xv(&t,"result_image.pgm",500);
+  TestImages::xv(&target,"compare_results.pgm");
 
   printf("Original colors are im1:[0,100,200,255] and im2:[50,150,200,254] \n");
   printf(": Image order is: \n");

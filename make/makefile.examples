@@ -115,7 +115,7 @@ depend:
 	${PRE_CMD}for file in ${_SOURCES_FILENAME} ; do \
 	   echo "  $$file" ; \
 		$(CMD_CCPP) $(CXXFLAGS) ${CPPDEFINES} ${ABS_INCLUDES} ${REL_INCLUDES} \
-	    $$file -MT ../obj/$${file%.*}.o -MM -o .depend ; \
+	    $$file -MT $${file%.*} -MM -o .depend ; \
 	   cat .depend >> makeDepend ; \
 	done
 	${CMD_RM} .depend

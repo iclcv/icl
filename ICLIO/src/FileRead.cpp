@@ -473,7 +473,7 @@ namespace icl {
 
      ICLASSERT (jpgCinfo.output_components == oInfo.iNumChannels);
      int iRowDim = jpgCinfo.output_width * jpgCinfo.output_components;
-     icl8u *pcR, *pcG, *pcB;
+     icl8u *pcR=0, *pcG=0, *pcB=0;
 
      if (oInfo.iNumChannels == 1) pcBuf = poImg->getData (0);
      else if (oInfo.iNumChannels == 3) {

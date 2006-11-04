@@ -214,10 +214,10 @@ Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
   float fScaleX = ((float)poDst->getSize().width)/(float)(getSize().width); 
   float fScaleY = ((float)poDst->getSize().height)/(float)(getSize().height);
   Rect roi = getROI();
-  roi.x = (int)(fScaleX * roi.x);
-  roi.y = (int)(fScaleY * roi.y); 
-  roi.width  = (int)(fScaleX * roi.width);
-  roi.height = (int)(fScaleY * roi.height);
+  roi.x = (int)rint(fScaleX * roi.x);
+  roi.y = (int)rint(fScaleY * roi.y); 
+  roi.width  = (int)rint(fScaleX * roi.width);
+  roi.height = (int)rint(fScaleY * roi.height);
   roi = roi & Rect (Point::zero, poDst->getSize());
   poDst->setROI (roi);
   return poDst;
@@ -423,18 +423,16 @@ Img<Type>::swapChannels(int iIndexA, int iIndexB)
 
 //----------------------------------------------------------------------------
 template<class Type> void
-Img<Type>::scale(const Size &s,scalemode eScaleMode)
+Img<Type>::scale(const Size &size, scalemode eScaleMode)
   // {{{ open
 
 {  
   FUNCTION_LOG("");
-  
-  Size oNewSize(s.width<0?getWidth():s.width, s.height<0?getHeight():s.height);
+  ICLASSERT_RETURN (size.width > 0 && size.height > 0);
 
-  if(! isEqual(oNewSize,getChannels()))
+  if (!isEqual(size,getChannels()))
     {
-      Img<Type> oTmp(oNewSize,getChannels());
-      oTmp.setFormat(getFormat());
+      Img<Type> oTmp(size,getChannels(),getFormat());
       scaledCopy(&oTmp,eScaleMode);
       (*this)=oTmp;
     }
@@ -472,7 +470,7 @@ static bool getMirrorPointers (axis eAxis, bool bInplace,
   // {{{ open
   FUNCTION_LOG("");
    void *&s=*pS, *&d=*pD, *&e=*pE, *&eLine=*pELine;
-   int iRows, iCols;
+   int iRows=0, iCols=0;
    int iSrcLineLen = iSrcLineStep / iByteSize;
    int iDstLineLen = iDstLineStep / iByteSize;
    switch (eAxis) {

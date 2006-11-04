@@ -1,28 +1,34 @@
 #ifndef WEIGHTEDSUM_H
 #define WEIGHTEDSUM_H
 
-#include "Filter.h"
 #include "Img.h"
-namespace icl{
-    /// Class for weighted sum
-    /** Summarize pixel values of all channels of one image
-       for every channel, its pixel values are multiplied with an corresponding weight 
-       The Result is written into an 1-Channel Img32f 
+#include "Filter.h"
+
+namespace icl {
+
+   /// Accumulate weighted pixel values of all image channels
+   /** Pixels of all channels in source image are weighted 
+       by a channel-wise weight and accumulated to the destination image.
+
+       Performance: 1000x1000x10 image
+               IPP     C++
+       icl8u   175ms   86ms
+       icl32f  165ms   85ms
     */
+   class WeightedSum : public Filter {
+   public:
+      void apply (ImgI *poSrc, Img<icl32f> *poDst, const std::vector<float>& weights);
 
-  class WeightedSum : public Filter{
-  public:
-/// compute the weighted sum
-    void ws (ImgI *poSrc, ImgI **ppoDst, std::vector<float> weights);
-/// compute the weighted sum (Img32f version)
-    void ws (Img32f *src, Img32f *dst,  const std::vector<float>& weights);
-/// compute the weighted sum, the Img8u is internaly converted to an Img32f  (Img8u version)
-    void ws (Img8u *src, Img32f *dst,  const std::vector<float>& weights);
+   private:
+#if 0 && defined WITH_IPP_OPTIMIZATION
+      std::vector<float> m_oBuffer;
+#endif
 
-  private:
-  Img32f m_oDepthBuf;
-  Img32f m_oAccuBuf;
-  };
+      template <typename T>
+      void compute(const Img<T> *src, Img<icl32f> *dst, 
+                   const std::vector<float>& weights);
+   };
+
 } // namespace icl
 
 #endif
