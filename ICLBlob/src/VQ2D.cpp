@@ -154,7 +154,7 @@ namespace icl{
       info.addElem(inn,p[0],p[1]);
       info.error(inn)+=err;
     }
-    float x,y,mxx,mxy,myy,l1,l2;
+    float x(0),y(0),mxx(0),mxy(0),myy(0),l1(0),l2(0);
     for(int i=0 ; i<k ;  i++){
       int s = info.size(i);
       info.error(i)/=s;
