@@ -1,0 +1,45 @@
+#!/bin/bash
+
+if [ ! "$#" = "2" ] ; then
+    echo -e "usage renameClass SRC-CLASS-NAME DST-CLASS NAME\n"
+    echo -e "\t this script will rename all occurences of the souce"
+    echo -e "\t class name with the destination class name. Then it"
+    echo -e "\t will rename all the classes header and source file"
+    echo -e "\t (if found) in the svn repository."
+
+
+DIR=`pwd`
+SRC_NAME=$1
+DST_NAME=$2
+
+echo -n "calling make clean ..."
+make clean > /dev/null
+echo "done"
+
+echo "replacing pattern *.h recursively"
+find -P $DIR -name "*.h" -exec sed -i "s|$SRC_NAME|$DST_NAME|g" {} \; -exec echo "replacing in {}" \;      
+
+echo "replacing pattern *.h recursively"
+find -P $DIR -name "*.cpp" -exec sed -i "s|$SRC_NAME|$DST_NAME|g" {} \; -exec echo "replacing in {}" \;      
+
+
+CLASS_H=`find -P $DIR -name "$SRC_NAME.h"`
+CLASS_CPP=`find -P $DIR -name "$SRC_NAME.cpp"`
+echo "seaching for class files $SRC_NAME.h and $SRC_NAME.cpp"
+
+if [ $CLASS_H ] ; then
+    echo "found $CLASS_H -> replacing (in svn) ..."
+    NEW_H=`echo $CLASS_H | sed "s|$SRC_NAME|$DST_NAME|g"`
+    svn mv $CLASS_H $NEW_H --force
+    echo "done"
+fi
+
+if [ $CLASS_CPP ] ; then
+    echo "found $CLASS_CPP -> replacing (in svn) ..."
+    NEW_CPP=`echo $CLASS_CPP | sed "s|$SRC_NAME|$DST_NAME|g"`
+    svn mv $CLASS_CPP $NEW_CPP --force
+    echo "done"
+fi
+
+echo -e "done!  call \n\t make depend && make all && svn commit\n\t now!"
+
