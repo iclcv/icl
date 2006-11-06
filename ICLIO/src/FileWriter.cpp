@@ -1,5 +1,5 @@
 /*
-  FileWrite.cpp
+  FileWriter.cpp
 
   Written by: Michael Götting, Robert Haschke (2006)
   University of Bielefeld
@@ -7,7 +7,7 @@
   mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "FileWrite.h"
+#include "FileWriter.h"
 #include "IO.h"
 #include <zlib.h>
 #include <sstream>
@@ -17,7 +17,7 @@ using namespace std;
 namespace icl {
 
    //--------------------------------------------------------------------------
-   void FileWrite::setFileName (const string& sFileName) throw (ICLException)
+   void FileWriter::setFileName (const string& sFileName) throw (ICLException)
       // {{{ open 
 
    {
@@ -61,7 +61,7 @@ namespace icl {
 // }}}
 
    //--------------------------------------------------------------------------
-   string FileWrite::buildFileName()
+   string FileWriter::buildFileName()
       // {{{ open
    {
       // if counting is disabled, sFilePrefix contains the whole file name
@@ -75,13 +75,13 @@ namespace icl {
 // }}}
 
    //--------------------------------------------------------------------------
-   void FileWrite::write(ImgI *poSrc) throw (FileOpenException, ICLException) {
+   void FileWriter::write(ImgBase *poSrc) throw (FileOpenException, ICLException) {
       // {{{ open
 
       FileInfo oInfo (buildFileName()); // create file info
       openFile (oInfo, "wb"); // open file for writing
       
-      ImgI *poImg = poSrc;
+      ImgBase *poImg = poSrc;
       if (poSrc->getDepth () != depth8u && oInfo.eFileFormat != ioFormatICL) {
          // image needs to be converted to depth8u
         poImg = poSrc->convertTo<icl8u> (&m_oImg8u);
@@ -109,7 +109,7 @@ namespace icl {
 // }}}
   
    //--------------------------------------------------------------------------
-   void FileWrite::writePNM(ImgI *poSrc, const FileInfo& oInfo) {
+   void FileWriter::writePNM(ImgBase *poSrc, const FileInfo& oInfo) {
       // {{{ open
 
       // check exact file type first:
@@ -194,7 +194,7 @@ namespace icl {
 // }}}
 
    //--------------------------------------------------------------------------
-   void FileWrite::writeJPG(Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality) {
+   void FileWriter::writeJPG(Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality) {
       // {{{ open
       J_COLOR_SPACE jCS;
       switch (poSrc->getFormat ()) {
