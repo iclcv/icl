@@ -164,19 +164,19 @@ namespace icl {
         @param poSrc  source image
         @param ppoDst pointer to destination image
     */
-    void apply(const ImgI *poSrc, ImgI **ppoDst);
+    void apply(const ImgBase *poSrc, ImgBase **ppoDst);
 
   protected:
-    void (Median::*aMethods[2])(const ImgI *poSrc, ImgI *poDst); 
+    void (Median::*aMethods[2])(const ImgBase *poSrc, ImgBase *poDst); 
 
 #ifdef WITH_IPP_OPTIMIZATION 
     template<typename T>
-       void ippMedian (const ImgI *poSrc, ImgI *poDst);
+       void ippMedian (const ImgBase *poSrc, ImgBase *poDst);
     template<typename T>
-       void ippMedianFixed (const ImgI *poSrc, ImgI *poDst);
+       void ippMedianFixed (const ImgBase *poSrc, ImgBase *poDst);
 #endif
     template<typename T>
-       void cMedian (const ImgI *poSrc, ImgI *poDst);
+       void cMedian (const ImgBase *poSrc, ImgBase *poDst);
   };
 }
 

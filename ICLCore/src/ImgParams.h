@@ -18,8 +18,8 @@ namespace icl{
      
       The class helps to create image processing classes getting
       certain image parameters. This parameters can now directly 
-      be aquired from an ImgI object. In addition to this, except
-      to the ImgIs underlying depth (which is commited to the
+      be aquired from an ImgBase object. In addition to this, except
+      to the ImgBases underlying depth (which is commited to the
       depth of the underlying Img object) Images can be made
       compatible by calling imageA.setParams(imageB.getParams())
   */

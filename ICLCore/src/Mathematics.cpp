@@ -91,9 +91,9 @@ namespace icl{
   
   // {{{ Statistic functions
   //--------------------------------------------------------------------------
-  vector<float> mean(ImgI *poImg, int iChannel)
+  vector<float> mean(ImgBase *poImg, int iChannel)
   {
-    FUNCTION_LOG("ImgI, int");
+    FUNCTION_LOG("ImgBase, int");
     
     vector<float> tmpVec;
     
@@ -151,9 +151,9 @@ namespace icl{
   template vector<float> mean<icl32f>(Img<icl32f>*, int);
   
    //--------------------------------------------------------------------------
-  vector<float> variance(ImgI *poImg, int iChannel)
+  vector<float> variance(ImgBase *poImg, int iChannel)
   {
-    FUNCTION_LOG("ImgI, int");
+    FUNCTION_LOG("ImgBase, int");
         
     vector<float> tmpVec;
     
@@ -226,9 +226,9 @@ namespace icl{
   template vector<float> variance<icl32f>(Img<icl32f>*, int);
 
   //--------------------------------------------------------------------------
-  vector<float> stdDeviation(ImgI *poImg, int iChannel)
+  vector<float> stdDeviation(ImgBase *poImg, int iChannel)
   {
-    FUNCTION_LOG("ImgI, int");
+    FUNCTION_LOG("ImgBase, int");
         
     vector<float> tmpVec;
     

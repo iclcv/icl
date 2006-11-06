@@ -10,7 +10,7 @@
 #ifndef Img_H
 #define Img_H
 
-#include "ImgI.h"
+#include "ImgBase.h"
 #include "ImgIterator.h"
 #include "SmartPtr.h"
 #include "Exception.h"
@@ -19,13 +19,13 @@
 
 namespace icl {
 
-  /// The Img class implements the ImgI Image interface with type specific functionalities
+  /// The Img class implements the ImgBase Image interface with type specific functionalities
   /**
   @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
   @author Christof Elbrechter (celbrech@TechFak.Uni-Bielefeld.de)
   **/
 template <class Type>
-class Img : public ImgI
+class Img : public ImgBase
 {
  protected:
   
@@ -250,13 +250,13 @@ class Img : public ImgI
       <b>WARNING:</b> If the destination image has another depth, then 
       <b>convertTo<dest-depth>(poDst)</b> will be called.
       <b>The images ROI will not be regarded</b>, to copy just the ROI 
-      into another image use deepCopyROI(ImgI *poDst.) or 
-      scaledCopyROI(ImgI *poDst).
+      into another image use deepCopyROI(ImgBase *poDst.) or 
+      scaledCopyROI(ImgBase *poDst).
       @param poDst Destination image for the copied data 
                    if NULL, then a new image is created and returned
       @return Pointer to new independent Img object
   **/
-  virtual ImgI* deepCopy(ImgI* poDst = NULL) const;
+  virtual ImgBase* deepCopy(ImgBase* poDst = NULL) const;
 
   /// returns a scaled copy of the image data (scaling on demand) (IPP-OPTIMIZED)
   /** the function performs a deep copy of the image data
@@ -271,8 +271,8 @@ class Img : public ImgI
       and convert the image in two steps. This will hardly <b>slow down 
       performace</b>.
       <b>The images ROI will not be regarded</b>, to copy just the ROI 
-      into another image use deepCopyROI(ImgI *poDst.) or 
-      scaledCopyROI(ImgI *poDst).
+      into another image use deepCopyROI(ImgBase *poDst.) or 
+      scaledCopyROI(ImgBase *poDst).
       @param poDst destination image (if NULL) than it is created new with
                    identical size of this image.
       @param eScaleMode defines the interpolation mode, that is used for the scaling
@@ -285,7 +285,7 @@ class Img : public ImgI
       @see resize
       @see deepCopy
   **/
-  virtual ImgI* scaledCopy(ImgI *poDst, scalemode eScaleMode=interpolateNN) const;
+  virtual ImgBase* scaledCopy(ImgBase *poDst, scalemode eScaleMode=interpolateNN) const;
   
   /// copies the image data in the images ROI into the destination images ROI (IPP-OPTIMIZED)
   /** This function will copy the content of the images ROI into the
@@ -304,7 +304,7 @@ class Img : public ImgI
       The deepCopyROI function supports IPP-OPTIMIZED depth conversion.
       
   **/
-  virtual ImgI *deepCopyROI(ImgI *poDst = NULL) const;
+  virtual ImgBase *deepCopyROI(ImgBase *poDst = NULL) const;
 
   
   /// scales the image data in the image ROI into the destination images ROI (IPP-OPTIMIZED)
@@ -326,7 +326,7 @@ class Img : public ImgI
                            - interpolateLIN  --> bilinear interpolation
                            - interpolateRA  --> region average 
   **/
-  virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, scalemode eScaleMode=interpolateNN) const;
+  virtual ImgBase *scaledCopyROI(ImgBase *poDst = NULL, scalemode eScaleMode=interpolateNN) const;
           
   /// flips the image on the given axis into the destination image (IPP-OPTIMIZED)
   /** If the destination images roi is not equal to the source images ROI,
@@ -350,7 +350,7 @@ class Img : public ImgI
       @param eAxis axis to flip (axisVert or axisHorz)
       @return poDst
   */
-  virtual ImgI *flippedCopyROI(ImgI *poDst = NULL, axis eAxis = axisHorz) const; 
+  virtual ImgBase *flippedCopyROI(ImgBase *poDst = NULL, axis eAxis = axisHorz) const; 
 
   /* }}} */
   
@@ -529,7 +529,7 @@ class Img : public ImgI
 
 
   /// return the raw- data pointer of an image channel
-  /** This function is inherited from the base class ImgI
+  /** This function is inherited from the base class ImgBase
       @param iChannel determines the channel which's dataptr should
                       be returned
       @return raw data pointer

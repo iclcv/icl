@@ -1,6 +1,6 @@
 #include "Logical.h"
 #include "Img.h"
-#include "FileWrite.h"
+#include "FileWriter.h"
 using namespace icl;
 
 

@@ -203,9 +203,9 @@ namespace icl {
 
 #endif
 
-  // {{{ ImgI* versions
+  // {{{ ImgBase* versions
   
-  void Logical::Not (const ImgI *poSrc, ImgI **ppoDst)
+  void Logical::Not (const ImgBase *poSrc, ImgBase **ppoDst)
   {
     // {{{ open
     ICLASSERT_RETURN(poSrc->getDepth() == depth8u);
@@ -214,7 +214,7 @@ namespace icl {
   }
   // }}}
 
-  void Logical::And (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
+  void Logical::And (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open
     ICLASSERT_RETURN( poSrc1->getDepth() == depth8u);
@@ -225,7 +225,7 @@ namespace icl {
   }
   // }}}
 
-  void Logical::Or (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
+  void Logical::Or (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open
     ICLASSERT_RETURN( poSrc1->getDepth() == depth8u);
@@ -236,7 +236,7 @@ namespace icl {
   }
   // }}}
 
-  void Logical::Xor (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst)
+  void Logical::Xor (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open
     ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
@@ -247,7 +247,7 @@ namespace icl {
   }
   // }}}
 
-  void Logical::AndC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst)
+  void Logical::AndC (const ImgBase *poSrc, const icl8u value, ImgBase **ppoDst)
   {
     // {{{ open
     ICLASSERT_RETURN( poSrc->getDepth() == depth8u);
@@ -256,7 +256,7 @@ namespace icl {
   }
   // }}}
 
-  void Logical::OrC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst)
+  void Logical::OrC (const ImgBase *poSrc, const icl8u value, ImgBase **ppoDst)
   {
     // {{{ open
     ICLASSERT_RETURN( poSrc->getDepth() == depth8u);
@@ -265,7 +265,7 @@ namespace icl {
   }
   // }}}
 
-  void Logical::XorC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst)
+  void Logical::XorC (const ImgBase *poSrc, const icl8u value, ImgBase **ppoDst)
   {
     // {{{ open
     ICLASSERT_RETURN( poSrc->getDepth() == depth8u);

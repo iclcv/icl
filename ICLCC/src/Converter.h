@@ -28,10 +28,10 @@ namespace icl{
     @param poDst destination image
     @param poSrc source image
     */
-    void convert(ImgI *poDst, ImgI *poSrc);
+    void convert(ImgBase *poDst, ImgBase *poSrc);
 
     private:
-    ImgI *m_poDepthBuffer,*m_poSizeBuffer;
+    ImgBase *m_poDepthBuffer,*m_poSizeBuffer;
     bool  m_bROIOnly;
   };
 }

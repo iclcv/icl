@@ -1,6 +1,6 @@
 #include "ICLDrawWidget.h"
 #include "PaintEngine.h"
-#include "ImgI.h"
+#include "ImgBase.h"
 
 using std::string;
 namespace icl{
@@ -210,7 +210,7 @@ namespace icl{
     // {{{ open
 
   public:
-    ImageCommand(ImgI *image, float x, float y, float w, float h):
+    ImageCommand(ImgBase *image, float x, float y, float w, float h):
       DrawCommand4F(x,y,w,h), m_poImage(0){
       ensureCompatible(&m_poImage,image);
       image->deepCopy(m_poImage);
@@ -221,7 +221,7 @@ namespace icl{
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       e->image(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),m_poImage,PaintEngine::Justify);
     }
-    ImgI *m_poImage;
+    ImgBase *m_poImage;
   };
 
   // }}}
@@ -393,7 +393,7 @@ namespace icl{
     // }}}
   
   // {{{ commands: line, sym, rel, ...
-  void ICLDrawWidget::image(ImgI *image,float x, float y, float w, float h){
+  void ICLDrawWidget::image(ImgBase *image,float x, float y, float w, float h){
     m_vecCommands.push_back(new ImageCommand(image,x,y,w,h));
   }
  

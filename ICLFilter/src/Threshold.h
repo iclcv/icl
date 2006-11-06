@@ -15,7 +15,7 @@ namespace icl {
       
        <h2>Functions flavours</h2>
        There exist two different types off function interfaces:
-       - First, functions working on ImgI base classes, which can deal 
+       - First, functions working on ImgBase base classes, which can deal 
        with arbitrary depths of the actual images. After ensuring the correct
        depth and size of the destination image, these functions delegate
        the call to an appropriate type-specific function depending on the
@@ -28,21 +28,21 @@ namespace icl {
    class Threshold : public Filter {
    public:
       /// less than thresholding
-      void lt(const ImgI *poSrc, ImgI **ppoDst, float threshold);
+      void lt(const ImgBase *poSrc, ImgBase **ppoDst, float threshold);
       /// greater than thresholding
-      void gt(const ImgI *poSrc, ImgI **ppoDst, float threshold);
+      void gt(const ImgBase *poSrc, ImgBase **ppoDst, float threshold);
       /// less than and greater than thresholding
-      void ltgt(const ImgI *poSrc, ImgI **ppoDst, float low, float hi);
+      void ltgt(const ImgBase *poSrc, ImgBase **ppoDst, float low, float hi);
       /// less than thresholding with explicit set value
-      void ltVal(const ImgI *poSrc, ImgI **ppoDst, float threshold, float val);
+      void ltVal(const ImgBase *poSrc, ImgBase **ppoDst, float threshold, float val);
       /// greater than thresholding with explicit set value
-      void gtVal(const ImgI *poSrc, ImgI **ppoDst, float threshold, float val);
+      void gtVal(const ImgBase *poSrc, ImgBase **ppoDst, float threshold, float val);
       /// less than and greater than thresholding with explicit set values
-      void ltgtVal(const ImgI *poSrc, ImgI **ppoDst, 
+      void ltgtVal(const ImgBase *poSrc, ImgBase **ppoDst, 
                    float low, float lowVal, float hi, float hiVal);
 
       /// calls ltgtVal with low=hi=threshold, lowVal = 0 and hiVal=255
-      void binarize(const ImgI *poSrc, ImgI **ppoDst, float threshold) {
+      void binarize(const ImgBase *poSrc, ImgBase **ppoDst, float threshold) {
          ltgtVal(poSrc,ppoDst,threshold,0,threshold,255);
       }
 

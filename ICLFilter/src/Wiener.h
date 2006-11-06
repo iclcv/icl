@@ -4,7 +4,7 @@
 #include <FilterMask.h>
 
 namespace icl {
-   class ImgI;
+   class ImgBase;
   
    /// Class for Wiener Filter
    /** Wiener filters are commonly used in image processing applications to
@@ -21,17 +21,17 @@ namespace icl {
 
       /// Filters an image using the Wiener algorithm.
       /** @param fNoise: noise level in range [0,1] */
-      void apply (const ImgI *poSrc, ImgI **ppoDst, icl32f fNoise);
+      void apply (const ImgBase *poSrc, ImgBase **ppoDst, icl32f fNoise);
 
 #ifdef WITH_IPP_OPTIMIZATION
    protected:
       template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint, icl32f*, icl8u*)>
-         void ippiWienerCall (const ImgI *src, ImgI *dst, icl32f fNoise);
+         void ippiWienerCall (const ImgBase *src, ImgBase *dst, icl32f fNoise);
 #endif
 
    private:
       /// array of image-depth selective filter methods
-      static void (Wiener::*aFilterVariants[2])(const ImgI *poSrc, ImgI *poDst, float); 
+      static void (Wiener::*aFilterVariants[2])(const ImgBase *poSrc, ImgBase *poDst, float); 
 
       std::vector<icl8u> vBuffer;
    };

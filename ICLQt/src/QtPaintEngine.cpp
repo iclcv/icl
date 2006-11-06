@@ -71,7 +71,7 @@ namespace icl{
   }
 
   // }}}
-  void QtPaintEngine::image(const Rect &r,ImgI *image, AlignMode mode){
+  void QtPaintEngine::image(const Rect &r,ImgBase *image, AlignMode mode){
     // {{{ open
     if(!image)return;
     ensureCompatible(&m_poScaledImage,image->getDepth(),r.size(),image->getChannels());

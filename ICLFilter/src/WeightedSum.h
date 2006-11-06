@@ -17,7 +17,7 @@ namespace icl {
     */
    class WeightedSum : public Filter {
    public:
-      void apply (ImgI *poSrc, Img<icl32f> *poDst, const std::vector<float>& weights);
+      void apply (ImgBase *poSrc, Img<icl32f> *poDst, const std::vector<float>& weights);
 
    private:
 #if 0 && defined WITH_IPP_OPTIMIZATION

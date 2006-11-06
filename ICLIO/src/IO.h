@@ -11,7 +11,7 @@
 #define ICLIO_H
 
 #include <string>
-#include <ImgI.h>
+#include <ImgBase.h>
 #include <Exception.h>
 
 extern "C" {

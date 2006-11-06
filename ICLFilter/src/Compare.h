@@ -33,14 +33,14 @@ namespace icl {
 #endif
 
       /// compare two images against each other
-      void compare(const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst, Compare::op cmpop);
+      void compare(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst, Compare::op cmpop);
       /// compare an image against a constant value
-      void compareC(const ImgI *poSrc, icl32f value, ImgI **ppoDst, Compare::op cmpop);
+      void compareC(const ImgBase *poSrc, icl32f value, ImgBase **ppoDst, Compare::op cmpop);
   
       /// compare two images for equality, allowing a certain tolerance eps
-      void equalEps(const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst, icl32f eps);
+      void equalEps(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst, icl32f eps);
       /// compare an image against a constant value allowing a tolerance eps
-      void equalEpsC(const ImgI *poSrc, icl32f value, ImgI **ppoDst, icl32f eps);
+      void equalEpsC(const ImgBase *poSrc, icl32f value, ImgBase **ppoDst, icl32f eps);
 
 
 

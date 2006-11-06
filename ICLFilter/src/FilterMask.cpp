@@ -2,7 +2,7 @@
 
 namespace icl {
 
-   bool FilterMask::prepare (ImgI **ppoDst, const ImgI *poSrc) {
+   bool FilterMask::prepare (ImgBase **ppoDst, const ImgBase *poSrc) {
       Size oROIsize;   //< to-be-used ROI size
       if (!computeROI (poSrc, oROIoffset, oROIsize)) return false;
 
@@ -12,7 +12,7 @@ namespace icl {
                               Rect (bClipToROI ? Point::zero : oROIoffset, oROIsize));
    }
 
-   bool FilterMask::computeROI(const ImgI *poSrc, Point& oROIoffset, Size& oROIsize)
+   bool FilterMask::computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize)
    {
       const Size& oSize = poSrc->getSize ();
       poSrc->getROI (oROIoffset, oROIsize);

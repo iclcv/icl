@@ -11,14 +11,14 @@
 #define ICLWRITER_H
 
 namespace icl {
-  class ImgI;
+  class ImgBase;
 
   /// The ICLGrabber base class
   class Writer {
   public:
      Writer() {}
      virtual ~Writer() {}
-     virtual void write(ImgI *poDst)=0;
+     virtual void write(ImgBase *poDst)=0;
   }; //class
  
 }//namespace icl

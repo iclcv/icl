@@ -39,7 +39,7 @@ namespace icl{
 
     virtual void line(const Point &a, const Point &b);
     virtual void point(const Point &p);
-    virtual void image(const Rect &r,ImgI *image, PaintEngine::AlignMode mode = PaintEngine::Justify);
+    virtual void image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify);
     virtual void image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify);
     virtual void rect(const Rect &r);
     virtual void ellipse(const Rect &r);

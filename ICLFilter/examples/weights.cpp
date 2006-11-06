@@ -19,7 +19,7 @@ void print (Img<T> &src, Img<icl32f> &dst, std::vector<float>::iterator wIt) {
 }
 
 void performance (depth eDepth) {
-   ImgI *pSrc = imgNew (eDepth, Size(1000,1000), 10);
+   ImgBase *pSrc = imgNew (eDepth, Size(1000,1000), 10);
    Img32f dst (Size(1000,1000),1);
    std::vector<float> weights(10);
 

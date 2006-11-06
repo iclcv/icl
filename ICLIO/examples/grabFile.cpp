@@ -1,6 +1,6 @@
 #include "Img.h"
 #include "FileRead.h"
-#include "FileWrite.h"
+#include "FileWriter.h"
 
 using namespace std;
 using namespace icl;
@@ -8,10 +8,10 @@ using namespace icl;
 int main() 
 {
   //---- Allocate variables ----
-  ImgI* poImg = imgNew(depth8u,Size(144,144));
+  ImgBase* poImg = imgNew(depth8u,Size(144,144));
 
   FileRead  ioRead("demoImages/mask*.pgm");
-  FileWrite ioWrite("demoImages/outmask##.pgm");
+  FileWriter ioWrite("demoImages/outmask##.pgm");
   
   ioRead.grab(poImg);
   ioWrite.write(poImg);

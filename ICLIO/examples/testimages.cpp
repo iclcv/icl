@@ -4,9 +4,9 @@
 using namespace icl;
 
 int main(){ 
-  ImgI *a = TestImages::create("women");
-  ImgI *b = TestImages::create("tree");
-  ImgI *c = TestImages::create("house");
+  ImgBase *a = TestImages::create("women");
+  ImgBase *b = TestImages::create("tree");
+  ImgBase *c = TestImages::create("house");
   TestImages::xv(a,"tmp1.ppm",500);
   TestImages::xv(b,"tmp2.ppm",500);
   TestImages::xv(c,"tmp3.ppm",500);

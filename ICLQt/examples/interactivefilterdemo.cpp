@@ -26,7 +26,7 @@ public:
   
   virtual void run(){
     while(1){
-      ImgI *image = grabber->grab();
+      ImgBase *image = grabber->grab();
       widget->setImage(image);
       if(x>0){ // else no mouse event has been recognized yet
         widget->lock();
@@ -45,7 +45,7 @@ public:
           image->setROI(roi);
           Convolution conv(k); // geht alles nicht so richtig!!
           //conv.setClipToROI(0);
-          ImgI *dst = new Img8u(Size(100,100),formatRGB);
+          ImgBase *dst = new Img8u(Size(100,100),formatRGB);
           conv.apply(image,&dst);         
           widget->image(dst,x-100,y-100,200,200);
           if(dst) delete dst;

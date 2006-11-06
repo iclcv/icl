@@ -13,8 +13,8 @@
 
 namespace icl{
 
-  /// Forward declaration of the ImgI class
-  class ImgI;
+  /// Forward declaration of the ImgBase class
+  class ImgBase;
     
   /// Paint engine interface 
   class PaintEngine{
@@ -31,7 +31,7 @@ namespace icl{
 
     virtual void line(const Point &a, const Point &b)=0;
     virtual void point(const Point &p)=0;
-    virtual void image(const Rect &r,ImgI *image, AlignMode mode = Justify)=0;
+    virtual void image(const Rect &r,ImgBase *image, AlignMode mode = Justify)=0;
     virtual void image(const Rect &r,const QImage &image, AlignMode mode = Justify)=0;
     virtual void rect(const Rect &r)=0;
     virtual void ellipse(const Rect &r)=0;

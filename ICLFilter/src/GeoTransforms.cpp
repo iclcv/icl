@@ -6,7 +6,7 @@ namespace icl {
 // {{{ Mirror
 
    template<typename T>
-   void Mirror::mirror (const ImgI *poSrc, ImgI *poDst) {
+   void Mirror::mirror (const ImgBase *poSrc, ImgBase *poDst) {
       const Img<T> *poS = (const Img<T>*) poSrc;
       Img<T> *poD = (Img<T>*) poDst;
       for(int c=0; c < poSrc->getChannels(); c++) {
@@ -22,7 +22,7 @@ namespace icl {
       this->aMethods[depth32f] = &Mirror::mirror<icl32f>;
    }
 
-   void Mirror::apply (const ImgI *poSrc, ImgI **ppoDst) {
+   void Mirror::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
       Point oROIOffset;
       if (bClipToROI) {
          oSrcOffset = poSrc->getROIOffset();
@@ -51,7 +51,7 @@ namespace icl {
 
 #ifdef WITH_IPP_OPTIMIZATION 
    template<>
-   void Affine::affine<icl8u> (const ImgI *poSrc, ImgI *poDst) {
+   void Affine::affine<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
       for(int c=0; c < poSrc->getChannels(); c++) {
          ippiWarpAffine_8u_C1R (poSrc->asImg<icl8u>()->getData (c),
                                 poSrc->getSize(), poSrc->getLineStep(), 
@@ -63,7 +63,7 @@ namespace icl {
       }
    }
    template<>
-   void Affine::affine<icl32f> (const ImgI *poSrc, ImgI *poDst) {
+   void Affine::affine<icl32f> (const ImgBase *poSrc, ImgBase *poDst) {
       for(int c=0; c < poSrc->getChannels(); c++) {
          ippiWarpAffine_32f_C1R (poSrc->asImg<icl32f>()->getData (c),
                                  poSrc->getSize(), poSrc->getLineStep(), 
@@ -77,7 +77,7 @@ namespace icl {
 #else
 #warning "fallback for Affine::affine not yet implemented"
    template<typename T>
-   void Affine::affine (const ImgI *poSrc, ImgI *poDst) {
+   void Affine::affine (const ImgBase *poSrc, ImgBase *poDst) {
       ERROR_LOG ("not yet implemented");
    }
 #endif
@@ -142,7 +142,7 @@ namespace icl {
 
    // }}}
    
-   void Affine::apply (const ImgI *poSrc, ImgI **ppoDst) {
+   void Affine::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
       double xShift, yShift;
       Size   oSize;
 

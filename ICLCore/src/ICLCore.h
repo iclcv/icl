@@ -6,19 +6,19 @@
 \section Overview
 
 The ICL is a C++ Image-Library, designed for Computer-Vision tasks. It
-supports multi-channel images (class ImgI/Img) with a depth of 8bit integer or 32bit floats.
+supports multi-channel images (class ImgBase/Img) with a depth of 8bit integer or 32bit floats.
 All channels within the image share a common size and region of 
 interest (ROI). This allows to handle color images as 3-channel images for example.
 
 Despite of the different image depth, most methods of an image class have
 common code. Hence, the two different pixel formats are implemented by a
 template class <b>Img<imagedepth></b>. Methods which are independent on the
-image depth are provided by a common interface class, named <b>ImgI</b>. This
+image depth are provided by a common interface class, named <b>ImgBase</b>. This
 allows easy and type-clean wrapping of both template classes within frameworks
 such as Neo/NST or TDI.
 
 Hence, the Library provides two basic image classes: 
-- <b>ImgI</b>: The <b>abstract interface</b> class providing common, 
+- <b>ImgBase</b>: The <b>abstract interface</b> class providing common, 
   but depth-independent information about the image structure:
   - size (in pixels)
   - channel count  (see <b>channel concept</b>)
@@ -29,7 +29,7 @@ Hence, the Library provides two basic image classes:
 
   It has no public constructors so it has to be used as interface
   class for the derived template classes Img<Type>.
-  Most of the functions in the ImgI class are purely virtual which
+  Most of the functions in the ImgBase class are purely virtual which
   implies, that they are implemented in the derived classes Img<T>.
 
 - <b>Img</b>: The <i>proper</i> image class is implemented as a template,
@@ -44,12 +44,12 @@ Hence, the Library provides two basic image classes:
   - access to all Image/all ROI pixels using the ImgIterator 
   (see <b>ImgIterator</b> class reference)
     
-In addition to the classes Img and ImgI, the ICLCore package
+In addition to the classes Img and ImgBase, the ICLCore package
 provides some utility functions, that facilitates working with 
 these classes (see icl namespace for more details).
   
 
-@see ImgI, Img
+@see ImgBase, Img
 
 \section SEC_DATA_ORIGN Data Origin
 Common image formats like png or bmp are following the convention,
@@ -85,8 +85,8 @@ Currently the Img provides two different data types:
 - <b>icl32f</b> 32bit float
 
 Img-classes are predefined for these two types:
-- Img<icl32f> : public ImgI <b>typedef'd to Img32f</b>
-- Img<icl8u> : public ImgI <b>typedef'd to Img8u</b>
+- Img<icl32f> : public ImgBase <b>typedef'd to Img32f</b>
+- Img<icl8u> : public ImgBase <b>typedef'd to Img8u</b>
 
 Each of these data types has several advantages/disadvantages. The greatest
 disadvantage of the icl8u, is its bounded range (0,1,...,255),
@@ -102,11 +102,11 @@ larger memory usage.
 @see Depth, icl8u, icl32f
 
 \section Color Formats
-An ImgI image provides some information about the (color) format, that
+An ImgBase image provides some information about the (color) format, that
 is associated with the image data represented by the images channels. Color
 is written in brackets, as not all available formats imply color-information.
 The most known color space is probably the RGB color space. 
-If an ImgI image has the format <i>formatRGB</i>, than this implies the 
+If an ImgBase image has the format <i>formatRGB</i>, than this implies the 
 following:
 - the image has exactly 3 channels
 - the first channel contains RED-Data in range [0,255]
@@ -289,7 +289,7 @@ namespace icl {
              poImage(eDepth==depth8u ? new Img8u(...) : new Img32f(...)){
          }
          private:
-         ImgI *poImage;         
+         ImgBase *poImage;         
       };
     </pre>
     This will work, but the "?:"-statement makes the code hardly readable.
@@ -301,7 +301,7 @@ namespace icl {
              poImage(imgNew(eDepth,...)){
          }
          private:
-         ImgI *poImage;         
+         ImgBase *poImage;         
       };
     </pre>
     The readability of the code is much better.
@@ -312,18 +312,18 @@ namespace icl {
     @param fmt:  format of the new image
     @param channels: number of channels (of an formatMatrix-type image)
     @param roi:  ROI rectangle of the new image
-    @return the new ImgI* with underlying Img<Type>, where
+    @return the new ImgBase* with underlying Img<Type>, where
             Type is depending on the first parameter eDepth
   **/
-  ImgI *imgNew(depth d=depth8u, const ImgParams &params = ImgParams::null);
+  ImgBase *imgNew(depth d=depth8u, const ImgParams &params = ImgParams::null);
   
   /// creates a new Img (see the above function for more details)
-  inline ImgI *imgNew(depth d, const Size& size, format fmt, const Rect &roi=Rect::null){
+  inline ImgBase *imgNew(depth d, const Size& size, format fmt, const Rect &roi=Rect::null){
     return imgNew(d,ImgParams(size,fmt,roi));
   }
 
   /// creates a new Img (see the above function for more details)
-  inline ImgI *imgNew(depth d, const Size& size, int channels=1, const Rect &roi=Rect::null){
+  inline ImgBase *imgNew(depth d, const Size& size, int channels=1, const Rect &roi=Rect::null){
     return imgNew(d,ImgParams(size,channels,roi));
   }
 
@@ -338,16 +338,16 @@ namespace icl {
       @param ppoImage pointer to the image-pointer
       @param eDepth destination depth of the image
   **/
-  void ensureDepth(ImgI **ppoImage, depth eDepth);
+  void ensureDepth(ImgBase **ppoImage, depth eDepth);
 
   /// ensures that an image has given depth and parameters
-  void ensureCompatible(ImgI **dst, depth d,const ImgParams &params);
+  void ensureCompatible(ImgBase **dst, depth d,const ImgParams &params);
 
   /// ensures that an image has given depth, size, number of channels and ROI
   /** If the given pointer to the destination image is 0, a new image with appropriate
       properties is created. Else the image properties are checked and adapted to the new
       values if neccessary.
-      @param dst points the destination ImgI*. If the images depth hasa to be
+      @param dst points the destination ImgBase*. If the images depth hasa to be
                  converted, then a new Img<T>* is created at (*dst).
       @param d desired image depth
       @param size desired image size
@@ -356,18 +356,18 @@ namespace icl {
       @param roi desired ROI rectangle. If the ROI parameters are not given, 
                  the ROI will comprise the whole image.
   **/
-  inline void ensureCompatible(ImgI **dst, depth d,const Size& size,int channels, const Rect &roi=Rect::null)
+  inline void ensureCompatible(ImgBase **dst, depth d,const Size& size,int channels, const Rect &roi=Rect::null)
      { ensureCompatible(dst,d,ImgParams(size,channels,roi)); }
 
   /// ensures that an image has given depth, size, format and ROI
-  inline void ensureCompatible(ImgI **dst, depth d,const Size& size, format fmt, const Rect &roi=Rect::null)
+  inline void ensureCompatible(ImgBase **dst, depth d,const Size& size, format fmt, const Rect &roi=Rect::null)
      { ensureCompatible(dst,d,ImgParams(size,fmt,roi)); }
   
   /// ensures that an image has given parameters 
   /** The given format must be compatible to the given channel count.
       <b>If not:</b> The format is set to "formatMatrix" and an exception is thrown.
   */
-  void ensureCompatible(ImgI **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi=Rect::null);
+  void ensureCompatible(ImgBase **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi=Rect::null);
   
   /// ensures that the destination image gets same depth, size, channel count, depth, format and ROI as source image
   /** If the given pointer to the destination image is 0, a new image is created as a deep copy of poSrc.
@@ -375,12 +375,12 @@ namespace icl {
       <b>Note:</b> If the destination images depth differs from the source images depth, it is adapted by
       deleting the <em>old</em> destination pointer by calling <em>delete *ppoDst</em> and creating a
       <em>brand new</em> Img<T> where T is the destination images depth.
-      @param ppoDst points the destination ImgI*. If the images depth has to be
+      @param ppoDst points the destination ImgBase*. If the images depth has to be
                     converted, then a new Img<T>* is created, at (*ppoDst).
       @param poSrc  source image. All params of this image are extracted to define
                     the destination parameters for *ppoDst.  
   **/
-  void ensureCompatible(ImgI **dst, const ImgI *src);
+  void ensureCompatible(ImgBase **dst, const ImgBase *src);
 
   /// determines the count of channels, for each color format
   /** @param eFormat source format which channel count should be returned

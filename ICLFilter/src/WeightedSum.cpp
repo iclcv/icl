@@ -79,9 +79,9 @@ namespace icl {
    // }}}
 #endif
 
-   void WeightedSum::apply (ImgI *poSrc, Img<icl32f> *poDst, 
+   void WeightedSum::apply (ImgBase *poSrc, Img<icl32f> *poDst, 
                             const std::vector<float>& weights) {
-      if (!Filter::prepare ((ImgI**) &poDst, depth32f, Filter::chooseSize (poSrc),
+      if (!Filter::prepare ((ImgBase**) &poDst, depth32f, Filter::chooseSize (poSrc),
                             formatMatrix, 1, chooseROI (poSrc))) return;
       switch (poSrc->getDepth()) {
          case depth8u:  compute (poSrc->asImg<icl8u>(), poDst, weights); break;

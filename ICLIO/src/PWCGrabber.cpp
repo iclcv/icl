@@ -497,7 +497,7 @@ bool PWCGrabber::init(const Size &s,float fFps, int iDevice)
 }
    // }}}
 
-ImgI* PWCGrabber::grab(ImgI *poOutput){
+ImgBase* PWCGrabber::grab(ImgBase *poOutput){
   // {{{ open 
 
   pthread_mutex_lock(&usb_semph_mutex[m_iDevice]);
@@ -596,7 +596,7 @@ bool PWCGrabber::init(const Size &s,float fFps, int iDevice){
   (void)iDevice;
   return false;
 }
-ImgI* PWCGrabber::grab(ImgI *poDst){
+ImgBase* PWCGrabber::grab(ImgBase *poDst){
   if(!poDst){
     return m_poRGB8Image;
   }else{

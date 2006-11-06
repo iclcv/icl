@@ -32,7 +32,7 @@ namespace icl{
   class OSDWidget;
   class OSD;
   class OSDButton;
-  class icl::ImgI;
+  class icl::ImgBase;
 
 #ifdef USE_OPENGL_ACCELERATION
   typedef QGLWidget ParentWidgetClass;
@@ -44,7 +44,7 @@ namespace icl{
   class ICLWidget : public ParentWidgetClass{
     Q_OBJECT
     public slots:
-    void setImage(ImgI *poImage);
+    void setImage(ImgBase *poImage);
     
     signals:
     void mouseEvent(MouseInteractionInfo *info);
@@ -131,7 +131,7 @@ namespace icl{
     Options op;
     QMutex m_oMutex, m_oOSDMutex;
 
-    ImgI *m_poImage;
+    ImgBase *m_poImage;
     
     OSDWidget *m_poOSD;
     OSDWidget *m_poCurrOSD;

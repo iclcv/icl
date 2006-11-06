@@ -10,7 +10,7 @@ namespace icl{
     if(m_poSizeBuffer)delete m_poSizeBuffer;
   }
 
-  void Converter::convert(ImgI *poDst, ImgI *poSrc){
+  void Converter::convert(ImgBase *poDst, ImgBase *poSrc){
     format eSrcFmt = poSrc->getFormat();
     format eDstFmt = poDst->getFormat();
     depth eSrcDepth = poSrc->getDepth();
@@ -26,7 +26,7 @@ namespace icl{
                                eSrcFmt != eDstFmt;
     
     //---- convert depth ----------------- 
-    ImgI *poCurSrc=poSrc;
+    ImgBase *poCurSrc=poSrc;
     if(iNeedDepthConversion){ 
       // test if other convesion steps will follow:
       if(iNeedSizeConversion || iNeedColorConversion){

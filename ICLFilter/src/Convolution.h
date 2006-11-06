@@ -193,7 +193,7 @@ namespace icl {
         @param poSrc  source image
         @param ppoDst destination image
     */
-    virtual void apply(ImgI *poSrc, ImgI **ppoDst);
+    virtual void apply(ImgBase *poSrc, ImgBase **ppoDst);
     
     /// change kernel
     void setKernel (int *piKernel, const Size& size, bool bBufferData=true);
@@ -242,17 +242,17 @@ namespace icl {
     void releaseBuffers ();
 
     /// array of image- and kernel-type selective generic convolution methods
-    static void (Convolution::*aGenericConvs[2][2])(ImgI *poSrc, ImgI *poDst); 
+    static void (Convolution::*aGenericConvs[2][2])(ImgBase *poSrc, ImgBase *poDst); 
 
 #ifdef WITH_IPP_OPTIMIZATION 
     template<typename ImgT, typename KernelT>
-       void ippGenericConv (ImgI *poSrc, ImgI *poDst);
+       void ippGenericConv (ImgBase *poSrc, ImgBase *poDst);
     template<typename T>
-       void ippFixedConv (ImgI *poSrc, ImgI *poDst,
+       void ippFixedConv (ImgBase *poSrc, ImgBase *poDst,
                           IppStatus (*pMethod)(const T* pSrc, int srcStep,
                                                T* pDst, int dstStep, IppiSize));
     template<typename T>
-       void ippFixedConvMask (ImgI *poSrc, ImgI *poDst,
+       void ippFixedConvMask (ImgBase *poSrc, ImgBase *poDst,
                               IppStatus (*pMethod)(const T* pSrc, int srcStep,
                                                    T* pDst, int dstStep, 
                                                    IppiSize, IppiMaskSize));
@@ -276,7 +276,7 @@ namespace icl {
 
 #else
     template<typename ImgT, typename KernelT>
-       void cGenericConv (ImgI *poSrc, ImgI *poDst);
+       void cGenericConv (ImgBase *poSrc, ImgBase *poDst);
 #endif
   };
 
@@ -296,10 +296,10 @@ namespace icl {
   */
   class DynamicConvolution : protected Convolution {
   public:
-     DynamicConvolution (const ImgI* poKernel = 0);
+     DynamicConvolution (const ImgBase* poKernel = 0);
      virtual ~DynamicConvolution ();
 
-     void setKernel (const ImgI* poKernel);
+     void setKernel (const ImgBase* poKernel);
      Convolution::setClipToROI;
      Convolution::setCheckOnly;
      Convolution::apply;

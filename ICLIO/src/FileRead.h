@@ -27,7 +27,7 @@ namespace icl {
       {
       public:
          typedef std::vector<std::string> FileList;
-         typedef std::vector<ImgI*>       ImageBuffer;
+         typedef std::vector<ImgBase*>       ImageBuffer;
 
          // @{ @name constructors / destructor
          ///Load images from files specified with shell-like regular expression
@@ -55,7 +55,7 @@ namespace icl {
          virtual ~FileRead ();
 
          ///Grab the next image from file/ buffer
-         virtual ImgI* grab(ImgI* poDst=0) 
+         virtual ImgBase* grab(ImgBase* poDst=0) 
             throw (ICLInvalidFileFormat, FileOpenException, ICLException) ;
   
          /// Load all images from current file list into an internal buffer
@@ -84,14 +84,14 @@ namespace icl {
          bool findFile (const std::string& sFile, FileList::iterator& itList);
 
          void readSequenceFile(const std::string& sFileName);
-         void readImage (const std::string& sFileName, ImgI** ppoDst)
+         void readImage (const std::string& sFileName, ImgBase** ppoDst)
             throw (ICLInvalidFileFormat, FileOpenException, ICLException);
 
-         void readHeaderPNM (FileInfo &oImgInfo);
-         void readHeaderJPG (FileInfo &oImgInfo);
+         void readHeaderPNM (FileInfo &oImgBasenfo);
+         void readHeaderJPG (FileInfo &oImgBasenfo);
 
-         void readDataPNM(ImgI* poImg, FileInfo &oImgInfo);
-         void readDataJPG(Img<icl8u>* poImg, FileInfo &oImgInfo);
+         void readDataPNM(ImgBase* poImg, FileInfo &oImgBasenfo);
+         void readDataJPG(Img<icl8u>* poImg, FileInfo &oImgBasenfo);
   
 
          FileList     m_vecFileName;  //< list of files to load
@@ -99,7 +99,7 @@ namespace icl {
   
          bool m_bBuffered;         //< flag indicating buffering of images
          unsigned int m_iCurImg;   //< image number to be read next
-         ImgI        *m_poCurImg;  //< recently read image
+         ImgBase        *m_poCurImg;  //< recently read image
 
          struct jpeg_decompress_struct jpgCinfo;
          struct icl_jpeg_error_mgr     jpgErr;

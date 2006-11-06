@@ -21,7 +21,7 @@ namespace icl {
 
 #ifdef WITH_IPP_OPTIMIZATION 
   template<>
-  void Median::ippMedian<icl8u> (const ImgI *poSrc, ImgI *poDst) {
+  void Median::ippMedian<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
      for(int c=0; c < poSrc->getChannels(); c++) {
         ippiFilterMedian_8u_C1R(poSrc->asImg<icl8u>()->getROIData (c, this->oROIoffset), 
                                 poSrc->getLineStep(),
@@ -32,7 +32,7 @@ namespace icl {
   }
 
   template<>
-  void Median::ippMedianFixed<icl8u> (const ImgI *poSrc, ImgI *poDst) {
+  void Median::ippMedianFixed<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
      IppiMaskSize mask = oMaskSize.width == 3 ? ippMskSize3x3 : ippMskSize5x5;
      for(int c=0; c < poSrc->getChannels(); c++) {
         ippiFilterMedianCross_8u_C1R(poSrc->asImg<icl8u>()->getROIData (c, this->oROIoffset), 
@@ -48,7 +48,7 @@ namespace icl {
 
   // {{{ Fallback Implementation
   template<typename T>
-  void Median::cMedian (const ImgI *poSrc, ImgI *poDst) {
+  void Median::cMedian (const ImgBase *poSrc, ImgBase *poDst) {
      Img<T> *poS = (Img<T>*) poSrc;
      Img<T> *poD = (Img<T>*) poDst;
 
@@ -102,7 +102,7 @@ namespace icl {
 
   // }}}
 
-  void Median::apply(const ImgI *poSrc, ImgI **ppoDst)
+  void Median::apply(const ImgBase *poSrc, ImgBase **ppoDst)
   {
     FUNCTION_LOG("");
 

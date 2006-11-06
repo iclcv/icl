@@ -311,7 +311,7 @@ namespace icl {
   // {{{ generic ipp convolution
 
   template<>
-  void Convolution::ippGenericConv<icl8u, int> (ImgI *poSrc, ImgI *poDst) {
+  void Convolution::ippGenericConv<icl8u, int> (ImgBase *poSrc, ImgBase *poDst) {
      Img<icl8u> *poS = poSrc->asImg<icl8u>();
      Img<icl8u> *poD = poDst->asImg<icl8u>();
      for(int c=0; c < poSrc->getChannels(); c++) {
@@ -321,7 +321,7 @@ namespace icl {
      }
   }
   template<>
-  void Convolution::ippGenericConv<icl8u, float> (ImgI *poSrc, ImgI *poDst) {
+  void Convolution::ippGenericConv<icl8u, float> (ImgBase *poSrc, ImgBase *poDst) {
      Img<icl8u> *poS = poSrc->asImg<icl8u>();
      Img<icl8u> *poD = poDst->asImg<icl8u>();
      for(int c=0; c < poSrc->getChannels(); c++) {
@@ -331,7 +331,7 @@ namespace icl {
      }
   }
   template<>
-  void Convolution::ippGenericConv<icl32f, float> (ImgI *poSrc, ImgI *poDst) {
+  void Convolution::ippGenericConv<icl32f, float> (ImgBase *poSrc, ImgBase *poDst) {
      Img<icl32f> *poS = poSrc->asImg<icl32f>();
      Img<icl32f> *poD = poDst->asImg<icl32f>();
      for(int c=0; c < poSrc->getChannels(); c++) {
@@ -346,7 +346,7 @@ namespace icl {
   // {{{ fixed ipp convolution
 
   template<typename T>
-  void Convolution::ippFixedConv (ImgI *poSrc, ImgI *poDst, 
+  void Convolution::ippFixedConv (ImgBase *poSrc, ImgBase *poDst, 
                                   IppStatus (*pMethod)(const T* pSrc, int srcStep,
                                                        T* pDst, int dstStep, 
                                                        IppiSize roiSize)) {
@@ -360,7 +360,7 @@ namespace icl {
      }
   }
   template<typename T>
-  void Convolution::ippFixedConvMask (ImgI *poSrc, ImgI *poDst, 
+  void Convolution::ippFixedConvMask (ImgBase *poSrc, ImgBase *poDst, 
                                       IppStatus (*pMethod)(const T* pSrc, int srcStep,
                                                            T* pDst, int dstStep, 
                                                            IppiSize roiSize, IppiMaskSize mask)) {
@@ -381,7 +381,7 @@ namespace icl {
 
   // {{{ generic fallback convolution
   template<typename ImageT, typename KernelT>
-  void Convolution::cGenericConv (ImgI *poSrc, ImgI *poDst)
+  void Convolution::cGenericConv (ImgBase *poSrc, ImgBase *poDst)
   {
     Img<ImageT> *poS = (Img<ImageT>*) poSrc;
     Img<ImageT> *poD = (Img<ImageT>*) poDst;
@@ -415,7 +415,7 @@ namespace icl {
   // {{{ static MethodPointers aGenericConvs
 
   // array of image- and kernel-type selective generic convolution methods
-  void (Convolution::*Convolution::aGenericConvs[2][2])(ImgI *poSrc, ImgI *poDst) = {
+  void (Convolution::*Convolution::aGenericConvs[2][2])(ImgBase *poSrc, ImgBase *poDst) = {
 #ifdef WITH_IPP_OPTIMIZATION 
      {&Convolution::ippGenericConv<icl8u,int>,    // 8u - 8u
       &Convolution::ippGenericConv<icl8u,float>},  // 8u - 32f
@@ -431,9 +431,9 @@ namespace icl {
 
   // }}}
 
-  // {{{ Convolution::apply (ImgI *poSrc, ImgI **ppoDst)
+  // {{{ Convolution::apply (ImgBase *poSrc, ImgBase **ppoDst)
 
-  void Convolution::apply(ImgI *poSrc, ImgI **ppoDst)
+  void Convolution::apply(ImgBase *poSrc, ImgBase **ppoDst)
   {
     FUNCTION_LOG("");
 
@@ -476,7 +476,7 @@ namespace icl {
 
   // {{{ DynamicConvolution
 
-  DynamicConvolution::DynamicConvolution (const ImgI* poKernel) : 
+  DynamicConvolution::DynamicConvolution (const ImgBase* poKernel) : 
      Convolution ()
   {
      poKernelBuf = new icl::Img<icl32f>(Size(3,3), 1);
@@ -487,7 +487,7 @@ namespace icl {
      delete poKernelBuf;
   }
 
-  void DynamicConvolution::setKernel (const ImgI* poKernel) {
+  void DynamicConvolution::setKernel (const ImgBase* poKernel) {
      ICLASSERT_RETURN(poKernel->getChannels() > 0);
 
      // resize kernel buffer if necessary

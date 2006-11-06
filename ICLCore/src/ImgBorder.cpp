@@ -113,7 +113,7 @@ namespace icl{
   }
   // }}}
   
-  void ImgBorder::copy(ImgI *poImage){
+  void ImgBorder::copy(ImgBase *poImage){
     // {{{ open
 
  /** copy strategy:
@@ -156,7 +156,7 @@ namespace icl{
 
   // }}}
  
-  void ImgBorder::fromOther(ImgI *dst, ImgI* src){
+  void ImgBorder::fromOther(ImgBase *dst, ImgBase* src){
     // {{{ open
 
     FUNCTION_LOG("");

@@ -5,7 +5,7 @@
 #include <map>
 #include <Img.h>
 #include <Size.h>
-#include <FileWrite.h>
+#include <FileWriter.h>
 #include <stdlib.h>
 
 using std::vector;
@@ -474,11 +474,11 @@ namespace icl{
   
   using namespace iclxpm;
   
-  ImgI* TestImages::create(const string& name, const Size& size,format f, depth d){
+  ImgBase* TestImages::create(const string& name, const Size& size,format f, depth d){
     // {{{ open
 
     Converter conv;
-    ImgI *dst = imgNew(d,size,f);
+    ImgBase *dst = imgNew(d,size,f);
     Img8u *src = 0;
     if(name == "women"){
       src = read_xpm(ppc_woman_xpm);
@@ -497,10 +497,10 @@ namespace icl{
 
   // }}}
 
-  void TestImages::xv(ImgI *image, const string& name, long msec){
+  void TestImages::xv(ImgBase *image, const string& name, long msec){
     // {{{ open
 
-    FileWrite(name).write(image);
+    FileWriter(name).write(image);
     system(string("xv ").append(name).append(" &").c_str());
     usleep(msec*1000);
     system(string("rm -rf ").append(name).c_str());

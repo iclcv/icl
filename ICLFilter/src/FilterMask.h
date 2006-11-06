@@ -37,7 +37,7 @@ namespace icl {
      }
 
      /// prepare filter operation: ensure compatible image format and size
-     bool prepare (ImgI **ppoDst, const ImgI *poSrc);
+     bool prepare (ImgBase **ppoDst, const ImgBase *poSrc);
     
      /// compute neccessary ROI offset and size
      /** This functions computes the to-be-used ROI for the source image, 
@@ -50,7 +50,7 @@ namespace icl {
          @param oROIsize    new ROI size
          @return whether a valid ROI remains
      */
-     bool computeROI(const ImgI *poSrc, Point& oROIoffset, Size& oROIsize);
+     bool computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize);
      
   protected:
      Size  oMaskSize;  //< size of filter mask

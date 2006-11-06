@@ -26,7 +26,7 @@ poSrc have not compatible formats.
 @param poDst destination image
 @param poSrc source image
 */
-void iclcc(ImgI *poDst, ImgI *poSrc);
+void iclcc(ImgBase *poDst, ImgBase *poSrc);
   
 
 /// Convert an image of GRAY8-format to any other format
@@ -34,49 +34,49 @@ void iclcc(ImgI *poDst, ImgI *poSrc);
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromGray8(ImgI *poDst, ImgI *poSrc);
+void convertFromGray8(ImgBase *poDst, ImgBase *poSrc);
 
 /// Convert an image of GRAY32-format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromGray32(ImgI *poDst, ImgI *poSrc);
+void convertFromGray32(ImgBase *poDst, ImgBase *poSrc);
 
 /// Convert an image of RGB8-format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromRGB8(ImgI *poDst, ImgI *poSrc);
+void convertFromRGB8(ImgBase *poDst, ImgBase *poSrc);
 
 /// Convert an image of RGB32-format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromRGB32(ImgI *poDst, ImgI *poSrc);
+void convertFromRGB32(ImgBase *poDst, ImgBase *poSrc);
 
 /// Convert an image of YUV8-format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromYUV8(ImgI *poDst,ImgI *poSrc);
+void convertFromYUV8(ImgBase *poDst,ImgBase *poSrc);
 
 /// Convert an image of YUV32-format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromYUV32(ImgI *poDst,ImgI *poSrc);
+void convertFromYUV32(ImgBase *poDst,ImgBase *poSrc);
 
 /// Convert an image of LAB8-format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromLAB8(ImgI *poDst,ImgI *poSrc);
+void convertFromLAB8(ImgBase *poDst,ImgBase *poSrc);
 
 /// Convert an image of LAB32-format to any other format
 /**
@@ -84,34 +84,34 @@ void convertFromLAB8(ImgI *poDst,ImgI *poSrc);
 @param poSrc source image
 */
 
-void convertFromLAB32(ImgI *poDst,ImgI *poSrc);
+void convertFromLAB32(ImgBase *poDst,ImgBase *poSrc);
 /// Convert an image of RGBA8-format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromRGBA8(ImgI *poDst, ImgI *poSrc);
+void convertFromRGBA8(ImgBase *poDst, ImgBase *poSrc);
 
 /// Convert an image of RGBA32-format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromRGBA32(ImgI *poDst, ImgI *poSrc);
+void convertFromRGBA32(ImgBase *poDst, ImgBase *poSrc);
 
 /// Convert an image of HLS8-format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromHLS8(ImgI *poDst, ImgI *poSrc);
+void convertFromHLS8(ImgBase *poDst, ImgBase *poSrc);
 
 /// Convert an image of HLS32-format to any other format
 /**
 @param poDst destination image
 @param poSrc source image
 */
-void convertFromHLS32(ImgI *poDst, ImgI *poSrc);
+void convertFromHLS32(ImgBase *poDst, ImgBase *poSrc);
 
 /// Convert an image in YUV420-format to RGB8 format (ippi accelerated)
 /**

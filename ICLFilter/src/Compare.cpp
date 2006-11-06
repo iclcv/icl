@@ -377,9 +377,9 @@ namespace icl {
   
 #endif
 
-   // {{{ ImgI* functions 
+   // {{{ ImgBase* functions 
   
-   void Compare::compare(const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst, Compare::op cmpOp)
+   void Compare::compare(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst, Compare::op cmpOp)
       // {{{ open
    {
       ICLASSERT_RETURN( poSrc1 && poSrc2 && poSrc1->getDepth() == poSrc2->getDepth() );
@@ -394,7 +394,7 @@ namespace icl {
    }
    // }}}
   
-   void Compare::equalEps(const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst, icl32f eps)
+   void Compare::equalEps(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst, icl32f eps)
       // {{{ open
    {
       ICLASSERT_RETURN( poSrc1 && poSrc2 && poSrc1->getDepth() == poSrc2->getDepth() );
@@ -411,7 +411,7 @@ namespace icl {
    }
    // }}}
 
-   void Compare::compareC(const ImgI *poSrc, icl32f value, ImgI **ppoDst, Compare::op cmpOp)
+   void Compare::compareC(const ImgBase *poSrc, icl32f value, ImgBase **ppoDst, Compare::op cmpOp)
       // {{{ open
    {
       if (!Filter::prepare (ppoDst, poSrc, depth8u)) return;
@@ -422,7 +422,7 @@ namespace icl {
    }
    // }}}
   
-   void Compare::equalEpsC(const ImgI *poSrc, icl32f value, ImgI **ppoDst, icl32f eps)
+   void Compare::equalEpsC(const ImgBase *poSrc, icl32f value, ImgBase **ppoDst, icl32f eps)
       // {{{ open
    {
       if (!Filter::prepare (ppoDst, poSrc, depth8u)) return;

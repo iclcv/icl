@@ -7,8 +7,8 @@
 using namespace icl;
 
 void test (icl::depth eDepth) {
-   ImgI *pSrc = imgNew (eDepth, Size(100, 100), formatRGB);
-   ImgI *pDst = 0;
+   ImgBase *pSrc = imgNew (eDepth, Size(100, 100), formatRGB);
+   ImgBase *pDst = 0;
 
    printf ("testing filters with image depth: %s\n", 
            eDepth == depth8u ? "depth8u" : "depth32f");
@@ -52,7 +52,7 @@ void test (icl::depth eDepth) {
    delete pConv;
 
    printf (" dynamic convolution\n");
-   ImgI *poKernel = imgNew (eDepth, Size(100, 100), formatGray);
+   ImgBase *poKernel = imgNew (eDepth, Size(100, 100), formatGray);
 // IPP seems to handle only odd mask sizes!
    poKernel->setROI (Rect(0,0, 10,10));
 //   poKernel->setROI (Rect(0,0, 11,11));

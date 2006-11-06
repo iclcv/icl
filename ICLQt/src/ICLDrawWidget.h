@@ -7,7 +7,7 @@
 namespace icl{
 
   class GLPaintEngine;
-  class ImgI; 
+  class ImgBase; 
   
 /// Exteded Image visualization widget, with a drawing state machine interface
 /** The ICLDrawWidget can be used to draw annotation on images in realtime.
@@ -46,7 +46,7 @@ namespace icl{
     void abs();
     void rel();
     
-    void image(ImgI *image, float x, float y, float w, float h);
+    void image(ImgBase *image, float x, float y, float w, float h);
     void text(std::string text, float x, float y, float w=-1, float h=-1);
     void point(float x, float y); 
     void line(float x1, float y1, float x2, float y2);

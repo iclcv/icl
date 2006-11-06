@@ -11,8 +11,8 @@ class QWidget;
 
 namespace icl{
 
-  /// Forward declaration of the ImgI class
-  class ImgI;
+  /// Forward declaration of the ImgBase class
+  class ImgBase;
     
   /// TODO
   class QtPaintEngine : public PaintEngine{
@@ -31,7 +31,7 @@ namespace icl{
 
     virtual void line(const Point &a, const Point &b);
     virtual void point(const Point &p);
-    virtual void image(const Rect &r,ImgI *image, PaintEngine::AlignMode mode = PaintEngine::Justify);
+    virtual void image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify);
     virtual void image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify);
     virtual void rect(const Rect &r);
     virtual void ellipse(const Rect &r);
@@ -51,7 +51,7 @@ namespace icl{
     
     QFont m_oFont;
     QImageConverter m_oQImageConverter;
-    ImgI *m_poScaledImage;
+    ImgBase *m_poScaledImage;
   };
 }// namespace
 #endif

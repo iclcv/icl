@@ -23,7 +23,7 @@ namespace icl {
 #endif
 
   //forward declaration for the Image interface
-  class ImgI;
+  class ImgBase;
 
   /// forward declaration of the Img-class
   template<class T> class Img;

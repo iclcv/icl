@@ -8,7 +8,7 @@ class QImage;
 
 namespace icl{
 
-  /// class for conversion between QImage and ImgI
+  /// class for conversion between QImage and ImgBase
   /** The QImageConverter class provides functionality for conversion
       between the QImage class and the Img8u/Img32f classes.
       It provides an intern buffer handling for the destination images, 
@@ -22,12 +22,12 @@ namespace icl{
       <h2>Use cases</h2>
       The basic use case is just to convert one Image into another:
       <pre>       
-      ImgI *i = imgNew(...);
+      ImgBase *i = imgNew(...);
       QImage *q = QImageConverter(i).getImage();
       </pre>
       This will temporarily create a converter object on the stack,
       that converts the given image <em>i</em> into a qimage. 
-      The opposite direction (QImage to ImgI) behaves identically.
+      The opposite direction (QImage to ImgBase) behaves identically.
       
       Another use case is to optimize performance in a working loop,
       by reusing the same instance of QImageConverter. By writing
@@ -35,14 +35,14 @@ namespace icl{
       QImageConverter c;
       while(true){
          ...
-         ImgI *i = ...
+         ImgBase *i = ...
          c.setImage(i);
          QImage *q = q.getQImage();
          ...
       }
       </pre>
       The converter will internally adapt itself to this use-case
-      (getting pointers to ImgI objects and returning pointers to
+      (getting pointers to ImgBase objects and returning pointers to
       QImages) that no memory allocation must be performed during the
       iteration. Only if several use cases are performed alternating, it
       might be necessary to allocate and release memory during lifetime.
@@ -63,8 +63,8 @@ namespace icl{
     /// creates an empty QImageConverter object
     QImageConverter();
 
-    /// creates a QImageConverter object with given ImgI
-    QImageConverter(const ImgI *image);
+    /// creates a QImageConverter object with given ImgBase
+    QImageConverter(const ImgBase *image);
 
     /// creates a QImageConverter object with given QImage
     QImageConverter(const QImage *qimage);
@@ -82,12 +82,12 @@ namespace icl{
     */
     const QImage *getQImage();
 
-    /// returns converted ImgI (of depth "depth8u")
+    /// returns converted ImgBase (of depth "depth8u")
     /** This function will cause an error if no images were set before.
         Images can be set by calling setImage, setQImage, or by using
         one of the not empty constructors.    
     */
-    const ImgI *getImage();
+    const ImgBase *getImage();
 
     /// returns converted Img8u
     /** This function will cause an error if no images were set before.
@@ -107,7 +107,7 @@ namespace icl{
     /** All further set images get the state "outdated". Hence all later
         <em>getXXXX-calls</em> must perform a deep conversion first
     */
-    void setImage(const ImgI *image);
+    void setImage(const ImgBase *image);
     
     /// sets the current source image of type QImage
     /** All further set images get the state "outdated". Hence all later

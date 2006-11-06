@@ -1,7 +1,7 @@
 #ifndef ICL_FILTER_H
 #define ICL_FILTER_H
 
-#include <ImgI.h>
+#include <ImgBase.h>
 
 namespace icl {
   /// Abstract class interface for filter operations
@@ -39,28 +39,28 @@ namespace icl {
 
      /// check+adapt destination images parameters against given values
      /// bCheckOnly mode ignores the given imgSize
-     bool prepare (ImgI **ppoDst, depth eDepth, const Size &imgSize, 
+     bool prepare (ImgBase **ppoDst, depth eDepth, const Size &imgSize, 
                    format eFormat, int nChannels, const Rect& roi);
 
      /// check+adapt destination image to properties of given source image
-     bool prepare (ImgI **ppoDst, const ImgI *poSrc) {
+     bool prepare (ImgBase **ppoDst, const ImgBase *poSrc) {
         return prepare (ppoDst, poSrc->getDepth(), chooseSize (poSrc),
                         poSrc->getFormat(), poSrc->getChannels (), chooseROI (poSrc));
      }
 
      /// check+adapt destination image to properties of given source image
      /// but use explicitly given depth
-     bool prepare (ImgI **ppoDst, const ImgI *poSrc, depth eDepth) {
+     bool prepare (ImgBase **ppoDst, const ImgBase *poSrc, depth eDepth) {
         return prepare (ppoDst, eDepth, chooseSize (poSrc),
                         poSrc->getFormat(), poSrc->getChannels (), chooseROI (poSrc));
      }
 
      /// return to-be-used image size depending on bClipToROI
-     const Size chooseSize (const ImgI *poSrc) {
+     const Size chooseSize (const ImgBase *poSrc) {
         return bClipToROI ? poSrc->getROISize () : poSrc->getSize ();
      }
      /// return to-be-used ROI depending on bClipToROI
-     const Rect chooseROI (const ImgI *poSrc) {
+     const Rect chooseROI (const ImgBase *poSrc) {
         return bClipToROI ? Rect (Point::zero, poSrc->getROISize ())
                           : poSrc->getROI();
      }

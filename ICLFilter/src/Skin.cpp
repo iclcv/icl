@@ -25,14 +25,14 @@ namespace icl {
     m_vecSkinParams = skinParams;
   }
 */
-  void Skin::apply(ImgI *poSrc, ImgI **ppoDst) {
+  void Skin::apply(ImgBase *poSrc, ImgBase **ppoDst) {
     // {{{ open 
     FUNCTION_LOG("");
 
     //Variable initialisation
     float p1, p2, rg_x, rg_y;
     
-    //Ensure ImgI compatibility
+    //Ensure ImgBase compatibility
     ensureCompatible(&m_poChromaApply, depth8u, 
                      poSrc->getSize(), formatChroma);
     ensureCompatible(ppoDst, depth8u, poSrc->getSize(), 
@@ -72,14 +72,14 @@ namespace icl {
   
 // }}}
 
-  void Skin::train(ImgI *poSrc) {
+  void Skin::train(ImgBase *poSrc) {
     // {{{ open 
     FUNCTION_LOG("");
 
     //Variable initialisation
     std::vector<float> vecTmpParams(6);
 
-    //Ensure ImgI compatibility
+    //Ensure ImgBase compatibility
     ensureCompatible(&m_poChromaTrain, 
                      depth8u, poSrc->getSize(), 
                      formatChroma);

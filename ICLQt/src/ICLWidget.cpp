@@ -254,7 +254,7 @@ namespace icl{
 
   // }}}
   
-  void ICLWidget::setImage(ImgI *input){
+  void ICLWidget::setImage(ImgBase *input){
     // {{{ open
 
     if(!op.on || !input){
@@ -370,7 +370,7 @@ namespace icl{
     // {{{ open
 
     std::vector<string> info;
-    ImgI* i = m_poImage;
+    ImgBase* i = m_poImage;
     if(!i){
       info.push_back("Image is NULL");
       return info;

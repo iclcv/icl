@@ -1,5 +1,5 @@
 /*
-  ImgI.cpp
+  ImgBase.cpp
 
   Written by: Michael Götting (2006)
               University of Bielefeld
@@ -7,7 +7,7 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "ImgI.h"
+#include "ImgBase.h"
 #include "Img.h"
 
 using namespace std;
@@ -16,17 +16,17 @@ namespace icl {
 
 // {{{ constructor / destructor 
 
-  ImgI::ImgI(depth d, const ImgParams &params):
+  ImgBase::ImgBase(depth d, const ImgParams &params):
     m_oParams(params),m_eDepth(d)
   {
-    FUNCTION_LOG("ImgI(" << getWidth()
+    FUNCTION_LOG("ImgBase(" << getWidth()
                  << "," << getHeight()
                  << "," << translateFormat(getFormat()) 
                  << ", "<< translateDepth(getDepth()) 
                  << "," << getChannels() << ")  this:" << this); 
   }
 
-ImgI::~ImgI()
+ImgBase::~ImgBase()
 {
   FUNCTION_LOG("");
 }
@@ -35,10 +35,10 @@ ImgI::~ImgI()
 
 // {{{ utillity functions
 
-ImgI* ImgI::shallowCopy(ImgI** ppoDst) const {
+ImgBase* ImgBase::shallowCopy(ImgBase** ppoDst) const {
   FUNCTION_LOG("");
 
-  ImgI* poDst = ppoDst ? *ppoDst : 0;
+  ImgBase* poDst = ppoDst ? *ppoDst : 0;
 
   // create image with zero channels
   if (!poDst) poDst = imgNew(getDepth(),getSize(),0,getROI());
@@ -54,10 +54,10 @@ ImgI* ImgI::shallowCopy(ImgI** ppoDst) const {
   return poDst;
 }
 
-ImgI* ImgI::shallowCopy(const std::vector<int>& vChannels, ImgI** ppoDst) const {
+ImgBase* ImgBase::shallowCopy(const std::vector<int>& vChannels, ImgBase** ppoDst) const {
   FUNCTION_LOG("");
 
-  ImgI* poDst = ppoDst ? *ppoDst : 0;
+  ImgBase* poDst = ppoDst ? *ppoDst : 0;
 
   // create image with zero channels
   if (!poDst) poDst = imgNew(getDepth(),getSize(),0,getROI());
@@ -79,7 +79,7 @@ ImgI* ImgI::shallowCopy(const std::vector<int>& vChannels, ImgI** ppoDst) const 
 }
 
 
-void ImgI::print(const string sTitle) const
+void ImgBase::print(const string sTitle) const
 {
   FUNCTION_LOG(sTitle);
   printf(   " -----------------------------------------\n"
@@ -111,7 +111,7 @@ void ImgI::print(const string sTitle) const
 // {{{ convertTo - template
 
 template <class T>
-Img<T> *ImgI::convertTo( Img<T>* poDst) const {
+Img<T> *ImgBase::convertTo( Img<T>* poDst) const {
   FUNCTION_LOG("");
  
   if(!poDst) poDst = new Img<T>(getParams());
@@ -125,13 +125,13 @@ Img<T> *ImgI::convertTo( Img<T>* poDst) const {
   return poDst;
 }
   
-template Img<icl8u>* ImgI::convertTo<icl8u>(Img<icl8u>*) const;
-template Img<icl32f>* ImgI::convertTo<icl32f>(Img<icl32f>*) const;
+template Img<icl8u>* ImgBase::convertTo<icl8u>(Img<icl8u>*) const;
+template Img<icl32f>* ImgBase::convertTo<icl32f>(Img<icl32f>*) const;
 
 // }}}
 
 // {{{ setFormat
-void ImgI::setFormat(format fmt){
+void ImgBase::setFormat(format fmt){
   FUNCTION_LOG("");
   int newcc = getChannelsOfFormat(fmt);
   if(fmt != formatMatrix && newcc != getChannels()){
@@ -144,7 +144,7 @@ void ImgI::setFormat(format fmt){
 
 // {{{ setParams
 
-void ImgI::setParams(const ImgParams &params){
+void ImgBase::setParams(const ImgParams &params){
   FUNCTION_LOG("");
   setChannels(params.getChannels());
   setSize(params.getSize());

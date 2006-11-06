@@ -50,7 +50,7 @@ static const icl8u ucDefaultSaturation = 0;
 static const icl32f fDefaultHue = ucDefaultHue;
 static const icl32f fDefaultSaturation = ucDefaultSaturation;
   
-void iclcc(ImgI *poDst, ImgI *poSrc){
+void iclcc(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
   ICLASSERT_RETURN (poDst->getSize() == poSrc->getSize());
 
@@ -83,7 +83,7 @@ void iclcc(ImgI *poDst, ImgI *poSrc){
 
 // }}}
 
-void convertFromGray8(ImgI *poDst, ImgI *poSrc){
+void convertFromGray8(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
 
   if(poDst->getDepth()==depth8u){
@@ -132,7 +132,7 @@ void convertFromGray8(ImgI *poDst, ImgI *poSrc){
 
   // }}}
   
-void convertFromGray32(ImgI *poDst, ImgI *poSrc){
+void convertFromGray32(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
  if(poDst->getDepth()==depth8u){
     switch(poDst->getFormat()){
@@ -180,7 +180,7 @@ void convertFromGray32(ImgI *poDst, ImgI *poSrc){
  
   // }}}
  
-void convertFromRGB8(ImgI *poDstImage, ImgI *poSrcImage){
+void convertFromRGB8(ImgBase *poDstImage, ImgBase *poSrcImage){
   // {{{ open
 
     icl8u *pR = poSrcImage->asImg<icl8u>()->getData(0);
@@ -292,7 +292,7 @@ void convertFromRGB8(ImgI *poDstImage, ImgI *poSrcImage){
 
   // }}}
 
-void convertFromRGB32(ImgI *poDstImage, ImgI *poSrcImage){
+void convertFromRGB32(ImgBase *poDstImage, ImgBase *poSrcImage){
   // {{{ open
 
     icl32f *pR = poSrcImage->asImg<icl32f>()->getData(0);
@@ -404,7 +404,7 @@ void convertFromRGB32(ImgI *poDstImage, ImgI *poSrcImage){
 
   // }}}
 
-void convertFromRGBA8(ImgI *poDst, ImgI *poSrc){
+void convertFromRGBA8(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
 
   convertFromRGB8(poDst,poSrc);
@@ -412,7 +412,7 @@ void convertFromRGBA8(ImgI *poDst, ImgI *poSrc){
 
   // }}}
 
-void convertFromRGBA32(ImgI *poDst, ImgI *poSrc){
+void convertFromRGBA32(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
 
     convertFromRGB32(poDst,poSrc);
@@ -420,7 +420,7 @@ void convertFromRGBA32(ImgI *poDst, ImgI *poSrc){
 
   // }}}
 
-void convertFromLAB8(ImgI *poDst, ImgI *poSrc){
+void convertFromLAB8(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
   (void)poDst;
   (void)poSrc;
@@ -428,7 +428,7 @@ void convertFromLAB8(ImgI *poDst, ImgI *poSrc){
 }
 // }}}
 
-void convertFromLAB32(ImgI *poDst, ImgI *poSrc){
+void convertFromLAB32(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
   (void)poDst;
   (void)poSrc;
@@ -436,7 +436,7 @@ void convertFromLAB32(ImgI *poDst, ImgI *poSrc){
 }
 // }}}
 
-void convertFromYUV8(ImgI *poDst, ImgI *poSrc){
+void convertFromYUV8(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
   (void)poDst;
   (void)poSrc;
@@ -444,7 +444,7 @@ void convertFromYUV8(ImgI *poDst, ImgI *poSrc){
 }
 // }}}
 
-void convertFromYUV32(ImgI *poDst, ImgI *poSrc){
+void convertFromYUV32(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
   (void)poDst;
   (void)poSrc;
@@ -452,7 +452,7 @@ void convertFromYUV32(ImgI *poDst, ImgI *poSrc){
 }
 // }}}
 
-void convertFromHLS8(ImgI *poDst, ImgI *poSrc){
+void convertFromHLS8(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
   (void)poDst;
   (void)poSrc;
@@ -461,7 +461,7 @@ void convertFromHLS8(ImgI *poDst, ImgI *poSrc){
 
   // }}}
 
-void convertFromHLS32(ImgI *poDst, ImgI *poSrc){
+void convertFromHLS32(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open
     (void)poDst;
     (void)poSrc;

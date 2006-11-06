@@ -103,7 +103,7 @@ namespace icl{
   }
 
   // }}}
-  void GLPaintEngine::image(const Rect &r,ImgI *image, PaintEngine::AlignMode mode){
+  void GLPaintEngine::image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode){
     // {{{ open
     Size s = image->getSize();
     setupRasterEngine(r,s,mode);

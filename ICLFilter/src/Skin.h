@@ -37,13 +37,13 @@ class Skin : public Filter
      @param poSrc The src image
      @param poDst The final skin color mask (binarized)
   **/
-  void apply(icl::ImgI *poSrc, icl::ImgI **ppoDst);
+  void apply(icl::ImgBase *poSrc, icl::ImgBase **ppoDst);
 
   ///Start the training procedure for the skin parabla parameter
   /**
      param The tarining image. Usually a small skin color patttern
   **/
-  void train(icl::ImgI *poSrc);
+  void train(icl::ImgBase *poSrc);
 
   ///Set the skin parabola parameter directly 
   /**
@@ -59,8 +59,8 @@ class Skin : public Filter
   std::vector<float> getSkinParams() { return m_vecSkinParams; }
   
  private:
-  ImgI *m_poChromaApply;
-  ImgI *m_poChromaTrain;
+  ImgBase *m_poChromaApply;
+  ImgBase *m_poChromaTrain;
   std::vector<float> m_vecSkinParams;
   
 }; //class Skin

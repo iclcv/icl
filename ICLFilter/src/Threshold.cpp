@@ -226,9 +226,9 @@ namespace icl {
    // }}}
 #endif
 
-   // {{{ ImgI* versions
+   // {{{ ImgBase* versions
 
-   void Threshold::lt(const ImgI *poSrc, ImgI **ppoDst, icl32f t)
+   void Threshold::lt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
       // {{{ open
    {
       if (!Filter::prepare (ppoDst, poSrc)) return;
@@ -240,7 +240,7 @@ namespace icl {
 
    // }}}
   
-   void Threshold::gt(const ImgI *poSrc, ImgI **ppoDst, icl32f t)
+   void Threshold::gt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
       // {{{ open
    {
       if (!Filter::prepare (ppoDst, poSrc)) return;
@@ -252,7 +252,7 @@ namespace icl {
 
    // }}}
   
-   void Threshold::ltgt(const ImgI *poSrc, ImgI **ppoDst, icl32f tMin, icl32f tMax)
+   void Threshold::ltgt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f tMin, icl32f tMax)
       // {{{ open
    {
       if (!Filter::prepare (ppoDst, poSrc)) return;
@@ -265,7 +265,7 @@ namespace icl {
 
    // }}}
   
-   void Threshold::ltVal(const ImgI *poSrc, ImgI **ppoDst, icl32f t, icl32f val)
+   void Threshold::ltVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
       // {{{ open
    {
       if (!Filter::prepare (ppoDst, poSrc)) return;
@@ -278,7 +278,7 @@ namespace icl {
 
    // }}}
   
-   void Threshold::gtVal(const ImgI *poSrc, ImgI **ppoDst, icl32f t, icl32f val)
+   void Threshold::gtVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
       // {{{ open
    {
       if (!Filter::prepare (ppoDst, poSrc)) return;
@@ -291,7 +291,7 @@ namespace icl {
 
    // }}}
   
-   void Threshold::ltgtVal(const ImgI *poSrc, ImgI **ppoDst, 
+   void Threshold::ltgtVal(const ImgBase *poSrc, ImgBase **ppoDst, 
                            icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal)
       // {{{ open
    {

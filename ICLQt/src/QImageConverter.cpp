@@ -136,7 +136,7 @@ namespace icl{
 
   // }}}
   
-  QImageConverter::QImageConverter(const ImgI *image):
+  QImageConverter::QImageConverter(const ImgBase *image):
     // {{{ open
 
     m_poImgBuffer8u(0),
@@ -187,7 +187,7 @@ namespace icl{
 
   // }}}
 
-  const ImgI *QImageConverter::getImage(){
+  const ImgBase *QImageConverter::getImage(){
     // {{{ open
 
     CHECK;
@@ -223,7 +223,7 @@ namespace icl{
   // }}}
   // {{{ image-setter
 
-  void QImageConverter::setImage(const ImgI *image){
+  void QImageConverter::setImage(const ImgBase *image){
     // {{{ open
 
     ICLASSERT_RETURN( image );
@@ -330,7 +330,7 @@ namespace icl{
     // {{{ open
 
     ICLASSERT_RETURN_VAL(qimage && !qimage->isNull() ,0);
-    ensureCompatible((ImgI**)&image,depth8u,Size(qimage->width(),qimage->height()),3);
+    ensureCompatible((ImgBase**)&image,depth8u,Size(qimage->width(),qimage->height()),3);
     icl8u *ap[3] = { image->getData(0), image->getData(1), image->getData(2) };
     ippiCopy_8u_C3P3R(qimage->bits(),image->getLineStep()*3, ap, image->getLineStep(),image->getSize());
 
@@ -344,7 +344,7 @@ namespace icl{
     // {{{ open
 
     ICLASSERT_RETURN_VAL(qimage && !qimage->isNull() ,0);  
-    ensureCompatible((ImgI**)&image,depth32f,Size(qimage->width(),qimage->height()),3);
+    ensureCompatible((ImgBase**)&image,depth32f,Size(qimage->width(),qimage->height()),3);
     
     int dim = image->getDim();
     icl8u *buf = getBuffer8u(image->getDim()*3);

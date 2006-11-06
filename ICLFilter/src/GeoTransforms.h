@@ -14,14 +14,14 @@ namespace icl {
       Mirror (axis eAxis);
 
       /// Applies the mirror transform to the images
-      void apply (const ImgI *poSrc, ImgI **ppoDst);
+      void apply (const ImgBase *poSrc, ImgBase **ppoDst);
 
    protected:
       /// array of class methods used to transform depth8u and depth32f images
-      void (Mirror::*aMethods[2])(const ImgI *poSrc, ImgI *poDst); 
+      void (Mirror::*aMethods[2])(const ImgBase *poSrc, ImgBase *poDst); 
 
       template<typename T>
-      void mirror (const ImgI *poSrc, ImgI *poDst);
+      void mirror (const ImgBase *poSrc, ImgBase *poDst);
 
    private:
       axis  eAxis;
@@ -50,14 +50,14 @@ namespace icl {
       }
 
       /// Applies the affine transform to the image
-      void apply (const ImgI *poSrc, ImgI **ppoDst);
+      void apply (const ImgBase *poSrc, ImgBase **ppoDst);
 
    protected:
       /// array of class methods used to transform depth8u and depth32f images
-      void (Affine::*aMethods[2])(const ImgI *poSrc, ImgI *poDst); 
+      void (Affine::*aMethods[2])(const ImgBase *poSrc, ImgBase *poDst); 
 
       template<typename T>
-      void affine (const ImgI *poSrc, ImgI *poDst);
+      void affine (const ImgBase *poSrc, ImgBase *poDst);
 
    private:
       void applyT (const double p[2], double aResult[2]);

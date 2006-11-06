@@ -6,7 +6,7 @@ using namespace std;
 
 namespace icl{
   
-  ImgI *imgNew(depth d, const ImgParams &params){
+  ImgBase *imgNew(depth d, const ImgParams &params){
     // {{{ open
 
     if(d == depth8u) return new Img8u(params);
@@ -75,14 +75,14 @@ namespace icl{
 
   // }}}
   
-  void ensureDepth(ImgI ** ppoImage, depth d){
+  void ensureDepth(ImgBase ** ppoImage, depth d){
     // {{{ open
 
     if(!*ppoImage){
       *ppoImage = imgNew(d);
     }
     else if((*ppoImage)->getDepth() != d){
-      ImgI *poNew = imgNew(d,(*ppoImage)->getParams());
+      ImgBase *poNew = imgNew(d,(*ppoImage)->getParams());
       delete *ppoImage;
       *ppoImage = poNew;     
     }
@@ -90,7 +90,7 @@ namespace icl{
 
   // }}}
   
-  void ensureCompatible(ImgI **ppoDst, depth d, const ImgParams &params){
+  void ensureCompatible(ImgBase **ppoDst, depth d, const ImgParams &params){
     // {{{ open
 
     if(!*ppoDst){
@@ -103,7 +103,7 @@ namespace icl{
 
   // }}}
   
-  void ensureCompatible(ImgI **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi){
+  void ensureCompatible(ImgBase **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi){
     // {{{ open
 
     FUNCTION_LOG("");
@@ -118,7 +118,7 @@ namespace icl{
 
   // }}}
 
-  void ensureCompatible(ImgI **dst, const ImgI *src){
+  void ensureCompatible(ImgBase **dst, const ImgBase *src){
     // {{{ open
     ensureCompatible(dst,src->getDepth(),src->getParams());
   }

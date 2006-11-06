@@ -1,5 +1,5 @@
 /*
-ImgI.h
+ImgBase.h
 
 Written by: Michael Götting and Christof Elbrechter(2006)
 University of Bielefeld
@@ -16,12 +16,12 @@ AG Neuroinformatik
 
 namespace icl {
   
-  /// ImgI is the Image-Interface class that provides save access to underlying Img-template
-  /* {{{ ImgI class documentation */
+  /// ImgBase is the Image-Interface class that provides save access to underlying Img-template
+  /* {{{ ImgBase class documentation */
 
   /**
   \section Class
-  The ImgI class provides access to the following basic image features:
+  The ImgBase class provides access to the following basic image features:
    - image size 
    - channel count
    - depth:  depth8 for icl8u or depth32 for icl32f-images
@@ -33,18 +33,18 @@ namespace icl {
             which also provide type-safe access functions, 
             e.g. getData (int).
    
-  \section How to use the ImgI class.
-  As the ImgI is an abstract class, no ImgI objects can be instantiated
+  \section How to use the ImgBase class.
+  As the ImgBase is an abstract class, no ImgBase objects can be instantiated
   It merely provides a common interface to methods provided by the 
   inherited class Img<icl8u> and Img<icl32f>.
 
-  The following example should explain how to work with ImgI class.
+  The following example should explain how to work with ImgBase class.
   
   <pre>
   void special_function_8(Img32f* poImg32f){...}
   void special_function_32(Img8* poImg8f){...}
   
-  void generic_function(ImgI *poImage){
+  void generic_function(ImgBase *poImage){
      if(poImage->getDepth()==depth8u){
         special_function_8(poImage->asImg<icl8u>());
      }else{
@@ -56,7 +56,7 @@ namespace icl {
   <pre>
   template<class T> void template_function(Img<T> *poImg){...}
 
-  void generic_function(ImgI *poImage){
+  void generic_function(ImgBase *poImage){
      if(poImage->getDepth()==depth8u){
         template_function<icl8u>(poImage->asImg<icl8u>);
      }else{
@@ -67,12 +67,12 @@ namespace icl {
 
   Many operations on the Img image class are conceptually independent
   on the concrete pixel type, e.g. recombining channels or resizing. 
-  For these operations the ImgI class provides abstract or implemented
+  For these operations the ImgBase class provides abstract or implemented
   methods ensuring a common and type-independent interface.
 
   For example, to resize an image, one can easily write:
   <pre>
-  void any_function(ImgI *poBase){
+  void any_function(ImgBase *poBase){
      poBase->resize(Size(256,256));
      ...
   }
@@ -81,7 +81,7 @@ namespace icl {
   **/ 
 
   /* }}} */
-  class ImgI
+  class ImgBase
     {   
       public:
       
@@ -89,7 +89,7 @@ namespace icl {
       /* {{{ open */
     
       /// Destructor
-      virtual ~ImgI();
+      virtual ~ImgBase();
       
       //@}
       /* }}} */ 
@@ -103,43 +103,43 @@ namespace icl {
           and a new one is created.
           @param poDst destination image (if Null, a new one is created)
       **/
-      ImgI* shallowCopy(ImgI** ppoDst = NULL) const;
+      ImgBase* shallowCopy(ImgBase** ppoDst = NULL) const;
 
       /// creates a shallow copy of selected channels of this image
       /** @param channelIndices vector containing channel indices to copy
           @param poDst destination image (if Null, a new one is created)*/
-      ImgI* shallowCopy(const std::vector<int>& channelIndices, ImgI** ppoDst = NULL) const;
+      ImgBase* shallowCopy(const std::vector<int>& channelIndices, ImgBase** ppoDst = NULL) const;
 
       /// copies the image data into the destination image
       /** this function is implemented in the Img-template class
           @see Img
       **/
-      virtual ImgI* deepCopy(ImgI* poDst = NULL) const=0;
+      virtual ImgBase* deepCopy(ImgBase* poDst = NULL) const=0;
       
       /// copies (or scales if necessary) the image data into the destination image and performs a
       /** this function is implemented in the Img-template class
           @see Img
       **/
-      virtual ImgI* scaledCopy(ImgI *poDst, scalemode eScaleMode=interpolateNN) const=0;
+      virtual ImgBase* scaledCopy(ImgBase *poDst, scalemode eScaleMode=interpolateNN) const=0;
     
 
       /// copies the image data in the images ROI into the destination images ROI
       /** this function is implemented in the Img-template class
           @see Img
       **/
-      virtual ImgI *deepCopyROI(ImgI *poDst = NULL) const=0;
+      virtual ImgBase *deepCopyROI(ImgBase *poDst = NULL) const=0;
 
       /// scales the image data in the image ROI into the destination images ROI
       /** this function is implemented in the Img-template class
           @see Img
       **/
-      virtual ImgI *scaledCopyROI(ImgI *poDst = NULL, scalemode eScaleMode=interpolateNN) const=0;
+      virtual ImgBase *scaledCopyROI(ImgBase *poDst = NULL, scalemode eScaleMode=interpolateNN) const=0;
 
       /// flips the image about the given axis into the destination image (IPP-OPTIMIZED)
        /** this function is implemented in the Img-template class
            @see Img
        **/ 
-      virtual ImgI *flippedCopyROI(ImgI *poDst = NULL, axis eAxis = axisVert) const=0; 
+      virtual ImgBase *flippedCopyROI(ImgBase *poDst = NULL, axis eAxis = axisVert) const=0; 
       //@}
 
       /* }}} */
@@ -381,8 +381,8 @@ namespace icl {
 
       /* {{{ Constructor  */
 
-      /// Creates an ImgI object with specified image parameters 
-      ImgI(depth d, const ImgParams& params);
+      /// Creates an ImgBase object with specified image parameters 
+      ImgBase(depth d, const ImgParams& params);
 
       /* }}} */
 

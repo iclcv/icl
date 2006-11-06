@@ -112,7 +112,7 @@ namespace icl {
     \param iChannel The channel to calculate the variance from    
     \return The variance from the image
   */
-  vector<float> variance(ImgI *poImg , int iChannel=-1);
+  vector<float> variance(ImgBase *poImg , int iChannel=-1);
   
   //--------------------------------------------------------------------------
   /*!
@@ -131,7 +131,7 @@ namespace icl {
     \param iChannel The channel to calculate the standard deviation from    
     \return The standard deviation from the image
   */
-  vector<float> stdDeviation(ImgI *poImg , int iChannel=-1);
+  vector<float> stdDeviation(ImgBase *poImg , int iChannel=-1);
   
   //--------------------------------------------------------------------------
   /*!
@@ -150,7 +150,7 @@ namespace icl {
     \param iChannel The channel to calculate the variance from
     \return The mean value form the image
   */
-  vector<float> mean(ImgI *poImg, int iChannel=-1);
+  vector<float> mean(ImgBase *poImg, int iChannel=-1);
 
   //--------------------------------------------------------------------------
   /*!

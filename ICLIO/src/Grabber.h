@@ -11,7 +11,7 @@
 #define ICLGRABBER_H
 
 namespace icl {
-  class ImgI;
+  class ImgBase;
 
   /// Common interface class for all grabbers
   class Grabber {
@@ -32,7 +32,7 @@ namespace icl {
          return value is a pointer to an internally stored image. 
          <b>Ownership for this image remains with the Grabber class.</b>
      */
-     virtual ImgI* grab(ImgI *poDst=0)=0;
+     virtual ImgBase* grab(ImgBase *poDst=0)=0;
   }; // class
  
 } // namespace icl

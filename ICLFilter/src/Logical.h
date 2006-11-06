@@ -27,20 +27,20 @@ namespace icl {
       /// Performs a bitwise XOR operation on each pixel with a constant.
       static void XorC (const Img8u *src, const icl8u value, Img8u *dst);
 
-      /// Combines corresponding pixels of two image buffers by a bitwise AND operation (ImgI Version).
-      void And (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst);
-      /// Combines corresponding pixels of two image buffers by a bitwise OR operation (ImgI Version).
-      void Or  (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst);
-      /// Combines corresponding pixels of two image buffers by a bitwise XOR operation (ImgI Version).
-      void Xor (const ImgI *poSrc1, const ImgI *poSrc2, ImgI **ppoDst);
-      /// Performs a bitwise NOT operation on each pixel (ImgI Version).
-      void Not (const ImgI *poSrc, ImgI **ppoDst);
-      /// Performs a bitwise AND operation on each pixel with a constant (ImgI Version).
-      void AndC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst);
-      /// Performs a bitwise OR operation on each pixel with a constant (ImgI Version).
-      void OrC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst);
-      /// Performs a bitwise XOR operation on each pixel with a constant (ImgI Version).
-      void XorC (const ImgI *poSrc, const icl8u value, ImgI **ppoDst);
+      /// Combines corresponding pixels of two image buffers by a bitwise AND operation (ImgBase Version).
+      void And (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
+      /// Combines corresponding pixels of two image buffers by a bitwise OR operation (ImgBase Version).
+      void Or  (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
+      /// Combines corresponding pixels of two image buffers by a bitwise XOR operation (ImgBase Version).
+      void Xor (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
+      /// Performs a bitwise NOT operation on each pixel (ImgBase Version).
+      void Not (const ImgBase *poSrc, ImgBase **ppoDst);
+      /// Performs a bitwise AND operation on each pixel with a constant (ImgBase Version).
+      void AndC (const ImgBase *poSrc, const icl8u value, ImgBase **ppoDst);
+      /// Performs a bitwise OR operation on each pixel with a constant (ImgBase Version).
+      void OrC (const ImgBase *poSrc, const icl8u value, ImgBase **ppoDst);
+      /// Performs a bitwise XOR operation on each pixel with a constant (ImgBase Version).
+      void XorC (const ImgBase *poSrc, const icl8u value, ImgBase **ppoDst);
    };
 } // namespace icl
 

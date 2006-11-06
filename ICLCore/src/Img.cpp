@@ -17,7 +17,7 @@ namespace icl {
 template<class Type>
 Img<Type>::Img(const ImgParams &params):
   // {{{ open
-  ImgI(icl::getDepth<Type>(),params){
+  ImgBase(icl::getDepth<Type>(),params){
   FUNCTION_LOG("Img(params)");
   
   for(int i=0;i<getChannels();i++) {
@@ -32,7 +32,7 @@ template<class Type>
 Img<Type>::Img(const Size &s,int iChannels):
   // {{{ open
 
-  ImgI(icl::getDepth<Type>(),ImgParams(s,iChannels)){
+  ImgBase(icl::getDepth<Type>(),ImgParams(s,iChannels)){
   FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << iChannels << ")  this:" << this );
   
   for(int i=0;i<getChannels();i++) {
@@ -46,7 +46,7 @@ Img<Type>::Img(const Size &s,int iChannels):
 template<class Type>
 Img<Type>::Img(const Size& s, format eFormat):
   // {{{ open
-  ImgI(icl::getDepth<Type>(),ImgParams(s,eFormat)){
+  ImgBase(icl::getDepth<Type>(),ImgParams(s,eFormat)){
   FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ")  this:" << this );
   
   for(int i=0;i<getChannels();i++) {
@@ -61,7 +61,7 @@ template<class Type>
 Img<Type>::Img(const Size &s,int iChannels, format fmt):
   // {{{ open
 
-  ImgI(icl::getDepth<Type>(),ImgParams(s,iChannels,fmt)){
+  ImgBase(icl::getDepth<Type>(),ImgParams(s,iChannels,fmt)){
   FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << 
                iChannels << "," << translateFormat(fmt) << ")  this:" << this );
   
@@ -76,7 +76,7 @@ Img<Type>::Img(const Size &s,int iChannels, format fmt):
 template<class Type>
 Img<Type>::Img(const Size &s, int channels, const std::vector<Type*>& vptData) :
   // {{{ open
-  ImgI(icl::getDepth<Type>(),ImgParams(s,channels)) {
+  ImgBase(icl::getDepth<Type>(),ImgParams(s,channels)) {
   ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
   FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  channels << ",Type**)  this:" << this);
   
@@ -92,7 +92,7 @@ Img<Type>::Img(const Size &s, int channels, const std::vector<Type*>& vptData) :
 template<class Type>
 Img<Type>::Img(const Size &s, int channels, format fmt, const std::vector<Type*>& vptData) :
   // {{{ open
-  ImgI(icl::getDepth<Type>(),ImgParams(s,channels,fmt)){
+  ImgBase(icl::getDepth<Type>(),ImgParams(s,channels,fmt)){
   ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
   FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  channels << 
                "," << translateFormat(fmt) << ",Type**)  this:" << this);
@@ -109,7 +109,7 @@ Img<Type>::Img(const Size &s, int channels, format fmt, const std::vector<Type*>
 template<class Type>
 Img<Type>::Img(const Size &s, format eFormat, const std::vector<Type*>& vptData) :
   // {{{ open
-  ImgI(icl::getDepth<Type>(),ImgParams(s,eFormat)){
+  ImgBase(icl::getDepth<Type>(),ImgParams(s,eFormat)){
   ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
   FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ",Type**)  this:" << this);
    
@@ -126,7 +126,7 @@ template<class Type>
 Img<Type>::Img(const Img<Type>& tSrc):
   // {{{ open
 
-    ImgI(tSrc.getDepth(),tSrc.getParams())
+    ImgBase(tSrc.getDepth(),tSrc.getParams())
 {
   FUNCTION_LOG("this: " << this);
   m_vecChannels = tSrc.m_vecChannels;
@@ -166,8 +166,8 @@ Img<Type>& Img<Type>::operator=(const Img<Type>& tSrc)
 // {{{  class organisation : 
 
 //----------------------------------------------------------------------------
-template<class Type> ImgI*
-Img<Type>::deepCopy(ImgI* poDst) const
+template<class Type> ImgBase*
+Img<Type>::deepCopy(ImgBase* poDst) const
   // {{{ open
 
 {
@@ -184,8 +184,8 @@ Img<Type>::deepCopy(ImgI* poDst) const
   // }}}
 
 //--------------------------------------------------------------------------
-template<class Type> ImgI*
-Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
+template<class Type> ImgBase*
+Img<Type>::scaledCopy(ImgBase *poDst,scalemode eScaleMode) const
   // {{{ open
 
 {
@@ -226,8 +226,8 @@ Img<Type>::scaledCopy(ImgI *poDst,scalemode eScaleMode) const
 // }}}
 
 //--------------------------------------------------------------------------
-template<class Type> ImgI*
-Img<Type>::deepCopyROI(ImgI *poDst) const
+template<class Type> ImgBase*
+Img<Type>::deepCopyROI(ImgBase *poDst) const
   // {{{ open
 
 {
@@ -259,8 +259,8 @@ Img<Type>::deepCopyROI(ImgI *poDst) const
   // }}}
 
 //----------------------------------------------------------------------------
-template<class Type> ImgI*
-Img<Type>::scaledCopyROI(ImgI *poDst, scalemode eScaleMode) const
+template<class Type> ImgBase*
+Img<Type>::scaledCopyROI(ImgBase *poDst, scalemode eScaleMode) const
   // {{{ open
 
 {
@@ -291,8 +291,8 @@ Img<Type>::scaledCopyROI(ImgI *poDst, scalemode eScaleMode) const
 
 // }}}
 
-template<class Type> ImgI*
-Img<Type>::flippedCopyROI(ImgI *poDst, axis eAxis) const
+template<class Type> ImgBase*
+Img<Type>::flippedCopyROI(ImgBase *poDst, axis eAxis) const
   // {{{ open
 
 {

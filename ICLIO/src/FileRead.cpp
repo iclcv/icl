@@ -156,7 +156,7 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  ImgI* FileRead::grab(ImgI* poDst) 
+  ImgBase* FileRead::grab(ImgBase* poDst) 
     throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
     // {{{ open 
 
@@ -182,7 +182,7 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  void FileRead::readImage(const string& sFileName, ImgI** ppoDst) 
+  void FileRead::readImage(const string& sFileName, ImgBase** ppoDst) 
     throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
     // {{{ open 
 
@@ -354,7 +354,7 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  void FileRead::readDataPNM(ImgI* poImg, FileInfo &oInfo) {
+  void FileRead::readDataPNM(ImgBase* poImg, FileInfo &oInfo) {
     // {{{ open
 
     if (oInfo.iNumImages == oInfo.iNumChannels ||

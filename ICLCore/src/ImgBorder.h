@@ -57,7 +57,7 @@ namespace icl{
     
     /// sets up an images border by extruding the images ROI pixels towards the image border
     /** @param poImage destination image */
-    static void copy(ImgI *poImage);
+    static void copy(ImgBase *poImage);
     
     /// copies an images border from another image
     /** @param poImage destination image
@@ -65,7 +65,7 @@ namespace icl{
                             the same size and channel count as poImage. The function
                             will print a warning and return immediately without any 
                             changings otherwise.*/
-    static void fromOther(ImgI *poImage, ImgI* poOther);
+    static void fromOther(ImgBase *poImage, ImgBase* poOther);
 
   };
 }
