@@ -6,7 +6,8 @@ if [ ! "$#" = "2" ] ; then
     echo -e "\t class name with the destination class name. Then it"
     echo -e "\t will rename all the classes header and source file"
     echo -e "\t (if found) in the svn repository."
-
+    exit -1
+fi
 
 DIR=`pwd`
 SRC_NAME=$1
@@ -42,4 +43,3 @@ if [ $CLASS_CPP ] ; then
 fi
 
 echo -e "done!  call \n\t make depend && make all && svn commit\n\t now!"
-
