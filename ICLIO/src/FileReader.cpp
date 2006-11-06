@@ -1,5 +1,5 @@
 /*
-  FileRead.cpp
+  FileReader.cpp
 
   Written by: Michael Götting, Robert Haschke (2006)
               University of Bielefeld
@@ -16,7 +16,7 @@
 #include <fstream>
 #include <sstream>
 
-#include <FileRead.h>
+#include <FileReader.h>
 #include <Converter.h>
 
 using namespace std;
@@ -28,7 +28,7 @@ namespace icl {
   }
 
   //--------------------------------------------------------------------------
-  FileRead::FileRead(string sPattern) throw (ICLException) 
+  FileReader::FileReader(string sPattern) throw (ICLException) 
     // {{{ open
 
   {
@@ -74,7 +74,7 @@ namespace icl {
 // }}}
 
   //--------------------------------------------------------------------------
-  FileRead::FileRead(const string& sPrefix, const string& sType, 
+  FileReader::FileReader(const string& sPrefix, const string& sType, 
                      int iObjStart, int iObjEnd, 
                      int iImageStart, int iImageEnd) throw (ICLException) 
     // {{{ open 
@@ -103,12 +103,12 @@ namespace icl {
 // }}}
   
   //--------------------------------------------------------------------------
-  FileRead::FileRead(const FileRead& other) : m_poCurImg(0) {
+  FileReader::FileReader(const FileReader& other) : m_poCurImg(0) {
      *this = other;
   }
   
   //--------------------------------------------------------------------------
-  FileRead& FileRead::operator=(const FileRead& other) {
+  FileReader& FileReader::operator=(const FileReader& other) {
     // {{{ open
 
      if (!this->m_bBuffered) delete this->m_poCurImg;
@@ -127,7 +127,7 @@ namespace icl {
 // }}}
 
   //--------------------------------------------------------------------------
-  FileRead::~FileRead ()
+  FileReader::~FileReader ()
      // {{{ open
   {
      for (ImageBuffer::iterator it=m_vecImgBuffer.begin(), 
@@ -140,7 +140,7 @@ namespace icl {
   // }}}
   
   //--------------------------------------------------------------------------
-  void FileRead::init() throw (ICLException) 
+  void FileReader::init() throw (ICLException) 
      // {{{ open
   {
      m_bBuffered = false;
@@ -156,7 +156,7 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  ImgBase* FileRead::grab(ImgBase* poDst) 
+  ImgBase* FileReader::grab(ImgBase* poDst) 
     throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
     // {{{ open 
 
@@ -182,7 +182,7 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  void FileRead::readImage(const string& sFileName, ImgBase** ppoDst) 
+  void FileReader::readImage(const string& sFileName, ImgBase** ppoDst) 
     throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
     // {{{ open 
 
@@ -219,7 +219,7 @@ namespace icl {
   // }}}
   
   //--------------------------------------------------------------------------
-  FileRead::FileList FileRead::bufferImages (bool bStopOnError) throw ()
+  FileReader::FileList FileReader::bufferImages (bool bStopOnError) throw ()
     // {{{ open
 
   {
@@ -259,7 +259,7 @@ namespace icl {
   // }}}
   
   //--------------------------------------------------------------------------
-  void FileRead::readSequenceFile (const std::string& sFileName) 
+  void FileReader::readSequenceFile (const std::string& sFileName) 
      // {{{ open
   {
      string sFile;
@@ -279,7 +279,7 @@ namespace icl {
 // }}}
 
   //--------------------------------------------------------------------------
-  void FileRead::readHeaderPNM (FileInfo &oInfo) {
+  void FileReader::readHeaderPNM (FileInfo &oInfo) {
     // {{{ open
 
     openFile (oInfo, "rb"); // open file for reading
@@ -354,7 +354,7 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  void FileRead::readDataPNM(ImgBase* poImg, FileInfo &oInfo) {
+  void FileReader::readDataPNM(ImgBase* poImg, FileInfo &oInfo) {
     // {{{ open
 
     if (oInfo.iNumImages == oInfo.iNumChannels ||
@@ -397,7 +397,7 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  void FileRead::readHeaderJPG (FileInfo &oInfo) {
+  void FileReader::readHeaderJPG (FileInfo &oInfo) {
      // {{{ open
 
      openFile (oInfo, "rb"); // open file for reading
@@ -457,7 +457,7 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  void FileRead::readDataJPG(Img<icl8u>* poImg, FileInfo &oInfo)
+  void FileReader::readDataJPG(Img<icl8u>* poImg, FileInfo &oInfo)
      // {{{ open
 
   {
@@ -519,7 +519,7 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  bool FileRead::findFile (const std::string& sFile,
+  bool FileReader::findFile (const std::string& sFile,
                            FileList::iterator& itList) {
     // {{{ open
 
@@ -537,7 +537,7 @@ namespace icl {
 // }}}
 
   //--------------------------------------------------------------------------
-  void FileRead::removeFiles (const FileList& vecFiles) {
+  void FileReader::removeFiles (const FileList& vecFiles) {
     // {{{ open
 
      FileList::iterator itList = m_vecFileName.begin();

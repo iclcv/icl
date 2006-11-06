@@ -1,5 +1,5 @@
 #include "Wiener.h"
-#include "FileRead.h"
+#include "FileReader.h"
 #include "TestImages.h"
 
 using namespace std;
@@ -12,7 +12,7 @@ int main(int nArgs, char **ppcArg){
    if (nArgs > 2) dstName = ppcArg[2];
    if (nArgs > 1) {
       // read image from file
-      FileRead reader(ppcArg[1]);
+      FileReader reader(ppcArg[1]);
       src = reader.grab();
    } else src = TestImages::create("women");
 

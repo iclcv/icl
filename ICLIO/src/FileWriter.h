@@ -7,8 +7,8 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#ifndef ICLFILEWRITE_H
-#define ICLFILEWRITE_H
+#ifndef ICLFILEWRITER_H
+#define ICLFILEWRITER_H
 
 #include <Writer.h>
 #include <Img.h>
@@ -17,7 +17,7 @@ namespace icl {
    struct FileInfo;
 
    /// write ICL images to file
-   /** The FileWrite class supports writing to PNM, JPG and the proprietary
+   /** The FileWriter class supports writing to PNM, JPG and the proprietary
        ICL image format. The format is choosen according to the file type
        extension of the file name. The proprietary ICL format supports writing
        image depths other than depth8u. In all other cases the image is
@@ -27,18 +27,18 @@ namespace icl {
        operation.
    */
 
-   class FileWrite : public Writer {
+   class FileWriter : public Writer {
    public: 
       /// Constructor
-      FileWrite(const std::string& sFileName) {setFileName (sFileName);}
+      FileWriter(const std::string& sFileName) {setFileName (sFileName);}
 
       void setFileName (const std::string& sFileName) throw (ICLException);
       void setCounter (int iID) {nCounter = iID;}
 
-      void write(ImgI* poSrc) throw (FileOpenException, ICLException);
+      void write(ImgBase* poSrc) throw (FileOpenException, ICLException);
     
    private:
-      void writePNM (ImgI *poSrc, const FileInfo& oInfo);
+      void writePNM (ImgBase *poSrc, const FileInfo& oInfo);
       void writeJPG (Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality=85);
       std::string buildFileName ();
 
@@ -49,4 +49,4 @@ namespace icl {
    }; //class
 
 } //namespace icl
-#endif //ICLFILEWRITE_H
+#endif //ICLFILEWRITER_H

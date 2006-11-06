@@ -1,5 +1,5 @@
 #include "Img.h"
-#include "FileRead.h"
+#include "FileReader.h"
 #include "FileWriter.h"
 
 using namespace std;
@@ -10,7 +10,7 @@ int main()
   //---- Allocate variables ----
   ImgBase* poImg = imgNew(depth8u,Size(144,144));
 
-  FileRead  ioRead("demoImages/mask*.pgm");
+  FileReader  ioRead("demoImages/mask*.pgm");
   FileWriter ioWrite("demoImages/outmask##.pgm");
   
   ioRead.grab(poImg);
@@ -23,10 +23,10 @@ int main()
   ioWrite.setFileName ("demoImages/outmask##.jpg");
   ioWrite.write(poImg);
 
-  ioRead = FileRead ("demoImages/*.jpg");
+  ioRead = FileReader ("demoImages/*.jpg");
   ioRead.grab(poImg);
 
-  FileRead io (ioRead);
+  FileReader io (ioRead);
   io.grab (poImg);
   ioWrite.write(poImg);
 

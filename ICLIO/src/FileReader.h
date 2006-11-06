@@ -1,5 +1,5 @@
 /*
-  FileRead.h
+  FileReader.h
 
   Written by: Michael Götting, Robert Haschke (2006)
   University of Bielefeld
@@ -19,11 +19,11 @@
 
 namespace icl {
  
-/// The FileRead class implements the interface for reading images from file
+/// The FileReader class implements the interface for reading images from file
 /**
    @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
 **/
-   class FileRead : public Grabber
+   class FileReader : public Grabber
       {
       public:
          typedef std::vector<std::string> FileList;
@@ -33,7 +33,7 @@ namespace icl {
          ///Load images from files specified with shell-like regular expression
          /** @param sPattern shell expression describing file location(s)
           **/
-         FileRead(std::string sPattern) throw (ICLException);
+         FileReader(std::string sPattern) throw (ICLException);
   
          ///Load images from files having the pattern sPrefix[obj]__[img].sType 
          ///where [obj] and [img] are replaced by numbers in a given range
@@ -44,15 +44,15 @@ namespace icl {
              @param iImageStart Start with image iImageStart
              @param iImageEnd End with object iImageEnd
          **/
-         FileRead(const std::string& sPrefix, const std::string& sType, 
+         FileReader(const std::string& sPrefix, const std::string& sType, 
                   int iObjStart, int iObjEnd, int iImageStart, int iImageEnd)
             throw (ICLException);
 
-         FileRead(const FileRead& other);
-         FileRead& operator=(const FileRead& other);
+         FileReader(const FileReader& other);
+         FileReader& operator=(const FileReader& other);
 
          ///Destructor
-         virtual ~FileRead ();
+         virtual ~FileReader ();
 
          ///Grab the next image from file/ buffer
          virtual ImgBase* grab(ImgBase* poDst=0) 
@@ -103,7 +103,7 @@ namespace icl {
 
          struct jpeg_decompress_struct jpgCinfo;
          struct icl_jpeg_error_mgr     jpgErr;
-      }; // class FileRead
+      }; // class FileReader
  
 } // namespace icl
 
