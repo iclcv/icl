@@ -113,10 +113,15 @@ namespace icl{
 
   void DefaultColorBlobSearcher::pixelRatingRemoved(int index){
     // {{{ open
-
-    m_vecXMedianLists.erase(m_vecXMedianLists.begin()+index);
-    m_vecYMedianLists.erase(m_vecYMedianLists.begin()+index);
-    m_vecCet.erase(m_vecCet.begin()+index);
+    if(index == -1){
+      m_vecXMedianLists.clear();
+      m_vecYMedianLists.clear();
+      m_vecCet.clear();
+    }else{
+      m_vecXMedianLists.erase(m_vecXMedianLists.begin()+index);
+      m_vecYMedianLists.erase(m_vecYMedianLists.begin()+index);
+      m_vecCet.erase(m_vecCet.begin()+index);
+    }
   } 
 
   // }}}

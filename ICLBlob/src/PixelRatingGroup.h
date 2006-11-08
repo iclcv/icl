@@ -47,6 +47,14 @@ namespace icl{
     
     /// removed and deletes the pixelrating at index
     int removePR(int index){
+      if(index == -1){
+        for(unsigned int i=0;i<m_vecPR.size();i++){
+          delete m_vecPR[i];
+        }
+        m_vecPR.clear();
+        m_vecSubResults.clear();
+        return 1;
+      }
       if(index < (int)m_vecPR.size() ) {
         m_vecSubResults.erase(m_vecSubResults.begin()+index);    
         delete *(m_vecPR.begin()+index);
