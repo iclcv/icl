@@ -8,6 +8,9 @@
 namespace icl {
   
 #ifdef WITH_IPP_OPTIMIZATION
+  /// 64Bit floating point type for the ICL
+  typedef Ipp64f icl64f;
+
   /// 32Bit floating point type for the ICL 
   typedef Ipp32f icl32f;
 
@@ -15,6 +18,9 @@ namespace icl {
   typedef Ipp8u icl8u;
 
 #else
+  /// 64Bit floating point type for the ICL
+  typedef double icl64f;
+
   /// 32Bit floating point type for the ICL 
   typedef float icl32f;
 
