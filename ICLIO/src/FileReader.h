@@ -74,6 +74,8 @@ namespace icl {
             if (m_iCurImg == 0) m_iCurImg = m_vecFileName.size()-1;
             else --m_iCurImg;
          }
+         /// get number of available images
+         unsigned int getNumImages() { return m_vecFileName.size(); }
 
          /// remove given files from internal list of files
          /// and additionally remove buffered images, if neccessary
