@@ -1,5 +1,5 @@
 #ifndef GENERAL_MODEL_H
-#define GENERAL_MDOEL_H
+#define GENERAL_MODEL_H
 
 #include "Array.h" 
 #include "Img.h"
@@ -45,6 +45,8 @@ namespace icl{
 
   </pre>
   
+
+  The template is pre-build for types icl32f and icl64f
   */
   template<class T>
   class GeneralModel{

@@ -3,15 +3,14 @@
 using namespace icl;
 
 template<class T>
-Array<T> __solvePQ(T p, T q){
+inline Array<T> __solvePQ(T p, T q){
   T rootTerm = p*p/4-q;
   Array<T> a(2);
   if(rootTerm >= 0){ // real solution
     a[0]=(-p*0.5 + sqrt(rootTerm));
     a[1]=(-p*0.5 - sqrt(rootTerm));
   }else{
-    a[0]=0;
-    a[1]=0;
+    a.clear();
   }     
   return a;
 } 
@@ -31,4 +30,5 @@ QuadraticModel<T>::QuadraticModel(int dim):
   GeneralModel<T>(dim){}
 
 
-#endif
+template class QuadraticModel<icl32f>;
+template class QuadraticModel<icl64f>;

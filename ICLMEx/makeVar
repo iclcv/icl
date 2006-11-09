@@ -83,4 +83,4 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 # Set the priority level
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
-SKIP_DIRECTORIES:=src obj lib doc examples
+SKIP_DIRECTORIES:=

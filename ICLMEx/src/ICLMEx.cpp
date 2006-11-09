@@ -4,13 +4,15 @@
 namespace icl{
   
   int ___tmp;
-#define IPP_CALL(X,S) ___tmp = X; if(___tmp) printf(S)
+  //#define IPP_CALL(X,S) ___tmp = X; if(___tmp) printf(S)
+#define IPP_CALL(X,S) X
 
 
   template<>
   void fitModel<icl64f>(icl64f *xs, icl64f *ys, int n, const GeneralModel<icl64f> &model, icl64f *dstParams){
     // {{{ open
     
+#ifdef WITH_IPP_OPTIMIZATION    
     ICLASSERT_RETURN( n>0 && n>model.dim() );  
     int dim = model.dim();
     
@@ -32,6 +34,7 @@ namespace icl{
       model.features(xs[i],ys[i],*D+dim*i);
     }
     
+
     // calculating scattermatrix S
     IPP_CALL( ippmMul_tm_64f(*D,a,b,dim,n,*D,a,b,dim,n,*S,a,b) , "mul_tm" );
     
@@ -48,10 +51,16 @@ namespace icl{
     icl64f max_elem(0);
     int max_index(0);
     IPP_CALL( ippsMaxIndx_64f(*Eval,dim,&max_elem, &max_index), "max index" );
-    
+
+    // memcpy(dstParams,(*EV)+max_index*dim,dim*sizeof(icl64f));
+
     for(int i=0;i<dim;i++){
       dstParams[i] = EV[dim*i+max_index];
     }
+    
+#else
+#warning "ICLMEx::fitEllipse is not implemented without ipp optimization"
+#endif    
   }
 
 // }}}
@@ -59,7 +68,8 @@ namespace icl{
   template<>
   void fitModel<icl32f>(icl32f *xs, icl32f *ys, int n, const GeneralModel<icl32f> &model, icl32f *dstParams){
     // {{{ open
-    
+
+#ifdef WITH_IPP_OPTIMIZATION    
     ICLASSERT_RETURN( n>0 && n>model.dim() );  
     int dim = model.dim();
     
@@ -81,6 +91,7 @@ namespace icl{
       model.features(xs[i],ys[i],*D+dim*i);
     }
     
+
     // calculating scattermatrix S
     IPP_CALL( ippmMul_tm_32f(*D,a,b,dim,n,*D,a,b,dim,n,*S,a,b) , "mul_tm" );
     
@@ -97,10 +108,17 @@ namespace icl{
     icl32f max_elem(0);
     int max_index(0);
     IPP_CALL( ippsMaxIndx_32f(*Eval,dim,&max_elem, &max_index), "max index" );
-    
+
+
     for(int i=0;i<dim;i++){
       dstParams[i] = EV[dim*i+max_index];
     }
+    
+   
+#else
+#warning "ICLMEx::fitEllipse is not implemented without ipp optimization"
+#endif        
+
   }
 
 // }}}
@@ -113,11 +131,10 @@ namespace icl{
     int w = image.getWidth();
     int h = image.getHeight();
     int ch = image.getChannels();
-    int n = 0;
     for(int px=0;px<w;px++){
       for(int c=0;c<ch;c++){
-        T *pr = model.y(n,px,params);
-        for(int p=0;p<n;p++){
+        std::vector<T> pr = model.y(px,params);
+        for(unsigned int p=0;p<pr.size();p++){
           int y = (int)pr[p];
           if(y>=0 && y<h){
             image(px,y,c)=color[c];
@@ -127,8 +144,8 @@ namespace icl{
     }
     for(int py=0;py<h;py++){
       for(int c=0;c<ch;c++){
-        T *pr = model.x(n,py,params);
-        for(int p=0;p<n;p++){
+        std::vector<T> pr = model.x(py,params);
+        for(unsigned int p=0;p<pr.size();p++){
           int x = (int)pr[p];
           if(x>=0 && x<w){ 
             image(x,py,c)=color[c];

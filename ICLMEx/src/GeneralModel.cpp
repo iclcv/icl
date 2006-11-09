@@ -15,10 +15,10 @@ const T *GeneralModel<T>::constraints() const{
 
 template<class T> 
 void GeneralModel<T>::setIdentityConstraintMatrix(){
-  m_oConstraintMatrix.resize(dim()*dim());
-  std::fill(constraints(),constraints()+m_iDim*m_iDim,0);
-  for(int i=0;i<m_iDim;i++){
-    m_oConstraintMatrix[i*m_iDim*i]=1;
+  m_oConstraintMatrix.resize(m_iDim*m_iDim);
+  std::fill(m_oConstraintMatrix.begin(),m_oConstraintMatrix.end(),0);
+  for(unsigned int i=0;i<m_oConstraintMatrix.size();i+=(m_iDim+1)){
+    m_oConstraintMatrix[i]=1;
   }
 }
 
@@ -27,3 +27,5 @@ GeneralModel<T>::GeneralModel(int dim):m_iDim(dim){
   setIdentityConstraintMatrix();
 }
     
+template class GeneralModel<icl32f>;
+template class GeneralModel<icl64f>;
