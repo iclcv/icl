@@ -1,4 +1,15 @@
-ImgParams.cpp:129  size reset is bad (display1.NST - X-Display)
+Felix: Timestamp
+Time timestamp;
+setTimeStamp / setCreateTime
+getTimeStamp / getCreateTime
+
+mirror, deepCopy(ROI)/scaledCopy(ROI) und shallowCopy (operator=) 
+übernehmen auch timestamp
+
+PWC setzt timestamp
+FileWriter schreibt, FileReader liest "# TimeStamp: 1234578234ß96823"
+
+Filter::prepare kopiert timestamp
 
 
 Michael:
