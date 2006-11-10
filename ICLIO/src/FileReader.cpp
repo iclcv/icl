@@ -30,8 +30,9 @@ namespace icl {
   //--------------------------------------------------------------------------
   FileReader::FileReader(string sPattern) throw (ICLException) 
     // {{{ open
-
+    
   {
+    FUNCTION_LOG("");
     wordexp_t match;
     char **ppcFiles;
 
@@ -80,7 +81,8 @@ namespace icl {
     // {{{ open 
 
   {
-     ostringstream ossFile;
+    FUNCTION_LOG("");
+    ostringstream ossFile;
      ossFile << "." << sType;
      bool bDummy;
 
@@ -104,54 +106,58 @@ namespace icl {
   
   //--------------------------------------------------------------------------
   FileReader::FileReader(const FileReader& other) : m_poCurImg(0) {
-     *this = other;
+    FUNCTION_LOG("");
+    *this = other;
   }
   
   //--------------------------------------------------------------------------
   FileReader& FileReader::operator=(const FileReader& other) {
     // {{{ open
-
-     if (!this->m_bBuffered) delete this->m_poCurImg;
-     this->m_vecFileName = other.m_vecFileName;
-     this->m_vecImgBuffer = other.m_vecImgBuffer;
-     this->m_bBuffered = other.m_bBuffered;
-     this->m_iCurImg = other.m_iCurImg;
-     this->m_poCurImg = 0;
-
-     // setup the jpeg error routine once
-     jpgCinfo.err = jpeg_std_error(&jpgErr);
-     jpgErr.error_exit = icl_jpeg_error_exit;
-     return *this;
+    FUNCTION_LOG("");
+    
+    if (!this->m_bBuffered) delete this->m_poCurImg;
+    this->m_vecFileName = other.m_vecFileName;
+    this->m_vecImgBuffer = other.m_vecImgBuffer;
+    this->m_bBuffered = other.m_bBuffered;
+    this->m_iCurImg = other.m_iCurImg;
+    this->m_poCurImg = 0;
+    
+    // setup the jpeg error routine once
+    jpgCinfo.err = jpeg_std_error(&jpgErr);
+    jpgErr.error_exit = icl_jpeg_error_exit;
+    return *this;
   }
-
+  
 // }}}
 
   //--------------------------------------------------------------------------
   FileReader::~FileReader ()
      // {{{ open
   {
-     for (ImageBuffer::iterator it=m_vecImgBuffer.begin(), 
-             end=m_vecImgBuffer.end(); it != end; ++it)
-        delete *it;
-
-     if (!m_bBuffered) delete m_poCurImg;
+    FUNCTION_LOG("");
+    for (ImageBuffer::iterator it=m_vecImgBuffer.begin(), 
+           end=m_vecImgBuffer.end(); it != end; ++it)
+      delete *it;
+    
+    if (!m_bBuffered) delete m_poCurImg;
   }
-
+  
   // }}}
   
   //--------------------------------------------------------------------------
   void FileReader::init() throw (ICLException) 
      // {{{ open
   {
-     m_bBuffered = false;
-     m_iCurImg   = 0;
-     m_poCurImg  = 0;
-     if (m_vecFileName.size () == 0)
-        throw ICLException ("empty file list");
-
-     // setup the jpeg error routine once
-     jpgCinfo.err = jpeg_std_error(&jpgErr);
-     jpgErr.error_exit = icl_jpeg_error_exit;
+    FUNCTION_LOG("");
+    m_bBuffered = false;
+    m_iCurImg   = 0;
+    m_poCurImg  = 0;
+    if (m_vecFileName.size () == 0)
+      throw ICLException ("empty file list");
+    
+    // setup the jpeg error routine once
+    jpgCinfo.err = jpeg_std_error(&jpgErr);
+    jpgErr.error_exit = icl_jpeg_error_exit;
   }
   // }}}
 
@@ -159,21 +165,23 @@ namespace icl {
   ImgBase* FileReader::grab(ImgBase* poDst) 
     throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
     // {{{ open 
-
+    FUNCTION_LOG("");
+    
     if (m_bBuffered) {
-       m_poCurImg = m_vecImgBuffer[m_iCurImg];
+      cout << m_iCurImg << endl; 
+      m_poCurImg = m_vecImgBuffer[m_iCurImg];
     } else {
-       readImage (m_vecFileName[m_iCurImg], &m_poCurImg);
+      readImage (m_vecFileName[m_iCurImg], &m_poCurImg);
     }
     
     // forward to next image
     next ();
-
+    
     //---- Convert to output format ----
     if (poDst) {
-       Converter oConv;
-       oConv.convert(poDst, m_poCurImg);
-       return poDst;
+      Converter oConv;
+      oConv.convert(poDst, m_poCurImg);
+      return poDst;
     } else {
       return m_poCurImg;
     }
@@ -185,6 +193,7 @@ namespace icl {
   void FileReader::readImage(const string& sFileName, ImgBase** ppoDst) 
     throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
     // {{{ open 
+    FUNCTION_LOG("");
 
     //---- Variable definition ----
     FileInfo oInfo (sFileName);
@@ -222,44 +231,43 @@ namespace icl {
   FileReader::FileList FileReader::bufferImages (bool bStopOnError) throw ()
     // {{{ open
   {
-     FileList vecErrorList;
-     if (m_bBuffered) return vecErrorList; // do not buffer twice
-
-     // if we enter buffering mode and already read images by calling grab
-     // we must free the internally allocated image first
-     if (m_poCurImg && !m_bBuffered) { delete m_poCurImg; m_poCurImg = 0; }
+    FUNCTION_LOG("");
     
-     // clear buffer from previous trial
-     for (ImageBuffer::iterator it=m_vecImgBuffer.begin(), 
-             end=m_vecImgBuffer.end(); it != end; ++it)
-        delete *it;
-     m_vecImgBuffer.clear();
-
-     for (FileList::iterator it=m_vecFileName.begin(), end=m_vecFileName.end();
-          it != end; ++it) {
-        m_poCurImg = 0; // force reallocation of new image pointer
-        if (!((*it).empty())) // Do not read empty filenames at all 
-        { 
-          try {
-            readImage (*it, &m_poCurImg);
-          } catch (ICLException &e) {
-            // in any case, report the error
-            vecErrorList.push_back (*it);
-            if (bStopOnError) return vecErrorList;
-            // create some dummy image to insert to buffer vector
-            if (!m_poCurImg) {
-              m_poCurImg = imgNew (depth8u, Size(1,1), formatGray);
-            }
-          }
-          m_vecImgBuffer.push_back (m_poCurImg);
+    FileList vecErrorList;
+    if (m_bBuffered) return vecErrorList; // do not buffer twice
+    
+    // if we enter buffering mode and already read images by calling grab
+    // we must free the internally allocated image first
+    if (m_poCurImg && !m_bBuffered) { delete m_poCurImg; m_poCurImg = 0; }
+    
+    // clear buffer from previous trial
+    for (ImageBuffer::iterator it=m_vecImgBuffer.begin(), 
+           end=m_vecImgBuffer.end(); it != end; ++it)
+      delete *it;
+    m_vecImgBuffer.clear();
+    
+    for (FileList::iterator it=m_vecFileName.begin(), end=m_vecFileName.end();
+         it != end; ++it) {
+      m_poCurImg = 0; // force reallocation of new image pointer
+      try {
+        readImage (*it, &m_poCurImg);
+      } catch (ICLException &e) {
+        // in any case, report the error
+        vecErrorList.push_back (*it);
+        if (bStopOnError) return vecErrorList;
+        // create some dummy image to insert to buffer vector
+        if (!m_poCurImg) {
+          m_poCurImg = imgNew (depth8u, Size(1,1), formatGray);
         }
-     }
-     
-     // only on successful reading of all images
-     m_bBuffered = true;
-     return vecErrorList;
+      }
+      m_vecImgBuffer.push_back (m_poCurImg);
+    }
+    
+    // only on successful reading of all images
+    m_bBuffered = true;
+    return vecErrorList;
   }
-
+  
   // }}}
   
   //--------------------------------------------------------------------------
@@ -267,31 +275,35 @@ namespace icl {
      // {{{ open
 
   {
-     string sFile;
-     ifstream streamSeq (sFileName.c_str(),ios::in);
-
-     if(!streamSeq)
-     {
-        ERROR_LOG("Can't open sequence file: " << sFileName);
-     }
-      
-     while(streamSeq) {
-        getline (streamSeq, sFile);
+    FUNCTION_LOG("");
+    string sFile;
+    ifstream streamSeq (sFileName.c_str(),ios::in);
+    
+    if(!streamSeq)
+    {
+      ERROR_LOG("Can't open sequence file: " << sFileName);
+    }
+    
+    while(streamSeq) {
+      getline (streamSeq, sFile);
+      if (!sFile.empty()) { // ignore empty lines 
         m_vecFileName.push_back(sFile);
-     }
-     streamSeq.close();
+      }
+    }
+    streamSeq.close();
   }
-
+  
 // }}}
-
+  
   //--------------------------------------------------------------------------
   void FileReader::readHeaderPNM (FileInfo &oInfo) {
     // {{{ open
 
+    FUNCTION_LOG("");
     openFile (oInfo, "rb"); // open file for reading
     char acBuf[1024];
     istringstream iss;
-
+    
     //---- Read the magic number  ----
     if (!gzgets (oInfo.fp, acBuf, 1024) ||
         acBuf[0] != 'P') throw ICLInvalidFileFormat();
@@ -300,12 +312,12 @@ namespace icl {
       case '5': oInfo.eFormat = formatGray; break;
       default: throw ICLInvalidFileFormat();
     }
-
+    
     //---- Set default values ----
     oInfo.iNumChannels = getChannelsOfFormat(oInfo.eFormat);
     oInfo.iNumImages = 1;
     oInfo.eDepth = depth8u;
-        
+    
     // {{{ Read special header info
 
     do {
@@ -362,6 +374,7 @@ namespace icl {
   //--------------------------------------------------------------------------
   void FileReader::readDataPNM(ImgBase* poImg, FileInfo &oInfo) {
     // {{{ open
+    FUNCTION_LOG("");
 
     if (oInfo.iNumImages == oInfo.iNumChannels ||
         oInfo.eFileFormat == ioFormatICL) {
@@ -405,164 +418,168 @@ namespace icl {
   //--------------------------------------------------------------------------
   void FileReader::readHeaderJPG (FileInfo &oInfo) {
      // {{{ open
-
-     openFile (oInfo, "rb"); // open file for reading
-
-     /* SETUP ERROR HANDLING:
-      *
-      * Our example here shows how to override the "error_exit" method so that
-      * control is returned to the library's caller when a fatal error occurs,
-      * rather than calling exit() as the standard error_exit method does.
-      *
-      * We use C's setjmp/longjmp facility to return control.  This means that the
-      * routine which calls the JPEG library must first execute a setjmp() call to
-      * establish the return point.  We want the replacement error_exit to do a
-      * longjmp().  But we need to make the setjmp buffer accessible to the
-      * error_exit routine.  To do this, we use a private extension of the
-      * standard JPEG error handler object.
-      */
-
-     if (setjmp(jpgErr.setjmp_buffer)) {
-        /* If we get here, the JPEG code has signaled an error.
-         * We need to clean up the JPEG object and signal the error to the caller */
-        jpeg_destroy_decompress(&jpgCinfo);
-        throw ICLInvalidFileFormat();
-     }
-
-     /* Step 1: Initialize the JPEG decompression object. */
-     jpeg_create_decompress(&jpgCinfo);
-
-     /* Step 2: specify data source (eg, a file) */
-     jpeg_stdio_src(&jpgCinfo, (FILE*) oInfo.fp);
-
-     /* Step 3: read file parameters with jpeg_read_header() */
-     (void) jpeg_read_header(&jpgCinfo, TRUE);
-
-     /* Step 4: set parameters for decompression */
-
-     /* Step 5: Start decompressor */
-     (void) jpeg_start_decompress(&jpgCinfo);
-
-     /* After jpeg_start_decompress() we have the correct scaled
-      * output image dimensions available, as well as the output colormap
-      * if we asked for color quantization.
-      */
-
-     oInfo.eDepth = depth8u; // can only read depth8u
-     oInfo.oImgSize.width  = jpgCinfo.output_width;
-     oInfo.oImgSize.height = jpgCinfo.output_height;
-     switch (jpgCinfo.out_color_space) {
-       case JCS_GRAYSCALE: oInfo.eFormat = formatGray; break;
-       case JCS_RGB: oInfo.eFormat = formatRGB; break;
-       case JCS_YCbCr: oInfo.eFormat = formatYUV; break;
-       default: throw ICLException("unknown color space");
-     }
-     oInfo.iNumChannels = getChannelsOfFormat (oInfo.eFormat);
+    FUNCTION_LOG("");
+    
+    openFile (oInfo, "rb"); // open file for reading
+    
+    /* SETUP ERROR HANDLING:
+     *
+     * Our example here shows how to override the "error_exit" method so that
+     * control is returned to the library's caller when a fatal error occurs,
+     * rather than calling exit() as the standard error_exit method does.
+     *
+     * We use C's setjmp/longjmp facility to return control.  This means that the
+     * routine which calls the JPEG library must first execute a setjmp() call to
+     * establish the return point.  We want the replacement error_exit to do a
+     * longjmp().  But we need to make the setjmp buffer accessible to the
+     * error_exit routine.  To do this, we use a private extension of the
+     * standard JPEG error handler object.
+     */
+    
+    if (setjmp(jpgErr.setjmp_buffer)) {
+      /* If we get here, the JPEG code has signaled an error.
+       * We need to clean up the JPEG object and signal the error to the caller */
+      jpeg_destroy_decompress(&jpgCinfo);
+      throw ICLInvalidFileFormat();
+    }
+    
+    /* Step 1: Initialize the JPEG decompression object. */
+    jpeg_create_decompress(&jpgCinfo);
+    
+    /* Step 2: specify data source (eg, a file) */
+    jpeg_stdio_src(&jpgCinfo, (FILE*) oInfo.fp);
+    
+    /* Step 3: read file parameters with jpeg_read_header() */
+    (void) jpeg_read_header(&jpgCinfo, TRUE);
+    
+    /* Step 4: set parameters for decompression */
+    
+    /* Step 5: Start decompressor */
+    (void) jpeg_start_decompress(&jpgCinfo);
+    
+    /* After jpeg_start_decompress() we have the correct scaled
+     * output image dimensions available, as well as the output colormap
+     * if we asked for color quantization.
+     */
+    
+    oInfo.eDepth = depth8u; // can only read depth8u
+    oInfo.oImgSize.width  = jpgCinfo.output_width;
+    oInfo.oImgSize.height = jpgCinfo.output_height;
+    switch (jpgCinfo.out_color_space) {
+      case JCS_GRAYSCALE: oInfo.eFormat = formatGray; break;
+      case JCS_RGB: oInfo.eFormat = formatRGB; break;
+      case JCS_YCbCr: oInfo.eFormat = formatYUV; break;
+      default: throw ICLException("unknown color space");
+    }
+    oInfo.iNumChannels = getChannelsOfFormat (oInfo.eFormat);
   }
-
+  
   // }}}
-
+  
   //--------------------------------------------------------------------------
   void FileReader::readDataJPG(Img<icl8u>* poImg, FileInfo &oInfo)
      // {{{ open
 
   {
-     icl8u *pcBuf = 0;
-     // update jump context to allow proper throw
-     if (setjmp(jpgErr.setjmp_buffer)) {
-        /* If we get here, the JPEG code has signaled an error.
-         * We need to clean up the JPEG object and signal the error to the caller */
-        jpeg_destroy_decompress(&jpgCinfo);
-        if (oInfo.iNumChannels == 3) delete[] pcBuf;
-        throw ICLInvalidFileFormat();
-     }
-
-     ICLASSERT (jpgCinfo.output_components == oInfo.iNumChannels);
-     int iRowDim = jpgCinfo.output_width * jpgCinfo.output_components;
-     icl8u *pcR=0, *pcG=0, *pcB=0;
-
-     if (oInfo.iNumChannels == 1) pcBuf = poImg->getData (0);
-     else if (oInfo.iNumChannels == 3) {
-        pcBuf = new icl8u[iRowDim];
-        pcR = poImg->getData (0);
-        pcG = poImg->getData (1);
-        pcB = poImg->getData (2);
-     }
-     else {ERROR_LOG ("This should not happen."); return;}
-
-     /* Step 6: while (scan lines remain to be read) */
-     /*           jpeg_read_scanlines(...); */
-     while (jpgCinfo.output_scanline < jpgCinfo.output_height) {
-        /* jpeg_read_scanlines expects an array of pointers to scanlines.
-         * Here the array is only one element long, but you could ask for
-         * more than one scanline at a time if that's more convenient.
-         */
-        (void) jpeg_read_scanlines(&jpgCinfo, &pcBuf, 1);
-
-        if (oInfo.iNumChannels == 1) pcBuf += iRowDim;
-        else { // deinterleave three channel data
-           icl8u *pc = pcBuf;
-           for (int c=0; c<oInfo.oImgSize.width; ++c, ++pcR, ++pcG, ++pcB) {
-              *pcR = *pc++;
-              *pcG = *pc++;
-              *pcB = *pc++;
-           }
+    FUNCTION_LOG("");
+    icl8u *pcBuf = 0;
+    // update jump context to allow proper throw
+    if (setjmp(jpgErr.setjmp_buffer)) {
+      /* If we get here, the JPEG code has signaled an error.
+       * We need to clean up the JPEG object and signal the error to the caller */
+      jpeg_destroy_decompress(&jpgCinfo);
+      if (oInfo.iNumChannels == 3) delete[] pcBuf;
+      throw ICLInvalidFileFormat();
+    }
+    
+    ICLASSERT (jpgCinfo.output_components == oInfo.iNumChannels);
+    int iRowDim = jpgCinfo.output_width * jpgCinfo.output_components;
+    icl8u *pcR=0, *pcG=0, *pcB=0;
+    
+    if (oInfo.iNumChannels == 1) pcBuf = poImg->getData (0);
+    else if (oInfo.iNumChannels == 3) {
+      pcBuf = new icl8u[iRowDim];
+      pcR = poImg->getData (0);
+      pcG = poImg->getData (1);
+      pcB = poImg->getData (2);
+    }
+    else {ERROR_LOG ("This should not happen."); return;}
+    
+    /* Step 6: while (scan lines remain to be read) */
+    /*           jpeg_read_scanlines(...); */
+    while (jpgCinfo.output_scanline < jpgCinfo.output_height) {
+      /* jpeg_read_scanlines expects an array of pointers to scanlines.
+       * Here the array is only one element long, but you could ask for
+       * more than one scanline at a time if that's more convenient.
+       */
+      (void) jpeg_read_scanlines(&jpgCinfo, &pcBuf, 1);
+      
+      if (oInfo.iNumChannels == 1) pcBuf += iRowDim;
+      else { // deinterleave three channel data
+        icl8u *pc = pcBuf;
+        for (int c=0; c<oInfo.oImgSize.width; ++c, ++pcR, ++pcG, ++pcB) {
+          *pcR = *pc++;
+          *pcG = *pc++;
+          *pcB = *pc++;
         }
-     }
-
-     /* Step 7: Finish decompression */
-     (void) jpeg_finish_decompress(&jpgCinfo);
-
-     /* At this point you may want to check to see whether any corrupt-data
-      * warnings occurred (test whether jpgErr.pub.num_warnings is nonzero).
-      */
-
-     /* Step 8: Release JPEG decompression object */
-     jpeg_destroy_decompress(&jpgCinfo);
-     if (oInfo.iNumChannels == 3) delete[] pcBuf;
+      }
+    }
+    
+    /* Step 7: Finish decompression */
+    (void) jpeg_finish_decompress(&jpgCinfo);
+    
+    /* At this point you may want to check to see whether any corrupt-data
+     * warnings occurred (test whether jpgErr.pub.num_warnings is nonzero).
+     */
+    
+    /* Step 8: Release JPEG decompression object */
+    jpeg_destroy_decompress(&jpgCinfo);
+    if (oInfo.iNumChannels == 3) delete[] pcBuf;
   }
-
+  
   // }}}
-
+  
   //--------------------------------------------------------------------------
   bool FileReader::findFile (const std::string& sFile,
                            FileList::iterator& itList) {
     // {{{ open
-
-     // search starting from itList to end
-     FileList::iterator found = find (itList, m_vecFileName.end(), sFile);
-     if (found != m_vecFileName.end()) 
-        itList = found;
-     // search second part from begin to itList
-     else if ( (found = find (m_vecFileName.begin(), itList, sFile)) != itList)
-        itList = found;
-     else return false; // item not found
-     return true;
+    FUNCTION_LOG("");
+    
+    // search starting from itList to end
+    FileList::iterator found = find (itList, m_vecFileName.end(), sFile);
+    if (found != m_vecFileName.end()) 
+      itList = found;
+    // search second part from begin to itList
+    else if ( (found = find (m_vecFileName.begin(), itList, sFile)) != itList)
+      itList = found;
+    else return false; // item not found
+    return true;
   }
-
+  
 // }}}
 
   //--------------------------------------------------------------------------
   void FileReader::removeFiles (const FileList& vecFiles) {
     // {{{ open
-
-     FileList::iterator itList = m_vecFileName.begin();
-     for (FileList::const_iterator itDel=vecFiles.begin (), end=vecFiles.end();
-          itDel != end; ++itDel) {
-        if (findFile (*itDel, itList)) {
-           if (m_bBuffered) {
-              // delete image at corresponding position
-              ImageBuffer::iterator itBuf 
-                 = m_vecImgBuffer.begin() + (itList-m_vecFileName.begin());
-              delete *itBuf;
-              m_vecImgBuffer.erase (itBuf);
-           }
-           // as well as file name itself
-           m_vecFileName.erase (itList);
+    FUNCTION_LOG("");
+    
+    FileList::iterator itList = m_vecFileName.begin();
+    for (FileList::const_iterator itDel=vecFiles.begin (), end=vecFiles.end();
+         itDel != end; ++itDel) {
+      if (findFile (*itDel, itList)) {
+        if (m_bBuffered) {
+          // delete image at corresponding position
+          ImageBuffer::iterator itBuf 
+            = m_vecImgBuffer.begin() + (itList-m_vecFileName.begin());
+          delete *itBuf;
+          m_vecImgBuffer.erase (itBuf);
         }
-     }
+        // as well as file name itself
+        m_vecFileName.erase (itList);
+      }
+    }
   }
-
+  
 // }}}
-
+  
 } // namespace icl
