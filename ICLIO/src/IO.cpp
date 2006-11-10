@@ -45,22 +45,29 @@ namespace icl {
    // }}}
   
    void openFile (FileInfo& oInfo, const char *pcMode) throw (FileOpenException) {
-      oInfo.bGzipped = false;
       switch (oInfo.eFileFormat) {
         case ioFormatPNM: case ioFormatICL:
            // these modes support gzipped format
-           oInfo.fp = gzopen (oInfo.sFileName.c_str(), pcMode);
-           oInfo.bGzipped = true;
+           // enable gzipped for reading always
+           if (strchr (pcMode, 'r')) oInfo.bGzipped = true;
+           // for writing, we keep the setting from file name
            break;
         case ioFormatJPG:
-           // these modes suppose plain files
-           oInfo.fp = fopen (oInfo.sFileName.c_str(), pcMode);
+           // these modes suppose plain files only
+           oInfo.bGzipped = false;
            break;
         default:
-           oInfo.fp = 0;
+           // unknown file format: can't open it ;-)
+           throw FileOpenException (oInfo.sFileName);
            break;
       }
 
+      if (oInfo.bGzipped)
+         oInfo.fp = gzopen (oInfo.sFileName.c_str(), pcMode);
+      else
+         oInfo.fp = fopen (oInfo.sFileName.c_str(), pcMode);
+
+      // if file pointer fp is still NULL, the file can't be opened
       if (!oInfo.fp) throw FileOpenException (oInfo.sFileName);
    }
 

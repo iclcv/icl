@@ -17,6 +17,7 @@ int main()
   ioWrite.write(poImg);
   
   ioRead.grab(poImg);
+  ioWrite.setFileName ("demoImages/outmask##.pgm.gz");
   ioWrite.write(poImg);
 
   ioRead.grab(poImg);

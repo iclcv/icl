@@ -108,9 +108,16 @@ namespace icl {
 
 // }}}
   
+   int plainWrite (void *fp, const void *pData, size_t len) {
+      return fwrite (pData, 1, len, (FILE*) fp);
+   }
+
    //--------------------------------------------------------------------------
    void FileWriter::writePNM(ImgBase *poSrc, const FileInfo& oInfo) {
       // {{{ open
+
+      int (*pWrite)(void *fp, const void *pData, size_t len) 
+         = oInfo.bGzipped ? gzwrite : plainWrite;
 
       // check exact file type first:
       // pgm: write separate channels below each other as pgm image (P5)
@@ -137,25 +144,25 @@ namespace icl {
       char acBuf[1024];
       // magic number
       sprintf (acBuf, "%s\n", bPPM ? "P6" : "P5");
-      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+      if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
       // format
       sprintf (acBuf, "# Format %s\n", translateFormat(poSrc->getFormat()).c_str());
-      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+      if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
       // number of images
       sprintf (acBuf, "# NumFeatures %d\n", iNumImages);
-      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+      if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
       // image depth
       sprintf (acBuf, "# ImageDepth %s\n", translateDepth(poSrc->getDepth()).c_str());
-      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+      if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
       // ROI
       Rect roi = poSrc->getROI ();
       sprintf (acBuf, "# ROI %d %d %d %d\n", roi.x, roi.y, roi.width, roi.height);
-      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+      if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
     
       // image size
       sprintf (acBuf, "%d %d\n%d\n", 
                poSrc->getSize().width, poSrc->getSize().height * iNumImages, 255);
-      if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+      if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
 
 
       // write image data
@@ -178,14 +185,14 @@ namespace icl {
                   *pc++ = *pcB;
                } // for rows (interleave)
 
-               if (gzwrite (oInfo.fp, pcBuf, iDim) != iDim)
+               if (pWrite (oInfo.fp, pcBuf, iDim) != iDim)
                   throw writeError;
             } // for lines
          } // for images
       } else { // write all channels separately
          int iDim = poSrc->getDim () * getSizeOf(poSrc->getDepth());
          for (int i=0;i<iNumImages;i++) {
-            if (gzwrite (oInfo.fp, poSrc->getDataPtr (i), iDim) != iDim) 
+            if (pWrite (oInfo.fp, poSrc->getDataPtr (i), iDim) != iDim) 
                throw writeError;
          }
       }
