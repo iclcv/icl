@@ -221,7 +221,6 @@ namespace icl {
   //--------------------------------------------------------------------------
   FileReader::FileList FileReader::bufferImages (bool bStopOnError) throw ()
     // {{{ open
-
   {
      FileList vecErrorList;
      if (m_bBuffered) return vecErrorList; // do not buffer twice
@@ -239,18 +238,23 @@ namespace icl {
      for (FileList::iterator it=m_vecFileName.begin(), end=m_vecFileName.end();
           it != end; ++it) {
         m_poCurImg = 0; // force reallocation of new image pointer
-        try {
-           readImage (*it, &m_poCurImg);
-        } catch (ICLException &e) {
-           // in any case, report the error
-           vecErrorList.push_back (*it);
-           if (bStopOnError) return vecErrorList;
-           // create some dummy image to insert to buffer vector
-           if (!m_poCurImg) m_poCurImg = imgNew (depth8u, Size(1,1), formatGray);
+        if (!((*it).empty())) // Do not read empty filenames at all 
+        { 
+          try {
+            readImage (*it, &m_poCurImg);
+          } catch (ICLException &e) {
+            // in any case, report the error
+            vecErrorList.push_back (*it);
+            if (bStopOnError) return vecErrorList;
+            // create some dummy image to insert to buffer vector
+            if (!m_poCurImg) {
+              m_poCurImg = imgNew (depth8u, Size(1,1), formatGray);
+            }
+          }
+          m_vecImgBuffer.push_back (m_poCurImg);
         }
-        m_vecImgBuffer.push_back (m_poCurImg);
      }
-
+     
      // only on successful reading of all images
      m_bBuffered = true;
      return vecErrorList;
@@ -261,6 +265,7 @@ namespace icl {
   //--------------------------------------------------------------------------
   void FileReader::readSequenceFile (const std::string& sFileName) 
      // {{{ open
+
   {
      string sFile;
      ifstream streamSeq (sFileName.c_str(),ios::in);
@@ -276,6 +281,7 @@ namespace icl {
      }
      streamSeq.close();
   }
+
 // }}}
 
   //--------------------------------------------------------------------------

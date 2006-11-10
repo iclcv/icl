@@ -27,7 +27,7 @@ namespace icl {
       {
       public:
          typedef std::vector<std::string> FileList;
-         typedef std::vector<ImgBase*>       ImageBuffer;
+         typedef std::vector<ImgBase*> ImageBuffer;
 
          // @{ @name constructors / destructor
          ///Load images from files specified with shell-like regular expression
