@@ -168,7 +168,6 @@ namespace icl {
     FUNCTION_LOG("");
     
     if (m_bBuffered) {
-      cout << m_iCurImg << endl; 
       m_poCurImg = m_vecImgBuffer[m_iCurImg];
     } else {
       readImage (m_vecFileName[m_iCurImg], &m_poCurImg);
