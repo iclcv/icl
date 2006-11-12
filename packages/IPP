@@ -19,7 +19,7 @@ ifneq (,$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES)))
 # Please, place here the include directory of the project
 # (e.g. -I${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/include )
 ABS_INCLUDES:= ${ABS_INCLUDES} \
-               -I${IPP_ROOT}/5.0/include
+               -I${IPP_ROOT}/5.1/include
 
 
 # Please, do not change this ifeq statement
@@ -40,7 +40,7 @@ else
 #       -lDisplayWindow )
 # (e.g. extra library like: -L/usr/lib -lpthreads )
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-                -L${IPP_ROOT}/5.0/sharedlib -Wl,-rpath -Wl,${IPP_ROOT}/5.0/sharedlib \
+                -L${IPP_ROOT}/5.1/sharedlib -Wl,-rpath -Wl,${IPP_ROOT}/5.1/sharedlib \
                 -lippcore \
                 -lippi \
                 -lipps \
