@@ -16,13 +16,13 @@ inline Array<T> __solvePQ(T p, T q){
 } 
 
 template<class T>
-Array<T> QuadraticModel<T>::x(T y, T *params) const{
-  return __solvePQ( px(y,params), qx(y,params) );
+Array<T> QuadraticModel<T>::x(T y) const{
+  return __solvePQ( px(y), qx(y) );
 }
 
 template<class T>
-Array<T> QuadraticModel<T>::y(T x, T *params) const{
-  return __solvePQ( py(x,params), qy(x,params) );
+Array<T> QuadraticModel<T>::y(T x) const{
+  return __solvePQ( py(x), qy(x) );
 }
 
 template<class T>

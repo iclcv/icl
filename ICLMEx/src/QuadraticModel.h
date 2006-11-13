@@ -19,13 +19,13 @@ namespace icl{
  class QuadraticModel : public GeneralModel<T>{
     public:
     virtual ~QuadraticModel(){}
-    virtual Array<T> x(T y, T *params) const;
-    virtual Array<T> y(T x, T *params) const;
+    virtual Array<T> x(T y) const;
+    virtual Array<T> y(T x) const;
 
-    virtual T px(T y, T* params) const = 0; 
-    virtual T qx(T y, T* params) const = 0; 
-    virtual T py(T x, T* params) const = 0;     
-    virtual T qy(T x, T* params) const = 0; 
+    virtual T px(T y) const = 0; 
+    virtual T qx(T y) const = 0; 
+    virtual T py(T x) const = 0;     
+    virtual T qy(T x) const = 0; 
 
     virtual void features(T x,T y, T *dst) const = 0;
 

@@ -23,9 +23,10 @@ void GeneralModel<T>::setIdentityConstraintMatrix(){
 }
 
 template<class T> 
-GeneralModel<T>::GeneralModel(int dim):m_iDim(dim){
+GeneralModel<T>::GeneralModel(int dim):m_oCurrParams(dim), m_iDim(dim){
   setIdentityConstraintMatrix();
 }
-    
+
+
 template class GeneralModel<icl32f>;
 template class GeneralModel<icl64f>;

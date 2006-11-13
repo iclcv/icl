@@ -18,10 +18,10 @@ namespace icl{
     EllipseModel();
     virtual ~EllipseModel(){}
 
-    virtual T px(T y, T* params) const;
-    virtual T qx(T y, T* params) const;
-    virtual T py(T x, T* params) const;
-    virtual T qy(T x, T* params) const;
+    virtual T px(T y) const;
+    virtual T qx(T y) const;
+    virtual T py(T x) const;
+    virtual T qy(T x) const;
 
     virtual void features(T x,T y, T *dst)const;
  };

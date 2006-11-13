@@ -3,13 +3,13 @@
 
 namespace icl{
   
-  int ___tmp;
+  //int ___tmp;
   //#define IPP_CALL(X,S) ___tmp = X; if(___tmp) printf(S)
 #define IPP_CALL(X,S) X
 
 
   template<>
-  void fitModel<icl64f>(icl64f *xs, icl64f *ys, int n, const GeneralModel<icl64f> &model, icl64f *dstParams){
+  void fitModel<icl64f>(icl64f *xs, icl64f *ys, int n, GeneralModel<icl64f> &model){
     // {{{ open
     
 #ifdef WITH_IPP_OPTIMIZATION    
@@ -55,7 +55,7 @@ namespace icl{
     // memcpy(dstParams,(*EV)+max_index*dim,dim*sizeof(icl64f));
 
     for(int i=0;i<dim;i++){
-      dstParams[i] = EV[dim*i+max_index];
+      model[i] = EV[dim*i+max_index];
     }
     
 #else
@@ -66,7 +66,7 @@ namespace icl{
 // }}}
   
   template<>
-  void fitModel<icl32f>(icl32f *xs, icl32f *ys, int n, const GeneralModel<icl32f> &model, icl32f *dstParams){
+  void fitModel<icl32f>(icl32f *xs, icl32f *ys, int n, GeneralModel<icl32f> &model){
     // {{{ open
 
 #ifdef WITH_IPP_OPTIMIZATION    
@@ -111,7 +111,7 @@ namespace icl{
 
 
     for(int i=0;i<dim;i++){
-      dstParams[i] = EV[dim*i+max_index];
+      model[i] = EV[dim*i+max_index];
     }
     
    
@@ -124,7 +124,7 @@ namespace icl{
 // }}}
 
   template<class T, class X>
-  void drawModel(GeneralModel<T> &model,Img<X> *im, T *params, X *color){
+  void drawModel(GeneralModel<T> &model,Img<X> *im, X *color){
     // {{{ open
     ICLASSERT_RETURN( im );
     Img<X> &image = *im;
@@ -133,7 +133,7 @@ namespace icl{
     int ch = image.getChannels();
     for(int px=0;px<w;px++){
       for(int c=0;c<ch;c++){
-        std::vector<T> pr = model.y(px,params);
+        std::vector<T> pr = model.y(px);
         for(unsigned int p=0;p<pr.size();p++){
           int y = (int)pr[p];
           if(y>=0 && y<h){
@@ -144,7 +144,7 @@ namespace icl{
     }
     for(int py=0;py<h;py++){
       for(int c=0;c<ch;c++){
-        std::vector<T> pr = model.x(py,params);
+        std::vector<T> pr = model.x(py);
         for(unsigned int p=0;p<pr.size();p++){
           int x = (int)pr[p];
           if(x>=0 && x<w){ 
@@ -159,12 +159,12 @@ namespace icl{
   
 
   // explicit template declarations
-  template void fitModel<icl64f>(icl64f*,icl64f*,int,const GeneralModel<icl64f> &,icl64f*);
-  template void fitModel<icl32f>(icl32f*,icl32f*,int,const GeneralModel<icl32f> &,icl32f*);
+  template void fitModel<icl64f>(icl64f*,icl64f*,int,GeneralModel<icl64f>&);
+  template void fitModel<icl32f>(icl32f*,icl32f*,int,GeneralModel<icl32f>&);
   
-  template void drawModel<icl32f,icl8u>(GeneralModel<icl32f>&,Img8u*,icl32f*,icl8u*);
-  template void drawModel<icl64f,icl8u>(GeneralModel<icl64f>&,Img8u*,icl64f*,icl8u*);
-  template void drawModel<icl32f,icl32f>(GeneralModel<icl32f>&,Img32f*,icl32f*,icl32f*);
-  template void drawModel<icl64f,icl32f>(GeneralModel<icl64f>&,Img32f*,icl64f*,icl32f*);
+  template void drawModel<icl32f,icl8u>(GeneralModel<icl32f>&,Img8u*,icl8u*);
+  template void drawModel<icl64f,icl8u>(GeneralModel<icl64f>&,Img8u*,icl8u*);
+  template void drawModel<icl32f,icl32f>(GeneralModel<icl32f>&,Img32f*,icl32f*);
+  template void drawModel<icl64f,icl32f>(GeneralModel<icl64f>&,Img32f*,icl32f*);
 
 }

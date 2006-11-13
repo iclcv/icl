@@ -7,27 +7,27 @@ namespace icl{
   }
   
   template<class T>
-  T CircleModel<T>::px(T y, T* params) const{
+  T CircleModel<T>::px(T y) const{
     // return b/a;
-    return params[1]/params[0];
+    return (*this)[1]/(*this)[0];
   }
   
   template<class T>
-  T CircleModel<T>::qx(T y, T* params) const{
+  T CircleModel<T>::qx(T y) const{
     // return (a*y*y+c*y+d)/a;
-    return (params[0]*y*y+params[2]*y+params[3])/params[0];
+    return ((*this)[0]*y*y+(*this)[2]*y+(*this)[3])/(*this)[0];
   }
   
   template<class T>
-  T CircleModel<T>::py(T x, T* params) const{
+  T CircleModel<T>::py(T x) const{
     // return  c/a; 
-    return params[2]/params[0];
+    return (*this)[2]/(*this)[0];
   }
   
   template<class T>
-  T CircleModel<T>::qy(T x, T* params) const{
+  T CircleModel<T>::qy(T x) const{
     // return (a*x*x+b*x+d)/a; 
-    return (params[0]*x*x+params[1]*x+params[3])/params[0];
+    return ((*this)[0]*x*x+(*this)[1]*x+(*this)[3])/(*this)[0];
   }
 
   template<class T>

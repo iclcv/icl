@@ -7,9 +7,9 @@ namespace icl{
   }
   
   template<class T>
-  T RestrictedEllipseModel<T>::px(T y, T* params) const{
+  T RestrictedEllipseModel<T>::px(T y) const{
     // return c/a;
-    return params[2]/params[0];
+    return (*this)[2]/(*this)[0];
   }
 
   // real p = c/a;
@@ -17,21 +17,21 @@ namespace icl{
 
 
   template<class T>
-  T RestrictedEllipseModel<T>::qx(T y, T* params) const{
+  T RestrictedEllipseModel<T>::qx(T y) const{
     // return  (b*y*y+d*y+e)/a;
-    return (params[1]*y*y+params[3]*y+params[4])/params[0];
+    return ((*this)[1]*y*y+(*this)[3]*y+(*this)[4])/(*this)[0];
   }
   
   template<class T>
-  T RestrictedEllipseModel<T>::py(T x, T* params) const{
+  T RestrictedEllipseModel<T>::py(T x) const{
     // return  d/b;
-    return params[3]/params[1];
+    return (*this)[3]/(*this)[1];
   }
   
   template<class T>
-  T RestrictedEllipseModel<T>::qy(T x, T* params) const{
+  T RestrictedEllipseModel<T>::qy(T x) const{
     // return  (a*x*x+c*x+e)/b;
-    return (params[0]*x*x+params[2]*x+params[4])/params[1];
+    return ((*this)[0]*x*x+(*this)[2]*x+(*this)[4])/(*this)[1];
   }
 
   template<class T>

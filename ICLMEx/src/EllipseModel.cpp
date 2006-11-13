@@ -7,27 +7,27 @@ namespace icl{
   }
   
   template<class T>
-  T EllipseModel<T>::px(T y, T* params) const{
+  T EllipseModel<T>::px(T y) const{
     // return (b*y+d)/a;
-    return (params[1]*y+params[3])/params[0];
+    return ((*this)[1]*y+(*this)[3])/(*this)[0];
   }
   
   template<class T>
-  T EllipseModel<T>::qx(T y, T* params) const{
+  T EllipseModel<T>::qx(T y) const{
     // return (c*y*y+e*y+f)/a;
-    return (params[2]*y*y+params[4]*y+params[5])/params[0];
+    return ((*this)[2]*y*y+(*this)[4]*y+(*this)[5])/(*this)[0];
   }
   
   template<class T>
-  T EllipseModel<T>::py(T x, T* params) const{
+  T EllipseModel<T>::py(T x) const{
     // return (b*x+e)/c;
-    return (params[1]*x+params[4])/params[2];
+    return ((*this)[1]*x+(*this)[4])/(*this)[2];
   }
   
   template<class T>
-  T EllipseModel<T>::qy(T x, T* params) const{
+  T EllipseModel<T>::qy(T x) const{
     // return (a*x*x+d*x+f)/c;    
-    return (params[0]*x*x+params[3]*x+params[5])/params[2];
+    return ((*this)[0]*x*x+(*this)[3]*x+(*this)[5])/(*this)[2];
   }
 
   template<class T>

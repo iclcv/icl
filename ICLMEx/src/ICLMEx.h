@@ -6,17 +6,19 @@
 namespace icl{
 
   /// fits a model to given xs and ys coordinate vector 
-  /** The size of dstParams must be at least the models dim()  
+  /** after the call, the given model reference has the found parameters.
+      This parameters can easily read out with the models "[]" operator.
+      @see GeneralizedModel
   */
   template<class T>
-  void fitModel(T *xs, T *ys, int nPoints, const GeneralModel<T> &model, T *dstParams);
+  void fitModel(T *xs, T *ys, int nPoints, GeneralModel<T> &model);
   
   /// draws a model with calculated params 
-  /** The size of dstParams must be at least the models dim(), the color
-      must have at least the size of the images channel count.
+  /** The model must be fitted with the above function before it can be drawed
+      into an image. 
   */
   template<class T, class X>
-  void drawModel(GeneralModel<T> &model, Img<X> *image, T *params, X *color);
+  void drawModel(GeneralModel<T> &model, Img<X> *image, X *color);
   
 }
 
