@@ -38,6 +38,10 @@ namespace icl {
   */
   void randomSeed(long int seedval);
   
+  struct MathematicsRandomSeedInitializer{
+    inline MathematicsRandomSeedInitializer(){ randomSeed(); }
+  };
+  
   //--------------------------------------------------------------------------
   /*!
     \brief Generate a random number to an upper limit. 
@@ -50,6 +54,10 @@ namespace icl {
   */
   float random(float max);
   
+
+
+  // creates a random integer number
+  unsigned int randomi(unsigned int max);
   //--------------------------------------------------------------------------
   /*!
     \brief Generate a random number between an lower and upper limit. 
@@ -161,6 +169,9 @@ namespace icl {
   */
   template <class T>
   vector<float> mean(Img<T> *poImg, int iChannel=-1);
+
+
+
 
 /* }}} */
 

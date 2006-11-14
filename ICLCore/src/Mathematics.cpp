@@ -34,6 +34,16 @@ namespace icl{
     return(max * drand48());
   } 
   
+  unsigned int randomi(unsigned int max){
+    FUNCTION_LOG("unsigned int");
+    float f = random(max+1);
+    if(f==max+1){
+      return static_cast<unsigned int>(max);
+    }else{
+      return static_cast<unsigned int>(std::floor(f));
+    }
+  }
+  
   //--------------------------------------------------------------------------
   float random(float min, float max)
   {
