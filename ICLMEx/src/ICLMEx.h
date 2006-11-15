@@ -95,7 +95,7 @@ x_N^2 & x_Ny_N & y_N^2 & x_N & y_N & N\\
 To forbid the minimization procedure to find the trivial solution \f$A=0\f$
 we have to introduce a so called constraint matrix \f$C\f$, which is in the
 simplest case just the \f$dim(A)\times dim(A)\f$ identity matrix. The minimization
-can be tackles as a constraint problem introducing Lagrange multipliers: Minimize
+can be tackled as a constraint problem introducing Lagrange multipliers: Minimize
 \f$E=\|Da\|^2\f$ subject to \f$a^TCa=1\f$. In case of \f$C=Id_{dim(A)}\f$ this
 constraint is equivalent to the constraint \f$\|a\|^2=1\f$. The above mentioned 
 paper discusses also other choices for \f$C\f$. Introducing Lagrange multipliers
