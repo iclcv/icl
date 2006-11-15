@@ -1,5 +1,6 @@
 #include "ICLMEx.h"
 #include "ICLTypes.h"
+#include "Mathematics.h"
 
 namespace icl{
   
@@ -123,6 +124,52 @@ namespace icl{
 
 // }}}
 
+  
+  template<class T>
+  void fitModel(T *xs,T *ys, int n, GeneralModel<T> &model, int nSubSets, int subSetSize){
+    // {{{ open
+    int dim = model.dim();
+    ICLASSERT_RETURN(dim > 0);
+    ICLASSERT_RETURN(subSetSize < n && subSetSize >= dim);
+   
+
+    subSetSize = std::max(dim,subSetSize);
+
+    static Array<T> XBuf, YBuf;
+    static Array<Array<T> > PBuf;    
+    XBuf.resize(subSetSize);
+    YBuf.resize(subSetSize);
+    PBuf.resize(dim);
+    for(int i=0;i<dim;i++){
+      PBuf[i].resize(nSubSets);
+    }
+    
+    static MathematicsRandomSeedInitializer s_initRandom;
+
+    
+    for(int i=0;i<nSubSets;i++){
+      for(int j=0;j<subSetSize;j++){
+        int idx = randomi(n);
+        XBuf[j] = xs[idx];
+        YBuf[j] = ys[idx];
+      }  
+      
+      fitModel(*XBuf, *YBuf,subSetSize, model);
+
+      for(int j=0;j<dim;j++){
+        PBuf[j][i] = model[j];
+      }
+    }
+    
+    // taking the median param of the param vec
+    for(int j=0;j<dim;j++){
+      sort(PBuf[j].begin(),PBuf[j].end());
+      model[j] = PBuf[j][nSubSets/2];
+    } 
+  }
+  
+  // }}}
+
   template<class T, class X>
   void drawModel(GeneralModel<T> &model,Img<X> *im, X *color){
     // {{{ open
@@ -161,7 +208,10 @@ namespace icl{
   // explicit template declarations
   template void fitModel<icl64f>(icl64f*,icl64f*,int,GeneralModel<icl64f>&);
   template void fitModel<icl32f>(icl32f*,icl32f*,int,GeneralModel<icl32f>&);
-  
+
+  template void fitModel<icl64f>(icl64f*,icl64f*,int,GeneralModel<icl64f>&,int,int);
+  template void fitModel<icl32f>(icl32f*,icl32f*,int,GeneralModel<icl32f>&,int,int);
+
   template void drawModel<icl32f,icl8u>(GeneralModel<icl32f>&,Img8u*,icl8u*);
   template void drawModel<icl64f,icl8u>(GeneralModel<icl64f>&,Img8u*,icl8u*);
   template void drawModel<icl32f,icl32f>(GeneralModel<icl32f>&,Img32f*,icl32f*);
