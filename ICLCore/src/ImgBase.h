@@ -13,6 +13,7 @@ AG Neuroinformatik
 #include <vector>
 #include "ICLCore.h"
 #include "ImgParams.h"
+#include "Time.h"
 
 namespace icl {
   
@@ -171,6 +172,9 @@ namespace icl {
       /// returns the current (color)-format of this image
       format getFormat() const { return m_oParams.getFormat(); }
 
+      /// returns the timestamp of the image
+      Time getTime() const { return m_timestamp; }
+
       /// returns the lenght of an image line in bytes (width*sizeof(Type))
       virtual int getLineStep() const = 0;
 
@@ -307,6 +311,11 @@ namespace icl {
       @see getChannelsOfFormat
       **/
       void setFormat(format fmt);
+
+      /// sets the timestamp of the image
+      void setTime(const Time time) { m_timestamp = time; }
+      /// sets timestamp of the image to the current time
+      void setTime() { m_timestamp = Time::now(); }
       
       //@}
 
@@ -393,13 +402,15 @@ namespace icl {
           - image size
           - number of image channels
           - image format
-          - image ROI      
+          - image ROI
       */
       ImgParams m_oParams;
 
       /// depth of the image (depth8 for icl8u/depth32 for icl32f)
       depth m_eDepth;
 
+      /// timestamp of the image
+      Time m_timestamp;
 
       /* }}} */
     };

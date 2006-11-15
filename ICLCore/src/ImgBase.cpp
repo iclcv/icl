@@ -49,8 +49,8 @@ ImgBase* ImgBase::shallowCopy(ImgBase** ppoDst) const {
   } else {
      *poDst->asImg<icl32f>() = *this->asImg<icl32f>();
   }
-
   if (ppoDst) *ppoDst = poDst;
+  poDst->setTime(this->getTime());
   return poDst;
 }
 
@@ -75,6 +75,7 @@ ImgBase* ImgBase::shallowCopy(const std::vector<int>& vChannels, ImgBase** ppoDs
   }
 
   if (ppoDst) *ppoDst = poDst;
+  poDst->setTime(this->getTime());
   return poDst;
 }
 
@@ -84,10 +85,11 @@ void ImgBase::print(const string sTitle) const
   FUNCTION_LOG(sTitle);
   printf(   " -----------------------------------------\n"
             "| image: %s\n"
+            "| timestamp: %s\n"
             "| width: %d, height: %d, channels: %d\n"
             "| depth: %s, format: %s\n"
             "| ROI: x: %d, y: %d, w: %d, h: %d \n",        
-            sTitle.c_str(),
+            sTitle.c_str(), this->getTime().toString().c_str(),
             getSize().width,getSize().height,getChannels(),
             getDepth()==depth8u ? "depth8u" : "depth32f",
             translateFormat(getFormat()).c_str(),

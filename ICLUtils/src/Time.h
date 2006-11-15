@@ -43,12 +43,17 @@ namespace icl
       value_type toSeconds() const;
       value_type toMilliSeconds() const;
       value_type toMicroSeconds() const;
-
+         
       double toSecondsDouble() const;
       double toMilliSecondsDouble() const;
       double toMicroSecondsDouble() const;
 
       std::string toString() const;
+
+      //xcf4cis stuff
+      Time age() const {
+         return Time::microSeconds(Time::now()._usec - _usec);
+      }
 
       Time operator-() const
          {

@@ -1,16 +1,5 @@
 Felix: Timestamp
-Time timestamp;
-setTimeStamp / setCreateTime
-getTimeStamp / getCreateTime
-
-mirror, deepCopy(ROI)/scaledCopy(ROI) und shallowCopy (operator=) 
-übernehmen auch timestamp
-
-PWC setzt timestamp
-FileWriter schreibt, FileReader liest "# TimeStamp: 1234578234ß96823"
-
-Filter::prepare kopiert timestamp
-
+-JPG-Header lesen und schreiben
 
 Michael:
 make install* does not check SKIP_DIRS variable (tries to install libICLQt)

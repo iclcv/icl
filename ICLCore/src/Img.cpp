@@ -158,6 +158,8 @@ Img<Type>& Img<Type>::operator=(const Img<Type>& tSrc)
   m_oParams = tSrc.getParams ();
   m_vecChannels = tSrc.m_vecChannels;
 
+  //take over timestamp
+  this->setTime(tSrc.getTime());
   return *this;
 }
 
@@ -173,7 +175,10 @@ Img<Type>::deepCopy(ImgBase* poDst) const
 {
   FUNCTION_LOG("");
   
-  if(!poDst) poDst = imgNew(getDepth());
+  if(!poDst) {
+     poDst = imgNew(getDepth());
+     poDst->setTime(this->getTime());
+  }
   if(poDst->getDepth() == depth8u){
     return convertTo<icl8u>(poDst->asImg<icl8u>());
   }else{
@@ -197,6 +202,7 @@ Img<Type>::scaledCopy(ImgBase *poDst,scalemode eScaleMode) const
   }
 
   poDst->setFormat(getFormat());
+  poDst->setTime(getTime());
   poDst->setChannels(getChannels());
 
   if(poDst->getDepth() == depth8u){
@@ -220,6 +226,7 @@ Img<Type>::scaledCopy(ImgBase *poDst,scalemode eScaleMode) const
   roi.height = (int)rint(fScaleY * roi.height);
   roi = roi & Rect (Point::zero, poDst->getSize());
   poDst->setROI (roi);
+  poDst->getTime() = this->getTime();
   return poDst;
 }
 

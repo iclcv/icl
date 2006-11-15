@@ -8,7 +8,7 @@ namespace icl {
 
       return Filter::prepare (ppoDst, poSrc->getDepth(), 
                               bClipToROI ? oROIsize : poSrc->getSize(),
-                              poSrc->getFormat(), poSrc->getChannels (), 
+                              poSrc->getFormat(), poSrc->getTime(), poSrc->getChannels (), 
                               Rect (bClipToROI ? Point::zero : oROIoffset, oROIsize));
    }
 
