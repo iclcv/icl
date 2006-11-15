@@ -147,6 +147,10 @@ namespace icl {
       if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
       // format
       sprintf (acBuf, "# Format %s\n", translateFormat(poSrc->getFormat()).c_str());
+      // timestamp
+      sprintf (acBuf, "# TimeStamp %f\n", poSrc->getTime().toMicroSecondsDouble());
+      //if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
+     
       if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
       // number of images
       sprintf (acBuf, "# NumFeatures %d\n", iNumImages);

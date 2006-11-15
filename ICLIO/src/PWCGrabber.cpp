@@ -565,6 +565,10 @@ ImgBase* PWCGrabber::grab(ImgBase *poOutput){
     pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);
     return m_poRGB8Image;
   }
+
+  //set timestamp
+  poOutput->setTime();
+
   return poOutput;
 }
 

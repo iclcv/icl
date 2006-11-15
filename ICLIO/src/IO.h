@@ -44,6 +44,7 @@ namespace icl {
   struct FileInfo {
      depth  eDepth;
      format eFormat;
+     Time timeStamp;
      int    iNumImages;
      int    iNumChannels;
      Size   oImgSize;
@@ -53,10 +54,10 @@ namespace icl {
      bool     bGzipped;
      void*    fp;
 
-     FileInfo (const std::string& sFileName) : sFileName (sFileName) {
-        eFileFormat = getFileType (sFileName, bGzipped);
-        fp = 0;
-     }
+     FileInfo (const std::string& sFileName) : 
+        sFileName (sFileName),
+        eFileFormat(getFileType (sFileName, bGzipped)),
+        fp(0){}
   };
 
   void icl_jpeg_error_exit (j_common_ptr cinfo);

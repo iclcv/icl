@@ -207,12 +207,14 @@ namespace icl {
             readHeaderPNM (oInfo);
             ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
                               oInfo.iNumChannels, oInfo.eFormat, oInfo.oROI);
+            (*ppoDst)->setTime(oInfo.timeStamp);
             readDataPNM (*ppoDst, oInfo);
             break;
          case ioFormatJPG:
             readHeaderJPG (oInfo);
             ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
                               oInfo.iNumChannels, oInfo.eFormat, oInfo.oROI);
+            (*ppoDst)->setTime(oInfo.timeStamp);
             readDataJPG ((*ppoDst)->asImg<icl8u>(), oInfo);
             break;
          default:
@@ -348,6 +350,10 @@ namespace icl {
        } else if (sKey == "Format") {
           iss >> sValue;
           oInfo.eFormat = translateFormat(sValue.c_str());
+       } else if (sKey == "TimeStamp") {
+          double time;
+          iss >> time;
+          oInfo.timeStamp = Time::microSeconds((long long int) time);
        }
        
        //---- Is num channels in depence to the format ----
