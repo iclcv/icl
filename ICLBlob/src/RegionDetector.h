@@ -5,6 +5,7 @@
 #include "RegionDetectorBlobPart.h"
 #include "RegionDetectorBlob.h"
 #include "RegionDetectorScanLine.h"
+#include "Size.h"
 
 namespace icl{
   namespace regiondetector{
@@ -33,6 +34,9 @@ namespace icl{
       void setMaxSize(int iMaxSize);
       void setMinValue(int iMinSize);
       void setMaxValue(int iMaxSize);
+      
+      Size getSize(){ return Size(m_iW, m_iH); }
+      void setSize(const Size &size);
       
       protected:
       

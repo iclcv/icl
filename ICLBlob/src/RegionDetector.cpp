@@ -16,6 +16,14 @@ namespace icl{
       RegionDetectorBlob::ensurePixelBufferSize(iW*iH*2);
     }
 
+    void RegionDetector::setSize(const Size &size){
+      m_iW = size.width;
+      m_iH = size.height;
+      m_iDim = m_iW*m_iH;
+      RegionDetectorBlob::ensurePixelBufferSize(size.width*size.height*2);
+    }
+
+    
     void RegionDetector::setMinSize(int iMinSize){
       this->m_iMinSize = iMinSize;
     }
