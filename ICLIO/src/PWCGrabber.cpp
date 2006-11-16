@@ -500,6 +500,9 @@ bool PWCGrabber::init(const Size &s,float fFps, int iDevice)
 ImgBase* PWCGrabber::grab(ImgBase *poOutput){
   // {{{ open 
 
+  //get time for timestamp creation 
+  Time tmpTime = Time::now();
+
   pthread_mutex_lock(&usb_semph_mutex[m_iDevice]);
   sem_wait(&usb_new_pictures[m_iDevice]); 
   pthread_mutex_unlock(&usb_semph_mutex[m_iDevice]);
@@ -566,8 +569,8 @@ ImgBase* PWCGrabber::grab(ImgBase *poOutput){
     return m_poRGB8Image;
   }
 
-  //set timestamp
-  poOutput->setTime();
+  //set timestamp to average of pre- and postgrabbing time
+  poOutput->setTime((Time::now()-tmpTime)/2);
 
   return poOutput;
 }
