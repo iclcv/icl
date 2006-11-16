@@ -1,6 +1,6 @@
 #include "Arithmetic.h"
 #include "Img.h"
-
+#include "math.h"
 namespace icl {
 
 #ifdef WITH_IPP_OPTIMIZATION
@@ -136,7 +136,7 @@ namespace icl {
   // {{{ C++ fallback functions
 
   template <typename T,class ArithmeticOp>
-  void fallbackArithmeticAdd(const Img<T> *src1, const Img<T> *src2, Img<T> *dst,const ArithmeticOp &op)
+  void fallbackArithmetic2T(const Img<T> *src1, const Img<T> *src2, Img<T> *dst,const ArithmeticOp &op)
     // {{{ open
   {
     ICLASSERT_RETURN( src1 && src2 && dst );
@@ -156,7 +156,7 @@ namespace icl {
   // }}}
 
   template <typename T,class ArithmeticOp>
-  void fallbackArithmeticAddC(const Img<T> *src, const T value, Img<T> *dst,const ArithmeticOp &op)
+  void fallbackArithmetic2TC(const Img<T> *src, const T value, Img<T> *dst,const ArithmeticOp &op)
     // {{{ open
   {
     ICLASSERT_RETURN( src && dst );
@@ -167,6 +167,24 @@ namespace icl {
       ImgIterator<T> itDst = dst->getROIIterator(c);
       for(;itSrc.inRegion(); ++itSrc, ++itDst){
         *itDst = op(*itSrc,value);
+      }
+    }
+  }
+  // }}}
+
+
+  template <typename T,class ArithmeticOp>
+  void fallbackArithmetic1T(const Img<T> *src, Img<T> *dst,const ArithmeticOp &op)
+    // {{{ open
+  {
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
+    ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
+    for(int c=src->getChannels()-1; c >= 0; --c) {
+      ImgIterator<T> itSrc = const_cast<Img<T>*>(src)->getROIIterator(c);
+      ImgIterator<T> itDst = dst->getROIIterator(c);
+      for(;itSrc.inRegion(); ++itSrc, ++itDst){
+        *itDst = op(*itSrc);
       }
     }
   }
@@ -193,43 +211,71 @@ namespace icl {
   public:
     inline T operator()(T val1,T val2) const { return val1 / val2; }
   };
+  template <typename T> class SqrOp {
+  public:
+    inline T operator()(T val) const { return val*val; }
+  };
+  template <typename T> class SqrtOp {
+  public:
+    inline T operator()(T val) const { return sqrt(val); }
+  };
+  template <typename T> class LnOp {
+  public:
+    inline T operator()(T val) const { return ln(val); }
+  };
+  template <typename T> class ExpOp {
+  public:
+    inline T operator()(T val) const { return exp(val); }
+  };
+  template <typename T> class AbsOp {
+  public:
+    inline T operator()(T val) const { return abs(val); }
+  };
+  
   // }}}
 
   // {{{ C++ fallback function specializations
   void Arithmetic::Add (const Img32f *src1, const Img32f *src2, Img32f *dst)
   {
-    fallbackArithmeticAdd<icl32f>(src1, src2,dst,AddOp<icl32f>());
+    fallbackArithmetic2T<icl32f>(src1, src2,dst,AddOp<icl32f>());
   }
   void Arithmetic::Sub (const Img32f *src1, const Img32f *src2, Img32f *dst)
   {
-    fallbackArithmeticAdd<icl32f>(src1, src2,dst,SubOp<icl32f>());
+    fallbackArithmetic2T<icl32f>(src1, src2,dst,SubOp<icl32f>());
   }
   void Arithmetic::Mul (const Img32f *src1, const Img32f *src2, Img32f *dst)
   {
-    fallbackArithmeticAdd<icl32f>(src1, src2,dst,MulOp<icl32f>());
+    fallbackArithmetic2T<icl32f>(src1, src2,dst,MulOp<icl32f>());
   }
   void Arithmetic::Div (const Img32f *src1, const Img32f *src2, Img32f *dst)
   {
-    fallbackArithmeticAdd<icl32f>(src1, src2,dst,DivOp<icl32f>());
+    fallbackArithmetic2T<icl32f>(src1, src2,dst,DivOp<icl32f>());
   }
   
   void Arithmetic::AddC (const Img32f *src, const icl32f value, Img32f *dst)
   {
-    fallbackArithmeticAddC<icl32f>(src, value,dst,AddOp<icl32f>());
+    fallbackArithmetic2TC<icl32f>(src, value,dst,AddOp<icl32f>());
   }
   void Arithmetic::SubC (const Img32f *src, const icl32f value, Img32f *dst)
   {
-    fallbackArithmeticAddC<icl32f>(src, value,dst,SubOp<icl32f>());
+    fallbackArithmetic2TC<icl32f>(src, value,dst,SubOp<icl32f>());
   }
   void Arithmetic::MulC (const Img32f *src, const icl32f value, Img32f *dst)
   {
-    fallbackArithmeticAddC<icl32f>(src, value,dst,MulOp<icl32f>());
+    fallbackArithmetic2TC<icl32f>(src, value,dst,MulOp<icl32f>());
   }
   void Arithmetic::DivC (const Img32f *src, const icl32f value, Img32f *dst)
   {
-    fallbackArithmeticAddC<icl32f>(src, value,dst,DivOp<icl32f>());
+    fallbackArithmetic2TC<icl32f>(src, value,dst,DivOp<icl32f>());
   }
-
+  void Arithmetic::Sqr (const Img32f *src, Img32f *dst)
+  {
+    fallbackArithmetic1T<icl32f>(src, dst,SqrOp<icl32f>());
+  }
+  void Arithmetic::Sqrt (const Img32f *src, Img32f *dst)
+  {
+    fallbackArithmetic1T<icl32f>(src, dst,SqrtOp<icl32f>());
+  }
   // }}}
 
 #endif

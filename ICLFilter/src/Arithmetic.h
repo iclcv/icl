@@ -48,8 +48,17 @@ namespace icl {
       /// Divides pixel values of an image by a constant - ImgBase Version
       void DivC (const ImgBase *poSrc, const icl32f value, ImgBase **ppoDst);
 
+      /// Squares pixel values of an image and writes them into the destination image - ImgBase Version
+      void Sqr (const ImgBase *poSrc, ImgBase **ppoDst);
+      /// Computes square roots of pixel values of a source image and writes them into the destination image - ImgBase Version
+      void Sqrt (const ImgBase *poSrc, ImgBase **ppoDst);
+      /// Computes the natural logarithm of pixel values in a source image and writes the results into the destination image - ImgBase Version
+      void Ln (const ImgBase *poSrc, ImgBase **ppoDst);
+      /// Computes the exponential of pixel values in a source image and writes the results into the destination image - ImgBase Version
+      void Exp (const ImgBase *poSrc, ImgBase **ppoDst);
+      /// Computes absolute pixel values of a source image and places them into the destination image - ImgBase Version
+      void Abs (const ImgBase *poSrc, ImgBase **ppoDst);
 
-#ifdef WITH_IPP_OPTIMIZATION
       /// Squares pixel values of an image and writes them into the destination image
       static void Sqr (const Img32f *src, Img32f *dst);
       /// Computes square roots of pixel values of a source image and writes them into the destination image
@@ -60,6 +69,8 @@ namespace icl {
       static void Exp (const Img32f *src, Img32f *dst);
       /// Computes absolute pixel values of a source image and places them into the destination image
       static void Abs (const Img32f *src, Img32f *dst);
+#ifdef WITH_IPP_OPTIMIZATION
+
       /// Finds the absolute difference between an image and a scalar value.
       static void AbsDiffC (const Img8u *src, int value, Img8u *dst);
       /// Finds the absolute difference between an image and a scalar value.
@@ -74,16 +85,7 @@ namespace icl {
       /// Finds the absolute difference between two images
       static void AbsDiff (const Img8u *src1, const Img8u *src2, Img8u *dst);
 
-      /// Squares pixel values of an image and writes them into the destination image - ImgBase Version
-      void Sqr (const ImgBase *poSrc, ImgBase **ppoDst);
-      /// Computes square roots of pixel values of a source image and writes them into the destination image - ImgBase Version
-      void Sqrt (const ImgBase *poSrc, ImgBase **ppoDst);
-      /// Computes the natural logarithm of pixel values in a source image and writes the results into the destination image - ImgBase Version
-      void Ln (const ImgBase *poSrc, ImgBase **ppoDst);
-      /// Computes the exponential of pixel values in a source image and writes the results into the destination image - ImgBase Version
-      void Exp (const ImgBase *poSrc, ImgBase **ppoDst);
-      /// Computes absolute pixel values of a source image and places them into the destination image - ImgBase Version
-      void Abs (const ImgBase *poSrc, ImgBase **ppoDst);
+      
       /// Finds the absolute difference between two images - ImgBase Version
       void AbsDiff (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
       /// Finds the absolute difference between an image and a scalar value. - ImgBase Version
