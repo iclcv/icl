@@ -103,30 +103,30 @@ namespace icl {
 
   void Morphological::Dilate(const Img8u *src, Img8u *dst){
     ippiMorphologicalCall<icl8u,ippiDilate_8u_C1R> (src,dst);
-  };
+  }
   void Morphological::Dilate3x3(const Img8u *src, Img8u *dst){
     ippiMorphologicalCall3x3<icl8u,ippiDilate3x3_8u_C1R> (src,dst);
-  };
+  }
 
   void Morphological::Dilate(const Img32f *src, Img32f *dst){
     ippiMorphologicalCall<icl32f,ippiDilate_32f_C1R> (src,dst);
-  };
+  }
   void Morphological::Dilate3x3(const Img32f *src, Img32f *dst){
     ippiMorphologicalCall3x3<icl32f,ippiDilate3x3_32f_C1R> (src,dst);
-  };
+  }
 
   void Morphological::Erode(const Img8u *src, Img8u *dst){
     ippiMorphologicalCall<icl8u,ippiErode_8u_C1R> (src,dst);
-  };
+  }
   void Morphological::Erode3x3(const Img8u *src, Img8u *dst){
     ippiMorphologicalCall3x3<icl8u,ippiErode3x3_8u_C1R> (src,dst);
-  };
+  }
   void Morphological::Erode(const Img32f *src, Img32f *dst){
     ippiMorphologicalCall<icl32f,ippiErode_32f_C1R> (src,dst);
-  };
+  }
   void Morphological::Erode3x3(const Img32f *src, Img32f *dst){
     ippiMorphologicalCall3x3<icl32f,ippiErode3x3_32f_C1R> (src,dst);
-  };
+  }
 
 /*
 
