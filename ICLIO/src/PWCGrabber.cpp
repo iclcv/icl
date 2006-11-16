@@ -570,7 +570,7 @@ ImgBase* PWCGrabber::grab(ImgBase *poOutput){
   }
 
   //set timestamp to average of pre- and postgrabbing time
-  poOutput->setTime((Time::now()-tmpTime)/2);
+  poOutput->setTime((Time::now() + tmpTime)/2);
 
   return poOutput;
 }
