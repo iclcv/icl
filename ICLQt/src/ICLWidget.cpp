@@ -44,8 +44,16 @@ namespace icl{
     memset(aiDown,0,3*sizeof(int));
 
   }
-
+  
   // }}}
+  
+  //Destructor
+  ICLWidget::~ICLWidget(void)
+  {
+    delete m_poImage;
+    if (m_poOSD) { delete m_poOSD; m_poOSD = 0; }
+    if (m_poShowOSD)  { delete m_poShowOSD; m_poShowOSD = 0; }
+  }
 
   // }}}
 

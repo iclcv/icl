@@ -64,6 +64,9 @@ namespace icl{
     /// Constructor
     ICLWidget(QWidget *poParent);
     
+    /// Destructor
+    ~ICLWidget();
+    
     /// Mouse-Event handling
     virtual void mousePressEvent(QMouseEvent *e);
     virtual void mouseReleaseEvent(QMouseEvent *e);
