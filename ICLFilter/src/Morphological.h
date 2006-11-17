@@ -17,7 +17,7 @@ namespace icl {
 
     /// Change mask size
     void setMask (Size size,char* pcMask);
-#ifdef WITH_IPP_OPTIMIZATION
+
     void MorphStateFree();
     void MorphAdvStateFree();
     /// Filters an image using the Wiener algorithm. ImgBase version, IPP-only!
@@ -31,6 +31,7 @@ namespace icl {
     void CloseBorder(const ImgBase *poSrc, ImgBase **ppoDst);
     void InitMorphState(ImgBase **ppoImg);
     void InitMorphAdvState(ImgBase **ppoImg);
+#ifdef WITH_IPP_OPTIMIZATION
   protected:
 
     template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
@@ -77,11 +78,18 @@ namespace icl {
 
     void ErodeBorderReplicate(const Img8u *src, Img8u *dst);
     void ErodeBorderReplicate(const Img32f *src, Img32f *dst);
+    typedef IppiMorphState ICLMorphState ;
+    typedef IppiMorphAdvState ICLMorphAdvState;
+#else
+    typedef void ICLMorphState;
+    typedef void ICLMorphAdvState;
 #endif
   private:
-    Ipp8u* pcMask;
-    IppiMorphState* pState;
-    IppiMorphAdvState* pAdvState;
+//    Ipp8u* pcMask;
+    icl8u * pcMask;
+
+    ICLMorphState* pState;
+    ICLMorphAdvState* pAdvState;
   };
 } // namespace icl
 #endif

@@ -10,7 +10,7 @@ namespace icl {
       ERROR_LOG("illegal width/height: " << maskSize.width << "/" << maskSize.height);
       //????
     } else setMask (maskSize,pcMask);
-    this->pcMask=(Ipp8u*)pcMask;
+    this->pcMask=(icl8u*)pcMask;
   }
   // }}}
   void Morphological::setMask (Size maskSize, char* pcMask) {
@@ -18,7 +18,7 @@ namespace icl {
     maskSize.width  = (maskSize.width/2)*2 + 1;
     maskSize.height = (maskSize.height/2)*2 + 1;
     FilterMask::setMask (maskSize);
-    this->pcMask=(Ipp8u*)pcMask;
+    this->pcMask=(icl8u*)pcMask;
   }
 
 
@@ -285,6 +285,44 @@ template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, Ip
 
 
   // }}}
+#else
+    void Morphological::MorphStateFree(){
+      #warning "MorphStateFree is not implemented without IPP optimization";
+    }
+    void Morphological::MorphAdvStateFree(){
+      #warning "MorphAdvStateFree is not implemented without IPP optimization";
+    }
+    /// Filters an image using the Wiener algorithm. ImgBase version, IPP-only!
+    void Morphological::Erode (const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "Erode is not implemented without IPP optimization";
+    }
+    void Morphological::Erode3x3 (const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "Erode3x3 is not implemented without IPP optimization";
+    }
+    void Morphological::Dilate (const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "Dilate is not implemented without IPP optimization";
+    }
+    void Morphological::Dilate3x3 (const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "Dilate3x3 is not implemented without IPP optimization";
+    }
+    void Morphological::DilateBorderReplicate (const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "DilateBorderReplicate is not implemented without IPP optimization";
+    }
+    void Morphological::ErodeBorderReplicate (const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "ErodeBorderReplicate is not implemented without IPP optimization";
+    }
+    void Morphological::OpenBorder(const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "OpenBorder is not implemented without IPP optimization";
+    }
+    void Morphological::CloseBorder(const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "CloseBorder is not implemented without IPP optimization";
+    }
+    void Morphological::InitMorphState(ImgBase **ppoImg){
+      #warning "InitMorphState is not implemented without IPP optimization";
+    }
+    void Morphological::InitMorphAdvState(ImgBase **ppoImg){
+      #warning "InitMorphAdvState is not implemented without IPP optimization";
+    }
 #endif
 
 }
