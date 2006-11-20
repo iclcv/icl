@@ -188,6 +188,8 @@ sem_t                   usb_new_pictures[4];
 double                  usb_last_time[4];
 int                     usb_image_widths[4];
 int                     usb_image_heights[4];
+
+Time                    g_Time[4];
 // }}}
 // {{{ usb_grabber_funct
 
@@ -216,10 +218,13 @@ bool usb_grabber_funct(void *data ){
    // Frame wechseln
    use_frame=1-use_frame;
 
-   while (1) {       
+   while (1) {      
+     // get time before capture
+     g_Time[device] = Time::now();
      //grab a frame
      PWC_DEBUG_CALL(ioctl(usbvflg_fd[device],VIDIOCMCAPTURE,&(usbvflg_params[device][use_frame])),"error capturing image");
-       
+     // get time after capture 
+     g_Time[device] = (g_Time[device] + Time::now()) / 2.f;
      // Frame wechseln
      use_frame=1-use_frame;
      usbvflg_useframe[device]=use_frame;
@@ -500,14 +505,14 @@ bool PWCGrabber::init(const Size &s,float fFps, int iDevice)
 ImgBase* PWCGrabber::grab(ImgBase *poOutput){
   // {{{ open 
 
-  //get time for timestamp creation 
-  Time tmpTime = Time::now();
-
   pthread_mutex_lock(&usb_semph_mutex[m_iDevice]);
+  
   sem_wait(&usb_new_pictures[m_iDevice]); 
+  
   pthread_mutex_unlock(&usb_semph_mutex[m_iDevice]);
   
   pthread_mutex_lock(&usb_frame_mutex[m_iDevice]);
+
   int use_frame=usbvflg_useframe[m_iDevice];
 
   icl8u *pucPwcData = usbvflg_buf[m_iDevice] + usbvflg_vmbuf[m_iDevice].offsets[use_frame];
@@ -517,6 +522,7 @@ ImgBase* PWCGrabber::grab(ImgBase *poOutput){
   icl8u *pV = pY+(int)(1.25*m_iWidth*m_iHeight);
 
   if(poOutput) {
+    poOutput->setTime(g_Time[m_iDevice]);
     if(poOutput->getFormat() == formatRGB &&
        poOutput->getDepth() == depth8u &&
        poOutput->getWidth() == m_iWidth &&
@@ -564,13 +570,11 @@ ImgBase* PWCGrabber::grab(ImgBase *poOutput){
     pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);
   }
   else {
+    m_poRGB8Image->setTime(g_Time[m_iDevice]);
     convertYUV420ToRGB8(m_poRGB8Image,pY,Size(m_iWidth,m_iHeight));
     pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);
     return m_poRGB8Image;
   }
-
-  //set timestamp to average of pre- and postgrabbing time
-  poOutput->setTime((Time::now() + tmpTime)/2);
 
   return poOutput;
 }
