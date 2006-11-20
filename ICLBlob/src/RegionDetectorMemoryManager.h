@@ -53,7 +53,7 @@ namespace icl{
         if(curr_index < curr_size/growfactor){
           shrink();
         }
-        printf("cleared curr_index = %d    size = %d \n",curr_index,curr_size);
+        //printf("cleared curr_index = %d    size = %d \n",curr_index,curr_size);
         curr_index = 0;
       }
       inline T* next(){
@@ -83,7 +83,7 @@ namespace icl{
       void shrink(){
         if(curr_size < INITIAL_CAPACITY) return;
         
-        printf("calling \"shrink\" oldsize = %d newsize = %d\n",curr_size,(int)(curr_size/growfactor));
+        //printf("calling \"shrink\" oldsize = %d newsize = %d\n",curr_size,(int)(curr_size/growfactor));
 
         int old_size = curr_size;
         curr_size/=growfactor;
