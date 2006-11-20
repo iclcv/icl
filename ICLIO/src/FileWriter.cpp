@@ -145,19 +145,23 @@ namespace icl {
       // magic number
       sprintf (acBuf, "%s\n", bPPM ? "P6" : "P5");
       if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+
       // format
       sprintf (acBuf, "# Format %s\n", translateFormat(poSrc->getFormat()).c_str());
-      // timestamp
-      sprintf (acBuf, "# TimeStamp %f\n", poSrc->getTime().toMicroSecondsDouble());
-      //if (gzputs (oInfo.fp, acBuf) < 0) throw writeError;
-     
       if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+
+      // timestamp
+      sprintf (acBuf, "# TimeStamp %lld\n", poSrc->getTime().toMicroSeconds());
+      if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+
       // number of images
       sprintf (acBuf, "# NumFeatures %d\n", iNumImages);
       if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+
       // image depth
       sprintf (acBuf, "# ImageDepth %s\n", translateDepth(poSrc->getDepth()).c_str());
       if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+
       // ROI
       Rect roi = poSrc->getROI ();
       sprintf (acBuf, "# ROI %d %d %d %d\n", roi.x, roi.y, roi.width, roi.height);
@@ -207,6 +211,7 @@ namespace icl {
    //--------------------------------------------------------------------------
    void FileWriter::writeJPG(Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality) {
       // {{{ open
+
       J_COLOR_SPACE jCS;
       switch (poSrc->getFormat ()) {
         case formatGray: jCS = JCS_GRAYSCALE; break;
@@ -258,7 +263,21 @@ namespace icl {
        * Pass TRUE unless you are very sure of what you're doing. */
       jpeg_start_compress(&jpgCinfo, TRUE);
 
-      /* Step 5: while (scan lines remain to be written) */
+
+      /* Step 5: Write comments */
+      char acBuf[1024];
+      // timestamp
+      sprintf (acBuf, "TimeStamp %lld", poSrc->getTime().toMicroSeconds());
+      jpeg_write_marker(&jpgCinfo, JPEG_COM, (JOCTET*) acBuf, strlen(acBuf));
+
+      // ROI
+      Rect roi = poSrc->getROI ();
+      sprintf (acBuf, "ROI %d %d %d %d", roi.x, roi.y, roi.width, roi.height);
+      jpeg_write_marker(&jpgCinfo, JPEG_COM, (JOCTET*) acBuf, strlen(acBuf));
+
+
+
+      /* Step 6: while (scan lines remain to be written) */
       if (poSrc->getChannels () == 1) {
          int iLineStep = poSrc->getSize().width;
          // grayscale image, can handover image channels directly
@@ -291,10 +310,10 @@ namespace icl {
          delete[] pcBuf; pcBuf = 0;
       }
 
-      /* Step 6: Finish compression */
+      /* Step 7: Finish compression */
       jpeg_finish_compress(&jpgCinfo);
 
-      /* Step 7: release JPEG compression object */
+      /* Step 8: release JPEG compression object */
       jpeg_destroy_compress(&jpgCinfo);
    }
 

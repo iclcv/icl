@@ -40,7 +40,8 @@ namespace icl {
      /// check+adapt destination images parameters against given values
      /// bCheckOnly mode ignores the given imgSize
      bool prepare (ImgBase **ppoDst, depth eDepth, const Size &imgSize, 
-                   format eFormat, int nChannels, const Rect& roi, Time timestamp=0);
+                   format eFormat, int nChannels, const Rect& roi, 
+                   Time timestamp=Time::null);
 
      /// check+adapt destination image to properties of given source image
      bool prepare (ImgBase **ppoDst, const ImgBase *poSrc) {

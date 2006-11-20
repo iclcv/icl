@@ -19,6 +19,8 @@
 
 namespace icl {
 
+   const Time Time::null(0);
+   
    Time::Time() :
       _usec(0)
    {

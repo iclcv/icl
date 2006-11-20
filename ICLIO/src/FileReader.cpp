@@ -351,9 +351,10 @@ namespace icl {
           iss >> sValue;
           oInfo.eFormat = translateFormat(sValue.c_str());
        } else if (sKey == "TimeStamp") {
-          double time;
-          iss >> time;
-          oInfo.timeStamp = Time::microSeconds((long long int) time);
+          Time::value_type t;
+          iss >> t;
+          oInfo.timeStamp = Time::microSeconds(t);
+          continue;
        }
        
        //---- Is num channels in depence to the format ----
@@ -454,9 +455,36 @@ namespace icl {
     /* Step 2: specify data source (eg, a file) */
     jpeg_stdio_src(&jpgCinfo, (FILE*) oInfo.fp);
     
+    /* request to save comments */
+    jpeg_save_markers (&jpgCinfo, JPEG_COM, 1024);
+
     /* Step 3: read file parameters with jpeg_read_header() */
     (void) jpeg_read_header(&jpgCinfo, TRUE);
     
+    /* evaluate markers, i.e. comments */
+    for (jpeg_saved_marker_ptr pMarker = jpgCinfo.marker_list; pMarker; 
+         pMarker = pMarker->next) {
+       if (pMarker->marker != JPEG_COM) continue;
+       char acBuf[1025] = "";
+       memcpy (acBuf, pMarker->data, pMarker->data_length);
+       acBuf[pMarker->data_length] = '\0'; // terminating null
+
+       istringstream iss (acBuf);
+       string sKey, sValue;
+       iss >> sKey;
+
+       if (sKey == "TimeStamp") {
+          Time::value_type t;
+          iss >> t;
+          oInfo.timeStamp = Time::microSeconds(t);
+       } else if (sKey == "ROI") {
+          iss >> oInfo.oROI.x;
+          iss >> oInfo.oROI.y;
+          iss >> oInfo.oROI.width;
+          iss >> oInfo.oROI.height;
+       }
+    }
+
     /* Step 4: set parameters for decompression */
     
     /* Step 5: Start decompressor */
