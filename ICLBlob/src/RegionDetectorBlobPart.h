@@ -16,17 +16,21 @@ RegionDectorRegionDetectorBlobPart.
 */
 namespace icl{
   namespace regiondetector{
-    
+
     class RegionDetectorBlobPart{
       public:
       inline RegionDetectorBlobPart(){
         rs = new BlobPartList(20);
         ps = new ScanLineList(250);
         inside_other_region = 0;
+
+        //s_iReferenceCounter++;
       }
       inline ~RegionDetectorBlobPart(){
         delete rs;
         delete ps;
+
+        //s_iReferenceCounter--;
       }
       inline void add(RegionDetectorScanLine *p){
         ps->push_back(p);
@@ -46,12 +50,16 @@ namespace icl{
         ps->clear();
         inside_other_region = 0;
       }
-      
       BlobPartList *rs;
       ScanLineList *ps;
       
+      static void showReferenceCounter(){
+        printf("RegionDetectorBlobPart #=%d \n",s_iReferenceCounter);
+      }
       private:
       int inside_other_region;
+
+      static int s_iReferenceCounter;
     };
     
     

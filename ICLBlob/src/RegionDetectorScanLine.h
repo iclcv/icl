@@ -19,14 +19,18 @@ namespace icl{
     class RegionDetectorScanLine{
       public:
       inline RegionDetectorScanLine(int line=0, int start=0, int end=0, int iImageWidth=-1, unsigned char *pucImageData=0):
-        line(line),start(start),end(end),imagewidth(iImageWidth),imagedata(pucImageData){};
+        line(line),start(start),end(end),imagewidth(iImageWidth),imagedata(pucImageData){
+
+        //s_iReferenceCounter++;
+      };
+      inline ~RegionDetectorScanLine(){
+        //s_iReferenceCounter--;
+      }
       
       inline float x(){return ((float)start+(float)end)/2.0;}
       inline int y(){return line;}
       inline unsigned char val(){return imagedata[imagewidth*line+start];}
-      inline int size(){
-        return end-start+1;
-      }
+      inline int size(){ return end-start+1; }
       inline int getStart(){return start;}
       inline int getEnd(){return end;}
       
@@ -44,12 +48,17 @@ namespace icl{
           *pucStart++=255;
         }
       }
+     
+      static void showReferenceCounter(){
+        printf("RegionDetectorScanLine #=%d \n",s_iReferenceCounter);
+      }
       protected:
       int line,start,end; 
       int imagewidth;
       unsigned char *imagedata;
       
-      
+      private:
+      static int s_iReferenceCounter;
     };
   }
 }

@@ -39,6 +39,10 @@ namespace icl{
       ScanLineList *getPixels(){ return m_poPixels; }
       
       static void ensurePixelBufferSize(unsigned int size);
+      
+      static void showReferenceCounter(){
+        printf("RegionDetectorBlob #=%d \n",s_iReferenceCounter);
+      }
       private:
       
       void fetch(RegionDetectorBlobPart *r);//recursive
@@ -51,6 +55,7 @@ namespace icl{
       
       ScanLineList *m_poPixels;
       
+      static int s_iReferenceCounter;
      
     };
   }

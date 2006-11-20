@@ -11,10 +11,10 @@ namespace icl{
   
   class ImgRegionDetector{
     public:
-    ImgRegionDetector(icl8u minVal=0, icl8u maxVal=255, unsigned int minSize=0, unsigned int maxSize=0);
+    ImgRegionDetector(unsigned int minSize=0, unsigned int maxSize=10000000,icl8u minVal=0, icl8u maxVal=255);
     ~ImgRegionDetector();
 
-    void setRestrictions(icl8u minVal, icl8u maxVal, int minSize, int maxSize);
+    void setRestrictions(int minSize, int maxSize, icl8u minVal, icl8u maxVal);
     
     const Array<int> &detect(ImgBase *image);
     void detect(ImgBase *image, Array<int> &centers, Array<icl8u> &values);

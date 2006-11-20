@@ -11,16 +11,33 @@ namespace icl{
       
       m_poBlobPartMM = new BlobPartMemoryManager(1000);
       m_poScanLineMM = new ScanLineMemoryManager(10000);
-            
+
       m_poBlobList = new BlobList(0);
       RegionDetectorBlob::ensurePixelBufferSize(iW*iH*2);
     }
+    
+    RegionDetector::~RegionDetector(){
+      delete [] m_ppoLim;
+      delete m_poBlobPartMM;
+      delete m_poScanLineMM;
+      for(int i=0;i<m_poBlobList->size();i++){
+        delete (*m_poBlobList)[i];
+      }
+      delete m_poBlobList;
+    }
+
 
     void RegionDetector::setSize(const Size &size){
-      m_iW = size.width;
-      m_iH = size.height;
-      m_iDim = m_iW*m_iH;
-      RegionDetectorBlob::ensurePixelBufferSize(size.width*size.height*2);
+      if(m_iW != size.width || m_iH != size.height){
+        m_iW = size.width;
+        m_iH = size.height;
+        m_iDim = m_iW*m_iH;
+        RegionDetectorBlob::ensurePixelBufferSize(size.width*size.height*2);
+        
+        delete [] m_ppoLim;
+        m_ppoLim = new RegionDetectorBlobPart*[m_iDim];
+        memset(m_ppoLim,0,m_iDim*sizeof(RegionDetectorBlobPart*));
+      }
     }
 
     
@@ -53,7 +70,7 @@ namespace icl{
       lim[0] = m_poBlobPartMM->next();
       lim[0]->clear();
       start_of_curr_pix_line = 0;
-            
+
       // first row
       for(i=1;i<w;i++){
         if(data[i]==data[i-1]){
@@ -79,6 +96,7 @@ namespace icl{
       icl8u *im_curr_line;
       icl8u *im_last_line;
       int x,y,j;
+
       for(y=1;y<h;y++){
         r_curr_line = lim+y*w;
         r_last_line = r_curr_line-w;
@@ -138,7 +156,6 @@ namespace icl{
         pl->update(y,start_of_curr_pix_line,w-1,w,data);
         r_curr_line[w-1]->add(pl);
       }
-
       //Creating RegionDetectorBlobs recursivly
       //delete old blobs !!
 

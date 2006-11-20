@@ -24,6 +24,8 @@ namespace icl{
       */
       RegionDetector(int iW, int iH, int iMinSize,int iMaxSize, int iMinValue=0, int iMaxValue=255);
       
+      //Desturctor
+      ~RegionDetector();
       /**
       searches for blobs in the given image-data. The returned RegionDetectorBlobList must not be
       deleted, as it is owned by the RegionDetector object

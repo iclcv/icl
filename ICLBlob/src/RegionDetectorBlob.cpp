@@ -3,8 +3,13 @@
 #include <math.h>
 #include <Array.h>
 
+
+
 namespace icl{
   namespace regiondetector{
+    
+    int RegionDetectorBlob::s_iReferenceCounter=0;
+    
     Array<int> PIXEL_BUFFER;
     
     RegionDetectorBlob::RegionDetectorBlob(RegionDetectorBlobPart *r){
@@ -13,10 +18,13 @@ namespace icl{
         fetch(r);
       }
       m_iDirty = 1;
+
+      //s_iReferenceCounter++;
     }
     
     RegionDetectorBlob::~RegionDetectorBlob(){
       delete m_poPixels;
+      //s_iReferenceCounter--;
     }
 
     void RegionDetectorBlob::ensurePixelBufferSize(unsigned int size){
@@ -206,12 +214,12 @@ namespace icl{
   
     void RegionDetectorBlob::fetch(RegionDetectorBlobPart *r){
       if(r->ps){
-        for(ScanLineList::iterator it = r->ps->begin();it!= r->ps->end();it++){
+        for(ScanLineList::iterator it = r->ps->begin();it!= r->ps->end();++it){
           m_poPixels->push_back(*it);
         }
       }
       if(r->rs){
-        for(BlobPartList::iterator it = r->rs->begin();it!= r->rs->end();it++){
+        for(BlobPartList::iterator it = r->rs->begin();it!= r->rs->end();++it){
           fetch(*it);
         }
       }
