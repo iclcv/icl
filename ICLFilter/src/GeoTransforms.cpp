@@ -40,8 +40,8 @@ namespace icl {
       }
 
       if (Filter::prepare (ppoDst, poSrc->getDepth(), oSize, 
-                           poSrc->getFormat(), poSrc->getTime(), poSrc->getChannels(),
-                           Rect (oROIOffset, poSrc->getROISize())))
+                           poSrc->getFormat(), poSrc->getChannels(),
+                           Rect (oROIOffset, poSrc->getROISize()), poSrc->getTime()))
          (this->*(aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);
    }
 

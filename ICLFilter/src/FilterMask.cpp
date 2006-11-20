@@ -8,8 +8,9 @@ namespace icl {
 
       return Filter::prepare (ppoDst, poSrc->getDepth(), 
                               bClipToROI ? oROIsize : poSrc->getSize(),
-                              poSrc->getFormat(), poSrc->getTime(), poSrc->getChannels (), 
-                              Rect (bClipToROI ? Point::zero : oROIoffset, oROIsize));
+                              poSrc->getFormat(), poSrc->getChannels (), 
+                              Rect (bClipToROI ? Point::zero : oROIoffset, oROIsize),
+                              poSrc->getTime());
    }
 
    bool FilterMask::computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize)
