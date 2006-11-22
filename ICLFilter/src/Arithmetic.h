@@ -13,24 +13,6 @@ namespace icl {
 
    class Arithmetic : public Filter {
    public:
-      /// Adds pixel values of two images
-      static void Add (const Img32f  *src1, const Img32f  *src2, Img32f  *dst);
-      /// Subtracts pixel values of two images
-      static void Sub  (const Img32f  *src1, const Img32f  *src2, Img32f  *dst);
-      /// Multiplies pixel values of two images
-      static void Mul (const Img32f  *src1, const Img32f  *src2, Img32f  *dst);
-      /// Divides pixel values of two images
-      static void Div (const Img32f  *src1, const Img32f  *src2, Img32f  *dst);
-      /// Adds a constant to pixel values of an image
-      static void AddC (const Img32f *src, const icl32f value, Img32f *dst);
-      /// Subtracts a constant to pixel values of an image
-      static void SubC (const Img32f *src, const icl32f value, Img32f *dst);
-      /// Multiplies pixel values of an image by a constant
-      static void MulC (const Img32f *src, const icl32f value, Img32f *dst);
-      /// Divides pixel values of an image by a constant
-      static void DivC (const Img32f *src, const icl32f value, Img32f *dst);
-
-
       /// Adds pixel values of two images - ImgBase Version
       void Add (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
       /// Subtracts pixel values of two images - ImgBase Version
@@ -59,6 +41,34 @@ namespace icl {
       /// Computes absolute pixel values of a source image and places them into the destination image - ImgBase Version
       void Abs (const ImgBase *poSrc, ImgBase **ppoDst);
 
+
+      /// Adds pixel values of two images
+      static void Add (const Img32f  *src1, const Img32f  *src2, Img32f  *dst);
+      /// Subtracts pixel values of two images
+      static void Sub  (const Img32f  *src1, const Img32f  *src2, Img32f  *dst);
+      /// Multiplies pixel values of two images
+      static void Mul (const Img32f  *src1, const Img32f  *src2, Img32f  *dst);
+      /// Divides pixel values of two images
+      static void Div (const Img32f  *src1, const Img32f  *src2, Img32f  *dst);
+      /// Adds a constant to pixel values of an image
+      static void AddC (const Img32f *src, const icl32f value, Img32f *dst);
+      /// Subtracts a constant to pixel values of an image
+      static void SubC (const Img32f *src, const icl32f value, Img32f *dst);
+      /// Multiplies pixel values of an image by a constant
+      static void MulC (const Img32f *src, const icl32f value, Img32f *dst);
+      /// Divides pixel values of an image by a constant
+      static void DivC (const Img32f *src, const icl32f value, Img32f *dst);
+
+      /// Finds the absolute difference between two images - ImgBase Version
+      void AbsDiff (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
+      /// Finds the absolute difference between an image and a scalar value. - ImgBase Version
+      void AbsDiffC (const ImgBase *poSrc, icl32f value, ImgBase **ppoDst);
+      /// Multiplies pixel values of an image by a constant and scales the product - ImgBase Version
+      void MulCScale (const ImgBase *poSrc, const icl32f value, ImgBase **ppoDst);
+      /// Multiplies pixel values of two images and scales the product, operates on icl8u - ImgBase Version
+      void MulScale (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
+
+    protected:
       /// Squares pixel values of an image and writes them into the destination image
       static void Sqr (const Img32f *src, Img32f *dst);
       /// Computes square roots of pixel values of a source image and writes them into the destination image
@@ -69,7 +79,6 @@ namespace icl {
       static void Exp (const Img32f *src, Img32f *dst);
       /// Computes absolute pixel values of a source image and places them into the destination image
       static void Abs (const Img32f *src, Img32f *dst);
-#ifdef WITH_IPP_OPTIMIZATION
 
       /// Finds the absolute difference between an image and a scalar value.
       static void AbsDiffC (const Img8u *src, int value, Img8u *dst);
@@ -84,20 +93,6 @@ namespace icl {
       static void AbsDiff (const Img32f *src1, const Img32f *src2, Img32f *dst);
       /// Finds the absolute difference between two images
       static void AbsDiff (const Img8u *src1, const Img8u *src2, Img8u *dst);
-
-      
-      /// Finds the absolute difference between two images - ImgBase Version
-      void AbsDiff (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
-      /// Finds the absolute difference between an image and a scalar value. - ImgBase Version
-      void AbsDiffC (const ImgBase *poSrc, icl32f value, ImgBase **ppoDst);
-      /// Multiplies pixel values of an image by a constant and scales the product - ImgBase Version
-      void MulCScale (const ImgBase *poSrc, const icl32f value, ImgBase **ppoDst);
-      /// Multiplies pixel values of two images and scales the product, operates on icl8u - ImgBase Version
-      void MulScale (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
-#endif
-
-
-
 
    };
 } // namespace icl

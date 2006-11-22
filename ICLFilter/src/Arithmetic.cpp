@@ -133,6 +133,14 @@ namespace icl {
 
 #else
 
+  // not implemented functions
+
+  void Arithmetic::MulCScale (const Img8u *src, const icl8u value, Img8u *dst){
+    #warning "MulCScale is not yet implemented without IPP optimization";
+  }
+  void Arithmetic::MulScale (const Img8u  *src1, const Img8u  *src2, Img8u  *dst){
+    #warning "MulScale is not yet implemented without IPP optimization";
+  }
   // {{{ C++ fallback functions
 
   template <typename T,class ArithmeticOp>
@@ -221,7 +229,7 @@ namespace icl {
   };
   template <typename T> class LnOp {
   public:
-    inline T operator()(T val) const { return ln(val); }
+    inline T operator()(T val) const { return log(val); }
   };
   template <typename T> class ExpOp {
   public:
@@ -229,7 +237,18 @@ namespace icl {
   };
   template <typename T> class AbsOp {
   public:
-    inline T operator()(T val) const { return abs(val); }
+    inline T operator()(T val) const { return fabs(val); }
+  };
+
+
+  //template <typename T,T (*absop)(T)> class AbsDiffOp {
+  template <typename T> class AbsDiffOp_8u {
+  public:
+    inline T operator()(T val1,T val2) const { return abs(val1 - val2); }
+  };
+  template <typename T> class AbsDiffOp_32f {
+  public:
+    inline T operator()(T val1,T val2) const { return fabs(val1 - val2); }
   };
   
   // }}}
@@ -275,6 +294,33 @@ namespace icl {
   void Arithmetic::Sqrt (const Img32f *src, Img32f *dst)
   {
     fallbackArithmetic1T<icl32f>(src, dst,SqrtOp<icl32f>());
+  }
+
+  void Arithmetic::Exp (const Img32f *src, Img32f *dst)
+  {
+    fallbackArithmetic1T<icl32f>(src, dst,ExpOp<icl32f>());
+  }
+  void Arithmetic::Ln (const Img32f *src, Img32f *dst)
+  {
+    fallbackArithmetic1T<icl32f>(src, dst,LnOp<icl32f>());
+  }
+  void Arithmetic::Abs (const Img32f *src, Img32f *dst)
+  {
+    fallbackArithmetic1T<icl32f>(src, dst,AbsOp<icl32f>());
+  }
+  void Arithmetic::AbsDiff (const Img32f *src1, const Img32f *src2, Img32f *dst){
+    fallbackArithmetic2T<icl32f>(src1, src2,dst,AbsDiffOp_32f<icl32f>());
+  }
+  void Arithmetic::AbsDiffC (const Img32f *src, const icl32f value, Img32f *dst)
+  {
+    fallbackArithmetic2TC<icl32f>(src, value,dst,AbsDiffOp_32f<icl32f>());
+  }
+  void Arithmetic::AbsDiff (const Img8u *src1, const Img8u *src2, Img8u *dst){
+    fallbackArithmetic2T<icl8u>(src1, src2,dst,AbsDiffOp_8u<icl8u>());
+  }
+  void Arithmetic::AbsDiffC (const Img8u *src, const int value, Img8u *dst)
+  {
+    fallbackArithmetic2TC<icl8u>(src, value,dst,AbsDiffOp_8u<icl8u>());
   }
   // }}}
 
@@ -350,8 +396,6 @@ namespace icl {
   // }}}
 
 
-
-#ifdef WITH_IPP_OPTIMIZATION
 
   void Arithmetic::MulScale (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
@@ -439,9 +483,6 @@ namespace icl {
     };
   }
   // }}}
-
-
-#endif
 
 // }}}
 }
