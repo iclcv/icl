@@ -9,7 +9,7 @@ namespace icl {
   class Morphological : public FilterMask {
   public:
 
-    /// Constructor that creates a Morphologicalwiener filter object, with specified mask size
+    /// Constructor that creates a Morphological object, with specified mask size
     /** @param maskSize of odd width and height
         Even width or height is increased to next higher odd value.
     */
@@ -20,17 +20,42 @@ namespace icl {
 
     void MorphStateFree();
     void MorphAdvStateFree();
-    /// Filters an image using the Wiener algorithm. ImgBase version, IPP-only!
+/*    void MorphGrayStateFree_8u();
+    void MorphGrayStateFree_32f();*/
+    /// Performs erosion of an image using a general rectangular mask.
     void Erode (const ImgBase *poSrc, ImgBase **ppoDst);
+    /// Performs erosion of an image using a 3x3 mask
     void Erode3x3 (const ImgBase *poSrc, ImgBase **ppoDst);
+    /// Performs dilation of an image using a general rectangular mask.
     void Dilate (const ImgBase *poSrc, ImgBase **ppoDst);
+    /// Performs dilation of an image using a 3x3 mask
     void Dilate3x3 (const ImgBase *poSrc, ImgBase **ppoDst);
+    /// Performs dilation of an image.
     void DilateBorderReplicate (const ImgBase *poSrc, ImgBase **ppoDst);
+    /// Performs erosion of an image.
     void ErodeBorderReplicate (const ImgBase *poSrc, ImgBase **ppoDst);
+    /// Perfoms opening operation of an image.
     void OpenBorder(const ImgBase *poSrc, ImgBase **ppoDst);
+    /// Perfoms closing operation of an image.
     void CloseBorder(const ImgBase *poSrc, ImgBase **ppoDst);
+    /// Performs top-hat operation of an image.
+    void TophatBorder(const ImgBase *poSrc, ImgBase **ppoDst);
+    /// Performs black-hat operation of an image.
+    void BlackhatBorder(const ImgBase *poSrc, ImgBase **ppoDst);
+    /// Calculates morphological gradient of an image.
+    void GradientBorder(const ImgBase *poSrc, ImgBase **ppoDst);
+    /*
+    void GrayDilateBorder(const ImgBase *poSrc, ImgBase **ppoDst);
+    void GrayErodeBorder(const ImgBase *poSrc, ImgBase **ppoDst);
+    */
+/*    void ReconstructDilate(const ImgBase *poSrc, ImgBase **ppoDst);
+    void ReconstructErode(const ImgBase *poSrc, ImgBase **ppoDst);
+*/
+    /// Allocates and initializes morphology state structure for the erosion or dilation operation.
     void InitMorphState(ImgBase **ppoImg);
+    /// Allocates and initializes morphology state structure for advanced morphology operations.
     void InitMorphAdvState(ImgBase **ppoImg);
+    //void InitMorphGrayState(ImgBase **ppoImg);
 #ifdef WITH_IPP_OPTIMIZATION
   protected:
 
@@ -48,10 +73,15 @@ namespace icl {
     template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
     void ippiMorphologicalBorderCall (const Img<T> *src, Img<T> *dst);
 
+/*    template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphGrayState_32f*)>
+    void ippiMorphologicalGrayCall (const Img<T> *src, Img<T> *dst);*/
+
     void InitMorphState (Img8u *img); 
     void InitMorphAdvState (Img8u *img);
+    //void InitMorphGrayState (Img8u *img);
     void InitMorphState (Img32f *img); 
     void InitMorphAdvState (Img32f *img);
+    //void InitMorphGrayState (Img32f *img);
 
 
 
@@ -78,11 +108,32 @@ namespace icl {
 
     void ErodeBorderReplicate(const Img8u *src, Img8u *dst);
     void ErodeBorderReplicate(const Img32f *src, Img32f *dst);
+
+    void TophatBorder(const Img8u *src, Img8u *dst);
+    void BlackhatBorder(const Img8u *src, Img8u *dst);
+    void GradientBorder(const Img8u *src, Img8u *dst);
+/*    void GrayDilateBorder(const Img8u *src, Img8u *dst);
+    void GrayErodeBorder(const Img8u *src, Img8u *dst);*/
+/*    void ReconstructDilate(const Img8u *src, Img8u *dst);
+    void ReconstructErode(const Img8u *src, Img8u *dst);
+*/
+    void TophatBorder(const Img32f *src, Img32f *dst);
+    void BlackhatBorder(const Img32f *src, Img32f *dst);
+    void GradientBorder(const Img32f *src, Img32f *dst);
+/*    void GrayDilateBorder(const Img32f *src, Img32f *dst);
+    void GrayErodeBorder(const Img32f *src, Img32f *dst);*/
+/*    void ReconstructDilate(const Img32f *src, Img32f *dst);
+    void ReconstructErode(const Img32f *src, Img32f *dst);
+*/
     typedef IppiMorphState ICLMorphState ;
     typedef IppiMorphAdvState ICLMorphAdvState;
+/*    typedef IppiMorphGrayState_8u ICLMorphGrayState_8u;
+    typedef IppiMorphGrayState_32f ICLMorphGrayState_32f;*/
 #else
     typedef void ICLMorphState;
     typedef void ICLMorphAdvState;
+/*    typedef void ICLMorphGrayState_8u;
+    typedef void ICLMorphGrayState_32f;*/
 #endif
   private:
 //    Ipp8u* pcMask;
@@ -90,6 +141,8 @@ namespace icl {
 
     ICLMorphState* pState;
     ICLMorphAdvState* pAdvState;
+/*    ICLMorphGrayState_8u* pGrayState_8u;
+    ICLMorphGrayState_32f* pGrayState_32f;*/
   };
 } // namespace icl
 #endif

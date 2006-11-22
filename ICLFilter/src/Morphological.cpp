@@ -78,7 +78,21 @@ namespace icl {
         );
     };
   }
-
+/*
+  template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphGrayState_32f*)>
+  void Morphological::ippiMorphologicalGrayCall (const Img<T> *src, Img<T> *dst) {
+    for(int c=0; c < src->getChannels(); c++) {
+        ippiFunc(src->getROIData (c, this->oROIoffset),
+                 src->getLineStep(),
+                 dst->getROIData (c),
+                 dst->getLineStep(),
+                 dst->getROISize(),
+                 ippBorderRepl,
+                 pGrayState_32f
+        );
+    };
+  }
+*/
 
   void Morphological::InitMorphState (Img8u *img) {
     ippiMorphologyInitAlloc_8u_C1R(img->getROISize().width, pcMask, oMaskSize, oAnchor,&pState);
@@ -86,19 +100,33 @@ namespace icl {
   void Morphological::InitMorphAdvState (Img8u *img) {
     ippiMorphAdvInitAlloc_8u_C1R(&pAdvState, img->getROISize(), pcMask, oMaskSize, oAnchor);
   }
+/*  void Morphological::InitMorphGrayState (Img8u *img) {
+    ippiMorphGrayInitAlloc_8u_C1R(&pGrayState_8u, img->getROISize(), pcMask, oMaskSize, oAnchor);
+  }
   void Morphological::InitMorphState (Img32f *img) {
     ippiMorphologyInitAlloc_32f_C1R(img->getROISize().width, pcMask, oMaskSize, oAnchor,&pState);
-  } 
+  }*/ 
   void Morphological::InitMorphAdvState (Img32f *img) {
     ippiMorphAdvInitAlloc_32f_C1R(&pAdvState, img->getROISize(), pcMask, oMaskSize, oAnchor);
   }
-
-  void Morphological::MorphAdvStateFree(){
-    ippiMorphAdvFree(pAdvState);
-  }
+  /*
+  void Morphological::InitMorphGrayState (Img32f *img) {
+    ippiMorphGrayInitAlloc_32f_C1R(&pGrayState_32f, img->getROISize(), pcMask, oMaskSize, oAnchor);
+  }*/
   void Morphological::MorphStateFree(){
     ippiMorphologyFree(pState);
   }
+  void Morphological::MorphAdvStateFree(){
+    ippiMorphAdvFree(pAdvState);
+  }
+  /*
+  void Morphological::MorphGrayStateFree_8u(){
+    ippiMorphAdvFree(pGrayState_8u);
+  }
+  void Morphological::MorphGrayStateFree_32f(){
+    ippiMorphAdvFree(pGrayState_32f);
+  }*/
+  
 
 
   void Morphological::Dilate(const Img8u *src, Img8u *dst){
@@ -135,9 +163,6 @@ template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, Ip
 */
 
   void Morphological::DilateBorderReplicate(const Img8u *src, Img8u *dst){
-  //  ippiDilateBorderReplicate_8u_C1R();
-//    ippiMorphologyInitAlloc_8u_C1R();
-    
     ippiMorphologicalBorderReplicateCall<icl8u,ippiDilateBorderReplicate_8u_C1R> (src,dst);
   }
 
@@ -163,6 +188,63 @@ template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, Ip
   void Morphological::CloseBorder(const Img32f *src, Img32f *dst){
     ippiMorphologicalBorderCall<icl32f,ippiMorphCloseBorder_32f_C1R> (src,dst);
   }
+
+
+
+
+    void Morphological::TophatBorder(const Img8u *src, Img8u *dst){
+      ippiMorphologicalBorderCall<icl8u,ippiMorphTophatBorder_8u_C1R> (src,dst);
+    }
+    void Morphological::BlackhatBorder(const Img8u *src, Img8u *dst){
+      ippiMorphologicalBorderCall<icl8u,ippiMorphBlackhatBorder_8u_C1R> (src,dst);
+    }
+    void Morphological::GradientBorder(const Img8u *src, Img8u *dst){
+      ippiMorphologicalBorderCall<icl8u,ippiMorphGradientBorder_8u_C1R> (src,dst);
+    }
+/*    void Morphological::GrayDilateBorder(const Img8u *src, Img8u *dst){
+      ippiMorphologicalGrayCall<icl8u,ippiGrayDilateBorder_8u_C1R> (src,dst);
+    }
+    void Morphological::GrayErodeBorder(const Img8u *src, Img8u *dst){
+      ippiMorphologicalGrayCall<icl8u,ippiGrayErodeBorder_8u_C1R> (src,dst);
+    }*/
+/*  void Morphological::ReconstructDilate(const Img8u *src, Img8u *dst){
+      #warning "ReconstructDilate is not implemented with IPP optimization";
+    }
+    void Morphological::ReconstructErode(const Img8u *src, Img8u *dst){
+      #warning "ReconstructErode is not implemented with IPP optimization";
+    }*/
+
+    void Morphological::TophatBorder(const Img32f *src, Img32f *dst){
+      ippiMorphologicalBorderCall<icl32f,ippiMorphTophatBorder_32f_C1R> (src,dst);
+    }
+    void Morphological::BlackhatBorder(const Img32f *src, Img32f *dst){
+      ippiMorphologicalBorderCall<icl32f,ippiMorphBlackhatBorder_32f_C1R> (src,dst);
+    }
+    void Morphological::GradientBorder(const Img32f *src, Img32f *dst){
+      ippiMorphologicalBorderCall<icl32f,ippiMorphGradientBorder_32f_C1R> (src,dst);
+    }
+/*    void Morphological::GrayDilateBorder(const Img32f *src, Img32f *dst){
+      ippiMorphologicalGrayCall<icl32f,ippiGrayDilateBorder_32f_C1R> (src,dst);
+    }
+    void Morphological::GrayErodeBorder(const Img32f *src, Img32f *dst){
+      ippiMorphologicalGrayCall<icl32f,ippiGrayErodeBorder_32f_C1R> (src,dst);
+    }*/
+/*    void Morphological::ReconstructDilate(const Img32f *src, Img32f *dst){
+      #warning "ReconstructDilate is not implemented with IPP optimization";
+    }
+    void Morphological::ReconstructErode(const Img32f *src, Img32f *dst){
+      #warning "ReconstructErode is not implemented with IPP optimization";
+    }*/
+
+
+
+
+
+
+
+
+
+
 
 
   // {{{ ImgBase* version
@@ -259,6 +341,93 @@ template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, Ip
    }
    // }}}
 
+   void Morphological::TophatBorder (const ImgBase *poSrc, ImgBase **ppoDst)
+      // {{{ open
+   {
+     FUNCTION_LOG("");
+     if (!prepare (ppoDst, poSrc)) return;
+     if (poSrc->getDepth () == depth8u)
+       TophatBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+     else
+       TophatBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+   }
+   // }}}
+
+   void Morphological::BlackhatBorder (const ImgBase *poSrc, ImgBase **ppoDst)
+      // {{{ open
+   {
+     FUNCTION_LOG("");
+     if (!prepare (ppoDst, poSrc)) return;
+     if (poSrc->getDepth () == depth8u)
+       BlackhatBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+     else
+       BlackhatBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+   }
+   // }}}
+
+   void Morphological::GradientBorder (const ImgBase *poSrc, ImgBase **ppoDst)
+      // {{{ open
+   {
+     FUNCTION_LOG("");
+     if (!prepare (ppoDst, poSrc)) return;
+     if (poSrc->getDepth () == depth8u)
+       GradientBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+     else
+       GradientBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+   }
+   // }}}
+
+/*
+   void Morphological::GrayDilateBorder (const ImgBase *poSrc, ImgBase **ppoDst)
+      // {{{ open
+   {
+     FUNCTION_LOG("");
+     if (!prepare (ppoDst, poSrc)) return;
+     if (poSrc->getDepth () == depth8u)
+       GrayDilateBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+     else
+       GrayDilateBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+   }
+   // }}}
+
+
+   void Morphological::GrayErodeBorder (const ImgBase *poSrc, ImgBase **ppoDst)
+      // {{{ open
+   {
+     FUNCTION_LOG("");
+     if (!prepare (ppoDst, poSrc)) return;
+     if (poSrc->getDepth () == depth8u)
+       GrayErodeBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+     else
+       GrayErodeBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+   }
+   // }}}
+*/
+/*   void Morphological::ReconstructDilate (const ImgBase *poSrc, ImgBase **ppoDst)
+      // {{{ open
+   {
+     FUNCTION_LOG("");
+     if (!prepare (ppoDst, poSrc)) return;
+     if (poSrc->getDepth () == depth8u)
+       ReconstructDilate(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+     else
+       ReconstructDilate(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+   }
+   // }}}
+
+   void Morphological::ReconstructErode (const ImgBase *poSrc, ImgBase **ppoDst)
+      // {{{ open
+   {
+     FUNCTION_LOG("");
+     if (!prepare (ppoDst, poSrc)) return;
+     if (poSrc->getDepth () == depth8u)
+       ReconstructErode(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+     else
+       ReconstructErode(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+   }
+   // }}}
+*/
+
    void Morphological::InitMorphAdvState (ImgBase **ppoImg)
       // {{{ open
    {
@@ -281,7 +450,19 @@ template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, Ip
        InitMorphState((*ppoImg)->asImg<icl32f>());
    }
    // }}}
-
+/*
+  void Morphological::InitMorphGrayState (ImgBase **ppoImg)
+      // {{{ open
+   {
+     FUNCTION_LOG("");
+     ICLASSERT_RETURN(ppoImg);
+     if ((*ppoImg)->getDepth () == depth8u)
+       InitMorphGrayState((*ppoImg)->asImg<icl8u>());
+     else
+       InitMorphGrayState((*ppoImg)->asImg<icl32f>());
+   }
+   // }}}
+*/
 
 
   // }}}
@@ -292,7 +473,12 @@ template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, Ip
     void Morphological::MorphAdvStateFree(){
       #warning "MorphAdvStateFree is not implemented without IPP optimization";
     }
-    /// Filters an image using the Wiener algorithm. ImgBase version, IPP-only!
+/*    void Morphological::MorphGrayStateFree_8u(){
+      #warning "MorphAdvStateFree_8u is not implemented without IPP optimization";
+    }
+    void Morphological::MorphGrayStateFree_32f(){
+      #warning "MorphAdvStateFree_32f is not implemented without IPP optimization";
+    }*/
     void Morphological::Erode (const ImgBase *poSrc, ImgBase **ppoDst){
       #warning "Erode is not implemented without IPP optimization";
     }
@@ -317,12 +503,39 @@ template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, Ip
     void Morphological::CloseBorder(const ImgBase *poSrc, ImgBase **ppoDst){
       #warning "CloseBorder is not implemented without IPP optimization";
     }
+    void Morphological::TophatBorder(const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "TopHatBorder is not implemented without IPP optimization";
+    }
+    void Morphological::BlackhatBorder(const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "BlackhatBorder is not implemented without IPP optimization";
+    }
+    void Morphological::GradientBorder(const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "GradientBorder is not implemented without IPP optimization";
+    }
+/*    void Morphological::GrayDilateBorder(const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "GrayDilateBorder is not implemented without IPP optimization";
+    }
+    void Morphological::GrayErodeBorder(const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "GrayErodeBorder is not implemented without IPP optimization";
+    }*/
+/*
+    void Morphological::ReconstructDilate(const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "ReconstructDilate is not implemented without IPP optimization";
+    }
+    void Morphological::ReconstructErode(const ImgBase *poSrc, ImgBase **ppoDst){
+      #warning "ReconstructErode is not implemented without IPP optimization";
+    }
+*/
+
     void Morphological::InitMorphState(ImgBase **ppoImg){
       #warning "InitMorphState is not implemented without IPP optimization";
     }
     void Morphological::InitMorphAdvState(ImgBase **ppoImg){
       #warning "InitMorphAdvState is not implemented without IPP optimization";
     }
+/*    void Morphological::InitMorphGrayState(ImgBase **ppoImg){
+      #warning "InitMorphAdvState is not implemented without IPP optimization";
+    }*/
 #endif
 
 }
