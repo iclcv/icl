@@ -100,12 +100,14 @@ namespace icl {
   void Morphological::InitMorphAdvState (Img8u *img) {
     ippiMorphAdvInitAlloc_8u_C1R(&pAdvState, img->getROISize(), pcMask, oMaskSize, oAnchor);
   }
-/*  void Morphological::InitMorphGrayState (Img8u *img) {
+  /*
+  void Morphological::InitMorphGrayState (Img8u *img) {
     ippiMorphGrayInitAlloc_8u_C1R(&pGrayState_8u, img->getROISize(), pcMask, oMaskSize, oAnchor);
   }
+  */
   void Morphological::InitMorphState (Img32f *img) {
     ippiMorphologyInitAlloc_32f_C1R(img->getROISize().width, pcMask, oMaskSize, oAnchor,&pState);
-  }*/ 
+  } 
   void Morphological::InitMorphAdvState (Img32f *img) {
     ippiMorphAdvInitAlloc_32f_C1R(&pAdvState, img->getROISize(), pcMask, oMaskSize, oAnchor);
   }
