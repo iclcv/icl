@@ -28,7 +28,7 @@ namespace icl{
     virtual T qy(T x) const = 0; 
 
     virtual void features(T x,T y, T *dst) const = 0;
-
+    virtual void center(T &x, T &y) const = 0;
 
     protected:
     QuadraticModel(int dim);

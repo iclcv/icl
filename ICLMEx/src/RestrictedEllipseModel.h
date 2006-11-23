@@ -26,6 +26,7 @@ namespace icl{
     virtual T qy(T x) const;
 
     virtual void features(T x,T y, T *dst)const;
+    virtual void center(T &x, T &y) const;
  };
 
 }

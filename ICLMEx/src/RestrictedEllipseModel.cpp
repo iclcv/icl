@@ -43,6 +43,15 @@ namespace icl{
     dst[4] = 1;
   }
 
+  template<class T>
+  void RestrictedEllipseModel<T>::center(T &x, T &y) const{
+    // x=-c/(2a)
+    // y=-d/(2b)
+    const RestrictedEllipseModel<T> &M=*this;
+    x = -M[2]/(2*M[0]);
+    y = -M[3]/(2*M[1]);
+  }
+
   template class RestrictedEllipseModel<icl32f>;
   template class RestrictedEllipseModel<icl64f>;
   

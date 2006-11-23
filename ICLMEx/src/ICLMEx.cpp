@@ -204,6 +204,28 @@ namespace icl{
 
 // }}}
   
+  template<class T, class X>
+  void drawQuadraticModel(QuadraticModel<T> &model, Img<X> *image, X *color){
+    drawModel(model,image,color);
+    
+    // draw the center
+    T tx(0),ty(0);
+    int w=image->getWidth(),h=image->getHeight();
+    model.center(tx,ty);
+    const int SIZE=10;
+    int x = (int)tx;
+    int y = (int)ty;
+    for(int i=x-SIZE/2;i<x+SIZE/2;i++){
+      for(int j=y-SIZE/2;j<y+SIZE/2;j++){
+        if(x>=0 && x<w && y>=0 && y<h){ 
+          for(int c=0;c<image->getChannels();c++){
+            (*image)(i,j,c)=color[c];
+          }
+        }
+      }
+    }
+  }
+
 
   // explicit template declarations
   template void fitModel<icl64f>(icl64f*,icl64f*,int,GeneralModel<icl64f>&);
@@ -217,4 +239,8 @@ namespace icl{
   template void drawModel<icl32f,icl32f>(GeneralModel<icl32f>&,Img32f*,icl32f*);
   template void drawModel<icl64f,icl32f>(GeneralModel<icl64f>&,Img32f*,icl32f*);
 
+  template void drawQuadraticModel<icl32f,icl8u>(QuadraticModel<icl32f>&,Img8u*,icl8u*);
+  template void drawQuadraticModel<icl64f,icl8u>(QuadraticModel<icl64f>&,Img8u*,icl8u*);
+  template void drawQuadraticModel<icl32f,icl32f>(QuadraticModel<icl32f>&,Img32f*,icl32f*);
+  template void drawQuadraticModel<icl64f,icl32f>(QuadraticModel<icl64f>&,Img32f*,icl32f*);
 }

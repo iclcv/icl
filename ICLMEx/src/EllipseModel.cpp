@@ -39,6 +39,16 @@ namespace icl{
     dst[4] = y;
     dst[5] = 1;
   }
+  
+  template<class T>
+  void EllipseModel<T>::center(T &x, T &y) const{
+    // x = (eb-2cd) / (4ac-b²)
+    // y = (db-2ae) / (4ac-b²)
+    const EllipseModel<T> &M=*this;
+    float norm = 4*M[0]*M[2]-M[1]*M[1];
+    x = (M[4]*M[1]-2*M[2]*M[3]) / norm;
+    y = (M[3]*M[1]-2*M[0]*M[4]) / norm;
+  }
 
   template class EllipseModel<icl32f>;
   template class EllipseModel<icl64f>;

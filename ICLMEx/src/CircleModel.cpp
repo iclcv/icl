@@ -37,6 +37,14 @@ namespace icl{
     dst[2] = y;
     dst[3] = 1;
   }
+  template<class T>
+  void CircleModel<T>::center(T &x, T &y) const{
+    // x=-b/(2a)
+    // y=-c/(2a)
+    const CircleModel<T> &M=*this;
+    x = -M[1]/(2*M[0]);
+    y = -M[2]/(2*M[0]);
+  }
 
   template class CircleModel<icl32f>;
   template class CircleModel<icl64f>;

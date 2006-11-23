@@ -2,6 +2,7 @@
 #define ICLMEX_H
 
 #include "GeneralModel.h"
+#include "QuadraticModel.h"
 
 /** \mainpage ICLMEx (ICL Model Extraction package)
 
@@ -159,6 +160,12 @@ namespace icl{
   template<class T, class X>
   void drawModel(GeneralModel<T> &model, Img<X> *image, X *color);
   
+  /// draws a model with calculated params 
+  /** The model must be fitted with the above function before it can be drawed
+      into an image. 
+  */
+  template<class T, class X>
+  void drawQuadraticModel(QuadraticModel<T> &model, Img<X> *image, X *color);
 }
 
 
