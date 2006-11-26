@@ -7,6 +7,19 @@ namespace icl {
 
   // {{{ ippi-function call templates
 
+  template <typename T, IppStatus (*ippiFunc) (T*, int, IppiSize)>
+  inline void ippi1srcInplaceCall(const Img<T> *srcdst)
+  {
+    // {{{ open
+    ICLASSERT_RETURN( srcdst );
+    for (int c=srcdst->getChannels()-1; c >= 0; --c) {
+      ippiFunc (srcdst->getROIData (c), srcdst->getLineStep(),
+                srcdst->getROISize());
+    }
+  }
+  // }}}
+	
+	
   template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize)>
   inline void ippi1srcCall(const Img<T> *src, Img<T> *dst)
   {
@@ -107,6 +120,9 @@ namespace icl {
   }
   void Arithmetic::Abs (const Img32f *src, Img32f *dst){
     ippi1srcCall<icl32f,ippiAbs_32f_C1R>(src,dst);
+  }
+  void Arithmetic::Abs (const Img32f *srcdst){
+    ippi1srcInplaceCall<icl32f,ippiAbs_32f_C1IR>(srcdst);
   }
   void Arithmetic::AddC (const Img32f *src, const icl32f value, Img32f *dst){
     ippiCallC<icl32f,ippiAddC_32f_C1R>(src,value,dst);
@@ -241,7 +257,8 @@ namespace icl {
   };
 
 
-  //template <typename T,T (*absop)(T)> class AbsDiffOp {
+  
+  
   template <typename T> class AbsDiffOp_8u {
   public:
     inline T operator()(T val1,T val2) const { return abs(val1 - val2); }
@@ -459,6 +476,12 @@ namespace icl {
     ICLASSERT_RETURN( poSrc->getDepth() == depth32f);
     if (!Filter::prepare (ppoDst, poSrc)) return;
     Abs(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+  }
+  void Arithmetic::Abs (const ImgBase *poSrcDst)
+  {
+    // {{{ open
+    ICLASSERT_RETURN( poSrcDst);
+    Abs(poSrcDst->asImg<icl32f>());
   }
   // }}}
 

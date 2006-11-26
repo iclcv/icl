@@ -8,7 +8,7 @@ namespace icl {
    /** 
        Supported operations include Add, Sub, Mul, Div, AddC, SubC, MulC, DivC, AbsDiff, Sqr, Sqrt, Ln, Exp, Abs, AbsDiffC.
        All arithmetic operations except AbsDiff, AbsDiffC and MulScale are only supported on float typed images, i.e. icl32f, to avoid using a scaleFactor, avoiding icl8u overflows.
-       In the moment, there is no Fallback for AbsDiff, Sqr, Sqrt, Ln, Exp, Abs, AbsDiffC implemented.
+       In the moment, there is no Fallback for MulScale and MulCScale implemented.
    */
 
    class Arithmetic : public Filter {
@@ -40,7 +40,8 @@ namespace icl {
       void Exp (const ImgBase *poSrc, ImgBase **ppoDst);
       /// Computes absolute pixel values of a source image and places them into the destination image - ImgBase Version
       void Abs (const ImgBase *poSrc, ImgBase **ppoDst);
-
+      /// Computes absolute pixel values of a source image and places them into the destination image - ImgBase Version
+      void Abs (const ImgBase *poSrcDst);
 
       /// Adds pixel values of two images
       static void Add (const Img32f  *src1, const Img32f  *src2, Img32f  *dst);
@@ -79,6 +80,8 @@ namespace icl {
       static void Exp (const Img32f *src, Img32f *dst);
       /// Computes absolute pixel values of a source image and places them into the destination image
       static void Abs (const Img32f *src, Img32f *dst);
+      /// Computes absolute pixel values of a source image and places them into the destination image, inplace Version
+      static void Abs (const Img32f *srcdst);
 
       /// Finds the absolute difference between an image and a scalar value.
       static void AbsDiffC (const Img8u *src, int value, Img8u *dst);
