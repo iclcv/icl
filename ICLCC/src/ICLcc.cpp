@@ -598,6 +598,171 @@ void convertToARGB32Interleaved(unsigned char *pucDst, Img32f *poSrc, Img8u *poB
 #endif
 } 
   // }}}
+//template <typename T, IppStatus (*ippiFunc) (const T*, int, const T*, int, icl8u*, int, IppiSize, IppCmpOp)>
+
+
+template<typename T>
+inline void fallbackInterleavedToPlanar(T *src, const Size &srcSize, int c,  Img<T> *dst){
+  printf("fallbackInterleavedToPlanar\n");
+	ICLASSERT_RETURN(src);
+	ICLASSERT_RETURN(dst);
+	dst->setChannels(c);
+	dst->setSize(srcSize);
+	T** pp=new T* [c];
+	T** ppEnd=pp+c;
+	for (int i=0;i>c;i++){
+		pp[i]=dst->getData(i);
+	}
+	T* srcEnd=src+srcSize.getDim()*c;
+	while (src<srcEnd){
+		for (T** p=pp;p<ppEnd;++p,++src){
+			*(*p)=*src;
+		}
+	}
+}
+
+
+template<typename T>
+inline void fallbackPlanarToInterleaved(Img<T> *src, T *dst){
+  printf("fallbackPlanarToInterleaved\n");
+	ICLASSERT_RETURN(src);
+	ICLASSERT_RETURN(dst);
+	int c=src->getChannels();
+	int dim=src->getSize().getDim();
+  printf("a\n");
+	T** pp=new T* [c];
+	T** ppEnd=pp+c;
+  printf("b\n");
+	for (int i=0;i>c;i++){
+		pp[i]=src->getData(i);
+	}
+  printf("c\n");
+	T* dstEnd=dst+c*dim;
+	while (dst<dstEnd){
+		for (T** p=pp;p<ppEnd;++p,++dst){
+      printf(",\n");
+			*dst=*(*p);
+		}
+    printf(".\n");
+	}
+  printf("d\n");
+	
+}
+
+
+
+void interleavedToPlanar(icl8u *src, const Size &srcSize, int srcChannels,  Img8u *dst){  //aus einem großem bild mit 3 farben in einem kanal mache 3 bilder mit einer farbe pro kanal
+#ifdef WITH_IPP_OPTIMIZATION
+ICLASSERT_RETURN(srcChannels>0);
+	dst->setChannels(srcChannels);
+switch(srcChannels){
+	case 1:
+		ippiCopy_8u_C1R(src,srcSize.width,dst->getData(0),srcSize.width,srcSize);
+		break;
+	case 3: {
+		icl8u* apucChannels[3]={dst->getData(0),dst->getData(1),dst->getData(2)};
+		ippiCopy_8u_C3P3R(src,srcSize.width*srcChannels,apucChannels,srcSize.width,srcSize);
+		break;
+	}
+	case 4: {
+		icl8u* apucChannels[4]={dst->getData(0),dst->getData(1),dst->getData(2),dst->getData(3)};
+		ippiCopy_8u_C4P4R(src,srcSize.width*srcChannels,apucChannels,srcSize.width,srcSize);
+		break;
+	}
+	default:
+		fallbackInterleavedToPlanar(src,srcSize,srcChannels,dst);
+		break;
+}
+#else
+  fallbackInterleavedToPlanar(src,srcSize,srcChannels,dst);
+#endif
+
+}
+// 		fallbackInterleavedToPlanar(src,srcSize,srcChannels,dst);  macht noch ein seg fault;
+//		fallbackPlanarToInterleaved(src,dst); auch!
+
+void interleavedToPlanar(icl32f *src, const Size &srcSize, int srcChannels,  Img32f *dst){  //aus einem großem bild mit 3 farben in einem kanal mache 3 bilder mit einer farbe pro kanal
+#ifdef WITH_IPP_OPTIMIZATION
+ICLASSERT_RETURN(srcChannels>0);
+	dst->setChannels(srcChannels);
+switch(srcChannels){
+	case 1:
+		ippiCopy_32f_C1R(src,srcSize.width,dst->getData(0),srcSize.width,srcSize);
+		break;
+	case 3: {
+		icl32f* apucChannels[3]={dst->getData(0),dst->getData(1),dst->getData(2)};
+		ippiCopy_32f_C3P3R(src,srcSize.width*srcChannels*sizeof(icl32f),apucChannels,srcSize.width*sizeof(icl32f),srcSize);
+		break;
+	}
+	case 4: {
+		icl32f* apucChannels[4]={dst->getData(0),dst->getData(1),dst->getData(2),dst->getData(3)};
+		ippiCopy_32f_C4P4R(src,srcSize.width*srcChannels*sizeof(icl32f),apucChannels,srcSize.width*sizeof(icl32f),srcSize);
+		break;
+	}
+	default:
+		fallbackInterleavedToPlanar(src,srcSize,srcChannels,dst);
+		break;
+}
+#else
+  fallbackInterleavedToPlanar(src,srcSize,srcChannels,dst);
+#endif
+
+}
+
+void planarToInterleaved(Img8u *src, icl8u *dst){
+
+#ifdef WITH_IPP_OPTIMIZATION
+    ICLASSERT_RETURN(src->getChannels()>0);
+switch(src->getChannels()){
+	case 1:
+		ippiCopy_8u_C1R(src->getData(0),src->getSize().width,dst,src->getSize().width,src->getSize());
+	case 3: { 
+		icl8u* apucChannels[3]={src->getData(0),src->getData(1),src->getData(2)};
+		ippiCopy_8u_P3C3R(apucChannels,src->getLineStep(),dst,src->getLineStep()*3,src->getSize());
+		break;
+	}
+	case 4: {
+		icl8u* apucChannels[4]={src->getData(0),src->getData(1),src->getData(2),src->getData(3)};
+		ippiCopy_8u_P4C4R(apucChannels,src->getLineStep(),dst,src->getLineStep()*4,src->getSize());
+		break;
+	}
+	default:
+		fallbackPlanarToInterleaved(src,dst);
+		break;
+}
+#else
+  fallbackPlanarToInterleaved(src,dst);
+#endif
+}
+
+void planarToInterleaved(Img32f *src, icl32f *dst,Point ROIoffset){
+
+#ifdef WITH_IPP_OPTIMIZATION
+    ICLASSERT_RETURN(src->getChannels()>0);
+switch(src->getChannels()){
+	case 1:
+		ippiCopy_32f_C1R(src->getData(0),src->getSize().width,dst,src->getSize().width,src->getSize());
+	case 3: { 
+		icl32f* apucChannels[3]={src->getROIData(0,ROIoffset),src->getROIData(1,ROIoffset),src->getROIData(2,ROIoffset)};
+		ippiCopy_32f_P3C3R(apucChannels,src->getLineStep(),dst,src->getLineStep()*3,src->getROISize());
+		break;
+	}
+	case 4: {
+		icl32f* apucChannels[4]={src->getData(0),src->getData(1),src->getData(2),src->getData(3)};
+		ippiCopy_32f_P4C4R(apucChannels,src->getLineStep(),dst,src->getLineStep()*4,src->getSize());
+		break;
+	}
+	default:
+		fallbackPlanarToInterleaved(src,dst);
+		break;
+}
+#else
+  fallbackPlanarToInterleaved(src,dst);
+#endif
+}
+
+
+
 
 static unsigned char aucHlsTable[257];
 static float afHlsTable[257];
