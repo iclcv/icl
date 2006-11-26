@@ -146,14 +146,14 @@ void convertYUV420ToRGB8(Img8u* poDst, unsigned char *pucSrc, const Size &s);
     size of dst must be at least src->getWidth() * src-getHeight() * *src-getChannels()
  */
  
- void planarToInterleaved(Img8u *src, icl8u *dst);
- void planarToInterleaved(Img32f *src, icl32f *dst, Point ROIoffset =Point(0,0));
+ void planarToInterleaved(const Img8u *src, icl8u *dst);
+ void planarToInterleaved(const Img32f *src, icl32f *dst, Point ROIoffset =Point(0,0));
 
 
 //Case 6: Splitting color image into separate planes IppStatus ippiCopy_<mod>(const Ipp<datatype>* pSrc, int srcStep, Ipp<datatype>* const pDst[3], int dstStep, IppiSize roiSize); Supported values for mod: IppStatus ippiCopy_<mod>(const Ipp<datatype>* pSrc, int srcStep, Ipp<datatype>* const pDst[4], int dstStep, IppiSize roiSize); 8u_C3P3R 16s_C3P3R 32s_C3P3R 32f_C3P3R
  
- void interleavedToPlanar(icl8u *src, const Size &srcSize, int srcChannels,  Img8u *dst);
- void interleavedToPlanar(icl32f *src, const Size &srcSize, int srcChannels,  Img32f *dst);
+ void interleavedToPlanar(const icl8u *src, const Size &srcSize, int srcChannels,  Img8u *dst);
+ void interleavedToPlanar(const icl32f *src, const Size &srcSize, int srcChannels,  Img32f *dst);
 
 //@}
 ///@name Function for Converting into HLS-Colorspace (Hue, Lightnes, Saturation)

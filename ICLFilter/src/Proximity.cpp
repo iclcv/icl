@@ -44,15 +44,15 @@ ICLASSERT_RETURN( src1);
       m_oBuffer8u[0].resize(src1->getDim()*src1->getChannels());
       m_oBuffer8u[1].resize(src2->getDim()*src2->getChannels());
       m_oBuffer32f[2].resize(src1->getDim()*src1->getChannels());
-      planarToInterleaved(src1->asImg<icl8u>(), *(m_oBuffer8u[0]));
-      planarToInterleaved(src2->asImg<icl8u>(), *(m_oBuffer8u[1]));
+      planarToInterleaved(src1, *(m_oBuffer8u[0]));
+      planarToInterleaved(src2, *(m_oBuffer8u[1]));
 	   Size srcROI=src1->getSize()-src2->getSize();
      ippiFunc (*m_oBuffer8u[0], src1->getLineStep(),
                    srcROI,
                    *m_oBuffer8u[1], src2->getLineStep(),
                    src2->getROISize(),
                    *m_oBuffer32f[2], dst->getLineStep());
-      interleavedToPlanar(*(m_oBuffer32f[2]),dst->getSize(),src1->getChannels(),dst->asImg<icl32f>());
+      interleavedToPlanar(*(m_oBuffer32f[2]),dst->getSize(),src1->getChannels(),dst);
    }
 
    template <IppStatus (*ippiFunc) (const icl32f*, int, IppiSize, const icl32f*, int, IppiSize, icl32f*, int)>
@@ -69,8 +69,8 @@ ICLASSERT_RETURN( src1);
       m_oBuffer32f[0].resize(src1->getDim()*src1->getChannels());
       m_oBuffer32f[1].resize(src2->getDim()*src2->getChannels());
       m_oBuffer32f[2].resize(src1->getDim()*src1->getChannels());  // ohne *2 absurz, seg fault, warum????
-      planarToInterleaved(src1->asImg<icl32f>(), *(m_oBuffer32f[0]));
-      planarToInterleaved(src2->asImg<icl32f>(), *(m_oBuffer32f[1]));
+      planarToInterleaved(src1, *(m_oBuffer32f[0]));
+      planarToInterleaved(src2, *(m_oBuffer32f[1]));
 	   Size srcROI=src1->getSize()-src2->getSize();
 	   //int ROIOffset=(src1->getSize().width*(src2->getSize().height-1)/2+(src2->getSize()-1)/2)*src1->getChannels();
 
@@ -79,7 +79,7 @@ ICLASSERT_RETURN( src1);
                    *m_oBuffer32f[1], src2->getLineStep()*src2->getChannels(),
                    src2->getROISize(),
                    *m_oBuffer32f[2], src1->getLineStep()*src1->getChannels());
-      interleavedToPlanar(*(m_oBuffer32f[0]),dst->getSize(),src1->getChannels(),dst->asImg<icl32f>());
+      interleavedToPlanar(*(m_oBuffer32f[0]),dst->getSize(),src1->getChannels(),dst);
       printf("7\n");
 	   /*for (int j=0;j<10;j++){
       planarToInterleaved(dst->asImg<icl32f>(), *(m_oBuffer32f[0]));

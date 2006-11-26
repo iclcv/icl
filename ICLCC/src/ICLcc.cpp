@@ -602,7 +602,7 @@ void convertToARGB32Interleaved(unsigned char *pucDst, Img32f *poSrc, Img8u *poB
 
 
 template<typename T>
-inline void fallbackInterleavedToPlanar(T *src, const Size &srcSize, int c,  Img<T> *dst){
+inline void fallbackInterleavedToPlanar(const T *src, const Size &srcSize, int c,  Img<T> *dst){
   printf("fallbackInterleavedToPlanar\n");
 	ICLASSERT_RETURN(src);
 	ICLASSERT_RETURN(dst);
@@ -613,17 +613,17 @@ inline void fallbackInterleavedToPlanar(T *src, const Size &srcSize, int c,  Img
 	for (int i=0;i>c;i++){
 		pp[i]=dst->getData(i);
 	}
-	T* srcEnd=src+srcSize.getDim()*c;
+	/*T* srcEnd=src+srcSize.getDim()*c;
 	while (src<srcEnd){
 		for (T** p=pp;p<ppEnd;++p,++src){
 			*(*p)=*src;
 		}
-	}
+	}*/
 }
 
 
 template<typename T>
-inline void fallbackPlanarToInterleaved(Img<T> *src, T *dst){
+inline void fallbackPlanarToInterleaved(const Img<T> *src, T *dst){
   printf("fallbackPlanarToInterleaved\n");
 	ICLASSERT_RETURN(src);
 	ICLASSERT_RETURN(dst);
@@ -651,7 +651,7 @@ inline void fallbackPlanarToInterleaved(Img<T> *src, T *dst){
 
 
 
-void interleavedToPlanar(icl8u *src, const Size &srcSize, int srcChannels,  Img8u *dst){  //aus einem großem bild mit 3 farben in einem kanal mache 3 bilder mit einer farbe pro kanal
+void interleavedToPlanar(const icl8u *src, const Size &srcSize, int srcChannels,  Img8u *dst){  //aus einem großem bild mit 3 farben in einem kanal mache 3 bilder mit einer farbe pro kanal
 #ifdef WITH_IPP_OPTIMIZATION
 ICLASSERT_RETURN(srcChannels>0);
 	dst->setChannels(srcChannels);
@@ -681,7 +681,7 @@ switch(srcChannels){
 // 		fallbackInterleavedToPlanar(src,srcSize,srcChannels,dst);  macht noch ein seg fault;
 //		fallbackPlanarToInterleaved(src,dst); auch!
 
-void interleavedToPlanar(icl32f *src, const Size &srcSize, int srcChannels,  Img32f *dst){  //aus einem großem bild mit 3 farben in einem kanal mache 3 bilder mit einer farbe pro kanal
+void interleavedToPlanar(const icl32f *src, const Size &srcSize, int srcChannels,  Img32f *dst){  //aus einem großem bild mit 3 farben in einem kanal mache 3 bilder mit einer farbe pro kanal
 #ifdef WITH_IPP_OPTIMIZATION
 ICLASSERT_RETURN(srcChannels>0);
 	dst->setChannels(srcChannels);
@@ -709,7 +709,7 @@ switch(srcChannels){
 
 }
 
-void planarToInterleaved(Img8u *src, icl8u *dst){
+void planarToInterleaved(const Img8u *src, icl8u *dst){
 
 #ifdef WITH_IPP_OPTIMIZATION
     ICLASSERT_RETURN(src->getChannels()>0);
@@ -735,7 +735,7 @@ switch(src->getChannels()){
 #endif
 }
 
-void planarToInterleaved(Img32f *src, icl32f *dst,Point ROIoffset){
+void planarToInterleaved(const Img32f *src, icl32f *dst,Point ROIoffset){
 
 #ifdef WITH_IPP_OPTIMIZATION
     ICLASSERT_RETURN(src->getChannels()>0);
