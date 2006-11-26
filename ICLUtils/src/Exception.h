@@ -48,6 +48,14 @@ namespace icl {
       ICLException(std::string("Invalid Img-Parameter: ")+param) {}
     virtual ~InvalidImgParamException() throw() {}
   };
+
+#define ICL_INVALID_FORMAT throw new InvalidFormatException(std::string(__FUNCTION__)+":"+__FILE__+":")
+  class InvalidFormatException : public ICLException {
+    public:
+    InvalidFormatException(const std::string &functionName) throw():
+      ICLException(std::string("Invalid Format in: ")+functionName) {}
+    virtual ~InvalidFormatException() throw() {}
+  };
 }
 
 #endif // ICLEXCEPTION
