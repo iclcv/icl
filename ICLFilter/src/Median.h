@@ -2,7 +2,7 @@
 #define ICLMEDIAN_H
 
 #include <FilterMask.h>
-
+#include <Array.h>
 namespace icl {
 
   /// Class that provides median filter abilities
@@ -165,6 +165,17 @@ namespace icl {
         @param ppoDst pointer to destination image
     */
     void apply(const ImgBase *poSrc, ImgBase **ppoDst);
+  /// applies the medianColor operation on poSrc and stores the result in poDst, 
+    /** 
+      poSrc and poDst have to be 3-channel or4-channel images 
+      The 3/4-ch planar icl image is internally converted into an interleaved one, then 
+      the IPP medianColor operation is applied, after that, the image is coverted back
+      to a planar ICL Image.
+      The depth, channel count and size of poDst is adapted to poSrc' ROI:
+        @param poSrc  source image
+        @param ppoDst pointer to destination image
+    */
+    void applyColor(const ImgBase *poSrc, ImgBase **ppoDst);
 
   protected:
     void (Median::*aMethods[2])(const ImgBase *poSrc, ImgBase *poDst); 
@@ -174,10 +185,19 @@ namespace icl {
        void ippMedian (const ImgBase *poSrc, ImgBase *poDst);
     template<typename T>
        void ippMedianFixed (const ImgBase *poSrc, ImgBase *poDst);
+    //template<typename T,IppStatus (*ippiFunc) (const T*, int, T*,int, IppiSize)>
+    template<typename T>
+       void ippMedianColor (const ImgBase *poSrc, ImgBase *poDst);  
 #endif
     template<typename T>
        void cMedian (const ImgBase *poSrc, ImgBase *poDst);
-  };
+private:
+#ifdef WITH_IPP_OPTIMIZATION 
+
+  Array<icl8u> m_oBuffer8u[2];
+  Array<icl32f> m_oBuffer32f[2];
+#endif
+ };
 }
 
 #endif

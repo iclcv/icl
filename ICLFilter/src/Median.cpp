@@ -1,5 +1,7 @@
  #include "Median.h"
 #include "Img.h"
+#include "ICLcc.h"
+#include "Array.h"
 #include "ImgIterator.h"
 #include <vector>
 #include <algorithm>
@@ -42,6 +44,60 @@ namespace icl {
                                      poDst->getROISize(), mask);
      }
   }
+  
+  //template <typename T, IppStatus (*ippiFunc) (T*, int, IppiSize)>
+  //template<,IppStatus (*ippiFunc) (const icl8u*, int, icl8u*,int, IppiSize)>
+  template<>
+  void Median::ippMedianColor<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
+		int dim=poSrc->getWidth() * poSrc->getHeight();
+		int dim2=poDst->getWidth() * poDst->getHeight();
+	  m_oBuffer8u[0].resize(dim*poSrc->getChannels());
+	  m_oBuffer8u[1].resize(dim2*poSrc->getChannels());
+     //planarToInterleaved(poSrc->asImg<icl8u>(), *(m_oBuffer8u[0]),this->oROIoffset);
+    planarToInterleaved(poSrc->asImg<icl8u>(), *(m_oBuffer8u[0]));
+    IppiMaskSize mask = oMaskSize.width == 3 ? ippMskSize3x3 : ippMskSize5x5;
+    if (poSrc->getChannels()==3){
+      ippiFilterMedianColor_8u_C3R(*m_oBuffer8u[0], 
+                                     poSrc->getLineStep()*poSrc->getChannels(),
+                                     *m_oBuffer8u[1], 
+                                     poDst->getLineStep()*poSrc->getChannels(), 
+                                     poDst->getROISize(), mask);
+    }
+    else { //ch=4
+      ippiFilterMedianColor_8u_AC4R(*m_oBuffer8u[0], 
+                                     poSrc->getLineStep()*poSrc->getChannels(),
+                                     *m_oBuffer8u[1], 
+                                     poDst->getLineStep()*poSrc->getChannels(), 
+                                     poDst->getROISize(), mask);
+    }
+    interleavedToPlanar(*(m_oBuffer8u[1]),poDst->getSize(),poSrc->getChannels(),poDst->asImg<icl8u>());
+  }
+  template <>
+  void Median::ippMedianColor<icl32f> (const ImgBase *poSrc, ImgBase *poDst) {
+		int dim=poSrc->getWidth() * poSrc->getHeight();
+		int dim2=poDst->getWidth() * poDst->getHeight();
+	  m_oBuffer32f[0].resize(dim*poSrc->getChannels());
+	  m_oBuffer32f[1].resize(dim2*poSrc->getChannels());
+     //planarToInterleaved(poSrc->asImg<icl32f>(), *(m_oBuffer32f[0]),this->oROIoffset);
+    planarToInterleaved(poSrc->asImg<icl32f>(), *(m_oBuffer32f[0]));
+    IppiMaskSize mask = oMaskSize.width == 3 ? ippMskSize3x3 : ippMskSize5x5;
+    if (poSrc->getChannels()==3){
+      ippiFilterMedianColor_32f_C3R(*m_oBuffer32f[0], 
+                                     poSrc->getLineStep()*poSrc->getChannels(),
+                                     *m_oBuffer32f[1], 
+                                     poDst->getLineStep()*poSrc->getChannels(), 
+                                     poDst->getROISize(), mask);
+    }
+    else { //ch=4
+      ippiFilterMedianColor_32f_AC4R(*m_oBuffer32f[0], 
+                                     poSrc->getLineStep()*poSrc->getChannels(),
+                                     *m_oBuffer32f[1], 
+                                     poDst->getLineStep()*poSrc->getChannels(), 
+                                     poDst->getROISize(), mask);
+    }
+    interleavedToPlanar(*(m_oBuffer32f[1]),poDst->getSize(),poSrc->getChannels(),poDst->asImg<icl32f>());
+  }
+  
 #endif
 
   // }}}
@@ -109,4 +165,51 @@ namespace icl {
     if (!prepare (ppoDst, poSrc)) return;
     (this->*(aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);
   }
+
+
+  #ifdef WITH_IPP_OPTIMIZATION 
+  void Median::applyColor(const ImgBase *poSrc, ImgBase **ppoDst)
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    ICLASSERT_RETURN( poSrc->getChannels() == 3|| (*ppoDst)->getChannels()==4);
+    ICLASSERT_RETURN( (*ppoDst)->getChannels() == 3|| (*ppoDst)->getChannels()==4);
+    switch (poSrc->getDepth()){
+      /*case depth8u:
+        if ((*ppoDst)->getChannels()==3){
+          ippMedianColor<icl8u,ippiFilterMedianColor_8u_C3R>(poSrc, *ppoDst);
+        }
+        else if ((*ppoDst)->getChannels()==4){
+          ippMedianColor<icl8u,ippiFilterMedianColor_8u_AC4R>(poSrc, *ppoDst);
+        }
+        break;
+      case depth32f:
+        if ((*ppoDst)->getChannels()==3){
+          ippMedianColor<icl32f,ippiFilterMedianColor_32f_C3R>(poSrc, *ppoDst);
+        }
+        else if ((*ppoDst)->getChannels()==4){
+          ippMedianColor<icl32f,ippiFilterMedianColor_32f_AC4R>(poSrc, *ppoDst);
+        }
+        break;*/
+
+      case depth8u:
+          ippMedianColor<icl8u>(poSrc, *ppoDst);
+        break;
+      case depth32f:
+          ippMedianColor<icl32f>(poSrc, *ppoDst);
+        break;
+
+
+      default:
+        ICL_INVALID_FORMAT;
+        break;
+    }
+  }
+  #else
+  void Median::applyColor(const ImgBase *poSrc, ImgBase **ppoDst)
+  {
+     #warning "applyColor is not implemented without IPP optimization";
+  }
+  #endif
+  
 }
