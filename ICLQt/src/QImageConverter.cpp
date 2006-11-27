@@ -102,6 +102,81 @@ namespace icl{
   }
 
   // }}}
+
+    void copy_8u_C3P3R_function(const icl8u* src, int srcstep, icl8u** dsts, int dststep, const Size &size){
+#ifdef WITH_IPP_OPTIMIZATION
+      ippiCopy_8u_C3P3R(src,srcstep, dsts,dststep, size);
+#else
+      icl8u *d1 = dsts[0];
+      icl8u *d2 = dsts[1];
+      icl8u *d3 = dsts[2];
+      icl8u *d4 = dsts[3];
+      int srcLineWrap = srcstep-4*size.width*sizeof(icl8u);
+      int dstLineWrap = dststep-size.width*sizeof(icl8u);
+      if(!dstLineWrap && !srcLineWrap){
+        for(const icl8u* srcEnd=src+size.getDim()*4; src<srcEnd;++d1,++d2,++d3,++d4){
+          *d1 = *src++;
+          *d2 = *src++;
+          *d3 = *src++;
+          *d4 = *src++;
+        }
+      }else{
+        for(int y=0;y<size.height;y++){
+          for(int x=0;x<size.width;x++){            
+            *d1 = *src++;
+            *d2 = *src++;
+            *d3 = *src++;
+            *d4 = *src++;
+          }
+          d1+=dstLineWrap;
+          d2+=dstLineWrap;
+          d3+=dstLineWrap;
+          d4+=dstLineWrap;
+          src+=srcLineWrap;
+        }        
+      }
+#endif
+    }
+    
+    
+    void copy_8u_P4C4R_function(const icl8u **srcs, int srcstep, icl8u *dst, int dststep, const Size &size){
+      // {{{ open
+
+#ifdef WITH_IPP_OPTIMIZATION
+      ippiCopy_8u_P4C4R(srcs,srcstep,dst,dststep, size);
+#else
+      const icl8u *s1 = srcs[0];
+      const icl8u *s2 = srcs[1];
+      const icl8u *s3 = srcs[2];
+      const icl8u *s4 = srcs[3];
+      int dstLineWrap = dststep-4*size.width*sizeof(icl8u);
+      int srcLineWrap = srcstep-size.width*sizeof(icl8u);
+      if(!dstLineWrap && !srcLineWrap){
+        for(icl8u* dstEnd=dst+size.getDim()*4; dst<dstEnd;++s1,++s2,++s3,++s4){
+          *dst++ = *s1;
+          *dst++ = *s2;
+          *dst++ = *s3;
+          *dst++ = *s4;        
+        }
+      }else{
+        for(int y=0;y<size.height;y++){
+          for(int x=0;x<size.width;x++){            
+            *dst++ = *s1++;
+            *dst++ = *s2++;
+            *dst++ = *s3++;
+            *dst++ = *s4++; 
+          }
+          dst+=dstLineWrap;
+          s1+=srcLineWrap;
+          s2+=srcLineWrap;
+          s3+=srcLineWrap;
+          s4+=srcLineWrap;
+        }        
+      }
+#endif
+    }
+
+    // }}}
   }
   
   using namespace qimageconverter;
@@ -286,27 +361,28 @@ namespace icl{
     const icl8u *ap[4];
     // }}}
     
-#ifdef WITH_IPP_OPTIMIZATION
+
     switch(image->getChannels()){
       case 1:
         ensureQImage(qimage,w,h,QImage::Format_Indexed8);
         icl::copy(image->getData(0),image->getData(0)+w*h,qimage->bits());
         break;
-      case 2:
+      case 2:{
         ap[0] = image->getData(0); //using b and r channel
         ap[1] = getBuffer8u(dim,0);
         ap[2] = image->getData(1);
         ap[3] = getBuffer8u(dim,1);
         ensureQImage(qimage,w,h,QImage::Format_RGB32);
-        ippiCopy_8u_P4C4R(ap,step,qimage->bits(),4*step,s);
+        copy_8u_P4C4R_function(ap,step,qimage->bits(),4*step,s);
         break;
+      }        
       case 3:
         ap[0] = image->getData(2); // qt byter order bgra
         ap[1] = image->getData(1);
         ap[2] = image->getData(0);
         ap[3] = getBuffer8u(dim,0);
         ensureQImage(qimage,w,h,QImage::Format_RGB32);
-        ippiCopy_8u_P4C4R(ap,step,qimage->bits(),4*step,s);
+        copy_8u_P4C4R_function(ap,step,qimage->bits(),4*step,s);
         break;
       default:
         ap[0] = image->getData(2); // qt byter order bgra
@@ -314,12 +390,9 @@ namespace icl{
         ap[2] = image->getData(0);
         ap[3] = image->getData(3);
         ensureQImage(qimage,w,h,QImage::Format_RGB32);
-        ippiCopy_8u_P4C4R(ap,step,qimage->bits(),4*step,s);
+        copy_8u_P4C4R_function(ap,step,qimage->bits(),4*step,s);
         break;
     }
-#else
-#warning "QImageConverter::img8uToQImage fallback not yet implemented"
-#endif
     STQ=uptodate;
     return qimage;
   }
@@ -332,7 +405,7 @@ namespace icl{
     ICLASSERT_RETURN_VAL(qimage && !qimage->isNull() ,0);
     ensureCompatible((ImgBase**)&image,depth8u,Size(qimage->width(),qimage->height()),3);
     icl8u *ap[3] = { image->getData(0), image->getData(1), image->getData(2) };
-    ippiCopy_8u_C3P3R(qimage->bits(),image->getLineStep()*3, ap, image->getLineStep(),image->getSize());
+    copy_8u_C3P3R_function(qimage->bits(),image->getLineStep()*3, ap, image->getLineStep(),image->getSize());
 
     STU = uptodate;
     return image;
@@ -349,7 +422,7 @@ namespace icl{
     int dim = image->getDim();
     icl8u *buf = getBuffer8u(image->getDim()*3);
     icl8u *ap[] = { buf,buf+dim,buf+2*dim };
-    ippiCopy_8u_C3P3R(qimage->bits(),3*dim, ap, dim,image->getSize());
+    copy_8u_C3P3R_function(qimage->bits(),3*dim, ap, dim,image->getSize());
     icl::copy(ap[0],ap[0]+dim,image->getData(0));
     icl::copy(ap[1],ap[1]+dim,image->getData(1));
     icl::copy(ap[2],ap[2]+dim,image->getData(2));
