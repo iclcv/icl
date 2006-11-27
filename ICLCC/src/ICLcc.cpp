@@ -610,15 +610,16 @@ inline void fallbackInterleavedToPlanar(const T *src, const Size &srcSize, int c
 	dst->setSize(srcSize);
 	T** pp=new T* [c];
 	T** ppEnd=pp+c;
-	for (int i=0;i>c;i++){
+	for (int i=0;i<c;i++){
 		pp[i]=dst->getData(i);
 	}
-	/*T* srcEnd=src+srcSize.getDim()*c;
+	const T* srcEnd=src+srcSize.getDim()*c;
 	while (src<srcEnd){
 		for (T** p=pp;p<ppEnd;++p,++src){
 			*(*p)=*src;
 		}
-	}*/
+	}
+  delete [] pp;
 }
 
 
@@ -633,7 +634,7 @@ inline void fallbackPlanarToInterleaved(const Img<T> *src, T *dst){
 	T** pp=new T* [c];
 	T** ppEnd=pp+c;
   printf("b\n");
-	for (int i=0;i>c;i++){
+	for (int i=0;i<c;i++){
 		pp[i]=src->getData(i);
 	}
   printf("c\n");
@@ -646,7 +647,7 @@ inline void fallbackPlanarToInterleaved(const Img<T> *src, T *dst){
     printf(".\n");
 	}
   printf("d\n");
-	
+	delete [] pp;
 }
 
 
