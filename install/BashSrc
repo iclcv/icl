@@ -23,7 +23,7 @@ EXTRA_LD_LIBRARY_PATH=""
 
 # Please, set here the inherited projects (separated by space)
 # (e.g. "${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/BashSrc" )
-INHERITED_PROJECTS="${IPP_ROOT}/5.0/BashSrc"
+INHERITED_PROJECTS="${IPP_ROOT}/5.1/BashSrc"
 
 # Please, don't forget to set the appropriate AGNI_GLOBAL_ROOT 
 # in your environment.
