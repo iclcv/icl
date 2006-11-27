@@ -10,12 +10,12 @@ namespace icl {
 void Canny::createBuffer(const Img32f *src){
   int bufSize;
   ippiCannyGetSize(src->getROISize(), &bufSize);
-  m_oBuffer8u = new icl8u [bufSize];
+  m_oBuffer8u = new icl8u[bufSize];
   
   
 }
 void Canny::deleteBuffer(){
-  delete m_oBuffer8u;
+  delete [] m_oBuffer8u;
 }
 void Canny::apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f lowThresh, icl32f highThresh){
       // {{{ open
@@ -57,15 +57,14 @@ void Canny::apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f 
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc->getDepth() == depth32f);
     
-
     ImgBase *sobelx=0; //sobel-x => y-derivation
     ImgBase *sobely=0; //sobel-y => x-derivation
-    Convolution* pConv = new Convolution(Convolution::kernelSobelX3x3);
-    pConv->setClipToROI (true);
-    pConv->apply (poSrc->asImg<icl32f>(), &sobelx);
-    pConv = new Convolution(Convolution::kernelSobelY3x3);
-    pConv->setClipToROI (true);
-    pConv->apply (poSrc->asImg<icl32f>(), &sobely);
+    Convolution oConvX(Convolution::kernelSobelX3x3);
+    oConvX.setClipToROI (true);
+    oConvX.apply (poSrc->asImg<icl32f>(), &sobelx);
+    Convolution oConY(Convolution::kernelSobelY3x3);
+    oConvY.setClipToROI (true);
+    oConvY.apply (poSrc->asImg<icl32f>(), &sobely);
     if (!prepare (ppoDst, sobelx,depth8u)) return;
     apply(sobely->asImg<icl32f>(),sobelx->asImg<icl32f>(),(*ppoDst)->asImg<icl8u>(),lowThresh,highThresh);
     //apply(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl8u>(),lowThresh,highThresh);
