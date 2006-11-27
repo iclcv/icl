@@ -51,8 +51,8 @@ predicted signal-to-noise ratios.
   */
   class Canny : public Filter {
   public:
-    void createBuffer(const Img32f *src);
-    void deleteBuffer();
+    Canny(const Img32f *src);
+    virtual ~Canny();
     /// applys Canny algorithm for edge detection, using 2 src images containing the x- and y-derivation
     /** 
       @param poSrcDx    source image, x-derivation
@@ -72,8 +72,10 @@ predicted signal-to-noise ratios.
     void apply (const ImgBase *poSrc, ImgBase **ppoDst, icl32f lowThresh, icl32f highThresh);
     void apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f lowThresh, icl32f highThresh);
     private:
-  // buffer for ippiCanny
+  /// buffer for ippiCanny
   icl8u* m_oBuffer8u;
+  ImgBase *m_poSobelx; //sobel-x => y-derivation
+  ImgBase *m_poSobely; //sobel-y => x-derivation
   };
 } // namespace icl
 #endif
