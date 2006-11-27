@@ -43,7 +43,7 @@ namespace icl {
 
       /// calls ltgtVal with low=hi=threshold, lowVal = 0 and hiVal=255
       void binarize(const ImgBase *poSrc, ImgBase **ppoDst, float threshold) {
-         ltgtVal(poSrc,ppoDst,threshold,0,threshold,255);
+        ltgtVal(poSrc,ppoDst,threshold+1,0,threshold,255);
       }
 
 

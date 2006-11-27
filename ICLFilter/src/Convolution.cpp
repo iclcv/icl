@@ -196,6 +196,10 @@ namespace icl {
 
      // create buffer for pfKernel:
      copyIntToFloatKernel (oMaskSize.width * oMaskSize.height);
+     
+     // TODO:
+     // C.E.: the integer kernel still contains the normalisation factor as first component -> increase by one
+     // piKernel++; will also not work if the normalisation factor is != 1 --> what to do ?
 #else
      pFixed8u = 0; pFixed8uMask = 0; pFixed32f = 0; pFixed32fMask = 0;
      int nSize = 3;
