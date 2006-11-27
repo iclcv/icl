@@ -3,7 +3,6 @@
 
 #include <Filter.h>
 #include "Img.h"
-#include "Array.h"
 namespace icl {
   
   /// Class for computing proximity measures
@@ -28,7 +27,7 @@ the template and the image in the neighborhood of that pixel.
     ///Computes normalized full cross-correlation between an image and a template.
     /**  impemented with support for interleaved, 3ch and 4ch images, may be removed
     */
-    void CrossCorrFull_Norm (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst, bool color=true);
+    void CrossCorrFull_Norm (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
     ///Computes normalized cross-correlation between an image and a template.
     void CrossCorrSame_Norm (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
     ///Computes normalized valid cross-correlation between an image and a template.
@@ -49,7 +48,7 @@ the template and the image in the neighborhood of that pixel.
     static void SqrDistanceValid_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst);
 
     ///Computes normalized full cross-correlation between an image and a template. Img8u version.
-    static void CrossCorrFull_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst, bool color=true);
+    static void CrossCorrFull_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst);
     ///Computes normalized cross-correlation between an image and a template. Img8u version.
     static void CrossCorrSame_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst);
     ///Computes normalized valid cross-correlation between an image and a template. Img8u version.
@@ -70,7 +69,7 @@ the template and the image in the neighborhood of that pixel.
     static void SqrDistanceValid_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst);
 
     ///Computes normalized full cross-correlation between an image and a template. Img32f version.
-    static void CrossCorrFull_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst, bool color=true);
+    static void CrossCorrFull_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst);
     ///Computes normalized cross-correlation between an image and a template. Img32f version.
     static void CrossCorrSame_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst);
     ///Computes normalized valid cross-correlation between an image and a template. Img32f version.
@@ -82,11 +81,6 @@ the template and the image in the neighborhood of that pixel.
     static void CrossCorrSame_NormLevel (const Img32f *src1, const Img32f *src2, Img32f *dst);
     ///Computes normalized valid correlation coefficients between an image and a template. Img32f version.
     static void CrossCorrValid_NormLevel (const Img32f *src1, const Img32f *src2, Img32f *dst);
-    private:
-  // buffer for 3ch and 4ch interleaved image, may be removed 
-  Array<icl8u> m_oBuffer8u[2];
-  // buffer for 3ch and 4ch interleaved image, may be removed 
-  Array<icl32f> m_oBuffer32f[3];
   };
 } // namespace icl
 #endif

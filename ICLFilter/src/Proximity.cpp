@@ -20,6 +20,8 @@ ICLASSERT_RETURN( src1);
       ICLASSERT_RETURN( src1->getChannels() == dst->getChannels() );
       ICLASSERT_RETURN( src1->getChannels() == src2->getChannels() );
       Size srcROI=src1->getSize()-src2->getSize();
+      //srcROI.width+=1;
+      //srcROI.height+=1;
       for (int c=src1->getChannels()-1; c >= 0; --c) {
          ippiFunc (src1->getROIData (c), src1->getLineStep(),
                    srcROI,
@@ -29,73 +31,6 @@ ICLASSERT_RETURN( src1);
       }
    }
    // }}}
-
-     
-   template <IppStatus (*ippiFunc) (const icl8u*, int, IppiSize, const icl8u*, int, IppiSize, icl32f*, int)>
-   inline void ippiColorCall(const Img8u *src1, const Img8u *src2, Img32f *dst, Array<icl8u> m_oBuffer8u[2], Array<icl32f> m_oBuffer32f[3])
-      // {{{ open
-   { 
-      ICLASSERT_RETURN( src1);	   
-      ICLASSERT_RETURN( src2);
-      ICLASSERT_RETURN( dst );
-      ICLASSERT_RETURN( src1->getROISize() == dst->getROISize() );
-      ICLASSERT_RETURN( src1->getChannels() == dst->getChannels() );
-      ICLASSERT_RETURN( src1->getChannels() == src2->getChannels() );
-      m_oBuffer8u[0].resize(src1->getDim()*src1->getChannels());
-      m_oBuffer8u[1].resize(src2->getDim()*src2->getChannels());
-      m_oBuffer32f[2].resize(src1->getDim()*src1->getChannels());
-      planarToInterleaved(src1, *(m_oBuffer8u[0]));
-      planarToInterleaved(src2, *(m_oBuffer8u[1]));
-	   Size srcROI=src1->getSize()-src2->getSize();
-     ippiFunc (*m_oBuffer8u[0], src1->getLineStep(),
-                   srcROI,
-                   *m_oBuffer8u[1], src2->getLineStep(),
-                   src2->getROISize(),
-                   *m_oBuffer32f[2], dst->getLineStep());
-      interleavedToPlanar(*(m_oBuffer32f[2]),dst->getSize(),src1->getChannels(),dst);
-   }
-
-   template <IppStatus (*ippiFunc) (const icl32f*, int, IppiSize, const icl32f*, int, IppiSize, icl32f*, int)>
-   inline void ippiColorCall(const Img32f *src1, const Img32f *src2, Img32f *dst/*, Array<icl32f> *m_oBuffer32f*/)
-      // {{{ open
-   { 
-      ICLASSERT_RETURN( src1);	   
-      ICLASSERT_RETURN( src2);
-      ICLASSERT_RETURN( dst );
-      ICLASSERT_RETURN( src1->getROISize() == dst->getROISize() );
-      ICLASSERT_RETURN( src1->getChannels() == dst->getChannels() );
-      ICLASSERT_RETURN( src1->getChannels() == src2->getChannels() );
-	   Array<icl32f> m_oBuffer32f[4];
-      m_oBuffer32f[0].resize(src1->getDim()*src1->getChannels());
-      m_oBuffer32f[1].resize(src2->getDim()*src2->getChannels());
-      m_oBuffer32f[2].resize(src1->getDim()*src1->getChannels());  // ohne *2 absurz, seg fault, warum????
-      planarToInterleaved(src1, *(m_oBuffer32f[0]));
-      planarToInterleaved(src2, *(m_oBuffer32f[1]));
-	   Size srcROI=src1->getSize()-src2->getSize();
-	   //int ROIOffset=(src1->getSize().width*(src2->getSize().height-1)/2+(src2->getSize()-1)/2)*src1->getChannels();
-
-     ippiFunc (*m_oBuffer32f[0]/*+ROIOffset*/, src1->getLineStep()*src1->getChannels(),
-                   srcROI,
-                   *m_oBuffer32f[1], src2->getLineStep()*src2->getChannels(),
-                   src2->getROISize(),
-                   *m_oBuffer32f[2], src1->getLineStep()*src1->getChannels());
-      interleavedToPlanar(*(m_oBuffer32f[0]),dst->getSize(),src1->getChannels(),dst);
-      printf("7\n");
-	   /*for (int j=0;j<10;j++){
-      planarToInterleaved(dst->asImg<icl32f>(), *(m_oBuffer32f[0]));
-      interleavedToPlanar(*(m_oBuffer32f[0]),dst->getSize(),src1->getChannels(),dst->asImg<icl32f>());
-	   };*/
-   }
-
-   // }}}
-  
-   
-   
-   
-   
-   
-   
-   
    
   // }}}
 
@@ -113,7 +48,7 @@ ICLASSERT_RETURN( src1);
       ippiCall<icl8u,ippiSqrDistanceValid_Norm_8u32f_C1R>(src1,src2,dst);
     }
 
-    void Proximity::CrossCorrFull_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst,bool color){
+    void Proximity::CrossCorrFull_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst){
       ippiCall<icl8u,ippiCrossCorrFull_Norm_8u32f_C1R>(src1,src2,dst);
     }
     void Proximity::CrossCorrSame_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst){
@@ -143,17 +78,8 @@ ICLASSERT_RETURN( src1);
       ippiCall<icl32f,ippiSqrDistanceValid_Norm_32f_C1R>(src1,src2,dst);
     }
 
-    void Proximity::CrossCorrFull_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst,bool color){
-      int ch=src1->getChannels();
-      if (!color){  
-        ch=1;
-      }
-      printf("CHans:%i\n",ch);
-      switch(ch){
-	      case 3:ippiColorCall<ippiCrossCorrFull_Norm_32f_C3R>(src1,src2,dst);break;
-        case 4:ippiColorCall<ippiCrossCorrFull_Norm_32f_C4R>(src1,src2,dst);break;
-        default:ippiCall<icl32f,ippiCrossCorrFull_Norm_32f_C1R>(src1,src2,dst);break;
-     }
+    void Proximity::CrossCorrFull_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst){
+      ippiCall<icl32f,ippiCrossCorrFull_Norm_32f_C1R>(src1,src2,dst);
     }
     void Proximity::CrossCorrSame_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst){
       ippiCall<icl32f,ippiCrossCorrSame_Norm_32f_C1R>(src1,src2,dst);
@@ -188,7 +114,7 @@ ICLASSERT_RETURN( src1);
       #warning "SqrDistanceValid_Norm is not implemented without IPP optimization";
     }
 
-    void Proximity::CrossCorrFull_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst,bool color){
+    void Proximity::CrossCorrFull_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst){
       #warning "CrossCorrFull_Norm is not implemented without IPP optimization";
     }
     void Proximity::CrossCorrSame_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst){
@@ -218,7 +144,7 @@ ICLASSERT_RETURN( src1);
       #warning "SqrDistanceValid_Norm is not implemented without IPP optimization";
     }
 
-    void Proximity::CrossCorrFull_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst,bool color){
+    void Proximity::CrossCorrFull_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst){
       #warning "CrossCorrFull_Norm is not implemented without IPP optimization";
     }
     void Proximity::CrossCorrSame_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst){
@@ -323,7 +249,7 @@ ICLASSERT_RETURN( src1);
    // }}}
 
 
-  void Proximity::CrossCorrFull_Norm (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst,bool color)
+  void Proximity::CrossCorrFull_Norm (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
       // {{{ open
   {
 	  printf("x\n");
@@ -337,10 +263,10 @@ printf("b\n");
     ICLASSERT_RETURN( (*ppoDst)->getDepth() == depth32f);
     printf("d\n");
     if (poSrc1->getDepth() == depth8u)
-       CrossCorrFull_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>(), color);
+       CrossCorrFull_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>());
     else{
 	    printf("_\n");
-       CrossCorrFull_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(),color);
+       CrossCorrFull_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
     }
     printf("c\n");
   }
