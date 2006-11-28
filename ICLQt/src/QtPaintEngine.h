@@ -1,7 +1,7 @@
 #ifndef QTPAINT_ENGINE_H
 #define QTPAINT_ENGINE_H
 
-#include "PaintEngine.h"
+#include <PaintEngine.h>
 #include <QFont>
 #include <QPainter>
 #include <QImageConverter.h>

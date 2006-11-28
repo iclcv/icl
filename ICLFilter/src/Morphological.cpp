@@ -1,5 +1,5 @@
-#include "Morphological.h"
-#include "Img.h"
+#include <Morphological.h>
+#include <Img.h>
 
 namespace icl {
 

@@ -1,6 +1,6 @@
-#include "Arithmetic.h"
-#include "Img.h"
-#include "math.h"
+#include <Arithmetic.h>
+#include <Img.h>
+#include <math.h>
 namespace icl {
 
 #ifdef WITH_IPP_OPTIMIZATION

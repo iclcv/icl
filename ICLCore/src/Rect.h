@@ -1,8 +1,8 @@
 #ifndef ICL_RECT_H
 #define ICL_RECT_H
 
-#include "Point.h"
-#include "Size.h"
+#include <Point.h>
+#include <Size.h>
 #include <stdio.h>
 #include <algorithm>
 

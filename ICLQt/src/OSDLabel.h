@@ -1,6 +1,6 @@
 #ifndef OSDLABEL_H
 #define OSDLABEL_H
-#include "OSDWidget.h"
+#include <OSDWidget.h>
 
 #include <vector>
 #include <QString>

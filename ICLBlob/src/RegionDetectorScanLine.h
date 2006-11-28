@@ -1,7 +1,7 @@
 #ifndef PIXELLINE_H
 #define PIXELLINE_H
 
-#include "RegionDetectorTypes.h" 
+#include <RegionDetectorTypes.h> 
 
 /**
 The RegionDetectorScanLine class represents a set of pixels that are detected in the same line

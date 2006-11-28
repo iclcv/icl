@@ -1,6 +1,6 @@
-#include "Img.h"
-#include "FileReader.h"
-#include "FileWriter.h"
+#include <Img.h>
+#include <FileReader.h>
+#include <FileWriter.h>
 
 using namespace std;
 using namespace icl;

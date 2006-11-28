@@ -1,4 +1,4 @@
-#include "DefaultColorBlobSearcher.h"
+#include <DefaultColorBlobSearcher.h>
 #include <Img.h>
 #include <vector>
 

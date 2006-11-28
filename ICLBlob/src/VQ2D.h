@@ -2,8 +2,8 @@
 #define VQ2D_H
 
 #include <stdlib.h>
-#include "VQVectorSet.h"
-#include "VQClusterInfo.h"
+#include <VQVectorSet.h>
+#include <VQClusterInfo.h>
 
 namespace icl{
   class VQ2D{

@@ -1,5 +1,5 @@
-#include "Compare.h"
-#include "Img.h"
+#include <Compare.h>
+#include <Img.h>
 
 namespace icl {
 

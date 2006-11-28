@@ -7,8 +7,8 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "Exception.h"
-#include "Macros.h"
+#include <Exception.h>
+#include <Macros.h>
 
 namespace icl {
 

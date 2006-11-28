@@ -1,7 +1,7 @@
-#include "Threshold.h"
-#include "Img.h"
-#include "TestImages.h"
-#include "Timer.h"
+#include <Threshold.h>
+#include <Img.h>
+#include <TestImages.h>
+#include <Timer.h>
 
 using namespace icl;
 

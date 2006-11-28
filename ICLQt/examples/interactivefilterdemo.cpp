@@ -1,7 +1,7 @@
-#include "ICLDrawWidget.h"
-#include "Img.h"
-#include "PWCGrabber.h"
-#include "Convolution.h"
+#include <ICLDrawWidget.h>
+#include <Img.h>
+#include <PWCGrabber.h>
+#include <Convolution.h>
 
 #include <QApplication>
 #include <QThread>

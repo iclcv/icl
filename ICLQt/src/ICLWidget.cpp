@@ -1,17 +1,17 @@
-#include "ICLWidget.h"
+#include <ICLWidget.h>
 #include <QImage>
 #include <QPainter>
 #include <QResizeEvent>
 
-#include "OSD.h"
-#include "ICLcc.h"
-#include "Img.h"
-#include "Timer.h"
+#include <OSD.h>
+#include <ICLcc.h>
+#include <Img.h>
+#include <Timer.h>
 
 #ifdef USE_OPENGL_ACCELERATION
-#include "GLPaintEngine.h"
+#include <GLPaintEngine.h>
 #else
-#include "QtPaintEngine.h"
+#include <QtPaintEngine.h>
 #endif
 
 using std::string;

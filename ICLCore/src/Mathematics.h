@@ -10,8 +10,8 @@
 #ifndef ICL_MATH_H
 #define ICL_MATH_H
 
-#include "Img.h"
-#include "ImgIterator.h"
+#include <Img.h>
+#include <ImgIterator.h>
 #include <cmath>
 
 using namespace std;

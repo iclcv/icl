@@ -1,7 +1,7 @@
 #ifndef OSDBUTTON_H
 #define OSDBUTTON_H
 
-#include "OSDWidget.h"
+#include <OSDWidget.h>
 
 namespace icl{
   /// implementation of an ordinary OSD-button

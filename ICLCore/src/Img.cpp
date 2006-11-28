@@ -7,7 +7,7 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "Img.h"
+#include <Img.h>
 
 namespace icl {
 

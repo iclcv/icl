@@ -1,9 +1,9 @@
 #ifndef DEF_COLOR_BLOB_SEARCHER_H
 #define DEF_COLOR_BLOB_SEARCHER_H
 
-#include "ColorBlobSearcher.h"
-#include "PixelRatingGroup.h"
-#include "FastMedianList.h"
+#include <ColorBlobSearcher.h>
+#include <PixelRatingGroup.h>
+#include <FastMedianList.h>
 #include <stdlib.h>
 #include <vector>
 

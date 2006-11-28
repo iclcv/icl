@@ -1,7 +1,7 @@
 #ifndef PIXEL_RATING_GROUP_H
 #define PIXEL_RATING_GROUP_H
 
-#include "PixelRating.h"
+#include <PixelRating.h>
 #include <vector>
 using std::vector;
 

@@ -1,6 +1,6 @@
-#include "Wiener.h"
-#include "FileReader.h"
-#include "TestImages.h"
+#include <Wiener.h>
+#include <FileReader.h>
+#include <TestImages.h>
 
 using namespace std;
 using namespace icl;

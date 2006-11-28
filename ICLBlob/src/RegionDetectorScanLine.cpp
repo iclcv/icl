@@ -1,4 +1,4 @@
-#include "RegionDetectorScanLine.h"
+#include <RegionDetectorScanLine.h>
 
 namespace icl{
   namespace regiondetector{

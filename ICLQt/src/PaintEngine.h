@@ -3,10 +3,10 @@
 
 #include <stdio.h>
 
-#include "Point.h"
-#include "Size.h"
-#include "Rect.h"
-#include "ICLTypes.h"
+#include <Point.h>
+#include <Size.h>
+#include <Rect.h>
+#include <ICLTypes.h>
 
 #include <string>
 #include <QImage>

@@ -1,8 +1,8 @@
 #ifndef GENERAL_MODEL_H
 #define GENERAL_MODEL_H
 
-#include "Array.h" 
-#include "Img.h"
+#include <Array.h> 
+#include <Img.h>
 
 namespace icl{
 

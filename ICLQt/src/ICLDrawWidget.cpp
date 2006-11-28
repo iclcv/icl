@@ -1,6 +1,6 @@
-#include "ICLDrawWidget.h"
-#include "PaintEngine.h"
-#include "ImgBase.h"
+#include <ICLDrawWidget.h>
+#include <PaintEngine.h>
+#include <ImgBase.h>
 
 using std::string;
 namespace icl{

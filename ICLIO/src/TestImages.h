@@ -1,7 +1,7 @@
 #ifndef TESTIMAGES_H
 #define TESTIMAGES_H
 
-#include "Img.h"
+#include <Img.h>
 #include <string>
 
 namespace icl{

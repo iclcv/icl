@@ -1,6 +1,6 @@
-#include "ImgRegionDetector.h"
-#include "RegionDetector.h"
-#include "Img.h"
+#include <ImgRegionDetector.h>
+#include <RegionDetector.h>
+#include <Img.h>
 
 
 namespace icl{

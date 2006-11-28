@@ -10,10 +10,10 @@
 #ifndef Img_H
 #define Img_H
 
-#include "ImgBase.h"
-#include "ImgIterator.h"
-#include "SmartPtr.h"
-#include "Exception.h"
+#include <ImgBase.h>
+#include <ImgIterator.h>
+#include <SmartPtr.h>
+#include <Exception.h>
 #include <cmath>
 #include <algorithm>
 

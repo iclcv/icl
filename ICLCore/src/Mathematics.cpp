@@ -7,7 +7,7 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "Mathematics.h"
+#include <Mathematics.h>
 
 namespace icl{
   

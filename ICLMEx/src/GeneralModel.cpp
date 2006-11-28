@@ -1,4 +1,4 @@
-#include "GeneralModel.h"
+#include <GeneralModel.h>
 
 
 using namespace icl;

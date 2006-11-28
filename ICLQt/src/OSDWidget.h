@@ -8,7 +8,7 @@
 #include <vector>
 #include <map>
 
-#include "PaintEngine.h"
+#include <PaintEngine.h>
 
 namespace icl{
   

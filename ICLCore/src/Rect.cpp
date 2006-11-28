@@ -1,3 +1,3 @@
-#include "Rect.h"
+#include <Rect.h>
 
 const icl::Rect icl::Rect::null(0,0,0,0);

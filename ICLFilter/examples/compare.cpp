@@ -1,6 +1,6 @@
-#include "Compare.h"
-#include "Img.h"
-#include "TestImages.h"
+#include <Compare.h>
+#include <Img.h>
+#include <TestImages.h>
 
 using namespace icl;
 

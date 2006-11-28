@@ -1,7 +1,7 @@
 #ifndef ICLIMAGE_COLOR_CONVERSION_H
 #define ICLIMAGE_COLOR_CONVERSION_H
 
-#include "Img.h"
+#include <Img.h>
 
 namespace icl{
 

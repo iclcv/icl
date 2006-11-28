@@ -22,11 +22,11 @@
 #include <QColor>
 #include <QMutex>
 
-#include "Converter.h"
-#include "PaintEngine.h"
+#include <Converter.h>
+#include <PaintEngine.h>
 
-#include "MouseInteractionInfo.h"
-#include "MouseInteractionReceiver.h"
+#include <MouseInteractionInfo.h>
+#include <MouseInteractionReceiver.h>
 
 namespace icl{
   class OSDWidget;

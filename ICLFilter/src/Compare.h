@@ -1,7 +1,7 @@
 #ifndef COMPARE_H
 #define COMPARE_H
 
-#include "Filter.h"
+#include <Filter.h>
 
 namespace icl {
   

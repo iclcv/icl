@@ -1,4 +1,4 @@
-#include "RegionDetectorBlobPart.h"
+#include <RegionDetectorBlobPart.h>
 
 namespace icl{
   namespace regiondetector{

@@ -1,8 +1,8 @@
 #ifndef WEIGHTEDSUM_H
 #define WEIGHTEDSUM_H
 
-#include "Img.h"
-#include "Filter.h"
+#include <Img.h>
+#include <Filter.h>
 
 namespace icl {
 

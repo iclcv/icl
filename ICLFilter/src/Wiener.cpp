@@ -1,5 +1,5 @@
-#include "Wiener.h"
-#include "Img.h"
+#include <Wiener.h>
+#include <Img.h>
 
 namespace icl {
 

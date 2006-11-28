@@ -7,10 +7,10 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "Skin.h"
-#include "Img.h"
-#include "Converter.h"
-#include "Mathematics.h"
+#include <Skin.h>
+#include <Img.h>
+#include <Converter.h>
+#include <Mathematics.h>
 
 namespace icl {
 /*

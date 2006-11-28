@@ -1,11 +1,11 @@
-#include "ICLDrawWidget.h"
-#include "Img.h"
-#include "PWCGrabber.h"
+#include <ICLDrawWidget.h>
+#include <Img.h>
+#include <PWCGrabber.h>
 
 #include <QApplication>
 #include <QThread>
-#include "ICLcc.h"
-#include "Timer.h"
+#include <ICLcc.h>
+#include <Timer.h>
 #include <math.h>
 
 using namespace icl;

@@ -1,14 +1,14 @@
-#include "PWCGrabber.h"
+#include <PWCGrabber.h>
 
 
 #ifdef __APPLE__
 
-#include "ICLcc.h"
-#include "Img.h"
+#include <ICLcc.h>
+#include <Img.h>
 
 #else
 
-#include "ICLcc.h"
+#include <ICLcc.h>
 
 #include <stdio.h> 
 #include <errno.h>

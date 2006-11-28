@@ -2,7 +2,7 @@
 #define PROXIMITY_H
 
 #include <Filter.h>
-#include "Img.h"
+#include <Img.h>
 namespace icl {
   
   /// Class for computing proximity measures

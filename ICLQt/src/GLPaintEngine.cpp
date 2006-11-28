@@ -1,4 +1,4 @@
-#include "GLPaintEngine.h"
+#include <GLPaintEngine.h>
 #include <QGLWidget>
 #include <Img.h>
 #include <QFontMetrics>

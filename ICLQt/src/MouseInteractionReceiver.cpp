@@ -1,4 +1,4 @@
-#include "MouseInteractionReceiver.h"
+#include <MouseInteractionReceiver.h>
 
 namespace icl{
   void MouseInteractionReceiver::mouseInteraction(MouseInteractionInfo *info){

@@ -3,8 +3,8 @@
 
 #include <list>
 #include <vector>
-#include "RegionDetectorVector.h"
-#include "RegionDetectorMemoryManager.h"
+#include <RegionDetectorVector.h>
+#include <RegionDetectorMemoryManager.h>
 
 #define XBLOB_OPTIMIZED_REGION_LIST
 #define XBLOB_OPTIMIZED_PIXLELLINE_LIST

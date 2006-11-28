@@ -222,9 +222,9 @@ provided in ImgMacros.h
 @see ImgMacros.h
 */
 
-#include "Macros.h"
-#include "ICLTypes.h"
-#include "ImgParams.h"
+#include <Macros.h>
+#include <ICLTypes.h>
+#include <ImgParams.h>
 #include <string>
 
 

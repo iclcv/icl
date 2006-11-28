@@ -1,5 +1,5 @@
-#include "RegionDetectorBlob.h"
-#include "RegionDetectorScanLine.h"
+#include <RegionDetectorBlob.h>
+#include <RegionDetectorScanLine.h>
 #include <math.h>
 #include <Array.h>
 

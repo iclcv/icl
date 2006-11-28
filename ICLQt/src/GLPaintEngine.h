@@ -1,7 +1,7 @@
 #ifndef GLPAINT_ENGINE_H
 #define GLPAINT_ENGINE_H
 
-#include "PaintEngine.h"
+#include <PaintEngine.h>
 
 #include <QFont>
 

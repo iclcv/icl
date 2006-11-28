@@ -1,8 +1,7 @@
- #include "Median.h"
-#include "Img.h"
-#include "ICLcc.h"
-#include "Array.h"
-#include "ImgIterator.h"
+#include <Median.h>
+#include <Img.h>
+#include <ICLcc.h>
+#include <ImgIterator.h>
 #include <vector>
 #include <algorithm>
 
@@ -167,49 +166,31 @@ namespace icl {
   }
 
 
-  #ifdef WITH_IPP_OPTIMIZATION 
+#ifdef WITH_IPP_OPTIMIZATION 
   void Median::applyColor(const ImgBase *poSrc, ImgBase **ppoDst)
   {
     FUNCTION_LOG("");
+    ICLASSERT_RETURN(poSrc->getChannels() == 3);
+
     if (!prepare (ppoDst, poSrc)) return;
-    ICLASSERT_RETURN( poSrc->getChannels() == 3|| (*ppoDst)->getChannels()==4);
-    ICLASSERT_RETURN( (*ppoDst)->getChannels() == 3|| (*ppoDst)->getChannels()==4);
     switch (poSrc->getDepth()){
-      /*case depth8u:
-        if ((*ppoDst)->getChannels()==3){
-          ippMedianColor<icl8u,ippiFilterMedianColor_8u_C3R>(poSrc, *ppoDst);
-        }
-        else if ((*ppoDst)->getChannels()==4){
-          ippMedianColor<icl8u,ippiFilterMedianColor_8u_AC4R>(poSrc, *ppoDst);
-        }
-        break;
-      case depth32f:
-        if ((*ppoDst)->getChannels()==3){
-          ippMedianColor<icl32f,ippiFilterMedianColor_32f_C3R>(poSrc, *ppoDst);
-        }
-        else if ((*ppoDst)->getChannels()==4){
-          ippMedianColor<icl32f,ippiFilterMedianColor_32f_AC4R>(poSrc, *ppoDst);
-        }
-        break;*/
-
       case depth8u:
-          ippMedianColor<icl8u>(poSrc, *ppoDst);
-        break;
+         ippMedianColor<icl8u>(poSrc, *ppoDst);
+         break;
       case depth32f:
-          ippMedianColor<icl32f>(poSrc, *ppoDst);
-        break;
-
+         ippMedianColor<icl32f>(poSrc, *ppoDst);
+         break;
 
       default:
-        ICL_INVALID_FORMAT;
-        break;
+         ICL_INVALID_FORMAT;
+         break;
     }
   }
-  #else
+#else
   void Median::applyColor(const ImgBase *poSrc, ImgBase **ppoDst)
   {
      #warning "applyColor is not implemented without IPP optimization";
   }
-  #endif
+#endif
   
 }

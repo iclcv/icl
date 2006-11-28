@@ -1,7 +1,7 @@
 #ifndef THRESHOLD_H
 #define THRESHOLD_H
 
-#include "Filter.h"
+#include <Filter.h>
 
 namespace icl {
   

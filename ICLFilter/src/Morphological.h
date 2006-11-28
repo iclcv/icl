@@ -2,7 +2,7 @@
 #define MORPHOLOGICAL_H
 
 #include <FilterMask.h>
-#include "Img.h"
+#include <Img.h>
 namespace icl {
   
   /// Class for Morphological operations

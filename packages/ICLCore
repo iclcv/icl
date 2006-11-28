@@ -12,12 +12,12 @@ ICLCore_MAKEVAR=ICLCore_MAKEVAR
 # Please include here the inherited packages
 # (e.g. include ${Packages}/Utils)
 include ${PACKAGES}/IPP
-include ${PACKAGES}/ICLUtils
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
 ABS_INCLUDES:= ${ABS_INCLUDES} \
-	-I${SRC_ROOT}/ICLCore/src
+	-I${SRC_ROOT}/ICLCore/src \
+	-I${SRC_ROOT}/ICLUtils/src
 
 # Please add here all the directories with relative path
 # (e.g. -I../MyModule/src) that contain include files needed by the sources.

@@ -1,9 +1,9 @@
-#include "QImageConverter.h"
+#include <QImageConverter.h>
 
 #include <QImage>
 #include <QVector>
-#include "Img.h"
-#include "ICLCore.h"
+#include <Img.h>
+#include <ICLCore.h>
 #include <map>
 
 #ifdef WITH_IPP_OPTIMIZATION

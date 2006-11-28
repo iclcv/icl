@@ -1,5 +1,5 @@
-#include "ICLWidget.h"
-#include "PWCGrabber.h"
+#include <ICLWidget.h>
+#include <PWCGrabber.h>
 
 #include <QApplication>
 #include <QThread>

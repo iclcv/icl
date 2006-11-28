@@ -11,9 +11,9 @@ AG Neuroinformatik
 #define ICLBASE_H
     
 #include <vector>
-#include "ICLCore.h"
-#include "ImgParams.h"
-#include "Time.h"
+#include <ICLCore.h>
+#include <ImgParams.h>
+#include <Time.h>
 
 namespace icl {
   

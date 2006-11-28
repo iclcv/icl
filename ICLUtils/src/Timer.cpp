@@ -7,7 +7,7 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "Timer.h"
+#include <Timer.h>
 using namespace std;
 
 //---- ICL in its own namespace ----

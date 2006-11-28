@@ -1,8 +1,8 @@
 #ifndef ICLPWCGRABBER_H
 #define ICLPWCGRABBER_H
 
-#include "Grabber.h"
-#include "Converter.h"
+#include <Grabber.h>
+#include <Converter.h>
 
 namespace icl{
   

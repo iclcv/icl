@@ -1,8 +1,8 @@
 #ifndef ICLMEX_H
 #define ICLMEX_H
 
-#include "GeneralModel.h"
-#include "QuadraticModel.h"
+#include <GeneralModel.h>
+#include <QuadraticModel.h>
 
 /** \mainpage ICLMEx (ICL Model Extraction package)
 

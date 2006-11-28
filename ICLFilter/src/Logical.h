@@ -1,8 +1,8 @@
 #ifndef LOGICAL_H
 #define LOGICAL_H
 
-#include "Filter.h"
-#include "Img.h"
+#include <Filter.h>
+#include <Img.h>
 namespace icl {
    /// Class for bitwise logical operations on pixel values.
    /** 

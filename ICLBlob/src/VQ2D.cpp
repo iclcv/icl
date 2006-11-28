@@ -1,4 +1,4 @@
-#include "VQ2D.h"
+#include <VQ2D.h>
 #include <math.h>
 
 namespace icl{

@@ -10,7 +10,7 @@
 #ifndef Skin_H
 #define Skin_H
 
-#include "Filter.h"
+#include <Filter.h>
 
 namespace icl {
 

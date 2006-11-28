@@ -1,11 +1,11 @@
 #ifndef ______OSD_H
 #define ______OSD_H
 
-#include "OSDWidget.h"
-#include "OSDButton.h"
-#include "OSDLabel.h"
-#include "OSDSlider.h"
-#include "OSDNavBar.h"
+#include <OSDWidget.h>
+#include <OSDButton.h>
+#include <OSDLabel.h>
+#include <OSDSlider.h>
+#include <OSDNavBar.h>
 
 namespace icl{
  

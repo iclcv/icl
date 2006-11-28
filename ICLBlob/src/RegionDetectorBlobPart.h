@@ -1,7 +1,7 @@
 #ifndef REGION_H
 #define REGION_H
 
-#include "RegionDetectorTypes.h"
+#include <RegionDetectorTypes.h>
 /**
 A RegionDetectorBlobPart represents a 
 single Region of pixels, with same values, that

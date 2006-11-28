@@ -1,15 +1,16 @@
 #ifndef BLOB_H
 #define BLOB_H
 
-#include "RegionDetectorTypes.h"
-#include "RegionDetectorScanLine.h"
-#include "RegionDetectorBlobPart.h"
-#include "Size.h"
-#include "Rect.h"
-#include "Point.h"
-#include "Array.h"
-#include "ICLTypes.h"
-namespace icl{
+#include <RegionDetectorTypes.h>
+#include <RegionDetectorScanLine.h>
+#include <RegionDetectorBlobPart.h>
+#include <Size.h>
+#include <Rect.h>
+#include <Point.h>
+#include <Array.h>
+#include <ICLTypes.h>
+
+namespace icl {
   namespace regiondetector{
     // A RegionDetectorBlob represents an image region with homogenoues value
     

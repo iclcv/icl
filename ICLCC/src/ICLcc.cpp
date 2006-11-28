@@ -1,7 +1,7 @@
 #ifndef ICLIMAGE_COLOR_CONVERSION_CPP
 #define ICLIMAGE_COLOR_CONVERSION_CPP
 
-#include "ICLcc.h"
+#include <ICLcc.h>
 #include <math.h>
 
 namespace icl{

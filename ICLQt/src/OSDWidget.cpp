@@ -1,5 +1,5 @@
-#include "OSDWidget.h"
-#include "ICLWidget.h"
+#include <OSDWidget.h>
+#include <ICLWidget.h>
 
 using std::string;
 

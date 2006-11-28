@@ -1,8 +1,8 @@
-#include "Proximity.h"
-#include "FileReader.h"
-#include "TestImages.h"
-#include "Canny.h"
-#include "Convolution.h"
+#include <Proximity.h>
+#include <FileReader.h>
+#include <TestImages.h>
+#include <Canny.h>
+#include <Convolution.h>
 using namespace std;
 using namespace icl;
 

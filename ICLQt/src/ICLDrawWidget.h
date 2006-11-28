@@ -1,7 +1,7 @@
 #ifndef ICL_DRAW_WIDGET_H
 #define ICL_DRAW_WIDGET_H
 
-#include "ICLWidget.h"
+#include <ICLWidget.h>
 #include <QMutex>
 
 namespace icl{

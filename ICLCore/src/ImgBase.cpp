@@ -7,8 +7,8 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "ImgBase.h"
-#include "Img.h"
+#include <ImgBase.h>
+#include <Img.h>
 
 using namespace std;
 

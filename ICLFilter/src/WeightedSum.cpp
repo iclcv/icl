@@ -1,4 +1,4 @@
-#include "WeightedSum.h"
+#include <WeightedSum.h>
 
 namespace icl {
 #undef WITH_IPP_OPTIMIZATION // slower than fallback

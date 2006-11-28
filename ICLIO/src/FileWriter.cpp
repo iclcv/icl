@@ -7,8 +7,8 @@
   mgoettin@techfak.uni-bielefeld.de
 */
 
-#include "FileWriter.h"
-#include "IO.h"
+#include <FileWriter.h>
+#include <IO.h>
 #include <zlib.h>
 #include <sstream>
 

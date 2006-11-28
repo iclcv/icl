@@ -1,4 +1,4 @@
-#include "OSDSlider.h"
+#include <OSDSlider.h>
 #include <math.h>
 
 using namespace std;

@@ -1,8 +1,8 @@
 #ifndef ARITHMETIC_H
 #define ARITHMETIC_H
 
-#include "Filter.h"
-#include "Img.h"
+#include <Filter.h>
+#include <Img.h>
 namespace icl {
    /// Class for Arithmetic Functions
    /** 

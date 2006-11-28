@@ -2,7 +2,7 @@
 #define MOUSE_INTERACTION_RECEIVER_H
 
 #include <QObject>
-#include "MouseInteractionInfo.h"
+#include <MouseInteractionInfo.h>
 
 
 namespace icl{

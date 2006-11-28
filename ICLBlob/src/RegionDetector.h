@@ -1,11 +1,11 @@
 #ifndef BLOBFINDER_H
 #define BLOBFINDER_H
 
-#include "RegionDetectorTypes.h"
-#include "RegionDetectorBlobPart.h"
-#include "RegionDetectorBlob.h"
-#include "RegionDetectorScanLine.h"
-#include "Size.h"
+#include <RegionDetectorTypes.h>
+#include <RegionDetectorBlobPart.h>
+#include <RegionDetectorBlob.h>
+#include <RegionDetectorScanLine.h>
+#include <Size.h>
 
 namespace icl{
   namespace regiondetector{

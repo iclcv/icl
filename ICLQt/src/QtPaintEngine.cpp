@@ -1,4 +1,4 @@
-#include "QtPaintEngine.h"
+#include <QtPaintEngine.h>
 #include <QWidget>
 #include <Img.h>
 #include <QFontMetrics>

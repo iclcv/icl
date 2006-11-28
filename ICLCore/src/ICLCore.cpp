@@ -1,6 +1,6 @@
-#include "ICLCore.h"
-#include "Img.h"
-#include "Exception.h"
+#include <ICLCore.h>
+#include <Img.h>
+#include <Exception.h>
 
 using namespace std;
 

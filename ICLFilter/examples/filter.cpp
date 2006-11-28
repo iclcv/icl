@@ -1,6 +1,6 @@
-#include "Img.h"
-#include "Median.h"
-#include "Convolution.h"
+#include <Img.h>
+#include <Median.h>
+#include <Convolution.h>
 
 #include <stdio.h>
 
