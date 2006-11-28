@@ -277,7 +277,7 @@ namespace icl {
                                IppiSize roiSize, IppiMaskSize mask);
 
 #else
-    template<typename ImgT, typename KernelT>
+    template<typename ImgT, typename KernelT, bool bUseFactor>
        void cGenericConv (ImgBase *poSrc, ImgBase *poDst);
 #endif
   };
