@@ -121,7 +121,7 @@ namespace icl {
   void Arithmetic::Abs (const Img32f *src, Img32f *dst){
     ippi1srcCall<icl32f,ippiAbs_32f_C1R>(src,dst);
   }
-  void Arithmetic::Abs (const Img32f *srcdst){
+  void Arithmetic::Abs (Img32f *srcdst){
     ippi1srcInplaceCall<icl32f,ippiAbs_32f_C1IR>(srcdst);
   }
   void Arithmetic::AddC (const Img32f *src, const icl32f value, Img32f *dst){
@@ -325,6 +325,10 @@ namespace icl {
   {
     fallbackArithmetic1T<icl32f>(src, dst,AbsOp<icl32f>());
   }
+	void Arithmetic::Abs (Img32f *srcdst)
+  {
+    fallbackArithmetic1T<icl32f>(srcdst, srcdst,AbsOp<icl32f>());
+  }
   void Arithmetic::AbsDiff (const Img32f *src1, const Img32f *src2, Img32f *dst){
     fallbackArithmetic2T<icl32f>(src1, src2,dst,AbsDiffOp_32f<icl32f>());
   }
@@ -477,7 +481,7 @@ namespace icl {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     Abs(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
   }
-  void Arithmetic::Abs (const ImgBase *poSrcDst)
+  void Arithmetic::Abs (ImgBase *poSrcDst)
   {
     // {{{ open
     ICLASSERT_RETURN( poSrcDst);

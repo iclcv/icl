@@ -41,7 +41,7 @@ namespace icl {
       /// Computes absolute pixel values of a source image and places them into the destination image - ImgBase Version
       void Abs (const ImgBase *poSrc, ImgBase **ppoDst);
       /// Computes absolute pixel values of a source image and places them into the destination image - ImgBase Version
-      void Abs (const ImgBase *poSrcDst);
+      void Abs (ImgBase *poSrcDst);
 
       /// Adds pixel values of two images
       static void Add (const Img32f  *src1, const Img32f  *src2, Img32f  *dst);
@@ -81,7 +81,7 @@ namespace icl {
       /// Computes absolute pixel values of a source image and places them into the destination image
       static void Abs (const Img32f *src, Img32f *dst);
       /// Computes absolute pixel values of a source image and places them into the destination image, inplace Version
-      static void Abs (const Img32f *srcdst);
+      static void Abs (Img32f *srcdst);
 
       /// Finds the absolute difference between an image and a scalar value.
       static void AbsDiffC (const Img8u *src, int value, Img8u *dst);
