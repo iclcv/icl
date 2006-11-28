@@ -1,5 +1,5 @@
-#include "Convolution.h"
-#include "Img.h"
+#include <Convolution.h>
+#include <Img.h>
 
 namespace icl {
   
@@ -10,7 +10,8 @@ namespace icl {
      and pfKernel within the methods <em>bufferKernel()</em>. Additionally
      the flag m_bBuffered is set to true.
      Note, that an external float pointer can only be buffered as int* piKernel
-     if the data can be interpreted as integers.
+     if the data can be interpreted as integers directly. Currently we do not
+     search for a greatest common divisor, which may be used as a normalization factor.
 
      If data is not buffered, we create a suitable piKernel or pfKernel buffer
      only on demand within the apply method. eKernelDepth indentifies which
@@ -74,11 +75,11 @@ namespace icl {
   void Convolution::copyIntToFloatKernel (int iDim) {
     FUNCTION_LOG("");
      if (!pfKernel) pfKernel = new float[iDim];
-     register int   *pi=piKernel+1, *piEnd=pi+iDim;
+     register int   *pi=piKernel, *piEnd=pi+iDim;
      register float *pf=pfKernel;
      // first element of piKernel contains normalization factor:
      for (; pi < piEnd; ++pi, ++pf)
-        *pf = (float) *pi / (float) *piKernel;
+        *pf = (float) *pi / (float) iNormFactor;
   }
 
   // initially create buffer array (within constructor only)
@@ -90,11 +91,11 @@ namespace icl {
      
      if (isConvertableToInt (pfKernelExt, iDim)) {
         // first element contains normalization factor
-        if (!piKernel) piKernel = new int[iDim+1]; 
-        piKernel[0] = 1;
+        if (!piKernel) piKernel = new int[iDim]; 
+        iNormFactor = 1;
           
         register float *pf=pfKernelExt, *pfEnd=pfKernelExt+iDim;
-        register int   *pi=piKernel+1;
+        register int   *pi=piKernel;
         for (; pf < pfEnd; ++pf, ++pi) {
           *pi = (int) *pf;
         }
@@ -105,8 +106,8 @@ namespace icl {
     FUNCTION_LOG("");
      int iDim = oMaskSize.width * oMaskSize.height;
 
-     if (!piKernel) piKernel = new int[iDim+1];
-     std::copy (piKernelExt, piKernelExt+iDim+1, piKernel);
+     if (!piKernel) piKernel = new int[iDim];
+     std::copy (piKernelExt, piKernelExt+iDim, piKernel);
      copyIntToFloatKernel (iDim);
   }
 
@@ -139,7 +140,9 @@ namespace icl {
         bufferKernel(pfKernel);
      }
   }
-  void Convolution::setKernel (int *piKernel, const Size& size, bool bBufferData) {
+  void Convolution::setKernel (int *piKernel, const Size& size, 
+                               int iNormFactor, bool bBufferData) {
+     this->iNormFactor = iNormFactor;
      if (size != oMaskSize ||
          m_eKernel != kernelCustom ||
          m_bBuffered != bBufferData ||
@@ -194,12 +197,9 @@ namespace icl {
      }
      setMask (Size(nSize, nSize));
 
+     this->iNormFactor = *piKernel; ++piKernel;
      // create buffer for pfKernel:
      copyIntToFloatKernel (oMaskSize.width * oMaskSize.height);
-     
-     // TODO:
-     // C.E.: the integer kernel still contains the normalisation factor as first component -> increase by one
-     // piKernel++; will also not work if the normalisation factor is != 1 --> what to do ?
 #else
      pFixed8u = 0; pFixed8uMask = 0; pFixed32f = 0; pFixed32fMask = 0;
      int nSize = 3;
@@ -273,14 +273,14 @@ namespace icl {
   // }}}
   
   Convolution::Convolution(int *piKernel, const Size &size, 
-                           bool bBufferData) :
+                           int iNormFactor, bool bBufferData) :
      // {{{ open
      FilterMask (size),
      pfKernel(0), piKernel(0), m_bBuffered(!bBufferData), 
      m_eKernel(kernelCustom), m_eKernelDepth(depth8u)
   {
      FUNCTION_LOG("");
-     setKernel(piKernel, size, bBufferData);
+     setKernel(piKernel, size, iNormFactor, bBufferData);
   }
 
   // }}}
@@ -384,15 +384,15 @@ namespace icl {
 #else
 
   // {{{ generic fallback convolution
-  template<typename ImageT, typename KernelT>
+  template<typename ImageT, typename KernelT, bool bUseFactor>
   void Convolution::cGenericConv (ImgBase *poSrc, ImgBase *poDst)
   {
     Img<ImageT> *poS = (Img<ImageT>*) poSrc;
     Img<ImageT> *poD = (Img<ImageT>*) poDst;
 
     // accumulator for each pixel result of Type M
-    KernelT buffer; 
-
+    KernelT buffer, factor = bUseFactor ? iNormFactor : 1; 
+    
     // pointer to the mask
     const KernelT *m;
 
@@ -407,7 +407,7 @@ namespace icl {
           {
              buffer += (*m) * (*sR);
           }
-          *d = Cast<KernelT, ImageT>::cast(buffer);
+          *d = Cast<KernelT, ImageT>::cast(buffer / factor);
        }
     }
   }
@@ -426,10 +426,10 @@ namespace icl {
      {0,                                          // 32f - 8u
       &Convolution::ippGenericConv<icl32f,float>}  // 32f - 32f
 #else
-     {&Convolution::cGenericConv<icl8u,int>,    // 8u - 8u
-      &Convolution::cGenericConv<icl8u,float>},  // 8u - 32f
+     {&Convolution::cGenericConv<icl8u,int, true>,    // 8u - 8u
+      &Convolution::cGenericConv<icl8u,float, false>},  // 8u - 32f
      {0,                                        // 32f - 8u
-      &Convolution::cGenericConv<icl32f,float>}  // 32f - 32f
+      &Convolution::cGenericConv<icl32f,float, false>}  // 32f - 32f
 #endif     
   };
 

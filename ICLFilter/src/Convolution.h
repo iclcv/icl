@@ -1,7 +1,7 @@
 #ifndef ICLCONVOLUTION_H
 #define ICLCONVOLUTION_H
 
-#include "FilterMask.h"
+#include <FilterMask.h>
 
 namespace icl {
   
@@ -173,8 +173,8 @@ namespace icl {
 
     /// Creates a Convolution object with the given custom kernel
     /** This constructor behaves essentially like the above one.
-        The first element of piKernel is assumed to contain a normalization 
-        factor, by which the scalar product of kernel and image mask is divided.
+        Additionally to the kernel mask itself, a normalization factor is needed.
+        The is used to normalize the scalar product of kernel and image mask.
         Usually it is the sum of purely possitive kernel entries or it equals 1.
 
         @param piKernel convolution kernel data
@@ -182,7 +182,8 @@ namespace icl {
         @param bBufferData flag that indicates, if given data should be 
         buffered internally. By default given data will be buffered.
     */
-    Convolution(int *piKernel, const Size& size, bool bBufferData=true);
+    Convolution(int *piKernel, const Size& size, 
+                int iNormFactor=1, bool bBufferData=true);
 
     /// Destructor
     virtual ~Convolution();
@@ -195,8 +196,8 @@ namespace icl {
     */
     virtual void apply(ImgBase *poSrc, ImgBase **ppoDst);
     
-    /// change kernel
-    void setKernel (int *piKernel, const Size& size, bool bBufferData=true);
+    /// change kernel (and/or normalization factor)
+    void setKernel (int *piKernel, const Size& size, int iNormFactor=1, bool bBufferData=true);
     /// change kernel
     void setKernel (icl32f *pfKernel, const Size& size, bool bBufferData=true);
     /// retrieve kernel pointer
@@ -223,6 +224,7 @@ namespace icl {
     float *pfKernel;
     /// storage of the kernel data
     int   *piKernel;
+    int    iNormFactor; // normalization factor for integer kernel
     
     /// indicates that data is buffered
     bool   m_bBuffered;
