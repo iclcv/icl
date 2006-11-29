@@ -652,7 +652,7 @@ inline void fallbackPlanarToInterleaved(const Img<T> *src, T *dst){
 
 
 
-void interleavedToPlanar(const icl8u *src, const Size &srcSize, int srcChannels,  Img8u *dst){  //aus einem großem bild mit 3 farben in einem kanal mache 3 bilder mit einer farbe pro kanal
+void interleavedToPlanar(const icl8u *src, const Size &srcSize, int srcChannels,  Img8u *dst){  
 #ifdef WITH_IPP_OPTIMIZATION
 ICLASSERT_RETURN(srcChannels>0);
 	dst->setChannels(srcChannels);
@@ -682,7 +682,7 @@ switch(srcChannels){
 // 		fallbackInterleavedToPlanar(src,srcSize,srcChannels,dst);  macht noch ein seg fault;
 //		fallbackPlanarToInterleaved(src,dst); auch!
 
-void interleavedToPlanar(const icl32f *src, const Size &srcSize, int srcChannels,  Img32f *dst){  //aus einem großem bild mit 3 farben in einem kanal mache 3 bilder mit einer farbe pro kanal
+void interleavedToPlanar(const icl32f *src, const Size &srcSize, int srcChannels,  Img32f *dst){
 #ifdef WITH_IPP_OPTIMIZATION
 ICLASSERT_RETURN(srcChannels>0);
 	dst->setChannels(srcChannels);
@@ -710,7 +710,7 @@ switch(srcChannels){
 
 }
 
-void planarToInterleaved(const Img8u *src, icl8u *dst){
+void planarToInterleaved(const Img8u *src, icl8u *dst,const Point ROIoffset){
 
 #ifdef WITH_IPP_OPTIMIZATION
     ICLASSERT_RETURN(src->getChannels()>0);
@@ -718,12 +718,12 @@ switch(src->getChannels()){
 	case 1:
 		ippiCopy_8u_C1R(src->getData(0),src->getSize().width,dst,src->getSize().width,src->getSize());
 	case 3: { 
-		icl8u* apucChannels[3]={src->getData(0),src->getData(1),src->getData(2)};
+		icl8u* apucChannels[3]={src->getROIData(0,ROIoffset),src->getROIData(1,ROIoffset),src->getROIData(2,ROIoffset)};
 		ippiCopy_8u_P3C3R(apucChannels,src->getLineStep(),dst,src->getLineStep()*3,src->getSize());
 		break;
 	}
 	case 4: {
-		icl8u* apucChannels[4]={src->getData(0),src->getData(1),src->getData(2),src->getData(3)};
+		icl8u* apucChannels[4]={src->getROIData(0,ROIoffset),src->getROIData(1,ROIoffset),src->getROIData(2,ROIoffset),src->getROIData(3,ROIoffset)};
 		ippiCopy_8u_P4C4R(apucChannels,src->getLineStep(),dst,src->getLineStep()*4,src->getSize());
 		break;
 	}
@@ -736,7 +736,7 @@ switch(src->getChannels()){
 #endif
 }
 
-void planarToInterleaved(const Img32f *src, icl32f *dst,Point ROIoffset){
+void planarToInterleaved(const Img32f *src, icl32f *dst,const Point ROIoffset){
 
 #ifdef WITH_IPP_OPTIMIZATION
     ICLASSERT_RETURN(src->getChannels()>0);
