@@ -37,6 +37,12 @@ void Canny::apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f 
   #else
   // {{{ C++ fallback 
 
+   
+  Canny::Canny(const Img32f *src){
+     #warning "Canny Edge Detector is not implemented without IPP optimization";
+  }
+Canny::~Canny(){}
+   
    void Canny::apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f lowThresh, icl32f highThresh){
      #warning "Canny Edge Detector is not implemented without IPP optimization";
     }
