@@ -48,52 +48,36 @@ namespace icl {
   //template<,IppStatus (*ippiFunc) (const icl8u*, int, icl8u*,int, IppiSize)>
   template<>
   void Median::ippMedianColor<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
+    ICLASSERT_RETURN (oMaskSize.width==oMaskSize.height);
+    ICLASSERT_RETURN (oMaskSize.width==3 || oMaskSize.width==5);
+    IppiMaskSize mask = oMaskSize.width == 3 ? ippMskSize3x3 : ippMskSize5x5;
 		int dim=poSrc->getWidth() * poSrc->getHeight();
-		int dim2=poDst->getWidth() * poDst->getHeight();
 	  m_oBuffer8u[0].resize(dim*poSrc->getChannels());
-	  m_oBuffer8u[1].resize(dim2*poSrc->getChannels());
+	  m_oBuffer8u[1].resize(dim*poSrc->getChannels());
      //planarToInterleaved(poSrc->asImg<icl8u>(), *(m_oBuffer8u[0]),this->oROIoffset);
     planarToInterleaved(poSrc->asImg<icl8u>(), *(m_oBuffer8u[0]));
-    IppiMaskSize mask = oMaskSize.width == 3 ? ippMskSize3x3 : ippMskSize5x5;
-    if (poSrc->getChannels()==3){
       ippiFilterMedianColor_8u_C3R(*m_oBuffer8u[0], 
                                      poSrc->getLineStep()*poSrc->getChannels(),
                                      *m_oBuffer8u[1], 
                                      poDst->getLineStep()*poSrc->getChannels(), 
                                      poDst->getROISize(), mask);
-    }
-    else { //ch=4
-      ippiFilterMedianColor_8u_AC4R(*m_oBuffer8u[0], 
-                                     poSrc->getLineStep()*poSrc->getChannels(),
-                                     *m_oBuffer8u[1], 
-                                     poDst->getLineStep()*poSrc->getChannels(), 
-                                     poDst->getROISize(), mask);
-    }
     interleavedToPlanar(*(m_oBuffer8u[1]),poDst->getSize(),poSrc->getChannels(),poDst->asImg<icl8u>());
   }
   template <>
   void Median::ippMedianColor<icl32f> (const ImgBase *poSrc, ImgBase *poDst) {
-		int dim=poSrc->getWidth() * poSrc->getHeight();
-		int dim2=poDst->getWidth() * poDst->getHeight();
-	  m_oBuffer32f[0].resize(dim*poSrc->getChannels());
-	  m_oBuffer32f[1].resize(dim2*poSrc->getChannels());
-     //planarToInterleaved(poSrc->asImg<icl32f>(), *(m_oBuffer32f[0]),this->oROIoffset);
-    planarToInterleaved(poSrc->asImg<icl32f>(), *(m_oBuffer32f[0]));
+    ICLASSERT_RETURN (oMaskSize.width==oMaskSize.height);
+    ICLASSERT_RETURN (oMaskSize.width==3 || oMaskSize.width==5);
     IppiMaskSize mask = oMaskSize.width == 3 ? ippMskSize3x3 : ippMskSize5x5;
-    if (poSrc->getChannels()==3){
+		int dim=poSrc->getWidth() * poSrc->getHeight();
+	  m_oBuffer32f[0].resize(dim*poSrc->getChannels());
+	  m_oBuffer32f[1].resize(dim*poSrc->getChannels());
+    //planarToInterleaved(poSrc->asImg<icl32f>(), *(m_oBuffer32f[0]),this->oROIoffset);
+    planarToInterleaved(poSrc->asImg<icl32f>(), *(m_oBuffer32f[0]));
       ippiFilterMedianColor_32f_C3R(*m_oBuffer32f[0], 
                                      poSrc->getLineStep()*poSrc->getChannels(),
                                      *m_oBuffer32f[1], 
                                      poDst->getLineStep()*poSrc->getChannels(), 
                                      poDst->getROISize(), mask);
-    }
-    else { //ch=4
-      ippiFilterMedianColor_32f_AC4R(*m_oBuffer32f[0], 
-                                     poSrc->getLineStep()*poSrc->getChannels(),
-                                     *m_oBuffer32f[1], 
-                                     poDst->getLineStep()*poSrc->getChannels(), 
-                                     poDst->getROISize(), mask);
-    }
     interleavedToPlanar(*(m_oBuffer32f[1]),poDst->getSize(),poSrc->getChannels(),poDst->asImg<icl32f>());
   }
   
