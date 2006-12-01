@@ -48,7 +48,7 @@ REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug status
 # This variable takes two values: TRUE or FALSE
-DEBUG_ON:=TRUE
+DEBUG_ON:=${DEBUG_ON}
 
 # Debugging flags
 DEBUG:= ${DEBUG}
