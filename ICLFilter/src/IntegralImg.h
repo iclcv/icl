@@ -8,10 +8,10 @@ namespace icl{
   class IntegralImg{
     public:
     template<class T,class  I>
-    static std::vector<I*> create(Img<T> *image,std::vector<I*> &integralImageChannels);
+    static std::vector<I*> create(Img<T> *image,std::vector<I*> &integralImageChannels,unsigned int borderSize=0);
 
     template<class T,class  I>
-    static std::vector<I*> create(Img<T> *image);
+    static std::vector<I*> create(Img<T> *image,unsigned int borderSize=0);
   };
 }
 
