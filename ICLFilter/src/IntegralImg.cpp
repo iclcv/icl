@@ -4,6 +4,8 @@ namespace icl{
 
   template<class T,class  I>
   inline void create_integral_channel_no_border(T *image,int w, int h, I *intImage){
+    // {{{ open
+
     FUNCTION_LOG("");
     /* algorithm: 
     +++++..
@@ -42,8 +44,61 @@ namespace icl{
       }
     }     
   }
+
+  // }}}
+
+  template<class I>
+  void fill_integral_image_borders(I *intImage,int w, int h, int iw, int ih, int border){
+    // {{{ open
+
+    /*******************************
+    left and top: set to zero
+    right and bottom: "copy replicate border"
+    <----------------->
+    00000000000
+    00000000000
+    00xxxxxxAAA^
+    00xxxxxxBBB|
+    00xxxxxxFFF|
+    00abcdqrGGGV
+    00abcdprGGG
+    00abcdprGGG
+    ********************************/
+ 
+    //top
+    intImage-=(border+iw*border);
+    memset(intImage,0,border*iw*sizeof(I));
+ 
+
+    // left and right
+    int bw = border+w;
+    int bw1 =bw-1;
+    int bh = border+h;
+    I bufVal;
+    for(int y=border;y<bh;++y){
+      //left
+      for(int x=0;x<border;++x){
+        intImage[x+iw*y] = 0;
+      }
+      bufVal = intImage[y*iw+bw1];
+      //right
+      for(int x=bw;x<iw;++x){
+        intImage[x+iw*y] = bufVal;
+      }
+    }
+    
+    // bottom
+    I *srcLine = intImage+(bh-1)*iw;
+    for(int y=bh;y<ih;++y){
+      memcpy(intImage+y*iw,srcLine,iw*sizeof(I));
+    }
+  }
+  // }}}
+             
   template<class T,class  I>
-  inline void create_integral_channel_with_border(T *image,int w, int h, I *intImage, int border){
+  void create_integral_channel_with_border(T *image,int w, int h, I *intImage, int border){
+    // {{{ open
+
     FUNCTION_LOG("");
     /* algorithm: 
     +++++..
@@ -56,9 +111,6 @@ namespace icl{
     // integral image size
     int iw = w+2*border;
     int ih = h+2*border;
-
-    
-    memset(intImage,0,iw*ih*sizeof(I));
 
     //move to the first integral-image pixel
     intImage+=(border+iw*border);
@@ -89,64 +141,60 @@ namespace icl{
     dst = intImage;
     int idx;
     for(int y=1;y<h;++y){
-      idx = y*iw;
+      idx = y*iw+1;
       for(int x=1;x<w;++x,++idx){
         dst[idx] = src[x+y*w] + dst[idx-1] + dst[idx-iw] - dst[idx-iw-1];
       }
     } 
  
-    // fill the border with correct values
-    /**
-       left and top: set to zero
-       right and bottom: "copy replicate border"
-       <----------------->
-     00000000000000000000000
-     00000000000000000000000
-     00xxxxxxxxxxxxxxxxxxAAA^
-     00xxxxxxxxxxxxxxxxxxBBB|
-     00xxxxxxxxxxxxxxxxxxCCC|
-     00xxxxxxxxxxxxxxxxxxDDD|
-     00xxxxxxxxxxxxxxxxxxEEE|
-     00xxxxxxxxxxxxxxxxxxFFF|
-     00abcdefghijklmnopqrGGGV
-     00abcdefghijklmnopqrGGG
-     00abcdefghijklmnopqrGGG
-    */
-
- 
-    //top
-    intImage-=(border+iw*border);
-    memset(intImage,0,border*iw*sizeof(I));
- 
-
-    // left and right
-    int bw = border+w;
-    int bw1 =bw-1;
-    int bh = border+h;
-    I bufVal;
-    for(int y=border;y<bh;++y){
-      //left
-      for(int x=0;x<border;++x){
-        intImage[x+iw*y] = 0;
-      }
-      bufVal = intImage[y*iw+bw1];
-      //right
-      for(int x=bw;x<iw;++x){
-        intImage[x+iw*y] = bufVal;
-      }
-    }
-    
-    
-    
-    // bottom
-    I *srcLine = intImage+(bh-1)*iw;
-    for(int y=bh;y<ih;++y){
-      memcpy(intImage+y*iw,srcLine,iw*sizeof(I));
-    }
+    fill_integral_image_borders(intImage,w,h,iw,ih,border);
   }
 
+  // }}}
+
+
+#ifdef WITH_IPP_OPTIMIZATION
+  template<>
+  void create_integral_channel_with_border<icl8u,Ipp32s>(icl8u *image, int w, int h, Ipp32s *intImage, int border){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    
+    // integral image size
+    int iw = w+2*border;
+    int ih = h+2*border;
+    int b1 = border-1;
+    ippiIntegral_8u32s_C1R(image,w*sizeof(icl8u),intImage+b1+b1*iw,iw*sizeof(Ipp32s), Size(w,h),0);
+    
+    intImage+=(border+iw*border);
+    fill_integral_image_borders(intImage,w,h,iw,ih,border);
+  }
+
+  // }}}
+
+  template<>
+  void create_integral_channel_with_border<icl8u,Ipp32f>(icl8u *image, int w, int h, Ipp32f *intImage, int border){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    
+    // integral image size
+    int iw = w+2*border;
+    int ih = h+2*border;
+    int b1 = border-1;
+    ippiIntegral_8u32f_C1R(image,w*sizeof(icl8u),intImage+b1+b1*iw,iw*sizeof(Ipp32f), Size(w,h),0);
+    
+    intImage+=(border+iw*border);
+    fill_integral_image_borders(intImage,w,h,iw,ih,border);
+  }
+
+  // }}}
+#endif
+  
   template<class T,class  I>
   std::vector<I*> IntegralImg::create(Img<T> *image, std::vector<I*> &dst, unsigned int border){
+    // {{{ open
+
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(image, dst);
     ICLASSERT_RETURN_VAL(image->getDim(),dst);
@@ -177,8 +225,12 @@ namespace icl{
     return dst;
   } 
 
+  // }}}
+
   template<class T,class  I>
   std::vector<I*> IntegralImg::create(Img<T> *image,unsigned int border){
+    // {{{ open
+
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(image, std::vector<I*>(0));
     ICLASSERT_RETURN_VAL(image->getDim(),std::vector<I*>(0));
@@ -197,7 +249,11 @@ namespace icl{
     }
     return dst;
   }   
+
+  // }}}
   
+  // {{{ explicit template instantiations
+
   template std::vector<int*> IntegralImg::create<icl8u,int>(Img<icl8u>*, std::vector<int*>&,unsigned int);
   template std::vector<icl32f*> IntegralImg::create<icl32f,icl32f>(Img<icl32f>*, std::vector<icl32f*>&,unsigned int);
   template std::vector<icl32f*> IntegralImg::create<icl8u,icl32f>(Img<icl8u>*, std::vector<icl32f*>&,unsigned int);
@@ -205,4 +261,6 @@ namespace icl{
   template std::vector<int*> IntegralImg::create<icl8u,int>(Img<icl8u>*,unsigned int);
   template std::vector<icl32f*> IntegralImg::create<icl32f,icl32f>(Img<icl32f>*,unsigned int);
   template std::vector<icl32f*> IntegralImg::create<icl8u,icl32f>(Img<icl8u>*,unsigned int);
+
+  // }}}
 }
