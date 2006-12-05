@@ -85,30 +85,109 @@ void localThreshold4(Img8u &src, Img8u &dst){
   delete I;
 }
 
+/*************************************
+............
+............
+..xxxxxxxx..
+..xxxxxxxx..
+..xxxxxxxx..
+**************************************/
+int *createROISizeImage(const Size &s, int r){
+  int *p = new int[s.getDim()];
+  memset(p,0,s.getDim()*sizeof(int));
+  
+  int w = s.width;
+  int h = s.height;
+  int r1 = r+1;
+  int rr1 = r+r+1;
+  int dim = rr1*rr1;
+  
+  // corners:
+  // top left / right
+  for(int y=0;y<r;y++){ 
+    for(int x=0;x<r;x++){
+      p[x+w*y] = (r1+x)*(r1+y); //>>>>>>>> left
+    }
+    for(int x=w-r;x<w;x++){
+      p[x+w*y] = (r1+(w-x-1))*(r1+y); //>> right
+    }
+    // center
+    for(int x=r,xEnd=w-r;x<xEnd;++x){
+      p[x+w*y] = rr1*(r1+y);
+    }    
+  }
+ 
+  // bottom left / right
+  for(int y=h-r;y<h;++y){ 
+    for(int x=0;x<r;++x){
+      p[x+w*y] = (r1+x)*(r1+(h-y-1)); //>>>>>>>> left
+    }
+    for(int x=w-r;x<w;x++){
+      p[x+w*y] = (r1+(w-x-1))*(r1+(h-y-1)); //>> right
+    }
+    // center
+    for(int x=r,xEnd=w-r;x<xEnd;++x){
+      p[x+w*y] = rr1*(r1+(h-y-1));
+    }  
+  }
 
+  // left and right
+  for(int y=r,yEnd=h-r;y<yEnd;++y){ 
+    for(int x=0;x<r;x++){
+      p[x+w*y] = (r1+x)*rr1; //>>>>>>>> left
+    }
+    for(int x=w-r;x<w;++x){
+      p[x+w*y] = (r1+(w-x-1))*rr1; //>> right
+    }
+  }
+  for(int y=r,yEnd=h-r; y<yEnd;++y){
+    for(int x=r,xEnd=w-r; x<xEnd; ++x){
+      p[x+w*y]=dim;
+    }
+  }
+  // looks correctly !!
+  return p;
+}
+
+void write(int *p,const Size &s, std::string name){
+  Img32f image(s,1);
+  copy<int,icl32f>(p,p+s.getDim(),image.getData(0));
+  image.print(name);  
+  image.scaleRange();
+  FileWriter(name).write(&image);
+  
+}
 
 void localThreshold5(Img8u &src, Img8u &dst){
   Size s = src.getSize();
   const int w = s.width;
   const int h = s.height;
   const int r = 10;
-  const int add_factor = -20; // its not a factor
-  
-  printf("1 \n");
-  // integral image
-  int *I = (IntegralImg::create<icl8u,int>(&src,r+1))[0];
+  const int r1 = r+1;
+  const int r_1 = -r-1;
 
-  printf("2 \n");
+  const int add_factor = -1; // its not a factor
+  
+  timer.start();
+  int *I;
+  for(int i=0;i<100;i++){
+    I = (IntegralImg::create<icl8u,int>(&src,r1))[0];
+  }
+  timer.stop();
 
   icl8u *S = src.getData(0);
   icl8u *D = dst.getData(0);
   
-  int idx, thresh, yu, yl, xr, xl;
+  int thresh, yu, yl, xr, xl;
   int roisize = (2*r+1)*(2*r+1);            // todo roisize depends on the current position
                                             // speed up by creating a roisize image as LUT
-  
-  int iw =w+2*(r+1);
-  
+  int *roiSizeImage = createROISizeImage(s,r);
+
+  int iw =w+2*(r1);
+  int ih =h+2*(r1);
+
+  write(I,Size(iw,ih),"integral_image.pgm");
+ 
   /* r=2
   .C....A...
   ..+++++...
@@ -120,20 +199,19 @@ void localThreshold5(Img8u &src, Img8u &dst){
   |+| = D - A - B + C
   */
   
-  I+=((r+1)+(r+1)*iw);
+  I+=(r1+r1*iw);
   for(int y=0;y<h;y++){
-    yu = (y-r-1)*iw;
-    yl = (y+r)*iw;
-    xr = r;
-    xl = -r-1;
-    idx = w*y;
-    for(int x=0;x<w; ++x, ++idx,++xr,++xl){     //optimize: use xr or index as loop index idx<idxEnd
-      thresh = (I[xr+yl] - (I[xr+yu] + I[xl+yl]) + I[xl+yu]) / roisize;
+    yu = (y-r1)*iw;  // (y-(r+1))*iw
+    yl = (y+r)*iw;   // (y+r)*iw 
+    xr = r;          // r
+    xl = r_1;        // -r-1
+    for(int idx=w*y,idxEnd=w*(y+1); idx<idxEnd ; ++idx,++xr,++xl){
+      thresh = (I[xr+yl] - (I[xr+yu] + I[xl+yl]) + I[xl+yu]) / roiSizeImage[idx]; //roisize;
       D[idx] = S[idx] < (thresh+add_factor) ? 0 : 255;
     }
   }
   
-  I-=((r+1)+(r+1)*iw);
+  I-=(r1+r1*iw);
   delete I;
 
 }
@@ -146,15 +224,8 @@ int main (int argc, char **argv) {
   
   Img8u  I(s,formatGray), R(s,formatGray);
   
-  FileReader read(argv[1]);
-  read.grab(&I);
-  
-  FileWriter("this.jpg").write(&I);
-  
-  //  localThreshold4(I,R);
+  FileReader(argv[1]).grab(&I);
+ 
   localThreshold5(I,R);
   
-  FileWriter("out.jpg").write(&R);
-  
-  return 1;
-}
+  FileWriter("out.jpg").write(&R);}
