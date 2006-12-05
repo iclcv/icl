@@ -10,7 +10,7 @@ using namespace std;
 using namespace icl;
 
 int main(int nArgs, char **ppcArg){
-  ImgBase *src,*src2, *dst=0,*dst2=0;
+  ImgBase *src, *dst=0;
   //Img32f *dst=0;
   string srcName("src.ppm");
   string dstName("wiener.ppm");

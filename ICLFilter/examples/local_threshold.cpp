@@ -146,10 +146,15 @@ int main (int argc, char **argv) {
   
   Img8u  I(s,formatGray), R(s,formatGray);
   
-  FileReader(argv[1]).grab(&I);
+  FileReader read(argv[1]);
+  read.grab(&I);
+  
   FileWriter("this.jpg").write(&I);
   
   //  localThreshold4(I,R);
   localThreshold5(I,R);
   
-  FileWriter("out.jpg").write(&R);}
+  FileWriter("out.jpg").write(&R);
+  
+  return 1;
+}

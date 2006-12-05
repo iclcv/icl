@@ -45,7 +45,10 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES} \
                 -lICLIO \
                 -lICLQt \
                 -lICLBlob \
-                -lICLFilter
+                -lICLFilter \
+                -lICLMEx \
+                -lICLNN \
+                -lICLViola
 
 # Please, do not remove this endif statement
 endif

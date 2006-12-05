@@ -109,8 +109,12 @@ namespace icl {
 // }}}
   
    int plainWrite (void *fp, const void *pData, size_t len) {
+     // {{{ open
+
       return fwrite (pData, 1, len, (FILE*) fp);
    }
+
+// }}}
 
    //--------------------------------------------------------------------------
    void FileWriter::writePNM(ImgBase *poSrc, const FileInfo& oInfo) {

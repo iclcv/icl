@@ -589,9 +589,10 @@ Img<Type>::setSize(const Size &s)
 {
   FUNCTION_LOG("");
   
-  Size oNewSize(s.width<0?getSize().width:s.width, s.height<0?getSize().height:s.height);
+  Size oNewSize(s.width<0?getSize().width:s.width, 
+                s.height<0?getSize().height:s.height);
+
   //---- estimate destination values in respect to defaults ----
-  
   if (oNewSize != getSize()) {
     m_oParams.setSize(oNewSize);
     for(int i=0;i<getChannels();i++) {
@@ -860,7 +861,7 @@ template<class Type> void
 Img<Type>::scaleRange(float fNewMin, float fNewMax) {
    Type tMin, tMax;
    getMinMax(tMin,tMax);
-   scaleRange(fNewMin,fNewMax, tMin,tMax);
+   scaleRange(fNewMin, fNewMax, tMin,tMax);
 }
 template<class Type> void
 Img<Type>::scaleRange(float fNewMin,float fNewMax, float fMin,float fMax) {
@@ -903,24 +904,30 @@ Img<icl8u>::scaleRange(float fNewMin, float fNewMax,
                        float fMin, float fMax, int iChannel) {
    icl8u tFac   = Cast<float, icl8u>::cast(fNewMax - fNewMin);
    icl8u tNorm  = Cast<float, icl8u>::cast(fMax - fMin);
-   icl8u tShift = Cast<float, icl8u>::cast((fMax * fNewMin - fMin * fNewMax) / (fNewMax - fNewMin));
-   
-   ippiMulC_8u_C1IRSfs (tFac, getROIData(iChannel), getLineStep(), getROISize(), tNorm);
+   icl8u tShift = Cast<float, icl8u>::cast((fMax * fNewMin - fMin * fNewMax) / 
+                                           (fNewMax - fNewMin));
+
+   ippiMulC_8u_C1IRSfs (tFac, getROIData(iChannel), getLineStep(), 
+                        getROISize(), tNorm);
    if (tShift != 0)
-      ippiAddC_8u_C1IRSfs (tShift, getROIData(iChannel), getLineStep(), getROISize(), 1);
+      ippiAddC_8u_C1IRSfs (tShift, getROIData(iChannel), getLineStep(), 
+                           getROISize(), 1);
 }
 template <> void 
 Img<icl32f>::scaleRange(float fNewMin, float fNewMax,
                         float fMin, float fMax, int iChannel) {
-   icl32f tFac   = (fNewMax - fNewMin) / (fMax - fMin);
-   icl32f tShift = (fMax * fNewMin - fMin * fNewMax) / (fMax - fMin);
-   
-   ippiMulC_32f_C1IR (tFac, getROIData(iChannel), getLineStep(), getROISize());
-   if (tShift != 0)
-      ippiAddC_32f_C1IR (tShift, getROIData(iChannel), getLineStep(), getROISize());
+  icl32f tFac   = (fNewMax - fNewMin) / (fMax - fMin);
+  icl32f tShift = (fMax * fNewMin - fMin * fNewMax) / (fMax - fMin);
+
+  ippiMulC_32f_C1IR (tFac, getROIData(iChannel), getLineStep(), 
+                     getROISize());
+  
+  if (tShift != 0) {
+    ippiAddC_32f_C1IR (tShift, getROIData(iChannel), getLineStep(), 
+                       getROISize());
+  }
 }
 #endif
-
 // }}}
 
 // ---------------------------------------------------------------------

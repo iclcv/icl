@@ -74,11 +74,12 @@ namespace icl {
 
   void Skin::train(ImgBase *poSrc) {
     // {{{ open 
+    
     FUNCTION_LOG("");
-
+    
     //Variable initialisation
     std::vector<float> vecTmpParams(6);
-
+    
     //Ensure ImgBase compatibility
     ensureCompatible(&m_poChromaTrain, 
                      depth8u, poSrc->getSize(), 
@@ -86,10 +87,10 @@ namespace icl {
     
     //Convert src image
     Converter().convert(m_poChromaTrain, poSrc);
-
+    
     //Compute start parameter
     std::vector<float> vecChromaMean = icl::mean(m_poChromaTrain);
-    std::vector<float> vecChromaDev = icl::stdDeviation(m_poChromaTrain);
+    std::vector<float> vecChromaDev = icl::deviation(m_poChromaTrain);
     
     //---- Compute the parabola parameter for parabola 1 ----
     vecTmpParams[0] = vecChromaMean[0];
@@ -118,6 +119,7 @@ namespace icl {
     //Set new parameter as default
     m_vecSkinParams = vecTmpParams;
   }
+
   // }}}
 
 } //namespace icl

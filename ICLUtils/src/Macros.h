@@ -84,7 +84,7 @@ namespace icl {
 /** log messages in long loops like pixel ops*/
 #define LOOP_LOG(x) DEBUG_LOG5("LOOP: " << x);
 
-/** TODO white a comment HERE:*/
+/** TODO write a comment HERE:*/
 #define ICLASSERT(X)                        \
   if(!(X)){                                 \
     ERROR_LOG("ICL ASSERTION ERROR:" << #X) \
@@ -106,7 +106,6 @@ namespace icl {
   if(!(X)){                         \
     throw OBJ;                      \
   }
-
 
 }// namespace icl
 

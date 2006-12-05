@@ -549,18 +549,16 @@ class Img : public ImgBase
   //@{ @name basic image manipulations
   /* {{{ open */
 
-  
-
   /// perform an inplace resize of the image (keeping the data) (IPP-OPTIMIZED)
   /** Scaling the channels is only performed on demand.
-      @param s size of the destination image, if s.width is -1, then only the height
-               of the image is adapted. The same is valid for s.height.
-      @param eScaleMode defines the interpolation mode, that is used for the scaling
-                          operation. (if interpolateNon, the image becomes black)
-                          possible modes are:
-                           - interpolateNN   --> nearest neighbor interpolation (fastest)
-                           - interpolateLIN  --> bilinear interpolation
-                           - interpolateRA   --> region average 
+      @param s size of the destination image, if s.width is -1, then only 
+      the height of the image is adapted. The same is valid for s.height.
+      @param eScaleMode defines the interpolation mode, that is used for the
+      scaling operation. (if interpolateNon, the image becomes black)
+      possible modes are:
+      - interpolateNN   --> nearest neighbor interpolation (fastest)
+      - interpolateLIN  --> bilinear interpolation
+      - interpolateRA   --> region average 
       @see scalemode
       @see resize
   **/
@@ -599,7 +597,7 @@ class Img : public ImgBase
                       performed on all channels)
   **/
   virtual void scaleRange(float fNewMin, float fNewMax,
-                          float fNewMin, float fNewMax, int iChannel);
+                          float fMin, float fMax, int iChannel);
 
   /// Scale pixel values uniformly on all channels
   virtual void scaleRange(float fMin=0.0, float fMax=255.0);

@@ -14,8 +14,6 @@
 #include <ImgIterator.h>
 #include <cmath>
 
-using namespace std;
-
 namespace icl {
   
   /* {{{ Random functions */
@@ -94,7 +92,7 @@ namespace icl {
         float generate_gauss_random(float), 
         void generate_gauss_random_vec(float*, int, float);
   */
-  void random(vector<float> &rndVec, float limit);
+  void random(std::vector<float> &rndVec, float limit);
   
   //--------------------------------------------------------------------------
   /*!
@@ -108,70 +106,128 @@ namespace icl {
         float gaussRandom(float), 
         void random(vector<float>, float);
   */
-  void gaussRandom(vector<float> &rndVec, float limit);
+  void gaussRandom(std::vector<float> &rndVec, float limit);
 
-  /* }}} */
-          
+/* }}} */
+                              
   /* {{{ statistic functions */
+
+  /* {{{ mean  */
+
   //--------------------------------------------------------------------------
   /*!
-    \brief Compute the variance of the vector
-    \param poImg The input img
-    \param iChannel The channel to calculate the variance from    
-    \return The variance from the image
-  */
-  vector<float> variance(ImgBase *poImg , int iChannel=-1);
-  
-  //--------------------------------------------------------------------------
-  /*!
-    \brief Compute the variance of the vector
-    \param poImg The input img
-    \param iChannel The channel to calculate the variance from    
-    \return The variance from the image
+    \brief Compute the mean value from a vector<T>.
+    \param vecData The data vector
+    \return The mean value form the vector
   */
   template <class T>
-  vector<float> variance(Img<T> *poImg , int iChannel=-1);
+  float mean(const T *ptData, int iDim);
 
   //--------------------------------------------------------------------------
   /*!
-    \brief Compute the standard deviation of the image
-    \param poImg The input img
-    \param iChannel The channel to calculate the standard deviation from    
-    \return The standard deviation from the image
-  */
-  vector<float> stdDeviation(ImgBase *poImg , int iChannel=-1);
-  
-  //--------------------------------------------------------------------------
-  /*!
-    \brief Compute the standard deviation of the image
-    \param poImg The input img
-    \param iChannel The channel to calculate the standard deviation from    
-    \return The standard deviation from the image
+    \brief Compute the mean value from a vector<T>.
+    \param vecData The data vector
+    \return The mean value form the vector
   */
   template <class T>
-  vector<float> stdDeviation(Img<T> *poImg , int iChannel=-1);
-  
-  //--------------------------------------------------------------------------
-  /*!
-    \brief Compute the mean value from image.
-    \param poImg The input img
-    \param iChannel The channel to calculate the variance from
-    \return The mean value form the image
-  */
-  vector<float> mean(ImgBase *poImg, int iChannel=-1);
+  float mean(const std::vector<T> &vecData);
 
   //--------------------------------------------------------------------------
   /*!
-    \brief Compute the mean value from image.
-    \param poImg The input img
-    \param iChannel The channel to calculate the variance from
-    \return The mean value form the image
+    \brief Compute the mean value from a vector<T>.
+    \param vecData The data vector
+    \return The mean value form the vector
   */
   template <class T>
-  vector<float> mean(Img<T> *poImg, int iChannel=-1);
+  std::vector<float> mean(const Img<T> *poImg, int iChannel=-1);
 
+  //--------------------------------------------------------------------------
+  /*!
+    \brief Compute the mean value from a vector<T>.
+    \param vecData The data vector
+    \return The mean value form the vector
+  */
+  std::vector<float> mean(const ImgBase *poImg, int iChannel=-1);
 
+/* }}} */
+  
+  /* {{{ variance  */
 
+  //--------------------------------------------------------------------------
+  /*!
+    \brief Compute the variance value from a vector<T>.
+    \param vecData The data vector
+    \return The variance value form the vector
+  */
+  template <class T>
+  float variance(const T *ptData, int iDim);
+
+  //--------------------------------------------------------------------------
+  /*!
+    \brief Compute the variance value from a vector<T>.
+    \param vecData The data vector
+    \return The variance value form the vector
+  */
+  template <class T>
+  float variance(const std::vector<T> &vecData);
+
+  //--------------------------------------------------------------------------
+  /*!
+    \brief Compute the variance value from a vector<T>.
+    \param vecData The data vector
+    \return The variance value form the vector
+  */
+  template <class T>
+  std::vector<float> variance(const Img<T> *poImg, int iChannel=-1);
+
+  //--------------------------------------------------------------------------
+  /*!
+    \brief Compute the variance value from a vector<T>.
+    \param vecData The data vector
+    \return The variance value form the vector
+  */
+  std::vector<float> variance(const ImgBase *poImg, int iChannel=-1);
+
+/* }}} */
+
+  /* {{{ deviation  */
+
+  //--------------------------------------------------------------------------
+  /*!
+    \brief Compute the deviation value from a vector<T>.
+    \param vecData The data vector
+    \return The deviation value form the vector
+  */
+  template <class T>
+  float deviation(const T *ptData, int iDim);
+
+  //--------------------------------------------------------------------------
+  /*!
+    \brief Compute the deviation value from a vector<T>.
+    \param vecData The data vector
+    \return The deviation value form the vector
+  */
+  template <class T>
+  float deviation(const std::vector<T> &vecData);
+
+  //--------------------------------------------------------------------------
+  /*!
+    \brief Compute the deviation value from a vector<T>.
+    \param vecData The data vector
+    \return The deviation value form the vector
+  */
+  template <class T>
+  std::vector<float> deviation(const Img<T> *poImg, int iChannel=-1);
+
+  //--------------------------------------------------------------------------
+  /*!
+    \brief Compute the deviation value from a vector<T>.
+    \param vecData The data vector
+    \return The deviation value form the vector
+  */
+  std::vector<float> deviation(const ImgBase *poImg, int iChannel=-1);
+
+/* }}} */
 
 /* }}} */
 
