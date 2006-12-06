@@ -141,8 +141,8 @@ namespace icl{
     int iW = s.width <=  0 ? getSize().width  + s.width  : s.width;
     int iH = s.height <= 0 ? getSize().height + s.height : s.height;
     
-    m_oROI.width  =  clip(iW, 1, getWidth()-getROIXOffset());
-    m_oROI.height =  clip(iH, 1, getHeight()-getROIYOffset());
+    m_oROI.width  =  clip(iW, 0, getWidth()-getROIXOffset());
+    m_oROI.height =  clip(iH, 0, getHeight()-getROIYOffset());
   }
 
   // }}}
