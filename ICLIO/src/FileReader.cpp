@@ -372,7 +372,7 @@ namespace icl {
        if (getChannelsOfFormat(oInfo.eFormat) != oInfo.iNumChannels)
           oInfo.eFormat = formatMatrix;
     } while (true);
-    cout << "hello" << endl;
+
     // }}}
     
     // read image size
