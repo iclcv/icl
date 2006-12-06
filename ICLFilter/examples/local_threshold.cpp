@@ -224,8 +224,9 @@ int main (int argc, char **argv) {
   
   Img8u  I(s,formatGray), R(s,formatGray);
   
-  FileReader(argv[1]).grab(&I);
+  FileReader r(argv[1]); r.grab(&I);
  
   localThreshold5(I,R);
   
-  FileWriter("out.jpg").write(&R);}
+  FileWriter("out.jpg").write(&R);
+}
