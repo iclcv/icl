@@ -302,7 +302,7 @@ namespace icl {
 
     FUNCTION_LOG("");
     openFile (oInfo, "rb"); // open file for reading
-    char acBuf[1024];
+    char acBuf[1024], *pcBuf;
     istringstream iss;
     
     //---- Read the magic number  ----
@@ -323,10 +323,12 @@ namespace icl {
 
     do {
        if (!gzgets (oInfo.fp, acBuf, 1024)) throw ICLInvalidFileFormat();
-       if (acBuf[0] != '#') break;
+       // skip withe space in beginning of line
+       pcBuf = acBuf; while (*pcBuf && isspace(*pcBuf)) ++pcBuf;
+       if (*pcBuf && *pcBuf != '#') break; // no more comments: break from loop
 
        // process comment
-       iss.str (acBuf+1);
+       iss.str (pcBuf+1);
        string sKey, sValue;
        iss >> sKey;
 
@@ -366,7 +368,7 @@ namespace icl {
     // }}}
     
     // read image size
-    iss.str (acBuf);
+    iss.str (pcBuf);
     iss >> oInfo.oImgSize.width;
     iss >> oInfo.oImgSize.height;
     oInfo.oImgSize.height = oInfo.oImgSize.height / oInfo.iNumImages;
