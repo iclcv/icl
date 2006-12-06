@@ -333,38 +333,46 @@ namespace icl {
        iss >> sKey;
 
        if (sKey == "NumFeatures" || sKey == "NumImages") {
-          iss >> oInfo.iNumImages;
-          oInfo.iNumChannels *= oInfo.iNumImages;
+         iss >> oInfo.iNumImages;
+         oInfo.iNumChannels *= oInfo.iNumImages;
+         SECTION_LOG("NumChannles: " << oInfo.iNumChannels);
+         SECTION_LOG("NumImages  : " << oInfo.iNumImages);
        } else if (sKey == "ROI") {
-          iss >> oInfo.oROI.x;
-          iss >> oInfo.oROI.y;
-          iss >> oInfo.oROI.width;
-          iss >> oInfo.oROI.height;
-          continue;
+         iss >> oInfo.oROI.x;
+         iss >> oInfo.oROI.y;
+         iss >> oInfo.oROI.width;
+         iss >> oInfo.oROI.height;
+         SECTION_LOG("ROI x     : " << oInfo.oROI.x);
+         SECTION_LOG("ROI y     : " << oInfo.oROI.y);
+         SECTION_LOG("ROI width : " << oInfo.oROI.width);
+         SECTION_LOG("ROI height: " << oInfo.oROI.height);
+         continue;
        } else if (sKey == "ImageDepth") {
-          // ignore image depth for all formats but ICL
-          if (!oInfo.eFileFormat == ioFormatICL) return;
-          iss >> sValue;
-          if (sValue == "depth8u") oInfo.eDepth = depth8u;
-          else if (sValue == "depth32f") oInfo.eDepth = depth32f;
-          else { ERROR_LOG("Unknown image depth: " + sValue); }
-          continue;
+         // ignore image depth for all formats but ICL
+         if (!oInfo.eFileFormat == ioFormatICL) continue;
+         iss >> sValue;
+         if (sValue == "depth8u") oInfo.eDepth = depth8u;
+         else if (sValue == "depth32f") oInfo.eDepth = depth32f;
+         else { ERROR_LOG("Unknown image depth: " + sValue); }
+         SECTION_LOG("Depth: " << oInfo.eDepth);
+         continue;
        } else if (sKey == "Format") {
-          iss >> sValue;
-          oInfo.eFormat = translateFormat(sValue.c_str());
+         iss >> sValue;
+         oInfo.eFormat = translateFormat(sValue.c_str());
+         SECTION_LOG("Format : " << oInfo.eFormat);
        } else if (sKey == "TimeStamp") {
-          Time::value_type t;
-          iss >> t;
-          oInfo.timeStamp = Time::microSeconds(t);
-          continue;
+         Time::value_type t;
+         iss >> t;
+         oInfo.timeStamp = Time::microSeconds(t);
+         SECTION_LOG("Timestamp: " << oInfo.timeStamp);
+         continue;
        }
-       
+
        //---- Is num channels in depence to the format ----
        if (getChannelsOfFormat(oInfo.eFormat) != oInfo.iNumChannels)
           oInfo.eFormat = formatMatrix;
-       
     } while (true);
-
+    cout << "hello" << endl;
     // }}}
     
     // read image size
@@ -372,6 +380,8 @@ namespace icl {
     iss >> oInfo.oImgSize.width;
     iss >> oInfo.oImgSize.height;
     oInfo.oImgSize.height = oInfo.oImgSize.height / oInfo.iNumImages;
+    SECTION_LOG("Image width : " << oInfo.oImgSize.width);
+    SECTION_LOG("Image height: " << oInfo.oImgSize.height);
 
     // skip line with maximal pixel value
     if (!gzgets (oInfo.fp, acBuf, 1024)) throw ICLInvalidFileFormat();
