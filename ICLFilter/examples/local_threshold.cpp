@@ -5,7 +5,6 @@
 #include <TestImages.h>
 
 #include <stdio.h>
-#include <Timer.h>
 
 using namespace icl;
 using namespace std;
@@ -22,10 +21,11 @@ int main (int argc, char **argv) {
     printf("input file %s \n",argv[1]);
     FileReader(argv[1]).grab(I);
   }
-  
   ImgBase *RBase =(ImgBase*)R;
-  LocalThreshold(10,0).apply(I,&RBase);
   
+  LocalThreshold t(10,0);
+  t.apply(I,&RBase);
+    
   printf("writing output file out.jpg \n");
   FileWriter("out.jpg").write(R);
 

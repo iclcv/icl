@@ -7,8 +7,14 @@ namespace icl{
   void create_roi_size_image(const Size &s, int r, IntegralImg::IntImg32s& dst){
     // {{{ open
 
+    if(s.width<=r || s.height<=r){
+      WARNING_LOG("creating roi size image for LocalThreshold: image size must be larger than the maskSize");
+      return;
+    }
+    
     dst.setSize(s);
     dst.setChannels(1);
+
     int *p = dst.getData(0);
     
     int w = s.width;
@@ -70,6 +76,8 @@ namespace icl{
 
     m_uiMaskSize(maskSize),m_iGlobalThreshold(globalThreshold),m_poROIImage(0)
   {
+
+    // prepare the roi size image
     //ImgBase *m_poROIImage;
     //IntegralImg::IntImg32s m_oROISizeImage;
     //IntegralImg::IntImg32s m_oIntegralImage;
@@ -153,6 +161,9 @@ namespace icl{
 
   void LocalThreshold::apply(ImgBase *src, ImgBase **dst){
     // {{{ open
+    ICLASSERT_RETURN( src );
+    ICLASSERT_RETURN( src->getSize() );
+    ICLASSERT_RETURN( src->getChannels() );
 
     // cut the roi of src if set
     if(!(src->hasFullROI())){
@@ -172,8 +183,12 @@ namespace icl{
       ERROR_LOG("prepare failure in LocalThreshold! ??");
     }
     
+
     // prepare the roi size image
-    create_roi_size_image(src->getSize(),m_uiMaskSize,m_oROISizeImage);
+    if(!m_oROISizeImage.getSize() || m_uiROISizeImagesMaskSize == m_uiMaskSize){
+      create_roi_size_image(src->getSize(),m_uiMaskSize,m_oROISizeImage);
+      m_uiROISizeImagesMaskSize = m_uiMaskSize;
+    }
     
     // create the integral images with border 1+roiSize
     switch(src->getDepth()){

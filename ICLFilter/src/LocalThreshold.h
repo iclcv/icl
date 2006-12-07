@@ -22,6 +22,9 @@ namespace icl{
     int m_iGlobalThreshold;
     
     ImgBase *m_poROIImage;
+
+    unsigned int m_uiROISizeImagesMaskSize;
+
     IntegralImg::IntImg32s m_oROISizeImage;
     IntegralImg::IntImg32s m_oIntegralImage;
     IntegralImg::IntImg32f m_oIntegralImageF;
