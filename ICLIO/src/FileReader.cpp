@@ -352,7 +352,7 @@ namespace icl {
          if (!oInfo.eFileFormat == ioFormatICL) continue;
          iss >> sValue;
          if (sValue == "depth8u") oInfo.eDepth = depth8u;
-         else if (sValue == "depth32f") oInfo.eDepth = depth32f;
+         else if (sValue == "depth32f") oInfo.eDepth = depth32f; //TODO_depth
          else { ERROR_LOG("Unknown image depth: " + sValue); }
          SECTION_LOG("Depth: " << oInfo.eDepth);
          continue;

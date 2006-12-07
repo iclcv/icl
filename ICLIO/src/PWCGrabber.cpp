@@ -535,32 +535,46 @@ ImgBase* PWCGrabber::grab(ImgBase *poOutput){
       Img8u oTmpSrc_Y(Size(m_iWidth,m_iHeight),    1,std::vector<icl8u*>(1, pY));
       Img8u oTmpSrc_U(Size(m_iWidth/2,m_iHeight/2),1,std::vector<icl8u*>(1, pU));
       Img8u oTmpSrc_V(Size(m_iWidth/2,m_iHeight/2),1,std::vector<icl8u*>(1, pV));
-      
-      if(poOutput->getDepth()==depth8u){
-        icl8u *pucTmpY = poOutput->asImg<icl8u>()->getData(0);
-        icl8u *pucTmpU = poOutput->asImg<icl8u>()->getData(1);
-        icl8u *pucTmpV = poOutput->asImg<icl8u>()->getData(2);
-        
-        Img8u oTmpDst_Y(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpY));
-        Img8u oTmpDst_U(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpU));
-        Img8u oTmpDst_V(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpV));
-        
-        oTmpSrc_Y.scaledCopy(&oTmpDst_Y);
-        oTmpSrc_U.scaledCopy(&oTmpDst_U);
-        oTmpSrc_V.scaledCopy(&oTmpDst_V);
-        
-      }else{
-        icl32f *pfTmpY = poOutput->asImg<icl32f>()->getData(0);
-        icl32f *pfTmpU = poOutput->asImg<icl32f>()->getData(1);
-        icl32f *pfTmpV = poOutput->asImg<icl32f>()->getData(2);
-        
-        Img32f oTmpDst_Y(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpY));
-        Img32f oTmpDst_U(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpU));
-        Img32f oTmpDst_V(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpV));
-        
-        m_oConverter.convert(&oTmpDst_Y,&oTmpSrc_Y);
-        m_oConverterHalfSize.convert(&oTmpDst_U,&oTmpSrc_U);
-        m_oConverterHalfSize.convert(&oTmpDst_V,&oTmpSrc_V);
+
+
+
+
+
+
+
+      switch (poOutput->getDepth()){
+        case depth8u:{
+          icl8u *pucTmpY = poOutput->asImg<icl8u>()->getData(0);
+          icl8u *pucTmpU = poOutput->asImg<icl8u>()->getData(1);
+          icl8u *pucTmpV = poOutput->asImg<icl8u>()->getData(2);
+          
+          Img8u oTmpDst_Y(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpY));
+          Img8u oTmpDst_U(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpU));
+          Img8u oTmpDst_V(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpV));
+          
+          oTmpSrc_Y.scaledCopy(&oTmpDst_Y);
+          oTmpSrc_U.scaledCopy(&oTmpDst_U);
+          oTmpSrc_V.scaledCopy(&oTmpDst_V);      
+          break;
+        }
+        case depth32f:{
+          icl32f *pfTmpY = poOutput->asImg<icl32f>()->getData(0);
+          icl32f *pfTmpU = poOutput->asImg<icl32f>()->getData(1);
+          icl32f *pfTmpV = poOutput->asImg<icl32f>()->getData(2);
+          
+          Img32f oTmpDst_Y(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpY));
+          Img32f oTmpDst_U(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpU));
+          Img32f oTmpDst_V(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpV));
+          
+          m_oConverter.convert(&oTmpDst_Y,&oTmpSrc_Y);
+          m_oConverterHalfSize.convert(&oTmpDst_U,&oTmpSrc_U);
+          m_oConverterHalfSize.convert(&oTmpDst_V,&oTmpSrc_V);
+          break;
+        }
+
+        default:
+          ICL_INVALID_FORMAT;
+          break;
       }
     }else{
       convertYUV420ToRGB8(m_poRGB8Image,pY,Size(m_iWidth,m_iHeight));

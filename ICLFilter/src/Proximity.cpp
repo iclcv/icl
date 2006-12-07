@@ -176,10 +176,11 @@ ICLASSERT_RETURN( src1);
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc1->getDepth() == poSrc1->getDepth());
     if (!prepare (ppoDst, poSrc1,depth32f)) return;
-    if (poSrc1->getDepth () == depth8u)
-       SqrDistanceFull_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>());
-    else
-       SqrDistanceFull_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+    switch (poSrc1->getDepth()){
+      case depth8u: SqrDistanceFull_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>()); break;
+      case depth32f: SqrDistanceFull_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
   }
    // }}}
 
@@ -189,10 +190,11 @@ ICLASSERT_RETURN( src1);
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc1->getDepth() == poSrc1->getDepth());
     if (!prepare (ppoDst, poSrc1,depth32f)) return;
-    if (poSrc1->getDepth () == depth8u)
-       SqrDistanceValid_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>());
-    else
-       SqrDistanceValid_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+    switch (poSrc1->getDepth()){
+      case depth8u: SqrDistanceValid_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>()); break;
+      case depth32f: SqrDistanceValid_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
   }
    // }}}
 
@@ -202,10 +204,11 @@ ICLASSERT_RETURN( src1);
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc1->getDepth() == poSrc1->getDepth());
     if (!prepare (ppoDst, poSrc1,depth32f)) return;
-    if (poSrc1->getDepth () == depth8u)
-       SqrDistanceSame_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>());
-    else
-       SqrDistanceSame_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+    switch (poSrc1->getDepth()){
+      case depth8u: SqrDistanceSame_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>()); break;
+      case depth32f: SqrDistanceSame_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
   }
    // }}}
 
@@ -215,10 +218,11 @@ ICLASSERT_RETURN( src1);
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc1->getDepth() == poSrc1->getDepth());
     if (!prepare (ppoDst, poSrc1,depth32f)) return;
-    if (poSrc1->getDepth () == depth8u)
-       CrossCorrFull_NormLevel(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>());
-    else
-       CrossCorrFull_NormLevel(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+    switch (poSrc1->getDepth()){
+      case depth8u: CrossCorrFull_NormLevel(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>()); break;
+      case depth32f: CrossCorrFull_NormLevel(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
   }
    // }}}
 
@@ -228,10 +232,11 @@ ICLASSERT_RETURN( src1);
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc1->getDepth() == poSrc1->getDepth());
     if (!prepare (ppoDst, poSrc1,depth32f)) return;
-    if (poSrc1->getDepth () == depth8u)
-       CrossCorrValid_NormLevel(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>());
-    else
-       CrossCorrValid_NormLevel(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+    switch (poSrc1->getDepth()){
+      case depth8u: CrossCorrValid_NormLevel(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>()); break;
+      case depth32f: CrossCorrValid_NormLevel(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
   }
    // }}}
 
@@ -241,10 +246,11 @@ ICLASSERT_RETURN( src1);
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc1->getDepth() == poSrc1->getDepth());
     if (!prepare (ppoDst, poSrc1,depth32f)) return;
-    if (poSrc1->getDepth () == depth8u)
-       CrossCorrSame_NormLevel(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>());
-    else
-       CrossCorrSame_NormLevel(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+    switch (poSrc1->getDepth()){
+      case depth8u: CrossCorrSame_NormLevel(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>()); break;
+      case depth32f: CrossCorrSame_NormLevel(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
   }
    // }}}
 
@@ -252,23 +258,15 @@ ICLASSERT_RETURN( src1);
   void Proximity::CrossCorrFull_Norm (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
       // {{{ open
   {
-	  printf("x\n");
     FUNCTION_LOG("");
-	    printf("f\n");
     ICLASSERT_RETURN( poSrc1->getDepth() == poSrc1->getDepth());
-	    printf("g\n");
-	  printf("y\n");
     if (!prepare (ppoDst, poSrc1,depth32f)) return;
-printf("b\n");
     ICLASSERT_RETURN( (*ppoDst)->getDepth() == depth32f);
-    printf("d\n");
-    if (poSrc1->getDepth() == depth8u)
-       CrossCorrFull_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>());
-    else{
-	    printf("_\n");
-       CrossCorrFull_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+    switch (poSrc1->getDepth()){
+      case depth8u: CrossCorrFull_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>()); break;
+      case depth32f: CrossCorrFull_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
     }
-    printf("c\n");
   }
    // }}}
 
@@ -279,10 +277,11 @@ printf("b\n");
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc1->getDepth() == poSrc1->getDepth());
     if (!prepare (ppoDst, poSrc1,depth32f)) return;
-    if (poSrc1->getDepth () == depth8u)
-       CrossCorrValid_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>());
-    else
-       CrossCorrValid_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+    switch (poSrc1->getDepth()){
+      case depth8u: CrossCorrValid_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>()); break;
+      case depth32f: CrossCorrValid_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
   }
    // }}}
 
@@ -292,10 +291,11 @@ printf("b\n");
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc1->getDepth() == poSrc1->getDepth());
     if (!prepare (ppoDst, poSrc1,depth32f)) return;
-    if (poSrc1->getDepth () == depth8u)
-       CrossCorrSame_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>());
-    else
-       CrossCorrSame_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+    switch (poSrc1->getDepth()){
+      case depth8u: CrossCorrSame_Norm(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>()); break;
+      case depth32f: CrossCorrSame_Norm(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
   }
    // }}}
 

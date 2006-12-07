@@ -496,6 +496,7 @@ namespace icl {
     switch (poSrc1->getDepth()) {
       case depth8u: AbsDiff(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
       case depth32f: AbsDiff(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
     };
   }
   // }}}
@@ -507,6 +508,7 @@ namespace icl {
     switch (poSrc->getDepth()) {
       case depth8u: AbsDiffC(poSrc->asImg<icl8u>(),Cast<icl32f,int>::cast(value),(*ppoDst)->asImg<icl8u>()); break;
       case depth32f: AbsDiffC(poSrc->asImg<icl32f>(),value,(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
     };
   }
   // }}}

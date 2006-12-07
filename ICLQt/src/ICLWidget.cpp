@@ -396,18 +396,27 @@ namespace icl{
       sprintf(ac,"roi:   ((%d,%d),(%d x %d))",r.x,r.y,r.width,r.height);
       info.push_back(ac);
     }
-    if(i->getDepth()==depth8u){
-      for(int a=0;a<i->getChannels();a++){
-        char ac[200];
-        sprintf(ac,"channel %d, min:%d, max:%d",a,i->asImg<icl8u>()->getMin(a),i->asImg<icl8u>()->getMax(a));
-        info.push_back(ac);
+    
+    switch (i->getDepth()){
+      case depth8u: {
+        for(int a=0;a<i->getChannels();a++){
+          char ac[200];
+          sprintf(ac,"channel %d, min:%d, max:%d",a,i->asImg<icl8u>()->getMin(a),i->asImg<icl8u>()->getMax(a));
+          info.push_back(ac);
+        }   
+        break;
       }
-    }else{
-      for(int a=0;a<i->getChannels();a++){
-        char ac[200];
-        sprintf(ac,"channel %d, min:%f, max:%f",a,i->asImg<icl32f>()->getMin(a),i->asImg<icl32f>()->getMax(a));
-        info.push_back(ac);
+      case depth32f:{
+        for(int a=0;a<i->getChannels();a++){
+          char ac[200];
+          sprintf(ac,"channel %d, min:%f, max:%f",a,i->asImg<icl32f>()->getMin(a),i->asImg<icl32f>()->getMax(a));
+          info.push_back(ac);
+        }
+        break;
       }
+      default:
+        ICL_INVALID_FORMAT;
+        break;
     }
     return info;
   }
@@ -501,15 +510,22 @@ namespace icl{
       m_oMouseInfo.imageX = (int)round((boxX*(m_poImage->getSize().width))/r.width);
       m_oMouseInfo.imageY = (int)round((boxY*(m_poImage->getSize().height))/r.height);
       m_oMouseInfo.color.resize(0);
-      if(m_poImage->getDepth() == depth8u){
+      switch (m_poImage->getDepth()){
+      case depth8u:
         for(int c=0;c<m_poImage->getChannels();c++){
           m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl8u>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
-        }        
-      }else{
+        }
+        break;
+      case depth32f:
         for(int c=0;c<m_poImage->getChannels();c++){
           m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl32f>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
         }
-      }
+        break;
+
+      default:
+        ICL_INVALID_FORMAT;
+        break;
+    }
     }else{
       m_oMouseInfo.imageX = -1;
       m_oMouseInfo.imageY = -1;

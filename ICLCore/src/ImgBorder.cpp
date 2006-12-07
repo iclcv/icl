@@ -131,26 +131,38 @@ namespace icl{
     ICLASSERT_RETURN(poImage);
     if(poImage->hasFullROI()) return;
     
-    if(poImage->getDepth() == depth8u){
+    
+    
+    
+    
+    
+    switch (poImage->getDepth()){
+      case depth8u:
 #ifdef WITH_IPP_OPTIMIZATION
-      for(int c=0;c<poImage->getChannels();c++){
-        ippiCopyReplicateBorder_8u_C1IR(poImage->asImg<icl8u>()->getROIData(c),poImage->getLineStep(),
+        for(int c=0;c<poImage->getChannels();c++){
+          ippiCopyReplicateBorder_8u_C1IR(poImage->asImg<icl8u>()->getROIData(c),poImage->getLineStep(),
                                         poImage->getROISize(),poImage->getSize(), 
                                         poImage->getROIOffset().x,poImage->getROIOffset().y);
-      }
+        }
 #else
-      _copy_border(poImage->asImg<icl8u>());
+        _copy_border(poImage->asImg<icl8u>());
 #endif
-    }else{
+        break;
+      case depth32f:
 #ifdef WITH_IPP_OPTIMIZATION
-      for(int c=0;c<poImage->getChannels();c++){ /// icl32f-case using Ipp32s method
-        ippiCopyReplicateBorder_32s_C1IR((Ipp32s*)(poImage->asImg<icl8u>()->getROIData(c)),poImage->getLineStep(),
+        for(int c=0;c<poImage->getChannels();c++){ /// icl32f-case using Ipp32s method
+          ippiCopyReplicateBorder_32s_C1IR((Ipp32s*)(poImage->asImg<icl8u>()->getROIData(c)),poImage->getLineStep(),
                                          poImage->getROISize(),poImage->getSize(), 
                                          poImage->getROIOffset().x,poImage->getROIOffset().y);
-      }
+        }
 #else
-      _copy_border(poImage->asImg<icl32f>());
-#endif
+        _copy_border(poImage->asImg<icl32f>());
+#endif        
+        break;
+        
+      default:
+        ICL_INVALID_FORMAT;
+        break;
     }
   }
 
@@ -178,36 +190,60 @@ namespace icl{
       Size(roi.left(),roi.height),           // left
       Size(s.width-roi.right(),roi.height)   // right
     };
-    
-    if(src->getDepth() == depth8u){
-      if(dst->getDepth() == depth8u){
-        for(int c=0;c<dst->getChannels();c++){
-          for(int i=0;i<4;i++){
-            deepCopyChannelROI<icl8u,icl8u>(src->asImg<icl8u>(),c,offs[i],size[i],dst->asImg<icl8u>(),c,offs[i],size[i]);
-          }
+
+
+    switch (src->getDepth()){
+      case depth8u:
+        
+        switch (dst->getDepth()){
+          case depth8u:
+            for(int c=0;c<dst->getChannels();c++){
+              for(int i=0;i<4;i++){
+                deepCopyChannelROI<icl8u,icl8u>(src->asImg<icl8u>(),c,offs[i],size[i],dst->asImg<icl8u>(),c,offs[i],size[i]);
+              }
+            }        
+            break;
+          case depth32f:
+            for(int c=0;c<dst->getChannels();c++){
+              for(int i=0;i<4;i++){
+                deepCopyChannelROI<icl8u,icl32f>(src->asImg<icl8u>(),c,offs[i],size[i],dst->asImg<icl32f>(),c,offs[i],size[i]);
+              }
+            }            
+            break;
+
+          default:
+            ICL_INVALID_FORMAT;
+            break;
         }
-      }else{
-        for(int c=0;c<dst->getChannels();c++){
-          for(int i=0;i<4;i++){
-            deepCopyChannelROI<icl8u,icl32f>(src->asImg<icl8u>(),c,offs[i],size[i],dst->asImg<icl32f>(),c,offs[i],size[i]);
-          }
+   
+        break;
+      case depth32f:
+
+        switch (dst->getDepth()){
+          case depth8u:
+            for(int c=0;c<dst->getChannels();c++){
+              for(int i=0;i<4;i++){
+                deepCopyChannelROI<icl32f,icl8u>(src->asImg<icl32f>(),c,offs[i],size[i],dst->asImg<icl8u>(),c,offs[i],size[i]);
+              }
+            }
+            break;
+          case depth32f:
+            for(int c=0;c<dst->getChannels();c++){
+              for(int i=0;i<4;i++){
+                deepCopyChannelROI<icl32f,icl32f>(src->asImg<icl32f>(),c,offs[i],size[i],dst->asImg<icl32f>(),c,offs[i],size[i]);
+              }
+            }            
+            break;
+
+          default:
+            ICL_INVALID_FORMAT;
+            break;
         }
-      }
-    }else{ // src is depth32f
-      if(dst->getDepth() == depth8u){
-        for(int c=0;c<dst->getChannels();c++){
-          for(int i=0;i<4;i++){
-            deepCopyChannelROI<icl32f,icl8u>(src->asImg<icl32f>(),c,offs[i],size[i],dst->asImg<icl8u>(),c,offs[i],size[i]);
-          }
-        }
-      }else{
-        for(int c=0;c<dst->getChannels();c++){
-          for(int i=0;i<4;i++){
-            deepCopyChannelROI<icl32f,icl32f>(src->asImg<icl32f>(),c,offs[i],size[i],dst->asImg<icl32f>(),c,offs[i],size[i]);
-          }
-        }
-      }
-    } 
+        break;
+      default:
+        ICL_INVALID_FORMAT;
+        break;
+    }
   }
 
   // }}}

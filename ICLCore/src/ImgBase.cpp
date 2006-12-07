@@ -44,11 +44,12 @@ ImgBase* ImgBase::shallowCopy(ImgBase** ppoDst) const {
   if (!poDst) poDst = imgNew(getDepth(),getSize(),0,getROI());
   else ensureDepth (&poDst, getDepth ());
   
-  if (getDepth() == depth8u) {
-     *poDst->asImg<icl8u>() = *this->asImg<icl8u>();
-  } else {
-     *poDst->asImg<icl32f>() = *this->asImg<icl32f>();
+  switch (getDepth()){
+    case depth8u: *poDst->asImg<icl8u>() = *this->asImg<icl8u>(); break;
+    case depth32f: *poDst->asImg<icl32f>() = *this->asImg<icl32f>(); break;
+    default: ICL_INVALID_FORMAT; break;
   }
+
   if (ppoDst) *ppoDst = poDst;
   poDst->setTime(this->getTime());
   return poDst;
@@ -67,11 +68,10 @@ ImgBase* ImgBase::shallowCopy(const std::vector<int>& vChannels, ImgBase** ppoDs
      poDst->setSize(getSize());
      poDst->setROI (getROI());
   }
-
-  if (getDepth() == depth8u) {
-     poDst->asImg<icl8u>()->append (this->asImg<icl8u>(), vChannels);
-  } else {
-     poDst->asImg<icl32f>()->append (this->asImg<icl32f>(), vChannels);
+  switch (getDepth()){
+    case depth8u: poDst->asImg<icl8u>()->append (this->asImg<icl8u>(), vChannels); break;
+    case depth32f: poDst->asImg<icl32f>()->append (this->asImg<icl32f>(), vChannels); break;
+    default: ICL_INVALID_FORMAT; break;
   }
 
   if (ppoDst) *ppoDst = poDst;
@@ -86,23 +86,33 @@ void ImgBase::print(const string sTitle) const
   printf(   " -----------------------------------------\n"
             "| image: %s\n"
             "| timestamp: %s\n"
-            "| width: %d, height: %d, channels: %d\n"
-            "| depth: %s, format: %s\n"
-            "| ROI: x: %d, y: %d, w: %d, h: %d \n",        
-            sTitle.c_str(), this->getTime().toString().c_str(),
-            getSize().width,getSize().height,getChannels(),
-            getDepth()==depth8u ? "depth8u" : "depth32f",
+            "| width: %d, height: %d, channels: %d\n",sTitle.c_str(), this->getTime().toString().c_str(),
+            getSize().width,getSize().height,getChannels());
+  
+  switch (getDepth()){
+    case depth8u: printf( "| depth: depth8u"); break;
+    case depth32f: printf( "| depth: depth32f"); break;
+    default: ICL_INVALID_FORMAT; break;
+  }
+  printf( "  format: %s\n"
+            "| ROI: x: %d, y: %d, w: %d, h: %d \n",
             translateFormat(getFormat()).c_str(),
             getROI().x, getROI().y,getROI().width, getROI().height);
-  if(m_eDepth == depth8u){
-    for(int i=0;i<getChannels();i++){
-      printf("| channel: %d, min: %d, max:%d \n",i,asImg<icl8u>()->getMin(i),asImg<icl8u>()->getMax(i));
-    }
-  }else{
-    for(int i=0;i<getChannels();i++){
-      printf("| channel: %d, min: %f, max:%f \n",i,asImg<icl32f>()->getMin(i),asImg<icl32f>()->getMax(i));
-    }
+  
+  switch (m_eDepth){
+    case depth8u:
+      for(int i=0;i<getChannels();i++){
+        printf("| channel: %d, min: %d, max:%d \n",i,asImg<icl8u>()->getMin(i),asImg<icl8u>()->getMax(i));
+      }
+      break;
+    case depth32f:
+      for(int i=0;i<getChannels();i++){
+        printf("| channel: %d, min: %f, max:%f \n",i,asImg<icl32f>()->getMin(i),asImg<icl32f>()->getMax(i));
+      }
+      break;
+    default: ICL_INVALID_FORMAT; break;
   }
+  
   printf(" -----------------------------------------\n");
  
 
@@ -118,11 +128,11 @@ Img<T> *ImgBase::convertTo( Img<T>* poDst) const {
  
   if(!poDst) poDst = new Img<T>(getParams());
   else poDst->setParams(getParams());
-  
-  if(getDepth() == depth8u){
-    for(int c=0;c<getChannels();c++) deepCopyChannel<icl8u,T>(asImg<icl8u>(),c,poDst,c);
-  }else{
-    for(int c=0;c<getChannels();c++) deepCopyChannel<icl32f,T>(asImg<icl32f>(),c,poDst,c);
+
+  switch (getDepth()){
+    case depth8u: for(int c=0;c<getChannels();c++) deepCopyChannel<icl8u,T>(asImg<icl8u>(),c,poDst,c); break;
+    case depth32f: for(int c=0;c<getChannels();c++) deepCopyChannel<icl32f,T>(asImg<icl32f>(),c,poDst,c); break;
+    default: ICL_INVALID_FORMAT; break;
   }
   return poDst;
 }

@@ -228,83 +228,86 @@ namespace icl {
 
    // {{{ ImgBase* versions
 
-   void Threshold::lt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
-      // {{{ open
-   {
-      if (!Filter::prepare (ppoDst, poSrc)) return;
-      if (poSrc->getDepth () == depth8u)
-         lt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t));
-      else 
-         lt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t);
-   }
+  void Threshold::lt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
+    // {{{ open
+  {
+    if (!Filter::prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: lt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t)); break;
+      case depth32f: lt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
 
-   // }}}
+  // }}}
   
-   void Threshold::gt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
-      // {{{ open
-   {
-      if (!Filter::prepare (ppoDst, poSrc)) return;
-      if (poSrc->getDepth () == depth8u)
-         gt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t));
-      else 
-         gt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t);
-   }
+  void Threshold::gt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
+    // {{{ open
+  {
+    if (!Filter::prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: gt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t)); break;
+      case depth32f: gt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
 
-   // }}}
+  // }}}
   
-   void Threshold::ltgt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f tMin, icl32f tMax)
-      // {{{ open
-   {
-      if (!Filter::prepare (ppoDst, poSrc)) return;
-      if (poSrc->getDepth () == depth8u)
-         ltgt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), 
-              Cast<icl32f,icl8u>::cast(tMin), Cast<icl32f,icl8u>::cast(tMax));
-      else 
-         ltgt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), tMin, tMax);
-   }
+  void Threshold::ltgt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f tMin, icl32f tMax)
+    // {{{ open
+  {
+    if (!Filter::prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: ltgt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(tMin), Cast<icl32f,icl8u>::cast(tMax)); break;
+      case depth32f: ltgt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), tMin, tMax); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
 
-   // }}}
+  // }}}
   
-   void Threshold::ltVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
-      // {{{ open
-   {
-      if (!Filter::prepare (ppoDst, poSrc)) return;
-      if (poSrc->getDepth () == depth8u)
-         ltVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), 
-               Cast<icl32f,icl8u>::cast(t), Cast<icl32f,icl8u>::cast(val));
-      else 
-         ltVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t, val);
-   }
+  void Threshold::ltVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
+    // {{{ open
+  {
+    if (!Filter::prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: ltVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t), Cast<icl32f,icl8u>::cast(val)); break;
+      case depth32f: ltVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t, val); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
+  
+  void Threshold::gtVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
+    // {{{ open
+  {
+    if (!Filter::prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: gtVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t), Cast<icl32f,icl8u>::cast(val)); break;
+      case depth32f: gtVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t, val); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
 
-   // }}}
+  // }}}
   
-   void Threshold::gtVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
-      // {{{ open
-   {
-      if (!Filter::prepare (ppoDst, poSrc)) return;
-      if (poSrc->getDepth () == depth8u)
-         gtVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), 
-               Cast<icl32f,icl8u>::cast(t), Cast<icl32f,icl8u>::cast(val));
-      else 
-         gtVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t, val);
-   }
-
-   // }}}
-  
-   void Threshold::ltgtVal(const ImgBase *poSrc, ImgBase **ppoDst, 
+  void Threshold::ltgtVal(const ImgBase *poSrc, ImgBase **ppoDst, 
                            icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal)
-      // {{{ open
-   {
-      if (!Filter::prepare (ppoDst, poSrc)) return;
-      if (poSrc->getDepth () == depth8u)
-         ltgtVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), 
+    // {{{ open
+  {
+    if (!Filter::prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u:  
+        ltgtVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), 
                  Cast<icl32f,icl8u>::cast(tMin), Cast<icl32f,icl8u>::cast(minVal), 
                  Cast<icl32f,icl8u>::cast(tMax), Cast<icl32f,icl8u>::cast(maxVal));
-      else 
-         ltgtVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), tMin, minVal, tMax, maxVal);
-   }
-
-   // }}}
+      break;
+      case depth32f: ltgtVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), tMin, minVal, tMax, maxVal); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
 
 // }}}  
   

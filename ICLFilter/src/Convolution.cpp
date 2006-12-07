@@ -448,18 +448,25 @@ namespace icl {
     */
 #ifdef WITH_IPP_OPTIMIZATION 
     if (m_eKernel != kernelCustom) {
-       if (poSrc->getDepth () == depth8u) {
+      switch (poSrc->getDepth()){
+        case depth8u:
           // distinguish between different ipp function interfaces
           if (pFixed8u) this->ippFixedConv<icl8u> (poSrc, *ppoDst, pFixed8u);
           else if (pFixed8uMask) this->ippFixedConvMask<icl8u> (poSrc, *ppoDst, pFixed8uMask);
           else ERROR_LOG ("IPP fixed filter not implemented for depth8u");
-       } else {
+          break;
+        case depth32f:
           // distinguish between different ipp function interfaces
           if (pFixed32f) this->ippFixedConv<icl32f> (poSrc, *ppoDst, pFixed32f);
           else if (pFixed32fMask) this->ippFixedConvMask<icl32f> (poSrc, *ppoDst, pFixed32fMask);
           else ERROR_LOG ("IPP fixed filter not implemented for depth32f");
-       }
-       return;
+          break;
+
+        default:
+          ICL_INVALID_FORMAT;
+          break;
+      }
+      return;
     }
 #endif
 
@@ -499,15 +506,23 @@ namespace icl {
         poKernelBuf->setSize (poKernel->getROISize());
 
      // copy data from poKernel's ROI to poKernelBuf
-     if (poKernel->getDepth () == depth8u) {
+     
+    switch (poKernel->getDepth()){
+      case depth8u:
         deepCopyChannelROI<icl8u,icl32f> 
            (poKernel->asImg<icl8u>(), 0, poKernel->getROIOffset(), poKernel->getROISize(),
             poKernelBuf, 0, Point::zero, poKernelBuf->getSize());
-     } else {
+        break;
+      case depth32f:
         deepCopyChannelROI<icl32f,icl32f> 
            (poKernel->asImg<icl32f>(), 0, poKernel->getROIOffset(), poKernel->getROISize(),
             poKernelBuf, 0, Point::zero, poKernelBuf->getSize());
-     }
+        break;
+
+      default:
+        ICL_INVALID_FORMAT;
+        break;
+    }     
      Convolution::setKernel (poKernelBuf->getData(0), poKernelBuf->getSize(), false);
   }
 

@@ -251,133 +251,144 @@ template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, Ip
 
   // {{{ ImgBase* version
 
-   void Morphological::Dilate (const ImgBase *poSrc, ImgBase **ppoDst)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       Dilate(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       Dilate(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
+  void Morphological::Dilate (const ImgBase *poSrc, ImgBase **ppoDst)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: Dilate(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth32f: Dilate(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
+  void Morphological::Dilate3x3 (const ImgBase *poSrc, ImgBase **ppoDst)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: Dilate3x3(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth32f: Dilate3x3(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+     }
    }
-   // }}}
-   void Morphological::Dilate3x3 (const ImgBase *poSrc, ImgBase **ppoDst)
+  // }}}
+  void Morphological::Erode (const ImgBase *poSrc, ImgBase **ppoDst)
       // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       Dilate3x3(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       Dilate3x3(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
-   }
-   // }}}
-   void Morphological::Erode (const ImgBase *poSrc, ImgBase **ppoDst)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       Erode(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       Erode(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
-   }
-   // }}}
-   void Morphological::Erode3x3 (const ImgBase *poSrc, ImgBase **ppoDst)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       Erode3x3(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       Erode3x3(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
-   }
-   // }}}
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: Erode(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth32f: Erode(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
+  void Morphological::Erode3x3 (const ImgBase *poSrc, ImgBase **ppoDst)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: Erode3x3(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth32f: Erode3x3(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
 
-   void Morphological::DilateBorderReplicate (const ImgBase *poSrc, ImgBase **ppoDst)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       DilateBorderReplicate(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       DilateBorderReplicate(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
-   }
-   // }}}
-   void Morphological::ErodeBorderReplicate (const ImgBase *poSrc, ImgBase **ppoDst)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       ErodeBorderReplicate(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       ErodeBorderReplicate(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
-   }
-   // }}}
+  void Morphological::DilateBorderReplicate (const ImgBase *poSrc, ImgBase **ppoDst)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: DilateBorderReplicate(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth32f: DilateBorderReplicate(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
+  void Morphological::ErodeBorderReplicate (const ImgBase *poSrc, ImgBase **ppoDst)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: ErodeBorderReplicate(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth32f: ErodeBorderReplicate(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
 
-   void Morphological::OpenBorder (const ImgBase *poSrc, ImgBase **ppoDst)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       OpenBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       OpenBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
-   }
-   // }}}
+  void Morphological::OpenBorder (const ImgBase *poSrc, ImgBase **ppoDst)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: OpenBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break; 
+      case depth32f: OpenBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
 
-   void Morphological::CloseBorder (const ImgBase *poSrc, ImgBase **ppoDst)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       CloseBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       CloseBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
-   }
-   // }}}
+  void Morphological::CloseBorder (const ImgBase *poSrc, ImgBase **ppoDst)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: CloseBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth32f: CloseBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
 
-   void Morphological::TophatBorder (const ImgBase *poSrc, ImgBase **ppoDst)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       TophatBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       TophatBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
-   }
-   // }}}
+  void Morphological::TophatBorder (const ImgBase *poSrc, ImgBase **ppoDst)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: TophatBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth32f: TophatBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
 
-   void Morphological::BlackhatBorder (const ImgBase *poSrc, ImgBase **ppoDst)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       BlackhatBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       BlackhatBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
-   }
-   // }}}
+  void Morphological::BlackhatBorder (const ImgBase *poSrc, ImgBase **ppoDst)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: BlackhatBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth32f: BlackhatBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
 
-   void Morphological::GradientBorder (const ImgBase *poSrc, ImgBase **ppoDst)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     if (!prepare (ppoDst, poSrc)) return;
-     if (poSrc->getDepth () == depth8u)
-       GradientBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-     else
-       GradientBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());
-   }
-   // }}}
+  void Morphological::GradientBorder (const ImgBase *poSrc, ImgBase **ppoDst)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    if (!prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()){
+      case depth8u: GradientBorder(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth32f: GradientBorder(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
 
 /*
    void Morphological::GrayDilateBorder (const ImgBase *poSrc, ImgBase **ppoDst)
@@ -430,28 +441,30 @@ template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, Ip
    // }}}
 */
 
-   void Morphological::InitMorphAdvState (ImgBase **ppoImg)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     ICLASSERT_RETURN(ppoImg);
-     if ((*ppoImg)->getDepth () == depth8u)
-       InitMorphAdvState((*ppoImg)->asImg<icl8u>());
-     else
-       InitMorphAdvState((*ppoImg)->asImg<icl32f>());
-   }
-   // }}}
+  void Morphological::InitMorphAdvState (ImgBase **ppoImg)
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(ppoImg);
+    switch ((*ppoImg)->getDepth ()){
+      case depth8u: InitMorphAdvState((*ppoImg)->asImg<icl8u>()); break;
+      case depth32f: InitMorphAdvState((*ppoImg)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
    void Morphological::InitMorphState (ImgBase **ppoImg)
-      // {{{ open
-   {
-     FUNCTION_LOG("");
-     ICLASSERT_RETURN(ppoImg);
-     if ((*ppoImg)->getDepth () == depth8u)
-       InitMorphState((*ppoImg)->asImg<icl8u>());
-     else
-       InitMorphState((*ppoImg)->asImg<icl32f>());
-   }
-   // }}}
+    // {{{ open
+  {
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(ppoImg);
+    switch ((*ppoImg)->getDepth ()){
+      case depth8u: InitMorphState((*ppoImg)->asImg<icl8u>()); break;
+      case depth32f: InitMorphState((*ppoImg)->asImg<icl32f>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
 /*
   void Morphological::InitMorphGrayState (ImgBase **ppoImg)
       // {{{ open

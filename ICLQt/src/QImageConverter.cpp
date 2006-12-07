@@ -303,18 +303,26 @@ namespace icl{
 
     ICLASSERT_RETURN( image );
 
-    if(image->getDepth() == depth8u){
-      if(m_poImgBuffer8u && STU != given) delete m_poImgBuffer8u;
-      STU = given;
-      STF = undefined;
-      STQ = undefined;
-      m_poImgBuffer8u = image->asImg<icl8u>();
-    }else{
-      if(m_poImgBuffer32f && STF != given) delete m_poImgBuffer32f;
-      STF = given;
-      STU = undefined;
-      STQ = undefined;
-      m_poImgBuffer32f = image->asImg<icl32f>();
+    switch (image->getDepth()){
+      case depth8u:{
+        if(m_poImgBuffer8u && STU != given) delete m_poImgBuffer8u;
+        STU = given;
+        STF = undefined;
+        STQ = undefined;
+        m_poImgBuffer8u = image->asImg<icl8u>();
+        break;
+      }
+      case depth32f:{
+        if(m_poImgBuffer32f && STF != given) delete m_poImgBuffer32f;
+        STF = given;
+        STU = undefined;
+        STQ = undefined;
+        m_poImgBuffer32f = image->asImg<icl32f>();
+        break;
+      }
+      default:
+        ICL_INVALID_FORMAT;
+        break;
     }
   }
 

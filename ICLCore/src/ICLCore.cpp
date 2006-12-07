@@ -8,9 +8,12 @@ namespace icl{
   
   ImgBase *imgNew(depth d, const ImgParams &params){
     // {{{ open
-
-    if(d == depth8u) return new Img8u(params);
-    else return new Img32f(params);
+  
+    switch (d){
+      case depth8u: return new Img8u(params); break;
+      case depth32f: return new Img32f(params); break;
+      default: ICL_INVALID_FORMAT; break;
+    }
   }
 
   // }}}

@@ -179,10 +179,10 @@ Img<Type>::deepCopy(ImgBase* poDst) const
      poDst = imgNew(getDepth());
      poDst->setTime(this->getTime());
   }
-  if(poDst->getDepth() == depth8u){
-    return convertTo<icl8u>(poDst->asImg<icl8u>());
-  }else{
-    return convertTo<icl32f>(poDst->asImg<icl32f>());
+  switch (poDst->getDepth()){
+    case depth8u: return convertTo<icl8u>(poDst->asImg<icl8u>()); break;
+    case depth32f: return convertTo<icl32f>(poDst->asImg<icl32f>()); break;
+    default: ICL_INVALID_FORMAT; break;
   }
 }
 
@@ -204,19 +204,22 @@ Img<Type>::scaledCopy(ImgBase *poDst,scalemode eScaleMode) const
   poDst->setFormat(getFormat());
   poDst->setTime(getTime());
   poDst->setChannels(getChannels());
-
-  if(poDst->getDepth() == depth8u){
-     for(int c=0;c<getChannels();c++){
+  switch (poDst->getDepth()){
+    case depth8u:
+      for(int c=0;c<getChannels();c++){
         scaledCopyChannelROI<Type,icl8u>(this,c,Point::zero,getSize(),
                                          poDst->asImg<icl8u>(),c,Point::zero,poDst->getSize(),eScaleMode);
-     }
-  }else{
-     for(int c=0;c<getChannels();c++){
+      } 
+      break;
+    case depth32f:
+      for(int c=0;c<getChannels();c++){
         scaledCopyChannelROI<Type,icl32f>(this,c,Point::zero,getSize(),
                                           poDst->asImg<icl32f>(),c,Point::zero,poDst->getSize(),eScaleMode);
-     }
+      }
+      break;
+    default: ICL_INVALID_FORMAT; break;
   }
-
+  
   float fScaleX = ((float)poDst->getSize().width)/(float)(getSize().width); 
   float fScaleY = ((float)poDst->getSize().height)/(float)(getSize().height);
   Rect roi = getROI();
@@ -248,17 +251,20 @@ Img<Type>::deepCopyROI(ImgBase *poDst) const
     poDst->setFormat(getFormat());
   }
   ICLASSERT_RETURN_VAL( getROISize() == poDst->getROISize() , poDst);
-
-  if(poDst->getDepth()==depth8u){
-     for(int c=0;c<getChannels();c++) {
+  switch (poDst->getDepth()){
+    case depth8u:
+      for(int c=0;c<getChannels();c++) {
         deepCopyChannelROI<Type,icl8u>(this,  c, getROIOffset(),       getROISize(),
                                        poDst->asImg<icl8u>(), c, poDst->getROIOffset(),poDst->getROISize());
-     }
-  }else{
-     for(int c=0;c<getChannels();c++) {
+      }
+      break;
+    case depth32f:
+      for(int c=0;c<getChannels();c++) {
         deepCopyChannelROI<Type,icl32f>(this,  c, getROIOffset(),       getROISize(),
                                         poDst->asImg<icl32f>(), c, poDst->getROIOffset(),poDst->getROISize());
-     }
+      }
+      break;
+    default: ICL_INVALID_FORMAT; break;
   }
   return poDst;
 }
@@ -279,19 +285,22 @@ Img<Type>::scaledCopyROI(ImgBase *poDst, scalemode eScaleMode) const
 
   poDst->setFormat(getFormat());
   poDst->setChannels(getChannels());
-
-  if(poDst->getDepth() == depth8u){
-     for(int c=0;c<getChannels();c++){
+  switch (poDst->getDepth()){
+    case depth8u:
+      for(int c=0;c<getChannels();c++){
         scaledCopyChannelROI<Type,icl8u>(this,c,getROIOffset(),getROISize(),
                                          poDst->asImg<icl8u>(),c,poDst->getROIOffset(), poDst->getROISize(),
                                          eScaleMode);
-     }
-  }else{
-     for(int c=0;c<getChannels();c++){
+      }
+      break;
+    case depth32f:
+      for(int c=0;c<getChannels();c++){
         scaledCopyChannelROI<Type,icl32f>(this,c,getROIOffset(),getROISize(),
                                           poDst->asImg<icl32f>(),c,poDst->getROIOffset(), poDst->getROISize(),
                                           eScaleMode);
-     }
+      }
+      break;
+    default: ICL_INVALID_FORMAT; break;
   }
   return poDst;
 }
@@ -318,21 +327,29 @@ Img<Type>::flippedCopyROI(ImgBase *poDst, axis eAxis) const
                                poDst->asImg<Type>(), c, poDst->getROIOffset(),poDst->getROISize());
      }
   } else {
-     if (poDst->getDepth() == depth8u) {
+    
+    switch (poDst->getDepth()){
+      case depth8u:{
         Img<icl8u> *pD = poDst->asImg<icl8u>();
         for(int c=0;c<getChannels();c++) {
            deepCopyChannelROI (this, c, getROIOffset(), getROISize(),
                                pD, c, poDst->getROIOffset(),poDst->getROISize());
            pD->mirror (eAxis, c, poDst->getROIOffset(),poDst->getROISize());
         }
-     } else {
+        break;
+      }
+        break;
+      case depth32f:{
         Img<icl32f> *pD = poDst->asImg<icl32f>();
         for(int c=0;c<getChannels();c++) {
-           deepCopyChannelROI (this, c, getROIOffset(), getROISize(),
+          deepCopyChannelROI (this, c, getROIOffset(), getROISize(),
                                pD, c, poDst->getROIOffset(),poDst->getROISize());
-           pD->mirror (eAxis, c, poDst->getROIOffset(),poDst->getROISize());
+          pD->mirror (eAxis, c, poDst->getROIOffset(),poDst->getROISize());
         }
-     }
+        break;
+      }
+      default: ICL_INVALID_FORMAT; break;
+    }
   }
   return poDst;  
 }

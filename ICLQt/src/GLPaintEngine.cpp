@@ -114,17 +114,26 @@ namespace icl{
     }else{
       // automatic adjustment of brightness and contrast
       float fScaleRGB,fBiasRGB;
-      if(image->getDepth() == depth8u){
-        icl8u tMin,tMax;
-        image->asImg<icl8u>()->getMinMax(tMin,tMax);
-        fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
-        fBiasRGB = (- fScaleRGB * tMin)/255.0;
-      }else{
-        icl32f tMin,tMax;
-        image->asImg<icl32f>()->getMinMax(tMin,tMax);
-        fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
-        fBiasRGB = (- fScaleRGB * tMin)/255.0;
-        fScaleRGB /= 255.0;
+      
+      switch (image->getDepth()){
+        case depth8u:{
+          icl8u tMin,tMax;
+          image->asImg<icl8u>()->getMinMax(tMin,tMax);
+          fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
+          fBiasRGB = (- fScaleRGB * tMin)/255.0;
+          break;
+        }
+        case depth32f:{
+          icl32f tMin,tMax;
+          image->asImg<icl32f>()->getMinMax(tMin,tMax);
+          fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
+          fBiasRGB = (- fScaleRGB * tMin)/255.0;
+          fScaleRGB /= 255.0;
+          break;
+        }
+        default:
+          ICL_INVALID_FORMAT;
+          break;
       }
       glPixelTransferf(GL_RED_SCALE,fScaleRGB);
       glPixelTransferf(GL_GREEN_SCALE,fScaleRGB);
@@ -134,7 +143,7 @@ namespace icl{
       glPixelTransferf(GL_BLUE_BIAS,fBiasRGB);
     }
   
-    GLenum datatype = image->getDepth() == depth8u ? GL_UNSIGNED_BYTE : GL_FLOAT;
+    GLenum datatype = image->getDepth() == depth8u ? GL_UNSIGNED_BYTE : GL_FLOAT; // TODO_depth
     static GLenum CHANNELS[4] = {GL_RED,GL_GREEN,GL_BLUE,GL_ALPHA};
     
     if(image->getChannels() > 1){ 
@@ -303,14 +312,22 @@ namespace icl{
   // }}}
   void GLPaintEngine::setPackAlignment(depth d, int linewidth){
     // {{{ open
-    if(d==depth8u){
-      if(linewidth%2) glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-      else if(linewidth%4) glPixelStorei(GL_UNPACK_ALIGNMENT,2);
-      else if(linewidth%8) glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-      else  glPixelStorei(GL_UNPACK_ALIGNMENT,8);
-    }else{
-      if(linewidth%2) glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-      else glPixelStorei(GL_UNPACK_ALIGNMENT,8);
+    switch (d){
+      case depth8u:{
+        if(linewidth%2) glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+        else if(linewidth%4) glPixelStorei(GL_UNPACK_ALIGNMENT,2);
+        else if(linewidth%8) glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+        else  glPixelStorei(GL_UNPACK_ALIGNMENT,8);
+        break;
+      }
+      case depth32f:{
+        if(linewidth%2) glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+        else glPixelStorei(GL_UNPACK_ALIGNMENT,8);
+        break;
+      }
+      default:
+        ICL_INVALID_FORMAT;
+        break;
     }
   }
 
@@ -319,7 +336,7 @@ namespace icl{
     // {{{ open
     (void)intensity;
     float fBiasRGB = (float)brightness/255.0;
-    float fScaleRGB = d == depth8u ? 1.0 : 1.0/255;
+    float fScaleRGB = d == depth8u ? 1.0 : 1.0/255;  //TODO_depth
         
     float c = (float)contrast/255;
     if(c>0) c*=10;
