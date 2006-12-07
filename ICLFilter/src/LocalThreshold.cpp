@@ -6,15 +6,11 @@ namespace icl{
 
   void create_roi_size_image(const Size &s, int r, IntegralImg::IntImg32s& dst){
     // {{{ open
-
-    if(s.width<=r || s.height<=r){
-      WARNING_LOG("creating roi size image for LocalThreshold: image size must be larger than the maskSize");
-      return;
-    }
-    
     dst.setSize(s);
     dst.setChannels(1);
 
+    ICLASSERT_RETURN( s.width > 2*r && s.height > 2*r );
+ 
     int *p = dst.getData(0);
     
     int w = s.width;
@@ -107,7 +103,8 @@ namespace icl{
                                  Img<T>* dst, 
                                  IntegralImg::IntImg<T2> *integralImage,
                                  int *roiSizeImage,  
-                                 const int globalThreshold){
+                                 int globalThreshold,
+                                 int r){
     // {{{ open
 
     /*********************************************************
@@ -128,7 +125,6 @@ namespace icl{
     Size s = src->getSize();
     const int w = s.width;
     const int h = s.height;
-    const int r = 10;
     const int r1 = r+1;
     const int r_1 = -r-1;
        
@@ -185,7 +181,7 @@ namespace icl{
     
 
     // prepare the roi size image
-    if(!m_oROISizeImage.getSize() || m_uiROISizeImagesMaskSize == m_uiMaskSize){
+    if(!m_oROISizeImage.getSize() || m_uiROISizeImagesMaskSize != m_uiMaskSize){
       create_roi_size_image(src->getSize(),m_uiMaskSize,m_oROISizeImage);
       m_uiROISizeImagesMaskSize = m_uiMaskSize;
     }
@@ -194,15 +190,26 @@ namespace icl{
     switch(src->getDepth()){
       case depth8u:
         IntegralImg::create(src->asImg<icl8u>(), m_uiMaskSize+1, &m_oIntegralImage);
-        local_threshold_algorithm<icl8u>(src->asImg<icl8u>(),(*dst)->asImg<icl8u>(),&m_oIntegralImage,m_oROISizeImage.getData(0),m_iGlobalThreshold);
+        local_threshold_algorithm<icl8u>(src->asImg<icl8u>(),
+                                         (*dst)->asImg<icl8u>(),
+                                         &m_oIntegralImage,
+                                         m_oROISizeImage.getData(0),
+                                         m_iGlobalThreshold,
+                                         m_uiMaskSize);
         break;
       case depth32f:
         IntegralImg::create(src->asImg<icl32f>(), m_uiMaskSize+1, &m_oIntegralImageF);
-        local_threshold_algorithm<icl32f>(src->asImg<icl32f>(),(*dst)->asImg<icl32f>(),&m_oIntegralImageF,m_oROISizeImage.getData(0),m_iGlobalThreshold);
+        local_threshold_algorithm<icl32f>(src->asImg<icl32f>(),
+                                          (*dst)->asImg<icl32f>(),
+                                          &m_oIntegralImageF,
+                                          m_oROISizeImage.getData(0),
+                                          m_iGlobalThreshold,
+                                          m_uiMaskSize);
         break;
       default:
         ICL_INVALID_FORMAT;
     }
+   
   }  
 
   // }}}
