@@ -167,6 +167,7 @@ namespace icl {
 #endif
   // }}}
 // {{{ Global variables
+
 int                     usbvflg_verbosity=0; //if verbosity>0 more messages will be printed
 
 int                     usbvflg_fd[]={-1,-1,-1,-1}; /* one filedescriptor for each device */
@@ -190,6 +191,7 @@ int                     usb_image_widths[4];
 int                     usb_image_heights[4];
 
 Time                    g_Time[4];
+
 // }}}
 // {{{ usb_grabber_funct
 
