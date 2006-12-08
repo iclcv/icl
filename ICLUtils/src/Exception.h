@@ -27,6 +27,13 @@ namespace icl {
     void report();
   };
 
+  class ICLOutOfMemoryException : public ICLException {
+    public:
+    ICLOutOfMemoryException(const std::string &text) throw():
+      ICLException(std::string("out of memory in ")+text){}
+    virtual ~ICLOutOfMemoryException() throw(){}
+  };
+
   //TODO: rename to InvalidFileFormatException
   class ICLInvalidFileFormat : public ICLException {
   public:
