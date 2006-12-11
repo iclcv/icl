@@ -49,6 +49,9 @@ namespace icl {
     /// scales the size by a scalar value
     Size operator*(double d) const { return Size((int)(d*width),(int)(d*height));}
 
+    /// scales the size by a scalar value
+    Size operator/(double d) const { return (*this)*(1.0/d); }
+    
     /// adds another size inplace
     Size& operator+=(const Size &s){width+=s.width; height+=s.height; return *this;}
 
@@ -57,6 +60,9 @@ namespace icl {
 
     /// scales the size parameters inplace by a scalar
     Size& operator*=(double d) {width=(int)((float)width*d); height=(int)((float)height*d); return *this;};
+
+    /// scales the size parameters inplace by a scalar
+    Size& operator/=(double d) { return (*this)*=(1.0/d); }
     
     /// reutrns width*height
     int getDim() const {return width*height;}

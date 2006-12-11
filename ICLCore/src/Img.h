@@ -882,6 +882,7 @@ scaledCopyChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Poin
 
 /* }}} */
 #endif
+
 /* }}} */
 
 /* {{{   flippedCopyChannelROI */
