@@ -114,7 +114,7 @@ int main(int n, char **ppc){
   /** <b>Note:</b> The index references all actually given args directly,
       sub args are not evaluated here.
       Possible types T are: 
-      - char* 
+      - string (std::string) 
       - int 
       - uint 
       - bool 
@@ -130,7 +130,7 @@ int main(int n, char **ppc){
   /** If the given argument "param" was not actually given, the default argument
       is returned without an additional warning message.
       Possible types T are: 
-      - char* 
+      - string (std::string)
       - int 
       - uint 
       - bool 
@@ -140,7 +140,7 @@ int main(int n, char **ppc){
       - double
   */
   template<class T> 
-  T pa_subarg(std::string param, unsigned int index, T def=0);
+  T pa_subarg(std::string param, unsigned int index, T defaultValue);
 
 }
 

@@ -212,7 +212,7 @@ namespace icl{
     inline string sSubParam(string param, unsigned int index, string def){
       ARG_EXIST_CHECK_RETURN(param,def);
       SUB_ARG_EXIST_CHECK_RETURN(param,index,def);
-      return s_oArgMap[param][index].c_str();
+      return s_oArgMap[param][index];
     }
   
     inline int iSubParam(string param, unsigned int index, int def){
@@ -305,10 +305,10 @@ namespace icl{
   EXPLICIT_PA_ARG_TEMPLATE(double,d);
   EXPLICIT_PA_ARG_TEMPLATE(unsigned char,uc);
   EXPLICIT_PA_ARG_TEMPLATE(char,c);
-  template<> char* pa_arg(unsigned int index){ 
-    return const_cast<char*>(progarg::sParam(index).c_str()); 
+  template<> string pa_arg(unsigned int index){ 
+    return progarg::sParam(index); 
   } 
-  template char* pa_arg<char*>(unsigned int index);
+  template string pa_arg<string>(unsigned int index);
 
   // }}}
   
@@ -335,15 +335,12 @@ namespace icl{
   EXPLICIT_PA_SUBARG_TEMPLATE(double,d);
   EXPLICIT_PA_SUBARG_TEMPLATE(unsigned char,uc);
   EXPLICIT_PA_SUBARG_TEMPLATE(char,c);
-  template<> char* pa_subarg(std::string param, unsigned int index, char* def){ 
-    if(def){
-      return const_cast<char*>(progarg::sSubParam(param,index,def).c_str()); 
-    }else{
-      static string _def;
-      return const_cast<char*>(progarg::sSubParam(param,index,_def).c_str()); 
-    }
+
+  // nochmal mit char const*
+  template<> string  pa_subarg(std::string param, unsigned int index, string def){ 
+    return progarg::sSubParam(param,index,def); 
   } 
-  template char* pa_subarg<char*>(std::string, unsigned int, char*);
+  template string pa_subarg<string>(std::string, unsigned int, string);
 
   // }}}
 }
