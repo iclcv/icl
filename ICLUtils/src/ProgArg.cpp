@@ -112,6 +112,7 @@ namespace icl{
             return;
           }
           int n = s_oARG_LUT[s];
+          if(!n) s_oArgMap[s]=std::vector<string>(0);
           // printf("found arg [%s] --> seaching for %d subargs \n",s.c_str(),n);
           // push the sub args and skip them
           // static svec s_oArgs;      // contains all arguments that were actually given
