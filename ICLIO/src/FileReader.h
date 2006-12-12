@@ -19,10 +19,57 @@
 
 namespace icl {
  
-/// The FileReader class implements the interface for reading images from file
-/**
-   @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
-**/
+//! The FileReader class implements the interface for reading images from file
+/*!
+   @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de)
+   @brief The ICL
+
+   The ICL FileReader supports the following image formats:
+   <table>
+     <tr>
+       <td><b>format</b></td>
+       <td><b>description</b></td>
+     </tr>
+     <tr>
+       <td> pgm </td>
+       <td> This is the standard pgm format (gray images). 
+            Related to the pgm specification
+            the icl8u format is used to save the image. Therefore the input
+            image is converted to the icl8u format if necessary. As an
+            additional feature multi channel images can be saved with 
+            respect to the pgm specification. For example an 3 dimensional
+            image with size 100 x 100 pixel is stored as 100 x 300 image. This
+            makes it possible to view the image with an standard image viewer
+            e.g. xv, xnview).
+            </td>
+     </tr>
+     <tr>
+       <td> ppm </td>
+       <td> This is the standard ppm format (color images). 
+            In comparison to the pgm image there is now difference between 
+            the data format.</td>
+     </tr>
+     <tr>
+       <td> jpg </td>
+       <td> The standard jpg format.</td>
+     </tr>
+     <tr>
+       <td> icl </td>
+       <td> A special icl32f image format. The main disadvantage of
+            the pgm and ppm image format is the icl8u data format. If we
+            assume a concetanation of several filter operations, the accuracy
+            of the numerical results is very important. This format allows 
+            information storing without any information loss.
+            </td>
+     </tr>
+   </table>  
+   
+   The following example show how to use the ICL FileReader:
+   <pre>
+      ImgBase* poImg = imgNew(depth8u,Size(144,144));
+      FileReader ioRead("testImage.pgm").grab(poImg);
+   </pre>
+*/
    class FileReader : public Grabber
       {
       public:

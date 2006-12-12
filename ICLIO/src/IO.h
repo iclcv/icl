@@ -14,18 +14,16 @@
 \mainpage ICLIO (Input/Ouput) package
 \section Overview
 
-The ICLIO package provides the complete input/ output functions supported by
-the ICL. Currently the following the sub packages are included in the IO 
+The ICLIO package provides the complete input and  output functions supported by the ICL. Currently the following subpackages are included in the IO 
 library:
-- <b>FileReader</b>: The FileReader could be used to load (pgm, ppm, pnm, jpg) files from a file or a sequence of files. 
+- <b>FileReader</b>: The FileReader could be used to load (pgm, ppm, pnm, jpg, icl) files from a file or a sequence of files. 
+
 - <b>FileWriter</b>: The provides the same file formats as the FileReader. But now the ICL images are written to a file or a file sequence.
-- <b>PWCGrabber</b>: The PWC Grabber (Phillips Webcam Grabber) supports various webcams with an Phillips chipset. For a detailed overview of the supported webcams look at <a href="http://www.saillard.org/linux/pwc/">www.saillard.org</a>.
+
+- <b>PWCGrabber</b>: The PWC Grabber (Phillips Webcam Grabber) supports various webcams chipsets. For a detailed overview of the supported webcams look at <a href="http://www.saillard.org/linux/pwc/">www.saillard.org</a>.
 
 A detailed description of the provided functions in each package is included in
 the class description.
-
-\section Basic Functionallity
-
 
 */
 
