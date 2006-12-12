@@ -19,8 +19,9 @@ int main (int argc, char **argv) {
   
 
   if(pa_defined("-input")){
-    printf("input file %s \n",pa_subarg<string>("-input",0,"").c_str());    
-    FileReader(pa_subarg<string>("-input",0,"")).grab(I);
+    string s = pa_subarg<string>("-input",0,"");
+    printf("input file %s \n",s.c_str());
+    FileReader(s).grab(I);
   }
   else{
     printf("working with testimage tree: \n");

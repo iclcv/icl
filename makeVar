@@ -1,4 +1,4 @@
-# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
+## -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
 #
 #   makeVar
 #
@@ -67,7 +67,7 @@ REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug status
 # This variable takes two values: TRUE or FALSE
-DEBUG_ON:=FALSE
+DEBUG_ON:=TRUE
 
 # Debugging flags
 DEBUG:=-O0 -g3
@@ -101,12 +101,12 @@ CMD_LD=g++
 
 
 ############################# check for IPP ############################
-ifeq "$(wildcard $(IPP_ROOT)/5.0/sharedlib/libipp*.so)" ""
+ifeq "$(wildcard $(IPP_ROOT)/5.1/sharedlib/libipp*.so)" ""
 ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
 ifeq "$(_WARN_IPP)" ""
 _WARN_IPP=done # warn only once
 export _WARN_IPP
-$(warning "IPP is not available. Its usage is switched off.")
+$(warning "IPP 5.1 is not available. Its usage is switched off.")
 endif
 CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
 CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
@@ -116,7 +116,7 @@ endif
 ############################# check for QT 4 ############################
 # try whether useful QTDIR is already set
 ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
-QTDIR=/vol/qt/4.1.4
+QTDIR=/vol/qt/4.2
 endif
 # try whether QTDIR contains QT 4 now
 ifneq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
@@ -125,7 +125,7 @@ else
 ifeq "$(_WARN_QT)" ""
 _WARN_QT=done # warn only once
 export _WARN_QT
-$(warning "Qt version 4 is not available. Qt-specific targets are not built.")
+$(warning "Qt version 4.2 is not available. Qt-specific targets are not built.")
 endif
 endif
 
