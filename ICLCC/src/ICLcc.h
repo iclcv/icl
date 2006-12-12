@@ -5,6 +5,16 @@
 
 namespace icl{
 
+  /** \mainpage ICLCC the Color Conversion Package of the ICL
+  The main class of the ICLCC package is The <b>Converter</b> which 
+  provides a very convenient color conversion mechanism.
+  \sa Converter
+
+  In addition to the Converter class, direct conversion routines are
+  defined, and accessible directy in the icl namespace.
+  \sa icl
+  */
+
 /**
 This time 8 different color formats in 4 color spaces are suppored.
 Color Spaces are:
