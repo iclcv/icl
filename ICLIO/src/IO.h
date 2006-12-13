@@ -52,8 +52,8 @@ namespace icl {
      ioFormatJPG  //< JPG image format
   };
 
-  enum 1394GrabMode {
-    MONO8_640x480,
+  enum GrabMode1394 {
+    MONO8_640x480 = 0,
     MONO8_800x600,
     MONO8_1024x768,
     MONO8_1280x960,
@@ -68,8 +68,13 @@ namespace icl {
     RGB8_1024x768,
     RGB8_1280x960,
     RGB8_1600x1200,
-    
-  }
+    YUV422_320x240,
+    YUV422_640x480,
+    YUV422_800x600,
+    YUV422_1024x768,
+    YUV422_1280x960,
+    YUV422_1600x1200
+  };
   
   /// Check for file type
   ioformat getFileType (const std::string &sFileName, bool& bGzipped);

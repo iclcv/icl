@@ -11,6 +11,7 @@
 #define FwGrabber_H
 
 #include <Grabber.h>
+#include <IO.h>
 #include <libraw1394/raw1394.h>
 #include <dc1394/control.h>
 #include <Img.h>
@@ -21,7 +22,7 @@ namespace icl {
      public:
      //---- Konstruktor/ Destruktor ----
      FwGrabber() {}
-     FwGrabber(dc1394video_mode_t eRes, unsigned int uiFps=30, int iDevice=0);
+     FwGrabber(GrabMode1394 eMode, unsigned int uiFps=30, int iDevice=0);
      ~FwGrabber();
      
      void init();

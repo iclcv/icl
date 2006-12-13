@@ -14,18 +14,42 @@
 
 namespace icl {
 
-  FwGrabber::FwGrabber(dc1394video_mode_t eRes, 
+  FwGrabber::FwGrabber(GrabMode1394 eMode, 
                        unsigned int uiFps, 
                        int iDevice) {
     // {{{ open
-
+    
     //---- Variable initialization ----
     m_uiNumCameras = 0;
     m_uiNumBuffers = 4;
     m_poFrame = 0;
     m_iDevice = iDevice;
-    m_eRes = eRes;
 
+    switch(eMode) {
+      case MONO8_640x480: m_eRes = DC1394_VIDEO_MODE_640x480_MONO8; break;
+      case MONO8_800x600: m_eRes = DC1394_VIDEO_MODE_800x600_MONO8; break;
+      case MONO8_1024x768: m_eRes = DC1394_VIDEO_MODE_1024x768_MONO8; break;
+      case MONO8_1280x960: m_eRes = DC1394_VIDEO_MODE_1280x960_MONO8; break;
+      case MONO8_1600x1200: m_eRes = DC1394_VIDEO_MODE_1600x1200_MONO8; break;
+      case MONO16_640x480: m_eRes = DC1394_VIDEO_MODE_640x480_MONO16; break;
+      case MONO16_800x600: m_eRes = DC1394_VIDEO_MODE_800x600_MONO16; break;
+      case MONO16_1024x768: m_eRes = DC1394_VIDEO_MODE_1024x768_MONO16; break;
+      case MONO16_1280x960: m_eRes = DC1394_VIDEO_MODE_1280x960_MONO16; break;
+      case MONO16_1600x1200: m_eRes = DC1394_VIDEO_MODE_1600x1200_MONO16;break;
+      case RGB8_640x480: m_eRes = DC1394_VIDEO_MODE_640x480_RGB8; break;
+      case RGB8_800x600: m_eRes = DC1394_VIDEO_MODE_800x600_RGB8; break;
+      case RGB8_1024x768: m_eRes = DC1394_VIDEO_MODE_1024x768_RGB8; break;
+      case RGB8_1280x960: m_eRes = DC1394_VIDEO_MODE_1280x960_RGB8; break;
+      case RGB8_1600x1200: m_eRes = DC1394_VIDEO_MODE_1600x1200_RGB8; break;
+      case YUV422_320x240: m_eRes = DC1394_VIDEO_MODE_320x240_YUV422; break;
+      case YUV422_640x480: m_eRes = DC1394_VIDEO_MODE_640x480_YUV422; break;
+      case YUV422_800x600: m_eRes = DC1394_VIDEO_MODE_800x600_YUV422; break;
+      case YUV422_1024x768: m_eRes = DC1394_VIDEO_MODE_1024x768_YUV422; break;
+      case YUV422_1280x960: m_eRes = DC1394_VIDEO_MODE_1280x960_YUV422; break;
+      case YUV422_1600x1200: m_eRes = DC1394_VIDEO_MODE_1600x1200_YUV422;break;
+      default: m_eRes = m_eRes = DC1394_VIDEO_MODE_640x480_MONO8; break;
+    }
+    
     switch(uiFps) {
       case 1: m_eFps =	DC1394_FRAMERATE_1_875; break;
       case 3: m_eFps =	DC1394_FRAMERATE_3_75; break;
