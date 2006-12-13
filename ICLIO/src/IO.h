@@ -51,6 +51,25 @@ namespace icl {
      ioFormatICL, //< proprietary format, equals pnm for icl8u, but allows icl32f as well
      ioFormatJPG  //< JPG image format
   };
+
+  enum 1394GrabMode {
+    MONO8_640x480,
+    MONO8_800x600,
+    MONO8_1024x768,
+    MONO8_1280x960,
+    MONO8_1600x1200,
+    MONO16_640x480,
+    MONO16_800x600,
+    MONO16_1024x768,
+    MONO16_1280x960,
+    MONO16_1600x1200,
+    RGB8_640x480,
+    RGB8_800x600,
+    RGB8_1024x768,
+    RGB8_1280x960,
+    RGB8_1600x1200,
+    
+  }
   
   /// Check for file type
   ioformat getFileType (const std::string &sFileName, bool& bGzipped);
