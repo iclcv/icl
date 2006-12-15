@@ -21,10 +21,8 @@ namespace icl {
     
     //---- Variable initialization ----
     m_uiNumCameras = 0;
-    m_uiNumBuffers = 4;
-    m_poFrame = 0;
-    m_iDevice = iDevice;
-
+    m_oCameras = 0;
+    /*
     switch(eMode) {
       case MONO8_640x480: m_eRes = DC1394_VIDEO_MODE_640x480_MONO8; break;
       case MONO8_800x600: m_eRes = DC1394_VIDEO_MODE_800x600_MONO8; break;
@@ -58,6 +56,7 @@ namespace icl {
       case 60: m_eFps = DC1394_FRAMERATE_60; break;
       default: m_eFps = DC1394_FRAMERATE_15; break;
     }
+    */
   }
 
 // }}}
@@ -66,105 +65,144 @@ namespace icl {
     // {{{ open
 
     // Destroy camera handle
-    cleanup();
+    //cleanup();
   }  
 
 // }}}
   
-  void FwGrabber::cleanup() {
+  void FwGrabber::cleanup(dc1394camera_t *camera) {
     // {{{ open
 
-    for (unsigned int i=0; i < m_uiNumCameras; i++)
-    {
-      dc1394_capture_stop(cameras[i]);
-      dc1394_video_set_transmission(cameras[i], DC1394_OFF);
-    }
+    dc1394_capture_stop(camera);
+    dc1394_video_set_transmission(camera, DC1394_OFF);
+    dc1394_free_camera(camera);
   }
 
 // }}}
   
   void FwGrabber::init() {
     // {{{ open
-    // Variable initilisation
-    dc1394speed_t speed;
-    char *device_name = NULL;
+    dc1394color_coding_t oCoding;
+    dc1394video_mode_t video_mode;
+    dc1394framerate_t framerate;
+    unsigned int i;
     
-    /*-----------------------------------------------------------------------
-     *  Find cameras
-     *-----------------------------------------------------------------------*/
-    int err = dc1394_find_cameras(&cameras, &m_uiNumCameras);
+    int err = dc1394_find_cameras(&m_oCameras, &m_uiNumCameras);
     
-    if ( (err != DC1394_SUCCESS) && (err != DC1394_NO_CAMERA) ) {
-      ERROR_LOG("Unable to find any camera");
-      exit(1);
+    if (err!=DC1394_SUCCESS && err != DC1394_NO_CAMERA) {
+    ERROR_LOG("Unable to look for camera");
+    exit(1);
     }
     
     /*-----------------------------------------------------------------------
-     * get the camera nodes and describe them as we find them
+     *  get the camera nodes and describe them as we find them
      *-----------------------------------------------------------------------*/
     if (m_uiNumCameras < 1) {
-      ERROR_LOG("No cameras found");
+      ERROR_LOG("no cameras found!");
       exit(1);
     }
     
-    SECTION_LOG("Cameras found: " << m_uiNumCameras);
-    
     // free the other cameras
-    for (unsigned int i=0;i<m_iDevice;i++) {
-      dc1394_free_camera(cameras[i]);
-    }    
-    for (unsigned int i=m_iDevice+1;i<m_uiNumCameras;i++) {
-      dc1394_free_camera(cameras[i]);
-    }
+    for (unsigned int i=1;i<m_uiNumCameras;i++)
+      dc1394_free_camera(m_oCameras[i]);
+    free(m_oCameras);
     
     /*-----------------------------------------------------------------------
-     * setup camera for capture
+     *  get the best video mode and highest framerate. This can be skipped
+     *  if you already know which mode/framerate you want...
      *-----------------------------------------------------------------------*/
-    if(dc1394_get_camera_feature_set(cameras[m_iDevice], &m_sFeatures) != 
-       DC1394_SUCCESS) {
-      ERROR_LOG("Unable to get feature set");
-    } else {
-      dc1394_print_feature_set(&m_sFeatures);
+    // get video modes:
+    if (dc1394_video_get_supported_modes(m_oCameras[0],&m_oVideoModes) != 
+        DC1394_SUCCESS) {
+      ERROR_LOG("Can't get video modes");
+      cleanup(m_oCameras[0]);
     }
-    
-    if (dc1394_video_get_iso_speed(cameras[m_iDevice], 
-                                   &speed) != DC1394_SUCCESS) {
-      ERROR_LOG("Unable to get the iso speed");
-      cleanup();
-      exit(-1);
-    }
-      
-    if (device_name != NULL) {
-      if (dc1394_capture_set_dma_device_filename(cameras[m_iDevice],
-                                                 device_name)!=DC1394_SUCCESS)
-      {
-        ERROR_LOG("Unable to set dma device filename!");
+
+    // select highest res mode:
+    for (i=m_oVideoModes.num-1;i>=0;i--) {
+      if (!dc1394_is_video_mode_scalable(m_oVideoModes.modes[i])) {
+        dc1394_get_color_coding_from_video_mode(m_oCameras[0],
+                                                m_oVideoModes.modes[i], 
+                                                &oCoding);
+        if (oCoding == DC1394_COLOR_CODING_MONO8) {
+          video_mode = m_oVideoModes.modes[i];
+          break;
+        }
       }
     }
-    
-    dc1394_video_set_iso_speed(cameras[m_iDevice], DC1394_ISO_SPEED_400);
-    dc1394_video_set_mode(cameras[m_iDevice],m_eRes);
-    dc1394_video_set_framerate(cameras[m_iDevice],m_eFps);
-    
-    if (dc1394_capture_setup_dma(cameras[m_iDevice], m_uiNumBuffers) != 
-        DC1394_SUCCESS) {
-      ERROR_LOG("Unable to setup camera. Make sure");
-      cleanup();
-      exit(-1);
+
+    dc1394_get_color_coding_from_video_mode(m_oCameras[0],
+                                            m_oVideoModes.modes[i], 
+                                            &oCoding);
+    if ((dc1394_is_video_mode_scalable(m_oVideoModes.modes[i])) ||
+        (oCoding!=DC1394_COLOR_CODING_MONO8)) {
+      ERROR_LOG("Could not get a valid MONO8 mode");
+      cleanup(m_oCameras[0]);
     }
-		
+    
+    // get highest framerate
+    if (dc1394_video_get_supported_framerates(m_oCameras[0],
+                                              video_mode,
+                                              &m_oFps) != DC1394_SUCCESS) {
+      ERROR_LOG("Can't get framrates");
+      cleanup(m_oCameras[0]);
+    }
+    framerate = m_oFps.framerates[m_oFps.num-1];
+    
     /*-----------------------------------------------------------------------
-     *  have the camera start sending us data
+     *  setup capture
      *-----------------------------------------------------------------------*/
-    if (dc1394_video_set_transmission(cameras[m_iDevice], DC1394_ON) != 
-        DC1394_SUCCESS) {
-      ERROR_LOG("Unable to start camera iso transmission");
-      cleanup();
-      exit(-1);
+    dc1394_video_set_iso_speed(m_oCameras[0], DC1394_ISO_SPEED_400);
+    dc1394_video_set_mode(m_oCameras[0], video_mode);
+    dc1394_video_set_framerate(m_oCameras[0], framerate);
+
+    if (dc1394_capture_setup_dma(m_oCameras[0], 8)!=DC1394_SUCCESS) {
+      ERROR_LOG("unable to setup camera-\n");
+      cleanup(m_oCameras[0]);
     }
     
-    dc1394_get_image_size_from_video_mode(cameras[m_iDevice],
-                                          m_eRes,
+    /*-----------------------------------------------------------------------
+     *  report camera's features
+     *-----------------------------------------------------------------------*/
+    if (dc1394_get_camera_feature_set(m_oCameras[0],&m_oFeatures) !=
+        DC1394_SUCCESS) {
+      ERROR_LOG("unable to get feature set");
+    }
+    else {
+      dc1394_print_feature_set(&m_oFeatures);
+    }
+    
+    /*-----------------------------------------------------------------------
+     *  have the camerastart sending us data
+     *-----------------------------------------------------------------------*/
+    if (dc1394_video_set_transmission(m_oCameras[0], DC1394_ON) !=
+        DC1394_SUCCESS) {
+      ERROR_LOG("unable to start camera iso transmission");
+      cleanup(m_oCameras[0]);
+    }
+
+    /*-----------------------------------------------------------------------
+     *  Sleep untill the camera has a transmission
+     *-----------------------------------------------------------------------*/
+    dc1394switch_t status = DC1394_OFF;
+    
+    unsigned int j = 0;
+    while( status == DC1394_OFF && j++ < 5 ) {
+      usleep(50000);
+      if (dc1394_video_get_transmission(m_oCameras[0], &status) !=
+          DC1394_SUCCESS) {
+        fprintf(stderr, "unable to get transmision status\n");
+        cleanup(m_oCameras[0]);
+      }
+    }
+
+    if( j == 5 ) {
+      fprintf(stderr,"Camera doesn't seem to want to turn on!\n");
+      cleanup(m_oCameras[0]);
+    }
+
+    dc1394_get_image_size_from_video_mode(m_oCameras[0],
+                                          video_mode,
                                           &m_uiDeviceWidth,
                                           &m_uiDeviceHeight);
     m_poGrabImg = imgNew(depth8u, 
@@ -176,73 +214,43 @@ namespace icl {
 
   ImgBase* FwGrabber::grab(ImgBase* poDst) {
     // {{{ open
-
+    SECTION_LOG("Grab image");
+    
+    register icl8u *r, *g, *b;
+    
     /*-----------------------------------------------------------------------
-     *  capture frame from each camera
+     *  capture frame
      *-----------------------------------------------------------------------*/
-/*    if (m_iDevice == -1) {
-      for (unsigned int i = 0; i < m_uiNumCameras; i++) {
-        m_poFrame = dc1394_capture_dequeue_dma (cameras[i], 
-                                                     DC1394_VIDEO1394_WAIT);
-        if (!m_poFrame)
-          ERROR_LOG("Error: Failed to capture from camera: " << i);
+    for (unsigned int i = 0; i < 1; i++) {
+      m_poFrames[i] = dc1394_capture_dequeue_dma (m_oCameras[0], 
+                                                  DC1394_VIDEO1394_WAIT);
+      if (!m_poFrames[i]) {
+        ERROR_LOG("Error: unable to capture frame");
+        cleanup(m_oCameras[0]);
       }
-    }
-    else {
-      m_poFrame = dc1394_capture_dequeue_dma (cameras[m_iDevice], 
-                                              DC1394_VIDEO1394_WAIT);
     }
     
-    // Copy image to ICL
-    if (m_iDevice == -1) {
-      for (unsigned int i = 0; i < m_uiNumCameras; i++) {
-        copy2ICL(i);
-      }
-    } else {
-      copy2ICL(0);
+    /*-----------------------------------------------------------------------
+     *  copy to ICL format
+     *-----------------------------------------------------------------------*/
+    r = m_poGrabImg->asImg<icl8u>()->getData(0);
+    g = m_poGrabImg->asImg<icl8u>()->getData(1);
+    b = m_poGrabImg->asImg<icl8u>()->getData(2);
+    
+    for (unsigned int i=0;i<m_poGrabImg->getDim();i+=3)
+    {
+        *r = m_poFrames[0]->image[i];
+        *g = m_poFrames[0]->image[i+1];
+        *b = m_poFrames[0]->image[i+2];
+        printf("%d: %d %d %d\n",i,m_poFrames[0]->image[i],m_poFrames[0]->image[i+1],m_poFrames[0]->image[i+2]);
+        r++; g++; b++;
     }
     
-    // Enque dma
-    if (m_iDevice) {
-      for (unsigned int i = 0; i < m_uiNumCameras; i++) {
-        if (m_poFrame)
-          dc1394_capture_enqueue_dma (cameras[i], m_poFrame);
-      }
-    }
-    else {
-      if (m_ppoFrames[0]) {
-        dc1394_capture_enqueue_dma (cameras[m_iDevice], m_ppoFrames[0]);
-      }
-    }
-   
-    // Convert to destination
-    if(poDst) {
-      Converter().convert(poDst, m_poGrabImg);
-      return poDst;
-    } else {
-*/
-      return m_poGrabImg;
+    
+    return m_poGrabImg;
   }
-
-    
-
+  
 // }}}
   
-  inline 
-  void FwGrabber::copy2ICL(unsigned int uiCam) {
-    register unsigned char *r, *g, *b;
-/*
-    r = m_poGrabImg->asImg<icl8u>()->getData(uiCam+0);
-    g = m_poGrabImg->asImg<icl8u>()->getData(uiCam+1);
-    b = m_poGrabImg->asImg<icl8u>()->getData(uiCam+2);
-    
-    for (int i=0; i<m_poGrabImg->getDim(); i+=3) {
-      *r = m_ppoFrames[uiCam]->image[i+0];
-      *g = m_ppoFrames[uiCam]->image[i+1];
-      *b = m_ppoFrames[uiCam]->image[i+2];
-      r++; g++, b++;
-    }
-*/
-  }
 
 } // namespace icl
