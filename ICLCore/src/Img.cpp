@@ -245,11 +245,12 @@ Img<Type>::deepCopyROI(ImgBase *poDst) const
 
   if(!poDst){
     poDst = imgNew(getDepth(),
-                   ImgParams(getROISize(),getFormat(),getChannels()));
+                   ImgParams(getROISize(),getChannels(),getFormat()));
   }else{
     poDst->setChannels(getChannels());
     poDst->setFormat(getFormat());
   }
+
   ICLASSERT_RETURN_VAL( getROISize() == poDst->getROISize() , poDst);
   switch (poDst->getDepth()){
     case depth8u:

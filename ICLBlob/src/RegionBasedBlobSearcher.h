@@ -123,6 +123,14 @@ namespace icl{
         that use the "special-features" */
     const Array<int> &getBoundingBoxes(ImgBase *image);
 
+    
+    /// 3rd working method: extract pca info
+    /** Data order is [axis1-length, axis2-length, axis1-angle, axis2-angle, ...] */
+    const Array<float> &getPCAInfo(ImgBase *image);
+
+    /// Combined working method, extracting all information at once
+    void detectAll(ImgBase *image, Array<int> &centers, Array<int> &boundingBoxes, Array<float> &pcaInfos); 
+    
     /// add new FMCreator
     /** ownership is passed to the RegionBasedBlobSearcher*/
     void add(FMCreator* fmc);
@@ -187,11 +195,13 @@ namespace icl{
     ImgRegionDetector *m_poRD;          //!< detects connected regions
     Array<Array<Point> > m_oPoints;     //!< buffer of all center lists
     Array<Array<Rect> > m_oRects;       //!< buffer of all b.b. lists
+    Array<Array<float> > m_oPCA;        //!< buffer for pca info 
     
     
     /// inupt and ouput data
     ImgBase *m_poInputImage;            //!< input image
     Array<int> m_oOutputBuffer;         //!< output-buffer (used for centers and b.b.)
+    Array<float> m_oOutputBufferF;      //!< float output-buffer (used for the pca infos )
 
   };
 }

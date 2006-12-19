@@ -63,6 +63,52 @@ namespace icl{
 
   // }}}
 
+  const Array<float> &RegionBasedBlobSearcher::getPCAInfo(ImgBase *image){
+    // {{{ open
+
+    m_poInputImage = image;
+    extractRegions();
+    unifyRegions();
+    m_oOutputBufferF.clear();
+    for(unsigned int i=0;i<m_oPCA.size();++i){
+      for(unsigned int j=0;j<m_oPCA[i].size();++j){
+        m_oOutputBufferF.push_back(m_oPCA[i][j]);
+      }
+    }
+    return m_oOutputBufferF;
+  }
+
+  // }}}
+
+  void RegionBasedBlobSearcher::detectAll(ImgBase *image, Array<int> &centers, Array<int> &boundingBoxes, Array<float> &pcaInfos){
+    // {{{ open
+
+    m_poInputImage = image;
+    extractRegions();
+    unifyRegions();
+   
+    centers.clear();
+    boundingBoxes.clear();
+    pcaInfos.clear();
+    
+    for(unsigned int i=0;i<m_oPoints.size();++i){
+      for(unsigned int j=0;j<m_oPoints[i].size();++j){
+        centers.push_back(m_oPoints[i][j].x);
+        centers.push_back(m_oPoints[i][j].y);
+
+        boundingBoxes.push_back(m_oRects[i][j].x);
+        boundingBoxes.push_back(m_oRects[i][j].y);
+        boundingBoxes.push_back(m_oRects[i][j].width);
+        boundingBoxes.push_back(m_oRects[i][j].height);   
+      }
+      for(unsigned int j=0;j<m_oPCA[i].size();++j){
+        pcaInfos.push_back(m_oPCA[i][j]);
+      }
+    }
+  }
+
+  // }}}
+  
   Img8u *RegionBasedBlobSearcher::getImage(const Size &size, format fmt){
     // {{{ open
 
@@ -118,6 +164,7 @@ namespace icl{
         m_poRD->detect(fm,cs,vs,bbs,pca);
         m_oPoints.push_back(Array<Point>(vs.size()));
         m_oRects.push_back(Array<Rect>(vs.size()));
+        m_oPCA.push_back(pca);
         for(unsigned int j=0;j<vs.size();++j){
           x = cs[2*j];
           y = cs[2*j+1];
@@ -322,7 +369,7 @@ namespace icl{
       int r2 = m_vecRefColor[2];
       icl8u *pucSrc2 = src.getData(2);
       if(nc == 3){
-        printf("nd = 3 ref=%d %d %d  thresh=%d %d %d\n",r0,r1,r2,t0,t1,t2);
+        //        printf("nd = 3 ref=%d %d %d  thresh=%d %d %d\n",r0,r1,r2,t0,t1,t2);
         for(;pucSrc0!=pucSrc0End;++pucSrc0,++pucSrc1,++pucSrc2,++pucDst){
           *pucDst = 255 * ( (std::abs(*pucSrc0-r0)<t0) & (std::abs(*pucSrc1-r1)<t1) & (std::abs(*pucSrc2-r2)<t2) );
         }
