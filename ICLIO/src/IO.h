@@ -76,9 +76,14 @@ namespace icl {
     YUV422_1600x1200
   };
   
-  /// Check for file type
+  /// Check for supported file type
   ioformat getFileType (const std::string &sFileName, bool& bGzipped);
+  /// Count Hashes directly before file suffix
+  void analyseHashes (const std::string &sFileName, unsigned int& nHashes, 
+                      std::string::size_type& iSuffixPos);
+  /// open given file
   void openFile (FileInfo& oInfo, const char *pcMode) throw (FileOpenException);
+  /// close given file
   void closeFile (FileInfo& oInfo);
 
 

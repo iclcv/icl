@@ -76,6 +76,9 @@ namespace icl {
          typedef std::vector<std::string> FileList;
          typedef std::vector<ImgBase*> ImageBuffer;
 
+         /// convert sFileName containing hashes as in FileWriter to regexp
+         static std::string hashPattern(const std::string& sFileName);
+
          // @{ @name constructors / destructor
          ///Load images from files specified with shell-like regular expression
          /** @param sPattern shell expression describing file location(s)

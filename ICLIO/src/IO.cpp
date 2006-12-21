@@ -44,6 +44,33 @@ namespace icl {
    
    // }}}
   
+   void analyseHashes (const std::string &sFileName, unsigned int& nHashes, 
+                       string::size_type& iSuffixPos) {
+      nHashes = 0; iSuffixPos = string::npos;
+
+      // search for first '.'
+      string::size_type iTmpPos = sFileName.rfind ('.');
+      if (iTmpPos == string::npos) 
+         throw ICLException ("cannot detect file type");
+
+      // search for second '.' if the suffix is .gz so far
+      const string& sType = sFileName.substr (iTmpPos);
+      if (sType == ".gz" && iTmpPos > 0) { // search further for file type
+         iSuffixPos = sFileName.rfind ('.', iTmpPos-1);
+      }
+      if (iSuffixPos == string::npos) iSuffixPos = iTmpPos;
+      
+      // count number of hashes directly before the suffix
+      for (string::const_reverse_iterator start (sFileName.begin() + iSuffixPos),
+              it = start, end = sFileName.rend(); it != end; ++it) {
+         if (*it != '#') {
+            // first pos without hash, count hashes
+            nHashes = it - start;
+            break;
+         }
+      }
+   }
+
    void openFile (FileInfo& oInfo, const char *pcMode) throw (FileOpenException) {
       switch (oInfo.eFileFormat) {
         case ioFormatPNM: case ioFormatICL:
@@ -90,60 +117,5 @@ namespace icl {
      /* Return control to the setjmp point */
      longjmp(err->setjmp_buffer, 1);
   }
-
-
-#if 0 // not needed anymore?
-   //--------------------------------------------------------------------------
-   void splitString(const string& line, 
-                    const string& separators,
-                    vector<string> &words) 
-   {
-      // {{{ open
-      FUNCTION_LOG("(string, char*, vector<string>)");
-
-      //---- Initialisation ----
-      std::string::size_type a = 0, e;
-      words.clear();
-
-      //---- Split into substrings ----
-      while ((a = line.find_first_not_of(separators, a)) != std::string::npos) 
-      {
-         e = line.find_first_of(separators, a);
-         if (e != std::string::npos) 
-         {
-            if (line.substr(a, e-a)[0] != '#')
-            {
-               words.push_back(line.substr(a, e-a));
-            }
-            a = e + 1;
-         }
-         else 
-         {
-            words.push_back(line.substr(a));
-            break;
-         }
-      }  
-   }
-  
-   // }}}
-  
-  
-   //--------------------------------------------------------------------------
-   string number2String(int i)
-   {
-      // {{{ open
-      FUNCTION_LOG("(int)");
-      //---- Initialization ----
-      ostringstream oss;
-    
-      //---- conversion ----
-      oss << i;
-    
-      //---- return ----
-      return oss.str();
-   }
-  
-   // }}}
-#endif
 
 } //namespace

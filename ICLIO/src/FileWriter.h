@@ -24,7 +24,8 @@ namespace icl {
        converted to depth8u first.
        If the filename as the pattern prefix##.filetype, the hashes (##)
        are replaced by a number continously incremented on every write
-       operation.
+       operation. To create correctly ordered file names uses as many hashes
+       as you need digits, i.e. #### goes to 0001, 0002, ...
    */
 
    class FileWriter : public Writer {
@@ -43,9 +44,9 @@ namespace icl {
       std::string buildFileName ();
 
       std::string sFilePrefix, sFileSuffix;
-      int         nCounterDigits;
-      int         nCounter;
-      Img<icl8u>  m_oImg8u;
+      unsigned int  nCounterDigits;
+      unsigned int  nCounter;
+      Img<icl8u>    m_oImg8u;
    }; //class
 
 } //namespace icl

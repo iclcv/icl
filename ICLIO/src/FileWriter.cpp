@@ -21,41 +21,21 @@ namespace icl {
       // {{{ open 
 
    {
-      string::size_type iSuffixPos;
-      string::size_type iTmpPos = sFileName.rfind ('.');
-      if (iTmpPos == string::npos) 
-         throw ICLException ("cannot detect file type");
-
-      string sType = sFileName.substr (iTmpPos);
-      if (sType == ".gz" && iTmpPos > 0) { // search further for file type
-         iSuffixPos = sFileName.rfind ('.', iTmpPos-1);
-         sType = sFileName.substr (iSuffixPos);
-      } else iSuffixPos = iTmpPos;
-
       // check for supported file type
       bool bGzipped;
-      if (getFileType (sType, bGzipped) < 0) {
-         throw ICLException ("not supported file type: " + sType);
+      if (getFileType (sFileName, bGzipped) < 0) {
+         throw ICLException ("not supported file type.");
       }
 
-      ICLASSERT (iSuffixPos < sFileName.size());
-
-      // check for hashes      
-      unsigned int nHashes = 0;
-      for (string::const_reverse_iterator start (sFileName.begin() + iSuffixPos),
-              it = start, end = sFileName.rend(); it != end; ++it) {
-         if (*it != '#') {
-            // first pos without hash, count hashes
-            nHashes = it - start;
-            break;
-         }
-      }
+      // check for hashes (directly before the file suffix only)
+      string::size_type iSuffixPos;
+      analyseHashes (sFileName, nCounterDigits, iSuffixPos);
 
       // set variables
-      nCounterDigits = nHashes;
       nCounter = 1;
-      sFileSuffix = sType;
-      sFilePrefix = nCounterDigits ? sFileName.substr (0, iSuffixPos-nHashes) : sFileName;
+      sFileSuffix = sFileName.substr(iSuffixPos);
+      sFilePrefix = nCounterDigits ? sFileName.substr (0, iSuffixPos-nCounterDigits) 
+                                   : sFileName;
    }
 
 // }}}
@@ -67,8 +47,9 @@ namespace icl {
       // if counting is disabled, sFilePrefix contains the whole file name
       if (nCounterDigits == 0) return sFilePrefix;
       
-      ostringstream oss; oss.fill('0'); oss.width(nCounterDigits);
-      oss << sFilePrefix << nCounter << sFileSuffix; 
+      ostringstream oss; oss << sFilePrefix;
+      oss.fill('0'); oss.width(nCounterDigits); 
+      oss << nCounter << sFileSuffix; 
       nCounter++;
       return oss.str ();
    }

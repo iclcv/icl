@@ -28,6 +28,25 @@ namespace icl {
   }
 
   //--------------------------------------------------------------------------
+  string FileReader::hashPattern(const std::string& sFileName) {
+     unsigned int nHashes=0, iSuffixPos=string::npos;
+
+     // count number of hashes directly before file suffix
+     analyseHashes (sFileName, nHashes, iSuffixPos);
+     if (nHashes) {
+        // and replace them by [0-9] regular expressions
+        ostringstream oss;
+        for (unsigned int i=1; i <= nHashes; ++i) {
+           oss << sFileName.substr(0, iSuffixPos-nHashes);
+           for (unsigned int j=1; j <= i; ++j) oss << "[0-9]";
+           oss << sFileName.substr(iSuffixPos) << " ";
+        }
+        return oss.str();
+     }
+     return sFileName;
+  }
+
+  //--------------------------------------------------------------------------
   FileReader::FileReader(string sPattern) throw (ICLException) 
     // {{{ open
     
