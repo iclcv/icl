@@ -129,10 +129,27 @@ $(warning "Qt version 4.2 is not available. Qt-specific targets are not built.")
 endif
 endif
 
+############################# check for Firewire ########################
+# try whether firewire lib is available
+ifneq "$(wildcard /vol/video/lib/libdc1394*.so)" ""
+HAVE_FIREWIRE=TRUE
+else
+ifeq "$(_WARN_FIREWIRE)" ""
+_WARN_FIREWIRE=done # warn only once
+export _WARN_FIREWIRE
+$(warning "Firewire library is not available. Firewire specific targets are not built.")
+endif
+endif
+
 
 # Set the priority level
 DIR_PRIORITY:=ICLUtils ICLCore ICLCC
 DIR_LOWPRIORITY:=examples
 ifeq "$(HAVE_QT)" ""
 SKIP_DIRECTORIES += ICLQt
+endif
+
+#Skip the following object files
+ifeq "$(HAVE_FIREWIRE)" ""
+SKIP_OBJECTS += FwGrabber.cpp
 endif

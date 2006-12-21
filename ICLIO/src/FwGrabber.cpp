@@ -9,7 +9,8 @@
 
 #include <FwGrabber.h>
 #include <Converter.h>
-#include <dc1394/utils.h>
+#include <dc1394/conversions.h>
+//#include <dc1394/utils.h>
 #include <Img.h>
 
 namespace icl {
@@ -22,41 +23,144 @@ namespace icl {
     //---- Variable initialization ----
     m_uiNumCameras = 0;
     m_oCameras = 0;
-    /*
-    switch(eMode) {
-      case MONO8_640x480: m_eRes = DC1394_VIDEO_MODE_640x480_MONO8; break;
-      case MONO8_800x600: m_eRes = DC1394_VIDEO_MODE_800x600_MONO8; break;
-      case MONO8_1024x768: m_eRes = DC1394_VIDEO_MODE_1024x768_MONO8; break;
-      case MONO8_1280x960: m_eRes = DC1394_VIDEO_MODE_1280x960_MONO8; break;
-      case MONO8_1600x1200: m_eRes = DC1394_VIDEO_MODE_1600x1200_MONO8; break;
-      case MONO16_640x480: m_eRes = DC1394_VIDEO_MODE_640x480_MONO16; break;
-      case MONO16_800x600: m_eRes = DC1394_VIDEO_MODE_800x600_MONO16; break;
-      case MONO16_1024x768: m_eRes = DC1394_VIDEO_MODE_1024x768_MONO16; break;
-      case MONO16_1280x960: m_eRes = DC1394_VIDEO_MODE_1280x960_MONO16; break;
-      case MONO16_1600x1200: m_eRes = DC1394_VIDEO_MODE_1600x1200_MONO16;break;
-      case RGB8_640x480: m_eRes = DC1394_VIDEO_MODE_640x480_RGB8; break;
-      case RGB8_800x600: m_eRes = DC1394_VIDEO_MODE_800x600_RGB8; break;
-      case RGB8_1024x768: m_eRes = DC1394_VIDEO_MODE_1024x768_RGB8; break;
-      case RGB8_1280x960: m_eRes = DC1394_VIDEO_MODE_1280x960_RGB8; break;
-      case RGB8_1600x1200: m_eRes = DC1394_VIDEO_MODE_1600x1200_RGB8; break;
-      case YUV422_320x240: m_eRes = DC1394_VIDEO_MODE_320x240_YUV422; break;
-      case YUV422_640x480: m_eRes = DC1394_VIDEO_MODE_640x480_YUV422; break;
-      case YUV422_800x600: m_eRes = DC1394_VIDEO_MODE_800x600_YUV422; break;
-      case YUV422_1024x768: m_eRes = DC1394_VIDEO_MODE_1024x768_YUV422; break;
-      case YUV422_1280x960: m_eRes = DC1394_VIDEO_MODE_1280x960_YUV422; break;
-      case YUV422_1600x1200: m_eRes = DC1394_VIDEO_MODE_1600x1200_YUV422;break;
-      default: m_eRes = m_eRes = DC1394_VIDEO_MODE_640x480_MONO8; break;
-    }
+    int iW, iH;    
+    format eImgFormat;
+    m_poGrabImg = 0;
     
-    switch(uiFps) {
-      case 1: m_eFps =	DC1394_FRAMERATE_1_875; break;
-      case 3: m_eFps =	DC1394_FRAMERATE_3_75; break;
-      case 15: m_eFps = DC1394_FRAMERATE_15; break;
-      case 30: m_eFps = DC1394_FRAMERATE_30; break;
-      case 60: m_eFps = DC1394_FRAMERATE_60; break;
-      default: m_eFps = DC1394_FRAMERATE_15; break;
+    // {{{ Set User defined format 
+
+    switch(eMode) {
+      case MONO8_640x480: 
+        m_oUserVM = DC1394_VIDEO_MODE_640x480_MONO8; 
+        iW = 640; iH = 480;
+        eImgFormat = formatGray;
+        break;
+      case MONO8_800x600: 
+        m_oUserVM = DC1394_VIDEO_MODE_800x600_MONO8; 
+        iW = 800; iH = 600;
+        eImgFormat = formatGray;  
+        break;
+      case MONO8_1024x768: 
+        m_oUserVM = DC1394_VIDEO_MODE_1024x768_MONO8; 
+        iW = 1024; iH = 768;
+        eImgFormat = formatGray;  
+        break;
+      case MONO8_1280x960: 
+        m_oUserVM = DC1394_VIDEO_MODE_1280x960_MONO8; 
+        iW = 1280; iH = 960;
+        eImgFormat = formatGray;  
+        break;
+      case MONO8_1600x1200: 
+        m_oUserVM = DC1394_VIDEO_MODE_1600x1200_MONO8;
+        iW = 1600; iH = 1200;
+        eImgFormat = formatGray;  
+        break;
+      case MONO16_640x480: 
+        m_oUserVM = DC1394_VIDEO_MODE_640x480_MONO16; 
+        iW = 600; iH = 480;
+        eImgFormat = formatGray;  
+        break;
+      case MONO16_800x600: 
+        m_oUserVM = DC1394_VIDEO_MODE_800x600_MONO16; 
+        iW = 800; iH = 600;
+        eImgFormat = formatGray;  
+        break;
+      case MONO16_1024x768: 
+        m_oUserVM = DC1394_VIDEO_MODE_1024x768_MONO16;
+        iW = 1024; iH = 768;
+        eImgFormat = formatGray;  
+        break;
+      case MONO16_1280x960: 
+        m_oUserVM = DC1394_VIDEO_MODE_1280x960_MONO16;
+        iW = 1280; iH = 960;
+        eImgFormat = formatGray;  
+        break;
+      case MONO16_1600x1200:
+        m_oUserVM = DC1394_VIDEO_MODE_1600x1200_MONO16;
+        iW = 1600; iH = 1200;
+        eImgFormat = formatGray;  
+        break;
+      case RGB8_640x480: 
+        m_oUserVM = DC1394_VIDEO_MODE_640x480_RGB8; 
+        iW = 640; iH = 480;
+        eImgFormat = formatRGB;  
+        break;
+      case RGB8_800x600: 
+        m_oUserVM = DC1394_VIDEO_MODE_800x600_RGB8; 
+        iW = 800; iH = 600;
+        eImgFormat = formatRGB;  
+        break;
+      case RGB8_1024x768: 
+        m_oUserVM = DC1394_VIDEO_MODE_1024x768_RGB8; 
+        iW = 1024; iH = 768;
+        eImgFormat = formatRGB;  
+        break;
+      case RGB8_1280x960: 
+        m_oUserVM = DC1394_VIDEO_MODE_1280x960_RGB8; 
+        iW = 1280; iH = 960;
+        eImgFormat = formatRGB;  
+        break;
+      case RGB8_1600x1200: 
+        m_oUserVM = DC1394_VIDEO_MODE_1600x1200_RGB8; 
+        iW = 1600; iH = 1200;
+        eImgFormat = formatRGB;  
+        break;
+      case YUV422_320x240: 
+        iW = 320; iH = 240;
+        eImgFormat = formatYUV422;  
+        m_oUserVM = DC1394_VIDEO_MODE_320x240_YUV422; 
+        break;
+      case YUV422_640x480: 
+        m_oUserVM = DC1394_VIDEO_MODE_640x480_YUV422; 
+        iW = 640; iH = 480;
+        eImgFormat = formatYUV422;  
+        break;
+      case YUV422_800x600: 
+        m_oUserVM = DC1394_VIDEO_MODE_800x600_YUV422; 
+        iW = 800; iH = 600;
+        eImgFormat = formatYUV422;  
+        break;
+      case YUV422_1024x768: 
+        m_oUserVM = DC1394_VIDEO_MODE_1024x768_YUV422;
+        iW = 1024; iH = 768;
+        eImgFormat = formatYUV422;  
+        break;
+      case YUV422_1280x960: 
+        m_oUserVM = DC1394_VIDEO_MODE_1280x960_YUV422;
+        iW = 1280; iH = 960;
+        eImgFormat = formatYUV422;  
+        break;
+      case YUV422_1600x1200:
+        m_oUserVM = DC1394_VIDEO_MODE_1600x1200_YUV422;
+        iW = 1600; iH = 1200;
+        eImgFormat = formatYUV422;  
+        break;
+      default: 
+        m_oUserVM = DC1394_VIDEO_MODE_640x480_YUV422; 
+        iW = 640; iH = 480;
+        eImgFormat = formatYUV422;  
+        break;
     }
-    */
+
+// }}}
+    eImgFormat=formatRGB;
+    m_poGrabImg = new uint8_t[iW*iH*3];
+    m_poRGBImg = imgNew(depth8u, 
+                         Size(iW,iH),
+                         formatRGB);
+    
+    // {{{ Set user defined framerate
+
+    switch(uiFps) {
+      case 1: m_oUserFps =	DC1394_FRAMERATE_1_875; break;
+      case 7: m_oUserFps =	DC1394_FRAMERATE_3_75; break;
+      case 15: m_oUserFps = DC1394_FRAMERATE_15; break;
+      case 30: m_oUserFps = DC1394_FRAMERATE_30; break;
+      case 60: m_oUserFps = DC1394_FRAMERATE_60; break;
+      default: m_oUserFps = DC1394_FRAMERATE_15; break;
+    }
+
+// }}}
   }
 
 // }}}
@@ -65,7 +169,8 @@ namespace icl {
     // {{{ open
 
     // Destroy camera handle
-    //cleanup();
+    cleanup(m_oCameras[0]);
+    delete m_poRGBImg;
   }  
 
 // }}}
@@ -76,16 +181,14 @@ namespace icl {
     dc1394_capture_stop(camera);
     dc1394_video_set_transmission(camera, DC1394_OFF);
     dc1394_free_camera(camera);
+    exit(1);
   }
 
 // }}}
   
   void FwGrabber::init() {
     // {{{ open
-    dc1394color_coding_t oCoding;
-    dc1394video_mode_t video_mode;
-    dc1394framerate_t framerate;
-    unsigned int i;
+    bool bUserVM=FALSE, bUserFps=FALSE;
     
     int err = dc1394_find_cameras(&m_oCameras, &m_uiNumCameras);
     
@@ -108,8 +211,7 @@ namespace icl {
     free(m_oCameras);
     
     /*-----------------------------------------------------------------------
-     *  get the best video mode and highest framerate. This can be skipped
-     *  if you already know which mode/framerate you want...
+     *  Use the right video mode and framerate
      *-----------------------------------------------------------------------*/
     // get video modes:
     if (dc1394_video_get_supported_modes(m_oCameras[0],&m_oVideoModes) != 
@@ -117,44 +219,40 @@ namespace icl {
       ERROR_LOG("Can't get video modes");
       cleanup(m_oCameras[0]);
     }
-
-    // select highest res mode:
-    for (i=m_oVideoModes.num-1;i>=0;i--) {
-      if (!dc1394_is_video_mode_scalable(m_oVideoModes.modes[i])) {
-        dc1394_get_color_coding_from_video_mode(m_oCameras[0],
-                                                m_oVideoModes.modes[i], 
-                                                &oCoding);
-        if (oCoding == DC1394_COLOR_CODING_MONO8) {
-          video_mode = m_oVideoModes.modes[i];
-          break;
-        }
-      }
+    
+    // Check if user selected mode is supported
+    for (unsigned int j=0;j<m_oVideoModes.num;j++) {
+      if (m_oUserVM == m_oVideoModes.modes[j]) bUserVM = TRUE;
     }
-
-    dc1394_get_color_coding_from_video_mode(m_oCameras[0],
-                                            m_oVideoModes.modes[i], 
-                                            &oCoding);
-    if ((dc1394_is_video_mode_scalable(m_oVideoModes.modes[i])) ||
-        (oCoding!=DC1394_COLOR_CODING_MONO8)) {
-      ERROR_LOG("Could not get a valid MONO8 mode");
+    
+    if (!bUserVM) {
+      ERROR_LOG("The user selected format is not supported by this camera");
       cleanup(m_oCameras[0]);
     }
     
-    // get highest framerate
+    // Get supported framerates
     if (dc1394_video_get_supported_framerates(m_oCameras[0],
-                                              video_mode,
+                                              m_oUserVM,
                                               &m_oFps) != DC1394_SUCCESS) {
       ERROR_LOG("Can't get framrates");
       cleanup(m_oCameras[0]);
     }
-    framerate = m_oFps.framerates[m_oFps.num-1];
+    
+    // Check if user selected framerate is supported
+    for (unsigned int j=0;j<m_oFps.num;j++) {
+      if (m_oUserFps == m_oFps.framerates[j]) bUserFps = TRUE;
+    }
+    if (!bUserFps) {
+      ERROR_LOG("The user selected fps is not supported by the camera");
+      cleanup(m_oCameras[0]);
+    }
     
     /*-----------------------------------------------------------------------
      *  setup capture
      *-----------------------------------------------------------------------*/
     dc1394_video_set_iso_speed(m_oCameras[0], DC1394_ISO_SPEED_400);
-    dc1394_video_set_mode(m_oCameras[0], video_mode);
-    dc1394_video_set_framerate(m_oCameras[0], framerate);
+    dc1394_video_set_mode(m_oCameras[0], m_oUserVM);
+    dc1394_video_set_framerate(m_oCameras[0], m_oUserFps);
 
     if (dc1394_capture_setup_dma(m_oCameras[0], 8)!=DC1394_SUCCESS) {
       ERROR_LOG("unable to setup camera-\n");
@@ -171,7 +269,7 @@ namespace icl {
     else {
       dc1394_print_feature_set(&m_oFeatures);
     }
-    
+
     /*-----------------------------------------------------------------------
      *  have the camerastart sending us data
      *-----------------------------------------------------------------------*/
@@ -200,14 +298,6 @@ namespace icl {
       fprintf(stderr,"Camera doesn't seem to want to turn on!\n");
       cleanup(m_oCameras[0]);
     }
-
-    dc1394_get_image_size_from_video_mode(m_oCameras[0],
-                                          video_mode,
-                                          &m_uiDeviceWidth,
-                                          &m_uiDeviceHeight);
-    m_poGrabImg = imgNew(depth8u, 
-                         Size(m_uiDeviceWidth,m_uiDeviceHeight),
-                         formatRGB);
   }
   
 // }}}
@@ -221,33 +311,51 @@ namespace icl {
     /*-----------------------------------------------------------------------
      *  capture frame
      *-----------------------------------------------------------------------*/
-    for (unsigned int i = 0; i < 1; i++) {
-      m_poFrames[i] = dc1394_capture_dequeue_dma (m_oCameras[0], 
-                                                  DC1394_VIDEO1394_WAIT);
-      if (!m_poFrames[i]) {
+    m_poFrames[0] = dc1394_capture_dequeue_dma (m_oCameras[0], 
+                                                DC1394_VIDEO1394_WAIT);
+      if (!m_poFrames[0]) {
         ERROR_LOG("Error: unable to capture frame");
         cleanup(m_oCameras[0]);
       }
-    }
     
-    /*-----------------------------------------------------------------------
-     *  copy to ICL format
-     *-----------------------------------------------------------------------*/
-    r = m_poGrabImg->asImg<icl8u>()->getData(0);
-    g = m_poGrabImg->asImg<icl8u>()->getData(1);
-    b = m_poGrabImg->asImg<icl8u>()->getData(2);
+    // Convert to RGB format
+    SUBSECTION_LOG("Convert to RGB");
+    dc1394_convert_to_RGB8(m_poFrames[0]->image,
+                           m_poGrabImg,
+                           m_poFrames[0]->size[0],
+                           m_poFrames[0]->size[1],
+                           DC1394_BYTE_ORDER_UYVY,
+                           m_poFrames[0]->color_coding,
+                           16);
     
-    for (unsigned int i=0;i<m_poGrabImg->getDim();i+=3)
-    {
-        *r = m_poFrames[0]->image[i];
-        *g = m_poFrames[0]->image[i+1];
-        *b = m_poFrames[0]->image[i+2];
-        printf("%d: %d %d %d\n",i,m_poFrames[0]->image[i],m_poFrames[0]->image[i+1],m_poFrames[0]->image[i+2]);
+    // Copy image to ICL
+    SUBSECTION_LOG("Copy RGB to ICL");
+    r = m_poRGBImg->asImg<icl8u>()->getData(0);
+    g = m_poRGBImg->asImg<icl8u>()->getData(1);
+    b = m_poRGBImg->asImg<icl8u>()->getData(2);
+    
+      for (int i=0;i<m_poRGBImg->getDim()*3;i+=3) {
+        *r = m_poGrabImg[i];
+        *g = m_poGrabImg[i+1];
+        *b = m_poGrabImg[i+2];
         r++; g++; b++;
-    }
-    
-    
-    return m_poGrabImg;
+      }
+
+      // Convert to output format
+      if (poDst) {
+        SUBSECTION_LOG("Convert to destination format");
+        Converter oConv;
+        oConv.convert(poDst, m_poRGBImg);
+        return poDst;
+      } 
+      else {
+        return m_poRGBImg;
+      }
+
+      // Enqueue camera
+      if (m_poFrames[0]) {
+          dc1394_capture_enqueue_dma (m_oCameras[0], m_poFrames[0]);
+      }
   }
   
 // }}}

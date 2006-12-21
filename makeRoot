@@ -162,6 +162,10 @@ endif
 # by the recursive make call
 SKIP_DIRECTORIES:=make
 
+# Please list here the object names that should be excluded (e.g. ICL.cpp)
+# by the recursive make call
+SKIP_OBJECTS:=
+
 # Please put here the directory that has to be executed first
 DIR_PRIORITY:=
 

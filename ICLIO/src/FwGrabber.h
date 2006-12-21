@@ -37,15 +37,18 @@ namespace icl {
      
    private:
      dc1394camera_t **m_oCameras;
-     dc1394video_frame_t *m_poFrames[4];
+     dc1394video_frame_t *m_poFrames[1000];
      dc1394featureset_t m_oFeatures;
      dc1394video_modes_t m_oVideoModes;
+     dc1394video_mode_t m_oUserVM;
      dc1394framerates_t m_oFps;
+     dc1394framerate_t m_oUserFps;
      
      unsigned int m_uiNumCameras;
      unsigned int m_uiDeviceWidth, m_uiDeviceHeight;
-
-     icl::ImgBase *m_poGrabImg;
+     
+     uint8_t *m_poGrabImg;
+     icl::ImgBase *m_poRGBImg;
 
      
      //-----------------------------------------------------------

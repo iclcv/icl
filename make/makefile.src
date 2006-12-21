@@ -14,7 +14,6 @@ ifeq "${_CURR_DIR}" ""
 endif
 
 PROJECT_NAME:= $(notdir $(shell cd ..;pwd))
-
 include makeVar
 
 # Checks if the project is composed by C or C++ source files
@@ -29,7 +28,8 @@ ifneq "${DEBUG_ON}" "TRUE"
  DEBUG:=${NODEBUG}
 endif
 
-_SOURCES_FILENAME = $(wildcard *.${_SOURCES_EXT})
+__SOURCES_FILENAME = $(wildcard *.${_SOURCES_EXT})
+_SOURCES_FILENAME:=$(filter-out ${SKIP_OBJECTS},${__SOURCES_FILENAME})
 TARGET_OBJECTS = $(_SOURCES_FILENAME:%.${_SOURCES_EXT}=../obj/${TARGET_PREFIX}%${TARGET_POSTFIX}.o)
 
 #-----------------------------------------------
