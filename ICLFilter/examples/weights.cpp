@@ -63,6 +63,9 @@ int main() {
    print (src8u, dst, weights.begin());
 
    performance (depth8u);
+   performance (depth16s);
+   performance (depth32s);
    performance (depth32f);
+   performance (depth64f);
    return 0;
 }
