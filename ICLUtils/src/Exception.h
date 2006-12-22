@@ -63,6 +63,15 @@ namespace icl {
       ICLException(std::string("Invalid Format in: ")+functionName) {}
     virtual ~InvalidFormatException() throw() {}
   };
+
+#define ICL_INVALID_DEPTH throw new InvalidDepthException(std::string(__FUNCTION__)+":"+__FILE__+":")
+
+  class InvalidDepthException : public ICLException {
+    public:
+    InvalidDepthException(const std::string &functionName) throw():
+      ICLException(std::string("Invalid Depth in: ")+functionName) {}
+    virtual ~InvalidDepthException() throw() {}
+  };
 }
 
 #endif // ICLEXCEPTION
