@@ -4,6 +4,8 @@
 #include <QFontMetrics>
 #include <QPainter>
 
+#include <Mathematics.h>
+
 using std::string;
 
 namespace icl{
@@ -11,7 +13,8 @@ namespace icl{
   GLPaintEngine::GLPaintEngine(QGLWidget *widget):
     // {{{ open
 
-    m_poWidget(widget),m_bBCIAutoFlag(false), m_oFont(QFont("Arial",30)){
+    m_poWidget(widget),m_bBCIAutoFlag(false), m_oFont(QFont("Arial",30)),
+    m_poImageBufferForIncompatibleDepth(0){
     
     widget->makeCurrent();
     
@@ -37,7 +40,7 @@ namespace icl{
   // }}}
   GLPaintEngine::~GLPaintEngine(){
     // {{{ open
-
+    if(m_poImageBufferForIncompatibleDepth) delete m_poImageBufferForIncompatibleDepth;
     glFlush();
   } 
 
@@ -114,7 +117,7 @@ namespace icl{
     }else{
       // automatic adjustment of brightness and contrast
       float fScaleRGB,fBiasRGB;
-      
+      // auto adaption
       switch (image->getDepth()){
         case depth8u:{
           icl8u tMin,tMax;
@@ -123,9 +126,32 @@ namespace icl{
           fBiasRGB = (- fScaleRGB * tMin)/255.0;
           break;
         }
+        case depth16s:{
+          static const icl16s _max = (65536/2-1);
+          icl16s tMin,tMax;
+          image->asImg<icl16s>()->getMinMax(tMin,tMax);
+          fScaleRGB  = (tMax == tMin) ? _max : _max/(tMax-tMin);
+          fBiasRGB = (- fScaleRGB * tMin)/255.0;
+          break;
+        }
+        case depth32s:{ // drawn as float
+          icl32s tMin,tMax;
+          image->asImg<icl32s>()->getMinMax(tMin,tMax);
+          fScaleRGB  = (tMax == tMin) ? 255 : 255/(tMax-tMin);
+          fBiasRGB = (- fScaleRGB * tMin)/255.0;
+          break;
+        }
         case depth32f:{
           icl32f tMin,tMax;
           image->asImg<icl32f>()->getMinMax(tMin,tMax);
+          fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
+          fBiasRGB = (- fScaleRGB * tMin)/255.0;
+          fScaleRGB /= 255.0;
+          break;
+        }
+        case depth64f:{ // drawn as float
+          icl64f tMin,tMax;
+          image->asImg<icl64f>()->getMinMax(tMin,tMax);
           fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
           fBiasRGB = (- fScaleRGB * tMin)/255.0;
           fScaleRGB /= 255.0;
@@ -143,19 +169,37 @@ namespace icl{
       glPixelTransferf(GL_BLUE_BIAS,fBiasRGB);
     }
   
-    GLenum datatype = image->getDepth() == depth8u ? GL_UNSIGNED_BYTE : GL_FLOAT; // TODO_depth
+    // old
+    // GLenum datatype = image->getDepth() == depth8u ? GL_UNSIGNED_BYTE : GL_FLOAT; // TODO_depth
+    // end old
+    GLenum datatype;
+    switch(image->getDepth()){
+      case depth8u: datatype = GL_UNSIGNED_BYTE; break;
+      case depth16s: datatype = GL_SHORT; break;
+      case depth32s:
+      case depth32f:
+      case depth64f: datatype = GL_FLOAT; break;
+    }
     static GLenum CHANNELS[4] = {GL_RED,GL_GREEN,GL_BLUE,GL_ALPHA};
     
-    if(image->getChannels() > 1){ 
-      for(int i=0;i<4 && i<image->getChannels();i++){
+    ImgBase *drawImage=image;
+
+    if(image->getDepth() == depth32s || image->getDepth() == depth64f){
+      // use fallback image conversion before drawing, as "int" and "double" are not supported yet
+      ensureCompatible((ImgBase**)&m_poImageBufferForIncompatibleDepth,depth32f,image->getParams());
+      drawImage = m_poImageBufferForIncompatibleDepth;
+      image->deepCopy(drawImage);
+    }
+    
+    if(drawImage->getChannels() > 1){ 
+      for(int i=0;i<4 && i<drawImage->getChannels();i++){
         glColorMask(i==0,i==1,i==2,i==3);
-        glDrawPixels(s.width,s.height,CHANNELS[i],datatype,image->getDataPtr(i));
+        glDrawPixels(s.width,s.height,CHANNELS[i],datatype,drawImage->getDataPtr(i));
       }
       glColorMask(1,1,1,1);
-    }else if(image->getChannels() > 0){
-      
+    }else if(drawImage->getChannels() > 0){
       glColorMask(1,1,1,0);
-      glDrawPixels(s.width,s.height,GL_LUMINANCE,datatype,image->getDataPtr(0));
+      glDrawPixels(s.width,s.height,GL_LUMINANCE,datatype,drawImage->getDataPtr(0));
     }
   }
 
@@ -320,6 +364,13 @@ namespace icl{
         else  glPixelStorei(GL_UNPACK_ALIGNMENT,8);
         break;
       }
+      case depth16s:{
+        if(linewidth%2) glPixelStorei(GL_UNPACK_ALIGNMENT,2);
+        else if(linewidth%4) glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+        else  glPixelStorei(GL_UNPACK_ALIGNMENT,8);
+        break;
+      }        
+      case depth32s:
       case depth32f:{
         if(linewidth%2) glPixelStorei(GL_UNPACK_ALIGNMENT,4);
         else glPixelStorei(GL_UNPACK_ALIGNMENT,8);
@@ -336,14 +387,27 @@ namespace icl{
     // {{{ open
     (void)intensity;
     float fBiasRGB = (float)brightness/255.0;
-    float fScaleRGB = d == depth8u ? 1.0 : 1.0/255;  //TODO_depth
+    
+    // old
+    // float fScaleRGB = d == depth8u ? 1.0 : 1.0/255;  //TODO_depth
+    // end old
+    float fScaleRGB;
+    switch(d){
+      case depth8u:
+        fScaleRGB = 1; break;
+      case depth16s:
+        fScaleRGB = 127; break; // or 255 ?
+      case depth32s:
+      case depth32f:
+      case depth64f:
+        fScaleRGB = 1.0/255; break;
+    }
         
     float c = (float)contrast/255;
     if(c>0) c*=10;
     fScaleRGB*=(1.0+c);
     fBiasRGB-=c/2;
 
-   
     glPixelTransferf(GL_RED_SCALE,fScaleRGB);
     glPixelTransferf(GL_GREEN_SCALE,fScaleRGB);
     glPixelTransferf(GL_BLUE_SCALE,fScaleRGB);

@@ -65,6 +65,9 @@ namespace icl{
     bool m_bBCIAutoFlag;
 
     QFont m_oFont;
+
+    private:
+    Img32f *m_poImageBufferForIncompatibleDepth;
   };
 }// namespace
 #endif

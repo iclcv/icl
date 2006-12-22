@@ -4,444 +4,294 @@
 #include <QVector>
 #include <Img.h>
 #include <ICLCore.h>
-#include <map>
-
-#ifdef WITH_IPP_OPTIMIZATION
-#include <ippi.h>
-#include <ipps.h>
-#endif
+#include <ICLcc.h>
 
 namespace icl{
 
-  // {{{ hidden memory management data and functions
+template<class T>
+void img_to_qimage(const Img<T> *src, QImage *&dst){
+  // {{{ open
 
-  namespace qimageconverter{
-    static int g_iRC(0);
-    static QVector<QRgb> g_qvecPalette;
-    
-    static std::vector<icl32f> g_vecBuffer32f;
-    static std::map<int,std::vector<icl32f> > g_mapBuffer32f;
-    static std::vector<icl8u> g_vecBuffer8u;
-    static std::map<int,std::vector<icl8u> > g_mapBuffer8u;
-
-    static Img8u g_ImgBuffer8u;    
-    
-    void inc(){
-      // {{{ open
-
-      g_iRC++;
-    }
-
-    // }}}
-    void dec(){
-      // {{{ open
-
-      g_iRC--;
-      if(!g_iRC){
-        g_qvecPalette.clear();
-        g_vecBuffer32f.clear();
-        g_vecBuffer8u.clear();
-        for(std::map<int,std::vector<icl32f> >::iterator it = g_mapBuffer32f.begin();
-            it!=g_mapBuffer32f.end(); ++it){
-          (*it).second.clear();
-        }
-        for(std::map<int,std::vector<icl8u> >::iterator it = g_mapBuffer8u.begin();
-            it!=g_mapBuffer8u.end(); ++it){
-          (*it).second.clear();
-        }
-      }
-    }
-
-    // }}}
-  
-    void ensureQImage(QImage *&qimage, int w, int h, QImage::Format f){
-      // {{{ open
-
-    if(!g_qvecPalette.size()){ for(int i=0;i<255;++i)g_qvecPalette.push_back(qRgb(i,i,i)); }
-    
-    if(!qimage){
-      qimage = new QImage(w,h,f);
-      if(f == QImage::Format_Indexed8){
-        qimage->setColorTable(g_qvecPalette);
-      }
-    }
-    else{
-      if(qimage->width() != w || qimage->height() != h || qimage->format() != f){
-        *qimage = QImage(w,h,f);
-        if(f == QImage::Format_Indexed8){
-          qimage->setColorTable(g_qvecPalette);
-        }
-      }
-    }    
+  ICLASSERT_RETURN(src);
+  static QVector<QRgb> palette;
+  if(!palette.size()){ for(int i=0;i<255;++i)palette.push_back(qRgb(i,i,i)); }
+  int w = src->getWidth();
+  int h = src->getHeight();
+  if(!dst){
+    dst = new QImage(1,1,QImage::Format_Indexed8);
+    dst->setColorTable(palette);
   }
 
-  // }}}
-    icl32f *getBuffer32f(unsigned int size, int id=0){
-      // {{{ open
-    if(!id){
-      if(g_vecBuffer32f.size() < size) g_vecBuffer32f.resize(size);
-      return &(g_vecBuffer32f[0]);
-    }else{
-      std::vector<icl32f> &ref = g_mapBuffer32f[id];
-      if(ref.size() < size) ref.resize(size);
-      return &(ref[0]);
+  if(src->getChannels() == 1){
+    if(dst->width() != w || dst->height() != h || dst->format() != QImage::Format_Indexed8){
+      delete dst;
+      dst = new QImage(w,h,QImage::Format_Indexed8);
+      dst->setColorTable(palette);
     }
-  }
-
-  // }}}
-    icl8u *getBuffer8u(unsigned int size,int id=0){
-      // {{{ open
-    if(!id){
-      if(g_vecBuffer8u.size() < size) g_vecBuffer8u.resize(size);
-      return &(g_vecBuffer8u[0]);
-    }else{
-      std::vector<icl8u> &ref = g_mapBuffer8u[id];
-      if(ref.size() < size) ref.resize(size);
-      return &(ref[0]);
+  }else{
+    if(dst->width() != w || dst->height() != h || dst->format() != QImage::Format_RGB32){
+      delete dst;
+      dst = new QImage(w,h,QImage::Format_RGB32);
     }
-  }
-
-  // }}}
-
-    void copy_8u_C3P3R_function(const icl8u* src, int srcstep, icl8u** dsts, int dststep, const Size &size){
-#ifdef WITH_IPP_OPTIMIZATION
-      ippiCopy_8u_C3P3R(src,srcstep, dsts,dststep, size);
-#else
-      icl8u *d1 = dsts[0];
-      icl8u *d2 = dsts[1];
-      icl8u *d3 = dsts[2];
-      icl8u *d4 = dsts[3];
-      int srcLineWrap = srcstep-4*size.width*sizeof(icl8u);
-      int dstLineWrap = dststep-size.width*sizeof(icl8u);
-      if(!dstLineWrap && !srcLineWrap){
-        for(const icl8u* srcEnd=src+size.getDim()*4; src<srcEnd;++d1,++d2,++d3,++d4){
-          *d1 = *src++;
-          *d2 = *src++;
-          *d3 = *src++;
-          *d4 = *src++;
-        }
-      }else{
-        for(int y=0;y<size.height;y++){
-          for(int x=0;x<size.width;x++){            
-            *d1 = *src++;
-            *d2 = *src++;
-            *d3 = *src++;
-            *d4 = *src++;
-          }
-          d1+=dstLineWrap;
-          d2+=dstLineWrap;
-          d3+=dstLineWrap;
-          d4+=dstLineWrap;
-          src+=srcLineWrap;
-        }        
-      }
-#endif
-    }
-    
-    
-    void copy_8u_P4C4R_function(const icl8u **srcs, int srcstep, icl8u *dst, int dststep, const Size &size){
-      // {{{ open
-
-#ifdef WITH_IPP_OPTIMIZATION
-      ippiCopy_8u_P4C4R(srcs,srcstep,dst,dststep, size);
-#else
-      const icl8u *s1 = srcs[0];
-      const icl8u *s2 = srcs[1];
-      const icl8u *s3 = srcs[2];
-      const icl8u *s4 = srcs[3];
-      int dstLineWrap = dststep-4*size.width*sizeof(icl8u);
-      int srcLineWrap = srcstep-size.width*sizeof(icl8u);
-      if(!dstLineWrap && !srcLineWrap){
-        for(icl8u* dstEnd=dst+size.getDim()*4; dst<dstEnd;++s1,++s2,++s3,++s4){
-          *dst++ = *s1;
-          *dst++ = *s2;
-          *dst++ = *s3;
-          *dst++ = *s4;        
-        }
-      }else{
-        for(int y=0;y<size.height;y++){
-          for(int x=0;x<size.width;x++){            
-            *dst++ = *s1++;
-            *dst++ = *s2++;
-            *dst++ = *s3++;
-            *dst++ = *s4++; 
-          }
-          dst+=dstLineWrap;
-          s1+=srcLineWrap;
-          s2+=srcLineWrap;
-          s3+=srcLineWrap;
-          s4+=srcLineWrap;
-        }        
-      }
-#endif
-    }
-
-    // }}}
   }
   
-  using namespace qimageconverter;
-
-  // }}}
-
-  // {{{ defines
-
-#define IDX8U 0
-#define IDX32F 1
-#define IDXQ 2
-
-#define STU m_eStates[IDX8U]  
-#define STF m_eStates[IDX32F]  
-#define STQ m_eStates[IDXQ]  
-
-#define CHECK ICLASSERT_RETURN_VAL( m_poImgBuffer8u || m_poImgBuffer32f || m_poQImageBuffer , 0); \
-              ICLASSERT_RETURN_VAL( STU == given || STF == given || STQ == given , 0);
-
-  // }}}
-  // {{{ Constructors / Destructor
-
-  QImageConverter::QImageConverter():
-    // {{{ open
-
-    m_poImgBuffer8u(0),
-    m_poImgBuffer32f(0),
-    m_poQImageBuffer(0){
-    STU=STF=STQ=undefined;
-    inc();
-  }
-
-  // }}}
+  static Img<T> bBuf(Size(1,1),1),wBuf(Size(1,1),1);
+  std::vector<T*> channelVec;
   
-  QImageConverter::QImageConverter(const ImgBase *image):
-    // {{{ open
-
-    m_poImgBuffer8u(0),
-    m_poImgBuffer32f(0),
-    m_poQImageBuffer(0)
-  {
-    setImage(image);
-    inc();
-  }
-
-  // }}}
-  
-  QImageConverter::QImageConverter(const QImage *qimage):
-    // {{{ open
-
-    m_poImgBuffer8u(0),
-    m_poImgBuffer32f(0),
-    m_poQImageBuffer(0)
-  {
-    setQImage(qimage);
-    inc();
-  }
-
-  // }}}
-
-  QImageConverter::~QImageConverter(){
-    // {{{ open
-
-    if(m_poImgBuffer8u) delete m_poImgBuffer8u;
-    if(m_poImgBuffer32f) delete m_poImgBuffer32f;
-    if(m_poQImageBuffer) delete m_poQImageBuffer;
-    dec();
-  }
-
-  // }}}
-
-  // }}}
-  // {{{ image-getter
-
-  const QImage *QImageConverter::getQImage(){
-    // {{{ open
-
-    CHECK;
-    if(STQ <= uptodate) return m_poQImageBuffer;
-    if(STU <= uptodate) return img8uToQImage(m_poImgBuffer8u,m_poQImageBuffer);
-    else return img32fToQImage(m_poImgBuffer32f,m_poQImageBuffer);
-  }
-
-  // }}}
-
-  const ImgBase *QImageConverter::getImage(){
-    // {{{ open
-
-    CHECK;
-    if(STU <= uptodate) return m_poImgBuffer8u;
-    if(STF <= uptodate) return m_poImgBuffer32f;
-    else return qimageToImg8u(m_poQImageBuffer,m_poImgBuffer8u);
-  }
-
-  // }}}
-
-  const Img8u *QImageConverter::getImg8u(){
-    // {{{ open
-
-    CHECK;
-    if(STU <= uptodate) return m_poImgBuffer8u;
-    if(STF <= uptodate) return m_poImgBuffer32f->deepCopy(m_poImgBuffer8u)->asImg<icl8u>();
-    else return qimageToImg8u(m_poQImageBuffer,m_poImgBuffer8u);
-  }
-
-  // }}}
-
-  const Img32f *QImageConverter::getImg32f(){
-    // {{{ open
-
-    CHECK;
-    if(STF <= uptodate) return m_poImgBuffer32f;
-    if(STU <= uptodate) return m_poImgBuffer8u->deepCopy(m_poImgBuffer32f)->asImg<icl32f>();
-    else return qimageToImg32f(m_poQImageBuffer,m_poImgBuffer32f);
-  }
-
-  // }}}
-
-  // }}}
-  // {{{ image-setter
-
-  void QImageConverter::setImage(const ImgBase *image){
-    // {{{ open
-
-    ICLASSERT_RETURN( image );
-
-    switch (image->getDepth()){
-      case depth8u:{
-        if(m_poImgBuffer8u && STU != given) delete m_poImgBuffer8u;
-        STU = given;
-        STF = undefined;
-        STQ = undefined;
-        m_poImgBuffer8u = image->asImg<icl8u>();
-        break;
+  switch(src->getChannels()){
+    case 1: 
+      planarToInterleaved<T,icl8u>(src, dst->bits());
+      break;
+    case 2:{
+      if(wBuf.getDim() < src->getDim()){
+        wBuf.setSize(src->getSize());
+        wBuf.clear(-1,255,false);
+        bBuf.setSize(src->getSize());
       }
-      case depth32f:{
-        if(m_poImgBuffer32f && STF != given) delete m_poImgBuffer32f;
-        STF = given;
-        STU = undefined;
-        STQ = undefined;
-        m_poImgBuffer32f = image->asImg<icl32f>();
-        break;
+      channelVec.push_back(src->getData(0));
+      channelVec.push_back(bBuf.getData(0));
+      channelVec.push_back(src->getData(1));
+      channelVec.push_back(wBuf.getData(0));
+      Img<T> tmp(src->getSize(),4,channelVec);
+      planarToInterleaved<T,icl8u>(&tmp,dst->bits());
+      break;
+    }
+    case 3:{
+      if(wBuf.getDim() < src->getDim()){
+        wBuf.setSize(src->getSize());
+        wBuf.clear(-1,255,false);
       }
-      default:
-        ICL_INVALID_FORMAT;
-        break;
+      channelVec.push_back(src->getData(2));
+      channelVec.push_back(src->getData(1));
+      channelVec.push_back(src->getData(0));
+      channelVec.push_back(wBuf.getData(0));
+      Img<T> tmp(src->getSize(),4,channelVec);
+
+      planarToInterleaved<T,icl8u>(&tmp,dst->bits());
+      break;
+    }
+    default:{
+      channelVec.push_back(src->getData(2));
+      channelVec.push_back(src->getData(1));
+      channelVec.push_back(src->getData(0));
+      channelVec.push_back(src->getData(3));
+      Img<T> tmp(src->getSize(),4,channelVec);
+      planarToInterleaved<T,icl8u>(&tmp,dst->bits());
+      break;
     }
   }
+}
 
   // }}}
 
-  void QImageConverter::setQImage(const QImage *qimage){
-    // {{{ open
-
-    ICLASSERT_RETURN( qimage );
-    STU=STF=undefined;
-    if(m_poQImageBuffer && STQ != given) delete m_poQImageBuffer;
-    STQ = given;
-    m_poQImageBuffer = const_cast<QImage*>(qimage);
-    
-  } 
-
-  // }}}
-
-  // }}}
-
-  // {{{ XXXToYYY-Functions
-
-  const QImage *QImageConverter::img32fToQImage(Img32f *image, QImage *&qimage){
-    // {{{ open
-    ICLASSERT_RETURN_VAL( image && image->getChannels() > 0, 0);
-    image->convertTo<icl8u>(&g_ImgBuffer8u);
-    return img8uToQImage(&g_ImgBuffer8u,qimage);
-  }
-    // }}}
+template<class T>
+void qimage_to_img(const QImage *src, Img<T> **ppDst){
+  // {{{ open
+  Img<T> *&dst = *ppDst;
   
-  const QImage *QImageConverter::img8uToQImage(Img8u *image, QImage *&qimage){
-    // {{{ open
-
-    // {{{ variable declaration
-
-    ICLASSERT_RETURN_VAL( image && image->getChannels() > 0, 0);
-   
-    int c = image->getChannels();
-    int w = image->getWidth();
-    int h = image->getHeight();
-    int dim = c*w*h;
-    const Size &s = image->getSize();
-    int step = image->getLineStep();
-    const icl8u *ap[4];
-    // }}}
-    
-
-    switch(image->getChannels()){
-      case 1:
-        ensureQImage(qimage,w,h,QImage::Format_Indexed8);
-        icl::copy(image->getData(0),image->getData(0)+w*h,qimage->bits());
-        break;
-      case 2:{
-        ap[0] = image->getData(0); //using b and r channel
-        ap[1] = getBuffer8u(dim,0);
-        ap[2] = image->getData(1);
-        ap[3] = getBuffer8u(dim,1);
-        ensureQImage(qimage,w,h,QImage::Format_RGB32);
-        copy_8u_P4C4R_function(ap,step,qimage->bits(),4*step,s);
-        break;
-      }        
-      case 3:
-        ap[0] = image->getData(2); // qt byter order bgra
-        ap[1] = image->getData(1);
-        ap[2] = image->getData(0);
-        ap[3] = getBuffer8u(dim,0);
-        ensureQImage(qimage,w,h,QImage::Format_RGB32);
-        copy_8u_P4C4R_function(ap,step,qimage->bits(),4*step,s);
-        break;
-      default:
-        ap[0] = image->getData(2); // qt byter order bgra
-        ap[1] = image->getData(1);
-        ap[2] = image->getData(0);
-        ap[3] = image->getData(3);
-        ensureQImage(qimage,w,h,QImage::Format_RGB32);
-        copy_8u_P4C4R_function(ap,step,qimage->bits(),4*step,s);
-        break;
-    }
-    STQ=uptodate;
-    return qimage;
+  ICLASSERT_RETURN(src);
+  ICLASSERT_RETURN(!src->isNull());
+  if(!dst) dst = new Img<T>(Size(1,1),1);
+  
+  if(src->format() == QImage::Format_Indexed8){
+    dst->setFormat(formatGray);
+  }else{
+    dst->setFormat(formatRGB);
   }
-
-  // }}}
-
-  const Img8u *QImageConverter::qimageToImg8u(QImage *qimage, Img8u *&image){
-    // {{{ open
-
-    ICLASSERT_RETURN_VAL(qimage && !qimage->isNull() ,0);
-    ensureCompatible((ImgBase**)&image,depth8u,Size(qimage->width(),qimage->height()),3);
-    icl8u *ap[3] = { image->getData(0), image->getData(1), image->getData(2) };
-    copy_8u_C3P3R_function(qimage->bits(),image->getLineStep()*3, ap, image->getLineStep(),image->getSize());
-
-    STU = uptodate;
-    return image;
+  dst->setSize(Size(src->width(),src->height()));
+  //append temporarily a white image channel
+  static Img<T> wBuf(Size(1,1),formatGray);
+  if(wBuf.getDim() < src->width()*src->height()){
+    wBuf.setSize(Size(src->width(),src->height()));
   }
+  std::vector<T*> vecChannels;
+  vecChannels.push_back(dst->getData(2));
+  vecChannels.push_back(dst->getData(1));
+  vecChannels.push_back(dst->getData(0));
+  vecChannels.push_back(wBuf.getData(0));
+  Img<T> tmp(dst->getSize(),4,vecChannels);
+
+  interleavedToPlanar(src->bits(), dst->getSize(),4,&tmp);
+}
 
   // }}}
 
-  const Img32f *QImageConverter::qimageToImg32f(QImage *qimage, Img32f *&image){
-    // {{{ open
+QImageConverter::QImageConverter(){
+  // {{{ open
 
-    ICLASSERT_RETURN_VAL(qimage && !qimage->isNull() ,0);  
-    ensureCompatible((ImgBase**)&image,depth32f,Size(qimage->width(),qimage->height()),3);
-    
-    int dim = image->getDim();
-    icl8u *buf = getBuffer8u(image->getDim()*3);
-    icl8u *ap[] = { buf,buf+dim,buf+2*dim };
-    copy_8u_C3P3R_function(qimage->bits(),3*dim, ap, dim,image->getSize());
-    icl::copy(ap[0],ap[0]+dim,image->getData(0));
-    icl::copy(ap[1],ap[1]+dim,image->getData(1));
-    icl::copy(ap[2],ap[2]+dim,image->getData(2));
-
-    STF = uptodate;
-    return image;  
+  for(int i=0;i<5;i++){
+    m_aeStates[5]=undefined;
+    m_apoBuf[i]=0;
   }
+  m_poQBuf = 0;
+  m_eQImageState=undefined;
+}
 
-  // }}}
+// }}}
 
-  // }}}
+QImageConverter::QImageConverter(const ImgBase *image){
+  // {{{ open
+
+  for(int i=0;i<5;i++){
+    m_aeStates[5]=undefined;
+    m_apoBuf[i]=0;
+  }
+  m_poQBuf = 0;
+  m_eQImageState=undefined;
+  setImage(image);
+}
+
+// }}}
+
+QImageConverter::QImageConverter(const QImage *qimage){
+  // {{{ open
+
+  for(int i=0;i<5;i++){
+    m_aeStates[5]=undefined;
+    m_apoBuf[i]=0;
+  }
+  m_poQBuf = 0;
+  m_eQImageState=undefined;
+  setQImage(qimage);
   
 }
 
+// }}}
+
+QImageConverter::QImageConverter::~QImageConverter(){
+  // {{{ open
+
+  if(m_poQBuf && m_eQImageState != given){
+    delete m_poQBuf;
+  }
+  for(int i=0;i<5;i++){
+    if(m_apoBuf[i] && m_aeStates[i] != given){
+      delete m_apoBuf[i];
+    }
+  }
+}
+
+// }}}
+    
+
+const QImage *QImageConverter::getQImage(){
+  // {{{ open
+
+  if(m_eQImageState < 2) return m_poQBuf;
+  for(int i=0;i<5;i++){
+    if(m_aeStates[i] < 2){
+      switch((depth)i){
+        case depth8u:{
+          img_to_qimage(m_apoBuf[i]->asImg<icl8u>(), m_poQBuf); 
+          break;
+        }
+        case depth16s: img_to_qimage(m_apoBuf[i]->asImg<icl16s>(), m_poQBuf); break;
+        case depth32s: img_to_qimage(m_apoBuf[i]->asImg<icl32s>(), m_poQBuf); break;
+        case depth32f: img_to_qimage(m_apoBuf[i]->asImg<icl32f>(), m_poQBuf); break;
+        case depth64f: img_to_qimage(m_apoBuf[i]->asImg<icl64f>(), m_poQBuf); break;
+        default: ICL_INVALID_DEPTH;
+      }          
+      m_eQImageState = uptodate;
+      return  m_poQBuf;
+    }
+  }
+  WARNING_LOG("could not create a QImage because no image/qimage was given yet!");
+  return 0;
+}
+
+// }}}
+
+const ImgBase *QImageConverter::getImgBase(depth d){
+  // {{{ open
+
+  switch(d){
+    case depth8u:  return getImg<icl8u>();
+    case depth16s: return getImg<icl16s>();
+    case depth32s: return getImg<icl32s>();
+    case depth32f: return getImg<icl32f>();
+    case depth64f: return getImg<icl64f>();
+    default:
+      ICL_INVALID_DEPTH;
+  }
+  return 0;
+}
+
+// }}}
+
+template<class T>
+const Img<T> *QImageConverter::getImg(){
+  // {{{ open
+
+  depth d = getDepth<T>();
+  if(m_aeStates[d] < 2) return m_apoBuf[d]->asImg<T>();
+  // else find a given image
+  for(int i=0;i<5;i++){
+    if(i!=d && m_aeStates[i] < 2){
+      m_apoBuf[d] = m_apoBuf[i]->deepCopy(m_apoBuf[d]);
+      m_aeStates[d] = uptodate;
+      return m_apoBuf[d]->asImg<T>();
+    }
+  }
+  // check if the qimage was given
+  if(m_eQImageState < 2){
+    qimage_to_img(m_poQBuf,reinterpret_cast<Img<T>**>(&m_apoBuf[d]));
+    m_aeStates[d] = uptodate;
+    return m_apoBuf[d]->asImg<T>();
+  }
+  WARNING_LOG("could not create an Image because no image/qimage was given yet!");
+  return 0;
+}
+
+// }}}
+
+void QImageConverter::setImage(const ImgBase *image){
+  // {{{ open
+
+  ICLASSERT_RETURN( image );
+  depth d = image->getDepth();
+
+  for(int i=0;i<5;i++){
+    if(i==d){
+      if(m_apoBuf[i] && m_aeStates[i] != given){
+        delete m_apoBuf[i];
+      }
+      m_aeStates[i] = given;
+      m_apoBuf[i] = const_cast<ImgBase*>(image);
+    }else{
+      if(m_aeStates[i] == given){
+        m_apoBuf[i] = 0;
+      }
+      m_aeStates[i] = undefined;
+    }
+  }  
+  if(m_eQImageState == given){
+    m_poQBuf = 0;
+  }
+  m_eQImageState = undefined;
+}
+
+// }}}
+
+void QImageConverter::setQImage(const QImage *qimage){
+  // {{{ open
+
+  ICLASSERT_RETURN( qimage );
+  ICLASSERT_RETURN( !qimage->isNull() );
+  
+  for(int i=0;i<5;i++){
+    if(m_apoBuf[i] && m_aeStates[i] == given){
+      m_apoBuf[i] = 0;
+    }
+    m_aeStates[i] = undefined;
+  }
+  if(m_poQBuf && m_eQImageState != given){
+    delete m_poQBuf;
+  }
+  m_poQBuf = const_cast<QImage*>(qimage);
+  m_eQImageState = given;
+}
+
+// }}}
+
+ 
+} // namespace icl

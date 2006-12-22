@@ -22,7 +22,7 @@ namespace icl{
   // }}}
   QtPaintEngine::~QtPaintEngine(){
     // {{{ open
-
+    if(m_poScaledImage) delete m_poScaledImage;
     m_oPainter.end();
   } 
 
@@ -77,6 +77,7 @@ namespace icl{
     ensureCompatible(&m_poScaledImage,image->getDepth(),r.size(),image->getChannels());
     image->scaledCopy(m_poScaledImage);
     m_oQImageConverter.setImage(m_poScaledImage);
+
     this->image(r,*(m_oQImageConverter.getQImage()),mode);
   }
 

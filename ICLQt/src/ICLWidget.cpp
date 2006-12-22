@@ -268,17 +268,64 @@ namespace icl{
     if(!op.on || !input){
       return;
     }
-    
+
     m_oMutex.lock();    
+    
+    m_eRealInupuImagesDepth = input->getDepth();    
+    
     if(op.c<0){
-      ensureCompatible(&m_poImage,input);
-      input->deepCopy(m_poImage);
-    }else if(op.c < input->getChannels()){ // copy the specific image channel
-      ensureCompatible(&m_poImage,input->getDepth(),input->getSize(),1,formatMatrix);
+      /// new 
       switch(input->getDepth()){
-        case depth8u: deepCopyChannel(input->asImg<icl8u>(),op.c,m_poImage->asImg<icl8u>(),0); break;
-        case depth32f: deepCopyChannel(input->asImg<icl32f>(),op.c,m_poImage->asImg<icl32f>(),0); break;
+        case depth8u:       /****************************************/
+        case depth16s:      /* This formats can be drawn natively   */
+          ensureCompatible(&m_poImage,input); /**********************/
+          break;
+        case depth32f:      /****************************************/
+        case depth32s:      /* This formats are converted to float  */
+        case depth64f:      /****************************************/
+          // depth64f is converted to 32f float -> 64f doubles are not supported by OpenGL
+          ensureCompatible(&m_poImage,depth32f,input->getSize(),input->getChannels(),input->getFormat());
+          break;
+        default:
+          ICL_INVALID_DEPTH;
       }
+      input->deepCopy(m_poImage);
+      /// old
+      //ensureCompatible(&m_poImage,input);
+      //input->deepCopy(m_poImage);
+      /// end eld
+    }else if(op.c < input->getChannels()){ // copy the specific image channel
+      switch(input->getDepth()){
+        case depth8u:
+          ensureCompatible(&m_poImage,input->getDepth(),input->getSize(),1,formatMatrix);
+          deepCopyChannel(input->asImg<icl8u>(),op.c,m_poImage->asImg<icl8u>(),0); 
+          break;    
+        case depth16s:  
+          ensureCompatible(&m_poImage,input->getDepth(),input->getSize(),1,formatMatrix);
+          deepCopyChannel(input->asImg<icl16s>(),op.c,m_poImage->asImg<icl16s>(),0); 
+          break;    
+        case depth32s:  
+          ensureCompatible(&m_poImage,depth32f,input->getSize(),1,formatMatrix);
+          deepCopyChannel(input->asImg<icl32s>(),op.c,m_poImage->asImg<icl32f>(),0);  // special case here ! 
+          break;    
+        case depth32f:
+          ensureCompatible(&m_poImage,depth32f,input->getSize(),1,formatMatrix);
+          deepCopyChannel(input->asImg<icl32f>(),op.c,m_poImage->asImg<icl32f>(),0); 
+          break;
+        case depth64f:
+          ensureCompatible(&m_poImage,depth32f,input->getSize(),1,formatMatrix);
+          deepCopyChannel(input->asImg<icl64f>(),op.c,m_poImage->asImg<icl32f>(),0);  // special case here!
+          break;
+        default:
+          ICL_INVALID_DEPTH;
+      }
+      //old
+      //ensureCompatible(&m_poImage,input->getDepth(),input->getSize(),1,formatMatrix);
+      //switch(input->getDepth()){
+      //  case depth8u: deepCopyChannel(input->asImg<icl8u>(),op.c,m_poImage->asImg<icl8u>(),0); break;
+      //  case depth32f: deepCopyChannel(input->asImg<icl32f>(),op.c,m_poImage->asImg<icl32f>(),0); break;
+      //}
+      // end old
     }else{
       if(m_poImage){
         delete m_poImage;
@@ -383,7 +430,7 @@ namespace icl{
       info.push_back("Image is NULL");
       return info;
     }
-    info.push_back(string("depth:   ")+translateDepth(i->getDepth()).c_str());
+    info.push_back(string("depth:   ")+translateDepth(m_eRealInupuImagesDepth).c_str());
     info.push_back(string("size:    ")+QString::number(i->getSize().width).toLatin1().data()+" x "+
                    QString::number(i->getSize().height).toLatin1().data());
     info.push_back(string("channels:")+QString::number(i->getChannels()).toLatin1().data());
@@ -406,6 +453,22 @@ namespace icl{
         }   
         break;
       }
+      case depth16s: {
+        for(int a=0;a<i->getChannels();a++){
+          char ac[200];
+          sprintf(ac,"channel %d, min:%d, max:%d",a,i->asImg<icl16s>()->getMin(a),i->asImg<icl16s>()->getMax(a));
+          info.push_back(ac);
+        }   
+        break;
+      }
+      case depth32s: { // this case does not occur, as 32s images are drawn as 32f-ones
+        for(int a=0;a<i->getChannels();a++){
+          char ac[200];
+          sprintf(ac,"channel %d, min:%d, max:%d",a,i->asImg<icl32s>()->getMin(a),i->asImg<icl32s>()->getMax(a));
+          info.push_back(ac);
+        }   
+        break;
+      }
       case depth32f:{
         for(int a=0;a<i->getChannels();a++){
           char ac[200];
@@ -414,6 +477,15 @@ namespace icl{
         }
         break;
       }
+      case depth64f:{ // this case does not occur, as 32s images are drawn as 32f-ones
+        for(int a=0;a<i->getChannels();a++){
+          char ac[200];
+          sprintf(ac,"channel %d, min:%f, max:%f",a,i->asImg<icl64f>()->getMin(a),i->asImg<icl64f>()->getMax(a));
+          info.push_back(ac);
+        }
+        break;
+      }
+
       default:
         ICL_INVALID_FORMAT;
         break;
@@ -511,21 +583,36 @@ namespace icl{
       m_oMouseInfo.imageY = (int)round((boxY*(m_poImage->getSize().height))/r.height);
       m_oMouseInfo.color.resize(0);
       switch (m_poImage->getDepth()){
-      case depth8u:
-        for(int c=0;c<m_poImage->getChannels();c++){
-          m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl8u>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
-        }
-        break;
-      case depth32f:
-        for(int c=0;c<m_poImage->getChannels();c++){
-          m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl32f>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
-        }
-        break;
-
-      default:
-        ICL_INVALID_FORMAT;
-        break;
-    }
+        case depth8u:
+          for(int c=0;c<m_poImage->getChannels();c++){
+            m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl8u>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
+          }
+          break; 
+        case depth16s:
+          for(int c=0;c<m_poImage->getChannels();c++){
+            m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl16s>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
+          }
+          break;
+        case depth32s:
+          for(int c=0;c<m_poImage->getChannels();c++){
+            m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl32s>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
+          }
+          break;
+        case depth32f:
+          for(int c=0;c<m_poImage->getChannels();c++){
+            m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl32f>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
+          }
+          break;
+        case depth64f:
+          for(int c=0;c<m_poImage->getChannels();c++){
+            m_oMouseInfo.color.push_back((float)(*(m_poImage->asImg<icl64f>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
+          }
+          break;
+          
+        default:
+          ICL_INVALID_FORMAT;
+          break;
+      }
     }else{
       m_oMouseInfo.imageX = -1;
       m_oMouseInfo.imageY = -1;

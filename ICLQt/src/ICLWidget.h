@@ -24,9 +24,11 @@
 
 #include <Converter.h>
 #include <PaintEngine.h>
+#include <ICLTypes.h>
 
 #include <MouseInteractionInfo.h>
 #include <MouseInteractionReceiver.h>
+
 
 namespace icl{
   class OSDWidget;
@@ -135,6 +137,7 @@ namespace icl{
     QMutex m_oMutex, m_oOSDMutex;
 
     ImgBase *m_poImage;
+    icl::depth m_eRealInupuImagesDepth;
     
     OSDWidget *m_poOSD;
     OSDWidget *m_poCurrOSD;
