@@ -10,7 +10,6 @@
 #include <FwGrabber.h>
 #include <Converter.h>
 #include <dc1394/conversions.h>
-//#include <dc1394/utils.h>
 #include <Img.h>
 
 namespace icl {
@@ -107,38 +106,38 @@ namespace icl {
         break;
       case YUV422_320x240: 
         iW = 320; iH = 240;
-        eImgFormat = formatYUV422;  
+        eImgFormat = formatYUV;  
         m_oUserVM = DC1394_VIDEO_MODE_320x240_YUV422; 
         break;
       case YUV422_640x480: 
         m_oUserVM = DC1394_VIDEO_MODE_640x480_YUV422; 
         iW = 640; iH = 480;
-        eImgFormat = formatYUV422;  
+        eImgFormat = formatYUV;  
         break;
       case YUV422_800x600: 
         m_oUserVM = DC1394_VIDEO_MODE_800x600_YUV422; 
         iW = 800; iH = 600;
-        eImgFormat = formatYUV422;  
+        eImgFormat = formatYUV;  
         break;
       case YUV422_1024x768: 
         m_oUserVM = DC1394_VIDEO_MODE_1024x768_YUV422;
         iW = 1024; iH = 768;
-        eImgFormat = formatYUV422;  
+        eImgFormat = formatYUV;  
         break;
       case YUV422_1280x960: 
         m_oUserVM = DC1394_VIDEO_MODE_1280x960_YUV422;
         iW = 1280; iH = 960;
-        eImgFormat = formatYUV422;  
+        eImgFormat = formatYUV;  
         break;
       case YUV422_1600x1200:
         m_oUserVM = DC1394_VIDEO_MODE_1600x1200_YUV422;
         iW = 1600; iH = 1200;
-        eImgFormat = formatYUV422;  
+        eImgFormat = formatYUV;  
         break;
       default: 
         m_oUserVM = DC1394_VIDEO_MODE_640x480_YUV422; 
         iW = 640; iH = 480;
-        eImgFormat = formatYUV422;  
+        eImgFormat = formatYUV;  
         break;
     }
 

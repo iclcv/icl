@@ -49,16 +49,7 @@ namespace icl {
      
      uint8_t *m_poGrabImg;
      icl::ImgBase *m_poRGBImg;
-
      
-     //-----------------------------------------------------------
-     /*
-     unsigned int m_uiNumCameras, m_uiNumBuffers;
-     unsigned int m_iDevice;
-     dc1394featureset_t m_sFeatures;
-     dc1394video_mode_t m_eRes;
-     
-     */
    };
    
 } // namespace icl
