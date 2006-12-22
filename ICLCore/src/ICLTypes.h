@@ -17,6 +17,12 @@ namespace icl {
   /// 8Bit unsigned integer type for the ICL
   typedef Ipp8u icl8u;
 
+  /// 32bit signed integer type for the ICL
+  typedef Ipp32s icl32s;
+
+  /// 16bit signed integer type for the ICL (range [-32767, 32768 ])
+  typedef Ipp16s icl16s;
+  
 #else
   /// 64Bit floating point type for the ICL
   typedef double icl64f;
@@ -26,6 +32,13 @@ namespace icl {
 
   /// 8Bit unsigned integer type for the ICL 
   typedef unsigned char icl8u;
+
+  /// 32bit signed integer type for the ICL
+  typedef int icl32s;
+  
+  /// 16bit signed integer type for the ICL (range [-32767, 32768 ])
+  typedef short int icl16s;
+
 #endif
 
   //forward declaration for the Image interface
@@ -40,10 +53,22 @@ namespace icl {
   /// typedef for 32bit float images
   typedef Img<icl32f> Img32f;
 
+  /// typedef for 8bit integer images
+  typedef Img<icl32s> Img32s;
+
+  /// typedef for 32bit float images
+  typedef Img<icl16s> Img16s;
+
+  /// typedef for 8bit integer images
+  typedef Img<icl64f> Img64f;
+
   /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
-  enum depth{
+  enum depth{ /* TODO lateron order 8u 16s 32s 32f 64f */
     depth8u  = 0, /**< 8Bit unsigned integer values range {0,1,...255} */
-    depth32f = 1 /**< 32Bit floating point values */
+    depth32f = 1, /**< 32Bit floating point values */
+    depth16s = 2, /**< 16Bit signed integer values */  
+    depth32s = 3, /**< 32Bit signed integer values */
+    depth64f = 4  /**< 16Bit signed integer values */
   };
   
   /// determines the color-format, that is associated with the images channels 

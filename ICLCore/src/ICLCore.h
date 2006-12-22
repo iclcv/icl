@@ -3,6 +3,10 @@
 
 /** 
 \mainpage ICL (Image-Component-Library) : ICLCore 
+\section TODO
+
+
+
 \section Overview
 
 The ICL is a C++ Image-Library, designed for Computer-Vision tasks. It
@@ -246,29 +250,69 @@ namespace icl {
 
 /* {{{ Cast class */
   
-  /// Casting operator
+  /// Generic Casting operator
   /** Use Cast<srcT, dstT>::cast (value) to cast values safely from
       one srcT type to dstT. If destination type is icl8u, the source
       value is clipped to the range [0..255].
   */
-  template<typename srcT, typename dstT> 
-  struct Cast {
+  template<typename srcT, typename dstT> struct Cast {
      static dstT cast (srcT v) {return static_cast<dstT>(v);}
   };
-  template<typename srcT>
-  struct Cast<srcT, icl8u> {
-     static icl8u cast (srcT v) {
-       return static_cast<icl8u>(clip<srcT>(v,0,255));
-     }
+  
+  /// casting class from any to icl8u type
+  template<class srcT> struct Cast<srcT,icl8u>{
+    static icl8u cast (srcT v) { return static_cast<icl8u>(clip<srcT>(v,0,255)); }
   };
-  template<typename T>
-  struct Cast<T, T> {
-     static T cast (T v) {return v;}
+  
+  /// casting class form any to icl16s type
+  template<class srcT> struct Cast<srcT,icl16s>{
+    static icl16s cast (srcT v) { return static_cast<icl16s>(clip<srcT>(v,-32767,32768)); }
   };
-  template<>
-  struct Cast<icl8u, icl8u> {
+  /// casting class specialized form icl8u to icl16s type
+  template<> struct Cast<icl8u,icl16s>{
+    static icl16s cast (icl8u v) { return static_cast<icl16s>(v); }
+  };
+   
+  /// casting class form any to icl32s type
+  template<class srcT> struct Cast<srcT,icl32s>{
+    static icl32s cast (srcT v) { return static_cast<icl32s>(clip<srcT>(v,-2147483647,2147483647)); }
+  };
+  /// casting class specialized form icl8u to icl32s type
+  template<> struct Cast<icl8u,icl32s>{
+    static icl32s cast (icl8u v) { return static_cast<icl32s>(v); }
+  };
+  /// casting class specialized form icl16s to icl32s type
+  template<> struct Cast<icl16s,icl32s>{
+    static icl32s cast (icl16s v) { return static_cast<icl32s>(v); }
+  };
+
+  /// casting class form T to T type (just returning the param itself)
+  template<typename T> struct Cast<T, T> {
+    static T cast (T v) {return v;}
+  };
+
+  /// casing class form icl8u to icl8u type
+  template<> struct Cast<icl8u, icl8u> {
      static icl8u cast (icl8u v) {return v;}
   };
+  /// casing class form icl16s to icl16s type
+  template<> struct Cast<icl16s, icl16s> {
+     static icl16s cast (icl16s v) {return v;}
+  };
+  /// casing class form icl32s to icl32s type
+  template<> struct Cast<icl32s, icl32s> {
+     static icl32s cast (icl32s v) {return v;}
+  };
+  /// casing class form icl32f to icl32f type
+  template<> struct Cast<icl32f, icl32f> {
+     static icl32f cast (icl32f v) {return v;}
+  };
+  /// casing class form icl64f to icl64f type
+  template<> struct Cast<icl64f, icl64f> {
+     static icl64f cast (icl64f v) {return v;}
+  };
+
+
 
 /* }}} */
 
@@ -410,25 +454,45 @@ namespace icl {
 
   /// returns a string representation for a depth value
   inline std::string translateDepth(depth eDepth){
-    return eDepth == depth8u ? "depth8u" : "depth32f";
+    switch(eDepth){
+      case depth8u : return "depth8u";
+      case depth16s : return "depth16s";
+      case depth32s : return "depth32s";
+      case depth32f : return "depth32f";
+      case depth64f : return "depth64f";
+      default: ICL_INVALID_DEPTH;
+    }
   }
-  
   /// creates a depth value form a depth string
   inline depth translateDepth(const std::string& sDepth){
-    return sDepth == "depth8u" ? depth8u : depth32f;
+    unsigned int len = sDepth.length();
+    ICLASSERT_RETURN_VAL(len > 5, depth8u);
+    switch(sDepth[len-1]){
+      case 'u': return depth8u;
+      case 's': return sDepth[len-2]=='6' ? depth16s : depth32s;
+      case 'f': return sDepth[len-2]=='2' ? depth32f : depth64f;
+      default: ICL_INVALID_DEPTH;
+    }
   }
 
   /// getDepth<T> returns to depth enum associated to type T
-  template<class T> 
-  inline depth getDepth() { return depth8u; }
+  template<class T> inline depth getDepth() { return depth8u; }
 
   /// getDepth<T> returns to depth enum associated to type T
-  template<> 
-  inline depth getDepth<icl8u>() { return depth8u; }
+  template<> inline depth getDepth<icl8u>() { return depth8u; }
   
   /// getDepth<T> returns to depth enum associated to type T
-  template<> 
-  inline depth getDepth<icl32f>() { return depth32f; }
+  template<> inline depth getDepth<icl16s>() { return depth16s; }
+
+  /// getDepth<T> returns to depth enum associated to type T
+  template<> inline depth getDepth<icl32s>() { return depth32s; }
+
+  /// getDepth<T> returns to depth enum associated to type T
+  template<> inline depth getDepth<icl32f>() { return depth32f; }
+
+  /// getDepth<T> returns to depth enum associated to type T
+  template<> inline depth getDepth<icl64f>() { return depth64f; }
+
 
   /// return sizeof value for the given depth type
   int getSizeOf(depth eDepth);
@@ -436,30 +500,84 @@ namespace icl {
 
   /// moves value from source to destination array (with casting on demand)
   template <class srcT,class dstT>
-  inline void copy(srcT *poSrcStart, srcT *poSrcEnd, dstT *poDst){
+  inline void copy(const srcT *poSrcStart,const srcT *poSrcEnd, dstT *poDst){
     while(poSrcStart != poSrcEnd) *poDst++ = Cast<srcT,dstT>::cast(*poSrcStart++);
   }
 
-#ifdef WITH_IPP_OPTIMIZATION
-  template<>
-  inline void copy<icl8u,icl32f>(icl8u *poSrcStart, icl8u *poSrcEnd, icl32f *poDst){
+#ifdef WITH_IPP_OPTIMIZATION 
+  /// from icl8u functions
+  template<> inline void copy<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst){
     ippsConvert_8u32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
   }
-  template <>
-  inline void copy<icl32f,icl8u>(icl32f *poSrcStart, icl32f *poSrcEnd, icl8u *poDst){
+  /// from icl16s functions
+  template<> inline void copy<icl16s,icl32s>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32s *poDst){
+    ippsConvert_16s32s(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+  template<> inline void copy<icl16s,icl32f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32f *poDst){
+    ippsConvert_16s32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+  template<> inline void copy<icl16s,icl64f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl64f *poDst){
+    ippsConvert_16s64f_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),1);
+  }
+  
+  // from icl32s functions
+  template<> inline void copy<icl32s,icl16s>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl16s *poDst){
+    ippsConvert_32s16s(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+  template<> inline void copy<icl32s,icl32f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl32f *poDst){
+    ippsConvert_32s32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+  template<> inline void copy<icl32s,icl64f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl64f *poDst){
+    ippsConvert_32s64f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+
+  // from icl32f functions
+  template <> inline void copy<icl32f,icl8u>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl8u *poDst){
     ippsConvert_32f8u_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,1);
   } 
+  template <> inline void copy<icl32f,icl16s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl16s *poDst){
+    ippsConvert_32f16s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,1);
+  } 
+  template <> inline void copy<icl32f,icl32s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32s *poDst){
+    ippsConvert_32f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,1);
+  } 
+  template <> inline void copy<icl32f,icl64f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl64f *poDst){
+    ippsConvert_32f64f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  } 
+
+  // from icl64f functions 
+  template<> inline void copy<icl64f,icl32f>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32f *poDst){
+    ippsConvert_64f32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+  template <> inline void copy<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst){
+    ippsConvert_64f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,1);
+  } 
+
+  // T to T function (using ippsCopy)
   template <>
-  inline void copy<icl8u,icl8u>(icl8u *poSrcStart, icl8u *poSrcEnd, icl8u *poDst){
+  inline void copy<icl8u,icl8u>(const icl8u *poSrcStart, const icl8u *poSrcEnd, icl8u *poDst){
     ippsCopy_8u(poSrcStart,poDst,(poSrcEnd-poSrcStart));
   }
   template <>
-  inline void copy<icl32f,icl32f>(icl32f *poSrcStart, icl32f *poSrcEnd, icl32f *poDst){
+  inline void copy<icl16s,icl16s>(const icl16s *poSrcStart, const icl16s *poSrcEnd, icl16s *poDst){
+    ippsCopy_16s(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+  template <>
+  inline void copy<icl32s,icl32s>(const icl32s *poSrcStart, const icl32s *poSrcEnd, icl32s *poDst){
+    ippsCopy_32s(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+  template <>
+  inline void copy<icl32f,icl32f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32f *poDst){
     ippsCopy_32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
   }
+  template <>
+  inline void copy<icl64f,icl64f>(const icl64f *poSrcStart, const icl64f *poSrcEnd, icl64f *poDst){
+    ippsCopy_64f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
+  }
+
 #else
   template <typename T>
-  inline void copy(T *poSrcStart, T *poSrcEnd, T *poDst){
+  inline void copy(const T *poSrcStart,const T *poSrcEnd, T *poDst){
     memcpy(poDst,poSrcStart,(poSrcEnd-poSrcStart)*sizeof(T));
   }
 #endif

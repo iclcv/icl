@@ -721,7 +721,20 @@ inline void clearChannelROI(Img<icl8u> *im, int c, icl8u clearVal, const Point &
   ICLASSERT_RETURN( im );
   ippiSet_8u_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
 }
-
+/// IPP-OPTIMIZED specialization for icl16s clearing (using ippiSet)
+template <>
+inline void clearChannelROI(Img<icl16s> *im, int c, icl16s clearVal, const Point &offs, const Size &size){
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN( im );
+  ippiSet_16s_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
+}
+/// IPP-OPTIMIZED specialization for icl32s clearing (using ippiSet)
+template <>
+inline void clearChannelROI(Img<icl32s> *im, int c, icl32s clearVal, const Point &offs, const Size &size){
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN( im );
+  ippiSet_32s_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
+}
 /// IPP-OPTIMIZED specialization for icl32f clearing (using ippiSet)
 template <>
 inline void clearChannelROI(Img<icl32f> *im, int c, icl32f clearVal, const Point &offs, const Size &size){
@@ -881,6 +894,8 @@ scaledCopyChannelROI<icl32f,icl32f>(const Img<icl32f> *src, int srcC, const Poin
   }
 
 /* }}} */
+
+
 #endif
 
 /* }}} */

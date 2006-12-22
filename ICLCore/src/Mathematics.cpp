@@ -184,10 +184,19 @@ namespace icl{
       case depth8u:
         tmpVec = mean(poImg->asImg<icl8u>(), iChannel);
         break;
-        
+      case depth16s:
+        tmpVec = mean(poImg->asImg<icl16s>(), iChannel);
+        break;
+      case depth32s:
+        tmpVec = mean(poImg->asImg<icl32s>(), iChannel);
+        break;
       case depth32f:
         tmpVec = mean(poImg->asImg<icl32f>(), iChannel);
         break;
+      case depth64f:
+        tmpVec = mean(poImg->asImg<icl64f>(), iChannel);
+        break;
+
     }
     
     // Return
@@ -280,10 +289,19 @@ namespace icl{
       case depth8u:
         vecVar = variance(poImg->asImg<icl8u>(), iChannel);
         break;
-        
+      case depth16s:
+        vecVar = variance(poImg->asImg<icl16s>(), iChannel);
+        break; 
+      case depth32s:
+        vecVar = variance(poImg->asImg<icl32s>(), iChannel);
+        break; 
       case depth32f:
         vecVar = variance(poImg->asImg<icl32f>(), iChannel);
         break;
+      case depth64f:
+        vecVar = variance(poImg->asImg<icl64f>(), iChannel);
+        break;
+
     }
     
     // Return
@@ -374,9 +392,17 @@ namespace icl{
       case depth8u:
         vecVar = deviation(poImg->asImg<icl8u>(), iChannel);
         break;
-        
+      case depth16s:
+        vecVar = deviation(poImg->asImg<icl16s>(), iChannel);
+        break; 
+      case depth32s:
+        vecVar = deviation(poImg->asImg<icl32s>(), iChannel);
+        break; 
       case depth32f:
         vecVar = deviation(poImg->asImg<icl32f>(), iChannel);
+        break;
+      case depth64f:
+        vecVar = deviation(poImg->asImg<icl64f>(), iChannel);
         break;
     }
     

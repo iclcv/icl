@@ -11,8 +11,11 @@ namespace icl{
   
     switch (d){
       case depth8u: return new Img8u(params); break;
+      case depth16s: return new Img16s(params); break;
+      case depth32s: return new Img32s(params); break;
       case depth32f: return new Img32f(params); break;
-      default: ICL_INVALID_FORMAT; break;
+      case depth64f: return new Img64f(params); break;
+      default: ICL_INVALID_DEPTH; break;
     }
   }
 
@@ -51,7 +54,7 @@ namespace icl{
       case formatGray: return "gray";
       case formatMatrix: return "matrix";
       case formatChroma: return "chroma";
-      default: return "undefined format";        
+      default: ICL_INVALID_FORMAT; return "undefined format";        
     }
   }
 
@@ -61,7 +64,7 @@ namespace icl{
     // {{{ open
 
     if(sFormat.length()<=0){
-      ERROR_LOG("warning iclTranslateFormatString(string) got \"\"-string");
+      ICL_INVALID_FORMAT;
       return formatMatrix;
     }
     switch(sFormat[0]){
@@ -72,7 +75,7 @@ namespace icl{
       case 'g': return formatGray;
       case 'm': return formatMatrix;
       case 'c': return formatChroma;
-      default: return formatMatrix;
+      default: ICL_INVALID_FORMAT; return formatMatrix;
     }
   }
 
@@ -129,18 +132,13 @@ namespace icl{
 
   int getSizeOf(depth eDepth){
     // {{{ open
-
-    switch(eDepth){
-      case depth8u:
-        return sizeof(icl8u);
-        break;
-      case depth32f:
-        return sizeof(icl32f);
-        break;
-      default:
-        ERROR_LOG("Unknown icl depth");
-        return 0;
-    }
+    ICLASSERT_RETURN_VAL( (int)eDepth < 5 ,0);
+    static unsigned int s_aiSizeTable[]= { sizeof(icl8u),
+                                           sizeof(icl32f),                                           
+                                           sizeof(icl16s),
+                                           sizeof(icl32s),
+                                           sizeof(icl64f)  };
+    return (int)s_aiSizeTable[(int)eDepth];
   }
 
   // }}}
