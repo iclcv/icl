@@ -98,8 +98,99 @@ namespace icl{
   }
 
   // }}}
+  void utility_hls_to_rgb(const icl32f h255, const icl32f l255, const icl32f sl255, icl32f &r, icl32f &g, icl32f &b){
+    // {{{ open
 
+    // H,L,S,R,G,B in range [0,255]
+    icl32f h   = h255/255;
+    icl32f l   = l255/255;
+    icl32f sl  = sl255/255;
+    
+    icl32f v = (l <= 0.5) ? (l * (1.0 + sl)) : (l + sl - l * sl);
+    if (v <= 0) {
+      r = g = b = 0.0;
+      return;
+    } 
+    
+    icl32f m = l + l - v;
+    icl32f sv = (v - m ) / v;
+    h *= 6.0;
+    int sextant = (int)h;	
+    icl32f fract = h - sextant;
+    icl32f vsf = v * sv * fract;
+    icl32f mid1 = m + vsf;
+    icl32f mid2 = v - vsf;
+    switch (sextant) {
+      case 0: r = v;    g = mid1; b = m;    break;
+      case 1: r = mid2; g = v;    b = m;    break;
+      case 2: r = m;    g = v;    b = mid1; break;
+      case 3: r = m;    g = mid2; b = v;    break;
+      case 4: r = mid1; g = m;    b = v;    break;
+      case 5: r = v;    g = m;    b = mid2; break;
+    }
+    
+    r *= 255;
+    g *= 255;
+    b *= 255;
+  }
 
+  // }}}
+  void utility_rgb_to_yuv(const icl32f r, const icl32f g, const icl32f b, icl32f &y, icl32f &u, icl32f &v){
+    // {{{ open
+
+    y = 0.299*r + 0.587*g + 0.114*b;  
+    u = 0.493*(b-y);
+    v = 0.877*(r-y);
+  }
+
+  // }}}
+  void utility_rgb_to_chroma(const icl32f r, const icl32f g, const icl32f b, icl32f &chromaR, icl32f &chromaG){
+    // {{{ open
+
+    icl32f sum = r+g+b;
+    sum+=!sum; //avoid division by zero
+    chromaR=r*255/sum;
+    chromaG=g*255/sum;
+  }
+
+  // }}}
+  void utitlity_lab_to_xyz(const icl32f l, const icl32f a, const icl32f b, icl32f &x, icl32f &y, icl32f &z){
+    // {{{ open
+
+    static const icl32f d = 6.0/29.0;
+    static const icl32f n = 16.0/116.0;
+    static const icl32f f = 3*d*d;
+
+    // white points values ???
+    static const icl32f wX = 95.0456;
+    static const icl32f wY = 100.0;
+    static const icl32f wZ = 108.8754;
+
+    icl32f fy = (l+16)/116;
+    icl32f fx = fy+a/500;
+    icl32f fz = fy-b/200;
+
+    y = (fy>d) ?  wY*pow(fy,3) : (fy-n)*f*wY;
+    x = (fx>d) ?  wX*pow(fx,3) : (fx-n)*f*wX;
+    z = (fz>d) ?  wZ*pow(fz,3) : (fz-n)*f*wZ;
+  }
+
+  // }}}
+  void utility_xyz_to_rgb(const icl32f x, const icl32f y, const icl32f z, icl32f &r, icl32f &g, icl32f &b){
+    // {{{ open
+
+    static icl32f m[3][3] = {{ 3.2405, -1.5372,-0.4985},
+                             {-0.9693,  1.8760, 0.0416},
+                             { 0.0556, -0.2040, 1.0573}};
+    // xyz = m rgb
+    // rgb = m^-1xyz
+    r = m[0][0] * x + m[0][1] * y + m[0][2] * z;
+    g = m[1][0] * x + m[1][1] * y + m[1][2] * z;
+    b = m[2][0] * x + m[2][1] * y + m[2][2] * z;
+  }
+
+  // }}}
+  
 #define GET_3_CHANNEL_POINTERS_DIM(T,I,P1,P2,P3,DIM) T *P1=I->getData(0),*P2=I->getData(1),*P3=I->getData(2); int DIM = I->getDim() 
 #define GET_3_CHANNEL_POINTERS_NODIM(T,I,P1,P2,P3) T *P1=I->getData(0),*P2=I->getData(1),*P3=I->getData(2)
 #define GET_2_CHANNEL_POINTERS_DIM(T,I,P1,P2,DIM) T *P1=I->getData(0),*P2=I->getData(1); int DIM = I->getDim()
@@ -330,12 +421,136 @@ namespace icl{
     // {{{ open
     static void convert(Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      icl::copy(src->getData(1),src->getData(1)+src->getDim(), dst->getData(0));
+      GET_3_CHANNEL_POINTERS_DIM(S,src,h,l,s,dim);
+      GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
+      register icl32f reg_r, reg_g, reg_b;
+      for(int i=0;i<dim;++i){
+        utility_hls_to_rgb(Cast<S,icl32f>::cast(h[i]),
+                           Cast<S,icl32f>::cast(l[i]),
+                           Cast<S,icl32f>::cast(s[i]),
+                           reg_r,reg_g,reg_b);
+        r[i] = Cast<icl32f,D>::cast(reg_r);
+        g[i] = Cast<icl32f,D>::cast(reg_g);
+        b[i] = Cast<icl32f,D>::cast(reg_b);
+      }
+    }
+  };
+
+  // }}}
+  template<class S, class D> struct CCFunc<S,D,formatHLS,formatYUV>{
+    // {{{ open
+    static void convert(Img<S> *src, Img<D> *dst){
+      FUNCTION_LOG("");
+      GET_3_CHANNEL_POINTERS_DIM(S,src,h,l,s,dim);
+      GET_3_CHANNEL_POINTERS_NODIM(D,dst,y,u,v);
+      register icl32f reg_r, reg_g, reg_b,reg_y,reg_u,reg_v;
+      for(int i=0;i<dim;++i){
+        utility_hls_to_rgb(Cast<S,icl32f>::cast(h[i]),
+                           Cast<S,icl32f>::cast(l[i]),
+                           Cast<S,icl32f>::cast(s[i]),
+                           reg_r,reg_g,reg_b);
+        utility_rgb_to_yuv(reg_r,reg_g,reg_b,reg_y,reg_u,reg_v);
+        y[i] = Cast<icl32f,D>::cast(reg_y);
+        u[i] = Cast<icl32f,D>::cast(reg_u);
+        v[i] = Cast<icl32f,D>::cast(reg_v);
+      }
+    }
+  };
+
+  // }}}
+  template<class S, class D> struct CCFunc<S,D,formatHLS,formatLAB>{
+    // {{{ open
+    static void convert(Img<S> *src, Img<D> *dst){
+      FUNCTION_LOG("");
+      GET_3_CHANNEL_POINTERS_DIM(S,src,h,l,s,dim);
+      GET_3_CHANNEL_POINTERS_NODIM(D,dst,ll,aa,bb);
+      register icl32f reg_r, reg_g, reg_b, reg_ll,reg_aa,reg_bb,reg_x, reg_y, reg_z;
+      for(int i=0;i<dim;++i){
+        utility_hls_to_rgb(Cast<S,icl32f>::cast(h[i]),
+                           Cast<S,icl32f>::cast(l[i]),
+                           Cast<S,icl32f>::cast(s[i]),
+                           reg_r,reg_g,reg_b);
+        utility_rgb_to_xyz(reg_r, reg_g, reg_b,reg_x, reg_y, reg_z);
+        utility_xyz_to_lab(reg_x,reg_y,reg_z,reg_ll,reg_aa,reg_bb);
+        ll[i] = Cast<icl32f,D>::cast(reg_ll);
+        aa[i] = Cast<icl32f,D>::cast(reg_aa);
+        bb[i] = Cast<icl32f,D>::cast(reg_bb);
+      }
+    }
+  };
+
+  // }}}
+  template<class S, class D> struct CCFunc<S,D,formatHLS,formatChroma>{
+    // {{{ open
+    static void convert(Img<S> *src, Img<D> *dst){
+      FUNCTION_LOG("");
+      GET_3_CHANNEL_POINTERS_DIM(S,src,h,l,s,dim);
+      GET_2_CHANNEL_POINTERS_NODIM(D,dst,chromaR,chromaG);
+      register icl32f reg_r, reg_g, reg_b, reg_chromaR, reg_chromaG;
+      for(int i=0;i<dim;++i){
+        utility_hls_to_rgb(Cast<S,icl32f>::cast(h[i]),
+                           Cast<S,icl32f>::cast(l[i]),
+                           Cast<S,icl32f>::cast(s[i]),
+                           reg_r,reg_g,reg_b);
+        utility_rgb_to_chroma(reg_r,reg_g,reg_b,reg_chromaR, reg_chromaG);
+        chromaR[i] = Cast<icl32f,D>::cast(reg_chromaR);
+        chromaG[i] = Cast<icl32f,D>::cast(reg_chromaG);
+      }
     }
   };
 
   // }}}
   
+  /// FROM FORMAT CHROMA
+  template<class S, class D> struct CCFunc<S,D,formatChroma,formatGray>{
+    // {{{ open
+    static void convert(Img<S> *src, Img<D> *dst){
+      (void) src; (void)dst;
+      ERROR_LOG("converting from formatChroma is not possible !");
+    }
+  };
+
+  // }}}
+  template<class S, class D> struct CCFunc<S,D,formatChroma,formatRGB>{
+    // {{{ open
+    static void convert(Img<S> *src, Img<D> *dst){
+      (void) src; (void)dst;
+      ERROR_LOG("converting from formatChroma is not possible !");
+    }
+  };
+
+  // }}}
+  template<class S, class D> struct CCFunc<S,D,formatChroma,formatHLS>{
+    // {{{ open
+    static void convert(Img<S> *src, Img<D> *dst){
+      (void) src; (void)dst;
+      ERROR_LOG("converting from formatChroma is not possible !");
+    }
+  };
+
+  // }}}
+  template<class S, class D> struct CCFunc<S,D,formatChroma,formatYUV>{
+    // {{{ open
+    static void convert(Img<S> *src, Img<D> *dst){
+      (void) src; (void)dst;
+      ERROR_LOG("converting from formatChroma is not possible !");
+    }
+  };
+
+  // }}}
+  template<class S, class D> struct CCFunc<S,D,formatChroma,formatLAB>{
+    // {{{ open
+    static void convert(Img<S> *src, Img<D> *dst){
+      (void) src; (void)dst;
+      ERROR_LOG("converting from formatChroma is not possible !");
+    }
+  };
+
+  // }}}
+
+  
+  /// FROM FORMAT LAB
+
   
   
   template<class S, class D> void cc_sd(Img<S> *src, Img<D> *dst){

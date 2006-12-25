@@ -9,31 +9,7 @@ namespace icl{
 #ifdef WITH_IPP_OPTIxxMIZATION
 // {{{ convert,set, and copy channels using IPP#define CONVERT_8U32F(S,SC,D,DC) ippiConvert_8u32f_C1R(S->asImg<icl8u>()->getData(SC),S->getLineStep(),D->asImg<icl32f>()->getData(DC),D->getLineStep(),D->getSize())#define CONVERT_32F8U(S,SC,D,DC) ippiConvert_32f8u_C1R(S->asImg<icl32f>()->getData(SC),S->getLineStep(),D->asImg<icl8u>()->getData(DC),D->getLineStep(),D->getSize(),ippRndZero)   #define SET_32F(V,D,DC) ippiSet_32f_C1R(V,D->asImg<icl32f>()->getData(DC),D->getLineStep(),D->getSize());#define SET_8U(V,D,DC) ippiSet_8u_C1R(V,D->asImg<icl8u>()->getData(DC),D->getLineStep(),D->getSize());#define COPY_8U(S,SC,D,DC) ippiCopy_8u_C1R(S->asImg<icl8u>()->getData(SC),S->getLineStep(),D->asImg<icl8u>()->getData(DC),D->getLineStep(),D->getSize())  #define COPY_32F(S,SC,D,DC) ippiCopy_32f_C1R(S->asImg<icl32f>()->getData(SC),S->getLineStep(),D->asImg<icl32f>()->getData(DC),D->getLineStep(),D->getSize())  // }}}
 #else
-// {{{ convert,set, and copy channels using C++
-
-#define CONVERT_8U32F(S,SC,D,DC)                                                        \
-{                                                                                       \
-  icl8u *pucSrc = S->asImg<icl8u>()->getData(SC);                                       \
-  icl32f *pfDst = D->asImg<icl32f>()->getData(DC);                                      \
-  icl32f *pfDstEnd = pfDst+D->getDim();                                                 \
-  while(pfDst < pfDstEnd) *pfDst++ = Cast<icl8u,icl32f>::cast(*pucSrc++);               \
-}
-
-#define CONVERT_32F8U(S,SC,D,DC)                                                        \
-{                                                                                       \
-  icl32f *fSrc = S->asImg<icl32f>()->getData(SC);                                       \
-  icl8u *pucDst = D->asImg<icl8u>()->getData(DC);                                       \
-  icl8u *pucDstEnd = pucDst+D->getDim();                                                \
-  while(pucDst < pucDstEnd) *pucDst++ = Cast<icl32f,icl8u>::cast(*fSrc++);              \
-}
-
-
-#define SET_32F(V,D,DC) D->asImg<icl32f>()->clear(DC,V)
-#define SET_8U(V,D,DC) D->asImg<icl8u>()->clear(DC,V)
-#define COPY_8U(S,SC,D,DC) memcpy(D->getDataPtr(DC),S->getDataPtr(SC),D->getDim()*sizeof(icl8u))
-#define COPY_32F(S,SC,D,DC) memcpy(D->getDataPtr(DC),S->getDataPtr(SC),D->getDim()*sizeof(icl32f))
-
-// }}}
+// {{{ convert,set, and copy channels using C++#define CONVERT_8U32F(S,SC,D,DC)                                                        \{                                                                                       \  icl8u *pucSrc = S->asImg<icl8u>()->getData(SC);                                       \  icl32f *pfDst = D->asImg<icl32f>()->getData(DC);                                      \  icl32f *pfDstEnd = pfDst+D->getDim();                                                 \  while(pfDst < pfDstEnd) *pfDst++ = Cast<icl8u,icl32f>::cast(*pucSrc++);               \}#define CONVERT_32F8U(S,SC,D,DC)                                                        \{                                                                                       \  icl32f *fSrc = S->asImg<icl32f>()->getData(SC);                                       \  icl8u *pucDst = D->asImg<icl8u>()->getData(DC);                                       \  icl8u *pucDstEnd = pucDst+D->getDim();                                                \  while(pucDst < pucDstEnd) *pucDst++ = Cast<icl32f,icl8u>::cast(*fSrc++);              \}#define SET_32F(V,D,DC) D->asImg<icl32f>()->clear(DC,V)#define SET_8U(V,D,DC) D->asImg<icl8u>()->clear(DC,V)#define COPY_8U(S,SC,D,DC) memcpy(D->getDataPtr(DC),S->getDataPtr(SC),D->getDim()*sizeof(icl8u))#define COPY_32F(S,SC,D,DC) memcpy(D->getDataPtr(DC),S->getDataPtr(SC),D->getDim()*sizeof(icl32f))// }}}
 #endif
 
 static const icl8u ucDefaultHue = 0;
@@ -81,13 +57,127 @@ void convertFromGray32(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open if(poDst->getDepth()==depth8u){    switch(poDst->getFormat()){      case formatGray:        CONVERT_32F8U(poSrc,0,poDst,0);        break;      case formatRGB:        CONVERT_32F8U(poSrc,0,poDst,0);        CONVERT_32F8U(poSrc,0,poDst,1);        CONVERT_32F8U(poSrc,0,poDst,2);        break;      case formatHLS:         SET_8U(ucDefaultHue,poDst,0);        CONVERT_32F8U(poSrc,1,poDst,1);        SET_8U(ucDefaultSaturation,poDst,2);        break;      case formatLAB:      case formatYUV:      default:        ERROR_LOG("unsupported format!");    }  }else{    switch(poDst->getFormat()){     case formatGray:       COPY_32F(poSrc,0,poDst,0);        break;      case formatRGB:        COPY_32F(poSrc,0,poDst,0);        COPY_32F(poSrc,0,poDst,1);        COPY_32F(poSrc,0,poDst,2);        break;      case formatHLS:        SET_32F(fDefaultHue,poDst,0);        COPY_32F(poSrc,1,poDst,1);        SET_32F(fDefaultSaturation,poDst,1);        break;        case formatLAB:      case formatYUV:      default:        ERROR_LOG("unsupported format!");        break;    }  }}   // }}}
  
 void convertFromRGB8(ImgBase *poDstImage, ImgBase *poSrcImage){
-  // {{{ open    icl8u *pR = poSrcImage->asImg<icl8u>()->getData(0);    icl8u *pG = poSrcImage->asImg<icl8u>()->getData(1);    icl8u *pB = poSrcImage->asImg<icl8u>()->getData(2);        if(poDstImage->getDepth() == depth8u){      switch(poDstImage->getFormat()){        case formatGray:{ //no ROI          register icl8u *poDst = poDstImage->asImg<icl8u>()->getData(0);          register icl8u *poDstEnd = poDst+poDstImage->getDim();          while(poDst!=poDstEnd){            *poDst++=((*pR++)+(*pG++)+(*pB++))/3;           }          break;        }        case formatRGB:          COPY_8U(poSrcImage,0,poDstImage,0);          COPY_8U(poSrcImage,1,poDstImage,1);          COPY_8U(poSrcImage,2,poDstImage,2);          break;        case formatHLS:          {            init_table();            register icl8u *pH = poDstImage->asImg<icl8u>()->getData(0);            register icl8u *pL = poDstImage->asImg<icl8u>()->getData(1);            register icl8u *pS = poDstImage->asImg<icl8u>()->getData(2);            register icl8u *pHEnd = pH+poDstImage->getDim();            while(pH!=pHEnd){              rgb_to_hls(*pR++,*pG++,*pB++,*pH++,*pL++,*pS++);            }            break;          }          break;        case formatChroma:        {          register int sum = 0;          register icl8u *pChromaR = poDstImage->asImg<icl8u>()->getData(0);          register icl8u *pChromaG = poDstImage->asImg<icl8u>()->getData(1);          register icl8u *pChromaREnd = pChromaR+poDstImage->getDim();                    while(pChromaR != pChromaREnd){            sum = (*pR + *pG + *pB);            sum+=!sum; //avoid division by zero            *pChromaR++=((*pR * 255) / sum);            *pChromaG++=((*pG * 255) / sum);                        pR++; pG++; pB++;            }                  break;        }        case formatYUV:        case formatLAB:        default:          ERROR_LOG("unsupported format!");      }    }else{//depth32f      switch(poDstImage->getFormat()){        case formatGray:{          register icl32f *poDst = poDstImage->asImg<icl32f>()->getData(0);          register icl32f *poDstEnd = poDst+poDstImage->getDim();          while(poDst!=poDstEnd){            *poDst++=(icl32f)((*pR++)+(*pG++)+(*pB++))/3.0;          }          break;        }        case formatRGB:          CONVERT_8U32F(poSrcImage,0,poDstImage,0);          CONVERT_8U32F(poSrcImage,1,poDstImage,1);          CONVERT_8U32F(poSrcImage,2,poDstImage,2);          break;        case formatHLS:          {            init_table();            register icl32f *pH = poDstImage->asImg<icl32f>()->getData(0);            register icl32f *pL = poDstImage->asImg<icl32f>()->getData(1);            register icl32f *pS = poDstImage->asImg<icl32f>()->getData(2);            register icl32f *pHEnd = pH+poDstImage->getDim();                        while(pH!=pHEnd){              rgb_to_hls(*pR++,*pG++,*pB++,*pH++,*pS++,*pL++);            }          }          break;        case formatChroma:        {          register int sum = 0;          register icl32f *pChromaR = poDstImage->asImg<icl32f>()->getData(0);          register icl32f *pChromaG = poDstImage->asImg<icl32f>()->getData(1);          register icl32f *pChromaREnd = pChromaR+poDstImage->getDim();                    while(pChromaR != pChromaREnd){            sum = (*pR + *pG + *pB);            sum+=!sum; //avoid division by zero            *pChromaR++=((*pR * 255) / sum);            *pChromaG++=((*pG * 255) / sum);                        pR++; pG++; pB++;          }          break;        }        case formatYUV:        case formatLAB:        default:          ERROR_LOG("unsupported format!");      }    }}  // }}}
+  // {{{ open
+
+    icl8u *pR = poSrcImage->asImg<icl8u>()->getData(0);
+    icl8u *pG = poSrcImage->asImg<icl8u>()->getData(1);
+    icl8u *pB = poSrcImage->asImg<icl8u>()->getData(2);
+    
+    if(poDstImage->getDepth() == depth8u){
+      switch(poDstImage->getFormat()){
+        case formatGray:{ //no ROI
+          register icl8u *poDst = poDstImage->asImg<icl8u>()->getData(0);
+          register icl8u *poDstEnd = poDst+poDstImage->getDim();
+          while(poDst!=poDstEnd){
+            *poDst++=((*pR++)+(*pG++)+(*pB++))/3; 
+          }
+          break;
+        }
+        case formatRGB:
+          COPY_8U(poSrcImage,0,poDstImage,0);
+          COPY_8U(poSrcImage,1,poDstImage,1);
+          COPY_8U(poSrcImage,2,poDstImage,2);
+          break;
+        case formatHLS:
+          {
+            init_table();
+            register icl8u *pH = poDstImage->asImg<icl8u>()->getData(0);
+            register icl8u *pL = poDstImage->asImg<icl8u>()->getData(1);
+            register icl8u *pS = poDstImage->asImg<icl8u>()->getData(2);
+            register icl8u *pHEnd = pH+poDstImage->getDim();
+            while(pH!=pHEnd){
+              rgb_to_hls(*pR++,*pG++,*pB++,*pH++,*pL++,*pS++);
+            }
+            break;
+          }
+          break;
+        case formatChroma:
+        {
+          register int sum = 0;
+          register icl8u *pChromaR = poDstImage->asImg<icl8u>()->getData(0);
+          register icl8u *pChromaG = poDstImage->asImg<icl8u>()->getData(1);
+          register icl8u *pChromaREnd = pChromaR+poDstImage->getDim();
+          
+          while(pChromaR != pChromaREnd){
+            sum = (*pR + *pG + *pB);
+            sum+=!sum; //avoid division by zero
+            *pChromaR++=((*pR * 255) / sum);
+            *pChromaG++=((*pG * 255) / sum);
+            
+            pR++; pG++; pB++;
+            }        
+          break;
+        }
+        case formatYUV:
+        case formatLAB:
+        default:
+          ERROR_LOG("unsupported format!");
+      }
+    }else{//depth32f
+      switch(poDstImage->getFormat()){
+        case formatGray:{
+          register icl32f *poDst = poDstImage->asImg<icl32f>()->getData(0);
+          register icl32f *poDstEnd = poDst+poDstImage->getDim();
+          while(poDst!=poDstEnd){
+            *poDst++=(icl32f)((*pR++)+(*pG++)+(*pB++))/3.0;
+          }
+          break;
+        }
+        case formatRGB:
+          CONVERT_8U32F(poSrcImage,0,poDstImage,0);
+          CONVERT_8U32F(poSrcImage,1,poDstImage,1);
+          CONVERT_8U32F(poSrcImage,2,poDstImage,2);
+          break;
+        case formatHLS:
+          {
+            init_table();
+            register icl32f *pH = poDstImage->asImg<icl32f>()->getData(0);
+            register icl32f *pL = poDstImage->asImg<icl32f>()->getData(1);
+            register icl32f *pS = poDstImage->asImg<icl32f>()->getData(2);
+            register icl32f *pHEnd = pH+poDstImage->getDim();
+            
+            while(pH!=pHEnd){
+              rgb_to_hls(*pR++,*pG++,*pB++,*pH++,*pS++,*pL++);
+            }
+          }
+          break;
+        case formatChroma:
+        {
+          register int sum = 0;
+          register icl32f *pChromaR = poDstImage->asImg<icl32f>()->getData(0);
+          register icl32f *pChromaG = poDstImage->asImg<icl32f>()->getData(1);
+          register icl32f *pChromaREnd = pChromaR+poDstImage->getDim();
+          
+          while(pChromaR != pChromaREnd){
+            sum = (*pR + *pG + *pB);
+            sum+=!sum; //avoid division by zero
+            *pChromaR++=((*pR * 255) / sum);
+            *pChromaG++=((*pG * 255) / sum);
+            
+            pR++; pG++; pB++;
+          }
+          break;
+        }
+        case formatYUV:
+        case formatLAB:
+        default:
+          ERROR_LOG("unsupported format!");
+      }
+    }
+}
+
+  // }}}
 
 void convertFromRGB32(ImgBase *poDstImage, ImgBase *poSrcImage){
   // {{{ open    icl32f *pR = poSrcImage->asImg<icl32f>()->getData(0);    icl32f *pG = poSrcImage->asImg<icl32f>()->getData(1);    icl32f *pB = poSrcImage->asImg<icl32f>()->getData(2);    if(poDstImage->getDepth() == depth8u){          switch(poDstImage->getFormat()){        case formatGray:{ //no ROI          register icl32f *poDst = poDstImage->asImg<icl32f>()->getData(0);          register icl32f *poDstEnd = poDst+poDstImage->getDim();          while(poDst!=poDstEnd){            *poDst++=(icl8u)(((*pR++)+(*pG++)+(*pB++))/3);          }          break;        }        case formatRGB:          CONVERT_32F8U(poSrcImage,0,poDstImage,0);          CONVERT_32F8U(poSrcImage,1,poDstImage,1);          CONVERT_32F8U(poSrcImage,2,poDstImage,2);          break;        case formatHLS:          {            init_table();            register icl8u *pH = poDstImage->asImg<icl8u>()->getData(0);            register icl8u *pL = poDstImage->asImg<icl8u>()->getData(1);            register icl8u *pS = poDstImage->asImg<icl8u>()->getData(2);            register icl8u *pHEnd = pH+poDstImage->getDim();            while(pH!=pHEnd){              rgb_to_hls(*pR++,*pG++,*pB++,*pH++,*pL++,*pS++);            }            break;          }        case formatChroma:        {          register float sum = 0;          register icl8u *pChromaR = poDstImage->asImg<icl8u>()->getData(0);          register icl8u *pChromaG = poDstImage->asImg<icl8u>()->getData(1);          register icl8u *pChromaREnd = pChromaR+poDstImage->getDim();                    while(pChromaR != pChromaREnd){            sum = (*pR + *pG + *pB);            sum+=!sum; //avoid division by zero            *pChromaR++=Cast<icl32f,icl8u>::cast((*pR * 255) / sum);            *pChromaG++=Cast<icl32f,icl8u>::cast((*pG * 255) / sum);            pR++; pG++; pB++;          }                    break;        }        case formatLAB:        case formatYUV:        default:          ERROR_LOG("unsupported format !");      }    }else{      switch(poDstImage->getFormat()){        case formatGray:          {            register icl32f *poDst = poDstImage->asImg<icl32f>()->getData(0);            register icl32f *poDstEnd = poDst+poDstImage->getDim();            while(poDst!=poDstEnd){              *poDst++=((*pR++)+(*pG++)+(*pB++))/3.0;            }            break;          }        case formatRGB:          COPY_32F(poSrcImage,0,poDstImage,0);          COPY_32F(poSrcImage,1,poDstImage,1);          COPY_32F(poSrcImage,2,poDstImage,2);          break;        case formatHLS:          {            init_table();            register icl32f *pH = poDstImage->asImg<icl32f>()->getData(0);            register icl32f *pL = poDstImage->asImg<icl32f>()->getData(1);            register icl32f *pS = poDstImage->asImg<icl32f>()->getData(2);            register icl32f *pHEnd = pH+poDstImage->getDim();            while(pH!=pHEnd){              rgb_to_hls(*pR++,*pG++,*pB++,*pH++,*pL++,*pS++);            }            break;          }        case formatChroma:        {          register float sum = 0;          register icl32f *pChromaR = poDstImage->asImg<icl32f>()->getData(0);          register icl32f *pChromaG = poDstImage->asImg<icl32f>()->getData(1);          register icl32f *pChromaREnd = pChromaR+poDstImage->getDim();                    while(pChromaR != pChromaREnd){            sum = (*pR + *pG + *pB);            sum+=!sum; //avoid division by zero            *pChromaR++=((*pR * 255) / sum);            *pChromaG++=((*pG * 255) / sum);                        pR++; pG++; pB++;          }          break;        }        case formatLAB:        case formatYUV:        default:          ERROR_LOG("unsupported format!");          break;      }    }}  // }}}
 
 void convertFromRGBA8(ImgBase *poDst, ImgBase *poSrc){
-  // {{{ open  convertFromRGB8(poDst,poSrc);  }  // }}}
+  // {{{ open
+
+  convertFromRGB8(poDst,poSrc);
+  }
+
+  // }}}
 
 void convertFromRGBA32(ImgBase *poDst, ImgBase *poSrc){
   // {{{ open    convertFromRGB32(poDst,poSrc);  }  // }}}
