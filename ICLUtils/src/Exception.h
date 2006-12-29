@@ -27,19 +27,11 @@ namespace icl {
     void report();
   };
 
-  class ICLOutOfMemoryException : public ICLException {
-    public:
-    ICLOutOfMemoryException(const std::string &text) throw():
-      ICLException(std::string("out of memory in ")+text){}
-    virtual ~ICLOutOfMemoryException() throw(){}
-  };
-
-  //TODO: rename to InvalidFileFormatException
-  class ICLInvalidFileFormat : public ICLException {
+  class InvalidFileFormatException : public ICLException {
   public:
-    ICLInvalidFileFormat () throw() : 
+    InvalidFileFormatException () throw() : 
        ICLException (std::string("invalid file format")) {}
-    virtual ~ICLInvalidFileFormat() throw() {}
+    virtual ~InvalidFileFormatException() throw() {}
   };
 
   class FileOpenException : public ICLException {
@@ -56,7 +48,6 @@ namespace icl {
     virtual ~InvalidImgParamException() throw() {}
   };
 
-#define ICL_INVALID_FORMAT throw new InvalidFormatException(std::string(__FUNCTION__)+":"+__FILE__+":")
   class InvalidFormatException : public ICLException {
     public:
     InvalidFormatException(const std::string &functionName) throw():
@@ -64,14 +55,17 @@ namespace icl {
     virtual ~InvalidFormatException() throw() {}
   };
 
-#define ICL_INVALID_DEPTH throw new InvalidDepthException(std::string(__FUNCTION__)+":"+__FILE__+":")
-
   class InvalidDepthException : public ICLException {
     public:
     InvalidDepthException(const std::string &functionName) throw():
       ICLException(std::string("Invalid Depth in: ")+functionName) {}
     virtual ~InvalidDepthException() throw() {}
   };
+
+#define ICL_FILE_LOCATION  (std::string(__FUNCTION__) + "(" + __FILE__ + ")")
+#define ICL_INVALID_FORMAT throw InvalidFormatException(ICL_FILE_LOCATION)
+#define ICL_INVALID_DEPTH  throw InvalidDepthException(ICL_FILE_LOCATION)
+
 }
 
 #endif // ICLEXCEPTION

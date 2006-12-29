@@ -108,10 +108,10 @@ namespace icl{
     };
     
     /// internal buffer for Imgs of all depths
-    ImgBase *m_apoBuf[5];
+    const ImgBase *m_apoBuf[5];
     
-    /// iternal qimage buffer
-    QImage *m_poQBuf;
+    /// internal qimage buffer
+    const QImage *m_poQBuf;
 
     /// internal state buffer (states indicate if images are uptodate, given or outdated
     State m_aeStates[5];

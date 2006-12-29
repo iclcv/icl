@@ -453,30 +453,13 @@ namespace icl {
   format translateFormat(const std::string& sFormat);
 
   /// returns a string representation for a depth value
-  inline std::string translateDepth(depth eDepth){
-    switch(eDepth){
-      case depth8u : return "depth8u";
-      case depth16s : return "depth16s";
-      case depth32s : return "depth32s";
-      case depth32f : return "depth32f";
-      case depth64f : return "depth64f";
-      default: ICL_INVALID_DEPTH;
-    }
-  }
+  std::string translateDepth(depth eDepth);
+
   /// creates a depth value form a depth string
-  inline depth translateDepth(const std::string& sDepth){
-    unsigned int len = sDepth.length();
-    ICLASSERT_RETURN_VAL(len > 5, depth8u);
-    switch(sDepth[len-1]){
-      case 'u': return depth8u;
-      case 's': return sDepth[len-2]=='6' ? depth16s : depth32s;
-      case 'f': return sDepth[len-2]=='2' ? depth32f : depth64f;
-      default: ICL_INVALID_DEPTH;
-    }
-  }
+  depth translateDepth(const std::string& sDepth);
 
   /// getDepth<T> returns to depth enum associated to type T
-  template<class T> inline depth getDepth() { return depth8u; }
+  template<class T> inline depth getDepth();
 
   /// getDepth<T> returns to depth enum associated to type T
   template<> inline depth getDepth<icl8u>() { return depth8u; }
@@ -495,7 +478,7 @@ namespace icl {
 
 
   /// return sizeof value for the given depth type
-  int getSizeOf(depth eDepth);
+  unsigned int getSizeOf(depth eDepth);
 
 
   /// moves value from source to destination array (with casting on demand)

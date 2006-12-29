@@ -12,7 +12,7 @@ namespace icl {
       ICLASSERT_RETURN( src->getChannels() == (int)weights.size() );
       ICLASSERT_RETURN( dst->getChannels() == 1);
  
-      ImgIterator<T>      itSrc = const_cast<Img<T>*>(src)->getROIIterator(0);
+      ConstImgIterator<T> itSrc = src->getROIIterator(0);
       ImgIterator<icl32f> itDst = dst->getROIIterator(0);
 
       float w = weights[0];
@@ -22,7 +22,7 @@ namespace icl {
 
       for (int c=src->getChannels()-1; c > 0; c--) {
          w = weights[c];
-         itSrc = const_cast<Img<T>*>(src)->getROIIterator(c);
+         itSrc = src->getROIIterator(c);
          itDst = dst->getROIIterator(0);
          for(;itSrc.inRegion(); ++itSrc, ++itDst){
             *itDst += *itSrc * w;

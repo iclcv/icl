@@ -84,28 +84,41 @@ namespace icl {
 /** log messages in long loops like pixel ops*/
 #define LOOP_LOG(x) DEBUG_LOG5("LOOP: " << x);
 
-/** TODO write a comment HERE:*/
+/** generate an assertion error if condition evaluates false */
 #define ICLASSERT(X)                        \
   if(!(X)){                                 \
     ERROR_LOG("ICL ASSERTION ERROR:" << #X) \
   }
 
+/** generate an assertion error and return (from void function) if condition evaluates false */
 #define ICLASSERT_RETURN(X)                                    \
   if(!(X)){                                                    \
     ERROR_LOG("ICL ASSERTION ERROR:" << #X << "(returning!)"); \
     return;                                                    \
   }
 
+/** generate an assertion error and return with value if condition evaluates false */
 #define ICLASSERT_RETURN_VAL(X,VALUE)                          \
   if(!(X)){                                                    \
     ERROR_LOG("ICL ASSERTION ERROR:" << #X << "(returning!)"); \
     return VALUE;                                              \
   }
 
+/** generate the given exception if the condition evaluates false */
 #define ICLASSERT_THROW(X,OBJ)      \
   if(!(X)){                         \
     throw OBJ;                      \
   }
+
+#define ICL_VALID_CHANNEL(X) ((X) >= 0 && (X) < getChannels())
+#define ICL_VALID_DEPTH(X)   ((X) >= 0 && (X) <= depthLast)
+#define ICL_VALID_FORMAT(X)  ((X) >= 0 && (X) <= formatLast)
+
+#if __GNUC__ >= 3
+#define ICL_UNLIKELY(expr) __builtin_expect(expr, 0)
+#else
+#define ICL_UNLIKELY(expr) expr
+#endif
 
 }// namespace icl
 

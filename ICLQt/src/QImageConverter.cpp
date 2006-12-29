@@ -256,7 +256,7 @@ void QImageConverter::setImage(const ImgBase *image){
         delete m_apoBuf[i];
       }
       m_aeStates[i] = given;
-      m_apoBuf[i] = const_cast<ImgBase*>(image);
+      m_apoBuf[i] = image;
     }else{
       if(m_aeStates[i] == given){
         m_apoBuf[i] = 0;
@@ -287,7 +287,7 @@ void QImageConverter::setQImage(const QImage *qimage){
   if(m_poQBuf && m_eQImageState != given){
     delete m_poQBuf;
   }
-  m_poQBuf = const_cast<QImage*>(qimage);
+  m_poQBuf = qimage;
   m_eQImageState = given;
 }
 

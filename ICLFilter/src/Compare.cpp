@@ -213,8 +213,8 @@ namespace icl {
       ICLASSERT_RETURN( src1->getChannels() == src2->getChannels() );
       ICLASSERT_RETURN( src1->getChannels() == dst->getChannels() );
       for(int c=src1->getChannels()-1; c >= 0; --c) {
-         ImgIterator<T> itSrc1 = const_cast<Img<T>*>(src1)->getROIIterator(c);
-         ImgIterator<T> itSrc2 = const_cast<Img<T>*>(src2)->getROIIterator(c);
+         ConstImgIterator<T> itSrc1 = src1->getROIIterator(c);
+         ConstImgIterator<T> itSrc2 = src2->getROIIterator(c);
          ImgIterator<icl8u> itDst = dst->getROIIterator(c);
          for(;itSrc1.inRegion(); ++itSrc1, ++itSrc2, ++itDst){
             *itDst = compare(*itSrc1,*itSrc2);
@@ -233,8 +233,8 @@ namespace icl {
       ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
 
       for(int c=src->getChannels()-1; c >= 0; --c) {
-         ImgIterator<T> itSrc = const_cast<Img<T>*>(src)->getROIIterator(c);
-         ImgIterator<icl8u> itDst = dst->getROIIterator(c);
+         ConstImgIterator<T> itSrc = src->getROIIterator(c);
+         ImgIterator<icl8u>  itDst = dst->getROIIterator(c);
          for(;itSrc.inRegion(); ++itSrc, ++itDst){
             *itDst = compare(*itSrc,value);
          }
@@ -254,9 +254,9 @@ namespace icl {
 
       CompareOpEqEps<T> compare;
       for(int c=src1->getChannels()-1; c >= 0; --c) {
-         ImgIterator<T> itSrc1 = const_cast<Img<T>*>(src1)->getROIIterator(c);
-         ImgIterator<T> itSrc2 = const_cast<Img<T>*>(src2)->getROIIterator(c);
-         ImgIterator<icl8u> itDst = dst->getROIIterator(c);
+         ConstImgIterator<T> itSrc1 = src1->getROIIterator(c);
+         ConstImgIterator<T> itSrc2 = src2->getROIIterator(c);
+         ImgIterator<icl8u>  itDst = dst->getROIIterator(c);
          for(;itSrc1.inRegion(); ++itSrc1, ++itSrc2, ++itDst){
             *itDst = compare(*itSrc1,*itSrc2,eps);
          }
@@ -274,8 +274,8 @@ namespace icl {
 
       CompareOpEqEps<T> compare;
       for(int c=src->getChannels()-1; c >= 0; --c) {
-         ImgIterator<T> itSrc = const_cast<Img<T>*>(src)->getROIIterator(c);
-         ImgIterator<icl8u> itDst = dst->getROIIterator(c);
+         ConstImgIterator<T> itSrc = src->getROIIterator(c);
+         ImgIterator<icl8u>  itDst = dst->getROIIterator(c);
          for(;itSrc.inRegion(); ++itSrc, ++itDst){
             *itDst = compare(*itSrc,value,eps);
          }

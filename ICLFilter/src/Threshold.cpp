@@ -166,7 +166,7 @@ namespace icl {
       ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
 
       for(int c=src->getChannels()-1; c >= 0; --c) {
-         ImgIterator<T> itSrc = const_cast<Img<T>*>(src)->getROIIterator(c);
+         ConstImgIterator<T> itSrc = src->getROIIterator(c);
          ImgIterator<T> itDst = dst->getROIIterator(c);
          for(;itSrc.inRegion(); ++itSrc, ++itDst){
             *itDst = threshold(*itSrc);

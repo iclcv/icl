@@ -1,6 +1,6 @@
 #include <ICLCore.h>
-#include <Img.h>
 #include <Exception.h>
+#include <Img.h>
 
 using namespace std;
 
@@ -10,7 +10,7 @@ namespace icl{
     // {{{ open
   
     switch (d){
-      case depth8u: return new Img8u(params); break;
+      case depth8u:  return new Img8u(params); break;
       case depth16s: return new Img16s(params); break;
       case depth32s: return new Img32s(params); break;
       case depth32f: return new Img32f(params); break;
@@ -81,6 +81,27 @@ namespace icl{
 
   // }}}
   
+  static string asDepthTypes[] = {"8u","16s","32s","32f","64f"};
+  string translateDepth(depth eDepth){
+    // {{{ open
+    if (!ICL_VALID_DEPTH(eDepth)) ICL_INVALID_DEPTH;
+    return string("depth") + asDepthTypes[eDepth];
+  }
+
+// }}}
+
+  depth translateDepth(const std::string& sDepth){
+    // {{{ open
+    if (sDepth.substr(0,5) == "depth") {
+       string t(sDepth.substr(5));
+       for (int i=0; i <= depthLast; i++)
+          if (t == asDepthTypes[i]) return static_cast<depth>(i);
+    }
+    ICL_INVALID_DEPTH;
+  }
+
+// }}}
+
   void ensureDepth(ImgBase ** ppoImage, depth d){
     // {{{ open
 
@@ -130,15 +151,15 @@ namespace icl{
   }
   // }}}
 
-  int getSizeOf(depth eDepth){
+  unsigned int getSizeOf(depth eDepth){
     // {{{ open
-    ICLASSERT_RETURN_VAL( (int)eDepth < 5 ,0);
+    ICLASSERT_RETURN_VAL( ICL_VALID_DEPTH(eDepth), 0 );
     static unsigned int s_aiSizeTable[]= { sizeof(icl8u),
-                                           sizeof(icl32f),                                           
                                            sizeof(icl16s),
                                            sizeof(icl32s),
-                                           sizeof(icl64f)  };
-    return (int)s_aiSizeTable[(int)eDepth];
+                                           sizeof(icl32f),                                           
+                                           sizeof(icl64f) };
+    return s_aiSizeTable[(int)eDepth];
   }
 
   // }}}
