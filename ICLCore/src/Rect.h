@@ -77,14 +77,10 @@ namespace icl {
       this->width = r.width;
       this->height = r.height;
     }
-    /// returns (x || y || width || height) as bool
-    operator bool() const{
-      return x || y || width || height;
-    }
 
-    /// returns !(bool)(*this)
-    bool operator!() const { return !(bool)(*this); } 
-    
+    /// checks wether the object instance is null, i.e. all elements are zero
+    bool isNull() const { return (*this)==null; }
+
     /// checks if two rects are equal
     bool operator==(const Rect &s) const {
       return x==s.x && y==s.y && width==s.width && height==s.height;

@@ -28,11 +28,8 @@ namespace icl {
     /// creates a specified size
     Size(int width,int height){ this->width = width; this->height = height; }
 
-    /// reutuns (width||height) as bool
-    operator bool() const { return width || height; }
-
-    /// returns !(bool)(*this)
-    bool operator!() const { return !(bool)(*this); } 
+    /// checks wether the object instance is null, i.e. all elements are zero
+    bool isNull() const { return (*this)==null; }
 
     /// checks if two sizes are equal
     bool operator==(const Size &s) const {return width==s.width && height==s.height;}

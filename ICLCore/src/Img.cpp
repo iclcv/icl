@@ -17,6 +17,7 @@ namespace icl {
 template<class Type>
 Img<Type>::Img(const ImgParams &params):
   // {{{ open
+
   ImgBase(icl::getDepth<Type>(),params){
   FUNCTION_LOG("Img(params)");
   
@@ -210,32 +211,32 @@ Img<Type>::scaledCopy(ImgBase *poDst,scalemode eScaleMode) const
   switch (poDst->getDepth()){
     case depth8u:
       for(int c=0;c<getChannels();c++){
-        scaledCopyChannelROI<Type,icl8u>(this,c,Point::zero,getSize(),
-                                         poDst->asImg<icl8u>(),c,Point::zero,poDst->getSize(),eScaleMode);
+        scaledCopyChannelROI<Type,icl8u>(this,c,Point::null,getSize(),
+                                         poDst->asImg<icl8u>(),c,Point::null,poDst->getSize(),eScaleMode);
       } 
       break; 
     case depth16s:
       for(int c=0;c<getChannels();c++){
-        scaledCopyChannelROI<Type,icl16s>(this,c,Point::zero,getSize(),
-                                         poDst->asImg<icl16s>(),c,Point::zero,poDst->getSize(),eScaleMode);
+        scaledCopyChannelROI<Type,icl16s>(this,c,Point::null,getSize(),
+                                         poDst->asImg<icl16s>(),c,Point::null,poDst->getSize(),eScaleMode);
       } 
       break;
     case depth32s:
       for(int c=0;c<getChannels();c++){
-        scaledCopyChannelROI<Type,icl32s>(this,c,Point::zero,getSize(),
-                                         poDst->asImg<icl32s>(),c,Point::zero,poDst->getSize(),eScaleMode);
+        scaledCopyChannelROI<Type,icl32s>(this,c,Point::null,getSize(),
+                                         poDst->asImg<icl32s>(),c,Point::null,poDst->getSize(),eScaleMode);
       } 
       break;
     case depth32f:
       for(int c=0;c<getChannels();c++){
-        scaledCopyChannelROI<Type,icl32f>(this,c,Point::zero,getSize(),
-                                          poDst->asImg<icl32f>(),c,Point::zero,poDst->getSize(),eScaleMode);
+        scaledCopyChannelROI<Type,icl32f>(this,c,Point::null,getSize(),
+                                          poDst->asImg<icl32f>(),c,Point::null,poDst->getSize(),eScaleMode);
       }
       break;
     case depth64f:
       for(int c=0;c<getChannels();c++){
-        scaledCopyChannelROI<Type,icl64f>(this,c,Point::zero,getSize(),
-                                          poDst->asImg<icl64f>(),c,Point::zero,poDst->getSize(),eScaleMode);
+        scaledCopyChannelROI<Type,icl64f>(this,c,Point::null,getSize(),
+                                          poDst->asImg<icl64f>(),c,Point::null,poDst->getSize(),eScaleMode);
       } 
       break;
     default: ICL_INVALID_DEPTH; break;
@@ -248,7 +249,7 @@ Img<Type>::scaledCopy(ImgBase *poDst,scalemode eScaleMode) const
   roi.y = (int)rint(fScaleY * roi.y); 
   roi.width  = (int)rint(fScaleX * roi.width);
   roi.height = (int)rint(fScaleY * roi.height);
-  roi = roi & Rect (Point::zero, poDst->getSize());
+  roi = roi & Rect (Point::null, poDst->getSize());
   poDst->setROI (roi);
   poDst->getTime() = this->getTime();
   return poDst;
@@ -377,7 +378,7 @@ Img<Type>::flippedCopyROI(ImgBase *poDst, axis eAxis) const
   FUNCTION_LOG("");
   if(!poDst){
     poDst = imgNew(getDepth(),
-                   ImgParams(getROISize(),getFormat(),getChannels()));
+                   ImgParams(getROISize(),getChannels(),getFormat()));
   } else {
     ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize() ,poDst);  
     poDst->setChannels(getChannels());
@@ -559,7 +560,7 @@ Img<Type>::mirror(axis eAxis, bool bOnlyROI)
   // {{{ open
 {
   FUNCTION_LOG("");
-   const Point& oOffset = bOnlyROI ? getROIOffset() : Point::zero;
+   const Point& oOffset = bOnlyROI ? getROIOffset() : Point::null;
    const Size&  oSize   = bOnlyROI ? getROISize() : getSize();
    for (int c=0; c < getChannels(); ++c) {
       this->mirror (eAxis, c, oOffset, oSize);
@@ -762,38 +763,31 @@ Img<Type>::getMax() const
   return tMax;    
 }
 
-  //fallback for 64f and 32s
+// fallback for all types
 template<class Type> Type 
 Img<Type>::getMax(int iChannel) const {
    FUNCTION_LOG("iChannel: " << iChannel);
    ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
    return *std::max_element (getData(iChannel), getData(iChannel) + getDim());
 }
+#ifdef WITH_IPP_OPTIMIZATION
+template<typename Type> 
+template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*)>
+inline Type Img<Type>::ippGetMax(int iChannel) const {
+   FUNCTION_LOG("iChannel: " << iChannel);
+   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
+   Type vMax;
+   ippiFunc (getROIData(iChannel),getLineStep(),getROISize(),&vMax);
+   return vMax;
+}
 
 template<> icl8u
-Img<icl8u>::getMax(int iChannel) const {
-   FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
-   icl8u vMax;
-   ippiMax_8u_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax);
-   return vMax;
-}
-template<> icl32f
-Img<icl32f>::getMax(int iChannel) const {
-   FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
-   icl32f vMax;
-   ippiMax_32f_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax);
-   return vMax;
-}
+Img<icl8u>::getMax(int iChannel) const {return ippGetMax<ippiMax_8u_C1R>(iChannel);}
 template<> icl16s
-Img<icl16s>::getMax(int iChannel) const {
-   FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN_VAL(0 <= iChannel && iChannel < getChannels(),0);
-   icl16s vMax;
-   ippiMax_16s_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax);
-   return vMax;
-}
+Img<icl16s>::getMax(int iChannel) const {return ippGetMax<ippiMax_16s_C1R>(iChannel);}
+template<> icl32f
+Img<icl32f>::getMax(int iChannel) const {return ippGetMax<ippiMax_32f_C1R>(iChannel);}
+#endif
 
 // }}}
 
@@ -1063,7 +1057,7 @@ void Img<Type>::clear(int iIndex, Type tValue, bool bROIOnly)
   FUNCTION_LOG("clear(" << iIndex << "," << tValue << ")");
   ICLASSERT_RETURN( iIndex < getChannels() );  
   
-  Point offs = bROIOnly ? getROIOffset() : Point::zero;
+  Point offs = bROIOnly ? getROIOffset() : Point::null;
   Size size = bROIOnly ? getROISize() : getSize();
   for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++){
     clearChannelROI(this,i,tValue,offs,size);

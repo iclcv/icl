@@ -53,8 +53,8 @@ namespace icl{
     m_oSize = size;
     m_eFormat = fmt;
     m_iChannels = channels;
-    if (roi) setROI(roi); // set given roi if non-empty
-    else setROI (Point::zero, size); // or set full ROI
+    if (!roi.isNull()) setROI(roi); // set given roi if non-empty
+    else setROI (Point::null, size); // or set full ROI
   }
 
   // }}}

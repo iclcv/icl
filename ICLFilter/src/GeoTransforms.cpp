@@ -26,10 +26,10 @@ namespace icl {
       Point oROIOffset;
       if (bClipToROI) {
          oSrcOffset = poSrc->getROIOffset();
-         oROIOffset = oDstOffset = Point::zero;
+         oROIOffset = oDstOffset = Point::null;
          oSize = poSrc->getROISize();
       } else {
-         oDstOffset = oSrcOffset = Point::zero;
+         oDstOffset = oSrcOffset = Point::null;
          oSize = poSrc->getSize();
 
          oROIOffset = poSrc->getROIOffset();
@@ -56,7 +56,7 @@ namespace icl {
          ippiWarpAffine_8u_C1R (poSrc->asImg<icl8u>()->getData (c),
                                 poSrc->getSize(), poSrc->getLineStep(), 
 //                                poSrc->getROI(),
-                                Rect (Point::zero, poSrc->getSize()),
+                                Rect (Point::null, poSrc->getSize()),
                                 poDst->asImg<icl8u>()->getData (c), 
                                 poDst->getLineStep(), poDst->getROI(), 
                                 T, eInterpolate);
@@ -68,7 +68,7 @@ namespace icl {
          ippiWarpAffine_32f_C1R (poSrc->asImg<icl32f>()->getData (c),
                                  poSrc->getSize(), poSrc->getLineStep(), 
 //                                 poSrc->getROI(),
-                                 Rect (Point::zero, poSrc->getSize()),
+                                 Rect (Point::null, poSrc->getSize()),
                                  poDst->asImg<icl32f>()->getData (c), 
                                  poDst->getLineStep(), poDst->getROI(), 
                                  T, eInterpolate);

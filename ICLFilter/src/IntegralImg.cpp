@@ -9,16 +9,17 @@ namespace icl{
   template<class T>
   IntegralImg::IntImg<T>::IntImg(const Size &s, int channels):
     m_oSize(s), m_oData(channels){
-    for(int i=0;getChannels();++i){
-      m_oData[i]=m_oSize ? new T[m_oSize.getDim()] : 0;
-    }      
+     if (m_oSize.isNull()) return;
+     for(int i=0;getChannels();++i){
+        m_oData[i]=new T[m_oSize.getDim()];
+     }
   }
   template<class T>
   IntegralImg::IntImg<T>::~IntImg(){
-    if(!m_oSize) return;
-    for(unsigned int i=0;i<m_oData.size();i++){
-      delete [] m_oData[i];
-    }
+     if(m_oSize.isNull()) return;
+     for(unsigned int i=0;i<m_oData.size();i++){
+        delete [] m_oData[i];
+     }
   }
 
   template<class T>

@@ -511,12 +511,12 @@ namespace icl {
       case depth8u:
         deepCopyChannelROI<icl8u,icl32f> 
            (poKernel->asImg<icl8u>(), 0, poKernel->getROIOffset(), poKernel->getROISize(),
-            poKernelBuf, 0, Point::zero, poKernelBuf->getSize());
+            poKernelBuf, 0, Point::null, poKernelBuf->getSize());
         break;
       case depth32f:
         deepCopyChannelROI<icl32f,icl32f> 
            (poKernel->asImg<icl32f>(), 0, poKernel->getROIOffset(), poKernel->getROISize(),
-            poKernelBuf, 0, Point::zero, poKernelBuf->getSize());
+            poKernelBuf, 0, Point::null, poKernelBuf->getSize());
         break;
 
       default:

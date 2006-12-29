@@ -158,7 +158,7 @@ namespace icl{
   void LocalThreshold::apply(ImgBase *src, ImgBase **dst){
     // {{{ open
     ICLASSERT_RETURN( src );
-    ICLASSERT_RETURN( src->getSize() );
+    ICLASSERT_RETURN( src->getSize() != Size::null );
     ICLASSERT_RETURN( src->getChannels() );
 
     // cut the roi of src if set
@@ -181,9 +181,10 @@ namespace icl{
     
 
     // prepare the roi size image
-    if(!m_oROISizeImage.getSize() || m_uiROISizeImagesMaskSize != m_uiMaskSize){
-      create_roi_size_image(src->getSize(),m_uiMaskSize,m_oROISizeImage);
-      m_uiROISizeImagesMaskSize = m_uiMaskSize;
+    if(m_oROISizeImage.getSize().isNull() || 
+       m_uiROISizeImagesMaskSize != m_uiMaskSize) {
+       create_roi_size_image(src->getSize(),m_uiMaskSize,m_oROISizeImage);
+       m_uiROISizeImagesMaskSize = m_uiMaskSize;
     }
     
     // create the integral images with border 1+roiSize

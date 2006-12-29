@@ -22,7 +22,7 @@ namespace icl{
     Size s = im->getSize();
      for(int c=0;c<im->getChannels();c++){
        // top
-       clearChannelROI<T>(im,c,val[c], Point::zero,        
+       clearChannelROI<T>(im,c,val[c], Point::null,        
                           Size(s.width,roi.top()));
        // bottom
        clearChannelROI<T>(im,c,val[c], Point(0,roi.bottom()),
@@ -46,7 +46,7 @@ namespace icl{
   inline void _copy_border(Img<T> *poImage){
     // {{{ open
 
-    Rect im = Rect(Point::zero,poImage->getSize());
+    Rect im = Rect(Point::null,poImage->getSize());
     Rect roi = poImage->getROI();
     
     Rect aR[4] = { 
@@ -179,7 +179,7 @@ namespace icl{
     Size s = dst->getSize();
     
     Point offs[4] = { 
-      Point::zero,              // top
+      Point::null,              // top
       Point(0,roi.bottom()),    // bottom
       Point(0,roi.top()),       // left
       roi.ur()                  // right

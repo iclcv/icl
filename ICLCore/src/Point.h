@@ -17,18 +17,18 @@ namespace icl{
   /// Point class of the ICL used e.g. for the Images ROI offset
   class Point : public IppiPoint{
     public:
-    /// zero Point is x=0, y=0
-    static const Point zero;
+    /// null Point is x=0, y=0
+    static const Point null;
 
     /// deep copy of a Point
-    Point(const Point& p=zero){ this->x = p.x; this->y = p.y; }
+    Point(const Point& p=null){ this->x = p.x; this->y = p.y; }
 
     /// create a special point
     Point(int x,int y){this->x = x;this->y = y;}
 
-    /// returns (p.x || p.y) as bool
-    operator bool() const{ return x || y ;}
-    
+    /// checks wether the object instance is null, i.e. all elements are zero
+    bool isNull() const { return (*this)==null; }
+
     /// checks if two points are equal
     bool operator==(const Point &s) const {return x==s.x && y==s.y;}
 

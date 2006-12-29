@@ -645,7 +645,7 @@ class Img : public ImgBase
       FUNCTION_LOG("begin(" << iChannel << ")");
       ICLASSERT_RETURN_VAL(iChannel >=0 , iterator());
       ICLASSERT_RETURN_VAL(iChannel < getChannels() ,iterator());
-      return iterator(getData(iChannel),getWidth(),Rect(Point::zero,getSize()));
+      return iterator(getData(iChannel),getWidth(),Rect(Point::null,getSize()));
     }
   /// returns an iterator to an images ROI pixles
   /** this function behaves essentially like the above function 
@@ -664,7 +664,12 @@ class Img : public ImgBase
   //@}
 
   /* }}} */
-                                       
+  
+#ifdef WITH_IPP_OPTIMIZATION
+ private: 
+  template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*)>
+  inline Type ippGetMax(int iChannel) const;
+#endif
 };// class Img<Type>
 
   

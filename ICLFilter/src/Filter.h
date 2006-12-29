@@ -64,7 +64,7 @@ namespace icl {
      }
      /// return to-be-used ROI depending on bClipToROI
      const Rect chooseROI (const ImgBase *poSrc) {
-        return bClipToROI ? Rect (Point::zero, poSrc->getROISize ())
+        return bClipToROI ? Rect (Point::null, poSrc->getROISize ())
                           : poSrc->getROI();
      }
 

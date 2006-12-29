@@ -33,7 +33,7 @@ public:
         widget->reset();
        
         Rect roi(x-101,y-101,202,202);
-        if(Rect(Point::zero,image->getSize()).contains(roi)){
+        if(Rect(Point::null,image->getSize()).contains(roi)){
           // drawing smooth dropshadow
           widget->nocolor();
           widget->fill(0,0,0,20);

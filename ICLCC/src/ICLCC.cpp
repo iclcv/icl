@@ -591,9 +591,11 @@ namespace icl{
   // }}}
   template<class S> void cc_s(Img<S> *src, ImgBase *dst){
     // {{{ open
-
+#if __GNUC__ == 3
+#warning "gcc 3 does not support asImg<T>()"
+#else
     switch(dst->getDepth()){
-      case depth8u: cc_sd(src, dst->asImg<icl8u>()); break;
+      case depth8u:  cc_sd(src, dst->asImg<icl8u>()); break;
       case depth16s: cc_sd(src, dst->asImg<icl16s>()); break;
       case depth32s: cc_sd(src, dst->asImg<icl32s>()); break;
       case depth32f: cc_sd(src, dst->asImg<icl32f>()); break;
@@ -601,6 +603,7 @@ namespace icl{
       default:
         ICL_INVALID_DEPTH;
     }
+#endif
   }
 
   // }}}

@@ -72,18 +72,10 @@ namespace icl{
         @see setup
     */
     ImgParams(int width, int height, int channels, format fmt, int roiX=0, int roiY=0, int roiWidth=0, int roiHeight=0);
-    /// converts an ImgParam object into a boolean value
-    /** this function enables the programmer to test and ImgParam object ip
-        for being valid with 
-        <pre>
-        if(ip)
-        </pre>
-    */
-    operator bool() const{ return (*this)==null; }
-    
-    /// returns !(bool)(*this)
-    bool operator!() const{ return !(bool)(*this); }
 
+    /// checks wether the object instance is null, i.e. all elements are zero
+    bool isNull() const { return (*this)==null; }
+    
     /// returns !(*this==other)
     bool operator!=(const ImgParams &other) const{ return !((*this)==other); } 
 
@@ -142,7 +134,7 @@ namespace icl{
     int hasFullROI() const { return m_oROI.size() == m_oSize;}
 
     /// sets the ROI to 0,0,image-width,image-height
-    void setFullROI(){ setROI(Point::zero, getSize()); }
+    void setFullROI(){ setROI(Point::null, getSize()); }
 
     /// returns the objects size
     const Size& getSize() const { return m_oSize;  }
