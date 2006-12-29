@@ -9,6 +9,13 @@
 
 
 namespace icl{
+
+  struct lessSize {
+     bool operator()(const icl::Size& lhs, const icl::Size& rhs) const {
+        return lhs.width < rhs.width && lhs.height < rhs.height;
+     }
+  };
+  
   class Converter; // converts all images
  
   class ImgRegionDetector;  // seaches connected regions 
@@ -186,7 +193,10 @@ namespace icl{
 
     // layer 1 converter
     Converter *m_poConverter;                            //!< used converter instance
-    std::map<Size,std::map<format,Img8u*> > m_mmImages;  //!< map of map of conveted images
+    
+    typedef std::map<icl::format,Img8u*> fmtmap;
+    typedef std::map<icl::Size,fmtmap,lessSize> sizemap;
+    sizemap m_mmImages;  //!< map of map of converted images
         
     // FM-Creators
     Array<FMCreator*> m_oFMCreators;    //!< array of all fm-creators

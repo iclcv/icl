@@ -113,8 +113,6 @@ namespace icl{
     // {{{ open
 
     //map<Size,map<format,Img8u*> > m_mmImages;
-    typedef map<format,Img8u*> fmtmap;
-    typedef map<Size,fmtmap> sizemap;
     sizemap &m = m_mmImages;
     sizemap::iterator i = m.find(size);
     if(i != m.end()){
