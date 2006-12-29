@@ -14,15 +14,15 @@ namespace icl {
   /// 32Bit floating point type for the ICL 
   typedef Ipp32f icl32f;
 
-  /// 8Bit unsigned integer type for the ICL
-  typedef Ipp8u icl8u;
-
   /// 32bit signed integer type for the ICL
   typedef Ipp32s icl32s;
 
   /// 16bit signed integer type for the ICL (range [-32767, 32768 ])
   typedef Ipp16s icl16s;
   
+  /// 8Bit unsigned integer type for the ICL
+  typedef Ipp8u icl8u;
+
 #else
   /// 64Bit floating point type for the ICL
   typedef double icl64f;
@@ -30,14 +30,14 @@ namespace icl {
   /// 32Bit floating point type for the ICL 
   typedef float icl32f;
 
-  /// 8Bit unsigned integer type for the ICL 
-  typedef unsigned char icl8u;
-
   /// 32bit signed integer type for the ICL
   typedef int icl32s;
   
   /// 16bit signed integer type for the ICL (range [-32767, 32768 ])
   typedef short int icl16s;
+
+  /// 8Bit unsigned integer type for the ICL 
+  typedef unsigned char icl8u;
 
 #endif
 
@@ -51,24 +51,25 @@ namespace icl {
   typedef Img<icl8u> Img8u;
 
   /// typedef for 32bit float images
-  typedef Img<icl32f> Img32f;
+  typedef Img<icl16s> Img16s;
 
   /// typedef for 8bit integer images
   typedef Img<icl32s> Img32s;
 
   /// typedef for 32bit float images
-  typedef Img<icl16s> Img16s;
+  typedef Img<icl32f> Img32f;
 
-  /// typedef for 8bit integer images
+  /// typedef for 64bit float images
   typedef Img<icl64f> Img64f;
 
   /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
-  enum depth{ /* TODO lateron order 8u 16s 32s 32f 64f */
+  enum depth{
     depth8u  = 0, /**< 8Bit unsigned integer values range {0,1,...255} */
-    depth32f = 1, /**< 32Bit floating point values */
-    depth16s = 2, /**< 16Bit signed integer values */  
-    depth32s = 3, /**< 32Bit signed integer values */
-    depth64f = 4  /**< 16Bit signed integer values */
+    depth16s = 1, /**< 16Bit signed integer values */  
+    depth32s = 2, /**< 32Bit signed integer values */
+    depth32f = 3, /**< 32Bit floating point values */
+    depth64f = 4, /**< 64Bit floating point values */
+    depthLast = depth64f
   };
   
   /// determines the color-format, that is associated with the images channels 
@@ -79,7 +80,8 @@ namespace icl {
     formatYUV, /**< (Y,u,v) color space */
     formatGray, /**< n-channel gray image range of values is [0,255] as default */
     formatMatrix, /**< n-channel image without a specified color space. */
-    formatChroma /**< 2 channel chromaticity color space */
+    formatChroma, /**< 2 channel chromaticity color space */
+    formatLast = formatChroma
   };
 
 #ifdef WITH_IPP_OPTIMIZATION
