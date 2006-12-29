@@ -615,6 +615,7 @@ class Img : public ImgBase
 
   /// type definition for roi iterator
   typedef ImgIterator<Type> iterator;
+  typedef ConstImgIterator<Type> const_iterator;
 
   /// returns the iterator for the hole image 
   /** The following example taken from ImgIterator.h will show
@@ -643,8 +644,7 @@ class Img : public ImgBase
   inline iterator getIterator(int iChannel)
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
-      ICLASSERT_RETURN_VAL(iChannel >=0 , iterator());
-      ICLASSERT_RETURN_VAL(iChannel < getChannels() ,iterator());
+      ICLASSERT_RETURN_VAL(ICL_VALID_CHANNEL(iChannel), iterator());
       return iterator(getData(iChannel),getWidth(),Rect(Point::null,getSize()));
     }
   /// returns an iterator to an images ROI pixles
@@ -656,9 +656,23 @@ class Img : public ImgBase
   inline iterator getROIIterator(int iChannel)
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
-      ICLASSERT_RETURN_VAL(iChannel >=0 , iterator());
-      ICLASSERT_RETURN_VAL(iChannel < getChannels() ,iterator());
+      ICLASSERT_RETURN_VAL(ICL_VALID_CHANNEL(iChannel), iterator());
       return iterator(getData(iChannel),getWidth(),getROI());
+    } 
+
+  /// const version of getIterator
+  inline const_iterator getIterator(int iChannel) const
+    {
+      FUNCTION_LOG("begin(" << iChannel << ")");
+      ICLASSERT_RETURN_VAL(ICL_VALID_CHANNEL(iChannel), const_iterator());
+      return const_iterator(getData(iChannel),getWidth(),Rect(Point::null,getSize()));
+    }
+  /// const version of getROIIterator
+  inline const_iterator getROIIterator(int iChannel) const
+    {
+      FUNCTION_LOG("begin(" << iChannel << ")");
+      ICLASSERT_RETURN_VAL(ICL_VALID_CHANNEL(iChannel), const_iterator());
+      return const_iterator(getData(iChannel),getWidth(),getROI());
     } 
  
   //@}
@@ -669,6 +683,10 @@ class Img : public ImgBase
  private: 
   template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*)>
   inline Type ippGetMax(int iChannel) const;
+  template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*)>
+  inline Type ippGetMin(int iChannel) const;
+  template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*, Type*)>
+  inline void ippGetMinMax(Type& rtMin, Type& rtMax, int iChannel) const;
 #endif
 };// class Img<Type>
 
