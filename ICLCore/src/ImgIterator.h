@@ -163,20 +163,25 @@ namespace icl{
   
   
   */
-  template <class Type>
-    class ImgIterator{
+  template <typename Type>
+  class ImgIterator {
+    private:
+    void init () {
+       m_iLineStep = m_iImageWidth - m_ROISize.width + 1;
+       m_ptDataEnd = m_ptDataCurr;
+       if (m_ROISize.width > 0)
+          m_ptDataEnd += m_ROISize.width + (m_ROISize.height-1) * m_iImageWidth;
+       m_ptCurrLineEnd = m_ptDataCurr + m_ROISize.width - 1;
+    }
+
     public:
     /** Creates an ImgIterator object */
     /// Default Constructor
     ImgIterator():
        m_iImageWidth(0),
-       m_iROIWidth(0), 
-       m_iROIHeight(0), 
-       m_iLineStep(0),
+       m_ROISize(Size::null), 
        m_ptDataOrigin(0),
-       m_ptDataCurr(0),
-       m_ptDataEnd(0),
-       m_ptCurrLineEnd(0){}
+       m_ptDataCurr(0) {init();}
     
      /** 2nd Constructor creates an ImgIterator object with Type "Type"
          @param ptData pointer to the corresponding channel data
@@ -185,13 +190,9 @@ namespace icl{
      */
     ImgIterator(Type *ptData,int iImageWidth,const Rect &roROI):
        m_iImageWidth(iImageWidth),
-       m_iROIWidth(roROI.width), 
-       m_iROIHeight(roROI.height), 
-       m_iLineStep(m_iImageWidth - m_iROIWidth + 1),
+       m_ROISize(roROI.size()), 
        m_ptDataOrigin(ptData),
-       m_ptDataCurr(ptData+roROI.x+roROI.y*iImageWidth),
-       m_ptDataEnd(m_iROIWidth ? m_ptDataCurr+m_iROIWidth+(m_iROIHeight-1)*m_iImageWidth : m_ptDataCurr),
-       m_ptCurrLineEnd(m_ptDataCurr+m_iROIWidth-1){}
+       m_ptDataCurr(ptData+roROI.x+roROI.y*iImageWidth) {init();}
 
     /// 3rd Constructor to create sub-regions of an Img-image
     /** This 3rd constructor creates a sub-region iterator, which may be
@@ -205,13 +206,9 @@ namespace icl{
 
     ImgIterator(const ImgIterator<Type> &roOrigin, const Size &s, const Point &a):
        m_iImageWidth(roOrigin.m_iImageWidth),
-       m_iROIWidth(s.width),
-       m_iROIHeight(s.height),
-       m_iLineStep(m_iImageWidth - m_iROIWidth + 1),
+       m_ROISize(s), 
        m_ptDataOrigin(roOrigin.m_ptDataOrigin),
-       m_ptDataCurr(roOrigin.m_ptDataCurr - a.x - a.y*m_iImageWidth),
-       m_ptDataEnd(m_iROIWidth ? m_ptDataCurr+m_iROIWidth+(m_iROIHeight-1)*m_iImageWidth : m_ptDataCurr),
-       m_ptCurrLineEnd(m_ptDataCurr+m_iROIWidth-1){}
+       m_ptDataCurr(roOrigin.m_ptDataCurr - a.x - a.y*m_iImageWidth) {init();}
     
     /// retuns a reference of the current pixel value
     /** changes on *p (p is of type ImgIterator) will effect
@@ -251,7 +248,7 @@ namespace icl{
     */
     inline ImgIterator& operator++()
        {
-         if ( m_ptDataCurr == m_ptCurrLineEnd )
+         if ( ICL_UNLIKELY(m_ptDataCurr == m_ptCurrLineEnd) )
            {
              m_ptDataCurr += m_iLineStep;
              m_ptCurrLineEnd += m_iImageWidth;
@@ -267,7 +264,7 @@ namespace icl{
         In most cases the "++it"-operator will ensure
         best performace.
     **/
-    inline ImgIterator operator++(int)
+    inline const ImgIterator operator++(int)
        {
          ImgIterator current (*this);
          ++(*this); // call prefix operator
@@ -286,15 +283,15 @@ namespace icl{
      */
     inline int getROIWidth() const
        {
-          return m_iROIWidth;
+          return m_ROISize.width;
        }
     
     inline int getROIHeight() const
        {
-          return m_iROIHeight;
+          return m_ROISize.height;
        }
     
-    /// moved the pixel vertically forward
+    /// move the pixel vertically forward
     /** current x value is hold, the current y-value is
         incremented by iLines
         @param iLines amount of lines to jump over
@@ -318,15 +315,13 @@ namespace icl{
        {
           return (m_ptDataCurr-m_ptDataOrigin) / m_iImageWidth;
        }       
+
     private:
     /// corresponding images width
     int m_iImageWidth;
     
-    /// corresponding images ROI width
-    int m_iROIWidth;
-
-    /// corresponding images ROI height
-    int m_iROIHeight;
+    /// ROI size of the iterator
+    Size m_ROISize;
 
     /// result of m_iImageWidth - m_iROIWidth
     int m_iLineStep;
@@ -342,8 +337,22 @@ namespace icl{
 
     /// pointer to the first invalid pixel of the current line
     Type *m_ptCurrLineEnd;
-
     
+  };
+
+  template <typename Type>
+  class ConstImgIterator : public ImgIterator<const Type> {
+    public:
+    /// Default Constructor: creates an empty ConstImgIterator object
+    ConstImgIterator() : ImgIterator<const Type>() {}
+
+    /// 2nd Constructor creates an ImgIterator object with type "Type"
+    ConstImgIterator(Type *ptData,int iImageWidth,const Rect &roROI) :
+       ImgIterator<const Type>(ptData, iImageWidth, roROI) {}
+
+    /// 3rd Constructor to create sub-regions of an image
+    ConstImgIterator(const ConstImgIterator<Type> &roOrigin, const Size &s, const Point &a) :
+       ImgIterator<const Type>(roOrigin, s, a) {}
   };
 }
 #endif
