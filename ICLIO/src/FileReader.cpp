@@ -182,7 +182,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   ImgBase* FileReader::grab(ImgBase* poDst) 
-    throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
+    throw (InvalidFileFormatException, FileOpenException, ICLException) {
     // {{{ open 
     FUNCTION_LOG("");
     
@@ -209,7 +209,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   void FileReader::readImage(const string& sFileName, ImgBase** ppoDst) 
-    throw (ICLInvalidFileFormat, FileOpenException, ICLException) {
+    throw (InvalidFileFormatException, FileOpenException, ICLException) {
     // {{{ open 
     FUNCTION_LOG("");
 
@@ -326,11 +326,11 @@ namespace icl {
     
     //---- Read the magic number  ----
     if (!gzgets (oInfo.fp, acBuf, 1024) ||
-        acBuf[0] != 'P') throw ICLInvalidFileFormat();
+        acBuf[0] != 'P') throw InvalidFileFormatException();
     switch (acBuf[1]) {
       case '6': oInfo.eFormat = formatRGB; break;
       case '5': oInfo.eFormat = formatGray; break;
-      default: throw ICLInvalidFileFormat();
+      default: throw InvalidFileFormatException();
     }
     
     //---- Set default values ----
@@ -341,7 +341,7 @@ namespace icl {
     // {{{ Read special header info
 
     do {
-       if (!gzgets (oInfo.fp, acBuf, 1024)) throw ICLInvalidFileFormat();
+       if (!gzgets (oInfo.fp, acBuf, 1024)) throw InvalidFileFormatException();
        // skip withe space in beginning of line
        pcBuf = acBuf; while (*pcBuf && isspace(*pcBuf)) ++pcBuf;
        if (*pcBuf && *pcBuf != '#') break; // no more comments: break from loop
@@ -354,36 +354,27 @@ namespace icl {
        if (sKey == "NumFeatures" || sKey == "NumImages") {
          iss >> oInfo.iNumImages;
          oInfo.iNumChannels *= oInfo.iNumImages;
-         SECTION_LOG("NumChannles: " << oInfo.iNumChannels);
-         SECTION_LOG("NumImages  : " << oInfo.iNumImages);
        } else if (sKey == "ROI") {
          iss >> oInfo.oROI.x;
          iss >> oInfo.oROI.y;
          iss >> oInfo.oROI.width;
          iss >> oInfo.oROI.height;
-         SECTION_LOG("ROI x     : " << oInfo.oROI.x);
-         SECTION_LOG("ROI y     : " << oInfo.oROI.y);
-         SECTION_LOG("ROI width : " << oInfo.oROI.width);
-         SECTION_LOG("ROI height: " << oInfo.oROI.height);
          continue;
        } else if (sKey == "ImageDepth") {
          // ignore image depth for all formats but ICL
-         if (!oInfo.eFileFormat == ioFormatICL) continue;
+         if (oInfo.eFileFormat != ioFormatICL) continue;
          iss >> sValue;
-         if (sValue == "depth8u") oInfo.eDepth = depth8u;
-         else if (sValue == "depth32f") oInfo.eDepth = depth32f; //TODO_depth
-         else { ERROR_LOG("Unknown image depth: " + sValue); }
-         SECTION_LOG("Depth: " << oInfo.eDepth);
+         // might throw an InvalidDepthException 
+         oInfo.eDepth = translateDepth (sValue); 
          continue;
        } else if (sKey == "Format") {
          iss >> sValue;
+         // might throw an InvalidFormatException 
          oInfo.eFormat = translateFormat(sValue.c_str());
-         SECTION_LOG("Format : " << oInfo.eFormat);
        } else if (sKey == "TimeStamp") {
          Time::value_type t;
          iss >> t;
          oInfo.timeStamp = Time::microSeconds(t);
-         SECTION_LOG("Timestamp: " << oInfo.timeStamp);
          continue;
        }
 
@@ -399,11 +390,9 @@ namespace icl {
     iss >> oInfo.oImgSize.width;
     iss >> oInfo.oImgSize.height;
     oInfo.oImgSize.height = oInfo.oImgSize.height / oInfo.iNumImages;
-    SECTION_LOG("Image width : " << oInfo.oImgSize.width);
-    SECTION_LOG("Image height: " << oInfo.oImgSize.height);
 
     // skip line with maximal pixel value
-    if (!gzgets (oInfo.fp, acBuf, 1024)) throw ICLInvalidFileFormat();
+    if (!gzgets (oInfo.fp, acBuf, 1024)) throw InvalidFileFormatException();
   }
 
   // }}}
@@ -419,7 +408,7 @@ namespace icl {
        int iDim = poImg->getDim () * getSizeOf (poImg->getDepth ());
        for (int i=0;i<oInfo.iNumChannels;i++) {
           if (gzread (oInfo.fp, poImg->getDataPtr(i), iDim) != iDim)
-             throw ICLInvalidFileFormat ();
+             throw InvalidFileFormatException ();
        }
     } else if (poImg->getDepth() == depth8u) {
        // file format is interleaved, i.e. RGB or something similar
@@ -435,7 +424,7 @@ namespace icl {
           icl8u *pcB = poImg8u->getData (i*3+2);
           for (int l=0; l<iLines; l++) {
              if (gzread (oInfo.fp, pcBuf, iDim) != iDim)
-                throw ICLInvalidFileFormat ();
+                throw InvalidFileFormatException ();
              pc=pcBuf;
              for (int c=0; c<oInfo.oImgSize.width; ++c, ++pcR, ++pcG, ++pcB) {
                 *pcR = *pc++;
@@ -477,7 +466,7 @@ namespace icl {
       /* If we get here, the JPEG code has signaled an error.
        * We need to clean up the JPEG object and signal the error to the caller */
       jpeg_destroy_decompress(&jpgCinfo);
-      throw ICLInvalidFileFormat();
+      throw InvalidFileFormatException();
     }
     
     /* Step 1: Initialize the JPEG decompression object. */
@@ -553,7 +542,7 @@ namespace icl {
        * We need to clean up the JPEG object and signal the error to the caller */
       jpeg_destroy_decompress(&jpgCinfo);
       if (oInfo.iNumChannels == 3) delete[] pcBuf;
-      throw ICLInvalidFileFormat();
+      throw InvalidFileFormatException();
     }
     
     ICLASSERT (jpgCinfo.output_components == oInfo.iNumChannels);

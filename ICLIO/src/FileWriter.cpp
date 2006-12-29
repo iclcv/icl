@@ -63,7 +63,7 @@ namespace icl {
       openFile (oInfo, "wb"); // open file for writing
       
       ImgBase *poImg = poSrc;
-      if (poSrc->getDepth () != depth8u && oInfo.eFileFormat != ioFormatICL) { //TODO_depth
+      if (poSrc->getDepth () != depth8u && oInfo.eFileFormat != ioFormatICL) {
          // image needs to be converted to depth8u
         poImg = poSrc->convertTo<icl8u> (&m_oImg8u);
       } // otherwise, use poSrc directly

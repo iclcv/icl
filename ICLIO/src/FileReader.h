@@ -37,9 +37,9 @@ namespace icl {
             the icl8u format is used to save the image. Therefore the input
             image is converted to the icl8u format if necessary. As an
             additional feature multi channel images can be saved with 
-            respect to the pgm specification. For example an 3 dimensional
+            respect to the pgm specification. For example a 3 dimensional
             image with size 100 x 100 pixel is stored as 100 x 300 image. This
-            makes it possible to view the image with an standard image viewer
+            makes it possible to view the image with a standard image viewer
             e.g. xv, xnview).
             </td>
      </tr>
@@ -55,11 +55,11 @@ namespace icl {
      </tr>
      <tr>
        <td> icl </td>
-       <td> A special icl32f image format. The main disadvantage of
-            the pgm and ppm image format is the icl8u data format. If we
-            assume a concetanation of several filter operations, the accuracy
-            of the numerical results is very important. This format allows 
-            information storing without any information loss.
+       <td> A special image format. The main disadvantage of common image formats
+            is their restriction to icl8u data. If we assume a concetanation of 
+            several filter operations, the accuracy of the numerical results is 
+            very important. This format allows to store this information
+            without any loss.
             </td>
      </tr>
    </table>  
@@ -67,7 +67,7 @@ namespace icl {
    The following example show how to use the ICL FileReader:
    <pre>
       ImgBase* poImg = imgNew(depth8u,Size(144,144));
-      FileReader ioRead("testImage.pgm").grab(poImg);
+      FileReader ioRead("*.p?m").grab(poImg);
    </pre>
 */
    class FileReader : public Grabber
@@ -106,7 +106,7 @@ namespace icl {
 
          ///Grab the next image from file/ buffer
          virtual ImgBase* grab(ImgBase* poDst=0) 
-            throw (ICLInvalidFileFormat, FileOpenException, ICLException) ;
+            throw (InvalidFileFormatException, FileOpenException, ICLException) ;
   
          /// Load all images from current file list into an internal buffer
          /** @return a list of failed image files */
@@ -137,7 +137,7 @@ namespace icl {
 
          void readSequenceFile(const std::string& sFileName);
          void readImage (const std::string& sFileName, ImgBase** ppoDst)
-            throw (ICLInvalidFileFormat, FileOpenException, ICLException);
+            throw (InvalidFileFormatException, FileOpenException, ICLException);
 
          void readHeaderPNM (FileInfo &oImgBasenfo);
          void readHeaderJPG (FileInfo &oImgBasenfo);
