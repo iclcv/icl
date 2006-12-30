@@ -898,7 +898,7 @@ template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*, Type*)>
 inline void Img<Type>::ippGetMinMax(Type& rtMin, Type& rtMax, int iChannel) const {
    rtMin = rtMax = 0;
    FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN( ICL_VALID_CHANNEL(iChannel), 0 );
+   ICLASSERT_RETURN( ICL_VALID_CHANNEL(iChannel) );
    ippiFunc (getROIData(iChannel),getLineStep(),getROISize(), &rtMin, &rtMax);
 }
 
@@ -1021,7 +1021,7 @@ Img<Type>::scaleRange(float fNewMin, float fNewMax, int iChannel) {
 
 // {{{   scaleRange main methods
 
-// fallback for all up to icl8u and icl32f
+// fallback for all types
 template <class Type> void 
 Img<Type>::scaleRange(float fNewMin, float fNewMax,
                       float fMin, float fMax, int iChannel) {
@@ -1037,6 +1037,7 @@ Img<Type>::scaleRange(float fNewMin, float fNewMax,
    }
 }
 
+#ifdef WITH_IPP_OPTIMIZATION
 template<> void 
 Img<icl8u>::scaleRange(float fNewMin, float fNewMax,
                        float fMin, float fMax, int iChannel) {
@@ -1049,6 +1050,20 @@ Img<icl8u>::scaleRange(float fNewMin, float fNewMax,
                         getROISize(), tNorm);
    if (tShift != 0)
       ippiAddC_8u_C1IRSfs (tShift, getROIData(iChannel), getLineStep(), 
+                           getROISize(), 1);
+}
+template<> void 
+Img<icl16s>::scaleRange(float fNewMin, float fNewMax,
+                       float fMin, float fMax, int iChannel) {
+   icl16s tFac   = Cast<float, icl16s>::cast(fNewMax - fNewMin);
+   icl16s tNorm  = Cast<float, icl16s>::cast(fMax - fMin);
+   icl16s tShift = Cast<float, icl16s>::cast((fMax * fNewMin - fMin * fNewMax) / 
+                                             (fNewMax - fNewMin));
+
+   ippiMulC_16s_C1IRSfs (tFac, getROIData(iChannel), getLineStep(), 
+                        getROISize(), tNorm);
+   if (tShift != 0)
+      ippiAddC_16s_C1IRSfs (tShift, getROIData(iChannel), getLineStep(), 
                            getROISize(), 1);
 }
 template <> void 
@@ -1065,7 +1080,7 @@ Img<icl32f>::scaleRange(float fNewMin, float fNewMax,
                        getROISize());
   }
 }
-
+#endif
 // }}}
 
 // ---------------------------------------------------------------------
