@@ -31,7 +31,7 @@ namespace icl {
 
    private:
       /// array of image-depth selective filter methods
-      static void (Wiener::*aFilterVariants[2])(const ImgBase *poSrc, ImgBase *poDst, float); 
+      static void (Wiener::*aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst, float); 
 
       std::vector<icl8u> vBuffer;
    };

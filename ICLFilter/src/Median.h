@@ -178,23 +178,22 @@ namespace icl {
     void applyColor(const ImgBase *poSrc, ImgBase **ppoDst);
 
   protected:
-    void (Median::*aMethods[2])(const ImgBase *poSrc, ImgBase *poDst); 
+    void (Median::*aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 
+    void (Median::*aColorMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 
 
 #ifdef WITH_IPP_OPTIMIZATION 
+    template<typename Type, IppStatus (*)(const Type*, int, Type*, int, IppiSize, IppiSize, IppiPoint)>
+    void ippMedian(const ImgBase *poSrc, ImgBase *poDst);
+    template<typename Type, IppStatus (*)(const Type*, int, Type*, int, IppiSize, IppiMaskSize)>
+    void ippMedianFixed(const ImgBase *poSrc, ImgBase *poDst);
     template<typename T>
-       void ippMedian (const ImgBase *poSrc, ImgBase *poDst);
-    template<typename T>
-       void ippMedianFixed (const ImgBase *poSrc, ImgBase *poDst);
-    //template<typename T,IppStatus (*ippiFunc) (const T*, int, T*,int, IppiSize)>
-    template<typename T>
-       void ippMedianColor (const ImgBase *poSrc, ImgBase *poDst);  
+    void ippMedianColor (const ImgBase *poSrc, ImgBase *poDst);  
 #endif
     template<typename T>
-       void cMedian (const ImgBase *poSrc, ImgBase *poDst);
+    void cMedian (const ImgBase *poSrc, ImgBase *poDst);
 private:
 #ifdef WITH_IPP_OPTIMIZATION 
-
-  Array<icl8u> m_oBuffer8u[2];
+  Array<icl8u>  m_oBuffer8u[2];
   Array<icl32f> m_oBuffer32f[2];
 #endif
  };

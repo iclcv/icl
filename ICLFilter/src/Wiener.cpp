@@ -37,12 +37,14 @@ namespace icl {
 // }}}
 #endif
 
-   void (Wiener::*Wiener::aFilterVariants[2])(const ImgBase *poSrc, ImgBase *poDst, float) = {
+   void (Wiener::*Wiener::aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst, float) = {
 #ifdef WITH_IPP_OPTIMIZATION 
-      &Wiener::ippiWienerCall<icl8u,ippiFilterWiener_8u_C1R>, // 8u
-      &Wiener::ippiWienerCall<icl32f,ippiFilterWiener_32f_C1R>  // 32f
+      &Wiener::ippiWienerCall<icl8u,ippiFilterWiener_8u_C1R>,   // 8u
+      &Wiener::ippiWienerCall<icl16s,ippiFilterWiener_16s_C1R>, // 16s
+      0, // 32s
+      &Wiener::ippiWienerCall<icl32f,ippiFilterWiener_32f_C1R>, // 32f
+      0 // 64f
 #else
-      0, 
       0
 #endif     
    };
@@ -52,7 +54,10 @@ namespace icl {
    void Wiener::apply (const ImgBase *poSrc, ImgBase **ppoDst, float fNoise) {
      FUNCTION_LOG("");
      if (!prepare (ppoDst, poSrc)) return;
-     (this->*(aFilterVariants[poSrc->getDepth()])) (poSrc, *ppoDst, fNoise);
+     void (Wiener::*pMethod)(const ImgBase*, ImgBase*, float) 
+        = this->aMethods[poSrc->getDepth()];
+     if (!pMethod) ICL_INVALID_FORMAT;
+     (this->*pMethod)(poSrc, *ppoDst, fNoise);
    }
    
   // }}}

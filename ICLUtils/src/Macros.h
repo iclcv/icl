@@ -120,6 +120,13 @@ namespace icl {
 #define ICL_UNLIKELY(expr) expr
 #endif
 
+#define INSTANTIATE_ALL_TEMPLATES \
+  INSTANTIATE_TEMPLATE(8u)  \
+  INSTANTIATE_TEMPLATE(16s) \
+  INSTANTIATE_TEMPLATE(32s) \
+  INSTANTIATE_TEMPLATE(32f) \
+  INSTANTIATE_TEMPLATE(64f)
+
 }// namespace icl
 
 
