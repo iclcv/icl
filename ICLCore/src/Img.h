@@ -479,7 +479,7 @@ class Img : public ImgBase
   Type* getData(int iChannel) const
     { 
       FUNCTION_LOG("");
-      ICLASSERT_RETURN_VAL( iChannel >= 0 && iChannel < getChannels(), 0);
+      ICLASSERT_RETURN_VAL(validChannel(iChannel), 0);
       return m_vecChannels[iChannel].get();
     }
   
@@ -505,8 +505,7 @@ class Img : public ImgBase
   */
   Type *getROIData(int iChannel) const{
     FUNCTION_LOG("");
-    ICLASSERT_RETURN_VAL( iChannel >= 0 ,0);
-    ICLASSERT_RETURN_VAL( iChannel < getChannels() ,0);
+    ICLASSERT_RETURN_VAL(validChannel(iChannel),0);
     return getData(iChannel) + m_oParams.getPixelOffset();
   }
 
@@ -522,8 +521,7 @@ class Img : public ImgBase
   **/
   Type *getROIData(int iChannel, const Point &p) const{
     FUNCTION_LOG("");
-    ICLASSERT_RETURN_VAL( iChannel >= 0 ,0);
-    ICLASSERT_RETURN_VAL( iChannel < getChannels() ,0);
+    ICLASSERT_RETURN_VAL(validChannel(iChannel),0);
     return getData(iChannel) + p.x + (p.y * getWidth());
   }
 
@@ -537,8 +535,7 @@ class Img : public ImgBase
   virtual void* getDataPtr(int iChannel) const
     {
       FUNCTION_LOG("");
-      ICLASSERT_RETURN_VAL( iChannel >= 0 ,0);
-      ICLASSERT_RETURN_VAL( iChannel < getChannels() ,0);
+      ICLASSERT_RETURN_VAL(validChannel(iChannel),0);
       return getData(iChannel);
     }
   
@@ -644,7 +641,7 @@ class Img : public ImgBase
   inline iterator getIterator(int iChannel)
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
-      ICLASSERT_RETURN_VAL(ICL_VALID_CHANNEL(iChannel), iterator());
+      ICLASSERT_RETURN_VAL(validChannel(iChannel), iterator());
       return iterator(getData(iChannel),getWidth(),Rect(Point::null,getSize()));
     }
   /// returns an iterator to an images ROI pixles
@@ -656,7 +653,7 @@ class Img : public ImgBase
   inline iterator getROIIterator(int iChannel)
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
-      ICLASSERT_RETURN_VAL(ICL_VALID_CHANNEL(iChannel), iterator());
+      ICLASSERT_RETURN_VAL(validChannel(iChannel), iterator());
       return iterator(getData(iChannel),getWidth(),getROI());
     } 
 
@@ -664,14 +661,14 @@ class Img : public ImgBase
   inline const_iterator getIterator(int iChannel) const
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
-      ICLASSERT_RETURN_VAL(ICL_VALID_CHANNEL(iChannel), const_iterator());
+      ICLASSERT_RETURN_VAL(validChannel(iChannel), const_iterator());
       return const_iterator(getData(iChannel),getWidth(),Rect(Point::null,getSize()));
     }
   /// const version of getROIIterator
   inline const_iterator getROIIterator(int iChannel) const
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
-      ICLASSERT_RETURN_VAL(ICL_VALID_CHANNEL(iChannel), const_iterator());
+      ICLASSERT_RETURN_VAL(validChannel(iChannel), const_iterator());
       return const_iterator(getData(iChannel),getWidth(),getROI());
     } 
  

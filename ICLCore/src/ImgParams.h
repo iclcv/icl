@@ -57,13 +57,15 @@ namespace icl{
     /** channel count is adapted to the given format
         @see setup
     */
-    ImgParams(int width, int height, format fmt, int roiX=0, int roiY=0, int roiWidth = 0, int roiHeight = 0);
+    ImgParams(int width, int height, format fmt, 
+              int roiX=0, int roiY=0, int roiWidth = 0, int roiHeight = 0);
 
     /// creates an ImgParams object with specified size, channel and roi given as POD-Types
     /** The format is set to "formatMatrix" 
         @see setup
     */
-    ImgParams(int width, int height, int channels, int roiX=0, int roiY=0, int roiWidth = 0, int roiHeight = 0);
+    ImgParams(int width, int height, int channels, 
+              int roiX=0, int roiY=0, int roiWidth = 0, int roiHeight = 0);
 
 
     /// creates an ImgParams object with ALL possible parameters
@@ -71,7 +73,8 @@ namespace icl{
         channel count is not compatible to the given format, an exception is thrown.
         @see setup
     */
-    ImgParams(int width, int height, int channels, format fmt, int roiX=0, int roiY=0, int roiWidth=0, int roiHeight=0);
+    ImgParams(int width, int height, int channels, format fmt, 
+              int roiX=0, int roiY=0, int roiWidth=0, int roiHeight=0);
 
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }
@@ -131,7 +134,7 @@ namespace icl{
     void setROIAdaptive(const Rect &r);
      
     /// returns ROISize == ImageSize
-    int hasFullROI() const { return m_oROI.size() == m_oSize;}
+    bool hasFullROI() const { return m_oROI.size() == m_oSize;}
 
     /// sets the ROI to 0,0,image-width,image-height
     void setFullROI(){ setROI(Point::null, getSize()); }

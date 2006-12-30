@@ -232,7 +232,6 @@ provided in ImgMacros.h
 #include <string>
 
 
-
 /// The ICL-namespace
 /**
 This namespace is dedicated for ICLCore- and all additional Computer-Vision
@@ -461,21 +460,10 @@ namespace icl {
   /// getDepth<T> returns to depth enum associated to type T
   template<class T> inline depth getDepth();
 
-  /// getDepth<T> returns to depth enum associated to type T
-  template<> inline depth getDepth<icl8u>() { return depth8u; }
-  
-  /// getDepth<T> returns to depth enum associated to type T
-  template<> inline depth getDepth<icl16s>() { return depth16s; }
-
-  /// getDepth<T> returns to depth enum associated to type T
-  template<> inline depth getDepth<icl32s>() { return depth32s; }
-
-  /// getDepth<T> returns to depth enum associated to type T
-  template<> inline depth getDepth<icl32f>() { return depth32f; }
-
-  /// getDepth<T> returns to depth enum associated to type T
-  template<> inline depth getDepth<icl64f>() { return depth64f; }
-
+#define INSTANTIATE_TEMPLATE(T) \
+  template<> inline depth getDepth<icl ## T>() { return depth ## T; }
+INSTANTIATE_ALL_TEMPLATES  
+#undef INSTANTIATE_TEMPLATE
 
   /// return sizeof value for the given depth type
   unsigned int getSizeOf(depth eDepth);

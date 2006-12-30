@@ -84,7 +84,6 @@ namespace icl{
   static string asDepthTypes[] = {"8u","16s","32s","32f","64f"};
   string translateDepth(depth eDepth){
     // {{{ open
-    if (!ICL_VALID_DEPTH(eDepth)) ICL_INVALID_DEPTH;
     return string("depth") + asDepthTypes[eDepth];
   }
 
@@ -153,13 +152,12 @@ namespace icl{
 
   unsigned int getSizeOf(depth eDepth){
     // {{{ open
-    ICLASSERT_RETURN_VAL( ICL_VALID_DEPTH(eDepth), 0 );
     static unsigned int s_aiSizeTable[]= { sizeof(icl8u),
                                            sizeof(icl16s),
                                            sizeof(icl32s),
                                            sizeof(icl32f),                                           
                                            sizeof(icl64f) };
-    return s_aiSizeTable[(int)eDepth];
+    return s_aiSizeTable[eDepth];
   }
 
   // }}}

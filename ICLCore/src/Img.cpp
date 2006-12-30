@@ -470,7 +470,7 @@ Img<Type>::removeChannel(int iChannel)
 
 {
   FUNCTION_LOG("removeChannel(" << iChannel << ")");
-  ICLASSERT_RETURN(iChannel >=0 && iChannel < getChannels());
+  ICLASSERT_RETURN(validChannel(iChannel));
 
   m_vecChannels.erase(m_vecChannels.begin()+iChannel);
   m_oParams.setChannels(m_vecChannels.size());
@@ -527,8 +527,8 @@ Img<Type>::swapChannels(int iIndexA, int iIndexB)
   // {{{ open
 {
   FUNCTION_LOG("swapChannels("<<iIndexA<<","<< iIndexB<< ")");
-  ICLASSERT_RETURN(iIndexA >= 0 && iIndexA < getChannels());
-  ICLASSERT_RETURN(iIndexB >= 0 && iIndexB < getChannels());
+  ICLASSERT_RETURN(validChannel(iIndexA));
+  ICLASSERT_RETURN(validChannel(iIndexB));
 
   std::swap(m_vecChannels[iIndexA], m_vecChannels[iIndexB]);
 }
@@ -740,8 +740,8 @@ Img<Type>::replaceChannel(int iThisIndex, Img<Type>* poSrc, int iOtherIndex)
   // {{{ open
 {
   FUNCTION_LOG("");
-  ICLASSERT_RETURN(iThisIndex >= 0 && iThisIndex < getChannels());
-  ICLASSERT_RETURN(iOtherIndex >= 0 && iOtherIndex < poSrc->getChannels());
+  ICLASSERT_RETURN(validChannel(iThisIndex));
+  ICLASSERT_RETURN(poSrc->validChannel(iOtherIndex));
   m_vecChannels[iThisIndex] = poSrc->m_vecChannels[iOtherIndex];
 }
 // }}}
@@ -768,7 +768,7 @@ Img<Type>::getMax() const
 template<class Type> Type 
 Img<Type>::getMax(int iChannel) const {
    FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN_VAL( ICL_VALID_CHANNEL(iChannel), 0 );
+   ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
 
    const_iterator it = getROIIterator(iChannel);
    if (!it.inRegion()) return 0; // empty region
@@ -784,7 +784,7 @@ template<typename Type>
 template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*)>
 inline Type Img<Type>::ippGetMax(int iChannel) const {
    FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN_VAL( ICL_VALID_CHANNEL(iChannel), 0 );
+   ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
    Type vMax = 0;
    ippiFunc (getROIData(iChannel),getLineStep(),getROISize(),&vMax);
    return vMax;
@@ -820,7 +820,7 @@ Img<Type>::getMin() const
 template<class Type> Type 
 Img<Type>::getMin(int iChannel) const {
    FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN_VAL( ICL_VALID_CHANNEL(iChannel), 0 );
+   ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
 
    const_iterator it = getROIIterator(iChannel);
    if (!it.inRegion()) return 0; // empty region
@@ -836,7 +836,7 @@ template<typename Type>
 template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*)>
 inline Type Img<Type>::ippGetMin(int iChannel) const {
    FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN_VAL( ICL_VALID_CHANNEL(iChannel), 0 );
+   ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
    Type vMin = 0;
    ippiFunc (getROIData(iChannel),getLineStep(),getROISize(),&vMin);
    return vMin;
@@ -880,7 +880,7 @@ template<class Type> void
 Img<Type>::getMinMax(Type &rtMin, Type &rtMax, int iChannel) const {
    rtMin = rtMax = 0;
    FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN (ICL_VALID_CHANNEL(iChannel));
+   ICLASSERT_RETURN (validChannel(iChannel));
 
    const_iterator it = getROIIterator(iChannel);
    if (!it.inRegion()) return; // empty region: return with 0, 0
@@ -898,7 +898,7 @@ template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*, Type*)>
 inline void Img<Type>::ippGetMinMax(Type& rtMin, Type& rtMax, int iChannel) const {
    rtMin = rtMax = 0;
    FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN( ICL_VALID_CHANNEL(iChannel) );
+   ICLASSERT_RETURN( validChannel(iChannel) );
    ippiFunc (getROIData(iChannel),getLineStep(),getROISize(), &rtMin, &rtMax);
 }
 
@@ -1010,7 +1010,7 @@ Img<Type>::scaleRange(float fNewMin,float fNewMax, float fMin,float fMax) {
 template<class Type> void
 Img<Type>::scaleRange(float fNewMin, float fNewMax, int iChannel) {
    FUNCTION_LOG("");
-   ICLASSERT_RETURN(iChannel >= 0 && iChannel < getChannels());
+   ICLASSERT_RETURN(validChannel(iChannel));
 
    Type tMin, tMax;
    getMinMax(tMin,tMax,iChannel);

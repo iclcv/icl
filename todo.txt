@@ -1,5 +1,8 @@
-Felix: Timestamp
--JPG-Header lesen und schreiben
+find src/ICL/ -regex \./ICL[^/]*/[^./]*/[^./]*\.[hc][hcp]*
+
+naming convention for files: iclBlaBlub.h / iclBlaBlub.cpp
+
+
 
 Michael:
 make install* does not check SKIP_DIRS variable (tries to install libICLQt)

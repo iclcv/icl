@@ -383,6 +383,11 @@ namespace icl {
           printing the image parameters to identify the message.
       **/
       void print(const std::string sTitle="image") const;
+
+      /// validate the given channel index
+      bool validChannel(const int iChannel) const {
+         return iChannel >= 0 && iChannel < getChannels();
+      }
       //@}
       /* }}} */
 

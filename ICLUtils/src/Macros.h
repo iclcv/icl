@@ -110,10 +110,6 @@ namespace icl {
     throw OBJ;                      \
   }
 
-#define ICL_VALID_CHANNEL(X) ((X) >= 0 && (X) < getChannels())
-#define ICL_VALID_DEPTH(X)   ((X) >= 0 && (X) <= depthLast)
-#define ICL_VALID_FORMAT(X)  ((X) >= 0 && (X) <= formatLast)
-
 #if __GNUC__ >= 3
 #define ICL_UNLIKELY(expr) __builtin_expect(expr, 0)
 #else
