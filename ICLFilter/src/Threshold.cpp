@@ -235,7 +235,7 @@ namespace icl {
     switch (poSrc->getDepth()){
       case depth8u: lt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t)); break;
       case depth32f: lt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t); break;
-      default: ICL_INVALID_FORMAT; break;
+      default: ICL_INVALID_DEPTH; break;
     }
   }
 
@@ -248,7 +248,7 @@ namespace icl {
     switch (poSrc->getDepth()){
       case depth8u: gt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t)); break;
       case depth32f: gt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t); break;
-      default: ICL_INVALID_FORMAT; break;
+      default: ICL_INVALID_DEPTH; break;
     }
   }
 
@@ -261,7 +261,7 @@ namespace icl {
     switch (poSrc->getDepth()){
       case depth8u: ltgt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(tMin), Cast<icl32f,icl8u>::cast(tMax)); break;
       case depth32f: ltgt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), tMin, tMax); break;
-      default: ICL_INVALID_FORMAT; break;
+      default: ICL_INVALID_DEPTH; break;
     }
   }
 
@@ -274,7 +274,7 @@ namespace icl {
     switch (poSrc->getDepth()){
       case depth8u: ltVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t), Cast<icl32f,icl8u>::cast(val)); break;
       case depth32f: ltVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t, val); break;
-      default: ICL_INVALID_FORMAT; break;
+      default: ICL_INVALID_DEPTH; break;
     }
   }
   // }}}
@@ -286,7 +286,7 @@ namespace icl {
     switch (poSrc->getDepth()){
       case depth8u: gtVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t), Cast<icl32f,icl8u>::cast(val)); break;
       case depth32f: gtVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t, val); break;
-      default: ICL_INVALID_FORMAT; break;
+      default: ICL_INVALID_DEPTH; break;
     }
   }
 
@@ -304,7 +304,7 @@ namespace icl {
                  Cast<icl32f,icl8u>::cast(tMax), Cast<icl32f,icl8u>::cast(maxVal));
       break;
       case depth32f: ltgtVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), tMin, minVal, tMax, maxVal); break;
-      default: ICL_INVALID_FORMAT; break;
+      default: ICL_INVALID_DEPTH; break;
     }
   }
   // }}}

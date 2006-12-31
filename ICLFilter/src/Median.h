@@ -165,17 +165,19 @@ namespace icl {
         @param ppoDst pointer to destination image
     */
     void apply(const ImgBase *poSrc, ImgBase **ppoDst);
-  /// applies the medianColor operation on poSrc and stores the result in poDst, 
-    /** 
-      poSrc and poDst have to be 3-channel or4-channel images 
-      The 3/4-ch planar icl image is internally converted into an interleaved one, then 
-      the IPP medianColor operation is applied, after that, the image is coverted back
-      to a planar ICL Image.
-      The depth, channel count and size of poDst is adapted to poSrc' ROI:
-        @param poSrc  source image
+    void apply(const ImgBase *poSrc, ImgBase *poDst);
+
+    /// applies a median operation for color images
+    /** poSrc and poDst have to be 3-channel images The 3 channel planar icl
+        image is internally converted into an interleaved one, then the IPP
+        medianColor operation is applied, after that, the image is converted
+        back to a planar ICL Image.  The depth, channel count and size of
+        poDst is adapted to poSrc' ROI.
+        @param poSrc source image 
         @param ppoDst pointer to destination image
     */
     void applyColor(const ImgBase *poSrc, ImgBase **ppoDst);
+    void applyColor(const ImgBase *poSrc, ImgBase *poDst);
 
   protected:
     void (Median::*aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 

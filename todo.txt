@@ -1,7 +1,7 @@
 find src/ICL/ -regex \./ICL[^/]*/[^./]*/[^./]*\.[hc][hcp]*
 
 naming convention for files: iclBlaBlub.h / iclBlaBlub.cpp
-
+Median::applyColor -> ColorMedian::apply
 
 
 Michael:

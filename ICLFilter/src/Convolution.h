@@ -150,7 +150,7 @@ namespace icl {
     /** @param eKernel determines the filter type 
         (kernelCustom is not allowed here!)
     */
-    Convolution(kernel eKernel);
+    explicit Convolution(kernel eKernel);
 
     /// Default constructor
     Convolution();
@@ -186,7 +186,7 @@ namespace icl {
                 int iNormFactor=1, bool bBufferData=true);
 
     /// Destructor
-    virtual ~Convolution();
+    ~Convolution();
     
     /// performs the convolution operation on the image
     /** The destination image is automatically set up to correct size and its
@@ -194,7 +194,16 @@ namespace icl {
         @param poSrc  source image
         @param ppoDst destination image
     */
-    virtual void apply(ImgBase *poSrc, ImgBase **ppoDst);
+    void apply(const ImgBase *poSrc, ImgBase **ppoDst);
+
+    /// performs the convolution operation on the image
+    /** The destination image must match the depth of the source image.
+        All other parameters, i.e. size, #channels, etc., is automatically 
+        set up w.r.t. the source image.
+        @param poSrc source image
+        @param poDst destination image
+    */
+    void apply(const ImgBase *poSrc, ImgBase *poDst);
     
     /// change kernel (and/or normalization factor)
     void setKernel (int *piKernel, const Size& size, int iNormFactor=1, bool bBufferData=true);
@@ -237,6 +246,8 @@ namespace icl {
     bool isConvertableToInt (float *pfData, int iLen);
     /// copy external int kernel to internal float buffer
     void copyIntToFloatKernel (int iDim);
+    /// make major changes for both setKernel() versions
+    void cleanupKernels (depth newDepth, const Size& size, bool bBufferData);
     /// create kernel buffers
     void bufferKernel (float *pfKernel);
     void bufferKernel (int *piKernel);
@@ -244,17 +255,17 @@ namespace icl {
     void releaseBuffers ();
 
     /// array of image- and kernel-type selective generic convolution methods
-    static void (Convolution::*aGenericConvs[2][2])(ImgBase *poSrc, ImgBase *poDst); 
+    static void (Convolution::*aGenericConvs[2][2])(const ImgBase *poSrc, ImgBase *poDst); 
 
 #ifdef WITH_IPP_OPTIMIZATION 
     template<typename ImgT, typename KernelT>
-       void ippGenericConv (ImgBase *poSrc, ImgBase *poDst);
+       void ippGenericConv (const ImgBase *poSrc, ImgBase *poDst);
     template<typename T>
-       void ippFixedConv (ImgBase *poSrc, ImgBase *poDst,
+       void ippFixedConv (const ImgBase *poSrc, ImgBase *poDst,
                           IppStatus (*pMethod)(const T* pSrc, int srcStep,
                                                T* pDst, int dstStep, IppiSize));
     template<typename T>
-       void ippFixedConvMask (ImgBase *poSrc, ImgBase *poDst,
+       void ippFixedConvMask (const ImgBase *poSrc, ImgBase *poDst,
                               IppStatus (*pMethod)(const T* pSrc, int srcStep,
                                                    T* pDst, int dstStep, 
                                                    IppiSize, IppiMaskSize));
@@ -278,7 +289,7 @@ namespace icl {
 
 #else
     template<typename ImgT, typename KernelT, bool bUseFactor>
-       void cGenericConv (ImgBase *poSrc, ImgBase *poDst);
+       void cGenericConv (const ImgBase *poSrc, ImgBase *poDst);
 #endif
   };
 
@@ -299,7 +310,7 @@ namespace icl {
   class DynamicConvolution : protected Convolution {
   public:
      DynamicConvolution (const ImgBase* poKernel = 0);
-     virtual ~DynamicConvolution ();
+     ~DynamicConvolution ();
 
      void setKernel (const ImgBase* poKernel);
      Convolution::setClipToROI;

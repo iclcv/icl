@@ -167,6 +167,18 @@ INSTANTIATE_ALL_TEMPLATES;
     (this->*pMethod)(poSrc, *ppoDst);
   }
 
+  void Median::apply(const ImgBase *poSrc, ImgBase *poDst)
+  {
+     ICLASSERT_RETURN(poSrc->getDepth() == poDst->getDepth());
+     ImgBase **ppoDst = &poDst;
+
+     apply (poSrc, ppoDst);
+     ICLASSERT(*ppoDst == poDst);
+  }
+
+  // }}}
+
+
 #ifdef WITH_IPP_OPTIMIZATION 
   void Median::applyColor(const ImgBase *poSrc, ImgBase **ppoDst)
   {
@@ -178,6 +190,15 @@ INSTANTIATE_ALL_TEMPLATES;
        = this->aColorMethods[poSrc->getDepth()];
     if (!pMethod) ICL_INVALID_FORMAT;
     (this->*pMethod)(poSrc, *ppoDst);
+  }
+
+  void Median::applyColor(const ImgBase *poSrc, ImgBase *poDst)
+  {
+     ICLASSERT_RETURN(poSrc->getDepth() == poDst->getDepth());
+     ImgBase **ppoDst = &poDst;
+
+     applyColor (poSrc, ppoDst);
+     ICLASSERT(*ppoDst == poDst);
   }
 #else
 #warning "applyColor is not implemented without IPP optimization";

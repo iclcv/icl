@@ -32,7 +32,7 @@ void test (icl::depth eDepth) {
    pConv->setClipToROI (true);
    pConv->apply (pSrc, &pDst);
    pConv->setClipToROI (false);
-   pConv->apply (pSrc, &pDst);
+   pConv->apply (pSrc, pDst);
 
    float *pfKernel = new float[9]; memset (pfKernel, 0, 9*sizeof(float));
    int   *piKernel = new int[10]; memset (piKernel, 0, 10*sizeof(int)); *piKernel=1;
