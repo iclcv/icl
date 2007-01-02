@@ -74,15 +74,16 @@ namespace icl {
   
   /// determines the color-format, that is associated with the images channels 
   enum format{
-    formatRGB, /**< (red,green,blue) colors pace */
-    formatHLS, /**< (hue,lightness,saturation) color space (also know as HSI) */
-    formatLAB, /**< (lightness,a*,b*) color space */
-    formatYUV, /**< (Y,u,v) color space */
-    formatGray, /**< n-channel gray image range of values is [0,255] as default */
-    formatMatrix, /**< n-channel image without a specified color space. */
-    formatChroma, /**< 2 channel chromaticity color space */
-    formatLast = formatChroma
+    formatGray   = 0, /**< (red,green,blue) colors pace */
+    formatRGB    = 1, /**< (hue,lightness,saturation) color space (also know as HSI) */
+    formatHLS    = 2, /**< (lightness,a*,b*) color space */
+    formatYUV    = 3, /**< (Y,u,v) color space */
+    formatLAB    = 4, /**< n-channel gray image range of values is [0,255] as default */
+    formatChroma = 5, /**< n-channel image without a specified color space. */
+    formatMatrix = 6  /**< 2 channel chromaticity color space */
+    formatLast = formatMatrix
   };
+  
 
 #ifdef WITH_IPP_OPTIMIZATION
   enum scalemode{
