@@ -362,7 +362,7 @@ namespace icl {
 
   // {{{ generic fallback convolution
   template<typename ImageT, typename KernelT, bool bUseFactor>
-  void Convolution::cGenericConv (ImgBase *poSrc, ImgBase *poDst)
+  void Convolution::cGenericConv (const ImgBase *poSrc, ImgBase *poDst)
   {
     Img<ImageT> *poS = (Img<ImageT>*) poSrc;
     Img<ImageT> *poD = (Img<ImageT>*) poDst;
@@ -407,7 +407,7 @@ namespace icl {
       &Convolution::cGenericConv<icl8u,float, false>},  // 8u - 32f
      {0,                                        // 32f - 8u
       &Convolution::cGenericConv<icl32f,float, false>}  // 32f - 32f
-#endif     
+#endif
   };
 
   // }}}
@@ -417,7 +417,6 @@ namespace icl {
   void Convolution::apply(const ImgBase *poSrc, ImgBase **ppoDst)
   {
     FUNCTION_LOG("");
-
     if (!prepare (ppoDst, poSrc)) return;
 
     /* We must carefully match the image depth to the
@@ -446,16 +445,32 @@ namespace icl {
       return;
     }
 #endif
+      int tmpKernelDepth;
+      int tmpSrcDepth;
+      switch (m_eKernelDepth){
+        case 0: tmpKernelDepth=0; break;
+        case 3: tmpKernelDepth=1; break;
+        default:tmpKernelDepth=-1; break;
+      }
+      switch (poSrc->getDepth()){
+        case 0: tmpSrcDepth=0; break;
+        case 3: tmpSrcDepth=1; break;
+        default:tmpSrcDepth=-1; break;
+      }
 
     if (poSrc->getDepth () == m_eKernelDepth || m_eKernelDepth == depth32f) {
-       (this->*(aGenericConvs[poSrc->getDepth()][m_eKernelDepth])) (poSrc, *ppoDst);
+//       (this->*(aGenericConvs[poSrc->getDepth()][m_eKernelDepth])) (poSrc, *ppoDst);  // Bumm, da aGenericConvs [2][2] für damals 0=>icl8u 1=>icl32f
+        if (tmpSrcDepth>=0 && tmpKernelDepth>=0){
+          (this->*(aGenericConvs[tmpSrcDepth][tmpKernelDepth])) (poSrc, *ppoDst);
+        }
     } else { // 32f image and int* kernel case, which is not supported directly
        if (!m_bBuffered) {
           // data has to be copied from (external) int* kernel to internal float buffer first
           copyIntToFloatKernel (oMaskSize.width * oMaskSize.height);
        }
        // use float kernel always
-       (this->*(aGenericConvs[poSrc->getDepth()][depth32f])) (poSrc, *ppoDst);
+//       (this->*(aGenericConvs[poSrc->getDepth()][depth32f])) (poSrc, *ppoDst);
+        (this->*(aGenericConvs[tmpSrcDepth][1])) (poSrc, *ppoDst);
     }
   }
 
