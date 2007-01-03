@@ -1142,7 +1142,7 @@ namespace icl {
     };
   }
   // }}}
-
+/*  alte version
   void Arithmetic::AbsDiffC (const ImgBase *poSrc, icl64f value, ImgBase **ppoDst)
   {
     // {{{ open
@@ -1157,6 +1157,37 @@ namespace icl {
     };
   }
   // }}}
+*/
 
+/*
+#define ICL_INSTANTIATE_DEPTH(T) \
+template<> icl ## T \
+Img<icl ## T>::getMin(int iChannel) const {return ippGetMin<ippiMin_ ## T ## _C1R>(iChannel);}
+
+ICL_INSTANTIATE_DEPTH(8u)
+ICL_INSTANTIATE_DEPTH(16s)
+ICL_INSTANTIATE_DEPTH(32f)
+#undef ICL_INSTANTIATE_DEPTH
+#endif
+*/
+#define ICL_INSTANTIATE_DEPTH(T) \
+     AbsDiffC(poSrc->asImg<icl ## T>(),Cast<icl64f,int>::cast(value),(*ppoDst)->asImg<icl ## T>());
+ 
+  void Arithmetic::AbsDiffC (const ImgBase *poSrc, icl64f value, ImgBase **ppoDst)
+  {
+    // {{{ open
+    if (!Filter::prepare (ppoDst, poSrc)) return;
+    switch (poSrc->getDepth()) {
+      case depth8u: ICL_INSTANTIATE_DEPTH(8u); break;
+      case depth16s: ICL_INSTANTIATE_DEPTH(16s); break;
+      case depth32s: ICL_INSTANTIATE_DEPTH(32s); break;
+      case depth32f: ICL_INSTANTIATE_DEPTH(32f); break;
+      case depth64f: ICL_INSTANTIATE_DEPTH(64f); break;
+      default: ICL_INVALID_FORMAT; break;
+    };
+  }
+#undef ICL_INSTANTIATE_DEPTH  
+  
+  
 // }}}
 }
