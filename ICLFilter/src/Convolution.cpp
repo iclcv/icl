@@ -40,12 +40,12 @@ namespace icl {
                                               1,  0, -1,
                                               2,  0, -2,
                                               1,  0, -1 };
-  int Convolution::KERNEL_SOBEL_X_5x5[26] = { 571,
-                                              2,  7,  12,  7,  2,
-                                              7, 31,  52, 31,  7,
-                                              12, 52, 127, 52, 12,
-                                              7, 31,  52, 31,  7,
-                                              2,  7,  12,  7,  2 };
+  int Convolution::KERNEL_SOBEL_X_5x5[26] = { 1,
+                                              1,  2,  0,  -2,  -1, 
+                                              4,  8,  0,  -8,  -4,
+                                              6, 12,  0, -12,  -6,
+                                              4,  8,  0,  -8,  -4,
+                                              1,  2,  0,  -2,  -1 };
    
   int Convolution::KERNEL_SOBEL_Y_3x3[10] = {  1, 
                                                1,  2,  1,
@@ -229,6 +229,7 @@ namespace icl {
      setIPPFixedMethods(eKernel);
 #endif
      // set (still) undefined method pointers to generic fallback versions
+     // this is needed also for IPP, because not all 5x5 version are IPP supported
      if (aMethods[depth8u] == 0)  aMethods[depth8u]  = &Convolution::cGenericConv<icl8u,  int, true>;
      if (aMethods[depth16s] == 0) aMethods[depth16s] = &Convolution::cGenericConv<icl16s, int, true>;
      if (aMethods[depth32s] == 0) aMethods[depth32s] = &Convolution::cGenericConv<icl32s, int, true>;
@@ -249,7 +250,7 @@ namespace icl {
 
   void Convolution::setKernel (int *piKernel, const Size& size, 
                                int iNormFactor, bool bBufferData) {
-     cleanupKernels (depth8u, size, bBufferData);
+     cleanupKernels (depth32s, size, bBufferData);
 
      this->iNormFactor = iNormFactor;
      if (m_bBuffered) bufferKernel (piKernel); // buffer kernel internally
@@ -414,8 +415,8 @@ namespace icl {
 
   // }}}
 
-//#else
-#endif  // cGenericConv is defined in the general part (not only in the no-IPP part) of Convolution.h and used in this file line 232...
+#endif // cGenericConv is also used for non-supported depths in IPP mode
+
   // {{{ generic fallback convolution
   template<> inline const int*   Convolution::getKernel<int>()   const {return piKernel;}
   template<> inline const float* Convolution::getKernel<float>() const {return pfKernel;}
@@ -448,8 +449,6 @@ namespace icl {
   }
 
   // }}}
-
-// #endif
 
   // {{{ static MethodPointers aGenericMethods
 
@@ -527,30 +526,16 @@ namespace icl {
   }
 
   void DynamicConvolution::setKernel (const ImgBase* poKernel) {
-     ICLASSERT_RETURN(poKernel->getChannels() > 0);
+     ICLASSERT_RETURN(poKernel->getChannels() == 1);
 
      // resize kernel buffer if necessary
      if (poKernel->getROISize() != poKernelBuf->getSize())
         poKernelBuf->setSize (poKernel->getROISize());
 
      // copy data from poKernel's ROI to poKernelBuf
-     
-    switch (poKernel->getDepth()){
-      case depth8u:
-        deepCopyChannelROI<icl8u,icl32f> 
-           (poKernel->asImg<icl8u>(), 0, poKernel->getROIOffset(), poKernel->getROISize(),
-            poKernelBuf, 0, Point::null, poKernelBuf->getSize());
-        break;
-      case depth32f:
-        deepCopyChannelROI<icl32f,icl32f> 
-           (poKernel->asImg<icl32f>(), 0, poKernel->getROIOffset(), poKernel->getROISize(),
-            poKernelBuf, 0, Point::null, poKernelBuf->getSize());
-        break;
+     poKernel->deepCopyROI (poKernelBuf);
 
-      default:
-        ICL_INVALID_FORMAT;
-        break;
-    }     
+     // set Convolution kernel from float data
      Convolution::setKernel (poKernelBuf->getData(0), poKernelBuf->getSize(), false);
   }
 

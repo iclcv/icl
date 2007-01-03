@@ -76,7 +76,6 @@ NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium3
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES} -DWITH_IPP_OPTIMIZATION
-#CDEFINES:= ${CDEFINES}
 
 # Flags for C compiler
 CFLAGS:= ${CFLAGS}
