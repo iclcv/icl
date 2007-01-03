@@ -5,16 +5,19 @@
 namespace icl {
 
 
-#ifdef WITH_IPP_OPTIMIZATION
-
 Canny::Canny(const Img32f *src){
+#ifdef WITH_IPP_OPTIMIZATION
   int bufSize;
   ippiCannyGetSize(src->getROISize(), &bufSize);
   m_oBuffer8u = new icl8u[bufSize];
-    m_poSobelx=0; //sobel-x => y-derivation
-    m_poSobely=0; //sobel-y => x-derivation
+  m_poSobelx=0; //sobel-x => y-derivation
+  m_poSobely=0; //sobel-y => x-derivation
+#else
+  throw ("Canny Edge Detector only implemented with IPP usage.");
+#endif
+  
 }
-
+#ifdef WITH_IPP_OPTIMIZATION
 
 Canny::~Canny(){
   FUNCTION_LOG("");
@@ -38,9 +41,6 @@ void Canny::apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f 
   // {{{ C++ fallback 
 
    
-  Canny::Canny(const Img32f *src){
-     #warning "Canny Edge Detector is not implemented without IPP optimization";
-  }
 Canny::~Canny(){}
    
    void Canny::apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f lowThresh, icl32f highThresh){
@@ -55,7 +55,8 @@ Canny::~Canny(){}
       // {{{ open
   {
     FUNCTION_LOG("");
-    ICLASSERT_RETURN( poSrcDx->getDepth() == poSrcDy->getDepth() == depth32f);
+    ICLASSERT_RETURN( poSrcDx->getDepth() == depth32f);
+    ICLASSERT_RETURN( poSrcDx->getDepth() == poSrcDy->getDepth());
     ICLASSERT_RETURN( poSrcDx->getChannels() == poSrcDy->getChannels());
     if (!prepare (ppoDst, poSrcDx,depth8u)) return;
        apply(poSrcDx->asImg<icl32f>(),poSrcDy->asImg<icl32f>(),(*ppoDst)->asImg<icl8u>(),lowThresh,highThresh);
