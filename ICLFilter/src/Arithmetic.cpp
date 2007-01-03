@@ -10,7 +10,7 @@ namespace icl {
   // {{{ C++ fallback functions
 
   template <typename T,class ArithmeticOp>
-  void fallbackArithmetic2T(const Img<T> *src1, const Img<T> *src2, Img<T> *dst,const ArithmeticOp &op)
+  inline void fallbackArithmetic2T(const Img<T> *src1, const Img<T> *src2, Img<T> *dst,const ArithmeticOp &op)
     // {{{ open
   {
     ICLASSERT_RETURN( src1 && src2 && dst );
@@ -30,7 +30,7 @@ namespace icl {
   // }}}
 
   template <typename T,class ArithmeticOp>
-  void fallbackArithmetic2TC(const Img<T> *src, const T value, Img<T> *dst,const ArithmeticOp &op)
+  inline void fallbackArithmetic2TC(const Img<T> *src, const T value, Img<T> *dst,const ArithmeticOp &op)
     // {{{ open
   {
     ICLASSERT_RETURN( src && dst );
@@ -48,7 +48,7 @@ namespace icl {
 
 
   template <typename T,class ArithmeticOp>
-  void fallbackArithmetic1T(const Img<T> *src, Img<T> *dst,const ArithmeticOp &op)
+  inline void fallbackArithmetic1T(const Img<T> *src, Img<T> *dst,const ArithmeticOp &op)
     // {{{ open
   {
     ICLASSERT_RETURN( src && dst );
@@ -548,7 +548,6 @@ namespace icl {
   }
   
   
-  
   void Arithmetic::MulCScale (const Img8u *src, const icl8u value, Img8u *dst){
     ippiCallC<icl8u,ippiMulCScale_8u_C1R>(src,value,dst);
   }
@@ -566,306 +565,133 @@ namespace icl {
   }
 
   // {{{ C++ fallback function specializations
-  void Arithmetic::Add (const Img32f *src1, const Img32f *src2, Img32f *dst)
-  {
-    fallbackArithmetic2T<icl32f>(src1, src2,dst,AddOp<icl32f>());
-  }
-  void Arithmetic::Add (const Img64f *src1, const Img64f *src2, Img64f *dst)
-  {
-    fallbackArithmetic2T<icl64f>(src1, src2,dst,AddOp<icl64f>());
-  }
 
-  void Arithmetic::Add (const Img8u *src1, const Img8u *src2, Img8u *dst)
-  {
-    fallbackArithmetic2T<icl8u>(src1, src2,dst,AddOp<icl8u>());
-  }
-  void Arithmetic::Add (const Img16s *src1, const Img16s *src2, Img16s *dst)
-  {
-    fallbackArithmetic2T<icl16s>(src1, src2,dst,AddOp<icl16s>());
-  }
-  void Arithmetic::Add (const Img32s *src1, const Img32s *src2, Img32s *dst)
-  {
-    fallbackArithmetic2T<icl32s>(src1, src2,dst,AddOp<icl32s>());
-  }
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Add (const Img ## T *src1, const Img ## T *src2, Img ## T *dst) {\
+    fallbackArithmetic2T<icl ## T>(src1, src2,dst,AddOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
   
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Sub (const Img ## T *src1, const Img ## T *src2, Img ## T *dst) {\
+    fallbackArithmetic2T<icl ## T>(src1, src2,dst,SubOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+  
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Mul (const Img ## T *src1, const Img ## T *src2, Img ## T *dst) {\
+    fallbackArithmetic2T<icl ## T>(src1, src2,dst,MulOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+  
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Div (const Img ## T *src1, const Img ## T *src2, Img ## T *dst) {\
+    fallbackArithmetic2T<icl ## T>(src1, src2,dst,DivOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+  
+  
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::AddC (const Img ## T *src, const icl ## T value, Img ## T *dst){\
+    fallbackArithmetic2TC<icl ## T>(src, value,dst,AddOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::SubC (const Img ## T *src, const icl ## T value, Img ## T *dst){\
+    fallbackArithmetic2TC<icl ## T>(src, value,dst,SubOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
-  void Arithmetic::Sub (const Img32f *src1, const Img32f *src2, Img32f *dst)
-  {
-    fallbackArithmetic2T<icl32f>(src1, src2,dst,SubOp<icl32f>());
-  }
-  void Arithmetic::Sub (const Img64f *src1, const Img64f *src2, Img64f *dst)
-  {
-    fallbackArithmetic2T<icl64f>(src1, src2,dst,SubOp<icl64f>());
-  }
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::MulC (const Img ## T *src, const icl ## T value, Img ## T *dst){\
+    fallbackArithmetic2TC<icl ## T>(src, value,dst,MulOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
-  void Arithmetic::Sub (const Img8u *src1, const Img8u *src2, Img8u *dst)
-  {
-    fallbackArithmetic2T<icl8u>(src1, src2,dst,SubOp<icl8u>());
-  }
-  void Arithmetic::Sub (const Img16s *src1, const Img16s *src2, Img16s *dst)
-  {
-    fallbackArithmetic2T<icl16s>(src1, src2,dst,SubOp<icl16s>());
-  }
-  void Arithmetic::Sub (const Img32s *src1, const Img32s *src2, Img32s *dst)
-  {
-    fallbackArithmetic2T<icl32s>(src1, src2,dst,SubOp<icl32s>());
-  }
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::DivC (const Img ## T *src, const icl ## T value, Img ## T *dst){\
+    fallbackArithmetic2TC<icl ## T>(src, value,dst,DivOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
+  
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Sqr (const Img ## T *src, Img ## T *dst){\
+    fallbackArithmetic1T<icl ## T>(src,dst,SqrOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
-  void Arithmetic::Mul (const Img8u *src1, const Img8u *src2, Img8u *dst)
-  {
-    fallbackArithmetic2T<icl8u>(src1, src2,dst,MulOp<icl8u>());
-  }
-  void Arithmetic::Mul (const Img16s *src1, const Img16s *src2, Img16s *dst)
-  {
-    fallbackArithmetic2T<icl16s>(src1, src2,dst,MulOp<icl16s>());
-  }
-  void Arithmetic::Mul (const Img32s *src1, const Img32s *src2, Img32s *dst)
-  {
-    fallbackArithmetic2T<icl32s>(src1, src2,dst,MulOp<icl32s>());
-  }
-  void Arithmetic::Mul (const Img32f *src1, const Img32f *src2, Img32f *dst)
-  {
-    fallbackArithmetic2T<icl32f>(src1, src2,dst,MulOp<icl32f>());
-  }
-  void Arithmetic::Mul (const Img64f *src1, const Img64f *src2, Img64f *dst)
-  {
-    fallbackArithmetic2T<icl64f>(src1, src2,dst,MulOp<icl64f>());
-  }
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Sqrt (const Img ## T *src, Img ## T *dst){\
+    fallbackArithmetic1T<icl ## T>(src,dst,SqrtOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
-  void Arithmetic::Div (const Img8u *src1, const Img8u *src2, Img8u *dst)
-  {
-    fallbackArithmetic2T<icl8u>(src1, src2,dst,DivOp<icl8u>());
-  }
-  void Arithmetic::Div (const Img16s *src1, const Img16s *src2, Img16s *dst)
-  {
-    fallbackArithmetic2T<icl16s>(src1, src2,dst,DivOp<icl16s>());
-  }
-  void Arithmetic::Div (const Img32s *src1, const Img32s *src2, Img32s *dst)
-  {
-    fallbackArithmetic2T<icl32s>(src1, src2,dst,DivOp<icl32s>());
-  }
-  void Arithmetic::Div (const Img32f *src1, const Img32f *src2, Img32f *dst)
-  {
-    fallbackArithmetic2T<icl32f>(src1, src2,dst,DivOp<icl32f>());
-  }
-  void Arithmetic::Div (const Img64f *src1, const Img64f *src2, Img64f *dst)
-  {
-    fallbackArithmetic2T<icl64f>(src1, src2,dst,DivOp<icl64f>());
-  }
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Exp (const Img ## T *src, Img ## T *dst){\
+    fallbackArithmetic1T<icl ## T>(src,dst,ExpOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Ln (const Img ## T *src, Img ## T *dst){\
+    fallbackArithmetic1T<icl ## T>(src,dst,LnOp<icl ## T>());}
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
   
   
   
-  void Arithmetic::AddC (const Img8u *src, const icl8u value, Img8u *dst)
-  {
-    fallbackArithmetic2TC<icl8u>(src, value,dst,AddOp<icl8u>());
-  }
-  void Arithmetic::AddC (const Img16s *src, const icl16s value, Img16s *dst)
-  {
-    fallbackArithmetic2TC<icl16s>(src, value,dst,AddOp<icl16s>());
-  }
-  void Arithmetic::AddC (const Img32s *src, const icl32s value, Img32s *dst)
-  {
-    fallbackArithmetic2TC<icl32s>(src, value,dst,AddOp<icl32s>());
-  }
-  void Arithmetic::AddC (const Img32f *src, const icl32f value, Img32f *dst)
-  {
-    fallbackArithmetic2TC<icl32f>(src, value,dst,AddOp<icl32f>());
-  }
-  void Arithmetic::AddC (const Img64f *src, const icl64f value, Img64f *dst)
-  {
-    fallbackArithmetic2TC<icl64f>(src, value,dst,AddOp<icl64f>());
-  }
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Abs (const Img ## T *src, Img ## T *dst){ \
+    fallbackArithmetic1T<icl ## T>(src, dst,AbsOp<icl ## T>());}
 
-  
-  void Arithmetic::SubC (const Img8u *src, const icl8u value, Img8u *dst)
-  {
-    fallbackArithmetic2TC<icl8u>(src, value,dst,SubOp<icl8u>());
-  }
-  void Arithmetic::SubC (const Img16s *src, const icl16s value, Img16s *dst)
-  {
-    fallbackArithmetic2TC<icl16s>(src, value,dst,SubOp<icl16s>());
-  }
-  void Arithmetic::SubC (const Img32s *src, const icl32s value, Img32s *dst)
-  {
-    fallbackArithmetic2TC<icl32s>(src, value,dst,SubOp<icl32s>());
-  }
-  void Arithmetic::SubC (const Img32f *src, const icl32f value, Img32f *dst)
-  {
-    fallbackArithmetic2TC<icl32f>(src, value,dst,SubOp<icl32f>());
-  }
-  void Arithmetic::SubC (const Img64f *src, const icl64f value, Img64f *dst)
-  {
-    fallbackArithmetic2TC<icl64f>(src, value,dst,SubOp<icl64f>());
-  }
-
-  
-  void Arithmetic::MulC (const Img8u *src, const icl8u value, Img8u *dst)
-  {
-    fallbackArithmetic2TC<icl8u>(src, value,dst,MulOp<icl8u>());
-  }
-  void Arithmetic::MulC (const Img16s *src, const icl16s value, Img16s *dst)
-  {
-    fallbackArithmetic2TC<icl16s>(src, value,dst,MulOp<icl16s>());
-  }
-  void Arithmetic::MulC (const Img32s *src, const icl32s value, Img32s *dst)
-  {
-    fallbackArithmetic2TC<icl32s>(src, value,dst,MulOp<icl32s>());
-  }
-  void Arithmetic::MulC (const Img32f *src, const icl32f value, Img32f *dst)
-  {
-    fallbackArithmetic2TC<icl32f>(src, value,dst,MulOp<icl32f>());
-  }
-  void Arithmetic::MulC (const Img64f *src, const icl64f value, Img64f *dst)
-  {
-    fallbackArithmetic2TC<icl64f>(src, value,dst,MulOp<icl64f>());
-  }
-
-  
-  void Arithmetic::DivC (const Img8u *src, const icl8u value, Img8u *dst)
-  {
-    fallbackArithmetic2TC<icl8u>(src, value,dst,DivOp<icl8u>());
-  }
-  void Arithmetic::DivC (const Img16s *src, const icl16s value, Img16s *dst)
-  {
-    fallbackArithmetic2TC<icl16s>(src, value,dst,DivOp<icl16s>());
-  }
-  void Arithmetic::DivC (const Img32s *src, const icl32s value, Img32s *dst)
-  {
-    fallbackArithmetic2TC<icl32s>(src, value,dst,DivOp<icl32s>());
-  }
-  void Arithmetic::DivC (const Img32f *src, const icl32f value, Img32f *dst)
-  {
-    fallbackArithmetic2TC<icl32f>(src, value,dst,DivOp<icl32f>());
-  }
-  void Arithmetic::DivC (const Img64f *src, const icl64f value, Img64f *dst)
-  {
-    fallbackArithmetic2TC<icl64f>(src, value,dst,DivOp<icl64f>());
-  }
-
-  
-  void Arithmetic::Sqr (const Img8u *src, Img8u *dst){
-    fallbackArithmetic1T<icl8u>(src,dst,SqrtOp<icl8u>());
-  }
-  void Arithmetic::Sqr (const Img16s *src, Img16s *dst){
-    fallbackArithmetic1T<icl16s>(src,dst,SqrtOp<icl16s>());
-  }
-  void Arithmetic::Sqr (const Img32s *src, Img32s *dst){
-    fallbackArithmetic1T<icl32s>(src,dst,SqrtOp<icl32s>());
-  }
-  void Arithmetic::Sqr (const Img32f *src, Img32f *dst){
-    fallbackArithmetic1T<icl32f>(src,dst,SqrtOp<icl32f>());
-  }
-  void Arithmetic::Sqr (const Img64f *src, Img64f *dst){
-    fallbackArithmetic1T<icl64f>(src,dst,SqrtOp<icl64f>());
-  }
-
-  void Arithmetic::Sqrt (const Img8u *src, Img8u *dst){
-    fallbackArithmetic1T<icl8u>(src,dst,SqrtOp<icl8u>());
-  }
-  void Arithmetic::Sqrt (const Img16s *src, Img16s *dst){
-    fallbackArithmetic1T<icl16s>(src,dst,SqrtOp<icl16s>());
-  }
-  void Arithmetic::Sqrt (const Img32s *src, Img32s *dst){
-    fallbackArithmetic1T<icl32s>(src,dst,SqrtOp<icl32s>());
-  }
-  void Arithmetic::Sqrt (const Img32f *src, Img32f *dst){
-    fallbackArithmetic1T<icl32f>(src,dst,SqrtOp<icl32f>());
-  }
-  void Arithmetic::Sqrt (const Img64f *src, Img64f *dst){
-    fallbackArithmetic1T<icl64f>(src,dst,SqrtOp<icl64f>());
-  }
-
-  
-
-
-  void Arithmetic::Exp (const Img8u *src, Img8u *dst){
-    fallbackArithmetic1T<icl8u>(src,dst,ExpOp<icl8u>());
-  }
-  void Arithmetic::Exp (const Img16s *src, Img16s *dst){
-    fallbackArithmetic1T<icl16s>(src,dst,ExpOp<icl16s>());
-  }
-  void Arithmetic::Exp (const Img32s *src, Img32s *dst){
-    fallbackArithmetic1T<icl32s>(src,dst,ExpOp<icl32s>());
-  }
-  void Arithmetic::Exp (const Img32f *src, Img32f *dst){
-    fallbackArithmetic1T<icl32f>(src,dst,ExpOp<icl32f>());
-  }
-  void Arithmetic::Exp (const Img64f *src, Img64f *dst){
-    fallbackArithmetic1T<icl64f>(src,dst,ExpOp<icl64f>());
-  }
-  
-  
-  void Arithmetic::Ln (const Img8u *src, Img8u *dst){
-    fallbackArithmetic1T<icl8u>(src,dst,LnOp<icl8u>());
-  }
-  void Arithmetic::Ln (const Img16s *src, Img16s *dst){
-    fallbackArithmetic1T<icl16s>(src,dst,LnOp<icl16s>());
-  }
-  void Arithmetic::Ln (const Img32s *src, Img32s *dst){
-    fallbackArithmetic1T<icl32s>(src,dst,LnOp<icl32s>());
-  }
-  void Arithmetic::Ln (const Img32f *src, Img32f *dst){
-    fallbackArithmetic1T<icl32f>(src,dst,LnOp<icl32f>());
-  }
-  void Arithmetic::Ln (const Img64f *src, Img64f *dst){
-    fallbackArithmetic1T<icl64f>(src,dst,LnOp<icl64f>());
-  }
-
-  void Arithmetic::Abs (const Img16s *src, Img16s *dst)
-  {
-    fallbackArithmetic1T<icl16s>(src, dst,AbsOp<icl16s>());
-  }
-  void Arithmetic::Abs (const Img32s *src, Img32s *dst)
-  {
-    fallbackArithmetic1T<icl32s>(src, dst,AbsOp<icl32s>());
-  }
-  void Arithmetic::Abs (const Img32f *src, Img32f *dst)
-  {
-    fallbackArithmetic1T<icl32f>(src, dst,fAbsOp<icl32f>());
-  }
-  void Arithmetic::Abs (const Img64f *src, Img64f *dst)
-  {
-    fallbackArithmetic1T<icl64f>(src, dst,fAbsOp<icl64f>());
-  }
+  ICL_INSTANTIATE_DEPTH(16s)
+  ICL_INSTANTIATE_DEPTH(32s)
+#undef ICL_INSTANTIATE_DEPTH
 
 
 
-  
-	void Arithmetic::Abs (Img16s *srcdst)
-  {
-    fallbackArithmetic1T<icl16s>(srcdst, srcdst,AbsOp<icl16s>());
-  }
-	void Arithmetic::Abs (Img32s *srcdst)
-  {
-    fallbackArithmetic1T<icl32s>(srcdst, srcdst,AbsOp<icl32s>());
-  }
-	void Arithmetic::Abs (Img32f *srcdst)
-  {
-    fallbackArithmetic1T<icl32f>(srcdst, srcdst,fAbsOp<icl32f>());
-  }
-	void Arithmetic::Abs (Img64f *srcdst)
-  {
-    fallbackArithmetic1T<icl64f>(srcdst, srcdst,fAbsOp<icl64f>());
-  }
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Abs (const Img ## T *src, Img ## T *dst){ \
+    fallbackArithmetic1T<icl ## T>(src, dst,fAbsOp<icl ## T>());}
+  ICL_INSTANTIATE_DEPTH(32f)
+  ICL_INSTANTIATE_DEPTH(64f)
+#undef ICL_INSTANTIATE_DEPTH
 
 
-  void Arithmetic::AbsDiff (const Img8u *src1, const Img8u *src2, Img8u *dst){
-    fallbackArithmetic2T<icl8u>(src1, src2,dst,AbsDiffOp<icl8u>());
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Abs (Img ## T *srcdst){\
+    fallbackArithmetic1T<icl ## T>(srcdst, srcdst,AbsOp<icl ## T>());}
+  ICL_INSTANTIATE_DEPTH(16s)
+  ICL_INSTANTIATE_DEPTH(32s)
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::Abs (Img ## T *srcdst){\
+    fallbackArithmetic1T<icl ## T>(srcdst, srcdst,fAbsOp<icl ## T>());}  
+  ICL_INSTANTIATE_DEPTH(32f)
+  ICL_INSTANTIATE_DEPTH(64f)
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::AbsDiff (const Img ## T *src1, const Img ## T *src2, Img ## T *dst){\
+    fallbackArithmetic2T<icl ## T>(src1, src2,dst,AbsDiffOp<icl ## T>());\
   }
-  void Arithmetic::AbsDiff (const Img16s *src1, const Img16s *src2, Img16s *dst){
-    fallbackArithmetic2T<icl16s>(src1, src2,dst,AbsDiffOp<icl16s>());
+  ICL_INSTANTIATE_DEPTH(8u)
+  ICL_INSTANTIATE_DEPTH(16s)
+  ICL_INSTANTIATE_DEPTH(32s)
+#undef ICL_INSTANTIATE_DEPTH
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Arithmetic::AbsDiff (const Img ## T *src1, const Img ## T *src2, Img ## T *dst){\
+    fallbackArithmetic2T<icl ## T>(src1, src2,dst,fAbsDiffOp<icl ## T>());\
   }
-  void Arithmetic::AbsDiff (const Img32s *src1, const Img32s *src2, Img32s *dst){
-    fallbackArithmetic2T<icl32s>(src1, src2,dst,AbsDiffOp<icl32s>());
-  }
-  void Arithmetic::AbsDiff (const Img32f *src1, const Img32f *src2, Img32f *dst){
-    fallbackArithmetic2T<icl32f>(src1, src2,dst,fAbsDiffOp<icl32f>());
-  }
-  void Arithmetic::AbsDiff (const Img64f *src1, const Img64f *src2, Img64f *dst){
-    fallbackArithmetic2T<icl64f>(src1, src2,dst,fAbsDiffOp<icl64f>());
-  }
+  ICL_INSTANTIATE_DEPTH(32f)
+  ICL_INSTANTIATE_DEPTH(64f)
+#undef ICL_INSTANTIATE_DEPTH
+
+
   
   
   void Arithmetic::AbsDiffC (const Img8u *src, const int value, Img8u *dst)
@@ -888,12 +714,14 @@ namespace icl {
   {
     fallbackArithmetic2TC<icl64f>(src, value,dst,fAbsDiffOp<icl64f>());
   }
-  
   // }}}
 
 #endif
 
   // {{{ ImgBase* versions
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: Add(poSrc1->asImg<icl ## T>(),poSrc2->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::Add (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open
@@ -901,119 +729,108 @@ namespace icl {
 
     if (!Filter::prepare (ppoDst, poSrc1)) return;
     switch (poSrc1->getDepth()) {
-      case depth8u: Add(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: Add(poSrc1->asImg<icl16s>(),poSrc2->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: Add(poSrc1->asImg<icl32s>(),poSrc2->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: Add(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: Add(poSrc1->asImg<icl64f>(),poSrc2->asImg<icl64f>(),(*ppoDst)->asImg<icl64f>()); break;
-
-      default: ICL_INVALID_FORMAT; break;
+      ICL_INSTANTIATE_ALL_DEPTHS      default: ICL_INVALID_FORMAT; break;
     };
   }
-  // }}}  
+#undef ICL_INSTANTIATE_DEPTH
+  // }}}
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: Sub(poSrc1->asImg<icl ## T>(),poSrc2->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::Sub (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc1)) return;
     switch (poSrc1->getDepth()) {
-      case depth8u: Sub(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: Sub(poSrc1->asImg<icl16s>(),poSrc2->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: Sub(poSrc1->asImg<icl32s>(),poSrc2->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: Sub(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: Sub(poSrc1->asImg<icl64f>(),poSrc2->asImg<icl64f>(),(*ppoDst)->asImg<icl64f>()); break;
-
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: Mul(poSrc1->asImg<icl ## T>(),poSrc2->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::Mul (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc1)) return;
     switch (poSrc1->getDepth()) {
-      case depth8u: Mul(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: Mul(poSrc1->asImg<icl16s>(),poSrc2->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: Mul(poSrc1->asImg<icl32s>(),poSrc2->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: Mul(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: Mul(poSrc1->asImg<icl64f>(),poSrc2->asImg<icl64f>(),(*ppoDst)->asImg<icl64f>()); break;
-
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: Div(poSrc1->asImg<icl ## T>(),poSrc2->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::Div (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc1)) return;
     switch (poSrc1->getDepth()) {
-      case depth8u: Div(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: Div(poSrc1->asImg<icl16s>(),poSrc2->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: Div(poSrc1->asImg<icl32s>(),poSrc2->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: Div(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: Div(poSrc1->asImg<icl64f>(),poSrc2->asImg<icl64f>(),(*ppoDst)->asImg<icl64f>()); break;
-
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     };
   }
+  #undef ICL_INSTANTIATE_DEPTH
   // }}}
 
-
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: AddC(poSrc->asImg<icl ## T>(),Cast<icl64f,icl ## T>::cast(value),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::AddC (const ImgBase *poSrc, const icl64f value, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()) {
-      case depth8u: AddC(poSrc->asImg<icl8u>(),Cast<icl64f,icl8u>::cast(value),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: AddC(poSrc->asImg<icl16s>(),Cast<icl64f,icl16s>::cast(value),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: AddC(poSrc->asImg<icl32s>(),Cast<icl64f,icl32s>::cast(value),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: AddC(poSrc->asImg<icl32f>(),Cast<icl64f,icl32f>::cast(value),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: AddC(poSrc->asImg<icl64f>(),value,(*ppoDst)->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: SubC(poSrc->asImg<icl ## T>(),Cast<icl64f,icl ## T>::cast(value),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::SubC (const ImgBase *poSrc, const icl32f value, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()) {
-      case depth8u: SubC(poSrc->asImg<icl8u>(),Cast<icl64f,icl8u>::cast(value),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: SubC(poSrc->asImg<icl16s>(),Cast<icl64f,icl16s>::cast(value),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: SubC(poSrc->asImg<icl32s>(),Cast<icl64f,icl32s>::cast(value),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: SubC(poSrc->asImg<icl32f>(),Cast<icl64f,icl32f>::cast(value),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: SubC(poSrc->asImg<icl64f>(),value,(*ppoDst)->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: MulC(poSrc->asImg<icl ## T>(),Cast<icl64f,icl ## T>::cast(value),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::MulC (const ImgBase *poSrc, const icl32f value, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()) {
-      case depth8u: MulC(poSrc->asImg<icl8u>(),Cast<icl64f,icl8u>::cast(value),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: MulC(poSrc->asImg<icl16s>(),Cast<icl64f,icl16s>::cast(value),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: MulC(poSrc->asImg<icl32s>(),Cast<icl64f,icl32s>::cast(value),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: MulC(poSrc->asImg<icl32f>(),Cast<icl64f,icl32f>::cast(value),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: MulC(poSrc->asImg<icl64f>(),value,(*ppoDst)->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
 
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: DivC(poSrc->asImg<icl ## T>(),Cast<icl64f,icl ## T>::cast(value),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::DivC (const ImgBase *poSrc, const icl32f value, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()) {
-      case depth8u: DivC(poSrc->asImg<icl8u>(),Cast<icl64f,icl8u>::cast(value),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: DivC(poSrc->asImg<icl16s>(),Cast<icl64f,icl16s>::cast(value),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: DivC(poSrc->asImg<icl32s>(),Cast<icl64f,icl32s>::cast(value),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: DivC(poSrc->asImg<icl32f>(),Cast<icl64f,icl32f>::cast(value),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: DivC(poSrc->asImg<icl64f>(),value,(*ppoDst)->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
 
 
@@ -1037,130 +854,114 @@ namespace icl {
   }
   // }}}
 
-
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: Sqr(poSrc->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::Sqr (const ImgBase *poSrc, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()) {
-      case depth8u: Sqr(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: Sqr(poSrc->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: Sqr(poSrc->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: Sqr(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: Sqr(poSrc->asImg<icl64f>(),(*ppoDst)->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
 
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: Sqrt(poSrc->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::Sqrt (const ImgBase *poSrc, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()) {
-      case depth8u: Sqrt(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: Sqrt(poSrc->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: Sqrt(poSrc->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: Sqrt(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: Sqrt(poSrc->asImg<icl64f>(),(*ppoDst)->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     }
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
-
+  
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: Exp(poSrc->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::Exp (const ImgBase *poSrc, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()) {
-      case depth8u: Exp(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: Exp(poSrc->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: Exp(poSrc->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: Exp(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: Exp(poSrc->asImg<icl64f>(),(*ppoDst)->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     }
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
-
+  
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: Ln(poSrc->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::Ln (const ImgBase *poSrc, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()) {
-      case depth8u: Ln(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: Ln(poSrc->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: Ln(poSrc->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: Ln(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: Ln(poSrc->asImg<icl64f>(),(*ppoDst)->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     }
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
 
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: Abs(poSrc->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Arithmetic::Abs (const ImgBase *poSrc, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()) {
-      case depth16s:  Abs(poSrc->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;;
-      case depth32s:  Abs(poSrc->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;;
-      case depth32f: Abs(poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f:  Abs(poSrc->asImg<icl64f>(),(*ppoDst)->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_DEPTH(16s)
+      ICL_INSTANTIATE_DEPTH(32s)
+      ICL_INSTANTIATE_DEPTH(32f)
+      ICL_INSTANTIATE_DEPTH(64f)
       default: ICL_INVALID_FORMAT; break;
-    }
-
-    
+    }    
   }
+#undef ICL_INSTANTIATE_DEPTH
+  // }}}
+  
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: Abs(poSrcDst->asImg<icl ## T>()); break;  
   void Arithmetic::Abs (ImgBase *poSrcDst)
   {
     // {{{ open
     ICLASSERT_RETURN( poSrcDst);
     switch (poSrcDst->getDepth()) {
       case depth8u: break; //unsigned, nothing to do
-      case depth16s: Abs(poSrcDst->asImg<icl16s>()); break;
-      case depth32s: Abs(poSrcDst->asImg<icl32s>()); break;
-      case depth32f: Abs(poSrcDst->asImg<icl32f>()); break;
-      case depth64f: Abs(poSrcDst->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_DEPTH(16s)
+      ICL_INSTANTIATE_DEPTH(32s)
+      ICL_INSTANTIATE_DEPTH(32f)
+      ICL_INSTANTIATE_DEPTH(64f)
       default: ICL_INVALID_FORMAT; break;
     }
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
-
+  
+#define ICL_INSTANTIATE_DEPTH(T) \
+  case depth ## T: AbsDiff(poSrc1->asImg<icl ## T>(),poSrc2->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
+  
   void Arithmetic::AbsDiff (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open
     if (!Filter::prepare (ppoDst, poSrc1)) return;
     switch (poSrc1->getDepth()) {
-      case depth8u: AbsDiff(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
-
-      case depth16s: AbsDiff(poSrc1->asImg<icl16s>(),poSrc2->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: AbsDiff(poSrc1->asImg<icl32s>(),poSrc2->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: AbsDiff(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: AbsDiff(poSrc1->asImg<icl64f>(),poSrc2->asImg<icl64f>(),(*ppoDst)->asImg<icl64f>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
-/*  alte version
-  void Arithmetic::AbsDiffC (const ImgBase *poSrc, icl64f value, ImgBase **ppoDst)
-  {
-    // {{{ open
-    if (!Filter::prepare (ppoDst, poSrc)) return;
-    switch (poSrc->getDepth()) {
-      case depth8u: AbsDiffC(poSrc->asImg<icl8u>(),Cast<icl64f,int>::cast(value),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: AbsDiffC(poSrc->asImg<icl16s>(),Cast<icl64f,int>::cast(value),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: AbsDiffC(poSrc->asImg<icl32s>(),Cast<icl64f,int>::cast(value),(*ppoDst)->asImg<icl32s>()); break;
-      case depth32f: AbsDiffC(poSrc->asImg<icl32f>(),Cast<icl64f,icl32f>::cast(value),(*ppoDst)->asImg<icl32f>()); break;
-      case depth64f: AbsDiffC(poSrc->asImg<icl64f>(),value,(*ppoDst)->asImg<icl64f>()); break;
-      default: ICL_INVALID_FORMAT; break;
-    };
-  }
-  // }}}
-*/
 
 #define ICL_INSTANTIATE_DEPTH(T) \
-     case depth ## T: AbsDiffC(poSrc->asImg<icl ## T>(),Cast<icl64f,int>::cast(value),(*ppoDst)->asImg<icl ## T>()); break;
+     case depth ## T: AbsDiffC(poSrc->asImg<icl ## T>(),Cast<icl64f,icl ## T>::cast(value),(*ppoDst)->asImg<icl ## T>()); break;
  
   void Arithmetic::AbsDiffC (const ImgBase *poSrc, icl64f value, ImgBase **ppoDst)
   {
@@ -1172,7 +973,6 @@ namespace icl {
     };
   }
 #undef ICL_INSTANTIATE_DEPTH  
-  
-  
-// }}}
+  // }}}
 }
+// }}}
