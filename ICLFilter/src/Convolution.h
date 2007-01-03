@@ -17,17 +17,16 @@ namespace icl {
 
   All possible filter operations can be divided in 4 cases, depending on the
   source and destination images depths and the depth of the used filter
-  kernel.  Possible image depths are depth8u and depth32f. Supported kernel
-  depths are depth32f and <b>32-bit signed integer</b> (called depth32s)
-  (depth8u-kernels, will be converted internally into this depth). Note the
-  differences of the following cases:
+  kernel.  While all image depths are supported, the only available kernel 
+  depths are depth32f (floating point) and depth32s (32-bit signed integer)
+  Note the differences of the following cases:
   
-  <h3>case images: depth8u </h3>
+  <h3>case images: depth8u, depth16s, depth32s </h3>
   In this case, an integer kernel is preferred. That means, that an integer
   kernel will be used, if available. Using a float kernel causes a marginal
   decline in performance.
 
-  <h3>case images: depth32f </h3>
+  <h3>case images: depth32f, depth64f </h3>
   In this case, a float kernel is preferred. If it is not available, the
   fallback integer-kernel must be used. As convolution operations of float
   images with integer kernels are not supported by the IPP, the kernel is
@@ -61,7 +60,7 @@ namespace icl {
   in two Constructors.
   */
 
-  class Convolution : public FilterMask {
+  class Convolution : protected FilterMask {
     public:
     /// this enum contains several predefined convolution kernels
     /** <h3>kernelSobleX</h3>
@@ -205,29 +204,25 @@ namespace icl {
     */
     void apply(const ImgBase *poSrc, ImgBase *poDst);
     
+    /// change kernel
+    void setKernel (kernel eKernel);
     /// change kernel (and/or normalization factor)
     void setKernel (int *piKernel, const Size& size, int iNormFactor=1, bool bBufferData=true);
     /// change kernel
     void setKernel (icl32f *pfKernel, const Size& size, bool bBufferData=true);
-    /// retrieve kernel pointer
-    template<typename KernelT> const KernelT* getKernel() const;
+
+    FilterMask::setClipToROI;
+    FilterMask::setCheckOnly;
 
     private:
-
-    /// internal storage for the sobel-x filter kernel
-    static int KERNEL_SOBEL_X_3x3[10];
-
-    /// internal storage for the sobel-y filter kernel
-    static int KERNEL_SOBEL_Y_3x3[10];
-
-    /// internal storage for the gauss 3x3 filter kernel
-    static int KERNEL_GAUSS_3x3[10];
-
-    /// internal storage for the gauss 5x5 filter kernel
-    static int KERNEL_GAUSS_5x5[26];
-
-    /// internal storage for the Laplace filter kernel
-    static int KERNEL_LAPLACE_3x3[10];
+    /// internal storage for the sobel-x filter kernels
+    static int KERNEL_SOBEL_X_3x3[10], KERNEL_SOBEL_X_5x5[26];
+    /// internal storage for the sobel-y filter kernels
+    static int KERNEL_SOBEL_Y_3x3[10], KERNEL_SOBEL_Y_5x5[26];
+    /// internal storage for the gauss filter kernels
+    static int KERNEL_GAUSS_3x3[10], KERNEL_GAUSS_5x5[26];
+    /// internal storage for the Laplace filter kernels
+    static int KERNEL_LAPLACE_3x3[10], KERNEL_LAPLACE_5x5[26];
   
     /// storage of the kernel data
     float *pfKernel;
@@ -235,6 +230,9 @@ namespace icl {
     int   *piKernel;
     int    iNormFactor; // normalization factor for integer kernel
     
+    /// retrieve kernel pointer
+    template<typename KernelT> const KernelT* getKernel() const;
+
     /// indicates that data is buffered
     bool   m_bBuffered;
 
@@ -254,49 +252,44 @@ namespace icl {
     /// release kernel buffers
     void releaseBuffers ();
 
-    /// array of image- and kernel-type selective generic convolution methods
-    static void (Convolution::*aGenericConvs[depthLast+1][depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 
+    /// array of image-type selective convolution methods (assigned during setKernel calls)
+    void (Convolution::*aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst);
+    /// static array of image- and kernel-type selective generic convolution methods
+    static void (Convolution::*aGenericMethods[depthLast+1][2])(const ImgBase *poSrc, ImgBase *poDst);
 
 #ifdef WITH_IPP_OPTIMIZATION 
-    template<typename ImgT, typename KernelT>
-       void ippGenericConv (const ImgBase *poSrc, ImgBase *poDst);
+    template<typename T, IppStatus (*)(const T*, int, T*, int, IppiSize, const Ipp32s*, IppiSize, IppiPoint, int)>
+    void ippGenericConvIntKernel (const ImgBase *poSrc, ImgBase *poDst);
+    template<typename T, IppStatus (*)(const T*, int, T*, int, IppiSize, const Ipp32f*, IppiSize, IppiPoint)>
+    void ippGenericConvFloatKernel (const ImgBase *poSrc, ImgBase *poDst);
     template<typename T>
-       void ippFixedConv (const ImgBase *poSrc, ImgBase *poDst,
-                          IppStatus (*pMethod)(const T* pSrc, int srcStep,
-                                               T* pDst, int dstStep, IppiSize));
+    void ippFixedConv (const ImgBase *poSrc, ImgBase *poDst);
     template<typename T>
-       void ippFixedConvMask (const ImgBase *poSrc, ImgBase *poDst,
-                              IppStatus (*pMethod)(const T* pSrc, int srcStep,
-                                                   T* pDst, int dstStep, 
-                                                   IppiSize, IppiMaskSize));
+    void ippFixedConvMask (const ImgBase *poSrc, ImgBase *poDst);
 
-    /// function pointer for ipp fixed convolution, depth8u image
-    IppStatus (*pFixed8u)(const Ipp8u* pSrc, int srcStep,
-                          Ipp8u* pDst, int dstStep, 
-                          IppiSize roiSize);
-    /// function pointer for ipp fixed convolution, depth8u image, mask size parameter
-    IppStatus (*pFixed8uMask)(const Ipp8u* pSrc, int srcStep,
-                              Ipp8u* pDst, int dstStep, 
-                              IppiSize roiSize, IppiMaskSize mask);
-    /// function pointer for ipp fixed convolution, depth32f image
-    IppStatus (*pFixed32f)(const Ipp32f* pSrc, int srcStep,
-                           Ipp32f* pDst, int dstStep, 
-                           IppiSize roiSize);
-    /// function pointer for ipp fixed convolution, depth32f image, mask size parameter
-    IppStatus (*pFixed32fMask)(const Ipp32f* pSrc, int srcStep,
-                               Ipp32f* pDst, int dstStep, 
-                               IppiSize roiSize, IppiMaskSize mask);
+    /// function pointers for ipp fixed convolution, with and without mask size parameter
+#define ICL_INSTANTIATE_DEPTH(T) \
+    IppStatus (*pFixed ## T)(const Ipp ## T* pSrc, int srcStep, Ipp ## T* pDst, int dstStep, IppiSize roiSize); \
+    IppStatus (*pFixedMask ## T)(const Ipp ## T* pSrc, int srcStep, Ipp ## T* pDst, int dstStep, IppiSize roiSize, IppiMaskSize mask);
+    ICL_INSTANTIATE_DEPTH(8u)
+    ICL_INSTANTIATE_DEPTH(16s)
+    ICL_INSTANTIATE_DEPTH(32f)
+#undef ICL_INSTANTIATE_DEPTH
 
-#else
+    template<typename T> IppStatus (*getIppFixedMethod() const)(const T*, int, T*, int, IppiSize);
+    template<typename T> IppStatus (*getIppFixedMaskMethod() const)(const T*, int, T*, int, IppiSize, IppiMaskSize);
+    
+    /// set ipp methods for fixed kernels
+    void setIPPFixedMethods(kernel);
+#endif // IPP available
+
     template<typename ImgT, typename KernelT, bool bUseFactor>
-       void cGenericConv (const ImgBase *poSrc, ImgBase *poDst);
-#endif
-  };
+    void cGenericConv (const ImgBase *poSrc, ImgBase *poDst);
 
-  template<> inline const int* 
-  Convolution::getKernel<int>()   const {return piKernel;}
-  template<> inline const float* 
-  Convolution::getKernel<float>() const {return pfKernel;}
+    /// initMethods initializes method array aMethods with dummyConvMethod
+    void initMethods ();
+    void dummyConvMethod (const ImgBase *poSrc, ImgBase *poDst) {}
+  };
 
 
   /// Convolution using the ROI of an ICL image as its kernel
