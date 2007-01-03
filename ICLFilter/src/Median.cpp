@@ -10,9 +10,16 @@ namespace icl {
   // {{{ Constructor / Destructor
 
   Median::Median (const Size& maskSize) {
+     // instantiate fallback methods
 #define ICL_INSTANTIATE_DEPTH(T) \
      aMethods[depth ## T]  = &Median::cMedian<icl ## T>; aColorMethods[depth ## T] = 0;
+#ifdef WITH_IPP_OPTIMIZATION 
+ICL_INSTANTIATE_DEPTH(32s);
+ICL_INSTANTIATE_DEPTH(32f);
+ICL_INSTANTIATE_DEPTH(64f);
+#else
 ICL_INSTANTIATE_ALL_DEPTHS;
+#endif
 #undef ICL_INSTANTIATE_DEPTH
 
      if (maskSize.width <= 0 || maskSize.height <= 0) {
