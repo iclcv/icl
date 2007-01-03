@@ -177,7 +177,7 @@ namespace icl {
     for (int c=src->getChannels()-1; c >= 0; --c) {
       ippiFunc (src->getROIData (c), src->getLineStep(),
                 dst->getROIData (c), dst->getLineStep(),
-                dst->getROISize(), 1);
+                dst->getROISize(), 0);
     }
   }
   // }}}
@@ -216,7 +216,7 @@ namespace icl {
       ippiFunc (src1->getROIData (c), src1->getLineStep(),
                 src2->getROIData (c), src2->getLineStep(),
                 dst->getROIData (c), dst->getLineStep(),
-                dst->getROISize(),1);
+                dst->getROISize(),0);
     }
   }
   // }}}
@@ -247,7 +247,7 @@ namespace icl {
       ippiFunc (src->getROIData (c), src->getLineStep(),
                 value,
                 dst->getROIData (c), dst->getLineStep(),
-                dst->getROISize(),1);
+                dst->getROISize(),0);
     }
   }
  
@@ -729,7 +729,8 @@ namespace icl {
 
     if (!Filter::prepare (ppoDst, poSrc1)) return;
     switch (poSrc1->getDepth()) {
-      ICL_INSTANTIATE_ALL_DEPTHS      default: ICL_INVALID_FORMAT; break;
+      ICL_INSTANTIATE_ALL_DEPTHS      
+      default: ICL_INVALID_FORMAT; break;
     };
   }
 #undef ICL_INSTANTIATE_DEPTH
