@@ -18,7 +18,7 @@ namespace icl {
 
    protected:
       /// array of class methods used to transform depth8u and depth32f images
-      void (Mirror::*aMethods[2])(const ImgBase *poSrc, ImgBase *poDst); 
+      void (Mirror::*aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst);
 
       template<typename T>
       void mirror (const ImgBase *poSrc, ImgBase *poDst);
@@ -54,7 +54,7 @@ namespace icl {
 
    protected:
       /// array of class methods used to transform depth8u and depth32f images
-      void (Affine::*aMethods[2])(const ImgBase *poSrc, ImgBase *poDst); 
+      void (Affine::*aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 
 
       template<typename T>
       void affine (const ImgBase *poSrc, ImgBase *poDst);

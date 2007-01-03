@@ -19,7 +19,10 @@ namespace icl {
       eAxis (eAxis)
    {
       this->aMethods[depth8u] = &Mirror::mirror<icl8u>;
+      this->aMethods[depth16s] = &Mirror::mirror<icl16s>;
+      this->aMethods[depth32s] = &Mirror::mirror<icl32s>;
       this->aMethods[depth32f] = &Mirror::mirror<icl32f>;
+      this->aMethods[depth64f] = &Mirror::mirror<icl64f>;
    }
 
    void Mirror::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
@@ -143,9 +146,9 @@ namespace icl {
    // }}}
    
    void Affine::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
+      ICLASSERT_RETURN( poSrc->getDepth() == depth32f || poSrc->getDepth() == depth8u);
       double xShift, yShift;
       Size   oSize;
-
       getShiftAndSize (poSrc->getROI(), oSize, xShift, yShift);
       translate (-xShift, -yShift);
       ensureCompatible (ppoDst, poSrc->getDepth(), oSize, 
