@@ -32,7 +32,7 @@ namespace icl {
          return value is a pointer to an internally stored image. 
          <b>Ownership for this image remains with the Grabber class.</b>
      */
-     virtual ImgBase* grab(ImgBase *poDst=0)=0;
+     virtual const ImgBase* grab(ImgBase *poDst=0)=0;
   }; // class
  
 } // namespace icl

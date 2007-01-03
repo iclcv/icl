@@ -262,7 +262,7 @@ namespace icl{
 
   // }}}
   
-  void ICLWidget::setImage(ImgBase *input){
+  void ICLWidget::setImage(const ImgBase *input){
     // {{{ open
 
     if(!op.on || !input){

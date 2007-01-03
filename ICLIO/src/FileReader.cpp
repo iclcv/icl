@@ -47,9 +47,9 @@ namespace icl {
   }
 
   //--------------------------------------------------------------------------
-  FileReader::FileReader(string sPattern) throw (ICLException) 
+  FileReader::FileReader(string sPattern) 
     // {{{ open
-    
+
   {
     FUNCTION_LOG("");
     wordexp_t match;
@@ -96,7 +96,7 @@ namespace icl {
   //--------------------------------------------------------------------------
   FileReader::FileReader(const string& sPrefix, const string& sType, 
                      int iObjStart, int iObjEnd, 
-                     int iImageStart, int iImageEnd) throw (ICLException) 
+                     int iImageStart, int iImageEnd) 
     // {{{ open 
 
   {
@@ -164,8 +164,9 @@ namespace icl {
   // }}}
   
   //--------------------------------------------------------------------------
-  void FileReader::init() throw (ICLException) 
+  void FileReader::init() 
      // {{{ open
+
   {
     FUNCTION_LOG("");
     m_bBuffered = false;
@@ -178,11 +179,11 @@ namespace icl {
     jpgCinfo.err = jpeg_std_error(&jpgErr);
     jpgErr.error_exit = icl_jpeg_error_exit;
   }
+
   // }}}
 
   //--------------------------------------------------------------------------
-  ImgBase* FileReader::grab(ImgBase* poDst) 
-    throw (InvalidFileFormatException, FileOpenException, ICLException) {
+  const ImgBase* FileReader::grab(ImgBase* poDst) {
     // {{{ open 
     FUNCTION_LOG("");
     
@@ -208,9 +209,9 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
-  void FileReader::readImage(const string& sFileName, ImgBase** ppoDst) 
-    throw (InvalidFileFormatException, FileOpenException, ICLException) {
+  void FileReader::readImage(const string& sFileName, ImgBase** ppoDst) {
     // {{{ open 
+
     FUNCTION_LOG("");
 
     //---- Variable definition ----
@@ -245,10 +246,11 @@ namespace icl {
     }
     closeFile (oInfo);
   }
+
   // }}}
   
   //--------------------------------------------------------------------------
-  FileReader::FileList FileReader::bufferImages (bool bStopOnError) throw ()
+  FileReader::FileList FileReader::bufferImages (bool bStopOnError) 
     // {{{ open
   {
     FUNCTION_LOG("");
@@ -400,6 +402,7 @@ namespace icl {
   //--------------------------------------------------------------------------
   void FileReader::readDataPNM(ImgBase* poImg, FileInfo &oInfo) {
     // {{{ open
+
     FUNCTION_LOG("");
 
     if (oInfo.iNumImages == oInfo.iNumChannels ||
@@ -444,6 +447,7 @@ namespace icl {
   //--------------------------------------------------------------------------
   void FileReader::readHeaderJPG (FileInfo &oInfo) {
      // {{{ open
+
     FUNCTION_LOG("");
     
     openFile (oInfo, "rb"); // open file for reading
@@ -526,7 +530,7 @@ namespace icl {
     }
     oInfo.iNumChannels = getChannelsOfFormat (oInfo.eFormat);
   }
-  
+
   // }}}
   
   //--------------------------------------------------------------------------
@@ -589,7 +593,7 @@ namespace icl {
     jpeg_destroy_decompress(&jpgCinfo);
     if (oInfo.iNumChannels == 3) delete[] pcBuf;
   }
-  
+
   // }}}
   
   //--------------------------------------------------------------------------

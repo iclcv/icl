@@ -36,11 +36,11 @@ namespace icl {
       void setFileName (const std::string& sFileName) throw (ICLException);
       void setCounter (int iID) {nCounter = iID;}
 
-      void write(ImgBase* poSrc) throw (FileOpenException, ICLException);
+      void write(const ImgBase* poSrc) throw (FileOpenException, ICLException);
     
    private:
-      void writePNM (ImgBase *poSrc, const FileInfo& oInfo);
-      void writeJPG (Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality=85);
+      void writePNM (const ImgBase *poSrc, const FileInfo& oInfo);
+      void writeJPG (const Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality=85);
       std::string buildFileName ();
 
       std::string sFilePrefix, sFileSuffix;

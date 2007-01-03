@@ -26,7 +26,7 @@ namespace icl {
      
      void init();
      
-     ImgBase* grab(ImgBase* poDst);
+     const ImgBase* grab(ImgBase* poDst);
      
      unsigned int getDeviceWidth() { return m_uiDeviceWidth; }
      unsigned int getDeviceHeight() { return m_uiDeviceHeight; }

@@ -301,7 +301,7 @@ namespace icl {
   
 // }}}
 
-  ImgBase* FwGrabber::grab(ImgBase* poDst) {
+  const ImgBase* FwGrabber::grab(ImgBase* poDst) {
     // {{{ open
     SECTION_LOG("Grab image");
     

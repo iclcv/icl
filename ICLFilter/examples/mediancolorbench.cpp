@@ -10,8 +10,8 @@ using namespace std;
 using namespace icl;
 
 int main(int nArgs, char **ppcArg){
-  ImgBase *src, *dst=0;
-  //Img32f *dst=0;
+  const ImgBase *src;
+  ImgBase *dst=0;
   string srcName("src.ppm");
   string dstName("wiener.ppm");
   Timer t;

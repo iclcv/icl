@@ -504,7 +504,7 @@ bool PWCGrabber::init(const Size &s,float fFps, int iDevice)
 }
    // }}}
 
-ImgBase* PWCGrabber::grab(ImgBase *poOutput){
+const ImgBase* PWCGrabber::grab(ImgBase *poOutput){
   // {{{ open 
 
   pthread_mutex_lock(&usb_semph_mutex[m_iDevice]);

@@ -6,7 +6,8 @@ using namespace std;
 using namespace icl;
 
 int main(int nArgs, char **ppcArg){
-   ImgBase *src, *dst=0;
+   const ImgBase *src;
+   ImgBase *dst=0;
    string srcName("");
    string dstName("wiener.ppm.gz");
    if (nArgs > 2) dstName = ppcArg[2];

@@ -65,7 +65,7 @@ namespace icl{
         @param poDst destination image. If it has formatMatrix, than it will be
                      converted to formatRGB for best performance. 
     **/    
-    virtual ImgBase* grab(ImgBase *poDst=0);
+    virtual const ImgBase* grab(ImgBase *poDst=0);
 
     bool restoreUserSettings();
     bool saveUserSettings();

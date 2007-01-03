@@ -1,23 +1,26 @@
 #include <Img.h>
 #include <FileReader.h>
 #include <FileWriter.h>
+#include <sstream>
 
 using namespace std;
 using namespace icl;
 
-int main() 
+int main(int argc, char* argv[]) 
 {
-  //---- Allocate variables ----
-  ImgBase* poImg = imgNew(depth8u,Size(144,144));
+   ostringstream oss;
+   if (argc <= 1) oss << "demoImages*.p?m";
+   else {
+      for (int i=1; i < argc; ++i) oss << argv[i] << " ";
+   }
 
-  FileReader ioRead(FileReader::hashPattern("/vol/bilddaten/share/vampire/slam/coil-100/sub1/ppm/obj1__##.ppm"));
-  FileReader io (ioRead);
-  FileWriter ioWrite("obj1__##.ppm.gz");
+   FileReader ioRead(oss.str());
+   FileReader io (ioRead);
+   FileWriter ioWrite("file__##.ppm.gz");
 
-  for (int n=0; n < 20; n++) {
-     io.grab (poImg);
-     if (n % 4 == 0) ioWrite.write(poImg);
-  }
-
-  delete poImg; poImg = 0;
+   // grab 20 images and write 5 of them
+   for (int n=0; n < 20; n++) {
+      const ImgBase* poImg = io.grab ();
+      if (n % 4 == 0) ioWrite.write(poImg);
+   }
 }

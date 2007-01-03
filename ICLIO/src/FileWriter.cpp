@@ -56,13 +56,13 @@ namespace icl {
 // }}}
 
    //--------------------------------------------------------------------------
-   void FileWriter::write(ImgBase *poSrc) throw (FileOpenException, ICLException) {
+   void FileWriter::write(const ImgBase *poSrc) throw (FileOpenException, ICLException) {
       // {{{ open
 
       FileInfo oInfo (buildFileName()); // create file info
       openFile (oInfo, "wb"); // open file for writing
       
-      ImgBase *poImg = poSrc;
+      const ImgBase *poImg = poSrc;
       if (poSrc->getDepth () != depth8u && oInfo.eFileFormat != ioFormatICL) {
          // image needs to be converted to depth8u
         poImg = poSrc->convertTo<icl8u> (&m_oImg8u);
@@ -98,7 +98,7 @@ namespace icl {
 // }}}
 
    //--------------------------------------------------------------------------
-   void FileWriter::writePNM(ImgBase *poSrc, const FileInfo& oInfo) {
+   void FileWriter::writePNM(const ImgBase *poSrc, const FileInfo& oInfo) {
       // {{{ open
 
       int (*pWrite)(void *fp, const void *pData, size_t len) 
@@ -194,7 +194,7 @@ namespace icl {
 // }}}
 
    //--------------------------------------------------------------------------
-   void FileWriter::writeJPG(Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality) {
+   void FileWriter::writeJPG(const Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality) {
       // {{{ open
 
       J_COLOR_SPACE jCS;

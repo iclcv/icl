@@ -83,7 +83,7 @@ namespace icl {
          ///Load images from files specified with shell-like regular expression
          /** @param sPattern shell expression describing file location(s)
           **/
-         FileReader(std::string sPattern) throw (ICLException);
+         FileReader(std::string sPattern);
   
          ///Load images from files having the pattern sPrefix[obj]__[img].sType 
          ///where [obj] and [img] are replaced by numbers in a given range
@@ -95,8 +95,7 @@ namespace icl {
              @param iImageEnd End with object iImageEnd
          **/
          FileReader(const std::string& sPrefix, const std::string& sType, 
-                  int iObjStart, int iObjEnd, int iImageStart, int iImageEnd)
-            throw (ICLException);
+                  int iObjStart, int iObjEnd, int iImageStart, int iImageEnd);
 
          FileReader(const FileReader& other);
          FileReader& operator=(const FileReader& other);
@@ -105,12 +104,11 @@ namespace icl {
          virtual ~FileReader ();
 
          ///Grab the next image from file/ buffer
-         virtual ImgBase* grab(ImgBase* poDst=0) 
-            throw (InvalidFileFormatException, FileOpenException, ICLException) ;
+         virtual const ImgBase* grab(ImgBase* poDst=0);
   
          /// Load all images from current file list into an internal buffer
          /** @return a list of failed image files */
-         FileList bufferImages (bool bStopOnError=false) throw ();
+         FileList bufferImages (bool bStopOnError=false);
 
          /// retrieve name of next grabbed file
          const std::string& getNextFileName () const 
@@ -132,12 +130,11 @@ namespace icl {
          void removeFiles (const FileList& vecFiles);
            
       private:
-         void init () throw (ICLException);
+         void init ();
          bool findFile (const std::string& sFile, FileList::iterator& itList);
 
          void readSequenceFile(const std::string& sFileName);
-         void readImage (const std::string& sFileName, ImgBase** ppoDst)
-            throw (InvalidFileFormatException, FileOpenException, ICLException);
+         void readImage (const std::string& sFileName, ImgBase** ppoDst);
 
          void readHeaderPNM (FileInfo &oImgBasenfo);
          void readHeaderJPG (FileInfo &oImgBasenfo);

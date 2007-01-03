@@ -26,7 +26,7 @@ public:
   
   virtual void run(){
     while(1){
-      ImgBase *image = grabber->grab();
+      ImgBase *image = grabber->grab()->shallowCopy();
       widget->setImage(image);
       if(x>0){ // else no mouse event has been recognized yet
         widget->lock();

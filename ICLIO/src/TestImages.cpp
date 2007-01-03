@@ -497,7 +497,7 @@ namespace icl{
 
   // }}}
 
-  void TestImages::xv(ImgBase *image, const string& name, long msec){
+  void TestImages::xv(const ImgBase *image, const string& name, long msec){
     // {{{ open
 
     FileWriter(name).write(image);

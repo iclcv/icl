@@ -7,7 +7,8 @@ using namespace std;
 using namespace icl;
 
 int main(int nArgs, char **ppcArg){
-   ImgBase *src, *dst=0,*dst2=0,*dst3=0,*dst4=0;
+   const ImgBase *src;
+   ImgBase *dst=0,*dst2=0,*dst3=0,*dst4=0;
    string srcName("src.ppm");
    string dstName("wiener.ppm");
    if (nArgs > 2) dstName = ppcArg[2];
@@ -42,7 +43,7 @@ int main(int nArgs, char **ppcArg){
    
    
    TestImages::xv (src, string("src.pgm"));
-      TestImages::xv (dst, string("dst.pgm"));
+   TestImages::xv (dst, string("dst.pgm"));
    TestImages::xv (dst2, string("sobelX.pgm"));
    TestImages::xv (dst3, string("sobelY.pgm"));
    TestImages::xv (dst4, string("dst4.pgm"));

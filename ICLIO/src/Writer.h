@@ -18,7 +18,7 @@ namespace icl {
   public:
      Writer() {}
      virtual ~Writer() {}
-     virtual void write(ImgBase *poDst)=0;
+     virtual void write(const ImgBase *poDst)=0;
   }; //class
  
 }//namespace icl

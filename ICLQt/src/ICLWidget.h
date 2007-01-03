@@ -46,7 +46,7 @@ namespace icl{
   class ICLWidget : public ParentWidgetClass{
     Q_OBJECT
     public slots:
-    void setImage(ImgBase *poImage);
+    void setImage(const ImgBase *poImage);
     
     signals:
     void mouseEvent(MouseInteractionInfo *info);
