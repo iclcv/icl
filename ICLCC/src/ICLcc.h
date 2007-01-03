@@ -5,7 +5,7 @@
 
 namespace icl{
 
-  /** \mainpage ICLCC the Color Conversion Package of the ICL
+  /** ICLCC the Color Conversion Package of the ICL
   The main class of the ICLCC package is The <b>Converter</b> which 
   provides a very convenient color conversion mechanism.
   \sa Converter
