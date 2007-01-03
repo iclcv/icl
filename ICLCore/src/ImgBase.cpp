@@ -141,6 +141,7 @@ Img<T> *ImgBase::convertTo( Img<T>* poDst) const {
  
   if(!poDst) poDst = new Img<T>(getParams());
   else poDst->setParams(getParams());
+  poDst->setTime(this->getTime());
 
   switch (getDepth()){
     case depth8u: for(int c=0;c<getChannels();c++) deepCopyChannel<icl8u,T>(asImg<icl8u>(),c,poDst,c); break;

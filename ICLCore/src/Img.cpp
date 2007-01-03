@@ -176,10 +176,8 @@ Img<Type>::deepCopy(ImgBase* poDst) const
 {
   FUNCTION_LOG("");
   
-  if(!poDst) {
-     poDst = imgNew(getDepth());
-     poDst->setTime(this->getTime());
-  }
+  if(!poDst) poDst = imgNew(getDepth());
+
   switch (poDst->getDepth()){
     case depth8u: return convertTo<icl8u>(poDst->asImg<icl8u>()); break;
     case depth16s: return convertTo<icl16s>(poDst->asImg<icl16s>()); break;
