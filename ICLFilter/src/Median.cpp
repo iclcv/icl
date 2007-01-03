@@ -12,7 +12,7 @@ namespace icl {
   Median::Median (const Size& maskSize) {
 #define ICL_INSTANTIATE_DEPTH(T) \
      aMethods[depth ## T]  = &Median::cMedian<icl ## T>; aColorMethods[depth ## T] = 0;
-INSTANTIATE_ALL_DEPTHS;
+ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
 
      if (maskSize.width <= 0 || maskSize.height <= 0) {

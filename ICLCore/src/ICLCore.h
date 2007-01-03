@@ -462,7 +462,7 @@ namespace icl {
 
 #define ICL_INSTANTIATE_DEPTH(T) \
   template<> inline depth getDepth<icl ## T>() { return depth ## T; }
-INSTANTIATE_ALL_DEPTHS  
+ICL_INSTANTIATE_ALL_DEPTHS  
 #undef ICL_INSTANTIATE_DEPTH
 
   /// return sizeof value for the given depth type
