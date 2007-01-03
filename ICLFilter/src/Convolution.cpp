@@ -372,20 +372,27 @@ namespace icl {
     
     // pointer to the mask
     const KernelT *m;
-
     for(int c=0; c < poSrc->getChannels(); c++) {
-       for(ImgIterator<ImageT> s (poS->getData(c), poS->getSize().width, 
+      for(ImgIterator<ImageT> s (poS->getData(c), poS->getSize().width, 
                                   Rect (this->oROIoffset, poD->getROISize())),
               d=poD->getROIIterator(c); 
            s.inRegion(); ++s, ++d)
-       {
-          m = this->getKernel<KernelT>(); buffer = 0;
-          for(ImgIterator<ImageT> sR(s,oMaskSize,oAnchor); sR.inRegion(); ++sR, ++m)
-          {
-             buffer += (*m) * (*sR);
-          }
-          *d = Cast<KernelT, ImageT>::cast(buffer / factor);
-       }
+      {
+        m = this->getKernel<KernelT>(); buffer = 0;
+        for(ImgIterator<ImageT> sR(s,oMaskSize,oAnchor); sR.inRegion(); ++sR, ++m)
+        {
+           buffer += (*m) * (*sR);
+        }
+           *d = Cast<KernelT, ImageT>::cast(buffer / factor); 
+        // workaround to avoid a floating point exception if buffer is nan
+/*        if (!buffer){
+          *d = Cast<KernelT, ImageT>::cast(buffer / factor); 
+        }
+        else{
+          *d = 0; 
+        }
+*/
+      }
     }
   }
 
@@ -396,7 +403,7 @@ namespace icl {
   // {{{ static MethodPointers aGenericConvs
 
   // array of image- and kernel-type selective generic convolution methods
-  void (Convolution::*Convolution::aGenericConvs[2][2])(const ImgBase *poSrc, ImgBase *poDst) = {
+/*  void (Convolution::*Convolution::aGenericConvs[2][2])(const ImgBase *poSrc, ImgBase *poDst) = {
 #ifdef WITH_IPP_OPTIMIZATION 
      {&Convolution::ippGenericConv<icl8u,int>,    // 8u - 8u
       &Convolution::ippGenericConv<icl8u,float>},  // 8u - 32f
@@ -409,7 +416,82 @@ namespace icl {
       &Convolution::cGenericConv<icl32f,float, false>}  // 32f - 32f
 #endif
   };
+*/
+  void (Convolution::*Convolution::aGenericConvs[depthLast+1][depthLast+1])(const ImgBase *poSrc, ImgBase *poDst) = {
+#ifdef WITH_IPP_OPTIMIZATION 
+     {&Convolution::ippGenericConv<icl8u,int>,    // 8u - 8u
+       0, //8u - 16s
+       0, //8u - 32s
+      &Convolution::ippGenericConv<icl8u,float>,  // 8u - 32f
+      0}, //8u - 64f
+      {0,//16s - 8u
+        0,//16s - 16s
+        0,//16s - 32s
+        0,//16s - 32f
+        0//16s - 64f
+      },
+      {0,//32s - 8u
+        0,//32s - 16s
+        0,//32s - 32s
+        0,//32s - 32f
+        0//32s - 64f
+      },
+     {0,                                          // 32f - 8u
+       0, //32f - 16s
+       0, //32f - 32s
+      &Convolution::ippGenericConv<icl32f,float>,  // 32f - 32f
+      0}, //32f - 64f
+      {0,//64f - 8u
+        0,//64f - 16s
+        0,//64f - 32s
+        0,//64f - 32f
+        0//64f - 64f
+      }
+#else
+/*     {&Convolution::cGenericConv<icl8u,int, true>,    // 8u - 8u
+      &Convolution::cGenericConv<icl8u,float, false>},  // 8u - 32f
+     {0,                                        // 32f - 8u
+      &Convolution::cGenericConv<icl32f,float, false>}  // 32f - 32f
+*/
+   
 
+
+     {&Convolution::cGenericConv<icl8u,int, true>,    // 8u - 8u
+       0, //8u - 16s
+       0, //8u - 32s
+      &Convolution::cGenericConv<icl8u,float, false>,  // 8u - 32f
+      0}, //8u - 64f
+      {0,//16s - 8u
+        0,//16s - 16s
+        0,//16s - 32s
+        0,//16s - 32f
+        0//16s - 64f
+      },
+      {0,//32s - 8u
+        0,//32s - 16s
+        0,//32s - 32s
+        0,//32s - 32f
+        0//32s - 64f
+      },
+     {0,                                          // 32f - 8u
+       0, //32f - 16s
+       0, //32f - 32s
+      &Convolution::cGenericConv<icl32f,float, false>,  // 32f - 32f
+      0}, //32f - 64f
+      {0,//64f - 8u
+        0,//64f - 16s
+        0,//64f - 32s
+        0,//64f - 32f
+        0//64f - 64f
+      }
+      
+      
+      
+#endif
+  };
+  
+  
+  
   // }}}
 
   // {{{ Convolution::apply (ImgBase *poSrc, ImgBase **ppoDst)
@@ -445,32 +527,15 @@ namespace icl {
       return;
     }
 #endif
-      int tmpKernelDepth;
-      int tmpSrcDepth;
-      switch (m_eKernelDepth){
-        case 0: tmpKernelDepth=0; break;
-        case 3: tmpKernelDepth=1; break;
-        default:tmpKernelDepth=-1; break;
-      }
-      switch (poSrc->getDepth()){
-        case 0: tmpSrcDepth=0; break;
-        case 3: tmpSrcDepth=1; break;
-        default:tmpSrcDepth=-1; break;
-      }
-
     if (poSrc->getDepth () == m_eKernelDepth || m_eKernelDepth == depth32f) {
 //       (this->*(aGenericConvs[poSrc->getDepth()][m_eKernelDepth])) (poSrc, *ppoDst);  // Bumm, da aGenericConvs [2][2] für damals 0=>icl8u 1=>icl32f
-        if (tmpSrcDepth>=0 && tmpKernelDepth>=0){
-          (this->*(aGenericConvs[tmpSrcDepth][tmpKernelDepth])) (poSrc, *ppoDst);
-        }
     } else { // 32f image and int* kernel case, which is not supported directly
        if (!m_bBuffered) {
           // data has to be copied from (external) int* kernel to internal float buffer first
           copyIntToFloatKernel (oMaskSize.width * oMaskSize.height);
        }
        // use float kernel always
-//       (this->*(aGenericConvs[poSrc->getDepth()][depth32f])) (poSrc, *ppoDst);
-        (this->*(aGenericConvs[tmpSrcDepth][1])) (poSrc, *ppoDst);
+       (this->*(aGenericConvs[poSrc->getDepth()][depth32f])) (poSrc, *ppoDst);
     }
   }
 

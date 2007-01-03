@@ -255,7 +255,7 @@ namespace icl {
     void releaseBuffers ();
 
     /// array of image- and kernel-type selective generic convolution methods
-    static void (Convolution::*aGenericConvs[2][2])(const ImgBase *poSrc, ImgBase *poDst); 
+    static void (Convolution::*aGenericConvs[depthLast+1][depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 
 
 #ifdef WITH_IPP_OPTIMIZATION 
     template<typename ImgT, typename KernelT>
