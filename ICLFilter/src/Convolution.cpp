@@ -414,8 +414,8 @@ namespace icl {
 
   // }}}
 
-#else
-#endif
+//#else
+#endif  // cGenericConv is defined in the general part (not only in the no-IPP part) of Convolution.h and used in this file line 232...
   // {{{ generic fallback convolution
   template<> inline const int*   Convolution::getKernel<int>()   const {return piKernel;}
   template<> inline const float* Convolution::getKernel<float>() const {return pfKernel;}
@@ -449,7 +449,7 @@ namespace icl {
 
   // }}}
 
-
+// #endif
 
   // {{{ static MethodPointers aGenericMethods
 
