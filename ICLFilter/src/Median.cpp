@@ -10,10 +10,10 @@ namespace icl {
   // {{{ Constructor / Destructor
 
   Median::Median (const Size& maskSize) {
-#define INSTANTIATE_TEMPLATE(T) \
+#define ICL_INSTANTIATE_DEPTH(T) \
      aMethods[depth ## T]  = &Median::cMedian<icl ## T>; aColorMethods[depth ## T] = 0;
-INSTANTIATE_ALL_TEMPLATES;
-#undef INSTANTIATE_TEMPLATE
+INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
 
      if (maskSize.width <= 0 || maskSize.height <= 0) {
         ERROR_LOG("illegal width/height: " << maskSize.width << "/" << maskSize.height);
@@ -176,9 +176,6 @@ INSTANTIATE_ALL_TEMPLATES;
      ICLASSERT(*ppoDst == poDst);
   }
 
-  // }}}
-
-
 #ifdef WITH_IPP_OPTIMIZATION 
   void Median::applyColor(const ImgBase *poSrc, ImgBase **ppoDst)
   {
@@ -201,9 +198,10 @@ INSTANTIATE_ALL_TEMPLATES;
      ICLASSERT(*ppoDst == poDst);
   }
 #else
+#warning "applyColor is not implemented without IPP optimization";
   void Median::applyColor(const ImgBase *poSrc, ImgBase **ppoDst)
   {
-    #warning "applyColor is not implemented without IPP optimization";
+     ERROR_LOG ("applyColor is not implemented without IPP optimization");
   }
 #endif
   

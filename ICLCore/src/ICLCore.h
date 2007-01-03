@@ -460,10 +460,10 @@ namespace icl {
   /// getDepth<T> returns to depth enum associated to type T
   template<class T> inline depth getDepth();
 
-#define INSTANTIATE_TEMPLATE(T) \
+#define ICL_INSTANTIATE_DEPTH(T) \
   template<> inline depth getDepth<icl ## T>() { return depth ## T; }
-INSTANTIATE_ALL_TEMPLATES  
-#undef INSTANTIATE_TEMPLATE
+INSTANTIATE_ALL_DEPTHS  
+#undef ICL_INSTANTIATE_DEPTH
 
   /// return sizeof value for the given depth type
   unsigned int getSizeOf(depth eDepth);

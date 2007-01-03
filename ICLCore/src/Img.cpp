@@ -788,14 +788,14 @@ inline Type Img<Type>::ippGetMax(int iChannel) const {
    return vMax;
 }
 
-#define INSTANTIATE_TEMPLATE(T) \
+#define ICL_INSTANTIATE_DEPTH(T) \
 template<> icl ## T \
 Img<icl ## T>::getMax(int iChannel) const {return ippGetMax<ippiMax_ ## T ## _C1R>(iChannel);}
 
-INSTANTIATE_TEMPLATE(8u)
-INSTANTIATE_TEMPLATE(16s)
-INSTANTIATE_TEMPLATE(32f)
-#undef INSTANTIATE_TEMPLATE
+ICL_INSTANTIATE_DEPTH(8u)
+ICL_INSTANTIATE_DEPTH(16s)
+ICL_INSTANTIATE_DEPTH(32f)
+#undef ICL_INSTANTIATE_DEPTH
 #endif
 
 // }}}
@@ -840,14 +840,14 @@ inline Type Img<Type>::ippGetMin(int iChannel) const {
    return vMin;
 }
 
-#define INSTANTIATE_TEMPLATE(T) \
+#define ICL_INSTANTIATE_DEPTH(T) \
 template<> icl ## T \
 Img<icl ## T>::getMin(int iChannel) const {return ippGetMin<ippiMin_ ## T ## _C1R>(iChannel);}
 
-INSTANTIATE_TEMPLATE(8u)
-INSTANTIATE_TEMPLATE(16s)
-INSTANTIATE_TEMPLATE(32f)
-#undef INSTANTIATE_TEMPLATE
+ICL_INSTANTIATE_DEPTH(8u)
+ICL_INSTANTIATE_DEPTH(16s)
+ICL_INSTANTIATE_DEPTH(32f)
+#undef ICL_INSTANTIATE_DEPTH
 #endif
 
 // }}}
@@ -900,15 +900,15 @@ inline void Img<Type>::ippGetMinMax(Type& rtMin, Type& rtMax, int iChannel) cons
    ippiFunc (getROIData(iChannel),getLineStep(),getROISize(), &rtMin, &rtMax);
 }
 
-#define INSTANTIATE_TEMPLATE(T) \
+#define ICL_INSTANTIATE_DEPTH(T) \
 template<> void \
 Img<icl ## T>::getMinMax(icl ## T& rtMin, icl ## T& rtMax, int iChannel) const \
 {ippGetMinMax<ippiMinMax_ ## T ## _C1R>(rtMin, rtMax, iChannel);}
 
-INSTANTIATE_TEMPLATE(8u)
-INSTANTIATE_TEMPLATE(16s)
-INSTANTIATE_TEMPLATE(32f)
-#undef INSTANTIATE_TEMPLATE
+ICL_INSTANTIATE_DEPTH(8u)
+ICL_INSTANTIATE_DEPTH(16s)
+ICL_INSTANTIATE_DEPTH(32f)
+#undef ICL_INSTANTIATE_DEPTH
 #endif
 
 // }}}
