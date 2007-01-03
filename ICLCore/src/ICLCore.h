@@ -488,7 +488,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
     ippsConvert_16s32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
   }
   template<> inline void copy<icl16s,icl64f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl64f *poDst){
-    ippsConvert_16s64f_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),1);
+    ippsConvert_16s64f_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),0);
   }
   
   // from icl32s functions
@@ -504,13 +504,13 @@ ICL_INSTANTIATE_ALL_DEPTHS
 
   // from icl32f functions
   template <> inline void copy<icl32f,icl8u>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl8u *poDst){
-    ippsConvert_32f8u_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,1);
+    ippsConvert_32f8u_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
   } 
   template <> inline void copy<icl32f,icl16s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl16s *poDst){
-    ippsConvert_32f16s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,1);
+    ippsConvert_32f16s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
   } 
   template <> inline void copy<icl32f,icl32s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32s *poDst){
-    ippsConvert_32f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,1);
+    ippsConvert_32f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
   } 
   template <> inline void copy<icl32f,icl64f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl64f *poDst){
     ippsConvert_32f64f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
@@ -521,7 +521,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
     ippsConvert_64f32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
   }
   template <> inline void copy<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst){
-    ippsConvert_64f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,1);
+    ippsConvert_64f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
   } 
 
   // T to T function (using ippsCopy)
