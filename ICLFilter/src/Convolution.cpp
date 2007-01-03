@@ -415,7 +415,7 @@ namespace icl {
   // }}}
 
 #else
-
+#endif
   // {{{ generic fallback convolution
   template<> inline const int*   Convolution::getKernel<int>()   const {return piKernel;}
   template<> inline const float* Convolution::getKernel<float>() const {return pfKernel;}
@@ -449,7 +449,7 @@ namespace icl {
 
   // }}}
 
-#endif
+
 
   // {{{ static MethodPointers aGenericMethods
 
