@@ -3,6 +3,91 @@
 
 namespace icl {
 
+  
+  
+  
+   // {{{ C++ fallback ThreshOp classes
+  
+   template <typename T> class ThreshOpLTVal {
+      // {{{ open
+
+   public:
+      ThreshOpLTVal (T t, T v) : threshold(t), value(v) {}
+      inline T operator()(T val) const { 
+         if (val < threshold) return value;
+         return val;
+      }
+   private:
+      T threshold;
+      T value;
+   };
+
+   // }}}
+   template <typename T> class ThreshOpGTVal {
+      // {{{ open
+
+   public:
+      ThreshOpGTVal (T t, T v) : threshold(t), value(v) {}
+      inline T operator()(T val) const { 
+         if (val > threshold) return value;
+         return val;
+      }
+   private:
+      T threshold;
+      T value;
+   };
+
+   // }}}
+   template <typename T> class ThreshOpLTGTVal {
+      // {{{ open
+   public:
+      ThreshOpLTGTVal(T tLow, T vLow, T tUp, T vUp) : 
+         tLow(tLow), tUp(tUp), vLow(vLow), vUp(vUp) {}
+      inline T operator()(T val) const { 
+         if (val < tLow) return vLow;
+         if (val > tUp)  return vUp;
+         return val;
+      }
+   private:
+      T tLow, tUp;
+      T vLow, vUp;
+   };
+
+   // }}}
+
+   // }}}
+
+   // {{{ C++ fallback threshold function for all threshold operations
+  
+   template <typename T, class ThresholdOp>
+   inline void fallbackThreshold(const Img<T> *src, Img<T> *dst, 
+                          const ThresholdOp &threshold) {
+      ICLASSERT_RETURN( src && dst );
+      ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
+      ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
+
+      for(int c=src->getChannels()-1; c >= 0; --c) {
+         ConstImgIterator<T> itSrc = src->getROIIterator(c);
+         ImgIterator<T> itDst = dst->getROIIterator(c);
+         for(;itSrc.inRegion(); ++itSrc, ++itDst){
+            *itDst = threshold(*itSrc);
+         }
+      }
+   }
+
+   // }}}
+
+#define ICL_INSTANTIATE_ALL_IPP_DEPTHS \
+  ICL_INSTANTIATE_DEPTH(8u)  \
+  ICL_INSTANTIATE_DEPTH(16s) \
+  ICL_INSTANTIATE_DEPTH(32f)
+
+#define ICL_INSTANTIATE_ALL_FB_DEPTHS \
+  ICL_INSTANTIATE_DEPTH(32s)  \
+  ICL_INSTANTIATE_DEPTH(64f)
+
+
+   
 #ifdef WITH_IPP_OPTIMIZATION
    // {{{ ippi-function call templates
 
@@ -60,255 +145,218 @@ namespace icl {
    // }}}
   
    // {{{ function specializations without Val postfix
+ 
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::lt(const Img ## T *src,Img ## T *dst, icl ## T t){\
+    ippiThresholdCall_1T<icl ## T, ippiThreshold_LT_ ## T ## _C1R> (src, dst, t);}
 
-   void Threshold::lt(const Img8u *src,Img8u *dst, icl8u t){
-      ippiThresholdCall_1T<icl8u, ippiThreshold_LT_8u_C1R> (src, dst, t);
-   }
-   void Threshold::lt(const Img32f *src,Img32f *dst, icl32f t){
-      ippiThresholdCall_1T<icl32f, ippiThreshold_LT_32f_C1R> (src, dst, t);
-   }
-   void Threshold::gt(const Img8u *src,Img8u *dst, icl8u t){
-      ippiThresholdCall_1T<icl8u, ippiThreshold_GT_8u_C1R> (src, dst, t);
-   }
-   void Threshold::gt(const Img32f *src,Img32f *dst, icl32f t){
-      ippiThresholdCall_1T<icl32f, ippiThreshold_GT_32f_C1R> (src, dst, t);
-   }
-   void Threshold::ltgt(const Img8u *src,Img8u *dst, icl8u tMin, icl8u tMax){
-      ippiThresholdCall_4T<icl8u, ippiThreshold_LTValGTVal_8u_C1R> (src, dst, tMin,tMin, tMax,tMax);
-   }
-   void Threshold::ltgt(const Img32f *src,Img32f *dst, icl32f tMin, icl32f tMax){
-      ippiThresholdCall_4T<icl32f, ippiThreshold_LTValGTVal_32f_C1R> (src, dst, tMin,tMin, tMax,tMax);
-   }
+  ICL_INSTANTIATE_ALL_IPP_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::gt(const Img ## T *src,Img ## T *dst, icl ## T t){\
+    ippiThresholdCall_1T<icl ## T, ippiThreshold_GT_ ## T ## _C1R> (src, dst, t);}
+
+  ICL_INSTANTIATE_ALL_IPP_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::ltgt(const Img ## T *src,Img ## T *dst, icl ## T tMin, icl ## T tMax){\
+      ippiThresholdCall_4T<icl ## T, ippiThreshold_LTValGTVal_ ## T ## _C1R> (src, dst, tMin,tMin, tMax,tMax);}
+
+  ICL_INSTANTIATE_ALL_IPP_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
    // }}}
  
    // {{{ function specializations with Val postfix
 
-   void Threshold::ltVal(const Img8u *src,Img8u *dst, icl8u t, icl8u val){
-      ippiThresholdCall_2T<icl8u, ippiThreshold_LTVal_8u_C1R> (src, dst, t, val);
-   }
-   void Threshold::ltVal(const Img32f *src,Img32f *dst, icl32f t, icl32f val){
-      ippiThresholdCall_2T<icl32f, ippiThreshold_LTVal_32f_C1R> (src, dst, t, val);
-   }
-   void Threshold::gtVal(const Img8u *src,Img8u *dst, icl8u t, icl8u val){
-      ippiThresholdCall_2T<icl8u, ippiThreshold_GTVal_8u_C1R> (src, dst, t,val);
-   }
-   void Threshold::gtVal(const Img32f *src,Img32f *dst, icl32f t, icl32f val){
-      ippiThresholdCall_2T<icl32f, ippiThreshold_GTVal_32f_C1R> (src, dst, t,val);
-   }
-   void Threshold::ltgtVal(const Img8u *src,Img8u *dst, icl8u tMin,icl8u minVal, icl8u tMax,icl8u maxVal){
-      ippiThresholdCall_4T<icl8u, ippiThreshold_LTValGTVal_8u_C1R> (src, dst, tMin, minVal, tMax, maxVal);
-   }
-   void Threshold::ltgtVal(const Img32f *src,Img32f *dst, icl32f tMin,icl32f minVal, icl32f tMax, icl32f maxVal){
-      ippiThresholdCall_4T<icl32f, ippiThreshold_LTValGTVal_32f_C1R> (src, dst, tMin, minVal, tMax, maxVal);
-   }
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::ltVal(const Img ## T *src,Img ## T *dst, icl ## T t, icl ## T val){\
+    ippiThresholdCall_2T<icl ## T , ippiThreshold_LTVal_ ## T ## _C1R> (src, dst, t, val);}
+
+  ICL_INSTANTIATE_ALL_IPP_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::gtVal(const Img ## T *src,Img ## T *dst, icl ## T t, icl ## T val){\
+    ippiThresholdCall_2T<icl ## T , ippiThreshold_GTVal_ ## T ## _C1R> (src, dst, t, val);}
+
+  ICL_INSTANTIATE_ALL_IPP_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::ltgtVal(const Img ## T *src,Img ## T *dst, icl ## T tMin,icl ## T minVal, icl ## T tMax,icl ## T maxVal){\
+      ippiThresholdCall_4T<icl ## T, ippiThreshold_LTValGTVal_ ## T ##_C1R> (src, dst, tMin, minVal, tMax, maxVal);}
+
+  ICL_INSTANTIATE_ALL_IPP_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
    // }}}
-#else
-   // {{{ C++ fallback ThreshOp classes
-  
-   template <typename T> class ThreshOpLTVal {
-      // {{{ open
-
-   public:
-      ThreshOpLTVal (T t, T v) : threshold(t), value(v) {}
-      inline T operator()(T val) const { 
-         if (val < threshold) return value;
-         return val;
-      }
-   private:
-      T threshold;
-      T value;
-   };
-
-   // }}}
-   template <typename T> class ThreshOpGTVal {
-      // {{{ open
-
-   public:
-      ThreshOpGTVal (T t, T v) : threshold(t), value(v) {}
-      inline T operator()(T val) const { 
-         if (val > threshold) return value;
-         return val;
-      }
-   private:
-      T threshold;
-      T value;
-   };
-
-   // }}}
-   template <typename T> class ThreshOpLTGTVal {
-      // {{{ open
-   public:
-      ThreshOpLTGTVal(T tLow, T vLow, T tUp, T vUp) : 
-         tLow(tLow), tUp(tUp), vLow(vLow), vUp(vUp) {}
-      inline T operator()(T val) const { 
-         if (val < tLow) return vLow;
-         if (val > tUp)  return vUp;
-         return val;
-      }
-   private:
-      T tLow, tUp;
-      T vLow, vUp;
-   };
-
-   // }}}
-
-   // }}}
-
-   // {{{ C++ fallback threshold function for all threshold operations
-  
-   template <typename T, class ThresholdOp>
-   void fallbackThreshold(const Img<T> *src, Img<T> *dst, 
-                          const ThresholdOp &threshold) {
-      ICLASSERT_RETURN( src && dst );
-      ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
-      ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
-
-      for(int c=src->getChannels()-1; c >= 0; --c) {
-         ConstImgIterator<T> itSrc = src->getROIIterator(c);
-         ImgIterator<T> itDst = dst->getROIIterator(c);
-         for(;itSrc.inRegion(); ++itSrc, ++itDst){
-            *itDst = threshold(*itSrc);
-         }
-      }
-   }
-
-   // }}}
+#endif 
 
    // {{{ function specializations without Val postfix (fallback)
    /* We just use the appropriate *Val functions, because there is no performance
       gain implementing a specialised variant */
 
-   void Threshold::lt(const Img8u *src, Img8u *dst, icl8u t){
-      Threshold::ltVal(src, dst, t, t);
-   }
-   void Threshold::lt(const Img32f *src, Img32f *dst, icl32f t){
-      Threshold::ltVal(src, dst, t, t);
-   }
-   void Threshold::gt(const Img8u *src, Img8u *dst, icl8u t){
-      Threshold::gtVal(src, dst, t, t);
-   }
-   void Threshold::gt(const Img32f *src, Img32f *dst, icl32f t){
-      Threshold::gtVal(src, dst, t, t);
-   }
-   void Threshold::ltgt(const Img8u *src, Img8u *dst, icl8u tMin, icl8u tMax){
-      Threshold::ltgtVal(src, dst, tMin,tMin, tMax,tMax);
-   }
-   void Threshold::ltgt(const Img32f *src, Img32f *dst, icl32f tMin, icl32f tMax){
-      Threshold::ltgtVal(src, dst, tMin,tMin, tMax,tMax);
-   }
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::lt(const Img ## T *src, Img ## T *dst, icl ## T t){\
+    Threshold::ltVal(src, dst, t, t);}
+#ifdef WITH_IPP_OPTIMIZATION
+  ICL_INSTANTIATE_ALL_FB_DEPTHS
+#else
+  ICL_INSTANTIATE_ALL_DEPTHS
+#endif
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::gt(const Img ## T *src, Img ## T *dst, icl ## T t){\
+    Threshold::gtVal(src, dst, t, t);}
+#ifdef WITH_IPP_OPTIMIZATION
+  ICL_INSTANTIATE_ALL_FB_DEPTHS
+#else
+  ICL_INSTANTIATE_ALL_DEPTHS
+#endif
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::ltgt(const Img ## T *src, Img ## T *dst, icl ## T tMin, icl ## T tMax){\
+    Threshold::ltgtVal(src, dst, tMin,tMin, tMax,tMax);}
+#ifdef WITH_IPP_OPTIMIZATION
+  ICL_INSTANTIATE_ALL_FB_DEPTHS
+#else
+  ICL_INSTANTIATE_ALL_DEPTHS
+#endif
+#undef ICL_INSTANTIATE_DEPTH
 
    // }}}
   
    // {{{ function specializations with Val postfix (fallback)
 
-   void Threshold::ltVal(const Img8u *src, Img8u *dst, icl8u t, icl8u val){
-      fallbackThreshold (src, dst, ThreshOpLTVal<icl8u>(t,val));
-   }
-   void Threshold::ltVal(const Img32f *src, Img32f *dst, icl32f t, icl32f val){
-      fallbackThreshold (src, dst, ThreshOpLTVal<icl32f>(t,val));
-   }
-   void Threshold::gtVal(const Img8u *src, Img8u *dst, icl8u t, icl8u val){
-      fallbackThreshold (src, dst, ThreshOpGTVal<icl8u>(t,val));
-   }
-   void Threshold::gtVal(const Img32f *src, Img32f *dst, icl32f t, icl32f val){
-      fallbackThreshold (src, dst, ThreshOpGTVal<icl32f>(t,val));
-   }
-   void Threshold::ltgtVal(const Img8u *src, Img8u *dst, 
-                           icl8u tMin, icl8u minVal, icl8u tMax, icl8u maxVal){
-      fallbackThreshold (src, dst, ThreshOpLTGTVal<icl8u>(tMin,minVal,tMax,maxVal));
-   }
-   void Threshold::ltgtVal(const Img32f *src, Img32f *dst, 
-                           icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal){
-      fallbackThreshold (src, dst, ThreshOpLTGTVal<icl32f>(tMin,minVal,tMax,maxVal));
-   }
-   // }}}
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::ltVal(const Img ##T *src, Img ## T *dst, icl ## T t, icl ## T val){\
+    fallbackThreshold (src, dst, ThreshOpLTVal<icl ## T>(t,val));}
+#ifdef WITH_IPP_OPTIMIZATION
+  ICL_INSTANTIATE_ALL_FB_DEPTHS
+#else
+  ICL_INSTANTIATE_ALL_DEPTHS
 #endif
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::gtVal(const Img ##T *src, Img ## T *dst, icl ## T t, icl ## T val){\
+    fallbackThreshold (src, dst, ThreshOpGTVal<icl ## T>(t,val));}
+#ifdef WITH_IPP_OPTIMIZATION
+  ICL_INSTANTIATE_ALL_FB_DEPTHS
+#else
+  ICL_INSTANTIATE_ALL_DEPTHS
+#endif
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+  void Threshold::ltgtVal(const Img ## T *src, Img ## T *dst, icl ## T tMin, icl ## T minVal, icl ##T tMax, icl ## T maxVal){\
+      fallbackThreshold (src, dst, ThreshOpLTGTVal<icl ## T>(tMin,minVal,tMax,maxVal));}
+#ifdef WITH_IPP_OPTIMIZATION
+  ICL_INSTANTIATE_ALL_FB_DEPTHS
+#else
+  ICL_INSTANTIATE_ALL_DEPTHS
+#endif
+#undef ICL_INSTANTIATE_DEPTH
+
+   // }}}
+
+#undef ICL_INSTANTIATE_ALL_IPP_DEPTHS
+
+#undef ICL_INSTANTIATE_ALL_FB_DEPTHS
+
 
    // {{{ ImgBase* versions
 
+#define ICL_INSTANTIATE_DEPTH(T) \
+    case depth ## T: lt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(t)); break;
   void Threshold::lt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
     // {{{ open
   {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()){
-      case depth8u: lt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t)); break;
-      case depth32f: lt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_DEPTH; break;
     }
   }
-
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
   
+#define ICL_INSTANTIATE_DEPTH(T) \
+    case depth ## T: gt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(t)); break;
   void Threshold::gt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
     // {{{ open
   {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()){
-      case depth8u: gt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t)); break;
-      case depth32f: gt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_DEPTH; break;
     }
   }
-
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
   
+#define ICL_INSTANTIATE_DEPTH(T) \
+    case depth ## T: ltgt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(tMin), Cast<icl32f,icl ## T>::cast(tMax)); break;
   void Threshold::ltgt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f tMin, icl32f tMax)
     // {{{ open
   {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()){
-      case depth8u: ltgt(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(tMin), Cast<icl32f,icl8u>::cast(tMax)); break;
-      case depth32f: ltgt(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), tMin, tMax); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_DEPTH; break;
     }
   }
-
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
   
+#define ICL_INSTANTIATE_DEPTH(T) \
+    case depth ## T: ltVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(t), Cast<icl32f,icl ## T>::cast(val)); break;
   void Threshold::ltVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
     // {{{ open
   {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()){
-      case depth8u: ltVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t), Cast<icl32f,icl8u>::cast(val)); break;
-      case depth32f: ltVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t, val); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_DEPTH; break;
     }
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
   
+#define ICL_INSTANTIATE_DEPTH(T) \
+    case depth ## T: gtVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(t), Cast<icl32f,icl ## T>::cast(val)); break;
   void Threshold::gtVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
     // {{{ open
   {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()){
-      case depth8u: gtVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), Cast<icl32f,icl8u>::cast(t), Cast<icl32f,icl8u>::cast(val)); break;
-      case depth32f: gtVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), t, val); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_DEPTH; break;
     }
   }
-
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
   
+#define ICL_INSTANTIATE_DEPTH(T) \
+    case depth ## T: ltgtVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(tMin),\
+                Cast<icl32f,icl ##T>::cast(minVal), Cast<icl32f,icl ## T>::cast(tMax), Cast<icl32f,icl ## T>::cast(maxVal));break;
   void Threshold::ltgtVal(const ImgBase *poSrc, ImgBase **ppoDst, 
                            icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal)
     // {{{ open
   {
     if (!Filter::prepare (ppoDst, poSrc)) return;
     switch (poSrc->getDepth()){
-      case depth8u:  
-        ltgtVal(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(), 
-                 Cast<icl32f,icl8u>::cast(tMin), Cast<icl32f,icl8u>::cast(minVal), 
-                 Cast<icl32f,icl8u>::cast(tMax), Cast<icl32f,icl8u>::cast(maxVal));
-      break;
-      case depth32f: ltgtVal(poSrc->asImg<icl32f>(), (*ppoDst)->asImg<icl32f>(), tMin, minVal, tMax, maxVal); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default: ICL_INVALID_DEPTH; break;
     }
   }
-  // }}}
-
+#undef ICL_INSTANTIATE_DEPTH
 // }}}  
   
 } // namespace icl
