@@ -82,25 +82,6 @@ namespace icl{
     b = y +  ( ( 518 * u2 ) >> 22 );
   } 
   // }}}
-  
-  inline void cc_util_get_min_and_max(const icl32f r,const icl32f g,const icl32f b,icl32f &min,icl32f &max){
-    // {{{ open
-    if(r<g) {
-      min=r;
-      max=g;
-    }
-    else {
-      min=g;
-      max=r;	
-    }
-    if(b<min)
-      min=b;
-    else {
-      max = b>max ? b : max;
-    }
-  }
-  
-  // }}}
   void cc_util_rgb_to_hls(const icl32f r255,const icl32f g255,const icl32f b255, icl32f &h, icl32f &l, icl32f &s){
     // {{{ open
 
@@ -109,8 +90,8 @@ namespace icl{
     icl32f b = b255/255;
     
     icl32f m,v;
-    cc_util_get_min_and_max(r,g,b,m,v); //m=min(r,g,b), v=max(r,g,b)
-  
+    getMinAndMax(r,g,b,m,v);
+    
     if((l = (m + v) / 2.0) <= 0.0){
       l=0; h=0; s=0; // just define anything!
       return;
@@ -484,7 +465,7 @@ namespace icl{
       FUNCTION_LOG("");
       GET_3_CHANNEL_POINTERS_DIM(S,src,h,l,s,dim);
       GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
-      register icl32f reg_r, reg_g, reg_b;
+      register icl32f reg_r(0), reg_g(0), reg_b(0);
       for(int i=0;i<dim;++i){
         cc_util_hls_to_rgb(Cast<S,icl32f>::cast(h[i]),
                            Cast<S,icl32f>::cast(l[i]),
@@ -645,6 +626,7 @@ namespace icl{
         ensureCompatible(&buf,src->getDepth(), src->getSize(), formatRGB);
         cc(src,buf);
         cc(buf,dst);
+        delete buf;
         break;
       }
       case ccUnavailable:{
