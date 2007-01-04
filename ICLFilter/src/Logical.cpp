@@ -235,78 +235,109 @@ namespace icl {
 #undef ICL_INSTANTIATE_DEPTH_NOT_FB
 
   // {{{ ImgBase* versions
-  
+
+#define ICL_INSTANTIATE_DEPTH(T) \
+     case depth ## T: Not(poSrc->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Logical::Not (const ImgBase *poSrc, ImgBase **ppoDst)
   {
     // {{{ open
-    ICLASSERT_RETURN(poSrc->getDepth() == depth8u);
     if (!Filter::prepare (ppoDst, poSrc)) return;
-    Not(poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
-  }
-  // }}}
-
-  void Logical::And (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
-  {
-    
-    // {{{ open
-    ICLASSERT_RETURN( poSrc1->getDepth() == poSrc2->getDepth());
-    if (!Filter::prepare (ppoDst, poSrc1)) return;
-    switch (poSrc1->getDepth()) {
-      case depth8u: And(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
-      case depth16s: And(poSrc1->asImg<icl16s>(),poSrc2->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
-      case depth32s: And(poSrc1->asImg<icl32s>(),poSrc2->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
+    switch (poSrc->getDepth()) {
+      ICL_INSTANTIATE_ALL_INT_DEPTHS
       default: ICL_INVALID_FORMAT; break;
     };
   }
+#undef ICL_INSTANTIATE_DEPTH
+  // }}}
+
+  #define ICL_INSTANTIATE_DEPTH(T) \
+     case depth ## T: And(poSrc1->asImg<icl ## T>(),poSrc2->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
+  void Logical::And (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
+  {
+    // {{{ open
+    ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
+    ICLASSERT_RETURN( poSrc1->getDepth() ==  poSrc2->getDepth());
+    if (!Filter::prepare (ppoDst, poSrc1)) return;
+    switch (poSrc1->getDepth()) {
+      ICL_INSTANTIATE_ALL_INT_DEPTHS
+      default: ICL_INVALID_FORMAT; break;
+    };
+  }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
     
+  #define ICL_INSTANTIATE_DEPTH(T) \
+     case depth ## T: Or(poSrc1->asImg<icl ## T>(),poSrc2->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Logical::Or (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open
-    ICLASSERT_RETURN( poSrc1->getDepth() == depth8u);
-    ICLASSERT_RETURN( poSrc2->getDepth() == depth8u);
     ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
+    ICLASSERT_RETURN( poSrc1->getDepth() ==  poSrc2->getDepth());
     if (!Filter::prepare (ppoDst, poSrc1)) return;
-    Or(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+    switch (poSrc1->getDepth()) {
+      ICL_INSTANTIATE_ALL_INT_DEPTHS
+      default: ICL_INVALID_FORMAT; break;
+    };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
 
+  #define ICL_INSTANTIATE_DEPTH(T) \
+     case depth ## T: Xor(poSrc1->asImg<icl ## T>(),poSrc2->asImg<icl ## T>(),(*ppoDst)->asImg<icl ## T>()); break;
   void Logical::Xor (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open
     ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
-    ICLASSERT_RETURN( poSrc1->getDepth() == depth8u);
-    ICLASSERT_RETURN( poSrc2->getDepth() == depth8u);
+    ICLASSERT_RETURN( poSrc1->getDepth() ==  poSrc2->getDepth());
     if (!Filter::prepare (ppoDst, poSrc1)) return;
-    Xor(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+    switch (poSrc1->getDepth()) {
+      ICL_INSTANTIATE_ALL_INT_DEPTHS
+      default: ICL_INVALID_FORMAT; break;
+    };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
 
+#define ICL_INSTANTIATE_DEPTH(T) \
+     case depth ## T: AndC(poSrc->asImg<icl ## T>(),value,(*ppoDst)->asImg<icl ## T>()); break;
   void Logical::AndC (const ImgBase *poSrc, const icl8u value, ImgBase **ppoDst)
   {
     // {{{ open
-    ICLASSERT_RETURN( poSrc->getDepth() == depth8u);
     if (!Filter::prepare (ppoDst, poSrc)) return;
-    AndC(poSrc->asImg<icl8u>(),value,(*ppoDst)->asImg<icl8u>());
+    switch (poSrc->getDepth()) {
+      ICL_INSTANTIATE_ALL_INT_DEPTHS
+      default: ICL_INVALID_FORMAT; break;
+    };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
 
+#define ICL_INSTANTIATE_DEPTH(T) \
+     case depth ## T: OrC(poSrc->asImg<icl ## T>(),value,(*ppoDst)->asImg<icl ## T>()); break;
   void Logical::OrC (const ImgBase *poSrc, const icl8u value, ImgBase **ppoDst)
   {
     // {{{ open
-    ICLASSERT_RETURN( poSrc->getDepth() == depth8u);
     if (!Filter::prepare (ppoDst, poSrc)) return;
-    OrC(poSrc->asImg<icl8u>(),value,(*ppoDst)->asImg<icl8u>());
+    switch (poSrc->getDepth()) {
+      ICL_INSTANTIATE_ALL_INT_DEPTHS
+      default: ICL_INVALID_FORMAT; break;
+    };
   }
+#undef ICL_INSTANTIATE_DEPTH
   // }}}
 
+#define ICL_INSTANTIATE_DEPTH(T) \
+     case depth ## T: XorC(poSrc->asImg<icl ## T>(),value,(*ppoDst)->asImg<icl ## T>()); break;
   void Logical::XorC (const ImgBase *poSrc, const icl8u value, ImgBase **ppoDst)
   {
     // {{{ open
-    ICLASSERT_RETURN( poSrc->getDepth() == depth8u);
     if (!Filter::prepare (ppoDst, poSrc)) return;
-    XorC(poSrc->asImg<icl8u>(),value,(*ppoDst)->asImg<icl8u>());
+    switch (poSrc->getDepth()) {
+      ICL_INSTANTIATE_ALL_INT_DEPTHS
+      default: ICL_INVALID_FORMAT; break;
+    };
   }
+  #undef ICL_INSTANTIATE_DEPTH
   // }}}
   
 // }}}
