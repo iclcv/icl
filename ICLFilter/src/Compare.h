@@ -44,26 +44,52 @@ namespace icl {
 
 
 
-      /// compare two images against each other (Img8u version)
+      /// compare two images against each other
       static void compare(const Img8u *src1, const Img8u *src2, Img8u *dst, Compare::op cmpop);
-      /// compare two images against each other (Img32f version)
+      /// compare two images against each other
+      static void compare(const Img16s *src1, const Img16s *src2, Img8u *dst, Compare::op cmpop);
+      /// compare two images against each other
+      static void compare(const Img32s *src1, const Img32s *src2, Img8u *dst, Compare::op cmpop);
+      /// compare two images against each other
       static void compare(const Img32f *src1, const Img32f *src2, Img8u *dst, Compare::op cmpop);
+      /// compare two images against each other
+      static void compare(const Img64f *src1, const Img64f *src2, Img8u *dst, Compare::op cmpop);
 
-      /// compare an image against a constant value (Img8u version)
+      /// compare an image against a constant value
       static void compareC(const Img8u *src, icl8u value, Img8u *dst, Compare::op cmpop);
-      /// compare an image against a constant value (Img32f version)
+      /// compare an image against a constant value
+      static void compareC(const Img16s *src, icl16s value, Img8u *dst, Compare::op cmpop);
+      /// compare an image against a constant value
+      static void compareC(const Img32s *src, icl32s value, Img8u *dst, Compare::op cmpop);
+      /// compare an image against a constant value
       static void compareC(const Img32f *src, icl32f value, Img8u *dst, Compare::op cmpop);
+      /// compare an image against a constant value
+      static void compareC(const Img64f *src, icl64f value, Img8u *dst, Compare::op cmpop);
 
-      /// compare two images for equality, allowing a certain tolerance eps (Img8u version)
+
+      /// compare two images for equality, allowing a certain tolerance eps
       static void equalEps(const Img8u *src1, const Img8u *src2, Img8u *dst, icl8u eps);
-      /// compare two images for equality, allowing a certain tolerance eps (Img32f version)
+      /// compare two images for equality, allowing a certain tolerance eps
+      static void equalEps(const Img16s *src1, const Img16s *src2, Img8u *dst, icl16s eps);
+      /// compare two images for equality, allowing a certain tolerance eps
+      static void equalEps(const Img32s *src1, const Img32s *src2, Img8u *dst, icl32s eps);
+      /// compare two images for equality, allowing a certain tolerance eps
       static void equalEps(const Img32f *src1, const Img32f *src2, Img8u *dst, icl32f eps);
+      /// compare two images for equality, allowing a certain tolerance eps
+      static void equalEps(const Img64f *src1, const Img64f *src2, Img8u *dst, icl64f eps); 
 
-      /// compare an image against a constant value allowing a tolerance eps (Img8u version)
+
+      /// compare an image against a constant value allowing a tolerance eps
       static void equalEpsC(const Img8u *src, icl8u value, Img8u *dst, icl8u eps);
-      /// compare an image against a constant value allowing a tolerance eps (Img32f version)
+      /// compare an image against a constant value allowing a tolerance eps
+      static void equalEpsC(const Img16s *src, icl16s value, Img8u *dst, icl16s eps);
+      /// compare an image against a constant value allowing a tolerance eps
+      static void equalEpsC(const Img32s *src, icl32s value, Img8u *dst, icl32s eps);
+      /// compare an image against a constant value allowing a tolerance eps
       static void equalEpsC(const Img32f *src, icl32f value, Img8u *dst, icl32f eps);
-   };
+      /// compare an image against a constant value allowing a tolerance eps
+      static void equalEpsC(const Img64f *src, icl64f value, Img8u *dst, icl64f eps);
+  };
 
 } // namespace icl
 
