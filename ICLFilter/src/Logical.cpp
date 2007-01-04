@@ -3,6 +3,105 @@
 
 namespace icl {
 
+
+// {{{ C++ fallback functions
+
+  template <typename T>
+  inline void fallbackLogicalNot(const Img<T> *src, Img<T> *dst)
+    // {{{ open
+  {
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
+    ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
+    for(int c=src->getChannels()-1; c >= 0; --c) {
+      ConstImgIterator<T> itSrc = src->getROIIterator(c);
+      ImgIterator<T>      itDst = dst->getROIIterator(c);
+      for(;itSrc.inRegion(); ++itSrc, ++itDst){
+        *itDst = ~*itSrc ;
+      }
+    }
+  }
+  // }}}
+
+  template <typename T,class LogicalOp>
+  inline void fallbackLogicalAndOrXor(const Img<T> *src1, const Img<T> *src2, Img<T> *dst,const LogicalOp &op)
+    // {{{ open
+  {
+    ICLASSERT_RETURN( src1 && src2 && dst );
+    ICLASSERT_RETURN( src1->getROISize() == src2->getROISize() );
+    ICLASSERT_RETURN( src1->getROISize() == dst->getROISize() );
+    ICLASSERT_RETURN( src1->getChannels() == src2->getChannels() );
+    ICLASSERT_RETURN( src1->getChannels() == dst->getChannels() );
+    for(int c=src1->getChannels()-1; c >= 0; --c) {
+      ConstImgIterator<T> itSrc1 = src1->getROIIterator(c);
+      ConstImgIterator<T> itSrc2 = src2->getROIIterator(c);
+      ImgIterator<T>      itDst  =  dst->getROIIterator(c);
+      for(;itSrc1.inRegion(); ++itSrc1, ++itSrc2, ++itDst){
+        *itDst = op(*itSrc1,*itSrc2);
+      }
+    }
+  }
+  // }}}
+
+  template <typename T,class LogicalOp>
+  inline void fallbackLogicalAndOrXorC(const Img<T> *src, const T value, Img<T> *dst,const LogicalOp &op)
+    // {{{ open
+  {
+    ICLASSERT_RETURN( src && dst );
+    ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
+    ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
+    for(int c=src->getChannels()-1; c >= 0; --c) {
+      ConstImgIterator<T> itSrc = src->getROIIterator(c);
+      ImgIterator<T>      itDst = dst->getROIIterator(c);
+      for(;itSrc.inRegion(); ++itSrc, ++itDst){
+        *itDst = op(*itSrc,value);
+      }
+    }
+  }
+  // }}}
+
+  // }}}
+
+    // {{{ C++ fallback Logical Operators
+  template <typename T> class AndOp {
+  public:
+    inline T operator()(T val1,T val2) const { return val1 & val2; }
+  };
+
+  template <typename T> class OrOp {
+  public:
+    inline T operator()(T val1,T val2) const { return val1 | val2; }
+  };
+
+  template <typename T> class XorOp {
+  public:
+    inline T operator()(T val1,T val2) const { return val1 ^ val2; }
+  };
+  // }}}
+
+  
+#define ICL_INSTANTIATE_DEPTH(T,U) \
+  void Logical:: U  (const Img ## T *src1, const Img ## T *src2, Img## T *dst){\
+    ippiAndOrXorCall<icl ## T,ippi ## U ##_ ## T ##_C1R>(src1,src2,dst);}
+
+
+#define ICL_INSTANTIATE_DEPTH_FB(T,U) \
+  void Logical:: U (const Img ## T *src1, const Img ## T *src2, Img ## T *dst){\
+    fallbackLogicalAndOrXor<icl ## T>(src1, src2,dst, U ##Op<icl ## T>());}
+
+#define ICL_INSTANTIATE_DEPTH_NOT_FB(T) \
+  void Logical::Not (const Img ## T *src, Img ## T *dst){\
+    fallbackLogicalNot<icl ## T>(src, dst);}
+
+#define ICL_INSTANTIATE_DEPTH_C(T,U) \
+  void Logical:: U ## C (const Img ## T *src, const icl ## T value, Img## T *dst){\
+    ippiAndOrXorCallC<icl ## T,ippi ## U ## C_ ## T ## _C1R>(src,value,dst);}
+
+
+#define ICL_INSTANTIATE_DEPTH_C_FB(T,U) \
+  void Logical:: U ## C (const Img ## T *src, const icl ## T value, Img ## T *dst){\
+    fallbackLogicalAndOrXorC<icl ##T>(src, value,dst, U ## Op<icl ## T>());}
+  
 #ifdef WITH_IPP_OPTIMIZATION
 
   // {{{ ippi-function call templates
@@ -60,148 +159,80 @@ namespace icl {
 
   // {{{ function specializations
 
-  void Logical::And (const Img8u *src1, const Img8u *src2, Img8u *dst)
-  {
-    ippiAndOrXorCall<icl8u,ippiAnd_8u_C1R>(src1,src2,dst);
-  }
-  void Logical::Or (const Img8u *src1, const Img8u *src2, Img8u *dst)
-  {
-    ippiAndOrXorCall<icl8u,ippiOr_8u_C1R>(src1,src2,dst);
-  }
-  void Logical::Xor (const Img8u *src1, const Img8u *src2, Img8u *dst)
-  {
-    ippiAndOrXorCall<icl8u,ippiXor_8u_C1R>(src1,src2,dst);
-  }
+  ICL_INSTANTIATE_DEPTH(8u,And)
+  ICL_INSTANTIATE_DEPTH_FB(16s,And)
+  ICL_INSTANTIATE_DEPTH(32s,And)
+  
+  ICL_INSTANTIATE_DEPTH(8u,Or)
+  ICL_INSTANTIATE_DEPTH_FB(16s,Or)  
+  ICL_INSTANTIATE_DEPTH(32s,Or)
+  
+  ICL_INSTANTIATE_DEPTH(8u,Xor)
+  ICL_INSTANTIATE_DEPTH_FB(16s,Xor)
+  ICL_INSTANTIATE_DEPTH(32s,Xor)
+
+  ICL_INSTANTIATE_DEPTH_C(8u,And)
+  ICL_INSTANTIATE_DEPTH_C_FB(16s,And)
+  ICL_INSTANTIATE_DEPTH_C(32s,And)
+  
+  ICL_INSTANTIATE_DEPTH_C(8u,Or)
+  ICL_INSTANTIATE_DEPTH_C_FB(16s,Or)  
+  ICL_INSTANTIATE_DEPTH_C(32s,Or)
+  
+  ICL_INSTANTIATE_DEPTH_C(8u,Xor)
+  ICL_INSTANTIATE_DEPTH_C_FB(16s,Xor)
+  ICL_INSTANTIATE_DEPTH_C(32s,Xor)
+
+
+  ICL_INSTANTIATE_DEPTH_NOT_FB(16s)
+  ICL_INSTANTIATE_DEPTH_NOT_FB(32s)
+  
   void Logical::Not (const Img8u *src, Img8u *dst)
   {
     ippiNotCall<icl8u,ippiNot_8u_C1R>(src,dst);
-  }
-
-  void Logical::AndC (const Img8u *src, const icl8u value, Img8u *dst)
-  {
-    ippiAndOrXorCallC<icl8u,ippiAndC_8u_C1R>(src,value,dst);
-  }
-  void Logical::OrC (const Img8u *src, const icl8u value, Img8u *dst)
-  {
-    ippiAndOrXorCallC<icl8u,ippiOrC_8u_C1R>(src,value,dst);
-  }
-  void Logical::XorC (const Img8u *src, const icl8u value, Img8u *dst)
-  {
-    ippiAndOrXorCallC<icl8u,ippiXorC_8u_C1R>(src,value,dst);
   }
 
   // }}}
 
 #else
 
-  // {{{ C++ fallback functions
-
-  template <typename T>
-  void fallbackLogicalNot(const Img<T> *src, Img<T> *dst)
-    // {{{ open
-  {
-    ICLASSERT_RETURN( src && dst );
-    ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
-    ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
-    for(int c=src->getChannels()-1; c >= 0; --c) {
-      ConstImgIterator<T> itSrc = src->getROIIterator(c);
-      ImgIterator<T>      itDst = dst->getROIIterator(c);
-      for(;itSrc.inRegion(); ++itSrc, ++itDst){
-        *itDst = ~*itSrc ;
-      }
-    }
-  }
-  // }}}
-
-  template <typename T,class LogicalOp>
-  void fallbackLogicalAndOrXor(const Img<T> *src1, const Img<T> *src2, Img<T> *dst,const LogicalOp &op)
-    // {{{ open
-  {
-    ICLASSERT_RETURN( src1 && src2 && dst );
-    ICLASSERT_RETURN( src1->getROISize() == src2->getROISize() );
-    ICLASSERT_RETURN( src1->getROISize() == dst->getROISize() );
-    ICLASSERT_RETURN( src1->getChannels() == src2->getChannels() );
-    ICLASSERT_RETURN( src1->getChannels() == dst->getChannels() );
-    for(int c=src1->getChannels()-1; c >= 0; --c) {
-      ConstImgIterator<T> itSrc1 = src1->getROIIterator(c);
-      ConstImgIterator<T> itSrc2 = src2->getROIIterator(c);
-      ImgIterator<T>      itDst  =  dst->getROIIterator(c);
-      for(;itSrc1.inRegion(); ++itSrc1, ++itSrc2, ++itDst){
-        *itDst = op(*itSrc1,*itSrc2);
-      }
-    }
-  }
-  // }}}
-
-  template <typename T,class LogicalOp>
-  void fallbackLogicalAndOrXorC(const Img<T> *src, const T value, Img<T> *dst,const LogicalOp &op)
-    // {{{ open
-  {
-    ICLASSERT_RETURN( src && dst );
-    ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
-    ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
-    for(int c=src->getChannels()-1; c >= 0; --c) {
-      ConstImgIterator<T> itSrc = src->getROIIterator(c);
-      ImgIterator<T>      itDst = dst->getROIIterator(c);
-      for(;itSrc.inRegion(); ++itSrc, ++itDst){
-        *itDst = op(*itSrc,value);
-      }
-    }
-  }
-  // }}}
-
-  // }}}
-
-  // {{{ C++ fallback Logical Operators
-  template <typename T> class AndOp {
-  public:
-    inline T operator()(T val1,T val2) const { return val1 & val2; }
-  };
-
-  template <typename T> class OrOp {
-  public:
-    inline T operator()(T val1,T val2) const { return val1 | val2; }
-  };
-
-  template <typename T> class XorOp {
-  public:
-    inline T operator()(T val1,T val2) const { return val1 ^ val2; }
-  };
-  // }}}
-
   // {{{ C++ fallback function specializations
-  void Logical::And (const Img8u *src1, const Img8u *src2, Img8u *dst)
-  {
-    fallbackLogicalAndOrXor<icl8u>(src1, src2,dst,AndOp<icl8u>());
-  }
-  void Logical::Or (const Img8u *src1, const Img8u *src2, Img8u *dst)
-  {
-    fallbackLogicalAndOrXor<icl8u>(src1, src2,dst,OrOp<icl8u>());
-  }
-  void Logical::Xor (const Img8u *src1, const Img8u *src2, Img8u *dst)
-  {
-    fallbackLogicalAndOrXor<icl8u>(src1, src2,dst,XorOp<icl8u>());
-  }
-  void Logical::Not (const Img8u *src, Img8u *dst)
-  {
-    fallbackLogicalNot<icl8u>(src, dst);
-  }
+  ICL_INSTANTIATE_DEPTH_FB(8u,And)
+  ICL_INSTANTIATE_DEPTH_FB(16s,And)
+  ICL_INSTANTIATE_DEPTH_FB(32s,And)
+  
+  ICL_INSTANTIATE_DEPTH_FB(8u,Or)
+  ICL_INSTANTIATE_DEPTH_FB(16s,Or)  
+  ICL_INSTANTIATE_DEPTH_FB(32s,Or)
+  
+  ICL_INSTANTIATE_DEPTH_FB(8u,Xor)
+  ICL_INSTANTIATE_DEPTH_FB(16s,Xor)
+  ICL_INSTANTIATE_DEPTH_FB(32s,Xor)
 
-  void Logical::AndC (const Img8u *src, const icl8u value, Img8u *dst)
-  {
-    fallbackLogicalAndOrXorC<icl8u>(src, value,dst,AndOp<icl8u>());
-  }
-  void Logical::OrC (const Img8u *src, const icl8u value, Img8u *dst)
-  {
-    fallbackLogicalAndOrXorC<icl8u>(src, value,dst,OrOp<icl8u>());
-  }
-  void Logical::XorC (const Img8u *src, const icl8u value, Img8u *dst)
-  {
-    fallbackLogicalAndOrXorC<icl8u>(src, value,dst,XorOp<icl8u>());
-  }
+  ICL_INSTANTIATE_DEPTH_C_FB(8u,And)
+  ICL_INSTANTIATE_DEPTH_C_FB(16s,And)
+  ICL_INSTANTIATE_DEPTH_C_FB(32s,And)
+  
+  ICL_INSTANTIATE_DEPTH_C_FB(8u,Or)
+  ICL_INSTANTIATE_DEPTH_C_FB(16s,Or)  
+  ICL_INSTANTIATE_DEPTH_C_FB(32s,Or)
+  
+  ICL_INSTANTIATE_DEPTH_C_FB(8u,Xor)
+  ICL_INSTANTIATE_DEPTH_C_FB(16s,Xor)
+  ICL_INSTANTIATE_DEPTH_C_FB(32s,Xor)
+
+  ICL_INSTANTIATE_DEPTH_NOT_FB(8u)
+  ICL_INSTANTIATE_DEPTH_NOT_FB(16s)
+  ICL_INSTANTIATE_DEPTH_NOT_FB(32s)
   // }}}
 
 #endif
+#undef ICL_INSTANTIATE_DEPTH
+#undef ICL_INSTANTIATE_DEPTH_C
+
+#undef ICL_INSTANTIATE_DEPTH_FB
+#undef ICL_INSTANTIATE_DEPTH_C_FB
+#undef ICL_INSTANTIATE_DEPTH_NOT_FB
 
   // {{{ ImgBase* versions
   
@@ -216,15 +247,19 @@ namespace icl {
 
   void Logical::And (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
+    
     // {{{ open
-    ICLASSERT_RETURN( poSrc1->getDepth() == depth8u);
-    ICLASSERT_RETURN( poSrc2->getDepth() == depth8u);
-    ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
+    ICLASSERT_RETURN( poSrc1->getDepth() == poSrc2->getDepth());
     if (!Filter::prepare (ppoDst, poSrc1)) return;
-    And(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());
+    switch (poSrc1->getDepth()) {
+      case depth8u: And(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>()); break;
+      case depth16s: And(poSrc1->asImg<icl16s>(),poSrc2->asImg<icl16s>(),(*ppoDst)->asImg<icl16s>()); break;
+      case depth32s: And(poSrc1->asImg<icl32s>(),poSrc2->asImg<icl32s>(),(*ppoDst)->asImg<icl32s>()); break;
+      default: ICL_INVALID_FORMAT; break;
+    };
   }
   // }}}
-
+    
   void Logical::Or (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
   {
     // {{{ open

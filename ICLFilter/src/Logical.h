@@ -12,20 +12,61 @@ namespace icl {
 
    class Logical : public Filter {
    public:
+
+#define ICL_INSTANTIATE_DEPTH(T,U) \
+      static void U (const Img ## T *src1, const Img ## T *src2, Img ## T *dst);
+#define ICL_INSTANTIATE_DEPTH_C(T,U) \
+      static void U ## C (const Img ## T *src, const icl ## T value, Img ## T *dst);
       /// Combines corresponding pixels of two image buffers by a bitwise AND operation.
-      static void And (const Img8u  *src1, const Img8u  *src2, Img8u  *dst);
+      ICL_INSTANTIATE_DEPTH(8u,And)
+      /// Combines corresponding pixels of two image buffers by a bitwise AND operation.
+      ICL_INSTANTIATE_DEPTH(16s,And)
+      /// Combines corresponding pixels of two image buffers by a bitwise AND operation.
+      ICL_INSTANTIATE_DEPTH(32s,And)
       /// Combines corresponding pixels of two image buffers by a bitwise OR operation.
-      static void Or  (const Img8u  *src1, const Img8u  *src2, Img8u  *dst);
+      ICL_INSTANTIATE_DEPTH(8u,Or)
+      /// Combines corresponding pixels of two image buffers by a bitwise OR operation.
+      ICL_INSTANTIATE_DEPTH(16s,Or)
+      /// Combines corresponding pixels of two image buffers by a bitwise OR operation.
+      ICL_INSTANTIATE_DEPTH(32s,Or)
       /// Combines corresponding pixels of two image buffers by a bitwise XOR operation.
-      static void Xor (const Img8u  *src1, const Img8u  *src2, Img8u  *dst);
+      ICL_INSTANTIATE_DEPTH(8u,Xor)
+      /// Combines corresponding pixels of two image buffers by a bitwise XOR operation.
+      ICL_INSTANTIATE_DEPTH(16s,Xor)
+      /// Combines corresponding pixels of two image buffers by a bitwise XOR operation.
+      ICL_INSTANTIATE_DEPTH(32s,Xor)
+
       /// Performs a bitwise NOT operation on each pixel.
-      static void Not (const Img8u  *src, Img8u  *dst);
-      /// Performs a bitwise AND operation on each pixel with a constant.
-      static void AndC (const Img8u *src, const icl8u value, Img8u *dst);
-      /// Performs a bitwise OR operation on each pixel with a constant.
-      static void OrC (const Img8u *src, const icl8u value, Img8u *dst);
-      /// Performs a bitwise XOR operation on each pixel with a constant.
-      static void XorC (const Img8u *src, const icl8u value, Img8u *dst);
+      static void Not (const Img8u *src, Img8u *dst);
+      /// Performs a bitwise NOT operation on each pixel.
+      static void Not (const Img16s *src, Img16s *dst);
+      /// Performs a bitwise NOT operation on each pixel.
+      static void Not (const Img32s *src, Img32s *dst);
+
+
+      /// Performs a bitwise AND operation on each pixel with a constant..
+      ICL_INSTANTIATE_DEPTH_C(8u,And)
+      /// Performs a bitwise AND operation on each pixel with a constant..
+      ICL_INSTANTIATE_DEPTH_C(16s,And)
+      /// Performs a bitwise AND operation on each pixel with a constant..
+      ICL_INSTANTIATE_DEPTH_C(32s,And)
+      /// Performs a bitwise OR operation on each pixel with a constant..
+      ICL_INSTANTIATE_DEPTH_C(8u,Or)
+      /// Performs a bitwise OR operation on each pixel with a constant..
+      ICL_INSTANTIATE_DEPTH_C(16s,Or)
+      /// Performs a bitwise OR operation on each pixel with a constant..
+      ICL_INSTANTIATE_DEPTH_C(32s,Or)
+      /// Performs a bitwise XOR operation on each pixel with a constant..
+      ICL_INSTANTIATE_DEPTH_C(8u,Xor)
+      /// Performs a bitwise XOR operation on each pixel with a constant..
+      ICL_INSTANTIATE_DEPTH_C(16s,Xor)
+      /// Performs a bitwise XOR operation on each pixel with a constant..
+      ICL_INSTANTIATE_DEPTH_C(32s,Xor)
+
+#undef ICL_INSTANTIATE_DEPTH
+
+#undef ICL_INSTANTIATE_DEPTH_C
+
 
       /// Combines corresponding pixels of two image buffers by a bitwise AND operation (ImgBase Version).
       void And (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
