@@ -31,6 +31,8 @@ namespace icl {
    }
 
    // }}}
+#define ICL_INSTANTIATE_DEPTH(T) \
+    case depth ## T: compute (poSrc->asImg<icl ## T>(), poDst, weights); break;
 
   void WeightedSum::apply (ImgBase *poSrc, Img<icl32f> *poDst, 
                            const std::vector<float>& weights) {
@@ -38,13 +40,10 @@ namespace icl {
     if (!Filter::prepare (&poDstBase, depth32f, Filter::chooseSize (poSrc),
                           formatMatrix, 1, chooseROI (poSrc), poSrc->getTime())) return;
     switch (poSrc->getDepth()) {
-      case depth8u:  compute (poSrc->asImg<icl8u>(), poDst, weights); break;
-      case depth16s: compute (poSrc->asImg<icl16s>(), poDst, weights); break;
-      case depth32s: compute (poSrc->asImg<icl32s>(), poDst, weights); break;
-      case depth32f: compute (poSrc->asImg<icl32f>(), poDst, weights); break;
-      case depth64f: compute (poSrc->asImg<icl64f>(), poDst, weights); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
       default:
         ICL_INVALID_DEPTH;
     }
   }
+#undef ICL_INSTANTIATE_DEPTH
 }
