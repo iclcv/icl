@@ -4,7 +4,6 @@
 #include <QResizeEvent>
 
 #include <OSD.h>
-#include <ICLcc.h>
 #include <Img.h>
 #include <Timer.h>
 

@@ -4,7 +4,6 @@
 #include <QFontMetrics>
 #include <QPainter>
 #include <Macros.h>
-#include <ICLcc.h>
 
 using std::string;
 

@@ -119,18 +119,18 @@ namespace icl{
       fmtmap::iterator j = (*i).second.find(fmt);
       if(j != (*i).second.end()){
         if(m_poInputImage->getTime() != (*j).second->getTime()){
-          m_poConverter->convert((*j).second,m_poInputImage);
+          m_poConverter->apply(m_poInputImage,(*j).second);
         }
         return (*j).second;
       }else{
         Img8u *image = new Img8u(size,fmt); 
-        m_poConverter->convert(image,m_poInputImage);
+        m_poConverter->apply(m_poInputImage,image);
         ((*i).second)[fmt] = image;
         return image;
       }
     }else{
       Img8u *image = new Img8u(size,fmt); 
-      m_poConverter->convert(image,m_poInputImage);
+      m_poConverter->apply(m_poInputImage,image);
       (m[size])[fmt]=image;
       return image;
     }

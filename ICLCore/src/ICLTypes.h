@@ -80,7 +80,7 @@ namespace icl {
     formatYUV    = 3, /**< (Y,u,v) color space */
     formatLAB    = 4, /**< n-channel gray image range of values is [0,255] as default */
     formatChroma = 5, /**< n-channel image without a specified color space. */
-    formatMatrix = 6,  /**< 2 channel chromaticity color space */
+    formatMatrix = 6, /**< 2 channel chromaticity color space */
     formatLast = formatMatrix
   };
   

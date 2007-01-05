@@ -1,6 +1,6 @@
 #include <Median.h>
 #include <Img.h>
-#include <ICLcc.h>
+#include <ICLCC.h>
 #include <ImgIterator.h>
 #include <vector>
 #include <algorithm>

@@ -1,75 +1,92 @@
-#include <ICLcc.h>
+#include <ICLCC.h>
 #include <Converter.h>
 
 namespace icl{
-  Converter::Converter(bool bROIOnly) : 
-     m_poDepthBuffer(0), m_poSizeBuffer(0), m_bROIOnly(bROIOnly) {}
-
-  Converter::~Converter(){
-    if(m_poDepthBuffer)delete m_poDepthBuffer;
-    if(m_poSizeBuffer)delete m_poSizeBuffer;
+  Converter::Converter(bool bROIOnly,bool bUseShallowCopy) : 
+    m_poBuffer(0),m_poCCBuffer(0), m_bROIOnly(bROIOnly), m_bUseShallowCopy(bUseShallowCopy) {
+    FUNCTION_LOG("");
+  }
+  
+  Converter::Converter(ImgBase *srcImage, ImgBase *dstImage, bool applyToROIOnly, bool useShallowCopy):
+    m_poBuffer(0), m_poCCBuffer(0), m_bROIOnly(applyToROIOnly), m_bUseShallowCopy(useShallowCopy) {
+      apply(srcImage,dstImage);
   }
 
-  void Converter::convert(ImgBase *poDst, ImgBase *poSrc){
-    format eSrcFmt = poSrc->getFormat();
-    format eDstFmt = poDst->getFormat();
-    depth eSrcDepth = poSrc->getDepth();
-    depth eDstDepth = poDst->getDepth();
-    Size  srcSize   = m_bROIOnly ? poSrc->getROISize() : poSrc->getSize();
+  Converter::~Converter(){
+    FUNCTION_LOG("");
+    if(m_poBuffer)delete m_poBuffer;
+    if(m_poCCBuffer)delete m_poCCBuffer;
+  }
 
-    int iNeedDepthConversion = eSrcDepth!=eDstDepth;
-    int iNeedSizeConversion  = poDst->getSize() != srcSize ||
-                               // cropping only:
-                               (m_bROIOnly && poSrc->getSize() != poDst->getSize());
-    int iNeedColorConversion = eSrcFmt != formatMatrix && 
-                               eDstFmt != formatMatrix && 
-                               eSrcFmt != eDstFmt;
+  void Converter::apply(ImgBase *poSrc, ImgBase *poDst){
+    printf("apply \n");
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( poSrc );
+    ICLASSERT_RETURN( poDst );
     
-    //---- convert depth ----------------- 
-    ImgBase *poCurSrc=poSrc;
-    if(iNeedDepthConversion){ 
-      // test if other convesion steps will follow:
-      if(iNeedSizeConversion || iNeedColorConversion){
-         // if other conversion steps follow, we first convert the depth
-         // and store the result in an intermediate buffer: m_poDepthBuffer
-         ensureCompatible(&m_poDepthBuffer,eDstDepth,srcSize,
-                          poCurSrc->getChannels(),eSrcFmt);
-         if (m_bROIOnly) poCurSrc->deepCopyROI(m_poDepthBuffer);
-         else poCurSrc->deepCopy(m_poDepthBuffer);
-         poCurSrc=m_poDepthBuffer;
-      }else{
-         // if only depth conversion is desired, we can simply call deepCopy
-         if (m_bROIOnly) poCurSrc->deepCopyROI(poDst);
-         else poCurSrc->deepCopy(poDst);
-         return;
-      }
-    }
+    int iNeedColorConversion = 
+      poSrc->getFormat() != formatMatrix && 
+      poDst->getFormat() != formatMatrix && 
+      poSrc->getFormat() != poDst->getFormat();
 
-    //---- convert size ----------------- 
-    if(iNeedSizeConversion){
-      if(iNeedColorConversion){
-        // if color conversion follows, we scale the image into the buffer
-        // m_poSizeBuffer first
-        ensureCompatible (&m_poSizeBuffer,poCurSrc->getDepth(), 
-                          poDst->getSize(), poCurSrc->getChannels(), eSrcFmt);
-        if (m_bROIOnly) poCurSrc->scaledCopyROI(m_poSizeBuffer);
-        else poCurSrc->scaledCopy(m_poSizeBuffer);
-        poCurSrc=m_poSizeBuffer;
-      }else{
-        // if only scaling is desired, we can return after it
-        if (m_bROIOnly) poCurSrc->scaledCopyROI(poDst);
-        else poCurSrc->scaledCopy(poDst);
-        return;
-      }     
+    int iNeedSizeConversionOrCopy;
+    if(m_bROIOnly){ 
+      iNeedSizeConversionOrCopy = 
+        poSrc->getROISize() != poDst->getSize() || //scaling from src-roi to dst
+        !poSrc->hasFullROI() || // used to crop the source images roi
+        (!iNeedColorConversion && poSrc->getDepth() != poDst->getDepth()); //depth conversion
+    }else{
+      iNeedSizeConversionOrCopy = 
+        poSrc->getSize() != poDst->getSize() || // scaling form src to dst
+        (!iNeedColorConversion && poSrc->getDepth() != poDst->getDepth()); //depth conversion
     }
-
-    if(iNeedColorConversion){
-       //---- convert color finally ----------------- 
-       iclcc(poDst,poCurSrc);
-       return;
+    
+    static const int NOTHING = 0;
+    static const int SIZE_ONLY = 1;
+    static const int COLOR_ONLY = 2;
+    static const int SIZE_AND_COLOR = 3;
+    switch(iNeedSizeConversionOrCopy + (iNeedColorConversion << 1)){
+      case NOTHING:
+        if(m_bUseShallowCopy){
+          SECTION_LOG("shallow copy");    printf("nothing shallow\n");
+          poSrc->shallowCopy(&poDst);
+        }else{
+          SECTION_LOG("deep copy");       printf("nothing deep \n");
+          poSrc->deepCopy(poDst);
+        }
+        break;
+      case SIZE_ONLY:
+        SECTION_LOG("scaling or copy only"); printf("size \n");
+        poSrc->scaledCopyROI(poDst);
+        break;
+      case COLOR_ONLY:
+        SECTION_LOG("color conversion only"); printf("color \n");
+        this->cc(poSrc,poDst);
+        break;
+      case SIZE_AND_COLOR:
+        SECTION_LOG("color conversion and copy/scaling"); printf("color and size \n");
+        ensureCompatible(&m_poBuffer,poSrc->getDepth(), poDst->getSize(), poSrc->getChannels(), poSrc->getFormat()); 
+        poSrc->scaledCopyROI(m_poBuffer);
+        this->cc(m_poBuffer,poDst);
+        break;
     }
-
-    //---- no changed needed at all: do deep / shallow copy
-    poCurSrc->shallowCopy(&poDst);
+  }
+  
+  void Converter::cc(ImgBase *src, ImgBase *dst){
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( src );
+    ICLASSERT_RETURN( dst );
+    
+    if(cc_available(src->getFormat(), dst->getFormat()) == ccEmulated){
+      printf("inner cc optimized \n");
+      SECTION_LOG("optimized emulated cross color conversion using Converter objects buffer");
+      ensureCompatible(&m_poCCBuffer,src->getDepth(), src->getSize(), formatRGB);
+      cc(src,m_poCCBuffer);
+      cc(m_poCCBuffer,dst);
+    }else{
+      printf("inner cc passed to iclcc\n");
+      SECTION_LOG("passing directly icl::cc");
+      icl::cc(src,dst);
+    }
   }
 }

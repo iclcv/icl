@@ -4,7 +4,6 @@
 
 #include <QApplication>
 #include <QThread>
-#include <ICLcc.h>
 #include <Timer.h>
 #include <math.h>
 

@@ -22,7 +22,7 @@ namespace icl{
         @param globalThreshold additive Threshold to the calculated reagions mean
     */
     LocalThreshold(unsigned int maskSize=10, int globalThreshold=0);
-    void apply(ImgBase *src, ImgBase **dst);
+    void apply(const ImgBase *src, ImgBase **dst);
 
     void setMaskSize(unsigned int maskSize);
     void setGlobalThreshold(int globalThreshold);

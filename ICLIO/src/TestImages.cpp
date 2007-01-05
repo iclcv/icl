@@ -477,7 +477,6 @@ namespace icl{
   ImgBase* TestImages::create(const string& name, const Size& size,format f, depth d){
     // {{{ open
 
-    Converter conv;
     ImgBase *dst = imgNew(d,size,f);
     Img8u *src = 0;
     if(name == "women"){
@@ -490,7 +489,7 @@ namespace icl{
       printf("error reading xpm image with name \"%s\"\n",name.c_str());
       return 0;
     }
-    conv.convert(dst,src);
+    Converter(src,dst);
     delete src;
     return dst;
   }

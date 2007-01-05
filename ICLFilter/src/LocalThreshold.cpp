@@ -155,7 +155,7 @@ namespace icl{
 
   // }}}
 
-  void LocalThreshold::apply(ImgBase *src, ImgBase **dst){
+  void LocalThreshold::apply(const ImgBase *src, ImgBase **dst){
     // {{{ open
     ICLASSERT_RETURN( src );
     ICLASSERT_RETURN( src->getSize() != Size::null );

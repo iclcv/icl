@@ -68,6 +68,9 @@ class Timer
     
     /// alias for stopTimer
     void stop(std::string sName = "no name" ){ stopTimer(sName) ;}
+    
+    /// stops the timer and returns the overall working time as long int
+    long int stopSilent();
 /* }}} */
 
 }; //class Timer

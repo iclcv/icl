@@ -4,7 +4,7 @@
 #include <QVector>
 #include <Img.h>
 #include <ICLCore.h>
-#include <ICLcc.h>
+#include <ICLCC.h>
 
 namespace icl{
 

@@ -92,6 +92,10 @@ void Timer::stopTimer(string sName)
   cout << endl;
 }
 
+long int Timer::stopSilent(){
+  return  getTime() - m_vecTime[0];
+}
+
 // }}}
 
 // {{{ Misc. functions

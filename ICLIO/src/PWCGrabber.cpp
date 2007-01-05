@@ -8,7 +8,7 @@
 
 #else
 
-#include <ICLcc.h>
+#include <ICLCC.h>
 
 #include <stdio.h> 
 #include <errno.h>
@@ -568,9 +568,9 @@ const ImgBase* PWCGrabber::grab(ImgBase *poOutput){
           Img32f oTmpDst_U(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpU));
           Img32f oTmpDst_V(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpV));
           
-          m_oConverter.convert(&oTmpDst_Y,&oTmpSrc_Y);
-          m_oConverterHalfSize.convert(&oTmpDst_U,&oTmpSrc_U);
-          m_oConverterHalfSize.convert(&oTmpDst_V,&oTmpSrc_V);
+          m_oConverter.apply(&oTmpSrc_Y,&oTmpDst_Y);
+          m_oConverterHalfSize.apply(&oTmpSrc_U,&oTmpDst_U);
+          m_oConverterHalfSize.apply(&oTmpSrc_V,&oTmpDst_V);
           break;
         }
 
@@ -580,7 +580,7 @@ const ImgBase* PWCGrabber::grab(ImgBase *poOutput){
       }
     }else{
       convertYUV420ToRGB8(m_poRGB8Image,pY,Size(m_iWidth,m_iHeight));
-      m_oConverter.convert(poOutput,m_poRGB8Image);
+      m_oConverter.apply(m_poRGB8Image,poOutput);
     }
 
     pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);

@@ -198,8 +198,7 @@ namespace icl {
     
     //---- Convert to output format ----
     if (poDst) {
-      Converter oConv;
-      oConv.convert(poDst, m_poCurImg);
+      Converter(m_poCurImg,poDst);
       return poDst;
     } else {
       return m_poCurImg;

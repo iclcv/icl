@@ -9,7 +9,7 @@
 
 #include <Skin.h>
 #include <Img.h>
-#include <Converter.h>
+#include <ICLCC.h>
 #include <Mathematics.h>
 
 namespace icl {
@@ -39,7 +39,7 @@ namespace icl {
                      formatMatrix, poSrc->getROI());
     
     //Convert src image
-    Converter().convert(m_poChromaApply, poSrc);
+    cc(poSrc,m_poChromaApply);
     (*ppoDst)->asImg<icl8u>()->clear();
     
     //Apply skin color detection
@@ -86,7 +86,7 @@ namespace icl {
                      formatChroma);
     
     //Convert src image
-    Converter().convert(m_poChromaTrain, poSrc);
+    cc(poSrc,m_poChromaTrain);
     
     //Compute start parameter
     std::vector<float> vecChromaMean = icl::mean(m_poChromaTrain);
