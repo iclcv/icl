@@ -554,6 +554,22 @@ ICL_INSTANTIATE_ALL_DEPTHS
 #endif
 
  
+  template<class T>
+  inline void getMinAndMax(T a, T b, T c, T &minVal, T &maxVal){
+    if(a<b) {
+      minVal=a;
+      maxVal=b;
+    }
+    else {
+      minVal=b;
+      maxVal=a;	
+    }
+    if(c<minVal)
+      minVal=c;
+    else {
+      maxVal = c>maxVal ? c : maxVal;
+    }
+  }  
                           
  
 
