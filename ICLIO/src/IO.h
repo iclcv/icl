@@ -49,7 +49,8 @@ namespace icl {
      ioFormatSEQ = -1, //< file list
      ioFormatPNM, //< PNM file format (gray/pgm or rgb/ppm
      ioFormatICL, //< proprietary format, equals pnm for icl8u, but allows icl32f as well
-     ioFormatJPG  //< JPG image format
+     ioFormatJPG,  //< JPG image format
+     ioFormatCSV   //< coma seperated value
   };
 
   enum GrabMode1394 {
@@ -78,6 +79,7 @@ namespace icl {
   
   /// Check for supported file type
   ioformat getFileType (const std::string &sFileName, bool& bGzipped);
+
   /// Count Hashes directly before file suffix
   void analyseHashes (const std::string &sFileName, unsigned int& nHashes, 
                       std::string::size_type& iSuffixPos);
@@ -88,17 +90,17 @@ namespace icl {
 
 
   struct FileInfo {
-     depth  eDepth;
-     format eFormat;
-     Time timeStamp;
-     int    iNumImages;
-     int    iNumChannels;
-     Size   oImgSize;
-     Rect   oROI;
+     depth       eDepth;
+     format      eFormat;
+     Time        timeStamp;
+     int         iNumImages;
+     int         iNumChannels;
+     Size        oImgSize;
+     Rect        oROI;
      std::string sFileName;
-     ioformat eFileFormat;
-     bool     bGzipped;
-     void*    fp;
+     ioformat    eFileFormat;
+     bool        bGzipped;
+     void*       fp;
 
      FileInfo (const std::string& sFileName) : 
         sFileName (sFileName),

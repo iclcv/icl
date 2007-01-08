@@ -40,14 +40,17 @@ namespace icl {
     
    private:
       void writePNM (const ImgBase *poSrc, const FileInfo& oInfo);
-      void writeJPG (const Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality=85);
+      void writeJPG (const Img<icl8u> *poSrc, 
+                     const FileInfo& oInfo, int iQuality=85);
+      void writeCSV (const ImgBase *poSrc, const FileInfo& oInfo);
+      
       std::string buildFileName ();
-
+      
       std::string sFilePrefix, sFileSuffix;
       unsigned int  nCounterDigits;
       unsigned int  nCounter;
       Img<icl8u>    m_oImg8u;
    }; //class
-
+   
 } //namespace icl
 #endif //ICLFILEWRITER_H

@@ -47,8 +47,10 @@ namespace icl {
       // if counting is disabled, sFilePrefix contains the whole file name
       if (nCounterDigits == 0) return sFilePrefix;
       
-      ostringstream oss; oss << sFilePrefix;
-      oss.fill('0'); oss.width(nCounterDigits); 
+      ostringstream oss; 
+      oss << sFilePrefix;
+      oss.fill('0'); 
+      oss.width(nCounterDigits); 
       oss << nCounter << sFileSuffix; 
       nCounter++;
       return oss.str ();
@@ -73,11 +75,14 @@ namespace icl {
          switch (oInfo.eFileFormat) {
            case ioFormatPNM: 
            case ioFormatICL:
-              writePNM (poImg, oInfo);
-              break;
+             writePNM (poImg, oInfo);
+             break;
            case ioFormatJPG:
-              writeJPG (poImg->asImg<icl8u>(), oInfo);
-              break;
+             writeJPG (poImg->asImg<icl8u>(), oInfo);
+             break;
+           case ioFormatCSV:
+             writeCSV (poImg, oInfo);
+             break;
            default: break;
          }
          closeFile (oInfo);
@@ -190,6 +195,54 @@ namespace icl {
          }
       }
    }
+
+// }}}
+
+   //--------------------------------------------------------------------------
+   void FileWriter::writeCSV(const ImgBase *poSrc, const FileInfo& oInfo) {
+     // {{{ open
+
+      int (*pWrite)(void *fp, const void *pData, size_t len) 
+         = oInfo.bGzipped ? gzwrite : plainWrite;
+
+      // check exact file type first:
+      // pgm: write separate channels below each other as pgm image (P5)
+      // ppm: require a multiple of 3 of channels, write as ppm image (P6)
+      // pnm: write 3-channel color images as pnm image (P6),
+      //      all other formats as pnm (P5)
+      // icl: write channels consecutively
+      
+      // write image data
+      Img8u *poImg8u = poSrc->asImg<icl8u>();
+      const Size& size = poSrc->getSize();
+      int iNumImages = poSrc->getChannels();
+      int iDim = size.getDim();
+      ICLException writeError ("Error writing file.");
+      ostringstream oss,oss2;
+      icl8u *pc;
+      
+      // write channel consecutively
+      for (int i=0;i<iNumImages;i++) {
+        pc = poImg8u->getData(i);
+        
+        if (i == iNumImages-1) {
+          for (int j=0;j<iDim-1;j++, pc++) {
+            oss << (int) *pc << ",";
+          }
+           oss << (int) *pc;
+        } else {
+          for (int j=0;j<iDim;j++, pc++) {
+            oss << (int) *pc << ",";
+          }
+        }
+      }
+      
+      string sData = oss.str();
+      
+      if (!pWrite (oInfo.fp, sData.c_str(), strlen(sData.c_str()))) 
+        throw writeError;
+   }
+  
 
 // }}}
 

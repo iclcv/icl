@@ -39,6 +39,8 @@ namespace icl {
          return bGzipped ? ioFormatUnknown : ioFormatJPG;
       else if (sType == "seq") 
          return bGzipped ? ioFormatUnknown : ioFormatSEQ;
+      else if (sType == "csv")
+         return bGzipped ? ioFormatUnknown : ioFormatCSV;
       else return ioFormatUnknown;
    }
    
@@ -73,13 +75,15 @@ namespace icl {
 
    void openFile (FileInfo& oInfo, const char *pcMode) throw (FileOpenException) {
       switch (oInfo.eFileFormat) {
-        case ioFormatPNM: case ioFormatICL:
+        case ioFormatPNM: 
+        case ioFormatICL:
            // these modes support gzipped format
            // enable gzipped for reading always
            if (strchr (pcMode, 'r')) oInfo.bGzipped = true;
            // for writing, we keep the setting from file name
            break;
         case ioFormatJPG:
+        case ioFormatCSV:
            // these modes suppose plain files only
            oInfo.bGzipped = false;
            break;
