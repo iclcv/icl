@@ -12,19 +12,10 @@
 #include <ICLCC.h>
 #include <Mathematics.h>
 
-namespace icl {
-/*
-  Skin::Skin() {
-    m_poChromaApply = 0;
-    m_poChromaTrain = 0;
-  }
+using namespace std;
 
-  Skin::Skin(std::vector<float> skinParams) {
-    m_poChromaApply = 0;
-    m_poChromaTrain = 0;
-    m_vecSkinParams = skinParams;
-  }
-*/
+namespace icl {
+
   void Skin::apply(ImgBase *poSrc, ImgBase **ppoDst) {
     // {{{ open 
     FUNCTION_LOG("");
@@ -37,7 +28,7 @@ namespace icl {
                      poSrc->getSize(), formatChroma);
     ensureCompatible(ppoDst, depth8u, poSrc->getSize(), 
                      formatMatrix, poSrc->getROI());
-    
+
     //Convert src image
     cc(poSrc,m_poChromaApply);
     (*ppoDst)->asImg<icl8u>()->clear();
@@ -72,21 +63,20 @@ namespace icl {
   
 // }}}
 
-  void Skin::train(ImgBase *poSrc) {
+  void Skin::train(ImgBase *poSrc, ImgBase *poMask) {
     // {{{ open 
     
     FUNCTION_LOG("");
     
-    //Variable initialisation
+    // Variable initialisation
     std::vector<float> vecTmpParams(6);
     
-    //Ensure ImgBase compatibility
+    //Convert src image
     ensureCompatible(&m_poChromaTrain, 
                      depth8u, poSrc->getSize(), 
                      formatChroma);
-    
-    //Convert src image
-    cc(poSrc,m_poChromaTrain);
+    cc(poSrc, m_poChromaTrain);
+    std::vector<int> vecTmp;
     
     //Compute start parameter
     std::vector<float> vecChromaMean = icl::mean(m_poChromaTrain);
@@ -101,7 +91,7 @@ namespace icl {
     SECTION_LOG("---------------------");
     SECTION_LOG("xO: " << vecTmpParams[0]);
     SECTION_LOG("yO: " << vecTmpParams[1]);
-    SECTION_LOG("a : " << vecTmpParams[2]);
+    SECTION_LOG("a0: " << vecTmpParams[2]);
     
     //---- Compute the parabola parameter for parabola 2 ----
     vecTmpParams[3] = vecChromaMean[0];
@@ -110,12 +100,10 @@ namespace icl {
     
     SECTION_LOG("Parameter Parabola 2:");
     SECTION_LOG("---------------------");
-    SECTION_LOG("x0: " << vecTmpParams[3]);
-    SECTION_LOG("y0: " << vecTmpParams[4]);
-    SECTION_LOG("a : " << vecTmpParams[5]);
+    SECTION_LOG("x1: " << vecTmpParams[3]);
+    SECTION_LOG("y1: " << vecTmpParams[4]);
+    SECTION_LOG("a1: " << vecTmpParams[5]);
     
-    //Gibbs parameter optimization
-
     //Set new parameter as default
     m_vecSkinParams = vecTmpParams;
   }

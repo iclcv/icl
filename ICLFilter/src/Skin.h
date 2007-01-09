@@ -41,22 +41,35 @@ class Skin : public Filter
 
   ///Start the training procedure for the skin parabla parameter
   /**
-     param The tarining image. Usually a small skin color patttern
+     param poSrc The tarining image. Usually a small skin color patttern
+     param poMask Mask the input image with this mask
   **/
-  void train(icl::ImgBase *poSrc);
+  void train(icl::ImgBase *poSrc, icl::ImgBase *poMask = 0);
 
   ///Set the skin parabola parameter directly 
   /**
      @params The skin color parabola parameter
   **/
-  void setSkinParams(std::vector<float> params) {
+  void setParameter(std::vector<float> params) {
     m_vecSkinParams = params;}
   
   ///Get the current skin parabola parameter
   /**
      @retrun A vector with the skin parabola parameter
   **/
-  std::vector<float> getSkinParams() { return m_vecSkinParams; }
+  std::vector<float> getParameter() { return m_vecSkinParams; }
+
+  ///Get the reference Image in chromaticity color space
+  /**
+     @retrun The chromaticity image
+  **/
+  ImgBase* getRefChromImg() { return m_poChromaTrain; }
+
+  ///Get the reference Image in chromaticity color space
+  /**
+     @retrun The chromaticty image
+  **/
+  ImgBase* getChromImg() { return m_poChromaApply; }
   
  private:
   ImgBase *m_poChromaApply;
