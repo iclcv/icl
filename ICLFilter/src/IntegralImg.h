@@ -38,9 +38,6 @@ namespace icl{
   is a bit more convenient for the most common applications in our sight.
   
   <h3>functions and borders</h3>
-  Because there is no stable implementation of an Img32s avilable yet, the integral image comes with
-  its own fallback implementation of this calls. <b>TODO:</b> replace this class lateron
-  by the Img32s/Img32f class when it is available (...). 
   The provided functions offer the ability for the definition of an optional 
   <em>borderSize</em> parameter, which is 0 by default. If it is set, The result image
   is enfolded with a border. The border pixels are filled with values as if the result
@@ -56,7 +53,7 @@ namespace icl{
   - Img32f -> icl32f
   
   <h1>Performance</h1>
-  The calculation is very fast! The IPP is about twice as fast as the c++ code.
+  The calculation is very fast! The IPP is about twice as fast as the C++ code.
   As Example: Img8u 640x480, 1-channel, borderSize = 10, 1.4MHz Centrino: 
   - no ipp: approx. 4.4ms (inclusive memory allocation!!)
   - with ipp: approx. 2.8ms (inclusive memory allocation!!)
@@ -77,32 +74,9 @@ namespace icl{
   class IntegralImg{
     public:
     
-    template<class T>
-    class IntImg{
-      public:
-      IntImg();
-      IntImg(const Size &s, int channels);
-      ~IntImg();
-      
-      T *getData(int channel);
-      const T *getData(int channel) const;
-      const Size &getSize() const;
-      void setSize(const Size &size);
-      void setChannels(int c);
-      int getChannels() const;
-      int getDim() const;
-      
-      private:
-      Size m_oSize;
-      std::vector<T*> m_oData;
-    };
-
-    typedef IntImg<icl32f> IntImg32f;
-    typedef IntImg<int> IntImg32s;
-    
     /// creates a set of integral image channels from a given image
     template<class T,class  I>
-    static IntImg<I> *create(Img<T> *image,unsigned int borderSize=0, IntImg<I> *intImage=0);
+    static Img<I> *create(Img<T> *image,unsigned int borderSize=0, Img<I> *integralImage=0);
 
   };
 }

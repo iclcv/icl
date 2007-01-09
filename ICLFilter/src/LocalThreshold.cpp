@@ -4,7 +4,7 @@
 
 namespace icl{
 
-  void create_roi_size_image(const Size &s, int r, IntegralImg::IntImg32s& dst){
+  void create_roi_size_image(const Size &s, int r, Img32s& dst){
     // {{{ open
     dst.setSize(s);
     dst.setChannels(1);
@@ -67,10 +67,11 @@ namespace icl{
   // }}}
   
   
-  LocalThreshold::LocalThreshold(unsigned int maskSize, int globalThreshold): 
+  LocalThreshold::LocalThreshold(unsigned int maskSize, int globalThreshold, float gammaSlope): 
     // {{{ open
 
-    m_uiMaskSize(maskSize),m_iGlobalThreshold(globalThreshold),m_poROIImage(0)
+    m_uiMaskSize(maskSize),m_iGlobalThreshold(globalThreshold),
+    m_fGammaSlope(gammaSlope),m_poROIImage(0)
   {
 
     // prepare the roi size image
@@ -98,13 +99,22 @@ namespace icl{
 
   // }}}
 
+  void LocalThreshold::setGammaSlope(float gammaSlope){
+    // {{{ open
+
+    this->m_fGammaSlope = gammaSlope;
+  }
+
+  // }}}
+
   template<class T,class T2>
   void local_threshold_algorithm(Img<T> *src, 
                                  Img<T>* dst, 
-                                 IntegralImg::IntImg<T2> *integralImage,
+                                 Img<T2> *integralImage,
                                  int *roiSizeImage,  
                                  int globalThreshold,
-                                 int r){
+                                 int r,
+                                 float gammaSlope){
     // {{{ open
 
     /*********************************************************
@@ -139,15 +149,35 @@ namespace icl{
       T *D = dst->getData(channel);
       
       T2 *I = integralImage->getData(channel)+(r1+r1*iw);
-      
-      for(int y=0;y<h;y++){
-        yu = (y-r1)*iw;  // (y-(r+1))*iw
-        yl = (y+r)*iw;   // (y+r)*iw 
-        xr = r;          // r
-        xl = r_1;        // -r-1
-        for(int idx=w*y,idxEnd=w*(y+1); idx<idxEnd ; ++idx,++xr,++xl){
-          thresh = (I[xr+yl] - (I[xr+yu] + I[xl+yl]) + I[xl+yu]) / roiSizeImage[idx]; 
-          D[idx] = S[idx] < (thresh+globalThreshold) ? 0 : 255;
+      if(gammaSlope){
+        /**
+         using function f(x) = m*x + b    (with clipping)
+         with m = gammaSlope
+              k = localThresh+globalThresh
+              f(k) = 128
+         
+         f(x) = clip( m(x-k)+128 , 0 , 255 )
+        */
+        for(int y=0;y<h;y++){
+          yu = (y-r1)*iw;  // (y-(r+1))*iw
+          yl = (y+r)*iw;   // (y+r)*iw 
+          xr = r;          // r
+          xl = r_1;        // -r-1
+          for(int idx=w*y,idxEnd=w*(y+1); idx<idxEnd ; ++idx,++xr,++xl){
+            thresh = (I[xr+yl] - (I[xr+yu] + I[xl+yl]) + I[xl+yu]) / roiSizeImage[idx]; 
+            D[idx] = (T2)clip( gammaSlope * (S[idx] - thresh+globalThreshold) + 128,float(0),float(255));
+          }
+        }
+      }else{
+        for(int y=0;y<h;y++){
+          yu = (y-r1)*iw;  // (y-(r+1))*iw
+          yl = (y+r)*iw;   // (y+r)*iw 
+          xr = r;          // r
+          xl = r_1;        // -r-1
+          for(int idx=w*y,idxEnd=w*(y+1); idx<idxEnd ; ++idx,++xr,++xl){
+            thresh = (I[xr+yl] - (I[xr+yu] + I[xl+yl]) + I[xl+yu]) / roiSizeImage[idx]; 
+            D[idx] = S[idx] < (thresh+globalThreshold) ? 0 : 255;
+          }
         }
       }
     }
@@ -196,7 +226,8 @@ namespace icl{
                                          &m_oIntegralImage,
                                          m_oROISizeImage.getData(0),
                                          m_iGlobalThreshold,
-                                         m_uiMaskSize);
+                                         m_uiMaskSize,
+                                         m_fGammaSlope);
         break;
       case depth32f:
         IntegralImg::create(src->asImg<icl32f>(), m_uiMaskSize+1, &m_oIntegralImageF);
@@ -205,7 +236,8 @@ namespace icl{
                                           &m_oIntegralImageF,
                                           m_oROISizeImage.getData(0),
                                           m_iGlobalThreshold,
-                                          m_uiMaskSize);
+                                          m_uiMaskSize,
+                                          m_fGammaSlope);
         break;
       default:
         ICL_INVALID_FORMAT;

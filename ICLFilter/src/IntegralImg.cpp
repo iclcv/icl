@@ -2,87 +2,6 @@
 
 namespace icl{
 
-  // integral image - inner class IntImg functions
-  template<class T>
-  IntegralImg::IntImg<T>::IntImg(){}
-
-  template<class T>
-  IntegralImg::IntImg<T>::IntImg(const Size &s, int channels):
-    m_oSize(s), m_oData(channels){
-     if (m_oSize.isNull()) return;
-     for(int i=0;getChannels();++i){
-        m_oData[i]=new T[m_oSize.getDim()];
-     }
-  }
-  template<class T>
-  IntegralImg::IntImg<T>::~IntImg(){
-     if(m_oSize.isNull()) return;
-     for(unsigned int i=0;i<m_oData.size();i++){
-        delete [] m_oData[i];
-     }
-  }
-
-  template<class T>
-  T *IntegralImg::IntImg<T>::getData(int channel){
-    ICLASSERT_RETURN_VAL(channel<getChannels(), 0);
-    return m_oData[channel];
-  }
-
-  template<class T>
-  const T *IntegralImg::IntImg<T>::getData(int channel) const{
-    ICLASSERT_RETURN_VAL(channel<getChannels(), 0);
-    return m_oData[channel];
-  }
-
-  template<class T>
-  const Size &IntegralImg::IntImg<T>::getSize() const{
-    return m_oSize;
-  }
-
-  template<class T>
-  void IntegralImg::IntImg<T>::setSize(const Size &size){
-    if(m_oSize != size){
-      for(int i=0;i<getChannels();++i){
-        delete m_oData[i];
-        m_oData[i] = new T[size.getDim()];
-      }
-      m_oSize = size;
-    }
-  }
-
-  template<class T>
-  void IntegralImg::IntImg<T>::setChannels(int c){
-    int cc = getChannels();
-    if(cc != c){
-      std::vector<T*> newData;
-      if(c<cc){ // remove channels
-        for(int i=0;i<c;++i){
-          newData.push_back(m_oData[i]);
-        }
-        for(int i=c;i<cc;++i){
-          delete m_oData[i];
-        }
-        m_oData = newData;
-      }else{ // add channels
-        for(int i=cc;i<c;++i){
-          m_oData.push_back(new T[getDim()]);
-        }        
-      }
-    }
-  }
-
-  template<class T>
-  int IntegralImg::IntImg<T>::getChannels() const{
-    return (int)(m_oData.size());
-  }
-  template<class T>
-  int IntegralImg::IntImg<T>::getDim() const{
-    return m_oSize.getDim();
-  }
-  
-  template class IntegralImg::IntImg<int>;
-  template class IntegralImg::IntImg<icl32f>;
-
   template<class T,class  I>
   inline void create_integral_channel_no_border(T *image,int w, int h, I *intImage){
     // {{{ open
@@ -275,7 +194,7 @@ namespace icl{
 #endif
   
   template<class T, class I>
-  IntegralImg::IntImg<I> *IntegralImg::create(Img<T> *image,unsigned int border, IntImg<I> *intImage){
+  Img<I> *IntegralImg::create(Img<T> *image,unsigned int border, Img<I> *intImage){
     // {{{ open
 
     ICLASSERT_RETURN_VAL(image, intImage);
@@ -288,7 +207,7 @@ namespace icl{
     int c = image->getChannels();
     
     if(!intImage){
-      intImage = new IntImg<I>(s,c);
+      intImage = new Img<I>(s,c);
     }else{
       intImage->setSize(s);
       intImage->setChannels(c);
@@ -310,9 +229,9 @@ namespace icl{
   
   // {{{ explicit template instantiations
 
-  template IntegralImg::IntImg<int> *IntegralImg::create<icl8u,int>(Img8u *, unsigned int, IntegralImg::IntImg<int>*);
-  template IntegralImg::IntImg<icl32f> *IntegralImg::create<icl8u,icl32f>(Img8u *, unsigned int, IntegralImg::IntImg<icl32f>*);
-  template IntegralImg::IntImg<icl32f> *IntegralImg::create<icl32f,icl32f>(Img32f *, unsigned int, IntegralImg::IntImg<icl32f>*);
+  template Img<int> *IntegralImg::create<icl8u,int>(Img8u *, unsigned int, Img<int>*);
+  template Img<icl32f> *IntegralImg::create<icl8u,icl32f>(Img8u *, unsigned int, Img<icl32f>*);
+  template Img<icl32f> *IntegralImg::create<icl32f,icl32f>(Img32f *, unsigned int, Img<icl32f>*);
    
   // }}}
 }
