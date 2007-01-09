@@ -42,6 +42,8 @@ namespace icl{
   
   const int OSD::CHANNELS_ID;
   const int OSD::CAPTURE_ID;
+  const int OSD::CAPTURE_LABEL_ID;
+  const int OSD::CAPTURE_BUTTON_ID;
   const int OSD::INFO_ID;
 
   const int OSD::MENU_ID;
@@ -133,9 +135,9 @@ namespace icl{
     w->addChild(new OSDSlider(CHANNELS_SLIDER_ID,getSubRect(3,8),m_poIW,this,-1,4,-1));
     m_mapPanels["channels"]=w;
     
-
+    // CAPTURE-Menu
     w = new OSDWidget(CAPTURE_ID,getMainRect(),poIW,this);  
-    w->addChild(new OSDLabel(CAPTURE_LABEL_ID,getSubRect(2,3),m_poIW,this,"comming soon!"));
+    w->addChild(new OSDButton(CAPTURE_BUTTON_ID,getSubRect(2,3),m_poIW,this,"write current image"));
     m_mapPanels["capture"]=w;
     
     // INFO-Menu

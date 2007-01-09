@@ -2,16 +2,21 @@
 #include <QImage>
 #include <QPainter>
 #include <QResizeEvent>
+#include <QLineEdit>
+#include <QThread>
 
 #include <OSD.h>
 #include <Img.h>
 #include <Timer.h>
+#include <FileWriter.h>
+
 
 #ifdef USE_OPENGL_ACCELERATION
 #include <GLPaintEngine.h>
 #else
 #include <QtPaintEngine.h>
 #endif
+
 
 using std::string;
 namespace icl{  
@@ -252,6 +257,20 @@ namespace icl{
       case OSD::CHANNELS_SLIDER_ID:
         op.c = *(int*)val;
         break;
+      case OSD::CAPTURE_BUTTON_ID:{
+        // capturing current image:
+        m_oMutex.lock();  
+        ImgBase *buf = 0;
+        if(m_poImage){
+          buf = m_poImage->deepCopy();
+        }
+        m_oMutex.unlock();  
+        if(buf){
+          FileWriter("./image-snapshot.ppm").write(buf);
+          delete buf;
+        }
+        break;
+      }
       default:
         break;
     }
