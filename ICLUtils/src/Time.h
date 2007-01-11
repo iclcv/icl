@@ -10,7 +10,6 @@
 #ifndef ICL_UTIL_TIME_H
 #define ICL_UTIL_TIME_H
 
-#include <stdint.h>
 #include <string>
 
 namespace icl
