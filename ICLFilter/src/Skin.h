@@ -50,14 +50,14 @@ class Skin : public Filter
   /**
      @params The skin color parabola parameter
   **/
-  void setParameter(std::vector<float> params) {
+  void setParameter(const std::vector<float>& params) {
     m_vecSkinParams = params;}
   
   ///Get the current skin parabola parameter
   /**
      @retrun A vector with the skin parabola parameter
   **/
-  std::vector<float> getParameter() { return m_vecSkinParams; }
+  const std::vector<float>& getParameter() { return m_vecSkinParams; }
 
   ///Get the reference Image in chromaticity color space
   /**

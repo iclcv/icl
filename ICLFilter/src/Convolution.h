@@ -211,6 +211,9 @@ namespace icl {
     /// change kernel
     void setKernel (icl32f *pfKernel, const Size& size, bool bBufferData=true);
 
+    /// retrieve kernel pointer
+    template<typename KernelT> const KernelT* const getKernel() const;
+
     FilterMask::setClipToROI;
     FilterMask::setCheckOnly;
 
@@ -230,9 +233,6 @@ namespace icl {
     int   *piKernel;
     int    iNormFactor; // normalization factor for integer kernel
     
-    /// retrieve kernel pointer
-    template<typename KernelT> const KernelT* getKernel() const;
-
     /// indicates that data is buffered
     bool   m_bBuffered;
 
@@ -312,6 +312,9 @@ namespace icl {
   private:
      icl::Img<icl::icl32f> *poKernelBuf;
   };
+
+  template<> inline const int*   const Convolution::getKernel<int>()   const {return piKernel;}
+  template<> inline const float* const Convolution::getKernel<float>() const {return pfKernel;}
 
 }
 

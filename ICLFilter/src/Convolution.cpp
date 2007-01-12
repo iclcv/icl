@@ -418,8 +418,6 @@ namespace icl {
 #endif // cGenericConv is also used for non-supported depths in IPP mode
 
   // {{{ generic fallback convolution
-  template<> inline const int*   Convolution::getKernel<int>()   const {return piKernel;}
-  template<> inline const float* Convolution::getKernel<float>() const {return pfKernel;}
 
   template<typename ImageT, typename KernelT, bool bUseFactor>
   void Convolution::cGenericConv (const ImgBase *poSrc, ImgBase *poDst)
