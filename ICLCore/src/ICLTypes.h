@@ -74,13 +74,13 @@ namespace icl {
   
   /// determines the color-format, that is associated with the images channels 
   enum format{
-    formatGray   = 0, /**< (red,green,blue) colors pace */
-    formatRGB    = 1, /**< (hue,lightness,saturation) color space (also know as HSI) */
-    formatHLS    = 2, /**< (lightness,a*,b*) color space */
+    formatGray   = 0, /**< 1-channel gray image, range of values is [0,255] as default */
+    formatRGB    = 1, /**< (red,green,blue) colors pace */
+    formatHLS    = 2, /**< (hue,lightness,saturation) color space (also know as HSI) */
     formatYUV    = 3, /**< (Y,u,v) color space */
-    formatLAB    = 4, /**< n-channel gray image range of values is [0,255] as default */
-    formatChroma = 5, /**< n-channel image without a specified color space. */
-    formatMatrix = 6, /**< 2 channel chromaticity color space */
+    formatLAB    = 4, /**< (lightness,a*,b*) color space */
+    formatChroma = 5, /**< 2 channel chromaticity color space */
+    formatMatrix = 6, /**< n-channel image without a specified color space. */
     formatLast = formatMatrix
   };
   
