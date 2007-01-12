@@ -344,7 +344,7 @@ namespace icl {
       if (poDst) {
         SUBSECTION_LOG("Convert to destination format");
         Converter oConv;
-        oConv.convert(poDst, m_poRGBImg);
+        oConv.apply(poDst, m_poRGBImg);
         return poDst;
       } 
       else {
