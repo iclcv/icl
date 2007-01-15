@@ -19,7 +19,6 @@ namespace icl{
   }
 
   void Converter::apply(ImgBase *poSrc, ImgBase *poDst){
-    printf("apply \n");
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc );
     ICLASSERT_RETURN( poDst );
@@ -48,23 +47,23 @@ namespace icl{
     switch(iNeedSizeConversionOrCopy + (iNeedColorConversion << 1)){
       case NOTHING:
         if(m_bUseShallowCopy){
-          SECTION_LOG("shallow copy");    printf("nothing shallow\n");
+          SECTION_LOG("shallow copy");  
           poSrc->shallowCopy(&poDst);
         }else{
-          SECTION_LOG("deep copy");       printf("nothing deep \n");
+          SECTION_LOG("deep copy");     
           poSrc->deepCopy(poDst);
         }
         break;
       case SIZE_ONLY:
-        SECTION_LOG("scaling or copy only"); printf("size \n");
+        SECTION_LOG("scaling or copy only");
         poSrc->scaledCopyROI(poDst);
         break;
       case COLOR_ONLY:
-        SECTION_LOG("color conversion only"); printf("color \n");
+        SECTION_LOG("color conversion only");
         this->cc(poSrc,poDst);
         break;
       case SIZE_AND_COLOR:
-        SECTION_LOG("color conversion and copy/scaling"); printf("color and size \n");
+        SECTION_LOG("color conversion and copy/scaling");
         ensureCompatible(&m_poBuffer,poSrc->getDepth(), poDst->getSize(), poSrc->getChannels(), poSrc->getFormat()); 
         poSrc->scaledCopyROI(m_poBuffer);
         this->cc(m_poBuffer,poDst);
@@ -78,13 +77,11 @@ namespace icl{
     ICLASSERT_RETURN( dst );
     
     if(cc_available(src->getFormat(), dst->getFormat()) == ccEmulated){
-      printf("inner cc optimized \n");
       SECTION_LOG("optimized emulated cross color conversion using Converter objects buffer");
       ensureCompatible(&m_poCCBuffer,src->getDepth(), src->getSize(), formatRGB);
       cc(src,m_poCCBuffer);
       cc(m_poCCBuffer,dst);
     }else{
-      printf("inner cc passed to iclcc\n");
       SECTION_LOG("passing directly icl::cc");
       icl::cc(src,dst);
     }
