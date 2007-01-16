@@ -1,5 +1,5 @@
 #include <Extrapolator.h>
-
+#include <stdio.h>
 namespace icl{
 
   //s(t+1) = s(t) + dt v(t) + (dt)²/2 a(t)
@@ -18,9 +18,9 @@ namespace icl{
   template<class valueType, class timeType>
   valueType Extrapolator<valueType,timeType>::predict(valueType x3, valueType x2, valueType x1){
     // {{{ open
-
     valueType v1 = x1-x2;
     valueType a = v1-( x2-x3 );//v1-v2
+    //    printf("prediciton for %d %d %d --> %d \n",(int)x3,(int)x2,(int)x1,(int)(x1 + v1 +  a/2.0));
     return valueType(x1 + v1 +  a/2.0);
   }
 

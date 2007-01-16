@@ -22,8 +22,9 @@ namespace icl{
   template<class valueType>
   class PositionTracker{
     public:
+    void pushData(valueType *xys, int n);
     void pushData(const std::vector<valueType> &xs, const std::vector<valueType> &ys);
-    int getID(int currIdx);
+    int getID(valueType x, valueType y);
     
     private:
     typedef std::vector<valueType> Vec;
@@ -31,7 +32,8 @@ namespace icl{
     typedef std::deque<Vec> QMat;
 
     QMat m_matData[2];
-    std::vector<int> m_vecCurrentAssignement;
+    std::vector<int> m_vecCurrentAssignment;
+    std::vector<int> m_vecIDs;
   };
   
   

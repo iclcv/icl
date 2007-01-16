@@ -247,6 +247,13 @@ namespace icl{
       }
     }//end while
 		
+    /*    printf("this is the path : \n");
+    for(int i=0;i<mask.h()+20;i++){
+      printf("%d %d \n",path[i][0],path[i][1]);
+    }
+    printf("-----\n");
+    printf("maskdim = %d x %d \n",mask.w(),mask.h());
+    */
     convertPath(mask, path, count);
     clearCovers(rowCover, colCover);
     erasePrimes(mask);
