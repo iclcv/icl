@@ -1,3 +1,6 @@
+#ifndef SIMPLE_MATRIX_H
+#define SIMPLE_MATRIX_H
+
 #include <SmartPtr.h>
 #include <algorithm>
 
@@ -82,7 +85,7 @@ namespace icl{
   
     /// Creates a matrix of size w x h, using given shared data
     inline SimpleMatrix(int w, int h, T *sharedData):
-      m_iW(w), m_iH(h), m_oData(sharedData,false){
+      m_oData(sharedData,false), m_iW(w), m_iH(h) {
     }
     
     /// returning a pointer to the column vector at given x offset
@@ -92,7 +95,7 @@ namespace icl{
     inline T *operator[](int x) const{ return m_oData.get()+m_iH*x; }
 
     /// performs a deep copy of the matrix into a destination matrix
-    inline void deepCopy(SimpleMatrix &m){
+    inline void deepCopy(SimpleMatrix &m) const{
       m.m_iW = m_iW;
       m.m_iH = m_iH;
       m.m_oData = SmartPtr<T>(new T[dim()]);
@@ -102,7 +105,7 @@ namespace icl{
     }
     
     /// creates a deep copy of the SimpleMatrix
-    inline SimpleMatrix deepCopy(){
+    inline SimpleMatrix deepCopy() const{
       SimpleMatrix m;
       deepCopy(m);
       return m;
@@ -124,6 +127,9 @@ namespace icl{
     inline int dim() const { return w()*h(); }
 
     
+    inline T min() const { return *std::min_element(data(),data()+dim()); }
+    inline T max() const { return *std::max_element(data(),data()+dim()); }
+
     private:
     /// Shared data pointer
     SmartPtr<T> m_oData;
@@ -131,5 +137,9 @@ namespace icl{
     /// Matrix dimensions
     int m_iW,m_iH;
   };
+  
+
 
 }
+
+#endif
