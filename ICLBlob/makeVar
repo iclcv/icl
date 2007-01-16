@@ -73,4 +73,4 @@ LDFLAGS:= ${LDFLAGS}
 # Flags for dynamic library linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
-DEBUG_ON:=FALSE
+DEBUG_ON:=TRUE
