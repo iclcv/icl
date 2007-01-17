@@ -4,7 +4,7 @@
 #include <Filter.h>
 #include <Img.h>
 namespace icl {
-   /// Class for bitwise logical operations on pixel values.
+   /// Class for bitwise logical operations on pixel values.  (all functions: Img8u, Img32s: IPP + Fallback, Img16s: Fallback only!, No support for other Types)
    /** 
        Supported operations include And, Or, Xor, Not. Clearly all logical operations
        are only supported on integer typed images, i.e. icl8u.

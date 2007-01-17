@@ -5,7 +5,7 @@
 #include <Img.h>
 namespace icl {
   
-  /// Class for computing proximity measures
+  /// Class for computing proximity measures (Only available for Img8u and Img32f, IPP only!)
   /**  
   The functions described in this section compute the proximity (similarity) measure between an
 image and a template (another image). These functions may be used as feature detection functions,

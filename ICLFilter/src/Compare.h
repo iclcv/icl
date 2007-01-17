@@ -5,7 +5,7 @@
 
 namespace icl {
   
-   /// Class for comparing operations
+   /// Class for comparing operations (All funcions: Img8u, Img32f: IPP + Fallback, all other Types: Fallback only!)
    /** Compares pixel values of two images or of one image and a constant value
        using a specified compare operation. The result is written to a
        binarized image of type Img8u. If the result of the comparison is true,

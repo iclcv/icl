@@ -5,7 +5,7 @@
 #include <Img.h>
 namespace icl {
   
-  /// Class for Morphological operations
+  /// Class for Morphological operations  (Only available for Img8u and Img32f, IPP only!)
   class Morphological : public FilterMask {
   public:
 

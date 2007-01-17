@@ -5,7 +5,7 @@
 
 namespace icl {
   
-  /// Class for Image convolutions
+  /// Class for Image convolutions (Img8u, Img32f: IPP + Fallback, all other Types: Fallback only!)
   /**
   The Convolution class provides functionality for any kind of convolution
   filters. As most other filter operations, it operates on the source images
