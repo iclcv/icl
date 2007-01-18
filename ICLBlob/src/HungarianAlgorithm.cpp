@@ -172,6 +172,7 @@ namespace icl{
   }
 
   // }}}
+
   int findPrimeInRow(imat &mask, int row){
     // {{{ open
 
@@ -222,42 +223,54 @@ namespace icl{
     //series. Erase any other primes. Reset covers. Go to step 3.
     
     int count = 0; //Counts rows of the path matrix.
-    //imat path(mask.h()+2,2);
-    imat path(mask.h()+20,2);
-    path[count][0] = zero_RC[0];//Row of last prime.
-    path[count][1] = zero_RC[1];//Column of last prime.
+    printf("use the new representation as it scaled better with dynamic size here \n");
+    printf("The correct formula for the hg_step5 was ... path(mask.h()*2,2) todo: \n");
+    printf("TEST TEST TEST .. HungarianAlgorithm.cppp hg_step5  line 228 ........ \n");
+    // orig, unstable, as first index becomes too large sometimes ???:
+    // imat path(mask.h()+2,2);
+
+    std::vector<Point> vecPath;
+    
+    vecPath.push_back(Point(zero_RC[0],zero_RC[1]));
+
+    //path[count][0] = zero_RC[0];//Row of last prime.
+    //path[count][1] = zero_RC[1];//Column of last prime.
     
     bool done = false;
    
     while (!done){
-      int r = findStarInCol(mask,path[count][1]);
+      //      int r = findStarInCol(mask,path[count][1]);
+      int r = findStarInCol(mask,vecPath[count].y);
       if (r>=0){
         count++;
-        //        printf("count is %d ---> max index is %d\n",count,mask.h()+2-1);
-        path[count][0] = r;               //Row of starred zero.
-        path[count][1] = path[count-1][1];//Column of starred zero.
+        
+        vecPath.push_back(Point(r,vecPath[count-1].y));
+        // path[count][0] = r;               //Row of starred zero.
+        // path[count][1] = path[count-1][1];//Column of starred zero.
       }else{
 	done = true;
       }
       if(!done){
-        int c = findPrimeInRow(mask, path[count][0]);
+        //int c = findPrimeInRow(mask, path[count][0]);
+        int c = findPrimeInRow(mask, vecPath[count].x);
         count++;
-        path[count][0] = path [count-1][0]; //Row of primed zero.
-        path[count][1] = c;		    //Col of primed zero.
+        vecPath.push_back(Point(vecPath[count-1].x,c));
+        // path[count][0] = path [count-1][0]; //Row of primed zero.
+        // path[count][1] = c;		    //Col of primed zero.
       }
     }//end while
 		
-    /*    printf("this is the path : \n");
-    for(int i=0;i<mask.h()+20;i++){
-      printf("%d %d \n",path[i][0],path[i][1]);
+    imat path((int)vecPath.size(),2);
+    for(unsigned int i=0;i<vecPath.size();i++){
+      path[i][0] = vecPath[i].x;
+      path[i][1] = vecPath[i].y;
     }
-    printf("-----\n");
-    printf("maskdim = %d x %d \n",mask.w(),mask.h());
-    */
     convertPath(mask, path, count);
     clearCovers(rowCover, colCover);
     erasePrimes(mask);
-		
+	
+    // printf("need %d more lines at dim %d  2xOK=%s\n", mask.h()-vecPath.size(),mask.h(),(int)((int)mask.h()-(int)vecPath.size())<2*mask.h() ? "OK" : "ERROR" );
+    
     step = 3;
     return step;
   }

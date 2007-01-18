@@ -27,32 +27,24 @@ void showRes(const Array<int> &dataXs,const Array<int> &dataYs,PositionTracker<i
 
 
 int main(int n, char  **ppc){
-  int aa[] = { 10, 20, 30, 40, 50 };
-  int bb[] = { 19, 11, 31, 42, 48, 100 };
-  
   PositionTracker<int> pt;
-
   randomSeed();
-  for(int i=0;i<10000;i++){
-    int dim = randomi(10)+2;
-    int *pi = new int[dim];
-    for(int i=0;i<dim;i++){
-      pi[i] = randomi(100);
-    }
-    pt.pushData(vec(pi,dim),vec(pi,dim));
-    showRes(vec(pi,dim),vec(pi,dim),pt);
-    delete [] pi;
-  }
   
-  pt.pushData(vec(aa,5),vec(aa,5));
-  showRes(vec(aa,5),vec(aa,5),pt);
-  
-  pt.pushData(vec(bb,6),vec(bb,6));
-  showRes(vec(bb,6),vec(bb,6),pt);
+  int N = 1000000;
 
-  pt.pushData(vec(aa,5),vec(aa,5));
-  showRes(vec(aa,5),vec(aa,5),pt);
-  
+  int pi[100],pj[100];
+  for(int i=0;i<N;i++){
+    int dim = randomi(30)+2;
+    printf("dim = %d \n",dim);
+    for(int k=0;k<dim;k++){
+      pi[k] = randomi(100);
+      pj[k] = randomi(100);
+    }
+    pt.pushData(vec(pi,dim),vec(pj,dim));
+    if(!(i%10000)){
+      printf("%f \n",float(i)/N);
+    }
+  }
   return 0;
 }
 

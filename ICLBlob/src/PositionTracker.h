@@ -34,6 +34,7 @@ namespace icl{
     QMat m_matData[2];
     std::vector<int> m_vecCurrentAssignment;
     std::vector<int> m_vecIDs;
+    std::vector<int> m_vecGoodDataCount;
   };
   
   
