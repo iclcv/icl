@@ -158,7 +158,11 @@ QImageConverter::QImageConverter(const QImage *qimage){
 
 // }}}
 
+#ifndef WIN32
 QImageConverter::QImageConverter::~QImageConverter(){
+#else
+QImageConverter::~QImageConverter(){
+#endif
   // {{{ open
 
   if(m_poQBuf && m_eQImageState != given){
