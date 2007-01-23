@@ -146,7 +146,7 @@ namespace icl{
     else rg = new RatingGroupAND();
                   
     icl8u ref[3];
-    for(uint i=0;i<rs.size() && i<gs.size() && i<bs.size(); i++){
+    for(unsigned int i=0;i<rs.size() && i<gs.size() && i<bs.size(); i++){
       ref[0] = rs[i];
       ref[1] = gs[i];
       ref[2] = bs[i];
@@ -171,10 +171,10 @@ namespace icl{
     // {{{ open
     if(m_oImageSize != size){
       m_oImageSize = size;
-      uint nPixelRatings = m_vecXMedianLists.size();
+      unsigned int nPixelRatings = m_vecXMedianLists.size();
       m_vecXMedianLists.clear();
       m_vecYMedianLists.clear();
-      for(uint i=0;i<nPixelRatings;i++){
+      for(unsigned int i=0;i<nPixelRatings;i++){
         m_vecXMedianLists.push_back(FastMedianList(m_oImageSize.width));
         m_vecYMedianLists.push_back(FastMedianList(m_oImageSize.height));
       }    

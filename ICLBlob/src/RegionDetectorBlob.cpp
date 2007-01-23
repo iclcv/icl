@@ -3,6 +3,9 @@
 #include <math.h>
 #include <Array.h>
 
+#ifdef WIN32
+#	include <Mathematics.h>
+#endif
 
 
 namespace icl{
@@ -74,9 +77,13 @@ namespace icl{
           center.y += l->y() * s;
           sumsize += s;
         }
+#ifndef WIN32
         center.x = (int)round(tmp_mean_x / sumsize);
         center.y = (int)round((float)center.y/sumsize);
-    
+#else
+		center.x = rint(tmp_mean_x / sumsize);
+        center.y = rint((float)center.y/sumsize);
+#endif
         m_oMean = center;
         m_iDirty = 0;
       }else{
@@ -160,8 +167,13 @@ namespace icl{
           }
           fAvgX=((float)iAvgX)*fFac;
           fAvgY=((float)iAvgY)*fFac;
+#ifndef WIN32
           iCx = (int)round(fAvgX);
           iCy = (int)round(fAvgY);
+#else
+		  iCx = rint(fAvgX);
+          iCy = rint(fAvgY);
+#endif
           fSxx = iAvgXX*fFac - fAvgX*fAvgX;
           fSyy = iAvgYY*fFac - fAvgY*fAvgY;
           fSxy = iAvgXY*fFac - fAvgX*fAvgY;

@@ -46,7 +46,7 @@ int main(){
   vector< FoundBlob<float> > result = blob.search(&image,&mask);
   
   printf("------- showing results -------------- \n");
-  for(uint i=0;i<result.size();i++){
+  for(unsigned int i=0;i<result.size();i++){
     printf(" found a blob at %d %d  id=%d rating = %f \n",result[i].x(),result[i].y(),result[i].id(),result[i].rating());
   }
   

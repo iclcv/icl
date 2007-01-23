@@ -6,7 +6,9 @@ namespace icl{
   inline int rnd(int max){
     // {{{ open
 
-    double d = drand48()*(max+1);
+    //double d = drand48()*(max+1);
+	//double d = drand48()*(max+1);
+    double d = random(max+1);
     if(d==max+1) d-=0.1;
     return (int)floor(d);
   }
@@ -71,8 +73,10 @@ namespace icl{
   const VQVectorSet &VQ2D::run(int k, int maxSteps, float mmqe, float &qe){
     // {{{ open
 
-    srand48(time(0));
-   
+	  //srand48(Time::now().toMicroSeconds());
+	  //srand(Time::now().toMicroSeconds());
+	  randomSeed();
+
     // temporary variables
     int n = m_poData->dim();
     float *data = m_poData->data();

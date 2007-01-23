@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <VQVectorSet.h>
 #include <VQClusterInfo.h>
+#include <Mathematics.h>
+#include <Time.h>
 
 namespace icl{
   class VQ2D{

@@ -21,14 +21,14 @@ namespace icl{
     public:
     /// overwritten rate-function, calls combineRatings with all sub-results
     virtual RatingType rate(PixelType a, PixelType b, PixelType c){
-      for(uint i=0;i<m_vecPR.size();++i){
+      for(unsigned int i=0;i<m_vecPR.size();++i){
         m_vecSubResults[i] = m_vecPR[i]->rate(a,b,c);
       }
       return combineRatings(m_vecSubResults);
     }
     /// deletes all contained pixelratings
     virtual ~PixelRatingGroup(){
-      for(uint i=0;i<m_vecPR.size();++i){
+      for(unsigned int i=0;i<m_vecPR.size();++i){
         delete m_vecPR[i];
       }
     }
