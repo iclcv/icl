@@ -12,6 +12,7 @@ ICLIO_MAKEVAR=ICLIO_MAKEVAR
 # Please include here the inherited packages
 # (e.g. include ${Packages}/Utils)
 include ${PACKAGES}/ICLCore
+include ${PACKAGES}/ICLCC
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
