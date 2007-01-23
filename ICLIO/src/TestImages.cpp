@@ -411,8 +411,8 @@ namespace iclxpm{
   strvec tokenize(string s,string sDelims){
     // {{{ open
     
-    uint iPos;
-    uint iLastPos = 0;
+    unsigned int iPos;
+    unsigned int iLastPos = 0;
     vector<string> oTokens;
     iPos = s.find_first_of( sDelims, iLastPos );
     // we don't want empty tokens
