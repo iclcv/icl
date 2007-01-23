@@ -16,7 +16,7 @@
 
 namespace icl {
   
-  /* {{{ Random functions */
+  /* {{{ random functions */
 
   //--------------------------------------------------------------------------
   /*!
@@ -50,12 +50,27 @@ namespace icl {
         void random(float),
         void gaussRandom(vector<float>, float);
   */
-  float random(float max);
+  float random(float max) {
+    FUNCTION_LOG("float");
+    return(max * drand48());
+  }
+
+  //--------------------------------------------------------------------------
+  /*!
+    \brief Creates a non negativ random number to an upper limit max
+    \param max The upper limit for the returned number
+    \return The random number
+  */
+  unsigned int randomi(unsigned int max) {
+    FUNCTION_LOG("unsigned int");
+    float f = random(max+1);
+    if(f == max+1){
+      return static_cast<unsigned int>(max);
+    }else{
+      return static_cast<unsigned int>(floor(f));
+    }
+  }
   
-
-
-  // creates a random integer number
-  unsigned int randomi(unsigned int max);
   //--------------------------------------------------------------------------
   /*!
     \brief Generate a random number between an lower and upper limit. 
@@ -67,7 +82,10 @@ namespace icl {
         float random(float),
         void gaussRandom(vector<float>, float);
   */
-  float random(float min, float max);
+  float random(float min, float max) {
+    FUNCTION_LOG("float, float");
+    return((max - min) * drand48() + min); 
+  }
   
   //--------------------------------------------------------------------------
   /*!
@@ -92,8 +110,14 @@ namespace icl {
         float generate_gauss_random(float), 
         void generate_gauss_random_vec(float*, int, float);
   */
-  void random(std::vector<float> &rndVec, float limit);
-  
+  template <class T>
+  void random(std::vector<T> &rndVec, T limit) {
+    FUNCTION_LOG("vector<T> &, T");
+    for (unsigned int i=0;i<rndVec.size();i++) {
+      rndVec[i] = static_cast<T>(random(static_cast<float>(limit)));
+    }
+  }
+
   //--------------------------------------------------------------------------
   /*!
     \brief Generate a i-dimensional gaussian random vector, with an upper 
@@ -106,7 +130,35 @@ namespace icl {
         float gaussRandom(float), 
         void random(vector<float>, float);
   */
-  void gaussRandom(std::vector<float> &rndVec, float limit);
+  template <class T>
+  void gaussRandom(std::vector<T> &rndVec, T limit) {
+    FUNCTION_LOG("vector<T> &, T");
+    for (unsigned int i=0;i<rndVec.size();i++)
+      rndVec[i] = static_cast<T>(gaussRandom(static_cast<float>(limit)));  
+  }
+
+/* }}} */
+                              
+  /* {{{ distance functions */
+
+  /*!
+    \brief Calculate the eucledean distance of point a and b
+    \param a The first 2D point
+    \param b The second 2D point
+    \return The distance of point a and b
+  */
+  template <class T> 
+  float euclidian(const std::vector<T> &a, const std::vector<T> &b);
+    
+  /*!
+    \brief Calculate the eucledean distance of point a and b
+    \param a The first 2D point
+    \param b The second 2D point
+    \param iDim The dimension of a, b
+    \return The distance of point a and b
+  */
+  template <class T>
+  float euclidian(const T *a, const T *b, unsigned int iDim);
 
 /* }}} */
                               

@@ -90,7 +90,26 @@ class Img : public ImgBase
   // @}
 
   /* }}} */
-                                
+               
+  /* {{{ basic image manipulations */
+
+  /// Scales pixel values from given min/max values to new min/max values.
+  /** Values exceeding the given range are set to the new min/max values.
+      For an automatic scaling use the results of  min(),max() as as arguments.
+      (Defining a range allows to compare different images.)
+      @param tNewMin destination minimum value
+      @param tNewMax destination maximum value
+      @param tMin current minimum value
+      @param tMax current maximum value
+      @param iChannel channel index (if set to -1, then operation is 
+                      performed on all channels)
+  **/
+  virtual void normalize(int iChannel, 
+                         Type tSrcMin, Type tSrcMax,
+                         Type tDstMin, Type tDstMax);
+
+  /* }}} */
+
  public:
   // @{ @name constructors / destructor
   /* {{{ open */
@@ -179,6 +198,7 @@ class Img : public ImgBase
   /* }}} */
   
   //@{ @name operators
+
   /* {{{ open */
 
   /// Assign operator (flat copy of channels)
@@ -574,35 +594,52 @@ class Img : public ImgBase
    **/
   void clear(int iChannel = -1, Type tValue = 0, bool bROIOnly=true);
   
-  /// Scale the channel min/ max range to the new range tMin, tMax.
-  /** @param fNewMin new mininum value for the channel
-      @param fNewMax new maximum value for the channel
-      @param iChannel channel index (if set to -1, then operation is 
-                      performed on all channels)
+  /// Normalize the channel min/ max range to the new min, max range.
+  /** The min/ max range from the source channels are automatically detected,
+      separately for each channel
+      @param tDstMin new mininum value for the channel
+      @param tDstMax new maximum value for the channel
   **/
-  virtual void scaleRange(float fNewMin, float fNewMax, int iChannel);
+  virtual void normalizeAllChannels(Type tDstMin, Type tDstMax);
 
-  /// Scales pixel values from given min/max values to new min/max values.
-  /** Values exceeding the given range are set to the new min/max values.
-      For an automatic scaling use the results of  min(),max() as as arguments.
-      (Defining a range allows to compare different images.)
-      @param fNewMin destination minimum value
-      @param fNewMax destination maximum value
-      @param fMin current minimum value
-      @param fMax current maximum value
-      @param iChannel channel index (if set to -1, then operation is 
-                      performed on all channels)
+  /// Normalize the channel from a given min/max range to the new range 
+  /** @param iChannel channel index
+      @param fSrcMin the minimum value of the givenchannel
+      @param fSrcMax the maximum value of the given channel
+      @param tDstMin the new minimum value for the channel
+      @param tDstMax the new maximum value for the channel
   **/
-  virtual void scaleRange(float fNewMin, float fNewMax,
-                          float fMin, float fMax, int iChannel);
+  virtual void normalizeChannel(int iChannel,
+                                Type tSrcMin, Type tSrcMax,
+                                Type tDstMin, Type tDstMax);
 
-  /// Scale pixel values uniformly on all channels
-  virtual void scaleRange(float fMin=0.0, float fMax=255.0);
-  /// Scale pixel values uniformly on all channels
-  virtual void scaleRange(float fNewMin, float fNewMax, 
-                          float fMin, float fMax);
+  /// Normalize the channel from a given min/max range to the new range 
+  /** The min/ max range from the source channel is automatically detected,
+      separately for this channel
+      @param iChannel channel index
+      @param tDstMin the new minimum value for the channel
+      @param tDstMax the new maximum value for the channel
+  **/
+  virtual void normalizeChannel(int iChannel,
+                                Type tDstMin, Type tDstMax);
+
+  /// Normalize the image from a given min/max range to the new range 
+  /** @param fSrcMin the minimum value
+      @param fSrcMax the maximum value
+      @param tDstMin the new minimum value for the image
+      @param tDstMax the new maximum value for the image
+  **/
+  virtual void normalizeImg(Type tSrcMin, Type tSrcMax,
+                            Type tDstMin, Type tDstMax);
   
-
+  /// Normalize the image from a min/max range to the new range 
+  /** The min/ max range from the image is automatically detected, combined 
+      over all image channels.
+      @param tDstMin the new minimum value for the image
+      @param tDstMax the new maximum value for the image
+  **/
+  virtual void normalizeImg(Type tDstMin, Type tDstMax);
+  
   //@}
 
 /* }}} */

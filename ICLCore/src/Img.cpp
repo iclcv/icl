@@ -991,86 +991,81 @@ Type Img<Type>::operator()(float fX, float fY, int iChannel, scalemode eScaleMod
 
 // {{{  Basic image manipulation functions
 
-// {{{   scaleRange wrappers
+// {{{   normalize wrappers
 
 template<class Type> void
-Img<Type>::scaleRange(float fNewMin, float fNewMax) {
-   Type tMin, tMax;
-   getMinMax(tMin,tMax);
-   scaleRange(fNewMin, fNewMax, tMin,tMax);
+Img<Type>::normalizeAllChannels(Type tDstMin, Type tDstMax) {
+  for (int c=0;c<getChannels();c++) {
+    normalizeChannel(c, tDstMin, tDstMax);
+  }
 }
+  
 template<class Type> void
-Img<Type>::scaleRange(float fNewMin,float fNewMax, float fMin,float fMax) {
-   for (int c=0; c < getChannels(); ++c)
-      scaleRange(fNewMin,fNewMax, fMin,fMax, c);
+Img<Type>::normalizeChannel(int iChannel, 
+                            Type tSrcMin, Type tSrcMax,
+                            Type tDstMin, Type tDstMax) {
+  normalize(iChannel, tSrcMin, tSrcMax, tDstMin, tDstMax);
 }
 
 template<class Type> void
-Img<Type>::scaleRange(float fNewMin, float fNewMax, int iChannel) {
-   FUNCTION_LOG("");
-   ICLASSERT_RETURN(validChannel(iChannel));
-
-   Type tMin, tMax;
-   getMinMax(tMin,tMax,iChannel);
-   scaleRange(fNewMin,fNewMax, tMin,tMax, iChannel);
+Img<Type>::normalizeChannel(int iChannel, Type tDstMin, Type tDstMax) {
+  Type tMin, tMax;
+  getMinMax(tMin,tMax,iChannel);
+  normalize(iChannel, tMin, tMax, tDstMin, tDstMax);
 }
 
+template<class Type> void
+Img<Type>::normalizeImg(Type tSrcMin, Type tSrcMax,
+                        Type tDstMin, Type tDstMax) {
+  for (int c=0;c<getChannels();c++) {
+    normalizeChannel(c, tSrcMin, tSrcMax, tDstMin, tDstMax);
+  }
+}
+  
+template<class Type> void
+Img<Type>::normalizeImg(Type tDstMin, Type tDstMax) {
+  Type tMin, tMax;
+  getMinMax(tMin, tMax);
+  for (int c=0;c<getChannels();c++) {
+    normalizeChannel(c, tMin, tMax, tDstMin, tDstMax);
+  }
+}
+  
 // }}}
 
-// {{{   scaleRange main methods
-
+// {{{   normalize main methods
 // fallback for all types
 template <class Type> void 
-Img<Type>::scaleRange(float fNewMin, float fNewMax,
-                      float fMin, float fMax, int iChannel) {
-   float fScale  = (fNewMax - fNewMin) / (fMax - fMin);
-   float fShift  = (fMax * fNewMin - fMin * fNewMax) / (fMax - fMin);
-   float fPixel;
-   for(iterator p=getROIIterator(iChannel); p.inRegion(); ++p) {
-      fPixel = fShift + (float)(*p) * fScale;
-      if (fPixel <= fNewMin) fPixel=fNewMin;
-      else if(fPixel >= fNewMax) fPixel=fNewMax;
-      
-      *p = Cast<float, Type>::cast (fPixel);
-   }
+Img<Type>::normalize(int iChannel, 
+                     Type tSrcMin, Type tSrcMax,
+                     Type tDstMin, Type tDstMax) {
+  printf("Ohne IPP\n");
+  float fPixel;
+  float fScale  = (float)(tDstMax - tDstMin) / (float)(tSrcMax - tSrcMin);
+  float fShift  = (float)(tSrcMax * tDstMin - tSrcMin * tDstMax) /
+    (float)(tSrcMax - tSrcMin);
+  for(iterator p=getROIIterator(iChannel); p.inRegion(); ++p) {
+    fPixel = fShift + (float)(*p) * fScale;
+    if (fPixel <= tDstMin) {
+      fPixel=tDstMin;
+    }
+    else if(fPixel >= tDstMax) {
+      fPixel=tDstMax;
+    }
+    *p = Cast<float, Type>::cast (fPixel);
+  }
 }
 
 #ifdef WITH_IPP_OPTIMIZATION
-template<> void 
-Img<icl8u>::scaleRange(float fNewMin, float fNewMax,
-                       float fMin, float fMax, int iChannel) {
-   icl8u tFac   = Cast<float, icl8u>::cast(fNewMax - fNewMin);
-   icl8u tNorm  = Cast<float, icl8u>::cast(fMax - fMin);
-   icl8u tShift = Cast<float, icl8u>::cast((fMax * fNewMin - fMin * fNewMax) / 
-                                           (fNewMax - fNewMin));
-
-   ippiMulC_8u_C1IRSfs (tFac, getROIData(iChannel), getLineStep(), 
-                        getROISize(), tNorm);
-   if (tShift != 0)
-      ippiAddC_8u_C1IRSfs (tShift, getROIData(iChannel), getLineStep(), 
-                           getROISize(), 1);
-}
-template<> void 
-Img<icl16s>::scaleRange(float fNewMin, float fNewMax,
-                       float fMin, float fMax, int iChannel) {
-   icl16s tFac   = Cast<float, icl16s>::cast(fNewMax - fNewMin);
-   icl16s tNorm  = Cast<float, icl16s>::cast(fMax - fMin);
-   icl16s tShift = Cast<float, icl16s>::cast((fMax * fNewMin - fMin * fNewMax) / 
-                                             (fNewMax - fNewMin));
-
-   ippiMulC_16s_C1IRSfs (tFac, getROIData(iChannel), getLineStep(), 
-                        getROISize(), tNorm);
-   if (tShift != 0)
-      ippiAddC_16s_C1IRSfs (tShift, getROIData(iChannel), getLineStep(), 
-                           getROISize(), 1);
-}
 template <> void 
-Img<icl32f>::scaleRange(float fNewMin, float fNewMax,
-                        float fMin, float fMax, int iChannel) {
-  icl32f tFac   = (fNewMax - fNewMin) / (fMax - fMin);
-  icl32f tShift = (fMax * fNewMin - fMin * fNewMax) / (fMax - fMin);
-
-  ippiMulC_32f_C1IR (tFac, getROIData(iChannel), getLineStep(), 
+Img<icl32f>::normalize(int iChannel, 
+                       icl32f tSrcMin, icl32f tSrcMax,
+                       icl32f tDstMin, icl32f tDstMax) {
+  
+  icl32f tScale  = (tDstMax - tDstMin) / (tSrcMax - tSrcMin);
+  icl32f tShift  = (tSrcMax * tDstMin - tSrcMin * tDstMax)/(tSrcMax - tSrcMin);
+  
+  ippiMulC_32f_C1IR (tScale, getROIData(iChannel), getLineStep(), 
                      getROISize());
   
   if (tShift != 0) {
@@ -1079,6 +1074,7 @@ Img<icl32f>::scaleRange(float fNewMin, float fNewMax,
   }
 }
 #endif
+
 // }}}
 
 // ---------------------------------------------------------------------

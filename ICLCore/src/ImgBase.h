@@ -331,16 +331,23 @@ namespace icl {
       /** @see Img*/
       virtual void mirror(axis eAxis, bool bOnlyROI=false)=0;
       
-      /// Scale the channel min/ max range to the new range tMin, tMax.
+      /// Scale the channel min/ max range to the new min, max range.
       /** @see Img*/
-      virtual void scaleRange(float fNewMin=0.0, float fNewMax=255.0)=0;
-      virtual void scaleRange(float fNewMin, float fNewMax, int iChannel)=0;
-
-      /// Scales pixel values from given min/max values to new min/max values.
-      /** @see Img */
-      virtual void scaleRange(float tNewMin, float tNewMax, float tMin, float tMax)=0;
-      virtual void scaleRange(float tNewMin, float tNewMax, float tMin, float tMax, int iChannel)=0;
-
+      /*
+      virtual void normalizeAllChannels(float fDstMin, float fDstMax);
+      virtual void normalizeChannel(int iChannel,
+                                    float fSrcMin, float fSrcMax,
+                                    float fDstMin, float fDstMax);
+      virtual void normalizeChannel(int iChannel,
+                                    float fDstMin, float fDstMax);
+      */
+      /// Scale the image min/ max range to the new min, max range.
+      /** @see Img*/
+      /*
+      virtual void normalizeImg(float fSrcMin, float fSrcMax,
+                                float fDstMin, float fDstMax);
+      virtual void normalizeImg(float fDstMin, float fDstMax);
+      */
       //@} 
       /* }}} */
 
