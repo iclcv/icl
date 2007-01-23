@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\ICLCC\src;..\ICLUtils\src;D:\ThirdParty\Qt\4.2.2\include;D:\ThirdParty\Qt\4.2.2\include\QtGui;D:\ThirdParty\Qt\4.2.2\include\QtCore;D:\ThirdParty\Qt\4.2.2\include\Qt;..\ICLQt\src;..\ICLCore\src;..\ICLIO\src"
+				AdditionalIncludeDirectories="..\ICLCC\src;..\ICLUtils\src;D:\ThirdParty\Qt\4.2.2\include;D:\ThirdParty\Qt\4.2.2\include\QtOpenGL;D:\ThirdParty\Qt\4.2.2\include\QtGui;D:\ThirdParty\Qt\4.2.2\include\QtCore;D:\ThirdParty\Qt\4.2.2\include\Qt;..\ICLQt\src;..\ICLCore\src;..\ICLIO\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_USE_MATH_DEFINES"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
