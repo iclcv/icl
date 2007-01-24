@@ -78,8 +78,8 @@ namespace icl{
     int dx = x_max-x_min;
     int dy = y_max-y_min;
     float m = (float)dy/(float)dx;
-    int b = rint(y_min-m*x_min);
-    return rint(m*x)+b;
+    int b = (int) rint(y_min-m*x_min);
+    return (int) (rint(m*x)+b);
   }
   
   int OSDSlider::valToPos(int val){

@@ -281,7 +281,7 @@ namespace icl{
     // {{{ open
 
     Rect m = getMainRect();
-    int h = rint((float)m.height/(float)(iMax+1));
+    int h = (int) rint((float)m.height/(float)(iMax+1));
     return Rect(m.x,m.y+i*h,m.width,h-2);
   } 
 

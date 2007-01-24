@@ -1,4 +1,5 @@
-#include <Mathematics.h>
+#include <ICLTypes.h>
+#include <Point.h>
 #include <HungarianAlgorithm.h>
 
 namespace icl{

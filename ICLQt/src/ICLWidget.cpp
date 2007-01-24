@@ -597,8 +597,8 @@ namespace icl{
       float boxX = m_iMouseX - r.x;
       float boxY = m_iMouseY - r.y;
       
-      m_oMouseInfo.imageX = rint((boxX*(m_poImage->getSize().width))/r.width);
-      m_oMouseInfo.imageY = rint((boxY*(m_poImage->getSize().height))/r.height);
+      m_oMouseInfo.imageX = (int) rint((boxX*(m_poImage->getSize().width))/r.width);
+      m_oMouseInfo.imageY = (int) rint((boxY*(m_poImage->getSize().height))/r.height);
       m_oMouseInfo.color.resize(0);
       switch (m_poImage->getDepth()){
         case depth8u:
