@@ -4,8 +4,8 @@ using namespace std;
 using namespace icl;
 
 StrTok::StrTok(string s, string sDelims){
-  uint iPos;
-  uint iLastPos = 0;
+  unsigned int iPos;
+  unsigned int iLastPos = 0;
   
   if(!(s.length())){
     this->m_uiPos = 0;   
