@@ -50,7 +50,7 @@ namespace icl {
         void random(float),
         void gaussRandom(vector<float>, float);
   */
-  float random(float max) {
+  inline float random(float max) {
     FUNCTION_LOG("float");
     return(max * drand48());
   }
@@ -61,7 +61,7 @@ namespace icl {
     \param max The upper limit for the returned number
     \return The random number
   */
-  unsigned int randomi(unsigned int max) {
+  inline unsigned int randomi(unsigned int max) {
     FUNCTION_LOG("unsigned int");
     float f = random(max+1);
     if(f == max+1){
@@ -82,7 +82,7 @@ namespace icl {
         float random(float),
         void gaussRandom(vector<float>, float);
   */
-  float random(float min, float max) {
+  inline float random(float min, float max) {
     FUNCTION_LOG("float, float");
     return((max - min) * drand48() + min); 
   }
