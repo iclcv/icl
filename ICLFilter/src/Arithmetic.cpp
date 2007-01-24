@@ -12,6 +12,7 @@ namespace icl {
   template <typename T,class ArithmeticOp>
   inline void fallbackArithmetic2T(const Img<T> *src1, const Img<T> *src2, Img<T> *dst,const ArithmeticOp &op)
     // {{{ open
+
   {
     ICLASSERT_RETURN( src1 && src2 && dst );
     ICLASSERT_RETURN( src1->getROISize() == src2->getROISize() );
@@ -27,6 +28,7 @@ namespace icl {
       }
     }
   }
+
   // }}}
 
   template <typename T,class ArithmeticOp>

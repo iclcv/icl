@@ -1,0 +1,71 @@
+# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
+#
+#   makeVar
+#
+
+# Don't change anything between the '####' lines!
+###############################################################################
+_DOT_DOT:=../${_DOT_DOT}
+-include ${_DOT_DOT}makeVar
+-include makeDepend
+###############################################################################
+
+# Add here your project settings, plese specify each entry in a separated
+# line (use backslash to continue the lines).
+
+# Please include here the inherited projects
+# (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
+include ${PACKAGES}/ICLIO
+
+# Please add here all the directories with absolute path
+# (e.g. -I/usr/local/include) that contain include files needed by the sources.
+ABS_INCLUDES:= ${ABS_INCLUDES}
+
+# Please add here all the directories with relative path
+# (e.g. -I../MyModule/src) that contain include files needed by the sources.
+REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
+               -I../src
+
+# Please add here all the directories with absolute path
+# (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
+ABS_LIBRARIES:= ${ABS_LIBRARIES}
+
+# Please add here all the directories with relative path
+# (e.g. -L../MyLib/lib)
+REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
+								-L../lib -lICLNN
+
+# Please add here all the objects with absolute path
+# that are needed by the executables.
+ABS_OBJECTS:= ${ABS_OBJECTS}
+
+# Please add here all the objects with relative path
+# that are needed by the executables.
+REL_OBJECTS:= $(REL_OBJECTS:%=../%)
+
+# Debug status
+# This variable takes two values: TRUE or FALSE
+DEBUG_ON:=${DEBUG_ON}
+
+# Debugging flags
+DEBUG:= ${DEBUG}
+# Non-Debugging flags
+NODEBUG:= ${NODEBUG}
+
+# Compilation definesfor C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
+CDEFINES:= ${CDEFINES}
+
+# Flags for C compiler
+CFLAGS:= ${CFLAGS}
+
+# Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
+CPPDEFINES:= ${CPPDEFINES}
+
+# Flags for C++ compiler
+CPPFLAGS:= ${CPPFLAGS}
+
+
+# Set the priority level
+DIR_PRIORITY:=
+DIR_LOWPRIORITY:=
+SKIP_DIRECTORIES:=
