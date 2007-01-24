@@ -45,50 +45,11 @@ namespace icl{
 
   template<class valueType>
   void removeElemsFromVector(vector<valueType> &v,const  std::vector<int> &rows){
-    // {{{ open
-    vector<valueType> newV;//(v.size()-rows.size());
-    int r=0,vidx=0;
-    for(; vidx<(int)(v.size()) && r<(int)rows.size() ; vidx++){
-      if(rows[r]!=vidx){
-        newV.push_back(v[vidx]);// [newvidx++] = v[vidx];
-      }else{
-        r++;
-      }
-    }
-    for(;vidx<(int)v.size();vidx++){
-      newV.push_back(v[vidx]);
-    }
-    v=newV;
-   }
-
-  // }}}
+    // {{{ open    vector<valueType> newV;//(v.size()-rows.size());    int r=0,vidx=0;    for(; vidx<(int)(v.size()) && r<(int)rows.size() ; vidx++){      if(rows[r]!=vidx){        newV.push_back(v[vidx]);// [newvidx++] = v[vidx];      }else{        r++;      }    }    for(;vidx<(int)v.size();vidx++){      newV.push_back(v[vidx]);    }    v=newV;   }  // }}}
   
   template<class valueType>
   void removeRowsFromDataMatrix(deque<vector<valueType> > *m,const std::vector<int> &rows){
-    // {{{ open
-
-    /// rows must be sorted !
-    for(int d=0; d <= 1; d++){
-      deque<vector<valueType> > &md = m[d];
-      for(int x=0;x<3;x++){ 
-        vector<valueType> &v = md[x];
-        removeElemsFromVector(v,rows);
-        /*
-        vector<valueType> newV(v.size()-rows.size());
-        for(int r=0,vidx=0,newvidx=0;vidx<(int)v.size();vidx++){
-        if(rows[r]!=vidx){
-        newV[newvidx++] = v[vidx];
-        }else{
-        r++;
-        }
-        }
-        v=newV;
-        */
-      }
-    }
-  }
-
-  // }}}
+    // {{{ open    /// rows must be sorted !    for(int d=0; d <= 1; d++){      deque<vector<valueType> > &md = m[d];      for(int x=0;x<3;x++){         vector<valueType> &v = md[x];        removeElemsFromVector(v,rows);        /*        vector<valueType> newV(v.size()-rows.size());        for(int r=0,vidx=0,newvidx=0;vidx<(int)v.size();vidx++){        if(rows[r]!=vidx){        newV[newvidx++] = v[vidx];        }else{        r++;        }        }        v=newV;        */      }    }  }  // }}}
   
 
    
@@ -99,39 +60,11 @@ namespace icl{
 
   template<class valueType>
   SimpleMatrix<valueType> createDistMat(const vector<valueType> a[2], const vector<valueType> b[2]){
-    // {{{ open
-
-    ICLASSERT( a[X].size() == b[X].size() );
-    // DEBUG if( a[X].size() != b[X].size() ) printf("error: %d != %d \n",a[X].size(),b[X].size());
-    int dim = (int)a[X].size();
-    SimpleMatrix<valueType> m(dim);
-    for(int i=0;i<dim;++i){
-      for(int j=0;j<dim;++j){
-        m[i][j] = (valueType)sqrt (pow( a[X][j] - b[X][i], 2) + pow( a[Y][j] - b[Y][i], 2) );
-      }
-    }
-    return m;
-  }
-
-  // }}}
+    // {{{ open    ICLASSERT( a[X].size() == b[X].size() );    // DEBUG if( a[X].size() != b[X].size() ) printf("error: %d != %d \n",a[X].size(),b[X].size());    int dim = (int)a[X].size();    SimpleMatrix<valueType> m(dim);    for(int i=0;i<dim;++i){      for(int j=0;j<dim;++j){        m[i][j] = (valueType)sqrt (pow( a[X][j] - b[X][i], 2) + pow( a[Y][j] - b[Y][i], 2) );      }    }    return m;  }  // }}}
   
   template<class valueType>
   inline vector<valueType> predict(int dim, deque<vector<valueType> > &data, const vector<int> &good){
-    // {{{ open
-    vector<valueType> pred;
-    for(int y=0 ; y < dim; ++y){
-      //if(y>=(int)good.size()) printf("!!!!!!!!!!!!!! waring dim=%d good.size = %d \n",dim,good.size());
-      switch(good[y]){
-        case 1: pred.push_back( data[2][y] ); break;
-        case 2: pred.push_back( Extrapolator<valueType,int>::predict( data[1][y], data[2][y]) ); break;
-        default: pred.push_back( Extrapolator<valueType,int>::predict( data[0][y], data[1][y], data[2][y]) ); break;
-      }
-    }
-      // ok old pred.push_back( Extrapolator<valueType,int>::predict( data[0][y], data[1][y], data[2][y] ) );
-    return pred;
-  }
-
-  // }}}
+    // {{{ open    vector<valueType> pred;    for(int y=0 ; y < dim; ++y){      //if(y>=(int)good.size()) printf("!!!!!!!!!!!!!! waring dim=%d good.size = %d \n",dim,good.size());      switch(good[y]){        case 1: pred.push_back( data[2][y] ); break;        case 2: pred.push_back( Extrapolator<valueType,int>::predict( data[1][y], data[2][y]) ); break;        default: pred.push_back( Extrapolator<valueType,int>::predict( data[0][y], data[1][y], data[2][y]) ); break;      }    }      // ok old pred.push_back( Extrapolator<valueType,int>::predict( data[0][y], data[1][y], data[2][y] ) );    return pred;  }  // }}}
   
   inline vector<int> get_n_new_ids(const vector<int> &currentIDS, int n){
    // {{{ open        vector<int> ids;    set<int> lut;    for(unsigned int i=0;i<currentIDS.size();i++){      lut.insert( currentIDS[i] );    }    for(int i=0,id=0;i<n;i++){      while(lut.find(id) != lut.end()){        id++;      }      ids.push_back(id);      lut.insert(id);          }    return ids;  }  // }}}
@@ -169,62 +102,7 @@ namespace icl{
                                  vector<int>               &assignment,  
                                  vector<valueType>         newData[2],
                                  vector<int>               &good){
-    // {{{ open
-
-    DIFF *= -1; // now positive
-    for(int j=0;j<DIFF;j++){
-      for(int i=0;i<3;i++){
-        data[X][i].push_back(BLIND_VALUE);
-        data[Y][i].push_back(BLIND_VALUE);
-      }
-    }  
-
-    int dim = data[X][0].size();
-    /// good vector is temporarily filled with ones for prediction
-    for(int i=0;i<DIFF;i++){
-      good.push_back(1);
-    }
-    vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
-    /// restore good
-    good.resize(good.size()-DIFF);
-    
-    SimpleMatrix<valueType> distMat = createDistMat( pred , newData );
-    
-    assignment = HungarianAlgorithm<valueType>::apply(distMat);
-    
-    /// <old>
-    //vector<int> newDataCols;
-    vector<valueType> newDataColsValues[2];
-    for(int x=0;x<dim;++x){ // x is the col index of newData
-      if(assignment[x] >= dim-DIFF){
-        newDataColsValues[X].push_back(newData[X][ assignment[x] ]);
-        newDataColsValues[Y].push_back(newData[Y][ assignment[x] ]);
-      }
-    }
-    if((int)newDataColsValues[X].size() != DIFF){
-      printf("WARNING: newDataColsValues[X].size()[%d] is != DIFF[%d]",(int)newDataColsValues[X].size(),DIFF);
-    }
-        
-    vector<int> newIDS = get_n_new_ids(ids,DIFF);
-    
-    for(int i=0;i<DIFF;i++){
-      for(int j=0;j<3;j++){
-        data[X][j][dim-DIFF+i] = newDataColsValues[X][i]; //newData[X][newDataCols[i]];
-        data[Y][j][dim-DIFF+i] = newDataColsValues[Y][i]; //newData[Y][newDataCols[i]];
-      }
-      ids.push_back( newIDS[i] );
-      good.push_back( 0 );
-    }
-    
-    for(unsigned int i=0;i<good.size();++i){
-      good[i]++;
-    }    
-
-    push_and_rearrange_data(dim, data, assignment, newData);
-
-  }
-
-  // }}}
+    // {{{ open    DIFF *= -1; // now positive    for(int j=0;j<DIFF;j++){      for(int i=0;i<3;i++){        data[X][i].push_back(BLIND_VALUE);        data[Y][i].push_back(BLIND_VALUE);      }    }      int dim = data[X][0].size();    /// good vector is temporarily filled with ones for prediction    for(int i=0;i<DIFF;i++){      good.push_back(1);    }    vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };    /// restore good    good.resize(good.size()-DIFF);        SimpleMatrix<valueType> distMat = createDistMat( pred , newData );        assignment = HungarianAlgorithm<valueType>::apply(distMat);        /// <old>    //vector<int> newDataCols;    vector<valueType> newDataColsValues[2];    for(int x=0;x<dim;++x){ // x is the col index of newData      if(assignment[x] >= dim-DIFF){        newDataColsValues[X].push_back(newData[X][ assignment[x] ]);        newDataColsValues[Y].push_back(newData[Y][ assignment[x] ]);      }    }    if((int)newDataColsValues[X].size() != DIFF){      printf("WARNING: newDataColsValues[X].size()[%d] is != DIFF[%d]",(int)newDataColsValues[X].size(),DIFF);    }            vector<int> newIDS = get_n_new_ids(ids,DIFF);        for(int i=0;i<DIFF;i++){      for(int j=0;j<3;j++){        data[X][j][dim-DIFF+i] = newDataColsValues[X][i]; //newData[X][newDataCols[i]];        data[Y][j][dim-DIFF+i] = newDataColsValues[Y][i]; //newData[Y][newDataCols[i]];      }      ids.push_back( newIDS[i] );      good.push_back( 0 );    }        for(unsigned int i=0;i<good.size();++i){      good[i]++;    }        push_and_rearrange_data(dim, data, assignment, newData);  }  // }}}
 
   template<class valueType>
   void push_data_intern_first_step(deque<vector<valueType> > data[2], 
@@ -247,6 +125,18 @@ namespace icl{
   int PositionTracker<valueType>::getID(valueType x, valueType y){
     // {{{ open    vector<valueType> &rX = m_matData[X][2];    vector<valueType> &rY = m_matData[Y][2];    for(unsigned int i=0;i<rX.size();++i){      if(rX[i] == x && rY[i] == y){        return m_vecIDs[i];      }    }    return -1;  }  // }}}
 
+  template<class valueType>
+  int PositionTracker<valueType>::getID(int index){
+    // {{{ open
+    if(index > 0 && index < (int)m_vecCurrentAssignment.size()){
+      return m_vecIDs[ m_vecCurrentAssignment[index] ];
+    }else{
+      return -1;
+    }
+  }
+
+  // }}}
+  
   template class  PositionTracker<icl32s>;
   // template class  PositionTracker<icl32f>;
   //template class  PositionTracker<icl64f>;

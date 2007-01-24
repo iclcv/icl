@@ -1,14 +1,20 @@
 #include <ICLTypes.h>
 #include <Point.h>
 #include <HungarianAlgorithm.h>
+#include <Timer.h>
+#include <StackTimer.h>
+#include <list>
 
 namespace icl{
   typedef SimpleMatrix<int> imat;
   typedef std::vector<int> vec;
+ 
 
+   
+  //#define BEGIN_METHOD(X) counter_##X++; MethodTimer __timer(&timer_##X)
+  
   void clearCovers(vec &rowCover, vec &colCover){
     // {{{ open
-
     for (unsigned int i=0; i<rowCover.size(); i++){
       rowCover[i] = 0;
     }	
@@ -91,8 +97,10 @@ namespace icl{
 
   // }}}
 
+  /* orig:: working, but slow !!!
   template<class real>
   int hg_step4(int step, SimpleMatrix<real> &cost, imat &mask, vec &rowCover, vec &colCover, vec &zero_RC){
+    BEGIN_METHOD(hg_step4);
     // {{{ open
 
     //What STEP 4 does:
@@ -109,7 +117,7 @@ namespace icl{
       }else{
         mask[row_col[0]][row_col[1]] = 2;	//Prime the found uncovered zero.
         bool starInRow = false;
-        for (int j=0; j<mask.h(); j++){ // TODO why not mask.h()
+        for (int j=0; j<mask.h(); j++){ 
           if (mask[row_col[0]][j]==1){ //If there is a star in the same row...
             starInRow = true;
             row_col[1] = j;//remember its column.
@@ -119,7 +127,6 @@ namespace icl{
           rowCover[row_col[0]] = 1;	//Cover the star's row.
           colCover[row_col[1]] = 0;	//Uncover its column.
         }else{
-          // TODO zero_RC = row_col ??
           zero_RC[0] = row_col[0];	//Save row of primed zero.
           zero_RC[1] = row_col[1];	//Save column of primed zero.
           done = true;
@@ -131,13 +138,45 @@ namespace icl{
   }
 
   // }}}
+  */
+ 
+  template<class real>
+  void findZeroPositions(std::vector<Point> &dst, SimpleMatrix<real> &cost){
+     // {{{ open
 
+    for(int i=0;i<cost.w();++i){
+      for(int j=0;j<cost.h();++j){
+        if(!cost[i][j]){
+          dst.push_back(Point(i,j));
+        }
+      }
+    } 
+  }
+
+  // }}}
+
+  
+  
+  /*
+  original function, 5x slower than ***Lite
+  */
   template<class real>
   vec findUncoveredZero(vec &row_col, SimpleMatrix<real> &cost, vec &rowCover, vec &colCover){
     // {{{ open
-
-    row_col[0] = -1;	//Just a check value. Not a real index.
+    for(int i=0;i<cost.w();++i){
+      for(int j=0;j<cost.h();++j){
+        if(!cost[i][j] && !rowCover[i] && !colCover[j]){
+          row_col[0] = i;
+          row_col[1] = j;
+          return row_col;
+        }
+      }
+    }
+    row_col[0] = -1;//Just a check value. Not a real index.
     row_col[1] = 0;
+    return row_col;
+
+    /***************************
     unsigned int i = 0; 
     bool done = false;
     while (!done){
@@ -156,34 +195,106 @@ namespace icl{
       }
     }//end outer while
     return row_col;
+    ****************************/
   }
 
   // }}}
-
-  int findStarInCol(imat &mask, int col){
+  
+  /*
+  Best function, 5x faster then original, and twice as fast as ***Fast
+  */
+  vec findUncoveredZeroLite(vec &row_col, const std::vector<Point> &indices, vec &rowCover, vec &colCover){
     // {{{ open
 
-    int r=-1;	//Again this is a check value.
+    //    x  = col;
+    for(unsigned int i=0;i<indices.size();i++){
+      if(!rowCover[indices[i].x] && !colCover[indices[i].y]){
+        row_col[0] = indices[i].x;
+        row_col[1] = indices[i].y;
+        return row_col;
+      }
+    }
+    row_col[0] = -1;//Just a check value. Not a real index.
+    row_col[1] = 0;
+    return row_col;
+  }
+  // }}}
+
+
+  template<class real>
+  int hg_step4(int step, SimpleMatrix<real> &cost, imat &mask, vec &rowCover, vec &colCover, vec &zero_RC){
+    // {{{ open
+    //What STEP 4 does:
+    //Find an uncovered zero in cost and prime it (if none go to step 6). Check for star in same row:
+    //if yes, cover the row and uncover the star's column. Repeat until no uncovered zeros are left
+    //and go to step 6. If not, save location of primed zero and go to step 5.
+    vec row_col(2); //Holds row and col of uncovered zero.
+    bool done = false;
+    std::vector<Point> zeroPositions;
+    findZeroPositions(zeroPositions, cost);
+    
+    if(!zeroPositions.size()){
+      step = 6;
+      return step;
+    }
+    
+    while (!done){ 
+      findUncoveredZeroLite(row_col, zeroPositions, rowCover, colCover);
+      if (row_col[0] == -1){
+        done = true;
+        step = 6;
+      }else{
+        mask[row_col[0]][row_col[1]] = 2;	//Prime the found uncovered zero.
+        bool starInRow = false;
+        for (int j=0; j<mask.h(); j++){ 
+          if (mask[row_col[0]][j]==1){ //If there is a star in the same row...
+            starInRow = true;
+            row_col[1] = j;//remember its column.
+          }
+        }
+        if (starInRow==true){
+          rowCover[row_col[0]] = 1;	//Cover the star's row.
+          colCover[row_col[1]] = 0;	//Uncover its column.
+        }else{
+          zero_RC[0] = row_col[0];	//Save row of primed zero.
+          zero_RC[1] = row_col[1];	//Save column of primed zero.
+          done = true;
+          step = 5;
+        }
+      }
+    }
+    return step;
+  }
+
+  // }}}
+  
+  int findStarInCol(imat &mask, int col){
+    // {{{ open
+    // int r=-1;	//Again this is a check value.
     for (int i=0; i<mask.w(); i++){
         if (mask[i][col]==1){
-          r = i;
+          return i;
+          //          r = i;
         }
     }
-    return r;
+    //    return r;
+    return -1;
   }
 
   // }}}
 
   int findPrimeInRow(imat &mask, int row){
     // {{{ open
-
-    int c = -1;
+    //    int c = -1;
+   
     for (int j=0; j<mask.h(); j++){
       if (mask[row][j]==2){
-        c = j;
+        return j;
+        //        c = j;
       }
     }    
-    return c;
+    //    return c;
+    return -1;
   }
 
   // }}}
@@ -224,9 +335,9 @@ namespace icl{
     //series. Erase any other primes. Reset covers. Go to step 3.
     
     int count = 0; //Counts rows of the path matrix.
-    printf("use the new representation as it scaled better with dynamic size here \n");
-    printf("The correct formula for the hg_step5 was ... path(mask.h()*2,2) todo: \n");
-    printf("TEST TEST TEST .. HungarianAlgorithm.cppp hg_step5  line 228 ........ \n");
+    // printf("use the new representation as it scaled better with dynamic size here \n");
+    // printf("The correct formula for the hg_step5 was ... path(mask.h()*2,2) todo: \n");
+    // printf("TEST TEST TEST .. HungarianAlgorithm.cppp hg_step5  line 228 ........ \n");
     // orig, unstable, as first index becomes too large sometimes ???:
     // imat path(mask.h()+2,2);
 
