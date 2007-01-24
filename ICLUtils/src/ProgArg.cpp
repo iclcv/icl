@@ -296,20 +296,18 @@ namespace icl{
   }
   
 #define EXPLICIT_PA_ARG_TEMPLATE(TYPE,SFX)                                        \
-  template<>TYPE pa_arg(unsigned int index){ return progarg::SFX##Param(index); } \
-  template TYPE pa_arg<TYPE>(unsigned int index)
+  template<> TYPE pa_arg(unsigned int index){ return progarg::SFX##Param(index); }
   
-  EXPLICIT_PA_ARG_TEMPLATE(int,i);
-  EXPLICIT_PA_ARG_TEMPLATE(float,f);
-  EXPLICIT_PA_ARG_TEMPLATE(unsigned int,ui);
-  EXPLICIT_PA_ARG_TEMPLATE(bool,b);
-  EXPLICIT_PA_ARG_TEMPLATE(double,d);
-  EXPLICIT_PA_ARG_TEMPLATE(unsigned char,uc);
-  EXPLICIT_PA_ARG_TEMPLATE(char,c);
+  EXPLICIT_PA_ARG_TEMPLATE(int,i)
+  EXPLICIT_PA_ARG_TEMPLATE(float,f)
+  EXPLICIT_PA_ARG_TEMPLATE(unsigned int,ui)
+  EXPLICIT_PA_ARG_TEMPLATE(bool,b)
+  EXPLICIT_PA_ARG_TEMPLATE(double,d)
+  EXPLICIT_PA_ARG_TEMPLATE(unsigned char,uc)
+  EXPLICIT_PA_ARG_TEMPLATE(char,c)
   template<> string pa_arg(unsigned int index){ 
     return progarg::sParam(index); 
-  } 
-  template string pa_arg<string>(unsigned int index);
+  }
 
   // }}}
   
