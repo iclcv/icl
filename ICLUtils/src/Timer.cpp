@@ -8,6 +8,8 @@
 */
 
 #include <Timer.h>
+#include <Time.h>
+
 using namespace std;
 
 //---- ICL in its own namespace ----
@@ -103,16 +105,14 @@ long int Timer::stopSilent(){
 long int Timer::getTime()
 {
   FUNCTION_LOG("");
-  struct timeval tv;
-  gettimeofday( &tv, 0 );
   
   switch (m_iTimerMode)
   {
     case 0: //ms
-      return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+       return Time::now().toMilliSeconds();
       
-    default: //ns
-      return tv.tv_sec * 1000000 + tv.tv_usec;
+    default: //µs
+       return Time::now().toMicroSeconds();
   }
 }
 
