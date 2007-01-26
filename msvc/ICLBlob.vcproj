@@ -21,6 +21,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="1"
+			ManagedExtensions="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -42,13 +43,14 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="D:\ThirdParty\Intel\IPP\5.1\ia32\include;..\ICLBlob\src;..\ICLCore\src;..\ICLUtils\src;..\ICLCC\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_USE_MATH_DEFINES;WITH_IPP_OPTIMIZATION"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
+				MinimalRebuild="false"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4244"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

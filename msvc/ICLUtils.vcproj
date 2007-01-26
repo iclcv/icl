@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="D:\freinhar\SVN\ICL\ICLUtils\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -181,6 +181,10 @@
 			>
 			<File
 				RelativePath="..\ICLUtils\src\Array.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLUtils\src\CompMacros.h"
 				>
 			</File>
 			<File
