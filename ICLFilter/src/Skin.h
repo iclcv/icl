@@ -35,7 +35,7 @@ class Skin : public Filter
   ///Start the detection of skin color in the given image.
   /**
      @param poSrc The src image
-     @param poDst The final skin color mask (binarized)
+     @param ppoDst The final skin color mask (binarized)
   **/
   void apply(icl::ImgBase *poSrc, icl::ImgBase **ppoDst);
 
@@ -48,26 +48,26 @@ class Skin : public Filter
 
   ///Set the skin parabola parameter directly 
   /**
-     @params The skin color parabola parameter
+     @param params The skin color parabola parameter
   **/
   void setParameter(const std::vector<float>& params) {
     m_vecSkinParams = params;}
   
   ///Get the current skin parabola parameter
   /**
-     @retrun A vector with the skin parabola parameter
+     @return A vector with the skin parabola parameter
   **/
   const std::vector<float>& getParameter() { return m_vecSkinParams; }
 
   ///Get the reference Image in chromaticity color space
   /**
-     @retrun The chromaticity image
+     @return The chromaticity image
   **/
   ImgBase* getRefChromImg() { return m_poChromaTrain; }
 
   ///Get the reference Image in chromaticity color space
   /**
-     @retrun The chromaticty image
+     @return The chromaticty image
   **/
   ImgBase* getChromImg() { return m_poChromaApply; }
   

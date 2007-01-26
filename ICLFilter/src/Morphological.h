@@ -12,6 +12,7 @@ namespace icl {
     /// Constructor that creates a Morphological object, with specified mask size
     /** @param maskSize of odd width and height
         Even width or height is increased to next higher odd value.
+        @param pcMask pointer to the Mask
     */
     Morphological (const Size &maskSize,char* pcMask);
 

@@ -87,10 +87,10 @@ namespace icl {
   
          ///Load images from files having the pattern sPrefix[obj]__[img].sType 
          ///where [obj] and [img] are replaced by numbers in a given range
-         /** @param srefix The filename prefix, including directory
+         /** @param sPrefix The filename prefix, including directory
              @param sType  The file type (ppm, pgm, pnm.gz, jpg, icl)
              @param iObjStart Start with object iObjStart
-             @param iObjStart End with object iObjEnd
+             @param iObjEnd End with object iObjEnd
              @param iImageStart Start with image iImageStart
              @param iImageEnd End with object iImageEnd
          **/

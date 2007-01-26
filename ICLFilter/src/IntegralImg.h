@@ -26,7 +26,7 @@ namespace icl{
     X = src(x) + A + B - C
   </pre>
 
-  <h1>Implementation<h1>
+  <h1>Implementation</h1>
   <h3>Other definitions</h3>
   There are alternative definitions (like the ipp): 
    \f[

@@ -9,7 +9,7 @@ namespace icl{
   /** The UCLUtils/ProgArg tool provides a more convenient access to
       executables arguments, given via "nArgs" and "ppcArg" in the main
       function.
-      <H1>What?</H2>
+      <H1>What?</H1>
       Consider a default main(int n, char **ppc) - application. If 
       the programs arguments have to be evaluated to affect the
       program flow, you have to take care about many things:
@@ -26,7 +26,7 @@ namespace icl{
       The following example, also available in ICLUtils/examples/progargdemo,
       shows the advantages of using the ProgArg environment:
       <pre>
-#include "ProgArg.h"
+\#include "ProgArg.h"
   
 using namespace icl;
   
@@ -91,7 +91,7 @@ int main(int n, char **ppc){
       @param nArgs argument count received in the main function
       @param ppcArg argument vector received in the main function
       @param allowedArgs optional definition of the allowed arguments with the following
-                         syntax: [ARG<(#SUBARGS)>]. E.g. "-size(2) -input-file(1) -fast".
+                         syntax: [ARG<(\#SUBARGS)>]. E.g. "-size(2) -input-file(1) -fast".
                          <em>More details in the example above!</em>  
   */
   void pa_init(int nArgs, char **ppcArg, std::string allowedArgs="");

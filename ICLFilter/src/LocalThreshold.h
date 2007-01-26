@@ -20,6 +20,7 @@ namespace icl{
     /** @param maskSize size of the mask to use for calculations, the image width and
                         height must each be larger than 2*maskSize.
         @param globalThreshold additive Threshold to the calculated reagions mean
+        @param gammaSlope gammaSlope (Default=0)
     */
     LocalThreshold(unsigned int maskSize=10, int globalThreshold=0, float gammaSlope=0);
     void apply(const ImgBase *src, ImgBase **dst);

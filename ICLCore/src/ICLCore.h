@@ -349,12 +349,12 @@ namespace icl {
     </pre>
     The readability of the code is much better.
   
-    @param eDepth depth of the image that should be created
+    @param d depth of the image that should be created
     @param params struct containing all neccessary parameters like:
-    @param size: size of the new image
-    @param fmt:  format of the new image
-    @param channels: number of channels (of an formatMatrix-type image)
-    @param roi:  ROI rectangle of the new image
+      size: size of the new image
+      fmt:  format of the new image
+      channels: number of channels (of an formatMatrix-type image)
+      roi:  ROI rectangle of the new image
     @return the new ImgBase* with underlying Img<Type>, where
             Type is depending on the first parameter eDepth
   **/
@@ -418,15 +418,15 @@ namespace icl {
       <b>Note:</b> If the destination images depth differs from the source images depth, it is adapted by
       deleting the <em>old</em> destination pointer by calling <em>delete *ppoDst</em> and creating a
       <em>brand new</em> Img<T> where T is the destination images depth.
-      @param ppoDst points the destination ImgBase*. If the images depth has to be
+      @param dst points the destination ImgBase*. If the images depth has to be
                     converted, then a new Img<T>* is created, at (*ppoDst).
-      @param poSrc  source image. All params of this image are extracted to define
+      @param src  source image. All params of this image are extracted to define
                     the destination parameters for *ppoDst.  
   **/
   void ensureCompatible(ImgBase **dst, const ImgBase *src);
 
   /// determines the count of channels, for each color format
-  /** @param eFormat source format which channel count should be returned
+  /** @param fmt source format which channel count should be returned
       @return channel count of format eFormat
   **/
   int getChannelsOfFormat(format fmt);

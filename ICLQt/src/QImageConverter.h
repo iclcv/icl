@@ -8,9 +8,9 @@ class QImage;
 
 namespace icl{
 
-  /// class for conversion between QImage and ImgBase/Img<T>
+  /// class for conversion between QImage and ImgBase/Img\<T\>
   /** The QImageConverter class provides functionality for conversion
-      between the QImage class and the Img<T> classes.
+      between the QImage class and the Img\<T\> classes.
       It provides an internal buffer handling for the destination images, 
       so that the user does not have to care about memory handling. The 
       user must only take care, that the given image is persistent.

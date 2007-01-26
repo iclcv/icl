@@ -2,7 +2,8 @@
 #define PIXELLINE_H
 
 #include <RegionDetectorTypes.h> 
-
+namespace icl{
+  namespace regiondetector{
 /**
 The RegionDetectorScanLine class represents a set of pixels that are detected in the same line
 of an image, and that each has the same value. 
@@ -14,8 +15,6 @@ It described by
 - the x-position where the RegionDetectorScanLine ends
 */
 
-namespace icl{
-  namespace regiondetector{
     class RegionDetectorScanLine{
       public:
       inline RegionDetectorScanLine(int line=0, int start=0, int end=0, int iImageWidth=-1, unsigned char *pucImageData=0):

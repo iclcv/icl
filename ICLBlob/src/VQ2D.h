@@ -17,7 +17,7 @@ namespace icl{
     
     /// retruns just the center information
     /** @param centers count of prototypes to use 
-        @param max. count of steps to perform 
+        @param steps count of steps to perform 
         @param mmqe mininum mean qauntisation error 
         @param qe quantisation error */
     const VQVectorSet &run(int centers, int steps, float mmqe, float &qe);

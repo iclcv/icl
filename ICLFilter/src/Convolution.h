@@ -180,6 +180,7 @@ namespace icl {
         @param size kernel mask size
         @param bBufferData flag that indicates, if given data should be 
         buffered internally. By default given data will be buffered.
+        @param iNormFactor The NormFactor (Defaultvalue :1)
     */
     Convolution(int *piKernel, const Size& size, 
                 int iNormFactor=1, bool bBufferData=true);
@@ -197,7 +198,7 @@ namespace icl {
 
     /// performs the convolution operation on the image
     /** The destination image must match the depth of the source image.
-        All other parameters, i.e. size, #channels, etc., is automatically 
+        All other parameters, i.e. size, \#channels, etc., is automatically 
         set up w.r.t. the source image.
         @param poSrc source image
         @param poDst destination image

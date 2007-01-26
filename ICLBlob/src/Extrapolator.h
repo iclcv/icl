@@ -25,7 +25,7 @@ namespace icl{
     static  valueType predict(valueType x2, valueType x1);
     
     /// extrapolates the next value using quadratic interpolation
-    /** The time series is x3@t-3 x2@t-2 x1@t-1 result@t with dt=1
+    /** The time series is x3\@t-3 x2\@t-2 x1\@t-1 result\@t with dt=1
         @param x3 second value at time t-3
         @param x2 first value at time t-2
         @param x1 second value at time t-1

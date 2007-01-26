@@ -97,10 +97,10 @@ class Img : public ImgBase
   /** Values exceeding the given range are set to the new min/max values.
       For an automatic scaling use the results of  min(),max() as as arguments.
       (Defining a range allows to compare different images.)
-      @param tNewMin destination minimum value
-      @param tNewMax destination maximum value
-      @param tMin current minimum value
-      @param tMax current maximum value
+      @param tDstMin destination minimum value
+      @param tDstMax destination maximum value
+      @param tSrcMin current minimum value
+      @param tSrcMax current maximum value
       @param iChannel channel index (if set to -1, then operation is 
                       performed on all channels)
   **/
@@ -129,7 +129,7 @@ class Img : public ImgBase
  
   /// Creates an image with specified size, number of channels and format
   /** @param s size of the new image
-      @param eFormat (color)-format of the image
+      @param fmt (color)-format of the image
   **/
   Img(const Size &s, format fmt);
  
@@ -147,7 +147,7 @@ class Img : public ImgBase
   /** The channel count is set to the channel count that is asociated with given the format
       @param size new image size
       @param format (color)-format of the image
-      @param pptData holds a pointer to channel data pointers. pptData must contain 
+      @param vptData holds a pointer to channel data pointers. pptData must contain 
                      enough Type-pointers for the given format. The data must not be 
                      deleted during the "lifetime" of the Img. Call detach after the 
                      constructor call, to induce the Img to allocate own memory for 
@@ -159,7 +159,7 @@ class Img : public ImgBase
   /** the format is set to formatMatrix
       @param size new image size
       @param channels channel count of the image (format is set to "formatMatrix")
-      @param pptData holds a pointer to channel data pointers. pptData must contain 
+      @param vptData holds a pointer to channel data pointers. pptData must contain 
                      enough Type-pointers for the given format. The data must not be 
                      deleted during the "lifetime" of the Img. Call detach after the 
                      constructor call, to induce the Img to allocate own memory for 
@@ -171,10 +171,10 @@ class Img : public ImgBase
   /** Note: channel count and format depend on each other, so if
       the given channel count and the given format are not compatible,
       an exception is thrown
-      @param s size of the image
+      @param size size of the image
       @param channels channel count of the image (must be compatible to fmt)
       @param fmt format of the image (must be compatble to channels)
-      @param pptData array of data pointers, which are used as shared 
+      @param vptData array of data pointers, which are used as shared 
                      pointers. Ensure, that these pointers are persistent
                      during the lifetime of the image, or call detach, to
                      make the image ollocate it own memory for the data
@@ -403,14 +403,14 @@ class Img : public ImgBase
       that is asociated with the current format. In this case, a
       waring is written to std::out, and the format will be set to 
       formatMatrix implicitly.
-      @param poSrc source image
+      @param src source image
       @param iChannel channel to append (or all, if < 0)
   **/
   void append(Img<Type> *src, int iChannel=-1);
   
   /// Append a set of selected channels from source image
   /** @param src source image
-      @param dst vChannels vector of channels indices*/
+      @param vChannels vector of channels indices*/
   void append(Img<Type> *src, const std::vector<int>& vChannels);
   
   /// Swap channel A and B
@@ -604,8 +604,8 @@ class Img : public ImgBase
 
   /// Normalize the channel from a given min/max range to the new range 
   /** @param iChannel channel index
-      @param fSrcMin the minimum value of the givenchannel
-      @param fSrcMax the maximum value of the given channel
+      @param tSrcMin the minimum value of the givenchannel
+      @param tSrcMax the maximum value of the given channel
       @param tDstMin the new minimum value for the channel
       @param tDstMax the new maximum value for the channel
   **/
@@ -624,8 +624,8 @@ class Img : public ImgBase
                                 Type tDstMin, Type tDstMax);
 
   /// Normalize the image from a given min/max range to the new range 
-  /** @param fSrcMin the minimum value
-      @param fSrcMax the maximum value
+  /** @param tSrcMin the minimum value
+      @param tSrcMax the maximum value
       @param tDstMin the new minimum value for the image
       @param tDstMax the new maximum value for the image
   **/

@@ -42,7 +42,6 @@ class Timer
   //--------------------------------------------------------------------------
   ///Start the time measurement 
   /** 
-      @param timerName Set the timer name (only for user information)
       @sa stopTimer
   **/
   void startTimer();
@@ -51,7 +50,7 @@ class Timer
   /// Set a sub timer.
   /** Each sub time is printed at the end of the whole time
       measure process (stopTimer).
-      @param timerName Set the timer name (only for user information)
+      @param sName Set the timer name (only for user information)
       @sa stopTimer
   **/
   void stopSubTimer(std::string sName = "no name");

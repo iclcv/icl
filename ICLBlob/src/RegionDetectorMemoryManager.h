@@ -3,14 +3,14 @@
 
 #include <Exception.h>
 #include <stdlib.h>
+namespace icl{
+namespace regiondetector{
 /**
 The RegionDetectorMemoryManager offers the ability of dynamic memory handling without
 allocation of new data at runtime (unless the fill-factor has reached
 100%. In this case the underlying memory array is reallocated with
 double size.
 */
-namespace icl{
-  namespace regiondetector{
     template<class T>
       class RegionDetectorMemoryManager{
         public:

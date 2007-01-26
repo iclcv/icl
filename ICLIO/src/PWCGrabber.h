@@ -49,7 +49,7 @@ namespace icl{
     ~PWCGrabber(void);
     
     /// init function
-    /** initializes a camera on /dev/video<iDevice>. be sure that you call init(..) and init(..) returns true
+    /** initializes a camera on /dev/video\<iDevice\>. be sure that you call init(..) and init(..) returns true
         before calling grab(..)
        @param s size of grabbed images
        @param fFps grabbing rate

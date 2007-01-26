@@ -23,10 +23,10 @@ namespace icl {
     static const Size null;
     
     /// deep copy of another Size
-    Size(const Size &s=null){ this->width = s.width;this->height = s.height; }
+    inline Size(const Size &s=null){ this->width = s.width;this->height = s.height; }
     
     /// creates a specified size
-    Size(int width,int height){ this->width = width; this->height = height; }
+   inline Size(int width,int height){ this->width = width; this->height = height; }
 
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }

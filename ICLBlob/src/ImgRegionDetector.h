@@ -18,7 +18,7 @@ namespace icl{
       The set of regions can be filtered out by selection an interval for the allowed value and size
       of the found regions:
   
-      <h2>The implemented algorithm:</h3>
+      <h2>The implemented algorithm:</h2>
       Details of the implemented algorithm can be read in the:
       Diploma-Thesis of Christof Elbrechter and Jens Schmüdderich
       "Das TDI-Framework für dynamische Lernarchitekturen in intelligenten, interaktiven Systemen"

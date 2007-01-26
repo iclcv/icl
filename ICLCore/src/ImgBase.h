@@ -102,13 +102,13 @@ namespace icl {
       /** It exploits the given destination image if possible,
           i.e. if the pixel depth matches. Else this image is released
           and a new one is created.
-          @param poDst destination image (if Null, a new one is created)
+          @param ppoDst destination image (if Null, a new one is created)
       **/
       ImgBase* shallowCopy(ImgBase** ppoDst = NULL) const;
 
       /// creates a shallow copy of selected channels of this image
       /** @param channelIndices vector containing channel indices to copy
-          @param poDst destination image (if Null, a new one is created)*/
+          @param ppoDst destination image (if Null, a new one is created)*/
       ImgBase* shallowCopy(const std::vector<int>& channelIndices, ImgBase** ppoDst = NULL) const;
 
       /// copies the image data into the destination image
@@ -307,7 +307,7 @@ namespace icl {
       asociated with the set format, if they differ.
       E.g an image with one channel will have 3 channels after
       a setFormat(formatRGB) - call.
-      @param eFormat new format value
+      @param fmt new format value
       @see getChannelsOfFormat
       **/
       void setFormat(format fmt);

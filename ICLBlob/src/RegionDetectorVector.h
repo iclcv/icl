@@ -1,6 +1,7 @@
 #ifndef REGION_DETECTOR_VECTOR_H
 #define REGION_DETECTOR_VECTOR_H
-
+namespace icl{
+ namespace regiondetector{
 /**
 The RegionDetectorVector-Template class defines a Abstract Data Type
 for incremental storage of Data using the push_back(T t)
@@ -19,8 +20,6 @@ Note that the memory usage of a RegionDetectorVector may be twice as much
 as the memory usage of the contained data.
 */
 
-namespace icl{
-  namespace regiondetector{
     template<class T>
       class RegionDetectorVector{
         public:

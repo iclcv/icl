@@ -213,7 +213,7 @@ namespace icl{
      
         <h3>Ensure a Valid ROI Size</h3>
         In total, there are three problems, that need to be tackled when the ROI is set.
-        - <b>Check if the given roi is null:</b> if the given roi is <em>null<em> (this
+        - <b>Check if the given roi is null:</b> if the given roi is <em>null</em> (this
           means the rect has offset (0,0) and size (0,0)), then the objects ROI is
           set up to cover the whole image rect (offset (0,0) and size 
           (image-width,image-height)). If it is <b>not</b> <em>null</em>, the following two

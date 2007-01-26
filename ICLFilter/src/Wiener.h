@@ -20,7 +20,10 @@ namespace icl {
       Wiener (const Size &maskSize);
 
       /// Filters an image using the Wiener algorithm.
-      /** @param fNoise: noise level in range [0,1] */
+      /** @param fNoise: noise level in range [0,1] 
+        @param poSrc Source image
+        @param ppoDst Destination image
+      */
       void apply (const ImgBase *poSrc, ImgBase **ppoDst, icl32f fNoise);
 
 #ifdef WITH_IPP_OPTIMIZATION

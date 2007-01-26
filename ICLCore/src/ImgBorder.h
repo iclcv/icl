@@ -61,7 +61,7 @@ namespace icl{
     
     /// copies an images border from another image
     /** @param poImage destination image
-        @param poOtherImage source image for the border data. This image must have
+        @param poOther source image for the border data. This image must have
                             the same size and channel count as poImage. The function
                             will print a warning and return immediately without any 
                             changings otherwise.*/
