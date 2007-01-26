@@ -33,7 +33,7 @@ ICL_INSTANTIATE_ALL_DEPTHS;
   // {{{ IPP implementation
 
 #ifdef WITH_IPP_OPTIMIZATION 
-  template<typename Type, IppStatus (*ippiFunc) (const Type*, int, Type*, int, IppiSize, IppiSize, IppiPoint)>
+  template<typename Type, IppStatus (IPP_DECL *ippiFunc) (const Type*, int, Type*, int, IppiSize, IppiSize, IppiPoint)>
   void Median::ippMedian(const ImgBase *poSrc, ImgBase *poDst) {
 #if __GNUC__ == 3
      const Img<Type> *src = dynamic_cast<const Img<Type>*>(poSrc);
@@ -49,7 +49,7 @@ ICL_INSTANTIATE_ALL_DEPTHS;
      }
   }
 
-  template<typename Type, IppStatus (*ippiFunc) (const Type*, int, Type*, int, IppiSize, IppiMaskSize)>
+  template<typename Type, IppStatus (IPP_DECL *ippiFunc) (const Type*, int, Type*, int, IppiSize, IppiMaskSize)>
   void Median::ippMedianFixed(const ImgBase *poSrc, ImgBase *poDst) {
 #if __GNUC__ == 3
      const Img<Type> *src = dynamic_cast<const Img<Type>*>(poSrc);

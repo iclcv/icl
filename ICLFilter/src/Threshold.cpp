@@ -91,7 +91,7 @@ namespace icl {
 #ifdef WITH_IPP_OPTIMIZATION
    // {{{ ippi-function call templates
 
-   template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, T)>
+   template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, T)>
    inline void ippiThresholdCall_1T(const Img<T> *src, Img<T> *dst, T t){
       // {{{ open
 
@@ -108,7 +108,7 @@ namespace icl {
 
    // }}}
 
-   template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, T, T)>
+   template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, T, T)>
    inline void ippiThresholdCall_2T(const Img<T> *src, Img<T> *dst, T t1, T t2){  
       // {{{ open
 
@@ -125,7 +125,7 @@ namespace icl {
 
    // }}}
  
-   template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, T, T, T, T)>
+   template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, T, T, T, T)>
    inline void ippiThresholdCall_4T(const Img<T> *src, Img<T> *dst, T t1,T t2, T t3, T t4){
       // {{{ open
 

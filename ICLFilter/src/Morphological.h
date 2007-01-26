@@ -60,18 +60,18 @@ namespace icl {
 #ifdef WITH_IPP_OPTIMIZATION
   protected:
 
-    template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
+    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
     void ippiMorphologicalCall (const Img<T> *src, Img<T> *dst);
-    template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize)>
+    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
     void ippiMorphologicalCall3x3 (const Img<T> *src, Img<T> *dst);
 
     template<IppStatus (*ippiFunc) (int, const Ipp8u*, IppiSize, IppiPoint,IppiMorphState*)>
     void ippiMorphologyInitCall (int roiWidth, IppiMorphState* pState );
 
-   template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
+   template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
     void ippiMorphologicalBorderReplicateCall (const Img<T> *src, Img<T> *dst);
 
-    template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
+    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
     void ippiMorphologicalBorderCall (const Img<T> *src, Img<T> *dst);
 
 /*    template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphGrayState_32f*)>

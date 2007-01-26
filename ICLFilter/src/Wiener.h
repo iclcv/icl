@@ -28,7 +28,7 @@ namespace icl {
 
 #ifdef WITH_IPP_OPTIMIZATION
    protected:
-      template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint, icl32f*, icl8u*)>
+      template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint, icl32f*, icl8u*)>
          void ippiWienerCall (const ImgBase *src, ImgBase *dst, icl32f fNoise);
 #endif
 

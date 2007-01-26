@@ -106,7 +106,7 @@ namespace icl {
 
   // {{{ ippi-function call templates
 
-  template <typename T, IppStatus (*ippiFunc) (const T*, int, const T*, int, T*, int, IppiSize)>
+  template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, const T*, int, T*, int, IppiSize)>
   inline void ippiAndOrXorCall(const Img<T> *src1, const Img<T> *src2, Img<T> *dst)
   {
     // {{{ open
@@ -124,7 +124,7 @@ namespace icl {
   }
   // }}}
 
-  template <typename T, IppStatus (*ippiFunc) (const T*, int, const T, T*, int, IppiSize)>
+  template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, const T, T*, int, IppiSize)>
   inline void ippiAndOrXorCallC(const Img<T> *src, T value, Img<T> *dst)
   {
     // {{{ open
@@ -140,7 +140,7 @@ namespace icl {
   }
   // }}}
 
-  template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize)>
+  template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
   inline void ippiNotCall(const Img<T> *src, Img<T> *dst)
   {
     // {{{ open

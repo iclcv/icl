@@ -7,7 +7,7 @@ namespace icl {
 #ifdef WITH_IPP_OPTIMIZATION
    // {{{ ippi-function call templates
 
-   template <typename T, IppStatus (*ippiFunc) (const T*, int, IppiSize, const T*, int, IppiSize, icl32f*, int)>
+   template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, IppiSize, const T*, int, IppiSize, icl32f*, int)>
    inline void ippiCall(const Img<T> *src1, const Img<T> *src2, Img32f *dst)
       // {{{ open
    { 

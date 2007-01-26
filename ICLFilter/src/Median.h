@@ -184,9 +184,9 @@ namespace icl {
     void (Median::*aColorMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 
 
 #ifdef WITH_IPP_OPTIMIZATION 
-    template<typename Type, IppStatus (*)(const Type*, int, Type*, int, IppiSize, IppiSize, IppiPoint)>
+    template<typename Type, IppStatus (IPP_DECL *)(const Type*, int, Type*, int, IppiSize, IppiSize, IppiPoint)>
     void ippMedian(const ImgBase *poSrc, ImgBase *poDst);
-    template<typename Type, IppStatus (*)(const Type*, int, Type*, int, IppiSize, IppiMaskSize)>
+    template<typename Type, IppStatus (IPP_DECL *)(const Type*, int, Type*, int, IppiSize, IppiMaskSize)>
     void ippMedianFixed(const ImgBase *poSrc, ImgBase *poDst);
     template<typename T>
     void ippMedianColor (const ImgBase *poSrc, ImgBase *poDst);  

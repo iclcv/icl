@@ -1,10 +1,9 @@
 #include <Arithmetic.h>
 #include <Img.h>
 #include <math.h>
+
 namespace icl {
 
-  
-  
 //Define Fallback also when IPP is - needed for datatypes, that are not supported by IPP  
   
   // {{{ C++ fallback functions
@@ -93,15 +92,15 @@ namespace icl {
   };
   template <typename T> class SqrtOp {
   public:
-    inline T operator()(T val) const { return (T)sqrt(val); } //TODO?? const_cast<T>(sqrt(val)
+	  inline T operator()(T val) const { return Cast<double, T>::cast(sqrt((double) val)); } //TODO?? const_cast<T>(sqrt(val)
   };
   template <typename T> class LnOp {
   public:
-    inline T operator()(T val) const { return (T)log(val); } //TODO?? const_cast<T>
+    inline T operator()(T val) const { return Cast<double, T>::cast(log((double) val)); } //TODO?? const_cast<T>
   };
   template <typename T> class ExpOp {
   public:
-    inline T operator()(T val) const { return (T)exp(val); } //TODO?? const_cast<T>
+    inline T operator()(T val) const { return Cast<double, T>::cast(exp((double)val)); } //TODO?? const_cast<T>
   };
   template <typename T> class fAbsOp {
   public:
@@ -140,7 +139,7 @@ namespace icl {
 
   // {{{ ippi-function call templates
 
-  template <typename T, IppStatus (*ippiFunc) (T*, int, IppiSize)>
+  template <typename T, IppStatus (IPP_DECL *ippiFunc) (T*, int, IppiSize)>
   inline void ippi1srcInplaceCall(const Img<T> *srcdst)
   {
     // {{{ open
@@ -153,7 +152,7 @@ namespace icl {
   // }}}
 	
 	
-  template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize)>
+  template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
   inline void ippi1srcCall(const Img<T> *src, Img<T> *dst)
   {
     // {{{ open
@@ -169,7 +168,7 @@ namespace icl {
   // }}}
 
   
-  template <typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize,int)>
+  template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize,int)>
   inline void ippi1srcCall_sc(const Img<T> *src, Img<T> *dst)
   {
     // {{{ open
@@ -187,7 +186,7 @@ namespace icl {
   
   
   
-  template <typename T, IppStatus (*ippiFunc) (const T*, int, const T*, int, T*, int, IppiSize)>
+  template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, const T*, int, T*, int, IppiSize)>
   inline void ippi2srcCall(const Img<T> *src1, const Img<T> *src2, Img<T> *dst)
   {
     // {{{ open
@@ -205,7 +204,7 @@ namespace icl {
   }
   // }}}
 
-  template <typename T, IppStatus (*ippiFunc) (const T*, int, const T*, int, T*, int, IppiSize,int)>
+  template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, const T*, int, T*, int, IppiSize,int)>
   inline void ippi2srcCall_sc(const Img<T> *src1, const Img<T> *src2, Img<T> *dst)
   {
     // {{{ open
@@ -223,7 +222,7 @@ namespace icl {
   }
   // }}}
 
-  template <typename T, IppStatus (*ippiFunc) (const T*, int, const T, T*, int, IppiSize)>
+  template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, const T, T*, int, IppiSize)>
   inline void ippiCallC(const Img<T> *src, T value, Img<T> *dst)
   {
     // {{{ open
@@ -238,7 +237,7 @@ namespace icl {
     }
   }
   
-   template <typename T, IppStatus (*ippiFunc) (const T*, int, const T, T*, int, IppiSize,int)>
+   template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, const T, T*, int, IppiSize,int)>
   inline void ippiCallC_sc(const Img<T> *src, T value, Img<T> *dst)
   {
     // {{{ open
@@ -256,7 +255,7 @@ namespace icl {
   
   
   
-  template <typename T,typename R, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, R)>
+  template <typename T,typename R, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, R)>
   inline void ippiCallAbsDiffC(const Img<T> *src, Img<T> *dst, R value)
   {
     // {{{ open

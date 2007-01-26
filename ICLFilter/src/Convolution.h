@@ -2,6 +2,9 @@
 #define ICLCONVOLUTION_H
 
 #include <FilterMask.h>
+#ifdef WIN32
+#	include <Mathematics.h>
+#endif
 
 namespace icl {
   
@@ -259,9 +262,9 @@ namespace icl {
     static void (Convolution::*aGenericMethods[depthLast+1][2])(const ImgBase *poSrc, ImgBase *poDst);
 
 #ifdef WITH_IPP_OPTIMIZATION 
-    template<typename T, IppStatus (*)(const T*, int, T*, int, IppiSize, const Ipp32s*, IppiSize, IppiPoint, int)>
+    template<typename T, IppStatus (IPP_DECL *)(const T*, int, T*, int, IppiSize, const Ipp32s*, IppiSize, IppiPoint, int)>
     void ippGenericConvIntKernel (const ImgBase *poSrc, ImgBase *poDst);
-    template<typename T, IppStatus (*)(const T*, int, T*, int, IppiSize, const Ipp32f*, IppiSize, IppiPoint)>
+    template<typename T, IppStatus (IPP_DECL *)(const T*, int, T*, int, IppiSize, const Ipp32f*, IppiSize, IppiPoint)>
     void ippGenericConvFloatKernel (const ImgBase *poSrc, ImgBase *poDst);
     template<typename T>
     void ippFixedConv (const ImgBase *poSrc, ImgBase *poDst);
@@ -270,15 +273,15 @@ namespace icl {
 
     /// function pointers for ipp fixed convolution, with and without mask size parameter
 #define ICL_INSTANTIATE_DEPTH(T) \
-    IppStatus (*pFixed ## T)(const Ipp ## T* pSrc, int srcStep, Ipp ## T* pDst, int dstStep, IppiSize roiSize); \
-    IppStatus (*pFixedMask ## T)(const Ipp ## T* pSrc, int srcStep, Ipp ## T* pDst, int dstStep, IppiSize roiSize, IppiMaskSize mask);
+    IppStatus (IPP_DECL *pFixed ## T)(const Ipp ## T* pSrc, int srcStep, Ipp ## T* pDst, int dstStep, IppiSize roiSize); \
+    IppStatus (IPP_DECL *pFixedMask ## T)(const Ipp ## T* pSrc, int srcStep, Ipp ## T* pDst, int dstStep, IppiSize roiSize, IppiMaskSize mask);
     ICL_INSTANTIATE_DEPTH(8u)
     ICL_INSTANTIATE_DEPTH(16s)
     ICL_INSTANTIATE_DEPTH(32f)
 #undef ICL_INSTANTIATE_DEPTH
 
-    template<typename T> IppStatus (*getIppFixedMethod() const)(const T*, int, T*, int, IppiSize);
-    template<typename T> IppStatus (*getIppFixedMaskMethod() const)(const T*, int, T*, int, IppiSize, IppiMaskSize);
+    template<typename T> IppStatus (IPP_DECL *getIppFixedMethod() const)(const T*, int, T*, int, IppiSize);
+    template<typename T> IppStatus (IPP_DECL *getIppFixedMaskMethod() const)(const T*, int, T*, int, IppiSize, IppiMaskSize);
     
     /// set ipp methods for fixed kernels
     void setIPPFixedMethods(kernel);

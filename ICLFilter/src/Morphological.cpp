@@ -23,7 +23,7 @@ namespace icl {
 
 
 #ifdef WITH_IPP_OPTIMIZATION
-  template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
+  template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
   void Morphological::ippiMorphologicalCall (const Img<T> *src, Img<T> *dst) {
     for(int c=0; c < src->getChannels(); c++) {
         ippiFunc(src->getROIData (c, this->oROIoffset),
@@ -36,7 +36,7 @@ namespace icl {
   }
 
 
-  template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize)>
+  template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
   void Morphological::ippiMorphologicalCall3x3 (const Img<T> *src, Img<T> *dst) {
     for(int c=0; c < src->getChannels(); c++) {
         ippiFunc(src->getROIData (c, this->oROIoffset),
@@ -48,7 +48,7 @@ namespace icl {
     };
   }
 
-  template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
+  template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
   void Morphological::ippiMorphologicalBorderReplicateCall (const Img<T> *src, Img<T> *dst) {
     for(int c=0; c < src->getChannels(); c++) {
         ippiFunc(src->getROIData (c, this->oROIoffset),
@@ -65,7 +65,7 @@ namespace icl {
 
 
 
-  template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
+  template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
   void Morphological::ippiMorphologicalBorderCall (const Img<T> *src, Img<T> *dst) {
     for(int c=0; c < src->getChannels(); c++) {
         ippiFunc(src->getROIData (c, this->oROIoffset),

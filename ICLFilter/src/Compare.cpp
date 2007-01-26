@@ -1,3 +1,4 @@
+
 #include <Compare.h>
 #include <Img.h>
 
@@ -159,7 +160,7 @@ namespace icl {
 
    // {{{ ippi-function call templates
 
-   template <typename T, IppStatus (*ippiFunc) (const T*, int, const T*, int, icl8u*, int, IppiSize, IppCmpOp)>
+   template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, const T*, int, icl8u*, int, IppiSize, IppCmpOp)>
    inline void ippiCompare(const Img<T> *src1, const Img<T> *src2, Img8u *dst, Compare::op cmpOp)
       // {{{ open
    {  
@@ -178,7 +179,7 @@ namespace icl {
    }
    // }}}
 
-   template <typename T, IppStatus (*ippiFunc) (const T*, int, T, icl8u*, int, IppiSize, IppCmpOp)>
+   template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T, icl8u*, int, IppiSize, IppCmpOp)>
    inline void ippiCompareC(const Img<T> *src, T value, Img8u *dst, Compare::op cmpOp)
       // {{{ open
    {

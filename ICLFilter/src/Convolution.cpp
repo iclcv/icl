@@ -1,3 +1,4 @@
+
 #include <Convolution.h>
 #include <Img.h>
 
@@ -77,8 +78,13 @@ namespace icl {
      FUNCTION_LOG("");
      // tests if an element of the given float* has decimals
      // if it does: return 0, else 1
+#ifndef WIN32
      for(int i=0;i<iLen;i++)
         if (pfData[i] != nearbyintf (pfData[i])) return false;
+#else
+	for(int i=0;i<iLen;i++)
+        if (pfData[i] != (float) rint (pfData[i])) return false;
+#endif
      return true;
   }
 
@@ -348,7 +354,7 @@ namespace icl {
 
   // {{{ generic ipp convolution
 
-  template<typename T, IppStatus (*pMethod)(const T*, int, T*, int, IppiSize, const Ipp32s*, IppiSize, IppiPoint, int)>
+  template<typename T, IppStatus (IPP_DECL *pMethod)(const T*, int, T*, int, IppiSize, const Ipp32s*, IppiSize, IppiPoint, int)>
   void Convolution::ippGenericConvIntKernel (const ImgBase *poSrc, ImgBase *poDst) {
      Img<T> *poS = poSrc->asImg<T>();
      Img<T> *poD = poDst->asImg<T>();
@@ -359,7 +365,7 @@ namespace icl {
      }
   }
 
-  template<typename T, IppStatus (*pMethod)(const T*, int, T*, int, IppiSize, const Ipp32f*, IppiSize, IppiPoint)>
+  template<typename T, IppStatus (IPP_DECL *pMethod)(const T*, int, T*, int, IppiSize, const Ipp32f*, IppiSize, IppiPoint)>
   void Convolution::ippGenericConvFloatKernel (const ImgBase *poSrc, ImgBase *poDst) {
      Img<T> *poS = poSrc->asImg<T>();
      Img<T> *poD = poDst->asImg<T>();
@@ -375,9 +381,9 @@ namespace icl {
   // {{{ fixed ipp convolution
 
 #define ICL_INSTANTIATE_DEPTH(T) \
-  template<> inline IppStatus (*Convolution::getIppFixedMethod() const) \
+  template<> inline IppStatus (IPP_DECL *Convolution::getIppFixedMethod() const) \
    (const Ipp ## T*, int, Ipp ## T*, int, IppiSize) {return pFixed ## T;} \
-  template<> inline IppStatus (*Convolution::getIppFixedMaskMethod() const) \
+  template<> inline IppStatus (IPP_DECL *Convolution::getIppFixedMaskMethod() const) \
    (const Ipp ## T*, int, Ipp ## T*, int, IppiSize, IppiMaskSize) {return pFixedMask ## T;}
 
   ICL_INSTANTIATE_DEPTH(8u)
@@ -387,7 +393,7 @@ namespace icl {
 
   template<typename T>
   void Convolution::ippFixedConv (const ImgBase *poSrc, ImgBase *poDst) {
-     IppStatus (*pMethod)(const T* pSrc, int srcStep, T* pDst, int dstStep, IppiSize roiSize)
+     IppStatus (IPP_DECL *pMethod)(const T* pSrc, int srcStep, T* pDst, int dstStep, IppiSize roiSize)
         = getIppFixedMethod<T>();
      Img<T> *poS = (Img<T>*) poSrc;
      Img<T> *poD = (Img<T>*) poDst;
@@ -400,7 +406,7 @@ namespace icl {
   }
   template<typename T>
   void Convolution::ippFixedConvMask (const ImgBase *poSrc, ImgBase *poDst) {
-     IppStatus (*pMethod)(const T* pSrc, int srcStep, T* pDst, int dstStep, IppiSize roiSize, IppiMaskSize mask)
+     IppStatus (IPP_DECL *pMethod)(const T* pSrc, int srcStep, T* pDst, int dstStep, IppiSize roiSize, IppiMaskSize mask)
         = getIppFixedMaskMethod<T>();
      IppiMaskSize eMaskSize = (IppiMaskSize)(11 * oMaskSize.width);
      Img<T> *poS = (Img<T>*) poSrc;

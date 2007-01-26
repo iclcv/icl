@@ -18,7 +18,7 @@ namespace icl {
 #ifdef WITH_IPP_OPTIMIZATION
 // {{{ IPP version
 
-   template<typename T, IppStatus (*ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint, float[], icl8u*)>
+   template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint, float[], icl8u*)>
    void Wiener::ippiWienerCall (const ImgBase *poSrc, ImgBase *poDst, float fNoise) {
       Img<T> *src = (Img<T>*) poSrc;
       Img<T> *dst = (Img<T>*) poDst;
