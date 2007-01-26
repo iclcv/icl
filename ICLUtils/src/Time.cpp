@@ -102,7 +102,7 @@ namespace icl {
 
       struct tm* t;
 #ifdef WIN32
-	  t = localtime(&time);
+      t = localtime(&time);
 #else
       struct tm tr;
       localtime_r(&time, &tr);

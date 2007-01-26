@@ -22,7 +22,7 @@ int main(){
   refImg = r.grab();
   
   // Apply skin parameter
-  skinFilter.train(const_cast<ImgBase*>(refImg));
+  skinFilter.train(refImg);
   
   // --------------------------------------------------------------
   // ---- Detect skin color 
@@ -40,7 +40,7 @@ int main(){
   skinFilter2.setParameter(vecparameter);
   
   // Detect skin color 
-  skinFilter2.apply(const_cast<ImgBase*>(img), &skinImg);
+  skinFilter2.apply(img, &skinImg);
   
   //Write skin mask
   w.write(skinImg);

@@ -63,7 +63,7 @@ namespace icl {
   
 // }}}
 
-  void Skin::train(ImgBase *poSrc, ImgBase *poMask) {
+  void Skin::train(const ImgBase *poSrc, const ImgBase *poMask) {
     // {{{ open 
     
     FUNCTION_LOG("");

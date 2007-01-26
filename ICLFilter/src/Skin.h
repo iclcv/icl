@@ -44,7 +44,7 @@ class Skin : public Filter
      param poSrc The tarining image. Usually a small skin color patttern
      param poMask Mask the input image with this mask
   **/
-  void train(icl::ImgBase *poSrc, icl::ImgBase *poMask = 0);
+  void train(const icl::ImgBase *poSrc, const icl::ImgBase *poMask = 0);
 
   ///Set the skin parabola parameter directly 
   /**

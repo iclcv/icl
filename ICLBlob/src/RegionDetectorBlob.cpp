@@ -3,11 +3,6 @@
 #include <math.h>
 #include <Array.h>
 
-#ifdef WIN32
-#	include <Mathematics.h>
-#endif
-
-
 namespace icl{
   namespace regiondetector{
     

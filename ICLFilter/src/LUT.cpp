@@ -1,7 +1,4 @@
 #include "LUT.h"
-#ifdef WIN32
-#	include <Mathematics.h>
-#endif
 
 namespace icl{
   
@@ -33,17 +30,10 @@ namespace icl{
 #else
     std::vector<icl8u> lut(256),lv;
     float range = 256.0/n;
-#ifndef WIN32
     for(int i=0;i<n;i++)lv.push_back((int)round(i*range));
     for(int i=0;i<256;i++){
       lut[i]=lv[(int)round((float)i/n)];
     }
-#else
-	for(int i=0;i<n;i++)lv.push_back(rint(i*range));
-    for(int i=0;i<256;i++){
-      lut[i]=lv[rint((float)i/n)];
-    }
-#endif
     // calculate table
     simple(src,dst,lut);
 #endif

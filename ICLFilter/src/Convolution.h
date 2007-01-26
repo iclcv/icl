@@ -2,9 +2,6 @@
 #define ICLCONVOLUTION_H
 
 #include <FilterMask.h>
-#ifdef WIN32
-#	include <Mathematics.h>
-#endif
 
 namespace icl {
   

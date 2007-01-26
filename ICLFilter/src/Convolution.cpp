@@ -78,13 +78,8 @@ namespace icl {
      FUNCTION_LOG("");
      // tests if an element of the given float* has decimals
      // if it does: return 0, else 1
-#ifndef WIN32
      for(int i=0;i<iLen;i++)
-        if (pfData[i] != nearbyintf (pfData[i])) return false;
-#else
-	for(int i=0;i<iLen;i++)
         if (pfData[i] != (float) rint (pfData[i])) return false;
-#endif
      return true;
   }
 

@@ -1,10 +1,6 @@
 #include <OSDSlider.h>
 #include <math.h>
 
-#ifdef WIN32
-#	include <Mathematics.h>
-#endif
-
 using namespace std;
 
 namespace icl{
@@ -77,9 +73,9 @@ namespace icl{
   int OSDSlider::mxb(int x, int x_min, int x_max, int y_min, int y_max){
     int dx = x_max-x_min;
     int dy = y_max-y_min;
-    float m = (float)dy/(float)dx;
+    float m = (float)dy / (float)dx;
     int b = (int) rint(y_min-m*x_min);
-    return (int) (rint(m*x)+b);
+    return ((int) rint(m*x)) + b;
   }
   
   int OSDSlider::valToPos(int val){

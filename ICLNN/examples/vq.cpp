@@ -20,7 +20,7 @@ int main() {
   // Real image
   vector<icl32f*> vecResultData;
   FileReader reader("demoImages/testImg.ppm");
-  ImgBase *tImgIn = const_cast<ImgBase*>(reader.grab());
+  const ImgBase *tImgIn = reader.grab();
   ImgBase *tImg = tImgIn->convertTo<icl32f>();
   ImgBase *tResultImg = imgNew(depth32f, tImg->getSize(), formatGray);
   vecResultData.resize(tImg->getChannels());
