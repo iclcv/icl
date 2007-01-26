@@ -1,6 +1,8 @@
 #ifndef ICLMACROS_H
 #define ICLMACROS_H
 
+#include <CompMacros.h>
+
 #include <iostream>
 #include <stdlib.h>
 

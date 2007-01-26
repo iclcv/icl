@@ -28,7 +28,7 @@ namespace icl
       typedef int64_t       value_type;
 #endif
 
-      // undefined time: 0
+	  // undefined time: 0
       static const Time null;
       
       Time();

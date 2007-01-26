@@ -10,9 +10,10 @@
 #include <Time.h>
 #include <sstream>
 
-#ifdef _WIN32
+#ifdef WIN32
+//#   include <time.h>
+#   include <C:\Programme\Microsoft Visual Studio 8\VC\include\time.h>
 #   include <sys/timeb.h>
-#   include <time.h>
 #else
 #   include <sys/time.h>
 #endif
@@ -100,8 +101,8 @@ namespace icl {
       time_t time = static_cast<long>(_usec / 1000000);
 
       struct tm* t;
-#ifdef _WIN32
-      t = localtime(&time);
+#ifdef WIN32
+	  t = localtime(&time);
 #else
       struct tm tr;
       localtime_r(&time, &tr);

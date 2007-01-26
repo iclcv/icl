@@ -320,12 +320,8 @@ namespace icl{
   }
 
 #define EXPLICIT_PA_SUBARG_TEMPLATE(TYPE,SFX)                                 \
-  template<>TYPE pa_subarg(std::string param, unsigned int index, TYPE def){  \
-    return progarg::SFX##SubParam(param,index,def);                           \
-  }                                                                           \
-  template TYPE pa_subarg<TYPE>(std::string,unsigned int,TYPE)
-  
- 
+  template<>TYPE pa_subarg(std::string param, unsigned int index, TYPE def) { return progarg::SFX##SubParam(param,index,def); }
+
 
   EXPLICIT_PA_SUBARG_TEMPLATE(int,i);
   EXPLICIT_PA_SUBARG_TEMPLATE(float,f);
@@ -336,10 +332,7 @@ namespace icl{
   EXPLICIT_PA_SUBARG_TEMPLATE(char,c);
 
   // nochmal mit char const*
-  template<> string  pa_subarg(std::string param, unsigned int index, string def){ 
-    return progarg::sSubParam(param,index,def); 
-  } 
-  template string pa_subarg<string>(std::string, unsigned int, string);
+  template<> string  pa_subarg(std::string param, unsigned int index, string def) { return progarg::sSubParam(param,index,def); }
 
   // }}}
 }

@@ -10,8 +10,7 @@
 #ifndef ICL_TIMER_H
 #define ICL_TIMER_H
 
-#include <time.h>
-#include <sys/time.h>
+#include <Time.h>
 #include <vector>
 #include <string>
 #include <Macros.h>
