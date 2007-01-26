@@ -797,19 +797,14 @@ Img<Type>::getMax(int iChannel) const {
    return vMax;
 }
 #ifdef WITH_IPP_OPTIMIZATION
-template<typename Type> 
-template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*)>
-inline Type Img<Type>::ippGetMax(int iChannel) const {
-   FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
-   Type vMax = 0;
-   ippiFunc (getROIData(iChannel),getLineStep(),getROISize(),&vMax);
-   return vMax;
-}
-
 #define ICL_INSTANTIATE_DEPTH(T) \
 template<> icl ## T \
-Img<icl ## T>::getMax(int iChannel) const {return ippGetMax<ippiMax_ ## T ## _C1R>(iChannel);}
+Img<icl ## T>::getMax(int iChannel) const { \
+   ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 ); \
+   icl ## T vMax = 0; \
+   ippiMax_ ## T ## _C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax); \
+   return vMax; \
+}
 
 ICL_INSTANTIATE_DEPTH(8u)
 ICL_INSTANTIATE_DEPTH(16s)
@@ -849,19 +844,14 @@ Img<Type>::getMin(int iChannel) const {
    return vMin;
 }
 #ifdef WITH_IPP_OPTIMIZATION
-template<typename Type> 
-template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*)>
-inline Type Img<Type>::ippGetMin(int iChannel) const {
-   FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
-   Type vMin = 0;
-   ippiFunc (getROIData(iChannel),getLineStep(),getROISize(),&vMin);
-   return vMin;
-}
-
 #define ICL_INSTANTIATE_DEPTH(T) \
 template<> icl ## T \
-Img<icl ## T>::getMin(int iChannel) const {return ippGetMin<ippiMin_ ## T ## _C1R>(iChannel);}
+Img<icl ## T>::getMin(int iChannel) const { \
+   ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 ); \
+   icl ## T vMin = 0; \
+   ippiMin_ ## T ## _C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin); \
+   return vMin; \
+}
 
 ICL_INSTANTIATE_DEPTH(8u)
 ICL_INSTANTIATE_DEPTH(16s)
@@ -910,19 +900,13 @@ Img<Type>::getMinMax(Type &rtMin, Type &rtMax, int iChannel) const {
 }
 
 #ifdef WITH_IPP_OPTIMIZATION
-template<typename Type>
-template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*, Type*)>
-inline void Img<Type>::ippGetMinMax(Type& rtMin, Type& rtMax, int iChannel) const {
-   rtMin = rtMax = 0;
-   FUNCTION_LOG("iChannel: " << iChannel);
-   ICLASSERT_RETURN( validChannel(iChannel) );
-   ippiFunc (getROIData(iChannel),getLineStep(),getROISize(), &rtMin, &rtMax);
-}
-
 #define ICL_INSTANTIATE_DEPTH(T) \
 template<> void \
-Img<icl ## T>::getMinMax(icl ## T& rtMin, icl ## T& rtMax, int iChannel) const \
-{ippGetMinMax<ippiMinMax_ ## T ## _C1R>(rtMin, rtMax, iChannel);}
+Img<icl ## T>::getMinMax(icl ## T& rtMin, icl ## T& rtMax, int iChannel) const { \
+   rtMin = rtMax = 0; \
+   ICLASSERT_RETURN( validChannel(iChannel) ); \
+   ippiMinMax_ ## T ## _C1R (getROIData(iChannel),getLineStep(),getROISize(), &rtMin, &rtMax); \
+}
 
 ICL_INSTANTIATE_DEPTH(8u)
 ICL_INSTANTIATE_DEPTH(16s)

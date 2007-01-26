@@ -717,15 +717,6 @@ class Img : public ImgBase
 
   /* }}} */
   
-#ifdef WITH_IPP_OPTIMIZATION
- private: 
-  template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*)>
-  inline Type ippGetMax(int iChannel) const;
-  template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*)>
-  inline Type ippGetMin(int iChannel) const;
-  template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*, Type*)>
-  inline void ippGetMinMax(Type& rtMin, Type& rtMax, int iChannel) const;
-#endif
 };// class Img<Type>
 
   
