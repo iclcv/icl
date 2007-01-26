@@ -16,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICLMEx", "ICLMEx.vcproj", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICLQt", "ICLQt.vcproj", "{335AAF76-F024-4DBC-A549-6C69D1848E6F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICLNN", "ICLNN.vcproj", "{0A67008A-671C-40F5-B39E-45D470813EED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -54,6 +56,10 @@ Global
 		{335AAF76-F024-4DBC-A549-6C69D1848E6F}.Debug|Win32.Build.0 = Debug|Win32
 		{335AAF76-F024-4DBC-A549-6C69D1848E6F}.Release|Win32.ActiveCfg = Release|Win32
 		{335AAF76-F024-4DBC-A549-6C69D1848E6F}.Release|Win32.Build.0 = Release|Win32
+		{0A67008A-671C-40F5-B39E-45D470813EED}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0A67008A-671C-40F5-B39E-45D470813EED}.Debug|Win32.Build.0 = Debug|Win32
+		{0A67008A-671C-40F5-B39E-45D470813EED}.Release|Win32.ActiveCfg = Release|Win32
+		{0A67008A-671C-40F5-B39E-45D470813EED}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

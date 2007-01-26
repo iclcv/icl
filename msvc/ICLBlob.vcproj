@@ -158,7 +158,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLBlob\src\Extrapolator.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLBlob\src\HungarianAlgorithm.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLBlob\src\ImgRegionDetector.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLBlob\src\KMeans2D.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLBlob\src\PositionTracker.cpp"
 				>
 			</File>
 			<File
@@ -200,11 +216,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLBlob\src\Extrapolator.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLBlob\src\FastMedianList.h"
 				>
 			</File>
 			<File
 				RelativePath="..\ICLBlob\src\FoundBlob.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLBlob\src\HungarianAlgorithm.h"
 				>
 			</File>
 			<File
@@ -216,11 +240,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLBlob\src\KMeans2D.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLBlob\src\PixelRating.h"
 				>
 			</File>
 			<File
 				RelativePath="..\ICLBlob\src\PixelRatingGroup.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLBlob\src\PositionTracker.h"
 				>
 			</File>
 			<File
