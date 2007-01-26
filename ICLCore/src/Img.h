@@ -504,7 +504,7 @@ class Img : public ImgBase
       return m_vecChannels[iChannel].get();
     }
   const Type* getData(int iChannel) const 
-     {return const_cast<const Img<Type>*>(this)->getData(iChannel);}
+     {return const_cast<Img<Type>*>(this)->getData(iChannel);}
   
   /// returns a Type save data pointer to the first pixel within the images roi
   /** The following ASCII image shows an images ROI.

@@ -6,7 +6,7 @@
 
 #include <Mathematics.h>
 
-using std::string;
+using std::string; using std::min;
 
 namespace icl{
 
@@ -277,7 +277,7 @@ namespace icl{
     painter.setPen(QColor( (int)(m_afLineColor[2]*255),
                            (int)(m_afLineColor[1]*255),
                            (int)(m_afLineColor[0]*255),
-                           std::min(254,(int)(m_afLineColor[3]*255)) ));
+						   min (254, (int)(m_afLineColor[3]*255)) ));
    
     painter.drawText(QPoint(1,img.height()-m.descent()-1),text.c_str());
     painter.end();

@@ -1,4 +1,5 @@
 #include <OSDSlider.h>
+#include <Macros.h>
 #include <math.h>
 
 using namespace std;

@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="D:\ThirdParty\Intel\IPP\5.1\ia32\include;..\ICLBlob\src;..\ICLCore\src;..\ICLUtils\src;..\ICLCC\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_USE_MATH_DEFINES;WITH_IPP_OPTIMIZATION"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_USE_MATH_DEFINES;WITH_IPP_OPTIMIZATION;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"

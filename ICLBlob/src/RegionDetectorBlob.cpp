@@ -1,7 +1,8 @@
 #include <RegionDetectorBlob.h>
 #include <RegionDetectorScanLine.h>
-#include <math.h>
+#include <Macros.h>
 #include <Array.h>
+#include <math.h>
 
 namespace icl{
   namespace regiondetector{
