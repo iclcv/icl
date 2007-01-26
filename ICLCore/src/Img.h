@@ -16,9 +16,11 @@
 #include <Exception.h>
 #include <cmath>
 #include <algorithm>
+#ifdef WIN32
+#	include <Mathematics.h>
+#endif
 
 namespace icl {
-
   /// The Img class implements the ImgBase Image interface with type specific functionalities
   /**
   @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
@@ -28,7 +30,7 @@ template <class Type>
 class Img : public ImgBase
 {
  protected:
-  
+	 
   // @{ @name data
   /* {{{ open */
 
@@ -715,11 +717,11 @@ class Img : public ImgBase
   
 #ifdef WITH_IPP_OPTIMIZATION
  private: 
-  template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*)>
+  template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*)>
   inline Type ippGetMax(int iChannel) const;
-  template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*)>
+  template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*)>
   inline Type ippGetMin(int iChannel) const;
-  template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*, Type*)>
+  template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*, Type*)>
   inline void ippGetMinMax(Type& rtMin, Type& rtMax, int iChannel) const;
 #endif
 };// class Img<Type>

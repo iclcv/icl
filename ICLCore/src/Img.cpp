@@ -779,7 +779,7 @@ Img<Type>::getMax(int iChannel) const {
 }
 #ifdef WITH_IPP_OPTIMIZATION
 template<typename Type> 
-template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*)>
+template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*)>
 inline Type Img<Type>::ippGetMax(int iChannel) const {
    FUNCTION_LOG("iChannel: " << iChannel);
    ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
@@ -831,7 +831,7 @@ Img<Type>::getMin(int iChannel) const {
 }
 #ifdef WITH_IPP_OPTIMIZATION
 template<typename Type> 
-template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*)>
+template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*)>
 inline Type Img<Type>::ippGetMin(int iChannel) const {
    FUNCTION_LOG("iChannel: " << iChannel);
    ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
@@ -892,7 +892,7 @@ Img<Type>::getMinMax(Type &rtMin, Type &rtMax, int iChannel) const {
 
 #ifdef WITH_IPP_OPTIMIZATION
 template<typename Type>
-template<IppStatus (*ippiFunc) (const Type*, int, IppiSize, Type*, Type*)>
+template<IppStatus (IPP_DECL *ippiFunc) (const Type*, int, IppiSize, Type*, Type*)>
 inline void Img<Type>::ippGetMinMax(Type& rtMin, Type& rtMax, int iChannel) const {
    rtMin = rtMax = 0;
    FUNCTION_LOG("iChannel: " << iChannel);
