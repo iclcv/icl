@@ -60,7 +60,7 @@ void Timer::stopTimer(string sName)
   if (m_vecTime.size() > 2) {
     for (unsigned int i=1;i<m_vecTime.size();i++)
     {
-      lTmpTimeDiff = m_vecTime[i] - m_vecTime[i-1];
+      lTmpTimeDiff = (long int)(m_vecTime[i] - m_vecTime[i-1]);
       
       switch(m_iTimerMode)
       {
@@ -71,13 +71,13 @@ void Timer::stopTimer(string sName)
           
         case 1:
           cout << " --  [" << m_vecTimerName[i] << "] -> Time: "
-               << lTmpTimeDiff << " ns" << endl;
+               << lTmpTimeDiff << " µs" << endl;
           break;
       }
     }    
   }
   
-  lTmpTimeDiff = m_vecTime[m_vecTime.size()-1] - m_vecTime[0];
+  lTmpTimeDiff = (long int)(m_vecTime[m_vecTime.size()-1] - m_vecTime[0]);
   
   switch(m_iTimerMode)
   {
@@ -95,14 +95,14 @@ void Timer::stopTimer(string sName)
 }
 
 long int Timer::stopSilent(){
-  return  getTime() - m_vecTime[0];
+  return  (long int)(getTime() - m_vecTime[0]);
 }
 
 // }}}
 
 // {{{ Misc. functions
 
-long int Timer::getTime()
+Time::value_type Timer::getTime()
 {
   FUNCTION_LOG("");
   

@@ -4,8 +4,8 @@ using namespace std;
 using namespace icl;
 
 StrTok::StrTok(string s, string sDelims){
-  unsigned int iPos;
-  unsigned int iLastPos = 0;
+  size_t iPos;
+  size_t iLastPos = 0;
   
   if(!(s.length())){
     this->m_uiPos = 0;   
@@ -35,7 +35,7 @@ const string &StrTok::nextToken(){
 }
 
 unsigned int StrTok::nTokens() const{
-  return m_oTokens.size();
+  return static_cast<unsigned int>(m_oTokens.size());
 }
 
 const vector<string> &StrTok::allTokens()const{

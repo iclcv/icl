@@ -41,7 +41,7 @@ namespace icl{
     inline int extract_arg_count(const string &s){
       // {{{ open
 
-      int n = StrTok(s,"(").allTokens().size();
+      size_t n = StrTok(s,"(").allTokens().size();
       string nr = (StrTok(s,"(").allTokens())[n-1];
       nr = nr.substr(0,nr.length()-1);
       return atoi(nr.c_str());
@@ -181,7 +181,7 @@ namespace icl{
     }
     inline float fParam(unsigned int index){
       ARG_INDEX_CHECK_RETURN(false);
-      return atof(s_oArgs[index].c_str());
+      return (float) atof(s_oArgs[index].c_str());
     }
     inline unsigned int uiParam(unsigned int index){
       ARG_INDEX_CHECK_RETURN(false);
@@ -230,7 +230,7 @@ namespace icl{
     inline float fSubParam(string param, unsigned int index, float def){
       ARG_EXIST_CHECK_RETURN(param,def);
       SUB_ARG_EXIST_CHECK_RETURN(param,index,def);
-      return atof(s_oArgMap[param][index].c_str());
+      return (float) atof(s_oArgMap[param][index].c_str());
     }
 
     inline unsigned int uiSubParam(string param, unsigned int index,unsigned int def){

@@ -21,10 +21,10 @@ class Timer
 {
  private:
   int m_iTimerMode;
-  std::vector<long int> m_vecTime;
+  std::vector<Time::value_type> m_vecTime;
   std::vector<std::string> m_vecTimerName;
   
-  long int getTime();
+  Time::value_type getTime();
   
  public:
 /* {{{ Konstruktor/ Destruktor */
