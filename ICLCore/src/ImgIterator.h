@@ -347,7 +347,7 @@ namespace icl{
     ConstImgIterator() : ImgIterator<const Type>() {}
 
     /// 2nd Constructor creates an ImgIterator object with type "Type"
-    ConstImgIterator(Type *ptData,int iImageWidth,const Rect &roROI) :
+    ConstImgIterator(const Type *ptData,int iImageWidth,const Rect &roROI) :
        ImgIterator<const Type>(ptData, iImageWidth, roROI) {}
 
     /// 3rd Constructor to create sub-regions of an image

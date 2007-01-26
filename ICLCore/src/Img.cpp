@@ -566,25 +566,13 @@ Img<Type>::mirror(axis eAxis, bool bOnlyROI)
 }
 // }}}
 
-static inline void* getPointerOffset (const void* begin, int x, int y, int iByteSize, int iLineLen) {
-  // {{{ open
-  FUNCTION_LOG("");
-  return ((char*)begin) + iByteSize * (x + y*iLineLen);
-}
-
-  // }}}
-static bool getMirrorPointers (axis eAxis, bool bInplace, 
-                               const void* srcBegin, const void* dstBegin, int iByteSize,
-                               const Point& oSrcOffset, int iSrcLineStep, 
-                               const Point& oDstOffset, int iDstLineStep, const Size& oSize,
-                               void** pS, void** pD, void** pE, void** pELine,
-                               int& iLineWarpS, int& iLineWarpD) {
-  // {{{ open
-  FUNCTION_LOG("");
-   void *&s=*pS, *&d=*pD, *&e=*pE, *&eLine=*pELine;
+static inline int getPointerOffset (int x, int y, int iLineLen) {return (x + y*iLineLen);}
+static bool getMirrorPointerOffsets (axis eAxis, bool bInplace, 
+                                     const Point& oSrcOffset, const int iSrcLineLen, 
+                                     const Point& oDstOffset, const int iDstLineLen, const Size& oSize,
+                                     int& s, int& d, int& e, int& eLine, int& iLineWarpS, int& iLineWarpD) {
+   // {{{ open
    int iRows=0, iCols=0;
-   int iSrcLineLen = iSrcLineStep / iByteSize;
-   int iDstLineLen = iDstLineStep / iByteSize;
    switch (eAxis) {
       case axisHorz:
          /* .....................
@@ -600,10 +588,9 @@ static bool getMirrorPointers (axis eAxis, bool bInplace,
          iCols = oSize.width;
          iLineWarpS = iSrcLineLen - iCols;
          iLineWarpD = -(iDstLineLen+iCols);
-         s = getPointerOffset (srcBegin, oSrcOffset.x, oSrcOffset.y, iByteSize, iSrcLineLen);
-         d = getPointerOffset (dstBegin, oDstOffset.x, oDstOffset.y + oSize.height - 1, 
-                               iByteSize, iDstLineLen);
-         e = ((char*)s) + iRows * iSrcLineStep;
+         s = getPointerOffset (oSrcOffset.x, oSrcOffset.y, iSrcLineLen);
+         d = getPointerOffset (oDstOffset.x, oDstOffset.y + oSize.height - 1, iDstLineLen);
+         e = iRows * iSrcLineLen;
          break;
       case axisVert:
          /* .....................
@@ -618,10 +605,9 @@ static bool getMirrorPointers (axis eAxis, bool bInplace,
          iCols = bInplace ? oSize.width/2 : oSize.width; 
          iLineWarpS = iSrcLineLen - iCols;
          iLineWarpD = iDstLineLen + iCols;
-         s = getPointerOffset (srcBegin, oSrcOffset.x, oSrcOffset.y, iByteSize, iSrcLineLen);
-         d = getPointerOffset (dstBegin, oDstOffset.x + oSize.width - 1, oDstOffset.y, 
-                               iByteSize, iDstLineLen);
-         e = ((char*)s) + iRows * iSrcLineStep;
+         s = getPointerOffset (oSrcOffset.x, oSrcOffset.y, iSrcLineLen);
+         d = getPointerOffset (oDstOffset.x + oSize.width - 1, oDstOffset.y, iDstLineLen);
+         e = iRows * iSrcLineLen;
          break;
       case axisBoth: 
          /* .....................
@@ -637,26 +623,56 @@ static bool getMirrorPointers (axis eAxis, bool bInplace,
          iCols = oSize.width;
          iLineWarpS = iSrcLineLen - iCols;
          iLineWarpD = iCols - iDstLineLen;
-         s = getPointerOffset (srcBegin, oSrcOffset.x, oSrcOffset.y, iByteSize, iSrcLineLen);
-         d = getPointerOffset (dstBegin, 
-                               oDstOffset.x + oSize.width - 1, 
-                               oDstOffset.y + oSize.height - 1, 
-                               iByteSize, iDstLineLen);
-         e = ((char*)s) + iRows * iSrcLineStep;
+         s = getPointerOffset (oSrcOffset.x, oSrcOffset.y, iSrcLineLen);
+         d = getPointerOffset (oDstOffset.x + oSize.width - 1, oDstOffset.y + oSize.height - 1, iDstLineLen);
+         e = iRows * iSrcLineLen;
 
          if (bInplace && oSize.height % 2) { // odd ROI height
             iRows++;
-            e = (char*)e + iByteSize * (oSize.width/2);
+            e += oSize.width/2;
          }
          break;
    }
-
-   eLine = ((char*)s) + iCols * iByteSize;
+   eLine = iCols;
 
    return (iRows != 0 && iCols != 0);
 }
+// }}}
 
-  // }}}
+template <typename Type>
+static inline bool getMirrorPointers (axis eAxis, bool bInplace, 
+                                      const Type* const srcBegin, const Point& oSrcOffset, const int iSrcLineLen, 
+                                      Type* const dstBegin, const Point& oDstOffset, const int iDstLineLen, const Size& oSize,
+                                      const Type*& s, Type*& d, const Type*& e, const Type*& eLine, int& iLineWarpS, int& iLineWarpD) {
+   // {{{ open
+   int deltaSrc, deltaDst, deltaEnd, deltaLineEnd;
+   if (!getMirrorPointerOffsets (eAxis, bInplace, oSrcOffset, iSrcLineLen, oDstOffset, iDstLineLen, oSize,
+                                 deltaSrc, deltaDst, deltaEnd, deltaLineEnd, iLineWarpS, iLineWarpD))
+      return false;
+   s = srcBegin + deltaSrc;
+   d = dstBegin + deltaDst;
+   e = srcBegin + deltaEnd;
+   eLine = srcBegin + deltaLineEnd;
+   return true;
+}
+// }}}
+template <typename Type>
+static inline bool getMirrorPointers (axis eAxis, bool bInplace, 
+                                      Type* const srcBegin, const Point& oSrcOffset, const int iSrcLineLen, 
+                                      Type* const dstBegin, const Point& oDstOffset, const int iDstLineLen, const Size& oSize,
+                                      Type*& s, Type*& d, const Type*& e, const Type*& eLine, int& iLineWarpS, int& iLineWarpD) {
+   // {{{ open
+   int deltaSrc, deltaDst, deltaEnd, deltaLineEnd;
+   if (!getMirrorPointerOffsets (eAxis, bInplace, oSrcOffset, iSrcLineLen, oDstOffset, iDstLineLen, oSize,
+                                 deltaSrc, deltaDst, deltaEnd, deltaLineEnd, iLineWarpS, iLineWarpD))
+      return false;
+   s = srcBegin + deltaSrc;
+   d = dstBegin + deltaDst;
+   e = srcBegin + deltaEnd;
+   eLine = srcBegin + deltaLineEnd;
+   return true;
+}
+// }}}
 
 template<class Type> void
 Img<Type>::mirror(axis eAxis, int iChannel, 
@@ -667,15 +683,18 @@ Img<Type>::mirror(axis eAxis, int iChannel,
   
   static const int aiDstStep[] = {1,-1,-1};
   int      iLineWarpS, iLineWarpD;
-  register Type *s=0, *d=0, *e=0, *eLine=0; /* source pointer, destination pointer, 
-                                             end pointer, line end pointer */
-  if (!getMirrorPointers (eAxis, true, getData(iChannel), getData(iChannel), sizeof(Type), 
-                          oOffset, getLineStep(), oOffset, getLineStep(), oSize,
-                          (void**) &s, (void**) &d, (void**) &e, (void**) &eLine, 
-                          iLineWarpS, iLineWarpD)) return;
+  register const Type *e=0, *eLine=0; /* end pointer, line end pointer */
+  register Type *s=0, *d=0; /* source pointer, destination pointer */
+
+  if (!getMirrorPointers (eAxis, true, 
+                          getData(iChannel), oOffset, getWidth(),
+                          getData(iChannel), oOffset, getWidth(), oSize,
+                          s, d, e, eLine, iLineWarpS, iLineWarpD)) return;
+
+  register int dir = aiDstStep[eAxis];
   do {
      std::swap (*s, *d);
-     ++s; d += aiDstStep[eAxis];
+     ++s; d += dir;
      if (s == eLine) {
         eLine += getWidth(); // end of line pointer jumps whole image width
         s += iLineWarpS;     // source pointer jumps iLineWarpS
@@ -948,7 +967,7 @@ float Img<Type>::subPixelLIN(float fX, float fY, int iChannel) const {
    int xll = (int) fX;
    int yll = (int) fY;
    
-   Type* pLL = getData(iChannel) + xll + yll * getWidth();
+   const Type* pLL = getData(iChannel) + xll + yll * getWidth();
    float a = *pLL;        //  a b
    float b = *(++pLL);    //  c d
    pLL += getWidth();
@@ -1193,12 +1212,13 @@ void flippedCopyChannelROI(axis eAxis,
   
   static const int aiDstStep[] = {1,-1,-1};
   int      iLineWarpS, iLineWarpD;
-  register T *s=0, *d=0, *e=0, *eLine=0; /* source pointer, destination pointer, 
-                                            end pointer, line end pointer */
-  if (!getMirrorPointers (eAxis, false, src->getData(srcC), dst->getData(dstC), sizeof(T), 
-                          srcOffs, src->getLineStep(), dstOffs, dst->getLineStep(), srcSize,
-                          (void**)&s, (void**)&d, (void**) &e, (void**) &eLine, 
-                          iLineWarpS, iLineWarpD)) return;
+  register const T *s=0, *e=0, *eLine=0; /* source pointer, end pointer, line end pointer */
+  register T *d=0; /* destination pointer */
+
+  if (!getMirrorPointers (eAxis, false, 
+                          src->getData(srcC), srcOffs, src->getWidth(),
+                          dst->getData(dstC), dstOffs, dst->getWidth(), srcSize,
+                          s, d, e, eLine, iLineWarpS, iLineWarpD)) return;
 
   if (eAxis == axisHorz) {
      int iSrcStep = src->getSize().width, iDstStep = dst->getSize().width;
@@ -1209,9 +1229,10 @@ void flippedCopyChannelROI(axis eAxis,
      return;
   }
 
+  register int dir = aiDstStep[eAxis];
   do {
      *d = *s;
-     ++s; d += aiDstStep[eAxis];
+     ++s; d += dir;
      if (s == eLine) {
         eLine += src->getSize().width; // end of line pointer jumps whole image width
         s += iLineWarpS;               // source pointer jumps iLineWarpS

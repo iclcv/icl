@@ -16,9 +16,6 @@
 #include <Exception.h>
 #include <cmath>
 #include <algorithm>
-#ifdef WIN32
-#	include <Mathematics.h>
-#endif
 
 namespace icl {
   /// The Img class implements the ImgBase Image interface with type specific functionalities
@@ -239,10 +236,12 @@ class Img : public ImgBase
       @param iY Y-Position of the referenced pixel
       @param iChannel channel index
   **/
-  Type& operator()(int iX, int iY, int iChannel) const
+  Type& operator()(int iX, int iY, int iChannel)
     {
       return getData(iChannel)[iX+getWidth()*iY];
     }
+  const Type& operator()(int iX, int iY, int iChannel) const
+    { return const_cast<const Img<Type>*>(this)->operator()(iX,iY,iChannel); }
 
   /// sub-pixel access using nearest neighbour interpolation
   float subPixelNN(float fX, float fY, int iChannel) const {
@@ -498,12 +497,14 @@ class Img : public ImgBase
       @param iChannel specifies the channel 
       @return data origin pointer to the specified channel 
   */
-  Type* getData(int iChannel) const
+  Type* getData(int iChannel)
     { 
       FUNCTION_LOG("");
       ICLASSERT_RETURN_VAL(validChannel(iChannel), 0);
       return m_vecChannels[iChannel].get();
     }
+  const Type* getData(int iChannel) const 
+     {return const_cast<const Img<Type>*>(this)->getData(iChannel);}
   
   /// returns a Type save data pointer to the first pixel within the images roi
   /** The following ASCII image shows an images ROI.
@@ -525,11 +526,13 @@ class Img : public ImgBase
      @param iChannel specifies the channel
      @return roi data pointer
   */
-  Type *getROIData(int iChannel) const{
+  Type* getROIData(int iChannel) {
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(validChannel(iChannel),0);
     return getData(iChannel) + m_oParams.getPixelOffset();
   }
+  const Type* getROIData(int iChannel) const 
+     {return const_cast<Img<Type>*>(this)->getROIData(iChannel);}
 
   /// returns the data pointer to a pixel with defined offset
   /** In some functions like filters, it might be necessary to change the images
@@ -541,12 +544,13 @@ class Img : public ImgBase
       @param p notional ROI offset
       @return data pointer with notional ROI offset p
   **/
-  Type *getROIData(int iChannel, const Point &p) const{
+  Type* getROIData(int iChannel, const Point &p) {
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(validChannel(iChannel),0);
     return getData(iChannel) + p.x + (p.y * getWidth());
   }
-
+  const Type* getROIData(int iChannel, const Point &p) const 
+     {return const_cast<Img<Type>*>(this)->getROIData(iChannel, p);}
 
   /// return the raw- data pointer of an image channel
   /** This function is inherited from the base class ImgBase
@@ -554,12 +558,10 @@ class Img : public ImgBase
                       be returned
       @return raw data pointer
   **/
-  virtual void* getDataPtr(int iChannel) const
-    {
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN_VAL(validChannel(iChannel),0);
-      return getData(iChannel);
-    }
+  virtual void* getDataPtr(int iChannel)
+    { return getData(iChannel); }
+  virtual const void* getDataPtr(int iChannel) const
+    { return getData(iChannel); }
   
   //@}
 
@@ -832,7 +834,7 @@ inline void deepCopyChannelROI(const Img<S> *src,int srcC, const Point &srcOffs,
     ICLASSERT_RETURN( src && dst );
     ICLASSERT_RETURN( srcSize == dstSize );
     
-    ImgIterator<S> itSrc(src->getData(srcC),src->getSize().width,Rect(srcOffs,srcSize));
+    ConstImgIterator<S> itSrc(src->getData(srcC),src->getSize().width,Rect(srcOffs,srcSize));
     ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
     
     for(;itSrc.inRegion();itSrc.incRow(),itDst.incRow()){

@@ -273,7 +273,8 @@ namespace icl {
       
       /// returns a pointer to first data element
       /** @see Img*/
-      virtual void* getDataPtr(int iChannel) const = 0;
+      virtual const void* getDataPtr(int iChannel) const = 0;
+      virtual void* getDataPtr(int iChannel) = 0;
     
       //@} 
       /* }}} */
