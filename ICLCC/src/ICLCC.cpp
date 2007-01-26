@@ -675,8 +675,8 @@ namespace icl{
     return;
   }
   int dim=src->getDim();
-  S** pp=new S* [c];
-  S** ppEnd=pp+c;
+  const S** pp=new const S* [c];
+  const S** ppEnd=pp+c;
   
   for (int i=0;i<c;i++){
     pp[i]=src->getData(i);
@@ -684,7 +684,7 @@ namespace icl{
   
   D* dstEnd=dst+c*dim;
   while (dst<dstEnd){
-    for (S** p=pp;p<ppEnd;++(*p),++p,++dst ){
+    for (const S** p=pp;p<ppEnd;++(*p),++p,++dst ){
       *dst=Cast<S,D>::cast(*(*p));
     }
   }
@@ -743,12 +743,12 @@ namespace icl{
     ICLASSERT_RETURN( src->getChannels() );                                                                   \
     switch(src->getChannels()){                                                                               \
       case 3: {                                                                                               \
-        icl##DEPTH* apucChannels[3]={src->getData(0),src->getData(1),src->getData(2)};                        \
+        const icl##DEPTH* apucChannels[3]={src->getData(0),src->getData(1),src->getData(2)};                        \
         ippiCopy_##DEPTH##_P3C3R(apucChannels,src->getLineStep(),dst,src->getLineStep()*3,src->getSize());    \
         break;                                                                                                \
       }                                                                                                       \
       case 4: {                                                                                               \
-        icl##DEPTH* apucChannels[4]={src->getData(0),src->getData(1),src->getData(2),src->getData(3)};        \
+        const icl##DEPTH* apucChannels[4]={src->getData(0),src->getData(1),src->getData(2),src->getData(3)};        \
         ippiCopy_##DEPTH##_P4C4R(apucChannels,src->getLineStep(),dst,src->getLineStep()*4,src->getSize());    \
         break;                                                                                                \
       }                                                                                                       \

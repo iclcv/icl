@@ -29,10 +29,10 @@ Canny::~Canny(){
 void Canny::apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f lowThresh, icl32f highThresh){
       // {{{ open
       for (int c=srcDx->getChannels()-1; c >= 0; --c) {
-         ippiCanny_32f8u_C1R (srcDx->getROIData (c), srcDx->getLineStep(),
-                   srcDy->getROIData (c), srcDy->getLineStep(),
-                   dst->getROIData (c), dst->getLineStep(),
-                   dst->getROISize(),lowThresh,highThresh,m_oBuffer8u);
+         ippiCanny_32f8u_C1R (const_cast<Img32f*>(srcDx)->getROIData (c), srcDx->getLineStep(),
+                              const_cast<Img32f*>(srcDy)->getROIData (c), srcDy->getLineStep(),
+                              dst->getROIData (c), dst->getLineStep(),
+                              dst->getROISize(),lowThresh,highThresh,m_oBuffer8u);
       }
    }
   // }}}

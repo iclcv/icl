@@ -140,7 +140,7 @@ namespace icl {
   // {{{ ippi-function call templates
 
   template <typename T, IppStatus (IPP_DECL *ippiFunc) (T*, int, IppiSize)>
-  inline void ippi1srcInplaceCall(const Img<T> *srcdst)
+  inline void ippi1srcInplaceCall(Img<T> *srcdst)
   {
     // {{{ open
     ICLASSERT_RETURN( srcdst );

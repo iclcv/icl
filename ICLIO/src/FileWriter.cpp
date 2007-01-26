@@ -320,7 +320,7 @@ namespace icl {
          int iLineStep = poSrc->getSize().width;
          // grayscale image, can handover image channels directly
          while (jpgCinfo.next_scanline < jpgCinfo.image_height) {
-            icl8u *pcBuf = poSrc->getData (0) + jpgCinfo.next_scanline*iLineStep;
+            icl8u *pcBuf = const_cast<icl8u*>(poSrc->getData (0)) + jpgCinfo.next_scanline*iLineStep;
             (void) jpeg_write_scanlines(&jpgCinfo, &pcBuf, 1);
          }
       } else {
@@ -332,9 +332,9 @@ namespace icl {
 
          pcBuf = new icl8u[iDim];
          for (int i=0;i<iNumImages;i++) {
-            icl8u *pcR = poSrc->getData (i*3);
-            icl8u *pcG = poSrc->getData (i*3+1);
-            icl8u *pcB = poSrc->getData (i*3+2);
+            const icl8u *pcR = poSrc->getData (i*3);
+            const icl8u *pcG = poSrc->getData (i*3+1);
+            const icl8u *pcB = poSrc->getData (i*3+2);
             for (int l=0; l<size.height; l++) {
                pc=pcBuf;
                for (int c=0; c<size.width; ++c, ++pcR, ++pcG, ++pcB) {

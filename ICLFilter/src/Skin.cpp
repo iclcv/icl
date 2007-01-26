@@ -16,7 +16,7 @@ using namespace std;
 
 namespace icl {
 
-  void Skin::apply(ImgBase *poSrc, ImgBase **ppoDst) {
+  void Skin::apply(const ImgBase *poSrc, ImgBase **ppoDst) {
     // {{{ open 
     FUNCTION_LOG("");
 

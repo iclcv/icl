@@ -37,7 +37,7 @@ class Skin : public Filter
      @param poSrc The src image
      @param ppoDst The final skin color mask (binarized)
   **/
-  void apply(icl::ImgBase *poSrc, icl::ImgBase **ppoDst);
+  void apply(const icl::ImgBase *poSrc, icl::ImgBase **ppoDst);
 
   ///Start the training procedure for the skin parabla parameter
   /**
