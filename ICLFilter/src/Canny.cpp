@@ -92,6 +92,19 @@ void Canny::apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f 
   }
    // }}}
 
+  void Canny::setThresholds(icl32f lo, icl32f hi){
+    m_fLowThresh = lo;
+    m_fHighThresh = hi;
+  }
+  
+  icl32f Canny::getLowThreshold()const {
+    return m_fLowThresh;
+  }
+  icl32f Canny::getHighThreshold()const {
+    return m_fHighThresh;
+  }
+
+  
 // }}}
 
 
