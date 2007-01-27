@@ -2,6 +2,63 @@
 
 namespace icl{
   
+  LUT::LUT(icl8u quantizationLevels):
+    m_bLevelsSet(true), m_bLutSet(false),
+    m_ucQuantizationLevels(quantizationLevels),
+    m_poBuffer(0){
+    
+  }
+
+  LUT::LUT(const std::vector<icl8u> &lut):
+    m_bLevelsSet(false), m_bLutSet(true),
+    m_vecLUT(lut),
+    m_ucQuantizationLevels(0),
+    m_poBuffer(0){
+  }
+
+  void LUT::setLUT(const std::vector<icl8u> &lut){
+    m_vecLUT = lut;
+    m_bLutSet = true;
+    m_bLevelsSet = false;
+    m_ucQuantizationLevels = 0;
+  }
+  void LUT::setQuantizationLevels(int levels){
+    m_ucQuantizationLevels = levels;
+    m_vecLUT.clear();
+    m_bLutSet = false;
+    m_bLevelsSet = true;
+  }
+  
+  icl8u LUT::getQuantizationLevels() const{
+    return m_ucQuantizationLevels;
+  }
+  const std::vector<icl8u> &LUT::getLUT() const{
+    return m_vecLUT;
+  }
+  
+  bool LUT::isLUTSet() const{
+    return m_bLutSet;
+  }
+  bool LUT::isLevelsSet() const{
+    return m_bLevelsSet;
+  }
+  
+  
+  void LUT::apply(const ImgBase *poSrc, ImgBase **ppoDst){
+    
+    if(poSrc->getDepth() != depth8u){
+      poSrc->deepCopy(m_poBuffer);
+      poSrc = m_poBuffer;
+    }
+    if (!prepare (ppoDst, poSrc, depth8u)) return;
+
+    if(m_bLevelsSet){
+      reduceBits(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(),m_ucQuantizationLevels); 
+    }else{
+      simple(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(),m_vecLUT); 
+    }
+  }
+
   void LUT::simple(Img8u *src, Img8u *dst, const std::vector<icl8u>& lut){
     ICLASSERT_RETURN( src && dst );
     ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
