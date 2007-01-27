@@ -4,51 +4,54 @@
 
 namespace icl {
 
-
-Canny::Canny(const Img32f *src){
 #ifdef WITH_IPP_OPTIMIZATION
-  int bufSize;
-  ippiCannyGetSize(src->getROISize(), &bufSize);
-  m_oBuffer8u = new icl8u[bufSize];
-  m_poSobelx=0; //sobel-x => y-derivation
-  m_poSobely=0; //sobel-y => x-derivation
-#else
-  throw ("Canny Edge Detector only implemented with IPP usage.");
-#endif
+  // without ipp non of the function is implemented
+  Canny::Canny(icl32f lowThresh, icl32f highThresh):
+    m_pucBuffer8u(0),m_poSobelx(0),m_poSobely(0),
+    m_fLowThresh(lowThresh), m_fHighThresh(highThresh)
+  {
+    FUNCTION_LOG("");
+  }
   
-}
-#ifdef WITH_IPP_OPTIMIZATION
+  Canny::~Canny(){
+    FUNCTION_LOG("");
+    if(m_pucBuffer8u){
+      delete [] m_pucBuffer8u;
+    }
+    if (m_poSobelx){delete m_poSobelx;}
+    if (m_poSobely){delete m_poSobely;}
+  }
 
-Canny::~Canny(){
-  FUNCTION_LOG("");
-  delete [] m_oBuffer8u;
-  if (m_poSobelx){delete m_poSobelx;}
-  if (m_poSobely){delete m_poSobely;}
-}
+  void Canny::enshureBufferSize(const Size &s){
+    FUNCTION_LOG("");
+    int bufferSizeNeeded;
+    ippiCannyGetSize(s, &bufferSizeNeeded);
+    if(bufferSizeNeeded != m_iBufferSize){
+      if(m_pucBuffer8u) delete m_pucBuffer8u;
+      m_pucBuffer8u = new icl8u[bufferSizeNeeded];
+      m_iBufferSize = bufferSizeNeeded;
+    }
+  }
 
 void Canny::apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f lowThresh, icl32f highThresh){
       // {{{ open
-      for (int c=srcDx->getChannels()-1; c >= 0; --c) {
+  FUNCTION_LOG("");
+  ICLASSERT_RETURN(srcDx->getROISize() == srcDy->getROISize());
+  ICLASSERT_RETURN(srcDx->getROISize() == dst->getROISize());
+  ICLASSERT_RETURN(srcDx->getChannels() == srcDy->getChannels());
+  ICLASSERT_RETURN(srcDx->getChannels() == dst->getChannels());
+  
+  enshureBufferSize(srcDx->getROISize());
+  
+  for (int c=srcDx->getChannels()-1; c >= 0; --c) {
          ippiCanny_32f8u_C1R (const_cast<Img32f*>(srcDx)->getROIData (c), srcDx->getLineStep(),
                               const_cast<Img32f*>(srcDy)->getROIData (c), srcDy->getLineStep(),
                               dst->getROIData (c), dst->getLineStep(),
-                              dst->getROISize(),lowThresh,highThresh,m_oBuffer8u);
+                              dst->getROISize(),lowThresh,highThresh,m_pucBuffer8u);
       }
    }
   // }}}
 
-  #else
-  // {{{ C++ fallback 
-
-   
-Canny::~Canny(){}
-   
-   void Canny::apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f lowThresh, icl32f highThresh){
-     #warning "Canny Edge Detector is not implemented without IPP optimization";
-    }
-
-  // }}}
-  #endif
   // {{{ ImgBase* version
 
   void Canny::apply (const ImgBase *poSrcDx, const ImgBase *poSrcDy, ImgBase **ppoDst, icl32f lowThresh, icl32f highThresh)
@@ -81,7 +84,16 @@ Canny::~Canny(){}
   }
    // }}}
 
+  void Canny::apply (const ImgBase *poSrc, ImgBase **ppoDst)
+      // {{{ open
+  {
+    FUNCTION_LOG("");
+    apply(poSrc, ppoDst, m_fLowThresh, m_fHighThresh);
+  }
+   // }}}
 
 // }}}
 
+
+#endif
 }

@@ -52,19 +52,25 @@ namespace icl {
 */
    class Canny : public Filter {
    public:
-      Canny(const Img32f *src);
-      virtual ~Canny();
-      /// applys Canny algorithm for edge detection, using 2 src images containing the x- and y-derivation
-      /** 
-          @param poSrcDx    source image, x-derivation
-          @param poSrcDy    source image, y-derivation
-          @param ppoDst   pointer to destination image
-          @param lowThresh    lower threshold for edges detection
-          @param highThresh   upper threshold for edges detection
-      */
-      void apply (const ImgBase *poSrcDx, const ImgBase *poSrcDy, ImgBase **ppoDst, icl32f lowThresh, icl32f highThresh);
-      /// applys Canny algorithm for edge detection
-      /**
+     Canny(icl32f lowThresh=0, icl32f highThresh=255);
+     virtual ~Canny();
+     
+     void setThresholds(icl32f lowThresh, icl32f highThresh);
+     icl32f getLowThreshold() const;
+     icl32f getHighThreshold() const;
+
+     virtual void apply(const ImgBase *src, ImgBase **dst);
+     /// applys Canny algorithm for edge detection, using 2 src images containing the x- and y-derivation
+     /** 
+         @param poSrcDx    source image, x-derivation
+         @param poSrcDy    source image, y-derivation
+         @param ppoDst   pointer to destination image
+         @param lowThresh    lower threshold for edges detection
+         @param highThresh   upper threshold for edges detection
+     */
+     void apply (const ImgBase *poSrcDx, const ImgBase *poSrcDy, ImgBase **ppoDst, icl32f lowThresh, icl32f highThresh);
+     /// applys Canny algorithm for edge detection
+     /**
          @param poSrc    source image
          @param ppoDst   pointer to destination image
          @param lowThresh    lower threshold for edges detection
@@ -74,10 +80,14 @@ namespace icl {
       void apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f lowThresh, icl32f highThresh);
 
    private:
+      
+      void enshureBufferSize(const Size &s);
       /// buffer for ippiCanny
-      icl8u* m_oBuffer8u;
+      icl8u* m_pucBuffer8u;
+      int m_iBufferSize;
       ImgBase *m_poSobelx; //sobel-x => y-derivation
       ImgBase *m_poSobely; //sobel-y => x-derivation
+      icl32f m_fLowThresh, m_fHighThresh; // internally used thresholds
    };
 } // namespace icl
 #endif
