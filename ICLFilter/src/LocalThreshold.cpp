@@ -131,7 +131,6 @@ namespace icl{
     ..........
     |+| = D - A - B + C 
     */
-    
     Size s = src->getSize();
     const int w = s.width;
     const int h = s.height;
@@ -143,11 +142,9 @@ namespace icl{
     
     int iw =w+2*(r1);
     //    int ih =h+2*(r1);
-   
     for(int channel=0;channel<src->getChannels();++channel){
       T *S = src->getData(channel);
       T *D = dst->getData(channel);
-      
       T2 *I = integralImage->getData(channel)+(r1+r1*iw);
       if(gammaSlope){
         /**
@@ -200,23 +197,22 @@ namespace icl{
         m_poROIImage = src->deepCopyROI();
       }else{
         src->deepCopyROI(m_poROIImage);
-      }
+      }    
       src = m_poROIImage;
     }
-    
     // prepare the destination image
     if(!prepare(dst,src)){
       ERROR_LOG("prepare failure in LocalThreshold! ??");
     }
     
-
     // prepare the roi size image
     if(m_oROISizeImage.getSize().isNull() || 
-       m_uiROISizeImagesMaskSize != m_uiMaskSize) {
-       create_roi_size_image(src->getSize(),m_uiMaskSize,m_oROISizeImage);
-       m_uiROISizeImagesMaskSize = m_uiMaskSize;
+       m_uiROISizeImagesMaskSize != m_uiMaskSize || 
+       m_oROISizeImage.getSize() != src->getSize() ) {
+      create_roi_size_image(src->getSize(),m_uiMaskSize,m_oROISizeImage);
+      m_uiROISizeImagesMaskSize = m_uiMaskSize;
     }
-    
+
     // create the integral images with border 1+roiSize
     switch(src->getDepth()){
       case depth8u:

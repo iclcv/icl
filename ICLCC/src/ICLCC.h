@@ -306,7 +306,7 @@ namespace icl{
       also located in the ICLCC package, for color conversion with implicit
       scaling instead.
   */
-  void cc(ImgBase *src, ImgBase *dst);
+  void cc(const ImgBase *src, ImgBase *dst);
   
   
   /// Internal used type, that describes an implementation type of a specific color conversion function
@@ -335,14 +335,14 @@ namespace icl{
   has half X- and half Y-resolution. The data pointer has iW*iH*1.5 elements)
   @param s image size 
   */
-  void convertYUV420ToRGB8(Img8u* poDst, unsigned char *pucSrc, const Size &s);
+  void convertYUV420ToRGB8(const unsigned char *pucSrc, const Size &s, Img8u* poDst);
   
   /// Convert an 4 channel Img8u into Qts ARGB32 interleaved format 
   /** @param pucDst destination data pointer of size
   poSrc->getDim()*4
   @param poSrc source image with 4 channels
   */ 
-  //void convertToARGB32Interleaved(unsigned char *pucDst, Img8u *poSrc);
+  //void convertToARGB32Interleaved(const Img8u *poSrc, unsigned char *pucDst);
   
   /// Convert an 4 channel Img32f into Qts ARGB32 interleaved format 
   /** This function will first convert the given Img32f poSrc into the 
@@ -354,7 +354,7 @@ namespace icl{
   @param poSrc source image with 4 channels
   @param poBuffer buffer to use for internal depth conversion.
   */ 
-  //void convertToARGB32Interleaved(unsigned char *pucDst, Img32f *poSrc, Img8u *poBuffer);
+  //void convertToARGB32Interleaved(const Img32f *poSrc, Img8u *poBuffer, unsigned char *pucDst);
   
   
   /// Converts a planar Img<S> image into its interleaved representations by mixing the channels

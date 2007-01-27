@@ -530,7 +530,7 @@ const ImgBase* PWCGrabber::grab(ImgBase *poOutput){
        poOutput->getWidth() == m_iWidth &&
        poOutput->getHeight() == m_iHeight ){
       
-      convertYUV420ToRGB8(poOutput->asImg<icl8u>(),pY,Size(m_iWidth,m_iHeight));
+      convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),poOutput->asImg<icl8u>());
       
     }else if(poOutput->getFormat() == formatYUV){ // not yet tested
       
@@ -579,7 +579,7 @@ const ImgBase* PWCGrabber::grab(ImgBase *poOutput){
           break;
       }
     }else{
-      convertYUV420ToRGB8(m_poRGB8Image,pY,Size(m_iWidth,m_iHeight));
+      convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),m_poRGB8Image);
       m_oConverter.apply(m_poRGB8Image,poOutput);
     }
 
@@ -587,7 +587,7 @@ const ImgBase* PWCGrabber::grab(ImgBase *poOutput){
   }
   else {
     m_poRGB8Image->setTime(g_Time[m_iDevice]);
-    convertYUV420ToRGB8(m_poRGB8Image,pY,Size(m_iWidth,m_iHeight));
+    convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),m_poRGB8Image);
     pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);
     return m_poRGB8Image;
   }

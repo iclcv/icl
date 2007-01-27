@@ -172,7 +172,7 @@ namespace icl{
     // old
     // GLenum datatype = image->getDepth() == depth8u ? GL_UNSIGNED_BYTE : GL_FLOAT; // TODO_depth
     // end old
-    GLenum datatype;
+    GLenum datatype(GL_UNSIGNED_BYTE);
     switch(image->getDepth()){
       case depth8u: datatype = GL_UNSIGNED_BYTE; break;
       case depth16s: datatype = GL_SHORT; break;
@@ -186,7 +186,7 @@ namespace icl{
 
     if(image->getDepth() == depth32s || image->getDepth() == depth64f){
       // use fallback image conversion before drawing, as "int" and "double" are not supported yet
-      ensureCompatible((ImgBase**)&m_poImageBufferForIncompatibleDepth,depth32f,image->getParams());
+      ensureCompatible(&m_poImageBufferForIncompatibleDepth,depth32f,image->getParams());
       drawImage = m_poImageBufferForIncompatibleDepth;
       image->deepCopy(drawImage);
     }
@@ -391,7 +391,7 @@ namespace icl{
     // old
     // float fScaleRGB = d == depth8u ? 1.0 : 1.0/255;  //TODO_depth
     // end old
-    float fScaleRGB;
+    float fScaleRGB(1);
     switch(d){
       case depth8u:
         fScaleRGB = 1; break;

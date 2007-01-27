@@ -260,7 +260,7 @@ namespace icl{
 
   template<class S, class D, format srcFmt, format dstFmt> struct CCFunc{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       (void)src; (void)dst;
     }
   };
@@ -268,7 +268,7 @@ namespace icl{
   // }}}
   template<class S, class D, format srcDstFmt> struct CCFunc<S,D,srcDstFmt,srcDstFmt>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       src->deepCopy(dst);
     }
     
@@ -279,9 +279,9 @@ namespace icl{
   /// FROM FORMAT RGB
   template<class S, class D> struct CCFunc<S,D,formatRGB,formatGray>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      GET_3_CHANNEL_POINTERS_DIM(S,src,r,g,b,dim);
+      GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
       D *gr = dst->getData(0);
       for(int i=0;i<dim;++i){
         gr[i] = Cast<S,D>::cast((r[i]+g[i]+b[i])/3);
@@ -293,9 +293,9 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatRGB,formatHLS>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      GET_3_CHANNEL_POINTERS_DIM(S,src,r,g,b,dim);
+      GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
       GET_3_CHANNEL_POINTERS_NODIM(D,dst,h,l,s);
       register icl32f reg_h, reg_l, reg_s;
       for(int i=0;i<dim;++i){
@@ -314,8 +314,8 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatRGB,formatChroma>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
-      GET_3_CHANNEL_POINTERS_DIM(S,src,r,g,b,dim);
+    static void convert(const Img<S> *src, Img<D> *dst){
+      GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
       GET_2_CHANNEL_POINTERS_NODIM(D,dst,cromaR,cromaG);
       register S sum;
       for(int i=0;i<dim;++i){
@@ -331,8 +331,8 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatRGB,formatYUV>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
-      GET_3_CHANNEL_POINTERS_DIM(S,src,r,g,b,dim);
+    static void convert(const Img<S> *src, Img<D> *dst){
+      GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
       GET_3_CHANNEL_POINTERS_NODIM(D,dst,y,u,v);
       register icl32s reg_y, reg_u, reg_v;
       for(int i=0;i<dim;++i){ 
@@ -351,8 +351,8 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatRGB,formatLAB>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
-      GET_3_CHANNEL_POINTERS_DIM(S,src,r,g,b,dim);
+    static void convert(const Img<S> *src, Img<D> *dst){
+      GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
       GET_3_CHANNEL_POINTERS_NODIM(D,dst,LL,aa,bb);
       
       register icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
@@ -376,9 +376,9 @@ namespace icl{
   /// FROM FORMAT GRAY
   template<class S, class D> struct CCFunc<S,D,formatGray,formatRGB>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      S *gr = src->getData(0);
+      const S *gr = src->getData(0);
       GET_3_CHANNEL_POINTERS_DIM(D,dst,r,g,b,dim);
       for(int i=0;i<dim;++i){
         r[i] = g[i] = b[i] = Cast<S,D>::cast(gr[i]);
@@ -390,9 +390,9 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatGray,formatHLS>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      S *gr = src->getData(0);
+      const S *gr = src->getData(0);
       GET_3_CHANNEL_POINTERS_DIM(D,dst,h,l,s,dim);
       for(int i=0;i<dim;++i){
         h[i] = s[i] = D(0);
@@ -405,9 +405,9 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatGray,formatYUV>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      S *gr = src->getData(0);
+      const S *gr = src->getData(0);
       GET_3_CHANNEL_POINTERS_DIM(D,dst,y,u,v,dim);
       for(int i=0;i<dim;++i){
         y[i] = Cast<S,D>::cast(gr[i]);
@@ -420,9 +420,9 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatGray,formatLAB>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      S *gr = src->getData(0);
+      const S *gr = src->getData(0);
       GET_3_CHANNEL_POINTERS_DIM(D,dst,L,a,b,dim);
       for(int i=0;i<dim;++i){
         L[i] = Cast<S,D>::cast(gr[i]);
@@ -435,7 +435,7 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatGray,formatChroma>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
       WARNING_LOG("converting formatGray to formatChroma does not make sense");
       (void) src;
@@ -451,7 +451,7 @@ namespace icl{
   /// FROM FORMAT HLS
   template<class S, class D> struct CCFunc<S,D,formatHLS,formatGray>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
       icl::copy(src->getData(1),src->getData(1)+src->getDim(), dst->getData(0));
     }
@@ -461,9 +461,9 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatHLS,formatRGB>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      GET_3_CHANNEL_POINTERS_DIM(S,src,h,l,s,dim);
+      GET_3_CHANNEL_POINTERS_DIM(const S,src,h,l,s,dim);
       GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
       register icl32f reg_r(0), reg_g(0), reg_b(0);
       for(int i=0;i<dim;++i){
@@ -484,7 +484,7 @@ namespace icl{
   /// FROM FORMAT LAB
   template<class S, class D> struct CCFunc<S,D,formatLAB,formatGray>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
       icl::copy(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));
     }
@@ -494,9 +494,9 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatLAB,formatRGB>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      GET_3_CHANNEL_POINTERS_DIM(S,src,ll,aa,bb,dim);
+      GET_3_CHANNEL_POINTERS_DIM(const S,src,ll,aa,bb,dim);
       GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
       register icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
       for(int i=0;i<dim;++i){
@@ -519,7 +519,7 @@ namespace icl{
   /// FROM FORMAT YUV
   template<class S, class D> struct CCFunc<S,D,formatYUV,formatGray>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
       icl::copy(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));
     }
@@ -529,9 +529,9 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatYUV,formatRGB>{
     // {{{ open
-    static void convert(Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      GET_3_CHANNEL_POINTERS_DIM(S,src,y,u,v,dim);
+      GET_3_CHANNEL_POINTERS_DIM(const S,src,y,u,v,dim);
       GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
       register icl32s reg_r, reg_g, reg_b;
       for(int i=0;i<dim;++i){
@@ -549,7 +549,7 @@ namespace icl{
 
   // }}}
 
-  template<class S, class D> void cc_sd(Img<S> *src, Img<D> *dst){
+  template<class S, class D> void cc_sd(const Img<S> *src, Img<D> *dst){
   // {{{ open
 
     // {{{ definition of CASE_LABEL(XXX)
@@ -587,7 +587,7 @@ namespace icl{
 
   // }}}
  
-  template<class S> void cc_s(Img<S> *src, ImgBase *dst){
+  template<class S> void cc_s(const Img<S> *src, ImgBase *dst){
     // {{{ open
 
     switch(dst->getDepth()){      //TODO depth macro
@@ -603,7 +603,7 @@ namespace icl{
 
   // }}}
 
-  void cc(ImgBase *src, ImgBase *dst){
+  void cc(const ImgBase *src, ImgBase *dst){
     // {{{ open
 
     ICLASSERT_RETURN( src );
@@ -823,10 +823,10 @@ namespace icl{
 
   // }}}
 
-  void convertYUV420ToRGB8(Img8u *poDst, unsigned char *pucSrc,const Size &s){
+  void convertYUV420ToRGB8(const unsigned char *pucSrc,const Size &s, Img8u *poDst){
     // {{{ open
 #ifdef WITH_IPP_OPTIMIZATION
-    icl8u *apucSrc[] = {pucSrc,pucSrc+s.getDim(), pucSrc+s.getDim()+s.getDim()/4};
+    const icl8u *apucSrc[] = {pucSrc,pucSrc+s.getDim(), pucSrc+s.getDim()+s.getDim()/4};
     icl8u *apucDst[] = {poDst->getData(0),poDst->getData(1),poDst->getData(2)};
     ippiYUV420ToRGB_8u_P3(apucSrc,apucDst,s); 
 #else
@@ -880,9 +880,9 @@ namespace icl{
     icl8u *pucR = poDst->getData(0);
     icl8u *pucG = poDst->getData(1);
     icl8u *pucB = poDst->getData(2);
-    icl8u *ptY = pucSrc;
-    icl8u *ptU = ptY+iW*iH;
-    icl8u *ptV = ptU+(iW*iH)/4;
+    const icl8u *ptY = pucSrc;
+    const icl8u *ptU = ptY+iW*iH;
+    const icl8u *ptV = ptU+(iW*iH)/4;
     
     register int r,g,b,y,u,v;
     

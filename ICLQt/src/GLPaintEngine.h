@@ -67,7 +67,7 @@ namespace icl{
     QFont m_oFont;
 
     private:
-    Img32f *m_poImageBufferForIncompatibleDepth;
+    ImgBase *m_poImageBufferForIncompatibleDepth;
   };
 }// namespace
 #endif

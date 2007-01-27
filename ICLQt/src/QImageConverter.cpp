@@ -48,9 +48,9 @@ void img_to_qimage(const Img<T> *src, QImage *&dst){
         wBuf.clear(-1,255,false);
         bBuf.setSize(src->getSize());
       }
-      channelVec.push_back(src->getData(0));
+      channelVec.push_back(const_cast<T*>(src->getData(0)));
       channelVec.push_back(bBuf.getData(0));
-      channelVec.push_back(src->getData(1));
+      channelVec.push_back(const_cast<T*>(src->getData(1)));
       channelVec.push_back(wBuf.getData(0));
       Img<T> tmp(src->getSize(),4,channelVec);
       planarToInterleaved<T,icl8u>(&tmp,dst->bits());
@@ -61,9 +61,9 @@ void img_to_qimage(const Img<T> *src, QImage *&dst){
         wBuf.setSize(src->getSize());
         wBuf.clear(-1,255,false);
       }
-      channelVec.push_back(src->getData(2));
-      channelVec.push_back(src->getData(1));
-      channelVec.push_back(src->getData(0));
+      channelVec.push_back(const_cast<T*>(src->getData(2)));
+      channelVec.push_back(const_cast<T*>(src->getData(1)));
+      channelVec.push_back(const_cast<T*>(src->getData(0)));
       channelVec.push_back(wBuf.getData(0));
       Img<T> tmp(src->getSize(),4,channelVec);
 
@@ -71,10 +71,10 @@ void img_to_qimage(const Img<T> *src, QImage *&dst){
       break;
     }
     default:{
-      channelVec.push_back(src->getData(2));
-      channelVec.push_back(src->getData(1));
-      channelVec.push_back(src->getData(0));
-      channelVec.push_back(src->getData(3));
+      channelVec.push_back(const_cast<T*>(src->getData(2)));
+      channelVec.push_back(const_cast<T*>(src->getData(1)));
+      channelVec.push_back(const_cast<T*>(src->getData(0)));
+      channelVec.push_back(const_cast<T*>(src->getData(3)));
       Img<T> tmp(src->getSize(),4,channelVec);
       planarToInterleaved<T,icl8u>(&tmp,dst->bits());
       break;

@@ -28,7 +28,7 @@ int main(int nArgs, char **ppcArg){
    pConv->setClipToROI (true);
    pConv->apply (src, &dst3);
 
-   Canny* pCanny = new Canny(src->asImg<icl32f>());
+   Canny* pCanny = new Canny();
    
    pCanny->apply (dst3, dst2,&dst,20,40);
    // test2

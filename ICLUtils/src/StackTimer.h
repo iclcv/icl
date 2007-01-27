@@ -47,7 +47,15 @@ namespace icl{
     /// StackTimerNotifier constructor, USE BENCHMARK_THIS_FUNCTION-MACRO instead
     class StackTimerNotifier{
       public:
-      StackTimerNotifier(const char* functionname){
+      StackTimerNotifier(const char* functionname, 
+                         bool writeCounts=true, 
+                         bool writeAvg=true,
+                         bool writeMin=true,
+                         bool writeMax=true){
+        m_bWriteCounts = writeCounts;
+        m_bWriteAvg = writeAvg;
+        m_bWriteMin = writeMin;
+        m_bWriteMax = writeMax;
         m_liCount = 0;
         m_liTime = 0;
         m_sFunctionName = functionname;
@@ -67,13 +75,20 @@ namespace icl{
       }
       /// StackTimerNotifier destructor, USE BENCHMARK_THIS_FUNCTION-MACRO instead
       ~StackTimerNotifier(){
-        printf("calls[%8ld]  time[%s]  avg[%s]  min[%s]  max[%s] {%s}\n",
-               m_liCount,
-               getTimeStr(m_liTime).c_str(),
-               getTimeStr(m_liTime/m_liCount).c_str(),
-               getTimeStr(m_liMinTime).c_str(),
-               getTimeStr(m_liMaxTime).c_str(),
-               m_sFunctionName.c_str());
+        if(m_bWriteCounts){
+          printf("calls[%8ld]  ",m_liCount);
+        }
+        printf("time[%s]  ",getTimeStr(m_liTime).c_str());
+        if(m_bWriteAvg){
+          printf("avg[%s]  ",getTimeStr(m_liTime/m_liCount).c_str());
+        }
+        if(m_bWriteMin){
+          printf("min[%s]  ",getTimeStr(m_liMinTime).c_str());
+        } 
+        if(m_bWriteMax){
+          printf("max[%s]  ",getTimeStr(m_liMaxTime).c_str());
+        }
+        printf("{%s}\n",m_sFunctionName.c_str());
       }
       /// increments the execution counter, USE BENCHMARK_THIS_FUNCTION-MACRO instead
       void incCount(){
@@ -91,6 +106,11 @@ namespace icl{
       long int m_liMaxTime;
       long int m_liMinTime;
       std::string m_sFunctionName;
+
+      bool m_bWriteCounts;
+      bool m_bWriteAvg;
+      bool m_bWriteMin;
+      bool m_bWriteMax;
     };
     /// StackTimer constructor, USE BENCHMARK_THIS_FUNCTION-MACRO instead
     StackTimer(StackTimerNotifier *notifier){
@@ -107,6 +127,7 @@ namespace icl{
     private:
     Timer *m_poTimer;
     StackTimerNotifier* m_poNotifier;
+   
   };
   
   
@@ -114,4 +135,7 @@ namespace icl{
   static StackTimer::StackTimerNotifier __notifier(__FUNCTION__);       \
   StackTimer __stacktimer(&__notifier);
   
+#define BENCHMARK_THIS_FUNCTION_LITE                                       \
+  static StackTimer::StackTimerNotifier __notifier(__FUNCTION__,0,0,0,0);  \
+  StackTimer __stacktimer(&__notifier);
 }
