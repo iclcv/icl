@@ -1,6 +1,7 @@
 #include <Img.h>
 #include <Median.h>
 #include <Convolution.h>
+#include <DynamicConvolution.h>
 
 #include <stdio.h>
 

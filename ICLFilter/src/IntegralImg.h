@@ -3,7 +3,7 @@
 
 #include <Img.h>
 #include <vector>
-
+#include <Filter.h>
 namespace icl{
   /// class for creating integral images
   /** 
@@ -71,13 +71,24 @@ namespace icl{
   But since it is a fallback implementation, this optimization is not yet implemented 
   
   */
-  class IntegralImg{
+  class IntegralImg : public Filter{
     public:
+    IntegralImg(unsigned int borderSize=0, depth integralImageDepth=depth32f);
+    void setBorderSize(unsigned int borderSize);
+    void setIntegralImageDepth(depth integralImageDepth);
+    unsigned int getBorderSize() const;
+    depth getIntegralImageDepth() const;
+
+    void apply(const ImgBase *posrc, ImgBase **ppoDst); 
+
     
     /// creates a set of integral image channels from a given image
     template<class T,class  I>
     static Img<I> *create(Img<T> *image,unsigned int borderSize=0, Img<I> *integralImage=0);
 
+    private:
+    unsigned int m_uiBorderSize;
+    depth m_eIntegralImageDepth;
   };
 }
 

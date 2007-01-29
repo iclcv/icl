@@ -28,6 +28,10 @@ namespace icl{
     void setMaskSize(unsigned int maskSize);
     void setGlobalThreshold(int globalThreshold);
     void setGammaSlope(float gammaSlope);
+    
+    unsigned int getMaskSize() const;
+    int getGlobalThreshold() const;
+    float getGammaSlope() const; 
 
     private:
     unsigned int m_uiMaskSize;

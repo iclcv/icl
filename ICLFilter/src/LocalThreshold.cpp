@@ -215,8 +215,10 @@ namespace icl{
 
     // create the integral images with border 1+roiSize
     switch(src->getDepth()){
-      case depth8u:
-        IntegralImg::create(src->asImg<icl8u>(), m_uiMaskSize+1, &m_oIntegralImage);
+      case depth8u:{
+        //        IntegralImg::create(src->asImg<icl8u>(), m_uiMaskSize+1, &m_oIntegralImage);
+        ImgBase *ii = &m_oIntegralImage;
+        IntegralImg(m_uiMaskSize+1, depth32s).apply(src, &ii);
         local_threshold_algorithm<icl8u>(src->asImg<icl8u>(),
                                          (*dst)->asImg<icl8u>(),
                                          &m_oIntegralImage,
@@ -225,8 +227,11 @@ namespace icl{
                                          m_uiMaskSize,
                                          m_fGammaSlope);
         break;
-      case depth32f:
-        IntegralImg::create(src->asImg<icl32f>(), m_uiMaskSize+1, &m_oIntegralImageF);
+      }
+      case depth32f:{
+        //IntegralImg::create(src->asImg<icl32f>(), m_uiMaskSize+1, &m_oIntegralImageF);
+        ImgBase *ii = &m_oIntegralImageF;
+        IntegralImg(m_uiMaskSize+1, depth32f).apply(src, &ii);
         local_threshold_algorithm<icl32f>(src->asImg<icl32f>(),
                                           (*dst)->asImg<icl32f>(),
                                           &m_oIntegralImageF,
@@ -235,6 +240,7 @@ namespace icl{
                                           m_uiMaskSize,
                                           m_fGammaSlope);
         break;
+      }
       default:
         ICL_INVALID_FORMAT;
     }
@@ -242,4 +248,16 @@ namespace icl{
   }  
 
   // }}}
+
+  unsigned int LocalThreshold::getMaskSize() const{
+    return m_uiMaskSize;
+  }
+  int LocalThreshold::getGlobalThreshold() const{
+      return m_iGlobalThreshold;
+  }
+  float LocalThreshold::getGammaSlope() const{
+      return m_fGammaSlope;
+  }
+  
+    
 }

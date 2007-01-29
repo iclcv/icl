@@ -2,6 +2,85 @@
 
 namespace icl{
 
+  
+  IntegralImg::IntegralImg(unsigned int borderSize, depth d):
+    // {{{ open
+
+    Filter(),m_uiBorderSize(borderSize),m_eIntegralImageDepth(d){
+  }
+
+  // }}}
+  void IntegralImg::setBorderSize(unsigned int borderSize){
+    // {{{ open
+
+    m_uiBorderSize = borderSize;
+  }
+
+  // }}}
+  void IntegralImg::setIntegralImageDepth(depth integralImageDepth){
+    // {{{ open
+
+    m_eIntegralImageDepth = integralImageDepth;
+  }
+
+  // }}}
+  unsigned int IntegralImg::getBorderSize() const{
+    // {{{ open
+
+    return m_uiBorderSize;
+  }
+
+  // }}}
+  depth IntegralImg::getIntegralImageDepth() const{
+    // {{{ open
+
+    return m_eIntegralImageDepth;
+  }
+
+  // }}}
+  
+  void IntegralImg::apply(const ImgBase *poSrc, ImgBase **ppoDst){
+    // {{{ open
+
+    ICLASSERT_RETURN( poSrc );
+    if(!prepare(ppoDst,  m_eIntegralImageDepth, poSrc->getSize()+Size(2*m_uiBorderSize,2*m_uiBorderSize),
+                formatMatrix, poSrc->getChannels(), Rect::null)) return;
+    
+    switch(m_eIntegralImageDepth){
+      case depth32s:
+        switch(poSrc->getDepth()){
+          case depth8u: create(poSrc->asImg<icl8u>(),m_uiBorderSize,(*ppoDst)->asImg<icl32s>()); break;
+          case depth16s: create(poSrc->asImg<icl16s>(),m_uiBorderSize,(*ppoDst)->asImg<icl32s>()); break;
+          case depth32s: create(poSrc->asImg<icl32s>(),m_uiBorderSize,(*ppoDst)->asImg<icl32s>()); break;
+          case depth32f: create(poSrc->asImg<icl32f>(),m_uiBorderSize,(*ppoDst)->asImg<icl32s>()); break;
+          case depth64f: create(poSrc->asImg<icl64f>(),m_uiBorderSize,(*ppoDst)->asImg<icl32s>()); break;
+        }
+        break;
+      case depth32f:
+        switch(poSrc->getDepth()){
+          case depth8u: create(poSrc->asImg<icl8u>(),m_uiBorderSize,(*ppoDst)->asImg<icl32f>()); break;
+          case depth16s: create(poSrc->asImg<icl16s>(),m_uiBorderSize,(*ppoDst)->asImg<icl32f>()); break;
+          case depth32s: create(poSrc->asImg<icl32s>(),m_uiBorderSize,(*ppoDst)->asImg<icl32f>()); break;
+          case depth32f: create(poSrc->asImg<icl32f>(),m_uiBorderSize,(*ppoDst)->asImg<icl32f>()); break;
+          case depth64f: create(poSrc->asImg<icl64f>(),m_uiBorderSize,(*ppoDst)->asImg<icl32f>()); break;
+        }
+        break;
+      case depth64f:
+        switch(poSrc->getDepth()){
+          case depth8u: create(poSrc->asImg<icl8u>(),m_uiBorderSize,(*ppoDst)->asImg<icl64f>()); break;
+          case depth16s: create(poSrc->asImg<icl16s>(),m_uiBorderSize,(*ppoDst)->asImg<icl64f>()); break;
+          case depth32s: create(poSrc->asImg<icl32s>(),m_uiBorderSize,(*ppoDst)->asImg<icl64f>()); break;
+          case depth32f: create(poSrc->asImg<icl32f>(),m_uiBorderSize,(*ppoDst)->asImg<icl64f>()); break;
+          case depth64f: create(poSrc->asImg<icl64f>(),m_uiBorderSize,(*ppoDst)->asImg<icl64f>()); break;
+        }
+        break;
+      default: ICL_INVALID_DEPTH;
+    }
+    
+  }
+
+  // }}}
+
   template<class T,class  I>
   inline void create_integral_channel_no_border(T *image,int w, int h, I *intImage){
     // {{{ open
@@ -19,18 +98,18 @@ namespace icl{
     I *dst = intImage;
   
     // fist pixel
-    *dst++ = *src++;
+    *dst++ = Cast<T,I>::cast(*src++);
     
     // fist row
     for(T *srcEnd=src+w-1;src<srcEnd;++src,++dst){
-      *dst = *src + *(dst-1);
+      *dst = Cast<T,I>::cast(*src) + *(dst-1);
     }
     
     // first column
     src = image+w;
     dst = intImage+w;
     for(T *srcEnd=src+w*(h-1);src<srcEnd;src+=w,dst+=w){
-      *dst = *src + *(dst-w);
+      *dst =  Cast<T,I>::cast(*src) + *(dst-w);
     }
 
     // rest of the image up to last row
@@ -40,7 +119,7 @@ namespace icl{
     for(int y=1;y<h;++y){
       int idx = y*w+1;
       for(int x=1;x<w;++x,++idx){
-        dst[idx] = src[idx] + dst[idx-1] + dst[idx-w] - dst[idx-w-1];
+        dst[idx] =  Cast<T,I>::cast(src[idx]) + dst[idx-1] + dst[idx-w] - dst[idx-w-1];
       }
     } 
   }
@@ -120,12 +199,12 @@ namespace icl{
     I *dst = intImage;
   
     // first pixel
-    *dst++ = *src++;
+    *dst++ =  Cast<T,I>::cast(*src++);
   
   
     // fist row
     for(T *srcEnd=src+w-1;src<srcEnd;++src,++dst){
-      *dst = *src + *(dst-1);
+      *dst =  Cast<T,I>::cast(*src) + *(dst-1);
     }
   
     
@@ -133,7 +212,7 @@ namespace icl{
     src = image+w;
     dst = intImage+iw;
     for(T *srcEnd=src+w*(h-1);src<srcEnd;src+=w,dst+=iw){
-      *dst = *src + *(dst-iw);
+      *dst =  Cast<T,I>::cast(*src) + *(dst-iw);
     }
 
     
@@ -146,7 +225,7 @@ namespace icl{
     for(int y=1;y<h;++y){
       idx = y*iw+1;
       for(int x=1;x<w;++x,++idx){
-        dst[idx] = src[x+y*w] + dst[idx-1] + dst[idx-iw] - dst[idx-iw-1];
+        dst[idx] =  Cast<T,I>::cast(src[x+y*w]) + dst[idx-1] + dst[idx-iw] - dst[idx-iw-1];
       }
     } 
     
@@ -225,13 +304,5 @@ namespace icl{
   }
 
   // }}}
-  
-  
-  // {{{ explicit template instantiations
-
-  template Img<int> *IntegralImg::create<icl8u,int>(Img8u *, unsigned int, Img<int>*);
-  template Img<icl32f> *IntegralImg::create<icl8u,icl32f>(Img8u *, unsigned int, Img<icl32f>*);
-  template Img<icl32f> *IntegralImg::create<icl32f,icl32f>(Img32f *, unsigned int, Img<icl32f>*);
-   
-  // }}}
+    
 }

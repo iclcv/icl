@@ -1,0 +1,30 @@
+#ifndef DYNAMIC_CONVOLUTION_H
+#define DYNAMIC_CONVOLUTION_H
+
+#include <Convolution.h>
+
+namespace icl{
+  /// Convolution using the ROI of an ICL image as its kernel
+  /** Sometimes it is useful to use the ROI of an ICL image directly as the
+      convolution kernel, e.g. for template matching. Because the ROI may be
+      smaller than the image itself, the DynamicConvolution class maintains
+      an internal buffer poKernelBuf of this ROI only. Its first channel is
+      directly set as the (unbuffered) kernel data of the underlying Convolution
+      class.
+  */
+  class DynamicConvolution : protected Convolution {
+  public:
+     DynamicConvolution (const ImgBase* poKernel = 0);
+     ~DynamicConvolution ();
+
+     void setKernel (const ImgBase* poKernel);
+     Convolution::setClipToROI;
+     Convolution::setCheckOnly;
+     Convolution::apply;
+  private:
+     icl::Img<icl::icl32f> *poKernelBuf;
+  };
+  
+}
+
+#endif
