@@ -159,6 +159,14 @@
 			<File
 				RelativePath="..\ICLCore\src\Img.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						DisableSpecificWarnings="4267;4305"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ICLCore\src\ImgBase.cpp"

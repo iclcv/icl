@@ -241,7 +241,7 @@ class Img : public ImgBase
       return getData(iChannel)[iX+getWidth()*iY];
     }
   const Type& operator()(int iX, int iY, int iChannel) const
-    { return const_cast<const Img<Type>*>(this)->operator()(iX,iY,iChannel); }
+    { return const_cast<Img<Type>*>(this)->operator()(iX,iY,iChannel); }
 
   /// sub-pixel access using nearest neighbour interpolation
   float subPixelNN(float fX, float fY, int iChannel) const {
