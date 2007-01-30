@@ -20,9 +20,6 @@ namespace icl {
       void apply (ImgBase *poSrc, Img<icl32f> *poDst, const std::vector<float>& weights);
 
    private:
-#if 0 && defined WITH_IPP_OPTIMIZATION
-      std::vector<float> m_oBuffer;
-#endif
 
       template <typename T>
       void compute(const Img<T> *src, Img<icl32f> *dst, 

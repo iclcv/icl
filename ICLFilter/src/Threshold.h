@@ -26,30 +26,33 @@ namespace icl {
        <h2>Benchmarks</h2>
    */
    class Threshold : public Filter {
+
    public:
-      /// less than thresholding
-      void lt(const ImgBase *poSrc, ImgBase **ppoDst, float threshold);
-      /// greater than thresholding
-      void gt(const ImgBase *poSrc, ImgBase **ppoDst, float threshold);
-      /// less than and greater than thresholding
-      void ltgt(const ImgBase *poSrc, ImgBase **ppoDst, float low, float hi);
-      /// less than thresholding with explicit set value
-      void ltVal(const ImgBase *poSrc, ImgBase **ppoDst, float threshold, float val);
-      /// greater than thresholding with explicit set value
-      void gtVal(const ImgBase *poSrc, ImgBase **ppoDst, float threshold, float val);
-      /// less than and greater than thresholding with explicit set values
-      void ltgtVal(const ImgBase *poSrc, ImgBase **ppoDst, 
-                   float low, float lowVal, float hi, float hiVal);
-
-      /// calls ltgtVal with low=hi=threshold, lowVal = 0 and hiVal=255
-      void binarize(const ImgBase *poSrc, ImgBase **ppoDst, float threshold) {
-        ltgtVal(poSrc,ppoDst,threshold+1,0,threshold,255);
-      }
-
-
+     
+      enum optype{
+        lt,
+        gt,
+        ltgt,
+        ltVal,
+        gtVal,
+        ltgtVal
+      };
+      Threshold(optype ttype,float lowThreshold=127, float highThreshold=127,float lowVal=0, float highVal=255 );
+      virtual ~Threshold();
+      virtual void apply (const ImgBase *poSrc, ImgBase **ppoDst);
+      float getLowThreshold() const;
+      float getHighThreshold() const;
+      float getLowVal() const;
+      float getHighVal() const;
+      optype getType() const;
+      void setLowThreshold(float lowThreshold);
+      void setHighThreshold(float highThreshold);
+      void setLowVal(float lowVal);
+      void setHighVal(float highVal);
+      void setType(optype type);
       
 #define ICL_INSTANTIATE_DEPTH(T) \
-      static void lt(const Img ## T *poSrc, Img ## T *poDst, icl ## T tThreshold);
+      static void tlt(const Img ## T *poSrc, Img ## T *poDst, icl ## T tThreshold);
       /// less than thresholding
       ICL_INSTANTIATE_DEPTH(8u)
       /// less than thresholding
@@ -63,7 +66,7 @@ namespace icl {
 #undef ICL_INSTANTIATE_DEPTH
 
 #define ICL_INSTANTIATE_DEPTH(T) \
-      static void gt(const Img ## T *poSrc, Img ## T *poDst, icl ## T tThreshold);
+      static void tgt(const Img ## T *poSrc, Img ## T *poDst, icl ## T tThreshold);
       /// greater than thresholding
       ICL_INSTANTIATE_DEPTH(8u)
       /// greater than thresholding
@@ -77,7 +80,7 @@ namespace icl {
 #undef ICL_INSTANTIATE_DEPTH
 
 #define ICL_INSTANTIATE_DEPTH(T) \
-      static void ltgt(const Img ## T *poSrc, Img ## T *poDst, icl ## T tLowerThreshold, icl ## T tUpperThreshold);
+      static void tltgt(const Img ## T *poSrc, Img ## T *poDst, icl ## T tLowerThreshold, icl ## T tUpperThreshold);
       /// less than and greater than thresholding
       ICL_INSTANTIATE_DEPTH(8u)
       /// less than and greater than thresholding
@@ -92,7 +95,7 @@ namespace icl {
 
 
 #define ICL_INSTANTIATE_DEPTH(T) \
-      static void ltVal(const Img ## T *poSrc, Img ## T *poDst, icl ## T tThreshold, icl ## T tVal);
+      static void tltVal(const Img ## T *poSrc, Img ## T *poDst, icl ## T tThreshold, icl ## T tVal);
       /// less than thresholding with explicit set value
       ICL_INSTANTIATE_DEPTH(8u)
       /// less than thresholding with explicit set value
@@ -107,7 +110,7 @@ namespace icl {
 
 
 #define ICL_INSTANTIATE_DEPTH(T) \
-      static void gtVal(const Img ## T *poSrc, Img ## T *poDst, icl ## T tThreshold, icl ## T tVal);
+      static void tgtVal(const Img ## T *poSrc, Img ## T *poDst, icl ## T tThreshold, icl ## T tVal);
       /// greater than thresholding with explicit set value
       ICL_INSTANTIATE_DEPTH(8u)
       /// greater than thresholding with explicit set value
@@ -121,7 +124,7 @@ namespace icl {
 #undef ICL_INSTANTIATE_DEPTH
 
 #define ICL_INSTANTIATE_DEPTH(T) \
-      static void ltgtVal(const Img ## T *poSrc, Img ## T *poDst, icl ## T tLow, icl ## T tLowVal, icl ## T tHi, icl ## T tHiVal);
+      static void tltgtVal(const Img ## T *poSrc, Img ## T *poDst, icl ## T tLow, icl ## T tLowVal, icl ## T tHi, icl ## T tHiVal);
       /// less than and greater than thresholding with explicit set values
       ICL_INSTANTIATE_DEPTH(8u)
       /// less than and greater than thresholding with explicit set values
@@ -133,6 +136,29 @@ namespace icl {
       /// less than and greater than thresholding with explicit set values
       ICL_INSTANTIATE_DEPTH(64f)      
 #undef ICL_INSTANTIATE_DEPTH
+
+   private:
+      float m_fLowThreshold;
+      float m_fHighThreshold;
+      float m_fLowVal;
+      float m_fHighVal;
+      optype m_eType;
+      /// less than thresholding
+      void tlt(const ImgBase *poSrc, ImgBase **ppoDst, float threshold);
+      /// greater than thresholding
+      void tgt(const ImgBase *poSrc, ImgBase **ppoDst, float threshold);
+      /// less than and greater than thresholding
+      void tltgt(const ImgBase *poSrc, ImgBase **ppoDst, float low, float hi);
+      /// less than thresholding with explicit set value
+      void tltVal(const ImgBase *poSrc, ImgBase **ppoDst, float threshold, float val);
+      /// greater than thresholding with explicit set value
+      void tgtVal(const ImgBase *poSrc, ImgBase **ppoDst, float threshold, float val);
+      /// less than and greater than thresholding with explicit set values
+      void tltgtVal(const ImgBase *poSrc, ImgBase **ppoDst, 
+                   float low, float lowVal, float hi, float hiVal);
+
+
+
    };
 
 } // namespace icl
