@@ -1,8 +1,7 @@
-#ifndef BASEAFFINE_H
-#define BASEAFFINE_H
+#ifndef BASEAFFINE_OP_H
+#define BASEAFFINE_OP_H
 
-#include "Filter.h"
-#include "ICLTypes.h"
+#include "UnaryOp.h"
 
 namespace icl{
 
@@ -15,11 +14,9 @@ namespace icl{
       - Mirror
       - Scale  
   */
-  class BaseAffine : public Filter{
+  class BaseAffineOp : public UnaryOp{
     public:
-    virtual ~BaseAffine(){}
-    /// pure virtual apply function implemented in the certain implementations of BaseAffine
-    virtual void apply(const ImgBase *src, ImgBase **dst)=0;
+    virtual ~BaseAffineOp(){}
   };
 
 }

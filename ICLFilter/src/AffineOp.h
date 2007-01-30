@@ -1,14 +1,14 @@
-#ifndef AFFINE_H
-#define AFFINE_H
+#ifndef AFFINE_OP_H
+#define AFFINE_OP_H
 
-#include "BaseAffine.h"
+#include "BaseAffineOp.h"
 
 namespace icl{
   /// Class to apply an arbitrary series of affine transformations
-  class Affine : public BaseAffine {
+  class AffineOp : public BaseAffineOp {
     public:
     /// Constructor
-    Affine (scalemode eInterpolate=interpolateLIN);
+    AffineOp (scalemode eInterpolate=interpolateLIN);
     
     void reset  ();
     void rotate (double dAngle);
@@ -25,7 +25,7 @@ namespace icl{
     
     private:
     /// array of class methods used to transform depth8u and depth32f images
-    void (Affine::*m_aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 
+    void (AffineOp::*m_aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 
     
     template<typename T>
     void affine (const ImgBase *poSrc, ImgBase *poDst);

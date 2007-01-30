@@ -1,22 +1,22 @@
-#ifndef MIRROR_H
-#define MIRROR_H
+#ifndef MIRROR_OP_H
+#define MIRROR_OP_H
 
-#include "BaseAffine.h"
+#include "BaseAffineOp.h"
 
 namespace icl{
   
   /// Class to mirror images vertically or horizontally
-  class Mirror : public BaseAffine {
+  class MirrorOp : public BaseAffineOp {
     public:
     /// Constructor
-    Mirror (axis eAxis);
-    
+    MirrorOp (axis eAxis);
+    virtual ~MirrorOp(){}
     /// Applies the mirror transform to the images
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);
 
     private:    
     /// array of class methods used to transform depth8u and depth32f images
-    void (Mirror::*m_aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst);
+    void (MirrorOp::*m_aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst);
     
     template<typename T>
     void mirror (const ImgBase *poSrc, ImgBase *poDst);

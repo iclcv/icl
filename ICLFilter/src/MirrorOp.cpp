@@ -1,9 +1,9 @@
-#include "Mirror.h"
+#include "MirrorOp.h"
 #include <Img.h>
 
 namespace icl{
    template<typename T>
-   void Mirror::mirror (const ImgBase *poSrc, ImgBase *poDst) {
+   void MirrorOp::mirror (const ImgBase *poSrc, ImgBase *poDst) {
       const Img<T> *poS = (const Img<T>*) poSrc;
       Img<T> *poD = (Img<T>*) poDst;
       for(int c=0; c < poSrc->getChannels(); c++) {
@@ -12,19 +12,19 @@ namespace icl{
       }
    }
 
-   Mirror::Mirror (axis eAxis) :
+   MirrorOp::MirrorOp (axis eAxis) :
       m_eAxis (eAxis)
    {
-      this->m_aMethods[depth8u] = &Mirror::mirror<icl8u>;
-      this->m_aMethods[depth16s] = &Mirror::mirror<icl16s>;
-      this->m_aMethods[depth32s] = &Mirror::mirror<icl32s>;
-      this->m_aMethods[depth32f] = &Mirror::mirror<icl32f>;
-      this->m_aMethods[depth64f] = &Mirror::mirror<icl64f>;
+      this->m_aMethods[depth8u] = &MirrorOp::mirror<icl8u>;
+      this->m_aMethods[depth16s] = &MirrorOp::mirror<icl16s>;
+      this->m_aMethods[depth32s] = &MirrorOp::mirror<icl32s>;
+      this->m_aMethods[depth32f] = &MirrorOp::mirror<icl32f>;
+      this->m_aMethods[depth64f] = &MirrorOp::mirror<icl64f>;
    }
 
-   void Mirror::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
+   void MirrorOp::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
       Point oROIOffset;
-      if (bClipToROI) {
+      if (getClipToROI()) {
          m_oSrcOffset = poSrc->getROIOffset();
          oROIOffset = m_oDstOffset = Point::null;
          m_oSize = poSrc->getROISize();
@@ -39,7 +39,7 @@ namespace icl{
             oROIOffset.x = m_oSize.width - oROIOffset.x - poSrc->getROISize().width;
       }
 
-      if (Filter::prepare (ppoDst, poSrc->getDepth(), m_oSize, 
+      if (UnaryOp::prepare (ppoDst, poSrc->getDepth(), m_oSize, 
                            poSrc->getFormat(), poSrc->getChannels(),
                            Rect (oROIOffset, poSrc->getROISize()), poSrc->getTime()))
          (this->*(m_aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);

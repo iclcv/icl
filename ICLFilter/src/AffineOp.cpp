@@ -1,4 +1,4 @@
-#include "Affine.h"
+#include "AffineOp.h"
 #include <Img.h>
 
 namespace icl{
@@ -6,7 +6,7 @@ namespace icl{
   
 #ifdef WITH_IPP_OPTIMIZATION 
    template<>
-   void Affine::affine<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
+   void AffineOp::affine<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
      // {{{ open
 
       for(int c=0; c < poSrc->getChannels(); c++) {
@@ -21,7 +21,7 @@ namespace icl{
   // }}}
   
    template<>
-   void Affine::affine<icl32f> (const ImgBase *poSrc, ImgBase *poDst) {
+   void AffineOp::affine<icl32f> (const ImgBase *poSrc, ImgBase *poDst) {
      // {{{ opem
 
       for(int c=0; c < poSrc->getChannels(); c++) {
@@ -39,23 +39,23 @@ namespace icl{
 
    // the affine function is not implemented so a linker error is produced
    //
-   //#warning "fallback for Affine::affine not yet implemented"
+   //#warning "fallback for AffineOp::affine not yet implemented"
    //template<typename T>
-   //void Affine::affine (const ImgBase *poSrc, ImgBase *poDst) {
+   //void AffineOp::affine (const ImgBase *poSrc, ImgBase *poDst) {
    //   ERROR_LOG ("not yet implemented");
    //} 
 #endif
 
-   Affine::Affine (scalemode eInterpolate) : m_eInterpolate (eInterpolate)  {
+   AffineOp::AffineOp (scalemode eInterpolate) : m_eInterpolate (eInterpolate)  {
      // {{{ open
      reset ();
-      this->m_aMethods[depth8u] = &Affine::affine<icl8u>;
-      this->m_aMethods[depth32f] = &Affine::affine<icl32f>;
+      this->m_aMethods[depth8u] = &AffineOp::affine<icl8u>;
+      this->m_aMethods[depth32f] = &AffineOp::affine<icl32f>;
    }
 
   // }}}
 
-   void Affine::reset () {
+   void AffineOp::reset () {
      // {{{ open
 
       m_aadT[0][0] = m_aadT[1][1] = 1.0;
@@ -64,7 +64,7 @@ namespace icl{
 
   // }}}
   
-   void Affine::rotate (double dAngle) {
+   void AffineOp::rotate (double dAngle) {
      // {{{ open
 
       double c=cos(dAngle * M_PI / 180.);
@@ -81,7 +81,7 @@ namespace icl{
 
   
 
-   inline void Affine::applyT (const double p[2], double adResult[2]) {
+   inline void AffineOp::applyT (const double p[2], double adResult[2]) {
      // {{{ open
 
       adResult[0] = m_aadT[0][0]*p[0] + m_aadT[0][1]*p[1] + m_aadT[0][2];
@@ -90,7 +90,7 @@ namespace icl{
 
   // }}}
   
-   inline void Affine::useMinMax (const double adCur[2], 
+   inline void AffineOp::useMinMax (const double adCur[2], 
                                   double adMin[2], double adMax[2]) {
      // {{{ open
 
@@ -102,7 +102,7 @@ namespace icl{
 
   // }}}
 
-   void Affine::getShiftAndSize (const Rect& roi, Size& size, 
+   void AffineOp::getShiftAndSize (const Rect& roi, Size& size, 
                                  double& xShift, double& yShift) {
      // {{{ open
 
@@ -128,7 +128,7 @@ namespace icl{
 
   // }}}
 
-   void Affine::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
+   void AffineOp::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
      // {{{ open
 
       ICLASSERT_RETURN( poSrc->getDepth() == depth32f || poSrc->getDepth() == depth8u);
