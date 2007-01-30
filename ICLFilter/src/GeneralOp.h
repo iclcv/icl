@@ -1,5 +1,5 @@
-#ifndef ROI_HANDLER_H
-#define ROI_HANDLER_H
+#ifndef GENERAL_OP_H
+#define GENERAL_OP_H
 
 #include <ImgBase.h>
 
@@ -11,7 +11,7 @@ TODO document this !
 
 namespace icl {
   /// Utility base class for Image Operators
-  /** The ROIHandler class builds a utility base class for ICL unary and binary
+  /** The GeneralOp class builds a utility base class for ICL unary and binary
       operator classes. Each Operator is performed on the ROI of the source image(s) 
       only. The destination image is <em> always </em> adapted in its parameters to the
       necessary values. We distinguish the following modes:
@@ -50,7 +50,7 @@ namespace icl {
       the prepare() methods which checks and adapts the destination image if 
       neccessary.
   */
-  class ROIHandler {
+  class GeneralOp {
   public:
      /// change adaption of destination image (see class description)
      void setClipToROI (bool bClipToROI) {this->m_bClipToROI = bClipToROI;}
@@ -61,8 +61,8 @@ namespace icl {
 
   protected:
      /// Filter is a base class for other classes and should be instantiated
-     ROIHandler() : m_bClipToROI (true), m_bCheckOnly (false) {}
-     ~ROIHandler() {};
+     GeneralOp() : m_bClipToROI (true), m_bCheckOnly (false) {}
+     ~GeneralOp() {};
 
      /// check+adapt destination images parameters against given values
      /// bCheckOnly mode ignores the given imgSize

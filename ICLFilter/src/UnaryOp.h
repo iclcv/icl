@@ -1,7 +1,7 @@
-#ifndef BINARY_OPERATOR_H
-#define BINARY_OPERATOR_H
+#ifndef UNARY_OP_H
+#define UNARY_OP_H
 
-#include "ROIHandler.h"
+#include "GeneralOp.h"
 
 namespace icl{
   /// Abstract Base class for I=f(I1,I2) operators
@@ -55,7 +55,7 @@ namespace icl{
       A detailed description of the provided functions in each package is included in
       the class description.
       */
-  class BinaryOperator : public ROIHandler{
+  class UnaryOp : public GeneralOp{
     public:
     /// pure virtual apply function, that must be implemented in all derived classes
     virtual void apply(const ImgBase *operand1, const ImgBase *operand2, ImgBase **dst)=0;
