@@ -1,12 +1,12 @@
-#include <GeneralOp.h>
+#include <OpROIHandler.h>
 #include <Macros.h>
 
 namespace icl {
 
    /// check+adapt destination images parameters against given values
-  bool GeneralOp::prepare (ImgBase **ppoDst, depth eDepth, 
-                           const Size &imgSize, format eFormat, int nChannels, 
-                           const Rect& roi, Time timestamp) {
+  bool OpROIHandler::prepare (ImgBase **ppoDst, depth eDepth, 
+                              const Size &imgSize, format eFormat, int nChannels, 
+                              const Rect& roi, Time timestamp) {
     ICLASSERT_RETURN_VAL (ppoDst, false);
     if (m_bCheckOnly) {
       ImgBase* dst = *ppoDst;

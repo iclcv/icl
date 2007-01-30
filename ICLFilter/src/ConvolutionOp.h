@@ -1,13 +1,13 @@
-#ifndef ICLCONVOLUTION_H
-#define ICLCONVOLUTION_H
+#ifndef ICLCONVOLUTIONOP_H
+#define ICLCONVOLUTIONOP_H
 
-#include <FilterMask.h>
+#include <NeighborhoodOp.h>
 
 namespace icl {
   
   /// Class for Image convolutions (Img8u, Img32f: IPP + Fallback, all other Types: Fallback only!)
   /**
-  The Convolution class provides functionality for any kind of convolution
+  The ConvolutionOp class provides functionality for any kind of convolution
   filters. As most other filter operations, it operates on the source images
   ROI only. Because the filter mask has to fit into the image at every point
   of the ROI, the ROI is eventually <em>shrinked</em> as described in base
@@ -51,16 +51,16 @@ namespace icl {
      - icl32f-image & icl32f kernel <b>~60ms</b> (further implem. ~60ms)
   
   <h2>Buffering Kernels</h2>
-  In some applications the Convolution object has to be created
+  In some applications the ConvolutionOp object has to be created
   during runtime. If the filter-kernel is created elsewhere, and it
-  is persistent over the <i>lifetime</i> of the Convolution object,
+  is persistent over the <i>lifetime</i> of the ConvolutionOp object,
   it may not be necessary to deeply copy the kernel into an internal buffer
-  of the Convolution object. To make the Convolution object just using a
+  of the ConvolutionOp object. To make the ConvolutionOp object just using a
   given kernel pointer, an additional flag <b>iBufferData</b> can be set
   in two Constructors.
   */
 
-  class Convolution : protected FilterMask {
+  class ConvolutionOp : protected NeighborhoodOp {
     public:
     /// this enum contains several predefined convolution kernels
     /** <h3>kernelSobleX</h3>
@@ -117,7 +117,7 @@ namespace icl {
                                   ----------------- 
 
         </pre>               
-
+2
         <h3>kernelLaplace</h3>
         The Laplacian kernel is a discrete approximation of the 2nd derivation
         of a 2D function.
@@ -145,22 +145,22 @@ namespace icl {
       kernelCustom  /*!< used for all other user defined kernels */ 
     };
     
-    /// create Convolution object with a fixed predefined filter type
+    /// create ConvolutionOp object with a fixed predefined filter type
     /** @param eKernel determines the filter type 
         (kernelCustom is not allowed here!)
     */
-    explicit Convolution(kernel eKernel);
+    explicit ConvolutionOp(kernel eKernel);
 
     /// Default constructor
-    Convolution();
+    ConvolutionOp();
 
-    /// Creates a Convolution object with the given custom kernel
-    /** Create an instance of the Convolution object, which uses the given kernel.
+    /// Creates a ConvolutionOp object with the given custom kernel
+    /** Create an instance of the ConvolutionOp object, which uses the given kernel.
         If the parameter bBufferData is given, the kernel data is internally buffered
         both as float and as an int array (if possible). If the kernel should not be
         buffered, the pointer to the kernel data is stored directly. In this case
         it is assumed, that the pointer stays valid as long as apply() is called.
-        The ownership for pfKernel is <b>not transfered</b> to the Convolution object,
+        The ownership for pfKernel is <b>not transfered</b> to the ConvolutionOp object,
         rather the owner is responsible to release this pointer properly.
 
         @param pfKernel convolution kernel data
@@ -168,9 +168,9 @@ namespace icl {
         @param bBufferData flag that indicates, if given data should be 
         buffered internally. By default given data will be buffered.
     */
-    Convolution(icl32f *pfKernel, const Size& size, bool bBufferData=true);
+    ConvolutionOp(icl32f *pfKernel, const Size& size, bool bBufferData=true);
 
-    /// Creates a Convolution object with the given custom kernel
+    /// Creates a ConvolutionOp object with the given custom kernel
     /** This constructor behaves essentially like the above one.
         Additionally to the kernel mask itself, a normalization factor is needed.
         The is used to normalize the scalar product of kernel and image mask.
@@ -182,11 +182,11 @@ namespace icl {
         buffered internally. By default given data will be buffered.
         @param iNormFactor The NormFactor (Defaultvalue :1)
     */
-    Convolution(int *piKernel, const Size& size, 
+    ConvolutionOp(int *piKernel, const Size& size, 
                 int iNormFactor=1, bool bBufferData=true);
 
     /// Destructor
-    ~Convolution();
+    ~ConvolutionOp();
     
     /// performs the convolution operation on the image
     /** The destination image is automatically set up to correct size and its
@@ -215,8 +215,8 @@ namespace icl {
     /// retrieve kernel pointer
     template<typename KernelT> const KernelT* const getKernel() const;
 
-    FilterMask::setClipToROI;
-    FilterMask::setCheckOnly;
+    NeighborhoodOp::setClipToROI;
+    NeighborhoodOp::setCheckOnly;
 
     private:
     /// internal storage for the sobel-x filter kernels
@@ -254,9 +254,9 @@ namespace icl {
     void releaseBuffers ();
 
     /// array of image-type selective convolution methods (assigned during setKernel calls)
-    void (Convolution::*aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst);
+    void (ConvolutionOp::*aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst);
     /// static array of image- and kernel-type selective generic convolution methods
-    static void (Convolution::*aGenericMethods[depthLast+1][2])(const ImgBase *poSrc, ImgBase *poDst);
+    static void (ConvolutionOp::*aGenericMethods[depthLast+1][2])(const ImgBase *poSrc, ImgBase *poDst);
 
 #ifdef WITH_IPP_OPTIMIZATION 
     template<typename T, IppStatus (IPP_DECL *)(const T*, int, T*, int, IppiSize, const Ipp32s*, IppiSize, IppiPoint, int)>
@@ -293,8 +293,8 @@ namespace icl {
   };
 
 
-  template<> inline const int*   const Convolution::getKernel<int>()   const {return piKernel;}
-  template<> inline const float* const Convolution::getKernel<float>() const {return pfKernel;}
+  template<> inline const int*   const ConvolutionOp::getKernel<int>()   const {return piKernel;}
+  template<> inline const float* const ConvolutionOp::getKernel<float>() const {return pfKernel;}
 
 }
 

@@ -1,7 +1,7 @@
-#ifndef DYNAMIC_CONVOLUTION_H
-#define DYNAMIC_CONVOLUTION_H
+#ifndef DYNAMIC_CONVOLUTION_OP_H
+#define DYNAMIC_CONVOLUTION_OP_H
 
-#include <Convolution.h>
+#include <ConvolutionOp.h>
 
 namespace icl{
   /// Convolution using the ROI of an ICL image as its kernel
@@ -12,15 +12,17 @@ namespace icl{
       directly set as the (unbuffered) kernel data of the underlying Convolution
       class.
   */
-  class DynamicConvolution : protected Convolution {
+  class DynamicConvolutionOp : protected ConvolutionOp {
   public:
-     DynamicConvolution (const ImgBase* poKernel = 0);
-     ~DynamicConvolution ();
+     DynamicConvolutionOp (const ImgBase* poKernel = 0);
+     ~DynamicConvolutionOp ();
 
      void setKernel (const ImgBase* poKernel);
-     Convolution::setClipToROI;
-     Convolution::setCheckOnly;
-     Convolution::apply;
+     ConvolutionOp::setClipToROI;
+     ConvolutionOp::setCheckOnly;
+     ConvolutionOp::getClipToROI;
+     ConvolutionOp::getCheckOnly;
+     ConvolutionOp::apply;
   private:
      icl::Img<icl::icl32f> *poKernelBuf;
   };

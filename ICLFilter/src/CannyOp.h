@@ -1,7 +1,7 @@
 #ifndef CANNY_H
 #define CANNY_H
 
-#include <Filter.h>
+#include <UnaryOp.h>
 #include <Img.h>
 #include <Array.h>
 
@@ -50,44 +50,27 @@ namespace icl {
      predicted signal-to-noise ratios.
 
 */
-   class Canny : public Filter {
+  class CannyOp : public UnaryOp {
    public:
-     Canny(icl32f lowThresh=0, icl32f highThresh=255);
-     virtual ~Canny();
+    CannyOp(icl32f lowThresh=0, icl32f highThresh=255);
+    CannyOp(UnaryOp *dxOp, UnaryOp *dyOp, icl32f lowThresh=0, icl32f highThresh=255, bool deleteOps=true);
+     virtual ~CannyOp();
      
      void setThresholds(icl32f lowThresh, icl32f highThresh);
      icl32f getLowThreshold() const;
      icl32f getHighThreshold() const;
 
      virtual void apply(const ImgBase *src, ImgBase **dst);
-     /// applys Canny algorithm for edge detection, using 2 src images containing the x- and y-derivation
-     /** 
-         @param poSrcDx    source image, x-derivation
-         @param poSrcDy    source image, y-derivation
-         @param ppoDst   pointer to destination image
-         @param lowThresh    lower threshold for edges detection
-         @param highThresh   upper threshold for edges detection
-     */
-     void apply (const ImgBase *poSrcDx, const ImgBase *poSrcDy, ImgBase **ppoDst, icl32f lowThresh, icl32f highThresh);
-     /// applys Canny algorithm for edge detection
-     /**
-         @param poSrc    source image
-         @param ppoDst   pointer to destination image
-         @param lowThresh    lower threshold for edges detection
-         @param highThresh   upper threshold for edges detection
-      */
-      void apply (const ImgBase *poSrc, ImgBase **ppoDst, icl32f lowThresh, icl32f highThresh);
-      void apply (const Img32f *srcDx, const Img32f *srcDy, Img8u *dst, icl32f lowThresh, icl32f highThresh);
-
-   private:
       
-      void enshureBufferSize(const Size &s);
-      /// buffer for ippiCanny
+   private:
+     /// buffer for ippiCanny
       icl8u* m_pucBuffer8u;
       int m_iBufferSize;
-      ImgBase *m_poSobelx; //sobel-x => y-derivation
-      ImgBase *m_poSobely; //sobel-y => x-derivation
+      
+      ImgBase *m_apoDXY[2];
+      UnaryOp *m_apoDXYOps[2];
       icl32f m_fLowThresh, m_fHighThresh; // internally used thresholds
+      bool m_bDeleteOps;
    };
 } // namespace icl
 #endif
