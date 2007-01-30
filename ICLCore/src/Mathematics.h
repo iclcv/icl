@@ -39,6 +39,17 @@ namespace icl {
   struct MathematicsRandomSeedInitializer{
     inline MathematicsRandomSeedInitializer(){ randomSeed(); }
   };
+
+  //--------------------------------------------------------------------------
+  /*!
+    @brief Generates random numbers between 0 and 1. 
+    @param -
+    @return random number
+    @sa double random()
+  */
+  inline double random() {
+	return (rand()/(RAND_MAX + 1.0));
+  }
   
   //--------------------------------------------------------------------------
   /*!
@@ -52,7 +63,7 @@ namespace icl {
   */
   inline float random(float max) {
     FUNCTION_LOG("float");
-    return(max * drand48());
+    return max * random();
   }
 
   //--------------------------------------------------------------------------
@@ -84,7 +95,7 @@ namespace icl {
   */
   inline float random(float min, float max) {
     FUNCTION_LOG("float, float");
-    return((max - min) * drand48() + min); 
+    return((max - min) * 0); //drand48() + min); 
   }
   
   //--------------------------------------------------------------------------

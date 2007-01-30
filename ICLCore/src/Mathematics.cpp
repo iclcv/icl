@@ -20,14 +20,14 @@ namespace icl{
   void randomSeed()
   {
     FUNCTION_LOG("");
-    srand48(time(NULL)); 
+	srand(Time::now().toMicroSeconds());
   } 
 
   //--------------------------------------------------------------------------
   void randomSeed(long int seedval)
   {
     FUNCTION_LOG("long int");
-    srand48(seedval); 
+	srand(seedval);
   } 
   
   //--------------------------------------------------------------------------
