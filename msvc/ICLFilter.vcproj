@@ -175,10 +175,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\GeoTransforms.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\ICLFilter\src\IntegralImg.cpp"
 				>
 			</File>
@@ -250,10 +246,6 @@
 			</File>
 			<File
 				RelativePath="..\ICLFilter\src\FilterMask.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ICLFilter\src\GeoTransforms.h"
 				>
 			</File>
 			<File

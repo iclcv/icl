@@ -185,7 +185,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ICLUtils\src\CompMacros.h"
+				RelativePath="..\ICLUtils\src\CompatMacros.h"
 				>
 			</File>
 			<File
