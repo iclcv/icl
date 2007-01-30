@@ -12,6 +12,7 @@
 
 #include "Img.h"
 #include "Interleaved.h"
+#include <limits>
 
 namespace icl {
 
