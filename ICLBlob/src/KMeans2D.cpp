@@ -40,7 +40,7 @@ namespace icl{
   inline int rnd(int max){
     // {{{ open
 
-    double d = drand48()*(max+1);
+    double d = random()*(max+1);
     if(d==max+1) d-=0.1;
     return (int)floor(d);
   }
@@ -88,7 +88,7 @@ namespace icl{
   KMeans2D::KMeans2D(int k, distfunc f):m_fError(-1),m_funcDist(f){
     // {{{ open
 
-    srand(time(0));
+    randomSeed();
     setK(k);
   }
 

@@ -2,6 +2,7 @@
 #define KMEANS2D_H
 
 #include <vector>
+#include <Mathematics.h>
 
 namespace icl{
   class KMeans2D{

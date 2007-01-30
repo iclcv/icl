@@ -138,7 +138,7 @@ namespace icl{
     SimpleMatrix<valueType> m(dim);
     for(int i=0;i<dim;++i){
       for(int j=0;j<dim;++j){
-        m[i][j] = (valueType)sqrt (pow( a[X][j] - b[X][i], 2) + pow( a[Y][j] - b[Y][i], 2) );
+        m[i][j] = (valueType)sqrt (pow((double) (a[X][j] - b[X][i]), 2) + pow((double) (a[Y][j] - b[Y][i]), 2) );
       }
     }
     return m;
