@@ -100,6 +100,7 @@ namespace icl {
     bool m_bMorphAdvState8u;
     bool m_bMorphAdvState32f;
     bool m_bHas_changed;
+    bool m_bHas_changedAdv;
     void deleteMorphStates();
     void checkMorphAdvState8u(const Size roiSize);
     void checkMorphAdvState32f(const Size roiSize);

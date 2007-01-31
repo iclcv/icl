@@ -18,6 +18,7 @@ namespace icl {
     m_bMorphAdvState8u=false;
     m_bMorphAdvState32f=false;
     m_bHas_changed=true;
+    m_bHas_changedAdv=true;
   }
   Morphological::~Morphological(){
     deleteMorphStates();
@@ -31,6 +32,7 @@ namespace icl {
     m_pcMask=(icl8u*)pcMask;
     m_sMasksize=maskSize;
     m_bHas_changed=true;
+    m_bHas_changedAdv=true;
   }
   //ippiMorphologyFree(m_pState8u);
 
@@ -54,11 +56,11 @@ namespace icl {
   }
     
   void Morphological::checkMorphAdvState8u(const Size roiSize){
-    if (m_bHas_changed){
+    if (m_bHas_changedAdv){
       deleteMorphStates();
       ippiMorphAdvInitAlloc_8u_C1R(&m_pAdvState8u, roiSize, m_pcMask, oMaskSize, oAnchor);
       m_bMorphAdvState8u=true;
-      m_bHas_changed=false;
+      m_bHas_changedAdv=false;
     }
   }
 
@@ -73,11 +75,11 @@ namespace icl {
     }
   }
   void Morphological::checkMorphAdvState32f(const Size roiSize){
-    if (m_bHas_changed){
+    if (m_bHas_changedAdv){
       deleteMorphStates();
       ippiMorphAdvInitAlloc_32f_C1R(&m_pAdvState32f, roiSize, m_pcMask, oMaskSize, oAnchor);
       m_bMorphAdvState32f=true;
-      m_bHas_changed=false;
+      m_bHas_changedAdv=false;
     }
   }
   
