@@ -17,20 +17,6 @@ namespace icl{
   // {{{ Random functions: 
 
   //--------------------------------------------------------------------------
-  void randomSeed()
-  {
-    FUNCTION_LOG("");
-	srand(Time::now().toMicroSeconds());
-  } 
-
-  //--------------------------------------------------------------------------
-  void randomSeed(long int seedval)
-  {
-    FUNCTION_LOG("long int");
-	srand(seedval);
-  } 
-  
-  //--------------------------------------------------------------------------
   float gaussRandom(float limit)
   {
     FUNCTION_LOG("float");
@@ -59,68 +45,9 @@ namespace icl{
       return (gset);
     }
   } 
-  
-  template void random<icl64f>(vector<icl64f> &, icl64f);
-  template void random<icl32f>(vector<icl32f> &, icl32f);
-  template void random<icl32s>(vector<icl32s> &, icl32s);
-  template void random<icl16s>(vector<icl16s> &, icl16s);
-  template void random<icl8u>(vector<icl8u> &, icl8u);
-
-  template void gaussRandom<icl64f>(vector<icl64f> &, icl64f);
-  template void gaussRandom<icl32f>(vector<icl32f> &, icl32f);
-  template void gaussRandom<icl32s>(vector<icl32s> &, icl32s);
-  template void gaussRandom<icl16s>(vector<icl16s> &, icl16s);
-  template void gaussRandom<icl8u>(vector<icl8u> &, icl8u);
 
   // }}}
 
-  // {{{ Distance functions
-  //--------------------------------------------------------------------------
-  template <class T>
-  inline float euclidian(const vector<T> &a, const vector<T> &b) {
-    FUNCTION_LOG("");
-    
-    //---- Variable initialisation ----
-    float dist = 0;
-    
-    //---- Compute euklidian distance ----
-    for (unsigned int i=0; i < a.size(); i++) {
-      dist += ((a[i] - b[i]) * (a[i] - b[i]));
-    }
-    
-    return sqrt(dist);
-  }
-  
-  template float euclidian<unsigned char> (const vector<unsigned char> &,
-                                           const vector<unsigned char> &);
-  template float euclidian<int> (const vector<int> &, const vector<int> &);
-  template float euclidian<float> (const vector<float> &,const vector<float>&);
-  
-  //--------------------------------------------------------------------------
-  template <class T>
-  inline float euclidian(const T *a, const T *b, unsigned int iDim){
-    // {{{ open
-    FUNCTION_LOG("");
-
-    //---- Variable initialisation ----
-    vector<T> vecA(iDim), vecB(iDim);
-    copy(a, a+iDim, vecA.begin());
-    copy(b, b+iDim, vecB.begin());
-    
-    //---- Compute euklidian distance ----
-    return euclidian(vecA, vecB);
-  }
-  
-  template float euclidian<unsigned char> (const unsigned char*,
-                                           const unsigned char*, unsigned int);
-  template float euclidian<int> (const int*, const int*, unsigned int);
-  template float euclidian<float> (const float*,const float*, unsigned int);
-  
-  // }}}
-  
-  
-// }}}
-  
   // {{{ statistic functions
 
   // {{{ mean

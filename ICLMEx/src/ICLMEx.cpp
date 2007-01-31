@@ -10,9 +10,9 @@ namespace icl{
 
 
   template<>
-  void fitModel<icl64f>(icl64f *xs, icl64f *ys, int n, GeneralModel<icl64f> &model){
+  void fitModel<icl64f>(icl64f *xs, icl64f *ys, unsigned int n, GeneralModel<icl64f> &model){
     // {{{ open
-    
+
 #ifdef WITH_IPP_OPTIMIZATION    
     ICLASSERT_RETURN( n>0 && n>model.dim() );  
     int dim = model.dim();
@@ -31,7 +31,7 @@ namespace icl{
     int a = dim*b;
     
     // calculating data matrix D
-    for(int i=0;i<n;i++){
+    for(unsigned int i=0;i<n;i++){
       model.features(xs[i],ys[i],*D+dim*i);
     }
     
@@ -67,7 +67,7 @@ namespace icl{
 // }}}
   
   template<>
-  void fitModel<icl32f>(icl32f *xs, icl32f *ys, int n, GeneralModel<icl32f> &model){
+  void fitModel<icl32f>(icl32f *xs, icl32f *ys, unsigned int n, GeneralModel<icl32f> &model){
     // {{{ open
 
 #ifdef WITH_IPP_OPTIMIZATION    
@@ -88,7 +88,7 @@ namespace icl{
     int a = dim*b;
     
     // calculating data matrix D
-    for(int i=0;i<n;i++){
+    for(unsigned int i=0;i<n;i++){
       model.features(xs[i],ys[i],*D+dim*i);
     }
     
@@ -126,7 +126,8 @@ namespace icl{
 
   
   template<class T>
-  void fitModel(T *xs,T *ys, int n, GeneralModel<T> &model, int nSubSets, int subSetSize){
+  void fitModel(T *xs,T *ys, unsigned int n, 
+                GeneralModel<T> &model, int nSubSets, int subSetSize){
     // {{{ open
     int dim = model.dim();
     ICLASSERT_RETURN(dim > 0);
@@ -149,7 +150,7 @@ namespace icl{
     
     for(int i=0;i<nSubSets;i++){
       for(int j=0;j<subSetSize;j++){
-        int idx = randomi(n);
+        int idx = random(n);
         XBuf[j] = xs[idx];
         YBuf[j] = ys[idx];
       }  
@@ -228,11 +229,11 @@ namespace icl{
 
 
   // explicit template declarations
-  template void fitModel<icl64f>(icl64f*,icl64f*,int,GeneralModel<icl64f>&);
-  template void fitModel<icl32f>(icl32f*,icl32f*,int,GeneralModel<icl32f>&);
+  template void fitModel<icl64f>(icl64f*,icl64f*,unsigned int,GeneralModel<icl64f>&);
+  template void fitModel<icl32f>(icl32f*,icl32f*,unsigned int,GeneralModel<icl32f>&);
 
-  template void fitModel<icl64f>(icl64f*,icl64f*,int,GeneralModel<icl64f>&,int,int);
-  template void fitModel<icl32f>(icl32f*,icl32f*,int,GeneralModel<icl32f>&,int,int);
+  template void fitModel<icl64f>(icl64f*,icl64f*,unsigned int,GeneralModel<icl64f>&,int,int);
+  template void fitModel<icl32f>(icl32f*,icl32f*,unsigned int,GeneralModel<icl32f>&,int,int);
 
   template void drawModel<icl32f,icl8u>(GeneralModel<icl32f>&,Img8u*,icl8u*);
   template void drawModel<icl64f,icl8u>(GeneralModel<icl64f>&,Img8u*,icl8u*);

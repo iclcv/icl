@@ -83,13 +83,13 @@ namespace icl {
     switch(eMode) {
       case initRnd:
         for (unsigned int i=0;i<m_uiCenter;i++) {
-          random<icl64f>(m_vecCluster[i],255.0);
+          initVector (m_vecCluster[i], icl::random, 255.0);
         }
         break;
         
       case initRndFromData:
         for(unsigned int i=0;i<m_uiCenter;i++) {
-          uiRndPos = randomi(m_uiSrcDim);
+          uiRndPos = random(m_uiSrcDim);
           for(unsigned int j=0;j<m_uiVQDim;j++) {
             m_vecCluster[i][j] = m_vecRefDataPtr[j][uiRndPos];
           }

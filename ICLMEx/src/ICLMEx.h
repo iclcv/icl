@@ -138,7 +138,7 @@ namespace icl{
       @see GeneralizedModel
   */
   template<class T>
-  void fitModel(T *xs, T *ys, int nPoints, GeneralModel<T> &model);
+  void fitModel(T *xs, T *ys, unsigned int nPoints, GeneralModel<T> &model);
 
 
   /// this fitModel function implements a metha algorithm to get a better robustness against non gaussian outliers

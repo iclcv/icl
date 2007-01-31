@@ -12,6 +12,7 @@
 
 #include <Img.h>
 #include <ImgIterator.h>
+#include <vector>
 #include <cmath>
 
 namespace icl {
@@ -21,20 +22,21 @@ namespace icl {
   //--------------------------------------------------------------------------
   /*!
     @brief Initilaize the random number generator. 
-    @param -
-    @return -
-    @sa void randomSeed(long int)
-  */
-  void randomSeed();
-
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Initilaize the random number generator. 
     @param seedval The seed value
     @return -
     @sa void randomSeed()
   */
-  void randomSeed(long int seedval);
+  inline void randomSeed(long int seedval) {srand48(seedval);}
+
+  //--------------------------------------------------------------------------
+  /*!
+    @brief Initilaize the random number generator. 
+    @param -
+    @return -
+    @sa void randomSeed(long int)
+  */
+  inline void randomSeed() {randomSeed(Time::now().toMicroSeconds());}
+
   
   struct MathematicsRandomSeedInitializer{
     inline MathematicsRandomSeedInitializer(){ randomSeed(); }
@@ -48,7 +50,7 @@ namespace icl {
     @sa double random()
   */
   inline double random() {
-	return (rand()/(RAND_MAX + 1.0));
+     return drand48();
   }
   
   //--------------------------------------------------------------------------
@@ -57,34 +59,18 @@ namespace icl {
     @param max a float argument. The upper limit for the returned number
     @return -
     @sa float gaussRandom(float), 
-        void random(vector<float>, float),
-        void random(float),
-        void gaussRandom(vector<float>, float);
+        void  random(vector<float>, float),
+        void  random(float),
+        void  gaussRandom(vector<float>, float);
   */
-  inline float random(float max) {
-    FUNCTION_LOG("float");
-    return max * random();
+  inline double random(double max) {
+     FUNCTION_LOG("float");
+     return max * random();
   }
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Creates a non negativ random number to an upper limit max
-    @param max The upper limit for the returned number
-    @return The random number
-  */
-  inline unsigned int randomi(unsigned int max) {
-    FUNCTION_LOG("unsigned int");
-    float f = random(max+1);
-    if(f == max+1){
-      return static_cast<unsigned int>(max);
-    }else{
-      return static_cast<unsigned int>(floor(f));
-    }
-  }
-  
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Generate a random number between an lower and upper limit. 
+    @brief Generate a random number between a lower and upper limit. 
     @param min a float argument. The lower intervall limit
     @param max a float argument. The upper interval limit 
     @return -
@@ -93,57 +79,55 @@ namespace icl {
         float random(float),
         void gaussRandom(vector<float>, float);
   */
-  inline float random(float min, float max) {
+  inline double random(double min, double max) {
     FUNCTION_LOG("float, float");
-    return((max - min) * 0); //drand48() + min); 
+    return ((max - min) * random() + min); 
   }
-  
+ 
+  //--------------------------------------------------------------------------
+  /*!
+    @brief Creates a non-negative random number to an upper limit max
+    @param max The upper limit for the returned number
+    @return The random number
+  */
+  inline unsigned int random(unsigned int max) {
+    FUNCTION_LOG("unsigned int");
+    unsigned int val = static_cast<unsigned int>(floor(random (max+1)));
+    return std::min(val, max);
+  }
+   
   //--------------------------------------------------------------------------
   /*!
     @brief Generate a gaussian random number to an upper limit. 
     @param limit a float argument. The upper limit for the returned number
     @return -
-    @sa float _random(float), 
+    @sa float random(float), 
         void random(vector<float>, float), 
         void gaussRandom(vector<float>, float);
   */
-  float gaussRandom(float limit);
+  double gaussRandom(double limit);
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Generate a i-dimensional random vector, with an upper limit for 
-    each vector element.
-    @param *rndVec a float argument. The destination vector.
-    @param limit a float argument. The upper limit for each element
-    @return -
-    @sa float generate_random(float), 
-        float generate_gauss_random(float), 
-        void generate_gauss_random_vec(float*, int, float);
+    @brief Initialize the elements of a std::vector by values of
+    an generator function taking no arguments, e.g. random()
   */
   template <class T>
-  void random(std::vector<T> &rndVec, T limit) {
-    FUNCTION_LOG("vector<T> &, T");
-    for (unsigned int i=0;i<rndVec.size();i++) {
-      rndVec[i] = static_cast<T>(random(static_cast<float>(limit)));
-    }
+  void initVector(std::vector<T> &vec, double (*gen)()) {
+     FUNCTION_LOG("vector<T> &, Generator");
+     std::generate (vec.begin(), vec.end(), gen);
   }
-
-  //--------------------------------------------------------------------------
   /*!
-    @brief Generate a i-dimensional gaussian random vector, with an upper 
-    limit for each vector element.
-    @param *rndVec a float argument. The destination vector.
-    @param limit a float argument. The upper limit for each element
-    @return -
-    @sa float random(float), 
-        float gaussRandom(float), 
-        void random(vector<float>, float);
+    @brief Initialize the elements of a std::vector by values of
+    an generator function taking one argument, e.g. randomGauss(max)
   */
   template <class T>
-  void gaussRandom(std::vector<T> &rndVec, T limit) {
-    FUNCTION_LOG("vector<T> &, T");
-    for (unsigned int i=0;i<rndVec.size();i++)
-      rndVec[i] = static_cast<T>(gaussRandom(static_cast<float>(limit)));  
+  void initVector(std::vector<T> &vec, double (*f)(double), double arg) {
+     FUNCTION_LOG("vector<T> &, Function, arg");
+     for (typename std::vector<T>::iterator it=vec.begin(), end=vec.end();
+          it != end; ++it) {
+        *it = f(arg);
+     }
   }
 
 /* }}} */
@@ -151,24 +135,34 @@ namespace icl {
   /* {{{ distance functions */
 
   /*!
-    @brief Calculate the eucledean distance of point a and b
-    @param a The first 2D point
-    @param b The second 2D point
+    @brief Calculate the euclidian distance of points a and b
+    @param a The first point
+    @param b The second point
     @return The distance of point a and b
   */
-  template <class T> 
-  float euclidian(const std::vector<T> &a, const std::vector<T> &b);
-    
+  template <class ForwardIterator> 
+  float euclidian(ForwardIterator first, ForwardIterator last,
+                  ForwardIterator second) {
+     float fSum = 0.0, fDiff;
+     for (; first != last; ++first, ++second) {
+        fDiff = (*second-*first);
+        fSum += fDiff*fDiff;
+     }
+     return sqrt(fSum);
+  }
+
   /*!
-    @brief Calculate the eucledean distance of point a and b
-    @param a The first 2D point
-    @param b The second 2D point
-    @param iDim The dimension of a, b
+    @brief Calculate the euclidian distance of points a and b
+    @param a The first point
+    @param b The second point
     @return The distance of point a and b
   */
   template <class T>
-  float euclidian(const T *a, const T *b, unsigned int iDim);
-
+     float euclidian(const std::vector<T> &a, const std::vector<T> &b) {
+     ICLASSERT (a.size() == b.size());
+     return euclidian (a.begin(), a.end(), b.begin());
+  }
+     
 /* }}} */
                               
   /* {{{ statistic functions */

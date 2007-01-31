@@ -3,21 +3,12 @@
 
 namespace icl{
   
-  inline int rnd(int max){
-    // {{{ open
-
-    //double d = drand48()*(max+1);
-	//double d = drand48()*(max+1);
-    double d = random(max+1);
-    if(d==max+1) d-=0.1;
-    return (int)floor(d);
-  }
-
-  // }}}
   inline float distance(float *a, float *b){
     // {{{ open
+
     return sqrt( pow(a[0]-b[0],2)+pow(a[1]-b[1],2) );
   }
+
   // }}}
   inline int nn(float *data, int dim, float* point, float &dist){
     // {{{ open
@@ -73,12 +64,10 @@ namespace icl{
   const VQVectorSet &VQ2D::run(int k, int maxSteps, float mmqe, float &qe){
     // {{{ open
 
-	  //srand48(Time::now().toMicroSeconds());
-	  //srand(Time::now().toMicroSeconds());
-	  randomSeed();
+	 randomSeed();
 
     // temporary variables
-    int n = m_poData->dim();
+    unsigned int n = m_poData->dim();
     float *data = m_poData->data();
     m_poCenters->resize(k);
     float *centers = m_poCenters->data();
@@ -91,7 +80,7 @@ namespace icl{
     ** Random initialisation of the center vectors ****      >> TODO other strategy or
     ***************************************************        give them from anywhere else */
     for(int p=0 ; p<k ; ++p){
-      copy_elem(data,rnd(n-1),centers,p);
+      copy_elem(data,random(n-1),centers,p);
     } 
    
 
@@ -110,7 +99,7 @@ namespace icl{
       /*************************************************
       ** 1.Step calculating voronoi cells **************
       *************************************************/
-      for(int i = 0 ; i<n; ++i){
+      for(unsigned int i = 0 ; i<n; ++i){
         int iNN = nn(centers,k,data+2*i,errBuf);
         qe += errBuf;
         vecx[iNN] += data[2*i];

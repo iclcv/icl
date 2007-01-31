@@ -30,7 +30,7 @@ int main(int n, char  **ppc){
     const int D = 10;
     int  *pi = new int[N*K];
     for(int i=0;i<N*K;i++){
-      pi[i] = randomi(10);
+      pi[i] = random(static_cast<unsigned int>(10));
     }
     pt.pushData(vec(pi,N),vec(pi,N));    
     Timer t(1); t.start();

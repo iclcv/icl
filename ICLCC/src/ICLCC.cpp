@@ -802,24 +802,22 @@ namespace icl{
   // {{{ explicit template instatiations for interleavedToPlanar and planarToInterleaved
 
 #define EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,TYPEB)                            \
-  template void planarToInterleaved<TYPEA,TYPEB>(const Img<TYPEA>*,TYPEB*);                 \
+  template void planarToInterleaved<TYPEB,TYPEA>(const Img<TYPEB>*,TYPEA*);                 \
   template void interleavedToPlanar<TYPEA,TYPEB>(const TYPEA*,const Size&,int,Img<TYPEB>*)
 
-#define EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION_FOR_ALL_TYPEB(TYPEA)  \
-  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,icl8u);               \
-  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,icl16s);              \
-  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,icl32s);              \
-  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,icl32f);              \
-  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,icl64f)
-  
-  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION_FOR_ALL_TYPEB(icl8u);
-  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION_FOR_ALL_TYPEB(icl16s);
-  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION_FOR_ALL_TYPEB(icl32s);
-  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION_FOR_ALL_TYPEB(icl32f);
-  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION_FOR_ALL_TYPEB(icl64f);
+  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl16s);
+  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl32s);
+  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl32f);
+  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl64f);
+#ifndef WITH_IPP_OPTINIZATION
+  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl8u);
+  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl16s);
+  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl32s);
+  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl32f);
+#endif
+  EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl64f,icl64f);
 
 #undef EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION
-#undef EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION_FOR_ALL_TYPEB
 
   // }}}
 
@@ -901,11 +899,9 @@ namespace icl{
         g = (int) ( g_lut1[y+256*u] - g_lut2[v]);
         b = b_lut[y+256*u];
         
-#define LIMIT(x) (x)>255?255:(x)<0?0:(x);
-        *pucR++=LIMIT(r);
-        *pucG++=LIMIT(g);
-        *pucB++=LIMIT(b);
-#undef LIMIT
+        *pucR++=clip(r,0,255);
+        *pucG++=clip(g,0,255);
+        *pucB++=clip(b,0,255);
         
         if(Xflag++){
           ptV++;
