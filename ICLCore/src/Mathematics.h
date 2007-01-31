@@ -26,13 +26,17 @@ namespace icl {
     @return -
     @sa void randomSeed()
   */
-  inline void randomSeed(long int seedval) {srand48(seedval);}
+  inline void randomSeed(long int seedval) {
+#ifdef WIN32
+	  srand(seedval);
+#else
+	  srand48(seedval);
+#endif
+  }
 
   //--------------------------------------------------------------------------
   /*!
     @brief Initilaize the random number generator. 
-    @param -
-    @return -
     @sa void randomSeed(long int)
   */
   inline void randomSeed() {randomSeed(Time::now().toMicroSeconds());}
@@ -50,7 +54,12 @@ namespace icl {
     @sa double random()
   */
   inline double random() {
+#ifdef WIN32
+     // this generates quite poor random numbers, because we RAND_MAX is 32767 only
+     return static_cast<double>(rand()) / (1.0 + static_cast<double>(RAND_MAX));
+#else
      return drand48();
+#endif
   }
   
   //--------------------------------------------------------------------------
@@ -92,7 +101,7 @@ namespace icl {
   */
   inline unsigned int random(unsigned int max) {
     FUNCTION_LOG("unsigned int");
-    unsigned int val = static_cast<unsigned int>(floor(random (max+1)));
+    unsigned int val = static_cast<unsigned int>(floor(random (static_cast<double>(max)+1.0)));
     return std::min(val, max);
   }
    

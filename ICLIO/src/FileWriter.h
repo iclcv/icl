@@ -33,10 +33,10 @@ namespace icl {
       /// Constructor
       FileWriter(const std::string& sFileName) {setFileName (sFileName);}
 
-      void setFileName (const std::string& sFileName) throw (ICLException);
+      void setFileName (const std::string& sFileName);
       void setCounter (int iID) {nCounter = iID;}
 
-      void write(const ImgBase* poSrc) throw (FileOpenException, ICLException);
+      void write(const ImgBase* poSrc);
     
    private:
       void writePNM (const ImgBase *poSrc, const FileInfo& oInfo);

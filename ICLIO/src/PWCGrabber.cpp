@@ -1,7 +1,7 @@
 #include <PWCGrabber.h>
 
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(WIN32)
 
 #include <ICLcc.h>
 #include <Img.h>
@@ -23,10 +23,6 @@
 #include <semaphore.h>
 #include <sys/time.h>
 #include <string.h> 
-
-#endif
-
-#ifndef __APPLE__
 
 #define PWC_DEBUG(X,S) if(X) {printf("pwc-debug:[%s]\n",S); return false;}
 #define PWC_DEBUG_CALL(X,S) if(X<0){printf("pwc-debug-call:[%s]\n",S); return false; }
@@ -598,53 +594,5 @@ const ImgBase* PWCGrabber::grab(ImgBase *poOutput){
 // }}}
 
 } //namespace icl
-
-
-#else // for the apple architecture
-
-using namespace icl;
-PWCGrabber::PWCGrabber(){
-  printf("The PWC Grabber is not suppoted under MacOS-X \n");
-  m_poRGB8Image = new Img8u();
-}
-PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice){
-  m_iWidth = s.width;
-  m_iHeight = s.height;
-  (void)fFps;
-  (void)iDevice;
-  m_poRGB8Image = new Img8u(s,1);
-  printf("The PWC Grabber is not suppoted under MacOS-X \n");
-}
-
-PWCGrabber::~PWCGrabber(){}
-bool PWCGrabber::init(const Size &s,float fFps, int iDevice){
-  m_poRGB8Image->setSize(s);
-  (void)fFps;
-  (void)iDevice;
-  return false;
-}
-ImgBase* PWCGrabber::grab(ImgBase *poDst){
-  if(!poDst){
-    return m_poRGB8Image;
-  }else{
-    return poDst;
-  }  
-}
-bool PWCGrabber::restoreUserSettings(){
-  return false;
-}
-bool PWCGrabber::saveUserSettings(){
-  return false;
-}
-bool PWCGrabber::setGain(signed int iGainValue){
-  (void)iGainValue;
-  return false;
-}
-bool PWCGrabber::setWhiteBalance(int mode, int manual_red, int manual_blue){
-  (void)mode;
-  (void)manual_red;
-  (void)manual_blue;
-  return false;
-}
 
 #endif
