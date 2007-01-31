@@ -1,7 +1,7 @@
 #include <Img.h>
 #include <Median.h>
-#include <Convolution.h>
-#include <DynamicConvolution.h>
+#include <ConvolutionOp.h>
+#include <DynamicConvolutionOp.h>
 
 #include <stdio.h>
 
@@ -23,12 +23,12 @@ void test (icl::depth eDepth) {
    delete pMedian;
 
    printf (" empty convolution\n");
-   Convolution* pConv = new Convolution();
+   ConvolutionOp* pConv = new ConvolutionOp();
    pConv->apply (pSrc, &pDst);
    delete pConv;
 
    printf (" special convolution\n");
-   pConv = new Convolution(Convolution::kernelSobelX5x5);
+   pConv = new ConvolutionOp(ConvolutionOp::kernelSobelX5x5);
    pConv->setClipToROI (true);
    pConv->apply (pSrc, &pDst);
    pConv->setClipToROI (false);
@@ -55,7 +55,7 @@ void test (icl::depth eDepth) {
    ImgBase *poKernel = imgNew (eDepth, Size(100, 100), formatGray);
 // IPP seems to handle only odd mask sizes!
    poKernel->setROI (Rect(0,0, 10,10));
-   DynamicConvolution* pDynConv = new DynamicConvolution (poKernel);
+   DynamicConvolutionOp* pDynConv = new DynamicConvolutionOp (poKernel);
    pDynConv->apply (pSrc, &pDst);
    delete pDynConv;
 

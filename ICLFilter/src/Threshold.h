@@ -157,8 +157,6 @@ namespace icl {
       void tltgtVal(const ImgBase *poSrc, ImgBase **ppoDst, 
                    float low, float lowVal, float hi, float hiVal);
 
-
-
    };
 
 } // namespace icl

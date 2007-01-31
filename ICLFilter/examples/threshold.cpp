@@ -44,9 +44,10 @@ static char *apc[38]={ // 40 x 38
   "........................................",
   "........................................",
   "........................................"};
-
+Threshold * pThresh = new Threshold(Threshold::lt,77,77,0,255);
 void performance () {
   Img8u src(Size(1000,1000),1),dst(Size(1000,1000),1);
+  ImgBase *dst2;
   Timer t;
   printf("\nThreshold Benchmark!");
   int N = 100;
@@ -62,7 +63,7 @@ void performance () {
   t.stopSubTimer("C++ fallback");
 
   for(int i=0;i<N;i++){
-    Threshold::lt(&src,&dst,tetta);
+    pThresh->apply(&src,&dst2);
   }
   t.stop("IPP");
 }
@@ -84,28 +85,52 @@ int main(){
   
   Size s = im.getSize();
   Img8u t(Size(s.width*7,s.height),1);
+  ImgBase *t2;
   int i=0;
 
   t.setROI(Rect((i++)*s.width,0,100,100));
   im.deepCopyROI(&t);
 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::lt(&im, &t, 150); 
+  pThresh->setType(Threshold::lt);
+  pThresh->setLowThreshold(150);
+  pThresh->apply(&im, &t2); 
 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::gt(&im, &t, 150); 
+  pThresh->setType(Threshold::gt);
+  pThresh->setHighThreshold(150);
+  pThresh->apply(&im, &t2);
 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::ltgt(&im, &t, 100, 200); 
-
+  //Threshold::ltgt(&im, &t, 100, 200); 
+  
+  pThresh->setType(Threshold::ltgt);
+  pThresh->setLowThreshold(100);
+  pThresh->setHighThreshold(200);
+  pThresh->apply(&im, &t2);
+  
   t.setROI(Rect((i++)*s.width, 0,100,100));
-  Threshold::ltVal(&im, &t, 150, 0); 
+//  Threshold::ltVal(&im, &t, 150, 0);
+  pThresh->setType(Threshold::ltVal);
+  pThresh->setLowThreshold(150);
+  pThresh->setLowVal(0);
+  pThresh->apply(&im, &t2);
 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::gtVal(&im, &t, 150, 255); 
+//  Threshold::gtVal(&im, &t, 150, 255); 
+  pThresh->setType(Threshold::gtVal);
+  pThresh->setHighThreshold(150);
+  pThresh->setHighVal(255);
+  pThresh->apply(&im, &t2);
 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  Threshold::ltgtVal(&im, &t, 150, 0, 150, 255); 
+//  Threshold::ltgtVal(&im, &t, 150, 0, 150, 255); 
+  pThresh->setType(Threshold::ltgtVal);
+  pThresh->setLowThreshold(150);
+  pThresh->setLowVal(0);
+  pThresh->setHighThreshold(150);
+  pThresh->setHighVal(255);
+  pThresh->apply(&im, &t2);
 
   printf("showing results\n");
   TestImages::xv(&t,"threshold_results.pgm");

@@ -9,7 +9,8 @@ namespace icl {
     m_fLowVal=lowVal;
     m_fHighVal=highVal;
   }  
-
+  Threshold::~Threshold(){
+    }
     void Threshold::apply (const ImgBase *poSrc, ImgBase **ppoDst){
       switch (m_eType){
         case lt:tlt(poSrc,ppoDst,m_fLowThreshold);break;
@@ -20,6 +21,7 @@ namespace icl {
         case ltgtVal:tltgtVal(poSrc,ppoDst,m_fLowThreshold,m_fLowVal,m_fHighThreshold,m_fHighVal);break;
       }      
     }
+    
   
     float Threshold::getLowThreshold() const{
       return m_fLowThreshold;

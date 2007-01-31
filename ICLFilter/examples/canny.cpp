@@ -1,8 +1,8 @@
 #include <Proximity.h>
 #include <FileReader.h>
 #include <TestImages.h>
-#include <Canny.h>
-#include <Convolution.h>
+#include <CannyOp.h>
+#include <ConvolutionOp.h>
 using namespace std;
 using namespace icl;
 
@@ -20,19 +20,19 @@ int main(int nArgs, char **ppcArg){
    
    
    // test 1
-   Convolution* pConv = new Convolution(Convolution::kernelSobelX3x3);
+   ConvolutionOp* pConv = new ConvolutionOp(ConvolutionOp::kernelSobelX3x3);
    pConv->setClipToROI (true);
    pConv->apply (src, &dst2);
    
-   pConv = new Convolution(Convolution::kernelSobelY3x3);
+   pConv = new ConvolutionOp(ConvolutionOp::kernelSobelY3x3);
    pConv->setClipToROI (true);
    pConv->apply (src, &dst3);
 
-   Canny* pCanny = new Canny();
+   CannyOp* pCanny = new CannyOp(20,40);
    
-   pCanny->apply (dst3, dst2,&dst,20,40);
+   //pCanny->apply (dst3, dst2,&dst,20,40);
    // test2
-   pCanny->apply (src,&dst4,20,40);
+   pCanny->apply (src,&dst4);
    
    // write and display the image
    src->print("src");

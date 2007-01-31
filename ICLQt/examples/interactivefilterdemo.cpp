@@ -1,7 +1,7 @@
 #include <ICLDrawWidget.h>
 #include <Img.h>
 #include <PWCGrabber.h>
-#include <Convolution.h>
+#include <ConvolutionOp.h>
 
 #include <QApplication>
 #include <QThread>
@@ -16,7 +16,7 @@ public:
   MyThread():widget(new ICLDrawWidget(0)),
              grabber(new PWCGrabber(Size(640,480))),
              x(-1),y(-1),r(0),g(0),b(0),
-             k(Convolution::kernelGauss3x3),sKernel("gauss")
+             k(ConvolutionOp::kernelGauss3x3),sKernel("gauss")
   {
     widget->setGeometry(200,200,640,480);
     widget->show();
@@ -43,7 +43,7 @@ public:
 
           // drawing filter result for the roi image
           image->setROI(roi);
-          Convolution conv(k); // geht alles nicht so richtig!!
+          ConvolutionOp conv(k); // geht alles nicht so richtig!!
           //conv.setClipToROI(0);
           ImgBase *dst = new Img8u(Size(100,100),formatRGB);
           conv.apply(image,&dst);         
@@ -80,17 +80,17 @@ public:
       b=(int)info->color[2];
     }
     if(info->type==MouseInteractionInfo::pressEvent){
-      if(k==Convolution::kernelGauss3x3){
-        k = Convolution::kernelSobelX3x3;
+      if(k==ConvolutionOp::kernelGauss3x3){
+        k = ConvolutionOp::kernelSobelX3x3;
         sKernel = "sobelx";
-      }else if(k == Convolution::kernelSobelX3x3){
-        k = Convolution::kernelSobelY3x3;
+      }else if(k == ConvolutionOp::kernelSobelX3x3){
+        k = ConvolutionOp::kernelSobelY3x3;
         sKernel = "sobel-y";
-      }else if(k == Convolution::kernelSobelY3x3){
-        k = Convolution::kernelLaplace3x3;
+      }else if(k == ConvolutionOp::kernelSobelY3x3){
+        k = ConvolutionOp::kernelLaplace3x3;
         sKernel = "laplace";
-      }else if(k == Convolution::kernelLaplace3x3){
-        k = Convolution::kernelGauss3x3;
+      }else if(k == ConvolutionOp::kernelLaplace3x3){
+        k = ConvolutionOp::kernelGauss3x3;
         sKernel = "gauss";
       }
     }
@@ -101,7 +101,7 @@ private:
   PWCGrabber *grabber;
   int x,y;
   int r,g,b;
-  Convolution::kernel k;
+  ConvolutionOp::kernel k;
   string sKernel;
 };
 
