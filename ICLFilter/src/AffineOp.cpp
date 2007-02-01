@@ -35,7 +35,7 @@ namespace icl{
    }
 
   // }}}
-#else
+
 
    // the affine function is not implemented so a linker error is produced
    //
@@ -44,7 +44,7 @@ namespace icl{
    //void AffineOp::affine (const ImgBase *poSrc, ImgBase *poDst) {
    //   ERROR_LOG ("not yet implemented");
    //} 
-#endif
+
 
    AffineOp::AffineOp (scalemode eInterpolate) : m_eInterpolate (eInterpolate)  {
      // {{{ open
@@ -54,7 +54,7 @@ namespace icl{
    }
 
   // }}}
-
+#endif
    void AffineOp::reset () {
      // {{{ open
 

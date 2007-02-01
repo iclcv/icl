@@ -4,7 +4,7 @@
 
 namespace icl {
 
-
+#ifdef WITH_IPP_OPTIMIZATION
   // without ipp non of the function is implemented
   CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh):
     // {{{ open
@@ -52,7 +52,7 @@ namespace icl {
   // }}}
 
   /// no CannyOp::apply without ipp
-#ifdef WITH_IPP_OPTIMIZATION
+
   void CannyOp::apply (const ImgBase *poSrc, ImgBase **ppoDst)
       // {{{ open
   {
@@ -80,7 +80,6 @@ namespace icl {
     }
   }
    // }}}
-#endif
   
   void CannyOp::setThresholds(icl32f lo, icl32f hi){
     // {{{ open
@@ -105,7 +104,7 @@ namespace icl {
   }
 
   // }}}
-
+#endif
 
   
 }

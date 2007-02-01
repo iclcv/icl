@@ -2,7 +2,7 @@
 #include <Img.h>
 
 namespace icl {
-
+#ifdef WITH_IPP_OPTIMIZATION
   // {{{ Constructor / Destructor
 
   Morphological::Morphological (const Size& maskSize, char* pcMask, optype eOptype) {
@@ -145,7 +145,7 @@ namespace icl {
     return m_eType;
   }
   
-#ifdef WITH_IPP_OPTIMIZATION
+
   template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
   void Morphological::ippiMorphologicalCall (const Img<T> *src, Img<T> *dst) {
     for(int c=0; c < src->getChannels(); c++) {

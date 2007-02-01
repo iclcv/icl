@@ -1,4 +1,3 @@
-#include <Proximity.h>
 #include <FileReader.h>
 #include <TestImages.h>
 #include <CannyOp.h>
@@ -7,7 +6,8 @@ using namespace std;
 using namespace icl;
 
 int main(int nArgs, char **ppcArg){
-   const ImgBase *src;
+#ifdef WITH_IPP_OPTIMIZATION
+  const ImgBase *src;
    ImgBase *dst=0,*dst2=0,*dst3=0,*dst4=0;
    string srcName("src.ppm");
    string dstName("wiener.ppm");
@@ -47,6 +47,8 @@ int main(int nArgs, char **ppcArg){
    TestImages::xv (dst2, string("sobelX.pgm"));
    TestImages::xv (dst3, string("sobelY.pgm"));
    TestImages::xv (dst4, string("dst4.pgm"));
-
+#else
+  printf("Canny only implemented with IPP\n");
+#endif
    return 0;
 }
