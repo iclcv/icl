@@ -9,7 +9,7 @@ namespace icl{
     public:
     virtual ~BinaryOp(){}
     /// pure virtual apply function
-    virtual void apply(ImgBase *operand1, ImgBase *operand2, ImgBase **result)=0;
+    virtual void apply(const ImgBase *operand1,const ImgBase *operand2, ImgBase **result)=0;
 
     void setClipToROI (bool bClipToROI) { m_oROIHandler.setClipToROI(bClipToROI); }
     void setCheckOnly (bool bCheckOnly) { m_oROIHandler.setCheckOnly(bCheckOnly); }
@@ -35,7 +35,7 @@ namespace icl{
       return m_oROIHandler.prepare(ppoDst, poSrc, eDepth);
     }
     
-    static inline bool check( ImgBase *operand1, ImgBase *operand2 , bool checkDepths = true){
+    static inline bool check(const ImgBase *operand1,const ImgBase *operand2 , bool checkDepths = true){
       if(checkDepths){
         return operand1->getChannels() == operand2->getChannels() &&
           operand1->getROISize() == operand2->getROISize() ;
