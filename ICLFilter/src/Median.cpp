@@ -204,12 +204,7 @@ ICL_INSTANTIATE_ALL_DEPTHS;
      applyColor (poSrc, ppoDst);
      ICLASSERT(*ppoDst == poDst);
   }
-#else
-#warning "applyColor is not implemented without IPP optimization";
-  void Median::applyColor(const ImgBase *poSrc, ImgBase **ppoDst)
-  {
-     ERROR_LOG ("applyColor is not implemented without IPP optimization");
-  }
+
 #endif
   
 }

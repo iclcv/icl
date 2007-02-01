@@ -100,73 +100,8 @@ ICLASSERT_RETURN( src1);
 
   // }}}
 
-  #else
-  // {{{ C++ fallback 
 
-    void Proximity::SqrDistanceFull_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst){
-      #warning "SqrDistanceFull_Norm is not implemented without IPP optimization";
-    }
-    void Proximity::SqrDistanceSame_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst){
-      #warning "SqrDistanceSame_Norm is not implemented without IPP optimization";
-    }
-    void Proximity::SqrDistanceValid_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst){
-      #warning "SqrDistanceValid_Norm is not implemented without IPP optimization";
-    }
-
-    void Proximity::CrossCorrFull_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst){
-      #warning "CrossCorrFull_Norm is not implemented without IPP optimization";
-    }
-    void Proximity::CrossCorrSame_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst){
-      #warning "CrossCorrSame_Norm is not implemented without IPP optimization";
-    }
-    void Proximity::CrossCorrValid_Norm (const Img8u *src1, const Img8u *src2, Img32f *dst){
-      #warning "CrossCorrValid_Norm is not implemented without IPP optimization";
-    }
-
-    void Proximity::CrossCorrFull_NormLevel (const Img8u *src1, const Img8u *src2, Img32f *dst){
-      #warning "CrossCorrFull_NormLevel is not implemented without IPP optimization";
-    }
-    void Proximity::CrossCorrSame_NormLevel (const Img8u *src1, const Img8u *src2, Img32f *dst){
-      #warning "CrossCorrSame_NormLevel is not implemented without IPP optimization";
-    }
-    void Proximity::CrossCorrValid_NormLevel (const Img8u *src1, const Img8u *src2, Img32f *dst){
-      #warning "CrossCorrValid_NormLevel is not implemented without IPP optimization";
-    }
-
-    void Proximity::SqrDistanceFull_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst){
-      #warning "SqrDistanceFull_Norm is not implemented without IPP optimization";
-    }
-    void Proximity::SqrDistanceSame_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst){
-      #warning "SqrDistanceSame_Norm is not implemented without IPP optimization";
-    }
-    void Proximity::SqrDistanceValid_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst){
-      #warning "SqrDistanceValid_Norm is not implemented without IPP optimization";
-    }
-
-    void Proximity::CrossCorrFull_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst){
-      #warning "CrossCorrFull_Norm is not implemented without IPP optimization";
-    }
-    void Proximity::CrossCorrSame_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst){
-      #warning "CrossCorrSame_Norm is not implemented without IPP optimization";
-    }
-    void Proximity::CrossCorrValid_Norm (const Img32f *src1, const Img32f *src2, Img32f *dst){
-      #warning "CrossCorrValid_Norm is not implemented without IPP optimization";
-    }
-
-    void Proximity::CrossCorrFull_NormLevel (const Img32f *src1, const Img32f *src2, Img32f *dst){
-      #warning "CrossCorrFull_NormLevel is not implemented without IPP optimization";
-    }
-    void Proximity::CrossCorrSame_NormLevel (const Img32f *src1, const Img32f *src2, Img32f *dst){
-      #warning "CrossCorrSame_NormLevel is not implemented without IPP optimization";
-    }
-    void Proximity::CrossCorrValid_NormLevel (const Img32f *src1, const Img32f *src2, Img32f *dst){
-      #warning "CrossCorrValid_NormLevel is not implemented without IPP optimization";
-    }
-
-
-
-  // }}}
-  #endif
+  
   // {{{ ImgBase* version
 
   void Proximity::SqrDistanceFull_Norm (const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst)
@@ -299,5 +234,5 @@ ICLASSERT_RETURN( src1);
    // }}}
 
 // }}}
-
+#endif
 }

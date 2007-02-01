@@ -10,6 +10,7 @@ using namespace std;
 using namespace icl;
 
 int main(int nArgs, char **ppcArg){
+#ifdef WITH_IPP_OPTIMIZATION
   const ImgBase *src;
   ImgBase *dst=0;
   string srcName("src.ppm");
@@ -36,6 +37,9 @@ int main(int nArgs, char **ppcArg){
     //dst->print("dst");
     //TestImages::xv (src, string("src.ppm"));
     //TestImages::xv (dst, string("dst.ppm"));
+#else
+  printf("Canny only implemented with IPP\n");
+#endif
 
    return 0;
 }
