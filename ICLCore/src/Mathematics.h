@@ -111,8 +111,6 @@ namespace icl {
     @param limit a float argument. The upper limit for the returned number
     @return -
     @sa float random(float), 
-        void random(vector<float>, float), 
-        void gaussRandom(vector<float>, float);
   */
   double gaussRandom(double limit);
 
@@ -145,8 +143,9 @@ namespace icl {
 
   /*!
     @brief Calculate the euclidian distance of points a and b
-    @param a The first point
-    @param b The second point
+    @param first  The first point
+    @param last   The first iterator behind last element of first
+    @param second The second point
     @return The distance of point a and b
   */
   template <class ForwardIterator> 
@@ -167,7 +166,7 @@ namespace icl {
     @return The distance of point a and b
   */
   template <class T>
-     float euclidian(const std::vector<T> &a, const std::vector<T> &b) {
+  float euclidian(const std::vector<T> &a, const std::vector<T> &b) {
      ICLASSERT (a.size() == b.size());
      return euclidian (a.begin(), a.end(), b.begin());
   }
