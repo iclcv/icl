@@ -17,7 +17,7 @@ using namespace std;
 namespace icl {
 
    //--------------------------------------------------------------------------
-   void FileWriter::setFileName (const string& sFileName) throw (ICLException)
+   void FileWriter::setFileName (const string& sFileName) 
       // {{{ open 
 
    {
@@ -58,7 +58,7 @@ namespace icl {
 // }}}
 
    //--------------------------------------------------------------------------
-   void FileWriter::write(const ImgBase *poSrc) throw (FileOpenException, ICLException) {
+   void FileWriter::write(const ImgBase *poSrc) {
       // {{{ open
 
       FileInfo oInfo (buildFileName()); // create file info
