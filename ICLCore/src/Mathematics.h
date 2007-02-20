@@ -105,14 +105,40 @@ namespace icl {
     return std::min(val, max);
   }
    
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Generate a gaussian random number to an upper limit. 
-    @param limit a float argument. The upper limit for the returned number
-    @return -
-    @sa float random(float), 
-  */
-  double gaussRandom(double limit);
+  /// fill an image with uniform distributed random values in the given range
+  /** @param poImage image to fill with random values (NULL is not allowed) 
+      @param range for the random value 
+      @param roiOnly decides whether to apply the operation on the whole image or on its ROI only 
+  **/
+  void random(ImgBase *poImage, const Range<double> &range=Range<double>(0,255), bool roiOnly=true);
+
+  /// fill an image with gauss-distributed random values with given mean, variance and min/max value
+  /** @param poImage image to fill with random values (NULL is not allowed) 
+      @param mean mean value for all gauss distributed random variables
+      @param var variance for all gauss distributed random variables
+      @param minAndMax clipping range for all variables
+      @param roiOnly decides whether to apply the operation on the whole image or on its ROI only 
+  **/
+  void gaussRandom(ImgBase *poImage, double mean, double var, const Range<double> &minAndMax, bool roiOnly=true);
+
+  /// Generate a gaussian random number with given mean and variance
+  /** @param mean mode of the gaussian
+      @param var variance of the gaussian
+      @return gaussian distributed variable
+      @sa double(double,double,const Range<double>&), 
+  **/
+  double gaussRandom(double mean, double var);
+
+  /// Generate a gaussian random number with given mean and variance and clips the result to a range
+  /** @param mean mode of the gaussian
+      @param var variance of the gaussian
+      @param range clipping range for the returned value
+      @return gaussian distributed variable clipped to range range
+      @sa double(double,double,const Range<double>&), 
+  **/
+  inline double gaussRandom(double mean, double var, const Range<double> &range){
+    return icl::clip( gaussRandom(mean,var), range.minVal, range.maxVal);
+  }
 
   //--------------------------------------------------------------------------
   /*!
@@ -142,18 +168,18 @@ namespace icl {
   /* {{{ distance functions */
 
   /*!
-    @brief Calculate the euclidian distance of points a and b
-    @param first  The first point
-    @param last   The first iterator behind last element of first
-    @param second The second point
-    @return The distance of point a and b
+    @brief Calculate the euclidian distance of two vectors v1 and v2
+    @param v1Begin first element of v1
+    @param v1End   end of v1 (points the first element behind v1)
+    @param v2Begin first element of v2
+    @return The euclidian distance |v1-v2|
   */
   template <class ForwardIterator> 
-  float euclidian(ForwardIterator first, ForwardIterator last,
-                  ForwardIterator second) {
+  float euclidian(ForwardIterator v1Begin, ForwardIterator v1End,
+                  ForwardIterator v2Begin) {
      float fSum = 0.0, fDiff;
-     for (; first != last; ++first, ++second) {
-        fDiff = (*second-*first);
+     for (; v1Begin != v1End; ++v1Begin, ++v2Begin) {
+        fDiff = (*v1Begin-*v2Begin);
         fSum += fDiff*fDiff;
      }
      return sqrt(fSum);
@@ -167,7 +193,7 @@ namespace icl {
   */
   template <class T>
   float euclidian(const std::vector<T> &a, const std::vector<T> &b) {
-     ICLASSERT (a.size() == b.size());
+     ICLASSERT_RETURN_VAL(a.size() == b.size(), float(0));
      return euclidian (a.begin(), a.end(), b.begin());
   }
      

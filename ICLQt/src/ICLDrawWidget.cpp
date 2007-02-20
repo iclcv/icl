@@ -212,8 +212,7 @@ namespace icl{
   public:
     ImageCommand(ImgBase *image, float x, float y, float w, float h):
       DrawCommand4F(x,y,w,h), m_poImage(0){
-      ensureCompatible(&m_poImage,image);
-      image->deepCopy(m_poImage);
+      image->deepCopy(&m_poImage);
     }
     virtual ~ImageCommand(){
       if(m_poImage)delete m_poImage;

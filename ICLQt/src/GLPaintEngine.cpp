@@ -116,57 +116,50 @@ namespace icl{
       setupPixelTransfer(image->getDepth(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
     }else{
       // automatic adjustment of brightness and contrast
-      float fScaleRGB,fBiasRGB;
+      icl64f dScaleRGB,dBiasRGB;
       // auto adaption
+      Range<icl64f> r = image->getMinMax();
+      icl64f l = r.getLength();
       switch (image->getDepth()){
         case depth8u:{
-          icl8u tMin,tMax;
-          image->asImg<icl8u>()->getMinMax(tMin,tMax);
-          fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
-          fBiasRGB = (- fScaleRGB * tMin)/255.0;
+          dScaleRGB  = l ? 255.0/l : 255;
+          dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
           break;
         }
         case depth16s:{
-          static const icl16s _max = (65536/2-1);
-          icl16s tMin,tMax;
-          image->asImg<icl16s>()->getMinMax(tMin,tMax);
-          fScaleRGB  = (tMax == tMin) ? _max : _max/(tMax-tMin);
-          fBiasRGB = (- fScaleRGB * tMin)/255.0;
+          static const icl64f _max = (65536/2-1);
+          dScaleRGB  = l ? _max/l : _max;
+          dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
           break;
         }
         case depth32s:{ // drawn as float
-          icl32s tMin,tMax;
-          image->asImg<icl32s>()->getMinMax(tMin,tMax);
-          fScaleRGB  = (tMax == tMin) ? 255 : 255/(tMax-tMin);
-          fBiasRGB = (- fScaleRGB * tMin)/255.0;
+          dScaleRGB  = l ? 255.0/l : 255;
+          dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
+          // if not working properly: dBiasRGB /= 255.0
           break;
         }
         case depth32f:{
-          icl32f tMin,tMax;
-          image->asImg<icl32f>()->getMinMax(tMin,tMax);
-          fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
-          fBiasRGB = (- fScaleRGB * tMin)/255.0;
-          fScaleRGB /= 255.0;
+          dScaleRGB  = l ? 255.0/l : 255;
+          dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
+          dScaleRGB /= 255.0;
           break;
         }
         case depth64f:{ // drawn as float
-          icl64f tMin,tMax;
-          image->asImg<icl64f>()->getMinMax(tMin,tMax);
-          fScaleRGB  = (tMax == tMin) ? 255 : 255.0/(tMax-tMin);
-          fBiasRGB = (- fScaleRGB * tMin)/255.0;
-          fScaleRGB /= 255.0;
+          dScaleRGB  = l ? 255.0/l : 255;
+          dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
+          dScaleRGB /= 255.0;
           break;
         }
         default:
           ICL_INVALID_FORMAT;
           break;
       }
-      glPixelTransferf(GL_RED_SCALE,fScaleRGB);
-      glPixelTransferf(GL_GREEN_SCALE,fScaleRGB);
-      glPixelTransferf(GL_BLUE_SCALE,fScaleRGB);
-      glPixelTransferf(GL_RED_BIAS,fBiasRGB);
-      glPixelTransferf(GL_GREEN_BIAS,fBiasRGB);
-      glPixelTransferf(GL_BLUE_BIAS,fBiasRGB);
+      glPixelTransferf(GL_RED_SCALE,float(dScaleRGB));
+      glPixelTransferf(GL_GREEN_SCALE,float(dScaleRGB));
+      glPixelTransferf(GL_BLUE_SCALE,float(dScaleRGB));
+      glPixelTransferf(GL_RED_BIAS,float(dBiasRGB));
+      glPixelTransferf(GL_GREEN_BIAS,float(dBiasRGB));
+      glPixelTransferf(GL_BLUE_BIAS,float(dBiasRGB));
     }
   
     // old
@@ -188,7 +181,7 @@ namespace icl{
       // use fallback image conversion before drawing, as "int" and "double" are not supported yet
       ensureCompatible(&m_poImageBufferForIncompatibleDepth,depth32f,image->getParams());
       drawImage = m_poImageBufferForIncompatibleDepth;
-      image->deepCopy(drawImage);
+      image->convert(drawImage->asImg<icl32f>());
     }
     
     if(drawImage->getChannels() > 1){ 

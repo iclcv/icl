@@ -1,7 +1,7 @@
 #include <Img.h>
 #include <FileReader.h>
 #include <FileWriter.h>
-#include <LocalThreshold.h>
+#include <LocalThresholdOp.h>
 #include <TestImages.h>
 #include <ProgArg.h>
 
@@ -25,7 +25,7 @@ int main (int argc, char **argv) {
   }
   else{
     printf("working with testimage tree: \n");
-    TestImages::create("tree")->deepCopy(I);
+    TestImages::create("tree")->convert(I);
   }
   
   unsigned int maskSize = pa_subarg<unsigned int>("-masksize",0,10);
@@ -35,7 +35,7 @@ int main (int argc, char **argv) {
   
   ImgBase *RBase =(ImgBase*)R;
   
-  LocalThreshold t(maskSize,gt);
+  LocalThresholdOp t(maskSize,gt);
   t.apply(I,&RBase);
   
   string outputName = pa_subarg<string>("-output",0,"./out.jpg");

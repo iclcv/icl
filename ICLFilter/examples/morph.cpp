@@ -1,7 +1,6 @@
-#include <Proximity.h>
 #include <FileReader.h>
 #include <TestImages.h>
-#include <Morphological.h>
+#include <MorphologicalOp.h>
 using namespace std;
 using namespace icl;
 
@@ -21,52 +20,52 @@ int main(int nArgs, char **ppcArg){
    
    // test 1
   char mask[9]={1,1,1,1,1,1,1,1,1};
-  Morphological* pMorph = new Morphological(Size(3,3),mask,Morphological::erode);
+  MorphologicalOp* pMorph = new MorphologicalOp(Size(3,3),mask,MorphologicalOp::erode);
   pMorph->apply (src,&dst);
   TestImages::xv (dst, string("erode.pgm"));
   printf("erode\n");
   
-  pMorph->setOptype(Morphological::dilate3x3);
+  pMorph->setOptype(MorphologicalOp::dilate3x3);
   pMorph->apply (src,&dst);
   TestImages::xv (dst, string("dilate3x3.pgm"));
   printf("dilate3x3\n");
   
-  pMorph->setOptype(Morphological::erode3x3);
+  pMorph->setOptype(MorphologicalOp::erode3x3);
   pMorph->apply (src,&dst);
   TestImages::xv (dst, string("erode3x3.pgm"));
   printf("erode3x3\n");
 
-  pMorph->setOptype(Morphological::dilateBorderReplicate);
+  pMorph->setOptype(MorphologicalOp::dilateBorderReplicate);
   pMorph->apply (src,&dst);
   TestImages::xv (dst, string("dilateBorderReplicate.pgm"));
   printf("dilateBorderReplicate\n");
   
-  pMorph->setOptype(Morphological::erodeBorderReplicate);
+  pMorph->setOptype(MorphologicalOp::erodeBorderReplicate);
   pMorph->apply (src,&dst);
   TestImages::xv (dst, string("erodeBorderReplicate.pgm"));
   printf("erodeBorderReplicate\n");
   
-  pMorph->setOptype(Morphological::openBorder);
+  pMorph->setOptype(MorphologicalOp::openBorder);
   pMorph->apply (src,&dst);
   TestImages::xv (dst, string("openBorder.pgm"));
   printf("openBorder\n");
   
-  pMorph->setOptype(Morphological::closeBorder);
+  pMorph->setOptype(MorphologicalOp::closeBorder);
   pMorph->apply (src,&dst);
   TestImages::xv (dst, string("closeBorder.pgm"));
   printf("closeBorder\n");
   
-  pMorph->setOptype(Morphological::tophatBorder);
+  pMorph->setOptype(MorphologicalOp::tophatBorder);
   pMorph->apply (src,&dst);
   TestImages::xv (dst, string("tophatBorder.pgm"));
   printf("tophatBorder\n");
   
-  pMorph->setOptype(Morphological::blackhatBorder);
+  pMorph->setOptype(MorphologicalOp::blackhatBorder);
   pMorph->apply (src,&dst);
   TestImages::xv (dst, string("blackhatBorder.pgm"));
   printf("blackhatBorder\n");
   
-  pMorph->setOptype(Morphological::gradientBorder);
+  pMorph->setOptype(MorphologicalOp::gradientBorder);
   pMorph->apply (src,&dst);
   TestImages::xv (dst, string("gradientBorder.pgm"));
   printf("gradientBorder\n");
@@ -79,7 +78,7 @@ int main(int nArgs, char **ppcArg){
    TestImages::xv (src, string("src.pgm"));
    TestImages::xv (dst, string("dst.pgm"));
    #else
-  printf("Morphological only implemented with IPP\n");
+  printf("MorphologicalOp only implemented with IPP\n");
    #endif
    return 0;
 }

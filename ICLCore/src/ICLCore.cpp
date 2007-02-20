@@ -103,7 +103,6 @@ namespace icl{
 
   void ensureDepth(ImgBase ** ppoImage, depth d){
     // {{{ open
-
     if(!*ppoImage){
       *ppoImage = imgNew(d);
     }
@@ -118,7 +117,7 @@ namespace icl{
   
   void ensureCompatible(ImgBase **ppoDst, depth d, const ImgParams &params){
     // {{{ open
-
+    ICLASSERT_RETURN(ppoDst);
     if(!*ppoDst){
       *ppoDst = imgNew(d,params);
     }else{

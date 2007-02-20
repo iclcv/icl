@@ -115,7 +115,13 @@ namespace icl{
     /// sets the image ROI to the given rectangle
     void setROI(const Rect &roi) { setROI (roi.ul(),roi.size()); }
    
-    /// as setROIOffset, but if checks for negative parameters
+    /// checks, eventually adapts and finally sets the image ROI offset
+    void setROIOffsetAdaptive(const Point &offset);
+      
+    /// checks, eventually adapts and finally sets the image ROI size
+    void setROISizeAdaptive(const Size &size);
+
+    /// as setROI, but if checks for negative parameters
     /** While the methods setROI, setROIOffset and setROISize directly set
         the images ROI from the given arguments (if possible), the following methods 
         adapt the ROI parameters to assure a valid ROI. Negative values are interpreted 
@@ -125,14 +131,12 @@ namespace icl{
         sub image with a 5-pixel margin. offset(-5,-5) and size (5,5) sets
         the ROI to the lower right 5x5 corner. 
     **/
-    void setROIOffsetAdaptive(const Point &offset);
-      
-    /// checks, eventually adapts and finally sets the image ROI size
-    void setROISizeAdaptive(const Size &size);
-
-    /// checks, eventually adapts and finally sets the image ROI size
     void setROIAdaptive(const Rect &r);
      
+    /// adapt given ROI, such that it fits for the current ImgParams
+    /** @see setROIAdaptive **/
+    Rect& adaptROI(Rect &roi) const;
+
     /// returns ROISize == ImageSize
     bool hasFullROI() const { return m_oROI.size() == m_oSize;}
 

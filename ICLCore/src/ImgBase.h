@@ -1,12 +1,3 @@
-/*
-ImgBase.h
-
-Written by: Michael Götting and Christof Elbrechter(2006)
-University of Bielefeld
-AG Neuroinformatik
-{mgoettin,celbrech}@techfak.uni-bielefeld.de
-*/
-
 #ifndef ICLBASE_H
 #define ICLBASE_H
     
@@ -14,6 +5,7 @@ AG Neuroinformatik
 #include <ICLCore.h>
 #include <ImgParams.h>
 #include <Time.h>
+#include <Range.h>
 
 namespace icl {
   
@@ -21,72 +13,96 @@ namespace icl {
   /* {{{ ImgBase class documentation */
 
   /**
-  \section Class
-  The ImgBase class provides access to the following basic image features:
-   - image size 
-   - channel count
-   - depth:  depth8 for icl8u or depth32 for icl32f-images
-   - format: color-format associated with images channels 
-             (see section "Img Color Formats")
-   - raw data:  getDataPtr(int) returns image data form nth channel 
-            as void pointer. The function is implented in the 
-            inherited classes Img<icl8u> and Img<icl32f>, 
-            which also provide type-safe access functions, 
-            e.g. getData (int).
+      \section SEC1 Class
+      The ImgBase class provides access to the following basic image features:
+      - image size 
+      - channel count
+      - depth:  currently one of the following:
+        - depth8u
+        - depth16s
+        - depth32s
+        - depth32f
+        - depth64f
+      - format: color-format associated with images channels 
+        (see section "Img Color Formats")
+      - raw data:  getDataPtr(int) returns image data form nth channel 
+        as void pointer. The function is implemented in the 
+        inherited classes Img<icl8u> and Img<icl32f>, 
+        which also provide type-safe access functions, 
+        e.g. getData (int).
+      - time stamp: The time stamp of an images can be set using the
+        setTime() and getTime() functions. All image sources should set
+        the time stamp of the produced images.\n
+        An images time stamp is associated with image images content (
+        what scene is shown on the image). So it is not implicitly the images
+        creation time, but it corresponds to the last time the images data content
+        was set. E.g. a scaling operation would not change the images time stamp.
    
-  \section How to use the ImgBase class.
-  As the ImgBase is an abstract class, no ImgBase objects can be instantiated
-  It merely provides a common interface to methods provided by the 
-  inherited class Img<icl8u> and Img<icl32f>.
-
-  The following example should explain how to work with ImgBase class.
+      \section SEC2 How to use the ImgBase class.
+      As the ImgBase is an abstract class, no ImgBase objects can be instantiated
+      It merely provides a common interface to methods provided by the 
+      inherited classe Img<T>. It can be used in all functions the abstract
+      about the underlying data type. E.g. consider a scaling operation on images:
+      When regarding an image as a continuous 2D function, it is not necessary to know
+      the images data type when scaling it. However the developer might say: "At 
+      the latest if I want to implement some kind of interpolation I have to know the
+      actual data type I'm working on".\n
+      The ImgBase class implements exactly this kind of abstraction from the 
+      underlying implementation. Although the implementation has indeed to tackle
+      each of the different data types (E.g. floating point types vs. integer 
+      types) in an appropriate way, it is possible to call such function directly on
+      the abstract ImgBase object.\n
+      Many other operations are also conceptually independent
+      on the concrete pixel type, e.g. recombining or selecting channels 
+      For these operations the ImgBase class provides abstract or implemented
+      methods ensuring a common and type-independent interface.
+      
+      For example, to resize an image, one can easily write:
+      \code
+      void any_function(ImgBase *poBase){
+          poBase->setSize(Size(640,480));
+          ...
+      }
+      \endcode
+      
+      \section Examples
+      The following example should explain how to work with ImgBase class.
   
-  <pre>
-  void special_function_8(Img32f* poImg32f){...}
-  void special_function_32(Img8* poImg8f){...}
-  
-  void generic_function(ImgBase *poImage){
-     if(poImage->getDepth()==depth8u){
-        special_function_8(poImage->asImg<icl8u>());
-     }else{
-        special_function_32(poImage->asImg<icl32f>());
-     }
-  }
-  </pre>
-  Template functions can be called in an analogous way:
-  <pre>
-  template<class T> void template_function(Img<T> *poImg){...}
-
-  void generic_function(ImgBase *poImage){
-     if(poImage->getDepth()==depth8u){
-        template_function<icl8u>(poImage->asImg<icl8u>);
-     }else{
-        template_function<icl32f>(poImage->asImg<icl32f>);
-     }
-  } 
-  </pre>
-
-  Many operations on the Img image class are conceptually independent
-  on the concrete pixel type, e.g. recombining channels or resizing. 
-  For these operations the ImgBase class provides abstract or implemented
-  methods ensuring a common and type-independent interface.
-
-  For example, to resize an image, one can easily write:
-  <pre>
-  void any_function(ImgBase *poBase){
-     poBase->resize(Size(256,256));
-     ...
-  }
-  </pre>
-
+      \code
+      void special_function_8u(Img8u* poImage){...}
+      void special_function_16s(Img16f* poImage){...}
+      ...
+      void special_function_64f(Img64f* poImage){...}
+      
+      void generic_function(ImgBase *poImage){
+         switch(poImage->getDepth()){
+            case depth8u:  special_function_8u(poImage->asImg<icl8u>());
+            case depth16s: special_function_8u(poImage->asImg<icl16s>());
+            ...
+            case depth64f: special_function_(poImage->asImg<icl64f>());
+        }
+      }
+      \endcode
+      Template functions can be called in an analogous way:
+      \code
+      template<class T> void template_function(Img<T> *poImg){...}
+      
+      void generic_function(ImgBase *poImage){
+         switch(poImage->getDepth()){
+            case depth8u:  template_function(poImage->asImg<icl8u>());
+            case depth16s: template_function(poImage->asImg<icl16s>());
+            ...
+            case depth64f: template_function(poImage->asImg<icl64f>());
+        }
+      }
+      \endcode
   **/ 
-
   /* }}} */
   class ImgBase
     {   
       public:
       
-      //@{ @name Destructor
+      /** @{ @name Destructor */
       /* {{{ open */
     
       /// Destructor
@@ -95,57 +111,260 @@ namespace icl {
       //@}
       /* }}} */ 
       
-      //@{ @name functions for data exchange
+      /** @{ @name shallow copy */
       /* {{{ open */
 
-      /// creates a shallow copy of the image (shared channels).
+      /// Create a shallow copy of the image
       /** It exploits the given destination image if possible,
           i.e. if the pixel depth matches. Else this image is released
-          and a new one is created.
-          @param ppoDst destination image (if Null, a new one is created)
+          and a new one is created. Optionally a second argument can be
+          specified to get a new image with the given ROI.
+          @param ppoDst pointer to the destination image pointer If ppoDst is NULL,
+                        a new image is created, if ppoDst points to NULL, a new 
+                        image is created at *ppoDst;
+          @param roi new ROI of the new image. If Rect::null, the source images roi
+                     is used.
+          @return shallow copy of this image
       **/
-      ImgBase* shallowCopy(ImgBase** ppoDst = NULL) const;
-
-      /// creates a shallow copy of selected channels of this image
-      /** @param channelIndices vector containing channel indices to copy
-          @param ppoDst destination image (if Null, a new one is created)*/
-      ImgBase* shallowCopy(const std::vector<int>& channelIndices, ImgBase** ppoDst = NULL) const;
-
-      /// copies the image data into the destination image
-      /** this function is implemented in the Img-template class
-          @see Img
-      **/
-      virtual ImgBase* deepCopy(ImgBase* poDst = NULL) const=0;
+      virtual ImgBase* shallowCopy(ImgBase** ppoDst = NULL, const Rect &roi=Rect::null) = 0;
       
-      /// copies (or scales if necessary) the image data into the destination image and performs a
-      /** this function is implemented in the Img-template class
-          @see Img
-      **/
-      virtual ImgBase* scaledCopy(ImgBase *poDst, scalemode eScaleMode=interpolateNN) const=0;
-    
+      /// Create a shallow copy of a const source image
+      /** In contrast to the not const function shallowCopy, the const one does not provide
+          to specify a destination image pointer, because this must neither be const nor not const.
+          If it would be const, it would not be possible to adapt it to correct parameters, 
+          otherwise it would violate the const concept as it could be used to change the const
+          result.\n 
+          This function can only be used to get const copy of a source image with a special ROI.
+          @param roi ROI of the returned image (Rect::null is not allowed!)
+          @return shallow copy of this image with specified ROI
+      */
+      const ImgBase* shallowCopy(const Rect& roi) const {
+         // casting constness away is safe, because we effectively return a const Img<Type>*
+         return const_cast<ImgBase*>(this)->shallowCopy(0, roi);
+      }
+     
 
-      /// copies the image data in the images ROI into the destination images ROI
-      /** this function is implemented in the Img-template class
-          @see Img
-      **/
-      virtual ImgBase *deepCopyROI(ImgBase *poDst = NULL) const=0;
+      /// Create a shallow copy of selected channels of an image
+      /** This function can be used if only one or some channels of a given const 
+          image should be used in further processing steps. It helps to avoid the 
+          necessity of "deepCopy" calls there.
+          @param channelIndices vector containing channel indices to copy
+          @param ppoDst destination image (if Null, a new one is created)
+          @return image containing only the selected channels (as shallow copies)
+      */
+      virtual ImgBase* selectChannels (const std::vector<int>& channelIndices, ImgBase** ppoDst=0) = 0;
 
-      /// scales the image data in the image ROI into the destination images ROI
-      /** this function is implemented in the Img-template class
-          @see Img
+      /// Create a shallow copy of a single image channel of an image
+      /** This function is a shortcut to use 
+          icl::ImgBase::selectChannels(const std::vector<int>&,icl::ImgBase**) to 
+          select a single channel from an image
+          @param channelIndex index of the channel to select (if invalid, NULL is returned)
+          @param ppoDst destination image 
+          @return image containing only the selected channel
       **/
-      virtual ImgBase *scaledCopyROI(ImgBase *poDst = NULL, scalemode eScaleMode=interpolateNN) const=0;
+      virtual ImgBase* selectChannel(int channelIndex, ImgBase **ppoDst){
+        ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
+        std::vector<int> v(1); v[0]= channelIndex; return selectChannels(v,ppoDst);
+      }
+      /// Create a shallow copy of selected channels of a const image.
+      /** @param channelIndices vector containing channel indices to copy
+          @param const image containing only the selected channels
+      */
+      const ImgBase* selectChannels (const std::vector<int>& channelIndices) const {
+         // casting constness away is safe, because we effectively return a const Img<Type>*
+         return const_cast<ImgBase*>(this)->selectChannels(channelIndices, 0);
+      }
+      
+      /// Create a shallow copy of a single image channel of a const image
+      /** This function is a shortcut to use 
+          icl::ImgBase::selectChannels(const std::vector<int>&)const to 
+          select a single channel from a const image image
+          @param channelIndex index of the channel to select (if invalid, NULL is returned)
+          @return const image containing only the selected channel
+      **/
+      const ImgBase *selectChannel(int channelIndex) const{
+        ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
+        std::vector<int> v(1); v[0]= channelIndex; return selectChannels(v);
+      }
 
-      /// flips the image about the given axis into the destination image (IPP-OPTIMIZED)
-       /** this function is implemented in the Img-template class
-           @see Img
-       **/ 
-      virtual ImgBase *flippedCopyROI(ImgBase *poDst = NULL, axis eAxis = axisVert) const=0; 
+      
+      /* }}} */
+      
+      /** @{ @name deep copy and depth conversion */
+      /* {{{ open */
+      /// Create a deep copy of a given image
+      /** An optional destination image can be given via ppoDst. If ppoDst is NULL, a new image
+          created and returned. If ppoDst points to NULL, the new image is created at *ppoDst.
+          Otherwise, the given destination image (*ppoDst) is adapted to this images params
+          including its depth. If the destination images depth differs from this images depth, 
+          (*ppoDst) is first released and then created new on the heap
+          @param ppoDst optionally given destination image
+          @return deep copied image
+      */
+      virtual ImgBase *deepCopy(ImgBase **ppoDst=0) const=0;
+      
+      /// Create a deep copy of an images ROI
+      /** This function creates copies this images ROI into an optional given 
+          destination image. If ppoDst is NULL, a new image is created. If it points to 
+          NULL, a new image is created at *ppoDst. Otherwise the destination image is
+          adapted in size, channels and depth to this image (the size is set to this
+          images ROI size). The copy operation is performed line-wise using <em>memcpy</em>,
+          what makes deepCopyROI very fast.
+          @param ppoDst optionally given destination image
+          @return image containing a deep copy of the source images ROI
+      */
+      virtual ImgBase *deepCopyROI(ImgBase **ppoDst=0) const=0;
+
+      /// returns an Img<T> instance of this image (type-conversion or deep copy)
+      /** If the requested type differs from the actual image type, then a type
+          conversion is performed to transfer the image data to poDst. Else
+          deepCopy is called, to transfer the image data. If poDst is NULL, it
+          is created with identical parameters, except for the images depth, which
+          is given by the template parameter T.
+          (For developers: The convert function builds the base function for
+          other higher level functions like deepCopy. Internally it calls the
+          icl namespace function deepCopyChannel, which decides if data has to
+          be copied or converted.)
+          @param poDst destination image. If NULL, then a deep copy of the current
+                       image is returned
+          @return converted image
+          @see deepCopy
+          
+      */      
+      template<class T>
+      Img<T> *convert(Img<T> *poDst=NULL) const;
+
+      /// returns a converted (or deep copied) instance of this image
+      /** This function can be called using an explicit destination depth.
+          The function switches the depth parameter and calls the associated
+          convert<T> template function
+          @param d new images depth
+          @return converted image
+      */
+      ImgBase *convert(depth d) const;
+
+      /// returns a converted (or deep copied) instance of this images ROI
+      /** This function behaves essentially like the above functions, except it
+          is applied on the source image ROI only.
+          @param poDst optionally given destination image pointer.
+          @return converted image, containing the source images ROI
+      */
+      template<class T>
+      Img<T> *convertROI(Img<T> *poDst=NULL) const;
+
+      /// returns a converted (or deep copied) instance of this images ROI
+      /** This function behaves essentially like the above functions, except it
+          is applied on the source image ROI only.
+          @param d new images depth 
+          @return converted image, containing the source images ROI
+      */
+      ImgBase *convertROI(depth d) const; // switches d --> convert(Img<..>)
+      
       //@}
+      /* }}} */ 
 
+      /** @{ @name scaledCopy */
+      /* {{{ open */
+      
+      /// Create a scaled copy with given size of an image
+      /** @param newSize size of the new image
+          @param eScaleMode interpolation method to use when scaling the image
+          @return scaled image
+      */
+      virtual ImgBase *scaledCopy(const Size &newSize, scalemode eScaleMode=interpolateNN) const = 0;
+
+      /// Create a scaled copy into a given destination image
+      /** If the given destination pointer ppoDst is NULL, a deep copy of this image
+          is returned. If ppoDst points to NULL, a new a deep copy of this image is
+          created at *ppoDst. Otherwise, the destination image is only adapted in its
+          depth to this image; its size is hold.
+          @param ppoDst optionally given destination image pointer
+          @param eScaleMode interpolation method to use when scaling the image
+          @return scaled image
+      */
+      virtual ImgBase *scaledCopy(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const = 0;
+
+      /// Create a scaled copy with given size of an images ROI
+      /** This function behaves identically to the scaledCopy function above, except it
+          is applied on the source images ROI only.
+          @param newSize size of the new image
+          @param eScaleMode interpolation method to use when scaling the image
+          @return image containing a scaled instance of the source images ROI
+      */
+      virtual ImgBase *scaledCopyROI(const Size &newSize, scalemode eScaleMode=interpolateNN) const = 0;
+
+      /// Create a scaled copy of an images ROI with optionally given destination image
+      /** This function behaves identically to the scaledCopy function above, except it
+          is applied on the source images ROI only.
+          @param ppoDst optionally given destination image pointer
+          @param eScaleMode interpolation method to use when scaling the image
+          @return image containing a scaled instance of the source images ROI
+      */
+      virtual ImgBase *scaledCopyROI(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const = 0;
+      
+      // @}
+      /* }}} */
+      
+      /** @{ @name flippedCopy */
+      /* {{{ open */      
+
+      /// Create a flipped (or mirrored) copy into an optional destination image
+      /** If the given destination pointer ppoDst is NULL, a new destination image
+          is created and returned. If it points to NULL, the new image is created 
+          at *ppoDst. Otherwise the destination images is adjusted in size, channels 
+          and depth to this image before the "flipped copy"-operation is applied. The
+          eAxis parameter specifies whether to flip horizontally, vertically or both.
+          @param eAxis axis to flip
+          @param ppoDst destination image
+          @return flipped image
+      */
+      virtual ImgBase *flippedCopy(axis eAxis, ImgBase **ppoDst=0) const=0;
+
+      /// Create a flipped copy of an images ROI with optionally given destination image
+      /** This function behaves identically to the flippedCopy function above, except it
+          is applied on the source images ROI only.
+          @param eAxis axis to flip on
+          @param ppoDst optionally given destination image pointer
+          @return image containing a flipped instance of the source images ROI
+      */
+      virtual ImgBase *flippedCopyROI(axis eAxis ,ImgBase **ppoDst=0) const = 0; 
+
+       // @}
+      /* }}} */
+      
+      /** @{ @name asImg<T> cast templates */
+      /* {{{ open */ 
+
+      /// dynamically casts this image to one of its Img<T> subclasses 
+      /** This function performs an emulated dynamic_cast on this image and
+          returns a Img<T>*. If this image can not be casted to the the template
+          type that is specified by the template parameter T, a NULL-pointer is
+          returned. To avoid an expensive RTTI-runtime check using dynamic_cast,
+          this images depth is compared the the depth associated the the template
+          parameter T.
+          @return Img<T>* instance of this image
+      **/
+      template <class T>
+      Img<T> *asImg() {
+        ICLASSERT_RETURN_VAL( icl::getDepth<T>() == getDepth(), 0);
+        return reinterpret_cast<Img<T>*>(this);
+      }
+      
+      /// dynamically casts this image to one of its Img<T> subclasses (const version)
+      /** const version of the above function
+          @return const Img<T>* instance of this image
+      **/
+      template <class T>
+      const Img<T> *asImg() const {
+        ICLASSERT_RETURN_VAL( icl::getDepth<T>() == getDepth(), 0);
+        return reinterpret_cast<const Img<T>*>(this);
+      }
+
+      //@}
+    
       /* }}} */
 
-      //@{ @name getter functions
+      /** @{ @name getter  (without ROI handling) */
       /* {{{ open */
 
       /// returns all params in terms of a const ImgParams reference
@@ -159,8 +378,14 @@ namespace icl {
 
       // returns the images size
       const Size& getSize() const { return m_oParams.getSize(); }
-      
-      /// returns the pixelcount of each channel
+
+      /// returns the images width
+      int getWidth() const { return m_oParams.getWidth(); }
+
+      /// returns the images height
+      int getHeight() const { return m_oParams.getHeight(); }      
+
+      /// returns the pixel count of each channel
       int getDim() const { return m_oParams.getDim(); }
 
       /// returns the channel count of the image
@@ -175,36 +400,24 @@ namespace icl {
       /// returns the timestamp of the image
       Time getTime() const { return m_timestamp; }
 
-      /// returns the lenght of an image line in bytes (width*sizeof(Type))
+      /// returns the length of an image line in bytes (width*sizeof(Type))
+      /** This information is compulsory for calling any IPP function.
+          @return getWidth()*sizeof<Type> in the underlying Img template */
       virtual int getLineStep() const = 0;
 
-      /// returns if two images have same size, and channel count
-      /** @param s size to test
-          @param nChannels channel count to test
-      **/
-      bool isEqual(const Size &s, int nChannels) const
-        {
-          FUNCTION_LOG("isEqual("<<s.width<<","<< s.height << ","<< nChannels << ")");
-          return (getSize() == s) && (getChannels() == nChannels);
-        }
-      
-      /// checks if the image has the given parameters
-      bool isEqual(const ImgParams &params){
-        FUNCTION_LOG("");
-        return m_oParams == params;
-      }
+     
       
       //@}
 
       /* }}} */
       
-      //@{ @name ROI handling functions
+      /** @{ @name ROI handling */
       /* {{{ open */
 
       /// returns the images ROI rectangle
       const Rect &getROI() const{ return m_oParams.getROI(); }
       
-      /// copies the current ROI into the given offset and size refereces
+      /// copies the current ROI into the given offset and size references
       void getROI(Point& offset, Size& size) const { m_oParams.getROI(offset,size); }
 
       /// returns the images ROI offset (upper left corner)
@@ -224,15 +437,6 @@ namespace icl {
 
       /// returns the images ROI YOffset
       int getROIYOffset() const{ return m_oParams.getROIYOffset(); }
-
-      /// returns the images width
-      int getWidth() const { return m_oParams.getWidth(); }
-
-      /// returns the images height
-      int getHeight() const { return m_oParams.getHeight(); }
-     
-      /// sets all image parameters in order channels,size,format,roi
-      void setParams(const ImgParams &params);
 
       /// sets the image ROI offset to the given value
       void setROIOffset(const Point &offset) { m_oParams.setROIOffset(offset); }
@@ -264,52 +468,93 @@ namespace icl {
       /// resets the image ROI to the whole image size with offset (0,0)
       void setFullROI() { m_oParams.setFullROI(); }
       
-      //@}
-
+      // @}
       /* }}} */
-
-      //@{ @name data access
+      
+      /** @{ @name data access */
       /* {{{ open */
       
-      /// returns a pointer to first data element
+      /// returns a pointer to first data element of a given channel
       /** @see Img*/
       virtual const void* getDataPtr(int iChannel) const = 0;
+
+      /// returns a pointer to first data element of a given channel
+      /** @see Img*/
       virtual void* getDataPtr(int iChannel) = 0;
     
       //@} 
       /* }}} */
       
-      //@{ @name class organisation
+      /** @{ @name channel management */
       /* {{{ open */
 
       /// Makes the image channels independent from other images.
-      /** @see Img*/
+      /** @param iIndex index of the channel, that should be detached.
+                        (If iIndex is an legal channel index only the 
+                        corresponding channel will be detached. If 
+                        iIndex is -1 (default) all channels are detached
+      **/
       virtual void detach(int iIndex = -1)=0;
 
       /// Removes a specified channel.
-      /** @see Img*/
+      /** If a non-matrix format image looses a channel,
+          the new channel count will not match to the channel count,
+          that is associated with the current format. In this case, a
+          warning is written to std::out, and the format will be set to 
+          formatMatrix implicitly. To avoid this warning the programmer 
+          has to change the format explicitly before to formatMatrix.
+          @param iChannel Index of channel to remove
+      **/
       virtual void removeChannel(int iChannel)=0;
       
       /// Swap channel A and B
-      /** @see Img*/
+      /** The channel swap operation is shallow; only the channel
+          pointers are swapped.
+          @param iIndexA Index of channel A;
+          @param iIndexB Index of channel B
+      **/
       virtual void swapChannels(int iIndexA, int iIndexB)=0;
 
+      
+      /// sets all image parameters in order channels,size,format,roi
+      void setParams(const ImgParams &params);
+
       /// sets the channel count to a new value
-      /** @see Img*/
+      /** This function works only on demand, that means, that
+          channels will only be created/deleted, if the new 
+          channel count differs from the current. If the current
+          image has a non-matrix format, then the new channel count
+          must match to the channel count associated with this format.
+          If not, a warning is written to std::out, and the format is
+          set to formatMatrix implicitly. To avoid this warning, the 
+          image format must be set to formatMatrix explicitly before
+          calling setChannels
+          @param iNewNumChannels new channel count
+      **/
       virtual void setChannels(int iNewNumChannels)=0;
 
-      /// resizes the image to new values (image data is scaled)
-      /** @see Img*/
+      /// resizes the image to new size (image data is lost!) 
+      /** operation is performed on demand - if the image
+          has already the given size, then
+          nothing is done at all. For resizing
+          operation with scaling of the image data use scale.
+          <b>Note:</b> The ROI of the image is set to the hole
+          image using delROI(), notwithstanding if a resize
+          operation was performed or not.
+          @param s new image size  (if x or y is < 0, the 
+                   original width/height is used)
+          @see scale
+      **/
       virtual void setSize(const Size &s)=0;
 
       /// sets the format associated with channels of the image
       /**
-      The channel count of the image is set to the channel count
-      asociated with the set format, if they differ.
-      E.g an image with one channel will have 3 channels after
-      a setFormat(formatRGB) - call.
-      @param fmt new format value
-      @see getChannelsOfFormat
+          The channel count of the image is set to the channel count
+          associated with the set format, if they differ.
+          E.g an image with one channel will have 3 channels after
+          a setFormat(formatRGB) - call.
+          @param fmt new format value
+          @see getChannelsOfFormat
       **/
       void setFormat(format fmt);
 
@@ -321,71 +566,116 @@ namespace icl {
       //@}
 
       /* }}} */
+                    
+      /** @{ @name min and max element */
+      /* {{{ open */
 
-      //@{ @name image processing functions
+    /// Returns max pixel value of channel iChannel within ROI
+    /** @param iChannel Index of channel
+    **/
+    icl64f getMax(int iChannel) const;
+  
+    /// Returns min pixel value of channel iChannel within ROI
+    /** @param iChannel Index of channel
+        **/
+    icl64f getMin(int iChannel) const;
+  
+
+    /// return maximal pixel value over all channels (restricted to ROI)
+    icl64f getMin() const;
+
+    /// return minimal pixel value over all channels (restricted to ROI)
+    icl64f getMax() const;
+
+    /// Returns min and max pixel values of channel iChannel within ROI
+    /** @param iChannel Index of channel
+        @return channel range in terms of a Range<icl64f> struct
+    **/
+    const Range<icl64f> getMinMax(int iChannel) const;
+
+    /// Returns min and max pixel values of all channels within ROI
+    /** @return image range in terms of a Range<icl64f> struct
+    **/
+    const Range<icl64f> getMinMax() const;
+                    
+    //@}
+    /* }}} */
+    
+      /** @{ @name in-place image adaption */
       /* {{{ open */
       
-      /// performs an inplace resize operation on the image (IPP-OPTIMIZED)
-      /** @see Img*/
+       /// performs an in-place resize operation on the image (IPP-OPTIMIZED)
+      /** The image size is adapted on demand to the given size, and the image
+          data is scaled. This function is SLOW in comparison to the scaledCopy
+          function that is also provided in this class, as an additional scaling
+          buffer is allocated and released at runtime.
+          @param s new size of this image
+          @param eScaleMode interpolation method to use for the scaling operation 
+      **/
       virtual void scale(const Size& s, scalemode eScaleMode=interpolateNN)=0;
-      /// performs an inplace mirror operation
-      /** @see Img*/
+
+
+      /// performs an in-place mirror operation
+      /** This function is an in-place version of the flippedCopy function, that
+          is also provided in this class. Its performance is comparable to the
+          out-place function 
+          @param eAxis axis for the mirror operations
+          @param bOnlyROI if set, only the ROI of this image is mirrored, else
+                          the whole image is mirrored. 
+      **/
       virtual void mirror(axis eAxis, bool bOnlyROI=false)=0;
       
-      /// Scale the channel min/ max range to the new min, max range.
-      /** @see Img*/
-      /*
-      virtual void normalizeAllChannels(float fDstMin, float fDstMax);
-      virtual void normalizeChannel(int iChannel,
-                                    float fSrcMin, float fSrcMax,
-                                    float fDstMin, float fDstMax);
-      virtual void normalizeChannel(int iChannel,
-                                    float fDstMin, float fDstMax);
-      */
-      /// Scale the image min/ max range to the new min, max range.
-      /** @see Img*/
-      /*
-      virtual void normalizeImg(float fSrcMin, float fSrcMax,
-                                float fDstMin, float fDstMax);
-      virtual void normalizeImg(float fDstMin, float fDstMax);
-      */
-      //@} 
-      /* }}} */
-
-      //@{ @name asImg<T> and convertTo<T>
-      /* {{{ open */
-
-      /// returns an Img<T>* intstance of this image (internal: reinterpret_cast)
-      /** 
-      @return Img<T>* instance of this image
+      /// Sets the ROI pixels of one or all channels to a specified value
+      /** @param iChannel Channel to fill with zero (default: -1 = all channels)
+          @param val destination value (default: 0)
+          @param bROIOnly if set false, the whole image is set to val
       **/
-      template <class T>
-      Img<T> *asImg() const{
-        return reinterpret_cast<Img<T>*>((void*)this);
-      }
+      void clear(int iChannel = -1, icl64f val=0, bool bROIOnly=true);
 
-      /// returns an Img<T> instance of this image (type-conversion or deep copy)
-      /** If the requested type differs from the actual image type, then a type
-          conversion is performed to transfer the image data to poDst. Else
-          deepCopy is called, to transfer the image data. If poDst is NULL, it
-          is created with identical parameters, except for the images depth, which
-          is given by the template parameter T.
-          (For developers: The convertTo function builds the base function for
-          other higher level funtions like deepCopy. Internally it calls the
-          icl namespace function deepCopyChannel, which decides if data has to
-          be copied or converted.)
-          @param poDst destination image. If NULL, then a deep copy of the current
-                       image is returned
-          @see deepCopy
-      */
-      template <class T>
-      Img<T> *convertTo( Img<T>* poDst=NULL ) const;
+      /// Normalize the channel min/ max range to the new min, max range.
+      /** The min/ max range from the source channels are automatically detected,
+          <b>separately</b> for each channel.
+          @param dstRange range of all channels after the operation
+      **/
+      void normalizeAllChannels(const Range<icl64f> &dstRange);
+
+      /// Normalize the channel from a given min/max range to the new range 
+      /** @param iChannel channel index
+          @param srcRange assumption of the current range of the channel
+          @param dstRange range of the channel after the operation
+       **/
+      void normalizeChannel(int iChannel,const Range<icl64f> &srcRange, const Range<icl64f> &dstRange);
+
+
+      /// Normalize the channel from a given min/max range to the new range 
+      /** The min/ max range from the source channel is automatically detected,
+          separately for this channel.  (Internally: this function calls normalizeChannel
+          with srcRage = this->getMinMax(iChannel) )
+          @param iChannel channel index
+          @param dstRange range of the channel after the operation
+      **/
+      void normalizeChannel(int iChannel, const Range<icl64f> &dstRange);
+
+      /// Normalize the image from a given min/max range to the new range 
+      /** @param srcRange assumption of the current image range 
+          @param dstRange range of the image after the operation
+      **/
+      void normalizeImg(const Range<icl64f> &srcRange,const Range<icl64f> &dstRange);
+  
+      /// Normalize the image from a min/max range to the new range 
+      /** The min/ max range from the image is automatically detected, combined 
+          over all image channels. (Internally: this function calls normalizeImg
+          with srcRage = this->getMinMax() )
+          @param dstRange range of the image after the operation
+      **/
+      void normalizeImg(const Range<icl64f> &dstRange);
 
       //@}
       /* }}} */
-
-      //@{ @name utility functions
+      
+      /** @{ @name utility functions */
       /* {{{ open */
+
       /// prints the image to std-out
       /** @param sTitle optional title, that can be printed before
           printing the image parameters to identify the message.
@@ -395,6 +685,34 @@ namespace icl {
       /// validate the given channel index
       bool validChannel(const int iChannel) const {
          return iChannel >= 0 && iChannel < getChannels();
+      }
+
+      /// returns if two images have same size, and channel count
+      /** @param s size to test
+          @param nChannels channel count to test
+      **/
+      bool isEqual(const Size &s, int nChannels) const {
+          FUNCTION_LOG("isEqual("<<s.width<<","<< s.height << ","<< nChannels << ")");
+          return (getSize() == s) && (getChannels() == nChannels);
+        }
+      
+      /// checks if the image has the given parameters
+      bool isEqual(const ImgParams &params){
+        FUNCTION_LOG("");
+        return m_oParams == params;
+      }
+
+      /// checks if the image has given params and depth
+      bool isEqual(const ImgParams &params, depth d){
+        FUNCTION_LOG("");
+        return m_oParams == params && getDepth() == d;
+      } 
+      
+      /// checks if the image has given params and depth as another image
+      bool isEqual(const ImgBase *otherImage){
+        FUNCTION_LOG("");
+        ICLASSERT_RETURN_VAL(otherImage,false);
+        return getParams() == otherImage->getParams() && getDepth() == otherImage->getDepth();
       }
       //@}
       /* }}} */

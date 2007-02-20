@@ -15,7 +15,7 @@ namespace icl {
                     Rect (getClipToROI() ? Point::null : m_oROIOffset, oROIsize),
                     poSrc->getTime());
   }
-  
+ 
   bool NeighborhoodOp::computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize) {
     const Size& oSize = poSrc->getSize ();
     poSrc->getROI (oROIoffset, oROIsize);

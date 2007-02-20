@@ -269,7 +269,7 @@ namespace icl{
   template<class S, class D, format srcDstFmt> struct CCFunc<S,D,srcDstFmt,srcDstFmt>{
     // {{{ open
     static void convert(const Img<S> *src, Img<D> *dst){
-      src->deepCopy(dst);
+      src->convert(dst);
     }
     
   };
@@ -453,7 +453,7 @@ namespace icl{
     // {{{ open
     static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      icl::copy(src->getData(1),src->getData(1)+src->getDim(), dst->getData(0));
+      icl::convert(src->getData(1),src->getData(1)+src->getDim(), dst->getData(0));
     }
     
   };
@@ -486,7 +486,7 @@ namespace icl{
     // {{{ open
     static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      icl::copy(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));
+      icl::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));
     }
     
   };
@@ -521,9 +521,8 @@ namespace icl{
     // {{{ open
     static void convert(const Img<S> *src, Img<D> *dst){
       FUNCTION_LOG("");
-      icl::copy(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));
-    }
-    
+      icl::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));
+    }    
   };
 
   // }}}
@@ -671,7 +670,7 @@ namespace icl{
 
   int c=src->getChannels();
   if(c==1){
-    copy<S,D>(src->getData(0),src->getData(0)+src->getDim(),dst);
+    convert<S,D>(src->getData(0),src->getData(0)+src->getDim(),dst);
     return;
   }
   int dim=src->getDim();
@@ -703,7 +702,7 @@ namespace icl{
   dst->setChannels(c);
   dst->setSize(srcSize);
   if(c==1){
-    copy<S,D>(src,src+srcSize.getDim(),dst->getData(0));
+    convert<S,D>(src,src+srcSize.getDim(),dst->getData(0));
     return;
   }    
   D** pp=new D* [c];

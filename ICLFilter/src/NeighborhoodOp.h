@@ -36,11 +36,11 @@ namespace icl {
     }
     
     void setMask(const Size &size) {
-        m_oMaskSize = size;
-        m_oAnchor   = Point (size.width/2, size.height/2);
+        m_oMaskSize = adaptSize(size);
+        m_oAnchor   = Point (m_oMaskSize.width/2, m_oMaskSize.height/2);
     }
     void setMask(const Size &size, const Point &anchor){
-      m_oMaskSize = size;
+      m_oMaskSize = adaptSize(size);
       m_oAnchor = anchor;
     }
     void setROIOffset(const Point &offs){
@@ -55,7 +55,7 @@ namespace icl {
     const Point &getROIOffset() const{
       return m_oROIOffset;
     }
-    
+
     /// prepare filter operation: ensure compatible image format and size
     virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc);
     
@@ -74,6 +74,15 @@ namespace icl {
          @return whether a valid ROI remains
      */
      bool computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize);
+     
+     /// this function can be reimplemented e.g to enshure an odd mask width and height
+     /** E.g. some implementations of Neighborhood-operation could demand odd or even
+         mask size parameters. In this case, this function can be implemented in another
+         way. (Example: MedianOp)
+         @param size size to ajust
+         @return the given size in this base implementation
+     **/
+     virtual Size adaptSize(const Size &size){ return size; }
      
     protected:
      ///TODO: later private with getter and setter functions

@@ -13,24 +13,73 @@
 using namespace std;
 
 namespace icl{
-  
+
   // {{{ Random functions: 
 
-  //--------------------------------------------------------------------------
-  float gaussRandom(float limit)
-  {
-    FUNCTION_LOG("float");
-    static int iset=0;
-    static float gset;
-    float fac,r,v1,v2;
+  // this anonymous namespace holds utiliy functions, that are used only here
+  namespace { 
+    template<class T>
+    void uniform_image_random(Img<T> *image, const Range<double> &range, bool roiOnly){
+      for(int c=0;c<image->getChannels();++c){
+        ImgIterator<T> it = roiOnly ? image->getROIIterator(c) : image->getIterator(c);
+        while(it.inRegion()){
+          *it++ = Cast<double,T>::cast( random(range.minVal, range.maxVal) );
+        }
+      }
+    } 
+    template<class T>
+    void gaussian_image_random(Img<T> *image,double mean, double var, const Range<double> &range, bool roiOnly){
+      for(int c=0;c<image->getChannels();++c){
+        ImgIterator<T> it = roiOnly ? image->getROIIterator(c) : image->getIterator(c);
+        while(it.inRegion()){
+          *it++ = Cast<double,T>::cast( gaussRandom(mean,var,range) );
+        }
+      }
+    }
+  }
     
-    if  (iset == 0) 
-    {
+  void random(ImgBase *poImage, const Range<double> &range, bool roiOnly){
+    ICLASSERT_RETURN( poImage );
+    switch(poImage->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: uniform_image_random(poImage->asImg<icl##D>(),range,roiOnly); break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+    }
+    
+  }
+
+  void gaussRandom(ImgBase *poImage, double mean, double var, const Range<double> &minAndMax, bool roiOnly){
+    ICLASSERT_RETURN( poImage );
+    switch(poImage->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: gaussian_image_random(poImage->asImg<icl##D>(),mean,var,minAndMax,roiOnly); break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+    }
+  }
+  
+  //--------------------------------------------------------------------------
+  double gaussRandom(double mean, double var){
+    FUNCTION_LOG("");
+    double x1 = random(1.0);
+    double x2 = random(1.0);
+    return mean+var*var*sqrt(-2*var*log(x1))*cos(2*var*M_PI*x2);
+  }   
+
+  /********************************************************
+      ** former implementation taken from the BCL **
+      
+  float gaussRandom(float limit){
+      static int iset=0;
+      static float gset;
+      float fac,r,v1,v2;
+      
+      if  (iset == 0) 
+      {
       do 
       {
-        v1=2*random(limit)-1;
-        v2=2*random(limit)-1;
-        r=v1*v1+v2*v2;      
+      v1=2*random(limit)-1;
+      v2=2*random(limit)-1;
+      r=v1*v1+v2*v2;      
       } while (r >= 1);
       
       fac=sqrt(-2*log(r)/r);
@@ -38,13 +87,14 @@ namespace icl{
       iset=1;
       
       return (v2*fac);
-    } 
-    else 
-    {
+      } 
+      else 
+      {
       iset=0;
       return (gset);
-    }
-  } 
+      }
+      } 
+   ******************************************************/
 
   // }}}
 

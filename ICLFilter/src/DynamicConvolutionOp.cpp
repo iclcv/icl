@@ -22,7 +22,7 @@ namespace icl{
         poKernelBuf->setSize (poKernel->getROISize());
 
      // copy data from poKernel's ROI to poKernelBuf
-     poKernel->deepCopyROI (poKernelBuf);
+     poKernel->convertROI(poKernelBuf);
 
      // set ConvolutionOp kernel from float data
      ConvolutionOp::setKernel (poKernelBuf->getData(0), poKernelBuf->getSize(), false);

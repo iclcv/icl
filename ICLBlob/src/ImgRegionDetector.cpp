@@ -26,7 +26,7 @@ namespace icl{
   BlobList *get_blob_list(ImgBase *image,RegionDetector *rd, Img8u *bufROI=0){
     if(image->getDepth() != depth8u || !(image->hasFullROI())){   //TODO_depth
       bufROI->setSize(image->getROISize());
-      image->deepCopyROI(bufROI);
+      image->convertROI(bufROI);
       return get_blob_list(bufROI,rd);
     }
     rd->setSize(image->getSize());

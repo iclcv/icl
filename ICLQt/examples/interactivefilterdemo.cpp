@@ -26,28 +26,29 @@ public:
   
   virtual void run(){
     while(1){
-      ImgBase *image = grabber->grab()->shallowCopy();
-      widget->setImage(image);
+      const ImgBase *grabbedImage = grabber->grab();
+      widget->setImage(grabbedImage);
       if(x>0){ // else no mouse event has been recognized yet
         widget->lock();
         widget->reset();
        
         Rect roi(x-101,y-101,202,202);
-        if(Rect(Point::null,image->getSize()).contains(roi)){
+
+        if(Rect(Point::null,grabbedImage->getSize()).contains(roi)){
           // drawing smooth dropshadow
           widget->nocolor();
           widget->fill(0,0,0,20);
           for(int d=0;d<5;d++){
             widget->rect(x-95-d,y-95-d,200+2*d,200+2*d);
           }
-
           // drawing filter result for the roi image
-          image->setROI(roi);
-          ConvolutionOp conv(k); // geht alles nicht so richtig!!
-          //conv.setClipToROI(0);
-          ImgBase *dst = new Img8u(Size(100,100),formatRGB);
-          conv.apply(image,&dst);         
+          const ImgBase *image = grabbedImage->shallowCopy(roi);
+          ConvolutionOp conv(k); 
+          ImgBase *dst = 0;
+          conv.apply(image,&dst);   
+          dst->normalizeAllChannels(Range<icl64f>(0,255));
           widget->image(dst,x-100,y-100,200,200);
+
           if(dst) delete dst;
           widget->nofill();
           widget->color(0,0,0);

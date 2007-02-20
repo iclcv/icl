@@ -227,7 +227,8 @@ const Img<T> *QImageConverter::getImg(){
   // else find a given image
   for(int i=0;i<5;i++){
     if(i!=d && m_aeStates[i] < 2){
-      m_apoBuf[d] = m_apoBuf[i]->deepCopy(m_apoBuf[d]);
+      //      m_apoBuf[d] = m_apoBuf[i]->deepCopy(m_apoBuf[d]);
+      m_apoBuf[d] = m_apoBuf[i]->convert(m_apoBuf[d]->asImg<T>());
       m_aeStates[d] = uptodate;
       return m_apoBuf[d]->asImg<T>();
     }

@@ -213,16 +213,16 @@ namespace icl {
     ICLASSERT_RETURN( poSrc );
     if(!UnaryOp::prepare(poDst,poSrc)) return;
     switch(m_eOpType){
-      case addOp:  apply_unary_arithmetical_op_no_val<addOp>(poSrc,*poDst); break;
-      case mulOp:  apply_unary_arithmetical_op_no_val<mulOp>(poSrc,*poDst); break;
-      case divOp:  apply_unary_arithmetical_op_no_val<divOp>(poSrc,*poDst); break;
-      case subOp:  apply_unary_arithmetical_op_no_val<subOp>(poSrc,*poDst); break;
+      case addOp:  apply_unary_arithmetical_op_with_val<addOp>(poSrc,*poDst,m_dValue); break;
+      case mulOp:  apply_unary_arithmetical_op_with_val<mulOp>(poSrc,*poDst,m_dValue); break;
+      case divOp:  apply_unary_arithmetical_op_with_val<divOp>(poSrc,*poDst,m_dValue); break;
+      case subOp:  apply_unary_arithmetical_op_with_val<subOp>(poSrc,*poDst,m_dValue); break;
         
-      case sqrOp:  apply_unary_arithmetical_op_with_val<sqrOp>(poSrc,*poDst, m_dValue); break;
-      case sqrtOp: apply_unary_arithmetical_op_with_val<sqrtOp>(poSrc,*poDst, m_dValue); break;
-      case lnOp:   apply_unary_arithmetical_op_with_val<lnOp>(poSrc,*poDst, m_dValue); break;
-      case expOp:  apply_unary_arithmetical_op_with_val<expOp>(poSrc,*poDst, m_dValue); break;
-      case absOp:  apply_unary_arithmetical_op_with_val<absOp>(poSrc,*poDst, m_dValue); break;
+      case sqrOp:  apply_unary_arithmetical_op_no_val<sqrOp>(poSrc,*poDst); break;
+      case sqrtOp: apply_unary_arithmetical_op_no_val<sqrtOp>(poSrc,*poDst); break;
+      case lnOp:   apply_unary_arithmetical_op_no_val<lnOp>(poSrc,*poDst); break;
+      case expOp:  apply_unary_arithmetical_op_no_val<expOp>(poSrc,*poDst); break;
+      case absOp:  apply_unary_arithmetical_op_no_val<absOp>(poSrc,*poDst); break;
     }
   }
   // }}}

@@ -199,14 +199,14 @@ namespace icl{
           case depth8u:
             for(int c=0;c<dst->getChannels();c++){
               for(int i=0;i<4;i++){
-                deepCopyChannelROI<icl8u,icl8u>(src->asImg<icl8u>(),c,offs[i],size[i],dst->asImg<icl8u>(),c,offs[i],size[i]);
+                convertChannelROI<icl8u,icl8u>(src->asImg<icl8u>(),c,offs[i],size[i],dst->asImg<icl8u>(),c,offs[i],size[i]);
               }
             }        
             break;
           case depth32f:
             for(int c=0;c<dst->getChannels();c++){
               for(int i=0;i<4;i++){
-                deepCopyChannelROI<icl8u,icl32f>(src->asImg<icl8u>(),c,offs[i],size[i],dst->asImg<icl32f>(),c,offs[i],size[i]);
+                convertChannelROI<icl8u,icl32f>(src->asImg<icl8u>(),c,offs[i],size[i],dst->asImg<icl32f>(),c,offs[i],size[i]);
               }
             }            
             break;
@@ -223,14 +223,14 @@ namespace icl{
           case depth8u:
             for(int c=0;c<dst->getChannels();c++){
               for(int i=0;i<4;i++){
-                deepCopyChannelROI<icl32f,icl8u>(src->asImg<icl32f>(),c,offs[i],size[i],dst->asImg<icl8u>(),c,offs[i],size[i]);
+                convertChannelROI<icl32f,icl8u>(src->asImg<icl32f>(),c,offs[i],size[i],dst->asImg<icl8u>(),c,offs[i],size[i]);
               }
             }
             break;
           case depth32f:
             for(int c=0;c<dst->getChannels();c++){
               for(int i=0;i<4;i++){
-                deepCopyChannelROI<icl32f,icl32f>(src->asImg<icl32f>(),c,offs[i],size[i],dst->asImg<icl32f>(),c,offs[i],size[i]);
+                convertChannelROI<icl32f,icl32f>(src->asImg<icl32f>(),c,offs[i],size[i],dst->asImg<icl32f>(),c,offs[i],size[i]);
               }
             }            
             break;

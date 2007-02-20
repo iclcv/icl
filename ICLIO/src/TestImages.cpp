@@ -13,7 +13,7 @@ using std::string;
 using std::map;
 using namespace icl;
 
-namespace iclxpm{
+namespace {
   struct XPMColor{ 
     // {{{ open
 
@@ -472,26 +472,58 @@ namespace iclxpm{
 
 namespace icl{
   
-  using namespace iclxpm;
+  Img8u *TestImages::internalCreate(const string &name){
+    if(name == "women"){
+      return read_xpm(ppc_woman_xpm);
+    }else if(name == "tree"){
+      return read_xpm(ppc_tree_xpm);
+    }else if(name == "house"){
+      return read_xpm(ppc_house_xpm);
+    }else if(name == "parrot"){
+      return createImage_macaw()->asImg<icl8u>();
+    }else if(name == "flowers"){
+      return createImage_flowers()->asImg<icl8u>();
+    }else if(name == "windows"){
+      return createImage_windows()->asImg<icl8u>();
+    }else{
+      ERROR_LOG("TestImage "<< name << "not found!");
+      return 0;
+    }
+  }
+
+  ImgBase* TestImages::create(const string& name, format f, depth d){
+    // {{{ open
+
+    Img8u *src = internalCreate(name);
+    if(!src) return 0;
+    
+    if(src->getDepth() != d || src->getFormat() != f){
+      ImgBase *dst = imgNew(d,src->getSize(),f);
+      Converter(src,dst);
+      delete src;
+      return dst;
+    }else{
+      return src;
+    }
+  }
+
+  // }}}
+
   
   ImgBase* TestImages::create(const string& name, const Size& size,format f, depth d){
     // {{{ open
 
-    ImgBase *dst = imgNew(d,size,f);
-    Img8u *src = 0;
-    if(name == "women"){
-      src = read_xpm(ppc_woman_xpm);
-    }else if(name == "tree"){
-      src = read_xpm(ppc_tree_xpm);
-    }else if(name == "house"){
-      src = read_xpm(ppc_house_xpm);
+    Img8u *src = internalCreate(name);
+    if(!src) return 0;
+
+    if(src->getDepth() != d || src->getFormat() != f || src->getSize() != size ){
+      ImgBase *dst = imgNew(d,size,f);
+      Converter(src,dst);
+      delete src;
+      return dst;
     }else{
-      printf("error reading xpm image with name \"%s\"\n",name.c_str());
-      return 0;
+      return src;
     }
-    Converter(src,dst);
-    delete src;
-    return dst;
   }
 
   // }}}

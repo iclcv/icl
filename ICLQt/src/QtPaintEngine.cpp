@@ -74,7 +74,7 @@ namespace icl{
     // {{{ open
     if(!image)return;
     ensureCompatible(&m_poScaledImage,image->getDepth(),r.size(),image->getChannels());
-    image->scaledCopy(m_poScaledImage);
+    image->scaledCopy(&m_poScaledImage);
     m_oQImageConverter.setImage(m_poScaledImage);
 
     this->image(r,*(m_oQImageConverter.getQImage()),mode);

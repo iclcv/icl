@@ -49,8 +49,8 @@ namespace icl {
      ioFormatSEQ = -1, //< file list
      ioFormatPNM, //< PNM file format (gray/pgm or rgb/ppm
      ioFormatICL, //< proprietary format, equals pnm for icl8u, but allows icl32f as well
-     ioFormatJPG,  //< JPG image format
-     ioFormatCSV   //< coma seperated value
+     ioFormatJPG, //< JPG image format
+     ioFormatCSV  //< comma seperated value
   };
 
   enum GrabMode1394 {
@@ -112,16 +112,6 @@ namespace icl {
   struct icl_jpeg_error_mgr : jpeg_error_mgr {
      jmp_buf setjmp_buffer;	/* for return to caller */
   };
-
-#if 0  
-  ///Split a given string
-  void splitString(const std::string& line, 
-                   const std::string& separators,
-                   std::vector<std::string> &words); 
-
-  ///Convert a string to int
-  std::string number2String(int i);
-#endif
 
 } //namespace icl
 

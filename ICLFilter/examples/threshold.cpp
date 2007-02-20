@@ -1,4 +1,4 @@
-#include <Threshold.h>
+#include <ThresholdOp.h>
 #include <Img.h>
 #include <TestImages.h>
 #include <Timer.h>
@@ -44,7 +44,7 @@ static char *apc[38]={ // 40 x 38
   "........................................",
   "........................................",
   "........................................"};
-Threshold * pThresh = new Threshold(Threshold::lt,77,77,0,255);
+ThresholdOp * pThresh = new ThresholdOp(ThresholdOp::lt,77,77,0,255);
 void performance () {
   Img8u src(Size(1000,1000),1),dst(Size(1000,1000),1);
   ImgBase *dst2=0;
@@ -92,50 +92,50 @@ int main(){
   im.deepCopyROI(&t);
 
   t.setROI(Rect((i++)*s.width,0,100,100));
-  pThresh->setType(Threshold::lt);
+  pThresh->setType(ThresholdOp::lt);
   pThresh->setLowThreshold(150);
   pThresh->apply(&im, &t2); 
-  t2->deepCopyROI(&t);
+  t2->convertROI(&t);
   
   t.setROI(Rect((i++)*s.width,0,100,100));
-  pThresh->setType(Threshold::gt);
+  pThresh->setType(ThresholdOp::gt);
   pThresh->setHighThreshold(150);
   pThresh->apply(&im, &t2);
-  t2->deepCopyROI(&t);
+  t2->convertROI(&t);
   t.setROI(Rect((i++)*s.width,0,100,100));
-  //Threshold::ltgt(&im, &t, 100, 200); 
+  //ThresholdOp::ltgt(&im, &t, 100, 200); 
   
-  pThresh->setType(Threshold::ltgt);
+  pThresh->setType(ThresholdOp::ltgt);
   pThresh->setLowThreshold(100);
   pThresh->setHighThreshold(200);
   pThresh->apply(&im, &t2);
-  t2->deepCopyROI(&t);
+  t2->convertROI(&t);
   
   t.setROI(Rect((i++)*s.width, 0,100,100));
-//  Threshold::ltVal(&im, &t, 150, 0);
-  pThresh->setType(Threshold::ltVal);
+//  ThresholdOp::ltVal(&im, &t, 150, 0);
+  pThresh->setType(ThresholdOp::ltVal);
   pThresh->setLowThreshold(150);
   pThresh->setLowVal(0);
   pThresh->apply(&im, &t2);
-  t2->deepCopyROI(&t);
+  t2->convertROI(&t);
 
   t.setROI(Rect((i++)*s.width,0,100,100));
-//  Threshold::gtVal(&im, &t, 150, 255); 
-  pThresh->setType(Threshold::gtVal);
+//  ThresholdOp::gtVal(&im, &t, 150, 255); 
+  pThresh->setType(ThresholdOp::gtVal);
   pThresh->setHighThreshold(150);
   pThresh->setHighVal(255);
   pThresh->apply(&im, &t2);
-  t2->deepCopyROI(&t);
+  t2->convertROI(&t);
 
   t.setROI(Rect((i++)*s.width,0,100,100));
-//  Threshold::ltgtVal(&im, &t, 150, 0, 150, 255); 
-  pThresh->setType(Threshold::ltgtVal);
+//  ThresholdOp::ltgtVal(&im, &t, 150, 0, 150, 255); 
+  pThresh->setType(ThresholdOp::ltgtVal);
   pThresh->setLowThreshold(150);
   pThresh->setLowVal(0);
   pThresh->setHighThreshold(150);
   pThresh->setHighVal(255);
   pThresh->apply(&im, &t2);
-  t2->deepCopyROI(&t);
+  t2->convertROI(&t);
 
   printf("showing results\n");
   TestImages::xv(&t,"threshold_results.pgm");

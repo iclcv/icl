@@ -14,7 +14,7 @@ namespace icl{
     // {{{ open
 
 #ifdef WITH_IPP_OPTIMIZATION    
-    ICLASSERT_RETURN( n>0 && n>model.dim() );  
+    ICLASSERT_RETURN( n>0 && (int)n>model.dim() );  
     int dim = model.dim();
     
     static Array<icl64f> D, S, invS, buf, invS_C, EV, Eval;
@@ -71,7 +71,7 @@ namespace icl{
     // {{{ open
 
 #ifdef WITH_IPP_OPTIMIZATION    
-    ICLASSERT_RETURN( n>0 && n>model.dim() );  
+    ICLASSERT_RETURN( n>0 && (int)n>model.dim() );  
     int dim = model.dim();
     
     static Array<icl32f> D, S, invS, buf, invS_C, EV, Eval;
@@ -131,7 +131,7 @@ namespace icl{
     // {{{ open
     int dim = model.dim();
     ICLASSERT_RETURN(dim > 0);
-    ICLASSERT_RETURN(subSetSize < n && subSetSize >= dim);
+    ICLASSERT_RETURN(subSetSize < (int)n && subSetSize >= dim);
    
 
     subSetSize = std::max(dim,subSetSize);

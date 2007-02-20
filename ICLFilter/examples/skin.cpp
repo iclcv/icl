@@ -1,4 +1,4 @@
-#include <Skin.h>
+#include <SkinOp.h>
 #include <Img.h>
 #include <FileReader.h>
 #include <FileWriter.h>
@@ -13,7 +13,7 @@ int main(){
   FileReader r2("demoImages/skinImg.ppm");
   FileWriter w("skinMask.pgm");
   std::vector<float> vecparameter;
-  Skin skinFilter, skinFilter2;
+  SkinOp skinFilter, skinFilter2;
   
   // --------------------------------------------------------------
   // ---- Train skin color filter 

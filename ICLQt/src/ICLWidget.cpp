@@ -307,7 +307,7 @@ namespace icl{
         default:
           ICL_INVALID_DEPTH;
       }
-      input->deepCopy(m_poImage);
+      input->deepCopy(&m_poImage);
       /// old
       //ensureCompatible(&m_poImage,input);
       //input->deepCopy(m_poImage);
@@ -324,7 +324,7 @@ namespace icl{
           break;    
         case depth32s:  
           ensureCompatible(&m_poImage,depth32f,input->getSize(),1,formatMatrix);
-          deepCopyChannel(input->asImg<icl32s>(),op.c,m_poImage->asImg<icl32f>(),0);  // special case here ! 
+          convertChannel(input->asImg<icl32s>(),op.c,m_poImage->asImg<icl32f>(),0);  // special case here ! 
           break;    
         case depth32f:
           ensureCompatible(&m_poImage,depth32f,input->getSize(),1,formatMatrix);
@@ -332,7 +332,7 @@ namespace icl{
           break;
         case depth64f:
           ensureCompatible(&m_poImage,depth32f,input->getSize(),1,formatMatrix);
-          deepCopyChannel(input->asImg<icl64f>(),op.c,m_poImage->asImg<icl32f>(),0);  // special case here!
+          convertChannel(input->asImg<icl64f>(),op.c,m_poImage->asImg<icl32f>(),0);  // special case here!
           break;
         default:
           ICL_INVALID_DEPTH;

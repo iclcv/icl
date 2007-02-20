@@ -351,7 +351,7 @@ namespace icl {
 
   template<typename T, IppStatus (IPP_DECL *pMethod)(const T*, int, T*, int, IppiSize, const Ipp32s*, IppiSize, IppiPoint, int)>
   void ConvolutionOp::ippGenericConvIntKernel (const ImgBase *poSrc, ImgBase *poDst) {
-     Img<T> *poS = poSrc->asImg<T>();
+     const Img<T> *poS = poSrc->asImg<T>();
      Img<T> *poD = poDst->asImg<T>();
      for(int c=0; c < poSrc->getChannels(); c++) {
         pMethod (poS->getROIData (c, getROIOffset()), poS->getLineStep(),
@@ -362,7 +362,7 @@ namespace icl {
 
   template<typename T, IppStatus (IPP_DECL *pMethod)(const T*, int, T*, int, IppiSize, const Ipp32f*, IppiSize, IppiPoint)>
   void ConvolutionOp::ippGenericConvFloatKernel (const ImgBase *poSrc, ImgBase *poDst) {
-     Img<T> *poS = poSrc->asImg<T>();
+     const Img<T> *poS = poSrc->asImg<T>();
      Img<T> *poD = poDst->asImg<T>();
      for(int c=0; c < poSrc->getChannels(); c++) {
         pMethod (poS->getROIData (c, getROIOffset()), poS->getLineStep(),
@@ -390,9 +390,8 @@ namespace icl {
   void ConvolutionOp::ippFixedConv (const ImgBase *poSrc, ImgBase *poDst) {
      IppStatus (IPP_DECL *pMethod)(const T* pSrc, int srcStep, T* pDst, int dstStep, IppiSize roiSize)
         = getIppFixedMethod<T>();
-     Img<T> *poS = (Img<T>*) poSrc;
+     const Img<T> *poS = (Img<T>*) poSrc;
      Img<T> *poD = (Img<T>*) poDst;
-
      for(int c=0; c < poSrc->getChannels(); c++) {
         pMethod (poS->getROIData (c, getROIOffset()), poS->getLineStep(),
                  poD->getROIData (c), poD->getLineStep(), 
@@ -405,7 +404,7 @@ namespace icl {
         = getIppFixedMaskMethod<T>();
      IppiMaskSize eMaskSize = (IppiMaskSize)(11 * getMaskSize().width);
      WARNING_LOG("what is that 11 about here ?");
-     Img<T> *poS = (Img<T>*) poSrc;
+     const Img<T> *poS = (Img<T>*) poSrc;
      Img<T> *poD = (Img<T>*) poDst;
      
      for(int c=0; c < poSrc->getChannels(); c++) {
@@ -424,7 +423,7 @@ namespace icl {
   template<typename ImageT, typename KernelT, bool bUseFactor>
   void ConvolutionOp::cGenericConv (const ImgBase *poSrc, ImgBase *poDst)
   {
-    Img<ImageT> *poS = (Img<ImageT>*) poSrc;
+    const Img<ImageT> *poS = (Img<ImageT>*) poSrc;
     Img<ImageT> *poD = (Img<ImageT>*) poDst;
 
     // accumulator for each pixel result of Type M
@@ -433,13 +432,14 @@ namespace icl {
     // pointer to the mask
     const KernelT *m;
     for(int c=0; c < poSrc->getChannels(); c++) {
-       for(ImgIterator<ImageT> s (poS->getData(c), poS->getSize().width, 
-                                  Rect (getROIOffset(), poD->getROISize())),
-              d=poD->getROIIterator(c); 
-           s.inRegion(); ++s, ++d)
+       ConstImgIterator<ImageT> s (poS->getData(c), poS->getSize().width, 
+                                   Rect (getROIOffset(), poD->getROISize()));
+       ImgIterator<ImageT>      d = poD->getROIIterator(c);
+       for(; s.inRegion(); ++s, ++d)
        {
           m = this->getKernel<KernelT>(); buffer = 0;
-          for(ImgIterator<ImageT> sR(s,getMaskSize(),getAnchor()); sR.inRegion(); ++sR, ++m)
+          for(ConstImgIterator<ImageT> sR (s,getMaskSize(),getAnchor()); 
+              sR.inRegion(); ++sR, ++m)
           {
              buffer += (*m) * (*sR);
           }

@@ -173,6 +173,13 @@ namespace icl{
 
   // }}}
   
-
+  Rect& ImgParams::adaptROI(Rect &roi) const {
+    // {{{ open
+     ImgParams curParams(*this);
+     curParams.setROIAdaptive(roi);
+     roi = curParams.getROI();
+     return roi;
+  }
+  // }}}
 
 }

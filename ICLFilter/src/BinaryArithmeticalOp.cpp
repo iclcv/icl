@@ -64,17 +64,17 @@ namespace icl {
 #define CREATE_IPP_FUNCTIONS_FOR_OP(OP,IPPOP)                                                           \
     template<> struct LoopFunc<icl8u, BinaryArithmeticalOp::OP##Op>{                                    \
       static inline void apply(const  Img<icl8u> *src1,const  Img<icl8u> *src2, Img<icl8u> *dst ){      \
-        ipp_call_sfs<icl8u,ippi##IPPOP##_8u_C1RSfs>(src1,src2,dst);                                     \
+        ipp_call_sfs<icl8u,ippi##IPPOP##_8u_C1RSfs>(src2,src1,dst);                                     \
       }                                                                                                 \
     };                                                                                                  \
     template<> struct LoopFunc<icl16s, BinaryArithmeticalOp::OP##Op>{                                   \
       static inline void apply(const  Img<icl16s> *src1,const  Img<icl16s> *src2, Img<icl16s> *dst ){   \
-        ipp_call_sfs<icl16s,ippi##IPPOP##_16s_C1RSfs>(src1,src2, dst);                                  \
+        ipp_call_sfs<icl16s,ippi##IPPOP##_16s_C1RSfs>(src2,src1, dst);                                  \
       }                                                                                                 \
     };                                                                                                  \
     template<> struct LoopFunc<icl32f, BinaryArithmeticalOp::OP##Op>{                                   \
       static inline void apply(const  Img<icl32f> *src1,const  Img<icl32f> *src2, Img<icl32f> *dst ){   \
-        ipp_call<icl32f,ippi##IPPOP##_32f_C1R>(src1,src2, dst);                                         \
+        ipp_call<icl32f,ippi##IPPOP##_32f_C1R>(src2,src1, dst);                                         \
       }                                                                                                 \
     }
     CREATE_IPP_FUNCTIONS_FOR_OP(add,Add);

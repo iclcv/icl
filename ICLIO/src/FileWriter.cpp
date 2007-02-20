@@ -67,7 +67,7 @@ namespace icl {
       const ImgBase *poImg = poSrc;
       if (poSrc->getDepth () != depth8u && oInfo.eFileFormat != ioFormatICL) {
          // image needs to be converted to depth8u
-        poImg = poSrc->convertTo<icl8u> (&m_oImg8u);
+        poImg = poSrc->convert<icl8u>(&m_oImg8u);
       } // otherwise, use poSrc directly
 
       try {
@@ -165,16 +165,16 @@ namespace icl {
 
       // write image data
       if (bPPM) { // file format is interleaved, i.e. RGB or something similar
-         Img8u *poImg8u = poSrc->asImg<icl8u>();
+         const Img8u *poImg8u = poSrc->asImg<icl8u>();
          const Size& size = poSrc->getSize();
          int iDim   = 3 * size.width;
          icl8u *pcBuf = new icl8u[iDim];
          icl8u *pc;
         
          for (int i=0;i<iNumImages;i++) {
-            icl8u *pcR = poImg8u->getData (i*3);
-            icl8u *pcG = poImg8u->getData (i*3+1);
-            icl8u *pcB = poImg8u->getData (i*3+2);
+            const icl8u *pcR = poImg8u->getData (i*3);
+            const icl8u *pcG = poImg8u->getData (i*3+1);
+            const icl8u *pcB = poImg8u->getData (i*3+2);
             for (int l=0; l<size.height; l++) {
                pc=pcBuf;
                for (int c=0; c<size.width; ++c, ++pcR, ++pcG, ++pcB) {
@@ -205,42 +205,25 @@ namespace icl {
       int (*pWrite)(void *fp, const void *pData, size_t len) 
          = oInfo.bGzipped ? gzwrite : plainWrite;
 
-      // check exact file type first:
-      // pgm: write separate channels below each other as pgm image (P5)
-      // ppm: require a multiple of 3 of channels, write as ppm image (P6)
-      // pnm: write 3-channel color images as pnm image (P6),
-      //      all other formats as pnm (P5)
-      // icl: write channels consecutively
-      
       // write image data
-      Img8u *poImg8u = poSrc->asImg<icl8u>();
+      const Img8u *poImg8u = poSrc->asImg<icl8u>();
       const Size& size = poSrc->getSize();
       int iNumImages = poSrc->getChannels();
       int iDim = size.getDim();
-      ICLException writeError ("Error writing file.");
-      ostringstream oss,oss2;
-      icl8u *pc;
+      
+      ostringstream oss;
       
       // write channel consecutively
       for (int i=0;i<iNumImages;i++) {
-        pc = poImg8u->getData(i);
-        
-        if (i == iNumImages-1) {
-          for (int j=0;j<iDim-1;j++, pc++) {
-            oss << (int) *pc << ",";
-          }
-           oss << (int) *pc;
-        } else {
-          for (int j=0;j<iDim;j++, pc++) {
-            oss << (int) *pc << ",";
-          }
+        const icl8u *pc = poImg8u->getData(i);
+        for (int j=0;j<iDim;j++, pc++) {
+           oss << (int) *pc << ",";
         }
       }
+      const string& sData = oss.str();
       
-      string sData = oss.str();
-      
-      if (!pWrite (oInfo.fp, sData.c_str(), strlen(sData.c_str()))) 
-        throw writeError;
+      if (!pWrite (oInfo.fp, sData.c_str(), sData.length()-1))
+        throw ICLException ("Error writing file.");
    }
   
 
