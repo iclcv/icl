@@ -153,7 +153,7 @@ namespace icl {
     /** @param maskSize of odd width and height
         Even width or height is increased to next higher odd value.
     **/
-    MedianOp (const Size &maskSize):NeighborhoodOp(maskSize){}
+    MedianOp (const Size &maskSize):NeighborhoodOp(adaptSize(maskSize)){}
     
     /// applies the median operation on poSrc and stores the result in poDst
     /** The depth, channel count and size of poDst is adapted to poSrc' ROI:

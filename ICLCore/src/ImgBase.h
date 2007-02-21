@@ -171,7 +171,7 @@ namespace icl {
       }
       /// Create a shallow copy of selected channels of a const image.
       /** @param channelIndices vector containing channel indices to copy
-          @param const image containing only the selected channels
+          @return const image containing only the selected channels
       */
       const ImgBase* selectChannels (const std::vector<int>& channelIndices) const {
          // casting constness away is safe, because we effectively return a const Img<Type>*
@@ -405,7 +405,7 @@ namespace icl {
 
       /// returns the length of an image line in bytes (width*sizeof(Type))
       /** This information is compulsory for calling any IPP function.
-          @return getWidth()*sizeof<Type> in the underlying Img template */
+          @return getWidth()*sizeof(Type) in the underlying Img template **/
       virtual int getLineStep() const = 0;
 
      

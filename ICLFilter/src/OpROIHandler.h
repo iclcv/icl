@@ -3,12 +3,6 @@
 
 #include <ImgBase.h>
 
-/**
-\mainpage ICLFilter package
-TODO document this !
-*/
-
-
 namespace icl {
   /// Utility base class for Image Operators
   /** The OpROIHandler class builds a utility base class for ICL unary and binary

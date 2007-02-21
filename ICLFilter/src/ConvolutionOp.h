@@ -289,7 +289,9 @@ namespace icl {
 
     /// initMethods initializes method array aMethods with dummyConvMethod
     void initMethods ();
-    void dummyConvMethod (const ImgBase *poSrc, ImgBase *poDst) {}
+    void dummyConvMethod (const ImgBase *poSrc, ImgBase *poDst) {
+      (void)poSrc; (void)poDst;
+    }
   };
 
 

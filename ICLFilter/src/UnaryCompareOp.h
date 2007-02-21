@@ -48,7 +48,7 @@ namespace icl {
     virtual ~UnaryCompareOp(){}
     
     /// sets the current optype
-    /** @param op new optype value */
+    /** @param ot new optype value */
     void setOpType(optype ot){ m_eOpType = ot; }
 
     /// sets the current compare value

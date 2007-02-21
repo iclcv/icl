@@ -51,7 +51,7 @@ namespace icl {
                       icl64f too.
 
     **/
-    void apply (const ImgBase *poSrc, ImgBase **poDst);
+    void apply (const ImgBase *poSrc, ImgBase **ppoDst);
      
     /// returns the current weight vector
     /** @return reference to the current weight vector **/

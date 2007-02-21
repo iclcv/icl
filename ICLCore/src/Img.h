@@ -281,7 +281,7 @@ namespace icl {
     /* {{{ open  */
 
     /// Create a shallow copy of the image (shared channels).
-    /** \copydoc icl::ImgBase::shallowCopy(icl::Img<Type>*,const icl::Rect&) */
+    /** \copydoc icl::ImgBase::shallowCopy(icl::ImgBase**,const icl::Rect&) */
     virtual Img<Type>* shallowCopy(ImgBase** ppoDst=0, const Rect &roi=Rect::null);
 
     /// Create a shallow copy of the image (shared channels).
@@ -485,17 +485,15 @@ namespace icl {
     Type getMax() const;
 
     /// Returns min and max pixel values of channel iChannel within ROI
-    /** @param rtMin reference to store the min value 
-        @param rtMax reference to store the max value
-        @param iChannel Index of channel
-        **/
+    /** @param iChannel Index of channel
+    **/
     const Range<Type> getMinMax(int iChannel) const;
 
     /// return minimal and maximal pixel values over all channels (restricted to ROI)
     const Range<Type> getMinMax() const;
 
     /// Returns the width of an image line in bytes
-    /** \copydoc icl::ImgBase::getLineStep()const */
+    /** \copydoc icl::ImgBase::getLineStep()const **/
     virtual int getLineStep() const{
       return getSize().width*sizeof(Type);
     }
@@ -573,13 +571,13 @@ namespace icl {
     }
 
     /// returns the raw- data pointer of an image channel
-    /** \copydoc icl::ImgBase::getDataPointer(int) **/
+    /** \copydoc icl::ImgBase::getDataPtr(int) **/
     virtual void* getDataPtr(int iChannel){
       return getData(iChannel);
     }
       
     /// returns the raw- data pointer of an image channel (const)
-    /** \copydoc icl::ImgBase::getDataPointer(int)const **/
+    /** \copydoc icl::ImgBase::getDataPtr(int)const **/
     virtual const void* getDataPtr(int iChannel) const{
       return getData(iChannel); 
     }
@@ -609,43 +607,36 @@ namespace icl {
     /// Normalize the channel min/ max range to the new min, max range.
     /** The min/ max range from the source channels are automatically detected,
         <b>separately</b> for each channel.
-        @param tDstMin new mininum value for the channel
-        @param tDstMax new maximum value for the channel
-        **/
+        @param dstRange new image range
+    **/
     void normalizeAllChannels(const Range<Type> &dstRange);
 
     /// Normalize the channel from a given min/max range to the new range 
     /** @param iChannel channel index
-        @param tSrcMin the minimum value of the givenchannel
-        @param tSrcMax the maximum value of the given channel
-        @param tDstMin the new minimum value for the channel
-        @param tDstMax the new maximum value for the channel
-        **/
+        @param srcRange notional image range befor this function call
+        @param dstRange image range after this function call
+    **/
     void normalizeChannel(int iChannel, const Range<Type> &srcRange, const Range<Type> &dstRange);
 
     /// Normalize the channel from a given min/max range to the new range 
     /** The min/ max range from the source channel is automatically detected,
         separately for this channel
         @param iChannel channel index
-        @param tDstMin the new minimum value for the channel
-        @param tDstMax the new maximum value for the channel
-        **/
+        @param dstRange destination image range
+    **/
     void normalizeChannel(int iChannel,const Range<Type> &dstRange);
 
     /// Normalize the image from a given min/max range to the new range 
-    /** @param tSrcMin the minimum value
-        @param tSrcMax the maximum value
-        @param tDstMin the new minimum value for the image
-        @param tDstMax the new maximum value for the image
-        **/
+    /** @param srcRange notional image range befor this function call
+        @param dstRange image range after this function call
+    **/
     void normalizeImg(const Range<Type> &srcRange, const Range<Type> &dstRange);
   
     /// Normalize the image from a min/max range to the new range 
     /** The min/ max range from the image is automatically detected, combined 
         over all image channels.
-        @param tDstMin the new minimum value for the image
-        @param tDstMax the new maximum value for the image
-        **/
+        @param dstRange destination image range
+    **/
     void normalizeImg(const Range<Type> &dstRange);
   
     //@}
@@ -837,7 +828,7 @@ namespace icl {
       @param srcSize source images ROI size
       @param dst destination image 
       @param dstC destination channel
-      @param dstOffset destination images ROI offset
+      @param dstOffs destination images ROI offset
       @param dstSize destination images ROI size (must be equal to srcSize) 
   **/
   template <class T>

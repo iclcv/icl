@@ -33,7 +33,7 @@ namespace icl{
     void apply(const ImgBase *poSrc, ImgBase **ppoDst);
 
     /// set up wheater to apply on the source image or on the source images ROI
-    /** @param applytoROIOnly given flag
+    /** @param applyToROIOnly given flag
     **/
     void setApplyToROIOnly(bool applyToROIOnly){ m_oConverter.setApplyToROIOnly(applyToROIOnly); }
     

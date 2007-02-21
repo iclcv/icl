@@ -151,7 +151,7 @@ namespace icl{
       (@see Paper: Further Five Point Fit Ellipse Fitting by Paul L. Rosin)
   */
   template<class T>
-  void fitModel(T *xs, T *ys, int nPoints, GeneralModel<T> &model, int subSetSize, int subSetCount=-1);
+  void fitModel(T *xs, T *ys,unsigned int nPoints, GeneralModel<T> &model, int subSetSize, int subSetCount=-1);
   
   /// draws a model with calculated params 
   /** The model must be fitted with the above function before it can be drawed

@@ -6,37 +6,11 @@
 namespace icl {
   
   /// Class for Morphological operations  (Only available for Img8u and Img32f, IPP only!)
-
-/**
-    /// Performs erosion of an image using a general rectangular mask.
-    void applyErode (const ImgBase *poSrc, ImgBase **ppoDst);
-    /// Performs erosion of an image using a 3x3 mask
-    void applyErode3x3 (const ImgBase *poSrc, ImgBase **ppoDst);
-    /// Performs dilation of an image using a general rectangular mask.
-    void applyDilate (const ImgBase *poSrc, ImgBase **ppoDst);
-    /// Performs dilation of an image using a 3x3 mask
-    void applyDilate3x3 (const ImgBase *poSrc, ImgBase **ppoDst);
-    /// Performs dilation of an image.
-    void applyDilateBorderReplicate (const ImgBase *poSrc, ImgBase **ppoDst);
-    /// Performs erosion of an image.
-    void applyErodeBorderReplicate (const ImgBase *poSrc, ImgBase **ppoDst);
-    /// Perfoms opening operation of an image.
-    void applyOpenBorder(const ImgBase *poSrc, ImgBase **ppoDst);
-    /// Perfoms closing operation of an image.
-    void applyCloseBorder(const ImgBase *poSrc, ImgBase **ppoDst);
-    /// Performs top-hat operation of an image.
-    void applyTophatBorder(const ImgBase *poSrc, ImgBase **ppoDst);
-    /// Performs black-hat operation of an image.
-    void applyBlackhatBorder(const ImgBase *poSrc, ImgBase **ppoDst);
-    /// Calculates morphological gradient of an image.
-    void applyGradientBorder(const ImgBase *poSrc, ImgBase **ppoDst);
-*/
-
-
+  /** TODO !*/
   class MorphologicalOp : public NeighborhoodOp {
   public:
 
-/// Performs dilation of an image.
+  /// Performs dilation of an image.
   enum optype { 
     dilate,
     erode,
@@ -52,8 +26,9 @@ namespace icl {
   };
     /// Constructor that creates a Morphological object, with specified mask size
     /** @param maskSize of odd width and height
-        Even width or height is increased to next higher odd value.
+                        Even width or height is increased to next higher odd value.
         @param pcMask pointer to the Mask
+        @param eoptype operation type
     */
     MorphologicalOp (const Size &maskSize,char* pcMask, optype eoptype);
     ~MorphologicalOp ();

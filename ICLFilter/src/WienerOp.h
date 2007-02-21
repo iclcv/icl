@@ -27,11 +27,12 @@ namespace icl {
     /// Constructor that creates a wiener filter object, with specified mask size
     /** @param maskSize of odd width and height
         Even width or height is increased to next higher odd value.
+        @param noise nois factor
     **/
     WienerOp (const Size &maskSize, icl32f noise=0): NeighborhoodOp(maskSize),m_fNoise(noise){}
 
     /// Filters an image using the Wiener algorithm.
-    /** param poSrc Source image
+    /** @param poSrc Source image
         @param ppoDst Destination image
     **/
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);
