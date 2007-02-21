@@ -114,6 +114,8 @@ namespace icl {
   // {{{ cluster algorithms 
   template <typename T, template<typename> class U>
   void VQ<T,U>::vq(unsigned int uiDataIdx) {
+    // {{{ open
+
     BENCHMARK_THIS_FUNCTION;
     FUNCTION_LOG("");
     
@@ -133,6 +135,8 @@ namespace icl {
         (m_vecRefDataPtr[i][uiDataIdx] -m_vecCluster[uiMinDistIdx][i]) ;
     }
   }
+
+// }}}
   
   template <typename T, template<typename> class U>
   void VQ<T,U>::lbg() {
@@ -211,7 +215,6 @@ namespace icl {
           tmp += ((m_vecRefDataPtr[j][uiDataIdx] - m_vecCluster[i][j]) * 
                   (m_vecRefDataPtr[j][uiDataIdx] - m_vecCluster[i][j]));
         }
-        tmp = sqrt(tmp);
         LOOP_LOG(i<<" -> "<<tmp);
         if (tmp < fMinDist) {
           uiMinDistIdx = i;

@@ -126,7 +126,8 @@ namespace icl {
                      is used.
           @return shallow copy of this image
       **/
-      virtual ImgBase* shallowCopy(ImgBase** ppoDst = NULL, const Rect &roi=Rect::null) = 0;
+      virtual ImgBase* shallowCopy(ImgBase** ppoDst = NULL, 
+                                   const Rect &roi=Rect::null) = 0;
       
       /// Create a shallow copy of a const source image
       /** In contrast to the not const function shallowCopy, the const one does not provide
@@ -152,7 +153,8 @@ namespace icl {
           @param ppoDst destination image (if Null, a new one is created)
           @return image containing only the selected channels (as shallow copies)
       */
-      virtual ImgBase* selectChannels (const std::vector<int>& channelIndices, ImgBase** ppoDst=0) = 0;
+      virtual ImgBase* selectChannels (const std::vector<int>& channelIndices, 
+                                       ImgBase** ppoDst=0) = 0;
 
       /// Create a shallow copy of a single image channel of an image
       /** This function is a shortcut to use 
@@ -162,9 +164,10 @@ namespace icl {
           @param ppoDst destination image 
           @return image containing only the selected channel
       **/
-      virtual ImgBase* selectChannel(int channelIndex, ImgBase **ppoDst){
+      virtual ImgBase* selectChannel(int channelIndex, ImgBase **ppoDst=0){
         ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
-        std::vector<int> v(1); v[0]= channelIndex; return selectChannels(v,ppoDst);
+        std::vector<int> v(1); v[0]= channelIndex; 
+        return selectChannels(v,ppoDst);
       }
       /// Create a shallow copy of selected channels of a const image.
       /** @param channelIndices vector containing channel indices to copy

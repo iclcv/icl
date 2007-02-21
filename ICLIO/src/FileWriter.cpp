@@ -65,11 +65,12 @@ namespace icl {
       openFile (oInfo, "wb"); // open file for writing
       
       const ImgBase *poImg = poSrc;
-      if (poSrc->getDepth () != depth8u && oInfo.eFileFormat != ioFormatICL) {
-         // image needs to be converted to depth8u
+      if (poSrc->getDepth () != depth8u && oInfo.eFileFormat != ioFormatICL &&
+          oInfo.eFileFormat != ioFormatCSV) {
+        // image needs to be converted to depth8u
         poImg = poSrc->convert<icl8u>(&m_oImg8u);
       } // otherwise, use poSrc directly
-
+      
       try {
          // write file
          switch (oInfo.eFileFormat) {
@@ -199,38 +200,71 @@ namespace icl {
 // }}}
 
    //--------------------------------------------------------------------------
-   void FileWriter::writeCSV(const ImgBase *poSrc, const FileInfo& oInfo) {
-     // {{{ open
+   namespace {
+     template<class T>
+     string __writeCSV(const Img<T> *poSrc) {
+       // {{{ open
+       
+       const Size& size = poSrc->getSize();
+       int iNumImages = poSrc->getChannels();
+       int iDim = size.getDim();
+       ostringstream oss;
 
-      int (*pWrite)(void *fp, const void *pData, size_t len) 
-         = oInfo.bGzipped ? gzwrite : plainWrite;
-
-      // write image data
-      const Img8u *poImg8u = poSrc->asImg<icl8u>();
-      const Size& size = poSrc->getSize();
-      int iNumImages = poSrc->getChannels();
-      int iDim = size.getDim();
-      
-      ostringstream oss;
-      
-      // write channel consecutively
-      for (int i=0;i<iNumImages;i++) {
-        const icl8u *pc = poImg8u->getData(i);
-        for (int j=0;j<iDim;j++, pc++) {
-           oss << (int) *pc << ",";
-        }
-      }
-      const string& sData = oss.str();
-      
-      if (!pWrite (oInfo.fp, sData.c_str(), sData.length()-1))
-        throw ICLException ("Error writing file.");
+       // write channel consecutively
+       for (int i=0;i<iNumImages;i++) {
+         const T *pDat = poSrc->getData(i);
+         
+         if (i == iNumImages-1) {
+           for (int j=0;j<iDim-1;j++, pDat++) {
+             oss << *pDat << ",";
+           }
+           oss << *pDat;
+         } else {
+           for (int j=0;j<iDim;j++, pDat++) {
+             oss << *pDat << ",";
+           }
+         }
+       }
+       
+       return (oss.str());
+     }
+// }}}
    }
-  
 
+  //--------------------------------------------------------------------------
+  void FileWriter::writeCSV(const ImgBase *poSrc, const FileInfo& oInfo) {
+    // {{{ open
+    
+    string sData;
+    ICLException writeError ("Error writing file.");
+    
+    int (*pWrite)(void *fp, const void *pData, size_t len) 
+      = oInfo.bGzipped ? gzwrite : plainWrite;
+
+    // write image data
+    switch(poSrc->getDepth()) {
+      case depth8u: sData = __writeCSV<icl8u>(poSrc->asImg<icl8u>()); 
+        break;
+      case depth16s: sData = __writeCSV<icl16s>(poSrc->asImg<icl16s>()); 
+        break;
+      case depth32s: sData = __writeCSV<icl32s>(poSrc->asImg<icl32s>()); 
+        break;
+      case depth32f: sData = __writeCSV<icl32f>(poSrc->asImg<icl32f>()); 
+        break;
+      case depth64f: sData = __writeCSV<icl64f>(poSrc->asImg<icl64f>()); 
+        break;
+      default: ICL_INVALID_DEPTH; break;
+    }
+    if (!pWrite (oInfo.fp, sData.c_str(), strlen(sData.c_str()))) 
+      throw writeError;
+}
+  
 // }}}
 
    //--------------------------------------------------------------------------
-   void FileWriter::writeJPG(const Img<icl8u> *poSrc, const FileInfo& oInfo, int iQuality) {
+   void FileWriter::writeJPG(const Img<icl8u> *poSrc, 
+                             const FileInfo& oInfo, 
+                             int iQuality) {
       // {{{ open
 
       J_COLOR_SPACE jCS;
