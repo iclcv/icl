@@ -276,7 +276,7 @@ Img<Type>::selectChannels (const std::vector<int>& channelIndices, Img<Type>* po
 // }}}
 
 // {{{  copy functions: deepCopy, scaledCopy, flippedCopy convert (with and without ROI)  
-  
+
   // {{{ copy-functions with ImgBase** argument
 
   template<class Type>
@@ -478,7 +478,6 @@ Img<Type>::selectChannels (const std::vector<int>& channelIndices, Img<Type>* po
 
   // }}}
 
- 
 // }}}
 
 // }}}
@@ -1406,7 +1405,7 @@ inline void flippedCopyChannelROI<icl8u>(axis eAxis,
   ICLASSERT_RETURN( srcSize == dstSize );
   ICLASSERT_RETURN( src->validChannel(srcC) );
   ICLASSERT_RETURN( dst->validChannel(dstC) );
-  ICLASSERT_RETURN( srcOffs.x > 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);
+  ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);
   ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );
   ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
    
