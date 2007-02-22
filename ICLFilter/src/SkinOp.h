@@ -7,10 +7,10 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#ifndef Skin_OP_H
-#define Skin_OP_H
+#ifndef SkinOp_H
+#define SkinOp_H
 
-#include <UnaryOp.h>
+#include <Filter.h>
 
 namespace icl {
 
@@ -23,7 +23,7 @@ In a first step the skin parabola parameter have to be trained or if the paramet
 author Michael Götting (mgoettin@techfak.uni-bielefeld.de)
 **/
 
-class SkinOp : public UnaryOp
+class SkinOp : public Filter
 {
  public:
   SkinOp () : m_poChromaApply(0), m_poChromaTrain(0) {}
@@ -38,6 +38,19 @@ class SkinOp : public UnaryOp
      @param ppoDst The final skin color mask (binarized)
   **/
   void apply(const icl::ImgBase *poSrc, icl::ImgBase **ppoDst);
+
+  ///Same function as apply() but image values written as csv file
+  /**
+     @param poSrc The src image
+     @param ppoDst The final skin color mask (binarized)
+     @param ppoPara1 The final skin color mask (prepared for function plot)
+     @param ppoPara2 The final skin color mask (prepared for function plot)
+     @param ppoChromaVal The final skin color mask (prepared for function plot)
+     @param ppoChromaSkinMask The final skin color mask (prepared for function plot)
+  **/
+  void apply(const icl::ImgBase *poSrc, icl::ImgBase **ppoDst,
+             icl::ImgBase **ppoPara1, icl::ImgBase **ppoPara2,
+             icl::ImgBase **ppoChromaVal, icl::ImgBase **ppoChromaSkinMask);
 
   ///Start the training procedure for the skin parabla parameter
   /**
