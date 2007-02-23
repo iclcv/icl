@@ -22,6 +22,16 @@ namespace icl{
     // {{{ open
     removeAll();
     delete m_poRD;
+
+    /// delete all images !!!
+    //map<Size,map<format,Img8u*> > m_mmImages;
+    /*
+        sizemap &m = m_mmImages;
+        sizemap::iterator i = m.find(size);
+        if(i != m.end()){
+        fmtmap::iterator j = (*i).second.find(fmt);
+    */
+
   }
 
   // }}}
@@ -118,12 +128,13 @@ namespace icl{
     if(i != m.end()){
       fmtmap::iterator j = (*i).second.find(fmt);
       if(j != (*i).second.end()){
-        if(m_poInputImage->getTime() != (*j).second->getTime()){
-          m_poConverter->apply(m_poInputImage,(*j).second);
-        }
+        // this does only work if the images have valid timestanps
+        // if(m_poInputImage->getTime() != (*j).second->getTime()){
+        m_poConverter->apply(m_poInputImage,(*j).second);
+        //}
         return (*j).second;
       }else{
-        Img8u *image = new Img8u(size,fmt); 
+        Img8u *image = new Img8u(size,fmt);
         m_poConverter->apply(m_poInputImage,image);
         ((*i).second)[fmt] = image;
         return image;
