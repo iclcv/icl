@@ -81,7 +81,8 @@ namespace icl{
 
 #define ICL_QUICK_DEPTH depth32f
 #define ICL_QUICK_TYPE icl32f
-
+  
+    
   /// typedef for the quick images type (this time Img<icl32f>)
   typedef Img<ICL_QUICK_TYPE> ImgQ;
 
@@ -488,6 +489,67 @@ namespace icl{
   /** @} **/
   /* }}} */
   
+  /** @{ @name drawing functions **/
+  /* {{{ open */
+
+  /// sets the current color to given r,g,b,alpha value
+  /** @param r red value 
+      @param g green value (if < 0, g is set to r) 
+      @param b blue value (if < 0, b is set to r) 
+      @param alpha alpha value 255 = no transparency, 0 = full transparency
+  **/
+  void color(float r, float g=-1, float b=-1, float alpha=255);
+
+  /// sets the current fill color to given r,g,b,alpha value
+  /** @param r red value 
+      @param g green value (if < 0, g is set to r) 
+      @param b blue value (if < 0, b is set to r) 
+      @param alpha alpha value 255 = no transparency, 0 = full transparency
+  **/
+  void fill(float r, float g=-1, float b=-1, float alpha=255);
+
+  /// draws a 6x6-cross into an image
+  /** @param image destination image 
+      @param x x-pos of the cross
+      @param y y-pos of the cross
+  **/
+  void cross(ImgQ &image, int x, int y);
+
+  /// draws a rect into an image
+  /** @param image destination image
+      @param x x-pos of the rect
+      @param y x-pos of the rect
+      @param w width of the rect
+      @param h height of the rect
+  **/
+  void rect(ImgQ &image, int x, int y, int w, int h);
+  
+  /// draws a line into an image
+  /** @param image destination image 
+      @param x1 fist point x coord 
+      @param y1 fist point y coord 
+      @param x2 second point x coord 
+      @param y2 second point y coord      
+  **/
+  void line(ImgQ &image, int x1, int y1, int x2, int y2);
+
+  /// renders a text into an image (slow)
+  /** This functin renders a text into an 3 or 1 channel image
+      using the a QPainter internally. This functino is very 
+      slow, as has to convert the hold image into a QImage
+      internally and back. 
+      <b>NOTE: the text rendering is performed in depth8u,
+      so information is lost!</b>
+      @param image destination image
+      @param x xpos of the lower left corner of the text
+      @param y ypos of the lower left corner of the text
+      @param text text to render
+  **/
+  void text(ImgQ &image, int x, int y,const string &text);
+ 
+  /** @} **/
+  /* }}} */
+
 }
 
 

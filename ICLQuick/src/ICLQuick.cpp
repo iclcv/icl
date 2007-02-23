@@ -14,6 +14,8 @@
 #include <FileWriter.h>
 #include <UnaryCompareOp.h>
 #include <LUTOp.h>
+#include <QImageConverter.h>
+#include <QPainter>
 
 namespace icl{
 
@@ -684,5 +686,136 @@ namespace icl{
   }
 
   // }}}
+
+  namespace {
+    float COLOR[4] = {255,0,0,255};
+    float FILL[4] = {0,0,0,0};
+
+    void bresenham(int x0, int x1, int y0, int y1, vector<int> &xs, vector<int> &ys, int maxX, int maxY){
+      // {{{ open
+
+      int steep = std::abs(y1 - y0) > std::abs(x1 - x0);
+      if(steep){
+        swap(x0, y0);
+        swap(x1, y1);
+      }
+      int steep2 = x0 > x1;
+      if(steep2){
+        swap(x0, x1);
+        swap(y0, y1);
+      }
+      
+      int deltax = x1 - x0;
+      int deltay = std::abs(y1 - y0);
+      int error = 0;
+      int ystep = y0 < y1 ? 1 : -1;
+      
+      for(int x=x0,y=y0;x<=x1;x++){
+        if(x>=0 && x<=maxX && y>=0 && y<=maxY){
+          if(steep){
+            xs.push_back(y); 
+            ys.push_back(x);
+          }else{
+            xs.push_back(x); 
+            ys.push_back(y);
+          }
+        }
+        error += deltay;
+        if (2*error >= deltax){
+          y += ystep;
+          error -=deltax;
+        }
+      }
+    }
+    // }}}
+  }
+  void color(float r, float g, float b, float a){
+    // {{{ open
+
+    COLOR[0] = r;
+    COLOR[1] = g<0 ? r : g;
+    COLOR[2] = b<0 ? r : b;
+    COLOR[3] = a;
+  }
+
+  // }}}
+  void fill(float r, float g, float b, float a){
+    // {{{ open
+
+    FILL[0] = r;
+    FILL[1] = g<0 ? r : g;
+    FILL[2] = b<0 ? r : b;
+    FILL[3] = a;
+  }
+
+  // }}}
+
+  void cross(ImgQ &image, int X, int Y){
+    // {{{ open
+
+    static const int CROSS_SIZE = 3;
+    line(image, X-CROSS_SIZE,Y-CROSS_SIZE,X+CROSS_SIZE,Y+CROSS_SIZE);
+    line(image, X-CROSS_SIZE,Y+CROSS_SIZE,X+CROSS_SIZE,Y-CROSS_SIZE);
+  }
+
+  // }}}
+  
+  void rect(ImgQ &image, int x, int y, int w, int h){
+    // {{{ open
+
+    line(image,x,y,x+w,y);
+    line(image,x,y,x,y+h);
+    line(image,x+w,y+h,x+w,y);
+    line(image,x+w,y+h,x,y+h);
+    float A = FILL[3]/255;
+    if(! A) return;
+    for(int i=x+1;i<x+w-1;i++){   
+      for(int j=y+1;j<y+h-1;j++){
+        if(i>=0 && j>=0 && x<image.getWidth() && y<image.getHeight()){
+          for(int c=0;c<image.getChannels() && c<3; ++c){
+            float &v = image(i,j,c);
+            v=(1.0-A)*v + A*FILL[c];
+          }
+        }
+      }
+    }
+  }
+
+  // }}}
+  
+  void text(ImgQ &image, int x, int y, const string &text){
+    // {{{ open
+
+    printf("rendering text is not yet supported! \n");
+    QImageConverter c(&image);
+    QImage q = *(c.getQImage());
+    QPainter p(&q);
+    p.setBrush(QColor((int)FILL[0],(int)FILL[1],(int)FILL[2],(int)FILL[3]));
+    p.setPen(QColor((int)COLOR[0],(int)COLOR[1],(int)COLOR[2],(int)COLOR[3]));
+    p.drawText(x,y,text.c_str());
+    c.setQImage(&q);
+    const ImgBase *r = c.getImgBase(ICL_QUICK_DEPTH);
+    const ImgQ *rq = (ImgQ*)r;
+    image = copy(*rq);
+  }
+
+  // }}}
+
+  void line(ImgQ &image, int x1, int y1, int x2, int y2){
+    // {{{ open
+
+    std::vector<int> xs,ys;
+    bresenham(x1,x2,y1,y2,xs,ys,image.getWidth()-1,image.getHeight()-1);
+    float A = COLOR[3]/255.0;
+    for(vector<int>::iterator itX=xs.begin(), itY=ys.begin(); itX != xs.end(); ++itX, ++itY){
+      for(int c=0;c<image.getChannels() && c<3; ++c){
+        float &v = image(*itX,*itY,c);
+        v=(1.0-A)*v + A*COLOR[c];
+      }
+    }
+  }
+
+  // }}}
+
 
 }

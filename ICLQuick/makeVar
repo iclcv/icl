@@ -26,6 +26,7 @@ include ${PACKAGES}/ICLCore
 include ${PACKAGES}/ICLCC
 include ${PACKAGES}/ICLIO
 include ${PACKAGES}/ICLFilter
+include ${PACKAGES}/ICLQt
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
