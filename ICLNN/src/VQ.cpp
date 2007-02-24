@@ -75,7 +75,6 @@ namespace icl {
   template <typename T, template<typename> class U>
   void VQ<T,U>::initClusterFromSrc(vqinitmode eMode,
                                    unsigned int uiStart) {
-    BENCHMARK_THIS_FUNCTION
     FUNCTION_LOG("");
     
     unsigned int uiRndPos;
@@ -115,8 +114,6 @@ namespace icl {
   template <typename T, template<typename> class U>
   void VQ<T,U>::vq(unsigned int uiDataIdx) {
     // {{{ open
-
-    BENCHMARK_THIS_FUNCTION;
     FUNCTION_LOG("");
     
     // check pre start options
@@ -141,8 +138,6 @@ namespace icl {
   template <typename T, template<typename> class U>
   void VQ<T,U>::lbg() {
     // {{{ open
-
-    BENCHMARK_THIS_FUNCTION;
     FUNCTION_LOG("");
     
     // check pre start options
@@ -199,8 +194,6 @@ namespace icl {
   template <typename T, template<typename> class U>
   unsigned int VQ<T,U>::nn(unsigned int uiDataIdx, float &fMinDist) {
     // {{{ open
-
-    BENCHMARK_THIS_FUNCTION;
     FUNCTION_LOG("");
     
     // variable deklaration
