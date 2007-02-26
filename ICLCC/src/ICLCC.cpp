@@ -3,6 +3,8 @@
 #include "ICLCore.h"
 #include "Img.h"
 #include <string>
+#include <map>
+#include "CCLUT.h"
 
 
 namespace icl{
@@ -63,6 +65,61 @@ namespace icl{
     return g_aeAvailableTable[srcFmt*NFMTS + dstFmt];
   }
 
+  std::map<format, std::map<format,CCLUT*> > g_mapCCLUTs;
+  
+  bool lut_available(format srcFmt, format dstFmt){
+    // {{{ open
+
+    return g_mapCCLUTs[srcFmt][dstFmt] != 0;
+  }
+
+  // }}}
+
+  void createLUT(format srcFmt, format dstFmt){
+    // {{{ open
+
+    CCLUT *&lut = g_mapCCLUTs[srcFmt][dstFmt];
+    if(!lut){
+      lut = new CCLUT(srcFmt,dstFmt);
+    }else{
+      WARNING_LOG("lookup table created twice!");
+    }
+  }
+
+  // }}}
+  
+  void releaseLUT(format srcFmt, format dstFmt){
+    // {{{ open
+
+    CCLUT *&lut = g_mapCCLUTs[srcFmt][dstFmt];
+    if(lut){
+      delete lut;
+      lut = 0;
+    }else{
+      WARNING_LOG("lookup table does not exist!");
+    }
+  }
+
+  // }}}
+
+  void releaseAllLUTs(){
+    // {{{ open
+
+    typedef std::map<format,CCLUT*> fmap;
+    typedef std::map<format,fmap> ffmap; 
+    for(ffmap::iterator it= g_mapCCLUTs.begin(); it!= g_mapCCLUTs.end();it++){
+      fmap &f = (*it).second;
+      for(fmap::iterator jt = f.begin();jt != f.end(); jt++){
+        if((*jt).second){
+          delete (*jt).second;
+          (*jt).second = 0;
+        }
+      }
+    }
+  }
+
+  // }}}
+  
   void cc_util_rgb_to_yuv(const icl32s r, const icl32s g, const icl32s b, icl32s &y, icl32s &u, icl32s &v){
     // {{{ integer open
   
@@ -607,7 +664,14 @@ namespace icl{
 
     ICLASSERT_RETURN( src );
     ICLASSERT_RETURN( dst );
-    dst->setSize( src->getSize() );
+    
+    /// adapt the size of the destination image
+    dst->setSize(src->getSize());
+    
+    if(lut_available(src->getFormat(),dst->getFormat())){
+      g_mapCCLUTs[src->getFormat()][dst->getFormat()]->cc(src,dst);
+      return;
+    }
     
     switch(cc_available(src->getFormat(), dst->getFormat())){
       case ccAvailable:

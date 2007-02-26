@@ -308,6 +308,27 @@ namespace icl{
   */
   void cc(const ImgBase *src, ImgBase *dst);
   
+  /// returns whether a lookup table was already created for src and dst format
+  /** @param srcFmt source format
+      @param dstfmt destination format
+  **/
+  bool lut_available(format srcFmt, format dstFmt);  
+
+  /// Internally creates a lookup table to accelerate conversion between given formats
+  /** Take care: <b>Each LUT uses up to 48MB of system memory</b> 
+      @param srcFmt source format
+      @param dstfmt destination format
+  **/
+  void createLUT(format srcFmt, format dstFmt);
+  
+  /// releases the internal lookup table created with createLUT
+  /**  @param srcFmt source format
+       @param dstfmt destination format
+  **/
+  void releaseLUT(format srcFmt, format dstFmt);
+
+  /// releases all lookup tables that were created with createLUT
+  void releaseAllLUTs();
   
   /// Internal used type, that describes an implementation type of a specific color conversion function
   enum ccimpl{
