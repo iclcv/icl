@@ -116,7 +116,7 @@ Img<Type>::Img(const Size &s, format eFormat, const std::vector<Type*>& vptData)
 
 //--- Copy constructor -------------------------------------------------------
 template<class Type>
-Img<Type>::Img(Img<Type>& tSrc) :
+Img<Type>::Img(const Img<Type>& tSrc) :
   // {{{ open
 
     ImgBase(tSrc.getDepth(),tSrc.getParams())
@@ -360,6 +360,51 @@ Img<Type>::selectChannels (const std::vector<int>& channelIndices, Img<Type>* po
   }
 
   // }}}
+ 
+  template<class Type>
+  Img<Type> *Img<Type>::deepCopyROIToROI(ImgBase *poDst) const{
+    // {{{ open
+
+    if(!poDst) return deepCopyROI();
+    switch(poDst->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return deepCopyROIToROI(poDst->asImg<icl##D>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+    }
+    return 0;
+  }
+
+  // }}}
+
+  template<class Type>
+  Img<Type> *Img<Type>::scaledCopyROIToROI(ImgBase *poDst, scalemode eScaleMode) const{
+    // {{{ open
+
+    if(!poDst) return deepCopyROI();
+    switch(poDst->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return scaledCopyROIToROI(poDst->asImg<icl##D>(),eScaleMode); break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+    }
+    return 0;
+  }
+
+  // }}}
+
+  template<class Type>
+  Img<Type> *Img<Type>::flippedCopyROIToROI(axis eAxis,ImgBase *poDst) const{
+    // {{{ open
+
+    if(!poDst) return flippedCopyROI(eAxis);
+    switch(poDst->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return flippedCopyROIToROI(eAxis,poDst->asImg<icl##D>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+    }
+    return 0;
+  }
+
+  // }}}
 
   // }}}
     
@@ -474,6 +519,60 @@ Img<Type>::selectChannels (const std::vector<int>& channelIndices, Img<Type>* po
     }
     return poDst;
 
+  }
+
+  // }}}
+
+  template<class Type>
+  Img<Type> *Img<Type>::deepCopyROIToROI(Img<Type> *poDst) const{
+    // {{{ open
+
+    FUNCTION_LOG("ptr:"<< poDst);
+    if(!poDst) return deepCopyROI();
+    ICLASSERT_RETURN_VAL( getROISize() == poDst->getROISize() ,0);
+    ICLASSERT_RETURN_VAL( getChannels() == poDst->getChannels() ,0);
+    poDst->setTime(getTime());
+    for(int c=getChannels()-1; c>=0; --c){
+      deepCopyChannelROI(this,c, getROIOffset(), getROISize(), 
+                         poDst,c, poDst->getROIOffset(), poDst->getROISize() );
+    }
+    return poDst;
+  }
+
+  // }}}
+  
+  template<class Type>
+  Img<Type> *Img<Type>::scaledCopyROIToROI(Img<Type> *poDst, scalemode eScaleMode) const{
+    // {{{ open
+
+    FUNCTION_LOG("ptr:"<< poDst);
+    if(!poDst) return deepCopyROI();
+    ICLASSERT_RETURN_VAL( getChannels() == poDst->getChannels() ,0);
+    poDst->setTime(getTime());
+    for(int c=getChannels()-1; c>=0; --c){
+      scaledCopyChannelROI(this,c, getROIOffset(), getROISize(), 
+                         poDst,c, poDst->getROIOffset(), poDst->getROISize() , eScaleMode);
+    }  
+    return poDst;
+  }
+
+  // }}}
+
+  template<class Type>
+  Img<Type> *Img<Type>::flippedCopyROIToROI(axis eAxis, Img<Type> *poDst) const{
+    // {{{ open
+
+    FUNCTION_LOG("ptr:"<< poDst);
+    if(!poDst) return flippedCopyROI(eAxis);
+    ICLASSERT_RETURN_VAL( getROISize() == poDst->getROISize() ,0);
+    ICLASSERT_RETURN_VAL( getChannels() == poDst->getChannels() ,0);
+    poDst->setTime(getTime());
+    for(int c=getChannels()-1; c>=0; --c){
+      flippedCopyChannelROI(eAxis,this,c, getROIOffset(), getROISize(), 
+                            poDst,c, poDst->getROIOffset(), poDst->getROISize() );
+    }
+    return poDst;
+  
   }
 
   // }}}

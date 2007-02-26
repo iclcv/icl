@@ -202,8 +202,10 @@ namespace icl {
         applicable to <b>non-const</b> Img<Type> references.  
         @param tSrc non-const reference of source instance
         **/
-    Img(Img<Type>& tSrc);
-  
+    Img(const Img<Type>& tSrc);
+    
+    
+    
     /// Destructor
     ~Img();
   
@@ -213,7 +215,10 @@ namespace icl {
   
     /** @{ @name operators */
     /* {{{ open */
-
+    
+    operator Img<Type>&(){
+      return *this;
+    }
     /// Assign operator (flat copy of channels)
     /** Both images will share their channel data. 
         Use deepCopy() to obtain a copy of an image which is not attached to the 
@@ -337,6 +342,12 @@ namespace icl {
     **/
     Img<Type> *deepCopyROI(Img<Type> *poDst) const;
 
+    /// TODO
+    virtual Img<Type> *deepCopyROIToROI(ImgBase *poDst) const;
+
+    /// TODO
+    Img<Type> *deepCopyROIToROI(Img<Type> *poDst) const;
+
     //@}
     /* }}} */
   
@@ -351,22 +362,7 @@ namespace icl {
     /** \copydoc icl::ImgBase::scaledCopy(icl::ImgBase**,icl::scalemode)const */
     virtual Img<Type> *scaledCopy(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const;
 
-    /// create a flipped copy of this image
-    /** \copydoc icl::ImgBase::flippedCopy(icl::axis,icl::ImgBase**)const */
-    virtual Img<Type> *flippedCopy(axis eAxis, ImgBase **ppoDst=0) const;
-      
-    /// create a scaled copy of an images ROI with given size
-    /** \copydoc icl::ImgBase::scaledCopyROI(const icl::Size&,icl::scalemode)const */
-    virtual Img<Type> *scaledCopyROI(const Size &newSize, scalemode eScaleMode=interpolateNN) const;
-  
-    /// create a scaled copy of an images ROI with given destination image
-    /** \copydoc icl::ImgBase::scaledCopyROI(icl::ImgBase**,icl::scalemode)const*/
-    virtual Img<Type> *scaledCopyROI(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const;
-  
-    /// create a flipped copy of an images ROI 
-    /** \copydoc icl::ImgBase::flippedCopyROI(icl::axis,icl::ImgBase**)const */
-    virtual Img<Type> *flippedCopyROI(axis eAxis ,ImgBase **ppoDst=0) const ; 
-
+   
     /// create a scaled copy of this image
     /** Overloaded function to create a scaled copy of an image. This function gets
         an Img<Type>* as destination, what allows to apply the operation without any
@@ -375,7 +371,37 @@ namespace icl {
         @param eScaleMode interpolation method to use when scaling
     */
     Img<Type> *scaledCopy(Img<Type> *poDst, scalemode eScaleMode=interpolateNN) const;
-  
+    
+    /// create a scaled copy of an images ROI with given size
+    /** \copydoc icl::ImgBase::scaledCopyROI(const icl::Size&,icl::scalemode)const */
+    virtual Img<Type> *scaledCopyROI(const Size &newSize, scalemode eScaleMode=interpolateNN) const;
+    
+    /// create a scaled copy of an images ROI with given destination image
+    /** \copydoc icl::ImgBase::scaledCopyROI(icl::ImgBase**,icl::scalemode)const*/
+    virtual Img<Type> *scaledCopyROI(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const;
+    
+    /// create a scaled copy of this images ROI
+    /** Overloaded function to create a scaled copy of an images ROI. This function gets
+        an Img<Type>* as destination, what allows to apply the operation without any
+        depth-switch.
+        @param poDst destination image pointer, if NULL, a new Img<Type> is created
+        @param eScaleMode interpolation method to use when scaling
+    */
+    Img<Type> *scaledCopyROI(Img<Type> *poDst, scalemode eScaleMode=interpolateNN) const;    
+
+    /// TODO
+    virtual Img<Type> *scaledCopyROIToROI(ImgBase *poDst, scalemode eScaleMode=interpolateNN) const;
+
+    /// TODO
+    Img<Type> *scaledCopyROIToROI(Img<Type> *poDst, scalemode eScaleMode=interpolateNN) const;
+
+    
+    
+    
+    /// create a flipped copy of this image
+    /** \copydoc icl::ImgBase::flippedCopy(icl::axis,icl::ImgBase**)const */
+    virtual Img<Type> *flippedCopy(axis eAxis, ImgBase **ppoDst=0) const;
+
     /// create a flipped copy of an image
     /** Overloaded function to create a flipped copy of an image. This function gets
         an Img<Type>* as destination, what allows to apply the operation without any
@@ -384,16 +410,11 @@ namespace icl {
         @param poDst destination image pointer, if NULL, a new Img<Type> is created
     */
     Img<Type> *flippedCopy(axis eAxis, Img<Type> *poDst) const;
-   
-    /// create a scaled copy of this images ROI
-    /** Overloaded function to create a scaled copy of an images ROI. This function gets
-        an Img<Type>* as destination, what allows to apply the operation without any
-        depth-switch.
-        @param poDst destination image pointer, if NULL, a new Img<Type> is created
-        @param eScaleMode interpolation method to use when scaling
-    */
-    Img<Type> *scaledCopyROI(Img<Type> *poDst, scalemode eScaleMode=interpolateNN) const;
- 
+
+    /// create a flipped copy of an images ROI 
+    /** \copydoc icl::ImgBase::flippedCopyROI(icl::axis,icl::ImgBase**)const */
+    virtual Img<Type> *flippedCopyROI(axis eAxis ,ImgBase **ppoDst=0) const ; 
+
     /// create a flipped copy of an images ROI
     /** Overloaded function to create a flipped copy of an images ROI. This function gets
         an Img<Type>* as destination, what allows to apply the operation without any
@@ -402,6 +423,12 @@ namespace icl {
         @param poDst destination image pointer, if NULL, a new Img<Type> is created
     */
     Img<Type> *flippedCopyROI(axis eAxis ,Img<Type> *poDst) const; 
+
+    /// TODO
+    virtual Img<Type> *flippedCopyROIToROI(axis eAxis, ImgBase *poDst) const;
+ 
+    /// TODO
+    Img<Type> *flippedCopyROIToROI(axis eAxis, Img<Type> *poDst) const;
     //@}
     /* }}} */
 

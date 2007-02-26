@@ -92,7 +92,22 @@ namespace icl {
     }
   }
   // }}}
+  
+  // {{{ convert(ImgBase *poDst)
 
+  ImgBase *ImgBase::convert(ImgBase *poDst) const{
+    FUNCTION_LOG("");
+    if(!poDst) return deepCopy();
+    switch(poDst->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return this->convert(poDst->asImg<icl##D>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+
+  // }}}
+  
   // {{{ convert(Img<otherT>*)
   template<class otherT>
   Img<otherT> *ImgBase::convert(Img<otherT> *poDst) const{ 
@@ -126,6 +141,20 @@ namespace icl {
   }
   // }}}
 
+  // {{{ convertROI(ImgBase *)
+      
+  ImgBase *ImgBase::convertROI(ImgBase *poDst) const{
+    FUNCTION_LOG("");
+    if(!poDst) return deepCopy();
+    switch(poDst->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return this->convertROI(poDst->asImg<icl##D>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}
+
   // {{{ convertROI(Img<otherT>*)
 
   template<class otherT>
@@ -150,6 +179,45 @@ namespace icl {
     return poDst;    
   }
   // }}}
+
+  // {{{ convertROIToROI(Img<otherT> *)
+
+ template<class otherT>
+ Img<otherT> *ImgBase::convertROIToROI(Img<otherT> *poDst) const{ 
+   FUNCTION_LOG("ptr:"<<poDst);
+   if(!poDst) return convertROI<otherT>();
+   ICLASSERT( poDst->getROISize() == getROISize() );
+   ICLASSERT( poDst->getChannels() == getChannels() );
+    
+#define ICL_INSTANTIATE_DEPTH(D)                                            \
+  case depth##D:                                                            \
+    for(int c=getChannels()-1;c>=0;--c){                                    \
+      convertChannelROI(asImg<icl##D>(),c,getROIOffset(),getROISize(),      \
+                        poDst,c,poDst->getROIOffset(),poDst->getROISize()); \
+    }                                                                       \
+    break;
+    
+    switch(getDepth()){
+      ICL_INSTANTIATE_ALL_DEPTHS;
+    }
+#undef ICL_INSTANTIATE_DEPTH
+    return poDst;    
+  }
+  // }}}
+
+  // {{{ convertROIToROI(ImgBase *)
+      
+  ImgBase *ImgBase::convertROIToROI(ImgBase *poDst) const{
+    FUNCTION_LOG("");
+    if(!poDst) return deepCopyROI();
+    switch(poDst->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return this->convertROIToROI(poDst->asImg<icl##D>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+      default: ICL_INVALID_FORMAT; break;
+    }
+  }
+  // }}}  
 
   // {{{ setFormat
   void ImgBase::setFormat(format fmt){

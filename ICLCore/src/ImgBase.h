@@ -218,6 +218,17 @@ namespace icl {
       */
       virtual ImgBase *deepCopyROI(ImgBase **ppoDst=0) const=0;
 
+      
+      /// Create a deep copy of an images ROI into another images ROI
+      /** This function copies the images ROI into the destination images ROI.
+          If the destination images ROI size is not compatible to this images ROI size,
+          or the channel counts or depths are not equal, an error is written to std::out, and
+          the operation is aborted. 
+          @param ppoDst if NULL or ppoDst points to NULL, deepCopyROI(ppoDst) is called.
+          @return the given destination image or a new image
+      **/
+      virtual ImgBase *deepCopyROIToROI(ImgBase *poDst) const=0;
+      
       /// returns an Img<T> instance of this image (type-conversion or deep copy)
       /** If the requested type differs from the actual image type, then a type
           conversion is performed to transfer the image data to poDst. Else
@@ -246,6 +257,9 @@ namespace icl {
       */
       ImgBase *convert(depth d) const;
 
+      /// TODO
+      ImgBase *convert(ImgBase *poDst) const;
+      
       /// returns a converted (or deep copied) instance of this images ROI
       /** This function behaves essentially like the above functions, except it
           is applied on the source image ROI only.
@@ -261,7 +275,19 @@ namespace icl {
           @param d new images depth 
           @return converted image, containing the source images ROI
       */
-      ImgBase *convertROI(depth d) const; // switches d --> convert(Img<..>)
+      ImgBase *convertROI(depth d) const;
+      
+      
+      /// TODO
+      ImgBase *convertROI(ImgBase *poDst) const;
+      
+      /// TODO
+      template<class T>
+      Img<T> *convertROIToROI(Img<T> *poDst) const;
+      
+      /// TODO
+      ImgBase *convertROIToROI(ImgBase *poDst) const;
+      
       
       //@}
       /* }}} */ 
@@ -305,6 +331,8 @@ namespace icl {
       */
       virtual ImgBase *scaledCopyROI(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const = 0;
       
+      /// TODO
+      virtual ImgBase *scaledCopyROIToROI(ImgBase *poDst, scalemode eScaleMode=interpolateNN) const = 0;
       // @}
       /* }}} */
       
@@ -332,6 +360,9 @@ namespace icl {
       */
       virtual ImgBase *flippedCopyROI(axis eAxis ,ImgBase **ppoDst=0) const = 0; 
 
+      
+      /// TODO
+      virtual ImgBase *flippedCopyROIToROI(axis eAxis ,ImgBase *poDst=0) const = 0; 
        // @}
       /* }}} */
       
