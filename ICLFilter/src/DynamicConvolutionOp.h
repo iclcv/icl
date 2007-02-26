@@ -12,19 +12,14 @@ namespace icl{
       directly set as the (unbuffered) kernel data of the underlying Convolution
       class.
   */
-  class DynamicConvolutionOp : protected ConvolutionOp {
-  public:
-     DynamicConvolutionOp (const ImgBase* poKernel = 0);
-     ~DynamicConvolutionOp ();
-
-     void setKernel (const ImgBase* poKernel);
-     ConvolutionOp::setClipToROI;
-     ConvolutionOp::setCheckOnly;
-     ConvolutionOp::getClipToROI;
-     ConvolutionOp::getCheckOnly;
-     ConvolutionOp::apply;
-  private:
-     icl::Img<icl::icl32f> *poKernelBuf;
+  class DynamicConvolutionOp : public ConvolutionOp {
+    public:
+    DynamicConvolutionOp (const ImgBase* poKernel = 0);
+    ~DynamicConvolutionOp ();
+    
+    void setKernel (const ImgBase* poKernel);
+    private:
+    icl::Img<icl::icl32f> *poKernelBuf;
   };
   
 }

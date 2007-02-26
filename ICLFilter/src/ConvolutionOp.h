@@ -60,7 +60,7 @@ namespace icl {
   in two Constructors.
   */
 
-  class ConvolutionOp : protected NeighborhoodOp {
+  class ConvolutionOp : public NeighborhoodOp {
     public:
     /// this enum contains several predefined convolution kernels
     /** <h3>kernelSobleX</h3>

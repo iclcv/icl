@@ -106,8 +106,9 @@ namespace icl {
     // {{{ open
     ICLASSERT_RETURN( poSrc1 );
     ICLASSERT_RETURN( poSrc2 );
-    
-    if(!BinaryOp::check(poSrc1,poSrc2) || !BinaryOp::prepare(poDst,poSrc1)) return;
+    if(!BinaryOp::check(poSrc1,poSrc2) || !BinaryOp::prepare(poDst,poSrc1)){
+      return;
+    }
     switch(m_eOpType){
       case addOp:  apply_op<addOp>(poSrc1,poSrc2,*poDst); break;
       case mulOp:  apply_op<mulOp>(poSrc1,poSrc2,*poDst); break;

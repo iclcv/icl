@@ -36,7 +36,7 @@ namespace icl{
     }
     
     static inline bool check(const ImgBase *operand1,const ImgBase *operand2 , bool checkDepths = true){
-      if(checkDepths){
+      if(!checkDepths){
         return operand1->getChannels() == operand2->getChannels() &&
           operand1->getROISize() == operand2->getROISize() ;
       }else{
