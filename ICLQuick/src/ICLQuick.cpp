@@ -15,7 +15,13 @@
 #include <UnaryCompareOp.h>
 #include <LUTOp.h>
 #include <QImageConverter.h>
+
+#include <Timer.h>
+
 #include <QPainter>
+#include <QImage>
+#include <QFont>
+#include <QApplication>
 
 namespace icl{
 
@@ -690,7 +696,8 @@ namespace icl{
   namespace {
     float COLOR[4] = {255,0,0,255};
     float FILL[4] = {0,0,0,0};
-
+    int FONTSIZE = 12;
+    string FONTFAMILY = "Times";
     void bresenham(int x0, int x1, int y0, int y1, vector<int> &xs, vector<int> &ys, int maxX, int maxY){
       // {{{ open
 
@@ -782,24 +789,6 @@ namespace icl{
   }
 
   // }}}
-  
-  void text(ImgQ &image, int x, int y, const string &text){
-    // {{{ open
-
-    printf("rendering text is not yet supported! \n");
-    QImageConverter c(&image);
-    QImage q = *(c.getQImage());
-    QPainter p(&q);
-    p.setBrush(QColor((int)FILL[0],(int)FILL[1],(int)FILL[2],(int)FILL[3]));
-    p.setPen(QColor((int)COLOR[0],(int)COLOR[1],(int)COLOR[2],(int)COLOR[3]));
-    p.drawText(x,y,text.c_str());
-    c.setQImage(&q);
-    const ImgBase *r = c.getImgBase(ICL_QUICK_DEPTH);
-    const ImgQ *rq = (ImgQ*)r;
-    image = copy(*rq);
-  }
-
-  // }}}
 
   void line(ImgQ &image, int x1, int y1, int x2, int y2){
     // {{{ open
@@ -817,5 +806,96 @@ namespace icl{
 
   // }}}
 
+  void text(ImgQ &image, int xoffs, int yoffs, const string &text){
+    // {{{ open
+    // first rendering the text 
+    int n = 0;
+    char ** ppc = 0;
+    static QApplication  *QAPP = 0;
+    if(!QAPP){
+      QAPP = new QApplication(n,ppc);
+    }
+    QFont f(FONTFAMILY.c_str(),FONTSIZE);
+    QFontMetrics m(f);
+    QSize br = m.size(Qt::TextSingleLine,text.c_str());
+    QImage img(br.width()+2,br.height()+2,QImage::Format_ARGB32_Premultiplied);
+    img.fill(0);
 
+    QPainter painter(&img);
+    painter.setRenderHint(QPainter::TextAntialiasing);
+    painter.setFont(f);
+    painter.setPen(QColor(255,255,255,254));   
+    painter.drawText(QPoint(1,img.height()-m.descent()-1),text.c_str());
+    painter.end();
+    
+    QImageConverter qic(&img);
+    const Img8u &t = *(qic.getImg<icl8u>());
+    for(int c=0;c<image.getChannels() && c<3; ++c){
+      for(int x=0;x<t.getWidth();x++){
+        for(int y=0;y<t.getHeight();y++){
+          //          printf("x,y,c = %d %d %d \n",x,y,c);
+          int ix = x+xoffs;
+          int iy = y+yoffs;
+          if(ix >= 0 && iy >= 0 && ix < image.getWidth() && iy < image.getHeight() ){
+            ICL_QUICK_TYPE &v = image(ix,iy,c);
+            float A = (((float)t(x,y,c))/255.0) * (COLOR[3]/255);
+            v=(1.0-A)*v + A*COLOR[c];
+          }
+        }
+      }
+    }
+  }
+
+  // }}}
+  
+  void font(int size, const string &family){
+    // {{{ open
+
+    FONTSIZE = size;
+    FONTFAMILY = family;
+  }
+
+  // }}}
+
+  void fontsize(int size){
+    // {{{ open
+
+    FONTSIZE = size;
+  }
+
+  // }}}
+  
+  namespace{
+    Timer *TIMER=0;    
+  }
+  void tic(){
+    // {{{ open
+
+    if(!TIMER){
+      TIMER = new Timer();
+      TIMER->start();
+    }else{
+      printf("timer was already running: \n");
+      TIMER->stop();
+      delete TIMER;
+      TIMER = new Timer();
+      TIMER->start();
+    }
+  }
+
+  // }}}
+  
+  void toc(){
+    // {{{ open
+
+    if(!TIMER){
+      printf("could not stop timer: call tic first! \n");
+    }else{
+      TIMER->stop();
+      delete TIMER;
+      TIMER = 0;
+    }
+  }
+
+  // }}}
 }

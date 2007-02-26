@@ -546,9 +546,31 @@ namespace icl{
       @param text text to render
   **/
   void text(ImgQ &image, int x, int y,const string &text);
- 
+
+  /// sets up the current font
+  /** @param size new font size 12 by default 
+      @param family font family string "Arial" by default
+  **/
+  void font(int size, const string &family="Arial");
+  
+  /// sets up current fontsize
+  /** @param size new font size (default is 12) **/
+  void fontsize(int size);
   /** @} **/
   /* }}} */
+
+  /** @{ @name timer and benchmarking **/
+  /* {{{ open */
+
+  /// starts a timer
+  void tic();
+  
+  /// stops a timer started with tic()
+  void toc();
+  /** @} **/
+  /* }}} */
+
+
 
 }
 
