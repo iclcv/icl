@@ -528,9 +528,12 @@ namespace icl{
 
   // }}}
 
-  void TestImages::xv(const ImgBase *image, const string& name, long msec){
+  void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
     // {{{ open
-
+    string name = nameIn;
+    if(image->getChannels() != 3){
+      name+=".pgm";
+    }
     FileWriter(name).write(image);
     system(string("xv ").append(name).append(" &").c_str());
     usleep(msec*1000);
