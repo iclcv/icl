@@ -532,8 +532,7 @@ namespace icl {
         @return data origin pointer to the specified channel 
     */
     Type* getData(int iChannel) { 
-      return const_cast<Type*>(
-                               static_cast<const Img<Type>*>(this)->getData(iChannel));
+      return const_cast<Type*>(static_cast<const Img<Type>*>(this)->getData(iChannel));
     }
     
     /// returns a Type save data data pointer to the channel data origin (const)

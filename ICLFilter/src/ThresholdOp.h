@@ -40,16 +40,16 @@ namespace icl {
       ThresholdOp(optype ttype,float lowThreshold=127, float highThreshold=127,float lowVal=0, float highVal=255 );
       virtual ~ThresholdOp();
       virtual void apply (const ImgBase *poSrc, ImgBase **ppoDst);
-      float getLowThreshold() const;
-      float getHighThreshold() const;
-      float getLowVal() const;
-      float getHighVal() const;
-      optype getType() const;
-      void setLowThreshold(float lowThreshold);
-      void setHighThreshold(float highThreshold);
-      void setLowVal(float lowVal);
-      void setHighVal(float highVal);
-      void setType(optype type);
+      float getLowThreshold() const {return m_fLowThreshold;}
+      float getHighThreshold() const {return m_fHighThreshold;}
+      float getLowVal() const {return m_fLowVal;}
+      float getHighVal() const {return m_fHighVal;}
+      optype getType() const {return m_eType;}
+      void setLowThreshold(float lowThreshold) {m_fLowThreshold=lowThreshold;}
+      void setHighThreshold(float highThreshold) {m_fHighThreshold=highThreshold;}
+      void setLowVal(float lowVal) {m_fLowVal=lowVal;}
+      void setHighVal(float highVal) {m_fHighVal=highVal;}
+      void setType(optype type) {m_eType=type;}
       
 #define ICL_INSTANTIATE_DEPTH(T) \
       static void tlt(const Img ## T *poSrc, Img ## T *poDst, icl ## T tThreshold);

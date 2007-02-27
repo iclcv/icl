@@ -6,7 +6,7 @@
 namespace icl{
   
   /// Class to translate images
-  class TranslateOp : private AffineOp {
+  class TranslateOp : public AffineOp {
     public:
     /// Constructor
     TranslateOp (double dX=0.0, double dY=0.0, scalemode eInterpolate=interpolateLIN) :
@@ -19,6 +19,10 @@ namespace icl{
     }
     /// apply should still be public
     AffineOp::apply;
+
+    private: // hide the following methods
+    AffineOp::rotate;
+    AffineOp::scale;
   };
 }
 #endif

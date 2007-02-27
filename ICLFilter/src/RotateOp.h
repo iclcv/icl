@@ -6,7 +6,7 @@
 namespace icl{
   
  /// Class to rotate images
-  class RotateOp : private AffineOp {
+  class RotateOp : public AffineOp {
     public:
     /// Constructor
     RotateOp (double dAngle=0.0, scalemode eInterpolate=interpolateLIN) :
@@ -20,6 +20,10 @@ namespace icl{
     
     /// apply should still be public
     AffineOp::apply;
+
+    private: // hide the following methods
+    AffineOp::translate;
+    AffineOp::scale;
   };
 }
 #endif

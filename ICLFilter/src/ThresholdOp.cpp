@@ -22,39 +22,6 @@ namespace icl {
       }      
     }
     
-  
-    float ThresholdOp::getLowThreshold() const{
-      return m_fLowThreshold;
-    }
-      float ThresholdOp::getHighThreshold() const{
-      return m_fHighThreshold;
-    }
-      float ThresholdOp::getLowVal() const{
-      return m_fLowVal;
-    }
-      float ThresholdOp::getHighVal() const{
-      return m_fHighVal;
-    }
-      ThresholdOp::optype ThresholdOp::getType() const{
-      return m_eType;
-    }
-      void ThresholdOp::setLowThreshold(float lowThreshold){
-        m_fLowThreshold=lowThreshold;
-      }
-      void ThresholdOp::setHighThreshold(float highThreshold){
-        m_fHighThreshold=highThreshold;
-      }
-      void ThresholdOp::setLowVal(float lowVal){
-        m_fLowVal=lowVal;
-      }
-      void ThresholdOp::setHighVal(float highVal){
-        m_fHighVal=highVal;
-      }
-      void ThresholdOp::setType(optype type){
-        m_eType=type;
-      }
-    
-  
    // {{{ C++ fallback ThreshOp classes
   
    template <typename T> class ThreshOpLTVal {

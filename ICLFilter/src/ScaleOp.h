@@ -6,7 +6,7 @@
 namespace icl{
   
   /// Class to scale images
-  class ScaleOp : private AffineOp{
+  class ScaleOp : public AffineOp{
     public:
     /// Constructor
     ScaleOp (double factorX=0.0, double factorY=0.0, scalemode eInterpolate=interpolateLIN) :
@@ -19,6 +19,10 @@ namespace icl{
     }
     /// apply should still be public
     AffineOp::apply;
+
+    private: // hide the following methods
+    AffineOp::rotate;
+    AffineOp::translate;
   };
 }
 #endif
