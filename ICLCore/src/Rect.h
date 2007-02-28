@@ -193,6 +193,10 @@ namespace icl {
 
     /// returns the size of the rect
     Size size() const { return Size(width,height); }
+
+    Rect transform(double xfac, double yfac) const { 
+      return Rect((int)(xfac*x),(int)(yfac*y),(int)(xfac*width), (int)(yfac*height)); 
+    }
   };
 
 } // namespace icl

@@ -43,16 +43,21 @@ namespace icl{
 
     /// scales a Points variables with a scalar value
     Point operator*(double d) const { return Point((int)(d*x),(int)(d*y));}
-    
+
     /// Adds another Point inplace
     Point& operator+=(const Point &s){x+=s.x; y+=s.y; return *this;}
 
     /// Substacts another Point inplace
     Point& operator-=(const Point &s){x-=s.x; y-=s.y; return *this;}
 
-    // scales the Point inplace with a scalar
+    /// scales the Point inplace with a scalar
     Point& operator*=(double d) {x=(int)((double)x*d); y=(int)((double)y*d); return *this;};
 
+    /// transforms the point by element-wise scaling
+    Point transform(double xfac, double yfac) const{ 
+      return Point((int)(xfac*x),(int)(yfac*y));
+    }
+    
   };
   
 } // namespace icl
