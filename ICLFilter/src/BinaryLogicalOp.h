@@ -1,5 +1,5 @@
-#ifndef BINARY_ARITHMETICAL_H
-#define BINARY_ARITHMETICAL_H
+#ifndef BINARY_LOGICAL_H
+#define BINARY_LOGICAL_H
 
 #include <BinaryOp.h>
 #include <Img.h>
@@ -9,17 +9,16 @@ namespace icl {
       
       
   */
-  class BinaryArithmeticalOp : public BinaryOp{
+  class BinaryLogicalOp : public BinaryOp{
     public:
     enum optype{
-      addOp,
-      subOp,
-      mulOp,
-      divOp
+      andOp,
+      orOp,
+      xorOp
     };
     
-    BinaryArithmeticalOp(optype t):m_eOpType(t){}
-    virtual ~BinaryArithmeticalOp(){}
+    BinaryLogicalOp(optype t):m_eOpType(t){}
+    virtual ~BinaryLogicalOp(){}
     
     virtual void apply(const ImgBase *src1, const ImgBase *src2, ImgBase **dst);
     

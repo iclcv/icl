@@ -1,9 +1,8 @@
 #include <ProximityOp.h>
 #include <Img.h>
 
-#ifdef WITH_IPP_OPTIMIZATION
 namespace icl {
-
+#ifdef WITH_IPP_OPTIMIZATION
   namespace{
 
     template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, IppiSize, const T*, int, IppiSize, icl32f*, int)>
