@@ -971,7 +971,7 @@ namespace icl{
 
   // }}}
 
-  void pix(ImgQ &image, int x, int y){
+  inline void pix(ImgQ &image, int x, int y){
     // {{{ open
     float A = COLOR[3]/255.0;
     if(x>=0 && y>=0 && x<image.getWidth() && y<image.getHeight()){
@@ -983,7 +983,16 @@ namespace icl{
   }
 
   // }}}
- 
+
+  void pix(ImgQ &image, const vector<Point> &pts){
+    // {{{ open
+
+    for(vector<Point>::const_iterator it = pts.begin();it!=pts.end();++it){
+      pix(image,it->x,it->y);
+    }
+  } 
+
+  // }}}
  
   ImgQ label(const ImgQ &imageIn, const string &text){
     // {{{ open

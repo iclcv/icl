@@ -188,8 +188,13 @@ namespace icl{
       @param p pos of the pixel
   **/
   void pix(ImgQ &image, const Point &p){ pix(image,p.x,p.y); }
-
-
+  
+  /// draws a set of points into an image
+  /** @param image destination image
+      @param pts vector of points
+  **/
+  void pix(ImgQ &image, const vector<Point> &pts);
+  
   /// renders a text into an image 
   /** This functin renders a text into an 3 or 1 channel image
       using the a QPainter internally.
