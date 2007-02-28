@@ -207,7 +207,7 @@ namespace icl{
       @param p pos of the lower left corner of the text
       @param text text to render
   **/
-  void text(ImgQ &image, const Point &p,const string &text){ text(image,p.x,p.y,text); }
+  void text(ImgQ &image, const Point &p,const string &sText){ text(image,p.x,p.y,sText); }
 
   /// labels an image in the upper left corner
   /** @param image image to label
