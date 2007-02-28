@@ -26,7 +26,7 @@ template <typename T, template<typename> class U>
 class VQ : public Img<T> {
  public:
   // Constructor/ Destructor
-  VQ(ImgBase *pSrc, bool deepCopyData=false);
+  VQ(ImgBase *pSrc, float fLearnRate=0.01, bool deepCopyData=false);
   virtual ~VQ();
   
   // operator
@@ -44,8 +44,14 @@ class VQ : public Img<T> {
   unsigned int m_uiVQDim; /// The cluster vector dimension
   unsigned int m_uiCenter; /// The number of VQ centers
   unsigned int m_uiMaxTrainSteps; /// The maximum training steps
+  float m_fLearnRate; /// The learning rate of the VQ
+  bool m_bClusterIsInitialized; 
   
-  bool m_bClusterIsInitialized;
+  // Set functions
+  void setLearnRate(float fLearnRate) { m_fLearnRate = fLearnRate; }
+
+  // Get functions
+  float getLearnRate() { return m_fLearnRate; }
   
   // cluster functions
   void createCluster(unsigned int uiCenter);
@@ -61,6 +67,7 @@ class VQ : public Img<T> {
 
   // distance algorithms
   unsigned int nn(unsigned int uiDataIdx, float &fMinDist);
+  ImgBase* wta(ImgBase **dstImg=0);
   
   // helper functions
   void printCluster();

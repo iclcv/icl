@@ -19,7 +19,8 @@ namespace icl {
   // {{{ Constructor/ Destructor
 
   template <typename T, template<typename> class U>
-  VQ<T,U>::VQ(ImgBase *poSrc, bool deepCopyData) {
+  VQ<T,U>::VQ(ImgBase *poSrc, float fLearnRate, bool deepCopyData) :
+    m_fLearnRate(fLearnRate) {
     FUNCTION_LOG("");
     m_poData = new U<T>(poSrc, deepCopyData);
     m_vecRefDataPtr = m_poData->getDataPtr();
@@ -128,13 +129,13 @@ namespace icl {
     
     // update the codebook
     for (unsigned int i=0;i<m_uiVQDim;i++) {
-      m_vecCluster[uiMinDistIdx][i] += 0.1 * 
+      m_vecCluster[uiMinDistIdx][i] += m_fLearnRate * 
         (m_vecRefDataPtr[i][uiDataIdx] -m_vecCluster[uiMinDistIdx][i]) ;
     }
   }
 
 // }}}
-  
+
   template <typename T, template<typename> class U>
   void VQ<T,U>::lbg() {
     // {{{ open
@@ -146,7 +147,7 @@ namespace icl {
     // variable initilization
     unsigned int uiMinDistIdx; // The min distance codeword
     float fErrBuf=0;
-    vector<unsigned int> vecClustCnt(m_uiCenter); // cluster size counters
+    vector<unsigned int> vecClustCnt(m_uiCenter); //cluster size counters
     vector<vector<float> > vecAccu(m_uiCenter); // data accumulators
     for (unsigned int i=0;i<m_uiCenter;i++) {
       vecAccu[i].resize(m_uiVQDim);
@@ -221,12 +222,45 @@ namespace icl {
 
 // }}}
 
+  template <typename T, template<typename> class U>
+  ImgBase* VQ<T,U>::wta(ImgBase **dstImg) {
+    // {{{ open
+    FUNCTION_LOG("");
+
+    // variable deklaration
+    ImgBase *oTmpImg;
+    icl8u *dataPtr=0;
+    unsigned int uiWinner;
+    unsigned int uiClusterColor = 255 / (m_uiCenter - 1);
+    float fMinDist = 0;
+    
+    // deklare dstImg
+    if (dstImg == 0) {
+      oTmpImg = imgNew(depth8u, m_poData->m_poData->getSize(), formatGray);
+    } else {
+      ensureCompatible(dstImg, depth8u, m_poData->m_poData->getSize(), 
+                       formatGray);
+    }
+    oTmpImg = *dstImg;
+    dataPtr = (icl8u*) oTmpImg->getDataPtr(0);
+    
+    // Compute WTA
+    for(unsigned int i=0;i<m_uiVQDim;i++) {
+      uiWinner = nn(i,fMinDist);
+      dataPtr[i] = uiWinner * uiClusterColor;  
+    }
+    
+    // return image
+    return oTmpImg;
+  }
+
+// }}}
+
   // }}}
 
   // {{{ helper functions 
   template <typename T, template<typename> class U>
   void VQ<T,U>::printCluster() {
-    BENCHMARK_THIS_FUNCTION;
     FUNCTION_LOG("");
 
     // calc center with minimal distance
