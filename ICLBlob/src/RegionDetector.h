@@ -43,6 +43,7 @@ namespace icl{
       protected:
       
       
+
       // Lable image
       RegionDetectorBlobPart **m_ppoLim;
       

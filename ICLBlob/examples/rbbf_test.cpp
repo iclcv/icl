@@ -10,16 +10,15 @@ vector<icl8u> vec3(icl8u r, icl8u g, icl8u b){
 } 
 
 int main(){
-  ImgQ a = create("flowers");
-  ImgQ b = create("parrot");
-  a = levels(scale(a,0.4),5);
-  b = levels(scale(b,0.4),5);
+  ImgQ A = create("flowers");
+  A = levels(scale(a,0.4),5);
   
   
-  RegionBasedBlobSearcher rbbs;
-  rbbs.addDefaultFMCreator (a.getSize(), formatRGB, vec3(200,10,10), vec3(30,30,30), 10,1000,true);
-  vector<int> ca = rbbs.getCenters(&a);
-  vector<int> cb = rbbs.getCenters(&b);
+  RegionBasedBlobSearcher R;
+  R.addDefaultFMCreator (a.getSize(), formatRGB, vec3(200,10,10), vec3(30,30,30), 10,1000,true);
+
+  vector<int> ca  = rbbs.getCentersPOD(&a);
+  vector<Rect> bb = rbbs.getBoundingBoxes(&a);
   
   color(255,255,255);
   

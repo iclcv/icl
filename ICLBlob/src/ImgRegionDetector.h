@@ -3,6 +3,7 @@
 
 #include <Array.h>
 #include <ICLTypes.h>
+#include <BlobData.h>
 
 namespace icl{
   /// namespace for ImgRegionDetector specific functions
@@ -36,27 +37,13 @@ namespace icl{
     /// sets new restrictions
     void setRestrictions(int minSize, int maxSize, icl8u minVal, icl8u maxVal);
     
-    /// extracts all regions centers returning them as a list of x,y coordinates
-    const Array<int> &detect(ImgBase *image);
-    
-    /// extracts all regions centers and corresponding values with given destination vectors 
-    void detect(ImgBase *image, Array<int> &centers, Array<icl8u> &values);
-
-    /// extracts centers, values, boundind-boxes and major axis from the given image
-    /** @param image input image
-        @param centers destination vector for the found centers (xyxyxy..)
-        @param values destinaiton vector for the regions values
-        @param boundingBoxes destination vector for the regions bounding boxes (order xywhyxwh,..)
-        @param pcaInfos destination vector for the regions major axis and arcs (order (l1l2arc1arc2,l1l2arc1arc2,...)
-    */
-    void detect(ImgBase *image, Array<int> &centers, Array<icl8u> &values,
-                Array<int> &boundingBoxes, Array<icl32f> &pcaInfos);
-    
+    /// detects all blobs in the image that match to the given parameters
+    const std::vector<BlobData> &detect(ImgBase *image);
     
     private:
     regiondetector::RegionDetector *m_poRD;
     Img8u *m_poImage8uBuffer;
-    Array<int> m_oCenterBuffer;
+    std::vector<BlobData> m_vecBlobData;
   };
 }
 

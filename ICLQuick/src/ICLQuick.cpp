@@ -75,6 +75,109 @@ namespace icl{
 
   // }}}
 
+  Img8u cvt8u(const ImgQ &image){
+    // {{{ open
+
+    Img8u *p = image.convert<icl8u>();
+    Img8u r = *p;
+    delete p;
+    return r;
+  }
+
+  // }}}
+  Img16s cvt16s(const ImgQ &image){
+    // {{{ open
+
+    Img16s *p = image.convert<icl16s>();
+    Img16s r = *p;
+    delete p;
+    return r;
+
+  }
+
+  // }}}
+  Img32s cvt32s(const ImgQ &image){
+    // {{{ open
+
+    Img32s *p = image.convert<icl32s>();
+    Img32s r = *p;
+    delete p;
+    return r;
+  }
+
+  // }}}
+  Img32f cvt32f(const ImgQ &image){
+    // {{{ open
+
+    Img32f *p = image.convert<icl32f>();
+    Img32f r = *p;
+    delete p;
+    return r;
+  }
+
+  // }}}
+  Img64f cvt64f(const ImgQ &image){
+    // {{{ open
+
+    Img64f *p = image.convert<icl64f>();
+    Img64f r = *p;
+    delete p;
+    return r;
+  }
+
+  // }}}
+
+  ImgQ cvt(const Img8u &image){
+    // {{{ open
+
+    ImgQ *p = image.convert<ICL_QUICK_TYPE>();
+    ImgQ r = *p;
+    delete p;
+    return r;
+  }
+
+  // }}}
+  ImgQ cvt(const Img16s &image){
+    // {{{ open
+
+    ImgQ *p = image.convert<ICL_QUICK_TYPE>();
+    ImgQ r = *p;
+    delete p;
+    return r;
+  }
+
+  // }}}
+  ImgQ cvt(const Img32s &image){
+    // {{{ open
+
+    ImgQ *p = image.convert<ICL_QUICK_TYPE>();
+    ImgQ r = *p;
+    delete p;
+    return r;
+  }
+
+  // }}}
+  ImgQ cvt(const Img32f &image){
+    // {{{ open
+
+    ImgQ *p = image.convert<ICL_QUICK_TYPE>();
+    ImgQ r = *p;
+    delete p;
+    return r;
+  }
+
+  // }}}
+  ImgQ cvt(const Img64f &image){
+    // {{{ open
+
+    ImgQ *p = image.convert<ICL_QUICK_TYPE>();
+    ImgQ r = *p;
+    delete p;
+    return r;
+  }
+
+  // }}}
+
   namespace{
     static PWCGrabber *G[4] = {0,0,0,0};
     struct PWCReleaser{
@@ -637,6 +740,26 @@ namespace icl{
 
   // }}}
 
+  ImgQ operator|(const ImgQ &a, const ImgQ &b){
+    // {{{ open
+
+    if(a.getChannels() == 0 || a.getROISize() == Size::null) return copy(b);
+    if(b.getChannels() == 0 || b.getROISize() == Size::null) return copy(a);
+    ImgQ r = zeros(max(a.getWidth(),b.getWidth()),max(a.getHeight(),b.getHeight()),a.getChannels()+b.getChannels());
+    r.setROI(a.getROI());
+    for(int c=0;c<a.getChannels();c++){
+      deepCopyChannelROI (&a,c,a.getROIOffset(),a.getROISize(), &r,c,r.getROIOffset(), r.getROISize());
+    }
+    r.setROI(b.getROI());
+    for(int c=0;c<b.getChannels();c++){
+      deepCopyChannelROI (&b,c,b.getROIOffset(),b.getROISize(), &r,c+a.getChannels(),r.getROIOffset(), r.getROISize());
+    }
+    r.setFullROI();
+    return r;
+  }
+
+  // }}}
+
   ImgROI &ImgROI::operator=(float val){
     // {{{ open
 
@@ -815,9 +938,10 @@ namespace icl{
     if(!QAPP){
       QAPP = new QApplication(n,ppc);
     }
-    QFont f(FONTFAMILY.c_str(),FONTSIZE);
+    QFont f(FONTFAMILY.c_str(),FONTSIZE,QFont::DemiBold);
     QFontMetrics m(f);
     QSize br = m.size(Qt::TextSingleLine,text.c_str());
+    
     QImage img(br.width()+2,br.height()+2,QImage::Format_ARGB32_Premultiplied);
     img.fill(0);
 
@@ -833,7 +957,6 @@ namespace icl{
     for(int c=0;c<image.getChannels() && c<3; ++c){
       for(int x=0;x<t.getWidth();x++){
         for(int y=0;y<t.getHeight();y++){
-          //          printf("x,y,c = %d %d %d \n",x,y,c);
           int ix = x+xoffs;
           int iy = y+yoffs;
           if(ix >= 0 && iy >= 0 && ix < image.getWidth() && iy < image.getHeight() ){
@@ -847,7 +970,47 @@ namespace icl{
   }
 
   // }}}
-  
+
+  void pix(ImgQ &image, int x, int y){
+    // {{{ open
+    float A = COLOR[3]/255.0;
+    if(x>=0 && y>=0 && x<image.getWidth() && y<image.getHeight()){
+      for(int c=0;c<image.getChannels() && c<3; ++c){
+        float &v = image(x,y,c);
+        v=(1.0-A)*v + A*COLOR[c];
+      }
+    }
+  }
+
+  // }}}
+ 
+ 
+  ImgQ label(const ImgQ &imageIn, const string &text){
+    // {{{ open
+    ImgQ image = copy(imageIn);
+        
+    float _COLOR[4] = { COLOR[0],COLOR[1],COLOR[2],COLOR[3] };
+    int _FONTSIZE = FONTSIZE;
+    string _FONTFAMILY = FONTFAMILY;
+ 
+    FONTSIZE = 10;
+    FONTFAMILY = "Arial";
+    COLOR[3]=255;
+
+    std::fill(COLOR,COLOR+3,float(1.0));
+    icl::text(image,6,6,text);
+    
+    std::fill(COLOR,COLOR+3,float(255.0));
+    icl::text(image,5,5,text);    
+    
+    std::copy((float*)_COLOR,_COLOR+4,COLOR);
+    FONTSIZE = _FONTSIZE;
+    FONTFAMILY = _FONTFAMILY;
+    return image;    
+  }
+
+  // }}}
+
   void font(int size, const string &family){
     // {{{ open
 

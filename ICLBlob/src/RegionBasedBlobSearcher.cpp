@@ -8,6 +8,86 @@ namespace icl{
   using namespace regiondetector;
   using namespace std;
 
+  namespace{
+    Array<Point> &cat(const Array<Array<Point> > &src, Array<Point> &dst){
+      // {{{ open
+      dst.clear();
+      for(Array<Array<Point> >::const_iterator it = src.begin();it!=src.end();++it){
+        dst.assign(it->begin(),it->end());
+      }
+      return dst;
+    }
+    // }}}
+    Array<Rect> &cat(const Array<Array<Rect> > &src, Array<Rect> &dst){
+      // {{{ open
+      dst.clear();
+      for(Array<Array<Rect> >::const_iterator it = src.begin();it!=src.end();++it){
+        dst.assign(it->begin(),it->end());
+      }
+      return dst;
+    }
+    // }}}
+    Array<PCAInfo> &cat(const Array<Array<PCAInfo> > &src, Array<PCAInfo> &dst){
+      // {{{ open
+      dst.clear();
+      for(Array<Array<PCAInfo> >::const_iterator it = src.begin();it!=src.end();++it){
+        dst.assign(it->begin(),it->end());
+      }
+      return dst;
+    }
+    // }}}
+
+    Array<int> &toPOD(const Array<Array<Point> >&src, Array<int> &dst){
+      // {{{ open
+
+    dst.clear();
+    for(unsigned int i=0;i<src.size();++i){
+      for(unsigned int j=0;j<src[i].size();++j){
+        dst.push_back(src[i][j].x);
+        dst.push_back(src[i][j].y);
+      }
+    }   
+    return dst;
+  }
+
+  // }}}
+    
+    Array<int> &toPOD(const Array<Array<Rect> > &src, Array<int> &dst){
+      // {{{ open
+
+    dst.clear();
+    for(unsigned int i=0;i<src.size();++i){
+      for(unsigned int j=0;j<src[i].size();++j){
+        dst.push_back(src[i][j].x);
+        dst.push_back(src[i][j].y);
+        dst.push_back(src[i][j].width);
+        dst.push_back(src[i][j].height);
+      }
+    }
+    return dst;
+  }
+
+  // }}}
+    Array<float> &toPOD(const Array<Array<PCAInfo> > &src, Array<float> &dst){
+      // {{{ open
+      
+    dst.clear();
+    for(unsigned int i=0;i<src.size();++i){
+      for(unsigned int j=0;j<src[i].size();++j){    
+        dst.push_back(src[i][j].len1);
+        dst.push_back(src[i][j].len2);
+        dst.push_back(src[i][j].arc1);
+        dst.push_back(src[i][j].arc2);
+      }
+    }
+    return dst;
+  }
+
+  // }}}
+  }
+
+
+  
   RegionBasedBlobSearcher::RegionBasedBlobSearcher(){
     // {{{ open
 
@@ -23,98 +103,98 @@ namespace icl{
     removeAll();
     delete m_poRD;
 
-    /// delete all images !!!
-    //map<Size,map<format,Img8u*> > m_mmImages;
-    /*
-        sizemap &m = m_mmImages;
-        sizemap::iterator i = m.find(size);
-        if(i != m.end()){
-        fmtmap::iterator j = (*i).second.find(fmt);
-    */
-
   }
 
   // }}}
   
-  const Array<int> &RegionBasedBlobSearcher::getCenters(ImgBase *image){
+  const Array<Point> &RegionBasedBlobSearcher::getCenters(ImgBase *image){
     // {{{ open
 
     m_poInputImage = image;
     extractRegions();
     unifyRegions();
-    m_oOutputBuffer.clear();
-    for(unsigned int i=0;i<m_oPoints.size();++i){
-      for(unsigned int j=0;j<m_oPoints[i].size();++j){
-        m_oOutputBuffer.push_back(m_oPoints[i][j].x);
-        m_oOutputBuffer.push_back(m_oPoints[i][j].y);
-      }
-    }
-    return m_oOutputBuffer;
+    return cat(m_oCenters,m_oCentersOut);
   }
 
   // }}}
 
-  const Array<int> &RegionBasedBlobSearcher::getBoundingBoxes(ImgBase *image){
+  const Array<Rect> &RegionBasedBlobSearcher::getBoundingBoxes(ImgBase *image){
     // {{{ open
     m_poInputImage = image;
     extractRegions();
     unifyRegions();
-    m_oOutputBuffer.clear();
-    for(unsigned int i=0;i<m_oRects.size();++i){
-      for(unsigned int j=0;j<m_oRects[i].size();++j){
-        m_oOutputBuffer.push_back(m_oRects[i][j].x);
-        m_oOutputBuffer.push_back(m_oRects[i][j].y);
-        m_oOutputBuffer.push_back(m_oRects[i][j].width);
-        m_oOutputBuffer.push_back(m_oRects[i][j].height);        
-      }
-    }
-    return m_oOutputBuffer;
+    return cat(m_oBBs,m_oBBsOut);
   }
 
   // }}}
 
-  const Array<float> &RegionBasedBlobSearcher::getPCAInfo(ImgBase *image){
+  const Array<PCAInfo> &RegionBasedBlobSearcher::getPCAInfo(ImgBase *image){
     // {{{ open
 
     m_poInputImage = image;
     extractRegions();
     unifyRegions();
-    m_oOutputBufferF.clear();
-    for(unsigned int i=0;i<m_oPCA.size();++i){
-      for(unsigned int j=0;j<m_oPCA[i].size();++j){
-        m_oOutputBufferF.push_back(m_oPCA[i][j]);
-      }
-    }
-    return m_oOutputBufferF;
+    return cat(m_oPCAInfos,m_oPCAInfosOut);
   }
 
   // }}}
 
-  void RegionBasedBlobSearcher::detectAll(ImgBase *image, Array<int> &centers, Array<int> &boundingBoxes, Array<float> &pcaInfos){
+  const Array<int> &RegionBasedBlobSearcher::getCentersPOD(ImgBase *image){
     // {{{ open
 
+    m_poInputImage = image;
+    extractRegions();
+    unifyRegions();
+    return toPOD(m_oCenters,m_oCentersOutPOD);
+  }
+
+  // }}}
+
+  const Array<int> &RegionBasedBlobSearcher::getBoundingBoxesPOD(ImgBase *image){
+    // {{{ open 
+
+    m_poInputImage = image;
+    extractRegions();
+    unifyRegions();
+    return toPOD(m_oBBs,m_oBBsOutPOD);
+  }
+
+  // }}}
+
+  const Array<float> &RegionBasedBlobSearcher::getPCAInfoPOD(ImgBase *image){
+    // {{{ open
+
+    m_poInputImage = image;
+    extractRegions();
+    unifyRegions();
+    return toPOD(m_oPCAInfos,m_oPCAInfosOutPOD);
+  }
+
+  // }}}
+
+
+  void RegionBasedBlobSearcher::detectAll(ImgBase *image, Array<Point> &centers, Array<Rect> &boundingBoxes, Array<PCAInfo> &pcaInfos){
+    // {{{ open
+    
     m_poInputImage = image;
     extractRegions();
     unifyRegions();
    
-    centers.clear();
-    boundingBoxes.clear();
-    pcaInfos.clear();
-    
-    for(unsigned int i=0;i<m_oPoints.size();++i){
-      for(unsigned int j=0;j<m_oPoints[i].size();++j){
-        centers.push_back(m_oPoints[i][j].x);
-        centers.push_back(m_oPoints[i][j].y);
-
-        boundingBoxes.push_back(m_oRects[i][j].x);
-        boundingBoxes.push_back(m_oRects[i][j].y);
-        boundingBoxes.push_back(m_oRects[i][j].width);
-        boundingBoxes.push_back(m_oRects[i][j].height);   
-      }
-      for(unsigned int j=0;j<m_oPCA[i].size();++j){
-        pcaInfos.push_back(m_oPCA[i][j]);
-      }
-    }
+    cat(m_oCenters,centers);
+    cat(m_oBBs,boundingBoxes);
+    cat(m_oPCAInfos,pcaInfos);
+  }
+  // }}}
+  
+  void RegionBasedBlobSearcher::detectAllPOD(ImgBase *image, Array<int> &centers, Array<int> &boundingBoxes, Array<float> &pcaInfos){
+    // {{{ open
+    m_poInputImage = image;
+    extractRegions();
+    unifyRegions();
+   
+    toPOD(m_oCenters,centers);
+    toPOD(m_oBBs,boundingBoxes);
+    toPOD(m_oPCAInfos,pcaInfos);
   }
 
   // }}}
@@ -153,13 +233,9 @@ namespace icl{
   void RegionBasedBlobSearcher::extractRegions(){
     // {{{ open
 
-    Array<int> cs, bbs;
-    Array<icl8u> vs;
-    Array<icl32f> pca;
-    
-    m_oPoints.clear();
-    m_oRects.clear();
-    int x,y;
+    m_oCenters.clear();
+    m_oBBs.clear();
+    m_oPCAInfos.clear();
     
     for(unsigned int i=0;i<m_oFMCreators.size(); ++i){
       FMCreator &fmc = *(m_oFMCreators[i]);
@@ -169,34 +245,31 @@ namespace icl{
       m_poRD->setRestrictions(rf.getMinSize(),rf.getMaxSize(),rf.getMinVal(),rf.getMaxVal());
       float facx =  (float)(m_poInputImage->getSize().width) / (float)(fmc.getSize().width);
       float facy =  (float)(m_poInputImage->getSize().height) / (float)(fmc.getSize().height);
-      if(rf.needSpecialFeatures()){
-        m_poRD->detect(fm,cs,vs,bbs,pca);
-        m_oPoints.push_back(Array<Point>(vs.size()));
-        m_oRects.push_back(Array<Rect>(vs.size()));
-        m_oPCA.push_back(pca);
-        for(unsigned int j=0;j<vs.size();++j){
-          x = cs[2*j];
-          y = cs[2*j+1];
-          if(rf.ok(vs[j],x,y,&(bbs[4*j]),&(pca[4*j]))){
-            m_oPoints[i][j]=Point((int)(facx*x),(int)(facy*y));
-            m_oRects[i][j]=Rect((int)(facx*bbs[4*j]),
-                                (int)(facy*bbs[4*j+1]),
-                                (int)(facx*bbs[4*j+2]),
-                                (int)(facy*bbs[4*j+3]));
-          }       
-        }
-      }else{
-        m_poRD->detect(fm,cs,vs);
-        m_oPoints.push_back(Array<Point>(vs.size()));
-        m_oRects.push_back(Array<Rect>());
-        for(unsigned int j=0;j<vs.size();++j){
-          x = cs[2*j];
-          y = cs[2*j+1];
-          if(rf.ok(vs[j],x,y)){
-            m_oPoints[i][j]=Point((int)(facx*x),(int)(facy*y));
-          }       
-        }
-      }      
+      
+      m_oCenters.push_back(Array<Point>());
+      m_oBBs.push_back(Array<Rect>());
+      m_oPCAInfos.push_back(Array<PCAInfo>());
+
+      const vector<BlobData> &vecBD = m_poRD->detect(fm);
+      for(vector<BlobData>::const_iterator it = vecBD.begin();it!= vecBD.end();it++){
+        const BlobData &bd = *it;
+
+        if(rf.needSpecialFeatures()){
+          Point pos = bd.getCenter();
+          if(rf.ok(bd.getVal(),pos)){
+            m_oCenters[i].push_back(pos.transform(facx,facy));
+          }
+        }else{
+          Point pos = bd.getCenter();
+          Rect bb = bd.getBoundingBox();
+          PCAInfo pca = bd.getPCAInfo();
+          if(rf.ok(bd.getVal(),pos,bb,pca)){
+            m_oCenters[i].push_back(pos.transform(facx,facy));
+            m_oBBs[i].push_back(bb.transform(facx,facy));
+            m_oPCAInfos[i].push_back(pca);
+          }
+        }        
+      }
     }
   }
 
@@ -242,8 +315,8 @@ namespace icl{
                                                     // {{{ open
 
                                                     format imageFormat,
-                                                    std::vector<icl8u> refcolor,
-                                                    std::vector<icl8u> thresholds,
+                                                    vector<icl8u> refcolor,
+                                                    vector<icl8u> thresholds,
                                                     unsigned int minBlobSize,
                                                     unsigned int maxBlobSize,
                                                     bool enableSpecialFeatures ){
@@ -283,12 +356,12 @@ namespace icl{
     virtual icl8u getMinVal(){ return m_ucMinVal; }
     virtual icl8u getMaxVal(){ return m_ucMaxVal; }
     virtual bool needSpecialFeatures(){ return m_bSF; }
-    virtual bool ok(icl8u value, int x, int y){
-      (void)value; (void)x; (void)y; 
+    virtual bool ok(icl8u value, const Point &p){
+      (void)value; (void)p;
       return true;
     }
-    virtual bool ok(icl8u value, int x, int y, int *bb, icl32f *pca){
-      (void)value; (void)x; (void)y; (void)bb; (void)pca;
+    virtual bool ok(icl8u value, const Point &p, const Rect &bb, const PCAInfo &pca){
+      (void)value; (void)p; (void)bb; (void)pca;
       return true;
     }
   };
@@ -357,7 +430,7 @@ namespace icl{
       icl8u *pucSrc0End = src.getData(0)+m_oSize.getDim();
       if(nc == 1){
         for(;pucSrc0!=pucSrc0End;++pucSrc0,++pucDst){
-          *pucDst = 255 * (std::abs(*pucSrc0-r0)<t0);
+          *pucDst = 255 * (abs(*pucSrc0-r0)<t0);
         }
         return m_poFM;
       }
@@ -368,7 +441,7 @@ namespace icl{
       icl8u *pucSrc1 = src.getData(1);
       if(nc == 2){
         for(;pucSrc0!=pucSrc0End;++pucSrc0,++pucSrc1,++pucDst){
-          *pucDst = 255 * ( (std::abs(*pucSrc0-r0)<t0) & (std::abs(*pucSrc1-r1)<t1) );
+          *pucDst = 255 * ( (abs(*pucSrc0-r0)<t0) & (abs(*pucSrc1-r1)<t1) );
         }
         return m_poFM;
       }
@@ -380,22 +453,22 @@ namespace icl{
       if(nc == 3){
         //        printf("nd = 3 ref=%d %d %d  thresh=%d %d %d\n",r0,r1,r2,t0,t1,t2);
         for(;pucSrc0!=pucSrc0End;++pucSrc0,++pucSrc1,++pucSrc2,++pucDst){
-          *pucDst = 255 * ( (std::abs(*pucSrc0-r0)<t0) & (std::abs(*pucSrc1-r1)<t1) & (std::abs(*pucSrc2-r2)<t2) );
+          *pucDst = 255 * ( (abs(*pucSrc0-r0)<t0) & (abs(*pucSrc1-r1)<t1) & (abs(*pucSrc2-r2)<t2) );
         }
         return m_poFM;
       }
 
 
       // n-channel version
-      std::vector<icl8u*> vecSrc(nc);
+      vector<icl8u*> vecSrc(nc);
       for(int i=0;i<nc;i++){
         vecSrc[i]=image->getData(i);
       }
       
       for(int c=0;pucSrc0!=pucSrc0End;++pucDst,++pucSrc0){
-        *pucDst = 255 * (std::abs(*pucSrc0-r0)<t0);
+        *pucDst = 255 * (abs(*pucSrc0-r0)<t0);
         for(c=1;c<nc;++c){
-          *pucDst &= 255 * ( std::abs(*(vecSrc[c])++ - m_vecRefColor[c]) < m_vecThresholds[c] );
+          *pucDst &= 255 * ( abs(*(vecSrc[c])++ - m_vecRefColor[c]) < m_vecThresholds[c] );
         }
       }
       return m_poFM;
@@ -420,6 +493,4 @@ namespace icl{
 
   // }}}
 
-  
 }
-

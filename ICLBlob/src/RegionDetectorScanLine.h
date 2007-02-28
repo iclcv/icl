@@ -51,6 +51,7 @@ It described by
       static void showReferenceCounter(){
         printf("RegionDetectorScanLine #=%d \n",s_iReferenceCounter);
       }
+      inline unsigned char *getImageDataPtr() { return imagedata; }
       protected:
       int line,start,end; 
       int imagewidth;
