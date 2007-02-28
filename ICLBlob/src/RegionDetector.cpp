@@ -13,7 +13,6 @@ namespace icl{
       m_poScanLineMM = new ScanLineMemoryManager(10000);
 
       m_poBlobList = new BlobList(0);
-      RegionDetectorBlob::ensurePixelBufferSize(iW*iH*2);
     }
     
     RegionDetector::~RegionDetector(){
@@ -32,7 +31,6 @@ namespace icl{
         m_iW = size.width;
         m_iH = size.height;
         m_iDim = m_iW*m_iH;
-        RegionDetectorBlob::ensurePixelBufferSize(size.width*size.height*2);
         
         delete [] m_ppoLim;
         m_ppoLim = new RegionDetectorBlobPart*[m_iDim];
@@ -168,8 +166,8 @@ namespace icl{
       for(BlobPartMemoryManager::iterator it = m_poBlobPartMM->begin();it != m_poBlobPartMM->end();it++){
         if(!((*it)->is_inside_other_region())){
           RegionDetectorBlob *b = new RegionDetectorBlob(*it);
-          iSize = b->size();
-          ucVal = b->val();
+          iSize = b->getSize();
+          ucVal = b->getVal();
           if((iSize >= m_iMinSize) && (iSize <= m_iMaxSize) && (ucVal >= m_iMinValue) && (ucVal <= m_iMaxValue)){
             m_poBlobList->push_back(b);
           }else{

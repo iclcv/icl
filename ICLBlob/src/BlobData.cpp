@@ -18,8 +18,16 @@ namespace icl{
   int BlobData::getSize() const{
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(m_poRDB,0);
-    return m_poRDB->size();
+    return m_poRDB->getSize();
   }
+
+  const std::vector<Point> &BlobData::getBoundary(){
+    FUNCTION_LOG("");
+    static const std::vector<Point> v;
+    ICLASSERT_RETURN_VAL(m_poRDB,v);
+    return m_poRDB->getBoundary(m_oImageSize);
+  }
+  
   
   int BlobData::getBoundaryLength() const{
     FUNCTION_LOG("");
@@ -35,38 +43,25 @@ namespace icl{
   icl8u BlobData::getVal() const{
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(m_poRDB,0);
-    return m_poRDB->val();
+    return m_poRDB->getVal();
   }
   
-  Point BlobData::getCenter() const{
+  Point BlobData::getCOG() const{
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(m_poRDB,Point::null);
-    icl8u val;
-    Point c;
-    m_poRDB->getFeatures(c,val);
-    return c;
+    return m_poRDB->getCOG();
   }
  
   Rect BlobData::getBoundingBox() const{
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(m_poRDB,Rect::null);
-
-    Point c;
-    icl8u v;
-    Rect bb;
-    float l1,l2,a1,a2;
-    m_poRDB->getAllFeatures(m_oImageSize,c,v,bb,l1,l2,a1,a2);
-    return bb;
+    return m_poRDB->getBoundingBox();
   }
   PCAInfo BlobData::getPCAInfo() const{
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(m_poRDB,PCAInfo::null);
-    Point c;
-    icl8u v;
-    Rect bb;
-    float l1,l2,a1,a2;
-    m_poRDB->getAllFeatures(m_oImageSize,c,v,bb,l1,l2,a1,a2);
-    return PCAInfo(l1,l2,a1,a2);
+    const vector<float> &pca =m_poRDB->getPCAInfo();
+    return PCAInfo(pca[0],pca[1],pca[2],pca[3]);
   }
     
  

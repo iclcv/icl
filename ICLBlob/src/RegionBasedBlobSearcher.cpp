@@ -13,7 +13,9 @@ namespace icl{
       // {{{ open
       dst.clear();
       for(Array<Array<Point> >::const_iterator it = src.begin();it!=src.end();++it){
-        dst.assign(it->begin(),it->end());
+        for(Array<Point>::const_iterator jt = it->begin();jt!= it->end();++jt){
+          dst.push_back(*jt);
+        }
       }
       return dst;
     }
@@ -22,7 +24,9 @@ namespace icl{
       // {{{ open
       dst.clear();
       for(Array<Array<Rect> >::const_iterator it = src.begin();it!=src.end();++it){
-        dst.assign(it->begin(),it->end());
+        for(Array<Rect>::const_iterator jt = it->begin();jt!= it->end();++jt){
+          dst.push_back(*jt);
+        }
       }
       return dst;
     }
@@ -31,7 +35,9 @@ namespace icl{
       // {{{ open
       dst.clear();
       for(Array<Array<PCAInfo> >::const_iterator it = src.begin();it!=src.end();++it){
-        dst.assign(it->begin(),it->end());
+        for(Array<PCAInfo>::const_iterator jt = it->begin();jt!= it->end();++jt){
+          dst.push_back(*jt);
+        }
       }
       return dst;
     }
@@ -51,7 +57,6 @@ namespace icl{
   }
 
   // }}}
-    
     Array<int> &toPOD(const Array<Array<Rect> > &src, Array<int> &dst){
       // {{{ open
 
@@ -86,8 +91,6 @@ namespace icl{
   // }}}
   }
 
-
-  
   RegionBasedBlobSearcher::RegionBasedBlobSearcher(){
     // {{{ open
 
@@ -97,7 +100,6 @@ namespace icl{
   }
 
   // }}}
- 
   RegionBasedBlobSearcher::~RegionBasedBlobSearcher(){
     // {{{ open
     removeAll();
@@ -106,7 +108,8 @@ namespace icl{
   }
 
   // }}}
-  
+ 
+ 
   const Array<Point> &RegionBasedBlobSearcher::getCenters(ImgBase *image){
     // {{{ open
 
@@ -117,7 +120,6 @@ namespace icl{
   }
 
   // }}}
-
   const Array<Rect> &RegionBasedBlobSearcher::getBoundingBoxes(ImgBase *image){
     // {{{ open
     m_poInputImage = image;
@@ -127,7 +129,6 @@ namespace icl{
   }
 
   // }}}
-
   const Array<PCAInfo> &RegionBasedBlobSearcher::getPCAInfo(ImgBase *image){
     // {{{ open
 
@@ -138,41 +139,6 @@ namespace icl{
   }
 
   // }}}
-
-  const Array<int> &RegionBasedBlobSearcher::getCentersPOD(ImgBase *image){
-    // {{{ open
-
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
-    return toPOD(m_oCenters,m_oCentersOutPOD);
-  }
-
-  // }}}
-
-  const Array<int> &RegionBasedBlobSearcher::getBoundingBoxesPOD(ImgBase *image){
-    // {{{ open 
-
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
-    return toPOD(m_oBBs,m_oBBsOutPOD);
-  }
-
-  // }}}
-
-  const Array<float> &RegionBasedBlobSearcher::getPCAInfoPOD(ImgBase *image){
-    // {{{ open
-
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
-    return toPOD(m_oPCAInfos,m_oPCAInfosOutPOD);
-  }
-
-  // }}}
-
-
   void RegionBasedBlobSearcher::detectAll(ImgBase *image, Array<Point> &centers, Array<Rect> &boundingBoxes, Array<PCAInfo> &pcaInfos){
     // {{{ open
     
@@ -185,7 +151,38 @@ namespace icl{
     cat(m_oPCAInfos,pcaInfos);
   }
   // }}}
-  
+
+
+  const Array<int> &RegionBasedBlobSearcher::getCentersPOD(ImgBase *image){
+    // {{{ open
+
+    m_poInputImage = image;
+    extractRegions();
+    unifyRegions();
+    return toPOD(m_oCenters,m_oCentersOutPOD);
+  }
+
+  // }}}
+  const Array<int> &RegionBasedBlobSearcher::getBoundingBoxesPOD(ImgBase *image){
+    // {{{ open 
+
+    m_poInputImage = image;
+    extractRegions();
+    unifyRegions();
+    return toPOD(m_oBBs,m_oBBsOutPOD);
+  }
+
+  // }}}
+  const Array<float> &RegionBasedBlobSearcher::getPCAInfoPOD(ImgBase *image){
+    // {{{ open
+
+    m_poInputImage = image;
+    extractRegions();
+    unifyRegions();
+    return toPOD(m_oPCAInfos,m_oPCAInfosOutPOD);
+  }
+
+  // }}}
   void RegionBasedBlobSearcher::detectAllPOD(ImgBase *image, Array<int> &centers, Array<int> &boundingBoxes, Array<float> &pcaInfos){
     // {{{ open
     m_poInputImage = image;
@@ -198,6 +195,8 @@ namespace icl{
   }
 
   // }}}
+
+
   
   Img8u *RegionBasedBlobSearcher::getImage(const Size &size, format fmt){
     // {{{ open
@@ -229,7 +228,6 @@ namespace icl{
   }       
 
   // }}}
-  
   void RegionBasedBlobSearcher::extractRegions(){
     // {{{ open
 
@@ -254,13 +252,13 @@ namespace icl{
       for(vector<BlobData>::const_iterator it = vecBD.begin();it!= vecBD.end();it++){
         const BlobData &bd = *it;
 
-        if(rf.needSpecialFeatures()){
-          Point pos = bd.getCenter();
+        if(!rf.needSpecialFeatures()){
+          Point pos = bd.getCOG();
           if(rf.ok(bd.getVal(),pos)){
             m_oCenters[i].push_back(pos.transform(facx,facy));
           }
         }else{
-          Point pos = bd.getCenter();
+          Point pos = bd.getCOG();
           Rect bb = bd.getBoundingBox();
           PCAInfo pca = bd.getPCAInfo();
           if(rf.ok(bd.getVal(),pos,bb,pca)){
@@ -274,14 +272,12 @@ namespace icl{
   }
 
   // }}}
-    
   void RegionBasedBlobSearcher::unifyRegions(){
     // {{{ open
     // do nothing
   }
 
   // }}}
-  
   void RegionBasedBlobSearcher::add(FMCreator *fmc){
     // {{{ open
     m_oFMCreators.push_back(fmc);
@@ -299,7 +295,6 @@ namespace icl{
   }
   
   // }}}
-    
   void RegionBasedBlobSearcher::removeAll(){
     // {{{ open
     for(unsigned int i=0;i<m_oFMCreators.size();++i){
@@ -309,6 +304,7 @@ namespace icl{
   }
   
   // }}}
+
 
 
   void RegionBasedBlobSearcher::addDefaultFMCreator(const Size &imageSize,
@@ -330,9 +326,6 @@ namespace icl{
   }  
 
   // }}}
-
-
-  
   struct DefaultRegionFilter : public RegionFilter{
     // {{{ open
 
@@ -379,7 +372,6 @@ namespace icl{
   }
 
   // }}}
-  
   struct DefaultFMCreator : public FMCreator{
     // {{{ open
     DefaultFMCreator(const Size &size, 
@@ -479,7 +471,6 @@ namespace icl{
   };
 
   // }}}
-  
   FMCreator *FMCreator::getDefaultFMCreator(const Size &size, 
                                             // {{{ open
 

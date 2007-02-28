@@ -10,24 +10,37 @@ vector<icl8u> vec3(icl8u r, icl8u g, icl8u b){
 } 
 
 int main(){
-  ImgQ A = create("flowers");
-  A = levels(scale(a,0.4),5);
+  ImgQ A = create("parrot");
+  A = levels(A,5);
   
   
   RegionBasedBlobSearcher R;
-  R.addDefaultFMCreator (a.getSize(), formatRGB, vec3(200,10,10), vec3(30,30,30), 10,1000,true);
+  R.addDefaultFMCreator (A.getSize(), formatRGB, vec3(10,200,10), vec3(80,80,80), 10,1000,true);
+  R.addDefaultFMCreator (A.getSize(), formatRGB, vec3(200,10,10), vec3(80,80,80), 10,1000,true);
+  R.addDefaultFMCreator (A.getSize(), formatRGB, vec3(10,10,200), vec3(80,80,80), 10,1000,true);
 
-  vector<int> ca  = rbbs.getCentersPOD(&a);
-  vector<Rect> bb = rbbs.getBoundingBoxes(&a);
+  vector<Point> ca  = R.getCenters(&A);
+  vector<Rect> bb = R.getBoundingBoxes(&A);
   
-  color(255,255,255);
+  color(0,0,0);
   
-  for(unsigned int i=0;i<ca.size()/2;i++){
-    cross(a,ca[2*i],ca[2*i+1]);
+  for(vector<Point>::iterator it = ca.begin();it!= ca.end();++it){
+    cross(A,*it);
   }
-  for(unsigned int i=0;i<cb.size()/2;i++){
-    cross(b,cb[2*i],cb[2*i+1]);
+  for(vector<Rect>::iterator it = bb.begin();it!= bb.end();++it){
+    rect(A,*it);
   }
-  show((a,b));
+
+  // todo !!
+  /****
+  color(255,255,255,100);
+  pix(A,R.getPixels());
+  
+  color(255,255,255,255);
+  pix(A,R.getBoundary());
+  ****/
+
+
+  show(A);
   
 }

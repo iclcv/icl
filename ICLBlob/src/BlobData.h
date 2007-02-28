@@ -46,30 +46,40 @@ namespace icl{
   /* }}} */
 
 
-  
+  /// Wrapper sturct for the low level RegionDetectorBlob DataStruct
   class BlobData{
     public:
+    /// creates a new BlobData struct
+    /** @param poRDB wrapped RegionDetectorBlob 
+        @param oImageSize corresponding image size
+    **/
     BlobData(regiondetector::RegionDetectorBlob *poRDB=0, const Size &oImageSize=Size::null);
-    
+
+    /// returns the blobs value
     icl8u getVal() const;
-    Point getCenter() const;
+
+    /// returns the blobs COG
+    Point getCOG() const;
+
+    /// returns the blobs pixel count
     int getSize() const;
+    
+    /// returns the blobs boundary length (size of boundary pixels)
     int getBoundaryLength() const;
+    
+    /// returns the blobs form factor (see RegionDetectorBlob)
     float getFormFactor() const;
    
+    /// returns the blobs bounding box
     Rect getBoundingBox() const;
-    PCAInfo getPCAInfo() const;
     
-    inline std::vector<Point> getBoundary(){
-      /* {{{ open */
+    /// returns the blobs pca information
+    PCAInfo getPCAInfo() const;
+  
+    /// returns a list of boundary pixels for this blob
+    const std::vector<Point> &getBoundary();
 
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN_VAL(m_poRDB,std::vector<Point>());
-      return m_poRDB->getBoundary(m_oImageSize);
-    }
-
-    /* }}} */
-
+    /// returs the list of all pixels of this blob
     inline std::vector<Point> getPixels() const{
       /* {{{ open */
 
@@ -87,6 +97,7 @@ namespace icl{
 
     /* }}} */
 
+    /// Returns a list of ScanLines for this blob
     inline std::vector<ScanLine> getScanLines() const{
       /* {{{ open */
 
@@ -104,7 +115,11 @@ namespace icl{
     /* }}} */
 
     private:
+    
+    /// wrapped low level blob data
     regiondetector::RegionDetectorBlob *m_poRDB;
+
+    /// correponding image size
     Size m_oImageSize;
   };
   
