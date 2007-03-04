@@ -3,12 +3,19 @@
 #include "Img.h"
 #include "ImgRegionDetector.h"
 #include <math.h>
+#include <limits>
+#include <RegionFilter.h>
+#include <FMCreator.h>
 
 namespace icl{
   using namespace regiondetector;
   using namespace std;
 
   namespace{
+
+    /// struct to use a Size struct as std::map - key
+   
+
     Array<Point> &cat(const Array<Array<Point> > &src, Array<Point> &dst){
       // {{{ open
       dst.clear();
@@ -55,6 +62,32 @@ namespace icl{
     }   
     return dst;
   }
+
+  // }}}
+    Array<int> &toPOD(const Array<Point> &src, Array<int> &dst){
+      // {{{ open
+
+    dst.clear();
+    for(unsigned int i=0;i<src.size();++i){
+      dst.push_back(src[i].x);
+      dst.push_back(src[i].y);
+    }   
+    return dst;
+  }
+
+  // }}}   
+    Array<Array<int> > &toPOD(const Array<Array<Point> >&src, Array<Array<int> > &dst){
+      // {{{ open
+      dst.clear();
+      for(unsigned int i=0;i<src.size();++i){
+        dst.push_back(Array<int>());
+        for(unsigned int j=0;j<src[i].size();++j){
+          dst[i].push_back(src[i][j].x);
+          dst[i].push_back(src[i][j].y);
+        }
+      }   
+      return dst;
+    }
 
   // }}}
     Array<int> &toPOD(const Array<Array<Rect> > &src, Array<int> &dst){
@@ -109,96 +142,132 @@ namespace icl{
 
   // }}}
  
- 
-  const Array<Point> &RegionBasedBlobSearcher::getCenters(ImgBase *image){
+  const Array<Point> &RegionBasedBlobSearcher::getCOGs(){
     // {{{ open
 
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
-    return cat(m_oCenters,m_oCentersOut);
+    m_oCOGsOut.clear();
+    for(unsigned int i=0;i<m_oInternalData.size();++i){
+      FF &fac = m_oScaleFactors[i];
+      Point p =  m_oInternalData[i]->getCOG();
+      Point q = p.transform(fac.f1,fac.f2);
+      m_oCOGsOut.push_back(q);
+      // m_oCOGsOut.push_back(m_oInternalData[i]->getCOG().transform(fac.f1,fac.f2));
+    }
+    return m_oCOGsOut; 
   }
 
   // }}}
-  const Array<Rect> &RegionBasedBlobSearcher::getBoundingBoxes(ImgBase *image){
+  const Array<Rect> &RegionBasedBlobSearcher::getBoundingBoxes(){
     // {{{ open
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
-    return cat(m_oBBs,m_oBBsOut);
+
+    m_oBBsOut.clear();
+    for(unsigned int i=0;i<m_oInternalData.size();++i){
+      FF &fac = m_oScaleFactors[i];
+      m_oBBsOut.push_back(m_oInternalData[i]->getBoundingBox().transform(fac.f1,fac.f2));
+    }
+    return m_oBBsOut; 
   }
 
   // }}}
-  const Array<PCAInfo> &RegionBasedBlobSearcher::getPCAInfo(ImgBase *image){
+  const Array<PCAInfo> &RegionBasedBlobSearcher::getPCAInfo(){
     // {{{ open
 
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
-    return cat(m_oPCAInfos,m_oPCAInfosOut);
+    m_oPCAInfosOut.clear();
+    for(unsigned int i=0;i<m_oInternalData.size();++i){
+      FF &fac = m_oScaleFactors[i];
+      PCAInfo pcaInfo = m_oInternalData[i]->getPCAInfo();
+      //      pcaInfo.len1 = .. TODO adapt to factor
+      (void)fac;
+      m_oPCAInfosOut.push_back(pcaInfo);
+    }
+    return m_oPCAInfosOut; 
   }
 
   // }}}
-  void RegionBasedBlobSearcher::detectAll(ImgBase *image, Array<Point> &centers, Array<Rect> &boundingBoxes, Array<PCAInfo> &pcaInfos){
+
+  
+  const Array<Array<Point> > &RegionBasedBlobSearcher::getBoundaries(){
     // {{{ open
+
+    m_oBoundariesOut.clear();
+    for(unsigned int i=0;i<m_oInternalData.size();++i){
+      RegionBasedBlobSearcher::FF &fac = m_oScaleFactors[i];
+      const vector<Point> &b = m_oInternalData[i]->getBoundary();
+      m_oBoundariesOut.push_back(Array<Point>());
+      Array<Point> &l = m_oBoundariesOut[i];
+      for(unsigned int j=0;j<b.size();++j){
+        l.push_back(b[j].transform(fac.f1,fac.f2));
+      }
+    }
+    return m_oBoundariesOut;
     
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
-   
-    cat(m_oCenters,centers);
-    cat(m_oBBs,boundingBoxes);
-    cat(m_oPCAInfos,pcaInfos);
   }
+
   // }}}
-
-
-  const Array<int> &RegionBasedBlobSearcher::getCentersPOD(ImgBase *image){
+  
+  const Array<int> &RegionBasedBlobSearcher::getBoundaryLengthsPOD(){
     // {{{ open
 
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
-    return toPOD(m_oCenters,m_oCentersOutPOD);
+    m_oBoundaryLengthsPOD.clear();
+    for(unsigned int i=0;i<m_oInternalData.size();++i){
+      m_oBoundaryLengthsPOD.push_back(m_oInternalData[i]->getBoundaryLength());
+    }
+    return m_oBoundaryLengthsPOD; 
   }
 
   // }}}
-  const Array<int> &RegionBasedBlobSearcher::getBoundingBoxesPOD(ImgBase *image){
-    // {{{ open 
+  
+  const Array<float> &RegionBasedBlobSearcher::getFormFactorsPOD(){
+    // {{{ open
 
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
+    m_oFormFactorsPOD.clear();
+    for(unsigned int i=0;i<m_oInternalData.size();++i){
+      m_oFormFactorsPOD.push_back(m_oInternalData[i]->getFormFactor());
+    }
+    return m_oFormFactorsPOD; 
+  }
+
+  // }}}
+  
+  const Array<BlobData*> &RegionBasedBlobSearcher::getBlobData(){
+    // {{{ open
+
+    return m_oInternalData;
+  }
+
+  // }}}
+  const Array<int> &RegionBasedBlobSearcher::getCOGsPOD(){
+    // {{{ open
+    return toPOD(m_oCOGsOut,m_oCOGsOutPOD);
+  }
+
+  // }}}
+  const Array<int> &RegionBasedBlobSearcher::getBoundingBoxesPOD(){
+    // {{{ open 
     return toPOD(m_oBBs,m_oBBsOutPOD);
   }
 
   // }}}
-  const Array<float> &RegionBasedBlobSearcher::getPCAInfoPOD(ImgBase *image){
+  const Array<float> &RegionBasedBlobSearcher::getPCAInfoPOD(){
     // {{{ open
-
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
     return toPOD(m_oPCAInfos,m_oPCAInfosOutPOD);
   }
 
   // }}}
-  void RegionBasedBlobSearcher::detectAllPOD(ImgBase *image, Array<int> &centers, Array<int> &boundingBoxes, Array<float> &pcaInfos){
+
+  const Array<Array<int> > &RegionBasedBlobSearcher::getBoundariesPOD(){
     // {{{ open
-    m_poInputImage = image;
-    extractRegions();
-    unifyRegions();
-   
-    toPOD(m_oCenters,centers);
-    toPOD(m_oBBs,boundingBoxes);
-    toPOD(m_oPCAInfos,pcaInfos);
+
+    return toPOD(getBoundaries(),m_oBoundariesPOD);
   }
 
   // }}}
 
 
+
+
   
-  Img8u *RegionBasedBlobSearcher::getImage(const Size &size, format fmt){
+  Img8u *RegionBasedBlobSearcher::getImage(const Size &size, format fmt, const ImgBase *inputImage){
     // {{{ open
 
     //map<Size,map<format,Img8u*> > m_mmImages;
@@ -209,18 +278,18 @@ namespace icl{
       if(j != (*i).second.end()){
         // this does only work if the images have valid timestanps
         // if(m_poInputImage->getTime() != (*j).second->getTime()){
-        m_poConverter->apply(m_poInputImage,(*j).second);
+        m_poConverter->apply(inputImage,(*j).second);
         //}
         return (*j).second;
       }else{
         Img8u *image = new Img8u(size,fmt);
-        m_poConverter->apply(m_poInputImage,image);
+        m_poConverter->apply(inputImage,image);
         ((*i).second)[fmt] = image;
         return image;
       }
     }else{
       Img8u *image = new Img8u(size,fmt); 
-      m_poConverter->apply(m_poInputImage,image);
+      m_poConverter->apply(inputImage,image);
       (m[size])[fmt]=image;
       return image;
     }
@@ -228,17 +297,41 @@ namespace icl{
   }       
 
   // }}}
-  void RegionBasedBlobSearcher::extractRegions(){
+
+  void RegionBasedBlobSearcher::extractRegions(const ImgBase *image){
     // {{{ open
 
-    m_oCenters.clear();
-    m_oBBs.clear();
-    m_oPCAInfos.clear();
+    m_oInternalData.clear(); // Array<BlobData*>
+    m_oScaleFactors.clear(); // Array<FF> >  
+    const Size &ims = image->getSize();
     
-    for(unsigned int i=0;i<m_oFMCreators.size(); ++i){
+    for(unsigned int i=0;i<m_oFMRF.size(); ++i){
+      FMCreator &fmc = *(m_oFMRF[i].fmc);
+      RegionFilter &rf = *(m_oFMRF[i].rf);
+      m_poRD->setRestrictions(rf.getSizeRange().castTo<unsigned int>(),rf.getValueRange());
+      FF factor( (float)(ims.width)/fmc.getSize().width,(float)(ims.height)/fmc.getSize().height);
+      const vector<BlobData> &vecBD = m_poRD->detect(fmc.getFM(getImage(fmc.getSize(),fmc.getFormat(),image)));
+      for(unsigned int i=0;i<vecBD.size();++i){
+        if(rf.validate(vecBD[i])){
+          m_oInternalData.push_back(const_cast<BlobData*>(&(vecBD[i])));        
+          m_oScaleFactors.push_back(factor);
+        }        
+      }
+    }
+  }
+
+  // }}}
+
+  /******************************************************************************
+      void RegionBasedBlobSearcher::extractRegions(){
+      m_oCenters.clear();
+      m_oBBs.clear();
+      m_oPCAInfos.clear();
+      
+      for(unsigned int i=0;i<m_oFMCreators.size(); ++i){
       FMCreator &fmc = *(m_oFMCreators[i]);
       Img8u *image = getImage(fmc.getSize(),fmc.getFormat());
-      Img8u *fm = fmc.getFM(image);
+        Img8u *fm = fmc.getFM(image);
       RegionFilter &rf = *(fmc.getFilter());
       m_poRD->setRestrictions(rf.getMinSize(),rf.getMaxSize(),rf.getMinVal(),rf.getMaxVal());
       float facx =  (float)(m_poInputImage->getSize().width) / (float)(fmc.getSize().width);
@@ -247,241 +340,108 @@ namespace icl{
       m_oCenters.push_back(Array<Point>());
       m_oBBs.push_back(Array<Rect>());
       m_oPCAInfos.push_back(Array<PCAInfo>());
-
+      
       const vector<BlobData> &vecBD = m_poRD->detect(fm);
       for(vector<BlobData>::const_iterator it = vecBD.begin();it!= vecBD.end();it++){
-        const BlobData &bd = *it;
+      const BlobData &bd = *it;
+      
+      if(!rf.needSpecialFeatures()){
+      Point pos = bd.getCOG();
+      if(rf.ok(bd.getVal(),pos)){
+      m_oCenters[i].push_back(pos.transform(facx,facy));
+      }
+      }else{
+      Point pos = bd.getCOG();
+      Rect bb = bd.getBoundingBox();
+      PCAInfo pca = bd.getPCAInfo();
+      if(rf.ok(bd.getVal(),pos,bb,pca)){
+      m_oCenters[i].push_back(pos.transform(facx,facy));
+      m_oBBs[i].push_back(bb.transform(facx,facy));
+      m_oPCAInfos[i].push_back(pca);
+      }
+      }        
+      }
+      }
+      }
+  ****************************************************************************/
 
-        if(!rf.needSpecialFeatures()){
-          Point pos = bd.getCOG();
-          if(rf.ok(bd.getVal(),pos)){
-            m_oCenters[i].push_back(pos.transform(facx,facy));
-          }
-        }else{
-          Point pos = bd.getCOG();
-          Rect bb = bd.getBoundingBox();
-          PCAInfo pca = bd.getPCAInfo();
-          if(rf.ok(bd.getVal(),pos,bb,pca)){
-            m_oCenters[i].push_back(pos.transform(facx,facy));
-            m_oBBs[i].push_back(bb.transform(facx,facy));
-            m_oPCAInfos[i].push_back(pca);
-          }
-        }        
+  void RegionBasedBlobSearcher::add(FMCreator* fmc, RegionFilter *rf){
+    // {{{ open
+
+    m_oFMRF.push_back(Plugin(fmc,rf));
+  }
+
+  // }}}
+
+  void RegionBasedBlobSearcher::remove(FMCreator *fmc, bool release){
+    // {{{ open
+    for(unsigned int i=0;i<m_oFMRF.size();++i){
+      if(m_oFMRF[i].fmc == fmc){
+        if(release){
+          delete m_oFMRF[i].fmc;
+          delete m_oFMRF[i].rf;
+        }
+        m_oFMRF.erase(m_oFMRF.begin()+i);
+        return;
       }
     }
   }
-
   // }}}
-  void RegionBasedBlobSearcher::unifyRegions(){
+  
+  void RegionBasedBlobSearcher::remove(RegionFilter *rf, bool release){
     // {{{ open
-    // do nothing
-  }
-
-  // }}}
-  void RegionBasedBlobSearcher::add(FMCreator *fmc){
-    // {{{ open
-    m_oFMCreators.push_back(fmc);
-  }
-
-  // }}}
-  void RegionBasedBlobSearcher::remove(FMCreator *fmc){
-    // {{{ open
-    for(unsigned int i=0;i<m_oFMCreators.size();++i){
-      if(m_oFMCreators[i] == fmc){
-        m_oFMCreators.erase(m_oFMCreators.begin()+i);
+    for(unsigned int i=0;i<m_oFMRF.size();++i){
+      if(m_oFMRF[i].rf == rf){
+        if(release){
+          delete m_oFMRF[i].fmc;
+          delete m_oFMRF[i].rf;
+        }
+        m_oFMRF.erase(m_oFMRF.begin()+i);
         return;
       }
     }
   }
   
   // }}}
-  void RegionBasedBlobSearcher::removeAll(){
+
+
+  RegionBasedBlobSearcher::Plugin RegionBasedBlobSearcher::getPlugin(FMCreator *fmc){
     // {{{ open
-    for(unsigned int i=0;i<m_oFMCreators.size();++i){
-      delete m_oFMCreators[i];
+
+    for(unsigned int i=0;i<m_oFMRF.size();++i){
+      if(m_oFMRF[i].fmc == fmc){
+        return m_oFMRF[i];
+      }
     }
-    m_oFMCreators.clear();
+    return Plugin();  
   }
-  
-  // }}}
-
-
-
-  void RegionBasedBlobSearcher::addDefaultFMCreator(const Size &imageSize,
-                                                    // {{{ open
-
-                                                    format imageFormat,
-                                                    vector<icl8u> refcolor,
-                                                    vector<icl8u> thresholds,
-                                                    unsigned int minBlobSize,
-                                                    unsigned int maxBlobSize,
-                                                    bool enableSpecialFeatures ){
-    
-    RegionFilter *rf = RegionFilter::getDefaultRegionFilter(minBlobSize,
-                                                            maxBlobSize,
-                                                            255,
-                                                            255,
-                                                            enableSpecialFeatures);
-    add(FMCreator::getDefaultFMCreator(imageSize,imageFormat,refcolor,thresholds,rf));                                      
-  }  
-
-  // }}}
-  struct DefaultRegionFilter : public RegionFilter{
-    // {{{ open
-
-    DefaultRegionFilter(unsigned int minSize, unsigned int maxSize,
-                        icl8u minVal, icl8u maxVal, bool specialFeatures){
-      m_uiMinSize = minSize;
-      m_uiMaxSize = maxSize;
-      m_ucMinVal = minVal;
-      m_ucMaxVal = maxVal;
-      m_bSF = specialFeatures;
-    }
-    unsigned int m_uiMinSize;
-    unsigned int m_uiMaxSize;
-    icl8u m_ucMinVal;
-    icl8u m_ucMaxVal;
-    bool m_bSF;
-    
-    virtual ~DefaultRegionFilter(){}
-    virtual unsigned int getMinSize(){ return m_uiMinSize; }
-    virtual unsigned int getMaxSize(){ return m_uiMaxSize; }
-    virtual icl8u getMinVal(){ return m_ucMinVal; }
-    virtual icl8u getMaxVal(){ return m_ucMaxVal; }
-    virtual bool needSpecialFeatures(){ return m_bSF; }
-    virtual bool ok(icl8u value, const Point &p){
-      (void)value; (void)p;
-      return true;
-    }
-    virtual bool ok(icl8u value, const Point &p, const Rect &bb, const PCAInfo &pca){
-      (void)value; (void)p; (void)bb; (void)pca;
-      return true;
-    }
-  };
 
   // }}}
   
-  RegionFilter* RegionFilter::getDefaultRegionFilter(unsigned int minSize, 
-                                                     // {{{ open
-
-                                                     unsigned int maxSize,
-                                                     icl8u minVal, 
-                                                     icl8u maxVal, 
-                                                     bool specialFeaturesEnabled){
-    return new DefaultRegionFilter(minSize,maxSize,minVal, maxVal, specialFeaturesEnabled);
-  }
-
-  // }}}
-  struct DefaultFMCreator : public FMCreator{
+  RegionBasedBlobSearcher::Plugin RegionBasedBlobSearcher::getPlugin(RegionFilter *rf){
     // {{{ open
-    DefaultFMCreator(const Size &size, 
-                     format fmt,
-                     vector<icl8u> refcolor,
-                     vector<icl8u> thresholds,
-                     RegionFilter *rf){
 
-      
-      m_oSize = size;
-      m_eFormat = fmt;
-      m_vecRefColor = refcolor;
-      m_vecThresholds = thresholds;
-      m_poRF = rf;   
-      m_poFM = new Img8u(size,formatMatrix);
-      ICLASSERT_RETURN(refcolor.size() == thresholds.size());
-      ICLASSERT_RETURN(refcolor.size() > 0);
+    for(unsigned int i=0;i<m_oFMRF.size();++i){
+      if(m_oFMRF[i].rf == rf){
+        return m_oFMRF[i];
+      }
     }
-    virtual ~DefaultFMCreator(){
-      if(m_poRF) delete m_poRF;
-      delete m_poFM;
-    }
-    
-    Size m_oSize;
-    format m_eFormat;
-    vector<icl8u> m_vecRefColor;
-    vector<icl8u> m_vecThresholds;
-    RegionFilter *m_poRF;
-    Img8u *m_poFM;
-    
-    virtual Size getSize(){ return m_oSize; }
-    virtual format getFormat(){ return m_eFormat; }
-    virtual Img8u* getFM(Img8u *image){
-      ICLASSERT_RETURN_VAL(image && m_poFM , 0);
-      ICLASSERT_RETURN_VAL(image->getChannels() == (int)m_vecRefColor.size() , 0);
-      ICLASSERT_RETURN_VAL(image->getSize() == m_poFM->getSize(), 0);
-      ICLASSERT_RETURN_VAL(image->getSize() == m_oSize, 0);
-      Img8u src = *image;
-      Img8u dst = *m_poFM;
-      
-      int nc = image->getChannels();
-      icl8u *pucDst = dst.getData(0);
-      
-      // 1 channel
-      int t0 = m_vecThresholds[0];
-      int r0 = m_vecRefColor[0];
-      icl8u *pucSrc0 = src.getData(0);
-      icl8u *pucSrc0End = src.getData(0)+m_oSize.getDim();
-      if(nc == 1){
-        for(;pucSrc0!=pucSrc0End;++pucSrc0,++pucDst){
-          *pucDst = 255 * (abs(*pucSrc0-r0)<t0);
-        }
-        return m_poFM;
-      }
-     
-      // 2 channels
-      int t1 = m_vecThresholds[1];
-      int r1 = m_vecRefColor[1];
-      icl8u *pucSrc1 = src.getData(1);
-      if(nc == 2){
-        for(;pucSrc0!=pucSrc0End;++pucSrc0,++pucSrc1,++pucDst){
-          *pucDst = 255 * ( (abs(*pucSrc0-r0)<t0) & (abs(*pucSrc1-r1)<t1) );
-        }
-        return m_poFM;
-      }
-     
-      // 3 channels
-      int t2 = m_vecThresholds[2];
-      int r2 = m_vecRefColor[2];
-      icl8u *pucSrc2 = src.getData(2);
-      if(nc == 3){
-        //        printf("nd = 3 ref=%d %d %d  thresh=%d %d %d\n",r0,r1,r2,t0,t1,t2);
-        for(;pucSrc0!=pucSrc0End;++pucSrc0,++pucSrc1,++pucSrc2,++pucDst){
-          *pucDst = 255 * ( (abs(*pucSrc0-r0)<t0) & (abs(*pucSrc1-r1)<t1) & (abs(*pucSrc2-r2)<t2) );
-        }
-        return m_poFM;
-      }
-
-
-      // n-channel version
-      vector<icl8u*> vecSrc(nc);
-      for(int i=0;i<nc;i++){
-        vecSrc[i]=image->getData(i);
-      }
-      
-      for(int c=0;pucSrc0!=pucSrc0End;++pucDst,++pucSrc0){
-        *pucDst = 255 * (abs(*pucSrc0-r0)<t0);
-        for(c=1;c<nc;++c){
-          *pucDst &= 255 * ( abs(*(vecSrc[c])++ - m_vecRefColor[c]) < m_vecThresholds[c] );
-        }
-      }
-      return m_poFM;
-    }
-    virtual RegionFilter *getFilter(){
-      return m_poRF;
-    }
-  };
-
-  // }}}
-  FMCreator *FMCreator::getDefaultFMCreator(const Size &size, 
-                                            // {{{ open
-
-                                 format fmt,
-                                 vector<icl8u> refcolor,
-                                 vector<icl8u> thresholds,
-                                 RegionFilter *rf){
-    return new DefaultFMCreator(size,fmt,refcolor,thresholds,rf);
-    
+    return Plugin();  
   }
 
+  // }}}
+
+  void RegionBasedBlobSearcher::removeAll(bool release){
+    // {{{ open
+    if(release){
+      for(unsigned int i=0;i<m_oFMRF.size();++i){
+        delete m_oFMRF[i].fmc;
+        delete m_oFMRF[i].rf;
+      }
+    }
+    m_oFMRF.clear();
+  }
+  
   // }}}
 
 }

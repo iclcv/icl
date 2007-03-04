@@ -4,6 +4,7 @@
 #include <Array.h>
 #include <ICLTypes.h>
 #include <BlobData.h>
+#include <Range.h>
 
 namespace icl{
   /// namespace for ImgRegionDetector specific functions
@@ -30,12 +31,14 @@ namespace icl{
     
     /// Creates a new ImgRegionDetector with given size and value interval
     ImgRegionDetector(unsigned int minSize=0, unsigned int maxSize=10000000,icl8u minVal=0, icl8u maxVal=255);
+    ImgRegionDetector(const Range<unsigned int> &sizeRange, const Range<icl8u> &valueRange);
 
     /// Destructor
     ~ImgRegionDetector();
 
     /// sets new restrictions
     void setRestrictions(int minSize, int maxSize, icl8u minVal, icl8u maxVal);
+    void setRestrictions(const Range<unsigned int> &sizeRange, const Range<icl8u> &valueRange);
     
     /// detects all blobs in the image that match to the given parameters
     const std::vector<BlobData> &detect(ImgBase *image);

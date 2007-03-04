@@ -15,6 +15,8 @@ namespace icl{
     FUNCTION_LOG("");
   }
 
+  BlobData::~BlobData(){}
+
   int BlobData::getSize() const{
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(m_poRDB,0);

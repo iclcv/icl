@@ -55,6 +55,7 @@ namespace icl{
     **/
     BlobData(regiondetector::RegionDetectorBlob *poRDB=0, const Size &oImageSize=Size::null);
 
+    ~BlobData();
     /// returns the blobs value
     icl8u getVal() const;
 

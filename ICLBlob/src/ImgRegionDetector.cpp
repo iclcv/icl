@@ -11,13 +11,23 @@ namespace icl{
     m_poRD = new RegionDetector(1,1, minSize, maxSize, minVal, maxVal);
     m_poImage8uBuffer = new Img8u;
   }
-  
+  ImgRegionDetector::ImgRegionDetector(const Range<unsigned int> &sizeRange, const Range<icl8u> &valueRange){
+    m_poRD = new RegionDetector(1,1, sizeRange.minVal, sizeRange.maxVal, valueRange.minVal, valueRange.maxVal);
+    m_poImage8uBuffer = new Img8u;
+  }
   void ImgRegionDetector::setRestrictions(int minSize, int maxSize,icl8u minVal, icl8u maxVal){
     m_poRD->setMinValue(minVal);
     m_poRD->setMaxValue(maxVal);
     m_poRD->setMinSize(minSize);
     m_poRD->setMaxSize(maxSize);
   }
+  void ImgRegionDetector::setRestrictions(const Range<unsigned int> &sizeRange, const Range<icl8u> &valueRange){
+    m_poRD->setMinValue(valueRange.minVal);
+    m_poRD->setMaxValue(valueRange.maxVal);
+    m_poRD->setMinSize(sizeRange.minVal);
+    m_poRD->setMaxSize(sizeRange.maxVal);
+  }
+
   ImgRegionDetector::~ImgRegionDetector(){
     delete m_poRD;
     delete m_poImage8uBuffer;

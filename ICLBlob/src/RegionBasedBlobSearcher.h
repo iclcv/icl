@@ -5,103 +5,16 @@
 #include <Point.h>
 #include <Rect.h>
 #include <ICLTypes.h>
-#include <BlobData.h>
 #include <map>
+#include <BlobData.h>
 
-
+#include <RegionFilter.h>
+#include <FMCreator.h>
 namespace icl{
 
-  
-  /// struct to use a Size struct as std::map - key
-  struct lessSize {
-     bool operator()(const icl::Size& lhs, const icl::Size& rhs) const {
-        return lhs.width < rhs.width && lhs.height < rhs.height;
-     }
-  };
-  
-  class Converter; // converts all images
+  class Converter;          //!< converts images
+  class ImgRegionDetector;  //!< seaches connected regions 
  
-  class ImgRegionDetector;  // seaches connected regions 
-  class RegionDetectorBlob; // a found blob and all params
-  
-  /// discrimimator for a found regions
-  /** The RegionFilter (RF) class filters a set of given Regions in two
-      steps:
-      -# Filter the regions by a size- and value- interval
-      -# Filter the regions by position, value, and optionally higher level features
-         like the bounding box and the major axis and corresponding arcs.
-      
-      The devision of the filter process is reasoned in the internal implementation of
-      the region extraction algorithm. The used ImgRegionDetector provides a
-      direct repulsion of too small, too large, too dark and too bright regions.
-      @see RegionBasedBlobSearcher for more details 
-  */
-  struct RegionFilter{
-
-    // Destructor
-    virtual ~RegionFilter(){}
-
-    /// defines the minimum size of a blob
-    virtual unsigned int getMinSize()=0;
-
-    /// defines the maximum size of a blob
-    virtual unsigned int getMaxSize()=0;
-    
-    /// defines the minimum value of a blob
-    virtual icl8u getMinVal()=0;
-
-    /// defines the maximum value of a blob
-    virtual icl8u getMaxVal()=0;
-
-    /// defines if this RegionFilter needs BoundingBoxes and PCAInfo to filter blobs
-    virtual bool needSpecialFeatures(){ return false; }
-    
-    /// filter funtion for no special features case
-    virtual bool ok(icl8u value, const Point &p){
-      (void)value; (void)p;
-      return false;
-    }
-    
-    /// filter function for special feature case
-    virtual bool ok(icl8u value, const Point &p,const Rect &bb, const PCAInfo &pca){
-      (void)value; (void)p; (void)bb; (void)pca;
-      return false;
-    }
-    
-    /// static function that returns a default regionfilter with given parameters
-    static RegionFilter *getDefaultRegionFilter(unsigned int minSize, unsigned int maxSize,
-                                                icl8u minVal, icl8u maxVal, 
-                                                bool specialFeaturesEnabled);
-                                                
-  };
-
-  /// interface for Feature Map creators
-  /** see RegionBasedBlobSearcher for more details */
-  struct FMCreator{
-    /// Destructor
-    virtual ~FMCreator(){};
-
-    /// returns the demanded image size
-    virtual Size getSize()=0;
-
-    /// returns the demaned image format
-    virtual format getFormat()=0;
-    
-    /// create a featur-map from the given image
-    virtual Img8u* getFM(Img8u *image)=0;
-    
-    /// returns it corresponging region-filter
-    virtual RegionFilter *getFilter()=0;
-
-
-    /// static function, that creates a default FMCreator with given parameters
-    static FMCreator *getDefaultFMCreator(const Size &size, 
-                                          format fmt,
-                                          std::vector<icl8u> refcolor,
-                                          std::vector<icl8u> thresholds,
-                                          RegionFilter *rf);
-  };
-
 
   /// Class to detect a set of blobs in an image using a region based approach
   /** The basic idea of the ReagionBasedBlobSearcher (RBBS) is simple:
@@ -109,9 +22,12 @@ namespace icl{
       - extract all image regions (with pixel-precision) into a list of regions
       - remove all regions/blobs, which params (size, value, ...) do not match
         to the searched blobs
-      - use the bounding boxes, or the centers of the remaining regions as blob info
+      - provide access to feature lists of all blobs. Most of the access functions are
+        provided in two flawors: a so called Plain Old Data flavor (functions with 
+        POD postfix provide blob information in POD types) and default flavor
+        (e.g. using Rect and Point structs ). The POD functions will be helpful
+        for Frameworks like TDI and NEO;
   
-      The RBBS complies a more convenient wrapper of the ImgRegionDetector class.
   
       <h2>Details</h2>
       The above description poses three quetions:
@@ -152,17 +68,19 @@ namespace icl{
       interfaces can handle POD-Data natively.
 
       <H2>Performance Hints</H2>
-      All getter function will extract all features from the given image that are necessary
-      directly:
-      \code
-      Array<Point> centers = RBBS.getCenters(image);
-      Array<Rect> bbs = RBBS.getBoundingBoxes(image);
-      \endcode
-      This code cause the RBBS to extract blob regions twice. Use getAllFeatures(..) 
-      to avoid this.
+      since revision 567 all function have been optimized in that way, that image-regions
+      are extracted only once.
   **/
   class RegionBasedBlobSearcher{
     public:
+    /// Internal used struct to associate FMCreator and RegionFilters
+    struct Plugin{
+      /// Constructor
+      Plugin(FMCreator *fmc=0,RegionFilter *rf=0) : fmc(fmc),rf(rf){}
+      
+      FMCreator *fmc;
+      RegionFilter *rf;
+    };
     
     /// Create a new RegionBasedBlobSearcher without any FMCreator
     RegionBasedBlobSearcher();
@@ -170,83 +88,82 @@ namespace icl{
     /// Destructor (delets all contained FMCreators)
     ~RegionBasedBlobSearcher();
     
+    /// Main Working function (internally invokes the ImgRegionDetector)
+    void extractRegions(const ImgBase *image);
     
-    /// extract centers by using all FMCreators (POD-Version)
+    /// access a list of center of gravities
     /** @param image input image
         @return "xyxyxy"- ordered int Array containing the data
     **/
-    const Array<int> &getCentersPOD(ImgBase *image);
+    const Array<int> &getCOGsPOD();
 
-    /// extract centers by using all FMCreators
+    /// access a list of center of gravities
     /** @param image input image
         @return Array of blob center positions 
     **/
-    const Array<Point> &getCenters(ImgBase *image);
+    const Array<Point> &getCOGs();
 
-    /// extract bounding boxes by using all FMCreators (POD-Version)
+    /// access to bounding boxes
     /** This function produces resuls only for RegionFilters 
         that use the "special-features".
         @param image input image
         @return "xywh,xywh,.."-ordered int Array containing data
     **/
-    const Array<int> &getBoundingBoxesPOD(ImgBase *image);
+    const Array<int> &getBoundingBoxesPOD();
 
-    /// extract bounding boxes by using all FMCreators
+    /// access to bounding boxes
     /** This function produces resuls only for RegionFilters 
         that use the "special-features".
         @param image input image
         @return Array of blobs bounding boxes
     **/
-    const Array<Rect> &getBoundingBoxes(ImgBase *image);
+    const Array<Rect> &getBoundingBoxes();
     
-    /// extract pca info (POD-Version)
+    /// Access to pca information
     /** Data order is [axis1-length, axis2-length, axis1-angle, axis2-angle, ...] 
         @param image input image
         @return ordered array of float with local pca information
     */
-    const Array<float> &getPCAInfoPOD(ImgBase *image);
+    const Array<float> &getPCAInfoPOD();
 
     /// extract pca info
-    /** Data order is [axis1-length, axis2-length, axis1-angle, axis2-angle, ...] 
-        @param image input image
+    /** @param image input image
         @return Array of the found blobs PCA-Information
     */
-    const Array<PCAInfo> &getPCAInfo(ImgBase *image);
+    const Array<PCAInfo> &getPCAInfo();
 
-    /// Combined working method, extracting all information at once (POD-Version)
-    /** The given destination Array are cleared automatically before use
-        @param image input image
-        @param centers destination vector for centers 
-        @param boundingBoxes destination vector for bounding boxes
-        @param pcaInfos destination vector for pcaInfos
-    **/
-    void detectAllPOD(ImgBase *image, Array<int> &centers, Array<int> &boundingBoxes, Array<float> &pcaInfos); 
-
-
-    /// Combined working method, extracting all information at once
-    /** The given destination Array are cleared automatically before use
-        @param image input image
-        @param centers destination vector for centers 
-        @param boundingBoxes destination vector for bounding boxes
-        @param pcaInfos destination vector for pcaInfos
-    **/
-    void detectAll(ImgBase *image, Array<Point> &centers, Array<Rect> &boundingBoxes, Array<PCAInfo> &pcaInfos); 
+    /// Extract an Array of boundary pixel arrays
+    const Array<Array<int> > &getBoundariesPOD();
     
+    const Array<Array<Point> > &getBoundaries();
+
+    const Array<int> &getBoundaryLengthsPOD();
+    
+    const Array<float> &getFormFactorsPOD();
+
+    const Array<BlobData*> &getBlobData();
+
     /// add new FMCreator
     /** ownership is passed to the RegionBasedBlobSearcher
         @param fmc new FMCreator to add
     */
-    void add(FMCreator* fmc);
+    void add(FMCreator* fmc, RegionFilter *rf);
 
     /// remove FMCreator
     /** ownership is passed back to the caller
         @param fmc FMCrator ptr. to remove
     **/
-    void remove(FMCreator *fmc);
+    void remove(FMCreator *fmc, bool release=true);
+    
+    void remove(RegionFilter *rf, bool release=true);
+
+    Plugin getPlugin(FMCreator *fmc); 
+
+    Plugin getPlugin(RegionFilter *rf); 
 
     /// removes all FMCreators
     /** the objects are deleted, as the owner is the RegionBasedBlobSearcher*/
-    void removeAll();
+    void removeAll(bool realease=true);
 
     /// adds an anonymous DefaultFMCreator with given params
     /** Because of the its anomymity, the FMCreator is owned by the
@@ -263,6 +180,7 @@ namespace icl{
            db = abs( I(x,y,2) - b )
            RESULT(x,y) = (dr<tr && dg<tg && db<tb) * 255;
         done
+
         </pre>
 
         @param imageSize image size that is used by the new FMCreator
@@ -273,26 +191,13 @@ namespace icl{
         @param minBlobSize maximun pixel count for detected blobs
         @param enableSpecialFeatures flag whether to enable "special features" (see above)
     */
-    void addDefaultFMCreator(const Size &imageSize,
-                             format imageFormat,
-                             std::vector<icl8u> refcolor,
-                             std::vector<icl8u> thresholds,
-                             unsigned int minBlobSize,
-                             unsigned int maxBlobSize,
-                             bool enableSpecialFeatures = true);
-                             
 
 
     private:
-    
-    /// returns the current input image in the given format and size
-    Img8u *getImage(const Size &size, format fmt);       
 
-    /// uses all fmcs to create a list of regions
-    void extractRegions();
-    
-    /// unify dublicated regions (not yet implemented!)
-    void unifyRegions();
+    /// returns the current input image in the given format and size
+    Img8u *getImage(const Size &size, format fmt, const ImgBase *inputImage);       
+
     
     /// used converter intstance
     Converter *m_poConverter;   
@@ -300,14 +205,19 @@ namespace icl{
     /// internally used type def for the "format-map"
     typedef std::map<icl::format,Img8u*> fmtmap;
 
+    /// compare function object (for creating a map with a size key)
+    struct lessSize {  bool operator()(const icl::Size& lhs, const icl::Size& rhs) const {
+      return lhs.width < rhs.width && lhs.height < rhs.height;
+    }};
+    
     /// internally used type def for the "format-size-map"
     typedef std::map<icl::Size,fmtmap,lessSize> sizemap;
     
     ///map of maps containing converted images
     sizemap m_mmImages;          
     
-    /// Array of all currently hold FMCreators
-    Array<FMCreator*> m_oFMCreators;
+    /// Array of all currently hold FMCreators and corresponding RegionFilters
+    Array<Plugin> m_oFMRF;
     
     /// Wrapped ImgRegionDetector
     ImgRegionDetector *m_poRD;   
@@ -322,7 +232,7 @@ namespace icl{
     Array<Array<PCAInfo> > m_oPCAInfos; 
     
     /// Output buffer for blob centers
-    Array<Point> m_oCentersOut;
+    Array<Point> m_oCOGsOut;
     
     /// Output buffer for blob bounding boxes
     Array<Rect> m_oBBsOut;
@@ -330,17 +240,35 @@ namespace icl{
     /// Output buffer for blob PCA-Infos
     Array<PCAInfo> m_oPCAInfosOut;
     
+    Array<Array<Point> > m_oBoundariesOut;
+    
     /// POD-Output buffer for blob centers
-    Array<int> m_oCentersOutPOD;
+    Array<int> m_oCOGsOutPOD;
 
     /// POD-Output buffer for blob bounding boxes
     Array<int> m_oBBsOutPOD;
 
     /// POD-Output buffer for blob PCA-Infos
     Array<float> m_oPCAInfosOutPOD;
+
+    Array<Array<int> > m_oBoundariesPOD;
+    
+    Array<int> m_oBoundaryLengthsPOD;
+    
+    Array<float> m_oFormFactorsPOD;
+
+    Array<BlobData*> m_oInternalData;
+
+    struct FF{
+      FF(float f1=0, float f2=0): f1(f1),f2(f2){}
+      float f1,f2; 
+    };
+    Array<FF> m_oScaleFactors; 
     
     /// Currently set input image
     ImgBase *m_poInputImage;     
+    
+
 
   };
 }
