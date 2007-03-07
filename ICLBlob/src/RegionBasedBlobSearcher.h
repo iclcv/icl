@@ -178,48 +178,40 @@ namespace icl{
     */
     void add(FMCreator* fmc, RegionFilter *rf);
 
-    /// remove FMCreator/RegionFitler tuple by giben FMCreator
+    /// remove FMCreator/RegionFitler tuple by given FMCreator
     /** @param fmc FMCrator* to identify the FMCreator/RegionFilter tuple to remove
-        @param release 
+        @param release decides whether to release the removed FMCreator and RegionFilter
     **/
     void remove(FMCreator *fmc, bool release=true);
-    
+
+    /// remove FMCreator/RegionFitler tuple by given Regionfilter
+    /** @param rf RegionFilter* to identify the FMCreator/RegionFilter tuple to remove
+        @param release decides whether to release the removed FMCreator and RegionFilter
+    **/
     void remove(RegionFilter *rf, bool release=true);
 
+    /// access a FMCreator/RegionFilter struct by FMCreator identifier
+    /** @param fmc FMCreator of the tuple
+        @return tuple of FMCreator/Region filter or NULL/NULL tuple if the
+                given FMCreator was not found
+    **/
     Plugin getPlugin(FMCreator *fmc); 
 
+    /// access a FMCreator/RegionFilter struct by RegionFilter identifier
+    /** @param rf RegionFilter of the tuple
+        @return tuple of FMCreator/Region filter or NULL/NULL tuple if the
+                given RegionFilter was not found
+    **/
     Plugin getPlugin(RegionFilter *rf); 
 
     /// removes all FMCreators
-    /** the objects are deleted, as the owner is the RegionBasedBlobSearcher*/
+    /** the objects are deleted, as the owner is the RegionBasedBlobSearcher
+        @param release decides whether to release the removed FMCreator/RegionFilter
+                       tuples or not
+    **/
     void removeAll(bool realease=true);
 
-    /// adds an anonymous DefaultFMCreator with given params
-    /** Because of the its anomymity, the FMCreator is owned by the
-        RegionBasedBlobSearcher
-        The new FMCreator will create the feature map using the following algorithm:
-        <pre>
-        I = input-image converted to size "imageSize" and format "imageFormat"
-        {the example is written for a 3-channel rgb image it is generalizable for abitrary formats}
-        [r,g,b] = "refcolor"       
-        [tr,tg,tb] = thresholds  
-        for all pixel p=(x,y) I do
-           dr = abs( I(x,y,0) - r )
-           dg = abs( I(x,y,1) - g )
-           db = abs( I(x,y,2) - b )
-           RESULT(x,y) = (dr<tr && dg<tg && db<tb) * 255;
-        done
-
-        </pre>
-
-        @param imageSize image size that is used by the new FMCreator
-        @param imageFomrat image format that is used by the new FMCreator
-        @param refcolor reference color
-        @param thresholds array of color component thresholds
-        @param minBlobSize minimun pixel count for detected blobs
-        @param minBlobSize maximun pixel count for detected blobs
-        @param enableSpecialFeatures flag whether to enable "special features" (see above)
-    */
+   
 
 
     private:
