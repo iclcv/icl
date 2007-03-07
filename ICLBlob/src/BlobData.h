@@ -10,7 +10,7 @@
 
 namespace icl{
 
-  /// struct to represent local PCA information
+  /// data-struct to represent local PCA information
   struct PCAInfo{
     /* {{{ open */
 
@@ -29,7 +29,7 @@ namespace icl{
 
   /* }}} */
   
-  /// struct to represent a scan line
+  /// data-struct to represent a scan line
   struct ScanLine{
     /* {{{ open */
 

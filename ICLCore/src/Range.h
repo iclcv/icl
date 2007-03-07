@@ -21,10 +21,14 @@ namespace icl{
     /// return max-min
     Type getLength() const { return maxVal - minVal; } 
     
+    /// casts this range into another depth
     template<class dstType>
     const Range<dstType> castTo() const{
       return Range<dstType>(Cast<Type,dstType>::cast(minVal),Cast<Type,dstType>::cast(maxVal));
     }
+    
+    /// tests whether a given value is inside of this range
+    bool in(Type value) { return value >= minVal && value <= maxVal; }
   };
 }
 #endif

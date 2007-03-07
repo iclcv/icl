@@ -45,9 +45,7 @@ namespace icl{
 
   const std::vector<BlobData> &ImgRegionDetector::detect(ImgBase *image){
     m_vecBlobData.clear();
-    if(!image || image->getChannels() != 1){
-      return m_vecBlobData;
-    }
+    ICLASSERT_RETURN_VAL(image && image->getChannels() == 1, m_vecBlobData);
     BlobList *blobList = get_blob_list(image, m_poRD, m_poImage8uBuffer);
     for(BlobList::iterator it = blobList->begin(); it != blobList->end(); ++it){
       m_vecBlobData.push_back(BlobData(*it,image->getSize()));

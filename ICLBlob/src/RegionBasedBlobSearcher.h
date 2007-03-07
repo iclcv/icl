@@ -76,9 +76,15 @@ namespace icl{
     /// Internal used struct to associate FMCreator and RegionFilters
     struct Plugin{
       /// Constructor
+      /** @param fmc FMCreator* of this Plugin 
+          @param rf RegionFilter *of this Plugin
+      **/
       Plugin(FMCreator *fmc=0,RegionFilter *rf=0) : fmc(fmc),rf(rf){}
       
+      /// Wrapped FMCreator pointer
       FMCreator *fmc;
+
+      /// Wrapped RegionFitler pointer
       RegionFilter *rf;
     };
     
@@ -89,24 +95,32 @@ namespace icl{
     ~RegionBasedBlobSearcher();
     
     /// Main Working function (internally invokes the ImgRegionDetector)
+    /** When this function is called, the wrapped ImgRegionDetector is
+        invoked to detect all image regions. The result is stored in an 
+        internal list of RegionDetectorBlobs. All following calles to 
+        access blob information work on this result list. The Region-
+        DetectorBlob is optimized to perform as less calculations as
+        possible. So all high level blob features are calculated when
+        the corresponding getter function is called.
+        @param image input image: further getter called refer to the 
+                blobs that were detected in this image until set image
+                is called again.
+    **/
     void extractRegions(const ImgBase *image);
     
     /// access a list of center of gravities
-    /** @param image input image
-        @return "xyxyxy"- ordered int Array containing the data
+    /** @return "xyxyxy"- ordered int Array containing the data
     **/
     const Array<int> &getCOGsPOD();
 
     /// access a list of center of gravities
-    /** @param image input image
-        @return Array of blob center positions 
+    /** @return Array of blob center positions 
     **/
     const Array<Point> &getCOGs();
 
     /// access to bounding boxes
     /** This function produces resuls only for RegionFilters 
         that use the "special-features".
-        @param image input image
         @return "xywh,xywh,.."-ordered int Array containing data
     **/
     const Array<int> &getBoundingBoxesPOD();
@@ -114,44 +128,59 @@ namespace icl{
     /// access to bounding boxes
     /** This function produces resuls only for RegionFilters 
         that use the "special-features".
-        @param image input image
         @return Array of blobs bounding boxes
     **/
     const Array<Rect> &getBoundingBoxes();
     
     /// Access to pca information
     /** Data order is [axis1-length, axis2-length, axis1-angle, axis2-angle, ...] 
-        @param image input image
         @return ordered array of float with local pca information
     */
     const Array<float> &getPCAInfoPOD();
 
     /// extract pca info
-    /** @param image input image
-        @return Array of the found blobs PCA-Information
+    /** @return Array of the found blobs PCA-Information
     */
     const Array<PCAInfo> &getPCAInfo();
 
     /// Extract an Array of boundary pixel arrays
+    /** Array of Array if pixels (xyxyxy...-order) */
     const Array<Array<int> > &getBoundariesPOD();
     
+    
+    /// Extract an Array of boundary pixel arrays
+    /** @return Array of Array of Pixels */
     const Array<Array<Point> > &getBoundaries();
 
+    
+    /// Extract an Array of detected blobs boundary lengths
+    /** This funtion is in POD-style, so no non-POD function is available
+        @return Array of boundary pixle counts 
+    **/
     const Array<int> &getBoundaryLengthsPOD();
     
+    /// Extract an Array of detected blobs form-factors (see BlobData)
+    /** This funtion is in POD-style, so no non-POD function is available
+        @return Array of Form-Factors 
+    **/
     const Array<float> &getFormFactorsPOD();
 
+    /// Extract an array of detected blob data pointers
+    /** The returned blobdata can be used to access all blob available blob features 
+        @return const array of internal used blob data Pointers
+        */
     const Array<BlobData*> &getBlobData();
 
-    /// add new FMCreator
+    /// add new FMCreator and associated RegionFilter
     /** ownership is passed to the RegionBasedBlobSearcher
         @param fmc new FMCreator to add
+        @param rf new RegionFilter to add
     */
     void add(FMCreator* fmc, RegionFilter *rf);
 
-    /// remove FMCreator
-    /** ownership is passed back to the caller
-        @param fmc FMCrator ptr. to remove
+    /// remove FMCreator/RegionFitler tuple by giben FMCreator
+    /** @param fmc FMCrator* to identify the FMCreator/RegionFilter tuple to remove
+        @param release 
     **/
     void remove(FMCreator *fmc, bool release=true);
     

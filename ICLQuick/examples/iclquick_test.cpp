@@ -9,10 +9,19 @@ int main(int nargs, char **ppc){
   ImgQ A = create("flowers");
   A = scale(A,0.2);
   A = gray(A);
-  A = levels(A,5);
-
-  show(norm(A*A*A));
   
+  A = levels(A,2);
+
+  show(A);
+
+  ImgQ B = A;
+  data(B) = 0;
+  B.setROI(Rect(20,20,20,20));
+  roi(B) = 255;
+  B.setFullROI();
+  
+  show(label(A||B,"OR"));
+  show(label(A&&B,"AND"));
 
   /*
       
