@@ -3,9 +3,9 @@
 #include <ICLPWCGrabber.h>
 #include <ICLConvolutionOp.h>
 #include <QApplication>
-#include <ICLQThread>
+#include <QThread>
 #include <QGridLayout>
-#include <ICLQPushButton>
+#include <QPushButton>
 #include <ICLTimer.h>
 
 

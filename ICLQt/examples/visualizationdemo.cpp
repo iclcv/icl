@@ -2,7 +2,7 @@
 #include <ICLImg.h>
 #include <ICLPWCGrabber.h>
 #include <QApplication>
-#include <ICLQThread>
+#include <QThread>
 #include <ICLTimer.h>
 #include <math.h>
 

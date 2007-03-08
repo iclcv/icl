@@ -2,7 +2,7 @@
 #include <ICLPWCGrabber.h>
 #include <QApplication>
 #include <ICLProgArg.h>
-#include <ICLQThread>
+#include <QThread>
 #include <ICLFileWriter.h>
 #include <ICLFileReader.h>
 

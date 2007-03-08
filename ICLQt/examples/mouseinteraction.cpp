@@ -2,9 +2,9 @@
 #include <ICLImg.h>
 #include <ICLPWCGrabber.h>
 #include <QApplication>
-#include <ICLQThread>
+#include <QThread>
 #include <QGridLayout>
-#include <ICLQPushButton>
+#include <QPushButton>
 #include <ICLTimer.h>
 
 

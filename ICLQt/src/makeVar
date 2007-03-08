@@ -67,15 +67,15 @@ SKIP_DIRECTORIES:=
 	${REL_INCLUDES} ${ABS_INCLUDES}
 
 
-../obj/moc_MouseInteractionReceiver.o : MouseInteractionReceiver.h MouseInteractionReceiver.cpp
-	${PRE_CMD} rm -rf moc_MouseInteractionReceiver.cpp
-	${PRE_CMD}${CMD_ECHO} "creating moc file moc_MouseInteractionReceiver.cpp [specialized]"
-	${PRE_CMD}${QTDIR}/bin/moc -o moc_MouseInteractionReceiver.cpp MouseInteractionReceiver.h
-	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/moc_MouseInteractionReceiver.cpp [specialized]"
-	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c moc_MouseInteractionReceiver.cpp -o $@ \
+../obj/moc_ICLMouseInteractionReceiver.o : ICLMouseInteractionReceiver.h ICLMouseInteractionReceiver.cpp
+	${PRE_CMD} rm -rf moc_ICLMouseInteractionReceiver.cpp
+	${PRE_CMD}${CMD_ECHO} "creating moc file moc_ICLMouseInteractionReceiver.cpp [specialized]"
+	${PRE_CMD}${QTDIR}/bin/moc -o moc_ICLMouseInteractionReceiver.cpp ICLMouseInteractionReceiver.h
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/moc_ICLMouseInteractionReceiver.cpp [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c moc_ICLMouseInteractionReceiver.cpp -o $@ \
 	${REL_INCLUDES} ${ABS_INCLUDES}
 
-../obj/MouseInteractionReceiver.o : MouseInteractionReceiver.cpp MouseInteractionReceiver.h ../obj/moc_MouseInteractionReceiver.o
+../obj/ICLMouseInteractionReceiver.o : ICLMouseInteractionReceiver.cpp ICLMouseInteractionReceiver.h ../obj/moc_ICLMouseInteractionReceiver.o
 	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
 	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
 	${REL_INCLUDES} ${ABS_INCLUDES}
