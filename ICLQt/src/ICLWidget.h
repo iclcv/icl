@@ -1,17 +1,5 @@
-#ifndef ICLWIDGET_H
-#define ICLWIDGET_H
-
-// comment out only if No acceleration is available
-// fall back is not yet implemented
-//#define USE_OPENGL_ACCELERATION
-
-
-#ifdef USE_OPENGL_ACCELERATION
 #include <QGLWidget>
-#else
 #include <QWidget>
-#endif
-
 #include <QImage>
 #include <QVector>
 #include <QWidget>
@@ -21,13 +9,25 @@
 #include <QRect>
 #include <QColor>
 #include <QMutex>
-
-#include <Converter.h>
-#include <PaintEngine.h>
+#include <ICLConverter.h>
+#include <ICLPaintEngine.h>
 #include <ICLTypes.h>
+#include <ICLMouseInteractionInfo.h>
+#include <ICLMouseInteractionReceiver.h>
+#ifndef ICLWIDGET_H
+#define ICLWIDGET_H
 
-#include <MouseInteractionInfo.h>
-#include <MouseInteractionReceiver.h>
+// comment out only if No acceleration is available
+// fall back is not yet implemented
+//#define USE_OPENGL_ACCELERATION
+
+
+#ifdef USE_OPENGL_ACCELERATION
+#else
+#endif
+
+
+
 
 
 namespace icl{

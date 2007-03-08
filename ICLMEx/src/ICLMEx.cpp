@@ -1,6 +1,6 @@
 #include <ICLMEx.h>
 #include <ICLTypes.h>
-#include <Mathematics.h>
+#include <ICLMathematics.h>
 
 namespace icl{
   

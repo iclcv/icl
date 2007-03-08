@@ -1,6 +1,6 @@
-#include <Logical.h>
-#include <Img.h>
-#include <FileWriter.h>
+#include <ICLLogical.h>
+#include <ICLImg.h>
+#include <ICLFileWriter.h>
 using namespace icl;
 
 

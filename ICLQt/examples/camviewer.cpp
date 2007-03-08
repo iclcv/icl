@@ -1,11 +1,11 @@
 #include <ICLWidget.h>
-#include <PWCGrabber.h>
-
+#include <ICLPWCGrabber.h>
 #include <QApplication>
-#include <ProgArg.h>
-#include <QThread>
-#include <FileWriter.h>
-#include <FileReader.h>
+#include <ICLProgArg.h>
+#include <ICLQThread>
+#include <ICLFileWriter.h>
+#include <ICLFileReader.h>
+
 
 using namespace icl;
 

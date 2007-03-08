@@ -1,6 +1,6 @@
-#include <Img.h>
-#include <FileReader.h>
-#include <FileWriter.h>
+#include <ICLImg.h>
+#include <ICLFileReader.h>
+#include <ICLFileWriter.h>
 #include <sstream>
 
 using namespace std;

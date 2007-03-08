@@ -1,11 +1,11 @@
-#include <Img.h>
-#include <FileReader.h>
-#include <FileWriter.h>
-#include <LocalThresholdOp.h>
-#include <TestImages.h>
-#include <ProgArg.h>
-
+#include <ICLImg.h>
+#include <ICLFileReader.h>
+#include <ICLFileWriter.h>
+#include <ICLLocalThresholdOp.h>
+#include <ICLTestImages.h>
+#include <ICLProgArg.h>
 #include <stdio.h>
+
 
 using namespace icl;
 using namespace std;

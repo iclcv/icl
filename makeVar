@@ -150,6 +150,6 @@ endif
 
 #Skip the following object files
 ifeq "$(HAVE_FIREWIRE)" ""
-SKIP_OBJECTS += FwGrabber.cpp
+SKIP_OBJECTS += ICLFwGrabber.cpp
 endif
 SKIP_DIRECTORIES += ICLViola

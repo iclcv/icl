@@ -1,8 +1,9 @@
+#include <ICLImg.h>
+#include <string>
+
 #ifndef ICL_QUICK_H
 #define ICL_QUICK_H
 
-#include <Img.h>
-#include <string>
 
 /** 
     \mainpage ICLQuick - an ICLPackage for rapid prototyping 
@@ -32,7 +33,6 @@
     \code
     
     
-    #include <ICLQuick.h>
     int main(){
       ImgQ b;
       for(int i=0;i<10;i++){

@@ -1,7 +1,7 @@
-#include <ThresholdOp.h>
-#include <Img.h>
-#include <TestImages.h>
-#include <Timer.h>
+#include <ICLThresholdOp.h>
+#include <ICLImg.h>
+#include <ICLTestImages.h>
+#include <ICLTimer.h>
 
 using namespace icl;
 

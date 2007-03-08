@@ -1,27 +1,27 @@
 #include <ICLQuick.h>
-#include <FileReader.h>
-#include <TestImages.h>
-#include <Converter.h>
-#include <PWCGrabber.h>
+#include <ICLFileReader.h>
+#include <ICLTestImages.h>
+#include <ICLConverter.h>
+#include <ICLPWCGrabber.h>
 #include <ICLCC.h>
 #include <map>
-
-#include <ConvolutionOp.h>
-#include <MedianOp.h>
-#include <MorphologicalOp.h>
-#include <BinaryArithmeticalOp.h>
-#include <UnaryArithmeticalOp.h>
-#include <FileWriter.h>
-#include <UnaryCompareOp.h>
-#include <LUTOp.h>
-#include <QImageConverter.h>
-
-#include <Timer.h>
-
+#include <ICLConvolutionOp.h>
+#include <ICLMedianOp.h>
+#include <ICLMorphologicalOp.h>
+#include <ICLBinaryArithmeticalOp.h>
+#include <ICLUnaryArithmeticalOp.h>
+#include <ICLFileWriter.h>
+#include <ICLUnaryCompareOp.h>
+#include <ICLLUTOp.h>
+#include <ICLQImageConverter.h>
+#include <ICLTimer.h>
 #include <QPainter>
 #include <QImage>
 #include <QFont>
 #include <QApplication>
+
+
+
 
 namespace icl{
 

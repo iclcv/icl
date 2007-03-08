@@ -1,6 +1,6 @@
-#include <Img.h>
-#include <PWCGrabber.h>
-#include <FileWriter.h>
+#include <ICLImg.h>
+#include <ICLPWCGrabber.h>
+#include <ICLFileWriter.h>
 
 using namespace std;
 using namespace icl;

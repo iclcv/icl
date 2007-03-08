@@ -1,10 +1,10 @@
 #include "ICLCC.h"
-#include "Macros.h"
+#include "ICLMacros.h"
 #include "ICLCore.h"
-#include "Img.h"
+#include "ICLImg.h"
 #include <string>
 #include <map>
-#include "CCLUT.h"
+#include "ICLCCLUT.h"
 
 
 namespace icl{

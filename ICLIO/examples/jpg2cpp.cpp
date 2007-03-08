@@ -1,6 +1,8 @@
 #include "stdio.h"
 #include <string>
 #include <vector>
+printf("#include "ICLFileReader.hn);"
+printf("#include "ICLImg.hn);"
 using namespace std;
 
 int usage(){
@@ -67,8 +69,6 @@ int main(int n, char **ppc){
   string extraArrayName = string("auc_ExtraData_")+imageName;
 
   //-------------------------------------------
-  printf("#include \"FileReader.h\"\n");
-  printf("#include \"Img.h\"\n");
   printf("using namespace icl;\n");
   printf("using namespace std;\n");
   printf("namespace icl{\n");

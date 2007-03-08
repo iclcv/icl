@@ -1,5 +1,5 @@
-#include <TestImages.h>
-#include <Img.h>
+#include <ICLTestImages.h>
+#include <ICLImg.h>
 
 using namespace icl;
 

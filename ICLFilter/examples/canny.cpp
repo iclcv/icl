@@ -1,7 +1,7 @@
-#include <FileReader.h>
-#include <TestImages.h>
-#include <CannyOp.h>
-#include <ConvolutionOp.h>
+#include <ICLFileReader.h>
+#include <ICLTestImages.h>
+#include <ICLCannyOp.h>
+#include <ICLConvolutionOp.h>
 using namespace std;
 using namespace icl;
 

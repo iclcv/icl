@@ -1,11 +1,11 @@
 #include <ICLDrawWidget.h>
-#include <Img.h>
-#include <PWCGrabber.h>
-
+#include <ICLImg.h>
+#include <ICLPWCGrabber.h>
 #include <QApplication>
-#include <QThread>
-#include <Timer.h>
+#include <ICLQThread>
+#include <ICLTimer.h>
 #include <math.h>
+
 
 using namespace icl;
 class MyThread : public QThread{

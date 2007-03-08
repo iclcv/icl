@@ -4,17 +4,17 @@
 #include <QResizeEvent>
 #include <QLineEdit>
 #include <QThread>
+#include <ICLOSD.h>
+#include <ICLImg.h>
+#include <ICLTimer.h>
+#include <ICLFileWriter.h>
+#include <ICLGLPaintEngine.h>
+#include <ICLQtPaintEngine.h>
 
-#include <OSD.h>
-#include <Img.h>
-#include <Timer.h>
-#include <FileWriter.h>
 
 
 #ifdef USE_OPENGL_ACCELERATION
-#include <GLPaintEngine.h>
 #else
-#include <QtPaintEngine.h>
 #endif
 
 

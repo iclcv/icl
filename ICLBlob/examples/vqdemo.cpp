@@ -1,8 +1,8 @@
-#include "VQ2D.h"
+#include "ICLVQ2D.h"
 #include <time.h>
 #include <math.h>
-#include <TestImages.h>
-#include <Timer.h>
+#include <ICLTestImages.h>
+#include <ICLTimer.h>
 #include <ICLDrawWidget.h>
 #include <QApplication>
 

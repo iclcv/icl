@@ -1,6 +1,6 @@
-#include <RegionBasedBlobSearcher.h>
+#include <ICLRegionBasedBlobSearcher.h>
 #include <ICLQuick.h>
-#include <ImgRegionDetector.h>
+#include <ICLImgRegionDetector.h>
 
 vector<icl8u> vec3(icl8u r, icl8u g, icl8u b){
   vector<icl8u> v(3);
