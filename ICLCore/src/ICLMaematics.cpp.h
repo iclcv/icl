@@ -1,3 +1,5 @@
+#include <ICLMathematics.h>
+#include <vector>
 /*
   Math.cpp
 
@@ -7,8 +9,6 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#include <Mathematics.h>
-#include <vector>
 
 using namespace std;
 

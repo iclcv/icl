@@ -1,4 +1,4 @@
-#include <Point.h>
+#include <ICLPoint.h>
 namespace icl{
   const Point Point::null(0,0);
 }

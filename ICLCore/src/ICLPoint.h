@@ -1,3 +1,4 @@
+#include <ipp.h>
 #ifndef ICL_POINT_H
 #define ICL_POINT_H
 
@@ -11,7 +12,6 @@ namespace icl{
     int y;
   };
 #else
-#include <ipp.h>
 #endif
   
   /// Point class of the ICL used e.g. for the Images ROI offset

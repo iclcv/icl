@@ -1,3 +1,7 @@
+#include <ICLMacros.h>
+#include <ICLTypes.h>
+#include <ICLImgParams.h>
+#include <string>
 #ifndef ICLCORE_H
 #define ICLCORE_H
 
@@ -226,10 +230,6 @@ provided in ImgMacros.h
 @see ImgMacros.h
 */
 
-#include <Macros.h>
-#include <ICLTypes.h>
-#include <ImgParams.h>
-#include <string>
 
 
 /// The ICL-namespace

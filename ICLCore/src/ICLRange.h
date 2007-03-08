@@ -1,7 +1,7 @@
+#include "ICLCore.h"
 #ifndef RANGE_H
 #define RANGE_H
 
-#include "ICLCore.h"
 namespace icl{
   /// class representing a range defined by min and max value
   template<class Type> 

@@ -1,7 +1,7 @@
+#include <ICLCore.h>
 #ifndef ICLITERATOR_H
 #define ICLITERATOR_H
 
-#include <ICLCore.h>
 
 namespace icl{
   /// Iterator class used to iterate over an Images (ROI-)pixels

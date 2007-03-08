@@ -1,4 +1,4 @@
-#include <ImgParams.h>
+#include <ICLImgParams.h>
 #include <ICLCore.h>
 
 

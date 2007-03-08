@@ -1,10 +1,11 @@
+#include <ICLPoint.h>
+#include <ICLSize.h>
+#include <stdio.h>
+#include <algorithm>
+#include <ipp.h>
 #ifndef ICL_RECT_H
 #define ICL_RECT_H
 
-#include <Point.h>
-#include <Size.h>
-#include <stdio.h>
-#include <algorithm>
 
 namespace icl {
   
@@ -25,7 +26,6 @@ namespace icl {
     int height;
   };
 #else
-#include <ipp.h>
 #endif
   
   /// Rectangle class of the ICL used e.g. for the Images ROI-rect

@@ -1,11 +1,11 @@
+#include <vector>
+#include <ICLCore.h>
+#include <ICLImgParams.h>
+#include <ICLTime.h>
+#include <ICLRange.h>
 #ifndef ICLBASE_H
 #define ICLBASE_H
     
-#include <vector>
-#include <ICLCore.h>
-#include <ImgParams.h>
-#include <Time.h>
-#include <Range.h>
 
 namespace icl {
   

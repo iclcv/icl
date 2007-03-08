@@ -1,6 +1,6 @@
 #include <ICLCore.h>
-#include <Exception.h>
-#include <Img.h>
+#include <ICLException.h>
+#include <ICLImg.h>
 
 using namespace std;
 

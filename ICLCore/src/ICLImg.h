@@ -1,12 +1,12 @@
+#include <ICLImgBase.h>
+#include <ICLImgIterator.h>
+#include <ICLSmartPtr.h>
+#include <ICLException.h>
+#include <cmath>
+#include <algorithm>
 #ifndef Img_H
 #define Img_H
 
-#include <ImgBase.h>
-#include <ImgIterator.h>
-#include <SmartPtr.h>
-#include <Exception.h>
-#include <cmath>
-#include <algorithm>
 
 namespace icl {
   /// The Img class implements the ImgBase Image interface with type specific functionalities

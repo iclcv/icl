@@ -1,3 +1,4 @@
+#include <ipp.h>
 #ifndef ICL_SIZE_H
 #define ICL_SIZE_H
 
@@ -13,7 +14,6 @@ namespace icl {
   };
 
 #else
-#include <ipp.h>
 #endif
   
   /// Size class of the ICL

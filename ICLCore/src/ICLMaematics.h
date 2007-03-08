@@ -1,3 +1,7 @@
+#include <ICLImg.h>
+#include <ICLImgIterator.h>
+#include <vector>
+#include <cmath>
 /*
   Math.h
 
@@ -10,10 +14,6 @@
 #ifndef ICL_MATH_H
 #define ICL_MATH_H
 
-#include <Img.h>
-#include <ImgIterator.h>
-#include <vector>
-#include <cmath>
 
 namespace icl {
   

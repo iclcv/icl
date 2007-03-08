@@ -1,12 +1,12 @@
+#include <ICLPoint.h>
+#include <ICLSize.h>
+#include <ICLRect.h>
+#include <ICLTypes.h>
+#include <ICLException.h>
+#include <ICLMacros.h>
 #ifndef IMG_PARAMS_H
 #define IMG_PARAMS_H
 
-#include <Point.h>
-#include <Size.h>
-#include <Rect.h>
-#include <ICLTypes.h>
-#include <Exception.h>
-#include <Macros.h>
 
 namespace icl{
   /// The ImgParams class stores all image parameters
