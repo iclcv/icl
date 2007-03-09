@@ -114,6 +114,64 @@ namespace icl {
       /** @{ @name shallow copy */
       /* {{{ open */
 
+      
+      /** Create a shallow copy of an image with given 
+          @param ppoDst destination image which is exploited if possible, or otherwise reallocated
+          @param roi ROI of the new Image
+          @param channelIndices indices to select from the source image. These channels are
+                                shallow-copied into the destination image
+          @param fmt format of the new image (the channel count that is associated with this format
+                     must be equal to the channel count that is implicitely defined by the size of 
+                     the vector channelIndices
+          @param time new timestamp for the returned image
+          @return shallow-copied image
+      **/
+      virtual ImgBase *shallowCopy(const Rect &roi, 
+                                   const std::vector<int> &channelIndices,
+                                   format fmt, 
+                                   Time=Time::null,
+                                   ImgBase **ppoDst = NULL) = 0;
+      
+      /** Create a shallow copy of an image with given (const version)
+          @see the above function
+          @param roi ROI of the new Image
+          @param channelIndices indices to select from the source image. These channels are
+                                shallow-copied into the destination image (if size is null, all
+                                channels are selected)
+          @param fmt format of the new image (the channel count that is associated with this format
+                     must be equal to the channel count that is implicitely defined by the size of 
+                     the vector channelIndices
+          @param time new timestamp for the returned image
+          @return shallow-copied image
+      **/
+      virtual const ImgBase *shallowCopy(const Rect &roi, 
+                                         const std::vector<int> &channelIndices,
+                                         format fmt, 
+                                         Time time=Time::null) const{
+        // casting constness away is safe, because we effectively return a const Img<Type>*
+        return const_cast<ImgBase*>(this)->shallowCopy(roi,channelIndices,fmt,time,0);
+      }
+      
+
+      /// Create a shallow copy of this image with a new format
+      /** @param newFmt new format to choose. This must be compatible to the channel count 
+                           of this image.
+          @param ppoDst destination image (exploited as possible) 
+          @return shallow copie with given format of NULL if an error occured 
+      **/
+      virtual ImgBase *reinterpretChannels(format newFmt, ImgBase **ppoDst = NULL){
+        return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime(),ppoDst);
+      }
+      
+      
+      /// Create a shallow copy of this image with a new format (const version)
+      /** @param newFmt new format to choose. This must be compatible to the channel count 
+                           of this image. 
+          @return shallow copie with given format of NULL if an error occured 
+      **/
+      virtual const ImgBase *reinterpretChannels(format newFmt){
+        return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime());
+      }
       /// Create a shallow copy of the image
       /** It exploits the given destination image if possible,
           i.e. if the pixel depth matches. Else this image is released
@@ -126,9 +184,10 @@ namespace icl {
                      is used.
           @return shallow copy of this image
       **/
-      virtual ImgBase* shallowCopy(ImgBase** ppoDst = NULL, 
-                                   const Rect &roi=Rect::null) = 0;
-      
+      virtual ImgBase* shallowCopy(const Rect &roi, ImgBase** ppoDst = NULL){
+        return shallowCopy(roi,std::vector<int>(),getFormat(),getTime());
+      }
+
       /// Create a shallow copy of a const source image
       /** In contrast to the not const function shallowCopy, the const one does not provide
           to specify a destination image pointer, because this must neither be const nor not const.
@@ -141,7 +200,7 @@ namespace icl {
       */
       const ImgBase* shallowCopy(const Rect& roi) const {
          // casting constness away is safe, because we effectively return a const Img<Type>*
-         return const_cast<ImgBase*>(this)->shallowCopy(0, roi);
+         return const_cast<ImgBase*>(this)->shallowCopy(roi,0);
       }
      
 
@@ -152,9 +211,12 @@ namespace icl {
           @param channelIndices vector containing channel indices to copy
           @param ppoDst destination image (if Null, a new one is created)
           @return image containing only the selected channels (as shallow copies)
+                        format of that image becomes formatMatrix
+          @see shallowCopy
       */
-      virtual ImgBase* selectChannels (const std::vector<int>& channelIndices, 
-                                       ImgBase** ppoDst=0) = 0;
+      virtual ImgBase* selectChannels (const std::vector<int>& channelIndices, ImgBase** ppoDst=0){
+        return shallowCopy(getROI(),channelIndices,formatMatrix,getTime(),ppoDst);
+      }
 
       /// Create a shallow copy of a single image channel of an image
       /** This function is a shortcut to use 
@@ -257,7 +319,10 @@ namespace icl {
       */
       ImgBase *convert(depth d) const;
 
-      /// TODO
+      /// converts image data into the given destination image
+      /** @param poDst destination image (exploited if not NULL else a deep copy of this is returned)
+          @return converted image
+      **/
       ImgBase *convert(ImgBase *poDst) const;
       
       /// returns a converted (or deep copied) instance of this images ROI
@@ -278,14 +343,30 @@ namespace icl {
       ImgBase *convertROI(depth d) const;
       
       
-      /// TODO
+      /// converts this images ROI into a given destination image
+      /** The destination image is exploited if not NULL, else a deep copy of this
+          is created and returned. 
+          @param poDst destination image (its depth is hold, other parameters are adapted)
+          @return converted image (poDst if it was not NULL) that was adapted to this images 
+                            ROI size, channels, format and Time
+      **/
       ImgBase *convertROI(ImgBase *poDst) const;
       
-      /// TODO
+      /// converts this images ROI into the destination images ROI
+      /** it exploits the destination image if it is not NULL. Otherwise a deep copy of this
+          image is created and returned. This images ROI size must be equal to poDst ROISize,
+          otherwise NULL is returned, and an assertion message is written to std::out.
+          @param poDst destination image (adated in channel count, and format).
+          @return conveted poDst 
+      **/
       template<class T>
       Img<T> *convertROIToROI(Img<T> *poDst) const;
       
-      /// TODO
+      /// converts this images ROI into the destination image ROI (ImgBase version)
+      /** This function behaves like the above funtion 
+          @param poDst destination image
+          @return converted image (poDst)
+      **/
       ImgBase *convertROIToROI(ImgBase *poDst) const;
       
       
@@ -331,7 +412,8 @@ namespace icl {
       */
       virtual ImgBase *scaledCopyROI(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const = 0;
       
-      /// TODO
+      /// scales this images ROI into the destination images ROI
+      /** **/
       virtual ImgBase *scaledCopyROIToROI(ImgBase *poDst, scalemode eScaleMode=interpolateNN) const = 0;
       // @}
       /* }}} */
@@ -361,8 +443,13 @@ namespace icl {
       virtual ImgBase *flippedCopyROI(axis eAxis ,ImgBase **ppoDst=0) const = 0; 
 
       
-      /// TODO
-      virtual ImgBase *flippedCopyROIToROI(axis eAxis ,ImgBase *poDst=0) const = 0; 
+      /// flippes this images ROI into the destination images ROI
+      /** @param eAxis axis to flip 
+          @param poDst destination image (if not NULL, adapted in channel count, format and
+                       time. Its format must be equal to this images format.
+          @return poDst or a new image
+      **/
+      virtual ImgBase *flippedCopyROIToROI(axis eAxis ,ImgBase *poDst) const = 0; 
        // @}
       /* }}} */
       

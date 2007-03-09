@@ -1,4 +1,4 @@
-#include <ICLImg.h>
+#include <iclImg.h>
 #ifndef IMG_BORDER_H
 #define IMG_BORDER_H
 

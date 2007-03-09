@@ -1,4 +1,4 @@
-#include <ICLMathematics.h>
+#include <iclMathematics.h>
 #include <vector>
 /*
   Math.cpp

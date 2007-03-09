@@ -284,34 +284,143 @@ namespace icl {
   
     /** @{ @name shallow/deepCopy  and convert functions */
     /* {{{ open  */
+                  
+    virtual Img<Type> *shallowCopy(const Rect &roi, 
+                                   const std::vector<int> &channelIndices,
+                                   format fmt,
+                                   Time=Time::null,
+                                   ImgBase **ppoDst = NULL);
 
-    /// Create a shallow copy of the image (shared channels).
-    /** \copydoc icl::ImgBase::shallowCopy(icl::ImgBase**,const icl::Rect&) */
-    virtual Img<Type>* shallowCopy(ImgBase** ppoDst=0, const Rect &roi=Rect::null);
+      /** Create a shallow copy of an image with given (const version)
+          @see the above function
+          @param roi ROI of the new Image
+          @param channelIndices indices to select from the source image. These channels are
+                                shallow-copied into the destination image (if size is null, all
+                                channels are selected)
+          @param fmt format of the new image (the channel count that is associated with this format
+                     must be equal to the channel count that is implicitely defined by the size of 
+                     the vector channelIndices
+          @param time new timestamp for the returned image
+          @return shallow-copied image
+      **/
+      virtual const Img<Type> *shallowCopy(const Rect &roi, 
+                                           const std::vector<int> &channelIndices,
+                                           format fmt, 
+                                           Time time=Time::null) const{
+        // casting constness away is safe, because we effectively return a const Img<Type>*
+        return const_cast<Img<Type>*>(this)->shallowCopy(roi,channelIndices,fmt,time,0);
+      }
+      
 
-    /// Create a shallow copy of the image (shared channels).
-    /** This function is an overloaded version of the above function. It behaves
-        essentially like the above function, except getting an Img<Type>* as
-        destination image argument, what allows to apply the operation without
-        a depth switch.
-        @param poDst destination image, if NULL, a new Img<Type> is created
-        @param roi new ROI of the destination image
-        */
-    Img<Type>* shallowCopy(Img<Type>* poDst, const Rect &roi=Rect::null);
-   
-    /// Create a shallow copy of selected channels of this image.
-    /** @copydoc icl::ImgBase::selectChannels(const std::vector<int>&,icl::ImgBase**) */
-    virtual Img<Type>* selectChannels (const std::vector<int>& channelIndices, ImgBase** ppoDst=0);
+      /// Create a shallow copy of this image with a new format
+      /** @param newFmt new format to choose. This must be compatible to the channel count 
+                           of this image.
+          @param ppoDst destination image (exploited as possible) 
+          @return shallow copie with given format of NULL if an error occured 
+      **/
+      virtual Img<Type> *reinterpretChannels(format newFmt, Img<Type> *poDst = NULL){
+        ImgBase *poDstBase = poDst;
+        return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime(),&poDstBase);
+      }
+      
+      
+      /// Create a shallow copy of this image with a new format (const version)
+      /** @param newFmt new format to choose. This must be compatible to the channel count 
+                           of this image. 
+          @return shallow copie with given format of NULL if an error occured 
+      **/
+      virtual const Img<Type> *reinterpretChannels(format newFmt){
+        return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime());
+      }
+      /// Create a shallow copy of the image
+      /** It exploits the given destination image if possible,
+          i.e. if the pixel depth matches. Else this image is released
+          and a new one is created. Optionally a second argument can be
+          specified to get a new image with the given ROI.
+          @param ppoDst pointer to the destination image pointer If ppoDst is NULL,
+                        a new image is created, if ppoDst points to NULL, a new 
+                        image is created at *ppoDst;
+          @param roi new ROI of the new image. If Rect::null, the source images roi
+                     is used.
+          @return shallow copy of this image
+      **/
+      virtual Img<Type>* shallowCopy(const Rect &roi,Img<Type>* poDst = NULL){
+        ImgBase *poDstBase = poDst;
+        return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),&poDstBase);
+      }
 
-    /// Create a shallow copy of selected channels of this image.
-    /** This is an overloaded version of the above function. It behaves
-        essentially like the above function, except getting an Img<Type>* as
-        destination image argument, what allows to apply the operation without
-        a depth switch.        
-        @param channelIndices vector containing channel indices to copy
-        @param poDst destination image (if Null, a new one is created)
-     **/
-    Img<Type>* selectChannels (const std::vector<int>& channelIndices, Img<Type>* poDst);
+      /// Create a shallow copy of a const source image
+      /** In contrast to the not const function shallowCopy, the const one does not provide
+          to specify a destination image pointer, because this must neither be const nor not const.
+          If it would be const, it would not be possible to adapt it to correct parameters, 
+          otherwise it would violate the const concept as it could be used to change the const
+          result.\n 
+          This function can only be used to get const copy of a source image with a special ROI.
+          @param roi ROI of the returned image (Rect::null is not allowed!)
+          @return shallow copy of this image with specified ROI
+      */
+      const Img<Type>* shallowCopy(const Rect& roi) const {
+         // casting constness away is safe, because we effectively return a const Img<Type>*
+         return const_cast<Img<Type>*>(this)->shallowCopy(roi,0);
+      }
+     
+
+      /// Create a shallow copy of selected channels of an image
+      /** This function can be used if only one or some channels of a given const 
+          image should be used in further processing steps. It helps to avoid the 
+          necessity of "deepCopy" calls there.
+          @param channelIndices vector containing channel indices to copy
+          @param ppoDst destination image (if Null, a new one is created)
+          @return image containing only the selected channels (as shallow copies)
+                        format of that image becomes formatMatrix
+          @see shallowCopy
+      */
+      virtual Img<Type>* selectChannels (const std::vector<int>& channelIndices, Img<Type>* poDst=0){
+        ImgBase *poDstBase = poDst;
+        return shallowCopy(getROI(),channelIndices,formatMatrix,getTime(),&poDstBase);
+      }
+
+      /// Create a shallow copy of a single image channel of an image
+      /** This function is a shortcut to use 
+          icl::ImgBase::selectChannels(const std::vector<int>&,icl::ImgBase**) to 
+          select a single channel from an image
+          @param channelIndex index of the channel to select (if invalid, NULL is returned)
+          @param ppoDst destination image 
+          @return image containing only the selected channel
+      **/
+      virtual Img<Type> *selectChannel(int channelIndex, Img<Type> *poDst=0){
+        ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
+        std::vector<int> v(1); v[0]= channelIndex; 
+        return selectChannels(v,poDst);
+      }
+      /// Create a shallow copy of selected channels of a const image.
+      /** @param channelIndices vector containing channel indices to copy
+          @return const image containing only the selected channels
+      */
+      const Img<Type>* selectChannels (const std::vector<int>& channelIndices) const {
+         // casting constness away is safe, because we effectively return a const Img<Type>*
+         return const_cast<Img<Type>*>(this)->selectChannels(channelIndices, 0);
+      }
+      
+      /// Create a shallow copy of a single image channel of a const image
+      /** This function is a shortcut to use 
+          icl::ImgBase::selectChannels(const std::vector<int>&)const to 
+          select a single channel from a const image image
+          @param channelIndex index of the channel to select (if invalid, NULL is returned)
+          @return const image containing only the selected channel
+      **/
+      const ImgBase *selectChannel(int channelIndex) const{
+        ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
+        std::vector<int> v(1); v[0]= channelIndex; return selectChannels(v);
+      }
+
+      //------------------------------------------------------------------------------   
+      //------------------------------------------------------------------------------    
+      //------------------------------------------------------------------------------   
+
+
+
+
 
     /// Perform a deep copy of an image
     /** \copydoc icl::ImgBase::deepCopy(icl::ImgBase**)const */

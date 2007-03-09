@@ -1,4 +1,4 @@
-#include <ICLCore.h>
+#include <iclCore.h>
 #ifndef ICLITERATOR_H
 #define ICLITERATOR_H
 

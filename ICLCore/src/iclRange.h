@@ -1,4 +1,4 @@
-#include "ICLCore.h"
+#include "iclCore.h"
 #ifndef RANGE_H
 #define RANGE_H
 

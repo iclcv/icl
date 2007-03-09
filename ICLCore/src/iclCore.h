@@ -1,6 +1,6 @@
-#include <ICLMacros.h>
-#include <ICLTypes.h>
-#include <ICLImgParams.h>
+#include <iclMacros.h>
+#include <iclTypes.h>
+#include <iclImgParams.h>
 #include <string>
 #ifndef ICLCORE_H
 #define ICLCORE_H

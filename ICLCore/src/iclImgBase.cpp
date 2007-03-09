@@ -1,5 +1,5 @@
-#include <ICLImgBase.h>
-#include <ICLImg.h>
+#include <iclImgBase.h>
+#include <iclImg.h>
 
 using namespace std;
 

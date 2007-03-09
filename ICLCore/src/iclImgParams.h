@@ -1,9 +1,9 @@
-#include <ICLPoint.h>
-#include <ICLSize.h>
-#include <ICLRect.h>
-#include <ICLTypes.h>
-#include <ICLException.h>
-#include <ICLMacros.h>
+#include <iclPoint.h>
+#include <iclSize.h>
+#include <iclRect.h>
+#include <iclTypes.h>
+#include <iclException.h>
+#include <iclMacros.h>
 #ifndef IMG_PARAMS_H
 #define IMG_PARAMS_H
 

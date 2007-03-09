@@ -1,5 +1,5 @@
-#include <ICLPoint.h>
-#include <ICLSize.h>
+#include <iclPoint.h>
+#include <iclSize.h>
 #include <stdio.h>
 #include <algorithm>
 #include <ipp.h>

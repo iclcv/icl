@@ -1,5 +1,5 @@
-#include <ICLImg.h>
-#include <ICLImgIterator.h>
+#include <iclImg.h>
+#include <iclImgIterator.h>
 #include <vector>
 #include <cmath>
 /*

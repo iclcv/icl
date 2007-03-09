@@ -1,4 +1,4 @@
-#include <ICLImgBorder.h>
+#include <iclImgBorder.h>
 
 namespace icl{
 
