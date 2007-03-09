@@ -265,16 +265,6 @@ namespace icl {
   // }}}
 
   template<class Type>
-  Img<Type> *Img<Type>::flippedCopy(axis eAxis, ImgBase **ppoDst) const{
-    // {{{ open
-
-    FUNCTION_LOG("ptr:"<<ppoDst);
-    return flippedCopy( eAxis, ensureCompatible<Type>(ppoDst,getParams()) );
-  }
-
-  // }}}
-      
-  template<class Type>
   Img<Type> *Img<Type>::deepCopyROI(ImgBase **ppoDst) const{
     // {{{ open
 
@@ -306,16 +296,6 @@ namespace icl {
   // }}}
 
   template<class Type>
-  Img<Type> *Img<Type>::flippedCopyROI(axis eAxis, ImgBase **ppoDst) const{
-    // {{{ open
-
-    FUNCTION_LOG("ptr:"<<ppoDst);
-    return flippedCopyROI( eAxis, ensureDepth<Type>(ppoDst));
-  }
-
-  // }}}
- 
-  template<class Type>
   Img<Type> *Img<Type>::deepCopyROIToROI(ImgBase *poDst) const{
     // {{{ open
 
@@ -337,21 +317,6 @@ namespace icl {
     if(!poDst) return deepCopyROI();
     switch(poDst->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return scaledCopyROIToROI(poDst->asImg<icl##D>(),eScaleMode); break;
-      ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
-    }
-    return 0;
-  }
-
-  // }}}
-
-  template<class Type>
-  Img<Type> *Img<Type>::flippedCopyROIToROI(axis eAxis,ImgBase *poDst) const{
-    // {{{ open
-
-    if(!poDst) return flippedCopyROI(eAxis);
-    switch(poDst->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return flippedCopyROIToROI(eAxis,poDst->asImg<icl##D>()); break;
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
     }
@@ -401,24 +366,6 @@ namespace icl {
   // }}}
   
   template<class Type>
-  Img<Type> *Img<Type>::flippedCopy(axis eAxis, Img<Type> *poDst) const{
-    // {{{ open
-
-    FUNCTION_LOG("ptr:"<<poDst);
-    if(!poDst) poDst = new Img<Type>(getParams());
-    else poDst->setParams(getParams());
-    poDst->setTime(getTime());
-    
-    for(int c=getChannels()-1; c>=0; --c){
-      flippedCopyChannelROI(eAxis, this,c, Point::null, getSize(),poDst,c, Point::null, poDst->getSize() );
-    }
-    return poDst;
-  
-  }
-
-  // }}}
-  
-  template<class Type>
   Img<Type> *Img<Type>::deepCopyROI(Img<Type> *poDst) const{
     // {{{ open
 
@@ -458,26 +405,6 @@ namespace icl {
   // }}}
   
   template<class Type>
-  Img<Type> *Img<Type>::flippedCopyROI(axis eAxis ,Img<Type> *poDst) const{
-    // {{{ open
-
-    FUNCTION_LOG("ptr:"<<poDst);
-    ImgParams p (getROISize(), getChannels(), getFormat());
-    if(!poDst) poDst = new Img<Type>(p);
-    else poDst->setParams (p);
-    poDst->setTime(getTime());
-    
-    for(int c=getChannels()-1; c>=0; --c){
-      flippedCopyChannelROI(eAxis, this,c, getROIOffset(), getROISize(), 
-                            poDst,c, poDst->getROIOffset(), poDst->getROISize() );
-    }
-    return poDst;
-
-  }
-
-  // }}}
-
-  template<class Type>
   Img<Type> *Img<Type>::deepCopyROIToROI(Img<Type> *poDst) const{
     // {{{ open
 
@@ -508,25 +435,6 @@ namespace icl {
                            poDst,c, poDst->getROIOffset(), poDst->getROISize() , eScaleMode);
     }  
     return poDst;
-  }
-
-  // }}}
-
-  template<class Type>
-  Img<Type> *Img<Type>::flippedCopyROIToROI(axis eAxis, Img<Type> *poDst) const{
-    // {{{ open
-
-    FUNCTION_LOG("ptr:"<< poDst);
-    if(!poDst) return flippedCopyROI(eAxis);
-    ICLASSERT_RETURN_VAL( getROISize() == poDst->getROISize() ,0);
-    ICLASSERT_RETURN_VAL( getChannels() == poDst->getChannels() ,0);
-    poDst->setTime(getTime());
-    for(int c=getChannels()-1; c>=0; --c){
-      flippedCopyChannelROI(eAxis,this,c, getROIOffset(), getROISize(), 
-                            poDst,c, poDst->getROIOffset(), poDst->getROISize() );
-    }
-    return poDst;
-  
   }
 
   // }}}
@@ -1504,6 +1412,71 @@ Img<icl ## T>::getMinMax(int iChannel) const {                         \
 
 
 
+  // }}}
+
+  // {{{    flippedCopy / flippedCopyROI
+
+  void flippedCopy(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst){
+    // {{{ open
+
+    ICLASSERT_RETURN(poSrc);
+    
+    ImgBase *poDst = ensureCompatible(ppoDst,poSrc->getDepth(),poSrc->getROISize(),poSrc->getChannels(),poSrc->getFormat());
+    poDst->setTime(poSrc->getTime());
+    
+    if(poSrc->getROISize() != poSrc->getSize()){
+      Size rs = poSrc->getROISize();
+      Size is = poSrc->getSize();
+      Point o = poSrc->getROIOffset();
+      Point newO = o;
+      switch(eAxis){
+        case axisHorz:
+          newO.x = is.width-o.x-rs.width; 
+          break;
+        case axisVert:
+          newO.y = is.height-o.y-rs.height;
+          break;
+        case axisBoth:
+          newO.x = is.width-o.x-rs.width; 
+          newO.y = is.height-o.y-rs.height;
+          break;
+      }
+      poDst->setROI(newO,rs);
+    }
+    flippedCopyROI(eAxis,poSrc,&poDst);                 
+  }
+
+  // }}}
+  void flippedCopyROI(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst){
+    // {{{ open
+
+    ICLASSERT_RETURN(poSrc);
+    ImgBase *poDst = 0;
+    if(!ppoDst){
+      poDst = imgNew(poSrc->getDepth(),poSrc->getROISize(),poSrc->getChannels(),poSrc->getFormat());
+    }else if(! *ppoDst){
+      poDst = imgNew(poSrc->getDepth(),poSrc->getROISize(),poSrc->getChannels(),poSrc->getFormat());
+      *ppoDst = poDst;
+    }else{
+      poDst = ensureDepth(ppoDst,poSrc->getDepth());
+      ICLASSERT_RETURN( poDst->getROISize() == poSrc->getROISize());
+      poDst->setChannels(poSrc->getChannels());
+      poDst->setFormat(poSrc->getFormat());
+    }
+    poDst->setTime(poSrc->getTime()); 
+    for(int c=poSrc->getChannels()-1; c>=0; --c){
+      switch(poSrc->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                                                                                           \
+        case depth##D :flippedCopyChannelROI(eAxis,poSrc->asImg<icl##D>(),c, poSrc->getROIOffset(), poSrc->getROISize(),   \
+                                             poDst->asImg<icl##D>(),c, poDst->getROIOffset(), poDst->getROISize() ); break;
+        ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+      }
+    }
+  }
+
+  // }}}
+    
   // }}}
 
   // }}}

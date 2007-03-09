@@ -606,21 +606,20 @@ namespace icl{
   // }}}
   ImgQ flipx(const ImgQ& image){
     // {{{ open
-
-    ImgQ *r = image.flippedCopyROI(axisHorz);
-    ImgQ r2 = *r;
-    delete r;
-    return r2;
+    ImgQ r(image.getParams());
+    ImgBase *rr = &r;
+    flippedCopy(axisVert,&image,&rr);
+    return r;
   }
 
   // }}}
   ImgQ flipy(const ImgQ& image){
     // {{{ open
 
-    ImgQ *r = image.flippedCopyROI(axisVert);
-    ImgQ r2 = *r;
-    delete r;
-    return r2;
+    ImgQ r(image.getParams());
+    ImgBase *rr = &r;
+    flippedCopy(axisHorz,&image,&rr);
+    return r;
   }
 
   // }}}

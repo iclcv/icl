@@ -504,40 +504,6 @@ namespace icl {
     /// TODO
     Img<Type> *scaledCopyROIToROI(Img<Type> *poDst, scalemode eScaleMode=interpolateNN) const;
 
-    
-    
-    
-    /// create a flipped copy of this image
-    /** \copydoc icl::ImgBase::flippedCopy(icl::axis,icl::ImgBase**)const */
-    virtual Img<Type> *flippedCopy(axis eAxis, ImgBase **ppoDst=0) const;
-
-    /// create a flipped copy of an image
-    /** Overloaded function to create a flipped copy of an image. This function gets
-        an Img<Type>* as destination, what allows to apply the operation without any
-        depth-switch.
-        @param eAxis axis to flip
-        @param poDst destination image pointer, if NULL, a new Img<Type> is created
-    */
-    Img<Type> *flippedCopy(axis eAxis, Img<Type> *poDst) const;
-
-    /// create a flipped copy of an images ROI 
-    /** \copydoc icl::ImgBase::flippedCopyROI(icl::axis,icl::ImgBase**)const */
-    virtual Img<Type> *flippedCopyROI(axis eAxis ,ImgBase **ppoDst=0) const ; 
-
-    /// create a flipped copy of an images ROI
-    /** Overloaded function to create a flipped copy of an images ROI. This function gets
-        an Img<Type>* as destination, what allows to apply the operation without any
-        depth-switch.
-        @param eAxis axis to flip
-        @param poDst destination image pointer, if NULL, a new Img<Type> is created
-    */
-    Img<Type> *flippedCopyROI(axis eAxis ,Img<Type> *poDst) const; 
-
-    /// TODO
-    virtual Img<Type> *flippedCopyROIToROI(axis eAxis, ImgBase *poDst) const;
- 
-    /// TODO
-    Img<Type> *flippedCopyROIToROI(axis eAxis, Img<Type> *poDst) const;
     //@}
     /* }}} */
 
@@ -1079,8 +1045,44 @@ namespace icl {
   void flippedCopyChannelROI(axis eAxis,
                              const Img<T> *src,int srcC, const Point &srcOffs, const Size &srcSize,
                              Img<T> *dst,int dstC, const Point &dstOffs, const Size &dstSize);
- 
+  
+  
+  /// mirror copy of an image from source to destination image (1:1 copy)
+  /** This function creates a flipped instance of this image. Even the ROI is flipped internally.
+      Example:
+      <pre>
+        ......                    ......     r = roi
+        ..rrrr  -> flipped x ->   rrrr..
+        ..rrrr                    rrrr..
+      </pre>
+      
+      @param eAxis axis to flip
+      @param poSrc source image
+      @param ppoDst image. This image is exploited if possible. It is adjusted to 
+                        the source image in depth, size,channels,format,and time
+      
+  **/
+  void flippedCopy(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst=0);
 
+  /// mirror copy of an images ROI into a destination images ROI
+  /** Example:
+      <pre>
+        ......                    ......    R,r = roi
+        ..RRrr  -> flipped x ->   rrRR..
+        ..RRrr                    rrRR..
+      </pre>
+      
+      @param eAxis axis to flip
+      @param poSrc source image
+      @param ppoDst destination image (expoited if possible). This images
+                    ROI size must be equal to ppoDst's ROI size otherwise 
+                    an errormessage is shown, and the function returns 0.
+                    If ppoDst is null, a new image is created with size of 
+                    this images ROI size. If ppoDst points to NULL, the new
+                    image is created at *ppoDst.
+      @return flippedCopy      
+  **/
+  void flippedCopyROI(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst=0);
   /* }}} */
 
   /* }}} */ 

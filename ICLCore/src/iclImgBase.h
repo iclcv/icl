@@ -418,41 +418,6 @@ namespace icl {
       // @}
       /* }}} */
       
-      /** @{ @name flippedCopy */
-      /* {{{ open */      
-
-      /// Create a flipped (or mirrored) copy into an optional destination image
-      /** If the given destination pointer ppoDst is NULL, a new destination image
-          is created and returned. If it points to NULL, the new image is created 
-          at *ppoDst. Otherwise the destination images is adjusted in size, channels 
-          and depth to this image before the "flipped copy"-operation is applied. The
-          eAxis parameter specifies whether to flip horizontally, vertically or both.
-          @param eAxis axis to flip
-          @param ppoDst destination image
-          @return flipped image
-      */
-      virtual ImgBase *flippedCopy(axis eAxis, ImgBase **ppoDst=0) const=0;
-
-      /// Create a flipped copy of an images ROI with optionally given destination image
-      /** This function behaves identically to the flippedCopy function above, except it
-          is applied on the source images ROI only.
-          @param eAxis axis to flip on
-          @param ppoDst optionally given destination image pointer
-          @return image containing a flipped instance of the source images ROI
-      */
-      virtual ImgBase *flippedCopyROI(axis eAxis ,ImgBase **ppoDst=0) const = 0; 
-
-      
-      /// flippes this images ROI into the destination images ROI
-      /** @param eAxis axis to flip 
-          @param poDst destination image (if not NULL, adapted in channel count, format and
-                       time. Its format must be equal to this images format.
-          @return poDst or a new image
-      **/
-      virtual ImgBase *flippedCopyROIToROI(axis eAxis ,ImgBase *poDst) const = 0; 
-       // @}
-      /* }}} */
-      
       /** @{ @name asImg<T> cast templates */
       /* {{{ open */ 
 

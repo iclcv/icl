@@ -6,23 +6,9 @@
 
 int main(int nargs, char **ppc){
 
-  ImgQ A = create("flowers");
-  A = scale(A,0.2);
-  A = gray(A);
+  ImgQ A = create("parrot");
   
-  A = levels(A,2);
-
-  show(A);
-
-  ImgQ B = A;
-  data(B) = 0;
-  B.setROI(Rect(20,20,20,20));
-  roi(B) = 255;
-  B.setFullROI();
-  
-  show(label(A||B,"OR"));
-  show(label(A&&B,"AND"));
-
+  show((A,flipx(A) ));
   /*
       
       ImgQ im = scale(create("parrot"),0.4);  

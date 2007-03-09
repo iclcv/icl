@@ -367,22 +367,34 @@ namespace icl {
   inline ImgBase *imgNew(depth d, const Size& size, int channels=1, const Rect &roi=Rect::null){
     return imgNew(d,ImgParams(size,channels,roi));
   }
-
+ 
+  inline ImgBase *imgNew(depth d, const Size& size, int channels, format fmt, const Rect &roi=Rect::null){
+    return imgNew(d,ImgParams(size,channels,fmt,roi));
+  }
 
   
   /// ensures that an image has the specified depth
   /** This function will delete the original image pointed by (*ppoImage)
       and create a new one with identical parameters, if the given depth
       parameter is not the images depth. If the given image pointer
-      (*ppoImage) is NULL, then a new image is created with size 1x1,
-      one channel and specified depth.
+      (*ppoImage) is NULL, then an empty image of specified depth es created
+      at *ppoImage.
+      If ppoImage is NULL a new Image is created and returned.
+      call:
+      <pre>
+      void func(ImgBase **ppoDst){
+         ImgBase *poDst = ensureDepth(ppoDst,anyDepth);
+      }
+      </pre>
+      to ensure that an image is valid.
       @param ppoImage pointer to the image-pointer
       @param eDepth destination depth of the image
+      @return the new image (this can be used e.g. if ppoImage is NULL)
   **/
-  void ensureDepth(ImgBase **ppoImage, depth eDepth);
+  ImgBase *ensureDepth(ImgBase **ppoImage, depth eDepth);
 
   /// ensures that an image has given depth and parameters
-  void ensureCompatible(ImgBase **dst, depth d,const ImgParams &params);
+  ImgBase *ensureCompatible(ImgBase **dst, depth d,const ImgParams &params);
 
   /// ensures that an image has given depth, size, number of channels and ROI
   /** If the given pointer to the destination image is 0, a new image with appropriate
@@ -397,18 +409,18 @@ namespace icl {
       @param roi desired ROI rectangle. If the ROI parameters are not given, 
                  the ROI will comprise the whole image.
   **/
-  inline void ensureCompatible(ImgBase **dst, depth d,const Size& size,int channels, const Rect &roi=Rect::null)
-     { ensureCompatible(dst,d,ImgParams(size,channels,roi)); }
+  inline ImgBase *ensureCompatible(ImgBase **dst, depth d,const Size& size,int channels, const Rect &roi=Rect::null)
+     { return ensureCompatible(dst,d,ImgParams(size,channels,roi)); }
 
   /// ensures that an image has given depth, size, format and ROI
-  inline void ensureCompatible(ImgBase **dst, depth d,const Size& size, format fmt, const Rect &roi=Rect::null)
-     { ensureCompatible(dst,d,ImgParams(size,fmt,roi)); }
+  inline ImgBase *ensureCompatible(ImgBase **dst, depth d,const Size& size, format fmt, const Rect &roi=Rect::null)
+     { return ensureCompatible(dst,d,ImgParams(size,fmt,roi)); }
   
   /// ensures that an image has given parameters 
   /** The given format must be compatible to the given channel count.
       <b>If not:</b> The format is set to "formatMatrix" and an exception is thrown.
   */
-  void ensureCompatible(ImgBase **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi=Rect::null);
+  ImgBase *ensureCompatible(ImgBase **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi=Rect::null);
   
   /// ensures that the destination image gets same depth, size, channel count, depth, format and ROI as source image
   /** If the given pointer to the destination image is 0, a new image is created as a deep copy of poSrc.
@@ -421,7 +433,7 @@ namespace icl {
       @param src  source image. All params of this image are extracted to define
                     the destination parameters for *ppoDst.  
   **/
-  void ensureCompatible(ImgBase **dst, const ImgBase *src);
+  ImgBase *ensureCompatible(ImgBase **dst, const ImgBase *src);
 
   /// determines the count of channels, for each color format
   /** @param fmt source format which channel count should be returned
