@@ -1,9 +1,9 @@
-#include <ICLDrawWidget.h>
-#include <ICLImg.h>
-#include <ICLPWCGrabber.h>
+#include <iclDrawWidget.h>
+#include <iclImg.h>
+#include <iclPWCGrabber.h>
 #include <QApplication>
 #include <QThread>
-#include <ICLTimer.h>
+#include <iclTimer.h>
 #include <math.h>
 
 

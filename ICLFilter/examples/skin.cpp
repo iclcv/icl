@@ -1,7 +1,7 @@
-#include <ICLSkinOp.h>
-#include <ICLImg.h>
-#include <ICLFileReader.h>
-#include <ICLFileWriter.h>
+#include <iclSkinOp.h>
+#include <iclImg.h>
+#include <iclFileReader.h>
+#include <iclFileWriter.h>
 
 using namespace icl;
 

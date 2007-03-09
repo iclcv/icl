@@ -1,7 +1,7 @@
-#include <ICLImgBase.h>
-#include <ICLImgIterator.h>
-#include <ICLSmartPtr.h>
-#include <ICLException.h>
+#include <iclImgBase.h>
+#include <iclImgIterator.h>
+#include <iclSmartPtr.h>
+#include <iclException.h>
 #include <cmath>
 #include <algorithm>
 #ifndef Img_H

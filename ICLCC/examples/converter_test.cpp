@@ -1,7 +1,7 @@
-#include "ICLConverter.h"
-#include "ICLCC.h"
-#include "ICLImg.h"
-#include "ICLTestImages.h"
+#include "iclConverter.h"
+#include "iclCC.h"
+#include "iclImg.h"
+#include "iclTestImages.h"
 
 using namespace icl;
 using namespace std;

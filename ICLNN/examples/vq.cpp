@@ -1,9 +1,9 @@
-#include "ICLVQ.h"
-#include "ICLInterleaved.h"
-#include "ICLImg.h"
-#include "ICLMathematics.h"
-#include "ICLFileReader.h"
-#include "ICLFileWriter.h"
+#include "iclVQ.h"
+#include "iclInterleaved.h"
+#include "iclImg.h"
+#include "iclMathematics.h"
+#include "iclFileReader.h"
+#include "iclFileWriter.h"
 
 using namespace icl;
 using namespace std;

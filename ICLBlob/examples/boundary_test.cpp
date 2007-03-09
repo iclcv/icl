@@ -1,5 +1,5 @@
-#include <ICLQuick.h>
-#include <ICLRegionDetector.h>
+#include <iclQuick.h>
+#include <iclRegionDetector.h>
 
 using namespace regiondetector;
 

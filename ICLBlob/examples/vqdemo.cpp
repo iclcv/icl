@@ -1,9 +1,9 @@
-#include "ICLVQ2D.h"
+#include "iclVQ2D.h"
 #include <time.h>
 #include <math.h>
-#include <ICLTestImages.h>
-#include <ICLTimer.h>
-#include <ICLDrawWidget.h>
+#include <iclTestImages.h>
+#include <iclTimer.h>
+#include <iclDrawWidget.h>
 #include <QApplication>
 
 using namespace icl;

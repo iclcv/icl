@@ -1,4 +1,4 @@
-#include <ICLImg.h>
+#include <iclImg.h>
 
 namespace icl {
   

@@ -1,8 +1,8 @@
 #include <vector>
-#include <ICLCore.h>
-#include <ICLImgParams.h>
-#include <ICLTime.h>
-#include <ICLRange.h>
+#include <iclCore.h>
+#include <iclImgParams.h>
+#include <iclTime.h>
+#include <iclRange.h>
 #ifndef ICLBASE_H
 #define ICLBASE_H
     

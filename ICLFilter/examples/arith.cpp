@@ -1,6 +1,6 @@
-#include "ICLUnaryArithmeticalOp.h"
-#include "ICLBinaryArithmeticalOp.h"
-#include <ICLTimer.h>
+#include "iclUnaryArithmeticalOp.h"
+#include "iclBinaryArithmeticalOp.h"
+#include <iclTimer.h>
 
 using namespace std;
 using namespace icl;

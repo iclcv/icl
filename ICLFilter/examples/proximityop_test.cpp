@@ -1,6 +1,6 @@
-#include <ICLProximityOp.h>
-#include <ICLFileReader.h>
-#include <ICLFileWriter.h>
+#include <iclProximityOp.h>
+#include <iclFileReader.h>
+#include <iclFileWriter.h>
 
 using namespace icl;
 

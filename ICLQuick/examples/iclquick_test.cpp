@@ -1,4 +1,4 @@
-#include <ICLQuick.h>
+#include <iclQuick.h>
 #include <QFont>
 #include <QFontMetrics>
 #include <QApplication>

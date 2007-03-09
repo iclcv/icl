@@ -1,6 +1,6 @@
-#include <ICLFileReader.h>
-#include <ICLTestImages.h>
-#include <ICLMorphologicalOp.h>
+#include <iclFileReader.h>
+#include <iclTestImages.h>
+#include <iclMorphologicalOp.h>
 using namespace std;
 using namespace icl;
 

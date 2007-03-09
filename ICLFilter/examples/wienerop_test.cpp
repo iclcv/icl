@@ -1,6 +1,6 @@
-#include <ICLWienerOp.h>
-#include <ICLFileReader.h>
-#include <ICLTestImages.h>
+#include <iclWienerOp.h>
+#include <iclFileReader.h>
+#include <iclTestImages.h>
 
 using namespace std;
 using namespace icl;

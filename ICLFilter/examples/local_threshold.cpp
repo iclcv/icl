@@ -1,9 +1,9 @@
-#include <ICLImg.h>
-#include <ICLFileReader.h>
-#include <ICLFileWriter.h>
-#include <ICLLocalThresholdOp.h>
-#include <ICLTestImages.h>
-#include <ICLProgArg.h>
+#include <iclImg.h>
+#include <iclFileReader.h>
+#include <iclFileWriter.h>
+#include <iclLocalThresholdOp.h>
+#include <iclTestImages.h>
+#include <iclProgArg.h>
 #include <stdio.h>
 
 

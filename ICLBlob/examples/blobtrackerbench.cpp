@@ -1,13 +1,13 @@
-#include "ICLExtrapolator.h"
-#include <ICLPositionTracker.h>
-#include <ICLHungarianAlgorithm.h>
+#include "iclExtrapolator.h"
+#include <iclPositionTracker.h>
+#include <iclHungarianAlgorithm.h>
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include <ICLImg.h>
-#include <ICLArray.h>
-#include <ICLMathematics.h>
-#include <ICLTimer.h>
+#include <iclImg.h>
+#include <iclArray.h>
+#include <iclMathematics.h>
+#include <iclTimer.h>
 
 
 

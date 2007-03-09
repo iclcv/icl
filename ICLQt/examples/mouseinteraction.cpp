@@ -1,11 +1,11 @@
-#include <ICLWidget.h>
-#include <ICLImg.h>
-#include <ICLPWCGrabber.h>
+#include <iclWidget.h>
+#include <iclImg.h>
+#include <iclPWCGrabber.h>
 #include <QApplication>
 #include <QThread>
 #include <QGridLayout>
 #include <QPushButton>
-#include <ICLTimer.h>
+#include <iclTimer.h>
 
 
 using namespace icl;

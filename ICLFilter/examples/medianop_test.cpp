@@ -1,6 +1,6 @@
-#include <ICLMedianOp.h>
-#include <ICLTestImages.h>
-#include <ICLFileWriter.h>
+#include <iclMedianOp.h>
+#include <iclTestImages.h>
+#include <iclFileWriter.h>
 
 using namespace icl;
 using namespace std;
