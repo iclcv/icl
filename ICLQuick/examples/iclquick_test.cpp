@@ -6,9 +6,23 @@
 
 int main(int nargs, char **ppc){
 
-  ImgQ A = create("parrot");
-  
-  show((A,flipx(A) ));
+  ImgQ A = scale(create("parrot"),300,300);
+  A.setROI(Rect(0,0,100,120));
+
+  ImgQ A2 = copy(A);
+  roi(A)=0;
+
+  print(A2);
+  A2 = flipx(A2);
+  print(A2);  
+  roi(A2)=0;
+
+  show(A);
+  show(A2);
+  A.setFullROI();
+  A2.setFullROI();
+
+  show((A,A2));
   /*
       
       ImgQ im = scale(create("parrot"),0.4);  

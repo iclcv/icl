@@ -1421,9 +1421,12 @@ Img<icl ## T>::getMinMax(int iChannel) const {                         \
 
     ICLASSERT_RETURN(poSrc);
     
-    ImgBase *poDst = ensureCompatible(ppoDst,poSrc->getDepth(),poSrc->getROISize(),poSrc->getChannels(),poSrc->getFormat());
+    ImgBase *poDst = ensureCompatible(ppoDst,poSrc->getDepth(),poSrc->getSize(),poSrc->getChannels(),poSrc->getFormat());
     poDst->setTime(poSrc->getTime());
     
+
+
+    // imagewidth = 300, roioffs=0, roiwidth=100
     if(poSrc->getROISize() != poSrc->getSize()){
       Size rs = poSrc->getROISize();
       Size is = poSrc->getSize();
@@ -1431,10 +1434,10 @@ Img<icl ## T>::getMinMax(int iChannel) const {                         \
       Point newO = o;
       switch(eAxis){
         case axisHorz:
-          newO.x = is.width-o.x-rs.width; 
+          newO.y = is.height-o.y-rs.height;
           break;
         case axisVert:
-          newO.y = is.height-o.y-rs.height;
+          newO.x = is.width-o.x-rs.width; 
           break;
         case axisBoth:
           newO.x = is.width-o.x-rs.width; 
@@ -1443,7 +1446,9 @@ Img<icl ## T>::getMinMax(int iChannel) const {                         \
       }
       poDst->setROI(newO,rs);
     }
-    flippedCopyROI(eAxis,poSrc,&poDst);                 
+    const ImgBase *poFullSrc = poSrc->shallowCopy(Rect(Point::null,poSrc->getSize()));
+    ImgBase *poFullDst = poDst->shallowCopy(Rect(Point::null,poDst->getSize()));
+    flippedCopyROI(eAxis,poFullSrc,&poFullDst);                 
   }
 
   // }}}

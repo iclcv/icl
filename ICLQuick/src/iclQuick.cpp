@@ -24,6 +24,191 @@
 
 
 namespace icl{
+  namespace {
+    struct Color{
+      // {{{ open
+
+      Color(const float *color){
+        for(int i=0;i<4;++i)COLOR[i]=color[i];
+      }
+      float COLOR[4];
+    };
+
+    // }}}
+
+    Color *savedColor = 0;
+    Color *savedFill = 0;
+    
+    float COLOR[4] = {255,0,0,255};
+    float FILL[4] = {0,0,0,0};
+
+    void saveColorAndFill(){
+      // {{{ open
+
+      if(savedColor) delete savedColor;
+      if(savedFill) delete savedFill;
+      savedColor = new Color(COLOR);
+      savedFill = new Color(FILL);
+    }
+
+    // }}}
+    void restoreColorAndFill(){
+      // {{{ open
+
+      if(savedColor){
+        for(int i=0;i<4;i++)COLOR[i]=savedColor->COLOR[i];
+        delete savedColor; 
+        savedColor = 0;
+      }
+      if(savedFill){
+        for(int i=0;i<4;i++)FILL[i]=savedFill->COLOR[i];
+        delete savedFill; 
+        savedFill = 0;
+      }
+    }
+
+    // }}}
+
+    int FONTSIZE = 12;
+    string FONTFAMILY = "Times";
+    void bresenham(int x0, int x1, int y0, int y1, vector<int> &xs, vector<int> &ys, int maxX, int maxY){
+      // {{{ open
+
+      int steep = std::abs(y1 - y0) > std::abs(x1 - x0);
+      if(steep){
+        swap(x0, y0);
+        swap(x1, y1);
+      }
+      int steep2 = x0 > x1;
+      if(steep2){
+        swap(x0, x1);
+        swap(y0, y1);
+      }
+      
+      int deltax = x1 - x0;
+      int deltay = std::abs(y1 - y0);
+      int error = 0;
+      int ystep = y0 < y1 ? 1 : -1;
+      
+      for(int x=x0,y=y0;x<=x1;x++){
+        if(x>=0 && x<=maxX && y>=0 && y<=maxY){
+          if(steep){
+            xs.push_back(y); 
+            ys.push_back(x);
+          }else{
+            xs.push_back(x); 
+            ys.push_back(y);
+          }
+        }
+        error += deltay;
+        if (2*error >= deltax){
+          y += ystep;
+          error -=deltax;
+        }
+      }
+    }
+    // }}}
+
+    static PWCGrabber *G[4] = {0,0,0,0};
+    struct PWCReleaser{
+      // {{{ open
+
+      ~PWCReleaser(){
+        for(int i=0;i<4;i++){
+          if(G[i]) delete G[i];
+        }
+      }
+    };
+
+    // }}}
+    static PWCReleaser __r;
+
+    inline ImgQ *prepare_for_binary_op(const ImgQ &a, const ImgQ &b, ImgQ &na, ImgQ &nb){
+      // {{{ open
+
+      if(a.getROISize() == b.getROISize() && a.getChannels() == b.getChannels()){
+        na = copy(a);
+        nb = copy(b);
+        return new ImgQ(a.getParams());
+      }
+
+    Size sa = a.getROISize(), sb = b.getROISize();
+    Size sr(max(sa.width,sb.width), max(sa.height,sb.height) );
+    int cr = max(a.getChannels(),b.getChannels());
+      
+    na = ImgQ(sr,a.getChannels());
+    na.setROI(a.getROI());
+    a.deepCopyROIToROI(&na);
+    na.setFullROI();
+    na.setChannels(cr);
+
+
+    nb = ImgQ(sr,b.getChannels());
+    nb.setROI(b.getROI());
+    b.deepCopyROIToROI(&nb);
+    nb.setFullROI();
+    nb.setChannels(cr);
+      
+    return new ImgQ(na.getParams());
+  }
+
+  // }}}
+    
+    inline ImgQ apply_binary_arithmetical_op(const ImgQ &a, const ImgQ &b,  BinaryArithmeticalOp::optype ot){
+      // {{{ open
+
+      BinaryArithmeticalOp binop(ot);
+      binop.setCheckOnly(true);
+      binop.setClipToROI(true);
+
+      if(a.getROISize() == b.getROISize() && a.getChannels() == b.getChannels()){
+          ImgBase *res = new ImgQ(a.getParams());
+          binop.apply(&a,&b,&res);
+          ImgQ x = *(res->asImg<ICL_QUICK_TYPE>());
+          delete res;
+          return x;
+      }
+      
+      Size sa = a.getROISize(), sb = b.getROISize();
+      Size sr(max(sa.width,sb.width), max(sa.height,sb.height) );
+      int cr = max(a.getChannels(),b.getChannels());
+      
+      ImgQ na(sr,a.getChannels());
+      na.setROI(a.getROI());
+      a.deepCopyROIToROI(&na);
+      na.setFullROI();
+      na.setChannels(cr);
+      
+      
+      ImgQ nb(sr,b.getChannels());
+      nb.setROI(b.getROI());
+      b.deepCopyROIToROI(&nb);
+      nb.setFullROI();
+      nb.setChannels(cr);
+      
+      ImgBase * res = new ImgQ(na.getParams());
+      
+      binop.apply(&na,&nb,&res);
+      ImgQ x = *(res->asImg<ICL_QUICK_TYPE>());
+      delete res;
+      return x;
+    }
+
+    // }}}
+    inline ImgQ apply_unary_arithmetical_op(const ImgQ &image,ICL_QUICK_TYPE val, UnaryArithmeticalOp::optype ot){
+      // {{{ open
+
+      ImgBase *dst = 0;
+      UnaryArithmeticalOp(ot,val).apply(&image,&dst);
+      ImgQ r = *(dst->asImg<ICL_QUICK_TYPE>());
+      delete dst;
+      return r;
+    }
+
+    // }}}
+
+    Timer *TIMER=0;      
+  }
 
   using namespace std;
 
@@ -178,22 +363,6 @@ namespace icl{
 
   // }}}
 
-  namespace{
-    static PWCGrabber *G[4] = {0,0,0,0};
-    struct PWCReleaser{
-      // {{{ open
-
-      ~PWCReleaser(){
-        for(int i=0;i<4;i++){
-          if(G[i]) delete G[i];
-        }
-      }
-    };
-
-    // }}}
-    static PWCReleaser __r;
-  }
-  
   ImgQ pwc(int device, const Size &size, format fmt, bool releaseGrabber){
     // {{{ open
 
@@ -305,8 +474,18 @@ namespace icl{
   // }}}
   void show(const ImgQ &image){
     // {{{ open
-
-    TestImages::xv(&image);
+    if(image.hasFullROI()){
+      TestImages::xv(&image);
+    }else{
+      ImgQ T = copy(image);
+      saveColorAndFill();
+      color(255,0,0);
+      fill(0,0,0,0);
+      rect(T,T.getROI());
+      restoreColorAndFill();
+      T.setFullROI();
+      TestImages::xv(&T);
+    }
   }
 
   // }}}
@@ -318,93 +497,6 @@ namespace icl{
 
   // }}}
 
-  namespace{
-    inline ImgQ *prepare_for_binary_op(const ImgQ &a, const ImgQ &b, ImgQ &na, ImgQ &nb){
-      // {{{ open
-
-      if(a.getROISize() == b.getROISize() && a.getChannels() == b.getChannels()){
-        na = copy(a);
-        nb = copy(b);
-        return new ImgQ(a.getParams());
-      }
-
-    Size sa = a.getROISize(), sb = b.getROISize();
-    Size sr(max(sa.width,sb.width), max(sa.height,sb.height) );
-    int cr = max(a.getChannels(),b.getChannels());
-      
-    na = ImgQ(sr,a.getChannels());
-    na.setROI(a.getROI());
-    a.deepCopyROIToROI(&na);
-    na.setFullROI();
-    na.setChannels(cr);
-
-
-    nb = ImgQ(sr,b.getChannels());
-    nb.setROI(b.getROI());
-    b.deepCopyROIToROI(&nb);
-    nb.setFullROI();
-    nb.setChannels(cr);
-      
-    return new ImgQ(na.getParams());
-  }
-
-  // }}}
-    
-    inline ImgQ apply_binary_arithmetical_op(const ImgQ &a, const ImgQ &b,  BinaryArithmeticalOp::optype ot){
-      // {{{ open
-
-      BinaryArithmeticalOp binop(ot);
-      binop.setCheckOnly(true);
-      binop.setClipToROI(true);
-
-      if(a.getROISize() == b.getROISize() && a.getChannels() == b.getChannels()){
-          ImgBase *res = new ImgQ(a.getParams());
-          binop.apply(&a,&b,&res);
-          ImgQ x = *(res->asImg<ICL_QUICK_TYPE>());
-          delete res;
-          return x;
-      }
-      
-      Size sa = a.getROISize(), sb = b.getROISize();
-      Size sr(max(sa.width,sb.width), max(sa.height,sb.height) );
-      int cr = max(a.getChannels(),b.getChannels());
-      
-      ImgQ na(sr,a.getChannels());
-      na.setROI(a.getROI());
-      a.deepCopyROIToROI(&na);
-      na.setFullROI();
-      na.setChannels(cr);
-      
-      
-      ImgQ nb(sr,b.getChannels());
-      nb.setROI(b.getROI());
-      b.deepCopyROIToROI(&nb);
-      nb.setFullROI();
-      nb.setChannels(cr);
-      
-      ImgBase * res = new ImgQ(na.getParams());
-      
-      binop.apply(&na,&nb,&res);
-      ImgQ x = *(res->asImg<ICL_QUICK_TYPE>());
-      delete res;
-      return x;
-    }
-
-    // }}}
-    inline ImgQ apply_unary_arithmetical_op(const ImgQ &image,ICL_QUICK_TYPE val, UnaryArithmeticalOp::optype ot){
-      // {{{ open
-
-      ImgBase *dst = 0;
-      UnaryArithmeticalOp(ot,val).apply(&image,&dst);
-      ImgQ r = *(dst->asImg<ICL_QUICK_TYPE>());
-      delete dst;
-      return r;
-    }
-
-    // }}}
-  
-  } // end of anonymous namespace
-  
   ImgQ operator+(const ImgQ &a,const ImgQ &b){
     // {{{ open
 
@@ -815,49 +907,6 @@ namespace icl{
 
   // }}}
 
-  namespace {
-    float COLOR[4] = {255,0,0,255};
-    float FILL[4] = {0,0,0,0};
-    int FONTSIZE = 12;
-    string FONTFAMILY = "Times";
-    void bresenham(int x0, int x1, int y0, int y1, vector<int> &xs, vector<int> &ys, int maxX, int maxY){
-      // {{{ open
-
-      int steep = std::abs(y1 - y0) > std::abs(x1 - x0);
-      if(steep){
-        swap(x0, y0);
-        swap(x1, y1);
-      }
-      int steep2 = x0 > x1;
-      if(steep2){
-        swap(x0, x1);
-        swap(y0, y1);
-      }
-      
-      int deltax = x1 - x0;
-      int deltay = std::abs(y1 - y0);
-      int error = 0;
-      int ystep = y0 < y1 ? 1 : -1;
-      
-      for(int x=x0,y=y0;x<=x1;x++){
-        if(x>=0 && x<=maxX && y>=0 && y<=maxY){
-          if(steep){
-            xs.push_back(y); 
-            ys.push_back(x);
-          }else{
-            xs.push_back(x); 
-            ys.push_back(y);
-          }
-        }
-        error += deltay;
-        if (2*error >= deltax){
-          y += ystep;
-          error -=deltax;
-        }
-      }
-    }
-    // }}}
-  }
   void color(float r, float g, float b, float a){
     // {{{ open
 
@@ -1036,9 +1085,6 @@ namespace icl{
 
   // }}}
   
-  namespace{
-    Timer *TIMER=0;    
-  }
   void tic(){
     // {{{ open
 
@@ -1055,7 +1101,6 @@ namespace icl{
   }
 
   // }}}
-  
   void toc(){
     // {{{ open
 
