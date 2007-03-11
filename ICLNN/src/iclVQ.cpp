@@ -1,6 +1,3 @@
-#include "iclVQ.h"
-#include "iclMathematics.h"
-#include "iclStackTimer.h"
 /*
   VQ.cpp
 
@@ -10,6 +7,10 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
+#include "iclVQ.h"
+#include "iclMathematics.h"
+#include "iclStackTimer.h"
+#include <iclCC.h>
 
 using namespace std;
 using namespace icl;
@@ -19,10 +20,10 @@ namespace icl {
   // {{{ Constructor/ Destructor
 
   template <typename T, template<typename> class U>
-  VQ<T,U>::VQ(ImgBase *poSrc, float fLearnRate, bool deepCopyData) :
+  VQ<T,U>::VQ(const ImgBase *poSrc, float fLearnRate) :
     m_fLearnRate(fLearnRate) {
     FUNCTION_LOG("");
-    m_poData = new U<T>(poSrc, deepCopyData);
+    m_poData = new U<T>(poSrc);
     m_vecRefDataPtr = m_poData->getDataPtr();
     m_uiVQDim = m_poData->getDim();
     m_uiSrcDim = poSrc->getDim();
@@ -31,9 +32,17 @@ namespace icl {
   }
 
   template <typename T, template<typename> class U>
+  VQ<T,U>::VQ(unsigned int uiVQDim, float fLearnRate) :
+    m_fLearnRate(fLearnRate), m_uiVQDim(uiVQDim) {
+    FUNCTION_LOG("");
+    m_poData = new U<T>();
+    m_bClusterIsInitialized = false;
+    m_uiMaxTrainSteps=3000;
+  }
+
+  template <typename T, template<typename> class U>
   VQ<T,U>::~VQ() {
     FUNCTION_LOG("");
-
   }
 
 // }}}
@@ -74,12 +83,18 @@ namespace icl {
 
   // {{{ cluster initilization methods 
   template <typename T, template<typename> class U>
-  void VQ<T,U>::initClusterFromSrc(vqinitmode eMode,
+  void VQ<T,U>::initClusterFromSrc(const ImgBase *poSrc,
+                                   vqinitmode eMode,
                                    unsigned int uiStart) {
     FUNCTION_LOG("");
     
+    // Variable initialisation
     unsigned int uiRndPos;
+    m_poData->setData(poSrc);
+    m_vecRefDataPtr = m_poData->getDataPtr();
+    m_uiSrcDim = poSrc->getDim();
     
+    // Select initialisation mode
     switch(eMode) {
       case initRnd:
         for (unsigned int i=0;i<m_uiCenter;i++) {
@@ -113,13 +128,18 @@ namespace icl {
 
   // {{{ cluster algorithms 
   template <typename T, template<typename> class U>
-  void VQ<T,U>::vq(unsigned int uiDataIdx) {
+  void VQ<T,U>::vq(const ImgBase *poSrc, unsigned int uiDataIdx) {
     // {{{ open
+
     FUNCTION_LOG("");
-    
+  
     // check pre start options
     ICLASSERT(m_bClusterIsInitialized);
     
+    // Initialise data object
+    m_poData->setData(poSrc);
+    m_vecRefDataPtr = m_poData->getDataPtr();
+
     // variable initilization
     unsigned int uiMinDistIdx; // The min distance codeword to the source data
     float fErrBuf=0; // The minimal distance 
@@ -130,7 +150,7 @@ namespace icl {
     // update the codebook
     for (unsigned int i=0;i<m_uiVQDim;i++) {
       m_vecCluster[uiMinDistIdx][i] += m_fLearnRate * 
-        (m_vecRefDataPtr[i][uiDataIdx] -m_vecCluster[uiMinDistIdx][i]) ;
+        (m_vecRefDataPtr[i][uiDataIdx] - m_vecCluster[uiMinDistIdx][i]) ;
     }
   }
 
@@ -196,7 +216,7 @@ namespace icl {
   unsigned int VQ<T,U>::nn(unsigned int uiDataIdx, float &fMinDist) {
     // {{{ open
     FUNCTION_LOG("");
-    
+
     // variable deklaration
     unsigned int uiMinDistIdx=0;
     float tmp=0;
@@ -223,31 +243,33 @@ namespace icl {
 // }}}
 
   template <typename T, template<typename> class U>
-  ImgBase* VQ<T,U>::wta(ImgBase **dstImg) {
+  ImgBase* VQ<T,U>::wta(bool bInking, ImgBase **dstImg) {
     // {{{ open
     FUNCTION_LOG("");
 
     // variable deklaration
     ImgBase *oTmpImg;
     icl8u *dataPtr=0;
-    unsigned int uiWinner;
-    unsigned int uiClusterColor = 255 / (m_uiCenter - 1);
     float fMinDist = 0;
+    int iColorIdx=1;
+    
+    // Ink WTA map
+    if (bInking) { iColorIdx = 255 / (m_uiCenter-1); }
     
     // deklare dstImg
-    if (dstImg == 0) {
+    if (!dstImg) {
       oTmpImg = imgNew(depth8u, m_poData->m_poData->getSize(), formatGray);
     } else {
       ensureCompatible(dstImg, depth8u, m_poData->m_poData->getSize(), 
                        formatGray);
+      oTmpImg = *dstImg;
     }
-    oTmpImg = *dstImg;
+
     dataPtr = (icl8u*) oTmpImg->getDataPtr(0);
-    
+
     // Compute WTA
-    for(unsigned int i=0;i<m_uiVQDim;i++) {
-      uiWinner = nn(i,fMinDist);
-      dataPtr[i] = uiWinner * uiClusterColor;  
+    for(unsigned int i=0;i<m_uiSrcDim;i++) {
+      dataPtr[i] = nn(i,fMinDist) * iColorIdx;  
     }
     
     // return image
@@ -261,6 +283,8 @@ namespace icl {
   // {{{ helper functions 
   template <typename T, template<typename> class U>
   void VQ<T,U>::printCluster() {
+    // {{{ open
+
     FUNCTION_LOG("");
 
     // calc center with minimal distance
@@ -274,6 +298,75 @@ namespace icl {
     }
     printf("\n\n");
   }
+
+// }}}
+
+  template <typename T, template<typename> class U>
+  float VQ<T,U>::discriminantAnalysis(const ImgBase *clusterImg) {
+    // {{{ open
+    
+    FUNCTION_LOG("");
+    
+    // variable deklaration
+    ImgBase *grayImg = imgNew(depth8u, m_poData->m_poData->getSize(),
+                              formatGray);
+    vector<_ClProp> vecClProp(m_uiVQDim);
+    vector<float> fMeanImg;
+    vector<int> vecSelChannel;
+    float fIntraClassVar=0, fInterClassVar=0;
+    float fTmp;
+    icl8u *clusterPtr = (icl8u*) clusterImg->getDataPtr(0);
+    ImgBase *rgbImg2=0;
+    
+    // Compute gray src image
+    vecSelChannel.push_back(0);
+    vecSelChannel.push_back(1);
+    vecSelChannel.push_back(2);
+    const ImgBase *rgbImg = 
+      m_poData->getSrcImg()->selectChannels(vecSelChannel);
+    rgbImg2 = const_cast<ImgBase*>(rgbImg);
+    rgbImg2->setFormat(formatRGB);
+    rgbImg2->normalizeImg(Range<icl64f>(0,255));
+    cc(rgbImg2, grayImg);
+    icl8u *grayPtr = (icl8u*) grayImg->getDataPtr(0);
+    
+    // Compute cluster properties
+    for (int i=0;i<clusterImg->getDim();i++) {
+      vecClProp[clusterPtr[i]].pixSum += grayPtr[i];
+      vecClProp[clusterPtr[i]].uiClSize++;  
+    }
+    
+    for (unsigned int i=0;i<m_uiVQDim;i++) {
+      vecClProp[i].fMean = vecClProp[i].pixSum / vecClProp[i].uiClSize;
+    }
+
+    fMeanImg = mean(grayImg);
+
+    // Compute Intra class varianz
+    for (int i=0;i<clusterImg->getDim();i++) {
+      fTmp = grayPtr[i] - vecClProp[clusterPtr[i]].fMean;
+      vecClProp[clusterPtr[i]].fIntraVar += fTmp * fTmp; 
+    }
+    
+    for (unsigned int i=0;i<m_uiVQDim;i++) {
+      vecClProp[i].fIntraVar = (vecClProp[i].fIntraVar / vecClProp[i].uiClSize);
+      fIntraClassVar += vecClProp[i].fIntraVar;
+    }
+    
+    fIntraClassVar = fIntraClassVar / m_uiVQDim;
+    
+    // Comuter Inter class varianz
+    for (unsigned int i=0;i<m_uiVQDim;i++) {
+      vecClProp[i].fInterVar = ((vecClProp[i].fMean-fMeanImg[0]) * 
+                                (vecClProp[i].fMean-fMeanImg[0]));
+      fInterClassVar += vecClProp[i].fInterVar;
+    }
+    
+    fInterClassVar = fInterClassVar / m_uiVQDim;
+    return (fInterClassVar / fIntraClassVar);
+  }
+
+// }}}
 
   // }}}
 

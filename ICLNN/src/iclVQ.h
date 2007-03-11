@@ -1,7 +1,4 @@
-#include "iclImg.h"
-#include "iclInterleaved.h"
-#include <limits>
- /*
+/*
   VQ.h
 
   Written by: Michael Götting and Christof Elbrechter (2007)
@@ -13,6 +10,9 @@
 #ifndef VQ_H
 #define VQ_H
 
+#include "iclImg.h"
+#include "iclInterleaved.h"
+#include <limits>
 
 namespace icl {
 
@@ -26,7 +26,8 @@ template <typename T, template<typename> class U>
 class VQ : public Img<T> {
  public:
   // Constructor/ Destructor
-  VQ(ImgBase *pSrc, float fLearnRate=0.01, bool deepCopyData=false);
+  VQ(const ImgBase *pSrc, float fLearnRate=0.01);
+  VQ(unsigned int uiVQDim, float fLearnRate=0.01);
   virtual ~VQ();
   
   // operator
@@ -35,18 +36,26 @@ class VQ : public Img<T> {
   // Variable deklaration
   U<T> *m_poData; /// The abstract information orientation
 
+  struct _ClProp {
+    unsigned int uiClSize;
+    float fMean;
+    float fIntraVar;
+    float fInterVar;
+    T pixSum;
+  };
+  
   // Variable deklaration for the reference data
   std::vector<T*> m_vecRefDataPtr; /// The first element of each data set
   unsigned int m_uiSrcDim; /// The dimension of the src data (w*h)
   
   // Variable deklaration for the VQ cluster
+  float m_fLearnRate; /// The learning rate of the VQ
   std::vector<std::vector<icl64f> > m_vecCluster; /// The VQ cluster data
   unsigned int m_uiVQDim; /// The cluster vector dimension
   unsigned int m_uiCenter; /// The number of VQ centers
   unsigned int m_uiMaxTrainSteps; /// The maximum training steps
-  float m_fLearnRate; /// The learning rate of the VQ
-  bool m_bClusterIsInitialized; 
-  
+  bool m_bClusterIsInitialized, m_bDeepCopyData; 
+
   // Set functions
   void setLearnRate(float fLearnRate) { m_fLearnRate = fLearnRate; }
 
@@ -59,19 +68,22 @@ class VQ : public Img<T> {
   void clearCluster();
 
   // cluster initialization methods
-  void initClusterFromSrc(vqinitmode eMode, unsigned int uiStart=0);
+  void initClusterFromSrc(const ImgBase *poSrc,
+                          vqinitmode eMode, 
+                          unsigned int uiStart=0);
   
   // cluster algorithms
-  void vq(unsigned int uiDataIdx);
+  void vq(const ImgBase *poSrc, unsigned int uiDataIdx);
   void lbg();
 
   // distance algorithms
   unsigned int nn(unsigned int uiDataIdx, float &fMinDist);
-  ImgBase* wta(ImgBase **dstImg=0);
+  ImgBase* wta(bool bInking=false, ImgBase **dstImg=0);
   
   // helper functions
   void printCluster();
-  
+  float discriminantAnalysis(const ImgBase* clusterImg);
+    
 }; // class VQ
  
 

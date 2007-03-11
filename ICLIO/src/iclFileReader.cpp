@@ -101,24 +101,26 @@ namespace icl {
 
   {
     FUNCTION_LOG("");
-    ostringstream ossFile;
-     ossFile << "." << sType;
-     bool bDummy;
-
-     ioformat eFormat = getFileType (ossFile.str(), bDummy);
-     if (eFormat == ioFormatSEQ || eFormat == ioFormatUnknown)
-        throw ICLException (string("not supported file type ") + sType);
-
-     //---- Build filename ----
-     for (int i=iObjStart;i<=iObjEnd;i++) {
-        for (int j=iImageStart;j<=iImageEnd;j++) {
-           ossFile.clear ();
-           ossFile << sPrefix << i << "__" << j << "." << sType;
-           m_vecFileName.push_back(ossFile.str());
-        }
-     }
-
-     this->init ();
+    ostringstream ossFileInit;
+    ossFileInit << "." << sType;
+    bool bDummy;
+    
+    ioformat eFormat = getFileType (ossFileInit.str(), bDummy);
+    if (eFormat == ioFormatSEQ || eFormat == ioFormatUnknown)
+      throw ICLException (string("not supported file type ") + sType);
+    
+    //---- Build filename ----
+    for (int i=iObjStart;i<=iObjEnd;i++) {
+      for (int j=iImageStart;j<=iImageEnd;j++) {
+        ostringstream ossObjectCnt, ossFile;
+        ossFile << sPrefix << i << "__" << j << "." << sType;
+        ossObjectCnt << i << "__" << j;
+        m_vecFileName.push_back(ossFile.str());
+        m_vecObjectCnt.push_back(ossObjectCnt.str());
+      }
+    }
+    
+    this->init ();
   }
 
 // }}}

@@ -12,22 +12,24 @@
 #ifndef Interleaved_H
 #define Interleaved_H
 
-
 namespace icl {
 
 template <typename T>
 class Interleaved {
  public:
 
-  Interleaved(ImgBase* poSrc, bool deepCopyData);
-  ~Interleaved();
+  Interleaved(const ImgBase* poSrc);
+  Interleaved() {}
+  ~Interleaved() {}
 
-  bool m_bHaveData;
-  ImgBase* m_poData;
+  const ImgBase* m_poData;
   std::vector<T*> m_vecDataPtr;
 
+  void setData(const ImgBase *poSrc);
+  
   const std::vector<T*>& getDataPtr();
   unsigned int getDim() {return m_poData->getChannels();}
+  const ImgBase* getSrcImg() { return m_poData; }
 
 };
 

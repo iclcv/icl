@@ -16,34 +16,32 @@ using namespace std;
 namespace icl {
 
   template <class T>
-  Interleaved<T>::Interleaved(ImgBase *poSrc, bool deepCopyData) :
-    m_bHaveData(deepCopyData) {
-    
-    // deep copy data
-    if (deepCopyData) {
-      m_poData = poSrc->deepCopy();
-    } else {
-      m_poData = poSrc;
-    }
-
-    // create Ptr Vector
+  Interleaved<T>::Interleaved(const ImgBase *poSrc) :
+    m_poData(poSrc) {
+    // create Data Vector
     for (int i=0;i<m_poData->getChannels();i++) {
       m_vecDataPtr.push_back((T*) m_poData->asImg<T>()->getDataPtr(i));
     }
   }
   
   template <class T>
-  Interleaved<T>::~Interleaved()
+  void Interleaved<T>::setData(const ImgBase *poSrc)
   {
-    if (m_bHaveData) { delete m_poData; }
+    // Variable initialisation
+    m_poData = poSrc;
+    m_vecDataPtr.clear();
     
+    // create Data Vector
+    for (int i=0;i<m_poData->getChannels();i++) {
+      m_vecDataPtr.push_back((T*) m_poData->asImg<T>()->getDataPtr(i));
+    }
   }
-
+  
   template <class T>
   inline const vector<T*>& Interleaved<T>::getDataPtr() { 
     return m_vecDataPtr;
   }
-
+  
   template class Interleaved<icl8u>;
   template class Interleaved<icl16s>;
   template class Interleaved<icl32f>;

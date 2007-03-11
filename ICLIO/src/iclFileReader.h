@@ -113,7 +113,18 @@ namespace icl {
          /// retrieve name of next grabbed file
          const std::string& getNextFileName () const 
             {return m_vecFileName[m_iCurImg];}
-
+         
+         /// retrieve the current object and image number
+         const std::string& getCurrObjectPostfix() const
+           { if (m_iCurImg == 0)
+             return m_vecObjectCnt[m_vecObjectCnt.size()-1];
+           else
+             return m_vecObjectCnt[m_iCurImg-1]; }
+         
+         /// retrieve the next object and image number
+         const std::string& getNextObjectPostfix() const
+           { return m_vecObjectCnt[m_iCurImg]; }
+         
          /// skip next file and directly jump to next one
          void next ()
             { if (++m_iCurImg == m_vecFileName.size()) m_iCurImg=0; }
@@ -144,6 +155,7 @@ namespace icl {
   
 
          FileList     m_vecFileName;  //< list of files to load
+         FileList     m_vecObjectCnt;  //
          ImageBuffer  m_vecImgBuffer; //< vector of buffered images
   
          bool m_bBuffered;         //< flag indicating buffering of images
