@@ -138,14 +138,14 @@ namespace icl{
       
     na = ImgQ(sr,a.getChannels());
     na.setROI(a.getROI());
-    a.deepCopyROIToROI(&na);
+    a.deepCopyROI(&na);
     na.setFullROI();
     na.setChannels(cr);
 
 
     nb = ImgQ(sr,b.getChannels());
     nb.setROI(b.getROI());
-    b.deepCopyROIToROI(&nb);
+    b.deepCopyROI(&nb);
     nb.setFullROI();
     nb.setChannels(cr);
       
@@ -175,14 +175,14 @@ namespace icl{
       
       ImgQ na(sr,a.getChannels());
       na.setROI(a.getROI());
-      a.deepCopyROIToROI(&na);
+      a.deepCopyROI(&na);
       na.setFullROI();
       na.setChannels(cr);
       
       
       ImgQ nb(sr,b.getChannels());
       nb.setROI(b.getROI());
-      b.deepCopyROIToROI(&nb);
+      b.deepCopyROI(&nb);
       nb.setFullROI();
       nb.setChannels(cr);
       

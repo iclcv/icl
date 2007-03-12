@@ -114,11 +114,12 @@ namespace icl {
     FUNCTION_LOG("ptr:"<<poDst);
     if(!poDst) poDst = new Img<otherT>(getParams());
     else poDst->setParams(getParams());
+    poDst->setTime(getTime());
     
-#define ICL_INSTANTIATE_DEPTH(D)                                            \
-      case depth##D: for(int c=getChannels()-1;c>=0;--c){                   \
-      icl::convert<icl##D,otherT>(asImg<icl##D>()->getData(c),              \
-      asImg<icl##D>()->getData(c)+getDim(),poDst->getData(c));    \
+#define ICL_INSTANTIATE_DEPTH(D)                                 \
+   case depth##D: for(int c=getChannels()-1;c>=0;--c){           \
+      icl::convert<icl##D,otherT>(asImg<icl##D>()->getData(c),   \
+      asImg<icl##D>()->getData(c)+getDim(),poDst->getData(c));   \
       } break;
     switch(getDepth()){
       ICL_INSTANTIATE_ALL_DEPTHS;
@@ -159,35 +160,16 @@ namespace icl {
 
   template<class otherT>
   Img<otherT> *ImgBase::convertROI(Img<otherT> *poDst) const{ 
+    /// new using src and dst ROI
     FUNCTION_LOG("ptr:"<<poDst);
-    ImgParams p(getROISize(),getChannels(),getFormat());
-    if(!poDst) poDst = new Img<otherT>(p);
-    else poDst->setParams(p);
-    
-#define ICL_INSTANTIATE_DEPTH(D)                                         \
-  case depth##D:                                                         \
-    for(int c=getChannels()-1;c>=0;--c){                                 \
-      convertChannelROI(asImg<icl##D>(),c,getROIOffset(),getROISize(),   \
-                        poDst,c,Point::null,getROISize());               \
-    }                                                                    \
-    break;
-    
-    switch(getDepth()){
-      ICL_INSTANTIATE_ALL_DEPTHS;
+    if(!poDst){
+      poDst = new Img<otherT>(getROISize(),getChannels(),getFormat());
+    }else{
+      ICLASSERT( poDst->getROISize() == getROISize() );
+      poDst->setChannels(getChannels());
+      poDst->setFormat(getFormat());
     }
-#undef ICL_INSTANTIATE_DEPTH
-    return poDst;    
-  }
-  // }}}
-
-  // {{{ convertROIToROI(Img<otherT> *)
-
- template<class otherT>
- Img<otherT> *ImgBase::convertROIToROI(Img<otherT> *poDst) const{ 
-   FUNCTION_LOG("ptr:"<<poDst);
-   if(!poDst) return convertROI<otherT>();
-   ICLASSERT( poDst->getROISize() == getROISize() );
-   ICLASSERT( poDst->getChannels() == getChannels() );
+    poDst->setTime(getTime());
     
 #define ICL_INSTANTIATE_DEPTH(D)                                            \
   case depth##D:                                                            \
@@ -204,20 +186,6 @@ namespace icl {
     return poDst;    
   }
   // }}}
-
-  // {{{ convertROIToROI(ImgBase *)
-      
-  ImgBase *ImgBase::convertROIToROI(ImgBase *poDst) const{
-    FUNCTION_LOG("");
-    if(!poDst) return deepCopyROI();
-    switch(poDst->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return this->convertROIToROI(poDst->asImg<icl##D>()); break;
-      ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
-      default: ICL_INVALID_FORMAT; break;
-    }
-  }
-  // }}}  
 
   // {{{ setFormat
   void ImgBase::setFormat(format fmt){

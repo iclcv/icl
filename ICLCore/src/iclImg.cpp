@@ -209,6 +209,7 @@ namespace icl {
                                     format fmt,
                                     Time t,
                                     ImgBase **ppoDst){
+    // {{{ open
     ImgParams p(this->getSize(), 0);
     Img<Type> *poDst = ensureCompatible<Type>(ppoDst,p);
     /// Die ROi wird nicht übernommen ???
@@ -226,6 +227,7 @@ namespace icl {
     return poDst;  
   }
 
+  // }}}
 
   // }}}
 
@@ -294,39 +296,9 @@ namespace icl {
   }
 
   // }}}
-
-  template<class Type>
-  Img<Type> *Img<Type>::deepCopyROIToROI(ImgBase *poDst) const{
-    // {{{ open
-
-    if(!poDst) return deepCopyROI();
-    switch(poDst->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return deepCopyROIToROI(poDst->asImg<icl##D>()); break;
-      ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
-    }
-    return 0;
-  }
-
+  
   // }}}
 
-  template<class Type>
-  Img<Type> *Img<Type>::scaledCopyROIToROI(ImgBase *poDst, scalemode eScaleMode) const{
-    // {{{ open
-
-    if(!poDst) return deepCopyROI();
-    switch(poDst->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return scaledCopyROIToROI(poDst->asImg<icl##D>(),eScaleMode); break;
-      ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
-    }
-    return 0;
-  }
-
-  // }}}
-
-  // }}}
-    
   // {{{ copy-functions with Img<Type>*-argument
 
   template<class Type>
@@ -368,11 +340,16 @@ namespace icl {
   template<class Type>
   Img<Type> *Img<Type>::deepCopyROI(Img<Type> *poDst) const{
     // {{{ open
-
+    
+    // NEW USING source ROI as well as destination images ROI
     FUNCTION_LOG("ptr:"<< poDst);
-    ImgParams p (getROISize(), getChannels(), getFormat());
-    if(!poDst) poDst = new Img<Type>(p);
-    else poDst->setParams (p);
+    if(!poDst){
+      poDst = new Img<Type>(getROISize(),getChannels(),getFormat());
+    }else{
+      ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize(), NULL);
+      poDst->setChannels(getChannels());
+      poDst->setFormat(getFormat());
+    }
     poDst->setTime(getTime());
     for(int c=getChannels()-1; c>=0; --c){
       deepCopyChannelROI(this,c, getROIOffset(), getROISize(), 
@@ -393,7 +370,6 @@ namespace icl {
     poDst->setChannels(getChannels());
     poDst->setFormat(getFormat());
     poDst->setTime(getTime());
-    poDst->setFullROI(); 
     
     for(int c=getChannels()-1; c>=0; --c){
       scaledCopyChannelROI(this,c, getROIOffset(), getROISize(), 
@@ -404,43 +380,6 @@ namespace icl {
 
   // }}}
   
-  template<class Type>
-  Img<Type> *Img<Type>::deepCopyROIToROI(Img<Type> *poDst) const{
-    // {{{ open
-
-    FUNCTION_LOG("ptr:"<< poDst);
-    if(!poDst) return deepCopyROI();
-    ICLASSERT_RETURN_VAL( getROISize() == poDst->getROISize() ,0);
-    ICLASSERT_RETURN_VAL( getChannels() == poDst->getChannels() ,0);
-    poDst->setTime(getTime());
-    for(int c=getChannels()-1; c>=0; --c){
-      deepCopyChannelROI(this,c, getROIOffset(), getROISize(), 
-                         poDst,c, poDst->getROIOffset(), poDst->getROISize() );
-    }
-    return poDst;
-  }
-
-  // }}}
-  
-  template<class Type>
-  Img<Type> *Img<Type>::scaledCopyROIToROI(Img<Type> *poDst, scalemode eScaleMode) const{
-    // {{{ open
-
-    FUNCTION_LOG("ptr:"<< poDst);
-    if(!poDst) return deepCopyROI();
-    ICLASSERT_RETURN_VAL( getChannels() == poDst->getChannels() ,0);
-    poDst->setTime(getTime());
-    for(int c=getChannels()-1; c>=0; --c){
-      scaledCopyChannelROI(this,c, getROIOffset(), getROISize(), 
-                           poDst,c, poDst->getROIOffset(), poDst->getROISize() , eScaleMode);
-    }  
-    return poDst;
-  }
-
-  // }}}
-
-  // }}}
-
   // }}}
   
   // {{{  channel management: detach, append remove, swap,...
@@ -1090,7 +1029,7 @@ Img<icl ## T>::getMinMax(int iChannel) const {                         \
     }
   }
   // }}}
-
+     
   // }}}
 
   // {{{  Global functions: combineImages , scaledCopyChannelROI

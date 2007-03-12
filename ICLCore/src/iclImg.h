@@ -282,7 +282,7 @@ namespace icl {
 
     /* }}} */
   
-    /** @{ @name shallow/deepCopy  and convert functions */
+    /** @{ @name shallow/deepCopy  functions */
     /* {{{ open  */
                   
     virtual Img<Type> *shallowCopy(const Rect &roi, 
@@ -451,12 +451,6 @@ namespace icl {
     **/
     Img<Type> *deepCopyROI(Img<Type> *poDst) const;
 
-    /// TODO
-    virtual Img<Type> *deepCopyROIToROI(ImgBase *poDst) const;
-
-    /// TODO
-    Img<Type> *deepCopyROIToROI(Img<Type> *poDst) const;
-
     //@}
     /* }}} */
   
@@ -497,12 +491,6 @@ namespace icl {
         @param eScaleMode interpolation method to use when scaling
     */
     Img<Type> *scaledCopyROI(Img<Type> *poDst, scalemode eScaleMode=interpolateNN) const;    
-
-    /// TODO
-    virtual Img<Type> *scaledCopyROIToROI(ImgBase *poDst, scalemode eScaleMode=interpolateNN) const;
-
-    /// TODO
-    Img<Type> *scaledCopyROIToROI(Img<Type> *poDst, scalemode eScaleMode=interpolateNN) const;
 
     //@}
     /* }}} */
