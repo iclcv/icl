@@ -229,9 +229,6 @@ namespace icl{
 
 
   // explicit template declarations
-  template void fitModel<icl64f>(icl64f*,icl64f*,unsigned int,GeneralModel<icl64f>&);
-  template void fitModel<icl32f>(icl32f*,icl32f*,unsigned int,GeneralModel<icl32f>&);
-
   template void fitModel<icl64f>(icl64f*,icl64f*,unsigned int,GeneralModel<icl64f>&,int,int);
   template void fitModel<icl32f>(icl32f*,icl32f*,unsigned int,GeneralModel<icl32f>&,int,int);
 

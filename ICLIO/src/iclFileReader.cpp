@@ -1,6 +1,7 @@
 #include <stdlib.h>
+#ifndef WIN32
 #include <wordexp.h>
-#include <dirent.h>
+#endif
 #include <zlib.h>
 #include <stdio.h>
 #include <fstream>
@@ -52,6 +53,7 @@ namespace icl {
 
   {
     FUNCTION_LOG("");
+#ifndef WIN32
     wordexp_t match;
     char **ppcFiles;
 
@@ -87,7 +89,9 @@ namespace icl {
        }
     }
     wordfree(&match);
-
+#else
+	m_vecFileName.push_back(sPattern);
+#endif
     this->init ();
   }
 

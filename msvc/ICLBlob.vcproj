@@ -17,9 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets=".\ICL Debug.vsprops"
 			CharacterSet="1"
 			ManagedExtensions="1"
 			>
@@ -40,8 +39,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="D:\ThirdParty\Intel\IPP\5.1\ia32\include;..\ICLBlob\src;..\ICLCore\src;..\ICLUtils\src;..\ICLCC\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;WITH_IPP_OPTIMIZATION;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -50,7 +47,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4244"
+				DisableSpecificWarnings="4244; 4267; 4661"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -82,9 +79,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets=".\ICL Release.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -150,55 +146,55 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\ICLBlob\src\ColorBlobSearcher.cpp"
+				RelativePath="..\ICLBlob\src\iclColorBlobSearcher.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\DefaultColorBlobSearcher.cpp"
+				RelativePath="..\ICLBlob\src\iclDefaultColorBlobSearcher.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\Extrapolator.cpp"
+				RelativePath="..\ICLBlob\src\iclExtrapolator.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\HungarianAlgorithm.cpp"
+				RelativePath="..\ICLBlob\src\iclHungarianAlgorithm.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\ImgRegionDetector.cpp"
+				RelativePath="..\ICLBlob\src\iclImgRegionDetector.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\KMeans2D.cpp"
+				RelativePath="..\ICLBlob\src\iclKMeans2D.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\PositionTracker.cpp"
+				RelativePath="..\ICLBlob\src\iclPositionTracker.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionBasedBlobSearcher.cpp"
+				RelativePath="..\ICLBlob\src\iclRegionBasedBlobSearcher.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetector.cpp"
+				RelativePath="..\ICLBlob\src\iclRegionDetector.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetectorBlob.cpp"
+				RelativePath="..\ICLBlob\src\iclRegionDetectorBlob.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetectorBlobPart.cpp"
+				RelativePath="..\ICLBlob\src\iclRegionDetectorBlobPart.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetectorScanLine.cpp"
+				RelativePath="..\ICLBlob\src\iclRegionDetectorScanLine.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\VQ2D.cpp"
+				RelativePath="..\ICLBlob\src\iclVQ2D.cpp"
 				>
 			</File>
 		</Filter>
@@ -208,95 +204,99 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\ICLBlob\src\ColorBlobSearcher.h"
+				RelativePath="..\ICLBlob\src\iclBlob.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\DefaultColorBlobSearcher.h"
+				RelativePath="..\ICLBlob\src\iclBlobData.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\Extrapolator.h"
+				RelativePath="..\ICLBlob\src\iclColorBlobSearcher.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\FastMedianList.h"
+				RelativePath="..\ICLBlob\src\iclDefaultColorBlobSearcher.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\FoundBlob.h"
+				RelativePath="..\ICLBlob\src\iclExtrapolator.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\HungarianAlgorithm.h"
+				RelativePath="..\ICLBlob\src\iclFastMedianList.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\ICLBlob.h"
+				RelativePath="..\ICLBlob\src\iclFoundBlob.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\ImgRegionDetector.h"
+				RelativePath="..\ICLBlob\src\iclHungarianAlgorithm.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\KMeans2D.h"
+				RelativePath="..\ICLBlob\src\iclImgRegionDetector.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\PixelRating.h"
+				RelativePath="..\ICLBlob\src\iclKMeans2D.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\PixelRatingGroup.h"
+				RelativePath="..\ICLBlob\src\iclPixelRating.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\PositionTracker.h"
+				RelativePath="..\ICLBlob\src\iclPixelRatingGroup.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionBasedBlobSearcher.h"
+				RelativePath="..\ICLBlob\src\iclPositionTracker.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetector.h"
+				RelativePath="..\ICLBlob\src\iclRegionBasedBlobSearcher.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetectorBlob.h"
+				RelativePath="..\ICLBlob\src\iclRegionDetector.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetectorBlobPart.h"
+				RelativePath="..\ICLBlob\src\iclRegionDetectorBlob.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetectorMemoryManager.h"
+				RelativePath="..\ICLBlob\src\iclRegionDetectorBlobPart.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetectorScanLine.h"
+				RelativePath="..\ICLBlob\src\iclRegionDetectorMemoryManager.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetectorTypes.h"
+				RelativePath="..\ICLBlob\src\iclRegionDetectorScanLine.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\RegionDetectorVector.h"
+				RelativePath="..\ICLBlob\src\iclRegionDetectorTypes.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\VQ2D.h"
+				RelativePath="..\ICLBlob\src\iclRegionDetectorVector.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\VQClusterInfo.h"
+				RelativePath="..\ICLBlob\src\iclVQ2D.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLBlob\src\VQVectorSet.h"
+				RelativePath="..\ICLBlob\src\iclVQClusterInfo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLBlob\src\iclVQVectorSet.h"
 				>
 			</File>
 		</Filter>

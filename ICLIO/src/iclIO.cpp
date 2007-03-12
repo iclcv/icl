@@ -2,6 +2,7 @@
 #include <iclException.h>
 #include <zlib.h>
 #include <stdio.h>
+#include <cctype>
 
 using namespace std;
 

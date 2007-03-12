@@ -7,6 +7,9 @@
 #include <iclSize.h>
 #include <iclFileWriter.h>
 #include <stdlib.h>
+#ifdef WIN32
+#include <iclWin32.h>
+#endif
 
 using std::vector;
 using std::string;

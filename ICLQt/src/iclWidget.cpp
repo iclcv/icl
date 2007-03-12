@@ -12,7 +12,6 @@
 #include <iclQtPaintEngine.h>
 
 
-
 #ifdef USE_OPENGL_ACCELERATION
 #else
 #endif

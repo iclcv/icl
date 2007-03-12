@@ -17,9 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets=".\ICL Debug.vsprops"
 			CharacterSet="1"
 			ManagedExtensions="1"
 			>
@@ -40,8 +39,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="D:\ThirdParty\Intel\IPP\5.1\ia32\include;..\ICLFilter\src;..\ICLCore\src;..\ICLUtils\src;..\ICLCC\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_USE_MATH_DEFINES;WITH_IPP_OPTIMIZATION"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -51,7 +48,7 @@
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 				CallingConvention="0"
-				DisableSpecificWarnings="4244"
+				DisableSpecificWarnings="4244;4305;4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -83,9 +80,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets=".\ICL Release.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -151,71 +147,107 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\ICLFilter\src\Arithmetic.cpp"
+				RelativePath="..\ICLFilter\src\iclAffineOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Canny.cpp"
+				RelativePath="..\ICLFilter\src\iclBinaryArithmeticalOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Compare.cpp"
+				RelativePath="..\ICLFilter\src\iclBinaryCompareOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Convolution.cpp"
+				RelativePath="..\ICLFilter\src\iclBinaryLogicalOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Filter.cpp"
+				RelativePath="..\ICLFilter\src\iclCannyOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\FilterMask.cpp"
+				RelativePath="..\ICLFilter\src\iclConvolutionOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\IntegralImg.cpp"
+				RelativePath="..\ICLFilter\src\iclDynamicConvolutionOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\LocalThreshold.cpp"
+				RelativePath="..\ICLFilter\src\iclFilter.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Logical.cpp"
+				RelativePath="..\ICLFilter\src\iclFilterMask.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\LUT.cpp"
+				RelativePath="..\ICLFilter\src\iclIntegralImgOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Median.cpp"
+				RelativePath="..\ICLFilter\src\iclLocalThreshold.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Morphological.cpp"
+				RelativePath="..\ICLFilter\src\iclLogical.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Proximity.cpp"
+				RelativePath="..\ICLFilter\src\iclLUTOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Skin.cpp"
+				RelativePath="..\ICLFilter\src\iclMedianOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Threshold.cpp"
+				RelativePath="..\ICLFilter\src\iclMirrorOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\WeightedSum.cpp"
+				RelativePath="..\ICLFilter\src\iclMorphologicalOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Wiener.cpp"
+				RelativePath="..\ICLFilter\src\iclNeighborhoodOp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclOpROIHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclProximityOp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclSkinOp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclThresholdOp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclUnaryArithmeticalOp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclUnaryCompareOp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclUnaryLogicalOp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclWeightedSumOp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclWienerOp.cpp"
 				>
 			</File>
 		</Filter>
@@ -225,71 +257,131 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\ICLFilter\src\Arithmetic.h"
+				RelativePath="..\ICLFilter\src\iclAffineOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Canny.h"
+				RelativePath="..\ICLFilter\src\iclBaseAffineOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Compare.h"
+				RelativePath="..\ICLFilter\src\iclBinaryArithmeticalOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Convolution.h"
+				RelativePath="..\ICLFilter\src\iclBinaryCompareOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Filter.h"
+				RelativePath="..\ICLFilter\src\iclBinaryLogicalOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\FilterMask.h"
+				RelativePath="..\ICLFilter\src\iclBinaryOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\IntegralImg.h"
+				RelativePath="..\ICLFilter\src\iclCannyOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\LocalThreshold.h"
+				RelativePath="..\ICLFilter\src\iclConvolutionOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Logical.h"
+				RelativePath="..\ICLFilter\src\iclDynamicConvolutionOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\LUT.h"
+				RelativePath="..\ICLFilter\src\iclFilter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Median.h"
+				RelativePath="..\ICLFilter\src\iclFilterMask.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Morphological.h"
+				RelativePath="..\ICLFilter\src\iclIntegralImgOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Proximity.h"
+				RelativePath="..\ICLFilter\src\iclLocalThresholdOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Skin.h"
+				RelativePath="..\ICLFilter\src\iclLogical.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Threshold.h"
+				RelativePath="..\ICLFilter\src\iclLUTOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\WeightedSum.h"
+				RelativePath="..\ICLFilter\src\iclMedianOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\Wiener.h"
+				RelativePath="..\ICLFilter\src\iclMirrorOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclMorphologicalOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclNeighborhoodOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclOpROIHandler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclProximityOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclRotateOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclScaleOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclSkinOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclThresholdOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclTranslateOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclUnaryArithmeticalOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclUnaryCompareOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclUnaryLogicalOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclUnaryOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclWeightedSumOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclWienerOp.h"
 				>
 			</File>
 		</Filter>

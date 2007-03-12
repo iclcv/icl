@@ -1,3 +1,5 @@
+#define NOMINMAX // needed for Win32 in order to not define min, max as macros
+
 #include <QGLWidget>
 #include <QWidget>
 #include <QImage>

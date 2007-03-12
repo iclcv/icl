@@ -17,9 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets=".\ICL Debug.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -39,9 +38,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="..\ICLIO\src;..\ICLCore\src;..\ICLUtils\src;..\ICLCC\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
+				AdditionalOptions="&#x0D;&#x0A;"
+				AdditionalIncludeDirectories="compat"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -49,6 +48,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4267; 4101; 4996; 4244; 4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -80,9 +80,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets=".\ICL Release.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -103,6 +102,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="compat"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -148,27 +148,31 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\ICLIO\src\FileReader.cpp"
+				RelativePath="..\ICLIO\src\iclDemoImageFlowers.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\FileWriter.cpp"
+				RelativePath="..\ICLIO\src\iclDemoImageMacaw.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\FwGrabber.cpp"
+				RelativePath="..\ICLIO\src\iclDemoImageWindows.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\IO.cpp"
+				RelativePath="..\ICLIO\src\iclFileReader.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\PWCGrabber.cpp"
+				RelativePath="..\ICLIO\src\iclFileWriter.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\TestImages.cpp"
+				RelativePath="..\ICLIO\src\iclIO.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclTestImages.cpp"
 				>
 			</File>
 		</Filter>
@@ -178,35 +182,27 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\ICLIO\src\FileReader.h"
+				RelativePath="..\ICLIO\src\iclFileReader.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\FileWriter.h"
+				RelativePath="..\ICLIO\src\iclFileWriter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\FwGrabber.h"
+				RelativePath="..\ICLIO\src\iclGrabber.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\Grabber.h"
+				RelativePath="..\ICLIO\src\iclIO.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\IO.h"
+				RelativePath="..\ICLIO\src\iclTestImages.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\PWCGrabber.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ICLIO\src\TestImages.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ICLIO\src\Writer.h"
+				RelativePath="..\ICLIO\src\iclWriter.h"
 				>
 			</File>
 		</Filter>

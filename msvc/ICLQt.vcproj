@@ -17,9 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets=".\ICL Debug.vsprops"
 			CharacterSet="1"
 			ManagedExtensions="1"
 			>
@@ -40,8 +39,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="..\ICLCC\src;..\ICLUtils\src;D:\ThirdParty\Qt\4.2.2\include;D:\ThirdParty\Qt\4.2.2\include\QtOpenGL;D:\ThirdParty\Qt\4.2.2\include\QtGui;D:\ThirdParty\Qt\4.2.2\include\QtCore;D:\ThirdParty\Qt\4.2.2\include\Qt;..\ICLQt\src;..\ICLCore\src;..\ICLIO\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_USE_MATH_DEFINES"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -50,6 +47,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4311; 4312; 4244; 4305; 4267; 4996; 4099"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -81,9 +79,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets=".\ICL Release.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -110,6 +107,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4311; 4312; 4244; 4305; 4267; 4996; 4099"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -149,51 +147,51 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\ICLQt\src\GLPaintEngine.cpp"
+				RelativePath="..\ICLQt\src\iclDrawWidget.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\ICLDrawWidget.cpp"
+				RelativePath="..\ICLQt\src\iclGLPaintEngine.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\ICLWidget.cpp"
+				RelativePath="..\ICLQt\src\iclMouseInteractionReceiver.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\MouseInteractionReceiver.cpp"
+				RelativePath="..\ICLQt\src\iclOSD.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSD.cpp"
+				RelativePath="..\ICLQt\src\iclOSDButton.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSDButton.cpp"
+				RelativePath="..\ICLQt\src\iclOSDLabel.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSDLabel.cpp"
+				RelativePath="..\ICLQt\src\iclOSDNavBar.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSDNavBar.cpp"
+				RelativePath="..\ICLQt\src\iclOSDSlider.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSDSlider.cpp"
+				RelativePath="..\ICLQt\src\iclOSDWidget.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSDWidget.cpp"
+				RelativePath="..\ICLQt\src\iclQImageConverter.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\QImageConverter.cpp"
+				RelativePath="..\ICLQt\src\iclQtPaintEngine.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\QtPaintEngine.cpp"
+				RelativePath="..\ICLQt\src\iclWidget.cpp"
 				>
 			</File>
 		</Filter>
@@ -203,63 +201,63 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\ICLQt\src\GLPaintEngine.h"
+				RelativePath="..\ICLQt\src\iclDrawWidget.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\ICLDrawWidget.h"
+				RelativePath="..\ICLQt\src\iclGLPaintEngine.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\ICLQt.h"
+				RelativePath="..\ICLQt\src\iclMouseInteractionInfo.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\ICLWidget.h"
+				RelativePath="..\ICLQt\src\iclMouseInteractionReceiver.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\MouseInteractionInfo.h"
+				RelativePath="..\ICLQt\src\iclOSD.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\MouseInteractionReceiver.h"
+				RelativePath="..\ICLQt\src\iclOSDButton.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSD.h"
+				RelativePath="..\ICLQt\src\iclOSDLabel.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSDButton.h"
+				RelativePath="..\ICLQt\src\iclOSDNavBar.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSDLabel.h"
+				RelativePath="..\ICLQt\src\iclOSDSlider.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSDNavBar.h"
+				RelativePath="..\ICLQt\src\iclOSDWidget.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSDSlider.h"
+				RelativePath="..\ICLQt\src\iclPaintEngine.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\OSDWidget.h"
+				RelativePath="..\ICLQt\src\iclQImageConverter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\PaintEngine.h"
+				RelativePath="..\ICLQt\src\iclQt.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\QImageConverter.h"
+				RelativePath="..\ICLQt\src\iclQtPaintEngine.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLQt\src\QtPaintEngine.h"
+				RelativePath="..\ICLQt\src\iclWidget.h"
 				>
 			</File>
 		</Filter>

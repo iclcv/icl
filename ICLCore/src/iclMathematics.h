@@ -55,7 +55,7 @@ namespace icl {
   */
   inline double random() {
 #ifdef WIN32
-     // this generates quite poor random numbers, because we RAND_MAX is 32767 only
+     // this generates quite poor random numbers, because RAND_MAX = 32767
      return static_cast<double>(rand()) / (1.0 + static_cast<double>(RAND_MAX));
 #else
      return drand48();

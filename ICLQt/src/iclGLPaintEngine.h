@@ -1,9 +1,10 @@
-#include <iclPaintEngine.h>
-#include <QFont>
 #ifndef GLPAINT_ENGINE_H
 #define GLPAINT_ENGINE_H
 
+#define NOMINMAX // needed for Win32 in order to not define min, max as macros
 
+#include <iclPaintEngine.h>
+#include <QFont>
 
 // forward declaration of the parent class
 class QGLWidget;
