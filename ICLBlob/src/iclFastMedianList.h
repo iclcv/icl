@@ -1,7 +1,7 @@
-#include <iclstring.h>
 #ifndef FASTMEDIANLIST_H
 #define FASTMEDIANLIST_H
 
+#include <string.h>
 
 namespace icl{
   
