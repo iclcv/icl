@@ -143,7 +143,7 @@ namespace icl {
   // {{{  operators: "=", ()-(float,float,channel,scalemode)
 
   template<class Type>
-  Img<Type>& Img<Type>::operator=(const Img<Type>& tSrc)
+  Img<Type>& Img<Type>::shallowCopy(const Img<Type>& tSrc)
   {
     // {{{ open
 

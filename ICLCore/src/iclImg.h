@@ -25,7 +25,7 @@ namespace icl {
     /** This must be kept private! Because the assign operator could otherwise be exploited
         to violate the Img's const concept (Ask Robert Haschke)  
     **/
-    Img<Type>& operator=(const Img<Type>& tSource);
+    Img<Type>& shallowCopy(const Img<Type>& tSource);
     
     /// private append function for a specified image channel
     /** This must be kept private! Because it could otherwise be exploited
@@ -227,7 +227,7 @@ namespace icl {
         **/
     Img<Type>& operator=(Img<Type>& tSource) {
       // call private const-version
-      return this->operator=(static_cast<const Img<Type>&>(tSource));
+      return this->shallowCopy (static_cast<const Img<Type>&>(tSource));
     }
 
     /// pixel access operator
