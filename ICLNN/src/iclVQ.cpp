@@ -8,8 +8,8 @@
 */
 
 #include "iclVQ.h"
-#include "iclMathematics.h"
 #include "iclStackTimer.h"
+#include "iclMathematics.h"
 #include <iclCC.h>
 
 using namespace std;
@@ -28,7 +28,7 @@ namespace icl {
     m_uiVQDim = m_poData->getDim();
     m_uiSrcDim = poSrc->getDim();
     m_bClusterIsInitialized = false;
-    m_uiMaxTrainSteps=3000;
+    m_uiMaxTrainSteps = 3000;
   }
 
   template <typename T, template<typename> class U>
@@ -60,6 +60,9 @@ namespace icl {
     for (unsigned int i=0;i<m_uiCenter;i++) {
       m_vecCluster[i].resize(m_uiVQDim);
     }
+
+    // Prepare cluster info
+    m_vecClusterInfo.resize(m_uiCenter);
   }
   
   template <typename T, template<typename> class U>
@@ -67,6 +70,7 @@ namespace icl {
     FUNCTION_LOG("");
     
     m_vecCluster.clear();
+    m_vecClusterInfo.clear();    
     createCluster(uiCenter);
   }
   
@@ -77,6 +81,9 @@ namespace icl {
     for (unsigned int i=0;i<m_uiCenter;i++) {
       fill(m_vecCluster[i].begin(),m_vecCluster[i].end(),0);
     }
+    
+    m_vecClusterInfo.clear(); 
+    m_vecClusterInfo.resize(m_uiCenter);
   }
 
   // }}}
@@ -87,8 +94,9 @@ namespace icl {
                                    vqinitmode eMode,
                                    unsigned int uiStart) {
     FUNCTION_LOG("");
-    
+
     // Variable initialisation
+    static MathematicsRandomSeedInitializer initSeed;
     unsigned int uiRndPos;
     m_poData->setData(poSrc);
     m_vecRefDataPtr = m_poData->getDataPtr();
@@ -105,6 +113,7 @@ namespace icl {
       case initRndFromData:
         for(unsigned int i=0;i<m_uiCenter;i++) {
           uiRndPos = random(m_uiSrcDim);
+          cout << uiRndPos << endl;
           for(unsigned int j=0;j<m_uiVQDim;j++) {
             m_vecCluster[i][j] = m_vecRefDataPtr[j][uiRndPos];
           }
@@ -251,7 +260,10 @@ namespace icl {
     ImgBase *oTmpImg;
     icl8u *dataPtr=0;
     float fMinDist = 0;
-    int iColorIdx=1;
+    int iPos, iWinnerCV = 0, iColorIdx=1;
+    unsigned int uiSrcWidth = m_poData->m_poData->getWidth();
+    unsigned int uiSrcHeight = m_poData->m_poData->getHeight();
+    clearClusterInfo();
     
     // Ink WTA map
     if (bInking) { iColorIdx = 255 / (m_uiCenter-1); }
@@ -268,14 +280,33 @@ namespace icl {
     dataPtr = (icl8u*) oTmpImg->getDataPtr(0);
 
     // Compute WTA
-    for(unsigned int i=0;i<m_uiSrcDim;i++) {
-      dataPtr[i] = nn(i,fMinDist) * iColorIdx;  
+    for(unsigned int y=0;y<uiSrcHeight;y++) {
+      for(unsigned int x=0;x<uiSrcWidth;x++) {
+        iPos = x+(y*uiSrcWidth);
+        iWinnerCV = nn(iPos,fMinDist);
+        dataPtr[iPos] = iWinnerCV * iColorIdx;
+        
+        m_vecClusterInfo[iWinnerCV].uiClSize++;
+        m_vecClusterInfo[iWinnerCV].fCentroX += x;
+        m_vecClusterInfo[iWinnerCV].fCentroY += y;
+      }
+    }
+
+    // Compute Cluster info
+    for (unsigned int i=0;i<m_uiCenter;i++) {
+      if (m_vecClusterInfo[i].uiClSize == 0) {
+        m_vecClusterInfo[i].fCentroX = 0;
+        m_vecClusterInfo[i].fCentroY = 0;
+      } else {
+        m_vecClusterInfo[i].fCentroX /= m_vecClusterInfo[i].uiClSize;
+        m_vecClusterInfo[i].fCentroY /= m_vecClusterInfo[i].uiClSize;
+      }
     }
     
     // return image
     return oTmpImg;
   }
-
+  
 // }}}
 
   // }}}
@@ -367,7 +398,24 @@ namespace icl {
   }
 
 // }}}
+  
+  template <typename T, template<typename> class U>
+  void VQ<T,U>::clearClusterInfo() {
+    // {{{ open
 
+    for (unsigned int i=0;i<m_uiCenter;i++) {
+      m_vecClusterInfo[i].uiClSize = 0;
+      m_vecClusterInfo[i].fMean = 0;
+      m_vecClusterInfo[i].fIntraVar = 0;
+      m_vecClusterInfo[i].fInterVar = 0;
+      m_vecClusterInfo[i].fCentroX = 0;
+      m_vecClusterInfo[i].fCentroY = 0;
+      m_vecClusterInfo[i].pixSum = 0;
+    }
+  }
+
+// }}}
+  
   // }}}
 
   template class VQ<icl8u, Interleaved>;

@@ -34,12 +34,12 @@ int main() {
   vq.createCluster(CLUSTER);
 
   // initialize cluster
-  vq.initClusterFromSrc(vqInitMode);
+  vq.initClusterFromSrc(tImg, vqInitMode);
   
   //---- Pixel coloring interval  ----
   unsigned int uiColoring = 255 / ( CLUSTER - 1);
   for(unsigned int i=0;i<TRAINSTEPS;i++) {
-    vq.vq(i);
+    vq.vq(tImg, i);
   }
   
   float fMinDist;

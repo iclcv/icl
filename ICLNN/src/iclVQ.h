@@ -22,6 +22,16 @@ enum vqinitmode {
   initSeqFromData
 };
 
+struct _ClProp {
+  unsigned int uiClSize;
+  float fMean;
+  float fIntraVar;
+  float fInterVar;
+  float fCentroX;
+  float fCentroY;
+  float pixSum;
+};
+ 
 template <typename T, template<typename> class U>
 class VQ : public Img<T> {
  public:
@@ -35,14 +45,6 @@ class VQ : public Img<T> {
   
   // Variable deklaration
   U<T> *m_poData; /// The abstract information orientation
-
-  struct _ClProp {
-    unsigned int uiClSize;
-    float fMean;
-    float fIntraVar;
-    float fInterVar;
-    T pixSum;
-  };
   
   // Variable deklaration for the reference data
   std::vector<T*> m_vecRefDataPtr; /// The first element of each data set
@@ -51,6 +53,7 @@ class VQ : public Img<T> {
   // Variable deklaration for the VQ cluster
   float m_fLearnRate; /// The learning rate of the VQ
   std::vector<std::vector<icl64f> > m_vecCluster; /// The VQ cluster data
+  std::vector<_ClProp> m_vecClusterInfo;
   unsigned int m_uiVQDim; /// The cluster vector dimension
   unsigned int m_uiCenter; /// The number of VQ centers
   unsigned int m_uiMaxTrainSteps; /// The maximum training steps
@@ -61,6 +64,7 @@ class VQ : public Img<T> {
 
   // Get functions
   float getLearnRate() { return m_fLearnRate; }
+  std::vector<_ClProp> getClusterInfo() { return m_vecClusterInfo; }
   
   // cluster functions
   void createCluster(unsigned int uiCenter);
@@ -83,7 +87,8 @@ class VQ : public Img<T> {
   // helper functions
   void printCluster();
   float discriminantAnalysis(const ImgBase* clusterImg);
-    
+  void clearClusterInfo();
+  
 }; // class VQ
  
 
