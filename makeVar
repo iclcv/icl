@@ -165,9 +165,6 @@ endif
 
 endif # end
 
-
-
-
 # Set the priority level
 DIR_PRIORITY:=ICLUtils ICLCore ICLCC
 DIR_LOWPRIORITY:=examples
@@ -176,7 +173,7 @@ SKIP_DIRECTORIES += ICLQt
 endif
 
 ifeq "$(HAVE_UNICAP)" ""
-SKIP_OBJECTS += iclUnicapGrabber.cpp
+SKIP_OBJECTS += iclUnicapGrabber.cpp unicap_test.cpp
 endif
 
 #Skip the following object files

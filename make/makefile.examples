@@ -1,4 +1,4 @@
-# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
+\# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
 #
 #   makefile
 #
@@ -47,7 +47,8 @@ ifneq "${DEBUG_ON}" "TRUE"
  DEBUG:=${NODEBUG}
 endif
 
-_SOURCES_FILENAME = $(wildcard *.${_SOURCES_EXT})
+__SOURCES_FILENAME = $(wildcard *.${_SOURCES_EXT})
+_SOURCES_FILENAME:=$(filter-out ${SKIP_OBJECTS},${__SOURCES_FILENAME})
 TARGET_EXE = $(_SOURCES_FILENAME:%.${_SOURCES_EXT}=./${TARGET_PREFIX}%${TARGET_POSTFIX})
 
 #-----------------------------------------------
