@@ -271,8 +271,8 @@ namespace icl {
   Img<Type> *Img<Type>::deepCopyROI(ImgBase **ppoDst) const{
     // {{{ open
 
-    FUNCTION_LOG("ptr:"<<ppoDst);
-    return deepCopyROI( ensureCompatible<Type>(ppoDst,ImgParams(getROISize(),getChannels(),getFormat())) );
+    FUNCTION_LOG("ptr:"<<ppoDst); 
+    return deepCopyROI( ensureDepth<Type>(ppoDst) );
   }
 
   // }}}
