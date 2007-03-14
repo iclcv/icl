@@ -1,8 +1,4 @@
-#include <iclGrabber.h>
-#include <iclIO.h>
-#include <dc1394/control.h>
-#include <iclImg.h>
- /*
+/*
   1394Grabber.h
 
   Written by: Michael Götting (2006)
@@ -14,6 +10,10 @@
 #ifndef FwGrabber_H
 #define FwGrabber_H
 
+#include <iclGrabber.h>
+#include <iclIO.h>
+#include <dc1394/control.h>
+#include <iclImg.h>
 
 namespace icl {
 
