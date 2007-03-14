@@ -12,7 +12,7 @@ _DOT_DOT:=../${_DOT_DOT}
 
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
-
+include ${PACKAGES}/ICLQuick
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -31,7 +31,7 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 # (e.g. -L../MyLib/lib)
 REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
                 -L../lib -lICLIO
-               
+
 # Please add here all the objects with absolute path
 # that are needed by the executables.
 ABS_OBJECTS:= ${ABS_OBJECTS}

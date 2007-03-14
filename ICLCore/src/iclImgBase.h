@@ -185,7 +185,7 @@ namespace icl {
           @return shallow copy of this image
       **/
       virtual ImgBase* shallowCopy(const Rect &roi, ImgBase** ppoDst = NULL){
-        return shallowCopy(roi,std::vector<int>(),getFormat(),getTime());
+        return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),ppoDst);
       }
 
       /// Create a shallow copy of a const source image

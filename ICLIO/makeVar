@@ -25,6 +25,7 @@ AGNI_INHERIT_MODE:= DYNAMIC
 include ${PACKAGES}/ICLCC
 include ${PACKAGES}/ICLCore
 include ${PACKAGES}/Firewire
+include ${PACKAGES}/Unicap
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.

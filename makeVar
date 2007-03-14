@@ -140,12 +140,43 @@ $(warning "Firewire library is not available. Firewire specific targets are not 
 endif
 endif
 
+############################# check for unicap ##########################
+ifneq "${UNICAP_ROOT}" ""
+
+ifeq "$(wildcard ${UNICAP_ROOT}/lib/libunicap*.so)" ""
+ifeq "${_WARN_UNICAP_1}" ""
+$(warning "libunicap.so was not found in UNICAP_ROOT/lib: ${UNICAP_ROOT}/lib. Unicap support disabled.")
+export _WARN_UNICAP_1=done
+endif # _WARN_UNICAP_1
+else # found libunicap.so in UNICAP_ROOT/lib ->ok
+HAVE_UNICAP=TRUE
+endif # searching in UNICAP_ROOT/lib
+
+else # no UNICAP_ROOT set
+
+ifeq "$(wildcard /vol/video/lib/libunicap*.so)" ""
+ifeq "${_WARN_UNICAP_2}" ""
+$(warning "libunicap.so was not found in /vol/video/lib. Unicap support disabled.")
+export _WARN_UNICAP_2=done
+endif # _WARN_UNICAP_2
+else # found libunicap.so in /vol/video/lib
+HAVE_UNICAP=TRUE
+endif
+
+endif # end
+
+
+
 
 # Set the priority level
 DIR_PRIORITY:=ICLUtils ICLCore ICLCC
 DIR_LOWPRIORITY:=examples
 ifeq "$(HAVE_QT)" ""
 SKIP_DIRECTORIES += ICLQt
+endif
+
+ifeq "$(HAVE_UNICAP)" ""
+SKIP_OBJECTS += iclUnicapGrabber.cpp
 endif
 
 #Skip the following object files
