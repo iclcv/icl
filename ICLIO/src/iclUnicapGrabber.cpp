@@ -12,6 +12,234 @@ using namespace std;
 #define MAX_FORMATS 64
 #define MAX_PROPERTIES 64
 
+namespace icl{
+  
+  class UnicapFormat{
+    // {{{ open
+
+    Rect cvt(const unicap_rect_t &r){
+      return Rect(r.x,r.y,r.width, r.height);
+    }
+  public:
+    UnicapFormat(){
+      unicap_void_format(m_oUnicapFormat);
+    }
+    UnicapFormat(unicap_handle_t handle):m_oUnicapHandle(handle){}
+
+    enum buffertype{
+      userBuffer = UNICAP_BUFFER_TYPE_USER ,
+      systemBuffer = UNICAP_BUFFER_TYPE_SYSTEM 
+    };
+
+    string getID() const { return m_oUnicapFormat.identifier; }
+    Rect getRect() const { return cvt(m_oUnicapFormat.size); }
+    Size getSize() const { return getRect().getSize(); }
+
+    Rect getMinRect() const { return cvt(m_oUnicapFormat.min_size); }  
+    Rect getMaxRect() const { return cvt(m_oUnicapFormat.max_size); }  
+    
+    Rect getMinSize() const { return getMinRect().getSize(); }
+    Rect getMaxSize() const { return getMaxRect().getSize(); }
+
+    int getHStepping() const { return m_oUnicapFormat.h_stepping; }
+    int getVStepping() const { return m_oUnicapFormat.v_stepping; }
+
+    vector<Rect> getPossibleRects() const{
+      vector<Rect> v;
+      for(int i=0;i< m_oUnicapFormat.size_count; v.push_back(cvt[m_oUnicapFormat.sizes[i]]));
+      return v;
+    }
+    vector<Size> getPossibleSizes() const{
+      vector<Size> v;
+      for(int i=0;i< m_oUnicapFormat.size_count; v.push_back(cvt[m_oUnicapFormat.sizes[i]].getSize()));
+      return v;
+    }
+    // bit per pixel ??
+    int getBitsPerPixel() const { return m_oUnicapFormat.bpp; }
+    unsigned int getFourCC() const { return m_oUnicapFormat.fourCC; }
+    unsigned int getFlags() const { return m_oUnicapFormat.flags; }
+    
+    unsigned int getBufferTypes() const { return m_oUnicapFormat.bufferTypes; }
+    unsigned int getSytstemBufferCount() const { return m_oUnicapFormat.system_buffer_count; }
+    
+    unsigned int getBufferSize() const { return m_oUnicapFormat.buffer_size(); }
+    
+    buffertype getBufferType() const { return m_oUnicapFormat.buffer_type(); }
+
+    const unicap_format_t &getUnicapFormat() const { return m_oUnicapFormat; }
+    unicap_format_t &getUnicapFormat(){ return m_oUnicapFormat; }
+
+    const unicap_handle_t &getUnicapHandle() const { return m_oUnicapHandle; }
+    unicap_handle_t &getUnicapHandle() { return m_oUnicapHandle; }
+    
+  private:
+    unicap_format_t m_oUnicapFormat;
+    unicap_handle_t m_oUnicapHandle;
+  };
+
+  // }}}
+
+  class UnicapProperty{
+    // {{{ open
+
+  public:
+    UnicapProperty(){
+      unicap_void_property (&m_oUnicapProperty);  
+    }
+    UnicapProperty(unicap_handle_t handle):m_oUnicapHandle(handle){}
+    enum type {
+      range = UNICAP_PROPERTY_TYPE_RANGE,
+      valueList = UNICAP_PROPERTY_TYPE_VALUE_LIST,
+      menu = UNICAP_PROPERTY_TYPE_MENU,
+      data = UNICAP_PROPERTY_TYPE_DATA,
+      flags = UNICAP_PROPERTY_TYPE_FLAGS
+    };
+    struct Data{
+      void *data;
+      unsigned int size;
+    };
+    string getID() const{ return m_oUnicapProperty.identifier; }
+    string getCategory() const{ return m_oUnicapProperty.category; }
+    string getUnit() const { return m_oUnicapProperty.unit; }
+  
+    vector<string> getRelations() const { 
+      vector<string> v;
+      for(int i=0;i<m_oUnicapProperty.relations_count;v.push_back(m_oUnicapProperty.relations[i++]));
+      return v;
+    }
+
+    type getType() const{
+      return m_oUnicapProperty.type;
+    }
+    
+    double getValue() const{
+      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_RANGE || 
+                            m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_VALUE_LIST ,0 );
+      return m_oUnicapProperty.value;
+    }
+
+    string getMenuItem() const{
+      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_MENU, 0);
+      return m_oUnicapProperty.menu_item;
+    } 
+    
+    Range<double> getRange() const{
+      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_RANGE, Range<double>());
+      return Range<double>( m_oUnicapProperty.range.min, m_oUnicapProperty.range.max );
+    }
+
+    vector<double> getValueList() const{
+       ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_VALUE_LIST ,0 );
+       vector<double> v;
+       for(int i=0;i<m_oUnicapProperty.value_list.value_count;v.push_back(m_oUnicapProperty.value_list.values[i++]));
+       return v;
+    }
+    vector<string> getMenu() const{
+      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_MENU , 0);
+      vector<string> v;
+      for(int i=0;i<m_oUnicapProperty.menu.menu_item_count;v.push_back(m_oUnicapProperty.menu_items[i++]));
+      return v;
+    }
+    double getStepping() const {
+      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_RANGE, 0);
+      return m_oUnicapProperty.stepping;
+    }
+    
+    u_int64_t getFlags() const{
+      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_FLAGS, 0);
+      return m_oUnicapProperty.flags;
+    }
+    u_int64_t getFlagMask() const{
+      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_FLAGS, 0);
+      return m_oUnicapProperty.flag_mask;
+    }
+    
+    const Data getData() const{
+      static const Data NULL_DATA = {0,0}; 
+      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_DATA,NULL_DATA);
+      Data d = { m_oUnicapProperty.property_data, property_data_size };
+    }
+    const unicap_property_t &getUnicapProperty() const{
+      return m_oUnicapProperty;
+    }
+    unicap_property_t &getUnicapProperty(){
+      return m_oUnicapProperty;
+    }
+    const unicap_handle_t &getUnicapHandle() const { return m_oUnicapHandle; }
+    unicap_handle_t &getUnicapHandle() { return m_oUnicapHandle; }
+ 
+  private:
+    
+    unicap_property_t m_oUnicapProperty;
+    unicap_handle_t m_oUnicapHandle;
+  };
+
+  // }}}
+
+  class UnicapDevice{
+    // {{{ open
+
+  public:
+    UnicapDevice(unicap_handle_t handle) : m_oUnicapHandle(handle){
+      // {{{ open
+
+      unicap_get_device(handle, &m_oUnicapDevice);
+      
+      // properties
+      unicap_status_t status = STATUS_SUCCESS;
+      for(int i=0;SUCCESS(status);i++){
+        m_oProperties.push_back(UnicapProperty(handle));
+        status = unicap_enumerate_properties(handle, NULL, &(m_oProperties[i].getUnicapProperty()),i);
+        if (!SUCCESS (status)){
+          m_oProperties.pop_back();
+        }
+      }
+      
+      // formats
+      status = STATUS_SUCCESS;
+      for(int i=0;SUCCESS(status);i++){ 
+        m_oFormats.push_back(UnicapFormat());
+        status = unicap_enumerate_formats (handle, NULL, &(m_oUnicapFormats[i].getUnicapFormat()), i);
+        if (!SUCCESS (status)){
+          m_oFormats.pop_back();
+        }
+      }
+    }
+
+    // }}}
+
+    string getID()const { return m_oUnicapDevice.identifier; }
+    string getModelName()const { return  m_oUnicapDevice.model_name;}
+    string getVendorName()const { return  m_oUnicapDevice.vendor_name;}
+    unsigned long long getModelID()const { return  m_oUnicapDevice.model_id; }
+    unsigned int getVendorID()const { return  m_oUnicapDevice.vendor_id;}
+    string getCPILayer()const { return  m_oUnicapDevice.cpi_layer;}
+    string getDevice() const { return m_oUnicapDevice.device;}
+    unsigned int getFlags() const { return m_oUnicapDevice.flags;}
+    
+    const vector<UnicapProperty> getProperties() const{ return m_oProperties; }
+    vector<UnicapProperty> getProperties(){ return m_oProperties; }
+
+    const vector<UnicapFormat> getFormats() const{ return m_oFormats; }
+    vector<UnicapFormat> getFormats(){ return m_oFormats; }
+    
+    
+    const unicap_handle_t &getUnicapHandle()const { return m_oUnicapHandle; }
+    unicap_handle_t &getUnicapHandle() { return m_oUnicapHandle; }
+    
+    const unicap_device_t &getUnicapDevice() { const return m_oUnicapDevice; }
+    unicap_device_t &getUnicapDevice(){ return m_oUnicapDevice; }
+    
+  private:
+    unicap_handle_t m_oUnicapHandle;
+    unicap_device_t m_oUnicapDevice;
+    
+    vector<UnicapProperty> m_oProperties; 
+    vector<UnicapFormat> m_oFormats; 
+  };
+
+  // }}}
+
 
 void set_format (unicap_handle_t handle){
   // {{{ open
@@ -353,8 +581,6 @@ struct unicap_property_t{
 };
 *********************************************************************/
 // }}}
-
-namespace icl{
 
   UnicapGrabber::UnicapGrabber():m_poImage(0){}
   
