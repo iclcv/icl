@@ -14,6 +14,7 @@ using namespace std;
 
 namespace icl{
   
+  
   class UnicapFormat{
     // {{{ open
 
@@ -44,6 +45,16 @@ namespace icl{
     int getHStepping() const { return m_oUnicapFormat.h_stepping; }
     int getVStepping() const { return m_oUnicapFormat.v_stepping; }
 
+    bool checkSize(const Size &size)const{
+      vector<Size> v= getPossibleSizes();
+      for(unsigned int i=0;i<v.size();++i){
+        if(v[i] == size){ 
+          return true; 
+        }
+      }
+      return false;
+    }
+    
     vector<Rect> getPossibleRects() const{
       vector<Rect> v;
       for(int i=0;i< m_oUnicapFormat.size_count; v.push_back( cvt(m_oUnicapFormat.sizes[i])) );
@@ -60,7 +71,7 @@ namespace icl{
     unsigned int getFlags() const { return m_oUnicapFormat.flags; }
     
     unsigned int getBufferTypes() const { return m_oUnicapFormat.buffer_types; }
-    unsigned int getSytstemBufferCount() const { return m_oUnicapFormat.system_buffer_count; }
+    unsigned int getSystemBufferCount() const { return m_oUnicapFormat.system_buffer_count; }
     
     unsigned int getBufferSize() const { return m_oUnicapFormat.buffer_size; }
     
@@ -72,6 +83,43 @@ namespace icl{
     const unicap_handle_t &getUnicapHandle() const { return m_oUnicapHandle; }
     unicap_handle_t &getUnicapHandle() { return m_oUnicapHandle; }
     
+    string toString()const{
+      // {{{ open
+
+      char buf[10000];
+      Rect r = getRect();
+      Rect a = getMinRect();
+      Rect b = getMaxRect();
+      sprintf(buf,
+              "ID               = %s\n"
+              "Rect:     curr   = %d %d %d %d\n"
+              "          min    = %d %d %d %d\n"
+              "          max    = %d %d %d %d\n"
+              "Stepping: h      = %d\n"
+              "          v      = %d\n"
+              "Misc:     bpp    = %d\n"
+              "          fourcc = %d\n"
+              "Buffers:  types  = %d\n"
+              "          #sysbf = %d\n"
+              "          size   = %d\n"
+              "          type   = %s\n"
+              ,getID().c_str(),r.x,r.y,r.width,r.height,a.x,a.y,a.width,a.height,
+              b.x,b.y,b.width,b.height,getHStepping(),getVStepping(),getBitsPerPixel(),
+              getFourCC(),getBufferTypes(),getSystemBufferCount(),getBufferSize(),
+              getBufferType()==userBuffer ? "user" : "system" );
+    
+      string s = buf;
+      s.append("PossibleSizes:\n");
+      vector<Rect> v = getPossibleRects();
+      for(unsigned int i=0;i<v.size();i++){
+        sprintf(buf,"                   %d %d %d %d\n",v[i].x,v[i].y,v[i].width,v[i].height);
+        s.append(buf);
+      }
+      return s;
+    }
+
+    // }}}
+
   private:
     unicap_format_t m_oUnicapFormat;
     unicap_handle_t m_oUnicapHandle;
@@ -169,6 +217,125 @@ namespace icl{
     const unicap_handle_t &getUnicapHandle() const { return m_oUnicapHandle; }
     unicap_handle_t &getUnicapHandle() { return m_oUnicapHandle; }
  
+    void setValue(double value){
+      // {{{ open
+      type t=getType();
+      ICLASSERT_RETURN( t == range || t==valueList );
+      if(t==range){
+        if(getRange().in(value)){
+          m_oUnicapProperty.value = value;
+          unicap_set_property(m_oUnicapHandle,&m_oUnicapProperty);
+        }else{
+          ERROR_LOG("could not set up value to: " << value << " (outside range!)");
+        }
+      }else if(t==valueList){
+        vector<double> v = getValueList();
+        if(find(v.begin(),v.end(),value) != v.end()){
+          m_oUnicapProperty.value = value;
+          if(!SUCCESS (unicap_set_property(m_oUnicapHandle,&m_oUnicapProperty) )){
+            ERROR_LOG("failed to set new property [code 0]");
+          }
+        }
+      }
+    }
+    // }}}
+    
+    void setMenuItem(const string &item){
+      // {{{ open
+
+      ICLASSERT_RETURN( getType() == menu );
+      vector<string> v = getMenu();
+      if(find(v.begin(),v.end(),item) != v.end()){
+        sprintf(m_oUnicapProperty.menu_item,item.c_str());
+         if(!SUCCESS (unicap_set_property(m_oUnicapHandle,&m_oUnicapProperty) )){
+           ERROR_LOG("failed to set new property [code 1]");
+         }
+      }else{
+        ERROR_LOG("could not set up menu item to : " << item << "(item not allowed!)");
+      }
+    }
+
+    // }}}
+  
+    static  const char *ftoa(double d){
+      static char buf[30];
+      sprintf(buf,"%f",d);
+      return buf;
+    }
+    static  const char *itoa(int i){
+      static char buf[30];
+      sprintf(buf,"%d",i);
+      return buf;
+    }
+    
+    string toString(){
+      string typeStr;
+      switch(getType()){
+        case  range: typeStr = "range"; break;
+        case  valueList: typeStr = "value-list"; break;
+        case  menu: typeStr = "menu"; break;
+        case  data: typeStr = "data"; break;
+        default: typeStr = "flags"; break;
+      }
+      
+      char buf[10000];
+      sprintf(buf,
+              "ID       = %s\n"
+              "Category = %s\n"
+              "Unit     = %s\n"
+              "Type     = %s\n"
+              , getID().c_str(), getCategory().c_str(),getUnit().c_str(),typeStr.c_str());
+      
+      string s = buf;
+      switch(getType()){
+        case  range:
+          sprintf(buf,"   min=%f\n   max=%f\n   curr=%f\n",getRange().minVal,getRange().maxVal,getValue());
+          s.append(buf);
+          break;
+        case  valueList:{
+          string l = "list     = {";
+          vector<double> v = getValueList();
+          for(unsigned int i=0;i<v.size();i++){
+            l.append(ftoa(v[i]));
+            if(i<v.size()-1){
+              l.append(",");
+            }
+          }
+          l.append("}\n");
+          s.append(l);
+          s.append("curr     = ");
+          s.append(ftoa(getValue()));
+          s.append("\n");
+          break;
+        }
+        case  menu:{
+          string l = "list     = {";
+          vector<string> v = getMenu();
+          for(unsigned int i=0;i<v.size();i++){
+            l.append(v[i]);
+            if(i<v.size()-1){
+              l.append(",");
+            }
+          }
+          l.append("}\n");
+          s.append(l);
+          s.append("curr     = ");
+          s.append(getMenuItem());
+          s.append("\n");
+          break;
+        }
+        case flags:
+          s.append("flag     = ");
+          s.append(itoa(getFlags()));
+          s.append("\n");
+          s.append("mask     = ");
+          s.append(itoa(getFlagMask()));
+          s.append("\n");
+          break;
+        default: break;
+      }
+      return s;
+    }
   private:
     
     unicap_property_t m_oUnicapProperty;
@@ -230,6 +397,113 @@ namespace icl{
     
     const unicap_device_t &getUnicapDevice()const {  return m_oUnicapDevice; }
     unicap_device_t &getUnicapDevice(){ return m_oUnicapDevice; }
+    
+    UnicapFormat getCurrentUnicapFormat(){
+      // {{{ open
+
+      UnicapFormat f;
+      if(!SUCCESS( unicap_get_format(m_oUnicapHandle,&(f.getUnicapFormat())) )){
+        ERROR_LOG("failed to get current unicap format!");
+      }
+      return f;
+    }
+
+    // }}}
+
+    Size getCurrentSize(){
+      // {{{ open
+
+      return getCurrentUnicapFormat().getSize();
+    }
+
+    // }}}
+
+    string getFormatID(){
+      // {{{ open
+
+      return getCurrentUnicapFormat().getID();
+    }
+
+    // }}}
+    
+    void setFormat(UnicapFormat &fmt){
+      // {{{ open
+
+      if(!SUCCESS(unicap_set_format(m_oUnicapHandle,&(fmt.getUnicapFormat())))){
+        ERROR_LOG("failed to set up unicap format! \n");
+      }
+    }
+
+    // }}}
+    void setFormatID(const string &fmtID){
+      // {{{ open
+
+      // search the format from the formatlist by id
+      for(unsigned int i=0;i<m_oFormats.size();i++){
+        if(m_oFormats[i].getID() == fmtID ){
+          if(m_oFormats[i].checkSize(getCurrentSize())){
+            UnicapFormat f = getCurrentUnicapFormat();
+            sprintf(f.getUnicapFormat().identifier,fmtID.c_str());
+            setFormat(f);
+          }else{
+            ERROR_LOG("current size is supported for new format: " << fmtID << "!");          
+          }
+          break;
+        }
+      }
+      ERROR_LOG("could not set unicap format to: " << fmtID << " (unknown format id)");
+    }
+
+    // }}}
+    
+    void setFormatSize(const Size &newSize){
+      // {{{ open
+
+      UnicapFormat f = getCurrentUnicapFormat();
+      if(f.checkSize(newSize)){
+        f.getUnicapFormat().size.width = newSize.width;
+        f.getUnicapFormat().size.width = newSize.height;
+        setFormat(f);
+      }else{
+        ERROR_LOG("nes size is supported for current format");          
+      }
+    }
+
+    // }}}
+    void setFormat(const string &fmtID, const Size &newSize){
+      // {{{ open
+
+      for(unsigned int i=0;i<m_oFormats.size();i++){
+        if(m_oFormats[i].getID() == fmtID ){
+          if(m_oFormats[i].checkSize(newSize)){
+            UnicapFormat f = getCurrentUnicapFormat();
+            sprintf(f.getUnicapFormat().identifier,fmtID.c_str());
+            f.getUnicapFormat().size.width = newSize.width;
+            f.getUnicapFormat().size.width = newSize.height; 
+            setFormat(f);
+          }else{
+            ERROR_LOG("combination of format and size is not supported \n");
+          }
+        }
+      }
+      ERROR_LOG("could not set unicap format to: " << fmtID << " (unknown format id)");
+    }
+
+    // }}}
+    
+    void listProperties()const{
+      vector<UnicapProperty> v = getProperties();
+      for(unsigned int i=0;i<v.size();i++){
+        printf("Property %d:\n%s\n",i,v[i].toString().c_str());
+      }
+    }
+    
+    void listFormats() const{
+      vector<UnicapFormat> v = getFormats();
+      for(unsigned int i=0;i<v.size();i++){
+        printf("Format %d:\n%s\n",i,v[i].toString().c_str());
+      }    
+    }
     
   private:
     unicap_handle_t m_oUnicapHandle;
@@ -593,6 +867,12 @@ struct unicap_property_t{
     handle = open_device();
     if(!handle){ return 0; }
     
+    
+    UnicapDevice ud(handle);
+    ud.listFormats();
+    ud.listProperties();
+   
+    return 0;
     
     set_format(handle);
     
