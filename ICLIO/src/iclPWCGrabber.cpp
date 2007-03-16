@@ -302,6 +302,7 @@ PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice) : m_poRGB8Image(0
 }
 PWCGrabber::~PWCGrabber(void) {
   // {{{ open 
+
   if (m_poRGB8Image)
     delete m_poRGB8Image;
   //delete m_pucFlippedData;
@@ -449,7 +450,7 @@ bool PWCGrabber::init(const Size &s,float fFps, int iDevice)
      vwin.width=m_iWidth; //these widht and height settings added later, 
      vwin.height=m_iHeight;//because via set_params it does't work always
      
-     printf ("%i %i\n", m_iWidth, m_iHeight);
+     //     printf ("%i %i\n", m_iWidth, m_iHeight);
      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCSWIN, &vwin),"error setting video-window");
 
      /* Set CHANNEL and PAL_MODE */
