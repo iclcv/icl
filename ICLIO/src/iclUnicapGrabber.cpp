@@ -17,12 +17,12 @@ namespace icl{
   class UnicapFormat{
     // {{{ open
 
-    Rect cvt(const unicap_rect_t &r){
+    static Rect cvt(const unicap_rect_t &r){
       return Rect(r.x,r.y,r.width, r.height);
     }
   public:
     UnicapFormat(){
-      unicap_void_format(m_oUnicapFormat);
+      unicap_void_format(&m_oUnicapFormat);
     }
     UnicapFormat(unicap_handle_t handle):m_oUnicapHandle(handle){}
 
@@ -33,38 +33,38 @@ namespace icl{
 
     string getID() const { return m_oUnicapFormat.identifier; }
     Rect getRect() const { return cvt(m_oUnicapFormat.size); }
-    Size getSize() const { return getRect().getSize(); }
+    Size getSize() const { return getRect().size(); }
 
     Rect getMinRect() const { return cvt(m_oUnicapFormat.min_size); }  
     Rect getMaxRect() const { return cvt(m_oUnicapFormat.max_size); }  
     
-    Rect getMinSize() const { return getMinRect().getSize(); }
-    Rect getMaxSize() const { return getMaxRect().getSize(); }
+    Size getMinSize() const { return getMinRect().size(); }
+    Size getMaxSize() const { return getMaxRect().size(); }
 
     int getHStepping() const { return m_oUnicapFormat.h_stepping; }
     int getVStepping() const { return m_oUnicapFormat.v_stepping; }
 
     vector<Rect> getPossibleRects() const{
       vector<Rect> v;
-      for(int i=0;i< m_oUnicapFormat.size_count; v.push_back(cvt[m_oUnicapFormat.sizes[i]]));
+      for(int i=0;i< m_oUnicapFormat.size_count; v.push_back( cvt(m_oUnicapFormat.sizes[i])) );
       return v;
     }
     vector<Size> getPossibleSizes() const{
       vector<Size> v;
-      for(int i=0;i< m_oUnicapFormat.size_count; v.push_back(cvt[m_oUnicapFormat.sizes[i]].getSize()));
+      for(int i=0;i< m_oUnicapFormat.size_count; v.push_back(cvt(m_oUnicapFormat.sizes[i]).size()));
       return v;
     }
     // bit per pixel ??
     int getBitsPerPixel() const { return m_oUnicapFormat.bpp; }
-    unsigned int getFourCC() const { return m_oUnicapFormat.fourCC; }
+    unsigned int getFourCC() const { return m_oUnicapFormat.fourcc; }
     unsigned int getFlags() const { return m_oUnicapFormat.flags; }
     
-    unsigned int getBufferTypes() const { return m_oUnicapFormat.bufferTypes; }
+    unsigned int getBufferTypes() const { return m_oUnicapFormat.buffer_types; }
     unsigned int getSytstemBufferCount() const { return m_oUnicapFormat.system_buffer_count; }
     
-    unsigned int getBufferSize() const { return m_oUnicapFormat.buffer_size(); }
+    unsigned int getBufferSize() const { return m_oUnicapFormat.buffer_size; }
     
-    buffertype getBufferType() const { return m_oUnicapFormat.buffer_type(); }
+    buffertype getBufferType() const { return (buffertype)m_oUnicapFormat.buffer_type; }
 
     const unicap_format_t &getUnicapFormat() const { return m_oUnicapFormat; }
     unicap_format_t &getUnicapFormat(){ return m_oUnicapFormat; }
@@ -109,7 +109,7 @@ namespace icl{
     }
 
     type getType() const{
-      return m_oUnicapProperty.type;
+      return (type)m_oUnicapProperty.type;
     }
     
     double getValue() const{
@@ -129,15 +129,15 @@ namespace icl{
     }
 
     vector<double> getValueList() const{
-       ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_VALUE_LIST ,0 );
+       ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_VALUE_LIST ,vector<double>() );
        vector<double> v;
        for(int i=0;i<m_oUnicapProperty.value_list.value_count;v.push_back(m_oUnicapProperty.value_list.values[i++]));
        return v;
     }
     vector<string> getMenu() const{
-      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_MENU , 0);
+      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_MENU , vector<string>());
       vector<string> v;
-      for(int i=0;i<m_oUnicapProperty.menu.menu_item_count;v.push_back(m_oUnicapProperty.menu_items[i++]));
+      for(int i=0;i<m_oUnicapProperty.menu.menu_item_count;v.push_back(m_oUnicapProperty.menu.menu_items[i++]));
       return v;
     }
     double getStepping() const {
@@ -151,13 +151,14 @@ namespace icl{
     }
     u_int64_t getFlagMask() const{
       ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_FLAGS, 0);
-      return m_oUnicapProperty.flag_mask;
+      return m_oUnicapProperty.flags_mask;
     }
     
     const Data getData() const{
       static const Data NULL_DATA = {0,0}; 
       ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_DATA,NULL_DATA);
-      Data d = { m_oUnicapProperty.property_data, property_data_size };
+      Data d = { m_oUnicapProperty.property_data, m_oUnicapProperty.property_data_size };
+      return d;
     }
     const unicap_property_t &getUnicapProperty() const{
       return m_oUnicapProperty;
@@ -199,7 +200,7 @@ namespace icl{
       status = STATUS_SUCCESS;
       for(int i=0;SUCCESS(status);i++){ 
         m_oFormats.push_back(UnicapFormat());
-        status = unicap_enumerate_formats (handle, NULL, &(m_oUnicapFormats[i].getUnicapFormat()), i);
+        status = unicap_enumerate_formats (handle, NULL, &(m_oFormats[i].getUnicapFormat()), i);
         if (!SUCCESS (status)){
           m_oFormats.pop_back();
         }
@@ -227,7 +228,7 @@ namespace icl{
     const unicap_handle_t &getUnicapHandle()const { return m_oUnicapHandle; }
     unicap_handle_t &getUnicapHandle() { return m_oUnicapHandle; }
     
-    const unicap_device_t &getUnicapDevice() { const return m_oUnicapDevice; }
+    const unicap_device_t &getUnicapDevice()const {  return m_oUnicapDevice; }
     unicap_device_t &getUnicapDevice(){ return m_oUnicapDevice; }
     
   private:
@@ -561,7 +562,7 @@ struct unicap_property_t{
     double value;               // default if enumerated
     char menu_item[128];
   };
-  
+    
   union
   {
     unicap_property_range_t range;      // if UNICAP_USE_RANGE is asserted
@@ -608,4 +609,5 @@ struct unicap_property_t{
 
     return m_poImage;
   }
+
 }
