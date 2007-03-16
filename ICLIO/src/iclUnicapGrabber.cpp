@@ -34,8 +34,9 @@ void set_format (unicap_handle_t handle){
   }
   
   while ((f < 0) || (f >= format_count)){
-    printf ("Use Format: ");
-    scanf ("%d", &f);
+    printf ("Use Format:  using 3 \n");
+    //    scanf ("%d", &f);
+    f=3;
   }
   
   if (formats[f].size_count){
@@ -48,8 +49,9 @@ void set_format (unicap_handle_t handle){
     }
     
     while ((s < 0) || (s >= formats[f].size_count)){
-      printf ("Select Size: ");
-      scanf ("%d", &s);
+      printf ("Select Size: using 3! \n");
+      //scanf ("%d", &s);
+      s=3;
     }
     formats[f].size.width = formats[f].sizes[s].width;
     formats[f].size.height = formats[f].sizes[s].height;
@@ -226,13 +228,26 @@ vector<ImgBase*>  capture_frames (unicap_handle_t handle, int nframes){
       fprintf (stderr, "Failed to wait for buffer!\n");
       exit (-1);
     }
-    Img8u *imYUV = new Img8u(Size(160,120),formatYUV);
-    Img8u *imRGB = new Img8u(Size(160,120),formatRGB);
-    
-    interleavedToPlanar(buffer.data,Size(160,120),3,imYUV);
-    Converter().apply(imYUV,imRGB);
+    /*****************************
+    Img8u *imRGB = new Img8u(Size(640,480),formatGray);
+    copy(buffer.data,buffer.data+imRGB->getDim(),imRGB->getData(0));
     vec.push_back(imRGB);
-    delete imYUV;
+    *******************************/
+    
+    
+    
+    Img8u *imRGB = new Img8u(Size(640,480),formatRGB);
+    icl8u *rgbBuf = new icl8u[imRGB->getDim()*3];
+    ippiYUV422ToRGB_8u_C2C3R(buffer.data,
+                             imRGB->getWidth()*2,
+                             rgbBuf,
+                             imRGB->getWidth()*3,
+                             imRGB->getROISize()    );
+    
+    interleavedToPlanar(rgbBuf,imRGB->getSize(),3, imRGB);
+    delete [] rgbBuf;
+    
+    vec.push_back(imRGB);
     
     if (!SUCCESS (unicap_queue_buffer (handle, returned_buffer)))  {
       fprintf (stderr, "Failed to queue buffer!\n");
@@ -359,18 +374,12 @@ namespace icl{
     vector<ImgBase*> v=capture_frames(handle,10);
 
     unicap_close(handle);
-    
-    m_poImage->setSize(Size(v[0]->getWidth()*v.size(),v[0]->getHeight()));
-    Rect roi = v[0]->getROI();
-    m_poImage->print("m_poImage");
+
+    v[0]->deepCopy(&m_poImage);    
     for(unsigned int i=0;i<v.size();i++){
-      roi.x = i*v[0]->getWidth();
-      printf("new roi = %d %d %d %d \n",roi.x,roi.y,roi.width, roi.height);
-      m_poImage->setROI(roi);
-      v[i]->deepCopyROI(&m_poImage);
+      delete v[i];
     }
-    
-    
+
     return m_poImage;
   }
 }
