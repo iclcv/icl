@@ -4,7 +4,7 @@
 #include <unicap.h>
 #include <iclConverter.h>
 #include <iclCC.h>
-
+#include <iclUnicapFormat.h>
 using namespace icl;
 using namespace std;
 
@@ -14,119 +14,6 @@ using namespace std;
 
 namespace icl{
   
-  
-  class UnicapFormat{
-    // {{{ open
-
-    static Rect cvt(const unicap_rect_t &r){
-      return Rect(r.x,r.y,r.width, r.height);
-    }
-  public:
-    UnicapFormat(){
-      unicap_void_format(&m_oUnicapFormat);
-    }
-    UnicapFormat(unicap_handle_t handle):m_oUnicapHandle(handle){}
-
-    enum buffertype{
-      userBuffer = UNICAP_BUFFER_TYPE_USER ,
-      systemBuffer = UNICAP_BUFFER_TYPE_SYSTEM 
-    };
-
-    string getID() const { return m_oUnicapFormat.identifier; }
-    Rect getRect() const { return cvt(m_oUnicapFormat.size); }
-    Size getSize() const { return getRect().size(); }
-
-    Rect getMinRect() const { return cvt(m_oUnicapFormat.min_size); }  
-    Rect getMaxRect() const { return cvt(m_oUnicapFormat.max_size); }  
-    
-    Size getMinSize() const { return getMinRect().size(); }
-    Size getMaxSize() const { return getMaxRect().size(); }
-
-    int getHStepping() const { return m_oUnicapFormat.h_stepping; }
-    int getVStepping() const { return m_oUnicapFormat.v_stepping; }
-
-    bool checkSize(const Size &size)const{
-      vector<Size> v= getPossibleSizes();
-      for(unsigned int i=0;i<v.size();++i){
-        if(v[i] == size){ 
-          return true; 
-        }
-      }
-      return false;
-    }
-    
-    vector<Rect> getPossibleRects() const{
-      vector<Rect> v;
-      for(int i=0;i< m_oUnicapFormat.size_count; v.push_back( cvt(m_oUnicapFormat.sizes[i])) );
-      return v;
-    }
-    vector<Size> getPossibleSizes() const{
-      vector<Size> v;
-      for(int i=0;i< m_oUnicapFormat.size_count; v.push_back(cvt(m_oUnicapFormat.sizes[i]).size()));
-      return v;
-    }
-    // bit per pixel ??
-    int getBitsPerPixel() const { return m_oUnicapFormat.bpp; }
-    unsigned int getFourCC() const { return m_oUnicapFormat.fourcc; }
-    unsigned int getFlags() const { return m_oUnicapFormat.flags; }
-    
-    unsigned int getBufferTypes() const { return m_oUnicapFormat.buffer_types; }
-    unsigned int getSystemBufferCount() const { return m_oUnicapFormat.system_buffer_count; }
-    
-    unsigned int getBufferSize() const { return m_oUnicapFormat.buffer_size; }
-    
-    buffertype getBufferType() const { return (buffertype)m_oUnicapFormat.buffer_type; }
-
-    const unicap_format_t &getUnicapFormat() const { return m_oUnicapFormat; }
-    unicap_format_t &getUnicapFormat(){ return m_oUnicapFormat; }
-
-    const unicap_handle_t &getUnicapHandle() const { return m_oUnicapHandle; }
-    unicap_handle_t &getUnicapHandle() { return m_oUnicapHandle; }
-    
-    string toString()const{
-      // {{{ open
-
-      char buf[10000];
-      Rect r = getRect();
-      Rect a = getMinRect();
-      Rect b = getMaxRect();
-      sprintf(buf,
-              "ID               = %s\n"
-              "Rect:     curr   = %d %d %d %d\n"
-              "          min    = %d %d %d %d\n"
-              "          max    = %d %d %d %d\n"
-              "Stepping: h      = %d\n"
-              "          v      = %d\n"
-              "Misc:     bpp    = %d\n"
-              "          fourcc = %d\n"
-              "Buffers:  types  = %d\n"
-              "          #sysbf = %d\n"
-              "          size   = %d\n"
-              "          type   = %s\n"
-              ,getID().c_str(),r.x,r.y,r.width,r.height,a.x,a.y,a.width,a.height,
-              b.x,b.y,b.width,b.height,getHStepping(),getVStepping(),getBitsPerPixel(),
-              getFourCC(),getBufferTypes(),getSystemBufferCount(),getBufferSize(),
-              getBufferType()==userBuffer ? "user" : "system" );
-    
-      string s = buf;
-      s.append("PossibleSizes:\n");
-      vector<Rect> v = getPossibleRects();
-      for(unsigned int i=0;i<v.size();i++){
-        sprintf(buf,"                   %d %d %d %d\n",v[i].x,v[i].y,v[i].width,v[i].height);
-        s.append(buf);
-      }
-      return s;
-    }
-
-    // }}}
-
-  private:
-    unicap_format_t m_oUnicapFormat;
-    unicap_handle_t m_oUnicapHandle;
-  };
-
-  // }}}
-
   class UnicapProperty{
     // {{{ open
 
