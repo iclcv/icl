@@ -140,7 +140,8 @@ namespace icl{
       valueList = UNICAP_PROPERTY_TYPE_VALUE_LIST,
       menu = UNICAP_PROPERTY_TYPE_MENU,
       data = UNICAP_PROPERTY_TYPE_DATA,
-      flags = UNICAP_PROPERTY_TYPE_FLAGS
+      flags = UNICAP_PROPERTY_TYPE_FLAGS,
+      anytype 
     };
     struct Data{
       void *data;
@@ -397,6 +398,69 @@ namespace icl{
     
     const unicap_device_t &getUnicapDevice()const {  return m_oUnicapDevice; }
     unicap_device_t &getUnicapDevice(){ return m_oUnicapDevice; }
+
+    const vector<UnicapFormat> getFilteredFormats(const Size &size) const{
+      // {{{ open
+
+      vector<UnicapFormat> v;
+      const vector<UnicapFormat> v2=getFormats();
+      for(unsigned int i=0;i<v2.size();i++){
+        if(v2[i].checkSize(size)){
+          v.push_back(v2[i]);
+        }
+      }
+      return v2;
+    }
+
+    // }}}
+
+    vector<UnicapFormat> getFilteredFormats(const Size &size){
+      // {{{ open
+
+      vector<UnicapFormat> v,v2=getFormats();
+      for(unsigned int i=0;i<v2.size();i++){
+        if(v2[i].checkSize(size)){
+          v.push_back(v2[i]);
+        }
+      }
+      return v2;
+    }
+
+    // }}}
+
+    const vector<UnicapProperty> getFilteredProperties(UnicapProperty::type t=UnicapProperty::anytype, const string &category="")const{
+      // {{{ open
+
+      const vector<UnicapProperty> v=getProperties();
+      vector<UnicapProperty> v2;
+      bool useType=t!=UnicapProperty::anytype;
+      bool useCategory=category!="";
+      for(unsigned int i=0;i<v.size();i++){
+        if( (!useType || v[i].getType()==t) || (!useCategory || v[i].getCategory()==category) ){
+          v2.push_back(v[i]);
+        }
+      }
+      return v2;
+    }
+
+    // }}}
+
+    vector<UnicapProperty> getFilteredProperties(UnicapProperty::type t=UnicapProperty::anytype, const string &category=""){
+      // {{{ open
+
+      const vector<UnicapProperty> v=getProperties();
+      vector<UnicapProperty> v2;
+      bool useType=t!=UnicapProperty::anytype;
+      bool useCategory=category!="";
+      for(unsigned int i=0;i<v.size();i++){
+        if( (!useType || v[i].getType()==t) || (!useCategory || v[i].getCategory()==category) ){
+          v2.push_back(v[i]);
+        }
+      }
+      return v2;
+    }
+
+    // }}}
     
     UnicapFormat getCurrentUnicapFormat(){
       // {{{ open
