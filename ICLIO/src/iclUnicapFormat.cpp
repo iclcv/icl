@@ -41,12 +41,12 @@ namespace icl{
   
   vector<Rect> UnicapFormat::getPossibleRects() const{
     vector<Rect> v;
-    for(int i=0;i< m_oUnicapFormatPtr->size_count; v.push_back( cvt(m_oUnicapFormatPtr->sizes[i])) );
+    for(int i=0;i< m_oUnicapFormatPtr->size_count; v.push_back( cvt(m_oUnicapFormatPtr->sizes[i++])) );
     return v;
   }
   vector<Size> UnicapFormat::getPossibleSizes() const{
     vector<Size> v;
-    for(int i=0;i< m_oUnicapFormatPtr->size_count; v.push_back(cvt(m_oUnicapFormatPtr->sizes[i]).size()));
+    for(int i=0;i< m_oUnicapFormatPtr->size_count; v.push_back(cvt(m_oUnicapFormatPtr->sizes[i++]).size()));
     return v;
   }
 
