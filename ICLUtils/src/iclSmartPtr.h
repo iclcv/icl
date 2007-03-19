@@ -1,10 +1,23 @@
 #include <stdlib.h>
 #include <iclMacros.h>
+#include <vector>
 #ifndef ICLAUTOPTR_H
 #define ICLAUTOPTR_H
 
 
 namespace icl{
+  
+  /// Pure Interface class for DelOps
+  class DelOpBase { };
+  
+  /// Pointer delete operation class for the SmartPtr class
+  struct PointerDelOp : public DelOpBase{ template<class T> static void delete_func(T *t){ delete t; } };
+
+  /// Array delete operation class for the SmartPtr class
+  struct ArrayDelOp : public DelOpBase{ template<class T>  static void delete_func(T *t){ delete [] t; } };
+
+  /// C-Style delete operation class for the SmartPtr class
+  struct FreeDelOp : public DelOpBase{ static void delete_func(void *v){ free(v); } };
   
   /// AutoPtr class used for channel management
   /** The operation of the SmartPtr class is copied from the 
@@ -13,12 +26,14 @@ namespace icl{
       packages) independent from the boost headers.
 
       <b>Important:</b> The data of a SmartPtr is released
-      using <b>delete []</b>. Take care, that data given to
-      the SmartPtr is created with <b>new T[count]</b> - particularly
-      single objects on the heep must be created with new T[1].
-      <em>delete []</em>-calls on pointers allocated with <em>new</em>
-      or <em>malloc</em> will cause memory corruptions.
-     
+      using the second template class parameter delOp::delete_func.
+      Predefined delOps are: 
+      - PointerDelOp  (using delete []) 
+      - ArrayDelOp  (using delete [])   [ default ]
+      - FreeDelOp  (using free)
+      Take care, that shared data, which is given to a specific SmartPtr,
+      is allocated using the correct allocation method (new, new[] or 
+      malloc).
   
       <h2>How a SmartPtr works</h2>
       In contrast with the auto pointers provided by the stdlib
@@ -53,7 +68,7 @@ namespace icl{
       array[99] = aptr_t();
       </pre>
   */
-  template<class T> 
+  template<class T, class delOp = ArrayDelOp > 
     class SmartPtr
     {
       private:
@@ -68,8 +83,9 @@ namespace icl{
       void dec() { 
          if(c && *c) { 
             if ( --(*c) == 0) { 
-               if(d) delete[] e; 
-               delete c;
+              //               if(d) delete[] e; 
+              if(d) delOp::delete_func(e);
+              delete c;
             }
          }
       }
@@ -90,7 +106,7 @@ namespace icl{
       SmartPtr(T *ptData, bool bOwn=true): e(ptData), c(new int(1)),d(bOwn){}
       
       /// e and c is copied from r, reference counter is increased by 1
-      SmartPtr(const SmartPtr<T>& r): e(r.e), c(r.c), d(r.d){ inc(); }
+      SmartPtr(const SmartPtr<T,delOp>& r): e(r.e), c(r.c), d(r.d){ inc(); }
       
       /// sets the pointer to hold another reference
       /** If the new reference r.e is identical to the current
@@ -101,7 +117,7 @@ namespace icl{
           copied from the given r. At the end, the copied reference
           counter is increased by 1.
       */
-      SmartPtr<T> &operator=(const SmartPtr<T>& r)
+      SmartPtr<T,delOp> &operator=(const SmartPtr<T,delOp>& r)
         {
           if(r.e == e) return *this;
           dec();
