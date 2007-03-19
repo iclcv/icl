@@ -1,7 +1,7 @@
-#include <iclQuadraticModel.h>
 #ifndef CIRCLE_MODEL_H
 #define CIRCLE_MODEL_H
 
+#include <iclQuadraticModel.h>
 
 
 namespace icl{

@@ -1,7 +1,7 @@
-#include "iclBaseAffineOp.h"
 #ifndef AFFINE_OP_H
 #define AFFINE_OP_H
 
+#include "iclBaseAffineOp.h"
 
 namespace icl{
   /// Class to apply an arbitrary series of affine transformations

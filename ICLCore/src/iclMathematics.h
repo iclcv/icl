@@ -1,3 +1,6 @@
+#ifndef ICL_MATH_H
+#define ICL_MATH_H
+
 #include <iclImg.h>
 #include <iclImgIterator.h>
 #include <vector>
@@ -11,8 +14,6 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#ifndef ICL_MATH_H
-#define ICL_MATH_H
 
 
 namespace icl {

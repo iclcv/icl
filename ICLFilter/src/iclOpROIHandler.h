@@ -1,7 +1,7 @@
-#include <iclImgBase.h>
 #ifndef OP_ROI_HANDLER_H
 #define OP_ROI_HANDLER_H
 
+#include <iclImgBase.h>
 
 namespace icl {
   /// Utility base class for Image Operators

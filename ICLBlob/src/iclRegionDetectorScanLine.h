@@ -1,6 +1,7 @@
-#include <iclRegionDetectorTypes.h>
 #ifndef PIXELLINE_H
 #define PIXELLINE_H
+
+#include <iclRegionDetectorTypes.h>
 
 namespace icl{
   namespace regiondetector{

@@ -1,7 +1,7 @@
-#include <string>
 #ifndef PROG_ARG_H
 #define PROG_ARG_H
 
+#include <string>
 
 namespace icl{
   

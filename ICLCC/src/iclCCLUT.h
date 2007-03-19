@@ -1,7 +1,8 @@
-#include <iclImg.h>
-#include <vector>
 #ifndef CC_LUT_H
 #define CC_LUT_H
+
+#include <iclImg.h>
+#include <vector>
 
 
 namespace icl{

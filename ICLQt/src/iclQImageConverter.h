@@ -1,7 +1,7 @@
-#include <iclTypes.h>
 #ifndef QIMAGE_CONVERTER_H
 #define QIMAGE_CONVERTER_H
 
+#include <iclTypes.h>
 
 // forward declared QImage class
 class QImage;

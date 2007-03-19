@@ -1,8 +1,8 @@
-#include <iclImg.h>
-#include <string>
 #ifndef TESTIMAGES_H
 #define TESTIMAGES_H
 
+#include <iclImg.h>
+#include <string>
 
 namespace icl{
   class TestImages{

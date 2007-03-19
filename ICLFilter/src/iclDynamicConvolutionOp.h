@@ -1,7 +1,7 @@
-#include <iclConvolutionOp.h>
 #ifndef DYNAMIC_CONVOLUTION_OP_H
 #define DYNAMIC_CONVOLUTION_OP_H
 
+#include <iclConvolutionOp.h>
 
 namespace icl{
   /// Convolution using the ROI of an ICL image as its kernel

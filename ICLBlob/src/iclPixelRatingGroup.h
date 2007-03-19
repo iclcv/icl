@@ -1,7 +1,8 @@
-#include <iclPixelRating.h>
-#include <vector>
 #ifndef PIXEL_RATING_GROUP_H
 #define PIXEL_RATING_GROUP_H
+
+#include <iclPixelRating.h>
+#include <vector>
 
 using std::vector;
 

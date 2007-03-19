@@ -1,8 +1,8 @@
-#include <iclSimpleMatrix.h>
-#include <vector>
 #ifndef HUNGARIAN_ALGORITHM_H
 #define HUNGARIAN_ALGORITHM_H
 
+#include <iclSimpleMatrix.h>
+#include <vector>
 
 namespace icl{
 /**

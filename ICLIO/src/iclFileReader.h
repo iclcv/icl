@@ -1,3 +1,6 @@
+#ifndef ICLFILEREAD_H
+#define ICLFILEREAD_H
+
 #include <iclGrabber.h>
 #include <iclException.h>
 #include <iclIO.h>
@@ -11,10 +14,6 @@
   AG Neuroinformatik
   mgoettin@techfak.uni-bielefeld.de
 */
-
-#ifndef ICLFILEREAD_H
-#define ICLFILEREAD_H
-
 
 
 namespace icl {

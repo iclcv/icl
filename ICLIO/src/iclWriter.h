@@ -1,3 +1,6 @@
+#ifndef ICLWRITER_H
+#define ICLWRITER_H
+
 /*
   Writer.h
 
@@ -6,9 +9,6 @@
               AG Neuroinformatik
               mgoettin@techfak.uni-bielefeld.de
 */
-
-#ifndef ICLWRITER_H
-#define ICLWRITER_H
 
 namespace icl {
   class ImgBase;

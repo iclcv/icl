@@ -1,6 +1,7 @@
-#include "iclOpROIHandler.h"
 #ifndef BINARY_OP_H
 #define BINARY_OP_H
+
+#include "iclOpROIHandler.h"
 
 namespace icl{
   /// Abstract base class for operators of type result=f(imageA,imageB)

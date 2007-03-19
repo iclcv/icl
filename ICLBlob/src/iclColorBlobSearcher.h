@@ -1,11 +1,11 @@
+#ifndef COLOR_BLOB_SEARCHER_H
+#define COLOR_BLOB_SEARCHER_H
+
 #include <iclPixelRatingGroup.h>
 #include <iclFoundBlob.h>
 #include <vector>
 #include <iclMacros.h>
 #include <iclImg.h>
-#ifndef COLOR_BLOB_SEARCHER_H
-#define COLOR_BLOB_SEARCHER_H
-
 
 
 namespace icl{

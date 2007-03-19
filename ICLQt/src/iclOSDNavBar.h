@@ -1,8 +1,8 @@
-#include <iclOSDWidget.h>
-#include <iclOSDButton.h>
 #ifndef OSDNAVBAR_H
 #define OSDNAVBAR_H
 
+#include <iclOSDWidget.h>
+#include <iclOSDButton.h>
 
 namespace icl{
   /// Implementation of a so called "Nav-Bar" widget

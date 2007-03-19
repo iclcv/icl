@@ -1,3 +1,6 @@
+#ifndef ICLCC_H  
+#define ICLCC_H 
+
 #include "iclTypes.h"
 #include <iclSize.h>
 #include <string>
@@ -389,3 +392,5 @@ namespace icl{
   void interleavedToPlanar(const S *src,const Size &srcSize, int srcChannels,  Img<D> *dst);
 
 }
+
+#endif

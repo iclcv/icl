@@ -1,3 +1,6 @@
+#ifndef FwGrabber_H
+#define FwGrabber_H
+
 /*
   1394Grabber.h
 
@@ -6,9 +9,6 @@
               AG Neuroinformatik
               {mgoettin}@techfak.uni-bielefeld.de
 */
-
-#ifndef FwGrabber_H
-#define FwGrabber_H
 
 #include <iclGrabber.h>
 #include <iclIO.h>

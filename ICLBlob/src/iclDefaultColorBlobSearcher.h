@@ -1,10 +1,11 @@
+#ifndef DEF_COLOR_BLOB_SEARCHER_H
+#define DEF_COLOR_BLOB_SEARCHER_H
+
 #include <iclColorBlobSearcher.h>
 #include <iclPixelRatingGroup.h>
 #include <iclFastMedianList.h>
 #include <stdlib.h>
 #include <vector>
-#ifndef DEF_COLOR_BLOB_SEARCHER_H
-#define DEF_COLOR_BLOB_SEARCHER_H
 
 
 

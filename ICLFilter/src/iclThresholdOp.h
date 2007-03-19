@@ -1,7 +1,7 @@
-#include <iclUnaryOp.h>
 #ifndef THRESHOLD_OP_H
 #define THRESHOLD_OP_H
 
+#include <iclUnaryOp.h>
 
 namespace icl {
   

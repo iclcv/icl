@@ -1,7 +1,7 @@
-#include <vector>
 #ifndef VQCLUSTERINFO_H
 #define VQCLUSTERINFO_H
 
+#include <vector>
 
 namespace icl{
 

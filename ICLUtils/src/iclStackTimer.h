@@ -1,3 +1,7 @@
+#ifndef ICL_STACKTIMER_H
+#define ICL_STACKTIMER_H
+
+
 #include <iclTimer.h>
 #include <string>
 
@@ -139,3 +143,4 @@ namespace icl{
   static StackTimer::StackTimerNotifier __notifier(__FUNCTION__,0,0,0,0);  \
   StackTimer __stacktimer(&__notifier);
 }
+#endif

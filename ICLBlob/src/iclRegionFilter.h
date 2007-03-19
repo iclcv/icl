@@ -1,9 +1,9 @@
-#include <iclRange.h>
-#include <iclTypes.h>
-#include <iclBlobData.h>
 #ifndef REGION_FILTER_H
 #define REGION_FILTER_H
 
+#include <iclRange.h>
+#include <iclTypes.h>
+#include <iclBlobData.h>
 
 namespace icl{
    /// discrimimator for a found regions

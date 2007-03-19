@@ -1,7 +1,7 @@
-#include "iclAffineOp.h"
 #ifndef ROTATE_OP_H
 #define ROTATE_OP_H
 
+#include "iclAffineOp.h"
 
 namespace icl{
   

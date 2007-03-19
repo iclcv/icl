@@ -1,9 +1,9 @@
-#include "iclUnaryOp.h"
-#include "iclImg.h"
-#include <vector>
 #ifndef LUT_OP_H
 #define LUT_OP_H
 
+#include "iclUnaryOp.h"
+#include "iclImg.h"
+#include <vector>
 
 namespace icl {
 

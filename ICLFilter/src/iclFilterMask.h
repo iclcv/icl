@@ -1,7 +1,7 @@
-#include <iclFilter.h>
 #ifndef ICL_FILTERMASK_H
 #define ICL_FILTERMASK_H
 
+#include <iclFilter.h>
 
 namespace icl {
   /// Abstract class interface for filter classes which use moving masks

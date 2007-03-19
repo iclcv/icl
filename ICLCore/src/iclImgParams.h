@@ -1,11 +1,12 @@
+#ifndef IMG_PARAMS_H
+#define IMG_PARAMS_H
+
 #include <iclPoint.h>
 #include <iclSize.h>
 #include <iclRect.h>
 #include <iclTypes.h>
 #include <iclException.h>
 #include <iclMacros.h>
-#ifndef IMG_PARAMS_H
-#define IMG_PARAMS_H
 
 
 namespace icl{

@@ -1,7 +1,7 @@
-#include <iclTypes.h>
 #ifndef EXTRAPOLATOR_H
 #define EXTRAPOLATOR_H
 
+#include <iclTypes.h>
 
 namespace icl{
   

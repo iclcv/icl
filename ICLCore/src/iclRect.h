@@ -1,10 +1,13 @@
+#ifndef ICL_RECT_H
+#define ICL_RECT_H
+
 #include <iclPoint.h>
 #include <iclSize.h>
 #include <stdio.h>
 #include <algorithm>
+#ifdef WITH_IPP_OPTIMIZATION
 #include <ipp.h>
-#ifndef ICL_RECT_H
-#define ICL_RECT_H
+#endif
 
 
 namespace icl {

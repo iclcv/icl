@@ -1,9 +1,9 @@
-#include <iclUnaryOp.h>
-#include <iclImg.h>
-#include <iclArray.h>
 #ifndef CANNY_H
 #define CANNY_H
 
+#include <iclUnaryOp.h>
+#include <iclImg.h>
+#include <iclArray.h>
 
 namespace icl {
   

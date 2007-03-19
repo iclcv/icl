@@ -1,3 +1,6 @@
+#ifndef ICLFILEWRITER_H
+#define ICLFILEWRITER_H
+
 #include <iclWriter.h>
 #include <iclImg.h>
 /*
@@ -8,9 +11,6 @@
               AG Neuroinformatik
               mgoettin@techfak.uni-bielefeld.de
 */
-
-#ifndef ICLFILEWRITER_H
-#define ICLFILEWRITER_H
 
 
 namespace icl {

@@ -1,8 +1,8 @@
-#include <vector>
-#include <string>
 #ifndef STR_TOK_H
 #define STR_TOK_H
 
+#include <vector>
+#include <string>
 
 namespace icl{
   

@@ -1,7 +1,7 @@
-#include "iclBaseAffineOp.h"
 #ifndef MIRROR_OP_H
 #define MIRROR_OP_H
 
+#include "iclBaseAffineOp.h"
 
 namespace icl{
   

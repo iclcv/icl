@@ -1,8 +1,8 @@
-#include <iclImg.h>
-#include <iclUnaryOp.h>
 #ifndef WEIGHTEDSUMOP_H
 #define WEIGHTEDSUMOP_H
 
+#include <iclImg.h>
+#include <iclUnaryOp.h>
 
 namespace icl {
 

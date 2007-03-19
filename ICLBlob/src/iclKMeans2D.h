@@ -1,7 +1,8 @@
-#include <vector>
-#include <iclMathematics.h>
 #ifndef KMEANS2D_H
 #define KMEANS2D_H
+
+#include <vector>
+#include <iclMathematics.h>
 
 
 namespace icl{

@@ -1,3 +1,6 @@
+#ifndef PAINT_ENGINE_H
+#define PAINT_ENGINE_H
+
 #include <stdio.h>
 #include <iclPoint.h>
 #include <iclSize.h>
@@ -5,11 +8,6 @@
 #include <iclTypes.h>
 #include <string>
 #include <QImage>
-#ifndef PAINT_ENGINE_H
-#define PAINT_ENGINE_H
-
-
-
 
 namespace icl{
 

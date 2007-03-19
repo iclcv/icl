@@ -1,7 +1,7 @@
-#include <iclBinaryOp.h>
 #ifndef BINARY_COMPARE_OP_H
 #define BINARY_COMPARE_OP_H
 
+#include <iclBinaryOp.h>
 
 namespace icl {
   

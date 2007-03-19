@@ -1,9 +1,9 @@
-#include <iclBinaryOp.h>
-#include <iclNeighborhoodOp.h>
-#include <iclImg.h>
 #ifndef PROXIMITY_OP_H
 #define PROXIMITY_OP_H
 
+#include <iclBinaryOp.h>
+#include <iclNeighborhoodOp.h>
+#include <iclImg.h>
 
 namespace icl {
   

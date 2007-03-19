@@ -1,7 +1,8 @@
-#include <iclException.h>
-#include <stdlib.h>
 #ifndef DATASTORE_H
 #define DATASTORE_H
+#include <iclException.h>
+#include <stdlib.h>
+
 
 namespace icl{
 namespace regiondetector{

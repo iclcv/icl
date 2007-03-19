@@ -1,7 +1,7 @@
-#include "iclAffineOp.h"
 #ifndef SCALE_OP_H
 #define SCALE_OP_H
 
+#include "iclAffineOp.h"
 
 namespace icl{
   

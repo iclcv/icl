@@ -1,3 +1,6 @@
+#ifndef VQ_H
+#define VQ_H
+
 /*
   VQ.h
 
@@ -6,9 +9,6 @@
               AG Neuroinformatik
               {mgoettin,celbrech}@techfak.uni-bielefeld.de
 */
-
-#ifndef VQ_H
-#define VQ_H
 
 #include "iclImg.h"
 #include "iclInterleaved.h"

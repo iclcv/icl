@@ -1,3 +1,6 @@
+#ifndef ICLGRABBER_H
+#define ICLGRABBER_H
+
 /*
   Grabber.h
 
@@ -6,9 +9,6 @@
               AG Neuroinformatik
               mgoettin@techfak.uni-bielefeld.de
 */
-
-#ifndef ICLGRABBER_H
-#define ICLGRABBER_H
 
 namespace icl {
   class ImgBase;

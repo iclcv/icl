@@ -1,6 +1,7 @@
-#include <iclRegionDetectorTypes.h>
 #ifndef REGION_H
 #define REGION_H
+
+#include <iclRegionDetectorTypes.h>
 
 /**
 A RegionDetectorBlobPart represents a 

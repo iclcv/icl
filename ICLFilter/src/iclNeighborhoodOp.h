@@ -1,7 +1,7 @@
-#include <iclUnaryOp.h>
 #ifndef NEIGHBORHOOD_OP_H
 #define NEIGHBORHOOD_OP_H
 
+#include <iclUnaryOp.h>
 
 namespace icl {
   /// unary operators that work on each pixels neighborhood

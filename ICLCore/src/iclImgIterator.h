@@ -1,6 +1,7 @@
-#include <iclCore.h>
 #ifndef ICLITERATOR_H
 #define ICLITERATOR_H
+
+#include <iclCore.h>
 
 
 namespace icl{

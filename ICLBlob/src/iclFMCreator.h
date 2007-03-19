@@ -1,9 +1,9 @@
-#include <iclSize.h>
-#include <vector>
-#include <iclTypes.h>
 #ifndef FMCREATOR_H
 #define FMCREATOR_H
 
+#include <iclSize.h>
+#include <vector>
+#include <iclTypes.h>
 
 namespace icl{
   /// interface for Feature Map creators

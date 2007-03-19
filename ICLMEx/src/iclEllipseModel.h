@@ -1,7 +1,7 @@
-#include <iclQuadraticModel.h>
 #ifndef ELLIPSE_MODEL_H
 #define ELLIPSE_MODEL_H
 
+#include <iclQuadraticModel.h>
 
 
 namespace icl{

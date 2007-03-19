@@ -1,7 +1,7 @@
-#include <vector>
 #ifndef MOUSE_INTERACTION_INFO_H
 #define MOUSE_INTERACTION_INFO_H
 
+#include <vector>
 
 namespace icl{
   /// for mouse interaction slots and signals

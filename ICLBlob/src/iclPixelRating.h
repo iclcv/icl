@@ -1,6 +1,7 @@
-#include <stdio.h>
 #ifndef PIXEL_RATING_H
 #define PIXEL_RATING_H
+
+#include <stdio.h>
 
 
 namespace icl{

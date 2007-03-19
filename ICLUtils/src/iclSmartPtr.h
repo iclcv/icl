@@ -1,9 +1,9 @@
-#include <stdlib.h>
-#include <iclMacros.h>
 #include <vector>
 #ifndef ICLAUTOPTR_H
 #define ICLAUTOPTR_H
 
+#include <stdlib.h>
+#include <iclMacros.h>
 
 namespace icl{
   

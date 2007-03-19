@@ -1,9 +1,9 @@
-#include <iclOSDWidget.h>
-#include <vector>
-#include <QString>
 #ifndef OSDLABEL_H
 #define OSDLABEL_H
 
+#include <iclOSDWidget.h>
+#include <vector>
+#include <QString>
 
 namespace icl{
   

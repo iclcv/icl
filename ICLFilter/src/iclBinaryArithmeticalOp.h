@@ -1,7 +1,8 @@
-#include <iclBinaryOp.h>
-#include <iclImg.h>
 #ifndef BINARY_ARITHMETICAL_H
 #define BINARY_ARITHMETICAL_H
+
+#include <iclBinaryOp.h>
+#include <iclImg.h>
 
 namespace icl {
   /// TODO short

@@ -1,6 +1,7 @@
-#include <iclImgBase.h>
 #ifndef ICL_FILTER_H
 #define ICL_FILTER_H
+
+#include <iclImgBase.h>
 
 /**
 \mainpage ICLFilter package

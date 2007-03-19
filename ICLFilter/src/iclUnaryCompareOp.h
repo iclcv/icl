@@ -1,7 +1,7 @@
-#include "iclUnaryOp.h"
 #ifndef UNARY_COMPARE_OP_H
 #define UNARY_COMPARE_OP_H
 
+#include "iclUnaryOp.h"
 
 namespace icl {
   

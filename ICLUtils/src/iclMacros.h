@@ -1,9 +1,9 @@
-#include <iclCompatMacros.h>
-#include <iostream>
-#include <stdlib.h>
 #ifndef ICLMACROS_H
 #define ICLMACROS_H
 
+#include <iclCompatMacros.h>
+#include <iostream>
+#include <stdlib.h>
 
 
 namespace icl {

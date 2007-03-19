@@ -1,7 +1,7 @@
-#include <vector>
 #ifndef ICLARRAY_H
 #define ICLARRAY_H
 
+#include <vector>
 
 namespace icl{
 

@@ -1,6 +1,8 @@
-#include <ipp.h>
 #ifndef ICL_POINT_H
 #define ICL_POINT_H
+#ifdef WITH_IPP_OPTIMIZATION
+#include <ipp.h>
+#endif
 
 namespace icl{
 #ifndef WITH_IPP_OPTIMIZATION

@@ -1,8 +1,8 @@
-#include <iclImg.h>
-#include <string>
-
 #ifndef ICL_QUICK_H
 #define ICL_QUICK_H
+
+#include <iclImg.h>
+#include <string>
 
 
 /** 

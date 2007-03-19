@@ -1,7 +1,7 @@
-#include <iclMacros.h>
 #ifndef VQVECTOR_SET_H
 #define VQVECTOR_SET_H
 
+#include <iclMacros.h>
 
 namespace icl{
   

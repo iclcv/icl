@@ -1,8 +1,8 @@
-#include <iclArray.h>
-#include <iclImg.h>
 #ifndef GENERAL_MODEL_H
 #define GENERAL_MODEL_H
 
+#include <iclArray.h>
+#include <iclImg.h>
 
 namespace icl{
 

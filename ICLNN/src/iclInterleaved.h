@@ -1,3 +1,6 @@
+#ifndef Interleaved_H
+#define Interleaved_H
+
 #include "iclImg.h"
 #include <vector>
  /*
@@ -8,9 +11,6 @@
               AG Neuroinformatik
               {mgoettin,celbrech}@techfak.uni-bielefeld.de
 */
-
-#ifndef Interleaved_H
-#define Interleaved_H
 
 namespace icl {
 

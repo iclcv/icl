@@ -1,3 +1,6 @@
+#ifndef REGIONBASEDBLOBSEARCHER_H
+#define REGIONBASEDBLOBSEARCHER_H
+
 #include <iclArray.h>
 #include <iclSize.h>
 #include <iclPoint.h>
@@ -7,8 +10,7 @@
 #include <iclBlobData.h>
 #include <iclRegionFilter.h>
 #include <iclFMCreator.h>
-#ifndef REGIONBASEDBLOBSEARCHER_H
-#define REGIONBASEDBLOBSEARCHER_H
+
 
 namespace icl{
 

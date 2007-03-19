@@ -1,3 +1,6 @@
+#ifndef BLOB_H
+#define BLOB_H
+
 #include <iclRegionDetectorTypes.h>
 #include <iclRegionDetectorScanLine.h>
 #include <iclRegionDetectorBlobPart.h>
@@ -6,9 +9,6 @@
 #include <iclPoint.h>
 #include <iclArray.h>
 #include <iclTypes.h>
-#ifndef BLOB_H
-#define BLOB_H
-
 
 namespace icl {
 

@@ -1,7 +1,7 @@
-#include "iclOpROIHandler.h"
 #ifndef UNARY_OP_H
 #define UNARY_OP_H
 
+#include "iclOpROIHandler.h"
 
 namespace icl{
   /// Abstract Base class for I=f(I1,I2) operators

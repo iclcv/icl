@@ -1,8 +1,8 @@
-#include <iclNeighborhoodOp.h>
-#include <vector>
 #ifndef WIENER_OP_H
 #define WIENER_OP_H
 
+#include <iclNeighborhoodOp.h>
+#include <vector>
 
 namespace icl {
   /// Class for Wiener Filter

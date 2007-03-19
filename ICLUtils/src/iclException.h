@@ -1,3 +1,6 @@
+#ifndef ICLEXCEPTION_H
+#define ICLEXCEPTION_H
+
 #include <iostream>
 #include <exception>
 #include <string>
@@ -9,9 +12,6 @@
               AG Neuroinformatik
               mgoettin@techfak.uni-bielefeld.de
 */
-
-#ifndef ICLEXCEPTION_H
-#define ICLEXCEPTION_H
 
 
 namespace icl {

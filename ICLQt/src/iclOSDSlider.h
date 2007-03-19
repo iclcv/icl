@@ -1,7 +1,7 @@
-#include <iclOSDWidget.h>
 #ifndef OSDSLIDER_H
 #define OSDSLIDER_H
 
+#include <iclOSDWidget.h>
 
 namespace icl{
   /// implementation of a Slider widgets

@@ -1,7 +1,7 @@
-#include "iclAffineOp.h"
 #ifndef TRANSLATE_OP_H
 #define TRANSLATE_OP_H
 
+#include "iclAffineOp.h"
 
 namespace icl{
   

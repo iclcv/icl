@@ -1,6 +1,7 @@
-#include <iclImg.h>
 #ifndef ICLCONVERTER_H
 #define ICLCONVERTER_H
+
+#include <iclImg.h>
 
 
 namespace icl{

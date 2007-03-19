@@ -1,7 +1,7 @@
-#include <iclNeighborhoodOp.h>
 #ifndef ICLCONVOLUTIONOP_H
 #define ICLCONVOLUTIONOP_H
 
+#include <iclNeighborhoodOp.h>
 
 namespace icl {
   

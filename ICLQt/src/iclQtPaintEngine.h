@@ -1,10 +1,10 @@
+#ifndef QTPAINT_ENGINE_H
+#define QTPAINT_ENGINE_H
+
 #include <iclPaintEngine.h>
 #include <QFont>
 #include <QPainter>
 #include <iclQImageConverter.h>
-#ifndef QTPAINT_ENGINE_H
-#define QTPAINT_ENGINE_H
-
 
 // forward declaration of the parent class 
 class QWidget;

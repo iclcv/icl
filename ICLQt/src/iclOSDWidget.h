@@ -1,14 +1,12 @@
+#ifndef OSDWIDGET_H
+#define OSDWIDGET_H
+
 #include <QRect>
 #include <QPainter>
 #include <QColor>
 #include <vector>
 #include <map>
 #include <iclPaintEngine.h>
-#ifndef OSDWIDGET_H
-#define OSDWIDGET_H
-
-
-
 
 namespace icl{
   

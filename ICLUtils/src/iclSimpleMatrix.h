@@ -1,8 +1,8 @@
-#include <iclSmartPtr.h>
-#include <algorithm>
 #ifndef SIMPLE_MATRIX_H
 #define SIMPLE_MATRIX_H
 
+#include <iclSmartPtr.h>
+#include <algorithm>
 
 namespace icl{
   /// A Low-Weight Matrix representation for block aligned data

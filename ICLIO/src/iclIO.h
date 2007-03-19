@@ -1,3 +1,6 @@
+#ifndef ICLIO_H
+#define ICLIO_H
+
 #include <string>
 #include <iclImgBase.h>
 #include <iclException.h>
@@ -12,9 +15,6 @@
               AG Neuroinformatik
               mgoettin@techfak.uni-bielefeld.de
 */
-
-#ifndef ICLIO_H
-#define ICLIO_H
 
 /**
 \mainpage ICLIO (Input/Ouput) package

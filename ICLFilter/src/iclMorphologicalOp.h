@@ -1,7 +1,8 @@
-#include <iclNeighborhoodOp.h>
-#include <iclImg.h>
 #ifndef MORPHOLOGICAL_OP_H
 #define MORPHOLOGICAL_OP_H
+
+#include <iclNeighborhoodOp.h>
+#include <iclImg.h>
 
 namespace icl {
   

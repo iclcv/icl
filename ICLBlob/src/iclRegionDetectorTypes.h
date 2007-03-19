@@ -1,9 +1,10 @@
+#ifndef REGION_DETECTOR_TYPES_H
+#define REGION_DETECTOR_TYPES_H
+
 #include <list>
 #include <vector>
 #include <iclRegionDetectorVector.h>
 #include <iclRegionDetectorMemoryManager.h>
-#ifndef REGION_DETECTOR_TYPES_H
-#define REGION_DETECTOR_TYPES_H
 
 
 #define XBLOB_OPTIMIZED_REGION_LIST

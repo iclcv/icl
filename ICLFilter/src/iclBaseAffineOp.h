@@ -1,7 +1,7 @@
-#include "iclUnaryOp.h"
 #ifndef BASEAFFINE_OP_H
 #define BASEAFFINE_OP_H
 
+#include "iclUnaryOp.h"
 
 namespace icl{
 

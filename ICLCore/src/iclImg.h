@@ -1,11 +1,12 @@
+#ifndef Img_H
+#define Img_H
+
 #include <iclImgBase.h>
 #include <iclImgIterator.h>
 #include <iclSmartPtr.h>
 #include <iclException.h>
 #include <cmath>
 #include <algorithm>
-#ifndef Img_H
-#define Img_H
 
 
 namespace icl {

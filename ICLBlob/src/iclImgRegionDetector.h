@@ -1,10 +1,10 @@
+#ifndef IMG_REGION_DETECTOR_H
+#define IMG_REGION_DETECTOR_H
+
 #include <iclArray.h>
 #include <iclTypes.h>
 #include <iclBlobData.h>
 #include <iclRange.h>
-#ifndef IMG_REGION_DETECTOR_H
-#define IMG_REGION_DETECTOR_H
-
 
 namespace icl{
   /// namespace for ImgRegionDetector specific functions

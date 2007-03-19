@@ -1,3 +1,6 @@
+#ifndef ICLWIDGET_H
+#define ICLWIDGET_H
+
 #define NOMINMAX // needed for Win32 in order to not define min, max as macros
 
 #include <QGLWidget>
@@ -16,8 +19,6 @@
 #include <iclTypes.h>
 #include <iclMouseInteractionInfo.h>
 #include <iclMouseInteractionReceiver.h>
-#ifndef ICLWIDGET_H
-#define ICLWIDGET_H
 
 // comment out only if No acceleration is available
 // fall back is not yet implemented

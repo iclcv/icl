@@ -1,6 +1,7 @@
-#include <iclConverter.h>
 #ifndef FIXED_CONVERTER_H
 #define FIXED_CONVERTER_H
+
+#include <iclConverter.h>
 
 
 namespace icl{

@@ -1,3 +1,6 @@
+#ifndef SkinOp_H
+#define SkinOp_H
+
 #include <iclFilter.h>
 /*
   Skin.h
@@ -7,9 +10,6 @@
               AG Neuroinformatik
               mgoettin@techfak.uni-bielefeld.de
 */
-
-#ifndef SkinOp_H
-#define SkinOp_H
 
 
 namespace icl {

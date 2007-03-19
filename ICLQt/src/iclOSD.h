@@ -1,11 +1,11 @@
+#ifndef ______OSD_H
+#define ______OSD_H
+
 #include <iclOSDWidget.h>
 #include <iclOSDButton.h>
 #include <iclOSDLabel.h>
 #include <iclOSDSlider.h>
 #include <iclOSDNavBar.h>
-#ifndef ______OSD_H
-#define ______OSD_H
-
 
 namespace icl{
  

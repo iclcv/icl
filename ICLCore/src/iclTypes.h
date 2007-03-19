@@ -1,8 +1,8 @@
-#include <ipp.h>
 #ifndef ICL_TYPES_H
 #define ICL_TYPES_H
 
 #ifdef WITH_IPP_OPTIMIZATION
+#include <ipp.h>
 #endif
 
 namespace icl {

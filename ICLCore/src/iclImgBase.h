@@ -1,10 +1,11 @@
+#ifndef ICLBASE_H
+#define ICLBASE_H
+
 #include <vector>
 #include <iclCore.h>
 #include <iclImgParams.h>
 #include <iclTime.h>
 #include <iclRange.h>
-#ifndef ICLBASE_H
-#define ICLBASE_H
     
 
 namespace icl {

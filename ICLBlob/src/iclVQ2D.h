@@ -1,11 +1,11 @@
+#ifndef VQ2D_H
+#define VQ2D_H
+
 #include <stdlib.h>
 #include <iclVQVectorSet.h>
 #include <iclVQClusterInfo.h>
 #include <iclMathematics.h>
 #include <iclTime.h>
-#ifndef VQ2D_H
-#define VQ2D_H
-
 
 namespace icl{
   class VQ2D{

@@ -1,8 +1,7 @@
-#include <iclQuadraticModel.h>
 #ifndef RESTRICTED_ELLIPSE_MODEL_H
 #define RESTRICTED_ELLIPSE_MODEL_H
 
-
+#include <iclQuadraticModel.h>
 
 namespace icl{
 

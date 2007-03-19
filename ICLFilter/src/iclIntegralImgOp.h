@@ -1,8 +1,9 @@
+#ifndef INTEGRALIMG_OP_H
+#define INTEGRALIMG_OP_H
+
 #include <iclImg.h>
 #include <vector>
 #include <iclUnaryOp.h>
-#ifndef INTEGRALIMG_OP_H
-#define INTEGRALIMG_OP_H
 
 namespace icl{
   /// class for creating integral images

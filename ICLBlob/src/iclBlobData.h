@@ -1,11 +1,12 @@
+#ifndef BLOB_DATA_H
+#define BLOB_DATA_H
+
 #include <iclPoint.h>
 #include <iclRect.h>
 #include <iclTypes.h>
 #include <vector>
 #include <iclMacros.h>
 #include <iclRegionDetectorBlob.h>
-#ifndef BLOB_DATA_H
-#define BLOB_DATA_H
 
 
 namespace icl{

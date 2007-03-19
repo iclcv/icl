@@ -1,7 +1,8 @@
-#include <iclBinaryOp.h>
-#include <iclImg.h>
 #ifndef BINARY_LOGICAL_H
 #define BINARY_LOGICAL_H
+
+#include <iclBinaryOp.h>
+#include <iclImg.h>
 
 namespace icl {
   /// TODO short

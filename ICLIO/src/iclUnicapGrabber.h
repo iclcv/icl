@@ -1,3 +1,6 @@
+#ifndef ICL_UNICAPGRABBER_H
+#define ICL_UNICAPGRABBER_H
+
 #include "iclGrabber.h"
 #include "iclUnicapDevice.h"
 
@@ -12,3 +15,5 @@ namespace icl{
     static const std::vector<UnicapDevice> &getDeviceList();
   };
 }
+
+#endif

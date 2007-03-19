@@ -1,7 +1,8 @@
-#include <iclUnaryOp.h>
-#include <iclImg.h>
 #ifndef UNARY_LOGICAL_H
 #define UNARY_LOGICAL_H
+
+#include <iclUnaryOp.h>
+#include <iclImg.h>
 
 namespace icl {
    /// Class for bitwise logical operations on pixel values.  (all functions: Img8u, Img32s: IPP + Fallback, Img16s: Fallback only!, No support for other Types)

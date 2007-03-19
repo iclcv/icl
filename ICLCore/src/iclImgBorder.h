@@ -1,6 +1,7 @@
-#include <iclImg.h>
 #ifndef IMG_BORDER_H
 #define IMG_BORDER_H
+
+#include <iclImg.h>
 
 
 namespace icl{

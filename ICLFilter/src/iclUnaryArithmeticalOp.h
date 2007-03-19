@@ -1,7 +1,8 @@
-#include <iclUnaryOp.h>
-#include <iclImg.h>
 #ifndef UNARY_ARITHMETICAL_H
 #define UNARY_ARITHMETICAL_H
+
+#include <iclUnaryOp.h>
+#include <iclImg.h>
 
 namespace icl {
   /// Class for Arithmetic Functions (nearly all functions: Img8u, Img16s, Img32f: IPP + Fallback, all other Types: Fallback only!)

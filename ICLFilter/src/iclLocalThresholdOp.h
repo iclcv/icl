@@ -1,10 +1,10 @@
+#ifndef LOCAL_THRESHOLD_OP_H
+#define LOCAL_THRESHOLD_OP_H
+
 #include "iclUnaryOp.h"
 #include "iclSize.h"
 #include "iclIntegralImgOp.h"
 #include <vector>
-#ifndef LOCAL_THRESHOLD_OP_H
-#define LOCAL_THRESHOLD_OP_H
-
 
 
 namespace icl{

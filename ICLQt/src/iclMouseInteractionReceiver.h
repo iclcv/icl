@@ -1,8 +1,8 @@
-#include <QObject>
-#include <iclMouseInteractionInfo.h>
 #ifndef MOUSE_INTERACTION_RECEIVER_H
 #define MOUSE_INTERACTION_RECEIVER_H
 
+#include <QObject>
+#include <iclMouseInteractionInfo.h>
 
 
 namespace icl{
