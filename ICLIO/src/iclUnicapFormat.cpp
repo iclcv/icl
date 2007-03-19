@@ -52,7 +52,11 @@ namespace icl{
 
   int UnicapFormat::getBitsPerPixel() const { return m_oUnicapFormatPtr->bpp; }
   
-  unsigned int UnicapFormat::getFourCC() const { return m_oUnicapFormatPtr->fourcc; }
+  string UnicapFormat::getFourCC() const { 
+    unsigned int i = m_oUnicapFormatPtr->fourcc; 
+    char buf[5] = {i,i>>8,i>>16,i>>24,0};
+    return buf;
+  }
   
   unsigned int UnicapFormat::getFlags() const { return m_oUnicapFormatPtr->flags; }
     
@@ -83,14 +87,14 @@ namespace icl{
             "Stepping: h      = %d\n"
             "          v      = %d\n"
             "Misc:     bpp    = %d\n"
-            "          fourcc = %c,%c,%c,%c\n"
+            "          fourcc = %s\n"
             "Buffers:  types  = %d\n"
             "          #sysbf = %d\n"
             "          size   = %d\n"
             "          type   = %s\n"
             ,getID().c_str(),r.x,r.y,r.width,r.height,a.x,a.y,a.width,a.height,
             b.x,b.y,b.width,b.height,getHStepping(),getVStepping(),getBitsPerPixel(),
-            getFourCC(),getFourCC()>>8, getFourCC()>>16, getFourCC()>>24,
+            getFourCC().c_str(),
             getBufferTypes(),getSystemBufferCount(),getBufferSize(),
             getBufferType()==userBuffer ? "user" : "system" );
     

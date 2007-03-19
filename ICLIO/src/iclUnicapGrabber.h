@@ -1,5 +1,5 @@
-#ifndef ICL_UNICAPGRABBER_H
-#define ICL_UNICAPGRABBER_H
+#ifndef ICL_UNICAP_GRABBER_H
+#define ICL_UNICAP_GRABBER_H
 
 #include "iclGrabber.h"
 #include "iclUnicapDevice.h"
@@ -12,8 +12,7 @@ namespace icl{
     virtual const ImgBase* grab(ImgBase *poDst=0);
     ImgBase *m_poImage;
     
-    static const std::vector<UnicapDevice> &getDeviceList();
+    static std::vector<UnicapDevice> &getDeviceList();
   };
 }
-
 #endif

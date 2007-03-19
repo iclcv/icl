@@ -53,11 +53,7 @@ namespace icl{
     private:
     struct UnicapPropertyDelOp : public DelOpBase{
       static void delete_func(unicap_property_t* p){
-        for(int i=0;i<p->relations_count;i++){
-          free(p->relations[i]);
-        }
-        if(p->relations_count && p->relations) free(p->relations);
-        if(p->property_data_size && p->property_data) free(p->property_data);
+        // other data may not be released here
         free(p);        
       }
     };

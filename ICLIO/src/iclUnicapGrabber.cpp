@@ -15,17 +15,17 @@ using namespace std;
 
 namespace icl{
 
-  const std::vector<UnicapDevice> &UnicapGrabber::getDeviceList(){
+  std::vector<UnicapDevice> &UnicapGrabber::getDeviceList(){
     // {{{ open
-
     static std::vector<UnicapDevice> s_CurrentDevices;
     s_CurrentDevices.clear();
-    int status = STATUS_SUCCESS;
-    for(int i=0;SUCCESS (status);++i){
-      s_CurrentDevices.push_back(UnicapDevice());
-      status = unicap_enumerate_devices (NULL,s_CurrentDevices[i].getUnicapDevice(),i);
-      if (!SUCCESS (status)){
-        s_CurrentDevices.pop_back();
+
+    for(int i=0;true;++i){
+      UnicapDevice d(i);
+      if(d.isValid()){
+        s_CurrentDevices.push_back(d);
+      }else{
+        break;
       }
     }
     return s_CurrentDevices;
@@ -242,12 +242,16 @@ struct unicap_property_t{
   const ImgBase* UnicapGrabber::grab(ImgBase *poDst){
     ensureCompatible(&m_poImage,depth8u,Size(640,480),formatRGB);
 
-    const std::vector<UnicapDevice> vs = UnicapGrabber::getDeviceList();
+    std::vector<UnicapDevice> vs = UnicapGrabber::getDeviceList();
+    printf("found %d devices\n",vs.size());
     for(unsigned int i=0;i<vs.size();i++){
+      printf("Device[%d]::%s \n",i,vs[i].getID().c_str());
       vs[i].listFormats();
       vs[i].listProperties();
     }
-    return 0;
+
+    
+    return new Img8u(Size(640,480),formatRGB);
     
     /*
         vector<ImgBase*> v=capture_frames(handle,10);

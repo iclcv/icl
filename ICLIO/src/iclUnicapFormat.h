@@ -39,7 +39,7 @@ namespace icl{
     std::vector<Size> getPossibleSizes() const;
 
     int getBitsPerPixel() const;
-    unsigned int getFourCC() const;
+    std::string getFourCC() const;
     unsigned int getFlags() const;
     
     unsigned int getBufferTypes() const;
@@ -60,7 +60,8 @@ namespace icl{
     private:
     struct UnicapFormatDelOp : public DelOpBase{ 
       static void delete_func(unicap_format_t *f){
-        if(f->size_count && f->sizes) free (f->sizes);
+        // it seems like that other variables are stored elsewhere
+        //if(f->size_count && f->sizes) free (f->sizes);
         free(f);
       }
     };

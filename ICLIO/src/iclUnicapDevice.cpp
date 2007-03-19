@@ -3,12 +3,22 @@
 using namespace std;
 namespace icl{
 
-  UnicapDevice::UnicapDevice() :
-    m_oUnicapDevicePtr((unicap_device_t*)malloc(sizeof(unicap_device_t))),m_oUnicapHandle(NULL), m_bOpen(false){
+  UnicapDevice::UnicapDevice(int deviceIndex) :
+    m_oUnicapDevicePtr((unicap_device_t*)malloc(sizeof(unicap_device_t))),m_oUnicapHandle(NULL), m_bOpen(false), m_bValid(false){
     // {{{ open
+    if(deviceIndex == -1 ){
+      unicap_void_device( m_oUnicapDevicePtr.get() );
+      return;
+    }
+    unicap_status_t status = unicap_enumerate_devices (NULL,m_oUnicapDevicePtr.get(),deviceIndex);
+    
+    if(!SUCCESS(status)){
+      unicap_void_device( m_oUnicapDevicePtr.get() );
+      return;
+    }
     
     if(open()){
-      unicap_get_device(m_oUnicapHandle, m_oUnicapDevicePtr.get());
+      
       // properties
       unicap_status_t status = STATUS_SUCCESS;
       for(int i=0;SUCCESS(status);i++){
@@ -28,28 +38,28 @@ namespace icl{
           m_oFormats.pop_back();
         }
       }
-      if(!close()){
-        ERROR_LOG("unable to close Unicap Device");
-      }
-    }else{
-      ERROR_LOG("Unable to close Unicap Device");
+      m_bValid = true;
+    }else{ 
+      unicap_void_device( m_oUnicapDevicePtr.get() );
+      ERROR_LOG("Unable to open Unicap Device");
+      return;
     }
   }
   
   // }}}
   
+  UnicapDevice::~UnicapDevice(){
+    if(m_bOpen) close();
+  }
+
   bool UnicapDevice::open(){
     // {{{ open
     if(m_bOpen){
       WARNING_LOG("Unicap Device already open (proceeding)");
       return true;
     }
-    if( SUCCESS( unicap_open(&m_oUnicapHandle,m_oUnicapDevicePtr.get()))){
-      m_bOpen = true;
-      return true;
-    }else{
-      return false;
-    }
+    unicap_open(&m_oUnicapHandle,m_oUnicapDevicePtr.get());
+    return true;
   }
 
   // }}}
@@ -60,14 +70,14 @@ namespace icl{
       WARNING_LOG("Unicap Device already closed (proceeding)");
       return true;
     }
-    if( SUCCESS( unicap_close(m_oUnicapHandle))){
-      return true;
-    }else{
-      return false;
-    }
+    unicap_close(m_oUnicapHandle);
+    return true;
   }
 
   // }}}
+  
+  bool UnicapDevice::isValid() const { return m_bValid; }
+
 
 
   string UnicapDevice::getID()const { return m_oUnicapDevicePtr->identifier; }
@@ -251,7 +261,6 @@ namespace icl{
   
   void UnicapDevice::listProperties()const{
     // {{{ open
-
     vector<UnicapProperty> v = getProperties();
     for(unsigned int i=0;i<v.size();i++){
       printf("Property %d:\n%s\n",i,v[i].toString().c_str());
@@ -262,7 +271,6 @@ namespace icl{
   
   void UnicapDevice::listFormats() const{
     // {{{ open
-
     vector<UnicapFormat> v = getFormats();
     for(unsigned int i=0;i<v.size();i++){
       printf("Format %d:\n%s\n",i,v[i].toString().c_str());

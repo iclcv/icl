@@ -8,10 +8,12 @@
 namespace icl{
  class UnicapDevice{
    public:
-   UnicapDevice();
+   UnicapDevice(int deviceIndex=-1);
+   ~UnicapDevice();
    
    bool open();
    bool close();
+   bool isValid() const;
    
    std::string getID()const;
    std::string getModelName()const;
@@ -53,14 +55,19 @@ namespace icl{
    void listFormats() const;    
    
    private:
-   SmartPtr<unicap_device_t,FreeDelOp> m_oUnicapDevicePtr;
+   struct UnicapDeviceDelOp : public DelOpBase{
+     static void delete_func(unicap_device_t *p){
+       free(p);
+     }
+   }; 
+   SmartPtr<unicap_device_t,UnicapDeviceDelOp> m_oUnicapDevicePtr;
    unicap_handle_t m_oUnicapHandle;
 
    
    std::vector<UnicapProperty> m_oProperties; 
    std::vector<UnicapFormat> m_oFormats; 
 
-   bool m_bOpen;
+   bool m_bOpen , m_bValid;
  };
 } // end of namespace icl
 #endif
