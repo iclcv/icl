@@ -4,7 +4,8 @@
 #include <unicap.h>
 #include <iclConverter.h>
 #include <iclCC.h>
-#include <iclUnicapFormat.h>
+#include "iclUnicapDevice.h"
+
 using namespace icl;
 using namespace std;
 
@@ -13,597 +14,25 @@ using namespace std;
 #define MAX_PROPERTIES 64
 
 namespace icl{
-  
-  class UnicapProperty{
+
+  const std::vector<UnicapDevice> &UnicapGrabber::getDeviceList(){
     // {{{ open
 
-  public:
-    UnicapProperty(){
-      unicap_void_property (&m_oUnicapProperty);  
-    }
-    UnicapProperty(unicap_handle_t handle):m_oUnicapHandle(handle){}
-    enum type {
-      range = UNICAP_PROPERTY_TYPE_RANGE,
-      valueList = UNICAP_PROPERTY_TYPE_VALUE_LIST,
-      menu = UNICAP_PROPERTY_TYPE_MENU,
-      data = UNICAP_PROPERTY_TYPE_DATA,
-      flags = UNICAP_PROPERTY_TYPE_FLAGS,
-      anytype 
-    };
-    struct Data{
-      void *data;
-      unsigned int size;
-    };
-    string getID() const{ return m_oUnicapProperty.identifier; }
-    string getCategory() const{ return m_oUnicapProperty.category; }
-    string getUnit() const { return m_oUnicapProperty.unit; }
-  
-    vector<string> getRelations() const { 
-      vector<string> v;
-      for(int i=0;i<m_oUnicapProperty.relations_count;v.push_back(m_oUnicapProperty.relations[i++]));
-      return v;
-    }
-
-    type getType() const{
-      return (type)m_oUnicapProperty.type;
-    }
-    
-    double getValue() const{
-      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_RANGE || 
-                            m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_VALUE_LIST ,0 );
-      return m_oUnicapProperty.value;
-    }
-
-    string getMenuItem() const{
-      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_MENU, 0);
-      return m_oUnicapProperty.menu_item;
-    } 
-    
-    Range<double> getRange() const{
-      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_RANGE, Range<double>());
-      return Range<double>( m_oUnicapProperty.range.min, m_oUnicapProperty.range.max );
-    }
-
-    vector<double> getValueList() const{
-       ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_VALUE_LIST ,vector<double>() );
-       vector<double> v;
-       for(int i=0;i<m_oUnicapProperty.value_list.value_count;v.push_back(m_oUnicapProperty.value_list.values[i++]));
-       return v;
-    }
-    vector<string> getMenu() const{
-      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_MENU , vector<string>());
-      vector<string> v;
-      for(int i=0;i<m_oUnicapProperty.menu.menu_item_count;v.push_back(m_oUnicapProperty.menu.menu_items[i++]));
-      return v;
-    }
-    double getStepping() const {
-      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_RANGE, 0);
-      return m_oUnicapProperty.stepping;
-    }
-    
-    u_int64_t getFlags() const{
-      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_FLAGS, 0);
-      return m_oUnicapProperty.flags;
-    }
-    u_int64_t getFlagMask() const{
-      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_FLAGS, 0);
-      return m_oUnicapProperty.flags_mask;
-    }
-    
-    const Data getData() const{
-      static const Data NULL_DATA = {0,0}; 
-      ICLASSERT_RETURN_VAL( m_oUnicapProperty.type == UNICAP_PROPERTY_TYPE_DATA,NULL_DATA);
-      Data d = { m_oUnicapProperty.property_data, m_oUnicapProperty.property_data_size };
-      return d;
-    }
-    const unicap_property_t &getUnicapProperty() const{
-      return m_oUnicapProperty;
-    }
-    unicap_property_t &getUnicapProperty(){
-      return m_oUnicapProperty;
-    }
-    const unicap_handle_t &getUnicapHandle() const { return m_oUnicapHandle; }
-    unicap_handle_t &getUnicapHandle() { return m_oUnicapHandle; }
- 
-    void setValue(double value){
-      // {{{ open
-      type t=getType();
-      ICLASSERT_RETURN( t == range || t==valueList );
-      if(t==range){
-        if(getRange().in(value)){
-          m_oUnicapProperty.value = value;
-          unicap_set_property(m_oUnicapHandle,&m_oUnicapProperty);
-        }else{
-          ERROR_LOG("could not set up value to: " << value << " (outside range!)");
-        }
-      }else if(t==valueList){
-        vector<double> v = getValueList();
-        if(find(v.begin(),v.end(),value) != v.end()){
-          m_oUnicapProperty.value = value;
-          if(!SUCCESS (unicap_set_property(m_oUnicapHandle,&m_oUnicapProperty) )){
-            ERROR_LOG("failed to set new property [code 0]");
-          }
-        }
+    static std::vector<UnicapDevice> s_CurrentDevices;
+    s_CurrentDevices.clear();
+    int status = STATUS_SUCCESS;
+    for(int i=0;SUCCESS (status);++i){
+      s_CurrentDevices.push_back(UnicapDevice());
+      status = unicap_enumerate_devices (NULL,s_CurrentDevices[i].getUnicapDevice(),i);
+      if (!SUCCESS (status)){
+        s_CurrentDevices.pop_back();
       }
     }
-    // }}}
-    
-    void setMenuItem(const string &item){
-      // {{{ open
-
-      ICLASSERT_RETURN( getType() == menu );
-      vector<string> v = getMenu();
-      if(find(v.begin(),v.end(),item) != v.end()){
-        sprintf(m_oUnicapProperty.menu_item,item.c_str());
-         if(!SUCCESS (unicap_set_property(m_oUnicapHandle,&m_oUnicapProperty) )){
-           ERROR_LOG("failed to set new property [code 1]");
-         }
-      }else{
-        ERROR_LOG("could not set up menu item to : " << item << "(item not allowed!)");
-      }
-    }
-
-    // }}}
-  
-    static  const char *ftoa(double d){
-      static char buf[30];
-      sprintf(buf,"%f",d);
-      return buf;
-    }
-    static  const char *itoa(int i){
-      static char buf[30];
-      sprintf(buf,"%d",i);
-      return buf;
-    }
-    
-    string toString(){
-      string typeStr;
-      switch(getType()){
-        case  range: typeStr = "range"; break;
-        case  valueList: typeStr = "value-list"; break;
-        case  menu: typeStr = "menu"; break;
-        case  data: typeStr = "data"; break;
-        default: typeStr = "flags"; break;
-      }
-      
-      char buf[10000];
-      sprintf(buf,
-              "ID       = %s\n"
-              "Category = %s\n"
-              "Unit     = %s\n"
-              "Type     = %s\n"
-              , getID().c_str(), getCategory().c_str(),getUnit().c_str(),typeStr.c_str());
-      
-      string s = buf;
-      switch(getType()){
-        case  range:
-          sprintf(buf,"   min=%f\n   max=%f\n   curr=%f\n",getRange().minVal,getRange().maxVal,getValue());
-          s.append(buf);
-          break;
-        case  valueList:{
-          string l = "list     = {";
-          vector<double> v = getValueList();
-          for(unsigned int i=0;i<v.size();i++){
-            l.append(ftoa(v[i]));
-            if(i<v.size()-1){
-              l.append(",");
-            }
-          }
-          l.append("}\n");
-          s.append(l);
-          s.append("curr     = ");
-          s.append(ftoa(getValue()));
-          s.append("\n");
-          break;
-        }
-        case  menu:{
-          string l = "list     = {";
-          vector<string> v = getMenu();
-          for(unsigned int i=0;i<v.size();i++){
-            l.append(v[i]);
-            if(i<v.size()-1){
-              l.append(",");
-            }
-          }
-          l.append("}\n");
-          s.append(l);
-          s.append("curr     = ");
-          s.append(getMenuItem());
-          s.append("\n");
-          break;
-        }
-        case flags:
-          s.append("flag     = ");
-          s.append(itoa(getFlags()));
-          s.append("\n");
-          s.append("mask     = ");
-          s.append(itoa(getFlagMask()));
-          s.append("\n");
-          break;
-        default: break;
-      }
-      return s;
-    }
-  private:
-    
-    unicap_property_t m_oUnicapProperty;
-    unicap_handle_t m_oUnicapHandle;
-  };
+    return s_CurrentDevices;
+  }
 
   // }}}
-
-  class UnicapDevice{
-    // {{{ open
-
-  public:
-    UnicapDevice(unicap_handle_t handle) : m_oUnicapHandle(handle){
-      // {{{ open
-
-      unicap_get_device(handle, &m_oUnicapDevice);
-      
-      // properties
-      unicap_status_t status = STATUS_SUCCESS;
-      for(int i=0;SUCCESS(status);i++){
-        m_oProperties.push_back(UnicapProperty(handle));
-        status = unicap_enumerate_properties(handle, NULL, &(m_oProperties[i].getUnicapProperty()),i);
-        if (!SUCCESS (status)){
-          m_oProperties.pop_back();
-        }
-      }
-      
-      // formats
-      status = STATUS_SUCCESS;
-      for(int i=0;SUCCESS(status);i++){ 
-        m_oFormats.push_back(UnicapFormat());
-        status = unicap_enumerate_formats (handle, NULL, &(m_oFormats[i].getUnicapFormat()), i);
-        if (!SUCCESS (status)){
-          m_oFormats.pop_back();
-        }
-      }
-    }
-
-    // }}}
-
-    string getID()const { return m_oUnicapDevice.identifier; }
-    string getModelName()const { return  m_oUnicapDevice.model_name;}
-    string getVendorName()const { return  m_oUnicapDevice.vendor_name;}
-    unsigned long long getModelID()const { return  m_oUnicapDevice.model_id; }
-    unsigned int getVendorID()const { return  m_oUnicapDevice.vendor_id;}
-    string getCPILayer()const { return  m_oUnicapDevice.cpi_layer;}
-    string getDevice() const { return m_oUnicapDevice.device;}
-    unsigned int getFlags() const { return m_oUnicapDevice.flags;}
-    
-    const vector<UnicapProperty> getProperties() const{ return m_oProperties; }
-    vector<UnicapProperty> getProperties(){ return m_oProperties; }
-
-    const vector<UnicapFormat> getFormats() const{ return m_oFormats; }
-    vector<UnicapFormat> getFormats(){ return m_oFormats; }
-    
-    
-    const unicap_handle_t &getUnicapHandle()const { return m_oUnicapHandle; }
-    unicap_handle_t &getUnicapHandle() { return m_oUnicapHandle; }
-    
-    const unicap_device_t &getUnicapDevice()const {  return m_oUnicapDevice; }
-    unicap_device_t &getUnicapDevice(){ return m_oUnicapDevice; }
-
-    const vector<UnicapFormat> getFilteredFormats(const Size &size) const{
-      // {{{ open
-
-      vector<UnicapFormat> v;
-      const vector<UnicapFormat> v2=getFormats();
-      for(unsigned int i=0;i<v2.size();i++){
-        if(v2[i].checkSize(size)){
-          v.push_back(v2[i]);
-        }
-      }
-      return v2;
-    }
-
-    // }}}
-
-    vector<UnicapFormat> getFilteredFormats(const Size &size){
-      // {{{ open
-
-      vector<UnicapFormat> v,v2=getFormats();
-      for(unsigned int i=0;i<v2.size();i++){
-        if(v2[i].checkSize(size)){
-          v.push_back(v2[i]);
-        }
-      }
-      return v2;
-    }
-
-    // }}}
-
-    const vector<UnicapProperty> getFilteredProperties(UnicapProperty::type t=UnicapProperty::anytype, const string &category="")const{
-      // {{{ open
-
-      const vector<UnicapProperty> v=getProperties();
-      vector<UnicapProperty> v2;
-      bool useType=t!=UnicapProperty::anytype;
-      bool useCategory=category!="";
-      for(unsigned int i=0;i<v.size();i++){
-        if( (!useType || v[i].getType()==t) || (!useCategory || v[i].getCategory()==category) ){
-          v2.push_back(v[i]);
-        }
-      }
-      return v2;
-    }
-
-    // }}}
-
-    vector<UnicapProperty> getFilteredProperties(UnicapProperty::type t=UnicapProperty::anytype, const string &category=""){
-      // {{{ open
-
-      const vector<UnicapProperty> v=getProperties();
-      vector<UnicapProperty> v2;
-      bool useType=t!=UnicapProperty::anytype;
-      bool useCategory=category!="";
-      for(unsigned int i=0;i<v.size();i++){
-        if( (!useType || v[i].getType()==t) || (!useCategory || v[i].getCategory()==category) ){
-          v2.push_back(v[i]);
-        }
-      }
-      return v2;
-    }
-
-    // }}}
-    
-    UnicapFormat getCurrentUnicapFormat(){
-      // {{{ open
-
-      UnicapFormat f;
-      if(!SUCCESS( unicap_get_format(m_oUnicapHandle,&(f.getUnicapFormat())) )){
-        ERROR_LOG("failed to get current unicap format!");
-      }
-      return f;
-    }
-
-    // }}}
-
-    Size getCurrentSize(){
-      // {{{ open
-
-      return getCurrentUnicapFormat().getSize();
-    }
-
-    // }}}
-
-    string getFormatID(){
-      // {{{ open
-
-      return getCurrentUnicapFormat().getID();
-    }
-
-    // }}}
-    
-    void setFormat(UnicapFormat &fmt){
-      // {{{ open
-
-      if(!SUCCESS(unicap_set_format(m_oUnicapHandle,&(fmt.getUnicapFormat())))){
-        ERROR_LOG("failed to set up unicap format! \n");
-      }
-    }
-
-    // }}}
-    void setFormatID(const string &fmtID){
-      // {{{ open
-
-      // search the format from the formatlist by id
-      for(unsigned int i=0;i<m_oFormats.size();i++){
-        if(m_oFormats[i].getID() == fmtID ){
-          if(m_oFormats[i].checkSize(getCurrentSize())){
-            UnicapFormat f = getCurrentUnicapFormat();
-            sprintf(f.getUnicapFormat().identifier,fmtID.c_str());
-            setFormat(f);
-          }else{
-            ERROR_LOG("current size is supported for new format: " << fmtID << "!");          
-          }
-          break;
-        }
-      }
-      ERROR_LOG("could not set unicap format to: " << fmtID << " (unknown format id)");
-    }
-
-    // }}}
-    
-    void setFormatSize(const Size &newSize){
-      // {{{ open
-
-      UnicapFormat f = getCurrentUnicapFormat();
-      if(f.checkSize(newSize)){
-        f.getUnicapFormat().size.width = newSize.width;
-        f.getUnicapFormat().size.width = newSize.height;
-        setFormat(f);
-      }else{
-        ERROR_LOG("nes size is supported for current format");          
-      }
-    }
-
-    // }}}
-    void setFormat(const string &fmtID, const Size &newSize){
-      // {{{ open
-
-      for(unsigned int i=0;i<m_oFormats.size();i++){
-        if(m_oFormats[i].getID() == fmtID ){
-          if(m_oFormats[i].checkSize(newSize)){
-            UnicapFormat f = getCurrentUnicapFormat();
-            sprintf(f.getUnicapFormat().identifier,fmtID.c_str());
-            f.getUnicapFormat().size.width = newSize.width;
-            f.getUnicapFormat().size.width = newSize.height; 
-            setFormat(f);
-          }else{
-            ERROR_LOG("combination of format and size is not supported \n");
-          }
-        }
-      }
-      ERROR_LOG("could not set unicap format to: " << fmtID << " (unknown format id)");
-    }
-
-    // }}}
-    
-    void listProperties()const{
-      vector<UnicapProperty> v = getProperties();
-      for(unsigned int i=0;i<v.size();i++){
-        printf("Property %d:\n%s\n",i,v[i].toString().c_str());
-      }
-    }
-    
-    void listFormats() const{
-      vector<UnicapFormat> v = getFormats();
-      for(unsigned int i=0;i<v.size();i++){
-        printf("Format %d:\n%s\n",i,v[i].toString().c_str());
-      }    
-    }
-    
-  private:
-    unicap_handle_t m_oUnicapHandle;
-    unicap_device_t m_oUnicapDevice;
-    
-    vector<UnicapProperty> m_oProperties; 
-    vector<UnicapFormat> m_oFormats; 
-  };
-
-  // }}}
-
-
-void set_format (unicap_handle_t handle){
-  // {{{ open
-
-  unicap_format_t formats[MAX_FORMATS];
-  int format_count;
-  unicap_status_t status = STATUS_SUCCESS;
-  int f = -1;
-   
-  for (format_count = 0; SUCCESS (status) && (format_count < MAX_FORMATS); format_count++){
-    status = unicap_enumerate_formats (handle, NULL, &formats[format_count], format_count);
-    if (SUCCESS (status)){
-      printf ("%d: %s\n", format_count, formats[format_count].identifier);
-    }else{
-      break;
-    }
-  }
-  if(!format_count){
-    return;
-  }
   
-  while ((f < 0) || (f >= format_count)){
-    printf ("Use Format:  using 3 \n");
-    //    scanf ("%d", &f);
-    f=3;
-  }
-  
-  if (formats[f].size_count){
-    int i;
-    int s = -1;
-    
-    for (i = 0; i < formats[f].size_count; i++){
-      printf ("%d: %dx%d\n", i, formats[f].sizes[i].width,
-              formats[f].sizes[i].height);
-    }
-    
-    while ((s < 0) || (s >= formats[f].size_count)){
-      printf ("Select Size: using 3! \n");
-      //scanf ("%d", &s);
-      s=3;
-    }
-    formats[f].size.width = formats[f].sizes[s].width;
-    formats[f].size.height = formats[f].sizes[s].height;
-  }
-  
-  if (!SUCCESS (unicap_set_format (handle, &formats[f]))){
-    fprintf (stderr, "Failed to set the format!\n");
-    exit (-1);
-  }
-}
-
-// }}}
-
-unicap_handle_t open_device (){
-  // {{{ open
-
-  int dev_count;
-  int status = STATUS_SUCCESS;
-  unicap_device_t devices[MAX_DEVICES];
-  unicap_handle_t handle;
-  int d = -1;
-  
-  for (dev_count = 0; SUCCESS (status) && (dev_count < MAX_DEVICES);dev_count++){
-    status = unicap_enumerate_devices (NULL, &devices[dev_count], dev_count); // (1)
-    if (SUCCESS (status)){
-      printf ("%d: %s\n", dev_count, devices[dev_count].identifier);
-    }else{
-      break;
-    }
-  }
-  
-  if (dev_count == 0){
-    return NULL;  // no device selected
-  }
-  while ((d < 0) || (d >= dev_count)){
-    printf ("Open Device: \n");
-    d=0;
-    
-    //scanf ("%d", &d);
-  }
-  unicap_open (&handle, &devices[d]);   // (2)
-  return handle;
-}
-
-// }}}
-
-void  set_range_property (unicap_handle_t handle){
-  // {{{ open
-
-  unicap_property_t properties[MAX_PROPERTIES];
-  int property_count;
-  int range_ppty_count;
-  unicap_status_t status = STATUS_SUCCESS;
-  int p = -1;
-  double new_value = 0.0;
-  
-  for (property_count = range_ppty_count = 0; SUCCESS (status) && (property_count < MAX_PROPERTIES); property_count++){
-    status = unicap_enumerate_properties (handle, NULL, &properties[range_ppty_count], property_count);       // (1)
-    if (SUCCESS (status)){
-      if (properties[range_ppty_count].type == UNICAP_PROPERTY_TYPE_RANGE){
-        printf ("%d: %s\n", range_ppty_count, properties[range_ppty_count].identifier);
-        range_ppty_count++;
-      }
-    }else{
-      break;
-    }
-  }
-  if (range_ppty_count == 0){
-    // no range properties
-    return;
-  }
-  while ((p < 0) || (p > range_ppty_count)){
-    printf ("Property: ");
-    scanf ("%d", &p);
-  }
-  
-  status = unicap_get_property (handle, &properties[p]); 
-  if (!SUCCESS (status)){
-    fprintf (stderr, "Failed to inquire property '%s'\n",properties[p].identifier);
-    exit (-1);
-  }
-  printf ("Property '%s': Current = %f, Range = [%f..%f]\n",
-          properties[p].identifier, properties[p].value,
-          properties[p].range.min, properties[p].range.max);
-  
-  new_value = properties[p].range.min - 1.0f;
-  while ((new_value < properties[p].range.min) || (new_value > properties[p].range.max)){
-    printf ("New value for property: ");
-    scanf ("%lf", &new_value);
-  }
-  properties[p].value = new_value;
-  if (!SUCCESS (unicap_set_property (handle, &properties[p]))){
-    fprintf (stderr, "Failed to set property!\n");
-    exit (-1);
-  }
-}
-
-// }}}
 
 static void new_frame_cb (unicap_event_t event, unicap_handle_t handle, unicap_data_buffer_t * buffer, void *usr_data){
   // {{{ open
@@ -813,32 +242,163 @@ struct unicap_property_t{
   const ImgBase* UnicapGrabber::grab(ImgBase *poDst){
     ensureCompatible(&m_poImage,depth8u,Size(640,480),formatRGB);
 
-    unicap_handle_t handle;
-
-    handle = open_device();
-    if(!handle){ return 0; }
-    
-    
-    UnicapDevice ud(handle);
-    ud.listFormats();
-    ud.listProperties();
-   
+    const std::vector<UnicapDevice> vs = UnicapGrabber::getDeviceList();
+    for(unsigned int i=0;i<vs.size();i++){
+      vs[i].listFormats();
+      vs[i].listProperties();
+    }
     return 0;
     
-    set_format(handle);
-    
-    //set_range_property(handle);
-
-    vector<ImgBase*> v=capture_frames(handle,10);
-
-    unicap_close(handle);
-
-    v[0]->deepCopy(&m_poImage);    
-    for(unsigned int i=0;i<v.size();i++){
-      delete v[i];
-    }
-
-    return m_poImage;
+    /*
+        vector<ImgBase*> v=capture_frames(handle,10);
+        v[0]->deepCopy(&m_poImage);    
+        for(unsigned int i=0;i<v.size();i++){
+        delete v[i];
+        }
+        
+        return m_poImage;
+    */
   }
 
 }
+
+
+  /*
+      void set_format (unicap_handle_t handle){
+      // {{{ open
+
+  unicap_format_t formats[MAX_FORMATS];
+  int format_count;
+  unicap_status_t status = STATUS_SUCCESS;
+  int f = -1;
+   
+  for (format_count = 0; SUCCESS (status) && (format_count < MAX_FORMATS); format_count++){
+    status = unicap_enumerate_formats (handle, NULL, &formats[format_count], format_count);
+    if (SUCCESS (status)){
+      printf ("%d: %s\n", format_count, formats[format_count].identifier);
+    }else{
+      break;
+    }
+  }
+  if(!format_count){
+    return;
+  }
+  
+  while ((f < 0) || (f >= format_count)){
+    printf ("Use Format:  using 3 \n");
+    //    scanf ("%d", &f);
+    f=3;
+  }
+  
+  if (formats[f].size_count){
+    int i;
+    int s = -1;
+    
+    for (i = 0; i < formats[f].size_count; i++){
+      printf ("%d: %dx%d\n", i, formats[f].sizes[i].width,
+              formats[f].sizes[i].height);
+    }
+    
+    while ((s < 0) || (s >= formats[f].size_count)){
+      printf ("Select Size: using 3! \n");
+      //scanf ("%d", &s);
+      s=3;
+    }
+    formats[f].size.width = formats[f].sizes[s].width;
+    formats[f].size.height = formats[f].sizes[s].height;
+  }
+  
+  if (!SUCCESS (unicap_set_format (handle, &formats[f]))){
+    fprintf (stderr, "Failed to set the format!\n");
+    exit (-1);
+  }
+}
+
+// }}}
+      
+      unicap_handle_t open_device (){
+      // {{{ open
+
+  int dev_count;
+  int status = STATUS_SUCCESS;
+  unicap_device_t devices[MAX_DEVICES];
+  unicap_handle_t handle;
+  int d = -1;
+  
+  for (dev_count = 0; SUCCESS (status) && (dev_count < MAX_DEVICES);dev_count++){
+    status = unicap_enumerate_devices (NULL, &devices[dev_count], dev_count); // (1)
+    if (SUCCESS (status)){
+      printf ("%d: %s\n", dev_count, devices[dev_count].identifier);
+    }else{
+      break;
+    }
+  }
+  
+  if (dev_count == 0){
+    return NULL;  // no device selected
+  }
+  while ((d < 0) || (d >= dev_count)){
+    printf ("Open Device: \n");
+    d=0;
+    
+    //scanf ("%d", &d);
+  }
+  unicap_open (&handle, &devices[d]);   // (2)
+  return handle;
+}
+
+// }}}
+      
+      void  set_range_property (unicap_handle_t handle){
+      // {{{ open
+
+  unicap_property_t properties[MAX_PROPERTIES];
+  int property_count;
+  int range_ppty_count;
+  unicap_status_t status = STATUS_SUCCESS;
+  int p = -1;
+  double new_value = 0.0;
+  
+  for (property_count = range_ppty_count = 0; SUCCESS (status) && (property_count < MAX_PROPERTIES); property_count++){
+    status = unicap_enumerate_properties (handle, NULL, &properties[range_ppty_count], property_count);       // (1)
+    if (SUCCESS (status)){
+      if (properties[range_ppty_count].type == UNICAP_PROPERTY_TYPE_RANGE){
+        printf ("%d: %s\n", range_ppty_count, properties[range_ppty_count].identifier);
+        range_ppty_count++;
+      }
+    }else{
+      break;
+    }
+  }
+  if (range_ppty_count == 0){
+    // no range properties
+    return;
+  }
+  while ((p < 0) || (p > range_ppty_count)){
+    printf ("Property: ");
+    scanf ("%d", &p);
+  }
+  
+  status = unicap_get_property (handle, &properties[p]); 
+  if (!SUCCESS (status)){
+    fprintf (stderr, "Failed to inquire property '%s'\n",properties[p].identifier);
+    exit (-1);
+  }
+  printf ("Property '%s': Current = %f, Range = [%f..%f]\n",
+          properties[p].identifier, properties[p].value,
+          properties[p].range.min, properties[p].range.max);
+  
+  new_value = properties[p].range.min - 1.0f;
+  while ((new_value < properties[p].range.min) || (new_value > properties[p].range.max)){
+    printf ("New value for property: ");
+    scanf ("%lf", &new_value);
+  }
+  properties[p].value = new_value;
+  if (!SUCCESS (unicap_set_property (handle, &properties[p]))){
+    fprintf (stderr, "Failed to set property!\n");
+    exit (-1);
+  }
+}
+
+// }}}
+  */

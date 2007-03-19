@@ -6,9 +6,10 @@
 #include <string>
 #include <vector>
 #include <stdio.h>
+#include <iclSmartPtr.h>
+
 
 namespace icl{
-  
   class UnicapFormat{
     public:
     UnicapFormat();
@@ -48,20 +49,26 @@ namespace icl{
     
     buffertype getBufferType() const;
 
-    const unicap_format_t &getUnicapFormat() const;
-    unicap_format_t &getUnicapFormat();
+    const unicap_format_t *getUnicapFormat() const;
+    unicap_format_t *getUnicapFormat();
 
-    const unicap_handle_t &getUnicapHandle() const;
-    unicap_handle_t &getUnicapHandle();
+    const unicap_handle_t getUnicapHandle() const;
+    unicap_handle_t getUnicapHandle();
     
     std::string toString()const;
-
-  private:
-    unicap_format_t m_oUnicapFormat;
+    
+    private:
+    struct UnicapFormatDelOp : public DelOpBase{ 
+      static void delete_func(unicap_format_t *f){
+        if(f->size_count && f->sizes) free (f->sizes);
+        free(f);
+      }
+    };
+    SmartPtr<unicap_format_t, UnicapFormatDelOp> m_oUnicapFormatPtr;
     unicap_handle_t m_oUnicapHandle;
   };
 
-
+  
 } // end of namespace icl
 
 #endif
