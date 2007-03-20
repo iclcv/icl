@@ -1,11 +1,15 @@
 #include "iclUnaryLogicalOp.h"
 #include "iclBinaryLogicalOp.h"
-//#include <iclTimer.h>
-
+#include <iclTestImages.h>
+#include <iclFileWriter.h>
 using namespace std;
 using namespace icl;
 
 int main(int nArgs, char **ppcArg){
+ImgBase *image = TestImages::create("parrot",formatRGB,depth8u);
+	char buf[100];
+	sprintf(buf,"image_ori.ppm");
+    FileWriter(buf).write(image);
   Img8u src(Size(2,2),1);
   Img8u srcb(Size(2,2),1);
   ImgIterator<icl8u> it = src.getIterator(0);
@@ -35,6 +39,7 @@ int main(int nArgs, char **ppcArg){
 
   
   ImgBase *dst=0;
+	ImgBase *dstimage=0;
 printf("a\n");  
   UnaryLogicalOp* uLogic = new UnaryLogicalOp(UnaryLogicalOp::andOp,0);
   BinaryLogicalOp* bLogic = new BinaryLogicalOp(BinaryLogicalOp::andOp);
@@ -96,6 +101,10 @@ printf ("Mode\n0==AND\n1==OR\n2==XOR\n3==NOT Using Unary, Data B, val:255/n");
     uLogic->setOpType((UnaryLogicalOp::optype)i);
 
     uLogic->apply(&srcb,&dst);
+		uLogic->apply(image,&dstimage);
+		char buf[100];	
+		sprintf(buf,"image_%d.ppm",i);
+    FileWriter(buf).write(dstimage);
     printf("\nMode:%d <8u>\n",i);
     for(ImgIterator<icl8u> it2 = (dst->asImg<icl8u>())->getIterator(0);it2.inRegion();++it2){
       printf("%d,",*it2);
