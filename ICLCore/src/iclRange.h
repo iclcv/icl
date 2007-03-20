@@ -29,7 +29,7 @@ namespace icl{
     }
     
     /// tests whether a given value is inside of this range
-    bool in(Type value) { return value >= minVal && value <= maxVal; }
+    bool in(Type value) const { return value >= minVal && value <= maxVal; }
   };
 }
 #endif
