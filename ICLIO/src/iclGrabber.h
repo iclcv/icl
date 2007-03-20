@@ -1,6 +1,10 @@
 #ifndef ICLGRABBER_H
 #define ICLGRABBER_H
 
+#include <string>
+#include <iclImgParams.h>
+#include <iclTypes.h>
+
 /*
   Grabber.h
 
@@ -19,7 +23,9 @@ namespace icl {
      Grabber() {}
      virtual ~Grabber() {}
 
-     /** grab directly into the specified destination image 
+     /**  DEPRECATED !!
+
+         grab directly into the specified destination image 
          or return an internally buffered image
 
          If specified, the destination image poDst is directly filled
@@ -33,6 +39,42 @@ namespace icl {
          <b>Ownership for this image remains with the Grabber class.</b>
      */
      virtual const ImgBase* grab(ImgBase *poDst=0)=0;
+
+     /// new------------------------------------------------
+     virtual const ImgBase* grab(ImgBase **ppoDst=0){ return 0;} // later = 0
+     const ImgParams &getDesiredParams()const{
+       return m_oDesiredParams;
+     }
+     const Size &getDesiredSize()const{
+       return m_oDesiredParams.getSize();
+     }
+     format getDesiredFormat() const{
+       return m_oDesiredParams.getFormat();
+     }
+     depth getDesiredDepth() const{
+       return m_eDesiredDepth;
+     }
+
+     void setDesiredParams(const ImgParams &p){
+       m_oDesiredParams = p;
+     }
+     void setDesiredSize(const Size &s){
+       m_oDesiredParams.setSize(s);
+     }
+     void setDesiredFormat(format f){
+       m_oDesiredParams.setFormat(f);
+     }
+     void setDesiredDepth(depth d){
+       m_eDesiredDepth = d;
+     }
+     
+     virtual void setParam(const std::string &param, const std::string &value){
+       (void)param; (void)value;
+     }
+     
+    private:
+     ImgParams m_oDesiredParams;
+     depth m_eDesiredDepth;
   }; // class
  
 } // namespace icl

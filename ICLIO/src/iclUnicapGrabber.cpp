@@ -408,8 +408,61 @@ struct unicap_property_t{
 *********************************************************************/
 // }}}
 
-  UnicapGrabber::UnicapGrabber():m_poImage(0){}
+//UnicapGrabber(const UnicapDevice &device);
+//UnicapGrabber(const std::string &deviceFilter); // uses the first device that matches
+
+
+  UnicapGrabber::UnicapGrabber(const UnicapDevice &device):m_oDevice(device),m_poImage(0),m_poConvertedImage(0){}
+  UnicapGrabber::UnicapGrabber(const std::string &deviceFilter):m_poImage(0),m_poConvertedImage(0){
+    const std::vector<UnicapDevice> &ds = getDeviceList(deviceFilter);
+    if(ds.size()){
+      m_oDevice = ds[0];
+    }else{
+      ERROR_LOG("no device found for filter: \""<<deviceFilter<<"\"!");
+    }    
+
+    printf("Created UnicapGrabber with this device: \n%s\n",m_oDevice.toString().c_str());
+  }
+
+  void UnicapGrabber::setParam(const std::string &param, const std::string &value){
+    (void)param; (void)value;
+    // TODO:: later translate to device, format and property options!
+  }
+
+  const ImgBase* UnicapGrabber::grab(ImgBase **ppoDst){
+    const ImgParams &p = getDesiredParams();
+    depth d = getDesiredDepth();
+    if(!ppoDst) ppoDst = &m_poImage;
+    else if(m_poImage){
+      delete m_poImage;
+      m_poImage = 0;
+    }
+    m_oDevice.lockGrabber();
+    if(m_oDevice.needsConversion()){
+      const icl8u *rawData = m_oDevice.getCurrentFrameUnconverted();
+      m_oDevice.cvt(rawData,p,d,ppoDst);
+    }else{
+      m_oDevice.getCurrentFrameConverted(p,d,ppoDst);
+    }
+    
+    if(ppoDst && *ppoDst){
+      ImgBase *image = *ppoDst;
+      if(image->getParams() != p || image->getDepth() != d){
+        ensureCompatible(&m_poConvertedImage,d,p);
+        m_oConverter.apply(image,m_poConvertedImage);
+        return m_poConvertedImage;
+      }else{
+        return image;
+      }
+    }else{
+      ERROR_LOG("error while grabbing image!");
+    }
+    return 0; 
+    
+  }
   
+
+  /// OLD !!!
   const ImgBase* UnicapGrabber::grab(ImgBase *poDst){
     ensureCompatible(&m_poImage,depth8u,Size(640,480),formatRGB);
 

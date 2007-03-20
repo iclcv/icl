@@ -3,8 +3,11 @@
 
 
 int main(){
-  UnicapGrabber g;
-  Img8u *image= g.grab()->convert<icl8u>();
+  UnicapGrabber g("/dev/video0");
+  g.setDesiredParams(ImgParams(Size(640,480),formatRGB));
+  g.setDesiredDepth(depth8u);
+  
+  const Img8u *image = g.grab((ImgBase**)0)->asImg<icl8u>();
   
   ImgQ a = cvt(*image);
   label(a,"grabbed image");

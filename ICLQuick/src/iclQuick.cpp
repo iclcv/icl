@@ -68,7 +68,6 @@ namespace icl{
     }
 
     // }}}
-
     int FONTSIZE = 12;
     string FONTFAMILY = "Times";
     void bresenham(int x0, int x1, int y0, int y1, vector<int> &xs, vector<int> &ys, int maxX, int maxY){

@@ -173,7 +173,7 @@ SKIP_DIRECTORIES += ICLQt
 endif
 
 ifeq "$(HAVE_UNICAP)" ""
-SKIP_OBJECTS += iclUnicapGrabber.cpp unicap_test.cpp 
+SKIP_OBJECTS += iclUnicapGrabber.cpp unicap_test.cpp iclPWCGrabEngine.cpp
 SKIP_OBJECTS += iclUnicapDevice.cpp iclUnicapFormat.cpp iclUnicapProperty.cpp
 endif
 
