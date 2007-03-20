@@ -5,7 +5,7 @@
 #include <iclConverter.h>
 #include <iclCC.h>
 #include "iclUnicapDevice.h"
-
+#include <iclStrTok.h>
 using namespace icl;
 using namespace std;
 
@@ -15,24 +15,195 @@ using namespace std;
 
 namespace icl{
 
-  std::vector<UnicapDevice> &UnicapGrabber::getDeviceList(){
+  namespace{
+    struct ParamFilter{
+      // {{{ open
+      ParamFilter(const string &str, unsigned int ui=0, unsigned long long ull=0):
+        str(str),ui(ui),ull(ull){ }
+      virtual ~ParamFilter(){}
+      virtual bool ok(const UnicapDevice &d)=0;
+      string str;
+      unsigned int ui;
+      unsigned long long ull;
+    };
+
+    // }}}
+    
+    struct ParamFilterID : public ParamFilter{
+      // {{{ open
+
+      ParamFilterID(const string &id):ParamFilter(str){}
+      virtual bool ok(const UnicapDevice &d){
+        return d.getID()==str;
+      }
+    };
+
+    // }}}
+    struct ParamFilterModelName : public ParamFilter{
+      // {{{ open
+
+      ParamFilterModelName(const string &mn):ParamFilter(mn){}
+      virtual bool ok(const UnicapDevice &d){
+        return d.getModelName()==str;
+      }
+    };
+
+    // }}}
+    struct ParamFilterVendorName : public ParamFilter{
+      // {{{ open
+
+      ParamFilterVendorName(const string &vn):ParamFilter(vn){}
+      virtual bool ok(const UnicapDevice &d){
+        return d.getVendorName()==str;
+      }
+    };
+
+    // }}}
+    struct ParamFilterModelID : public ParamFilter{
+      // {{{ open
+
+      ParamFilterModelID(unsigned long long mid):ParamFilter("",0,mid){}
+      virtual bool ok(const UnicapDevice &d){
+        return d.getModelID()==ull;
+      }
+    };
+
+    // }}}
+    struct ParamFilterVendorID : public ParamFilter{
+      // {{{ open
+
+      ParamFilterVendorID(unsigned int vid):ParamFilter("",vid){}
+      virtual bool ok(const UnicapDevice &d){
+        return d.getVendorID()==ui;
+      }
+    };
+
+    // }}}
+    struct ParamFilterCPILayer : public ParamFilter{
+      // {{{ open
+
+      ParamFilterCPILayer(const string &cpil):ParamFilter(cpil){}
+      virtual bool ok(const UnicapDevice &d){
+        return d.getCPILayer()==str;
+      }
+    };
+
+    // }}}
+    struct ParamFilterDevice : public ParamFilter{
+      // {{{ open
+
+      ParamFilterDevice(const string &dev):ParamFilter(dev){}
+      virtual bool ok(const UnicapDevice &d){
+        return d.getDevice()==str;
+      }
+    };
+
+    // }}}
+    struct ParamFilterFlags : public ParamFilter{
+      // {{{ open
+
+      ParamFilterFlags(unsigned int flags):ParamFilter("",flags){}
+      virtual bool ok(const UnicapDevice &d){
+        return d.getFlags()==ui;
+      }
+    };
+
+    // }}}
+    
+    string force_lower_case(const string &s){
+      // {{{ open
+
+      static const Range<char> uppers('A','Z');
+      static const int offs = 'A' - 'a';
+      
+      string r=s;
+      for(unsigned int i=0;i<r.length();i++){
+        if(uppers.in(r[i])) r[i]-=offs;
+      }
+      return r;
+    }
+
+    // }}}
+
+    void filter_devices(const vector<UnicapDevice> &src, vector<UnicapDevice> &dst, const string &filter){
+      // {{{ open
+
+      dst.clear();
+      StrTok t(filter,"%");
+      const std::vector<string> &toks = t.allTokens();
+      vector<ParamFilter*> filters;
+      for(unsigned int i=0;i<toks.size();++i){
+        StrTok t2(toks[i],"=");
+        const std::vector<string> &toks2 = t2.allTokens();
+        if(toks2.size() != 2){
+          WARNING_LOG("unknown filter token \""<< toks[i] <<"\"");
+          continue;
+        }
+        string param = force_lower_case(toks2[0]);
+        string value = toks2[1];
+        if(param == "id"){
+          filters.push_back(new ParamFilterID(value));
+        }else if (param == "modelname"){
+          filters.push_back(new ParamFilterModelName(value));
+        }else if (param == "vendorname"){
+          filters.push_back(new ParamFilterVendorName(value));
+        }else if (param == "modelid"){
+          filters.push_back(new ParamFilterModelID(atol(value.c_str())));
+        }else if (param == "vendorid"){
+          filters.push_back(new ParamFilterVendorID((unsigned int)atol(value.c_str())));
+        }else if (param == "cpilayer"){
+          filters.push_back(new ParamFilterCPILayer(value));
+        }else if (param == "device"){
+          filters.push_back(new ParamFilterDevice(value));
+        }else if (param == "flags"){
+          filters.push_back(new ParamFilterFlags((unsigned int )atol(value.c_str())));
+        }else{
+          WARNING_LOG("unknown filter param \"" << param << "\"");
+        }
+      }
+      for(unsigned int i=0;i<src.size();++i){
+        bool ok = true;
+        for(unsigned int j=0;j<filters.size();++j){
+          if(!filters[j]->ok(src[i])){
+            ok = false;
+            break;
+          }
+        }
+        if(ok) dst.push_back(src[i]);
+      }
+      for(unsigned int j=0;j<filters.size();++j){
+        delete filters[j];
+      }
+    }    
+  }
+
+  // }}}
+  
+  const vector<UnicapDevice> &UnicapGrabber::getDeviceList(const string &filter){
     // {{{ open
-    static std::vector<UnicapDevice> s_CurrentDevices;
+    static std::vector<UnicapDevice> s_CurrentDevices,buf;
     s_CurrentDevices.clear();
 
     for(int i=0;true;++i){
       UnicapDevice d(i);
       if(d.isValid()){
-        s_CurrentDevices.push_back(d);
+        buf.push_back(d);
       }else{
         break;
       }
     }
+    filter_devices(buf,s_CurrentDevices,filter);
     return s_CurrentDevices;
   }
 
   // }}}
   
+  const vector<UnicapDevice> &filterDevices(const std::vector<UnicapDevice> &devices, const string &filter){
+    static std::vector<UnicapDevice> s_CurrentDevices;
+    filter_devices(devices,s_CurrentDevices,filter);
+    return s_CurrentDevices;
+  }
+
 
 static void new_frame_cb (unicap_event_t event, unicap_handle_t handle, unicap_data_buffer_t * buffer, void *usr_data){
   // {{{ open
@@ -242,10 +413,10 @@ struct unicap_property_t{
   const ImgBase* UnicapGrabber::grab(ImgBase *poDst){
     ensureCompatible(&m_poImage,depth8u,Size(640,480),formatRGB);
 
-    std::vector<UnicapDevice> vs = UnicapGrabber::getDeviceList();
+    const std::vector<UnicapDevice> vs = UnicapGrabber::getDeviceList("device=/dev/video0");
     printf("found %d devices\n",vs.size());
     for(unsigned int i=0;i<vs.size();i++){
-      printf("Device[%d]::%s \n",i,vs[i].getID().c_str());
+      printf("Device %d = %s \n",i,vs[i].toString().c_str());
       vs[i].listFormats();
       vs[i].listProperties();
     }
@@ -405,4 +576,5 @@ struct unicap_property_t{
 }
 
 // }}}
+
   */

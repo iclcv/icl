@@ -53,7 +53,7 @@ namespace icl{
    void setFormat(const std::string &fmtID, const Size &newSize);
    void listProperties()const;
    void listFormats() const;    
-   
+   std::string toString() const;
    private:
    struct UnicapDeviceDelOp : public DelOpBase{
      static void delete_func(unicap_device_t *p){
