@@ -46,14 +46,13 @@ namespace icl{
     string modelname = m_oDevice.getModelName();
     
     if(modelname == "Philips 740 webcam"){
-      printf("Using PWCGrabEngine !");
-      // this does not work --> as the device is occupied then!
-      
-      m_poGrabEngine = new PWCGrabEngine(&m_oDevice);
+      printf("Using PWCGrabEngine !\n");
+      ERROR_LOG("Philips 740 webcam is not supported by the UnicapGrabber !");
+      m_poGrabEngine = 0 ; //new PWCGrabEngine(&m_oDevice);
       m_poConvertEngine = 0;
     
     }else if(modelname == "DFW-VL500 2.30"){ // sony cams !
-      printf("Using UnicapGrabEngine !");
+      printf("Using UnicapGrabEngine !\n");
       m_poGrabEngine = new UnicapGrabEngine(&m_oDevice);
       m_poConvertEngine = new SonyConvertEngine();
     }
@@ -65,6 +64,8 @@ namespace icl{
   }
 
   const ImgBase* UnicapGrabber::grab(ImgBase **ppoDst){
+    ICLASSERT_RETURN_VAL(m_poGrabEngine , 0);
+
     const ImgParams &p = getDesiredParams();
     depth d = getDesiredDepth();
     if(!ppoDst) ppoDst = &m_poImage;
