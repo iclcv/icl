@@ -23,8 +23,8 @@ namespace icl{
     // unicap_format_t format;
     //unicap_data_buffer_t buffer;
     //int cframe = 0;
-    printf("1 \n");
-    
+    printf("1 device is %p \n",(void*)m_poDevice);
+    printf("device: %s \n",m_poDevice->toString().c_str());
     UnicapFormat UF = m_poDevice->getCurrentUnicapFormat();
     printf("2 \n");
     

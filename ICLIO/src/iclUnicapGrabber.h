@@ -6,6 +6,9 @@
 #include <iclConverter.h>
 
 namespace icl{
+  class UnicapGrabEngine;
+  class UnicapConvertEngine;
+  
   class UnicapGrabber : public Grabber{
     public:
     UnicapGrabber(const UnicapDevice &device);
@@ -37,9 +40,13 @@ namespace icl{
 
 
     private:
+    void init();
     UnicapDevice m_oDevice;
     ImgBase *m_poImage, *m_poConvertedImage;
     Converter m_oConverter;
+
+    UnicapGrabEngine *m_poGrabEngine;
+    UnicapConvertEngine *m_poConvertEngine;
   };
 }
 #endif

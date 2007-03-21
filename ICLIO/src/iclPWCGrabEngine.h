@@ -11,8 +11,8 @@ namespace icl{
   
   class PWCGrabEngine : public UnicapGrabEngine{
     public:
-    PWCGrabEngine(UnicapDevice *unicapDev, int device = 0) : 
-    UnicapGrabEngine(unicapDev),m_poPWCGrabber(new PWCGrabber(Size(640,480),30,device)){}
+    PWCGrabEngine(UnicapDevice *unicapDev);
+    
     virtual ~PWCGrabEngine(){
       if(m_poPWCGrabber) delete m_poPWCGrabber;
     }
@@ -22,7 +22,7 @@ namespace icl{
     virtual void lockGrabber(){}
     virtual void unlockGrabber(){}
     virtual void getCurrentFrameConverted(const ImgParams &desiredParams, depth desiredDepth,ImgBase **ppoDst);
-    virtual bool needConversion() const { return false; }
+    virtual bool needsConversion() const { return false; }
     virtual const icl8u *getCurrentFrameUnconverted(){ return 0; }
     
     private:

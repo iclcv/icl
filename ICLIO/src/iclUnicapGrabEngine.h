@@ -20,7 +20,7 @@ namespace icl{
       ERROR_LOG("this GrabEngine does not provide converted frames!");
     }
     virtual const icl8u *getCurrentFrameUnconverted();
-    virtual bool needConversion() const{ return true; }
+    virtual bool needsConversion() const{ return true; }
 
     private:
     UnicapDevice *m_poDevice;

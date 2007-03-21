@@ -7,8 +7,7 @@
 #include <iclTypes.h>
 
 namespace icl{
-  class UnicapGrabEngine;
-  class UnicapConvertEngine;
+  
   
   class UnicapDevice{
     public:
@@ -59,15 +58,6 @@ namespace icl{
     void listFormats() const;    
     std::string toString() const;
     
-    /// grabbing functions
-    void setGrabbingParameters(const std::string &params);
-    void lockGrabber();
-    void unlockGrabber();
-    void getCurrentFrameConverted(const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst);
-    const icl8u *getCurrentFrameUnconverted();
-    bool needsConversion() const;
-    void cvt(const icl8u *rawData, const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst);
-    
     private:
     struct UnicapDeviceDelOp : public DelOpBase{
       static void delete_func(unicap_device_t *p){
@@ -77,14 +67,10 @@ namespace icl{
     SmartPtr<unicap_device_t,UnicapDeviceDelOp> m_oUnicapDevicePtr;
     unicap_handle_t m_oUnicapHandle;
     
-    
     std::vector<UnicapProperty> m_oProperties; 
     std::vector<UnicapFormat> m_oFormats; 
     
     bool m_bOpen , m_bValid;
-
-    UnicapGrabEngine *m_poGrabEngine;
-    UnicapConvertEngine *m_poConvertEngine;
   };
 } // end of namespace icl
 #endif

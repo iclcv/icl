@@ -1,16 +1,12 @@
 #include "iclUnicapDevice.h"
-#include "iclUnicapGrabEngine.h"
-#include "iclUnicapConvertEngine.h"
 
-#include "iclPWCGrabEngine.h"
-#include "iclSonyConvertEngine.h"
 
 using namespace std;
 namespace icl{
 
   UnicapDevice::UnicapDevice(int deviceIndex) :
     m_oUnicapDevicePtr((unicap_device_t*)malloc(sizeof(unicap_device_t))),m_oUnicapHandle(NULL),
-    m_bOpen(false), m_bValid(false),m_poGrabEngine(0),m_poConvertEngine(0){
+    m_bOpen(false), m_bValid(false){
     // {{{ open
     if(deviceIndex == -1 ){
       unicap_void_device( m_oUnicapDevicePtr.get() );
@@ -66,24 +62,7 @@ namespace icl{
       unicap_open(&m_oUnicapHandle,m_oUnicapDevicePtr.get());
     }
     
-    if(getModelName() == "(XXXXXXXX)Philips 740 webcam"){
-      printf("(REMOVE!) Using PWCGrabEngine !");
-      // this does not work --> as the device is occupied then!
-      string dev = getDevice();
-      int idev = 
-      dev == "/dev/video0" ? 0 :
-      dev == "/dev/video1" ? 1 :
-      dev == "/dev/video2" ? 2 :
-      dev == "/dev/video3" ? 3 : -1;
-      if(idev == -1) ERROR_LOG("could not found device association for: \""<<dev<<"\"!");
-      
-      m_poGrabEngine = new PWCGrabEngine(this,idev);
-      m_poConvertEngine = 0;
-    }else if("Sony" == "Sony"){
-      printf("(REMOVE!) Using UnicapGrabEngine !");
-      m_poGrabEngine = new UnicapGrabEngine(this);
-      m_poConvertEngine = new SonyConvertEngine();
-    }
+   
     return true;
   }
 
@@ -96,11 +75,6 @@ namespace icl{
     }else{
       unicap_close(m_oUnicapHandle);
     }
-    if(m_poGrabEngine) delete m_poGrabEngine;
-    if(m_poConvertEngine) delete m_poConvertEngine;
-
-    m_poGrabEngine = 0;
-    m_poConvertEngine = 0;
     return true;
   }
 
@@ -348,69 +322,6 @@ namespace icl{
   // }}}
   
   
-  void UnicapDevice::setGrabbingParameters(const string &params){
-    // {{{ open
-
-    m_poGrabEngine->setGrabbingParameters(params);
-  }
-
-  // }}}
-  void UnicapDevice::lockGrabber(){
-    // {{{ open
-
-    m_poGrabEngine->lockGrabber();
-  }
-
-  // }}}
-  void UnicapDevice::unlockGrabber(){
-    // {{{ open
-
-    m_poGrabEngine->unlockGrabber();
-  }
-
-  // }}}
-  void UnicapDevice::getCurrentFrameConverted(const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst){
-    // {{{ open
-
-    if(m_poConvertEngine){
-      ERROR_LOG("this device is not able to provide converted images!");
-    }else{
-      m_poGrabEngine->getCurrentFrameConverted(desiredParams, desiredDepth, ppoDst);
-    }
-  }
-
-  // }}}
-  const icl8u *UnicapDevice::getCurrentFrameUnconverted(){
-    // {{{ open
-
-    if(!m_poConvertEngine){
-      ERROR_LOG("this device provides converted images!");
-      return 0;
-    }else{
-      return m_poGrabEngine->getCurrentFrameUnconverted();
-    }
-  }
-
-  // }}}
-  bool UnicapDevice::needsConversion() const{
-    // {{{ open
-
-    return m_poConvertEngine!=NULL;
-  }
-
-  // }}}
-  void UnicapDevice::cvt(const icl8u *rawData,  const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst){
-    // {{{ open
-
-    ICLASSERT_RETURN(ppoDst);
-    if(m_poConvertEngine){
-      m_poConvertEngine->cvt(rawData,desiredParams,desiredDepth,ppoDst);
-    }else{
-      ERROR_LOG("invalid call to cvt:  this device provides converted images!");
-    }
-  }
-
-  // }}}
   
 
 
