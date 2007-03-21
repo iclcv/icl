@@ -6,7 +6,7 @@ namespace icl{
   
   class UnicapConvertEngine{
     public:
-    virtual ~UnicapConvertEngine()=0;
+    virtual ~UnicapConvertEngine(){}
     virtual void cvt(const icl8u *rawData, const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst)=0;
   };
 }

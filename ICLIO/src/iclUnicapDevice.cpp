@@ -3,6 +3,7 @@
 #include "iclUnicapConvertEngine.h"
 
 #include "iclPWCGrabEngine.h"
+#include "iclSonyConvertEngine.h"
 
 using namespace std;
 namespace icl{
@@ -65,7 +66,8 @@ namespace icl{
       unicap_open(&m_oUnicapHandle,m_oUnicapDevicePtr.get());
     }
     
-    if(getModelName() == "Philips 740 webcam"){
+    if(getModelName() == "(XXXXXXXX)Philips 740 webcam"){
+      printf("(REMOVE!) Using PWCGrabEngine !");
       // this does not work --> as the device is occupied then!
       string dev = getDevice();
       int idev = 
@@ -75,12 +77,12 @@ namespace icl{
       dev == "/dev/video3" ? 3 : -1;
       if(idev == -1) ERROR_LOG("could not found device association for: \""<<dev<<"\"!");
       
-      m_poGrabEngine = new PWCGrabEngine(idev);
+      m_poGrabEngine = new PWCGrabEngine(this,idev);
       m_poConvertEngine = 0;
-    }else{
-      ERROR_LOG("no grab engine could be created for this device");
-      m_poGrabEngine = 0;
-      m_poConvertEngine = 0;
+    }else if("Sony" == "Sony"){
+      printf("(REMOVE!) Using UnicapGrabEngine !");
+      m_poGrabEngine = new UnicapGrabEngine(this);
+      m_poConvertEngine = new SonyConvertEngine();
     }
     return true;
   }

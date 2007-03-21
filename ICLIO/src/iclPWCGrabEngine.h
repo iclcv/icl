@@ -7,15 +7,23 @@
 #include "iclUnicapGrabEngine.h"
 
 namespace icl{
+  class UnicapDevice;
   
-  class PWCGrabEngine:public UnicapGrabEngine{
+  class PWCGrabEngine : public UnicapGrabEngine{
     public:
-    PWCGrabEngine(int device = 0) : m_poPWCGrabber(new PWCGrabber(Size(640,480),30,device)){}
+    PWCGrabEngine(UnicapDevice *unicapDev, int device = 0) : 
+    UnicapGrabEngine(unicapDev),m_poPWCGrabber(new PWCGrabber(Size(640,480),30,device)){}
     virtual ~PWCGrabEngine(){
       if(m_poPWCGrabber) delete m_poPWCGrabber;
     }
+    virtual void setGrabbingParameters(const std::string &params){
+      (void)params;
+    };
+    virtual void lockGrabber(){}
+    virtual void unlockGrabber(){}
     virtual void getCurrentFrameConverted(const ImgParams &desiredParams, depth desiredDepth,ImgBase **ppoDst);
     virtual bool needConversion() const { return false; }
+    virtual const icl8u *getCurrentFrameUnconverted(){ return 0; }
     
     private:
     PWCGrabber *m_poPWCGrabber;
