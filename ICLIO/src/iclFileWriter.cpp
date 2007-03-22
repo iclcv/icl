@@ -34,12 +34,51 @@ namespace icl {
       // set variables
       nCounter = 1;
       sFileSuffix = sFileName.substr(iSuffixPos);
+      
       sFilePrefix = nCounterDigits ? sFileName.substr (0, iSuffixPos-nCounterDigits) 
-                                   : sFileName;
+                                 : sFileName;
    }
 
 // }}}
 
+   
+   
+   //--------------------------------------------------------------------------
+   void FileWriter::CSVsetFileName (const string& sFileName, const ImgBase *poSrc) 
+      // {{{ open 
+
+   {
+      // check for supported file type
+      bool bGzipped;
+      if (getFileType (sFileName, bGzipped) < 0) {
+         throw ICLException ("not supported file type.");
+      }
+
+      // check for hashes (directly before the file suffix only)
+      string::size_type iSuffixPos;
+      analyseHashes (sFileName, nCounterDigits, iSuffixPos);
+
+      // set variables
+      nCounter = 1;
+      sFileSuffix = sFileName.substr(iSuffixPos);
+      ostringstream blah;
+      char result[100];     
+      sprintf(result,"-ICL:%dx%dx%d:%s:%s",poSrc->getSize().width,poSrc->getSize().height,poSrc->getChannels(), translateDepth(poSrc->getDepth()).c_str(), translateFormat(poSrc->getFormat()).c_str());
+
+      if (strcmp(sFileSuffix.c_str(),".csv")==0){
+        sFilePrefix = nCounterDigits ? sFileName.substr (0, iSuffixPos-nCounterDigits) +result
+                                   : sFileName.substr (0, iSuffixPos) +result+sFileSuffix;
+      }
+      else{
+        sFilePrefix = nCounterDigits ? sFileName.substr (0, iSuffixPos-nCounterDigits) 
+                                   : sFileName;
+      }
+   }
+
+// }}}   
+   
+   
+   
    //--------------------------------------------------------------------------
    string FileWriter::buildFileName()
       // {{{ open
@@ -60,7 +99,7 @@ namespace icl {
    //--------------------------------------------------------------------------
    void FileWriter::write(const ImgBase *poSrc) {
       // {{{ open
-
+     CSVsetFileName (sFilePrefix, poSrc);
       FileInfo oInfo (buildFileName()); // create file info
       openFile (oInfo, "wb"); // open file for writing
       
@@ -74,8 +113,10 @@ namespace icl {
       try {
          // write file
          switch (oInfo.eFileFormat) {
-           case ioFormatPNM: 
            case ioFormatICL:
+              writeICL(poImg, oInfo);
+              break;
+           case ioFormatPNM: 
              writePNM (poImg, oInfo);
              break;
            case ioFormatJPG:
@@ -201,31 +242,38 @@ namespace icl {
 
    //--------------------------------------------------------------------------
    namespace {
-     template<class T>
+     template<class T,class R>
      string __writeCSV(const Img<T> *poSrc) {
        // {{{ open
        
        const Size& size = poSrc->getSize();
        int iNumImages = poSrc->getChannels();
-       int iDim = size.getDim();
+
        ostringstream oss;
 
        // write channel consecutively
        for (int i=0;i<iNumImages;i++) {
-         const T *pDat = poSrc->getData(i);
-         
-         if (i == iNumImages-1) {
-           for (int j=0;j<iDim-1;j++, pDat++) {
-             oss << *pDat << ",";
-           }
-           oss << *pDat;
-         } else {
-           for (int j=0;j<iDim;j++, pDat++) {
-             oss << *pDat << ",";
-           }
-         }
-       }
-       
+        const T *pDat = poSrc->getData(i);
+        for (int j=0;j<size.height-1;j++) {
+          for (int k=0;k<size.width;k++, pDat++){
+           oss << (R)*pDat << ",";
+          }
+          oss << endl;
+        }
+        if (i!=iNumImages-1){ 
+          for (int k=0;k<size.width;k++, pDat++){
+           oss << (R)*pDat << ",";
+          }
+          oss << endl;          
+        }else{
+          for (int k=0;k<size.width-1;k++, pDat++){
+           oss << (R)*pDat << ",";
+          }
+          oss << (R)*pDat << endl;          
+
+        }
+      }
+       //cout <<oss.str();
        return (oss.str());
      }
 // }}}
@@ -243,22 +291,69 @@ namespace icl {
 
     // write image data
     switch(poSrc->getDepth()) {
-      case depth8u: sData = __writeCSV<icl8u>(poSrc->asImg<icl8u>()); 
+      case depth8u: sData = __writeCSV<icl8u,int>(poSrc->asImg<icl8u>());
         break;
-      case depth16s: sData = __writeCSV<icl16s>(poSrc->asImg<icl16s>()); 
+      case depth16s: sData = __writeCSV<icl16s,int>(poSrc->asImg<icl16s>()); 
         break;
-      case depth32s: sData = __writeCSV<icl32s>(poSrc->asImg<icl32s>()); 
+      case depth32s: sData = __writeCSV<icl32s,int>(poSrc->asImg<icl32s>()); 
         break;
-      case depth32f: sData = __writeCSV<icl32f>(poSrc->asImg<icl32f>()); 
+      case depth32f: sData = __writeCSV<icl32f,float>(poSrc->asImg<icl32f>()); 
         break;
-      case depth64f: sData = __writeCSV<icl64f>(poSrc->asImg<icl64f>()); 
+      case depth64f: sData = __writeCSV<icl64f,double>(poSrc->asImg<icl64f>()); 
         break;
       default: ICL_INVALID_DEPTH; break;
     }
+    //oInfo.sFileName
     if (!pWrite (oInfo.fp, sData.c_str(), strlen(sData.c_str()))) 
       throw writeError;
 }
   
+// }}}
+
+//--------------------------------------------------------------------------
+  void FileWriter::writeICL(const ImgBase *poSrc, const FileInfo& oInfo) {
+    // {{{ open
+    
+    string sData;
+    ICLException writeError ("Error writing file.");
+    int  iNumImages = poSrc->getChannels ();
+    int (*pWrite)(void *fp, const void *pData, size_t len) 
+      = oInfo.bGzipped ? gzwrite : plainWrite;
+
+    // write image data
+    //---- Write header ----
+    char acBuf[1024];
+    // magic number
+    // format
+    sprintf (acBuf, "# Format %s\n", translateFormat(poSrc->getFormat()).c_str());
+    if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+
+    // timestamp
+    sprintf (acBuf, "# TimeStamp %lld\n", poSrc->getTime().toMicroSeconds());
+    if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+
+    // number of images
+    sprintf (acBuf, "# NumFeatures %d\n", iNumImages);
+    if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+
+    // image depth
+    sprintf (acBuf, "# ImageDepth %s\n", translateDepth(poSrc->getDepth()).c_str());
+    if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+
+    // ROI
+    Rect roi = poSrc->getROI ();
+    sprintf (acBuf, "# ROI %d %d %d %d\n", roi.x, roi.y, roi.width, roi.height);
+    if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+  
+    // image size
+    sprintf (acBuf, "%d %d\n%d\n", 
+             poSrc->getSize().width, poSrc->getSize().height * iNumImages, 255);
+    if (!pWrite (oInfo.fp, acBuf, strlen(acBuf))) throw writeError;
+    for (int i=0;i<iNumImages;i++) {       
+      if (!pWrite (oInfo.fp, poSrc->getDataPtr (i), poSrc->getDim()* getSizeOf(poSrc->getDepth()))) 
+        throw writeError;
+    }
+}
 // }}}
 
    //--------------------------------------------------------------------------

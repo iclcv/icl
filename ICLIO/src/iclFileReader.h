@@ -138,20 +138,43 @@ namespace icl {
          /// remove given files from internal list of files
          /// and additionally remove buffered images, if neccessary
          void removeFiles (const FileList& vecFiles);
-           
-      private:
-         void init ();
+         void setHeader (int numCh,depth depth, Rect roi,format format,Size imsize  );
+         enum csvFlag{
+           csvSplitFiles,
+           csvExtendFilename
+         };
+        void setCSVFlag(csvFlag f,bool value);
+
+         private:
+
+          template<class T>
+           void __readCSV(Img<T> *poImg, char* pcBuf);
+      struct CSVheader {
+           depth       eDepth;
+           format      eFormat;
+           Time        timeStamp;
+           int         iNumChannels;
+           Size        oImgSize;
+           Rect        oROI;
+      };
+
+
+      void init ();
+         
          bool findFile (const std::string& sFile, FileList::iterator& itList);
 
          void readSequenceFile(const std::string& sFileName);
          void readImage (const std::string& sFileName, ImgBase** ppoDst);
-
          void readHeaderPNM (FileInfo &oImgBasenfo);
+         void readHeaderICL (FileInfo &oImgBasenfo);      
          void readHeaderJPG (FileInfo &oImgBasenfo);
+         void readHeaderCSV (FileInfo &oInfo);
 
+         void readDataICL(ImgBase* poImg, FileInfo &oImgBasenfo);
          void readDataPNM(ImgBase* poImg, FileInfo &oImgBasenfo);
          void readDataJPG(Img<icl8u>* poImg, FileInfo &oImgBasenfo);
-  
+         void readDataCSV(ImgBase* poImg, FileInfo &oImgBasenfo);
+         void setHeader(FileInfo &oinfo);
 
          FileList     m_vecFileName;  //< list of files to load
          FileList     m_vecObjectCnt;  //
@@ -161,6 +184,8 @@ namespace icl {
          unsigned int m_iCurImg;   //< image number to be read next
          ImgBase        *m_poCurImg;  //< recently read image
 
+
+         CSVheader m_oCSVHeader;
          struct jpeg_decompress_struct jpgCinfo;
          struct icl_jpeg_error_mgr     jpgErr;
       }; // class FileReader

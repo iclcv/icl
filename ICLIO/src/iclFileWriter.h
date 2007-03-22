@@ -32,6 +32,7 @@ namespace icl {
    public: 
       /// Constructor
       FileWriter(const std::string& sFileName) {setFileName (sFileName);}
+      void CSVsetFileName (const std::string& sFileName, const ImgBase *poSrc);
 
       void setFileName (const std::string& sFileName);
       void setCounter (int iID) {nCounter = iID;}
@@ -43,6 +44,7 @@ namespace icl {
       void writeJPG (const Img<icl8u> *poSrc, 
                      const FileInfo& oInfo, int iQuality=85);
       void writeCSV (const ImgBase *poSrc, const FileInfo& oInfo);
+      void writeICL (const ImgBase *poSrc, const FileInfo& oInfo);
       
       std::string buildFileName ();
       

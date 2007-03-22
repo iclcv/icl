@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iclFileReader.h>
 #include <iclConverter.h>
+#include <iclStrTok.h>
 /*
   FileReader.cpp
 
@@ -227,8 +228,22 @@ namespace icl {
 
     try {
        switch (oInfo.eFileFormat) {
-         case ioFormatPNM:
          case ioFormatICL:
+            readHeaderICL (oInfo);
+            ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
+                              oInfo.iNumChannels, oInfo.eFormat, oInfo.oROI);
+            (*ppoDst)->setTime(oInfo.timeStamp);
+            readDataICL (*ppoDst, oInfo);
+            break;
+         case ioFormatCSV:
+           readHeaderCSV (oInfo);
+            ensureCompatible (ppoDst, m_oCSVHeader.eDepth, m_oCSVHeader.oImgSize, 
+                              m_oCSVHeader.iNumChannels, m_oCSVHeader.eFormat, m_oCSVHeader.oROI);
+            (*ppoDst)->setTime(m_oCSVHeader.timeStamp);
+            
+            readDataCSV (*ppoDst, oInfo);
+            break;           
+         case ioFormatPNM:
             readHeaderPNM (oInfo);
             ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
                               oInfo.iNumChannels, oInfo.eFormat, oInfo.oROI);
@@ -321,7 +336,217 @@ namespace icl {
   }
   
 // }}}
+  void FileReader::readHeaderCSV (FileInfo &oInfo) {
+    int pos=oInfo.sFileName.find("-ICL:",0)+5;
+    StrTok tok(oInfo.sFileName.substr(pos),":");
+    if(tok.hasMoreTokens()){
+      StrTok tok2(tok.nextToken(),"x");// WxHxC
+      if(tok2.hasMoreTokens()){
+        m_oCSVHeader.oImgSize.width=atoi((tok2.nextToken()).c_str()); // W
+      }
+      if(tok2.hasMoreTokens()){
+        m_oCSVHeader.oImgSize.height=atoi((tok2.nextToken()).c_str()); // H
+      }
+      if(tok2.hasMoreTokens()){
+        m_oCSVHeader.iNumChannels=atoi((tok2.nextToken()).c_str()); //C
+      }      
+    }
+    if(tok.hasMoreTokens()){
+      m_oCSVHeader.eDepth=translateDepth(tok.nextToken()); //D
+    }
+    if(tok.hasMoreTokens()){
+      StrTok tok2(tok.nextToken(),".");
+      if(tok2.hasMoreTokens()){
+        m_oCSVHeader.eFormat=translateFormat(tok2.nextToken()); //F
+      }
+    }
+  }
+  //--------------------------------------------------------------------------
+  void FileReader::readHeaderICL (FileInfo &oInfo) {
+    // {{{ open
+
+    FUNCTION_LOG("");
+    openFile (oInfo, "rb"); // open file for reading
+    char acBuf[1024], *pcBuf;
+    istringstream iss;
+    
+    //---- Set default values ----
+    oInfo.iNumChannels = getChannelsOfFormat(oInfo.eFormat);
+    oInfo.iNumImages = 1;
+    oInfo.eDepth = depth8u;
+    
+    // {{{ Read special header info
+
+    do {
+       if (!gzgets (oInfo.fp, acBuf, 1024)) throw InvalidFileFormatException();
+       // skip withe space in beginning of line
+       pcBuf = acBuf; while (*pcBuf && isspace(*pcBuf)) ++pcBuf;
+       if (*pcBuf && *pcBuf != '#') break; // no more comments: break from loop
+
+       // process comment
+       iss.str (pcBuf+1);
+       string sKey, sValue;
+       iss >> sKey;
+
+       if (sKey == "NumFeatures" || sKey == "NumImages") {
+         iss >> oInfo.iNumImages;
+         oInfo.iNumChannels *= oInfo.iNumImages;
+       } else if (sKey == "ROI") {
+         iss >> oInfo.oROI.x;
+         iss >> oInfo.oROI.y;
+         iss >> oInfo.oROI.width;
+         iss >> oInfo.oROI.height;
+         continue;
+       } else if (sKey == "ImageDepth") {
+         // ignore image depth for all formats but ICL
+         iss >> sValue;
+         // might throw an InvalidDepthException 
+         oInfo.eDepth = translateDepth (sValue); 
+         continue;
+       } else if (sKey == "Format") {
+         iss >> sValue;
+         // might throw an InvalidFormatException 
+         oInfo.eFormat = translateFormat(sValue.c_str());
+       } else if (sKey == "TimeStamp") {
+         Time::value_type t;
+         iss >> t;
+         oInfo.timeStamp = Time::microSeconds(t);
+         continue;
+       }
+
+       //---- Is num channels in depence to the format ----
+       if (getChannelsOfFormat(oInfo.eFormat) != oInfo.iNumChannels)
+          oInfo.eFormat = formatMatrix;
+    } while (true);
+
+    // }}}
+    
+    // read image size
+    iss.str (pcBuf);
+    iss >> oInfo.oImgSize.width;
+    iss >> oInfo.oImgSize.height;
+    oInfo.oImgSize.height = oInfo.oImgSize.height / oInfo.iNumImages;
+
+    // skip line with maximal pixel value
+    if (!gzgets (oInfo.fp, acBuf, 1024)) throw InvalidFileFormatException();
+  }
+
+  // }}}
+
   
+  //--------------------------------------------------------------------------
+  
+ 
+  void FileReader::setHeader (int numCh,depth depth, Rect roi,format format,Size imsize  ) {
+    // {{{ open
+
+
+
+
+    FUNCTION_LOG("");
+    m_oCSVHeader.iNumChannels = numCh;
+    m_oCSVHeader.eDepth = depth;
+    m_oCSVHeader.oROI=roi;
+    m_oCSVHeader.eFormat = format;
+    m_oCSVHeader.oImgSize = imsize;
+    //m_oCSVHeader.timeStamp = 0;
+
+    if (getChannelsOfFormat(m_oCSVHeader.eFormat) != m_oCSVHeader.iNumChannels){
+          m_oCSVHeader.eFormat = formatMatrix;
+    } 
+
+  }
+
+  // }}}
+  
+  //--------------------------------------------------------------------------
+  void FileReader::readDataICL(ImgBase* poImg, FileInfo &oInfo) {
+    // {{{ open
+
+    FUNCTION_LOG("");
+
+
+     // file format is non-interleaved, i.e. grayscale or icl proprietary
+     int iDim = poImg->getDim () * getSizeOf (poImg->getDepth ());
+     for (int i=0;i<oInfo.iNumChannels;i++) {
+        if (gzread (oInfo.fp, poImg->getDataPtr(i), iDim) != iDim)
+           throw InvalidFileFormatException ();
+     }
+  }
+
+  // }}}
+  
+//--------------------------------------------------------------------------
+
+
+/*
+  void FileReader::__readDataCSV(ImgBase* poImg, FileInfo &oInfo) {
+    // {{{ open
+
+    FUNCTION_LOG("");
+
+  }
+
+  // }}}
+  */
+//--------------------------------------------------------------------------
+
+
+
+
+
+
+//TODO Andre: Img16s -> switch auf alle depths   wird morgen (23.3. erledigt)
+
+  void FileReader::readDataCSV(ImgBase* poImg, FileInfo &oInfo) {
+    // {{{ open
+
+    FUNCTION_LOG("");
+
+    openFile (oInfo, "rb"); // open file for reading
+    char *pcBuf=0;
+    int fsize=20*m_oCSVHeader.oImgSize.width; //20 = max char length of double (should be 14) +1 (komma) + 5 bonus
+    Img16s *poImg16s = poImg->asImg<icl16s>();
+    icl16s *pc2Buf[3];
+    pc2Buf[0] = poImg16s->getData (0);
+    pc2Buf[1] = poImg16s->getData (1);
+    pc2Buf[2] = poImg16s->getData (2);
+    
+    pcBuf=(char*)malloc(fsize*sizeof(char));
+    for (int c=0;c<m_oCSVHeader.iNumChannels;c++) {
+      for (int i=0;i<m_oCSVHeader.oImgSize.height;i++) {
+        char *result = NULL;
+        fgets (pcBuf, fsize,(FILE*)oInfo.fp);
+        result = strtok( pcBuf, ",");
+        for (int j=0;j<m_oCSVHeader.oImgSize.width;j++) {
+            *pc2Buf[c]=atoi(result);pc2Buf[c]++;
+            result = strtok( NULL, ",");
+        }
+      }
+    }
+    free (pcBuf);
+  }
+  // }}}
+  
+  //--------------------------------------------------------------------------
+
+  template<class T>
+    void FileReader::__readCSV(Img<T> *poImg, char* pcBuf) {
+    char *result = NULL;
+    result = strtok( pcBuf, ",");
+    T *pc2Buf[3];
+    pc2Buf[0] = poImg->getData (0);
+    pc2Buf[1] = poImg->getData (1);
+    pc2Buf[2] = poImg->getData (2);
+    int iDim = m_oCSVHeader.oImgSize.width*m_oCSVHeader.oImgSize.height;
+    for (int c=0;c<m_oCSVHeader.iNumChannels;c++) {
+      for (int i=0;i<iDim;i++) {
+        *pc2Buf[c]=(T)atof(result);pc2Buf[c]++;
+        result = strtok( NULL, ",");
+      }
+    }
+  }
+
   //--------------------------------------------------------------------------
   void FileReader::readHeaderPNM (FileInfo &oInfo) {
     // {{{ open
