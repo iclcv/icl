@@ -18,9 +18,6 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-
-
-
 using namespace std;
 
 namespace icl {
@@ -215,6 +212,7 @@ namespace icl {
   // }}}
 
   //--------------------------------------------------------------------------
+
   void FileReader::readImage(const string& sFileName, ImgBase** ppoDst) {
     // {{{ open 
 
@@ -478,40 +476,21 @@ namespace icl {
   
 //--------------------------------------------------------------------------
 
-
-/*
-  void FileReader::__readDataCSV(ImgBase* poImg, FileInfo &oInfo) {
+  template<class T>
+  void FileReader::__readCSV(Img<T>* poImg, FileInfo &oInfo) {
     // {{{ open
 
     FUNCTION_LOG("");
 
-  }
-
-  // }}}
-  */
-//--------------------------------------------------------------------------
-
-
-
-
-
-
-//TODO Andre: Img16s -> switch auf alle depths   wird morgen (23.3. erledigt)
-
-  void FileReader::readDataCSV(ImgBase* poImg, FileInfo &oInfo) {
-    // {{{ open
-
-    FUNCTION_LOG("");
+    //Img16s *poImg16s = poImg->asImg<icl16s>();
+    T *pc2Buf[3];
+    pc2Buf[0] = poImg->getData (0);
+    pc2Buf[1] = poImg->getData (1);
+    pc2Buf[2] = poImg->getData (2);
 
     openFile (oInfo, "rb"); // open file for reading
     char *pcBuf=0;
-    int fsize=20*m_oCSVHeader.oImgSize.width; //20 = max char length of double (should be 14) +1 (komma) + 5 bonus
-    Img16s *poImg16s = poImg->asImg<icl16s>();
-    icl16s *pc2Buf[3];
-    pc2Buf[0] = poImg16s->getData (0);
-    pc2Buf[1] = poImg16s->getData (1);
-    pc2Buf[2] = poImg16s->getData (2);
-    
+    int fsize=20*m_oCSVHeader.oImgSize.width; //20 = max char length of double (should be 14) +1 (komma) + 5 bonus    
     pcBuf=(char*)malloc(fsize*sizeof(char));
     for (int c=0;c<m_oCSVHeader.iNumChannels;c++) {
       for (int i=0;i<m_oCSVHeader.oImgSize.height;i++) {
@@ -525,6 +504,30 @@ namespace icl {
       }
     }
     free (pcBuf);
+  }
+
+  // }}}
+
+//--------------------------------------------------------------------------
+
+  void FileReader::readDataCSV(ImgBase* poImg, FileInfo &oInfo) {
+    // {{{ open
+
+    FUNCTION_LOG("");
+
+    switch(poImg->getDepth()) {
+      case depth8u: __readCSV<icl8u>(poImg->asImg<icl8u>(),oInfo);
+        break;
+      case depth16s: __readCSV<icl16s>(poImg->asImg<icl16s>(),oInfo);
+        break;
+      case depth32s: __readCSV<icl32s>(poImg->asImg<icl32s>(),oInfo);
+        break;
+      case depth32f: __readCSV<icl32f>(poImg->asImg<icl32f>(),oInfo);
+        break;
+      case depth64f: __readCSV<icl64f>(poImg->asImg<icl64f>(),oInfo);
+        break;
+      default: ICL_INVALID_DEPTH; break;
+    }
   }
   // }}}
   

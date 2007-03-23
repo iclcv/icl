@@ -139,28 +139,21 @@ namespace icl {
          /// and additionally remove buffered images, if neccessary
          void removeFiles (const FileList& vecFiles);
          void setHeader (int numCh,depth depth, Rect roi,format format,Size imsize  );
-         enum csvFlag{
-           csvSplitFiles,
-           csvExtendFilename
-         };
-        void setCSVFlag(csvFlag f,bool value);
-
          private:
 
           template<class T>
            void __readCSV(Img<T> *poImg, char* pcBuf);
-      struct CSVheader {
-           depth       eDepth;
-           format      eFormat;
-           Time        timeStamp;
-           int         iNumChannels;
-           Size        oImgSize;
-           Rect        oROI;
-      };
+           struct CSVheader {
+               depth       eDepth;
+               format      eFormat;
+               Time        timeStamp;
+               int         iNumChannels;
+               Size        oImgSize;
+               Rect        oROI;
+           };
 
 
-      void init ();
-         
+         void init ();
          bool findFile (const std::string& sFile, FileList::iterator& itList);
 
          void readSequenceFile(const std::string& sFileName);
@@ -174,6 +167,8 @@ namespace icl {
          void readDataPNM(ImgBase* poImg, FileInfo &oImgBasenfo);
          void readDataJPG(Img<icl8u>* poImg, FileInfo &oImgBasenfo);
          void readDataCSV(ImgBase* poImg, FileInfo &oImgBasenfo);
+         template<class T>
+         void __readCSV(Img<T>* poImg, FileInfo &oInfo);
          void setHeader(FileInfo &oinfo);
 
          FileList     m_vecFileName;  //< list of files to load
@@ -183,8 +178,6 @@ namespace icl {
          bool m_bBuffered;         //< flag indicating buffering of images
          unsigned int m_iCurImg;   //< image number to be read next
          ImgBase        *m_poCurImg;  //< recently read image
-
-
          CSVheader m_oCSVHeader;
          struct jpeg_decompress_struct jpgCinfo;
          struct icl_jpeg_error_mgr     jpgErr;

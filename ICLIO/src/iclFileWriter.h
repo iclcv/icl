@@ -31,21 +31,32 @@ namespace icl {
    class FileWriter : public Writer {
    public: 
       /// Constructor
-      FileWriter(const std::string& sFileName) {setFileName (sFileName);}
-      void CSVsetFileName (const std::string& sFileName, const ImgBase *poSrc);
+      FileWriter(const std::string& sFileName) {setFileName (sFileName); m_bCsvExtendFilename=false; m_bCsvSplitFiles=false;m_bCsvHeader_set=false;}
+      void CSVsetFileName (std::string& sFileName, const ImgBase *poSrc);
 
       void setFileName (const std::string& sFileName);
       void setCounter (int iID) {nCounter = iID;}
 
       void write(const ImgBase* poSrc);
+      enum csvFlag{
+        csvSplitFiles,
+        csvExtendFilename
+      };
+      void setCSVFlag(csvFlag f,bool value);
     
    private:
+      bool m_bCsvSplitFiles;
+      bool m_bCsvExtendFilename;
+      bool m_bCsvHeader_set;
       void writePNM (const ImgBase *poSrc, const FileInfo& oInfo);
       void writeJPG (const Img<icl8u> *poSrc, 
                      const FileInfo& oInfo, int iQuality=85);
-      void writeCSV (const ImgBase *poSrc, const FileInfo& oInfo);
+      void writeCSV (const ImgBase *poSrc, FileInfo& oInfo);
       void writeICL (const ImgBase *poSrc, const FileInfo& oInfo);
-      
+      template<class T,class R>
+      std::string __writeCSV(const Img<T> *poSrc,int ch) ;
+      template<class T,class R>
+      void__writeCSV(const Img<T> *poSrc, FileInfo& oInfo);
       std::string buildFileName ();
       
       std::string sFilePrefix, sFileSuffix;
