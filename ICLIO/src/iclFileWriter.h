@@ -56,7 +56,7 @@ namespace icl {
       template<class T,class R>
       std::string __writeCSV(const Img<T> *poSrc,int ch) ;
       template<class T,class R>
-      void__writeCSV(const Img<T> *poSrc, FileInfo& oInfo);
+      void __writeCSV(const Img<T> *poSrc, FileInfo& oInfo);
       std::string buildFileName ();
       
       std::string sFilePrefix, sFileSuffix;

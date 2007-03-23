@@ -336,15 +336,15 @@ cout <<"ccc"<<endl;
   void FileWriter::writeCSV(const ImgBase *poSrc, FileInfo& oInfo) {
     // {{{ open
     switch(poSrc->getDepth()) {
-      case depth8u: writeCSV<icl8u,int>(poSrc->asImg<icl8u>(),oInfo);
+      case depth8u: __writeCSV<icl8u,int>(poSrc->asImg<icl8u>(),oInfo);
         break;
-      case depth16s: writeCSV<icl16s,int>(poSrc->asImg<icl16s>(),oInfo);
+      case depth16s: __writeCSV<icl16s,int>(poSrc->asImg<icl16s>(),oInfo);
         break;
-      case depth32s: writeCSV<icl32s,int>(poSrc->asImg<icl32s>(),oInfo);
+      case depth32s: __writeCSV<icl32s,int>(poSrc->asImg<icl32s>(),oInfo);
         break;
-      case depth32f: writeCSV<icl32f,float>(poSrc->asImg<icl32f>(),oInfo);
+      case depth32f: __writeCSV<icl32f,float>(poSrc->asImg<icl32f>(),oInfo);
         break;
-      case depth64f: writeCSV<icl64f,double>(poSrc->asImg<icl64f>(),oInfo);
+      case depth64f: __writeCSV<icl64f,double>(poSrc->asImg<icl64f>(),oInfo);
         break;
       default: ICL_INVALID_DEPTH; break;
     }
