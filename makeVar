@@ -175,6 +175,7 @@ endif
 ifeq "$(HAVE_UNICAP)" ""
 SKIP_OBJECTS += iclUnicapGrabber.cpp unicap_test.cpp iclPWCGrabEngine.cpp
 SKIP_OBJECTS += iclUnicapDevice.cpp iclUnicapFormat.cpp iclUnicapProperty.cpp
+SKIP_OBJECTS += iclSonyConvertEngine.cpp iclUnicapGrabEngine.cpp
 endif
 
 #Skip the following object files
