@@ -7,11 +7,12 @@
 
 namespace icl{
   class UnicapDevice;
+  class UnicapBuffer;
 
   class UnicapGrabEngine{
     public:
-    UnicapGrabEngine(UnicapDevice *device);
-    virtual ~UnicapGrabEngine(){};
+    UnicapGrabEngine(UnicapDevice *device, bool useDMA=true);
+    virtual ~UnicapGrabEngine();
     virtual void setGrabbingParameters(const std::string &params);
     virtual void lockGrabber();
     virtual void unlockGrabber();
@@ -23,9 +24,13 @@ namespace icl{
     virtual bool needsConversion() const{ return true; }
 
     private:
+    void setupUseDMA(bool useDMA);
+
     UnicapDevice *m_poDevice;
     unicap_data_buffer_t m_oBuffer;
-    bool m_bUseDMA;
+    bool m_bUseDMA, m_bStarted;
+
+    UnicapBuffer *m_poDMABuffer;
   };
 }
 

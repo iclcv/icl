@@ -5,6 +5,7 @@
 #include "iclUnicapDevice.h"
 #include <iclConverter.h>
 
+
 namespace icl{
   class UnicapGrabEngine;
   class UnicapConvertEngine;
@@ -13,7 +14,7 @@ namespace icl{
     public:
     UnicapGrabber(const UnicapDevice &device);
     UnicapGrabber(const std::string &deviceFilter); // uses the first device that matches
-
+    ~UnicapGrabber();
     virtual const ImgBase* grab(ImgBase *poDst);
     virtual const ImgBase* grab(ImgBase **ppoDst=0);
     virtual void setParam(const std::string &param, const std::string &value);
@@ -40,6 +41,7 @@ namespace icl{
 
 
     private:
+    
     void init();
     UnicapDevice m_oDevice;
     ImgBase *m_poImage, *m_poConvertedImage;
@@ -47,6 +49,7 @@ namespace icl{
 
     UnicapGrabEngine *m_poGrabEngine;
     UnicapConvertEngine *m_poConvertEngine;
+
   };
 }
 #endif

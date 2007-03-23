@@ -30,7 +30,8 @@ namespace icl{
   }
   
   UnicapGrabber::UnicapGrabber(const std::string &deviceFilter):
-    m_poImage(0),m_poConvertedImage(0),m_poGrabEngine(0),m_poConvertEngine(0){
+    m_poImage(0),m_poConvertedImage(0),m_poGrabEngine(0),
+    m_poConvertEngine(0){
     const std::vector<UnicapDevice> &ds = getDeviceList(deviceFilter);
     if(ds.size()){
       m_oDevice = ds[0];
@@ -41,11 +42,16 @@ namespace icl{
     printf("Created UnicapGrabber with this device: \n%s\n",m_oDevice.toString().c_str());
     printf("using device %p \n",(void*)&m_oDevice);
     init();
-  }
 
+  }
+  UnicapGrabber::~UnicapGrabber(){
+    if(m_poGrabEngine) delete m_poGrabEngine;
+    if(m_poConvertEngine) delete m_poConvertEngine;
+    if(m_poImage) delete m_poImage;
+    if(m_poConvertedImage) delete m_poConvertedImage;
+  }
   void UnicapGrabber::init(){
     string modelname = m_oDevice.getModelName();
-    
     if(modelname == "Philips 740 webcam"){
       printf("Using PWCGrabEngine !\n");
       ERROR_LOG("Philips 740 webcam is not supported by the UnicapGrabber !");
@@ -57,8 +63,8 @@ namespace icl{
       m_poGrabEngine = new SonyGrabEngine(&m_oDevice);
       m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
 
-      m_oDevice.listFormats();
-      m_oDevice.setFormat(m_oDevice.getFormats()[3]);
+      //m_oDevice.listFormats();
+      //m_oDevice.setFormat(m_oDevice.getFormats()[4]);
     }
   }
 
@@ -84,7 +90,7 @@ namespace icl{
     }else{
       m_poGrabEngine->getCurrentFrameConverted(p,d,ppoDst);
     }
-    
+    m_poGrabEngine->unlockGrabber();
     if(ppoDst && *ppoDst){
       ImgBase *image = *ppoDst;
       if(image->getParams() != p || image->getDepth() != d){
