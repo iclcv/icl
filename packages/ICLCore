@@ -26,7 +26,7 @@ REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-	-L${SRC_ROOT}/ICLCore/lib -lICLCore
+	-L${SRC_ROOT}/ICLCore/lib -lICLCore -lpthread
 
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)

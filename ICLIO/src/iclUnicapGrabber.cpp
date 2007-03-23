@@ -38,11 +38,7 @@ namespace icl{
     }else{
       ERROR_LOG("no device found for filter: \""<<deviceFilter<<"\"!");
     }    
-    
-    printf("Created UnicapGrabber with this device: \n%s\n",m_oDevice.toString().c_str());
-    printf("using device %p \n",(void*)&m_oDevice);
     init();
-
   }
   UnicapGrabber::~UnicapGrabber(){
     if(m_poGrabEngine) delete m_poGrabEngine;
@@ -62,7 +58,6 @@ namespace icl{
       printf("Using UnicapGrabEngine !\n");
       m_poGrabEngine = new SonyGrabEngine(&m_oDevice);
       m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
-
       //m_oDevice.listFormats();
       //m_oDevice.setFormat(m_oDevice.getFormats()[4]);
     }
