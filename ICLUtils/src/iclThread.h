@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include <unistd.h>
+#include <iclMutex.h>
 
 namespace icl{
   /// Simple object oriented thread class wrapping the pthread library
@@ -34,12 +35,27 @@ namespace icl{
       
       };
       \endcode
-      
+      Additionally each Thread can be initialized with a given priority level.
+      This feature is copied from Qt (version 4.2.x) and is not yet tested
+      explicitly. 
       */
   class Thread{
     public:
+    /// used priority stepping (see Qts QThread!)
+    enum priority{
+      idle,     /**< this thread is only working when the processor is idle   */   
+      lowest,   /**< lowest priority */
+      low,      /**< lowe priority */
+      normal,   /**< normal priority (default) */
+      heigh,    /**< high priority */
+      heighest, /**< highest priority */
+      critical, /**< time critical priority */
+      inherit   /**< inherit priority */
+    };
+
+    
     /// Create a new Thread
-    Thread();
+    Thread(priority p=normal);
 
     /// Destructor
     virtual ~Thread();
@@ -59,21 +75,45 @@ namespace icl{
         is executed to the end befor the stop function is able to join the 
         Thread 
     **/
-    void lock() { pthread_mutex_lock(&m_oMutex); }
+    void lock() { m_oMutex.lock(); }
     
     /// internal used unlock function
-    void unlock(){ pthread_mutex_unlock(&m_oMutex); }
+    void unlock(){ m_oMutex.unlock(); }
     
+    /// waits for this thread to be stopped
+    /** This function can be called from the parent thread when it is not
+        clear, when the icl-Thread has run to the end 
+        @param test_interval_msec interval in milliseconds to sleep
+                                  during testing if the thread is finished
+                                  <b>warning:</b>a kind of active waiting
+    **/
+    void waitFor(unsigned int test_interval_msec=1){
+      while(m_bRunning){
+        msleep(test_interval_msec);
+      }
+    }
+    protected:
+    
+    /// sets this thread to sleep for some milli-seconds
+    /** @param msecs time in msecs to sleep **/
     void msleep(unsigned int msecs){
       usleep(msecs*1000);
     }
+    
+    /// sets this thread to sleep for some seconds
+    /** @param secs time in secs to sleep  ( float precision!)**/
     void sleep(float secs){
       usleep((long)secs*1000000);
     }
+    
+    
     private:
-
+    
+    //
+    bool m_bRunning;
+    pthread_attr_t m_oAttr;
     pthread_t m_oPT;
-    pthread_mutex_t m_oMutex;
+    Mutex m_oMutex;
   };
 }
 
