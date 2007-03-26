@@ -4,13 +4,12 @@
 #include <string>
 #include <unicap.h>
 #include <iclImgParams.h>
-#include <iclThread.h>
 
 namespace icl{
   class UnicapDevice;
   class UnicapBuffer;
 
-  class UnicapGrabEngine : public Thread{
+  class UnicapGrabEngine{
     public:
     /// Creates a new UnicapGrabEngine
     /** Note that dma support is not yet implemnted correcly and does not work!
@@ -20,8 +19,6 @@ namespace icl{
                       access) <b>Note:This feature does not work yet!</b>*/
     UnicapGrabEngine(UnicapDevice *device, bool useDMA=false);
     virtual ~UnicapGrabEngine();
-
-    virtual void run();
 
     virtual void lockGrabber();
     virtual void unlockGrabber();
@@ -33,13 +30,11 @@ namespace icl{
     virtual bool needsConversion() const{ return true; }
 
     private:
-    void setupUseDMA(bool useDMA);
 
     UnicapDevice *m_poDevice;
-    unicap_data_buffer_t m_oBuffer;
+    unicap_data_buffer_t m_oBuf[2];
+    int m_iCurrBuf;
     bool m_bUseDMA, m_bStarted;
-
-    UnicapBuffer *m_poDMABuffer;
   };
 }
 
