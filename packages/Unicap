@@ -43,9 +43,8 @@ else
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
                 -L${UNICAP_ROOT}/lib -Wl,-rpath -Wl,${UNICAP_ROOT}/lib \
                 -lunicap  \
-                -lucil    \
                 -lraw1394 \
-	-lpthread
+								-lpthread
 
 # Please, do not remove this endif statement
 endif
