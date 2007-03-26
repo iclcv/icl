@@ -1,10 +1,10 @@
 #include <iclThread.h>
 #include <iclUnaryOp.h>
 
-namespce icl{
+namespace icl {
   class TestThread : public Thread{
     public:
-    TestThread(UnaryOp *op):Thread(),m_poSrc(0),m_ppoDst(0){
+    TestThread(UnaryOp *op):Thread(),m_poSrc(0),m_ppoDst(0),m_poOp(op) {
       m_oRunMutex.lock();
       start();
     }
@@ -12,7 +12,7 @@ namespce icl{
       while(1){
         m_oRunMutex.lock();
         m_oDataMutex.lock();
-        m_poOp->apply(m_poSrc, m_poDst);
+        m_poOp->apply(m_poSrc, m_ppoDst);
         m_oDataMutex.unlock();
         m_oRunMutex.unlock();
       }    
@@ -25,13 +25,13 @@ namespce icl{
       m_oDataMutex.unlock();
       
       m_oRunMutex.unlock();
-      usleep(1);
+      usleep(100);
       m_oRunMutex.lock();
     }
     
     private:
     const ImgBase *m_poSrc;
-    ImgBase ***m_poDst;
+    ImgBase **m_ppoDst;
     UnaryOp *m_poOp;
     Mutex m_oDataMutex;
     Mutex m_oRunMutex;
