@@ -32,8 +32,11 @@ namespace icl{
     private:
 
     UnicapDevice *m_poDevice;
-    unicap_data_buffer_t m_oBuf[2];
+    static const int NBUFS=4;
+    unicap_data_buffer_t m_oBuf[NBUFS];
     int m_iCurrBuf;
+    int NEXT_IDX() { return CYCLE_IDX(m_iCurrBuf); }
+    int CYCLE_IDX(int &i){ int j=i++; if(i==NBUFS)i=0; return j; }
     bool m_bUseDMA, m_bStarted;
   };
 }

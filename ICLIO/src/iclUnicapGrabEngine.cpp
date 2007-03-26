@@ -8,7 +8,7 @@ namespace icl{
     m_poDevice(device), m_iCurrBuf(0), m_bUseDMA(useDMA), m_bStarted(false){
     
     UnicapFormat fmt = m_poDevice->getCurrentUnicapFormat();
-    for(int i=0;i<2;i++){
+    for(int i=0;i<NBUFS;i++){
       m_oBuf[i].buffer_size = useDMA ? 0 : fmt.getBufferSize();
       m_oBuf[i].data = useDMA ? 0 :new unsigned char[fmt.getBufferSize()];
       m_oBuf[i].type = useDMA ? UNICAP_BUFFER_TYPE_SYSTEM : UNICAP_BUFFER_TYPE_USER;
@@ -18,7 +18,7 @@ namespace icl{
   }
   UnicapGrabEngine::~UnicapGrabEngine(){
     unicap_stop_capture (m_poDevice->getUnicapHandle()); 
-    for(int i=0;i<2;i++){
+    for(int i=0;i<NBUFS;i++){
       if(m_oBuf[i].type == UNICAP_BUFFER_TYPE_USER && m_oBuf[i].data){
         delete [] m_oBuf[i].data;
       }
@@ -53,18 +53,16 @@ namespace icl{
     if(!m_bStarted){
       unicap_start_capture(m_poDevice->getUnicapHandle());
       m_bStarted = true;
-      unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[m_iCurrBuf]);
-      m_iCurrBuf = !m_iCurrBuf;
+      unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
     }
     
     unicap_data_buffer_t *returned_buffer;
     if( !SUCCESS (unicap_wait_buffer (m_poDevice->getUnicapHandle(), &returned_buffer)))  {
       ERROR_LOG("Failed to wait for the buffer to be filled!");
     }
-    printf("in UnicapGrabEngine::getCurrentFrameUnconverted(): buffer filled : %p \n",(void*)returned_buffer);
+    printf("in UnicapGrabEngine::getCurrentFrameUnconverted(): buffer filled : idx=%d %p \n",m_iCurrBuf,(void*)returned_buffer);
     
-    unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[m_iCurrBuf]);
-    m_iCurrBuf = !m_iCurrBuf;
+    unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
         
     return returned_buffer->data;
   }
