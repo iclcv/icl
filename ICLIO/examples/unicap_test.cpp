@@ -3,7 +3,16 @@
 
 
 int main(){
-  UnicapGrabber g("/dev/video0");
+  const std::vector<UnicapDevice> l = UnicapGrabber::getDeviceList();
+  if(!l.size()) {
+    ERROR_LOG("alles ist woanders !");
+     exit(-1001);
+  }
+  UnicapGrabber g(l[0]);
+  l[0].listFormats();
+  l[0].listProperties();
+  
+  //UnicapGrabber g("device=/dev/video1394-0");
   g.setDesiredParams(ImgParams(Size(640,480),formatRGB));
   g.setDesiredDepth(depth8u);
 
