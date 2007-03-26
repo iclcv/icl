@@ -17,6 +17,7 @@ _DOT_DOT:=../${_DOT_DOT}
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
 include ${PACKAGES}/ICLIO
 include ${PACKAGES}/ICLCC
+include ${PACKAGES}/ICLQuick
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
