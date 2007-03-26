@@ -19,7 +19,7 @@ namespace icl{
   UnicapGrabEngine::~UnicapGrabEngine(){
     unicap_stop_capture (m_poDevice->getUnicapHandle()); 
     for(int i=0;i<2;i++){
-      if(m_oBuf[i].type == UNICAP_BUFFER_TYPE_SYSTEM && m_oBuf[i].data){
+      if(m_oBuf[i].type == UNICAP_BUFFER_TYPE_USER && m_oBuf[i].data){
         delete [] m_oBuf[i].data;
       }
     }    
