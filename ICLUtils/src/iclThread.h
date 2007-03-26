@@ -83,14 +83,10 @@ namespace icl{
     /// waits for this thread to be stopped
     /** This function can be called from the parent thread when it is not
         clear, when the icl-Thread has run to the end 
-        @param test_interval_msec interval in milliseconds to sleep
-                                  during testing if the thread is finished
-                                  <b>warning:</b>a kind of active waiting
     **/
-    void waitFor(unsigned int test_interval_msec=1){
-      while(m_bRunning){
-        msleep(test_interval_msec);
-      }
+    void waitFor(){
+      m_oRunMutex.lock();
+      m_oRunMutex.unlock();
     }
     protected:
     
@@ -110,10 +106,9 @@ namespace icl{
     private:
     
     //
-    bool m_bRunning;
     pthread_attr_t m_oAttr;
     pthread_t m_oPT;
-    Mutex m_oMutex;
+    Mutex m_oMutex, m_oRunMutex;
   };
 }
 

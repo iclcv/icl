@@ -33,7 +33,7 @@ namespace icl{
     
   }
   
-  Thread::Thread(Thread::priority p) : m_bRunning(false){
+  Thread::Thread(Thread::priority p) {
     pthread_attr_init(&m_oAttr);
     pthread_attr_setdetachstate(&m_oAttr, PTHREAD_CREATE_DETACHED); // ???
 
@@ -61,12 +61,8 @@ namespace icl{
   }
   
   void Thread::start(){
-    if(m_bRunning){
-      ERROR_LOG("Thread is already started!");
-    }else{
-      pthread_create(&m_oPT, &m_oAttr, thread_handler, (void*)this);  
-      m_bRunning = true;
-    }
+    m_oRunMutex.lock();
+    pthread_create(&m_oPT, &m_oAttr, thread_handler, (void*)this);  
   }
   
   void Thread::stop(){
@@ -74,7 +70,7 @@ namespace icl{
     void *data;
     pthread_cancel(m_oPT);
     pthread_join(m_oPT,&data);
-    m_bRunning = false;
+    m_oRunMutex.unlock();
     unlock();
   }
   
