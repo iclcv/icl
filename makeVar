@@ -161,6 +161,7 @@ export _WARN_UNICAP_2=done
 endif # _WARN_UNICAP_2
 else # found libunicap.so in /vol/video/lib
 HAVE_UNICAP=TRUE
+export UNICAP_ROOT=/vol/video
 endif
 
 endif # end
@@ -182,4 +183,3 @@ endif
 ifeq "$(HAVE_FIREWIRE)" ""
 SKIP_OBJECTS += iclFwGrabber.cpp
 endif
-SKIP_DIRECTORIES += ICLViola
