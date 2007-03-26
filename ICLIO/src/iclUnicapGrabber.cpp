@@ -24,12 +24,18 @@ using namespace std;
 namespace icl{
 
   UnicapGrabber::UnicapGrabber(const UnicapDevice &device):
+    // {{{ open
+
     m_oDevice(device),m_poImage(0),m_poConvertedImage(0),
     m_poGrabEngine(0),m_poConvertEngine(0){
     init();
   }
+
+  // }}}
   
   UnicapGrabber::UnicapGrabber(const std::string &deviceFilter):
+    // {{{ open
+
     m_poImage(0),m_poConvertedImage(0),m_poGrabEngine(0),
     m_poConvertEngine(0){
     const std::vector<UnicapDevice> &ds = getDeviceList(deviceFilter);
@@ -40,13 +46,23 @@ namespace icl{
     }    
     init();
   }
+
+  // }}}
+
   UnicapGrabber::~UnicapGrabber(){
+    // {{{ open
+
     if(m_poGrabEngine) delete m_poGrabEngine;
     if(m_poConvertEngine) delete m_poConvertEngine;
     if(m_poImage) delete m_poImage;
     if(m_poConvertedImage) delete m_poConvertedImage;
   }
+
+  // }}}
+
   void UnicapGrabber::init(){
+    // {{{ open
+
     string modelname = m_oDevice.getModelName();
     if(modelname == "Philips 740 webcam"){
       printf("Using PWCGrabEngine !\n");
@@ -64,12 +80,101 @@ namespace icl{
     }
   }
 
+  // }}}
+
+  namespace{
+    string force_lower_case(const string &s){
+      // {{{ open
+
+      static const Range<char> uppers('A','Z');
+      static const int offs = 'A' - 'a';
+      
+      string r=s;
+      for(unsigned int i=0;i<r.length();i++){
+        if(uppers.in(r[i])) r[i]-=offs;
+      }
+      return r;
+    }
+    
+    // }}}
+  }
+  
   void UnicapGrabber::setParam(const std::string &param, const std::string &value){
-    (void)param; (void)value;
-    // TODO:: later translate to device, format and property options!
+    // {{{ open
+
+    bool verbose = true;
+    string p = force_lower_case(param);
+    vector<UnicapProperty> ps = m_oDevice.getProperties();
+    for(unsigned int i=0;i<ps.size();i++){
+      UnicapProperty &prop = ps[i];
+      if(force_lower_case(prop.getID()) != p) continue;
+      switch(prop.getType()){
+        case UnicapProperty::range:{
+          // {{{ open
+
+          Range<double> range = prop.getRange();
+          double val = atof(value.c_str());
+          if(range.in(val)){
+            prop.setValue(val);
+            m_oDevice.setProperty(prop);
+            if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
+          }else{
+            printf("UnicapGrabber::setParam() value %f is out of range [%f..%f]\n",val,range.minVal, range.maxVal);
+          }
+          break;
+        }
+
+          // }}}
+        case UnicapProperty::valueList:{
+          // {{{ open
+
+          vector<double> valueList = prop.getValueList();
+          double val = atof(value.c_str());
+          bool foundValue = false;
+          for(unsigned int j=0;j<valueList.size();j++){
+            if(abs(valueList[j]-val)<0.00001){
+              if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
+              prop.setValue(valueList[j]);
+              m_oDevice.setProperty(prop);
+              foundValue = true;
+              break;
+            }
+          }
+          if(!foundValue){
+            string valueListStr="{";
+            char buf[50];
+            for(unsigned int j=0;j<valueList.size();j++){
+              sprintf(buf,"%f",valueList[j]);
+              valueListStr += buf;
+              if(j<valueList.size()-1){
+                valueListStr+=",";
+              }else{
+                valueListStr+="}";
+              }
+            }
+            printf("UnicapGrabber::setParam() value %f is not in value list %s \n",val,valueListStr.c_str());
+          }
+          break;
+        }
+
+          // }}}
+        case UnicapProperty::menu:
+          break;
+        case UnicapProperty::data:
+          break;
+        case UnicapProperty::flags:
+          break;
+        default: break;
+      }        
+      break;
+    }      
   }
 
+  // }}}
+
   const ImgBase* UnicapGrabber::grab(ImgBase **ppoDst){
+    // {{{ open
+
     ICLASSERT_RETURN_VAL(m_poGrabEngine , 0);
 
     const ImgParams &p = getDesiredParams();
@@ -102,6 +207,8 @@ namespace icl{
     return 0; 
     
   }
+
+  // }}}
   
   namespace{
     struct ParamFilter{
@@ -198,21 +305,6 @@ namespace icl{
 
     // }}}
     
-    string force_lower_case(const string &s){
-      // {{{ open
-
-      static const Range<char> uppers('A','Z');
-      static const int offs = 'A' - 'a';
-      
-      string r=s;
-      for(unsigned int i=0;i<r.length();i++){
-        if(uppers.in(r[i])) r[i]-=offs;
-      }
-      return r;
-    }
-
-    // }}}
-
     void filter_devices(const vector<UnicapDevice> &src, vector<UnicapDevice> &dst, const string &filter){
       // {{{ open
 
@@ -263,10 +355,9 @@ namespace icl{
         delete filters[j];
       }
     }    
-  }
+    // }}}
+  }  
 
-  // }}}
-  
   const vector<UnicapDevice> &UnicapGrabber::getDeviceList(const string &filter){
     // {{{ open
     static std::vector<UnicapDevice> s_CurrentDevices,buf;
@@ -287,15 +378,19 @@ namespace icl{
   // }}}
   
   const vector<UnicapDevice> &filterDevices(const std::vector<UnicapDevice> &devices, const string &filter){
+    // {{{ open
+
     static std::vector<UnicapDevice> s_CurrentDevices;
     filter_devices(devices,s_CurrentDevices,filter);
     return s_CurrentDevices;
   }
 
+  // }}}
 
-
-  /// OLD !!!
+  /// OLD  FUNCTION TO BE REMOVED SOON!!!
   const ImgBase* UnicapGrabber::grab(ImgBase *poDst){
+    // {{{ open
+
     ensureCompatible(&m_poImage,depth8u,Size(640,480),formatRGB);
 
     const std::vector<UnicapDevice> vs = UnicapGrabber::getDeviceList("device=/dev/video0");
@@ -308,275 +403,11 @@ namespace icl{
 
     
     return new Img8u(Size(640,480),formatRGB);
-    
-    /*
-        vector<ImgBase*> v=capture_frames(handle,10);
-        v[0]->deepCopy(&m_poImage);    
-        for(unsigned int i=0;i<v.size();i++){
-        delete v[i];
-        }
-        
-        return m_poImage;
-    */
+
   }
 
+  // }}}
 }
-
-
-  /*
-      void set_format (unicap_handle_t handle){
-      // {{{ open
-
-  unicap_format_t formats[MAX_FORMATS];
-  int format_count;
-  unicap_status_t status = STATUS_SUCCESS;
-  int f = -1;
-   
-  for (format_count = 0; SUCCESS (status) && (format_count < MAX_FORMATS); format_count++){
-    status = unicap_enumerate_formats (handle, NULL, &formats[format_count], format_count);
-    if (SUCCESS (status)){
-      printf ("%d: %s\n", format_count, formats[format_count].identifier);
-    }else{
-      break;
-    }
-  }
-  if(!format_count){
-    return;
-  }
-  
-  while ((f < 0) || (f >= format_count)){
-    printf ("Use Format:  using 3 \n");
-    //    scanf ("%d", &f);
-    f=3;
-  }
-  
-  if (formats[f].size_count){
-    int i;
-    int s = -1;
-    
-    for (i = 0; i < formats[f].size_count; i++){
-      printf ("%d: %dx%d\n", i, formats[f].sizes[i].width,
-              formats[f].sizes[i].height);
-    }
-    
-    while ((s < 0) || (s >= formats[f].size_count)){
-      printf ("Select Size: using 3! \n");
-      //scanf ("%d", &s);
-      s=3;
-    }
-    formats[f].size.width = formats[f].sizes[s].width;
-    formats[f].size.height = formats[f].sizes[s].height;
-  }
-  
-  if (!SUCCESS (unicap_set_format (handle, &formats[f]))){
-    fprintf (stderr, "Failed to set the format!\n");
-    exit (-1);
-  }
-}
-
-// }}}
-      
-      unicap_handle_t open_device (){
-      // {{{ open
-
-  int dev_count;
-  int status = STATUS_SUCCESS;
-  unicap_device_t devices[MAX_DEVICES];
-  unicap_handle_t handle;
-  int d = -1;
-  
-  for (dev_count = 0; SUCCESS (status) && (dev_count < MAX_DEVICES);dev_count++){
-    status = unicap_enumerate_devices (NULL, &devices[dev_count], dev_count); // (1)
-    if (SUCCESS (status)){
-      printf ("%d: %s\n", dev_count, devices[dev_count].identifier);
-    }else{
-      break;
-    }
-  }
-  
-  if (dev_count == 0){
-    return NULL;  // no device selected
-  }
-  while ((d < 0) || (d >= dev_count)){
-    printf ("Open Device: \n");
-    d=0;
-    
-    //scanf ("%d", &d);
-  }
-  unicap_open (&handle, &devices[d]);   // (2)
-  return handle;
-}
-
-// }}}
-      
-      void  set_range_property (unicap_handle_t handle){
-      // {{{ open
-
-  unicap_property_t properties[MAX_PROPERTIES];
-  int property_count;
-  int range_ppty_count;
-  unicap_status_t status = STATUS_SUCCESS;
-  int p = -1;
-  double new_value = 0.0;
-  
-  for (property_count = range_ppty_count = 0; SUCCESS (status) && (property_count < MAX_PROPERTIES); property_count++){
-    status = unicap_enumerate_properties (handle, NULL, &properties[range_ppty_count], property_count);       // (1)
-    if (SUCCESS (status)){
-      if (properties[range_ppty_count].type == UNICAP_PROPERTY_TYPE_RANGE){
-        printf ("%d: %s\n", range_ppty_count, properties[range_ppty_count].identifier);
-        range_ppty_count++;
-      }
-    }else{
-      break;
-    }
-  }
-  if (range_ppty_count == 0){
-    // no range properties
-    return;
-  }
-  while ((p < 0) || (p > range_ppty_count)){
-    printf ("Property: ");
-    scanf ("%d", &p);
-  }
-  
-  status = unicap_get_property (handle, &properties[p]); 
-  if (!SUCCESS (status)){
-    fprintf (stderr, "Failed to inquire property '%s'\n",properties[p].identifier);
-    exit (-1);
-  }
-  printf ("Property '%s': Current = %f, Range = [%f..%f]\n",
-          properties[p].identifier, properties[p].value,
-          properties[p].range.min, properties[p].range.max);
-  
-  new_value = properties[p].range.min - 1.0f;
-  while ((new_value < properties[p].range.min) || (new_value > properties[p].range.max)){
-    printf ("New value for property: ");
-    scanf ("%lf", &new_value);
-  }
-  properties[p].value = new_value;
-  if (!SUCCESS (unicap_set_property (handle, &properties[p]))){
-    fprintf (stderr, "Failed to set property!\n");
-    exit (-1);
-  }
-}
-
-// }}}
-
-  */
-
-
-static void new_frame_cb (unicap_event_t event, unicap_handle_t handle, unicap_data_buffer_t * buffer, void *usr_data){
-  // {{{ open
-  printf("callback was called \n");
-  volatile int *frame_count = (volatile int *) usr_data;
-  *frame_count = *frame_count - 1;
-}
-
-// }}}
-
-void capture_frames_dma (unicap_handle_t handle, int nframes){
-  // {{{ open
-
-  unicap_format_t format;
-  volatile int frame_count;
-   
-  if (!SUCCESS (unicap_get_format (handle, &format))){
-    fprintf (stderr, "Failed to get video format!\n");
-    exit (-1);
-  }
-  
-  format.buffer_type = UNICAP_BUFFER_TYPE_SYSTEM;       // (1)
-   
-  if (!SUCCESS (unicap_set_format (handle, &format))){
-    fprintf (stderr, "Failed to set video format!\n");
-    exit (-1);
-  }
-  
-  printf("registering callback \n");
-  frame_count = nframes;
-  unicap_register_callback (handle, UNICAP_EVENT_NEW_FRAME, (unicap_callback_t) new_frame_cb, (void *) &frame_count);   // (2)
-  
-  printf("starting to capture \n");
-  unicap_start_capture (handle); 
-  while (frame_count > 0){
-    printf("framecount is %d \n",frame_count);
-    usleep (1000000);
-  }
-  printf ("Captured %d frames!\n", nframes);
-  
-  unicap_stop_capture (handle); // (5)
-  
-}
-
-// }}}
-
-vector<ImgBase*>  capture_frames (unicap_handle_t handle, int nframes){
-  // {{{ open
-  vector<ImgBase*> vec;
-  unicap_format_t format;
-  unicap_data_buffer_t buffer;
-  int cframe = 0;
-  
-  if (!SUCCESS (unicap_get_format (handle, &format))){
-    fprintf (stderr, "Failed to get video format!\n");
-    exit (-1);
-  }
-  
-  format.buffer_type = UNICAP_BUFFER_TYPE_USER; // (1)
-  
-  if (!SUCCESS (unicap_set_format (handle, &format))) {
-    fprintf (stderr, "Failed to set video format!\n");
-    exit (-1);
-  }
-  
-  buffer.data = new unsigned char[format.buffer_size];
-  buffer.buffer_size = format.buffer_size;
-  
-  unicap_start_capture (handle);        // (4)
-  unicap_queue_buffer (handle, &buffer);        // (3)
-  
-  while (cframe < nframes) {
-     
-    unicap_data_buffer_t *returned_buffer;
-    if (!SUCCESS (unicap_wait_buffer (handle, &returned_buffer)))   {
-      fprintf (stderr, "Failed to wait for buffer!\n");
-      exit (-1);
-    }
-    /*****************************
-    Img8u *imRGB = new Img8u(Size(640,480),formatGray);
-    copy(buffer.data,buffer.data+imRGB->getDim(),imRGB->getData(0));
-    vec.push_back(imRGB);
-    *******************************/
-    
-    
-    
-    Img8u *imRGB = new Img8u(Size(640,480),formatRGB);
-    icl8u *rgbBuf = new icl8u[imRGB->getDim()*3];
-    ippiYUV422ToRGB_8u_C2C3R(buffer.data,
-                             imRGB->getWidth()*2,
-                             rgbBuf,
-                             imRGB->getWidth()*3,
-                             imRGB->getROISize()    );
-    
-    interleavedToPlanar(rgbBuf,imRGB->getSize(),3, imRGB);
-    delete [] rgbBuf;
-    
-    vec.push_back(imRGB);
-    
-    if (!SUCCESS (unicap_queue_buffer (handle, returned_buffer)))  {
-      fprintf (stderr, "Failed to queue buffer!\n");
-      exit (-1);
-    }
-    
-    cframe++;
-  }
-  printf ("Captured %d frames!\n", nframes);
-  unicap_stop_capture (handle); // (6)
-  delete [] buffer.data;
-  return vec;
-}
-
-// }}}
 
 // {{{ unicap_device_t
 
@@ -668,5 +499,3 @@ struct unicap_property_t{
 *********************************************************************/
 // }}}
 
-//UnicapGrabber(const UnicapDevice &device);
-//UnicapGrabber(const std::string &deviceFilter); // uses the first device that matches

@@ -54,6 +54,8 @@ namespace icl{
     void setFormatID(const std::string &fmtID);    
     void setFormatSize(const Size &newSize);
     void setFormat(const std::string &fmtID, const Size &newSize);
+    void setProperty(UnicapProperty &prop);
+    
     void listProperties()const;
     void listFormats() const;    
     std::string toString() const;

@@ -260,6 +260,13 @@ namespace icl{
   }
   
   // }}}
+
+  void UnicapDevice::setProperty(UnicapProperty &prop){
+    // {{{ open
+    unicap_set_property(m_oUnicapHandle, prop.getUnicapProperty());
+  }
+  
+  // }}}
   
   void UnicapDevice::listProperties()const{
     // {{{ open
