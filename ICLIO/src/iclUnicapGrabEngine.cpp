@@ -32,21 +32,6 @@ namespace icl{
     // no longer needed because of using double buffering
   }
   
-  /*
-      if(!m_bStarted){
-      unicap_start_capture(m_poDevice->getUnicapHandle());
-        m_bStarted = true;
-      }
-      unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuffer);    
-      unicap_data_buffer_t *returned_buffer;
-
-      if( !SUCCESS (unicap_wait_buffer (m_poDevice->getUnicapHandle(), &returned_buffer)))  {
-        ERROR_LOG("Failed to wait for the buffer to be filled!");
-      }
-      printf("bufa=%p bufb_%p \n",(void*)&m_oBuffer,(void*)returned_buffer);
-      return m_oBuffer.data;
-      */
-
   const icl8u *UnicapGrabEngine::getCurrentFrameUnconverted(){
     BENCHMARK_THIS_FUNCTION;
     
