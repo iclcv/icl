@@ -72,7 +72,7 @@ namespace icl{
     
     }else if(modelname == "DFW-VL500 2.30"){ // sony cams !
       printf("Using UnicapGrabEngine !\n");
-      bool useDMA = true;
+      bool useDMA = false;
       m_poGrabEngine = new SonyGrabEngine(&m_oDevice,useDMA);
       m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
       //m_oDevice.listFormats();
@@ -127,7 +127,6 @@ namespace icl{
           // }}}
         case UnicapProperty::valueList:{
           // {{{ open
-
           vector<double> valueList = prop.getValueList();
           double val = atof(value.c_str());
           bool foundValue = false;
