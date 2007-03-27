@@ -9,12 +9,16 @@
 namespace icl{
   
   /// Wrapper class for the unicap_device_t struct
-  /** The UnicapDevice wraps all unicap_device_t data an provides getter and setter functions
+  /** The UnicapDevice wraps the unicap_device_t and provides getter and setter functions
       to access and manipulate its data. In addition to this, it offers some high-level functions
       to get format- and property lists (optionally filtered!) or to list all formats and 
       properties to std::out. \n
       All formats and properties are created at creation time of the UnicapDevice struct. So 
-      setter and getter functions can be computed very fast.
+      setter and getter functions can be computed very fast. \n
+      
+      The UnicapDevice class uses a smart pointer for optimized memory handling. The assign
+      operator as well as the copy constructor implements this shallow-copy concept, so a 
+      UnicapDevice can only be copied in a shallow way.
   **/
   class UnicapDevice{
     public:
@@ -31,9 +35,9 @@ namespace icl{
            exit(-1); 
         }
         \endcode
-        ensures, that the device creation was successful. A more recommended way using UnicapDevices
-        is using just the UnicapGrabber class and its static function to create a list of all 
-        currently connected video devices that are supported by unicap.\n
+        ensures, that the device creation was successful. A more recommended way for the use of
+        UnicapDevices is using just the UnicapGrabber class and its static function to create a 
+        list of all currently connected video devices that are supported by unicap.\n
         
         <b>Note:</b> if the device is valid, the Constructor does automatically call
         \code
