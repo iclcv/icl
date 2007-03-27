@@ -1,5 +1,6 @@
 #include <iclWidget.h>
 #include <iclPWCGrabber.h>
+#include <iclUnicapGrabber.h>
 #include <QApplication>
 #include <iclProgArg.h>
 #include <QThread>
@@ -20,7 +21,15 @@ public:
     if(pa_defined("-input")){
       grabber = new FileReader(pa_subarg("-input",0,std::string("nofile.ppm")));
     }else{
-      grabber = new PWCGrabber(Size(640,480));
+      if(pa_defined("-source")){
+        if(pa_subarg("-source",0,std::string("pwc")) == "pwc"){
+          grabber = new PWCGrabber(Size(640,480));
+        }else{
+          grabber = new UnicapGrabber("device=/dev/video1394-0");
+        }
+      }else{
+        grabber = new PWCGrabber(Size(640,480));
+      }
     }
     widget->setGeometry(200,200,640,480);
     widget->show();
@@ -46,7 +55,7 @@ public:
 
 int main(int nArgs, char **ppcArg){
   QApplication a(nArgs,ppcArg);
-  pa_init(nArgs,ppcArg,"-format(1) -depth(1) -file(1) -input(1)");
+  pa_init(nArgs,ppcArg,"-format(1) -depth(1) -file(1) -input(1) -source(1)");
   MyThread x;
   x.start();
   return a.exec();
