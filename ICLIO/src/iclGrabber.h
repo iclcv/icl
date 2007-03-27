@@ -21,7 +21,10 @@ namespace icl {
   /// Common interface class for all grabbers
   class Grabber {
   public:
-     Grabber() {}
+     Grabber() {
+       m_eDesiredDepth = depth8u;
+       m_oDesiredParams = ImgParams(Size(320,240),formatRGB);
+     }
      virtual ~Grabber() {}
 
      /**  DEPRECATED !!

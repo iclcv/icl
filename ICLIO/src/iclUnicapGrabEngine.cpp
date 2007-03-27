@@ -45,8 +45,7 @@ namespace icl{
     if( !SUCCESS (unicap_wait_buffer (m_poDevice->getUnicapHandle(), &returned_buffer)))  {
       ERROR_LOG("Failed to wait for the buffer to be filled!");
     }
-    printf("in UnicapGrabEngine::getCurrentFrameUnconverted(): buffer filled : idx=%d %p \n",m_iCurrBuf,(void*)returned_buffer);
-    
+        
     unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
         
     return returned_buffer->data;

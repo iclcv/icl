@@ -25,7 +25,21 @@ public:
         if(pa_subarg("-source",0,std::string("pwc")) == "pwc"){
           grabber = new PWCGrabber(Size(640,480));
         }else{
-          grabber = new UnicapGrabber("device=/dev/video1394-0");
+          std::vector<UnicapDevice> v = UnicapGrabber::getDeviceList();
+          for(unsigned int i=0;i<v.size();i++){
+            printf("%d = %s \n",i,v[i].getID().c_str());
+          }
+          
+          int dev=-1;
+          while(dev < 0 || dev >= (int)v.size()){
+            printf("choose device: ");
+            scanf("%d",&dev);
+            printf("\n");
+          }
+          v[dev].setFormatSize(Size(640,480));
+          grabber = new UnicapGrabber(v[dev]);
+          grabber->setDesiredSize(Size(640,480));
+          //grabber->setDesiredDepth(depth32f);
         }
       }else{
         grabber = new PWCGrabber(Size(640,480));
@@ -39,11 +53,16 @@ public:
     if(pa_defined("-file")){
       w = new FileWriter(pa_subarg("-file",0,std::string("./image_##.ppm")));
     }
+    delete image;
+    image = 0;
+    ImgBase *img2 = image;
     while(1){
-      widget->setImage(grabber->grab(image));
+
+      widget->setImage(grabber->grab(&img2));
       if(w){
         w->write(image);
       }
+      printf("current image ptr = %p \n",(void*)img2);
       widget->update();
     }
   }

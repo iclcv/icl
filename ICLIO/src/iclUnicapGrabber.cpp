@@ -232,11 +232,13 @@ namespace icl{
 
     const ImgParams &p = getDesiredParams();
     depth d = getDesiredDepth();
-    if(!ppoDst) ppoDst = &m_poImage;
-    else if(m_poImage){
+    if(!ppoDst) ppoDst = &m_poImage;   // ACHTUNG    !!!
+    else if(m_poImage && m_poImage != *ppoDst){
       delete m_poImage;
       m_poImage = 0;
     }
+
+    // get the image from the grabber
     m_poGrabEngine->lockGrabber();
     if(m_poGrabEngine->needsConversion()){
       const icl8u *rawData = m_poGrabEngine->getCurrentFrameUnconverted();
@@ -244,6 +246,9 @@ namespace icl{
     }else{
       m_poGrabEngine->getCurrentFrameConverted(p,d,ppoDst);
     }
+    
+    /// 3rd step: the image, got by the Grab/Convert-Engine must not have the desired
+    /// parameters, so: check and convert on demand
     m_poGrabEngine->unlockGrabber();
     if(ppoDst && *ppoDst){
       ImgBase *image = *ppoDst;
