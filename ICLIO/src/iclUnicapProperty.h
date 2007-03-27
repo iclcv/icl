@@ -49,6 +49,9 @@ namespace icl{
  
     void setValue(double value);    
     void setMenuItem(const std::string &item);
+    void setFlags(u_int64_t flags);
+    void setFlagsMask(u_int64_t flags_mask);
+    void setData(void *data,unsigned int nBytes);
     std::string toString();
     private:
     struct UnicapPropertyDelOp : public DelOpBase{

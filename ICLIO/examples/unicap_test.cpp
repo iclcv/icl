@@ -19,12 +19,12 @@ void grab_100_frames(UnicapGrabber &g){
 int main(){
   const std::vector<UnicapDevice> l = UnicapGrabber::getDeviceList();
   if(!l.size()) {
-    ERROR_LOG("alles ist woanders !");
+    ERROR_LOG("no devices were found !");
      exit(-1001);
   }
   UnicapGrabber g(l[0]);
   //  l[0].listFormats();
-  //l[0].listProperties();
+  l[0].listProperties();
   g.setParam("frame rate","30");
   
   //UnicapGrabber g("device=/dev/video1394-0");

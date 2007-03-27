@@ -217,6 +217,54 @@ namespace icl{
 
     // }}}
   
+  void UnicapProperty::setFlags(u_int64_t flags_val){
+    // {{{ open
+
+    ICLASSERT_RETURN(getType() == flags);
+    m_oUnicapPropertyPtr->flags = flags_val;
+    if(!SUCCESS (unicap_set_property(m_oUnicapHandle,m_oUnicapPropertyPtr.get()) )){
+      ERROR_LOG("failed to set new property [code 2]");
+    }
+  }
+
+  // }}}
+
+  void UnicapProperty::setFlagsMask(u_int64_t flags_mask){
+    // {{{ open
+
+    ICLASSERT_RETURN(getType() == flags);
+    m_oUnicapPropertyPtr->flags_mask = flags_mask;
+    if(!SUCCESS (unicap_set_property(m_oUnicapHandle,m_oUnicapPropertyPtr.get()) )){
+      ERROR_LOG("failed to set new property [code 3]");
+    }
+  }
+
+  // }}}
+  
+  void UnicapProperty::setData(void *data,unsigned int nBytes){
+    // {{{ open
+
+   ICLASSERT_RETURN(getType() == UnicapProperty::data);
+   if(m_oUnicapPropertyPtr->property_data_size == 0){
+     ERROR_LOG("cannot set up data array of size 0 [code 4]");
+     return;
+   }
+   if(nBytes != m_oUnicapPropertyPtr->property_data_size){
+     ERROR_LOG("data array and new data have different sizes [code 5]");
+     return;
+   }
+   if(!m_oUnicapPropertyPtr->property_data){
+     m_oUnicapPropertyPtr->property_data = malloc(nBytes);
+   }
+   memcpy(m_oUnicapPropertyPtr->property_data, data, nBytes);
+   
+   if(!SUCCESS (unicap_set_property(m_oUnicapHandle,m_oUnicapPropertyPtr.get()) )){
+     ERROR_LOG("failed to set new property [code 6]");
+   }
+  }
+
+  // }}}
+
   namespace {
     const char *ftoa(double d){
       // {{{ open

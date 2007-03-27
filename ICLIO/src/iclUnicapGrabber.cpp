@@ -157,9 +157,32 @@ namespace icl{
         }
 
           // }}}
-        case UnicapProperty::menu:
+        case UnicapProperty::menu:{
+          // {{{ open
+          vector<string> men = prop.getMenu();
+          string val = force_lower_case(value);
+          bool foundEntry = false;
+          for(unsigned int j=0;j<men.size();j++){
+            if(force_lower_case(men[j])==val){
+              prop.setMenuItem(men[j]);
+              m_oDevice.setProperty(prop);
+              if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
+              foundEntry = true;
+            }
+          }
+          if(!foundEntry){
+            printf("UnicapGrabber::setParam() value is entry %s is not an valide menu entry \n",value.c_str());
+            printf("menu={");
+            for(unsigned int j=0;j<men.size();j++){
+              printf("%s%s",men[j].c_str(),j<men.size()-1 ? "," : "}");
+            }
+            printf("\n");
+          }
           break;
+        }
+        // }}}
         case UnicapProperty::data:
+          
           break;
         case UnicapProperty::flags:
           break;
