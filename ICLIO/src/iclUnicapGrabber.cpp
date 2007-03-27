@@ -181,12 +181,28 @@ namespace icl{
           break;
         }
         // }}}
-        case UnicapProperty::data:
-          
+        case UnicapProperty::data:{
+          // {{{ open
+
+          WARNING_LOG("setting up \"data\"-properties is not yet supported!");
+          return;
           break;
-        case UnicapProperty::flags:
+        }
+
+          // }}}
+        case UnicapProperty::flags:{
+          // {{{ open
+
+          char *end = 0;
+          prop.setFlags(strtoul(value.c_str(),&end,10));
+          m_oDevice.setProperty(prop);
           break;
-        default: break;
+        }
+
+          // }}}
+        default: 
+          ERROR_LOG("Unknown unicap property type ![code 8] ");
+          break;
       }        
       break;
     }      
