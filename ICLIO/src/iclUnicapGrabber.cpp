@@ -99,7 +99,7 @@ namespace icl{
     // }}}
   }
   
-  void UnicapGrabber::setParam(const std::string &param, const std::string &value){
+  void UnicapGrabber::setProperty(const std::string &param, const std::string &value){
     // {{{ open
 
     bool verbose = true;
@@ -209,6 +209,21 @@ namespace icl{
   }
 
   // }}}
+  
+  void UnicapGrabber::setParam(const std::string &param, const std::string &value){
+    (void)param; (void)value;
+    WARNING_LOG("not yet implemented! \n");
+  }
+  
+  std::vector<std::string> UnicapGrabber::getPropertyList(){
+    WARNING_LOG("not yet implemented! \n");
+    return vector<string>();
+  }
+  std::vector<std::string> UnicapGrabber::getParamList(){
+    WARNING_LOG("not yet implemented! \n");
+    return vector<string>();    
+  }
+
 
   const ImgBase* UnicapGrabber::grab(ImgBase **ppoDst){
     // {{{ open
