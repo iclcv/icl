@@ -70,6 +70,11 @@ namespace icl{
       printf("Using UnicapGrabEngine !\n");
       m_poGrabEngine = new SonyGrabEngine(&m_oDevice,m_bUseDMA);
       m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
+      
+    }else {
+      printf("Using UniapGrabEngine and Sony Convert Engine for %s! \n",modelname.c_str());
+      m_poGrabEngine = new UnicapGrabEngine(&m_oDevice,m_bUseDMA);
+      m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
     }
   }
 

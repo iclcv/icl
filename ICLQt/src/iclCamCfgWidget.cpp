@@ -118,6 +118,7 @@ namespace icl{
     if(wasCapturing){ 
       startStopCapture(true);
     }
+    updateFormatCombo();
   }
   void CamCfgWidget::formatChanged(const QString &text){
     if(m_bDisableSlots) return;
@@ -276,8 +277,6 @@ namespace icl{
       ERROR_LOG("no supported devices were found (aborting !)");
       exit(-1);
     }
-    updateFormatCombo();
-    updatePropertyPanel();
   }
 
   // }}}
