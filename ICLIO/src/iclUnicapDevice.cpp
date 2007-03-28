@@ -1,5 +1,5 @@
 #include "iclUnicapDevice.h"
-
+#include <iclStackTimer.h>
 
 using namespace std;
 namespace icl{
@@ -104,6 +104,36 @@ namespace icl{
   const unicap_device_t *UnicapDevice::getUnicapDevice()const {  return m_oUnicapDevicePtr.get(); }
   unicap_device_t *UnicapDevice::getUnicapDevice(){ return m_oUnicapDevicePtr.get(); }
   
+  bool UnicapDevice::hasProperty(const string &id) const{
+    // {{{ open
+
+    for(unsigned int i=0;i<m_oProperties.size();++i){
+      if(m_oProperties[i].getID() == id){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // }}}
+  
+  /// returns the property associated with the given id
+  /** <b>Note:</b> use hasProperty to enshure that this device supports this property
+      @param id property id to get
+      **/
+  UnicapProperty UnicapDevice::getProperty(const string &id)const{
+    // {{{ open
+
+    for(unsigned int i=0;i<m_oProperties.size();++i){
+      if(m_oProperties[i].getID() == id){
+        return m_oProperties[i];
+      }
+    }
+    return UnicapProperty();
+  }
+
+  // }}}
+
   const vector<UnicapFormat> UnicapDevice::getFilteredFormats(const Size &size) const{
     // {{{ open
     
@@ -261,6 +291,7 @@ namespace icl{
 
   void UnicapDevice::setProperty(UnicapProperty &prop){
     // {{{ open
+    BENCHMARK_THIS_FUNCTION;
     unicap_set_property(m_oUnicapHandle, prop.getUnicapProperty());
   }
   

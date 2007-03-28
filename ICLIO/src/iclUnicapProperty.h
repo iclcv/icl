@@ -29,6 +29,7 @@ namespace icl{
     std::string getCategory() const;
     std::string getUnit() const;
   
+    bool isValid() const;
     std::vector<std::string> getRelations() const;
     type getType() const;
     double getValue() const;

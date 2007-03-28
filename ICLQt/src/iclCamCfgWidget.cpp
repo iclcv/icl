@@ -135,9 +135,36 @@ namespace icl{
     }
   }
   void CamCfgWidget::propertySliderChanged(const QString &id, double value){
+    UnicapProperty p = getCurrentDevice().getProperty(id.toLatin1().data());
+    if(p.isValid()){
+      p.setValue(value);
+      getCurrentDevice().setProperty(p);
+    }else{
+      WARNING_LOG("noting known about property \""<< id.toLatin1().data() << "\"\n");
+    }
     printf("property %s changed value to %f \n",id.toLatin1().data(), float(value));
   }
   void CamCfgWidget::propertyComboBoxChanged(const QString &text){
+    QString first = text.section(']',0,0);
+    QString sec = text.section(']',1,1);
+    string propName = first.toLatin1().data()+1;
+    string propValue = sec.toLatin1().data()+1;
+    UnicapProperty p = getCurrentDevice().getProperty(propName);
+    if(p.isValid()){
+      switch(p.getType()){
+        case UnicapProperty::valueList:
+          p.setValue(atof(propValue.c_str()));
+          break;
+        case UnicapProperty::menu:
+          p.setMenuItem(propValue);
+          break;
+        default:
+          ERROR_LOG("setting up this property type is not yet implemented !");
+      }
+      getCurrentDevice().setProperty(p);
+    }else{
+      WARNING_LOG("noting known about property \""<< propName << "\"\n");
+    }
     printf("property %s changed \n",text.toLatin1().data());
   }
   void CamCfgWidget::startStopCapture(bool on){

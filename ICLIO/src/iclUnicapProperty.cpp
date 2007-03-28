@@ -15,6 +15,14 @@ namespace icl{
     unicap_void_property (m_oUnicapPropertyPtr.get());  
   }
   
+  bool UnicapProperty::isValid() const{
+    // {{{ open
+
+    return m_oUnicapHandle != NULL;
+  }
+
+  // }}}
+  
   string UnicapProperty::getID() const{
     // {{{ open
 

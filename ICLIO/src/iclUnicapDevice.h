@@ -108,6 +108,16 @@ namespace icl{
 
     /// returns the wrapped unicap_device_t
     unicap_device_t *getUnicapDevice();
+
+    /// returns whether this device the named property
+    /** @param id properties id to test **/
+    bool hasProperty(const std::string &id) const;
+    
+    /// returns the property associated with the given id
+    /** <b>Note:</b> use hasProperty to enshure that this device supports this property
+        @param id property id to get
+    **/
+    UnicapProperty getProperty(const std::string &id) const;
     
     /// returns the list of formats that support the given size (const)
     const std::vector<UnicapFormat> getFilteredFormats(const Size &size) const;
