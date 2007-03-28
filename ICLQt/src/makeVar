@@ -79,3 +79,29 @@ SKIP_DIRECTORIES:=
 	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
 	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
 	${REL_INCLUDES} ${ABS_INCLUDES}
+
+../obj/moc_iclCamCfgWidget.o : iclCamCfgWidget.h iclCamCfgWidget.cpp
+	${PRE_CMD} rm -rf moc_iclCamCfgWidget.cpp
+	${PRE_CMD}${CMD_ECHO} "creating moc file moc_iclCamCfgWidget.cpp [specialized]"
+	${PRE_CMD}${QTDIR}/bin/moc -o moc_iclCamCfgWidget.cpp iclCamCfgWidget.h
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/moc_iclCamCfgWidget.cpp [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c moc_iclCamCfgWidget.cpp -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}
+
+../obj/iclCamCfgWidget.o : iclCamCfgWidget.cpp iclCamCfgWidget.h ../obj/moc_iclCamCfgWidget.o
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}
+
+../obj/moc_iclDoubleSlider.o : iclDoubleSlider.h iclDoubleSlider.cpp
+	${PRE_CMD} rm -rf moc_iclDoubleSlider.cpp
+	${PRE_CMD}${CMD_ECHO} "creating moc file moc_iclDoubleSlider.cpp [specialized]"
+	${PRE_CMD}${QTDIR}/bin/moc -o moc_iclDoubleSlider.cpp iclDoubleSlider.h
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/moc_iclDoubleSlider.cpp [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c moc_iclDoubleSlider.cpp -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}
+
+../obj/iclDoubleSlider.o : iclDoubleSlider.cpp iclDoubleSlider.h ../obj/moc_iclDoubleSlider.o
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}

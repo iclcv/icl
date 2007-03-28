@@ -75,3 +75,7 @@ LDFLAGS:= ${LDFLAGS}
 
 # Flags for dynamic library linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
+
+ifeq "$(HAVE_UNICAP)" ""
+SKIP_OBJECTS += iclCamCfgWidget.cpp moc_iclCamDfgWidget.cpp
+endif

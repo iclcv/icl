@@ -6,9 +6,12 @@
 #include <QThread>
 #include <iclFileWriter.h>
 #include <iclFileReader.h>
+#include <string>
+
 
 
 using namespace icl;
+using namespace std;
 
 class MyThread : public QThread{
 public:
@@ -36,8 +39,11 @@ public:
             scanf("%d",&dev);
             printf("\n");
           }
-          v[dev].setFormatSize(Size(640,480));
           grabber = new UnicapGrabber(v[dev]);
+          // v[dev].listFormats();
+          grabber->setParam("size&format","640x480&YUV(4:2:2) 640x480");
+          if(pa_defined("-dma")) grabber->setParam("dma","on");
+          else grabber->setParam("dma","off");
           grabber->setDesiredSize(Size(640,480));
           //grabber->setDesiredDepth(depth32f);
         }
@@ -47,6 +53,11 @@ public:
     }
     widget->setGeometry(200,200,640,480);
     widget->show();
+  }
+
+  ~MyThread(){
+    exit();
+    msleep(250);
   }
   virtual void run(){
     FileWriter *w=0;
@@ -74,7 +85,7 @@ public:
 
 int main(int nArgs, char **ppcArg){
   QApplication a(nArgs,ppcArg);
-  pa_init(nArgs,ppcArg,"-format(1) -depth(1) -file(1) -input(1) -source(1)");
+  pa_init(nArgs,ppcArg,"-format(1) -depth(1) -file(1) -input(1) -source(1) -dma");
   MyThread x;
   x.start();
   return a.exec();
