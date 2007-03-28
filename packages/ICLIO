@@ -13,6 +13,7 @@ ICLIO_MAKEVAR=ICLIO_MAKEVAR
 # (e.g. include ${Packages}/Utils)
 include ${PACKAGES}/ICLCore
 include ${PACKAGES}/ICLCC
+include ${PACKAGES}/Unicap
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.

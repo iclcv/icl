@@ -4,6 +4,7 @@
 #include "iclGrabber.h"
 #include "iclUnicapDevice.h"
 #include <iclConverter.h>
+#include <iclMutex.h>
 
 
 namespace icl{
@@ -56,9 +57,10 @@ namespace icl{
     
     /// setter function for video device parameters 
     /** @copydoc icl::Grabber::setParam(const std::string&, const std::string&) 
-        @copydoc icl::UnicapGrabber::getParamList() */
-    virtual void setParam(const std::string &param, const std::string &value);                  //XXX TODO (most complicated!)
-    
+        additionally the following commands are supported:
+        - param=dma [value={on, off} of is default!] 
+    **/
+    virtual void setParam(const std::string &param, const std::string &value);
     
     /// setter function for video device properties 
     /** @copydoc icl::Grabber::setProperty(const std::string&, const std::string&) */
@@ -67,20 +69,20 @@ namespace icl{
     
     /// returns a list of properties, that can be set using setProperty
     /** @return list of supported property names **/
-    virtual std::vector<std::string> getPropertyList();                                         // XXX TODO
+    virtual std::vector<std::string> getPropertyList(); 
     
     
      /// returns a list of supported params, that can be set using setParams
      /** currently the UnicapGrabber supports setting the
          grabbed image size and format:
-         paramList = { size, format, size&format }
+         paramList = { size, format, size&format, dma }
          - syntax for size is e.g. "320x240"
          - syntax for format is e.g. "YUV411", "YUV422", "YUV444" or "RAW"
          - syntax for size&format is e.g. "320x240&YUV411"
+         - syntax for dma is "on" of "off"
          @return list of supported parameters names 
     **/
-    virtual std::vector<std::string> getParamList();                                              //XXX TODO
-
+    virtual std::vector<std::string> getParamList(); 
 
     /// creates a vector of all currently available UnicapDevices (filterer by filter)
     /** The filter string has the following syntax = A%B%C%D%... 
@@ -132,6 +134,12 @@ namespace icl{
 
     /// internal used convert engine
     UnicapConvertEngine *m_poConvertEngine;
+
+    /// internal mutex for the GrabEngine access
+    Mutex m_oMutex;
+
+    /// internal flag indicating whether DMA should be used
+    bool m_bUseDMA;
 
   };
 }

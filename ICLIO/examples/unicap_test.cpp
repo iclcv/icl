@@ -25,7 +25,7 @@ int main(){
   UnicapGrabber g(l[0]);
   //  l[0].listFormats();
   l[0].listProperties();
-  g.setParam("frame rate","30");
+  //  g.setProperty("frame rate","30");
   
   //UnicapGrabber g("device=/dev/video1394-0");
   g.setDesiredParams(ImgParams(Size(640,480),formatRGB));

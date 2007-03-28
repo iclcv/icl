@@ -210,14 +210,10 @@ namespace icl{
     // search the format from the formatlist by id
     for(unsigned int i=0;i<m_oFormats.size();i++){
       if(m_oFormats[i].getID() == fmtID ){
-        if(m_oFormats[i].checkSize(getCurrentSize())){
-          UnicapFormat f = getCurrentUnicapFormat();
-          sprintf(f.getUnicapFormat()->identifier,fmtID.c_str());
-          setFormat(f);
-        }else{
-          ERROR_LOG("current size is supported for new format: " << fmtID << "!");          
-        }
-        break;
+        UnicapFormat f = getCurrentUnicapFormat();
+        sprintf(f.getUnicapFormat()->identifier,fmtID.c_str());
+        setFormat(f);
+        return;
       }
     }
     ERROR_LOG("could not set unicap format to: " << fmtID << " (unknown format id)");
@@ -251,8 +247,10 @@ namespace icl{
           f.getUnicapFormat()->size.width = newSize.width;
           f.getUnicapFormat()->size.width = newSize.height; 
           setFormat(f);
+          return;
         }else{
           ERROR_LOG("combination of format and size is not supported \n");
+          return;
         }
       }
     }

@@ -82,3 +82,14 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
 SKIP_DIRECTORIES:=
+
+ifeq "$(HAVE_UNICAP)" ""
+SKIP_OBJECTS += iclUnicapGrabber.cpp unicap_test.cpp iclPWCGrabEngine.cpp
+SKIP_OBJECTS += iclUnicapDevice.cpp iclUnicapFormat.cpp iclUnicapProperty.cpp
+SKIP_OBJECTS += iclSonyConvertEngine.cpp iclUnicapGrabEngine.cpp
+endif
+
+ifeq "$(HAVE_FIREWIRE)" ""
+SKIP_OBJECTS += iclFwGrabber.cpp
+endif
+

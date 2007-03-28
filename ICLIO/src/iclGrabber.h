@@ -77,6 +77,7 @@ namespace icl {
          Yet, the following parameters are compulsory:
          - size (syntax for value: e.g. "320x240")
          - format (value depends on the underlying devices formats specifications) 
+         - format&size (syntax like 320x240&FORMAT_ID)
          
          To get a list of all supported params, call 
          \code getParamList()  \endcode

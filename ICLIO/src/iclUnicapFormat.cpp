@@ -31,9 +31,15 @@ namespace icl{
   
   bool UnicapFormat::checkSize(const Size &size)const{
     vector<Size> v= getPossibleSizes();
-    for(unsigned int i=0;i<v.size();++i){
-      if(v[i] == size){ 
-        return true; 
+    if(!v.size()){
+      if(getSize() == size || getMaxSize() == size || getMinSize() == size){
+        return true;
+      }
+    }else{
+      for(unsigned int i=0;i<v.size();++i){
+        if(v[i] == size){ 
+          return true; 
+        }
       }
     }
     return false;

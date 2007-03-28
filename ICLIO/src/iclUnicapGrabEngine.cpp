@@ -42,10 +42,18 @@ namespace icl{
     }
     
     unicap_data_buffer_t *returned_buffer;
-    if( !SUCCESS (unicap_wait_buffer (m_poDevice->getUnicapHandle(), &returned_buffer)))  {
-      ERROR_LOG("Failed to wait for the buffer to be filled!");
+    static const int MAX_TRYS = 10;
+    static const long WAIT_TIME = 100000;
+    int i=0;
+    for(;i<MAX_TRYS;i++){
+      if( SUCCESS (unicap_wait_buffer (m_poDevice->getUnicapHandle(), &returned_buffer))){
+        break;
+      }else{
+        usleep(WAIT_TIME);
+      }
+    }if(i==MAX_TRYS){
+      ERROR_LOG("Failed to wait for the buffer to be filled! ( tried "<<MAX_TRYS<<" times)");        
     }
-        
     unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
         
     return returned_buffer->data;
