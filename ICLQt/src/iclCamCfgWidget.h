@@ -63,6 +63,7 @@ namespace icl{
 
     QTimer *m_poTimer;
     UnicapGrabber *m_poGrabber;
+    UnicapDevice m_oUnicapDevice;
     
     std::vector<QComboBox*> m_vecPropertyCombos;
     std::vector<DoubleSlider*> m_vecPropertySliders;

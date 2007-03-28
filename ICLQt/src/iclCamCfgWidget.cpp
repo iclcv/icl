@@ -1,4 +1,5 @@
 #include "iclCamCfgWidget.h"
+#include "iclStackTimer.h"
 
 #include <iclPWCGrabber.h>
 #include <iclUnicapGrabber.h>
@@ -36,7 +37,7 @@ namespace icl{
 
   // }}}
   
-  CamCfgWidget::CamCfgWidget() : m_bDisableSlots(false){
+  CamCfgWidget::CamCfgWidget() : m_bDisableSlots(false), m_bCapturing(false){
     // TOP LEVEL
     m_poTopLevelLayout = new QHBoxLayout(this);
     m_poICLWidget = new ICLWidget(this);
@@ -101,10 +102,19 @@ namespace icl{
     if(wasCapturing){
       startStopCapture(false);
     }
-    
-    printf("device switching is not yet supported!");
-    
-    
+    vector<UnicapDevice> devList = UnicapGrabber::getDeviceList();
+    bool found = false;
+    for(unsigned int i=0;i<devList.size();i++){
+      if(devList[i].getID() == text.toLatin1().data()){
+        m_oUnicapDevice = devList[i];
+        found = true;
+        break;
+      }
+    }
+    if(!found){
+      ERROR_LOG("failed to switch to unknown device \""<<text.toLatin1().data()<<"\"");
+    }
+        
     if(wasCapturing){ 
       startStopCapture(true);
     }
@@ -142,7 +152,6 @@ namespace icl{
     }else{
       WARNING_LOG("noting known about property \""<< id.toLatin1().data() << "\"\n");
     }
-    printf("property %s changed value to %f \n",id.toLatin1().data(), float(value));
   }
   void CamCfgWidget::propertyComboBoxChanged(const QString &text){
     QString first = text.section(']',0,0);
@@ -165,7 +174,6 @@ namespace icl{
     }else{
       WARNING_LOG("noting known about property \""<< propName << "\"\n");
     }
-    printf("property %s changed \n",text.toLatin1().data());
   }
   void CamCfgWidget::startStopCapture(bool on){
     if(on){
@@ -189,8 +197,7 @@ namespace icl{
     
   UnicapDevice CamCfgWidget::getCurrentDevice(){
     // {{{ open
-
-    return UnicapDevice(m_poDeviceCombo->currentIndex());
+    return m_oUnicapDevice;
   }
 
   // }}}
@@ -262,6 +269,13 @@ namespace icl{
     vector<UnicapDevice> deviceList = UnicapGrabber::getDeviceList();
     for(unsigned int j=0;j<deviceList.size();j++) m_poDeviceCombo->addItem(deviceList[j].getID().c_str());
     m_bDisableSlots = false;
+    
+    if(deviceList.size()){
+      deviceChanged(deviceList[0].getID().c_str());
+    }else{
+      ERROR_LOG("no supported devices were found (aborting !)");
+      exit(-1);
+    }
     updateFormatCombo();
     updatePropertyPanel();
   }

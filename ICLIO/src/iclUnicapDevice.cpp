@@ -291,7 +291,6 @@ namespace icl{
 
   void UnicapDevice::setProperty(UnicapProperty &prop){
     // {{{ open
-    BENCHMARK_THIS_FUNCTION;
     unicap_set_property(m_oUnicapHandle, prop.getUnicapProperty());
   }
   
