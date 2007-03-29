@@ -101,20 +101,19 @@ namespace icl{
     /// RIGHT WIDGETS
     m_vecDeviceList = UnicapGrabber::getDeviceList();
         
-    for(int xxx=0;xxx<5;xxx++){
-      for(unsigned int j=0;j<m_vecDeviceList.size();j++){
-        QString name = m_vecDeviceList[j].getID().c_str();
-        m_poDeviceCombo->addItem(name);
-        QWidget *w = new QWidget(this);
-        QVBoxLayout *l = new QVBoxLayout(w);
-        QScrollArea *sa = new QScrollArea(this);
-        fillLayout(l,m_vecDeviceList[j]);
-        sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-        w->setLayout(l);
-        sa->setWidget(w);      
-        m_poTabWidget->addTab(sa,name);
-        m_poTabWidget->setTabEnabled(xxx,false);
-      }
+
+    for(unsigned int j=0;j<m_vecDeviceList.size();j++){
+      QString name = m_vecDeviceList[j].getID().c_str();
+      m_poDeviceCombo->addItem(name);
+      QWidget *w = new QWidget(this);
+      QVBoxLayout *l = new QVBoxLayout(w);
+      QScrollArea *sa = new QScrollArea(this);
+      fillLayout(l,m_vecDeviceList[j]);
+      sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+      w->setLayout(l);
+      sa->setWidget(w);      
+      m_poTabWidget->addTab(sa,name);
+      m_poTabWidget->setTabEnabled(j,false);
     }
     m_poTopLevelLayout->addWidget(m_poTabWidget);
     
@@ -289,47 +288,50 @@ namespace icl{
     }
 
     QString currentFormatString = m_poFormatCombo->currentText();
-    if(m_oUnicapDevice.isValid()){
-      vector<UnicapFormat> formats = m_oUnicapDevice.getFormats();
-      bool found = false;
-      for(unsigned int j=0;j<formats.size();j++){
-        if(currentFormatString == formats[j].getID().c_str() ){
-           vector<Size> sizes = formats[j].getPossibleSizes();
-           int currSizeIdx = -1;
-           for(unsigned int i=0;i<sizes.size();i++){
-             m_poSizeCombo->addItem(sizeToStr(sizes[i]).c_str());
-             if(sizes[i] == m_oUnicapDevice.getCurrentSize()){
-               currSizeIdx = i;
-             }
-           }
-           if(currSizeIdx != -1){
-             m_poSizeCombo->setCurrentIndex(currSizeIdx);
-           }
-        }
-        found = true;
-      }
-      /*************************************************
-      UnicapFormat fmt = dev.getCurrentUnicapFormat();
-      vector<Size> v = fmt.getPossibleSizes();
-      if(v.size()){
-        int currSizeIdx = -1;
 
-        for(unsigned int i=0;i<v.size();i++){
-          printf("case 1: adding size %dx%d\n",v[i].width,v[i].height);
-          m_poSizeCombo->addItem(sizeToStr(v[i]).c_str());
-          if(v[i] == dev.getCurrentSize()){
-            currSizeIdx = i;
+    vector<UnicapFormat> formats = m_oUnicapDevice.getFormats();
+    Size currSize = m_oUnicapDevice.getCurrentSize();
+    for(unsigned int j=0;j<formats.size();j++){
+      if(currentFormatString == formats[j].getID().c_str() ){
+        vector<Size> sizes = formats[j].getPossibleSizes();
+        int currSizeIdx = -1;
+        if(!sizes.size()){
+          m_poSizeCombo->addItem(sizeToStr(currSize).c_str());
+          currSizeIdx = 0;
+        }else{
+          for(unsigned int i=0;i<sizes.size();i++){
+            m_poSizeCombo->addItem(sizeToStr(sizes[i]).c_str());
+            if(sizes[i] == currSize){
+              currSizeIdx = i;
+            }
           }
         }
-        m_poSizeCombo->setCurrentIndex(currSizeIdx);
-      }else{
-        m_poSizeCombo->addItem(sizeToStr(dev.getCurrentSize()).c_str());
+        if(currSizeIdx != -1){
+          m_poSizeCombo->setCurrentIndex(currSizeIdx);
+        }
+        break;
       }
-      *****************************************************/
     }
     m_bDisableSlots = false;
   }
-
+    /*************************************************
+        UnicapFormat fmt = dev.getCurrentUnicapFormat();
+        vector<Size> v = fmt.getPossibleSizes();
+        if(v.size()){
+        int currSizeIdx = -1;
+        
+        for(unsigned int i=0;i<v.size();i++){
+        printf("case 1: adding size %dx%d\n",v[i].width,v[i].height);
+        m_poSizeCombo->addItem(sizeToStr(v[i]).c_str());
+        if(v[i] == dev.getCurrentSize()){
+        currSizeIdx = i;
+        }
+        }
+        m_poSizeCombo->setCurrentIndex(currSizeIdx);
+        }else{
+        m_poSizeCombo->addItem(sizeToStr(dev.getCurrentSize()).c_str());
+        }
+     *****************************************************/
   // }}}
   void CamCfgWidget::updateFormatCombo(){
     // {{{ open

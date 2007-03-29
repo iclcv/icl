@@ -67,13 +67,12 @@ namespace icl{
       m_poConvertEngine = 0;
     
     }else if(modelname == "DFW-VL500 2.30"){ // sony cams !
-      printf("Using UnicapGrabEngine !\n");
+      printf("Using SonyGrabEngine !\n");
       m_poGrabEngine = new SonyGrabEngine(&m_oDevice,m_bUseDMA);
       m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
       
     }else {
       printf("Using UniapGrabEngine and Sony Convert Engine for %s! \n",modelname.c_str());
-      m_oDevice.listFormats();
       m_poGrabEngine = new UnicapGrabEngine(&m_oDevice,m_bUseDMA);
       m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
     }
