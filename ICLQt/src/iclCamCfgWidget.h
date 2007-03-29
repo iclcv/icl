@@ -15,6 +15,7 @@ class QLabel;
 class QScrollArea;
 class QPushButton;
 class QTimer;
+class QGroupBox;
 /** \endcond **/  
 
 namespace icl{
@@ -23,6 +24,7 @@ namespace icl{
   class UnicapGrabber;
   class PWCGrabber;
   class DoubleSlider;
+  class BorderBox;
   /** \endcond **/  
 
 
@@ -67,7 +69,7 @@ namespace icl{
     
     std::vector<QComboBox*> m_vecPropertyCombos;
     std::vector<DoubleSlider*> m_vecPropertySliders;
-    std::vector<QLabel*> m_vecPropertyLabels;
+    std::vector<BorderBox*> m_vecPropertyBorderBoxes;
     
     bool m_bDisableSlots;
     bool m_bCapturing;

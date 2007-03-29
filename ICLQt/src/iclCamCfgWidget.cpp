@@ -13,12 +13,36 @@
 #include <QSizePolicy>
 #include <QTimer>
 #include <QPushButton>
-
+#include <QGroupBox>
 using namespace icl;
 using namespace std;
 
 namespace icl{
   
+  struct BorderBox : public QWidget{
+    BorderBox(const QString &label, QWidget *content, QWidget *parent) : 
+      QWidget(parent), m_poContent(content){
+      m_poGroupBox = new QGroupBox(label,this);
+      m_poLayout = new QVBoxLayout;
+      m_poLayout->setMargin(3);
+      m_poLayout->addWidget(content);
+      m_poGroupBox->setLayout(m_poLayout);
+      m_poGroupBox->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+      parent->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+    }
+    
+    QWidget *content() { return m_poContent; }
+  private:
+    QGroupBox *m_poGroupBox;
+    QVBoxLayout *m_poLayout;
+    QWidget *m_poContent;
+    
+  };
+  
+    
+
+
+
   string sizeToStr(const Size &size){
     // {{{ open
 
@@ -55,16 +79,13 @@ namespace icl{
    
     /// CENTER WIDGETS
     m_poDeviceCombo = new QComboBox(this);
-    m_poCenterPanelLayout->addWidget(new QLabel("device:",this));
-    m_poCenterPanelLayout->addWidget(m_poDeviceCombo);
+    m_poCenterPanelLayout->addWidget(new BorderBox("device",m_poDeviceCombo,this));
     
     m_poFormatCombo = new QComboBox(this);
-    m_poCenterPanelLayout->addWidget(new QLabel("format:",this));
-    m_poCenterPanelLayout->addWidget(m_poFormatCombo);
+    m_poCenterPanelLayout->addWidget(new BorderBox("format",m_poFormatCombo,this));
     
     m_poSizeCombo = new QComboBox(this);
-    m_poCenterPanelLayout->addWidget(new QLabel("size:",this));
-    m_poCenterPanelLayout->addWidget(m_poSizeCombo);
+    m_poCenterPanelLayout->addWidget(new BorderBox("size",m_poSizeCombo,this));
 
     m_poCaptureButton = new QPushButton("capture!",this);
     m_poCaptureButton->setCheckable(true);
@@ -121,6 +142,7 @@ namespace icl{
     updateFormatCombo();
   }
   void CamCfgWidget::formatChanged(const QString &text){
+    ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     if(m_bDisableSlots) return;
     bool wasCapturing = m_bCapturing;
     if(wasCapturing){
@@ -133,6 +155,7 @@ namespace icl{
     }
   }
   void CamCfgWidget::sizeChanged(const QString &text){
+    ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     if(m_bDisableSlots) return;
     bool wasCapturing = m_bCapturing;
     if(wasCapturing){
@@ -146,6 +169,7 @@ namespace icl{
     }
   }
   void CamCfgWidget::propertySliderChanged(const QString &id, double value){
+    ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     UnicapProperty p = getCurrentDevice().getProperty(id.toLatin1().data());
     if(p.isValid()){
       p.setValue(value);
@@ -155,6 +179,7 @@ namespace icl{
     }
   }
   void CamCfgWidget::propertyComboBoxChanged(const QString &text){
+    ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     QString first = text.section(']',0,0);
     QString sec = text.section(']',1,1);
     string propName = first.toLatin1().data()+1;
@@ -177,6 +202,7 @@ namespace icl{
     }
   }
   void CamCfgWidget::startStopCapture(bool on){
+    ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     if(on){
       m_bCapturing = true;
       if(m_poGrabber) delete m_poGrabber;
@@ -191,6 +217,7 @@ namespace icl{
   }
 
   void CamCfgWidget::updateImage(){
+    ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     ICLASSERT_RETURN(m_poGrabber);
     m_poICLWidget->setImage(m_poGrabber->grab((ImgBase**)0));
     m_poICLWidget->update();
@@ -204,7 +231,8 @@ namespace icl{
   // }}}
   
   void CamCfgWidget::updateSizeCombo(){
-    // {{{ oppen
+    // {{{ open
+    ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     m_bDisableSlots = true;
     while(m_poSizeCombo->count()){
       m_poSizeCombo->removeItem(0);
@@ -233,6 +261,7 @@ namespace icl{
   
   void CamCfgWidget::updateFormatCombo(){
     // {{{ open
+    ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     m_bDisableSlots = true;
     while(m_poFormatCombo->count()){
       m_poFormatCombo->removeItem(0);
@@ -274,20 +303,15 @@ namespace icl{
     if(deviceList.size()){
       deviceChanged(deviceList[0].getID().c_str());
     }else{
-      ERROR_LOG("no supported devices were found (aborting !)");
-      exit(-1);
+      ERROR_LOG("no supported devices were found!");
     }
   }
 
   // }}}
 
   void CamCfgWidget::updatePropertyPanel(){
+    ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     m_bDisableSlots = true;
-    /*
-        std::vector<QComboBox*> m_vecPropertyCombos;
-        std::vector<DoubleSlider*> m_vecPropertySliders;
-        std::vector<QLabel*> m_vecPropertyLabels;
-    */
     vector<UnicapProperty> vec = getCurrentDevice().getProperties();
     for(unsigned int i=0;i<vec.size();i++){
       switch(vec[i].getType()){
@@ -297,16 +321,19 @@ namespace icl{
           ds->setMaxDouble(vec[i].getRange().maxVal);
           ds->setDoubleValue(vec[i].getValue());
           m_vecPropertySliders.push_back(ds);
-          QLabel *label = new QLabel(vec[i].getID().c_str(),this);
-          m_vecPropertyLabels.push_back(label);
-          m_poRightPanelLayout->addWidget(label);
-          m_poRightPanelLayout->addWidget(ds);
+          BorderBox *poBorderBox = new BorderBox(vec[i].getID().c_str(),ds,this);
+          m_poRightPanelLayout->addWidget(poBorderBox);
+          m_vecPropertyBorderBoxes.push_back(poBorderBox);
+          //QLabel *label = new QLabel(vec[i].getID().c_str(),this);
+          //m_vecPropertyLabels.push_back(label);
+          //m_poRightPanelLayout->addWidget(label);
+          //m_poRightPanelLayout->addWidget(ds);
           connect(ds,SIGNAL(doubleValueChanged(const QString&,double)),this,SLOT(propertySliderChanged(const QString&,double)));
           break;
         }
         case UnicapProperty::valueList:{
           QLabel *label = new QLabel(vec[i].getID().c_str(),this);
-          m_vecPropertyLabels.push_back(label);
+          //          m_vecPropertyLabels.push_back(label);
           m_poRightPanelLayout->addWidget(label);
           
           QString propName = QString("[")+vec[i].getID().c_str()+"]";
@@ -329,7 +356,7 @@ namespace icl{
         }
         case UnicapProperty::menu:{
           QLabel *label = new QLabel(vec[i].getID().c_str(),this);
-          m_vecPropertyLabels.push_back(label);
+          //  m_vecPropertyLabels.push_back(label);
           m_poRightPanelLayout->addWidget(label);
           
           QString propName = QString("[")+vec[i].getID().c_str()+"]";
