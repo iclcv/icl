@@ -73,6 +73,7 @@ namespace icl{
       
     }else {
       printf("Using UniapGrabEngine and Sony Convert Engine for %s! \n",modelname.c_str());
+      m_oDevice.listFormats();
       m_poGrabEngine = new UnicapGrabEngine(&m_oDevice,m_bUseDMA);
       m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
     }

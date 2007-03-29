@@ -78,7 +78,23 @@ namespace icl{
         col+=2;
       }
 #endif
+    }else if(fourcc == "YUYV"){
+      ensureCompatible(ppoDst,depth8u,size,formatRGB);
+
+      icl8u *dstR = (*ppoDst)->asImg<icl8u>()->getData(0);
+      icl8u *dstG = (*ppoDst)->asImg<icl8u>()->getData(1);
+      icl8u *dstB = (*ppoDst)->asImg<icl8u>()->getData(2);
       
+      const icl8u *pSrcEnd = rawData+size.getDim()+size.getDim()/2;
+      for(const icl8u *pSrc = rawData; pSrc <pSrcEnd ;){
+        icl8u y1 = *pSrc++;
+        icl8u u = *pSrc++;
+        icl8u y2 = *pSrc++;
+        icl8u v = *pSrc++;
+
+        yuv_to_rgb(y1,u,v,*dstR++,*dstG++,*dstB++);
+        yuv_to_rgb(y2,u,v,*dstR++,*dstG++,*dstB++);     
+      }
     }else if(fourcc == "Y411"){// YUV411 size = 640x480 ORDER: U Y1 Y2 V Y3 Y4
       ensureCompatible(ppoDst,depth8u,size,formatRGB);
 
