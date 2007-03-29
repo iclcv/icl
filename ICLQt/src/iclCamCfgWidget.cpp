@@ -19,7 +19,11 @@ using namespace std;
 
 namespace icl{
   
+  // {{{ Utilities BorderBox, sizeToStr and strToSize
+
   struct BorderBox : public QGroupBox{
+    // {{{ open
+
     BorderBox(const QString &label, QWidget *content, QWidget *parent) : 
       QGroupBox(label,parent), m_poContent(content){
       m_poLayout = new QVBoxLayout;
@@ -34,11 +38,8 @@ namespace icl{
     QWidget *m_poContent;
     
   };
-  
-    
 
-
-
+  // }}}
   string sizeToStr(const Size &size){
     // {{{ open
 
@@ -56,8 +57,12 @@ namespace icl{
   }
 
   // }}}
+
+  // }}}
   
   CamCfgWidget::CamCfgWidget() : m_bDisableSlots(false), m_bCapturing(false){
+    // {{{ open
+
     // TOP LEVEL
     m_poTopLevelLayout = new QHBoxLayout(this);
     m_poICLWidget = new ICLWidget(this);
@@ -66,7 +71,8 @@ namespace icl{
     /// THREE PANELS
     m_poCenterPanel = new QWidget(this);
     m_poTabWidget = new QTabWidget(this);
-    m_poTabWidget->setTabPosition(QTabWidget::West);
+    
+    m_poTabWidget->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     m_poCenterPanelLayout = new QVBoxLayout(m_poCenterPanel);
     m_poCenterPanel->setLayout(m_poCenterPanelLayout);
     m_poTopLevelLayout->addWidget(m_poCenterPanel);
@@ -87,30 +93,29 @@ namespace icl{
     m_poCenterPanelLayout->addWidget(m_poCaptureButton);
 
     connect(m_poDeviceCombo,SIGNAL(currentIndexChanged(QString)), SLOT(deviceChanged(QString)));
+    connect(m_poDeviceCombo,SIGNAL(currentIndexChanged(int)), SLOT(deviceChanged(int)));
     connect(m_poFormatCombo,SIGNAL(currentIndexChanged(QString)), SLOT(formatChanged(QString)));
     connect(m_poSizeCombo,SIGNAL(currentIndexChanged(QString)), SLOT(sizeChanged(QString)));
     connect(m_poCaptureButton,SIGNAL(toggled(bool)),this,SLOT(startStopCapture(bool)));
 
-    updateDeviceCombo();
-
     /// RIGHT WIDGETS
-    vector<UnicapDevice> deviceList = UnicapGrabber::getDeviceList();
-    for(unsigned int j=0;j<deviceList.size();j++){
-      QString name = deviceList[j].getID().c_str();
-      m_poDeviceCombo->addItem(name);
-      
-      QWidget *w = new QWidget(this);
-      QVBoxLayout *l = new QVBoxLayout(this);
-      QScrollArea *sa = new QScrollArea(this);
-      
-      fillLayout(l,deviceList[j]);
-      
-      sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-      w->setLayout(l);
-      sa->setWidget(w);      
-      m_poTabWidget->addTab(sa,name);
+    m_vecDeviceList = UnicapGrabber::getDeviceList();
+        
+    for(int xxx=0;xxx<5;xxx++){
+      for(unsigned int j=0;j<m_vecDeviceList.size();j++){
+        QString name = m_vecDeviceList[j].getID().c_str();
+        m_poDeviceCombo->addItem(name);
+        QWidget *w = new QWidget(this);
+        QVBoxLayout *l = new QVBoxLayout(w);
+        QScrollArea *sa = new QScrollArea(this);
+        fillLayout(l,m_vecDeviceList[j]);
+        sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+        w->setLayout(l);
+        sa->setWidget(w);      
+        m_poTabWidget->addTab(sa,name);
+        m_poTabWidget->setTabEnabled(xxx,false);
+      }
     }
-    
     m_poTopLevelLayout->addWidget(m_poTabWidget);
     
     
@@ -124,19 +129,22 @@ namespace icl{
     connect(m_poTimer,SIGNAL(timeout()),this,SLOT(updateImage()));
     show();
   }
-  
+
+  // }}}
   
   void CamCfgWidget::deviceChanged(const QString &text){
+    // {{{ open
+
     if(m_bDisableSlots) return;
     bool wasCapturing = m_bCapturing;
     if(wasCapturing){
       startStopCapture(false);
     }
-    vector<UnicapDevice> devList = UnicapGrabber::getDeviceList();
+
     bool found = false;
-    for(unsigned int i=0;i<devList.size();i++){
-      if(devList[i].getID() == text.toLatin1().data()){
-        m_oUnicapDevice = devList[i];
+    for(unsigned int i=0;i<m_vecDeviceList.size();i++){
+      if(m_vecDeviceList[i].getID() == text.toLatin1().data()){
+        m_oUnicapDevice = m_vecDeviceList[i];
         if(m_oUnicapDevice.getCurrentSize() == Size(-1,-1)){
           vector<UnicapFormat> formats = m_oUnicapDevice.getFormats();
           if(formats.size()){
@@ -157,20 +165,36 @@ namespace icl{
     updateFormatCombo();
     formatChanged(m_poFormatCombo->currentText());
   }
+
+  // }}}
+  
+  void CamCfgWidget::deviceChanged(int index){
+    // {{{ open
+    m_poTabWidget->setCurrentIndex(index);
+  }
+
+  // }}}
+  
   void CamCfgWidget::formatChanged(const QString &text){
+    // {{{ open
+
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     if(m_bDisableSlots) return;
     bool wasCapturing = m_bCapturing;
     if(wasCapturing){
       startStopCapture(false);
     }
-    getCurrentDevice().setFormatID(text.toLatin1().data());
+    m_oUnicapDevice.setFormatID(text.toLatin1().data());
     
     if(wasCapturing){ 
       startStopCapture(true);
     }
   }
+
+  // }}}
   void CamCfgWidget::sizeChanged(const QString &text){
+    // {{{ open
+
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     if(m_bDisableSlots) return;
     bool wasCapturing = m_bCapturing;
@@ -178,29 +202,37 @@ namespace icl{
       startStopCapture(false);
     }
 
-    getCurrentDevice().setFormatSize(strToSize(text.toLatin1().data()));
+    m_oUnicapDevice.setFormatSize(strToSize(text.toLatin1().data()));
     
     if(wasCapturing){ 
       startStopCapture(true);
     }
   }
+
+  // }}}
   void CamCfgWidget::propertySliderChanged(const QString &id, double value){
+    // {{{ open
+
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
-    UnicapProperty p = getCurrentDevice().getProperty(id.toLatin1().data());
+    UnicapProperty p = m_oUnicapDevice.getProperty(id.toLatin1().data());
     if(p.isValid()){
       p.setValue(value);
-      getCurrentDevice().setProperty(p);
+      m_oUnicapDevice.setProperty(p);
     }else{
       WARNING_LOG("noting known about property \""<< id.toLatin1().data() << "\"\n");
     }
   }
+
+  // }}}
   void CamCfgWidget::propertyComboBoxChanged(const QString &text){
+    // {{{ open
+
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     QString first = text.section(']',0,0);
     QString sec = text.section(']',1,1);
     string propName = first.toLatin1().data()+1;
     string propValue = sec.toLatin1().data()+1;
-    UnicapProperty p = getCurrentDevice().getProperty(propName);
+    UnicapProperty p = m_oUnicapDevice.getProperty(propName);
     if(p.isValid()){
       switch(p.getType()){
         case UnicapProperty::valueList:
@@ -212,17 +244,20 @@ namespace icl{
         default:
           ERROR_LOG("setting up this property type is not yet implemented !");
       }
-      getCurrentDevice().setProperty(p);
+      m_oUnicapDevice.setProperty(p);
     }else{
       WARNING_LOG("noting known about property \""<< propName << "\"\n");
     }
   }
+  // }}}
+
   void CamCfgWidget::startStopCapture(bool on){
+    // {{{ open
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     if(on){
       m_bCapturing = true;
       if(m_poGrabber) delete m_poGrabber;
-      m_poGrabber = new UnicapGrabber(getCurrentDevice());
+      m_poGrabber = new UnicapGrabber(m_oUnicapDevice);
       m_poTimer->start(40);
     }else{
       m_bCapturing = false;
@@ -232,20 +267,19 @@ namespace icl{
     }
   }
 
+  // }}}
+
+
   void CamCfgWidget::updateImage(){
+    // {{{ open
+
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     ICLASSERT_RETURN(m_poGrabber);
     m_poICLWidget->setImage(m_poGrabber->grab((ImgBase**)0));
     m_poICLWidget->update();
   }
-    
-  UnicapDevice CamCfgWidget::getCurrentDevice(){
-    // {{{ open
-    return m_oUnicapDevice;
-  }
 
   // }}}
-  
   void CamCfgWidget::updateSizeCombo(){
     // {{{ open
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
@@ -255,9 +289,8 @@ namespace icl{
     }
 
     QString currentFormatString = m_poFormatCombo->currentText();
-    UnicapDevice dev = getCurrentDevice();
-    if(dev.isValid()){
-      vector<UnicapFormat> formats = dev.getFormats();
+    if(m_oUnicapDevice.isValid()){
+      vector<UnicapFormat> formats = m_oUnicapDevice.getFormats();
       bool found = false;
       for(unsigned int j=0;j<formats.size();j++){
         if(currentFormatString == formats[j].getID().c_str() ){
@@ -265,7 +298,7 @@ namespace icl{
            int currSizeIdx = -1;
            for(unsigned int i=0;i<sizes.size();i++){
              m_poSizeCombo->addItem(sizeToStr(sizes[i]).c_str());
-             if(sizes[i] == dev.getCurrentSize()){
+             if(sizes[i] == m_oUnicapDevice.getCurrentSize()){
                currSizeIdx = i;
              }
            }
@@ -298,7 +331,6 @@ namespace icl{
   }
 
   // }}}
-  
   void CamCfgWidget::updateFormatCombo(){
     // {{{ open
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
@@ -306,54 +338,39 @@ namespace icl{
     while(m_poFormatCombo->count()){
       m_poFormatCombo->removeItem(0);
     }
-    UnicapDevice dev(m_poDeviceCombo->currentIndex());
 
-    if(dev.isValid()){
-      UnicapFormat currf = dev.getCurrentUnicapFormat();
-      
-      vector<UnicapFormat> fmts = dev.getFormats();
-      int currIdx = -1;
-      for(unsigned int i=0;i<fmts.size();i++){
-        m_poFormatCombo->addItem(fmts[i].getID().c_str());
-        if(fmts[i].getID() == currf.getID()){
-          currIdx = i;
-        }
-      }
-      if(currIdx != -1){
-        m_poFormatCombo->setCurrentIndex(currIdx);
+
+    UnicapFormat currf = m_oUnicapDevice.getCurrentUnicapFormat();
+    
+    vector<UnicapFormat> fmts = m_oUnicapDevice.getFormats();
+    int currIdx = -1;
+    for(unsigned int i=0;i<fmts.size();i++){
+      m_poFormatCombo->addItem(fmts[i].getID().c_str());
+      if(fmts[i].getID() == currf.getID()){
+        currIdx = i;
       }
     }
+    if(currIdx != -1){
+      m_poFormatCombo->setCurrentIndex(currIdx);
+    }
+  
     m_bDisableSlots = false;
     updateSizeCombo();
-
+    
   }
 
   // }}}
-  
-  void CamCfgWidget::updateDeviceCombo(){
-    // {{{ open
-    m_bDisableSlots = true;
-    while(m_poDeviceCombo->count()){
-      m_poDeviceCombo->removeItem(0);
-    }
-   
-    /**    if(deviceList.size()){
-      deviceChanged(deviceList[0].getID().c_str());
-    }else{
-      ERROR_LOG("no supported devices were found!");
-    }
-        **/
-  }
+ 
 
-  // }}}
 
   void CamCfgWidget::fillLayout(QLayout *l, UnicapDevice &dev){
-    ICLASSERT_RETURN(m_oUnicapDevice.isValid());
+    // {{{ open
+
+    ICLASSERT_RETURN(dev.isValid());
     
     vector<UnicapProperty> vec = dev.getProperties();
     QWidget *PARENT = 0;
     for(unsigned int i=0;i<vec.size();i++){
-      printf("property %d \n",i);
       switch(vec[i].getType()){
         case UnicapProperty::range:{
           DoubleSlider *ds = new DoubleSlider(PARENT,vec[i].getID().c_str());
@@ -411,5 +428,7 @@ namespace icl{
     printf("everything done !\n");
     m_bDisableSlots = false;
   }
+
+  // }}}
 }
 

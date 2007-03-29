@@ -36,6 +36,7 @@ namespace icl{
     
     public slots:
     void deviceChanged(const QString &text);
+    void deviceChanged(int index);
     void formatChanged(const QString &text);
     void sizeChanged(const QString &text);
 
@@ -46,10 +47,8 @@ namespace icl{
     void updateImage();
     
     private:
-    UnicapDevice getCurrentDevice();
     void updateSizeCombo();
     void updateFormatCombo();
-    void updateDeviceCombo();
     
     void fillLayout(QLayout *l, UnicapDevice &dev);
     
@@ -68,6 +67,7 @@ namespace icl{
     QTimer *m_poTimer;
     UnicapGrabber *m_poGrabber;
     UnicapDevice m_oUnicapDevice;
+    std::vector<UnicapDevice> m_vecDeviceList;
     
   
     
