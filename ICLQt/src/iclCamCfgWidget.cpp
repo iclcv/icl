@@ -19,21 +19,17 @@ using namespace std;
 
 namespace icl{
   
-  struct BorderBox : public QWidget{
+  struct BorderBox : public QGroupBox{
     BorderBox(const QString &label, QWidget *content, QWidget *parent) : 
-      QWidget(parent), m_poContent(content){
-      m_poGroupBox = new QGroupBox(label,this);
+      QGroupBox(label,parent), m_poContent(content){
       m_poLayout = new QVBoxLayout;
       m_poLayout->setMargin(3);
       m_poLayout->addWidget(content);
-      m_poGroupBox->setLayout(m_poLayout);
-      m_poGroupBox->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
-      parent->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+      setLayout(m_poLayout);
     }
     
     QWidget *content() { return m_poContent; }
   private:
-    QGroupBox *m_poGroupBox;
     QVBoxLayout *m_poLayout;
     QWidget *m_poContent;
     
@@ -128,6 +124,12 @@ namespace icl{
     for(unsigned int i=0;i<devList.size();i++){
       if(devList[i].getID() == text.toLatin1().data()){
         m_oUnicapDevice = devList[i];
+        if(m_oUnicapDevice.getCurrentSize() == Size(-1,-1)){
+          vector<UnicapFormat> formats = m_oUnicapDevice.getFormats();
+          if(formats.size()){
+            m_oUnicapDevice.setFormat(formats[0]);
+          }
+        }
         found = true;
         break;
       }
@@ -140,6 +142,9 @@ namespace icl{
       startStopCapture(true);
     }
     updateFormatCombo();
+    formatChanged(m_poFormatCombo->currentText());
+    
+    updatePropertyPanel();
   }
   void CamCfgWidget::formatChanged(const QString &text){
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
@@ -237,13 +242,36 @@ namespace icl{
     while(m_poSizeCombo->count()){
       m_poSizeCombo->removeItem(0);
     }
+
+    QString currentFormatString = m_poFormatCombo->currentText();
     UnicapDevice dev = getCurrentDevice();
     if(dev.isValid()){
+      vector<UnicapFormat> formats = dev.getFormats();
+      bool found = false;
+      for(unsigned int j=0;j<formats.size();j++){
+        if(currentFormatString == formats[j].getID().c_str() ){
+           vector<Size> sizes = formats[j].getPossibleSizes();
+           int currSizeIdx = -1;
+           for(unsigned int i=0;i<sizes.size();i++){
+             m_poSizeCombo->addItem(sizeToStr(sizes[i]).c_str());
+             if(sizes[i] == dev.getCurrentSize()){
+               currSizeIdx = i;
+             }
+           }
+           if(currSizeIdx != -1){
+             m_poSizeCombo->setCurrentIndex(currSizeIdx);
+           }
+        }
+        found = true;
+      }
+      /*************************************************
       UnicapFormat fmt = dev.getCurrentUnicapFormat();
       vector<Size> v = fmt.getPossibleSizes();
       if(v.size()){
         int currSizeIdx = -1;
+
         for(unsigned int i=0;i<v.size();i++){
+          printf("case 1: adding size %dx%d\n",v[i].width,v[i].height);
           m_poSizeCombo->addItem(sizeToStr(v[i]).c_str());
           if(v[i] == dev.getCurrentSize()){
             currSizeIdx = i;
@@ -253,6 +281,7 @@ namespace icl{
       }else{
         m_poSizeCombo->addItem(sizeToStr(dev.getCurrentSize()).c_str());
       }
+      *****************************************************/
     }
     m_bDisableSlots = false;
   }
@@ -312,32 +341,66 @@ namespace icl{
   void CamCfgWidget::updatePropertyPanel(){
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
     m_bDisableSlots = true;
+    printf("updatePropertyPanel called \n");
+    // m_poRightPanel->hide();
+    // m_poRightPanelLayout = new QVBoxLayout(m_poRightPanel);
+    /***
+    // remove old misc an clean up!
+    //    std::vector<QComboBox*> m_vecPropertyCombos;
+    //std::vector<DoubleSlider*> m_vecPropertySliders;
+    //std::vector<BorderBox*> m_vecPropertyBorderBoxes;
+    //    printf("called deleting border boxes\n");
+    **/
+    
+    for(unsigned int i=0;i<m_vecPropertyBorderBoxes.size();i++){
+      m_poRightPanelLayout->removeWidget(m_vecPropertyBorderBoxes[i]);
+      //delete m_vecPropertyBorderBoxes[i];
+    }
+        /**
+    //printf("called deleting combos\n");
+    for(unsigned int i=0;i<m_vecPropertyCombos.size();i++){
+      disconnect(m_vecPropertyCombos[i],SIGNAL(currentIndexChanged(QString)),this,SLOT(propertyComboBoxChanged(QString)));
+      //delete m_vecPropertyCombos[i];
+    }
+    printf("called deleting sliders\n");
+    for(unsigned int i=0;i<m_vecPropertySliders.size();i++){
+      printf("disconnecting slider !\n");
+      disconnect(m_vecPropertySliders[i],SIGNAL(doubleValueChanged(const QString&,double)),this,SLOT(propertySliderChanged(const QString&,double)));
+      printf("deleting slider \n");
+      //delete m_vecPropertySliders[i];
+    }
+    printf("sliders deleted \n");
+    ******************************/
+    m_vecPropertyCombos.clear();
+    m_vecPropertySliders.clear();
+    m_vecPropertyBorderBoxes.clear();
+
+    printf("adding new components \n");
+    
     vector<UnicapProperty> vec = getCurrentDevice().getProperties();
+    QWidget *PARENT = 0;
     for(unsigned int i=0;i<vec.size();i++){
+      printf("property %d \n",i);
       switch(vec[i].getType()){
         case UnicapProperty::range:{
-          DoubleSlider *ds = new DoubleSlider(this,vec[i].getID().c_str());
+          DoubleSlider *ds = new DoubleSlider(PARENT,vec[i].getID().c_str());
           ds->setMinDouble(vec[i].getRange().minVal);
           ds->setMaxDouble(vec[i].getRange().maxVal);
           ds->setDoubleValue(vec[i].getValue());
           m_vecPropertySliders.push_back(ds);
-          BorderBox *poBorderBox = new BorderBox(vec[i].getID().c_str(),ds,this);
+          BorderBox *poBorderBox = new BorderBox(vec[i].getID().c_str(),ds,PARENT);
           m_poRightPanelLayout->addWidget(poBorderBox);
           m_vecPropertyBorderBoxes.push_back(poBorderBox);
-          //QLabel *label = new QLabel(vec[i].getID().c_str(),this);
-          //m_vecPropertyLabels.push_back(label);
-          //m_poRightPanelLayout->addWidget(label);
-          //m_poRightPanelLayout->addWidget(ds);
           connect(ds,SIGNAL(doubleValueChanged(const QString&,double)),this,SLOT(propertySliderChanged(const QString&,double)));
           break;
         }
         case UnicapProperty::valueList:{
-          QLabel *label = new QLabel(vec[i].getID().c_str(),this);
+          //QLabel *label = new QLabel(vec[i].getID().c_str(),this);
           //          m_vecPropertyLabels.push_back(label);
-          m_poRightPanelLayout->addWidget(label);
+          //m_poRightPanelLayout->addWidget(label);
           
           QString propName = QString("[")+vec[i].getID().c_str()+"]";
-          QComboBox *cb = new QComboBox(this);
+          QComboBox *cb = new QComboBox(PARENT);
           vector<double> vals = vec[i].getValueList();
           int iCurrIdx = -1;
           for(unsigned int j=0;j<vals.size();j++){
@@ -350,17 +413,19 @@ namespace icl{
             cb->setCurrentIndex(iCurrIdx);
           }
           connect(cb,SIGNAL(currentIndexChanged(QString)),this,SLOT(propertyComboBoxChanged(QString)));
-          m_poRightPanelLayout->addWidget(cb);
+          BorderBox *poBorderBox = new BorderBox(vec[i].getID().c_str(),cb,PARENT);
+          m_vecPropertyBorderBoxes.push_back(poBorderBox);
+          m_poRightPanelLayout->addWidget(poBorderBox);
           break;
         
         }
         case UnicapProperty::menu:{
-          QLabel *label = new QLabel(vec[i].getID().c_str(),this);
+          // QLabel *label = new QLabel(vec[i].getID().c_str(),this);
           //  m_vecPropertyLabels.push_back(label);
-          m_poRightPanelLayout->addWidget(label);
+          // m_poRightPanelLayout->addWidget(label);
           
           QString propName = QString("[")+vec[i].getID().c_str()+"]";
-          QComboBox *cb = new QComboBox(this);
+          QComboBox *cb = new QComboBox(PARENT);
           vector<string> men = vec[i].getMenu();
           int iCurrIdx = -1;
           for(unsigned int j=0;j<men.size();j++){
@@ -373,13 +438,18 @@ namespace icl{
             cb->setCurrentIndex(iCurrIdx);
           }
           connect(cb,SIGNAL(currentIndexChanged(QString)),this,SLOT(propertyComboBoxChanged(QString)));
-          m_poRightPanelLayout->addWidget(cb);
+          BorderBox *poBorderBox = new BorderBox(vec[i].getID().c_str(),cb,PARENT);
+          m_vecPropertyBorderBoxes.push_back(poBorderBox);
+          m_poRightPanelLayout->addWidget(poBorderBox);
           break;
         }
         default: // not yet supported via gui!
           break;
       }
     }    
+    //    m_poRightPanel->show();
+    //    m_poRightPanel->setLayout(m_poRightPanelLayout);
+    printf("everything done !\n");
     m_bDisableSlots = false;
   }
 }
