@@ -16,6 +16,7 @@ class QScrollArea;
 class QPushButton;
 class QTimer;
 class QGroupBox;
+class QTabWidget;
 /** \endcond **/  
 
 namespace icl{
@@ -50,7 +51,7 @@ namespace icl{
     void updateFormatCombo();
     void updateDeviceCombo();
     
-    void updatePropertyPanel();
+    void fillLayout(QLayout *l, UnicapDevice &dev);
     
     QHBoxLayout *m_poTopLevelLayout;
     ICLWidget *m_poICLWidget;
@@ -58,6 +59,7 @@ namespace icl{
     QVBoxLayout *m_poCenterPanelLayout, *m_poRightPanelLayout;
     QScrollArea *m_poPropertyScrollArea;
     QPushButton *m_poCaptureButton;
+    QTabWidget *m_poTabWidget;
     
     QComboBox *m_poDeviceCombo;
     QComboBox *m_poFormatCombo;
@@ -67,9 +69,7 @@ namespace icl{
     UnicapGrabber *m_poGrabber;
     UnicapDevice m_oUnicapDevice;
     
-    std::vector<QComboBox*> m_vecPropertyCombos;
-    std::vector<DoubleSlider*> m_vecPropertySliders;
-    std::vector<BorderBox*> m_vecPropertyBorderBoxes;
+  
     
     bool m_bDisableSlots;
     bool m_bCapturing;

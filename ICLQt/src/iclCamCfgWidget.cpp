@@ -65,11 +65,10 @@ namespace icl{
     
     /// THREE PANELS
     m_poCenterPanel = new QWidget(this);
-    m_poRightPanel = new QWidget(this);
+    m_poTabWidget = new QTabWidget(this);
+    m_poTabWidget->setTabPosition(QTabWidget::West);
     m_poCenterPanelLayout = new QVBoxLayout(m_poCenterPanel);
-    m_poRightPanelLayout = new QVBoxLayout(m_poRightPanel);
     m_poCenterPanel->setLayout(m_poCenterPanelLayout);
-    m_poRightPanel->setLayout(m_poRightPanelLayout);
     m_poTopLevelLayout->addWidget(m_poCenterPanel);
 
    
@@ -95,10 +94,24 @@ namespace icl{
     updateDeviceCombo();
 
     /// RIGHT WIDGETS
-    m_poPropertyScrollArea= new QScrollArea(this);
-    m_poPropertyScrollArea->setWidget(m_poRightPanel);
-    m_poPropertyScrollArea->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-    m_poTopLevelLayout->addWidget(m_poPropertyScrollArea);
+    vector<UnicapDevice> deviceList = UnicapGrabber::getDeviceList();
+    for(unsigned int j=0;j<deviceList.size();j++){
+      QString name = deviceList[j].getID().c_str();
+      m_poDeviceCombo->addItem(name);
+      
+      QWidget *w = new QWidget(this);
+      QVBoxLayout *l = new QVBoxLayout(this);
+      QScrollArea *sa = new QScrollArea(this);
+      
+      fillLayout(l,deviceList[j]);
+      
+      sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+      w->setLayout(l);
+      sa->setWidget(w);      
+      m_poTabWidget->addTab(sa,name);
+    }
+    
+    m_poTopLevelLayout->addWidget(m_poTabWidget);
     
     
     /// FINISHING : FINAL LAYOUTING
@@ -143,8 +156,6 @@ namespace icl{
     }
     updateFormatCombo();
     formatChanged(m_poFormatCombo->currentText());
-    
-    updatePropertyPanel();
   }
   void CamCfgWidget::formatChanged(const QString &text){
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
@@ -325,59 +336,21 @@ namespace icl{
     while(m_poDeviceCombo->count()){
       m_poDeviceCombo->removeItem(0);
     }
-    vector<UnicapDevice> deviceList = UnicapGrabber::getDeviceList();
-    for(unsigned int j=0;j<deviceList.size();j++) m_poDeviceCombo->addItem(deviceList[j].getID().c_str());
-    m_bDisableSlots = false;
-    
-    if(deviceList.size()){
+   
+    /**    if(deviceList.size()){
       deviceChanged(deviceList[0].getID().c_str());
     }else{
       ERROR_LOG("no supported devices were found!");
     }
+        **/
   }
 
   // }}}
 
-  void CamCfgWidget::updatePropertyPanel(){
+  void CamCfgWidget::fillLayout(QLayout *l, UnicapDevice &dev){
     ICLASSERT_RETURN(m_oUnicapDevice.isValid());
-    m_bDisableSlots = true;
-    printf("updatePropertyPanel called \n");
-    // m_poRightPanel->hide();
-    // m_poRightPanelLayout = new QVBoxLayout(m_poRightPanel);
-    /***
-    // remove old misc an clean up!
-    //    std::vector<QComboBox*> m_vecPropertyCombos;
-    //std::vector<DoubleSlider*> m_vecPropertySliders;
-    //std::vector<BorderBox*> m_vecPropertyBorderBoxes;
-    //    printf("called deleting border boxes\n");
-    **/
     
-    for(unsigned int i=0;i<m_vecPropertyBorderBoxes.size();i++){
-      m_poRightPanelLayout->removeWidget(m_vecPropertyBorderBoxes[i]);
-      //delete m_vecPropertyBorderBoxes[i];
-    }
-        /**
-    //printf("called deleting combos\n");
-    for(unsigned int i=0;i<m_vecPropertyCombos.size();i++){
-      disconnect(m_vecPropertyCombos[i],SIGNAL(currentIndexChanged(QString)),this,SLOT(propertyComboBoxChanged(QString)));
-      //delete m_vecPropertyCombos[i];
-    }
-    printf("called deleting sliders\n");
-    for(unsigned int i=0;i<m_vecPropertySliders.size();i++){
-      printf("disconnecting slider !\n");
-      disconnect(m_vecPropertySliders[i],SIGNAL(doubleValueChanged(const QString&,double)),this,SLOT(propertySliderChanged(const QString&,double)));
-      printf("deleting slider \n");
-      //delete m_vecPropertySliders[i];
-    }
-    printf("sliders deleted \n");
-    ******************************/
-    m_vecPropertyCombos.clear();
-    m_vecPropertySliders.clear();
-    m_vecPropertyBorderBoxes.clear();
-
-    printf("adding new components \n");
-    
-    vector<UnicapProperty> vec = getCurrentDevice().getProperties();
+    vector<UnicapProperty> vec = dev.getProperties();
     QWidget *PARENT = 0;
     for(unsigned int i=0;i<vec.size();i++){
       printf("property %d \n",i);
@@ -387,18 +360,12 @@ namespace icl{
           ds->setMinDouble(vec[i].getRange().minVal);
           ds->setMaxDouble(vec[i].getRange().maxVal);
           ds->setDoubleValue(vec[i].getValue());
-          m_vecPropertySliders.push_back(ds);
           BorderBox *poBorderBox = new BorderBox(vec[i].getID().c_str(),ds,PARENT);
-          m_poRightPanelLayout->addWidget(poBorderBox);
-          m_vecPropertyBorderBoxes.push_back(poBorderBox);
+          l->addWidget(poBorderBox);
           connect(ds,SIGNAL(doubleValueChanged(const QString&,double)),this,SLOT(propertySliderChanged(const QString&,double)));
           break;
         }
         case UnicapProperty::valueList:{
-          //QLabel *label = new QLabel(vec[i].getID().c_str(),this);
-          //          m_vecPropertyLabels.push_back(label);
-          //m_poRightPanelLayout->addWidget(label);
-          
           QString propName = QString("[")+vec[i].getID().c_str()+"]";
           QComboBox *cb = new QComboBox(PARENT);
           vector<double> vals = vec[i].getValueList();
@@ -414,16 +381,11 @@ namespace icl{
           }
           connect(cb,SIGNAL(currentIndexChanged(QString)),this,SLOT(propertyComboBoxChanged(QString)));
           BorderBox *poBorderBox = new BorderBox(vec[i].getID().c_str(),cb,PARENT);
-          m_vecPropertyBorderBoxes.push_back(poBorderBox);
-          m_poRightPanelLayout->addWidget(poBorderBox);
+          l->addWidget(poBorderBox);
           break;
         
         }
         case UnicapProperty::menu:{
-          // QLabel *label = new QLabel(vec[i].getID().c_str(),this);
-          //  m_vecPropertyLabels.push_back(label);
-          // m_poRightPanelLayout->addWidget(label);
-          
           QString propName = QString("[")+vec[i].getID().c_str()+"]";
           QComboBox *cb = new QComboBox(PARENT);
           vector<string> men = vec[i].getMenu();
@@ -439,16 +401,13 @@ namespace icl{
           }
           connect(cb,SIGNAL(currentIndexChanged(QString)),this,SLOT(propertyComboBoxChanged(QString)));
           BorderBox *poBorderBox = new BorderBox(vec[i].getID().c_str(),cb,PARENT);
-          m_vecPropertyBorderBoxes.push_back(poBorderBox);
-          m_poRightPanelLayout->addWidget(poBorderBox);
+          l->addWidget(poBorderBox);
           break;
         }
         default: // not yet supported via gui!
           break;
       }
     }    
-    //    m_poRightPanel->show();
-    //    m_poRightPanel->setLayout(m_poRightPanelLayout);
     printf("everything done !\n");
     m_bDisableSlots = false;
   }
