@@ -5,14 +5,16 @@
 
 namespace icl{
   
-  namespace{
-    void *thread_handler(void *thread){
-      Thread* t = (Thread*)thread;
-      t->run();
-      t->stop();
-      return 0;
-    }
-
+ 
+  void *icl_thread_handler(void *thread){
+    Thread* t = (Thread*)thread;
+    t->m_bRunning=true;
+    t->run();
+    t->stop();
+    return 0;
+  }
+  
+  namespace {
     void get_prio_interval(int &minp, int &maxp, pthread_attr_t *attr){
       int sched_policy;
       if (pthread_attr_getschedpolicy(attr, &sched_policy) != 0) {
@@ -30,11 +32,12 @@ namespace icl{
         WARNING_LOG("Thread::start: Cannot determine scheduler priority range");
       }
     }
-    
   }
   
-  Thread::Thread(Thread::priority p) {
-    pthread_attr_init(&m_oAttr);
+  Thread::Thread(Thread::priority p): m_bRunning(false){
+    pthread_cond_init(&m_oWaitCond,0);
+    pthread_mutex_init(&m_oWaitMutex,0);
+    pthread_attr_init(&m_oAttr); 
     pthread_attr_setdetachstate(&m_oAttr, PTHREAD_CREATE_DETACHED); // ???
 
     if(p==inherit){
@@ -58,11 +61,12 @@ namespace icl{
   }
   Thread::~Thread(){
     stop();
+    pthread_cond_destroy(&m_oWaitCond);
+    pthread_mutex_destroy(&m_oWaitMutex);
   }
   
   void Thread::start(){
-    m_oRunMutex.lock();
-    pthread_create(&m_oPT, &m_oAttr, thread_handler, (void*)this);  
+    pthread_create(&m_oPT, &m_oAttr, icl_thread_handler, (void*)this); 
   }
   
   void Thread::stop(){
@@ -70,11 +74,11 @@ namespace icl{
     void *data;
     pthread_cancel(m_oPT);
     pthread_join(m_oPT,&data);
-    m_oRunMutex.unlock();
+    m_bRunning = false;
+    pthread_cond_broadcast(&m_oWaitCond);
     unlock();
   }
-  
-  
+    
   void Thread::run(){
     printf("the virtual Thread Function run() has been called! \n");
     printf("please reimplement this function to make the thread perform \n");

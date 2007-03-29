@@ -24,6 +24,8 @@ int main() {
     ImgBase *dst2 = dstImg->shallowCopy(Rect(500,0,500,1000));
     f1.apply(src1, &dst1);
     f2.apply(src2, &dst2);
+    f1.waitForApply();
+    f2.waitForApply();
 
     delete src1;
     delete src2;

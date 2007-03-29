@@ -41,6 +41,8 @@ namespace icl{
       */
   class Thread{
     public:
+    friend void *icl_thread_handler(void *);
+
     /// used priority stepping (see Qts QThread!)
     enum priority{
       idle,     /**< this thread is only working when the processor is idle   */   
@@ -85,8 +87,9 @@ namespace icl{
         clear, when the icl-Thread has run to the end 
     **/
     void waitFor(){
-      m_oRunMutex.lock();
-      m_oRunMutex.unlock();
+      while(m_bRunning){
+        pthread_cond_wait(&m_oWaitCond,&m_oWaitMutex);
+      }
     }
     protected:
     
@@ -108,7 +111,10 @@ namespace icl{
     //
     pthread_attr_t m_oAttr;
     pthread_t m_oPT;
-    Mutex m_oMutex, m_oRunMutex;
+    Mutex m_oMutex;
+    pthread_cond_t m_oWaitCond;
+    pthread_mutex_t m_oWaitMutex;
+    bool m_bRunning;
   };
 }
 
