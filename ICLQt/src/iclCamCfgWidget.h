@@ -6,6 +6,7 @@
 #include <QString>
 #include <QWidget>
 #include <iclUnicapDevice.h>
+#include <iclTypes.h>
 
 /** \cond **/  
 class QHBoxLayout;
@@ -26,6 +27,7 @@ namespace icl{
   class PWCGrabber;
   class DoubleSlider;
   class BorderBox;
+  class ImgParamWidget;
   /** \endcond **/  
 
 
@@ -39,6 +41,8 @@ namespace icl{
     void deviceChanged(int index);
     void formatChanged(const QString &text);
     void sizeChanged(const QString &text);
+
+    void visImageParamChanged(int width, int height, int d, int fmt);
 
     void propertySliderChanged(const QString &id, double value);
     void propertyComboBoxChanged(const QString &text);
@@ -69,11 +73,14 @@ namespace icl{
     UnicapDevice m_oUnicapDevice;
     std::vector<UnicapDevice> m_vecDeviceList;
     
-  
+    ImgParamWidget *m_poImgParamWidget;
     
     bool m_bDisableSlots;
     bool m_bCapturing;
   
+    Size m_oVideoSize;
+    format m_eVideoFormat;
+    icl::depth m_eVideoDepth;
   
   };
 }

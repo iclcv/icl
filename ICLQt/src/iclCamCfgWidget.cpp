@@ -5,6 +5,8 @@
 #include <iclUnicapGrabber.h>
 #include <iclWidget.h>
 #include <iclDoubleSlider.h>
+#include <iclBorderBox.h>
+#include <iclImgParamWidget.h>
 
 #include <QHBoxLayout>
 #include <QComboBox>
@@ -14,32 +16,13 @@
 #include <QTimer>
 #include <QPushButton>
 #include <QGroupBox>
+
+
 using namespace icl;
 using namespace std;
 
 namespace icl{
   
-  // {{{ Utilities BorderBox, sizeToStr and strToSize
-
-  struct BorderBox : public QGroupBox{
-    // {{{ open
-
-    BorderBox(const QString &label, QWidget *content, QWidget *parent) : 
-      QGroupBox(label,parent), m_poContent(content){
-      m_poLayout = new QVBoxLayout;
-      m_poLayout->setMargin(3);
-      m_poLayout->addWidget(content);
-      setLayout(m_poLayout);
-    }
-    
-    QWidget *content() { return m_poContent; }
-  private:
-    QVBoxLayout *m_poLayout;
-    QWidget *m_poContent;
-    
-  };
-
-  // }}}
   string sizeToStr(const Size &size){
     // {{{ open
 
@@ -55,8 +38,6 @@ namespace icl{
     QString s = sIn.c_str();
     return Size(s.section('x',0,0).toInt(), s.section('x',1,1).toInt());
   }
-
-  // }}}
 
   // }}}
   
@@ -91,6 +72,13 @@ namespace icl{
     m_poCaptureButton = new QPushButton("capture!",this);
     m_poCaptureButton->setCheckable(true);
     m_poCenterPanelLayout->addWidget(m_poCaptureButton);
+
+    m_poImgParamWidget = new ImgParamWidget(this);
+    BorderBox *poBorderBox = new BorderBox("output image",m_poImgParamWidget,this);
+    m_poCenterPanelLayout->addWidget(poBorderBox);
+    m_poImgParamWidget->doEmitState();
+
+    connect(m_poImgParamWidget,SIGNAL(somethingChanged(int,int,int,int)),this,SLOT(visImageParamChanged(int,int,int,int)));
 
     connect(m_poDeviceCombo,SIGNAL(currentIndexChanged(QString)), SLOT(deviceChanged(QString)));
     connect(m_poDeviceCombo,SIGNAL(currentIndexChanged(int)), SLOT(deviceChanged(int)));
@@ -174,6 +162,20 @@ namespace icl{
 
   // }}}
   
+  void CamCfgWidget::visImageParamChanged(int width, int height, int d, int fmt){
+    // {{{ open
+    m_oVideoSize = Size(width,height);
+    m_eVideoFormat = (format)fmt;
+    m_eVideoDepth = (icl::depth)d;
+    
+    if(m_bCapturing){
+      startStopCapture(false);
+      startStopCapture(true);
+    }
+  }
+
+  // }}}
+
   void CamCfgWidget::formatChanged(const QString &text){
     // {{{ open
 
@@ -257,6 +259,9 @@ namespace icl{
       m_bCapturing = true;
       if(m_poGrabber) delete m_poGrabber;
       m_poGrabber = new UnicapGrabber(m_oUnicapDevice);
+      m_poGrabber->setDesiredSize(m_oVideoSize);
+      m_poGrabber->setDesiredDepth(m_eVideoDepth);
+      m_poGrabber->setDesiredFormat(m_eVideoFormat);
       m_poTimer->start(40);
     }else{
       m_bCapturing = false;
