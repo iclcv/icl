@@ -17,27 +17,27 @@ namespace icl{
         value which is restricted by a given valid range <em>and a given 
         value stepping??</em>
         (e.g. brightness \in [-100, 100]) 
-      - <b>value list:</b> the propety is also characterized by a
+      - <b>value list:</b> the property is also characterized by a
         single double value, but is is restricted by a set of valid
         values (e.g. frame rate \in {3.75, 7.5, 15, 30}
       - <b>menu:</b> In this case, the property defines a string
         value, which must be in a well defined list of alternative
-        string values. (e.g. video source \in { "coposite1", 
+        string values. (e.g. video source \in { "composite1", 
         "composite2", "svideo1" }
-      - <b>data:</b> The property may defined by arbirary data in this
-        case. The binary data is decribed by a length in bytes.
+      - <b>data:</b> The property may defined by arbitrary data in this
+        case. The binary data is described by a length in bytes.
         (very video device specific: hard to access in a generic 
         framework)
       - <b>flags:</b> The property complies a list of flags, coded
-        in a single unsinged integer variable. (not often used)
+        in a single unsigned integer variable. (not often used)
       
       When dealing with objects of type UnicapDevice, the programmer
       must first ensure, that is is of the expected types. E.g. if 
       you call \code getMenuEntry() \endcode on an UnicapDevice of 
       type <em>value</em> an error occurs, and an invalid value is 
-      retured.\n
+      returned.\n
       Properties can be differenced by a well defined <em>ID</em>. A
-      coarser subdevision is made into a list of <em>categories</em>.
+      coarser subdivision is made into a list of <em>categories</em>.
       In addition, some devices provide information about the 
       properties <em>unit</em> (e.g. mm for a <em>zoom</em> property).
       Properties, that are created by using the empty constructor are
@@ -77,14 +77,14 @@ namespace icl{
              if(find(valueList.begin(),valueList.end(),newFrameRage) != valueList.end()){
                 prop.setValue(newFrameRate);
              }else{
-                ERROR_LOG("framerate " << newFrameRate << " is not supported by current device");
+                ERROR_LOG("frame rate " << newFrameRate << " is not supported by current device");
                 prop = UnicapProperty(); // now: invalid, indicates not to set the property later
              }      
           }else if(prop.getType() == UnicapProperty::range){
              if(prop.getRange().in(newFrameRate)){
                 prop.setValue(newFrameRate);             
              }else{
-                ERROR_LOG("framerate " << newFrameRate << " is not supported by current device");
+                ERROR_LOG("frame rate " << newFrameRate << " is not supported by current device");
                 prop = UnicapProperty(); // now: invalid, indicates not to set the property later
              }
           }
@@ -92,7 +92,7 @@ namespace icl{
              d.setProperty(prop); // now the property is set
           }
       }else{
-         ERROR_LOG("can't set up framerate (not supported by current device)");
+         ERROR_LOG("can't set up frame rate (not supported by current device)");
       }
       \endcode
   **/
@@ -109,18 +109,18 @@ namespace icl{
       range = UNICAP_PROPERTY_TYPE_RANGE,           /**< a double value within a given range **/
       valueList = UNICAP_PROPERTY_TYPE_VALUE_LIST,  /**< a double value within a list of allowed values **/
       menu = UNICAP_PROPERTY_TYPE_MENU,             /**< a string value within a list of allowed values **/
-      data = UNICAP_PROPERTY_TYPE_DATA,             /**< an abtrary binary data block value **/
+      data = UNICAP_PROPERTY_TYPE_DATA,             /**< an arbitrary binary data block value **/
       flags = UNICAP_PROPERTY_TYPE_FLAGS,           /**< a value of type unsigned int - a list of flags **/
       anytype                                       /**< an additional enum value to indicate an unspecified type **/
     };
     
-    /// Internal used struct for repesenting data values
+    /// Internal used struct for representing data values
     struct Data{
       void *data;        /**< the binary data */
       unsigned int size; /**< the data size in bytes */
     };
     
-    /// retungs the id of the property
+    /// returns the id of the property
     std::string getID() const;
     
     /// returns the category of the property
@@ -129,16 +129,16 @@ namespace icl{
     /// returns the unit for this property (mostly not defined)
     std::string getUnit() const;
   
-    /// retuns whether this propterty is valid or not
+    /// returns whether this propterty is valid or not
     bool isValid() const;
     
-    /// retuns a list of other property ids, which corresponding property value coupled with this properties value
+    /// returns a list of other property ids, which corresponding property value coupled with this properties value
     std::vector<std::string> getRelations() const;
     
     /// returns the type of this property
     type getType() const;
     
-    /// retuns the value of this property
+    /// returns the value of this property
     /** valid return values are given only, if the property type is one of "range" or "valueList" */
     double getValue() const;
 
@@ -163,11 +163,11 @@ namespace icl{
     std::vector<std::string> getMenu() const;
     
 
-    /// retuns the flags value of this property 
+    /// returns the flags value of this property 
     /** valid only if type is "flags" **/
     u_int64_t getFlags() const;
 
-    /// retuns the flagsmask (??) value of this property 
+    /// returns the flagsmask (??) value of this property 
     /** valid only if type is "flags" **/
     u_int64_t getFlagMask() const;
     
@@ -175,16 +175,16 @@ namespace icl{
     /** valid only if type is "data" **/
     const Data getData() const;
     
-    /// retuns a pointer of the wrapped unicap_property_t (const)
+    /// returns a pointer of the wrapped unicap_property_t (const)
     const unicap_property_t *getUnicapProperty() const;
 
-    /// retuns a pointer of the wrapped unicap_property_t
+    /// returns a pointer of the wrapped unicap_property_t
     unicap_property_t *getUnicapProperty();
     
-    /// retuns the associated unicap_handle_t (const)
+    /// returns the associated unicap_handle_t (const)
     const unicap_handle_t &getUnicapHandle() const;
 
-    /// retuns the associated unicap_handle_t
+    /// returns the associated unicap_handle_t
     unicap_handle_t &getUnicapHandle();
  
     /// sets the value for this property
@@ -196,8 +196,8 @@ namespace icl{
     void setValue(double value);    
 
     /// adapts a value with respect to current range and stepping
-    /** @param value value to adatpt 
-        @return tranlated value, compatible to range and stepping 
+    /** @param value value to adapt 
+        @return translated value, compatible to range and stepping 
     **/
     double translateValue(double value);
     
