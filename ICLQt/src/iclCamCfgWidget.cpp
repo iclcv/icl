@@ -383,6 +383,7 @@ namespace icl{
           DoubleSlider *ds = new DoubleSlider(PARENT,vec[i].getID().c_str());
           ds->setMinDouble(vec[i].getRange().minVal);
           ds->setMaxDouble(vec[i].getRange().maxVal);
+          ds->setDoubleStepping(vec[i].getStepping());
           ds->setDoubleValue(vec[i].getValue());
           BorderBox *poBorderBox = new BorderBox(vec[i].getID().c_str(),ds,PARENT);
           l->addWidget(poBorderBox);

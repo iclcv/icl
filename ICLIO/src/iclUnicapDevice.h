@@ -43,7 +43,10 @@ namespace icl{
         \code
         this->open();
         \endcode
-        to access unicap information.
+        to access unicap information. This function is slow, as the busses must be scanned
+        internaly.. If you wan't to create more than one unicap device, it's recommended to
+        use the static function \code UnicapGrabber::getDeviceList() \endcode once, and than
+        to work with the produced vector of UnicapDevices
     */
     UnicapDevice(int deviceIndex=-1);
 

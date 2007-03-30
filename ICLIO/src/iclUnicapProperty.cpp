@@ -1,5 +1,5 @@
 #include <iclUnicapProperty.h>
-
+#include <math.h>
 using namespace std;
 
 namespace icl{
@@ -185,12 +185,44 @@ namespace icl{
 
   // }}}
   
+
+  /** range = {10,100}
+      step = 5;
+      value = 44;
+      
+      stepIdx = round[ (44-10)/step }
+              = round[ 34/5 ]
+              = 7
+      value   = 10+7*5 
+              = 45
+  */
+  
+  double UnicapProperty::translateValue(double value){
+    ICLASSERT_RETURN_VAL( getType() == range , value);
+    Range<double> r = getRange();
+    if(r.in(value)){
+      double step = getStepping();
+      if(step > 0){
+        double minVal = r.minVal;
+        int stepIdx = (int)round((value-minVal)/step);
+        return minVal+stepIdx*step;
+      }
+      return value;
+    }else{
+      if(r.minVal > value) return r.minVal;
+      else return r.maxVal;
+    }
+  }
+  
+  
   void UnicapProperty::setValue(double value){
     // {{{ open
       type t=getType();
       ICLASSERT_RETURN( t == range || t==valueList );
       if(t==range){
         if(getRange().in(value)){
+          // find the next value with respect to current stepping or clip it
+          value = translateValue(value);
           m_oUnicapPropertyPtr->value = value;
           unicap_set_property(m_oUnicapHandle,m_oUnicapPropertyPtr.get());
         }else{
@@ -318,7 +350,7 @@ namespace icl{
     string s = buf;
     switch(getType()){
       case  range:
-        sprintf(buf,"   min=%f\n   max=%f\n   curr=%f\n",getRange().minVal,getRange().maxVal,getValue());
+        sprintf(buf,"   min=%f\n   max=%f\n  steps=%f\n  curr=%f\n",getRange().minVal,getRange().maxVal,getStepping(),getValue());
         s.append(buf);
         break;
       case  valueList:{

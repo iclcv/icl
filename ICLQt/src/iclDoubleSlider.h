@@ -24,11 +24,13 @@ namespace icl{
     void setMaxDouble(double dmax);
     double getDoubleValue();
     void setDoubleValue(double d);
+    void setDoubleStepping(double s);
+          
     private:
     QSlider *m_poSlider;
     QLabel *m_poLabel;
     QGridLayout *m_poLayout;
-    double m_dMin, m_dMax;
+    double m_dMin, m_dMax, m_dStepping;
     QString m_qsID;
 
   };
