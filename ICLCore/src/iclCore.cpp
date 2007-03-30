@@ -82,6 +82,7 @@ namespace icl{
   // }}}
   
   static string asDepthTypes[] = {"8u","16s","32s","32f","64f"};
+
   string translateDepth(depth eDepth){
     // {{{ open
     return string("depth") + asDepthTypes[eDepth];
@@ -100,6 +101,75 @@ namespace icl{
   }
 
 // }}}
+
+  /// creates a size string like "640x480"
+  std::string translateSize(const Size &size){
+    // {{{ open
+
+    char buf[100];
+    sprintf(buf,"%dx%d",size.width,size.height);
+    return buf;
+  }
+
+  // }}}
+  
+  /// translates a size string into a size variable
+  /** if the string could not be parsed, the returned size is "(-1,-1)" */
+  Size translateSize(const std::string &size){
+    // {{{ open
+
+    unsigned int pos = size.find('x',0);
+    if(pos == string::npos || pos == 0 || pos == size.length()-1 ) return Size::null;
+    int w = atoi(size.c_str());
+    int h = atoi(size.c_str()+pos+1);
+    return Size(w,h);
+  }
+
+  // }}}
+
+  /// creates a rect string like "640x480@(5,10)"
+  std::string translateRect(const Rect &r){
+    // {{{ open
+
+    return translateSize(r.size())+translatePoint(r.ul());
+  }
+
+  // }}}
+  
+  /// translates a rect string into a Rect variable
+  /** if the string could not be parsed, the returned Rect is "(-1,-1)@-1x-1" */
+  Rect translateRect(const std::string &r){
+    // {{{ open
+
+    int pos = r.find('@',0);
+    return Rect(translatePoint(r.c_str()+pos+1),translateSize(r));
+  }
+
+  // }}}
+  
+  std::string translatePoint(const Point &p){
+    // {{{ open
+
+    char buf[100];
+    sprintf(buf,"(%d,%d)",p.y,p.x);
+    return buf;
+  }
+
+  // }}}
+
+
+  Point translatePoint(const std::string &p){
+    // {{{ open
+
+    unsigned int pos = p.find(',',0);
+    if(pos == string::npos || pos == 0 || pos == p.length()-1 ||
+       p.find('(',0) != 0 || p.find(')',0) != p.length()-1  )   return Point::null;
+    int x = atoi(p.c_str()+1);
+    int y = atoi(p.c_str()+pos+1);
+    return Point(x,y);
+  }
+
+  // }}}
 
   ImgBase *ensureDepth(ImgBase **ppoImage, depth d){
     // {{{ open

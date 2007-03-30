@@ -165,19 +165,19 @@ namespace icl {
       return this->x<=x && right()>=x && this->y<=y && bottom()>=y;
     }
 
-    /// returns lower left point of the rect
+    /// returns upper left point of the rect
     Point ul() const {
       return Point(x,y);
     }
-    /// returns upper left point of the rect
+    /// returns lower left point of the rect
     Point ll() const {
       return Point(x,y+height);
     }
-    /// returns lower right point of the rect
+    /// returns upper right point of the rect
     Point ur() const {
       return Point(x+width,y);
     }
-    /// returns upper right point of the rect
+    /// returns lower right point of the rect
     Point lr() const {
       return Point(x+width,y+height);
     }

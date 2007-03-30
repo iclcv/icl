@@ -68,7 +68,6 @@ public:
     image = 0;
     ImgBase *img2 = image;
     while(1){
-
       widget->setImage(grabber->grab(&img2));
       if(w){
         w->write(image);

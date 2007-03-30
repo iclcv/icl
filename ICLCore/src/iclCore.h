@@ -468,6 +468,27 @@ namespace icl {
   /// creates a depth value form a depth string
   depth translateDepth(const std::string& sDepth);
 
+  /// creates a size string like "640x480"
+  std::string translateSize(const Size &size);
+  
+  /// translates a size string into a size variable
+  /** if the string could not be parsed, the returned size is "0x0" */
+  Size translateSize(const std::string &sSize);
+
+  /// creates a rect string like "640x480@(5,10)"
+  std::string translateRect(const Rect &size);
+  
+  /// translates a rect string into a Rect variable
+  /** if the string could not be parsed, the returned Rect is "0x0@(0,0)" */
+  Rect translateRect(const std::string &sRect);
+
+  /// creates a point string like "640x480@(5,10)"
+  std::string translatePoint(const Point &p);
+  
+  /// translates a point string into a Point variable
+  /** if the string could not be parsed, the returned Poin is "(0,0)" */
+  Point translatePoint(const std::string &p);
+  
   /// getDepth<T> returns to depth enum associated to type T
   template<class T> inline depth getDepth();
 
