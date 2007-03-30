@@ -76,9 +76,30 @@ namespace icl{
       m_poGrabEngine = new UnicapGrabEngine(&m_oDevice,m_bUseDMA);
       m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
     }
+    m_fCurrentFps = 0;
+    m_oLastTime = icl::Time::now();
   }
 
   // }}}
+
+  void UnicapGrabber::updateFps(){
+    // {{{ open
+
+    Time now = icl::Time::now();
+    Time dt = now-m_oLastTime;
+    m_fCurrentFps = 1000000.0/dt.toMicroSeconds();
+    m_oLastTime = now;
+  }
+
+  // }}}
+
+  float UnicapGrabber::getCurrentFps() const{
+    // {{{ open
+    
+    return m_fCurrentFps;
+  }
+    // }}}
+
 
   namespace{
     string force_lower_case(const string &s){
@@ -354,14 +375,17 @@ namespace icl{
         ensureCompatible(&m_poConvertedImage,d,p);
         m_oConverter.apply(image,m_poConvertedImage);
         m_oMutex.unlock();
+        updateFps();
         return m_poConvertedImage;
       }else{
+        updateFps();
         m_oMutex.unlock();
         return image;
       }
     }else{
       ERROR_LOG("error while grabbing image!");
     }
+    updateFps();
     return 0; 
     
   }
@@ -516,6 +540,8 @@ namespace icl{
     // }}}
   }  
 
+
+  
   const vector<UnicapDevice> &UnicapGrabber::getDeviceList(const string &filter){
     // {{{ open
     static std::vector<UnicapDevice> s_CurrentDevices,buf;
@@ -656,4 +682,3 @@ struct unicap_property_t{
 };
 *********************************************************************/
 // }}}
-

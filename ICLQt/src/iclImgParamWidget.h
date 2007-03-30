@@ -16,7 +16,7 @@ namespace icl{
     public:
     ImgParamWidget(QWidget *parent);
     void doEmitState();
-
+    void getParams(int &width, int &height, int &d, int &fmt) const;
     
     private slots:
     void sizeChanged(const QString &val);

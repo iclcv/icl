@@ -61,8 +61,15 @@ namespace icl{
     QWidget *m_poCenterPanel, *m_poRightPanel;
     QVBoxLayout *m_poCenterPanelLayout, *m_poRightPanelLayout;
     QScrollArea *m_poPropertyScrollArea;
+    
     QPushButton *m_poCaptureButton;
+    QLabel *m_poFpsLabel;
+    QWidget *m_poGrabButtonAndFpsLabelWidget;
+    QHBoxLayout *m_poGrabButtonAndFpsLabelLayout;
+
     QTabWidget *m_poTabWidget;
+    
+    
     
     QComboBox *m_poDeviceCombo;
     QComboBox *m_poFormatCombo;

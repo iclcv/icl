@@ -54,18 +54,88 @@ namespace icl{
 
   namespace{
     QString sizeToStr(const Size &size){
-      // {{{ open            static char buf[100];      sprintf(buf,"%dx%d",size.width,size.height);      return buf;    }        // }}}
+      // {{{ open
+      
+      static char buf[100];
+      sprintf(buf,"%dx%d",size.width,size.height);
+      return buf;
+    }
+    
+    // }}}
     Size strToSize(const QString &s){
-      // {{{ open      return Size(s.section('x',0,0).toInt(), s.section('x',1,1).toInt());    }        // }}}
+      // {{{ open
+      return Size(s.section('x',0,0).toInt(), s.section('x',1,1).toInt());
+    }
+    
+    // }}}
     int getIndex(const QString &str, QComboBox *box){
-      // {{{ open      for(int i=0;i<box->count();i++){        if(str == box->itemText(i)){          return i;        }      }      return -1;    }    // }}}
+      // {{{ open
+
+      for(int i=0;i<box->count();i++){
+        if(str == box->itemText(i)){
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    // }}}
   }
 
   void ImgParamWidget::doEmitState(){
-    // {{{ open    emit somethingChanged(m_iWidth,m_iHeight, m_iDepth, m_iFormat);  }  // }}}
+    // {{{ open
+
+    emit somethingChanged(m_iWidth,m_iHeight, m_iDepth, m_iFormat);
+  }
+
+  // }}}
+  
+  void ImgParamWidget::getParams(int &width, int &height, int &d, int &fmt)const{
+    // {{{ open
+
+    width = m_iWidth;
+    height = m_iHeight;
+    d = m_iDepth;
+    fmt = m_iFormat;
+  }
+
+  // }}}
 
   void ImgParamWidget::setup(int width, int height, int dth, int fmt){
-    // {{{ open    m_iWidth = width;    m_iHeight = height;    m_iDepth = dth;    m_iFormat = fmt;        QString sizeText = sizeToStr(Size(width,height));    int sizeIdx = getIndex(sizeText,m_poSizeCombo);    if(sizeIdx == -1){      ERROR_LOG("invalid size \"" << width << "x" << height << "\"");    }else{      m_poSizeCombo->setCurrentIndex(sizeIdx);    }        QString depthText = translateDepth((icl::depth)dth).c_str();    int depthIdx = getIndex(depthText,m_poDepthCombo);    if(depthIdx == -1){      ERROR_LOG("invalid depth \"" << depthText.toLatin1().data() << "\"");     }else{      m_poDepthCombo->setCurrentIndex(depthIdx);    }    QString formatText = translateFormat((format)fmt).c_str();    int formatIdx = getIndex(formatText,m_poFormatCombo);    if(formatIdx == -1){      ERROR_LOG("invalid format \"" << formatText.toLatin1().data() << "\"");     }else{      m_poFormatCombo->setCurrentIndex(formatIdx);    }      }  // }}}
+    // {{{ open
+
+    m_iWidth = width;
+    m_iHeight = height;
+    m_iDepth = dth;
+    m_iFormat = fmt;
+    
+    QString sizeText = sizeToStr(Size(width,height));
+    int sizeIdx = getIndex(sizeText,m_poSizeCombo);
+    if(sizeIdx == -1){
+      ERROR_LOG("invalid size \"" << width << "x" << height << "\"");
+    }else{
+      m_poSizeCombo->setCurrentIndex(sizeIdx);
+    }
+    
+    QString depthText = translateDepth((icl::depth)dth).c_str();
+    int depthIdx = getIndex(depthText,m_poDepthCombo);
+    if(depthIdx == -1){
+      ERROR_LOG("invalid depth \"" << depthText.toLatin1().data() << "\""); 
+    }else{
+      m_poDepthCombo->setCurrentIndex(depthIdx);
+    }
+
+    QString formatText = translateFormat((format)fmt).c_str();
+    int formatIdx = getIndex(formatText,m_poFormatCombo);
+    if(formatIdx == -1){
+      ERROR_LOG("invalid format \"" << formatText.toLatin1().data() << "\""); 
+    }else{
+      m_poFormatCombo->setCurrentIndex(formatIdx);
+    }
+    
+  }
+
+  // }}}
   
   void ImgParamWidget::sizeChanged(const QString &val){
     Size s = strToSize(val);

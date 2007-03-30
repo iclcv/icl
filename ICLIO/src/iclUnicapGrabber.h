@@ -5,7 +5,7 @@
 #include "iclUnicapDevice.h"
 #include <iclConverter.h>
 #include <iclMutex.h>
-
+#include <iclTime.h>
 
 namespace icl{
   /** \cond */
@@ -112,10 +112,16 @@ namespace icl{
     /// returns a reference of the internally wrapped UnicapDevice
     UnicapDevice &getDevice() { return m_oDevice; }
     
+    /// returns the current grabbing framerate of this grabber
+    float getCurrentFps() const;
+    
     private:
     
     /// internally used for initialization
     void init();
+
+    /// internally called to update current fps information
+    void updateFps();
 
     /// wrapped UnicapDevice object
     UnicapDevice m_oDevice;
@@ -141,6 +147,12 @@ namespace icl{
     /// internal flag indicating whether DMA should be used
     bool m_bUseDMA;
 
+    /// internal timeval for calculating current framerate
+    Time m_oLastTime;
+     
+    /// storage for current framerate
+    float m_fCurrentFps;
+    
   };
 }
 #endif

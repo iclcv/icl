@@ -71,12 +71,22 @@ namespace icl{
 
     m_poCaptureButton = new QPushButton("capture!",this);
     m_poCaptureButton->setCheckable(true);
-    m_poCenterPanelLayout->addWidget(m_poCaptureButton);
+
+    m_poFpsLabel  = new QLabel("fps: ---",this);
+    m_poGrabButtonAndFpsLabelWidget = new QWidget(this);
+    m_poGrabButtonAndFpsLabelLayout = new QHBoxLayout(m_poGrabButtonAndFpsLabelWidget);
+    m_poGrabButtonAndFpsLabelLayout->addWidget(m_poCaptureButton);
+    m_poGrabButtonAndFpsLabelLayout->addWidget(m_poFpsLabel);
+    m_poGrabButtonAndFpsLabelWidget->setLayout(m_poGrabButtonAndFpsLabelLayout);
+    
+    m_poCenterPanelLayout->addWidget(m_poGrabButtonAndFpsLabelWidget);
 
     m_poImgParamWidget = new ImgParamWidget(this);
     BorderBox *poBorderBox = new BorderBox("output image",m_poImgParamWidget,this);
     m_poCenterPanelLayout->addWidget(poBorderBox);
-    m_poImgParamWidget->doEmitState();
+    int w,h,d,f;
+    m_poImgParamWidget->getParams(w,h,d,f);
+    visImageParamChanged(w,h,d,f);
 
     connect(m_poImgParamWidget,SIGNAL(somethingChanged(int,int,int,int)),this,SLOT(visImageParamChanged(int,int,int,int)));
 
@@ -262,7 +272,7 @@ namespace icl{
       m_poGrabber->setDesiredSize(m_oVideoSize);
       m_poGrabber->setDesiredDepth(m_eVideoDepth);
       m_poGrabber->setDesiredFormat(m_eVideoFormat);
-      m_poTimer->start(40);
+      m_poTimer->start(10);
     }else{
       m_bCapturing = false;
       if(m_poGrabber) delete m_poGrabber;
@@ -281,6 +291,11 @@ namespace icl{
     ICLASSERT_RETURN(m_poGrabber);
     m_poICLWidget->setImage(m_poGrabber->grab((ImgBase**)0));
     m_poICLWidget->update();
+    static float accu = 0;
+    static const float fac = 0.1;
+    accu = accu*(1.0-fac) + fac*(m_poGrabber->getCurrentFps());
+    accu = ((float)((int)(accu*100)))/100;
+    m_poFpsLabel->setText(QString("fps: ")+QString::number(accu));
   }
 
   // }}}
@@ -433,7 +448,6 @@ namespace icl{
           break;
       }
     }    
-    printf("everything done !\n");
     m_bDisableSlots = false;
   }
 
