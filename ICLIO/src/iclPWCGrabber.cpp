@@ -328,83 +328,153 @@ void save_setparams(int device){
   PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice) : m_poRGB8Image(0), m_poImage(0) {
     if (!init(s, fFps, iDevice)) { exit(0); }
   }
+
   PWCGrabber::~PWCGrabber(void) {
+    releaseAll();
+  }
+  
+  void PWCGrabber::releaseAll(){
     // {{{ open 
-
-  if (m_poRGB8Image)
-    delete m_poRGB8Image;
-  //delete m_pucFlippedData;
-  
-  usbvflg_opencount[m_iDevice]--;
-  if (usbvflg_verbosity>1)
-    fprintf(stderr,"destructor leaving %d instances for /dev/video%d\n",
-            usbvflg_opencount[m_iDevice],m_iDevice);
-  
-  // ---- deleting last instance of grabber ----
-  if (usbvflg_opencount[m_iDevice] == 0) { 
-    if (pthread_cancel(usb_grabber_thread[m_iDevice])<0) { // kill thread
-      printf("Error: Cancel pthread: %s\n",strerror(errno));
+    if (m_poRGB8Image){
+      delete m_poRGB8Image; 
+      m_poRGB8Image=0;
     }
     
-    if (pthread_join(usb_grabber_thread[m_iDevice],NULL)<0) {  // wait
-      printf("Error: Cancel pthread: %s\n",strerror(errno));
-    }
-  
-    if (pthread_mutex_destroy(&usb_frame_mutex[m_iDevice])<0) {
-      printf("Error: Mutex destroy frame: %s\n",strerror(errno));
-    }
+    usbvflg_opencount[m_iDevice]--;
+    if (usbvflg_verbosity>1)
+      fprintf(stderr,"destructor leaving %d instances for /dev/video%d\n",
+              usbvflg_opencount[m_iDevice],m_iDevice);
     
-    if (pthread_mutex_destroy(&usb_semph_mutex[m_iDevice])<0) {
-      printf("Error: Mutex destroy semph: %s\n",strerror(errno));
-    }
-    
-    if (sem_destroy(&usb_new_pictures[m_iDevice])<0) {
-      printf("Error: Sem destroy: %s\n",strerror(errno));
-    }
-    
-    if (usbvflg_verbosity) {
-      printf("thread stuff destroyed\n");
-    }
-
-    if (usbvflg_fd[m_iDevice]>=0) {  // close
-      close(usbvflg_fd[m_iDevice]);          
-      if (usbvflg_verbosity) {
-        printf("closing /dev/video%d\n",m_iDevice);
+    // ---- deleting last instance of grabber ----
+    if (usbvflg_opencount[m_iDevice] == 0) { 
+      if (pthread_cancel(usb_grabber_thread[m_iDevice])<0) { // kill thread
+        printf("Error: Cancel pthread: %s\n",strerror(errno));
       }
-     
-      if (usbvflg_buf[m_iDevice]) { // munmap
-        munmap(usbvflg_buf[m_iDevice],usbvflg_vmbuf[m_iDevice].size);
+      
+      if (pthread_join(usb_grabber_thread[m_iDevice],NULL)<0) {  // wait
+        printf("Error: Cancel pthread: %s\n",strerror(errno));
+      }
+      
+      if (pthread_mutex_destroy(&usb_frame_mutex[m_iDevice])<0) {
+        printf("Error: Mutex destroy frame: %s\n",strerror(errno));
+      }
+      
+      if (pthread_mutex_destroy(&usb_semph_mutex[m_iDevice])<0) {
+        printf("Error: Mutex destroy semph: %s\n",strerror(errno));
+      }
+      
+      if (sem_destroy(&usb_new_pictures[m_iDevice])<0) {
+        printf("Error: Sem destroy: %s\n",strerror(errno));
+      }
+      
+      if (usbvflg_verbosity) {
+        printf("thread stuff destroyed\n");
+      }
+      
+      if (usbvflg_fd[m_iDevice]>=0) {  // close
+        close(usbvflg_fd[m_iDevice]);          
+        if (usbvflg_verbosity) {
+          printf("closing /dev/video%d\n",m_iDevice);
+        }
         
-        if (usbvflg_verbosity)
-          printf("unmapping memory for /dev/video%d\n",m_iDevice);
+        if (usbvflg_buf[m_iDevice]) { // munmap
+          munmap(usbvflg_buf[m_iDevice],usbvflg_vmbuf[m_iDevice].size);
+          
+          if (usbvflg_verbosity)
+            printf("unmapping memory for /dev/video%d\n",m_iDevice);
+        }
       }
     }
   }
-}
-
-// }}}
   
+  // }}}
+  
+  bool PWCGrabber::setGrabbingSize(const Size &size){
+    // {{{ open
+
+    if(size != Size(160,120) && size != Size(320,240) && size != Size(640,480)){
+      ERROR_LOG("size "<< translateSize(size) <<" is not supported ");
+      return false;
+    }
+    releaseAll();
+    
+    return init(size,m_fFps,m_iDevice);
+    
+  }
+
+  // }}}
   
   void PWCGrabber::setParam(const string &param, const string &value){
-    ERROR_LOG("not yet implemented for " << param << " to " << value );
+    // {{{ open
+
+    if(param == "size"){
+      Size newSize = translateSize(value);
+      setGrabbingSize(newSize);          
+    }else{
+      ERROR_LOG("nothing known about a param " << param ); 
+    }
   }
-  
+
+  // }}}
   
   void PWCGrabber::setProperty(const string &property, const string &value){
-    ERROR_LOG("not yet implemented for " << property << " to " << value );
+    // {{{ 
+
+    if(property == "gain"){
+      int val = atoi(value.c_str());
+      setGain(clip(val,0,65535));
+    }else if(property == "save user settings"){
+      saveUserSettings(); // value is ignored
+    }else if(property == "restore user settings"){
+      restoreUserSettings();
+    }else if(property == "white balance mode"){
+      int val = value == "indoor"  ? 0 :
+                value == "outdoor" ? 1 :
+                value == "fl-tube" ? 2 :
+                value == "auto" ? 4 : -1;
+      if(val != -1){
+        setWhiteBalance(val,0,0);
+      }else{
+        ERROR_LOG("unknown white balance mode \"" << value << "\"");
+      }
+    }else if(property == "white balance red"){
+      int val = atoi(value.c_str());
+      setWhiteBalance(3,val,-1);
+    }else if(property == "white balance blue"){
+      int val = atoi(value.c_str());
+      setWhiteBalance(3,-1,val);
+    }else{
+      ERROR_LOG("nothing known about a property " << property ); 
+    }
   }
+
+  // }}}
   
   std::vector<std::string> PWCGrabber::getPropertyList(){
-    return std::vector<std::string>();
+    // {{{ open
+
+    std::vector<std::string> v;
+    v.push_back("gain");
+    v.push_back("save user settings");
+    v.push_back("restor user settings");
+    v.push_back("white balance mode");
+    v.push_back("white balance red");
+    v.push_back("white balance blue");
+    return v;
   }
-  
+
+  // }}}
   
   std::vector<std::string> PWCGrabber::getParamList(){
-    return std::vector<std::string>();
+    // {{{ open
+
+    std::vector<std::string> v;
+    v.push_back("size");
+    return v;
   }
+
+  // }}}
   
-
-
   bool PWCGrabber::restoreUserSettings(){
     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCRUSER), "cannot restore user settings");
     return true;
@@ -424,20 +494,13 @@ void save_setparams(int device){
   }
   
   bool PWCGrabber::setWhiteBalance(int mode, int manual_red, int manual_blue){
-    /* mode can be:
-       PWC_WB_AUTO - Automatic
-       PWC_WB_MANUAL - Manually set by manual_red and manual_blue
-       PWC_WB_INDOOR - Indoor lightbulb type lighting
-       PWC_WB_OUTDOOR - Outdoor lighting
-       PWC_WB_FL - Flourescent lighting (FL tubes)
-        
-       other values can be between 0..65535 if you set mode = PWC_WB_MANUAL
-       read_xxx values are ignored
-    */
     pwc_whitebalance wb;
+    
+    PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAWB, &wb), "cannot get white balance");
+    
     wb.mode = mode;
-    wb.manual_red = manual_red;
-    wb.manual_blue = manual_blue;
+    if(manual_red != -1)  wb.manual_red = manual_red;
+    if(manual_blue != -1) wb.manual_blue = manual_blue;
     wb.read_red = 0;
     wb.read_blue = 0;
     

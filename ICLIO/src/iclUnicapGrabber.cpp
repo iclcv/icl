@@ -10,7 +10,6 @@
 #include "iclUnicapGrabEngine.h"
 #include "iclUnicapConvertEngine.h"
 
-#include "iclPWCGrabEngine.h"
 #include "iclSonyConvertEngine.h"
 #include "iclSonyGrabEngine.h"
 

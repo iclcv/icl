@@ -477,7 +477,7 @@ namespace icl {
 //--------------------------------------------------------------------------
 
   template<class T>
-  void FileReader::__readCSV(Img<T>* poImg, FileInfo &oInfo) {
+  void FileReader::readCSVTmpl(Img<T>* poImg, FileInfo &oInfo) {
     // {{{ open
 
     FUNCTION_LOG("");
@@ -516,15 +516,15 @@ namespace icl {
     FUNCTION_LOG("");
 
     switch(poImg->getDepth()) {
-      case depth8u: __readCSV<icl8u>(poImg->asImg<icl8u>(),oInfo);
+      case depth8u: readCSVTmpl<icl8u>(poImg->asImg<icl8u>(),oInfo);
         break;
-      case depth16s: __readCSV<icl16s>(poImg->asImg<icl16s>(),oInfo);
+      case depth16s: readCSVTmpl<icl16s>(poImg->asImg<icl16s>(),oInfo);
         break;
-      case depth32s: __readCSV<icl32s>(poImg->asImg<icl32s>(),oInfo);
+      case depth32s: readCSVTmpl<icl32s>(poImg->asImg<icl32s>(),oInfo);
         break;
-      case depth32f: __readCSV<icl32f>(poImg->asImg<icl32f>(),oInfo);
+      case depth32f: readCSVTmpl<icl32f>(poImg->asImg<icl32f>(),oInfo);
         break;
-      case depth64f: __readCSV<icl64f>(poImg->asImg<icl64f>(),oInfo);
+      case depth64f: readCSVTmpl<icl64f>(poImg->asImg<icl64f>(),oInfo);
         break;
       default: ICL_INVALID_DEPTH; break;
     }
@@ -534,7 +534,7 @@ namespace icl {
   //--------------------------------------------------------------------------
 
   template<class T>
-    void FileReader::__readCSV(Img<T> *poImg, char* pcBuf) {
+    void FileReader::readCSVTmpl(Img<T> *poImg, char* pcBuf) {
     char *result = NULL;
     result = strtok( pcBuf, ",");
     T *pc2Buf[3];

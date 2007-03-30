@@ -265,7 +265,7 @@ cout <<"ccc"<<endl;
    
 
      template<class T,class R>
-     string FileWriter::__writeCSV(const Img<T> *poSrc,int ch) {
+     string FileWriter::writeCSVTmpl(const Img<T> *poSrc,int ch) {
        // {{{ open
        const Size& size = poSrc->getSize();
        ostringstream oss;
@@ -290,7 +290,7 @@ cout <<"ccc"<<endl;
    //--------------------------------------------------------------------------
 
      template<class T,class R>
-     void FileWriter::__writeCSV(const Img<T> *poSrc, FileInfo& oInfo) {
+     void FileWriter::writeCSVTmpl(const Img<T> *poSrc, FileInfo& oInfo) {
 
     int (*pWrite)(void *fp, const void *pData, size_t len) 
       = oInfo.bGzipped ? gzwrite : plainWrite;
@@ -302,9 +302,9 @@ cout <<"ccc"<<endl;
        if (!m_bCsvSplitFiles){ //every channel in its own .csv file, if splitFiles is enabled
         ostringstream oss;
         for (int i=0;i<iNumImages-1;i++) {
-            oss<<__writeCSV<T,R>(poSrc,i)<<","<<endl;
+            oss<<writeCSVTmpl<T,R>(poSrc,i)<<","<<endl;
         }
-        oss<<__writeCSV<T,R>(poSrc,iNumImages-1)<<endl;
+        oss<<writeCSVTmpl<T,R>(poSrc,iNumImages-1)<<endl;
         if (!pWrite (oInfo.fp, (oss.str()).c_str(), strlen((oss.str()).c_str()))) 
           throw writeError;
 
@@ -312,7 +312,7 @@ cout <<"ccc"<<endl;
       else{
         for (int i=0;i<iNumImages-1;i++) {
           ostringstream oss;
-          oss<<__writeCSV<T,R>(poSrc,i)<<endl;
+          oss<<writeCSVTmpl<T,R>(poSrc,i)<<endl;
           if (!pWrite (oInfo.fp, (oss.str()).c_str(), strlen((oss.str()).c_str()))) 
           throw writeError;
           closeFile (oInfo);
@@ -320,7 +320,7 @@ cout <<"ccc"<<endl;
           openFile (oInfo, "wb"); // open file for writing
         }
         ostringstream oss;
-        oss<<__writeCSV<T,R>(poSrc,iNumImages-1)<<endl;
+        oss<<writeCSVTmpl<T,R>(poSrc,iNumImages-1)<<endl;
         if (!pWrite (oInfo.fp, (oss.str()).c_str(), strlen((oss.str()).c_str()))) 
         throw writeError;
         
@@ -336,15 +336,15 @@ cout <<"ccc"<<endl;
   void FileWriter::writeCSV(const ImgBase *poSrc, FileInfo& oInfo) {
     // {{{ open
     switch(poSrc->getDepth()) {
-      case depth8u: __writeCSV<icl8u,int>(poSrc->asImg<icl8u>(),oInfo);
+      case depth8u: writeCSVTmpl<icl8u,int>(poSrc->asImg<icl8u>(),oInfo);
         break;
-      case depth16s: __writeCSV<icl16s,int>(poSrc->asImg<icl16s>(),oInfo);
+      case depth16s: writeCSVTmpl<icl16s,int>(poSrc->asImg<icl16s>(),oInfo);
         break;
-      case depth32s: __writeCSV<icl32s,int>(poSrc->asImg<icl32s>(),oInfo);
+      case depth32s: writeCSVTmpl<icl32s,int>(poSrc->asImg<icl32s>(),oInfo);
         break;
-      case depth32f: __writeCSV<icl32f,float>(poSrc->asImg<icl32f>(),oInfo);
+      case depth32f: writeCSVTmpl<icl32f,float>(poSrc->asImg<icl32f>(),oInfo);
         break;
-      case depth64f: __writeCSV<icl64f,double>(poSrc->asImg<icl64f>(),oInfo);
+      case depth64f: writeCSVTmpl<icl64f,double>(poSrc->asImg<icl64f>(),oInfo);
         break;
       default: ICL_INVALID_DEPTH; break;
     }

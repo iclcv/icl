@@ -42,26 +42,34 @@ namespace icl{
   class PWCGrabber : public Grabber {
   public:
     
-    /// Base constructor
+    /// Base constructor (recommended)
+    /** call init(..) savely after object creation to avoid an exit(-1) call when the 
+        desired device was not found **/
     PWCGrabber(void);
-    PWCGrabber(const Size &s, float fFps=30, int iDevice = 0); // Deprecated contstructor: use the default contructor instead and call init(..) to get initialization results
+    
+    /// Deprecated contstructor for direct instantiation of a valid grabber object
+    /** use the default contructor instead and call init(..) to get initialization 
+        results 
+        @param size internal grabbing size for pwc,
+        @param fFps speed of the internal grabber thread 
+        @param iDevice /dev/video - device to use (0..4) **/
+    PWCGrabber(const Size &s, float fFps=30, int iDevice = 0); 
     
     /// Destructor
     ~PWCGrabber(void);
     
-    /// init function
+    /// initialisation function
     /** initializes a camera on /dev/video\<iDevice\>. be sure that you call init(..) and init(..) returns true
         before calling grab(..)
-       @param s size of grabbed images
-       @param fFps grabbing rate
-       @param iDevice USB grabbing device {0,1,2,3}
+        @param s size of grabbed images
+        @param fFps grabbing rate
+        @param iDevice USB grabbing device {0,1,2,3}
     **/
     bool init(const Size &s,float fFps=30, int iDevice = 0);
     
     /// grabbing function  
     /** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    
     virtual const ImgBase* grab(ImgBase **poDst=0);
-    
     
     /// interface for the setter function for video device parameters
     /** \copydoc icl::Grabber::setParam(const std::string&,const std::string&) **/
@@ -83,28 +91,67 @@ namespace icl{
 
     /** @{ @name additional special functions for PWC-Param access **/
 
+    /// restores user settings
     bool restoreUserSettings();
+    
+    /// saves user settings
     bool saveUserSettings();
+
+    /// sets the current gain level
+    /** @param iGainValue gain level in range [0..65535]
+        @return if successful */
     bool setGain(signed int iGainValue);
 
     /// sets for whitebalance mode 
     /** possible modes are
-        0 indoor
-        1 outdoor
-        2 "fl-tube"
-        3 manual
-        4 auto
+        - 0 indoor
+        - 1 outdoor
+        - 2 "fl-tube"
+        - 3 manual
+        - 4 auto
+        @param mode mode specifier
+        @param manual_red definition of manual red white balance value 
+               left unregarded if -1
+        @param manual_green definition of manual blue white balance value 
+               left unregarded if -1
+        @return if successful
     */
-    bool setWhiteBalance(int mode, int manual_red, int manual_blue);
+    bool setWhiteBalance(int mode, int manual_red=-1, int manual_blue=-1);
     
+    /// sets new grabbing size
+    /** internally the grabber is released and created new(this lasts
+        less then a second )
+        @param size new size ( one of (160x120,320x240 or 640x480)
+    */
+    bool setGrabbingSize(const Size &size);
     /** @} **/
-  private:   
-    int m_iWidth, m_iHeight, m_iDevice;
+ 
+    private:   
+    /// internal release function (for destructor and setting new size)
+    void releaseAll();
+    
+    /// current grabbing width
+    int m_iWidth;
+    
+    /// current grabbing height
+    int m_iHeight;
+    
+    /// current grabbing device
+    int m_iDevice;
+    
+    /// current grabbing fps value
     float m_fFps;
-    
+
+    /// current Img8u image buffer
     Img8u *m_poRGB8Image;
-    Converter m_oConverter,m_oConverterHalfSize;
+
+    /// converter used for output format conversion
+    Converter m_oConverter;
     
+    /// converter used for output formatYUV conversion
+    Converter m_oConverterHalfSize;
+    
+    /// buffer image for output if not given
     ImgBase *m_poImage;
   };
   
