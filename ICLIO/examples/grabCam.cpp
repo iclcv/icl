@@ -5,20 +5,12 @@
 using namespace std;
 using namespace icl;
 
-int main() 
-{
+int main() {
   
   PWCGrabber cam(Size(320,240));
-  ImgBase* poImg = imgNew(depth8u,Size(320,240),formatRGB);
-
-  FileWriter ioWrite("demoImages/outImg##.ppm");
+  FileWriter ioWrite("testImg##.ppm");
   
-  cam.grab(poImg);
-  ioWrite.write(poImg);
-  
-  cam.grab(poImg);
-  ioWrite.write(poImg);
-
-  cam.grab(poImg);
-  ioWrite.write(poImg);
+  for(int i=0;i<3;i++){
+    ioWrite.write(cam.grab());
+  }
 }

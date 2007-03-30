@@ -3,6 +3,7 @@
 
 #include <iclGrabber.h>
 #include <iclConverter.h>
+#include <string>
 
 namespace icl{
   
@@ -57,15 +58,30 @@ namespace icl{
     **/
     bool init(const Size &s,float fFps=30, int iDevice = 0);
     
-    /// grabbing function, 
-    /** grabs the next pwc image into an internal buffer, and converts it into 
-        the format of poDst. If poDst has depth8u and formatRGB, then, 
-        the image data is directly converted from the PWC-"mbuf" into the
-        destination images data.
-        @param poDst destination image. If it has formatMatrix, than it will be
-                     converted to formatRGB for best performance. 
-    **/    
-    virtual const ImgBase* grab(ImgBase *poDst=0);
+    /// grabbing function  
+    /** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    
+    virtual const ImgBase* grab(ImgBase **poDst=0);
+    
+    
+    /// interface for the setter function for video device parameters
+    /** \copydoc icl::Grabber::setParam(const std::string&,const std::string&) **/
+    virtual void setParam(const std::string &param, const std::string &value);
+    
+    /// interface for the setter function for video device properties 
+    /** \copydoc icl::Grabber::setProperty(const std::string&,const std::string&) **/
+    virtual void setProperty(const std::string &property, const std::string &value);
+    
+    /// returns a list of properties, that can be set using setProperty
+    /** @return list of supported property names **/
+    virtual std::vector<std::string> getPropertyList();
+    
+    
+    /// returns a list of supported params, that can be set using setParams
+    /** @return list of supported parameters names */
+    virtual std::vector<std::string> getParamList();
+
+
+    /** @{ @name additional special functions for PWC-Param access **/
 
     bool restoreUserSettings();
     bool saveUserSettings();
@@ -81,13 +97,15 @@ namespace icl{
     */
     bool setWhiteBalance(int mode, int manual_red, int manual_blue);
     
+    /** @} **/
   private:   
     int m_iWidth, m_iHeight, m_iDevice;
     float m_fFps;
     
     Img8u *m_poRGB8Image;
     Converter m_oConverter,m_oConverterHalfSize;
-
+    
+    ImgBase *m_poImage;
   };
   
 }

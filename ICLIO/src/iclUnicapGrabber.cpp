@@ -61,18 +61,18 @@ namespace icl{
 
     string modelname = m_oDevice.getModelName();
     if(modelname == "Philips 740 webcam"){
-      printf("Using PWCGrabEngine !\n");
+      //      printf("Using PWCGrabEngine !\n");
       ERROR_LOG("Philips 740 webcam is not supported by the UnicapGrabber !");
       m_poGrabEngine = 0 ; //new PWCGrabEngine(&m_oDevice);
       m_poConvertEngine = 0;
     
     }else if(modelname == "DFW-VL500 2.30"){ // sony cams !
-      printf("Using SonyGrabEngine !\n");
+      //printf("Using SonyGrabEngine !\n");
       m_poGrabEngine = new SonyGrabEngine(&m_oDevice,m_bUseDMA);
       m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
       
     }else {
-      printf("Using UniapGrabEngine and Sony Convert Engine for %s! \n",modelname.c_str());
+      //printf("Using UniapGrabEngine and Sony Convert Engine for %s! \n",modelname.c_str());
       m_poGrabEngine = new UnicapGrabEngine(&m_oDevice,m_bUseDMA);
       m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
     }

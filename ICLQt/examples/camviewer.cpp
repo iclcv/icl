@@ -73,7 +73,6 @@ public:
       if(w){
         w->write(image);
       }
-      printf("current image ptr = %p \n",(void*)img2);
       widget->update();
     }
   }

@@ -27,23 +27,6 @@ namespace icl {
      }
      virtual ~Grabber() {}
 
-     /**  DEPRECATED !!
-
-         grab directly into the specified destination image 
-         or return an internally buffered image
-
-         If specified, the destination image poDst is directly filled
-         with a new image. The parameters of poDst, i.e. depth, size,
-         channels and format is not changed in this case, but the
-         grabbed image is converted to these parameters if neccessary.
-         Return value is poDst again.
-
-         If no destination is specified (or NULL pointer given), the
-         return value is a pointer to an internally stored image. 
-         <b>Ownership for this image remains with the Grabber class.</b>
-     */
-     virtual const ImgBase* grab(ImgBase *poDst=0)=0;
-
      /// **NEW** grab function grabs an image (destination image is adapted on demand)
      /** This new grab function is one or the main parts of the ICLs Grabber interface. Its 
         underlying philosophy is as follows:

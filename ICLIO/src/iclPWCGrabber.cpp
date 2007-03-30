@@ -16,6 +16,8 @@
 #include <string.h>
 
 
+using namespace std;
+
 #if defined(__APPLE__) || defined(WIN32)
 
 
@@ -26,9 +28,35 @@
 #define PWC_DEBUG(X,S) if(X) {printf("pwc-debug:[%s]\n",S); return false;}
 #define PWC_DEBUG_CALL(X,S) if(X<0){printf("pwc-debug-call:[%s]\n",S); return false; }
 
+namespace pwc_ext{
+  template<class T>
+  inline void pwc_yuv2yuv(icl::ImgBase *&poOutput,
+                          icl::Converter &converter, 
+                          icl::Converter &converterHalfSize,
+                          icl::Img8u &oTmpSrc_Y,
+                          icl::Img8u &oTmpSrc_U,
+                          icl::Img8u &oTmpSrc_V){
+    // {{{ open
+  
+    T *pfTmpY = poOutput->asImg<T>()->getData(0);
+    T *pfTmpU = poOutput->asImg<T>()->getData(1);
+    T *pfTmpV = poOutput->asImg<T>()->getData(2);
+    
+    icl::Img<T> oTmpDst_Y(poOutput->getSize(),1,std::vector<T*>(1, pfTmpY));
+    icl::Img<T> oTmpDst_U(poOutput->getSize(),1,std::vector<T*>(1, pfTmpU));
+    icl::Img<T> oTmpDst_V(poOutput->getSize(),1,std::vector<T*>(1, pfTmpV));
+    
+    converter.apply(&oTmpSrc_Y,&oTmpDst_Y);
+    converterHalfSize.apply(&oTmpSrc_U,&oTmpDst_U);
+    converterHalfSize.apply(&oTmpSrc_V,&oTmpDst_V);
+  }
+  
+  // }}}
+}
+
 namespace icl {
 
-// {{{ PWC-IOCTL
+  // {{{ PWC-IOCTL
 
 #ifndef PWC_IOCTL_H
 #define PWC_IOCTL_H
@@ -161,7 +189,7 @@ namespace icl {
 
 #endif
   // }}}
-// {{{ Global variables
+  // {{{ Global variables
 
 int                     usbvflg_verbosity=0; //if verbosity>0 more messages will be printed
 
@@ -188,7 +216,7 @@ int                     usb_image_heights[4];
 Time                    g_Time[4];
 
 // }}}
-// {{{ usb_grabber_funct
+  // {{{ usb_grabber_funct
 
 bool usb_grabber_funct(void *data ){
   int device=*(int*)data;
@@ -256,7 +284,7 @@ bool usb_grabber_funct(void *data ){
 }
 
 // }}}
-// {{{ setparams(int device)
+  // {{{ setparams(int device)
 
 void setparams(int device){
    usbvflg_params[device][0].width= usb_image_widths[device];
@@ -267,7 +295,7 @@ void setparams(int device){
 }
 
 // }}}
-// {{{ save_setparams(int device)
+  // {{{ save_setparams(int device)
 
 void save_setparams(int device){
 
@@ -293,15 +321,15 @@ void save_setparams(int device){
    pthread_mutex_unlock(&usb_semph_mutex[device]);
 }
 // }}}
-
-PWCGrabber::PWCGrabber(void) : m_poRGB8Image(0) {
-}
-
-PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice) : m_poRGB8Image(0) {
-  if (!init(s, fFps, iDevice)) { exit(0); }
-}
-PWCGrabber::~PWCGrabber(void) {
-  // {{{ open 
+  
+  PWCGrabber::PWCGrabber(void) : m_poRGB8Image(0),m_poImage(0) {
+  }
+  
+  PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice) : m_poRGB8Image(0), m_poImage(0) {
+    if (!init(s, fFps, iDevice)) { exit(0); }
+  }
+  PWCGrabber::~PWCGrabber(void) {
+    // {{{ open 
 
   if (m_poRGB8Image)
     delete m_poRGB8Image;
@@ -355,153 +383,180 @@ PWCGrabber::~PWCGrabber(void) {
 }
 
 // }}}
-
-bool PWCGrabber::restoreUserSettings()
-{
-   PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCRUSER), "cannot restore user settings");
-   return true;
-}
-
-bool PWCGrabber::saveUserSettings()
-{
-  PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSUSER), "cannot save user settings");
-  return true;
-}
-
-bool PWCGrabber::setGain(signed int iGainValue) // use a negative value to set to auto-gain or use a value from interval 0..65535 to set it to a fixed value
-{
-  if (iGainValue > 65535)
-  {
-    return false;
+  
+  
+  void PWCGrabber::setParam(const string &param, const string &value){
+    ERROR_LOG("not yet implemented for " << param << " to " << value );
   }
-  PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSAGC, &iGainValue), "cannot set gain");
-
-  return true;
-}
-
-bool PWCGrabber::setWhiteBalance(int mode, int manual_red, int manual_blue)
-{
-/* mode can be:
-  PWC_WB_AUTO - Automatic
-  PWC_WB_MANUAL - Manually set by manual_red and manual_blue
-  PWC_WB_INDOOR - Indoor lightbulb type lighting
-  PWC_WB_OUTDOOR - Outdoor lighting
-  PWC_WB_FL - Flourescent lighting (FL tubes)
-
-  other values can be between 0..65535 if you set mode = PWC_WB_MANUAL
-  read_xxx values are ignored
-*/
-  pwc_whitebalance wb;
-  wb.mode = mode;
-  wb.manual_red = manual_red;
-  wb.manual_blue = manual_blue;
-  wb.read_red = 0;
-  wb.read_blue = 0;
   
-  PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSAWB, &wb), "cannot set white balance");
-
-  return true;
-}
-
-bool PWCGrabber::init(const Size &s,float fFps, int iDevice)
-{
-  m_iWidth = s.width;
-  m_iHeight = s.height;
-  m_iDevice = iDevice;
-  m_fFps = fFps;
-  m_poRGB8Image = new Img8u(s,formatRGB);
   
-  // {{{ open
-
-  usb_image_widths[m_iDevice]=m_iWidth;
-  usb_image_heights[m_iDevice]=m_iHeight;
-
-  static char *sollname="Philips 740 webcam";
-  struct timeval zeit;
-  static char *devname[] = { "/dev/video0", "/dev/video1",
-                             "/dev/video2", "/dev/video3", 
-                             NULL };
+  void PWCGrabber::setProperty(const string &property, const string &value){
+    ERROR_LOG("not yet implemented for " << property << " to " << value );
+  }
   
-   struct video_capability vcap;
-   struct video_picture picture;
-   struct video_window vwin;
+  std::vector<std::string> PWCGrabber::getPropertyList(){
+    return std::vector<std::string>();
+  }
   
-   gettimeofday(&zeit,NULL);
-   usbvflg_starttime=zeit.tv_sec+float(zeit.tv_usec)/1000000;
-   usb_last_time[m_iDevice]=zeit.tv_sec+double(zeit.tv_usec)/1000000-usbvflg_starttime;
+  
+  std::vector<std::string> PWCGrabber::getParamList(){
+    return std::vector<std::string>();
+  }
+  
 
-   if (!usbvflg_opencount[m_iDevice]){  /* realy open */
-     PWC_DEBUG_CALL((usbvflg_fd[m_iDevice]=open(devname[m_iDevice], O_RDWR)),"error opening device");
-     
-     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGCAP, &vcap),"error checking capturing device");
 
-     usbvflg_maxwidth[m_iDevice]=vcap.maxwidth;
-
-     PWC_DEBUG(strcmp(vcap.name,sollname),"Wrong hardware name (need something like \"/dev/video0\"");
-
-     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGWIN, &vwin),"error getting video-window");
-
-     vwin.flags &= ~PWC_FPS_FRMASK;
-     int _fps_ = m_iWidth <=320 ? 30 : 15;
-
-     /**ATTENTION 40 is max FPS value and will cause 25 fps in this system**/
-     vwin.flags |= (_fps_ << PWC_FPS_SHIFT); // new framerate 15 fps
-     
-     vwin.width=m_iWidth; //these widht and height settings added later, 
-     vwin.height=m_iHeight;//because via set_params it does't work always
-     
-     //     printf ("%i %i\n", m_iWidth, m_iHeight);
-     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCSWIN, &vwin),"error setting video-window");
-
-     /* Set CHANNEL and PAL_MODE */
-     usbvflg_vchan[m_iDevice].channel=0; /* 0: Tuner, 1: Comp1, 2: S-VHS */
-      //    usbvflg_vchan[device].norm=VIDEO_MODE_PAL;
-
-     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCSCHAN, &(usbvflg_vchan[m_iDevice])),"error setting video-channel");
-
-     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGPICT, &picture),"error getting video-picture");
-
-     usbvflg_params[m_iDevice][0].format= picture.palette;
-     usbvflg_params[m_iDevice][1].format= picture.palette;
+  bool PWCGrabber::restoreUserSettings(){
+    PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCRUSER), "cannot restore user settings");
+    return true;
+  }
+  
+  bool PWCGrabber::saveUserSettings(){
+    PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSUSER), "cannot save user settings");
+    return true;
+  }
+  
+  bool PWCGrabber::setGain(signed int iGainValue) {
+    if (iGainValue > 65535){
+      return false;
+    }
+    PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSAGC, &iGainValue), "cannot set gain");
+    return true;
+  }
+  
+  bool PWCGrabber::setWhiteBalance(int mode, int manual_red, int manual_blue){
+    /* mode can be:
+       PWC_WB_AUTO - Automatic
+       PWC_WB_MANUAL - Manually set by manual_red and manual_blue
+       PWC_WB_INDOOR - Indoor lightbulb type lighting
+       PWC_WB_OUTDOOR - Outdoor lighting
+       PWC_WB_FL - Flourescent lighting (FL tubes)
+        
+       other values can be between 0..65535 if you set mode = PWC_WB_MANUAL
+       read_xxx values are ignored
+    */
+    pwc_whitebalance wb;
+    wb.mode = mode;
+    wb.manual_red = manual_red;
+    wb.manual_blue = manual_blue;
+    wb.read_red = 0;
+    wb.read_blue = 0;
     
-     /* get infos about snapshot buffer memory size */
-     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGMBUF, &usbvflg_vmbuf[m_iDevice]),"error getting video-membuffer" );
+    PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSAWB, &wb), "cannot set white balance");
+    
+    return true;
+  }
+  
+  bool PWCGrabber::init(const Size &s,float fFps, int iDevice)  {
+    m_iWidth = s.width;
+    m_iHeight = s.height;
+    m_iDevice = iDevice;
+    m_fFps = fFps;
+    m_poRGB8Image = new Img8u(s,formatRGB);
+    
+    // {{{ open
 
-     /* Alloc memory for snapshot  */
-     usbvflg_buf[m_iDevice]=(icl8u *)mmap(0,usbvflg_vmbuf[m_iDevice].size, 
-                                               PROT_READ|PROT_WRITE,
-                                               MAP_SHARED, usbvflg_fd[m_iDevice],0);
+    usb_image_widths[m_iDevice]=m_iWidth;
+    usb_image_heights[m_iDevice]=m_iHeight;
     
-     /* Mutex stuff */
-     pthread_mutex_init(&usb_frame_mutex[m_iDevice],NULL);
-     pthread_mutex_init(&usb_semph_mutex[m_iDevice],NULL);
-     /* Semaphore stuff */
-     sem_init(&usb_new_pictures[m_iDevice],0,0);
+    static char *sollname="Philips 740 webcam";
+    struct timeval zeit;
+    static char *devname[] = { "/dev/video0", "/dev/video1",
+                               "/dev/video2", "/dev/video3", 
+                               NULL };
     
-     setparams(m_iDevice);
+    struct video_capability vcap;
+    struct video_picture picture;
+    struct video_window vwin;
+    
+    gettimeofday(&zeit,NULL);
+    usbvflg_starttime=zeit.tv_sec+float(zeit.tv_usec)/1000000;
+    usb_last_time[m_iDevice]=zeit.tv_sec+double(zeit.tv_usec)/1000000-usbvflg_starttime;
+    
+    if (!usbvflg_opencount[m_iDevice]){  /* realy open */
+      PWC_DEBUG_CALL((usbvflg_fd[m_iDevice]=open(devname[m_iDevice], O_RDWR)),"error opening device");
       
-     /* Thread starten  */
-     pthread_create(&usb_grabber_thread[m_iDevice], NULL, 
-                    (void*(*)(void*))&usb_grabber_funct,
-                    (void *)&(this->m_iDevice)); 
-   }   
-   else {  /* already using device and thread already running */
-     printf("error device %d is already open \n",m_iDevice);
-     return false;
-   }
-   //   if(ioctl(usbvflg_fd[device], VIDIOCGWIN, &vwin)<0){
-   //throw CException("vfl:VIDIOCGWIN: %s\n",strerror(errno)); 
-   //}
-   //width=vwin.width; 
-   //height=vwin.height;
-   usbvflg_opencount[m_iDevice]++;
-   
-   return true;
-}
-   // }}}
+      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGCAP, &vcap),"error checking capturing device");
+      
+      usbvflg_maxwidth[m_iDevice]=vcap.maxwidth;
+      
+      PWC_DEBUG(strcmp(vcap.name,sollname),"Wrong hardware name (need something like \"/dev/video0\"");
+      
+      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGWIN, &vwin),"error getting video-window");
+      
+      vwin.flags &= ~PWC_FPS_FRMASK;
+      int _fps_ = m_iWidth <=320 ? 30 : 15;
+      
+      /**ATTENTION 40 is max FPS value and will cause 25 fps in this system**/
+      vwin.flags |= (_fps_ << PWC_FPS_SHIFT); // new framerate 15 fps
+      
+      vwin.width=m_iWidth; //these widht and height settings added later, 
+      vwin.height=m_iHeight;//because via set_params it does't work always
+      
+      //     printf ("%i %i\n", m_iWidth, m_iHeight);
+      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCSWIN, &vwin),"error setting video-window");
+      
+      /* Set CHANNEL and PAL_MODE */
+      usbvflg_vchan[m_iDevice].channel=0; /* 0: Tuner, 1: Comp1, 2: S-VHS */
+      //    usbvflg_vchan[device].norm=VIDEO_MODE_PAL;
+      
+      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCSCHAN, &(usbvflg_vchan[m_iDevice])),"error setting video-channel");
+      
+      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGPICT, &picture),"error getting video-picture");
+      
+      usbvflg_params[m_iDevice][0].format= picture.palette;
+      usbvflg_params[m_iDevice][1].format= picture.palette;
+      
+      /* get infos about snapshot buffer memory size */
+      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGMBUF, &usbvflg_vmbuf[m_iDevice]),"error getting video-membuffer" );
+      
+      /* Alloc memory for snapshot  */
+      usbvflg_buf[m_iDevice]=(icl8u *)mmap(0,usbvflg_vmbuf[m_iDevice].size, 
+                                           PROT_READ|PROT_WRITE,
+                                           MAP_SHARED, usbvflg_fd[m_iDevice],0);
+      
+      /* Mutex stuff */
+      pthread_mutex_init(&usb_frame_mutex[m_iDevice],NULL);
+      pthread_mutex_init(&usb_semph_mutex[m_iDevice],NULL);
+      /* Semaphore stuff */
+      sem_init(&usb_new_pictures[m_iDevice],0,0);
+      
+      setparams(m_iDevice);
+      
+      /* Thread starten  */
+      pthread_create(&usb_grabber_thread[m_iDevice], NULL, 
+                     (void*(*)(void*))&usb_grabber_funct,
+                     (void *)&(this->m_iDevice)); 
+    }   
+    else {  /* already using device and thread already running */
+      printf("error device %d is already open \n",m_iDevice);
+      return false;
+    }
+    //   if(ioctl(usbvflg_fd[device], VIDIOCGWIN, &vwin)<0){
+    //throw CException("vfl:VIDIOCGWIN: %s\n",strerror(errno)); 
+    //}
+    //width=vwin.width; 
+    //height=vwin.height;
+    usbvflg_opencount[m_iDevice]++;
+    
+    return true;
+  }
+  // }}}
+  
+  
+  
+  const ImgBase* PWCGrabber::grab(ImgBase **ppoDst){
+    // {{{ open 
 
-const ImgBase* PWCGrabber::grab(ImgBase *poOutput){
-  // {{{ open 
+  //adapt destination image
+  const ImgParams &p = getDesiredParams();
+  depth d = getDesiredDepth();
+  if(!ppoDst) ppoDst = &m_poImage;
+  else if(m_poImage && m_poImage != *ppoDst){
+    delete m_poImage;
+    m_poImage = 0;
+  }
+  ensureCompatible(ppoDst,d,p);
+  ImgBase *poOutput = *ppoDst;
 
   pthread_mutex_lock(&usb_semph_mutex[m_iDevice]);
   
@@ -519,80 +574,67 @@ const ImgBase* PWCGrabber::grab(ImgBase *poOutput){
   icl8u *pU = pY+m_iWidth*m_iHeight;
   icl8u *pV = pY+(int)(1.25*m_iWidth*m_iHeight);
 
-  if(poOutput) {
-    poOutput->setTime(g_Time[m_iDevice]);
-    if(poOutput->getFormat() == formatRGB &&
-       poOutput->getDepth() == depth8u &&
-       poOutput->getWidth() == m_iWidth &&
-       poOutput->getHeight() == m_iHeight ){
-      
-      convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),poOutput->asImg<icl8u>());
-      
-    }else if(poOutput->getFormat() == formatYUV){ // not yet tested
-      
-      Img8u oTmpSrc_Y(Size(m_iWidth,m_iHeight),    1,std::vector<icl8u*>(1, pY));
-      Img8u oTmpSrc_U(Size(m_iWidth/2,m_iHeight/2),1,std::vector<icl8u*>(1, pU));
-      Img8u oTmpSrc_V(Size(m_iWidth/2,m_iHeight/2),1,std::vector<icl8u*>(1, pV));
-
-
-
-
-
-
-
-      switch (poOutput->getDepth()){
-        case depth8u:{
-          icl8u *pucTmpY = poOutput->asImg<icl8u>()->getData(0);
-          icl8u *pucTmpU = poOutput->asImg<icl8u>()->getData(1);
-          icl8u *pucTmpV = poOutput->asImg<icl8u>()->getData(2);
-          
-          Img8u oTmpDst_Y(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpY));
-          Img8u oTmpDst_U(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpU));
-          Img8u oTmpDst_V(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpV));
-          
-          oTmpSrc_Y.scaledCopy(&oTmpDst_Y);
-          oTmpSrc_U.scaledCopy(&oTmpDst_U);
-          oTmpSrc_V.scaledCopy(&oTmpDst_V);      
-          break;
-        }
-        case depth32f:{
-          icl32f *pfTmpY = poOutput->asImg<icl32f>()->getData(0);
-          icl32f *pfTmpU = poOutput->asImg<icl32f>()->getData(1);
-          icl32f *pfTmpV = poOutput->asImg<icl32f>()->getData(2);
-          
-          Img32f oTmpDst_Y(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpY));
-          Img32f oTmpDst_U(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpU));
-          Img32f oTmpDst_V(poOutput->getSize(),1,std::vector<icl32f*>(1, pfTmpV));
-          
-          m_oConverter.apply(&oTmpSrc_Y,&oTmpDst_Y);
-          m_oConverterHalfSize.apply(&oTmpSrc_U,&oTmpDst_U);
-          m_oConverterHalfSize.apply(&oTmpSrc_V,&oTmpDst_V);
-          break;
-        }
-
-        default:
-          ICL_INVALID_FORMAT;
-          break;
+  
+  poOutput->setTime(g_Time[m_iDevice]);
+  if(poOutput->getFormat() == formatRGB &&
+     poOutput->getDepth() == depth8u &&
+     poOutput->getWidth() == m_iWidth &&
+     poOutput->getHeight() == m_iHeight ){
+    
+    convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),poOutput->asImg<icl8u>());
+    
+  }else if(poOutput->getFormat() == formatYUV){ // not yet tested
+    
+    Img8u oTmpSrc_Y(Size(m_iWidth,m_iHeight),    1,std::vector<icl8u*>(1, pY));
+    Img8u oTmpSrc_U(Size(m_iWidth/2,m_iHeight/2),1,std::vector<icl8u*>(1, pU));
+    Img8u oTmpSrc_V(Size(m_iWidth/2,m_iHeight/2),1,std::vector<icl8u*>(1, pV));
+    
+    switch (poOutput->getDepth()){
+      case depth8u:{
+        icl8u *pucTmpY = poOutput->asImg<icl8u>()->getData(0);
+        icl8u *pucTmpU = poOutput->asImg<icl8u>()->getData(1);
+        icl8u *pucTmpV = poOutput->asImg<icl8u>()->getData(2);
+        
+        Img8u oTmpDst_Y(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpY));
+        Img8u oTmpDst_U(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpU));
+        Img8u oTmpDst_V(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpV));
+        
+        oTmpSrc_Y.scaledCopy(&oTmpDst_Y);
+        oTmpSrc_U.scaledCopy(&oTmpDst_U);
+        oTmpSrc_V.scaledCopy(&oTmpDst_V);      
+        break;
       }
-    }else{
-      convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),m_poRGB8Image);
-      m_oConverter.apply(m_poRGB8Image,poOutput);
+      case depth32f:{
+         pwc_ext::pwc_yuv2yuv<icl32f>(poOutput,m_oConverter,m_oConverterHalfSize,oTmpSrc_Y,oTmpSrc_U,oTmpSrc_V);
+        break;
+      }
+      case depth32s:{
+        pwc_ext::pwc_yuv2yuv<icl32s>(poOutput,m_oConverter,m_oConverterHalfSize,oTmpSrc_Y,oTmpSrc_U,oTmpSrc_V);
+        break;
+      }
+      case depth16s:{
+         pwc_ext::pwc_yuv2yuv<icl16s>(poOutput,m_oConverter,m_oConverterHalfSize,oTmpSrc_Y,oTmpSrc_U,oTmpSrc_V);
+        break;
+      }
+      case depth64f:{
+        pwc_ext::pwc_yuv2yuv<icl64f>(poOutput,m_oConverter,m_oConverterHalfSize, oTmpSrc_Y,oTmpSrc_U,oTmpSrc_V);
+        break;
+      }
+      default:
+        ICL_INVALID_FORMAT;
+        break;
     }
-
-    pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);
-  }
-  else {
-    m_poRGB8Image->setTime(g_Time[m_iDevice]);
+  }else{
     convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),m_poRGB8Image);
-    pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);
-    return m_poRGB8Image;
+    m_oConverter.apply(m_poRGB8Image,poOutput);
   }
-
+  pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);
+  
   return poOutput;
 }
 
 // }}}
-
+  
 } //namespace icl
 
 #endif

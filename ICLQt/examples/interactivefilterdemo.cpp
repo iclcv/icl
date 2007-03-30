@@ -18,6 +18,7 @@ public:
              x(-1),y(-1),r(0),g(0),b(0),
              k(ConvolutionOp::kernelGauss3x3),sKernel("gauss")
   {
+    grabber->setDesiredSize(Size(640,480));
     widget->setGeometry(200,200,640,480);
     widget->show();
     QThread::connect((ICLDrawWidget*)widget,SIGNAL(mouseEvent(MouseInteractionInfo*)),
