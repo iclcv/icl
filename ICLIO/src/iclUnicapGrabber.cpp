@@ -10,8 +10,8 @@
 #include "iclUnicapGrabEngine.h"
 #include "iclUnicapConvertEngine.h"
 
-#include "iclSonyConvertEngine.h"
-#include "iclSonyGrabEngine.h"
+#include "iclDefaultConvertEngine.h"
+#include "iclDefaultGrabEngine.h"
 
 using namespace icl;
 using namespace std;
@@ -67,13 +67,13 @@ namespace icl{
     
     }else if(modelname == "DFW-VL500 2.30"){ // sony cams !
       //printf("Using SonyGrabEngine !\n");
-      m_poGrabEngine = new SonyGrabEngine(&m_oDevice,m_bUseDMA);
-      m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
+      m_poGrabEngine = new DefaultGrabEngine(&m_oDevice,m_bUseDMA);
+      m_poConvertEngine = new DefaultConvertEngine(&m_oDevice);
       
     }else {
       //printf("Using UniapGrabEngine and Sony Convert Engine for %s! \n",modelname.c_str());
-      m_poGrabEngine = new UnicapGrabEngine(&m_oDevice,m_bUseDMA);
-      m_poConvertEngine = new SonyConvertEngine(&m_oDevice);
+      m_poGrabEngine = new DefaultGrabEngine(&m_oDevice,m_bUseDMA);
+      m_poConvertEngine = new DefaultConvertEngine(&m_oDevice);
     }
     m_fCurrentFps = 0;
     m_oLastTime = icl::Time::now();

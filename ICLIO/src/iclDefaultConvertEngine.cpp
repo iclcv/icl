@@ -1,9 +1,9 @@
-#include "iclSonyConvertEngine.h"
+#include "iclDefaultConvertEngine.h"
 #include "iclUnicapDevice.h"
 #include <string>
 #include <iclImg.h>
 #include <iclCC.h>
-#include <iclTimer.h>
+
 using namespace std;
 
 namespace icl{
@@ -22,7 +22,7 @@ namespace icl{
   }
   
   
-  void SonyConvertEngine::cvt(const icl8u *rawData, const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst){
+  void DefaultConvertEngine::cvt(const icl8u *rawData, const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst){
     UnicapFormat f = m_poDevice->getCurrentUnicapFormat();
     string fourcc = f.getFourCC();
     Size size = f.getSize();

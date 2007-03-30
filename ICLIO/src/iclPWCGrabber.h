@@ -50,7 +50,7 @@ namespace icl{
     /// Deprecated contstructor for direct instantiation of a valid grabber object
     /** use the default contructor instead and call init(..) to get initialization 
         results 
-        @param size internal grabbing size for pwc,
+        @param s internal grabbing size for pwc,
         @param fFps speed of the internal grabber thread 
         @param iDevice /dev/video - device to use (0..4) **/
     PWCGrabber(const Size &s, float fFps=30, int iDevice = 0); 
@@ -112,7 +112,7 @@ namespace icl{
         @param mode mode specifier
         @param manual_red definition of manual red white balance value 
                left unregarded if -1
-        @param manual_green definition of manual blue white balance value 
+        @param manual_blue definition of manual blue white balance value 
                left unregarded if -1
         @return if successful
     */

@@ -16,13 +16,13 @@ namespace icl{
       - <b>range:</b> the property is characterized by a single double 
         value which is restricted by a given valid range <em>and a given 
         value stepping??</em>
-        (e.g. brightness \in [-100, 100]) 
+        (e.g. brightness \f$ \in \f$  [-100, 100]) 
       - <b>value list:</b> the property is also characterized by a
         single double value, but is is restricted by a set of valid
-        values (e.g. frame rate \in {3.75, 7.5, 15, 30}
+        values (e.g. frame rate \f$ \in \f$ {3.75, 7.5, 15, 30}
       - <b>menu:</b> In this case, the property defines a string
         value, which must be in a well defined list of alternative
-        string values. (e.g. video source \in { "composite1", 
+        string values. (e.g. video source \f$ \in \f$ { "composite1", 
         "composite2", "svideo1" }
       - <b>data:</b> The property may defined by arbitrary data in this
         case. The binary data is described by a length in bytes.

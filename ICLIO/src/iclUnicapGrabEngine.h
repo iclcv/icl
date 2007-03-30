@@ -6,38 +6,24 @@
 #include <iclImgParams.h>
 
 namespace icl{
-  class UnicapDevice;
-  class UnicapBuffer;
+  /// Interface class for UnicapGrabEngines
+  /** Base implemetation is the UnicapDefaultGrabEngine */
+  struct UnicapGrabEngine{
+    virtual ~UnicapGrabEngine(){}
+    // locks the grabbers image
+    virtual void lockGrabber() = 0;
 
-  class UnicapGrabEngine{
-    public:
-    /// Creates a new UnicapGrabEngine
-    /** Note that dma support is not yet implemnted correcly and does not work!
-        @param device corresponding unicap device
-        @param useDMA flag that indicates whether frames are grabbed into system or user
-                      buffers. Usage of system buffers implies using DMA (direct memory
-                      access) <b>Note:This feature does not work yet!</b>*/
-    UnicapGrabEngine(UnicapDevice *device, bool useDMA=false);
-    virtual ~UnicapGrabEngine();
+    // unlocks the grabber image
+    virtual void unlockGrabber() =0;
 
-    virtual void lockGrabber();
-    virtual void unlockGrabber();
-    virtual void getCurrentFrameConverted(const ImgParams &desiredParams, depth desiredDepth,ImgBase **ppoDst){ 
-      (void)desiredParams;(void)desiredDepth; (void)ppoDst;
-      ERROR_LOG("this GrabEngine does not provide converted frames!");
-    }
-    virtual const icl8u *getCurrentFrameUnconverted(); // needs lock!
-    virtual bool needsConversion() const{ return true; }
+    /// returns a converted frame
+    virtual void getCurrentFrameConverted(const ImgParams &desiredParams, depth desiredDepth,ImgBase **ppoDst) = 0;
 
-    private:
+    /// returns an unconverted frame
+    virtual const icl8u *getCurrentFrameUnconverted() = 0;
 
-    UnicapDevice *m_poDevice;
-    static const int NBUFS=4;
-    unicap_data_buffer_t m_oBuf[NBUFS];
-    int m_iCurrBuf;
-    int NEXT_IDX() { return CYCLE_IDX(m_iCurrBuf); }
-    int CYCLE_IDX(int &i){ int j=i++; if(i==NBUFS)i=0; return j; }
-    bool m_bUseDMA, m_bStarted;
+    /// retruns whether this engine is able to provide converted frames or not
+    virtual bool needsConversion() const = 0;
   };
 }
 
