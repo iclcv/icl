@@ -440,7 +440,6 @@ namespace icl{
   // }}}
   ImgQ copyroi(const ImgQ &image){
     // {{{ open
-
     ImgQ *cpy = image.deepCopyROI()->asImg<ICL_QUICK_TYPE>();
     ImgQ im = *cpy;
     delete cpy;
@@ -600,7 +599,6 @@ namespace icl{
 
   ImgQ cc(const ImgQ& image, format fmt){
     // {{{ open
-
     ImgQ dst(image.getSize(),fmt);
     ImgQ src = copyroi(image);
     cc(&src,&dst);

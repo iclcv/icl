@@ -2,27 +2,55 @@
 #include <QFont>
 #include <QFontMetrics>
 #include <QApplication>
-
+#include <iclRegionBasedBlobSearcher.h>
+#include <iclFMCreator.h>
+#include <iclRegionFilter.h>
+#include <vector>
 
 int main(int nargs, char **ppc){
 
-  ImgQ A = scale(create("parrot"),300,300);
-  A.setROI(Rect(0,0,100,120));
+  ImgQ A = scale(create("parrot"),0.5);
+  
+  
+  RegionBasedBlobSearcher rbbs;
+  
+  icl8u rc[] = {255,0,0};
+  icl8u tr[] = {55,55,55};
+  vector<icl8u> refColor;
+  vector<icl8u> thresh;
+  for(int i=0;i<3;i++){
+    refColor.push_back(rc[i]);
+    thresh.push_back(tr[i]);
+  }
+  
+  FMCreator *fmc = FMCreator::getDefaultFMCreator(A.getSize(),formatRGB,refColor, thresh);
+  Img8u A8u= cvt8u(A);
+  Img8u fm = *(fmc->getFM(&A8u));
 
-  ImgQ A2 = copy(A);
-  roi(A)=0;
+  ImgQ fm2 = cvt(fm);
+  fm2.setFormat(formatGray);
 
-  print(A2);
-  A2 = flipx(A2);
-  print(A2);  
-  roi(A2)=0;
+  RegionFilter *rf = new RegionFilter(new Range<icl8u>(200,255),      // val 
+                                      new Range<icl32s>( 5,200000),   // size
+                                      0,
+                                      new Range<icl32f>(10,1000)    );   // formfactor 
+                                      
+  rbbs.add(fmc,rf);
+  rbbs.extractRegions(&A);
+  
+  const Array<Point> &centers = rbbs.getCOGs();
 
-  show(A);
-  show(A2);
-  A.setFullROI();
-  A2.setFullROI();
+  const Array<Array<Point> > &boundaries = rbbs.getBoundaries();
+  ImgQ B = rgb(fm2);
 
-  show((A,A2));
+  for(unsigned int i=0;i<centers.size();i++){
+    color(255,0,0);
+    cross(B,centers[i]);
+    color(0,100,255);
+    pix(B,boundaries[i]);
+  }
+  show((A,B));
+  
   /*
       
       ImgQ im = scale(create("parrot"),0.4);  

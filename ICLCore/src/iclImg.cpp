@@ -193,9 +193,8 @@ namespace icl {
   template<class Type>
   Img<Type>* ensureDepth(ImgBase **ppoDst){
     // {{{ open
-  
-    icl::ensureDepth(ppoDst,getDepth<Type>());
-    return (*ppoDst)->asImg<Type>();
+    ImgBase *poDst = icl::ensureDepth(ppoDst,getDepth<Type>());
+    return poDst->asImg<Type>();  
   }
   // }}}
 
@@ -270,9 +269,14 @@ namespace icl {
   template<class Type>
   Img<Type> *Img<Type>::deepCopyROI(ImgBase **ppoDst) const{
     // {{{ open
-
     FUNCTION_LOG("ptr:"<<ppoDst); 
-    return deepCopyROI( ensureDepth<Type>(ppoDst) );
+    Img<Type> *tmp = ensureDepth<Type>(ppoDst);
+    if(!ppoDst){
+      tmp->setSize(getROISize());
+      tmp->setFormat(getFormat());
+      tmp->setChannels(getChannels());
+    }
+    return deepCopyROI( tmp );
   }
 
   // }}}
@@ -341,7 +345,6 @@ namespace icl {
   template<class Type>
   Img<Type> *Img<Type>::deepCopyROI(Img<Type> *poDst) const{
     // {{{ open
-    
     // NEW USING source ROI as well as destination images ROI
     FUNCTION_LOG("ptr:"<< poDst);
     if(!poDst){

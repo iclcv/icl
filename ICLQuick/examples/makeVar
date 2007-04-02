@@ -12,7 +12,7 @@ _DOT_DOT:=../${_DOT_DOT}
 
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
-
+include ${PACKAGES}/ICLBlob
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.

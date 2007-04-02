@@ -84,7 +84,7 @@ namespace icl {
      virtual void setProperty(const std::string &property, const std::string &value){
        (void)property; (void)value;
      }
-
+     
      /// returns a list of properties, that can be set using setProperty
      /** @return list of supported property names **/
      virtual std::vector<std::string> getPropertyList(){
@@ -97,35 +97,83 @@ namespace icl {
        return std::vector<std::string>();
      }
 
+     /// get type of property or parameter
+     /** This is a new minimal configuration interface: When implementing generic
+         video device configuration utilities, the programmer need information about
+         the parameters and properties received by getPropertyList() and 
+         getParamList(). With the getType(const string&) function you can intercept
+         all possible params and properties, and receive a type string which defines
+         of which type the given parameter or property was: \n
+         (for detailed description of the types, see also the get Info function)
+         Types are:
+         - "range" the property/param is a double value in a given range 
+         - "value-list" the property/param double value in a list of possible values
+         - "menu" the property/param is a string value in a list of possible values
+         - ... (propably some other types are defined later on)
+     */
+     virtual std::string getType(const std::string &name){
+       (void)name; return "undefined";
+     }
+     
+     /// get information of a property or parameters valid values values
+     /** This is the second function of the minimal configuration interface: If 
+         received a specific parameter or property type with getType(), it's
+         possible to get the corresponding range, value-list or menu with this
+         funcitons. The Syntax of the returned strings are:
+         - "[A,B]:C"  for a range with min=A, max=B and stepping = C
+         - "{A,B,C,...}" for a value-list and A,B,C are ascii doubles
+         - "{A,B,C,...}" for a menu and A,B,C are strings
+     */
+     virtual std::string getInfo(const std::string &name){
+       (void)name; return "undefined";
+     }
+     /* END-NEW */
 
+     /// returns current desired image params (size and format)
      const ImgParams &getDesiredParams()const{
        return m_oDesiredParams;
      }
+     
+     /// returns current desired image size (default is "320x240"
      const Size &getDesiredSize()const{
        return m_oDesiredParams.getSize();
      }
+     
+     /// returns current desired image format (default is formatRGB)
      format getDesiredFormat() const{
        return m_oDesiredParams.getFormat();
      }
+
+     /// returns current desired image depth (default is depth8u)
      depth getDesiredDepth() const{
        return m_eDesiredDepth;
      }
 
+     /// sets current desired image parameters
      void setDesiredParams(const ImgParams &p){
        m_oDesiredParams = p;
      }
+
+     /// sets current desired image size
      void setDesiredSize(const Size &s){
        m_oDesiredParams.setSize(s);
      }
+     
+     /// sets current desired image format
      void setDesiredFormat(format f){
        m_oDesiredParams.setFormat(f);
      }
+     
+     /// returns current desired image depth
      void setDesiredDepth(depth d){
        m_eDesiredDepth = d;
      }
      
     private:
+     /// internal storage of desired image parameters
      ImgParams m_oDesiredParams;
+     
+     /// internal storage of desired image depth
      depth m_eDesiredDepth;
   }; // class
  
