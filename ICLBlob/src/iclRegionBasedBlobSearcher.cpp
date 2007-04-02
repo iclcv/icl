@@ -238,18 +238,21 @@ namespace icl{
   // }}}
   const Array<int> &RegionBasedBlobSearcher::getCOGsPOD(){
     // {{{ open
+		getCOGs();
     return toPOD(m_oCOGsOut,m_oCOGsOutPOD);
   }
 
   // }}}
   const Array<int> &RegionBasedBlobSearcher::getBoundingBoxesPOD(){
     // {{{ open 
+		getBoundingBoxes();
     return toPOD(m_oBBs,m_oBBsOutPOD);
   }
 
   // }}}
   const Array<float> &RegionBasedBlobSearcher::getPCAInfoPOD(){
     // {{{ open
+		getPCAInfo();
     return toPOD(m_oPCAInfos,m_oPCAInfosOutPOD);
   }
 
@@ -257,7 +260,7 @@ namespace icl{
 
   const Array<Array<int> > &RegionBasedBlobSearcher::getBoundariesPOD(){
     // {{{ open
-
+		getBoundaries();
     return toPOD(getBoundaries(),m_oBoundariesPOD);
   }
 

@@ -32,7 +32,6 @@ namespace icl{
 
   bool RegionFilter::validate(const BlobData &d){
     // {{{ open
-
     if(m_poValueRange && !m_poValueRange->in(d.getVal())) return false;
     if(m_poSizeRange && ! m_poSizeRange->in(d.getSize())) return false;
     if(m_poBoundaryLengthRange && ! m_poBoundaryLengthRange->in(d.getBoundaryLength())) return false;
