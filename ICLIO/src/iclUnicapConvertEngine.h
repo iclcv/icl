@@ -27,6 +27,9 @@ namespace icl{
                       produce by this converter 
     **/
     virtual void cvt(const icl8u *rawData, const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst)=0;
+
+    /// returns whether this engine is able to provide given paramters
+    virtual bool isAbleToProvideParams(const ImgParams &desiredParams, depth desiredDepth) const = 0;
     protected:
     
     /// internal storage of the associated UnicapDevice

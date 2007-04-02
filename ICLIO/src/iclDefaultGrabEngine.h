@@ -54,6 +54,8 @@ namespace icl{
     /// returns true in this class
     virtual bool needsConversion() const{ return true; }
 
+    /// returns whether this engine is able to provide images with given params
+    virtual bool isAbleToProvideParams(const ImgParams &desiredParams, depth desiredDepth) const{  return false; }
     private:
 
     /// Internal storage of the assiciated UnicapDevice

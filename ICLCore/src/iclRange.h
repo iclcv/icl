@@ -7,6 +7,7 @@ namespace icl{
   /// class representing a range defined by min and max value
   template<class Type> 
   struct Range{
+    virtual ~Range(){}
     /// create an empty range (min = max = 0)
     Range():minVal(Type(0)),maxVal(Type(0)){}
     
@@ -29,7 +30,7 @@ namespace icl{
     }
     
     /// tests whether a given value is inside of this range
-    bool in(Type value) const { return value >= minVal && value <= maxVal; }
+    virtual bool in(Type value) const { return value >= minVal && value <= maxVal; }
   };
 }
 #endif

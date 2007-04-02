@@ -5,7 +5,7 @@
 #include <iclImgParams.h>
 #include <iclTypes.h>
 #include <vector>
-
+#include <iclSteppingRange.h>
 /*
   Grabber.h
 
@@ -97,11 +97,30 @@ namespace icl {
        return std::vector<std::string>();
      }
 
+     /// translates a SteppingRange into a string representation
+     static std::string translateSteppingRange(const SteppingRange<double>& range);
+
+     /// creates a SteppingRange out of a string representation
+     static SteppingRange<double> translateRange(const std::string &rangeStr);
+
+     /// translates a vector of doubles into a string representation
+     static std::string translateDoubleVec(const std::vector<double> &doubleVec);
+
+     /// creates a vector of doubles out of a string representation
+     static std::vector<double> translateDoubleVec(const std::string &doubleVecStr);
+
+     /// translates a vector of strings into a single string representation
+     static std::string translateStringVec(const std::vector<std::string> &stringVec);
+
+     /// creates a vector of strins out of a single string representation
+     static std::vector<std::string> translateStringVec(const std::string &stringVecStr);
+
+     
      /// get type of property or parameter
      /** This is a new minimal configuration interface: When implementing generic
          video device configuration utilities, the programmer need information about
          the parameters and properties received by getPropertyList() and 
-         getParamList(). With the getType(const string&) function you can intercept
+         getParamList(). With the getType(const string&) function you can explore
          all possible params and properties, and receive a type string which defines
          of which type the given parameter or property was: \n
          (for detailed description of the types, see also the get Info function)

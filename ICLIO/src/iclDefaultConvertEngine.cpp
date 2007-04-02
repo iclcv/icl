@@ -21,6 +21,14 @@ namespace icl{
     } 
   }
   
+  bool DefaultConvertEngine::isAbleToProvideParams(const ImgParams &desiredParams, depth desiredDepth) const{
+    UnicapFormat f = m_poDevice->getCurrentUnicapFormat();
+    if(desiredDepth == depth8u && desiredParams.getFormat() == formatRGB && desiredParams.getSize() == f.getSize() ){
+      return true;
+    }else{
+      return false;
+    }
+  }
   
   void DefaultConvertEngine::cvt(const icl8u *rawData, const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst){
     UnicapFormat f = m_poDevice->getCurrentUnicapFormat();

@@ -126,11 +126,11 @@ namespace icl{
     /// wrapped UnicapDevice object
     UnicapDevice m_oDevice;
     
-    /// output image if no conversion is neccesary
+    /// output image if no image is given
     ImgBase *m_poImage;
 
-    /// output image if conversion is neccesary
-    ImgBase *m_poConvertedImage;
+    /// buffer image if conversion is neccesary
+    ImgBase *m_poConversionBuffer;
 
     /// internal used converter to ensure output images have correct parameters
     Converter m_oConverter;

@@ -32,6 +32,9 @@ namespace icl{
     /** \copydoc icl::UnicapConvertEngine::cvt(const icl::icl8u*, const iclImgParams&, icl::depth, icl::ImgBase**) */
     virtual void cvt(const icl8u *rawData, const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst);
 
+    /// returns whether this engine is able to provide images with given params
+    virtual bool isAbleToProvideParams(const ImgParams &desiredParams, depth desiredDepth) const;
+
     private:
     /// internal used data buffer for conversion
     Array<icl8u> m_oCvtBuf;

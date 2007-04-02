@@ -22,6 +22,9 @@ namespace icl{
     /// returns an unconverted frame
     virtual const icl8u *getCurrentFrameUnconverted() = 0;
 
+    /// returns whether the grab engine is able to provide given image params
+    virtual bool isAbleToProvideParams(const ImgParams &desiredParams, depth desiredDepth)const = 0;
+    
     /// retruns whether this engine is able to provide converted frames or not
     virtual bool needsConversion() const = 0;
   };
