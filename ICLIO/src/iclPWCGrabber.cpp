@@ -26,8 +26,9 @@ using namespace std;
 
 
 #define PWC_DEBUG(X,S) if(X) {printf("pwc-debug:[%s]\n",S); return false;}
+#define PWC_DEBUG_2(ECHO,X,S) if(X) {if(ECHO){printf("pwc-debug:[%s]\n",S);} m_iDevice = -1; return false;}
 #define PWC_DEBUG_CALL(X,S) if(X<0){printf("pwc-debug-call:[%s]\n",S); return false; }
-
+#define PWC_DEBUG_CALL_2(ECHO,X,S) if(X<0){ if(ECHO){printf("pwc-debug-call:[%s]\n",S);}m_iDevice = -1; return false; }
 namespace pwc_ext{
   template<class T>
   inline void pwc_yuv2yuv(icl::ImgBase *&poOutput,
@@ -323,15 +324,35 @@ void save_setparams(int device){
 // }}}
   
   PWCGrabber::PWCGrabber(void) : m_poRGB8Image(0),m_poImage(0) {
+    m_iDevice  = -1;
+    //printf("created empty pwc grabber \n");
   }
   
   PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice) : m_poRGB8Image(0), m_poImage(0) {
     if (!init(s, fFps, iDevice)) { exit(0); }
+    //printf("created grabber %d\n",iDevice);
   }
 
   PWCGrabber::~PWCGrabber(void) {
+    //printf("released pwc grabber %d \n",m_iDevice);
     releaseAll();
   }
+  
+  vector<int> PWCGrabber::getDeviceList(){
+    // {{{ open
+
+    vector<int> v;
+    for(int i=0;i<4;i++){
+      PWCGrabber *g = new PWCGrabber;
+      if(g->init(Size(320,240),15,i,true)){
+        v.push_back(i);
+      }
+      delete g;
+    }
+    return v;
+  }
+
+  // }}}
   
   void PWCGrabber::releaseAll(){
     // {{{ open 
@@ -339,6 +360,8 @@ void save_setparams(int device){
       delete m_poRGB8Image; 
       m_poRGB8Image=0;
     }
+    
+    if(m_iDevice<0) return;
     
     usbvflg_opencount[m_iDevice]--;
     if (usbvflg_verbosity>1)
@@ -403,6 +426,66 @@ void save_setparams(int device){
   }
 
   // }}}
+
+  string PWCGrabber::getType(const std::string &name){
+    if(name == "size" || name == "white balance mode"){
+      return "menu";
+    }else if(name == "gain" || name == "white balance red" || name == "white balance blue"){
+      return "range";
+    }else if(name == "save user settings" || name == "restore user settings"){
+      return "command";
+    }else{
+      return "undefined";
+    }    
+  }
+  
+  string PWCGrabber::getInfo(const std::string &name){
+    if(name == "size"){
+      return "{\"160x120\",\"320x240\",\"640x480\"}";
+    }else if(name == "gain" || name == "white balance red" || name == "white balance blue"){
+      return "[0,65535]:1";
+    }else if(name == "save user settings" || name == "restore user settings"){
+      return "undefined";
+    }else if(name == "white balance mode"){
+      return "{\"indoor\",\"outdoor\",\"fl-tube\",\"auto\"}";
+    }else{
+      return "undefined";
+    }
+  }
+  
+  string PWCGrabber::getValue(const std::string &name){
+    if(name == "size"){
+      return translateSize(Size(m_iWidth,m_iHeight));
+    }else if(name == "gain"){
+      unsigned int g = 0;
+      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAGC, &g), "cannot get PWC gain");
+      char buf[20];
+      sprintf(buf,"%d",g);
+      return buf;
+    }else if(name == "white balance red" || name == "white balance blue" || name == "white balance mode"){
+      pwc_whitebalance wb;
+      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAWB, &wb), "cannot get PWC white balance");
+      if(name == "white balance red"){ 
+        char buf[20];
+        sprintf(buf,"%d",wb.manual_red);
+        return buf;
+      }else if(name == "white balance blue"){ 
+        char buf[20];
+        sprintf(buf,"%d",wb.manual_blue);
+        return buf;
+      }else {
+        switch(wb.mode){
+          case 0: return "indoor";
+          case 1: return "outdoor";
+          case 2: return "fl-tube";
+          case 3: return "manual";
+          case 4: return "auto";
+          default: return "undefined";
+        }
+      }
+    }
+    return "undefined";
+  }
   
   void PWCGrabber::setParam(const string &param, const string &value){
     // {{{ open
@@ -456,7 +539,7 @@ void save_setparams(int device){
     std::vector<std::string> v;
     v.push_back("gain");
     v.push_back("save user settings");
-    v.push_back("restor user settings");
+    v.push_back("restore user settings");
     v.push_back("white balance mode");
     v.push_back("white balance red");
     v.push_back("white balance blue");
@@ -509,7 +592,7 @@ void save_setparams(int device){
     return true;
   }
   
-  bool PWCGrabber::init(const Size &s,float fFps, int iDevice)  {
+  bool PWCGrabber::init(const Size &s,float fFps, int iDevice, bool echoOff)  {
     m_iWidth = s.width;
     m_iHeight = s.height;
     m_iDevice = iDevice;
@@ -535,16 +618,16 @@ void save_setparams(int device){
     usbvflg_starttime=zeit.tv_sec+float(zeit.tv_usec)/1000000;
     usb_last_time[m_iDevice]=zeit.tv_sec+double(zeit.tv_usec)/1000000-usbvflg_starttime;
     
-    if (!usbvflg_opencount[m_iDevice]){  /* realy open */
-      PWC_DEBUG_CALL((usbvflg_fd[m_iDevice]=open(devname[m_iDevice], O_RDWR)),"error opening device");
+    if (!usbvflg_opencount[m_iDevice]){  /* not already  open */
+      PWC_DEBUG_CALL_2(!echoOff,(usbvflg_fd[m_iDevice]=open(devname[m_iDevice], O_RDWR)),"error opening device");
       
-      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGCAP, &vcap),"error checking capturing device");
+      PWC_DEBUG_CALL_2(!echoOff,ioctl(usbvflg_fd[m_iDevice], VIDIOCGCAP, &vcap),"error checking capturing device");
       
       usbvflg_maxwidth[m_iDevice]=vcap.maxwidth;
       
-      PWC_DEBUG(strcmp(vcap.name,sollname),"Wrong hardware name (need something like \"/dev/video0\"");
+      PWC_DEBUG_2(!echoOff,strcmp(vcap.name,sollname),"Wrong hardware name (need something like \"/dev/video0\"");
       
-      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGWIN, &vwin),"error getting video-window");
+      PWC_DEBUG_CALL_2(!echoOff,ioctl(usbvflg_fd[m_iDevice], VIDIOCGWIN, &vwin),"error getting video-window");
       
       vwin.flags &= ~PWC_FPS_FRMASK;
       int _fps_ = m_iWidth <=320 ? 30 : 15;
@@ -556,7 +639,7 @@ void save_setparams(int device){
       vwin.height=m_iHeight;//because via set_params it does't work always
       
       //     printf ("%i %i\n", m_iWidth, m_iHeight);
-      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCSWIN, &vwin),"error setting video-window");
+      PWC_DEBUG_CALL_2(!echoOff,ioctl(usbvflg_fd[m_iDevice], VIDIOCSWIN, &vwin),"error setting video-window");
       
       /* Set CHANNEL and PAL_MODE */
       usbvflg_vchan[m_iDevice].channel=0; /* 0: Tuner, 1: Comp1, 2: S-VHS */
@@ -591,7 +674,9 @@ void save_setparams(int device){
                      (void *)&(this->m_iDevice)); 
     }   
     else {  /* already using device and thread already running */
-      printf("error device %d is already open \n",m_iDevice);
+      if(!echoOff){
+        printf("error device %d is already open \n",m_iDevice);
+      }
       return false;
     }
     //   if(ioctl(usbvflg_fd[device], VIDIOCGWIN, &vwin)<0){

@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <iclUnicapDevice.h>
 #include <iclTypes.h>
+#include <QMutex>
 
 /** \cond **/  
 class QHBoxLayout;
@@ -23,8 +24,7 @@ class QTabWidget;
 namespace icl{
   /** \cond **/
   class ICLWidget;
-  class UnicapGrabber;
-  class PWCGrabber;
+  class Grabber;
   class DoubleSlider;
   class BorderBox;
   class ImgParamWidget;
@@ -50,11 +50,13 @@ namespace icl{
     void startStopCapture(bool on);
     void updateImage();
     
+    void createGrabber(const QString &id);
+    
     private:
     void updateSizeCombo();
     void updateFormatCombo();
     
-    void fillLayout(QLayout *l, UnicapDevice &dev);
+    void fillLayout(QLayout *l, Grabber *dev);
     
     QHBoxLayout *m_poTopLevelLayout;
     ICLWidget *m_poICLWidget;
@@ -69,16 +71,19 @@ namespace icl{
 
     QTabWidget *m_poTabWidget;
     
-    
-    
     QComboBox *m_poDeviceCombo;
     QComboBox *m_poFormatCombo;
     QComboBox *m_poSizeCombo;
 
     QTimer *m_poTimer;
-    UnicapGrabber *m_poGrabber;
-    UnicapDevice m_oUnicapDevice;
+    QMutex m_oGrabberMutex;
+    
+    
+    Grabber *m_poGrabber;
+    
+    // UnicapDevice m_oUnicapDevice;
     std::vector<UnicapDevice> m_vecDeviceList;
+    std::vector<int> m_vecPWCDeviceList;
     
     ImgParamWidget *m_poImgParamWidget;
     

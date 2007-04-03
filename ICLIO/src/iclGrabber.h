@@ -96,12 +96,23 @@ namespace icl {
      virtual std::vector<std::string> getParamList(){
        return std::vector<std::string>();
      }
+     
+     /// base implementation for param check (seaches in the param list)
+     /** This function may be reimplemented in an optimized way in
+         particular subclasses.**/
+     virtual bool supportsParam(const std::string &param);
 
+     /// base implementation for property check (seaches in the property list)
+     /** This function may be reimplemented in an optimized way in
+         particular subclasses.**/
+     virtual bool supportsProperty(const std::string &property);
+
+     
      /// translates a SteppingRange into a string representation
      static std::string translateSteppingRange(const SteppingRange<double>& range);
 
      /// creates a SteppingRange out of a string representation
-     static SteppingRange<double> translateRange(const std::string &rangeStr);
+     static SteppingRange<double> translateSteppingRange(const std::string &rangeStr);
 
      /// translates a vector of doubles into a string representation
      static std::string translateDoubleVec(const std::vector<double> &doubleVec);
@@ -129,6 +140,7 @@ namespace icl {
          - "value-list" the property/param double value in a list of possible values
          - "menu" the property/param is a string value in a list of possible values
          - ... (propably some other types are defined later on)
+         - "command" property param has no additional parameters
      */
      virtual std::string getType(const std::string &name){
        (void)name; return "undefined";
@@ -144,6 +156,11 @@ namespace icl {
          - "{A,B,C,...}" for a menu and A,B,C are strings
      */
      virtual std::string getInfo(const std::string &name){
+       (void)name; return "undefined";
+     }
+
+     /// returns the current value of a property or a parameter
+     virtual std::string getValue(const std::string &name){
        (void)name; return "undefined";
      }
      /* END-NEW */

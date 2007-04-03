@@ -58,6 +58,9 @@ namespace icl{
     /// Destructor
     ~PWCGrabber(void);
     
+    /// creates a list with all available PWC device indices
+    static std::vector<int> getDeviceList();
+    
     /// initialisation function
     /** initializes a camera on /dev/video\<iDevice\>. be sure that you call init(..) and init(..) returns true
         before calling grab(..)
@@ -65,11 +68,13 @@ namespace icl{
         @param fFps grabbing rate
         @param iDevice USB grabbing device {0,1,2,3}
     **/
-    bool init(const Size &s,float fFps=30, int iDevice = 0);
+    bool init(const Size &s,float fFps=30, int iDevice = 0, bool echoOff=false);
     
     /// grabbing function  
     /** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    
     virtual const ImgBase* grab(ImgBase **poDst=0);
+
+    /** @{ @name properties and parameters */
     
     /// interface for the setter function for video device parameters
     /** \copydoc icl::Grabber::setParam(const std::string&,const std::string&) **/
@@ -88,6 +93,17 @@ namespace icl{
     /** @return list of supported parameters names */
     virtual std::vector<std::string> getParamList();
 
+    /// get type of property or parameter
+    /** \copydoc icl::Grabber::getType(const std::string &)*/
+    virtual std::string getType(const std::string &name);
+
+    /// get information of a property or parameters valid values values
+    /** \copydoc icl::Grabber::getInfo(const std::string &)*/
+    virtual std::string getInfo(const std::string &name);
+
+    /// returns the current value of a property or a parameter
+    virtual std::string getValue(const std::string &name);
+    /** @} */
 
     /** @{ @name additional special functions for PWC-Param access **/
 

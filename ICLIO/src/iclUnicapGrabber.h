@@ -43,17 +43,20 @@ namespace icl{
     /// Destructor
     ~UnicapGrabber();
     
-    /// **OLD** and **DEPRECATED** grab function
-    /** The old grab functions philosophy was to Convert the grabbed data directly into the 
-        given destiantion image (if not NULL) or otherwise to return an image of the currently 
-        best supported format and size (e.g. formarRGB and size equal to the grabbing size) 
-    **/
-    virtual const ImgBase* grab(ImgBase *poDst);
-    
-    
     /// **NEW** grab function grabs an image (destination image is adapted on demand)
     /** @copydoc icl::Grabber::grab(icl::ImgBase**) **/
     virtual const ImgBase* grab(ImgBase **ppoDst=0);
+    
+    /// get type of property or parameter
+    /** \copydoc icl::Grabber::getType(const std::string &)*/
+    virtual std::string getType(const std::string &name);
+
+    /// get information of a property or parameters valid values values
+    /** \copydoc icl::Grabber::getInfo(const std::string &)*/
+    virtual std::string getInfo(const std::string &name);
+    
+    /// returns the current value of a given property or parameter
+    virtual std::string getValue(const std::string &name);
     
     /// setter function for video device parameters 
     /** @copydoc icl::Grabber::setParam(const std::string&, const std::string&) 

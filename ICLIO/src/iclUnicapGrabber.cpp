@@ -1,6 +1,7 @@
 #include "iclUnicapGrabber.h"
 #include <iclImg.h>
 #include <string>
+#include <map>
 #include <unicap.h>
 #include <iclConverter.h>
 #include <iclCC.h>
@@ -106,7 +107,7 @@ namespace icl{
 
       static const Range<char> uppers('A','Z');
       static const int offs = 'A' - 'a';
-      
+
       string r=s;
       for(unsigned int i=0;i<r.length();i++){
         if(uppers.in(r[i])) r[i]-=offs;
@@ -114,6 +115,18 @@ namespace icl{
       return r;
     }
     
+    // }}}
+    string sizeVecToStr(const vector<Size> &v){
+      // {{{ open
+
+      if(!v.size()) return "{}";
+      string s = "{";
+      for(unsigned int i=0;i<v.size()-1;i++){
+        s+=string("\"")+translateSize(v[i])+"\",";
+      }      
+      return s+string("\"")+translateSize(v[v.size()-1])+"\"}";
+    }
+
     // }}}
   }
   
@@ -314,7 +327,7 @@ namespace icl{
 
   // }}}
   
-  std::vector<std::string> UnicapGrabber::getPropertyList(){
+  vector<string> UnicapGrabber::getPropertyList(){
     // {{{ open
 
     vector<string> v;
@@ -327,7 +340,7 @@ namespace icl{
 
   // }}}
 
-  std::vector<std::string> UnicapGrabber::getParamList(){
+  vector<string> UnicapGrabber::getParamList(){
     // {{{ open
 
     vector<string> v;
@@ -336,6 +349,178 @@ namespace icl{
     v.push_back("size&format");
     v.push_back("dma");
     return v;
+  }
+
+  // }}}
+
+  string UnicapGrabber::getInfo(const string &name){
+    // {{{ open
+
+    if(name == "size"){
+      // {{{ open
+
+      UnicapFormat fmt= m_oDevice.getCurrentUnicapFormat();
+      vector<Size> sizes = fmt.getPossibleSizes();
+      if(sizes.size()){
+        return sizeVecToStr(sizes);
+        
+      }else{
+        Size others[] = {fmt.getSize(),fmt.getMinSize(),fmt.getMaxSize()};
+        for(int i=0;i<3;i++){
+          if(others[i] != Size::null && others[i] != Size(-1,-1)){
+            return string("{\"")+translateSize(others[i])+"\"}";
+          }
+        }
+        return "{}";
+      }      
+
+      // }}}
+    }else if(name == "format"){
+      // {{{ open
+
+      vector<UnicapFormat> fmts = m_oDevice.getFormats();
+      if(!fmts.size()) return "{}";
+      string s = "{";
+      for(unsigned i = 0;i<fmts.size()-1;i++){
+        s+=string("\"")+fmts[i].getID()+"\",";
+      }
+      return s+string("\"")+fmts[fmts.size()-1].getID()+"\"}";
+
+      // }}}
+    }else if(name == "size&format"){
+      // {{{ open
+
+      string s = "{";
+      vector<UnicapFormat> fmts = m_oDevice.getFormats();
+      for(unsigned i = 0;i<fmts.size();i++){
+        vector<Size> sizes = fmts[i].getPossibleSizes();
+        if(sizes.size()){
+          for(unsigned int j=0;j<sizes.size();j++){
+            s+=string("\"")+fmts[i].getID()+"&"+translateSize(sizes[j])+"\"";
+            if(i==fmts.size()-1 && j == sizes.size()-1){
+              s+="}";
+            }else{
+              s+=",";
+            }
+          }
+        }else{
+          Size others[] = {fmts[i].getSize(),fmts[i].getMinSize(),fmts[i].getMaxSize()};
+          for(int j=0;j<3;j++){
+            if(others[j] != Size::null && others[j] != Size(-1,-1)){
+              s+=string("\"")+fmts[i].getID()+"&"+translateSize(others[j])+"\"";
+              break;
+            }
+          }
+          if(i==fmts.size()-1){
+            s+="}";
+          }else{
+            s+=",";
+          }
+        }
+      }
+      return s;
+
+      // }}}
+    }else if(name == "dma"){
+      // {{{ open
+      return "{\"on\",\"off\"}";
+      // }}}
+    }else{ // checking all properties
+      // {{{ open
+      
+      string t = getType(name);
+      if(t == "undefined") return t;
+      UnicapProperty p;
+      vector<UnicapProperty> ps = m_oDevice.getProperties();
+      bool found = false;
+      for(unsigned int i=0;i<ps.size();i++){
+        if(ps[i].getID() == name){
+          p = ps[i];
+          found = true;
+          break;
+        }
+      }
+      if(!found)return "undefined";
+      if(t == "menu"){
+        return Grabber::translateStringVec(p.getMenu());
+      }else if(t == "range"){
+        Range<double> r = p.getRange();
+        return Grabber::translateSteppingRange(SteppingRange<double>(r.minVal,r.maxVal,p.getStepping()));
+      }else if(t == "valueList"){
+        return Grabber::translateDoubleVec(p.getValueList());
+      }else{
+        return "undefined";
+      }
+    }
+    // }}}
+  }
+
+  // }}}
+  
+  string UnicapGrabber::getType(const string &name){
+    // {{{ open
+
+    static map<UnicapProperty::type,string> *typeMap = 0;
+    if(!typeMap){
+      typeMap = new map<UnicapProperty::type,string>;
+      (*typeMap)[UnicapProperty::valueList] = "valueList";
+      (*typeMap)[UnicapProperty::menu]      = "menu";
+      (*typeMap)[UnicapProperty::range]     = "range";
+      (*typeMap)[UnicapProperty::flags]     = "undefined";
+      (*typeMap)[UnicapProperty::data]      = "undefined";
+      (*typeMap)[UnicapProperty::anytype]   = "undefined";
+    }
+    
+    vector<UnicapProperty> ps = m_oDevice.getProperties();
+    for(unsigned int i=0;i<ps.size();i++){
+      if(ps[i].getID() == name){
+        return (*typeMap)[ps[i].getType()];
+      }
+    }
+
+    if(name == "size" || name == "format" || name == "format&size" || name == "dma"){
+      return "valueList";
+    }
+    return "undefined";
+  }
+
+  // }}}
+  
+  string UnicapGrabber::getValue(const std::string &name){
+    // {{{ open
+
+    // look for a specific property:
+    vector<UnicapProperty> ps = m_oDevice.getProperties();
+    for(unsigned int i=0;i<ps.size();i++){
+      if(ps[i].getID() == name){
+        char buf[30];
+        switch(ps[i].getType()){
+          case UnicapProperty::range:
+          case UnicapProperty::valueList:
+            sprintf(buf,"%f",ps[i].getValue());
+            return buf;
+          case UnicapProperty::menu:
+            return ps[i].getMenuItem();
+          default:
+            return "undefined";
+        }
+      }
+    }
+    if(name == "size"){
+      return translateSize(m_oDevice.getCurrentSize());
+    }else if(name == "format"){
+      return m_oDevice.getFormatID();
+    }else if(name == "size&format"){
+      return translateSize(m_oDevice.getCurrentSize())+"&"+m_oDevice.getFormatID();
+    }else if(name == "dma"){
+      if( m_bUseDMA ){
+        return "on";
+      }else{
+        return "off";
+      }
+    }else{
+      return "undefined";
+    }
   }
 
   // }}}
@@ -569,26 +754,6 @@ namespace icl{
 
   // }}}
 
-  /// OLD  FUNCTION TO BE REMOVED SOON!!!
-  const ImgBase* UnicapGrabber::grab(ImgBase *poDst){
-    // {{{ open
-
-    ensureCompatible(&m_poImage,depth8u,Size(640,480),formatRGB);
-
-    const std::vector<UnicapDevice> vs = UnicapGrabber::getDeviceList("device=/dev/video0");
-    printf("found %d devices\n",vs.size());
-    for(unsigned int i=0;i<vs.size();i++){
-      printf("Device %d = %s \n",i,vs[i].toString().c_str());
-      vs[i].listFormats();
-      vs[i].listProperties();
-    }
-
-    
-    return new Img8u(Size(640,480),formatRGB);
-
-  }
-
-  // }}}
 }
 
 // {{{ unicap_device_t

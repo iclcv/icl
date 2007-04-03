@@ -18,6 +18,10 @@ namespace icl{
       unicap_void_device( m_oUnicapDevicePtr.get() );
       return;
     }
+    if(getModelName() == "Philips 740 webcam"){
+      unicap_void_device( m_oUnicapDevicePtr.get() );
+      return;
+    }
     
     if(open()){
       
