@@ -28,9 +28,15 @@ namespace icl{
     // {{{ open
 
     // TOP LEVEL
-    m_poTopLevelLayout = new QHBoxLayout(this);
+    m_poTopLevelLayout = new QHBoxLayout(0);
+    m_poVTopLevelLayout = new QVBoxLayout(0);
+
+    m_poHBoxWidget = new QWidget(this);
     m_poICLWidget = new ICLWidget(this);
-    m_poTopLevelLayout->addWidget(m_poICLWidget);
+    m_poICLWidget->setGeometry(0,0,640,480);
+    m_poVTopLevelLayout->addWidget(m_poICLWidget);
+    m_poVTopLevelLayout->addWidget(m_poHBoxWidget);
+    m_poHBoxWidget->setLayout(m_poTopLevelLayout);
     
     /// THREE PANELS
     m_poCenterPanel = new QWidget(this);
@@ -125,8 +131,8 @@ namespace icl{
     }
  
     /// FINISHING : FINAL LAYOUTING
-    setLayout(m_poTopLevelLayout);
-    setGeometry(50,50,1100,400);
+    setLayout(m_poVTopLevelLayout);
+    setGeometry(50,50,800,800);
     setWindowTitle("ICL Camera Configuration Tool");
     m_poTimer = new QTimer(this);
     connect(m_poTimer,SIGNAL(timeout()),this,SLOT(updateImage()));

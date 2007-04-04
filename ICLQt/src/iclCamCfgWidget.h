@@ -58,9 +58,11 @@ namespace icl{
     void updateFormatCombo();
     
     void fillLayout(QLayout *l, Grabber *dev);
-    
+
+    QVBoxLayout *m_poVTopLevelLayout;
     QHBoxLayout *m_poTopLevelLayout;
     ICLWidget *m_poICLWidget;
+    QWidget *m_poHBoxWidget;
     QWidget *m_poCenterPanel, *m_poRightPanel;
     QVBoxLayout *m_poCenterPanelLayout, *m_poRightPanelLayout;
     QScrollArea *m_poPropertyScrollArea;
