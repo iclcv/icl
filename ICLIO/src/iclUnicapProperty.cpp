@@ -67,10 +67,9 @@ namespace icl{
   
   double UnicapProperty::getValue() const{
     // {{{ open
-
-      ICLASSERT_RETURN_VAL( m_oUnicapPropertyPtr->type == UNICAP_PROPERTY_TYPE_RANGE || 
-                            m_oUnicapPropertyPtr->type == UNICAP_PROPERTY_TYPE_VALUE_LIST ,0 );
-      return m_oUnicapPropertyPtr->value;
+    ICLASSERT_RETURN_VAL( m_oUnicapPropertyPtr->type == UNICAP_PROPERTY_TYPE_RANGE || 
+                          m_oUnicapPropertyPtr->type == UNICAP_PROPERTY_TYPE_VALUE_LIST ,0 );
+    return m_oUnicapPropertyPtr->value;
   }
 
   // }}}

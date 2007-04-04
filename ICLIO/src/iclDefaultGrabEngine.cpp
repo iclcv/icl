@@ -1,6 +1,5 @@
 #include <iclDefaultGrabEngine.h>
 #include <iclUnicapDevice.h>
-#include <iclStackTimer.h>
 
 namespace icl{
   DefaultGrabEngine::DefaultGrabEngine(UnicapDevice *device, bool useDMA):
@@ -32,8 +31,6 @@ namespace icl{
   }
   
   const icl8u *DefaultGrabEngine::getCurrentFrameUnconverted(){
-    BENCHMARK_THIS_FUNCTION;
-    
     if(!m_bStarted){
       unicap_start_capture(m_poDevice->getUnicapHandle());
       m_bStarted = true;

@@ -343,8 +343,8 @@ namespace icl{
     // {{{ open
     ICLASSERT_RETURN(m_poGrabber);
     m_bDisableSlots = true;
-    while(m_poSizeCombo->count()){
-      m_poSizeCombo->removeItem(0);
+    while(m_poFormatCombo->count()){
+      m_poFormatCombo->removeItem(0);
     }
 
     if(m_poGrabber->supportsParam("format")){
@@ -387,14 +387,16 @@ namespace icl{
       }else if(typeStr == "valueList"){
         QString propName = QString("[")+prop.c_str()+"]";
         QComboBox *cb = new QComboBox(PARENT);
-        vector<string> values = Grabber::translateStringVec( grabber->getInfo(prop) );
+        vector<double> values = Grabber::translateDoubleVec( grabber->getInfo(prop) );
         string currValue = grabber->getValue(prop);
         int iCurrIdx = -1;
         for(unsigned int j=0;j<values.size();j++){
-          if( values[j] == currValue ){
+          char buf[30];
+          sprintf(buf,"%f",values[j]);
+          if( abs(values[j] - atof(currValue.c_str())) < 0.001 ){
             iCurrIdx = i;
           }
-          cb->addItem(propName+" "+currValue.c_str());
+          cb->addItem(propName+" "+buf);
         }
         if(iCurrIdx != -1){
           cb->setCurrentIndex(iCurrIdx);

@@ -133,7 +133,7 @@ namespace icl{
   void UnicapGrabber::setProperty(const std::string &param, const std::string &value){
     // {{{ open
 
-    bool verbose = true;
+    //    bool verbose = true;
     string p = force_lower_case(param);
     vector<UnicapProperty> ps = m_oDevice.getProperties();
     for(unsigned int i=0;i<ps.size();i++){
@@ -148,7 +148,7 @@ namespace icl{
           if(range.in(val)){
             prop.setValue(val);
             m_oDevice.setProperty(prop);
-            if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
+            //      if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
           }else{
             printf("UnicapGrabber::setParam() value %f is out of range [%f..%f]\n",val,range.minVal, range.maxVal);
           }
@@ -163,7 +163,7 @@ namespace icl{
           bool foundValue = false;
           for(unsigned int j=0;j<valueList.size();j++){
             if(abs(valueList[j]-val)<0.00001){
-              if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
+              //              if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
               prop.setValue(valueList[j]);
               m_oDevice.setProperty(prop);
               foundValue = true;
@@ -182,7 +182,7 @@ namespace icl{
                 valueListStr+="}";
               }
             }
-            printf("UnicapGrabber::setParam() value %f is not in value list %s \n",val,valueListStr.c_str());
+            // printf("UnicapGrabber::setParam() value %f is not in value list %s \n",val,valueListStr.c_str());
           }
           break;
         }
@@ -197,7 +197,7 @@ namespace icl{
             if(force_lower_case(men[j])==val){
               prop.setMenuItem(men[j]);
               m_oDevice.setProperty(prop);
-              if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
+              //  if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
               foundEntry = true;
             }
           }
