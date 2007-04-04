@@ -60,8 +60,10 @@ namespace icl{
     double r = m_dMax-m_dMin;
     static const double ri = 10000;
     
-    int interval = (int)round(ri/r *s);
-    if(interval < 100) interval *=5;
+    int interval =   (int)round(r/ri *s);
+    if(interval < 100) interval *=10;
+    if(interval < 100) interval *=10;
+    
     m_poSlider->setTickInterval(interval);
     m_poSlider->setSingleStep(interval);
     m_poSlider->setTickPosition(QSlider::TicksBelow);

@@ -28,6 +28,7 @@ using namespace std;
 #define PWC_DEBUG(X,S) if(X) {printf("pwc-debug:[%s]\n",S); return false;}
 #define PWC_DEBUG_2(ECHO,X,S) if(X) {if(ECHO){printf("pwc-debug:[%s]\n",S);} m_iDevice = -1; return false;}
 #define PWC_DEBUG_CALL(X,S) if(X<0){printf("pwc-debug-call:[%s]\n",S); return false; }
+#define PWC_DEBUG_CALL_STR(X,S) if(X<0){printf("pwc-debug-call:[%s]\n",S); return ""; }
 #define PWC_DEBUG_CALL_2(ECHO,X,S) if(X<0){ if(ECHO){printf("pwc-debug-call:[%s]\n",S);}m_iDevice = -1; return false; }
 namespace pwc_ext{
   template<class T>
@@ -176,8 +177,10 @@ namespace icl {
 #define VIDIOCPWCSAGC   _IOW('v', 200, int)
   /* Get AGC; int < 0 = auto; >= 0 = fixed, range 0..65535 */
 #define VIDIOCPWCGAGC   _IOR('v', 200, int)
+
   /* Set shutter speed; int < 0 = auto; >= 0 = fixed, range 0..65535 */
 #define VIDIOCPWCSSHUTTER _IOW('v', 201, int)
+
 
   /* Color compensation (Auto White Balance) */
 #define VIDIOCPWCSAWB           _IOW('v', 202, struct pwc_whitebalance)
@@ -204,6 +207,7 @@ icl8u           *usbvflg_buf[]={NULL,NULL,NULL,NULL};
 int                     usbvflg_useframe[]={-1,-1,-1,-1};
 double                  usbvflg_starttime; 
 double                  usbvflg_diff_time=0;
+int                     usbvflg_shutter_speeds[4] = {-1,-1,-1,-1};
 
 pthread_t               usb_grabber_thread[4];
 pthread_mutex_t         usb_frame_mutex[4];
@@ -344,7 +348,7 @@ void save_setparams(int device){
     vector<int> v;
     for(int i=0;i<4;i++){
       PWCGrabber *g = new PWCGrabber;
-      if(g->init(Size(320,240),15,i,true)){
+      if(g->init(Size::null,40,i,true)){
         v.push_back(i);
       }
       delete g;
@@ -428,9 +432,9 @@ void save_setparams(int device){
   // }}}
 
   string PWCGrabber::getType(const std::string &name){
-    if(name == "size" || name == "white balance mode"){
+    if(name == "size" || name == "white balance mode" || name == "compression level"){
       return "menu";
-    }else if(name == "gain" || name == "white balance red" || name == "white balance blue"){
+    }else if(name == "gain" || name == "white balance red" || name == "white balance blue" || name == "shutter speed"){
       return "range";
     }else if(name == "save user settings" || name == "restore user settings"){
       return "command";
@@ -448,6 +452,12 @@ void save_setparams(int device){
       return "undefined";
     }else if(name == "white balance mode"){
       return "{\"indoor\",\"outdoor\",\"fl-tube\",\"auto\"}";
+    }else if(name == "format"){
+      return "{\"YUV 4-2-0 planar\"}";
+    }else if(name == "compression level"){
+      return "{\"no compression\",\"low compression\",\"average compression\",\"high compression\"}";
+    }else if(name == "shutter speed"){
+      return "[-1,65535]:1";
     }else{
       return "undefined";
     }
@@ -458,13 +468,13 @@ void save_setparams(int device){
       return translateSize(Size(m_iWidth,m_iHeight));
     }else if(name == "gain"){
       unsigned int g = 0;
-      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAGC, &g), "cannot get PWC gain");
+      PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAGC, &g), "cannot get PWC gain");
       char buf[20];
       sprintf(buf,"%d",g);
       return buf;
     }else if(name == "white balance red" || name == "white balance blue" || name == "white balance mode"){
       pwc_whitebalance wb;
-      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAWB, &wb), "cannot get PWC white balance");
+      PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAWB, &wb), "cannot get PWC white balance");
       if(name == "white balance red"){ 
         char buf[20];
         sprintf(buf,"%d",wb.manual_red);
@@ -483,6 +493,23 @@ void save_setparams(int device){
           default: return "undefined";
         }
       }
+    }else if(name == "format"){
+      return "YUV 4-2-0 planar";
+    }else if(name == "shutter speed"){
+      signed int level = usbvflg_shutter_speeds[m_iDevice];
+      char buf[20];
+      sprintf(buf,"%d",level);
+      return buf;
+    }else if(name == "compression level"){
+      signed int level = -2;
+      PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGCQUAL, &level), "cannot get compression level");
+      switch(level){
+        case 0: return "no compression";
+        case 1: return "low compression";
+        case 2: return "average compression";
+        case 3: return  "high compression";
+        default: return "undifined";
+      }
     }
     return "undefined";
   }
@@ -492,7 +519,11 @@ void save_setparams(int device){
 
     if(param == "size"){
       Size newSize = translateSize(value);
-      setGrabbingSize(newSize);          
+      setGrabbingSize(newSize);
+    }else if(param == "size"){
+      if(value != "YUV 4-2-0 planar"){
+        ERROR_LOG("invalid format \"" << value <<"\"");
+      }
     }else{
       ERROR_LOG("nothing known about a param " << param ); 
     }
@@ -526,6 +557,15 @@ void save_setparams(int device){
     }else if(property == "white balance blue"){
       int val = atoi(value.c_str());
       setWhiteBalance(3,-1,val);
+    }else if(property == "shutter speed"){
+      int val = atoi(value.c_str());
+      setShutterSpeed(val);
+    }else if(property == "compression level"){
+      int val = value == "no compression" ? 0 :
+                value == "low compression" ? 1 :
+                value == "average compression" ? 2 :
+                value == "high compression" ? 3 : -1;
+      setCompression(val);
     }else{
       ERROR_LOG("nothing known about a property " << property ); 
     }
@@ -543,6 +583,8 @@ void save_setparams(int device){
     v.push_back("white balance mode");
     v.push_back("white balance red");
     v.push_back("white balance blue");
+    v.push_back("shutter speed");
+    v.push_back("compression level");
     return v;
   }
 
@@ -553,6 +595,7 @@ void save_setparams(int device){
 
     std::vector<std::string> v;
     v.push_back("size");
+    v.push_back("format");
     return v;
   }
 
@@ -560,6 +603,7 @@ void save_setparams(int device){
   
   bool PWCGrabber::restoreUserSettings(){
     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCRUSER), "cannot restore user settings");
+    usleep(1500000);
     return true;
   }
   
@@ -591,14 +635,26 @@ void save_setparams(int device){
     
     return true;
   }
+
+  bool PWCGrabber::setCompression(int level){
+    ICLASSERT_RETURN_VAL( level >=0 && level <=3 ,false);
+    PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSCQUAL, &level), "cannot set compression level");
+    return true;
+  }
+  
+  bool PWCGrabber::setShutterSpeed(int level){
+    ICLASSERT_RETURN_VAL( level >=-1 && level <= 65535 ,false);
+    PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSSHUTTER, &level), "cannot set shutter speed");
+    usbvflg_shutter_speeds[m_iDevice] = level;
+    return true;
+  }
   
   bool PWCGrabber::init(const Size &s,float fFps, int iDevice, bool echoOff)  {
     m_iWidth = s.width;
     m_iHeight = s.height;
     m_iDevice = iDevice;
     m_fFps = fFps;
-    m_poRGB8Image = new Img8u(s,formatRGB);
-    
+
     // {{{ open
 
     usb_image_widths[m_iDevice]=m_iWidth;
@@ -630,13 +686,23 @@ void save_setparams(int device){
       PWC_DEBUG_CALL_2(!echoOff,ioctl(usbvflg_fd[m_iDevice], VIDIOCGWIN, &vwin),"error getting video-window");
       
       vwin.flags &= ~PWC_FPS_FRMASK;
-      int _fps_ = m_iWidth <=320 ? 30 : 15;
+      //      int _fps_ = (int)m_fFps; //m_iWidth <=320 ? 30 : 15;
+      int _fps_ =  15;
       
       /**ATTENTION 40 is max FPS value and will cause 25 fps in this system**/
       vwin.flags |= (_fps_ << PWC_FPS_SHIFT); // new framerate 15 fps
       
-      vwin.width=m_iWidth; //these widht and height settings added later, 
-      vwin.height=m_iHeight;//because via set_params it does't work always
+      if(s != Size::null){
+        vwin.width=m_iWidth; //these widht and height settings added later, 
+        vwin.height=m_iHeight;//because via set_params it does't work always
+      }else{
+        m_iWidth = vwin.width;
+        m_iHeight = vwin.height;
+        usb_image_widths[m_iDevice]=m_iWidth;
+        usb_image_heights[m_iDevice]=m_iHeight;
+      }
+      m_poRGB8Image = new Img8u(Size(m_iWidth,m_iHeight),formatRGB);
+        
       
       //     printf ("%i %i\n", m_iWidth, m_iHeight);
       PWC_DEBUG_CALL_2(!echoOff,ioctl(usbvflg_fd[m_iDevice], VIDIOCSWIN, &vwin),"error setting video-window");
@@ -695,15 +761,25 @@ void save_setparams(int device){
   const ImgBase* PWCGrabber::grab(ImgBase **ppoDst){
     // {{{ open 
 
-  //adapt destination image
-  const ImgParams &p = getDesiredParams();
-  depth d = getDesiredDepth();
-  if(!ppoDst) ppoDst = &m_poImage;
-  else if(m_poImage && m_poImage != *ppoDst){
-    delete m_poImage;
-    m_poImage = 0;
-  }
-  ensureCompatible(ppoDst,d,p);
+    //adapt destination image
+    const ImgParams &p = getDesiredParams();
+    depth d = getDesiredDepth();
+    
+    
+    if(!ppoDst) ppoDst = &m_poImage;  
+    ensureCompatible(ppoDst,d,p);
+
+    /**
+        const ImgParams &p = getDesiredParams();
+        depth d = getDesiredDepth();
+        
+        if(!ppoDst) ppoDst = &m_poImage;
+        else if(m_poImage && m_poImage != *ppoDst){
+        delete m_poImage;
+        m_poImage = 0;
+        }
+        ensureCompatible(ppoDst,d,p);
+   **/
   ImgBase *poOutput = *ppoDst;
 
   pthread_mutex_lock(&usb_semph_mutex[m_iDevice]);
@@ -728,7 +804,6 @@ void save_setparams(int device){
      poOutput->getDepth() == depth8u &&
      poOutput->getWidth() == m_iWidth &&
      poOutput->getHeight() == m_iHeight ){
-    
     convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),poOutput->asImg<icl8u>());
     
   }else if(poOutput->getFormat() == formatYUV){ // not yet tested

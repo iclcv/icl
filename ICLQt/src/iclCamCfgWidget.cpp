@@ -7,6 +7,7 @@
 #include <iclDoubleSlider.h>
 #include <iclBorderBox.h>
 #include <iclImgParamWidget.h>
+#include <iclStringSignalButton.h>
 
 #include <QHBoxLayout>
 #include <QComboBox>
@@ -77,13 +78,11 @@ namespace icl{
 
     /// RIGHT WIDGETS-----------------------------------------
     m_bDisableSlots = true;
-    /**
+
     /// add unicap devices:
     m_vecDeviceList = UnicapGrabber::getDeviceList();
     
-    printf("------------------------------------------------------------------------6 \n");
     for(unsigned int j=0;j<m_vecDeviceList.size();j++){
-      printf("------------------------------------------------------------------------7.%d \n",j);
       QString name = m_vecDeviceList[j].getID().c_str();
       m_poDeviceCombo->addItem(name);
       QWidget *w = new QWidget(this);
@@ -97,7 +96,7 @@ namespace icl{
       m_poTabWidget->addTab(sa,name);
       m_poTabWidget->setTabEnabled(j,false);
     }
-    **/
+
     /// add philips webcam devices
     m_vecPWCDeviceList = PWCGrabber::getDeviceList();
 
@@ -108,7 +107,7 @@ namespace icl{
       QVBoxLayout *l = new QVBoxLayout(w);
       QScrollArea *sa = new QScrollArea(this);
       PWCGrabber grabber;
-      if(!grabber.init(Size(320,240),24,j)){
+      if(!grabber.init(Size::null,24,j)){
         printf("error while initializing grabber device %d! \n",j);
       }
       fillLayout(l,&grabber);
@@ -118,24 +117,20 @@ namespace icl{
       m_poTabWidget->addTab(sa,name);
       m_poTabWidget->setTabEnabled(j,false);
     }
-    printf("------------------------------------------------------------------------10 \n");
     m_poTopLevelLayout->addWidget(m_poTabWidget);
-
     m_bDisableSlots = false;
-    
     if(m_poDeviceCombo->count()){
       createGrabber(m_poDeviceCombo->currentText());     
+      updateFormatCombo();
     }
  
     /// FINISHING : FINAL LAYOUTING
     setLayout(m_poTopLevelLayout);
     setGeometry(50,50,1100,400);
     setWindowTitle("ICL Camera Configuration Tool");
-    printf("------------------------------------------------------------------------11 \n");
     m_poTimer = new QTimer(this);
     connect(m_poTimer,SIGNAL(timeout()),this,SLOT(updateImage()));
     show();
-    printf("------------------------------------------------------------------------12 \n");
   }
 
   // }}}
@@ -145,30 +140,28 @@ namespace icl{
 
     if(m_bCapturing){
       startStopCapture(false);
-      m_oGrabberMutex.lock();
-      delete m_poGrabber;
-      m_poGrabber = false;
-      m_oGrabberMutex.unlock();
     }
     
     m_oGrabberMutex.lock();
-
+    if(m_poGrabber) delete m_poGrabber;
+    m_poGrabber = 0;
+    
     //search for a unicap grabber:
     for(unsigned int i=0;i<m_vecDeviceList.size();i++){
       if(m_vecDeviceList[i].getID() == text.toLatin1().data()){
         m_poGrabber = new UnicapGrabber(m_vecDeviceList[i]);
       }
     }
-    
+
     if(!m_poGrabber){ // search for pwc device
       if(text == "Philips 740 Webcam [device 0]"){
-        m_poGrabber = new PWCGrabber(Size(320,240),24,0);
+        m_poGrabber = new PWCGrabber(Size::null,40,0);
       }else if(text == "Philips 740 Webcam [device 1]"){
-        m_poGrabber = new PWCGrabber(Size(320,240),24,1);
+        m_poGrabber = new PWCGrabber(Size::null,40,1);
       }else if(text == "Philips 740 Webcam [device 2]"){
-        m_poGrabber = new PWCGrabber(Size(320,240),24,2);
+        m_poGrabber = new PWCGrabber(Size::null,40,2);
       }else if(text == "Philips 740 Webcam [device 3]"){
-        m_poGrabber = new PWCGrabber(Size(320,240),24,3);
+        m_poGrabber = new PWCGrabber(Size::null,40,3);
       }
     }
 
@@ -268,14 +261,31 @@ namespace icl{
   }
   // }}}
 
+  void CamCfgWidget::propertyButtonClicked(const QString &text){
+    ICLASSERT_RETURN(m_poGrabber);
+    m_oGrabberMutex.lock();
+    m_poGrabber->setProperty(text.toLatin1().data(),"");
+    m_oGrabberMutex.unlock();
+  }
+
+
   void CamCfgWidget::startStopCapture(bool on){
     // {{{ open
     if(on){
-      m_bCapturing = true;
-      m_poTimer->start(10);
+      if(!m_bCapturing){
+        m_bCapturing = true;
+        m_poTimer->start(10);
+      }
     }else{
-      m_bCapturing = false;
-      m_poTimer->stop();
+      if(m_bCapturing){
+        if(!m_bDisableSlots){
+          m_bDisableSlots = true;
+          m_poCaptureButton->setChecked(false);
+          m_bCapturing = false;
+          m_poTimer->stop();
+          m_bDisableSlots = false;
+        }          
+      }
     }
   }
 
@@ -287,7 +297,8 @@ namespace icl{
 
     m_oGrabberMutex.lock();
     if(m_poGrabber){
-      m_poICLWidget->setImage(m_poGrabber->grab((ImgBase**)0));
+      const ImgBase *image = m_poGrabber->grab();
+      m_poICLWidget->setImage(image);
       m_poICLWidget->update();
     }
     m_oGrabberMutex.unlock();
@@ -311,9 +322,17 @@ namespace icl{
     if(m_poGrabber->supportsParam("size")){
       string sizeListStr = m_poGrabber->getInfo("size");
       vector<string> sizeList = Grabber::translateStringVec( sizeListStr );
+      string currSizeStr = m_poGrabber->getValue("size");
       
+      int iCurrIdx = -1;
       for(unsigned int i=0;i<sizeList.size();i++){
+        if(sizeList[i]==currSizeStr){
+          iCurrIdx = i;
+        }
         m_poSizeCombo->addItem(sizeList[i].c_str());
+      }
+      if(iCurrIdx != -1){
+        m_poSizeCombo->setCurrentIndex(iCurrIdx);
       }
     }
     m_bDisableSlots = false;
@@ -365,7 +384,6 @@ namespace icl{
         BorderBox *poBorderBox = new BorderBox(prop.c_str(),ds,PARENT);
         l->addWidget(poBorderBox);
         connect(ds,SIGNAL(doubleValueChanged(const QString&,double)),this,SLOT(propertySliderChanged(const QString&,double)));
-        break;
       }else if(typeStr == "valueList"){
         QString propName = QString("[")+prop.c_str()+"]";
         QComboBox *cb = new QComboBox(PARENT);
@@ -392,17 +410,21 @@ namespace icl{
         int iCurrIdx = -1;
         for(unsigned int j=0;j<men.size();j++){
           if(men[j] == menuItem){
-            iCurrIdx = i;
+            iCurrIdx = j;
           }
           cb->addItem(propName+" "+men[j].c_str());
         }
         if(iCurrIdx != -1){
-          cb->setCurrentIndex(iCurrIdx);
+          cb->setCurrentIndex(iCurrIdx); 
         }
         connect(cb,SIGNAL(currentIndexChanged(QString)),this,SLOT(propertyComboBoxChanged(QString)));
         BorderBox *poBorderBox = new BorderBox(prop.c_str(),cb,PARENT);
         l->addWidget(poBorderBox);
-        break;
+      }else if(typeStr == "command"){
+        StringSignalButton *b = new StringSignalButton(prop.c_str(),PARENT);
+        connect(b,SIGNAL(clicked(QString)),this,SLOT(propertyButtonClicked(QString)));
+        BorderBox *poBorderBox = new BorderBox(prop.c_str(),b,PARENT);
+        l->addWidget(poBorderBox);
       }
       m_bDisableSlots = false;
     }

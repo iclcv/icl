@@ -118,3 +118,16 @@ SKIP_DIRECTORIES:=
 	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
 	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
 	${REL_INCLUDES} ${ABS_INCLUDES}
+
+../obj/moc_iclStringSignalButton.o : iclStringSignalButton.h iclStringSignalButton.cpp
+	${PRE_CMD} rm -rf moc_iclStringSignalButton.cpp
+	${PRE_CMD}${CMD_ECHO} "creating moc file moc_iclStringSignalButton.cpp [specialized]"
+	${PRE_CMD}${QTDIR}/bin/moc -o moc_iclStringSignalButton.cpp iclStringSignalButton.h
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/moc_iclStringSignalButton.cpp [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c moc_iclStringSignalButton.cpp -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}
+
+../obj/iclStringSignalButton.o : iclStringSignalButton.cpp iclStringSignalButton.h ../obj/moc_iclStringSignalButton.o
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}

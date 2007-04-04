@@ -50,10 +50,11 @@ namespace icl{
     /// Deprecated contstructor for direct instantiation of a valid grabber object
     /** use the default contructor instead and call init(..) to get initialization 
         results 
-        @param s internal grabbing size for pwc,
+        @param s internal grabbing size for pwc if Size::null, the current size is used!
         @param fFps speed of the internal grabber thread 
         @param iDevice /dev/video - device to use (0..4) **/
     PWCGrabber(const Size &s, float fFps=30, int iDevice = 0); 
+
     
     /// Destructor
     ~PWCGrabber(void);
@@ -64,7 +65,7 @@ namespace icl{
     /// initialisation function
     /** initializes a camera on /dev/video\<iDevice\>. be sure that you call init(..) and init(..) returns true
         before calling grab(..)
-        @param s size of grabbed images
+        @param s size of grabbed images (if size::null, the current size is used!)
         @param fFps grabbing rate
         @param iDevice USB grabbing device {0,1,2,3}
     **/
@@ -140,6 +141,15 @@ namespace icl{
         @param size new size ( one of (160x120,320x240 or 640x480)
     */
     bool setGrabbingSize(const Size &size);
+
+    
+    /// sets the compression factor
+    /** @param level value in {0=no compression, 1,2,3=highest compression]*/
+    bool setCompression(int level);
+    
+    /// sets the shutterspeed
+    /** @param level speed in range [-1,65535] where -1 is auto */
+    bool setShutterSpeed(int level);
     /** @} **/
  
     private:   

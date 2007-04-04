@@ -46,7 +46,8 @@ namespace icl{
 
     void propertySliderChanged(const QString &id, double value);
     void propertyComboBoxChanged(const QString &text);
-
+    void propertyButtonClicked(const QString &text);
+    
     void startStopCapture(bool on);
     void updateImage();
     
