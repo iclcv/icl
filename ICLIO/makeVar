@@ -84,9 +84,11 @@ DIR_LOWPRIORITY:=
 SKIP_DIRECTORIES:=
 
 ifeq "$(HAVE_UNICAP)" ""
-SKIP_OBJECTS += iclUnicapGrabber.cpp unicap_test.cpp iclPWCGrabEngine.cpp
+SKIP_OBJECTS += iclUnicapGrabber.cpp unicap_test.cpp 
 SKIP_OBJECTS += iclUnicapDevice.cpp iclUnicapFormat.cpp iclUnicapProperty.cpp
-SKIP_OBJECTS += iclSonyConvertEngine.cpp iclUnicapGrabEngine.cpp
+SKIP_OBJECTS += iclDefaulGrabEngine.cpp iclDefaultConvertEngine.cpp
+SKIP_OBJECTS += iclUnicapGrabEngine.cpp iclUnicapConvertEngine.cpp
+
 endif
 
 ifeq "$(HAVE_FIREWIRE)" ""
