@@ -28,6 +28,7 @@ using namespace std;
 #define PWC_DEBUG(X,S) if(X) {printf("pwc-debug:[%s]\n",S); return false;}
 #define PWC_DEBUG_2(ECHO,X,S) if(X) {if(ECHO){printf("pwc-debug:[%s]\n",S);} m_iDevice = -1; return false;}
 #define PWC_DEBUG_CALL(X,S) if(X<0){printf("pwc-debug-call:[%s]\n",S); return false; }
+#define PWC_DEBUG_CALL_LIGHT(X,S) if(X<0){printf("pwc-debug-call:[%s]\n",S); return; }
 #define PWC_DEBUG_CALL_STR(X,S) if(X<0){printf("pwc-debug-call:[%s]\n",S); return ""; }
 #define PWC_DEBUG_CALL_2(ECHO,X,S) if(X<0){ if(ECHO){printf("pwc-debug-call:[%s]\n",S);}m_iDevice = -1; return false; }
 namespace pwc_ext{
@@ -222,6 +223,21 @@ Time                    g_Time[4];
 
 // }}}
   // {{{ usb_grabber_funct
+
+  namespace{
+    string toStr(int i){
+      char buf[20];
+      sprintf(buf,"%d",i);
+      return buf;
+    }
+    string toStr(double d){
+      char buf[30];
+      sprintf(buf,"%f",d);
+      return buf;
+    }
+    
+  }
+
 
 bool usb_grabber_funct(void *data ){
   int device=*(int*)data;
@@ -434,7 +450,8 @@ void save_setparams(int device){
   string PWCGrabber::getType(const std::string &name){
     if(name == "size" || name == "white balance mode" || name == "compression level"){
       return "menu";
-    }else if(name == "gain" || name == "white balance red" || name == "white balance blue" || name == "shutter speed"){
+    }else if(name == "gain" || name == "white balance red" || name == "white balance blue" || 
+             name == "shutter speed" || name == "led on" || name == "led off"){
       return "range";
     }else if(name == "save user settings" || name == "restore user settings"){
       return "command";
@@ -458,6 +475,8 @@ void save_setparams(int device){
       return "{\"no compression\",\"low compression\",\"average compression\",\"high compression\"}";
     }else if(name == "shutter speed"){
       return "[-1,65535]:1";
+    }else if(name == "led on" || name == "led off"){
+      return "[0,25000]:1";
     }else{
       return "undefined";
     }
@@ -469,20 +488,23 @@ void save_setparams(int device){
     }else if(name == "gain"){
       unsigned int g = 0;
       PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAGC, &g), "cannot get PWC gain");
-      char buf[20];
-      sprintf(buf,"%d",g);
-      return buf;
+      return toStr(int(g));
+      //char buf[20];
+      //sprintf(buf,"%d",g);
+      //return buf;
     }else if(name == "white balance red" || name == "white balance blue" || name == "white balance mode"){
       pwc_whitebalance wb;
       PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAWB, &wb), "cannot get PWC white balance");
       if(name == "white balance red"){ 
-        char buf[20];
-        sprintf(buf,"%d",wb.manual_red);
-        return buf;
+        return toStr(int(wb.manual_red));
+        //        char buf[20];
+        //sprintf(buf,"%d",wb.manual_red);
+        //return buf;
       }else if(name == "white balance blue"){ 
-        char buf[20];
-        sprintf(buf,"%d",wb.manual_blue);
-        return buf;
+        return toStr(int(wb.manual_blue));
+        //        char buf[20];
+        //sprintf(buf,"%d",wb.manual_blue);
+        //return buf;
       }else {
         switch(wb.mode){
           case 0: return "indoor";
@@ -497,9 +519,10 @@ void save_setparams(int device){
       return "YUV 4-2-0 planar";
     }else if(name == "shutter speed"){
       signed int level = usbvflg_shutter_speeds[m_iDevice];
-      char buf[20];
-      sprintf(buf,"%d",level);
-      return buf;
+      return toStr(int(level));
+      //      char buf[20];
+      //sprintf(buf,"%d",level);
+      //return buf;
     }else if(name == "compression level"){
       signed int level = -2;
       PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGCQUAL, &level), "cannot get compression level");
@@ -510,6 +533,15 @@ void save_setparams(int device){
         case 3: return  "high compression";
         default: return "undifined";
       }
+    }else if (name == "led on"){
+      struct pwc_leds leds;
+      PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice],VIDIOCPWCGLED , &leds), "cannot get \"led on\" value");
+      return toStr(int(leds.led_on));
+    }
+    else if (name == "led off"){
+      struct pwc_leds leds;
+      PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice],VIDIOCPWCGLED , &leds), "cannot get \"led off\" value");
+      return toStr(int(leds.led_off));
     }
     return "undefined";
   }
@@ -566,6 +598,10 @@ void save_setparams(int device){
                 value == "average compression" ? 2 :
                 value == "high compression" ? 3 : -1;
       setCompression(val);
+    }else if(property == "led on"){
+      setLED(true, atoi(value.c_str()));
+    }else if(property == "led off"){
+      setLED(false, atoi(value.c_str()));
     }else{
       ERROR_LOG("nothing known about a property " << property ); 
     }
@@ -585,6 +621,8 @@ void save_setparams(int device){
     v.push_back("white balance blue");
     v.push_back("shutter speed");
     v.push_back("compression level");
+    v.push_back("led on");
+    v.push_back("led off");
     return v;
   }
 
@@ -646,6 +684,14 @@ void save_setparams(int device){
     ICLASSERT_RETURN_VAL( level >=-1 && level <= 65535 ,false);
     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSSHUTTER, &level), "cannot set shutter speed");
     usbvflg_shutter_speeds[m_iDevice] = level;
+    return true;
+  }
+  
+  bool PWCGrabber::setLED(bool on, int time){
+    struct pwc_leds leds;
+    leds.led_on = on ? time : 0;
+    leds.led_off = on ? 0 : time;
+    PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice],VIDIOCPWCGLED , &leds), "cannot set led value");
     return true;
   }
   

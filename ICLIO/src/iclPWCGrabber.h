@@ -60,6 +60,11 @@ namespace icl{
     ~PWCGrabber(void);
     
     /// creates a list with all available PWC device indices
+    /** The resulting vector contains device indices form 0 to 3
+        depending on currently found PWC-devices. E.g. if the
+        returned vector is {0}, just a single device was found
+        at /dev/video0 
+    **/
     static std::vector<int> getDeviceList();
     
     /// initialisation function
@@ -68,6 +73,9 @@ namespace icl{
         @param s size of grabbed images (if size::null, the current size is used!)
         @param fFps grabbing rate
         @param iDevice USB grabbing device {0,1,2,3}
+        @param echoOff if set to true, no warnings and error messages are printed. This feature
+                       is used by getDeviceList(), which just tests, if the init function would
+                       return true, to estimate if a specific device is valid.
     **/
     bool init(const Size &s,float fFps=30, int iDevice = 0, bool echoOff=false);
     
@@ -109,14 +117,16 @@ namespace icl{
     /** @{ @name additional special functions for PWC-Param access **/
 
     /// restores user settings
+    /** @return success value */
     bool restoreUserSettings();
     
     /// saves user settings
+    /** @return success value */
     bool saveUserSettings();
 
     /// sets the current gain level
     /** @param iGainValue gain level in range [0..65535]
-        @return if successful */
+        @return success value */
     bool setGain(signed int iGainValue);
 
     /// sets for whitebalance mode 
@@ -139,20 +149,32 @@ namespace icl{
     /** internally the grabber is released and created new(this lasts
         less then a second )
         @param size new size ( one of (160x120,320x240 or 640x480)
+        @return if successful
     */
     bool setGrabbingSize(const Size &size);
 
     
     /// sets the compression factor
-    /** @param level value in {0=no compression, 1,2,3=highest compression]*/
+    /** @param level value in {0=no compression, 1,2,3=highest compression]
+        @return if successful */
     bool setCompression(int level);
     
     /// sets the shutterspeed
-    /** @param level speed in range [-1,65535] where -1 is auto */
+    /** @param level speed in range [-1,65535] where -1 is auto 
+        @return if successful */
     bool setShutterSpeed(int level);
+
+
+    /// sets led state
+    /** @param time value between 0 and 25000 
+        @return if successful **/
+    bool setLED(bool on, int time);
+
+
     /** @} **/
- 
+    
     private:   
+    
     /// internal release function (for destructor and setting new size)
     void releaseAll();
     

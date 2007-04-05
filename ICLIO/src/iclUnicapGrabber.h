@@ -13,7 +13,7 @@ namespace icl{
   class UnicapConvertEngine;
   /** \endcond */  
 
-  /// Specialization ICLs Grabber interface wrapping a unicap-Grabber
+  /// Specialization of ICLs Grabber interface wrapping a unicap-Grabber
   /** The UnicapGrabber class wraps the Unicap-Libray to provide access to v4l, v4l2 as well as
       ieee1394 video devices. 
       The UnicapGrabber has two constructors, each providing a different strategy for selecting a 
@@ -46,6 +46,8 @@ namespace icl{
     /// **NEW** grab function grabs an image (destination image is adapted on demand)
     /** @copydoc icl::Grabber::grab(icl::ImgBase**) **/
     virtual const ImgBase* grab(ImgBase **ppoDst=0);
+
+    /** @{ @name properties and params */
     
     /// get type of property or parameter
     /** \copydoc icl::Grabber::getType(const std::string &)*/
@@ -87,6 +89,8 @@ namespace icl{
     **/
     virtual std::vector<std::string> getParamList(); 
 
+    /** @} @{ @name special static functions to get device lists */
+    
     /// creates a vector of all currently available UnicapDevices (filterer by filter)
     /** The filter string has the following syntax = A%B%C%D%... 
         where A,B,C and so on are tokens like X=Y and X is a specific UnicapDevice parameter
@@ -112,11 +116,15 @@ namespace icl{
     **/
     static const std::vector<UnicapDevice> &filterDevices(const std::vector<UnicapDevice> &devices, const std::string &filter);
 
+    /** @} @{ @name special unicap functions */
+    
     /// returns a reference of the internally wrapped UnicapDevice
     UnicapDevice &getDevice() { return m_oDevice; }
     
     /// returns the current grabbing framerate of this grabber
     float getCurrentFps() const;
+    
+    /** @} */
     
     private:
     

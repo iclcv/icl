@@ -875,6 +875,7 @@ namespace icl {
       }  
   }
 
+  /** \cond */
 #ifdef WITH_IPP_OPTIMIZATION
   /// IPP-OPTIMIZED specialization for icl8u clearing (using ippiSet)
   template <>
@@ -905,6 +906,7 @@ namespace icl {
     ippiSet_32f_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
   }
 #endif
+  /** \endcond */
 
   /* }}} */
 

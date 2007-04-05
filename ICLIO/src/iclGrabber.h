@@ -16,52 +16,66 @@
 */
 
 namespace icl {
+  /** \cond */
   class ImgBase;
-
+  /** \endcond */
+  
   /// Common interface class for all grabbers
   class Grabber {
-  public:
-     Grabber() {
-       m_eDesiredDepth = depth8u;
-       m_oDesiredParams = ImgParams(Size(320,240),formatRGB);
-     }
-     virtual ~Grabber() {}
+    public:
+    /// Basic Grabber constructor
+    /** sets desired params to:
+        - depth = depth8u
+        - size = 320x240
+        - foramt = formatRGB 
+    **/
+    Grabber() {
+      m_eDesiredDepth = depth8u;
+      m_oDesiredParams = ImgParams(Size(320,240),formatRGB);
+    }
+    /// Destructor
+    virtual ~Grabber() {}
 
-     /// **NEW** grab function grabs an image (destination image is adapted on demand)
-     /** This new grab function is one or the main parts of the ICLs Grabber interface. Its 
+    /// **NEW** grab function grabs an image (destination image is adapted on demand)
+    /** This new grab function is one or the main parts of the ICLs Grabber interface. Its 
         underlying philosophy is as follows:
         - if ppoDst is NULL, a constant image (owned by the grabber) is retuned. Its params and
-          depth are adapted to the currently set "desiredParams" and "desiredDepth" (see the 
-          parent class icl::Grabber for more details), and the image data is received from the
-          camera is converted interanlly to this params and depth.
+        depth are adapted to the currently set "desiredParams" and "desiredDepth" (see the 
+        parent class icl::Grabber for more details), and the image data is received from the
+        camera is converted interanlly to this params and depth.
         - if ppoDst is valid, but it points to a NULL-Pointer (ppoDst!=NULL but *ppoDst==NULL),
-          a new image is created at exacly at (*ppoDst). This image is owned by the calling 
-          aplication and not by the Grabber.
-        - if ppoDst is valid, and it points a a valid ImgBase*, the this ImgBase* is exploited
-          as possible. If its depth distincts from the current "desiredDepth" value, it is 
-          released, and a new image with the "desired" params and depth is created at (*ppoDst).
-          Otherwise, the the ImgBase* at *poDst is adapted in format, channel count and size
-          to the "desired" params, before it is filled with data returned
-         @param ppoDst destination image (pointer-to-pointer
-         @return grabbed image (if ppoDst != 0) equal to *ppoDst
+        a new image is created exacly at (*ppoDst). This image is owned by the calling 
+        aplication and not by the Grabber.
+        - if ppoDst is valid, and it points a valid ImgBase*, the this ImgBase* is exploited
+        as possible. If its depth distincts from the currently "desired" depth value, it is 
+        released, and a new image with the "desired" params and depth is created at (*ppoDst).
+        Otherwise, the the ImgBase* at *poDst is adapted in format, channel count and size
+        to the "desired" params, before it is filled with data and returned
+        @param ppoDst destination image (pointer-to-pointer
+        @return grabbed image (if ppoDst != 0) equal to *ppoDst
      **/
      virtual const ImgBase* grab(ImgBase **ppoDst=0){ 
        return 0;
      } 
 
+
+     /** @{ @name get/set properties and parameters */
+
      /// interface for the setter function for video device parameters
-     /** In constrast to the setProperty function, this function sets up more <em>critical</em>
+     /** In constrast to the setProperty() function, this function sets up more <em>critical</em>
          parameters like the grabbed images size and format. The difference to properties, that
          are set via setProperty(), is that setParams() may have to force the underlying grabbing 
          engine to stop or to reinitialize its buffers and convert-engine due to the format or 
-         size changes. As there are potential very much params that could make sense in this
-         context, this functions as well as the setProperty function are implemented in the 
+         size changes. As there are potentially very much params that could make sense in this
+         context, this functions as well as the setProperty() function are implemented in the 
          most general string-string-manner.\n
-         Yet, the following parameters are compulsory:
+         Yet, the following parameters are compulsory for grabbers:
          - size (syntax for value: e.g. "320x240")
          - format (value depends on the underlying devices formats specifications) 
-         - format&size (syntax like 320x240&FORMAT_ID)
+         - [ format&size (syntax like 320x240&FORMAT_ID) ] deprecated!
          
+         It is possible, but not recommended, to let special grabbers have more different params.
+
          To get a list of all supported params, call 
          \code getParamList()  \endcode
          
@@ -73,7 +87,7 @@ namespace icl {
      }
      
      /// interface for the setter function for video device properties 
-     /** All video device properties can be set using this function. As differenct video devices  
+     /** All video device properties can be set using this function. As different video devices  
          have different property sets, there are no specialized functions to set special parameters.
          The set of video device parameters consists of two parts:
          To get a list of all possible properties and their corresponding data ranges or value lists,
@@ -108,24 +122,8 @@ namespace icl {
      virtual bool supportsProperty(const std::string &property);
 
      
-     /// translates a SteppingRange into a string representation
-     static std::string translateSteppingRange(const SteppingRange<double>& range);
-
-     /// creates a SteppingRange out of a string representation
-     static SteppingRange<double> translateSteppingRange(const std::string &rangeStr);
-
-     /// translates a vector of doubles into a string representation
-     static std::string translateDoubleVec(const std::vector<double> &doubleVec);
-
-     /// creates a vector of doubles out of a string representation
-     static std::vector<double> translateDoubleVec(const std::string &doubleVecStr);
-
-     /// translates a vector of strings into a single string representation
-     static std::string translateStringVec(const std::vector<std::string> &stringVec);
-
-     /// creates a vector of strins out of a single string representation
-     static std::vector<std::string> translateStringVec(const std::string &stringVecStr);
-
+     
+     
      
      /// get type of property or parameter
      /** This is a new minimal configuration interface: When implementing generic
@@ -163,7 +161,30 @@ namespace icl {
      virtual std::string getValue(const std::string &name){
        (void)name; return "undefined";
      }
-     /* END-NEW */
+
+     
+     /** @} @{ @name static string conversion functions */
+
+     /// translates a SteppingRange into a string representation
+     static std::string translateSteppingRange(const SteppingRange<double>& range);
+
+     /// creates a SteppingRange out of a string representation
+     static SteppingRange<double> translateSteppingRange(const std::string &rangeStr);
+
+     /// translates a vector of doubles into a string representation
+     static std::string translateDoubleVec(const std::vector<double> &doubleVec);
+
+     /// creates a vector of doubles out of a string representation
+     static std::vector<double> translateDoubleVec(const std::string &doubleVecStr);
+
+     /// translates a vector of strings into a single string representation
+     static std::string translateStringVec(const std::vector<std::string> &stringVec);
+
+     /// creates a vector of strins out of a single string representation
+     static std::vector<std::string> translateStringVec(const std::string &stringVecStr);
+
+
+     /** @} @{ @name functions for get/set desired params */
 
      /// returns current desired image params (size and format)
      const ImgParams &getDesiredParams()const{
@@ -204,6 +225,8 @@ namespace icl {
      void setDesiredDepth(depth d){
        m_eDesiredDepth = d;
      }
+     
+     /** @} */
      
     private:
      /// internal storage of desired image parameters

@@ -252,13 +252,14 @@ namespace icl {
   
   /// Generic Casting operator
   /** Use Cast<srcT, dstT>::cast (value) to cast values safely from
-      one srcT type to dstT. If destination type is icl8u, the source
+      one srcT type to dstT. If destination type is e.g. icl8u, the source
       value is clipped to the range [0..255].
   */
   template<typename srcT, typename dstT> struct Cast {
      static dstT cast (srcT v) {return static_cast<dstT>(v);}
   };
-  
+
+  /** \cond */
   /// casting class from any to icl8u type
   template<class srcT> struct Cast<srcT,icl8u>{
     static icl8u cast (srcT v) { return static_cast<icl8u>(clip<srcT>(v,0,255)); }
@@ -311,6 +312,7 @@ namespace icl {
   template<> struct Cast<icl64f, icl64f> {
      static icl64f cast (icl64f v) {return v;}
   };
+  /** \endcond */
 
 /* }}} */
 
@@ -492,16 +494,15 @@ namespace icl {
   /// getDepth<T> returns to depth enum associated to type T
   template<class T> inline depth getDepth();
 
+  /** \cond */
 #define ICL_INSTANTIATE_DEPTH(T) \
   template<> inline depth getDepth<icl ## T>() { return depth ## T; }
 ICL_INSTANTIATE_ALL_DEPTHS  
 #undef ICL_INSTANTIATE_DEPTH
-
+ 
+  /** \endcond  */
   /// return sizeof value for the given depth type
   unsigned int getSizeOf(depth eDepth);
-
-
-
 
   /// moves data from source to destination array (no casting possible)
   template <class T>
@@ -509,7 +510,8 @@ ICL_INSTANTIATE_ALL_DEPTHS
     //std::copy<T>(src,srcEnd,dst);
     memcpy(dst,src,(srcEnd-src)*sizeof(T));
   } 
- 
+
+  /** \cond */
 #ifdef WITH_IPP_OPTIMIZATION
   template <>
   inline void copy<icl8u>(const icl8u *poSrcStart, const icl8u *poSrcEnd, icl8u *poDst){
@@ -532,7 +534,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
     ippsCopy_64f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
   }
 #endif
-
+  /** \endcond */
 
 
 
@@ -542,7 +544,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
     while(poSrcStart != poSrcEnd) *poDst++ = Cast<srcT,dstT>::cast(*poSrcStart++);
   }
   
-/*
+/* Why commented out ?
 #define ICL_INSTANTIATE_DEPTH(D) template<> inline void convert<icl##D,icl##D>  \
                                  (const T* src, const T*srcEnd, T *dst){        \
                                  icl::copy<icl##D>(src,srcEnd,dst); }
@@ -550,6 +552,7 @@ ICL_INSTATIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
     */
   
+  /** \cond */
   
 #ifdef WITH_IPP_OPTIMIZATION 
   /// from icl8u functions
@@ -599,10 +602,17 @@ ICL_INSTATIATE_ALL_DEPTHS
   template <> inline void convert<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst){
     ippsConvert_64f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
   } 
-
+  /** \endcond */
 #endif
 
  
+  /// function, that calculates the mininum and the maximum value of three value
+  /** @param a first input value 
+      @param b second input value 
+      @param c third input value 
+      @param minVal return value for the minimum
+      @param maxVal return value for the maximum
+  **/
   template<class T>
   inline void getMinAndMax(T a, T b, T c, T &minVal, T &maxVal){
     if(a<b) {
