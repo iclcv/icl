@@ -12,23 +12,23 @@
 \section TODO
 
 
-\section Overview
+\section SEC_OVERVIEW Overview
 
 The ICL is a C++ Image-Library, designed for Computer-Vision tasks. It
-supports multi-channel images (class ImgBase/Img) with a depth of 8bit integer or 32bit floats.
-All channels within the image share a common size and region of 
-interest (ROI). This allows to handle color images as 3-channel images for example.
+supports a multi-channel image class (class ImgBase and template class Img).
+All channels within the image share a common size, region of interest (ROI) and
+depth. This allows to handle color images as 3-channel images for example.
 
 Despite of the different image depth, most methods of an image class have
-common code. Hence, the two different pixel formats are implemented by a
+common code. Hence, the different pixel data types are implemented by the
 template class <b>Img<imagedepth></b>. Methods which are independent on the
 image depth are provided by a common interface class, named <b>ImgBase</b>. This
-allows easy and type-clean wrapping of both template classes within frameworks
+allows easy and type-clean wrapping of the template classes Img<T> within frameworks
 such as Neo/NST or TDI.
 
-Hence, the Library provides two basic image classes: 
-- <b>ImgBase</b>: The <b>abstract interface</b> class providing common, 
-  but depth-independent information about the image structure:
+\subsection SUB_SEC_IMGBASE class ImgBase (abstract interface) 
+    This class provides common, but depth-independent information about 
+    the image structure:
   - size (in pixels)
   - channel count  (see <b>channel concept</b>)
   - type of pixels (see <b>data types</b>)
@@ -41,8 +41,7 @@ Hence, the Library provides two basic image classes:
   Most of the functions in the ImgBase class are purely virtual which
   implies, that they are implemented in the derived classes Img<T>.
 
-- <b>Img</b>: The <i>proper</i> image class is implemented as a template,
-  where the datatype of each pixel value is the template parameter.
+\subsection SUB_SEC_IMG template class Img<PixelType>
   Internally each Img<T> object holds a std::vector of so called smart 
   pointers (class SmartPtr in the ICLUtils package) to the channel
   data. The Img class provides some additional image information and access
@@ -89,24 +88,30 @@ automatically releasing <i>unused</i> image channels.
 @see Img, ImgChannel
 
 \section Data-Types
-Currently the Img provides two different data types:
+Currently the Img provides 5 different data types:
 - <b>icl8u</b> 8bit unsigned char
-- <b>icl32f</b> 32bit float
+- <b>icl16s</b> 16bit signed integer (short)
+- <b>icl32s</b> 32bit signed integer (int)
+- <b>icl32f</b> 32bit single precision float
+- <b>icl64f</b> 64bit double precision float
 
 Img-classes are predefined for these two types:
-- Img<icl32f> : public ImgBase <b>typedef'd to Img32f</b>
 - Img<icl8u> : public ImgBase <b>typedef'd to Img8u</b>
+- Img<icl16s> : public ImgBase <b>typedef'd to Img16s</b>
+- Img<icl32s> : public ImgBase <b>typedef'd to Img32s</b>
+- Img<icl32f> : public ImgBase <b>typedef'd to Img32f</b>
+- Img<icl64f> : public ImgBase <b>typedef'd to Img64f</b>
+
 
 Each of these data types has several advantages/disadvantages. The greatest
-disadvantage of the icl8u, is its bounded range (0,1,...,255),
+disadvantage of the integer types, is their bounded range (e.g. 0-255 for icl8u),
 which has the effect, that all information has to be scaled to this
 range, and all image processing functions must take care that
 no range-overflow occurs during calculation. Furthermore
 the limited range may cause loss of information - particular in 
 complex systems.
-The advantage of integer values is, that computation is faster
-than using float values, not at least because of the 4-Times 
-larger memory usage.
+The advantage of integer types is, that computation is faster
+than using floats.
  
 @see Depth, icl8u, icl32f
 
