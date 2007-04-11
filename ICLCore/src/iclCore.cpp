@@ -131,7 +131,7 @@ namespace icl{
   std::string translateRect(const Rect &r){
     // {{{ open
 
-    return translateSize(r.size())+translatePoint(r.ul());
+    return translateSize(r.size())+string("@")+translatePoint(r.ul());
   }
 
   // }}}
@@ -151,7 +151,7 @@ namespace icl{
     // {{{ open
 
     char buf[100];
-    sprintf(buf,"(%d,%d)",p.y,p.x);
+    sprintf(buf,"(%d,%d)",p.x,p.y);
     return buf;
   }
 

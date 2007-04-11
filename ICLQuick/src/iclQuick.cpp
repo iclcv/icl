@@ -938,15 +938,15 @@ namespace icl{
   void rect(ImgQ &image, int x, int y, int w, int h){
     // {{{ open
 
-    line(image,x,y,x+w,y);
-    line(image,x,y,x,y+h);
-    line(image,x+w,y+h,x+w,y);
-    line(image,x+w,y+h,x,y+h);
+    line(image,x,y,x+w-1,y);
+    line(image,x,y,x,y+h-1);
+    line(image,x+w-1,y+h-1,x+w-1,y);
+    line(image,x+w-1,y+h-1,x,y+h-1);
     float A = FILL[3]/255;
     if(! A) return;
     for(int i=x+1;i<x+w-1;i++){   
       for(int j=y+1;j<y+h-1;j++){
-        if(i>=0 && j>=0 && x<image.getWidth() && y<image.getHeight()){
+        if(i>=0 && j>=0 && i<image.getWidth() && j<image.getHeight()){
           for(int c=0;c<image.getChannels() && c<3; ++c){
             float &v = image(i,j,c);
             v=(1.0-A)*v + A*FILL[c];
@@ -966,8 +966,10 @@ namespace icl{
     float A = COLOR[3]/255.0;
     for(vector<int>::iterator itX=xs.begin(), itY=ys.begin(); itX != xs.end(); ++itX, ++itY){
       for(int c=0;c<image.getChannels() && c<3; ++c){
-        float &v = image(*itX,*itY,c);
-        v=(1.0-A)*v + A*COLOR[c];
+        if(*itX >= 0 && *itX < image.getWidth() && *itY >= 0 && *itY <= image.getHeight()){
+          float &v = image(*itX,*itY,c);
+          v=(1.0-A)*v + A*COLOR[c];
+        }
       }
     }
   }

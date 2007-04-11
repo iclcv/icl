@@ -483,7 +483,7 @@ namespace icl {
   Size translateSize(const std::string &sSize);
 
   /// creates a rect string like "640x480@(5,10)"
-  std::string translateRect(const Rect &size);
+  std::string translateRect(const Rect &rect);
   
   /// translates a rect string into a Rect variable
   /** if the string could not be parsed, the returned Rect is "0x0@(0,0)" */

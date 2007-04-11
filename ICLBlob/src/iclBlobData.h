@@ -116,6 +116,10 @@ namespace icl{
 
     /* }}} */
 
+    const regiondetector::RegionDetectorBlob* getRegionDetectorBlobHandle() const{
+      return m_poRDB;
+    }
+    
     private:
     
     /// wrapped low level blob data
