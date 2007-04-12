@@ -66,7 +66,13 @@ namespace icl{
         at /dev/video0 
     **/
     static std::vector<int> getDeviceList();
-    
+
+    /// retrieve currently used device number
+    int getDevice () const {return m_iDevice;}
+
+    /// retrieve currently set frame rate
+    float getFrameRate () const {return m_fFps;}
+
     /// initialisation function
     /** initializes a camera on /dev/video\<iDevice\>. be sure that you call init(..) and init(..) returns true
         before calling grab(..)
@@ -134,17 +140,22 @@ namespace icl{
         - 0 indoor
         - 1 outdoor
         - 2 "fl-tube"
-        - 3 manual
         - 4 auto
         @param mode mode specifier
+        @return if successful
+    */
+    bool setWhiteBalance(int mode) {return setWhiteBalance(mode, -1, -1);}
+    /// manually sets white balance for red and blue channel
+    /**
         @param manual_red definition of manual red white balance value 
                left unregarded if -1
         @param manual_blue definition of manual blue white balance value 
                left unregarded if -1
         @return if successful
     */
-    bool setWhiteBalance(int mode, int manual_red=-1, int manual_blue=-1);
-    
+    bool setWhiteBalance(int manual_red, int manual_blue)
+       {return setWhiteBalance (3, manual_red, manual_blue);}
+
     /// sets new grabbing size
     /** internally the grabber is released and created new(this lasts
         less then a second )
@@ -177,6 +188,8 @@ namespace icl{
     
     /// internal release function (for destructor and setting new size)
     void releaseAll();
+    /// internal white balance setting
+    bool setWhiteBalance(int mode, int manual_red, int manual_blue);
     
     /// current grabbing width
     int m_iWidth;
@@ -193,14 +206,8 @@ namespace icl{
     /// current Img8u image buffer
     Img8u *m_poRGB8Image;
 
-    /// converter used for output format conversion
-    Converter m_oConverter;
-    
     /// converter used for output formatYUV conversion
     Converter m_oConverterHalfSize;
-    
-    /// buffer image for output if not given
-    ImgBase *m_poImage;
   };
   
 }

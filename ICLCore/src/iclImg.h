@@ -304,10 +304,10 @@ namespace icl {
           @param time new timestamp for the returned image
           @return shallow-copied image
       **/
-      virtual const Img<Type> *shallowCopy(const Rect &roi, 
-                                           const std::vector<int> &channelIndices,
-                                           format fmt, 
-                                           Time time=Time::null) const{
+      const Img<Type> *shallowCopy(const Rect &roi, 
+                                   const std::vector<int> &channelIndices,
+                                   format fmt, 
+                                   Time time=Time::null) const{
         // casting constness away is safe, because we effectively return a const Img<Type>*
         return const_cast<Img<Type>*>(this)->shallowCopy(roi,channelIndices,fmt,time,0);
       }
@@ -319,9 +319,9 @@ namespace icl {
           @param ppoDst destination image (exploited as possible) 
           @return shallow copie with given format of NULL if an error occured 
       **/
-      virtual Img<Type> *reinterpretChannels(format newFmt, Img<Type> *poDst = NULL){
-        ImgBase *poDstBase = poDst;
-        return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime(),&poDstBase);
+      Img<Type> *reinterpretChannels(format newFmt, Img<Type> *poDst = NULL){
+         ImgBase *poDstBase = poDst;
+         return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime(),&poDstBase);
       }
       
       
@@ -330,7 +330,7 @@ namespace icl {
                            of this image. 
           @return shallow copie with given format of NULL if an error occured 
       **/
-      virtual const Img<Type> *reinterpretChannels(format newFmt){
+      const Img<Type> *reinterpretChannels(format newFmt){
         return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime());
       }
       /// Create a shallow copy of the image
@@ -345,7 +345,7 @@ namespace icl {
                      is used.
           @return shallow copy of this image
       **/
-      virtual Img<Type>* shallowCopy(const Rect &roi,Img<Type>* poDst = NULL){
+      Img<Type>* shallowCopy(const Rect &roi,Img<Type>* poDst = NULL){
         ImgBase *poDstBase = poDst;
         return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),&poDstBase);
       }
@@ -376,7 +376,7 @@ namespace icl {
                         format of that image becomes formatMatrix
           @see shallowCopy
       */
-      virtual Img<Type>* selectChannels (const std::vector<int>& channelIndices, Img<Type>* poDst=0){
+      Img<Type>* selectChannels (const std::vector<int>& channelIndices, Img<Type>* poDst=0){
         ImgBase *poDstBase = poDst;
         return shallowCopy(getROI(),channelIndices,formatMatrix,getTime(),&poDstBase);
       }
@@ -389,7 +389,7 @@ namespace icl {
           @param ppoDst destination image 
           @return image containing only the selected channel
       **/
-      virtual Img<Type> *selectChannel(int channelIndex, Img<Type> *poDst=0){
+      Img<Type> *selectChannel(int channelIndex, Img<Type> *poDst=0){
         ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
         std::vector<int> v(1); v[0]= channelIndex; 
         return selectChannels(v,poDst);

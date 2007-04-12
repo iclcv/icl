@@ -4,15 +4,16 @@
 #include <string>
 #include <iclImgParams.h>
 #include <iclTypes.h>
+#include <iclConverter.h>
 #include <vector>
 #include <iclSteppingRange.h>
 /*
   Grabber.h
 
-  Written by: Michael Götting (2006)
+  Written by: Christof Elbrechter (2006)
               University of Bielefeld
               AG Neuroinformatik
-              mgoettin@techfak.uni-bielefeld.de
+              celbrech@techfak.uni-bielefeld.de
 */
 
 namespace icl {
@@ -29,34 +30,33 @@ namespace icl {
         - size = 320x240
         - foramt = formatRGB 
     **/
-    Grabber() {
-      m_eDesiredDepth = depth8u;
-      m_oDesiredParams = ImgParams(Size(320,240),formatRGB);
-    }
+    Grabber() : 
+       m_oDesiredParams (Size(320,240), formatRGB),
+       m_eDesiredDepth (depth8u), 
+       m_poImage (0)
+       {}
+
     /// Destructor
-    virtual ~Grabber() {}
+    virtual ~Grabber() {delete m_poImage;}
 
     /// **NEW** grab function grabs an image (destination image is adapted on demand)
-    /** This new grab function is one or the main parts of the ICLs Grabber interface. Its 
+    /** This new grab function is one of the main parts of the ICL Grabber interface. Its 
         underlying philosophy is as follows:
-        - if ppoDst is NULL, a constant image (owned by the grabber) is retuned. Its params and
-        depth are adapted to the currently set "desiredParams" and "desiredDepth" (see the 
-        parent class icl::Grabber for more details), and the image data is received from the
-        camera is converted interanlly to this params and depth.
+        - if ppoDst is NULL, a constant image (owned by the grabber) is retuned. 
+        The returned image will have the desired depth and image params, which is ensured
+        by an appropriate conversion from the originally grabbed image if neccessary.
         - if ppoDst is valid, but it points to a NULL-Pointer (ppoDst!=NULL but *ppoDst==NULL),
         a new image is created exacly at (*ppoDst). This image is owned by the calling 
         aplication and not by the Grabber.
-        - if ppoDst is valid, and it points a valid ImgBase*, the this ImgBase* is exploited
-        as possible. If its depth distincts from the currently "desired" depth value, it is 
+        - if ppoDst is valid, and it points to a valid ImgBase*, this ImgBase* is exploited
+        as possible. If its depth differs from the currently "desired" depth value, it is 
         released, and a new image with the "desired" params and depth is created at (*ppoDst).
         Otherwise, the the ImgBase* at *poDst is adapted in format, channel count and size
         to the "desired" params, before it is filled with data and returned
-        @param ppoDst destination image (pointer-to-pointer
-        @return grabbed image (if ppoDst != 0) equal to *ppoDst
+        @param ppoDst destination image (pointer-to-pointer)
+        @return grabbed image (if ppoDst != 0 and depth matches) equal to *ppoDst
      **/
-     virtual const ImgBase* grab(ImgBase **ppoDst=0){ 
-       return 0;
-     } 
+     virtual const ImgBase* grab(ImgBase **ppoDst=0) = 0;
 
 
      /** @{ @name get/set properties and parameters */
@@ -228,12 +228,22 @@ namespace icl {
      
      /** @} */
      
-    private:
+    protected:
+     /// prepare depth and params of output image according to desired settings
+     ImgBase* prepareOutput (ImgBase **ppoDst);
+
      /// internal storage of desired image parameters
      ImgParams m_oDesiredParams;
      
      /// internal storage of desired image depth
      depth m_eDesiredDepth;
+
+     /// converter used for conversion to desired output depth/params
+     Converter m_oConverter;
+
+     /// interal output image instance used if ppoDst is zero in grab()
+     ImgBase  *m_poImage;
+
   }; // class
  
 } // namespace icl

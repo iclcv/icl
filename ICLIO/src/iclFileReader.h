@@ -18,9 +18,9 @@
 
 namespace icl {
  
-  //! The FileReader class implements the interface for reading images from file
+  //! The FileReader class implements the grbber interface to read images from file
   /*!
-      @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de)
+      @author Robert Haschke (rhaschke@TechFak.Uni-Bielefeld.de)
       @brief The ICL
 
       The ICL FileReader supports the following image formats:
@@ -65,8 +65,13 @@ namespace icl {
    
       The following example show how to use the ICL FileReader:
       <pre>
-      ImgBase* poImg = imgNew(depth8u,Size(144,144));
-      FileReader ioRead("*.p?m").grab(poImg);
+      FileReader ioRead("*.p?m"); // define file pattern to read
+      // return fixed image size
+      ioRead.setDesiredSize (ImgParams(Size(144,144))); 
+
+      ImgBase* poImg = 0;
+      ioRead.grab (&poImg); // poImg is modifyable
+      const ImgBase* poImg = ioRead.grab (); // poImg is const
       </pre>
       */
   class FileReader : public Grabber{
@@ -99,12 +104,48 @@ namespace icl {
     FileReader(const FileReader& other);
     FileReader& operator=(const FileReader& other);
 
-    ///Destructor
+    /// Destructor
     virtual ~FileReader ();
 
-    ///Grab the next image from file/ buffer
-    virtual const ImgBase* grab(ImgBase* poDst=0);
+    /// Grab the next image from file/ buffer
+    virtual const ImgBase* grab(ImgBase **ppoDst=0);
   
+    /// define whether desired depth and parameters should be used or not
+    /** The standard grabber interface defines a desired grabbing depth
+        and desired image parameters for the grabbed image, which ideally
+        suites for camera grabbing. When grabbing from file, one usually
+        wants to get the image as it is in the file. Hence, we provide
+        a flag to ignore the desired settings of the grabber interface.
+        By default, these settings are ignored!
+    */
+    void setIgnoreDesired (bool bFlag=true) {this->m_bIgnoreDesired = bFlag;}
+    /// set flag indicating whether desired depth and parameters should be used
+    bool getIgnoreDesired () const {return this->m_bIgnoreDesired;}
+
+    /// sets current desired image parameters
+    void setDesiredParams(const ImgParams &p){
+       Grabber::setDesiredParams (p);
+       m_bIgnoreDesired = false;
+    }
+
+     /// sets current desired image size
+     void setDesiredSize(const Size &s){
+       Grabber::setDesiredSize (s);
+       m_bIgnoreDesired = false;
+     }
+     
+     /// sets current desired image format
+     void setDesiredFormat(format f){
+       Grabber::setDesiredFormat (f);
+       m_bIgnoreDesired = false;
+     }
+     
+     /// returns current desired image depth
+     void setDesiredDepth(depth d){
+       Grabber::setDesiredDepth (d);
+       m_bIgnoreDesired = false;
+     }
+ 
     /// Load all images from current file list into an internal buffer
     /** @return a list of failed image files */
     FileList bufferImages (bool bStopOnError=false);
@@ -152,50 +193,40 @@ namespace icl {
     void removeFiles (const FileList& vecFiles);
     
     
-    void setHeader (int numCh,depth depth, Rect roi,format format,Size imsize  );
+    void setCSVHeader (depth depth, const ImgParams& p);
+
     private:
-
-    template<class T>
-    void readCSVTmpl(Img<T> *poImg, char* pcBuf);
-           
-    struct CSVheader {
-      depth       eDepth;
-      format      eFormat;
-      Time        timeStamp;
-      int         iNumChannels;
-      Size        oImgSize;
-      Rect        oROI;
-    };
-
 
     void init ();
     bool findFile (const std::string& sFile, FileList::iterator& itList);
 
     void readSequenceFile(const std::string& sFileName);
     void readImage (const std::string& sFileName, ImgBase** ppoDst);
-    void readHeaderPNM (FileInfo &oImgBasenfo);
-    void readHeaderICL (FileInfo &oImgBasenfo);      
-    void readHeaderJPG (FileInfo &oImgBasenfo);
-    void readHeaderCSV (FileInfo &oInfo);
 
-    void readDataICL(ImgBase* poImg, FileInfo &oImgBasenfo);
-    void readDataPNM(ImgBase* poImg, FileInfo &oImgBasenfo);
-    void readDataJPG(Img<icl8u>* poImg, FileInfo &oImgBasenfo);
-    void readDataCSV(ImgBase* poImg, FileInfo &oImgBasenfo);
-         
+    void readHeaderPNMICL (FileInfo &oInfo);
+    void readDataPNMICL(ImgBase* poImg, FileInfo &oInfo);
+
+    void readHeaderJPG (FileInfo &oInfo);
+    void readDataJPG(Img<icl8u>* poImg, FileInfo &oInfo);
+
+    void readHeaderCSV (FileInfo &oInfo);         
     template<class T>
     void readCSVTmpl(Img<T>* poImg, FileInfo &oInfo);
+    void readDataCSV(ImgBase* poImg, FileInfo &oInfo);
          
-    void setHeader(FileInfo &oinfo);
-
     FileList     m_vecFileName;  //< list of files to load
-    FileList     m_vecObjectCnt;  //
+    FileList     m_vecObjectCnt; //< list of object indices (##__##)
     ImageBuffer  m_vecImgBuffer; //< vector of buffered images
   
-    bool m_bBuffered;         //< flag indicating buffering of images
-    unsigned int m_iCurImg;   //< image number to be read next
-    ImgBase        *m_poCurImg;  //< recently read image
-    CSVheader m_oCSVHeader;
+    bool         m_bIgnoreDesired; //< flag whether to ignore desired params and images as read
+    bool         m_bBuffered;      //< flag indicating buffering of images
+    unsigned int m_iCurImg;        //< image number to be read next
+    ImgBase     *m_poCurImg;       //< recently read image
+
+    /// used for CSV file format which doesn't store image info in file
+    ImgParams       m_CSVParams;
+    depth           m_CSVDepth;
+
     struct jpeg_decompress_struct jpgCinfo;
     struct icl_jpeg_error_mgr     jpgErr;
   }; // class FileReader

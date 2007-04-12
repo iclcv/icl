@@ -31,8 +31,14 @@ namespace icl {
    class FileWriter : public Writer {
    public: 
       /// Constructor
-      FileWriter(const std::string& sFileName) {setFileName (sFileName); m_bCsvExtendFilename=false; m_bCsvSplitFiles=false;m_bCsvHeader_set=false;}
-      void CSVsetFileName (std::string& sFileName, const ImgBase *poSrc);
+      FileWriter(const std::string& sFileName) {
+         setFileName (sFileName); 
+
+         m_bCsvExtendFilename=false; 
+         m_bCsvSplitFiles=false;
+         m_bCsvHeader_set=false;
+      }
+      void setFileNameCSV (std::string& sFileName, const ImgBase *poSrc);
 
       void setFileName (const std::string& sFileName);
       void setCounter (int iID) {nCounter = iID;}
@@ -45,14 +51,11 @@ namespace icl {
       void setCSVFlag(csvFlag f,bool value);
     
    private:
-      bool m_bCsvSplitFiles;
-      bool m_bCsvExtendFilename;
-      bool m_bCsvHeader_set;
-      void writePNM (const ImgBase *poSrc, const FileInfo& oInfo);
+      void writePNMICL (const ImgBase *poSrc, const FileInfo& oInfo);
       void writeJPG (const Img<icl8u> *poSrc, 
                      const FileInfo& oInfo, int iQuality=85);
+
       void writeCSV (const ImgBase *poSrc, FileInfo& oInfo);
-      void writeICL (const ImgBase *poSrc, const FileInfo& oInfo);
       template<class T,class R>
       std::string writeCSVTmpl(const Img<T> *poSrc,int ch) ;
       template<class T,class R>
@@ -63,6 +66,10 @@ namespace icl {
       unsigned int  nCounterDigits;
       unsigned int  nCounter;
       Img<icl8u>    m_oImg8u;
+
+      bool m_bCsvSplitFiles;
+      bool m_bCsvExtendFilename;
+      bool m_bCsvHeader_set;
    }; //class
    
 } //namespace icl

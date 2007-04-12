@@ -343,19 +343,18 @@ void save_setparams(int device){
 }
 // }}}
   
-  PWCGrabber::PWCGrabber(void) : m_poRGB8Image(0),m_poImage(0) {
+  PWCGrabber::PWCGrabber(void) : m_poRGB8Image(0) {
     m_iDevice  = -1;
-    //printf("created empty pwc grabber \n");
   }
   
-  PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice) : m_poRGB8Image(0), m_poImage(0) {
+  PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice) : 
+    m_poRGB8Image(0) {
     if (!init(s, fFps, iDevice)) { exit(0); }
-    //printf("created grabber %d\n",iDevice);
   }
 
   PWCGrabber::~PWCGrabber(void) {
-    //printf("released pwc grabber %d \n",m_iDevice);
     releaseAll();
+    delete m_poRGB8Image;
   }
   
   vector<int> PWCGrabber::getDeviceList(){
@@ -439,10 +438,7 @@ void save_setparams(int device){
       ERROR_LOG("size "<< translateSize(size) <<" is not supported ");
       return false;
     }
-    releaseAll();
-    
     return init(size,m_fFps,m_iDevice);
-    
   }
 
   // }}}
@@ -574,21 +570,29 @@ void save_setparams(int device){
     }else if(property == "restore user settings"){
       restoreUserSettings();
     }else if(property == "white balance mode"){
-      int val = value == "indoor"  ? 0 :
-                value == "outdoor" ? 1 :
-                value == "fl-tube" ? 2 :
-                value == "auto" ? 4 : -1;
-      if(val != -1){
-        setWhiteBalance(val,0,0);
+      int mode = -1; // unknown default
+      if      (value == "indoor") mode = 0;
+      else if (value == "outdoor") mode = 1;
+      else if (value == "fl-tube") mode = 2;
+      else if (value == "auto") mode = 4;
+      if (mode != -1) {
+        setWhiteBalance(mode);
       }else{
         ERROR_LOG("unknown white balance mode \"" << value << "\"");
       }
+    }else if(property == "white balance"){
+       vector<double> vec = Grabber::translateDoubleVec (value);
+       if (vec.size() != 2) {
+          ERROR_LOG("two white balance values required (red + blue)");
+       } else {
+          setWhiteBalance((int)vec[0], (int)vec[1]);
+       }
     }else if(property == "white balance red"){
       int val = atoi(value.c_str());
-      setWhiteBalance(3,val,-1);
+      setWhiteBalance(val,-1);
     }else if(property == "white balance blue"){
       int val = atoi(value.c_str());
-      setWhiteBalance(3,-1,val);
+      setWhiteBalance(-1,val);
     }else if(property == "shutter speed"){
       int val = atoi(value.c_str());
       setShutterSpeed(val);
@@ -696,6 +700,8 @@ void save_setparams(int device){
   }
   
   bool PWCGrabber::init(const Size &s,float fFps, int iDevice, bool echoOff)  {
+    if (iDevice >= 0) releaseAll ();
+    
     m_iWidth = s.width;
     m_iHeight = s.height;
     m_iDevice = iDevice;
@@ -807,26 +813,7 @@ void save_setparams(int device){
   const ImgBase* PWCGrabber::grab(ImgBase **ppoDst){
     // {{{ open 
 
-    //adapt destination image
-    const ImgParams &p = getDesiredParams();
-    depth d = getDesiredDepth();
-    
-    
-    if(!ppoDst) ppoDst = &m_poImage;  
-    ensureCompatible(ppoDst,d,p);
-
-    /**
-        const ImgParams &p = getDesiredParams();
-        depth d = getDesiredDepth();
-        
-        if(!ppoDst) ppoDst = &m_poImage;
-        else if(m_poImage && m_poImage != *ppoDst){
-        delete m_poImage;
-        m_poImage = 0;
-        }
-        ensureCompatible(ppoDst,d,p);
-   **/
-  ImgBase *poOutput = *ppoDst;
+  ImgBase *poOutput = prepareOutput (ppoDst);
 
   pthread_mutex_lock(&usb_semph_mutex[m_iDevice]);
   

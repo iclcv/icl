@@ -22,7 +22,7 @@ namespace icl{
   UnicapGrabber::UnicapGrabber(const UnicapDevice &device):
     // {{{ open
 
-    m_oDevice(device),m_poImage(0),m_poConversionBuffer(0),
+    m_oDevice(device),m_poConversionBuffer(0),
     m_poGrabEngine(0),m_poConvertEngine(0), m_bUseDMA(false){
     init();
   }
@@ -32,7 +32,7 @@ namespace icl{
   UnicapGrabber::UnicapGrabber(const std::string &deviceFilter):
     // {{{ open
 
-    m_poImage(0),m_poConversionBuffer(0),m_poGrabEngine(0),
+    m_poConversionBuffer(0),m_poGrabEngine(0),
     m_poConvertEngine(0), m_bUseDMA(false){
     const std::vector<UnicapDevice> &ds = getDeviceList(deviceFilter);
     if(ds.size()){
@@ -533,14 +533,12 @@ namespace icl{
     const ImgParams &p = getDesiredParams();
     depth d = getDesiredDepth();
     
-    
     if(!ppoDst) ppoDst = &m_poImage;  
     ensureCompatible(ppoDst,d,p);
-    
-    // indicates later on whether a final conversion into the desired parameters is 
-    // needed
-    bool needFinalConversion = false;
 
+    // indicates whether a conversion to the desired parameters will be needed
+    bool needFinalConversion = false; // assume, that no conversion is needed
+    
     // get the image from the grabber
     m_oMutex.lock();
     m_poGrabEngine->lockGrabber();
