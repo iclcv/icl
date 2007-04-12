@@ -181,7 +181,7 @@ sub generate_documentation {
     $menuTable .= "</tr>\n";
 
     foreach my $project (@projects) {
-        $menuTable .= "<tr><td> <a href=\"../".$project."/html/index.html\" target=\"Hauptframe\">".$project."</a></td>\n";
+        $menuTable .= "<tr><td> <a href=\"../".$project."/html/index.html\" target=\"MainFrame\">".$project."</a></td>\n";
     }
     
     $menuTable .= "</table>\n";
