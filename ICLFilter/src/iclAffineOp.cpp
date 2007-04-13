@@ -18,7 +18,7 @@ namespace icl{
                                 m_aadT, m_eInterpolate);
       }
    }
-  // }}}
+   // }}}
   
    template<>
    void AffineOp::affine<icl32f> (const ImgBase *poSrc, ImgBase *poDst) {
@@ -34,16 +34,7 @@ namespace icl{
       }
    }
 
-  // }}}
-
-
-   // the affine function is not implemented so a linker error is produced
-   //
-   //#warning "fallback for AffineOp::affine not yet implemented"
-   //template<typename T>
-   //void AffineOp::affine (const ImgBase *poSrc, ImgBase *poDst) {
-   //   ERROR_LOG ("not yet implemented");
-   //} 
+   // }}}
 
 
    AffineOp::AffineOp (scalemode eInterpolate) : m_eInterpolate (eInterpolate)  {
@@ -55,6 +46,7 @@ namespace icl{
 
   // }}}
 #endif
+
    void AffineOp::reset () {
      // {{{ open
 

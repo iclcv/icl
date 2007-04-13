@@ -5,6 +5,7 @@
 using namespace icl;
 
 int main(){  
+#ifdef WITH_IPP_OPTIMIZATION
   FileReader r("demoImages/macaw2.ppm");
   Img8u *image = r.grab()->asImg<icl8u>()->deepCopy();
 
@@ -23,5 +24,6 @@ int main(){
   FileWriter("./proximity_result.ppm").write(output);
   printf("ProximityDemo applied successfully \n");
   
+#endif
   return 0;
 }

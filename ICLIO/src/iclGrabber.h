@@ -7,7 +7,6 @@
 #include <iclConverter.h>
 #include <vector>
 #include <iclSteppingRange.h>
-#include <iclConverter.h>
 /*
   Grabber.h
 

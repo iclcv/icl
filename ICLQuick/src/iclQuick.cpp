@@ -408,10 +408,12 @@ namespace icl{
       M["gauss"] = new ConvolutionOp(ConvolutionOp::kernelGauss3x3);
       M["laplace"] = new ConvolutionOp(ConvolutionOp::kernelLaplace3x3);
       M["median"] = new MedianOp(Size(3,3));
+#ifdef WITH_IPP_OPTIMIZATION
       M["dilation"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::dilate);
       M["erosion"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::erode);
       M["opening"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::openBorder);
       M["closing"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::closeBorder);
+#endif
     }    
     UnaryOp* u = M[filter];
     if(!u){
