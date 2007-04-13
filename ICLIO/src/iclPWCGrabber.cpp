@@ -542,27 +542,19 @@ void save_setparams(int device){
     return "undefined";
   }
   
-  void PWCGrabber::setParam(const string &param, const string &value){
-    // {{{ open
-
-    if(param == "size"){
-      Size newSize = translateSize(value);
-      setGrabbingSize(newSize);
-    }else if(param == "size"){
-      if(value != "YUV 4-2-0 planar"){
-        ERROR_LOG("invalid format \"" << value <<"\"");
-      }
-    }else{
-      ERROR_LOG("nothing known about a param " << param ); 
-    }
-  }
-
   // }}}
   
   void PWCGrabber::setProperty(const string &property, const string &value){
     // {{{ 
 
-    if(property == "gain"){
+    if(property == "size"){
+      Size newSize = translateSize(value);
+      setGrabbingSize(newSize);
+    }else if(property == "format"){
+      if(value != "YUV 4-2-0 planar"){
+        ERROR_LOG("invalid format \"" << value <<"\"");
+      }
+    }else if(property == "gain"){
       int val = atoi(value.c_str());
       setGain(clip(val,0,65535));
     }else if(property == "save user settings"){
@@ -617,6 +609,8 @@ void save_setparams(int device){
     // {{{ open
 
     std::vector<std::string> v;
+    v.push_back("size");
+    v.push_back("format");
     v.push_back("gain");
     v.push_back("save user settings");
     v.push_back("restore user settings");
@@ -627,17 +621,6 @@ void save_setparams(int device){
     v.push_back("compression level");
     v.push_back("led on");
     v.push_back("led off");
-    return v;
-  }
-
-  // }}}
-  
-  std::vector<std::string> PWCGrabber::getParamList(){
-    // {{{ open
-
-    std::vector<std::string> v;
-    v.push_back("size");
-    v.push_back("format");
     return v;
   }
 

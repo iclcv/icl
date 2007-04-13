@@ -91,10 +91,6 @@ namespace icl{
 
     /** @{ @name properties and parameters */
     
-    /// interface for the setter function for video device parameters
-    /** \copydoc icl::Grabber::setParam(const std::string&,const std::string&) **/
-    virtual void setParam(const std::string &param, const std::string &value);
-    
     /// interface for the setter function for video device properties 
     /** \copydoc icl::Grabber::setProperty(const std::string&,const std::string&) **/
     virtual void setProperty(const std::string &property, const std::string &value);
@@ -103,16 +99,11 @@ namespace icl{
     /** @return list of supported property names **/
     virtual std::vector<std::string> getPropertyList();
     
-    
-    /// returns a list of supported params, that can be set using setParams
-    /** @return list of supported parameters names */
-    virtual std::vector<std::string> getParamList();
-
-    /// get type of property or parameter
+    /// get type of property
     /** \copydoc icl::Grabber::getType(const std::string &)*/
     virtual std::string getType(const std::string &name);
 
-    /// get information of a property or parameters valid values values
+    /// get information of a property valid values
     /** \copydoc icl::Grabber::getInfo(const std::string &)*/
     virtual std::string getInfo(const std::string &name);
 

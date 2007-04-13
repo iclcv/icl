@@ -130,11 +130,91 @@ namespace icl{
     // }}}
   }
   
-  void UnicapGrabber::setProperty(const std::string &param, const std::string &value){
+  void UnicapGrabber::setProperty(const std::string &property, const std::string &value){
     // {{{ open
-
+    
     //    bool verbose = true;
-    string p = force_lower_case(param);
+    string p = force_lower_case(property);
+
+    // search for former "params"
+    m_oMutex.lock();
+    if(p == "size"){
+      // {{{ open
+
+      vector<string> ts = StrTok(value,"x").allTokens();
+      if(ts.size() != 2){
+        ERROR_LOG("unable to set parameter size to \""<<value<<"\" (expected syntax WxH)");
+        m_oMutex.unlock();
+        return;
+      }else{
+        Size s(atoi(ts[0].c_str()),atoi(ts[1].c_str()));
+        delete m_poGrabEngine;
+        m_poGrabEngine = 0;
+        delete m_poConvertEngine;
+        m_poConvertEngine = 0;
+        m_oDevice.setFormatSize(s);
+        init(); // creates a new grab engine
+      }
+
+      // }}}
+    }else if(p == "format"){
+      // {{{ open
+
+      delete m_poGrabEngine;
+      m_poGrabEngine = 0;
+      delete m_poConvertEngine;
+      m_poConvertEngine = 0;
+      m_oDevice.setFormatID(value);
+      init(); // creates new grab engine
+
+      // }}}
+    }else if(p == "size&format"){
+      // {{{ open
+
+      vector<string> tmp = StrTok(value,"&").allTokens();
+      if(tmp.size() != 2){
+        ERROR_LOG("unable to set parameter format&size to \""<<value<<"\" (expected syntax WxH&FORMAT_ID)");
+        m_oMutex.unlock();
+        return;
+      }
+
+      string size = tmp[0];
+      string fmt = tmp[1];
+      vector<string> ts = StrTok(size,"x").allTokens();
+      if(ts.size() != 2){
+        ERROR_LOG("unable to set size of parameter format&size to \""<<size<<"\" (expected syntax WxH)");
+        m_oMutex.unlock();
+        return;
+      }else{
+        Size s(atoi(ts[0].c_str()),atoi(ts[1].c_str()));
+        delete m_poGrabEngine;
+        m_poGrabEngine = 0;
+        delete m_poConvertEngine;
+        m_poConvertEngine = 0;
+        m_oDevice.setFormat(fmt,s);
+        init(); // creates a new grab engine
+      }
+
+      // }}}
+    }else if(p == "dma"){
+      // {{{ open
+      if(value == "on" || value == "off"){
+        if((value == "on" && !m_bUseDMA) || (value == "off" && m_bUseDMA)){
+          delete m_poGrabEngine;
+          m_poGrabEngine = 0;
+          delete m_poConvertEngine;
+          m_poConvertEngine = 0;
+          m_bUseDMA = value == "on" ? true : false;
+          init(); // creates a new grab engine
+        }
+      }else{
+        ERROR_LOG("unable to set param dma to \"" << value << "\" (allowed values are \"on\" and \"off\")");
+      }
+      // }}}
+    }
+    m_oMutex.unlock();
+    
+    // else search for properties
     vector<UnicapProperty> ps = m_oDevice.getProperties();
     for(unsigned int i=0;i<ps.size();i++){
       UnicapProperty &prop = ps[i];
@@ -241,113 +321,19 @@ namespace icl{
 
   // }}}
   
-  void UnicapGrabber::setParam(const std::string &param, const std::string &value){
-    // {{{ open
-
-    m_oMutex.lock();
-    if(param == "size"){
-      // {{{ open
-
-      vector<string> ts = StrTok(value,"x").allTokens();
-      if(ts.size() != 2){
-        ERROR_LOG("unable to set parameter size to \""<<value<<"\" (expected syntax WxH)");
-        m_oMutex.unlock();
-        return;
-      }else{
-        Size s(atoi(ts[0].c_str()),atoi(ts[1].c_str()));
-        delete m_poGrabEngine;
-        m_poGrabEngine = 0;
-        delete m_poConvertEngine;
-        m_poConvertEngine = 0;
-        m_oDevice.setFormatSize(s);
-        init(); // creates a new grab engine
-      }
-
-      // }}}
-    }else if(param == "format"){
-      // {{{ open
-
-      delete m_poGrabEngine;
-      m_poGrabEngine = 0;
-      delete m_poConvertEngine;
-      m_poConvertEngine = 0;
-      m_oDevice.setFormatID(value);
-      init(); // creates new grab engine
-
-      // }}}
-    }else if(param == "size&format"){
-      // {{{ open
-
-      vector<string> tmp = StrTok(value,"&").allTokens();
-      if(tmp.size() != 2){
-        ERROR_LOG("unable to set parameter format&size to \""<<value<<"\" (expected syntax WxH&FORMAT_ID)");
-        m_oMutex.unlock();
-        return;
-      }
-
-      string size = tmp[0];
-      string fmt = tmp[1];
-      vector<string> ts = StrTok(size,"x").allTokens();
-      if(ts.size() != 2){
-        ERROR_LOG("unable to set size of parameter format&size to \""<<size<<"\" (expected syntax WxH)");
-        m_oMutex.unlock();
-        return;
-      }else{
-        Size s(atoi(ts[0].c_str()),atoi(ts[1].c_str()));
-        delete m_poGrabEngine;
-        m_poGrabEngine = 0;
-        delete m_poConvertEngine;
-        m_poConvertEngine = 0;
-        m_oDevice.setFormat(fmt,s);
-        init(); // creates a new grab engine
-      }
-
-      // }}}
-    }else if(param == "dma"){
-      // {{{ open
-      if(value == "on" || value == "off"){
-        if((value == "on" && !m_bUseDMA) || (value == "off" && m_bUseDMA)){
-          delete m_poGrabEngine;
-          m_poGrabEngine = 0;
-          delete m_poConvertEngine;
-          m_poConvertEngine = 0;
-          m_bUseDMA = value == "on" ? true : false;
-          init(); // creates a new grab engine
-        }
-      }else{
-        ERROR_LOG("unable to set param dma to \"" << value << "\" (allowed values are \"on\" and \"off\")");
-      }
-      
-      // }}}
-    }else{
-      ERROR_LOG("unable to set unknown param \"" << param << "\"");
-    }
-    m_oMutex.unlock();
-  }
-
-  // }}}
   
   vector<string> UnicapGrabber::getPropertyList(){
     // {{{ open
 
     vector<string> v;
+    v.push_back("size");
+    v.push_back("format");
+    // [deprecated !] v.push_back("size&format");
+    v.push_back("dma");
     vector<UnicapProperty> ps = m_oDevice.getProperties();
     for(unsigned int i=0;i<ps.size();i++){
       v.push_back(ps[i].getID());
     }
-    return v;
-  }
-
-  // }}}
-
-  vector<string> UnicapGrabber::getParamList(){
-    // {{{ open
-
-    vector<string> v;
-    v.push_back("size");
-    v.push_back("format");
-    v.push_back("size&format");
-    v.push_back("dma");
     return v;
   }
 
@@ -530,11 +516,14 @@ namespace icl{
 
     ICLASSERT_RETURN_VAL(m_poGrabEngine , 0);
 
-    const ImgParams &p = getDesiredParams();
-    depth d = getDesiredDepth();
-    
-    if(!ppoDst) ppoDst = &m_poImage;  
-    ensureCompatible(ppoDst,d,p);
+    *ppoDst = prepareOutput(ppoDst);
+    /*
+        const ImgParams &p = getDesiredParams();
+        depth d = getDesiredDepth();
+        
+        if(!ppoDst) ppoDst = &m_poImage;  
+        ensureCompatible(ppoDst,d,p);
+    */
 
     // indicates whether a conversion to the desired parameters will be needed
     bool needFinalConversion = false; // assume, that no conversion is needed
@@ -544,17 +533,17 @@ namespace icl{
     m_poGrabEngine->lockGrabber();
     if(m_poGrabEngine->needsConversion()){
       const icl8u *rawData = m_poGrabEngine->getCurrentFrameUnconverted();
-      if(m_poConvertEngine->isAbleToProvideParams(p,d)){
-        m_poConvertEngine->cvt(rawData,p,d,ppoDst);
+      if(m_poConvertEngine->isAbleToProvideParams(m_oDesiredParams,m_eDesiredDepth)){
+        m_poConvertEngine->cvt(rawData,m_oDesiredParams,m_eDesiredDepth,ppoDst);
       }else{
-        m_poConvertEngine->cvt(rawData,p,d,&m_poConversionBuffer);
+        m_poConvertEngine->cvt(rawData,m_oDesiredParams,m_eDesiredDepth,&m_poConversionBuffer);
         needFinalConversion = true;
       }
     }else{
-      if(m_poGrabEngine->isAbleToProvideParams(p,d)){
-        m_poGrabEngine->getCurrentFrameConverted(p,d,ppoDst);
+      if(m_poGrabEngine->isAbleToProvideParams(m_oDesiredParams,m_eDesiredDepth)){
+        m_poGrabEngine->getCurrentFrameConverted(m_oDesiredParams,m_eDesiredDepth,ppoDst);
       }else{
-        m_poGrabEngine->getCurrentFrameConverted(p,d,&m_poConversionBuffer);
+        m_poGrabEngine->getCurrentFrameConverted(m_oDesiredParams,m_eDesiredDepth,&m_poConversionBuffer);
         needFinalConversion = true;
       }
     }

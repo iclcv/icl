@@ -7,6 +7,7 @@
 #include <iclConverter.h>
 #include <vector>
 #include <iclSteppingRange.h>
+#include <iclConverter.h>
 /*
   Grabber.h
 
@@ -36,8 +37,9 @@ namespace icl {
        m_poImage (0)
        {}
 
+    
     /// Destructor
-    virtual ~Grabber() {delete m_poImage;}
+    virtual ~Grabber() { if(m_poImage) delete m_poImage;}
 
     /// **NEW** grab function grabs an image (destination image is adapted on demand)
     /** This new grab function is one of the main parts of the ICL Grabber interface. Its 
@@ -59,39 +61,27 @@ namespace icl {
      virtual const ImgBase* grab(ImgBase **ppoDst=0) = 0;
 
 
-     /** @{ @name get/set properties and parameters */
+     /** @{ @name get/set properties  */
 
-     /// interface for the setter function for video device parameters
-     /** In constrast to the setProperty() function, this function sets up more <em>critical</em>
-         parameters like the grabbed images size and format. The difference to properties, that
-         are set via setProperty(), is that setParams() may have to force the underlying grabbing 
-         engine to stop or to reinitialize its buffers and convert-engine due to the format or 
-         size changes. As there are potentially very much params that could make sense in this
-         context, this functions as well as the setProperty() function are implemented in the 
-         most general string-string-manner.\n
-         Yet, the following parameters are compulsory for grabbers:
-         - size (syntax for value: e.g. "320x240")
-         - format (value depends on the underlying devices formats specifications) 
-         - [ format&size (syntax like 320x240&FORMAT_ID) ] deprecated!
-         
-         It is possible, but not recommended, to let special grabbers have more different params.
-
-         To get a list of all supported params, call 
-         \code getParamList()  \endcode
-         
-         @param param parameter name to set
-         @param value destination parameter value (internally parsed to the desired type)
-     **/
-     virtual void setParam(const std::string &param, const std::string &value){
-       (void)param; (void)value;
-     }
-     
      /// interface for the setter function for video device properties 
      /** All video device properties can be set using this function. As different video devices  
          have different property sets, there are no specialized functions to set special parameters.
-         The set of video device parameters consists of two parts:
          To get a list of all possible properties and their corresponding data ranges or value lists,
-         call \code getPropertyList() \endcode
+         call \code getPropertyList()  and getInfo() \endcode
+         Yet, the following properties are compulsory for grabbers:
+         - size (syntax for value: e.g. "320x240")
+         - format (value depends on the underlying devices formats specifications) 
+
+         Other parameters, implemented for most video devices are: 
+         - "frame rate"
+         - "exposure"
+         - "shutter speed"
+         - "gain"
+         - ...
+         
+         Look into the documentation of the special grabber classes or explore the device paremeters
+         with the <em>camcfg</em> utility application, located in ICLQt/examples
+         
          @param property identifier of the property
          @param value value of the property (the value is parsed into the desired type)
      */
@@ -105,53 +95,45 @@ namespace icl {
        return std::vector<std::string>();
      }
      
-     /// returns a list of supported params, that can be set using setParams
-     /** @return list of supported parameters names */
-     virtual std::vector<std::string> getParamList(){
-       return std::vector<std::string>();
-     }
-     
-     /// base implementation for param check (seaches in the param list)
-     /** This function may be reimplemented in an optimized way in
-         particular subclasses.**/
-     virtual bool supportsParam(const std::string &param);
-
      /// base implementation for property check (seaches in the property list)
      /** This function may be reimplemented in an optimized way in
          particular subclasses.**/
      virtual bool supportsProperty(const std::string &property);
 
-     
-     
-     
-     
-     /// get type of property or parameter
+     /// get type of property 
      /** This is a new minimal configuration interface: When implementing generic
-         video device configuration utilities, the programmer need information about
-         the parameters and properties received by getPropertyList() and 
-         getParamList(). With the getType(const string&) function you can explore
+         video device configuration utilities, the programmer needs information about
+         the properties received by getPropertyList(). With the getType(const string&)
+         function, you can explore
          all possible params and properties, and receive a type string which defines
-         of which type the given parameter or property was: \n
+         of which type the given property was: \n
          (for detailed description of the types, see also the get Info function)
          Types are:
-         - "range" the property/param is a double value in a given range 
-         - "value-list" the property/param double value in a list of possible values
-         - "menu" the property/param is a string value in a list of possible values
+         - "range" the propertyis a double value in a given range 
+         - "value-list" the property is a double value in a list of possible values
+         - "menu" the property  is a string value in a list of possible values
+         - "command" property param has no additional parameters (this feature is 
+           used e.g. for triggered abilities of grabbing devices, like 
+           "save user settings" for the PWCGrabber 
          - ... (propably some other types are defined later on)
-         - "command" property param has no additional parameters
      */
      virtual std::string getType(const std::string &name){
        (void)name; return "undefined";
      }
      
-     /// get information of a property or parameters valid values values
+     /// get information of a properties valid values
      /** This is the second function of the minimal configuration interface: If 
-         received a specific parameter or property type with getType(), it's
+         received a specific property type with getType(), it's
          possible to get the corresponding range, value-list or menu with this
          funcitons. The Syntax of the returned strings are:
          - "[A,B]:C"  for a range with min=A, max=B and stepping = C
          - "{A,B,C,...}" for a value-list and A,B,C are ascii doubles
          - "{A,B,C,...}" for a menu and A,B,C are strings
+         <b>Note:</b> The received string can be translated into C++ data
+         with some static utility function in this Grabber class.
+         @see translateSteppingRange
+         @see translateDoubleVec
+         @see translateStringVec
      */
      virtual std::string getInfo(const std::string &name){
        (void)name; return "undefined";
@@ -238,10 +220,18 @@ namespace icl {
      /// internal storage of desired image depth
      depth m_eDesiredDepth;
 
-     /// converter used for conversion to desired output depth/params
+     /// converter used for conversion to desired output depth/params 
+     /** This instance of the Converter class can be used in derived classes
+         to adapt a grabbed image the desired params 
+     */
      Converter m_oConverter;
 
      /// interal output image instance used if ppoDst is zero in grab()
+     /** This image can be used in derived classes if the ImgBase** that
+         was passed to the grab(..) function was NULL. In this case, this
+         ImgBase should be used and returned. This will help to avoide
+         runtime memory allocation and deallocations. 
+     */
      ImgBase  *m_poImage;
 
   }; // class

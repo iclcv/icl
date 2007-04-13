@@ -49,26 +49,22 @@ namespace icl{
 
     /** @{ @name properties and params */
     
-    /// get type of property or parameter
+    /// get type of property
     /** \copydoc icl::Grabber::getType(const std::string &)*/
     virtual std::string getType(const std::string &name);
 
-    /// get information of a property or parameters valid values values
+    /// get information of a propertyvalid values values
     /** \copydoc icl::Grabber::getInfo(const std::string &)*/
     virtual std::string getInfo(const std::string &name);
     
-    /// returns the current value of a given property or parameter
+    /// returns the current value of a given property
     virtual std::string getValue(const std::string &name);
     
-    /// setter function for video device parameters 
-    /** @copydoc icl::Grabber::setParam(const std::string&, const std::string&) 
-        additionally the following commands are supported:
-        - param=dma [value={on, off} of is default!] 
-    **/
-    virtual void setParam(const std::string &param, const std::string &value);
-    
     /// setter function for video device properties 
-    /** @copydoc icl::Grabber::setProperty(const std::string&, const std::string&) */
+    /** @copydoc icl::Grabber::setProperty(const std::string&, const std::string&)
+        additional property is: 
+        - property=dma [value={on, off} of is default!] 
+    **/
     virtual void setProperty(const std::string &property, const std::string &value);
     
     
@@ -77,18 +73,6 @@ namespace icl{
     virtual std::vector<std::string> getPropertyList(); 
     
     
-     /// returns a list of supported params, that can be set using setParams
-     /** currently the UnicapGrabber supports setting the
-         grabbed image size and format:
-         paramList = { size, format, size&format, dma }
-         - syntax for size is e.g. "320x240"
-         - syntax for format is e.g. "YUV411", "YUV422", "YUV444" or "RAW"
-         - syntax for size&format is e.g. "320x240&YUV411"
-         - syntax for dma is "on" of "off"
-         @return list of supported parameters names 
-    **/
-    virtual std::vector<std::string> getParamList(); 
-
     /** @} @{ @name special static functions to get device lists */
     
     /// creates a vector of all currently available UnicapDevices (filterer by filter)

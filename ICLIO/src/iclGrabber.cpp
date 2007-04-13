@@ -34,17 +34,9 @@ namespace icl{
     // }}}
   }
   
-  bool Grabber::supportsParam(const std::string &param){
-    // {{{ open
-
-    return inList(param,getParamList());
-  }
-
-  // }}}
-  
   bool Grabber::supportsProperty(const std::string &property){
     // {{{ open
-
+    
     return inList(property,getPropertyList());
   }
 
