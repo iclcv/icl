@@ -226,8 +226,8 @@ namespace icl{
     
     
     m_oGrabberMutex.lock();
-    if(m_poGrabber->supportsParam("format") && text != ""){
-      m_poGrabber->setParam("format",text.toLatin1().data());
+    if(m_poGrabber->supportsProperty("format") && text != ""){
+      m_poGrabber->setProperty("format",text.toLatin1().data());
     }
     m_oGrabberMutex.unlock();
   }
@@ -237,8 +237,8 @@ namespace icl{
     // {{{ open
     if(!m_poGrabber || m_bDisableSlots) return;
     m_oGrabberMutex.lock();
-    if(m_poGrabber->supportsParam("size") && text != ""){
-      m_poGrabber->setParam("size",text.toLatin1().data());
+    if(m_poGrabber->supportsProperty("size") && text != ""){
+      m_poGrabber->setProperty("size",text.toLatin1().data());
     }
     m_oGrabberMutex.unlock();
   }
@@ -325,7 +325,7 @@ namespace icl{
     while(m_poSizeCombo->count()){
       m_poSizeCombo->removeItem(0);
     }
-    if(m_poGrabber->supportsParam("size")){
+    if(m_poGrabber->supportsProperty("size")){
       string sizeListStr = m_poGrabber->getInfo("size");
       vector<string> sizeList = Grabber::translateStringVec( sizeListStr );
       string currSizeStr = m_poGrabber->getValue("size");
@@ -353,7 +353,7 @@ namespace icl{
       m_poFormatCombo->removeItem(0);
     }
 
-    if(m_poGrabber->supportsParam("format")){
+    if(m_poGrabber->supportsProperty("format")){
       string fmtListStr = m_poGrabber->getInfo("format");
       vector<string> fmtList = Grabber::translateStringVec( fmtListStr );
       
@@ -377,6 +377,8 @@ namespace icl{
     QWidget *PARENT = 0;
     for(unsigned int i=0;i<propertyList.size();i++){
       string &prop = propertyList[i];
+      if(prop == "size" || prop == "format") continue; // this two properties are handled externally
+      
       string typeStr = grabber->getType(prop);
       if(typeStr == "range"){
         SteppingRange<double> sr = Grabber::translateSteppingRange(grabber->getInfo(prop));

@@ -41,9 +41,16 @@ public:
           }
           grabber = new UnicapGrabber(v[dev]);
           // v[dev].listFormats();
-          grabber->setParam("size&format","640x480&YUV(4:2:2) 640x480");
-          if(pa_defined("-dma")) grabber->setParam("dma","on");
-          else grabber->setParam("dma","off");
+          if(grabber->supportsProperty("size")){
+            grabber->setProperty("size","640x480");
+          }
+          if(grabber->supportsProperty("dma")){
+            if(pa_defined("-dma")){
+              grabber->setProperty("dma","on");
+            }else{ 
+              grabber->setProperty("dma","off");
+            }
+          }
           grabber->setDesiredSize(Size(640,480));
           //grabber->setDesiredDepth(depth32f);
         }
