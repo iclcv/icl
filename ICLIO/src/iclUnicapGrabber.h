@@ -34,11 +34,13 @@ namespace icl{
     UnicapGrabber(const UnicapDevice &device);
     
     /// create a UniapGrabber with given device Filter
-    /** <b>Note:</b> The first device, that matches all filters is used
-        @param deviceFilter device filter string (see the static function getDeviceList() for
+    /** @param deviceFilter device filter string (see the static function getDeviceList() for
                             more details
+        @param useIndex: if more devices match the given filters, than use the device with index
+                         useIndex. If useIndex is invalid, an error is written, the grabber becomes
+                         invalid (this should not cause crashes, but no warranty).
     **/
-    UnicapGrabber(const std::string &deviceFilter); // uses the first device that matches
+    UnicapGrabber(const std::string &deviceFilter, int useIndex=0); 
 
     /// Destructor
     ~UnicapGrabber();
@@ -76,19 +78,32 @@ namespace icl{
     /** @} @{ @name special static functions to get device lists */
     
     /// creates a vector of all currently available UnicapDevices (filterer by filter)
-    /** The filter string has the following syntax = A%B%C%D%... 
-        where A,B,C and so on are tokens like X=Y and X is a specific UnicapDevice parameter
-        and Y is the desired value that must match for UnicapDevices to get into the output
-        vector. Possible values for X are all (simple) UnicapDevice available in the UnicapDevice
-        class interface via simple getter functions:
-        - <b>id=string</b>  the unique camera id (including some bus specific identifiers) 
-        - <b>ModelName=string</b> model name of the camera e.g. "Philips 740 webcam"
-        - <b>VendorName=string</b> name of the camera vendor (confusing: "v4l2" for the Phillips webcam)
-        - <b>ModelID=unsinged long long</b> model id ("1" for the Phillips webcam)
-        - <b>VendorID=unsigned int</b> id of the Vendor ("-65536" for the Phillips webcam)
-        - <b>CPILayer=string</b> used software libray e.g. "/usr/local/lib/unicap/cpi/libv4l2.so"
-        - <b>Device=string</b> corresponding software device e.g. "/dev/video0"
-        - <b>Flags=unsigned int</b> internal camera flags (not very specific!)
+    /** The filter string has the following syntax:
+        - the string consist of one or more filter stings that are applied one after 
+          another on the primary filter list, which would be returned, if no filters are 
+          defined (filter-string = ""). This filters are devided by new lines (\\n).
+        - each filter string then again consits of 3 single parts:
+          - the filter <b>ID</b>
+          - the filter <b>operator</b>
+          - the filter <b>value</b>
+        - IDs are:
+          - <b>id</b>(string)  the unique camera id (including some bus specific identifiers) 
+          - <b>ModelName</b>(string) model name of the camera e.g. "Philips 740 webcam"
+          - <b>VendorName</b>(string) name of the camera vendor (confusing: "v4l2" for the Phillips webcam)
+          - <b>ModelID</b>(unsinged long long) model id ("1" for the Phillips webcam)
+          - <b>VendorID</b>(unsigned int) id of the Vendor ("-65536" for the Phillips webcam)
+          - <b>CPILayer</b>(string) used software libray e.g. "/usr/local/lib/unicap/cpi/libv4l2.so"
+          - <b>Device</b>(string) corresponding software device e.g. "/dev/video0"
+          - <b>Flags</b>(unsigned int) internal camera flags (not very specific!)
+        - Operators are:
+          - <b>==</b> the given filter value must match to the actual value
+          - <b>~=</b> the given filter value must be a substring of the actual value 
+          - <b>*=</b> the given filter value is a regular expression, that must match
+            actual value
+        - Values depend on the type (listed in the ID-description) of the corresponding ID, and
+          of cause on the possible values, that are provided by the cameras. The possible values
+          can be investigated by exploring all UnicapDevices returned by a call to getDeviceList()
+          with no filter (filter="")
     **/
     static const std::vector<UnicapDevice> &getDeviceList(const std::string &filter="");
     

@@ -14,6 +14,8 @@
 #include "iclDefaultConvertEngine.h"
 #include "iclDefaultGrabEngine.h"
 
+#include <regex.h>
+
 using namespace icl;
 using namespace std;
 
@@ -29,7 +31,7 @@ namespace icl{
 
   // }}}
   
-  UnicapGrabber::UnicapGrabber(const std::string &deviceFilter):
+  UnicapGrabber::UnicapGrabber(const std::string &deviceFilter,int  useIndex):
     // {{{ open
 
     m_poConversionBuffer(0),m_poGrabEngine(0),
@@ -558,15 +560,50 @@ namespace icl{
   // }}}
   
   namespace{
+    
+    enum matchmode{
+      eq, // == equal 
+      in, // ~= contains
+      rx  // *= regex-match
+    };
+
+    bool match_regex(const string &text,const string &patternIn){
+      // {{{ open
+
+      string patternSave = patternIn;
+      char *pattern = const_cast<char*>(patternSave.c_str());
+      int    status;
+      regex_t    re;
+      
+      if (regcomp(&re, pattern, REG_EXTENDED|REG_NOSUB) != 0) {
+        ERROR_LOG("error in regular expression " << patternIn);
+        return false; 
+      }
+      status = regexec(&re, text.c_str(), (size_t) 0, NULL, 0);
+      regfree(&re);
+      return !status;
+    }
+
+    // }}}
+
+    bool match_string(const string &text, const string &pattern, matchmode mode){
+      switch(mode){
+        case eq: return text == pattern;
+        case in: return text.find(pattern,0) != string::npos;
+        default: return match_regex(text,pattern);
+      }
+    } 
+    
     struct ParamFilter{
       // {{{ open
-      ParamFilter(const string &str, unsigned int ui=0, unsigned long long ull=0):
-        str(str),ui(ui),ull(ull){ }
+      ParamFilter(const string &str,matchmode mode, unsigned int ui=0, unsigned long long ull=0):
+        str(str),ui(ui),ull(ull),mode(mode){ }
       virtual ~ParamFilter(){}
       virtual bool ok(const UnicapDevice &d)=0;
       string str;
       unsigned int ui;
       unsigned long long ull;
+      matchmode mode;
     };
 
     // }}}
@@ -574,9 +611,9 @@ namespace icl{
     struct ParamFilterID : public ParamFilter{
       // {{{ open
 
-      ParamFilterID(const string &id):ParamFilter(str){}
+      ParamFilterID(const string &id, matchmode mode):ParamFilter(str,mode){}
       virtual bool ok(const UnicapDevice &d){
-        return d.getID()==str;
+        return match_string(d.getID(),str,mode);
       }
     };
 
@@ -584,9 +621,9 @@ namespace icl{
     struct ParamFilterModelName : public ParamFilter{
       // {{{ open
 
-      ParamFilterModelName(const string &mn):ParamFilter(mn){}
+      ParamFilterModelName(const string &mn, matchmode mode):ParamFilter(mn,mode){}
       virtual bool ok(const UnicapDevice &d){
-        return d.getModelName()==str;
+        return match_string(d.getModelName(),str,mode);
       }
     };
 
@@ -594,9 +631,9 @@ namespace icl{
     struct ParamFilterVendorName : public ParamFilter{
       // {{{ open
 
-      ParamFilterVendorName(const string &vn):ParamFilter(vn){}
+      ParamFilterVendorName(const string &vn, matchmode mode):ParamFilter(vn,mode){}
       virtual bool ok(const UnicapDevice &d){
-        return d.getVendorName()==str;
+        return match_string(d.getVendorName(),str,mode);
       }
     };
 
@@ -604,7 +641,7 @@ namespace icl{
     struct ParamFilterModelID : public ParamFilter{
       // {{{ open
 
-      ParamFilterModelID(unsigned long long mid):ParamFilter("",0,mid){}
+      ParamFilterModelID(unsigned long long mid, matchmode mode):ParamFilter("",mode,0,mid){}
       virtual bool ok(const UnicapDevice &d){
         return d.getModelID()==ull;
       }
@@ -614,7 +651,7 @@ namespace icl{
     struct ParamFilterVendorID : public ParamFilter{
       // {{{ open
 
-      ParamFilterVendorID(unsigned int vid):ParamFilter("",vid){}
+      ParamFilterVendorID(unsigned int vid, matchmode mode):ParamFilter("",mode,vid){}
       virtual bool ok(const UnicapDevice &d){
         return d.getVendorID()==ui;
       }
@@ -624,9 +661,9 @@ namespace icl{
     struct ParamFilterCPILayer : public ParamFilter{
       // {{{ open
 
-      ParamFilterCPILayer(const string &cpil):ParamFilter(cpil){}
+      ParamFilterCPILayer(const string &cpil, matchmode mode):ParamFilter(cpil,mode){}
       virtual bool ok(const UnicapDevice &d){
-        return d.getCPILayer()==str;
+        return match_string(d.getCPILayer(),str,mode);
       }
     };
 
@@ -634,58 +671,69 @@ namespace icl{
     struct ParamFilterDevice : public ParamFilter{
       // {{{ open
 
-      ParamFilterDevice(const string &dev):ParamFilter(dev){}
+      ParamFilterDevice(const string &dev, matchmode mode):ParamFilter(dev,mode){}
       virtual bool ok(const UnicapDevice &d){
-        return d.getDevice()==str;
+        return match_string(d.getDevice(),str,mode);
       }
     };
-
+    
     // }}}
     struct ParamFilterFlags : public ParamFilter{
       // {{{ open
-
-      ParamFilterFlags(unsigned int flags):ParamFilter("",flags){}
+      
+      ParamFilterFlags(unsigned int flags, matchmode mode):ParamFilter("",mode,flags){}
       virtual bool ok(const UnicapDevice &d){
         return d.getFlags()==ui;
       }
     };
 
     // }}}
-    
+   
+
     void filter_devices(const vector<UnicapDevice> &src, vector<UnicapDevice> &dst, const string &filter){
       // {{{ open
 
       dst.clear();
-      StrTok t(filter,"%");
+      StrTok t(filter,"\n");
       const std::vector<string> &toks = t.allTokens();
       vector<ParamFilter*> filters;
       for(unsigned int i=0;i<toks.size();++i){
-        StrTok t2(toks[i],"=");
-        const std::vector<string> &toks2 = t2.allTokens();
-        if(toks2.size() != 2){
-          WARNING_LOG("unknown filter token \""<< toks[i] <<"\"");
+        static const char* apcOps[] = {"==","~=","*="};
+        static const matchmode aeModes[] = {eq,in,rx};
+        
+        size_t pos = string::npos;
+        matchmode mode;
+        string id,value;
+        for(int i=0;i<3;i++){
+          if((pos=toks[i].find(apcOps[i],0)) != string::npos){
+            id = toks[i].substr(0,pos-1);
+            value = toks[i].substr(pos+1,toks[i].size()-pos);
+            mode = aeModes[i];
+            break;
+          }
+        }
+        if(pos ==  string::npos){
+          WARNING_LOG("unknown filter operator token in \""<< toks[i] <<"\"");
           continue;
         }
-        string param = force_lower_case(toks2[0]);
-        string value = toks2[1];
-        if(param == "id"){
-          filters.push_back(new ParamFilterID(value));
-        }else if (param == "modelname"){
-          filters.push_back(new ParamFilterModelName(value));
-        }else if (param == "vendorname"){
-          filters.push_back(new ParamFilterVendorName(value));
-        }else if (param == "modelid"){
-          filters.push_back(new ParamFilterModelID(atol(value.c_str())));
-        }else if (param == "vendorid"){
-          filters.push_back(new ParamFilterVendorID((unsigned int)atol(value.c_str())));
-        }else if (param == "cpilayer"){
-          filters.push_back(new ParamFilterCPILayer(value));
-        }else if (param == "device"){
-          filters.push_back(new ParamFilterDevice(value));
-        }else if (param == "flags"){
-          filters.push_back(new ParamFilterFlags((unsigned int )atol(value.c_str())));
+        if(id == "id"){
+          filters.push_back(new ParamFilterID(value,mode));
+        }else if (id == "modelname"){
+          filters.push_back(new ParamFilterModelName(value,mode));
+        }else if (id == "vendorname"){
+          filters.push_back(new ParamFilterVendorName(value,mode));
+        }else if (id == "modelid"){
+          filters.push_back(new ParamFilterModelID(atol(value.c_str()),mode));
+        }else if (id == "vendorid"){
+          filters.push_back(new ParamFilterVendorID((unsigned int)atol(value.c_str()),mode));
+        }else if (id == "cpilayer"){
+          filters.push_back(new ParamFilterCPILayer(value,mode));
+        }else if (id == "device"){
+          filters.push_back(new ParamFilterDevice(value,mode));
+        }else if (id == "flags"){
+          filters.push_back(new ParamFilterFlags((unsigned int )atol(value.c_str()),mode));
         }else{
-          WARNING_LOG("unknown filter param \"" << param << "\"");
+          WARNING_LOG("unknown filter id \"" << id << "\"");
         }
       }
       for(unsigned int i=0;i<src.size();++i){
