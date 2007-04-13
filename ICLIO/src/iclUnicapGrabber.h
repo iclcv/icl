@@ -83,9 +83,9 @@ namespace icl{
           another on the primary filter list, which would be returned, if no filters are 
           defined (filter-string = ""). This filters are devided by new lines (\\n).
         - each filter string then again consits of 3 single parts:
-          - the filter <b>ID</b>
-          - the filter <b>operator</b>
-          - the filter <b>value</b>
+          - the filter <b> ID </b>
+          - the filter <b> operator </b>
+          - the filter <b> value </b>
         - IDs are:
           - <b>id</b>(string)  the unique camera id (including some bus specific identifiers) 
           - <b>ModelName</b>(string) model name of the camera e.g. "Philips 740 webcam"

@@ -704,11 +704,12 @@ namespace icl{
         size_t pos = string::npos;
         matchmode mode;
         string id,value;
-        for(int i=0;i<3;i++){
-          if((pos=toks[i].find(apcOps[i],0)) != string::npos){
-            id = toks[i].substr(0,pos-1);
-            value = toks[i].substr(pos+1,toks[i].size()-pos);
-            mode = aeModes[i];
+        for(int j=0;j<3;j++){
+          if((pos=toks[i].find(apcOps[j],0)) != string::npos){
+            id = toks[i].substr(0,pos);
+            value = toks[i].substr(pos+2,toks[i].size()-pos-1);
+            mode = aeModes[j];
+            printf("filter: id=[%s] mode=[%s] value=[%s]\n ",id.c_str(),apcOps[j],value.c_str());
             break;
           }
         }
@@ -778,6 +779,7 @@ namespace icl{
     // {{{ open
 
     static std::vector<UnicapDevice> s_CurrentDevices;
+    s_CurrentDevices.clear();
     filter_devices(devices,s_CurrentDevices,filter);
     return s_CurrentDevices;
   }
