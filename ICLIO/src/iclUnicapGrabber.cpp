@@ -465,7 +465,7 @@ namespace icl{
     }
 
     if(name == "size" || name == "format" || name == "format&size" || name == "dma"){
-      return "valueList";
+      return "menu";
     }
     return "undefined";
   }
@@ -516,14 +516,9 @@ namespace icl{
 
     ICLASSERT_RETURN_VAL(m_poGrabEngine , 0);
 
-    *ppoDst = prepareOutput(ppoDst);
-    /*
-        const ImgParams &p = getDesiredParams();
-        depth d = getDesiredDepth();
-        
-        if(!ppoDst) ppoDst = &m_poImage;  
-        ensureCompatible(ppoDst,d,p);
-    */
+    if(!ppoDst) ppoDst = &m_poImage;  
+    ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
+    
 
     // indicates whether a conversion to the desired parameters will be needed
     bool needFinalConversion = false; // assume, that no conversion is needed
