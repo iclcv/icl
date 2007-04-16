@@ -194,6 +194,14 @@ namespace icl{
       @param pts vector of points
   **/
   void pix(ImgQ &image, const vector<Point> &pts);
+
+  /// draws a circle into an image
+  /** @param image destination image
+      @param x x-pos of the circle
+      @param y x-pos of the circle
+      @param r radius of the circle
+  **/
+  void circle(ImgQ &image, int x, int y, int r);
   
   /// renders a text into an image 
   /** This functin renders a text into an 3 or 1 channel image
