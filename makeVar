@@ -67,8 +67,8 @@ REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug status
 # This variable takes two values: TRUE or FALSE
-#DEBUG_ON:=TRUE
-DEBUG_ON:=FALSE
+DEBUG_ON:= ${DEBUG_ON}
+
 # Debugging flags
 DEBUG:=-O0 -g3
 # Non-Debugging flags
@@ -141,31 +141,29 @@ endif
 endif
 
 ############################# check for unicap ##########################
-ifneq "${UNICAP_ROOT}" ""
-
+UNICAP_ROOT ?= /vol/video
 ifeq "$(wildcard ${UNICAP_ROOT}/lib/libunicap*.so)" ""
-ifeq "${_WARN_UNICAP_1}" ""
-$(warning "libunicap.so was not found in UNICAP_ROOT/lib: ${UNICAP_ROOT}/lib. Unicap support disabled.")
-export _WARN_UNICAP_1=done
-endif # _WARN_UNICAP_1
+ifeq "${_WARN_UNICAP}" ""
+$(warning "libunicap.so was not found in ${UNICAP_ROOT}/lib. Unicap support disabled.")
+export _WARN_UNICAP=done
+endif # _WARN_UNICAP
 else # found libunicap.so in UNICAP_ROOT/lib ->ok
 HAVE_UNICAP=TRUE
 endif # searching in UNICAP_ROOT/lib
 
-else # no UNICAP_ROOT set
+############################# check for XCF ########################
+XCF_ROOT ?= /vol/xcf
+ifeq "$(wildcard ${XCF_ROOT}/lib/libxcf*.so)" ""
+ifeq "${_WARN_XCF}" ""
+$(warning "libxcf.so was not found in ${XCF_ROOT}/lib. XCF support disabled.")
+export _WARN_XCF=done
+endif # _WARN_XCF
+else # found libxcf.so in XCF_ROOT/lib ->ok
+HAVE_XCF=TRUE
+endif # searching in XCF_ROOT/lib
 
-ifeq "$(wildcard /vol/video/lib/libunicap*.so)" ""
-ifeq "${_WARN_UNICAP_2}" ""
-$(warning "libunicap.so was not found in /vol/video/lib. Unicap support disabled.")
-export _WARN_UNICAP_2=done
-endif # _WARN_UNICAP_2
-else # found libunicap.so in /vol/video/lib
-HAVE_UNICAP=TRUE
-export UNICAP_ROOT=/vol/video
-endif
 
-endif # end
-
+#########################################################################
 # Set the priority level
 DIR_PRIORITY:=ICLUtils ICLCore ICLCC
 DIR_LOWPRIORITY:=examples

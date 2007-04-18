@@ -542,10 +542,8 @@ void save_setparams(int device){
     return "undefined";
   }
   
-  // }}}
-  
   void PWCGrabber::setProperty(const string &property, const string &value){
-    // {{{ 
+    // {{{ open
 
     if(property == "size"){
       Size newSize = translateSize(value);

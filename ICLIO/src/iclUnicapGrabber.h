@@ -40,7 +40,7 @@ namespace icl{
                          useIndex. If useIndex is invalid, an error is written, the grabber becomes
                          invalid (this should not cause crashes, but no warranty).
     **/
-    UnicapGrabber(const std::string &deviceFilter, int useIndex=0); 
+    UnicapGrabber(const std::string &deviceFilter, unsigned int useIndex=0); 
 
     /// Destructor
     ~UnicapGrabber();
@@ -105,7 +105,7 @@ namespace icl{
           can be investigated by exploring all UnicapDevices returned by a call to getDeviceList()
           with no filter (filter="")
     **/
-    static const std::vector<UnicapDevice> &getDeviceList(const std::string &filter="");
+    static std::vector<UnicapDevice> getDeviceList(const std::string &filter="");
     
     /// filters a given device list with given filter
     /** @see getDeviceList(const string &) 
@@ -113,7 +113,8 @@ namespace icl{
         @param filter given device filter
         @return vector of UnicapDevices that match all given filters
     **/
-    static const std::vector<UnicapDevice> &filterDevices(const std::vector<UnicapDevice> &devices, const std::string &filter);
+    static std::vector<UnicapDevice> filterDevices(const std::vector<UnicapDevice> &devices, 
+                                                   const std::string &filter);
 
     /** @} @{ @name special unicap functions */
     

@@ -31,14 +31,14 @@ namespace icl{
 
   // }}}
   
-  UnicapGrabber::UnicapGrabber(const std::string &deviceFilter,int  useIndex):
+  UnicapGrabber::UnicapGrabber(const std::string &deviceFilter, unsigned int useIndex):
     // {{{ open
 
     m_poConversionBuffer(0),m_poGrabEngine(0),
     m_poConvertEngine(0), m_bUseDMA(false){
     const std::vector<UnicapDevice> &ds = getDeviceList(deviceFilter);
-    if(ds.size()){
-      m_oDevice = ds[0];
+    if(useIndex < ds.size()){
+      m_oDevice = ds[useIndex];
     }else{
       ERROR_LOG("no device found for filter: \""<<deviceFilter<<"\"!");
     }    
@@ -240,6 +240,7 @@ namespace icl{
           // }}}
         case UnicapProperty::valueList:{
           // {{{ open
+
           vector<double> valueList = prop.getValueList();
           double val = atof(value.c_str());
           bool foundValue = false;
@@ -690,7 +691,8 @@ namespace icl{
     // }}}
    
 
-    void filter_devices(const vector<UnicapDevice> &src, vector<UnicapDevice> &dst, const string &filter){
+    void filter_devices(const vector<UnicapDevice> &src, 
+                        vector<UnicapDevice> &dst, const string &filter){
       // {{{ open
 
       dst.clear();
@@ -756,32 +758,35 @@ namespace icl{
 
 
   
-  const vector<UnicapDevice> &UnicapGrabber::getDeviceList(const string &filter){
+  vector<UnicapDevice>
+  UnicapGrabber::getDeviceList(const string &filter){
     // {{{ open
-    static std::vector<UnicapDevice> s_CurrentDevices,buf;
-    s_CurrentDevices.clear();
+
+    static std::vector<UnicapDevice> vCurrentDevices;
+    // rebuild current list of available devices
+    vCurrentDevices.clear();
 
     for(int i=0;true;++i){
-      UnicapDevice d(i);
-      if(d.isValid()){
-        buf.push_back(d);
-      }else{
-        break;
-      }
+       UnicapDevice d(i);
+       if(!d.isValid()) break;
+
+       vCurrentDevices.push_back(d);
     }
-    filter_devices(buf,s_CurrentDevices,filter);
-    return s_CurrentDevices;
+    return filterDevices (vCurrentDevices, filter);
   }
 
   // }}}
   
-  const vector<UnicapDevice> &filterDevices(const std::vector<UnicapDevice> &devices, const string &filter){
+  /* Returning a real vector instead of a const reference to some static variable
+     here allows to apply several filterDevices-calls in series */
+  vector<UnicapDevice>
+  UnicapGrabber::filterDevices(const std::vector<UnicapDevice> &devices, 
+                               const string &filter){
     // {{{ open
 
-    static std::vector<UnicapDevice> s_CurrentDevices;
-    s_CurrentDevices.clear();
-    filter_devices(devices,s_CurrentDevices,filter);
-    return s_CurrentDevices;
+    std::vector<UnicapDevice> vResult;
+    filter_devices(devices,vResult,filter);
+    return vResult;
   }
 
   // }}}

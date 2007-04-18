@@ -45,6 +45,8 @@ CPPDEFINES:= ${CPPDEFINES}
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
 
+# Ice doesn't compile with pedantic flag
+../obj/iclXCFGrabber.o: CPPFLAGS := $(filter-out -pedantic,$(CPPFLAGS))
 
 # Set the priority level
 DIR_PRIORITY:=

@@ -24,8 +24,8 @@ AGNI_INHERIT_MODE:= DYNAMIC
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
 include ${PACKAGES}/ICLCC
 include ${PACKAGES}/ICLCore
-include ${PACKAGES}/Firewire
 include ${PACKAGES}/Unicap
+include ${PACKAGES}/XCF
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -53,8 +53,7 @@ REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug status
 # This variable takes two values: TRUE or FALSE
-#DEBUG_ON:=${DEBUG_ON}
-DEBUNG_ON=FALSE
+DEBUG_ON:=${DEBUG_ON}
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES}
@@ -88,10 +87,9 @@ SKIP_OBJECTS += iclUnicapGrabber.cpp unicap_test.cpp
 SKIP_OBJECTS += iclUnicapDevice.cpp iclUnicapFormat.cpp iclUnicapProperty.cpp
 SKIP_OBJECTS += iclDefaulGrabEngine.cpp iclDefaultConvertEngine.cpp
 SKIP_OBJECTS += iclUnicapGrabEngine.cpp iclUnicapConvertEngine.cpp
-
 endif
 
-ifeq "$(HAVE_FIREWIRE)" ""
-SKIP_OBJECTS += iclFwGrabber.cpp
+ifeq "$(HAVE_XCF)" ""
+SKIP_OBJECTS += iclXCFGrabber.cpp
 endif
 

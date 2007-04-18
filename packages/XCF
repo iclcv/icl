@@ -7,11 +7,11 @@
 
 # Please, replace "((PACKAGENAME))" with the project name
 # (e.g. DISPLAYWINDOW_MAKEVAR )
-ifeq "${UNICAP_MAKEVAR}" ""
-UNICAP_MAKEVAR=UNICAP_MAKEVAR
+ifeq "${XCF_MAKEVAR}" ""
+XCF_MAKEVAR=XCF_MAKEVAR
 
-# we need libdc1394 and libraw1394
-ifneq "$(HAVE_UNICAP)" ""
+# we need libxcf.so and libxmltio.so
+ifneq "$(HAVE_XCF)" ""
 
 # Please, include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/globalVar )
@@ -20,7 +20,7 @@ ifneq "$(HAVE_UNICAP)" ""
 # Please, place here the include directory of the project
 # (e.g. -I${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/include )
 ABS_INCLUDES:= ${ABS_INCLUDES} \
-               -I${UNICAP_ROOT}/include/unicap
+               -I${XCF_ROOT}/include
 
 # Please, do not change this ifeq statement
 ifeq "${HRI_INHERIT_MODE}" "STATIC"
@@ -41,25 +41,25 @@ else
 #       -lDisplayWindow )
 # (e.g. extra library like: -L/usr/lib -lpthreads )
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-                -L${UNICAP_ROOT}/lib -Wl,-rpath -Wl,${UNICAP_ROOT}/lib \
-                -lunicap -lpthread
+                -L${XCF_ROOT}/lib -Wl,-rpath -Wl,${XCF_ROOT}/lib \
+                -lxcf -lxmltio -lpthread
 
 # Please, do not remove this endif statement
 endif
 
 # Please, place here needed C defines (for static compilation)
-CDEFINES:= ${CDEFINES}
+CDEFINES:= ${CDEFINES} -DHAVE_XCF -pthread
 
 # Please, place here C flags (for static compilation)
 CFLAGS:= ${CFLAGS}
 
 # place here needed C++ defines (for static compilation)
 # (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT )
-CPPDEFINES:= ${CPPDEFINES}
+CPPDEFINES:= ${CPPDEFINES} -DHAVE_XCF -pthread
 
 # Please, place here C++ flags (for static compilation)
 CPPFLAGS:= ${CPPFLAGS}
 
 
-endif # HAVE Unicap
-endif # UNICAP_MAKEVAR
+endif # HAVE XCF
+endif # XCF_MAKEVAR
