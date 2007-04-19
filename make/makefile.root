@@ -15,6 +15,18 @@ else
  _CURR_DIR+=
 endif
 
+# Set ARCH specialized to the OS System
+ifeq "${ARCH}" ""
+ARCH=(shell echo 'uname' | tr [:upper:] [:lower:])
+endif
+
+ifeq "${ARCH}" "darwin"
+ ARCH = macosx
+endif
+
+export ARCH
+
+# Include more stuff
 PROJECT_NAME:= $(notdir $(shell pwd))
 
 include makeVar

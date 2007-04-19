@@ -70,3 +70,7 @@ CPPFLAGS:= ${CPPFLAGS}
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
 SKIP_DIRECTORIES:=
+
+ifeq "${ARCH}" "macosx"
+SKIP_OBJECTS:=camviewer.cpp camcfg.cpp interactivefilterdemo.cpp mouseinteraction.cpp visualizationdemo.cpp
+endif

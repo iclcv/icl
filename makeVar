@@ -72,7 +72,13 @@ DEBUG_ON:= ${DEBUG_ON}
 # Debugging flags
 DEBUG:=-O0 -g3
 # Non-Debugging flags
-NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium3
+ifeq "${ARCH}" "linux"
+ # For linux OS
+ NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium3
+else
+ # For mac OS
+ NODEBUG:=-O4 -DNDEBUG
+endif
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES} -DWITH_IPP_OPTIMIZATION

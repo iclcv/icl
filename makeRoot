@@ -187,6 +187,11 @@ AGNI_INHERIT_MODE:= DYNAMIC
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
 ABS_INCLUDES:=
 
+# For mac OS
+ifeq "${ARCH}" "macosx"
+ABS_INCLUDES:=${ABS_INCLUDES} -I/sw/include
+endif
+
 # Please add here all the directories with relative path
 # (e.g. -I../MyModule/src) that contain include files needed by the sources.
 REL_INCLUDES:=
@@ -194,6 +199,11 @@ REL_INCLUDES:=
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
 ABS_LIBRARIES:=
+
+# For mac OS
+ifeq "${ARCH}" "macosx"
+ABS_LIBRARIES:=${ABS_LIBRARIES} -L/sw/lib
+endif
 
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)
@@ -240,7 +250,13 @@ ARFLAGS:= rv
 LDFLAGS:=
 
 # Flags for dynamic library linker
-LDDYNFLAGS:= -shared 
+ifeq "${ARCH}" "linux"
+ # For linux OS
+ LDDYNFLAGS:= -shared
+else
+ # For mac OS
+ LDDYNFLAGS:= -dynamiclib
+endif
 
 # Flags for makedepend tool
 MKDEPFLAGS:= -fmakeDepend

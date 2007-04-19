@@ -2,7 +2,11 @@
 #include <iclFileReader.h>
 #include <iclTestImages.h>
 #include <iclConverter.h>
+
+#ifndef __APPLE__
 #include <iclPWCGrabber.h>
+#endif
+
 #include <iclCC.h>
 #include <map>
 #include <iclConvolutionOp.h>
@@ -108,6 +112,7 @@ namespace icl{
     }
     // }}}
 
+#ifndef __APPLE__
     static PWCGrabber *G[4] = {0,0,0,0};
     struct PWCReleaser{
       // {{{ open
@@ -121,6 +126,7 @@ namespace icl{
 
     // }}}
     static PWCReleaser __r;
+#endif
 
     inline ImgQ *prepare_for_binary_op(const ImgQ &a, const ImgQ &b, ImgQ &na, ImgQ &nb){
       // {{{ open
@@ -362,9 +368,10 @@ namespace icl{
 
   // }}}
 
+
   ImgQ pwc(int device, const Size &size, format fmt, bool releaseGrabber){
     // {{{ open
-
+#ifndef __APPLE__
     if(device > 4){
       ERROR_LOG("device must be in 1,2,3 or 4");
       return ImgQ();
@@ -382,7 +389,11 @@ namespace icl{
       delete G[device];
       G[device] = 0;
     }
-    return im;    
+    return im;
+#else
+    ImgQ im(size, fmt);
+    return label(im,"PWC not supported");
+#endif    
   }
 
   // }}}

@@ -45,6 +45,8 @@ else
 # (e.g. -L${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/lib \
 #       -lDisplayWindow )
 # (e.g. extra library like: -L/usr/lib -lpthreads )
+
+ifeq "${ARCH}" "linux"
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
                 -L${QTDIR}/lib -Wl,-rpath -Wl,${QTDIR}/lib \
                 -lQtCore \
@@ -52,6 +54,13 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES} \
                 -lQtOpenGL \
                 -lGL \
                 -lGLU
+else
+ABS_LIBRARIES:=${ABS_LIBRARIES} -F${QTDIR}/lib \
+                        	-framework QtCore \
+                        	-framework QtGui \
+                        	-framework QtOpenGL \
+				-framework OpenGL
+endif
 
 # Please, do not remove this endif statement
 endif
@@ -68,7 +77,6 @@ CPPDEFINES:= ${CPPDEFINES}
 
 # Please, place here C++ flags (for static compilation)
 CPPFLAGS:= ${CPPFLAGS}
-
 
 # Please, don't forget to set the appropriate AGNI_GLOBAL_ROOT in your environment.
 

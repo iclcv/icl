@@ -131,7 +131,7 @@ namespace icl {
 
 // }}}
   
-   int plainWrite (void *fp, const void *pData, size_t len) {
+   int plainWrite (void *fp, const void *pData, unsigned int len) {
      // {{{ open
 
       return fwrite (pData, 1, len, (FILE*) fp);
@@ -143,7 +143,7 @@ namespace icl {
    void FileWriter::writePNMICL(const ImgBase *poSrc, const FileInfo& oInfo) {
       // {{{ open
 
-      int (*pWrite)(void *fp, const void *pData, size_t len) 
+      int (*pWrite)(void *fp, const void *pData, unsigned int len) 
          = oInfo.bGzipped ? gzwrite : plainWrite;
 
       // check exact file type first:
@@ -267,7 +267,7 @@ namespace icl {
      template<class T,class R>
      void FileWriter::writeCSVTmpl(const Img<T> *poSrc, FileInfo& oInfo) {
 
-    int (*pWrite)(void *fp, const void *pData, size_t len) 
+    int (*pWrite)(void *fp, const void *pData, unsigned int len) 
       = oInfo.bGzipped ? gzwrite : plainWrite;
        
     ICLException writeError ("Error writing file.");       

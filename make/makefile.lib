@@ -20,9 +20,16 @@ include makeVar
 _TARGET_NAME_LIB=${TARGET_PREFIX}lib${TARGET_LIB}${TARGET_POSTFIX}
 _TARGET_FULL_VER=${TARGET_MAJVERSION}.${TARGET_MINVERSION}
 _TARGET_VER=${TARGET_MAJVERSION}
-
-TARGET_SO_LIB=${_TARGET_NAME_LIB}.so.${_TARGET_FULL_VER}
+    
 TARGET_AR_LIB=${_TARGET_NAME_LIB}.${_TARGET_FULL_VER}.a
+
+ifeq "${ARCH}" "linux"
+# For linux OS
+TARGET_SO_LIB=${_TARGET_NAME_LIB}.so.${_TARGET_FULL_VER}
+else
+# For Mac OS
+TARGET_SO_LIB=${_TARGET_NAME_LIB}.${_TARGET_FULL_VER}.dylib
+endif
 
 #-----------------------------------------------
 # Rule: all & cleanall & clean & printtype
@@ -42,13 +49,23 @@ printtype:
 lib: ${MAKE_PRECOND} ${TARGET_SO_LIB} ${MAKE_POSTCOND}
 	${PRE_CMD}${CMD_FINAL}
 
+ifeq "${ARCH}" "linux"
+# For linux OS
 ${TARGET_SO_LIB}: ${TARGET_AR_LIB}
 	${PRE_CMD}${CMD_ECHO} "Building shared library from: ${_CURR_DIR}/$@"
 	${PRE_CMD}${CMD_LD} ${LDDYNFLAGS} -o $@ \
                   ${REL_OBJECTS} ${ABS_OBJECTS} ${REL_LIBRARIES} ${ABS_LIBRARIES}
 	${PRE_CMD}${CMD_LN} $@ ${_TARGET_NAME_LIB}.so.${_TARGET_VER}
 	${PRE_CMD}${CMD_LN} $@ ${_TARGET_NAME_LIB}.so
-
+else
+#For macosx
+${TARGET_SO_LIB}: ${TARGET_AR_LIB}
+	${PRE_CMD}${CMD_ECHO} "Building shared library from: ${_CURR_DIR}/$@"
+	${PRE_CMD}${CMD_LD} ${LDDYNFLAGS} -o $@ \
+		${REL_OBJECTS} ${ABS_OBJECTS} ${REL_LIBRARIES} ${ABS_LIBRARIES}
+	${PRE_CMD}${CMD_LN} $@ ${_TARGET_NAME_LIB}.${_TARGET_VER}.dylib
+	${PRE_CMD}${CMD_LN} $@ ${_TARGET_NAME_LIB}.dylib
+endif
 
 ${TARGET_AR_LIB}: ${REL_OBJECTS} ${ABS_OBJECTS}
 	${PRE_CMD}${CMD_ECHO} "Building arc library from: ${_CURR_DIR}/$@"
