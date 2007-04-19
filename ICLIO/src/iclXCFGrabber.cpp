@@ -7,7 +7,7 @@ using namespace xmltio;
 namespace icl {
 
    void extractImage (XCF::CTUPtr ctu, xmltio::Location l, ImgBase*& poImg) {
-      const string& sURI = extract<string>(l["@uri"]);
+      const string& sURI = extract<string>(l["uri"]);
       xmltio::Location  p(l, "PROPERTIES");
       int iWidth   = extract<int>(p["width"]);
       int iHeight  = extract<int>(p["height"]);
@@ -21,14 +21,16 @@ namespace icl {
                      (int) extract<int>(r["width"]),
                      (int) extract<int>(r["height"]));
 
-      ensureCompatible (&poImg, eDepth, Size(iWidth, iHeight), iChannels, fmt, roi);
+      ensureCompatible (&poImg, eDepth, Size(iWidth, iHeight), 
+                        iChannels, fmt, roi);
 
 		Time::value_type t 
          = extract<Time::value_type>(l[XPath("TIMESTAMPS/CREATED")]);
       poImg->setTime (Time::microSeconds (t));
 
       XCF::Binary::TransportUnitPtr btu = ctu->getBinary (sURI);
-      XCF::Binary::TransportVecByte *pTypedBTU = dynamic_cast<XCF::Binary::TransportVecByte*>(btu.get());
+      XCF::Binary::TransportVecByte *pTypedBTU 
+         = dynamic_cast<XCF::Binary::TransportVecByte*>(btu.get());
       const std::vector<Ice::Byte> &vecImage = pTypedBTU->value;
     
       int imgSize = iWidth * iHeight * getSizeOf(eDepth);
@@ -38,7 +40,10 @@ namespace icl {
    }
 
    XCFGrabber::XCFGrabber (const std::string& sServer, XCF::RecoverLevel l) :
-      m_locRequest ("<IMAGEREQUEST/>"), m_remoteServer(0)
+      m_locRequest ("<IMAGEREQUEST>"
+                    "<GRAB stereo=\"false\" timestamp=\"\"/>"
+                    "</IMAGEREQUEST>", "/IMAGEREQUEST/GRAB"), 
+      m_remoteServer(0)
    {
       // create remote server instance
       m_remoteServer = XCF::RemoteServer::create(sServer, XCF::NONE);
@@ -53,7 +58,7 @@ namespace icl {
    const ImgBase* XCFGrabber::grab (ImgBase **ppoDst) {
       receive (m_result);
 
-      Location loc (m_result->getXML(), "/IMAGESET/IMAGE[@uri]");
+      Location loc (m_result->getXML(), "/IMAGESET/IMAGE");
 
       ImgBase *poOutput = prepareOutput (ppoDst);
       extractImage (m_result, loc, m_poSource);
@@ -67,7 +72,7 @@ namespace icl {
       vGrabbedImages.resize (m_result->getBinaryMap().size());
       xmltio::Location locResult (m_result->getXML(), "/IMAGESET");
 
-      XPathIterator locIt = XPath("Image[@uri]").evaluate(locResult);
+      XPathIterator locIt = XPath("IMAGE[uri]").evaluate(locResult);
       vector<ImgBase*>::iterator imgIt = vGrabbedImages.begin();
       for (; locIt; ++locIt, ++imgIt) {
          ImgBase *poOutput = prepareOutput (&(*imgIt));
@@ -78,9 +83,7 @@ namespace icl {
    
    void XCFGrabber::receive (XCF::CTUPtr& result) {
       m_locRequest["timestamp"] = ""; // most-recent image
-      
-      string xml ("<IMAGEREQUEST>");
-      m_remoteServer->callMethod ("retrieveImages", 
+      m_remoteServer->callMethod ("retrieveImage", 
                                   m_locRequest.getDocumentText(), result);
    }
 }
