@@ -17,7 +17,9 @@ endif
 
 # Set ARCH specialized to the OS System
 ifeq "${ARCH}" ""
-ARCH=(shell echo 'uname' | tr [:upper:] [:lower:])
+ARCH_TMP=$(shell echo `uname` | tr [:upper:] [:lower:])
+#remove leading and trailing spaces ! 
+ARCH=$(shell echo "$(ARCH_TMP)" | sed "s| ||g")
 endif
 
 ifeq "${ARCH}" "darwin"
