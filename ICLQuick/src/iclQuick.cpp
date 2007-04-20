@@ -971,85 +971,42 @@ namespace icl{
 
   // }}}
 
-  void circle(ImgQ &image, int x, int y, int radius) {
+  void circle(ImgQ &image, int xoffs, int yoffs, int radius) {
     // {{{ open
+		// first render the circle
+    int n = 0;
+    char ** ppc = 0;
+    static QApplication  *QAPP = 0;
+    if(!QAPP){
+      QAPP = new QApplication(n,ppc);
+    }
+    QSize br(radius * 2, radius * 2);
+    
+    QImage img(br.width()+2,br.height()+2,QImage::Format_ARGB32_Premultiplied);
+    img.fill(0);
 
-    // perhaps not the fastest or most efficient method but it works.
-    int ex, ey;
-    float radSqr, radSqr2, d, dx, dy;
+    QPainter painter(&img);
+    painter.setPen(QColor(255,255,255,254));
+		painter.setBrush(QColor(255, 255, 255, 254));
+		painter.drawEllipse(QRectF(xoffs - radius, yoffs - radius, xoffs + radius, yoffs + radius));
+    painter.end();
+    
+    QImageConverter qic(&img);
+    const Img8u &t = *(qic.getImg<icl8u>());
+    for(int c=0;c<image.getChannels() && c<3; ++c){
+      for(int x=0;x<t.getWidth();x++){
+        for(int y=0;y<t.getHeight();y++){
+          int ix = x+xoffs-radius;
+          int iy = y+yoffs-radius;
+          if(ix >= 0 && iy >= 0 && ix < image.getWidth() && iy < image.getHeight() ){
+            ICL_QUICK_TYPE &v = image(ix,iy,c);
+            float A = (((float)t(x,y,c))/255.0) * (FILL[3]/255);
+            v=(1.0-A)*v + A*FILL[c];
+          }
+        }
+      }
+    }
 
-    ex = 0;
-    ey = radius;
-    radSqr = radius * radius;
-    radSqr2 = 2 * radSqr;
-    dx = 0;
-    dy = radSqr2 * radius;
-    float A = COLOR[3]/255;
-    if(! A) return;
-    for (int c = 0; c < image.getChannels() && c<3; c++){
-      float &t = image(x,y-ey,c);
-      t=(1.0-A)*t + A*COLOR[c];
-      float &u = image(x, y+ey, c);
-      u=(1.0-A)*u + A*COLOR[c];
-    }
-    while (dx < dy) {
-      if (d > 0) {
-        ey--;
-        dy = dy - radSqr2;
-        d = d - dy;
-      }
-      ex++;
-      dx = dx + radSqr2;
-      d = d + radSqr + dx;
-      saveColorAndFill();
-      for (int i = 0; i < 4; i++)
-        COLOR[i] = FILL[i];
-      line(image, x - ex, y - ey, x + ex, y - ey);
-      line(image, x - ex, y + ey, x + ex, y + ey);
-      restoreColorAndFill();
-      float A = COLOR[3]/255;
-      if(! A) return;
-      for (int c = 0; c < image.getChannels() && c<3; c++){
-        float &t = image(x+ex, y+ey, c);
-        t=(1.0-A)*t + A*COLOR[c];
-        float &u = image(x-ex, y+ey, c);
-        u=(1.0-A)*u + A*COLOR[c];
-        float &v = image(x+ex, y-ey, c);
-        v=(1.0-A)*v + A*COLOR[c];
-        float &w = image(x-ex, y-ey, c);
-        w=(1.0-A)*w + A*COLOR[c];
-      }
-    }
-    d = (3 * (radSqr - radSqr) / 2 - (dx + dy)) / 2;
-    for (int i = ey; i > 0; i--) {
-      if (d < 0) {
-        ex++;
-        dx = dx + radSqr2;
-        d = d + radSqr + dx;
-      }
-      ey--;
-      dy = dy - radSqr2;
-      d = d + radSqr - dy;
-      saveColorAndFill();
-      for (int i = 0; i < 4; i++)
-        COLOR[i] = FILL[i];
-      line(image, x - ex, y - ey, x + ex, y - ey);
-      line(image, x - ex, y + ey, x + ex, y + ey);
-      restoreColorAndFill();
-      float A = COLOR[3]/255;
-      if(! A) return;
-      for (int c = 0; c < image.getChannels() && c<3; c++){
-        float &t = image(x+ex, y+ey, c);
-        t=(1.0-A)*t + A*COLOR[c];
-        float &u = image(x-ex, y+ey, c);
-        u=(1.0-A)*u + A*COLOR[c];
-        float &v = image(x+ex, y-ey, c);
-        v=(1.0-A)*v + A*COLOR[c];
-        float &w = image(x-ex, y-ey, c);
-        w=(1.0-A)*w + A*COLOR[c];
-      }
-    }
-    restoreColorAndFill();
   }
 
   // }}}

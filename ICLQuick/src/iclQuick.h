@@ -645,16 +645,18 @@ namespace icl{
   **/
   void pix(ImgQ &image, const vector<Point> &pts);
 
-  /// draws a circle into an image
-  /** @param image destination image
-      @param x x-pos of the circle
-      @param y x-pos of the circle
+	/// renders a filled circle into an image
+  /** This function renders a filled circle into a 3 or 1 channel image (only with fill color!)
+			using a QPainter internally.
+  	  @param image destination image
+      @param x x-pos of the circle center
+      @param y x-pos of the circle center
       @param r radius of the circle
   **/
   void circle(ImgQ &image, int x, int y, int r);
   
   /// renders a text into an image 
-  /** This functin renders a text into an 3 or 1 channel image
+  /** This functin renders a text into a 3 or 1 channel image
       using the a QPainter internally.
       @param image destination image
       @param x xpos of the lower left corner of the text
