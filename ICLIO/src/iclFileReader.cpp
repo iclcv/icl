@@ -155,9 +155,11 @@ namespace icl {
     this->m_iCurImg = other.m_iCurImg;
     this->m_poCurImg = 0;
     
+#ifdef WITH_JPEG_SUPPORT    
     // setup the jpeg error routine once
     jpgCinfo.err = jpeg_std_error(&jpgErr);
     jpgErr.error_exit = icl_jpeg_error_exit;
+#endif
     return *this;
   }
 
@@ -189,10 +191,12 @@ namespace icl {
     m_poCurImg  = 0;
     if (m_vecFileName.size () == 0)
       throw ICLException ("empty file list");
-    
+
+#ifdef WITH_JPEG_SUPPORT    
     // setup the jpeg error routine once
     jpgCinfo.err = jpeg_std_error(&jpgErr);
     jpgErr.error_exit = icl_jpeg_error_exit;
+#endif
   }
 
   // }}}
@@ -254,6 +258,7 @@ namespace icl {
             (*ppoDst)->setTime(oInfo.timeStamp);
             readDataPNMICL (*ppoDst, oInfo);
             break;
+#ifdef WITH_JPEG_SUPPORT 
          case ioFormatJPG:
             readHeaderJPG (oInfo);
             ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
@@ -261,7 +266,7 @@ namespace icl {
             (*ppoDst)->setTime(oInfo.timeStamp);
             readDataJPG ((*ppoDst)->asImg<icl8u>(), oInfo);
             break;
-
+#endif
          case ioFormatCSV:
             readHeaderCSV (oInfo);
             ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
@@ -586,6 +591,7 @@ namespace icl {
 
 
   //--------------------------------------------------------------------------
+#ifdef WITH_JPEG_SUPPORT    
   void FileReader::readHeaderJPG (FileInfo &oInfo) {
      // {{{ open
 
@@ -671,10 +677,11 @@ namespace icl {
     }
     oInfo.iNumChannels = getChannelsOfFormat (oInfo.eFormat);
   }
-
+#endif
   // }}}
   
   //--------------------------------------------------------------------------
+#ifdef WITH_JPEG_SUPPORT    
   void FileReader::readDataJPG(Img<icl8u>* poImg, FileInfo &oInfo)
      // {{{ open
 
@@ -734,7 +741,7 @@ namespace icl {
     jpeg_destroy_decompress(&jpgCinfo);
     if (oInfo.iNumChannels == 3) delete[] pcBuf;
   }
-
+#endif
   // }}}
   
 

@@ -227,8 +227,10 @@ namespace icl {
     ImgParams       m_CSVParams;
     depth           m_CSVDepth;
 
+#ifdef WITH_JPEG_SUPPORT
     struct jpeg_decompress_struct jpgCinfo;
     struct icl_jpeg_error_mgr     jpgErr;
+#endif
   }; // class FileReader
  
 } // namespace icl

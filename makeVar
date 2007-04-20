@@ -146,6 +146,8 @@ endif
 CDEFINES:=$(filter-out -DWITH_JPEG_SUPPORT, $(CDEFINES))
 CPPDEFINES:=$(filter-out -DWITH_JPEG_SUPPORT, $(CPPDEFINES))
 endif
+else
+HAVE_LIBJPEG=TRUE
 endif
 
 ############################# check for QT 4 ############################

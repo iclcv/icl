@@ -114,9 +114,11 @@ namespace icl {
            case ioFormatPNM: 
              writePNMICL (poImg, oInfo);
              break;
+#ifdef WITH_JPEG_SUPPORT
            case ioFormatJPG:
              writeJPG (poImg->asImg<icl8u>(), oInfo);
              break;
+#endif
            case ioFormatCSV:
              writeCSV (poImg, oInfo);
              break;
@@ -326,7 +328,7 @@ namespace icl {
 }
   
 // }}}
-
+#ifdef WITH_JEPG_SUPPORT
    //--------------------------------------------------------------------------
    void FileWriter::writeJPG(const Img<icl8u> *poSrc, 
                              const FileInfo& oInfo, 
@@ -437,7 +439,7 @@ namespace icl {
       /* Step 8: release JPEG compression object */
       jpeg_destroy_compress(&jpgCinfo);
    }
-
+#endif
 // }}}
 
 } //namespace 

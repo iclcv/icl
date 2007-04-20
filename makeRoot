@@ -187,11 +187,6 @@ AGNI_INHERIT_MODE:= DYNAMIC
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
 ABS_INCLUDES:=
 
-# For mac OS
-ifeq "${ARCH}" "macosx"
-ABS_INCLUDES:=${ABS_INCLUDES} -I/sw/include
-endif
-
 # Please add here all the directories with relative path
 # (e.g. -I../MyModule/src) that contain include files needed by the sources.
 REL_INCLUDES:=
