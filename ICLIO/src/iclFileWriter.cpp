@@ -328,7 +328,7 @@ namespace icl {
 }
   
 // }}}
-#ifdef WITH_JEPG_SUPPORT
+#ifdef WITH_JPEG_SUPPORT
    //--------------------------------------------------------------------------
    void FileWriter::writeJPG(const Img<icl8u> *poSrc, 
                              const FileInfo& oInfo, 
