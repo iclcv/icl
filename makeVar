@@ -81,7 +81,7 @@ else
 endif
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CDEFINES:= ${CDEFINES} -DWITH_IPP_OPTIMIZATION
+CDEFINES:= ${CDEFINES} -DWITH_IPP_OPTIMIZATION -DWITH_JPEG_SUPPORT
 
 # Flags for C compiler
 CFLAGS:= ${CFLAGS}
@@ -134,6 +134,20 @@ endif
 endif
 endif
 
+############################# check for JPEG-SUPPORT ####################
+LIBJPEG_ROOT ?= /usr
+ifeq "$(wildcard ${LIBJPEG_ROOT}/lib/libjpeg.so)" ""
+ifneq "$(findstring -DWITH_JPEG_SUPPORT,$(CDEFINES))" ""
+ifeq "$(_WARN_JPEG)" ""
+_WARN_JPEG=done # warn only once
+export _WARN_JPEG
+$(warning "libjpeg is not available. Its usage is switched off.")
+endif
+CDEFINES:=$(filter-out -DWITH_JPEG_SUPPORT, $(CDEFINES))
+CPPDEFINES:=$(filter-out -DWITH_JPEG_SUPPORT, $(CPPDEFINES))
+endif
+endif
+
 ############################# check for QT 4 ############################
 # try whether useful QTDIR is already set
 ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
@@ -151,7 +165,7 @@ endif
 endif
 
 ############################# check for Firewire ########################
-# try whether firewire lib is available
+# try whether fire wire is available
 ifneq "$(wildcard /vol/video/lib/libdc1394*.so)" ""
 HAVE_FIREWIRE=TRUE
 else
