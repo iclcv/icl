@@ -980,9 +980,9 @@ namespace icl{
     if(!QAPP){
       QAPP = new QApplication(n,ppc);
     }
-    QSize br(radius * 2, radius * 2);
+    static QSize *br = new QSize(radius * 2, radius * 2);
     
-    QImage img(br.width()+2,br.height()+2,QImage::Format_ARGB32_Premultiplied);
+    QImage img(br->width()+2,br->height()+2,QImage::Format_ARGB32_Premultiplied);
     img.fill(0);
 
     QPainter painter(&img);
