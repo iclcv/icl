@@ -39,6 +39,7 @@ else
 # (e.g. -L${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/lib \
 #       -lDisplayWindow )
 # (e.g. extra library like: -L/usr/lib -lpthreads )
+ifeq "${ARCH}" "linux"
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
                 -L${IPP_ROOT}/5.1/sharedlib -Wl,-rpath -Wl,${IPP_ROOT}/5.1/sharedlib \
                 -lippcore \
@@ -49,6 +50,9 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES} \
                 -lippm \
                 -lippcc \
                 -lguide
+else
+ABS_LIBRARIES:=${ABS_LIBRARIES} -framework Intel_IPP
+endif
 
 # Please, do not remove this endif statement
 endif

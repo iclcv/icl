@@ -106,6 +106,8 @@ CMD_LD=g++
 
 
 ############################# check for IPP ############################
+ifeq "${ARCH}" "linux"
+# Linux support
 ifeq "$(wildcard $(IPP_ROOT)/5.1/sharedlib/libipp*.so)" ""
 ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
 ifeq "$(_WARN_IPP)" ""
@@ -115,6 +117,20 @@ $(warning "IPP 5.1 is not available. Its usage is switched off.")
 endif
 CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
 CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
+endif
+endif
+else
+# Mac support
+ifeq "$(wildcard $(IPP_ROOT)/Intel_IPP.framework/Libraries/libipp*.dylib)" ""
+ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
+ifeq "$(_WARN_IPP)" ""
+_WARN_IPP=done # warn only once
+export _WARN_IPP
+$(warning "IPP is not available. Its usage is switched off.")
+endif
+CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
+CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
+endif
 endif
 endif
 
@@ -177,4 +193,4 @@ ifeq "$(HAVE_QT)" ""
 SKIP_DIRECTORIES += ICLQt 
 SKIP_DIRECTORIES += ICLQuick
 endif
-
+SKIP_DIRECTORIES += ICLNN ICLViola
