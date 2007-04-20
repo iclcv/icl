@@ -38,6 +38,7 @@ my @dirs = readdir(DIR);
 closedir(DIR);
 
 my $INSTALLDIR="$ENV{AGNI_LOCAL_ROOT}/${projectRootName}/${majVer}.${minVer}";
+my $OS_SYSTEM="$ENV{ARCH}";
 
 #---- Remove old install tree before installing the new one ----
 if ($installMode == 0 || $installMode == 1 || $installMode == 3) {
@@ -89,8 +90,13 @@ foreach my $entry(@dirs) {
                         }
                     elsif ($subentry eq 'lib'){
                         print "---- Copying libraries: $entry/$subentry\n";
-                        system "cp -d ../$entry/$subentry/*.so* $INSTALLDIR/lib";
-                        system "cp -d ../$entry/$subentry/*.a $INSTALLDIR/lib";
+                        if ("$OS_SYSTEM" eq "macosx") {
+                            system "cp -d ../$entry/$subentry/*.dylib $INSTALLDIR/lib";
+                            system "cp -d ../$entry/$subentry/*.a $INSTALLDIR/lib";
+                        } else {
+                            system "cp -d ../$entry/$subentry/*.so* $INSTALLDIR/lib";
+                            system "cp -d ../$entry/$subentry/*.a $INSTALLDIR/lib";
+                        }
                     }
                     elsif ($subentry !~ /^\./ ){
                         push(@dirs,"$entry/$subentry");
@@ -106,8 +112,13 @@ foreach my $entry(@dirs) {
                         }
                     elsif ($subentry eq 'lib'){
                         print "---- Linking libraries: $entry/$subentry\n";
-                        system "ln -s $curdir/../$entry/$subentry/*.so* $INSTALLDIR/lib";
-                        system "ln -s $curdir/../$entry/$subentry/*.a $INSTALLDIR/lib";
+                        if ("$OS_SYSTEM" eq "macosx") {
+                            system "ln -s $curdir/../$entry/$subentry/*.dylib $INSTALLDIR/lib";
+                            system "ln -s $curdir/../$entry/$subentry/*.a $INSTALLDIR/lib";
+                        } else {
+                            system "ln -s $curdir/../$entry/$subentry/*.so* $INSTALLDIR/lib";
+                            system "ln -s $curdir/../$entry/$subentry/*.a $INSTALLDIR/lib";
+                        }
                     }
                     elsif ($subentry !~ /^\./ ){
                         push(@dirs,"$entry/$subentry");
