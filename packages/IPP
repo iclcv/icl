@@ -18,9 +18,14 @@ ifneq (,$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES)))
 
 # Please, place here the include directory of the project
 # (e.g. -I${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/include )
+ifeq "${ARCH}" "linux"
 ABS_INCLUDES:= ${ABS_INCLUDES} \
                -I${IPP_ROOT}/5.1/include
-
+else
+#mac support
+ABS_INCLUDES:= ${ABS_INCLUDES} \
+               -I${IPP_ROOT}/Intel_IPP.framework/Headers
+endif
 
 # Please, do not change this ifeq statement
 ifeq "${HRI_INHERIT_MODE}" "STATIC"
