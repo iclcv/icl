@@ -195,11 +195,6 @@ REL_INCLUDES:=
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
 ABS_LIBRARIES:=
 
-# For mac OS
-ifeq "${ARCH}" "macosx"
-ABS_LIBRARIES:=${ABS_LIBRARIES} -L/sw/lib
-endif
-
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)
 REL_LIBRARIES:=
