@@ -74,3 +74,7 @@ LDFLAGS:= ${LDFLAGS}
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
 DEBUG_ON:=${DEBUG_ON}
+
+ifeq "$(HAVE_QT)" ""
+SKIP_OBJECTS += vqdemo.cpp
+endif
