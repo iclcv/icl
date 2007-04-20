@@ -4,8 +4,10 @@
 #include <string>
 #include <iclImgBase.h>
 #include <iclException.h>
+#ifdef WITH_JPEG_SUPPORT
 #include <jerror.h>
 #include <jpeglib.h>
+#endif
 #include <setjmp.h>
 /*
   IO.h
@@ -49,37 +51,15 @@ namespace icl {
      ioFormatSEQ = -1, //< file list
      ioFormatPNM, //< PNM file format (gray/pgm or rgb/ppm
      ioFormatICL, //< proprietary format, equals pnm for icl8u, but allows icl32f as well
+#ifdef WITH_JPEG_SUPPORT
      ioFormatJPG, //< JPG image format
+#endif
      ioFormatCSV  //< comma seperated value
-  };
-
-  enum GrabMode1394 {
-    MONO8_640x480 = 0,
-    MONO8_800x600,
-    MONO8_1024x768,
-    MONO8_1280x960,
-    MONO8_1600x1200,
-    MONO16_640x480,
-    MONO16_800x600,
-    MONO16_1024x768,
-    MONO16_1280x960,
-    MONO16_1600x1200,
-    RGB8_640x480,
-    RGB8_800x600,
-    RGB8_1024x768,
-    RGB8_1280x960,
-    RGB8_1600x1200,
-    YUV422_320x240,
-    YUV422_640x480,
-    YUV422_800x600,
-    YUV422_1024x768,
-    YUV422_1280x960,
-    YUV422_1600x1200
   };
   
   /// Check for supported file type
   ioformat getFileType (const std::string &sFileName, bool& bGzipped);
-
+  
   /// Count Hashes directly before file suffix
   void analyseHashes (const std::string &sFileName, unsigned int& nHashes, 
                       std::string::size_type& iSuffixPos);
@@ -107,12 +87,13 @@ namespace icl {
         eFileFormat(getFileType (sFileName, bGzipped)),
         fp(0){}
   };
-
+  
+#ifdef WITH_JPEG_SUPPORT
   void icl_jpeg_error_exit (j_common_ptr cinfo);
   struct icl_jpeg_error_mgr : jpeg_error_mgr {
      jmp_buf setjmp_buffer;	/* for return to caller */
   };
-
+#endif
 } //namespace icl
 
 #endif

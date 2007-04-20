@@ -36,8 +36,10 @@ namespace icl {
          return ioFormatPNM;
       else if (sType == "icl") 
          return ioFormatICL;
+#ifdef WITH_JPEG_SUPPORT
       else if (sType == "jpg" || sType == "jpeg") 
          return bGzipped ? ioFormatUnknown : ioFormatJPG;
+#endif
       else if (sType == "seq") 
          return bGzipped ? ioFormatUnknown : ioFormatSEQ;
       else if (sType == "csv")
@@ -83,7 +85,9 @@ namespace icl {
            if (strchr (pcMode, 'r')) oInfo.bGzipped = true;
            // for writing, we keep the setting from file name
            break;
+#ifdef WITH_JPEG_SUPPORT
         case ioFormatJPG:
+#endif
         case ioFormatCSV:
            // these modes suppose plain files only
            oInfo.bGzipped = false;
@@ -111,6 +115,7 @@ namespace icl {
 
   // Routine to replace the standard jpeg error_exit routine.
   // The caller has to activate it by calling setjmp (err->setjmp_buffer)
+#ifdef WITH_JPEG_SUPPORT
   void icl_jpeg_error_exit (j_common_ptr cinfo) {
      /* cinfo->err really points to a my_error_mgr struct, so coerce pointer */
      struct icl_jpeg_error_mgr* err = (struct icl_jpeg_error_mgr*) cinfo->err;
@@ -122,5 +127,6 @@ namespace icl {
      /* Return control to the setjmp point */
      longjmp(err->setjmp_buffer, 1);
   }
+#endif
 
 } //namespace
