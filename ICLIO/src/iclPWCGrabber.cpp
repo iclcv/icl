@@ -382,48 +382,50 @@ void save_setparams(int device){
     
     if(m_iDevice<0) return;
     
-    usbvflg_opencount[m_iDevice]--;
-    if (usbvflg_verbosity>1)
-      fprintf(stderr,"destructor leaving %d instances for /dev/video%d\n",
-              usbvflg_opencount[m_iDevice],m_iDevice);
-    
-    // ---- deleting last instance of grabber ----
-    if (usbvflg_opencount[m_iDevice] == 0) { 
-      if (pthread_cancel(usb_grabber_thread[m_iDevice])<0) { // kill thread
-        printf("Error: Cancel pthread: %s\n",strerror(errno));
-      }
+    if(usbvflg_opencount[m_iDevice]>0){
+      usbvflg_opencount[m_iDevice]--;
+      if (usbvflg_verbosity>1)
+        fprintf(stderr,"destructor leaving %d instances for /dev/video%d\n",
+                usbvflg_opencount[m_iDevice],m_iDevice);
       
-      if (pthread_join(usb_grabber_thread[m_iDevice],NULL)<0) {  // wait
-        printf("Error: Cancel pthread: %s\n",strerror(errno));
-      }
-      
-      if (pthread_mutex_destroy(&usb_frame_mutex[m_iDevice])<0) {
-        printf("Error: Mutex destroy frame: %s\n",strerror(errno));
-      }
-      
-      if (pthread_mutex_destroy(&usb_semph_mutex[m_iDevice])<0) {
-        printf("Error: Mutex destroy semph: %s\n",strerror(errno));
-      }
-      
-      if (sem_destroy(&usb_new_pictures[m_iDevice])<0) {
-        printf("Error: Sem destroy: %s\n",strerror(errno));
-      }
-      
-      if (usbvflg_verbosity) {
-        printf("thread stuff destroyed\n");
-      }
-      
-      if (usbvflg_fd[m_iDevice]>=0) {  // close
-        close(usbvflg_fd[m_iDevice]);          
-        if (usbvflg_verbosity) {
-          printf("closing /dev/video%d\n",m_iDevice);
+      // ---- deleting last instance of grabber ----
+      if (usbvflg_opencount[m_iDevice] == 0) { 
+        if (pthread_cancel(usb_grabber_thread[m_iDevice])<0) { // kill thread
+          printf("Error: Cancel pthread: %s\n",strerror(errno));
         }
         
-        if (usbvflg_buf[m_iDevice]) { // munmap
-          munmap(usbvflg_buf[m_iDevice],usbvflg_vmbuf[m_iDevice].size);
+        if (pthread_join(usb_grabber_thread[m_iDevice],NULL)<0) {  // wait
+          printf("Error: Cancel pthread: %s\n",strerror(errno));
+        }
+        
+        if (pthread_mutex_destroy(&usb_frame_mutex[m_iDevice])<0) {
+          printf("Error: Mutex destroy frame: %s\n",strerror(errno));
+        }
+        
+        if (pthread_mutex_destroy(&usb_semph_mutex[m_iDevice])<0) {
+          printf("Error: Mutex destroy semph: %s\n",strerror(errno));
+        }
+        
+        if (sem_destroy(&usb_new_pictures[m_iDevice])<0) {
+          printf("Error: Sem destroy: %s\n",strerror(errno));
+        }
+        
+        if (usbvflg_verbosity) {
+          printf("thread stuff destroyed\n");
+        }
+        
+        if (usbvflg_fd[m_iDevice]>=0) {  // close
+          close(usbvflg_fd[m_iDevice]);          
+          if (usbvflg_verbosity) {
+            printf("closing /dev/video%d\n",m_iDevice);
+          }
           
-          if (usbvflg_verbosity)
-            printf("unmapping memory for /dev/video%d\n",m_iDevice);
+          if (usbvflg_buf[m_iDevice]) { // munmap
+            munmap(usbvflg_buf[m_iDevice],usbvflg_vmbuf[m_iDevice].size);
+            
+            if (usbvflg_verbosity)
+              printf("unmapping memory for /dev/video%d\n",m_iDevice);
+          }
         }
       }
     }
@@ -682,12 +684,10 @@ void save_setparams(int device){
   
   bool PWCGrabber::init(const Size &s,float fFps, int iDevice, bool echoOff)  {
     if (iDevice >= 0) releaseAll ();
-    
     m_iWidth = s.width;
     m_iHeight = s.height;
     m_iDevice = iDevice;
     m_fFps = fFps;
-
     // {{{ open
 
     usb_image_widths[m_iDevice]=m_iWidth;
