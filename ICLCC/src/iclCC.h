@@ -381,15 +381,16 @@ namespace icl{
   //void convertToARGB32Interleaved(const Img32f *poSrc, Img8u *poBuffer, unsigned char *pucDst);
   
   
-  /// Converts a planar Img<S> image into its interleaved representations by mixing the channels
+  /// Converts a planar Img<S> images ROI  into its interleaved representations by mixing the channels
   /** This function is highly optimized, because it is needed whenever we need interleaved images
   */
   template<class S, class D>
   void planarToInterleaved(const Img<S> *src, D* dst);
   
-  /// Converts interleaved image data into planar representation
+  /// Converts interleaved image data into planar representation 
+  /** The source data is transformed into the destination images ROI */
   template<class S, class D>
-  void interleavedToPlanar(const S *src,const Size &srcSize, int srcChannels,  Img<D> *dst);
+  void interleavedToPlanar(const S *src, Img<D> *dst);
 
 }
 

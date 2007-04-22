@@ -734,54 +734,100 @@ namespace icl{
 
   int c=src->getChannels();
   if(c==1){
-    convert<S,D>(src->getData(0),src->getData(0)+src->getDim(),dst);
+    if(src->hasFullROI()){
+      convert<S,D>(src->getData(0),src->getData(0)+src->getDim(),dst);
+    }else{
+      std::vector<D*> dstDataVec;
+      dstDataVec.push_back(dst);
+      Img<D> tmpDstImage(src->getSize(),formatMatrix,dstDataVec);
+      src->convertROI(&tmpDstImage);
+    }
     return;
   }
-  int dim=src->getDim();
-  const S** pp=new const S* [c];
-  const S** ppEnd=pp+c;
-  
-  for (int i=0;i<c;i++){
-    pp[i]=src->getData(i);
-  }
-  
-  D* dstEnd=dst+c*dim;
-  while (dst<dstEnd){
-    for (const S** p=pp;p<ppEnd;++(*p),++p,++dst ){
-      *dst=Cast<S,D>::cast(*(*p));
+
+  if(src->hasFullROI()){ // no roi handling!
+    int dim=src->getDim();
+    const S** pp=new const S* [c];
+    const S** ppEnd=pp+c;
+    
+    for (int i=0;i<c;i++){
+      pp[i]=src->getData(i);
     }
+    
+    D* dstEnd=dst+c*dim;
+    while (dst<dstEnd){
+      for (const S** p=pp;p<ppEnd;++(*p),++p,++dst ){
+        *dst=Cast<S,D>::cast(*(*p));
+      }
+    }
+    delete [] pp;
+  }else{ // roi handling
+    ConstImgIterator<S> *sourceIts = new ConstImgIterator<S>[c];
+    for (int i=0;i<c;i++){
+      sourceIts[i] = src->getROIIterator(i);
+    }
+    D* dstEnd=dst+c*src->getDim();
+    while(dst<dstEnd){
+      for(int i=0;i<c;i++,dst++){
+        *dst = Cast<S,D>::cast(*(sourceIts[i]));
+        sourceIts[i]++;
+      }
+    }
+    delete [] sourceIts;
   }
-  delete [] pp;
 }
   
   // }}}
   
   template<class S, class D>
-  inline void interleavedToPlanar_Generic(const S *src,const Size &srcSize, int c,  Img<D> *dst){
+  inline void interleavedToPlanar_Generic(const S *src,  Img<D> *dst){
     // {{{ open
-  
-  FUNCTION_LOG("");
-  ICLASSERT_RETURN(src);
-  ICLASSERT_RETURN(dst);
-  dst->setChannels(c);
-  dst->setSize(srcSize);
-  if(c==1){
-    convert<S,D>(src,src+srcSize.getDim(),dst->getData(0));
-    return;
-  }    
-  D** pp=new D* [c];
-  D** ppEnd=pp+c;
-  for (int i=0;i<c;i++){
-    pp[i]=dst->getData(i);
-  }
-  const S* srcEnd=src+srcSize.getDim()*c;
-  while (src<srcEnd){
-    for (D** p=pp;p<ppEnd;++(*p),++p,++src){
-      *(*p)= Cast<S,D>::cast(*src);
+    
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(src);
+    ICLASSERT_RETURN(dst);
+    int c = dst->getChannels();
+    Size srcSize= dst->getSize();
+    if(c==1){
+      if(dst->hasFullROI()){
+        convert<S,D>(src,src+srcSize.getDim(),dst->getData(0));
+      }else{
+        std::vector<S*> tmpSrcChannelData;
+        tmpSrcChannelData.push_back(const_cast<S*>(src));
+        Img<S> tmpSrcImg(srcSize,c,tmpSrcChannelData);
+        tmpSrcImg.convertROI(dst);
+      }
+      return;
+    }    
+
+    if(dst->hasFullROI()){
+      D** pp=new D* [c];
+      D** ppEnd=pp+c;
+      for (int i=0;i<c;i++){
+        pp[i]=dst->getData(i);
+      }
+      const S* srcEnd=src+srcSize.getDim()*c;
+      while (src<srcEnd){
+        for (D** p=pp;p<ppEnd;++(*p),++p,++src){
+          *(*p)= Cast<S,D>::cast(*src);
+        }
+      }
+      delete [] pp;
+    }else{ // roi handling with iterators
+      ImgIterator<D> *itDsts = new ImgIterator<D>[c];
+      for(int i=0;i<c;i++){
+        itDsts[i] = dst->getROIIterator(i);
+      }
+      const S* srcEnd=src+srcSize.getDim()*c;
+      while (src<srcEnd){
+        for (int i=0;i<c;++i, ++src){
+          *(itDsts[i]) = Cast<S,D>::cast(*src);
+          itDsts[i]++;
+        }
+      }
+      delete [] itDsts;
     }
   }
-  delete [] pp;
-}
   
   // }}}
   
@@ -791,8 +837,8 @@ namespace icl{
   }
   
   template<class S, class D>
-  void interleavedToPlanar(const S *src,const Size &srcSize, int c,  Img<D> *dst){
-    interleavedToPlanar_Generic(src,srcSize,c,dst);
+  void interleavedToPlanar(const S *src, Img<D> *dst){
+    interleavedToPlanar_Generic(src,dst);
   }
   
 #ifdef WITH_IPP_OPTIMIZATION
@@ -831,24 +877,25 @@ namespace icl{
   // {{{ INTERLEAVED_2_PLANAR_IPP
 
 #define INTERLEAVED_2_PLANAR_IPP(DEPTH)                                                                                         \
-  template<> void interleavedToPlanar(const icl##DEPTH *src, const Size &srcSize, int srcChannels,  Img<icl##DEPTH> *dst){      \
+  template<> void interleavedToPlanar(const icl##DEPTH *src, Img<icl##DEPTH> *dst){                                             \
     ICLASSERT_RETURN( src );                                                                                                    \
     ICLASSERT_RETURN( dst );                                                                                                    \
+    int srcChannels = dst->getChannels();                                                                                       \
     ICLASSERT_RETURN( srcChannels );                                                                                            \
-    dst->setChannels( srcChannels );                                                                                            \
+    Size srcSize = dst->getROISize();                                                                                           \
     switch(srcChannels){                                                                                                        \
       case 3: {                                                                                                                 \
-        icl##DEPTH* apucChannels[3]={dst->getData(0),dst->getData(1),dst->getData(2)};                                          \
+        icl##DEPTH* apucChannels[3]={dst->getROIData(0),dst->getROIData(1),dst->getROIData(2)};                                 \
         ippiCopy_##DEPTH##_C3P3R(src,srcSize.width*srcChannels,apucChannels,srcSize.width,srcSize);                             \
         break;                                                                                                                  \
       }                                                                                                                         \
       case 4: {                                                                                                                 \
-        icl##DEPTH* apucChannels[4]={dst->getData(0),dst->getData(1),dst->getData(2),dst->getData(3)};                          \
+        icl##DEPTH* apucChannels[4]={dst->getROIData(0),dst->getROIData(1),dst->getROIData(2),dst->getROIData(3)};              \
         ippiCopy_##DEPTH##_C4P4R(src,srcSize.width*srcChannels,apucChannels,srcSize.width,srcSize);                             \
         break;                                                                                                                  \
       }                                                                                                                         \
       default:                                                                                                                  \
-        interleavedToPlanar_Generic(src,srcSize,srcChannels,dst);                                                               \
+        interleavedToPlanar_Generic(src,dst);                                                                                   \
         break;                                                                                                                  \
     }                                                                                                                           \
   }
@@ -866,7 +913,7 @@ namespace icl{
 
 #define EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,TYPEB)                            \
   template void planarToInterleaved<TYPEB,TYPEA>(const Img<TYPEB>*,TYPEA*);                 \
-  template void interleavedToPlanar<TYPEA,TYPEB>(const TYPEA*,const Size&,int,Img<TYPEB>*)
+  template void interleavedToPlanar<TYPEA,TYPEB>(const TYPEA*,Img<TYPEB>*)
 
   EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl16s);
   EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl32s);
