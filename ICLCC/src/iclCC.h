@@ -383,9 +383,13 @@ namespace icl{
   
   /// Converts a planar Img<S> images ROI  into its interleaved representations by mixing the channels
   /** This function is highly optimized, because it is needed whenever we need interleaved images
+      @param src source image image
+      @param dst destination data pointer
+      @param dstLineStep optinal linestep of the destination image. This must be given, if it differs from
+                         the source images lineStep multiplied by the source images channel count
   */
   template<class S, class D>
-  void planarToInterleaved(const Img<S> *src, D* dst);
+  void planarToInterleaved(const Img<S> *src, D* dst, int dstLineStep=-1);
   
   /// Converts interleaved image data into planar representation 
   /** The source data is transformed into the destination images ROI */

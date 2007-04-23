@@ -49,6 +49,12 @@ int main(int nargs, char **ppc){
     color(0,100,255);
     pix(B,boundaries[i]);
   }
+
+  color(255,0,0);
+  fill(255,0,0,200);
+  for(int o=0;o<5;o++){
+    circle(B,3*o+100,20*o+10,50);
+  }
   show((A,B));
   
   /*

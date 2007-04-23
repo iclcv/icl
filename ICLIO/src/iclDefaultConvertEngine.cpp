@@ -60,7 +60,7 @@ namespace icl{
       // 3Times faster on -O4
       m_oCvtBuf.resize(size.getDim()*3);
       ippiCbYCr422ToRGB_8u_C2C3R(rawData,2*size.width, *m_oCvtBuf,3*size.width, size);
-      interleavedToPlanar(*m_oCvtBuf,size,3,(*ppoDst)->asImg<icl8u>());
+      interleavedToPlanar(*m_oCvtBuf,(*ppoDst)->asImg<icl8u>());
 #else
       const icl8u *s = rawData;
       register int width = size.width;
