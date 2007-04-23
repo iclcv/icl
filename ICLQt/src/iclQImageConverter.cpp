@@ -111,7 +111,7 @@ void qimage_to_img(const QImage *src, Img<T> **ppDst){
   vecChannels.push_back(wBuf.getData(0));
   Img<T> tmp(dst->getSize(),4,vecChannels);
 
-  interleavedToPlanar(src->bits(), dst->getSize(),4,&tmp);
+  interleavedToPlanar(src->bits(),&tmp);
 }
 
   // }}}
