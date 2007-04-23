@@ -976,9 +976,8 @@ namespace icl{
 		// first render the circle
     int n = 0;
     char ** ppc = 0;
-    static QApplication  *QAPP = 0;
-    if(!QAPP){
-      QAPP = new QApplication(n,ppc);
+    if(!qApp){
+      new QApplication(n,ppc);
     }
     static QSize *br = new QSize(radius * 2, radius * 2);
     
@@ -1034,9 +1033,8 @@ namespace icl{
     // first rendering the text 
     int n = 0;
     char ** ppc = 0;
-    static QApplication  *QAPP = 0;
-    if(!QAPP){
-      QAPP = new QApplication(n,ppc);
+    if(!qApp){
+      new QApplication(n,ppc);
     }
     QFont f(FONTFAMILY.c_str(),FONTSIZE,QFont::DemiBold);
     QFontMetrics m(f);
