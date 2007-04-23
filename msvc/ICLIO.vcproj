@@ -39,10 +39,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="&#x0D;&#x0A;"
-				AdditionalIncludeDirectories="compat"
+				AdditionalIncludeDirectories="D:\freinhar\SonyGrabberTest;compat"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;"
 				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -61,6 +61,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				AdditionalLibraryDirectories=""
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -168,7 +169,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLIO\src\iclGrabber.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLIO\src\iclIO.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclSonyFwGrabber.cpp"
 				>
 			</File>
 			<File
@@ -195,6 +204,10 @@
 			</File>
 			<File
 				RelativePath="..\ICLIO\src\iclIO.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclSonyFwGrabber.h"
 				>
 			</File>
 			<File
