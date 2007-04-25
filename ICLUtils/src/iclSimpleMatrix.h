@@ -5,6 +5,12 @@
 #include <algorithm>
 
 namespace icl{
+
+  template<class T>
+  struct DefSimpleMatrixAlloc{
+    static T create() { return T(0); }
+  };
+  
   /// A Low-Weight Matrix representation for block aligned data
   /** <h1>General</h1>
       The SimpleMatrix class is a utility class, for organizing
@@ -64,7 +70,7 @@ namespace icl{
       object. If an explicit "deep copy" is demanded, one of the
       two <em>deepCopy</em>-functions must be used. 
   */
-  template<class T>
+  template<class T, class Alloc=DefSimpleMatrixAlloc<T> >
   struct SimpleMatrix{
     
     /// Creates an empty SimpleMatrix w=h=0
@@ -74,13 +80,13 @@ namespace icl{
     /// Creates a square matrix of size dim x dim filled with 0
     inline SimpleMatrix(int dim): 
       m_oData(new T[dim*dim]),m_iW(dim), m_iH(dim){
-      std::fill(m_oData.get(),m_oData.get()+this->dim(),T(0));
+      std::fill(m_oData.get(),m_oData.get()+this->dim(),Alloc::create());
     }
   
     /// Creates a matrix of size w x h filled with 0
     inline SimpleMatrix(int w, int h): 
       m_oData(new T[w*h]),m_iW(w), m_iH(h){
-      std::fill(m_oData.get(),m_oData.get()+dim(),T(0));
+      std::fill(m_oData.get(),m_oData.get()+dim(),Alloc::create());
     }
   
     /// Creates a matrix of size w x h, using given shared data
