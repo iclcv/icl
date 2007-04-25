@@ -5,11 +5,10 @@
 namespace icl {
 
 	SonyFwGrabber::SonyFwGrabber(void) {
+		init();
+	}
 
-		//Allocate new image memory TODO icl buffer images
-		m_ppImgBufLeft = (BYTE**) new BYTE[1];
-		m_ppImgBufRight = (BYTE**) new BYTE[1];
-		
+	void SonyFwGrabber::init() {
 		char* cameraID[10];
 
 		IIDC_FORMATINFO *formatinfo;
@@ -47,12 +46,12 @@ namespace icl {
 				//---- Read/ build unique camera id ----
 				cameraID[i] = new char[100];
 				GetCamAllString(i, cameraID[i]);
-				cout << "Unique ID for camera " << i << ": " << cameraID[i] << endl;
+				//cout << "Unique ID for camera " << i << ": " << cameraID[i] << endl;
 
 				//---- Open camera ----
 				m_hCamera[i] = iidc_open(i);
 				if (!m_hCamera[i] )
-					cout << "Get camera handle - FAILED" << endl;
+					cout << "Get camera handle of camera " << i << " FAILED!" << endl;
 
 				//---- How many formats are supported ----
 				lFormatCnt = iidc_getformatcount( m_hCamera[i] );
@@ -80,13 +79,12 @@ namespace icl {
 				//---- Set image format ----
 				bRet = iidc_setformat(m_hCamera[i], ppFormatIndexList[i][0]);
 				
-				cout << formatinfo[i].capflag << endl;
-				cout << "video format: " << formatinfo[i].iidc.videoformat << endl;
-				cout << "cc: " << formatinfo[i].colorcoding << endl;
+				//cout << formatinfo[i].capflag << endl;
+				//cout << "video format: " << formatinfo[i].iidc.videoformat << endl;
+				//cout << "cc: " << formatinfo[i].colorcoding << endl;
 
-				//cout << "color coding: " << cc << endl;
 				//printf("color coding: %o\n", cc);
-				switch( formatinfo[i].colorcoding ) {
+				/*switch( formatinfo[i].colorcoding ) {
 					case IIDCID_COLORCODING_MONO8:
 						cout << "  MONO8" << endl;
 						break;
@@ -114,7 +112,7 @@ namespace icl {
 					case IIDCID_COLORCODING_RAW16:
 						cout << "  RAW16"<< endl;
 						break;
-				}
+				}*/
 
 				if (!bRet)
 				{
@@ -142,10 +140,12 @@ namespace icl {
 				lRet = iidc_currentfeatureinfo(m_hCamera[i], &featureInfo[i], sizeof(IIDC_FEATUREINFO) );
 			}
 
+			m_pppImgBuffer = (BYTE***) new BYTE**[m_lNumCameras];
+
 			for (i=0;i<m_lNumCameras;i++)
 			{
-				if (iidc_getstatus(m_hCamera[i]) == IIDC_STATUS_UNSTABLE)
-					cout << "status unstable, call preparecapture" << endl;
+				//if (iidc_getstatus(m_hCamera[i]) == IIDC_STATUS_UNSTABLE)
+				//	cout << "status unstable, call preparecapture" << endl;
 				//---- Prepare capture (IIDC_STATUS_UNSTABLE) ----
 				bRet = iidc_preparecapture( m_hCamera[i]);
 
@@ -162,24 +162,9 @@ namespace icl {
 				long lBufSz;
 				lBufSz = iidc_currentdataframebytes( m_hCamera[i] );
 
-				//m_pppImgBuffer = (BYTE***) new BYTE[m_lNumCameras][3][lBufSz];
-				//m_pppImgBuffer[i] = new BYTE*[1];
-				/*for (j=0;j<3;j++)
-				{
-					m_pppImgBuffer[i][j] = new BYTE[lBufSz];
-				}*/
-				//lRet = iidc_attachbuffer( m_hCamera[i], (void**)m_pppImgBuffer[i], sizeof(LPBYTE) );
-
-				if (i == 0) {
-					for (j=0;j<3;j++)
-						m_ppImgBufLeft[j] = new BYTE[lBufSz];
-					lRet = iidc_attachbuffer( m_hCamera[i], (void**) m_ppImgBufLeft, sizeof(LPBYTE) );
-				}
-				if (i == 1) {
-					for (j=0;j<3;j++)
-						m_ppImgBufRight[j] = new BYTE[lBufSz];
-					lRet = iidc_attachbuffer( m_hCamera[i], (void**) m_ppImgBufRight, sizeof(LPBYTE) );
-				}
+				m_pppImgBuffer[i] = new BYTE*[1];
+				m_pppImgBuffer[i][0] = new BYTE[lBufSz];
+				lRet = iidc_attachbuffer( m_hCamera[i], (void**)m_pppImgBuffer[i], sizeof(LPBYTE) );
 
 				//---- Start sequential grab ----
 				bRet = iidc_capture( m_hCamera[i], TRUE);
@@ -236,13 +221,102 @@ namespace icl {
 
 	}
 
-	SonyFwGrabber::SonyFwGrabber(const Size &s, float fFps, int iDevice) {
-
-	}
-
 	SonyFwGrabber::~SonyFwGrabber(void) {
 		//---- Destroy all camera handle ----
 		iidc_uninit();
+	}
+
+	std::string SonyFwGrabber::getValue(const std::string &name) {
+		//TODO return values for all cameras or get num of camera as argument!
+		IIDC_FEATURE feature;
+		if(name == "size"){
+			return translateSize(Size(m_iWidth, m_iHeight));
+		}else if(name == "gain"){
+			memset( (void*)&feature, 0, sizeof(IIDC_FEATURE) );
+			feature.feature_index = IIDCID_FEATURE_GAIN;
+			iidc_currentfeature( m_hCamera[0], &feature, sizeof(IIDC_FEATURE) );
+			feature.value = (int)SONY_GAIN;
+			char buf[20];
+			sprintf(buf,"%d",int(feature.value));
+			return buf;
+		}else if(name == "white balance red" || name == "white balance blue" || name == "white balance mode"){
+			if(name == "white balance red"){ 
+			}else if(name == "white balance blue"){}
+			return "TODO";
+		}else if(name == "format"){
+			return "TODO";
+		}else if(name == "shutter speed"){
+			memset( (void*)&feature, 0, sizeof(IIDC_FEATURE) );
+			feature.feature_index = IIDCID_FEATURE_SHUTTER;
+			feature.flags = iidcfeature_value;
+			iidc_currentfeature( m_hCamera[0], &feature, sizeof(IIDC_FEATURE) );
+			feature.value = (float)SONY_SHUTTER;
+			char buf[20];
+			sprintf(buf,"%d",int(feature.value));
+			return buf;
+		}
+		return "undefined";
+	}
+
+	void SonyFwGrabber::setProperty(const std::string &property, const std::string &value) {
+		if(property == "size"){
+			Size newSize = translateSize(value);
+			//setGrabbingSize(newSize);
+		}else if(property == "format"){
+			/*if(value != "YUV 4-2-0 planar"){
+				ERROR_LOG("invalid format \"" << value <<"\"");
+			}*/
+		}else if(property == "gain"){
+			int val = atoi(value.c_str());
+			//setGain(clip(val,0,65535));
+		}else if(property == "save user settings"){
+			//saveUserSettings(); // value is ignored
+		}else if(property == "restore user settings"){
+			//restoreUserSettings();
+		}else if(property == "white balance mode"){
+			/*int mode = -1; // unknown default
+			if      (value == "indoor") mode = 0;
+			else if (value == "outdoor") mode = 1;
+			else if (value == "fl-tube") mode = 2;
+			else if (value == "auto") mode = 4;
+			if (mode != -1) {
+				setWhiteBalance(mode);
+			}else{
+				ERROR_LOG("unknown white balance mode \"" << value << "\"");
+			}*/
+		}else if(property == "white balance"){
+			/*vector<double> vec = Grabber::translateDoubleVec (value);
+			if (vec.size() != 2) {
+				ERROR_LOG("two white balance values required (red + blue)");
+			} else {
+				setWhiteBalance((int)vec[0], (int)vec[1]);
+			}*/
+		}else if(property == "white balance red"){
+			int val = atoi(value.c_str());
+			//setWhiteBalance(val,-1);
+		}else if(property == "white balance blue"){
+			int val = atoi(value.c_str());
+			//setWhiteBalance(-1,val);
+		}else if(property == "shutter speed"){
+			int val = atoi(value.c_str());
+			//setShutterSpeed(val);
+		}else{
+			ERROR_LOG("nothing known about a property " << property ); 
+		}
+	}
+
+	std::vector<std::string> SonyFwGrabber::getPropertyList() {
+		std::vector<std::string> v;
+		v.push_back("size");
+		v.push_back("format");
+		v.push_back("gain");
+		v.push_back("save user settings");
+		v.push_back("restore user settings");
+		v.push_back("white balance mode");
+		v.push_back("white balance red");
+		v.push_back("white balance blue");
+		v.push_back("shutter speed");
+		return v;
 	}
 
 	const ImgBase* SonyFwGrabber::grab(ImgBase **poDst) {
@@ -268,14 +342,8 @@ namespace icl {
 			vImgBufRight = (LPBYTE) iidc_lockdata( m_hCamera[1], -1 );
 			if(vImgBufLeft && vImgBufRight)
 			{
-				//---- Copy image data ----
-				//memcpy((icl8u*)(img->getDataPtr(0)),m_pppImgBuffer[0][0],(m_iWidth*m_iHeight)*sizeof(unsigned char));
-				//memcpy((icl8u*)(img->getDataPtr(1)),m_pppImgBuffer[0][1],(m_iWidth*m_iHeight)*sizeof(unsigned char));
-				//memcpy((icl8u*)(img->getDataPtr(2)),m_pppImgBuffer[0][2],(m_iWidth*m_iHeight)*sizeof(unsigned char));
-
-				memcpy((icl8u*)(img->getDataPtr(0)),m_ppImgBufLeft[0],(m_iWidth*m_iHeight)*sizeof(unsigned char));
-				//memcpy((icl8u*)(img->getDataPtr(1)),m_ppImgBufLeft[1],(m_iWidth*m_iHeight)*sizeof(unsigned char));
-				//memcpy((icl8u*)(img->getDataPtr(2)),m_ppImgBufLeft[2],(m_iWidth*m_iHeight)*sizeof(unsigned char));
+				memcpy((icl8u*)(img->getDataPtr(0)),m_pppImgBuffer[0][0],(m_iWidth*m_iHeight)*sizeof(unsigned char));
+				//memcpy((icl8u*)(img->getDataPtr(1)),m_pppImgBuffer[1][0],(m_iWidth*m_iHeight)*sizeof(unsigned char));
 
 				//---- remove data lock ----
 				iidc_unlockdata( m_hCamera[0] );
