@@ -95,7 +95,7 @@ namespace icl {
           is much more efficient. The better performace is
           is achieved by just counting the border pixels instead 
           of pushing them into a list of points.
-          @param imagesSize corresponding image size
+          @param imageSize corresponding image size
           @return count of boundary pixels
       **/
       int getBoundaryLength(const Size &imageSize);

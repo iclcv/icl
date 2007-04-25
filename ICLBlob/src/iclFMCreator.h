@@ -14,7 +14,7 @@ namespace icl{
     virtual ~FMCreator(){};
 
     /// returns the demanded image size
-    /** @param size size of the source image of the feature-map**/
+    /** @return size of the source image of the feature-map**/
     virtual Size getSize()=0;
 
 

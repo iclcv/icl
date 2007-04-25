@@ -29,7 +29,7 @@ namespace icl{
     virtual ~DefaultConvertEngine(){}
     
     /// Convertsion function
-    /** \copydoc icl::UnicapConvertEngine::cvt(const icl::icl8u*, const iclImgParams&, icl::depth, icl::ImgBase**) */
+    /** \copydoc icl::UnicapConvertEngine::cvt(const icl8u*, const ImgParams&, depth, ImgBase**) */
     virtual void cvt(const icl8u *rawData, const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst);
 
     /// returns whether this engine is able to provide images with given params

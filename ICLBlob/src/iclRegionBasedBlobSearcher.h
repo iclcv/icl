@@ -211,7 +211,7 @@ namespace icl{
         @param release decides whether to release the removed FMCreator/RegionFilter
                        tuples or not
     **/
-    void removeAll(bool realease=true);
+    void removeAll(bool release=true);
 
    
 

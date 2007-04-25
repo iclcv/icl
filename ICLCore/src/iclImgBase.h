@@ -131,7 +131,7 @@ namespace icl {
       virtual ImgBase *shallowCopy(const Rect &roi, 
                                    const std::vector<int> &channelIndices,
                                    format fmt, 
-                                   Time=Time::null,
+                                   Time time=Time::null,
                                    ImgBase **ppoDst = NULL) = 0;
       
       /** Create a shallow copy of an image with given (const version)

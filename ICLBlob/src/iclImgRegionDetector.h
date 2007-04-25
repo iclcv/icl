@@ -47,7 +47,7 @@ namespace icl{
 
     /// Creates a new ImgRegionDetector with given size and value interval
     /** @param sizeRange range for allowed region pixel count
-        @param valueRagen range for allowed region value
+        @param valueRange range for allowed region value
     **/
     ImgRegionDetector(const Range<unsigned int> &sizeRange, const Range<icl8u> &valueRange);
 
@@ -64,7 +64,7 @@ namespace icl{
 
     /// sets new restrictions
     /** @param sizeRange range for allowed region pixel count
-        @param valueRagen range for allowed region value
+        @param valueRange range for allowed region value
     **/
     void setRestrictions(const Range<unsigned int> &sizeRange, const Range<icl8u> &valueRange);
     

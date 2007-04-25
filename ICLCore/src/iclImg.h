@@ -289,7 +289,7 @@ namespace icl {
     virtual Img<Type> *shallowCopy(const Rect &roi, 
                                    const std::vector<int> &channelIndices,
                                    format fmt,
-                                   Time=Time::null,
+                                   Time time =Time::null,
                                    ImgBase **ppoDst = NULL);
 
       /** Create a shallow copy of an image with given (const version)
@@ -316,7 +316,7 @@ namespace icl {
       /// Create a shallow copy of this image with a new format
       /** @param newFmt new format to choose. This must be compatible to the channel count 
                            of this image.
-          @param ppoDst destination image (exploited as possible) 
+          @param poDst destination image (exploited as possible) 
           @return shallow copie with given format of NULL if an error occured 
       **/
       Img<Type> *reinterpretChannels(format newFmt, Img<Type> *poDst = NULL){
@@ -338,7 +338,7 @@ namespace icl {
           i.e. if the pixel depth matches. Else this image is released
           and a new one is created. Optionally a second argument can be
           specified to get a new image with the given ROI.
-          @param ppoDst pointer to the destination image pointer If ppoDst is NULL,
+          @param poDst pointer to the destination image pointer If ppoDst is NULL,
                         a new image is created, if ppoDst points to NULL, a new 
                         image is created at *ppoDst;
           @param roi new ROI of the new image. If Rect::null, the source images roi
@@ -371,7 +371,7 @@ namespace icl {
           image should be used in further processing steps. It helps to avoid the 
           necessity of "deepCopy" calls there.
           @param channelIndices vector containing channel indices to copy
-          @param ppoDst destination image (if Null, a new one is created)
+          @param poDst destination image (if Null, a new one is created)
           @return image containing only the selected channels (as shallow copies)
                         format of that image becomes formatMatrix
           @see shallowCopy
@@ -386,7 +386,7 @@ namespace icl {
           icl::ImgBase::selectChannels(const std::vector<int>&,icl::ImgBase**) to 
           select a single channel from an image
           @param channelIndex index of the channel to select (if invalid, NULL is returned)
-          @param ppoDst destination image 
+          @param poDst destination image 
           @return image containing only the selected channel
       **/
       Img<Type> *selectChannel(int channelIndex, Img<Type> *poDst=0){

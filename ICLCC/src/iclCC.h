@@ -313,20 +313,20 @@ namespace icl{
   
   /// returns whether a lookup table was already created for src and dst format
   /** @param srcFmt source format
-      @param dstfmt destination format
+      @param dstFmt destination format
   **/
   bool lut_available(format srcFmt, format dstFmt);  
 
   /// Internally creates a lookup table to accelerate conversion between given formats
   /** Take care: <b>Each LUT uses up to 48MB of system memory</b> 
       @param srcFmt source format
-      @param dstfmt destination format
+      @param dstFmt destination format
   **/
   void createLUT(format srcFmt, format dstFmt);
   
   /// releases the internal lookup table created with createLUT
   /**  @param srcFmt source format
-       @param dstfmt destination format
+       @param dstFmt destination format
   **/
   void releaseLUT(format srcFmt, format dstFmt);
 

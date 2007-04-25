@@ -86,8 +86,8 @@ namespace icl{
     bool init(const Size &s,float fFps=30, int iDevice = 0, bool echoOff=false);
     
     /// grabbing function  
-    /** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    
-    virtual const ImgBase* grab(ImgBase **poDst=0);
+    /** \copydoc icl::Grabber::grab(ImgBase**)  **/    
+    virtual const ImgBase* grab(ImgBase **ppoDst=0);
 
     /** @{ @name properties and parameters */
     
@@ -168,7 +168,8 @@ namespace icl{
 
 
     /// sets led state
-    /** @param time value between 0 and 25000 
+    /** @param time value between 0 and 25000
+        @param on sets LED state to on, if true, or to off if false 
         @return if successful **/
     bool setLED(bool on, int time);
 

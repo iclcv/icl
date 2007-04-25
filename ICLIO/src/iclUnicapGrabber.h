@@ -46,7 +46,7 @@ namespace icl{
     ~UnicapGrabber();
     
     /// **NEW** grab function grabs an image (destination image is adapted on demand)
-    /** @copydoc icl::Grabber::grab(icl::ImgBase**) **/
+    /** @copydoc icl::Grabber::grab(ImgBase**) **/
     virtual const ImgBase* grab(ImgBase **ppoDst=0);
 
     /** @{ @name properties and params */
@@ -96,9 +96,9 @@ namespace icl{
           - <b>Device</b>(string) corresponding software device e.g. "/dev/video0"
           - <b>Flags</b>(unsigned int) internal camera flags (not very specific!)
         - Operators are:
-          - <b>==</b> the given filter value must match to the actual value
-          - <b>~=</b> the given filter value must be a substring of the actual value 
-          - <b>*=</b> the given filter value is a regular expression, that must match
+          - <b> == </b> the given filter value must match to the actual value
+          - <b> ~= </b> the given filter value must be a substring of the actual value 
+          - <b> *= </b> the given filter value is a regular expression, that must match
             actual value
         - Values depend on the type (listed in the ID-description) of the corresponding ID, and
           of cause on the possible values, that are provided by the cameras. The possible values

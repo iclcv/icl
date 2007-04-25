@@ -478,8 +478,8 @@ namespace icl{
   ImgQ operator%(const ImgQ &a, const ImgQ &b);
 
   /// channel concatenation of images
-  /** @param first image (channels f1,f2,f3,...)
-      @param second image (channels s2, s2,s3,...)
+  /** @param a first image (channels f1,f2,f3,...)
+      @param b second image (channels s2, s2,s3,...)
       @return image with channels (f1,f2,... s1, s2, ...)
   **/
   ImgQ operator|(const ImgQ &a, const ImgQ &b);
@@ -591,7 +591,7 @@ namespace icl{
 
   /// draws a 6x6-cross into an image
   /** @param image destination image 
-      @param cross position 
+      @param p position 
   **/
   void cross(ImgQ &image, const Point &p) { cross(image,p.x,p.y); }
 
@@ -622,7 +622,7 @@ namespace icl{
   /// draws a line into an image
   /** @param image destination image 
       @param p1 fist point
-      @param y1 second point
+      @param p2 second point
   **/
   void line(ImgQ &image, const Point &p1, const Point &p2){ line(image,p1.x,p1.y, p2.x,p2.y); }
 
@@ -670,7 +670,7 @@ namespace icl{
       using the a QPainter internally.
       @param image destination image
       @param p pos of the lower left corner of the text
-      @param text text to render
+      @param sText text to render
   **/
   void text(ImgQ &image, const Point &p,const string &sText){ text(image,p.x,p.y,sText); }
 
