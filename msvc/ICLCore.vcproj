@@ -232,11 +232,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLCore\src\iclRange.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLCore\src\iclRect.h"
 				>
 			</File>
 			<File
 				RelativePath="..\ICLCore\src\iclSize.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLCore\src\iclSteppingRange.h"
 				>
 			</File>
 			<File

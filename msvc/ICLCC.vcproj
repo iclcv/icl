@@ -156,6 +156,10 @@
 				RelativePath="..\ICLCC\src\iclConverter.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\ICLCC\src\iclFixedConverter.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Headerdateien"
@@ -167,7 +171,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLCC\src\iclCCLUT.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLCC\src\iclConverter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLCC\src\iclFixedConverter.h"
 				>
 			</File>
 		</Filter>

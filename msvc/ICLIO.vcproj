@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="&#x0D;&#x0A;"
-				AdditionalIncludeDirectories="D:\freinhar\SonyGrabberTest;compat"
+				AdditionalIncludeDirectories="compat"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"

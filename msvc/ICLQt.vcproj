@@ -147,11 +147,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\ICLQt\src\iclDoubleSlider.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclDrawWidget.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\ICLQt\src\iclGLPaintEngine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclImgParamWidget.cpp"
 				>
 			</File>
 			<File
@@ -191,6 +199,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLQt\src\iclStringSignalButton.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclWidget.cpp"
 				>
 			</File>
@@ -201,11 +213,23 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\ICLQt\src\iclBorderBox.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclDoubleSlider.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclDrawWidget.h"
 				>
 			</File>
 			<File
 				RelativePath="..\ICLQt\src\iclGLPaintEngine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclImgParamWidget.h"
 				>
 			</File>
 			<File
@@ -254,6 +278,10 @@
 			</File>
 			<File
 				RelativePath="..\ICLQt\src\iclQtPaintEngine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclStringSignalButton.h"
 				>
 			</File>
 			<File

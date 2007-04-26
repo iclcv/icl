@@ -146,6 +146,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\ICLBlob\src\iclBlobData.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLBlob\src\iclColorBlobSearcher.cpp"
 				>
 			</File>
@@ -155,6 +159,10 @@
 			</File>
 			<File
 				RelativePath="..\ICLBlob\src\iclExtrapolator.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLBlob\src\iclFMCreator.cpp"
 				>
 			</File>
 			<File
@@ -194,6 +202,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLBlob\src\iclRegionFilter.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLBlob\src\iclVQ2D.cpp"
 				>
 			</File>
@@ -225,6 +237,10 @@
 			</File>
 			<File
 				RelativePath="..\ICLBlob\src\iclFastMedianList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLBlob\src\iclFMCreator.h"
 				>
 			</File>
 			<File
@@ -285,6 +301,10 @@
 			</File>
 			<File
 				RelativePath="..\ICLBlob\src\iclRegionDetectorVector.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLBlob\src\iclRegionFilter.h"
 				>
 			</File>
 			<File
