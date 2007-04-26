@@ -5,7 +5,7 @@
 
 #include <iclGrabber.h>
 //#include <iclConverter.h>
-#include "iidcapi.h"
+#include <sony/iidcapi.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -25,6 +25,8 @@ namespace icl {
 	public:
 		SonyFwGrabber(void);
 		~SonyFwGrabber(void);
+
+		bool init();
 
 		/// grabbing function  
 		/** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    
@@ -70,8 +72,6 @@ namespace icl {
 		HIIDC m_hCamera[10];
 
 		void GetCamAllString(long camIndex, char *strCamera);
-
-		void init();
 
 	};
 

@@ -5,10 +5,10 @@
 namespace icl {
 
 	SonyFwGrabber::SonyFwGrabber(void) {
-		init();
+		//init();
 	}
 
-	void SonyFwGrabber::init() {
+	bool SonyFwGrabber::init() {
 		char* cameraID[10];
 
 		IIDC_FORMATINFO *formatinfo;
@@ -28,7 +28,7 @@ namespace icl {
 		if (!bRet)
 		{
 			cout << "FATAL error during init!" << endl;
-			exit (1);
+			return false;
 		}
 		else
 		{
@@ -117,7 +117,7 @@ namespace icl {
 				if (!bRet)
 				{
 					cout << "FATAL error - could not set FORMAT" << endl;
-					exit (1);
+					return false;
 				}
 
 				//---- Get image width/ height  ----
@@ -218,6 +218,8 @@ namespace icl {
 				cout << endl;
 			}  
 		}
+
+		return true;
 
 	}
 
