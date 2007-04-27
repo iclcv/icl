@@ -1,66 +1,208 @@
 #include <iclWidget.h>
-#include <QImage>
-#include <QPainter>
-#include <QResizeEvent>
-#include <QLineEdit>
-#include <QThread>
-#include <iclOSD.h>
 #include <iclImg.h>
-#include <iclTimer.h>
-#include <iclFileWriter.h>
+#include <iclGLTextureMapBaseImage.h>
 #include <iclGLPaintEngine.h>
-#include <iclQtPaintEngine.h>
+#include <iclFileWriter.h>
+#include <iclOSD.h>
+#include <string>
+#include <vector>
 
-
-#ifdef USE_OPENGL_ACCELERATION
-#else
-#endif
-
-
-using std::string;
-namespace icl{  
-  const int ICLWidget::SHOW_OSD_ID;
+using namespace std;
+namespace icl{
   
-  // {{{ Constructor
+  namespace{
+    Rect computeRect(const Size &imageSize, const Size &widgetSize, ICLWidget::fitmode mode){
+      // {{{ open
 
-  ICLWidget::ICLWidget(QWidget *poParent):
-    // {{{ open
-    ParentWidgetClass(poParent),m_poImage(imgNew()),  m_poOSD(0),
-    m_poCurrOSD(0),m_poShowOSD(0),m_iMouseX(-1), m_iMouseY(-1){
-   
-    setParent(poParent);
-    setMouseTracking(true);
-    // TODO what is optimal for the non-GL class
-#ifdef USE_OPENGL_ACCELERATION
-    setAttribute(Qt::WA_PaintOnScreen); 
-    setAttribute(Qt::WA_NoBackground);
-#endif
-
-    op.fm = fmHoldAR;
-    op.rm = rmOn;
-    op.on = true;
-    op.c = -1;
-    op.brightness=0;
-    op.contrast=0;
-    op.intensity=0;
-    
-    memset(aiDown,0,3*sizeof(int));
-
+      int iImageW = imageSize.width;
+      int iImageH = imageSize.height;
+      int iW = widgetSize.width;
+      int iH = widgetSize.height;
+      
+      switch(mode){
+        case ICLWidget::fmNoScale:
+          // set up the image rect to be centered
+          return Rect((iW -iImageW)/2,(iH -iImageH)/2,iImageW,iImageH); 
+          break;
+        case ICLWidget::fmHoldAR:{
+          // check if the image is more "widescreen" as the widget or not
+          // and adapt image-rect
+          float fWidgetAR = (float)iW/(float)iH;
+          float fImageAR = (float)iImageW/(float)iImageH;
+          if(fImageAR >= fWidgetAR){ //Image is more "widescreen" then the widget
+            float fScaleFactor = (float)iW/(float)iImageW;
+            return Rect(0,(iH-(int)floor(iImageH*fScaleFactor))/2,
+                        (int)floor(iImageW*fScaleFactor),(int)floor(iImageH*fScaleFactor));
+          }else{
+            float fScaleFactor = (float)iH/(float)iImageH;
+            return Rect((iW-(int)floor(iImageW*fScaleFactor))/2,0,
+                        (int)floor(iImageW*fScaleFactor),(int)floor(iImageH*fScaleFactor));
+          }
+          break;
+        }
+        case ICLWidget::fmFit:
+          // the image is force to fit into the widget
+          return Rect(0,0,iW,iH);
+          break;
+      }
+      return Rect(0,0,iW,iH);
+    }
+    // }}}
   }
   
+  ICLWidget::ICLWidget(QWidget *parent) : 
+    QGLWidget(parent),m_poOSD(0),
+    m_poCurrOSD(0),m_poShowOSD(0),m_iMouseX(-1), m_iMouseY(-1),
+    m_iCurrSelectedChannel(-1){
+    // {{{ open
+
+    makeCurrent();
+    setAttribute(Qt::WA_PaintOnScreen); 
+    setAttribute(Qt::WA_NoBackground);
+    m_poImage = 0;
+    m_eFitMode = fmHoldAR;
+    m_eRangeMode = rmOff;
+
+    memset(m_aiBCI,0,3*sizeof(int));
+
+    setMouseTracking(true);
+    memset(aiDown,0,3*sizeof(int));
+  }
+
   // }}}
-  
-  //Destructor
-  ICLWidget::~ICLWidget(void)
-  {
-    delete m_poImage;
+  ICLWidget::~ICLWidget(){
+    // {{{ open
+    if(m_poImage)delete m_poImage;
     if (m_poOSD) { delete m_poOSD; m_poOSD = 0; }
     if (m_poShowOSD)  { delete m_poShowOSD; m_poShowOSD = 0; }
   }
 
   // }}}
 
-  // {{{ mouse<Press|Release|Move|Enter|Release>()- and resizeEvent
+  void ICLWidget::initializeGL(){
+    // {{{ open
+
+    glClearColor (0.0, 0.0, 0.0, 0.0);
+    glShadeModel(GL_FLAT);
+    glEnable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glOrtho(0, width(), height(), 0, -999999, 999999);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+  }
+
+  // }}}
+  void ICLWidget::resizeGL(int w, int h){
+    // {{{ open
+
+    m_oMutex.lock();
+    glViewport(0, 0, (GLint)w, (GLint)h);
+    m_oMutex.unlock();
+  }
+
+  // }}}
+  void ICLWidget::paintGL(){
+    // {{{ open
+
+    m_oMutex.lock();
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
+    
+    if(m_poImage){
+      Rect r = computeRect(m_poImage->getSize(),getSize(),m_eFitMode);
+      GLTextureMapBaseImage image;
+      if(m_eRangeMode == rmAuto){
+        image.bci(-1,-1,-1);
+      }else if(m_eRangeMode == rmOn){
+        image.bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
+      }
+      if(m_iCurrSelectedChannel == -1){
+        image.updateTextures(m_poImage);
+      }else{
+        if(m_poImage->getChannels() > m_iCurrSelectedChannel){
+          ImgBase *chan = m_poImage->selectChannel(m_iCurrSelectedChannel);
+          image.updateTextures(chan);
+          delete chan;
+        }else{
+          GLPaintEngine pe(this);
+          pe.fill(0,0,0,255);
+          Rect fullRect(0,0,width(),height());
+          pe.rect(fullRect);
+          pe.color(255,255,255,255);
+          pe.fill(255,255,255,255);
+          pe.text(fullRect,"invalid channel!");
+        }
+      }
+      image.drawTo(r,getSize());
+    }else{
+      GLPaintEngine pe(this);
+      pe.fill(0,0,0,255);
+      Rect fullRect(0,0,width(),height());
+      pe.rect(fullRect);
+      pe.color(255,255,255,255);
+      pe.fill(255,255,255,255);
+      pe.text(fullRect,"image is null!");
+      /// draw something like : no image available !!
+    }
+    m_oMutex.unlock();
+
+    GLPaintEngine pe(this);
+
+    m_oOSDMutex.lock();
+    if(m_poCurrOSD){
+      float m = std::min(((float)std::min(width(),height()))/100,6.0f);
+      pe.font("Arial",(int)(1.5*m)+5,PaintEngine::DemiBold);
+      m_poCurrOSD->_drawSelf(&pe,m_iMouseX,m_iMouseY,aiDown);
+    }
+    m_oOSDMutex.unlock();
+    
+    customPaintEvent(&pe);
+  }
+
+  // }}}
+  
+  void ICLWidget::setImage(const ImgBase *image){ 
+    // {{{ open
+
+    ICLASSERT_RETURN(image);
+    m_oMutex.lock();
+    image->deepCopy(&m_poImage); 
+    m_oMutex.unlock();
+  }
+
+  // }}}
+  void ICLWidget::setFitMode(fitmode fm){
+    // {{{ open
+
+    m_eFitMode = fm;
+  }
+
+  // }}}
+  void ICLWidget::setRangeMode(rangemode rm){
+    // {{{ open
+
+    m_eRangeMode = rm;
+  }
+
+  // }}}
+  void ICLWidget::setBCI(int brightness, int contrast, int intensity){
+    // {{{ open
+
+    m_aiBCI[0] = brightness;    
+    m_aiBCI[1] = contrast;  
+    m_aiBCI[2] = intensity;
+  }
+
+  // }}}
+  void ICLWidget::customPaintEvent(PaintEngine *e){
+    // {{{ open
+    (void)e;
+  }
+
+  // }}}
 
   void ICLWidget::mousePressEvent(QMouseEvent *e){
     // {{{ open
@@ -69,8 +211,8 @@ namespace icl{
       case Qt::RightButton: aiDown[2]=1; break;
       default: aiDown[1] = 1; break;
     }
-   
-     m_oOSDMutex.lock();
+    
+    m_oOSDMutex.lock();
     if(m_poCurrOSD && m_poCurrOSD->mouseOver(e->x(),e->y())){
       m_iMouseX = e->x();
       m_iMouseY = e->y();
@@ -80,43 +222,33 @@ namespace icl{
       emit mouseEvent(updateMouseInfo(MouseInteractionInfo::pressEvent));
     }
     m_oOSDMutex.unlock();
-    up();
-
-    
+    update();
   }
-
   // }}}
-
   void ICLWidget::mouseReleaseEvent(QMouseEvent *e){
     // {{{ open
-
-    switch(e->button()){
-      case Qt::LeftButton: aiDown[0]=0; break;
-      case Qt::RightButton: aiDown[2]=0; break;
-      default: aiDown[1] = 0; break;
-    }
-    m_oOSDMutex.lock();
-    m_iMouseX = e->x();
-    m_iMouseY = e->y();
-    if(m_poCurrOSD){
-      m_poCurrOSD->_mouseReleased(e->x(),e->y(),e->button());
-    }
-    if(!m_poCurrOSD->mouseOver(e->x(),e->y())){
-      /// emitting signal
-      emit mouseEvent(updateMouseInfo(MouseInteractionInfo::releaseEvent));
-    }
-
-    m_oOSDMutex.unlock();
-    up();
-
     
-  }
-
+    switch(e->button()){
+     case Qt::LeftButton: aiDown[0]=0; break;
+     case Qt::RightButton: aiDown[2]=0; break;
+     default: aiDown[1] = 0; break;
+   }
+   m_oOSDMutex.lock();
+   m_iMouseX = e->x();
+   m_iMouseY = e->y();
+   if(m_poCurrOSD){
+     m_poCurrOSD->_mouseReleased(e->x(),e->y(),e->button());
+   }
+   if(!m_poCurrOSD->mouseOver(e->x(),e->y())){
+     /// emitting signal
+     emit mouseEvent(updateMouseInfo(MouseInteractionInfo::releaseEvent));
+   }
+   m_oOSDMutex.unlock();
+   update();
+ }
   // }}}
-  
   void ICLWidget::mouseMoveEvent(QMouseEvent *e){
     // {{{ open
-
     m_oOSDMutex.lock();
     m_iMouseX = e->x();
     m_iMouseY = e->y();
@@ -131,36 +263,31 @@ namespace icl{
       }
     }
     m_oOSDMutex.unlock();
-    up();
+    update();
   }
-
   // }}}
-  
   void ICLWidget::enterEvent(QEvent *e){
     // {{{ open
-
     (void)e;
     m_oOSDMutex.lock();
     m_iMouseX = -1;
     m_iMouseY = -1;
     if(!m_poOSD){
-      m_poOSD = new OSD(0,Rect(3,3,w()-10,h()-10),this,0);
+      m_poOSD = new OSD(0,Rect(3,3,width()-10,height()-10),this,0);
       m_poShowOSD = new OSDButton(SHOW_OSD_ID,Rect(width()-80,height()-23,75,18),this,0,"menu");
+
     }
     if(m_poCurrOSD == 0){
       m_poCurrOSD = m_poShowOSD;
     }
     m_oOSDMutex.unlock();
-    up();
-
+    update();
     emit mouseEvent(updateMouseInfo(MouseInteractionInfo::enterEvent));
   }
 
   // }}}
-  
   void ICLWidget::leaveEvent(QEvent *e){
     // {{{ open
-
     (void)e;
     m_oOSDMutex.lock();
     if(m_poCurrOSD == m_poShowOSD){
@@ -170,19 +297,18 @@ namespace icl{
     m_iMouseX = -1;
     m_iMouseY = -1;
    
-    up();
+    update();
     emit mouseEvent(updateMouseInfo(MouseInteractionInfo::leaveEvent));
   }
 
   // }}}
-  
   void ICLWidget::resizeEvent(QResizeEvent *e){
     // {{{ open
-
-    QSize s = e->size();
+    resizeGL(e->size().width(),e->size().height());
 
     m_oOSDMutex.lock();
     if(m_poOSD && isVisible()){
+      QSize s = e->size();
       int iLastOSD = 0; // none
       if(m_poCurrOSD == m_poOSD) iLastOSD = 1; // osd
       else if(m_poCurrOSD == m_poShowOSD) iLastOSD = 2; // show osd
@@ -200,61 +326,45 @@ namespace icl{
     }
     m_oOSDMutex.unlock();
   }
-
   // }}}
-
-  // }}}
-  
-  // {{{ childChanged() and setImage()
-
   void ICLWidget::childChanged(int id, void *val){  
     // {{{ open
-
-    (void)val;
     switch(id){
       case SHOW_OSD_ID:
         m_poCurrOSD = m_poOSD;
-#ifndef USE_OPENGL_ACCELERATION   
-        //      setAttribute(Qt::WA_PaintOnScreen,false); 
-        // setAttribute(Qt::WA_NoBackground,false);
-#endif
         break;
       case OSD::BOTTOM_EXIT_ID:
         m_poCurrOSD = m_poShowOSD;
-#ifndef USE_OPENGL_ACCELERATION   
-        //   setAttribute(Qt::WA_PaintOnScreen,true); 
-        // setAttribute(Qt::WA_NoBackground,true);
-#endif
         break;
       case OSD::FITMODE_NOSCALE_ID:
-        op.fm = fmNoScale;
+        m_eFitMode = fmNoScale;
         break;
       case OSD::FITMODE_HOLDAR_ID:
-        op.fm = fmHoldAR;
+        m_eFitMode = fmHoldAR;
         break;
       case OSD::FITMODE_FIT_ID:
-        op.fm = fmFit;
+        m_eFitMode = fmFit;
         break;
       case OSD::ADJUST_BRIGHTNESS_SLIDER_ID:
-        op.brightness = *(int*)val;
+        m_aiBCI[0] = *(int*)val;
         break;
       case OSD::ADJUST_CONTRAST_SLIDER_ID:
-        op.contrast = *(int*)val;
+        m_aiBCI[1] = *(int*)val;
         break;
       case OSD::ADJUST_INTENSITY_SLIDER_ID:
-        op.intensity = *(int*)val;
+        m_aiBCI[2] = *(int*)val;
         break;
       case OSD::ADJUST_MODE_NONE_ID:
-        op.rm = rmOff;
+        m_eRangeMode = rmOff;
         break;
       case OSD::ADJUST_MODE_MANUAL_ID:
-        op.rm = rmOn;
+        m_eRangeMode = rmOn;
         break;
       case OSD::ADJUST_MODE_AUTO_ID:
-        op.rm = rmAuto;
+        m_eRangeMode = rmAuto;
         break;
       case OSD::CHANNELS_SLIDER_ID:
-        op.c = *(int*)val;
+        m_iCurrSelectedChannel = *(int*)val;
         break;
       case OSD::CAPTURE_BUTTON_ID:{
         // capturing current image:
@@ -274,180 +384,20 @@ namespace icl{
         break;
     }
 
-    up();
+    update();
   }
 
   // }}}
-  
-  void ICLWidget::setImage(const ImgBase *input){
-    // {{{ open
-
-    if(!op.on || !input){
-      return;
-    }
-
-    m_oMutex.lock();    
-    
-    m_eRealInupuImagesDepth = input->getDepth();    
-    
-    if(op.c<0){
-      /// new 
-      switch(input->getDepth()){
-        case depth8u:       /****************************************/
-        case depth16s:      /* This formats can be drawn natively   */
-          ensureCompatible(&m_poImage,input); /**********************/
-          break;
-        case depth32f:      /****************************************/
-        case depth32s:      /* This formats are converted to float  */
-        case depth64f:      /****************************************/
-          // depth64f is converted to 32f float -> 64f doubles are not supported by OpenGL
-          ensureCompatible(&m_poImage,depth32f,input->getSize(),input->getChannels(),input->getFormat());
-          break;
-        default:
-          ICL_INVALID_DEPTH;
-      }
-      input->deepCopy(&m_poImage);
-      /// old
-      //ensureCompatible(&m_poImage,input);
-      //input->deepCopy(m_poImage);
-      /// end eld
-    }else if(op.c < input->getChannels()){ // copy the specific image channel
-      switch(input->getDepth()){
-        case depth8u:
-          ensureCompatible(&m_poImage,input->getDepth(),input->getSize(),1,formatMatrix);
-          deepCopyChannel(input->asImg<icl8u>(),op.c,m_poImage->asImg<icl8u>(),0); 
-          break;    
-        case depth16s:  
-          ensureCompatible(&m_poImage,input->getDepth(),input->getSize(),1,formatMatrix);
-          deepCopyChannel(input->asImg<icl16s>(),op.c,m_poImage->asImg<icl16s>(),0); 
-          break;    
-        case depth32s:  
-          ensureCompatible(&m_poImage,depth32f,input->getSize(),1,formatMatrix);
-          convertChannel(input->asImg<icl32s>(),op.c,m_poImage->asImg<icl32f>(),0);  // special case here ! 
-          break;    
-        case depth32f:
-          ensureCompatible(&m_poImage,depth32f,input->getSize(),1,formatMatrix);
-          deepCopyChannel(input->asImg<icl32f>(),op.c,m_poImage->asImg<icl32f>(),0); 
-          break;
-        case depth64f:
-          ensureCompatible(&m_poImage,depth32f,input->getSize(),1,formatMatrix);
-          convertChannel(input->asImg<icl64f>(),op.c,m_poImage->asImg<icl32f>(),0);  // special case here!
-          break;
-        default:
-          ICL_INVALID_DEPTH;
-      }
-      //old
-      //ensureCompatible(&m_poImage,input->getDepth(),input->getSize(),1,formatMatrix);
-      //switch(input->getDepth()){
-      //  case depth8u: deepCopyChannel(input->asImg<icl8u>(),op.c,m_poImage->asImg<icl8u>(),0); break;
-      //  case depth32f: deepCopyChannel(input->asImg<icl32f>(),op.c,m_poImage->asImg<icl32f>(),0); break;
-      //}
-      // end old
-    }else{
-      if(m_poImage){
-        delete m_poImage;
-        m_poImage = 0;
-      }
-    }
-    m_oMutex.unlock();    
-  }
-
-  // }}}
-
-  // }}}
-  
-  // {{{ drawOSD(), drawImage() and paintGL()
-
-  void ICLWidget::drawOSD(PaintEngine *e){
-    // {{{ open
-
-    m_oOSDMutex.lock();
-    if(m_poCurrOSD){
-      float m = std::min(((float)std::min(w(),h()))/100,6.0f);
-      e->font("Arial",(int)(2*m)+5,PaintEngine::DemiBold);
-      m_poCurrOSD->_drawSelf(e,m_iMouseX,m_iMouseY,aiDown);
-    }
-    m_oOSDMutex.unlock();
-  }
-
-  // }}}
-  
-#ifdef USE_OPENGL_ACCELERATION
-  void ICLWidget::paintGL(){
-    // {{{ open
-
-    // {{{
-    GLPaintEngine e(this);
-
-    drawImage(&e);
-    customPaintEvent(&e);
-    drawOSD(&e);
-  }
-
-  // }}}
-#else
-  void ICLWidget::paintEvent(QPaintEvent *evt){
-    // {{{ open
-    (void)evt;
-
-    QtPaintEngine e(this);
-    
-    drawImage(&e);
-    customPaintEvent(&e);
-    drawOSD(&e);
-  }
-
-  // }}}
-#endif
-  void ICLWidget::drawImage(PaintEngine *e){
-    // {{{ open
-    
-    if(!m_poImage || !m_poImage->getDim()) return;
-    int _w = w();
-    int _h = h();
-    Rect r(0,0,_w,_h);
-
-    m_oMutex.lock();
-    if(!op.on || !m_poImage){
-      e->fill(0,0,0,255);
-      e->rect(r);
-      e->color(255,255,255);
-      e->text(r,m_poImage ? "disabled" : "image is null", PaintEngine::Centered);
-      m_oMutex.unlock();
-      return;
-    }
-    switch(op.rm){
-      case rmOff:
-        e->bci();
-        break;
-      case rmOn:
-        e->bci(op.brightness,op.contrast,op.intensity);
-        break;
-      case rmAuto:
-        e->bciAuto();
-        break;
-    }
  
-    e->image( computeImageRect(m_poImage->getSize(),Size(w(),h()),op.fm) , m_poImage, PaintEngine::Justify);
-    m_oMutex.unlock();
-  }
-
-  // }}}
-
-  // }}}
-
-  // {{{ getImage<Info|Rect|Size>() up(), w() and h()
-
   std::vector<std::string> ICLWidget::getImageInfo(){
     // {{{ open
-
     std::vector<string> info;
     ImgBase* i = m_poImage;
     if(!i){
       info.push_back("Image is NULL");
       return info;
     }
-    info.push_back(string("depth:   ")+translateDepth(m_eRealInupuImagesDepth).c_str());
+    info.push_back(string("depth:   ")+translateDepth(m_poImage->getDepth()).c_str());
     info.push_back(string("size:    ")+QString::number(i->getSize().width).toLatin1().data()+" x "+
                    QString::number(i->getSize().height).toLatin1().data());
     info.push_back(string("channels:")+QString::number(i->getChannels()).toLatin1().data());
@@ -511,88 +461,39 @@ namespace icl{
   }
 
   // }}}
-
-  void ICLWidget::up(){  update(); }
-  int ICLWidget::w(){ return width(); }
-  int ICLWidget::h(){ return height(); }
-
   Size ICLWidget::getImageSize(){
     // {{{ open
-
     m_oMutex.lock();
     Size s;
     if(m_poImage){
       s = m_poImage->getSize(); 
     }else{
-      s = Size(w(),h());
+      s = Size(width(),height());
     }
     m_oMutex.unlock();
     return s;
   }
 
   // }}}
-
   Rect ICLWidget::getImageRect(){
     // {{{ open
 
-    return computeImageRect(getImageSize(),Size(w(),h()),op.fm);
+    return computeRect(getImageSize(),Size(width(),height()),m_eFitMode);
   }
 
   // }}}
-
-  // }}}
-
-  // {{{ private utility functions computeImageRect() and updateMouseInfo()
-
-  Rect ICLWidget::computeImageRect(Size oImageSize, Size oWidgetSize, fitmode eFitMode){
-    // {{{ open
-
-    int iImageW = oImageSize.width;
-    int iImageH = oImageSize.height;
-    int iW = oWidgetSize.width;
-    int iH = oWidgetSize.height;
-  
-    switch(eFitMode){
-      case fmNoScale:
-        // set up the image rect to be centered
-        return Rect((iW -iImageW)/2,(iH -iImageH)/2,iImageW,iImageH); 
-        break;
-      case fmHoldAR:{
-        // check if the image is more "widescreen" as the widget or not
-        // and adapt image-rect
-        float fWidgetAR = (float)iW/(float)iH;
-        float fImageAR = (float)iImageW/(float)iImageH;
-        if(fImageAR >= fWidgetAR){ //Image is more "widescreen" then the widget
-          float fScaleFactor = (float)iW/(float)iImageW;
-          return Rect(0,(iH-(int)floor(iImageH*fScaleFactor))/2,
-                      (int)floor(iImageW*fScaleFactor),(int)floor(iImageH*fScaleFactor));
-        }else{
-          float fScaleFactor = (float)iH/(float)iImageH;
-          return Rect((iW-(int)floor(iImageW*fScaleFactor))/2,0,
-                      (int)floor(iImageW*fScaleFactor),(int)floor(iImageH*fScaleFactor));
-        }
-        break;
-      }
-      case fmFit:
-        // the image is force to fit into the widget
-        return Rect(0,0,iW,iH);
-        break;
-    }
-    return Rect(0,0,iW,iH);
-  }
-
-  // }}}
-
   MouseInteractionInfo *ICLWidget::updateMouseInfo(MouseInteractionInfo::Type type){
     // {{{ open
+    if(!m_poImage) return &m_oMouseInfo;
     m_oMouseInfo.type = type;
     m_oMouseInfo.widgetX = m_iMouseX;
     m_oMouseInfo.widgetY = m_iMouseY;
     memcpy(m_oMouseInfo.downmask,aiDown,3*sizeof(int));
     
     m_oMutex.lock();
-    Rect r = computeImageRect(m_poImage->getSize(), Size(w(),h()), op.fm);
-    if(m_poImage && op.on && r.contains(m_iMouseX, m_iMouseY)){
+    Rect r = computeRect(m_poImage->getSize(), Size(width(),height()), m_eFitMode);
+    //if(m_poImage && op.on && r.contains(m_iMouseX, m_iMouseY)){
+    if(r.contains(m_iMouseX, m_iMouseY)){
       float boxX = m_iMouseX - r.x;
       float boxY = m_iMouseY - r.y;
       
@@ -638,8 +539,6 @@ namespace icl{
     m_oMutex.unlock();
     return &m_oMouseInfo;
   }
-
-  // }}}
 
   // }}}
 

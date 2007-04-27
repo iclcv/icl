@@ -80,6 +80,7 @@ public:
         w->write(image);
       }
       widget->update();
+      //   msleep(500);
     }
   }
   ICLWidget *widget;

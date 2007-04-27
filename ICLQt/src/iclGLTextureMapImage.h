@@ -6,7 +6,6 @@
 #include <iclSimpleMatrix.h>
 #include <iclTypes.h>
 #include <iclImg.h>
-
 namespace icl{
   
   /// Utility class for displaying images using OpenGLs texture mapping abilities
@@ -84,13 +83,19 @@ namespace icl{
     /// returns whether this GLTextureMapImage is compatible to a given image
     bool compatible(const Img<T> *image) const;
 
+    /// sets up current brightness contrast and intensity
+    /** if b=c=i=-1 then, brightness is adapted automatically */
+    void bci(int b=-1, int c=-1, int i=-1);
     private:
-    
-    /// internally used for debugging (TODO remove)
-    void setPackAlignment(depth d, int linewidth);
 
-    /// internally used for debugging (TODO remove)
-    void setUpPixelTransfer();
+    /// internally used for debugging (TODO remove and make glabal function)
+    static void setPackAlignment(depth d, int linewidth);
+
+    /// internally used for debugging (TODO remove and make glabal function)
+    void setUpPixelTransfer(depth d, float brightness, float constrast, float intensity, const ImgBase *image);
+
+    /// resets scale to 1  and bias to 0 for r,g,b and a channel (TODO remove and make glabal function)
+    void resetPixelTransfer();
 
     /// associated image width
     int m_iImageW;  
@@ -124,6 +129,10 @@ namespace icl{
     
     /// buffer for cell data (only one cell needs to be buffered at one time)
     T *m_ptCellData;
+
+    /// holds brightness contrast and intensity values
+    int m_aiBCI[3];
+    
   };
 }
 

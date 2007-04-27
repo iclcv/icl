@@ -36,6 +36,9 @@ namespace icl{
     By the introduction of the PaintEngine interface we got an additional abstraction
     layer that generalizes drawing commands like lines, rects, circles and images
     without regarding the underlying drawing mechanism like X11, DirectDraw or OpenGL.
+    Yet, Only the GLPaintEngine was hold, because:
+    - X11 is not plattform independent
+    - Qt is not fast enough for drawing images
 */
  class ICLDrawWidget : public ICLWidget {
     public:
@@ -44,7 +47,9 @@ namespace icl{
     
     /// creates a new ICLDrawWidget embedded into the parent component
     ICLDrawWidget(QWidget *parent);
-    virtual ~ICLDrawWidget(){}
+
+    /// destructor2
+    ~ICLDrawWidget();
 
     /// locks the state machine
     /** The state machine collects all draw commands in a command queue internally.

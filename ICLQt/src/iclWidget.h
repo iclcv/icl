@@ -1,18 +1,14 @@
 #ifndef ICLWIDGET_H
 #define ICLWIDGET_H
+#include <QGLWidget>
+#include <iclImgBase.h>
+#include <QMutex>
+
 
 #define NOMINMAX // needed for Win32 in order to not define min, max as macros
 
-#include <QGLWidget>
-#include <QWidget>
-#include <QImage>
-#include <QVector>
-#include <QWidget>
 #include <QMouseEvent>
 #include <QPaintEvent>
-#include <QFont>
-#include <QRect>
-#include <QColor>
 #include <QMutex>
 #include <iclConverter.h>
 #include <iclPaintEngine.h>
@@ -20,59 +16,170 @@
 #include <iclMouseInteractionInfo.h>
 #include <iclMouseInteractionReceiver.h>
 
-// comment out only if No acceleration is available
-// fall back is not yet implemented
-//#define USE_OPENGL_ACCELERATION
-
-
-#ifdef USE_OPENGL_ACCELERATION
-#else
-#endif
-
-
-
-
-
 namespace icl{
+
+  /** \cond */
+  class PaintEngine;
   class OSDWidget;
   class OSD;
   class OSDButton;
   class icl::ImgBase;
-
-#ifdef USE_OPENGL_ACCELERATION
-  typedef QGLWidget ParentWidgetClass;
-#else
-  typedef QWidget ParentWidgetClass;
-#endif  
+  /** \endcond */
   
-  /// Intern used class for openGL-based image visualisation componets, embedded into an ICLGuiModule
-  class ICLWidget : public ParentWidgetClass{
+  /// Intern used class for openGL-based image visualization components, embedded into an ICLGuiModule
+  /** The ICLWidget class provide basic abilities for displaying ICL images (ImgBase) on embedded 
+      Qt GUI components. Its is fitted out with a responsive OpenGL-Overlay On-Screen-Display (OSD),
+      which can be used to adapt some ICLWidget specific settings, and which is partitioned into several
+      sub menus:
+      - <b>adjust</b> here one can define image adjustment parameters via sliders, like brightness and
+        contrast. In addition, there are three different modes: <em>off</em> (no adjustments are 
+        preformed), <em>manual</em> (slider values are exploited) and <em>auto</em> (brightness 
+        and intensity are adapted automatically to exploit the full image range). <b>Note:</b> This time,
+        no intensity adaptions are implemented at all.
+      - <b>fitmode</b> Determines how the image is fit into the widget geometry (see enum 
+        ICLWidget::fitmode) 
+      - <b>channel selection</b> A slider can be used to select a single image channel that should be 
+        shown as gray image 
+      - <b>capture</b> Yet, just a single button is available to save the currently shown image into the
+        local directory 
+      - <b>info</b> shows information about the current image
+      - <b>menu</b> settings for the menu itself, like the alpha value or the color (very useful!)
+      
+      The following code (also available in <em>ICLQt/examples/camviewer_lite.cpp</em> demonstrates how
+      simple an ICLWidget can be used to create a simple USB Webcam viewer:
+      \code
+      
+\#include <iclWidget.h>
+\#include <iclDrawWidget.h>
+\#include <iclPWCGrabber.h>
+\#include <QApplication>
+\#include <QThread>
+\#include <iclTestImages.h>
+using namespace icl;
+using namespace std;
+
+
+// we need a working thread, which allows us to grab images
+// from the webcam asynchronously to Qts event loop
+
+class MyThread : public QThread{               
+public:
+  MyThread(){
+    widget = new ICLWidget(0);                // create the widget
+    widget->setGeometry(200,200,640,480);     // set up its geometry
+    widget->show();                           // show it
+    start();                                  // start the working loop (this will call the
+  }                                           //           run() function in an own thread)   
+  ~MyThread(){
+    exit();                                   // this will destroy the working thread
+    msleep(250);                              // wait till it is destroyed   
+    delete widget;
+  }
+  
+  virtual void run(){
+    PWCGrabber g(Size(320,240));              // create a grabber instance
+    while(1){                                 // enter the working loop
+      widget->setImage(g.grab());             // grab a new image from the grabber an give it to the widget
+      widget->update();                       // force qt to update the widgets user interface
+    }
+  }
+  private:
+  ICLWidget *widget;                          // internal widget object
+};
+
+
+int main(int nArgs, char **ppcArg){
+  QApplication a(nArgs,ppcArg);           // create a QApplication
+  MyThread x;                             // create the widget and thread
+  return a.exec();                        // start the QAppliations event loop
+}
+      
+      \endcode
+
+      When other things, like annotations should be drawn to the widget, you can either
+      create a new class that inherits the ICLWidget class, and reimplement the function:
+      \code
+      virtual void customPaintEvent(PaintEngine *e);
+      \endcode
+      or, you can use the extended ICLDrawWidget class, which enables you to give 2D draw
+      commands in image coordinates. (The last method is more recommended, as it should be
+      exactly what you want!!!)
+      @see ICLDrawWidget
+*/
+  class ICLWidget : public QGLWidget{
     Q_OBJECT
-    public slots:
-    void setImage(const ImgBase *poImage);
+    public:
+    /// determines how the image is fit into the widget geometry
+    enum fitmode{ 
+      fmNoScale,  /**< the image is not scaled it is centered to the image rect */
+      fmHoldAR,   /**< the image is scaled to fit into the image rect, but its aspect ratio is hold */
+      fmFit       /**< the image is fit into the frame ( this may change the images aspect ratio)*/
+    };
     
+    /// determines intensity adaption mode 
+    enum rangemode { 
+      rmOn = 1 ,  /**< range settings of the sliders are used */ 
+      rmOff = 2 , /**< no range adjustment is used */
+      rmAuto      /**< automatic range adjustment */ 
+    };   
+    
+    /// creates a new ICLWidget within the parent widget
+    ICLWidget(QWidget *parent=0);
+    
+    /// destructor
+    virtual ~ICLWidget();
+
+    /// GLContext initialization
+    virtual void initializeGL();
+    
+    /// called by resizeEvent to adapt the current GL-Viewport
+    virtual void resizeGL(int w, int h);
+    
+    /// draw function
+    virtual void paintGL();
+    
+    /// this function can be overwritten do draw additional misc using the given PaintEngine
+    virtual void customPaintEvent(PaintEngine *e);
+    
+    /// sets the current fitmode
+    void setFitMode(fitmode fm);
+    
+    /// sets the current rangemode
+    void setRangeMode(rangemode rm);
+    
+    /// set up current brightness, contrast and intensity adaption values
+    void setBCI(int brightness, int contrast, int intensity);
+
+    
+    /// returns the widgets size as icl::Size
+    Size getSize() { return Size(width(),height()); }
+    
+    /// returns the current images size
+    Size getImageSize();
+
+    /// returns the rect, that is currently used to draw the image into
+    Rect getImageRect();
+    
+    /// returns the current fitmode
+    fitmode getFitMode(){return m_eFitMode;}
+    
+    /// returns the current rangemode
+    rangemode getRangeMode(){return m_eRangeMode;}
+    
+    /// returns a list of image specification string (used by the OSD)
+    std::vector<std::string> getImageInfo();
+    
+    
+    public slots:
+    /// sets up the current image
+    void setImage(const ImgBase *image);
+
     signals:
+    /// invoked when any mouse interaction was performed
     void mouseEvent(MouseInteractionInfo *info);
 
+
     public:
-    enum fitmode   { fmFit = 0, 
-                     fmHoldAR = 1,
-                     fmNoScale = 2    };
-    
-    enum rangemode { rmOn = 1 ,  /**< range settings of the sliders are used */ 
-                     rmOff = 2 , /**< no range adjustment is used */
-                     rmAuto };   /**< automatic range adjustment */
-                    
-    
-    
-    
-    /// Constructor
-    ICLWidget(QWidget *poParent);
-    
-    /// Destructor
-    ~ICLWidget();
-    
-    /// Mouse-Event handling
     virtual void mousePressEvent(QMouseEvent *e);
     virtual void mouseReleaseEvent(QMouseEvent *e);
     virtual void mouseMoveEvent(QMouseEvent *e);
@@ -81,76 +188,52 @@ namespace icl{
     virtual void resizeEvent(QResizeEvent *e);
     virtual void childChanged(int id, void *val);
     
-#ifdef USE_OPENGL_ACCELERATION
-    /// drawing using openGL
-    virtual void paintGL();
-#else
-    virtual void paintEvent(QPaintEvent *e);
-#endif
-
-    /// additiona custom drawings (between image and osd)
-    virtual void customPaintEvent(PaintEngine *e){(void)e;}
-    /// final drawing of the osd
-    void drawOSD(PaintEngine *e);
-    
-    struct Options{
-      fitmode fm;
-      rangemode rm;
-      bool on;
-      int c;
-      int brightness;
-      int contrast;
-      int intensity;
-    };
-
-    // calls update
-    void up();
-    
-    // returns the width of the widget
-    int w();
-
-    // returns the height of the widget
-    int h();
-
-    // sets the current fitmode
-    void setFitMode(fitmode fm){ op.fm = fm; }
-    // sets the current rangemode
-    void setRangeMode(rangemode rm){ op.rm = rm; }
-    /// returns the current image size of the widget size if the image is null
-    Size getImageSize();
-    /// returns the current image rect
-    Rect getImageRect();
-    fitmode getFitMode(){return op.fm;}
-    std::vector<std::string> getImageInfo();
-    
-    protected:
-    /// sets up all 3 gl channels to given bias and scale
-    Rect computeImageRect(Size oImageSize, Size oWidgetSize, fitmode eFitMode);
-
-
-    void drawImage(PaintEngine *e);
-    
     private:
-
-    // help function for creating the current mouse interactio info
-    MouseInteractionInfo *updateMouseInfo(MouseInteractionInfo::Type type);
-    MouseInteractionInfo m_oMouseInfo;
-   
-    Options op;
-    QMutex m_oMutex, m_oOSDMutex;
-
+    /// internal image buffer
     ImgBase *m_poImage;
-    icl::depth m_eRealInupuImagesDepth;
     
+    /// mutex for the internal image buffer
+    QMutex m_oMutex;
+    
+    /// mutex for the OSD
+    QMutex m_oOSDMutex;
+    
+    /// current fitmode
+    fitmode m_eFitMode;
+    
+    /// current rangemode
+    rangemode m_eRangeMode;
+    
+    /// current brightness,contrast and intensity values
+    int m_aiBCI[3];
+
+    /// current OSD
     OSDWidget *m_poOSD;
+    
+    /// current button to show the whole OSD
     OSDWidget *m_poCurrOSD;
+    
+    /// currently shown ODS (one of the two above)
     OSDButton *m_poShowOSD;
-
+    
+    /// internal storage for the mouse button state (order: left, middle, right; 0=up, 1=down)
     int aiDown[3];
+    
+    /// current mouse position
     int m_iMouseX, m_iMouseY;
-
+    
+    /// event id for the show-ODS button
     static const int SHOW_OSD_ID = 123456;
+    
+    /// currently selected channel
+    int m_iCurrSelectedChannel;
 
+    /// prepares the current MouseInteractionInfo struct for being emitted
+    MouseInteractionInfo *updateMouseInfo(MouseInteractionInfo::Type type);
+    
+    /// mouse interaction info storage
+    MouseInteractionInfo m_oMouseInfo;
   };
+  
 }
 #endif

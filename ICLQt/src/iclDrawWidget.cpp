@@ -382,15 +382,22 @@ namespace icl{
     m_poState->aa = false;
     m_poState->rel = false;
     m_poState->rect = getImageRect();
-    m_poState->size = Size(w(),h());
+    m_poState->size = Size(width(),height());
     m_poState->imsize = getImageSize();
     m_poState->symsize = QSizeF(5,5);
     
     memset(m_poState->bg,0,4*sizeof(unsigned char));
+
   }
 
     // }}}
-  
+  ICLDrawWidget::~ICLDrawWidget(){
+    lock();
+    reset();
+    if(m_poState)delete m_poState;
+    unlock();
+  }
+
   // {{{ commands: line, sym, rel, ...
   void ICLDrawWidget::image(ImgBase *image,float x, float y, float w, float h){
     m_vecCommands.push_back(new ImageCommand(image,x,y,w,h));
@@ -455,6 +462,7 @@ namespace icl{
 
   void ICLDrawWidget::initializeCustomPaintEvent(PaintEngine *e){
     // {{{ open
+    (void)e;
   }
 
     // }}}
@@ -471,7 +479,7 @@ namespace icl{
     m_poState->aa = false;
     m_poState->rel = false;
     m_poState->rect = getImageRect();
-    m_poState->size = Size(w(),h());
+    m_poState->size = Size(width(),height());
     m_poState->imsize = getImageSize();
     m_poState->symsize = QSizeF(5,5);
     memset(m_poState->bg,0,4*sizeof(unsigned char));

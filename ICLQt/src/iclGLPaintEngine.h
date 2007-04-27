@@ -10,7 +10,7 @@
 class QGLWidget;
 
 namespace icl{
-
+  
   /// Paint engine to be used in QGLWigets for a high performance image visualization
   /** The GLPaintEngine provides a QPainter like interface for drawing
       2D-OpenGL primitives directly into a OpenGL graphics context. 
@@ -26,7 +26,7 @@ namespace icl{
   */
   class GLPaintEngine : public PaintEngine{
     public:
-
+    
     GLPaintEngine(QGLWidget *widget);
     virtual ~GLPaintEngine();
     

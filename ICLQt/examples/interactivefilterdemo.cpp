@@ -14,21 +14,26 @@ using namespace std;
 class MyThread : public QThread, public MouseInteractionReceiver{
 public:
   MyThread():widget(new ICLDrawWidget(0)),
-             grabber(new PWCGrabber(Size(640,480))),
-             x(-1),y(-1),r(0),g(0),b(0),
-             k(ConvolutionOp::kernelGauss3x3),sKernel("gauss")
-  {
+             grabber(new PWCGrabber(Size(640,480))) {
     grabber->setDesiredSize(Size(640,480));
     widget->setGeometry(200,200,640,480);
     widget->show();
     QThread::connect((ICLDrawWidget*)widget,SIGNAL(mouseEvent(MouseInteractionInfo*)),
                      (MouseInteractionReceiver*)this,SLOT(mouseInteraction(MouseInteractionInfo*)));
+
+    x = -1;
+    y = -1;
+    r = g = b = 0; 
+    k = ConvolutionOp::kernelGauss3x3;
+    sKernel = "gauss";
+    return;
   }
   
   virtual void run(){
     while(1){
       const ImgBase *grabbedImage = grabber->grab();
       widget->setImage(grabbedImage);
+
       if(x>0){ // else no mouse event has been recognized yet
         widget->lock();
         widget->reset();
@@ -61,11 +66,11 @@ public:
         widget->fill(r,g,b,200);
         char ac[100];
         sprintf(ac,"color(%d,%d,%d)",r,g,b);
-        widget->text(ac,x-90,y+100);
+        widget->text(ac,x-90,y+120);
         sprintf(ac,"pos(%d,%d)",x,y);
-        widget->text(ac,x-90,y+90);
-        widget->text(sKernel,x-90,y+80);
-        widget->text("(click!)",x+60,y+100);
+        widget->text(ac,x-90,y+110);
+        widget->text(sKernel,x-90,y+100);
+        widget->text("(click!)",x+60,y+120);
 
         widget->unlock();
       }

@@ -4,33 +4,66 @@
 #include <QFontMetrics>
 #include <QPainter>
 #include <iclMathematics.h>
-
+#include <iclCC.h>
+#include <iclGLTextureMapBaseImage.h>
 
 using std::string; using std::min;
 
 namespace icl{
 
+  namespace{
+    Rect computeRect(const Rect &rect, const Size &imageSize, PaintEngine::AlignMode mode){
+      // {{{ open
+
+      switch(mode){
+        case PaintEngine::NoAlign: return Rect(rect.x, rect.y, imageSize.width, imageSize.height);
+        case PaintEngine::Centered: {
+          int cx  = rect.x+rect.width/2;
+          int cy  = rect.y+rect.height/2;
+          return Rect(cx-imageSize.width/2,cy-imageSize.height/2,imageSize.width,imageSize.height);
+        }
+        default:  return rect;
+      }
+    }
+
+    // }}}
+ 
+    inline float winToDraw(float x, float w) { return (2/w) * x -1; }  
+    inline float drawToWin(float x, float w) { return (w/2) * x + (w/2); } 
+  }
+
   GLPaintEngine::GLPaintEngine(QGLWidget *widget):
     // {{{ open
-
     m_poWidget(widget),m_bBCIAutoFlag(false), m_oFont(QFont("Arial",30)),
     m_poImageBufferForIncompatibleDepth(0){
     
     widget->makeCurrent();
     
     glMatrixMode(GL_MODELVIEW);
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
-    QSize sz(widget->size());
-    glViewport(0, 0, sz.width(), sz.height());
+    glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    //glClearColor(0.0, 0.0, 0.0, 1.0);
+    //glClearColor (0.0, 0.0, 0.0, 0.0);
+    
+    //glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
+    
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, sz.width(), sz.height(), 0, -999999, 999999);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
+    //    QSize sz(widget->size());
+    //    glViewport(0, 0, sz.width(), sz.height());
+
+    glOrtho(0, widget->width(), widget->height(), 0, -999999, 999999);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glEnable(GL_BLEND);
+    //glDisable(GL_DEPTH_TEST); 
+    //glEnable(GL_DEPTH_TEST); 
+    //glShadeModel(GL_FLAT);
+    //glEnable(GL_DEPTH_TEST);
+
+
 
     memset(m_afFillColor,0,3*sizeof(float));
     for(int i=0;i<4;m_afLineColor[i++]=255);
@@ -41,7 +74,12 @@ namespace icl{
   GLPaintEngine::~GLPaintEngine(){
     // {{{ open
     if(m_poImageBufferForIncompatibleDepth) delete m_poImageBufferForIncompatibleDepth;
-    glFlush();
+
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+
   } 
 
   // }}}
@@ -106,106 +144,35 @@ namespace icl{
   }
 
   // }}}
-  void GLPaintEngine::image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode){
-    // {{{ open
-    Size s = image->getSize();
-    setupRasterEngine(r,s,mode);
-    setPackAlignment(image->getDepth(),s.width);
-   
-    if(!m_bBCIAutoFlag){
-      setupPixelTransfer(image->getDepth(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
-    }else{
-      // automatic adjustment of brightness and contrast
-      icl64f dScaleRGB,dBiasRGB;
-      // auto adaption
-      Range<icl64f> r = image->getMinMax();
-      icl64f l = r.getLength();
-      switch (image->getDepth()){
-        case depth8u:{
-          dScaleRGB  = l ? 255.0/l : 255;
-          dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
-          break;
-        }
-        case depth16s:{
-          static const icl64f _max = (65536/2-1);
-          dScaleRGB  = l ? _max/l : _max;
-          dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
-          break;
-        }
-        case depth32s:{ // drawn as float
-          dScaleRGB  = l ? 255.0/l : 255;
-          dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
-          // if not working properly: dBiasRGB /= 255.0
-          break;
-        }
-        case depth32f:{
-          dScaleRGB  = l ? 255.0/l : 255;
-          dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
-          dScaleRGB /= 255.0;
-          break;
-        }
-        case depth64f:{ // drawn as float
-          dScaleRGB  = l ? 255.0/l : 255;
-          dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
-          dScaleRGB /= 255.0;
-          break;
-        }
-        default:
-          ICL_INVALID_FORMAT;
-          break;
-      }
-      glPixelTransferf(GL_RED_SCALE,float(dScaleRGB));
-      glPixelTransferf(GL_GREEN_SCALE,float(dScaleRGB));
-      glPixelTransferf(GL_BLUE_SCALE,float(dScaleRGB));
-      glPixelTransferf(GL_RED_BIAS,float(dBiasRGB));
-      glPixelTransferf(GL_GREEN_BIAS,float(dBiasRGB));
-      glPixelTransferf(GL_BLUE_BIAS,float(dBiasRGB));
-    }
-  
-    // old
-    // GLenum datatype = image->getDepth() == depth8u ? GL_UNSIGNED_BYTE : GL_FLOAT; // TODO_depth
-    // end old
-    GLenum datatype(GL_UNSIGNED_BYTE);
-    switch(image->getDepth()){
-      case depth8u: datatype = GL_UNSIGNED_BYTE; break;
-      case depth16s: datatype = GL_SHORT; break;
-      case depth32s:
-      case depth32f:
-      case depth64f: datatype = GL_FLOAT; break;
-    }
-    static GLenum CHANNELS[4] = {GL_RED,GL_GREEN,GL_BLUE,GL_ALPHA};
-    
-    ImgBase *drawImage=image;
 
-    if(image->getDepth() == depth32s || image->getDepth() == depth64f){
-      // use fallback image conversion before drawing, as "int" and "double" are not supported yet
-      ensureCompatible(&m_poImageBufferForIncompatibleDepth,depth32f,image->getParams());
-      drawImage = m_poImageBufferForIncompatibleDepth;
-      image->convert(drawImage->asImg<icl32f>());
-    }
-    
-    if(drawImage->getChannels() > 1){ 
-      for(int i=0;i<4 && i<drawImage->getChannels();i++){
-        glColorMask(i==0,i==1,i==2,i==3);
-        glDrawPixels(s.width,s.height,CHANNELS[i],datatype,drawImage->getDataPtr(i));
-      }
-      glColorMask(1,1,1,1);
-    }else if(drawImage->getChannels() > 0){
-      glColorMask(1,1,1,0);
-      glDrawPixels(s.width,s.height,GL_LUMINANCE,datatype,drawImage->getDataPtr(0));
-    }
-  }
-
-  // }}}
   void GLPaintEngine::image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode){
     // {{{ open
-    setupPixelTransfer(depth8u,m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
-    glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-    setupRasterEngine(r, Size(image.width(),image.height()),mode);
-    glDrawPixels(image.width(),image.height(),GL_RGBA,GL_UNSIGNED_BYTE,image.bits());
+
+    Img8u buf;    
+    if(image.format()==QImage::Format_Indexed8){
+      buf = Img8u(Size(image.width(),image.height()),formatGray);
+    }else{
+      buf = Img8u(Size(image.width(),image.height()),4);
+    }
+    interleavedToPlanar(image.bits(),&buf);
+    this->image(r,&buf,mode);
   }
 
   // }}}
+
+  void GLPaintEngine::image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode){
+    // {{{ open
+
+    ICLASSERT_RETURN(image);
+    glColor4f(1,1,1,1);
+    GLTextureMapBaseImage texmapImage;
+    texmapImage.bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
+    texmapImage.updateTextures(image);
+    texmapImage.drawTo(computeRect(r,image->getSize(),mode), Size(m_poWidget->width(),m_poWidget->height()));
+  }
+
+  // }}}
+
   void GLPaintEngine::rect(const Rect &r){
     // {{{ open
 
@@ -270,24 +237,24 @@ namespace icl{
     painter.setPen(QColor( (int)(m_afLineColor[2]*255),
                            (int)(m_afLineColor[1]*255),
                            (int)(m_afLineColor[0]*255),
-						   min (254, (int)(m_afLineColor[3]*255)) ));
+                           min (254, (int)(m_afLineColor[3]*255)) ));
    
     painter.drawText(QPoint(1,img.height()-m.descent()-1),text.c_str());
     painter.end();
     
-    setupPixelTransfer(depth8u,0,0,0);
-    glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-    
-
-    if(mode == PaintEngine::NoAlign){
-      // specialized for no alligned text rendering: 2*img.height() makes the text origin be
-      // lower left and not upper left [??]
-      setupRasterEngine(Rect(r.x,r.y,img.width(),2*img.height()), Size(img.width(),img.height()),mode);
-    }else{
-      setupRasterEngine(r, Size(img.width(),img.height()),mode);
-    }
-    
-    glDrawPixels(img.width(),img.height(),GL_RGBA,GL_UNSIGNED_BYTE,img.bits());
+    image(r,img,mode);
+    /*
+        setupPixelTransfer(depth8u,0,0,0);
+        glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+        if(mode == PaintEngine::NoAlign){
+        // specialized for no alligned text rendering: 2*img.height() makes the text origin be
+        // lower left and not upper left [??]
+        setupRasterEngine(Rect(r.x,r.y,img.width(),2*img.height()), Size(img.width(),img.height()),mode);
+        }else{
+        setupRasterEngine(r, Size(img.width(),img.height()),mode);
+        }
+        glDrawPixels(img.width(),img.height(),GL_RGBA,GL_UNSIGNED_BYTE,img.bits());
+    */
   }
 
   // }}}

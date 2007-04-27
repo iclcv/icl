@@ -13,6 +13,7 @@ _DOT_DOT:=../${_DOT_DOT}
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
 include ${PACKAGES}/Unicap
+include ${PACKAGES}/ICLQuick
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -34,7 +35,7 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES}
 REL_LIBRARIES:= $(REL_LIBRARIES:-L%=-L../%) \
 	 -L../../ICLIO/lib -lICLIO \
 	 -L../../ICLQt/lib -lICLQt \
-	 -L../../ICLFilter/lib -lICLFilter
+	 -L../../ICLFilter/lib -lICLFilter -lglut
 
 # Please add here all the objects with absolute path
 # that are needed by the executables.
