@@ -755,7 +755,7 @@ namespace icl{
       }
       int dstH = src->getHeight();
       Img<D> tmpDstImage(Size(dstW,dstH),formatMatrix,dstDataVec);
-      tmpDstImage.setROI(Rect(Point::null,src->getSize()));
+      tmpDstImage.setROI(Rect(Point::null,src->getROISize()));
       src->convertROI(&tmpDstImage);
     }
     return;

@@ -414,8 +414,8 @@ namespace icl{
     if(!inited){
       static icl8u mask[9] = {1,1,1,1,1,1,1,1,1};
       static Size s3x3(3,3);
-      M["sobelx"] = new ConvolutionOp(ConvolutionOp::kernelSobelX3x3);
-      M["sobely"] = new ConvolutionOp(ConvolutionOp::kernelSobelY3x3);
+      M["sobely"] = new ConvolutionOp(ConvolutionOp::kernelSobelX3x3);
+      M["sobelx"] = new ConvolutionOp(ConvolutionOp::kernelSobelY3x3);
       M["gauss"] = new ConvolutionOp(ConvolutionOp::kernelGauss3x3);
       M["laplace"] = new ConvolutionOp(ConvolutionOp::kernelLaplace3x3);
       M["median"] = new MedianOp(Size(3,3));
