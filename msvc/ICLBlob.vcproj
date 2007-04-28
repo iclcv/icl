@@ -82,6 +82,7 @@
 			ConfigurationType="4"
 			InheritedPropertySheets=".\ICL Release.vsprops"
 			CharacterSet="1"
+			ManagedExtensions="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -101,12 +102,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;WITH_IPP_OPTIMIZATION;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4244; 4267; 4661"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
