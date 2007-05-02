@@ -146,6 +146,17 @@ namespace icl{
     if(m_po32f) return m_po32f->getColor(x,y);
     return std::vector<icl32f>();
   }
+
+  ImgBase *GLTextureMapBaseImage::deepCopy() const{
+    ImgBase *image = 0;
+    if(m_po8u) image = m_po8u->deepCopy();
+    if(m_po16s) image = m_po16s->deepCopy();
+    if(m_po32s) image = m_po32s->deepCopy();
+    if(m_po32f) image = m_po32f->deepCopy();
+    if(image) image->setFormat(m_oCurrentImageParams.getFormat());
+    return image;
+  }
+
   
   Range<icl32f> GLTextureMapBaseImage::getMinMax(int channel) const{
     if(m_po8u)return m_po8u->getMinMax(channel).castTo<icl32f>();

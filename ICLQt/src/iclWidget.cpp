@@ -6,6 +6,7 @@
 #include <iclOSD.h>
 #include <string>
 #include <vector>
+#include <iclTime.h>
 
 using namespace std;
 namespace icl{
@@ -363,7 +364,12 @@ namespace icl{
         }
         m_oMutex.unlock();  
         if(buf){
-          FileWriter("./image-snapshot.ppm").write(buf);
+          string t = Time::now().toString();
+          for(unsigned int i=0;i<t.length();i++){
+            if(t[i]=='/')t[i]='.';
+            if(t[i]==' ')t[i]='_';
+          }
+          FileWriter(string("./snapshot_[")+t+string("].pnm")).write(buf);
           delete buf;
         }
         break;

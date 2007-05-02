@@ -1,6 +1,7 @@
 #include <iclDrawWidget.h>
 #include <iclPaintEngine.h>
 #include <iclImgBase.h>
+#include <iclGLTextureMapBaseImage.h>
 
 using std::string;
 namespace icl{
@@ -206,6 +207,7 @@ namespace icl{
 
   // }}}
 
+  /** old 
   class ImageCommand : public DrawCommand4F{
     // {{{ open
 
@@ -224,7 +226,28 @@ namespace icl{
   };
 
   // }}}
- 
+  **/
+  class ImageCommand : public DrawCommand4F{
+    // {{{ open
+
+  public:
+    ImageCommand(ImgBase *image, float x, float y, float w, float h):
+      DrawCommand4F(x,y,w,h){
+      m_poImage = new GLTextureMapBaseImage(image,false);
+    }
+    virtual ~ImageCommand(){
+      if(m_poImage)delete m_poImage;
+    }
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      (void)e;
+      m_poImage->drawTo(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),s->imsize);
+    }
+    GLTextureMapBaseImage *m_poImage;
+  };
+
+  // }}}
+
+
   class TextCommand : public DrawCommand4F{
     // {{{ open
 

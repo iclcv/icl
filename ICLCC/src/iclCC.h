@@ -392,9 +392,13 @@ namespace icl{
   void planarToInterleaved(const Img<S> *src, D* dst, int dstLineStep=-1);
   
   /// Converts interleaved image data into planar representation 
-  /** The source data is transformed into the destination images ROI */
+  /** The source data is transformed into the destination images ROI 
+      @param src data pointer
+      @param dst image pointer
+      @param optionally given src linestep size
+  */
   template<class S, class D>
-  void interleavedToPlanar(const S *src, Img<D> *dst);
+  void interleavedToPlanar(const S *src, Img<D> *dst, int srcLineStep=-1);
 
 }
 

@@ -812,12 +812,17 @@ namespace icl{
   // }}}
   
   template<class S, class D>
-  inline void interleavedToPlanar_Generic(const S *src,  Img<D> *dst){
+  inline void interleavedToPlanar_Generic(const S *src,  Img<D> *dst, int srcLineStep){
     // {{{ open
     
     FUNCTION_LOG("");
     ICLASSERT_RETURN(src);
     ICLASSERT_RETURN(dst);
+    
+    if(srcLineStep != -1){
+      ERROR_LOG("interleavedToPlanar_Generic is not yet implemented for a special src line step !\n");
+      return;
+    }
     int c = dst->getChannels();
     Size srcSize= dst->getSize();
     if(c==1){
@@ -869,8 +874,8 @@ namespace icl{
   }
   
   template<class S, class D>
-  void interleavedToPlanar(const S *src, Img<D> *dst){
-    interleavedToPlanar_Generic(src,dst);
+  void interleavedToPlanar(const S *src, Img<D> *dst, int srcLineStep){
+    interleavedToPlanar_Generic(src,dst, srcLineStep);
   }
   
 #ifdef WITH_IPP_OPTIMIZATION
@@ -910,28 +915,30 @@ namespace icl{
 
   // {{{ INTERLEAVED_2_PLANAR_IPP
 
-#define INTERLEAVED_2_PLANAR_IPP(DEPTH)                                                                                         \
-  template<> void interleavedToPlanar(const icl##DEPTH *src, Img<icl##DEPTH> *dst){                                             \
-    ICLASSERT_RETURN( src );                                                                                                    \
-    ICLASSERT_RETURN( dst );                                                                                                    \
-    int srcChannels = dst->getChannels();                                                                                       \
-    ICLASSERT_RETURN( srcChannels );                                                                                            \
-    Size srcSize = dst->getROISize();                                                                                           \
-    switch(srcChannels){                                                                                                        \
-      case 3: {                                                                                                                 \
-        icl##DEPTH* apucChannels[3]={dst->getROIData(0),dst->getROIData(1),dst->getROIData(2)};                                 \
-        ippiCopy_##DEPTH##_C3P3R(src,srcSize.width*srcChannels,apucChannels,srcSize.width,srcSize);                             \
-        break;                                                                                                                  \
-      }                                                                                                                         \
-      case 4: {                                                                                                                 \
-        icl##DEPTH* apucChannels[4]={dst->getROIData(0),dst->getROIData(1),dst->getROIData(2),dst->getROIData(3)};              \
-        ippiCopy_##DEPTH##_C4P4R(src,srcSize.width*srcChannels,apucChannels,srcSize.width,srcSize);                             \
-        break;                                                                                                                  \
-      }                                                                                                                         \
-      default:                                                                                                                  \
-        interleavedToPlanar_Generic(src,dst);                                                                                   \
-        break;                                                                                                                  \
-    }                                                                                                                           \
+#define INTERLEAVED_2_PLANAR_IPP(DEPTH)                                                                               \
+  template<> void interleavedToPlanar(const icl##DEPTH *src, Img<icl##DEPTH> *dst, int srcLineStep){                  \
+    ICLASSERT_RETURN( src );                                                                                          \
+    ICLASSERT_RETURN( dst );                                                                                          \
+    int c = dst->getChannels();                                                                                       \
+    ICLASSERT_RETURN( c );                                                                                            \
+    Size s = dst->getROISize();                                                                                       \
+    int dstStep = dst->getLineStep();                                                                                 \
+    int srcStep = (srcLineStep == -1) ? c*s.width*sizeof(icl##DEPTH) : srcLineStep;                                   \
+    switch(c){                                                                                                        \
+      case 3: {                                                                                                       \
+        icl##DEPTH* apucChannels[3]={dst->getROIData(0),dst->getROIData(1),dst->getROIData(2)};                       \
+        ippiCopy_##DEPTH##_C3P3R(src,srcStep,apucChannels,dstStep,s);                                                 \
+        break;                                                                                                        \
+      }                                                                                                               \
+      case 4: {                                                                                                       \
+        icl##DEPTH* apucChannels[4]={dst->getROIData(0),dst->getROIData(1),dst->getROIData(2),dst->getROIData(3)};    \
+        ippiCopy_##DEPTH##_C4P4R(src,srcStep,apucChannels,dstStep,s);                                                 \
+        break;                                                                                                        \
+      }                                                                                                               \
+      default:                                                                                                        \
+        interleavedToPlanar_Generic(src,dst,srcLineStep);                                                             \
+        break;                                                                                                        \
+    }                                                                                                                 \
   }
   INTERLEAVED_2_PLANAR_IPP(8u)
   INTERLEAVED_2_PLANAR_IPP(16s)
@@ -947,7 +954,7 @@ namespace icl{
 
 #define EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,TYPEB)                            \
   template void planarToInterleaved<TYPEB,TYPEA>(const Img<TYPEB>*,TYPEA*,int);             \
-  template void interleavedToPlanar<TYPEA,TYPEB>(const TYPEA*,Img<TYPEB>*)
+  template void interleavedToPlanar<TYPEA,TYPEB>(const TYPEA*,Img<TYPEB>*,int)
 
   EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl16s);
   EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl32s);

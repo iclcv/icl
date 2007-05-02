@@ -81,8 +81,8 @@ namespace icl{
     /// sets if the wrapped images are created with single or multi buffer 
     void setSingleBufferMode(bool useSingleBuffer);
     
-    
-    ImgBase *deepCopy(){ printf("todo implement a deep copy here! \n");return 0; }
+    /// creates a snapshot of the current buffered image (multi buffer mode only 
+    ImgBase *deepCopy() const;
     private:
     /// creates an image with valid channel count 1 or 3
     /** - images with 0 channels are invalid

@@ -311,6 +311,21 @@ namespace icl{
 
   // }}}
 
+  template<class T>
+  Img<T> *GLTextureMapImage<T>::deepCopy() const{
+    if(m_bUseSingleBuffer){
+      return 0;
+    }
+    Img<T> *image = new Img<T>(Size(m_iImageW,m_iImageH), m_iChannels);
+    for(int y=0;y<m_iYCells;++y){
+      for(int x=0;x<m_iXCells;++x){
+        image->setROI(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes[x][y]));
+        interleavedToPlanar(m_matCellData[x][y],image,m_iCellSize*m_iChannels*sizeof(T));
+      }
+    }
+    return image;
+  }
+  
   namespace{
     inline float winToDraw(float x, float w) { return (2/w) * x -1; }  
     inline float drawToWin(float x, float w) { return (w/2) * x + (w/2); } 
