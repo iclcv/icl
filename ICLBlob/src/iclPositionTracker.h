@@ -192,6 +192,8 @@ namespace icl{
   class PositionTracker{
     public:
     /// most common function, adds a new data row, and causes all internal computation (see above)
+    /** @param xys data vector with xyxy.. data order 
+        @param n count of xy-pairs in xys (xys.length/2)*/
     void pushData(valueType *xys, int n);
 
     /// as above
