@@ -50,8 +50,8 @@ int main(int nargs, char **ppc){
     pix(B,boundaries[i]);
   }
 
-  color(255,0,0);
-  fill(255,0,0,200);
+  color(0,255,0,200);
+//  fill(255,0,0,200);
   for(int o=0;o<5;o++){
     circle(B,3*o+100,20*o+10,50);
   }

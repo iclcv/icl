@@ -987,9 +987,10 @@ namespace icl{
     QPainter painter(&img);
     painter.setPen(QColor(255,255,255,254));
 		painter.setBrush(QColor(255, 255, 255, 254));
-		painter.drawEllipse(QRectF(xoffs - radius, yoffs - radius, xoffs + radius, yoffs + radius));
+		painter.drawEllipse(QRectF(0, 0, radius * 2, radius * 2));
     painter.end();
     
+		// then transfer the rendered image into the given image
     QImageConverter qic(&img);
     const Img8u &t = *(qic.getImg<icl8u>());
     for(int c=0;c<image.getChannels() && c<3; ++c){

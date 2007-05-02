@@ -502,7 +502,7 @@ namespace icl{
   template<class valueType>
   int PositionTracker<valueType>::getID(int index){
     // {{{ open
-    if(index > 0 && index < (int)m_vecCurrentAssignment.size()){
+    if(index >= 0 && index < (int)m_vecCurrentAssignment.size()){
       return m_vecIDs[ m_vecCurrentAssignment[index] ];
     }else{
       return -1;
