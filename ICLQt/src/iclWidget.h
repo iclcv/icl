@@ -24,6 +24,7 @@ namespace icl{
   class OSD;
   class OSDButton;
   class icl::ImgBase;
+  class GLTextureMapBaseImage;
   /** \endcond */
   
   /// Intern used class for openGL-based image visualization components, embedded into an ICLGuiModule
@@ -190,7 +191,7 @@ int main(int nArgs, char **ppcArg){
     
     private:
     /// internal image buffer
-    ImgBase *m_poImage;
+    GLTextureMapBaseImage *m_poImage;
     
     /// mutex for the internal image buffer
     QMutex m_oMutex;

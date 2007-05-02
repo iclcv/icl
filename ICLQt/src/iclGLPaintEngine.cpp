@@ -43,29 +43,27 @@ namespace icl{
     glPushMatrix();
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
-    //glClearColor(0.0, 0.0, 0.0, 1.0);
-    //glClearColor (0.0, 0.0, 0.0, 0.0);
     
-    //glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    //    QSize sz(widget->size());
-    //    glViewport(0, 0, sz.width(), sz.height());
-
+   
     glOrtho(0, widget->width(), widget->height(), 0, -999999, 999999);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glEnable(GL_BLEND);
-    //glDisable(GL_DEPTH_TEST); 
-    //glEnable(GL_DEPTH_TEST); 
-    //glShadeModel(GL_FLAT);
-    //glEnable(GL_DEPTH_TEST);
+   
 
+    glPixelTransferf(GL_ALPHA_SCALE,1);
+    glPixelTransferf(GL_RED_SCALE,1);
+    glPixelTransferf(GL_GREEN_SCALE,1);
+    glPixelTransferf(GL_BLUE_SCALE,1);
+    glPixelTransferf(GL_ALPHA_BIAS,0);
+    glPixelTransferf(GL_RED_BIAS,0);
+    glPixelTransferf(GL_GREEN_BIAS,0);
+    glPixelTransferf(GL_BLUE_BIAS,0);
 
-
-    memset(m_afFillColor,0,3*sizeof(float));
+    
+    memset(m_afFillColor,0,4*sizeof(float));
     for(int i=0;i<4;m_afLineColor[i++]=255);
     memset(m_aiBCI,0,3*sizeof(int));
   }
@@ -74,7 +72,6 @@ namespace icl{
   GLPaintEngine::~GLPaintEngine(){
     // {{{ open
     if(m_poImageBufferForIncompatibleDepth) delete m_poImageBufferForIncompatibleDepth;
-
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);

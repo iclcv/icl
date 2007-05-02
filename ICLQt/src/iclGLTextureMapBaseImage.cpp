@@ -36,6 +36,16 @@ namespace icl{
     SAVE_DEL(m_po32f);
     SAVE_DEL(m_poChannelBuf);    
   }
+
+  void GLTextureMapBaseImage::setSingleBufferMode(bool useSingleBuffer){
+    if(useSingleBuffer!=m_bUseSingleBuffer){
+      m_bUseSingleBuffer  = useSingleBuffer;
+      SAVE_DEL(m_po8u);
+      SAVE_DEL(m_po16s);
+      SAVE_DEL(m_po32s);
+      SAVE_DEL(m_po32f);
+    }
+  }
   
   const ImgBase *GLTextureMapBaseImage::adaptChannels(const ImgBase *image){
     ICLASSERT_RETURN_VAL(image && image->getChannels(), 0);
@@ -58,16 +68,19 @@ namespace icl{
   void GLTextureMapBaseImage::updateTextures(const ImgBase *imageIn){
     const ImgBase *image = adaptChannels(imageIn);
     ICLASSERT_RETURN(image);
+
+    m_oCurrentImageParams = imageIn->getParams();
+    Size s = image->getSize();
     
-#define APPLY_FOR(D)                                                                                                      \
-        if(m_po##D && !(m_po##D->compatible(image->asImg<icl##D>()))){                                                    \
-          SAVE_DEL(m_po##D);                                                                                              \
-        }                                                                                                                 \
-        if(!m_po##D){                                                                                                     \
-          m_po##D = new GLTextureMapImage<icl##D>(image->getSize(),image->getChannels(), getCellSize(image->getSize()));  \
-          m_po##D->bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);                                                                 \
-        }                                                                                                                 \
-        m_po##D->updateTextures(image->asImg<icl##D>());                                                                  \
+#define APPLY_FOR(D)                                                                                          \
+        if(m_po##D && !(m_po##D->compatible(image->asImg<icl##D>()))){                                        \
+          SAVE_DEL(m_po##D);                                                                                  \
+        }                                                                                                     \
+        if(!m_po##D){                                                                                         \
+          m_po##D = new GLTextureMapImage<icl##D>(s,m_bUseSingleBuffer,image->getChannels(),getCellSize(s));  \
+          m_po##D->bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);                                                     \
+        }                                                                                                     \
+        m_po##D->updateTextures(image->asImg<icl##D>());                                                      \
         break;                                                                                                                  
     
     switch(image->getDepth()){
@@ -101,13 +114,48 @@ namespace icl{
     }    
   }
   
-  Size GLTextureMapBaseImage::getImageSize(){
-    if(m_po8u)return Size (m_po8u->getImageWidth(), m_po8u->getImageHeight());
-    if(m_po16s)return Size (m_po16s->getImageWidth(), m_po16s->getImageHeight());
-    if(m_po32s)return Size (m_po32s->getImageWidth(), m_po32s->getImageHeight());
-    if(m_po32f)return Size (m_po32f->getImageWidth(), m_po32f->getImageHeight());
-    return Size::null;
+  Size GLTextureMapBaseImage::getSize() const{
+    return m_oCurrentImageParams.getSize();
   }
+
+  depth GLTextureMapBaseImage::getDepth() const{
+    if(m_po8u)return depth8u;
+    if(m_po16s)return depth16s;
+    if(m_po32s)return depth32s;
+    if(m_po32f)return depth32f;
+    ERROR_LOG("getDepth() must not be called before an image was set!");
+    return depth64f; //
+  }
+  
+  int GLTextureMapBaseImage::getChannels() const{
+    return m_oCurrentImageParams.getChannels();
+  }
+                          
+  format GLTextureMapBaseImage::getFormat() const{
+    return m_oCurrentImageParams.getFormat();  
+  }
+  
+  Rect GLTextureMapBaseImage::getROI() const{
+    return m_oCurrentImageParams.getROI();
+  }
+
+  std::vector<icl32f>  GLTextureMapBaseImage::getColor(int x, int y) const{
+    if(m_po8u) return m_po8u->getColor(x,y);
+    if(m_po16s) return m_po16s->getColor(x,y);
+    if(m_po32s) return m_po32s->getColor(x,y);
+    if(m_po32f) return m_po32f->getColor(x,y);
+    return std::vector<icl32f>();
+  }
+  
+  Range<icl32f> GLTextureMapBaseImage::getMinMax(int channel) const{
+    if(m_po8u)return m_po8u->getMinMax(channel).castTo<icl32f>();
+    if(m_po16s)return m_po16s->getMinMax(channel).castTo<icl32f>();
+    if(m_po32s)return m_po32s->getMinMax(channel).castTo<icl32f>();
+    if(m_po32f)return m_po32f->getMinMax(channel).castTo<icl32f>();
+    ERROR_LOG("getMinMax must not be called before an image was set!");
+    return Range<icl32f>(0,0);
+  }
+  
 
   void GLTextureMapBaseImage::bci(int b, int c, int i){
     m_aiBCI[0]= b;

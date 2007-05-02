@@ -59,7 +59,7 @@ namespace icl{
     makeCurrent();
     setAttribute(Qt::WA_PaintOnScreen); 
     setAttribute(Qt::WA_NoBackground);
-    m_poImage = 0;
+    m_poImage = new GLTextureMapBaseImage(0,false);
     m_eFitMode = fmHoldAR;
     m_eRangeMode = rmOff;
 
@@ -109,34 +109,12 @@ namespace icl{
     // {{{ open
 
     m_oMutex.lock();
-    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
-    
-    if(m_poImage){
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+   
+    if(m_poImage && m_poImage->hasImage()){
       Rect r = computeRect(m_poImage->getSize(),getSize(),m_eFitMode);
-      GLTextureMapBaseImage image;
-      if(m_eRangeMode == rmAuto){
-        image.bci(-1,-1,-1);
-      }else if(m_eRangeMode == rmOn){
-        image.bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
-      }
-      if(m_iCurrSelectedChannel == -1){
-        image.updateTextures(m_poImage);
-      }else{
-        if(m_poImage->getChannels() > m_iCurrSelectedChannel){
-          ImgBase *chan = m_poImage->selectChannel(m_iCurrSelectedChannel);
-          image.updateTextures(chan);
-          delete chan;
-        }else{
-          GLPaintEngine pe(this);
-          pe.fill(0,0,0,255);
-          Rect fullRect(0,0,width(),height());
-          pe.rect(fullRect);
-          pe.color(255,255,255,255);
-          pe.fill(255,255,255,255);
-          pe.text(fullRect,"invalid channel!");
-        }
-      }
-      image.drawTo(r,getSize());
+      m_poImage->drawTo(r,getSize());
     }else{
       GLPaintEngine pe(this);
       pe.fill(0,0,0,255);
@@ -144,11 +122,12 @@ namespace icl{
       pe.rect(fullRect);
       pe.color(255,255,255,255);
       pe.fill(255,255,255,255);
-      pe.text(fullRect,"image is null!");
-      /// draw something like : no image available !!
+      pe.text(fullRect,"no image");
     }
+
     m_oMutex.unlock();
 
+        
     GLPaintEngine pe(this);
 
     m_oOSDMutex.lock();
@@ -162,14 +141,25 @@ namespace icl{
     customPaintEvent(&pe);
   }
 
-  // }}}
+  // }}}icl
   
   void ICLWidget::setImage(const ImgBase *image){ 
     // {{{ open
 
     ICLASSERT_RETURN(image);
     m_oMutex.lock();
-    image->deepCopy(&m_poImage); 
+    if(m_eRangeMode == rmAuto){
+      m_poImage->bci(-1,-1,-1);
+    }else if(m_eRangeMode == rmOn){
+      m_poImage->bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
+    }
+    if(m_iCurrSelectedChannel != -1 && m_iCurrSelectedChannel >= 0 && m_iCurrSelectedChannel < image->getChannels()){
+      const ImgBase *selectedChannel = image->selectChannel(m_iCurrSelectedChannel);
+      m_poImage->updateTextures(selectedChannel);
+      delete selectedChannel;
+    }else{
+      m_poImage->updateTextures(image);
+    }
     m_oMutex.unlock();
   }
 
@@ -392,8 +382,8 @@ namespace icl{
   std::vector<std::string> ICLWidget::getImageInfo(){
     // {{{ open
     std::vector<string> info;
-    ImgBase* i = m_poImage;
-    if(!i){
+    GLTextureMapBaseImage* i = m_poImage;
+    if(!i || !i->hasImage()){
       info.push_back("Image is NULL");
       return info;
     }
@@ -402,7 +392,7 @@ namespace icl{
                    QString::number(i->getSize().height).toLatin1().data());
     info.push_back(string("channels:")+QString::number(i->getChannels()).toLatin1().data());
     info.push_back(string("format:  ")+translateFormat(i->getFormat()).c_str());
-    if(i->hasFullROI()){
+    if(i->getROI() == Rect(Point::null,i->getSize())){
       info.push_back("roi:   full");
     }else{
       char ac[200];
@@ -411,51 +401,11 @@ namespace icl{
       info.push_back(ac);
     }
     
-    switch (i->getDepth()){
-      case depth8u: {
-        for(int a=0;a<i->getChannels();a++){
-          char ac[200];
-          sprintf(ac,"channel %d, min:%d, max:%d",a,i->asImg<icl8u>()->getMin(a),i->asImg<icl8u>()->getMax(a));
-          info.push_back(ac);
-        }   
-        break;
-      }
-      case depth16s: {
-        for(int a=0;a<i->getChannels();a++){
-          char ac[200];
-          sprintf(ac,"channel %d, min:%d, max:%d",a,i->asImg<icl16s>()->getMin(a),i->asImg<icl16s>()->getMax(a));
-          info.push_back(ac);
-        }   
-        break;
-      }
-      case depth32s: { // this case does not occur, as 32s images are drawn as 32f-ones
-        for(int a=0;a<i->getChannels();a++){
-          char ac[200];
-          sprintf(ac,"channel %d, min:%d, max:%d",a,i->asImg<icl32s>()->getMin(a),i->asImg<icl32s>()->getMax(a));
-          info.push_back(ac);
-        }   
-        break;
-      }
-      case depth32f:{
-        for(int a=0;a<i->getChannels();a++){
-          char ac[200];
-          sprintf(ac,"channel %d, min:%f, max:%f",a,i->asImg<icl32f>()->getMin(a),i->asImg<icl32f>()->getMax(a));
-          info.push_back(ac);
-        }
-        break;
-      }
-      case depth64f:{ // this case does not occur, as 32s images are drawn as 32f-ones
-        for(int a=0;a<i->getChannels();a++){
-          char ac[200];
-          sprintf(ac,"channel %d, min:%f, max:%f",a,i->asImg<icl64f>()->getMin(a),i->asImg<icl64f>()->getMax(a));
-          info.push_back(ac);
-        }
-        break;
-      }
-
-      default:
-        ICL_INVALID_FORMAT;
-        break;
+    for(int a=0;a<i->getChannels();a++){
+      char ac[200];
+      Range<icl32f> r = i->getMinMax(a);
+      sprintf(ac,"channel %d, min:%f, max:%f",a,r.minVal,r.maxVal);
+      info.push_back(ac);
     }
     return info;
   }
@@ -484,7 +434,8 @@ namespace icl{
   // }}}
   MouseInteractionInfo *ICLWidget::updateMouseInfo(MouseInteractionInfo::Type type){
     // {{{ open
-    if(!m_poImage) return &m_oMouseInfo;
+    return &m_oMouseInfo;
+    if(!m_poImage || !m_poImage->hasImage() ) return &m_oMouseInfo;
     m_oMouseInfo.type = type;
     m_oMouseInfo.widgetX = m_iMouseX;
     m_oMouseInfo.widgetY = m_iMouseY;
@@ -496,41 +447,9 @@ namespace icl{
     if(r.contains(m_iMouseX, m_iMouseY)){
       float boxX = m_iMouseX - r.x;
       float boxY = m_iMouseY - r.y;
-      
       m_oMouseInfo.imageX = (int) rint((boxX*(m_poImage->getSize().width))/r.width);
       m_oMouseInfo.imageY = (int) rint((boxY*(m_poImage->getSize().height))/r.height);
-      m_oMouseInfo.color.resize(0);
-      switch (m_poImage->getDepth()){
-        case depth8u:
-          for(int c=0;c<m_poImage->getChannels();c++){
-            m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl8u>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
-          }
-          break; 
-        case depth16s:
-          for(int c=0;c<m_poImage->getChannels();c++){
-            m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl16s>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
-          }
-          break;
-        case depth32s:
-          for(int c=0;c<m_poImage->getChannels();c++){
-            m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl32s>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
-          }
-          break;
-        case depth32f:
-          for(int c=0;c<m_poImage->getChannels();c++){
-            m_oMouseInfo.color.push_back((*(m_poImage->asImg<icl32f>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
-          }
-          break;
-        case depth64f:
-          for(int c=0;c<m_poImage->getChannels();c++){
-            m_oMouseInfo.color.push_back((float)(*(m_poImage->asImg<icl64f>()))(m_oMouseInfo.imageX,m_oMouseInfo.imageY,c));
-          }
-          break;
-          
-        default:
-          ICL_INVALID_FORMAT;
-          break;
-      }
+      m_oMouseInfo.color = m_poImage->getColor(m_oMouseInfo.imageX,m_oMouseInfo.imageY);
     }else{
       m_oMouseInfo.imageX = -1;
       m_oMouseInfo.imageY = -1;

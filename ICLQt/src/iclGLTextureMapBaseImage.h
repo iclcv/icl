@@ -36,11 +36,11 @@ namespace icl{
     /// Constructor with optionally given image
     /** @param image if not NULL, the constructor calls updateTexture(image) 
                      immediately after initialization */
-    GLTextureMapBaseImage(ImgBase* image = 0 ): 
-    m_po8u(0),m_po16s(0),m_po32s(0),m_po32f(0), m_poChannelBuf(0){
+    GLTextureMapBaseImage(ImgBase* image = 0, bool useSingleBuffer = true): 
+    m_po8u(0),m_po16s(0),m_po32s(0),m_po32f(0), m_poChannelBuf(0),
+    m_bUseSingleBuffer(useSingleBuffer){
       m_aiBCI[0]=m_aiBCI[1]=m_aiBCI[2]=0; 
       if(image) updateTextures(image);
-
     }
     
     /// Destructor
@@ -60,12 +60,29 @@ namespace icl{
     }
     
     /// returns the size of the current image or (0,0) if there is no image
-    Size getImageSize();
-
+    Size getSize() const;
+    
+    depth getDepth() const;
+    
+    int getChannels() const;
+    
+    format getFormat() const;
+    
+    Rect getROI() const;
+    
+    Range<icl32f> getMinMax(int iChannel) const;
+    
+    std::vector<icl32f> getColor(int x, int y) const;
+    
     /// sets up brightness, contrast and intensity
     /** if b=c=i, then brightness and contrast is adpated automatically */
     void bci(int b=-1, int c=-1, int i=-1);
 
+    /// sets if the wrapped images are created with single or multi buffer 
+    void setSingleBufferMode(bool useSingleBuffer);
+    
+    
+    ImgBase *deepCopy(){ printf("todo implement a deep copy here! \n");return 0; }
     private:
     /// creates an image with valid channel count 1 or 3
     /** - images with 0 channels are invalid
@@ -91,8 +108,14 @@ namespace icl{
     // internal buffer image for input image with 2 channels
     ImgBase *m_poChannelBuf;
 
-    // brightness contrast and intensity buffer
+    /// brightness contrast and intensity buffer
     int m_aiBCI[3];
+
+    /// flag that decides of the wrapped GLTMIs are created with single or mult buffer
+    bool m_bUseSingleBuffer;
+    
+    /// stores the current images params
+    ImgParams m_oCurrentImageParams;
   };  
 }
 

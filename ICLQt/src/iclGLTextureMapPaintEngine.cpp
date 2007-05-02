@@ -29,7 +29,7 @@ namespace icl{
     ICLASSERT_RETURN(m_bSharedImage);
     glColor4f(1,1,1,1);
 
-    Rect r2 = computeRect(r,m_bSharedImage->getImageSize(),mode);
+    Rect r2 = computeRect(r,m_bSharedImage->getSize(),mode);
     Size s(m_poWidget->width(),m_poWidget->height());
     m_bSharedImage->drawTo(r2,s);
   }

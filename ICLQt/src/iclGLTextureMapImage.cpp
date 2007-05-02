@@ -6,7 +6,7 @@ namespace icl{
   using namespace std;
 
   template<class T>
-  GLTextureMapImage<T>::GLTextureMapImage(const Size &imageSize,  int channels,int cellSize){
+  GLTextureMapImage<T>::GLTextureMapImage(const Size &imageSize, bool useSingleBuffer,  int channels,int cellSize){
     // {{{ open
     ICLASSERT( channels == 3 || channels == 1 || channels == 4);
     ICLASSERT( cellSize >= 16);
@@ -18,13 +18,22 @@ namespace icl{
     m_iXCells = m_iImageW/m_iCellSize;
     m_iYCells = m_iImageH/m_iCellSize;
     
+   
+    m_bUseSingleBuffer = useSingleBuffer;
+    
     m_iRestX = m_iImageW % m_iCellSize;
     m_iRestY = m_iImageH % m_iCellSize;
     if(m_iRestX) m_iXCells++;
     if(m_iRestY) m_iYCells++;
     
     m_iCellDataSize = m_iCellSize*m_iCellSize*m_iChannels;
-    m_ptCellData = new T[m_iCellDataSize];
+
+    if(m_bUseSingleBuffer){
+      m_ptCellData = new T[m_iCellDataSize];
+    }else{
+      m_ptCellData = 0;
+      m_matCellData = SimpleMatrix<T*>(m_iXCells,m_iYCells);
+    }
     
     m_matTextureNames = SimpleMatrix<GLuint>(m_iXCells,m_iYCells);
     m_matROISizes = SimpleMatrix<Size,SimpleMatrixAllocSize>(m_iXCells,m_iYCells);
@@ -34,6 +43,9 @@ namespace icl{
       for(int x=0;x<m_iXCells;++x){
         m_matROISizes[x][y].width  = m_iRestX ? (x==m_iXCells-1 ? m_iRestX : m_iCellSize) : m_iCellSize;
         m_matROISizes[x][y].height = m_iRestY ? (y==m_iYCells-1 ? m_iRestY : m_iCellSize) : m_iCellSize;
+        if(!m_bUseSingleBuffer){
+          m_matCellData[x][y] = new T[m_iCellDataSize];
+        }
       }
     }
     memset(m_aiBCI,0,3*sizeof(int));
@@ -45,7 +57,15 @@ namespace icl{
   GLTextureMapImage<T>::~GLTextureMapImage(){
     // {{{ open
     glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());
-    delete [] m_ptCellData;
+    if(m_bUseSingleBuffer){
+      delete [] m_ptCellData;
+    }else{
+      for(int y=0;y<m_iYCells;++y){
+        for(int x=0;x<m_iXCells;++x){
+          delete [] m_matCellData[x][y];
+        }
+      }
+    }
   }
 
   // }}}
@@ -85,6 +105,47 @@ namespace icl{
   void GLTextureMapImage<T>::bci(int b, int c, int i) {
     m_aiBCI[0] = b; m_aiBCI[1] = c; m_aiBCI[2] = i;
   }
+
+  template<class T>
+  Range<T> GLTextureMapImage<T>::getMinMax(int channel) const{
+    if(m_bUseSingleBuffer){
+      ERROR_LOG("image range cannot be extracted in singleBufferMode");
+      return Range<T>(0,0);
+    }
+    Range<T> mm(std::numeric_limits<T>::max(),std::numeric_limits<T>::min());
+    for(int y=0;y<m_iYCells;++y){
+      for(int x=0;x<m_iXCells;++x){
+        Img<T> tmpImage(Size(m_iImageW, m_iImageH), m_iChannels);
+        interleavedToPlanar(m_matCellData[x][y],&tmpImage);
+        tmpImage.setROISize(m_matROISizes[x][y]);
+        Range<T> rng = tmpImage.getMinMax(channel);
+        if(mm.minVal > rng.minVal)mm.minVal = rng.minVal;
+        if(mm.maxVal < rng.maxVal)mm.maxVal = rng.maxVal;
+      }
+    }
+    return mm;
+  }
+ 
+  template<class T>
+  vector<icl32f> GLTextureMapImage<T>::getColor(int x, int y) const{
+    if(m_bUseSingleBuffer){
+      ERROR_LOG("getting image colors is not supported in single buffer mode");
+      return vector<icl32f>();
+    }
+    if(x>=0 && y>=0 && x<m_iImageW && y<m_iImageH){
+      int xCell = x/m_iCellSize;
+      int yCell = y/m_iCellSize;
+      int xOffs = x%m_iCellSize;
+      int yOffs = y%m_iCellSize;
+      T *data = m_matCellData[xCell][yCell] + m_iChannels * (xOffs + yOffs*m_iCellSize);
+      vector<icl32f> color;
+      for(int c=0;c<m_iChannels;c++){
+        color.push_back(data[c]);
+      }
+      return color;
+    }
+    return vector<icl32f>();
+  }
   
 
   template<class T>
@@ -96,44 +157,55 @@ namespace icl{
     ICLASSERT( m_iImageW == image->getWidth());
     ICLASSERT( m_iImageH == image->getHeight());
 
-    setPackAlignment(getDepth<T>(),image->getWidth());
-    setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], image);
 
-    
-    static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_INT, GL_FLOAT, GL_FLOAT };
-    GLenum glType = aeGLTypes[getDepth<T>()];
-    
-    for(int y=0;y<m_iYCells;++y){
-      for(int x=0;x<m_iXCells;++x){
-        glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-
-        const Img<T> *src = image->shallowCopy(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes[x][y]));
-
-
-        if(x==m_iXCells -1 || y == m_iYCells-1){
-          fill(m_ptCellData,m_ptCellData+m_iCellDataSize,0);
+    if(m_bUseSingleBuffer){
+      
+      setPackAlignment(getDepth<T>(),image->getWidth());
+      setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], image);
+      
+      static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_INT, GL_FLOAT, GL_FLOAT };
+      GLenum glType = aeGLTypes[getDepth<T>()];
+      
+      for(int y=0;y<m_iYCells;++y){
+        for(int x=0;x<m_iXCells;++x){
+          glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
+          
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+          
+          const Img<T> *src = image->shallowCopy(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes[x][y]));
+          
+          
+          if(x==m_iXCells -1 || y == m_iYCells-1){
+            fill(m_ptCellData,m_ptCellData+m_iCellDataSize,0);
+          }
+          
+          planarToInterleaved(src,m_ptCellData,m_iCellSize*m_iChannels*sizeof(T));
+          
+          delete src;
+          if(m_iChannels == 1){
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_ptCellData);
+          }else if (m_iChannels == 3){
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_ptCellData);   
+          }else if (m_iChannels == 4){
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_ptCellData);   
+          }else{
+            ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
+          }
         }
-
-        planarToInterleaved(src,m_ptCellData,m_iCellSize*m_iChannels*sizeof(T));
-
-        delete src;
-        if(m_iChannels == 1){
-          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_ptCellData);
-        }else if (m_iChannels == 3){
-          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_ptCellData);   
-        }else if (m_iChannels == 4){
-          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_ptCellData);   
-        }else{
-          ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
+      }
+      resetPixelTransfer();
+    }else{ // multiTextureBuffer
+      for(int y=0;y<m_iYCells;++y){
+        for(int x=0;x<m_iXCells;++x){
+          const Img<T> *src = image->shallowCopy(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes[x][y]));
+          planarToInterleaved(src,m_matCellData[x][y],m_iCellSize*m_iChannels*sizeof(T));
+          delete src;
         }
       }
     }
-    resetPixelTransfer();
   }
 
   // }}}
@@ -160,7 +232,7 @@ namespace icl{
       icl64f dScaleRGB,dBiasRGB;
       // auto adaption
       ICLASSERT(image);
-      Range<icl64f> r = image->getMinMax();
+      Range<icl64f> r = image ? image->getMinMax() : Range<icl64f>(0,255);
       icl64f l = r.getLength();
       switch (image->getDepth()){
         case depth8u:{
@@ -247,6 +319,38 @@ namespace icl{
   template<class T>
   void GLTextureMapImage<T>::drawTo(const Rect &rect, const Size &windowSize){
     // {{{ open
+    if(!m_bUseSingleBuffer){
+      setPackAlignment(getDepth<T>(),m_iImageW);
+      setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], 0);
+      
+      static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_INT, GL_FLOAT, GL_FLOAT };
+      GLenum glType = aeGLTypes[getDepth<T>()];
+      
+      for(int y=0;y<m_iYCells;++y){
+        for(int x=0;x<m_iXCells;++x){
+          glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
+          
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+          
+          if(m_iChannels == 1){
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData[x][y]);
+          }else if (m_iChannels == 3){
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData[x][y]);   
+          }else if (m_iChannels == 4){
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData[x][y]);   
+          }else{
+            ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
+          }
+        }
+      }
+      resetPixelTransfer();
+    }
+    
+
+    
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
@@ -256,6 +360,7 @@ namespace icl{
     glColor4f(1,1,1,1);
     glScalef(1,-1,1); // flip y
     
+  
 
     float winW = windowSize.width;
     float winH = windowSize.height;
@@ -277,11 +382,13 @@ namespace icl{
     float dy = fracYForLastPart ? lY/(m_iYCells-1+fracYForLastPart) : lY/m_iYCells;
 
     // TODO lateron prebuffer all this calculations !
-
+     
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
 
         glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
+
+
         glBegin(GL_QUADS);
         float xPos = xOffs+x*dx;
         float yPos = yOffs+y*dy;
@@ -310,15 +417,17 @@ namespace icl{
         glTexCoord2f(texCoordsXMax, texCoordsYMax ); glVertex2f(vertexCoordsXMax, vertexCoordsYMax);
         glTexCoord2f(texCoordsXMax, texCoordsYMin ); glVertex2f(vertexCoordsXMax, vertexCoordsYMin);
         glEnd();
+
       }
     }    
     
+    glColor4f(1,1,1,1);    
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
-    
-    return;
+
+
   }
 
   // }}}

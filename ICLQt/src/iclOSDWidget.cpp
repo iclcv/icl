@@ -145,7 +145,7 @@ namespace icl{
 
     setCol(e,drawFill, drawBorder, hovered, pressed);
     e->rect(r);    
-    e->color(0,0,0,0);
+    e->color(0,0,0,0); /// ????
     int d = 2;
     e->rect(Rect(r.x+d,r.y+d, r.width-2*d, r.height-2*d));
   }     

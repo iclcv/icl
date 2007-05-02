@@ -7,7 +7,7 @@
 #include <iclTypes.h>
 #include <iclImg.h>
 namespace icl{
-  
+
   /// Utility class for displaying images using OpenGLs texture mapping abilities
   /** As former pixel drawing implementations used glDrawPixels(..) to draw images
       into a GL context, the visualization engine became very slow on some machines.
@@ -60,7 +60,7 @@ namespace icl{
     public:
     
     /// constructor
-    GLTextureMapImage(const Size &imageSize, int channels=3, int cellSize=128);
+    GLTextureMapImage(const Size &imageSize, bool useSingleBuffer, int channels=3, int cellSize=128);
     
     /// destructor
     ~GLTextureMapImage();
@@ -83,9 +83,21 @@ namespace icl{
     /// returns whether this GLTextureMapImage is compatible to a given image
     bool compatible(const Img<T> *image) const;
 
+    /// returns whether this image is in single buffer mode or not2
+    bool hasSingleBuffer() const { return m_bUseSingleBuffer; }
+    
     /// sets up current brightness contrast and intensity
     /** if b=c=i=-1 then, brightness is adapted automatically */
     void bci(int b=-1, int c=-1, int i=-1);
+
+    /// returns the current minimun and maximum value (only available in mutli buffer mode)
+    /** This function works very inefficient as it converts the current array of
+        cell datas back into an image (using interleavedToPlanar) before it searches for
+        the min and max value of the tmp image using its getMinMax(channel) function */
+    Range<T> getMinMax(int channel) const;
+    
+    /// retuns the color at a given image location or a zero sized vector, (x,y) is outside the image
+    std::vector<icl32f> getColor(int x, int y)const;
     private:
 
     /// internally used for debugging (TODO remove and make glabal function)
@@ -127,9 +139,17 @@ namespace icl{
     /// matrix containing ROI sizes for the cells
     SimpleMatrix<Size,SimpleMatrixAllocSize> m_matROISizes;
     
+    /// indicates whether to use a single buffer or one buffer per texture
+    bool m_bUseSingleBuffer;
+    
+    /// if mode is multiTextureBuffer, the data is stored here
+    SimpleMatrix<T*> m_matCellData;
+    
     /// buffer for cell data (only one cell needs to be buffered at one time)
     T *m_ptCellData;
 
+
+    
     /// holds brightness contrast and intensity values
     int m_aiBCI[3];
     
