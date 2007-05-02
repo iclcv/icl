@@ -159,7 +159,7 @@ namespace icl{
 
   void GLPaintEngine::image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode){
     // {{{ open
-
+    
     ICLASSERT_RETURN(image);
     glColor4f(1,1,1,1);
     GLTextureMapBaseImage texmapImage;

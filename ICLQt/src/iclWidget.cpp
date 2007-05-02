@@ -127,6 +127,7 @@ namespace icl{
 
     GLPaintEngine pe(this);
 
+
     m_oOSDMutex.lock();
     if(m_poCurrOSD){
       float m = std::min(((float)std::min(width(),height()))/100,6.0f);
@@ -134,6 +135,7 @@ namespace icl{
       m_poCurrOSD->_drawSelf(&pe,m_iMouseX,m_iMouseY,aiDown);
     }
     m_oOSDMutex.unlock();
+
     customPaintEvent(&pe);
   }
 
@@ -430,7 +432,6 @@ namespace icl{
   // }}}
   MouseInteractionInfo *ICLWidget::updateMouseInfo(MouseInteractionInfo::Type type){
     // {{{ open
-    return &m_oMouseInfo;
     if(!m_poImage || !m_poImage->hasImage() ) return &m_oMouseInfo;
     m_oMouseInfo.type = type;
     m_oMouseInfo.widgetX = m_iMouseX;

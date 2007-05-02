@@ -159,9 +159,7 @@ namespace icl{
     ICLASSERT( m_iImageW == image->getWidth());
     ICLASSERT( m_iImageH == image->getHeight());
 
-
     if(m_bUseSingleBuffer){
-      
       setPackAlignment(getDepth<T>(),image->getWidth());
       setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], image);
       
