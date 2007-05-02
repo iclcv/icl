@@ -81,7 +81,6 @@ namespace icl{
 
   void ICLWidget::initializeGL(){
     // {{{ open
-
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glShadeModel(GL_FLAT);
     glEnable(GL_TEXTURE_2D);
@@ -110,7 +109,6 @@ namespace icl{
 
     m_oMutex.lock();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
    
     if(m_poImage && m_poImage->hasImage()){
       Rect r = computeRect(m_poImage->getSize(),getSize(),m_eFitMode);
@@ -127,7 +125,6 @@ namespace icl{
 
     m_oMutex.unlock();
 
-        
     GLPaintEngine pe(this);
 
     m_oOSDMutex.lock();
@@ -137,7 +134,6 @@ namespace icl{
       m_poCurrOSD->_drawSelf(&pe,m_iMouseX,m_iMouseY,aiDown);
     }
     m_oOSDMutex.unlock();
-    
     customPaintEvent(&pe);
   }
 
@@ -145,9 +141,9 @@ namespace icl{
   
   void ICLWidget::setImage(const ImgBase *image){ 
     // {{{ open
-
     ICLASSERT_RETURN(image);
     m_oMutex.lock();
+
     if(m_eRangeMode == rmAuto){
       m_poImage->bci(-1,-1,-1);
     }else if(m_eRangeMode == rmOn){

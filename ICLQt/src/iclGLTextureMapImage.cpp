@@ -8,6 +8,7 @@ namespace icl{
   template<class T>
   GLTextureMapImage<T>::GLTextureMapImage(const Size &imageSize, bool useSingleBuffer,  int channels,int cellSize){
     // {{{ open
+    
     ICLASSERT( channels == 3 || channels == 1 || channels == 4);
     ICLASSERT( cellSize >= 16);
     ICLASSERT( getDepth<T>() != depth64f );
@@ -28,17 +29,17 @@ namespace icl{
     
     m_iCellDataSize = m_iCellSize*m_iCellSize*m_iChannels;
 
+    m_matTextureNames = SimpleMatrix<GLuint>(m_iXCells,m_iYCells);
     if(m_bUseSingleBuffer){
       m_ptCellData = new T[m_iCellDataSize];
+      glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
     }else{
       m_ptCellData = 0;
       m_matCellData = SimpleMatrix<T*>(m_iXCells,m_iYCells);
     }
-    
-    m_matTextureNames = SimpleMatrix<GLuint>(m_iXCells,m_iYCells);
+
     m_matROISizes = SimpleMatrix<Size,SimpleMatrixAllocSize>(m_iXCells,m_iYCells);
-    glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
-    
+
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
         m_matROISizes[x][y].width  = m_iRestX ? (x==m_iXCells-1 ? m_iRestX : m_iCellSize) : m_iCellSize;
@@ -56,13 +57,15 @@ namespace icl{
   template<class T>
   GLTextureMapImage<T>::~GLTextureMapImage(){
     // {{{ open
-    glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());
     if(m_bUseSingleBuffer){
+      glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());
       delete [] m_ptCellData;
     }else{
-      for(int y=0;y<m_iYCells;++y){
-        for(int x=0;x<m_iXCells;++x){
-          delete [] m_matCellData[x][y];
+      if(m_matCellData.dim()){
+        for(int y=0;y<m_iYCells;++y){
+          for(int x=0;x<m_iXCells;++x){
+            delete [] m_matCellData[x][y];
+          }
         }
       }
     }
@@ -151,7 +154,6 @@ namespace icl{
   template<class T>
   void GLTextureMapImage<T>::updateTextures(const Img<T> *image){
     // {{{ open
-
     ICLASSERT_RETURN( image);
     ICLASSERT( m_iChannels == image->getChannels() );
     ICLASSERT( m_iImageW == image->getWidth());
@@ -320,6 +322,9 @@ namespace icl{
   void GLTextureMapImage<T>::drawTo(const Rect &rect, const Size &windowSize){
     // {{{ open
     if(!m_bUseSingleBuffer){
+      
+      glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
+
       setPackAlignment(getDepth<T>(),m_iImageW);
       setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], 0);
       
@@ -346,6 +351,7 @@ namespace icl{
           }
         }
       }
+
       resetPixelTransfer();
     }
     
@@ -421,6 +427,9 @@ namespace icl{
       }
     }    
     
+    if(!m_bUseSingleBuffer){
+      glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());  
+    }
     glColor4f(1,1,1,1);    
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();

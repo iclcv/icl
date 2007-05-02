@@ -148,8 +148,6 @@ namespace icl{
     /// buffer for cell data (only one cell needs to be buffered at one time)
     T *m_ptCellData;
 
-
-    
     /// holds brightness contrast and intensity values
     int m_aiBCI[3];
     
