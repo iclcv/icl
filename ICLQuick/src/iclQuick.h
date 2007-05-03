@@ -305,14 +305,30 @@ namespace icl{
   **/
   void save(const ImgQ &image, const std::string &filename);
   
-  /// shows an image using TestImages::xv
+  /// shows an image using TestImages::show
   /** The image is wrote to disk into a temporary file. Then it
-      is shown using system("xv filename"). To ensure xv could
-      read the image, sleep(0.5sec) is called before the temporary
-      image is deleted using system("rm filename")
+      is shown using a specifi show command, which can be set, using
+      the the showSetup function, which is also available in this 
+      package.
       @param image image to show
+      @see showSetput(const string&, const stirng&, int)
   **/
   void show(const ImgQ &image);
+  
+  
+  /// setup image visualisation programm
+  /** when images are shown using an extrenal viewer like gnu's xv, the image is temporarily 
+      written to the hard disk. Then the show command is called. Before the rmCommand is
+      called usleep(1000*msecBeforeDelete); is called, to ensure, that the viewer has read the
+      image completely. By default, the <b>"iclxv"</b> image viewer is used, which is available
+      as example of the ICLQt package. In this case, the showCommand is "iclxv -input %s -delete".
+      As iclxv automatically deletes the image, when it was read, the rmCommand is empty and
+      the wait time is 0. To use this, you have to place at least a link to ICLQt/examples/iclxv
+      into any directory contained in your path variable.
+      @see show
+      @see ICLIO/TestImages 
+  **/
+  void showSetup(const string &showCommand="xv %s", const string &rmCommand="rm -rf %s", int msecBeforeDelete=500);
   
   /// print the images parameters to std::out
   /** @param image image to print to std::out **/

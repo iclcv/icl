@@ -483,10 +483,23 @@ namespace icl{
   }
 
   // }}}
+  
+  namespace{
+    string g_sShowCommand = "iclxv -input %s -delete";
+    string g_sRmCommand = "";
+    int g_iMsecBeforeDelete = 0;
+  }
+
+  void showSetup(const string &showCommand, const string &rmCommand, int msecBeforeDelete){
+    g_sShowCommand = showCommand;
+    g_sRmCommand = rmCommand;
+    g_iMsecBeforeDelete = msecBeforeDelete;
+  }  
+  
   void show(const ImgQ &image){
     // {{{ open
     if(image.hasFullROI()){
-      TestImages::xv(&image);
+      TestImages::show(&image,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
     }else{
       ImgQ T = copy(image);
       saveColorAndFill();
@@ -495,7 +508,7 @@ namespace icl{
       rect(T,T.getROI());
       restoreColorAndFill();
       T.setFullROI();
-      TestImages::xv(&T);
+      TestImages::show(&T,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
     }
   }
 
