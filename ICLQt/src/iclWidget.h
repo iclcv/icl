@@ -27,7 +27,7 @@ namespace icl{
   class GLTextureMapBaseImage;
   /** \endcond */
   
-  /// Intern used class for openGL-based image visualization components, embedded into an ICLGuiModule
+  /// Class for openGL-based image visualization components
   /** The ICLWidget class provide basic abilities for displaying ICL images (ImgBase) on embedded 
       Qt GUI components. Its is fitted out with a responsive OpenGL-Overlay On-Screen-Display (OSD),
       which can be used to adapt some ICLWidget specific settings, and which is partitioned into several

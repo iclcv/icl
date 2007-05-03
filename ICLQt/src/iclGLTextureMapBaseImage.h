@@ -9,7 +9,7 @@
 
 namespace icl{
   
-  /// wrapper of the GLTextureMapImage for processing ImgBases
+  /// wrapper of the GLTextureMapImage for processing ImgBase objects 
   /** The GLTextureMapBaseImage complies an additional abstraction layer
       for displaying image using OpenGL's texture mapping abilities.
       It wraps simple GLTextureMapImages for all supported depths 
@@ -20,11 +20,11 @@ namespace icl{
       the internal GLTextureMapImage must be reallocated to that depth, 
       which is a bit less performant.\n
       In addition, the GLTextureMapBase image hides the current size and
-      channel count of the current drawn image, which must explicitly be 
+      channel count of the currently drawn image, which must explicitly be 
       given to the wrapped GLTextureMapImages constructor. So the current
       valid GLTextureMapImage must be reallocated also, if the current
       image size or channel count changes.\n
-      The depth depth8u is not supported by OpenGL's glTexImage2D function,
+      The depth depth64f is not supported by OpenGL's glTexImage2D function,
       and so it is also not supported by the GLTextureMapImage. To ensure
       compatibility, the GLTextureMapBaseImage provides a fallback 
       implementation that internally creates an Img<icl32f> of given 
@@ -35,7 +35,10 @@ namespace icl{
     
     /// Constructor with optionally given image
     /** @param image if not NULL, the constructor calls updateTexture(image) 
-                     immediately after initialization */
+                     immediately after initialization 
+        @param useSingelBuffer decides whether to instantiate wrapped 
+                               GLTextureMap images in single or multi buffer mode
+    **/
     GLTextureMapBaseImage(ImgBase* image = 0, bool useSingleBuffer = true): 
     m_po8u(0),m_po16s(0),m_po32s(0),m_po32f(0), m_poChannelBuf(0),
     m_bUseSingleBuffer(useSingleBuffer){
@@ -62,16 +65,23 @@ namespace icl{
     /// returns the size of the current image or (0,0) if there is no image
     Size getSize() const;
     
+    /// returns current depth
     depth getDepth() const;
     
+    /// returns current channel count
     int getChannels() const;
     
+    /// returns current image format
     format getFormat() const;
     
+    /// returns current image roi
     Rect getROI() const;
     
+    /// retuns mininum and maximum of the current image
     Range<icl32f> getMinMax(int iChannel) const;
     
+    /// returns the image color at pixel position (x,y)
+    /** if (x,y) is outside the image rect, the returned vector is empty*/
     std::vector<icl32f> getColor(int x, int y) const;
     
     /// sets up brightness, contrast and intensity
@@ -81,7 +91,7 @@ namespace icl{
     /// sets if the wrapped images are created with single or multi buffer 
     void setSingleBufferMode(bool useSingleBuffer);
     
-    /// creates a snapshot of the current buffered image (multi buffer mode only 
+    /// creates a snapshot of the current buffered image (multi buffer mode only)
     ImgBase *deepCopy() const;
     private:
     /// creates an image with valid channel count 1 or 3

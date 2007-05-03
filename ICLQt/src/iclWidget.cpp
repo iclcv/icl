@@ -100,6 +100,7 @@ namespace icl{
     // {{{ open
 
     m_oMutex.lock();
+    makeCurrent();
     glViewport(0, 0, (GLint)w, (GLint)h);
     m_oMutex.unlock();
   }
