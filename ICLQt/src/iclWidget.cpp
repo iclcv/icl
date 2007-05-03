@@ -61,6 +61,7 @@ namespace icl{
     setAttribute(Qt::WA_PaintOnScreen); 
     setAttribute(Qt::WA_NoBackground);
     m_poImage = new GLTextureMapBaseImage(0,false);
+    m_poImageBufferForChannelSelection = 0;
     m_eFitMode = fmHoldAR;
     m_eRangeMode = rmOff;
 
@@ -68,14 +69,17 @@ namespace icl{
 
     setMouseTracking(true);
     memset(aiDown,0,3*sizeof(int));
+
+
   }
 
   // }}}
   ICLWidget::~ICLWidget(){
     // {{{ open
-    if(m_poImage)delete m_poImage;
+    if (m_poImage) { delete m_poImage; }
     if (m_poOSD) { delete m_poOSD; m_poOSD = 0; }
     if (m_poShowOSD)  { delete m_poShowOSD; m_poShowOSD = 0; }
+    if (m_poImageBufferForChannelSelection){  delete m_poImageBufferForChannelSelection; }
   }
 
   // }}}
@@ -157,8 +161,15 @@ namespace icl{
       const ImgBase *selectedChannel = image->selectChannel(m_iCurrSelectedChannel);
       m_poImage->updateTextures(selectedChannel);
       delete selectedChannel;
+      if(image != m_poImageBufferForChannelSelection){
+        image->deepCopy(&m_poImageBufferForChannelSelection);
+      }
     }else{
       m_poImage->updateTextures(image);
+      if(m_poImageBufferForChannelSelection){
+        delete m_poImageBufferForChannelSelection;
+        m_poImageBufferForChannelSelection = 0;
+      }
     }
     m_oMutex.unlock();
   }
@@ -317,6 +328,23 @@ namespace icl{
     m_oOSDMutex.unlock();
   }
   // }}}
+
+  void ICLWidget::rebufferImageInternal(){
+    m_oMutex.lock();
+    if(m_poImage && m_poImage->hasImage()){
+      if(m_poImageBufferForChannelSelection){
+        m_oMutex.unlock();
+        setImage(m_poImageBufferForChannelSelection);
+      }else{
+        ImgBase *tmpImage = m_poImage->deepCopy();
+        m_oMutex.unlock();
+        setImage(tmpImage);
+        delete tmpImage;
+      }
+    }else{
+      m_oMutex.unlock();
+    }
+  }
   void ICLWidget::childChanged(int id, void *val){  
     // {{{ open
     switch(id){
@@ -337,24 +365,31 @@ namespace icl{
         break;
       case OSD::ADJUST_BRIGHTNESS_SLIDER_ID:
         m_aiBCI[0] = *(int*)val;
+        rebufferImageInternal();
         break;
       case OSD::ADJUST_CONTRAST_SLIDER_ID:
         m_aiBCI[1] = *(int*)val;
+        rebufferImageInternal();
         break;
       case OSD::ADJUST_INTENSITY_SLIDER_ID:
         m_aiBCI[2] = *(int*)val;
+        rebufferImageInternal();
         break;
       case OSD::ADJUST_MODE_NONE_ID:
         m_eRangeMode = rmOff;
+        rebufferImageInternal();
         break;
       case OSD::ADJUST_MODE_MANUAL_ID:
         m_eRangeMode = rmOn;
+        rebufferImageInternal();
         break;
       case OSD::ADJUST_MODE_AUTO_ID:
         m_eRangeMode = rmAuto;
+        rebufferImageInternal();
         break;
       case OSD::CHANNELS_SLIDER_ID:
         m_iCurrSelectedChannel = *(int*)val;
+        rebufferImageInternal();
         break;
       case OSD::CAPTURE_BUTTON_ID:{
         // capturing current image:
@@ -387,6 +422,9 @@ namespace icl{
   std::vector<std::string> ICLWidget::getImageInfo(){
     // {{{ open
     std::vector<string> info;
+    info.push_back("not yet implemented!");
+    return info;
+
     GLTextureMapBaseImage* i = m_poImage;
     if(!i || !i->hasImage()){
       info.push_back("Image is NULL");

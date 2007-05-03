@@ -190,6 +190,13 @@ int main(int nArgs, char **ppcArg){
     virtual void childChanged(int id, void *val);
     
     private:
+    
+    /// if parameters are changed in the gui
+    void rebufferImageInternal();
+    
+    /// if a special channel is selected, the hole image is buffered here!
+    ImgBase *m_poImageBufferForChannelSelection;
+    
     /// internal image buffer
     GLTextureMapBaseImage *m_poImage;
     
