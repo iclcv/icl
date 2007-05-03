@@ -7,6 +7,7 @@
 #include <iclSize.h>
 #include <iclFileWriter.h>
 #include <stdlib.h>
+#include <iclTime.h>
 #ifdef WIN32
 #include <iclWin32.h>
 #endif
@@ -530,8 +531,38 @@ namespace icl{
   }
 
   // }}}
+  
+  
+  void TestImages::show(const ImgBase *image, 
+                        const std::string &showCommand,
+                        long msec_to_rm_call,
+                        const std::string &rmCommand){
+    ICLASSERT_RETURN(image);
+    string timeStr = Time::now().toString();
+    for(unsigned int i=0;i<timeStr.length();i++){
+      if(timeStr[i]=='/') timeStr[i]='_';
+      if(timeStr[i]==' ') timeStr[i]='_';
+      if(timeStr[i]==':') timeStr[i]='_';
+    }
+    string postfix = image->getChannels() == 3 ? ".ppm" : ".pgm";
+    string name = string(".tmpImage.")+timeStr+postfix;
+    FileWriter(name).write(image);
+    
+    char showCommandStr[500];
+    sprintf(showCommandStr,showCommand.c_str(),name.c_str());
+    
+    char rmCommandStr[500];
+    sprintf(rmCommandStr,rmCommand.c_str(),name.c_str());
+    
+    system((string(showCommandStr)+" &").c_str());
 
-  void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
+    if(string(rmCommand).length()){
+      usleep(1000*msec_to_rm_call);
+      system((string(rmCommandStr)+" &").c_str());
+    }
+  }
+  
+void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
     // {{{ open
     string name = nameIn;
     if(image->getChannels() != 3){
