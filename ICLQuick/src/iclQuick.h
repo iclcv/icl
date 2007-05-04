@@ -171,37 +171,48 @@ namespace icl{
   **/
   Img64f cvt64f(const ImgQ &image);
 
-  /// Converts a give Img8u into an ImgQ
+  /// Converts a given Img8u into an ImgQ
   /** @param image source image 
       @return converted image 
   **/
   ImgQ cvt(const Img8u &image);
 
-  /// Converts a give Img16s into an ImgQ
+  /// Converts a given Img16s into an ImgQ
   /** @param image source image 
       @return converted image 
   **/
   ImgQ cvt(const Img16s &image);
 
-  /// Converts a give Img32s into an ImgQ
+  /// Converts a given Img32s into an ImgQ
   /** @param image source image 
       @return converted image 
   **/
   ImgQ cvt(const Img32s &image);
 
-  /// Converts a give Img32f into an ImgQ
+  /// Converts a given Img32f into an ImgQ
   /** @param image source image 
       @return converted image 
   **/
   ImgQ cvt(const Img32f &image);
 
-  /// Converts a give Img64f into an ImgQ
+  /// Converts a given Img64f into an ImgQ
   /** @param image source image 
       @return converted image 
   **/
   ImgQ cvt(const Img64f &image);
 
+  /// Converts a given ImgBase into an ImgQ
+  /** @param image source image 
+      @return conveted image 
+  **/
+  ImgQ cvt(const ImgBase *image);
 
+
+  /// Converts a given ImgBase into an ImgQ
+  /** @param image source image 
+      @return conveted image 
+  **/
+  ImgQ cvt(const ImgBase &image);
   /** @} **/
   /* }}} */
 
@@ -609,7 +620,7 @@ namespace icl{
   /** @param image destination image 
       @param p position 
   **/
-  void cross(ImgQ &image, const Point &p) { cross(image,p.x,p.y); }
+  inline void cross(ImgQ &image, const Point &p) { cross(image,p.x,p.y); }
 
   /// draws a rect into an image
   /** @param image destination image
@@ -624,7 +635,7 @@ namespace icl{
   /** @param image destination image
       @param r rect to draw
   **/
-  void rect(ImgQ &image, const Rect &r){ rect(image,r.x,r.y,r.width,r.height); }
+  inline void rect(ImgQ &image, const Rect &r){ rect(image,r.x,r.y,r.width,r.height); }
   
   /// draws a line into an image
   /** @param image destination image 
@@ -640,7 +651,7 @@ namespace icl{
       @param p1 fist point
       @param p2 second point
   **/
-  void line(ImgQ &image, const Point &p1, const Point &p2){ line(image,p1.x,p1.y, p2.x,p2.y); }
+  inline void line(ImgQ &image, const Point &p1, const Point &p2){ line(image,p1.x,p1.y, p2.x,p2.y); }
 
   /// draw a single pixel into an image
   /** @param image destination image 
@@ -653,7 +664,7 @@ namespace icl{
   /** @param image destination image 
       @param p pos of the pixel
   **/
-  void pix(ImgQ &image, const Point &p){ pix(image,p.x,p.y); }
+  inline void pix(ImgQ &image, const Point &p){ pix(image,p.x,p.y); }
   
   /// draws a set of points into an image
   /** @param image destination image
@@ -688,7 +699,7 @@ namespace icl{
       @param p pos of the lower left corner of the text
       @param sText text to render
   **/
-  void text(ImgQ &image, const Point &p,const string &sText){ text(image,p.x,p.y,sText); }
+  inline void text(ImgQ &image, const Point &p,const string &sText){ text(image,p.x,p.y,sText); }
 
   /// labels an image in the upper left corner
   /** @param image image to label

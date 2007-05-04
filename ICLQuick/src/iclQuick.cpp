@@ -368,6 +368,22 @@ namespace icl{
 
   // }}}
 
+  
+  ImgQ cvt(const ImgBase *image){
+    ICLASSERT_RETURN_VAL(image, ImgQ() );
+    switch(image->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return cvt(*(image->asImg<icl##D>()));
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+      default: 
+        ICL_INVALID_DEPTH;
+    }
+    return ImgQ();
+  }
+
+  ImgQ cvt(const ImgBase &image){
+    return cvt(&image);
+  }
 
   ImgQ pwc(int device, const Size &size, format fmt, bool releaseGrabber){
     // {{{ open
