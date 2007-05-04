@@ -74,7 +74,7 @@ DEBUG:=-O0 -g3
 # Non-Debugging flags
 ifeq "${ARCH}" "linux"
  # For linux OS
- NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium3
+ NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium-m
 else
  # For mac OS
  NODEBUG:=-O4 -DNDEBUG
@@ -178,6 +178,19 @@ $(warning "Firewire library is not available. Firewire specific targets are not 
 endif
 endif
 
+############################# check for SVS ########################
+# try whether SVS is available
+SVS_ROOT ?= /vol/vision/SVS/4.2
+ifneq "$(wildcard ${SVS_ROOT}/bin/libsvs.so)" ""
+HAVE_SVS=TRUE
+else
+ifeq "$(_WARN_SVS)" ""
+_WARN_SVS=done # warn only once
+export _WARN_SVS
+$(warning "SVS library is not available. SVS specific targets are not built.")
+endif
+endif
+
 ############################# check for unicap ##########################
 UNICAP_ROOT ?= /vol/video
 ifeq "$(wildcard ${UNICAP_ROOT}/lib/libunicap*.so)" ""
@@ -209,4 +222,10 @@ ifeq "$(HAVE_QT)" ""
 SKIP_DIRECTORIES += ICLQt 
 SKIP_DIRECTORIES += ICLQuick
 endif
+
+ifeq "$(HAVE_SVS)" ""
+SKIP_DIRECTORIES += ICLSVS
+endif
+
+
 SKIP_DIRECTORIES += ICLNN ICLViola
