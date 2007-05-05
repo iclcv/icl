@@ -86,7 +86,7 @@ DEBUG OFF
         @param lim left image
         @param rim right image
         @param offset the offset for the cutted image
-				@param Size the size for the cutted image
+        @param iDim the size for the cutted image
       */
       void Load_cut(const Img8u* lim,const Img8u* rim, Point offset,Size iDim);
 
@@ -114,14 +114,14 @@ DEBUG OFF
 
       ///Sets a SVS parameter
       /**
-        @param p @see svsparam
+        @param p parameter @see svsparam
         @param value the value, the parameter will be set to
       */
       void setParam(svsparam p, int value);
 
       ///Gets a SVS parameter
       /**
-        @param p @see svsparam
+        @param p parameter @see svsparam
         @returns the value of the parameter
       */
       int getParam(svsparam p);
