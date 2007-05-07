@@ -84,7 +84,6 @@ namespace icl {
 
   void BinaryLogicalOp::apply(const ImgBase *poSrc1,const ImgBase *poSrc2, ImgBase **poDst){
     // {{{ open
-    printf("in apply \n");
     ICLASSERT_RETURN( poSrc1 );
     ICLASSERT_RETURN( poSrc2 );
     if(!BinaryOp::check(poSrc1,poSrc2) || !BinaryOp::prepare(poDst,poSrc1)){

@@ -1,6 +1,5 @@
 #ifndef ICLCORE_H
 #define ICLCORE_H
-
 #include <iclMacros.h>
 #include <iclTypes.h>
 #include <iclImgParams.h>
@@ -606,9 +605,9 @@ ICL_INSTATIATE_ALL_DEPTHS
   }
   template <> inline void convert<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst){
     ippsConvert_64f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
-  } 
+  }
+#endif 
   /** \endcond */
-#endif
 
  
   /// function, that calculates the mininum and the maximum value of three value
@@ -640,5 +639,4 @@ ICL_INSTATIATE_ALL_DEPTHS
   /* }}} */
 
 } // namespace icl
-
 #endif

@@ -40,21 +40,14 @@ ImgBase *image = TestImages::create("parrot",formatRGB,depth8u);
   
   ImgBase *dst=0;
 	ImgBase *dstimage=0;
-printf("a\n");  
   UnaryLogicalOp* uLogic = new UnaryLogicalOp(UnaryLogicalOp::andOp,0);
   BinaryLogicalOp* bLogic = new BinaryLogicalOp(BinaryLogicalOp::andOp);
-printf("b\n");
   bLogic ->setOpType(BinaryLogicalOp::orOp);
   uLogic ->setOpType(UnaryLogicalOp::notOp);
   uLogic ->setOpType(uLogic ->getOpType());
-printf("c\n");
   uLogic ->apply(&src,&dst);  
-  
-
-  printf("d\n");
   bLogic ->apply(&src,&srcb,&dst);
 
-printf("e\n");
 
 printf ("Mode\n0==AND\n1==OR\n2==XOR\n3==NOT Using Unary, Data A, val:0/n");
 

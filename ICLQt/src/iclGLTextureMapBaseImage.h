@@ -36,7 +36,7 @@ namespace icl{
     /// Constructor with optionally given image
     /** @param image if not NULL, the constructor calls updateTexture(image) 
                      immediately after initialization 
-        @param useSingelBuffer decides whether to instantiate wrapped 
+        @param useSingleBuffer decides whether to instantiate wrapped 
                                GLTextureMap images in single or multi buffer mode
     **/
     GLTextureMapBaseImage(ImgBase* image = 0, bool useSingleBuffer = true): 

@@ -215,7 +215,9 @@ namespace icl {
     /// retrieve kernel pointer
     template<typename KernelT> const KernelT* const getKernel() const;
 
+    /// sets if the image should be clip to ROI or not
     NeighborhoodOp::setClipToROI;
+    /// sets if the destination image should be adapted to the source, or if it is only checked if it can be adapted.
     NeighborhoodOp::setCheckOnly;
 
     private:

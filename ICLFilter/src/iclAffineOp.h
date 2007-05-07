@@ -5,16 +5,43 @@
 
 namespace icl{
   /// Class to apply an arbitrary series of affine transformations
+  /**
+    every affine operation modifies an internal matrix,
+    with the apply function, the matrix will be multiplicated to the image, 
+    so that the desired affine operations are executed on the image.
+  */
   class AffineOp : public BaseAffineOp {
     public:
     /// Constructor
     AffineOp (scalemode eInterpolate=interpolateLIN);
-    
+    /// resets the internal Matrix
+    /**
+      to
+      1 0 0
+      0 1 0
+      0 0 
+    */
     void reset  ();
+    /// adds a rotation
+    /**
+      @param dAngle angle in degrees (clockwise) 
+    */
     void rotate (double dAngle);
+    
+    ///adds a traslation
+    /**
+      @param x pixels to translate in x-direction
+      @param y pixels to translate in y-direction
+    */
     void translate (double x, double y) {
       m_aadT[0][2] += x; m_aadT[1][2] += y;
     }
+    /// adds a scale
+    /**
+      @param x scale-factor in x-direction
+      @param y scale-factor in y-direction
+      different values for x and y will lead to a dilation / upsetting deformation
+    */
     void scale (double x, double y) {
       m_aadT[0][0] *= x; m_aadT[1][0] *= x;
       m_aadT[0][1] *= y; m_aadT[1][1] *= y;

@@ -84,7 +84,7 @@ namespace icl{
           defined (filter-string = ""). This filters are devided by new lines (\\n).
         - each filter string then again consits of 3 single parts:
           - the filter <b> ID </b>
-          - the filter <b> operator </b>
+          - the filter <b> Operator </b>
           - the filter <b> value </b>
         - IDs are:
           - <b>id</b>(string)  the unique camera id (including some bus specific identifiers) 

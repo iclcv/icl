@@ -47,7 +47,7 @@ namespace icl {
 
     /// internally used storage for the image channels
     std::vector<SmartPtr<Type> > m_vecChannels;
-    // @}
+    /// @}
 
     /* }}} */
 
@@ -97,7 +97,7 @@ namespace icl {
         */
     int getEndIndex(int iIndex) const { return iIndex < 0 ? getChannels() : iIndex+1; }
 
-    // @}
+    /// @}
 
     /* }}} */
           
@@ -123,13 +123,11 @@ namespace icl {
         @param oSize image rects size to use
     **/
     void mirror(axis eAxis, int iChannel,const Point& oOffset, const Size& oSize);
-
+    /// @}
     /* }}} */
 
     public:
-    /** @{ @name constructors / destructor */
     /* {{{ open */
-
     /// creates a new image specified by the given param struct
     /** @param params initializing image parameters, if null, then a 
         null image is created  
@@ -209,8 +207,7 @@ namespace icl {
     
     /// Destructor
     ~Img();
-  
-    //@}
+
 
     /* }}} */
   
@@ -279,7 +276,7 @@ namespace icl {
     /// sub-pixel access operator, uses given interpolation method
     Type operator()(float fX, float fY, int iChannel, scalemode eMode) const;
   
-    //@}
+    /// @}
 
     /* }}} */
   
@@ -452,7 +449,7 @@ namespace icl {
     **/
     Img<Type> *deepCopyROI(Img<Type> *poDst) const;
 
-    //@}
+    /// @}
     /* }}} */
   
     /** @{ scaled-, and flipped-Copy functions */
@@ -493,7 +490,7 @@ namespace icl {
     */
     Img<Type> *scaledCopyROI(Img<Type> *poDst, scalemode eScaleMode=interpolateNN) const;    
 
-    //@}
+    /// @}
     /* }}} */
 
     /** @{ @name organization and channel management */
@@ -551,7 +548,7 @@ namespace icl {
     /** \copydoc icl::ImgBase::setSize(const icl::Size&) */
     virtual void setSize(const Size &s);
   
-    //@}
+    /// @}
 
     /* }}} */
   
@@ -672,7 +669,7 @@ namespace icl {
       return getData(iChannel); 
     }
   
-    //@}
+    /// @}
 
     /* }}} */
   
@@ -729,7 +726,7 @@ namespace icl {
     **/
     void normalizeImg(const Range<Type> &dstRange);
   
-    //@}
+    /// @}
 
     /* }}} */
   
@@ -797,7 +794,7 @@ namespace icl {
       return const_iterator(getData(iChannel),getWidth(),getROI());
     } 
  
-    //@}
+    /// @}
 
     /* }}} */
   
@@ -985,7 +982,7 @@ namespace icl {
     }
   }
  
-  //@}
+  /// @}
 
   /* }}} */
 

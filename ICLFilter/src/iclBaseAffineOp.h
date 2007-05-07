@@ -16,6 +16,7 @@ namespace icl{
   */
   class BaseAffineOp : public UnaryOp{
     public:
+    /// Destructor
     virtual ~BaseAffineOp(){}
   };
 

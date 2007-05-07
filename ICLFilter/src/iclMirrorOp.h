@@ -9,7 +9,12 @@ namespace icl{
   class MirrorOp : public BaseAffineOp {
     public:
     /// Constructor
+    /**
+      @param eAxis the axis on which the mirroring is performed
+    */
     MirrorOp (axis eAxis);
+    
+    /// Destructor
     virtual ~MirrorOp(){}
     /// Applies the mirror transform to the images
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);

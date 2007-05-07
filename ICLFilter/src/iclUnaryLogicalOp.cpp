@@ -153,7 +153,6 @@ namespace icl {
 
   void UnaryLogicalOp::apply(const ImgBase *poSrc, ImgBase **poDst){
     // {{{ open
-    printf("1\n");
     ICLASSERT_RETURN( poSrc );
     if(!UnaryOp::prepare(poDst,poSrc)) return;
     switch(m_eOpType){

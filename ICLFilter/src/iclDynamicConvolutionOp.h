@@ -14,9 +14,16 @@ namespace icl{
   */
   class DynamicConvolutionOp : public ConvolutionOp {
     public:
+    /// Constructor
+    /**
+      @ param poKernel Kernel for the Convolution
+    */
     DynamicConvolutionOp (const ImgBase* poKernel = 0);
+    
+    /// Destructor
     ~DynamicConvolutionOp ();
     
+    /// sets the Kernel for the Convolution
     void setKernel (const ImgBase* poKernel);
     private:
     icl::Img<icl::icl32f> *poKernelBuf;

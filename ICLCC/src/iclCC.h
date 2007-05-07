@@ -395,7 +395,7 @@ namespace icl{
   /** The source data is transformed into the destination images ROI 
       @param src data pointer
       @param dst image pointer
-      @param optionally given src linestep size
+      @param srcLineStep optionally given src linestep size
   */
   template<class S, class D>
   void interleavedToPlanar(const S *src, Img<D> *dst, int srcLineStep=-1);
