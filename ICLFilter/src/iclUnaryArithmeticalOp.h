@@ -6,20 +6,17 @@
 
 namespace icl {
   /// Class for Arithmetic Functions (nearly all functions: Img8u, Img16s, Img32f: IPP + Fallback, all other Types: Fallback only!)
-  /** The functions Add, Sub, Mul, Div, AddC, SubC, MulC, DivC, AbsDiff, Sqr, Sqrt, Ln, Exp, Abs, AbsDiffC are implemented for:
+  /** The functions AddC, SubC, MulC, DivC, AbsDiff, Sqr, Sqrt, Ln, Exp, Abs are implemented for:
       Img8u IPP+Fallback
       Img16s IPP+Fallback
       Img32f IPP+Fallback
       Img32s Fallback only
       Img64f Fallback only
-      
-      The functions MulScale and MulCScale are implemented for
-      Img8u IPP only
       The user have to take care about overflows. For example 255+1=0 on icl8u
    */
   class UnaryArithmeticalOp : public UnaryOp {
     public:
-    /// internal type for operation, that should be applied
+    /// this enum specifiy all possible binary arithmetical operations
     enum optype{
       addOp=0,  /**< add a constant value to each pixel  */
       subOp=1,  /**< substract a constant value from each pixel  */
@@ -32,17 +29,44 @@ namespace icl {
       absOp=14  /**< calculates the absolute value for each pixel */
     };
     
+    /// Constructor
     UnaryArithmeticalOp(optype t, icl64f val=0):m_eOpType(t), m_dValue(val){}
     
+    /// Destructor
     virtual ~UnaryArithmeticalOp(){}
     
+    /// performes the arithmetical operation, given in the constructor or by the setOpType method.
+    /**
+      @param poSrc first operand (image)
+      @param ppoDst destination image, to store the result
+    */
     virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
-    
+
+    /// sets the second operand, with the source is operated with.
+    /**
+      @param value the value for the operand 
+    */
     void setValue(icl64f value) { m_dValue = value; }
+
+    /// returns the value of the second operand
+    /**
+      @return  the value of the second operand
+    */
     icl64f getValue() const { return m_dValue; }
-    void setOpType(optype t){ m_eOpType = t;}
-    optype getOpType() const { return m_eOpType; }
     
+    /// changes the operator type
+    /**
+      @see optype
+      @param optype operator type
+    */
+    void setOpType(optype t){ m_eOpType = t;}
+    
+    /// returns the operator type
+    /**
+      @see optype
+      @return operator type
+    */    
+    optype getOpType() const { return m_eOpType; }
 
     private:
     optype m_eOpType;

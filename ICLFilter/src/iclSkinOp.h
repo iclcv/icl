@@ -26,10 +26,14 @@ author Michael Götting (mgoettin@techfak.uni-bielefeld.de)
 class SkinOp : public Filter
 {
  public:
+  ///Constructor
   SkinOp () : m_poChromaApply(0), m_poChromaTrain(0) {}
+    
+  ///Constructor
   SkinOp (std::vector<float> skinParams) : m_poChromaApply(0), 
     m_poChromaTrain(0),
     m_vecSkinParams(skinParams) {}
+  ///Destructor
   ~SkinOp () {};
   
   ///Start the detection of skin color in the given image.

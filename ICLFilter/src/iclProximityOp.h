@@ -80,7 +80,7 @@ namespace icl {
   class ProximityOp : public BinaryOp{
     public:
     
-    /// enum o specify the current apply mode of a ProximityOp
+    /// enum to specify the current apply mode of a ProximityOp
     /** @see ProximityOp */
     enum applymode{
       full, /*< destination image has size (w1+w2-1)x(h1+h2-1) */

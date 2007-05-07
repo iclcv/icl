@@ -7,11 +7,10 @@
 namespace icl {
   
   /// Class for Morphological operations  (Only available for Img8u and Img32f, IPP only!)
-  /** TODO !*/
   class MorphologicalOp : public NeighborhoodOp {
   public:
 
-  /// Performs dilation of an image.
+  /// this enum specifiy all possible morphological operations
   enum optype { 
     dilate,
     erode,
@@ -32,15 +31,34 @@ namespace icl {
         @param eoptype operation type
     */
     MorphologicalOp (const Size &maskSize,char* pcMask, optype eoptype);
+  
+    /// Destructor
     ~MorphologicalOp ();
-    /// Change mask size
+  
+    /// Change mask
     void setMask (Size size,char* pcMask);
-    /// Performs morph of an image with given optype and mask.
+    
+    /// returns mask
+    /** 
+      @return mask
+    */
     icl8u* getMask() const;
-    Size getMaskSize() const;
-    void setOptype(optype type);
-    optype getOptype() const;
 
+    /// returns mask size
+    /** 
+      @return mask size
+    */
+    Size getMaskSize() const;
+    
+    void setOptype(optype type);
+    
+    /// returns the type of the selected morphological operation
+    /** 
+      @return optype
+    */
+    optype getOptype() const;
+    
+    /// Performs morph of an image with given optype and mask.
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);
     
 

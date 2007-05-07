@@ -46,6 +46,7 @@ namespace icl {
   */
   class OpROIHandler {
     public:
+    /// Destructor
     virtual ~OpROIHandler(){}
 
     

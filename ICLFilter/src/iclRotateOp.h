@@ -12,13 +12,17 @@ namespace icl{
     RotateOp (double dAngle=0.0, scalemode eInterpolate=interpolateLIN) :
       AffineOp (eInterpolate) {}
     
-    /// change rotation angle
+    /// sets the rotation angle
+    /**
+      @param dAngle angle in degrees (clockwise) 
+    */
     void setAngle (double dAngle) {
       AffineOp::reset ();
       AffineOp::rotate (dAngle);
     }
     
-    /// apply should still be public
+    // apply should still be public
+    ///applies the rotation
     AffineOp::apply;
 
     private: // hide the following methods

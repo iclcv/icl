@@ -29,11 +29,11 @@ namespace icl {
     
     /// performes the arithmetical operation, given in the constructor or by the setOpType method.
     /**
-      @param src1 first operand (image)
-      @param src2 second operand (image)
-      @param dst destination image, to store the result
+      @param poSrc1 first operand (image)
+      @param poSrc2 second operand (image)
+      @param poDst pointer to the destination image, to store the result
     */
-    virtual void apply(const ImgBase *src1, const ImgBase *src2, ImgBase **dst);
+    virtual void apply(const ImgBase *poSrc1,const ImgBase *poSrc2, ImgBase **poDst);
 
     /// sets the operaion that will be performed by apply
     /**

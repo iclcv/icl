@@ -27,6 +27,8 @@ namespace icl {
   */
   class NeighborhoodOp : public UnaryOp {
     public:
+    
+    ///Destructor
     virtual ~NeighborhoodOp(){}
     
     protected:

@@ -12,12 +12,20 @@ namespace icl{
     TranslateOp (double dX=0.0, double dY=0.0, scalemode eInterpolate=interpolateLIN) :
       AffineOp (eInterpolate) {}
     
-    /// change rotation angle
+    /// performs a translation
+    /**
+      @param dX pixels to translate in x-direction
+      @param dY pixels to translate in y-direction
+    */
+
     void setTranslation (double dX, double dY) {
       AffineOp::reset (); 
       AffineOp::translate (dX,dY);
     }
-    /// apply should still be public
+    
+    // apply should still be public
+    
+    ///applies the translation
     AffineOp::apply;
 
     private: // hide the following methods

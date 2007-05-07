@@ -16,6 +16,7 @@ namespace icl{
     
     /// Destructor
     virtual ~MirrorOp(){}
+    
     /// Applies the mirror transform to the images
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);
 

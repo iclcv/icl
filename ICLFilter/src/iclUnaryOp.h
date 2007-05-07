@@ -57,14 +57,34 @@ namespace icl{
       */
   class UnaryOp{
     public:
+    /// Destructor
     virtual ~UnaryOp(){}
+      
     /// pure virtual apply function, that must be implemented in all derived classes
     virtual void apply(const ImgBase *operand1, ImgBase **dst)=0;
-    
+
+    /// sets if the image should be clip to ROI or not
+    /**
+      @param bClipToROI true=yes, false=no
+    */    
     void setClipToROI (bool bClipToROI) { m_oROIHandler.setClipToROI(bClipToROI); }
+    
+    /// sets if the destination image should be adapted to the source, or if it is only checked if it can be adapted.
+    /**
+      @param bCheckOnly true = destination image is only checked, false = destination image will be checked and adapted.
+    */
     void setCheckOnly (bool bCheckOnly) { m_oROIHandler.setCheckOnly(bCheckOnly); }
     
+    /// returns the ClipToROI status
+    /**
+      @return true=ClipToROI is enable, false=ClipToROI is disabled
+    */
     bool getClipToROI() const { return m_oROIHandler.getClipToROI(); }
+    
+    /// returns the CheckOnly status
+    /**
+      @return true=CheckOnly is enable, false=CheckOnly is disabled
+    */
     bool getCheckOnly() const { return m_oROIHandler.getCheckOnly(); }
     
     protected:

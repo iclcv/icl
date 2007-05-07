@@ -28,7 +28,7 @@ namespace icl {
    class ThresholdOp : public UnaryOp {
 
    public:
-     
+      /// this enum specifiy all possible thresholding operations
       enum optype{
         lt,
         gt,
@@ -37,18 +37,84 @@ namespace icl {
         gtVal,
         ltgtVal
       };
+      
+      ///Constructor
+      /**
+        @param ttype threshold type, @see optype
+        @param lowThreshold lower threshold
+        @param highThreshold upper threshold
+        @param lowVal values above lowThreshold will be set to this value
+        @param highVal values higher than highThreshold will be set to this value
+      */
       ThresholdOp(optype ttype,float lowThreshold=127, float highThreshold=127,float lowVal=0, float highVal=255 );
+      
+      ///Destructor
       virtual ~ThresholdOp();
+      
+      ///applies the Threshold Operator
+      /**
+        @param poSrc the source image
+        @param ppoDst pointer to the destination image
+      */
       virtual void apply (const ImgBase *poSrc, ImgBase **ppoDst);
+      
+      /// returns the lower threshold
+      /**
+       @return lower threshold
+      */
       float getLowThreshold() const {return m_fLowThreshold;}
+
+      /// returns the upper threshold
+      /**
+       @return upper threshold
+      */
       float getHighThreshold() const {return m_fHighThreshold;}
+      
+      /// returns the lower value
+      /**
+       @return lower value
+      */      
       float getLowVal() const {return m_fLowVal;}
+      /// returns the upper value
+      /**
+       @return upper value
+      */
       float getHighVal() const {return m_fHighVal;}
+      
+      /// returns the type of the thresholding operation
+      /**
+       @return optype
+      */
       optype getType() const {return m_eType;}
+      
+      /// sets the lower threshold
+      /**
+        @param lowThreshold lower threshold
+      */
       void setLowThreshold(float lowThreshold) {m_fLowThreshold=lowThreshold;}
+
+      /// sets the upper threshold
+      /**
+        @param highThreshold upper threshold
+      */
       void setHighThreshold(float highThreshold) {m_fHighThreshold=highThreshold;}
+      
+      /// sets the lower value
+      /**
+        @param lowVal lower value
+      */
       void setLowVal(float lowVal) {m_fLowVal=lowVal;}
+      
+      /// sets the upper value
+      /**
+        @param highVal upper value
+      */
       void setHighVal(float highVal) {m_fHighVal=highVal;}
+      
+      /// sets the type of the thresholding operation
+      /**
+        @param optype optype
+      */
       void setType(optype type) {m_eType=type;}
       
 #define ICL_INSTANTIATE_DEPTH(T) \

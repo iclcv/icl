@@ -24,13 +24,13 @@ namespace icl{
     */
     void setCheckOnly (bool bCheckOnly) { m_oROIHandler.setCheckOnly(bCheckOnly); }
     
-    /// gets the ClipToROI status
+    /// returns the ClipToROI status
     /**
       @return true=ClipToROI is enable, false=ClipToROI is disabled
     */
     bool getClipToROI() const { return m_oROIHandler.getClipToROI(); }
     
-    /// gets the CheckOnly status
+    /// returns the CheckOnly status
     /**
       @return true=CheckOnly is enable, false=CheckOnly is disabled
     */

@@ -12,12 +12,19 @@ namespace icl{
     ScaleOp (double factorX=0.0, double factorY=0.0, scalemode eInterpolate=interpolateLIN) :
       AffineOp (eInterpolate) {}
     
-    /// change rotation angle
-    void setTranslation (double factorX, double factorY) {
+    /// performs a scale
+    /**
+      @param factorX scale-factor in x-direction
+      @param factorY scale-factor in y-direction
+      different values for x and y will lead to a dilation / upsetting deformation
+    */
+    void setScale (double factorX, double factorY) {
       AffineOp::reset (); 
       AffineOp::scale (factorX,factorY);
     }
-    /// apply should still be public
+        
+    // apply should still be public
+    ///applies the scale
     AffineOp::apply;
 
     private: // hide the following methods
