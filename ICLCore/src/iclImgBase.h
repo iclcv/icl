@@ -104,13 +104,11 @@ namespace icl {
     {   
       public:
       
-      /** @{ @name Destructor */
       /* {{{ open */
     
       /// Destructor
       virtual ~ImgBase();
       
-      //@}
       /* }}} */ 
       
       /** @{ @name shallow copy */
@@ -364,7 +362,7 @@ namespace icl {
       // DELETE ImgBase *convertROIToROI(ImgBase *poDst) const;
       
       
-      //@}
+      /// @}
       /* }}} */ 
 
       /** @{ @name scaledCopy */
@@ -406,7 +404,7 @@ namespace icl {
       */
       virtual ImgBase *scaledCopyROI(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const = 0;
       
-      // @}
+      /// @}
       /* }}} */
       
       /** @{ @name asImg<T> cast templates */
@@ -437,7 +435,7 @@ namespace icl {
         return reinterpret_cast<const Img<T>*>(this);
       }
 
-      //@}
+      /// @}
     
       /* }}} */
 
@@ -484,7 +482,7 @@ namespace icl {
 
      
       
-      //@}
+      /// @}
 
       /* }}} */
       
@@ -545,7 +543,7 @@ namespace icl {
       /// resets the image ROI to the whole image size with offset (0,0)
       void setFullROI() { m_oParams.setFullROI(); }
       
-      // @}
+      /// @}
       /* }}} */
       
       /** @{ @name data access */
@@ -559,7 +557,7 @@ namespace icl {
       /** @see Img*/
       virtual void* getDataPtr(int iChannel) = 0;
     
-      //@} 
+      /// @} 
       /* }}} */
       
       /** @{ @name channel management */
@@ -640,7 +638,7 @@ namespace icl {
       /// sets timestamp of the image to the current time
       void setTime() { m_timestamp = Time::now(); }
       
-      //@}
+      /// @}
 
       /* }}} */
                     
@@ -675,7 +673,7 @@ namespace icl {
     **/
     const Range<icl64f> getMinMax() const;
                     
-    //@}
+    /// @}
     /* }}} */
     
       /** @{ @name in-place image adaption */
@@ -747,7 +745,7 @@ namespace icl {
       **/
       void normalizeImg(const Range<icl64f> &dstRange);
 
-      //@}
+      /// @}
       /* }}} */
       
       /** @{ @name utility functions */
@@ -791,7 +789,7 @@ namespace icl {
         ICLASSERT_RETURN_VAL(otherImage,false);
         return getParams() == otherImage->getParams() && getDepth() == otherImage->getDepth();
       }
-      //@}
+      /// @}
       /* }}} */
 
       protected:

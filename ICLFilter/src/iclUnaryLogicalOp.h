@@ -48,7 +48,7 @@ namespace icl {
     /// changes the operator type
     /**
       @see optype
-      @param optype operator type
+      @param t operator type
     */
     void setOpType(optype t){ m_eOpType = t;}
 

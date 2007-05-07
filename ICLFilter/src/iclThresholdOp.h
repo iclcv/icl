@@ -113,7 +113,7 @@ namespace icl {
       
       /// sets the type of the thresholding operation
       /**
-        @param optype optype
+        @param type optype
       */
       void setType(optype type) {m_eType=type;}
       
