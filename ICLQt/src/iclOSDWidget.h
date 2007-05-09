@@ -45,7 +45,7 @@ namespace icl{
       a one needs to considere, that all events are passed down to all
       widgets that are contained directly and indirectly by the root widget.
   
-      In addition to this top down event handlich approach, an bottom up
+      In addition to this top down event handling approach, an bottom up
       mechanism is implemented, which allows the programmer for
       grouped handling of the child widgets events. Each widget may
       call the <em>childChanded(id, value)</em> function to inform the
@@ -71,7 +71,7 @@ namespace icl{
     /// Destructor
     virtual ~OSDWidget();
 
-    //@{ @name custom event processing of this widget
+    /// @{ @name custom event processing of this widget
     /// drawing functions
     virtual void drawSelf(PaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
 
@@ -87,17 +87,20 @@ namespace icl{
     /// mouse released handling
     virtual void mouseReleased(int x, int y, int button);
     
-    // @}@{ @name top down event handling functions
+    /// @}
+    /// @{ @name top down event handling functions
     void _keyPressed(int key, int x, int y);
     void _mouseMoved(int x, int y, int downmask[3]);
     void _mousePressed(int x, int y, int button);
     void _mouseReleased(int x, int y, int button);
     void _drawSelf(PaintEngine *e, int x, int y, int downmask[3]);
     
-    // @}@{ @name bottom up event handling
+    /// @} 
+    /// @{ @name bottom up event handling
     virtual void childChanged(int id, void *val=0);
     
-    // @}@{ @name utility functions
+    /// @}
+    /// @{ @name utility functions
     
     /// returns the widgets unique id
     int getID();
@@ -149,7 +152,8 @@ namespace icl{
     
     /// returns if a child of the widgets was hit
     int mouseOverChild(int x, int y);
-    // @}@{ @name utility function for drawing primitives 
+    /// @}
+    /// @{ @name utility function for drawing primitives 
     
     /// draws the background of the widgets with givent parameters
     void drawBG(PaintEngine *e,int drawFill,int drawBorder, int over,int  pressed);
@@ -168,7 +172,7 @@ namespace icl{
     
     /// static parameters that specify appearance or the widgest
     static int s_iAlpha,s_iBorderR,s_iBorderG, s_iBorderB,s_iFillR,s_iFillG,s_iFillB,s_iHoveredAdd,s_iPressedAdd;
-    // @}
+    /// @}
    
     protected:
     wvec m_vecChilds;

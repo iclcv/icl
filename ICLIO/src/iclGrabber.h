@@ -60,7 +60,7 @@ namespace icl {
      virtual const ImgBase* grab(ImgBase **ppoDst=0) = 0;
 
 
-     /** @{ @name get/set properties  */
+     /// @{ @name get/set properties  
 
      /// interface for the setter function for video device properties 
      /** All video device properties can be set using this function. As different video devices  
@@ -144,7 +144,8 @@ namespace icl {
      }
 
      
-     /** @} @{ @name static string conversion functions */
+     /// @} 
+     /// @{ @name static string conversion functions 
 
      /// translates a SteppingRange into a string representation
      static std::string translateSteppingRange(const SteppingRange<double>& range);
@@ -165,7 +166,8 @@ namespace icl {
      static std::vector<std::string> translateStringVec(const std::string &stringVecStr);
 
 
-     /** @} @{ @name functions for get/set desired params */
+     /// @} 
+     /// @{ @name functions for get/set desired params
 
      /// returns current desired image params (size and format)
      const ImgParams &getDesiredParams()const{
@@ -207,7 +209,7 @@ namespace icl {
        m_eDesiredDepth = d;
      }
      
-     /** @} */
+     /// @}
      
     protected:
      /// prepare depth and params of output image according to desired settings

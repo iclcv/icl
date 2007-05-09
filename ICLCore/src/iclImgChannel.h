@@ -132,7 +132,11 @@ namespace icl{
     inline T &operator()(int x, int y){  return m_ptData[x+m_iWidth*y]; }
     
     /// main working function: returns const a reference to the pixel at position (x,y)
-    /** \copydoc operator()(x,y) */
+    /** The data address is calculated by x+ImageWidth*y. <b>Note:</b> no checks
+        are performed to ensure, that the position is valid!
+        @param x x-Position
+        @param y y-Position
+        @return reference to the Pixel at (x,y) */
     inline const T &operator()(int x, int y) const{  return m_ptData[x+m_iWidth*y]; }
     
     /// returns the corresponding data pointer 

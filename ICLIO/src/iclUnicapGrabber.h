@@ -75,7 +75,8 @@ namespace icl{
     virtual std::vector<std::string> getPropertyList(); 
     
     
-    /** @} @{ @name special static functions to get device lists */
+    /// @} 
+    /// @{ @name special static functions to get device lists 
     
     /// creates a vector of all currently available UnicapDevices (filterer by filter)
     /** The filter string has the following syntax:
@@ -116,7 +117,8 @@ namespace icl{
     static std::vector<UnicapDevice> filterDevices(const std::vector<UnicapDevice> &devices, 
                                                    const std::string &filter);
 
-    /** @} @{ @name special unicap functions */
+    /// @} 
+    /// @{ @name special unicap functions 
     
     /// returns a reference of the internally wrapped UnicapDevice
     UnicapDevice &getDevice() { return m_oDevice; }
@@ -124,7 +126,7 @@ namespace icl{
     /// returns the current grabbing framerate of this grabber
     float getCurrentFps() const;
     
-    /** @} */
+    /// @} 
     
     private:
     
