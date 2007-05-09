@@ -944,7 +944,7 @@ namespace icl {
 
   /* {{{   convertChannelROI */
 
-  //@{ @name type conversion of channel ROIs 
+  /// @{ @name type conversion of channel ROIs 
   /// copies/converts the ROI data from one image to the ROI of another image (IPP-OPTIMIZED)
   /** This function is used by all other deepCopyROI functions internally. 
       It copies / converts ROI image data to another images ROI using the
@@ -988,7 +988,7 @@ namespace icl {
 
   /* {{{   scaledCopyChannelROI */
 
-  //@{ @name scaling of channel ROIs 
+  /// @{ @name scaling of channel ROIs 
   /// scales an image channels ROI into another images ROI (with implicit type conversion) (IPP-OPTIMIZED)
   /** This function provides all necessary functionalities for scaling images. Please regard, that the fallback-
       implementation is very slow. Only scaling operations with identical source and destination type 
