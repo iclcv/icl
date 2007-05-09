@@ -20,14 +20,15 @@ namespace icl{
   static const ccimpl g_aeAvailableTable[NFMTS*NFMTS] = {
     /*                      |-------------- dst format ------------------> */ 
     /*  ___                 gray   rgb    hls    yuv    lab  chroma matrix */
-    /*   |        gray  */  AVL,   AVL,   AVL,   AVL,   AVL,   IPS,   IPS,   
-    /*   |        rgb   */  AVL,   AVL,   AVL,   AVL,   AVL,   AVL,   IPS,   
-    /*  src-      hls   */  AVL,   AVL,   AVL,   IMU,   IMU,   IMU,   IPS, 
-    /* format     yuv   */  AVL,   AVL,   IMU,   AVL,   IMU,   IMU,   IPS, 
-    /*   |        lab   */  AVL,   AVL,   IMU,   IMU,   AVL,   IMU,   IPS, 
-    /*   |       chroma */  IPS,   IPS,   IPS,   IPS,   IPS,   AVL,   IPS, 
-    /*   V       matrix */  IPS,   IPS,   IPS,   IPS,   IPS,   IPS,   IPS
+    /*   |        gray  */  AVL,   AVL,   AVL,   AVL,   AVL,   IPS,  IPS,   
+    /*   |        rgb   */  AVL,   AVL,   AVL,   AVL,   AVL,   AVL,  IPS,   
+    /*  src-      hls   */  AVL,   AVL,   AVL,   IMU,   IMU,   IMU,  IPS, 
+    /* format     yuv   */  AVL,   AVL,   IMU,   AVL,   IMU,   IMU,  IPS, 
+    /*   |        lab   */  AVL,   AVL,   IMU,   IMU,   AVL,   IMU,  IPS, 
+    /*   |       chroma */  IPS,   IPS,   IPS,   IPS,   IPS,   AVL,  IPS, 
+    /*   V       matrix */  IPS,   IPS,   IPS,   IPS,   IPS,   IPS,  IPS
   };
+
 #undef AVL 
 #undef IMU
 #undef UAV
@@ -1071,65 +1072,4 @@ namespace icl{
   }
   
   // }}}
- 
 }
-
-
-
-/** old misc:
-
-
-void convertToARGB32Interleaved(unsigned char *pucDst, Img8u *poSrc){
-  if(!poSrc || poSrc->getChannels() != 4 ) return;
-#ifdef WITH_IPP_OPTIMIZATION
-  icl8u* apucChannels[4]={poSrc->getData(0),poSrc->getData(1),poSrc->getData(2),poSrc->getData(3)};
-  ippiCopy_8u_P4C4R(apucChannels,poSrc->getLineStep(),pucDst,poSrc->getLineStep()*4,poSrc->getSize());
-#else
-  printf("c++ fallback for convertToRGB8Interleaved(unsigned char *pucDst, Img8u *poSrc) not yet implemented \n");
-#endif
-} 
-
-
-void convertToARGB32Interleaved(unsigned char *pucDst, Img32f *poSrc, Img8u *poBuffer){
-  if(!poSrc || poSrc->getChannels() != 4 ) return;
-#ifdef WITH_IPP_OPTIMIZATION
-  poSrc->convertTo<icl8u>(poBuffer);
-  icl8u* apucChannels[4]={poBuffer->getData(0),poBuffer->getData(1),poBuffer->getData(2),poBuffer->getData(3)};
-  ippiCopy_8u_P4C4R(apucChannels,poBuffer->getLineStep(),pucDst,poBuffer->getLineStep()*4,poBuffer->getSize());
-#else
-  printf("c++ fallback for convertToRGB8Interleaved(unsigned char *pucDst,"
-         " Img32f *poSrc, Img8u* poBuffer) not yet implemented \n");
-#endif
-} 
-
-void cc_util_yuv_to_rgb(const icl8u y, const icl8u u, const icl8u v, icl8u &r, icl8u &g, icl8u &b){
-  register int buf;
-  buf = g_a32s_yuv_r_lut[y+256*v];
-  r = buf < 0 ? 0 : buf > 255 ? 255 : buf; //optimize clipped lut
-   
-  buf = (int) ( g_a32f_yuv_g_lut1[y+256*u] - g_a32f_yuv_g_lut2[v]);
-  g = buf < 0 ? 0 : buf > 255 ? 255 : buf;
-    
-  buf = g_a32s_yuv_b_lut[y+256*u];
-  b = buf < 0 ? 0 : buf > 255 ? 255 : buf;
-}
-
-void yuv3rgb(icl32f y,icl32f u,icl32f v, icl32f &r, icl32f &g, icl32f &b){
-  // y range 0..255
-  // u range +-0.436
-  // v range +-0.615
-
-  icl32f u2 = 0.0034196078*u - 0.436;
-  icl32f v2 = 0.0048235294*v - 0.615;
-
-  r = y +               290.7   * v2;
-  g = y - 100.47 * u2 - 148.155 * v2;
-  b = y + 518.16 * u2;
-} 
-void rgb2yuv(icl32f r, icl32f g, icl32f b, icl32f &y, icl32f &u, icl32f &v){
-  y = (0.299*r + 0.587*g + 0.114*b);  
-  u = 0.56433408*(b-y) + 127.5; 
-  v = 0.71326676*(r-y) + 127.5; 
-}
-
-*/

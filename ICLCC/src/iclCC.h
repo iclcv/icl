@@ -5,8 +5,6 @@
 #include <iclSize.h>
 #include <string>
 
-
-
 /** \mainpage ICLCC Color Conversion Package of the ICL 
 The ICL provides the following color formats / models
 - RGB (sRGB)
@@ -360,7 +358,7 @@ namespace icl{
   @param s image size 
   */
   void convertYUV420ToRGB8(const unsigned char *pucSrc, const Size &s, Img8u* poDst);
-  
+
   /// Convert an 4 channel Img8u into Qts ARGB32 interleaved format 
   /** @param pucDst destination data pointer of size
   poSrc->getDim()*4
