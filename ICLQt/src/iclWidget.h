@@ -1,12 +1,11 @@
 #ifndef ICLWIDGET_H
 #define ICLWIDGET_H
-#include <QGLWidget>
-#include <iclImgBase.h>
-#include <QMutex>
-
 
 #define NOMINMAX // needed for Win32 in order to not define min, max as macros
 
+#include <QGLWidget>
+#include <iclImgBase.h>
+#include <QMutex>
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QMutex>

@@ -48,7 +48,7 @@
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 				CallingConvention="0"
-				DisableSpecificWarnings=" 4244; 4267"
+				DisableSpecificWarnings="4244; 4267; 4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -110,6 +110,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4244; 4267; 4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -213,6 +214,10 @@
 			</File>
 			<File
 				RelativePath="..\ICLCore\src\iclImgBorder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLCore\src\iclImgChannel.h"
 				>
 			</File>
 			<File

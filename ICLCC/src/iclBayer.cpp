@@ -767,7 +767,7 @@ namespace icl {
     iHeight -= 1;
 
     for (; iHeight--; bayer += iBayerStep, pucRGBInterImg += iRGBStep) {
-      const uint8_t *bayerEnd = bayer + iWidth;
+      const unsigned char *bayerEnd = bayer + iWidth;
 
       if (start_with_green) {
         pucRGBInterImg[-blue] = bayer[1];

@@ -2,6 +2,7 @@
 #define ICL_DOUBLE_SLIDER_H
 
 #include <QWidget>
+#include <iclCompatMacros.h>
 
 class QSlider;
 class QLabel;
