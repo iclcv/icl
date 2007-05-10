@@ -16,6 +16,10 @@
 #define SONY_WHITEBALANCE_V 12
 #define SONY_HUE 15
 
+#define GET_FORMAT(formatindex)			((formatindex>>8)&0x07)
+#define GET_MODE(formatindex)			((formatindex>>12)&0x07)
+#define GET_COLORCODING(formatindex)	(formatindex & 0x0f)
+
 using namespace std;
 
 namespace icl {
@@ -34,7 +38,7 @@ namespace icl {
 
 		//void GetLeftImage (Img8u *image);
 		//void GetRightImage (Img8u *image);
-		//void GetStereoImage (Img8u *leftImage, Img8u *rightImage);
+		void GetStereoImage (ImgBase **poDstLeft, ImgBase **poDstRight);
 		//void GetStereoImageTrigger (Img8u *leftImage, Img8u *rightImage);
 
 		/** @{ @name properties and parameters */
@@ -50,6 +54,8 @@ namespace icl {
 		/// returns the current value of a property or a parameter
 		virtual std::string getValue(const std::string &name);
 		/** @} */
+
+		icl::Size getSize() { return icl::Size(m_iWidth, m_iHeight); }
 
 	private:
 		/// current grabbing width

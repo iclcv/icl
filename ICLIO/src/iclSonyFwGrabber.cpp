@@ -79,12 +79,11 @@ namespace icl {
 				//---- Set image format ----
 				bRet = iidc_setformat(m_hCamera[i], ppFormatIndexList[i][0]);
 				
-				//cout << formatinfo[i].capflag << endl;
-				//cout << "video format: " << formatinfo[i].iidc.videoformat << endl;
-				//cout << "cc: " << formatinfo[i].colorcoding << endl;
+				long lCurFormat = iidc_currentformat(m_hCamera[i]);
+				cout << "color coding: " << GET_COLORCODING(lCurFormat);
+				//cout << iidc_setformat(m_hCamera[i], IIDCID_COLORCODING_RGB8) << endl;
 
-				//printf("color coding: %o\n", cc);
-				/*switch( formatinfo[i].colorcoding ) {
+				switch(GET_COLORCODING(lCurFormat)) {
 					case IIDCID_COLORCODING_MONO8:
 						cout << "  MONO8" << endl;
 						break;
@@ -112,7 +111,7 @@ namespace icl {
 					case IIDCID_COLORCODING_RAW16:
 						cout << "  RAW16"<< endl;
 						break;
-				}*/
+				}
 
 				if (!bRet)
 				{
@@ -123,9 +122,6 @@ namespace icl {
 				//---- Get image width/ height  ----
 				cout << "Image width : " << formatinfo[i].width << endl;
 				cout << "Image height: " << formatinfo[i].height << endl;
-
-				//imageLeft->red.resize(formatinfo[i].width * formatinfo[i].height);
-				//imageRight->red.resize(formatinfo[i].width * formatinfo[i].height);
 
 				m_iWidth = (int) formatinfo[i].width;
 				m_iHeight = (int) formatinfo[i].height;
@@ -329,7 +325,7 @@ namespace icl {
 		bool bRetLeft, bRetRight;
 		void *vImgBufLeft, *vImgBufRight;
 
-		printf("GetStereoImage ... ");
+		printf("get image(s) ... ");
 
 		waitparam.event = IIDCID_EVENT_FRAMEEND;
 		waitparam.timeout = 1000;
@@ -355,6 +351,48 @@ namespace icl {
 
 		printf("done\n");
 		return img;
+	}
+
+	void SonyFwGrabber::GetStereoImage(ImgBase **poDstLeft, ImgBase **poDstRight) {
+		
+		//---- Initialize variables ----
+		IIDC_WAIT waitparam;
+		bool bRetLeft, bRetRight;
+		void *vImgBufLeft, *vImgBufRight;
+
+		printf("get images ... ");
+
+		waitparam.event = IIDCID_EVENT_FRAMEEND;
+		waitparam.timeout = 1000;
+
+		//---- Get image from buffer ----
+		bRetLeft = iidc_wait( m_hCamera[0], &waitparam, sizeof(IIDC_WAIT) );
+		bRetRight = iidc_wait( m_hCamera[1], &waitparam, sizeof(IIDC_WAIT) );
+
+		if( bRetLeft && bRetRight )
+		{
+			vImgBufLeft = (LPBYTE) iidc_lockdata( m_hCamera[0], -1 );
+			vImgBufRight = (LPBYTE) iidc_lockdata( m_hCamera[1], -1 );
+			if(vImgBufLeft && vImgBufRight)
+			{
+				memcpy((icl8u*)((*poDstLeft)->getDataPtr(0)),m_pppImgBuffer[0][0],(m_iWidth*m_iHeight)*sizeof(unsigned char));
+				memcpy((icl8u*)((*poDstRight)->getDataPtr(0)),m_pppImgBuffer[1][0],(m_iWidth*m_iHeight)*sizeof(unsigned char));
+
+				//---- remove data lock ----
+				iidc_unlockdata( m_hCamera[0] );
+				iidc_unlockdata( m_hCamera[1] );
+			}
+		}
+
+		printf("done\n");
+
+		//flipping image
+		ImgBase* tmp = new Img8u(Size(m_iWidth, m_iHeight), icl::formatGray);
+		flippedCopy(axisBoth, *poDstLeft, &tmp);
+		tmp->deepCopy(poDstLeft);
+		flippedCopy(axisBoth, *poDstRight, &tmp);
+		tmp->deepCopy(poDstRight);
+
 	}
 
 	void SonyFwGrabber::GetCamAllString(long camIndex, char *strCamera) {
