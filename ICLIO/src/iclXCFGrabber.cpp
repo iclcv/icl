@@ -6,14 +6,58 @@ using namespace xmltio;
 
 namespace icl {
 
+	const string IMG_XML_STRING = 
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+		"<IMAGE uri=\"\">"
+		"<TIMESTAMPS>"
+		"<CREATED timestamp=\"\"/>"
+		"</TIMESTAMPS>"
+		"<PROPERTIES width=\"\" height=\"\" depth=\"\" channels=\"\" format=\"\" />"
+		"<ROI offsetX=\"\" offsetY=\"\" width=\"\" height=\"\" />"
+		"<BAYERFORMAT/>"
+		"</IMAGE>";
+
+	xmltio::Location createXML(ImgBase* poImg, string uri="image", int bayerFormat=0) {
+			xmltio::Location l(IMG_XML_STRING);
+			l[XPath("IMAGE/@uri")]					= uri;
+			l[XPath("IMAGE/PROPERTIES/@width")]		= poImg->getWidth();
+			l[XPath("IMAGE/PROPERTIES/@height")]	= poImg->getHeight();
+			l[XPath("IMAGE/PROPERTIES/@depth")]		= translateDepth(poImg->getDepth());
+			l[XPath("IMAGE/PROPERTIES/@channels")]	= poImg->getChannels();
+			l[XPath("IMAGE/PROPERTIES/@format")]	= translateFormat(poImg->getFormat());
+			l[XPath("IMAGE/ROI/@offsetX")]			= poImg->getROIXOffset();
+			l[XPath("IMAGE/ROI/@offsetY")]			= poImg->getROIYOffset();
+			l[XPath("IMAGE/ROI/@width")]			= poImg->getROIWidth();
+			l[XPath("IMAGE/ROI/@height")]			= poImg->getROIHeight();
+			l[XPath("IMAGE/TIMESTAMPS/CREATED")]	= poImg->getTime().toMicroSeconds();
+			l[XPath("IMAGE/BAYERFORMAT")]			= bayerFormat;
+			return l;
+	}
+
+	XCF::Binary::TransportUnitPtr createBTU (ImgBase* poImg, string uri="image") {
+		XCF::Binary::TransportUnitPtr tup = new XCF::Binary::TransportVecByte;
+		int imgSize = poImg->getWidth() * poImg->getHeight() * getSizeOf(poImg->getDepth());
+		//TODO      !!!!!
+		std::vector<icl8u> vecImage (imgSize * poImg->getChannels());
+		for (int i=0; i<poImg->getChannels(); i++) {
+			memcpy(&vecImage[i*imgSize], poImg->getDataPtr(i), imgSize);
+		}
+		tup->setUri(uri);
+		tup->set(vecImage);
+		return tup;
+	}
+
    void extractImage (XCF::CTUPtr ctu, xmltio::Location l, ImgBase*& poImg) {
       const string& sURI = extract<string>(l["uri"]);
       xmltio::Location  p(l, "PROPERTIES");
       int iWidth   = extract<int>(p["width"]);
       int iHeight  = extract<int>(p["height"]);
-      depth eDepth = depth8u; // extract<int>(p[XPath("@depth")]);
+      depth eDepth = translateDepth(extract<string>(p["depth"]));
       int iChannels   = extract<int>(p["channels"]);
-		icl::format fmt = translateFormat(extract<string>(p["format"]));
+	  icl::format fmt = translateFormat(extract<string>(p["format"]));
+
+	  int bayerFormat = extract<int>(l["BAYERFORMAT"]);
+	  //TODO return bayerFormat
       
       Location  r (l, "ROI");
       icl::Rect roi ((int) extract<int>(r["offsetX"]), 
