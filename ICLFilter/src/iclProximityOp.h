@@ -83,17 +83,17 @@ namespace icl {
     /// enum to specify the current apply mode of a ProximityOp
     /** @see ProximityOp */
     enum applymode{
-      full, /*< destination image has size (w1+w2-1)x(h1+h2-1) */
-      same, /*< destination image has size (w1)x(h1)           */
-      valid /*< destination image has size (w1-w2+1)x(h1-h2+1) */
+      full, /**< destination image has size (w1+w2-1)x(h1+h2-1) */
+      same, /**< destination image has size (w1)x(h1)           */
+      valid /**< destination image has size (w1-w2+1)x(h1-h2+1) */
     };
 
     /// enum to specify the current operation type of a ProximityOp
     /** @see ProximityOp */
     enum optype{
-      sqrDistance,   /*< square distance metric               */
-      crossCorr,     /*< cross correlation metric             */ 
-      crossCorrCoeff /*< cross correlation coefficient metric */
+      sqrDistance,   /**< square distance metric               */
+      crossCorr,     /**< cross correlation metric             */ 
+      crossCorrCoeff /**< cross correlation coefficient metric */
     };
 
     /// Creates a new ProximityOp object with given apply mode and optype

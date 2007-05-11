@@ -814,7 +814,7 @@ namespace icl {
   }
 
   /* {{{   deepCopyChannel */
-
+  /// Copies the channel from one image to another 
   template<class T>
   inline void deepCopyChannel( const Img<T> *src, int srcC, Img<T> *dst, int dstC){
     FUNCTION_LOG("");

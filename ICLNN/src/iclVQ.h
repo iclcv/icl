@@ -47,16 +47,16 @@ class VQ : public Img<T> {
   U<T> *m_poData; /// The abstract information orientation
   
   // Variable deklaration for the reference data
-  std::vector<T*> m_vecRefDataPtr; /// The first element of each data set
-  unsigned int m_uiSrcDim; /// The dimension of the src data (w*h)
+  std::vector<T*> m_vecRefDataPtr; ///> The first element of each data set
+  unsigned int m_uiSrcDim; ///> The dimension of the src data (w*h)
   
   // Variable deklaration for the VQ cluster
-  float m_fLearnRate; /// The learning rate of the VQ
-  std::vector<std::vector<icl64f> > m_vecCluster; /// The VQ cluster data
+  float m_fLearnRate; ///> The learning rate of the VQ
+  std::vector<std::vector<icl64f> > m_vecCluster; ///> The VQ cluster data
   std::vector<_ClProp> m_vecClusterInfo;
-  unsigned int m_uiVQDim; /// The cluster vector dimension
-  unsigned int m_uiCenter; /// The number of VQ centers
-  unsigned int m_uiMaxTrainSteps; /// The maximum training steps
+  unsigned int m_uiVQDim; ///> The cluster vector dimension
+  unsigned int m_uiCenter; ///> The number of VQ centers
+  unsigned int m_uiMaxTrainSteps; ///> The maximum training steps
   bool m_bClusterIsInitialized, m_bDeepCopyData; 
 
   // Set functions

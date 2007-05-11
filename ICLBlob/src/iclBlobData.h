@@ -18,11 +18,14 @@ namespace icl{
     /// Default Constructor
     PCAInfo(float len1=0, float len2=0, float arc1=0, float arc2=0):
       len1(len1),len2(len2),arc1(arc1),arc2(arc2){}
-    
-    float len1; /*< length of first major axis */
-    float len2; /*< length of second major axis */
-    float arc1; /*< angle of the first major axis */
-    float arc2; /*< angle of the second major axis (arc1+PI/2)*/
+    /// length of first major axis
+    float len1; 
+    /// length of second major axis
+    float len2; 
+    /// angle of the first major axis
+    float arc1; 
+    /// angle of the second major axis (arc1+PI/2)
+    float arc2; 
 
     /// null PCAInfo
     static const PCAInfo null;
@@ -36,9 +39,9 @@ namespace icl{
 
     /// Default constructor
     ScanLine(int x=0,int y=0,int len=0):x(x),y(y),len(len){}
-    int x; /*< x-offset of this horizontal line */
-    int y; /*< y-offset of this horizontal line */
-    int len; /*< length of this line */
+    int x; ///< x-offset of this horizontal line 
+    int y; ///< y-offset of this horizontal line 
+    int len; ///< length of this line
 
     /// null ScanLine
     static const ScanLine null;
@@ -56,6 +59,7 @@ namespace icl{
     **/
     BlobData(regiondetector::RegionDetectorBlob *poRDB=0, const Size &oImageSize=Size::null);
 
+    /// Destructor
     ~BlobData();
     /// returns the blobs value
     icl8u getVal() const;

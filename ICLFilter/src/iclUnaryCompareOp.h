@@ -17,22 +17,22 @@ namespace icl {
 #ifdef WITH_IPP_OPTIMIZATION
     /// this enum specifiy all possible compare operations
     enum optype{
-      lt   = ippCmpLess,      /*< "<"- relation */
-      lteq = ippCmpLessEq,    /*< "<="-relation */
-      eq   = ippCmpEq,        /*< "=="-relation */
-      gteq = ippCmpGreaterEq, /*< ">="-relation */
-      gt   = ippCmpGreater,   /*< ">" -relation */
-      eqt                     /*< "=="-relation using a given tolerance level */
+      lt   = ippCmpLess,      /**< "<"- relation */
+      lteq = ippCmpLessEq,    /**< "<="-relation */
+      eq   = ippCmpEq,        /**< "=="-relation */
+      gteq = ippCmpGreaterEq, /**< ">="-relation */
+      gt   = ippCmpGreater,   /**< ">" -relation */
+      eqt                     /**< "=="-relation using a given tolerance level */
     };
 #else
     /// this enum specifiy all possible compare operations
     enum optype{
-      lt,   /*< "<"- relation */
-      lteq, /*< "<="-relation */
-      eq,   /*< "=="-relation */
-      gteq, /*< ">="-relation */
-      gt,   /*< ">" -relation */
-      eqt   /*< "=="-relation using a given tolerance level */
+      lt,   /**< "<"- relation */
+      lteq, /**< "<="-relation */
+      eq,   /**< "=="-relation */
+      gteq, /**< ">="-relation */
+      gt,   /**< ">" -relation */
+      eqt   /**< "=="-relation using a given tolerance level */
     };
 #endif
     

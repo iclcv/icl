@@ -30,10 +30,10 @@ namespace icl{
                        RatingCombinationType rct=rctOR,
                        CenterEstimationType cet=cetMedian);
 
-    // just passing to the parent class
+    /// just passing to the parent class
     virtual const FoundBlobVector &search(Img8u *poImage, Img8u *poMask);
 
-    // returns the current image size of this 
+    /// returns the current image size of this 
     const Size &getImageSize() const;
     void setImageSize(const Size &size);
     protected:

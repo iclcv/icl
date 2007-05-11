@@ -27,12 +27,13 @@ class Timer
   Time::value_type getTime();
   
  public:
-/* {{{ Konstruktor/ Destruktor */
-  //@{ @name Constructors
-  ///Construct the Timerr class.      
+  /// @{ @name constructors / destructor
+  ///Construct the Timer class.      
   /** @param iTimerMode Select the output format (0 = ms, 1 = ns)
   **/
   Timer(int iTimerMode=0);
+
+   /// @}
 
 /* }}} */
 

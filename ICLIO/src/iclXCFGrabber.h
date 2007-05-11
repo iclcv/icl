@@ -25,8 +25,8 @@ namespace icl {
       ~XCFGrabber(void);
     
       /// grabbing function  
-      /** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    
-      virtual const ImgBase* grab(ImgBase **poDst=0);
+      /** \copydoc icl::Grabber::grab(ImgBase**)*/
+      virtual const ImgBase* grab(ImgBase **ppoDst=0);
       
       /// grabbing a whole image set, e.g. from a stereo camera
       /** The vector of images is resized to match the number of grabbed

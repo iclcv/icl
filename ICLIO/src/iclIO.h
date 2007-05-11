@@ -48,13 +48,13 @@ namespace icl {
   /// Determine the supported file formats for load and save functions
   enum ioformat {
      ioFormatUnknown = -2,
-     ioFormatSEQ = -1, //< file list
-     ioFormatPNM, //< PNM file format (gray/pgm or rgb/ppm
-     ioFormatICL, //< proprietary format, equals pnm for icl8u, but allows icl32f as well
+     ioFormatSEQ = -1, ///< file list
+     ioFormatPNM, ///< PNM file format (gray/pgm or rgb/ppm)
+     ioFormatICL, ///< proprietary format, equals pnm for icl8u, but allows icl32f as well
 #ifdef WITH_JPEG_SUPPORT
-     ioFormatJPG, //< JPG image format
+     ioFormatJPG, ///< JPG image format
 #endif
-     ioFormatCSV  //< comma seperated value
+     ioFormatCSV  ///< comma seperated value
   };
   
   /// Check for supported file type

@@ -53,9 +53,9 @@ namespace icl {
      bool computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize);
      
   protected:
-     Size  oMaskSize;  //< size of filter mask
-     Point oAnchor;    //< anchor of filter mask
-     Point oROIoffset; //< to-be-used ROI offset for source image
+     Size  oMaskSize;  ///< size of filter mask
+     Point oAnchor;    ///< anchor of filter mask
+     Point oROIoffset; ///< to-be-used ROI offset for source image
   };
 }
 #endif

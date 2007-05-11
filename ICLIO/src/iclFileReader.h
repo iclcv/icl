@@ -83,7 +83,7 @@ namespace icl {
     /// convert sFileName containing hashes as in FileWriter to regexp
     static std::string hashPattern(const std::string& sFileName);
     
-    // @{ @name constructors / destructor
+    /// @{ @name constructors / destructor
     ///Load images from files specified with shell-like regular expression
     /** @param sPattern shell expression describing file location(s)
         **/
@@ -106,7 +106,7 @@ namespace icl {
 
     /// Destructor
     virtual ~FileReader ();
-
+    /// @}
     /// Grab the next image from file/ buffer
     virtual const ImgBase* grab(ImgBase **ppoDst=0);
   
@@ -214,14 +214,15 @@ namespace icl {
     void readCSVTmpl(Img<T>* poImg, FileInfo &oInfo);
     void readDataCSV(ImgBase* poImg, FileInfo &oInfo);
          
-    FileList     m_vecFileName;  //< list of files to load
-    FileList     m_vecObjectCnt; //< list of object indices (##__##)
-    ImageBuffer  m_vecImgBuffer; //< vector of buffered images
+    FileList     m_vecFileName;  ///< list of files to load
+    FileList     m_vecObjectCnt; ///< list of object indices (##<span>_</span>_##)
+// TODO: How can doxygen special chars/keywords like __ or operator be displayed (with thinks like\_\_ and without using tricks like above  
+    ImageBuffer  m_vecImgBuffer; ///< vector of buffered images
   
-    bool         m_bIgnoreDesired; //< flag whether to ignore desired params and images as read
-    bool         m_bBuffered;      //< flag indicating buffering of images
-    unsigned int m_iCurImg;        //< image number to be read next
-    ImgBase     *m_poCurImg;       //< recently read image
+    bool         m_bIgnoreDesired; ///< flag whether to ignore desired params and images as read
+    bool         m_bBuffered;      ///< flag indicating buffering of images
+    unsigned int m_iCurImg;        ///< image number to be read next
+    ImgBase     *m_poCurImg;       ///< recently read image
 
     /// used for CSV file format which doesn't store image info in file
     ImgParams       m_CSVParams;

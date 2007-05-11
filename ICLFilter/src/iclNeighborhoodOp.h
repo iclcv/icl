@@ -88,9 +88,9 @@ namespace icl {
      
     protected:
      ///TODO: later private with getter and setter functions
-     Size  m_oMaskSize;  //< size of filter mask
-     Point m_oAnchor;    //< anchor of filter mask
-     Point m_oROIOffset; //< to-be-used ROI offset for source image
+     Size  m_oMaskSize;  ///< size of filter mask
+     Point m_oAnchor;    ///< anchor of filter mask
+     Point m_oROIOffset; ///< to-be-used ROI offset for source image
   };
 }
 #endif
