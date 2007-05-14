@@ -1,4 +1,5 @@
 #ifdef WIN32
+#ifdef WITH_SONYIIDC
 
 #include "iclSonyFwGrabber.h"
 
@@ -436,4 +437,5 @@ namespace icl {
 
 }
 
-#endif
+#endif //SONYIIDC
+#endif //WIN32

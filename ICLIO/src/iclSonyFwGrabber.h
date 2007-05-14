@@ -2,6 +2,7 @@
 #define ICLSONYFWGRABBER_H
 
 #ifdef WIN32
+#ifdef WITH_SONYIIDC
 
 #include <iclGrabber.h>
 //#include <iclConverter.h>
@@ -83,5 +84,6 @@ namespace icl {
 
 }
 
+#endif //SONYIIDC
 #endif //WIN32
 #endif //SONYFWGRABBER_H
