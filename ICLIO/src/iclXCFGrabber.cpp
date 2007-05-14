@@ -9,79 +9,133 @@ namespace icl {
 	const string IMG_XML_STRING = 
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 		"<IMAGE uri=\"\">"
-		"<TIMESTAMPS>"
-		"<CREATED timestamp=\"\"/>"
-		"</TIMESTAMPS>"
-		"<PROPERTIES width=\"\" height=\"\" depth=\"\" channels=\"\" format=\"\" />"
-		"<ROI offsetX=\"\" offsetY=\"\" width=\"\" height=\"\" />"
-		"<BAYERFORMAT/>"
+		  "<TIMESTAMPS>"
+		    "<CREATED timestamp=\"\"/>"
+		  "</TIMESTAMPS>"
+		  "<PROPERTIES width=\"\" height=\"\" depth=\"\" channels=\"\" format=\"\" />"
+		  "<ROI offsetX=\"\" offsetY=\"\" width=\"\" height=\"\" />"
 		"</IMAGE>";
 
-	xmltio::Location createXML(ImgBase* poImg, string uri="image", int bayerFormat=0) {
-			xmltio::Location l(IMG_XML_STRING);
-			l[XPath("IMAGE/@uri")]					= uri;
-			l[XPath("IMAGE/PROPERTIES/@width")]		= poImg->getWidth();
-			l[XPath("IMAGE/PROPERTIES/@height")]	= poImg->getHeight();
-			l[XPath("IMAGE/PROPERTIES/@depth")]		= translateDepth(poImg->getDepth());
-			l[XPath("IMAGE/PROPERTIES/@channels")]	= poImg->getChannels();
-			l[XPath("IMAGE/PROPERTIES/@format")]	= translateFormat(poImg->getFormat());
-			l[XPath("IMAGE/ROI/@offsetX")]			= poImg->getROIXOffset();
-			l[XPath("IMAGE/ROI/@offsetY")]			= poImg->getROIYOffset();
-			l[XPath("IMAGE/ROI/@width")]			= poImg->getROIWidth();
-			l[XPath("IMAGE/ROI/@height")]			= poImg->getROIHeight();
-			l[XPath("IMAGE/TIMESTAMPS/CREATED")]	= poImg->getTime().toMicroSeconds();
-			l[XPath("IMAGE/BAYERFORMAT")]			= bayerFormat;
-			return l;
+	xmltio::Location createXML(const ImgBase* poImg, const string& uri, 
+                              const string& bayerPattern)
+   {
+      xmltio::Location l(IMG_XML_STRING, "/IMAGE");
+      l[XPath("@uri")]					   = uri;
+      l[XPath("PROPERTIES/@width")]		= poImg->getWidth();
+      l[XPath("PROPERTIES/@height")]	= poImg->getHeight();
+      l[XPath("PROPERTIES/@depth")]		= translateDepth(poImg->getDepth());
+      l[XPath("PROPERTIES/@channels")]	= poImg->getChannels();
+      l[XPath("PROPERTIES/@format")]	= translateFormat(poImg->getFormat());
+      if (bayerPattern != "") 
+         l[XPath("PROPERTIES/@bayerPattern")] = bayerPattern;
+      l[XPath("ROI/@offsetX")]			= poImg->getROIXOffset();
+      l[XPath("ROI/@offsetY")]			= poImg->getROIYOffset();
+      l[XPath("ROI/@width")]			   = poImg->getROIWidth();
+      l[XPath("ROI/@height")]			   = poImg->getROIHeight();
+      l[XPath("TIMESTAMPS/CREATED/@timestamp")]	= poImg->getTime().toMicroSeconds();
+      return l;
 	}
 
-	XCF::Binary::TransportUnitPtr createBTU (ImgBase* poImg, string uri="image") {
-		XCF::Binary::TransportUnitPtr tup = new XCF::Binary::TransportVecByte;
-		int imgSize = poImg->getWidth() * poImg->getHeight() * getSizeOf(poImg->getDepth());
-		//TODO      !!!!!
-		std::vector<icl8u> vecImage (imgSize * poImg->getChannels());
-		for (int i=0; i<poImg->getChannels(); i++) {
-			memcpy(&vecImage[i*imgSize], poImg->getDataPtr(i), imgSize);
-		}
-		tup->setUri(uri);
-		tup->set(vecImage);
-		return tup;
-	}
+// {{{ packImage
 
-   void extractImage (XCF::CTUPtr ctu, xmltio::Location l, ImgBase*& poImg) {
+   template <class XCF_T, typename ICE_T>
+   XCF::Binary::TransportUnitPtr packImage (const ImgBase* poImg,
+                                            XCF::Binary::TransportUnitPtr btu) {
+      XCF_T *pTypedBTU = dynamic_cast<XCF_T*>(btu.get());
+      // on type mismatch, create new instance
+      if (!pTypedBTU) pTypedBTU = new XCF_T;
+      // get reference to data content
+      std::vector<ICE_T> &vecImage = pTypedBTU->value;
+      vecImage.resize (poImg->getChannels() * poImg->getDim());
+      // copy data
+      int imgSize = poImg->getDim();
+      int imgByteSize = imgSize * getSizeOf(poImg->getDepth());
+      for (int i=0, nChannels=poImg->getChannels(); i < nChannels; i++) {
+         memcpy(&vecImage[i*imgSize], poImg->getDataPtr(i), imgByteSize);
+      }
+      return pTypedBTU;
+   }
+
+	XCF::Binary::TransportUnitPtr packImage (const ImgBase* poImg, 
+                                            XCF::Binary::TransportUnitPtr btu) {
+      switch (poImg->getDepth()) {
+        case depth8u:
+           return packImage<XCF::Binary::TransportVecByte, Ice::Byte> (poImg, btu);
+           break;
+        case depth32s:
+           return packImage<XCF::Binary::TransportVecInt, int> (poImg, btu);
+           break;
+        case depth32f:
+           return packImage<XCF::Binary::TransportVecFloat, float> (poImg, btu);
+           break;
+        case depth64f:
+           return packImage<XCF::Binary::TransportVecDouble, double> (poImg, btu);
+           break;
+        default:
+           return 0;
+           break;
+      }
+   }
+
+// }}}
+      
+// {{{ extract image
+
+   template <class XCF_T, typename ICE_T>
+   static void extractImage (ImgBase* poImg, XCF::Binary::TransportUnitPtr btu) {
+      XCF_T *pTypedBTU = dynamic_cast<XCF_T*>(btu.get());
+      const std::vector<ICE_T> &vecImage = pTypedBTU->value;
+    
+      int imgSize = poImg->getDim() * getSizeOf(poImg->getDepth());
+      for (int i=0, nChannels=poImg->getChannels(); i < nChannels; i++) {
+         memcpy(poImg->getDataPtr(i), &vecImage[i*imgSize], imgSize);
+      }
+   }
+
+   void extractImage (const XCF::CTUPtr ctu, const xmltio::Location& l, 
+                      ImgBase*& poImg) {
       const string& sURI = extract<string>(l["uri"]);
       xmltio::Location  p(l, "PROPERTIES");
       int iWidth   = extract<int>(p["width"]);
       int iHeight  = extract<int>(p["height"]);
       depth eDepth = translateDepth(extract<string>(p["depth"]));
       int iChannels   = extract<int>(p["channels"]);
-	  icl::format fmt = translateFormat(extract<string>(p["format"]));
+      icl::format fmt = translateFormat(extract<string>(p["format"]));
 
-	  int bayerFormat = extract<int>(l["BAYERFORMAT"]);
-	  //TODO return bayerFormat
-      
       Location  r (l, "ROI");
       icl::Rect roi ((int) extract<int>(r["offsetX"]), 
                      (int) extract<int>(r["offsetY"]),
                      (int) extract<int>(r["width"]),
                      (int) extract<int>(r["height"]));
 
-      ensureCompatible (&poImg, eDepth, Size(iWidth, iHeight), 
-                        iChannels, fmt, roi);
+      poImg = ensureCompatible (&poImg, eDepth, Size(iWidth, iHeight), 
+                                iChannels, fmt, roi);
 
 		Time::value_type t 
-         = extract<Time::value_type>(l[XPath("TIMESTAMPS/CREATED")]);
+         = extract<Time::value_type>(l[XPath("TIMESTAMPS/CREATED/@timestamp")]);
       poImg->setTime (Time::microSeconds (t));
 
       XCF::Binary::TransportUnitPtr btu = ctu->getBinary (sURI);
-      XCF::Binary::TransportVecByte *pTypedBTU 
-         = dynamic_cast<XCF::Binary::TransportVecByte*>(btu.get());
-      const std::vector<Ice::Byte> &vecImage = pTypedBTU->value;
-    
-      int imgSize = iWidth * iHeight * getSizeOf(eDepth);
-      for (int i=0; i < iChannels; i++) {
-         memcpy(poImg->getDataPtr(i), &vecImage[i*imgSize], imgSize);
+      switch (eDepth) {
+        case depth8u:
+           extractImage<XCF::Binary::TransportVecByte, Ice::Byte> (poImg, btu);
+           break;
+        case depth32s:
+           extractImage<XCF::Binary::TransportVecInt, int> (poImg, btu);
+           break;
+        case depth32f:
+           extractImage<XCF::Binary::TransportVecFloat, float> (poImg, btu);
+           break;
+        case depth64f:
+           extractImage<XCF::Binary::TransportVecDouble, double> (poImg, btu);
+           break;
+        default:
+           return;
+           break;
       }
    }
+
+// }}}
 
    XCFGrabber::XCFGrabber (const std::string& sServer, XCF::RecoverLevel l) :
       m_locRequest ("<IMAGEREQUEST>"
