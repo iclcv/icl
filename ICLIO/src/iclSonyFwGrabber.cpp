@@ -394,6 +394,8 @@ namespace icl {
 		flippedCopy(axisBoth, *poDstRight, &tmp);
 		tmp->deepCopy(poDstRight);
 
+		delete tmp;
+
 	}
 
 	void SonyFwGrabber::GetCamAllString(long camIndex, char *strCamera) {
@@ -439,3 +441,4 @@ namespace icl {
 
 #endif //SONYIIDC
 #endif //WIN32
+
