@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bayerdemo", "bayerdemo.vcpr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "convertertest", "convertertest.vcproj", "{5AF5DBB8-35CE-4FD9-A7C0-98532BEA61FF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sonygrabberTest", "sonygrabberTest.vcproj", "{5217BD3C-F17E-469A-95A1-B2B25CBA9200}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -42,6 +44,10 @@ Global
 		{5AF5DBB8-35CE-4FD9-A7C0-98532BEA61FF}.Debug|Win32.Build.0 = Debug|Win32
 		{5AF5DBB8-35CE-4FD9-A7C0-98532BEA61FF}.Release|Win32.ActiveCfg = Release|Win32
 		{5AF5DBB8-35CE-4FD9-A7C0-98532BEA61FF}.Release|Win32.Build.0 = Release|Win32
+		{5217BD3C-F17E-469A-95A1-B2B25CBA9200}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5217BD3C-F17E-469A-95A1-B2B25CBA9200}.Debug|Win32.Build.0 = Debug|Win32
+		{5217BD3C-F17E-469A-95A1-B2B25CBA9200}.Release|Win32.ActiveCfg = Release|Win32
+		{5217BD3C-F17E-469A-95A1-B2B25CBA9200}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
