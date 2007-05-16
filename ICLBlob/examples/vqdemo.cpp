@@ -1,6 +1,7 @@
 #include "iclVQ2D.h"
 #include <time.h>
 #include <math.h>
+#include <iclMathematics.h>
 #include <iclTestImages.h>
 #include <iclTimer.h>
 #include <iclDrawWidget.h>
@@ -9,7 +10,7 @@
 using namespace icl;
 
 float rnd(float min=0, float max=1){
-  return (float)((max-min)*drand48())+min;
+	return (float)((max-min)*icl::random())+min;
 }
 
 void getCenter(int i, float &cx, float &cy){
@@ -112,7 +113,7 @@ void visualize(Img8u &image,const VQClusterInfo &info){
 
 
 int main(){
-  srand48(time(0));
+  icl::randomSeed();
   Img8u image(Size(100,100),3);
 
   int k=5;  
