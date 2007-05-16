@@ -26,6 +26,7 @@ copy ..\ICLMEx\src\*.h %1\include\*.h
 copy ..\ICLNN\src\*.h %1\include\*.h
 copy ..\ICLQt\src\*.h %1\include\*.h
 copy ..\ICLUtils\src\*.h %1\include\*.h
+copy compat\*.h %1\include\*.h
 
 ECHO copy library files
 copy lib\* %1\lib\*
