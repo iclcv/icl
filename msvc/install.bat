@@ -32,15 +32,15 @@ ECHO copy library files
 copy lib\* %1\lib\*
 
 ECHO copy doc files
-copy ..\ICLBlob\doc\html\* %1doc\html\*
-copy ..\ICLCC\doc\html\* %1doc\html\*
-copy ..\ICLCore\doc\html\* %1doc\html\*
-copy ..\ICLFilter\doc\html\* %1doc\html\*
-copy ..\ICLIO\doc\html\* %1doc\html\*
-copy ..\ICLMEx\doc\html\* %1doc\html\*
-copy ..\ICLNN\doc\html\* %1doc\html\*
-copy ..\ICLQt\doc\html\* %1doc\html\*
-copy ..\ICLUtils\doc\html\* %1doc\html\*
+copy ..\ICLBlob\doc\documentation\html\* %1\doc\html\*
+copy ..\ICLCC\doc\documentation\html\* %1\doc\html\*
+copy ..\ICLCore\doc\documentation\html\* %1\doc\html\*
+copy ..\ICLFilter\doc\documentation\html\* %1\doc\html\*
+copy ..\ICLIO\doc\documentation\html\* %1\doc\html\*
+copy ..\ICLMEx\doc\documentation\html\* %1\doc\html\*
+copy ..\ICLNN\doc\documentation\html\* %1\doc\html\*
+copy ..\ICLQt\doc\documentation\html\* %1\doc\html\*
+copy ..\ICLUtils\doc\documentation\html\* %1\doc\html\*
 
 ::ECHO setting environment variables
 ::set ICLROOT=%1
