@@ -28,8 +28,8 @@ namespace icl {
 	class SonyFwGrabber : public Grabber {
 
 	public:
-		SonyFwGrabber(void);
-		~SonyFwGrabber(void);
+		SonyFwGrabber();
+		~SonyFwGrabber();
 
 		bool init();
 
@@ -37,10 +37,8 @@ namespace icl {
 		/** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    
 		virtual const ImgBase* grab(ImgBase **poDst=0);
 
-		//void GetLeftImage (Img8u *image);
-		//void GetRightImage (Img8u *image);
-		void GetStereoImage (ImgBase **poDstLeft, ImgBase **poDstRight);
-		//void GetStereoImageTrigger (Img8u *leftImage, Img8u *rightImage);
+		void grabStereo (ImgBase **ppoDstLeft, ImgBase **ppoDstRight);
+		void grabStereoTrigger (ImgBase **leftImage, ImgBase **rightImage);
 
 		/** @{ @name properties and parameters */
     
@@ -56,7 +54,11 @@ namespace icl {
 		virtual std::string getValue(const std::string &name);
 		/** @} */
 
-		icl::Size getSize() { return icl::Size(m_iWidth, m_iHeight); }
+		void setDevice(int dev) {
+			if ((dev <= m_lNumCameras) && (dev >=0))
+				m_iDevice = dev; 
+		}
+		inline icl::Size getSize() { return icl::Size(m_iWidth, m_iHeight); }
 
 	private:
 		/// current grabbing width
@@ -69,14 +71,16 @@ namespace icl {
 		float m_fFps;
 		/// current number of devices
 		long m_lNumCameras;
-		/// current Img8u image buffer
-		//Img8u *m_poRGB8Image;
-		//Img8u *imageLeft;
-		//Img8u *imageRight;
+		/// image buffer
 		BYTE ***m_pppImgBuffer;
-	
 		/// camera handels
 		HIIDC m_hCamera[10];
+
+		///internal image pointer 
+		ImgBase *left;
+		ImgBase *right;
+		//help image used for flipping
+		ImgBase* flip;
 
 		void GetCamAllString(long camIndex, char *strCamera);
 

@@ -216,13 +216,19 @@ namespace icl {
 			}  
 		}
 
-		return true;
+		m_iDevice = 0;
+		setDesiredParams(ImgParams(Size(m_iWidth, m_iHeight), icl::formatGray));
 
+		//image used for flipping
+		flip = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatGray);
+		return true;
 	}
 
-	SonyFwGrabber::~SonyFwGrabber(void) {
+	SonyFwGrabber::~SonyFwGrabber() {
 		//---- Destroy all camera handle ----
 		iidc_uninit();
+		delete flip;
+		m_poImage = 0;
 	}
 
 	std::string SonyFwGrabber::getValue(const std::string &name) {
@@ -318,50 +324,56 @@ namespace icl {
 		return v;
 	}
 
-	const ImgBase* SonyFwGrabber::grab(ImgBase **poDst) {
-		ImgBase* img = new Img8u(Size(m_iWidth, m_iHeight), icl::formatGray);
-
-		//---- Initialize variables ----
-		IIDC_WAIT waitparam;
-		bool bRetLeft, bRetRight;
-		void *vImgBufLeft, *vImgBufRight;
-
-		printf("get image(s) ... ");
-
-		waitparam.event = IIDCID_EVENT_FRAMEEND;
-		waitparam.timeout = 1000;
-
-		//---- Get image from buffer ----
-		bRetLeft = iidc_wait( m_hCamera[0], &waitparam, sizeof(IIDC_WAIT) );
-		bRetRight = iidc_wait( m_hCamera[1], &waitparam, sizeof(IIDC_WAIT) );
-
-		if( bRetLeft && bRetRight )
-		{
-			vImgBufLeft = (LPBYTE) iidc_lockdata( m_hCamera[0], -1 );
-			vImgBufRight = (LPBYTE) iidc_lockdata( m_hCamera[1], -1 );
-			if(vImgBufLeft && vImgBufRight)
-			{
-				memcpy((icl8u*)(img->getDataPtr(0)),m_pppImgBuffer[0][0],(m_iWidth*m_iHeight)*sizeof(unsigned char));
-				//memcpy((icl8u*)(img->getDataPtr(1)),m_pppImgBuffer[1][0],(m_iWidth*m_iHeight)*sizeof(unsigned char));
-
-				//---- remove data lock ----
-				iidc_unlockdata( m_hCamera[0] );
-				iidc_unlockdata( m_hCamera[1] );
-			}
-		}
-
-		printf("done\n");
-		return img;
-	}
-
-	void SonyFwGrabber::GetStereoImage(ImgBase **poDstLeft, ImgBase **poDstRight) {
+	const ImgBase* SonyFwGrabber::grab(ImgBase **ppoDst) {
+		ImgBase *poOutput = prepareOutput (ppoDst);
 		
 		//---- Initialize variables ----
 		IIDC_WAIT waitparam;
+		bool bRet;
+		void *vImgBuf;
+
+		waitparam.event = IIDCID_EVENT_FRAMEEND;
+		waitparam.timeout = 1000;
+
+		//---- Get image from buffer ----
+		bRet = iidc_wait( m_hCamera[m_iDevice], &waitparam, sizeof(IIDC_WAIT) );
+		
+		if( bRet ) {
+			vImgBuf = (LPBYTE) iidc_lockdata( m_hCamera[m_iDevice], -1 );
+			if(vImgBuf) {
+				memcpy((icl8u*)(poOutput->getDataPtr(0)),m_pppImgBuffer[0][0], m_iWidth * m_iHeight * sizeof(icl8u));
+				
+				//---- remove data lock ----
+				iidc_unlockdata( m_hCamera[m_iDevice] );
+			}
+		}
+
+		//flipping
+		flippedCopy(axisBoth, poOutput, &flip);
+		flip->deepCopy(&poOutput);
+
+		return poOutput;
+	}
+
+	void SonyFwGrabber::grabStereo(ImgBase **ppoDstLeft, ImgBase **ppoDstRight) {
+		if (m_lNumCameras < 2) return;
+ 
+		if (!ppoDstLeft) {
+			ppoDstLeft = &left;
+			*ppoDstLeft = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatGray);
+		}
+		if (!ppoDstRight) {
+			ppoDstRight = &right;
+			*ppoDstRight = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatGray);
+		}
+		
+		ensureCompatible(ppoDstLeft, m_eDesiredDepth, m_oDesiredParams);
+		ensureCompatible(ppoDstRight, m_eDesiredDepth, m_oDesiredParams);
+
+		//---- Initialize variables ----
+		IIDC_WAIT waitparam;
 		bool bRetLeft, bRetRight;
 		void *vImgBufLeft, *vImgBufRight;
-
-		printf("get images ... ");
 
 		waitparam.event = IIDCID_EVENT_FRAMEEND;
 		waitparam.timeout = 1000;
@@ -376,8 +388,8 @@ namespace icl {
 			vImgBufRight = (LPBYTE) iidc_lockdata( m_hCamera[1], -1 );
 			if(vImgBufLeft && vImgBufRight)
 			{
-				memcpy((icl8u*)((*poDstLeft)->getDataPtr(0)),m_pppImgBuffer[0][0],(m_iWidth*m_iHeight)*sizeof(unsigned char));
-				memcpy((icl8u*)((*poDstRight)->getDataPtr(0)),m_pppImgBuffer[1][0],(m_iWidth*m_iHeight)*sizeof(unsigned char));
+				memcpy((icl8u*)((*ppoDstLeft)->getDataPtr(0)),m_pppImgBuffer[0][0], m_iWidth*m_iHeight*sizeof(icl8u));
+				memcpy((icl8u*)((*ppoDstRight)->getDataPtr(0)),m_pppImgBuffer[1][0], m_iWidth*m_iHeight*sizeof(icl8u));
 
 				//---- remove data lock ----
 				iidc_unlockdata( m_hCamera[0] );
@@ -385,17 +397,16 @@ namespace icl {
 			}
 		}
 
-		printf("done\n");
-
 		//flipping image
-		ImgBase* tmp = new Img8u(Size(m_iWidth, m_iHeight), icl::formatGray);
-		flippedCopy(axisBoth, *poDstLeft, &tmp);
-		tmp->deepCopy(poDstLeft);
-		flippedCopy(axisBoth, *poDstRight, &tmp);
-		tmp->deepCopy(poDstRight);
+		flippedCopy(axisBoth, *ppoDstLeft, &flip);
+		flip->deepCopy(ppoDstLeft);
+		flippedCopy(axisBoth, *ppoDstRight, &flip);
+		flip->deepCopy(ppoDstRight);
 
-		delete tmp;
+	}
 
+	void SonyFwGrabber::grabStereoTrigger(ImgBase **ppoDstLeft, ImgBase **ppoDstRight) {
+		//TODO
 	}
 
 	void SonyFwGrabber::GetCamAllString(long camIndex, char *strCamera) {
