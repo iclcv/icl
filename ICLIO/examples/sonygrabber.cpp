@@ -20,7 +20,25 @@ int main() {
 	const ImgBase* img = grabber->grab();
 	writer.write(img);
 
+	ImgBase *left, *right;
+	left = 0;
+	right = 0;
+	
+	grabber->grabStereo(&left, &right);
+	writer.setFileName("left_0.pgm");
+	writer.write(left);
+	writer.setFileName("right_0.pgm");
+	writer.write(right);
+
+	grabber->grabStereo(&left, &right);
+	writer.setFileName("left_1.pgm");
+	writer.write(left);
+	writer.setFileName("right_1.pgm");
+	writer.write(right);
+
 	delete img;
+	delete left;
+	delete right;
 	delete grabber;
 	return 0;
 }
