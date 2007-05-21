@@ -1,5 +1,3 @@
-#!/usr/bin/perl
-
 use strict;
 use Cwd;
 use Data::Dumper;
@@ -34,26 +32,29 @@ foreach my $line(@content) {
 #Walk through directory tree
 #---------------------------
 opendir(DIR,"..") or die "Can not open DIR: $!";
-my @dirs = readdir(DIR);
+my @dirs = grep { /ICL/ } readdir(DIR);
 closedir(DIR);
 
 my $INSTALLDIR="$ENV{AGNI_LOCAL_ROOT}/${projectRootName}/${majVer}.${minVer}";
 my $OS_SYSTEM="$ENV{ARCH}";
+my $currDir=&Cwd::cwd();
 
 #---- Remove old install tree before installing the new one ----
 if ($installMode == 0 || $installMode == 1 || $installMode == 3) {
     print "---- Remove header files in: $INSTALLDIR/include \n";
-    system "rm $INSTALLDIR/include/*.h";
+    system "rm -Rf $INSTALLDIR/include/*.h";
     print "---- Remove libraries in: $INSTALLDIR/lib \n";
-    system "rm $INSTALLDIR/lib/*";
+    system "rm -Rf $INSTALLDIR/lib/*";
+    print "---- Remove packages in: $INSTALLDIR/packages \n";
+    system "rm -Rf $INSTALLDIR/packages/*";
 }
 
 if ($installMode == 0 || $installMode == 2) {
     print "---- Remove docs in: $INSTALLDIR/doc \n";
-    system "rm -R $INSTALLDIR/doc/*";
+    system "rm -Rf $INSTALLDIR/doc/*";
 }
 
-#---- Create directory tree ----
+#---- Create install tree ----
 if (!-e "$INSTALLDIR"){
     print "make dir: $INSTALLDIR\n";
     system "mkdir -p $INSTALLDIR";
@@ -69,86 +70,63 @@ if (!-e "$INSTALLDIR/include"){
     system "mkdir $INSTALLDIR/include";
     }
 
+if (!-e "$INSTALLDIR/packages"){
+    print "make dir: $INSTALLDIR/packages\n";
+    system "mkdir $INSTALLDIR/packages";
+}
+
 if (!-e "$INSTALLDIR/doc"){
     print "make dir: $INSTALLDIR/doc\n";
     system "mkdir $INSTALLDIR/doc";
 }
 
 #---- Copy content to install dir ----
-system "cp ./BashSrc $INSTALLDIR";
-system "cp ./packageVar $INSTALLDIR";
+#system "cp ./BashSrc $INSTALLDIR";
+#system "cp ./packageVar $INSTALLDIR";
 
 foreach my $entry(@dirs) {
-    if ($entry !~ /^\./ ){        
-        if (opendir(DIR,"../".$entry)) {
-            my $curdir=&Cwd::cwd();
-            while (my $subentry=readdir(DIR)) {
-                if ($installMode == 0 || $installMode == 1) { 
-                    if ($subentry eq 'src'){
-                        print "---- Copying header files: $entry/$subentry\n";
-                        system "cp ../$entry/$subentry/*.h $INSTALLDIR/include"
-                        }
-                    elsif ($subentry eq 'lib'){
-                        print "---- Copying libraries: $entry/$subentry\n";
-                        if ("$OS_SYSTEM" eq "macosx") {
-                            system "cp -d ../$entry/$subentry/*.dylib $INSTALLDIR/lib";
-                            system "cp -d ../$entry/$subentry/*.a $INSTALLDIR/lib";
-                        } else {
-                            system "cp -d ../$entry/$subentry/*.so* $INSTALLDIR/lib";
-                            system "cp -d ../$entry/$subentry/*.a $INSTALLDIR/lib";
-                        }
-                    }
-                    elsif ($subentry !~ /^\./ ){
-                        push(@dirs,"$entry/$subentry");
-                    }
-                }
-                if ($installMode == 3) {
-                    if ($subentry eq 'src'){
-                        my @allHeaders = ();
-                        &File::Find::find( sub {push @allHeaders, $_;}, 
-                                           "$curdir/../$entry/$subentry/*.h" );
-                        print "---- Linking header files: $entry/$subentry\n";
-                        system "ln -s $curdir/../$entry/$subentry/*.h $INSTALLDIR/include"
-                        }
-                    elsif ($subentry eq 'lib'){
-                        print "---- Linking libraries: $entry/$subentry\n";
-                        if ("$OS_SYSTEM" eq "macosx") {
-                            system "ln -s $curdir/../$entry/$subentry/*.dylib $INSTALLDIR/lib";
-                            system "ln -s $curdir/../$entry/$subentry/*.a $INSTALLDIR/lib";
-                        } else {
-                            system "ln -s $curdir/../$entry/$subentry/*.so* $INSTALLDIR/lib";
-                            system "ln -s $curdir/../$entry/$subentry/*.a $INSTALLDIR/lib";
-                        }
-                    }
-                    elsif ($subentry !~ /^\./ ){
-                        push(@dirs,"$entry/$subentry");
-                    }
-                }
-                if ($installMode == 0 || $installMode == 2) {
-                    if ($subentry eq 'doc'){
-                        if (!-e "$INSTALLDIR/doc/$entry"){                   
-                            ($projectName) = $entry =~ /.*\/(.+?)$/;
-                            if (!$projectName) {
-                                $projectName = $entry;
-                            }
-                            push(@allProjectNames, $projectName);
-                            system "mkdir $INSTALLDIR/doc/$projectName";
-                        }
-                        print "---- Copying documentation: $entry/$subentry\n";
-                        system "cp -r ../$entry/$subentry/documentation/* $INSTALLDIR/doc/$entry";
-                    }
-                    elsif ($subentry !~ /^\./ ){
-                        push(@dirs,"$entry/$subentry");
-                    }
-                }
+    if ($entry !~ /ICLUtils/) {
+        # ---- Install content ----
+        if ($installMode == 0 || $installMode == 1) { 
+            print "---- Copying header files: $entry/src\n";
+            system "cp ../$entry/src/*.h $INSTALLDIR/include";
+            
+            print "---- Copying libraries: $entry/lib\n";
+            if ("$OS_SYSTEM" eq "macosx") {
+                system "cp -d ../$entry/lib/*.dylib $INSTALLDIR/lib";
+                system "cp -d ../$entry/lib/*.a $INSTALLDIR/lib";
+            } else {
+                system "cp -d ../$entry/lib/*.so* $INSTALLDIR/lib";
+                system "cp -d ../$entry/lib/*.a $INSTALLDIR/lib";
             }
-            closedir (DIR);
         }
-    }
-}
+        
+        # ---- remove & install as link include, lib ----
+        if ($installMode == 3) {
+            print "---- Linking header files: $entry/src\n";
+            system "ln -s $currDir/../$entry/src/*.h $INSTALLDIR/include";
+            
+            print "---- Linking libraries: $entry/lib\n";
+            if ("$OS_SYSTEM" eq "macosx") {
+                system "ln -s $currDir/../$entry/lib/*.dylib $INSTALLDIR/lib";
+                system "ln -s $currDir/../$entry/lib/*.a $INSTALLDIR/lib";
+            } else {
+                system "ln -s $currDir/../$entry/lib/*.so* $INSTALLDIR/lib";
+                system "ln -s $currDir/../$entry/lib/*.a $INSTALLDIR/lib";
+            }
+        }
+        
+        if ($installMode == 0 || $installMode == 2) {
+            print "---- Copying documentation: $entry/doc\n";
+            system "cp -r ../$entry/doc/documentation/* $INSTALLDIR/doc/$entry";
+        }
 
-if ($installMode == 0 || $installMode == 2) {
-    generate_documentation($INSTALLDIR, @allProjectNames);
+        generate_packagevar($entry, $INSTALLDIR);
+    }
+
+    if ($installMode == 0 || $installMode == 2) {
+        generate_documentation($INSTALLDIR, @dirs);
+    }
 }
 
 #---------------------
@@ -158,8 +136,11 @@ system "find $INSTALLDIR -name '.svn' -exec rm -Rf {} \\; 2> /dev/null";
 
 exit(0);
 
+
 #----------------------------------------------------------------------------- 
 sub generate_documentation {
+# {{{ open
+
     my ($INSTALLDIR, @projects) = @_;
     my $menuTable = "";
     
@@ -205,3 +186,46 @@ sub generate_documentation {
     print FILE $menuTable;
     close(FILE);
 }
+# }}}
+
+sub generate_packagevar {
+# {{{ open
+
+    my ($entry, $installdir) = @_;
+    my $pkgContent = "";
+    
+    #---- Generate content ----
+    $pkgContent .= "#   packageVar\n";
+    $pkgContent .= "ifeq \"\${".$entry."_MAKEVAR}\" \"\"\n";
+    $pkgContent .= $entry."_MAKEVAR=".$entry."_MAKEVAR\n";
+    $pkgContent .= "\n";
+    $pkgContent .= "# Please, place here the include directory of the project\n";
+    $pkgContent .= "ABS_INCLUDES:= \${ABS_INCLUDES} \\\n";
+    $pkgContent .= "-I$installdir/include\n";
+    $pkgContent .= "\n";
+    $pkgContent .= "# Please, do not change this ifeq statement\n";
+    $pkgContent .= "ifeq \"\${AGNI_INHERIT_MODE}\" \"STATIC\"\n";
+    $pkgContent .= "\n";
+    $pkgContent .= "\n";
+    $pkgContent .= "# Please, place here the static libraries\n";
+    $pkgContent .= "ABS_OBJECTS:= \${ABS_OBJECTS} \\\n";
+    $pkgContent .= "$installdir/lib/lib".$entry.".a\n";
+    $pkgContent .= "\n";
+    $pkgContent .= "else\n";
+    $pkgContent .= "\n";
+    $pkgContent .= "\n";
+    $pkgContent .= "# Please, place here the lib directory of the project and the library name.\n";
+    $pkgContent .= "ABS_LIBRARIES:= \${ABS_LIBRARIES} \\\n";
+    $pkgContent .= "-L".$installdir."/lib -l".$entry."\n";
+    $pkgContent .= "\n";
+    $pkgContent .= "endif\n";
+    $pkgContent .= "endif\n";
+
+    #---- Write packagevar ----
+    open(FILE, ">$INSTALLDIR/packages/$entry") or die "cannot write packageVar:$!";
+    print FILE $pkgContent;
+    close(FILE);
+}
+
+# }}}
+

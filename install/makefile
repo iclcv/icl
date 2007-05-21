@@ -25,19 +25,19 @@ all: install
 #-----------------------------------------------
 install:
 	echo "**** Installing Project: ${PROJECT_ROOT_NAME} ****"
-	./Install ${PROJECT_ROOT_NAME} 1
+	perl ./Install ${PROJECT_ROOT_NAME} 1
 
 installdoc:
 	echo "**** Installing Project documentation for: ${PROJECT_ROOT_NAME} ****"
-	./Install ${PROJECT_ROOT_NAME} 2
+	perl ./Install ${PROJECT_ROOT_NAME} 2
 
 installlink:
 	echo "**** Installing Project: ${PROJECT_ROOT_NAME} ****"
-	./Install ${PROJECT_ROOT_NAME} 3
+	perl ./Install ${PROJECT_ROOT_NAME} 3
 
 installall:
 	echo "**** Installing Project documentation for: ${PROJECT_ROOT_NAME} ****"
-	./Install ${PROJECT_ROOT_NAME} 0
+	perl ./Install ${PROJECT_ROOT_NAME} 0
 
 #-----------------------------------------------
 # Rule: % (default rule)
