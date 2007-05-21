@@ -1,14 +1,12 @@
-#ifdef WIN32
-#ifdef WITH_SONYIIDC
-
 #include <iclFileWriter.h>
 #include <iclSonyFwGrabber.h>
 
 using namespace std;
 using namespace icl;
 
-int main() {
-
+int main(int n, char **ppc) {
+#ifdef WIN32
+#ifdef WITH_SONYIIDC
 	SonyFwGrabber *grabber = new SonyFwGrabber();
 	if (!grabber->init()) {
 		cout << "init failed!" << endl;
@@ -36,12 +34,11 @@ int main() {
 	writer.setFileName("right_1.pgm");
 	writer.write(right);
 
-	delete img;
-	delete left;
-	delete right;
 	delete grabber;
+
 	return 0;
+#endif
+#endif
+
 }
 
-#endif
-#endif
