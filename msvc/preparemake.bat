@@ -2,7 +2,21 @@
 
 :PREPARE
 ECHO copy makefiles
+
 copy ..\make\makefile.root ..\makefile
+
+copy ..\make\makefile.root ..\ICLBlob\makefile
+copy ..\make\makefile.root ..\ICLCC\makefile
+copy ..\make\makefile.root ..\ICLCore\makefile
+copy ..\make\makefile.root ..\ICLFilter\makefile
+copy ..\make\makefile.root ..\ICLIO\makefile
+copy ..\make\makefile.root ..\ICLMEx\makefile
+copy ..\make\makefile.root ..\ICLNN\makefile
+copy ..\make\makefile.root ..\ICLQt\makefile
+copy ..\make\makefile.root ..\ICLUtils\makefile
+copy ..\make\makefile.root ..\ICLQuick\makefile
+copy ..\make\makefile.root ..\ICLSVS\makefile
+
 copy ..\make\makefile.src ..\ICLBlob\src\makefile
 copy ..\make\makefile.src ..\ICLCC\src\makefile
 copy ..\make\makefile.src ..\ICLCore\src\makefile

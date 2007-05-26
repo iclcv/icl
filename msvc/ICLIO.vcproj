@@ -104,7 +104,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="compat"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;HAVE_XCF"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;HAVE_XCF;WITH_SONYIIDC"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
