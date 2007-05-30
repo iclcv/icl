@@ -3,7 +3,11 @@
 
 #define NOMINMAX // needed for Win32 in order to not define min, max as macros
 
+#ifdef DO_NOT_USE_GL_VISUALIZATION
+#include <QWidget>
+#else
 #include <QGLWidget>
+#endif
 #include <iclImgBase.h>
 #include <QMutex>
 #include <QMouseEvent>
@@ -15,6 +19,8 @@
 #include <iclMouseInteractionInfo.h>
 #include <iclMouseInteractionReceiver.h>
 
+class QImage;
+
 namespace icl{
 
   /** \cond */
@@ -22,8 +28,9 @@ namespace icl{
   class OSDWidget;
   class OSD;
   class OSDButton;
-  class icl::ImgBase;
+  class ImgBase;
   class GLTextureMapBaseImage;
+  class QImageConverter;
   /** \endcond */
   
   /// Class for openGL-based image visualization components
@@ -106,7 +113,14 @@ int main(int nArgs, char **ppcArg){
       exactly what you want!!!)
       @see ICLDrawWidget
 */
-  class ICLWidget : public QGLWidget{
+
+#ifdef DO_NOT_USE_GL_VISUALIZATION
+  typedef QWidget ICLWidgetsParentClass;
+#else
+  typedef QGLWidget ICLWidgetsParentClass;
+#endif
+
+  class ICLWidget : public ICLWidgetsParentClass{
     Q_OBJECT
     public:
     /// determines how the image is fit into the widget geometry
@@ -137,6 +151,9 @@ int main(int nArgs, char **ppcArg){
     
     /// draw function
     virtual void paintGL();
+
+    /// drawing function for NO-GL fallback
+    virtual void paintEvent(QPaintEvent *e);
     
     /// this function can be overwritten do draw additional misc using the given PaintEngine
     virtual void customPaintEvent(PaintEngine *e);
@@ -196,8 +213,14 @@ int main(int nArgs, char **ppcArg){
     /// if a special channel is selected, the hole image is buffered here!
     ImgBase *m_poImageBufferForChannelSelection;
     
-    /// internal image buffer
+    /// internal image buffer 
     GLTextureMapBaseImage *m_poImage;
+    
+    /// converters Images to qimages
+    QImageConverter *m_poQImageConverter;
+
+    /// image buffer in case of using no GL
+    QImage *m_poQImage;
     
     /// mutex for the internal image buffer
     QMutex m_oMutex;

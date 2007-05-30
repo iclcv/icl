@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 #include <iclTime.h>
+#include <iclQImageConverter.h>
+#include <QImage>
+#include <iclQtPaintEngine.h>
 
 using namespace std;
 namespace icl{
@@ -52,15 +55,25 @@ namespace icl{
   }
   
   ICLWidget::ICLWidget(QWidget *parent) : 
-    QGLWidget(parent),m_poOSD(0),
-    m_poCurrOSD(0),m_poShowOSD(0),m_iMouseX(-1), m_iMouseY(-1),
+#ifdef DO_NOT_USE_GL_VISUALIZATION
+    QWidget(parent), m_poImage(0),m_poQImageConverter(new QImageConverter),
+#else
+    QGLWidget(parent), m_poImage(new GLTextureMapBaseImage(0,false)),
+    m_poQImageConverter(0),
+#endif
+    m_poQImage(0),
+    m_poOSD(0),m_poCurrOSD(0),m_poShowOSD(0),m_iMouseX(-1), m_iMouseY(-1),
     m_iCurrSelectedChannel(-1){
     // {{{ open
 
+#ifndef DO_NOT_USE_GL_VISUALIZATION
     makeCurrent();
     setAttribute(Qt::WA_PaintOnScreen); 
-    setAttribute(Qt::WA_NoBackground);
-    m_poImage = new GLTextureMapBaseImage(0,false);
+    setAttribute(Qt::WA_NoBackground);   
+#endif
+
+
+
     m_poImageBufferForChannelSelection = 0;
     m_eFitMode = fmHoldAR;
     m_eRangeMode = rmOff;
@@ -83,6 +96,62 @@ namespace icl{
   }
 
   // }}}
+
+#ifdef DO_NOT_USE_GL_VISUALIZATION
+  void ICLWidget::initializeGL(){}
+  void ICLWidget::paintGL(){}
+  void ICLWidget::resizeGL(int w, int h){ (void)w; (void)h; }
+  void ICLWidget::paintEvent(QPaintEvent *e){
+    m_oMutex.lock();
+
+    QtPaintEngine pe(this);   
+    if(m_poQImage){
+      Rect r = computeRect(Size(m_poQImage->width(),m_poQImage->height()),getSize(),m_eFitMode);
+      pe.image(r,*m_poQImage);
+    }else{
+      pe.fill(0,0,0,255);
+      Rect fullRect(0,0,width(),height());
+      pe.rect(fullRect);
+      pe.color(255,255,255,255);
+      pe.fill(255,255,255,255);
+      pe.text(fullRect,"no image");
+    }
+
+    m_oMutex.unlock();
+
+    m_oOSDMutex.lock();
+    if(m_poCurrOSD){
+      float m = std::min(((float)std::min(width(),height()))/100,6.0f);
+      pe.font("Arial",(int)(1.5*m)+5,PaintEngine::DemiBold);
+      m_poCurrOSD->_drawSelf(&pe,m_iMouseX,m_iMouseY,aiDown);
+    }
+    m_oOSDMutex.unlock();
+    
+    customPaintEvent(&pe);
+  }
+
+  // NO GL case
+  void ICLWidget::setImage(const ImgBase *image){ 
+    ICLASSERT_RETURN(image);
+    m_oMutex.lock();
+    
+    // range mode is not regarded in this fallback impl.
+    
+    if(m_iCurrSelectedChannel != -1 && m_iCurrSelectedChannel >= 0 && m_iCurrSelectedChannel < image->getChannels()){
+      const ImgBase *selectedChannel = image->selectChannel(m_iCurrSelectedChannel);
+      
+      m_poQImageConverter->setImage(selectedChannel);
+      m_poQImage = const_cast<QImage*>(m_poQImageConverter->getQImage());
+      
+      delete selectedChannel;
+    }else{
+      m_poQImageConverter->setImage(image);
+      m_poQImage = const_cast<QImage*>(m_poQImageConverter->getQImage());
+    }
+    m_oMutex.unlock();
+
+  }
+#else
 
   void ICLWidget::initializeGL(){
     // {{{ open
@@ -145,8 +214,19 @@ namespace icl{
     customPaintEvent(&pe);
   }
 
-  // }}}icl
+  // }}}
+
+  // GL case
+  void ICLWidget::paintEvent(QPaintEvent *e){
+    // {{{ open
+
+    QGLWidget::paintEvent(e);    
+  }
+
+  // }}}
+
   
+  // GL case
   void ICLWidget::setImage(const ImgBase *image){ 
     // {{{ open
     ICLASSERT_RETURN(image);
@@ -175,6 +255,8 @@ namespace icl{
   }
 
   // }}}
+
+#endif
   void ICLWidget::setFitMode(fitmode fm){
     // {{{ open
 

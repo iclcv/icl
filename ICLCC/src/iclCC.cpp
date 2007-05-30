@@ -762,7 +762,7 @@ namespace icl{
     return;
   }
 
-  if(src->hasFullROI() && dstLineStep != -1){ // no roi handling!
+  if(src->hasFullROI() && dstLineStep == -1){ // no roi handling!
     int dim=src->getDim();
     const S** pp=new const S* [c];
     const S** ppEnd=pp+c;
@@ -779,7 +779,7 @@ namespace icl{
     }
     delete [] pp;
   }else{ // roi handling
-    if(dstLineStep == -1) dstLineStep = src->getROIWidth()*sizeof(D);
+    if(dstLineStep == -1) dstLineStep = src->getROIWidth()*sizeof(D)*c;
     ConstImgIterator<S> *sourceIts = new ConstImgIterator<S>[c];
     for (int i=0;i<c;i++){
       sourceIts[i] = src->getROIIterator(i);
