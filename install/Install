@@ -173,9 +173,11 @@ sub generate_documentation {
     $menuTable .= "</tr>\n";
 
     foreach my $project (@projects) {
-        $menuTable .= "<tr><td> <a href=\"../".$project."/html/index.html\" target=\"MainFrame\">".$project."</a></td>\n";
+        if ($project !~ /ICLUtils/) {
+            $menuTable .= "<tr><td> <a href=\"../".$project."/index.html\" target=\"MainFrame\">".$project."</a></td>\n";
+        }
     }
-    
+
     $menuTable .= "</table>\n";
     $menuTable .= "<br>\n";
     $menuTable .= "</body>\n";
