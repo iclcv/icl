@@ -348,11 +348,12 @@ void save_setparams(int device){
   }
   
   PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice) : 
-    m_poRGB8Image(0) {
+    m_iDevice(-1),m_poRGB8Image(0) {
     if (!init(s, fFps, iDevice)) { exit(0); }
   }
 
   PWCGrabber::~PWCGrabber(void) {
+    printf("destructor called for device %d \n",m_iDevice);
     releaseAll();
     delete m_poRGB8Image;
   }
@@ -423,6 +424,7 @@ void save_setparams(int device){
           if (usbvflg_buf[m_iDevice]) { // munmap
             munmap(usbvflg_buf[m_iDevice],usbvflg_vmbuf[m_iDevice].size);
             
+	    printf("device %d unmapping %p \n",m_iDevice,usbvflg_buf[m_iDevice]);
             if (usbvflg_verbosity)
               printf("unmapping memory for /dev/video%d\n",m_iDevice);
           }
@@ -683,7 +685,9 @@ void save_setparams(int device){
   }
   
   bool PWCGrabber::init(const Size &s,float fFps, int iDevice, bool echoOff)  {
-    if (iDevice >= 0) releaseAll ();
+    if (iDevice >= 0){
+      releaseAll ();
+    }
     m_iWidth = s.width;
     m_iHeight = s.height;
     m_iDevice = iDevice;
@@ -755,10 +759,20 @@ void save_setparams(int device){
       PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCGMBUF, &usbvflg_vmbuf[m_iDevice]),"error getting video-membuffer" );
       
       /* Alloc memory for snapshot  */
+      /**
+	 usbvflg_buf[m_iDevice]=(icl8u *)mmap(0,usbvflg_vmbuf[m_iDevice].size, 
+	 PROT_READ|PROT_WRITE,
+	 MAP_SHARED, usbvflg_fd[m_iDevice],0);
+      **/
+
       usbvflg_buf[m_iDevice]=(icl8u *)mmap(0,usbvflg_vmbuf[m_iDevice].size, 
-                                           PROT_READ|PROT_WRITE,
-                                           MAP_SHARED, usbvflg_fd[m_iDevice],0);
-      
+					   PROT_READ|PROT_WRITE,
+					   MAP_SHARED, usbvflg_fd[m_iDevice],0);
+
+	 
+      printf("mmap returned %p for device %d \n",usbvflg_buf[m_iDevice],m_iDevice);
+
+
       /* Mutex stuff */
       pthread_mutex_init(&usb_frame_mutex[m_iDevice],NULL);
       pthread_mutex_init(&usb_semph_mutex[m_iDevice],NULL);
@@ -807,6 +821,12 @@ void save_setparams(int device){
   int use_frame=usbvflg_useframe[m_iDevice];
 
   icl8u *pucPwcData = usbvflg_buf[m_iDevice] + usbvflg_vmbuf[m_iDevice].offsets[use_frame];
+  
+  printf("device = %d buf = %p offs = %d got this pwcData : %p \n",
+	 m_iDevice,
+	 (void*)usbvflg_buf[m_iDevice],
+	 usbvflg_vmbuf[m_iDevice].offsets[use_frame],
+	 (void*)pucPwcData);
   
   icl8u *pY = pucPwcData;
   icl8u *pU = pY+m_iWidth*m_iHeight;
