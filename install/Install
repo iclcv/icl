@@ -84,13 +84,20 @@ if (!-e "$INSTALLDIR/doc"){
 #system "cp ./BashSrc $INSTALLDIR";
 #system "cp ./packageVar $INSTALLDIR";
 
+#---- Copy extern projects files----
+system "cp ../packages/IPP $INSTALLDIR/packages";
+system "cp ../packages/Qt $INSTALLDIR/packages";
+system "cp ../packages/Unicap $INSTALLDIR/packages";
+system "cp ../packages/XCF $INSTALLDIR/packages";
+system "cp ../packages/Firewire $INSTALLDIR/packages";
+
 foreach my $entry(@dirs) {
-    if ($entry !~ /ICLUtils/) {
-        # ---- Install content ----
-        if ($installMode == 0 || $installMode == 1) { 
-            print "---- Copying header files: $entry/src\n";
-            system "cp ../$entry/src/*.h $INSTALLDIR/include";
-            
+    # ---- Install content ----
+    if ($installMode == 0 || $installMode == 1) { 
+        print "---- Copying header files: $entry/src\n";
+        system "cp ../$entry/src/*.h $INSTALLDIR/include";
+        
+        if ($entry !~ /ICLUtils/) {
             print "---- Copying libraries: $entry/lib\n";
             if ("$OS_SYSTEM" eq "macosx") {
                 system "cp -d ../$entry/lib/*.dylib $INSTALLDIR/lib";
@@ -100,12 +107,14 @@ foreach my $entry(@dirs) {
                 system "cp -d ../$entry/lib/*.a $INSTALLDIR/lib";
             }
         }
+    }
+    
+    # ---- remove & install as link include, lib ----
+    if ($installMode == 3) {
+        print "---- Linking header files: $entry/src\n";
+        system "ln -s $currDir/../$entry/src/*.h $INSTALLDIR/include";
         
-        # ---- remove & install as link include, lib ----
-        if ($installMode == 3) {
-            print "---- Linking header files: $entry/src\n";
-            system "ln -s $currDir/../$entry/src/*.h $INSTALLDIR/include";
-            
+        if ($entry !~ /ICLUtils/) {
             print "---- Linking libraries: $entry/lib\n";
             if ("$OS_SYSTEM" eq "macosx") {
                 system "ln -s $currDir/../$entry/lib/*.dylib $INSTALLDIR/lib";
@@ -115,15 +124,17 @@ foreach my $entry(@dirs) {
                 system "ln -s $currDir/../$entry/lib/*.a $INSTALLDIR/lib";
             }
         }
-        
+    }
+    
+    if ($entry !~ /ICLUtils/) {
         if ($installMode == 0 || $installMode == 2) {
             print "---- Copying documentation: $entry/doc\n";
             system "cp -r ../$entry/doc/documentation/* $INSTALLDIR/doc/$entry";
         }
-
+        
         generate_packagevar($entry, $INSTALLDIR);
     }
-
+    
     if ($installMode == 0 || $installMode == 2) {
         generate_documentation($INSTALLDIR, @dirs);
     }
