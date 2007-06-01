@@ -75,7 +75,9 @@ namespace icl {
 					ppFormatIndexList[i][k]);
 
 				//---- SET FRAMERATE (has to be set non-zero, and before iidc_setformat is called!) ----
-				iidc_setframerate(m_hCamera[i], 15.0);
+				//iidc_setframerate(m_hCamera[i], 15.0);
+				iidc_setframerate(m_hCamera[i], 30.0);
+				//iidc_setframerate(m_hCamera[i], 60.0);
 
 				//---- Set image format ----
 				bRet = iidc_setformat(m_hCamera[i], ppFormatIndexList[i][0]);
@@ -224,8 +226,35 @@ namespace icl {
 		return true;
 	}
 
+	bool SonyFwGrabber::initTrigger() {
+		IIDC_SONY_STRUCT_SOFTTRIGGER *trigger = new IIDC_SONY_STRUCT_SOFTTRIGGER[m_lNumCameras];
+		for (int i=0; i<m_lNumCameras; i++) {
+			//stop sequence mode
+			iidc_idle(m_hCamera[i]);
+			//start snap mode
+			iidc_capture(m_hCamera[i], false);
+
+			//check soft-trigger capability
+			//iidc_extended(m_hCamera[i], IIDC_EXTEND_SONY_SOFTTRIGGER_GET_CAP, 
+			//			  &trigger[i], sizeof(IIDC_SONY_STRUCT_SOFTTRIGGER);
+			//set soft-trigger mode
+			trigger[i].mode = 0;
+			trigger[i].timer = 0;
+			iidc_extended(m_hCamera[i], IIDC_EXTEND_SONY_SOFTTRIGGER_SET,
+							&trigger[i], sizeof(IIDC_SONY_STRUCT_SOFTTRIGGER));
+			//check if mode actually set
+			// IIDC_EXTEND_SONY_SOFTTRIGGER_SET
+
+		}
+		return true;
+	}
+
 	SonyFwGrabber::~SonyFwGrabber() {
 		//---- Destroy all camera handle ----
+		for (int i=0; i<m_lNumCameras; i++) {
+			iidc_idle(m_hCamera[i]);
+			iidc_releasebuffer(m_hCamera[i]);
+		}
 		iidc_uninit();
 		delete flip;
 		m_poImage = 0;
@@ -406,7 +435,58 @@ namespace icl {
 	}
 
 	void SonyFwGrabber::grabStereoTrigger(ImgBase **ppoDstLeft, ImgBase **ppoDstRight) {
-		//TODO
+		if (m_lNumCameras < 2) return;
+ 
+		if (!ppoDstLeft) {
+			ppoDstLeft = &left;
+			*ppoDstLeft = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatGray);
+		}
+		if (!ppoDstRight) {
+			ppoDstRight = &right;
+			*ppoDstRight = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatGray);
+		}
+		
+		ensureCompatible(ppoDstLeft, m_eDesiredDepth, m_oDesiredParams);
+		ensureCompatible(ppoDstRight, m_eDesiredDepth, m_oDesiredParams);
+
+		//---- Trigger Grabbing
+		iidc_capture(m_hCamera[0], false);
+		iidc_capture(m_hCamera[1], false);
+
+		//??? trigger with iidc_extended(...) ???
+
+		//---- Initialize variables ----
+		IIDC_WAIT waitparam;
+		bool bRetLeft, bRetRight;
+		void *vImgBufLeft, *vImgBufRight;
+
+		waitparam.event = IIDCID_EVENT_FRAMEEND;
+		waitparam.timeout = 1000;
+
+		//---- Get image from buffer ----
+		bRetLeft = iidc_wait( m_hCamera[0], &waitparam, sizeof(IIDC_WAIT) );
+		bRetRight = iidc_wait( m_hCamera[1], &waitparam, sizeof(IIDC_WAIT) );
+
+		if( bRetLeft && bRetRight )
+		{
+			vImgBufLeft = (LPBYTE) iidc_lockdata( m_hCamera[0], -1 );
+			vImgBufRight = (LPBYTE) iidc_lockdata( m_hCamera[1], -1 );
+			if(vImgBufLeft && vImgBufRight)
+			{
+				memcpy((icl8u*)((*ppoDstLeft)->getDataPtr(0)),m_pppImgBuffer[0][0], m_iWidth*m_iHeight*sizeof(icl8u));
+				memcpy((icl8u*)((*ppoDstRight)->getDataPtr(0)),m_pppImgBuffer[1][0], m_iWidth*m_iHeight*sizeof(icl8u));
+
+				//---- remove data lock ----
+				iidc_unlockdata( m_hCamera[0] );
+				iidc_unlockdata( m_hCamera[1] );
+			}
+		}
+
+		//flipping image
+		flippedCopy(axisBoth, *ppoDstLeft, &flip);
+		flip->deepCopy(ppoDstLeft);
+		flippedCopy(axisBoth, *ppoDstRight, &flip);
+		flip->deepCopy(ppoDstRight);
 	}
 
 	void SonyFwGrabber::GetCamAllString(long camIndex, char *strCamera) {

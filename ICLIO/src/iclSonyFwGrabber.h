@@ -32,6 +32,7 @@ namespace icl {
 		~SonyFwGrabber();
 
 		bool init();
+		bool initTrigger();
 
 		/// grabbing function  
 		/** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    

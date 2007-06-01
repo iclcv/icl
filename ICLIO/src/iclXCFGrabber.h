@@ -6,6 +6,7 @@
 #include <string>
 #include <xcf/RemoteServer.hpp>
 #include <xmltio/Location.hpp>
+#include <iclBayer.h>
 
 namespace icl {
   
@@ -65,6 +66,8 @@ namespace icl {
       XCF::RemoteServerPtr m_remoteServer;
       XCF::CTUPtr          m_result;
       ImgBase*             m_poSource;
+	  BayerConverter*	   m_poBayerConverter;
+
    };
   
 }
