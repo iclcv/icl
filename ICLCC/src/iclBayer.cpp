@@ -842,5 +842,64 @@ namespace icl {
     }
   }
 
+  std::string BayerConverter::translateBayerConverterMethod(BayerConverter::bayerConverterMethod ebcm) {
+	switch(ebcm){
+		case nearestNeighbor: return "nearestNeighbor";
+		case simple: return "simple";
+		case bilinear: return "bilinear";
+		case hqLinear: return "hqLinear";
+		case edgeSense: return "edgeSense";
+		case vng: return "vng";
+		default: ICL_INVALID_FORMAT; return "undefined format";        
+    }
+  }
+
+  BayerConverter::bayerConverterMethod BayerConverter::translateBayerConverterMethod(std::string sbcm) {
+	if(sbcm.length()<=0){
+      ICL_INVALID_FORMAT;
+      return nearestNeighbor;
+    }
+    switch(sbcm[0]){
+      case 'n': return nearestNeighbor;
+      case 's': return simple;
+      case 'b': return bilinear;
+      case 'h': return hqLinear;
+      case 'e': return edgeSense;
+      case 'v': return vng;
+      default: ICL_INVALID_FORMAT; return nearestNeighbor;
+    }
+  }
+
+  std::string BayerConverter::translateBayerPattern(BayerConverter::bayerPattern ebp) {
+	switch(ebp){
+		case bayerPattern_RGGB: return "RGGB";
+		case bayerPattern_GBRG: return "GBRG";
+		case bayerPattern_GRBG: return "GRBG";
+		case bayerPattern_BGGR: return "BGGR";
+		default: ICL_INVALID_FORMAT; return "undefined format";        
+    }
+  }
+
+  BayerConverter::bayerPattern BayerConverter::translateBayerPattern(std::string sbp) {
+	if(sbp.length()<=0){
+      ICL_INVALID_FORMAT;
+      return bayerPattern_RGGB;
+    }
+	if (sbp == "RGGB") {
+		return bayerPattern_RGGB;
+	}
+	if (sbp == "GBRG") {
+		return bayerPattern_GBRG;
+	}
+	if (sbp == "GRBG") {
+		return bayerPattern_GRBG;
+	}
+	if (sbp == "BGGR") {
+		return bayerPattern_BGGR;
+	}
+	ICL_INVALID_FORMAT; 
+	return bayerPattern_RGGB;
+  }
+
 // }}}
 } // namespace

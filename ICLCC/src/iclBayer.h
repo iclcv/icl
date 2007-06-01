@@ -38,6 +38,12 @@ class BayerConverter
     m_eConvMethod = eConvMethod; }
   void setBayerImgSize(Size s) {
     m_pucRGBInterImg = new unsigned char[s.width * s.height * 3]; }
+
+  static std::string translateBayerConverterMethod(bayerConverterMethod ebcm);
+  static bayerConverterMethod translateBayerConverterMethod(std::string sbcm);
+
+  static std::string translateBayerPattern(bayerPattern ebp);
+  static bayerPattern translateBayerPattern(std::string sbp);
   
  private:
   icl8u *m_pucRGBInterImg; // RGB image in interleaved data format
