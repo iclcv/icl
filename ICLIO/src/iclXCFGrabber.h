@@ -19,7 +19,7 @@ namespace icl {
                                             XCF::Binary::TransportUnitPtr btu=0);
    /// Extract image from XCF composite transport unit using given XML description 
    /** ICL image poImg is created from XCF composite transport unit
-       @arg ctu   CTU containing various images in its <IMAGESET>
+       @arg ctu   CTU containing various images in its IMAGESET
        @arg l     XML Location describing parameters of image
        @arg poImg destination image pointer
    */
