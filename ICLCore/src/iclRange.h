@@ -11,7 +11,7 @@ namespace icl{
     /// create an empty range (min = max = 0)
     Range():minVal(Type(0)),maxVal(Type(0)){}
     
-    /// create a special Rage
+    /// create a special Range
     Range(Type minVal, Type maxVal): minVal(minVal), maxVal(maxVal){}
 
     /// minimum value of this range

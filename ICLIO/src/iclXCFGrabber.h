@@ -58,6 +58,10 @@ namespace icl {
       void setRecoverLevel (XCF::RecoverLevel l) {
          m_remoteServer->setRecoverLevel (l);
       }
+
+      /// set request string for image server
+      void setRequest (const std::string& sRequest);
+
    private:   
       /// retrieve most current image set in provided composite transport unit
       void receive (XCF::CTUPtr& result);

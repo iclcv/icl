@@ -199,9 +199,11 @@ namespace icl {
       vGrabbedImages.resize (m_result->getBinaryMap().size());
       xmltio::Location locResult (m_result->getXML(), "/IMAGESET");
 
-      XPathIterator locIt = XPath("IMAGE[uri]").evaluate(locResult);
-      vector<ImgBase*>::iterator imgIt = vGrabbedImages.begin();
-      for (; locIt; ++locIt, ++imgIt) {
+      XPathIterator locIt = XPath("IMAGE").evaluate(locResult);
+      vector<ImgBase*>::iterator 
+         imgIt  = vGrabbedImages.begin(),
+         imgEnd = vGrabbedImages.end();
+      for (; (!locIt == false) && (imgIt != imgEnd); ++locIt, ++imgIt) {
          ImgBase *poOutput = prepareOutput (&(*imgIt));
          *imgIt = poOutput;
          extractImage (m_result, *locIt, m_poSource);
@@ -209,6 +211,10 @@ namespace icl {
       }
    }
    
+   void XCFGrabber::setRequest (const string& sRequest) {
+      m_locRequest = Location (sRequest, "/IMAGEREQUEST/GRAB");
+   }
+
    void XCFGrabber::receive (XCF::CTUPtr& result) {
       m_locRequest["timestamp"] = ""; // most-recent image
       m_remoteServer->callMethod ("retrieveImage", 

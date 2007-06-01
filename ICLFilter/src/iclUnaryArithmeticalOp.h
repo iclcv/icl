@@ -22,7 +22,7 @@ namespace icl {
       subOp=1,  /**< substract a constant value from each pixel  */
       mulOp=2,  /**< multiply each pixel by a constant value */
       divOp=3,  /**< divide each pixle through a constant value */
-      sqrOp=10, /**< spares each pixel */
+      sqrOp=10, /**< squares each pixel */
       sqrtOp=11,/**< calculates the square root of each pixel*/
       lnOp=12,  /**< calculates the natural logarithm of each pixel */
       expOp=13, /**< calculates the exponential function for each pixel*/
