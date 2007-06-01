@@ -219,10 +219,10 @@ namespace icl {
 		}
 
 		m_iDevice = 0;
-		setDesiredParams(ImgParams(Size(m_iWidth, m_iHeight), icl::formatGray));
+		setDesiredParams(ImgParams(Size(m_iWidth, m_iHeight), icl::formatMatrix));
 
 		//image used for flipping
-		flip = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatGray);
+		flip = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatMatrix);
 		return true;
 	}
 
@@ -389,11 +389,11 @@ namespace icl {
  
 		if (!ppoDstLeft) {
 			ppoDstLeft = &left;
-			*ppoDstLeft = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatGray);
+			*ppoDstLeft = imgNew(depth8u, Size(m_iWidth, m_iHeight), 1, icl::formatMatrix);
 		}
 		if (!ppoDstRight) {
 			ppoDstRight = &right;
-			*ppoDstRight = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatGray);
+			*ppoDstRight = imgNew(depth8u, Size(m_iWidth, m_iHeight), 1, icl::formatMatrix);
 		}
 		
 		ensureCompatible(ppoDstLeft, m_eDesiredDepth, m_oDesiredParams);
@@ -439,11 +439,11 @@ namespace icl {
  
 		if (!ppoDstLeft) {
 			ppoDstLeft = &left;
-			*ppoDstLeft = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatGray);
+			*ppoDstLeft = imgNew(depth8u, Size(m_iWidth, m_iHeight), 1, icl::formatMatrix);
 		}
 		if (!ppoDstRight) {
 			ppoDstRight = &right;
-			*ppoDstRight = imgNew(depth8u, Size(m_iWidth, m_iHeight), icl::formatGray);
+			*ppoDstRight = imgNew(depth8u, Size(m_iWidth, m_iHeight), 1, icl::formatMatrix);
 		}
 		
 		ensureCompatible(ppoDstLeft, m_eDesiredDepth, m_oDesiredParams);
