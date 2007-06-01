@@ -12,31 +12,33 @@ namespace icl {
 		  "<TIMESTAMPS>"
 		    "<CREATED timestamp=\"\"/>"
 		  "</TIMESTAMPS>"
-		  "<PROPERTIES width=\"\" height=\"\" depth=\"\" channels=\"\" format=\"\" bayerPattern=\"\" />"
+		  "<PROPERTIES width=\"\" height=\"\" depth=\"\" channels=\"\" format=\"\"/>"
 		  "<ROI offsetX=\"\" offsetY=\"\" width=\"\" height=\"\" />"
 		"</IMAGE>";
 
 	xmltio::Location createXML(const ImgBase* poImg, const string& uri, 
                               const string& bayerPattern)
-   {
+  {
       xmltio::Location l(IMG_XML_STRING, "/IMAGE");
-      l[XPath("@uri")]					   = uri;
-      l[XPath("PROPERTIES/@width")]		= poImg->getWidth();
-      l[XPath("PROPERTIES/@height")]	= poImg->getHeight();
-      l[XPath("PROPERTIES/@depth")]		= translateDepth(poImg->getDepth());
-      l[XPath("PROPERTIES/@channels")]	= poImg->getChannels();
-      l[XPath("PROPERTIES/@format")]	= translateFormat(poImg->getFormat());
-	  if (bayerPattern != "") {
-         l[XPath("PROPERTIES/@bayerPattern")] = bayerPattern;
-		 l[XPath("PROPERTIES/@format")]	= translateFormat(formatRGB);
-	  }
-      l[XPath("ROI/@offsetX")]			= poImg->getROIXOffset();
-      l[XPath("ROI/@offsetY")]			= poImg->getROIYOffset();
-      l[XPath("ROI/@width")]			   = poImg->getROIWidth();
-      l[XPath("ROI/@height")]			   = poImg->getROIHeight();
+      l["uri"]					   = uri;
+
+      xmltio::Location p(l, "PROPERTIES");
+      p["width"]		= poImg->getWidth();
+      p["height"]	  = poImg->getHeight();
+      p["depth"]		= translateDepth(poImg->getDepth());
+      p["channels"]	= poImg->getChannels();
+      p["format"]	  = translateFormat(poImg->getFormat());
+      if (bayerPattern != "") p["bayerPattern"] = bayerPattern;
+
+      xmltio::Location r(l, "ROI");
+      r["offsetX"]			= poImg->getROIXOffset();
+      r["offsetY"]			= poImg->getROIYOffset();
+      r["width"]			  = poImg->getROIWidth();
+      r["height"]			  = poImg->getROIHeight();
+
       l[XPath("TIMESTAMPS/CREATED/@timestamp")]	= poImg->getTime().toMicroSeconds();
       return l;
-	}
+  }
 
 // {{{ packImage
 
@@ -110,16 +112,11 @@ namespace icl {
                      (int) extract<int>(r["width"]),
                      (int) extract<int>(r["height"]));
 
-	  string bayerPattern =  extract<string>(p["bayerPattern"]);
-	  if (bayerPattern != "") {
-		  poImg = ensureCompatible (&poImg, eDepth, Size(iWidth, iHeight), 
-										iChannels, formatGray, roi);
-	  } else {
-		  poImg = ensureCompatible (&poImg, eDepth, Size(iWidth, iHeight), 
-										iChannels, fmt, roi);
-	  }
 
-		Time::value_type t 
+      poImg = ensureCompatible (&poImg, eDepth, Size(iWidth, iHeight), 
+                                iChannels, fmt, roi);
+
+      Time::value_type t 
          = extract<Time::value_type>(l[XPath("TIMESTAMPS/CREATED/@timestamp")]);
       poImg->setTime (Time::microSeconds (t));
 
@@ -162,7 +159,27 @@ namespace icl {
 
    XCFGrabber::~XCFGrabber () {
       m_remoteServer->destroy ();
-	  delete m_poBayerConverter;
+      delete m_poBayerConverter;
+      delete m_poSource;
+   }
+
+   void XCFGrabber::makeOutput (const xmltio::Location& l, ImgBase *poOutput) {
+      LocationPtr locBayer = xmltio::find (l, "PROPERTIES/@bayerPattern");
+      if (locBayer) {
+         const string& bayerPattern =  extract<string>(*locBayer);
+         ImgParams p = m_poSource->getParams();
+         p.setFormat (formatRGB);
+         m_poBayer = ensureCompatible (&m_poBayer, m_poSource->getDepth(), p);
+         
+         m_poBayerConverter->setBayerImgSize(m_poSource->getSize());
+         //m_poBayerConverter->setConverterMethod(BayerConverter::nearestNeighbor);
+         m_poBayerConverter->setBayerPattern(BayerConverter::translateBayerPattern(bayerPattern));
+         
+         m_poBayerConverter->apply(m_poSource->asImg<icl8u>(), m_poBayer);
+         m_oConverter.apply (m_poBayer, poOutput);
+      } else {
+         m_oConverter.apply (m_poSource, poOutput);
+      }
    }
 
    const ImgBase* XCFGrabber::grab (ImgBase **ppoDst) {
@@ -172,20 +189,7 @@ namespace icl {
 
       ImgBase *poOutput = prepareOutput (ppoDst);
       extractImage (m_result, loc, m_poSource);
-
-	  string bayerPattern =  extract<string>(loc["PROPERTIES/@bayerPattern"]);
-	  if (bayerPattern != "") {
-		  m_poBayerConverter->setBayerImgSize(m_poSource->getSize());
-		  //m_poBayerConverter->setConverterMethod(BayerConverter::nearestNeighbor);
-		  m_poBayerConverter->setBayerPattern(BayerConverter::translateBayerPattern(bayerPattern));
-		  
-		  //poOutput->setChannels(3);
-		  //poOutput->setFormat(formatRGB);
-		  m_poBayerConverter->apply(m_poSource->asImg<icl8u>(), poOutput);
-		  poOutput->deepCopy(&m_poSource);
-	  }
-
-      m_oConverter.apply (m_poSource, poOutput);
+      makeOutput (loc, poOutput);
       return poOutput;
    }
 
@@ -199,21 +203,9 @@ namespace icl {
       vector<ImgBase*>::iterator imgIt = vGrabbedImages.begin();
       for (; locIt; ++locIt, ++imgIt) {
          ImgBase *poOutput = prepareOutput (&(*imgIt));
+         *imgIt = poOutput;
          extractImage (m_result, *locIt, m_poSource);
-
-		 string bayerPattern =  extract<string>((*locIt)["PROPERTIES/@bayerPattern"]);
-		 if (bayerPattern != "") {
-			m_poBayerConverter->setBayerImgSize(m_poSource->getSize());
-			//m_poBayerConverter->setConverterMethod(BayerConverter::nearestNeighbor);
-			m_poBayerConverter->setBayerPattern(BayerConverter::translateBayerPattern(bayerPattern));
-		  
-			//poOutput->setChannels(3);
-			//poOutput->setFormat(formatRGB);
-			m_poBayerConverter->apply(m_poSource->asImg<icl8u>(), poOutput);
-			poOutput->deepCopy(&m_poSource);
-		 }
-
-         m_oConverter.apply (m_poSource, poOutput);
+         makeOutput (*locIt, poOutput);
       }
    }
    

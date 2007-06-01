@@ -61,13 +61,14 @@ namespace icl {
    private:   
       /// retrieve most current image set in provided composite transport unit
       void receive (XCF::CTUPtr& result);
-
+      void makeOutput (const xmltio::Location& l, ImgBase* poOutput);
+      
       xmltio::Location     m_locRequest;
       XCF::RemoteServerPtr m_remoteServer;
       XCF::CTUPtr          m_result;
       ImgBase*             m_poSource;
-	  BayerConverter*	   m_poBayerConverter;
-
+      BayerConverter*	     m_poBayerConverter;
+      ImgBase*             m_poBayer;
    };
   
 }
