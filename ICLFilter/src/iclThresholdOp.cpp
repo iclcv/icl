@@ -4,6 +4,7 @@
 namespace icl {
 
   ThresholdOp::ThresholdOp(optype ttype,float lowThreshold, float highThreshold,float lowVal, float highVal){
+    m_eType=ttype;
     m_fLowThreshold=lowThreshold;
     m_fHighThreshold=highThreshold;
     m_fLowVal=lowVal;
