@@ -7,9 +7,12 @@
 using namespace icl;
 using namespace std;
 
+Size size(160,120);
+
 class MyThread : public QThread{
 public:
-  MyThread(){
+  MyThread(int device){
+    this->device = device;
     widget = new ICLWidget(0);
     widget->setGeometry(200,200,640,480);
     widget->show();
@@ -21,19 +24,24 @@ public:
   }
   
   virtual void run(){
-    PWCGrabber g(Size(320,240));
-    g.setDesiredSize(Size(800,600));
+    PWCGrabber g(size,24,device);
+    g.setDesiredSize(size);
     while(1){
       widget->setImage(g.grab());
       widget->update();
     }
   }
+  int device;
   ICLWidget *widget;
 };
 
 
 int main(int nArgs, char **ppcArg){
+  int device=0;
+  if(nArgs == 2){
+    device = atoi(ppcArg[1]);
+  }
   QApplication a(nArgs,ppcArg);
-  MyThread x;
+  MyThread x(device);
   return a.exec();
 }

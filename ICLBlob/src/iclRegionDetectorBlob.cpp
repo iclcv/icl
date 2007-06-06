@@ -298,19 +298,57 @@ namespace icl{
         avgY += len*y;
 
         /// XX = sum(k=x..end) k²
-        avgXX += eval_sum_of_squares(end) - eval_sum_of_squares(x);
+        avgXX += eval_sum_of_squares(end) - eval_sum_of_squares(x-1);
       
         /// YY = sum(k=x..end) y²
         avgYY += len*y*y;
       
         /// XY = sum(k=x..end) xy = y * sum(k=x..end) k 
-        avgXY += y * ( eval_sum(end) - eval_sum(x) );
+        avgXY += y * ( eval_sum(end) - eval_sum(x-1) );
       }
       avgX/=nPts;
       avgY/=nPts;
       avgXX/=nPts;
       avgYY/=nPts;
       avgXY/=nPts;
+ 
+      /**** test code !!!!
+          printf("nPts=%d x=%f y=%f xx=%f yy=%f xy=%f\n",nPts,avgX,avgY,avgXX,avgYY,avgXY);
+
+          // ------------------ working with all pixels!
+          {
+          register double _avgY(0),_avgX(0),_avgXX(0),_avgXY(0),_avgYY(0);
+          register int _nPts(0);
+          for(ScanLineList::iterator it = m_poPixels->begin(); it!= m_poPixels->end(); it++){
+          int xStart = (*it)->getStart();
+          int yStart = (*it)->y();
+          int lineLen  = (*it)->size();
+          
+          for(int x=xStart,y=yStart,counter=0;counter<lineLen;counter++,x++){
+          _avgX+=x;
+          _avgY+=y;
+          _avgXX += x*x;
+          _avgYY += y*y;
+          _avgXY += x*y;
+          }
+          _nPts += lineLen;
+          }
+          
+          _avgX /= _nPts;
+          _avgY /= _nPts;
+          _avgXX /= _nPts;
+          _avgYY /= _nPts;
+          _avgXY /= _nPts;
+          
+          avgX = _avgX;
+          avgY = _avgY;
+          avgXX = _avgXX;
+          avgYY = _avgYY;
+          avgXY = _avgXY;
+          printf("nPts=%d x=%f y=%f xx=%f yy=%f xy=%f\n--\n",_nPts,_avgX,_avgY,_avgXX,_avgYY,_avgXY);
+          }
+          // ------------------------------------------- 
+      ***/
 
       if(m_bCOGDirty){
         m_oCOG = Point((int)round(avgX),(int)round(avgY));

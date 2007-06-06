@@ -73,7 +73,7 @@ namespace icl{
                      <b>NOTE:</b> Non-icl8u images are converted internally to icl8u.
                      (if null, an empty vector is returned)
         @return vector of detected regions*/
-    const std::vector<BlobData> &detect(ImgBase *image);
+    const std::vector<BlobData> &detect(const ImgBase *image);
     
     private:
     

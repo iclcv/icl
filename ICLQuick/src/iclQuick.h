@@ -609,6 +609,12 @@ namespace icl{
   **/
   void fill(float r, float g=-1, float b=-1, float alpha=255);
 
+  /// returns the current color state
+  /** @param color destintaion array for the current draw color 
+      @param fill destinaion array for the current fill color 
+  **/
+  void colorinfo(float color[4], float fill[4]);
+  
   /// draws a 6x6-cross into an image
   /** @param image destination image 
       @param x x-pos of the cross
@@ -672,7 +678,13 @@ namespace icl{
   **/
   void pix(ImgQ &image, const vector<Point> &pts);
 
-	/// renders a filled circle into an image
+  /// draws a set of point sets into an image
+  /** @param image destination image
+      @param pts vector of vector of points to draw
+  **/
+  void pix(ImgQ &image, const vector<vector<Point> > &pts);
+  
+  /// renders a filled circle into an image
   /** This function renders a filled circle into a 3 or 1 channel image (only with fill color!)
 			using a QPainter internally.
   	  @param image destination image

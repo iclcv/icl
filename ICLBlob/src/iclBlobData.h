@@ -16,8 +16,8 @@ namespace icl{
     /* {{{ open */
 
     /// Default Constructor
-    PCAInfo(float len1=0, float len2=0, float arc1=0, float arc2=0):
-      len1(len1),len2(len2),arc1(arc1),arc2(arc2){}
+    PCAInfo(float len1=0, float len2=0, float arc1=0, float arc2=0, int cx=0, int cy=0):
+      len1(len1),len2(len2),arc1(arc1),arc2(arc2),cx(cx),cy(cy){}
     /// length of first major axis
     float len1; 
     /// length of second major axis
@@ -26,6 +26,10 @@ namespace icl{
     float arc1; 
     /// angle of the second major axis (arc1+PI/2)
     float arc2; 
+    /// x center of the region
+    int cx;
+    /// y center of the region
+    int cy;
 
     /// null PCAInfo
     static const PCAInfo null;
@@ -83,7 +87,7 @@ namespace icl{
     PCAInfo getPCAInfo() const;
   
     /// returns a list of boundary pixels for this blob
-    const std::vector<Point> &getBoundary();
+    const std::vector<Point> &getBoundary() const;
 
     /// returs the list of all pixels of this blob
     inline std::vector<Point> getPixels() const{

@@ -23,7 +23,7 @@ namespace icl{
     return m_poRDB->getSize();
   }
 
-  const std::vector<Point> &BlobData::getBoundary(){
+  const std::vector<Point> &BlobData::getBoundary() const {
     FUNCTION_LOG("");
     static const std::vector<Point> v;
     ICLASSERT_RETURN_VAL(m_poRDB,v);
@@ -63,8 +63,10 @@ namespace icl{
     FUNCTION_LOG("");
     ICLASSERT_RETURN_VAL(m_poRDB,PCAInfo::null);
     const vector<float> &pca =m_poRDB->getPCAInfo();
-    return PCAInfo(pca[0],pca[1],pca[2],pca[3]);
+    const Point &cog = m_poRDB->getCOG();
+    return PCAInfo(pca[0],pca[1],pca[2],pca[3],cog.x,cog.y);
   }
+
     
  
 

@@ -7,9 +7,14 @@ Size s(320,240);
 
 int main(){
 
-  PWCGrabber a(s,24,0),b(s,24,1);
-  a.setDesiredSize(s);
-  b.setDesiredSize(s);
+  PWCGrabber a(s,24,0);
+  PWCGrabber b(s,24,1);
+
+  usleep(1000*1000*1);
+  return 0;
+  
+  //a.setDesiredSize(s);
+  //b.setDesiredSize(s);
 
   printf("grabbing some images \n");
 

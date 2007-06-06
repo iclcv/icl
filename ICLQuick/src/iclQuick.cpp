@@ -76,7 +76,6 @@ namespace icl{
     string FONTFAMILY = "Times";
     void bresenham(int x0, int x1, int y0, int y1, vector<int> &xs, vector<int> &ys, int maxX, int maxY){
       // {{{ open
-
       int steep = std::abs(y1 - y0) > std::abs(x1 - x0);
       if(steep){
         swap(x0, y0);
@@ -94,15 +93,14 @@ namespace icl{
       int ystep = y0 < y1 ? 1 : -1;
       
       for(int x=x0,y=y0;x<=x1;x++){
-        if(x>=0 && x<=maxX && y>=0 && y<=maxY){
-          if(steep){
-            xs.push_back(y); 
-            ys.push_back(x);
-          }else{
-            xs.push_back(x); 
-            ys.push_back(y);
-          }
+        if(steep && x>=0 && x<=maxY && y>=0 && y<=maxX){
+          xs.push_back(y); 
+          ys.push_back(x);
+        }else if(x>=0 && x<=maxX && y>=0 && y<=maxY){
+          xs.push_back(x); 
+          ys.push_back(y);
         }
+
         error += deltay;
         if (2*error >= deltax){
           y += ystep;
@@ -514,10 +512,26 @@ namespace icl{
   
   void show(const ImgQ &image){
     // {{{ open
+
     if(image.hasFullROI()){
-      TestImages::show(&image,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
+      if(image.getFormat()==formatMatrix && image.getChannels()==1){
+        ImgQ tmp = image;
+        tmp.setFormat(formatGray);
+        TestImages::show(&tmp,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
+      }else if(image.getFormat() == formatMatrix && image.getChannels()==3){
+        ImgQ tmp = image;
+        tmp.setFormat(formatRGB);
+        TestImages::show(&tmp,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
+      }else{
+        TestImages::show(&image,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
+      }
     }else{
       ImgQ T = copy(image);
+      if(image.getFormat()==formatMatrix && image.getChannels()==1){
+        T.setFormat(formatGray);
+      }else if(image.getFormat()==formatMatrix && image.getChannels()==3){
+        T.setFormat(formatRGB);
+      }
       saveColorAndFill();
       color(255,0,0);
       fill(0,0,0,0);
@@ -643,6 +657,7 @@ namespace icl{
     // {{{ open
     ImgQ dst(image.getSize(),fmt);
     ImgQ src = copyroi(image);
+    if(src.getFormat() == formatMatrix && src.getChannels()==1) src.setFormat(formatGray);
     cc(&src,&dst);
     return dst;
   }
@@ -967,6 +982,13 @@ namespace icl{
 
   // }}}
 
+  void colorinfo(float color[4], float fill[4]){
+    // {{{ open
+    memcpy(color,COLOR,4*sizeof(float));
+    memcpy(fill,FILL,4*sizeof(float));
+  }
+  // }}}
+
   void cross(ImgQ &image, int X, int Y){
     // {{{ open
 
@@ -1000,58 +1022,104 @@ namespace icl{
 
   // }}}
 
-  void circle(ImgQ &image, int xoffs, int yoffs, int radius) {
-    // {{{ open
-		// first render the circle
-    int n = 0;
-    char ** ppc = 0;
-    if(!qApp){
-      new QApplication(n,ppc);
-    }
-    static QSize *br = new QSize(radius * 2, radius * 2);
-    
-    QImage img(br->width()+2,br->height()+2,QImage::Format_ARGB32_Premultiplied);
-    img.fill(0);
+  namespace{
+    void draw_circle_outline(ImgQ &image, int xcenter, int ycenter, int radius){
+      // {{{ open
 
-    QPainter painter(&img);
-    painter.setPen(QColor(255,255,255,254));
-		painter.setBrush(QColor(255, 255, 255, 254));
-		painter.drawEllipse(QRectF(0, 0, radius * 2, radius * 2));
-    painter.end();
-    
-		// then transfer the rendered image into the given image
-    QImageConverter qic(&img);
-    const Img8u &t = *(qic.getImg<icl8u>());
-    for(int c=0;c<image.getChannels() && c<3; ++c){
-      for(int x=0;x<t.getWidth();x++){
-        for(int y=0;y<t.getHeight();y++){
-          int ix = x+xoffs-radius;
-          int iy = y+yoffs-radius;
-          if(ix >= 0 && iy >= 0 && ix < image.getWidth() && iy < image.getHeight() ){
-            ICL_QUICK_TYPE &v = image(ix,iy,c);
-            float A = (((float)t(x,y,c))/255.0) * (FILL[3]/255);
-            v=(1.0-A)*v + A*FILL[c];
-          }
+      float outline = 2*M_PI*radius;
+      int nc = std::min(3,image.getChannels());
+      float A = COLOR[3]/255;
+      int maxx = image.getWidth()-1;
+      int maxy = image.getHeight()-1;
+      for(float f=0;f<2*M_PI;f+=1/outline){
+        for(int c=0;c<nc;c++){
+          int x = (int)round(xcenter+cos(f)*radius);
+          if(x<0 || x > maxx) continue;
+          int y = (int)round(ycenter+sin(f)*radius);
+          if(y<0 || y > maxy) continue;
+          ICL_QUICK_TYPE &v = image(x,y,c);
+          v=(1.0-A)*v + A*COLOR[c];
         }
       }
     }
 
+    // }}}
+  }
+  
+  void circle(ImgQ &image, int xoffs, int yoffs, int radius) {
+    // {{{ open
+    
+    float rr = radius*radius;
+    int h = image.getHeight();
+    int w = image.getWidth();
+    
+    int ystart = std::max(-radius,-yoffs);
+    int yend = std::min(radius,h-yoffs);
+    int nc = std::min(image.getChannels(),3);
+    for(int dy = ystart;dy<=yend;++dy){
+      int y = dy+yoffs;
+      int dx = (int)round(::sqrt(rr-dy*dy));
+      float A = FILL[3]/255;
+      int xend = std::min(xoffs+dx,w-1);
+      for(int x=std::max(0,xoffs-dx);x<=xend;++x){
+        for(int c=0;c<nc;++c){
+          ICL_QUICK_TYPE &v = image(x,y,c);
+          v=(1.0-A)*v + A*FILL[c];
+        }
+      }
+    }
+    draw_circle_outline(image,xoffs,yoffs,radius);
+
+
+    /** OLD Qt implementation
+        int n = 0;
+        char ** ppc = 0;
+        if(!qApp){
+        new QApplication(n,ppc);
+        }
+        static QSize *br = new QSize(radius * 2, radius * 2);
+        
+        QImage img(br->width()+2,br->height()+2,QImage::Format_ARGB32_Premultiplied);
+        img.fill(0);
+        
+        QPainter painter(&img);
+        painter.setPen(QColor(255,255,255,254));
+        painter.setBrush(QColor(255, 255, 255, 254));
+        painter.drawEllipse(QRectF(0, 0, radius * 2, radius * 2));
+        painter.end();
+        
+        // then transfer the rendered image into the given image
+        QImageConverter qic(&img);
+        const Img8u &t = *(qic.getImg<icl8u>());
+        for(int c=0;c<image.getChannels() && c<3; ++c){
+        for(int x=0;x<t.getWidth();x++){
+        for(int y=0;y<t.getHeight();y++){
+        int ix = x+xoffs-radius;
+        int iy = y+yoffs-radius;
+        if(ix >= 0 && iy >= 0 && ix < image.getWidth() && iy < image.getHeight() ){
+        ICL_QUICK_TYPE &v = image(ix,iy,c);
+        float A = (((float)t(x,y,c))/255.0) * (FILL[3]/255);
+        v=(1.0-A)*v + A*FILL[c];
+        }
+        }
+        }
+        }
+     **/
   }
 
   // }}}
 
   void line(ImgQ &image, int x1, int y1, int x2, int y2){
     // {{{ open
-
     std::vector<int> xs,ys;
     bresenham(x1,x2,y1,y2,xs,ys,image.getWidth()-1,image.getHeight()-1);
     float A = COLOR[3]/255.0;
     for(vector<int>::iterator itX=xs.begin(), itY=ys.begin(); itX != xs.end(); ++itX, ++itY){
       for(int c=0;c<image.getChannels() && c<3; ++c){
-        if(*itX >= 0 && *itX < image.getWidth() && *itY >= 0 && *itY <= image.getHeight()){
-          float &v = image(*itX,*itY,c);
-          v=(1.0-A)*v + A*COLOR[c];
-        }
+        //        if(*itX >= 0 && *itX < image.getWidth() && *itY >= 0 && *itY <= image.getHeight()){
+        float &v = image(*itX,*itY,c);
+        v=(1.0-A)*v + A*COLOR[c];
+        //      }
       }
     }
   }
@@ -1122,6 +1190,16 @@ namespace icl{
 
   // }}}
  
+  void pix(ImgQ &image, const vector<vector<Point> > &pts){
+    // {{{ open
+
+    for(vector<vector<Point> >::const_iterator it = pts.begin();it!=pts.end();++it){
+      pix(image,*it);
+    }
+  } 
+
+  // }}}
+
   ImgQ label(const ImgQ &imageIn, const string &text){
     // {{{ open
     ImgQ image = copy(imageIn);
@@ -1263,5 +1341,5 @@ namespace icl{
 #define ICL_INSTANTIATE_DEPTH(D) template struct ImgBasePtrPtr<icl##D>;
   ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
-  
+
 }

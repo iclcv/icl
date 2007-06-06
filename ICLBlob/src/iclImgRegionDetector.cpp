@@ -33,17 +33,17 @@ namespace icl{
     delete m_poImage8uBuffer;
   }
   
-  BlobList *get_blob_list(ImgBase *image,RegionDetector *rd, Img8u *bufROI=0){
+  BlobList *get_blob_list(const ImgBase *image,RegionDetector *rd, Img8u *bufROI=0){
     if(image->getDepth() != depth8u || !(image->hasFullROI())){   //TODO_depth
       bufROI->setSize(image->getROISize());
       image->convertROI(bufROI);
       return get_blob_list(bufROI,rd);
     }
     rd->setSize(image->getSize());
-    return rd->find_blobs(image->asImg<icl8u>()->getData(0));
+    return rd->find_blobs(const_cast<icl8u*>(image->asImg<icl8u>()->getData(0)));
   }
 
-  const std::vector<BlobData> &ImgRegionDetector::detect(ImgBase *image){
+  const std::vector<BlobData> &ImgRegionDetector::detect(const ImgBase *image){
     m_vecBlobData.clear();
     ICLASSERT_RETURN_VAL(image && image->getChannels() == 1, m_vecBlobData);
     BlobList *blobList = get_blob_list(image, m_poRD, m_poImage8uBuffer);

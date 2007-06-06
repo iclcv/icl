@@ -53,7 +53,8 @@ REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug status
 # This variable takes two values: TRUE or FALSE
-DEBUG_ON:=${DEBUG_ON}
+#DEBUG_ON:=${DEBUG_ON}
+DEBUG_ON:=TRUE
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES}
