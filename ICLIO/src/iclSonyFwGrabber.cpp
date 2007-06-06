@@ -378,7 +378,7 @@ namespace icl {
 		}
 
 		//flipping
-		flippedCopy(axisBoth, poOutput, &flip);
+		flippedCopy(axisHorz, poOutput, &flip);
 		flip->deepCopy(&poOutput);
 
 		return poOutput;
@@ -427,9 +427,9 @@ namespace icl {
 		}
 
 		//flipping image
-		flippedCopy(axisBoth, *ppoDstLeft, &flip);
+		flippedCopy(axisHorz, *ppoDstLeft, &flip);
 		flip->deepCopy(ppoDstLeft);
-		flippedCopy(axisBoth, *ppoDstRight, &flip);
+		flippedCopy(axisHorz, *ppoDstRight, &flip);
 		flip->deepCopy(ppoDstRight);
 
 	}
@@ -483,9 +483,9 @@ namespace icl {
 		}
 
 		//flipping image
-		flippedCopy(axisBoth, *ppoDstLeft, &flip);
+		flippedCopy(axisHorz, *ppoDstLeft, &flip);
 		flip->deepCopy(ppoDstLeft);
-		flippedCopy(axisBoth, *ppoDstRight, &flip);
+		flippedCopy(axisHorz, *ppoDstRight, &flip);
 		flip->deepCopy(ppoDstRight);
 	}
 
