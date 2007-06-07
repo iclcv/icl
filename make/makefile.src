@@ -24,8 +24,10 @@ else
  FORCE_CPP:= TRUE
 endif
 
-ifneq "${DEBUG_ON}" "TRUE"
+_DBG_INDICATOR:=(debug)
+ifneq "$(firstword ${DEBUG_ON})" "TRUE"
  DEBUG:=${NODEBUG}
+ _DBG_INDICATOR:=(optimized)
 endif
 
 __SOURCES_FILENAME = $(wildcard *.${_SOURCES_EXT})
@@ -53,14 +55,14 @@ obj: ../obj ${MAKE_PRECOND} ${TARGET_OBJECTS} ${MAKE_POSTCOND}
 ifeq "${FORCE_CPP}" "TRUE"
 
 ../obj/${TARGET_PREFIX}%.o: %.${_SOURCES_EXT}
-	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$<"
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< ${_DBG_INDICATOR}"
 	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
                     ${REL_INCLUDES} ${ABS_INCLUDES}
 
 else
 
 ../obj/${TARGET_PREFIX}%.o: %.${_SOURCES_EXT}
-	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$<"
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< ${_DBG_INDICATOR}"
 	${PRE_CMD}${CMD_CC} ${CFLAGS} ${DEBUG} ${CDEFINES} -c $< -o $@ \
                   ${REL_INCLUDES} ${ABS_INCLUDES}
 

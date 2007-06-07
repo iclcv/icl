@@ -43,8 +43,10 @@ else
  FORCE_CPP:= TRUE
 endif
 
-ifneq "${DEBUG_ON}" "TRUE"
+_DBG_INDICATOR:=(debug)
+ifneq "$(firstword ${DEBUG_ON})" "TRUE"
  DEBUG:=${NODEBUG}
+ _DBG_INDICATOR:=(optimized)
 endif
 
 __SOURCES_FILENAME = $(wildcard *.${_SOURCES_EXT})
@@ -72,7 +74,7 @@ exe: ${MAKE_PRECOND} ${TARGET_EXE} ${MAKE_POSTCOND}
 ifeq "${FORCE_CPP}" "TRUE"
 
 ./${TARGET_PREFIX}%: %.${_SOURCES_EXT} ${REL_OBJECTS} ${ABS_OBJECTS}
-	${PRE_CMD}${CMD_ECHO} "Building examples from: ${_CURR_DIR}/$@"
+	${PRE_CMD}${CMD_ECHO} "Building examples from: ${_CURR_DIR}/$@ ${_DBG_INDICATOR}"
 	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${LDFLAGS} ${DEBUG} ${CPPDEFINES} -o $@ $< \
                     ${REL_INCLUDES} ${ABS_INCLUDES} \
                     ${REL_OBJECTS} ${ABS_OBJECTS} \
@@ -80,7 +82,7 @@ ifeq "${FORCE_CPP}" "TRUE"
 else
 
 ./${TARGET_PREFIX}%: %.${_SOURCES_EXT} ${REL_OBJECTS} ${ABS_OBJECTS}
-	${PRE_CMD}${CMD_ECHO} "Building examples from: ${_CURR_DIR}/$@"
+	${PRE_CMD}${CMD_ECHO} "Building examples from: ${_CURR_DIR}/$@ ${_DBG_INDICATOR}"
 	${PRE_CMD}${CMD_CC} ${CFLAGS} ${LDFLAGS} ${DEBUG} ${CDEFINES} -o $@ $< \
                   ${REL_INCLUDES} ${ABS_INCLUDES} \
                   ${REL_OBJECTS} ${ABS_OBJECTS} \
