@@ -30,7 +30,7 @@ class BayerConverter
                  Size s);
   ~BayerConverter();
   
-  void apply(const Img8u *src, ImgBase *dst);
+  void apply(const Img8u *src, ImgBase **dst);
   
   void setBayerPattern(bayerPattern eBayerPattern) { 
     m_eBayerPattern = eBayerPattern; }
@@ -51,11 +51,11 @@ class BayerConverter
   bayerPattern m_eBayerPattern;
   
   // Interpolation methods
-  void nnInterpolation(const Img8u *poBayerImg, ImgBase *dst);
-  void bilinearInterpolation(const Img<icl8u> *poBayerImg, ImgBase *dst);
-  void hqLinearInterpolation(const Img<icl8u> *poBayerImg, ImgBase *dst);
-  void edgeSenseInterpolation(const Img<icl8u> *poBayerImg, ImgBase *dst);
-  void simpleInterpolation(const Img<icl8u> *poBayerImg, ImgBase *dst);
+  void nnInterpolation(const Img8u *poBayerImg);
+  void bilinearInterpolation(const Img<icl8u> *poBayerImg);
+  void hqLinearInterpolation(const Img<icl8u> *poBayerImg);
+  void edgeSenseInterpolation(const Img<icl8u> *poBayerImg);
+  void simpleInterpolation(const Img<icl8u> *poBayerImg);
   
   // Helper functions
   void clearBorders(icl8u *rgb, int sx, int sy, int w);

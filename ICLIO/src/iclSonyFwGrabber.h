@@ -72,19 +72,12 @@ namespace icl {
 		float m_fFps;
 		/// current number of devices
 		long m_lNumCameras;
-		/// image buffer
+		/// image data buffers for grabbing
 		BYTE ***m_pppImgBuffer;
 		/// camera handels
 		HIIDC m_hCamera[10];
 
-		///internal image pointer 
-		ImgBase *left;
-		ImgBase *right;
-		//help image used for flipping
-		ImgBase* flip;
-
 		void GetCamAllString(long camIndex, char *strCamera);
-
 	};
 
 }

@@ -21,51 +21,50 @@ namespace icl {
     
   }
 
-  void BayerConverter::apply(const Img8u *src, ImgBase *dst) {
+  void BayerConverter::apply(const Img8u *src, ImgBase **dst) {
     // {{{ open
     
     // Check bayer and dst image compatibility
-    ensureCompatible(&dst, depth8u, src->getSize(), 3, formatRGB);
+    ensureCompatible(dst, depth8u, src->getSize(), 3, formatRGB);
     
     // Select interpolation method
     switch (m_eConvMethod) {
       case nearestNeighbor: 
         FUNCTION_LOG("Nearest Neighbor interpolation");
-        nnInterpolation(src, dst);
+        nnInterpolation(src);
         break;
         
       case bilinear:
         FUNCTION_LOG("Bilinear interpolation");
-        bilinearInterpolation(src, dst);
+        bilinearInterpolation(src);
         break;
 
-        case hqLinear:
-          FUNCTION_LOG("High Quality Linear interpolation");
-          hqLinearInterpolation(src, dst);
-          break;
+      case hqLinear:
+        FUNCTION_LOG("High Quality Linear interpolation");
+        hqLinearInterpolation(src);
+        break;
 
       case edgeSense:
         FUNCTION_LOG("Edge Sense interpolation");
-        edgeSenseInterpolation(src, dst);
+        edgeSenseInterpolation(src);
         break;
 
       case simple:
         FUNCTION_LOG("Simple interpolation");
-        simpleInterpolation(src, dst);
+        simpleInterpolation(src);
         break;
         
       default:
-        nnInterpolation(src, dst);
+        nnInterpolation(src);
     }
 
     // convert data order from interleaved to planar
-    interleavedToPlanar(m_pucRGBInterImg, dst->asImg<icl8u>());
+    interleavedToPlanar(m_pucRGBInterImg, (*dst)->asImg<icl8u>());
   }
 
 // }}}
   
-  void BayerConverter::nnInterpolation(const Img<icl8u> *poBayerImg, 
-                                       ImgBase *dst) {
+  void BayerConverter::nnInterpolation(const Img<icl8u> *poBayerImg) {
     // {{{ open
 
     // Variable deklaration
@@ -149,8 +148,7 @@ namespace icl {
 
 // }}}
   
-  void BayerConverter::bilinearInterpolation(const Img<icl8u> *poBayerImg, 
-                                             ImgBase *dst) {
+  void BayerConverter::bilinearInterpolation(const Img<icl8u> *poBayerImg) {
     // {{{ open
 
     int iWidth = poBayerImg->getWidth();
@@ -247,8 +245,7 @@ namespace icl {
 
 // }}}
 
-  void BayerConverter::hqLinearInterpolation(const Img<icl8u> *poBayerImg, 
-                                             ImgBase *dst) {
+  void BayerConverter::hqLinearInterpolation(const Img<icl8u> *poBayerImg) {
     // {{{ open
 
     // Variable initialization
@@ -445,8 +442,7 @@ namespace icl {
 
 // }}}
   
-  void BayerConverter::edgeSenseInterpolation(const Img<icl8u> *poBayerImg, 
-                                              ImgBase *dst) {
+  void BayerConverter::edgeSenseInterpolation(const Img<icl8u> *poBayerImg) {
     // {{{ open
 
     // Variable initialization
@@ -732,8 +728,7 @@ namespace icl {
 
 // }}}
   
-  void BayerConverter::simpleInterpolation(const Img<icl8u> *poBayerImg, 
-                                           ImgBase *dst) {
+  void BayerConverter::simpleInterpolation(const Img<icl8u> *poBayerImg) {
     // {{{ open
 
     // Variable initialization

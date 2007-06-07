@@ -146,15 +146,16 @@ namespace icl {
       m_locRequest ("<IMAGEREQUEST>"
                     "<GRAB stereo=\"false\" timestamp=\"\"/>"
                     "</IMAGEREQUEST>", "/IMAGEREQUEST/GRAB"), 
-      m_remoteServer(0)
+      m_remoteServer(0), m_poSource(0), m_poBayer(0)
    {
       // create remote server instance
       m_remoteServer = XCF::RemoteServer::create(sServer, XCF::NONE);
       // and on success, set default recover level
       m_remoteServer->setRecoverLevel (l);
 
-	  m_poBayerConverter = new BayerConverter(BayerConverter::nearestNeighbor,
-		  BayerConverter::bayerPattern_RGGB, Size(320, 240));
+	  m_poBayerConverter = new BayerConverter(BayerConverter::simple,
+                                             BayerConverter::bayerPattern_RGGB, 
+                                             m_oDesiredParams.getSize());
    }
 
    XCFGrabber::~XCFGrabber () {
@@ -175,7 +176,7 @@ namespace icl {
          //m_poBayerConverter->setConverterMethod(BayerConverter::nearestNeighbor);
          m_poBayerConverter->setBayerPattern(BayerConverter::translateBayerPattern(bayerPattern));
          
-         m_poBayerConverter->apply(m_poSource->asImg<icl8u>(), m_poBayer);
+         m_poBayerConverter->apply(m_poSource->asImg<icl8u>(), &m_poBayer);
          m_oConverter.apply (m_poBayer, poOutput);
       } else {
          m_oConverter.apply (m_poSource, poOutput);

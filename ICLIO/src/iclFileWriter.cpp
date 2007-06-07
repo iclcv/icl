@@ -224,10 +224,13 @@ namespace icl {
                   *pc++ = *pcB;
                } // for rows (interleave)
 
-               if (pWrite (oInfo.fp, pcBuf, iDim) != iDim)
+               if (pWrite (oInfo.fp, pcBuf, iDim) != iDim) {
+                  delete [] pcBuf;
                   throw writeError;
+               }
             } // for lines
          } // for images
+         delete [] pcBuf;
       } else { // write all channels separately
          int iDim = poSrc->getDim () * getSizeOf(poSrc->getDepth());
          for (int i=0;i<iNumImages;i++) {

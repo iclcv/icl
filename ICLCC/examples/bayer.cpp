@@ -27,7 +27,7 @@ int main() {
   cout << "Nearest Neighbor:";
   t1.start();
   for (int i=0;i<100;i++) {
-    bayerCC.apply(bayerImg->asImg<icl8u>(), rgbImg);
+    bayerCC.apply(bayerImg->asImg<icl8u>(), &rgbImg);
   }
   t1.stop("Nearest neighbor");
   // Save RGB image
@@ -41,7 +41,7 @@ int main() {
   bayerCC.setConverterMethod(BayerConverter::bilinear);
   t2.start();
   for (int i=0;i<100;i++) {
-    bayerCC.apply(bayerImg->asImg<icl8u>(), rgbImg);
+    bayerCC.apply(bayerImg->asImg<icl8u>(), &rgbImg);
   }
   t2.stop("Bilinear");
   // Save RGB image
@@ -54,7 +54,7 @@ int main() {
   bayerCC.setConverterMethod(BayerConverter::hqLinear);
   t3.start();
   for (int i=0;i<100;i++) {
-    bayerCC.apply(bayerImg->asImg<icl8u>(), rgbImg);
+    bayerCC.apply(bayerImg->asImg<icl8u>(), &rgbImg);
   }
   t3.stop("HQLinear");
   // Save RGB image
@@ -67,7 +67,7 @@ int main() {
   bayerCC.setConverterMethod(BayerConverter::edgeSense);
   t4.start();
   for (int i=0;i<100;i++) {
-    bayerCC.apply(bayerImg->asImg<icl8u>(), rgbImg);
+    bayerCC.apply(bayerImg->asImg<icl8u>(), &rgbImg);
   }
   t4.stop("EdgeSende");
   // Save RGB image
@@ -80,13 +80,12 @@ int main() {
   bayerCC.setConverterMethod(BayerConverter::simple);
   t5.start();
   for (int i=0;i<100;i++) {
-    bayerCC.apply(bayerImg->asImg<icl8u>(), rgbImg);
+    bayerCC.apply(bayerImg->asImg<icl8u>(), &rgbImg);
   }
   t5.stop("Simple");
   // Save RGB image
   writer.setFileName("demoImages/rgbOut_simple.ppm");
   writer.write(rgbImg);  
-  
 
   return 1;
 }

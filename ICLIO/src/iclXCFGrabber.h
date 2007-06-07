@@ -71,7 +71,7 @@ namespace icl {
       XCF::RemoteServerPtr m_remoteServer;
       XCF::CTUPtr          m_result;
       ImgBase*             m_poSource;
-      BayerConverter*	     m_poBayerConverter;
+      BayerConverter*	   m_poBayerConverter;
       ImgBase*             m_poBayer;
    };
   
