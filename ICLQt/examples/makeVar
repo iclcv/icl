@@ -77,6 +77,6 @@ SKIP_OBJECTS += camviewer.cpp
 endif
 
 ifeq "${ARCH}" "macosx"
-SKIP_OBJECTS += camviewer.cpp camcfg.cpp interactivefilterdemo.cpp 
+SKIP_OBJECTS += camviewer.cpp camviewer_lite.cpp camcfg.cpp interactivefilterdemo.cpp 
 SKIP_OBJECTS += mouseinteraction.cpp visualizationdemo.cpp
 endif
