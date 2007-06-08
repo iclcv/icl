@@ -1,7 +1,12 @@
 #ifndef ICL_GL_TEXTUREMAP_IMAGE
 #define ICL_GL_TEXTUREMAP_IMAGE
 
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
+
 #include <iclSize.h>
 #include <iclSimpleMatrix.h>
 #include <iclTypes.h>
