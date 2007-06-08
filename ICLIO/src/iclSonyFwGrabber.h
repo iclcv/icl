@@ -38,8 +38,8 @@ namespace icl {
 		/** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    
 		virtual const ImgBase* grab(ImgBase **poDst=0);
 
-		void grabStereo (ImgBase **ppoDstLeft, ImgBase **ppoDstRight);
-		void grabStereoTrigger (ImgBase **leftImage, ImgBase **rightImage);
+		void grabStereo (ImgBase*& ppoDstLeft, ImgBase*& ppoDstRight);
+		void grabStereoTrigger (ImgBase*& leftImage, ImgBase*& rightImage);
 
 		/** @{ @name properties and parameters */
     
@@ -78,6 +78,8 @@ namespace icl {
 		HIIDC m_hCamera[10];
 
 		void GetCamAllString(long camIndex, char *strCamera);
+		void copyGrabbingBuffer (int iDevice, ImgBase *poDst);
+
 	};
 
 }

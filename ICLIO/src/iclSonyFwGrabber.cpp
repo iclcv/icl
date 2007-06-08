@@ -413,8 +413,8 @@ namespace icl {
 	void SonyFwGrabber::grabStereoTrigger(ImgBase*& poDstLeft, ImgBase*& poDstRight) {
 		if (m_lNumCameras < 2) return;
  
-		ensureCompatible(ppoDstLeft,  m_eDesiredDepth, m_oDesiredParams);
-		ensureCompatible(ppoDstRight, m_eDesiredDepth, m_oDesiredParams);
+		ensureCompatible(&poDstLeft,  m_eDesiredDepth, m_oDesiredParams);
+		ensureCompatible(&poDstRight, m_eDesiredDepth, m_oDesiredParams);
 
 		//---- Trigger Grabbing
 		iidc_capture(m_hCamera[0], false);
