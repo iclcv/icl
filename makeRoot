@@ -212,13 +212,6 @@ REL_OBJECTS:=
 # TRUE means: do not force C++ compiler)
 FORCE_CPP:=TRUE
 
-# Debug flag
-DEBUG:= -g -O0
-
-# Debug status
-# This variable takes two values: TRUE or FALSE
-DEBUG_ON:=FALSE
-
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:=
 
@@ -252,7 +245,7 @@ endif
 MKDEPFLAGS:= -fmakeDepend
 
 # Flags for make
-EXTRAMAKEFLAGS:= -s
+EXTRAMAKEFLAGS:=-s
 
 # Prefix string to be placed before each target name
 TARGET_PREFIX:=
@@ -321,8 +314,8 @@ printvar:
 	${PRE_CMD}${CMD_ECHO} "CPPDEFINES:       #${CPPDEFINES}#"
 	${PRE_CMD}${CMD_ECHO} "CPPFLAGS:         #${CPPFLAGS}#"
 	${PRE_CMD}${CMD_ECHO} ""
-	${PRE_CMD}${CMD_ECHO} "C cmdline:        #${CMD_CC} ${CFLAGS} ${DEBUG} ${CDEFINES} ${REL_INCLUDES} ${ABS_INCLUDES}#"
-	${PRE_CMD}${CMD_ECHO} "CPP cmdline:      #${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} ${REL_INCLUDES} ${ABS_INCLUDES}#"
+	${PRE_CMD}${CMD_ECHO} "C cmdline:        #${CMD_CC} ${CFLAGS} ${DEBUG_FLAGS} ${CDEFINES} ${REL_INCLUDES} ${ABS_INCLUDES}#"
+	${PRE_CMD}${CMD_ECHO} "CPP cmdline:      #${CMD_CCPP} ${CPPFLAGS} ${DEBUG_FLAGS} ${CPPDEFINES} ${REL_INCLUDES} ${ABS_INCLUDES}#"
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} "ARFLAGS:          #${ARFLAGS}#"
 	${PRE_CMD}${CMD_ECHO} "LDFLAGS:          #${LDFLAGS}#"

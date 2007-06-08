@@ -38,6 +38,16 @@ _DIRECTORY_ORDER:=$(filter ${_DIRECTORY_LIST},${DIR_PRIORITY}) \
                   $(filter-out ${DIR_PRIORITY} ${DIR_LOWPRIORITY},${_DIRECTORY_LIST}) \
                   $(filter ${_DIRECTORY_LIST},${DIR_LOWPRIORITY})
 
+ifneq "$(firstword ${DEBUG_ON})" "TRUE"
+  _DBG_INDICATOR:=(optimized)
+  DEBUG_FLAGS:=${NODEBUG}
+else
+  _DBG_INDICATOR:=(debug)
+  DEBUG_FLAGS:=${DEBUG}
+endif
+export _DBG_INDICATOR
+export DEBUG_FLAGS
+
 #-----------------------------------------------
 # Rule: all & cleanall & clean & printtype
 #-----------------------------------------------
