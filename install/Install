@@ -62,22 +62,22 @@ if (!-e "$INSTALLDIR"){
 
 if (!-e "$INSTALLDIR/lib"){
     print "make dir: $INSTALLDIR/lib\n";
-    system "mkdir $INSTALLDIR/lib";
+    system "mkdir -p $INSTALLDIR/lib";
     }
 
 if (!-e "$INSTALLDIR/include"){
     print "make dir: $INSTALLDIR/include\n";
-    system "mkdir $INSTALLDIR/include";
+    system "mkdir -p $INSTALLDIR/include";
     }
 
 if (!-e "$INSTALLDIR/packages"){
     print "make dir: $INSTALLDIR/packages\n";
-    system "mkdir $INSTALLDIR/packages";
+    system "mkdir -p $INSTALLDIR/packages";
 }
 
 if (!-e "$INSTALLDIR/doc"){
     print "make dir: $INSTALLDIR/doc\n";
-    system "mkdir $INSTALLDIR/doc";
+    system "mkdir -p $INSTALLDIR/doc";
 }
 
 #---- Copy content to install dir ----
