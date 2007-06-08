@@ -15,18 +15,19 @@ namespace icl{
 #define IMU ccEmulated
 #define UAV ccUnavailable 
 #define IPS ccImpossible
+#define ADP ccAdapted
 
   static const unsigned int NFMTS = 7;
   static const ccimpl g_aeAvailableTable[NFMTS*NFMTS] = {
     /*                      |-------------- dst format ------------------> */ 
     /*  ___                 gray   rgb    hls    yuv    lab  chroma matrix */
-    /*   |        gray  */  AVL,   AVL,   AVL,   AVL,   AVL,   IPS,  IPS,   
-    /*   |        rgb   */  AVL,   AVL,   AVL,   AVL,   AVL,   AVL,  IPS,   
-    /*  src-      hls   */  AVL,   AVL,   AVL,   IMU,   IMU,   IMU,  IPS, 
-    /* format     yuv   */  AVL,   AVL,   IMU,   AVL,   IMU,   IMU,  IPS, 
-    /*   |        lab   */  AVL,   AVL,   IMU,   IMU,   AVL,   IMU,  IPS, 
-    /*   |       chroma */  IPS,   IPS,   IPS,   IPS,   IPS,   AVL,  IPS, 
-    /*   V       matrix */  IPS,   IPS,   IPS,   IPS,   IPS,   IPS,  IPS
+    /*   |        gray  */  AVL,   AVL,   AVL,   AVL,   AVL,   IPS,  ADP,   
+    /*   |        rgb   */  AVL,   AVL,   AVL,   AVL,   AVL,   AVL,  ADP,   
+    /*  src-      hls   */  AVL,   AVL,   AVL,   IMU,   IMU,   IMU,  ADP, 
+    /* format     yuv   */  AVL,   AVL,   IMU,   AVL,   IMU,   IMU,  ADP, 
+    /*   |        lab   */  AVL,   AVL,   IMU,   IMU,   AVL,   IMU,  ADP, 
+    /*   |       chroma */  IPS,   IPS,   IPS,   IPS,   IPS,   AVL,  ADP, 
+    /*   V       matrix */  ADP,   ADP,   ADP,   ADP,   ADP,   ADP,  ADP
   };
 
 #undef AVL 
@@ -36,7 +37,7 @@ namespace icl{
   std::string translateCCImpl(ccimpl i){
     // {{{ open
 
-    static string s_asNames[4] = { "available" , "emulated", "unavailable", "impossible" };
+    static string s_asNames[5] = { "available" , "emulated","adapted","unavailable", "impossible" };
     return s_asNames[i];
   }
 
@@ -45,12 +46,14 @@ namespace icl{
   ccimpl translateCCImlp(const std::string &s){
     // {{{ open
 
-    if(!s.length()){
+    if(s.length() < 3){
       ERROR_LOG("ccimpl \""<<s<<"\" is not defined"); 
       return ccUnavailable;
     }
     switch(s[0]){
-      case 'a': return ccAvailable;
+      case 'a': 
+        if(s[1] == 'v') return  ccAvailable;
+        else return ccAdapted;
       case 'e': return ccEmulated;
       case 'u': return ccUnavailable;
       case 'i': return ccImpossible;
@@ -692,6 +695,23 @@ namespace icl{
         cc(buf,dst);
         delete buf;
         break;
+      }
+      case ccAdapted:{
+        int n = std::min(src->getChannels(),dst->getChannels());
+        switch(src->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)  case depth##D:                                                                          \
+          switch(dst->getDepth()){                                                                                        \
+            case depth8u: for(int i=0;i<n;i++){ convertChannel(src->asImg<icl##D>(),n,dst->asImg<icl8u>(),n); } break;    \
+            case depth16s: for(int i=0;i<n;i++){ convertChannel(src->asImg<icl##D>(),n,dst->asImg<icl16s>(),n); } break;  \
+            case depth32s: for(int i=0;i<n;i++){ convertChannel(src->asImg<icl##D>(),n,dst->asImg<icl32s>(),n); } break;  \
+            case depth32f: for(int i=0;i<n;i++){ convertChannel(src->asImg<icl##D>(),n,dst->asImg<icl32f>(),n); } break;  \
+            case depth64f: for(int i=0;i<n;i++){ convertChannel(src->asImg<icl##D>(),n,dst->asImg<icl64f>(),n); } break;  \
+          }                                                                                                               \
+          break;
+          ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+          
+        }        
       }
       case ccUnavailable:{
         ERROR_LOG("no color conversion [" << 

@@ -249,6 +249,12 @@ The gray scale conversion is optimized for speed performance. Although,
 L of Lab is not equal to the Y of YUV, color formats, that have an
 brightness-like component are converted to gray scale by picking this
 channel. RGB is converted to gray by the simple channel mean (r+g+b)/3.
+    
+\section matrix formatMatrix Conversion
+As the matrix image format offers no color information, matrix image data is just copied 
+from the source image channels to the destination image channels. If the source image has
+more channels, the remaining channels are left unregarded. If otherwise the destination 
+image has more channels, this channels are left  unchanged
 
 \section secChroma r-g-Chromaticity Color Space Conversion
 The chromaticity space r,g,b divides the R,G,B components by the city
@@ -335,8 +341,9 @@ namespace icl{
   enum ccimpl{
     ccAvailable   = 0, /**< conversion is supported natively/directly */
     ccEmulated    = 1, /**< conversion is supported using the bridge format RGB */
-    ccUnavailable = 2, /**< conversion is not implemented yet, but possible */
-    ccImpossible  = 3  /**< conversion does not make sense (like formatMatrix to XXX) */
+    ccAdapted     = 2, /**< conversion is actually not possible but although performed ( like XXX to matrix )*/
+    ccUnavailable = 3, /**< conversion is not implemented yet, but possible */
+    ccImpossible  = 4  /**< conversion does not make sense (like croma to RGB )*/
   };
   
   /// translates a ccimpl enum into a string representation

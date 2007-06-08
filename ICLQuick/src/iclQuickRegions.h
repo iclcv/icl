@@ -5,8 +5,21 @@
 #include <iclBlobData.h>
 
 namespace icl{
+  /// creates a color map of a 3-channel color image
+  /** This function uses a the following algorithm to calculate the
+      color map \f$M\f$ of an 3-channel image \f$I\f$:
+      \$[
+      M(x,y) = 255 - \frac{\sqrt{(I(x,y,0)-r)^2 + (I(x,y,1)-g)^2 + (I(x,y,2)-b)^2}}{\sqrt{3}}
+      \$]
+      @param image input image
+      @param r red referene color value
+      @param g green referecne color value
+      @param b blue color value
+  */
   ImgQ colormap(const ImgQ &image, float r, float g, float b);
 
+  /// detects all region centers withing the given image
+  /** a*/
   vector<Point> centers(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
   vector<Rect> boundingboxes(const ImgQ &image,int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
   vector<vector<Point> > boundaries(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
