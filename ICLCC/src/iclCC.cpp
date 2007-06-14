@@ -744,108 +744,320 @@ namespace icl{
   // }}}
 
 
-  /// additional misc
-  template<class S, class D>
-  inline void planarToInterleaved_Generic(const Img<S> *src, D* dst, int dstLineStep){
-    // {{{ open
-  FUNCTION_LOG("");
-  ICLASSERT_RETURN(src);
-  ICLASSERT_RETURN(dst);
-
-
-  /**
-   ann src = 6x4x1
-   xxxxxx   xxxxxx....
-   xxxxxx   xxxxxx....
-   xxxxxx   xxxxxx....
-   xxxxxx   xxxxxx....
-   */
+  /// additional misc (planar -> interleaved and interleaved -> planar)
   
-  int c=src->getChannels();
-  if(c==1){
-    if(src->hasFullROI() && dstLineStep == -1){
-      convert<S,D>(src->getData(0),src->getData(0)+src->getDim(),dst);
-    }else{
-      if(dstLineStep == -1) dstLineStep = src->getROIWidth()*sizeof(D);
-      std::vector<D*> dstDataVec;
-      dstDataVec.push_back(dst);
-      int dstW = dstLineStep/sizeof(D);
-      if(dstW < src->getROIWidth()){
-        ERROR_LOG("dst image is smaller than source images ROI\n");
-        return;
-      }
-      int dstH = src->getHeight();
-      Img<D> tmpDstImage(Size(dstW,dstH),formatMatrix,dstDataVec);
-      tmpDstImage.setROI(Rect(Point::null,src->getROISize()));
-      src->convertROI(&tmpDstImage);
-    }
-    return;
-  }
+  template<class S, class D>
+  inline void planarToInterleaved_POD(int channels,int len, const S** src, D* dst){
+    // {{{ open
 
-  if(src->hasFullROI() && dstLineStep == -1){ // no roi handling!
-    int dim=src->getDim();
-    const S** pp=new const S* [c];
-    const S** ppEnd=pp+c;
-    
-    for (int i=0;i<c;i++){
-      pp[i]=src->getData(i);
-    }
-    
-    D* dstEnd=dst+c*dim;
-    while (dst<dstEnd){
-      for (const S** p=pp;p<ppEnd;++(*p),++p,++dst ){
-        *dst=Cast<S,D>::cast(*(*p));
-      }
-    }
-    delete [] pp;
-  }else{ // roi handling
-    if(dstLineStep == -1) dstLineStep = src->getROIWidth()*sizeof(D)*c;
-    ConstImgIterator<S> *sourceIts = new ConstImgIterator<S>[c];
-    for (int i=0;i<c;i++){
-      sourceIts[i] = src->getROIIterator(i);
-    }
-    //    D* dstEnd=dst+c*src->getDim();
-    const int xEnd = src->getROISize().width;
-    const int yEnd = src->getROISize().height;
-    int dstW = dstLineStep/(sizeof(D)*c);
-    if(dstW < src->getROIWidth()){
-      ERROR_LOG("dst image is smaller than source images ROI\n");
-      delete [] sourceIts;
-      return;
-    }
-
-    //int dstH = src->getROISize().height;
-    int lineJump = c*(dstW-yEnd)-1;
-
-    for(int y=0;y<yEnd;++y){
-      for(int x=0;x<xEnd;++x){
-        for(int i=0;i<c;i++,dst++){
-          *dst = Cast<S,D>::cast(*(sourceIts[i]));
-          sourceIts[i]++;
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(src);
+    ICLASSERT_RETURN(dst);
+    ICLASSERT_RETURN(channels>0);
+    switch(channels){
+      case 1:
+        convert<S,D>(*src,*src+len,dst);
+        break;
+      case 2:{
+        D* dstEnd=dst+channels*len;
+        const S* s0 = src[0];
+        const S* s1 = src[1];
+        while (dst<dstEnd){
+          *dst++ = Cast<S,D>::cast(*s0++);
+          *dst++ = Cast<S,D>::cast(*s1++);
+        }
+        break;
+      }case 3:{
+        D* dstEnd=dst+channels*len;
+        const S* s0 = src[0];
+        const S* s1 = src[1];
+        const S* s2 = src[2];
+        while (dst<dstEnd){
+          *dst++ = Cast<S,D>::cast(*s0++);
+          *dst++ = Cast<S,D>::cast(*s1++);
+          *dst++ = Cast<S,D>::cast(*s2++);
+        }
+        break;
+      }case 4:{
+        D* dstEnd=dst+channels*len;
+        const S* s0 = src[0];
+        const S* s1 = src[1];
+        const S* s2 = src[2];
+        const S* s3 = src[3];
+        while (dst<dstEnd){
+          *dst++ = Cast<S,D>::cast(*s0++);
+          *dst++ = Cast<S,D>::cast(*s1++);
+          *dst++ = Cast<S,D>::cast(*s2++);
+          *dst++ = Cast<S,D>::cast(*s3++);
+        }
+        break;
+      }default:{
+        D* dstEnd=dst+channels*len;
+        const S** srcEnd = src+channels;
+        while (dst<dstEnd){
+          for (const S** p=src;p<srcEnd;++(*p),++p,++dst ){
+            *dst=Cast<S,D>::cast(*(*p));
+          }
         }
       }
-      dst+=lineJump;
     }
-    delete [] sourceIts;
   }
-}
-  
+
   // }}}
   
   template<class S, class D>
-  inline void interleavedToPlanar_Generic(const S *src,  Img<D> *dst, int srcLineStep){
+  inline void planarToInterleaved_Generic_NO_ROI(const Img<S> *src, D*dst){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(src);
+    ICLASSERT_RETURN(dst);
+
+    int c=src->getChannels();    
+    const S **srcData = new const S*[c];
+    for(int i=0;i<c;i++){
+      srcData[i] = src->getData(i);
+    }
+    planarToInterleaved_POD(c,src->getDim(),srcData,dst);
+    delete [] srcData;
+  }
+
+  // }}}
+  
+  template<class S, class D>
+  inline void planarToInterleaved_Generic_WITH_ROI(const Img<S> *src, D *dst,int dstLineStep){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(src);
+    ICLASSERT_RETURN(dst);
+
+    int c=src->getChannels();
+    int lineLength = src->getROIWidth();
+    int dstImageWidth = dstLineStep/(sizeof(D));
+    int dstLineJump = dstImageWidth-lineLength;
+
+    int srcImageWidth = src->getWidth();
+    int srcLineJump = srcImageWidth-lineLength;
+
+    if(dstLineJump<0){
+      ERROR_LOG("destination images linestep is too small!"); 
+      return;
+    }
+    
+    srcLineJump+=lineLength;    
+    dstLineJump+=lineLength;
+    
+    const S** srcData=new const S* [c];
+    for(int i=0;i<c;++i){
+      srcData[i] = src->getROIData(i);
+    }
+    
+    for(int y=0;y<src->getROIHeight();++y){
+      planarToInterleaved_POD(c,lineLength,srcData,dst);
+      for(int i=0;i<c;++i){
+        srcData[i]+=srcLineJump;
+      }
+      dst+=dstLineJump;
+    }
+    delete [] srcData;
+  }
+
+  // }}}
+  
+  template<class S, class D>
+  inline void planarToInterleaved_Generic(const Img<S> *src, D* dst, int dstLineStep){
     // {{{ open
     
     FUNCTION_LOG("");
     ICLASSERT_RETURN(src);
     ICLASSERT_RETURN(dst);
     
-    if(srcLineStep != -1){
-      ERROR_LOG("interleavedToPlanar_Generic is not yet implemented for a special src line step !\n");
+    if(src->hasFullROI() && ( dstLineStep == -1 || dstLineStep/((int)sizeof(D)) == src->getWidth())){
+      planarToInterleaved_Generic_NO_ROI(src,dst);
+    }else{
+      planarToInterleaved_Generic_WITH_ROI(src,dst,dstLineStep);
+    }
+  }
+  
+  // }}}
+  
+  
+  template<class S, class D>
+  inline void interleavedToPlanar_POD(int channels,int len, const S* src, D **dst){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(src);
+    ICLASSERT_RETURN(dst);
+    ICLASSERT_RETURN(channels>0);
+    switch(channels){
+      case 1:
+        convert<S,D>(src,src+len,*dst);
+        break;
+      case 2:{
+        const S* srcEnd=src+channels*len;
+        D* d0 = dst[0];
+        D* d1 = dst[1];
+        while (src<srcEnd){
+          *d0++ = Cast<S,D>::cast(*src++);
+          *d1++ = Cast<S,D>::cast(*src++);
+        }
+        break;
+      }case 3:{
+        const S* srcEnd=src+channels*len;
+        D* d0 = dst[0];
+        D* d1 = dst[1];
+        D* d2 = dst[2];
+        while (src<srcEnd){
+          *d0++ = Cast<S,D>::cast(*src++);
+          *d1++ = Cast<S,D>::cast(*src++);
+          *d2++ = Cast<S,D>::cast(*src++);
+        }
+        break;
+      }
+      case 4:{
+        const S* srcEnd=src+channels*len;
+        D* d0 = dst[0];
+        D* d1 = dst[1];
+        D* d2 = dst[2];      
+        D* d3 = dst[3];
+        while (src<srcEnd){
+          *d0++ = Cast<S,D>::cast(*src++);
+          *d1++ = Cast<S,D>::cast(*src++);
+          *d2++ = Cast<S,D>::cast(*src++);
+          *d3++ = Cast<S,D>::cast(*src++);
+        }
+        break;
+      }
+      default:{
+        const S* srcEnd=src+channels*len;
+        D** dstEnd = dst+channels;
+        while (src<srcEnd){
+          for (D** p=dst;p<dstEnd;++(*p),++p,++src ){
+            *(*p) = Cast<S,D>::cast(*src);
+          }
+        }
+      }
+    }
+  }
+
+  // }}}
+  
+  template<class S, class D>
+  inline void interleavedToPlanar_Generic_NO_ROI(const S* src, Img<D> *dst){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(src);
+    ICLASSERT_RETURN(dst);
+
+    int c=dst->getChannels();    
+    D **dstData = new D*[c];
+    for(int i=0;i<c;i++){
+      dstData[i] = dst->getData(i);
+    }
+    interleavedToPlanar_POD(c,dst->getDim(),src,dstData);
+    delete [] dstData;
+  }
+
+  // }}}
+  
+  template<class S, class D>
+  inline void interleavedToPlanar_Generic_WITH_ROI(const S *src, Img<D> *dst, int srcLineStep){
+    // {{{ open
+
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(src);
+    ICLASSERT_RETURN(dst);
+
+    int c=dst->getChannels();
+    int lineLength = dst->getROIWidth();
+    int srcImageWidth = srcLineStep/(sizeof(S));
+    int srcLineJump = srcImageWidth-lineLength;
+
+    int dstImageWidth = dst->getWidth();
+    int dstLineJump = dstImageWidth-lineLength;
+
+    if(srcLineJump<0){
+      ERROR_LOG("destination images linestep is too small!"); 
       return;
     }
+
+    dstLineJump+=lineLength;    
+    srcLineJump+=lineLength;    
+
+    D** dstData=new D*[c];
+    for(int i=0;i<c;++i){
+      dstData[i] = dst->getROIData(i);
+    }
+    
+    for(int y=0;y<dst->getROIHeight();++y){
+      interleavedToPlanar_POD(c,lineLength,src,dstData);
+      for(int i=0;i<c;++i){
+        dstData[i]+=dstLineJump;
+      }
+      src+=srcLineJump;
+    }
+    delete [] dstData;
+  }
+
+  // }}}
+  
+  template<class S, class D>
+  inline void interleavedToPlanar_Generic( const S *src, Img<D> *dst, int srcLineStep){
+    // {{{ open
+    
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(src);
+    ICLASSERT_RETURN(dst);
+    
+    if(dst->hasFullROI() && ( srcLineStep == -1 || srcLineStep/((int)sizeof(S)) == dst->getWidth())){
+      interleavedToPlanar_Generic_NO_ROI(src,dst);
+    }else{
+      interleavedToPlanar_Generic_WITH_ROI(src,dst,srcLineStep);
+    }
+  }
+  
+  // }}}
+
+
+  /****
+
+  template<class S, class D>
+  inline void interleavedToPlanar_Generic(const S *src,  Img<D> *dst, int srcLineStep){
+    // {{{ open
+    printf("i2p called \n");
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN(src);
+    ICLASSERT_RETURN(dst);
+    int srcWidth = srcLineStep/sizeof(S);
+    int srcROIWidth = dst->getROIWidth(); // assume that this are equal
     int c = dst->getChannels();
-    Size srcSize= dst->getSize();
+    Size srcSize = dst->getROISize();
+    
+    if(srcLineStep != -1 &&  srcROIWidth != srcWidth){
+      int lineJump = srcWidth-srcROIWidth;
+      if(lineJump < 0){
+        ERROR_LOG("srcLine step is too small. The source image must be at least as wide as the destination image.");
+        return;
+      }
+      ImgIterator<D> *itDsts = new ImgIterator<D>[c];
+      for(int i=0;i<c;i++){
+        itDsts[i] = dst->getROIIterator(i);
+      }
+      for(int y=0;y<srcSize.height;++y){
+        for(int x=0;x<srcSize.width;++x){
+          for (int i=0;i<c;++i, ++src){
+            *(itDsts[i]) = Cast<S,D>::cast(*src);
+            itDsts[i]++;
+          }
+        }
+        src+=lineJump;
+      }
+      delete [] itDsts;
+      return;
+    }
     if(c==1){
       if(dst->hasFullROI()){
         convert<S,D>(src,src+srcSize.getDim(),dst->getData(0));
@@ -888,6 +1100,8 @@ namespace icl{
   }
   
   // }}}
+
+  ********/
   
   template<class S,class D>
   void planarToInterleaved(const Img<S> *src, D* dst,int dstLineStep){
@@ -1092,4 +1306,5 @@ namespace icl{
   }
   
   // }}}
+
 }
