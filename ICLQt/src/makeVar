@@ -132,7 +132,7 @@ SKIP_DIRECTORIES:=
 	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
 	${REL_INCLUDES} ${ABS_INCLUDES}
 
-../obj/moc_iclCamThread.o : iclCamThread.cpp iclCamThread.h 
+../obj/moc_iclCamThread.o : iclCamThread.h iclCamThread.cpp 
 	${PRE_CMD} rm -rf moc_iclCamThread.cpp
 	${PRE_CMD}${CMD_ECHO} "creating moc file moc_iclCamThread.cpp [specialized]"
 	${PRE_CMD}${QTDIR}/bin/moc -o moc_iclCamThread.cpp iclCamThread.h
@@ -140,7 +140,7 @@ SKIP_DIRECTORIES:=
 	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c moc_iclCamThread.cpp -o $@ \
 	${REL_INCLUDES} ${ABS_INCLUDES}
 
-../obj/iclCamThread.o : iclCamThread.cpp iclCamThread ../obj/moc_iclCamThread.o
+../obj/iclCamThread.o : iclCamThread.cpp iclCamThread.h ../obj/moc_iclCamThread.o
 	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
 	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
 	${REL_INCLUDES} ${ABS_INCLUDES}
