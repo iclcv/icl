@@ -23,6 +23,7 @@
 #include <QImage>
 #include <QFont>
 #include <QApplication>
+#include <iclLine.h>
 
 
 
@@ -74,41 +75,7 @@ namespace icl{
     // }}}
     int FONTSIZE = 12;
     string FONTFAMILY = "Times";
-    void bresenham(int x0, int x1, int y0, int y1, vector<int> &xs, vector<int> &ys, int maxX, int maxY){
-      // {{{ open
-      int steep = std::abs(y1 - y0) > std::abs(x1 - x0);
-      if(steep){
-        swap(x0, y0);
-        swap(x1, y1);
-      }
-      int steep2 = x0 > x1;
-      if(steep2){
-        swap(x0, x1);
-        swap(y0, y1);
-      }
-      
-      int deltax = x1 - x0;
-      int deltay = std::abs(y1 - y0);
-      int error = 0;
-      int ystep = y0 < y1 ? 1 : -1;
-      
-      for(int x=x0,y=y0;x<=x1;x++){
-        if(steep && x>=0 && x<=maxY && y>=0 && y<=maxX){
-          xs.push_back(y); 
-          ys.push_back(x);
-        }else if(x>=0 && x<=maxX && y>=0 && y<=maxY){
-          xs.push_back(x); 
-          ys.push_back(y);
-        }
 
-        error += deltay;
-        if (2*error >= deltax){
-          y += ystep;
-          error -=deltax;
-        }
-      }
-    }
-    // }}}
 
 #ifndef __APPLE__
     static PWCGrabber *G[4] = {0,0,0,0};
@@ -426,7 +393,9 @@ namespace icl{
     static map<string,UnaryOp*> M;
     bool inited = false;
     if(!inited){
+#ifdef WITH_IPP_OPTIMIZATION
       static icl8u mask[9] = {1,1,1,1,1,1,1,1,1};
+#endif
       static Size s3x3(3,3);
       M["sobely"] = new ConvolutionOp(ConvolutionOp::kernelSobelX3x3);
       M["sobelx"] = new ConvolutionOp(ConvolutionOp::kernelSobelY3x3);
@@ -1112,7 +1081,8 @@ namespace icl{
   void line(ImgQ &image, int x1, int y1, int x2, int y2){
     // {{{ open
     std::vector<int> xs,ys;
-    bresenham(x1,x2,y1,y2,xs,ys,image.getWidth()-1,image.getHeight()-1);
+    Line l(Point(x1,y2), Point(x2,y2));
+    l.sample(xs,ys,Rect(0,0,image.getWidth(), image.getHeight()));
     float A = COLOR[3]/255.0;
     for(vector<int>::iterator itX=xs.begin(), itY=ys.begin(); itX != xs.end(); ++itX, ++itY){
       for(int c=0;c<image.getChannels() && c<3; ++c){
@@ -1167,7 +1137,7 @@ namespace icl{
 
   // }}}
 
-  inline void pix(ImgQ &image, int x, int y){
+  void pix(ImgQ &image, int x, int y){
     // {{{ open
     float A = COLOR[3]/255.0;
     if(x>=0 && y>=0 && x<image.getWidth() && y<image.getHeight()){
