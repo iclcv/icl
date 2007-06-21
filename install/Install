@@ -4,7 +4,7 @@ use Data::Dumper;
 use File::Find;
 
 my ($projectName, $majVer, $minVer);
-my (@content, @allProjectNames);
+my (@makeVarContent, @content, @allProjectNames);
 my $projectRootName = $ARGV[0];
 my $installMode = $ARGV[1]; # 0: remove & install all (include, lib, doc)
                             # 1: remove & install include, lib
@@ -80,10 +80,6 @@ if (!-e "$INSTALLDIR/doc"){
     system "mkdir -p $INSTALLDIR/doc";
 }
 
-#---- Copy content to install dir ----
-#system "cp ./BashSrc $INSTALLDIR";
-#system "cp ./packageVar $INSTALLDIR";
-
 #---- Copy extern projects files----
 system "cp ../packages/IPP $INSTALLDIR/packages";
 system "cp ../packages/Qt $INSTALLDIR/packages";
@@ -92,6 +88,20 @@ system "cp ../packages/XCF $INSTALLDIR/packages";
 system "cp ../packages/Firewire $INSTALLDIR/packages";
 
 foreach my $entry(@dirs) {
+    if ($entry !~ /ICLUtils/) {
+        #---- Check makeVar for inlcudes ----
+        open(FILE,"../$entry/makeVar") or die "Can not open file: $!";
+        @makeVarContent = <FILE>;
+        close(FILE);
+    }
+
+    my @includes = ();
+    foreach my $line(@makeVarContent) {
+        if ($line =~ /^include/) {
+            push(@includes, $line);
+        }
+    }
+
     # ---- Install content ----
     if ($installMode == 0 || $installMode == 1) { 
         print "---- Copying header files: $entry/src\n";
@@ -132,7 +142,7 @@ foreach my $entry(@dirs) {
             system "cp -r ../$entry/doc/documentation/* $INSTALLDIR/doc/$entry";
         }
         
-        generate_packagevar($entry, $INSTALLDIR);
+        generate_packagevar($entry, $INSTALLDIR, @includes);
     }
     
     if ($installMode == 0 || $installMode == 2) {
@@ -204,7 +214,7 @@ sub generate_documentation {
 sub generate_packagevar {
 # {{{ open
 
-    my ($entry, $installdir) = @_;
+    my ($entry, $installdir, @includes) = @_;
     my $pkgContent = "";
     
     #---- Generate content ----
@@ -212,6 +222,12 @@ sub generate_packagevar {
     $pkgContent .= "ifeq \"\${".$entry."_MAKEVAR}\" \"\"\n";
     $pkgContent .= $entry."_MAKEVAR=".$entry."_MAKEVAR\n";
     $pkgContent .= "\n";
+    $pkgContent .= "# Please include here the inherited packages123\n";
+    foreach my $inc (@includes) {
+        $inc =~ s/\$\{PACKAGES\}/$installdir\/packages/;
+        $pkgContent .= $inc;
+    }
+    $pkgContent .= "\n";    
     $pkgContent .= "# Please, place here the include directory of the project\n";
     $pkgContent .= "ABS_INCLUDES:= \${ABS_INCLUDES} \\\n";
     $pkgContent .= "-I$installdir/include\n";

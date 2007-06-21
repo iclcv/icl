@@ -14,7 +14,7 @@ endif
 
 # Add here your project settings, plese specify each entry in a separated
 # line (use backslash to continue the lines).
-include $(PACKAGES)/IPP
+include ${PACKAGES}/IPP
 
 # This variable sets the inclusion modality for packageVar
 # Values are: DYNAMIC (for the inclusion of shared object) and
