@@ -41,7 +41,7 @@ namespace icl{
     Point operator+(const Point &s) const {return  Point(x+s.x,y+s.y);}
 
     /// substracts two Points as vectors 
-    Point operator-(const Point &s) const {return  Point(x+s.x,y+s.y);}
+    Point operator-(const Point &s) const {return  Point(x-s.x,y-s.y);}
 
     /// scales a Points variables with a scalar value
     Point operator*(double d) const { return Point((int)(d*x),(int)(d*y));}

@@ -62,7 +62,12 @@ namespace icl{
     FUNCTION_LOG("");
     double x1 = random(1.0);
     double x2 = random(1.0);
-    return mean+var*var*sqrt(-2*var*log(x1))*cos(2*var*M_PI*x2);
+    
+    if(random(1.0) < 0.5){
+      return mean+var*var*sqrt(-2*var*log(x1))*cos(2*var*M_PI*x2);
+    }else{
+      return -(mean+var*var*sqrt(-2*var*log(x1))*cos(2*var*M_PI*x2));
+    }
   }   
 
   /********************************************************
