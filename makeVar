@@ -67,7 +67,7 @@ REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug status
 # This variable takes two values: TRUE or FALSE
-DEBUG_ON:=FALSE
+DEBUG_ON:=TRUE
 
 # Debugging flags
 DEBUG:=-O0 -g3
@@ -105,119 +105,11 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 CMD_LD=g++
 
 
-############################# check for IPP ############################
-ifeq "${ARCH}" "linux"
-# Linux support
-ifeq "$(wildcard $(IPP_ROOT)/5.1/sharedlib/libipp*.so)" ""
-ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
-ifeq "$(_WARN_IPP)" ""
-_WARN_IPP=done # warn only once
-export _WARN_IPP
-$(warning "IPP 5.1 is not available. Its usage is switched off.")
-endif
-CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
-CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
-endif
-endif
-else
-# Mac support
-ifeq "$(wildcard $(IPP_ROOT)/Intel_IPP.framework/Libraries/libipp*.dylib)" ""
-ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
-ifeq "$(_WARN_IPP)" ""
-_WARN_IPP=done # warn only once
-export _WARN_IPP
-$(warning "IPP is not available. Its usage is switched off.")
-endif
-CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
-CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
-endif
-endif
-endif
-
-############################# check for JPEG-SUPPORT ####################
-LIBJPEG_ROOT ?= /usr
-ifeq "$(wildcard ${LIBJPEG_ROOT}/lib/libjpeg.so)" ""
-ifneq "$(findstring -DWITH_JPEG_SUPPORT,$(CDEFINES))" ""
-ifeq "$(_WARN_JPEG)" ""
-_WARN_JPEG=done # warn only once
-export _WARN_JPEG
-$(warning "libjpeg is not available. Its usage is switched off.")
-endif
-CDEFINES:=$(filter-out -DWITH_JPEG_SUPPORT, $(CDEFINES))
-CPPDEFINES:=$(filter-out -DWITH_JPEG_SUPPORT, $(CPPDEFINES))
-endif
-else
-HAVE_LIBJPEG=TRUE
-endif
-
-############################# check for QT 4 ############################
-# try whether useful QTDIR is already set
-ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
-QTDIR=/vol/qt/4.2
-endif
-# try whether QTDIR contains QT 4 now
-ifneq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
-HAVE_QT=TRUE
-else
-ifeq "$(_WARN_QT)" ""
-_WARN_QT=done # warn only once
-export _WARN_QT
-$(warning "Qt version 4.2 is not available. Qt-specific targets are not built.")
-endif
-endif
-
-############################# check for Firewire ########################
-# try whether fire wire is available
-ifneq "$(wildcard /vol/video/lib/libdc1394*.so)" ""
-HAVE_FIREWIRE=TRUE
-else
-ifeq "$(_WARN_FIREWIRE)" ""
-_WARN_FIREWIRE=done # warn only once
-export _WARN_FIREWIRE
-$(warning "Firewire library is not available. Firewire specific targets are not built.")
-endif
-endif
-
-############################# check for SVS ########################
-# try whether SVS is available
-SVS_ROOT ?= /vol/vision/SVS/4.2
-ifneq "$(wildcard ${SVS_ROOT}/bin/libsvs.so)" ""
-HAVE_SVS=TRUE
-else
-ifeq "$(_WARN_SVS)" ""
-_WARN_SVS=done # warn only once
-export _WARN_SVS
-$(warning "SVS library is not available. SVS specific targets are not built.")
-endif
-endif
-
-############################# check for unicap ##########################
-UNICAP_ROOT ?= /vol/video
-ifeq "$(wildcard ${UNICAP_ROOT}/lib/libunicap*.so)" ""
-ifeq "${_WARN_UNICAP}" ""
-$(warning "libunicap.so was not found in ${UNICAP_ROOT}/lib. Unicap support disabled.")
-export _WARN_UNICAP=done
-endif # _WARN_UNICAP
-else # found libunicap.so in UNICAP_ROOT/lib ->ok
-HAVE_UNICAP=TRUE
-endif # searching in UNICAP_ROOT/lib
-
-############################# check for XCF ########################
-XCF_ROOT ?= /vol/xcf
-ifeq "$(wildcard ${XCF_ROOT}/lib/libxcf*.so)" ""
-ifeq "${_WARN_XCF}" ""
-$(warning "libxcf.so was not found in ${XCF_ROOT}/lib. XCF support disabled.")
-export _WARN_XCF=done
-endif # _WARN_XCF
-else # found libxcf.so in XCF_ROOT/lib ->ok
-HAVE_XCF=TRUE
-endif # searching in XCF_ROOT/lib
-
-
 #########################################################################
-# Set the priority level
-DIR_PRIORITY:=ICLUtils ICLCore ICLCC
-DIR_LOWPRIORITY:=examples
+# Dependency checks
+-include ${SRC_ROOT}/make/dependencyChecks
+
+# Exclude the folowing folder or files
 ifeq "$(HAVE_QT)" ""
 SKIP_DIRECTORIES += ICLQt 
 SKIP_DIRECTORIES += ICLQuick
@@ -227,5 +119,11 @@ ifeq "$(HAVE_SVS)" ""
 SKIP_DIRECTORIES += ICLSVS
 endif
 
+#########################################################################
+# Set the priority level
+DIR_PRIORITY:=ICLUtils ICLCore ICLCC
+DIR_LOWPRIORITY:=examples
 
+#########################################################################
+# Exclude the folowing folder or files
 SKIP_DIRECTORIES += ICLNN ICLViola
