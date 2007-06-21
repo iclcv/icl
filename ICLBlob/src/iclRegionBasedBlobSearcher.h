@@ -115,10 +115,22 @@ namespace icl{
     **/
     const Array<int> &getCOGsPOD();
 
+    /// access a list of center of gravities (floating point precision)
+    /** @return "xyxyxy"- ordered int Array containing the data
+    **/
+    const Array<float> &getCOGsFloatPOD();
+
+
     /// access a list of center of gravities
     /** @return Array of blob center positions 
     **/
     const Array<Point> &getCOGs();
+ 
+    /// access a list of center of gravities (floating point precision)
+    /** @return Array of blob center positions 
+    **/
+    const Array<Point32f> &getCOGsFloat();
+    
 
     /// access to bounding boxes
     /** This function produces resuls only for RegionFilters 
@@ -248,6 +260,9 @@ namespace icl{
     /// Internal buffer of all FMCreators' calculated blob centers
     Array<Array<Point> > m_oCenters;    
 
+    /// Internal buffer of all FMCreators' calculated blob centers
+    Array<Array<Point32f> > m_oCentersFloat;    
+
     /// Internal buffer of all FMCreators' calculated blob bounding boxes
     Array<Array<Rect> > m_oBBs;         
     
@@ -256,6 +271,9 @@ namespace icl{
     
     /// Output buffer for blob centers
     Array<Point> m_oCOGsOut;
+    
+    /// Output buffer for blob centers (floating point precision)
+    Array<Point32f> m_oCOGsFloatOut;
     
     /// Output buffer for blob bounding boxes
     Array<Rect> m_oBBsOut;
@@ -267,6 +285,9 @@ namespace icl{
     
     /// POD-Output buffer for blob centers
     Array<int> m_oCOGsOutPOD;
+
+    /// POD-Output buffer for blob centers (floating point precision)
+    Array<float> m_oCOGsFloatOutPOD;
 
     /// POD-Output buffer for blob bounding boxes
     Array<int> m_oBBsOutPOD;

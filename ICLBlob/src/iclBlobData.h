@@ -2,6 +2,7 @@
 #define BLOB_DATA_H
 
 #include <iclPoint.h>
+#include <iclPoint32f.h>
 #include <iclRect.h>
 #include <iclTypes.h>
 #include <vector>
@@ -70,6 +71,9 @@ namespace icl{
 
     /// returns the blobs COG
     Point getCOG() const;
+
+    /// returns the blobs COG with floating point precision
+    Point32f getCOGFloat() const;
 
     /// returns the blobs pixel count
     int getSize() const;

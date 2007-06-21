@@ -53,6 +53,12 @@ namespace icl{
     ICLASSERT_RETURN_VAL(m_poRDB,Point::null);
     return m_poRDB->getCOG();
   }
+  
+  Point32f BlobData::getCOGFloat() const{
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN_VAL(m_poRDB,Point32f::null);
+    return m_poRDB->getCOGFloat();
+  }
  
   Rect BlobData::getBoundingBox() const{
     FUNCTION_LOG("");

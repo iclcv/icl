@@ -7,6 +7,7 @@
 #include <iclSize.h>
 #include <iclRect.h>
 #include <iclPoint.h>
+#include <iclPoint32f.h>
 #include <iclArray.h>
 #include <iclTypes.h>
 
@@ -75,6 +76,9 @@ namespace icl {
       /// returns the center of gravity of this blob
       const Point &getCOG();
 
+      /// returns the center of gravity with sub-pixel precission
+      const Point32f &getCOGFloat();
+
       /// returns the bounding box of this blob
       const Rect &getBoundingBox();
       
@@ -132,6 +136,9 @@ namespace icl {
       /// updates the COG information on demand
       void calculateCOG();
 
+      /// updated the COG information with float precision
+      void calculateCOGFloat();
+
       /// updates the Size information on demand
       void calculateSize();
 
@@ -160,6 +167,9 @@ namespace icl {
       /// internal flag indicating that the current COG information is outdated
       bool m_bCOGDirty;
 
+      /// internal flag indicating that hte current COG information with float precision is outdated
+      bool m_bCOGFloatDirty;
+
       /// internal flag indicating that the current BB information is outdated
       bool m_bBBDirty;
 
@@ -178,6 +188,9 @@ namespace icl {
       /// internal storage for current blob center
       Point m_oCOG;  
 
+      /// internal storag for the current blob center with sub-pixel precision
+      Point32f m_oCOGFloat;
+      
       /// internal storage for current BB
       Rect m_oBB; 
 

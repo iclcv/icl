@@ -15,15 +15,10 @@ namespace icl{
       // {{{ open
 
       m_poPixels = new ScanLineList(0);
+      clear();
       if(r){
         fetch(r);
       }
-      m_bSizeDirty = true;
-      m_bCOGDirty = true;
-      m_bBBDirty = true;
-      m_bPCADirty = true;
-      m_bBoundaryDirty = true;
-      m_bFormFactorDirty = true;
 
       m_oPCA.resize(4);
     }
@@ -67,13 +62,7 @@ namespace icl{
     void RegionDetectorBlob::update(RegionDetectorBlobPart *r){
       // {{{ open
 
-      m_bSizeDirty = true;
-      m_bCOGDirty = true;
-      m_bBBDirty = true;
-      m_bPCADirty = true;
-      m_bBoundaryDirty = true;
-      m_bFormFactorDirty = true;
-      m_poPixels->clear();
+      clear();
       fetch(r);
     }
 
@@ -85,6 +74,7 @@ namespace icl{
       m_bSizeDirty = true;
       m_bCOGDirty = true;
       m_bBBDirty = true;
+      m_bCOGFloatDirty = true;
       m_bPCADirty = true;
       m_bBoundaryDirty = true;
       m_bFormFactorDirty = true;
@@ -169,6 +159,11 @@ namespace icl{
 
     // }}}
     
+    const Point32f &RegionDetectorBlob::getCOGFloat(){
+      calculateCOGFloat();
+      return m_oCOGFloat;
+    } 
+    
     const Rect &RegionDetectorBlob::getBoundingBox(){
       // {{{ open
 
@@ -225,26 +220,58 @@ namespace icl{
     
     void RegionDetectorBlob::calculateCOG(){
       // {{{ open
-      if(!m_bCOGDirty) return;
+      calculateCOGFloat();
+      /*
+          if(!m_bCOGDirty) return;
       
-      m_oCOG = Point(0,0);
+          m_oCOG = Point(0,0);
+          register float xBuf(0);
+          register int nPix(0),s(0);
+          
+          for(ScanLineList::iterator it = m_poPixels->begin();it!= m_poPixels->end();it++){
+          RegionDetectorScanLine *l = *it;
+          s = l->size();
+          xBuf += l->x() * s;
+          m_oCOG.y += l->y() * s;
+          nPix += s;
+          }
+          
+          m_oCOG.x = (int)round(xBuf/nPix);
+          m_oCOG.y /= nPix;
+          m_bCOGDirty = false;
+          */
+    }
+
+    // }}}
+
+    void RegionDetectorBlob::calculateCOGFloat(){
+      // {{{ open
+      if(!m_bCOGFloatDirty) return;
+      
       register float xBuf(0);
+      register float yBuf(0);
       register int nPix(0),s(0);
       
       for(ScanLineList::iterator it = m_poPixels->begin();it!= m_poPixels->end();it++){
         RegionDetectorScanLine *l = *it;
         s = l->size();
         xBuf += l->x() * s;
-        m_oCOG.y += l->y() * s;
+        yBuf += l->y() * s;
         nPix += s;
       }
+
+      m_oCOGFloat.x = xBuf/nPix;
+      m_oCOGFloat.y = yBuf/nPix;
       
-      m_oCOG.x = (int)round(xBuf/nPix);
-      m_oCOG.y /= nPix;
+      m_oCOG.x = (int)round(m_oCOGFloat.x);
+      m_oCOG.y = (int)round(m_oCOGFloat.y);
+      
+      m_bCOGFloatDirty = false;
       m_bCOGDirty = false;
     }
 
     // }}}
+
     
     void RegionDetectorBlob::calculateSize(){
       // {{{ open

@@ -27,6 +27,19 @@ namespace icl{
       return dst;
     }
     // }}}
+
+    Array<Point32f> &cat(const Array<Array<Point32f> > &src, Array<Point32f> &dst){
+      // {{{ open
+      dst.clear();
+      for(Array<Array<Point32f> >::const_iterator it = src.begin();it!=src.end();++it){
+        for(Array<Point32f>::const_iterator jt = it->begin();jt!= it->end();++jt){
+          dst.push_back(*jt);
+        }
+      }
+      return dst;
+    }
+    // }}}
+
     Array<Rect> &cat(const Array<Array<Rect> > &src, Array<Rect> &dst){
       // {{{ open
       dst.clear();
@@ -75,7 +88,21 @@ namespace icl{
     return dst;
   }
 
-  // }}}   
+    // }}}   
+
+    Array<float> &toPOD(const Array<Point32f> &src, Array<float> &dst){
+      // {{{ open
+      
+      dst.clear();
+      for(unsigned int i=0;i<src.size();++i){
+        dst.push_back(src[i].x);
+        dst.push_back(src[i].y);
+      }   
+      return dst;
+    }
+    
+    // }}}       
+
     Array<Array<int> > &toPOD(const Array<Array<Point> >&src, Array<Array<int> > &dst){
       // {{{ open
       dst.clear();
@@ -90,6 +117,23 @@ namespace icl{
     }
 
   // }}}
+
+    Array<Array<float> > &toPOD(const Array<Array<Point32f> >&src, Array<Array<float> > &dst){
+      // {{{ open
+      dst.clear();
+      for(unsigned int i=0;i<src.size();++i){
+        dst.push_back(Array<float>());
+        for(unsigned int j=0;j<src[i].size();++j){
+          dst[i].push_back(src[i][j].x);
+          dst[i].push_back(src[i][j].y);
+        }
+      }   
+      return dst;
+    }
+
+  // }}}
+
+
     Array<int> &toPOD(const Array<Array<Rect> > &src, Array<int> &dst){
       // {{{ open
 
@@ -157,6 +201,25 @@ namespace icl{
   }
 
   // }}}
+
+
+  const Array<Point32f> &RegionBasedBlobSearcher::getCOGsFloat(){
+    // {{{ open
+
+    m_oCOGsFloatOut.clear();
+    for(unsigned int i=0;i<m_oInternalData.size();++i){
+      FF &fac = m_oScaleFactors[i];
+      Point32f p =  m_oInternalData[i]->getCOGFloat();
+      Point32f q = p.transform(fac.f1,fac.f2);
+      m_oCOGsFloatOut.push_back(q);
+      // m_oCOGsOut.push_back(m_oInternalData[i]->getCOG().transform(fac.f1,fac.f2));
+    }
+    return m_oCOGsFloatOut; 
+  }
+
+  // }}}
+
+
   const Array<Rect> &RegionBasedBlobSearcher::getBoundingBoxes(){
     // {{{ open
 
@@ -243,16 +306,25 @@ namespace icl{
   }
 
   // }}}
+
+  const Array<float> &RegionBasedBlobSearcher::getCOGsFloatPOD(){
+    // {{{ open
+    getCOGsFloat();
+    return toPOD(m_oCOGsFloatOut,m_oCOGsFloatOutPOD);
+  }
+
+  // }}}
+
   const Array<int> &RegionBasedBlobSearcher::getBoundingBoxesPOD(){
     // {{{ open 
-		getBoundingBoxes();
+    getBoundingBoxes();
     return toPOD(m_oBBs,m_oBBsOutPOD);
   }
 
   // }}}
   const Array<float> &RegionBasedBlobSearcher::getPCAInfoPOD(){
     // {{{ open
-		getPCAInfo();
+    getPCAInfo();
     return toPOD(m_oPCAInfos,m_oPCAInfosOutPOD);
   }
 
@@ -260,7 +332,7 @@ namespace icl{
 
   const Array<Array<int> > &RegionBasedBlobSearcher::getBoundariesPOD(){
     // {{{ open
-		getBoundaries();
+    getBoundaries();
     return toPOD(getBoundaries(),m_oBoundariesPOD);
   }
 
