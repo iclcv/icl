@@ -671,8 +671,8 @@ namespace icl{
   // }}}
   ImgQ scale(const ImgQ& image, int width, int height){
     // {{{ open
-
     ImgQ *n = image.scaledCopyROI(Size(width,height));
+    
     ImgQ a = *n;
     delete n;
     return a;    
