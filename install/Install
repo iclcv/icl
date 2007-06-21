@@ -75,6 +75,11 @@ if (!-e "$INSTALLDIR/packages"){
     system "mkdir -p $INSTALLDIR/packages";
 }
 
+if (!-e "$INSTALLDIR/make"){
+    print "make dir: $INSTALLDIR/make\n";
+    system "mkdir -p $INSTALLDIR/make";
+}
+
 if (!-e "$INSTALLDIR/doc"){
     print "make dir: $INSTALLDIR/doc\n";
     system "mkdir -p $INSTALLDIR/doc";
@@ -86,22 +91,23 @@ system "cp ../packages/Qt $INSTALLDIR/packages";
 system "cp ../packages/Unicap $INSTALLDIR/packages";
 system "cp ../packages/XCF $INSTALLDIR/packages";
 system "cp ../packages/Firewire $INSTALLDIR/packages";
+system "cp ../make/dependencyChecks $INSTALLDIR/make";
 
 foreach my $entry(@dirs) {
+    #---- Check makeVar for inlcudes ----
     if ($entry !~ /ICLUtils/) {
-        #---- Check makeVar for inlcudes ----
         open(FILE,"../$entry/makeVar") or die "Can not open file: $!";
         @makeVarContent = <FILE>;
         close(FILE);
     }
-
+    
     my @includes = ();
     foreach my $line(@makeVarContent) {
         if ($line =~ /^include/) {
             push(@includes, $line);
         }
     }
-
+    
     # ---- Install content ----
     if ($installMode == 0 || $installMode == 1) { 
         print "---- Copying header files: $entry/src\n";
