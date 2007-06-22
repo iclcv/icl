@@ -1,5 +1,7 @@
 #include "iclLine.h"
 #include <math.h>
+#include <algorithm>
+
 using namespace std;
 
 namespace icl{
@@ -62,6 +64,10 @@ namespace icl{
           }
         }
       }
+      if(steep2){
+        reverse(xs.begin(),xs.end());
+        reverse(ys.begin(),ys.end());
+      }
     }
     // }}}
     
@@ -122,6 +128,9 @@ namespace icl{
           }
         }
 
+      }
+      if(steep2){
+        reverse(xys.begin(),xys.end());
       }
     }
   // }}}
