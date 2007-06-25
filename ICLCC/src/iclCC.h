@@ -266,6 +266,7 @@ possible, as to much information is lost.
  
 \section secBench Benchmarks
 The following tables, show the cross format conversion times:
+<b>TODO: re-run this test --> which machine / which image size ?</b>
 
 <b><em>depth32f</em></b>
 <table>
