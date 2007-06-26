@@ -353,7 +353,6 @@ void save_setparams(int device){
   }
 
   PWCGrabber::~PWCGrabber(void) {
-    printf("destructor called for device %d \n",m_iDevice);
     releaseAll();
     delete m_poRGB8Image;
   }
