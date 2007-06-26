@@ -91,6 +91,9 @@ namespace icl{
         setProperty("Contrast","66");             //                            *
         AVOID_RECURSIVE_CALL_FLAG = false;        //*****************************
       }                                           
+    }else{
+      m_poGrabEngine = new DefaultGrabEngine(&m_oDevice,m_bUseDMA, m_bProgressiveGrabMode);
+      m_poConvertEngine = new DefaultConvertEngine(&m_oDevice);
     }
     m_fCurrentFps = 0;
     m_oLastTime = icl::Time::now();

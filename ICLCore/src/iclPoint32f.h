@@ -1,6 +1,8 @@
 #ifndef ICL_POINT_32F_H
 #define ICL_POINT_32F_H
 
+#include "iclPoint.h"
+
 namespace icl{
   
   /// Single precission 3D Vectors Point class of the ICL
@@ -22,6 +24,9 @@ namespace icl{
     /// create a special point
     Point32f(float x,float y):x(x),y(y){}
 
+    /// craete a point by a given interger point
+    Point32f(const Point &p):x(p.x),y(p.y){}
+    
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }
 
@@ -52,6 +57,30 @@ namespace icl{
     /// transforms the point by element-wise scaling
     Point32f transform(double xfac, double yfac) const{ 
       return Point32f(xfac*x,yfac*y);
+    }
+
+    /// returns the p-norm of the 2D Vector
+    /** - p = 0 -> 2 
+        - p = 1 -> city block norm x+y 
+        - p = 2 -> euclidian norm 
+        - p->inf -> infinity norm 
+        @param p chooses the norm 
+        @return norm value 
+    **/
+    float norm(float p=2);
+    
+    /// normalized this 2D vector to length=1;
+    /** uses the euclidian norm!
+        @ return a reference to (this) normalized
+    **/
+    Point32f &normalize(){
+      float l = norm(); x/=l; y/=l; return *this; 
+    }
+    
+    /// returns a normalized version of this Point
+    /** @return normalized vec*/
+    Point32f normalized() const{
+      return Point32f(*this).normalize();
     }
     
   };

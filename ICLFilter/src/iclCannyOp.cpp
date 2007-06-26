@@ -58,7 +58,7 @@ namespace icl {
   {
     ICLASSERT_RETURN( poSrc->getDepth() == depth32f );
     FUNCTION_LOG("");
-    for(int i=0;i<1;i++){
+    for(int i=0;i<2;i++){
       m_apoDXYOps[i]->setClipToROI (true);
       m_apoDXYOps[i]->apply(poSrc,m_apoDXY+i);
     }

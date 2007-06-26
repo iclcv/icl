@@ -106,7 +106,6 @@ namespace icl{
         }
         
       }else{
-        //rprintf("here! \n");
         for(int x=x0,y=y0;x<=x1;x++){
           if(steep){
             if( x>=minY && x<maxY && y>=minX && y<=maxX){
@@ -117,9 +116,6 @@ namespace icl{
               xys.push_back(Point(x,y));
             }
           }
-          
-          Point pNew =  xys[xys.size()-1];
-          //     printf ("new point is %d %d \n",pNew.x,pNew.y);
           
           error += deltay;
           if (2*error >= deltax){
