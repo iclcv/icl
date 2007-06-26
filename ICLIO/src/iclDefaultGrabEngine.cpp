@@ -2,8 +2,8 @@
 #include <iclUnicapDevice.h>
 
 namespace icl{
-  DefaultGrabEngine::DefaultGrabEngine(UnicapDevice *device, bool useDMA):
-    m_poDevice(device), m_iCurrBuf(0), m_bUseDMA(useDMA), m_bStarted(false){
+  DefaultGrabEngine::DefaultGrabEngine(UnicapDevice *device, bool useDMA, bool progressiveGrabMode):
+    m_poDevice(device), m_iCurrBuf(0), m_bUseDMA(useDMA), m_bStarted(false), m_bProgressiveGrabMode(progressiveGrabMode){
     
     UnicapFormat fmt = m_poDevice->getCurrentUnicapFormat();
     for(int i=0;i<NBUFS;i++){
@@ -31,27 +31,56 @@ namespace icl{
   }
   
   const icl8u *DefaultGrabEngine::getCurrentFrameUnconverted(){
-    if(!m_bStarted){
-      unicap_start_capture(m_poDevice->getUnicapHandle());
-      m_bStarted = true;
-      unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
-    }
     
-    unicap_data_buffer_t *returned_buffer;
-    static const int MAX_TRYS = 10;
-    static const long WAIT_TIME = 100000;
-    int i=0;
-    for(;i<MAX_TRYS;i++){
-      if( SUCCESS (unicap_wait_buffer (m_poDevice->getUnicapHandle(), &returned_buffer))){
-        break;
-      }else{
-        usleep(WAIT_TIME);
+    if(m_bProgressiveGrabMode){
+      if(!m_bStarted){
+        unicap_start_capture(m_poDevice->getUnicapHandle());
+        m_bStarted = true;
+        unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
       }
-    }if(i==MAX_TRYS){
-      ERROR_LOG("Failed to wait for the buffer to be filled! ( tried "<<MAX_TRYS<<" times)");        
-    }
-    unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
+      
+      unicap_data_buffer_t *returned_buffer;
+      static const int MAX_TRYS = 10;
+      static const long WAIT_TIME = 100000;
+      int i=0;
+      for(;i<MAX_TRYS;i++){
+        usleep(1000);
+        if( SUCCESS (unicap_wait_buffer (m_poDevice->getUnicapHandle(), &returned_buffer))){
+          break;
+        }else{
+          usleep(WAIT_TIME);
+        }
         
-    return returned_buffer->data;
+      }if(i==MAX_TRYS){
+        ERROR_LOG("Failed to wait for the buffer to be filled! ( tried "<<MAX_TRYS<<" times)");        
+      }
+      unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
+      
+      return returned_buffer->data;
+    }else{
+      if(!m_bStarted){
+        unicap_start_capture(m_poDevice->getUnicapHandle());
+        m_bStarted = true;
+      }
+      
+      unicap_data_buffer_t *returned_buffer;
+      static const int MAX_TRYS = 10;
+      static const long WAIT_TIME = 100000;
+      int i=0;
+      for(;i<MAX_TRYS;i++){
+        unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
+        usleep(1000);
+        if( SUCCESS (unicap_wait_buffer (m_poDevice->getUnicapHandle(), &returned_buffer))){
+          break;
+        }else{
+          usleep(WAIT_TIME);
+        }
+        
+      }if(i==MAX_TRYS){
+        ERROR_LOG("Failed to wait for the buffer to be filled! ( tried "<<MAX_TRYS<<" times)");        
+      }
+      
+      return returned_buffer->data;
+    }
   }
 }

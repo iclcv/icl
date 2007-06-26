@@ -65,7 +65,13 @@ namespace icl{
     /// setter function for video device properties 
     /** @copydoc icl::Grabber::setProperty(const std::string&, const std::string&)
         additional property is: 
-        - property=dma [value={on, off} of is default!] 
+        - property=dma [value={on, off} off is default!] 
+        - property=grab mode [value={progressive, frame by frame}  progressive is default!}
+          if the grab mode is set to progressive, each time the UnicapGrabber instance is
+          asked for a new image by invoking its grab(..) function, the grabber will internally
+          queue a the next frame to be filled concurrently by unicaps grabber thread. This may
+          cause problems, when a only a single image is grabbed, because this image could be
+          queued some time ago, an so, it may contain not the desired content.\n
     **/
     virtual void setProperty(const std::string &property, const std::string &value);
     
@@ -153,6 +159,8 @@ namespace icl{
 
     /// internal flag indicating whether DMA should be used
     bool m_bUseDMA;
+
+    bool m_bProgressiveGrabMode;
 
     /// internal timeval for calculating current framerate
     Time m_oLastTime;

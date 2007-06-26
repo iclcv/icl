@@ -125,9 +125,50 @@ namespace icl{
         yuv_to_rgb(y4,u,v,*dstR++,*dstG++,*dstB++);
       }
       
-    }else if(fourcc == "Y800"){// Gray8Bit size = 640x480
+    }else if(fourcc == "Y800" || fourcc == "GREY" || fourcc == "GRAY" ){// Gray8Bit size = 640x480
       ensureCompatible(ppoDst,depth8u,size,formatGray);
       copy(rawData,rawData+size.getDim(),(*ppoDst)->asImg<icl8u>()->getData(0));
+    }else if(fourcc == "BGR3"){
+      ensureCompatible(ppoDst,depth8u,size,formatRGB);
+      icl8u *dstR = (*ppoDst)->asImg<icl8u>()->getData(0);
+      icl8u *dstG = (*ppoDst)->asImg<icl8u>()->getData(1);
+      icl8u *dstB = (*ppoDst)->asImg<icl8u>()->getData(2);
+      
+      const icl8u *r = rawData;
+      const icl8u *rEnd = r + size.getDim()*3;
+      while(r<rEnd){
+        *dstB++ = *r++;
+        *dstG++ = *r++;
+        *dstR++ = *r++;
+      }
+    }else if(fourcc == "BGR4"){
+      ensureCompatible(ppoDst,depth8u,size,formatRGB);
+      icl8u *dstR = (*ppoDst)->asImg<icl8u>()->getData(0);
+      icl8u *dstG = (*ppoDst)->asImg<icl8u>()->getData(1);
+      icl8u *dstB = (*ppoDst)->asImg<icl8u>()->getData(2);
+      
+      const icl8u *r = rawData;
+      const icl8u *rEnd = r + size.getDim()*4;
+      while(r<rEnd){
+        *dstB++ = *r++;
+        *dstG++ = *r++;
+        *dstR++ = *r++;
+        r++;
+      }
+    }else if(fourcc == "RGB4"){
+      ensureCompatible(ppoDst,depth8u,size,formatRGB);
+      icl8u *dstR = (*ppoDst)->asImg<icl8u>()->getData(0);
+      icl8u *dstG = (*ppoDst)->asImg<icl8u>()->getData(1);
+      icl8u *dstB = (*ppoDst)->asImg<icl8u>()->getData(2);
+      
+      const icl8u *r = rawData;
+      const icl8u *rEnd = r + size.getDim()*4;
+      while(r<rEnd){
+        *dstR++ = *r++;
+        *dstG++ = *r++;
+        *dstB++ = *r++;
+        r++;
+      }
     }
   }
 }

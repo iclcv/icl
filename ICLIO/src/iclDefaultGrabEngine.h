@@ -27,7 +27,7 @@ namespace icl{
         @param useDMA flag that indicates whether frames are grabbed into system or user
                       buffers. Usage of system buffers implies using DMA (direct memory
                       access) <b>Note:This feature does not work yet!</b>*/
-    DefaultGrabEngine(UnicapDevice *device, bool useDMA=false);
+    DefaultGrabEngine(UnicapDevice *device, bool useDMA=false, bool progressiveGrabMode=true);
 
     /// Destructor
     virtual ~DefaultGrabEngine();
@@ -81,6 +81,9 @@ namespace icl{
 
     /// flag to indicate the grabber has been started to grab
     bool m_bStarted;
+
+    /// flag to indicate the current grab mode
+    bool m_bProgressiveGrabMode;
   };
 }
 

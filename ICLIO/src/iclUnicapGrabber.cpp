@@ -25,7 +25,8 @@ namespace icl{
     // {{{ open
 
     m_oDevice(device),m_poConversionBuffer(0),
-    m_poGrabEngine(0),m_poConvertEngine(0), m_bUseDMA(false){
+    m_poGrabEngine(0),m_poConvertEngine(0), m_bUseDMA(false),
+    m_bProgressiveGrabMode(true){
     init();
   }
 
@@ -35,7 +36,8 @@ namespace icl{
     // {{{ open
 
     m_poConversionBuffer(0),m_poGrabEngine(0),
-    m_poConvertEngine(0), m_bUseDMA(false){
+    m_poConvertEngine(0), m_bUseDMA(false),
+    m_bProgressiveGrabMode(true){
     const std::vector<UnicapDevice> &ds = getDeviceList(deviceFilter);
     if(useIndex < ds.size()){
       m_oDevice = ds[useIndex];
@@ -49,11 +51,12 @@ namespace icl{
 
   UnicapGrabber::~UnicapGrabber(){
     // {{{ open
-
-    if(m_poGrabEngine) delete m_poGrabEngine;
-    if(m_poConvertEngine) delete m_poConvertEngine;
-    if(m_poImage) delete m_poImage;
-    if(m_poConversionBuffer) delete m_poConversionBuffer;
+    m_oMutex.lock();
+    ICL_DELETE(m_poGrabEngine);
+    ICL_DELETE(m_poConvertEngine);
+    ICL_DELETE(m_poImage);
+    ICL_DELETE(m_poConversionBuffer);
+    m_oMutex.unlock();
   }
 
   // }}}
@@ -70,13 +73,24 @@ namespace icl{
     
     }else if(modelname == "DFW-VL500 2.30"){ // sony cams !
       //printf("Using SonyGrabEngine !\n");
-      m_poGrabEngine = new DefaultGrabEngine(&m_oDevice,m_bUseDMA);
+      m_poGrabEngine = new DefaultGrabEngine(&m_oDevice,m_bUseDMA, m_bProgressiveGrabMode);
       m_poConvertEngine = new DefaultConvertEngine(&m_oDevice);
       
-    }else {
-      //printf("Using UniapGrabEngine and Sony Convert Engine for %s! \n",modelname.c_str());
-      m_poGrabEngine = new DefaultGrabEngine(&m_oDevice,m_bUseDMA);
+    }else if(modelname == "Hauppauge WinTV 34xxx models"){
+      m_poGrabEngine = new DefaultGrabEngine(&m_oDevice,m_bUseDMA,m_bProgressiveGrabMode);
       m_poConvertEngine = new DefaultConvertEngine(&m_oDevice);
+
+      static bool AVOID_RECURSIVE_CALL_FLAG = false;
+      if(!AVOID_RECURSIVE_CALL_FLAG){
+        AVOID_RECURSIVE_CALL_FLAG = true;
+        setProperty("video source","S-Video");
+        setProperty("video norm","PAL-BG");       //*****************************
+        setProperty("size","640x480");            //                            *   
+        setProperty("format","24 bpp RGB, le");   //   this properties work     *
+        setProperty("Saturation","200");          //   finest, i think!         *
+        setProperty("Contrast","66");             //                            *
+        AVOID_RECURSIVE_CALL_FLAG = false;        //*****************************
+      }                                           
     }
     m_fCurrentFps = 0;
     m_oLastTime = icl::Time::now();
@@ -213,6 +227,19 @@ namespace icl{
         ERROR_LOG("unable to set param dma to \"" << value << "\" (allowed values are \"on\" and \"off\")");
       }
       // }}}
+    }else if(p == "grab mode"){
+      // {{{ open
+      if(value == "progressive" || value == "frame by frame"){
+        if((value == "progressive" && !m_bProgressiveGrabMode) || (value == "frame by frame" && m_bProgressiveGrabMode)){
+          ICL_DELETE(m_poGrabEngine);
+          ICL_DELETE(m_poConvertEngine);
+          m_bProgressiveGrabMode = value == "progressive" ? true : false;
+          init(); // creates a new grab engine
+        }
+      }else{
+        ERROR_LOG("unable to set param dma to \"" << value << "\" (allowed values are \"on\" and \"off\")");
+      }
+      // }}}
     }
     m_oMutex.unlock();
     
@@ -333,6 +360,7 @@ namespace icl{
     v.push_back("format");
     // [deprecated !] v.push_back("size&format");
     v.push_back("dma");
+    v.push_back("grab mode");
     vector<UnicapProperty> ps = m_oDevice.getProperties();
     for(unsigned int i=0;i<ps.size();i++){
       v.push_back(ps[i].getID());
@@ -414,6 +442,8 @@ namespace icl{
       // {{{ open
       return "{\"on\",\"off\"}";
       // }}}
+    }else if(name == "grab mode"){
+      return "{\"progressive\",\"frame by frame\"}";
     }else{ // checking all properties
       // {{{ open
       
@@ -467,7 +497,7 @@ namespace icl{
       }
     }
 
-    if(name == "size" || name == "format" || name == "format&size" || name == "dma"){
+    if(name == "size" || name == "format" || name == "format&size" || name == "dma" || name == "grab mode"){
       return "menu";
     }
     return "undefined";
@@ -506,6 +536,12 @@ namespace icl{
         return "on";
       }else{
         return "off";
+      }
+    }else if(name == "grab mode"){
+      if(m_bProgressiveGrabMode){
+        return "progressive";
+      }else{
+        return "frame by frame";
       }
     }else{
       return "undefined";
