@@ -133,6 +133,6 @@ namespace icl {
 
 }// namespace icl
 
-
+#define ICL_DELETE(X) if((X)){ delete (X); (X)=0; }
 
 #endif //ICLMACROS_H
