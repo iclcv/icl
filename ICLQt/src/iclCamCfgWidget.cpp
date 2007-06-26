@@ -352,15 +352,27 @@ namespace icl{
     while(m_poFormatCombo->count()){
       m_poFormatCombo->removeItem(0);
     }
+    
 
+    
     if(m_poGrabber->supportsProperty("format")){
+      string sCurrFormat = m_poGrabber->getValue("format");
+      
       string fmtListStr = m_poGrabber->getInfo("format");
       vector<string> fmtList = Grabber::translateStringVec( fmtListStr );
       
+      int useFmtIdx = -1;
       for(unsigned int i=0;i<fmtList.size();i++){
+        if(sCurrFormat == fmtList[i]) useFmtIdx = i;
         m_poFormatCombo->addItem(fmtList[i].c_str());
       }
+      if(useFmtIdx != -1){
+        m_poFormatCombo->setCurrentIndex(useFmtIdx);
+      }
     }
+    
+
+    
     m_bDisableSlots = false;
     updateSizeCombo();
   }
