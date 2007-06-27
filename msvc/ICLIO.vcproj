@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="&#x0D;&#x0A;"
-				AdditionalIncludeDirectories="compat"
+				AdditionalIncludeDirectories="compat;$(BoostIncludeDir)"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;HAVE_XCF;WITH_SONYIIDC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -103,7 +103,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="compat"
+				AdditionalIncludeDirectories="compat;$(BoostIncludeDir)"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;HAVE_XCF;WITH_SONYIIDC"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"

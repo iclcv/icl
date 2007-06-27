@@ -30,4 +30,8 @@
 		Name="QtDir"
 		Value="$(ThirdPartyDir)\Qt\4.2.2"
 	/>
+	<UserMacro
+		Name="BoostIncludeDir"
+		Value="&quot;D:\boost-1.33.1&quot;"
+	/>
 </VisualStudioPropertySheet>
