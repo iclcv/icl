@@ -72,7 +72,12 @@ if (!-e "$INSTALLDIR/include"){
 
 if (!-e "$INSTALLDIR/packages"){
     print "make dir: $INSTALLDIR/packages\n";
-    system "mkdir -p $INSTALLDIR/packages";
+    system "mkdir -p $INSTALLDIR/packages/pkg-config";
+}
+
+if (!-e "$INSTALLDIR/packages/pkg-config"){
+    print "make dir: $INSTALLDIR/packages/pkg-config\n";
+    system "mkdir -p $INSTALLDIR/packages/pkg-config";
 }
 
 if (!-e "$INSTALLDIR/make"){
@@ -149,6 +154,7 @@ foreach my $entry(@dirs) {
         }
         
         generate_packagevar($entry, $INSTALLDIR, @includes);
+        generate_pkgconfig($entry, $INSTALLDIR, @includes);
     }
     
     if ($installMode == 0 || $installMode == 2) {
@@ -222,7 +228,8 @@ sub generate_packagevar {
 
     my ($entry, $installdir, @includes) = @_;
     my $pkgContent = "";
-    
+    my $ersion = $installdir;
+
     #---- Generate content ----
     $pkgContent .= "#   packageVar\n";
     $pkgContent .= "ifeq \"\${".$entry."_MAKEVAR}\" \"\"\n";
@@ -262,5 +269,34 @@ sub generate_packagevar {
     close(FILE);
 }
 
-# }}}
+sub generate_pkgconfig {
+# {{{ open
+    
+    my ($entry, $installdir, @includes) = @_;
+    my ($pkgContent, $requiredList);
+    my @dirContent;
+    $installdir =~ /^.*\/(\d*.\d*)/;
+    my $version = $1;
 
+    foreach my $inc (@includes) {
+        $inc =~ /^.*}\/(.*)/;
+        $requiredList .= $1." ";
+    }
+    
+    #---- Generate content ----
+    $pkgContent .= "# This is the pkg-config file for: $entry\n";
+    $pkgContent .= "prefix=$installdir\n";
+    $pkgContent .= "\n";
+    $pkgContent .= "Name: $entry\n";    
+    $pkgContent .= "Version: $version\n";
+    $pkgContent .= "Requires: $requiredList\n";
+    $pkgContent .= "Libs: -L\${prefix}/lib -l$entry\n";
+    $pkgContent .= "Cflags: -I\${prefix}include\n";
+
+    #---- Write pkg-config file ----
+    open(FILE, ">$INSTALLDIR/packages/pkg-config/$entry.pc") or die "cannot write pkgconfig file:$!";
+    print FILE $pkgContent;
+    close(FILE);
+}
+
+# }}}

@@ -1,24 +1,6 @@
 # -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
 #
-#   makefile
-#
-#   Copyright (C) 2002 by
-#   Honda R&D EUROPE (DEUTSCHLAND) GmbH,
-#   Future Technology Research
-#   Carl-Legien Str. 30
-#   63073 Offenbach/Main
-#   Germany
-#
-#   UNPUBLISHED PROPRIETARY MATERIAL.
-#   ALL RIGHTS RESERVED.
-#
-#   Author: Antonello Ceravola & Mark Dunn & Julian Eggert
-#
-#   Date: September 13, 2002
-#
-#   BUG: Dependency are not correct for windows executable;
-#        the ".exe" is missing in the "./%" rules
-#
+#   makefile.examples
 #
 
 # Don't change anything below this line!

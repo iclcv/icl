@@ -48,7 +48,6 @@ ARFLAGS:= ${ARFLAGS}
 # Flags for static dynamic linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
-
 # Set the priority level
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=

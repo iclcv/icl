@@ -45,6 +45,7 @@ DEBUG_ON:=${DEBUG_ON}
 
 # Debugging flags
 DEBUG:= ${DEBUG}
+
 # Non-Debugging flags
 NODEBUG:= ${NODEBUG}
 
@@ -59,7 +60,6 @@ CPPDEFINES:= ${CPPDEFINES}
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
-
 
 # Set the priority level
 DIR_PRIORITY:=

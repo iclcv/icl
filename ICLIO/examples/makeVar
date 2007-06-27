@@ -5,9 +5,12 @@
 
 # Don't change anything between the '####' lines!
 ###############################################################################
-_DOT_DOT:=../${_DOT_DOT}
--include ${_DOT_DOT}makeVar
--include makeDepend
+-include ${_DOT_DOT}makeRoot
+ifneq "${MAKEROOT_DEFINED}" "TRUE"
+  _DOT_DOT:=../${_DOT_DOT}
+  -include ${_DOT_DOT}makeVar
+  -include makeDepend
+endif
 ###############################################################################
 
 # Add here your project settings, plese specify each entry in a separated

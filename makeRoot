@@ -9,8 +9,8 @@
 MAKEROOT_DEFINED= TRUE
 ###############################################################################
 
-CONFIG_GUESS_OUT?=i686-pc-linux-gnu
-CONFIG_GUESS_ID?=i686-pc-linux-gnu_
+#CONFIG_GUESS_OUT?=i686-pc-linux-gnu
+#CONFIG_GUESS_ID?=i686-pc-linux-gnu_
 AGNI_LOCAL_ROOT?=/vol/vision
 IPP_ROOT?=/vol/vision/IPP
 export AGNI_LOCAL_ROOT
@@ -283,6 +283,7 @@ printvar:
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} "SYSTEM_INFO:      #${SYSTEM_INFO}#"
 	${PRE_CMD}${CMD_ECHO} "ARCH_TYPE:        #${ARCH_TYPE}#"
+	${PRE_CMD}${CMD_ECHO} "ARCH:             #${ARCH}#"
 	${PRE_CMD}${CMD_ECHO} "VENDOR_NAME:      #${VENDOR_NAME}#"
 	${PRE_CMD}${CMD_ECHO} "OS_TYPE:          #${OS_TYPE}#"
 	${PRE_CMD}${CMD_ECHO} "OS_NAME:          #${OS_NAME}#"
