@@ -20,16 +20,8 @@ double kernelMagic(double tx, double ty, int h){
 int main(){
 
   
-  //  ImgQ myImage = load("red_gradient.jpg");
-  ImgQ myImage = zeros(1000,1000,1);
-  
-  color(255);
-  fill(255);
-  rect(myImage,180,180,40,45);
-  
-  fill(0);
-  myImage.setFormat(formatGray);
-  save(myImage,"bla.jpg");
+  ImgQ myImage = load("wurst.jpg");
+
 		       	  
   //just a gray image for the weights, testing
   ImgQ wImage = gray(myImage);
@@ -37,8 +29,8 @@ int main(){
   //h kernel bandwidth=half window size; 50 for test
   int h = 80;
   //x,y coords of center of kernel window, 50 for test
-  int cx = 180;
-  int cy = 180;
+  int cx = 650;
+  int cy = 50;
 
   
   //drawing rect at current kernel pos
@@ -46,9 +38,9 @@ int main(){
   
   int repeat = 0;
 
-  static int END =100;  
+  static int END =1000;  
   while(repeat < 2 && END){
-
+    printf("The END is near! %d \n",END);
     END--;
     //msx, msy the meanshift vectors for x and y directions
     double msx = 0;
@@ -61,11 +53,13 @@ int main(){
 
     //loop; x, y coords of all pixels in local window
     for (int x = cx-h; x <= cx+h; x++){
+      if (x < 0) x=0;
+      if (x >= myImage.getWidth()) break;
+      
       for (int y = cy-h; y <= cy+h; y++){
 	//checking: x, y have to be in the picture
-	if (x < 0) x = 0;
-	if (x >= myImage.getWidth()) break;
-	if (y < 0) y = 0;
+
+	if (y < 0) y=0;
 	if (y >= myImage.getHeight()) break;
 	//tx, ty relative coords
 	double tx = x - cx;
@@ -105,15 +99,12 @@ int main(){
     printf("msx %f, mxy %f \n", msx, msy);
     //setting new center
     
-    float dx = msx-cx;
-    float dy = msy-cy;
+    
+    cx = (int)msx;
+    cy = (int)msy;
+    
+    
 
-    if( fabs(dx) + fabs(dy) < 2) break;
-    cx -= dx;
-    cy -= dy;
-
-    //cx = (int)msx;
-    //cy = (int)msy;
     printf("cx %d, cy %d\n", cx, cy);
   
     //drawing another rect
@@ -123,12 +114,13 @@ int main(){
     alpha = std::min(float(255.0),alpha);
     color(255-alpha,2*alpha,0,alpha);
     
-    rect(myImage, cx-h/4, cy-h/4, h/2, h/2);  
+    if(!(END%3)){
+      circle(myImage, cx,cy,h);
+    }
     
   }  
   
-  //  show(myImage);
-  save(myImage,"result.jpg");
+  show(myImage);
   
   return 0;
 }
