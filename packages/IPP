@@ -18,10 +18,10 @@ ifneq (,$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES)))
 
 # Please, place here the include directory of the project
 # (e.g. -I${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/include )
-ifeq "${ARCH}" "linux"
+ifeq "${OS_TYPE}" "linux"
 ABS_INCLUDES:= ${ABS_INCLUDES} \
                -I${IPP_ROOT}/5.1/include
-else
+else ifeq "${OS_TYPE}" "macosx"
 #mac support
 ABS_INCLUDES:= ${ABS_INCLUDES} \
                -I${IPP_ROOT}/Intel_IPP.framework/Headers
@@ -44,7 +44,7 @@ else
 # (e.g. -L${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/lib \
 #       -lDisplayWindow )
 # (e.g. extra library like: -L/usr/lib -lpthreads )
-ifeq "${ARCH}" "linux"
+ifeq "${OS_TYPE}" "linux"
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
                 -L${IPP_ROOT}/5.1/sharedlib -Wl,-rpath -Wl,${IPP_ROOT}/5.1/sharedlib \
                 -lippcore \
@@ -55,7 +55,7 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES} \
                 -lippm \
                 -lippcc \
                 -lguide
-else
+else ifeq "${OS_TYPE}" "macosx"
 ABS_LIBRARIES:=${ABS_LIBRARIES} -framework Intel_IPP
 endif
 

@@ -1,5 +1,5 @@
 ############################# check for IPP ############################
-ifeq "${ARCH}" "linux"
+ifeq "${OS_TYPE}" "linux"
 # Linux support
 ifeq "$(wildcard $(IPP_ROOT)/5.1/sharedlib/libipp*.so)" ""
 ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
@@ -12,7 +12,7 @@ CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
 CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
 endif
 endif
-else
+else ifeq "${OS_TYPE}" "macosx"
 # Mac support
 ifeq "$(wildcard $(IPP_ROOT)/Intel_IPP.framework/Libraries/libipp*.dylib)" ""
 ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""

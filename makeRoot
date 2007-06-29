@@ -9,8 +9,6 @@
 MAKEROOT_DEFINED= TRUE
 ###############################################################################
 
-#CONFIG_GUESS_OUT?=i686-pc-linux-gnu
-#CONFIG_GUESS_ID?=i686-pc-linux-gnu_
 AGNI_LOCAL_ROOT?=/vol/vision
 IPP_ROOT?=/vol/vision/IPP
 export AGNI_LOCAL_ROOT
@@ -120,7 +118,7 @@ CMD_CHMOD=chmod
 #  setenv CONFIG_GUESS_ID `config.guess|tr -c "[A-Za-z0-9\-]" "_"`
 #
 ifeq "${CONFIG_GUESS_OUT}" ""
- SYSTEM_INFO= $(shell config.guess)
+ SYSTEM_INFO= $(shell ${_DOT_DOT}config.guess)
 else
  SYSTEM_INFO= ${CONFIG_GUESS_OUT}
 endif
@@ -137,8 +135,10 @@ OS_NAME= $(word 3, ${SYSTEM_ID})
 
 ifeq "$(findstring windows,${OS_NAME})" "windows"
  OS_TYPE= windows
-else
- OS_TYPE= unix
+else ifeq "$(findstring linux,${OS_NAME})" "linux"
+ OS_TYPE= linux
+else ifeq "$(findstring darwin,${OS_NAME})" "darwin"
+ OS_TYPE = macosx
 endif
 
 ifeq "${HOSTINFO}" ""
@@ -146,7 +146,6 @@ ifeq "${HOSTINFO}" ""
 else
  HOST_INFO=${HOSTINFO}
 endif
-
 
 ###############################################################################
 
@@ -233,10 +232,10 @@ ARFLAGS:= rv
 LDFLAGS:=
 
 # Flags for dynamic library linker
-ifeq "${ARCH}" "linux"
+ifeq "${OS_TYPE}" "linux"
  # For linux OS
  LDDYNFLAGS:= -shared
-else
+else ifeq "${OS_TYPE}" "macosx"
  # For mac OS
  LDDYNFLAGS:= -dynamiclib
 endif
@@ -283,7 +282,6 @@ printvar:
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} "SYSTEM_INFO:      #${SYSTEM_INFO}#"
 	${PRE_CMD}${CMD_ECHO} "ARCH_TYPE:        #${ARCH_TYPE}#"
-	${PRE_CMD}${CMD_ECHO} "ARCH:             #${ARCH}#"
 	${PRE_CMD}${CMD_ECHO} "VENDOR_NAME:      #${VENDOR_NAME}#"
 	${PRE_CMD}${CMD_ECHO} "OS_TYPE:          #${OS_TYPE}#"
 	${PRE_CMD}${CMD_ECHO} "OS_NAME:          #${OS_NAME}#"

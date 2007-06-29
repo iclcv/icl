@@ -30,10 +30,12 @@ REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
 ifeq "$(HAVE_LIBJPEG)" "TRUE"
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
 	-L${SRC_ROOT}/ICLIO/lib -lICLIO \
-	-L${LIBJPEG_ROOT} -ljpeg
+	-L${LIBJPEG_ROOT} -ljpeg \
+	-Wl,-rpath=${AGNI_LOCAL_ROOT}/${PROJECT_ROOT_NAME}/${TARGET_MAJVERSION}.${TARGET_MINVERSION}/lib
 else
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-	-L${SRC_ROOT}/ICLIO/lib -lICLIO
+	-L${SRC_ROOT}/ICLIO/lib -lICLIO \
+	-Wl,-rpath=${AGNI_LOCAL_ROOT}/${PROJECT_ROOT_NAME}/${TARGET_MAJVERSION}.${TARGET_MINVERSION}/lib
 endif
 
 # Please add here all the directories with relative path

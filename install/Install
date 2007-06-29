@@ -72,12 +72,12 @@ if (!-e "$INSTALLDIR/include"){
 
 if (!-e "$INSTALLDIR/packages"){
     print "make dir: $INSTALLDIR/packages\n";
-    system "mkdir -p $INSTALLDIR/packages/pkg-config";
+    system "mkdir -p $INSTALLDIR/packages";
 }
 
-if (!-e "$INSTALLDIR/packages/pkg-config"){
-    print "make dir: $INSTALLDIR/packages/pkg-config\n";
-    system "mkdir -p $INSTALLDIR/packages/pkg-config";
+if (!-e "$INSTALLDIR/lib/pkgconfig"){
+    print "make dir: $INSTALLDIR/lib/pkgconfig\n";
+    system "mkdir -p $INSTALLDIR/lib/pkgconfig";
 }
 
 if (!-e "$INSTALLDIR/make"){
@@ -258,7 +258,7 @@ sub generate_packagevar {
     $pkgContent .= "\n";
     $pkgContent .= "# Please, place here the lib directory of the project and the library name.\n";
     $pkgContent .= "ABS_LIBRARIES:= \${ABS_LIBRARIES} \\\n";
-    $pkgContent .= "-L".$installdir."/lib -l".$entry."\n";
+    $pkgContent .= "-L".$installdir."/lib -l".$entry." -Wl,rpath=".$installdir."/lib\n";
     $pkgContent .= "\n";
     $pkgContent .= "endif\n";
     $pkgContent .= "endif\n";
@@ -268,6 +268,7 @@ sub generate_packagevar {
     print FILE $pkgContent;
     close(FILE);
 }
+# }}}
 
 sub generate_pkgconfig {
 # {{{ open
@@ -291,10 +292,10 @@ sub generate_pkgconfig {
     $pkgContent .= "Version: $version\n";
     $pkgContent .= "Requires: $requiredList\n";
     $pkgContent .= "Libs: -L\${prefix}/lib -l$entry\n";
-    $pkgContent .= "Cflags: -I\${prefix}include\n";
+    $pkgContent .= "Cflags: -I\${prefix}/include\n";
 
     #---- Write pkg-config file ----
-    open(FILE, ">$INSTALLDIR/packages/pkg-config/$entry.pc") or die "cannot write pkgconfig file:$!";
+    open(FILE, ">$INSTALLDIR/lib/pkgconfig/$entry.pc") or die "cannot write pkgconfig file:$!";
     print FILE $pkgContent;
     close(FILE);
 }

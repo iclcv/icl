@@ -66,7 +66,6 @@ CPPDEFINES:= ${CPPDEFINES}
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
 
-
 # Set the priority level
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
@@ -76,7 +75,7 @@ ifeq "$(HAVE_UNICAP)" ""
 SKIP_OBJECTS += camviewer.cpp 
 endif
 
-ifeq "${ARCH}" "macosx"
+ifeq "${OS_TYPE}" "macosx"
 SKIP_OBJECTS += camviewer.cpp camviewer_lite.cpp camcfg.cpp interactivefilterdemo.cpp 
 SKIP_OBJECTS += mouseinteraction.cpp visualizationdemo.cpp
 endif

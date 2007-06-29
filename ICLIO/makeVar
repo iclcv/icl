@@ -88,7 +88,7 @@ SKIP_OBJECTS += iclDefaultGrabEngine.cpp iclDefaultConvertEngine.cpp
 SKIP_OBJECTS += iclUnicapGrabEngine.cpp iclUnicapConvertEngine.cpp
 endif
 
-ifeq "${ARCH}" "macosx"
+ifeq "${OS_TYPE}" "macosx"
 SKIP_OBJECTS += iclPWCGrabber.h iclPWCGrabber.cpp
 endif
 

@@ -25,7 +25,7 @@ REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-	-L${SRC_ROOT}/PACKAGE_NAME/lib -lPACKAGE_NAME
+	-L${SRC_ROOT}/PACKAGE_NAME/lib -lPACKAGE_NAME -Wl,-rpath=${AGNI_LOCAL_ROOT}/${PROJECT_ROOT_NAME}/${TARGET_MAJVERSION}.${TARGET_MINVERSION}/lib
 
 # Please add here all the directories with relative path
 # (e.g. -L../MyLib/lib)
@@ -65,6 +65,3 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 
 
 endif #ICLCC defined
-
-
-

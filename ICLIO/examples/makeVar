@@ -68,6 +68,6 @@ CPPFLAGS:= ${CPPFLAGS}
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
 
-ifeq "${ARCH}" "macosx"
+ifeq "${OS_TYPE}" "macosx"
 SKIP_OBJECTS:=grabCam.cpp unicap_test.cpp
 endif

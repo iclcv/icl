@@ -10,7 +10,6 @@ ifneq "${MAKEROOT_DEFINED}" "TRUE"
   _DOT_DOT:= ../${_DOT_DOT}
   -include ${_DOT_DOT}makeVar
 else
-
 ifeq "${_DOT_DOT}" ""
 _DOT_DOT=.
 endif
@@ -72,10 +71,10 @@ DEBUG_ON:=FALSE
 # Debugging flags
 DEBUG:=-O0 -g3
 # Non-Debugging flags
-ifeq "${ARCH}" "linux"
+ifeq "${OS_TYPE}" "linux"
  # For linux OS
  NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium-m
-else
+else ifeq "${OS_TYPE}" "macosx"
  # For mac OS
  NODEBUG:=-O4 -DNDEBUG
 endif
