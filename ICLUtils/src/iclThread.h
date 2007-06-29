@@ -71,6 +71,8 @@ namespace icl{
     /// virtual run function doing all the work
     virtual void run();
 
+    /// at the end of the stop function, this function is called
+    virtual void finalize(){}
     /// internal used lock function
     /** This function (and unlock) can be used inside the reimplementation of
         the run function to enshure, that the code between lock() and unlock() 

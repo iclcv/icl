@@ -71,12 +71,17 @@ namespace icl{
   
   void Thread::stop(){
     lock();
-    void *data;
-    pthread_cancel(m_oPT);
-    pthread_join(m_oPT,&data);
-    m_bRunning = false;
-    pthread_cond_broadcast(&m_oWaitCond);
-    unlock();
+    if(m_bRunning){
+      void *data;
+      pthread_cancel(m_oPT);
+      pthread_join(m_oPT,&data);
+      m_bRunning = false;
+      pthread_cond_broadcast(&m_oWaitCond);
+      unlock();
+      finalize();
+    }else{
+      unlock();
+    }
   }
     
   void Thread::run(){

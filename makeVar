@@ -120,8 +120,8 @@ endif
 
 #########################################################################
 # Set the priority level
-DIR_PRIORITY:=ICLUtils ICLCore ICLCC
-DIR_LOWPRIORITY:=examples
+DIR_PRIORITY:=ICLUtils ICLCore ICLCC 
+DIR_LOWPRIORITY:=ICLDC examples
 
 #########################################################################
 # Exclude the folowing folder or files

@@ -1,3 +1,5 @@
+#ifndef ICL_MUTEX_H
+#define ICL_MUTEX_H
 #include <pthread.h>
 
 namespace icl{
@@ -36,3 +38,5 @@ namespace icl{
     pthread_mutex_t m;
   };
 }
+
+#endif

@@ -8,35 +8,42 @@
 using namespace icl;
 using namespace std;
 namespace icl{
-class CamThread : public QObject{
-  Q_OBJECT
+  class CamThread : public QObject{
+    Q_OBJECT
     public:
-  inline CamThread(int id, const Size &size=Size(320,240)):
+    inline CamThread(int id, const Size &size=Size(320,240)):
     widget(new ICLWidget(0)),
     grabber(new PWCGrabber(size,30,id)),
     id(id){
-    //grabber->setDesiredSize(size);
+      //grabber->setDesiredSize(size);
       widget->setGeometry(10,10,size.width,size.height);
-    widget->show();
-  }
-  inline virtual ~CamThread(){
-    delete grabber;
-    delete widget;
-  }
-  
-  public slots:
+      widget->show();
+    } 
+    inline CamThread(Grabber *grabber, const Size &size=Size(320,240)):
+    widget(new ICLWidget(0)),
+    grabber(grabber),
+    id(-1){
+      //grabber->setDesiredSize(size);
+      widget->setGeometry(10,10,size.width,size.height);
+      widget->show();
+    }
+    inline virtual ~CamThread(){
+      delete grabber;
+      delete widget;
+    }
     
-  void update(){
-    widget->setImage(grabber->grab());
-    widget->update();
-  }
-  
- private:
-  ICLWidget *widget;
-  PWCGrabber *grabber;
-  int id;
-};
-
+    public slots:
+    
+    void update(){
+      widget->setImage(grabber->grab());
+      widget->update();
+    }
+    
+    private:
+    ICLWidget *widget;
+    Grabber *grabber;
+    int id;
+  };
 }
 
 
