@@ -27,6 +27,7 @@ REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%)
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
+ifeq "${OS_TYPE}" "linux"
 ifeq "$(HAVE_LIBJPEG)" "TRUE"
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
 	-L${SRC_ROOT}/ICLIO/lib -lICLIO \
@@ -36,6 +37,17 @@ else
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
 	-L${SRC_ROOT}/ICLIO/lib -lICLIO \
 	-Wl,-rpath=${AGNI_LOCAL_ROOT}/${PROJECT_ROOT_NAME}/${TARGET_MAJVERSION}.${TARGET_MINVERSION}/lib
+endif
+endif
+ifeq "${OS_TYPE}" "macosx"
+ifeq "$(HAVE_LIBJPEG)" "TRUE"
+ABS_LIBRARIES:= ${ABS_LIBRARIES} \
+	-L${SRC_ROOT}/ICLIO/lib -lICLIO \
+	-L${LIBJPEG_ROOT} -ljpeg
+else
+ABS_LIBRARIES:= ${ABS_LIBRARIES} \
+	-L${SRC_ROOT}/ICLIO/lib -lICLIO
+endif
 endif
 
 # Please add here all the directories with relative path
