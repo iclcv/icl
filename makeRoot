@@ -118,7 +118,7 @@ CMD_CHMOD=chmod
 #  setenv CONFIG_GUESS_ID `config.guess|tr -c "[A-Za-z0-9\-]" "_"`
 #
 ifeq "${CONFIG_GUESS_OUT}" ""
- SYSTEM_INFO= $(shell ${_DOT_DOT}config.guess)
+ SYSTEM_INFO= $(shell ./${_DOT_DOT}/config.guess)
 else
  SYSTEM_INFO= ${CONFIG_GUESS_OUT}
 endif
@@ -134,11 +134,13 @@ VENDOR_NAME= $(word 2, ${SYSTEM_ID})
 OS_NAME= $(word 3, ${SYSTEM_ID})
 
 ifeq "$(findstring windows,${OS_NAME})" "windows"
- OS_TYPE= windows
-elseifeq "$(findstring linux,${OS_NAME})" "linux"
- OS_TYPE= linux
-elseifeq "$(findstring darwin,${OS_NAME})" "darwin"
- OS_TYPE = macosx
+ OS_TYPE=windows
+endif
+ifeq "$(findstring linux,${OS_NAME})" "linux"
+ OS_TYPE=linux
+endif
+ifeq "$(findstring darwin,${OS_NAME})" "darwin"
+ OS_TYPE=macosx
 endif
 
 ifeq "${HOSTINFO}" ""
@@ -235,7 +237,8 @@ LDFLAGS:=
 ifeq "${OS_TYPE}" "linux"
  # For linux OS
  LDDYNFLAGS:= -shared
-elseifeq "${OS_TYPE}" "macosx"
+endif
+ifeq "${OS_TYPE}" "macosx"
  # For mac OS
  LDDYNFLAGS:= -dynamiclib
 endif

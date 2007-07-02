@@ -74,7 +74,8 @@ DEBUG:=-O0 -g3
 ifeq "${OS_TYPE}" "linux"
  # For linux OS
  NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium4
-elseifeq "${OS_TYPE}" "macosx"
+endif
+ifeq "${OS_TYPE}" "macosx"
  # For mac OS
  NODEBUG:=-O4 -DNDEBUG
 endif
