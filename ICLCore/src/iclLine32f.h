@@ -1,0 +1,81 @@
+#ifndef ICL_LINE_32F_H
+#define ICL_LINE_32f_H
+
+#include <iclPoint32f.h>
+#include "iclLine.h"
+#include <iclRect.h>
+#include <vector>
+
+namespace icl{
+  /// The ICLs abstract line class describing a line from Point "start" to Point "end"
+  /** @see icl::Line
+  */
+  class Line32f{
+    public:
+    /// Null line of length 0 with and and end point 0
+    static const Line32f null;
+   
+    /// Creates a new line from point "start" to point "end"
+    /** @param start start point
+        @param end end point 
+    */
+    Line32f(Point32f start=Point::null, Point32f end=Point::null):
+    start(start),end(end){}
+    
+    /// Creates a new line by given polar coordinates
+    /** @param start start point of the line
+        @param angle angle of the line 
+        @param length length of the line 
+    */
+    Line32f(Point32f start, float angle, float length);
+    
+    /// Creates a line by a given integer line
+    /** @param l interger line*/
+    Line32f(const Line &l):start(l.start),end(l.end){} 
+
+    /// translates a line by a given vector
+    /** @param p translation vector
+        @return the translated line
+    */
+    Line32f operator+(const Point32f &p) const { return Line32f(start+p,end+p); }
+    
+    /// translates a line by a given vector (negative direction)
+    /** @param p translation vector
+        @return the translated line
+    */
+    Line32f operator-(const Point32f &p) const { return Line32f(start-p,end-p); }
+    
+    /// calculates the euclidean norm of this line
+    /** @return length of the line */
+    float length() const;
+
+    /// samples this line from start to end point regarding the given limiting rect
+    /** @param limits each line point is check for being inside of this rect
+                      the eases working e.g. on image planes, that have an finite
+                      extend. If the limits rect has width*height == 0, the limits
+                      are not regarded.
+        @return vector of line Points 
+    */
+    std::vector<Point> sample( const Rect &limits=Rect::null ) const;
+    
+    /// samples this line from start to end point regarding the given limiting rect
+    /** This function works essentially like the above function. In this case, the
+        result is not returned, but it is stored into the given vector references.
+        @param xs destination vector for x-coordinates (filled using push_back, so
+                  it is not cleared before it is filled) 
+        @param ys as xs but for the y-coordinates 
+        @param limits (see above)*/
+    void sample(std::vector<int> &xs,std::vector<int> &ys, const Rect &limits=Rect::null ) const;
+
+    /// swaps the lines start and end point internally
+    void swap() { Point32f x=start; start=end; end=x; }
+    
+    /// start point of this line
+    Point32f start;
+
+    /// end point of this line
+    Point32f end;
+  };
+}
+
+#endif
