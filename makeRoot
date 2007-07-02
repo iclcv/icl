@@ -135,9 +135,9 @@ OS_NAME= $(word 3, ${SYSTEM_ID})
 
 ifeq "$(findstring windows,${OS_NAME})" "windows"
  OS_TYPE= windows
-else ifeq "$(findstring linux,${OS_NAME})" "linux"
+elseifeq "$(findstring linux,${OS_NAME})" "linux"
  OS_TYPE= linux
-else ifeq "$(findstring darwin,${OS_NAME})" "darwin"
+elseifeq "$(findstring darwin,${OS_NAME})" "darwin"
  OS_TYPE = macosx
 endif
 
@@ -235,7 +235,7 @@ LDFLAGS:=
 ifeq "${OS_TYPE}" "linux"
  # For linux OS
  LDDYNFLAGS:= -shared
-else ifeq "${OS_TYPE}" "macosx"
+elseifeq "${OS_TYPE}" "macosx"
  # For mac OS
  LDDYNFLAGS:= -dynamiclib
 endif

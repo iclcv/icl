@@ -54,7 +54,7 @@ ABS_LIBRARIES:= ${ABS_LIBRARIES} \
                 -lQtOpenGL \
                 -lGL \
                 -lGLU
-else ifeq "${OS_TYPE}" "macosx"
+elseifeq "${OS_TYPE}" "macosx"
 ABS_LIBRARIES:=${ABS_LIBRARIES} -F${QTDIR}/lib \
                         	-framework QtCore \
                         	-framework QtGui \

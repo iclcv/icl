@@ -12,7 +12,7 @@ CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
 CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
 endif
 endif
-else ifeq "${OS_TYPE}" "macosx"
+elseifeq "${OS_TYPE}" "macosx"
 # Mac support
 ifeq "$(wildcard $(IPP_ROOT)/Intel_IPP.framework/Libraries/libipp*.dylib)" ""
 ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""

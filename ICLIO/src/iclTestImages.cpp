@@ -570,7 +570,7 @@ void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
     }
     FileWriter(name).write(image);
     system(string("xv ").append(name).append(" &").c_str());
-    usleep(msec*1000);
+    usleep(msec*10000);
     system(string("rm -rf ").append(name).c_str());
   }
 
