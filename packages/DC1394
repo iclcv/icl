@@ -1,0 +1,65 @@
+# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
+#
+#   packageVar
+#
+# To use it, please include this file in your top-level makeVar.
+
+
+# Please, replace "((PACKAGENAME))" with the project name
+# (e.g. DISPLAYWINDOW_MAKEVAR )
+ifeq "${DC1394_MAKEVAR}" ""
+DC1394_MAKEVAR=DC1394_MAKEVAR
+
+
+ifneq "$(HAVE_LIBDC)" ""
+
+# Please, include here the inherited projects
+# (e.g. include ${AGNI_GLOBAL_ROOT}/globalVar )
+# (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar )
+
+# Please, place here the include directory of the project
+# (e.g. -I${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/include )
+ABS_INCLUDES:= ${ABS_INCLUDES} \
+	-I${LIBDC_ROOT}/include
+
+# Please, do not change this ifeq statement
+ifeq "${HRI_INHERIT_MODE}" "STATIC"
+
+
+# Please, place here the static libraries
+# (e.g. ${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/lib/libDisplayWindow.a )
+ABS_OBJECTS:= ${ABS_OBJECTS}
+
+# Please, do not remove the else statement
+else
+
+
+# Please, place here the lib directory of the project
+# and the library name. Add extra library path with
+# library names as well (when needed)
+# (e.g. -L${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/lib \
+#       -lDisplayWindow )
+# (e.g. extra library like: -L/usr/lib -lpthreads )
+ABS_LIBRARIES:= ${ABS_LIBRARIES} \
+                -L${LIBDC_ROOT}/lib -Wl,-rpath -Wl,${LIBDC_ROOT}/lib \
+                -ldc1394 -lraw1394 -lpthread
+
+# Please, do not remove this endif statement
+endif
+
+# Please, place here needed C defines (for static compilation)
+CDEFINES:= ${CDEFINES}
+
+# Please, place here C flags (for static compilation)
+CFLAGS:= ${CFLAGS}
+
+# place here needed C++ defines (for static compilation)
+# (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT )
+CPPDEFINES:= ${CPPDEFINES}
+
+# Please, place here C++ flags (for static compilation)
+CPPFLAGS:= ${CPPFLAGS}
+
+
+endif # HAVE_LIBDC
+endif # DC1394_MAKEVAR
