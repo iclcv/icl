@@ -6,7 +6,7 @@ namespace icl{
   namespace dc{
     
     DCGrabberThread::DCGrabberThread(dc1394camera_t* c):
-      m_poCam(c),m_poFrameQueue(0){}
+      m_poFrameQueue(0),m_poCam(c){}
     
     void DCGrabberThread::run(){
       if(!m_poFrameQueue){

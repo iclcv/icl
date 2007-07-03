@@ -60,7 +60,7 @@ DEBUG_ON:=${DEBUG_ON}
 CDEFINES:= ${CDEFINES}
 
 # Flags for C compiler
-CFLAGS:= ${CFLAGS}
+CFLAGS:= ${CFLAGS} 
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CPPDEFINES:= ${CPPDEFINES}

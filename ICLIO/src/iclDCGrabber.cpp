@@ -5,7 +5,7 @@
 namespace icl{
   using namespace icl::dc;
   
-  DCGrabber::DCGrabber():m_poImage(0),m_poGT(0){}
+  DCGrabber::DCGrabber():m_poGT(0),m_poImage(0){}
   
   void DCGrabber::initialize(){
     if(!m_poGT){
@@ -26,7 +26,7 @@ namespace icl{
     initialize();
     if(ppoDst){
       m_poGT->getCurrentImage(ppoDst);    
-      *ppoDst;
+      return *ppoDst;
     }else{
       ppoDst = &m_poImage;
       m_poGT->getCurrentImage(ppoDst);    

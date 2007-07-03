@@ -165,21 +165,21 @@ namespace icl{
       int width = (int)f->size[0];
       int height = (int)f->size[1];
       dc1394color_coding_t cc = f->color_coding;
-      dc1394color_filter_t cf = f->color_filter;
+      //      dc1394color_filter_t cf = f->color_filter;
       uint32_t yuv_byte_order = f->yuv_byte_order;
       uint32_t bit_depth      = f->bit_depth;
-      uint32_t stride         = f->stride;
-      dc1394video_mode_t vm   = f->video_mode;
-      uint64_t wholedatasize  = f->total_bytes;
-      uint32_t datasize       = f->image_bytes;
-      uint32_t padding_bytes  = f->padding_bytes;
-      uint32_t bpp            = f->bytes_per_packet;
-      uint32_t ppf            = f->packets_per_frame;
-      uint64_t timestamp      = f->timestamp;
-      uint32_t frames_behind  = f->frames_behind;
-      dc1394camera_t *cam     = f->camera;
-      uint32_t ringbufferid   = f->id;
-      uint64_t allocated_bytes= f->allocated_image_bytes;
+      // uint32_t stride         = f->stride;
+      //dc1394video_mode_t vm   = f->video_mode;
+      //uint64_t wholedatasize  = f->total_bytes;
+      //uint32_t datasize       = f->image_bytes;
+      //uint32_t padding_bytes  = f->padding_bytes;
+      //uint32_t bpp            = f->bytes_per_packet;
+      //uint32_t ppf            = f->packets_per_frame;
+      //uint64_t timestamp      = f->timestamp;
+      //uint32_t frames_behind  = f->frames_behind;
+      //dc1394camera_t *cam     = f->camera;
+      //uint32_t ringbufferid   = f->id;
+      //uint64_t allocated_bytes= f->allocated_image_bytes;
   
       if(fmt == formatGray){
         Img8u i(Size(width,height),formatGray);
@@ -208,21 +208,21 @@ namespace icl{
       int width = (int)f->size[0];
       int height = (int)f->size[1];
       dc1394color_coding_t cc = f->color_coding;
-      dc1394color_filter_t cf = f->color_filter;
+      //dc1394color_filter_t cf = f->color_filter;
       uint32_t yuv_byte_order = f->yuv_byte_order;
       uint32_t bit_depth      = f->bit_depth;
-      uint32_t stride         = f->stride;
-      dc1394video_mode_t vm   = f->video_mode;
-      uint64_t wholedatasize  = f->total_bytes;
-      uint32_t datasize       = f->image_bytes;
-      uint32_t padding_bytes  = f->padding_bytes;
-      uint32_t bpp            = f->bytes_per_packet;
-      uint32_t ppf            = f->packets_per_frame;
-      uint64_t timestamp      = f->timestamp;
-      uint32_t frames_behind  = f->frames_behind;
-      dc1394camera_t *cam     = f->camera;
-      uint32_t ringbufferid   = f->id;
-      uint64_t allocated_bytes= f->allocated_image_bytes;
+      //uint32_t stride         = f->stride;
+      //dc1394video_mode_t vm   = f->video_mode;
+      //uint64_t wholedatasize  = f->total_bytes;
+      //uint32_t datasize       = f->image_bytes;
+      //uint32_t padding_bytes  = f->padding_bytes;
+      //uint32_t bpp            = f->bytes_per_packet;
+      //uint32_t ppf            = f->packets_per_frame;
+      //uint64_t timestamp      = f->timestamp;
+      //uint32_t frames_behind  = f->frames_behind;
+      //dc1394camera_t *cam     = f->camera;
+      //uint32_t ringbufferid   = f->id;
+      //uint64_t allocated_bytes= f->allocated_image_bytes;
 
 
       if( is_firefly_color(f->camera) ){
@@ -233,7 +233,7 @@ namespace icl{
         }
         else{
           ensureCompatible(ppoDst,depth8u, Size(width,height),formatRGB);
-          if(rgbInterleavedBuffer.size() < width*height*3){
+          if((int)rgbInterleavedBuffer.size() < width*height*3){
             rgbInterleavedBuffer.resize(width*height*3);
           }
           icl8u *buf = &(rgbInterleavedBuffer[0]);
@@ -276,7 +276,7 @@ namespace icl{
         dc1394_convert_to_MONO8(f->image, (*image)->asImg<icl8u>()->getData(0),size.width,size.height,f->yuv_byte_order,f->color_coding,f->bit_depth);
       }else if(fmt == formatRGB){
         static std::vector<icl8u> rgbBuffer;
-        if(rgbBuffer.size() < size.getDim()*3) rgbBuffer.resize(size.getDim()*3);
+        if((int)rgbBuffer.size() < size.getDim()*3) rgbBuffer.resize(size.getDim()*3);
 
         //dc1394_convert_to_RGB8(f->image, &(rgbBuffer[0]),size.width,size.height,f->yuv_byte_order,f->color_coding,f->bit_depth);
         dc1394_bayer_decoding_8bit(f->image, 
