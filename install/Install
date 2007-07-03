@@ -14,7 +14,7 @@ my $installMode = $ARGV[1]; # 0: remove & install all (include, lib, doc)
 #------------------
 #Get version number
 #------------------
-open(FILE,"../makeVar") or die "Can not open file: $!";
+open(FILE,"./makeVar") or die "Can not open file: $!";
 @content = <FILE>;
 close(FILE);
 
@@ -31,7 +31,7 @@ foreach my $line(@content) {
 #---------------------------
 #Walk through directory tree
 #---------------------------
-opendir(DIR,"..") or die "Can not open DIR: $!";
+opendir(DIR,"./") or die "Can not open DIR: $!";
 my @dirs = grep { /ICL/ } readdir(DIR);
 closedir(DIR);
 
@@ -91,17 +91,17 @@ if (!-e "$INSTALLDIR/doc"){
 }
 
 #---- Copy extern projects files----
-system "cp ../packages/IPP $INSTALLDIR/packages";
-system "cp ../packages/Qt $INSTALLDIR/packages";
-system "cp ../packages/Unicap $INSTALLDIR/packages";
-system "cp ../packages/XCF $INSTALLDIR/packages";
-system "cp ../packages/Firewire $INSTALLDIR/packages";
-system "cp ../make/dependencyChecks $INSTALLDIR/make";
+system "cp ./packages/IPP $INSTALLDIR/packages";
+system "cp ./packages/Qt $INSTALLDIR/packages";
+system "cp ./packages/Unicap $INSTALLDIR/packages";
+system "cp ./packages/XCF $INSTALLDIR/packages";
+system "cp ./packages/Firewire $INSTALLDIR/packages";
+system "cp ./make/dependencyChecks $INSTALLDIR/make";
 
 foreach my $entry(@dirs) {
     #---- Check makeVar for inlcudes ----
     if ($entry !~ /ICLUtils/) {
-        open(FILE,"../$entry/makeVar") or die "Can not open file: $!";
+        open(FILE,"./$entry/makeVar") or die "Can not open file: $!";
         @makeVarContent = <FILE>;
         close(FILE);
     }
@@ -116,16 +116,16 @@ foreach my $entry(@dirs) {
     # ---- Install content ----
     if ($installMode == 0 || $installMode == 1) { 
         print "---- Copying header files: $entry/src\n";
-        system "cp ../$entry/src/*.h $INSTALLDIR/include";
+        system "cp ./$entry/src/*.h $INSTALLDIR/include";
         
         if ($entry !~ /ICLUtils/) {
             print "---- Copying libraries: $entry/lib\n";
             if ("$OS_SYSTEM" eq "macosx") {
-                system "cp -d ../$entry/lib/*.dylib $INSTALLDIR/lib";
-                system "cp -d ../$entry/lib/*.a $INSTALLDIR/lib";
+                system "cp -d ./$entry/lib/*.dylib $INSTALLDIR/lib";
+                system "cp -d ./$entry/lib/*.a $INSTALLDIR/lib";
             } else {
-                system "cp -d ../$entry/lib/*.so* $INSTALLDIR/lib";
-                system "cp -d ../$entry/lib/*.a $INSTALLDIR/lib";
+                system "cp -d ./$entry/lib/*.so* $INSTALLDIR/lib";
+                system "cp -d ./$entry/lib/*.a $INSTALLDIR/lib";
             }
         }
     }
@@ -133,33 +133,32 @@ foreach my $entry(@dirs) {
     # ---- remove & install as link include, lib ----
     if ($installMode == 3) {
         print "---- Linking header files: $entry/src\n";
-        system "ln -s $currDir/../$entry/src/*.h $INSTALLDIR/include";
+        system "ln -s $currDir/$entry/src/*.h $INSTALLDIR/include";
         
         if ($entry !~ /ICLUtils/) {
             print "---- Linking libraries: $entry/lib\n";
             if ("$OS_SYSTEM" eq "macosx") {
-                system "ln -s $currDir/../$entry/lib/*.dylib $INSTALLDIR/lib";
-                system "ln -s $currDir/../$entry/lib/*.a $INSTALLDIR/lib";
+                system "ln -s $currDir/$entry/lib/*.dylib $INSTALLDIR/lib";
+                system "ln -s $currDir/$entry/lib/*.a $INSTALLDIR/lib";
             } else {
-                system "ln -s $currDir/../$entry/lib/*.so* $INSTALLDIR/lib";
-                system "ln -s $currDir/../$entry/lib/*.a $INSTALLDIR/lib";
+                system "ln -s $currDir/$entry/lib/*.so* $INSTALLDIR/lib";
+                system "ln -s $currDir/$entry/lib/*.a $INSTALLDIR/lib";
             }
         }
     }
     
-    if ($entry !~ /ICLUtils/) {
-        if ($installMode == 0 || $installMode == 2) {
-            print "---- Copying documentation: $entry/doc\n";
-            system "cp -r ../$entry/doc/documentation/* $INSTALLDIR/doc/$entry";
-        }
+    if ($installMode == 0 || $installMode == 2) {
+        print "---- Copying documentation: $entry/doc\n";
+        system "cp -r ./$entry/doc/documentation/* $INSTALLDIR/doc/$entry";
         
-        generate_packagevar($entry, $INSTALLDIR, @includes);
-        generate_pkgconfig($entry, $INSTALLDIR, @includes);
     }
     
     if ($installMode == 0 || $installMode == 2) {
         generate_documentation($INSTALLDIR, @dirs);
     }
+
+    generate_packagevar($entry, $INSTALLDIR, @includes);
+    generate_pkgconfig($entry, $INSTALLDIR, @includes);
 }
 
 #---------------------
@@ -178,8 +177,8 @@ sub generate_documentation {
     my $menuTable = "";
     
     #---- Copy static documentation files ----
-    system "mkdir $INSTALLDIR/doc/html";
-    system "cp -r ../doc/html/* $INSTALLDIR/doc/html";
+    system "mkdir -p $INSTALLDIR/doc/html";
+    system "cp -r ./doc/html/* $INSTALLDIR/doc/html";
     
     #---- Generate menu content ----
     @projects = sort(@projects);
@@ -206,9 +205,7 @@ sub generate_documentation {
     $menuTable .= "</tr>\n";
 
     foreach my $project (@projects) {
-        if ($project !~ /ICLUtils/) {
-            $menuTable .= "<tr><td> <a href=\"../".$project."/index.html\" target=\"MainFrame\">".$project."</a></td>\n";
-        }
+        $menuTable .= "<tr><td> <a href=\"../".$project."/index.html\" target=\"MainFrame\">".$project."</a></td>\n";
     }
 
     $menuTable .= "</table>\n";
@@ -258,7 +255,7 @@ sub generate_packagevar {
     $pkgContent .= "\n";
     $pkgContent .= "# Please, place here the lib directory of the project and the library name.\n";
     $pkgContent .= "ABS_LIBRARIES:= \${ABS_LIBRARIES} \\\n";
-    $pkgContent .= "-L".$installdir."/lib -l".$entry." -Wl,rpath=".$installdir."/lib\n";
+    $pkgContent .= "-L".$installdir."/lib -l".$entry." -Wl,-rpath=".$installdir."/lib\n";
     $pkgContent .= "\n";
     $pkgContent .= "endif\n";
     $pkgContent .= "endif\n";

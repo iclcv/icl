@@ -35,6 +35,11 @@ export _DBG_INDICATOR
 export DEBUG_FLAGS
 
 #-----------------------------------------------
+# Specify PHONY targets here
+#-----------------------------------------------
+.PHONY : install installdoc installlink installall cleaninstall	 
+
+#-----------------------------------------------
 # Rule: all & cleanall & clean & printtype
 #-----------------------------------------------
 all: ${ALL_EXEC_LIST}
@@ -120,35 +125,25 @@ cleanexe_%:
 #-----------------------------------------------
 # Rule: install & cleaninstall
 #-----------------------------------------------
-install: $(_DIRECTORY_ORDER:%=install_%)
+install:
+	${PRE_CMD}${CMD_ECHO} "**** Installing Project: ${PROJECT_ROOT_NAME} ****"
+	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 1
 
-install_%:
-	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} install -C $(subst install_,,$@)\
-              "_CURR_DIR=$(subst install_,${strip ${_CURR_DIR}}/,$@)"
+installdoc:
+	${PRE_CMD}${CMD_ECHO} "**** Installing Project documentation for: ${PROJECT_ROOT_NAME} ****"
+	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 2
 
-installdoc: $(_DIRECTORY_ORDER:%=installdoc_%)
+installlink:
+	${PRE_CMD}${CMD_ECHO} "**** Installing Project: ${PROJECT_ROOT_NAME} ****"
+	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 3
 
-installdoc_%:
-	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} installdoc -C $(subst installdoc_,,$@)\
-              "_CURR_DIR=$(subst installdoc_,${strip ${_CURR_DIR}}/,$@)"
+installall:
+	${PRE_CMD}${CMD_ECHO} "**** Installing Project documentation for: ${PROJECT_ROOT_NAME} ****"
+	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 0
 
-installlink: $(_DIRECTORY_ORDER:%=installlink_%)
-
-installlink_%:
-	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} installlink -C $(subst installlink_,,$@)\
-              "_CURR_DIR=$(subst installlink_,${strip ${_CURR_DIR}}/,$@)"
-
-installall: $(_DIRECTORY_ORDER:%=installall_%)
-
-installall_%:
-	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} installall -C $(subst installall_,,$@)\
-              "_CURR_DIR=$(subst installall_,${strip ${_CURR_DIR}}/,$@)"
-
-cleaninstall: $(_DIRECTORY_ORDER:%=cleaninstall_%)
-
-cleaninstall_%:
-	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} cleaninstall -C $(subst cleaninstall_,,$@)\
-              "_CURR_DIR=$(subst cleaninstall_,${strip ${_CURR_DIR}}/,$@)"
+cleaninstall:
+	${PRE_CMD}${CMD_ECHO} "**** Uninstall ${PROJECT_ROOT_NAME} ****"
+	${PRE_CMD}perl ./install/Uninstall ${PROJECT_ROOT_NAME}
 
 #-----------------------------------------------
 # Rule: depend

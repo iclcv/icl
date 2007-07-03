@@ -39,6 +39,10 @@ installall:
 	echo "**** Installing Project documentation for: ${PROJECT_ROOT_NAME} ****"
 	perl ./Install ${PROJECT_ROOT_NAME} 0
 
+cleaninstall:
+	echo "**** Uninstall ${PROJECT_ROOT_NAME} ****"
+	perl ./Uninstall ${PROJECT_ROOT_NAME}
+
 #-----------------------------------------------
 # Rule: % (default rule)
 # Note: This rule must be the last one!
