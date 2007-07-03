@@ -100,20 +100,32 @@ namespace icl{
     }
 
     // }}}
-    void configure_cam(dc1394camera_t* c){
+       
+    void initialize_dc_cam(dc1394camera_t *c, int nDMABuffers){
       // {{{ open
 
-      if(is_firefly_color(c)){
-        printf("found color cam !\n");
-      }
-      if(is_firefly_mono(c)){
-        printf("found mono cam !\n");
-      }
+      dc1394_capture_stop(c);
+      set_streaming(c,false);
+      dc1394_cleanup_iso_channels_and_bandwidth(c);
+      
+      // switch over the camera
+      dc1394_video_set_iso_speed(c,DC1394_ISO_SPEED_400);
+      dc1394_video_set_mode(c,DC1394_VIDEO_MODE_640x480_MONO8);
+      dc1394_video_set_framerate(c, DC1394_FRAMERATE_60);
+      
+      dc1394_capture_setup(c,nDMABuffers,DC1394_CAPTURE_FLAGS_DEFAULT);
+      set_streaming(c,true);
+    
     }
 
     // }}}
     
-    
+    void release_dc_cam(dc1394camera_t *c){
+      set_streaming(c,false);
+      dc1394_capture_stop(c);
+      dc1394_cleanup_iso_channels_and_bandwidth(c);
+    }
+
     void set_streaming(dc1394camera_t* c, bool on){
       // {{{ open
       dc1394switch_t currVal;

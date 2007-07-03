@@ -1,5 +1,5 @@
 #include "iclDCFrameQueue.h"
-
+#include "iclDC.h"
 namespace icl{
   namespace dc{
     
@@ -9,16 +9,7 @@ namespace icl{
       m_iQueuedBuffers(nQueuedBuffers)
     {
       
-      dc1394_capture_stop(m_poCam);
-      set_streaming(m_poCam,false);
-      dc1394_cleanup_iso_channels_and_bandwidth(m_poCam);
-      
-      dc1394_video_set_iso_speed(m_poCam,DC1394_ISO_SPEED_400);
-      dc1394_video_set_mode(m_poCam,DC1394_VIDEO_MODE_640x480_MONO8);
-      dc1394_video_set_framerate(m_poCam, DC1394_FRAMERATE_60);
-      
-      dc1394_capture_setup(m_poCam,m_iBuffers,DC1394_CAPTURE_FLAGS_DEFAULT);
-      set_streaming(m_poCam,true);
+      initialize_dc_cam(c,nDMABuffers);
       
       /// dequeu all frames once 
       for(int i=0;i<m_iBuffers;i++){
@@ -33,9 +24,7 @@ namespace icl{
       }    
     }
     DCFrameQueue::~DCFrameQueue(){
-      set_streaming(m_poCam,false);
-      dc1394_capture_stop(m_poCam);
-      dc1394_cleanup_iso_channels_and_bandwidth(m_poCam);
+      release_dc_cam(m_poCam);
     }
     
     void DCFrameQueue::step(){
