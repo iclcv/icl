@@ -60,17 +60,29 @@ $(warning "Qt version 4.2 is not available. Qt-specific targets are not built.")
 endif
 endif
 
-############################# check for Firewire ########################
-# try whether fire wire is available
-ifneq "$(wildcard /vol/video/lib/libdc1394*.so)" ""
-HAVE_FIREWIRE=TRUE
+############################# check for libdc1394 ########################
+# try whether libdc and libraw is available
+LIBDC_ROOT ?= /vol/video
+ifneq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.so.2*)" ""
+ifneq "$(wildcard ${LIBDC_ROOT}/lib/libraw1394.so*)" ""
+HAVE_LIBDC=TRUE
 else
-ifeq "$(_WARN_FIREWIRE)" ""
-_WARN_FIREWIRE=done # warn only once
-export _WARN_FIREWIRE
-$(warning "Firewire library is not available. Firewire specific targets are not built.")
+ifeq "$(_WARN_DC)" ""
+_WARN_DC=done # warn only once
+export _WARN_DC
+$(warning "libraw1394.so is not available. DC1394 specific targets are not built.")
+endif
+endif	
+else
+ifeq "$(_WARN_DC)" ""
+_WARN_DC=done # warn only once
+export _WARN_DC
+$(warning "libdc1394.so is not available. DC1394 specific targets are not built.")
 endif
 endif
+#endif
+
+
 
 ############################# check for SVS ########################
 # try whether SVS is available

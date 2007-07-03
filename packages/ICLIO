@@ -14,6 +14,7 @@ ICLIO_MAKEVAR=ICLIO_MAKEVAR
 include ${PACKAGES}/ICLCore
 include ${PACKAGES}/ICLCC
 include ${PACKAGES}/Unicap
+include ${PACKAGES}/DC1394
 include ${PACKAGES}/XCF
 
 # Please add here all the directories with absolute path

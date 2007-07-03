@@ -38,6 +38,10 @@ namespace icl{
       widget->setImage(grabber->grab());
       widget->update();
     }
+
+    void setGeomery(const Rect &bounds){
+      widget->setGeometry(QRect(bounds.x, bounds.y, bounds.width, bounds.height));
+    }
     
     private:
     ICLWidget *widget;

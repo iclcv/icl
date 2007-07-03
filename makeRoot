@@ -218,14 +218,14 @@ CDEFINES:=
 
 # Flags for C compiler
 # Removing -Wall -pedantic will be punished severely!!!
-CFLAGS:= -Wall -pedantic -std=c99 -Wno-long-long
+CFLAGS:= -Wall -std=c99 -Wno-long-long
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CPPDEFINES:=
 
 # Flags for C++ compiler
 # Removing -Wall -pedantic will be punished severely!!!
-CPPFLAGS:= -Wall -pedantic -Wno-long-long
+CPPFLAGS:= -Wall -Wno-long-long
 
 # Flags for archive
 ARFLAGS:= rv
