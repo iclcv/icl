@@ -11,7 +11,7 @@ ifeq "${DC1394_MAKEVAR}" ""
 DC1394_MAKEVAR=DC1394_MAKEVAR
 
 
-ifneq "$(HAVE_LIBDC)" ""
+ifneq "$(HAVE_LIBDC_AND_LIBRAW)" ""
 
 # Please, include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/globalVar )
@@ -41,8 +41,9 @@ else
 #       -lDisplayWindow )
 # (e.g. extra library like: -L/usr/lib -lpthreads )
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-                -L${LIBDC_ROOT}/lib -Wl,-rpath -Wl,${LIBDC_ROOT}/lib \
-                -ldc1394 -lraw1394 -lpthread
+                -L${LIBDC_ROOT}/lib -Wl,-rpath -Wl,${LIBDC_ROOT}/lib -ldc1394 \
+                -L${LIBRAW_ROOT}/lib -Wl,-rpath -Wl,${LIBRAW_ROOT}/lib -lraw1394 \
+                -lpthread
 
 # Please, do not remove this endif statement
 endif
@@ -61,5 +62,5 @@ CPPDEFINES:= ${CPPDEFINES}
 CPPFLAGS:= ${CPPFLAGS}
 
 
-endif # HAVE_LIBDC
+endif # HAVE_LIBDC_AND_LIBRAW
 endif # DC1394_MAKEVAR

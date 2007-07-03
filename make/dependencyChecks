@@ -60,29 +60,34 @@ $(warning "Qt version 4.2 is not available. Qt-specific targets are not built.")
 endif
 endif
 
-############################# check for libdc1394 ########################
-# try whether libdc and libraw is available
+############################# check for libdc1394.so.2x ############################
 LIBDC_ROOT ?= /vol/video
-ifneq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.so.2*)" ""
-ifneq "$(wildcard ${LIBDC_ROOT}/lib/libraw1394.so*)" ""
+ifeq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.so.2*)" ""
+ifeq "${_WARN_LIBDC}" ""
+$(warning "libdc1394.so.2x was not found in ${LIBDC_ROOT}/lib. DCGrabber support disabled.")
+export _WARN_LIBDC=done
+endif # _WARN_LIBDC
+else # found libdc1394.so.2x in LIBDC_ROOT/lib ->ok
 HAVE_LIBDC=TRUE
-else
-ifeq "$(_WARN_DC)" ""
-_WARN_DC=done # warn only once
-export _WARN_DC
-$(warning "libraw1394.so is not available. DC1394 specific targets are not built.")
-endif
-endif	
-else
-ifeq "$(_WARN_DC)" ""
-_WARN_DC=done # warn only once
-export _WARN_DC
-$(warning "libdc1394.so is not available. DC1394 specific targets are not built.")
-endif
-endif
-#endif
+endif # searching in LIBDC_ROOT/lib
 
+############################# check for libraw1394.so #############################
+LIBRAW_ROOT ?= /vol/video
+ifeq "$(wildcard ${LIBRAW_ROOT}/lib/libraw1394.so*)" ""
+ifeq "${_WARN_LIBRAW}" ""
+$(warning "libraw1394.so was not found in ${LIBRAW_ROOT}/lib. DCGrabber support disabled.")
+export _WARN_LIBRAW=done
+endif # _WARN_LIBRAW
+else # found libraw1394.so in LIBRAW_ROOT/lib ->ok
+HAVE_LIBRAW=TRUE
+endif # searching in LIBRAW_ROOT/lib
 
+############################# check both DCGrabber dependencies ####################
+ifneq "$(HAVE_LIBDC)" ""
+ifneq "$(HAVE_LIBRAW)" ""
+HAVE_LIBDC_AND_LIBRAW=TRUE
+endif
+endif
 
 ############################# check for SVS ########################
 # try whether SVS is available

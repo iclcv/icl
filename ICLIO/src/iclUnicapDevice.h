@@ -55,7 +55,7 @@ namespace icl{
     
     /// opens this device (automatically called by the constructor)
     bool open();
-
+    
     /// closes this device 
     /** If the device is closed, no data access is possible) */
     bool close();
