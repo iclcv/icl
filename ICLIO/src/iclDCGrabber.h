@@ -2,8 +2,8 @@
 #define ICL_DC_GRABBER_H
 
 #include "iclDC.h"
-
-#include <iclGrabber.h>
+#include "iclDCDevice.h"
+#include "iclGrabber.h"
 
 namespace icl{
  
@@ -11,18 +11,29 @@ namespace icl{
     class DCGrabberThread; 
   }
   
+  
   class DCGrabber : public Grabber{
-    // {{{ open
     public: 
-    DCGrabber();
+    DCGrabber(const DCDevice &dev=DCDevice::null);
     ~DCGrabber();
     
-    void initialize();
-    
+    /// Grabber functions
+    virtual void setProperty(const std::string &property, const std::string &value);
+    virtual std::vector<std::string> getPropertyList();
+    virtual bool supportsProperty(const std::string &property);
+    virtual std::string getType(const std::string &name);
+    virtual std::string getInfo(const std::string &name);
+    virtual std::string getValue(const std::string &name);
+      
+
     virtual const ImgBase *grab (ImgBase **ppoDst=0);
     
+    
+    /// Returns a list of all connected DCDevices
+    static std::vector<DCDevice> getDeviceList();
+
     private:
-    dc1394camera_t *m_poCam;
+    DCDevice m_oDev;
     dc::DCGrabberThread *m_poGT;    
     ImgBase *m_poImage;
   };

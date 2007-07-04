@@ -12,13 +12,13 @@ namespace icl{
   namespace dc{
     
     /// Internal used utility class for fast handling of DMA buffers
-    /** This Queue implementation initializes the given camera. Then, it dequeues
-        all DMA ring buffer frames once, and pushed them into its wrapped 
+    /** This Queue implementation initializes the given camera. Then it dequeues
+        all DMA ring buffer frames once, and pushes them into its wrapped 
         std::queue<dc1394video_frame_t*>. After that, it re-enqueues a fixed number
         (given by the 3rd constructor argument nQueuedBuffers which is set to 2
-        by default). This 2 buffers are filled continuously with new frame data
+        by default) into the DMA-queue. This buffers are filled continuously with new frame data
         by the DMA-Thread.
-        When this initialization is performed, the Queue is used by the DCGrabberThread
+        After this initialization, the Queue is used by the DCGrabberThread
         to buffer grabbed image data as fast a possible, and to offer the newest frame
         safely at any time to other threads.
     **/

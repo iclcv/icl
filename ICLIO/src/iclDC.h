@@ -21,6 +21,15 @@ namespace icl{
     /// translate a dc1394color_filter_t into a string representation
     std::string to_string(dc1394color_filter_t f);
     
+    /// translate a dc1394video_mode_t from a string representation
+    dc1394video_mode_t videomode_from_string(const std::string &s);
+    
+    /// translate a dc1394framerate_t from a string representation
+    dc1394framerate_t framerate_from_string(const std::string &s);
+
+    /// translate a dc1394color_filter_t into a string representation
+    std::string to_string(dc1394color_filter_t f);
+
     /// checks if a camera has the firefly mv color model id
     /** @param c camera to check 
         @return string(c->model) == "Firefly MV FFMV-03MTC"
