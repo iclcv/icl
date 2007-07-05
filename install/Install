@@ -96,6 +96,7 @@ system "cp ./packages/Qt $INSTALLDIR/packages";
 system "cp ./packages/Unicap $INSTALLDIR/packages";
 system "cp ./packages/XCF $INSTALLDIR/packages";
 system "cp ./packages/Firewire $INSTALLDIR/packages";
+system "cp ./packages/DC1394 $INSTALLDIR/packages";
 system "cp ./make/dependencyChecks $INSTALLDIR/make";
 
 foreach my $entry(@dirs) {
