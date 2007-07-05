@@ -91,14 +91,16 @@ if (!-e "$INSTALLDIR/doc"){
 }
 
 #---- Copy extern projects files----
-system "cp ./packages/IPP $INSTALLDIR/packages";
-system "cp ./packages/Qt $INSTALLDIR/packages";
-system "cp ./packages/Unicap $INSTALLDIR/packages";
-system "cp ./packages/XCF $INSTALLDIR/packages";
-system "cp ./packages/Firewire $INSTALLDIR/packages";
-system "cp ./packages/DC1394 $INSTALLDIR/packages";
+opendir(DIR,"./packages") or die "Can not open DIR: $!";
+my @externPackageList = grep { !/ICL/ && !/\./ } readdir(DIR);
+closedir(DIR);
+
+foreach my $externPackage(@externPackageList) {
+    system "cp ./packages/$externPackage $INSTALLDIR/packages";
+}
 system "cp ./make/dependencyChecks $INSTALLDIR/make";
 
+#---- Install the whole stuff ----
 foreach my $entry(@dirs) {
     #---- Check makeVar for inlcudes ----
     if ($entry !~ /ICLUtils/) {
