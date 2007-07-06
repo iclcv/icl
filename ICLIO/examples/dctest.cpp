@@ -29,6 +29,9 @@ int main(int n, char **ppc){
   printf("chose 2nd device (or -1 for no 2nd device) :\n>>: ");
   scanf("%d",&j);
   
+  int k = -1;
+  printf("chose 3rd device (or -1 for no 3rd device) :\n>>: ");
+  scanf("%d",&k);
 
   CamThread ct(new DCGrabber(devs[i]));
   ct.setGeomery(Rect(200,200,640,480));
@@ -36,10 +39,18 @@ int main(int n, char **ppc){
   
   if(j!=i && j>=0 && j < (int)devs.size()){
     CamThread ct2(new DCGrabber(devs[j]));    
-    ct.setGeomery(Rect(600,200,640,480));
+    ct2.setGeomery(Rect(600,200,640,480));
     QObject::connect(&t,SIGNAL(timeout()), &ct2, SLOT(update()));
-    t.start(20);
-    app.exec();
+    if(k!=i && k!=j && k >=0 && k<(int)devs.size()){
+        CamThread ct3(new DCGrabber(devs[k]));    
+        ct3.setGeomery(Rect(600,200,640,480));
+        QObject::connect(&t,SIGNAL(timeout()), &ct3, SLOT(update()));
+        t.start(20);
+        app.exec();
+    }else{
+      t.start(20);
+      app.exec();
+    }
   }else{
     t.start(20);
     app.exec();

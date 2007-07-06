@@ -65,6 +65,7 @@ namespace icl{
     /// returns wheather the device is associated to a dc-camera
     bool isNull() const { return m_poCam == 0; }
     
+    void reset() { if(!isNull()) dc1394_reset_camera(m_poCam); }
     private:    
     /// Creates a new device (pivate; called by DCGrabber::getDeviceList())
     DCDevice(dc1394camera_t *cam):m_poCam(cam){}

@@ -67,6 +67,9 @@ namespace icl{
       /// resets the dc-camera at the end
       virtual void finalize();
       
+      /// called by the signal handler to stop all grabber threads
+      static void stopAllGrabberThreads();
+      
       private: 
       /// private constructor )can only be called by icl::DCGrabber
       DCGrabberThread(dc1394camera_t* c);

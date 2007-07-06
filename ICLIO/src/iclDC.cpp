@@ -3,16 +3,22 @@
 
 #include <iclImg.h>
 #include <iclCC.h>
-
+#include <iclMutex.h>
+#include <iclSignalHandler.h>
+#include <iclDCGrabberThread.h>
+#include <map>
+#include <signal.h>
 
 using std::string;
 using std::vector;
 
 namespace icl{
   namespace dc{
+
 #define MODE_SWITCH(X) case X: return #X
 #define MODE_SWITCH_IF(X) if(s==#X) return X 
 #define MODE_SWITCH_ELSE(X) else if(s==#X) return X
+
     string to_string(dc1394video_mode_t vm){
       // {{{ open
       switch(vm){
@@ -157,31 +163,66 @@ namespace icl{
     }
 
     // }}}
-       
+    
+    
+    class DCSignalHandler : public SignalHandler{
+    public:
+      DCSignalHandler():SignalHandler("SIGINT,SIGSEGV"){}
+      virtual void handleSignals(const string &signal){
+        // {{{ open
+
+        printf("releasing cameras ...\n");
+        m_oMutex.lock();
+        DCGrabberThread::stopAllGrabberThreads();
+        m_oMutex.unlock();
+        printf("done! (please ignore \"Hangup\" statement)\n");
+        killCurrentProcess();
+        
+      }
+
+      // }}}
+      
+    private:
+      Mutex m_oMutex;
+    };
+   
+    void install_signal_handler(){
+      // {{{ open
+
+      static DCSignalHandler dcs;
+    }
+
+    // }}}
+
     void initialize_dc_cam(dc1394camera_t *c, int nDMABuffers){
       // {{{ open
 
       dc1394_capture_stop(c);
       set_streaming(c,false);
-      dc1394_cleanup_iso_channels_and_bandwidth(c);
+      //dc1394_cleanup_iso_channels_and_bandwidth(c);
       
       // switch over the camera
       dc1394_video_set_iso_speed(c,DC1394_ISO_SPEED_400);
       dc1394_video_set_mode(c,DC1394_VIDEO_MODE_640x480_MONO8);
-      dc1394_video_set_framerate(c, DC1394_FRAMERATE_60);
+      dc1394_video_set_framerate(c, DC1394_FRAMERATE_30);
       
+      // falls hier fehler : channel cleanen!
       dc1394_capture_setup(c,nDMABuffers,DC1394_CAPTURE_FLAGS_DEFAULT);
       set_streaming(c,true);
-    
+      
     }
 
     // }}}
     
     void release_dc_cam(dc1394camera_t *c){
+      // {{{ open
       set_streaming(c,false);
       dc1394_capture_stop(c);
-      dc1394_cleanup_iso_channels_and_bandwidth(c);
+
+      //dc1394_cleanup_iso_channels_and_bandwidth(c);
     }
+
+    // }}}
 
     void set_streaming(dc1394camera_t* c, bool on){
       // {{{ open
@@ -229,6 +270,7 @@ namespace icl{
     
     Img8u extract_image(dc1394video_frame_t *f, format fmt){
       // {{{ open
+
       ICLASSERT_RETURN_VAL( f , Img8u());
       unsigned char *data = f->image;
       int width = (int)f->size[0];
@@ -327,7 +369,7 @@ namespace icl{
     
     void grab_frame(dc1394camera_t* c, ImgBase **image){
       // {{{ open
-  
+
       ICLASSERT_RETURN(image);
       format fmt = *image ? (*image)->getFormat() : formatRGB;
       ICLASSERT_RETURN( fmt == formatGray || fmt == formatRGB );
@@ -335,8 +377,7 @@ namespace icl{
       //dc1394video_frame_t *f = get_newest_frame(c);
       dc1394video_frame_t *f = get_a_frame(c);
   
-      dc1394color_filter_t cfilter = f->color_filter;
-      printf("color filter is %s \n",to_string(cfilter).c_str());
+      //      dc1394color_filter_t cfilter = f->color_filter;
       Size size = Size(f->size[0],f->size[1]);
   
   

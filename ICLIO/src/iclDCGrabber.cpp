@@ -1,6 +1,6 @@
 #include "iclDCGrabber.h"
 #include "iclDCGrabberThread.h"
-
+#include <iclSignalHandler.h>
 
 namespace icl{
   using namespace std;
@@ -8,16 +8,15 @@ namespace icl{
   
   DCGrabber::DCGrabber(const DCDevice &dev):
     m_oDev(dev),m_poGT(0),m_poImage(0)
-  {}
+  {
+    dc::install_signal_handler();
+  }
   
   const ImgBase *DCGrabber::grab (ImgBase **ppoDst){
     ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
     if(!m_poGT){
-      
-      printf("using this camera: \n");
-      dc1394_print_camera_info(m_oDev.getCam());
-    
-
+      m_oDev.reset();
+      //dc1394_print_camera_info(m_oDev.getCam());
       m_poGT = new DCGrabberThread(m_oDev.getCam());
       m_poGT->start();
       usleep(10*1000);
@@ -28,10 +27,9 @@ namespace icl{
     m_poGT->getCurrentImage(ppoDst);    
     return *ppoDst;
   }
-
+  
   DCGrabber::~DCGrabber(){
-    m_poGT->stop();   
-    m_poGT->waitFor();
+    m_poGT->stop();
     ICL_DELETE(m_poGT);
   }
 

@@ -89,6 +89,13 @@ namespace icl{
     /// utility function to grab a single frame from a camera into a given ImgBase**
     /** <b>DEPRECATED</b>*/
     void grab_frame(dc1394camera_t* c, ImgBase **image);
+
+    /// creates a signal handler for the SIGINT signal
+    /** The signal handler will enshure, that the SIGINT-signal,
+        which is send when CTRL+C is pressed to kill a the programm,
+        is caught. The new signal handler function ensures, that
+        all camera threads are stopped before the programm exits */
+    void install_signal_handler();
   }
 }
     
