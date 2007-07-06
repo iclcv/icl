@@ -66,8 +66,16 @@ namespace icl{
     void start();
     
     /// stops the thread
-    void stop();
-
+    /** @param locked if set to false, the running thread is stopped immediately
+                      without waiting for it to return from the internal locked
+                      state (use locked = false only if you know what you are 
+                      doing). An example for a non-locking call to a threads
+                      stop function may be explicit signal handling e.g. from the
+                      SIGINT signal. Here it might be necessary not to wait
+                      for the running thread.
+    */
+    void stop(bool locked = true);
+    
     /// virtual run function doing all the work
     virtual void run();
 
@@ -93,6 +101,36 @@ namespace icl{
         pthread_cond_wait(&m_oWaitCond,&m_oWaitMutex);
       }
     }
+
+ 
+    /// static utility function which deletes a pointer and sets it to NULL
+    /** Internally this function template will create a specific mutex for the
+        given class T. All calls to the saveDelete function are protected
+        by the static mutex. So saveDelete(XXX) can be called from different
+        threads [but with the identical pointer reference] without the risk 
+        of segmentation violations or double free exceptions.
+    */
+    template<class T>
+    static inline void saveDelete(T* &pointer){
+      static Mutex m;
+      m.lock();
+      ICL_DELETE(pointer);
+      m.unlock();
+    }
+    /// static utility function which ensures Thread-safety for object functions
+    /** Internally this function template will create a specific mutex for the
+        given class T and the given member function. When using the saveCall template
+        to call an objects member-function from different threads, the function 
+        will automatically become Thread-save, as it is only executes once at one time.
+    */
+    template<class T, void (T::*func)()>
+    static inline void saveCall(T *obj){
+      static Mutex m;
+      m.lock();
+      (obj->*func)();
+      m.unlock();
+    }
+
     protected:
     
     /// sets this thread to sleep for some milli-seconds
@@ -110,7 +148,6 @@ namespace icl{
     
     private:
     
-    //
     pthread_attr_t m_oAttr;
     pthread_t m_oPT;
     Mutex m_oMutex;

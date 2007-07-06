@@ -69,18 +69,18 @@ namespace icl{
     pthread_create(&m_oPT, &m_oAttr, icl_thread_handler, (void*)this); 
   }
   
-  void Thread::stop(){
-    lock();
+  void Thread::stop(bool locked){
+    if(locked) lock();
     if(m_bRunning){
       void *data;
       pthread_cancel(m_oPT);
       pthread_join(m_oPT,&data);
       m_bRunning = false;
       pthread_cond_broadcast(&m_oWaitCond);
-      unlock();
+      if(locked)unlock();
       finalize();
     }else{
-      unlock();
+      if(locked)unlock();
     }
   }
     
