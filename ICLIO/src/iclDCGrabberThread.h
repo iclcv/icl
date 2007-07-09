@@ -77,6 +77,25 @@ namespace icl{
       /// private image access function
       void getCurrentImage(ImgBase **ppoDst);
       
+      /// complex function to get the next image
+      /** The function gets all desired params from the top level grabber, which it
+          should fullfill. But in some cases it's not possible to satisfy all 
+          desired params constraints. In this case, this function will use the
+          second given ImgBase** (ppoDstTmp) as destination image and it will set
+          the boolean reference named desiredParamsFullfilled to false. The parent
+          grabber can check this variable, to decide whether to use the original
+          destination pointer (ppoDst) or to use the ppoDstTmp pointer temporarily
+          and convert is into ppoDst by itself, using the desired params for ppoDst.
+          <b>TODO: some more text here !</b>
+      */
+      void getCurrentImage(ImgBase **ppoDst, 
+                           ImgBase **ppoDstTmp,
+                           bool &desiredParamsFullfilled, 
+                           const Size &desiredSizeHint, 
+                           format desiredFormatHint,
+                           depth desiredDepthHint,
+                           dc1394bayer_method_t bayerMethod=DC1394_BAYER_METHOD_BILINEAR);
+      
       /// internally used DCFrameQueue object
       DCFrameQueue *m_poFrameQueue;
 

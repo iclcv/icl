@@ -1,12 +1,16 @@
 #include <dc1394/control.h>
+#include <dc1394/conversions.h>
 #include <iclTypes.h>
+#include <iclSize.h>
 #include <string>
 #include <vector>
+
 
 
 namespace icl{
   /** \cond */
   class ImgBase;
+  class DCDevice;
   /** \endcond */
   
   /// internal used namespace for libdc1394 dependent help functions and classes
@@ -21,11 +25,17 @@ namespace icl{
     /// translate a dc1394color_filter_t into a string representation
     std::string to_string(dc1394color_filter_t f);
     
+    /// translate a dc1394bayer_method_t into a string representation
+    std::string to_string(dc1394bayer_method_t bm);
+
     /// translate a dc1394video_mode_t from a string representation
     dc1394video_mode_t videomode_from_string(const std::string &s);
     
     /// translate a dc1394framerate_t from a string representation
     dc1394framerate_t framerate_from_string(const std::string &s);
+    
+    /// translate a dc1394bayer_method_t from a string representation
+    dc1394bayer_method_t bayermethod_from_string(const std::string &s);
 
     /// translate a dc1394color_filter_t into a string representation
     std::string to_string(dc1394color_filter_t f);
@@ -85,6 +95,27 @@ namespace icl{
 
         */
     void extract_image_to(dc1394video_frame_t *f, ImgBase **ppoDst, std::vector<icl8u> &rgbInterleavedBuffer);
+    
+    /// converts a grabbed frame
+    /** the desired params are only hints, which can - but do not have to - be
+        regarded !! */
+    void extract_image_to(dc1394video_frame_t *f,
+                          const DCDevice &dev, 
+                          ImgBase **ppoDst, 
+                          const Size &desiredSizeHint, 
+                          format desiredFormatHint,
+                          depth desiredDepthHint,
+                          std::vector<icl8u> &dataBuffer,
+                          dc1394bayer_method_t bayerMethod);
+
+    /// determins if the desired parameters can be fullfilled by extract_image_to(..)
+    /** TODO !!*/
+    bool can_extract_image_to(dc1394video_frame_t *f,
+                              const DCDevice &dev, 
+                              const Size &desiredSizeHint, 
+                              format desiredFormatHint,
+                              depth desiredDepthHint);
+
     
     /// utility function to grab a single frame from a camera into a given ImgBase**
     /** <b>DEPRECATED</b>*/

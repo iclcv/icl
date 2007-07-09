@@ -4,6 +4,7 @@
 #include "iclDC.h"
 #include "iclDCDevice.h"
 #include "iclGrabber.h"
+#include <iclConverter.h>
 
 namespace icl{
  
@@ -19,6 +20,7 @@ namespace icl{
     
     /// Grabber functions
     virtual void setProperty(const std::string &property, const std::string &value);
+    
     virtual std::vector<std::string> getPropertyList();
     virtual bool supportsProperty(const std::string &property);
     virtual std::string getType(const std::string &name);
@@ -35,7 +37,11 @@ namespace icl{
     private:
     DCDevice m_oDev;
     dc::DCGrabberThread *m_poGT;    
-    ImgBase *m_poImage;
+    ImgBase *m_poImage, *m_poImageTmp;
+    Converter m_oConverter;
+
+    dc1394bayer_method_t m_eBayerMethod;
+    
   };
   
 }

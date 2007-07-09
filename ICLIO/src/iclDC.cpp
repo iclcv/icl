@@ -6,6 +6,7 @@
 #include <iclMutex.h>
 #include <iclSignalHandler.h>
 #include <iclDCGrabberThread.h>
+#include <iclDCDevice.h>
 #include <map>
 #include <signal.h>
 
@@ -89,8 +90,25 @@ namespace icl{
     }
 
     // }}}
+    string to_string(dc1394bayer_method_t bm){
+      // {{{ open
 
-    dc1394video_mode_t videomode_from_string(const std::string &s){
+      switch(bm){
+        MODE_SWITCH(DC1394_BAYER_METHOD_NEAREST);
+        MODE_SWITCH(DC1394_BAYER_METHOD_SIMPLE);
+        MODE_SWITCH(DC1394_BAYER_METHOD_BILINEAR);
+        MODE_SWITCH(DC1394_BAYER_METHOD_HQLINEAR);
+        MODE_SWITCH(DC1394_BAYER_METHOD_DOWNSAMPLE);
+        MODE_SWITCH(DC1394_BAYER_METHOD_EDGESENSE);
+        MODE_SWITCH(DC1394_BAYER_METHOD_VNG);
+        MODE_SWITCH(DC1394_BAYER_METHOD_AHD);
+        default: return "unknown bayer method";
+      }
+    }
+
+    // }}}
+
+    dc1394video_mode_t videomode_from_string(const string &s){
       // {{{ open
 
       MODE_SWITCH_IF(DC1394_VIDEO_MODE_160x120_YUV444);
@@ -129,7 +147,7 @@ namespace icl{
     }
 
     // }}}
-    dc1394framerate_t framerate_from_string(const std::string &s){
+    dc1394framerate_t framerate_from_string(const string &s){
       // {{{ open
 
       MODE_SWITCH_IF(DC1394_FRAMERATE_1_875);
@@ -144,7 +162,22 @@ namespace icl{
     }
 
     // }}}
-    
+    dc1394bayer_method_t bayermethod_from_string(const string &s){
+      // {{{ open
+
+      MODE_SWITCH_IF(DC1394_BAYER_METHOD_NEAREST);
+      MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_SIMPLE);
+      MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_BILINEAR);
+      MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_HQLINEAR);
+      MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_DOWNSAMPLE);
+      MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_EDGESENSE);
+      MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_VNG);
+      MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_AHD);
+      return (dc1394bayer_method_t)-1;
+    }
+
+    // }}}
+
 #undef MODE_SWITCH
 #undef MODE_SWITCH_IF
 #undef MODE_SWITCH_ELSE
@@ -367,6 +400,142 @@ namespace icl{
 
     // }}}
     
+    void extract_image_to_gray(dc1394video_frame_t *f,
+                                const DCDevice &dev, 
+                                ImgBase **ppoDst, 
+                                const Size &desiredSizeHint, 
+                                depth desiredDepthHint,
+                                std::vector<icl8u> &dataBuffer,
+                               dc1394bayer_method_t bayerMethod){
+      // {{{ open
+
+      (void)desiredDepthHint;
+      Size frameSize(f->size[0],f->size[1]);
+      if(dev.supports(formatGray)){
+        ensureCompatible(ppoDst,depth8u, desiredSizeHint,formatGray);
+        std::vector<icl8u*> srcData(1,static_cast<icl8u*>(f->image));
+        Img8u srcImg(frameSize,formatGray,srcData);
+        Img8u *dst = (*ppoDst)->asImg<icl8u>();
+        srcImg.scaledCopy(dst);
+      }else{
+        ensureCompatible(ppoDst,depth8u,frameSize,formatGray);
+        dc1394_convert_to_MONO8(f->image, 
+                                (*ppoDst)->asImg<icl8u>()->getData(0),
+                                frameSize.width,
+                                frameSize.height,
+                                f->yuv_byte_order, 
+                                f->color_coding,
+                                f->bit_depth);
+      }
+    }
+
+    // }}}
+    
+    void extract_image_to_rgb(dc1394video_frame_t *f,
+                              const DCDevice &dev, 
+                              ImgBase **ppoDst, 
+                              const Size &desiredSizeHint, 
+                              depth desiredDepthHint,
+                              std::vector<icl8u> &dataBuffer,
+                              dc1394bayer_method_t bayerMethod){
+      // {{{ open
+      (void)desiredDepthHint;
+      Size frameSize(f->size[0],f->size[1]);
+      ensureCompatible(ppoDst,depth8u, frameSize,formatRGB);
+      if(dev.supports(formatRGB)){
+        if(dev.needsBayerDecoding()){
+          if((int)dataBuffer.size() < frameSize.getDim()*3){
+            dataBuffer.resize(frameSize.getDim()*3);
+          }
+          icl8u *buf = &(dataBuffer[0]);
+          
+          dc1394_bayer_decoding_8bit(f->image,
+                                     buf,
+                                     frameSize.width,
+                                     frameSize.height,
+                                     dev.getBayerFilterLayout(),
+                                     bayerMethod);
+          interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
+        }else{
+          /// rgb works directly TODO
+          if((int)dataBuffer.size() < frameSize.getDim()*3){
+            dataBuffer.resize(frameSize.getDim()*3);
+          }
+          icl8u *buf = &(dataBuffer[0]);
+          
+          dc1394_convert_to_RGB8(f->image,
+                                 buf,
+                                 frameSize.width,
+                                 frameSize.height,
+                                 f->yuv_byte_order,
+                                 f->color_coding,
+                                 f->bit_depth);
+          interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
+        }
+      }else{
+        // camera does not support RGB directly (use dc function)
+        if((int)dataBuffer.size() < frameSize.getDim()*3){
+          dataBuffer.resize(frameSize.getDim()*3);
+        }
+        icl8u *buf = &(dataBuffer[0]);
+       
+        dc1394_convert_to_RGB8(f->image,
+                               buf,
+                               frameSize.width,
+                               frameSize.height,
+                               f->yuv_byte_order,
+                               f->color_coding,
+                               f->bit_depth);
+        interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
+      }
+    }
+
+    // }}}
+
+    void extract_image_to(dc1394video_frame_t *f,
+                          const DCDevice &dev, 
+                          ImgBase **ppoDst, 
+                          const Size &desiredSizeHint, 
+                          format desiredFormatHint,
+                          depth desiredDepthHint,
+                          std::vector<icl8u> &dataBuffer,
+                          dc1394bayer_method_t bayerMethod){
+
+      // {{{ open
+
+      // This function must work dynamically --> it must not use is_firefly_mono for example !!
+      
+      (void)desiredDepthHint;
+      Size frameSize(f->size[0],f->size[1]);
+      switch(desiredFormatHint){
+        case formatGray:
+          extract_image_to_gray(f,dev,ppoDst,desiredSizeHint,desiredDepthHint,dataBuffer,bayerMethod);
+          break;
+        default: // rgb is returned .. and converted lateron
+          extract_image_to_rgb(f,dev,ppoDst,desiredSizeHint,desiredDepthHint,dataBuffer,bayerMethod);
+          break;
+      }
+    }
+
+    // }}}
+    
+    bool can_extract_image_to(dc1394video_frame_t *f,
+                              const DCDevice &dev, 
+                              const Size &desiredSizeHint, 
+                              format desiredFormatHint,
+                              depth desiredDepthHint){
+      // {{{ open
+
+      if(desiredDepthHint != depth8u) return false;
+      if(desiredFormatHint == formatGray) return true;
+      if(desiredSizeHint != Size(f->size[0],f->size[1])) return false;
+      if(desiredFormatHint != formatRGB) return false;
+      return true;
+    }
+
+    // }}}
+
+
     void grab_frame(dc1394camera_t* c, ImgBase **image){
       // {{{ open
 

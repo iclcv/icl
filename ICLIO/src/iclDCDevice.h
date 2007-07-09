@@ -5,10 +5,14 @@
 #include <string>
 #include <vector>
 #include <iclTypes.h>
+#include <iclSize.h>
 
 namespace icl{
   /** \cond */
   class DCGrabber;
+  namespace dc{
+    class DCGrabberThread;
+  }
   /** \endcond */
   
   /// Device struct, used by the DCGrabber class to identify devices
@@ -19,6 +23,9 @@ namespace icl{
     
     /// DCDevices may only be created by the DCGrabbers private function
     friend class icl::DCGrabber;
+
+    /// DCDevices may only be created by the DCGrabbers private function
+    friend class icl::dc::DCGrabberThread;
     
     /// Internally used Mode struct (combination of videomode and framerate)
     struct Mode{
@@ -46,6 +53,7 @@ namespace icl{
     
     /// returns the camera, which is associated with this device (fixed)
     dc1394camera_t *getCam(){ return m_poCam; }
+
     
     /// returns a list of supported modes for this device
     std::vector<Mode> getModes() const ;
@@ -65,10 +73,36 @@ namespace icl{
     /// returns wheather the device is associated to a dc-camera
     bool isNull() const { return m_poCam == 0; }
     
-    void reset() { if(!isNull()) dc1394_reset_camera(m_poCam); }
+    /// shows some device information 
+    void show(const std::string &title="DCDevice") const;
+       
+    /// returns whether the Device supports a given icl-format
+    bool supports(format fmt) const;
+
+    /// returns whether the Device supports a given icl-format
+    bool supports(const Size &size) const;    
+
+    /// returns whether the Device supports a given mode
+    bool supports(const Mode &mode) const;
+    
+    /// returns whether images need by decoding
+    bool needsBayerDecoding() const;
+       
+    /// returns the bayer-filter layout (for the current set format)
+    dc1394color_filter_t getBayerFilterLayout() const;
+    
     private:    
     /// Creates a new device (pivate; called by DCGrabber::getDeviceList())
     DCDevice(dc1394camera_t *cam):m_poCam(cam){}
+
+    /// sets the current mode of this device
+    /** This function may only be called by the DCGrabber*/
+    void setMode(const Mode &mode);
+
+    /// resets the camera internally
+    /** This function may only be called by the DCGrabber*/
+    void reset() { if(!isNull()) dc1394_reset_camera(m_poCam); }
+    
     
     /// associated camera (libdc stays the owner of the pointer)
     dc1394camera_t *m_poCam;
