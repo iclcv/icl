@@ -9,29 +9,24 @@
 #include <jpeglib.h>
 #endif
 #include <setjmp.h>
-/*
-  IO.h
-
-  Written by: Michael Götting (2006)
-              University of Bielefeld
-              AG Neuroinformatik
-              mgoettin@techfak.uni-bielefeld.de
-*/
 
 /**
-\mainpage ICLIO (Input/Ouput) package
-\section Overview
+    \mainpage ICLIO (Input/Ouput) package
+    \section Overview
 
-The ICLIO package provides the complete input and  output functions supported by the ICL. Currently the following subpackages are included in the IO 
-library:
-- <b>FileReader</b>: The FileReader could be used to load (pgm, ppm, pnm, jpg, icl) files from a file or a sequence of files. 
+    The ICLIO package provides the complete input and  output functions supported by the ICL. 
+    Currently the following subpackages are included in the IO 
+    library:
+    - <b>FileReader</b>: The FileReader could be used to load 
+      (pgm, ppm, pnm, jpg, icl) files from a file or a sequence of files. 
+    - <b>FileWriter</b>: The provides the same file formats as 
+      the FileReader. But now the ICL images are written to a file or a file sequence.
+    - <b>PWCGrabber</b>: The PWC Grabber (Phillips Webcam Grabber) supports various 
+      webcams chipsets. For a detailed overview of the supported webcams look at 
+      <a href="http://www.saillard.org/linux/pwc/">www.saillard.org</a>.
 
-- <b>FileWriter</b>: The provides the same file formats as the FileReader. But now the ICL images are written to a file or a file sequence.
-
-- <b>PWCGrabber</b>: The PWC Grabber (Phillips Webcam Grabber) supports various webcams chipsets. For a detailed overview of the supported webcams look at <a href="http://www.saillard.org/linux/pwc/">www.saillard.org</a>.
-
-A detailed description of the provided functions in each package is included in
-the class description.
+    A detailed description of the provided functions in each package is included in
+    the class description.
 
 */
 
@@ -68,7 +63,18 @@ namespace icl {
   /// close given file
   void closeFile (FileInfo& oInfo);
 
-
+  /// draws a label into the upper left image corner
+  /** This utility function can be used e.g. to identify images in longer
+      computation queues. Internally is uses a static map of hard-coded
+      ascii-art letters ('a'-'z)'=('A'-'Z'), ('0'-'9') and ' '-'/' are defined yet.
+      which associates letters to letter images and corresponding offsets.
+      Some tests showed, that is runs very fast (about 100ns per call).
+      Note, that no line-break mechanism is implemented, so the labeling
+      is restricted to a single line, which is cropped, if the label would
+      overlap with the right or bottom  image border.
+  */ 
+  void labelImage(ImgBase *image,const std::string &label);
+  
   struct FileInfo {
      depth       eDepth;
      format      eFormat;
