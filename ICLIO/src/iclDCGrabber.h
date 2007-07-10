@@ -3,6 +3,7 @@
 
 #include "iclDC.h"
 #include "iclDCDevice.h"
+#include "iclDCDeviceOptions.h"
 #include "iclGrabber.h"
 #include <iclConverter.h>
 
@@ -35,13 +36,14 @@ namespace icl{
     static std::vector<DCDevice> getDeviceList();
 
     private:
+    void restartGrabberThread();
+    
     DCDevice m_oDev;
     dc::DCGrabberThread *m_poGT;    
     ImgBase *m_poImage, *m_poImageTmp;
     Converter m_oConverter;
 
-    dc1394bayer_method_t m_eBayerMethod;
-    
+    DCDeviceOptions m_oOptions;
   };
   
 }

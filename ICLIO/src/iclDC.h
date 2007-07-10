@@ -11,6 +11,7 @@ namespace icl{
   /** \cond */
   class ImgBase;
   class DCDevice;
+  class DCDeviceOptions;
   /** \endcond */
   
   /// internal used namespace for libdc1394 dependent help functions and classes
@@ -53,7 +54,7 @@ namespace icl{
     bool is_firefly_mono(dc1394camera_t* c);
     
     /// (TODO) sets up a camera to some useful defaults dependent on its model id    
-    void initialize_dc_cam(dc1394camera_t *c, int nDMABuffers);
+    void initialize_dc_cam(dc1394camera_t *c, int nDMABuffers, DCDeviceOptions *options);
 
     /// stops the capturing and streaming process
     void release_dc_cam(dc1394camera_t *c);

@@ -35,10 +35,10 @@ namespace icl{
 
     // }}}
     
-    DCGrabberThread::DCGrabberThread(dc1394camera_t* c):
+    DCGrabberThread::DCGrabberThread(dc1394camera_t* c, DCDeviceOptions *options):
       // {{{ open
 
-      m_poFrameQueue(0),m_poCam(c){
+      m_poFrameQueue(0),m_poCam(c),m_poOptions(options){
       g_oGrabberThreadMutex.lock();
       g_vecAllThreads.push_back(this);
       g_oGrabberThreadMutex.unlock();
@@ -50,7 +50,7 @@ namespace icl{
       // {{{ open
 
       if(!m_poFrameQueue){
-        m_poFrameQueue = new DCFrameQueue(m_poCam);
+        m_poFrameQueue = new DCFrameQueue(m_poCam, m_poOptions);
       }
       while(true){
         lock();

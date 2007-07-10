@@ -145,9 +145,12 @@ namespace icl {
   void labelImage(Img<T> *image,const char*txt, const std::map<char,OffsPtr> &m){
     static const Point OFS(5,5);
 
-    Img<T> *boxImage = image->shallowCopy(Rect(OFS.x-1,OFS.y-1,strlen(txt)*(7+2),7+2));
-    boxImage->clear();
-    delete boxImage;
+    Rect roi = Rect(OFS.x-1,OFS.y-1,strlen(txt)*(7+2),7+2);
+    if(Rect(Point::null,image->getSize()).contains(roi)){
+      Img<T> *boxImage = image->shallowCopy(roi);
+      boxImage->clear();
+      delete boxImage;
+    }
     
     int letterIdx = 0;
     for(const char *p = txt; *p; p++){

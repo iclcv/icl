@@ -1,4 +1,5 @@
 #include "iclDC.h"
+#include "iclDCDeviceOptions.h"
 #include <dc1394/conversions.h>
 
 #include <iclImg.h>
@@ -227,7 +228,7 @@ namespace icl{
 
     // }}}
 
-    void initialize_dc_cam(dc1394camera_t *c, int nDMABuffers){
+    void initialize_dc_cam(dc1394camera_t *c, int nDMABuffers, DCDeviceOptions *options){
       // {{{ open
 
       dc1394_capture_stop(c);
@@ -235,9 +236,16 @@ namespace icl{
       //dc1394_cleanup_iso_channels_and_bandwidth(c);
       
       // switch over the camera
+      // TODO use max here
       dc1394_video_set_iso_speed(c,DC1394_ISO_SPEED_400);
-      dc1394_video_set_mode(c,DC1394_VIDEO_MODE_640x480_MONO8);
-      dc1394_video_set_framerate(c, DC1394_FRAMERATE_30);
+      
+      
+      if((int)options->videomode != -1){
+        dc1394_video_set_mode(c,options->videomode);
+      }
+      if((int)options->framerate != -1){
+        dc1394_video_set_framerate(c, options->framerate);
+      } // otherwise, the current framerate is used
       
       // falls hier fehler : channel cleanen!
       dc1394_capture_setup(c,nDMABuffers,DC1394_CAPTURE_FLAGS_DEFAULT);
@@ -411,7 +419,7 @@ namespace icl{
 
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
-      if(dev.supports(formatGray)){
+      if(dev.supports(formatGray) && f->bit_depth == 8){
         ensureCompatible(ppoDst,depth8u, desiredSizeHint,formatGray);
         std::vector<icl8u*> srcData(1,static_cast<icl8u*>(f->image));
         Img8u srcImg(frameSize,formatGray,srcData);
@@ -527,7 +535,7 @@ namespace icl{
       // {{{ open
 
       if(desiredDepthHint != depth8u) return false;
-      if(desiredFormatHint == formatGray) return true;
+      if(desiredFormatHint == formatGray && f->bit_depth == 8) return true;
       if(desiredSizeHint != Size(f->size[0],f->size[1])) return false;
       if(desiredFormatHint != formatRGB) return false;
       return true;

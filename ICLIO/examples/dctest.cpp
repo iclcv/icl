@@ -4,26 +4,31 @@
 #include <iclDCGrabber.h>
 #include <iclProgArg.h>
 
+using namespace std;
 
 Size size;
 format fmt;
+string mode;
 
 Grabber *initGrabber(Grabber *g){
   g->setDesiredSize(size);
   g->setDesiredFormat(fmt);
+  g->setProperty("format",mode);
   return g;
 }
 
 int main(int n, char **ppc){
   QApplication app(n,ppc);
-  pa_init(n,ppc,"-cams(1) -cam(1) -size(1) -format(1)");
+  pa_init(n,ppc,"-cams(1) -cam(1) -size(1) -format(1) -mode(1)");
   
   int NCAMS = pa_subarg("-cams",0,int(1));
   if(NCAMS <= 0 || NCAMS > 3){
     NCAMS = 1;
   }
   int USECAM = pa_subarg("-cam",0,int(-1));
-
+  
+  mode = pa_subarg("-mode",0,std::string("DC1394_VIDEO_MODE_640x480_MONO8@DC1394_FRAMERATE_30"));
+  
   size = translateSize(pa_subarg("-size",0,std::string("640x480")));
   if(size == Size::null) size = Size(640,480);
   

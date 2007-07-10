@@ -1,7 +1,8 @@
 #ifndef ICL_DC_GRABBER_THREAD_H
 #define ICL_DC_GRABBER_THREAD_H
 
-#include <iclDC.h>
+#include "iclDC.h"
+#include "iclDCDeviceOptions.h"
 #include <iclThread.h>
 #include <iclTypes.h>
 
@@ -72,7 +73,7 @@ namespace icl{
       
       private: 
       /// private constructor )can only be called by icl::DCGrabber
-      DCGrabberThread(dc1394camera_t* c);
+      DCGrabberThread(dc1394camera_t* c, DCDeviceOptions *options);
       
       /// private image access function
       void getCurrentImage(ImgBase **ppoDst);
@@ -104,6 +105,9 @@ namespace icl{
       
       /// internally used buffer for RGB-Bayer image conversion
       std::vector<icl8u> m_oRGBInterleavedBuffer;
+      
+      /// Parents DCGrabbers options pointer
+      DCDeviceOptions *m_poOptions;
     };
   }
 }

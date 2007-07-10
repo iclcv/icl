@@ -14,7 +14,14 @@ namespace icl{
   {
     dc::install_signal_handler();
 
-    m_eBayerMethod = DC1394_BAYER_METHOD_BILINEAR;
+    m_oOptions.bayermethod = DC1394_BAYER_METHOD_BILINEAR;
+    
+    m_oOptions.framerate = (dc1394framerate_t)-1; // use default
+    
+    m_oOptions.videomode = (dc1394video_mode_t)-1; // use default
+    
+    m_oOptions.enable_image_labeling = false;
+    
   }
 
   // }}}
@@ -24,10 +31,7 @@ namespace icl{
 
     ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
     if(!m_poGT){
-      m_oDev.reset();
-      m_poGT = new DCGrabberThread(m_oDev.getCam());
-      m_poGT->start();
-      usleep(10*1000);
+      restartGrabberThread();
     }
     
     ppoDst = ppoDst ? ppoDst : &m_poImage;
@@ -42,9 +46,9 @@ namespace icl{
       ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
       m_oConverter.apply(*ppoDstTmp,*ppoDst);
     }
-    
-    labelImage(*ppoDst,m_oDev.getModelID());
-    
+    if(m_oOptions.enable_image_labeling){
+      labelImage(*ppoDst,m_oDev.getModelID());
+    }
     return *ppoDst;
   }
 
@@ -52,9 +56,10 @@ namespace icl{
   
   DCGrabber::~DCGrabber(){
     // {{{ open
-
-    m_poGT->stop();
-    ICL_DELETE(m_poGT);
+    if(m_poGT){
+      m_poGT->stop();
+      ICL_DELETE(m_poGT);
+    }
   }
 
   // }}}
@@ -75,28 +80,72 @@ namespace icl{
   }
 
   // }}}
-
+  
+  void DCGrabber::restartGrabberThread(){
+    if(m_poGT){
+      m_poGT->stop();
+      m_poGT->waitFor();
+      delete m_poGT;
+    }
+    m_poGT = new DCGrabberThread(m_oDev.getCam(),&m_oOptions);
+    m_poGT->start();
+    usleep(10*1000);
+  }
 
   void DCGrabber::setProperty(const std::string &property, const std::string &value){
     if(property == "bayer-quality"){
-      m_eBayerMethod = bayermethod_from_string(value);
+      m_oOptions.bayermethod = bayermethod_from_string(value);
+    }else if(property == "format"){
+      DCDevice::Mode m(value);
+      if(m_oDev.getMode() != m && m_oDev.supports(m)){
+        m_oOptions.framerate = m.framerate;
+        m_oOptions.videomode = m.videomode;
+        if(m_poGT){
+          restartGrabberThread();
+        }
+      }
+    }else if(property == "enable-image-labeling"){
+      if(value == "on"){
+        m_oOptions.enable_image_labeling = true;
+      }else if(value == "off"){
+        m_oOptions.enable_image_labeling = false;
+      }else{
+        ERROR_LOG("parameter image-labeling has values \"on\" and \"off\", nothing known about \""<<value<<"\"");
+      }
+    }else{
+      ERROR_LOG("nothing known about a property named \""<<property<<"\", value was \""<<value<<"\"");
     }
   }
   std::vector<std::string> DCGrabber::getPropertyList(){
     std::vector<std::string> v;
-    v.push_back("bayer-quality");
+    if(m_oDev.isNull()) return v;
+    
+    if(m_oDev.needsBayerDecoding()){
+      v.push_back("bayer-quality");
+    }
+    v.push_back("format");
+    v.push_back("size");
+    v.push_back("enable-image-labeling");
     return v;
   }
   bool DCGrabber::supportsProperty(const std::string &property){
-    if(property == "bayer-quality") return true;
+    if(m_oDev.isNull()) return false;
+    if((m_oDev.needsBayerDecoding() && property == "bayer-quality") || 
+       property == "format" ||
+       property == "size" ||
+       property == "enable-image-labeling" ) return true;
     return false;
   }
   std::string DCGrabber::getType(const std::string &name){
-    if(name == "bayer-quality") return "menu";
+    if((m_oDev.needsBayerDecoding() && name == "bayer-quality") || 
+       name == "format" ||
+       name == "size" ||
+       name == "enable-image-labeling") return "menu";
     return "";// range command undefined
   }
   std::string DCGrabber::getInfo(const std::string &name){
-    if(name == "bayer-quality"){
+    if(m_oDev.isNull()) return "";
+    if(m_oDev.needsBayerDecoding() && name == "bayer-quality"){
       return "{"
       "\"DC1394_BAYER_METHOD_NEAREST\","
       "\"DC1394_BAYER_METHOD_BILINEAR\","
@@ -105,11 +154,36 @@ namespace icl{
       "\"DC1394_BAYER_METHOD_EDGESENSE\","
       "\"DC1394_BAYER_METHOD_VNG\","
       "\"DC1394_BAYER_METHOD_AHD\"}";
+    }else if(name == "format"){
+      std::vector<DCDevice::Mode> mv= m_oDev.getModes();
+      std::vector<string> v;
+      for(unsigned int i=0;i<mv.size();i++){
+        v.push_back(mv[i].toString());
+      }
+      return Grabber::translateStringVec(v);
+    }else if(name == "enable-image-labeling"){
+      return "{\"on\",\"off\"}";
+    }else if(name == "size"){
+      return "{\"adjusted by format\"}";
     }
     return "";
   }
   std::string DCGrabber::getValue(const std::string &name){
-    if(name == "bayer-quality") return to_string(m_eBayerMethod);
+    if(m_oDev.isNull()) return "";  
+
+    if(m_oDev.needsBayerDecoding() && name == "bayer-quality") return to_string(m_oOptions.bayermethod);
+    else if(name == "format"){
+      if(m_oDev.isNull()) return "";
+      return m_oDev.getMode().toString();
+    }else if(name == "enable-image-labeling"){
+      if(m_oOptions.enable_image_labeling){
+        return "on";
+      }else{
+        return "off";
+      }
+    }else if(name == "size"){
+      return "adjusted by format";
+    }
     return "";
   }
 

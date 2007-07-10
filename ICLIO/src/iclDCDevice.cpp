@@ -154,7 +154,19 @@ namespace icl{
   // }}}
 
 
+  DCDevice::Mode::Mode(dc1394camera_t *cam){
+    // {{{ open
 
+    if(cam){
+      dc1394_video_get_mode(cam,&videomode);
+      dc1394_video_get_framerate(cam,&framerate);
+    }else{
+      framerate = (dc1394framerate_t)-1;
+      videomode = (dc1394video_mode_t)-1;
+    }
+  }
+
+  // }}}
   DCDevice::Mode::Mode(const std::string &stringRepr){
     // {{{ open
 

@@ -3,13 +3,13 @@
 namespace icl{
   namespace dc{
     
-    DCFrameQueue::DCFrameQueue(dc1394camera_t* c,int nDMABuffers, int nQueuedBuffers):
+    DCFrameQueue::DCFrameQueue(dc1394camera_t* c, DCDeviceOptions *options,int nDMABuffers, int nQueuedBuffers):
       m_poCam(c),
       m_iBuffers(nDMABuffers),
       m_iQueuedBuffers(nQueuedBuffers)
     {
       
-      initialize_dc_cam(c,nDMABuffers);
+      initialize_dc_cam(c,nDMABuffers, options);
       
       /// dequeu all frames once 
       for(int i=0;i<m_iBuffers;i++){

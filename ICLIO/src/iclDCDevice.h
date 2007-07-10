@@ -36,6 +36,9 @@ namespace icl{
       /// creates a new Mode by a given string representation
       /** syntax: videomode@framerate */
       Mode(const std::string &stringRepr);
+
+      /// create a new Mode by given cam
+      Mode(dc1394camera_t *cam);
       
       /// returns a string representation of the mode
       /** syntax: videomode@framerate */
@@ -49,11 +52,19 @@ namespace icl{
       
       /// corresponding framerate;
       dc1394framerate_t framerate;
+      
+      /// compares to modes
+      bool operator==(const Mode &m) const{ return videomode == m.videomode && framerate == m.framerate; }
+      
+      /// compares to modes [!=  complies !(==)]
+      bool operator!=(const Mode &m) const{ return !((*this)==m);}
     };
     
     /// returns the camera, which is associated with this device (fixed)
     dc1394camera_t *getCam(){ return m_poCam; }
 
+    /// returns the current mode
+    Mode getMode() const{ return Mode(m_poCam); }
     
     /// returns a list of supported modes for this device
     std::vector<Mode> getModes() const ;

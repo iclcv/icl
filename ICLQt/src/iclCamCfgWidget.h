@@ -6,6 +6,7 @@
 #include <QString>
 #include <QWidget>
 #include <iclUnicapDevice.h>
+#include <iclDCDevice.h>
 #include <iclTypes.h>
 #include <QMutex>
 
@@ -35,6 +36,7 @@ namespace icl{
     Q_OBJECT
     public:
     CamCfgWidget();
+    ~CamCfgWidget();
     
     public slots:
     void deviceChanged(const QString &text);
@@ -86,6 +88,7 @@ namespace icl{
     
     // UnicapDevice m_oUnicapDevice;
     std::vector<UnicapDevice> m_vecDeviceList;
+    std::vector<DCDevice> m_vecDCDeviceList;
     std::vector<int> m_vecPWCDeviceList;
     
     ImgParamWidget *m_poImgParamWidget;

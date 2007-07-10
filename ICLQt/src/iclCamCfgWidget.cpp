@@ -3,6 +3,7 @@
 
 #include <iclPWCGrabber.h>
 #include <iclUnicapGrabber.h>
+#include <iclDCGrabber.h>
 #include <iclWidget.h>
 #include <iclDoubleSlider.h>
 #include <iclBorderBox.h>
@@ -85,9 +86,8 @@ namespace icl{
     /// RIGHT WIDGETS-----------------------------------------
     m_bDisableSlots = true;
 
-    /// add unicap devices:
+    /// add unicap devices: ?? how to deactivate dc devices ??
     m_vecDeviceList = UnicapGrabber::getDeviceList();
-    
     for(unsigned int j=0;j<m_vecDeviceList.size();j++){
       QString name = m_vecDeviceList[j].getID().c_str();
       m_poDeviceCombo->addItem(name);
@@ -102,7 +102,25 @@ namespace icl{
       m_poTabWidget->addTab(sa,name);
       m_poTabWidget->setTabEnabled(j,false);
     }
-
+        
+    /// add DC devices
+    m_vecDCDeviceList = DCGrabber::getDeviceList();
+    for(unsigned int j=0;j<m_vecDCDeviceList.size();j++){
+      QString name = m_vecDCDeviceList[j].getModelID().c_str();
+      m_poDeviceCombo->addItem(name);
+      QWidget *w = new QWidget(this);
+      QVBoxLayout *l = new QVBoxLayout(w);
+      QScrollArea *sa = new QScrollArea(this);
+      DCGrabber grabber(m_vecDCDeviceList[j]);
+      //      grabber.grab();
+      fillLayout(l,&grabber);
+      sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+      w->setLayout(l);
+      sa->setWidget(w);      
+      m_poTabWidget->addTab(sa,name);
+      m_poTabWidget->setTabEnabled(j,false);
+    }
+    
     /// add philips webcam devices
     m_vecPWCDeviceList = PWCGrabber::getDeviceList();
 
@@ -141,6 +159,16 @@ namespace icl{
 
   // }}}
   
+  CamCfgWidget::~CamCfgWidget(){
+    if(m_bCapturing){
+      startStopCapture(false);
+    }
+    m_oGrabberMutex.lock();
+    ICL_DELETE(m_poGrabber);
+    m_oGrabberMutex.unlock();
+    
+  }
+  
   void CamCfgWidget::createGrabber(const QString &text){
     // {{{ open
 
@@ -152,12 +180,22 @@ namespace icl{
     if(m_poGrabber) delete m_poGrabber;
     m_poGrabber = 0;
     
-    //search for a unicap grabber:
-    for(unsigned int i=0;i<m_vecDeviceList.size();i++){
-      if(m_vecDeviceList[i].getID() == text.toLatin1().data()){
-        m_poGrabber = new UnicapGrabber(m_vecDeviceList[i]);
+    for(unsigned int i=0;i<m_vecDCDeviceList.size();i++){
+      if(m_vecDCDeviceList[i].getModelID() == text.toLatin1().data()){
+        m_poGrabber = new DCGrabber(m_vecDCDeviceList[i]);
+        break;
       }
     }
+    if(!m_poGrabber){
+      //search for a unicap grabber:
+      for(unsigned int i=0;i<m_vecDeviceList.size();i++){
+        if(m_vecDeviceList[i].getID() == text.toLatin1().data()){
+          m_poGrabber = new UnicapGrabber(m_vecDeviceList[i]);
+          break;
+        }
+      }
+    }
+    
 
     if(!m_poGrabber){ // search for pwc device
       if(text == "Philips 740 Webcam [device 0]"){
@@ -414,7 +452,7 @@ namespace icl{
           char buf[30];
           sprintf(buf,"%f",values[j]);
           if( abs(values[j] - atof(currValue.c_str())) < 0.001 ){
-            iCurrIdx = i;
+            iCurrIdx = j;
           }
           cb->addItem(propName+" "+buf);
         }
