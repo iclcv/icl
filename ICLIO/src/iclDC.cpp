@@ -1,7 +1,6 @@
 #include "iclDC.h"
 #include "iclDCDeviceOptions.h"
 #include <dc1394/conversions.h>
-#include <iclFPSEstimator.h>
 
 #include <iclImg.h>
 #include <iclCC.h>
@@ -448,7 +447,6 @@ namespace icl{
                               std::vector<icl8u> &dataBuffer,
                               dc1394bayer_method_t bayerMethod){
       
-      FPS_LOG_THIS_FUNCTION(20);
       // {{{ open
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
