@@ -128,14 +128,7 @@ namespace icl{
     v.push_back("enable-image-labeling");
     return v;
   }
-  bool DCGrabber::supportsProperty(const std::string &property){
-    if(m_oDev.isNull()) return false;
-    if((m_oDev.needsBayerDecoding() && property == "bayer-quality") || 
-       property == "format" ||
-       property == "size" ||
-       property == "enable-image-labeling" ) return true;
-    return false;
-  }
+
   std::string DCGrabber::getType(const std::string &name){
     if((m_oDev.needsBayerDecoding() && name == "bayer-quality") || 
        name == "format" ||

@@ -45,7 +45,7 @@ namespace icl{
     /// Destructor
     ~UnicapGrabber();
     
-    /// **NEW** grab function grabs an image (destination image is adapted on demand)
+    /// grab function grabs an image (destination image is adapted on demand)
     /** @copydoc icl::Grabber::grab(ImgBase**) **/
     virtual const ImgBase* grab(ImgBase **ppoDst=0);
 
@@ -60,6 +60,7 @@ namespace icl{
     virtual std::string getInfo(const std::string &name);
     
     /// returns the current value of a given property
+    /** \copydoc icl::Grabber::getValue(const std::string &)*/
     virtual std::string getValue(const std::string &name);
     
     /// setter function for video device properties 
