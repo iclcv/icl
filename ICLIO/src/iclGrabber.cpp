@@ -55,7 +55,7 @@ namespace icl{
   SteppingRange<double> Grabber::translateSteppingRange(const string &rangeStr){
     // {{{ open
 
-    const char *str = rangeStr.c_str();
+    const char *str = rangeStr.c_str();  
     if(*str++ != '['){
       ERROR_LOG("syntax error: " << rangeStr);
       return SteppingRange<double>();

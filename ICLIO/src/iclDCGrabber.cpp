@@ -93,6 +93,7 @@ namespace icl{
   }
 
   void DCGrabber::setProperty(const std::string &property, const std::string &value){
+    if(m_oDev.isNull()) return;
     if(property == "bayer-quality"){
       m_oOptions.bayermethod = bayermethod_from_string(value);
     }else if(property == "format"){
@@ -112,6 +113,8 @@ namespace icl{
       }else{
         ERROR_LOG("parameter image-labeling has values \"on\" and \"off\", nothing known about \""<<value<<"\"");
       }
+    }else if(m_oDev.isFeatureAvailable(property)){
+      m_oDev.setFeatureValue(property,value);
     }else{
       ERROR_LOG("nothing known about a property named \""<<property<<"\", value was \""<<value<<"\"");
     }
@@ -126,6 +129,11 @@ namespace icl{
     v.push_back("format");
     v.push_back("size");
     v.push_back("enable-image-labeling");
+    
+    std::vector<std::string> v2 = m_oDev.getFeatures();
+    for(unsigned int i=0;i<v2.size();i++){
+      v.push_back(v2[i]);
+    }
     return v;
   }
 
@@ -134,8 +142,12 @@ namespace icl{
        name == "format" ||
        name == "size" ||
        name == "enable-image-labeling") return "menu";
+    if(m_oDev.isFeatureAvailable(name)){
+      return m_oDev.getFeatureType(name);
+    }
     return "";// range command undefined
   }
+ 
   std::string DCGrabber::getInfo(const std::string &name){
     if(m_oDev.isNull()) return "";
     if(m_oDev.needsBayerDecoding() && name == "bayer-quality"){
@@ -158,6 +170,8 @@ namespace icl{
       return "{\"on\",\"off\"}";
     }else if(name == "size"){
       return "{\"adjusted by format\"}";
+    }else if(m_oDev.isFeatureAvailable(name)){
+      return m_oDev.getFeatureInfo(name);
     }
     return "";
   }
@@ -176,6 +190,8 @@ namespace icl{
       }
     }else if(name == "size"){
       return "adjusted by format";
+    }else if(m_oDev.isFeatureAvailable(name)){
+      return m_oDev.getFeatureValue(name);
     }
     return "";
   }

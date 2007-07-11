@@ -28,6 +28,9 @@ namespace icl{
     
     /// translate a dc1394bayer_method_t into a string representation
     std::string to_string(dc1394bayer_method_t bm);
+    
+    /// translate a dc1394feature_t into a string representation
+    std::string to_string(dc1394feature_t f);
 
     /// translate a dc1394video_mode_t from a string representation
     dc1394video_mode_t videomode_from_string(const std::string &s);
@@ -38,9 +41,12 @@ namespace icl{
     /// translate a dc1394bayer_method_t from a string representation
     dc1394bayer_method_t bayermethod_from_string(const std::string &s);
 
-    /// translate a dc1394color_filter_t into a string representation
-    std::string to_string(dc1394color_filter_t f);
-
+    /// translate a dc1394feature_t from a string representation
+    dc1394feature_t feature_from_string(const std::string &s);
+    
+    /// returns a list of all currently implemented dc1394 features
+    const std::vector<std::string> &getListOfAllFeatures();
+    
     /// checks if a camera has the firefly mv color model id
     /** @param c camera to check 
         @return string(c->model) == "Firefly MV FFMV-03MTC"

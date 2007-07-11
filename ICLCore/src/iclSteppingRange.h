@@ -33,6 +33,7 @@ namespace icl{
     
     /// tests whether a given value is inside of this range
     virtual bool in(Type value) const { 
+      if(stepping == 0) return Range<Type>(Range<Type>::minVal,Range<Type>::maxVal).in(value);
       Type offs = value - Range<Type>::minVal;
       int n = (int)(offs/stepping);
       double n2 = (double)offs/stepping;
@@ -47,6 +48,7 @@ namespace icl{
     Type nearest(Type value){
       if(value < Range<Type>::minVal) return Range<Type>::minVal;
       if(value > Range<Type>::maxVal) return Range<Type>::maxVal;
+      if(stepping == 0) return value;
       Type offs = value - Range<Type>::minVal;
       int n = (int)(offs/stepping);
       Type k = n*stepping;

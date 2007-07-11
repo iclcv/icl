@@ -102,6 +102,24 @@ namespace icl{
     /// returns the bayer-filter layout (for the current set format)
     dc1394color_filter_t getBayerFilterLayout() const;
     
+    /// returns wheter a given feature is available on this camera
+    bool isFeatureAvailable(const std::string &feature) const;
+
+    /// returns a list of all supported features
+    std::vector<std::string> getFeatures() const;
+    
+    /// returns the type of the given feature ("" for unsupported features)
+    std::string getFeatureType(const std::string &feature) const;
+    
+    /// returns the feature information depending on the feature type
+    std::string getFeatureInfo(const std::string &feature) const;
+
+    /// returns the current value of the given feature
+    std::string getFeatureValue(const std::string &feature) const;
+    
+    /// sets the current value of the given feature
+    void setFeatureValue(const std::string &feature, const std::string &value);
+    
     private:    
     /// Creates a new device (pivate; called by DCGrabber::getDeviceList())
     DCDevice(dc1394camera_t *cam):m_poCam(cam){}

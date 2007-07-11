@@ -435,7 +435,9 @@ namespace icl{
         DoubleSlider *ds = new DoubleSlider(PARENT,prop.c_str());
         ds->setMinDouble(sr.minVal);
         ds->setMaxDouble(sr.maxVal);
-        ds->setDoubleStepping(sr.stepping);
+        if(sr.stepping != 0){
+          ds->setDoubleStepping(sr.stepping);
+        }
 
         ds->setDoubleValue(atof(grabber->getValue(prop).c_str()));
         
