@@ -60,6 +60,9 @@ namespace icl{
       return Point((int)(xfac*x),(int)(yfac*y));
     }
     
+    /// returns the euclidian distance to another point
+    float distanceTo(const Point &p) const;
+    
   };
   
 } // namespace icl

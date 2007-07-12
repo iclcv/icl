@@ -129,7 +129,12 @@ namespace icl{
         @param x x-Position
         @param y y-Position
         @return reference to the Pixel at (x,y) */
-    inline T &operator()(int x, int y){  return m_ptData[x+m_iWidth*y]; }
+    inline T &operator()(int x, int y){ 
+#ifdef CHECK_INDICES
+      ICLASSERT(x>=0 && y>=0 && x<m_iWidth && y<m_iHeight);
+#endif
+      return m_ptData[x+m_iWidth*y]; 
+    }
     
     /// main working function: returns const a reference to the pixel at position (x,y)
     /** The data address is calculated by x+ImageWidth*y. <b>Note:</b> no checks
@@ -137,7 +142,34 @@ namespace icl{
         @param x x-Position
         @param y y-Position
         @return reference to the Pixel at (x,y) */
-    inline const T &operator()(int x, int y) const{  return m_ptData[x+m_iWidth*y]; }
+    inline const T &operator()(int x, int y) const{  
+#ifdef CHECK_INDICES
+      ICLASSERT(x>=0 && y>=0 && x<m_iWidth && y<m_iHeight);
+#endif
+      return m_ptData[x+m_iWidth*y]; 
+    }
+    
+    /// working function for linear pixel array access ( not const version)
+    /** @param idx pixel array index 
+        @return reference to the pixel at linear pixel offfset idx 
+    **/
+    inline T &operator[](int idx) { 
+#ifdef CHECK_INDICES
+      ICLASSERT(idx>=0 && idx < m_iDim);
+#endif
+      return m_ptData[idx]; 
+    }
+    
+    /// working function for linear pixel array access (const version)
+    /** @param idx pixel array index 
+        @return reference to the pixel at linear pixel offfset idx 
+    **/
+    inline const T &operator[](int idx) const { 
+#ifdef CHECK_INDICES
+      ICLASSERT(idx>=0 && idx < m_iDim);
+#endif
+      return m_ptData[idx]; 
+    }
     
     /// returns the corresponding data pointer 
     /** @return current wrapped data pointer */
@@ -155,7 +187,9 @@ namespace icl{
     /** @return wrapped images height */
     inline int getHeight() const { return m_iHeight; }
     
-    
+    /// returns the wrapped images dim = width*height
+    /** @return wrapped images pixel count */
+    inline int getDim() const { return m_iDim; }
     private:    
     /// private constructor (called by the friend functions pickChannel)
     /** @see the pickChannel function available in the icl namespace
@@ -166,11 +200,13 @@ namespace icl{
       m_ptData = const_cast<T*>(image->getData(channelIndex));
       m_iWidth = image->getWidth();
       m_iHeight = image->getHeight();
+      m_iDim = m_iWidth * m_iHeight;
     }
     
     T *m_ptData;   /**< wrapped image data pointer */
     int m_iWidth;  /**< wrapped images width */
     int m_iHeight; /**< wrapped images height */
+    int m_iDim;   /**< wrapped images width*height */
   };
   
   /// @{ @name ImgChannel<T> creator functions

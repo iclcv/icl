@@ -84,7 +84,8 @@ SKIP_DIRECTORIES:=
 
 ifeq "$(HAVE_LIBDC)" ""
 SKIP_OBJECTS += iclDCGrabber.cpp iclDCGrabberThread.cpp
-SKIP_OBJECTS += iclDCFrameQueue.cpp iclDC.cpp dctest.cpp
+SKIP_OBJECTS += iclDC.cpp iclDCDevice.cpp dcclearisochannels.cpp
+SKIP_OBJECTS += iclDCFrameQueue.cpp iclDC.cpp dctest.cpp dcdeviceinfo.cpp
 endif
 
 ifeq "$(HAVE_UNICAP)" ""

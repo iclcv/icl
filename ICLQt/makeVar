@@ -77,5 +77,10 @@ LDFLAGS:= ${LDFLAGS}
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
 ifeq "$(HAVE_UNICAP)" ""
+ifneq "$(HAVE_LIBDC)" ""
+SKIP_OBJECTS += iclCamCfgWidget.cpp moc_iclCamDfgWidget.cpp camcfg.cpp
+endif
+endif
+ifeq "$(HAVE_LIBDC)" ""
 SKIP_OBJECTS += iclCamCfgWidget.cpp moc_iclCamDfgWidget.cpp camcfg.cpp
 endif
