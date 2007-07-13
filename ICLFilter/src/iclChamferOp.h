@@ -1,13 +1,13 @@
-#ifndef ICL_CHAMPFER_OP
-#define ICL_CHAMPFER_OP
+#ifndef ICL_CHAMFER_OP
+#define ICL_CHAMFER_OP
 
 #include "iclUnaryOp.h"
 
 namespace icl{
-  /// Champfering Unit
+  /// Chamfering Unit
   /** TODO comment here 
       \section BENCH Benchmarks
-      The champfering operation komplexity is linear to pixel count of an
+      The chamfering operation komplexity is linear to pixel count of an
       image, so a single benchmark for differnt depths are sufficient:
       
       Image-size 320x240 single channel (Pentium M 1.6GHz)
@@ -21,7 +21,7 @@ namespace icl{
       "image-size"*"white-pixel-count" 
       - e.g. icl8u: approx. 6.6<b>sec</b> (using an image with 2193 white pixels)
   */
-  class ChampferOp : public UnaryOp{
+  class ChamferOp : public UnaryOp{
     public:
     /// Metric to use for horizontal/vertical and diagonal pixels
     enum metric{
@@ -32,9 +32,9 @@ namespace icl{
       metric_real_euclidian  /**< use the <b>real</b> euclidian distance instead of the high performance matching (not realtime capable)*/
     };
 
-    ChampferOp( metric m = metric_7071_10000 ): m_eMetric(m){}
+    ChamferOp( metric m = metric_7071_10000 ): m_eMetric(m){}
 
-    virtual ~ChampferOp(){}
+    virtual ~ChamferOp(){}
     
     virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
     

@@ -1,5 +1,5 @@
 #include <iclQuick.h>
-#include <iclChampferOp.h>
+#include <iclChamferOp.h>
 
 
 int main(int n, char **ppc){
@@ -15,7 +15,7 @@ int main(int n, char **ppc){
   ImgBase *res=0;
   Img8u im = cvt8u(image);
   for(int i=0;i<10;i++){
-    ChampferOp(ChampferOp::metric_real_euclidian).apply(&im,&res);
+    ChamferOp(ChamferOp::metric_real_euclidian).apply(&im,&res);
   }
   
   ImgQ result;

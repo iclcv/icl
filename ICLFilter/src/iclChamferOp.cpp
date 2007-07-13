@@ -1,4 +1,4 @@
-#include "iclChampferOp.h"
+#include "iclChamferOp.h"
 #include <iclImg.h>
 #include <iclPoint.h>
 
@@ -34,7 +34,7 @@ namespace icl{
 
     // }}}
     template<class T>
-    void prepare_champfer_image(const Img<T> *poSrc, Img32s *poDst, int channel, int maxVal){
+    void prepare_chamfer_image(const Img<T> *poSrc, Img32s *poDst, int channel, int maxVal){
       // {{{ open
 
       if(poSrc->hasFullROI() && poDst->hasFullROI()){
@@ -58,7 +58,7 @@ namespace icl{
     }
 
     // }}}
-    void apply_champfer_op_generic(Img32s *poDst, int channel, int  d1, int d2){
+    void apply_chamfer_op_generic(Img32s *poDst, int channel, int  d1, int d2){
       // {{{ open
 
       if(poDst->hasFullROI()){
@@ -93,7 +93,7 @@ namespace icl{
           dst(x,h1) = dst(x,h2) ;
         }
       }else{
-        ERROR_LOG("Champfering is not yet implemnted with ROI support!");
+        ERROR_LOG("Chamfering is not yet implemnted with ROI support!");
       }
     }    
   // }}}
@@ -139,7 +139,7 @@ namespace icl{
 
   // }}}
   
-  void ChampferOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
+  void ChamferOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
     // {{{ open
     BENCHMARK_THIS_FUNCTION;
     
@@ -167,13 +167,13 @@ namespace icl{
       }
       
       switch(poSrc->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: for(int c=0;c<C;++c){ prepare_champfer_image(poSrc->asImg<icl##D>(),dst,c,d2*WH); } break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: for(int c=0;c<C;++c){ prepare_chamfer_image(poSrc->asImg<icl##D>(),dst,c,d2*WH); } break;
         ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
         default: ICL_INVALID_DEPTH;
       }
       for(int c=0;c<C;++c){
-        apply_champfer_op_generic(dst,c,d1,d2);
+        apply_chamfer_op_generic(dst,c,d1,d2);
       }
       
     }else{
