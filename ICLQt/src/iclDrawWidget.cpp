@@ -411,6 +411,7 @@ namespace icl{
     
     memset(m_poState->bg,0,4*sizeof(unsigned char));
 
+    setShowNoImageWarning(false);
   }
 
     // }}}
@@ -469,7 +470,7 @@ namespace icl{
     m_vecCommands.push_back(new NoFillCommand());
   }
   void ICLDrawWidget::setPseudoImage(Size s){
-     m_vecCommands.push_back(new SetImageSizeCommand(s));
+    m_vecCommands.push_back(new SetImageSizeCommand(s));
   }
   void ICLDrawWidget::clear(int r, int g, int b, int alpha){
     m_vecCommands.push_back(new ClearCommand(r,g,b,alpha));
@@ -498,7 +499,7 @@ namespace icl{
   void ICLDrawWidget::customPaintEvent(PaintEngine *e){
     // {{{ open
     m_oCommandMutex.lock();
-    Rect r = getImageRect();
+    //Rect r = getImageRect();
     m_poState->aa = false;
     m_poState->rel = false;
     m_poState->rect = getImageRect();

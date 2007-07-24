@@ -186,6 +186,8 @@ int main(int nArgs, char **ppcArg){
     /// returns a list of image specification string (used by the OSD)
     std::vector<std::string> getImageInfo();
     
+    /// returns whether a "NULL-Image" is warned in the image (...)
+    void setShowNoImageWarning(bool enabled=true){ m_bShowNoImageWarning=enabled; }
     
     public slots:
     /// sets up the current image
@@ -263,6 +265,9 @@ int main(int nArgs, char **ppcArg){
     
     /// mouse interaction info storage
     MouseInteractionInfo m_oMouseInfo;
+
+    /// by default: enabled if set to false, it is possible to show no image
+    bool m_bShowNoImageWarning;
   };
   
 }

@@ -63,7 +63,7 @@ namespace icl{
 #endif
     m_poQImage(0),
     m_poOSD(0),m_poCurrOSD(0),m_poShowOSD(0),m_iMouseX(-1), m_iMouseY(-1),
-    m_iCurrSelectedChannel(-1){
+    m_iCurrSelectedChannel(-1),m_bShowNoImageWarning(true){
     // {{{ open
 
 #ifndef DO_NOT_USE_GL_VISUALIZATION
@@ -108,13 +108,15 @@ namespace icl{
     if(m_poQImage){
       Rect r = computeRect(Size(m_poQImage->width(),m_poQImage->height()),getSize(),m_eFitMode);
       pe.image(r,*m_poQImage);
-    }else{
+    }else{    
       pe.fill(0,0,0,255);
       Rect fullRect(0,0,width(),height());
       pe.rect(fullRect);
       pe.color(255,255,255,255);
       pe.fill(255,255,255,255);
-      pe.text(fullRect,"no image");
+      if(m_bShowNoImageWarning){
+        pe.text(fullRect,"no image");
+      }
     }
 
     m_oMutex.unlock();
@@ -189,19 +191,21 @@ namespace icl{
       Rect r = computeRect(m_poImage->getSize(),getSize(),m_eFitMode);
       m_poImage->drawTo(r,getSize());
     }else{
-      GLPaintEngine pe(this);
-      pe.fill(0,0,0,255);
-      Rect fullRect(0,0,width(),height());
-      pe.rect(fullRect);
-      pe.color(255,255,255,255);
-      pe.fill(255,255,255,255);
-      pe.text(fullRect,"no image");
+        GLPaintEngine pe(this);
+        pe.fill(0,0,0,255);
+        Rect fullRect(0,0,width(),height());
+        pe.rect(fullRect);
+        pe.color(255,255,255,255);
+        pe.fill(255,255,255,255);
+        
+        if(m_bShowNoImageWarning){
+          pe.text(fullRect,"no image");
+        }
     }
 
     m_oMutex.unlock();
 
     GLPaintEngine pe(this);
-
 
     m_oOSDMutex.lock();
     if(m_poCurrOSD){

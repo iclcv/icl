@@ -1,0 +1,272 @@
+../obj/iclBorderedObject.o: iclBorderedObject.cpp \
+  ../src/iclBorderedObject.h ../src/iclObject.h \
+  ../..//ICLCore/src/iclImg.h ../..//ICLCore/src/iclImgBase.h \
+  ../..//ICLCore/src/iclCore.h ../..//ICLUtils/src/iclMacros.h \
+  ../..//ICLUtils/src/iclCompatMacros.h ../..//ICLCore/src/iclTypes.h \
+  /vol/vision/IPP/5.1/include/ipp.h /vol/vision/IPP/5.1/include/ippdefs.h \
+  /vol/vision/IPP/5.1/include/ippalign.h \
+  /vol/vision/IPP/5.1/include/ippvc.h \
+  /vol/vision/IPP/5.1/include/ippcore.h \
+  /vol/vision/IPP/5.1/include/ippac.h /vol/vision/IPP/5.1/include/ippcc.h \
+  /vol/vision/IPP/5.1/include/ippdc.h /vol/vision/IPP/5.1/include/ippch.h \
+  /vol/vision/IPP/5.1/include/ippcv.h /vol/vision/IPP/5.1/include/ippi.h \
+  /vol/vision/IPP/5.1/include/ippj.h /vol/vision/IPP/5.1/include/ippm.h \
+  /vol/vision/IPP/5.1/include/ipps.h /vol/vision/IPP/5.1/include/ippsc.h \
+  /vol/vision/IPP/5.1/include/ippsr.h /vol/vision/IPP/5.1/include/ippvm.h \
+  ../..//ICLCore/src/iclImgParams.h ../..//ICLCore/src/iclPoint.h \
+  ../..//ICLCore/src/iclSize.h ../..//ICLCore/src/iclRect.h \
+  ../..//ICLUtils/src/iclException.h ../..//ICLUtils/src/iclTime.h \
+  ../..//ICLCore/src/iclRange.h ../..//ICLCore/src/iclCore.h \
+  ../..//ICLCore/src/iclImgIterator.h ../..//ICLUtils/src/iclSmartPtr.h \
+  ../src/iclGeom.h ../src/iclVec4D.h ../src/iclMat4D.h ../src/iclVec4D.h \
+  ../..//ICLCore/src/iclImgChannel.h ../..//ICLCore/src/iclImg.h \
+  ../..//ICLQt/src/iclDrawWidget.h ../..//ICLQt/src/iclWidget.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtOpenGL/QGLWidget \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtOpenGL/qgl.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qwidget.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qwindowdefs.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qobjectdefs.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qnamespace.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qglobal.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qconfig.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qfeatures.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qobject.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qstring.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qchar.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qbytearray.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qatomic.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qatomic_arch.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qatomic_i386.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qlist.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qiterator.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qalgorithms.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qpaintdevice.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qrect.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qsize.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qpoint.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qpalette.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qcolor.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qrgb.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qstringlist.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qdatastream.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qiodevice.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qregexp.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qstringmatcher.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qbrush.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qpair.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qvector.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qmatrix.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qpolygon.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qregion.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qline.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qimage.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qpixmap.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qfont.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qfontmetrics.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qfontinfo.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qsizepolicy.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qcursor.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qkeysequence.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtOpenGL/qglcolormap.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qmap.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/QMutex \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qmutex.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/QMouseEvent \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qevent.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qcoreevent.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qmime.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qmimedata.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qvariant.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qmetatype.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qdrag.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/QPaintEvent \
+  ../..//ICLCC/src/iclConverter.h ../..//ICLQt/src/iclPaintEngine.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/QImage \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qimage.h \
+  ../..//ICLQt/src/iclMouseInteractionInfo.h \
+  ../..//ICLQt/src/iclMouseInteractionReceiver.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/QObject \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qobject.h
+../obj/iclCamera.o: iclCamera.cpp iclCamera.h ../src/iclObject.h \
+  ../..//ICLCore/src/iclImg.h ../..//ICLCore/src/iclImgBase.h \
+  ../..//ICLCore/src/iclCore.h ../..//ICLUtils/src/iclMacros.h \
+  ../..//ICLUtils/src/iclCompatMacros.h ../..//ICLCore/src/iclTypes.h \
+  /vol/vision/IPP/5.1/include/ipp.h /vol/vision/IPP/5.1/include/ippdefs.h \
+  /vol/vision/IPP/5.1/include/ippalign.h \
+  /vol/vision/IPP/5.1/include/ippvc.h \
+  /vol/vision/IPP/5.1/include/ippcore.h \
+  /vol/vision/IPP/5.1/include/ippac.h /vol/vision/IPP/5.1/include/ippcc.h \
+  /vol/vision/IPP/5.1/include/ippdc.h /vol/vision/IPP/5.1/include/ippch.h \
+  /vol/vision/IPP/5.1/include/ippcv.h /vol/vision/IPP/5.1/include/ippi.h \
+  /vol/vision/IPP/5.1/include/ippj.h /vol/vision/IPP/5.1/include/ippm.h \
+  /vol/vision/IPP/5.1/include/ipps.h /vol/vision/IPP/5.1/include/ippsc.h \
+  /vol/vision/IPP/5.1/include/ippsr.h /vol/vision/IPP/5.1/include/ippvm.h \
+  ../..//ICLCore/src/iclImgParams.h ../..//ICLCore/src/iclPoint.h \
+  ../..//ICLCore/src/iclSize.h ../..//ICLCore/src/iclRect.h \
+  ../..//ICLUtils/src/iclException.h ../..//ICLUtils/src/iclTime.h \
+  ../..//ICLCore/src/iclRange.h ../..//ICLCore/src/iclCore.h \
+  ../..//ICLCore/src/iclImgIterator.h ../..//ICLUtils/src/iclSmartPtr.h \
+  ../src/iclGeom.h ../src/iclVec4D.h ../src/iclMat4D.h ../src/iclVec4D.h
+../obj/iclCubeObject.o: iclCubeObject.cpp ../src/iclCubeObject.h \
+  ../src/iclObject.h ../..//ICLCore/src/iclImg.h \
+  ../..//ICLCore/src/iclImgBase.h ../..//ICLCore/src/iclCore.h \
+  ../..//ICLUtils/src/iclMacros.h ../..//ICLUtils/src/iclCompatMacros.h \
+  ../..//ICLCore/src/iclTypes.h /vol/vision/IPP/5.1/include/ipp.h \
+  /vol/vision/IPP/5.1/include/ippdefs.h \
+  /vol/vision/IPP/5.1/include/ippalign.h \
+  /vol/vision/IPP/5.1/include/ippvc.h \
+  /vol/vision/IPP/5.1/include/ippcore.h \
+  /vol/vision/IPP/5.1/include/ippac.h /vol/vision/IPP/5.1/include/ippcc.h \
+  /vol/vision/IPP/5.1/include/ippdc.h /vol/vision/IPP/5.1/include/ippch.h \
+  /vol/vision/IPP/5.1/include/ippcv.h /vol/vision/IPP/5.1/include/ippi.h \
+  /vol/vision/IPP/5.1/include/ippj.h /vol/vision/IPP/5.1/include/ippm.h \
+  /vol/vision/IPP/5.1/include/ipps.h /vol/vision/IPP/5.1/include/ippsc.h \
+  /vol/vision/IPP/5.1/include/ippsr.h /vol/vision/IPP/5.1/include/ippvm.h \
+  ../..//ICLCore/src/iclImgParams.h ../..//ICLCore/src/iclPoint.h \
+  ../..//ICLCore/src/iclSize.h ../..//ICLCore/src/iclRect.h \
+  ../..//ICLUtils/src/iclException.h ../..//ICLUtils/src/iclTime.h \
+  ../..//ICLCore/src/iclRange.h ../..//ICLCore/src/iclCore.h \
+  ../..//ICLCore/src/iclImgIterator.h ../..//ICLUtils/src/iclSmartPtr.h \
+  ../src/iclGeom.h ../src/iclVec4D.h ../src/iclMat4D.h ../src/iclVec4D.h
+../obj/iclMat4D.o: iclMat4D.cpp iclMat4D.h iclVec4D.h \
+  ../..//ICLCore/src/iclTypes.h /vol/vision/IPP/5.1/include/ipp.h \
+  /vol/vision/IPP/5.1/include/ippdefs.h \
+  /vol/vision/IPP/5.1/include/ippalign.h \
+  /vol/vision/IPP/5.1/include/ippvc.h \
+  /vol/vision/IPP/5.1/include/ippcore.h \
+  /vol/vision/IPP/5.1/include/ippac.h /vol/vision/IPP/5.1/include/ippcc.h \
+  /vol/vision/IPP/5.1/include/ippdc.h /vol/vision/IPP/5.1/include/ippch.h \
+  /vol/vision/IPP/5.1/include/ippcv.h /vol/vision/IPP/5.1/include/ippi.h \
+  /vol/vision/IPP/5.1/include/ippj.h /vol/vision/IPP/5.1/include/ippm.h \
+  /vol/vision/IPP/5.1/include/ipps.h /vol/vision/IPP/5.1/include/ippsc.h \
+  /vol/vision/IPP/5.1/include/ippsr.h /vol/vision/IPP/5.1/include/ippvm.h \
+  ../..//ICLCore/src/iclCore.h ../..//ICLUtils/src/iclMacros.h \
+  ../..//ICLUtils/src/iclCompatMacros.h ../..//ICLCore/src/iclImgParams.h \
+  ../..//ICLCore/src/iclPoint.h ../..//ICLCore/src/iclSize.h \
+  ../..//ICLCore/src/iclRect.h ../..//ICLUtils/src/iclException.h
+../obj/iclObject.o: iclObject.cpp ../src/iclObject.h \
+  ../..//ICLCore/src/iclImg.h ../..//ICLCore/src/iclImgBase.h \
+  ../..//ICLCore/src/iclCore.h ../..//ICLUtils/src/iclMacros.h \
+  ../..//ICLUtils/src/iclCompatMacros.h ../..//ICLCore/src/iclTypes.h \
+  /vol/vision/IPP/5.1/include/ipp.h /vol/vision/IPP/5.1/include/ippdefs.h \
+  /vol/vision/IPP/5.1/include/ippalign.h \
+  /vol/vision/IPP/5.1/include/ippvc.h \
+  /vol/vision/IPP/5.1/include/ippcore.h \
+  /vol/vision/IPP/5.1/include/ippac.h /vol/vision/IPP/5.1/include/ippcc.h \
+  /vol/vision/IPP/5.1/include/ippdc.h /vol/vision/IPP/5.1/include/ippch.h \
+  /vol/vision/IPP/5.1/include/ippcv.h /vol/vision/IPP/5.1/include/ippi.h \
+  /vol/vision/IPP/5.1/include/ippj.h /vol/vision/IPP/5.1/include/ippm.h \
+  /vol/vision/IPP/5.1/include/ipps.h /vol/vision/IPP/5.1/include/ippsc.h \
+  /vol/vision/IPP/5.1/include/ippsr.h /vol/vision/IPP/5.1/include/ippvm.h \
+  ../..//ICLCore/src/iclImgParams.h ../..//ICLCore/src/iclPoint.h \
+  ../..//ICLCore/src/iclSize.h ../..//ICLCore/src/iclRect.h \
+  ../..//ICLUtils/src/iclException.h ../..//ICLUtils/src/iclTime.h \
+  ../..//ICLCore/src/iclRange.h ../..//ICLCore/src/iclCore.h \
+  ../..//ICLCore/src/iclImgIterator.h ../..//ICLUtils/src/iclSmartPtr.h \
+  ../src/iclGeom.h ../src/iclVec4D.h ../src/iclMat4D.h ../src/iclVec4D.h \
+  ../..//ICLQt/src/iclDrawWidget.h ../..//ICLQt/src/iclWidget.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtOpenGL/QGLWidget \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtOpenGL/qgl.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qwidget.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qwindowdefs.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qobjectdefs.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qnamespace.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qglobal.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qconfig.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qfeatures.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qobject.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qstring.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qchar.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qbytearray.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qatomic.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qatomic_arch.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qatomic_i386.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qlist.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qiterator.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qalgorithms.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qpaintdevice.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qrect.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qsize.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qpoint.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qpalette.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qcolor.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qrgb.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qstringlist.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qdatastream.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qiodevice.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qregexp.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qstringmatcher.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qbrush.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qpair.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qvector.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qmatrix.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qpolygon.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qregion.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qline.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qimage.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qpixmap.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qfont.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qfontmetrics.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qfontinfo.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qsizepolicy.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qcursor.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qkeysequence.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtOpenGL/qglcolormap.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qmap.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/QMutex \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qmutex.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/QMouseEvent \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qevent.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qcoreevent.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qmime.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qmimedata.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qvariant.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qmetatype.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qdrag.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/QPaintEvent \
+  ../..//ICLCC/src/iclConverter.h ../..//ICLQt/src/iclPaintEngine.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/QImage \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtGui/qimage.h \
+  ../..//ICLQt/src/iclMouseInteractionInfo.h \
+  ../..//ICLQt/src/iclMouseInteractionReceiver.h \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/QObject \
+  /usr/local/Trolltech/Qt-4.2.3//include/QtCore/qobject.h \
+  ../..//ICLQuick/src/iclQuick.h ../..//ICLCore/src/iclImgChannel.h \
+  ../..//ICLCore/src/iclImg.h
+../obj/iclSzene.o: iclSzene.cpp ../src/iclSzene.h ../src/iclObject.h \
+  ../..//ICLCore/src/iclImg.h ../..//ICLCore/src/iclImgBase.h \
+  ../..//ICLCore/src/iclCore.h ../..//ICLUtils/src/iclMacros.h \
+  ../..//ICLUtils/src/iclCompatMacros.h ../..//ICLCore/src/iclTypes.h \
+  /vol/vision/IPP/5.1/include/ipp.h /vol/vision/IPP/5.1/include/ippdefs.h \
+  /vol/vision/IPP/5.1/include/ippalign.h \
+  /vol/vision/IPP/5.1/include/ippvc.h \
+  /vol/vision/IPP/5.1/include/ippcore.h \
+  /vol/vision/IPP/5.1/include/ippac.h /vol/vision/IPP/5.1/include/ippcc.h \
+  /vol/vision/IPP/5.1/include/ippdc.h /vol/vision/IPP/5.1/include/ippch.h \
+  /vol/vision/IPP/5.1/include/ippcv.h /vol/vision/IPP/5.1/include/ippi.h \
+  /vol/vision/IPP/5.1/include/ippj.h /vol/vision/IPP/5.1/include/ippm.h \
+  /vol/vision/IPP/5.1/include/ipps.h /vol/vision/IPP/5.1/include/ippsc.h \
+  /vol/vision/IPP/5.1/include/ippsr.h /vol/vision/IPP/5.1/include/ippvm.h \
+  ../..//ICLCore/src/iclImgParams.h ../..//ICLCore/src/iclPoint.h \
+  ../..//ICLCore/src/iclSize.h ../..//ICLCore/src/iclRect.h \
+  ../..//ICLUtils/src/iclException.h ../..//ICLUtils/src/iclTime.h \
+  ../..//ICLCore/src/iclRange.h ../..//ICLCore/src/iclCore.h \
+  ../..//ICLCore/src/iclImgIterator.h ../..//ICLUtils/src/iclSmartPtr.h \
+  ../src/iclGeom.h ../src/iclVec4D.h ../src/iclMat4D.h ../src/iclVec4D.h \
+  ../src/iclCamera.h ../src/iclObject.h \
+  ../..//ICLUtils/src/iclStackTimer.h ../..//ICLUtils/src/iclTimer.h
+../obj/iclVec4D.o: iclVec4D.cpp iclVec4D.h ../..//ICLCore/src/iclTypes.h \
+  /vol/vision/IPP/5.1/include/ipp.h /vol/vision/IPP/5.1/include/ippdefs.h \
+  /vol/vision/IPP/5.1/include/ippalign.h \
+  /vol/vision/IPP/5.1/include/ippvc.h \
+  /vol/vision/IPP/5.1/include/ippcore.h \
+  /vol/vision/IPP/5.1/include/ippac.h /vol/vision/IPP/5.1/include/ippcc.h \
+  /vol/vision/IPP/5.1/include/ippdc.h /vol/vision/IPP/5.1/include/ippch.h \
+  /vol/vision/IPP/5.1/include/ippcv.h /vol/vision/IPP/5.1/include/ippi.h \
+  /vol/vision/IPP/5.1/include/ippj.h /vol/vision/IPP/5.1/include/ippm.h \
+  /vol/vision/IPP/5.1/include/ipps.h /vol/vision/IPP/5.1/include/ippsc.h \
+  /vol/vision/IPP/5.1/include/ippsr.h /vol/vision/IPP/5.1/include/ippvm.h \
+  ../..//ICLCore/src/iclCore.h ../..//ICLUtils/src/iclMacros.h \
+  ../..//ICLUtils/src/iclCompatMacros.h ../..//ICLCore/src/iclImgParams.h \
+  ../..//ICLCore/src/iclPoint.h ../..//ICLCore/src/iclSize.h \
+  ../..//ICLCore/src/iclRect.h ../..//ICLUtils/src/iclException.h

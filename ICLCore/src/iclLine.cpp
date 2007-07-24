@@ -6,9 +6,15 @@ using namespace std;
 
 namespace icl{
   namespace{
+    inline void swap_int(int &a, int &b){
+      int tmp = a;
+      a = b;
+      b = tmp;
+    }
 
     void bresenham(int x0, int x1, int y0, int y1, vector<int> &xs, vector<int> &ys,int minX, int maxX, int minY, int maxY){
       // {{{ open
+      
       int steep = std::abs(y1 - y0) > std::abs(x1 - x0);
       if(steep){
         swap(x0, y0);
@@ -73,6 +79,7 @@ namespace icl{
     
     void bresenham(int x0, int x1, int y0, int y1, vector<Point> &xys,int minX, int maxX, int minY, int maxY){
       // {{{ open
+
       int steep = std::abs(y1 - y0) > std::abs(x1 - x0);
       if(steep){
         swap(x0, y0);

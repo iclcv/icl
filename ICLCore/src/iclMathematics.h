@@ -183,7 +183,7 @@ namespace icl {
         fDiff = (*v1Begin-*v2Begin);
         fSum += fDiff*fDiff;
      }
-     return sqrt(fSum);
+     return ::sqrt(fSum);
   }
 
   /*!

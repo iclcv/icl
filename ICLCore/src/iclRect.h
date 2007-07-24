@@ -140,11 +140,23 @@ namespace icl {
        else return null;
     }
     
+    /// inplace intersection of two rects
+    Rect &operator&=(const Rect &r){
+      (*this)=(*this)&r;
+      return *this;
+    }
+    
     /// union of two Rects
     Rect operator|(const Rect &r) const {
        Point ul (std::min (x, r.x), std::min (y, r.y));
        Point lr (std::max (right(), r.right()), std::max (bottom(), r.bottom()));
        return Rect (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
+    }
+
+    /// inplace union of two rects
+    Rect &operator|=(const Rect &r){
+      (*this)=(*this)|r;
+      return *this;
     }
     
     /// rects with negative sizes are normalized to Positive sizes
@@ -156,15 +168,34 @@ namespace icl {
        return r;
     }
     
-    /// returns if a Rect containes another rect (NOT IMPLEMENTED)
+    /// returns if a Rect containes another rect
     bool contains(const Rect &r) const {
        return x<=r.x && y <= r.y && right() >= r.right() && bottom() >= r.bottom();
     }
     
+    /// returns if the Rect contains a given point
     bool contains(int x, int y){
       return this->x<=x && right()>=x && this->y<=y && bottom()>=y;
     }
-
+    
+    /// let the rect grow by k pixles into each direction
+    /** if k<0 the rect becomes smaller
+        E.g. Rect(10,10,90,90).enlarge(10) creates a Rect (0,0,100,100)
+        @param k amount of pixel the rectangle is enlarged by
+        @return *this
+        */
+    Rect &enlarge(int k){
+      x-=k; y-=k; width+=2*k; height+=2*k;
+      return *this;
+    }
+    
+    /// returns an enlarged instance of this rect
+    /** @see enlarge(int)*/
+    Rect enlarged(int k) const{
+      return Rect(*this).enlarge(k);
+    }
+    
+    
     /// returns upper left point of the rect
     Point ul() const {
       return Point(x,y);

@@ -1081,7 +1081,7 @@ namespace icl{
   void line(ImgQ &image, int x1, int y1, int x2, int y2){
     // {{{ open
     std::vector<int> xs,ys;
-    Line l(Point(x1,y2), Point(x2,y2));
+    Line l(Point(x1,y1), Point(x2,y2));
     l.sample(xs,ys,Rect(0,0,image.getWidth(), image.getHeight()));
     float A = COLOR[3]/255.0;
     for(vector<int>::iterator itX=xs.begin(), itY=ys.begin(); itX != xs.end(); ++itX, ++itY){
