@@ -14,7 +14,11 @@ namespace icl {
       ICLASSERT_RETURN_VAL( dst->getDepth() == eDepth , false);
       ICLASSERT_RETURN_VAL( dst->getChannels () == nChannels ,false);
       ICLASSERT_RETURN_VAL( dst->getFormat () == eFormat ,false);
+      if(dst->getROISize() != roi.size()){
+        printf("ERROR_HERE!! dst->getROI() is %s  roi is %s \n",translateRect(dst->getROI()).c_str(),translateRect(roi).c_str());
+      }
       ICLASSERT_RETURN_VAL( dst->getROISize () == roi.size(), false);
+      
       dst->setTime(timestamp);
     } else {
       ensureCompatible (ppoDst, eDepth, imgSize, 

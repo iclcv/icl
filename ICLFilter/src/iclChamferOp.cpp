@@ -135,9 +135,8 @@ namespace icl{
         *it = min_point_distance(pix,Point(it.x(),it.y()));
       }      
     }
+    // }}}
   }
-
-  // }}}
   
   void ChamferOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
     // {{{ open
@@ -200,6 +199,148 @@ namespace icl{
         }
       }
     }
+  }
+
+  // }}}
+  
+  double ChamferOp::computeDirectedHausdorffDistance(const Img32s *chamferImage, const std::vector<Point> &model, ChamferOp::hausdorffMetric m){
+    // {{{ open
+
+    ICLASSERT_RETURN_VAL(chamferImage,-1);
+    ICLASSERT_RETURN_VAL(chamferImage->getChannels() == 1,-1);
+    ICLASSERT_RETURN_VAL(model.size(),-1);
+    
+    Rect roi = chamferImage->getROI();
+    ImgChannel32s chan = pickChannel(chamferImage,0);
+    
+    if(m == hausdorff_mean){
+      int n=0;
+      double val=0;
+      register int x,y;      
+      for(unsigned int i=0;i<model.size();++i){
+        x = model[i].x;
+        y = model[i].y;
+        if(roi.contains(x,y)){
+          val+=chan(x,y);
+          n++;
+        }
+      }
+      return n ? val/n : 0;
+    }else{
+      icl32s maxVal = 0;
+      register int x,y; 
+      for(unsigned int i=0;i<model.size();++i){
+        x = model[i].x;
+        y = model[i].y;
+        if(roi.contains(x,y)){
+          maxVal = std::max(maxVal,chan(x,y));
+        }
+      }
+      return maxVal;      
+    }    
+  }
+
+  // }}}
+  
+  double ChamferOp::computeDirectedHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB, ChamferOp::hausdorffMetric m){
+    // {{{ open
+
+    ICLASSERT_RETURN_VAL(chamferImageA,-1);
+    ICLASSERT_RETURN_VAL(chamferImageB,-1);
+    ICLASSERT_RETURN_VAL(chamferImageA->getChannels() == 1,-1);
+    ICLASSERT_RETURN_VAL(chamferImageB->getChannels() == 1,-1);
+
+    Rect roi = chamferImageA->getROI() & chamferImageB->getROI();
+    ImgChannel32s chanA = pickChannel(chamferImageA,0);
+    ImgChannel32s chanB = pickChannel(chamferImageB,0);
+    
+    int xEnd = roi.right();
+    int yEnd = roi.bottom();
+    
+    if(m == hausdorff_mean){
+      int n=0;
+      double val=0;
+      for(int x=roi.x;x<xEnd;++x){
+        for(int y=roi.y;y<yEnd;++y){
+          if(!chanA(x,y)){
+            val += chanB(x,y);
+            n++;
+          }
+        }
+      }
+      return n ? val/n : 0;
+    }else{
+      icl32s maxVal = 0; 
+      for(int x=roi.x;x<xEnd;++x){
+        for(int y=roi.y;y<yEnd;++y){
+          if(!chanA(x,y)){
+            maxVal = std::max(maxVal,chanB(x,y));
+          }
+        }
+      }
+      return maxVal;
+    }
+  }
+  
+  // }}}
+
+  double ChamferOp::computeSymmetricHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB, ChamferOp::hausdorffMetric m){
+    // {{{ open
+
+    if(m==hausdorff_mean){
+      return (computeDirectedHausdorffDistance(chamferImageA,chamferImageB,m)+
+              computeDirectedHausdorffDistance(chamferImageB,chamferImageA,m))/2;
+    }else{
+      return std::max(computeDirectedHausdorffDistance(chamferImageA,chamferImageB,m),
+                      computeDirectedHausdorffDistance(chamferImageB,chamferImageA,m));
+    }
+  }
+
+  // }}}
+  double ChamferOp::computeSymmetricHausdorffDistance(const std::vector<Point> setA, ImgBase **bufferA, 
+                                                      const std::vector<Point> setB, ImgBase **bufferB,
+                                                      const Size &imageSize,ChamferOp::hausdorffMetric m){
+    // {{{ open
+
+    ICLASSERT_RETURN_VAL(bufferA,-1);
+    ICLASSERT_RETURN_VAL(bufferB,-1);
+    ICLASSERT_RETURN_VAL(setA.size(),-1);
+    ICLASSERT_RETURN_VAL(setB.size(),-1);
+    
+    ensureCompatible(bufferA,depth32s,imageSize,1);
+    ensureCompatible(bufferB,depth32s,imageSize,1);
+    
+    Img32s *a = (*bufferA)->asImg<icl32s>();   
+    Img32s *b = (*bufferA)->asImg<icl32s>();
+    
+    a->clear();
+    b->clear();
+    
+    ImgChannel32s cA = pickChannel(a,0);
+    ImgChannel32s cB = pickChannel(b,0);
+    
+    Rect roiA = a->getROI(); 
+    Rect roiB = b->getROI(); 
+    register int x,y;
+    for(unsigned int i=0;i<setA.size();i++){
+      x = setA[i].x;
+      y = setA[i].y;
+      if(roiA.contains(x,y)){
+        cA(x,y)=255;
+      }
+    }
+    for(unsigned int i=0;i<setB.size();i++){
+      x = setB[i].x;
+      y = setB[i].y;
+      if(roiB.contains(x,y)){
+        cB(x,y)=255;
+      }
+    }
+  
+    ChamferOp().apply(a,bufferA);
+    ChamferOp().apply(b,bufferB);
+    
+    return computeSymmetricHausdorffDistance(a,b,m);
   }
 
   // }}}

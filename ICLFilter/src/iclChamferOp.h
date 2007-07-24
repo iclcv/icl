@@ -2,6 +2,8 @@
 #define ICL_CHAMFER_OP
 
 #include "iclUnaryOp.h"
+#include <vector>
+#include <iclPoint.h>
 
 namespace icl{
   /// Chamfering Unit
@@ -31,6 +33,11 @@ namespace icl{
       metric_7071_10000,     /**< better approximation of the euclidian metic */
       metric_real_euclidian  /**< use the <b>real</b> euclidian distance instead of the high performance matching (not realtime capable)*/
     };
+    
+    enum hausdorffMetric{
+      hausdorff_max,
+      hausdorff_mean
+    };
 
     ChamferOp( metric m = metric_7071_10000 ): m_eMetric(m){}
 
@@ -41,6 +48,15 @@ namespace icl{
     inline void setMetric( metric m){ m_eMetric = m; }
     
     metric getMetric() const{ return m_eMetric; }
+
+    static double computeDirectedHausdorffDistance(const Img32s *chamferImage, const std::vector<Point> &model,hausdorffMetric m=hausdorff_mean);
+    static double computeDirectedHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB, ChamferOp::hausdorffMetric m);
+    static double computeSymmetricHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB,hausdorffMetric m=hausdorff_mean);
+    static double computeSymmetricHausdorffDistance(const std::vector<Point> setA, ImgBase **bufferA, 
+                                                    const std::vector<Point> setB, ImgBase **bufferB,
+                                                    const Size &imageSize,hausdorffMetric m=hausdorff_mean);
+
+    
 
     private:
     metric m_eMetric;
