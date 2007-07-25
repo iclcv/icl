@@ -9,6 +9,8 @@
 using std::vector;
 
 namespace icl{
+  bool BorderedObject::VISUALIZE_BORDERS = true;
+
   BorderedObject::BorderedObject(){
     m_vecBorders.reserve(MAX_BORDERS);
     m_poConvexHullLineStrip = addNewBorder();
