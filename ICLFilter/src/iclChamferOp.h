@@ -51,11 +51,15 @@ namespace icl{
 
     static double computeDirectedHausdorffDistance(const Img32s *chamferImage, const std::vector<Point> &model,hausdorffMetric m=hausdorff_mean);
     static double computeDirectedHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB, ChamferOp::hausdorffMetric m);
+
     static double computeSymmetricHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB,hausdorffMetric m=hausdorff_mean);
     static double computeSymmetricHausdorffDistance(const std::vector<Point> setA, ImgBase **bufferA, 
                                                     const std::vector<Point> setB, ImgBase **bufferB,
                                                     const Size &imageSize,hausdorffMetric m=hausdorff_mean);
-
+    static double computeSymmeticHausdorffDistance(const Img32s *chamferImage, 
+                                                   const std::vector<Point> &model, 
+                                                   ImgBase **bufferImage, 
+                                                   hausdorffMetric m=hausdorff_mean);
     
 
     private:

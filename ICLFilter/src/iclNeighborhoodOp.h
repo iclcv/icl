@@ -31,6 +31,19 @@ namespace icl {
     ///Destructor
     virtual ~NeighborhoodOp(){}
     
+    /// compute neccessary ROI offset and size
+    /** This functions computes the to-be-used ROI for the source image, 
+        such that the filter mask of given size (oMaskSize) fits everywhere
+        into the image if placed arbitrarily within the ROI.
+        The original ROI of the source image is not changed, instead the
+        adapted ROI is returned in parameters oROIsize and oROIoffset.
+        @param poSrc  image whose ROI is adapted
+        @param oROIoffset  new ROI offset
+        @param oROIsize    new ROI size
+        @return whether a valid ROI remains
+        */
+    bool computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize);
+
     protected:
     NeighborhoodOp() : m_oMaskSize(1,1), m_oAnchor (0,0) {}
     NeighborhoodOp(const Size &size) {
@@ -64,27 +77,14 @@ namespace icl {
     /// prepare filter operation: as above, but with depth parameter
     virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc, depth eDepht);
     
-     /// compute neccessary ROI offset and size
-     /** This functions computes the to-be-used ROI for the source image, 
-         such that the filter mask of given size (oMaskSize) fits everywhere
-         into the image if placed arbitrarily within the ROI.
-         The original ROI of the source image is not changed, instead the
-         adapted ROI is returned in parameters oROIsize and oROIoffset.
-         @param poSrc  image whose ROI is adapted
-         @param oROIoffset  new ROI offset
-         @param oROIsize    new ROI size
-         @return whether a valid ROI remains
-     */
-     bool computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize);
-     
-     /// this function can be reimplemented e.g to enshure an odd mask width and height
+    /// this function can be reimplemented e.g to enshure an odd mask width and height
      /** E.g. some implementations of Neighborhood-operation could demand odd or even
          mask size parameters. In this case, this function can be implemented in another
          way. (Example: MedianOp)
          @param size size to ajust
          @return the given size in this base implementation
-     **/
-     virtual Size adaptSize(const Size &size){ return size; }
+         **/
+    virtual Size adaptSize(const Size &size){ return size; }
      
     protected:
      ///TODO: later private with getter and setter functions

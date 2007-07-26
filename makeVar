@@ -113,6 +113,7 @@ CMD_LD=g++
 ifeq "$(HAVE_QT)" ""
 SKIP_DIRECTORIES += ICLQt 
 SKIP_DIRECTORIES += ICLQuick
+SKIP_DIRECTORIES += ICLGeom
 endif
 
 ifeq "$(HAVE_SVS)" ""
@@ -121,8 +122,8 @@ endif
 
 #########################################################################
 # Set the priority level
-DIR_PRIORITY:=ICLUtils ICLCore ICLCC 
-DIR_LOWPRIORITY:=ICLDC examples
+DIR_PRIORITY:=ICLUtils ICLCore ICLCC
+DIR_LOWPRIORITY:=ICLGeom examples
 
 #########################################################################
 # Exclude the folowing folder or files

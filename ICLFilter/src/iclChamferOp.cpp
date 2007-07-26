@@ -6,7 +6,6 @@
 #include <limits>
 #include <math.h>
 #include <vector>
-#include <iclStackTimer.h>
 using std::vector;
 
 namespace icl{
@@ -140,8 +139,6 @@ namespace icl{
   
   void ChamferOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
     // {{{ open
-    BENCHMARK_THIS_FUNCTION;
-    
     ICLASSERT_RETURN(poSrc);
     ICLASSERT_RETURN(ppoDst);
     if(!prepare (ppoDst, m_eMetric == metric_real_euclidian ? depth32f : depth32s, 
@@ -245,6 +242,8 @@ namespace icl{
   double ChamferOp::computeDirectedHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB, ChamferOp::hausdorffMetric m){
     // {{{ open
 
+    //    A:=model
+ 
     ICLASSERT_RETURN_VAL(chamferImageA,-1);
     ICLASSERT_RETURN_VAL(chamferImageB,-1);
     ICLASSERT_RETURN_VAL(chamferImageA->getChannels() == 1,-1);
@@ -344,5 +343,38 @@ namespace icl{
   }
 
   // }}}
+
+  double  ChamferOp::computeSymmeticHausdorffDistance(const Img32s *chamferImage, 
+                                                      const std::vector<Point> &model, 
+                                                      ImgBase **bufferImage, 
+                                                      ChamferOp::hausdorffMetric m){
+    ICLASSERT_RETURN_VAL(chamferImage,-1);
+    ICLASSERT_RETURN_VAL(chamferImage->getChannels() == 1,-1);
+    ICLASSERT_RETURN_VAL(bufferImage,-1);
+    
+    double hd1 = computeDirectedHausdorffDistance(chamferImage, model,m);
+
+    ensureCompatible(bufferImage,depth32s,chamferImage->getSize(),1,formatMatrix);
+    Img32s *bi = (*bufferImage)->asImg<icl32s>();
+    ImgChannel32s biChannel = pickChannel(bi,0);
+    bi->clear();
+    Rect roi = bi->getROI();
+    for(unsigned int i=0;i<model.size();i++){
+      int x = model[i].x;
+      int y = model[i].y;
+      if(roi.contains(x,y)){
+        biChannel(x,y) = 255;
+      }
+    }
+    
+    ChamferOp co;
+    co.apply(bi,bufferImage);
+
+    double hd2 = computeDirectedHausdorffDistance(chamferImage,bi,m);
+    
+    return m == hausdorff_mean ? (hd1+hd2)/2 : std::max(hd1,hd2);
+  }
+
+
 
 }
