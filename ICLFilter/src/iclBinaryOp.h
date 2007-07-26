@@ -50,23 +50,27 @@ namespace icl{
     
     /// check+adapt destination image to properties of given source image
     /// but use explicitly given depth
-    virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc, depth eDepth) {
+    virtual bool prepare (ImgBase **ppoDst, 
+                          const ImgBase *poSrc, 
+                          depth eDepth) {
       return m_oROIHandler.prepare(ppoDst, poSrc, eDepth);
     }
     
-    static inline bool check(const ImgBase *operand1,const ImgBase *operand2 , bool checkDepths = true){
-      if(!checkDepths){
+    static inline bool check(const ImgBase *operand1,
+                             const ImgBase *operand2 , 
+                             bool checkDepths = true) {
+      if(!checkDepths) {
         return operand1->getChannels() == operand2->getChannels() &&
           operand1->getROISize() == operand2->getROISize() ;
-      }else{
+      } else {
         return operand1->getChannels() == operand2->getChannels() &&
           operand1->getROISize() == operand2->getROISize() &&
           operand1->getDepth() == operand2->getDepth() ;
       }            
     }
-    private:
+    
+  private:
     OpROIHandler m_oROIHandler;
-
   };
 }
 

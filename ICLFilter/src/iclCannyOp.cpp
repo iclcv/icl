@@ -63,7 +63,7 @@ namespace icl {
       m_apoDXYOps[i]->apply(poSrc,m_apoDXY+i);
     }
     if (!prepare (ppoDst, m_apoDXY[0], depth8u)) return;
-    
+
     int bufferSizeNeeded;
     ippiCannyGetSize(m_apoDXY[0]->getSize(), &bufferSizeNeeded);
     if(bufferSizeNeeded != m_iBufferSize){

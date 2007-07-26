@@ -191,6 +191,7 @@ namespace icl {
     } 
 
     // }}}
+
     template<UnaryArithmeticalOp::optype OT>
     void apply_unary_arithmetical_op_with_val(const ImgBase *src, ImgBase *dst, icl64f val){
       // {{{ open
