@@ -643,6 +643,15 @@ namespace icl{
   **/
   inline void rect(ImgQ &image, const Rect &r){ rect(image,r.x,r.y,r.width,r.height); }
   
+  /// draws a triangle into an image
+  /** given 3 points (x1,y1),(x2,y2),(x3,y3) */
+  void triangle(ImgQ &image, int x1,int y1, int x2, int y2, int x3, int y3);
+
+  /// draws a triangle into an image
+  inline void triangle(ImgQ &image, const Point &a, const Point &b, const Point &c){
+    triangle(image,a.x,a.y,b.x,b.y,c.x,c.y);
+  }
+  
   /// draws a line into an image
   /** @param image destination image 
       @param x1 fist point x coord 

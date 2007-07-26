@@ -24,6 +24,7 @@
 #include <QFont>
 #include <QApplication>
 #include <iclLine.h>
+#include <iclPoint32f.h>
 
 
 
@@ -1013,6 +1014,57 @@ namespace icl{
     }
 
     // }}}
+
+    inline bool lessPt(const Point &a, const Point &b){
+      // {{{ open
+
+      return a.y<b.y;
+    }
+
+    // }}}
+
+    void hline(ImgQ &image, int x1, int x2, int y, bool useFillColor){
+      // {{{ open
+      if( y < 0 || y >= image.getHeight()) return;
+      if(x1 > x2) std::swap(x1,x2);
+      const float *color = useFillColor ? FILL : COLOR;
+      float A = color[3]/255.0;
+      int cMax = std::max(image.getChannels(),3);
+      int xEnd = std::min(x2,image.getWidth());
+      for(int x=std::max(x1,0);x<=xEnd;++x){
+        for(int c=0;c<cMax; ++c){
+          float &v = image(x,y,c);
+          v=(1.0-A)*v + A*color[c];
+        }
+      }
+    }
+
+    // }}}
+    inline void hlinef(ImgQ &image, float x1, float x2, float y,bool useFillColor){
+      // {{{ open
+
+      hline(image,(int)round(x1), (int)round(x2), (int)round(y), useFillColor);
+    }
+
+    // }}}
+    void vline(ImgQ &image, int x, int y1, int y2,bool useFillColor){
+      // {{{ open
+      if( x < 0 || x >= image.getWidth()) return;
+      if(y1 > y2) std::swap(y1,y2);
+      const float *color = useFillColor ? FILL : COLOR;
+      float A = color[3]/255.0;
+      int cMax = std::max(image.getChannels(),3);
+      int yEnd = std::min(y2,image.getHeight()-1);
+      for(int y=std::max(y1,0);y<=yEnd;++y){
+        for(int c=0;c<cMax; ++c){
+          float &v = image(x,y,c);
+          v=(1.0-A)*v + A*color[c];
+        }
+      }
+    }
+
+    // }}}
+
   }
   
   void circle(ImgQ &image, int xoffs, int yoffs, int radius) {
@@ -1080,6 +1132,8 @@ namespace icl{
 
   void line(ImgQ &image, int x1, int y1, int x2, int y2){
     // {{{ open
+    if(x1 == x2) { vline(image,x1,y1,y2,false); return; }
+    if(y1 == y2) { hline(image,x1,x2,y1,false); return; }
     std::vector<int> xs,ys;
     Line l(Point(x1,y1), Point(x2,y2));
     l.sample(xs,ys,Rect(0,0,image.getWidth(), image.getHeight()));
@@ -1091,6 +1145,78 @@ namespace icl{
         v=(1.0-A)*v + A*COLOR[c];
         //      }
       }
+    }
+  }
+
+  // }}}
+
+  
+  void triangle(ImgQ &image,int x1, int y1, int x2, int y2, int x3, int y3 ){
+    // {{{ open
+
+    // *  the coordinates of vertices are (A.x,A.y), (B.x,B.y), (C.x,C.y); 
+    //we assume that A.y<=B.y<=C.y (you should sort them first)
+    //* dx1,dx2,dx3 are deltas used in interpolation
+    //* horizline draws horizontal segment with coordinates (S.x,Y), (E.x,Y)
+    //* S.x, E.x are left and right x-coordinates of the segment we have to draw
+    //* S=A means that S.x=A.x; S.y=A.y; 
+    if(FILL[3] != 0){
+      if(x1==x2 && y1 == y2){ line(image,x1,y1,x3,y3); return; }
+      if(x1==x3 && y1 == y3){ line(image,x1,y1,x2,y2); return; }
+      if(x2==x3 && y2 == y3){ line(image,x1,y1,x3,y3); return; }
+      
+      vector<Point> v(3);
+      v[0] = Point(x1,y1);
+      v[1] = Point(x2,y2);
+      v[2] = Point(x3,y3);
+      std::sort(v.begin(),v.end(),lessPt);
+      
+      Point A = v[0];
+      Point B = v[1];
+      Point C = v[2];
+      
+      float dx1,dx2,dx3;
+      
+      if (B.y-A.y > 0){
+        dx1=float(B.x-A.x)/(B.y-A.y);
+      }else{
+        dx1=B.x - A.x;
+      }
+      if (C.y-A.y > 0){
+        dx2=float(C.x-A.x)/(C.y-A.y);
+      }else{
+        dx2=0;
+      }
+      if (C.y-B.y > 0){
+        dx3=float(C.x-B.x)/(C.y-B.y);
+      }else{
+        dx3=0;
+      }
+      
+      Point32f S = Point32f(A.x,A.y);
+      Point32f E = Point32f(A.x,A.y);
+      if(dx1 > dx2) {
+        for(;S.y<=B.y;S.y++,E.y++,S.x+=dx2,E.x+=dx1){
+          hlinef(image,S.x,E.x,S.y,true);
+        }
+        E=Point32f(B.x,B.y);
+        for(;S.y<=C.y;S.y++,E.y++,S.x+=dx2,E.x+=dx3){
+          hlinef(image,S.x,E.x,S.y,true);
+        }
+      }else {
+        for(;S.y<=B.y;S.y++,E.y++,S.x+=dx1,E.x+=dx2){
+          hlinef(image,S.x,E.x,S.y,true);
+        }
+        S=Point32f(B.x,B.y);
+        for(;S.y<=C.y;S.y++,E.y++,S.x+=dx3,E.x+=dx2){
+          hlinef(image,S.x,E.x,S.y,true);
+        }
+      }
+    }
+    if(COLOR[3] != 0){
+      line(image,x1,y1,x2,y2);
+      line(image,x1,y1,x3,y3);
+      line(image,x2,y2,x3,y3);
     }
   }
 
