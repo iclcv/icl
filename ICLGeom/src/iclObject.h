@@ -52,6 +52,11 @@ namespace icl{
     public:
     /// typedef for more writing convenience
     typedef std::pair<int,int> Tuple;
+    struct Triple{
+      Triple():a(0),b(0),c(0){}
+      Triple(int a, int b, int c):a(a),b(b),c(c){}
+      int a,b,c;
+    };
     
     /// Constructor
     Object();
