@@ -103,6 +103,14 @@ namespace icl{
     m_oPainter.drawRect(QRect(r.x,r.y,r.width,r.height));
   }
 
+  void QtPaintEngine::triangle(const Point &a, const Point &b, const Point &c){
+    const QPoint pts[3] = { QPoint(a.x,a.y),
+                            QPoint(b.x,b.y),
+                            QPoint(c.x,c.y) };
+    m_oPainter.drawPolygon(pts,3);
+  };
+  
+
   // }}}
   void QtPaintEngine::ellipse(const Rect &r){
     // {{{ open

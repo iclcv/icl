@@ -192,7 +192,22 @@ namespace icl{
     point(Point(r.right(),r.top()));
     
   }
-
+  void GLPaintEngine::triangle(const Point &a, const Point &b, const Point &c){
+    glColor4fv(m_afFillColor);
+    glBegin(GL_TRIANGLES);
+    glVertex2f((GLfloat)a.x,(GLfloat)a.y);
+    glVertex2f((GLfloat)b.x,(GLfloat)b.y);
+    glVertex2f((GLfloat)c.x,(GLfloat)c.y);
+    glEnd();
+    
+    glColor4fv(m_afLineColor);
+    glBegin(GL_LINE_LOOP);
+    glVertex2f((GLfloat)a.x,(GLfloat)a.y);
+    glVertex2f((GLfloat)b.x,(GLfloat)b.y);
+    glVertex2f((GLfloat)c.x,(GLfloat)c.y);
+    glEnd();
+    
+  }
   // }}}
   void GLPaintEngine::ellipse(const Rect &r){
     // {{{ open

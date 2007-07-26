@@ -114,7 +114,19 @@ namespace icl{
   };
 
   // }}}
+ 
+  class DrawCommand6F : public DrawCommand4F{
+    // {{{ open
+    
+  public:
+    DrawCommand6F(float a, float b, float c, float d,float e,float f):
+      DrawCommand4F(a,b,c,d),m_fE(e),m_fF(f){}
+  protected:
+    float m_fE;
+    float m_fF;
+  };
 
+  // }}}
   // }}}
   
   // {{{ geometric commands ( point, line, rect, ellipse )
@@ -157,6 +169,18 @@ namespace icl{
 
   // }}}
 
+  class TriangleCommand : public DrawCommand6F{
+    // {{{ open
+  public:
+    TriangleCommand(float x1, float y1, float x2, float y2,float x3,float y3):
+      DrawCommand6F(x1,y1,x2,y2,x3,y3){}
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      e->triangle(tP(m_fA,m_fB,s),tP(m_fC,m_fD,s),tP(m_fE,m_fF,s));
+    }
+  };
+  
+  // }}}
+  
   class EllipseCommand : public DrawCommand4F{
     // {{{ open
   public:
@@ -453,6 +477,9 @@ namespace icl{
   }
   void ICLDrawWidget::rect(float x, float y, float w, float h){
     m_vecCommands.push_back(new RectCommand(x,y,w,h));
+  }
+  void ICLDrawWidget::triangle(float x1, float y1, float x2, float y2, float x3, float y3){
+    m_vecCommands.push_back(new TriangleCommand(x1,y2,x2,y2,x3,y3));
   }
   void ICLDrawWidget::ellipse(float x, float y, float w, float h){
     m_vecCommands.push_back(new EllipseCommand(x,y,w,h));
