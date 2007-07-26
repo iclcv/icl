@@ -94,6 +94,9 @@ namespace icl{
     /// draws a triangle defined by 3 points
     void triangle(float x1, float y1, float x2, float y2, float x3, float y3); 
     
+    /// draws a quad with given 4 points 
+    void quad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4); 
+
     /// draws an ellipse with given parameters (w==H --> circle)
     void ellipse(float x, float y, float w, float h);
 

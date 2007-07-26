@@ -33,6 +33,7 @@ namespace icl{
     virtual void image(const Rect &r,const QImage &image, AlignMode mode = Justify)=0;
     virtual void rect(const Rect &r)=0;
     virtual void triangle(const Point &a, const Point &b, const Point &c)=0;
+    virtual void quad(const Point &a, const Point &b, const Point &c, const Point &d)=0;
     virtual void ellipse(const Rect &r)=0;
     virtual void text(const Rect &r, const std::string text, AlignMode mode = Centered)=0;
 

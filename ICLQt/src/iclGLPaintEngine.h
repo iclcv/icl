@@ -44,6 +44,7 @@ namespace icl{
     virtual void image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify);
     virtual void rect(const Rect &r);
     virtual void triangle(const Point &a, const Point &b, const Point &c);
+    virtual void quad(const Point &a, const Point &b, const Point &c, const Point &d);
     virtual void ellipse(const Rect &r);
     virtual void text(const Rect &r, const std::string text, PaintEngine::AlignMode mode = PaintEngine::Centered);
 

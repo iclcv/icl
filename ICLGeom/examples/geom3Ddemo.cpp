@@ -28,9 +28,9 @@ public:
     w2->setImage(&image);
 
     szene = new Szene(Size(640,480));
-    for(int i=0;i<10;i++){
-      szene->add(new CubeObject(0,0,0,float(i)/3));
-    }
+    
+    szene->add(new CubeObject(0,0,0,3));
+
   }
   virtual void run(){
     Camera &cam = szene->getCam();

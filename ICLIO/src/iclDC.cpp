@@ -341,7 +341,7 @@ namespace icl{
 
     void set_streaming(dc1394camera_t* c, bool on){
       // {{{ open
-      dc1394switch_t currVal;
+      dc1394switch_t currVal=DC1394_OFF;
       dc1394_video_get_transmission(c,&currVal);
       if( currVal == DC1394_OFF && on == true){
         dc1394_video_set_transmission(c,DC1394_ON);

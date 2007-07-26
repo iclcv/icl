@@ -57,7 +57,11 @@ namespace icl{
       Triple(int a, int b, int c):a(a),b(b),c(c){}
       int a,b,c;
     };
-    
+    struct Quadruple{
+      Quadruple():a(0),b(0),c(0),d(0){}
+      Quadruple(int a, int b, int c,int d):a(a),b(b),c(c),d(d){}
+      int a,b,c,d;
+    };
     /// Constructor
     Object();
     
@@ -129,9 +133,14 @@ namespace icl{
     /// adds a new point to this object
     void add(const Vec &p, const Vec &color=Vec(255,0,0,255));
     
-    // adds a new line to this object
+    /// adds a new line to this object
     void add(const Tuple &t, const Vec &color=Vec(100,100,100,255));
     
+    /// adds a new triangle to this onject
+    void add(const Triple &t, const Vec &color=Vec(0,100,250,255));
+
+    /// adds a new triangle to this onject
+    void add(const Quadruple &q, const Vec &color=Vec(0,100,250,255));
     private:   
 
     /// The current objects transformation matrix
@@ -153,9 +162,22 @@ namespace icl{
     
     /// vector of line colors
     VecArray m_vecLineColors;
+   
+    /// vector of triangle colors
+    VecArray m_vecTriangleColors;
+    
+    /// vector of quad colors
+    VecArray m_vecQuadColors;
     
     /// vector of lines (connections between points)
     std::vector<Tuple> m_vecConnections;
+    
+    /// triangles to draw
+    std::vector<Triple> m_vecTriangles;
+
+    /// quads to draw
+    std::vector<Quadruple> m_vecQuads;
+
   };
 }
 

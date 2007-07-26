@@ -102,16 +102,32 @@ namespace icl{
     // {{{ open
     m_oPainter.drawRect(QRect(r.x,r.y,r.width,r.height));
   }
+  // }}}
 
   void QtPaintEngine::triangle(const Point &a, const Point &b, const Point &c){
+    // {{{ open
+
     const QPoint pts[3] = { QPoint(a.x,a.y),
                             QPoint(b.x,b.y),
                             QPoint(c.x,c.y) };
     m_oPainter.drawPolygon(pts,3);
   };
-  
 
   // }}}
+  
+  void QtPaintEngine::quad(const Point &a, const Point &b, const Point &c,const Point &d){
+    // {{{ open
+
+    const QPoint pts[4] = { QPoint(a.x,a.y),
+                            QPoint(b.x,b.y),
+                            QPoint(c.x,c.y),                      
+                            QPoint(d.x,d.y) };
+    m_oPainter.drawPolygon(pts,4);
+  };
+
+  // }}}
+
+
   void QtPaintEngine::ellipse(const Rect &r){
     // {{{ open
     m_oPainter.drawEllipse(QRect(r.x,r.y,r.width,r.height));

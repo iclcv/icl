@@ -24,6 +24,7 @@ namespace icl{
     for(unsigned int i=0;i<m_vecPtsTrans.size();++i){ 
       m_vecPtsProj[i] = (CAMMATRIX*m_vecPtsTrans[i]);
       m_vecPtsProj[i].homogenize();
+      m_vecPtsProj[i].z() = m_vecPtsTrans[i].z();
     }
   }
 
@@ -57,6 +58,22 @@ namespace icl{
   }
 
   // }}}
+  void Object::add(const Triple &t, const Vec &color){
+    // {{{ open
+    m_vecTriangles.push_back(t);
+    m_vecTriangleColors.push_back(color);
+  }
+  // }}}
+  
+  void Object::add(const Quadruple &q, const Vec &color){
+    // {{{ open
+
+    m_vecQuads.push_back(q);
+    m_vecQuadColors.push_back(color);
+  }
+
+  // }}}
+  
   void Object::tintPoint(int i, const Vec &color){
     // {{{ open
 
@@ -71,10 +88,82 @@ namespace icl{
   }
 
   // }}}
+
+  namespace{
+    struct P3{
+      // {{{ open
+
+      inline P3():a(0),b(0),c(0),color(0),z(0){}
+      inline P3(const Vec *a,const Vec *b,const Vec *c, const Vec *color):a(a),b(b),c(c),color(color){
+        z = (a->z()+b->z()+c->z())/3;
+      }
+      const Vec *a,*b,*c,*color;
+      float z;
+      bool operator<(const P3 &p) const{
+        return z<p.z;
+      }
+    };    
+
+    // }}}
+    struct P4{
+      // {{{ open
+
+      inline P4():a(0),b(0),c(0),d(0),color(0),z(0){}
+      inline P4(const Vec *a,const Vec *b,const Vec *c, const Vec *d, const Vec *color):a(a),b(b),c(c),d(d),color(color){
+        z = (a->z()+b->z()+c->z()+d->z())/4;
+      }
+      const Vec *a,*b,*c,*d,*color;
+      float z;
+      bool operator<(const P4 &p) const{
+        return z<p.z;
+      }
+    };    
+
+    // }}}
+
+  }
   void Object::render(ICLDrawWidget *widget) const{
     // {{{ open
-
-    //    const_cast<Object*>(this)->tintConvexHull();
+    if(m_vecTriangles.size()){
+      vector<P3> v;
+      const VecArray &p = m_vecPtsProj;
+      for(unsigned int i=0;i<m_vecTriangles.size();i++){
+        const Triple &t = m_vecTriangles[i];
+        v.push_back(P3(&p[t.a],&p[t.b],&p[t.c],&m_vecTriangleColors[i]));
+      }
+      std::sort(v.begin(),v.end());
+      widget->color(0,0,0,0);
+      for(int i=0;i<(int)v.size();i++){
+        widget->fill((int)(*(v[i].color))[0],
+                     (int)(*(v[i].color))[1],
+                     (int)(*(v[i].color))[2],
+                     (int)(*(v[i].color))[3]);
+        widget->triangle( (*(v[i].a))[0],(*(v[i].a))[1],
+                          (*(v[i].b))[0],(*(v[i].b))[1],
+                          (*(v[i].c))[0],(*(v[i].c))[1] );
+      }    
+    }
+    
+    if(m_vecQuads.size()){
+      vector<P4> v;
+      const VecArray &p = m_vecPtsProj;
+      for(unsigned int i=0;i<m_vecQuads.size();i++){
+        const Quadruple &t = m_vecQuads[i];
+        v.push_back(P4(&p[t.a],&p[t.b],&p[t.c],&p[t.d],&m_vecQuadColors[i]));
+      }
+      std::sort(v.begin(),v.end());
+      widget->color(0,0,0,0);
+      for(int i=0;i<(int)v.size();i++){
+        widget->fill((int)(*(v[i].color))[0],
+                     (int)(*(v[i].color))[1],
+                     (int)(*(v[i].color))[2],
+                     (int)(*(v[i].color))[3]);
+        widget->quad( (*(v[i].a))[0],(*(v[i].a))[1],
+                      (*(v[i].b))[0],(*(v[i].b))[1],
+                      (*(v[i].c))[0],(*(v[i].c))[1],
+                      (*(v[i].d))[0],(*(v[i].d))[1] );
+      }    
+    }
     
     Size s = widget->getImageSize();
     widget->fill(0,0,0,0);
@@ -92,6 +181,8 @@ namespace icl{
       static const float r = 0.5;
       widget->ellipse(v.x()-r/2,v.y()-r/2,r,r);
     }
+    
+ 
   }
 
   // }}}

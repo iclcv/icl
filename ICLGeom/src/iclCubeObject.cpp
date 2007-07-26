@@ -29,6 +29,13 @@ namespace icl{
     add(Tuple(2,6));
     add(Tuple(3,7));
     
+    add(Quadruple(0,1,2,3),Vec(0,100,120,255));
+    add(Quadruple(4,5,6,7),Vec(0,100,140,255));
+    add(Quadruple(0,3,7,4),Vec(0,100,160,255));
+    add(Quadruple(1,2,6,5),Vec(0,100,180,255));
+    add(Quadruple(0,1,5,4),Vec(0,100,200,255));
+    add(Quadruple(3,2,6,7),Vec(0,100,220,255));
+    
     setT( Mat( d/2, 0, 0, x,
                0, d/2, 0, y,
                0, 0,   1, z, 

@@ -209,6 +209,28 @@ namespace icl{
     
   }
   // }}}
+ 
+  void GLPaintEngine::quad(const Point &a, const Point &b, const Point &c, const Point &d){
+    glColor4fv(m_afFillColor);
+    glBegin(GL_QUADS);
+    glVertex2f((GLfloat)a.x,(GLfloat)a.y);
+    glVertex2f((GLfloat)b.x,(GLfloat)b.y);
+    glVertex2f((GLfloat)c.x,(GLfloat)c.y);
+    glVertex2f((GLfloat)d.x,(GLfloat)d.y);
+    glEnd();
+    
+    glColor4fv(m_afLineColor);
+    glBegin(GL_LINE_LOOP);
+    glVertex2f((GLfloat)a.x,(GLfloat)a.y);
+    glVertex2f((GLfloat)b.x,(GLfloat)b.y);
+    glVertex2f((GLfloat)c.x,(GLfloat)c.y);
+    glVertex2f((GLfloat)d.x,(GLfloat)d.y);
+    glEnd();
+    
+  }
+  // }}}
+  
+
   void GLPaintEngine::ellipse(const Rect &r){
     // {{{ open
     glColor4fv(m_afFillColor);
