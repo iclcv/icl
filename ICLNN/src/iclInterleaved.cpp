@@ -16,6 +16,11 @@ using namespace std;
 namespace icl {
 
   template <class T>
+  Interleaved<T>::Interleaved() {
+    m_poData = 0; 
+  }
+  
+  template <class T>
   Interleaved<T>::Interleaved(const ImgBase *poSrc) :
     m_poData(poSrc) {
     // create Data Vector
@@ -30,15 +35,15 @@ namespace icl {
     // Variable initialisation
     m_poData = poSrc;
     m_vecDataPtr.clear();
-    
+
     // create Data Vector
     for (int i=0;i<m_poData->getChannels();i++) {
-      m_vecDataPtr.push_back((T*) m_poData->asImg<T>()->getDataPtr(i));
+      m_vecDataPtr.push_back(m_poData->asImg<T>()->getData(i));
     }
   }
   
   template <class T>
-  inline const vector<T*>& Interleaved<T>::getDataPtr() { 
+  inline vector<const T*>& Interleaved<T>::getDataPtr() { 
     return m_vecDataPtr;
   }
   

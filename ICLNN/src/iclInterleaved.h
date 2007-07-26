@@ -18,16 +18,16 @@ template <typename T>
 class Interleaved {
  public:
 
+  Interleaved();
   Interleaved(const ImgBase* poSrc);
-  Interleaved() {}
   ~Interleaved() {}
 
   const ImgBase* m_poData;
-  std::vector<T*> m_vecDataPtr;
+  std::vector<const T*> m_vecDataPtr;
 
   void setData(const ImgBase *poSrc);
   
-  const std::vector<T*>& getDataPtr();
+  std::vector<const T*>& getDataPtr();
   unsigned int getDim() {return m_poData->getChannels();}
   const ImgBase* getSrcImg() { return m_poData; }
 

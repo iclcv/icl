@@ -16,10 +16,12 @@
 
 namespace icl {
 
+/**
+   Different initialisation modes for the VQ cluster
+**/
 enum vqinitmode {
-  initRnd = 0,
-  initRndFromData,
-  initSeqFromData
+  initRnd = 0, ///< Initialise the Cluster with random values between [0..255]
+  initRndFromData ///< Initialise the Cluster with data from a given source image at random positions
 };
 
 struct _ClProp {
@@ -36,31 +38,35 @@ template <typename T, template<typename> class U>
 class VQ : public Img<T> {
  public:
   // Constructor/ Destructor
+  VQ();
   VQ(const ImgBase *pSrc, float fLearnRate=0.01);
   VQ(unsigned int uiVQDim, float fLearnRate=0.01);
   virtual ~VQ();
   
   // operator
-  T* operator[](int i) { return m_vecRefDataPtr[i]; }
+  const T* operator[](int i) { return m_vecRefDataPtr[i]; }
   
   // Variable deklaration
   U<T> *m_poData; /// The abstract information orientation
   
   // Variable deklaration for the reference data
-  std::vector<T*> m_vecRefDataPtr; ///> The first element of each data set
-  unsigned int m_uiSrcDim; ///> The dimension of the src data (w*h)
+  std::vector<const T*> m_vecRefDataPtr; ///< The first element of each data set
+  unsigned int m_uiSrcDim; ///< The dimension of the src data (w*h)
   
   // Variable deklaration for the VQ cluster
-  float m_fLearnRate; ///> The learning rate of the VQ
-  std::vector<std::vector<icl64f> > m_vecCluster; ///> The VQ cluster data
+  float m_fLearnRate; ///< The learning rate of the VQ
+  std::vector<std::vector<icl32f> > m_vecCluster; ///< The VQ cluster data
   std::vector<_ClProp> m_vecClusterInfo;
-  unsigned int m_uiVQDim; ///> The cluster vector dimension
-  unsigned int m_uiCenter; ///> The number of VQ centers
-  unsigned int m_uiMaxTrainSteps; ///> The maximum training steps
+  unsigned int m_uiClassDim; ///< The dimension of one class
+  unsigned int m_uiClasses; ///< The number of classes
+  unsigned int m_uiTrainSteps; ///< The maximum number of training steps
   bool m_bClusterIsInitialized, m_bDeepCopyData; 
-
+  
   // Set functions
   void setLearnRate(float fLearnRate) { m_fLearnRate = fLearnRate; }
+  void setTrainSteps(unsigned int uiSteps) { m_uiTrainSteps = uiSteps; }
+  void setClassNum(unsigned int uiClasses) { m_uiClasses = uiClasses; }
+  void setClassDim(unsigned int uiDim) { m_uiClassDim = uiDim; }
 
   // Get functions
   float getLearnRate() { return m_fLearnRate; }
@@ -70,11 +76,7 @@ class VQ : public Img<T> {
   void createCluster(unsigned int uiCenter);
   void resizeCluster(unsigned int uiCenter);
   void clearCluster();
-
-  // cluster initialization methods
-  void initClusterFromSrc(const ImgBase *poSrc,
-                          vqinitmode eMode, 
-                          unsigned int uiStart=0);
+  void initCluster(vqinitmode eMode, const ImgBase *poSrc=0);
   
   // cluster algorithms
   void vq(const ImgBase *poSrc, unsigned int uiDataIdx);

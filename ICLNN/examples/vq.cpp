@@ -32,23 +32,24 @@ int main() {
   // create cluster with 10 nodes
   VQ<icl32f, Interleaved> vq(tImg);
   vq.createCluster(CLUSTER);
-
-  // initialize cluster
-  vq.initClusterFromSrc(tImg, vqInitMode);
+  vq.initCluster(vqInitMode, tImg);
   
-  //---- Pixel coloring interval  ----
-  unsigned int uiColoring = 255 / ( CLUSTER - 1);
+  // Execute VQ
   for(unsigned int i=0;i<TRAINSTEPS;i++) {
     vq.vq(tImg, i);
   }
   
+  // Pixel coloring interval
+  unsigned int uiColoring = 255 / ( CLUSTER - 1);
+
+  // Write cluster cell image
   float fMinDist;
   for(unsigned int i=0;i<(unsigned int)tResultImg->getDim();i++) {
     unsigned int uiWinner = vq.nn(i,fMinDist);
     vecResultData[0][i] = uiWinner * uiColoring;  
   }
   
-  //write result image
+  //write cluster cell image
   FileWriter("resultImg.pgm").write(tResultImg);
 }
 
