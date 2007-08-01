@@ -35,7 +35,6 @@ namespace icl{
     template<class T>
     void prepare_chamfer_image(const Img<T> *poSrc, Img32s *poDst, int channel, int maxVal){
       // {{{ open
-
       if(poSrc->hasFullROI() && poDst->hasFullROI()){
         
         ImgChannel<T> src = pickChannel(poSrc,channel);
@@ -92,7 +91,40 @@ namespace icl{
           dst(x,h1) = dst(x,h2) ;
         }
       }else{
-        ERROR_LOG("Chamfering is not yet implemnted with ROI support!");
+        ImgChannel32s dst = pickChannel(poDst,channel);
+        Rect r = poDst->getROI();
+        int rX = r.x;
+        int rY = r.y;
+        int rXEnd = r.right();
+        int rYEnd = r.bottom();
+        // forward loop
+        for(int x=rX+1;x<rXEnd-1;++x){
+          for(int y=rY+1;y<rYEnd;++y){
+            dst(x,y) = min5( dst(x,y),dst(x-1,y)+d1,dst(x-1,y-1)+d2,dst(x,y-1)+d1,dst(x+1,y-1)+d2 );
+          }
+        }
+        
+        // backward loop
+        for(int x=rXEnd-2;x>=rX+1; --x){
+          for(int y=rYEnd-2;y>=rY; --y){
+            dst(x,y) = min5( dst(x,y),dst(x+1,y)+d1,dst(x+1,y+1)+d2,dst(x,y+1)+d1,dst(x-1,y+1)+d2 );
+          }
+        }
+        
+        // first  and last column / first and last row
+        int h1 = rYEnd-1;
+        int h2 = h1-1;
+        int w1 = rXEnd-1;
+        int w2 = w1-1;
+        
+        for(int y=rY;y<rYEnd;++y){
+          dst(0,y) = dst(1,y);
+          dst(w1,y) = dst(w2,y) ;
+        }
+        for(int x=rX;x<rXEnd;++x){
+          dst(x,0) = dst(x,1);
+          dst(x,h1) = dst(x,h2) ;
+        }
       }
     }    
   // }}}
