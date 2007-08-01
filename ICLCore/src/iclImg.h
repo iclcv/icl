@@ -557,13 +557,17 @@ namespace icl {
 
     /// Returns max pixel value of channel iChannel within ROI
     /** @param iChannel Index of channel
+        @param coords (optinal) if not null, the pixel position of the max is 
+               written into this argument
         **/
-    Type getMax(int iChannel) const;
+    Type getMax(int iChannel, Point *coords=0) const;
   
     /// Returns min pixel value of channel iChannel within ROI
     /** @param iChannel Index of channel
+        @param coords (optinal) if not null, the pixel position of the min is 
+               written into this argument
         **/
-    Type getMin(int iChannel) const;
+    Type getMin(int iChannel, Point *coords=0) const;
   
 
     /// return maximal pixel value over all channels (restricted to ROI)
@@ -574,8 +578,12 @@ namespace icl {
 
     /// Returns min and max pixel values of channel iChannel within ROI
     /** @param iChannel Index of channel
+        @param minCoords (optinal) if not null, the pixel position of the min is 
+               written into this argument
+        @param maxCoords (optinal) if not null, the pixel position of the max is 
+               written into this argument
     **/
-    const Range<Type> getMinMax(int iChannel) const;
+    const Range<Type> getMinMax(int iChannel, Point *minCoords=0, Point *maxCoords=0) const;
 
     /// return minimal and maximal pixel values over all channels (restricted to ROI)
     const Range<Type> getMinMax() const;

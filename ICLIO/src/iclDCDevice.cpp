@@ -91,8 +91,10 @@ namespace icl{
     }else if( is_firefly_color(m_poCam) ){
       return fmt == formatRGB || 
              fmt == formatMatrix;
+    }else if( string(m_poCam->model) == "DFW-VL500 2.30"){
+      return fmt == formatRGB || fmt == formatMatrix;
     }else{
-      ERROR_LOG("unsupported camera!");
+      ERROR_LOG("unsupported camera: \"" << m_poCam->model << "\"");
       return false;
     }
   }
@@ -131,8 +133,10 @@ namespace icl{
       return false;
     }else if( is_firefly_color(m_poCam) ){
       return true;
+    }else if( string(m_poCam->model) == "DFW-VL500 2.30"){
+      return false;
     }else{
-      ERROR_LOG("unsupported camera!");
+      ERROR_LOG("unsupported camera: \""<< m_poCam->model << "\"");
       return false;
     }
   }

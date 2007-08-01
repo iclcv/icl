@@ -6,7 +6,8 @@
 
 namespace icl{
   
-  Object::Object():T(Mat::id()){ 
+  Object::Object():T(Mat::id()),m_bPointsVisible(true),m_bLinesVisible(true),
+                   m_bTrianglesVisible(true),m_bQuadsVisible(true){ 
     // {{{ open
   }
 
@@ -64,7 +65,7 @@ namespace icl{
     m_vecTriangleColors.push_back(color);
   }
   // }}}
-  
+ 
   void Object::add(const Quadruple &q, const Vec &color){
     // {{{ open
 
@@ -88,6 +89,23 @@ namespace icl{
   }
 
   // }}}
+
+  void Object::tintTriangle(int i, const Vec &color){
+
+    // {{{ open
+    m_vecTriangleColors[i] = color;
+  }
+
+  // }}}
+
+  void Object::tintQuad(int i, const Vec &color){
+    // {{{ open
+
+    m_vecQuadColors[i] = color;
+  }
+
+  // }}}
+
 
   namespace{
     struct P3{
@@ -124,7 +142,8 @@ namespace icl{
   }
   void Object::render(ICLDrawWidget *widget) const{
     // {{{ open
-    if(m_vecTriangles.size()){
+    
+    if(m_bTrianglesVisible && m_vecTriangles.size()){
       vector<P3> v;
       const VecArray &p = m_vecPtsProj;
       for(unsigned int i=0;i<m_vecTriangles.size();i++){
@@ -144,7 +163,7 @@ namespace icl{
       }    
     }
     
-    if(m_vecQuads.size()){
+    if(m_bQuadsVisible && m_vecQuads.size()){
       vector<P4> v;
       const VecArray &p = m_vecPtsProj;
       for(unsigned int i=0;i<m_vecQuads.size();i++){
@@ -167,47 +186,98 @@ namespace icl{
     
     Size s = widget->getImageSize();
     widget->fill(0,0,0,0);
-    for(unsigned int i=0;i<m_vecConnections.size();i++){
-      const Vec &c = m_vecLineColors[i];
-      widget->color((int)c[0],(int)c[1],(int)c[2],(int)c[3]);
-      const Vec &a = m_vecPtsProj[m_vecConnections[i].first];
-      const Vec &b = m_vecPtsProj[m_vecConnections[i].second];
-      widget->line(a.x(),a.y(),b.x(),b.y());
+    if(m_bLinesVisible){
+      for(unsigned int i=0;i<m_vecConnections.size();i++){
+        const Vec &c = m_vecLineColors[i];
+        widget->color((int)c[0],(int)c[1],(int)c[2],(int)c[3]);
+        const Vec &a = m_vecPtsProj[m_vecConnections[i].first];
+        const Vec &b = m_vecPtsProj[m_vecConnections[i].second];
+        widget->line(a.x(),a.y(),b.x(),b.y());
+      }
     }
-    for(unsigned int i=0;i<m_vecPtsProj.size();i++){
-      const Vec &c = m_vecPtsColors[i];
-      widget->color((int)c[0],(int)c[1],(int)c[2],(int)c[3]);
-      const Vec &v = m_vecPtsProj[i];
-      static const float r = 0.5;
-      widget->ellipse(v.x()-r/2,v.y()-r/2,r,r);
+    if(m_bPointsVisible){
+      for(unsigned int i=0;i<m_vecPtsProj.size();i++){
+        const Vec &c = m_vecPtsColors[i];
+        widget->color((int)c[0],(int)c[1],(int)c[2],(int)c[3]);
+        const Vec &v = m_vecPtsProj[i];
+        static const float r = 0.5;
+        widget->ellipse(v.x()-r/2,v.y()-r/2,r,r);
+      }
     }
-    
- 
   }
 
   // }}}
   void Object::render(Img32f *image) const{
     // {{{ open
 
-    for(unsigned int i=0;i<m_vecConnections.size();i++){
-      color(200,200,200);
-      const Vec &a = m_vecPtsProj[m_vecConnections[i].first];
-      const Vec &b = m_vecPtsProj[m_vecConnections[i].second];
-      line(*image,
-           (int)(a.x()),
-           (int)(a.y()),
-           (int)(b.x()),
-           (int)(b.y()) );
+
+    if(m_bTrianglesVisible && m_vecTriangles.size()){
+      vector<P3> v;
+      const VecArray &p = m_vecPtsProj;
+      for(unsigned int i=0;i<m_vecTriangles.size();i++){
+        const Triple &t = m_vecTriangles[i];
+        v.push_back(P3(&p[t.a],&p[t.b],&p[t.c],&m_vecTriangleColors[i]));
+      }
+      std::sort(v.begin(),v.end());
+      color(0,0,0,0);
+      for(int i=0;i<(int)v.size();i++){
+        fill((int)(*(v[i].color))[0],
+             (int)(*(v[i].color))[1],
+             (int)(*(v[i].color))[2],
+             (int)(*(v[i].color))[3]);
+        triangle( *image, (int)(*(v[i].a))[0],(int)(*(v[i].a))[1],
+                  (int)(*(v[i].b))[0],(int)(*(v[i].b))[1],
+                  (int)(*(v[i].c))[0],(int)(*(v[i].c))[1] );
+      }    
     }
-    for(unsigned int i=0;i<m_vecPtsProj.size();i++){
-      color(255,0,0);
-      const Vec &v = m_vecPtsProj[i];
-      circle(*image,
-             (int)(v.x()),
-             (int)(v.y()),
-             2);
-      //      printf("drawed a point at %d %d \n",(int)v.x(),(int)v.y());
-    }    
+    
+    if(m_bQuadsVisible && m_vecQuads.size()){
+      vector<P4> v;
+      const VecArray &p = m_vecPtsProj;
+      for(unsigned int i=0;i<m_vecQuads.size();i++){
+        const Quadruple &t = m_vecQuads[i];
+        v.push_back(P4(&p[t.a],&p[t.b],&p[t.c],&p[t.d],&m_vecQuadColors[i]));
+      }
+      std::sort(v.begin(),v.end());
+      color(0,0,0,0);
+      for(int i=0;i<(int)v.size();i++){
+        fill((int)(*(v[i].color))[0],
+             (int)(*(v[i].color))[1],
+             (int)(*(v[i].color))[2],
+             (int)(*(v[i].color))[3]);
+        triangle(*image,(int)(*(v[i].a))[0],(int)(*(v[i].a))[1],
+                 (int)(*(v[i].b))[0],(int)(*(v[i].b))[1],
+                 (int)(*(v[i].c))[0],(int)(*(v[i].c))[1] );
+        triangle(*image,(int)(*(v[i].c))[0],(int)(*(v[i].c))[1],
+                 (int)(*(v[i].d))[0],(int)(*(v[i].d))[1],
+                 (int)(*(v[i].a))[0],(int)(*(v[i].a))[1] );
+      }    
+    }
+  
+
+    if(m_bLinesVisible){
+      for(unsigned int i=0;i<m_vecConnections.size();i++){
+        color(200,200,200);
+        const Vec &a = m_vecPtsProj[m_vecConnections[i].first];
+        const Vec &b = m_vecPtsProj[m_vecConnections[i].second];
+        line(*image,
+             (int)(a.x()),
+             (int)(a.y()),
+             (int)(b.x()),
+             (int)(b.y()) );
+      }
+    }
+    if(m_bPointsVisible){
+      for(unsigned int i=0;i<m_vecPtsProj.size();i++){
+        color(255,0,0);
+        const Vec &v = m_vecPtsProj[i];
+        circle(*image,
+               (int)(v.x()),
+               (int)(v.y()),
+               2);
+        //      printf("drawed a point at %d %d \n",(int)v.x(),(int)v.y());
+      }    
+    }
   }
 
   // }}}

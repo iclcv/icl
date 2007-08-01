@@ -97,6 +97,8 @@ namespace icl {
     */
     class Plugin{
       public:
+      /// Empty constructor
+      Plugin(){}
       /// Constructor
       /** @param ref1 first channel reference color value 
           @param ref2 second channel reference color value           

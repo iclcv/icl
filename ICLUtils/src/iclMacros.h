@@ -135,4 +135,6 @@ namespace icl {
 
 #define ICL_DELETE(X) if((X)){ delete (X); (X)=0; }
 
+#define ICL_DELETE_ARRAY(X) if((X)){ delete [] (X); (X)=0; }
+
 #endif //ICLMACROS_H

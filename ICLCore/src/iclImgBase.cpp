@@ -279,10 +279,10 @@ namespace icl {
   
   // {{{ getMin,getMax, getMinMax
 
-  icl64f ImgBase::getMax(int iChannel) const{
+  icl64f ImgBase::getMax(int iChannel, Point *coords) const{
     FUNCTION_LOG("");
     switch(getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMax(iChannel);
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMax(iChannel,coords);
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
     }
@@ -292,10 +292,10 @@ namespace icl {
   /// Returns min pixel value of channel iChannel within ROI
   /** @param iChannel Index of channel
   **/
-  icl64f ImgBase::getMin(int iChannel) const{
+  icl64f ImgBase::getMin(int iChannel, Point *coords) const{
     FUNCTION_LOG("");
     switch(getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMin(iChannel);
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMin(iChannel,coords);
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH   
     }
@@ -330,10 +330,10 @@ namespace icl {
       @param rtMax reference to store the max value
       @param iChannel Index of channel
   **/
-  const Range<icl64f> ImgBase::getMinMax(int iChannel) const{
+  const Range<icl64f> ImgBase::getMinMax(int iChannel, Point *minCoords, Point *maxCoords) const{
     FUNCTION_LOG("");
     switch(getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMinMax(iChannel).castTo<icl64f>();
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMinMax(iChannel,minCoords,maxCoords).castTo<icl64f>();
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH   
     }

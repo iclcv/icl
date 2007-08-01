@@ -406,6 +406,20 @@ namespace icl{
   template<class S, class D>
   void interleavedToPlanar(const S *src, Img<D> *dst, int srcLineStep=-1);
 
+  /// converts given (r,g,b) pixel into the yuv format
+  void cc_util_rgb_to_yuv(const icl32s r, const icl32s g, const icl32s b, icl32s &y, icl32s &u, icl32s &v);
+  
+  /// converts given (y,u,v) pixel into the rgb format
+  void cc_util_yuv_to_rgb(const icl32s y,const icl32s u,const icl32s v, icl32s &r, icl32s &g, icl32s &b);
+  
+  /// converts given (r,g,b) pixel into the hls format
+  void cc_util_rgb_to_hls(const icl32f r255,const icl32f g255,const icl32f b255, icl32f &h, icl32f &l, icl32f &s);
+
+  /// converts given (h,l,s) pixel into the rgb format
+  void cc_util_hls_to_rgb(const icl32f h255, const icl32f l255, const icl32f sl255, icl32f &r, icl32f &g, icl32f &b);
+
+  /// converts given (r,g,b) pixel into the RG-chroma format
+  void cc_util_rgb_to_chroma(const icl32f r, const icl32f g, const icl32f b, icl32f &chromaR, icl32f &chromaG);
 }
 
 #endif

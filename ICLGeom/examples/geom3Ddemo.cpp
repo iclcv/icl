@@ -27,27 +27,40 @@ public:
     w->setImage(&image);
     w2->setImage(&image);
 
-    szene = new Szene(Size(640,480));
+    szene = new Szene(Rect(0,0,640,480));
     
-    szene->add(new CubeObject(0,0,0,3));
-
+    for(int x=-1;x<2;x++){
+      for(int y=-1;y<2;y++){
+        for(int z=-1;z<2;z++){
+          szene->add(new CubeObject(10*x,10*y,10*z-15,5));
+        }
+      }
+    }
   }
   virtual void run(){
     Camera &cam = szene->getCam();
-    cam.setFocalLength(4); /// 1 equals 90° view arc !
+    cam.setFocalLength(1); /// 1 equals 90° view arc !
     while(1){
 
       w->lock();
       w->reset();
-       
-      szene->update();
-      szene->transformAllObjs(Mat::rot(0.02,0.03,0));
-      szene->render(w);
-      image.clear();
-      szene->render(&image);
+
+      szene->transformAllObjs(Mat::rot(0.02,0.03,0));  
+      
+      for(int x=0;x<3;x++){
+        for(int y=0;y<3;y++){
+          szene->setViewPort(Rect(x*640/3,y*480/3,640/3,480/3));
+          szene->update();
+          szene->render(w);
+        }
+      }
       w->unlock();
       w->update();
-      
+
+      szene->setViewPort(Rect(0,0,640,480));
+      szene->update();
+      image.clear();
+      szene->render(&image);
       w2->setImage(&image);
       w2->update();
       msleep(50);

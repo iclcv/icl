@@ -47,10 +47,10 @@ namespace icl{
                          size of the Img32f for the other render-
                          function.
     */
-    Szene(const Size &imageSize);
+    Szene(const Rect &viewPort,const Camera &cam=Camera() );
     
     /// returns the szenes camera
-    Camera &getCam(){ return cam; }
+    Camera &getCam(){ return m_oCam; }
     
     /// renders the szene into the given draw-widget
     void render(ICLDrawWidget *w) const;
@@ -70,13 +70,27 @@ namespace icl{
     /// passes the given matrix to all objects transform(.)-function
     void transformAllObjs(const Mat &m);
 
+    /// sets the current view port
+    void setViewPort(const Rect &viewPort){
+      m_oViewPort = viewPort;
+    }
+    /// returns the current view port
+    const Rect &getViewPort() const{
+      return m_oViewPort;
+    }
     private:
+    
+    /// returns the current viewport matrix
+    Mat getViewPortMatrix() const;
 
+    /// current view port
+    Rect m_oViewPort;
+    
     /// szene camera
-    Camera cam;
+    Camera m_oCam;
     
     /// list of currently available szene objects
-    std::vector<Object*> objs;
+    std::vector<Object*> m_vecObjs;
   };
   
 }

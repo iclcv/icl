@@ -36,38 +36,37 @@ namespace icl{
         @param up up-vector of the camera
         @param f focal length
         @param imageSize view-port size*/
-    Camera(const Vec &pos=0,const Vec &norm=0, const Vec &up=0, float f=0, const Size &imageSize = Size::null):
-      pos(pos),norm(norm),up(up),f(f),imageSize(imageSize){}
+    Camera(const Vec &pos=Vec(0,0,10,0),const Vec &norm=Vec(0,0,-1,0), const Vec &up=Vec(1,0,0,0), float f=-1):
+      m_oPos(pos),m_oNorm(norm),m_oUp(up),m_fF(f){}
+    
+    /// Default copy constructor copies all but the internal matrix buffer
+    Camera(const Camera &cam):m_oPos(cam.m_oPos),m_oNorm(cam.m_oNorm),m_oUp(cam.m_oUp),m_fF(cam.m_fF){}
     
     /// returns the camera transformation matrix
     const Mat &getTransformationMatrix();
     
     /// returns the current pos-vector
-    inline const Vec &getPos() const { return pos; }
+    inline const Vec &getPos() const { return m_oPos; }
 
     /// returns the current norm-vector
-    inline const Vec &getNorm() const { return norm; }
+    inline const Vec &getNorm() const { return m_oNorm; }
 
     /// returns the current up-vector
-    inline const Vec &getUp() const{ return up; }
-
-    /// returns the current view-port size
-    inline const Size &getImageSize()const{ return imageSize; }
+    inline const Vec &getUp() const{ return m_oUp; }
 
     /// returns the current focal length
-    inline float getFocalLength() const{ return f; }
+    inline float getFocalLength() const{ return m_fF; }
     
     /// returns the current horizontal vector (norm x up)
-    inline Vec getHorz()const{ return norm.cross(up); }
+    inline Vec getHorz()const{ return m_oNorm.cross(m_oUp); }
 
     /// show some camera information to std::out
     void show(const std::string &title) const;
 
     /// transforms norm and up by the given matrix
     void transform(const Mat &m){
-      //m.show("camera transformation \n");
-      norm *= m;
-      up*=m;
+      m_oNorm *= m;
+      m_oUp *= m;
     }
     
     /// rotates norm and up by the given angles
@@ -84,21 +83,20 @@ namespace icl{
     }
     /// translates the current pos-vector
     void translate(const Vec &d){
-      pos+=d;
+      m_oPos+=d;
     }
     
     /// sets the focal length
-    void setFocalLength( float f){ this->f = f; }
+    void setFocalLength( float f){ this->m_fF = f; }
     
 
     private:
-    Vec pos;        ///!< center position vector
-    Vec norm;       ///!< norm vector
-    Vec up;         ///!< up vector
-    float f;        ///!< focal length
-    Size imageSize; ///!< image size
+    Vec m_oPos;        ///!< center position vector
+    Vec m_oNorm;       ///!< norm vector
+    Vec m_oUp;         ///!< up vector
+    float m_fF;        ///!< focal length
     
-    Mat M; //!< internal buffer for the current transformation matrix
+    Mat m_oMatBuf; //!< internal buffer for the current transformation matrix
     
   };
 }

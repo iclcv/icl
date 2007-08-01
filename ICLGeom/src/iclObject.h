@@ -86,11 +86,23 @@ namespace icl{
     /// re-define a lines color
     void tintLine(int i, const Vec &color);
 
+    /// redefine a triangles color
+    void tintTriangle(int i, const Vec &color);
+
+    /// redefine a quads color
+    void tintQuad(int i, const Vec &color);
+
     /// returns the count of points of this object
     inline int getPointCount() const { return (int)(m_vecPtsOrig.size()); }
     
     /// returns the count of lines of this object
     inline int getLineCount() const { return (int)(m_vecConnections.size()); }
+
+    /// retuns the count of triangles of this object
+    inline int getTriangleCount() const { return (int)(m_vecTriangles.size()); }
+
+    /// returns the count of quads of this object
+    inline int getQuadCount() const { return (int)(m_vecQuads.size()); }
 
     /// internally saves the objects current transformation matrix
     inline void pushState(){ TPushed = T; }
@@ -129,6 +141,30 @@ namespace icl{
     /// renders the object into an image (using the current projected points)
     virtual void render(Img32f *image) const;
     
+    /// sets whether points should be rendered or not
+    void setPointsVisible(bool enabled){ m_bPointsVisible=enabled; }
+
+    /// sets whether lines should be rendered or not
+    void setLinesVisible(bool enabled){ m_bLinesVisible=enabled; }
+
+    /// sets whether triangles should be rendered or not
+    void setTrianglesVisible(bool enabled){ m_bTrianglesVisible=enabled; }
+
+    /// sets whether quads should be rendered or not
+    void setQuadsVisible(bool enabled){ m_bQuadsVisible=enabled; }
+    
+    /// returns whether points are rendered or not
+    bool getPointsVisible() const { return m_bPointsVisible; }
+
+    /// returns whether lines are rendered or not
+    bool getLinesVisible() const { return m_bLinesVisible; }
+
+    /// returns whether triangles are rendered or not
+    bool getTrianglesVisible() const { return m_bTrianglesVisible; }
+
+    /// returns whether quads are rendered or not
+    bool getQuadsVisible() const { return m_bQuadsVisible; }
+    
     protected:
     /// adds a new point to this object
     void add(const Vec &p, const Vec &color=Vec(255,0,0,255));
@@ -141,6 +177,15 @@ namespace icl{
 
     /// adds a new triangle to this onject
     void add(const Quadruple &q, const Vec &color=Vec(0,100,250,255));
+
+    /// returns a specific line of this object
+    const Tuple &getLine(int i) const { return m_vecConnections[i]; }
+
+    /// returns a specific triangle of this object
+    const Triple &getTriangle(int i) const { return m_vecTriangles[i]; }
+    
+    /// returns a specific quad of this object
+    const Quadruple &getQuad(int i) const { return m_vecQuads[i]; }
     private:   
 
     /// The current objects transformation matrix
@@ -178,6 +223,17 @@ namespace icl{
     /// quads to draw
     std::vector<Quadruple> m_vecQuads;
 
+    /// defines whether points are visible or not
+    bool m_bPointsVisible;
+    
+    /// defines whether lines are visible or not
+    bool m_bLinesVisible;
+    
+    /// defines whether triangles are visible or not
+    bool m_bTrianglesVisible;
+    
+    /// defines whether quads are visible or not
+    bool m_bQuadsVisible;
   };
 }
 
