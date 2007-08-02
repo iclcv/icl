@@ -314,7 +314,7 @@ namespace icl{
       also located in the ICLCC package, for color conversion with implicit
       scaling instead.
   */
-  void cc(const ImgBase *src, ImgBase *dst);
+  void cc(const ImgBase *src, ImgBase *dst, bool roiOnly=false);
   
   /// returns whether a lookup table was already created for src and dst format
   /** @param srcFmt source format

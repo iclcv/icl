@@ -10,7 +10,7 @@ namespace icl{
   class CCLUT{
     public:
     CCLUT(format srcFmt, format dstFmt);
-    void cc(const ImgBase *src, ImgBase *dst);
+    void cc(const ImgBase *src, ImgBase *dst, bool roiOnly=false);
     
     private:
     Img8u m_oLUT;

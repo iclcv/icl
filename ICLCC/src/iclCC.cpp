@@ -321,16 +321,20 @@ namespace icl{
 
   template<class S, class D, format srcFmt, format dstFmt> struct CCFunc{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
-      (void)src; (void)dst;
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
+      (void)src; (void)dst; (void)roiOnly;
     }
   };
 
   // }}}
   template<class S, class D, format srcDstFmt> struct CCFunc<S,D,srcDstFmt,srcDstFmt>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
-      src->convert(dst);
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
+      if(roiOnly){
+        src->convertROI(dst);
+      }else{
+        src->convert(dst);
+      }
     }
     
   };
@@ -340,12 +344,22 @@ namespace icl{
   /// FROM FORMAT RGB
   template<class S, class D> struct CCFunc<S,D,formatRGB,formatGray>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
-      D *gr = dst->getData(0);
-      for(int i=0;i<dim;++i){
-        gr[i] = Cast<S,D>::cast((r[i]+g[i]+b[i])/3);
+      if(roiOnly){
+        ConstImgIterator<S> itR = src->getROIIterator(0);
+        ConstImgIterator<S> itG = src->getROIIterator(1);
+        ConstImgIterator<S> itB = src->getROIIterator(2);
+        ImgIterator<D> itGray = dst->getROIIterator(0);
+        for(;itGray.inRegion();++itR,++itG,++itB,++itGray){
+          *itGray = Cast<S,D>::cast((*itR + *itG + *itB)/3);
+        }
+      }else{
+        GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
+        D *gr = dst->getData(0);
+        for(int i=0;i<dim;++i){
+          gr[i] = Cast<S,D>::cast((r[i]+g[i]+b[i])/3);
+        }
       }
     }
     
@@ -354,19 +368,39 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatRGB,formatHLS>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
-      GET_3_CHANNEL_POINTERS_NODIM(D,dst,h,l,s);
+
       register icl32f reg_h, reg_l, reg_s;
-      for(int i=0;i<dim;++i){
-        cc_util_rgb_to_hls(Cast<S,icl32f>::cast(r[i]),
-                           Cast<S,icl32f>::cast(g[i]),
-                           Cast<S,icl32f>::cast(b[i]),
-                           reg_h,reg_l,reg_s);
-        h[i] = Cast<icl32f,D>::cast(reg_h);
-        l[i] = Cast<icl32f,D>::cast(reg_l);
-        s[i] = Cast<icl32f,D>::cast(reg_s);
+      if(roiOnly){
+        ConstImgIterator<S> itR = src->getROIIterator(0);
+        ConstImgIterator<S> itG = src->getROIIterator(1);
+        ConstImgIterator<S> itB = src->getROIIterator(2);
+        ImgIterator<D> itH = dst->getROIIterator(0);
+        ImgIterator<D> itL = dst->getROIIterator(0);
+        ImgIterator<D> itS = dst->getROIIterator(0);
+        for(;itR.inRegion();++itR,++itG,++itB,++itH,++itL,++itS){
+          cc_util_rgb_to_hls(Cast<S,icl32f>::cast(*itR),
+                             Cast<S,icl32f>::cast(*itG),
+                             Cast<S,icl32f>::cast(*itB),
+                             reg_h,reg_l,reg_s);
+          *itH = Cast<icl32f,D>::cast(reg_h);
+          *itL = Cast<icl32f,D>::cast(reg_l);
+          *itS = Cast<icl32f,D>::cast(reg_s);
+        }
+      }else{
+        GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
+        GET_3_CHANNEL_POINTERS_NODIM(D,dst,h,l,s);
+        
+        for(int i=0;i<dim;++i){
+          cc_util_rgb_to_hls(Cast<S,icl32f>::cast(r[i]),
+                             Cast<S,icl32f>::cast(g[i]),
+                             Cast<S,icl32f>::cast(b[i]),
+                             reg_h,reg_l,reg_s);
+          h[i] = Cast<icl32f,D>::cast(reg_h);
+          l[i] = Cast<icl32f,D>::cast(reg_l);
+          s[i] = Cast<icl32f,D>::cast(reg_s);
+        }
       }
     }
     
@@ -375,7 +409,7 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatRGB,formatChroma>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
       GET_2_CHANNEL_POINTERS_NODIM(D,dst,cromaR,cromaG);
       register S sum;
@@ -392,7 +426,7 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatRGB,formatYUV>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
       GET_3_CHANNEL_POINTERS_NODIM(D,dst,y,u,v);
       register icl32s reg_y, reg_u, reg_v;
@@ -412,7 +446,7 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatRGB,formatLAB>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
       GET_3_CHANNEL_POINTERS_NODIM(D,dst,LL,aa,bb);
       
@@ -437,12 +471,22 @@ namespace icl{
   /// FROM FORMAT GRAY
   template<class S, class D> struct CCFunc<S,D,formatGray,formatRGB>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      const S *gr = src->getData(0);
-      GET_3_CHANNEL_POINTERS_DIM(D,dst,r,g,b,dim);
-      for(int i=0;i<dim;++i){
-        r[i] = g[i] = b[i] = Cast<S,D>::cast(gr[i]);
+      if(roiOnly){
+        ConstImgIterator<S> itGray = src->getROIIterator(0);
+        ImgIterator<D> itR = dst->getROIIterator(0);
+        ImgIterator<D> itG = dst->getROIIterator(1);
+        ImgIterator<D> itB = dst->getROIIterator(2);
+        for(;itG.inRegion();++itG,++itR,++itGray,++itB){
+          *itR = *itG = *itB = Cast<S,D>::cast(*itGray);
+        }
+      }else{
+        const S *gr = src->getData(0);
+        GET_3_CHANNEL_POINTERS_DIM(D,dst,r,g,b,dim);
+        for(int i=0;i<dim;++i){
+          r[i] = g[i] = b[i] = Cast<S,D>::cast(gr[i]);
+        }
       }
     }
     
@@ -451,13 +495,24 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatGray,formatHLS>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      const S *gr = src->getData(0);
-      GET_3_CHANNEL_POINTERS_DIM(D,dst,h,l,s,dim);
-      for(int i=0;i<dim;++i){
-        h[i] = s[i] = D(0);
-        l[i] = Cast<S,D>::cast(gr[i]);
+      if(roiOnly){
+        ConstImgIterator<S> itG = src->getROIIterator(0);
+        ImgIterator<D> itH = dst->getROIIterator(0);
+        ImgIterator<D> itL = dst->getROIIterator(1);
+        ImgIterator<D> itS = dst->getROIIterator(2);
+        for(;itG.inRegion();++itG,++itH,++itL,++itS){
+          *itL = Cast<S,D>::cast(*itG);
+          *itH = *itS = D(0);
+        }
+      }else{
+        const S *gr = src->getData(0);
+        GET_3_CHANNEL_POINTERS_DIM(D,dst,h,l,s,dim);
+        for(int i=0;i<dim;++i){
+          h[i] = s[i] = D(0);
+          l[i] = Cast<S,D>::cast(gr[i]);
+        }
       }
     }
     
@@ -466,13 +521,24 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatGray,formatYUV>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      const S *gr = src->getData(0);
-      GET_3_CHANNEL_POINTERS_DIM(D,dst,y,u,v,dim);
-      for(int i=0;i<dim;++i){
-        y[i] = Cast<S,D>::cast(gr[i]);
-        u[i] = v[i] = D(127);
+      if(roiOnly){
+        ConstImgIterator<S> itG = src->getROIIterator(0);
+        ImgIterator<D> itY = dst->getROIIterator(0);
+        ImgIterator<D> itU = dst->getROIIterator(1);
+        ImgIterator<D> itV = dst->getROIIterator(2);
+        for(;itG.inRegion();++itG,++itY,++itU,++itV){
+          *itY = Cast<S,D>::cast(*itG);
+          *itU = *itV = D(127);
+        }
+      }else{
+        const S *gr = src->getData(0);
+        GET_3_CHANNEL_POINTERS_DIM(D,dst,y,u,v,dim);
+        for(int i=0;i<dim;++i){
+          y[i] = Cast<S,D>::cast(gr[i]);
+          u[i] = v[i] = D(127);
+        }
       }
     }
     
@@ -481,13 +547,24 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatGray,formatLAB>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      const S *gr = src->getData(0);
-      GET_3_CHANNEL_POINTERS_DIM(D,dst,L,a,b,dim);
-      for(int i=0;i<dim;++i){
-        L[i] = Cast<S,D>::cast(gr[i]);
-        a[i] = b[i] = D(127);
+      if(roiOnly){
+        ConstImgIterator<S> itG = src->getROIIterator(0);
+        ImgIterator<D> itL = dst->getROIIterator(0);
+        ImgIterator<D> itA = dst->getROIIterator(1);
+        ImgIterator<D> itB = dst->getROIIterator(2);
+        for(;itG.inRegion();++itG,++itL,++itA,++itB){
+          *itL = Cast<S,D>::cast(*itG);
+          *itA = *itB = D(127);
+        }
+      }else{
+        const S *gr = src->getData(0);
+        GET_3_CHANNEL_POINTERS_DIM(D,dst,L,a,b,dim);
+        for(int i=0;i<dim;++i){
+          L[i] = Cast<S,D>::cast(gr[i]);
+          a[i] = b[i] = D(127);
+        }
       }
     }
     
@@ -496,13 +573,11 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatGray,formatChroma>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
       WARNING_LOG("converting formatGray to formatChroma does not make sense");
       (void) src;
-      GET_2_CHANNEL_POINTERS_DIM(D,dst,chromaR,chromaG,dim);
-      std::fill(chromaR,chromaR+dim,D(85));
-      std::fill(chromaG,chromaG+dim,D(85));
+      dst->clear(-1,85,roiOnly);
     }
     
   };
@@ -512,9 +587,14 @@ namespace icl{
   /// FROM FORMAT HLS
   template<class S, class D> struct CCFunc<S,D,formatHLS,formatGray>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      icl::convert(src->getData(1),src->getData(1)+src->getDim(), dst->getData(0));
+      if(roiOnly){
+        convertChannelROI(src,1,src->getROIOffset(),src->getROISize(), 
+                          dst,0,dst->getROIOffset(),dst->getROISize());
+      }else{
+        icl::convert(src->getData(1),src->getData(1)+src->getDim(), dst->getData(0));
+      }
     }
     
   };
@@ -522,19 +602,39 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatHLS,formatRGB>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      GET_3_CHANNEL_POINTERS_DIM(const S,src,h,l,s,dim);
-      GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
+      
       register icl32f reg_r(0), reg_g(0), reg_b(0);
-      for(int i=0;i<dim;++i){
-        cc_util_hls_to_rgb(Cast<S,icl32f>::cast(h[i]),
-                           Cast<S,icl32f>::cast(l[i]),
-                           Cast<S,icl32f>::cast(s[i]),
-                           reg_r,reg_g,reg_b);
-        r[i] = Cast<icl32f,D>::cast(reg_r);
-        g[i] = Cast<icl32f,D>::cast(reg_g);
-        b[i] = Cast<icl32f,D>::cast(reg_b);
+      if(roiOnly){
+        ConstImgIterator<S> itH = src->getROIIterator(0);
+        ConstImgIterator<S> itL = src->getROIIterator(1);
+        ConstImgIterator<S> itS = src->getROIIterator(2);
+        ImgIterator<D> itR = dst->getROIIterator(0);
+        ImgIterator<D> itG = dst->getROIIterator(1);
+        ImgIterator<D> itB = dst->getROIIterator(2);
+        for(;itH.inRegion();++itH,++itL,++itS,++itR,++itG,++itB){
+          cc_util_hls_to_rgb(Cast<S,icl32f>::cast(*itH),
+                             Cast<S,icl32f>::cast(*itL),
+                             Cast<S,icl32f>::cast(*itS),
+                             reg_r,reg_g,reg_b);
+          *itR = Cast<icl32f,D>::cast(reg_r);
+          *itG = Cast<icl32f,D>::cast(reg_g);
+          *itB = Cast<icl32f,D>::cast(reg_b);
+        }
+      }else{
+        GET_3_CHANNEL_POINTERS_DIM(const S,src,h,l,s,dim);
+        GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
+        
+        for(int i=0;i<dim;++i){
+          cc_util_hls_to_rgb(Cast<S,icl32f>::cast(h[i]),
+                             Cast<S,icl32f>::cast(l[i]),
+                             Cast<S,icl32f>::cast(s[i]),
+                             reg_r,reg_g,reg_b);
+          r[i] = Cast<icl32f,D>::cast(reg_r);
+          g[i] = Cast<icl32f,D>::cast(reg_g);
+          b[i] = Cast<icl32f,D>::cast(reg_b);
+        }
       }
     }
     
@@ -545,9 +645,14 @@ namespace icl{
   /// FROM FORMAT LAB
   template<class S, class D> struct CCFunc<S,D,formatLAB,formatGray>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      icl::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));
+      if(roiOnly){
+        convertChannelROI(src,0,src->getROIOffset(),src->getROISize(), 
+                          dst,0,dst->getROIOffset(),dst->getROISize());
+      }else{
+        icl::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));        
+      }
     }
     
   };
@@ -555,20 +660,39 @@ namespace icl{
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatLAB,formatRGB>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      GET_3_CHANNEL_POINTERS_DIM(const S,src,ll,aa,bb,dim);
-      GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
       register icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
-      for(int i=0;i<dim;++i){
-        cc_util_lab_to_xyz(Cast<S,icl32f>::cast(ll[i]),
-                           Cast<S,icl32f>::cast(aa[i]),
-                           Cast<S,icl32f>::cast(bb[i]),
-                           reg_x,reg_y,reg_z);
-        cc_util_xyz_to_rgb(reg_x,reg_y,reg_z,reg_r,reg_g,reg_b);
-        r[i] = Cast<icl32f,D>::cast(reg_r);
-        g[i] = Cast<icl32f,D>::cast(reg_g);
-        b[i] = Cast<icl32f,D>::cast(reg_b);
+      if(roiOnly){
+        ConstImgIterator<S> itL = src->getROIIterator(0);
+        ConstImgIterator<S> itA = src->getROIIterator(1);
+        ConstImgIterator<S> itB = src->getROIIterator(2);
+        ImgIterator<D> itR = dst->getROIIterator(0);
+        ImgIterator<D> itG = dst->getROIIterator(1);
+        ImgIterator<D> itBl = dst->getROIIterator(2);
+        for(;itL.inRegion();++itL,++itA,++itB,++itR,++itG,++itBl){
+          cc_util_lab_to_xyz(Cast<S,icl32f>::cast(*itL),
+                             Cast<S,icl32f>::cast(*itA),
+                             Cast<S,icl32f>::cast(*itB),
+                             reg_x,reg_y,reg_z);
+          cc_util_xyz_to_rgb(reg_x,reg_y,reg_z,reg_r,reg_g,reg_b);
+          *itR  = Cast<icl32f,D>::cast(reg_r);
+          *itG  = Cast<icl32f,D>::cast(reg_g);
+          *itBl = Cast<icl32f,D>::cast(reg_b);
+        }
+      }else{
+        GET_3_CHANNEL_POINTERS_DIM(const S,src,ll,aa,bb,dim);
+        GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
+        for(int i=0;i<dim;++i){
+          cc_util_lab_to_xyz(Cast<S,icl32f>::cast(ll[i]),
+                             Cast<S,icl32f>::cast(aa[i]),
+                             Cast<S,icl32f>::cast(bb[i]),
+                             reg_x,reg_y,reg_z);
+          cc_util_xyz_to_rgb(reg_x,reg_y,reg_z,reg_r,reg_g,reg_b);
+          r[i] = Cast<icl32f,D>::cast(reg_r);
+          g[i] = Cast<icl32f,D>::cast(reg_g);
+          b[i] = Cast<icl32f,D>::cast(reg_b);
+        }
       }
     }
     
@@ -580,28 +704,51 @@ namespace icl{
   /// FROM FORMAT YUV
   template<class S, class D> struct CCFunc<S,D,formatYUV,formatGray>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      icl::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));
+      if(roiOnly){
+        convertChannelROI(src,0,src->getROIOffset(),src->getROISize(), 
+                          dst,0,dst->getROIOffset(),dst->getROISize());
+      }else{
+        icl::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));        
+      }
     }    
   };
 
   // }}}
   template<class S, class D> struct CCFunc<S,D,formatYUV,formatRGB>{
     // {{{ open
-    static void convert(const Img<S> *src, Img<D> *dst){
+    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
-      GET_3_CHANNEL_POINTERS_DIM(const S,src,y,u,v,dim);
-      GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
       register icl32s reg_r, reg_g, reg_b;
-      for(int i=0;i<dim;++i){
-        cc_util_yuv_to_rgb(Cast<S,icl32s>::cast(y[i]),
-                           Cast<S,icl32s>::cast(u[i]),
-                           Cast<S,icl32s>::cast(v[i]),
-                           reg_r, reg_g, reg_b);
-        r[i] = Cast<icl32s,D>::cast(reg_r);
-        g[i] = Cast<icl32s,D>::cast(reg_g);
-        b[i] = Cast<icl32s,D>::cast(reg_b);
+      if(roiOnly){
+        ConstImgIterator<S> itY = src->getROIIterator(0);
+        ConstImgIterator<S> itU = src->getROIIterator(1);
+        ConstImgIterator<S> itV = src->getROIIterator(2);
+        ImgIterator<D> itR = dst->getROIIterator(0);
+        ImgIterator<D> itG = dst->getROIIterator(1);
+        ImgIterator<D> itB = dst->getROIIterator(2);
+        for(;itY.inRegion();++itY,++itU,++itV,++itR,++itG,++itB){
+          cc_util_yuv_to_rgb(Cast<S,icl32s>::cast(*itY),
+                             Cast<S,icl32s>::cast(*itU),
+                             Cast<S,icl32s>::cast(*itV),
+                             reg_r, reg_g, reg_b);
+          *itR = Cast<icl32s,D>::cast(reg_r);
+          *itG = Cast<icl32s,D>::cast(reg_g);
+          *itB = Cast<icl32s,D>::cast(reg_b);
+        }
+      }else{
+        GET_3_CHANNEL_POINTERS_DIM(const S,src,y,u,v,dim);
+        GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
+        for(int i=0;i<dim;++i){
+          cc_util_yuv_to_rgb(Cast<S,icl32s>::cast(y[i]),
+                             Cast<S,icl32s>::cast(u[i]),
+                             Cast<S,icl32s>::cast(v[i]),
+                             reg_r, reg_g, reg_b);
+          r[i] = Cast<icl32s,D>::cast(reg_r);
+          g[i] = Cast<icl32s,D>::cast(reg_g);
+          b[i] = Cast<icl32s,D>::cast(reg_b);
+        }
       }
     }
     
@@ -609,13 +756,13 @@ namespace icl{
 
   // }}}
 
-  template<class S, class D> void cc_sd(const Img<S> *src, Img<D> *dst){
+  template<class S, class D> void cc_sd(const Img<S> *src, Img<D> *dst, bool roiOnly){
   // {{{ open
 
     // {{{ definition of CASE_LABEL(XXX)
     
 #define INNER_CASE_LABEL(XXX,YYY) \
-  case format##YYY: CCFunc<S,D,format##XXX,format##YYY>::convert(src,dst); break
+  case format##YYY: CCFunc<S,D,format##XXX,format##YYY>::convert(src,dst,roiOnly); break
     
 #define CASE_LABEL(XXX)                         \
       case format##XXX:                         \
@@ -647,15 +794,15 @@ namespace icl{
 
   // }}}
  
-  template<class S> void cc_s(const Img<S> *src, ImgBase *dst){
+  template<class S> void cc_s(const Img<S> *src, ImgBase *dst, bool roiOnly){
     // {{{ open
 
     switch(dst->getDepth()){      //TODO depth macro
-      case depth8u: cc_sd(src, dst->asImg<icl8u>()); break;
-      case depth16s: cc_sd(src, dst->asImg<icl16s>()); break;
-      case depth32s: cc_sd(src, dst->asImg<icl32s>()); break;
-      case depth32f: cc_sd(src, dst->asImg<icl32f>()); break;
-      case depth64f: cc_sd(src, dst->asImg<icl64f>()); break;
+      case depth8u: cc_sd(src, dst->asImg<icl8u>(),roiOnly); break;
+      case depth16s: cc_sd(src, dst->asImg<icl16s>(),roiOnly); break;
+      case depth32s: cc_sd(src, dst->asImg<icl32s>(),roiOnly); break;
+      case depth32f: cc_sd(src, dst->asImg<icl32f>(),roiOnly); break;
+      case depth64f: cc_sd(src, dst->asImg<icl64f>(),roiOnly); break;
       default:
         ICL_INVALID_DEPTH;
     }
@@ -663,37 +810,53 @@ namespace icl{
 
   // }}}
 
-  void cc(const ImgBase *src, ImgBase *dst){
+  void cc(const ImgBase *src, ImgBase *dst, bool roiOnly){
     // {{{ open
 
     ICLASSERT_RETURN( src );
     ICLASSERT_RETURN( dst );
     
-    /// adapt the size of the destination image
-    dst->setSize(src->getSize());
+    if(roiOnly){
+      /// check for equal roi sizes
+      ICLASSERT_RETURN(src->getROISize() == dst->getROISize());
+    }else{
+      /// adapt the size of the destination image
+      dst->setSize(src->getSize());
+    }
+    /// ensure, that the roiOnly - flag is necessary
+    if(roiOnly && src->hasFullROI() && dst->hasFullROI()){
+      roiOnly = false;
+    }
     
     if(lut_available(src->getFormat(),dst->getFormat())){
-      g_mapCCLUTs[src->getFormat()][dst->getFormat()]->cc(src,dst);
+      g_mapCCLUTs[src->getFormat()][dst->getFormat()]->cc(src,dst,roiOnly);
       return;
     }
     
     switch(cc_available(src->getFormat(), dst->getFormat())){
       case ccAvailable:
         switch(src->getDepth()){ //TODO depth macro
-          case depth8u: cc_s(src->asImg<icl8u>(),dst); break;
-          case depth16s: cc_s(src->asImg<icl16s>(),dst); break;
-          case depth32s: cc_s(src->asImg<icl32s>(),dst); break;
-          case depth32f: cc_s(src->asImg<icl32f>(),dst); break;
-          case depth64f: cc_s(src->asImg<icl64f>(),dst); break;
+          case depth8u: cc_s(src->asImg<icl8u>(),dst,roiOnly); break;
+          case depth16s: cc_s(src->asImg<icl16s>(),dst,roiOnly); break;
+          case depth32s: cc_s(src->asImg<icl32s>(),dst,roiOnly); break;
+          case depth32f: cc_s(src->asImg<icl32f>(),dst,roiOnly); break;
+          case depth64f: cc_s(src->asImg<icl64f>(),dst,roiOnly); break;
           default:
             ICL_INVALID_DEPTH;
         }
         break;
       case ccEmulated:{
-        ImgBase *buf=imgNew(src->getDepth(), src->getSize(), formatRGB);
-        cc(src,buf);
-        cc(buf,dst);
-        delete buf;
+        if(roiOnly){
+          ImgBase *buf=imgNew(src->getDepth(), src->getROISize(),formatRGB);
+          cc(src,buf,true);
+          cc(buf,dst,true);
+          delete buf;
+        }else{
+          ImgBase *buf=imgNew(src->getDepth(), src->getSize(), formatRGB);
+          cc(src,buf);
+          cc(buf,dst);
+          delete buf;
+        }
         break;
       }
       case ccAdapted:{
@@ -701,11 +864,31 @@ namespace icl{
         switch(src->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)  case depth##D:                                                                          \
           switch(dst->getDepth()){                                                                                        \
-            case depth8u: for(int i=0;i<n;i++){ convertChannel(src->asImg<icl##D>(),n,dst->asImg<icl8u>(),n); } break;    \
-            case depth16s: for(int i=0;i<n;i++){ convertChannel(src->asImg<icl##D>(),n,dst->asImg<icl16s>(),n); } break;  \
-            case depth32s: for(int i=0;i<n;i++){ convertChannel(src->asImg<icl##D>(),n,dst->asImg<icl32s>(),n); } break;  \
-            case depth32f: for(int i=0;i<n;i++){ convertChannel(src->asImg<icl##D>(),n,dst->asImg<icl32f>(),n); } break;  \
-            case depth64f: for(int i=0;i<n;i++){ convertChannel(src->asImg<icl##D>(),n,dst->asImg<icl64f>(),n); } break;  \
+            case depth8u: for(int i=0;i<n;i++){                                                                           \
+              convertChannelROI(src->asImg<icl##D>(),n,src->getROIOffset(),src->getROISize(),                             \
+                                dst->asImg<icl8u>(),n,dst->getROIOffset(),dst->getROISize());                             \
+            }                                                                                                             \
+            break;                                                                                                        \
+            case depth16s: for(int i=0;i<n;i++){                                                                          \
+              convertChannelROI(src->asImg<icl##D>(),n,src->getROIOffset(),src->getROISize(),                             \
+                                dst->asImg<icl16s>(),n,dst->getROIOffset(),dst->getROISize());                            \
+            }                                                                                                             \
+            break;                                                                                                        \
+            case depth32s: for(int i=0;i<n;i++){                                                                          \
+              convertChannelROI(src->asImg<icl##D>(),n,src->getROIOffset(),src->getROISize(),                             \
+                                dst->asImg<icl32s>(),n,dst->getROIOffset(),dst->getROISize());                            \
+            }                                                                                                             \
+            break;                                                                                                        \
+            case depth32f: for(int i=0;i<n;i++){                                                                          \
+              convertChannelROI(src->asImg<icl##D>(),n,src->getROIOffset(),src->getROISize(),                             \
+                                dst->asImg<icl32f>(),n,dst->getROIOffset(),dst->getROISize());                            \
+            }                                                                                                             \
+            break;                                                                                                        \
+            case depth64f: for(int i=0;i<n;i++){                                                                          \
+              convertChannelROI(src->asImg<icl##D>(),n,src->getROIOffset(),src->getROISize(),                             \
+                                dst->asImg<icl64f>(),n,dst->getROIOffset(),dst->getROISize());                            \
+            }                                                                                                             \
+            break;                                                                                                        \
           }                                                                                                               \
           break;
           ICL_INSTANTIATE_ALL_DEPTHS;

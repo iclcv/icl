@@ -122,194 +122,223 @@ namespace{
   // }}}
 
   template<class S, class D>
-  void cc_3x3(const Img<S> &src, Img<D> &dst, Img8u &lut){
+  void cc_3x3(const Img<S> &src, Img<D> &dst, Img8u &lut, bool roiOnly){
     // {{{ open
-    const S *s1,*s2, *s3; 
-    D *d1, *d2, *d3; 
-    icl8u *l1, *l2, *l3;
-    
-    get_ptrs_3(src,s1,s2,s3);
-    get_ptrs_3(dst,d1,d2,d3);
-    get_ptrs_3(lut,l1,l2,l3);
-               
-    const int DIM = src.getDim();
-    register int idx(0);
-    for(int i=0;i<DIM;i++){
-      idx = C2*Cast<S,icl8u>::cast(s1[i]) + C1*Cast<S,icl8u>::cast(s2[i]) + Cast<S,icl8u>::cast(s3[i]);
-      d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-      d2[i] = Cast<icl8u,D>::cast(l2[idx]);
-      d3[i] = Cast<icl8u,D>::cast(l3[idx]);
+    if(roiOnly){
+      ERROR_LOG("not yet implemented with roi support!");
+    }else{
+      const S *s1,*s2, *s3; 
+      D *d1, *d2, *d3; 
+      icl8u *l1, *l2, *l3;
+      
+      get_ptrs_3(src,s1,s2,s3);
+      get_ptrs_3(dst,d1,d2,d3);
+      get_ptrs_3(lut,l1,l2,l3);
+      
+      const int DIM = src.getDim();
+      register int idx(0);
+      for(int i=0;i<DIM;i++){
+        idx = C2*Cast<S,icl8u>::cast(s1[i]) + C1*Cast<S,icl8u>::cast(s2[i]) + Cast<S,icl8u>::cast(s3[i]);
+        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+        d3[i] = Cast<icl8u,D>::cast(l3[idx]);
+      }
     }
   }
 
   // }}}
 
   template<class S, class D>
-  void cc_3x2(const Img<S> &src, Img<D> &dst, Img8u &lut){
+  void cc_3x2(const Img<S> &src, Img<D> &dst, Img8u &lut, bool roiOnly){
     // {{{ open
-
-    const S *s1,*s2, *s3; 
-    D *d1, *d2; 
-    icl8u *l1, *l2;
-    
-    get_ptrs_3(src,s1,s2,s3);
-    get_ptrs_2(dst,d1,d2);
-    get_ptrs_2(lut,l1,l2);
-               
-    const int DIM = src.getDim();
-    register int idx(0);
-    for(int i=0;i<DIM;i++){
-      idx = C2*Cast<S,icl8u>::cast(s1[i]) + C1*Cast<S,icl8u>::cast(s2[i]) + Cast<S,icl8u>::cast(s3[i]);
-      d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-      d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+    if(roiOnly){
+      ERROR_LOG("not yet implemented with roi support!");
+    }else{
+      const S *s1,*s2, *s3; 
+      D *d1, *d2; 
+      icl8u *l1, *l2;
+      
+      get_ptrs_3(src,s1,s2,s3);
+      get_ptrs_2(dst,d1,d2);
+      get_ptrs_2(lut,l1,l2);
+      
+      const int DIM = src.getDim();
+      register int idx(0);
+      for(int i=0;i<DIM;i++){
+        idx = C2*Cast<S,icl8u>::cast(s1[i]) + C1*Cast<S,icl8u>::cast(s2[i]) + Cast<S,icl8u>::cast(s3[i]);
+        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+      }
     }
   }
 
   // }}}
 
   template<class S, class D>
-  void cc_3x1(const Img<S> &src, Img<D> &dst, Img8u &lut){
+  void cc_3x1(const Img<S> &src, Img<D> &dst, Img8u &lut, bool roiOnly){
     // {{{ open
-
-    const S *s1,*s2, *s3; 
-    D *d1 = dst.getData(0);
-    icl8u *l1 = lut.getData(0);
-    
-    get_ptrs_3(src,s1,s2,s3);
-
-    const int DIM = src.getDim();
-    register int idx(0);
-    for(int i=0;i<DIM;i++){
-      idx = C2*Cast<S,icl8u>::cast(s1[i]) + C1*Cast<S,icl8u>::cast(s2[i]) + Cast<S,icl8u>::cast(s3[i]);
-      d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+    if(roiOnly){
+      ERROR_LOG("not yet implemented with roi support!");
+    }else{
+      const S *s1,*s2, *s3; 
+      D *d1 = dst.getData(0);
+      icl8u *l1 = lut.getData(0);
+      
+      get_ptrs_3(src,s1,s2,s3);
+      
+      const int DIM = src.getDim();
+      register int idx(0);
+      for(int i=0;i<DIM;i++){
+        idx = C2*Cast<S,icl8u>::cast(s1[i]) + C1*Cast<S,icl8u>::cast(s2[i]) + Cast<S,icl8u>::cast(s3[i]);
+        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+      }
     }
   }
 
   // }}}
 
   template<class S, class D>
-  void cc_2x3(const Img<S> &src, Img<D> &dst, Img8u &lut){
+  void cc_2x3(const Img<S> &src, Img<D> &dst, Img8u &lut, bool roiOnly){
     // {{{ open
-
-    const S *s1,*s2; 
-    D *d1, *d2, *d3; 
-    icl8u *l1, *l2, *l3;
-    
-    get_ptrs_2(src,s1,s2);
-    get_ptrs_3(dst,d1,d2,d3);
-    get_ptrs_3(lut,l1,l2,l3);
-               
-    const int DIM = src.getDim();
-    register int idx(0);
-    for(int i=0;i<DIM;i++){
-      idx = C1*Cast<S,icl8u>::cast(s1[i]) + Cast<S,icl8u>::cast(s2[i]);
-      d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-      d2[i] = Cast<icl8u,D>::cast(l2[idx]);
-      d3[i] = Cast<icl8u,D>::cast(l3[idx]);
+    if(roiOnly){
+      ERROR_LOG("not yet implemented with roi support!");
+    }else{
+      const S *s1,*s2; 
+      D *d1, *d2, *d3; 
+      icl8u *l1, *l2, *l3;
+      
+      get_ptrs_2(src,s1,s2);
+      get_ptrs_3(dst,d1,d2,d3);
+      get_ptrs_3(lut,l1,l2,l3);
+      
+      const int DIM = src.getDim();
+      register int idx(0);
+      for(int i=0;i<DIM;i++){
+        idx = C1*Cast<S,icl8u>::cast(s1[i]) + Cast<S,icl8u>::cast(s2[i]);
+        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+        d3[i] = Cast<icl8u,D>::cast(l3[idx]);
+      }
     }
   }
 
   // }}}
 
   template<class S, class D>
-  void cc_2x2(const Img<S> &src, Img<D> &dst, Img8u &lut){
+  void cc_2x2(const Img<S> &src, Img<D> &dst, Img8u &lut, bool roiOnly){
     // {{{ open
-
-    const S *s1,*s2; 
-    D *d1, *d2;
-    icl8u *l1, *l2;
-    
-    get_ptrs_2(src,s1,s2);
-    get_ptrs_2(dst,d1,d2);
-    get_ptrs_2(lut,l1,l2);
-               
-    const int DIM = src.getDim();
-    register int idx(0);
-    for(int i=0;i<DIM;i++){
-      idx = C1*Cast<S,icl8u>::cast(s1[i]) + Cast<S,icl8u>::cast(s2[i]);
-      d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-      d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+    if(roiOnly){
+      ERROR_LOG("not yet implemented with roi support!");
+    }else{
+      const S *s1,*s2; 
+      D *d1, *d2;
+      icl8u *l1, *l2;
+      
+      get_ptrs_2(src,s1,s2);
+      get_ptrs_2(dst,d1,d2);
+      get_ptrs_2(lut,l1,l2);
+      
+      const int DIM = src.getDim();
+      register int idx(0);
+      for(int i=0;i<DIM;i++){
+        idx = C1*Cast<S,icl8u>::cast(s1[i]) + Cast<S,icl8u>::cast(s2[i]);
+        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+      }
     }
   }
 
   // }}}
 
   template<class S, class D>
-  void cc_2x1(const Img<S> &src, Img<D> &dst, Img8u &lut){
+  void cc_2x1(const Img<S> &src, Img<D> &dst, Img8u &lut, bool roiOnly){
     // {{{ open
-
-    const S *s1,*s2; 
-    D *d1 = dst.getData(0);
-    icl8u *l1 = lut.getData(0);
-    
-    get_ptrs_2(src,s1,s2);
-               
-    const int DIM = src.getDim();
-    register int idx(0);
-    for(int i=0;i<DIM;i++){
-      idx = C1*Cast<S,icl8u>::cast(s1[i]) + Cast<S,icl8u>::cast(s2[i]);
-      d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+    if(roiOnly){
+      ERROR_LOG("not yet implemented with roi support!");
+    }else{
+      const S *s1,*s2; 
+      D *d1 = dst.getData(0);
+      icl8u *l1 = lut.getData(0);
+      
+      get_ptrs_2(src,s1,s2);
+      
+      const int DIM = src.getDim();
+      register int idx(0);
+      for(int i=0;i<DIM;i++){
+        idx = C1*Cast<S,icl8u>::cast(s1[i]) + Cast<S,icl8u>::cast(s2[i]);
+        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+      }
     }
   }
 
   // }}}
 
   template<class S, class D>
-  void cc_1x3(const Img<S> &src, Img<D> &dst, Img8u &lut){
+  void cc_1x3(const Img<S> &src, Img<D> &dst, Img8u &lut, bool roiOnly){
     // {{{ open
-
-    const S *s1 = src.getData(0);
-    D *d1, *d2, *d3; 
-    icl8u *l1, *l2, *l3;
-    
-    get_ptrs_3(dst,d1,d2,d3);
-    get_ptrs_3(lut,l1,l2,l3);
-               
-    const int DIM = src.getDim();
-    register int idx(0);
-    for(int i=0;i<DIM;i++){
-      idx = Cast<S,icl8u>::cast(s1[i]);
-      d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-      d2[i] = Cast<icl8u,D>::cast(l2[idx]);
-      d3[i] = Cast<icl8u,D>::cast(l3[idx]);
+    if(roiOnly){
+      ERROR_LOG("not yet implemented with roi support!");
+    }else{
+      const S *s1 = src.getData(0);
+      D *d1, *d2, *d3; 
+      icl8u *l1, *l2, *l3;
+      
+      get_ptrs_3(dst,d1,d2,d3);
+      get_ptrs_3(lut,l1,l2,l3);
+      
+      const int DIM = src.getDim();
+      register int idx(0);
+      for(int i=0;i<DIM;i++){
+        idx = Cast<S,icl8u>::cast(s1[i]);
+        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+        d3[i] = Cast<icl8u,D>::cast(l3[idx]);
+      }
     }
   }
 
   // }}}
 
   template<class S, class D>
-  void cc_1x2(const Img<S> &src, Img<D> &dst, Img8u &lut){
+  void cc_1x2(const Img<S> &src, Img<D> &dst, Img8u &lut, bool roiOnly){
     // {{{ open
-
-    const S *s1 = src.getData(0);
-    D *d1, *d2;
-    icl8u *l1, *l2;
-    
-    get_ptrs_2(dst,d1,d2);
-    get_ptrs_2(lut,l1,l2);
-               
-    const int DIM = src.getDim();
-    register int idx(0);
-    for(int i=0;i<DIM;i++){
-      idx = Cast<S,icl8u>::cast(s1[i]);
-      d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-      d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+    if(roiOnly){
+      ERROR_LOG("not yet implemented with roi support!");
+    }else{
+      const S *s1 = src.getData(0);
+      D *d1, *d2;
+      icl8u *l1, *l2;
+      
+      get_ptrs_2(dst,d1,d2);
+      get_ptrs_2(lut,l1,l2);
+      
+      const int DIM = src.getDim();
+      register int idx(0);
+      for(int i=0;i<DIM;i++){
+        idx = Cast<S,icl8u>::cast(s1[i]);
+        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+      }
     }
   }
 
   // }}}
 
   template<class S, class D>
-  void cc_1x1(const Img<S> &src, Img<D> &dst, Img8u &lut){
+  void cc_1x1(const Img<S> &src, Img<D> &dst, Img8u &lut, bool roiOnly){
     // {{{ open
 
-    const S *s1 = src.getData(0);
-    D *d1 = dst.getData(0);
-    icl8u *l1 = lut.getData(0);
-    
-    const int DIM = src.getDim();
-    for(int i=0;i<DIM;i++){
-      d1[i] = Cast<icl8u,D>::cast(l1[Cast<S,icl8u>::cast(s1[i])]);
+    if(roiOnly){
+      ERROR_LOG("not yet implemented with roi support!");
+    }else{
+      const S *s1 = src.getData(0);
+      D *d1 = dst.getData(0);
+      icl8u *l1 = lut.getData(0);
+      
+      const int DIM = src.getDim();
+      for(int i=0;i<DIM;i++){
+        d1[i] = Cast<icl8u,D>::cast(l1[Cast<S,icl8u>::cast(s1[i])]);
+      }
     }
   }
 
@@ -374,29 +403,29 @@ namespace{
   
 
   template<class S, class D>
-  inline void cc_sd(const Img<S> *src, Img<D> *dst, Img8u &lut){
+  inline void cc_sd(const Img<S> *src, Img<D> *dst, Img8u &lut, bool roiOnly){
     switch(src->getChannels()){
       case 1: 
         switch(dst->getChannels()){
-          case 1: cc_1x1(*src, *dst, lut); break;
-          case 2: cc_1x2(*src, *dst, lut); break;
-          case 3: cc_1x3(*src, *dst, lut); break;
+          case 1: cc_1x1(*src, *dst, lut, roiOnly); break;
+          case 2: cc_1x2(*src, *dst, lut, roiOnly); break;
+          case 3: cc_1x3(*src, *dst, lut, roiOnly); break;
           default: throw ICLException("CCLUT internal error (code 1)");
         }
         break;
       case 2:
         switch(dst->getChannels()){
-          case 1: cc_2x1(*src, *dst, lut); break;
-          case 2: cc_2x2(*src, *dst, lut); break;
-          case 3: cc_2x3(*src, *dst, lut); break;
+          case 1: cc_2x1(*src, *dst, lut, roiOnly); break;
+          case 2: cc_2x2(*src, *dst, lut, roiOnly); break;
+          case 3: cc_2x3(*src, *dst, lut, roiOnly); break;
           default: throw ICLException("CCLUT internal error (code 2)");
         }
         break;
       case 3:
         switch(dst->getChannels()){
-          case 1: cc_3x1(*src, *dst, lut); break;
-          case 2: cc_3x2(*src, *dst, lut); break;
-          case 3: cc_3x3(*src, *dst, lut); break;
+          case 1: cc_3x1(*src, *dst, lut, roiOnly); break;
+          case 2: cc_3x2(*src, *dst, lut, roiOnly); break;
+          case 3: cc_3x3(*src, *dst, lut, roiOnly); break;
           default: throw ICLException("CCLUT internal error (code 3)");
         }
         break;
@@ -406,9 +435,9 @@ namespace{
   }
 
   template<class S>
-  inline void cc_s(const Img<S> *src, ImgBase *dst, Img8u &lut){
+  inline void cc_s(const Img<S> *src, ImgBase *dst, Img8u &lut, bool roiOnly){
     switch(dst->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: cc_sd(src,dst->asImg<icl##D>(),lut); break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: cc_sd(src,dst->asImg<icl##D>(),lut,roiOnly); break;
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
     }
@@ -426,9 +455,9 @@ namespace icl{
       default: ICL_INVALID_FORMAT;
     }        
   }
-  void CCLUT::cc(const ImgBase *src, ImgBase *dst){
+  void CCLUT::cc(const ImgBase *src, ImgBase *dst, bool roiOnly){
     switch(src->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: cc_s(src->asImg<icl##D>(),dst, m_oLUT); break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: cc_s(src->asImg<icl##D>(),dst, m_oLUT,roiOnly); break;
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
     }      
