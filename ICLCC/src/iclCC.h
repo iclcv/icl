@@ -302,7 +302,16 @@ The following tables, show the cross format conversion times:
 <tr>  <td>gray</td>    <td>8</td>   <td>8</td>   <td>8</td>   <td>8</td>   <td>3</td>    <td>**</td>      </tr>
 <tr>  <td>chroma</td>  <td>7</td>   <td>**</td>  <td>**</td>  <td>**</td>  <td>**</td>   <td>5</td>       </tr>
 </table>
-*/
+
+\section ROI ROI-Support
+A new feature is the ROI-Support of the "cc" function. If the "roiOnly"-flag given to cc function is 
+set to true, the source images ROI is converted into the destination images ROI. In this case, the
+destination image is not adapted to the source image. Instead, a single test is performed to ensure,
+that the source images ROI has the same size as the destination images ROI. If the test fails, an
+error occurs and the function returns immediately.\n
+<b>Note:</b> internally all functions are optimized for running without ROI support (in this case, the
+images data arrays are 1D). Thus, the ROI-Support mode (roiOnly = true) runs approx. 20% (2%-50%) slower 
+depended on the specific source and destination format. */
 
 namespace icl{
   
