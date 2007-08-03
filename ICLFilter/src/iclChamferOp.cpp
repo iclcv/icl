@@ -169,6 +169,35 @@ namespace icl{
     // }}}
   }
   
+  ChamferOp::ChamferOp( ChamferOp::metric m ){
+    setMetric(m);    
+  }
+  
+  namespace{
+    int compute_max_val(ChamferOp::metric m, const Size &imageSize){
+      int a = imageSize.width+imageSize.height;
+      switch(m){
+        case ChamferOp::metric_1_1: return a;
+        case ChamferOp::metric_1_2: return 2*a;
+        case ChamferOp::metric_2_3: return 3*a;
+        case ChamferOp::metric_7071_10000: return 10000*a;
+        default: return a;
+      }
+    }
+  }
+  
+  void ChamferOp::setMetric(ChamferOp::metric m){
+    m_eMetric = m;
+    switch(m){
+      case metric_1_1: m_aiDist[0] = m_aiDist[1] = 1; break;
+      case metric_1_2: m_aiDist[0] = 1; m_aiDist[1] = 2; break;
+      case metric_2_3: m_aiDist[0] = 2; m_aiDist[1] = 3; break;
+      case metric_7071_10000: m_aiDist[0]=7071; m_aiDist[1]=10000; break;
+      default: m_aiDist[0] = m_aiDist[1] = 1; break;
+    }
+    m_iMaxVal = m_aiDist[1];
+  }
+  
   void ChamferOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
     // {{{ open
     ICLASSERT_RETURN(poSrc);
@@ -185,17 +214,11 @@ namespace icl{
     if(m_eMetric != metric_real_euclidian){    
       Img32s *dst = (*ppoDst)->asImg<icl32s>();
       
-      int d1,d2;
-      switch(m_eMetric){
-        case metric_1_1: d1=d2=1; break;
-        case metric_1_2: d1=1; d2=2; break;
-        case metric_2_3: d1=2; d2=3; break;
-        case metric_7071_10000: d1=7071; d2=10000; break;
-        default: d1=d2=-1;
-      }
+      int d1 = m_aiDist[0];
+      int d2 = m_aiDist[1];
       
       switch(poSrc->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: for(int c=0;c<C;++c){ prepare_chamfer_image(poSrc->asImg<icl##D>(),dst,c,d2*WH); } break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: for(int c=0;c<C;++c){ prepare_chamfer_image(poSrc->asImg<icl##D>(),dst,c,m_iMaxVal*WH); } break;
         ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
         default: ICL_INVALID_DEPTH;
@@ -232,7 +255,11 @@ namespace icl{
 
   // }}}
   
-  double ChamferOp::computeDirectedHausdorffDistance(const Img32s *chamferImage, const std::vector<Point> &model, ChamferOp::hausdorffMetric m){
+  double ChamferOp::computeDirectedHausdorffDistance(const Img32s *chamferImage, 
+                                                     const std::vector<Point> &model,
+                                                     ChamferOp::hausdorffMetric hm, 
+                                                     int penalty,
+                                                     ChamferOp::metric m){
     // {{{ open
 
     ICLASSERT_RETURN_VAL(chamferImage,-1);
@@ -240,9 +267,12 @@ namespace icl{
     ICLASSERT_RETURN_VAL(model.size(),-1);
     
     Rect roi = chamferImage->getROI();
+    Rect imagerect = Rect(Point::null,chamferImage->getSize());
     ImgChannel32s chan = pickChannel(chamferImage,0);
     
-    if(m == hausdorff_mean){
+    penalty = penalty < 0 ? compute_max_val(m,chamferImage->getSize()) : penalty;
+    
+    if(hm == hausdorff_mean){
       int n=0;
       double val=0;
       register int x,y;      
@@ -252,6 +282,9 @@ namespace icl{
         if(roi.contains(x,y)){
           val+=chan(x,y);
           n++;
+        }else if(imagerect.contains(x,y)){
+          val+=penalty;
+          if(penalty) n++;
         }
       }
       return n ? val/n : 0;
@@ -263,6 +296,8 @@ namespace icl{
         y = model[i].y;
         if(roi.contains(x,y)){
           maxVal = std::max(maxVal,chan(x,y));
+        }else if(imagerect.contains(x,y)){
+          maxVal = std::max(maxVal,penalty);
         }
       }
       return maxVal;      
@@ -280,11 +315,11 @@ namespace icl{
     ICLASSERT_RETURN_VAL(chamferImageB,-1);
     ICLASSERT_RETURN_VAL(chamferImageA->getChannels() == 1,-1);
     ICLASSERT_RETURN_VAL(chamferImageB->getChannels() == 1,-1);
-
+    
     Rect roi = chamferImageA->getROI() & chamferImageB->getROI();
     ImgChannel32s chanA = pickChannel(chamferImageA,0);
     ImgChannel32s chanB = pickChannel(chamferImageB,0);
-    
+
     int xEnd = roi.right();
     int yEnd = roi.bottom();
     
@@ -342,7 +377,7 @@ namespace icl{
     ensureCompatible(bufferB,depth32s,imageSize,1);
     
     Img32s *a = (*bufferA)->asImg<icl32s>();   
-    Img32s *b = (*bufferA)->asImg<icl32s>();
+    Img32s *b = (*bufferB)->asImg<icl32s>();
     
     a->clear();
     b->clear();
@@ -379,14 +414,16 @@ namespace icl{
   double  ChamferOp::computeSymmeticHausdorffDistance(const Img32s *chamferImage, 
                                                       const std::vector<Point> &model, 
                                                       ImgBase **bufferImage, 
-                                                      ChamferOp::hausdorffMetric m){
+                                                      ChamferOp::hausdorffMetric hm,
+                                                      int penalty,
+                                                      ChamferOp::metric m){
     ICLASSERT_RETURN_VAL(chamferImage,-1);
     ICLASSERT_RETURN_VAL(chamferImage->getChannels() == 1,-1);
     ICLASSERT_RETURN_VAL(bufferImage,-1);
     
-    double hd1 = computeDirectedHausdorffDistance(chamferImage, model,m);
+    double hd1 = computeDirectedHausdorffDistance(chamferImage, model,hm, penalty,m);
 
-    ensureCompatible(bufferImage,depth32s,chamferImage->getSize(),1,formatMatrix);
+    ensureCompatible(bufferImage,depth32s,chamferImage->getSize(),1,formatMatrix,chamferImage->getROI());
     Img32s *bi = (*bufferImage)->asImg<icl32s>();
     ImgChannel32s biChannel = pickChannel(bi,0);
     bi->clear();
@@ -402,9 +439,9 @@ namespace icl{
     ChamferOp co;
     co.apply(bi,bufferImage);
 
-    double hd2 = computeDirectedHausdorffDistance(chamferImage,bi,m);
+    double hd2 = computeDirectedHausdorffDistance(chamferImage,bi,hm);
     
-    return m == hausdorff_mean ? (hd1+hd2)/2 : std::max(hd1,hd2);
+    return hm == hausdorff_mean ? (hd1+hd2)/2 : std::max(hd1,hd2);
   }
 
 

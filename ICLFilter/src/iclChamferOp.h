@@ -39,17 +39,26 @@ namespace icl{
       hausdorff_mean
     };
 
-    ChamferOp( metric m = metric_7071_10000 ): m_eMetric(m){}
+    ChamferOp( metric m = metric_7071_10000 );
 
     virtual ~ChamferOp(){}
     
     virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
     
-    inline void setMetric( metric m){ m_eMetric = m; }
+    void setMetric( metric m);
     
-    metric getMetric() const{ return m_eMetric; }
+    inline metric getMetric() const{ return m_eMetric; }
 
-    static double computeDirectedHausdorffDistance(const Img32s *chamferImage, const std::vector<Point> &model,hausdorffMetric m=hausdorff_mean);
+    inline int getMaxVal() const { return m_iMaxVal; }
+
+    /// overwrites the settings applied by setMetrix ! 
+    inline void setMaxVal(int val) { m_iMaxVal = val; }
+
+    static double computeDirectedHausdorffDistance(const Img32s *chamferImage, 
+                                                   const std::vector<Point> &model,
+                                                   hausdorffMetric m=hausdorff_mean, 
+                                                   int penalty=-1,
+                                                   metric m=metric_7071_10000);
     static double computeDirectedHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB, ChamferOp::hausdorffMetric m);
 
     static double computeSymmetricHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB,hausdorffMetric m=hausdorff_mean);
@@ -59,11 +68,16 @@ namespace icl{
     static double computeSymmeticHausdorffDistance(const Img32s *chamferImage, 
                                                    const std::vector<Point> &model, 
                                                    ImgBase **bufferImage, 
-                                                   hausdorffMetric m=hausdorff_mean);
+                                                   hausdorffMetric m=hausdorff_mean,
+                                                   int penalty=-1,
+                                                   metric m=metric_7071_10000);
     
-
+    
+    
     private:
     metric m_eMetric;
+    int m_iMaxVal;    /// maxinum image value multiplicator (defined by the metric and mutliplied by (image.widht+image.height)  
+    int m_aiDist[2];   /// neighbour-pixel distances (horz/vert and diag)
   };
 }
 #endif

@@ -47,7 +47,7 @@ namespace icl{
                          size of the Img32f for the other render-
                          function.
     */
-    Szene(const Rect &viewPort,const Camera &cam=Camera() );
+    Szene(const Rect &viewPort=Rect(0,0,320,240),const Camera &cam=Camera() );
     
     /// returns the szenes camera
     Camera &getCam(){ return m_oCam; }
