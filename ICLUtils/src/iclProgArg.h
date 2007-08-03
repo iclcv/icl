@@ -132,6 +132,7 @@ int main(int n, char **ppc){
       <pre>
       usage: 
       </pre>
+      <b>NOTE: pa_explain(..) must be called BEFORE pa_init() is called !!</b>
       @param argname name of the argument to explain
       @param explanation explanation for argname
   */
