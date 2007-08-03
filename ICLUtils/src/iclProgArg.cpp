@@ -15,9 +15,11 @@ namespace icl{
 
     typedef vector<string> svec;
     typedef map<string,svec> svecmap;
+    typedef map<string,string> smap;
     
     static svec s_oArgs;      // contains all arguments that were actually given
     static svecmap s_oArgMap; // contains all args with their actually given sub-args
+    static smap s_oExplanations; // optinally contains explanations for some or all args
 
     static bool s_bCheckParams;
     static string s_sProgName;
@@ -51,6 +53,16 @@ namespace icl{
 
     // }}}
 
+    std::string iToStr(int n){
+      // {{{ open
+
+      char buf[20];
+      sprintf(buf,"%d",n);
+      return buf;
+    }
+
+    // }}}
+    
     void usage(){
       // {{{ open
 
@@ -58,36 +70,57 @@ namespace icl{
       if(s_bCheckParams){
         printf("\tallowed ARGS are:\n");
         for(std::map<string,int>::iterator it = s_oARG_LUT.begin(); it != s_oARG_LUT.end();++it){
-          if((*it).second){
-            printf("\t%s(%d) \n",(*it).first.c_str(),(*it).second);
+          const std::string &arg = (*it).first;
+          int &n = (*it).second;
+          std::string &ex = s_oExplanations[arg];
+          
+          string line = "\t"+arg;
+          if(n){
+            line += string("(")+iToStr(n)+") : ";
           }else{
-            printf("\t%s \n",(*it).first.c_str());
+            line += " : ";
+          }
+          int len = (int)line.length();
+          
+          std::vector<string> exLines = StrTok(ex,"\n").allTokens();
+          if(!exLines.size()){
+            printf("%s\n",line.c_str());
+          }else{
+            for(unsigned int i=0;i<exLines.size();i++){
+              if(i){
+                printf("\t");
+                for(int j=1;j<len;j++) printf(" ");
+              }else{
+                printf("%s",line.c_str());
+              }
+              printf("%s",exLines[i].c_str());
+              printf("\n");
+            }
           }
         }
+        printf("\t--help : show this usage\n");
       }
       exit(-1);
     }
 
     // }}}
     
-    void init(int nArgs, char **ppcArg, string allowedParams){
+    void init(int nArgs, char **ppcArg, string allowedParams, bool skipUnknownArgs){
       // {{{ open
-
+      bool showUsage = false;
       s_sProgName = *ppcArg++;
       s_iArgCount = --nArgs;
 
-    
-
       // create the list of params
       for(int i=0;i<nArgs;i++){
+        if(string(*ppcArg) == "--help"){
+          showUsage = true;
+        }
         s_oArgs.push_back(*ppcArg++);
-        // printf("current arg token %d is [%s] \n",i,s_oArgs[s_oArgs.size()-1].c_str());
       }
 
       s_bCheckParams = (allowedParams!="");
       if(s_bCheckParams){
-      
-        // printf("check params case !\n");
       
         // create list of allowed arguments 
         StrTok tok(allowedParams," ");
@@ -97,30 +130,27 @@ namespace icl{
           int nargs = last(s)==')' ?  extract_arg_count(s) : 0;
           s=s.substr(0,s.find('('));
 
-          // printf("processing allowed arg token [%s](%d) \n",s.c_str(),nargs);
           s_oARG_LUT[s]=nargs;
         }
 
         // check all args and subargs
         for(unsigned int i=0;i<s_oArgs.size();i++){
           string &s = s_oArgs[i];
-          // printf("verifying current arg %d: [%s] \n",i,s.c_str());
-        
           if(s_oARG_LUT.find(s) == s_oARG_LUT.end()){
-            printf("error: nothing known about arg %s [index=%d]\n ",s.c_str(),i);
-            usage();
-            return;
+            if(skipUnknownArgs){
+              continue;
+            }else{
+              printf("error: nothing known about arg %s [index=%d]\n ",s.c_str(),i);
+              usage();
+              return;
+            }
           }
           int n = s_oARG_LUT[s];
           if(!n) s_oArgMap[s]=std::vector<string>(0);
-          // printf("found arg [%s] --> seaching for %d subargs \n",s.c_str(),n);
-          // push the sub args and skip them
-          // static svec s_oArgs;      // contains all arguments that were actually given
-          // static svecmap s_oArgMap; // contains all args with their actually given sub-args
+         
           i++;
           for(int sa=0;sa<n;sa++,i++){
             if(i<s_oArgs.size()){ 
-              // printf("found subarg %d [%s] \n",sa,s_oArgs[i].c_str());
               s_oArgMap[s].push_back(s_oArgs[i]); 
             }else{
               printf("error: arg %s requires %d subargs !",s.c_str(),n);
@@ -131,10 +161,15 @@ namespace icl{
           i--;
         }      
       }
+      if(showUsage){
+        usage();
+        return;
+      }
     }
 
     // }}}
-
+    
+    
     inline const string &progName(){
       // {{{ open
 
@@ -155,6 +190,17 @@ namespace icl{
       // {{{ open
 
       return s_oArgMap.find(param) != s_oArgMap.end();
+    }
+
+    // }}}
+
+    void explain(const std::string &arg, const std::string & ex){
+      // {{{ open
+      
+      if(s_oExplanations.find(arg) != s_oExplanations.end()){
+        WARNING_LOG("Arg \"" << arg << "\" was alredy explained by " << std::endl << "\"" << ex << "\"");
+      }
+      s_oExplanations[arg] = ex;
     }
 
     // }}}
@@ -264,8 +310,8 @@ namespace icl{
     
   // {{{ pa_xxx functions pa_init, pa_progname, pa_argcount, pa_usage, pa_defined
 
-  void pa_init(int n, char **a, std::string allowed){
-    progarg::init(n,a,allowed);
+  void pa_init(int n, char **a, std::string allowed, bool skipUnknownArgs){
+    progarg::init(n,a,allowed,skipUnknownArgs);
   }
   
   const std::string & pa_progname(){
@@ -333,6 +379,14 @@ namespace icl{
 
   // nochmal mit char const*
   template<> string  pa_subarg(std::string param, unsigned int index, string def) { return progarg::sSubParam(param,index,def); }
+
+  // }}}
+
+  void pa_explain(const std::string &argname, const std::string &explanation){
+    // {{{ open
+
+    progarg::explain(argname,explanation);
+  }
 
   // }}}
 }

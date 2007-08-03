@@ -21,15 +21,26 @@ namespace icl{
       - printing error messages and usage if 
          - denied arguments were given the program
          - an argument go not the correct count of sub-arguments
+         - list and explain possible arguments
          - ...
       <H1>ProgArg - a more convenient approach!</H1>
       The following example, also available in ICLUtils/examples/progargdemo,
       shows the advantages of using the ProgArg environment:
-      <pre>
-  
+      \code
+
+#include <iclProgArg.h>
 using namespace icl;
   
 int main(int n, char **ppc){
+
+  pa_explain("-size",
+             "image size\n"
+             "first param = width (one of 160, 320 or 640)\n"
+             "second param = height one of (120, 240 or 480)");
+  pa_explain("-format","image format\none of:\n- formatRGB\n- formatGray\n- formatHLS");
+  pa_explain("-channels","count of image channels\none of {1,2,3,4}");
+  pa_explain("-fast","enables the \"fast\"-mode which does everything\nmuch faster!");
+
   pa_init(n,ppc,"-size(2) -format(1) -channels(1) -fast");
   
   printf("programs name is %s \n",pa_progname().c_str());
@@ -51,7 +62,8 @@ int main(int n, char **ppc){
   
   return 0;
 }
-  </pre>
+  \endcode
+
   The following outputs are possible. 
   <pre>
   gordonfreeman\@blackmesa:~/projects/ICL/ICLUtils/examples> ./progargdemo -size 640 480 -channels 3 -format rgb -fast
@@ -72,12 +84,21 @@ int main(int n, char **ppc){
  
   gordonfreeman\@blackmesa:~/projects/ICL/ICLUtils/examples> ./progargdemo -size 640 480 -slow
   error: nothing known about arg -slow [index=3]
-  usage: ./progargdemo [ARGS]
-         allowed ARGS are:
-         -channels(1)
-         -fast
-         -format(1)
-         -size(2)
+  usage: progargdemo [ARGS] 
+        allowed ARGS are:
+        -channels(1) : count of image channels
+                       one of {1,2,3,4}
+        -fast : enables the "fast"-mode which does everything
+                much faster!
+        -format(1) : image format
+                     one of:
+                     - formatRGB
+                     - formatGray
+                     - formatHLS
+        -size(2) : image size
+                   first param = width (one of 160, 320 or 640)
+                   second param = height one of (120, 240 or 480)
+        --help : show this usage
   </pre>
   
       <H1>pa_init</H1>
@@ -92,19 +113,36 @@ int main(int n, char **ppc){
       @param allowedArgs optional definition of the allowed arguments with the following
                          syntax: [ARG<(\#SUBARGS)>]. E.g. "-size(2) -input-file(1) -fast".
                          <em>More details in the example above!</em>  
+      @param skipUnknownArgs if set to true, unknown args are just skipped, otherwise, the
+             "usage" is shown, and the programm is aborted using exit(-1)
   */
-  void pa_init(int nArgs, char **ppcArg, std::string allowedArgs="");
+  void pa_init(int nArgs, char **ppcArg, std::string allowedArgs="", bool skipUnknowArgs=false);
   
   /// returns the program name as it was written to start the program
   /** e.g. "./myprogram" */
   const std::string &pa_progname();
+  
+  /// this function can be used to explain arguents 
+  /** e.g. if you call pa_init(n,ppc,"-s(1)"), the "-s" arg is not explained enogh
+      propably. To do this, just call: 
+      \code
+      pa_explain("-s","sets up the current image size"); 
+      \endcode
+      and the following usage will help to understand programm args better:
+      <pre>
+      usage: 
+      </pre>
+      @param argname name of the argument to explain
+      @param explanation explanation for argname
+  */
+  void pa_explain(const std::string &argname, const std::string &explanation);
 
   /// returns the count of parameters actually given
   unsigned int pa_argcount();
   
   /// writes the error message followed by a usage definition
   /** the usage is only defined, if "allowedArgs" was set in pa_init */
-  void pa_usage(std::string errorMessage);
+  void pa_usage(const std::string &errorMessage);
   
   /// returns weather a certain argument was actually given
   bool pa_defined(const std::string &param);
