@@ -174,7 +174,7 @@ namespace icl {
     }
     
     /// returns if the Rect contains a given point
-    bool contains(int x, int y){
+    bool contains(int x, int y) const{
       return this->x<=x && right()>=x && this->y<=y && bottom()>=y;
     }
     
