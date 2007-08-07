@@ -512,7 +512,10 @@ namespace icl {
 
       /// returns the images ROI YOffset
       int getROIYOffset() const{ return m_oParams.getROIYOffset(); }
-
+      
+      /// returns the image rect (0,0,width, height)
+      Rect getImageRect() const { return Rect(Point::null,getSize()); }
+      
       /// sets the image ROI offset to the given value
       void setROIOffset(const Point &offset) { m_oParams.setROIOffset(offset); }
       

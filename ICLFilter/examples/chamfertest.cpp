@@ -15,19 +15,12 @@ int main(int n, char **ppc){
   ImgBase *res=0;
   Img8u im = cvt8u(image);
   for(int i=0;i<10;i++){
-    ChamferOp(ChamferOp::metric_real_euclidian).apply(&im,&res);
+    ChamferOp(3,4).apply(&im,&res);
   }
   
-  ImgQ result;
-  if(res->getDepth() == depth32s){
-    result = cvt( *(res->asImg<icl32s>()));
-  }else{
-    result = cvt( *(res->asImg<icl32f>()));
-  }
+  ImgQ result = cvt( *(res->asImg<icl32s>()));
   
-  print(result);
   result = norm(result);
-  
   
   show((image,result));
 
