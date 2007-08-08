@@ -98,7 +98,12 @@ namespace icl {
     Rect operator*(double d) const {
       return Rect((int)(d*x),(int)(d*y),(int)(d*width),(int)(d*height));
     }
-    
+
+    /// scales all parameters of the rect by a double value
+    Rect operator/(double d) const {
+      return Rect((int)(x/d),(int)(y/d),(int)(width/d),(int)(height/d));
+    }
+
     /// adds a size to the rects size
     Rect& operator+=(const Size &s){
       width+=s.width; height+=s.height; return *this;
@@ -126,8 +131,15 @@ namespace icl {
       width=(int)((float)width*d); 
       height=(int)((float)height*d); 
       return *this;
-    };
-    
+    }
+    /// scales all rect params inplace
+    Rect& operator/=(double d){
+      x=(int)((float)x/d); 
+      y=(int)((float)y/d);
+      width=(int)((float)width/d); 
+      height=(int)((float)height/d); 
+      return *this;
+    }
     /// returns width*height
     int getDim() const {return width*height;}
 
