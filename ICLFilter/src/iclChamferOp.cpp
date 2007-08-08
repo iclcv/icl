@@ -26,8 +26,20 @@ namespace icl{
 
     // }}}
 
+    namespace co{
+      inline Size scale(const Size &s, int f){
+        return Size( (int)ceil(float(s.width)/f), (int)ceil(float(s.height)/f) );
+      }
+      inline Point scale(const Point &s, int f){
+        return Point( (int)ceil(float(s.x)/f), (int)ceil(float(s.y)/f) );
+      }
+      inline Rect scale(const Rect &r, int f){
+        return Rect(scale(r.ul(),f), scale(r.size(),f) );
+      }
+    }
+
     template<class T>
-    void prepare_chamfer_image(const Img<T> *poSrc, Img32s *poDst, int channel, icl32s maxVal){
+    void prepare_chamfer_image_unscaled(const Img<T> *poSrc, Img32s *poDst, int channel, icl32s maxVal){
       // {{{ open
       if(poSrc->hasFullROI() && poDst->hasFullROI()){
         
@@ -49,7 +61,68 @@ namespace icl{
       }
     }
 
+    // }}} 
+    template<class T>
+    void prepare_chamfer_image_scaled(const Img<T> *poSrc, Img32s *poDst, int channel, icl32s maxVal, int scaleFactor){
+      // {{{ open
+      
+      ICLASSERT_RETURN(poSrc);
+      ICLASSERT_RETURN(poDst);
+      ICLASSERT_RETURN(co::scale(poSrc->getROISize(),scaleFactor) == poDst->getROISize());
+      
+      poDst->clear(channel,maxVal,true);
+      
+      if(poSrc->hasFullROI() && poDst->hasFullROI()){
+        int xEnd = poSrc->getWidth();
+        int yEnd = poSrc->getHeight();
+        const ImgChannel<T> src = pickChannel(poSrc,channel);
+        ImgChannel32s dst = pickChannel(poDst,channel);
+        for(int x=0;x<xEnd;++x){
+          for(int y=0;y<yEnd;++y){
+            if(src(x,y)) dst(x/scaleFactor,y/scaleFactor) = 0;
+          }
+        }
+      }else{
+        int xSrcStart = poSrc->getROI().x;
+        int xSrcEnd = poSrc->getROI().right();
+        int ySrcStart = poSrc->getROI().y;
+        int ySrcEnd = poSrc->getROI().bottom();
+        int xDstStart = poDst->getROI().x;
+        int yDstStart = poDst->getROI().y;
+
+        const ImgChannel<T> src = pickChannel(poSrc,channel);
+        ImgChannel32s dst = pickChannel(poDst,channel);
+        poDst->clear(channel,maxVal,true);
+        Rect r = poDst->getROI();
+        for(int x=xSrcStart;x<xSrcEnd;++x){
+          for(int y=ySrcStart;y<ySrcEnd;++y){
+            if(src(x,y)) dst(xDstStart + (x-xSrcStart)/scaleFactor,yDstStart + (y-ySrcStart)/scaleFactor ) = 0;
+          }
+        }
+      }
+    }
+
     // }}}
+
+  
+    
+    template<class T>
+    void prepare_chamfer_image(const Img<T> *poSrc, Img32s *poDst, int channel, icl32s maxVal, int scaleFactor, Img32s &buffer, bool scaleUpResult){
+      // {{{ open
+
+      if(scaleFactor > 1){
+        ImgBase *buf = scaleUpResult ? &buffer : poDst;
+        
+        ensureCompatible(&buf,depth32s,co::scale(poSrc->getSize(),scaleFactor), 
+                         poSrc->getChannels(),poSrc->getFormat(),co::scale(poSrc->getROI(),scaleFactor));
+        
+        prepare_chamfer_image_scaled(poSrc,buf->asImg<icl32s>(),channel,maxVal,scaleFactor);
+      }else{
+        prepare_chamfer_image_unscaled(poSrc,poDst,channel,maxVal);
+      }
+    }
+    // }}}
+
     void apply_chamfer_op_generic(Img32s *poDst, int channel, icl32s  d1, icl32s d2){
       // {{{ open
       
@@ -89,6 +162,7 @@ namespace icl{
       }else{
         ImgChannel32s dst = pickChannel(poDst,channel);
         Rect r = poDst->getROI();
+     
         int rX = r.x;
         int rY = r.y;
         int rXEnd = r.right();
@@ -114,11 +188,11 @@ namespace icl{
         int w2 = w1-1;
         
         for(int y=rY;y<rYEnd;++y){
-          dst(0,y) = dst(1,y);
+          dst(rX,y) = dst(rX+1,y);
           dst(w1,y) = dst(w2,y) ;
         }
         for(int x=rX;x<rXEnd;++x){
-          dst(x,0) = dst(x,1);
+          dst(x,rY) = dst(x,rY+1);
           dst(x,h1) = dst(x,h2) ;
         }
       }
@@ -134,15 +208,19 @@ namespace icl{
   
   }
   
-  ChamferOp::ChamferOp( icl32s horizontalAndVerticalNeighbourDistance, icl32s diagonalNeighborDistance )
+  ChamferOp::ChamferOp( icl32s horizontalAndVerticalNeighbourDistance, icl32s diagonalNeighborDistance, int scaleFactor, bool scaleUpResult)
     // {{{ open
 
     :m_iHorizontalAndVerticalNeighbourDistance(horizontalAndVerticalNeighbourDistance),
-     m_iDiagonalNeighborDistance(diagonalNeighborDistance){
+     m_iDiagonalNeighborDistance(diagonalNeighborDistance),
+     m_iScaleFactor(scaleFactor),
+     m_bScaleUpResult(scaleUpResult){
     setClipToROI(false);
   }
 
   // }}}
+ 
+
   
   void ChamferOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
     // {{{ open
@@ -151,7 +229,17 @@ namespace icl{
 
     bool needSetCheckOnlyToFalseCall = (!getCheckOnly()) && (*ppoDst == poSrc);
     if(needSetCheckOnlyToFalseCall) setCheckOnly(true);
-    if(!prepare (ppoDst, poSrc, depth32s)){
+    //    if(!prepare (ppoDst, poSrc, depth32s)){
+    Size dstSize;
+    Rect dstROI;
+    if( (m_iScaleFactor == 1) || m_bScaleUpResult ){
+      dstSize = poSrc->getSize();
+      dstROI = poSrc->getROI();
+    }else{
+      dstSize = co::scale(poSrc->getSize(),m_iScaleFactor);
+      dstROI = co::scale(poSrc->getROI(),m_iScaleFactor);
+    }
+    if(!prepare(ppoDst, depth32s, dstSize,  poSrc->getFormat(), poSrc->getChannels(), dstROI)){
       ERROR_LOG("unable to prepare image \n");
       if(needSetCheckOnlyToFalseCall) setCheckOnly(false);
       return;
@@ -165,13 +253,25 @@ namespace icl{
     icl32s maxVal = compute_max_val(d1,d2,poSrc->getSize());
     
     switch(poSrc->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: for(int c=0;c<C;++c){ prepare_chamfer_image(poSrc->asImg<icl##D>(),dst,c,maxVal); } break;
+#define ICL_INSTANTIATE_DEPTH(D)                                                                                          \
+      case depth##D:                                                                                                      \
+        for(int c=0;c<C;++c){                                                                                             \
+          prepare_chamfer_image(poSrc->asImg<icl##D>(),dst,c,maxVal, m_iScaleFactor, m_oBufferImage, m_bScaleUpResult);   \
+        }                                                                                                                 \
+        break;                                                          
       ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
       default: ICL_INVALID_DEPTH;
     }
-    for(int c=0;c<C;++c){
-      apply_chamfer_op_generic(dst,c,d1,d2);
+    if(m_iScaleFactor == 1 || !m_bScaleUpResult){
+      for(int c=0;c<C;++c){
+        apply_chamfer_op_generic(dst,c,d1,d2);
+      }
+    }else{
+      for(int c=0;c<C;++c){
+        apply_chamfer_op_generic(&m_oBufferImage,c,d1,d2);
+      }      
+      m_oBufferImage.scaledCopyROI(dst);
     }
     if(needSetCheckOnlyToFalseCall) setCheckOnly(false);
   }

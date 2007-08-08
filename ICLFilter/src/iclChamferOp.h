@@ -2,6 +2,7 @@
 #define ICL_CHAMFER_OP
 
 #include "iclUnaryOp.h"
+#include <iclImg.h>
 #include <vector>
 #include <iclPoint.h>
 
@@ -80,20 +81,34 @@ namespace icl{
       \section BENCH Benchmarks
       
       The chamfering operation complexity is linear to pixel count of an
-      image, so a single benchmark for different depths are sufficient:
+      image and it does not change with different input image types:
       
-      Image-size 320x240 single channel (Pentium M 1.6GHz)
-      - icl8u:  approx. 3.6ms
-      - icl16s  approx  3.7ms
-      - icl32s: approx. 3.7ms
-      - icl32f: approx. 3.6ms
-      - icl64f: approx. 3.7ms
+      Image-size 640x480 single channel (Pentium M 1.6GHz)
+      - scaleFactor 1:   approx. 20ms
+      - scaleFactor 2:   approx. 5.5ms (with up-scaling 14ms)
+      - scaleFactor 4:   approx. 2ms (with up-scaling 11ms)
+      - scaleFactor 8:   approx. 1ms (with up-scaling 10ms)
       
       \section RS ROI support
       Currently image ROIs are supported, but the chamfering operation will
       perform step 4 of the above presented algorithm with the image ROI Rect 
       if there is a ROI defined on I.
 
+      \section SCALE Explicit scaling
+      A new feature of the ChamferOp class can be activated using the 
+      "scaleFactor" argument of the class constructor. If the given scale-factor is
+      greater then 1, the chamfering operation is applied only on an image,
+      that is scaled down by that factor. The last constructor argument
+      (scaleUpResult) can be used to define whether to scale up the resulting
+      chamfer Image (using NN-Interpolation this time), or to let the result image
+      become smaller (by the scale-factor) then the input image.\n
+      Internally the down-scaling is not actually performed, but it is emulated
+      by iterating creating a downscaled chamfer image (Step 1 in the algorithm above).
+      By this means, a scaleFactor of 2 (in x and y direction) provides nearly 
+      400% of the computation speed compared to scale factor 1.\n
+      The "scaleUpResult" Feature, however slows down the performace again, as the
+      image scaling operation is more expensive too. (@see \BENCH)
+      
       \section Hausdorff-Distance
       The Hausdorff-Distance is a metric to measure the similarity of two point
       sets \f$A=\{a_1,...,a_n\}\f$ and \f$B=\{b_1,...,b_m\}\f$. It is defined
@@ -135,6 +150,7 @@ namespace icl{
       -# distancePenalty outliers are punished proportionally to the distance to the images ROI
          (the distance value can be weighted linearly by a manually given factor)
 
+      
   */
   class ChamferOp : public UnaryOp{
     public:
@@ -163,7 +179,7 @@ namespace icl{
         <b>Note:</b> As it is more common, this constructor automatically sets the
         clipToROI property of the parent UnaryOp class to false
     */
-    ChamferOp( icl32s horizontalAndVerticalNeighbourDistance=3, icl32s diagonalNeighborDistance=4 );
+    ChamferOp( icl32s horizontalAndVerticalNeighbourDistance=3, icl32s diagonalNeighborDistance=4, int scaleFactor=1, bool scaleUpResult=true);
     
     /// destructor
     virtual ~ChamferOp(){}
@@ -318,6 +334,15 @@ namespace icl{
     
     /// internally used variable for diagonal adjacent pixels
     icl32s m_iDiagonalNeighborDistance;
+
+    /// internal scale factor
+    int m_iScaleFactor;
+    
+    /// defines whether to scale up the result image if m_iScaleFactor is > 1
+    bool m_bScaleUpResult;
+    
+    /// temporarily use buffer
+    Img32s m_oBufferImage;
   };
 }
 #endif
