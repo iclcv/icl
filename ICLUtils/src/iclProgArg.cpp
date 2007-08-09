@@ -133,7 +133,10 @@ namespace icl{
           s_oARG_LUT[s]=nargs;
         }
 
-        // check all args and subargs
+        // check all args and subargs 
+        // s_oArgs contains given args
+        // s_oARG_LUT contains the parameter count for all allowed args
+        // s_oArgMap contains subargs for all given args
         for(unsigned int i=0;i<s_oArgs.size();i++){
           string &s = s_oArgs[i];
           if(s_oARG_LUT.find(s) == s_oARG_LUT.end()){
@@ -149,7 +152,8 @@ namespace icl{
           if(!n) s_oArgMap[s]=std::vector<string>(0);
          
           i++;
-          for(int sa=0;sa<n;sa++,i++){
+          //for(int sa=0;sa<n && i < s_oArgs.size() ;sa++,i++){       
+          for(int sa=0;sa<n ;sa++,i++){
             if(i<s_oArgs.size()){ 
               s_oArgMap[s].push_back(s_oArgs[i]); 
             }else{
@@ -322,7 +326,7 @@ namespace icl{
     return progarg::argCount();
   }
 
-  void pa_usage(string errorMessage){
+  void pa_usage(const string &errorMessage){
     printf("error : %s \n",errorMessage.c_str());
     progarg::usage();
   }
