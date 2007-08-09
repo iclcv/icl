@@ -19,8 +19,9 @@
 
 /** \mainpage ICLSVS package
 
-    Implementation of the SVS stereovision library for calculating disparity information from a
-    stereo image pair
+    Implementation of the Small Vision System (SVS) stereovision library from SRI. (<a href="http://www.ai.sri.com/software/SVS">http://www.ai.sri.com/software/SVS</a>).
+    SVS is used for calculating disparity information from a stereo image pair.<br>
+    @copydoc icl::SVS
 
 */
 
@@ -144,7 +145,7 @@ Code example :
         normally, it has .ini as suffix
         @param filename  the filename where the calibration file is stored
       */
-      void loadCalibration(char *filename);
+      void loadCalibration(const char *filename);
 
       ///Sets a SVS parameter
       /**

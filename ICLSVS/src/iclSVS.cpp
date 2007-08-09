@@ -98,8 +98,10 @@ namespace icl {
     return 0;
   }
 
-  void SVS::loadCalibration(char *filename){
-    m_pSi->ReadParams(filename);  
+  void SVS::loadCalibration(const char *filename){
+    char fn[255];
+    sprintf(fn,"%s",filename);
+    m_pSi->ReadParams(fn);
   }
 
   void SVS::load(const Img8u* lim,const Img8u* rim){
