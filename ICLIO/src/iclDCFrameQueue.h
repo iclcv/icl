@@ -9,7 +9,6 @@
 
 namespace icl{
   
-  /// internal used namespace for libdc1394 dependent help functions and classes
   namespace dc{
     
     /// Internal used utility class for fast handling of DMA buffers

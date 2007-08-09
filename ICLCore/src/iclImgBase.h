@@ -653,14 +653,14 @@ namespace icl {
         @param coords (optinal) if not null, the pixel position of the max is 
                written into this argument
     **/
-    icl64f getMax(int channel, Point *coords=0) const;
+    icl64f getMax(int iChannel, Point *coords=0) const;
   
     /// Returns min pixel value of channel iChannel within ROI
     /** @param iChannel Index of channel
         @param coords (optinal) if not null, the pixel position of the min is 
                written into this argument
         **/
-    icl64f getMin(int channel, Point *coords=0) const;
+    icl64f getMin(int iChannel, Point *coords=0) const;
   
 
     /// return maximal pixel value over all channels (restricted to ROI)

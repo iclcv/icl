@@ -21,8 +21,8 @@ namespace icl{
            killCurrentProcess();
         }
       };
-      \endcode:
-  **/
+      \endcode
+  */
   class SignalHandler{
     public:
     /// Create a new Signal handler with a list of signals
@@ -40,11 +40,11 @@ namespace icl{
         - <b>SIGHUP</b>  ( Hangup )
         - <b>SIGILL</b>  ( Illegal instruction )
         - <b>SIGINT</b>  ( Terminal interrupt signal )
-        - <b>SIGKILL</b> ( Kill</b> (cannot be caught or ignored)
+        - <b>SIGKILL</b> ( <b>Kill</b> (cannot be caught or ignored)
         - <b>SIGPIPE</b> ( Write on a pipe with no one to read it)
         - <b>SIGQUIT</b> ( Terminal quit signal )
         - <b>SIGSEGV</b> ( Invalid memory reference )
-        - <b>SIGSTOP</b> ( Stop executing</b> (cannot be caught or ignored) )
+        - <b>SIGSTOP</b> ( <b>Stop executing</b> (cannot be caught or ignored) )
         - <b>SIGTERM</b> ( Termination signal )
         - <b>SIGTSTP</b> ( Terminal stop signal)
         - <b>SIGTTIN</b> ( Background process attempting read)
@@ -79,7 +79,7 @@ namespace icl{
     /** internally this function calls kill(getpid(),1) which is mutch
         stronger than calling exit(0)
         (see the signal.h manpage)
-    **/
+    */
     static void killCurrentProcess();
     
     private:

@@ -16,8 +16,7 @@ namespace icl{
   class DCGrabber;
   /** \endcond */
   
-  /// internal used namespace for libdc1394 dependent help functions and classes
-  namespace dc{
+		namespace dc{
     
     /** \cond */
     class DCFrameQueue;

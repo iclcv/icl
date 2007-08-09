@@ -6,7 +6,7 @@
 #include <vector>
 #include <iclSize.h>
 
-/// the icl namespace
+// the icl namespace
 namespace icl{
   
   /** \cond */
@@ -40,12 +40,13 @@ namespace icl{
     /// Create a new Szene with give view-port size
     /** The view-port-size is given to the internally 
         created camera
-        @param imageSize view-port size, which must be equal
+        @param viewPort view-port size, which must be equal
                          to the view-port (image-size) of the
                          given ICLDrawWidget if the corresponding
                          render-function is called, resp. the 
                          size of the Img32f for the other render-
                          function.
+        @param cam TODO
     */
     Szene(const Rect &viewPort=Rect(0,0,320,240),const Camera &cam=Camera() );
     

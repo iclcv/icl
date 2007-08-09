@@ -34,14 +34,14 @@ namespace icl{
         videomode(vm),framerate(fr){}
       
       /// creates a new Mode by a given string representation
-      /** syntax: videomode@framerate */
+      /** syntax: videomode\@framerate */
       Mode(const std::string &stringRepr);
 
       /// create a new Mode by given cam
       Mode(dc1394camera_t *cam);
       
       /// returns a string representation of the mode
-      /** syntax: videomode@framerate */
+      /** syntax: videomode\@framerate */
       std::string toString() const;
 
       /// returns whether the given camera supports this mode or not

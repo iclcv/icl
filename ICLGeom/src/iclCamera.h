@@ -4,7 +4,7 @@
 #include <iclObject.h>
 #include <iclSize.h>
 
-/// the icl namespace
+// the icl namespace
 namespace icl{
   
   /// Camera class 
@@ -34,8 +34,8 @@ namespace icl{
     /** @param pos position of the camera center
         @param norm view-vector of the camera
         @param up up-vector of the camera
-        @param f focal length
-        @param imageSize view-port size*/
+        @param f focal length*/
+//        @param imageSize view-port size  TODO delete this line?
     Camera(const Vec &pos=Vec(0,0,10,0),const Vec &norm=Vec(0,0,-1,0), const Vec &up=Vec(1,0,0,0), float f=-1):
       m_oPos(pos),m_oNorm(norm),m_oUp(up),m_fF(f){}
     

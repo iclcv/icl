@@ -11,11 +11,20 @@
 */
 
 
-
 #include <iclImg.h>
 #include <iclImgBase.h> 
 //#include "/vol/vision/SVS/4.2/src/svsclass.h"
 #include <svsclass.h>
+#include <iclMacros.h>
+
+/** \mainpage ICLSVS package
+
+    Implementation of the SVS stereovision library for calculating disparity information from a
+    stereo image pair
+
+*/
+
+
 namespace icl{
 
 /// Wrapper-Class for SVS (Small Vision System)
@@ -48,20 +57,45 @@ height - Subimage height:240
 DEBUG OFF
 ~8 sec for 1000 iterations => 8ms per operation => 125hz
 
+Code example :
+\code
+ const ImgBase *imgL, *imgR;
+  ImgBase *outImg=0;
+  imgL = img_l.grab();
+  imgR = img_r.grab();
+  SVS t;
+  t.load(imgL->asImg<icl8u>(),imgR->asImg<icl8u>());
+  t.loadCalibration("/vol/pgacvis/sonyfw.ini"); // always load calibration after loading a (new) image
+  t.doStereo();
+  outImg=t.getDisparity();
+\endcode
+
+
 */
   class SVS{
     public:
       /// parameterlist
+
       enum svsparam{
+        /// Size of the correlation window
         corrsize,
+        /// Value of the confidence threshold
         confidence,
+        /// Value of the uniqueness threshold
         unique,
+        /// Number of pixels
         ndisp,
+        /// Disparities per pixel
         dpp,
+        /// Horopter offset
         offx,
+        /// Subimage start column
         ix,
+        /// Subimage start row
         iy,
+        /// Subimage width
         width,
+        /// Subimage height
         height
       };
 			/// initiates the necessary SVS Objects.
@@ -73,14 +107,14 @@ DEBUG OFF
         @param lim left image
         @param rim right image
       */
-      void Load(const Img8u* lim, const Img8u* rim);
+      void load(const Img8u* lim, const Img8u* rim);
       /// Makes a stereoimage-pair available for SVS that represents only a subimage of the cameraimage
       /**
         @param lim left image
         @param rim right image
         @param offset the offset between the overgiven images (lim, rim) and the original camera image, used to have the right internal parameters (lens distortion)
       */
-      void Load(const Img8u* lim,const Img8u* rim, Point offset);
+      void load(const Img8u* lim,const Img8u* rim, Point offset);
       /// Cuts a stereoimage-pair and makes it available for SVS
       /**
         @param lim left image
@@ -88,29 +122,29 @@ DEBUG OFF
         @param offset the offset for the cutted image
         @param iDim the size for the cutted image
       */
-      void Load_cut(const Img8u* lim,const Img8u* rim, Point offset,Size iDim);
+      void loadCut(const Img8u* lim,const Img8u* rim, Point offset,Size iDim);
 
       /// Calculates disparity and confidence images
-      void do_stereo();
+      void doStereo();
 
       /// Returns the disparity image
       /**
         @returns the disparity image
       */
-      Img16s* get_disparity();
+      Img16s* getDisparity();
 
       /// Returns the disparity image
       /**
         @returns the disparity image
       */
-      Img16s* get_confidence();
+      Img16s* getConfidence();
 
       /// Loads a calibration file
       /**
         normally, it has .ini as suffix
         @param filename  the filename where the calibration file is stored
       */
-      void load_calibration(char *filename);
+      void loadCalibration(char *filename);
 
       ///Sets a SVS parameter
       /**
@@ -126,12 +160,16 @@ DEBUG OFF
       */
       int getParam(svsparam p);
     private:
-      svsStereoImage* m_si;
-      format m_fmt;
-      Size m_size;
-      Img16s *m_di;
-      svsStoredImages *m_svsI;
-      svsStereoProcess *m_svsP;
+			/// SVS StereoImage
+      svsStereoImage* m_pSi;
+      format m_eFmt;
+      Size m_oSize;
+      /// Disparity Image
+      Img16s *m_pDi;
+      /// SVS StoredImages
+      svsStoredImages *m_pSvsI;
+      /// SVS StereoProcess
+      svsStereoProcess *m_pSvsP;
   }; //class
 } // namespace icl
 #endif

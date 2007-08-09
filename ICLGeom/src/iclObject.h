@@ -4,7 +4,7 @@
 #include <iclImg.h>
 #include <iclGeom.h>
 
-/// The icl namespace
+// The icl namespace
 namespace icl{
 
   /** \cond */

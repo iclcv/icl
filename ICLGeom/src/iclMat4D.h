@@ -83,9 +83,9 @@ namespace icl{
           /// set all rows equal to the first
           m(1) = m(2) = m(3) = m(0);
           \endcode
-          @param m other row
+          @param r other row
           @return *this
-      **/
+      */
       inline MatRow &operator=(const MatRow &r){
         (*this)[0] = r[0];
         (*this)[1] = r[1];
@@ -160,7 +160,7 @@ namespace icl{
     /** This function internally allocates a T* of 16 elements and fills it with the 
         current data. The data array is not updated implicitly when other Mat4D<T>-element
         functions e.g. transpose() are called. 
-        @param optional destination T-pointer
+        @param dst optional destination T-pointer
         @return internal temporary data array or dst (if given) 
     */
     void getData(T *dst) const{
@@ -196,7 +196,7 @@ namespace icl{
     }
     
     /// creates a new matrix from given matrix of (another) depth
-    /** @param t other matrix*/
+    /** @param m other matrix*/
     template<class OtherT>
     inline  Mat4D(const Mat4D<OtherT> m){
       cols[0] = m[0];
@@ -245,7 +245,7 @@ namespace icl{
         \end{array}\right)\;\;\; with \;\;m_{ij} = a_j\, b_i
         \f]
         @param a first value
-        @param second value first value
+        @param b second value first value
     */
     inline Mat4D(const Vec4D<T> &a, const Vec4D<T> &b){
       for(int i=0;i<4;++i){

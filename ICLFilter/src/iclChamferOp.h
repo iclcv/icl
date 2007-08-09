@@ -107,7 +107,7 @@ namespace icl{
       By this means, a scaleFactor of 2 (in x and y direction) provides nearly 
       400% of the computation speed compared to scale factor 1.\n
       The "scaleUpResult" Feature, however slows down the performace again, as the
-      image scaling operation is more expensive too. (@see \BENCH)
+      image scaling operation is more expensive too. (@see BENCH)
       
       \section Hausdorff-Distance
       The Hausdorff-Distance is a metric to measure the similarity of two point
@@ -178,6 +178,8 @@ namespace icl{
         - 7071,10000 ( nearly perfect approximation of the euclidean distance 1:sqrt(2) )
         <b>Note:</b> As it is more common, this constructor automatically sets the
         clipToROI property of the parent UnaryOp class to false
+        @param scaleFactor TODO
+        @param scaleUpResult TODO
     */
     ChamferOp( icl32s horizontalAndVerticalNeighbourDistance=3, icl32s diagonalNeighborDistance=4, int scaleFactor=1, bool scaleUpResult=true);
     
@@ -187,7 +189,7 @@ namespace icl{
     /// apply function
     /** @param poSrc source; image arbitrary parameters; ROI is regarded. If the image has more than one channels,
                      the operation is performed on each channel separately.
-        @param poDst destination image, adapted to the source images ROI (dependent on the clipToROI settings @see UnaryOp)
+        @param ppoDst destination image, adapted to the source images ROI (dependent on the clipToROI settings @see UnaryOp)
                      and set up to depth32s. <b>Note:</b> to perform an in-place chamfering operation, use
                      \code
                      ImgBase *image = new Img32s(...);

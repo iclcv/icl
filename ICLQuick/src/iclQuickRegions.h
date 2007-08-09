@@ -8,9 +8,9 @@ namespace icl{
   /// creates a color map of a 3-channel color image
   /** This function uses a the following algorithm to calculate the
       color map \f$M\f$ of an 3-channel image \f$I\f$:
-      \$[
+      \f[
       M(x,y) = 255 - \frac{\sqrt{(I(x,y,0)-r)^2 + (I(x,y,1)-g)^2 + (I(x,y,2)-b)^2}}{\sqrt{3}}
-      \$]
+      \f]
       @param image input image
       @param r red referene color value
       @param g green referecne color value

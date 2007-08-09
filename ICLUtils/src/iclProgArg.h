@@ -116,7 +116,7 @@ int main(int n, char **ppc){
       @param skipUnknownArgs if set to true, unknown args are just skipped, otherwise, the
              "usage" is shown, and the programm is aborted using exit(-1)
   */
-  void pa_init(int nArgs, char **ppcArg, std::string allowedArgs="", bool skipUnknowArgs=false);
+  void pa_init(int nArgs, char **ppcArg, std::string allowedArgs="", bool skipUnknownArgs=false);
   
   /// returns the program name as it was written to start the program
   /** e.g. "./myprogram" */

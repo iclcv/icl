@@ -25,13 +25,13 @@ int main(){
   int N=5;
   printf("Doing %d iterations\n",N);
   for(int i=0;i<N;i++){
-    t.Load(imgL->asImg<icl8u>(),imgR->asImg<icl8u>());
-    t.load_calibration("/vol/vision/SVS/4.2/data/wallcal.ini");
-//      t.load_calibration("/vol/pgacvis/sonyfw.ini");
+    t.load(imgL->asImg<icl8u>(),imgR->asImg<icl8u>());
+    t.loadCalibration("/vol/vision/SVS/4.2/data/wallcal.ini");
+//      t.loadCalibration("/vol/pgacvis/sonyfw.ini");
 
     timer.stopSubTimer("Iterations of Load done");
-    t.do_stereo();
-    outImg=t.get_disparity();
+    t.doStereo();
+    outImg=t.getDisparity();
   }
   timer.stop("Iterations of get_disparity done");
   Converter().apply(outImg,dst);

@@ -18,7 +18,7 @@ namespace icl{
       
       Internally it uses a ring buffer to ensure highspeed grabbing with low
       CPU usage.
-  **/
+  */
   class DefaultGrabEngine : public UnicapGrabEngine{
     public:
     /// Creates a new UnicapGrabEngine
@@ -26,7 +26,9 @@ namespace icl{
         @param device corresponding unicap device
         @param useDMA flag that indicates whether frames are grabbed into system or user
                       buffers. Usage of system buffers implies using DMA (direct memory
-                      access) <b>Note:This feature does not work yet!</b>*/
+                      access) <b>Note:This feature does not work yet!</b>
+        @param progressiveGrabMode TODO
+    */
     DefaultGrabEngine(UnicapDevice *device, bool useDMA=false, bool progressiveGrabMode=true);
 
     /// Destructor
