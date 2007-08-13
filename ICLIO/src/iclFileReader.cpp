@@ -10,7 +10,7 @@
 #include <iclConverter.h>
 #include <iclStrTok.h>
 /*
-  FileReader.cpp
+  iclFileReader.cpp
 
   Written by: Michael Götting, Robert Haschke (2006)
               University of Bielefeld
@@ -267,14 +267,6 @@ namespace icl {
             readDataJPG ((*ppoDst)->asImg<icl8u>(), oInfo);
             break;
 #endif
-         case ioFormatCSV:
-            readHeaderCSV (oInfo);
-            ensureCompatible (ppoDst, oInfo.eDepth, oInfo.oImgSize, 
-                              oInfo.iNumChannels, oInfo.eFormat, oInfo.oROI);
-            (*ppoDst)->setTime(oInfo.timeStamp);
-            readDataCSV (*ppoDst, oInfo);
-            break;           
-
          default:
             throw ICLException (string("not supported file type"));
        }
@@ -355,111 +347,7 @@ namespace icl {
   
 // }}}
 
-
-
-  //--------------------------------------------------------------------------
-  void FileReader::setCSVHeader (depth d, const ImgParams& p) {
-    // {{{ open
-
-     m_CSVDepth = d;
-     m_CSVParams = p;
-  }
-
-  // }}}
-  
-  void FileReader::readHeaderCSV (FileInfo &oInfo) {
-    // {{{ open
-
-    // use m_CSV parameters as default settings
-    oInfo.eDepth = m_CSVDepth;
-    oInfo.oImgSize = m_CSVParams.getSize();
-    oInfo.oROI=m_CSVParams.getROI();
-    oInfo.iNumChannels = m_CSVParams.getChannels();
-    oInfo.eFormat = m_CSVParams.getFormat();
-    //oInfo.timeStamp = 0;
-
-    // overwrite these settings by file name contents
-    int pos=oInfo.sFileName.find("-ICL:",0)+5;
-    StrTok tok(oInfo.sFileName.substr(pos),":");
-    if(tok.hasMoreTokens()){
-      StrTok tok2(tok.nextToken(),"x");// WxHxC
-      if(tok2.hasMoreTokens()){
-        oInfo.oImgSize.width=atoi((tok2.nextToken()).c_str()); // W
-      }
-      if(tok2.hasMoreTokens()){
-        oInfo.oImgSize.height=atoi((tok2.nextToken()).c_str()); // H
-      }
-      if(tok2.hasMoreTokens()){
-        oInfo.iNumChannels=atoi((tok2.nextToken()).c_str()); //C
-      }      
-    }
-    if(tok.hasMoreTokens()){
-      oInfo.eDepth=translateDepth(tok.nextToken()); //D
-    }
-    if(tok.hasMoreTokens()){
-      StrTok tok2(tok.nextToken(),".");
-      if(tok2.hasMoreTokens()){
-        oInfo.eFormat=translateFormat(tok2.nextToken()); //F
-      }
-    }
-  }
-
-// }}}
-
-  template<class T>
-  void FileReader::readCSVTmpl(Img<T>* poImg, FileInfo &oInfo) {
-    // {{{ open
-
-    FUNCTION_LOG("");
-
-    //Img16s *poImg16s = poImg->asImg<icl16s>();
-    T *pc2Buf[3];
-    pc2Buf[0] = poImg->getData (0);
-    pc2Buf[1] = poImg->getData (1);
-    pc2Buf[2] = poImg->getData (2);
-
-    openFile (oInfo, "rb"); // open file for reading
-    char *pcBuf=0;
-    int fsize=20*oInfo.oImgSize.width; //20 = max char length of double (should be 14) +1 (komma) + 5 bonus    
-    pcBuf=(char*)malloc(fsize*sizeof(char));
-    for (int c=0;c<oInfo.iNumChannels;c++) {
-      for (int i=0;i<oInfo.oImgSize.height;i++) {
-        char *result = NULL;
-        fgets (pcBuf, fsize,(FILE*)oInfo.fp);
-        result = strtok( pcBuf, ",");
-        for (int j=0;j<oInfo.oImgSize.width;j++) {
-            *pc2Buf[c]=atoi(result);pc2Buf[c]++;
-            result = strtok( NULL, ",");
-        }
-      }
-    }
-    free (pcBuf);
-  }
-
-  // }}}
-
-  void FileReader::readDataCSV(ImgBase* poImg, FileInfo &oInfo) {
-    // {{{ open
-
-    FUNCTION_LOG("");
-
-    switch(poImg->getDepth()) {
-      case depth8u: readCSVTmpl<icl8u>(poImg->asImg<icl8u>(),oInfo);
-        break;
-      case depth16s: readCSVTmpl<icl16s>(poImg->asImg<icl16s>(),oInfo);
-        break;
-      case depth32s: readCSVTmpl<icl32s>(poImg->asImg<icl32s>(),oInfo);
-        break;
-      case depth32f: readCSVTmpl<icl32f>(poImg->asImg<icl32f>(),oInfo);
-        break;
-      case depth64f: readCSVTmpl<icl64f>(poImg->asImg<icl64f>(),oInfo);
-        break;
-      default: ICL_INVALID_DEPTH; break;
-    }
-  }
-
-  // }}}
-  
+ 
 
   //--------------------------------------------------------------------------
   void FileReader::readHeaderPNMICL (FileInfo &oInfo) {

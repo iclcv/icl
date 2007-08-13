@@ -1,5 +1,5 @@
-#ifndef ICLFILEREAD_H
-#define ICLFILEREAD_H
+#ifndef ICLFILEREADER_H
+#define ICLFILEREADER_H
 
 #include <iclGrabber.h>
 #include <iclException.h>
@@ -18,7 +18,7 @@
 
 namespace icl {
  
-  //! The FileReader class implements the grbber interface to read images from file
+  //! The FileReader class implements the grabber interface to read images from file
   /*!
       @author Robert Haschke (rhaschke@TechFak.Uni-Bielefeld.de)
       @brief The ICL
@@ -192,9 +192,6 @@ namespace icl {
     /// and additionally remove buffered images, if neccessary
     void removeFiles (const FileList& vecFiles);
     
-    
-    void setCSVHeader (depth depth, const ImgParams& p);
-
     private:
 
     void init ();
@@ -208,12 +205,7 @@ namespace icl {
 
     void readHeaderJPG (FileInfo &oInfo);
     void readDataJPG(Img<icl8u>* poImg, FileInfo &oInfo);
-
-    void readHeaderCSV (FileInfo &oInfo);         
-    template<class T>
-    void readCSVTmpl(Img<T>* poImg, FileInfo &oInfo);
-    void readDataCSV(ImgBase* poImg, FileInfo &oInfo);
-         
+        
     FileList     m_vecFileName;  ///< list of files to load
     FileList     m_vecObjectCnt; ///< list of object indices (##<span>_</span>_##)
 // TODO: How can doxygen special chars/keywords like __ or operator be displayed (with thinks like\_\_ and without using tricks like above  
@@ -224,10 +216,6 @@ namespace icl {
     unsigned int m_iCurImg;        ///< image number to be read next
     ImgBase     *m_poCurImg;       ///< recently read image
 
-    /// used for CSV file format which doesn't store image info in file
-    ImgParams       m_CSVParams;
-    depth           m_CSVDepth;
-
 #ifdef WITH_JPEG_SUPPORT
     struct jpeg_decompress_struct jpgCinfo;
     struct icl_jpeg_error_mgr     jpgErr;
@@ -236,4 +224,4 @@ namespace icl {
  
 } // namespace icl
 
-#endif //ICLFILE_H
+#endif //ICLFILEREADER_H

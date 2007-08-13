@@ -15,8 +15,7 @@
 using namespace std;
 
 namespace icl {
-  FileWriter::FileWriter(const std::string& sFileName) : 
-    m_bCsvSplitFiles(false), m_bCsvExtendFilename(false) {
+  FileWriter::FileWriter(const std::string& sFileName){
     setFileName (sFileName); 
   } 
   
@@ -42,33 +41,7 @@ namespace icl {
 
 // }}}
   
-  void FileWriter::setCSVFlag(csvFlag f,bool value) {
-    // {{{ open 
-    switch(f){
-      case csvSplitFiles:
-        m_bCsvSplitFiles=value;
-      break;
-      case csvExtendFilename:
-        m_bCsvExtendFilename=value;
-      break;
-    }
-  }
-
-  // }}}
-  
-  void FileWriter::setFileNameCSV (string& sFilePrefix, const ImgBase *poSrc) { 
-    // {{{ open 
-      char result[100];
-      sprintf(result,"-ICL:%dx%dx%d:%s:%s",
-              poSrc->getSize().width,poSrc->getSize().height,
-              poSrc->getChannels(), 
-              translateDepth(poSrc->getDepth()).c_str(), 
-              translateFormat(poSrc->getFormat()).c_str());
-      sFilePrefix+=result;
-   }
-
-// }}}   
-  
+   
   string FileWriter::buildFileName()
     // {{{ open
   {
@@ -89,13 +62,7 @@ namespace icl {
 // }}}
   
   void FileWriter::write(const ImgBase *poSrc) {
-    // {{{ open
-    cout << "1Hello" << endl;
-    cout << "1pre: " << sFilePrefix << endl;
-    cout << "1suf: " << sFileSuffix << endl;
-    
-    if (m_bCsvExtendFilename) setFileNameCSV (sFilePrefix, poSrc);
-    
+    // {{{ open    
     string test = buildFileName();
     FileInfo oInfo (test); // create file info
     openFile (oInfo, "wb"); // open file for writing
@@ -121,9 +88,6 @@ namespace icl {
           writeJPG (poImg->asImg<icl8u>(), oInfo);
           break;
 #endif
-        case ioFormatCSV:
-          writeCSV (poImg, oInfo);
-          break;
         default: break;
       }
       closeFile (oInfo);
@@ -242,92 +206,7 @@ namespace icl {
    }
 
 // }}}
-  
-  template<class T,class R>
-  string FileWriter::writeCSVTmpl(const Img<T> *poSrc,int ch) {
-    // {{{ open
-     const Size& size = poSrc->getSize();
-     ostringstream oss;
-     // write channel consecutively
-     const T *pDat = poSrc->getData(ch);
-     for (int j=0;j<size.height-1;j++) {
-       for (int k=0;k<size.width;k++, pDat++){
-         oss << (R)*pDat << ",";
-       }
-       oss << endl;
-     }
      
-     for (int k=0;k<size.width-1;k++, pDat++){
-       oss << (R)*pDat << ",";
-     }
-     oss << (R)*pDat;
-     oss << endl;
-     
-     return (oss.str());
-   }
-// }}}
-  
-  template<class T,class R>
-  void FileWriter::writeCSVTmpl(const Img<T> *poSrc, FileInfo& oInfo) {
-    // {{{ open
-    int (*pWrite)(void *fp, const void *pData, unsigned int len) 
-      = oInfo.bGzipped ? gzwrite : plainWrite;
-    ICLException writeError ("Error writing file.");       
-    int iNumImages = poSrc->getChannels();
-
-    // write channel consecutively
-    if (!m_bCsvSplitFiles) { 
-      ostringstream oss;
-      
-      for (int i=0;i<iNumImages-1;i++) {
-        oss << writeCSVTmpl<T,R>(poSrc,i) << "," << endl;
-      }
-      
-      oss << writeCSVTmpl<T,R>(poSrc,iNumImages-1) << endl;
-      if (!pWrite (oInfo.fp, (oss.str()).c_str(), 
-                   strlen((oss.str()).c_str()))) { 
-        throw writeError;
-      }
-    } else {
-      for (int i=0;i<iNumImages-1;i++) {
-        printf("Split %d\n",i);
-        ostringstream oss;
-        oss << writeCSVTmpl<T,R>(poSrc,i) << endl;
-        if (!pWrite (oInfo.fp, (oss.str()).c_str(), 
-                     strlen((oss.str()).c_str()))) 
-          throw writeError;
-        closeFile (oInfo);
-        oInfo.sFileName = buildFileName(); 
-        openFile (oInfo, "wb");
-      }
-      
-      ostringstream oss;
-      oss<<writeCSVTmpl<T,R>(poSrc,iNumImages-1)<<endl;
-      if (!pWrite (oInfo.fp, (oss.str()).c_str(), strlen((oss.str()).c_str()))) 
-        throw writeError;
-    }
-  }
-// }}}
-  
-  void FileWriter::writeCSV(const ImgBase *poSrc, FileInfo& oInfo) {
-    // {{{ open
-    switch(poSrc->getDepth()) {
-      case depth8u: writeCSVTmpl<icl8u,int>(poSrc->asImg<icl8u>(),oInfo);
-        break;
-      case depth16s: writeCSVTmpl<icl16s,int>(poSrc->asImg<icl16s>(),oInfo);
-        break;
-      case depth32s: writeCSVTmpl<icl32s,int>(poSrc->asImg<icl32s>(),oInfo);
-        break;
-      case depth32f: writeCSVTmpl<icl32f,float>(poSrc->asImg<icl32f>(),oInfo);
-        break;
-      case depth64f: writeCSVTmpl<icl64f,double>(poSrc->asImg<icl64f>(),oInfo);
-        break;
-      default: ICL_INVALID_DEPTH; break;
-    }
-}
-  
-// }}}
-  
 #ifdef WITH_JPEG_SUPPORT
   void FileWriter::writeJPG(const Img<icl8u> *poSrc, 
                             const FileInfo& oInfo, 

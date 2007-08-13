@@ -4,7 +4,7 @@
 #include <iclWriter.h>
 #include <iclImg.h>
 /*
-  FileWrite.h
+  FileWriter.h
 
   Written by: Michael Götting (2006)
   University of Bielefeld
@@ -27,11 +27,7 @@ namespace icl {
       operation. To create correctly ordered file names uses as many hashes
       as you need digits, i.e. #### goes to 0001, 0002, ...
   */
-  enum csvFlag{
-    csvSplitFiles,
-    csvExtendFilename
-  };
-  
+  int plainWrite (void *fp, const void *pData, unsigned int len);
   class FileWriter : public Writer {
   public: 
 
@@ -39,31 +35,19 @@ namespace icl {
     FileWriter(const std::string& sFileName);
     
     /// Set Functions
-    void setFileNameCSV (std::string& sFileName, const ImgBase *poSrc);
     void setFileName (const std::string& sFileName);
     void setCounter (int iID) {nCounter = iID;}
-    void setCSVFlag(csvFlag f,bool value);
-
     void write(const ImgBase* poSrc);
     
-  private:
+  protected:
     void writePNMICL (const ImgBase *poSrc, const FileInfo& oInfo);
     void writeJPG (const Img<icl8u> *poSrc, 
                    const FileInfo& oInfo, int iQuality=85);
-
-    void writeCSV (const ImgBase *poSrc, FileInfo& oInfo);
-    template<class T,class R>
-      std::string writeCSVTmpl(const Img<T> *poSrc,int ch) ;
-    template<class T,class R>
-      void writeCSVTmpl(const Img<T> *poSrc, FileInfo& oInfo);
-
     std::string buildFileName();
     std::string sFilePrefix, sFileSuffix;
     unsigned int  nCounterDigits;
     unsigned int  nCounter;
     Img<icl8u>    m_oImg8u;
-    bool m_bCsvSplitFiles;
-    bool m_bCsvExtendFilename;
   }; //class
    
 } //namespace icl
