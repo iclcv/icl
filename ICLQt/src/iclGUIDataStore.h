@@ -110,6 +110,7 @@ namespace icl{
       DataArray &da = (*m_oDataMapPtr)[id];
       if(da.type != get_type_name<T>()){
         ERROR_LOG("unable to cast "<<  id  << " to a given type "<< get_type_name<T>() <<"\n");
+        ERROR_LOG("type is " << da.type << "\n");
         return;
       }
       da.release_func(&da);
@@ -154,6 +155,7 @@ namespace icl{
       DataArray &da = (*m_oDataMapPtr)[id];
       if(da.type != get_type_name<T>()){
         ERROR_LOG("unable to cast "<<  id  << " to a given type "<< get_type_name<T>() <<"\n");
+        ERROR_LOG("type is " << da.type << "\n");
         return _NULL;
       }
       if(da.len){

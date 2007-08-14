@@ -6,6 +6,7 @@
 
 /** \cond */
 class QGridLayout;
+class QLayout;
 /** \endcond */
 
 
@@ -19,8 +20,16 @@ namespace icl{
   class GUIWidget : public QWidget{
     Q_OBJECT;
     public:
+    enum layoutType{
+      noLayout,       // do not call setLayout(..)
+      hboxLayout,     // use a QHBoxLayout
+      vboxLayout,     // use a QVBoxLayout
+      gridLayout      // use the default GridLayout
+    };
+    
     /// create a new GUIWidget ( this constructor must be called by all subclasses )
-    GUIWidget(const GUIDefinition &def, bool useGridLayout=true);
+    GUIWidget(const GUIDefinition &def, layoutType lt=gridLayout, int ensureNumInputs=-1,int ensureNumOutputs=-1,int ensureNumParams=-1);
+
 
     /// Destructor
     virtual ~GUIWidget();
@@ -42,12 +51,16 @@ namespace icl{
     /// returns the size in Cells if no size is given if (Size::null, it is not set)
     virtual Size getDefaultSize() { return Size::null; }
     
+    /// this function must be reimplemented for other layouts the hbox, vbox or grid
+    virtual QLayout *getGUIWidgetLayout() { return m_poGridLayout ? (QLayout*)m_poGridLayout : m_poOtherLayout; }
+    
     /// returns the underlying GUI structure
     GUI *getGUI(){ return m_poGUI; }
     
     private:
-    /// initial layout manager
+    /// initial layout managers
     QGridLayout *m_poGridLayout;
+    QLayout *m_poOtherLayout;
     GUI *m_poGUI;
   };
 }

@@ -5,6 +5,10 @@
 #include <vector>
 #include <iclSmartPtr.h>
 #include <iclGUIDataStore.h>
+#include <iclGUIEvent.h>
+#include <iclGUILabel.h>
+#include <iclWidget.h>
+#include <iclDrawWidget.h>
 
 
 /** \cond */
@@ -28,8 +32,8 @@ namespace icl{
     static const int CELLH = 20;
     
     /// default constructor 
-    GUI(const std::string &definition, const GUIDataStore &ds=GUIDataStore());
-    GUI(const GUI &gui, const GUIDataStore &ds);
+    GUI(const std::string &definition);
+    GUI(const GUI &gui);
     /// Destructor
     virtual ~GUI(){}
     
@@ -78,16 +82,18 @@ namespace icl{
     inline void unlockData() {
       m_oDataStore.unlock();
     }
-    
+    /// waits for the gui to be created completely
+    void waitForCreation();
     
     private:
-    void create(QLayout *parentLayout);
+    void create(QLayout *parentLayout,QWidget *parentWidget, GUIDataStore *ds);
 
     /// own definition string
     std::string m_sDefinition;
     std::vector<GUI*> m_vecChilds;
     GUIWidget *m_poWidget;
     GUIDataStore m_oDataStore;
+    bool m_bCreated;
   };  
 }
 

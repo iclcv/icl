@@ -1,4 +1,5 @@
 #include "iclGUIDefinition.h"
+#include "iclGUISyntaxErrorException.h"
 #include <iclSize.h>
 #include <iclStrTok.h>
 #include <iclCore.h>
@@ -6,111 +7,90 @@ using namespace std;
 
 namespace icl{
   namespace{
-#define GUIDEF_ASSERT(X,CODE) if(!(X)) { ERROR_LOG("syntax error [Code:"  << CODE << "]"); return; }
-    static string rest(StrTok &t, const string &delim){
-      // {{{ open
-      
-      string s;
-      while(t.hasMoreTokens()){
-        s+=t.nextToken();
-        if(t.hasMoreTokens()){
-          s+=delim;
-        }
-      }
-      return s;
-    }
-    
-// }}}
-    static string split_first(const string &s,const string &delim, string &restStr, const string &errorCode, bool noRestAllowed, bool noFirstAllowed){
-      // {{{ open
-    
-    StrTok t(s,delim);
-    
-    switch(t.nTokens()){
-      case 0: {
-        if(noFirstAllowed && noRestAllowed){
-          restStr = "";
-          return "";
-        }else{
-          ERROR_LOG("syntax error [Code:"  << errorCode << "]"); 
-          restStr = "";
-          return "";
-        }
-      }
-      case 1: {
-        if(noRestAllowed){
-          restStr = "";
-          return t.nextToken();
-        }
-      }
-      default:{
-        string first = t.nextToken();    
-        restStr = rest(t,delim);
-        return first;
-      }
-    }
-  }
-  
-  // }}}
+
     static string cutName(const string &s){
       // {{{ open
-    
-    unsigned int pos = s.find("=",0);
-    if(pos == string::npos || pos == s.length()-1){
-      ERROR_LOG("undefined parameter value in \""<< s <<"\"");
-      return "";
+      
+      unsigned int pos = s.find("=",0);
+      if(pos == string::npos){
+        throw GUISyntaxErrorException(s,"missing '=' character!");
+        return "";
+      }
+      if(pos == s.length()-1){
+        throw GUISyntaxErrorException(s,"character '=' at end of definition is not allowed!");
+        return "";
+      }
+      return s.substr(pos+1);
     }
-    return s.substr(pos+1);
-  }
-  
+    
+    static void split_string(const std::string &s, string &type, string &params, string &optparams){
+      unsigned int obrPos = s.find('(');
+      unsigned int cbrPos = s.find(')');
+      unsigned int obrPos2 = s.find('[');
+      unsigned int cbrPos2 = s.find(']');
+      
+      if(obrPos != string::npos){
+        if(cbrPos == string::npos) throw GUISyntaxErrorException(s,"missing ')' character!");
+        if(obrPos2 != string::npos){
+          if(cbrPos2 == string::npos) throw GUISyntaxErrorException(s,"missing ']' character!");
+          type = s.substr(0,obrPos);
+          params = s.substr(obrPos+1, cbrPos-obrPos-1);
+          optparams = s.substr(obrPos2+1, cbrPos2-obrPos2-1); 
+        }else{
+          type = s.substr(0,obrPos);
+          params = s.substr(obrPos+1, cbrPos-obrPos-1);
+          optparams = "";          
+        }
+      }else{
+        if(obrPos2 != string::npos){
+          if(cbrPos2 == string::npos) throw GUISyntaxErrorException(s,"missing ']' character!");
+          type = s.substr(0,obrPos2);
+          optparams = s.substr(obrPos2+1, cbrPos2-obrPos2-1);
+          params = "";          
+        }else{
+          optparams = "";
+          params = "";
+          type = s;
+        }
+      }
+    }
+    
   // }}}
   }
   
-  GUIDefinition::GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout)
+  
+  
+  GUIDefinition::GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout, QWidget *parentWidget)
     // {{{ open
-    :m_poGUI(gui),m_poParentLayout(parentLayout){
+    :m_sDefinitionString(def),m_iMargin(2),m_iSpacing(2),m_poGUI(gui),m_poParentLayout(parentLayout),m_poParentWidget(parentWidget){
     
-    // SYNTAX: type(paramList)[@out=outNameList@inp=inNameList@size=Size@label=label]
-    string defWork = def;
-    
-    // split the type string
-    m_sType = split_first(defWork,"(",defWork,"Excepted character after \"(\"",false,false);
-    
-    // split the param list
+    // SYNTAX: type(commaSeperatedparamList)[@out=outNameList@inp=inNameList@size=Size@label=label]
     string paramList;
-    if (defWork.length() && defWork[0] == ')'){
-      paramList = "";
-      defWork = defWork.substr(1);
-    }else{
-      paramList = split_first(defWork,")",defWork,"This error message can not occur!",true,true);
+    string optParamList;
+    split_string(def,m_sType,paramList,optParamList);
+    
+    if(paramList.length()){
+      m_vecParams = StrTok(paramList,",").allTokens();
     }
     
-    // parse the param list
-    m_vecParams = StrTok(paramList,",").allTokens();
-    
-    // test whether optional params are given
-    if(!(defWork.length())) return;
-    
-    // #####  parse optional params #########
-    // test for correct brackets 
-    GUIDEF_ASSERT(defWork[0] == '[',"Expected \"[\"-character at the beginning of the optional params list");
-    GUIDEF_ASSERT(defWork[defWork.length()-1] == ']',"Expected \"]\"-character at the end of the optional params list");
-    
-    // trim ends
-    defWork = defWork.substr(1,defWork.length()-2);
-    
-    StrTok t(defWork,"@");
-    while(t.hasMoreTokens()){
-      string s = t.nextToken();
-      if(!s.find("out",0)) m_vecOutputs = StrTok(cutName(s),",").allTokens();
-      else if(!s.find("inp",0)) m_vecInputs = StrTok(cutName(s),",").allTokens();  
-      else if(!s.find("size",0)) m_oSize = translateSize(cutName(s));
-      else if(!s.find("label",0)) m_sLabel = cutName(s);
-      else ERROR_LOG("Undefined parameter identifier \"" << s << "\"");
+    if(optParamList.length()){
+      StrTok t(optParamList,"@");
+      while(t.hasMoreTokens()){
+        string s = t.nextToken();
+        if(!s.find("out",0)) m_vecOutputs = StrTok(cutName(s),",").allTokens();
+        else if(!s.find("inp",0)) m_vecInputs = StrTok(cutName(s),",").allTokens();  
+        else if(!s.find("size",0)) m_oSize = translateSize(cutName(s));
+        else if(!s.find("minsize",0)) m_oMinSize = translateSize(cutName(s));
+        else if(!s.find("maxsize",0)) m_oMaxSize = translateSize(cutName(s));
+        else if(!s.find("label",0)) m_sLabel = cutName(s);
+        else if(!s.find("margin",0)) m_iMargin = (int)abs(atoi(cutName(s).c_str()));
+        else if(!s.find("spacing",0)) m_iSpacing = (int)abs(atoi(cutName(s).c_str()));
+        else throw GUISyntaxErrorException(def,string("illegal optional parameter \"")+s+"\"");
+      }
     }
   }
   // }}}
-  
+
   const std::string &GUIDefinition::param(unsigned int idx) const {
     // {{{ open
     
@@ -155,7 +135,7 @@ namespace icl{
     // {{{ open
     
     static const string DEF;
-    return idx < m_vecOutputs.size() ? m_vecOutputs[idx] : DEF;
+    return idx < m_vecInputs.size() ? m_vecInputs[idx] : DEF;
   }
   
   // }}}
