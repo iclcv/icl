@@ -10,6 +10,8 @@
 #include <iclWidget.h>
 #include <iclDrawWidget.h>
 
+#include <QLayout>
+#include <QWidget>
 #include <QApplication>
 
 /** \cond */
@@ -162,6 +164,8 @@ namespace icl{
       - <b>draw</b> an ICLDrawWidget component
       - <b>combo</b> a combo box
       - <b>spinner</b> a spin box (integer valued with given range)
+      - <b>hcontainer</b> a horizontal layouted container which can be used to embed external QWidgets
+      - <b>hcontainer</b> a vertical layouted container which can be used to embed external QWidgets
       
       \subsection TYPEPARAMS Type Dependent Parameters
       The 2nd part of the GUI definition string is a comma separated list of type dependent parameters.
@@ -213,6 +217,10 @@ namespace icl{
         element.
       - <b>spinner(int MIN,int MAX,int CURRENT)</b>\n
         An integer valued Spin-Box with a given range {MIN,...,MAX} and a given initial value CURRENT.
+      - <b>hcontainer</b>\n
+        No parameters here!
+      - <b>vcontainer</b>\n
+        No parameters here!
       
       \subsection GP General Parameters
       The 3rd part of the GUI definition string is a list of so called general params. "General" means here,
@@ -293,8 +301,8 @@ namespace icl{
       <TR> <TD>draw</TD>         <TD>1 type ICLDrawWidget*</TD> <TD>0</TD>            <TD>handle for the embedded ICLDrawWidget</TD>              </TR>
       <TR> <TD>combo</TD>        <TD>0</TD>               <TD>1 type std::string</TD> <TD>current selected item</TD>                              </TR>
       <TR> <TD>spinner</TD>      <TD>0</TD>               <TD>1 type int</TD>         <TD>current value</TD>                                      </TR>
-      <TR> <TD></TD> <TD></TD> <TD></TD> <TD></TD> </TR>
-      <TR> <TD></TD> <TD></TD> <TD></TD> <TD></TD> </TR>
+      <TR> <TD>hcontainer</TD>   <TD>2 QWidget*, QLayout*</TD>  <TD>0</TD>             <TD>The widget itself and its QHBoxLayout</TD>              </TR>
+      <TR> <TD>vcontainer</TD>   <TD>2 QWidget*, QLayout*</TD>  <TD>0</TD>             <TD>The widget itself and its QVBoxLayout</TD>              </TR>
       </TABLE>
       
       \subsubsection SpT Special Interface Types (handles)
@@ -391,6 +399,47 @@ namespace icl{
       data type, can be triggered (if the button is pressed) an it can be checked using its 
       wasTriggered() function, which returns if the event was triggered and resets the internal
       boolean variable to false.
+
+      \subsection EMB Embedding external QWidgets
+      In some cases it might be necessary to embed QWidgets, which are not supported by the GUI-API.
+      For this, two additional components (hcontainer and vcontainer) are provided. This containers
+      use the input interface, to pass the containers QWidget itself and its layout to the GUI
+      interface. By this means you can access theses pointers directly as parents for your own
+      widget. See the following example for more details:
+      \code
+      #include <iclGUI.h>
+      #include <QProgressBar>
+      
+      using namespace icl;
+      
+      int main(int n, char**ppc){
+        QApplication app(n,ppc);
+      
+        // create the top level gui component
+        GUI gui("vbox");
+      
+        // add some buttons with funny texts
+        gui << "button(click me)[@out=click0]"<< "button(no !click me)[@out=click1]"<< "button(no no no! me!)[@out=click2]";
+      
+        // add the container widget (comma separated list of output identifiers)
+        gui << "hcontainer[@inp=widget,layout@label=Progress]";
+      
+        // create the gui (this allocates input and output data)
+        gui.show();
+      
+        // create a new QProgressBar using the containers widget as parent
+        QProgressBar *pb = new QProgressBar(gui.getValue<QWidget*>("widget"));
+        pb->setValue(50);
+      
+        // add it to the widgets layout
+        gui.getValue<QLayout*>("layout")->addWidget(pb);
+      
+        // enter Qt's event loop
+        return app.exec();
+      }
+      \endcode
+      
+      \image html Image04_ExternalWidget.jpg
       
       \subsection LOCK Locking
       Some interface types involve the danger to be corrupted when accessed by the working thread

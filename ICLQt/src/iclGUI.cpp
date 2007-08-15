@@ -687,7 +687,38 @@ public:
   };
 
 // }}}
-  
+  struct HContainerGUIWidget : public GUIWidget{
+    // {{{ open
+    HContainerGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::hboxLayout,2,0,0){
+      
+      getGUI()->lockData();
+      getGUI()->allocValue<QWidget*>(def.input(0),def.parentWidget());
+      getGUI()->allocValue<QLayout*>(def.input(1),def.parentLayout());
+      getGUI()->unlockData();
+      
+      setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+    }
+    static string getSyntax(){
+      return string("hcontainer()[general params]\n")+gen_params();
+    }
+  };
+  // }}}
+  struct VContainerGUIWidget : public GUIWidget{
+    // {{{ open
+    VContainerGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::vboxLayout,2,0,0){
+      
+      getGUI()->lockData();
+      getGUI()->allocValue<QWidget*>(def.input(0),def.parentWidget());
+      getGUI()->allocValue<QLayout*>(def.input(1),def.parentLayout());
+      getGUI()->unlockData();
+      
+      setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+    }
+    static string getSyntax(){
+      return string("vcontainer()[general params]\n")+gen_params();
+    }
+  };
+  // }}}
   /// template for creating arbitrary GUIWidget's
   template<class T>
   GUIWidget *create_widget_template(const GUIDefinition &def){
@@ -742,6 +773,8 @@ public:
       MAP_CREATOR_FUNCS["draw"] = create_widget_template<DrawGUIWidget>;
       MAP_CREATOR_FUNCS["combo"] = create_widget_template<ComboGUIWidget>;
       MAP_CREATOR_FUNCS["spinner"] = create_widget_template<SpinnerGUIWidget>;
+      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
+      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;
     }
     
     /// find the creator function

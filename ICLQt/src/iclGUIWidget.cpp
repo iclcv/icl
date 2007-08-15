@@ -43,7 +43,7 @@ namespace icl{
       setMaximumSize(QSize(defSize.width*GUI::CELLW,defSize.height*GUI::CELLH));
     }
     
-    if(def.getParentLayout()) def.getParentLayout()->addWidget(this);
+    if(def.parentLayout()) def.parentLayout()->addWidget(this);
 
     switch(lt){
       case noLayout: 

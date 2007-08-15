@@ -46,7 +46,7 @@ namespace icl{
     GUI *getGUI() const { return m_poGUI; }
     
     /// return the parent layout or null if there is nor parent
-    QLayout *getParentLayout() const { return m_poParentLayout; }
+    QLayout *parentLayout() const { return m_poParentLayout; }
 
     /// returns the number of params
     unsigned int numParams() const { return m_vecParams.size(); }
