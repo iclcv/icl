@@ -631,8 +631,10 @@ public:
       m_psCurrentText = &getGUI()->allocValue<string>(def.output(0),sFirst);
       getGUI()->unlockData();
       
-      connect(m_poCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(ioSlot()));	
       m_poCombo->setCurrentIndex(selectedIndex);
+      
+      connect(m_poCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(ioSlot()));	
+
     }
     static string getSyntax(){
       return string("combo(entry1,entry2,entry3)[general params] \n")+
@@ -641,9 +643,9 @@ public:
       gen_params();
     }
     virtual void processIO(){
-      getGUI()->unlockData();
-      *m_psCurrentText = m_poCombo->currentText().toLatin1().data();
       getGUI()->lockData();
+      *m_psCurrentText = m_poCombo->currentText().toLatin1().data();
+      getGUI()->unlockData();
     }
     virtual Size getDefaultSize() { 
       return Size(4,1); 
