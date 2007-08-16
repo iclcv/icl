@@ -5,11 +5,12 @@
 #include <QMutex>
 
 namespace icl{
-
+  /** \cond */
   class GLPaintEngine;
   class ImgBase; 
-  
-/// Extended Image visualization widget, with a drawing state machine interface
+  /** \endcond */
+
+/// Extended Image visualization widget, with a drawing state machine interface \ingroup COMMON
 /** The ICLDrawWidget can be used to draw annotation on images in real time.
     It provides the ability for translating draw command given in image coordinations
     with respect to the currently used image scaling type (hold-ar, no-scaling or 

@@ -31,74 +31,100 @@ namespace icl{
   class ImgParamWidget;
   /** \endcond **/  
 
-
+  /// Complex widget class, which is used in the Camera configuration tool camcfg \ingroup UNCOMMON
   class CamCfgWidget : public QWidget{
     Q_OBJECT
     public:
+    /// Constructor
     CamCfgWidget();
+    
+    /// Destructor
     ~CamCfgWidget();
     
     public slots:
+    /// slot for processing events on the device combo box
     void deviceChanged(const QString &text);
+
+    /// slot for processing events on the device combo box
     void deviceChanged(int index);
+
+    /// slot for processing events on the format combo box
     void formatChanged(const QString &text);
+    
+    /// slot for processing events on the size combo box
     void sizeChanged(const QString &text);
 
+    /// slot for processing events on the image params widget
     void visImageParamChanged(int width, int height, int d, int fmt);
 
+    /// slot for processing events on property sliders (ranged values)
     void propertySliderChanged(const QString &id, double value);
+
+    /// slot for processing events on property combo-boxes (value lists)
     void propertyComboBoxChanged(const QString &text);
+    
+    /// slot for processing events on property buttons (events)
     void propertyButtonClicked(const QString &text);
     
+    /// slot for processing events on the capture button
     void startStopCapture(bool on);
+
+    /// slot that is called to update the currently shown image
     void updateImage();
     
+    /// slot to create a new grabber with given id
     void createGrabber(const QString &id);
     
     private:
+    /// called when a new grabber is selcted
     void updateSizeCombo();
+    
+    /// called when a new grabber is selcted
     void updateFormatCombo();
     
+    /// called when a new grabber is selcted
     void fillLayout(QLayout *l, Grabber *dev);
 
-    QVBoxLayout *m_poVTopLevelLayout;
-    QHBoxLayout *m_poTopLevelLayout;
-    ICLWidget *m_poICLWidget;
-    QWidget *m_poHBoxWidget;
-    QWidget *m_poCenterPanel, *m_poRightPanel;
-    QVBoxLayout *m_poCenterPanelLayout, *m_poRightPanelLayout;
-    QScrollArea *m_poPropertyScrollArea;
+    QVBoxLayout *m_poVTopLevelLayout;    //!< the top level vertical layout
+    QHBoxLayout *m_poTopLevelLayout;     //!< the top level horizontal layout
+    ICLWidget *m_poICLWidget;            //!< image visualizing widget
+    QWidget *m_poHBoxWidget;             //!< top level hbox widget
+    QWidget *m_poCenterPanel;            //!< top level center widget
+    QWidget *m_poRightPanel;             //!< top level right widget
+    QVBoxLayout *m_poCenterPanelLayout;  //!< internaly layout
+    QVBoxLayout *m_poRightPanelLayout;   //!< internaly layout
+    QScrollArea *m_poPropertyScrollArea; //!< internaly scroll-area (for the list of properties)
     
-    QPushButton *m_poCaptureButton;
-    QLabel *m_poFpsLabel;
-    QWidget *m_poGrabButtonAndFpsLabelWidget;
-    QHBoxLayout *m_poGrabButtonAndFpsLabelLayout;
+    QPushButton *m_poCaptureButton;      //!< button for start/stop capturing (togglebutton)
+    QLabel *m_poFpsLabel;                //!< lable that shows the current fps (inactive)
+    QWidget *m_poGrabButtonAndFpsLabelWidget;       //!< container widget
+    QHBoxLayout *m_poGrabButtonAndFpsLabelLayout;   //!< container layout
 
-    QTabWidget *m_poTabWidget;
+    QTabWidget *m_poTabWidget;           //!< property tab for each camera found
     
-    QComboBox *m_poDeviceCombo;
-    QComboBox *m_poFormatCombo;
-    QComboBox *m_poSizeCombo;
+    QComboBox *m_poDeviceCombo;          //!< provides a list of all available devices (ieee,pwc and unicap)
+    QComboBox *m_poFormatCombo;          //!< provides all formats available on the currently selcted device
+    QComboBox *m_poSizeCombo;            //!< provides all sizes available on the currently selcted device
 
-    QTimer *m_poTimer;
-    QMutex m_oGrabberMutex;
+    QTimer *m_poTimer;                   //!< internally used timer (grabbing thread!)
+    QMutex m_oGrabberMutex;              //!< mutex to protect the grabbed images
     
     
-    Grabber *m_poGrabber;
+    Grabber *m_poGrabber;                //!< current grabber instance
     
     // UnicapDevice m_oUnicapDevice;
-    std::vector<UnicapDevice> m_vecDeviceList;
-    std::vector<DCDevice> m_vecDCDeviceList;
-    std::vector<int> m_vecPWCDeviceList;
+    std::vector<UnicapDevice> m_vecDeviceList;   //!< unicap device list
+    std::vector<DCDevice> m_vecDCDeviceList;     //!< DCDevice list
+    std::vector<int> m_vecPWCDeviceList;         //!< PWCDevice list
     
-    ImgParamWidget *m_poImgParamWidget;
+    ImgParamWidget *m_poImgParamWidget;   //!< widget to ajust image params ( grabbers desired params)
     
-    bool m_bDisableSlots;
-    bool m_bCapturing;
+    bool m_bDisableSlots;                 //!< internal flag for temporarily disable all slots (to disable endless recursions)
+    bool m_bCapturing;                    //!< flag that indicates wheter the current grabber thread runs or not
   
-    Size m_oVideoSize;
-    format m_eVideoFormat;
-    icl::depth m_eVideoDepth;
+    Size m_oVideoSize;                    //!< current video size
+    format m_eVideoFormat;                //!< current video format
+    icl::depth m_eVideoDepth;             //!< current video depth
   
   };
 }

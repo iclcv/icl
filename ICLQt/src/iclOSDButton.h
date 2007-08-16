@@ -4,7 +4,7 @@
 #include <iclOSDWidget.h>
 
 namespace icl{
-  /// implementation of an ordinary OSD-button
+  /// implementation of an ordinary OSD-button \ingroup UNCOMMON
   class OSDButton : public OSDWidget{
     public:
     OSDButton(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent, std::string sText, int iToggable=0);

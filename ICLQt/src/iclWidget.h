@@ -33,7 +33,15 @@ namespace icl{
   class QImageConverter;
   /** \endcond */
   
-  /// Class for openGL-based image visualization components
+  /** \cond */
+#ifdef DO_NOT_USE_GL_VISUALIZATION
+  typedef QWidget ICLWidgetsParentClass;
+#else
+  typedef QGLWidget ICLWidgetsParentClass;
+#endif
+  /** \endcond */
+
+  /// Class for openGL-based image visualization components \ingroup COMMON
   /** The ICLWidget class provide basic abilities for displaying ICL images (ImgBase) on embedded 
       Qt GUI components. Its is fitted out with a responsive OpenGL-Overlay On-Screen-Display (OSD),
       which can be used to adapt some ICLWidget specific settings, and which is partitioned into several
@@ -112,14 +120,7 @@ int main(int nArgs, char **ppcArg){
       commands in image coordinates. (The last method is more recommended, as it should be
       exactly what you want!!!)
       @see ICLDrawWidget
-*/
-
-#ifdef DO_NOT_USE_GL_VISUALIZATION
-  typedef QWidget ICLWidgetsParentClass;
-#else
-  typedef QGLWidget ICLWidgetsParentClass;
-#endif
-
+  */
   class ICLWidget : public ICLWidgetsParentClass{
     Q_OBJECT
     public:

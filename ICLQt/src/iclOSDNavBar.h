@@ -5,7 +5,7 @@
 #include <iclOSDButton.h>
 
 namespace icl{
-  /// Implementation of a so called "Nav-Bar" widget
+  /// Implementation of a so called "Nav-Bar" widget \ingroup UNCOMMON
   /** The nav-bar widget contains a count of buttons alligned on a
       horizontal line. One of these buttons is selected (like a
       group of radio buttons), all others are deselected. The selected

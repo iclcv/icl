@@ -11,14 +11,17 @@ class QWidget;
 
 namespace icl{
 
-  /// Forward declaration of the ImgBase class
+  /** \cond */
   class ImgBase;
-    
-  /// TODO
+  /** \endcond */
+  
+  /// PaintEngine implementation using Qts QPainter \ingroup UNCOMMON
   class QtPaintEngine : public PaintEngine{
     public:
-   
+    /// Create a new QtPaintEngine which paints on a given QWidget
     QtPaintEngine(QWidget *widget);
+
+    /// Destructor
     ~QtPaintEngine();
     
     virtual void color(int r, int g, int b, int a=255);

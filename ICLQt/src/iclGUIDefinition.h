@@ -15,7 +15,7 @@ namespace icl{
   class GUI;
   /** \endcond */
 
-  /// Utilty class to simplify creation of GUI components
+  /// Utilty class to simplify creation of GUI components \ingroup UNCOMMON
   class GUIDefinition{
     public:
     /// create a new GUI Definition

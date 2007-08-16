@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace icl{
-  /// for mouse interaction slots and signals
+  /// for mouse interaction slots and signals \ingroup COMMON
   struct MouseInteractionInfo{
     MouseInteractionInfo(){
       widgetX = -1;

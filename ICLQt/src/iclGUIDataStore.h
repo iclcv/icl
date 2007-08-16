@@ -10,7 +10,7 @@
 
 namespace icl{
   
-  /// Abstract and associative Data Container for Data of different types
+  /// Abstract and associative Data Container for Data of different types \ingroup UNCOMMON
   /** The GUIDataStore class can be used to create an associative container
       for different types. It provides an interface for a type-save handling
       of single elements as well as arrays of data.\n

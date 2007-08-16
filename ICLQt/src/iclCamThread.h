@@ -1,5 +1,5 @@
-#ifndef jfkdjflksdjfdsjfklsdjlkf
-#define jfkdjflksdjfdsjfklsdjlkf
+#ifndef ICL_CAM_THREAD_H
+#define ICL_CAM_THREAD_H
 
 #include <iclWidget.h>
 #include <iclImgBase.h>
@@ -8,6 +8,8 @@
 using namespace icl;
 using namespace std;
 namespace icl{
+
+  /// A utility class ( DEPRECATED! ) \ingroup COMMON 
   class CamThread : public QObject{
     Q_OBJECT
     public:

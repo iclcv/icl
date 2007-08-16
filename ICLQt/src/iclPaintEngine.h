@@ -11,10 +11,11 @@
 
 namespace icl{
 
-  /// Forward declaration of the ImgBase class
+  /** \cond */
   class ImgBase;
-    
-  /// Paint engine interface 
+  /** \endcond */  
+  
+  /// pure virtual Paint engine interface \ingroup UNCOMMON
   class PaintEngine{
     public:
     virtual ~PaintEngine(){}

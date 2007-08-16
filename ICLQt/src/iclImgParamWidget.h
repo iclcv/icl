@@ -11,6 +11,7 @@ class QHBoxLayout;
 
 namespace icl{
   
+  /// Internally used widget to define image params \ingroup UNCOMMON
   class ImgParamWidget : public QWidget{
     Q_OBJECT
     public:

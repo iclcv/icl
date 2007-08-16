@@ -9,7 +9,7 @@
 
 namespace icl{
  
-  /// Complex Widgets, that is used in the ICLWidget
+  /// Complex Widgets, that is used in the ICLWidget \ingroup UNCOMMON
   class OSD : public OSDWidget{
     typedef std::map<std::string,OSDWidget*> pmap;
     public:

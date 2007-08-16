@@ -9,7 +9,7 @@
 
 namespace icl{
   
-  /// wrapper of the GLTextureMapImage for processing ImgBase objects 
+  /// wrapper of the GLTextureMapImage for processing ImgBase objects \ingroup UNCOMMON
   /** The GLTextureMapBaseImage complies an additional abstraction layer
       for displaying image using OpenGL's texture mapping abilities.
       It wraps simple GLTextureMapImages for all supported depths 

@@ -16,7 +16,7 @@ namespace icl{
   class GUI;
   /** \endcond */
 
-  /// Abstract class for GUI components
+  /// Abstract class for GUI components \ingroup UNCOMMON
   class GUIWidget : public QWidget{
     Q_OBJECT;
     public:

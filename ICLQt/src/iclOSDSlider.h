@@ -4,7 +4,7 @@
 #include <iclOSDWidget.h>
 
 namespace icl{
-  /// implementation of a Slider widgets
+  /// implementation of a Slider widgets \ingroup UNCOMMON
   class OSDSlider : public OSDWidget{
     public:
     OSDSlider(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent,int min, int max, int curr);

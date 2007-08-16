@@ -7,7 +7,7 @@
 
 namespace icl{
   
-  /// Implementation of a ordinary label widget
+  /// Implementation of a ordinary label widget \ingroup UNCOMMON
   class OSDLabel : public OSDWidget{
     public:
     OSDLabel(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent, std::string sText);

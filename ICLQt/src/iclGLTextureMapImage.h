@@ -13,8 +13,8 @@
 #include <iclImg.h>
 namespace icl{
 
-  /// Utility class for displaying images using OpenGLs texture mapping abilities
-  /** As former pixel drawing implementations used glDrawPixels(..) to draw images
+  /// Utility class for displaying images using OpenGLs texture mapping abilities \ingroup UNCOMMON
+  /** As former pixel drawing implementations used glDrawPixels(..) to draw images 
       into a GL context, the visualization engine became very slow on some machines.
       Many sources mentioned already, that there are some performance problems with
       the glDrawPixels(..) procedure.\n

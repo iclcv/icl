@@ -10,17 +10,18 @@
 
 namespace icl{
   
-  /// forward declarations
+  /** \cond */
   class OSDWidget;
   class ICLWidget;
-  
+  /** \endcond */
+
   /// vector of OSDWidget pointers
   typedef std::vector<OSDWidget*> wvec;
 
   /// typedef for according image widget class
   typedef ICLWidget ImageWidget;
   
-  /// base class for On Screen Display (OSD) Widgets
+  /// base class for On Screen Display (OSD) Widgets \ingroup UNCOMMON
   /** Like QWidgets, the OSDWidget class provides an interface for
       arbitrary OSD-components like sliders, buttons and labels.
       Each widget may contain other wigets, an passes all givent events

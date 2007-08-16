@@ -26,7 +26,7 @@ namespace icl{
   class GUIWidget;
   /** \endcond */
 
-  /// Simple but powerful GUI Toolkit for the ICL
+  /// Simple but powerful GUI Toolkit for the ICL \ingroup COMMON
   /** \section INTRO Introduction
       When working on computer-vision tasks, one whats to have some graphical user interface 
       to show the current images. This can be achieved by the use of the ICLQt's ICLWidget and 

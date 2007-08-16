@@ -6,7 +6,10 @@
 
 
 namespace icl{
-  /// Abstract class for receiving MouseInteractionEvents
+  /// Abstract class for receiving MouseInteractionEvents \ingroup COMMON
+  /** <b>TODO</b>: Place an example here! 
+      
+  */
   class MouseInteractionReceiver : public QObject{
     Q_OBJECT
     public slots:
