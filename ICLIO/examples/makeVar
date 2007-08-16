@@ -71,3 +71,7 @@ DIR_LOWPRIORITY:=
 ifeq "${OS_TYPE}" "macosx"
 SKIP_OBJECTS:=grabCam.cpp unicap_test.cpp
 endif
+
+ifeq "$(HAVE_LIBDC)" ""
+SKIP_OBJECTS += dcmulticam.cpp
+endif
