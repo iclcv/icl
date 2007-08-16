@@ -615,7 +615,7 @@ public:
       addToGrid(m_poCombo);
 
       unsigned int selectedIndex = 0;
-      string sFirst;
+      string sFirst = def.param(0);
       for(unsigned int i=0;i<def.numParams();i++){
         const std::string &s = def.param(i);
         if(s.length() && s[0]=='!'){
@@ -630,9 +630,9 @@ public:
       getGUI()->lockData();
       m_psCurrentText = &getGUI()->allocValue<string>(def.output(0),sFirst);
       getGUI()->unlockData();
-
-      m_poCombo->setCurrentIndex(selectedIndex);
+      
       connect(m_poCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(ioSlot()));	
+      m_poCombo->setCurrentIndex(selectedIndex);
     }
     static string getSyntax(){
       return string("combo(entry1,entry2,entry3)[general params] \n")+
