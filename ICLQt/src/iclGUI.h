@@ -471,7 +471,7 @@ namespace icl{
     static const int CELLH = 20;
     
     /// default constructor 
-    GUI(const std::string &definition);
+    GUI(const std::string &definition="vbox");
     
     /// copy constructor
     GUI(const GUI &gui);

@@ -619,7 +619,7 @@ public:
       for(unsigned int i=0;i<def.numParams();i++){
         const std::string &s = def.param(i);
         if(s.length() && s[0]=='!'){
-          sFirst = s;
+          sFirst = s.substr(1);
           selectedIndex = i;
           m_poCombo->addItem(s.substr(1).c_str());
         }else{
