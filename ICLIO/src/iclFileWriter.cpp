@@ -45,12 +45,9 @@ namespace icl {
   string FileWriter::buildFileName()
     // {{{ open
   {
-    printf("1\n");
     if (nCounterDigits == 0) { 
-      cout << "2Hello" << endl;
-      cout << "2pre: " << sFilePrefix << endl;
-      cout << "2suf: " << sFileSuffix << endl;
-      return sFilePrefix+sFileSuffix; }
+      return sFilePrefix+sFileSuffix; 
+    }
     ostringstream oss; 
     oss << sFilePrefix;
     oss.fill('0'); 
