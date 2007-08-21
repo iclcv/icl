@@ -74,4 +74,5 @@ endif
 
 ifeq "$(HAVE_LIBDC)" ""
 SKIP_OBJECTS += dcmulticam.cpp dcclearisochannels.cpp dcdeviceinfo.cpp
+SKIP_OBJECTS += dctest.cpp
 endif
