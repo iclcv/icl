@@ -73,5 +73,5 @@ SKIP_OBJECTS:=grabCam.cpp unicap_test.cpp
 endif
 
 ifeq "$(HAVE_LIBDC)" ""
-SKIP_OBJECTS += dcmulticam.cpp dcclearisochannels.cpp
+SKIP_OBJECTS += dcmulticam.cpp dcclearisochannels.cpp dcdeviceinfo.cpp
 endif
