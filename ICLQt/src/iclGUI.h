@@ -47,7 +47,7 @@ namespace icl{
       to show the current images. This can be achieved by the use of the ICLQt's ICLWidget and 
       ICLDrawWidget classes. \n
       However in many cases this GUI components are not enough, e.g.:
-      - a value shall be adjusted at runtime (using a slider, a spinbox or a simple textfield)
+      - a value shall be adjusted at run-time (using a slider, a spinbox or a simple textfield)
       - a mode shall be switched (using a radiobutton group or a combobox)
       - the application shall have a "pause"-button which stops the iteration thread temporarily
       - ...
@@ -290,7 +290,7 @@ namespace icl{
       }
       \endcode
 
-      Yet, only the most components provide an outupt pin, however the 
+      Yet, only the most components provide an output pin, however the 
       GUI-definition syntax can be used to define components with N inputs and M outputs.\n
       As each GUI component has different semantics, the count and the type of it's
       in- and output pins must be regarded. The following list shows all GUI components
@@ -321,13 +321,13 @@ namespace icl{
       \section HVV Handles vs. Values
 
       
-      In some cases accessing a components value is not enough. E.g. if a "lable" component
+      In some cases accessing a components value is not enough. E.g. if a "label" component
       should be used to show another string, of if a slider should be set externally to a
       specific value. \n
-      To faciliate working with GUI objects, each component is able to allocate a so called
+      To facilitate working with GUI objects, each component is able to allocate a so called
       "handle"-object of itself in its parent GUI-objects data store. This will be done
       if a "@handle=.." token is found in the general params list of this component definition
-      (general params are inside angular brackes).\n
+      (general params are inside angular brackets).\n
       All handle classes are derived from the GUIHandle<T> template class, which provides
       functionalities for storing a T-pointer (template parameter) and which offers functions
       to access this pointer (the *operator). A ButtonHandle for example inherits
@@ -361,7 +361,7 @@ namespace icl{
         // the handle can be used to affect the underlying QSlider component
         h = 5;
   
-        // And the handle can be used to access the QSlider directy 
+        // And the handle can be used to access the QSlider directly 
         // To work with this slider, the \#include <QSlider> statement is mandatory
         // because the SliderHandle uses the QSlider class forward declared.
         QSlider *sl = *h;  
@@ -392,7 +392,7 @@ namespace icl{
         /// create a container 
         GUI gui("vbox");
       
-        // add some lables
+        // add some labels
         gui << "label(Text 1)[@handle=L1@size=6x1@label=Label 1]";
         gui << "label(Text 2)[@handle=L2@size=6x1@label=Label 2]";
         gui << "label(Text 3)[@handle=L3@size=6x1@label=Label 3]";
@@ -414,10 +414,10 @@ namespace icl{
 
       \subsection DISPC DispHandles
       
-      The disp component implements a 2D-Array of lable componets (e.g. to visualize
+      The disp component implements a 2D-Array of label components (e.g. to visualize
       a matrix). It makes use of the LabelHandle class to provide an interface
       of type DispHandle which wraps a matrix of LabelHandles using the ICLUtils/
-      SimpleMatrix template calss. \n
+      SimpleMatrix template class. \n
       Matrix elements - of type "LabelHandle&" - can be addressed using the 
       [][]-operator (see SimpleMatrix).
       
@@ -471,7 +471,7 @@ namespace icl{
       
       The next interface type, that should be introduced here in detail, is the ButtonHandle type,
       which is used for the "button" type interface. The button itself produces no data; it can
-      only be accesse by using its handle. In contrast to other components, simple buttons
+      only be accessed by using its handle. In contrast to other components, simple buttons
       are producing an event instead of some data. When accessing the button from the working
       thread, you don't need the information if the button is pressed at this time, but you
       may want to know if it <em>was</em> pressed since the last test. You might say that a simple boolean
@@ -506,7 +506,7 @@ namespace icl{
       };
       
       int main(int n, char**ppc){
-        // create a qapplication object
+        // create a QApplication object
         QApplication app(n,ppc);
       
         // create the top level container
@@ -533,7 +533,7 @@ namespace icl{
       
       \subsubsection Event and Buttons
       
-      In some applications it might be neccessary to associate an event to a button click,
+      In some applications it might be necessary to associate an event to a button click,
       which is called immediately if the button is clicked. This is quite useful e.g. to interrupt
       the current working thread. However this feature is more complex, then the claim of the
       ICL GUI API can stand, this feature is a "must-have" and it is wrapped into the GUI API
@@ -543,11 +543,11 @@ namespace icl{
       these Callback-Objects and functions, two type-definition were made inside of the ButtonHandle
       class:
       \code
-      /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
+      /// Special Utility class for handling Button clicks in the ICL GUI API \ingroup HANDLES
       class ButtonHandle : public GUIHandle<QPushButton>{
         public:
       
-        /// typedefinition for a callback function
+        /// type definition for a callback function
         typedef void (*callback)(void);
     
         /// Interface for callback objects (functors)
@@ -586,7 +586,7 @@ namespace icl{
       }
       
       int main(int n, char**ppc){
-        // create a qapplication object
+        // create a QApplication object
         QApplication app(n,ppc);
       
         // create the top level container
@@ -617,7 +617,7 @@ namespace icl{
       \subsection EMB Embedding external QWidgets
       In some cases it might be necessary to embed QWidgets, which are not supported by the GUI-API.
       For this, the two box-components ("hbox" and "vbox") do also provide a special BoxHandle which
-      wrapps the underlying QWidget to provide access to it and its current layout.See the following 
+      wraps the underlying QWidget to provide access to it and its current layout.See the following 
       example for more details:
 
       \code
@@ -694,12 +694,12 @@ namespace icl{
     /// stream operator to add new other GUIs
     virtual GUI &operator<<(const GUI &g);
     
-    /// wraps the datastores allocValue function
+    /// wraps the data-stores allocValue function
     template<class T>
     inline T &allocValue(const std::string &id, const T&val=T()){
       return m_oDataStore.allocValue<T>(id,val);
     }
-    /// wraps the datastores allocArray function
+    /// wraps the data-stores allocArray function
     template<class T>
     inline T *allocArray(const std::string &id,unsigned int n){
       return m_oDataStore.allocArray<T>(id,n);
