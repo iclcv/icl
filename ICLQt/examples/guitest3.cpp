@@ -1,5 +1,4 @@
 #include "iclGUI.h"
-#include "iclGUIEvent.h"
 #include <iclGUIDataStore.h>
 #include <iclSize.h>
 #include <iclImg.h>

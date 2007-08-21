@@ -154,8 +154,8 @@ int main(int n,char **ppc){
   running = &gui->getValue<bool>("run");
   sleeptime = &gui->getValue<int>("sleep");
   colormode = &gui->getValue<string>("colormode");
-  gui->getValue<GUIEvent>("reset").registerCallback(reset_list);
-  gui->getValue<GUIEvent>("calc").registerCallback(calc_mean);
+  gui->getValue<ButtonHandle>("reset").registerCallback(reset_list);
+  gui->getValue<ButtonHandle>("calc").registerCallback(calc_mean);
   
   
   

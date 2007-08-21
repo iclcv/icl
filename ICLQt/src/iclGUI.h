@@ -5,8 +5,23 @@
 #include <vector>
 #include <iclSmartPtr.h>
 #include <iclGUIDataStore.h>
-#include <iclGUIEvent.h>
-#include <iclGUILabel.h>
+#include <iclButtonHandle.h>
+#include <iclBoxHandle.h>
+#include <iclBorderHandle.h>
+#include <iclButtonGroupHandle.h>
+#include <iclLabelHandle.h>
+#include <iclSliderHandle.h>
+#include <iclFSliderHandle.h>
+#include <iclIntHandle.h>
+#include <iclFloatHandle.h>
+#include <iclStringHandle.h>
+#include <iclComboHandle.h>
+#include <iclSpinnerHandle.h>
+#include <iclImageHandle.h>
+#include <iclDrawHandle.h>
+#include <iclDispHandle.h>
+
+
 #include <iclWidget.h>
 #include <iclDrawWidget.h>
 

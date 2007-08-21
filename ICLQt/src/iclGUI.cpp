@@ -25,6 +25,8 @@
 #include <QDoubleValidator>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QLabel>
+
 
 
 #include <map>
@@ -41,6 +43,7 @@ namespace icl{
     string("\t@size=WxH     (W and H are positive integers) set min and max size of that widget\n")+
     string("\t@minsize=WxH  (W and H are positive integers) set min. size of that widget\n")+
     string("\t@maxsize=WxH  (W and H are positive integers) set max. size of that widget\n")+
+    string("\t@handle=NAME  if defined, the componets handle is allocated with id NAME\n")+
     string("\t              (all size parameters are defined in cells of 15x15 pixles)\n")+
     string("\t@label=L      L is the label of this component\n")+
     string("\t@out=LIST     LIST is a comma-seperated list of output names\n")+
@@ -54,6 +57,12 @@ namespace icl{
     // {{{ open
     HBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::hboxLayout,0,0,0){
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(def.parentWidget()));
+        getGUI()->unlockData();
+      }
     }
     static string getSyntax(){
       return string("hbox()[general params]\n")+gen_params();
@@ -65,6 +74,11 @@ namespace icl{
     // {{{ open
     VBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::vboxLayout,0,0,0){
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(def.parentWidget()));
+        getGUI()->unlockData();
+      }
     }
     static string getSyntax(){
       return string("hbox()[general params]\n")+gen_params();
@@ -83,6 +97,13 @@ namespace icl{
       m_poGroupBox->setLayout(m_poLayout);
       addToGrid(m_poGroupBox);
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+      
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<BorderHandle>(def.handle(),BorderHandle(m_poGroupBox));
+        getGUI()->unlockData();
+      }
+      
     }
     static string getSyntax(){
       return string("border(LABEL)[general params]\n")+
@@ -98,14 +119,16 @@ namespace icl{
   // }}}
   struct ButtonGUIWidget : public GUIWidget{
     // {{{ open
-    ButtonGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,1){
+    ButtonGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,1){
       QPushButton *b = new QPushButton(def.param(0).c_str(),def.parentWidget());
       addToGrid(b);
       connect(b,SIGNAL(pressed()),this,SLOT(ioSlot()));
       
-      getGUI()->lockData();
-      m_poClickedEvent = &getGUI()->allocValue<GUIEvent>(def.output(0),GUIEvent(string("button:")+def.output(0)));
-      getGUI()->unlockData();
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        m_poClickedEvent = &getGUI()->allocValue<ButtonHandle>(def.handle(),ButtonHandle(b));
+        getGUI()->unlockData();
+      }
     }
     static string getSyntax(){
       return string("button(TEXT)[general params] \n")+
@@ -121,7 +144,7 @@ namespace icl{
     }
   private:
     // bool *m_pbClicked;
-    GUIEvent *m_poClickedEvent;
+    ButtonHandle *m_poClickedEvent;
   };
 
   // }}}
@@ -130,6 +153,7 @@ namespace icl{
     ButtonGroupGUIWidget(const GUIDefinition &def):
       GUIWidget(def,GUIWidget::gridLayout,0,1,-1), m_uiInitialIndex(0){
       if(def.numParams() < 1) throw GUISyntaxErrorException(def.defString(),"at least one param here!a");
+
 
       for(unsigned int i=0;i<def.numParams();i++){
         string text = def.param(i);
@@ -150,6 +174,12 @@ namespace icl{
       m_vecButtons[m_uiInitialIndex]->setChecked(true);
 
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<ButtonGroupHandle>(def.handle(),ButtonGroupHandle(&m_vecButtons));
+        getGUI()->unlockData();
+      }
     }
     static string getSyntax(){
       return string("buttongroup(LIST)[general params] \n")+
@@ -205,6 +235,12 @@ namespace icl{
       getGUI()->lockData();
       m_pbToggled = &getGUI()->allocValue<bool>(def.output(0),m_iCurr?true:false);
       getGUI()->unlockData();
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        m_poHandle = &getGUI()->allocValue<ButtonHandle>(def.handle(),ButtonHandle(m_poButton));
+        getGUI()->unlockData();
+      }
     }
     static string getSyntax(){
       return string("togglebutton(U,T)[general params] \n")+
@@ -216,12 +252,14 @@ namespace icl{
     virtual void processIO(){
       *m_pbToggled = !(*m_pbToggled);
       m_poButton->setText(m_asText[*m_pbToggled].c_str());
+      m_poHandle->trigger();
     }
     virtual Size getDefaultSize() { 
       return Size(4,1); 
     }
   private:
     QPushButton *m_poButton;
+    ButtonHandle *m_poHandle;
     bool *m_pbToggled;
     string m_asText[2];
     int m_iCurr;
@@ -230,16 +268,17 @@ namespace icl{
 // }}}
   struct LabelGUIWidget : public GUIWidget{
     // {{{ open
-    LabelGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,-1,0,-1){
+    LabelGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,-1){
       if(def.numParams() > 1) throw GUISyntaxErrorException(def.defString(),"need max. 1 parameter here!");
       if(def.numInputs() > 1) throw GUISyntaxErrorException(def.defString(),"need max. 1 input here!");
-      m_oLabel = GUILabel(def.numParams()==1?def.param(0):"");
+    
+      m_poLabel = new QLabel(def.numParams()==1?def.param(0).c_str():"",def.parentWidget());
       
-      addToGrid(m_oLabel.getLabel());
+      addToGrid(m_poLabel);
       
-      if(def.numInputs()==1){
+      if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<GUILabel>(def.input(0),m_oLabel);
+        getGUI()->allocValue<LabelHandle>(def.handle(),LabelHandle(m_poLabel));
         getGUI()->unlockData();
       }
     }
@@ -253,7 +292,7 @@ namespace icl{
       return Size(4,1); 
     }
   private:
-    GUILabel m_oLabel;
+    QLabel *m_poLabel;
   };
   
   // }}}
@@ -300,6 +339,12 @@ namespace icl{
       m_bVerticalFlag = iVerticalFlag ? true : false;
      
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<SliderHandle>(def.handle(),SliderHandle(m_poSlider));
+        getGUI()->unlockData();
+      }
     }
     static string getSyntax(){
       return 
@@ -372,6 +417,12 @@ namespace icl{
       }    
       connect(m_poSlider,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<FSliderHandle>(def.handle(),FSliderHandle(m_poSlider,fMin,fMax,10000));
+        getGUI()->unlockData();
+      }
     }
     static string getSyntax(){
       return 
@@ -417,6 +468,12 @@ public:
       getGUI()->lockData();
       m_piOutput = &getGUI()->allocValue<int>(def.output(0),def.intParam(2));
       getGUI()->unlockData();
+      
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<IntHandle>(def.handle(),IntHandle(m_poLineEdit));
+        getGUI()->unlockData();
+      }
     }
     static string getSyntax(){
       return 
@@ -453,6 +510,13 @@ public:
       getGUI()->lockData();
       m_pfOutput = &getGUI()->allocValue<float>(def.output(0),def.intParam(2));
       getGUI()->unlockData();
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<FloatHandle>(def.handle(),FloatHandle(m_poLineEdit));
+        getGUI()->unlockData();
+      }
+
     }
     static string getSyntax(){
       return 
@@ -502,6 +566,13 @@ public:
       getGUI()->lockData();
       m_psOutput = &getGUI()->allocValue<string>(def.output(0),def.param(0));
       getGUI()->unlockData();
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<StringHandle>(def.handle(),StringHandle(m_poLineEdit));
+        getGUI()->unlockData();
+      }
+
     }
     static string getSyntax(){
       return 
@@ -523,7 +594,7 @@ public:
 // }}} 
   struct DispGUIWidget : public GUIWidget{
     // {{{ open
-    DispGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,1,0,2){
+    DispGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,2){
       
       int nW = def.intParam(0);
       int nH = def.intParam(1);
@@ -531,14 +602,19 @@ public:
       if(nW < 1) throw GUISyntaxErrorException(def.defString(),"NW must be > 0");
       if(nH < 1) throw GUISyntaxErrorException(def.defString(),"NW must be > 0");
 
-      getGUI()->lockData();
-      m_poLabelMatrix = &(getGUI()->allocValue<GUILabelMatrix>(def.input(0),GUILabelMatrix(nW,nH)));
-      getGUI()->unlockData();      
+      m_poLabelMatrix = new LabelMatrix(nW,nH);
 
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<DispHandle>(def.handle(),DispHandle(m_poLabelMatrix));
+        getGUI()->unlockData();  
+      }
+        
       for(int x=0;x<nW;x++){
         for(int y=0;y<nH;y++){
-          (*m_poLabelMatrix)[x][y] = GUILabel("");
-          addToGrid((*m_poLabelMatrix)[x][y].getLabel(),x,y);
+          QLabel *l = new QLabel(def.parentWidget());
+          (*m_poLabelMatrix)[x][y] = LabelHandle(l);
+          addToGrid(l,x,y);
         }
       }
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -554,27 +630,23 @@ public:
       return Size(2*m_poLabelMatrix->w(),m_poLabelMatrix->h()); 
     }
   private:
-    GUILabelMatrix *m_poLabelMatrix;
+    LabelMatrix *m_poLabelMatrix;
   };
   
   // }}}
   struct ImageGUIWidget : public GUIWidget{
     // {{{ open
-    ImageGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,1,0,0){
-      /*
-          QWidget *w = new QWidget;
-          addToGrid(w);
-          m_poWidget = new ICLWidget(w);
-          QHBoxLayout *l= new QHBoxLayout;
-          w->setLayout(l);
-          l->addWidget(m_poWidget);
-      */
+    ImageGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,0){
+
       m_poWidget = new ICLWidget(def.parentWidget());
       addToGrid(m_poWidget);
       
-      getGUI()->lockData();
-      getGUI()->allocValue<ICLWidget*>(def.input(0),m_poWidget);
-      getGUI()->unlockData();
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<ImageHandle>(def.handle(),ImageHandle(m_poWidget));
+        getGUI()->unlockData();  
+      }
+      
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
     }
     static string getSyntax(){
@@ -588,13 +660,15 @@ public:
   // }}}
   struct DrawGUIWidget : public GUIWidget{
     // {{{ open
-    DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,1,0,0){
+    DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,0){
       m_poWidget = new ICLDrawWidget(def.parentWidget());
       addToGrid(m_poWidget);
       
-      getGUI()->lockData();
-      getGUI()->allocValue<ICLDrawWidget*>(def.input(0),m_poWidget);
-      getGUI()->unlockData();
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<ImageHandle>(def.handle(),ImageHandle(m_poWidget));
+        getGUI()->unlockData();  
+      }
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
     }
     static string getSyntax(){
@@ -634,7 +708,12 @@ public:
       m_poCombo->setCurrentIndex(selectedIndex);
       
       connect(m_poCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(ioSlot()));	
-
+      
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<ComboHandle>(def.handle(),ComboHandle(m_poCombo));
+        getGUI()->unlockData();  
+      }
     }
     static string getSyntax(){
       return string("combo(entry1,entry2,entry3)[general params] \n")+
@@ -671,6 +750,13 @@ public:
       getGUI()->lockData();
       m_piOutput = &getGUI()->allocValue<int>(def.output(0),def.intParam(2));
       getGUI()->unlockData();
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<SpinnerHandle>(def.handle(),SpinnerHandle(m_poSpinBox));
+        getGUI()->unlockData();  
+      }
+
     }
     static string getSyntax(){
       return 
@@ -689,8 +775,10 @@ public:
   };
 
 // }}}
-  struct HContainerGUIWidget : public GUIWidget{
-    // {{{ open
+
+  /**
+      struct HContainerGUIWidget : public GUIWidget{
+      // {{{ open
     HContainerGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::hboxLayout,2,0,0){
       
       getGUI()->lockData();
@@ -705,8 +793,8 @@ public:
     }
   };
   // }}}
-  struct VContainerGUIWidget : public GUIWidget{
-    // {{{ open
+      struct VContainerGUIWidget : public GUIWidget{
+      // {{{ open
     VContainerGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::vboxLayout,2,0,0){
       
       getGUI()->lockData();
@@ -721,7 +809,9 @@ public:
     }
   };
   // }}}
-  /// template for creating arbitrary GUIWidget's
+  **/
+      
+      /// template for creating arbitrary GUIWidget's
   template<class T>
   GUIWidget *create_widget_template(const GUIDefinition &def){
     // {{{ open
@@ -775,8 +865,8 @@ public:
       MAP_CREATOR_FUNCS["draw"] = create_widget_template<DrawGUIWidget>;
       MAP_CREATOR_FUNCS["combo"] = create_widget_template<ComboGUIWidget>;
       MAP_CREATOR_FUNCS["spinner"] = create_widget_template<SpinnerGUIWidget>;
-      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
-      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;
+      //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
+      //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;
     }
     
     /// find the creator function

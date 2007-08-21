@@ -26,6 +26,9 @@ namespace icl{
 
     /// return the lable string
     const std::string &label() const { return m_sLabel; }
+
+    /// return the handle id string
+    const std::string &handle() const { return m_sHandle; }
     
     /// return this size (or Size::null)
     const Size &size() const { return m_oSize; }
@@ -88,6 +91,7 @@ namespace icl{
     std::vector<std::string> m_vecOutputs; //<! vector of output names
     std::vector<std::string> m_vecInputs;  //<! vector of input names
     std::string m_sLabel;                  //<! parsed label (unused this time)
+    std::string m_sHandle;                 //<! parsed handle id string
     Size m_oSize;                          //<! parsed size
     Size m_oMinSize;                       //<! parsed minimal size
     Size m_oMaxSize;                       //<! parsed maximum size

@@ -3,7 +3,9 @@
 
 /** 
     \defgroup COMMON "Most common classes"
+    \defgroup HANDLES "GUI Component Handle classes"
     \defgroup UNCOMMON "Uncommon classes (internally used)"
+
     
     \mainpage ICLQt Package for embedding image visualization Wigets into QWidgets
     This package provides some Widget classes, which allow to visualize ICL images in 
@@ -28,8 +30,13 @@
     - <b>QImageConverter</b> Class for converting QImages to ICL images and back with optimized
       conversion routines and memory handling.
     - <b>GUI</b> basic GUI class
+
+    \section HandleClasses GUI Handle classes
+    - <b>jfdsjf</b>
     
     <b>\ref COMMON</b> 
+
+    <b>\ref HANDLES</b> 
     
     \ref UNCOMMON 
 

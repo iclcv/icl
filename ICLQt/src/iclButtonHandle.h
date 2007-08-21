@@ -1,13 +1,19 @@
-#ifndef ICLGUI_EVENT_H
-#define ICLGUI_EVENT_H
+#ifndef ICL_BUTTON_HANDLE_H
+#define ICL_BUTTON_HANDLE_H
 
 #include <string>
 #include <vector>
+#include <iclGUIHandle.h>
+
+/**\cond */
+class QPushButton;
+/**\endcond */
+
 
 namespace icl{
   
-  /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup COMMON
-  class GUIEvent{
+  /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
+  class ButtonHandle : public GUIHandle<QPushButton>{
     public:
     
     /// typedefinition for a callback function
@@ -22,7 +28,7 @@ namespace icl{
     };
     
     /// create a new event with a given button id
-    GUIEvent(const std::string &id="undefined");
+    ButtonHandle(QPushButton *b=0);
 
     /// check if this event/button was triggered
     /** @param reset if set to true the internal boolen variable
@@ -46,6 +52,7 @@ namespace icl{
     void registerCallback(Callback *c, bool remove=false);
     
     private:
+    
     bool m_bTriggered; //!< internal boolean variable
     std::string m_sID; //!< corresponding id
     std::vector<callback> m_vecCallbackFuncs; //!< internal vector of callback functions

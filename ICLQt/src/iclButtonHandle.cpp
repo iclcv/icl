@@ -1,11 +1,11 @@
-#include <iclGUIEvent.h>
+#include <iclButtonHandle.h>
 
 
 namespace icl{
-  GUIEvent::GUIEvent(const std::string &id):
-    m_bTriggered(false),m_sID(id){
+  ButtonHandle::ButtonHandle(QPushButton *b):
+    GUIHandle<QPushButton>(b),m_bTriggered(false){
   }
-  void GUIEvent::trigger() { 
+  void ButtonHandle::trigger() { 
     m_bTriggered = true; 
     for(unsigned int i=0;i<m_vecCallbackFuncs.size();i++){
       m_vecCallbackFuncs[i]();
@@ -15,7 +15,7 @@ namespace icl{
     }
   }
 
-  bool GUIEvent::wasTriggered(bool reset) {
+  bool ButtonHandle::wasTriggered(bool reset) {
     if(m_bTriggered){
       if(reset) m_bTriggered = false;
       return true;
@@ -23,14 +23,14 @@ namespace icl{
     return false;
   }
 
-  void GUIEvent::reset() { 
+  void ButtonHandle::reset() { 
     m_bTriggered = false; 
   }
-  const std::string &GUIEvent::getID() const { 
+  const std::string &ButtonHandle::getID() const { 
     return m_sID; 
   }
 
-  void  GUIEvent::registerCallback(GUIEvent::callback c, bool remove){
+  void  ButtonHandle::registerCallback(ButtonHandle::callback c, bool remove){
     if(remove){
       std::vector<callback>::iterator it =  find(m_vecCallbackFuncs.begin(),m_vecCallbackFuncs.end(),c);
       if(it !=  m_vecCallbackFuncs.end()){
@@ -43,7 +43,7 @@ namespace icl{
   }
   
 
-  void  GUIEvent::registerCallback(GUIEvent::Callback *c, bool remove){
+  void  ButtonHandle::registerCallback(ButtonHandle::Callback *c, bool remove){
     if(remove){
       std::vector<Callback*>::iterator it =  find(m_vecCallbackObjs.begin(),m_vecCallbackObjs.end(),c);
       if(it !=  m_vecCallbackObjs.end()){

@@ -4,20 +4,21 @@
 #include <string>
 #include <QString>
 #include <QWidget>
-#include <iclSimpleMatrix.h>
+#include <iclGUIHandle.h>
+
+/** \cond */
+class QLabel;
+/** \endcond */
 
 namespace icl{
-  /// Class for GUI-Label handling \ingroup COMMON  
+  /// Class for GUI-Label handling \ingroup HANDLES
   /** The gui label is created inside the GUI class, it can be used
       to make GUI-"label" components show anther text 
       @see GUI */
-  class GUILabel{
+  class LabelHandle : public GUIHandle<QLabel>{
     public:
-    /// Create a new GUILabel
-    GUILabel():m_poGUILabel(0){}
-    
-    /// Create a new GUI Label with given initial text (internally creates the label)
-    GUILabel(const std::string &initialText);
+    /// Create a new LabelHandle
+    LabelHandle(QLabel *l=0):GUIHandle<QLabel>(l){}
     
     ///  assign a std::string (makes the underlying label show that string)
     void operator=(const std::string &text);
@@ -34,23 +35,17 @@ namespace icl{
     ///  assign a double (makes the underlying label show that double)
     void operator=(double num);
     
-    ///  retruns the underlying label
-    QWidget *getLabel() const { return m_poGUILabel; }
-
     private:
-    ///  Unterlying label
-    QWidget *m_poGUILabel;
+    /// utitlity function
+    QLabel *lab() { return **this; }
+
+    /// utitlity function
+    const QLabel *lab() const { return **this; }
   };
 
-  /** \cond */
-  struct GUILabelAlloc{
-    static GUILabel create() { return GUILabel(); }
-  };
-  /** \endcond */
+ 
   
-  /// Type definition for handling GUI-"disp" components
-  /** @see GUI, SimpleMatrix template class of the ICLUtils package */
-  typedef SimpleMatrix<GUILabel,GUILabelAlloc>  GUILabelMatrix;
+ 
 }                               
 
 #endif
