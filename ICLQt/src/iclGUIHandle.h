@@ -9,6 +9,7 @@ namespace icl{
     /// as GUIHandle is just an interface, its base constructor is protected
     GUIHandle(T *t=0):m_poContent(t){}
     
+    public:
     /// use the *-oprator to get the wrapped component (const)
     const T *operator*() const{
       return m_poContent;

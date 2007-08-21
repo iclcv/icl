@@ -107,17 +107,18 @@ namespace icl{
         gui << "slider(0,100,50)[@out=height]";
 
         // add an image component (ensure its size to be at least 10x10 cells 
-        // (a cell has a size of 15x15 pixels)  
-        gui << "image[@inp=image@minsize=10x10]";
+        // (a cell has a size of 15x15 pixels) The @handle=... statement makes
+        // this component allocate a handle for it in its parent GUI object
+        gui << "image[@handle=image@minsize=10x10]";
       
         // show the top level gui (this will create all components internally
         // and recursively. Before the top-level "show" function is called,
         // the gui data is inaccessible
         gui.show();
       
-        // get the images drawing context (of type ICLWidget*) and induce it 
+        // get the images drawing context (as an ImageHandle) and induce it 
         // to show a new image
-        gui.getValue<ICLWidget*>("image")->setImage(&image);
+        gui.getValue<ImageHandle>("image") = &image;
       
         // start Qt's event loop
         return app.exec();
@@ -179,9 +180,7 @@ namespace icl{
       - <b>draw</b> an ICLDrawWidget component
       - <b>combo</b> a combo box
       - <b>spinner</b> a spin box (integer valued with given range)
-      - <b>hcontainer</b> a horizontal layouted container which can be used to embed external QWidgets
-      - <b>hcontainer</b> a vertical layouted container which can be used to embed external QWidgets
-      
+        
       \subsection TYPEPARAMS Type Dependent Parameters
       The 2nd part of the GUI definition string is a comma separated list of type dependent parameters.
       This list is bounded by round brackets; if it is empty you can write "()" or just omit this list
@@ -232,11 +231,7 @@ namespace icl{
         element.
       - <b>spinner(int MIN,int MAX,int CURRENT)</b>\n
         An integer valued Spin-Box with a given range {MIN,...,MAX} and a given initial value CURRENT.
-      - <b>hcontainer</b>\n
-        No parameters here!
-      - <b>vcontainer</b>\n
-        No parameters here!
-      
+        
       \subsection GP General Parameters
       The 3rd part of the GUI definition string is a list of so called general params. "General" means here,
       that these params are available for all components, whereas some of these parameters must be compatible
@@ -247,15 +242,20 @@ namespace icl{
       be subdivided into two parts:
       - <b>layouting parameters:</b> These parameters affect the layout and the appearance of the widget
         which is created by that component (\@size=..., \@minsize=..., \@maxsize=.., \@label=...)
-      - <b>input and output interface definition:</b> (\@inp=.., \@out=...) As mentioned above, each 
-        embedded GUI components
-        current value(s) or "handle" can be accessed from outside by calling the "getValue<T>()"-function
-        template on the top level GUI object. To decide which value/handle should be accessed by that
-        call, each input/and output of a GUI component is associated internally with a string-identifier.
-        (see the next subsection for more details and some examples)
+      - <b>input and output interface definition:</b> (\@inp=.., \@out=...\@handle=...) As mentioned above, 
+        each embedded GUI components current value(s) or can be accessed from outside by calling the 
+        "getValue<T>()"-function template on the top level GUI object. 
+        To decide which value/handle should be accessed by that call, each input/and output of a GUI 
+        component is associated internally with a string-identifier. In addition each component can be
+        controlled by a so called GUIHandle object which is implemented for each provided GUI component.
+        By default, a gui component "xyz" provides a Handle class "XyzHandle". This handle is also allocated
+        in the top-level GUI objects Data-Store, if the "@handle=NAME" token was defined in the definition
+        string. The handles "NAME" is used as string identifier for the GUI-DataStore. (see the next 
+        subsection for more details and some examples)
 
       \subsection IO Input- and Output-Interface
       Depend on the type of a GUI component, the top level GUI gets additional input and output "pins". 
+      (<b>Note: input pins have been replaced by the GUIHandles, but they remain in the API.</b>)
       In contrast to software frameworks like Neo/NST or TDI, no explicit connection must be established 
       to access a GUI objects input/and output data. Instead, a component allocates a mutex-locked variable
       inside of a so called GUIDataStore that is created by its top level GUI component, and updates this
@@ -290,7 +290,7 @@ namespace icl{
       }
       \endcode
 
-      Yet, each component only provides a single out- <b>or</b> input pin, however the 
+      Yet, only the most components provide an outupt pin, however the 
       GUI-definition syntax can be used to define components with N inputs and M outputs.\n
       As each GUI component has different semantics, the count and the type of it's
       in- and output pins must be regarded. The following list shows all GUI components
@@ -298,64 +298,128 @@ namespace icl{
       
       
       <TABLE>
-      <TR> <TD>type</TD>         <TD>inputs</TD>          <TD>outputs</TD>            <TD>meaning</TD>                                            </TR>
-      <TR> <TD>vbox</TD>         <TD>0</TD>               <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>hbox</TD>         <TD>0</TD>               <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>border</TD>       <TD>0</TD>               <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>button</TD>       <TD>0</TD>               <TD>1 type GUIEvent</TD>    <TD>handle for this button (see below!)</TD>                </TR>
-      <TR> <TD>buttongroup</TD>  <TD>0</TD>               <TD>1 type int</TD>         <TD>index of the currently toggled radio button </TD>       </TR>
-      <TR> <TD>togglebutton</TD> <TD>0</TD>               <TD>1 type bool</TD>        <TD>true=toggled, false=untoggled</TD>                      </TR>
-      <TR> <TD>label</TD>        <TD>1 type GUILabel</TD> <TD>0</TD>                  <TD>handle for this label (see below!)</TD>                </TR>
-      <TR> <TD>slider</TD>       <TD>0</TD>               <TD>1 type int</TD>         <TD>current slider value</TD>                               </TR>
-      <TR> <TD>fslider</TD>      <TD>0</TD>               <TD>1 type float</TD>       <TD>current slider value</TD>                               </TR>
-      <TR> <TD>int</TD>          <TD>0</TD>               <TD>1 type int</TD>         <TD>current text input field content</TD>                   </TR>
-      <TR> <TD>float</TD>        <TD>0</TD>               <TD>1 type float</TD>       <TD>current text input field content</TD>                   </TR>
-      <TR> <TD>string</TD>       <TD>0</TD>               <TD>1 type std::string</TD> <TD>current text input field content</TD>                   </TR>
-      <TR> <TD>disp</TD>         <TD>1 type GUILabelMatrix</TD> <TD>0</TD>            <TD>handle for the label matrix (see below!) </TD>          </TR>
-      <TR> <TD>image</TD>        <TD>1 type ICLWidget*</TD>     <TD>0</TD>            <TD>handle for the embedded ICLWidget</TD>                  </TR>
-      <TR> <TD>draw</TD>         <TD>1 type ICLDrawWidget*</TD> <TD>0</TD>            <TD>handle for the embedded ICLDrawWidget</TD>              </TR>
-      <TR> <TD>combo</TD>        <TD>0</TD>               <TD>1 type std::string</TD> <TD>current selected item</TD>                              </TR>
-      <TR> <TD>spinner</TD>      <TD>0</TD>               <TD>1 type int</TD>         <TD>current value</TD>                                      </TR>
-      <TR> <TD>hcontainer</TD>   <TD>2 QWidget*, QLayout*</TD>  <TD>0</TD>             <TD>The widget itself and its QHBoxLayout</TD>              </TR>
-      <TR> <TD>vcontainer</TD>   <TD>2 QWidget*, QLayout*</TD>  <TD>0</TD>             <TD>The widget itself and its QVBoxLayout</TD>              </TR>
+      <TR> <TD><b>type</b></TD>  <TD><b>handle</b></TD>     <TD><b>outputs</b></TD>     <TD><b>meaning</b></TD>                                     </TR>
+      <TR> <TD>vbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
+      <TR> <TD>hbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
+      <TR> <TD>border</TD>       <TD>BorderHandle</TD>      <TD>0</TD>                  <TD>-</TD>                                                  </TR>
+      <TR> <TD>button</TD>       <TD>ButtonHandle</TD>      <TD>1 type GUIEvent</TD>    <TD>handle for this button (see below!)</TD>                </TR>
+      <TR> <TD>buttongroup</TD>  <TD>ButtonGroupHandle</TD> <TD>1 type int</TD>         <TD>index of the currently toggled radio button </TD>       </TR>
+      <TR> <TD>togglebutton</TD> <TD>ButtonHandle</TD>      <TD>1 type bool</TD>        <TD>true=toggled, false=untoggled</TD>                      </TR>
+      <TR> <TD>label</TD>        <TD>LabelHandle</TD>       <TD>0</TD>                  <TD>handle for this label (see below!)</TD>                 </TR>
+      <TR> <TD>slider</TD>       <TD>SliderHandle</TD>      <TD>1 type int</TD>         <TD>current slider value</TD>                               </TR>
+      <TR> <TD>fslider</TD>      <TD>FSliderHandle</TD>     <TD>1 type float</TD>       <TD>current slider value</TD>                               </TR>
+      <TR> <TD>int</TD>          <TD>IntHandle</TD>         <TD>1 type int</TD>         <TD>current text input field content</TD>                   </TR>
+      <TR> <TD>float</TD>        <TD>FloatHandle</TD>       <TD>1 type float</TD>       <TD>current text input field content</TD>                   </TR>
+      <TR> <TD>string</TD>       <TD>StringHandle</TD>      <TD>1 type std::string</TD> <TD>current text input field content</TD>                   </TR>
+      <TR> <TD>disp</TD>         <TD>DispHandle</TD>        <TD>0</TD>                  <TD>handle for the label matrix (see below!) </TD>          </TR>
+      <TR> <TD>image</TD>        <TD>ImageHandle</TD>       <TD>0</TD>                  <TD>handle for the embedded ICLWidget</TD>                  </TR>
+      <TR> <TD>draw</TD>         <TD>DrawHandle</TD>        <TD>0</TD>                  <TD>handle for the embedded ICLDrawWidget</TD>              </TR>
+      <TR> <TD>combo</TD>        <TD>ComboHandle</TD>       <TD>1 type std::string</TD> <TD>current selected item</TD>                              </TR>
+      <TR> <TD>spinner</TD>      <TD>SpinnerHandle</TD>     <TD>1 type int</TD>         <TD>current value</TD>                                      </TR>
       </TABLE>
       
-      \subsubsection SpT Special Interface Types (handles)
+      \section HVV Handles vs. Values
 
-      Some components use a special interface type to facilitate working with GUI objects. E.g. 
-      the "label" component uses the special type GUILabel. To understand this, we have to
-      concentrate on what we actually want to do:
-      When accessing a labels output interface using e.g. 
-      \code
-      GUILabel &l = g.getValue<GUILabel>("the labels id");
-      \endcode
-      we want to get an object, which can be used to make the corresponding QLabel to
-      show another string. To achieve this, the GUILabel object contains a back-link
-      to the associated QLabel, which is used to make this QLabel show strings, integers
-      and floats that are assigned to the GUILabel. This sounds complicated, but in
-      practice it is very simple:
+      
+      In some cases accessing a components value is not enough. E.g. if a "lable" component
+      should be used to show another string, of if a slider should be set externally to a
+      specific value. \n
+      To faciliate working with GUI objects, each component is able to allocate a so called
+      "handle"-object of itself in its parent GUI-objects data store. This will be done
+      if a "@handle=.." token is found in the general params list of this component definition
+      (general params are inside angular brackes).\n
+      All handle classes are derived from the GUIHandle<T> template class, which provides
+      functionalities for storing a T-pointer (template parameter) and which offers functions
+      to access this pointer (the *operator). A ButtonHandle for example inherits
+      the GUIHandle<QPushButton>, so it wraps a QPushButton* internally. For a more
+      convenient working process, each handle has some special functions which provide
+      and abstract and direct access of the underlying class without knowing it.
       
       \code
-      GUILabel &l = g.getValue<GUILabel>("the labels id");
+      #include <iclGUI.h>
+      #include <QSlider>
       
-      // make the label to show a string
-      l = "ICL rocks!";
+      using namespace icl;
+      int main(int n, char**ppc){
+        QApplication app(n,ppc);
       
-      // make it show an integer
-      l = 5;
+        // create a new slider with output value and a handle id string
+        GUI g("slider(0,100,50)[@out=the slider value@handle=the slider handle]");
       
-      // or a float
-      l = 3.1415;      
-      \endcode
+        // show it
+        g.show();
+      
+        // access the sliders value
+        int &val = g.getValue<int>("the slider value");
+      
+        // val cannot be used to set a new slider position
+        val = 5; // the slider will not change
+      
+        // accessing the Sliders handle
+        SliderHandle h = g.getValue<SliderHandle>("the slider handle");
+      
+        // the handle can be used to affect the underlying QSlider component
+        h = 5;
+  
+        // And the handle can be used to access the QSlider directy 
+        // To work with this slider, the \#include <QSlider> statement is mandatory
+        // because the SliderHandle uses the QSlider class forward declared.
+        QSlider *sl = *h;  
+      
+        // now the slider itself can be manipulated
+        sl->setValue(7);
+      
+        // enter qts event loop
+        return app.exec();
+      }
 
-      The disp component makes use of the GUILabel class to provide an interface
-      of type GUILabelMatrix. Internally the GUILabelMatrix is just a typedef to a matrix
-      of GUILabel objects:
-      \code
-      typedef SimpleMatrix<GUILabel,GUILabelAlloc>  GUILabelMatrix;
       \endcode
-      As matrix elements can be addressed using the [][]-operator (see SimpleMatrix),
-      all labels of a disp-component can easily be set up.
+      
+      The following subsection shows some examples for different GUIHandles.
+      
+      \subsection LH LabelHandles
+      
+      Labels can be used to show strings, integers and floats
+      
+      \code
+      
+      #include <iclGUI.h>
+      #include <iclQuick.h>
+      
+      int main(int n, char **ppc){
+        QApplication app(n,ppc);
+      
+        /// create a container 
+        GUI gui("vbox");
+      
+        // add some lables
+        gui << "label(Text 1)[@handle=L1@size=6x1@label=Label 1]";
+        gui << "label(Text 2)[@handle=L2@size=6x1@label=Label 2]";
+        gui << "label(Text 3)[@handle=L3@size=6x1@label=Label 3]";
+      
+        // show the gui
+        gui.show();
+      
+        // access the sliders value 
+        gui.getValue<LabelHandle>("L1") = "A New Text";
+        gui.getValue<LabelHandle>("L2") = 5;
+        gui.getValue<LabelHandle>("L3") = 3.1415;
+      
+        return app.exec();
+      }
+
+      \endcode
+      
+      \image html Image05_LabelDemo.jpg
+
+      \subsection DISPC DispHandles
+      
+      The disp component implements a 2D-Array of lable componets (e.g. to visualize
+      a matrix). It makes use of the LabelHandle class to provide an interface
+      of type DispHandle which wraps a matrix of LabelHandles using the ICLUtils/
+      SimpleMatrix template calss. \n
+      Matrix elements - of type "LabelHandle&" - can be addressed using the 
+      [][]-operator (see SimpleMatrix).
       
       \code
       #include <iclGUI.h>
@@ -364,28 +428,28 @@ namespace icl{
       
       int main(int n, char**ppc){
         QApplication app(n,ppc);
-  
-        // create a top-level horizontal box
-        GUI gui("hbox");
+      
+        // create top-level container
+        GUI gui;
       
         // add a new 4x4 display component
-        // with a bordered label, a min. size of 14 x 6 
-        // cells and interface id "mydisp"
-        gui << "disp(4,4)[@label=My Disp@minsize=14x6@inp=mydisp]";
+        // with a bordered label, a min. size of 14 x 6 cells and
+        // handle id mydisp
+        gui << "disp(4,4)[@label=My Display Component@minsize=14x6@handle=mydisp]";
       
-        // show this gui (remember QWidgets are created here,
+        // show this gui (remember: QWidgets are created here,
         // and the interface data is allocated
         gui.show();
-
-        // Extract the disps handle of Type GUILabelMatrix
-        GUILabelMatrix &m = gui.getValue<GUILabelMatrix>("mydisp");
+      
+        // Extract the displays handle
+        DispHandle &m = gui.getValue<DispHandle>("mydisp");
       
         // assign the first row with string
         m[0][0] = "";
         m[1][0] = "column 1";
         m[2][0] = "column 2";
         m[3][0] = "column 3";
-
+      
         // assign the first column with strings
         m[0][1] = "row 1";
         m[0][2] = "row 2";
@@ -397,30 +461,165 @@ namespace icl{
             m[x][y] = 10*x+y;
           }
         }
-      
         // enter Qt's event loop
         return app.exec();
       }
       \endcode
       \image html Image03_DispExample.jpg 
       
-      The last interface type, that needs further explanations is the GUIEvent type, which is
-      used for the "button" type interface. In contrast to all other components, simple buttons
+      \subsection BHA Button Handles
+      
+      The next interface type, that should be introduced here in detail, is the ButtonHandle type,
+      which is used for the "button" type interface. The button itself produces no data; it can
+      only be accesse by using its handle. In contrast to other components, simple buttons
       are producing an event instead of some data. When accessing the button from the working
       thread, you don't need the information if the button is pressed at this time, but you
-      may want to know if it was pressed since the last test. You might say that a simple boolean
+      may want to know if it <em>was</em> pressed since the last test. You might say that a simple boolean
       variable would be sufficient to handle this information, but the following stays doubtful:
-      "Who resets this boolean variable, and when?". To avoid this problem the GUIEvent
+      "Who resets this boolean variable, and when?". To avoid this problem the ButtonHandle
       data type, can be triggered (if the button is pressed) an it can be checked using its 
       wasTriggered() function, which returns if the event was triggered and resets the internal
-      boolean variable to false.
+      boolean variable to false. The following example code illustrates this:
 
+      \code
+      #include <iclGUI.h>
+      #include <iclThread.h>
+      
+      using namespace icl;
+      
+      /// Use a static gui pointer (accessible in main an in the Thread class
+      GUI *gui = 0;
+      
+      // create a Thread class, which implements the working loop. For this example
+      // this loop will test each second if the button was pressed or not
+      class DemoThread : public Thread{
+        virtual void run(){
+          while(true){
+            if(gui->getValue<ButtonHandle>("b").wasTriggered()){
+              printf("button was triggered! \n");
+            }else{
+              printf("button was not triggered! \n"); 
+            }
+            sleep(1.0);
+          }
+        }
+      };
+      
+      int main(int n, char**ppc){
+        // create a qapplication object
+        QApplication app(n,ppc);
+      
+        // create the top level container
+        gui = new GUI;  
+      
+        // add a button to this container
+        (*gui) << "button(Click me!)[@handle=b]";
+      
+        // show it
+        gui->show();
+      
+        // create the working loop thread
+        DemoThread t;
+      
+        // start it
+        t.start();
+      
+        // enter Qt's event loop
+        return app.exec();
+      }
+      \endcode
+      
+      \image html Image06_ButtonDemo.jpg
+      
+      \subsubsection Event and Buttons
+      
+      In some applications it might be neccessary to associate an event to a button click,
+      which is called immediately if the button is clicked. This is quite useful e.g. to interrupt
+      the current working thread. However this feature is more complex, then the claim of the
+      ICL GUI API can stand, this feature is a "must-have" and it is wrapped into the GUI API
+      to avoid that it is implemented many times elsewhere.\n
+      First we have to decide how we formalize an "event". Here an event is a callback-function or a
+      function object which can be triggered (the function is called). To differentiate between
+      these Callback-Objects and functions, two type-definition were made inside of the ButtonHandle
+      class:
+      \code
+      /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
+      class ButtonHandle : public GUIHandle<QPushButton>{
+        public:
+      
+        /// typedefinition for a callback function
+        typedef void (*callback)(void);
+    
+        /// Interface for callback objects (functors)
+        struct Callback{
+          /// Destructor
+          virtual ~Callback(){}
+          /// call back function (pure virtual)
+          virtual void operator()() = 0;
+        };
+      
+        ...
+      \endcode
+      Each button handle provides two functions named "registerCallback(..)" to add callbacks
+      to a button, which are called exactly when the button is pressed. The following example 
+      extends the example above by a simple exit button:
+
+      \code
+      #include <iclGUI.h>
+      #include <iclThread.h>
+      
+      using namespace icl;
+      
+      /// Use a static gui pointer (accessible in main an in the Thread class
+      GUI *gui = 0;
+      
+      // create a Thread class, which implements the working loop. For this example
+      // this loop will test each second if the button was pressed or not
+      class DemoThread : public Thread{
+       ... see above!
+      };
+
+      // a simple callback function (type "void (*callback)(void)"
+      void exit_callback(void){
+        printf("exit callback was called \n");
+        exit(0);
+      }
+      
+      int main(int n, char**ppc){
+        // create a qapplication object
+        QApplication app(n,ppc);
+      
+        // create the top level container
+        gui = new GUI;  
+      
+        // add a button to this container
+        (*gui) << "button(Click me!)[@handle=b]";
+        (*gui) << "button(Exit!)[@handle=exit]";
+      
+        // show it
+        gui->show();
+      
+        // register the call back function
+        gui->getValue<ButtonHandle>("exit").registerCallback(exit_callback);
+      
+        // create the working loop thread
+        DemoThread t;
+      
+        // start it
+        t.start();
+      
+        // enter Qt's event loop
+        return app.exec();
+      }
+      \endcode
+      
+      
       \subsection EMB Embedding external QWidgets
       In some cases it might be necessary to embed QWidgets, which are not supported by the GUI-API.
-      For this, two additional components (hcontainer and vcontainer) are provided. This containers
-      use the input interface, to pass the containers QWidget itself and its layout to the GUI
-      interface. By this means you can access theses pointers directly as parents for your own
-      widget. See the following example for more details:
+      For this, the two box-components ("hbox" and "vbox") do also provide a special BoxHandle which
+      wrapps the underlying QWidget to provide access to it and its current layout.See the following 
+      example for more details:
+
       \code
       #include <iclGUI.h>
       #include <QProgressBar>
@@ -437,21 +636,21 @@ namespace icl{
         gui << "button(click me)[@out=click0]"<< "button(no !click me)[@out=click1]"<< "button(no no no! me!)[@out=click2]";
       
         // add the container widget (comma separated list of output identifiers)
-        gui << "hcontainer[@inp=widget,layout@label=Progress]";
+        gui << "vbox[@label=Progress@handle=conti]";
       
         // create the gui (this allocates input and output data)
         gui.show();
       
         // create a new QProgressBar using the containers widget as parent
-        QProgressBar *pb = new QProgressBar(gui.getValue<QWidget*>("widget"));
+        QProgressBar *pb = new QProgressBar(0);
         pb->setValue(50);
       
         // add it to the widgets layout
-        gui.getValue<QLayout*>("layout")->addWidget(pb);
+        gui.getValue<BoxHandle>("conti").add(pb);
       
         // enter Qt's event loop
         return app.exec();
-      }
+      }     
       \endcode
       
       \image html Image04_ExternalWidget.jpg
@@ -472,11 +671,6 @@ namespace icl{
       was used, otherwise an error occurs, and the program is aborted.\n
       So it is much faster to extract a value from a gui only once (at reference or pointer) and
       work with this reference later on.
-      
-      \subsection EX Extensions
-      An extension, which must be implemented is a special GUI constructor which allows to
-      embed arbitrary QWidgets into the GUI. This GUIWidgets could allocate themselves as
-      in input pin (...)
   */
   class GUI{
     public:
