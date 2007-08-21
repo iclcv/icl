@@ -531,7 +531,7 @@ namespace icl{
       
       \image html Image06_ButtonDemo.jpg
       
-      \subsubsection Event and Buttons
+      \subsubsection EAB Events and Buttons
       
       In some applications it might be necessary to associate an event to a button click,
       which is called immediately if the button is clicked. This is quite useful e.g. to interrupt
