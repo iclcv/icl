@@ -21,7 +21,6 @@ namespace icl{
 
   void Object::project(const Mat &CAMMATRIX){
     // {{{ open
-
     for(unsigned int i=0;i<m_vecPtsTrans.size();++i){ 
       m_vecPtsProj[i] = (CAMMATRIX*m_vecPtsTrans[i]);
       m_vecPtsProj[i].homogenize();
@@ -282,4 +281,52 @@ namespace icl{
 
   // }}}
  
+
+
+  
+  bool Object::check() const{
+    // {{{ open
+#define TEST_VAL(X,MESSAGE) if(!(X)) { printf("Error: %s \n",MESSAGE); ok=false; }
+#define TEST_VAL_IDX(X,MESSAGE,IDX) if(!(X)) { printf("Error: %s (index:%d)\n",MESSAGE,IDX); ok=false; }
+    const VecArray &ps = m_vecPtsOrig;
+    const std::vector<Tuple> &ls = m_vecConnections;
+    const std::vector<Triple> &ts = m_vecTriangles;
+    const std::vector<Quadruple> qs = m_vecQuads;
+
+    const VecArray &pc = m_vecPtsColors;    
+    const VecArray &lc = m_vecLineColors;
+    const VecArray &tc = m_vecTriangleColors;    
+    const VecArray &qc = m_vecQuadColors;    
+
+    bool ok = true;
+    
+    TEST_VAL(pc.size()==ps.size(),"invalid count of point colors");
+    TEST_VAL(lc.size()==ls.size(),"invalid count of line colors");
+    TEST_VAL(tc.size()==ts.size(),"invalid count of triangle colors");
+    TEST_VAL(qc.size()==qs.size(),"invalid count of quad colors");
+    
+    int np = (int)ps.size();
+    int nl = (int)ls.size();
+    int nt = (int)ts.size();
+    int nq = (int)qs.size();
+    
+    for(int i=0;i<nl;i++){
+      TEST_VAL_IDX(ls[i].first<np,"invalid point reference in lines first point",i);
+      TEST_VAL_IDX(ls[i].second<np,"invalid point reference in lines second point",i);
+    }
+    for(int i=0;i<nt;i++){
+      TEST_VAL_IDX(ts[i].a<np,"invalid point reference in triangles point a",i);
+      TEST_VAL_IDX(ts[i].b<np,"invalid point reference in triangles point b",i);
+      TEST_VAL_IDX(ts[i].c<np,"invalid point reference in triangles point b",i);
+    }
+    for(int i=0;i<nq;i++){
+      TEST_VAL_IDX(qs[i].a<np,"invalid point reference in quads point a",i);
+      TEST_VAL_IDX(qs[i].b<np,"invalid point reference in quads point b",i);
+      TEST_VAL_IDX(qs[i].c<np,"invalid point reference in quads point c",i);
+      TEST_VAL_IDX(qs[i].d<np,"invalid point reference in quads point d",i);
+    }
+    return ok;
+  }
+
+  // }}}
 }

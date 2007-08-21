@@ -71,6 +71,9 @@ namespace icl{
         is called.
     **/
     virtual void updateBorders(); // 
+
+    /// internally checks wheter a Line, a Triangle or a Quad references an invalid point
+    virtual bool check() const;
     private:   
   
     /// internally calculates the objects convex using the "Graham-Scan" algorithm

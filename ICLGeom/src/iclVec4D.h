@@ -139,8 +139,9 @@ namespace icl{
     
     /// homogenize the vector (inplace) --> h==1
     inline Vec4D &homogenize() { 
-      ICLASSERT_RETURN_VAL(h(),*this); 
-      x()/=h();y()/=h();z()/=h();h()=1; 
+      if(h()){
+        x()/=h();y()/=h();z()/=h();h()=1; 
+      }
       return *this; 
     }
     

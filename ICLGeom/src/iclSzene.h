@@ -62,6 +62,9 @@ namespace icl{
     /// adds a new Object to the szene
     void add(Object *obj);
     
+    /// removes this Object from the szene
+    void remove(Object *obj);
+    
     /// updates all objects in the szene
     /** This function has to be called after 
         -# the camera has been changed or

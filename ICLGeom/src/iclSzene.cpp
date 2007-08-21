@@ -42,7 +42,14 @@ namespace icl{
   void Szene::add(Object *obj){
     m_vecObjs.push_back(obj);
   }
-
+  
+  void Szene::remove(Object *obj){
+    std::vector<Object*>::iterator it = find(m_vecObjs.begin(),m_vecObjs.end(),obj);
+    if(it != m_vecObjs.end()){
+      m_vecObjs.erase(it);
+    }
+  }
+  
   void Szene::transformAllObjs(const Mat &m){
     for(unsigned int i=0;i<m_vecObjs.size();i++){
       m_vecObjs[i]->transform(m);

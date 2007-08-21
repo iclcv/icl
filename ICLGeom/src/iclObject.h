@@ -186,6 +186,9 @@ namespace icl{
     
     /// returns a specific quad of this object
     const Quadruple &getQuad(int i) const { return m_vecQuads[i]; }
+    
+    /// internally checks wheter a Line, a Triangle or a Quad references an invalid point
+    virtual bool check() const;
     private:   
 
     /// The current objects transformation matrix
