@@ -128,6 +128,8 @@ namespace icl{
         getGUI()->lockData();
         m_poClickedEvent = &getGUI()->allocValue<ButtonHandle>(def.handle(),ButtonHandle(b));
         getGUI()->unlockData();
+      }else{
+        m_poClickedEvent = 0;
       }
     }
     static string getSyntax(){
@@ -136,14 +138,14 @@ namespace icl{
       gen_params();
     }
     virtual void processIO(){
-      m_poClickedEvent->trigger();
-      //      *m_pbClicked = true;
+      if(m_poClickedEvent){
+        m_poClickedEvent->trigger();
+      }
     }
     virtual Size getDefaultSize() { 
       return Size(4,1); 
     }
   private:
-    // bool *m_pbClicked;
     ButtonHandle *m_poClickedEvent;
   };
 
@@ -240,6 +242,8 @@ namespace icl{
         getGUI()->lockData();
         m_poHandle = &getGUI()->allocValue<ButtonHandle>(def.handle(),ButtonHandle(m_poButton));
         getGUI()->unlockData();
+      }else{
+        m_poHandle = 0;
       }
     }
     static string getSyntax(){
@@ -252,7 +256,9 @@ namespace icl{
     virtual void processIO(){
       *m_pbToggled = !(*m_pbToggled);
       m_poButton->setText(m_asText[*m_pbToggled].c_str());
-      m_poHandle->trigger();
+      if(m_poHandle){
+        m_poHandle->trigger();
+      }
     }
     virtual Size getDefaultSize() { 
       return Size(4,1); 
@@ -666,7 +672,7 @@ public:
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<ImageHandle>(def.handle(),ImageHandle(m_poWidget));
+        getGUI()->allocValue<DrawHandle>(def.handle(),DrawHandle(m_poWidget));
         getGUI()->unlockData();  
       }
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));

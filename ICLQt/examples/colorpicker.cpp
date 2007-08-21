@@ -111,8 +111,14 @@ void calc_mean(){
 }
 
 void run_func(){
-  while(!(*running)) usleep(100*1000);
+  while(!(*running)){
+    usleep(100*1000);
+  }
   const ImgBase *image = grabber->grab();
+  if(!image){
+    printf("no image found \n");
+    exit(0);
+  }
   widget->setImage(image);
   widget->update();
   usleep(1000*(*sleeptime));
@@ -139,18 +145,18 @@ int main(int n,char **ppc){
   QApplication app(n,ppc);
   
   gui = new GUI;
-  (*gui) << "draw[@label=image@inp=image@size=32x24]";
+  (*gui) << "draw[@label=image@handle=image@size=32x24]";
   (*gui) << "togglebutton(Run!,Stop!)[@out=run]";
   (*gui) << ( GUI("hbox") 
               << "slider(0,400,10)[@out=sleep@label=sleeptime]" 
               << "combo(!rgb,hls,gray,yuv)[@out=colormode@label=colormode]" 
-              << "button(Reset List)[@out=reset]"
-              << "button(Calculate Mean)[@out=calc]"
+              << "button(Reset List)[@handle=reset]"
+              << "button(Calculate Mean)[@handle=calc]"
               );
   
   (*gui).show();
   
-  widget = gui->getValue<ICLDrawWidget*>("image");
+  widget = *gui->getValue<DrawHandle>("image");
   running = &gui->getValue<bool>("run");
   sleeptime = &gui->getValue<int>("sleep");
   colormode = &gui->getValue<string>("colormode");
