@@ -257,8 +257,14 @@ sub generate_packagevar {
     $pkgContent .= "\n";
     $pkgContent .= "\n";
     $pkgContent .= "# Please, place here the lib directory of the project and the library name.\n";
+    $pkgContent .= "ifeq \"\${OS_TYPE}\" \"linux\"\n";
     $pkgContent .= "ABS_LIBRARIES:= \${ABS_LIBRARIES} \\\n";
     $pkgContent .= "-L".$installdir."/lib -l".$entry." -Wl,-rpath=".$installdir."/lib\n";
+    $pkgContent .= "endif\n\n";
+    $pkgContent .= "ifeq \"\${OS_TYPE}\" \"macosx\"\n";
+    $pkgContent .= "ABS_LIBRARIES:= \${ABS_LIBRARIES} \\\n";
+    $pkgContent .= "-L".$installdir."/lib -l".$entry."\n";
+    $pkgContent .= "endif\n";
     $pkgContent .= "\n";
     $pkgContent .= "endif\n";
     $pkgContent .= "endif\n";
