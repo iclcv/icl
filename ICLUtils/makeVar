@@ -71,8 +71,11 @@ LDFLAGS:= ${LDFLAGS}
 # Flags for dynamic library linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
-
-
+ifeq "$(HAVE_LIBDC)" ""
+ifeq "$(HAVE_LIBRAW)" ""
+SKIP_OBJECTS += iclSignalHandler.cpp
+endif
+endif
 
 
 
