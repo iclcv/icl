@@ -23,7 +23,7 @@ struct Package{
   void operator()(){
     //    ImgQ x = scale(IMAGE,3);
     for(int i=0;i<1;i++){
-      for(int j=0;j<300000;j++){
+      for(int j=0;j<100000;j++){
         DATA[j] = 100.43242*j+i*34324+5;
       }
     }
