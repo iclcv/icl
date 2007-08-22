@@ -8,77 +8,57 @@
 #include <QThread>
 #include <QTime>
 #include <QString>
+#include <QMutexLocker>
+#include "iclCallbackThread.h"
+#include <queue>
+#include <QSemaphore>
 
-static QWaitCondition work;
-static QWaitCondition workdone;
-static const int NTHREADS = 2;
-static QMutex m[NTHREADS];
 
+const int DataSize = 10000;
+const int BufferSize = 8192;
+char buffer[BufferSize];
 
-struct Worker : public QThread {
+QSemaphore freeBytes(BufferSize);
+QSemaphore usedBytes;
 
-  Worker (int idx):idx(idx){
-    start();
-    msleep(100);
-  }
-  int idx;
-  
-
-  static void execThreaded(){
-    printf("[execThreaded] called\n");
-    for(int i=0;i<NTHREADS;i++){
-      m[i].lock();
-    }
-    work.wakeOne();
-    work.wakeOne();
-    printf("[execThreaded] wating\n");
-    for(int i=0;i<NTHREADS;i++){
-      workdone.wait(&m[i]);
-    }
-    printf("[execThreaded] waited\n");
-    for(int i=0;i<NTHREADS;i++){
-      m[i].unlock();
-    }
-    printf("[execThreaded] done\n");
-  }
-  
-  void message(const std::string &func, const std::string &txt) {
-    printf("[%s] thread %d: %s \n",func.c_str(),idx,txt.c_str());
-  }
-  
+class Producer : public QThread {
+public:
   void run(){
-    m[idx].lock();
-    while(true){
-
-      message("run","waiting");
-      work.wait(&m[idx]);
-      //m.unlock();
-
-      message("run","waited starting to work");
-
-      for(int i=0;i<10;i++){
-        ImgQ x = scale(create("parrot"),2);
-        msleep(10);
-        
-        message("run",(QString("working ")+QString::number(i*10)+"%").toLatin1().data());
-      }
-      message("run","work done");
-      
-      workdone.wakeAll();
-
+    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+    for (int i = 0; i < DataSize; ++i) {
+      freeBytes.acquire();
+      buffer[i % BufferSize] = "ACGT"[(int)qrand() % 4];
+      usedBytes.release();
     }
-    m[idx].unlock();
   }
 };
 
-int main(int argc, char *argv[]){
-  QCoreApplication app(argc, argv);
-  
-  Worker w1(0);
-  Worker w2(1);
-  
-  for(int i=0;i<10;i++){
-    w1.execThreaded();
+class Consumer : public QThread {
+public:
+  void run(){
+     for (int i = 0; i < DataSize/2; ++i) {
+       usedBytes.acquire();
+       fprintf(stderr, "%c", buffer[i % BufferSize]);
+       freeBytes.release();
+     }
+     printf("---done \n");
+     fprintf(stderr, "\n");
   }
+};
+
+
+int main(int argc, char *argv[]) {
+  QCoreApplication app(argc, argv);
+  Producer producer;
+  Consumer consumer;
+  Consumer consumer2;
+  producer.start();
+  consumer.start();
+  consumer2.start();
+  producer.wait();
+  consumer.wait();
+  consumer2.wait();
   return 0;
 }
+
+ 
