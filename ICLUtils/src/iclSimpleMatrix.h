@@ -5,10 +5,14 @@
 #include <algorithm>
 
 namespace icl{
+  template<class T>
+  struct NullSimpleMatrixAlloc{
+    static T create() { return T(0); }
+  };
 
   template<class T>
   struct DefSimpleMatrixAlloc{
-    static T create() { return T(0); }
+    static T create() { return T(); }
   };
   
   /// A Low-Weight Matrix representation for block aligned data
@@ -70,7 +74,7 @@ namespace icl{
       object. If an explicit "deep copy" is demanded, one of the
       two <em>deepCopy</em>-functions must be used. 
   */
-  template<class T, class Alloc=DefSimpleMatrixAlloc<T> >
+  template<class T, class Alloc=NullSimpleMatrixAlloc<T> >
   struct SimpleMatrix{
     
     /// Creates an empty SimpleMatrix w=h=0

@@ -33,7 +33,6 @@ namespace icl{
     /// returns the number of tokesn
     unsigned int nTokens() const;
 
-
     /// returns a vector
     const std::vector<std::string> &allTokens() const;
     

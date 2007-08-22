@@ -97,28 +97,32 @@ namespace icl{
   namespace{
     struct PointWithAngle{
       // {{{ open
-      static float dxy(const Vec &a,const Vec &b){
+      static inline float dxy(const Vec &a,const Vec &b){
         return (float)pow(a.x()-b.x(),2)+pow(a.y()-b.y(),2);
       }
       PointWithAngle():idx(0),angle(0),len(0){}
       PointWithAngle(int idx, float angle):
-        idx(idx),angle(angle),len(0){}
+        idx(idx),angle((int)(100000*angle)),len(0){}
       
       PointWithAngle(int idx, const Vec &v, const Vec &p0):
-        idx(idx),angle(atan2(v.y()-p0.y(),v.x()-p0.x())),len(dxy(v,p0)){
+        idx(idx),
+        angle((int)(100000*atan2(v.y()-p0.y(),v.x()-p0.x()))),
+        len((int)(100000*dxy(v,p0))){
       }
       
       inline bool operator<(const PointWithAngle &pt) const{
-        if(angle == pt.angle){
+        if(angle==pt.angle ){
           return len < pt.len;
         }
         return angle < pt.angle;
       }
       int idx;
-      float angle;
-      float len;
+      // float angle;
+      int angle;
+      //float len;
+      int len;
     }; 
-
+    
     // }}}
     typedef std::stack<PointWithAngle> Stack;
     
@@ -176,6 +180,17 @@ namespace icl{
       S[iUpper]=PointWithAngle(iUpper,0);
     }     
     // }}}
+    inline int jump_first(const vector<PointWithAngle> &S){
+      // {{{ open
+
+      if(S.size() < 3) return S.size()-1;
+      float angle_of_p2 = S[1].angle;
+      unsigned int idx = 2;
+      while(S[idx].angle == angle_of_p2 && idx < S.size()-1 ) idx++;
+      return idx;
+    }
+
+    // }}}
   }
   
   void BorderedObject::calculateConvexHull(BorderedObject::LineStrip &dst){
@@ -202,8 +217,11 @@ namespace icl{
     STACK.push(S[1]);
     
     hullPts[S[0].idx] = hullPts[S[1].idx] = true;
+
+    int nBegin = jump_first(S);
+    //    int nBegin = 2;
     
-    for(int i=2;i<n;){
+    for(int i=nBegin;i<n;){
       if(STACK.empty()){
         printf("stack is empty, this may not occur! \n");
         return;
@@ -212,6 +230,11 @@ namespace icl{
       STACK.pop();
       if(STACK.empty()){
         printf("stack is empty after calling pop(), this may not occur! at idx %d/%d\n",i,n-1);
+        printf("0: %f,%f,arc=%d,len=%d\n1: %f,%f,arc=%d,len=%d\n2: %f,%f,arc=%d,len=%d \n---------------------------------------\n ",
+               p[S[0].idx].x(),p[S[0].idx].y(),S[0].angle,S[0].len,
+               p[S[1].idx].x(),p[S[1].idx].y(),S[1].angle,S[1].len,
+               p[S[2].idx].x(),p[S[2].idx].y(),S[2].angle,S[2].len);
+        
         return;
       }
       PointWithAngle P2 = STACK.top();
@@ -221,10 +244,8 @@ namespace icl{
         STACK.push(P1);
         STACK.push(SI);
         i++;
-        if((int)hullPts.size() <= SI.idx) printf("err 1!");
         hullPts[SI.idx]=true;
       }else{
-        if((int)hullPts.size() <= P1.idx) printf("err 2!");
         hullPts[P1.idx]=false;
       }
     }
