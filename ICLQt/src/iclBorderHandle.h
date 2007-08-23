@@ -4,9 +4,9 @@
 #include <iclGUIHandle.h>
 #include <string>
 
-/** \cond*/
+/** \cond */
 class QGroupBox;
-/** \endcond*/
+/** \endcond */
 
 
 namespace icl{

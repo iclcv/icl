@@ -3,9 +3,9 @@
 
 #include <iclGUIHandle.h>
 
-/**\cond*/
+/** \cond */
 class QSlider;
-/**\endcond*/
+/** \endcond */
 
 namespace icl{
   

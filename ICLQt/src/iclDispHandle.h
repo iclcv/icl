@@ -17,7 +17,7 @@ namespace icl{
   /** @see GUI, SimpleMatrix template class of the ICLUtils package */
   typedef SimpleMatrix<LabelHandle,LabelHandleAlloc>  LabelMatrix;
 
-  /// Handle class for disp components \indgoup HANDLE
+  /// Handle class for disp components \ingroup HANDLE
   class DispHandle : public GUIHandle<LabelMatrix>{
     public:
     /// Create a new DispHandle with given 

@@ -10,7 +10,7 @@ class QLabel;
 class QGridLayout;
 /** \endcond */
 
-/// The icl namespace
+// The icl namespace
 namespace icl{
   
   /// A utiltiy class which implements a labeld, double valued QSlider \ingroup UNCOMMON

@@ -3,9 +3,9 @@
 
 #include <iclGUIHandle.h>
 
-/**\cond*/
+/** \cond */
 class QSpinBox;
-/**\endcond*/
+/** \endcond */
 
 
 namespace icl{

@@ -2,9 +2,9 @@
 #define ICL_SLIDER_HANDLE_H
 
 #include <iclGUIHandle.h>
-/**\cond*/
+/** \cond */
 class QSlider;
-/**\endcond*/
+/** \endcond */
 
 namespace icl{
   

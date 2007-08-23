@@ -2,9 +2,9 @@
 #define ICL_FLOAT_HANDLE_H
 
 #include <iclGUIHandle.h>
-/**\cond*/
+/** \cond */
 class QLineEdit;
-/**\endcond*/
+/** \endcond */
 
 namespace icl{
   

@@ -5,9 +5,9 @@
 #include <QString>
 #include <iclGUIHandle.h>
 
-/**\cond*/
+/** \cond */
 class QLineEdit;
-/**\endcond*/
+/** \endcond */
 
 namespace icl{
   

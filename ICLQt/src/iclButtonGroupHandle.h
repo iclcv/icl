@@ -4,9 +4,9 @@
 #include <vector>
 #include <string>
 #include <iclGUIHandle.h>
-/**\cond*/
+/** \cond */
 class QRadioButton;
-/**\endcond*/
+/** \endcond */
 
 namespace icl{
 
