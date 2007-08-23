@@ -33,7 +33,7 @@ ifeq "${OS_TYPE}" "linux"
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
 	-L${SRC_ROOT}/ICLQuick/lib -lICLQuick -Wl,-rpath=${AGNI_LOCAL_ROOT}/${PROJECT_ROOT_NAME}/${TARGET_MAJVERSION}.${TARGET_MINVERSION}/lib
 endif
-ifeq "${OS_TYPE}" "linux"
+ifeq "${OS_TYPE}" "macosx"
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
 	-L${SRC_ROOT}/ICLQuick/lib -lICLQuick
 endif
