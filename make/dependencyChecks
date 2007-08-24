@@ -62,7 +62,7 @@ endif
 
 ############################# check for libdc1394.so.2x ############################
 LIBDC_ROOT ?= /vol/video
-ifeq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.so.2*)" ""
+ifeq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.*2*)" ""
 ifeq "${_WARN_LIBDC}" ""
 $(warning "libdc1394.so.2x was not found in ${LIBDC_ROOT}/lib. DCGrabber support disabled.")
 export _WARN_LIBDC=done
