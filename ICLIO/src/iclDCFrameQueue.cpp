@@ -8,16 +8,19 @@ namespace icl{
       m_iBuffers(nDMABuffers),
       m_iQueuedBuffers(nQueuedBuffers)
     {
-      
+
       initialize_dc_cam(c,nDMABuffers, options);
       
       /// dequeu all frames once 
+#ifdef __APPLE__
+      for(int i=0;i<m_iBuffers-1;i++){
+#else
       for(int i=0;i<m_iBuffers;i++){
+#endif
         dc1394video_frame_t *frame;
         dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
         push(frame);
       }
-      
       for(int i=0;i<m_iQueuedBuffers;i++){
         dc1394video_frame_t *frame = pop();
         dc1394_capture_enqueue(m_poCam,frame); 

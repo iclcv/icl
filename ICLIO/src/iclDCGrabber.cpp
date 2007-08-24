@@ -37,7 +37,7 @@ namespace icl{
     ppoDst = ppoDst ? ppoDst : &m_poImage;
     ImgBase **ppoDstTmp = &m_poImageTmp;
     bool desiredParamsFullfilled = false;
-    
+
     m_poGT->getCurrentImage(ppoDst,ppoDstTmp,desiredParamsFullfilled,
                             getDesiredSize(),getDesiredFormat(), getDesiredDepth(),
                             bayermethod_from_string(getValue("bayer-quality")) );

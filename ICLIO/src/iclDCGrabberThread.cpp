@@ -48,7 +48,6 @@ namespace icl{
     
     void DCGrabberThread::run(){
       // {{{ open
-
       if(!m_poFrameQueue){
         m_poFrameQueue = new DCFrameQueue(m_poCam, m_poOptions);
       }
@@ -81,7 +80,7 @@ namespace icl{
     
     void DCGrabberThread::getCurrentImage(ImgBase **ppoDst){
       // {{{ open
-
+      
       while(!m_poFrameQueue) usleep(1000*10);
       m_poFrameQueue->lock();
       extract_image_to(m_poFrameQueue->back(),ppoDst,m_oRGBInterleavedBuffer);
@@ -104,6 +103,7 @@ namespace icl{
       m_poFrameQueue->lock();
       
       dc1394video_frame_t *frame = m_poFrameQueue->back();
+      
       DCDevice dev(m_poCam);
       desiredParamsFullfilled = can_extract_image_to(frame,dev,desiredSizeHint,desiredFormatHint,desiredDepthHint);
       extract_image_to(frame,dev,

@@ -6,6 +6,10 @@
 #include <iclMacros.h>
 #include <iclMutex.h>
 
+#ifdef __APPLE__
+#define SIGPOLL SIGIO
+#endif
+
 using namespace std;
 
 namespace icl{
