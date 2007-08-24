@@ -168,7 +168,7 @@ namespace {
 
 // }}}
   
-  static char *ppc_woman_xpm[] = {
+  static const char *ppc_woman_xpm[] = {
     // {{{ open
 
   "63 60 14 1",
@@ -250,7 +250,7 @@ namespace {
 
 // }}}
   
-  static char *ppc_tree_xpm[] = {
+  static const char *ppc_tree_xpm[] = {
     // {{{ open
 
   "63 60 11 1",
@@ -329,7 +329,7 @@ namespace {
 
 // }}}
   
-  static char *ppc_house_xpm[] = {
+  static const char *ppc_house_xpm[] = {
     // {{{ open
 
   "63 60 15 1",
@@ -432,7 +432,7 @@ namespace {
   }
   // }}}
   
-  Img8u *read_xpm(char **p){
+  Img8u *read_xpm(const char **p){
     // {{{ open
 
   // header
@@ -461,7 +461,7 @@ namespace {
 
   // paring image content
   for(int y=0;y<h;y++){
-    for(char *line = *p++; *line; line++, ++it[0], ++it[1], ++it[2]){
+    for(const char *line = *p++; *line; line++, ++it[0], ++it[1], ++it[2]){
       XPMColor c = lut[(int)(*line)];
       *(it[0]) = c.r;
       *(it[1]) = c.g;

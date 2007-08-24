@@ -696,11 +696,11 @@ void save_setparams(int device){
     usb_image_widths[m_iDevice]=m_iWidth;
     usb_image_heights[m_iDevice]=m_iHeight;
     
-    static char *sollname="Philips 740 webcam";
+    static const char *sollname="Philips 740 webcam";
     struct timeval zeit;
-    static char *devname[] = { "/dev/video0", "/dev/video1",
-                               "/dev/video2", "/dev/video3", 
-                               NULL };
+    static const char *devname[] = { "/dev/video0", "/dev/video1",
+                                     "/dev/video2", "/dev/video3", 
+                                     NULL };
     
     struct video_capability vcap;
     struct video_picture picture;
