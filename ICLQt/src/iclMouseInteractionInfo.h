@@ -11,6 +11,8 @@ namespace icl{
       widgetY = -1;
       imageX = 0;
       imageY = 0;
+      relImageX = 0;
+      relImageY = 0;
       downmask[0] = downmask[1] = downmask[2] = 0;
       color.push_back(0);
       color.push_back(0);
@@ -20,6 +22,7 @@ namespace icl{
     enum Type { moveEvent, dragEvent, pressEvent, releaseEvent, enterEvent, leaveEvent};
     int widgetX, widgetY;
     int imageX, imageY;
+    float relImageX, relImageY;
     int downmask[3];
     std::vector<float> color;
     Type type;

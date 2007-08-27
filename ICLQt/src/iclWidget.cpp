@@ -567,22 +567,26 @@ namespace icl{
     m_oMouseInfo.type = type;
     m_oMouseInfo.widgetX = m_iMouseX;
     m_oMouseInfo.widgetY = m_iMouseY;
+ 
     memcpy(m_oMouseInfo.downmask,aiDown,3*sizeof(int));
     
     m_oMutex.lock();
     Rect r = computeRect(m_poImage->getSize(), Size(width(),height()), m_eFitMode);
     //if(m_poImage && op.on && r.contains(m_iMouseX, m_iMouseY)){
-    if(r.contains(m_iMouseX, m_iMouseY)){
-      float boxX = m_iMouseX - r.x;
-      float boxY = m_iMouseY - r.y;
-      m_oMouseInfo.imageX = (int) rint((boxX*(m_poImage->getSize().width))/r.width);
-      m_oMouseInfo.imageY = (int) rint((boxY*(m_poImage->getSize().height))/r.height);
+    //    if(r.contains(m_iMouseX, m_iMouseY)){
+    float boxX = m_iMouseX - r.x;
+    float boxY = m_iMouseY - r.y;
+    m_oMouseInfo.imageX = (int) rint((boxX*(m_poImage->getSize().width))/r.width);
+    m_oMouseInfo.imageY = (int) rint((boxY*(m_poImage->getSize().height))/r.height);
+    if(r.contains(m_iMouseX,m_iMouseY)){
       m_oMouseInfo.color = m_poImage->getColor(m_oMouseInfo.imageX,m_oMouseInfo.imageY);
     }else{
-      m_oMouseInfo.imageX = -1;
-      m_oMouseInfo.imageY = -1;
+      //      m_oMouseInfo.imageX = -1;
+      //m_oMouseInfo.imageY = -1;
       m_oMouseInfo.color.resize(0);
     }
+    m_oMouseInfo.relImageX = float(m_oMouseInfo.imageX)/m_poImage->getSize().width;
+    m_oMouseInfo.relImageY = float(m_oMouseInfo.imageY)/m_poImage->getSize().height;
     m_oMutex.unlock();
     return &m_oMouseInfo;
   }

@@ -189,6 +189,12 @@ int main(int nArgs, char **ppcArg){
     
     /// returns whether a "NULL-Image" is warned in the image (...)
     void setShowNoImageWarning(bool enabled=true){ m_bShowNoImageWarning=enabled; }
+
+    /// calls QObject::connect to establish an explicit connection
+    void add(MouseInteractionReceiver *r){
+      connect((ICLWidget*)this,SIGNAL(mouseEvent(MouseInteractionInfo*)),
+              (MouseInteractionReceiver*)r,SLOT(mouseInteraction(MouseInteractionInfo*)));
+    }
     
     public slots:
     /// sets up the current image

@@ -60,7 +60,7 @@ namespace icl{
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(def.parentWidget()));
+        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(this));//def.parentWidget()));
         getGUI()->unlockData();
       }
     }
@@ -76,7 +76,7 @@ namespace icl{
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(def.parentWidget()));
+        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(this));//def.parentWidget()));
         getGUI()->unlockData();
       }
     }
@@ -908,7 +908,67 @@ public:
   }
 
   // }}}
-  
+  string extract_minsize(string s){
+    // {{{ open
+    
+    unsigned int p = s.find('[');
+    if(p == string::npos) return "";
+    s = s.substr(p+1);
+    if(!s.length()) return "";
+    if(s[s.length()-1] != ']') return "";
+    StrTok t(s.substr(0,s.length()-1),"@");
+    while(t.hasMoreTokens()){
+      const string &s2 = t.nextToken();
+      if(!s2.find("minsize",0)){
+        if(s2.length() < 9) return "";
+        return s2.substr(8);
+      } 
+    }
+    return "";
+  }
+
+  // }}}
+  string extract_maxsize(string s){
+    // {{{ open
+    
+    unsigned int p = s.find('[');
+    if(p == string::npos) return "";
+    s = s.substr(p+1);
+    if(!s.length()) return "";
+    if(s[s.length()-1] != ']') return "";
+    StrTok t(s.substr(0,s.length()-1),"@");
+    while(t.hasMoreTokens()){
+      const string &s2 = t.nextToken();
+      if(!s2.find("maxsize",0)){
+        if(s2.length() < 9) return "";
+        return s2.substr(8);
+      } 
+    }
+    return "";
+  }
+
+  // }}}
+  string extract_size(string s){
+    // {{{ open
+    
+    unsigned int p = s.find('[');
+    if(p == string::npos) return "";
+    s = s.substr(p+1);
+    if(!s.length()) return "";
+    if(s[s.length()-1] != ']') return "";
+    StrTok t(s.substr(0,s.length()-1),"@");
+    while(t.hasMoreTokens()){
+      const string &s2 = t.nextToken();
+      if(!s2.find("size",0)){
+        if(s2.length() < 6) return "";
+        return s2.substr(5);
+      } 
+    }
+    return "";
+  }
+
+  // }}}
+
   string remove_label(const string &s, const std::string &label){
     // {{{ open
     string toRemove = string("@label=")+label;
@@ -941,9 +1001,17 @@ public:
 
     usleep(1000*100);
     string label = extract_label(definition);
+    string minsize = extract_minsize(definition);
+    string maxsize = extract_maxsize(definition);
+    string size = extract_size(definition);
+    
+    if(minsize.length()) minsize = string("@minsize=")+translateSize(translateSize(minsize)+Size(1,1));
+    if(maxsize.length()) minsize = string("@maxsize=")+translateSize(translateSize(minsize)+Size(1,1));
+    if(size.length()) minsize = string("@size=")+translateSize(translateSize(minsize)+Size(1,1));
+
     if(label.length()){
       string rest = remove_label(definition,label);
-      return ( (*this) << ( GUI(string("border("+label+")")) << rest ) );
+      return ( (*this) << ( GUI(string("border("+label+")["+minsize+maxsize+size+"]")) << rest ) );
     }else{
       m_vecChilds.push_back(new GUI(definition));
       return *this;
@@ -956,13 +1024,21 @@ public:
 
     if(m_poWidget) { ERROR_LOG("this GUI is already visible"); return *this; }
     string label = extract_label(g.m_sDefinition);
+    string minsize = extract_minsize(g.m_sDefinition);
+    string maxsize = extract_maxsize(g.m_sDefinition);
+    string size = extract_size(g.m_sDefinition);
+    
+    if(minsize.length()) minsize = string("@minsize=")+translateSize(translateSize(minsize)+Size(1,1));
+    if(maxsize.length()) minsize = string("@maxsize=")+translateSize(translateSize(minsize)+Size(1,1));
+    if(size.length()) minsize = string("@size=")+translateSize(translateSize(minsize)+Size(1,1));
+    
     if(label.length()){
       GUI gNew(g);
       if(gNew.m_sDefinition.length() > 10000) {
         throw GUISyntaxErrorException("-- long text --","definition string was too large! (>10000 characters)");
       }
       gNew.m_sDefinition = remove_label(g.m_sDefinition,label);
-      return ( *this << (  GUI(string("border(")+label+")") << gNew ) );
+      return ( *this << (  GUI(string("border(")+label+")["+minsize+maxsize+size+"]") << gNew ) );
     }else{
       m_vecChilds.push_back(new GUI(g));
       return *this;
