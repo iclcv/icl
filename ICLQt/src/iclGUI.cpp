@@ -978,20 +978,21 @@ public:
 
   // }}}
 
-  GUI::GUI(const std::string &definition):
+  GUI::GUI(const std::string &definition,QWidget *parent):
     // {{{ open
-    m_sDefinition(definition),m_poWidget(0),m_bCreated(false){
+    m_sDefinition(definition),m_poWidget(0),m_bCreated(false),m_poParent(parent){
   }
 
   // }}}
-  GUI::GUI(const GUI &g):
+  GUI::GUI(const GUI &g,QWidget *parent):
     // {{{ open
     m_sDefinition(g.m_sDefinition),
     m_vecChilds(g.m_vecChilds),
-    m_poWidget(NULL),m_bCreated(false){
-
+    m_poWidget(NULL),m_bCreated(false),
+    m_poParent(parent){
   }
   // }}}
+
   GUI &GUI::operator<<(const std::string &definition){
     // {{{ open
     if(m_poWidget) { ERROR_LOG("this GUI is already visible"); return *this; }
@@ -1082,8 +1083,11 @@ public:
   
   void GUI::show(){
     // {{{ open
-
-    create(0,0,0);
+    if(m_poParent){
+      create(m_poParent->layout(),m_poParent,0);
+    }else{
+      create(0,0,0);
+    }
     m_poWidget->show();
   }
 

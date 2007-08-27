@@ -654,6 +654,52 @@ namespace icl{
       \endcode
       
       \image html Image04_ExternalWidget.jpg
+
+      \subsection GUIInGUI Embedding other GUIs
+      GUI objects can be embedded into other GUI objects by using the optional constructor parameter
+      "parent" of the constructor. This can be very useful when creating re-usable GUI classes
+      by using the ICL GUI API. To demonstrate this, we adapt the example above:
+
+      \code
+      #include <iclGUI.h>
+      
+      using namespace icl;
+      
+      int main(int n, char**ppc){
+        QApplication app(n,ppc);
+      
+        // create the top level gui component
+        GUI gui_1("hbox");
+        
+        // add some buttons vertically alligned
+        gui_1 << ( GUI("vbox") 
+                   << "button(click me)[@out=click0]"
+                   << "button(no !click me)[@out=click1]"
+                   << "button(no no no! me!)[@out=click2]" 
+                 );
+      
+        // add a container widget
+        gui_1 << "vbox[@label=GUI 2@handle=box-handle]";
+      
+        // create the gui (this allocates input and output data)
+        gui_1.show();
+      
+        /// create to "to be embeded gui (with given parent)
+        GUI gui_2("vbox",*gui_1.getValue<BoxHandle>("box-handle"));
+      
+        /// add something to this gui
+        gui_2 << "label(GUI 2!!)";
+      
+        /// finally create the underlying Qt-stuff
+        gui_2.show();
+      
+        // enter Qt's event loop
+        return app.exec();
+      }
+      
+      \endcode
+
+      \image html Image07_GUIInGUI.jpg
       
       \subsection LOCK Locking
       Some interface types involve the danger to be corrupted when accessed by the working thread
@@ -680,10 +726,10 @@ namespace icl{
     static const int CELLH = 20;
     
     /// default constructor 
-    GUI(const std::string &definition="vbox");
+    GUI(const std::string &definition="vbox", QWidget *parent=0);
     
     /// copy constructor
-    GUI(const GUI &gui);
+    GUI(const GUI &gui,QWidget *parent=0);
 
     /// Destructor
     virtual ~GUI(){}
@@ -745,6 +791,7 @@ namespace icl{
     GUIWidget *m_poWidget;
     GUIDataStore m_oDataStore;
     bool m_bCreated;
+    QWidget *m_poParent;
   };  
 }
 
