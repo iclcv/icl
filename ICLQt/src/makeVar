@@ -157,3 +157,16 @@ SKIP_DIRECTORIES:=
 	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
 	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
 	${REL_INCLUDES} ${ABS_INCLUDES}
+
+../obj/moc_iclChromaGUI.o : iclChromaGUI.h iclChromaGUI.cpp 
+	${PRE_CMD} rm -rf moc_iclChromaGUI.cpp
+	${PRE_CMD}${CMD_ECHO} "creating moc file moc_iclChromaGUI.cpp [specialized]"
+	${PRE_CMD}${QTDIR}/bin/moc -o moc_iclChromaGUI.cpp iclChromaGUI.h
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/moc_iclChromaGUI.cpp [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c moc_iclChromaGUI.cpp -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}
+
+../obj/iclChromaGUI.o : iclChromaGUI.cpp iclChromaGUI.h ../obj/moc_iclChromaGUI.o
+	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< [specialized]"
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG} ${CPPDEFINES} -c $< -o $@ \
+	${REL_INCLUDES} ${ABS_INCLUDES}

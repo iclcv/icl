@@ -1,0 +1,18 @@
+#include "iclDragger.h"
+#include <iclDrawWidget.h>
+
+namespace icl{
+  void Dragger::draw( ICLDrawWidget *w ) const{
+    w->color(c.r,c.g,c.b,c.a);
+    if(dragged()){
+      w->fill(std::min(c.r+30,255),std::min(c.g+30,255), std::min(c.b+30,255),c.a/2);
+    }else if(over()){
+      w->fill(c.r,c.g,c.b,c.a/2);
+    }else{
+      w->nofill();
+    }
+    w->rect(r.x,r.y,r.width,r.height);
+    w->line(p.x-d/2,p.y-d/2, p.x+d/2,p.y+d/2);
+    w->line(p.x+d/2,p.y-d/2, p.x-d/2,p.y+d/2);
+  }  
+}

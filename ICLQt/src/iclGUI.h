@@ -34,7 +34,6 @@ class QLayout;
 /** \endcond */
 
 
-// The icl namespace
 namespace icl{
 
   /** \cond */
