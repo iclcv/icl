@@ -71,7 +71,6 @@ namespace icl {
         oInfo.eFileFormat != ioFormatCSV) {
       poImg = poSrc->convert<icl8u>(&m_oImg8u);
     }
-    poImg->print("inWrite");
     
     try {
       // write file
