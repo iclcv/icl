@@ -604,7 +604,6 @@ public:
       
       int nW = def.intParam(0);
       int nH = def.intParam(1);
-      printf("nW is %d  nH is %d \n",nW,nH);
       if(nW < 1) throw GUISyntaxErrorException(def.defString(),"NW must be > 0");
       if(nH < 1) throw GUISyntaxErrorException(def.defString(),"NW must be > 0");
 
@@ -1007,8 +1006,8 @@ public:
     string size = extract_size(definition);
     
     if(minsize.length()) minsize = string("@minsize=")+translateSize(translateSize(minsize)+Size(1,1));
-    if(maxsize.length()) minsize = string("@maxsize=")+translateSize(translateSize(minsize)+Size(1,1));
-    if(size.length()) minsize = string("@size=")+translateSize(translateSize(minsize)+Size(1,1));
+    if(maxsize.length()) maxsize = string("@maxsize=")+translateSize(translateSize(maxsize)+Size(1,1));
+    if(size.length()) size = string("@size=")+translateSize(translateSize(size)+Size(1,1));
 
     if(label.length()){
       string rest = remove_label(definition,label);
@@ -1030,8 +1029,8 @@ public:
     string size = extract_size(g.m_sDefinition);
     
     if(minsize.length()) minsize = string("@minsize=")+translateSize(translateSize(minsize)+Size(1,1));
-    if(maxsize.length()) minsize = string("@maxsize=")+translateSize(translateSize(minsize)+Size(1,1));
-    if(size.length()) minsize = string("@size=")+translateSize(translateSize(minsize)+Size(1,1));
+    if(maxsize.length()) maxsize = string("@maxsize=")+translateSize(translateSize(maxsize)+Size(1,1));
+    if(size.length()) size = string("@size=")+translateSize(translateSize(size)+Size(1,1));
     
     if(label.length()){
       GUI gNew(g);

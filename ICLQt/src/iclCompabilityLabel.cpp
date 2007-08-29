@@ -14,7 +14,7 @@ namespace icl{
     QPainter p(this);
     m_oMutex.lock();
 
-    p.setPen(QColor(0,0,0,0));
+    p.setPen(QColor(0,0,0));
     p.drawText(QRect(0,0,width(),height()),Qt::AlignCenter,m_sText);
     
     m_oMutex.unlock();
