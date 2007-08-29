@@ -278,7 +278,7 @@ namespace icl{
       if(def.numParams() > 1) throw GUISyntaxErrorException(def.defString(),"need max. 1 parameter here!");
       if(def.numInputs() > 1) throw GUISyntaxErrorException(def.defString(),"need max. 1 input here!");
     
-      m_poLabel = new QLabel(def.numParams()==1?def.param(0).c_str():"",def.parentWidget());
+      m_poLabel = new CompabilityLabel(def.numParams()==1?def.param(0).c_str():"",def.parentWidget());
       
       addToGrid(m_poLabel);
       
@@ -298,7 +298,7 @@ namespace icl{
       return Size(4,1); 
     }
   private:
-    QLabel *m_poLabel;
+    CompabilityLabel *m_poLabel;
   };
   
   // }}}
@@ -618,7 +618,7 @@ public:
         
       for(int x=0;x<nW;x++){
         for(int y=0;y<nH;y++){
-          QLabel *l = new QLabel(def.parentWidget());
+          CompabilityLabel *l = new CompabilityLabel("",def.parentWidget());
           (*m_poLabelMatrix)[x][y] = LabelHandle(l);
           addToGrid(l,x,y);
         }

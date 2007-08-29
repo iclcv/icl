@@ -5,20 +5,18 @@
 #include <QString>
 #include <QWidget>
 #include <iclGUIHandle.h>
-
-/** \cond */
-class QLabel;
-/** \endcond */
+#include <iclCompabilityLabel.h>
 
 namespace icl{
+
   /// Class for GUI-Label handling \ingroup HANDLES
   /** The gui label is created inside the GUI class, it can be used
       to make GUI-"label" components show anther text 
       @see GUI */
-  class LabelHandle : public GUIHandle<QLabel>{
+  class LabelHandle : public GUIHandle<CompabilityLabel>{
     public:
     /// Create a new LabelHandle
-    LabelHandle(QLabel *l=0):GUIHandle<QLabel>(l){}
+    LabelHandle(CompabilityLabel *l=0):GUIHandle<CompabilityLabel>(l){}
     
     ///  assign a std::string (makes the underlying label show that string)
     void operator=(const std::string &text);
@@ -37,10 +35,10 @@ namespace icl{
     
     private:
     /// utitlity function
-    QLabel *lab() { return **this; }
+    CompabilityLabel *lab() { return **this; }
 
     /// utitlity function
-    const QLabel *lab() const { return **this; }
+    const CompabilityLabel *lab() const { return **this; }
   };
 
  

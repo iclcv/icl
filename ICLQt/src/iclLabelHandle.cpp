@@ -20,7 +20,7 @@ namespace icl{
     lab()->update();
   }
   void LabelHandle::operator=(double num){
-    lab()->setNum(num);
+    lab()->setNum(float(num));
     lab()->update();
   }
 }
