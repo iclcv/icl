@@ -85,8 +85,8 @@ float *createData(int dim, Img8u &image){
 void visualize(Img8u &image,const VQClusterInfo &info){
   //TestImages::xv(&image,"bla.ppm",500);
   int n=1;
-  char *bla[] = {"vqdemo",0};
-  QApplication a(n,bla);
+  const char *bla[] = {"vqdemo",0};
+  QApplication a(n,const_cast<char**>(bla));
   ICLDrawWidget w(0);
   w.show();
   w.setImage(&image);

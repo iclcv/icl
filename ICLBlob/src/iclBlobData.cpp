@@ -1,6 +1,7 @@
 #include <iclBlobData.h>
 #include <iclRegionDetectorBlob.h>
 #include <iclMacros.h>
+#include <iclImgChannel.h>
 
 using namespace icl::regiondetector;
 using namespace icl;
@@ -72,7 +73,32 @@ namespace icl{
     const Point &cog = m_poRDB->getCOG();
     return PCAInfo(pca[0],pca[1],pca[2],pca[3],cog.x,cog.y);
   }
-
+  
+  namespace {
+    template<class T>
+    void draw_blobdata_to(const RegionDetectorBlob *b, Img<T> *image, T val){
+      ScanLineList *sls = const_cast<ScanLineList*>(b->getScanLines());
+      for(int ch=0;ch<image->getChannels();ch++){
+        ImgChannel<T> c = pickChannel(image,ch);
+        for(ScanLineList::iterator it = sls->begin(); it!= sls->end(); ++it){
+          RegionDetectorScanLine &sl = **it;
+          T *dst = &c(sl.getStart(),sl.y());
+          std::fill( dst, dst+sl.size()+1, val);
+        }
+      }
+    }
+  }
+  
+  void BlobData::drawTo(ImgBase *image, icl64f val) const{
+    ICLASSERT_RETURN(image);
+    ICLASSERT_RETURN(image->getImageRect().contains(getBoundingBox()));
+    switch(image->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: draw_blobdata_to<icl##D>(m_poRDB, image->asImg<icl##D>(),Cast<icl64f,icl##D>::cast(val)); break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+      default: ICL_INVALID_DEPTH;
+#undef ICL_INSTANTIATE_DEPTH
+    }
+  }
     
  
 

@@ -128,10 +128,25 @@ namespace icl{
 
     /* }}} */
 
+    /// Returns the underlying handle
     const regiondetector::RegionDetectorBlob* getRegionDetectorBlobHandle() const{
+      /* {{{ open */
+
       return m_poRDB;
     }
+
+    /* }}} */
+
+    /// draws this blob into an image
+    void drawTo(ImgBase *image, icl64f val=255) const;
     
+    inline bool operator<(const BlobData &other) const{
+      /* {{{ open */
+
+      return this->getSize() < other.getSize();
+    }
+
+    /* }}} */
     private:
     
     /// wrapped low level blob data
