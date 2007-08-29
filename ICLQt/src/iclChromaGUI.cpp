@@ -347,13 +347,19 @@ namespace icl{
   }
 
   // }}}
-  void ChromaGUI::load(){
+  void ChromaGUI::load(const std::string &filenameIn){
     // {{{ open
 
-    QString filename = QFileDialog::getOpenFileName( 0, "Select Filename...", "./");
-    if(filename.isNull() || filename == ""){
-      return;
+    QString filename;
+    if(filenameIn == ""){
+      filename = QFileDialog::getOpenFileName( 0, "Select Filename...", "./");
+      if(filename.isNull() || filename == ""){
+        return;
+      }
+    }else{
+      filename = filenameIn.c_str();
     }
+
     vector<int> data;
     m_poChromaWidget->load(filename.toLatin1().data(),data);
     ICLASSERT_RETURN(data.size() == 7);
@@ -370,12 +376,17 @@ namespace icl{
   }
 
   // }}}
-  void ChromaGUI::save(){
+  void ChromaGUI::save(const std::string &filenameIn){
     // {{{ open
 
-    QString filename = QFileDialog::getSaveFileName( 0, "Select Filename...", "./");
-    if(filename.isNull() || filename == ""){
-      return;
+    QString filename;
+    if(filenameIn == ""){
+      filename = QFileDialog::getSaveFileName( 0, "Select Filename...", "./");
+      if(filename.isNull() || filename == ""){
+        return;
+      }
+    }else{
+      filename = filenameIn.c_str();
     }
 
     vector<int> data;

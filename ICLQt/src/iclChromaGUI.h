@@ -104,10 +104,10 @@ namespace icl{
     void blueSliderChanged(int val);
     
     /// used for the save-button
-    void save();
+    void save(const std::string &filename="");
     
     /// used for the load-button
-    void load();
+    void load(const std::string &filename="");
     
     private:
     /// Wrapped ChromaWidget (an internal class)
