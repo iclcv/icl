@@ -1,3 +1,5 @@
+# -*-mode: Perl;-*-  ;; Have EMACS always use perl-mode for this file.
+
 use strict;
 use Cwd;
 use Data::Dumper;
@@ -35,7 +37,7 @@ opendir(DIR,"./") or die "Can not open DIR: $!";
 my @dirs = grep { /ICL/ } readdir(DIR);
 closedir(DIR);
 
-my $INSTALLDIR="$ENV{AGNI_LOCAL_ROOT}/${projectRootName}/${majVer}.${minVer}";
+my $INSTALLDIR="$ENV{ICL_INSTALL_ROOT}/${projectRootName}/${majVer}.${minVer}";
 my $OS_SYSTEM="$ENV{ARCH}";
 my $currDir=&Cwd::cwd();
 
@@ -231,11 +233,13 @@ sub generate_packagevar {
     my $ersion = $installdir;
 
     #---- Generate content ----
+    $pkgContent .= "# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file.\n";
+    $pkgContent .= "\n";
     $pkgContent .= "#   packageVar\n";
     $pkgContent .= "ifeq \"\${".$entry."_MAKEVAR}\" \"\"\n";
     $pkgContent .= $entry."_MAKEVAR=".$entry."_MAKEVAR\n";
     $pkgContent .= "\n";
-    $pkgContent .= "# Please include here the inherited packages123\n";
+    $pkgContent .= "# Please include here the inherited packages\n";
     foreach my $inc (@includes) {
         $inc =~ s/\$\{PACKAGES\}/$installdir\/packages/;
         $pkgContent .= $inc;
@@ -248,13 +252,11 @@ sub generate_packagevar {
     $pkgContent .= "# Please, do not change this ifeq statement\n";
     $pkgContent .= "ifeq \"\${AGNI_INHERIT_MODE}\" \"STATIC\"\n";
     $pkgContent .= "\n";
-    $pkgContent .= "\n";
     $pkgContent .= "# Please, place here the static libraries\n";
     $pkgContent .= "ABS_OBJECTS:= \${ABS_OBJECTS} \\\n";
     $pkgContent .= "$installdir/lib/lib".$entry.".a\n";
     $pkgContent .= "\n";
     $pkgContent .= "else\n";
-    $pkgContent .= "\n";
     $pkgContent .= "\n";
     $pkgContent .= "# Please, place here the lib directory of the project and the library name.\n";
     $pkgContent .= "ifeq \"\${OS_TYPE}\" \"linux\"\n";
