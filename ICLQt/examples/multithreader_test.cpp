@@ -6,13 +6,27 @@
 
 static int next_functor_id = 0;
 
+static const int LARGE_SIZE = 10000000;
+static float *large_array = new float[LARGE_SIZE];
+static float *large_array2 = new float[LARGE_SIZE];
+static icl8u *large_array3 = new icl8u[LARGE_SIZE];
+void apply_large_func(int start=0, int end = LARGE_SIZE){
+  int size = end-start;
+  int h = size/100;
+  int w = 100;
+  //ippiFilterGauss_32f_C1R(large_array+w+1, sizeof(float)*(w-2), large_array2+w+1, sizeof(float)*(w-2), Size(h-2,w-2),(IppiMaskSize)33);
+  ippiCompareC_32f_C1R(large_array, w*sizeof(float), 5.3, large_array3,w,Size(w,h),ippCmpLess);
+}
+
 class CompareFunctor{
   UnaryCompareOp *m_poOp;
   const ImgBase *m_poSrc;
   ImgBase **m_ppoDst;
 public:
-  CompareFunctor(UnaryCompareOp::optype ot= UnaryCompareOp::lt, icl64f value=128, icl64f tolerance=0):
+  CompareFunctor(UnaryCompareOp::optype ot= UnaryCompareOp::eq, icl64f value=128, icl64f tolerance=5):
     m_poOp(new UnaryCompareOp(ot,value,tolerance)),m_poSrc(0),m_ppoDst(0){
+    m_poOp->setClipToROI(false);
+    m_poOp->setCheckOnly(true);
     id = next_functor_id++;
     iCalled = 1;
   }  
@@ -21,13 +35,21 @@ public:
     m_ppoDst = dst;
   }
   void operator()(){
-    printf("compare functor %d called %d times \n",id,iCalled++);
-    //    for(int i=0;i<1;i++){
-      m_poOp->apply(m_poSrc,m_ppoDst);
-      // }
+    m_poOp->apply(m_poSrc,m_ppoDst);
+    apply_large_func(0,LARGE_SIZE/2);
   }
   int iCalled;
   int id;
+};
+
+class LargeFuncFunctor{
+public:
+  LargeFuncFunctor(int iStart, int iEnd):a(iStart),b(iEnd){}
+  void operator()(){
+    apply_large_func(a,b);
+  }
+private:
+  int a,b;
 };
 
 vector<Rect> split_rect(const Rect &r, int n){
@@ -59,38 +81,69 @@ void spit_image(ImgBase *src,ImgBase *dst, vector<ImgBase*> &srcs, vector<ImgBas
   }
 }
 
-int main (int n, char **ppc){
+int main2(){
+  const int N = 2;
+  const int K = 100;
+  MultiThreader<LargeFuncFunctor> mt(N);
+  vector<LargeFuncFunctor*> functors(N);
+  for(int i=0;i<N;i++){
+    functors[i] = new LargeFuncFunctor(i?LARGE_SIZE/2:0,i?LARGE_SIZE:LARGE_SIZE/2);
+  }
+  tic();
+  for(int i=0;i<K;i++){
+    mt.apply(functors);
+  }
+  toc();
+
+  mt.stopThreads();
+
+  
+  tic();
+  for(int i=0;i<K;i++){
+    apply_large_func();
+  }
+  toc();
+
+  return 0;
+}
+
+int main(int n, char **ppc){
   
   const int N = 2;  
-  printf("main 0.1 \n");
+
   MultiThreader<CompareFunctor> mt(N);
-  printf("main 0.2 \n");
   
   ImgQ image = create("parrot");
-  printf("main 0.3 \n");
 
   ImgBase *dst = new Img8u(image.getSize(),image.getFormat());
-  printf("main 1 \n");
   vector<ImgBase*> srcs;
   vector<ImgBase*> dsts;
-  printf("main 2 \n");
+
   spit_image(&image,dst,srcs,dsts,N);
-  printf("main 3 \n");
   vector<CompareFunctor*> functors(N);
 
-  printf("main 4 \n");
   for(int i=0;i<N;i++){
     functors[i] = new CompareFunctor;
   }
-  printf("main 5 \n");
-  for(int i=0;i<20;i++){
-
+  tic();
+  for(int i=0;i<100;i++){
     for(int j=0;j<N;j++){
       functors[j]->setup(srcs[j],&(dsts[j]));
     }
     mt.apply(functors);
   }
-  printf("main 9 \n");
+  toc();
+  mt.stopThreads();
   
+  ImgQ image2 = create("parrot");
+  ImgBase *dst2=0;
+  UnaryCompareOp op(UnaryCompareOp::eq,128,5);
+  op.apply(&image2,&dst2);
+  tic();
+  for(int i=0;i<100;i++){
+    op.apply(&image2,&dst2);
+    apply_large_func(0,LARGE_SIZE);
+  }
+  toc();
   return 0;
 }

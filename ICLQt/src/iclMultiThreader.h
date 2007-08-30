@@ -18,13 +18,19 @@ namespace icl{
 
       T *m_ptFunctor;
       bool doEnd;
-      QSemaphore *m_poProvided; // provided work
+      QSemaphore *m_poProvided1; // provided work
+      QSemaphore *m_poProvided2; // provided work
       QSemaphore *m_poDone;     // done work
       bool m_pbNewDataAvailable;
       
       // public:
-      WorkingThread(QSemaphore *provided, QSemaphore *done):
-      m_ptFunctor(0),doEnd(false),m_poProvided(provided),m_poDone(done),m_pbNewDataAvailable(false){
+      WorkingThread(QSemaphore *provided1,QSemaphore *provided2, QSemaphore *done):
+      m_ptFunctor(0),
+      doEnd(false),
+      m_poProvided1(provided1),
+      m_poProvided2(provided2),
+      m_poDone(done),
+      m_pbNewDataAvailable(false){
         start();
       }
       ~WorkingThread(){
@@ -51,61 +57,94 @@ namespace icl{
       
       void run(){
         while(!doEnd){
-          if(!m_pbNewDataAvailable){
-            usleep(0);
-          }else{
-            m_poProvided->acquire();
-            if(doEnd) break;
-            
-            if(m_ptFunctor){
-              (*m_ptFunctor)();
-              m_pbNewDataAvailable = false;
-            }
-            m_poDone->release();
+          m_poProvided1->acquire();
+          if(doEnd) break;
+          
+          if(m_ptFunctor){
+            (*m_ptFunctor)();
+            m_pbNewDataAvailable = false;
           }
+          m_poDone->release();
+
+          m_poProvided2->acquire();
+          if(doEnd) break;
+          
+          if(m_ptFunctor){
+            (*m_ptFunctor)();
+            m_pbNewDataAvailable = false;
+          }
+          m_poDone->release();
+
         }
       }
     };
 
     public:
-    MultiThreader(int nThreads=2):m_oProvidedSem(nThreads),m_oDoneSem(nThreads),m_iNumThreads(nThreads){
-      m_vecThreads.resize(nThreads);
-      
-      m_oProvidedSem.acquire(nThreads);
-      m_oDoneSem.acquire(m_vecThreads.size());
-      
-      for(int i=0;i<nThreads;i++){
-        m_vecThreads[i] = new WorkingThread(&m_oProvidedSem,&m_oDoneSem);
-      }
 
-      
+    MultiThreader(int nThreads=2):
+    m_iProvidedSemIdx(0),
+    m_vecThreads(nThreads),
+    m_oDoneSem(nThreads),
+    m_iNumThreads(nThreads),      
+    m_bThreadsRunning(false){
+      startThreads();
     }
+    
     ~MultiThreader(){
-
-      for(int i=0;i<numThreads();i++){ 
-        m_vecThreads[i]->end();
-        m_oProvidedSem.release(1);
-        delete m_vecThreads[i];
-      }
+      stopThreads();
     }
     int numThreads() const { return m_iNumThreads; }
     
+    void stopThreads(){
+      if(m_bThreadsRunning){
+        for(int i=0;i<numThreads();i++){ 
+          m_vecThreads[i]->end();
+          m_apoProvidedSem[m_iProvidedSemIdx]->release(1);       
+          m_apoProvidedSem[!m_iProvidedSemIdx]->release(1);
+          delete m_vecThreads[i];
+        }    
+        m_bThreadsRunning = false;
+      }
+      delete m_apoProvidedSem[0];
+      m_apoProvidedSem[0] = 0;
+      delete m_apoProvidedSem[1];
+      m_apoProvidedSem[1] = 0;
+    }
+
+    void startThreads(){
+      if (!m_bThreadsRunning){
+        int n = numThreads();
+        m_apoProvidedSem[0] = new QSemaphore(n);
+        m_apoProvidedSem[1] = new QSemaphore(n);
+        m_apoProvidedSem[0]->acquire(n);
+        m_apoProvidedSem[1]->acquire(n);
+        m_oDoneSem.acquire(n);
+        
+        for(int i=0;i<n;i++){
+          m_vecThreads[i] = new WorkingThread(m_apoProvidedSem[0],m_apoProvidedSem[1],&m_oDoneSem);
+        }
+        m_bThreadsRunning = true;
+        m_iProvidedSemIdx = 0; 
+      } 
+    }
+    
     void apply(std::vector<T*> &functors){
       ICLASSERT_RETURN((int)functors.size() == numThreads() );
-
       for(int i=0;i<numThreads();i++){
         m_vecThreads[i]->setFunctor(functors[i]);
-      }
-      m_oProvidedSem.release(numThreads());
+      }      
+      m_apoProvidedSem[m_iProvidedSemIdx]->release(numThreads());
       m_oDoneSem.acquire(numThreads());
+      m_iProvidedSemIdx = !m_iProvidedSemIdx;
     }
     
     private:
-
+    int m_iProvidedSemIdx;
     std::vector<WorkingThread*> m_vecThreads;
-    QSemaphore m_oProvidedSem;
+    QSemaphore *m_apoProvidedSem[2];
     QSemaphore m_oDoneSem;
     int m_iNumThreads;
+    bool m_bThreadsRunning;
     
   };
   
