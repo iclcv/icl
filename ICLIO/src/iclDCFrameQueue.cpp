@@ -35,7 +35,13 @@ namespace icl{
       dc1394_capture_enqueue(m_poCam,frame); 
       
       frame=0;
-      dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
+      // OLD      dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
+      dc1394error_t err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_POLL,&frame);
+      while(err !=  DC1394_SUCCESS){
+        usleep(0);
+        err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_POLL,&frame);
+      }
+
       push(frame);
     }    
     

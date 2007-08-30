@@ -5,10 +5,12 @@
 #include <iclThread.h>
 #include <iclTestImages.h>
 #include <iclMutex.h>
+#include <iclFileWriter.h>
+
 using namespace icl;
 using namespace std;
 
-Size size(160,120);
+Size size(320,240);
 
 class MyThread : public Thread{
 public:
@@ -27,7 +29,7 @@ public:
       printf("adding camera %s \n",devs[i].getModelID().c_str());
       gs[gs.size()-1]->setDesiredSize(Size(640,480));
       gs[gs.size()-1]->setDesiredFormat(formatRGB);
-      gs[gs.size()-1]->setProperty("format","DC1394_VIDEO_MODE_640x480_MONO8@DC1394_FRAMERATE_30");
+      gs[gs.size()-1]->setProperty("format","DC1394_VIDEO_MODE_640x480_MONO8@DC1394_FRAMERATE_15");
     }
     image = new Img8u(Size(devs.size()*640,480),formatRGB);
   }
@@ -51,10 +53,12 @@ public:
         image->setROI(Rect(i*640,0,640,480));
         gs[i]->grab()->deepCopyROI(&image);
       }
+      static icl::FileWriter soWriter("Frame###.ppm");
+      soWriter.write(image);
       w->setImage(image);
       w->update();
       m.unlock();
-      msleep(50);
+      msleep(80);
     }
   }
   int device;

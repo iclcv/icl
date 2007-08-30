@@ -21,7 +21,7 @@ public:
       printf("adding camera %s \n",devs[i].getModelID().c_str());
       gs[gs.size()-1]->setDesiredSize(Size(640,480));
       gs[gs.size()-1]->setDesiredFormat(formatRGB);
-      gs[gs.size()-1]->setProperty("format","DC1394_VIDEO_MODE_640x480_MONO8@DC1394_FRAMERATE_30");
+      gs[gs.size()-1]->setProperty("format","DC1394_VIDEO_MODE_640x480_MONO8@DC1394_FRAMERATE_15");
     }
     image = new Img8u(Size(devs.size()*640,480),formatRGB);
   }
@@ -34,14 +34,16 @@ public:
   }
   
   virtual void run(){
-    while(1){
+    for(int k=0;k<10;k++){
       for(unsigned int i=0;i<gs.size();i++){
         image->setROI(Rect(i*640,0,640,480));
         gs[i]->grab()->deepCopyROI(&image);
       }
       system("if [ ! -d images ] ; then mkdir images ; fi");
       static icl::FileWriter soWriter("images/Frame###.ppm");
+      usleep(100000);
       soWriter.write(image);
+      usleep(100000);
     }
   }
   int device;
