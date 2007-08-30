@@ -446,8 +446,6 @@ namespace icl{
   
   // }}}
  
-
- 
   ICLDrawWidget::ICLDrawWidget(QWidget *poParent):
     // {{{ open
 
@@ -504,6 +502,9 @@ namespace icl{
   }
   void ICLDrawWidget::rect(float x, float y, float w, float h){
     m_vecCommands.push_back(new RectCommand(x,y,w,h));
+  }
+  void ICLDrawWidget::rect(Rect r){
+    m_vecCommands.push_back(new RectCommand(r.x,r.y,r.width,r.height));
   }
   void ICLDrawWidget::triangle(float x1, float y1, float x2, float y2, float x3, float y3){
     m_vecCommands.push_back(new TriangleCommand(x1,y1,x2,y2,x3,y3));

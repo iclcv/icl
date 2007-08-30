@@ -48,9 +48,9 @@ int main(int n, char **ppc){
   g << "image[@inp=image2@label=image 2]";
   g << "image[@inp=image3@label=image 3]";
   GUI v("vbox[@maxsize=10x1000]");
-  v << "slider(-1000,1000,0)[@out=the-int1@maxsize=5x1@label=slider1]";
-  v << "slider(-1000,1000,0)[@out=the-int2@maxsize=5x1@label=slider2]";
-  v << "slider(-1000,1000,0)[@out=the-int3@maxsize=5x1@label=slider3]";
+  v << "slider(-1000,1000,0)[@out=the-int1@maxsize=35x1@label=slider1]";
+  v << "slider(-1000,1000,0)[@out=the-int2@maxsize=35x1@label=slider2]";
+  v << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3]";
   v << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]";
   v << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]";
   g << v;

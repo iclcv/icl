@@ -9,9 +9,9 @@
 MAKEROOT_DEFINED= TRUE
 ###############################################################################
 
-AGNI_LOCAL_ROOT?=/vol/vision
+ICL_INSTALL_ROOT?=/vol/vision
 IPP_ROOT?=/vol/vision/IPP
-export AGNI_LOCAL_ROOT
+export ICL_INSTALL_ROOT
 
 #------------------------------------------------------------------------------
 # Shell commands
@@ -363,13 +363,13 @@ help:
 	${PRE_CMD}${CMD_ECHO} " printvar    : print all variables from top to current directory"
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} " install     : remove and install all include and "
-	${PRE_CMD}${CMD_ECHO} "               library files to ${AGNI_LOCAL_ROOT}/*"
+	${PRE_CMD}${CMD_ECHO} "               library files to ${ICL_INSTALL_ROOT}/*"
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} " installdoc  : remove and install all documentation"
-	${PRE_CMD}${CMD_ECHO} "               files to ${AGNI_LOCAL_ROOT}/*"
+	${PRE_CMD}${CMD_ECHO} "               files to ${ICL_INSTALL_ROOT}/*"
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} " installlink : remove and link all include and "
-	${PRE_CMD}${CMD_ECHO} "             : library files to ${AGNI_LOCAL_ROOT}/*"
+	${PRE_CMD}${CMD_ECHO} "             : library files to ${ICL_INSTALL_ROOT}/*"
 	${PRE_CMD}${CMD_ECHO} ""
 	${PRE_CMD}${CMD_ECHO} " installall  : make install installdoc"
 	${PRE_CMD}${CMD_ECHO} ""

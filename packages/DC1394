@@ -10,7 +10,6 @@
 ifeq "${DC1394_MAKEVAR}" ""
 DC1394_MAKEVAR=DC1394_MAKEVAR
 
-
 ifeq "${OS_TYPE}" "linux"
 
 ifneq "$(HAVE_LIBDC_AND_LIBRAW)" ""
@@ -121,6 +120,5 @@ CPPFLAGS:= ${CPPFLAGS}
 
 endif # HAVE_LIBDC
 endif # macosx
-
 
 endif # DC1394_MAKEVAR

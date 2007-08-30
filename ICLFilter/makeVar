@@ -63,7 +63,7 @@ CFLAGS:= ${CFLAGS}
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CPPDEFINES:=${CPPDEFINES}
 
-# Flags for C++ compiler
+	# Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
 
 # Flags for archive

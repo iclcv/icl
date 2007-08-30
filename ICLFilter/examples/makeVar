@@ -18,6 +18,7 @@ _DOT_DOT:=../${_DOT_DOT}
 include ${PACKAGES}/ICLIO
 include ${PACKAGES}/ICLCC
 include ${PACKAGES}/ICLQuick
+include ${PACKAGES}/ICLQt
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -30,7 +31,6 @@ REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
 		-I../../ICLIO/src \
 		-I../../ICLUtils/src \
 		-I../../ICLCC/src
-
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
@@ -70,8 +70,11 @@ CPPDEFINES:= ${CPPDEFINES}
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
 
-
 # Set the priority level
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
 SKIP_DIRECTORIES:=
+
+ifeq "$(HAVE_QT)" ""
+SKIP_OBJECTS += skinControl.cpp
+endif

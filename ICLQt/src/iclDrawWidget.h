@@ -92,6 +92,9 @@ namespace icl{
     /// draws a rect with given parameters
     void rect(float x, float y, float w, float h);
 
+    /// draws a rect from a icl Rect structure
+    void rect(Rect r);
+
     /// draws a triangle defined by 3 points
     void triangle(float x1, float y1, float x2, float y2, float x3, float y3); 
     

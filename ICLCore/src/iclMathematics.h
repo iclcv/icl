@@ -151,6 +151,7 @@ namespace icl {
      FUNCTION_LOG("vector<T> &, Generator");
      std::generate (vec.begin(), vec.end(), gen);
   }
+
   /*!
     @brief Initialize the elements of a std::vector by values of
     an generator function taking one argument, e.g. randomGauss(max)

@@ -2,6 +2,7 @@
 #include <iclImg.h>
 #include <iclCC.h>
 #include <iclMathematics.h>
+
 /*
   Skin.cpp
 
@@ -22,20 +23,22 @@ namespace icl {
 
     //Variable initialisation
     float p1, p2;
-    
     //Ensure ImgBase compatibility
     ensureCompatible(&m_poChromaApply, depth32f, 
                      poSrc->getSize(), formatChroma);
     ensureCompatible(ppoDst, depth8u, poSrc->getSize(), 
                      formatMatrix, poSrc->getROI());
-    
+
     //Convert src image
     cc(poSrc,m_poChromaApply);
     (*ppoDst)->asImg<icl8u>()->clear();
     
+
     Img32f::iterator itChromaR=m_poChromaApply->asImg<icl32f>()->getIterator(0);
     Img32f::iterator itChromaG=m_poChromaApply->asImg<icl32f>()->getIterator(1);
     Img8u::iterator  itOutMask= (*ppoDst)->asImg<icl8u>()->getIterator(0);
+
+
     
     for (; itChromaR.inRegion(); ++itChromaR, ++itChromaG, ++itOutMask) {
       //---- evaluate parabolas ----
@@ -49,8 +52,8 @@ namespace icl {
       
       LOOP_LOG("Parabola value p1: " << p1);
       LOOP_LOG("Parabola value p2: " << p2);
-      LOOP_LOG("p1 < chromaG        : " << p1 << " < " << *itChromaG);
-      LOOP_LOG("p2 > chromaG        : " << p2 << " > " << *itChromaG);
+      LOOP_LOG("p1 < chromaG     : " << p1 << " < " << *itChromaG);
+      LOOP_LOG("p2 > chromaG     : " << p2 << " > " << *itChromaG);
       
       if ((*itChromaG > p1) && (*itChromaG < p2))
       {
@@ -176,6 +179,7 @@ namespace icl {
     
     //Set new parameter as default
     m_vecSkinParams = vecTmpParams;
+
   }
 
   // }}}
