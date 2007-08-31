@@ -77,5 +77,5 @@ endif
 
 ifeq "${OS_TYPE}" "macosx"
 SKIP_OBJECTS += camviewer.cpp camviewer_lite.cpp camcfg.cpp interactivefilterdemo.cpp 
-SKIP_OBJECTS += mouseinteraction.cpp visualizationdemo.cpp
+SKIP_OBJECTS += mouseinteraction.cpp visualizationdemo.cpp chroma_demo.cpp
 endif
