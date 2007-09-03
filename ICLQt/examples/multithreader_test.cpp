@@ -133,7 +133,9 @@ int main(int n, char **ppc){
     mt.apply(functors);
   }
   toc();
+  printf("ok! stopping threads! \n");
   mt.stopThreads();
+  printf("ok 2 threads stopped! \n");
   
   ImgQ image2 = create("parrot");
   ImgBase *dst2=0;

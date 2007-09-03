@@ -4,7 +4,7 @@
 namespace icl{
 
   CompabilityLabel::CompabilityLabel(const QString &text, QWidget *parent):
-    QWidget(parent),m_sText(text){
+    QLabel("placeholder",parent),m_sText(text){
     
   }
   

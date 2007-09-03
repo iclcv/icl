@@ -1,7 +1,7 @@
 #ifndef ICL_COMPABILITY_LABEL_H
 #define ICL_COMPABILITY_LABEL_H
 
-#include <QWidget>
+#include <QLabel>
 #include <QString>
 #include <QMutex>
 
@@ -15,7 +15,7 @@ namespace icl{
       original QLabel but this thread-save reimplementation called
       CompabilityLabel.
   */
-  class CompabilityLabel : public QWidget{
+  class CompabilityLabel : public QLabel{
     public:
     /// Create a new label with given text and given parent widget
     CompabilityLabel(const QString &text, QWidget *parent=0);

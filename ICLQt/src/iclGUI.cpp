@@ -166,7 +166,7 @@ namespace icl{
         QRadioButton * b = new QRadioButton(text.c_str(),def.parentWidget());
         m_vecButtons.push_back(b);
         addToGrid(b,0,i);
-        connect(b,SIGNAL(pressed()),this,SLOT(ioSlot()));
+        connect(b,SIGNAL(clicked()),this,SLOT(ioSlot()));
       }
       
       getGUI()->lockData();
