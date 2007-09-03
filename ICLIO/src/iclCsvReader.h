@@ -41,11 +41,12 @@ namespace icl {
                int iObjStart, int iObjEnd, int iImageStart, int iImageEnd);
 
     CsvReader(const FileReader& other);
-
+    
+    /// DEPRECATED todo:: redesign
     void setCSVHeader (depth depth, const ImgParams& p);
 
     private:
-    void readImage (const std::string& sFileName, ImgBase** ppoDst);
+    virtual void readImage (const std::string& sFileName, ImgBase** ppoDst);
     void readHeaderCSV (FileInfo &oInfo);         
     template<class T>
     void readCSVTmpl(Img<T>* poImg, FileInfo &oInfo);

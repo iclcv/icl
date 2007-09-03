@@ -198,7 +198,7 @@ namespace icl {
     bool findFile (const std::string& sFile, FileList::iterator& itList);
 
     void readSequenceFile(const std::string& sFileName);
-    void readImage (const std::string& sFileName, ImgBase** ppoDst);
+    virtual void readImage (const std::string& sFileName, ImgBase** ppoDst);
 
     void readHeaderPNMICL (FileInfo &oInfo);
     void readDataPNMICL(ImgBase* poImg, FileInfo &oInfo);

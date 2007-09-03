@@ -27,6 +27,7 @@ namespace icl {
 
       // extract suffix after separating '.' and convert to lower case
       string sType (sFileName.substr (iTmpPos+1)); toLower (sType);
+
       if (sType == "gz") { // search further for file type
          bGzipped = true;
          if (iTmpPos == 0) return ioFormatUnknown; // ".gz" only
