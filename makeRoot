@@ -265,11 +265,16 @@ SOURCE_CPP_EXT:= cpp
 LIBRARIES_SO_EXT:= so
 
 #Dynamic library extension
-ifeq "${OS_NAME}" "windows"
+ifeq "${OS_TYPE}" "windows"
   LIBRARIES_SO_EXT:= dll
 endif
-ifeq "${OS_NAME}" "cygwin"
-  LIBRARIES_SO_EXT:= dll
+ifeq "${OS_TYPE}" "macosx"
+ # For mac OS
+ LIBRARIES_SO_EXT:=dylib
+endif
+ifeq "${OS_TYPE}" "linux"
+ # For mac OS
+ LIBRARIES_SO_EXT:=so
 endif
 
 #-----------------------------------------------
