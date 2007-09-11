@@ -95,6 +95,8 @@ namespace icl{
       return fmt == formatRGB || fmt == formatMatrix;
     }else if( string(m_poCam->vendor) == "Apple Computer, Inc."){
       return fmt == formatRGB || fmt == formatMatrix;
+    }else if( string(m_poCam->model) == "Fire-i 1.2"){
+      return fmt == formatRGB || fmt == formatMatrix;
     }else{
       ERROR_LOG("unsupported camera: \"" << m_poCam->model << "\"");
       return false;
@@ -111,7 +113,7 @@ namespace icl{
     }else if( is_firefly_color(m_poCam) ){
       return size == Size(640,480) || 
              size == Size(320,240);  // in this case by BAYER_DOWNSAMPLE is used
-    }else if(string(m_poCam->vendor) == "Apple Computer, Inc."){
+    }else if(string(m_poCam->vendor) == "Apple Computer, Inc." || string(m_poCam->model) == "Fire-i 1.2"){
       return size == Size(640,480) || 
 	     size == Size(320,240);
     }else{
@@ -141,6 +143,8 @@ namespace icl{
     }else if( string(m_poCam->model) == "DFW-VL500 2.30"){
       return false;
     }else if( string(m_poCam->vendor) == "Apple Computer, Inc."){
+      return false;
+    }else if( string(m_poCam->model) == "Fire-i 1.2"){
       return false;
     }else{
       ERROR_LOG("unsupported camera: \""<< m_poCam->model << "\"");
