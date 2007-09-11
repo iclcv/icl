@@ -7,19 +7,14 @@ namespace icl {
   BayerConverter::BayerConverter(bayerConverterMethod eConvMethod, 
                                  bayerPattern eBayerPattern,
                                  Size s) {
-    // Initialize variables
-    m_pucRGBInterImg = new unsigned char[s.width * s.height * 3];
-    m_eBayerPattern = eBayerPattern;
-    m_eConvMethod = eConvMethod;
-    
+     // Initialize variables
+     m_eBayerPattern = eBayerPattern;
+     m_eConvMethod = eConvMethod;
+     m_vRGBInterImg.resize(s.width * s.height * 3); 
   }
   
   
-  BayerConverter::~BayerConverter() {
-    // free memory
-    delete[] m_pucRGBInterImg;
-    
-  }
+  BayerConverter::~BayerConverter() { }
 
   void BayerConverter::apply(const Img8u *src, ImgBase **dst) {
     // {{{ open
@@ -59,7 +54,7 @@ namespace icl {
     }
 
     // convert data order from interleaved to planar
-    interleavedToPlanar(m_pucRGBInterImg, (*dst)->asImg<icl8u>());
+    interleavedToPlanar(&m_vRGBInterImg[0], (*dst)->asImg<icl8u>());
   }
 
 // }}}
@@ -74,7 +69,7 @@ namespace icl {
     const int iBayerStep = iWidth;
     const int iRGBStep = 3 * iWidth;
     const icl8u *bayer = poBayerImg->getData(0);
-    icl8u *pucRGBInterImg = m_pucRGBInterImg;
+    icl8u *pucRGBInterImg = &m_vRGBInterImg[0];
     
     int blue = m_eBayerPattern == bayerPattern_BGGR
       || m_eBayerPattern == bayerPattern_GBRG ? -1 : 1;
@@ -156,7 +151,7 @@ namespace icl {
     const int iBayerStep = iWidth;
     const int iRGBStep = 3 * iWidth;
     const icl8u *bayer = poBayerImg->getData(0);
-    icl8u *pucRGBInterImg = m_pucRGBInterImg;
+    icl8u *pucRGBInterImg = &m_vRGBInterImg[0];
 
     int blue = m_eBayerPattern == bayerPattern_BGGR
       || m_eBayerPattern == bayerPattern_GBRG ? -1 : 1;
@@ -254,7 +249,7 @@ namespace icl {
     const int iBayerStep = iWidth;
     const int iRGBStep = 3 * iWidth;
     const icl8u *bayer = poBayerImg->getData(0);
-    icl8u *pucRGBInterImg = m_pucRGBInterImg;
+    icl8u *pucRGBInterImg = &m_vRGBInterImg[0];
       
     int blue = m_eBayerPattern == bayerPattern_BGGR
       || m_eBayerPattern == bayerPattern_GBRG ? -1 : 1;
@@ -450,7 +445,7 @@ namespace icl {
     int iWidth = poBayerImg->getWidth();
     int iHeight = poBayerImg->getHeight();
     const icl8u *bayer = poBayerImg->getData(0);
-    icl8u *pucRGBInterImg = m_pucRGBInterImg;
+    icl8u *pucRGBInterImg = &m_vRGBInterImg[0];
     register int i3, j3, base;
     int i, j, dh, dv, tmp;
     int iWidth3 = iWidth*3;
@@ -738,7 +733,7 @@ namespace icl {
     const int iBayerStep = iWidth;
     const int iRGBStep = 3 * iWidth;
     const icl8u *bayer = poBayerImg->getData(0);
-    icl8u *pucRGBInterImg = m_pucRGBInterImg;
+    icl8u *pucRGBInterImg = &m_vRGBInterImg[0];
     
     int blue = m_eBayerPattern == bayerPattern_BGGR
       || m_eBayerPattern == bayerPattern_GBRG ? -1 : 1;

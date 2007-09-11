@@ -1,7 +1,9 @@
 #ifndef iclBayer_H
 #define iclBayer_H
 
+#include <vector>
 #include <iclCore.h>
+#include <iclImg.h>
 
 namespace icl {
 
@@ -37,7 +39,8 @@ class BayerConverter
   void setConverterMethod(bayerConverterMethod eConvMethod) { 
     m_eConvMethod = eConvMethod; }
   void setBayerImgSize(Size s) {
-    m_pucRGBInterImg = new unsigned char[s.width * s.height * 3]; }
+     m_vRGBInterImg.resize(s.width * s.height * 3);
+  }
 
   static std::string translateBayerConverterMethod(bayerConverterMethod ebcm);
   static bayerConverterMethod translateBayerConverterMethod(std::string sbcm);
@@ -46,7 +49,7 @@ class BayerConverter
   static bayerPattern translateBayerPattern(std::string sbp);
   
  private:
-  icl8u *m_pucRGBInterImg; // RGB image in interleaved data format
+  std::vector<unsigned char> m_vRGBInterImg;
   bayerConverterMethod m_eConvMethod;
   bayerPattern m_eBayerPattern;
   
