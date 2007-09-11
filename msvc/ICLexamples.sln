@@ -14,6 +14,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "convertertest", "convertert
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sonygrabberTest", "sonygrabberTest.vcproj", "{5217BD3C-F17E-469A-95A1-B2B25CBA9200}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qtTest", "qtTest.vcproj", "{202F67DA-4B81-46DA-8C27-A8E246BA78A9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xcfgrabberTest", "xcfgrabberTest.vcproj", "{483E72A1-48BC-4736-BF27-E86EBF8A0109}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -48,6 +52,14 @@ Global
 		{5217BD3C-F17E-469A-95A1-B2B25CBA9200}.Debug|Win32.Build.0 = Debug|Win32
 		{5217BD3C-F17E-469A-95A1-B2B25CBA9200}.Release|Win32.ActiveCfg = Release|Win32
 		{5217BD3C-F17E-469A-95A1-B2B25CBA9200}.Release|Win32.Build.0 = Release|Win32
+		{202F67DA-4B81-46DA-8C27-A8E246BA78A9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{202F67DA-4B81-46DA-8C27-A8E246BA78A9}.Debug|Win32.Build.0 = Debug|Win32
+		{202F67DA-4B81-46DA-8C27-A8E246BA78A9}.Release|Win32.ActiveCfg = Release|Win32
+		{202F67DA-4B81-46DA-8C27-A8E246BA78A9}.Release|Win32.Build.0 = Release|Win32
+		{483E72A1-48BC-4736-BF27-E86EBF8A0109}.Debug|Win32.ActiveCfg = Debug|Win32
+		{483E72A1-48BC-4736-BF27-E86EBF8A0109}.Debug|Win32.Build.0 = Debug|Win32
+		{483E72A1-48BC-4736-BF27-E86EBF8A0109}.Release|Win32.ActiveCfg = Release|Win32
+		{483E72A1-48BC-4736-BF27-E86EBF8A0109}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
