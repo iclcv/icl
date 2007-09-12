@@ -1,13 +1,17 @@
 #ifdef HAVE_XCF
 #include <vector>
 #include <iclXCFGrabber.h>
+#ifdef WIN32
 #include <log4cxx/PropertyConfigurator.h>
+#endif
 using namespace icl;
 #endif
 
 int main() {
 #ifdef HAVE_XCF
+#ifdef WIN32
 	log4cxx::PropertyConfigurator::configure(std::string("log4cxx.props"));
+#endif
 	XCFGrabber *grabber = new XCFGrabber("XCFSonyFwImageServer");
 	grabber->setRequest("<IMAGEREQUEST>"
                     	"<GRAB stereo=\"true\" timestamp=\"\"/>"
@@ -23,8 +27,8 @@ int main() {
 		grabber->grab(imgs);
 	}
 	Time dur = before.age();
-	std::cout << "Grabbed 200 images in " << dur.toSeconds() << "seconds!" << std::endl;
-	std::cout << dur.toMicroSeconds() / (200 * 1000) << " hz" << std::endl;
+	std::cout << "Grabbed 200 images in " << dur.toSeconds() << " seconds!" << std::endl;
+	std::cout << 200.0 / dur.toSeconds() << " hz" << std::endl;
 
 #ifdef WIN32
 	Sleep(1000);
