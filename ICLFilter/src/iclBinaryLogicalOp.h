@@ -5,7 +5,7 @@
 #include <iclImg.h>
 
 namespace icl {
-  /// Class for logical operations performed on two images. (and, or, xor)
+  /// Class for logical operations performed on two images. (and, or, xor) \ingroup BINARY
   /**
     Logical operations are only possible on integer types like Img8u, Img16s and Img32s
   */

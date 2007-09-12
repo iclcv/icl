@@ -8,7 +8,7 @@ namespace icl{
   class ImgBase;
   /** \endcond */
   
-  /// Utility class that helps applying UnaryOps one after another
+  /// Utility class that helps applying UnaryOps one after another \ingroup UNARY
   /** Consider a default computer vision system, which has some
       preprocessing steps in the following operation order:
       -# resize the image to a given size

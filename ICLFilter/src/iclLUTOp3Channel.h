@@ -1,5 +1,5 @@
-#ifndef LUT_OP_H
-#define LUT_OP_H
+#ifndef LUT_OP_3C_H
+#define LUT_OP_3C_H
 
 #include "iclUnaryOp.h"
 #include "iclImg.h"
@@ -7,7 +7,7 @@
 
 namespace icl {
 
-  /// class for applying table look-up transformation to 3-channel integer-valued images
+  /// class for applying table look-up transformation to 3-channel integer-valued images \ingroup OTHER
   /** In many applications it is necessary to create a feature map on 3-channel 
       input images. These feature map creation procedure can take much time,
       depending on the complexity of the calculated feature. In a very simple
@@ -90,7 +90,7 @@ namespace icl {
   class LUTOp3Channel : public UnaryOp {
     public:
     
-    /// Internal plugin class for the LUTOp3Channel
+    /// Internal plugin class for the LUTOp3Channel \ingroup OTHER
     /** The Plugin class can be reimplemented to create custom LUTOp3Channel
         functions. The basic implementation realized a default color distance 
         map on source images.

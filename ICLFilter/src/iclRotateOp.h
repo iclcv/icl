@@ -5,7 +5,7 @@
 
 namespace icl{
   
- /// Class to rotate images
+ /// Class to rotate images \ingroup UNARY \ingroup AFFINE
   class RotateOp : public AffineOp {
     public:
     /// Constructor

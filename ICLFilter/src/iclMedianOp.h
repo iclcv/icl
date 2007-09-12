@@ -6,7 +6,7 @@
 
 namespace icl {
 
-  /// Class that provides median filter abilities
+  /// Class that provides median filter abilities \ingroup UNARY \ingroup NBH
   /** The median class provides the ability for arbitrary
       mask sizes. Although the functionality of the IPP-optimized
       implementation and the fallback C++-implementation is

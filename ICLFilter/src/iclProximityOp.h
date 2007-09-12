@@ -7,8 +7,10 @@
 
 namespace icl {
   
-  /// Class for computing proximity measures (Only available for Img8u and Img32f, IPP only!)
-  /** IPP-description:
+  /// Class for computing proximity measures  \ingroup BINARY
+  /** (Only available for Img8u and Img32f, IPP only!)
+      \section OV Overview (taken from the IPPI-Manual)
+
       "The functions described in this section compute the proximity (similarity) measure between an
       image and a template (another image). These functions may be used as feature detection functions,
       as well as the components of more sophisticated techniques.

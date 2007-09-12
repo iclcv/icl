@@ -5,7 +5,7 @@
 
 namespace icl {
   
-   /// Class for thresholding operations
+   /// Class for thresholding operations \ingroup UNARY
    /** Essentially there are two different types of Threshold functions:
        - <b>non-"Val" functions</b> will cut pixel intensities above or 
        below a given threshold by setting the result pixels to the

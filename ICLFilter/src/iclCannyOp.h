@@ -7,7 +7,7 @@
 
 namespace icl {
   
-  /// Class for the canny edge detector (IPP only!)
+  /// Class for the canny edge detector (IPP only!) \ingroup UNARY
   /**  
     <em>This subsection describes a classic edge detector proposed by J.Canny. The
     detector uses a grayscale image as an input and outputs a black-and-white image, where non-zero

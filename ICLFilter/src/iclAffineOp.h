@@ -4,7 +4,7 @@
 #include "iclBaseAffineOp.h"
 
 namespace icl{
-  /// Class to apply an arbitrary series of affine transformations
+  /// Class to apply an arbitrary series of affine transformations \ingroup AFFINE \ingroup UNARY
   /**
     every affine operation modifies an internal matrix,
     with the apply function, the matrix will be multiplicated to the image, 

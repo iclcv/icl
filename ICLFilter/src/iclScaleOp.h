@@ -5,7 +5,7 @@
 
 namespace icl{
   
-  /// Class to scale images
+  /// Class to scale images \ingroup UNARY \ingroup AFFINE
   class ScaleOp : public AffineOp{
     public:
     /// Constructor

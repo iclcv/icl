@@ -5,7 +5,7 @@
 
 namespace icl {
   
-  /// Class for comparing two images pixel-wise
+  /// Class for comparing two images pixel-wise \ingroup BINARY
   /** Compares pixel values of two images using a specified compare
       operation. The result is written to a binarized image of type Img8u. 
       If the result of the comparison is true, the corresponding output 

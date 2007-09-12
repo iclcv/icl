@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace icl {
-  /// Class for Wiener Filter
+  /// Class for Wiener Filter \ingroup UNARY \ingroup NBH
    /** Wiener filters are commonly used in image processing applications to
        remove additive noise from degraded images, to restore a blurred image.
        

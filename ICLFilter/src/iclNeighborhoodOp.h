@@ -4,9 +4,9 @@
 #include <iclUnaryOp.h>
 
 namespace icl {
-  /// unary operators that work on each pixels neighborhood
+  /// unary operators that work on each pixels neighborhood \ingroup UNARY \ingroup NBH
   /** TODO:: check!!
-      The Filter class builds a base class for filter operations employing
+      The NeighborhoodOp class builds a base class for unary operations employing
       a filter mask which is moved over the ROI of the source image(s), 
       e.g. convolution filters use some convolution masks.
       To this end the class provides members to store the size and anchor

@@ -6,7 +6,7 @@
 
 namespace icl {
 
-   /// Weight pixel values of all image channels
+   /// Weight pixel values of all image channels \ingroup UNARY
    /** Pixels of all channels in source image are weighted 
        by a channel-wise weight:
        \f[

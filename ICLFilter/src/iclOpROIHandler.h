@@ -4,7 +4,7 @@
 #include <iclImgBase.h>
 
 namespace icl {
-  /// Utility base class for Image Operators
+  /// Utility base class for Image Operators \ingroup OTHER
   /** The OpROIHandler class builds a utility base class for ICL unary and binary
       operator classes. Each Operator is performed on the ROI of the source image(s) 
       only. The destination image is <em> always </em> adapted in its parameters to the

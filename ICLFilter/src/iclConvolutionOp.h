@@ -5,8 +5,8 @@
 
 namespace icl {
   
-  /// Class for Image convolutions (Img8u, Img32f: IPP + Fallback, all other Types: Fallback only!)
-  /**
+  /// Class for Image convolutions 
+  /** (Img8u, Img32f: IPP + Fallback, all other Types: Fallback only!) \ingroup UNARY \ingroup NBH
   The ConvolutionOp class provides functionality for any kind of convolution
   filters. As most other filter operations, it operates on the source images
   ROI only. Because the filter mask has to fit into the image at every point

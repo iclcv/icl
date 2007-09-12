@@ -6,7 +6,7 @@
 #include <iclUnaryOp.h>
 
 namespace icl{
-  /// class for creating integral images
+  /// class for creating integral images \ingroup UNARY
   /** 
   The integral image A of an image a (introduced by Viola & Jones (2001) in the
   paper : "Rapid Object Detection using a Boosted Cascade of Simple Features" )

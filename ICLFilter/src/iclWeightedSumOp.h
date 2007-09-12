@@ -6,7 +6,7 @@
 
 namespace icl {
 
-   /// Accumulate weighted pixel values of all image channels
+   /// Accumulate weighted pixel values of all image channels \ingroup UNARY
    /** Pixels of all channels in source image are weighted 
        by a channel-wise weight and accumulated to the destination 
        image:

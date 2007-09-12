@@ -5,7 +5,7 @@
 
 namespace icl{
   
-  /// Class to mirror images vertically or horizontally
+  /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
   class MirrorOp : public BaseAffineOp {
     public:
     /// Constructor

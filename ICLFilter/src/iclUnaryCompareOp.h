@@ -5,7 +5,7 @@
 
 namespace icl {
   
-   /// Class for comparing operations 
+   /// Class for comparing operations  \ingroup UNARY
    /** This class Compares each pixelvalue of an image with a constant value
        using a specified compare operation. The result is written to a
        binarized image of type Img8u. If the result of the comparison is true,

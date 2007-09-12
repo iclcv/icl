@@ -5,7 +5,7 @@
 
 namespace icl{
   
-  /// Class to translate images
+  /// Class to translate images \ingroup UNARY \ingroup AFFINE
   class TranslateOp : public AffineOp {
     public:
     /// Constructor

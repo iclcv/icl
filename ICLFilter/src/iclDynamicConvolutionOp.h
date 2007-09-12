@@ -4,7 +4,7 @@
 #include <iclConvolutionOp.h>
 
 namespace icl{
-  /// Convolution using the ROI of an ICL image as its kernel
+  /// Convolution using the ROI of an ICL image as its kernel \ingroup UNARY \ingroup NBH
   /** Sometimes it is useful to use the ROI of an ICL image directly as the
       convolution kernel, e.g. for template matching. Because the ROI may be
       smaller than the image itself, the DynamicConvolution class maintains

@@ -5,8 +5,8 @@
 #include <iclImg.h>
 
 namespace icl {
-  /// Class for arithmetic operations performed on two images. (add, sub, mul, div)
-  /**
+  /// Class for arithmetic operations performed on two images. \ingroup BINARY  
+  /** (add, sub, mul, div)
     Performance notes: The functions are implemented for all 5 ICL datatypes, but only
     Img8u, Img16s and Img32f are IPP-accelerated!      
   */

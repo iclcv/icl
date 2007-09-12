@@ -13,7 +13,7 @@ namespace icl{
   /** \endcond */
 
   
-  /// Applies Gabor filter operation on images
+  /// Applies Gabor filter operation on images \ingroup UNARY
   /** \section GEN General Information about Gabor Filters
 
       A short introduction to Gabor filters can be found at Wikipedia: 

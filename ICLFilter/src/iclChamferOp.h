@@ -7,7 +7,7 @@
 #include <iclPoint.h>
 
 namespace icl{
-  /// Chamfering Unit
+  /// Chamfering Unit \ingroup UNARY 
   /** Chamfering is a procedure called Euclidean-Distance-Transformation (EDT).
       Input of the Chamfering operation is a binary image. The Chamfering operation
       creates a map (also called the <em>voronoi surface</em>) which's

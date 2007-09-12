@@ -9,7 +9,7 @@
 
 namespace icl{
   
-  /// LocalThreshold Filter class 
+  /// LocalThreshold Filter class \ingroup UNARY
   /** C.E.: **TODO** document this
   
   */

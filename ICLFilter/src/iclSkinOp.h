@@ -14,15 +14,17 @@
 
 namespace icl {
 
-/// This class implements a Skin color detection algorithm
+/// This class implements a Skin color detection algorithm \ingroup UNARY
 /**
-\section class
-The skin class provides access to a skin color segmentation algorithm.
-Therefor the class provide a training procedure and a skin detection algorithm.
-In a first step the skin parabola parameter have to be trained or if the parameter set is allready known the can be set directly. After this the detection algorithm is well prepared for detection the skin color.
-author Michael Götting (mgoettin@techfak.uni-bielefeld.de)
+    \section Overview
+    The skin class provides access to a skin color segmentation algorithm.
+    Therefor the class provide a training procedure and a skin detection algorithm.
+    In a first step the skin parabola parameter have to be trained or if the parameter set 
+    is allready known the can be set directly. After this the detection algorithm is well 
+    prepared for detection the skin color.
+    
+    author Michael Götting (mgoettin@techfak.uni-bielefeld.de)
 **/
-
 class SkinOp : public UnaryOp{
   public:
   ///Constructor

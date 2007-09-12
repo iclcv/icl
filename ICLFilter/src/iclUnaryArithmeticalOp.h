@@ -5,8 +5,10 @@
 #include <iclImg.h>
 
 namespace icl {
-  /// Class for Arithmetic Functions (nearly all functions: Img8u, Img16s, Img32f: IPP + Fallback, all other Types: Fallback only!)
-  /** The functions AddC, SubC, MulC, DivC, AbsDiff, Sqr, Sqrt, Ln, Exp, Abs are implemented for:
+  /// Class for Arithmetic Functions  \ingroup UNARY
+  /** 
+      (nearly all functions: Img8u, Img16s, Img32f: IPP + Fallback, all other Types: Fallback only!)
+      The functions AddC, SubC, MulC, DivC, AbsDiff, Sqr, Sqrt, Ln, Exp, Abs are implemented for:
       Img8u IPP+Fallback
       Img16s IPP+Fallback
       Img32f IPP+Fallback

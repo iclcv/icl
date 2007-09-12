@@ -4,8 +4,10 @@
 #include "iclOpROIHandler.h"
 
 namespace icl{
-  /// Abstract base class for operators of type result=f(imageA,imageB)
-  /** <b>TODO!!!</b> clip to ROI and prepare logic here !*/
+  /// Abstract base class for binary image operations \ingroup BINARY
+  /** A list of all binary operators can be found here: \n
+      \ref BINARY
+  **/
   class BinaryOp{
     public:
     virtual ~BinaryOp(){}

@@ -6,7 +6,10 @@
 
 namespace icl {
   
-  /// Class for Morphological operations  (Only available for Img8u and Img32f, IPP only!)
+  /// Class for Morphological operations  
+  /**
+      (Only available for Img8u and Img32f, IPP only!) \ingroup UNARY \ingroup NBH
+  **/
   class MorphologicalOp : public NeighborhoodOp {
   public:
 

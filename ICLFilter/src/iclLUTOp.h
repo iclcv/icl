@@ -7,7 +7,7 @@
 
 namespace icl {
 
-  /// class for applying table lookup transformation to Img8u images
+  /// class for applying table lookup transformation to Img8u images \ingroup UNARY 
   /** \section SEC1 General Information
       The class knows two modes: first: given count of quantization levels,
       it is able to calculate an internal lut for applying a quantization
