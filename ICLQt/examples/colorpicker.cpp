@@ -2,14 +2,14 @@
 #include <iclQuick.h>
 #include <iclGUI.h>
 #include <iclMouseInteractionReceiver.h>
-#include <iclFileReader.h>
+#include <iclFileGrabber.h>
 #include <iclThread.h>
 #include <iclCC.h>
 #include <iclMutex.h>
 
 GUI *gui;
 ICLDrawWidget *widget;
-FileReader *grabber;
+FileGrabber *grabber;
 bool *running;
 int *sleeptime;
 string *colormode;
@@ -140,7 +140,7 @@ int main(int n,char **ppc){
   pa_init(n,ppc,"-input(1)");
   if(!pa_defined("-input")){ pa_usage("please define input file!"); exit(0); }
   
-  grabber = new FileReader(pa_subarg("-input",0,string("no input file defined!")));
+  grabber = new FileGrabber(pa_subarg("-input",0,string("no input file defined!")));
   
   QApplication app(n,ppc);
   

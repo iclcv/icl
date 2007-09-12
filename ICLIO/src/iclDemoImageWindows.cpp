@@ -251,7 +251,7 @@ ImgBase* createImage_windows(){
   fwrite(buf,1,DIM,f);
   fclose(f);
   delete [] buf;
-  image = FileGrabber("./.tmp_image_buffer.jpg").grab()->deepCopy();
+  image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grab()->deepCopy();
   remove("./.tmp_image_buffer.jpg");
   return image->deepCopy();
 }

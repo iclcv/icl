@@ -203,6 +203,8 @@ namespace icl{
     // {{{ open
 
     FileGrabber g(filename);
+    g.setIgnoreDesiredParams(true);
+    
     ImgQ *image = g.grab()->convert<ICL_QUICK_TYPE>();
     if(!image){
       return ImgQ();

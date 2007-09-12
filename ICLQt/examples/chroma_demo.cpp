@@ -3,7 +3,7 @@
 #include <iclThread.h>
 #include <iclDCGrabber.h>
 #include <iclPWCGrabber.h>
-#include <iclFileReader.h>
+#include <iclFileGrabber.h>
 
 using namespace icl;
 using namespace std;
@@ -19,8 +19,8 @@ struct MyThread : public Thread{
     if(!devs.size()){
       vector<int> pwcdevs = PWCGrabber::getDeviceList();
       if(!pwcdevs.size()){
-        grabber = new FileReader("./images/*");
-        ((FileReader*)grabber)->setIgnoreDesired(false);
+        grabber = new FileGrabber("./images/*");
+        ((FileGrabber*)grabber)->setIgnoreDesiredParams(false);
       }else{
         grabber = new PWCGrabber(size);
       }
