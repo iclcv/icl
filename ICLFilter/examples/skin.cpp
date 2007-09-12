@@ -1,6 +1,6 @@
 #include <iclSkinOp.h>
 #include <iclImg.h>
-#include <iclFileReader.h>
+#include <iclFileGrabber.h>
 #include <iclFileWriter.h>
 
 using namespace icl;
@@ -9,8 +9,8 @@ int main(){
   // Variable initilization
   const ImgBase* refImg, *img;
   ImgBase *skinImg = imgNew();
-  FileReader r("demoImages/skinRefImg.ppm");
-  FileReader r2("demoImages/skinImg.ppm");
+  FileGrabber r("demoImages/skinRefImg.ppm");
+  FileGrabber r2("demoImages/skinImg.ppm");
   FileWriter w("skinMask.pgm");
   std::vector<float> vecparameter;
   SkinOp skinFilter, skinFilter2;

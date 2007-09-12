@@ -7,19 +7,19 @@
 
 namespace icl{
   
-  /// Pure Interface class for DelOps
+  /// Pure Interface class for DelOps \ingroup UTILS
   class DelOpBase { };
   
-  /// Pointer delete operation class for the SmartPtr class
+  /// Pointer delete operation class for the SmartPtr class \ingroup UTILS
   struct PointerDelOp : public DelOpBase{ template<class T> static void delete_func(T *t){ delete t; } };
 
-  /// Array delete operation class for the SmartPtr class
+  /// Array delete operation class for the SmartPtr class \ingroup UTILS
   struct ArrayDelOp : public DelOpBase{ template<class T>  static void delete_func(T *t){ delete [] t; } };
 
-  /// C-Style delete operation class for the SmartPtr class
+  /// C-Style delete operation class for the SmartPtr class \ingroup UTILS
   struct FreeDelOp : public DelOpBase{ static void delete_func(void *v){ free(v); } };
   
-  /// AutoPtr class used for channel management
+  /// AutoPtr class used for channel management \ingroup UTILS
   /** The operation of the SmartPtr class is copied from the 
       previously used boost/shared_ptr template class.
       This re-implementation makes the ICLCore (and depending

@@ -5,7 +5,7 @@
 
 namespace icl{
   
-  /// initialization of the ProgArg-Environment
+  /// initialization of the ProgArg-Environment \ingroup PA
   /** The UCLUtils/ProgArg tool provides a more convenient access to
       executables arguments, given via "nArgs" and "ppcArg" in the main
       function.
@@ -118,11 +118,11 @@ int main(int n, char **ppc){
   */
   void pa_init(int nArgs, char **ppcArg, std::string allowedArgs="", bool skipUnknownArgs=false);
   
-  /// returns the program name as it was written to start the program
+  /// returns the program name as it was written to start the program \ingroup PA
   /** e.g. "./myprogram" */
   const std::string &pa_progname();
   
-  /// this function can be used to explain arguents 
+  /// this function can be used to explain arguents  \ingroup PA
   /** e.g. if you call pa_init(n,ppc,"-s(1)"), the "-s" arg is not explained enogh
       propably. To do this, just call: 
       \code
@@ -138,17 +138,17 @@ int main(int n, char **ppc){
   */
   void pa_explain(const std::string &argname, const std::string &explanation);
 
-  /// returns the count of parameters actually given
+  /// returns the count of parameters actually given \ingroup PA
   unsigned int pa_argcount();
   
-  /// writes the error message followed by a usage definition
+  /// writes the error message followed by a usage definition \ingroup PA
   /** the usage is only defined, if "allowedArgs" was set in pa_init */
   void pa_usage(const std::string &errorMessage);
   
-  /// returns weather a certain argument was actually given
+  /// returns weather a certain argument was actually given \ingroup PA
   bool pa_defined(const std::string &param);
   
-  /// access to the actually given program arguments
+  /// access to the actually given program arguments \ingroup PA
   /** <b>Note:</b> The index references all actually given args directly,
       sub args are not evaluated here.
       Possible types T are: 
@@ -164,7 +164,7 @@ int main(int n, char **ppc){
   template<class T> 
   T pa_arg(unsigned int index);
 
-  /// access to sub arguments with a given default value
+  /// access to sub arguments with a given default value \ingroup PA
   /** If the given argument "param" was not actually given, the default argument
       is returned without an additional warning message.
       Possible types T are: 

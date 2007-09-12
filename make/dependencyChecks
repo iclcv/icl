@@ -46,6 +46,22 @@ else
 HAVE_LIBJPEG=TRUE
 endif
 
+############################# check for ZLIB-SUPPORT ####################
+LIBZ_ROOT ?= /usr
+ifeq "$(wildcard ${LIBZ_ROOT}/lib/libz.so)" ""
+ifneq "$(findstring -DWITH_ZLIB_SUPPORT,$(CDEFINES))" ""
+ifeq "$(_WARN_Z)" ""
+_WARN_Z=done # warn only once
+export _WARN_Z
+$(warning "libz is not available. Its usage is switched off.")
+endif
+CDEFINES:=$(filter-out -DWITH_ZLIB_SUPPORT, $(CDEFINES))
+CPPDEFINES:=$(filter-out -DWITH_ZLIB_SUPPORT, $(CPPDEFINES))
+endif
+else
+HAVE_LIBZ=TRUE
+endif
+
 ############################# check for QT 4 ############################
 # try whether useful QTDIR is already set
 ifeq "$(shell ${QTDIR}/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""

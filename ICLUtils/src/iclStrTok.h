@@ -6,7 +6,7 @@
 
 namespace icl{
   
-  
+  /// String Tokenizer Utility class  \ingroup UTILS
   class StrTok{
     public:
     

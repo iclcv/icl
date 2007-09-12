@@ -10,7 +10,7 @@
 
 namespace icl {
   
-  /// ImgBase is the Image-Interface class that provides save access to underlying Img-template
+  /// ImgBase is the Image-Interface class that provides save access to underlying Img-template \ingroup IMAGE \ingroup TYPES
   /* {{{ ImgBase class documentation */
 
   /**

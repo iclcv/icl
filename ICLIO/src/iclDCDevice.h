@@ -15,7 +15,7 @@ namespace icl{
   }
   /** \endcond */
   
-  /// Device struct, used by the DCGrabber class to identify devices
+  /// Device struct, used by the DCGrabber class to identify devices \ingroup DC_G
   class DCDevice{
     public:
     

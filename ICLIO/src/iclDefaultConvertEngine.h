@@ -4,7 +4,7 @@
 #include <iclArray.h>
 namespace icl{
   
-  /// Basic implemenation for the UnicapCovertEngine
+  /// Basic implemenation for the UnicapCovertEngine \ingroup UNICAP_G
   /** providing abilities to convert the following formats:
       - Y444 YUV 4-4-4 interleaved (no sub sampling of U and V channel \n
         (C++ and IPP implementation)

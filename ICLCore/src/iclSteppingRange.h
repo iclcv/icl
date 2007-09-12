@@ -4,7 +4,7 @@
 #include "iclRange.h"
 
 namespace icl{
-  /// class representing a range with defined stepping
+  /// class representing a range with defined stepping \ingroup TYPES
   /** A Stepping range is a well defined interval
       I = [minVal,maxVal] with an also well defined 
       stepping e.g. S. the SteppingRange contains all

@@ -4,7 +4,7 @@
 #include "iclImg.h"
 
 namespace icl{
-  /// Utility helper class for faster and more convenient access to single channel image data
+  /// Utility helper class for faster and more convenient access to single channel image data \ingroup IMAGE
   /** Yet, the (x,x,c)-operator of the Img<T> class is slow, because of its high channel lookup
       overhead. The (x,y,c)-operator needs first to lookup for the channel c in the channel 
       array of that object, before it can address a pixels value by dereferencing the shared 
@@ -211,7 +211,7 @@ namespace icl{
   
   /// @{ @name ImgChannel<T> creator functions
 
-  /// Creation function for ImgChannel objects (not const version)
+  /// Creation function for ImgChannel objects (not const version) \ingroup IMAGE
   /** This function creates an ImgChannel object of a given image and channel index.
       @param image image which's channel should be wrapped 
       @param channelIndex index of the channel 
@@ -222,7 +222,7 @@ namespace icl{
     return ImgChannel<T>(image,channelIndex);
   }
   
-  /// Creation function for ImgChannel objects (const version)
+  /// Creation function for ImgChannel objects (const version) \ingroup IMAGE
   /** This function creates an ImgChannel object of a given image and channel index.
       @param image image wich's channel should be wrapped 
       @param channelIndex index of the channel 
@@ -235,10 +235,10 @@ namespace icl{
   
   /// @} 
   
-  
+  /** \cond */
 #define ICL_INSTANTIATE_DEPTH(D) typedef ImgChannel<icl##D> ImgChannel##D;
   ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
-  
+  /** \endcond */
 }
 #endif

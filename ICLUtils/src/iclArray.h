@@ -5,6 +5,8 @@
 
 namespace icl{
 
+  
+  /// Deprecated std::vector extension class \ingroup UTILS
   template <class T>
   class Array : public std::vector<T>{
     public:

@@ -8,7 +8,7 @@
 namespace icl{
   class UnicapDevice;
 
-  /// Default implementation of the UnicapGrab Engine
+  /// Default implementation of the UnicapGrab Engine \ingroup UNICAP_G
   /** This GrabEngine should be apropriate for all UnicapDevices. Propably some
       minor adaptions in the grabbing process must be performed, so this structure
       was implemented using the UnicapGrabEngine interface 

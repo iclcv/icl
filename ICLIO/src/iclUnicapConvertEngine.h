@@ -7,7 +7,7 @@ namespace icl{
   class UnicapDevice;
   /** \endcond */
   
-  /// Interface class for unicap convert engines
+  /// Interface class for unicap convert engines \ingroup UNICAP_G
   struct UnicapConvertEngine{
     
     /// Default constructor (just saving the device)

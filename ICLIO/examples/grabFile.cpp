@@ -1,5 +1,5 @@
 #include <iclImg.h>
-#include <iclFileReader.h>
+#include <iclFileGrabber.h>
 #include <iclFileWriter.h>
 #include <sstream>
 
@@ -14,13 +14,12 @@ int main(int argc, char* argv[])
       for (int i=1; i < argc; ++i) oss << argv[i] << " ";
    }
 
-   FileReader ioRead(oss.str());
-   FileReader io (ioRead);
+   FileGrabber ioRead(oss.str());
    FileWriter ioWrite("file__##.icl.gz");
 
    // grab 20 images and write 5 of them
    for (int n=0; n < 20; n++) {
-      const ImgBase* poImg = io.grab ();
+      const ImgBase* poImg = ioRead.grab ();
       if (n % 4 == 0) ioWrite.write(poImg);
    }
 }

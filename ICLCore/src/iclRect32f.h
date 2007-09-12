@@ -8,12 +8,16 @@
 
 namespace icl {
   
-  
+  /// Floatin point precision implementation of the Rect class \ingroup TYPES
   class Rect32f{
     public:
    
-    float x,y,width,height;
+    float x;      ///!< x pos (upper left)
+    float y;      ///!< y pos (upper left)
+    float width;  ///!< width of the rect
+    float height; ///!< height of the rect
 
+    /// static null instance (0,0,0,0)
     static const Rect32f null;
     
     /// creates a defined Rect32f

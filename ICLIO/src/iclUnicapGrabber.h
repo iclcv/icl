@@ -13,7 +13,7 @@ namespace icl{
   class UnicapConvertEngine;
   /** \endcond */  
 
-  /// Specialization of ICLs Grabber interface wrapping a unicap-Grabber
+  /// Specialization of ICLs Grabber interface wrapping a unicap-Grabber \ingroup UNICAP_G \ingroup GRABBER_G
   /** The UnicapGrabber class wraps the Unicap-Libray to provide access to v4l, v4l2 as well as
       ieee1394 video devices. 
       The UnicapGrabber has two constructors, each providing a different strategy for selecting a 

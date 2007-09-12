@@ -1,12 +1,12 @@
 #include <iclProximityOp.h>
-#include <iclFileReader.h>
+#include <iclFileGrabber.h>
 #include <iclFileWriter.h>
 
 using namespace icl;
 
 int main(){  
 #ifdef WITH_IPP_OPTIMIZATION
-  FileReader r("demoImages/macaw2.ppm");
+  FileGrabber r("demoImages/macaw2.ppm");
   Img8u *image = r.grab()->asImg<icl8u>()->deepCopy();
 
   image->setROI(Rect(150,100,200,200));

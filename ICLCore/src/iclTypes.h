@@ -8,61 +8,61 @@
 namespace icl {
   
 #ifdef WITH_IPP_OPTIMIZATION
-  /// 64Bit floating point type for the ICL
+  /// 64Bit floating point type for the ICL \ingroup TYPES
   typedef Ipp64f icl64f;
 
-  /// 32Bit floating point type for the ICL 
+  /// 32Bit floating point type for the ICL \ingroup TYPES 
   typedef Ipp32f icl32f;
 
-  /// 32bit signed integer type for the ICL
+  /// 32bit signed integer type for the ICL \ingroup TYPES
   typedef Ipp32s icl32s;
 
-  /// 16bit signed integer type for the ICL (range [-32767, 32768 ])
+  /// 16bit signed integer type for the ICL (range [-32767, 32768 ]) \ingroup TYPES
   typedef Ipp16s icl16s;
   
-  /// 8Bit unsigned integer type for the ICL
+  /// 8Bit unsigned integer type for the ICL \ingroup TYPES
   typedef Ipp8u icl8u;
 
 #else
-  /// 64Bit floating point type for the ICL
+  /// 64Bit floating point type for the ICL \ingroup TYPES
   typedef double icl64f;
 
-  /// 32Bit floating point type for the ICL 
+  /// 32Bit floating point type for the ICL \ingroup TYPES
   typedef float icl32f;
 
-  /// 32bit signed integer type for the ICL
+  /// 32bit signed integer type for the ICL \ingroup TYPES
   typedef int icl32s;
   
-  /// 16bit signed integer type for the ICL (range [-32767, 32768 ])
+  /// 16bit signed integer type for the ICL (range [-32767, 32768 ]) \ingroup TYPES
   typedef short int icl16s;
 
-  /// 8Bit unsigned integer type for the ICL 
+  /// 8Bit unsigned integer type for the ICL \ingroup TYPES
   typedef unsigned char icl8u;
 
 #endif
 
-  //forward declaration for the Image interface
+  //forward declaration for the Image interface \ingroup TYPES
   class ImgBase;
 
-  /// forward declaration of the Img-class
+  /// forward declaration of the Img-class \ingroup TYPES
   template<class T> class Img;
 
-  /// typedef for 8bit integer images
+  /// typedef for 8bit integer images \ingroup TYPES
   typedef Img<icl8u> Img8u;
 
-  /// typedef for 32bit float images
+  /// typedef for 32bit float images \ingroup TYPES
   typedef Img<icl16s> Img16s;
 
-  /// typedef for 8bit integer images
+  /// typedef for 8bit integer images \ingroup TYPES
   typedef Img<icl32s> Img32s;
 
-  /// typedef for 32bit float images
+  /// typedef for 32bit float images \ingroup TYPES
   typedef Img<icl32f> Img32f;
 
-  /// typedef for 64bit float images
+  /// typedef for 64bit float images \ingroup TYPES
   typedef Img<icl64f> Img64f;
 
-  /// determines the pixel type of an image (8Bit-int or 32Bit-float) 
+  /// determines the pixel type of an image (8Bit-int or 32Bit-float) \ingroup TYPES 
   enum depth{
     depth8u  = 0, /**< 8Bit unsigned integer values range {0,1,...255} */
     depth16s = 1, /**< 16Bit signed integer values */  
@@ -72,7 +72,7 @@ namespace icl {
     depthLast = depth64f
   };
   
-  /// determines the color-format, that is associated with the images channels 
+  /// determines the color-format, that is associated with the images channels \ingroup TYPES
   enum format{
     formatGray   = 0, /**< 1-channel gray image, range of values is [0,255] as default */
     formatRGB    = 1, /**< (red,green,blue) colors pace */
@@ -86,13 +86,14 @@ namespace icl {
   
 
 #ifdef WITH_IPP_OPTIMIZATION
+  /// for scaling of Img images theses functions are provided \ingroup TYPES
   enum scalemode{
     interpolateNN=IPPI_INTER_NN,      /**< nearest neighbor interpolation */
     interpolateLIN=IPPI_INTER_LINEAR, /**< bilinear interpolation */
     interpolateRA=IPPI_INTER_SUPER    /**< region-average interpolation */
   };
 #else
-  /// for scaling of Img images theses functions are provided
+  /// for scaling of Img images theses functions are provided \ingroup TYPES
   enum scalemode{
     interpolateNN,  /**< nearest neighbor interpolation */
     interpolateLIN, /**< bilinear interpolation */
@@ -100,7 +101,7 @@ namespace icl {
   };
 #endif
 
-  /// for flipping of images
+  /// for flipping of images \ingroup TYPES
   enum axis{
 #ifdef WITH_IPP_OPTIMIZATION
     axisHorz=ippAxsHorizontal, /**> horizontal image axis */

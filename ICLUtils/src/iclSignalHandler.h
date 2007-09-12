@@ -6,7 +6,7 @@
 
 namespace icl{
   
-  /// C++ Signal-Handler interface class 
+  /// C++ Signal-Handler interface class \ingroup UTILS
   /** Just create an own signal handler class,  implement its handleSignal()
       function and create a static object of that signal handler.
       

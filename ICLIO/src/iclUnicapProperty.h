@@ -9,7 +9,7 @@
  
 
 namespace icl{
-  /// Wrapper class for the unicap_propterty_t struct
+  /// Wrapper class for the unicap_propterty_t struct \ingroup UNICAP_G
   /** It implements a shallow copy concept by using the ICLs SmartPtr
       to store the wrapped unicap_property_t. Video device properties 
       may have different <em>types</em>:

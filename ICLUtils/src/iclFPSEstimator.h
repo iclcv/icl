@@ -6,8 +6,11 @@
 #include <string>
 
 namespace icl{
+  ///Utility clas for online FPS estimation \ingroup TIME
   class FPSEstimator{
     public:
+
+    ///Constructor
     FPSEstimator(int n=1){
       reset(n);
     }

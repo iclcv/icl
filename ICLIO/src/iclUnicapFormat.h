@@ -10,7 +10,7 @@
 
 
 namespace icl{
-  /// Wrapper class for the unicap_format_t struct
+  /// Wrapper class for the unicap_format_t struct \ingroup UNICAP_G
   /** The UnicapFormat class wraps the unicap_format_t struct and provides accessibility to
       all of its members by setter and getter functions. Additionally it uses a Smart-Pointer
       to allow cheep (shallow) copies by using the assign operator \n

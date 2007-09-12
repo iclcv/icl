@@ -5,7 +5,7 @@
 
 namespace icl{
   
-  /// Single precission 3D Vectors Point class of the ICL
+  /// Single precission 3D Vectors Point class of the ICL \ingroup TYPES
   class Point32f{
     public:
     

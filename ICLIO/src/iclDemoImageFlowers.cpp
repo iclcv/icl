@@ -1,4 +1,4 @@
-#include "iclFileReader.h"
+#include "iclFileGrabber.h"
 #include "iclImg.h"
 using namespace icl;
 using namespace std;
@@ -1575,7 +1575,7 @@ ImgBase* createImage_flowers(){
   fwrite(buf,1,DIM,f);
   fclose(f);
   delete [] buf;
-  image = FileReader("./.tmp_image_buffer.jpg").grab()->deepCopy();
+  image = FileGrabber("./.tmp_image_buffer.jpg").grab()->deepCopy();
   remove("./.tmp_image_buffer.jpg");
   return image->deepCopy();
 }

@@ -12,11 +12,11 @@
 #define ICL_UTIL_TIME_H
 
 
-namespace icl
-{
+namespace icl{
 
-   class Time {
-   public:
+  /// ICL Time class (taken from the Ice lib) \ingroup TIME
+  class Time {
+    public:
 //
 // Definitions of 64-bit integer type used for timestamp
 //

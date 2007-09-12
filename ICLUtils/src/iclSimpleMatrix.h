@@ -5,17 +5,20 @@
 #include <algorithm>
 
 namespace icl{
+  
+  /// Template parameter class for the SimpleMatrix template \ingroup UTILS
   template<class T>
   struct NullSimpleMatrixAlloc{
     static T create() { return T(0); }
   };
 
+  /// Template parameter class for the SimpleMatrix template \ingroup UTILS
   template<class T>
   struct DefSimpleMatrixAlloc{
     static T create() { return T(); }
   };
   
-  /// A Low-Weight Matrix representation for block aligned data
+  /// A Low-Weight Matrix representation for block aligned data \ingroup UTILS
   /** <h1>General</h1>
       The SimpleMatrix class is a utility class, for organizing
       a linear aligned data block, whiches content is associated

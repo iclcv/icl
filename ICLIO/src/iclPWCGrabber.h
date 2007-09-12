@@ -7,7 +7,7 @@
 
 namespace icl{
   
-  /// Camera Grabber for Phillips Webcams
+  /// Camera Grabber for Phillips Webcams \ingroup GRABBER_G
   /**
   The PWCGrabber provides basic abilities for grabbing images from Phillips
   USB Webcams (that are using the PWC Kernel module). The Grabber will create

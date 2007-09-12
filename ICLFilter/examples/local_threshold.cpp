@@ -1,5 +1,5 @@
 #include <iclImg.h>
-#include <iclFileReader.h>
+#include <iclFileGrabber.h>
 #include <iclFileWriter.h>
 #include <iclLocalThresholdOp.h>
 #include <iclTestImages.h>
@@ -21,7 +21,7 @@ int main (int argc, char **argv) {
   if(pa_defined("-input")){
     string s = pa_subarg<string>("-input",0,"");
     printf("input file %s \n",s.c_str());
-    FileReader(s).grab(&I);
+    FileGrabber(s).grab(&I);
   }
   else{
     printf("working with testimage tree: \n");

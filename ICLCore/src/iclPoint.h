@@ -6,7 +6,7 @@
 
 namespace icl{
 #ifndef WITH_IPP_OPTIMIZATION
-  /// fallback implementation for the IppiPoint struct, defined in the ippi libb
+  /// fallback implementation for the IppiPoint struct, defined in the ippi libb \ingroup TYPES
   struct IppiPoint {
     /// xpos
     int x;
@@ -16,7 +16,7 @@ namespace icl{
 #else
 #endif
   
-  /// Point class of the ICL used e.g. for the Images ROI offset
+  /// Point class of the ICL used e.g. for the Images ROI offset \ingroup TYPES
   class Point : public IppiPoint{
     public:
     /// null Point is x=0, y=0

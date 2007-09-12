@@ -52,7 +52,6 @@ namespace icl{
   // }}}
   void Object::add(const Tuple &t, const Vec &color){
     // {{{ open
-
     m_vecConnections.push_back(t);
     m_vecLineColors.push_back(color);
   }
@@ -67,7 +66,6 @@ namespace icl{
  
   void Object::add(const Quadruple &q, const Vec &color){
     // {{{ open
-
     m_vecQuads.push_back(q);
     m_vecQuadColors.push_back(color);
   }

@@ -6,7 +6,7 @@
 #include <vector>
 
 namespace icl{
-  /// The ICLs abstract line class describing a line from Point "start" to Point "end"
+  /// The ICLs abstract line class describing a line from Point "start" to Point "end" \ingroup TYPES
   /** This Line class provides basic abilities for the description of an abstract line.
       A line is defined by two Points "start" and "end" where each of this points is
       a 2D integer vector. Lines can be translated by using the "+"- and "-"-operators.

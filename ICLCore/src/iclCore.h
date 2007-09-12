@@ -7,6 +7,12 @@
 
 
 /** 
+    \defgroup TYPES Common Data Type Definitions
+    \defgroup GENERAL General Utility and Support Functions
+    \defgroup IMAGE Image Classes and Support Functions
+    \defgroup STRUTILS Utiltiy functions for std::string conversions
+    \defgroup MATH Mathematical Utiltiy functions
+
 \mainpage ICL (Image-Component-Library) : ICLCore 
 \section TODO
 
@@ -24,6 +30,15 @@ template class <b>Img<imagedepth></b>. Methods which are independent on the
 image depth are provided by a common interface class, named <b>ImgBase</b>. This
 allows easy and type-clean wrapping of the template classes Img<T> within frameworks
 such as Neo/NST or TDI.
+
+\subsection Modules
+    If you like to explore the ICLCore documentation by your own, take a 
+    look a the following modules:\n
+    -# \ref TYPES 
+    -# \ref GENERAL
+    -# \ref IMAGE 
+    -# \ref STRUTILS
+    -# \ref MATH 
 
 \subsection SUB_SEC_IMGBASE class ImgBase (abstract interface) 
     This class provides common, but depth-independent information about 
@@ -246,7 +261,7 @@ namespace icl {
 
 /* {{{ clip function*/
 
-  /// clips a value into the range [tMin,tMax]
+  /// clips a value into the range [tMin,tMax] \ingroup GENERAL
   template <class T>
   inline T clip(T tX, T tMin, T tMax){ return tX < tMin ? tMin : tX > tMax ? tMax : tX; }
  
@@ -254,7 +269,7 @@ namespace icl {
 
 /* {{{ Cast class */
   
-  /// Generic Casting operator
+  /// Generic Casting operator \ingroup GENERAL
   /** Use Cast<srcT, dstT>::cast (value) to cast values safely from
       one srcT type to dstT. If destination type is e.g. icl8u, the source
       value is clipped to the range [0..255].
@@ -322,7 +337,7 @@ namespace icl {
 
 /* {{{ Global functions */
 
-/// create a new image instance of the given depth type and with given parameters
+/// create a new image instance of the given depth type and with given parameters \ingroup IMAGE
 /** This function provides a common interface to instantiate images of 
     arbitrary depth, selecting the appropriate constructor of the derived class
     Img<T>. 
@@ -365,22 +380,23 @@ namespace icl {
   **/
   ImgBase *imgNew(depth d=depth8u, const ImgParams &params = ImgParams::null);
   
-  /// creates a new Img (see the above function for more details)
+  /// creates a new Img (see the above function for more details) \ingroup IMAGE
   inline ImgBase *imgNew(depth d, const Size& size, format fmt, const Rect &roi=Rect::null){
     return imgNew(d,ImgParams(size,fmt,roi));
   }
 
-  /// creates a new Img (see the above function for more details)
+  /// creates a new Img (see the above function for more details) \ingroup IMAGE
   inline ImgBase *imgNew(depth d, const Size& size, int channels=1, const Rect &roi=Rect::null){
     return imgNew(d,ImgParams(size,channels,roi));
   }
  
+  /// creates a new Img (see the above function for more details) \ingroup IMAGE
   inline ImgBase *imgNew(depth d, const Size& size, int channels, format fmt, const Rect &roi=Rect::null){
     return imgNew(d,ImgParams(size,channels,fmt,roi));
   }
 
   
-  /// ensures that an image has the specified depth
+  /// ensures that an image has the specified depth \ingroup IMAGE
   /** This function will delete the original image pointed by (*ppoImage)
       and create a new one with identical parameters, if the given depth
       parameter is not the images depth. If the given image pointer
@@ -400,10 +416,10 @@ namespace icl {
   **/
   ImgBase *ensureDepth(ImgBase **ppoImage, depth eDepth);
 
-  /// ensures that an image has given depth and parameters
+  /// ensures that an image has given depth and parameters \ingroup IMAGE
   ImgBase *ensureCompatible(ImgBase **dst, depth d,const ImgParams &params);
 
-  /// ensures that an image has given depth, size, number of channels and ROI
+  /// ensures that an image has given depth, size, number of channels and ROI \ingroup IMAGE
   /** If the given pointer to the destination image is 0, a new image with appropriate
       properties is created. Else the image properties are checked and adapted to the new
       values if neccessary.
@@ -419,17 +435,17 @@ namespace icl {
   inline ImgBase *ensureCompatible(ImgBase **dst, depth d,const Size& size,int channels, const Rect &roi=Rect::null)
      { return ensureCompatible(dst,d,ImgParams(size,channels,roi)); }
 
-  /// ensures that an image has given depth, size, format and ROI
+  /// ensures that an image has given depth, size, format and ROI \ingroup IMAGE
   inline ImgBase *ensureCompatible(ImgBase **dst, depth d,const Size& size, format fmt, const Rect &roi=Rect::null)
      { return ensureCompatible(dst,d,ImgParams(size,fmt,roi)); }
   
-  /// ensures that an image has given parameters 
+  /// ensures that an image has given parameters  \ingroup IMAGE
   /** The given format must be compatible to the given channel count.
       <b>If not:</b> The format is set to "formatMatrix" and an exception is thrown.
   */
   ImgBase *ensureCompatible(ImgBase **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi=Rect::null);
   
-  /// ensures that the destination image gets same depth, size, channel count, depth, format and ROI as source image
+  /// ensures that the destination image gets same depth, size, channel count, depth, format and ROI as source image \ingroup IMAGE
   /** If the given pointer to the destination image is 0, a new image is created as a deep copy of poSrc.
       Else the image properties are checked and adapted to the new values if neccessary.
       <b>Note:</b> If the destination images depth differs from the source images depth, it is adapted by
@@ -442,20 +458,20 @@ namespace icl {
   **/
   ImgBase *ensureCompatible(ImgBase **dst, const ImgBase *src);
 
-  /// determines the count of channels, for each color format
+  /// determines the count of channels, for each color format \ingroup GENERAL
   /** @param fmt source format which channel count should be returned
       @return channel count of format eFormat
   **/
   int getChannelsOfFormat(format fmt);
 
 
-  /// returns a string representation of an Format enum
+  /// returns a string representation of an Format enum \ingroup GENERAL
   /** @param eFormat Format enum which string repr. is asked 
       @return string representation of eFormat
   **/
   std::string translateFormat(format eFormat);  
   
-  /// returns an Format enum, specified by a string 
+  /// returns an Format enum, specified by a string \ingroup GENERAL
   /** This functions implements the opposite direction to the above function,
       which means, that:
       <pre>
@@ -468,34 +484,34 @@ namespace icl {
   **/
   format translateFormat(const std::string& sFormat);
 
-  /// returns a string representation for a depth value
+  /// returns a string representation for a depth value \ingroup GENERAL
   std::string translateDepth(depth eDepth);
 
-  /// creates a depth value form a depth string
+  /// creates a depth value form a depth string \ingroup GENERAL
   depth translateDepth(const std::string& sDepth);
 
-  /// creates a size string like "640x480"
+  /// creates a size string like "640x480" \ingroup GENERAL
   std::string translateSize(const Size &size);
   
-  /// translates a size string into a size variable
+  /// translates a size string into a size variable \ingroup GENERAL
   /** if the string could not be parsed, the returned size is "0x0" */
   Size translateSize(const std::string &sSize);
 
-  /// creates a rect string like "640x480@(5,10)"
+  /// creates a rect string like "640x480@(5,10)" \ingroup GENERAL
   std::string translateRect(const Rect &rect);
   
-  /// translates a rect string into a Rect variable
+  /// translates a rect string into a Rect variable \ingroup GENERAL
   /** if the string could not be parsed, the returned Rect is "0x0@(0,0)" */
   Rect translateRect(const std::string &sRect);
 
-  /// creates a point string like "640x480@(5,10)"
+  /// creates a point string like "640x480@(5,10)" \ingroup GENERAL
   std::string translatePoint(const Point &p);
   
-  /// translates a point string into a Point variable
+  /// translates a point string into a Point variable \ingroup GENERAL
   /** if the string could not be parsed, the returned Poin is "(0,0)" */
   Point translatePoint(const std::string &p);
   
-  /// getDepth<T> returns to depth enum associated to type T
+  /// getDepth<T> returns to depth enum associated to type T \ingroup GENERAL
   template<class T> inline depth getDepth();
 
   /** \cond */
@@ -505,10 +521,10 @@ ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
  
   /** \endcond  */
-  /// return sizeof value for the given depth type
+  /// return sizeof value for the given depth type \ingroup GENERAL
   unsigned int getSizeOf(depth eDepth);
 
-  /// moves data from source to destination array (no casting possible)
+  /// moves data from source to destination array (no casting possible) \ingroup GENERAL
   template <class T>
   inline void copy(const T *src, const T *srcEnd, T *dst){
     //std::copy<T>(src,srcEnd,dst);
@@ -542,21 +558,21 @@ ICL_INSTANTIATE_ALL_DEPTHS
 
 
 
-  /// moves value from source to destination array (with casting on demand)
+  /// moves value from source to destination array (with casting on demand) \ingroup GENERAL
   template <class srcT,class dstT>
   inline void convert(const srcT *poSrcStart,const srcT *poSrcEnd, dstT *poDst){
     while(poSrcStart != poSrcEnd) *poDst++ = Cast<srcT,dstT>::cast(*poSrcStart++);
   }
   
-/* Why commented out ?
-#define ICL_INSTANTIATE_DEPTH(D) template<> inline void convert<icl##D,icl##D>  \
-                                 (const T* src, const T*srcEnd, T *dst){        \
-                                 icl::copy<icl##D>(src,srcEnd,dst); }
-ICL_INSTATIATE_ALL_DEPTHS
-#undef ICL_INSTANTIATE_DEPTH
-    */
-  
+  // Problems here! (if defined, the compiler gets problems when resolving the most-optimized function
   /** \cond */
+  /**
+      #define ICL_INSTANTIATE_DEPTH(D) template<> inline void convert<icl##D,icl##D>  \
+      (const T* src, const T*srcEnd, T *dst){        \
+      icl::copy<icl##D>(src,srcEnd,dst); }
+      ICL_INSTATIATE_ALL_DEPTHS
+      #undef ICL_INSTANTIATE_DEPTH
+   **/ 
   
 #ifdef WITH_IPP_OPTIMIZATION 
   /// from icl8u functions
@@ -610,7 +626,7 @@ ICL_INSTATIATE_ALL_DEPTHS
   /** \endcond */
 
  
-  /// function, that calculates the mininum and the maximum value of three value
+  /// function, that calculates the mininum and the maximum value of three value \ingroup GENERAL
   /** @param a first input value 
       @param b second input value 
       @param c third input value 

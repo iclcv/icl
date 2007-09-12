@@ -5,7 +5,7 @@
 
 
 namespace icl{
-  /// Iterator class used to iterate over an Images (ROI-)pixels
+  /// Iterator class used to iterate over an Images (ROI-)pixels \ingroup IMAGE
   /**
   The ImgIterator is a utility to iterate line by line over
   all pixels of <a subrect/all pixles> of an image. The following ASCII image 

@@ -13,7 +13,7 @@
 namespace icl {
   
 #ifndef WITH_IPP_OPTIMIZATION
-  /// fallback implementation for the IppiRect struct, defined in the ippi lib
+  /// fallback implementation for the IppiRect struct, defined in the ippi lib \ingroup TYPES
   struct IppiRect {
 
     /// xpos of upper left corner
@@ -31,7 +31,7 @@ namespace icl {
 #else
 #endif
   
-  /// Rectangle class of the ICL used e.g. for the Images ROI-rect
+  /// Rectangle class of the ICL used e.g. for the Images ROI-rect \ingroup TYPES
   /** Please take care of the following conventions when using
       Rects in the ICL library:
       <pre>

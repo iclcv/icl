@@ -6,7 +6,7 @@
 #include <string>
 
 namespace icl{
-  /// Tool for benchmarking method calls
+  /// Tool for benchmarking method calls \ingroup TIME
   /** The stack timer class is an Extension of the Timer class, 
       that provides very convenient function benchmarking 
       functionality.

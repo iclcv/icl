@@ -27,7 +27,7 @@ namespace icl {
                       ImgBase*& poImg);
 
 
-   /// Grabber to access XCF Image Server
+   /// Grabber to access XCF Image Server \ingroup GRABBER_G
    /** The XCFGrabber provides access to an XCF Image Server. */
   
    class XCFGrabber : public Grabber {

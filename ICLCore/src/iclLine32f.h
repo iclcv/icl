@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace icl{
-  /// The ICLs abstract line class describing a line from Point "start" to Point "end"
+  /// The ICLs abstract line class describing a line from Point "start" to Point "end" \ingroup TYPES
   /** @see icl::Line
   */
   class Line32f{

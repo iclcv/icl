@@ -5,7 +5,7 @@
 #include <iclProgArg.h>
 #include <QThread>
 #include <iclFileWriter.h>
-#include <iclFileReader.h>
+#include <iclFileGrabber.h>
 #include <string>
 
 
@@ -22,7 +22,7 @@ public:
                  Size(640,480),translateFormat(pa_subarg("-format",0,std::string("rgb")))  ))
   {
     if(pa_defined("-input")){
-      grabber = new FileReader(pa_subarg("-input",0,std::string("nofile.ppm")));
+      grabber = new FileGrabber(pa_subarg("-input",0,std::string("nofile.ppm")));
     }else{
       if(pa_defined("-source")){
         if(pa_subarg("-source",0,std::string("pwc")) == "pwc"){

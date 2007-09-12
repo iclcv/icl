@@ -1,6 +1,6 @@
 #include <iclSVS.h>
 #include <iclImg.h>
-#include <iclFileReader.h>
+#include <iclFileGrabber.h>
 #include <iclFileWriter.h>
 #include <iclTimer.h>
 
@@ -12,8 +12,8 @@ int main(){
   const ImgBase *imgL, *imgR;
   ImgBase *dst =new Img32f(Size(320,240),formatGray);
   ImgBase *outImg=0;
-  FileReader img_l("demoImages/face320-cal-L.pgm");
-  FileReader img_r("demoImages/face320-cal-R.pgm");
+  FileGrabber img_l("demoImages/face320-cal-L.pgm");
+  FileGrabber img_r("demoImages/face320-cal-R.pgm");
   FileWriter w("face320-disp.pgm");
 
   imgL = img_l.grab();

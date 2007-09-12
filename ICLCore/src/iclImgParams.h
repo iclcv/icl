@@ -10,7 +10,7 @@
 
 
 namespace icl{
-  /// The ImgParams class stores all image parameters
+  /// The ImgParams class stores all image parameters \ingroup IMAGE \ingroup TYPES
   /** This class offers an encapsulation of all Img parameters
       - size
       - channels

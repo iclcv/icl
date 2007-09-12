@@ -5,7 +5,7 @@
 #include <string>
 
 namespace icl{
-  /// Utility class for creating test images
+  /// Utility class for creating test images \ingroup UTILS_G
   class TestImages{
     public:
     /// creates a new testimage instance

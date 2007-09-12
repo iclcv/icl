@@ -11,7 +11,7 @@ namespace icl{
   
   namespace dc{
     
-    /// Internal used utility class for fast handling of DMA buffers
+    /// Internal used utility class for fast handling of DMA buffers \ingroup DC_G
     /** This Queue implementation initializes the given camera. Then it dequeues
         all DMA ring buffer frames once, and pushes them into its wrapped 
         std::queue<dc1394video_frame_t*>. After that, it re-enqueues a fixed number

@@ -8,7 +8,7 @@
 
 namespace icl{
   
-  /// Wrapper class for the unicap_device_t struct
+  /// Wrapper class for the unicap_device_t struct \ingroup UNICAP_G
   /** The UnicapDevice wraps the unicap_device_t and provides getter and setter functions
       to access and manipulate its data. In addition to this, it offers some high-level functions
       to get format- and property lists (optionally filtered!) or to list all formats and 

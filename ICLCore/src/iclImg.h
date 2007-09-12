@@ -10,7 +10,7 @@
 
 
 namespace icl {
-  /// The Img class implements the ImgBase Image interface with type specific functionalities
+  /// The Img class implements the ImgBase Image interface with type specific functionalities \ingroup IMAGE \ingroup TYPES
   /**
       @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
       @author Christof Elbrechter (celbrech@TechFak.Uni-Bielefeld.de)
@@ -811,18 +811,18 @@ namespace icl {
   
   /* {{{ global functions */
 
-  /// Combine several images using shallow copy.
+  /// Combine several images using shallow copy. \ingroup IMAGE
   template<class ImgType>
   const ImgType* combineImages (const std::vector<const ImgType*>& vec);
 
-  /// Combine several images using shallow copy. Non-const version
+  /// Combine several images using shallow copy. Non-const version \ingroup IMAGE
   template<class ImgType>
   ImgType* combineImages (const std::vector<ImgType*>& vec) {
     return const_cast<ImgType*>(combineImages(reinterpret_cast<const std::vector<const ImgType*>&>(vec)));
   }
 
   /* {{{   deepCopyChannel */
-  /// Copies the channel from one image to another 
+  /// Copies the channel from one image to another \ingroup IMAGE
   template<class T>
   inline void deepCopyChannel( const Img<T> *src, int srcC, Img<T> *dst, int dstC){
     FUNCTION_LOG("");
@@ -837,7 +837,7 @@ namespace icl {
  
   /* {{{   convertChannel */
 
-  /// copies/converts the data from one image to another image (IPP-OPTIMIZED)
+  /// copies/converts the data from one image to another image (IPP-OPTIMIZED) \ingroup IMAGE
   /** The deepCopyChannel function is a higher lever wrapper for the 
       icl::copy(..) function. It extracts the data pointers and data dimension
       from the source- and destination image to call icl::copy(..)
@@ -860,7 +860,7 @@ namespace icl {
 
   /* {{{   clearChannelROI */
 
-  /// sets an arbitrary image ROI to a given value
+  /// sets an arbitrary image ROI to a given value \ingroup IMAGE
   /** This function is used as basic operation for higher level image operation like
       Img<T>::clear(T value).
       @param im image
@@ -917,7 +917,7 @@ namespace icl {
 
   /* {{{   deepCopyChannelROI */
 
-  /// copies the channel roi from one image to another  
+  /// copies the channel roi from one image to another \ingroup IMAGE
   /** Essential deep copy function. 
       @param src source image
       @param srcC source channel
@@ -953,7 +953,7 @@ namespace icl {
   /* {{{   convertChannelROI */
 
   /// @{ @name type conversion of channel ROIs 
-  /// copies/converts the ROI data from one image to the ROI of another image (IPP-OPTIMIZED)
+  /// copies/converts the ROI data from one image to the ROI of another image (IPP-OPTIMIZED) \ingroup IMAGE
   /** This function is used by all other deepCopyROI functions internally. 
       It copies / converts ROI image data to another images ROI using the
       icl::copy(..) function line by line or, in case of IPP-optimization enabled,
@@ -997,7 +997,7 @@ namespace icl {
   /* {{{   scaledCopyChannelROI */
 
   /// @{ @name scaling of channel ROIs 
-  /// scales an image channels ROI into another images ROI (with implicit type conversion) (IPP-OPTIMIZED)
+  /// scales an image channels ROI into another images ROI (with implicit type conversion) (IPP-OPTIMIZED) \ingroup IMAGE
   /** This function provides all necessary functionalities for scaling images. Please regard, that the fallback-
       implementation is very slow. Only scaling operations with identical source and destination type 
       is optimized by corresponding ippResize calls (see also the specialized template functions).
@@ -1024,7 +1024,7 @@ namespace icl {
 
   /* {{{   flippedCopyChannelROI */
 
-  /// mirror copy ROI data from one image to the ROI of another image (IPP-OPTIMIZED)
+  /// mirror copy ROI data from one image to the ROI of another image (IPP-OPTIMIZED) \ingroup IMAGE
   /** This function is used by flippedCopyROI and Mirror operator.
       @param eAxis mirror axis (axisHorz, axisVert or axisBoth)
       @param src source image
@@ -1043,7 +1043,7 @@ namespace icl {
                              Img<T> *dst,int dstC, const Point &dstOffs, const Size &dstSize);
   
   
-  /// mirror copy of an image from source to destination image (1:1 copy)
+  /// mirror copy of an image from source to destination image (1:1 copy) \ingroup IMAGE
   /** This function creates a flipped instance of this image. Even the ROI is flipped internally.
       Example:
       <pre>
@@ -1057,10 +1057,10 @@ namespace icl {
       @param ppoDst image. This image is exploited if possible. It is adjusted to 
                         the source image in depth, size,channels,format,and time
       
-  **/
+   **/
   void flippedCopy(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst=0);
 
-  /// mirror copy of an images ROI into a destination images ROI
+  /// mirror copy of an images ROI into a destination images ROI \ingroup IMAGE
   /** Example:
       <pre>
         ......                    ......    R,r = roi

@@ -1,8 +1,31 @@
 #include <iclMacros.h>
 
-/** \mainpage ICLUtils package
+/** 
+    \defgroup TIME Time and Timer Support Classes and Functions
+    \defgroup EX Special Exceptions
+    \defgroup THREAD Support Functions for ;ulti-Threading 
+    \defgroup UTILS General purpose Utiltiy Classes and Functions
+    \defgroup PA Programm Argument Evaluation Functions
     
-    \section PA ProgArg evaluation environment ("iclProgArg.h")
+    
+    
+    \mainpage ICLUtils package
+    
+    \section OV Overview
+    
+    The ICLUtils package contains C++ Support Functions and Classes which do no depend on the
+    underlying ICL-Image API and datatypes. To empasise that classes and functions 
+    <em>are</em> completely independent, they are collected in the external ICLPackage. Further
+    contributions to the ICLUtils package should not have any dependencies not even external ones.
+    
+    The packe can be grouped into the following modules:
+    -# \ref TIME
+    -# \ref EX
+    -# \ref THREAD
+    -# \ref UTILS
+    -# \ref PA
+    
+    \section PA_ ProgArg evaluation environment ("iclProgArg.h")
     
     The program argument evaluation environment (PAEE) of the ICLUtils package is useful
     for many applications, that have to handle different program arguments. The PAEE can be 

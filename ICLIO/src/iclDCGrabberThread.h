@@ -16,13 +16,13 @@ namespace icl{
   class DCGrabber;
   /** \endcond */
   
-		namespace dc{
+  namespace dc{
     
     /** \cond */
     class DCFrameQueue;
     /** \endcond */
     
-    /// Internally spawned thread class to provide continuous grabbing without drop frames
+    /// Internally spawned thread class to provide continuous grabbing without drop frames \ingroup DC_G
     /** Each DCGrabber instance uses a DCGrabberThread, which continuously dequeues and 
         enqueus frames. Each frame can either be inside of the DMA queue or inside of the
         DCGrabberThreads wrapped DCFrameQueue at on time. The following ASCII art should

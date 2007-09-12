@@ -15,7 +15,7 @@
 
 
 namespace icl {
-  
+  /// Base class for Exception handling in the ICL \ingroup EX
   class ICLException : public std::exception
   {
   private:
@@ -28,6 +28,7 @@ namespace icl {
     void report();
   };
 
+  /// Exception for invalid file formats \ingroup EX
   class InvalidFileFormatException : public ICLException {
   public:
     InvalidFileFormatException () throw() : 
@@ -35,13 +36,23 @@ namespace icl {
     virtual ~InvalidFileFormatException() throw() {}
   };
 
+  /// Exception thrown if a file could not be opend \ingroup EX
   class FileOpenException : public ICLException {
   public:
     FileOpenException (const std::string& sFileName) throw() : 
        ICLException (std::string("Can't open file: ") + sFileName) {}
     virtual ~FileOpenException() throw() {}
   };
- 
+  
+  /// Exception thrown if a file could not be found \ingroup EX
+  class FileNotFoundException : public ICLException {
+    public:
+    FileNotFoundException (const std::string& sFileName) throw() : 
+    ICLException (std::string("File not found: ") + sFileName) {}
+    virtual ~FileNotFoundException() throw() {}
+  };
+  
+  /// Exception called if an image gets invalid params \ingroup EX
   class InvalidImgParamException : public ICLException {
     public:
     InvalidImgParamException(const std::string &param) throw():
@@ -49,6 +60,7 @@ namespace icl {
     virtual ~InvalidImgParamException() throw() {}
   };
 
+  /// Exception thrown if a function should process an unsupported image format \ingroup EX
   class InvalidFormatException : public ICLException {
     public:
     InvalidFormatException(const std::string &functionName) throw():
@@ -56,6 +68,7 @@ namespace icl {
     virtual ~InvalidFormatException() throw() {}
   };
 
+  /// Exception thrown if a function should process an unsupported image depth \ingroup EX
   class InvalidDepthException : public ICLException {
     public:
     InvalidDepthException(const std::string &functionName) throw():

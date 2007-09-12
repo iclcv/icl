@@ -1,5 +1,5 @@
 #include <iclQuick.h>
-#include <iclFileReader.h>
+#include <iclFileGrabber.h>
 #include <iclTestImages.h>
 #include <iclConverter.h>
 
@@ -202,7 +202,7 @@ namespace icl{
   ImgQ load(const string &filename, format fmt){
     // {{{ open
 
-    FileReader g(filename);
+    FileGrabber g(filename);
     ImgQ *image = g.grab()->convert<ICL_QUICK_TYPE>();
     if(!image){
       return ImgQ();

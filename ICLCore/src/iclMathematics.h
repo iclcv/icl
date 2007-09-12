@@ -22,7 +22,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Initilaize the random number generator. 
+    @brief Initilaize the random number generator. \ingroup MATH
     @param seedval The seed value
     @return -
     @sa void randomSeed()
@@ -37,7 +37,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Initilaize the random number generator. 
+    @brief Initilaize the random number generator.\ingroup MATH 
     @sa void randomSeed(long int)
   */
   inline void randomSeed() {randomSeed(Time::now().toMicroSeconds());}
@@ -49,7 +49,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Generates random numbers between 0 and 1. 
+    @brief Generates random numbers between 0 and 1. \ingroup MATH
     @param -
     @return random number
     @sa double random()
@@ -65,7 +65,7 @@ namespace icl {
   
   //--------------------------------------------------------------------------
   /*!
-    @brief Generate a random number to an upper limit. 
+    @brief Generate a random number to an upper limit. \ingroup MATH
     @param max a float argument. The upper limit for the returned number
     @return -
     @sa float gaussRandom(float), 
@@ -80,7 +80,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Generate a random number between a lower and upper limit. 
+    @brief Generate a random number between a lower and upper limit. \ingroup MATH
     @param min a float argument. The lower intervall limit
     @param max a float argument. The upper interval limit 
     @return -
@@ -96,7 +96,7 @@ namespace icl {
  
   //--------------------------------------------------------------------------
   /*!
-    @brief Creates a non-negative random number to an upper limit max
+    @brief Creates a non-negative random number to an upper limit max \ingroup MATH
     @param max The upper limit for the returned number
     @return The random number
   */
@@ -106,14 +106,14 @@ namespace icl {
     return std::min(val, max);
   }
    
-  /// fill an image with uniform distributed random values in the given range
+  /// fill an image with uniform distributed random values in the given range \ingroup MATH
   /** @param poImage image to fill with random values (NULL is not allowed) 
       @param range for the random value 
       @param roiOnly decides whether to apply the operation on the whole image or on its ROI only 
   **/
   void random(ImgBase *poImage, const Range<double> &range=Range<double>(0,255), bool roiOnly=true);
 
-  /// fill an image with gauss-distributed random values with given mean, variance and min/max value
+  /// fill an image with gauss-distributed random values with given mean, variance and min/max value \ingroup MATH
   /** @param poImage image to fill with random values (NULL is not allowed) 
       @param mean mean value for all gauss distributed random variables
       @param var variance for all gauss distributed random variables
@@ -122,7 +122,7 @@ namespace icl {
   **/
   void gaussRandom(ImgBase *poImage, double mean, double var, const Range<double> &minAndMax, bool roiOnly=true);
 
-  /// Generate a gaussian random number with given mean and variance
+  /// Generate a gaussian random number with given mean and variance \ingroup MATH
   /** @param mean mode of the gaussian
       @param var variance of the gaussian
       @return gaussian distributed variable
@@ -130,7 +130,7 @@ namespace icl {
   **/
   double gaussRandom(double mean, double var);
 
-  /// Generate a gaussian random number with given mean and variance and clips the result to a range
+  /// Generate a gaussian random number with given mean and variance and clips the result to a range \ingroup MATH
   /** @param mean mode of the gaussian
       @param var variance of the gaussian
       @param range clipping range for the returned value
@@ -143,7 +143,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Initialize the elements of a std::vector by values of
+    @brief Initialize the elements of a std::vector by values of \ingroup MATH
     an generator function taking no arguments, e.g. random()
   */
   template <class T>
@@ -153,7 +153,7 @@ namespace icl {
   }
 
   /*!
-    @brief Initialize the elements of a std::vector by values of
+    @brief Initialize the elements of a std::vector by values of \ingroup MATH
     an generator function taking one argument, e.g. randomGauss(max)
   */
   template <class T>
@@ -170,7 +170,7 @@ namespace icl {
   /* {{{ distance functions */
 
   /*!
-    @brief Calculate the euclidian distance of two vectors v1 and v2
+    @brief Calculate the euclidian distance of two vectors v1 and v2 \ingroup MATH
     @param v1Begin first element of v1
     @param v1End   end of v1 (points the first element behind v1)
     @param v2Begin first element of v2
@@ -188,7 +188,7 @@ namespace icl {
   }
 
   /*!
-    @brief Calculate the euclidian distance of points a and b
+    @brief Calculate the euclidian distance of points a and b \ingroup MATH
     @param a The first point
     @param b The second point
     @return The distance of point a and b
@@ -207,7 +207,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the mean value from a vector<T>.
+    @brief Compute the mean value from a vector<T>. \ingroup MATH
     @param iDim an in argument. The dimension of the destination vector
     @param ptData The data vector
     @return The mean value form the vector
@@ -217,7 +217,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the mean value from a vector<T>.
+    @brief Compute the mean value from a vector<T>. \ingroup MATH
     @param vecData The data vector
     @return The mean value form the vector
   */
@@ -226,7 +226,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the mean value from a vector<T>.
+    @brief Compute the mean value from a vector<T>. \ingroup MATH
     @param poImg The data Image
     @param iChannel The number of channels
     @return The mean value form the vector
@@ -236,7 +236,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the mean value from a vector<T>.
+    @brief Compute the mean value from a vector<T>. \ingroup MATH
     @param poImg The data Image
     @param iChannel The number of channels
     @return The mean value form the vector
@@ -249,7 +249,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the variance value from a vector<T>.
+    @brief Compute the variance value from a vector<T>. \ingroup MATH
     @param ptData The data vector
     @param iDim an in argument. The dimension of the destination vector
     @return The variance value form the vector
@@ -259,7 +259,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the variance value from a vector<T>.
+    @brief Compute the variance value from a vector<T>. \ingroup MATH
     @param vecData The data vector
     @return The variance value form the vector
   */
@@ -268,7 +268,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the variance value from a vector<T>.
+    @brief Compute the variance value from a vector<T>. \ingroup MATH
     @param poImg The data vector
     @param iChannel The number of channels
     @return The variance value form the vector
@@ -278,7 +278,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the variance value from a vector<T>.
+    @brief Compute the variance value from a vector<T>. \ingroup MATH
     @param poImg The data vector
     @param iChannel The number of channels
     @return The variance value form the vector
@@ -291,7 +291,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the deviation value from a vector<T>.
+    @brief Compute the deviation value from a vector<T>. \ingroup MATH
     @param ptData The data vector
     @param iDim an in argument. The dimension of the destination vector
     @return The deviation value form the vector
@@ -301,7 +301,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the deviation value from a vector<T>.
+    @brief Compute the deviation value from a vector<T>. \ingroup MATH
     @param vecData The data vector
     @return The deviation value form the vector
   */
@@ -310,7 +310,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the deviation value from a vector<T>.
+    @brief Compute the deviation value from a vector<T>. \ingroup MATH
     @param poImg The data vector
     @param iChannel The number of channels
     @return The deviation value form the vector
@@ -320,7 +320,7 @@ namespace icl {
 
   //--------------------------------------------------------------------------
   /*!
-    @brief Compute the deviation value from a vector<T>.
+    @brief Compute the deviation value from a vector<T>. \ingroup MATH
     @param poImg The data vector
     @param iChannel The number of channels
     @return The deviation value form the vector

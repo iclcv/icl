@@ -21,7 +21,7 @@ namespace icl {
   class ImgBase;
   /** \endcond */
   
-  /// Common interface class for all grabbers
+  /// Common interface class for all grabbers \ingroup GRABBER_G
   class Grabber {
     public:
     /// Basic Grabber constructor

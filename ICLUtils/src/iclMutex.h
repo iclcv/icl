@@ -3,7 +3,7 @@
 #include <pthread.h>
 
 namespace icl{
-  /// Mutex class of the ICL
+  /// Mutex class of the ICL \ingroup THREAD
   /** This mutex class is a simple object oriented wrapper of the
       pthread_mutex_t struct.
       
@@ -33,10 +33,38 @@ namespace icl{
       pthread_mutex_unlock(&m);
     }
     
+    /// Locks a mutex on the stack (mutex is unlocked when the stack's section is released
+    class Locker{
+      public:
+      /// Locks the given mutex until the section is leaved
+      Locker(Mutex *m);
+
+      /// Locks the given mutex until the section is leaved
+      Locker(Mutex &m);
+
+      /// unlocks the given mutex (automatically called for objects on the stack)
+      ~Locker();
+      private:
+      /// wrapped mutex
+      Mutex *m;
+    };
     private:
     /// wrapped thread_mutex_t struct
     pthread_mutex_t m;
   };
+  
+  
+  /** \cond inline implementation of the embedded Locker class */
+  inline Mutex::Locker::Locker(Mutex *m):m(m){
+    m->lock();
+  }
+  inline Mutex::Locker::Locker(Mutex &m):m(&m){
+    m.lock();
+  }
+  inline Mutex::Locker::~Locker(){
+    m->unlock();
+  }
+  /** \endcond */
 }
 
 #endif

@@ -6,7 +6,7 @@
 #include <iclImgParams.h>
 
 namespace icl{
-  /// Interface class for UnicapGrabEngines
+  /// Interface class for UnicapGrabEngines \ingroup UNICAP_G
   /** Base implemetation is the UnicapDefaultGrabEngine */
   struct UnicapGrabEngine{
     virtual ~UnicapGrabEngine(){}

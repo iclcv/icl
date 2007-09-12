@@ -4,7 +4,7 @@
 #include "iclCore.h"
 
 namespace icl{
-  /// class representing a range defined by min and max value
+  /// class representing a range defined by min and max value \ingroup TYPES
   template<class Type> 
   struct Range{
     virtual ~Range(){}

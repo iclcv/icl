@@ -6,7 +6,7 @@
 #include <iclMutex.h>
 
 namespace icl{
-  /// Simple object oriented thread class wrapping the pthread library
+  /// Simple object oriented thread class wrapping the pthread library \ingroup THREAD
   /** This Thread class is very simple to understand, and behaves essentially
       like Qts QThread. Create a custom Thread class derived from this class, 
       reimplement the virtual run() function and use start and stop to contol the
