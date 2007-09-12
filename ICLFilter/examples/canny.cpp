@@ -1,4 +1,4 @@
-#include <iclFileReader.h>
+#include <iclFileGrabber.h>
 #include <iclTestImages.h>
 #include <iclCannyOp.h>
 #include <iclConvolutionOp.h>
@@ -14,8 +14,8 @@ int main(int nArgs, char **ppcArg){
    if (nArgs > 2) dstName = ppcArg[2];
    if (nArgs > 1) {
       // read image from file
-      FileReader reader(ppcArg[1]);
-      src = reader.grab();
+      FileGrabber grabber(ppcArg[1]);
+      src = grabber.grab();
    } else src = TestImages::create("women",Size(63,60),formatGray,depth32f);
    
    

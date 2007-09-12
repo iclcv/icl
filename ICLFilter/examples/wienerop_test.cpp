@@ -1,5 +1,4 @@
 #include <iclWienerOp.h>
-#include <iclFileReader.h>
 #include <iclTestImages.h>
 
 using namespace std;

@@ -1,7 +1,7 @@
 #ifndef SkinOp_H
 #define SkinOp_H
 
-#include <iclFilter.h>
+#include <iclUnaryOp.h>
 /*
   Skin.h
 
@@ -23,9 +23,8 @@ In a first step the skin parabola parameter have to be trained or if the paramet
 author Michael Götting (mgoettin@techfak.uni-bielefeld.de)
 **/
 
-class SkinOp : public Filter
-{
- public:
+class SkinOp : public UnaryOp{
+  public:
   ///Constructor
   SkinOp () : m_poChromaApply(0), m_poChromaTrain(0) {}
     
