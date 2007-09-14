@@ -1,6 +1,6 @@
 #include "iclCC.h"
 #include "iclImg.h"
-#include "iclFileReader.h"
+#include "iclFileGrabber.h"
 #include "iclFileWriter.h"
 #include "iclBayer.h"
 #include "iclImg.h"
@@ -13,8 +13,8 @@ int main() {
   Timer t1,t2,t3,t4,t5;
     
   // Load bayer Image
-  FileReader read("demoImages/bayer.pgm");
-  const ImgBase *bayerImg = read.grab();
+  FileGrabber grabber("demoImages/bayer.pgm");
+  const ImgBase *bayerImg = grabber.grab();
   
   ImgBase *rgbImg = imgNew(depth8u, bayerImg->getSize(), formatRGB);
   
@@ -31,8 +31,7 @@ int main() {
   }
   t1.stop("Nearest neighbor");
   // Save RGB image
-  FileWriter writer("demoImages/rgbOut_nn.ppm");
-  writer.write(rgbImg);
+  FileWriter("demoImages/rgbOut_nn.ppm").write(rgbImg);
   
   
   // Bilinear
@@ -45,8 +44,7 @@ int main() {
   }
   t2.stop("Bilinear");
   // Save RGB image
-  writer.setFileName("demoImages/rgbOut_bilinear.ppm");
-  writer.write(rgbImg);
+  FileWriter("demoImages/rgbOut_bilinear.ppm").write(rgbImg);
 
   // HQLinear
   cout << "HQLinear:";
@@ -58,8 +56,7 @@ int main() {
   }
   t3.stop("HQLinear");
   // Save RGB image
-  writer.setFileName("demoImages/rgbOut_hqLinear.ppm");
-  writer.write(rgbImg);  
+  FileWriter("demoImages/rgbOut_hqLinear.ppm").write(rgbImg);
 
   // Edge Sense
   cout << "Edge Sense:";
@@ -71,8 +68,7 @@ int main() {
   }
   t4.stop("EdgeSende");
   // Save RGB image
-  writer.setFileName("demoImages/rgbOut_edgeSense.ppm");
-  writer.write(rgbImg);  
+  FileWriter("demoImages/rgbOut_edgeSense.ppm").write(rgbImg);
 
   // Simple
   cout << "Simple:";
@@ -84,8 +80,7 @@ int main() {
   }
   t5.stop("Simple");
   // Save RGB image
-  writer.setFileName("demoImages/rgbOut_simple.ppm");
-  writer.write(rgbImg);  
+  FileWriter("demoImages/rgbOut_simple.ppm").write(rgbImg);  
 
   return 1;
 }

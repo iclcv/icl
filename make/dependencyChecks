@@ -13,8 +13,11 @@ endif
 CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
 CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
 endif
+else
+HAVE_IPP=TRUE
 endif
-endif
+endif #OS_TYPE
+
 ifeq "${OS_TYPE}" "macosx"
 # Mac support
 ifeq "$(wildcard $(IPP_ROOT)/Intel_IPP.framework/Libraries/libipp*.dylib)" ""
@@ -27,8 +30,10 @@ endif
 CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
 CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
 endif
+else
+HAVE_IPP=TRUE
 endif
-endif
+endif #OS_TYPE
 
 ############################# check for JPEG-SUPPORT ####################
 LIBJPEG_ROOT ?= /usr
