@@ -7,6 +7,8 @@
 #include <vector>
 #include <iclQuick.h>
 
+#include "iclConvexHullMonotoneChain.h"
+
 using std::vector;
 
 namespace icl{
@@ -94,167 +96,21 @@ namespace icl{
 
   // }}}
 
-  namespace{
-    struct PointWithAngle{
-      // {{{ open
-      static inline float dxy(const Vec &a,const Vec &b){
-        return (float)pow(a.x()-b.x(),2)+pow(a.y()-b.y(),2);
-      }
-      PointWithAngle():idx(0),angle(0),len(0){}
-      PointWithAngle(int idx, float angle):
-        idx(idx),angle((int)(100000*angle)),len(0){}
-      
-      PointWithAngle(int idx, const Vec &v, const Vec &p0):
-        idx(idx),
-        angle((int)(100000*atan2(v.y()-p0.y(),v.x()-p0.x()))),
-        len((int)(100000*dxy(v,p0))){
-      }
-      
-      inline bool operator<(const PointWithAngle &pt) const{
-        if(angle==pt.angle ){
-          return len < pt.len;
-        }
-        return angle < pt.angle;
-      }
-      int idx;
-      // float angle;
-      int angle;
-      //float len;
-      int len;
-    }; 
-    
-    // }}}
-    typedef std::stack<PointWithAngle> Stack;
-    
-    inline float compute_area(const Vec &a, const Vec &b, const Vec &c){
-      // {{{ open
-
-      return (b[0] - a[0]) * (c[1] - a[1]) -
-      (c[0] - a[0]) * (b[1] - a[1]);
-    }
-
-    // }}}
-    inline bool is_left( const Vec &a, const Vec &b, const Vec &c){
-      // {{{ open
-
-      /*---------------------------------------------------------------------
-          Returns true iff c is strictly to the left of the directed
-          line through a to b.
-          ---------------------------------------------------------------------*/
-      return  compute_area( a, b, c ) > 0;
-    }
-
-    // }}}
-    inline void sort_by_angle(vector<PointWithAngle> &S){
-      // {{{ open
-
-      std::sort(S.begin(),S.end());
-    }
-
-    // }}}
-    inline int find_upper_left(const VecArray &p,int n){
-      // {{{ open
-
-      int iUpper = 0;
-      float yUpper = p[0].y();
-      float xUpper = p[0].x();
-      for(int i=1;i<n;i++){
-        float y = p[i].y();
-        float x = p[i].x();
-        if(y < yUpper || y == yUpper && x < xUpper){
-          yUpper = y;
-          xUpper = x;
-          iUpper = i;
-        }
-      }
-      return iUpper;
-    }
-
-    // }}}
-    inline void create_angle_list(vector<PointWithAngle> &S, VecArray &p, int n, Vec &p0, int iUpper){
-      // {{{ open
-      
-      for(int i=0;i<n;i++){
-        S[i] = PointWithAngle(i,p[i],p0);
-      }
-      S[iUpper]=PointWithAngle(iUpper,0);
-    }     
-    // }}}
-    inline int jump_first(const vector<PointWithAngle> &S){
-      // {{{ open
-
-      if(S.size() < 3) return S.size()-1;
-      float angle_of_p2 = S[1].angle;
-      unsigned int idx = 2;
-      while(S[idx].angle == angle_of_p2 && idx < S.size()-1 ) idx++;
-      return idx;
-    }
-
-    // }}}
-  }
   
   void BorderedObject::calculateConvexHull(BorderedObject::LineStrip &dst){
     // {{{ open
     
     dst.clear();
-    
     VecArray &p = Object::getPointsProj();
-    int n = (int)p.size();
-    
-    vector<PointWithAngle> S(n);
-    vector<bool> hullPts(n);
-    
-    int iUpper = find_upper_left(p,n);
-    Vec p0 = p[iUpper];
-    
-    create_angle_list(S,p,n,p0,iUpper);
-    sort_by_angle(S);
-    
-    
-    
-    Stack STACK;
-    STACK.push(S[0]);
-    STACK.push(S[1]);
-    
-    hullPts[S[0].idx] = hullPts[S[1].idx] = true;
-
-    int nBegin = jump_first(S);
-    //    int nBegin = 2;
-    
-    for(int i=nBegin;i<n;){
-      if(STACK.empty()){
-        printf("stack is empty, this may not occur! \n");
-        return;
-      }
-      PointWithAngle P1 = STACK.top(); 
-      STACK.pop();
-      if(STACK.empty()){
-        printf("stack is empty after calling pop(), this may not occur! at idx %d/%d\n",i,n-1);
-        printf("0: %f,%f,arc=%d,len=%d\n1: %f,%f,arc=%d,len=%d\n2: %f,%f,arc=%d,len=%d \n---------------------------------------\n ",
-               p[S[0].idx].x(),p[S[0].idx].y(),S[0].angle,S[0].len,
-               p[S[1].idx].x(),p[S[1].idx].y(),S[1].angle,S[1].len,
-               p[S[2].idx].x(),p[S[2].idx].y(),S[2].angle,S[2].len);
-        
-        return;
-      }
-      PointWithAngle P2 = STACK.top();
-      PointWithAngle &SI = S[i];
-
-      if(is_left( p[P2.idx], p[P1.idx], p[SI.idx])){
-        STACK.push(P1);
-        STACK.push(SI);
-        i++;
-        hullPts[SI.idx]=true;
-      }else{
-        hullPts[P1.idx]=false;
-      }
-    }
-
-    for(int i=0;i<n;i++){
-      int idx = S[i].idx;
-      if(hullPts[idx]){
-        dst.push_back(&p[idx]);
-      }
+    vector<CHPoint> input(p.size());
+    for(unsigned int i=0;i<p.size();++i){
+      input[i] = CHPoint(p[i].x(),p[i].y(),&p[i]);
+    } 
+    std::sort(input.begin(),input.end());
+    vector<CHPoint> output(p.size());
+    int nHullPts = chainHull_2D(&input[0], (int)input.size(), &output[0]);
+    for(int i=0;i<nHullPts;i++){
+      dst.push_back(output[i].v);
     }
   }
 

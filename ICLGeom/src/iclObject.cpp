@@ -268,10 +268,13 @@ namespace icl{
       for(unsigned int i=0;i<m_vecPtsProj.size();i++){
         color(255,0,0);
         const Vec &v = m_vecPtsProj[i];
-        circle(*image,
-               (int)(v.x()),
-               (int)(v.y()),
-               2);
+        pix(*image,(int)(v.x()),(int)(v.y()));
+        /*
+            circle(*image,
+            (int)(v.x()),
+            (int)(v.y()),
+            2);
+        */
         //      printf("drawed a point at %d %d \n",(int)v.x(),(int)v.y());
       }    
     }
