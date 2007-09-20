@@ -26,7 +26,7 @@ namespace icl{
       g_bStopAllGrabberThreadsCalled = true;
 
       for(unsigned int i=0;i<g_vecAllThreads.size();i++){
-        g_vecAllThreads[i]->stop(false);
+        g_vecAllThreads[i]->stop();
       }
       g_vecAllThreads.clear();
       g_bStopAllGrabberThreadsCalled = false;

@@ -84,7 +84,7 @@ namespace icl{
   void DCGrabber::restartGrabberThread(){
     if(m_poGT){
       m_poGT->stop();
-      m_poGT->waitFor();
+      //      m_poGT->waitFor();
       delete m_poGT;
     }
     m_poGT = new DCGrabberThread(m_oDev.getCam(),&m_oOptions);

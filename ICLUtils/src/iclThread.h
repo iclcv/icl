@@ -1,11 +1,20 @@
 #ifndef ICL_THREAD_H
 #define ICL_THREAD_H
 
-#include <pthread.h>
-#include <unistd.h>
+#include <iclShallowCopyable.h>
 #include <iclMutex.h>
 
 namespace icl{
+  
+  /** \cond */
+  class ThreadImpl;
+  struct ThreadImplDelOp{
+    static void delete_func( ThreadImpl* impl );
+  };
+  /** \endcond */
+  
+
+  
   /// Simple object oriented thread class wrapping the pthread library \ingroup THREAD
   /** This Thread class is very simple to understand, and behaves essentially
       like Qts QThread. Create a custom Thread class derived from this class, 
@@ -38,123 +47,93 @@ namespace icl{
       Additionally each Thread can be initialized with a given priority level.
       This feature is copied from Qt (version 4.2.x) and is not yet tested
       explicitly. 
-      */
-  class Thread{
+
+      \section PERF Performance
+      Although the Thread class implements the ShallowCopyable interface, it
+      is desingned for optimal performance. On a 1.6GHz Pentium-M (linux), you can 
+      create, run, stop and release about 50.000 Threads per second. Thus it 
+      is possible to use this simple Thread implementation to create multi-threaded
+      image processing modules as filters and so on.  \n
+      <b>TODO:</b> Implement a dedicated class framework for this
+  */
+  class Thread : public ShallowCopyable<ThreadImpl,ThreadImplDelOp>{
     public:
-    friend void *icl_thread_handler(void *);
-
-    /// used priority stepping (see Qts QThread!)
-    enum priority{
-      idle,     /**< this thread is only working when the processor is idle   */   
-      lowest,   /**< lowest priority */
-      low,      /**< lowe priority */
-      normal,   /**< normal priority (default) */
-      heigh,    /**< high priority */
-      heighest, /**< highest priority */
-      critical, /**< time critical priority */
-      inherit   /**< inherit priority */
-    };
-
     
     /// Create a new Thread
-    Thread(priority p=normal);
-
-    /// Destructor
+    Thread();
+    
+    /// Destructor (if the thread is still running, it is ended)
     virtual ~Thread();
     
     /// starts the thread
+    /** if the thread is already running, an error message is shown */
     void start();
     
-    /// stops the thread
-    /** @param locked if set to false, the running thread is stopped immediately
-                      without waiting for it to return from the internal locked
-                      state (use locked = false only if you know what you are 
-                      doing). An example for a non-locking call to a threads
-                      stop function may be explicit signal handling e.g. from the
-                      SIGINT signal. Here it might be necessary not to wait
-                      for the running thread.
-    */
-    void stop(bool locked = true);
+    /// stops the thread and waits till it is ended 
+    void stop();
     
-    /// virtual run function doing all the work
-    virtual void run();
-
+    /// waits for this thread to be ended
+    /** The Thread ends automatically when its run function is over, or - if the
+        run() function has not run to the end yet - it is ended when stop is called.
+    **/
+    void wait();
+    
+    /// pure virtual run function doing all the work
+    virtual void run()=0;
+    
     /// at the end of the stop function, this function is called
     virtual void finalize(){}
+  
+    protected:
+    
+    /// sets this thread to sleep for some milli-seconds
+    /** @param msecs time in msecs to sleep **/
+    void msleep(unsigned int msecs);
+    
+    /// sets this thread to sleep for some seconds
+    /** @param secs time in secs to sleep  ( float precision!)**/
+    void sleep(float secs);
+
     /// internal used lock function
     /** This function (and unlock) can be used inside the reimplementation of
         the run function to enshure, that the code between lock() and unlock() 
         is executed to the end befor the stop function is able to join the 
         Thread 
     **/
-    void lock() { m_oMutex.lock(); }
+    void lock();
     
     /// internal used unlock function
-    void unlock(){ m_oMutex.unlock(); }
-    
-    /// waits for this thread to be stopped
-    /** This function can be called from the parent thread when it is not
-        clear, when the icl-Thread has run to the end 
-    **/
-    void waitFor(){
-      while(m_bRunning){
-        pthread_cond_wait(&m_oWaitCond,&m_oWaitMutex);
-      }
-    }
-
- 
-    /// static utility function which deletes a pointer and sets it to NULL
-    /** Internally this function template will create a specific mutex for the
-        given class T. All calls to the saveDelete function are protected
-        by the static mutex. So saveDelete(XXX) can be called from different
-        threads [but with the identical pointer reference] without the risk 
-        of segmentation violations or double free exceptions.
-    */
-    template<class T>
-    static inline void saveDelete(T* &pointer){
-      static Mutex m;
-      m.lock();
-      ICL_DELETE(pointer);
-      m.unlock();
-    }
-    /// static utility function which ensures Thread-safety for object functions
-    /** Internally this function template will create a specific mutex for the
-        given class T and the given member function. When using the saveCall template
-        to call an objects member-function from different threads, the function 
-        will automatically become Thread-save, as it is only executes once at one time.
-    */
-    template<class T, void (T::*func)()>
-    static inline void saveCall(T *obj){
-      static Mutex m;
-      m.lock();
-      (obj->*func)();
-      m.unlock();
-    }
-
-    protected:
-    
-    /// sets this thread to sleep for some milli-seconds
-    /** @param msecs time in msecs to sleep **/
-    void msleep(unsigned int msecs){
-      usleep(msecs*1000);
-    }
-    
-    /// sets this thread to sleep for some seconds
-    /** @param secs time in secs to sleep  ( float precision!)**/
-    void sleep(float secs){
-      usleep((long)secs*1000000);
-    }
-    
-    
-    private:
-    
-    pthread_attr_t m_oAttr;
-    pthread_t m_oPT;
-    Mutex m_oMutex;
-    pthread_cond_t m_oWaitCond;
-    pthread_mutex_t m_oWaitMutex;
-    bool m_bRunning;
+    void unlock();
   };
+
+
+  /// static utility function which deletes a pointer and sets it to NULL \ingroup THREAD
+  /** Internally this function template will create a specific mutex for the
+      given class T. All calls to the saveDelete function are protected
+      by the static mutex. So saveDelete(XXX) can be called from different
+      threads [but with the identical pointer reference] without the risk 
+      of segmentation violations or double free exceptions.
+      */
+  template<class T>
+  static inline void saveDelete(T* &pointer){
+    static Mutex m;
+    m.lock();
+    ICL_DELETE(pointer);
+    m.unlock();
+  }
+  /// static utility function which ensures Thread-safety for object functions \ingroup THREAD
+  /** Internally this function template will create a specific mutex for the
+      given class T and the given member function. When using the saveCall template
+      to call an objects member-function from different threads, the function 
+      will automatically become Thread-save, as it is only executes once at one time.
+      */
+  template<class T, void (T::*func)()>
+  static inline void saveCall(T *obj){
+    static Mutex m;
+    m.lock();
+    (obj->*func)();
+    m.unlock();
+  }
 }
 
 
