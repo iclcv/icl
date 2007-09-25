@@ -4,13 +4,14 @@
 #include <vector>
 #include <iclCore.h>
 #include <iclImg.h>
+#include <iclUncopyable.h>
 
 namespace icl {
 
-class BayerConverter
-{
- public:
-
+  class BayerConverter : public Uncopyable
+  {
+    public:
+    
   enum bayerConverterMethod {
     nearestNeighbor = 0,
     simple,
@@ -60,12 +61,14 @@ class BayerConverter
   void edgeSenseInterpolation(const Img<icl8u> *poBayerImg);
   void simpleInterpolation(const Img<icl8u> *poBayerImg);
   
-  // Helper functions
+  // Utility functions
   void clearBorders(icl8u *rgb, int sx, int sy, int w);
   void clip(int *iIn, icl8u *iOut) {
-    *iIn = *iIn < 0 ? 0 : *iIn; 
-    *iIn = *iIn > 255 ? 255 : *iIn; 
-    *iOut = *iIn;
+    *iOut = *iIn = *iIn < 0 ? 0 : *iIn > 255 ? 255 : 0;
+    // slower !
+    // *iIn = *iIn < 0 ? 0 : *iIn; 
+    // *iIn = *iIn > 255 ? 255 : *iIn; 
+    //*iOut = *iIn;
   }
 };
  

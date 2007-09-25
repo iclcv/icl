@@ -6,6 +6,7 @@
 #include <iclImg.h>
 #include <iclPoint.h>
 #include <vector>
+#include <iclUncopyable.h>
 
 namespace icl{
   /** \cond */
@@ -84,7 +85,7 @@ namespace icl{
       - \f$\gamma\f$ aspect-ratio of the Gaussian
       
   **/
-  class GaborOp : public UnaryOp{
+  class GaborOp : public UnaryOp, public Uncopyable{
     public:
     /// creates an empty GaborOp
     GaborOp();

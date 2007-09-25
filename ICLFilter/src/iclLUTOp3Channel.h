@@ -4,6 +4,7 @@
 #include "iclUnaryOp.h"
 #include "iclImg.h"
 #include <vector>
+#include <iclUncopyable.h>
 
 namespace icl {
 
@@ -87,7 +88,7 @@ namespace icl {
       <b>11msec</b>.
   **/
   template<class T>
-  class LUTOp3Channel : public UnaryOp {
+  class LUTOp3Channel : public UnaryOp, public Uncopyable {
     public:
     
     /// Internal plugin class for the LUTOp3Channel \ingroup OTHER

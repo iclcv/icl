@@ -5,6 +5,7 @@
 #include <iclImg.h>
 #include <vector>
 #include <iclPoint.h>
+#include <iclUncopyable.h>
 
 namespace icl{
   /// Chamfering Unit \ingroup UNARY 
@@ -152,7 +153,7 @@ namespace icl{
 
       
   */
-  class ChamferOp : public UnaryOp{
+  class ChamferOp : public UnaryOp, public Uncopyable{
     public:
     /// decides which metric is used to calculate the Hausdorff distance
     enum hausdorffMetric{

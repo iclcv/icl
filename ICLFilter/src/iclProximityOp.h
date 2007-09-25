@@ -4,6 +4,7 @@
 #include <iclBinaryOp.h>
 #include <iclNeighborhoodOp.h>
 #include <iclImg.h>
+#include <iclUncopyable.h>
 
 namespace icl {
   
@@ -79,7 +80,7 @@ namespace icl {
      
       
   */
-  class ProximityOp : public BinaryOp{
+  class ProximityOp : public BinaryOp, public Uncopyable{
     public:
     
     /// enum to specify the current apply mode of a ProximityOp

@@ -3,6 +3,7 @@
 
 #include <iclNeighborhoodOp.h>
 #include <iclImg.h>
+#include <iclUncopyable.h>
 
 namespace icl {
   
@@ -10,7 +11,7 @@ namespace icl {
   /**
       (Only available for Img8u and Img32f, IPP only!) \ingroup UNARY \ingroup NBH
   **/
-  class MorphologicalOp : public NeighborhoodOp {
+  class MorphologicalOp : public NeighborhoodOp, public Uncopyable {
   public:
 
   /// this enum specifiy all possible morphological operations

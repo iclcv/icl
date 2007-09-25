@@ -5,7 +5,7 @@
 #include "iclSize.h"
 #include "iclIntegralImgOp.h"
 #include <vector>
-
+#include <iclUncopyable.h>
 
 namespace icl{
   
@@ -13,7 +13,7 @@ namespace icl{
   /** C.E.: **TODO** document this
   
   */
-  class LocalThresholdOp : public UnaryOp{
+  class LocalThresholdOp : public UnaryOp, public Uncopyable{
     public:
     
     /// create a new LocalThreshold object with given mask-size and global threshold

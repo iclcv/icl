@@ -2,11 +2,12 @@
 #define MIRROR_OP_H
 
 #include "iclBaseAffineOp.h"
+#include <iclUncopyable.h>
 
 namespace icl{
   
   /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
-  class MirrorOp : public BaseAffineOp {
+  class MirrorOp : public BaseAffineOp, public Uncopyable {
     public:
     /// Constructor
     /**

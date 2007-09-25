@@ -2,6 +2,7 @@
 #define AFFINE_OP_H
 
 #include "iclBaseAffineOp.h"
+#include <iclUncopyable.h>
 
 namespace icl{
   /// Class to apply an arbitrary series of affine transformations \ingroup AFFINE \ingroup UNARY
@@ -10,7 +11,7 @@ namespace icl{
     with the apply function, the matrix will be multiplicated to the image, 
     so that the desired affine operations are executed on the image.
   */
-  class AffineOp : public BaseAffineOp {
+  class AffineOp : public BaseAffineOp, public Uncopyable {
     public:
     /// Constructor
     AffineOp (scalemode eInterpolate=interpolateLIN);

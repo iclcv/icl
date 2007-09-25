@@ -4,6 +4,7 @@
 #include <iclUnaryOp.h>
 #include <iclImg.h>
 #include <iclArray.h>
+#include <iclUncopyable.h>
 
 namespace icl {
   
@@ -51,7 +52,7 @@ namespace icl {
     (Taken from IPP Manual)
 
   */
-  class CannyOp : public UnaryOp {
+  class CannyOp : public UnaryOp, public Uncopyable{
     public:
       /// Constructor
       /**

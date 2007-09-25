@@ -2,6 +2,7 @@
 #define ICLCONVOLUTIONOP_H
 
 #include <iclNeighborhoodOp.h>
+#include <iclUncopyable.h>
 
 namespace icl {
   
@@ -60,7 +61,7 @@ namespace icl {
   in two Constructors.
   */
 
-  class ConvolutionOp : public NeighborhoodOp {
+  class ConvolutionOp : public NeighborhoodOp, public Uncopyable{
     public:
     /// this enum contains several predefined convolution kernels
     /** <h3>kernelSobleX</h3>
@@ -241,6 +242,8 @@ namespace icl {
 
     /// kernel type
     kernel m_eKernel;
+    
+    // kernel depth
     depth  m_eKernelDepth;
 
     /// checks whether float array can be interpreted as int
@@ -249,8 +252,9 @@ namespace icl {
     void copyIntToFloatKernel (int iDim);
     /// make major changes for both setKernel() versions
     void cleanupKernels (depth newDepth, const Size& size, bool bBufferData);
-    /// create kernel buffers
+    /// create kernel buffer
     void bufferKernel (float *pfKernel);
+    /// create kernel buffer
     void bufferKernel (int *piKernel);
     /// release kernel buffers
     void releaseBuffers ();

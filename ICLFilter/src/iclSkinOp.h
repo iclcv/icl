@@ -1,7 +1,8 @@
-#ifndef SkinOp_H
-#define SkinOp_H
+#ifndef ICL_SkinOp_H
+#define ICL_SkinOp_H
 
 #include <iclUnaryOp.h>
+#include <iclUncopyable.h>
 /*
   Skin.h
 
@@ -25,7 +26,7 @@ namespace icl {
     
     author Michael Götting (mgoettin@techfak.uni-bielefeld.de)
 **/
-class SkinOp : public UnaryOp{
+class SkinOp : public UnaryOp, public Uncopyable{
   public:
   ///Constructor
   SkinOp () : m_poChromaApply(0), m_poChromaTrain(0) {}

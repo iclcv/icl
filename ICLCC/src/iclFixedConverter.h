@@ -2,7 +2,7 @@
 #define FIXED_CONVERTER_H
 
 #include <iclConverter.h>
-
+#include <iclUncopyable.h>
 
 namespace icl{
 
@@ -13,7 +13,7 @@ namespace icl{
       the FixedConverter.
       @see icl::Converter
   **/
-  class FixedConverter{
+  class FixedConverter : public Uncopyable{
     public:
     /// Create a new FixedConverter Object with given destination params and depth
     /** @param p output image parameters

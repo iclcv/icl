@@ -2,6 +2,7 @@
 #define ICLCONVERTER_H
 
 #include <iclImg.h>
+#include <iclUncopyable.h>
 
 
 namespace icl{
@@ -14,7 +15,7 @@ namespace icl{
       If demanded, the converter provides an interface to specify the order
       of the different operations.
   **/
-  class Converter {
+  class Converter : public Uncopyable{
     public:
     /// enum to define internal used operation order
     enum oporder{
