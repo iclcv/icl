@@ -1,6 +1,7 @@
 #ifndef ICL_MUTEX_H
 #define ICL_MUTEX_H
 #include <pthread.h>
+#include <iclUncopyable.h>
 
 namespace icl{
   /// Mutex class of the ICL \ingroup THREAD
@@ -13,7 +14,7 @@ namespace icl{
       - unlocked (pthread_mutex_unlock)
       - and destroyed (Destructor)-> (pthread_mutex_destroy)
   **/
-  class Mutex{
+  class Mutex : public Uncopyable{ 
     public:
     /// Create a mutex
     Mutex(){
@@ -34,7 +35,7 @@ namespace icl{
     }
     
     /// Locks a mutex on the stack (mutex is unlocked when the stack's section is released
-    class Locker{
+    class Locker : public Uncopyable{
       public:
       /// Locks the given mutex until the section is leaved
       Locker(Mutex *m);

@@ -3,7 +3,7 @@
 /** 
     \defgroup TIME Time and Timer Support Classes and Functions
     \defgroup EX Special Exceptions
-    \defgroup THREAD Support Functions for ;ulti-Threading 
+    \defgroup THREAD Support Functions for Multi-Threading 
     \defgroup UTILS General purpose Utiltiy Classes and Functions
     \defgroup PA Programm Argument Evaluation Functions
     
