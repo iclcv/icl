@@ -73,7 +73,7 @@ DEBUG:=-O0 -g3
 # Non-Debugging flags
 ifeq "${OS_TYPE}" "linux"
  # For linux OS
- NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=native
+ NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium3
 endif
 ifeq "${OS_TYPE}" "macosx"
  # For mac OS
