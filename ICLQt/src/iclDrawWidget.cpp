@@ -6,6 +6,7 @@
 using std::string;
 namespace icl{
   
+  
   /// internally used classes
   struct ICLDrawWidget::State{
     // {{{  struct
