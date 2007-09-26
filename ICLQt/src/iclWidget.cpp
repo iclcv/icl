@@ -325,11 +325,12 @@ namespace icl{
    m_iMouseY = e->y();
    if(m_poCurrOSD){
      m_poCurrOSD->_mouseReleased(e->x(),e->y(),e->button());
+     if(!m_poCurrOSD->mouseOver(e->x(),e->y())){
+       /// emitting signal
+       emit mouseEvent(updateMouseInfo(MouseInteractionInfo::releaseEvent));
+     }
    }
-   if(!m_poCurrOSD->mouseOver(e->x(),e->y())){
-     /// emitting signal
-     emit mouseEvent(updateMouseInfo(MouseInteractionInfo::releaseEvent));
-   }
+  
    m_oOSDMutex.unlock();
    update();
  }
