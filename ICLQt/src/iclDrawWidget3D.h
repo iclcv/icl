@@ -66,6 +66,9 @@ namespace icl{
     
     /// sets the current matrix to the identity matrix
     void id();
+    
+    /// creates a callback function draw command
+    void callback(void (*func)(void*), void *data);
 
     /// forward declaration of the internally used DrawCommandClass
     class DrawCommand3D;

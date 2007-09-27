@@ -15,7 +15,6 @@ namespace icl{
 
     Cube3DDrawCommand(float x,float y,float z, float d):x(x),y(y),z(z),d(d){}
     virtual void execute(){
-      printf("cube command \n");
       static GLfloat n[6][3] = {  
         {-1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {1.0, 0.0, 0.0},
         {0.0, -1.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, -1.0} };
@@ -54,7 +53,6 @@ namespace icl{
 
     Color3DDrawCommand(float r,float g,float b, float a):r(r),g(b),b(b),a(a){}
     virtual void execute(){
-      printf("color command \n");
       glColor4f(r,g,b,a);
     }
     float r,g,b,a;
@@ -65,7 +63,6 @@ namespace icl{
     // {{{ open
 
     virtual void execute(){
-      printf("clear command \n");
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
   };
@@ -76,7 +73,6 @@ namespace icl{
     LookAt3DDrawCommand(float ex, float ey, float ez, float cx, float cy, float cz, float ux, float uy, float uz):
       ex(ex),ey(ey),ez(ez),cx(cx),cy(cy),cz(cz),ux(ux),uy(uy),uz(uz){}
     virtual void execute(){
-      printf("applying lookAt \n");
       glMatrixMode(GL_MODELVIEW);
       gluLookAt(ex,ey,ez,cx,cy,cz,ux,uy,uz);
     }
@@ -90,7 +86,6 @@ namespace icl{
       left(left),right(right),bottom(bottom),top(top),zNear(zNear),zFar(zFar){}
 
     virtual void execute(){
-      printf("setting frustrum \n");
       glMatrixMode(GL_PROJECTION);
       glFrustum(left,right,bottom,top,zNear,zFar);
     }
@@ -103,7 +98,6 @@ namespace icl{
 
     Rotate3DDrawCommand(float rx,float ry,float rz):rx(rx),ry(ry),rz(rz){}
     virtual void execute(){
-      printf("rotate by %f %f %f \n",rx,ry,rz);
       glRotatef(rx,1,0,0);
       glRotatef(ry,0,1,0);
       glRotatef(rz,0,0,1);
@@ -117,7 +111,6 @@ namespace icl{
 
     Translate3DDrawCommand(float tx,float ty,float tz):tx(tx),ty(ty),tz(tz){}
     virtual void execute(){
-      printf("translate by %f %f %f \n",tx,ty,tz);
       glTranslatef(tx,ty,tz);
     }
     float tx,ty,tz;
@@ -128,7 +121,6 @@ namespace icl{
     // {{{ open
 
     MultMat3DDrawCommand(float *mat){
-      printf("multmat\n");
       memcpy(this->mat,mat,16*sizeof(float));
     }
     virtual void execute(){
@@ -145,7 +137,6 @@ namespace icl{
       memcpy(this->mat,mat,16*sizeof(float));
     }
     virtual void execute(){
-      printf("setmat\n");
       glLoadIdentity();
       glMultMatrixf(mat);
     }
@@ -160,7 +151,6 @@ namespace icl{
       m = projection ? GL_PROJECTION : GL_MODELVIEW;
     }
     virtual void execute(){
-      printf("matrix mode set to %s\n",m==GL_PROJECTION ? "GL_PROJECTION" : "GL_MODELVIEW");
       glMatrixMode(m);
     }
     
@@ -185,6 +175,18 @@ namespace icl{
     // {{{ open
 
     virtual void execute() { glLoadIdentity(); }
+  };
+
+  // }}}
+  struct Callback3DCommand : public ICLDrawWidget3D::DrawCommand3D{
+    // {{{ open
+
+    Callback3DCommand(void (*func)(void*), void *data):func(func),data(data){}
+    virtual void execute(){
+      func(data);
+    }
+    void (*func)(void*);
+    void *data;
   };
 
   // }}}
@@ -215,17 +217,14 @@ namespace icl{
     glLoadIdentity();
     
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-
-    GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};  // A White diffuse light
-    GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};  // location is infinite
+    GLfloat light_diffuse[] = {1.0, 0.0, 0.0, 1.0};  /* Red diffuse light. */
+    GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};  /* Infinite light location. */
 
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHTING);
-
-
+    
     glMatrixMode(GL_PROJECTION);
     gluPerspective( 45,  float(width())/height(), 0.1, 100);
     glMatrixMode(GL_MODELVIEW);
@@ -237,7 +236,6 @@ namespace icl{
 #ifdef DO_NOT_USE_GL_VISUALIZATION
     ERROR_LOG("3D Visualization is not supported without OpenGL!");
 #else
-    printf("------------------------------------------------------ \n");
     for(unsigned int i=0;i<m_vecCommands3D.size();++i){
       m_vecCommands3D[i]->execute();
     }
@@ -305,4 +303,9 @@ namespace icl{
   void ICLDrawWidget3D::id(){
     m_vecCommands3D.push_back(new ID3DCommand);
   }
+  void ICLDrawWidget3D::callback(void (*func)(void*), void *data){
+    m_vecCommands3D.push_back(new Callback3DCommand(func,data));
+  }
+
+
 }
