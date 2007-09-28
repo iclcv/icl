@@ -48,6 +48,90 @@ namespace icl{
   };
 
   // }}}
+  struct SuperCube3DDrawCommand : public ICLDrawWidget3D::DrawCommand3D{
+    // {{{ open
+
+    SuperCube3DDrawCommand(float x,float y,float z, float d):x(x),y(y),z(z),d(d){}
+
+    GLfloat* xx (GLfloat x,GLfloat y, GLfloat z){
+      GLfloat* back = new GLfloat[3];
+      back[0]=x;
+      back[1]=y;
+      back[2]=z;
+      return back;
+    }
+    
+    virtual void execute(){
+      static GLfloat** p = new GLfloat* [40];
+      static GLfloat a = 1.0f;
+      static GLfloat b = 0.8f;
+      static bool first = true;
+      if(first){
+        first = false;
+        //E aussen
+        p[0] = xx(-a,a,a);p[1]= xx(-a,-a,a);p[2]= xx(a,-a,a);p[3]= xx(a,a,a);	
+        //E innen
+        p[4] = xx(-b,b,a);p[5]= xx(-b,-b,a);p[6]= xx(b,-b,a);p[7]= xx(b,b,a);
+	
+        //F aussen
+        p[8] = xx(-a,a,-a);p[9]= xx(-a,-a,-a);p[10]= xx(a,-a,-a);p[11]= xx(a,a,-a);
+        //F innne	
+        p[12] = xx(-b,b,-a);p[13]= xx(-b,-b,-a);p[14]= xx(b,-b,-a);p[15]= xx(b,b,-a);
+
+
+        //C innen
+        p[16] = xx(-b,a,-b);p[17]= xx(-b,a,b);p[18]= xx(b,a,b);p[19]= xx(b,a,-b);
+
+        //D innen
+        p[20] = xx(-b,-a,-b);p[21]= xx(-b,-a,b);p[22]= xx(b,-a,b);p[23]= xx(b,-a,-b);
+	
+        //A innen
+        p[24] = xx(a,b,-b);p[25]= xx(a,b,b);p[26]= xx(a,-b,b);p[27]= xx(a,-b,-b);
+
+        //B innen
+        p[28] = xx(-a,b,-b);p[29]= xx(-a,b,b);p[30]= xx(-a,-b,b);p[31]= xx(-a,-b,-b);
+
+        //Innen Wuerfel oben
+        p[32] = xx(b,b,b);p[33]= xx(-b,b,b);p[34]= xx(-b,-b,b);p[35]= xx(b,-b,b);
+
+        //Innen Wuerfel unten
+        p[36] = xx(b,b,-b);p[37]= xx(-b,b,-b);p[38]= xx(-b,-b,-b);p[39]= xx(b,-b,-b);
+      }
+    
+      static GLfloat nml[][3] = {{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},};
+      static GLint idx[192] ={0,4,5,1,1,5,6,2,6,2,3,7,3,7,4,0,                     // upper vetices
+                              8,12,15,11,15,11,10,14,10,14,13,9,13,9,8,12,         // lower vertices
+                              8,16,17,0,17,0,3,18,3,18,19,11,19,11,8,16,           // front vertices
+                              1,21,22,2,22,2,10,23,23,10,9,20,9,20,21,1,           // back vertices
+                              3,25,26,2,26,2,10,27,27,10,11,24,11,24,25,3,         // right vertices
+                              8,28,29,0,0,29,30,1,1,30,31,9,31,9,8,28,             // left vertices
+                              36,24,27,39,39,27,26,35,26,35,32,25,32,25,24,36,     // inner fron right
+                              28,37,33,29,33,29,30,34,30,34,38,31,38,31,28,37,     // inner back left
+                              16,37,33,17,33,17,18,32,18,32,36,19,36,19,16,37,     // inner front left
+                              34,21,22,35,22,35,39,23,39,23,20,38,20,38,34,21,     // inner back right
+                              5,34,35,6,35,6,7,32,7,32,33,4,33,4,5,34,             // inner uppper
+                              37,12,13,38,13,38,39,14,39,14,15,36,15,36,37,12      // inner lower
+      };
+      static GLint normalIdx[] = {4,4,4,4,5,5,5,5,2,2,2,2,3,3,3,3,0,0,0,0,1,1,1,1,
+                                  4,2,5,3,3,5,2,4,0,5,1,4,5,1,4,0,2,1,3,0,0,2,1,3};
+      glTranslatef(x,y,z);
+      glScalef(d,d,d);
+      glBegin(GL_QUADS);
+      for(int i=0;i<192;i+=4){
+        glNormal3fv(nml[normalIdx[(int)(i/4)]]);
+        glVertex3fv(p[idx[i]]);			
+        glVertex3fv(p[idx[i+1]]);			
+        glVertex3fv(p[idx[i+2]]);				
+        glVertex3fv(p[idx[i+3]]);		
+      }
+      glEnd();	
+      glTranslatef(-x,-y,-z);
+      glScalef(1/d,1/d,1/d);
+    }
+    float x,y,z,d;
+  };
+
+  // }}}
   struct Color3DDrawCommand : public ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
 
@@ -280,6 +364,9 @@ namespace icl{
   }
   void ICLDrawWidget3D::cube3D(float x,float y, float z, float d){
     m_vecCommands3D.push_back(new Cube3DDrawCommand(x,y,z,d));
+  } 
+  void ICLDrawWidget3D::supercube3D(float x,float y, float z, float d){
+    m_vecCommands3D.push_back(new SuperCube3DDrawCommand(x,y,z,d));
   }
   void ICLDrawWidget3D::color3D(float r, float g, float b, float a){
     m_vecCommands3D.push_back(new Color3DDrawCommand(r,g,b,a));

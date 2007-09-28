@@ -34,8 +34,11 @@ namespace icl{
     /// clears all buffers
     void clear3D();
     
-    /// draw a 3D cube with border size d at given location (x,y,z)
+    /// draws a 3D cube with size d at given location (x,y,z)
     void cube3D(float cx, float cy, float cz, float d);
+
+    /// draws a very nice 3D cube with size d at given location (x,y,z)
+    void supercube3D(float cx, float cy, float cz, float d);
 
     /// sets the current color to (r,g,b,a)
     void color3D(float r, float g, float b, float a);

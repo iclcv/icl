@@ -44,7 +44,7 @@ public:
       ry += 0.8;
 
       widget->color3D(1, 0, 0, 1);
-      widget->cube3D(0,0,0,0.2);
+      widget->supercube3D(0,0,0,0.2);
       
       // 2D Stuff
       widget->reset();
