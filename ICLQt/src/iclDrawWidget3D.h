@@ -10,13 +10,16 @@ namespace icl{
   /** TODO: Document*/
   class ICLDrawWidget3D : public ICLDrawWidget {
     public:
+    /// internally used callback function type
+    typedef void (*GLCallbackFunc)(void*);
     
-    /// internally used vector class
-    struct vec{
-      vec(float x=0,float y=0,float z=0):x(x),y(y),z(z){}
-      float x,y,z;
+    /// internally used callback class type
+    class GLCallback{
+      public:
+      /// pure virtual drawing function
+      virtual void draw() = 0;
     };
-
+    
     /// creates a new ICLDrawWidget embedded into the parent component
     ICLDrawWidget3D(QWidget *parent);
 
@@ -32,13 +35,13 @@ namespace icl{
     void clear3D();
     
     /// draw a 3D cube with border size d at given location (x,y,z)
-    void cube3D(const vec &center, float d);
+    void cube3D(float cx, float cy, float cz, float d);
 
     /// sets the current color to (r,g,b,a)
     void color3D(float r, float g, float b, float a);
     
     /// sets up the current modelview-matrix
-    void lookAt3D(const vec &eye, const vec &center, const vec &up);
+    void lookAt3D(float eyeX, float eyeY, float eyeZ, float cX, float cY, float cZ, float upX, float upY, float upZ);
     
     /// sets up the current projection-matrix
     void frustum3D(float left,float right,float bottom, float top,float zNear,float zFar);
@@ -68,7 +71,10 @@ namespace icl{
     void id();
     
     /// creates a callback function draw command
-    void callback(void (*func)(void*), void *data);
+    void callback(GLCallbackFunc, void *data=0);
+    
+    /// create a callback object draw comamnd
+    void callback(GLCallback *cb);
 
     /// forward declaration of the internally used DrawCommandClass
     class DrawCommand3D;

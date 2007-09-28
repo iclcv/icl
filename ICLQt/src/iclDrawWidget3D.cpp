@@ -178,20 +178,31 @@ namespace icl{
   };
 
   // }}}
-  struct Callback3DCommand : public ICLDrawWidget3D::DrawCommand3D{
+  struct CallbackFunc3DCommand : public ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
 
-    Callback3DCommand(void (*func)(void*), void *data):func(func),data(data){}
+    CallbackFunc3DCommand(ICLDrawWidget3D::GLCallbackFunc func, void *data):func(func),data(data){}
     virtual void execute(){
       func(data);
     }
-    void (*func)(void*);
+    ICLDrawWidget3D::GLCallbackFunc func;
     void *data;
   };
 
   // }}}
+  struct Callback3DCommand : public ICLDrawWidget3D::DrawCommand3D{
+    // {{{ open
 
-  ICLDrawWidget3D::ICLDrawWidget3D(QWidget *parent):ICLDrawWidget(parent){
+    Callback3DCommand(ICLDrawWidget3D::GLCallback *cb):cb(cb){}
+    virtual void execute(){
+      cb->draw();
+    }
+    ICLDrawWidget3D::GLCallback *cb;
+  };
+
+  // }}}
+
+ ICLDrawWidget3D::ICLDrawWidget3D(QWidget *parent):ICLDrawWidget(parent){
     // {{{ open
 
   }
@@ -267,14 +278,14 @@ namespace icl{
   void ICLDrawWidget3D::clear3D(){
     m_vecCommands3D.push_back(new Clear3DDrawCommand);
   }
-  void ICLDrawWidget3D::cube3D(const ICLDrawWidget3D::vec &v, float d){
-    m_vecCommands3D.push_back(new Cube3DDrawCommand(v.x,v.y,v.z,d));
+  void ICLDrawWidget3D::cube3D(float x,float y, float z, float d){
+    m_vecCommands3D.push_back(new Cube3DDrawCommand(x,y,z,d));
   }
   void ICLDrawWidget3D::color3D(float r, float g, float b, float a){
     m_vecCommands3D.push_back(new Color3DDrawCommand(r,g,b,a));
   }
-  void ICLDrawWidget3D::lookAt3D(const vec &eye, const vec &c, const vec &up){
-    m_vecCommands3D.push_back(new LookAt3DDrawCommand(eye.x,eye.y,eye.z,c.x,c.y,c.z,up.x,up.y,up.z));
+  void ICLDrawWidget3D::lookAt3D(float eyeX, float eyeY, float eyeZ, float cX, float cY, float cZ, float upX, float upY, float upZ){
+    m_vecCommands3D.push_back(new LookAt3DDrawCommand(eyeX,eyeY,eyeZ,cX,cY,cZ,upX,upY,upZ));
   }
   void ICLDrawWidget3D::frustum3D(float left,float right,float bottom, float top,float zNear,float zFar){
     m_vecCommands3D.push_back(new Frustum3DDrawCommand(left,right,bottom,top,zNear,zFar));
@@ -303,8 +314,11 @@ namespace icl{
   void ICLDrawWidget3D::id(){
     m_vecCommands3D.push_back(new ID3DCommand);
   }
-  void ICLDrawWidget3D::callback(void (*func)(void*), void *data){
-    m_vecCommands3D.push_back(new Callback3DCommand(func,data));
+  void ICLDrawWidget3D::callback(ICLDrawWidget3D::GLCallbackFunc func, void *data){
+    m_vecCommands3D.push_back(new CallbackFunc3DCommand(func,data));
+  }
+  void ICLDrawWidget3D::callback(ICLDrawWidget3D::GLCallback *cb){
+    m_vecCommands3D.push_back(new Callback3DCommand(cb));
   }
 
 
