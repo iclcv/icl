@@ -81,7 +81,7 @@ namespace icl{
     void image(ImgBase *image, float x, float y, float w, float h);
     
     /// draws a string into the given rect
-    void text(std::string text, float x, float y, float w=-1, float h=-1);
+    void text(std::string text, float x, float y, float w=-1, float h=-1, int fontsize=30);
 
     /// draws a point at the given location
     void point(float x, float y); 

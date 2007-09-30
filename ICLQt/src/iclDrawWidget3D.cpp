@@ -1,10 +1,10 @@
 #include <iclDrawWidget3D.h>
-
+#include <iclGLTextureMapBaseImage.h>
 namespace icl{
  
   struct ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
-
+    virtual ~DrawCommand3D(){}
     virtual void execute()=0;
   };
 
@@ -132,6 +132,84 @@ namespace icl{
   };
 
   // }}}
+  struct ImageCube3DDrawCommand : public ICLDrawWidget3D::DrawCommand3D{
+    // {{{ open
+
+    ImageCube3DDrawCommand(float x,float y,float z, float d, const ImgBase *image):x(x),y(y),z(z),d(d){
+      glimage = new GLTextureMapBaseImage(image);
+    }
+    ~ImageCube3DDrawCommand(){
+      delete glimage;
+    }
+    virtual void execute(){
+      
+      GLboolean wasLightingEnabled;
+      glGetBooleanv(GL_LIGHTING,&wasLightingEnabled);
+      if(wasLightingEnabled){
+        glDisable(GL_LIGHTING);
+      }
+
+      d/=2;
+      
+      float A[3] = {x+d, y+d, z+d};
+      float B[3] = {x+d, y-d, z+d};
+      float C[3] = {x-d, y-d, z+d};
+      float D[3] = {x-d, y+d, z+d};
+
+      float E[3] = {x+d, y+d, z-d};
+      float F[3] = {x+d, y-d, z-d};
+      float G[3] = {x-d, y-d, z-d};
+      float H[3] = {x-d, y+d, z-d};
+
+      glimage->drawTo3D(A,B,E);
+      glimage->drawTo3D(A,D,E);
+      glimage->drawTo3D(A,D,B);
+
+      glimage->drawTo3D(G,H,C);
+      glimage->drawTo3D(G,H,F);
+      glimage->drawTo3D(G,F,C);
+      
+      d*=2;
+
+      if(wasLightingEnabled){
+        glEnable(GL_LIGHTING);
+      }
+    }
+    float x,y,z,d;
+    GLTextureMapBaseImage *glimage;
+  };
+
+  // }}}
+  struct Image3DDrawCommand : public ICLDrawWidget3D::DrawCommand3D{
+    // {{{ open
+
+    Image3DDrawCommand(float cX,float cY,float cZ,float aX, float aY,float aZ,float bX,float bY,float bZ, const ImgBase *image){
+      c[0]=cX; c[1]=cY; c[2]=cZ;
+      a[0]=aX; a[1]=aY; a[2]=aZ;
+      b[0]=bX; b[1]=bY; b[2]=bZ;
+      glimage = new GLTextureMapBaseImage(image);
+    }
+    ~Image3DDrawCommand(){
+      delete glimage;
+    }
+    virtual void execute(){
+      GLboolean wasLightingEnabled;
+      glGetBooleanv(GL_LIGHTING,&wasLightingEnabled);
+      if(wasLightingEnabled){
+        glDisable(GL_LIGHTING);
+      }
+      
+      glimage->drawTo3D(c,a,b);
+      
+      if(wasLightingEnabled){
+        glEnable(GL_LIGHTING);
+      }    
+    }
+    float c[3],a[3],b[3];
+    GLTextureMapBaseImage *glimage;
+  };
+
+  // }}}
   struct Color3DDrawCommand : public ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
 
@@ -196,6 +274,17 @@ namespace icl{
     Translate3DDrawCommand(float tx,float ty,float tz):tx(tx),ty(ty),tz(tz){}
     virtual void execute(){
       glTranslatef(tx,ty,tz);
+    }
+    float tx,ty,tz;
+  };
+
+  // }}}
+  struct Scale3DDrawCommand : public ICLDrawWidget3D::DrawCommand3D{
+    // {{{ open
+
+    Scale3DDrawCommand(float tx,float ty,float tz):tx(tx),ty(ty),tz(tz){}
+    virtual void execute(){
+      glScalef(tx,ty,tz);
     }
     float tx,ty,tz;
   };
@@ -368,6 +457,12 @@ namespace icl{
   void ICLDrawWidget3D::supercube3D(float x,float y, float z, float d){
     m_vecCommands3D.push_back(new SuperCube3DDrawCommand(x,y,z,d));
   }
+  void ICLDrawWidget3D::imagecube3D(float cx, float cy, float cz, float d, const ImgBase *image){
+    m_vecCommands3D.push_back(new ImageCube3DDrawCommand(cx,cy,cz,d,image));
+  }
+  void ICLDrawWidget3D::image3D(float cX,float cY,float cZ,float aX, float aY,float aZ,float bX,float bY,float bZ, const ImgBase *image){
+    m_vecCommands3D.push_back(new Image3DDrawCommand(cX,cY,cZ,aX,aY,aZ,bX,bY,bZ,image));
+  }
   void ICLDrawWidget3D::color3D(float r, float g, float b, float a){
     m_vecCommands3D.push_back(new Color3DDrawCommand(r,g,b,a));
   }
@@ -383,8 +478,8 @@ namespace icl{
   void ICLDrawWidget3D::translate3D(float tx, float ty, float tz){
     m_vecCommands3D.push_back(new Translate3DDrawCommand(tx,ty,tz));
   }
-  void ICLDrawWidget3D::multMat3D(float *mat){
-    m_vecCommands3D.push_back(new MultMat3DDrawCommand(mat));
+  void ICLDrawWidget3D::scale3D(float sx, float sy,float sz){
+    m_vecCommands3D.push_back(new Scale3DDrawCommand(sx,sy,sz));
   }
   void ICLDrawWidget3D::setMat3D(float *mat){
     m_vecCommands3D.push_back(new SetMat3DDrawCommand(mat));

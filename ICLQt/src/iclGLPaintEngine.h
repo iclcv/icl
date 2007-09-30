@@ -55,6 +55,10 @@ namespace icl{
     virtual void getColor(int *piColor);
     virtual void getFill(int *piColor);
 
+    virtual int getFontSize() const{
+      return m_oFont.pixelSize();
+    }
+
     protected:
     void setupRasterEngine(const Rect& r, const Size &s, PaintEngine::AlignMode mode);
     void setPackAlignment(depth d, int linewidth);

@@ -102,6 +102,20 @@ namespace icl{
   
     /// draws the image into the given rect on a GL context with given window and view port size 
     void drawTo(const Rect &rect, const Size &windowSize);
+
+    /// draw the image into the rectangle specified by Center and two given axis
+    /** Example:
+        <pre>
+        Center------------->FirstAxis
+          |................
+          |...         ....
+          |...  Image  ....
+          |...         ....
+          V................
+        SecondAxis
+        </pre>
+    **/
+    void drawTo3D(float *pCenter, float *pFirstAxis, float *pSecondAxis);
     
     /// returns current image height
     int getImageWidth() const { return m_iImageW; }

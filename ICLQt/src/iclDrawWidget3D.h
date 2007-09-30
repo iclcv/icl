@@ -40,6 +40,12 @@ namespace icl{
     /// draws a very nice 3D cube with size d at given location (x,y,z)
     void supercube3D(float cx, float cy, float cz, float d);
 
+    /// draws a 3D cube with size d at given location (x,y,z)
+    void imagecube3D(float cx, float cy, float cz, float d, const ImgBase *image);
+
+    /// draw a 3D image texture into the parallelogram defined by the base vector c and two direction vector a and b
+    void image3D(float cX,float cY,float cZ,float aX, float aY,float aZ,float bX,float bY,float bZ, const ImgBase *image);
+
     /// sets the current color to (r,g,b,a)
     void color3D(float r, float g, float b, float a);
     
@@ -55,8 +61,11 @@ namespace icl{
     /// rotates the current matrix by given angles
     void rotate3D(float rx, float ry, float rz);
 
-    /// translates teh current szene by given angles
+    /// translates the current szene by given angles
     void translate3D(float rx, float ry, float rz);
+    
+    /// calls glScalef multiply the current matrix with a scaling matrix
+    void scale3D(float sx, float sy, float sz);
     
     /// multiplies the current matrix with a given matrix
     void multMat3D(float *mat);

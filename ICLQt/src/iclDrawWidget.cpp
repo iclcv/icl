@@ -304,18 +304,23 @@ namespace icl{
     // {{{ open
 
   public:
-    TextCommand(std::string text, float x, float y, float w, float h):
-      DrawCommand4F(x,y,w,h),text(text){
+    TextCommand(std::string text, float x, float y, float w, float h, int fontsize):
+      DrawCommand4F(x,y,w,h),text(text),fontsize(fontsize){
     }
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      int oldFontSize = e->getFontSize();
+
+      e->fontsize(fontsize);
       if(m_fC == -1 || m_fD == -1){
         e->text(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),text,PaintEngine::NoAlign);
       }else{
         e->text(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),text,PaintEngine::Justify);
       }
+      e->fontsize(oldFontSize);
     }
   protected:
     string text;
+    int fontsize;
   };
 
   // }}}
@@ -477,8 +482,8 @@ namespace icl{
     m_vecCommands.push_back(new ImageCommand(image,x,y,w,h));
   }
  
-  void ICLDrawWidget::text(string text, float x, float y, float w, float h){
-    m_vecCommands.push_back(new TextCommand(text,x,y,w,h));
+  void ICLDrawWidget::text(string text, float x, float y, float w, float h, int fontsize){
+    m_vecCommands.push_back(new TextCommand(text,x,y,w,h,fontsize));
   } 
 
   void ICLDrawWidget::line(float x1, float y1, float x2, float y2){

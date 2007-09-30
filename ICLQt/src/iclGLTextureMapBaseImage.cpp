@@ -196,6 +196,25 @@ namespace icl{
       return;
     }
   }
+  void GLTextureMapBaseImage::drawTo3D(float *pCenter, float *pFirstAxis, float *pSecondAxis){
+    if(m_po8u){
+      m_po8u->drawTo3D(pCenter,pFirstAxis,pSecondAxis);
+      return;
+    }
+    if(m_po16s){
+      m_po16s->drawTo3D(pCenter,pFirstAxis,pSecondAxis);
+      return;
+    }
+    if(m_po32s){
+      m_po32s->drawTo3D(pCenter,pFirstAxis,pSecondAxis);
+      return;
+    }
+    if(m_po32f){
+      m_po32f->drawTo3D(pCenter,pFirstAxis,pSecondAxis);
+      return;
+    }
 
+  }
+    
 
 }

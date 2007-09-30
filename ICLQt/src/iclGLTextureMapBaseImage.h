@@ -39,7 +39,7 @@ namespace icl{
         @param useSingleBuffer decides whether to instantiate wrapped 
                                GLTextureMap images in single or multi buffer mode
     **/
-    GLTextureMapBaseImage(ImgBase* image = 0, bool useSingleBuffer = true): 
+    GLTextureMapBaseImage(const ImgBase* image = 0, bool useSingleBuffer = true): 
     m_po8u(0),m_po16s(0),m_po32s(0),m_po32f(0), m_poChannelBuf(0),
     m_bUseSingleBuffer(useSingleBuffer){
       m_aiBCI[0]=m_aiBCI[1]=m_aiBCI[2]=0; 
@@ -56,6 +56,20 @@ namespace icl{
     /// this call is passed to the current valid GLTextureMapImage 
     void drawTo(const Rect &rect, const Size &windowSize);
 
+    /// draw the image into the rectangle specified by Center and two given axis
+    /** Example:
+        <pre>
+        Center------------->FirstAxis
+          |................
+          |...         ....
+          |...  Image  ....
+          |...         ....
+          V................
+        SecondAxis
+        </pre>
+    **/
+    void drawTo3D(float *pCenter, float *pFirstAxis, float *pSecondAxis);
+    
     
     /// if the GLTextureMapBase image has no Image, it cannot be drawn
     bool hasImage(){

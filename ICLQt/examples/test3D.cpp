@@ -1,13 +1,13 @@
 #include <iclWidget.h>
 #include <iclDrawWidget3D.h>
-#include <iclPWCGrabber.h>
+#include <iclFileGrabber.h>
 #include <QApplication>
 #include <QThread>
 #include <iclTestImages.h>
 using namespace icl;
 using namespace std;
 
-Size size(640,480);
+Size size(320,240);
 
 
 class MyThread : public QThread{
@@ -25,13 +25,14 @@ public:
   }
   
   virtual void run(){
-    PWCGrabber g(size,24,device);
+    FileGrabber g("images/*.ppm");
     g.setDesiredSize(size);
     
     static float rz = 2;    
     static float ry = 1;
     while(1){
-      widget->setImage(g.grab());
+      const ImgBase *image = g.grab();
+      widget->setImage(image);
       
       widget->lock();
       widget->reset3D();
@@ -43,21 +44,23 @@ public:
       rz += 0.4;
       ry += 0.8;
 
-      widget->color3D(1, 0, 0, 1);
-      widget->supercube3D(0,0,0,0.2);
+      //widget->color3D(1, 1, 1, 1);
+      widget->imagecube3D(0,0,0,0.5,g.grab());
+      // widget->scale3D(0.3,0.3,0.3);
+      // widget->translate3D(-0.5,-0.5,0);
+      //widget->image3D(0,0,0,640.0/480.0,0,0,0,1,0,image);
+      
       
       // 2D Stuff
       widget->reset();
       widget->color(255,0,0,100);
       widget->fill(255,0,0,50);
-      widget->rect(100,100,100,100);
       widget->rel();
-      widget->rect(0.1,0.1,0.8,0.8);
-      widget->abs();
-      widget->color(0,100,255);
-      widget->fill(0,100,255);
-      widget->text("This is a text",300,100,80,20);
-      
+      widget->rect(0.01,0.01,0.5,0.05);
+      widget->color(255,255,255,200);
+      widget->fill(255,255,255,200);
+      widget->text("2D-Overlay!",0.02,0.02,0.48,0.03);
+
       widget->unlock();
       
       

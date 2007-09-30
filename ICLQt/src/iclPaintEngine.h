@@ -44,6 +44,8 @@ namespace icl{
     
     virtual void getColor(int *piColor)=0;
     virtual void getFill(int *piColor)=0;
+    
+    virtual int getFontSize() const =0;
 
   };
 }// namespace

@@ -49,6 +49,11 @@ namespace icl{
     virtual void getColor(int *piColor);
     virtual void getFill(int *piColor);
 
+    virtual int getFontSize() const{
+      return m_oFont.pixelSize();
+    }
+
+
     protected:
       
     QWidget *m_poWidget;
