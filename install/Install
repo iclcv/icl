@@ -152,18 +152,16 @@ foreach my $entry(@dirs) {
         }
     }
     
+    # ---- Install documentation ----
     if ($installMode == 0 || $installMode == 2) {
         print "---- Copying documentation: $entry/doc\n";
         system "cp -r ./$entry/doc/documentation/* $INSTALLDIR/doc/$entry";
-        
-    }
-    
-    if ($installMode == 0 || $installMode == 2) {
-        generate_documentation($INSTALLDIR, @dirs);
+        generate_documentation($INSTALLDIR, @dirs);        
     }
 
     generate_packagevar($entry, $INSTALLDIR, @includes);
     generate_pkgconfig($entry, $INSTALLDIR, @includes);
+    generate_BashSrc($INSTALLDIR);
 }
 
 #---------------------
@@ -276,6 +274,54 @@ sub generate_packagevar {
     print FILE $pkgContent;
     close(FILE);
 }
+# }}}
+
+sub generate_BashSrc {
+# {{{ open
+
+    my ($installdir) = @_;
+    my $BashSrcContent = "";
+
+    #---- Generate content ----
+    $BashSrcContent .= "# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file.\n";
+    $BashSrcContent .= "\n";
+    $BashSrcContent .= "# BashSrc\n";
+    $BashSrcContent .= "\n";
+    $BashSrcContent .= "PROJECT_NAME=ICL\n";
+    $BashSrcContent .= "\n";
+    $BashSrcContent .= "FULL_VERSION=".${majVer}.".".${minVer}."\n";
+    $BashSrcContent .= "\n";
+    $BashSrcContent .= "PROJECT_START_PATH=$ENV{ICL_INSTALL_ROOT}\n";
+    $BashSrcContent .= "\n";
+    $BashSrcContent .= "EXTRA_LD_LIBRARY_PATH=\"\"\n";
+    $BashSrcContent .= "\n";
+    $BashSrcContent .= "INHERITED_PROJECTS=\"\${IPP_ROOT}/5.1/BashSrc\"\n";
+    $BashSrcContent .= "\n\n";
+    $BashSrcContent .= "# --------------------------------------------------\n";
+    $BashSrcContent .= "# Do not change anything below this line\n";
+    $BashSrcContent .= "# --------------------------------------------------\n";
+    $BashSrcContent .= "if ((`echo \${LD_LIBRARY_PATH} | grep -e\"/\${PROJECT_NAME}/\${FULL_VERSION}/\" | wc -c` == 0)); then\n";
+    $BashSrcContent .= "\n";
+    $BashSrcContent .= "# Run-time libraries paths\n";
+    $BashSrcContent .= "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\${PROJECT_START_PATH}/\${PROJECT_NAME}/\${FULL_VERSION}/lib\n";
+    $BashSrcContent .= "\n";
+    $BashSrcContent .= "# Extra libraries path  \n";
+    $BashSrcContent .= "if [ \"`echo \${EXTRA_LD_LIBRARY_PATH} | wc -m`\" -gt \"1\" ] ; then\n";
+    $BashSrcContent .= "  export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\${EXTRA_LD_LIBRARY_PATH}\n";
+    $BashSrcContent .= "fi\n";
+    $BashSrcContent .= "\n";
+    $BashSrcContent .= "# Source all inherited projects\n";
+    $BashSrcContent .= "for i in \${INHERITED_PROJECTS} ; do\n";
+    $BashSrcContent .= "  source \$i\n";
+    $BashSrcContent .= "done\n";
+    $BashSrcContent .= "fi\n";
+
+    #---- Write packagevar ----
+    open(FILE, ">$installdir/BashSrc") or die "cannot write BashSrc:$!";
+    print FILE $BashSrcContent;
+    close(FILE);
+}
+
 # }}}
 
 sub generate_pkgconfig {
