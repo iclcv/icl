@@ -510,9 +510,9 @@ namespace icl{
       A[i] /= LA;
       B[i] /= LB;
     }
-    
-    float DA = LA/m_iXCells;
-    float DB = LB/m_iYCells;
+
+    float DA = fracXForLastPart ? LA/(m_iXCells-1+fracXForLastPart) : LA/m_iXCells;
+    float DB = fracYForLastPart ? LB/(m_iYCells-1+fracYForLastPart) : LB/m_iYCells;
     
     float V[3];
     
@@ -527,27 +527,33 @@ namespace icl{
         float texCoordsXMax = 1;
         float texCoordsYMax = 1;
         
+        float USE_DA0 = x*DA;
+        float USE_DB0 = y*DB;
+        float USE_DA1 = (x+1)*DA;
+        float USE_DB1 = (y+1)*DA;
+        
         if(fracXForLastPart != 0 && x==m_iXCells-1){
-          texCoordsXMax =  1-float(m_iCellSize-m_iRestX)/m_iCellSize;    
+          texCoordsXMax =  fracXForLastPart;
+          USE_DA1 = LA;
         }
         if(fracYForLastPart != 0 && y==m_iYCells-1){
-          texCoordsYMax = 1-float(m_iCellSize-m_iRestY)/m_iCellSize;
+          texCoordsYMax = fracYForLastPart;
+          USE_DB1 = LB;
         }
         
-        
         glTexCoord2f(texCoordsXMin, texCoordsYMin ); 
-        for(int i=0;i<3;i++) V[i] = S[i] + x*DA*A[i] + y*DB*B[i];
+        for(int i=0;i<3;i++) V[i] = S[i] + USE_DA0*A[i] + USE_DB0*B[i];
         glVertex3fv(V);
 
         glTexCoord2f(texCoordsXMin, texCoordsYMax ); 
-        for(int i=0;i<3;i++) V[i] = S[i] + x*DA*A[i] + (y+1)*DB*B[i];
+        for(int i=0;i<3;i++) V[i] = S[i] + USE_DA0*A[i] + USE_DB1*B[i];
         glVertex3fv(V);
         
-        for(int i=0;i<3;i++) V[i] = S[i] + (x+1)*DA*A[i] + (y+1)*DB*B[i];
+        for(int i=0;i<3;i++) V[i] = S[i] + USE_DA1*A[i] + USE_DB1*B[i];
         glTexCoord2f(texCoordsXMax, texCoordsYMax ); 
         glVertex3fv(V);
         
-        for(int i=0;i<3;i++) V[i] = S[i] + (x+1)*DA*A[i] + y*DB*B[i];
+        for(int i=0;i<3;i++) V[i] = S[i] + USE_DA1*A[i] + USE_DB0*B[i];
         glTexCoord2f(texCoordsXMax, texCoordsYMin ); 
         glVertex3fv(V);
         
