@@ -69,6 +69,9 @@ public:
     gui << ( GUI("hbox") 
              << "label()[@handle=l1@label=vision fps]"
              << "label()[@handle=l2@label=linass fps]"
+             << "label()[@handle=l3@label=center count]"
+             << "slider(0,100,10)[@handle=Hsl@out=Vsl@label=sleeptime]"
+             << "togglebutton(!off,on)[@out=Vlo@label=Show labels]"
            );
     gui.show();
     dh = &gui.getValue<DrawHandle>("image");
@@ -77,6 +80,11 @@ public:
 
     while(1){
       static Img8u dst;
+      static LabelHandle &l = gui.getValue<LabelHandle>("l1");
+      static FPSEstimator fps(10);
+      l = fps.getFpsString();
+
+
       const ImgBase *image = grabber->grab();
 
       vec v = getCenters(*(image->asImg<icl8u>()),&dst);
@@ -87,10 +95,12 @@ public:
 
       drawhandlemutex.lock();
       (*dh) = &dst;
+      static LabelHandle &lN = gui.getValue<LabelHandle>("l3");
+      lN = (int)v.size();
       drawhandlemutex.unlock();
 
-
-      msleep(10);
+      static int &sleepTime = gui.getValue<int>("Vsl");
+      msleep(sleepTime);
     }
   }
 private:
@@ -102,6 +112,9 @@ public:
   virtual void run(){
     PositionTracker<int> pt;
     while(1){
+      static LabelHandle &l = gui.getValue<LabelHandle>("l2");
+      static FPSEstimator fps(10);
+      l = fps.getFpsString();
 
       datamutex.lock();
       vec v = DATA;
@@ -117,15 +130,19 @@ public:
         w->color(255,0,0);
         for(unsigned int i=0;i<v.size();i+=2){
           w->sym(v[i],v[i+1],ICLDrawWidget::symCross);
-          static char buf[100];
-          w->text(toStr(pt.getID(i/2),buf),v[i],v[i+1],10);
+          static bool &labelsOnFlag = gui.getValue<bool>("Vlo");
+          if(labelsOnFlag){
+            static char buf[100];
+            w->text(toStr(pt.getID(i/2),buf),v[i],v[i+1],10);
+          }
         }
       }
       w->unlock();
       drawhandlemutex.unlock();
       w->update();
 
-      msleep(10);        
+      static int &sleepTime = gui.getValue<int>("Vsl");
+      msleep(sleepTime);
     }
   }
 };
