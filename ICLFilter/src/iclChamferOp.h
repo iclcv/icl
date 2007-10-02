@@ -5,7 +5,6 @@
 #include <iclImg.h>
 #include <vector>
 #include <iclPoint.h>
-#include <iclUncopyable.h>
 
 namespace icl{
   /// Chamfering Unit \ingroup UNARY 
@@ -151,9 +150,12 @@ namespace icl{
       -# distancePenalty outliers are punished proportionally to the distance to the images ROI
          (the distance value can be weighted linearly by a manually given factor)
 
-      
+      \section COPY_CO Copying
+      Please note, that ChampferOp instances are copied shallowly. By this means, you can cheaply 
+      pass ChampferOp instances to function calls, but this ops share their internal image buffer,
+      so in some cases inpredictable behaviour can occur.
   */
-  class ChamferOp : public UnaryOp, public Uncopyable{
+  class ChamferOp : public UnaryOp{
     public:
     /// decides which metric is used to calculate the Hausdorff distance
     enum hausdorffMetric{
