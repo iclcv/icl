@@ -73,7 +73,7 @@ DEBUG:=-O0 -g3
 # Non-Debugging flags
 ifeq "${OS_TYPE}" "linux"
  # For linux OS
- NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium3
+ NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium4
 endif
 ifeq "${OS_TYPE}" "macosx"
  # For mac OS
@@ -127,4 +127,4 @@ DIR_LOWPRIORITY:=ICLGeom examples
 
 #########################################################################
 # Exclude the folowing folder or files
-SKIP_DIRECTORIES += ICLNN ICLViola
+SKIP_DIRECTORIES += 

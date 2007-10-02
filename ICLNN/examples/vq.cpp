@@ -2,7 +2,7 @@
 #include "iclInterleaved.h"
 #include "iclImg.h"
 #include "iclMathematics.h"
-#include "iclFileReader.h"
+#include "iclFileGrabber.h"
 #include "iclFileWriter.h"
 
 using namespace icl;
@@ -19,7 +19,7 @@ int main() {
   
   // Real image
   vector<icl32f*> vecResultData;
-  FileReader reader("demoImages/testImg.ppm");
+  FileGrabber reader("demoImages/testImg.ppm");
   const ImgBase *tImgIn = reader.grab();
   ImgBase *tImg = tImgIn->convert<icl32f>();
   ImgBase *tResultImg = imgNew(depth32f, tImg->getSize(), formatGray);

@@ -681,7 +681,7 @@ namespace icl {
 
     /* }}} */
   
-    /** @{ @name basic in-place image manipulations (scale mirror,clear and normalize) */
+    /** @{ @name basic in-place image manipulations */
     /* {{{ open */
 
     /// perform an in-place resize of the image (keeping the data) 

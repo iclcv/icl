@@ -1,5 +1,8 @@
 #include <iclMathematics.h>
 #include <vector>
+#include <fstream>
+#include <sstream>
+
 /*
   Math.cpp
 
@@ -415,5 +418,5 @@ namespace icl{
 // }}}
 
 // }}}
-
+  
 } //namespace icl

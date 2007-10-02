@@ -27,7 +27,7 @@ namespace icl{
       </pre>
 
       <h3>copy</h3>
-      The copy stategy is an analogue to the IPPs "ippCopyReplicateBorder_.."
+      The copy strategy is an analogue to the IPPs "ippCopyReplicateBorder_.."
       function. It will extrude the images ROI edges towards the images borders.
       
       <pre>
@@ -42,7 +42,7 @@ namespace icl{
       </pre>
       
       <h3>fromOther</h3>
-      The last stategy is to copy the border pixels from another given
+      The last strategy is to copy the border pixels from another given
       Img. 
   
   */

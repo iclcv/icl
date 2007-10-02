@@ -334,7 +334,7 @@ namespace icl {
   /** \endcond */
 
 /* }}} */
-
+ 
 /* {{{ Global functions */
 
 /// create a new image instance of the given depth type and with given parameters \ingroup IMAGE
