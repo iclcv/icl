@@ -521,7 +521,7 @@ namespace icl{
         glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
         
         glBegin(GL_QUADS);
-        
+
         float texCoordsXMin = 0;
         float texCoordsYMin = 0;
         float texCoordsXMax = 1;
@@ -530,7 +530,7 @@ namespace icl{
         float USE_DA0 = x*DA;
         float USE_DB0 = y*DB;
         float USE_DA1 = (x+1)*DA;
-        float USE_DB1 = (y+1)*DA;
+        float USE_DB1 = (y+1)*DB;
         
         if(fracXForLastPart != 0 && x==m_iXCells-1){
           texCoordsXMax =  fracXForLastPart;
