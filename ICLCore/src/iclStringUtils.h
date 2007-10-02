@@ -7,20 +7,25 @@
 #include <numeric>
 #include "iclTypes.h"
 #include "iclCore.h"
-
+#include <ctype.h>
 namespace icl{
   
-
+  inline char toLower(const char &c){
+    return tolower(c);
+  }
+  inline char toUpper(const char &c){
+    return toupper(c);
+  }
   
   /// inplace lower case conversion \ingroup STRUTILS
   inline std::string &toLowerI(std::string &s){
-    std::for_each(s.begin(),s.end(),tolower);
+    std::for_each(s.begin(),s.end(),toLower);
     return s;
   }
   
   /// inplace upper case conversion \ingroup STRUTILS
   inline std::string &toUpperI(std::string &s){
-    std::for_each(s.begin(),s.end(),toupper);
+    std::for_each(s.begin(),s.end(),toUpper);
     return s;
   }
 
