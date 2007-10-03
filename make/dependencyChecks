@@ -3,12 +3,12 @@
 ############################# check for IPP ############################
 ifeq "${OS_TYPE}" "linux"
 # Linux support
-ifeq "$(wildcard $(IPP_ROOT)/5.1/sharedlib/libipp*.so)" ""
+ifeq "$(wildcard $(IPP_ROOT)/5.2/sharedlib/libipp*.so)" ""
 ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
 ifeq "$(_WARN_IPP)" ""
 _WARN_IPP=done # warn only once
 export _WARN_IPP
-$(warning "IPP 5.1 is not available. Its usage is switched off.")
+$(warning "IPP 5.2 is not available. Its usage is switched off.")
 endif
 CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
 CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
@@ -70,24 +70,33 @@ endif
 ############################# check for QT 4 ############################
 # try whether useful QTDIR is already set
 ifeq "$(shell ${QTDIR}/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
-QTDIR=/vol/qt/4.3
+QTDIR=$(lastword $(sort $(wildcard /vol/qt/4.*)))
 endif
 # try whether QTDIR contains QT 4 now
 ifneq "$(shell ${QTDIR}/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
 HAVE_QT=TRUE
-else
 ifeq "$(_WARN_QT)" ""
 _WARN_QT=done # warn only once
 export _WARN_QT
-$(warning "Qt version 4.3 is not available. Qt-specific targets are not built.")
+$(warning "$(shell ${QTDIR}/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')")
+endif
+
+else
+
+ifeq "$(_WARN_QT)" ""
+_WARN_QT=done # warn only once
+export _WARN_QT
+$(warning "Qt version 4.x is not available. Qt-specific targets are not built.")
 endif
 endif
 
 ############################# check for libdc1394.so.2x ############################
-LIBDC_ROOT ?= /vol/video
-ifeq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.*2*)" ""
+_LIB:=$(firstword $(wildcard $(addsuffix /lib/libdc1394.so.2*, \
+      ${LIBDC_ROOT} /vol/video /usr)))
+LIBDC_ROOT:=$(subst lib/,,$(dir $(_LIB)))
+ifeq "$(LIBDC_ROOT)" ""
 ifeq "${_WARN_LIBDC}" ""
-$(warning "libdc1394.so.2x was not found in ${LIBDC_ROOT}/lib. DCGrabber support disabled.")
+$(warning "libdc1394.so.2x was not found. Set LIBDC_ROOT! DCGrabber support disabled.")
 export _WARN_LIBDC=done
 endif # _WARN_LIBDC
 else # found libdc1394.so.2x in LIBDC_ROOT/lib ->ok
@@ -95,10 +104,12 @@ HAVE_LIBDC=TRUE
 endif # searching in LIBDC_ROOT/lib
 
 ############################# check for libraw1394.so #############################
-LIBRAW_ROOT ?= /vol/video
-ifeq "$(wildcard ${LIBRAW_ROOT}/lib/libraw1394.so*)" ""
+_LIB:=$(firstword $(wildcard $(addsuffix /lib/libraw1394.so*, \
+      ${LIBRAW_ROOT} /usr /vol/video)))
+LIBRAW_ROOT:=$(subst lib/,,$(dir $(_LIB)))
+ifeq "$(LIBRAW_ROOT)" ""
 ifeq "${_WARN_LIBRAW}" ""
-$(warning "libraw1394.so was not found in ${LIBRAW_ROOT}/lib. DCGrabber support disabled.")
+$(warning "libraw1394.so was not found. Set LIBRAW_ROOT! DCGrabber support disabled.")
 export _WARN_LIBRAW=done
 endif # _WARN_LIBRAW
 else # found libraw1394.so in LIBRAW_ROOT/lib ->ok
@@ -126,8 +137,10 @@ endif
 endif
 
 ############################# check for unicap ##########################
-UNICAP_ROOT ?= /vol/video
-ifeq "$(wildcard ${UNICAP_ROOT}/lib/libunicap*.so)" ""
+_LIB:=$(firstword $(wildcard $(addsuffix /lib/libunicap*.so, \
+      ${UNICAP_ROOT} /usr /vol/video)))
+UNICAP_ROOT:=$(subst lib/,,$(dir $(_LIB)))
+ifeq "$(UNICAP_ROOT)" ""
 ifeq "${_WARN_UNICAP}" ""
 $(warning "libunicap.so was not found in ${UNICAP_ROOT}/lib. Unicap support disabled.")
 export _WARN_UNICAP=done
