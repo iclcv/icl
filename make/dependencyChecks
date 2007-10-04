@@ -78,7 +78,6 @@ HAVE_QT=TRUE
 ifeq "$(_WARN_QT)" ""
 _WARN_QT=done # warn only once
 export _WARN_QT
-$(warning "$(shell ${QTDIR}/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')")
 endif
 
 else
@@ -91,8 +90,7 @@ endif
 endif
 
 ############################# check for libdc1394.so.2x ############################
-_LIB:=$(firstword $(wildcard $(addsuffix /lib/libdc1394.so.2*, \
-      ${LIBDC_ROOT} /vol/video /usr)))
+_LIB:=$(firstword $(wildcard $(addsuffix /lib/libdc1394.so.2*, ${LIBDC_ROOT} /vol/video /usr)))
 LIBDC_ROOT:=$(subst lib/,,$(dir $(_LIB)))
 ifeq "$(LIBDC_ROOT)" ""
 ifeq "${_WARN_LIBDC}" ""
@@ -104,8 +102,7 @@ HAVE_LIBDC=TRUE
 endif # searching in LIBDC_ROOT/lib
 
 ############################# check for libraw1394.so #############################
-_LIB:=$(firstword $(wildcard $(addsuffix /lib/libraw1394.so*, \
-      ${LIBRAW_ROOT} /usr /vol/video)))
+_LIB:=$(firstword $(wildcard $(addsuffix /lib/libraw1394.so*, ${LIBRAW_ROOT} /vol/video /usr)))
 LIBRAW_ROOT:=$(subst lib/,,$(dir $(_LIB)))
 ifeq "$(LIBRAW_ROOT)" ""
 ifeq "${_WARN_LIBRAW}" ""
@@ -137,8 +134,7 @@ endif
 endif
 
 ############################# check for unicap ##########################
-_LIB:=$(firstword $(wildcard $(addsuffix /lib/libunicap*.so, \
-      ${UNICAP_ROOT} /usr /vol/video)))
+_LIB:=$(firstword $(wildcard $(addsuffix /lib/libunicap*.so, ${UNICAP_ROOT} /vol/video /usr)))
 UNICAP_ROOT:=$(subst lib/,,$(dir $(_LIB)))
 ifeq "$(UNICAP_ROOT)" ""
 ifeq "${_WARN_UNICAP}" ""
