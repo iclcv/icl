@@ -219,10 +219,6 @@
 				RelativePath="..\ICLCore\src\iclStringUtils.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\iclTestDummy.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Headerdateien"

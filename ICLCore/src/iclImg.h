@@ -228,6 +228,13 @@ namespace icl {
       return this->shallowCopy (static_cast<const Img<Type>&>(tSource));
     }
 
+#ifdef WIN32
+    Img<Type>& operator=(const Img<Type>& tSource) {
+      // call private const-version
+      return this->shallowCopy (static_cast<const Img<Type>&>(tSource));
+    }
+#endif
+
     /// pixel access operator
     /** This operator may be used, to access the pixel data of the image
         e.g. copy of image data:
