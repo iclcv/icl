@@ -999,7 +999,12 @@ public:
       throw GUISyntaxErrorException("-- long text --","definition string was too large! (>10000 characters)");
     }
 
+#ifndef WIN32
     usleep(1000*100);
+#else
+	Sleep(100);
+#endif
+
     string label = extract_label(definition);
     string minsize = extract_minsize(definition);
     string maxsize = extract_maxsize(definition);
@@ -1094,7 +1099,11 @@ public:
 
   void GUI::waitForCreation(){
     while(!m_bCreated){
-      usleep(100*1000);
+#ifndef WIN32
+		usleep(1000*100);
+#else
+		Sleep(100);
+#endif
     }
   }
 

@@ -83,6 +83,7 @@
 			ConfigurationType="4"
 			InheritedPropertySheets=".\ICL Release.vsprops"
 			CharacterSet="1"
+			ManagedExtensions="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -102,13 +103,14 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="ICL_API_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4996; 4800"
+				DisableSpecificWarnings="4996; 4800; 4244; 4099"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -156,11 +158,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLUtils\src\iclSemaphore.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLUtils\src\iclSmartPtr.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\ICLUtils\src\iclStrTok.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLUtils\src\iclThread.cpp"
 				>
 			</File>
 			<File
@@ -190,7 +200,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLUtils\src\iclFPSEstimator.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLUtils\src\iclMacros.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLUtils\src\iclMultiThreader.h"
 				>
 			</File>
 			<File
@@ -199,6 +217,14 @@
 			</File>
 			<File
 				RelativePath="..\ICLUtils\src\iclProgArg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLUtils\src\iclSemaphore.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLUtils\src\iclShallowCopyable.h"
 				>
 			</File>
 			<File
@@ -218,11 +244,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLUtils\src\iclThread.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLUtils\src\iclTime.h"
 				>
 			</File>
 			<File
 				RelativePath="..\ICLUtils\src\iclTimer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLUtils\src\iclUncopyable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLUtils\src\iclUtils.h"
 				>
 			</File>
 		</Filter>

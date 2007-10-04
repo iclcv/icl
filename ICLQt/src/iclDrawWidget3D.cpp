@@ -335,12 +335,15 @@ namespace icl{
     // {{{ open
 
     Perspective3DCommand(float angle,float aspect,float near,float far):
-      angle(angle),aspect(aspect),near(near),far(far){}
+      angle(angle),aspect(aspect),nearVal(near),farVal(far){}
     virtual void execute(){
       glMatrixMode(GL_PROJECTION);
-      gluPerspective(angle,aspect,near,far);
+      gluPerspective(angle,aspect,nearVal,farVal);
     }
-    float angle,aspect,near,far;
+	float angle;
+	float aspect;
+	float nearVal;
+	float farVal;
   };
 
   // }}}
@@ -490,8 +493,8 @@ namespace icl{
   void ICLDrawWidget3D::projection(){
     m_vecCommands3D.push_back(new MatrixMode3DDrawCommand(true));
   }
-  void ICLDrawWidget3D::perspective(float angle, float aspect, float near, float far){
-    m_vecCommands3D.push_back(new Perspective3DCommand(angle,aspect,near,far));
+  void ICLDrawWidget3D::perspective(float angle, float aspect, float nearVal, float farVal){
+    m_vecCommands3D.push_back(new Perspective3DCommand(angle,aspect,nearVal,farVal));
   }
   void ICLDrawWidget3D::id(){
     m_vecCommands3D.push_back(new ID3DCommand);

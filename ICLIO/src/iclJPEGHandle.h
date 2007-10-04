@@ -40,7 +40,7 @@ namespace icl{
 #else // no JPEG_SUPPORT
 namespace icl{
   /** \cond */
-  struct JPEGDataHandle{}
+  struct JPEGDataHandle{};
   /** \endcond */
 }
 #endif // JPEG_SUPPORT 

@@ -169,6 +169,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLFilter\src\iclChamferOp.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLFilter\src\iclConvolutionOp.cpp"
 				>
 			</File>
@@ -177,11 +181,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\iclFilter.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\ICLFilter\src\iclFilterMask.cpp"
+				RelativePath="..\ICLFilter\src\iclGaborOp.cpp"
 				>
 			</File>
 			<File
@@ -193,11 +193,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\iclLogical.cpp"
+				RelativePath="..\ICLFilter\src\iclLUTOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\iclLUTOp.cpp"
+				RelativePath="..\ICLFilter\src\iclLUTOp3Channel.cpp"
 				>
 			</File>
 			<File
@@ -245,6 +245,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLFilter\src\iclUnaryOpPipe.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclWeightChannelsOp.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLFilter\src\iclWeightedSumOp.cpp"
 				>
 			</File>
@@ -287,6 +295,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLFilter\src\iclChamferOp.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLFilter\src\iclConvolutionOp.h"
 				>
 			</File>
@@ -299,7 +311,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\iclFilterMask.h"
+				RelativePath="..\ICLFilter\src\iclGaborOp.h"
 				>
 			</File>
 			<File
@@ -311,11 +323,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\iclLogical.h"
+				RelativePath="..\ICLFilter\src\iclLUTOp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ICLFilter\src\iclLUTOp.h"
+				RelativePath="..\ICLFilter\src\iclLUTOp3Channel.h"
 				>
 			</File>
 			<File
@@ -376,6 +388,14 @@
 			</File>
 			<File
 				RelativePath="..\ICLFilter\src\iclUnaryOp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclUnaryOpPipe.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLFilter\src\iclWeightChannelsOp.h"
 				>
 			</File>
 			<File

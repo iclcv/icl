@@ -85,6 +85,7 @@
 			ConfigurationType="4"
 			InheritedPropertySheets=".\ICL Release.vsprops"
 			CharacterSet="1"
+			ManagedExtensions="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -110,7 +111,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4244; 4267; 4996"
+				DisableSpecificWarnings="4244; 4267; 4996; 4305"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -179,6 +180,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLCore\src\iclLine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLCore\src\iclLine32f.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLCore\src\iclMathematics.cpp"
 				>
 			</File>
@@ -187,11 +196,31 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLCore\src\iclPoint32f.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLCore\src\iclRect.cpp"
 				>
 			</File>
 			<File
+				RelativePath="..\ICLCore\src\iclRect32f.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLCore\src\iclSize.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLCore\src\iclSize32f.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLCore\src\iclStringUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\iclTestDummy.cpp"
 				>
 			</File>
 		</Filter>
@@ -229,11 +258,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLCore\src\iclLine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLCore\src\iclLine32f.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLCore\src\iclMathematics.h"
 				>
 			</File>
 			<File
 				RelativePath="..\ICLCore\src\iclPoint.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLCore\src\iclPoint32f.h"
 				>
 			</File>
 			<File
@@ -245,11 +286,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLCore\src\iclRect32f.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLCore\src\iclSize.h"
 				>
 			</File>
 			<File
+				RelativePath="..\ICLCore\src\iclSize32f.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLCore\src\iclSteppingRange.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLCore\src\iclStringUtils.h"
 				>
 			</File>
 			<File

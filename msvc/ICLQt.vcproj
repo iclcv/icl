@@ -148,7 +148,39 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\ICLQt\src\iclBorderHandle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclButtonGroupHandle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclButtonHandle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclChromaGUI.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclComboHandle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclCompabilityLabel.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclDoubleSlider.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclDragger.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclDrawHandle.cpp"
 				>
 			</File>
 			<File
@@ -156,11 +188,47 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLQt\src\iclDrawWidget3D.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclFloatHandle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclFSliderHandle.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclGLPaintEngine.cpp"
 				>
 			</File>
 			<File
+				RelativePath="..\ICLQt\src\iclGUI.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclGUIDefinition.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclGUIWidget.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclImageHandle.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclImgParamWidget.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclIntHandle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclLabelHandle.cpp"
 				>
 			</File>
 			<File
@@ -200,6 +268,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLQt\src\iclSliderHandle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclSpinnerHandle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclStringHandle.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclStringSignalButton.cpp"
 				>
 			</File>
@@ -218,7 +298,47 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLQt\src\iclBorderHandle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclBoxHandle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclButtonGroupHandle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclButtonHandle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclChromaGUI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclComboHandle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclCompabilityLabel.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclDispHandle.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclDoubleSlider.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclDragger.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclDrawHandle.h"
 				>
 			</File>
 			<File
@@ -226,11 +346,59 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLQt\src\iclDrawWidget3D.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclFloatHandle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclFSliderHandle.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclGLPaintEngine.h"
 				>
 			</File>
 			<File
+				RelativePath="..\ICLQt\src\iclGUI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclGUIDataStore.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclGUIDefinition.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclGUIHandle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclGUISyntaxErrorException.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclGUIWidget.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclImageHandle.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclImgParamWidget.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclIntHandle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclLabelHandle.h"
 				>
 			</File>
 			<File
@@ -270,6 +438,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ICLQt\src\iclParable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ICLQt\src\iclQImageConverter.h"
 				>
 			</File>
@@ -279,6 +451,18 @@
 			</File>
 			<File
 				RelativePath="..\ICLQt\src\iclQtPaintEngine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclSliderHandle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclSpinnerHandle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLQt\src\iclStringHandle.h"
 				>
 			</File>
 			<File

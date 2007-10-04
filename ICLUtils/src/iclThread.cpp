@@ -3,7 +3,7 @@
 #include "iclMacros.h"
 //#include <sched.h>
 #include <pthread.h>
-#include <unistd.h>
+//#include <unistd.h>
 
 
 namespace icl{
@@ -64,11 +64,19 @@ namespace icl{
     impl->mutex.unlock();
   }
   
-  void Thread::msleep(unsigned int msecs){ 
-    usleep(msecs*1000); 
+  void Thread::msleep(unsigned int msecs){
+#ifndef WIN32
+    usleep(msecs*1000);
+#else
+	  System::Threading::Thread::Sleep(msecs);
+#endif
   }
   void Thread::sleep(float secs){
-    usleep((long)secs*1000000); 
+#ifndef WIN32
+    usleep((long)secs*1000000);
+#else
+	  System::Threading::Thread::Sleep(secs*1000);
+#endif
   }
   
   void *icl_thread_handler(void *t){

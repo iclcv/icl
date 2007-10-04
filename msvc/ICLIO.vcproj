@@ -110,7 +110,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4244; 4800; 4996; 4267; 4101; 4290; 4800"
+				DisableSpecificWarnings="4244; 4800; 4996; 4267; 4101; 4290; 4800; 4099"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -162,11 +162,47 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ICLIO\src\iclFileReader.cpp"
+				RelativePath="..\ICLIO\src\iclFile.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileGrabber.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileGrabberPluginCSV.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileGrabberPluginJPEG.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileGrabberPluginPNM.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileList.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFilenameGenerator.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\ICLIO\src\iclFileWriter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileWriterPluginCSV.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileWriterPluginJPEG.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileWriterPluginPNM.cpp"
 				>
 			</File>
 			<File
@@ -175,6 +211,14 @@
 			</File>
 			<File
 				RelativePath="..\ICLIO\src\iclIO.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclIOUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclJPEGHandle.cpp"
 				>
 			</File>
 			<File
@@ -196,11 +240,55 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\ICLIO\src\iclFileReader.h"
+				RelativePath="..\ICLIO\src\iclFile.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileGrabber.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileGrabberPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileGrabberPluginCSV.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileGrabberPluginJPEG.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileGrabberPluginPNM.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFilenameGenerator.h"
 				>
 			</File>
 			<File
 				RelativePath="..\ICLIO\src\iclFileWriter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileWriterPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileWriterPluginCSV.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileWriterPluginJPEG.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclFileWriterPluginPNM.h"
 				>
 			</File>
 			<File
@@ -209,6 +297,14 @@
 			</File>
 			<File
 				RelativePath="..\ICLIO\src\iclIO.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclIOUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ICLIO\src\iclJPEGHandle.h"
 				>
 			</File>
 			<File

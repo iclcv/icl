@@ -179,7 +179,7 @@ namespace icl{
 
   // }}}
 
-  string FilenameGenerator::FilenameGenerator::next(){
+  string FilenameGenerator::next(){
     // {{{ open
 
     ICLASSERT_RETURN_VAL(!isNull(),0);

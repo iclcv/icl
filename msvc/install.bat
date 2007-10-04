@@ -23,7 +23,6 @@ copy ..\ICLCore\src\*.h %1\include\*.h
 copy ..\ICLFilter\src\*.h %1\include\*.h
 copy ..\ICLIO\src\*.h %1\include\*.h
 copy ..\ICLMEx\src\*.h %1\include\*.h
-copy ..\ICLNN\src\*.h %1\include\*.h
 copy ..\ICLQt\src\*.h %1\include\*.h
 copy ..\ICLUtils\src\*.h %1\include\*.h
 copy compat\*.h %1\include\*.h
@@ -38,7 +37,6 @@ copy ..\ICLCore\doc\documentation\html\* %1\doc\html\*
 copy ..\ICLFilter\doc\documentation\html\* %1\doc\html\*
 copy ..\ICLIO\doc\documentation\html\* %1\doc\html\*
 copy ..\ICLMEx\doc\documentation\html\* %1\doc\html\*
-copy ..\ICLNN\doc\documentation\html\* %1\doc\html\*
 copy ..\ICLQt\doc\documentation\html\* %1\doc\html\*
 copy ..\ICLUtils\doc\documentation\html\* %1\doc\html\*
 

@@ -1,9 +1,7 @@
 #include <iclFileGrabberPluginJPEG.h>
 
-#ifdef WITH_JPEG_SUPPORT
 #include <iclStrTok.h>
 #include <iclJPEGHandle.h>
-#endif
 
 using namespace std;
 

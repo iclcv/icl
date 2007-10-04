@@ -4,6 +4,8 @@
 #include <ipp.h>
 #endif
 
+#include <iclMacros.h>
+
 namespace icl{
 #ifndef WITH_IPP_OPTIMIZATION
   /// fallback implementation for the IppiPoint struct, defined in the ippi libb \ingroup TYPES

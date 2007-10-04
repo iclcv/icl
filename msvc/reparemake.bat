@@ -11,7 +11,6 @@ del  ..\ICLCore\makefile
 del  ..\ICLFilter\makefile
 del  ..\ICLIO\makefile
 del  ..\ICLMEx\makefile
-del  ..\ICLNN\makefile
 del  ..\ICLQt\makefile
 del  ..\ICLUtils\makefile
 del  ..\ICLQuick\makefile
@@ -23,7 +22,6 @@ del  ..\ICLCore\src\makefile
 del  ..\ICLFilter\src\makefile
 del  ..\ICLIO\src\makefile
 del  ..\ICLMEx\src\makefile
-del  ..\ICLNN\src\makefile
 del  ..\ICLQt\src\makefile
 del  ..\ICLUtils\src\makefile
 del  ..\ICLQuick\src\makefile
@@ -35,7 +33,6 @@ del  ..\ICLCC\examples\makefile
 del  ..\ICLFilter\examples\makefile
 del  ..\ICLIO\examples\makefile
 del  ..\ICLMEx\examples\makefile
-del  ..\ICLNN\examples\makefile
 del  ..\ICLQt\examples\makefile
 del  ..\ICLUtils\examples\makefile
 del  ..\ICLQuick\examples\makefile
@@ -47,7 +44,6 @@ del  ..\ICLCore\lib\makefile
 del  ..\ICLFilter\lib\makefile
 del  ..\ICLIO\lib\makefile
 del  ..\ICLMEx\lib\makefile
-del  ..\ICLNN\lib\makefile
 del  ..\ICLQt\lib\makefile
 del  ..\ICLUtils\lib\makefile
 del  ..\ICLQuick\lib\makefile
@@ -59,7 +55,6 @@ del  ..\ICLCore\doc\makefile
 del  ..\ICLFilter\doc\makefile
 del  ..\ICLIO\doc\makefile
 del  ..\ICLMEx\doc\makefile
-del  ..\ICLNN\doc\makefile
 del  ..\ICLQt\doc\makefile
 del  ..\ICLUtils\doc\makefile
 del  ..\ICLQuick\doc\makefile
@@ -71,7 +66,6 @@ del  ..\ICLCore\doc\doxyfile
 del  ..\ICLFilter\doc\doxyfile
 del  ..\ICLIO\doc\doxyfile
 del  ..\ICLMEx\doc\doxyfile
-del  ..\ICLNN\doc\doxyfile
 del  ..\ICLQt\doc\doxyfile
 del  ..\ICLUtils\doc\doxyfile
 del  ..\ICLQuick\doc\doxyfile

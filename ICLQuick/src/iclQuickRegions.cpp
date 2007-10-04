@@ -21,7 +21,7 @@ namespace icl{
         float dg = pow((rgb[1])(x,y)-g,2);
         float db = pow((rgb[2])(x,y)-b,2);
         float val = ::sqrt(  dr + dg + db );
-        m(x,y) = 255- (val / ::sqrt(3));
+        m(x,y) = 255- (val / ::sqrt(3.0));
       }
     }
     

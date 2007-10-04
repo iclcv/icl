@@ -8,7 +8,7 @@
 	>
 	<Tool
 		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="..\ICLUtils\src;..\ICLCore\src;..\ICLFilter\src;..\ICLCC\src;..\ICLBlob\src;..\ICLIO\src;..\ICLMex\src;..\ICLNN\src;..\ICLQt\src;$(ThirdPartyDir)\include;$(IppDir)\include;$(QtDir)\include;$(QtDir)\include\Qt;$(QtDir)\include\QtCore;$(QtDir)\include\QtOpenGL;$(QtDir)\include\QtGui;compat"
+		AdditionalIncludeDirectories="..\ICLUtils\src;..\ICLCore\src;..\ICLFilter\src;..\ICLCC\src;..\ICLBlob\src;..\ICLIO\src;..\ICLMex\src;..\ICLNN\src;..\ICLGeom\src;..\ICLQuick\src;..\ICLQt\src;$(ThirdPartyDir)\include;$(IppDir)\include;$(QtDir)\include;$(QtDir)\include\Qt;$(QtDir)\include\QtCore;$(QtDir)\include\QtOpenGL;$(QtDir)\include\QtGui;compat"
 		PreprocessorDefinitions="WIN32;WITH_IPP_OPTIMIZATION"
 		TreatWChar_tAsBuiltInType="false"
 		ProgramDataBaseFileName="$(OutDir)\$(ProjectName).pdb"

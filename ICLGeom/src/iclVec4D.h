@@ -119,7 +119,7 @@ namespace icl{
     inline Vec4D &operator/=(T f) { x()/=f; y()/=f; z()/=f; h()/=f; return *this;}
     
     /// returns the length of the vector (default:: euclidian length)
-    inline icl64f length(T norm=2) const{ return ::pow( ::pow(x(),norm)+::pow(y(),norm)+::pow(z(),norm) +::pow(h(),norm), 1.0/norm); }
+    inline icl64f length(T norm=2) const{ return ::pow( (float) (::pow((float) x(), (float) norm)+::pow((float) y(), (float) norm)+::pow((float) z(), (float) norm) +::pow((float) h(), (float) norm)), (float) (1.0/norm)); }
 
     /// returns (-x,-y,-z,-h)
     inline Vec4D operator-() const { return Vec4D(-x(),-y(),-z(),-h()); }

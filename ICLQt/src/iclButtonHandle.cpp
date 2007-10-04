@@ -1,5 +1,5 @@
 #include <iclButtonHandle.h>
-
+#include <algorithm>
 
 namespace icl{
   ButtonHandle::ButtonHandle(QPushButton *b):
@@ -32,7 +32,7 @@ namespace icl{
 
   void  ButtonHandle::registerCallback(ButtonHandle::callback c, bool remove){
     if(remove){
-      std::vector<callback>::iterator it =  find(m_vecCallbackFuncs.begin(),m_vecCallbackFuncs.end(),c);
+		std::vector<callback>::iterator it =  find(m_vecCallbackFuncs.begin(),m_vecCallbackFuncs.end(),c);
       if(it !=  m_vecCallbackFuncs.end()){
         m_vecCallbackFuncs.erase(it);
       }

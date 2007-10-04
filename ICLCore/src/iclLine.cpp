@@ -147,7 +147,7 @@ namespace icl{
   }
   
   float Line::length() const{
-    return ::sqrt (pow( start.x-end.x,2 ) +  pow(start.y -end.y ,2) );
+    return ::sqrt (pow((float) (start.x-end.x),2 ) +  pow((float) (start.y -end.y) ,2) );
   }
   
   std::vector<Point> Line::sample( const Rect &limits) const{
