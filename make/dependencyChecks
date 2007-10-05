@@ -4,67 +4,59 @@
 ifeq "${OS_TYPE}" "linux"
 # Linux support
 ifeq "$(wildcard $(IPP_ROOT)/5.2/sharedlib/libipp*.so)" ""
-ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
 ifeq "$(_WARN_IPP)" ""
 _WARN_IPP=done # warn only once
 export _WARN_IPP
 $(warning "IPP 5.2 is not available. Its usage is switched off.")
 endif
-CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
-CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
-endif
 else
 HAVE_IPP=TRUE
+CDEFINES:=$(sort $(CDEFINES) -DWITH_IPP_OPTIMIZATION)
+CPPDEFINES:=$(sort $(CPPDEFINES) -DWITH_IPP_OPTIMIZATION)
 endif
 endif #OS_TYPE
 
 ifeq "${OS_TYPE}" "macosx"
 # Mac support
 ifeq "$(wildcard $(IPP_ROOT)/Intel_IPP.framework/Libraries/libipp*.dylib)" ""
-ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
 ifeq "$(_WARN_IPP)" ""
 _WARN_IPP=done # warn only once
 export _WARN_IPP
 $(warning "IPP is not available. Its usage is switched off.")
 endif
-CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
-CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
-endif
 else
 HAVE_IPP=TRUE
+CDEFINES:=$(sort $(CDEFINES) -DWITH_IPP_OPTIMIZATION)
+CPPDEFINES:=$(sort $(CPPDEFINES) -DWITH_IPP_OPTIMIZATION)
 endif
 endif #OS_TYPE
 
 ############################# check for JPEG-SUPPORT ####################
 LIBJPEG_ROOT ?= /usr
 ifeq "$(wildcard ${LIBJPEG_ROOT}/lib/libjpeg.so)" ""
-ifneq "$(findstring -DWITH_JPEG_SUPPORT,$(CDEFINES))" ""
 ifeq "$(_WARN_JPEG)" ""
 _WARN_JPEG=done # warn only once
 export _WARN_JPEG
 $(warning "libjpeg is not available. Its usage is switched off.")
 endif
-CDEFINES:=$(filter-out -DWITH_JPEG_SUPPORT, $(CDEFINES))
-CPPDEFINES:=$(filter-out -DWITH_JPEG_SUPPORT, $(CPPDEFINES))
-endif
 else
 HAVE_LIBJPEG=TRUE
+CDEFINES:=$(sort $(CDEFINES) -DWITH_JPEG_SUPPORT)
+CPPDEFINES:=$(sort $(CPPDEFINES) -DWITH_JPEG_SUPPORT)
 endif
 
 ############################# check for ZLIB-SUPPORT ####################
 LIBZ_ROOT ?= /usr
 ifeq "$(wildcard ${LIBZ_ROOT}/lib/libz.so)" ""
-ifneq "$(findstring -DWITH_ZLIB_SUPPORT,$(CDEFINES))" ""
 ifeq "$(_WARN_Z)" ""
 _WARN_Z=done # warn only once
 export _WARN_Z
 $(warning "libz is not available. Its usage is switched off.")
 endif
-CDEFINES:=$(filter-out -DWITH_ZLIB_SUPPORT, $(CDEFINES))
-CPPDEFINES:=$(filter-out -DWITH_ZLIB_SUPPORT, $(CPPDEFINES))
-endif
 else
 HAVE_LIBZ=TRUE
+CDEFINES:=$(sort $(CDEFINES) -DWITH_ZLIB_SUPPORT)
+CPPDEFINES:=$(sort $(CPPDEFINES) -DWITH_ZLIB_SUPPORT)
 endif
 
 ############################# check for QT 4 ############################

@@ -63,7 +63,7 @@ CDEFINES:= ${CDEFINES}
 CFLAGS:= ${CFLAGS} 
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CPPDEFINES:= ${CPPDEFINES} -DWITH_ZLIB_SUPPORT -DWITH_JPEG_SUPPORT
+CPPDEFINES:= ${CPPDEFINES}
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS} -Wno-long-long
@@ -86,7 +86,7 @@ ifeq "$(HAVE_LIBDC)" ""
 SKIP_OBJECTS += iclDCGrabber.cpp iclDCGrabberThread.cpp
 SKIP_OBJECTS += iclDC.cpp iclDCDevice.cpp dcclearisochannels.cpp
 SKIP_OBJECTS += iclDCFrameQueue.cpp iclDC.cpp dctest.cpp dcdeviceinfo.cpp 
-SKIP_OBJECTS += dcmultitest.cpp
+SKIP_OBJECTS += dcmultitest.cpp test3D.cpp
 endif
 
 ifeq "$(HAVE_UNICAP)" ""
