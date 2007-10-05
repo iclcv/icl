@@ -5,7 +5,7 @@ namespace icl{
   void Dragger::draw( ICLDrawWidget *w ) const{
     w->color(c.r,c.g,c.b,c.a);
     if(dragged()){
-      w->fill(std::min(c.r+30,255),std::min(c.g+30,255), std::min(c.b+30,255),c.a/2);
+      w->fill(iclMin(c.r+30,255),iclMin(c.g+30,255), iclMin(c.b+30,255),c.a/2);
     }else if(over()){
       w->fill(c.r,c.g,c.b,c.a/2);
     }else{

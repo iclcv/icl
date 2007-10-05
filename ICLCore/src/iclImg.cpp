@@ -744,7 +744,7 @@ namespace icl {
     if (getChannels() == 0) return 0;
     Type tMax = getMax(0);
     for(int i=1;i<getChannels();i++)
-      tMax = std::max(tMax,getMax(i));
+      tMax = iclMax(tMax,getMax(i));
     return tMax;    
   }
 
@@ -809,7 +809,7 @@ Img<icl ## T>::getMax(int iChannel,Point *coords) const {                       
     if (getChannels() == 0) return 0;
     Type tMin = getMin(0);
     for(int i=1;i<getChannels();i++)
-      tMin = std::min(tMin,getMin(i));
+      tMin = iclMin(tMin,getMin(i));
     return tMin;    
   }
 
@@ -880,8 +880,8 @@ Img<icl ## T>::getMin(int iChannel, Point *coords) const {                      
     Range<Type> r = getMinMax(0);
     for(int i=1;i<getChannels();i++) {
       Range<Type> k = getMinMax(i);
-      r.minVal = std::min(r.minVal,k.minVal);
-      r.maxVal = std::max(r.maxVal,k.maxVal);
+      r.minVal = iclMin(r.minVal,k.minVal);
+      r.maxVal = iclMax(r.maxVal,k.maxVal);
     }
     return r;
   }

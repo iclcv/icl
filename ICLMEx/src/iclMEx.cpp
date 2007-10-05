@@ -134,7 +134,7 @@ namespace icl{
     ICLASSERT_RETURN(subSetSize < (int)n && subSetSize >= dim);
    
 
-    subSetSize = std::max(dim,subSetSize);
+    subSetSize = iclMax(dim,subSetSize);
 
     static Array<T> XBuf, YBuf;
     static Array<Array<T> > PBuf;    

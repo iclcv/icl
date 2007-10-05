@@ -36,7 +36,7 @@ namespace icl{
     for(int i=0; i<cost.h(); i++){									
       minval=cost[i][0];
       for(int j=0; j<cost.w(); j++){
-        minval = std::min(minval,cost[i][j]);
+        minval = iclMin(minval,cost[i][j]);
       }
       for (int j=0; j<cost.h(); j++){
         cost[i][j]-=minval;

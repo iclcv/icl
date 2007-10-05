@@ -39,7 +39,7 @@ namespace icl{
     if(m_poPcaAxisLengthRationRange || m_poPcaFirstMajorAxisAngleRange){
       PCAInfo info = d.getPCAInfo();
       if(m_poPcaAxisLengthRationRange){
-        float frac = std::max(info.len1 / info.len2, info.len2 / info.len1);
+        float frac = iclMax(info.len1 / info.len2, info.len2 / info.len1);
         if(!m_poPcaAxisLengthRationRange->in(frac)) return false;
       }
       if(m_poPcaFirstMajorAxisAngleRange && !m_poPcaFirstMajorAxisAngleRange->in(info.arc1)) return false;

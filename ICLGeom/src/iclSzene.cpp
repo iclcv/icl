@@ -11,7 +11,7 @@ namespace icl{
 
     float dx = (m_oViewPort.left()+m_oViewPort.right())/2;
     float dy = (m_oViewPort.top()+m_oViewPort.bottom())/2;
-    float slope = std::min(m_oViewPort.width/2,m_oViewPort.height/2);
+    float slope = iclMin(m_oViewPort.width/2,m_oViewPort.height/2);
     return  Mat ( slope , 0     , 0 , dx,
                   0     , slope , 0 , dy,
                   0     , 0     , 0 , 0 ,

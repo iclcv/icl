@@ -4,8 +4,6 @@
 #include <iclCompatMacros.h>
 #include <iostream>
 #include <stdlib.h>
-
-
 namespace icl {
 
 /* {{{ Debug Level */
@@ -132,6 +130,12 @@ namespace icl {
   ICL_INSTANTIATE_ALL_FLOAT_DEPTHS
 
 }// namespace icl
+
+/** Utility macros and defines */
+template <typename T>
+inline const T &iclMin(const T &a, const T &b) {if (a < b) return a; return b;}
+template <typename T>
+inline const T &iclMax(const T &a, const T &b) {if (a > b) return a; return b;}
 
 #define ICL_DELETE(X) if((X)){ delete (X); (X)=0; }
 

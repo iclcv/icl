@@ -111,7 +111,7 @@ int main(){
     static float alpha = 0;
     
     alpha +=20;
-    alpha = std::min(float(255.0),alpha);
+    alpha = iclMin(float(255.0),alpha);
     color(255-alpha,2*alpha,0,alpha);
     
     if(!(END%3)){

@@ -999,7 +999,7 @@ namespace icl{
       // {{{ open
 
       float outline = 2*M_PI*radius;
-      int nc = std::min(3,image.getChannels());
+      int nc = iclMin(3,image.getChannels());
       float A = COLOR[3]/255;
       int maxx = image.getWidth()-1;
       int maxy = image.getHeight()-1;
@@ -1031,9 +1031,9 @@ namespace icl{
       if(x1 > x2) std::swap(x1,x2);
       const float *color = useFillColor ? FILL : COLOR;
       float A = color[3]/255.0;
-      int cMax = std::max(image.getChannels(),3);
-      int xEnd = std::min(x2,image.getWidth());
-      for(int x=std::max(x1,0);x<=xEnd;++x){
+      int cMax = iclMax(image.getChannels(),3);
+      int xEnd = iclMin(x2,image.getWidth());
+      for(int x=iclMax(x1,0);x<=xEnd;++x){
         for(int c=0;c<cMax; ++c){
           float &v = image(x,y,c);
           v=(1.0-A)*v + A*color[c];
@@ -1055,9 +1055,9 @@ namespace icl{
       if(y1 > y2) std::swap(y1,y2);
       const float *color = useFillColor ? FILL : COLOR;
       float A = color[3]/255.0;
-      int cMax = std::max(image.getChannels(),3);
-      int yEnd = std::min(y2,image.getHeight()-1);
-      for(int y=std::max(y1,0);y<=yEnd;++y){
+      int cMax = iclMax(image.getChannels(),3);
+      int yEnd = iclMin(y2,image.getHeight()-1);
+      for(int y=iclMax(y1,0);y<=yEnd;++y){
         for(int c=0;c<cMax; ++c){
           float &v = image(x,y,c);
           v=(1.0-A)*v + A*color[c];
@@ -1076,15 +1076,15 @@ namespace icl{
     int h = image.getHeight();
     int w = image.getWidth();
     
-    int ystart = std::max(-radius,-yoffs);
-    int yend = std::min(radius,h-yoffs);
-    int nc = std::min(image.getChannels(),3);
+    int ystart = iclMax(-radius,-yoffs);
+    int yend = iclMin(radius,h-yoffs);
+    int nc = iclMin(image.getChannels(),3);
     for(int dy = ystart;dy<=yend;++dy){
       int y = dy+yoffs;
       int dx = (int)round(::sqrt(rr-dy*dy));
       float A = FILL[3]/255;
-      int xend = std::min(xoffs+dx,w-1);
-      for(int x=std::max(0,xoffs-dx);x<=xend;++x){
+      int xend = iclMin(xoffs+dx,w-1);
+      for(int x=iclMax(0,xoffs-dx);x<=xend;++x){
         for(int c=0;c<nc;++c){
           ICL_QUICK_TYPE &v = image(x,y,c);
           v=(1.0-A)*v + A*FILL[c];

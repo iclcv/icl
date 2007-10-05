@@ -581,7 +581,7 @@ namespace icl{
     ICLASSERT_RETURN_VAL(!isNull(),0);
     ICLASSERT_RETURN_VAL(isOpen(),0);
 
-    len = std::min(len,bytesAvailable());
+    len = iclMin(len,bytesAvailable());
     
     const vector<icl8u> &data = readAll();
     std::copy(&data[0]+impl->bufferoffset,&data[0]+impl->bufferoffset+len,(icl8u*)dst);

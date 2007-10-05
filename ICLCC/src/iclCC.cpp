@@ -860,7 +860,7 @@ namespace icl{
         break;
       }
       case ccAdapted:{
-        int n = std::min(src->getChannels(),dst->getChannels());
+        int n = iclMin(src->getChannels(),dst->getChannels());
         switch(src->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)  case depth##D:                                                                          \
           switch(dst->getDepth()){                                                                                        \

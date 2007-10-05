@@ -250,7 +250,7 @@ namespace icl{
         \code
         double ab = computeDirectedHausdorffDistance(chamferImageA,chamferImageB,m,pm,penaltyValue);
         double ba = computeDirectedHausdorffDistance(chamferImageB,chamferImageA,m,pm,penaltyValue);
-        return m==hausdorff_mean ? (ab+ba)/2 : std::max(ab,ba);
+        return m==hausdorff_mean ? (ab+ba)/2 : iclMax(ab,ba);
         \endcode
         @param chamferImageA first image      
         @param chamferImageB first image

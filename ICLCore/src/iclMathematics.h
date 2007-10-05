@@ -103,7 +103,7 @@ namespace icl {
   inline unsigned int random(unsigned int max) {
     FUNCTION_LOG("unsigned int");
     unsigned int val = static_cast<unsigned int>(floor(random (static_cast<double>(max)+1.0)));
-    return std::min(val, max);
+    return iclMin(val, max);
   }
    
   /// fill an image with uniform distributed random values in the given range \ingroup MATH

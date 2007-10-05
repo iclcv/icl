@@ -14,7 +14,7 @@ namespace icl{
     inline icl32s min3(icl32s a, icl32s b, icl32s c){
       // {{{ open
 
-      return std::min(std::min(a,b),c);
+      return iclMin(iclMin(a,b),c);
     }
 
     // }}}
@@ -201,7 +201,7 @@ namespace icl{
     int compute_max_val(icl32s d1, icl32s d2, const Size &imageSize){
       // {{{ open
 
-      return std::max(d1,d2)*(imageSize.width+imageSize.height);
+      return iclMax(d1,d2)*(imageSize.width+imageSize.height);
     }
 
     // }}}
@@ -311,8 +311,8 @@ namespace icl{
         if(roi.contains(x,y)){
           return val;
         }else{
-          int dx = std::max(0,abs(roi.x+roi.width/2 - x)-roi.width/2);
-          int dy = std::max(0,abs(roi.y+roi.height/2 - y)-roi.height/2);
+          int dx = iclMax(0,abs(roi.x+roi.width/2 - x)-roi.width/2);
+          int dy = iclMax(0,abs(roi.y+roi.height/2 - y)-roi.height/2);
           return (dx+dy)*penalty;
         }
       }
@@ -337,7 +337,7 @@ namespace icl{
       // {{{ open
 
       HausdorffMetricModeMax():val(-1){}
-      inline void operator<<(icl32s x){ val = std::max(val,x); }
+      inline void operator<<(icl32s x){ val = iclMax(val,x); }
       double getResult() const{ return val; }
       icl32s val;
     };
@@ -495,7 +495,7 @@ namespace icl{
     
     double ab = computeDirectedHausdorffDistance(chamferImageA,chamferImageB,m,pm,penaltyValue);
     double ba = computeDirectedHausdorffDistance(chamferImageB,chamferImageA,m,pm,penaltyValue);
-    return m==hausdorff_mean ? (ab+ba)/2 : std::max(ab,ba);
+    return m==hausdorff_mean ? (ab+ba)/2 : iclMax(ab,ba);
   }
 
   // }}}
@@ -539,7 +539,7 @@ namespace icl{
     
     double hd2 = computeDirectedHausdorffDistance((*bufferImage)->asImg<icl32s>(),chamferImage,m,pm,penaltyValue);
     
-    return m == hausdorff_mean ? (hd1+hd2)/2 : std::max(hd1,hd2);
+    return m == hausdorff_mean ? (hd1+hd2)/2 : iclMax(hd1,hd2);
     
   }
 
@@ -588,9 +588,9 @@ namespace icl{
       x = model[i].x;
       y = model[i].y;
       if(roi.contains(x,y)){
-      maxVal = std::max(maxVal,chan(x,y));
+      maxVal = iclMax(maxVal,chan(x,y));
       }else if(imagerect.contains(x,y)){
-      maxVal = std::max(maxVal,penalty);
+      maxVal = iclMax(maxVal,penalty);
       }
       }
       return maxVal;      
@@ -633,7 +633,7 @@ namespace icl{
       for(int x=roi.x;x<xEnd;++x){
         for(int y=roi.y;y<yEnd;++y){
           if(!chanA(x,y)){
-            maxVal = std::max(maxVal,chanB(x,y));
+            maxVal = iclMax(maxVal,chanB(x,y));
           }
         }
       }
@@ -650,7 +650,7 @@ namespace icl{
       return (computeDirectedHausdorffDistance(chamferImageA,chamferImageB,m)+
               computeDirectedHausdorffDistance(chamferImageB,chamferImageA,m))/2;
     }else{
-      return std::max(computeDirectedHausdorffDistance(chamferImageA,chamferImageB,m),
+      return iclMax(computeDirectedHausdorffDistance(chamferImageA,chamferImageB,m),
                       computeDirectedHausdorffDistance(chamferImageB,chamferImageA,m));
     }
   }
@@ -734,7 +734,7 @@ namespace icl{
 
       double hd2 = computeDirectedHausdorffDistance(chamferImage,bi,hm);
     
-      return hm == hausdorff_mean ? (hd1+hd2)/2 : std::max(hd1,hd2);
+      return hm == hausdorff_mean ? (hd1+hd2)/2 : iclMax(hd1,hd2);
       }
       */
 

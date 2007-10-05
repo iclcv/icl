@@ -101,8 +101,8 @@ namespace icl{
       /// adds execution time, USE BENCHMARK_THIS_FUNCTION-MACRO instead
       void incTime(long int dt){
         m_liTime+=dt;
-        m_liMinTime = std::min(dt,m_liMinTime);
-        m_liMaxTime = std::max(dt,m_liMaxTime);
+        m_liMinTime = iclMin(dt,m_liMinTime);
+        m_liMaxTime = iclMax(dt,m_liMaxTime);
       }
       private:
       long int m_liCount;

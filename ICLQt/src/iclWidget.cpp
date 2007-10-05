@@ -123,7 +123,7 @@ namespace icl{
 
     m_oOSDMutex.lock();
     if(m_poCurrOSD){
-      float m = std::min(((float)std::min(width(),height()))/100,6.0f);
+      float m = iclMin(((float)iclMin(width(),height()))/100,6.0f);
       pe.font("Arial",(int)(1.5*m)+5,PaintEngine::DemiBold);
       m_poCurrOSD->_drawSelf(&pe,m_iMouseX,m_iMouseY,aiDown);
     }
@@ -209,7 +209,7 @@ namespace icl{
 
     m_oOSDMutex.lock();
     if(m_poCurrOSD){
-      float m = std::min(((float)std::min(width(),height()))/100,6.0f);
+      float m = iclMin(((float)iclMin(width(),height()))/100,6.0f);
       pe.font("Arial",(int)(1.5*m)+5,PaintEngine::DemiBold);
       m_poCurrOSD->_drawSelf(&pe,m_iMouseX,m_iMouseY,aiDown);
     }

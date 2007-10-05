@@ -135,7 +135,7 @@ namespace icl{
       bool end = false;
       while(!end){
         oInfo.size.height++; // additional line
-        oInfo.size.width = std::max((unsigned int)oInfo.size.width,tok(line,",").size());
+        oInfo.size.width = iclMax((unsigned int)oInfo.size.width,tok(line,",").size());
         if(file.hasMoreLines()){
           line = file.readLine();
         }else{
