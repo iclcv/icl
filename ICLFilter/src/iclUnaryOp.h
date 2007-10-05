@@ -4,18 +4,37 @@
 #include "iclOpROIHandler.h"
 
 namespace icl{
+  
+  /** \cond */
+  class MultiThreader;
+  /** \endcond */
+  
   /// Abstract Base class for Unary Operators \ingroup UNARY
   /** A list of unary operators can be found here:\n
       \ref UNARY
   **/
   class UnaryOp{
     public:
+
+    /// Explicit empty constructor
+    UnaryOp();
+
+    /// Explicit copy constructor
+    UnaryOp(const UnaryOp &other);
+
+    /// Explicit declaration of the assignment operator
+    UnaryOp &operator=(const UnaryOp &other);
+
+    
     /// Destructor
-    virtual ~UnaryOp(){}
+    virtual ~UnaryOp();
       
     /// pure virtual apply function, that must be implemented in all derived classes
     virtual void apply(const ImgBase *operand1, ImgBase **dst)=0;
 
+    /// *NEW* apply function for multithreaded filtering
+    virtual void applyMT(const ImgBase *operand1, ImgBase **dst, unsigned int nThreads);
+    
     /// sets if the image should be clip to ROI or not
     /**
       @param bClipToROI true=yes, false=no
@@ -59,6 +78,7 @@ namespace icl{
     }
     
     private:
+    MultiThreader *m_poMT;
     OpROIHandler m_oROIHandler;
   };    
 }
