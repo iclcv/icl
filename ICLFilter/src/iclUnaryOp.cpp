@@ -37,6 +37,10 @@ namespace icl{
   void UnaryOp::applyMT(const ImgBase *poSrc, ImgBase **ppoDst, unsigned int nThreads){
     ICLASSERT_RETURN( nThreads > 0 );
     ICLASSERT_RETURN( poSrc );
+    if(nThreads == 1){
+      apply(poSrc,ppoDst);
+      return;
+    }
 
     if(!UnaryOp::prepare (ppoDst, poSrc)) return;
   
