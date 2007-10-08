@@ -1,20 +1,11 @@
 #ifndef ICL_IMAGE_SPLITTER_H
 #define ICL_IMAGE_SPLITTER_H
 
-#include <iclShallowCopyable.h>
 #include <iclImgBase.h>
 #include <vector>
 
 namespace icl{
 
-  /** \cond */
-  class ImageSplitterImpl;
-  class ImageSplitterImplDelOp{
-    public: static void delete_func(ImageSplitterImpl *impl);
-  };
-  /** \endcond */
-  
-  
   /// Utility class to split an images roi into a set of shallow copies
   /** In some cases it is useful, to devide a task, that should be applied on an
       images ROI, into a set of disjoint subtasks. This can be achieved by
@@ -34,31 +25,26 @@ namespace icl{
       and the filter can be applied on each of the resulting images parts in a dedicated
       thread.
       
-      \section CONST "const-ness"
-      In some application also "un-const" images should be split. In this case, the image
-      should be made unconst using const_cast<ImgBase*>(..). Although this is a bit 
-      circumstantial, no implicit cast operation is provided to avoid an exploit in the 
-      Img's const mechanism.
   */
-  class ImageSplitter : public ShallowCopyable<ImageSplitterImpl,ImageSplitterImplDelOp>{
+  class ImageSplitter{
     public:
-    /// Creates a "null" image splitter (see ShallowCopyable)
-    ImageSplitter();
+    /// splits a source image into given number of parts
+    static std::vector<ImgBase*> split(ImgBase *src, int nParts);
     
-    /// Create new image splitter from a given source image into n disjoint parts
-    ImageSplitter(const ImgBase *src, int n);
+    /// splits a const source image into a given number of const parts
+    static const std::vector<ImgBase*> split(const ImgBase *src, int nParts);
     
-    /// returns the number of parts
-    int getPartCount();
+    /// releases all images within the given vector
+    static void release(const std::vector<ImgBase*> &v);
     
-    /// returns the image part of given image
-    const ImgBase *operator[](int idx);
-
+    private:
+    /// private constructor 
+    ImageSplitter(){}
     /// internally used static splitting function
     /** Note: the resulting images must be deleted manually <b>and</b>
         the given parts vector must be given, initalized with NULL pointers.
     **/
-    static void splitImage(const ImgBase *src,std::vector<const ImgBase*> &parts);
+    static void splitImage(ImgBase *src, std::vector<ImgBase*> &parts);
   };
 }
 

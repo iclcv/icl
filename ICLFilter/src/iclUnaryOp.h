@@ -76,9 +76,11 @@ namespace icl{
     virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc, depth eDepth) {
       return m_oROIHandler.prepare(ppoDst, poSrc, eDepth);
     }
+
+    MultiThreader *m_poMT;
     
     private:
-    MultiThreader *m_poMT;
+  
     OpROIHandler m_oROIHandler;
   };    
 }

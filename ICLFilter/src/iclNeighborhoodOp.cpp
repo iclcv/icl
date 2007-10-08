@@ -1,4 +1,7 @@
 #include <iclNeighborhoodOp.h>
+#include <iclUnaryOpWork.h>
+#include <iclMacros.h>
+#include <iclImageSplitter.h>
 
 namespace icl {
 
@@ -37,5 +40,54 @@ namespace icl {
     }
     if (oROIsize.width < 1 || oROIsize.height < 1) return false;
     return true;
+  }
+
+  void NeighborhoodOp::applyMT(const ImgBase *poSrc, ImgBase **ppoDst, unsigned int nThreads){
+    ICLASSERT_RETURN( nThreads > 0 );
+    ICLASSERT_RETURN( poSrc );
+    if(nThreads == 1){
+      apply(poSrc,ppoDst);
+      return;
+    }
+    if(!prepare (ppoDst, poSrc)) return;
+  
+    bool ctr = getClipToROI();
+    bool co = getCheckOnly();
+    
+    setClipToROI(false);
+    setCheckOnly(true);
+    
+    const ImgBase *srcROIAdapted = poSrc->shallowCopy(Rect(getROIOffset(),(*ppoDst)->getROISize()));
+    const std::vector<ImgBase*> srcs = ImageSplitter::split(srcROIAdapted,nThreads);
+    std::vector<ImgBase*> dsts = ImageSplitter::split(*ppoDst,nThreads);
+    delete srcROIAdapted;
+    
+    MultiThreader::WorkSet works(nThreads);
+    
+    for(unsigned int i=0;i<nThreads;i++){
+      works[i] = new UnaryOpWork(this,srcs[i],const_cast<ImgBase*>(dsts[i]));
+    }
+    
+    if(!m_poMT){
+      m_poMT = new MultiThreader(nThreads);
+    }else{
+      if(m_poMT->getNumThreads() != (int)nThreads){
+        delete m_poMT;
+        m_poMT = new MultiThreader(nThreads);
+      }
+    }
+    
+    (*m_poMT)( works );
+    
+    for(unsigned int i=0;i<nThreads;i++){
+      delete works[i];
+    }
+
+    setClipToROI(ctr);
+    setCheckOnly(co);
+
+    ImageSplitter::release(srcs);
+    ImageSplitter::release(dsts);
+
   }
 }

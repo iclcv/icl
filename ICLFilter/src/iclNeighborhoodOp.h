@@ -44,6 +44,9 @@ namespace icl {
         */
     bool computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize);
 
+    /// *NEW* apply function for multithreaded filtering (reimplemented here for special roi handling!)
+    virtual void applyMT(const ImgBase *operand1, ImgBase **dst, unsigned int nThreads);
+    
     protected:
     NeighborhoodOp() : m_oMaskSize(1,1), m_oAnchor (0,0) {}
     NeighborhoodOp(const Size &size) {

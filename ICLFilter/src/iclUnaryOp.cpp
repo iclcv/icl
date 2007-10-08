@@ -1,25 +1,9 @@
 #include <iclUnaryOp.h>
-#include <iclMultiThreader.h>
+#include <iclUnaryOpWork.h>
 #include <iclMacros.h>
 #include <iclImageSplitter.h>
 
 namespace icl{
-
-  namespace{
-  
-    struct UnaryOpWork : public MultiThreader::Work{
-      UnaryOpWork(UnaryOp *op, const ImgBase *src, ImgBase *dst):
-        op(op),src(src),dst(dst){}
-      virtual ~UnaryOpWork(){}
-      virtual void perform(){
-        op->apply(src,&dst);
-      }
-    private:
-      UnaryOp *op;
-      const ImgBase *src;
-      ImgBase *dst;
-    };
-  }
 
   UnaryOp::UnaryOp():m_poMT(0){};
   
@@ -42,7 +26,7 @@ namespace icl{
       return;
     }
 
-    if(!UnaryOp::prepare (ppoDst, poSrc)) return;
+    if(!prepare (ppoDst, poSrc)) return;
   
     bool ctr = getClipToROI();
     bool co = getCheckOnly();
@@ -50,8 +34,8 @@ namespace icl{
     setClipToROI(false);
     setCheckOnly(true);
     
-    ImageSplitter srcs(poSrc,nThreads);
-    ImageSplitter dsts(*ppoDst,nThreads);
+    const std::vector<ImgBase*> srcs = ImageSplitter::split(poSrc,nThreads);
+    std::vector<ImgBase*> dsts = ImageSplitter::split(*ppoDst,nThreads);
     
     MultiThreader::WorkSet works(nThreads);
     
@@ -77,7 +61,8 @@ namespace icl{
     setClipToROI(ctr);
     setCheckOnly(co);
 
-    
+    ImageSplitter::release(srcs);
+    ImageSplitter::release(dsts);
   }
 
 }

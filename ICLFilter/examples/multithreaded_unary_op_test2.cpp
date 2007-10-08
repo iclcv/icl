@@ -12,17 +12,18 @@ int main(int n, char **ppc){
   ImgBase *dst = 0;
 
   // UnaryArithmeticalOp op(UnaryArithmeticalOp::addOp, 100);
-  // ConvolutionOp op(ConvolutionOp::kernelGauss3x3);
-  LocalThresholdOp op(30,0,0);
+  ConvolutionOp op(ConvolutionOp::kernelSobelX3x3);
+  //LocalThresholdOp op(30,0,0);
   int nt = pa_subarg<int>("-n",0,1);
   printf("applying with %d threads \n",nt);
   tic();
-  for(int i=0;i<100;i++){
-    op.applyMT(&image,&dst,nt);
-  }
+  //  for(int i=0;i<100;i++){
+  //op.apply(&image,&dst);
+  op.applyMT(&image,&dst,nt);
+    //}
   toc();
   
-  save(cvt(dst),"image.ppm");
-  //  show(cvt(dst));
+  //save(cvt(dst),"image.ppm");
+  show(cvt(dst));
   return 0;
 }
