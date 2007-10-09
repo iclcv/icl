@@ -65,7 +65,7 @@ ifeq "$(shell ${QTDIR}/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" "
 QTDIR=$(lastword $(sort $(wildcard /vol/qt/4.*)))
 endif
 # try whether QTDIR contains QT 4 now
-ifneq "$(shell ${QTDIR}/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
+		ifneq "$(shell ${QTDIR}/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
 HAVE_QT=TRUE
 ifeq "$(_WARN_QT)" ""
 _WARN_QT=done # warn only once

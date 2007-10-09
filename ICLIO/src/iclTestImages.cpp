@@ -537,6 +537,7 @@ namespace icl{
                         const std::string &showCommand,
                         long msec_to_rm_call,
                         const std::string &rmCommand){
+
     ICLASSERT_RETURN(image);
     string timeStr = Time::now().toString();
     for(unsigned int i=0;i<timeStr.length();i++){
@@ -544,6 +545,7 @@ namespace icl{
       if(timeStr[i]==' ') timeStr[i]='_';
       if(timeStr[i]==':') timeStr[i]='_';
     }
+    
     string postfix = image->getChannels() == 3 ? ".ppm" : ".pgm";
     string name = string(".tmpImage.")+timeStr+postfix;
     FileWriter(name).write(image);
@@ -560,6 +562,7 @@ namespace icl{
       usleep(1000*msec_to_rm_call);
       system((string(rmCommandStr)+" &").c_str());
     }
+    
   }
   
 void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){

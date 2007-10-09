@@ -484,7 +484,6 @@ namespace icl{
   
   void show(const ImgQ &image){
     // {{{ open
-
     if(image.hasFullROI()){
       if(image.getFormat()==formatMatrix && image.getChannels()==1){
         ImgQ tmp = image;
@@ -493,7 +492,7 @@ namespace icl{
       }else if(image.getFormat() == formatMatrix && image.getChannels()==3){
         ImgQ tmp = image;
         tmp.setFormat(formatRGB);
-        TestImages::show(&tmp,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
+        TestImages::show(&tmp,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);       
       }else{
         TestImages::show(&image,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
       }

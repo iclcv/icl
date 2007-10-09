@@ -134,6 +134,9 @@ namespace icl{
         is caught. The new signal handler function ensures, that
         all camera threads are stopped before the programm exits */
     void install_signal_handler();
+    
+    /// internally used bayer conversion function
+    void bayer2gray(icl8u *src, icl8u*dst, int w, int h);
   }
 }
     
