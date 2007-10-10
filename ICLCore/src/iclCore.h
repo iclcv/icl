@@ -1,4 +1,4 @@
-#ifndef ICLCORE_H
+ #ifndef ICLCORE_H
 #define ICLCORE_H
 #include <iclMacros.h>
 #include <iclTypes.h>

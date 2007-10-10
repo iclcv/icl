@@ -129,6 +129,8 @@ namespace icl{
     /// plugin class for work packages performed parallel
     class Work{
       public:
+      /// virtual destructor doing nothing
+      virtual ~Work(){}
       /// abstract working function
       virtual void perform()=0;
     };

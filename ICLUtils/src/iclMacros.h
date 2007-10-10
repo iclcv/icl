@@ -132,10 +132,26 @@ namespace icl {
 }// namespace icl
 
 /** Utility macros and defines */
-template <typename T>
-inline const T &iclMin(const T &a, const T &b) {if (a < b) return a; return b;}
-template <typename T>
-inline const T &iclMax(const T &a, const T &b) {if (a > b) return a; return b;}
+
+// ?? why not as macro? -> no type problems
+#ifdef WIN32
+#define iclMin(A,B) ((A)<(B)?(A):(B))
+#define iclMax(A,B) ((A)>(B)?(A):(B))
+#else
+#define iclMin(A,B) std::min(A,B)
+#define iclMax(A,B) std::max(A,B)
+#endif
+
+// template <typename T,t>
+// inline const T &iclMin(const T &a, const T &b) {if (a < b) return a; return b;}
+// template <typename T>
+// inline const T &iclMax(const T &a, const T &b) {if (a > b) return a; return b;}
+
+// this will not work because of the unknown return type
+// template <typename T,typename U>
+// inline const T &iclMin(const T &a, const U &b) {if (a < b) return a; return b;}
+// template <typename T>
+// inline const T &iclMax(const T &a, const T &b) {if (a > b) return a; return b;}
 
 #define ICL_DELETE(X) if((X)){ delete (X); (X)=0; }
 

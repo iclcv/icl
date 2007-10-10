@@ -109,8 +109,8 @@ namespace icl {
 
     /// intersection of two Rect32fs
     Rect32f operator&(const Rect32f &r) const {
-       Point ul (std::max (x, r.x), std::max (y, r.y));
-       Point lr (std::min (right(), r.right()), std::min (bottom(), r.bottom()));
+       Point ul (iclMax (x, r.x), iclMax (y, r.y));
+       Point lr (iclMin (right(), r.right()), iclMin (bottom(), r.bottom()));
        Rect32f result (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
        if (result.width > 0 && result.height > 0) return result;
        else return null;
@@ -124,8 +124,8 @@ namespace icl {
     
     /// union of two Rect32fs
     Rect32f operator|(const Rect32f &r) const {
-       Point ul (std::min (x, r.x), std::min (y, r.y));
-       Point lr (std::max (right(), r.right()), std::max (bottom(), r.bottom()));
+       Point ul (iclMin (x, r.x), iclMin (y, r.y));
+       Point lr (iclMax (right(), r.right()), iclMax (bottom(), r.bottom()));
        return Rect32f (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
     }
 
