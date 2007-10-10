@@ -109,8 +109,8 @@ namespace icl {
 
     /// intersection of two Rect32fs
     Rect32f operator&(const Rect32f &r) const {
-       Point ul (iclMax (x, r.x), iclMax (y, r.y));
-       Point lr (iclMin (right(), r.right()), iclMin (bottom(), r.bottom()));
+       Point ul ((int)iclMax (x, r.x), (int)iclMax (y, r.y));
+       Point lr ((int)iclMin (right(), r.right()), (int)iclMin (bottom(), r.bottom()));
        Rect32f result (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
        if (result.width > 0 && result.height > 0) return result;
        else return null;
@@ -124,8 +124,8 @@ namespace icl {
     
     /// union of two Rect32fs
     Rect32f operator|(const Rect32f &r) const {
-       Point ul (iclMin (x, r.x), iclMin (y, r.y));
-       Point lr (iclMax (right(), r.right()), iclMax (bottom(), r.bottom()));
+       Point ul ((int)iclMin (x, r.x), (int)iclMin (y, r.y));
+       Point lr ((int)iclMax (right(), r.right()), (int)iclMax (bottom(), r.bottom()));
        return Rect32f (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
     }
 
@@ -174,19 +174,19 @@ namespace icl {
     
     /// returns upper left point of the rect
     Point ul() const {
-      return Point(x,y);
+      return Point((int)x,(int)y);
     }
     /// returns lower left point of the rect
     Point ll() const {
-      return Point(x,y+height);
+      return Point((int)x,(int)(y+height));
     }
     /// returns upper right point of the rect
     Point ur() const {
-      return Point(x+width,y);
+      return Point((int)(x+width),(int)y);
     }
     /// returns lower right point of the rect
     Point lr() const {
-      return Point(x+width,y+height);
+      return Point((int)(x+width),(int)(y+height));
     }
 
     /// returns the left border position
