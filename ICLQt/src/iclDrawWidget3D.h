@@ -16,6 +16,8 @@ namespace icl{
     /// internally used callback class type
     class GLCallback{
       public:
+      /// empty destructor (doing nothing)
+      virtual ~GLCallback(){}
       /// pure virtual drawing function
       virtual void draw() = 0;
     };
