@@ -23,6 +23,12 @@ namespace icl{
 #ifdef WITH_JPEG_SUPPORT
   void FileWriterPluginJPEG::write(File &file, const ImgBase *image){
     ICLASSERT_RETURN(image);
+    format fmt = image->getFormat();
+
+    if(fmt != formatGray && fmt != formatRGB && fmt != formatYUV){
+      throw ICLException (translateFormat (fmt)+" not supported by jpeg");
+    }
+    
     Mutex::Locker _locker(s_oBufferImageMutex);
     
     const Img8u *poSrc = 0;

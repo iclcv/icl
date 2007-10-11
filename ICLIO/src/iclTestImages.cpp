@@ -539,6 +539,7 @@ namespace icl{
                         const std::string &rmCommand){
 
     ICLASSERT_RETURN(image);
+    
     string timeStr = Time::now().toString();
     for(unsigned int i=0;i<timeStr.length();i++){
       if(timeStr[i]=='/') timeStr[i]='_';
@@ -562,7 +563,6 @@ namespace icl{
       usleep(1000*msec_to_rm_call);
       system((string(rmCommandStr)+" &").c_str());
     }
-    
   }
   
 void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
