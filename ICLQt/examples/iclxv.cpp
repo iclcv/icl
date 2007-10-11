@@ -10,6 +10,7 @@ int main (int n, char **ppc){
   ICLWidget w;
   w.show();
  
+  
   ImgQ image;
   if(pa_defined("-input")){
     try{
