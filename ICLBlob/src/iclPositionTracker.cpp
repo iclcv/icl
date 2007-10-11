@@ -3,6 +3,7 @@
 #include "iclHungarianAlgorithm.h"
 #include <math.h>
 #include <set>
+#include <limits>
 
 /**                             new data
                          | o   o  x(t)  o   o
@@ -229,6 +230,69 @@ namespace icl{
 
   // }}}
 
+  template<class valueType>
+  inline valueType distance(valueType x1, valueType y1, valueType x2, valueType y2){
+    return sqrt( pow((double)(x1-x2),2) +  pow((double)(y1-y2),2) );
+  }
+
+  template<class valueType>
+  bool push_data_first_optimized_try(int dim,
+                                     deque<vector<valueType> > data[2], 
+                                     vector<int>               &assignment,  
+                                     vector<valueType>         newData[2],
+                                     vector<int>               &good,
+                                     valueType threshold){
+    
+    // {{{ open
+
+    vector<valueType> xsOld(dim);
+    vector<valueType> ysOld(dim);
+    
+    for(int y=0 ; y < dim; ++y){
+      xsOld[y] = data[0][2][y];
+      ysOld[y] = data[1][2][y];
+    }
+    
+    vector<valueType> &xsNew = newData[0];
+    vector<valueType> &ysNew = newData[1];
+
+    vector<bool> assigned(dim,false);
+
+    vector<int> newAssignment(dim,-1);
+
+    for(int i=0;i<dim;i++){
+      // find best hit for nr i
+      valueType minDist = numeric_limits<valueType>::max();
+      valueType minIdx = -1;
+      for(int j=0;j<dim;j++){
+        if(j==i) continue;
+        valueType dist = distance(xsOld[i],ysOld[i],xsNew[j],ysNew[j]);
+        if(dist < minDist){
+          minDist = dist;
+          minIdx = j;
+        }
+      }
+      if(minDist < threshold && !assigned[minIdx]){
+        assigned[minIdx] = true;
+        newAssignment[i] = minIdx;
+      }else{
+        return false;
+      }
+    }
+
+    assignment = newAssignment;
+
+    push_and_rearrange_data(dim, data, assignment, newData);
+    
+    for(unsigned int i=0;i<good.size();++i){
+      good[i]++;
+    }
+
+    return true;
+    
+    
+  }
+  // }}}
  
   template<class valueType>
   void push_data_intern_diff_gtz(int DIFF, 
@@ -381,7 +445,14 @@ namespace icl{
     }else if(DIFF > 0){
       push_data_intern_diff_gtz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
     }else{
-      push_data_intern_diff_zero(DATA_MATRIX_HEIGHT,m_matData, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
+      if(m_bTryOptimize && m_tThreshold > 0){
+        bool succ = push_data_first_optimized_try(DATA_MATRIX_HEIGHT,m_matData,m_vecCurrentAssignment,newData,m_vecGoodDataCount,m_tThreshold);
+        if(!succ){
+          push_data_intern_diff_zero(DATA_MATRIX_HEIGHT,m_matData, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
+        }        
+      }else{
+        push_data_intern_diff_zero(DATA_MATRIX_HEIGHT,m_matData, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
+      }
     }
   }
 

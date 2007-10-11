@@ -187,10 +187,27 @@ namespace icl{
   two diagrams illustrate the performance:
   \image html bench1.jpg "Performance for 2-20 Blobs" width=4cm
   \image html bench2.jpg "Performance for 0-500 Blobs (the green line is show an O(n^2) approximation, the red on is O(n^3)" width=4cm
+
+
+      \section OPT_ Optimization
+      If the optimized flag and a valid threshold is given to the constructor, the pushData function is implemented as follows:
+      Because in real applications, there are many successive time steps, where pushData gets the nearly equal data, pushData
+      trys to associate old and new data with a trivial min-distance matching: If the data dimension has not changed, for each 
+      old data item (without extrapolation), the nearest new data item is chosen. If no conflicts arise (one old center is the
+      nearest to more then one new center and if all minimum distances are below the given threshold, this trivial assignment is
+      used. Otherwise the default algorithm is applied, and the optimization has no effect. <b>Note:</b> If the given threshold
+      is smaller or equal to zero or the data dimension changes from on push call to another, no optimization is performed.
   */
   template<class valueType>
   class PositionTracker{
     public:
+    /// Empty default constructor without any optimization
+    PositionTracker():m_bTryOptimize(false),m_tThreshold(0){}
+
+    /// *NEW* constructor with optimization enabled and given theshold
+    /** @param threshold threshold for optimization (must be > 0) \ref OPT_ */
+    PositionTracker(valueType threshold):m_bTryOptimize(true),m_tThreshold(threshold){}
+    
     /// most common function, adds a new data row, and causes all internal computation (see above)
     /** @param xys data vector with xyxy.. data order 
         @param n count of xy-pairs in xys (xys.length/2)*/
@@ -226,6 +243,9 @@ namespace icl{
     
     /// internal storage for the good data count G
     std::vector<int> m_vecGoodDataCount;
+    
+    bool m_bTryOptimize;
+    valueType m_tThreshold;
   };
   
   
