@@ -115,6 +115,7 @@ namespace icl{
       Img8u buf;
       for(int i=0;i<oInfo.imageCount;i++){
         poImg->asImg<icl8u>()->selectChannels(vec3(3*i,3*i+1,3*i+2),&buf);
+        buf.setFullROI();
         interleavedToPlanar(file.getCurrentDataPointer()+i*iImageStep,&buf);
       }
     } else {
