@@ -139,7 +139,12 @@ namespace icl{
     SimpleMatrix<valueType> m(dim);
     for(int i=0;i<dim;++i){
       for(int j=0;j<dim;++j){
-        m[i][j] = (valueType)sqrt (pow((double) (a[X][j] - b[X][i]), 2) + pow((double) (a[Y][j] - b[Y][i]), 2) );
+        double dx = a[X][j] - b[X][i];
+        double dy = a[Y][j] - b[Y][i];
+        // !! use sqrt of the euclidian distance to stabilize the association procedure (..)
+        m[i][j] = (int)round (sqrt(sqrt( dx*dx + dy*dy )) );
+        // m[i][j] = (valueType)sqrt(sqrt (pow((double) (a[X][j] - b[X][i]), 2) +
+        // pow((double) (a[Y][j] - b[Y][i]), 2) ));
       }
     }
     return m;
@@ -232,7 +237,7 @@ namespace icl{
 
   template<class valueType>
   inline valueType distance(valueType x1, valueType y1, valueType x2, valueType y2){
-    return sqrt( pow((double)(x1-x2),2) +  pow((double)(y1-y2),2) );
+    return (valueType) sqrt( pow((double)(x1-x2),2) +  pow((double)(y1-y2),2) );
   }
 
   template<class valueType>
@@ -300,6 +305,7 @@ namespace icl{
   }
   // }}}
  
+
   template<class valueType>
   void push_data_intern_diff_gtz(int DIFF, 
                                  deque<vector<valueType> > data[2], 

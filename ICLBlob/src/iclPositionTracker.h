@@ -97,7 +97,11 @@ namespace icl{
 
   N is the vector of new data positions   
   
-  D is the cost matrix                      where D(c,r) is the euclidian distance of P(r) and N(c)
+  D is the cost matrix                      where D(c,r) is the square root of the 
+                                            euclidian distance of P(r) and N(c)
+                                            We have to use the square root and not the euclidian
+                                            distnace itself, to avoid that new blobs are
+                                            are mixed up with old ones (...)
   
   G is the so called "good count matrix"    where G(r) is the number of valid history steps is the
                                             r-th row of H
