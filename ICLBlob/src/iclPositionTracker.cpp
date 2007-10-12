@@ -260,7 +260,7 @@ namespace icl{
 
     vector<int> newAssignment(dim,-1);
 
-    printf("optimzation ... for %d centers\n",dim):
+    printf("optimzation ... for %d centers\n",dim);
     
     for(int i=0;i<dim;i++){
       printf("processing step old data index %d \n",i);
