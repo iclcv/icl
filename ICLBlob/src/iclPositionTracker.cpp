@@ -260,10 +260,13 @@ namespace icl{
 
     vector<int> newAssignment(dim,-1);
 
+    printf("optimzation ... for %d centers\n",dim):
+    
     for(int i=0;i<dim;i++){
+      printf("processing step old data index %d \n",i);
       // find best hit for nr i
       valueType minDist = numeric_limits<valueType>::max();
-      valueType minIdx = -1;
+      int minIdx = -1;
       for(int j=0;j<dim;j++){
         if(j==i) continue;
         valueType dist = distance(xsOld[i],ysOld[i],xsNew[j],ysNew[j]);
@@ -441,12 +444,13 @@ namespace icl{
     const int DIFF = DATA_MATRIX_HEIGHT - NEW_DATA_DIMENSION;
 
     if(DIFF <  0){
-      push_data_intern_diff_ltz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
+       push_data_intern_diff_ltz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
     }else if(DIFF > 0){
-      push_data_intern_diff_gtz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
+       push_data_intern_diff_gtz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
     }else{
-      if(m_bTryOptimize && m_tThreshold > 0){
+       if(m_bTryOptimize && m_tThreshold > 0){
         bool succ = push_data_first_optimized_try(DATA_MATRIX_HEIGHT,m_matData,m_vecCurrentAssignment,newData,m_vecGoodDataCount,m_tThreshold);
+        printf("optimization was %s\n",succ ? "successful" : "failed");
         if(!succ){
           push_data_intern_diff_zero(DATA_MATRIX_HEIGHT,m_matData, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
         }        
