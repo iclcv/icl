@@ -14,7 +14,7 @@ int main(int n, char **ppc){
   // UnaryArithmeticalOp op(UnaryArithmeticalOp::addOp, 100);
   //  ConvolutionOp op(ConvolutionOp::kernelSobelX5x5);
   //LocalThresholdOp op(30,0,0);
-  float kernel[25];
+  //  float kernel[25];
   //ConvolutionOp op(kernel,Size(5,5));
   ConvolutionOp op(ConvolutionOp::kernelSobelX5x5);
   
