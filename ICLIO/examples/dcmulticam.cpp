@@ -53,12 +53,12 @@ public:
         image->setROI(Rect(i*640,0,640,480));
         gs[i]->grab()->deepCopyROI(&image);
       }
-      static icl::FileWriter soWriter("Frame###.ppm");
-      soWriter.write(image);
+      //  static icl::FileWriter soWriter("Frame###.ppm");
+      // soWriter.write(image);
       w->setImage(image);
       w->update();
       m.unlock();
-      msleep(80);
+      msleep(gs.size()*10);
     }
   }
   int device;

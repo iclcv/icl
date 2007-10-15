@@ -40,10 +40,10 @@ public:
         gs[i]->grab()->deepCopyROI(&image);
       }
       system("if [ ! -d images ] ; then mkdir images ; fi");
-      static icl::FileWriter soWriter("images/Frame###.ppm");
-      usleep(100000);
-      soWriter.write(image);
-      usleep(100000);
+      // static icl::FileWriter soWriter("images/Frame###.ppm");
+      //usleep(100000);
+      // soWriter.write(image);
+      // usleep(100000);
     }
   }
   int device;
