@@ -20,7 +20,9 @@ namespace icl {
     template<class T> struct PixelFunc<T,BinaryArithmeticalOp::divOp>{ 
       static inline T apply(const T t1, const T t2){ return t1/t2; }
     };
-
+    template<class T> struct PixelFunc<T,BinaryArithmeticalOp::absSubOp>{ 
+      static inline T apply(const T t1, const T t2){ return std::abs(t1-t2); }
+    };
     template<class T, BinaryArithmeticalOp::optype OT> struct LoopFunc{  
       // {{{ open
       static inline void apply(const  Img<T> *src1, const Img<T> *src2, Img<T> *dst ){
@@ -81,6 +83,18 @@ namespace icl {
     CREATE_IPP_FUNCTIONS_FOR_OP(sub,Sub);
     CREATE_IPP_FUNCTIONS_FOR_OP(mul,Mul);
     CREATE_IPP_FUNCTIONS_FOR_OP(div,Div);
+    
+    /// for absDiff only 8u and 32f all supported by the IPP
+    template<> struct LoopFunc<icl8u, BinaryArithmeticalOp::absSubOp>{
+      static inline void apply(const  Img<icl8u> *src1,const  Img<icl8u> *src2, Img<icl8u> *dst ){
+        ipp_call<icl8u,ippiAbsDiff_8u_C1R>(src2,src1,dst);
+      } 
+    };  
+    template<> struct LoopFunc<icl32f, BinaryArithmeticalOp::absSubOp>{
+      static inline void apply(const  Img<icl32f> *src1,const  Img<icl32f> *src2, Img<icl32f> *dst ){
+        ipp_call<icl32f,ippiAbsDiff_32f_C1R>(src2,src1,dst);
+      } 
+    };  
 
 #undef CREATE_IPP_FUNCTIONS_FOR_OP    
     
@@ -114,6 +128,7 @@ namespace icl {
       case mulOp:  apply_op<mulOp>(poSrc1,poSrc2,*poDst); break;
       case divOp:  apply_op<divOp>(poSrc1,poSrc2,*poDst); break;
       case subOp:  apply_op<subOp>(poSrc1,poSrc2,*poDst); break;
+      case absSubOp:  apply_op<absSubOp>(poSrc1,poSrc2,*poDst); break;
     }
   }
   // }}}

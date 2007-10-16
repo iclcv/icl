@@ -17,7 +17,8 @@ namespace icl {
       addOp,
       subOp,
       mulOp,
-      divOp
+      divOp,
+      absSubOp,
     };
     /// Constructor
     /**
