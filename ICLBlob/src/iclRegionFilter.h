@@ -6,7 +6,7 @@
 #include <iclBlobData.h>
 
 namespace icl{
-   /// discrimimator for a found regions
+   /// discrimimator for a found regions \ingroup G_RBBS
   /** The RegionFilter (RF) class filters a set of given Regions in 2
       steps:
       -# Filter the regions by a size- and value- interval (during region detection
@@ -52,12 +52,12 @@ namespace icl{
     
     
     protected:
-    Range<icl8u> *m_poValueRange;
-    Range<icl32s> *m_poSizeRange;
-    Range<icl32s> *m_poBoundaryLengthRange;
-    Range<icl32f> *m_poFormFactorRange;    
-    Range<icl32f> *m_poPcaAxisLengthRationRange;    
-    Range<icl32f> *m_poPcaFirstMajorAxisAngleRange;    
+    Range<icl8u> *m_poValueRange;                     ///!< value range to use as filter
+    Range<icl32s> *m_poSizeRange;                     ///!< size range for filtering
+    Range<icl32s> *m_poBoundaryLengthRange;           ///!< range for valid boundary length
+    Range<icl32f> *m_poFormFactorRange;               ///!< range for valied form factors
+    Range<icl32f> *m_poPcaAxisLengthRationRange;      ///!< range for valied pca axis length ratio
+    Range<icl32f> *m_poPcaFirstMajorAxisAngleRange;   ///!< range for valied first major axis angle 
 
   };
 }

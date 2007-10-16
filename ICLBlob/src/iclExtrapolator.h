@@ -5,7 +5,7 @@
 
 namespace icl{
   
-  /// class for linear and quadatic extrapolation
+  /// class for linear and quadatic extrapolation \ingroup G_PT
   /** The Extrapolator class is designed as template and abstracts from
       the type of the values as well as from the type that is used to
       indicate time stamps for values.

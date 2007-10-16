@@ -12,7 +12,7 @@
 
 namespace icl{
 
-  /// data-struct to represent local PCA information
+  /// data-struct to represent local PCA information \ingroup G_RD
   struct PCAInfo{
     /* {{{ open */
 
@@ -38,7 +38,7 @@ namespace icl{
 
   /* }}} */
   
-  /// data-struct to represent a scan line
+  /// data-struct to represent a scan line \ingroup G_RD
   struct ScanLine{
     /* {{{ open */
 
@@ -55,7 +55,7 @@ namespace icl{
   /* }}} */
 
 
-  /// Wrapper sturct for the low level RegionDetectorBlob DataStruct
+  /// Wrapper sturct for the low level RegionDetectorBlob DataStruct \ingroup G_RD
   class BlobData{
     public:
     /// creates a new BlobData struct

@@ -232,8 +232,14 @@ namespace icl{
     int getID(int index);
 
     private:
+    
+    /// internally used vector type
     typedef std::vector<valueType> Vec;
+
+    /// internally used matrix type
     typedef std::vector<Vec> Mat;
+    
+    /// internally used queue-matrix (columns can be pushed and pop'ed in constant time
     typedef std::deque<Vec> QMat;
 
     /// internal storage of the history matrix H
@@ -248,7 +254,10 @@ namespace icl{
     /// internal storage for the good data count G
     std::vector<int> m_vecGoodDataCount;
     
+    /// flag to indicate whether to try optimization (trivial assignment)
     bool m_bTryOptimize;
+    
+    /// threshold distance
     valueType m_tThreshold;
   };
   

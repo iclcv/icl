@@ -8,7 +8,7 @@ using std::vector;
 
 namespace icl{
   
-  /// Provides abilities for individual combinations of pixleratings
+  /// Provides abilities for individual combinations of pixleratings \ingroup G_CBS
   template<class PixelType,class RatingType>
   class PixelRatingGroup : public PixelRating<PixelType,RatingType>{
 

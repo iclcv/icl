@@ -14,11 +14,12 @@
 
 namespace icl{
 
+  /** \cond */
   class Converter;          //!< converts images
   class ImgRegionDetector;  //!< seaches connected regions 
- 
+  /** \endcond */
 
-  /// Class to detect a set of blobs in an image using a region based approach
+  /// Class to detect a set of blobs in an image using a region based approach \ingroup G_RBBS
   /** The basic idea of the ReagionBasedBlobSearcher (RBBS) is simple:
       - create an Image where the homogenous segments comply supposed blobs
       - extract all image regions (with pixel-precision) into a list of regions

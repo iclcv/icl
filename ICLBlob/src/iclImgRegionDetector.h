@@ -7,13 +7,17 @@
 #include <iclRange.h>
 
 namespace icl{
-  /// namespace for ImgRegionDetector specific functions
+
+  /** \cond */
+  // namespace for ImgRegionDetector specific functions
   namespace regiondetector{
-    /// forward declaration for a hidden class
+    // forward declaration for a hidden class
     class RegionDetector;
   }
   
-  /// Class for extracting a list of connected image regions from an image
+  /** \endcond */
+  
+  /// Class for extracting a list of connected image regions from an image \ingroup G_RD
   /** The ImgRegionDetector (IRD) offers the ability for extracting a list of all connected image
       regions in an image:
       The set of regions can be filtered out by specifying an allowed interval for value and size

@@ -6,7 +6,7 @@
 #include <iclTypes.h>
 
 namespace icl{
-  /// interface for Feature Map creators
+  /// interface for Feature Map creators \ingroup G_RBBS
   /** see RegionBasedBlobSearcher for more details */
   struct FMCreator{
 

@@ -13,10 +13,12 @@
 
 namespace icl {
 
+  /** \cond */
   class BlobData;
-  
+  /** \endcond */
   namespace regiondetector{
-    /// A RegionDetectorBlob represents an image region with homogenoues value
+    
+    /// A RegionDetectorBlob represents an image region with homogenoues value \ingroup G_RD
     /** The RegionDetectorBlob complies a fundamental structure in for storing
         found blob data and to computer features for the found blobs.
         The RegionDetectorBlob class provides all low level features that are

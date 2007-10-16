@@ -5,11 +5,19 @@
 
 namespace icl{
 
-
+  /// Utiltiy class for accessing meta-information about VQClusters \ingroup G_UTILS
+  /** The dimension of a VQCluster info is equal to the center/
+      prototype/cluster-count of the top-level VQ2D object. For each 
+      prototype/center/cluster the cluster info provides some meta
+      information like cluster mean or clusters major axis (length
+      and angle) 
+  **/
   class VQClusterInfo{
+    /// internally used float vector type
     typedef std::vector<float> fvec;  
     public:
-    
+
+    /// creates a new cluster info with given dimension
     VQClusterInfo(int dim=0): m_iDim(0), m_pfCenters(0),
       /* {{{ open */
 
@@ -20,6 +28,8 @@ namespace icl{
     }
 
     /* }}} */
+
+    /// Destructor
     ~VQClusterInfo(){
       /* {{{ open */
 
@@ -28,6 +38,8 @@ namespace icl{
 
     /* }}} */
     
+    /// resets the dimension of this cluster info class
+    /** old data content is lost */
     void resize(int dim){
       /* {{{ open */
 
@@ -53,18 +65,21 @@ namespace icl{
     }
 
     /* }}} */
+    
+    /// adds a data element for given prototype index 
     void addElem(int prototypeIndex, float x, float y){
       /* {{{ open */
 
-      printf("adding index-%d dim-%d \n",prototypeIndex,m_iDim);
+      //      printf("adding index-%d dim-%d \n",prototypeIndex,m_iDim);
       m_pvecElems[prototypeIndex].push_back(x);
       m_pvecElems[prototypeIndex].push_back(y);
     }
 
     /* }}} */
+
+    /// clears internal data with 0
     void clear(){
       /* {{{ open */
-
       for(int i=0;i<m_iDim;i++){
         m_pvecElems[i].clear();
       }
@@ -75,6 +90,7 @@ namespace icl{
 
     /* }}} */
 
+    /// returns the dimension of this cluster info
     int dim() const {
       /* {{{ open */
 
@@ -82,6 +98,7 @@ namespace icl{
     }
 
     /* }}} */
+    /// returns center of a cluster
     float *center(int index=0) const {
       /* {{{ open */
 
@@ -89,6 +106,9 @@ namespace icl{
     }
 
     /* }}} */
+    
+    /// returns the pca-information of cluster c 
+    /** @return pca-information (data order: [len , len2, angle of axis 1]*/
     float *pcainfo(int index=0) const {
       /* {{{ open */
 
@@ -96,6 +116,8 @@ namespace icl{
     }
 
     /* }}} */
+    
+    /// returns the quantisation error for cluster at given index
     float &error(int index=0) const {
       /* {{{ open */
 
@@ -110,6 +132,8 @@ namespace icl{
     }
 
     /* }}} */
+
+    /// returns a specific data element according to a certain prototype
     float *elem(int prototypeIndex, int elemIndex=0) const {
       /* {{{ open */
 
@@ -121,11 +145,11 @@ namespace icl{
     private:
     /* {{{ members */
 
-    int m_iDim;
-    float *m_pfCenters;
-    float *m_pfPCAInfos;
-    float *m_pfErrors;
-    fvec *m_pvecElems;
+    int m_iDim;          ///!< center count
+    float *m_pfCenters;  ///!< center data
+    float *m_pfPCAInfos; ///!< pca information data
+    float *m_pfErrors;   ///!< error data
+    fvec *m_pvecElems;   ///!< data elements for each center
 
     /* }}} */
   };

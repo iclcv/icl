@@ -10,9 +10,7 @@
 
 namespace icl{
 
-  using std::vector;
-  
-  /// interface for a single color blob searcher
+  /// abstract interface for a single color blob searcher \ingroup G_CBS
   /** The ColorBlobSearcher Interface provides as well the functionality
       for different Blob searching Algorithms (working pixelwise and
       reference color based), as a dynamic interface for custom 
@@ -20,7 +18,8 @@ namespace icl{
   
       <h2>Slice Model</h2>
       The detection of image blobs is brocken apart into slice model,
-      for a generalizing abstraction that is <em>as dynamic as possible</em>. (~~~)
+      for a generalizing abstraction that is <em>as dynamic as possible</em>. 
+      
   <pre>
   +--------------------------------------------------------+
   | .. Higher level combination of different               |
@@ -74,28 +73,52 @@ namespace icl{
   template <class PixelType,class RatingType,class BlobRatingType>
   class ColorBlobSearcher : public PixelRatingGroup<PixelType,RatingType>{
     public:
+    
+    /// internal type definition
     typedef FoundBlob<BlobRatingType> foundblob;
-    typedef vector<foundblob> FoundBlobVector;
+
+    /// internal type definition
+    typedef std::vector<foundblob> FoundBlobVector;
+
+    /// internal type definition
     typedef PixelRating<PixelType,RatingType> pixelrating;
+
+    /// internal type definition
     typedef std::vector<pixelrating*> PixelRatingVector;
    
+    /// Destructor
     virtual ~ColorBlobSearcher();
+    
+    /// extracts all blobs
     virtual const FoundBlobVector &search(Img<PixelType> *poImage, Img8u *poMask);
 
+    /// inserts a new  pixel rating a last index (passing ownership of p to this class)
     virtual void addPR(pixelrating *p);
+    
+    /// removes a pixel rating at given index
     virtual void removePR(int index);
     
     protected:
+    /// internally used function ( can be reimplemented )
     virtual void prepareForNewImage(Img<PixelType> *poImage, Img8u *poMask);
+
+    /// internally used function ( can be reimplemented )
     virtual void storeResult(int iPRIndex, int x, int y, RatingType rating)=0;
+
+    /// internally used function ( can be reimplemented )
     virtual void evaluateResults(FoundBlobVector &destination)=0;
+
+    /// internally used function ( can be reimplemented )
     virtual void feedback(const FoundBlobVector &results, Img<PixelType> *poImage);
     
+    /// internally used function ( can be reimplemented )
     virtual void pixelRatingAdded(pixelrating *pr);
+
+    /// internally used function ( can be reimplemented )
     virtual void pixelRatingRemoved(int index);
     
     private:
-    
+    /// internal storage of the current set of found blobs
     FoundBlobVector m_vecFoundBlobs;
   };
 }
