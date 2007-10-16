@@ -56,14 +56,12 @@
     look at the corresponding class descriptions.
 
     
-    \ref G_CBS
-    
+    \ref G_CBS \n  
     The Color Blob Searcher API is a template based framework which provides a
     mechanism for a color based blob detection. In this approach each blob is
     determined by a special color, so blobs with identical colors are mixed together.
         
-    \ref G_RD
-
+    \ref G_RD \n
     The <b>ImgRegionDetector</b> provides low level functionalities for the detection of
     <em>connected</em> image regions. The regions that can be found must be connected and
     must show identical gray values (color images can not be processed yet). Commonly the
@@ -78,8 +76,7 @@
     available. A very common function may be <b>ICLFilter/LUT::reduceBits(..)</b>.
 
     
-    \ref G_RBBS
-    
+    \ref G_RBBS \n    
     The RegionBasedBlobSearcher also searches for a set of image blobs, which
     are discriminated <em>here</em> by their spacial location. The <em>connection</em>
     feature is compulsory for blobs. The advantage of this region based approach 
@@ -90,14 +87,12 @@
     feature-map creation and region evaluation interface.
         
 
-    \ref G_PT
-    
+    \ref G_PT \n    
     The 3 approaches above all perform Blob or region detection. The Position tracker can
     be used together with these ones to track detected blobs over time.
 
     
-    \ref G_UTILS
-    
+    \ref G_UTILS \n    
     In this group some additional support classes and functions are provided
 
 */
