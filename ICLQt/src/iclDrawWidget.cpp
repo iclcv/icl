@@ -292,7 +292,8 @@ namespace icl{
     }
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)e;
-      m_poImage->drawTo(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),s->imsize);
+      Rect r(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s));
+      m_poImage->drawTo(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),s->size);
     }
     GLTextureMapBaseImage *m_poImage;
   };
