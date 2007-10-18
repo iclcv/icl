@@ -13,6 +13,8 @@ namespace{
   ROW_INIT __RI;
 
   int BAR_LEN = 30;
+}
+namespace icl{
   void progress_init(){
     // {{{ open
 
@@ -51,7 +53,8 @@ namespace{
     printf("]\n");
     
   }
-
+}
+namespace {
   // }}}
   
   template<class T>

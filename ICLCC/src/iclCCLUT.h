@@ -7,6 +7,15 @@
 
 namespace icl{
 
+  /// static utility function for displaying some progress information in console
+  void progress_init();
+
+  /// static utility function for displaying some progress information in console
+  void progress_finish();
+
+  /// static utility function for displaying some progress information in console
+  void progress(int curr, int max);
+
   class CCLUT{
     public:
     CCLUT(format srcFmt, format dstFmt);
