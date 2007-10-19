@@ -6,7 +6,7 @@ using std::string;
 namespace icl{
  // {{{ static variables
 
-#ifdef USE_OPENGL_ACCELERATION
+#ifndef DO_NOT_USE_OPENGL_ACCELERATION
   int OSDWidget::s_iAlpha = 160;
 #else
   int OSDWidget::s_iAlpha = 255;

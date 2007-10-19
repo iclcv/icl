@@ -60,7 +60,7 @@ endif
 ifeq "${OS_TYPE}" "macosx"
 #ABS_LIBRARIES:=${ABS_LIBRARIES} -F/Library/Frameworks -framework Intel_IPP
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-                -L${IPP_ROOT}/Intel_IPP.framework/Versions/5.1/ia32/Libraries \
+                -L${IPP_ROOT}/Intel_IPP.framework/Versions/5.2/ia32/Libraries \
                 -lippcore \
                 -lippi \
                 -lipps \

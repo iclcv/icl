@@ -137,6 +137,10 @@ namespace icl {
 #ifdef WIN32
 #define iclMin(A,B) ((A)<(B)?(A):(B))
 #define iclMax(A,B) ((A)>(B)?(A):(B))
+#endif
+#ifdef __APPLE__
+#define iclMin(A,B) ((A)<(B)?(A):(B))
+#define iclMax(A,B) ((A)>(B)?(A):(B))
 #else
 #define iclMin(A,B) std::min(A,B)
 #define iclMax(A,B) std::max(A,B)
