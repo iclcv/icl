@@ -49,6 +49,11 @@ namespace icl{
     **/
     FileList(const std::string &pattern, bool omitDoubledFiles=false);
 
+    /// create a file list by given set of filenames
+    /** double filenames are allowed in this mode. Sequence files are not
+        handled in a special way.*/
+    FileList(const std::vector<std::string> &filenames);
+
     /// does nothing
     ~FileList();
 
@@ -57,7 +62,7 @@ namespace icl{
     
     /// returns the i-th filename in this list
     const std::string &operator[](int i) const;
-    
+
     /// adds all files from another FileList to this
     void join(const FileList &other);
 

@@ -27,8 +27,9 @@ namespace icl{
   class FileListImpl{
   public:
     FileListImpl(const std::string &pattern, bool omitDoubledFiles):
-      m_bNoDoubledFiles(omitDoubledFiles){
       // {{{ open
+      m_bNoDoubledFiles(omitDoubledFiles){
+
       if(pattern == "") return;
       string sPattern = pattern;
       std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
@@ -61,6 +62,13 @@ namespace icl{
 #else
       add(sPattern);
 #endif
+    }
+
+    // }}}
+    FileListImpl(const std::vector<std::string> &filenames)
+      // {{{ open
+
+      :m_vecFiles(filenames),m_bNoDoubledFiles(false){
     }
 
     // }}}
@@ -137,6 +145,14 @@ namespace icl{
     // {{{ open
 
     ShallowCopyable<FileListImpl,FileListImplDelOp>(new FileListImpl(pattern,omitDoubledFiles)){
+  }
+
+  // }}}
+  
+  FileList::FileList(const vector<string> &filenames):
+    // {{{ open
+
+    ShallowCopyable<FileListImpl,FileListImplDelOp>(new FileListImpl(filenames)){
   }
 
   // }}}
