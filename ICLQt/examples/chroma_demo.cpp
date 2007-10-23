@@ -4,6 +4,7 @@
 #include <iclDCGrabber.h>
 #include <iclPWCGrabber.h>
 #include <iclFileGrabber.h>
+#include <iclProgArg.h>
 
 using namespace icl;
 using namespace std;
@@ -19,8 +20,13 @@ struct MyThread : public Thread{
     if(!devs.size()){
       vector<int> pwcdevs = PWCGrabber::getDeviceList();
       if(!pwcdevs.size()){
-        grabber = new FileGrabber("./images/*");
-        ((FileGrabber*)grabber)->setIgnoreDesiredParams(false);
+        if (pa_defined("-file")) {
+          grabber = new FileGrabber(pa_subarg("-file",0,string("./images/*")));
+          ((FileGrabber*)grabber)->setIgnoreDesiredParams(false);
+        } else {
+          cout << "Define at least a file or plugin the PWC cam" << endl;
+          exit(1);
+        }
       }else{
         grabber = new PWCGrabber(size);
       }
@@ -58,9 +64,9 @@ struct MyThread : public Thread{
   }
 };
 
-int main(int n, char **ppc){
-  QApplication app(n,ppc);
-
+int main(int nArgs, char **ppcArgs){
+  QApplication app(nArgs,ppcArgs);
+  pa_init(nArgs, ppcArgs,"-file(1)");
   
   gui = new GUI("hbox");
   (*gui) << ( GUI("vbox")  
