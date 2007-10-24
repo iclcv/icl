@@ -153,22 +153,22 @@ namespace icl {
      pFixed16s = 0; pFixedMask16s = 0;
      pFixed32f = 0; pFixedMask32f = 0;
      switch (m_eKernel) {
-       case kernelSobelX3x3:
+       case kernelSobelY3x3:
           pFixed8u  = ippiFilterSobelHoriz_8u_C1R;
           pFixed16s = ippiFilterSobelHoriz_16s_C1R;
           pFixed32f = ippiFilterSobelHoriz_32f_C1R;
           break;
-       case kernelSobelX5x5:
+       case kernelSobelY5x5:
           pFixedMask8u  = 0;
           pFixedMask16s = 0;
           pFixedMask32f = ippiFilterSobelHorizMask_32f_C1R;
           break;
-       case kernelSobelY3x3:
+       case kernelSobelX3x3:
           pFixed8u  = ippiFilterSobelVert_8u_C1R;
           pFixed16s = ippiFilterSobelVert_16s_C1R;
           pFixed32f = ippiFilterSobelVert_32f_C1R;
           break;
-       case kernelSobelY5x5:
+       case kernelSobelX5x5:
           pFixedMask8u  = 0;
           pFixedMask16s = 0;
           pFixedMask32f = ippiFilterSobelVertMask_32f_C1R;
