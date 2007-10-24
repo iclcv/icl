@@ -51,6 +51,14 @@ namespace icl {
     ICLException (std::string("File not found: ") + sFileName) {}
     virtual ~FileNotFoundException() throw() {}
   };
+   
+  /// Exception thrown if a file could not be read properly \ingroup EX
+  class InvalidFileException : public ICLException {
+    public:
+    InvalidFileException (const std::string& sFileName) throw() : 
+    ICLException (std::string("Invalied file: ") + sFileName) {}
+    virtual ~InvalidFileException() throw() {}
+  };
   
   /// Exception called if an image gets invalid params \ingroup EX
   class InvalidImgParamException : public ICLException {
