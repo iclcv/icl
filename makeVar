@@ -1,4 +1,4 @@
-## -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
+# -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file. 
 #
 #   makeVar
 #
@@ -73,7 +73,7 @@ DEBUG:=-O0 -g3
 # Non-Debugging flags
 ifeq "${OS_TYPE}" "linux"
  # For linux OS
- NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=pentium3
+ NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=native
 endif
 ifeq "${OS_TYPE}" "macosx"
  # For mac OS
@@ -81,7 +81,7 @@ ifeq "${OS_TYPE}" "macosx"
 endif
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CDEFINES:= ${CDEFINES} -DWITH_IPP_OPTIMIZATION -DWITH_JPEG_SUPPORT
+CDEFINES:= ${CDEFINES}
 
 # Flags for C compiler
 CFLAGS:= ${CFLAGS}
