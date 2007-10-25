@@ -21,7 +21,7 @@ namespace icl{
     // {{{ open
 
     printf("\n");
-    printf("%s%s\n",text.c_str(),BACK_LINE);
+    printf("%s%s\n",BACK_LINE,text.c_str());
     PROGRESS_STR = text;
   }
 
@@ -30,7 +30,7 @@ namespace icl{
   void progress_finish(){
     // {{{ open
 
-    printf("%s%s:100%s[##############################]\n\n",PROGRESS_STR.c_str(),BACK_LINE,"%");
+    printf("%s%s:100%s[##############################]\n",BACK_LINE,PROGRESS_STR.c_str(),"%");
     
   }
 
@@ -39,7 +39,7 @@ namespace icl{
   void progress(int curr, int max){
     // {{{ open
 
-    printf("%s%s:",PROGRESS_STR.c_str(),BACK_LINE);
+    printf("%s%s:",BACK_LINE,PROGRESS_STR.c_str());
     float frac = (float)curr/(float)max;
     printf("%3d%s",(int)(frac*100),"%");
     
