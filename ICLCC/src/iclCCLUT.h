@@ -3,12 +3,12 @@
 
 #include <iclImg.h>
 #include <vector>
-
+#include <string>
 
 namespace icl{
 
   /// static utility function for displaying some progress information in console
-  void progress_init();
+  void progress_init(const std::string &text="Creating LUT");
 
   /// static utility function for displaying some progress information in console
   void progress_finish();

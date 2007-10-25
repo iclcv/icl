@@ -13,13 +13,16 @@ namespace{
   ROW_INIT __RI;
 
   int BAR_LEN = 30;
+  
+  string PROGRESS_STR;
 }
 namespace icl{
-  void progress_init(){
+  void progress_init(const std::string &text){
     // {{{ open
 
     printf("\n");
-    printf("%screating lookup table:\n",BACK_LINE);
+    printf("%s%s\n",text.c_str(),BACK_LINE);
+    PROGRESS_STR = text;
   }
 
   // }}}
@@ -27,7 +30,7 @@ namespace icl{
   void progress_finish(){
     // {{{ open
 
-    printf("%screating lookup table:100%s[##############################]\n\n",BACK_LINE,"%");
+    printf("%s%s:100%s[##############################]\n\n",PROGRESS_STR.c_str(),BACK_LINE,"%");
     
   }
 
@@ -36,7 +39,7 @@ namespace icl{
   void progress(int curr, int max){
     // {{{ open
 
-    printf("%screating lookup table:",BACK_LINE);
+    printf("%s%s:",PROGRESS_STR.c_str(),BACK_LINE);
     float frac = (float)curr/(float)max;
     printf("%3d%s",(int)(frac*100),"%");
     
