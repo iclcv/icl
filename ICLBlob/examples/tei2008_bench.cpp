@@ -125,7 +125,7 @@ public:
       w->lock();       
       w->reset();
       if(v.size()){
-        pt.pushData(v.data(),v.size()/2);
+        pt.pushData(v.ptr(),v.size()/2);
 
         w->color(255,0,0);
         for(unsigned int i=0;i<v.size();i+=2){
