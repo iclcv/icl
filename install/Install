@@ -126,8 +126,8 @@ foreach my $entry(@dirs) {
         if ($entry !~ /ICLUtils/) {
             print "---- Copying libraries: $entry/lib\n";
             if ("$OS_SYSTEM" eq "macosx") {
-                system "cp -d ./$entry/lib/*.dylib $INSTALLDIR/lib";
-                system "cp -d ./$entry/lib/*.a $INSTALLDIR/lib";
+                system "cp ./$entry/lib/*.dylib $INSTALLDIR/lib";
+                system "cp ./$entry/lib/*.a $INSTALLDIR/lib";
             } else {
                 system "cp -d ./$entry/lib/*.so* $INSTALLDIR/lib";
                 system "cp -d ./$entry/lib/*.a $INSTALLDIR/lib";
