@@ -1,6 +1,37 @@
 #include <iclDrawWidget3D.h>
 #include <iclGLTextureMapBaseImage.h>
+#include <GL/gl.h>
+
 namespace icl{
+
+  ICLDrawWidget3D::GLCallback::GLCallback(bool useDisplayList){
+    // {{{ open
+
+    m_bUseDisplayList=useDisplayList;
+    m_bFirst = true;
+   
+  } 
+
+  // }}}
+  
+  void ICLDrawWidget3D::GLCallback::draw_extern(){
+    // {{{ open
+    if(m_bFirst && m_bUseDisplayList){
+      m_uiListHandle = glGenLists(1);
+      glNewList(m_uiListHandle,GL_COMPILE_AND_EXECUTE);
+      draw();
+      glEndList();
+      m_bFirst = false;
+
+    }
+    if(m_bUseDisplayList){
+      glCallList(m_uiListHandle);
+    }else{
+      draw();
+    }
+  }
+
+  // }}}
  
   struct ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
@@ -371,7 +402,7 @@ namespace icl{
 
     Callback3DCommand(ICLDrawWidget3D::GLCallback *cb):cb(cb){}
     virtual void execute(){
-      cb->draw();
+      cb->draw_extern();
     }
     ICLDrawWidget3D::GLCallback *cb;
   };
@@ -404,13 +435,19 @@ namespace icl{
     glLoadIdentity();
     
     glEnable(GL_DEPTH_TEST);
-    GLfloat light_diffuse[] = {1.0, 0.0, 0.0, 1.0};  /* Red diffuse light. */
+    GLfloat light_diffuse[] = {1.0, 1.0, 0.8, 1.0};  /* White diffuse light. */
     GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};  /* Infinite light location. */
 
+    //    GLfloat light_ambient[] = {1.0, 1.0, 0.5, 0.2};  /* White diffuse light. */
+
+
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    // glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHTING);
+
+    glEnable(GL_COLOR_MATERIAL);
     
     glMatrixMode(GL_PROJECTION);
     gluPerspective( 45,  float(width())/height(), 0.1, 100);

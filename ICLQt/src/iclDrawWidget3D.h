@@ -15,11 +15,22 @@ namespace icl{
     
     /// internally used callback class type
     class GLCallback{
+      protected:
+      /// create a callback with given displaylist flag
+      GLCallback(bool useDisplayList = false);
+      
       public:
       /// empty destructor (doing nothing)
       virtual ~GLCallback(){}
       /// pure virtual drawing function
-      virtual void draw() = 0;
+      virtual void draw()=0;
+
+      /// this function is called externally eventually using display list
+      void draw_extern();
+      private:
+      bool m_bUseDisplayList;
+      unsigned int m_uiListHandle;
+      bool m_bFirst;
     };
     
     /// creates a new ICLDrawWidget embedded into the parent component
@@ -87,7 +98,7 @@ namespace icl{
     /// creates a callback function draw command
     void callback(GLCallbackFunc, void *data=0);
     
-    /// create a callback object draw comamnd
+    /// create a callback object draw comamnd (ownership is not passed!)
     void callback(GLCallback *cb);
 
     /// forward declaration of the internally used DrawCommandClass
