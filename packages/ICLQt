@@ -17,7 +17,6 @@ ifneq "$(HAVE_QT)" ""
 include ${PACKAGES}/Qt
 include ${PACKAGES}/ICLCore
 
-
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
 ABS_INCLUDES:= ${ABS_INCLUDES} \

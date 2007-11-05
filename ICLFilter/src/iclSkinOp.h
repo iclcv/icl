@@ -28,13 +28,9 @@ namespace icl {
 **/
 class SkinOp : public UnaryOp, public Uncopyable{
   public:
-  ///Constructor
+  ///Empty Constructor
   SkinOp () : m_poChromaApply(0), m_poChromaTrain(0) {}
-    
-  ///Constructor
-  SkinOp (std::vector<float> skinParams) : m_poChromaApply(0), 
-    m_poChromaTrain(0),
-    m_vecSkinParams(skinParams) {}
+  
   ///Destructor
   ~SkinOp () {};
   
@@ -45,7 +41,42 @@ class SkinOp : public UnaryOp, public Uncopyable{
   **/
   void apply(const icl::ImgBase *poSrc, icl::ImgBase **ppoDst);
 
-  ///Same function as apply() but image values written as csv file
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /**
      @param poSrc The src image
      @param ppoDst The final skin color mask (binarized)

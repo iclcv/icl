@@ -78,3 +78,4 @@ SKIP_DIRECTORIES:=
 ifeq "$(HAVE_QT)" ""
 SKIP_OBJECTS += skinControl.cpp
 endif
+SKIP_OBJECTS += skin.cpp

@@ -1,7 +1,7 @@
 #include <iclSkinOp.h>
 #include <iclImg.h>
 #include <iclCC.h>
-#include <iclMathematics.h>
+//#include <iclMathematics.h>
 
 /*
   Skin.cpp
@@ -20,20 +20,23 @@ namespace icl {
   void SkinOp::apply(const ImgBase *poSrc, ImgBase **ppoDst) {
     // {{{ open 
     FUNCTION_LOG("");
-
+    
     //Variable initialisation
     float p1, p2;
-    //Ensure ImgBase compatibility
-    ensureCompatible(&m_poChromaApply, depth32f, 
-                     poSrc->getSize(), formatChroma);
-    ensureCompatible(ppoDst, depth8u, poSrc->getSize(), 
-                     formatMatrix, poSrc->getROI());
-
-    //Convert src image
-    cc(poSrc,m_poChromaApply);
-    (*ppoDst)->asImg<icl8u>()->clear();
     
-
+    // Check if src image is allready a chroma image
+    if (poSrc->getFormat() == icl::formatChroma) {
+      ensureCompatible(m_poChroma, poSrc);
+      m_poChroma = poSrc;
+    } else {
+      ensureCompatible(m_poChroma, poSrc);
+      //Convert src image 
+      cc(poSrc,m_poChromaApply);
+    }
+    
+    ensureCompatible(ppoDst, depth8u, poSrc->getSize(), 
+                     formatGray, poSrc->getROI());
+    
     Img32f::iterator itChromaR=m_poChromaApply->asImg<icl32f>()->getIterator(0);
     Img32f::iterator itChromaG=m_poChromaApply->asImg<icl32f>()->getIterator(1);
     Img8u::iterator  itOutMask= (*ppoDst)->asImg<icl8u>()->getIterator(0);

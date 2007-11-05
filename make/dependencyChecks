@@ -4,65 +4,76 @@
 ifeq "${OS_TYPE}" "linux"
 # Linux support
 ifeq "$(wildcard $(IPP_ROOT)/5.1/sharedlib/libipp*.so)" ""
-ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
 ifeq "$(_WARN_IPP)" ""
 _WARN_IPP=done # warn only once
 export _WARN_IPP
 $(warning "IPP 5.1 is not available. Its usage is switched off.")
 endif
-CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
-CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
-endif
-endif
-endif
+else # found IPP -> Ok
+ifeq "${_HAVE_IPP}" ""
+$(warning "IPP support enabled: ${IPP_ROOT}/lib")
+export _HAVE_IPP=done
+CDEFINES += -DWITH_IPP_OPTIMIZATION
+CPPDEFINES += -DWITH_IPP_OPTIMIZATION
+endif	# _HAVE_IPP
+endif # wildcard
+endif # OS_TYPE
+
 ifeq "${OS_TYPE}" "macosx"
 # Mac support
 ifeq "$(wildcard $(IPP_ROOT)/Intel_IPP.framework/Libraries/libipp*.dylib)" ""
-ifneq "$(findstring -DWITH_IPP_OPTIMIZATION,$(CDEFINES))" ""
 ifeq "$(_WARN_IPP)" ""
 _WARN_IPP=done # warn only once
 export _WARN_IPP
 $(warning "IPP is not available. Its usage is switched off.")
 endif
-CDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CDEFINES))
-CPPDEFINES:=$(filter-out -DWITH_IPP_OPTIMIZATION, $(CPPDEFINES))
-endif
-endif
-endif
+else
+ifeq "${_HAVE_IPP}" ""
+$(warning "IPP support enabled: ${IPP_ROOT}/lib")
+export _HAVE_IPP=done
+CDEFINES += -DWITH_IPP_OPTIMIZATION
+CPPDEFINES += -DWITH_IPP_OPTIMIZATION
+endif	# _HAVE_IPP
+endif # wildcard
+endif # OS_TYPE
 
 ############################# check for JPEG-SUPPORT ####################
 LIBJPEG_ROOT ?= /usr
 ifeq "$(wildcard ${LIBJPEG_ROOT}/lib/libjpeg.*)" ""
-ifneq "$(findstring -DWITH_JPEG_SUPPORT,$(CDEFINES))" ""
 ifeq "$(_WARN_JPEG)" ""
 _WARN_JPEG=done # warn only once
 export _WARN_JPEG
 $(warning "libjpeg is not available. Its usage is switched off.")
 endif
-CDEFINES:=$(filter-out -DWITH_JPEG_SUPPORT, $(CDEFINES))
-CPPDEFINES:=$(filter-out -DWITH_JPEG_SUPPORT, $(CPPDEFINES))
-endif
 else
+ifeq "${_HAVE_JPEG}" ""
+$(warning "JPEG support enabled: ${LIBJPEG_ROOT}/lib")
+export _HAVE_JPEG=done
+CDEFINES += -DWITH_JPEG_SUPPORT
+CPPDEFINES += -DWITH_JPEG_SUPPORT
 HAVE_LIBJPEG=TRUE
+endif	# _HAVE_IPP
 endif
 
 ############################# check for QT 4 ############################
 # try whether useful QTDIR is already set
-ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
-QTDIR=/vol/qt/4.2
-endif
+QTDIR ?= /vol/qt/4.2
+
 # try whether QTDIR contains QT 4 now
-ifneq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
-HAVE_QT=TRUE
-else
+ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
 ifeq "$(_WARN_QT)" ""
 _WARN_QT=done # warn only once
 export _WARN_QT
 $(warning "Qt version 4.2 is not available. Qt-specific targets are not built.")
 endif
+else # found Qt
+ifeq "${HAVE_QT}" ""
+$(warning "Qt support enabled: ${QTDIR}/lib")
+export HAVE_QT=TRUE
+endif # HAVE_QT
 endif
 
-############################# check for libdc1394.so.2x ############################
+############################# check for libdc1394.so.2x ################
 LIBDC_ROOT ?= /vol/video
 ifeq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.*2*)" ""
 ifeq "${_WARN_LIBDC}" ""
@@ -70,10 +81,14 @@ $(warning "libdc1394.so.2x was not found in ${LIBDC_ROOT}/lib. DCGrabber support
 export _WARN_LIBDC=done
 endif # _WARN_LIBDC
 else # found libdc1394.so.2x in LIBDC_ROOT/lib ->ok
+ifeq "${_HAVE_LIBDC}" ""
+$(warning "LIBDC support enabled: ${LIBDC_ROOT}/lib")
+export _HAVE_LIBDC=done
 HAVE_LIBDC=TRUE
+endif
 endif # searching in LIBDC_ROOT/lib
 
-############################# check for libraw1394.so #############################
+############################# check for libraw1394.so ##################
 LIBRAW_ROOT ?= /vol/video
 ifeq "$(wildcard ${LIBRAW_ROOT}/lib/libraw1394.so*)" ""
 ifeq "${_WARN_LIBRAW}" ""
@@ -81,26 +96,34 @@ $(warning "libraw1394.so was not found in ${LIBRAW_ROOT}/lib. DCGrabber support 
 export _WARN_LIBRAW=done
 endif # _WARN_LIBRAW
 else # found libraw1394.so in LIBRAW_ROOT/lib ->ok
+ifeq "${_HAVE_LIBRAW}" ""
+$(warning "LIBRAW support enabled: ${LIBRAW_ROOT}/lib")
+export _HAVE_LIBRAW=done
 HAVE_LIBRAW=TRUE
+endif
 endif # searching in LIBRAW_ROOT/lib
 
-############################# check both DCGrabber dependencies ####################
+############################# check both DCGrabber dependencies #######
 ifneq "$(HAVE_LIBDC)" ""
 ifneq "$(HAVE_LIBRAW)" ""
-HAVE_LIBDC_AND_LIBRAW=TRUE
+export HAVE_LIBDC_AND_LIBRAW=TRUE
 endif
 endif
 
 ############################# check for SVS ########################
 # try whether SVS is available
 SVS_ROOT ?= /vol/vision/SVS/4.2
-ifneq "$(wildcard ${SVS_ROOT}/bin/libsvs.so)" ""
-HAVE_SVS=TRUE
-else
+ifeq "$(wildcard ${SVS_ROOT}/bin/libsvs.so)" ""
 ifeq "$(_WARN_SVS)" ""
 _WARN_SVS=done # warn only once
 export _WARN_SVS
 $(warning "SVS library is not available. SVS specific targets are not built.")
+endif #_WARN_SVS
+else # found SVS library ->ok
+ifeq "${_HAVE_SVS}" ""
+$(warning "SVS support enabled: ${SVS_ROOT}/lib")
+export _HAVE_SVS=done
+HAVE_SVS=TRUE
 endif
 endif
 
@@ -112,7 +135,11 @@ $(warning "libunicap.so was not found in ${UNICAP_ROOT}/lib. Unicap support disa
 export _WARN_UNICAP=done
 endif # _WARN_UNICAP
 else # found libunicap.so in UNICAP_ROOT/lib ->ok
+ifeq "${_HAVE_UNICAP}" ""
+$(warning "Unicap support enabled: ${UNICAP_ROOT}/lib")
+export _HAVE_UNICAP=done
 HAVE_UNICAP=TRUE
+endif
 endif # searching in UNICAP_ROOT/lib
 
 ############################# check for XCF ########################
@@ -123,5 +150,8 @@ $(warning "libxcf.so was not found in ${XCF_ROOT}/lib. XCF support disabled.")
 export _WARN_XCF=done
 endif # _WARN_XCF
 else # found libxcf.so in XCF_ROOT/lib ->ok
+ifneq "${HAVE_XCF}" "TRUE"
+$(warning "XCF support enabled: ${XCF_ROOT}/lib")
 HAVE_XCF=TRUE
+endif
 endif # searching in XCF_ROOT/lib

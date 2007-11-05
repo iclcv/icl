@@ -75,3 +75,4 @@ LDFLAGS:= ${LDFLAGS}
 # Flags for dynamic library linker
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
+SKIP_OBJECTS:=iclSkinOp.cpp
