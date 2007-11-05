@@ -11,7 +11,7 @@ $(warning "IPP 5.2 is not available. Its usage is switched off.")
 endif
 else # found IPP -> Ok
 ifeq "${_HAVE_IPP}" ""
-$(warning "IPP support enabled: ${IPP_ROOT}/lib")
+$(warning "IPP support enabled: ${IPP_ROOT}/5.2/sharedlib")
 export _HAVE_IPP=done
 CDEFINES += -DWITH_IPP_OPTIMIZATION
 CPPDEFINES += -DWITH_IPP_OPTIMIZATION
