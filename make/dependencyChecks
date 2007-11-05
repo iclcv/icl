@@ -3,11 +3,11 @@
 ############################# check for IPP ############################
 ifeq "${OS_TYPE}" "linux"
 # Linux support
-ifeq "$(wildcard $(IPP_ROOT)/5.1/sharedlib/libipp*.so)" ""
+ifeq "$(wildcard $(IPP_ROOT)/5.2/sharedlib/libipp*.so)" ""
 ifeq "$(_WARN_IPP)" ""
 _WARN_IPP=done # warn only once
 export _WARN_IPP
-$(warning "IPP 5.1 is not available. Its usage is switched off.")
+$(warning "IPP 5.2 is not available. Its usage is switched off.")
 endif
 else # found IPP -> Ok
 ifeq "${_HAVE_IPP}" ""
