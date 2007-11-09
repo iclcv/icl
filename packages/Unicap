@@ -41,7 +41,7 @@ else
 #       -lDisplayWindow )
 # (e.g. extra library like: -L/usr/lib -lpthreads )
 ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-                -L${UNICAP_ROOT}/lib -Wl,-rpath -Wl,${UNICAP_ROOT}/lib \
+                -L${UNICAP_ROOT}/lib -Wl,-rpath=${UNICAP_ROOT}/lib \
                 -lunicap -lpthread
 
 # Please, do not remove this endif statement

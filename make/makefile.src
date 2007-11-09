@@ -50,8 +50,7 @@ ifeq "${FORCE_CPP}" "TRUE"
 
 ../obj/${TARGET_PREFIX}%.o: %.${_SOURCES_EXT}
 	${PRE_CMD}${CMD_ECHO} "Building objects from: ${_CURR_DIR}/$< ${_DBG_INDICATOR}"
-	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG_FLAGS} ${CPPDEFINES} -c $< -o $@ \
-                    ${REL_INCLUDES} ${ABS_INCLUDES}
+	${PRE_CMD}${CMD_CCPP} ${CPPFLAGS} ${DEBUG_FLAGS} ${CPPDEFINES} -c $< -o $@ ${REL_INCLUDES} ${ABS_INCLUDES}
 
 else
 

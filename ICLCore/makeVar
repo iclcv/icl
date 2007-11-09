@@ -61,7 +61,6 @@ CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CPPDEFINES:= ${CPPDEFINES}
-# -DDEBUGLEVEL_4
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}

@@ -22,13 +22,13 @@ ABS_INCLUDES:= ${ABS_INCLUDES}
 REL_INCLUDES:= $(REL_INCLUDES:-I%=-I../%) \
                -I../src
 
-
 # Debug status
 # This variable takes two values: TRUE or FALSE
 DEBUG_ON:=${DEBUG_ON}
 
 # Debugging flags
 DEBUG:= ${DEBUG}
+
 # Non-Debugging flags
 NODEBUG:= ${NODEBUG}
 

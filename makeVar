@@ -15,7 +15,7 @@ _DOT_DOT=.
 endif
 
 SRC_ROOT=${_DOT_DOT}
-PACKAGES=$(SRC_ROOT)/packages/
+PACKAGES=$(SRC_ROOT)/packages
 endif
 ###############################################################################
 
@@ -64,20 +64,20 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 # that are needed by the executables.
 REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
-# Debug status
-# This variable takes two values: TRUE or FALSE
+# Debug status (This variable takes two values: TRUE or FALSE)
 DEBUG_ON:=FALSE
 
 # Debugging flags
 DEBUG:=-O0 -g3
+
 # Non-Debugging flags
 ifeq "${OS_TYPE}" "linux"
  # For linux OS
- NODEBUG:=-O4 -DNDEBUG -mfpmath=sse -march=native
+ NODEBUG:=-O4 -DNDEBUG -mfpmath=sse ${ICL_OPTIMIZATION}
 endif
 ifeq "${OS_TYPE}" "macosx"
  # For mac OS
- NODEBUG:=-O4 -DNDEBUG
+ NODEBUG:=-O4 -DNDEBUG ${ICL_OPTIMIZATION}
 endif
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
@@ -87,7 +87,7 @@ CDEFINES:= ${CDEFINES}
 CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CPPDEFINES:= ${CDEFINES}
+CPPDEFINES:= ${CPPDEFINES}
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
@@ -104,10 +104,9 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 # Change the linker to g++
 CMD_LD=g++
 
-
 #########################################################################
 # Dependency checks
--include ${SRC_ROOT}/make/dependencyChecks
+include ${SRC_ROOT}/make/dependencyChecks
 
 # Exclude the folowing folder or files
 ifeq "$(HAVE_QT)" ""
