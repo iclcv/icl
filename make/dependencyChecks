@@ -53,10 +53,10 @@ HAVE_LIBJPEG:=TRUE
 endif
 
 # QT
-QTDIR ?= /vol/qt
+QTDIR ?= /vol/qt/4.3
 ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
 ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-$(warning "Qt version 4.2 is not available. Qt-specific targets are not built.")
+$(warning "Qt version 4.3 is not available. Qt-specific targets are not built.")
 endif
 else
 ifeq "${ICL_DEPENDENCYS_CHECKED}" ""

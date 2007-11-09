@@ -146,7 +146,7 @@ namespace icl {
       m_locRequest ("<IMAGEREQUEST>"
                     "<GRAB stereo=\"false\" timestamp=\"\"/>"
                     "</IMAGEREQUEST>", "/IMAGEREQUEST/GRAB"), 
-      m_remoteServer(0), m_poSource(0), m_poBayer(0), m_result(0)
+      m_remoteServer(0), m_result(0), m_poSource(0), m_poBayer(0)
    {
       // create remote server instance
       m_remoteServer = XCF::RemoteServer::create(sServer, XCF::NONE);
