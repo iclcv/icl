@@ -84,17 +84,10 @@ ifeq "$(wildcard ${LIBRAW_ROOT}/lib/libraw1394.so*)" ""
 ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
 $(warning "libraw1394.so was not found in ${LIBRAW_ROOT}/lib. DCGrabber support disabled.")
 endif
+HAVE_LIBDC:=
 else
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
+ifeq "${ICL_DEPENDENCYS_CHECKED}${HAVE_LIBDC}" "TRUE"
 $(warning "libraw support enabled: ${LIBRAW_ROOT}/lib")
-endif
-HAVE_LIBRAW:=TRUE
-endif
-
-# libdc1394 and libraw1394
-ifneq "$(HAVE_LIBDC)" ""
-ifneq "$(HAVE_LIBRAW)" ""
-export HAVE_LIBDC_AND_LIBRAW=TRUE
 endif
 endif
 

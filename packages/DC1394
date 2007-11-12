@@ -12,7 +12,7 @@ DC1394_MAKEVAR=DC1394_MAKEVAR
 
 ifeq "${OS_TYPE}" "linux"
 
-ifneq "$(HAVE_LIBDC_AND_LIBRAW)" ""
+ifneq "$(HAVE_LIBDC)" ""
 # Please, include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/globalVar )
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar )
@@ -20,7 +20,7 @@ ifneq "$(HAVE_LIBDC_AND_LIBRAW)" ""
 # Please, place here the include directory of the project
 # (e.g. -I${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/include )
 ABS_INCLUDES:= ${ABS_INCLUDES} \
-							-I${LIBDC_ROOT}/include
+				   -I${LIBDC_ROOT}/include -I${LIBRAW_ROOT}/include
 
 # Please, do not change this ifeq statement
 ifeq "${HRI_INHERIT_MODE}" "STATIC"
@@ -61,7 +61,7 @@ CPPDEFINES:= ${CPPDEFINES}
 CPPFLAGS:= ${CPPFLAGS}
 
 
-endif # HAVE_LIBDC_AND_LIBRAW
+endif # HAVE_LIBDC
 endif # linux
 
 ifeq "${OS_TYPE}" "macosx"
@@ -75,7 +75,7 @@ ifneq "$(HAVE_LIBDC)" ""
 # Please, place here the include directory of the project
 # (e.g. -I${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/include )
 ABS_INCLUDES:= ${ABS_INCLUDES} \
-	-I${LIBDC_ROOT}/include
+	-I${LIBDC_ROOT}/include -I${LIBRAW_ROOT}/include
 
 # Please, do not change this ifeq statement
 ifeq "${HRI_INHERIT_MODE}" "STATIC"

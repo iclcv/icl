@@ -72,9 +72,7 @@ LDFLAGS:= ${LDFLAGS}
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
 ifeq "$(HAVE_LIBDC)" ""
-ifeq "$(HAVE_LIBRAW)" ""
 SKIP_OBJECTS += iclSignalHandler.cpp
-endif
 endif
 
 
