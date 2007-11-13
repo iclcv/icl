@@ -3,7 +3,6 @@
 
 #ifdef MACOSX
 #include <OpenGL/gl.h>
-#error "PANIK OpenGL"
 #else
 #include <GL/gl.h>
 #endif
