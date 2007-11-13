@@ -134,12 +134,18 @@ OS_NAME= $(word 3, ${SYSTEM_ID})
 
 ifeq "$(findstring windows,${OS_NAME})" "windows"
  OS_TYPE=windows
+ CPPDEFINES:=${CPPDEFINES} -DWINDOWS
+ CDEFINES:=${CDEFINES} -DWINDOWS
 endif
 ifeq "$(findstring linux,${OS_NAME})" "linux"
  OS_TYPE=linux
+ CPPDEFINES:=${CPPDEFINES} -DLINUX
+ CDEFINES:=${CDEFINES} -DLINUX
 endif
 ifeq "$(findstring darwin,${OS_NAME})" "darwin"
  OS_TYPE=macosx
+ CPPDEFINES:=${CPPDEFINES} -DMACOSX
+ CDEFINES:=${CDEFINES} -DMACOSX
 endif
 
 ifeq "${HOSTINFO}" ""
@@ -213,13 +219,13 @@ REL_OBJECTS:=
 FORCE_CPP:=TRUE
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CDEFINES:=
+CDEFINES:=${CDEFINES}
 
 # Flags for C compiler
 CFLAGS:= -Wall -std=c99 -Wno-long-long
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CPPDEFINES:=
+CPPDEFINES:=${CPPDEFINES}
 
 # Flags for C++ compiler
 # Removing -Wall -pedantic will be punished severely!!!

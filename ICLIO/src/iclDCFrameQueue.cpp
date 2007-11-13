@@ -12,7 +12,7 @@ namespace icl{
       initialize_dc_cam(c,nDMABuffers, options);
       
       /// dequeu all frames once 
-#ifdef __APPLE__
+#ifdef MACOSX
       for(int i=0;i<m_iBuffers-1;i++){
 #else
       for(int i=0;i<m_iBuffers;i++){

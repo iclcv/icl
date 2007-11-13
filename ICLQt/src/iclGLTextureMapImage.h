@@ -1,8 +1,9 @@
 #ifndef ICL_GL_TEXTUREMAP_IMAGE
 #define ICL_GL_TEXTUREMAP_IMAGE
 
-#ifdef __APPLE__
+#ifdef MACOSX
 #include <OpenGL/gl.h>
+#error "PANIK OpenGL"
 #else
 #include <GL/gl.h>
 #endif

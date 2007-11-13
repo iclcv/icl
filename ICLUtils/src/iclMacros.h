@@ -138,7 +138,7 @@ namespace icl {
 #define iclMin(A,B) ((A)<(B)?(A):(B))
 #define iclMax(A,B) ((A)>(B)?(A):(B))
 #endif
-#ifdef __APPLE__
+#ifdef MACOSX
 #define iclMin(A,B) ((A)<(B)?(A):(B))
 #define iclMax(A,B) ((A)>(B)?(A):(B))
 #else
