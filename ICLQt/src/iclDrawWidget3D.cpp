@@ -1,6 +1,11 @@
 #include <iclDrawWidget3D.h>
 #include <iclGLTextureMapBaseImage.h>
+
+#ifdef MACOSX
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 
 namespace icl{
 
