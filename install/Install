@@ -221,6 +221,7 @@ sub generate_documentation {
     print FILE $menuTable;
     close(FILE);
 }
+
 # }}}
 
 sub generate_packagevar {
@@ -295,7 +296,7 @@ sub generate_BashSrc {
     $BashSrcContent .= "\n";
     $BashSrcContent .= "EXTRA_LD_LIBRARY_PATH=\"\"\n";
     $BashSrcContent .= "\n";
-    $BashSrcContent .= "INHERITED_PROJECTS=\"\${IPP_ROOT}/5.1/BashSrc\"\n";
+    $BashSrcContent .= "INHERITED_PROJECTS=\"\${IPP_ROOT}/5.2/BashSrc\"\n";
     $BashSrcContent .= "\n\n";
     $BashSrcContent .= "# --------------------------------------------------\n";
     $BashSrcContent .= "# Do not change anything below this line\n";
