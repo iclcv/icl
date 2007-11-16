@@ -23,7 +23,11 @@ namespace icl{
     updateKernels();
   }
   
-  GaborOp::~GaborOp(){}
+  GaborOp::~GaborOp(){
+    for(unsigned int i=0;i<m_vecResults.size();++i){
+      delete m_vecResults[i];
+    }
+  }
   
   void GaborOp::setKernelSize(const Size &size){
     m_oKernelSize = size;
