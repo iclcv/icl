@@ -51,7 +51,6 @@ namespace icl{
         for(unsigned int p = 0;p<m_vecPsis.size();p++){
           for(unsigned int s = 0;s<m_vecSigmas.size();s++){
             for(unsigned int g = 0;g<m_vecGammas.size();g++){
-              printf("hier 1 \n");
               Img32f *k = createKernel(m_oKernelSize,
                                        m_vecLambdas[l],
                                        m_vecThetas[t],
@@ -67,7 +66,7 @@ namespace icl{
       }
     }
   }
-  
+
   void GaborOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
     ICLASSERT_RETURN( poSrc && ppoDst );
 
@@ -78,14 +77,15 @@ namespace icl{
     poDst->setChannels(0);
     poDst->setSize(Size::null);
     
-    ConvolutionOp co(ConvolutionOp::kernelCustom);
-    co.setCheckOnly(true);
-    co.setClipToROI(true);
     for(unsigned int i=0;i<m_vecKernels.size();i++){
-      co.setKernel(m_vecKernels[i].getData(0),m_oKernelSize,false);
+      ConvolutionOp co(m_vecKernels[i].getData(0),m_oKernelSize, false);
+      co.setCheckOnly(false);
+      co.setClipToROI(true);
+
       co.apply(poSrc,&(m_vecResults[i]));
+
       poDst->setSize(m_vecResults[i]->getSize());
-      poDst->asImg<icl32f>()->append(m_vecResults[i]->asImg<icl32f>(),0);
+      poDst->asImg<icl32f>()->append(m_vecResults[i]->asImg<icl32f>());
     }
   }
   
@@ -93,9 +93,6 @@ namespace icl{
     ICLASSERT_RETURN_VAL( poSrc && poSrc->getChannels() && poSrc->getSize() != Size::null, vector<icl32f>() );
     vector<icl32f> v;
     
-    ConvolutionOp co(ConvolutionOp::kernelCustom);
-    co.setCheckOnly(true);
-    co.setClipToROI(true);
     
     Img32f resPix(Size(1,1),poSrc->getChannels());
     ImgBase *resPixBase  = &resPix;
@@ -103,7 +100,10 @@ namespace icl{
     const ImgBase *poSrcROIPix = poSrc->shallowCopy(Rect(p,Size(1,1)));
 
     for(unsigned int i=0;i<m_vecKernels.size();i++){
-      co.setKernel(m_vecKernels[i].getData(0),m_oKernelSize,false);
+      ConvolutionOp co(m_vecKernels[i].getData(0),m_oKernelSize, false);
+      co.setCheckOnly(false);
+      co.setClipToROI(true);
+
       co.apply(poSrcROIPix,&resPixBase);
       for(int c=0;c<resPix.getChannels();c++){
         v.push_back(resPix(0,0,c));
