@@ -40,6 +40,9 @@ namespace icl{
     
     /// Destructor
     ~CamCfgWidget();
+
+    /// getter of the current image for "abusing" the CamCfgWidget as a Grabber
+    virtual const ImgBase *getCurrentImage();
     
     public slots:
     /// slot for processing events on the device combo box

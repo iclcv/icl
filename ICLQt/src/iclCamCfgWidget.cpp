@@ -168,7 +168,22 @@ namespace icl{
     m_oGrabberMutex.unlock();
     
   }
+
+  const ImgBase *CamCfgWidget::getCurrentImage(){
+  // {{{ open
+    const ImgBase *image;
+
+    image = 0;
+
+    m_oGrabberMutex.lock();
+    if(m_poGrabber){
+      image = m_poGrabber->grab();
+    }
+    m_oGrabberMutex.unlock();
+    return image;
+  }
   
+  // }}}
   void CamCfgWidget::createGrabber(const QString &text){
     // {{{ open
 
