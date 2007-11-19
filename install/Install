@@ -67,6 +67,11 @@ if (!-e "$INSTALLDIR/lib"){
     system "mkdir -p $INSTALLDIR/lib";
     }
 
+if (!-e "$INSTALLDIR/bin"){
+    print "make dir: $INSTALLDIR/bin\n";
+    system "mkdir -p $INSTALLDIR/bin";
+    }
+
 if (!-e "$INSTALLDIR/include"){
     print "make dir: $INSTALLDIR/include\n";
     system "mkdir -p $INSTALLDIR/include";
@@ -131,6 +136,15 @@ foreach my $entry(@dirs) {
             } else {
                 system "cp -d ./$entry/lib/*.so* $INSTALLDIR/lib";
                 system "cp -d ./$entry/lib/*.a $INSTALLDIR/lib";
+            }
+            
+            # ---- Copy examples ----
+            opendir(DIR,"./$entry/examples") or die "Can not open DIR: $!";
+            my @exampleList = grep { /.cpp/ } readdir(DIR);
+            closedir(DIR);
+            foreach my $exampleEntry (@exampleList) {
+                $exampleEntry =~ /(^.*).cpp/;
+                system "cp ./$entry/examples/$1* $INSTALLDIR/bin";
             }
         }
     }
