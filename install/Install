@@ -45,6 +45,8 @@ my $currDir=&Cwd::cwd();
 if ($installMode == 0 || $installMode == 1 || $installMode == 3) {
     print "---- Remove header files in: $INSTALLDIR/include \n";
     system "rm -Rf $INSTALLDIR/include/*.h";
+    print "---- Remove example files in: $INSTALLDIR/bin \n";
+    system "rm -Rf $INSTALLDIR/bin/*";
     print "---- Remove libraries in: $INSTALLDIR/lib \n";
     system "rm -Rf $INSTALLDIR/lib/*";
     print "---- Remove packages in: $INSTALLDIR/packages \n";
@@ -139,17 +141,18 @@ foreach my $entry(@dirs) {
             }
             
             # ---- Copy examples ----
+            print "---- Copying examples: $entry/bin\n";
             opendir(DIR,"./$entry/examples") or die "Can not open DIR: $!";
-            my @exampleList = grep { /.cpp/ } readdir(DIR);
+            my @exampleList = grep { /\.cpp/ } readdir(DIR);
             closedir(DIR);
             foreach my $exampleEntry (@exampleList) {
-                $exampleEntry =~ /(^.*).cpp/;
+                $exampleEntry =~ /(^.*)\.cpp/;
                 system "cp ./$entry/examples/$1* $INSTALLDIR/bin";
             }
         }
     }
     
-    # ---- remove & install as link include, lib ----
+    # ---- install as link include, lib ----
     if ($installMode == 3) {
         print "---- Linking header files: $entry/src\n";
         system "ln -s $currDir/$entry/src/*.h $INSTALLDIR/include";
@@ -162,6 +165,16 @@ foreach my $entry(@dirs) {
             } else {
                 system "ln -s $currDir/$entry/lib/*.so* $INSTALLDIR/lib";
                 system "ln -s $currDir/$entry/lib/*.a $INSTALLDIR/lib";
+            }
+
+            # ---- link examples ----
+            print "---- Linking examples: $entry/bin\n";
+            opendir(DIR,"./$entry/examples") or die "Can not open DIR: $!";
+            my @exampleList = grep { /\.cpp/ } readdir(DIR);
+            closedir(DIR);
+            foreach my $exampleEntry (@exampleList) {
+                $exampleEntry =~ /(^.*)\.cpp/;
+                system "ln -s $currDir/$entry/examples/$1* $INSTALLDIR/bin 2> /dev/null";
             }
         }
     }
