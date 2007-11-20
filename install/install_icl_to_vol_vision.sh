@@ -2,16 +2,21 @@
 
 echo "replacing shell variables ..."
 ICL_OPTIMIZATION_SAVE=$ICL_OPTIMIZATION
-export ICL_OPTIMIZATION=-march=prescott
+export ICL_OPTIMIZATION=""
 
 ICL_INSTALL_ROOT_SAVE=$ICL_INSTALL_ROOT
 export ICL_INSTALL_ROOT=/vol/vision/
 
-echo "re-building ICL..."
+
 cd $HOME/projects/ICL/
 #svn up
-make clean depend all install doc installdoc
-#make install installdoc
+if [ "$1" = "noclean" ] ; then
+    echo "re-building ICL... (targets all, install, installdoc)"
+    make all install installdoc
+else
+    echo "re-building ICL... (targets clean, depend, all install doc and isntalldoc"
+    make clean depend all install doc installdoc 
+fi
 
 echo "restoring shell variables..."
 export ICL_OPTIMIZATION=$ICL_OPTIMIZATION_SAVE
