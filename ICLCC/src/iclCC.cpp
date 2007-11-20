@@ -857,7 +857,7 @@ namespace icl{
           cc(buf,dst);
           delete buf;
         }
-        break;
+        break; 
       }
       case ccAdapted:{
         int n = iclMin(src->getChannels(),dst->getChannels());
@@ -865,28 +865,28 @@ namespace icl{
 #define ICL_INSTANTIATE_DEPTH(D)  case depth##D:                                                                          \
           switch(dst->getDepth()){                                                                                        \
             case depth8u: for(int i=0;i<n;i++){                                                                           \
-              convertChannelROI(src->asImg<icl##D>(),n,src->getROIOffset(),src->getROISize(),                             \
-                                dst->asImg<icl8u>(),n,dst->getROIOffset(),dst->getROISize());                             \
+              convertChannelROI(src->asImg<icl##D>(),i,src->getROIOffset(),src->getROISize(),                             \
+                                dst->asImg<icl8u>(),i,dst->getROIOffset(),dst->getROISize());                             \
             }                                                                                                             \
             break;                                                                                                        \
             case depth16s: for(int i=0;i<n;i++){                                                                          \
-              convertChannelROI(src->asImg<icl##D>(),n,src->getROIOffset(),src->getROISize(),                             \
-                                dst->asImg<icl16s>(),n,dst->getROIOffset(),dst->getROISize());                            \
+              convertChannelROI(src->asImg<icl##D>(),i,src->getROIOffset(),src->getROISize(),                             \
+                                dst->asImg<icl16s>(),i,dst->getROIOffset(),dst->getROISize());                            \
             }                                                                                                             \
             break;                                                                                                        \
             case depth32s: for(int i=0;i<n;i++){                                                                          \
-              convertChannelROI(src->asImg<icl##D>(),n,src->getROIOffset(),src->getROISize(),                             \
-                                dst->asImg<icl32s>(),n,dst->getROIOffset(),dst->getROISize());                            \
+              convertChannelROI(src->asImg<icl##D>(),i,src->getROIOffset(),src->getROISize(),                             \
+                                dst->asImg<icl32s>(),i,dst->getROIOffset(),dst->getROISize());                            \
             }                                                                                                             \
             break;                                                                                                        \
             case depth32f: for(int i=0;i<n;i++){                                                                          \
-              convertChannelROI(src->asImg<icl##D>(),n,src->getROIOffset(),src->getROISize(),                             \
-                                dst->asImg<icl32f>(),n,dst->getROIOffset(),dst->getROISize());                            \
+              convertChannelROI(src->asImg<icl##D>(),i,src->getROIOffset(),src->getROISize(),                             \
+                                dst->asImg<icl32f>(),i,dst->getROIOffset(),dst->getROISize());                            \
             }                                                                                                             \
             break;                                                                                                        \
             case depth64f: for(int i=0;i<n;i++){                                                                          \
-              convertChannelROI(src->asImg<icl##D>(),n,src->getROIOffset(),src->getROISize(),                             \
-                                dst->asImg<icl64f>(),n,dst->getROIOffset(),dst->getROISize());                            \
+              convertChannelROI(src->asImg<icl##D>(),i,src->getROIOffset(),src->getROISize(),                             \
+                                dst->asImg<icl64f>(),i,dst->getROIOffset(),dst->getROISize());                            \
             }                                                                                                             \
             break;                                                                                                        \
           }                                                                                                               \
@@ -894,7 +894,8 @@ namespace icl{
           ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
           
-        }        
+        }     
+        break;
       }
       case ccUnavailable:{
         ERROR_LOG("no color conversion [" << 
@@ -906,6 +907,7 @@ namespace icl{
                   "-->" << 
                   translateDepth(dst->getDepth()) <<
                   ") available!" );
+        break;
       }
       case ccImpossible:{
         ERROR_LOG("color conversion [" << 
@@ -917,7 +919,7 @@ namespace icl{
                   "-->" << 
                   translateDepth(dst->getDepth()) <<
                   ") impossible!" );
-      
+        break;
       }
         
     }
