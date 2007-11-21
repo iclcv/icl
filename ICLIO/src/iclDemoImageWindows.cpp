@@ -1,5 +1,6 @@
 #include "iclFileGrabber.h"
 #include "iclImg.h"
+#include "iclFile.h"
 using namespace icl;
 using namespace std;
 namespace icl{
@@ -236,7 +237,7 @@ ImgBase* createImage_windows(){
   // {{{ open
   static ImgBase *image = 0;
   if(image) return image->deepCopy();
-  FILE *f = fopen("./.tmp_image_buffer.jpg","wb");
+  File f("./.tmp_image_buffer.jpg",File::writeBinary);
   const int DIM = NROWS*NCOLS+NEXTRA;
   char *buf= new char[DIM];
   int j=0;
@@ -248,11 +249,11 @@ ImgBase* createImage_windows(){
   for(int i=0;i<NEXTRA;i++,j++){
      buf[j] = auc_ExtraData_windows[i];
   }
-  fwrite(buf,1,DIM,f);
-  fclose(f);
+  f.write(buf,DIM);
+  f.close();
   delete [] buf;
   image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grab()->deepCopy();
-  remove("./.tmp_image_buffer.jpg");
+  f.erase();
   return image->deepCopy();
 }
 // }}}

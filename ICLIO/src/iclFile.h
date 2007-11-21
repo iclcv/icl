@@ -68,7 +68,7 @@ namespace icl{
     /// returns the files suffix ( "../data.txt" -> ".txt")
     std::string getSuffix() const;
 
-    /// returns hole file url ( "../data.txt" -> "../data.txt")
+    /// returns whole file url ( "../data.txt" -> "../data.txt")
     std::string getName() const;
     
     /// writes len bytes from data into the file
@@ -145,9 +145,11 @@ namespace icl{
     int getFileSize() const;
     
     /// opens the file with given openmode ("rw" is not yet supported!) 
+    /** Throws a FileOpenException if file can not be opened */
     void open(OpenMode om);
 
     /// re-opens the file with given openmode ("rw" is not yet supported!) 
+    /** Throws a FileOpenException if file can not be opened */
     void reopen(OpenMode om);
 
     /// closes the file

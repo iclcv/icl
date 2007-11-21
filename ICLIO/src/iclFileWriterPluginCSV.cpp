@@ -31,7 +31,6 @@ namespace icl{
     }
     
     file.open(File::writeText);
-    ICLASSERT(file.isOpen());
     
     if(!s_bExtendFileName){
       static const string H = "# ";

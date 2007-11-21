@@ -85,7 +85,6 @@ namespace icl{
   void FileWriterPluginPNM::write(File &file, const ImgBase *poSrc){
     ICLASSERT_RETURN(poSrc);
     file.open(File::writeText);
-    ICLASSERT_RETURN(file.isOpen());
     
     string suffix = toLower( file.getSuffix() );    
     bool bPPM=false;

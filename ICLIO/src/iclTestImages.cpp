@@ -477,20 +477,25 @@ namespace {
 namespace icl{
   
   Img8u *TestImages::internalCreate(const string &name){
-    if(name == "women"){
-      return read_xpm(ppc_woman_xpm);
-    }else if(name == "tree"){
-      return read_xpm(ppc_tree_xpm);
-    }else if(name == "house"){
-      return read_xpm(ppc_house_xpm);
-    }else if(name == "parrot"){
-      return createImage_macaw()->asImg<icl8u>();
-    }else if(name == "flowers"){
-      return createImage_flowers()->asImg<icl8u>();
-    }else if(name == "windows"){
-      return createImage_windows()->asImg<icl8u>();
-    }else{
-      ERROR_LOG("TestImage "<< name << "not found!");
+    try{
+      if(name == "women"){
+        return read_xpm(ppc_woman_xpm);
+      }else if(name == "tree"){
+        return read_xpm(ppc_tree_xpm);
+      }else if(name == "house"){
+        return read_xpm(ppc_house_xpm);
+      }else if(name == "parrot"){
+        return createImage_macaw()->asImg<icl8u>();
+      }else if(name == "flowers"){
+        return createImage_flowers()->asImg<icl8u>();
+      }else if(name == "windows"){
+        return createImage_windows()->asImg<icl8u>();
+      }else{
+        ERROR_LOG("TestImage "<< name << "not found!");
+        return 0;
+      }
+    }catch(ICLException &ex){
+      ERROR_LOG("an exception occured while creating image: \""<< ex.what() << "\"");
       return 0;
     }
   }
@@ -549,7 +554,16 @@ namespace icl{
     
     string postfix = image->getChannels() == 3 ? ".ppm" : ".pgm";
     string name = string(".tmpImage.")+timeStr+postfix;
-    FileWriter(name).write(image);
+    try{
+      FileWriter(name).write(image);
+    }catch(FileOpenException &ex){
+      ERROR_LOG("unable to show image (invalid permissions to write a temporary\n");
+      ERROR_LOG("                      image file in the current working directory)");
+      return;
+    }catch(ICLException &ex){
+      ERROR_LOG("unable to show image (image could not be written to a temporary file)");
+      return;
+    }
     
     char showCommandStr[500];
     sprintf(showCommandStr,showCommand.c_str(),name.c_str());
@@ -571,7 +585,17 @@ void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
     if(image->getChannels() != 3){
       name+=".pgm";
     }
-    FileWriter(name).write(image);
+    try{
+      FileWriter(name).write(image);
+    }catch(FileOpenException &ex){
+      ERROR_LOG("unable to show image (invalid permissions to write a temporary\n");
+      ERROR_LOG("                      image file in the current working directory)");
+      return;
+    }catch(ICLException &ex){
+      ERROR_LOG("unable to show image (image could not be written to a temporary file)");
+      return;
+    }
+
     system(string("xv ").append(name).append(" &").c_str());
     usleep(msec*10000);
     system(string("rm -rf ").append(name).c_str());

@@ -16,6 +16,16 @@ namespace icl{
     static const char DIR_SEPERATOR = '/';
     static const char NEW_LINE = '\n';
 
+    std::string toString(File::OpenMode om){
+      switch(om){
+        case File::writeBinary: return "Write Binary";
+        case File::writeText: return "Write Text";
+        case File::readBinary: return "Read Binary";
+        case File::readText: return "Read Text";
+        default: return "unknown mode";
+      }
+    }
+    
     void break_apart(const string &s, string &dir, string &basename, string &suffix, string &filename){
       // {{{ open
 
@@ -144,6 +154,8 @@ namespace icl{
     // }}}
     
     void reopen(File::OpenMode openmode){
+      // {{{ open
+
       if(!handle){
         open(openmode);
         return;
@@ -165,6 +177,8 @@ namespace icl{
       
       this->openmode = openmode;
     }
+
+    // }}}
     
     void close(){
       // {{{ open
@@ -631,6 +645,8 @@ namespace icl{
     ICLASSERT_RETURN(openmode != notOpen);
     
     impl->open(openmode);
+    
+    ICLASSERT_THROW(isOpen(),FileOpenException(getName()+"(OpenMode: "+toString(openmode)+")"));
   }
 
   // }}}
@@ -654,11 +670,21 @@ namespace icl{
   }
 
   // }}}
+  
+  void File::erase(){
+    // {{{ open
 
+    ICLASSERT_RETURN(!isNull() && exists());
+    remove(getName().c_str());
+  }
+
+  // }}}
+  
   void File::reopen(File::OpenMode om){
     // {{{ open
     ICLASSERT_RETURN(!isNull());
     impl->reopen(om);
+    ICLASSERT_THROW(isOpen(),FileOpenException(getName()+"(OpenMode: "+toString(om)+")"));
   }
 
   // }}}
