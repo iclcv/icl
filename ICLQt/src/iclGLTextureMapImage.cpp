@@ -19,7 +19,6 @@ namespace icl{
     m_iXCells = m_iImageW/m_iCellSize;
     m_iYCells = m_iImageH/m_iCellSize;
     
-   
     m_bUseSingleBuffer = useSingleBuffer;
     
     m_iRestX = m_iImageW % m_iCellSize;
@@ -30,14 +29,16 @@ namespace icl{
     m_iCellDataSize = m_iCellSize*m_iCellSize*m_iChannels;
 
     m_matTextureNames = SimpleMatrix<GLuint>(m_iXCells,m_iYCells);
+
     if(m_bUseSingleBuffer){
       m_ptCellData = new T[m_iCellDataSize];
+      // This is an asyncronous gl call an may cause problems ..
+      // -> set useSingleBuffer to false to avoid this
       glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
     }else{
       m_ptCellData = 0;
       m_matCellData = SimpleMatrix<T*>(m_iXCells,m_iYCells);
     }
-
     m_matROISizes = SimpleMatrix<Size,SimpleMatrixAllocSize>(m_iXCells,m_iYCells);
 
     for(int y=0;y<m_iYCells;++y){

@@ -48,6 +48,7 @@ namespace icl{
   }
   
   const ImgBase *GLTextureMapBaseImage::adaptChannels(const ImgBase *image){
+    WARNING_LOG("memory leak here!");
     ICLASSERT_RETURN_VAL(image && image->getChannels(), 0);
     switch(image->getChannels()){
       case 1: 
@@ -64,7 +65,6 @@ namespace icl{
     }
   }  
 
-
   void GLTextureMapBaseImage::updateTextures(const ImgBase *imageIn){
     const ImgBase *image = adaptChannels(imageIn);
     ICLASSERT_RETURN(image);
@@ -72,16 +72,16 @@ namespace icl{
     m_oCurrentImageParams = imageIn->getParams();
     Size s = image->getSize();
     
-#define APPLY_FOR(D)                                                                                          \
-        if(m_po##D && !(m_po##D->compatible(image->asImg<icl##D>()))){                                        \
-          SAVE_DEL(m_po##D);                                                                                  \
-        }                                                                                                     \
-        if(!m_po##D){                                                                                         \
-          m_po##D = new GLTextureMapImage<icl##D>(s,m_bUseSingleBuffer,image->getChannels(),getCellSize(s));  \
-          m_po##D->bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);                                                     \
-        }                                                                                                     \
-        m_po##D->updateTextures(image->asImg<icl##D>());                                                      \
-        break;                                                                                                                  
+#define APPLY_FOR(D)                                                    \
+    if(m_po##D && !(m_po##D->compatible(image->asImg<icl##D>()))){      \
+      SAVE_DEL(m_po##D);                                                \
+    }                                                                   \
+    if(!m_po##D){                                                       \
+      m_po##D = new GLTextureMapImage<icl##D>(s,m_bUseSingleBuffer,image->getChannels(),getCellSize(s)); \
+      m_po##D->bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);                   \
+    }                                                                   \
+    m_po##D->updateTextures(image->asImg<icl##D>());                    \
+    break;  
     
     switch(image->getDepth()){
       case depth8u:

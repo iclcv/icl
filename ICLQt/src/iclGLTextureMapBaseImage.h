@@ -38,11 +38,21 @@ namespace icl{
                      immediately after initialization 
         @param useSingleBuffer decides whether to instantiate wrapped 
                                GLTextureMap images in single or multi buffer mode
+                               <b>WARNING:</b> Settin use single buffer to true
+                               may cause conflicts on some graphic cards.
     **/
-    GLTextureMapBaseImage(const ImgBase* image = 0, bool useSingleBuffer = true): 
+    GLTextureMapBaseImage(const ImgBase* image = 0, bool useSingleBuffer = false): 
     m_po8u(0),m_po16s(0),m_po32s(0),m_po32f(0), m_poChannelBuf(0),
     m_bUseSingleBuffer(useSingleBuffer){
+      m_oCurrentImageParams = ImgParams(Size::null,0);
       m_aiBCI[0]=m_aiBCI[1]=m_aiBCI[2]=0; 
+      if(useSingleBuffer){
+        static bool first = true;
+        if(first) {
+          first = false;
+          WARNING_LOG("Single Buffer mode may cause serious problems with some graphic cards...");
+        }
+      }
       if(image) updateTextures(image);
     }
     

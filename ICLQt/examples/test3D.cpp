@@ -30,7 +30,7 @@ public:
     Grabber *g=0;
     vector<DCDevice> devs = DCGrabber::getDeviceList();
     if(!devs.size()){
-      g = new FileGrabber("images/*.ppm");
+      g = new FileGrabber("images/*.ppm",true);
     }else{
       g = new DCGrabber(devs[0]);
       g->setProperty("format","DC1394_VIDEO_MODE_640x480_MONO8@DC1394_FRAMERATE_60");
@@ -56,6 +56,7 @@ public:
       widget->color3D(1, 1, 1, 1);
       static FileGrabber gFile("images/*.ppm");
       widget->imagecube3D(0,0,0,0.5,gFile.grab());
+      // widget->supercube3D(0,0,0,0.5);
       // widget->scale3D(0.3,0.3,0.3);
       // widget->translate3D(-0.5,-0.5,0);
       //widget->image3D(0,0,0,640.0/480.0,0,0,0,1,0,image);
@@ -78,7 +79,7 @@ public:
       
       
       widget->update();
-      msleep(10);
+      msleep(1);
     }
   }
   int device;
