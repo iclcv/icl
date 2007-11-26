@@ -97,6 +97,8 @@ namespace icl{
       return fmt == formatRGB || fmt == formatMatrix;
     }else if( string(m_poCam->model) == "Fire-i 1.2"){
       return fmt == formatRGB || fmt == formatMatrix;
+    }else if( string(m_poCam->model) == "DFx 21BF04"){
+      return fmt == formatRGB;
     }else{
       ERROR_LOG("unsupported camera: \"" << m_poCam->model << "\"");
       return false;
@@ -108,7 +110,7 @@ namespace icl{
     // {{{ open
 
     if(isNull()) return false;
-    if( is_firefly_mono(m_poCam) ){
+    if( is_firefly_mono(m_poCam) || string(m_poCam->model) == "DFx 21BF04" ){
       return size == Size(640,480);
     }else if( is_firefly_color(m_poCam) ){
       return size == Size(640,480) || 
@@ -146,6 +148,12 @@ namespace icl{
       return false;
     }else if( string(m_poCam->model) == "Fire-i 1.2"){
       return false;
+    }else if( string(m_poCam->model) == "DFx 21BF04"){
+      if(getMode().videomode == DC1394_VIDEO_MODE_640x480_YUV422){
+        return false;
+      }else{
+        return true;
+      }
     }else{
       ERROR_LOG("unsupported camera: \""<< m_poCam->model << "\"");
       return false;
@@ -159,7 +167,7 @@ namespace icl{
     if(isNull()) return (dc1394color_filter_t)0;
     if( is_firefly_mono(m_poCam) ){
       return (dc1394color_filter_t)0;
-    }else if( is_firefly_color(m_poCam) ){
+    }else if( is_firefly_color(m_poCam) || string(m_poCam->model) == "DFx 21BF04" ){
       return DC1394_COLOR_FILTER_GBRG;
     }else{
       return (dc1394color_filter_t)0;
