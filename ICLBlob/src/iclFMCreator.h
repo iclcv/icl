@@ -28,6 +28,9 @@ namespace icl{
     **/
     virtual Img8u* getFM(Img8u *image)=0;
     
+    /// returns the last calculated feature map
+    virtual const ImgBase *getLastFM() const{ return 0; }
+
     /// static function, that creates a default FMCreator with given parameters
     /** The new FMCreator will create the feature map using the following algorithm:
         \code

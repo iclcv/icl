@@ -186,6 +186,18 @@ namespace icl{
 
   // }}}
  
+  const std::vector<const ImgBase*> RegionBasedBlobSearcher::getFeatureMaps() const{
+    // {{{ open
+
+    std::vector<const ImgBase *> v(m_oFMRF.size());
+    for(unsigned int i=0;i<m_oFMRF.size();i++){
+      v[i] = m_oFMRF[i].fmc->getLastFM();
+    }
+    return v;
+  }
+
+  // }}}
+
   const Array<Point> &RegionBasedBlobSearcher::getCOGs(){
     // {{{ open
 

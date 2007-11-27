@@ -226,7 +226,8 @@ namespace icl{
     **/
     void removeAll(bool release=true);
 
-   
+    /// returns a list of current feature maps
+    const std::vector<const ImgBase*> getFeatureMaps() const;
 
 
     private:

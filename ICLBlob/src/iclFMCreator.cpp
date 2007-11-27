@@ -5,14 +5,14 @@
 using namespace std;
 
 namespace icl{
-
-   struct DefaultFMCreator : public FMCreator{
+  
+  struct DefaultFMCreator : public FMCreator{
     // {{{ open
     DefaultFMCreator(const Size &size, 
                      format fmt,
                      vector<icl8u> refcolor,
                      vector<icl8u> thresholds){
-
+      
       
       m_oSize = size;
       m_eFormat = fmt;
@@ -25,13 +25,15 @@ namespace icl{
     virtual ~DefaultFMCreator(){
       delete m_poFM;
     }
-    
+     
     Size m_oSize;
     format m_eFormat;
     vector<icl8u> m_vecRefColor;
     vector<icl8u> m_vecThresholds;
     Img8u *m_poFM;
-    
+    virtual const ImgBase *getLastFM() const{ 
+      return m_poFM;
+    }
     virtual Size getSize(){ return m_oSize; }
     virtual format getFormat(){ return m_eFormat; }
     virtual Img8u* getFM(Img8u *image){
@@ -41,10 +43,10 @@ namespace icl{
       ICLASSERT_RETURN_VAL(image->getSize() == m_oSize, 0);
       Img8u src = *image;
       Img8u dst = *m_poFM;
-      
+       
       int nc = image->getChannels();
       icl8u *pucDst = dst.getData(0);
-      
+       
       // 1 channel
       int t0 = m_vecThresholds[0];
       int r0 = m_vecRefColor[0];
