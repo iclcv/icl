@@ -19,7 +19,36 @@ namespace icl{
   map<string,FileGrabberPlugin*> FileGrabber::s_mapPlugins;
 
   struct FileGrabberPluginMapInitializer{
-    // {{{ open PLUGINS ARE INCLUDED HERE    FileGrabberPluginMapInitializer(){      FileGrabber::s_mapPlugins[".ppm"] = new FileGrabberPluginPNM;        FileGrabber::s_mapPlugins[".pgm"] = new FileGrabberPluginPNM;       FileGrabber::s_mapPlugins[".pnm"] = new FileGrabberPluginPNM;       FileGrabber::s_mapPlugins[".icl"] = new FileGrabberPluginPNM;       FileGrabber::s_mapPlugins[".jpg"] = new FileGrabberPluginJPEG;       FileGrabber::s_mapPlugins[".jpeg"] = new FileGrabberPluginJPEG;       FileGrabber::s_mapPlugins[".csv"] = new FileGrabberPluginCSV; #ifdef WITH_ZLIB_SUPPORT      FileGrabber::s_mapPlugins[".ppm.gz"] = new FileGrabberPluginPNM;       FileGrabber::s_mapPlugins[".pgm.gz"] = new FileGrabberPluginPNM;       FileGrabber::s_mapPlugins[".pnm.gz"] = new FileGrabberPluginPNM;       FileGrabber::s_mapPlugins[".icl.gz"] = new FileGrabberPluginPNM;       FileGrabber::s_mapPlugins[".csv.gz"] = new FileGrabberPluginCSV;       #endif      // add additional plugins to the map    }    ~FileGrabberPluginMapInitializer(){      for(map<string,FileGrabberPlugin*>::iterator it = FileGrabber::s_mapPlugins.begin();           it!= FileGrabber::s_mapPlugins.end(); ++it){        delete it->second;      }    }  };  // }}}
+    // {{{ open PLUGINS ARE INCLUDED HERE
+
+    FileGrabberPluginMapInitializer(){
+      FileGrabber::s_mapPlugins[".ppm"] = new FileGrabberPluginPNM;  
+      FileGrabber::s_mapPlugins[".pgm"] = new FileGrabberPluginPNM; 
+      FileGrabber::s_mapPlugins[".pnm"] = new FileGrabberPluginPNM; 
+      FileGrabber::s_mapPlugins[".icl"] = new FileGrabberPluginPNM; 
+      FileGrabber::s_mapPlugins[".jpg"] = new FileGrabberPluginJPEG; 
+      FileGrabber::s_mapPlugins[".jpeg"] = new FileGrabberPluginJPEG; 
+      FileGrabber::s_mapPlugins[".csv"] = new FileGrabberPluginCSV; 
+
+#ifdef WITH_ZLIB_SUPPORT
+      FileGrabber::s_mapPlugins[".ppm.gz"] = new FileGrabberPluginPNM; 
+      FileGrabber::s_mapPlugins[".pgm.gz"] = new FileGrabberPluginPNM; 
+      FileGrabber::s_mapPlugins[".pnm.gz"] = new FileGrabberPluginPNM; 
+      FileGrabber::s_mapPlugins[".icl.gz"] = new FileGrabberPluginPNM; 
+      FileGrabber::s_mapPlugins[".csv.gz"] = new FileGrabberPluginCSV;       
+#endif
+
+      // add additional plugins to the map
+    }
+    ~FileGrabberPluginMapInitializer(){
+      for(map<string,FileGrabberPlugin*>::iterator it = FileGrabber::s_mapPlugins.begin(); 
+          it!= FileGrabber::s_mapPlugins.end(); ++it){
+        delete it->second;
+      }
+    }
+  };
+
+  // }}}
 
   static FileGrabberPluginMapInitializer ___filegrabber_plugin_map_initializer__;
   
@@ -45,7 +74,15 @@ namespace icl{
   // }}}
 
   FileGrabber::~FileGrabber(){  
-    // {{{ open    ICL_DELETE(m_poBufferImage);    for(unsigned int i=0;i<m_vecImageBuffer.size();i++){      ICL_DELETE(m_vecImageBuffer[i]);    }  }  // }}}
+    // {{{ open
+
+    ICL_DELETE(m_poBufferImage);
+    for(unsigned int i=0;i<m_vecImageBuffer.size();i++){
+      ICL_DELETE(m_vecImageBuffer[i]);
+    }
+  }
+
+  // }}}
 
   const FileList &FileGrabber::bufferImages(bool omitExceptions){
     // {{{ open
@@ -86,18 +123,47 @@ namespace icl{
   // }}}
 
   void FileGrabber::next(){
-    // {{{ open    ICLASSERT_RETURN(m_oFileList.size());    m_iCurrIdx++;    if(m_iCurrIdx >= m_oFileList.size()) m_iCurrIdx = 0;  }  // }}}
+    // {{{ open
+
+    ICLASSERT_RETURN(m_oFileList.size());
+    m_iCurrIdx++;
+    if(m_iCurrIdx >= m_oFileList.size()) m_iCurrIdx = 0;
+  }
+
+  // }}}
   void FileGrabber::prev(){
-    // {{{ open    ICLASSERT_RETURN(m_oFileList.size());    m_iCurrIdx--;    if(m_iCurrIdx <= 0) m_iCurrIdx = m_oFileList.size()-1;  }  // }}}
+    // {{{ open
+
+    ICLASSERT_RETURN(m_oFileList.size());
+    m_iCurrIdx--;
+    if(m_iCurrIdx <= 0) m_iCurrIdx = m_oFileList.size()-1;
+  }
+
+  // }}}
   
   unsigned int FileGrabber::getFileCount() const{
-    // {{{ open    return m_oFileList.size();  }  // }}}
+    // {{{ open
+
+    return m_oFileList.size();
+  }
+
+  // }}}
   
   const std::string &FileGrabber::getNextFileName() const{
-    // {{{ open    return m_oFileList[m_iCurrIdx];  }  // }}}
+    // {{{ open
+
+    return m_oFileList[m_iCurrIdx];
+  }
+
+  // }}}
   
   void FileGrabber::setIgnoreDesiredParams(bool flag){
-    // {{{ open    m_bIgnoreDesiredParams = flag;  }  // }}}
+    // {{{ open
+
+    m_bIgnoreDesiredParams = flag;
+  }
+
+  // }}}
   
   const ImgBase *FileGrabber::grab(ImgBase **ppoDst){
     // {{{ open
@@ -128,15 +194,26 @@ namespace icl{
     }
     if(m_bIgnoreDesiredParams){
       ImgBase** useDestImage = ppoDst ? ppoDst : &m_poBufferImage;
-      it->second->grab(f,useDestImage);
+      try{
+        it->second->grab(f,useDestImage);
+      }catch(ICLException &ex){
+        if(f.isOpen()) f.close();
+        throw ex;
+      }
       if(f.isOpen()) f.close();
+
       if(!useDestImage){
         throw InvalidFileException(f.getName());
         return 0;
       }
       return *useDestImage;
     }else{
-      it->second->grab(f,&m_poBufferImage);
+      try{
+        it->second->grab(f,&m_poBufferImage);
+      }catch(ICLException &ex){
+        if(f.isOpen()) f.close();
+        throw ex;
+      }
       if(f.isOpen()) f.close();
       
       if(!m_poBufferImage){
