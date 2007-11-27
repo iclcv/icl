@@ -7,7 +7,83 @@ using namespace std;
 using namespace icl::dc;
 namespace icl{
 
+  /** Have a NEW CAMERA ???
+
+      - add a new CameryTypeID to the DCDevice::enum
+ 
+      - edit the function trailed wiht token **NEW-CAM**
+        - bool DCDevice::supports(format) const
+        - bool DCDevice::supports(const Size &) const
+        - bool DCDevice::needsBayerDecoding() const 
+        - dc1394color_filter_t DCDevice::getBayerFilterLayout() const
+      
+  **/
+  
+
   const DCDevice DCDevice::null = DCDevice(0);
+
+  // **NEW-CAM** (optional)
+  std::string DCDevice::translate(DCDevice::CameraTypeID id){
+    // {{{ open
+
+    switch(id){
+#define TRANSLATE(X) case X: return #X
+      TRANSLATE(pointGreyFire_FlyMVMono);
+      TRANSLATE(pointGreyFire_FlyMVColor);
+      TRANSLATE(sony_DFW_VL500_2_30);
+      TRANSLATE(apple_ISight);
+      TRANSLATE(fireI_1_2);
+      TRANSLATE(imagingSource_DFx_21BF04);
+#undef TRANSLATE
+      default: return "unknownCameraType";
+    }    
+  }
+
+  // }}}
+
+  // **NEW-CAM** (optional)
+  DCDevice::CameraTypeID DCDevice::translate(const std::string &name){
+    // {{{ open
+
+    if(name == "pointGreyFire_FlyMVMono" ) return pointGreyFire_FlyMVMono;
+#define TRANSLATE(X) else if( name == #X ) return X
+    TRANSLATE(pointGreyFire_FlyMVColor);
+    TRANSLATE(sony_DFW_VL500_2_30);
+    TRANSLATE(apple_ISight);
+    TRANSLATE(fireI_1_2);
+    TRANSLATE(imagingSource_DFx_21BF04);
+#undef TRANSLATE 
+    else return unknownCameraType;
+  }
+
+  // }}}
+  
+  // **NEW-CAM** 
+  DCDevice::CameraTypeID DCDevice::estimateCameraType(dc1394camera_t *cam){
+    // {{{ open
+    if(!cam){
+      return unknownCameraType;
+    }else if( is_firefly_mono(cam) ){
+      return pointGreyFire_FlyMVMono;
+    }else if( is_firefly_color(cam) ){
+      return pointGreyFire_FlyMVColor;
+    }else if( string(cam->model) == "DFW-VL500 2.30"){
+      return sony_DFW_VL500_2_30;
+    }else if( string(cam->vendor) == "Apple Computer, Inc."){
+      return apple_ISight;
+    }else if( string(cam->model) == "Fire-i 1.2"){
+      return fireI_1_2;
+    }else if( string(cam->model) == "DFx 21BF04"){
+      return imagingSource_DFx_21BF04;
+    }else{
+      ERROR_LOG("unsupported camera: \"" << cam->model << "\"");
+      return unknownCameraType;
+    }  
+  }
+
+  // }}}
+
+
   
   vector<DCDevice::Mode> DCDevice::getModes() const{
     // {{{ open
@@ -30,26 +106,38 @@ namespace icl{
   }
 
   // }}}
-
   string DCDevice::getVendorID() const{
+    // {{{ open
+
     if(isNull()) return "null";  
     return m_poCam->vendor;
   }
-  
+
+  // }}}
   string DCDevice::getModelID() const{
+    // {{{ open
+
     if(isNull()) return "null";  
     return m_poCam->model;
   }
 
+  // }}}
   icl32s DCDevice::getPort() const{
+    // {{{ open
+
     if(isNull()) return -1;
     return m_poCam->port;
   }
-  
+
+  // }}}
   icl16s DCDevice::getNode() const{
+    // {{{ open
+
     if(isNull()) return (icl16s)-1; /// ??
     return m_poCam->node;
   }
+
+  // }}}
 
   void DCDevice::setMode(const Mode &mode){
     // {{{ open
@@ -81,50 +169,6 @@ namespace icl{
   }
 
   // }}}
-  bool DCDevice::supports(format fmt) const{
-    // {{{ open
-
-    if(isNull()) return false;
-    if( is_firefly_mono(m_poCam) ){
-      return fmt == formatGray || 
-             fmt == formatMatrix;
-    }else if( is_firefly_color(m_poCam) ){
-      return fmt == formatRGB || 
-             fmt == formatMatrix;
-    }else if( string(m_poCam->model) == "DFW-VL500 2.30"){
-      return fmt == formatRGB || fmt == formatMatrix;
-    }else if( string(m_poCam->vendor) == "Apple Computer, Inc."){
-      return fmt == formatRGB || fmt == formatMatrix;
-    }else if( string(m_poCam->model) == "Fire-i 1.2"){
-      return fmt == formatRGB || fmt == formatMatrix;
-    }else if( string(m_poCam->model) == "DFx 21BF04"){
-      return fmt == formatRGB;
-    }else{
-      ERROR_LOG("unsupported camera: \"" << m_poCam->model << "\"");
-      return false;
-    }
-  }
-
-  // }}}
-  bool DCDevice::supports(const Size &size) const{
-    // {{{ open
-
-    if(isNull()) return false;
-    if( is_firefly_mono(m_poCam) || string(m_poCam->model) == "DFx 21BF04" ){
-      return size == Size(640,480);
-    }else if( is_firefly_color(m_poCam) ){
-      return size == Size(640,480) || 
-             size == Size(320,240);  // in this case by BAYER_DOWNSAMPLE is used
-    }else if(string(m_poCam->vendor) == "Apple Computer, Inc." || string(m_poCam->model) == "Fire-i 1.2"){
-      return size == Size(640,480) || 
-	     size == Size(320,240);
-    }else{
-      ERROR_LOG("unsupported camera!");
-      return false;
-    }
-  }
-
-  // }}}
   bool DCDevice::supports(const DCDevice::Mode &mode) const{
     // {{{ open
 
@@ -133,44 +177,91 @@ namespace icl{
   }
 
   // }}}
-
-  bool DCDevice::needsBayerDecoding() const{
+ 
+  
+  // **NEW-CAM** 
+  bool DCDevice::supports(format fmt) const{
     // {{{ open
-
-    if(isNull()) return false; 
-    if( is_firefly_mono(m_poCam) ){
-      return false;
-    }else if( is_firefly_color(m_poCam) ){
-      return true;
-    }else if( string(m_poCam->model) == "DFW-VL500 2.30"){
-      return false;
-    }else if( string(m_poCam->vendor) == "Apple Computer, Inc."){
-      return false;
-    }else if( string(m_poCam->model) == "Fire-i 1.2"){
-      return false;
-    }else if( string(m_poCam->model) == "DFx 21BF04"){
-      if(getMode().videomode == DC1394_VIDEO_MODE_640x480_YUV422){
+    
+    if(isNull()) return false;
+    switch(m_eCameraTypeID){
+      case pointGreyFire_FlyMVMono:
+        return fmt == formatGray || fmt == formatMatrix;
+      case pointGreyFire_FlyMVColor:
+      case sony_DFW_VL500_2_30:
+      case apple_ISight:
+      case fireI_1_2:
+      case imagingSource_DFx_21BF04:
+        return fmt == formatRGB ||  fmt == formatMatrix;
+      case unknownCameraType:
+      default:
         return false;
-      }else{
-        return true;
-      }
-    }else{
-      ERROR_LOG("unsupported camera: \""<< m_poCam->model << "\"");
-      return false;
     }
   }
 
   // }}}
-  dc1394color_filter_t DCDevice::getBayerFilterLayout() const{
+  
+  // **NEW-CAM** 
+  bool DCDevice::supports(const Size &size) const{
     // {{{ open
 
+    if(isNull()) return false;
+    static const Size s64(640,480);
+    static const Size s32(640,480);
+    switch(m_eCameraTypeID){
+      case pointGreyFire_FlyMVMono: 
+      case imagingSource_DFx_21BF04:
+        return size == s64;
+      case pointGreyFire_FlyMVColor:
+      case sony_DFW_VL500_2_30:
+      case apple_ISight:
+      case fireI_1_2:
+        return size == s64 || size == s32;
+      case unknownCameraType:
+      default:
+        return false;
+    }
+  }
+
+  // }}}
+  
+  // **NEW-CAM** 
+  bool DCDevice::needsBayerDecoding() const{
+    // {{{ open
+
+    if(isNull()) return false; 
+    switch(m_eCameraTypeID){
+      case pointGreyFire_FlyMVMono: 
+      case apple_ISight:
+      case sony_DFW_VL500_2_30:
+      case fireI_1_2:
+        return false;
+      case pointGreyFire_FlyMVColor:
+        return true;
+      case imagingSource_DFx_21BF04:        
+        if(getMode().videomode == DC1394_VIDEO_MODE_640x480_YUV422){
+          return false;
+        }else{
+          return true;
+        }
+      case unknownCameraType:
+      default:
+        return false;
+    }
+  }
+
+  // }}}
+  
+  // **NEW-CAM**   
+  dc1394color_filter_t DCDevice::getBayerFilterLayout() const{
+    // {{{ open
     if(isNull()) return (dc1394color_filter_t)0;
-    if( is_firefly_mono(m_poCam) ){
-      return (dc1394color_filter_t)0;
-    }else if( is_firefly_color(m_poCam) || string(m_poCam->model) == "DFx 21BF04" ){
-      return DC1394_COLOR_FILTER_GBRG;
-    }else{
-      return (dc1394color_filter_t)0;
+    switch(m_eCameraTypeID){
+      case pointGreyFire_FlyMVColor:
+      case imagingSource_DFx_21BF04:
+        return DC1394_COLOR_FILTER_GBRG;
+      default:
+        return (dc1394color_filter_t)0;
     }
   }
 

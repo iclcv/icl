@@ -18,7 +18,28 @@ namespace icl{
   /// Device struct, used by the DCGrabber class to identify devices \ingroup DC_G
   class DCDevice{
     public:
+
+    /// Enumeration of supported cameras
+    enum CameraTypeID{
+      pointGreyFire_FlyMVMono,
+      pointGreyFire_FlyMVColor,
+      sony_DFW_VL500_2_30,
+      apple_ISight,
+      fireI_1_2,
+      imagingSource_DFx_21BF04,
+      unknownCameraType
+    };
     
+    /// translates a camera id type into a string
+    static std::string translate(CameraTypeID id);    
+
+    /// translates a string into a camera id type
+    static CameraTypeID translate(const std::string &name);
+
+    /// estimates the camera id type of a given camera 
+    static CameraTypeID estimateCameraType(dc1394camera_t *m_poCam);
+
+    /// static null device (m_poCam is null)
     static const DCDevice null;
     
     /// DCDevices may only be created by the DCGrabbers private function
@@ -122,7 +143,8 @@ namespace icl{
     
     private:    
     /// Creates a new device (pivate; called by DCGrabber::getDeviceList())
-    DCDevice(dc1394camera_t *cam):m_poCam(cam){}
+    DCDevice(dc1394camera_t *cam):
+    m_poCam(cam),m_eCameraTypeID(estimateCameraType(cam)){}
 
     /// sets the current mode of this device
     /** This function may only be called by the DCGrabber*/
@@ -135,6 +157,9 @@ namespace icl{
     
     /// associated camera (libdc stays the owner of the pointer)
     dc1394camera_t *m_poCam;
+
+    /// once estimated this flag is used to identify the current camery type
+    CameraTypeID m_eCameraTypeID;
     
   };
 }
