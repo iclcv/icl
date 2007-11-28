@@ -7,6 +7,7 @@
 #include <iclGUI.h>
 #include <iclMouseInteractionReceiver.h>
 
+#include <QApplication>
 /** 
     \defgroup COMMON "Most common classes"
     \defgroup HANDLES "GUI Component Handle classes"
