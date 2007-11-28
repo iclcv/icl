@@ -1,6 +1,11 @@
 #ifndef ICLQT_H
 #define ICLQT_H
 
+#include <iclWidget.h>
+#include <iclDrawWidget.h>
+#include <iclDrawWidget3D.h>
+#include <iclGUI.h>
+#include <iclMouseInteractionReceiver.h>
 
 /** 
     \defgroup COMMON "Most common classes"
