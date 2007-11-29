@@ -83,6 +83,7 @@ namespace icl{
     
     /// at the end of the stop function, this function is called
     virtual void finalize(){}
+
   
     protected:
     
