@@ -21,11 +21,11 @@ namespace icl{
   template<class T>
   Mat4D<T> Mat4D<T>::rot(double rx, double ry, double rz){
     double cx = cos(rx);
-    double cy = cos(ry);
-    double cz = cos(rz);
+    double cy = cos(-ry);
+    double cz = cos(-rz);
     double sx = sin(rx);
-    double sy = sin(ry);
-    double sz = sin(rz);
+    double sy = sin(-ry);
+    double sz = sin(-rz);
     return Mat4D<double>( cy*cz-sx*sy*sz , -sz*cx , cz*sy+sz*sx*cy , 0,
                           cy*sz+cz*sx*sy ,  cz*cx , sz*sy-sx*cy*cz , 0,
                           -sy*cx         ,  sx    , cx*cy          , 0,
@@ -43,11 +43,11 @@ namespace icl{
   template<class T>
   Mat4D<T> Mat4D<T>::hom(double rx, double ry, double rz, T dx, T dy, T dz, double v1, double v2, double v3){
     double cx = cos(rx);
-    double cy = cos(ry);
-    double cz = cos(rz);
+    double cy = cos(-ry);
+    double cz = cos(-rz);
     double sx = sin(rx);
-    double sy = sin(ry);
-    double sz = sin(rz);
+    double sy = sin(-ry);
+    double sz = sin(-rz);
     return Mat4D<double>( cy*cz-sx*sy*sz , -sz*cx , cz*sy+sz*sx*cy , dx,
                           cy*sz+cz*sx*sy ,  cz*cx , sz*sy-sx*cy*cz , dy,
                           -sy*cx         ,  sx    , cx*cy          , dz,

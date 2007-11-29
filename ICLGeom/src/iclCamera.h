@@ -34,13 +34,29 @@ namespace icl{
     /** @param pos position of the camera center
         @param norm view-vector of the camera
         @param up up-vector of the camera
-        @param f focal length*/
-//        @param imageSize view-port size  TODO delete this line?
-    Camera(const Vec &pos=Vec(0,0,10,0),const Vec &norm=Vec(0,0,-1,0), const Vec &up=Vec(1,0,0,0), float f=-1):
-      m_oPos(pos),m_oNorm(norm),m_oUp(up),m_fF(f){}
+        @param f focal length in mm or Field of view in degree
+        if f is negative, it is interpretet in OpenGL's
+        gluPerspective manner as opening angle of the camera
+        view field. Otherwise, f is interpretet as focal
+        length in mm.
+        @param zNear nearest clipping plane (clipping is not yet implemented, 
+        but zNear is used to estimation the camera projection internally.)
+        @param zFar farest clipping plane (clipping is not yet implemented, 
+        but zNear is used to estimation the camera projection internally.)
+        */
+  Camera(const Vec &pos=Vec(0,0,10,0),
+         const Vec &norm=Vec(0,0,-1,0), 
+         const Vec &up=Vec(1,0,0,0), 
+         float f=-45, 
+         float zNear=0.1,
+         float zFar=100
+         );
+
     
     /// Default copy constructor copies all but the internal matrix buffer
-    Camera(const Camera &cam):m_oPos(cam.m_oPos),m_oNorm(cam.m_oNorm),m_oUp(cam.m_oUp),m_fF(cam.m_fF){}
+  Camera(const Camera &cam):
+    m_oPos(cam.m_oPos),m_oNorm(cam.m_oNorm),m_oUp(cam.m_oUp),m_fF(cam.m_fF),
+      m_fZNear(cam.m_fZNear),m_fZFar(cam.m_fZFar){}
     
     /// returns the camera transformation matrix
     const Mat &getTransformationMatrix();
@@ -95,6 +111,8 @@ namespace icl{
     Vec m_oNorm;       ///!< norm vector
     Vec m_oUp;         ///!< up vector
     float m_fF;        ///!< focal length
+    float m_fZNear;     ///!< nearest clipping plane (must be > 0 and < zFar)
+    float m_fZFar;      ///!< farest clipping plane (must be > 0 and < zFar)
     
     Mat m_oMatBuf; //!< internal buffer for the current transformation matrix
     

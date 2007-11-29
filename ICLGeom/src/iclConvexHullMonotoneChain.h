@@ -1,7 +1,7 @@
 #ifndef ICL_CONVEX_HULL_MONOTONE_CHAIN_H
 #define ICL_CONVEX_HULL_MONOTONE_CHAIN_H
 
-#include <iclGeom.h>
+#include <iclGeomDefs.h>
 namespace icl{
   
   /// Utility Structure used for the Convex-Hull Algorithm

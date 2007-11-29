@@ -2,7 +2,7 @@
 #define ICL_OBJECT_H
 
 #include <iclImg.h>
-#include <iclGeom.h>
+#include <iclGeomDefs.h>
 
 // The icl namespace
 namespace icl{
