@@ -84,16 +84,16 @@ namespace icl{
     /// at the end of the stop function, this function is called
     virtual void finalize(){}
 
+    /// sets the current thread to sleep for some milli-seconds
+    /** @param msecs time in msecs to sleep **/
+    static void msleep(unsigned int msecs);
+    
+    /// sets the current thread to sleep for some seconds
+    /** @param secs time in secs to sleep  ( float precision!)**/
+    static void sleep(float secs);
   
     protected:
     
-    /// sets this thread to sleep for some milli-seconds
-    /** @param msecs time in msecs to sleep **/
-    void msleep(unsigned int msecs);
-    
-    /// sets this thread to sleep for some seconds
-    /** @param secs time in secs to sleep  ( float precision!)**/
-    void sleep(float secs);
 
     /// internal used lock function
     /** This function (and unlock) can be used inside the reimplementation of

@@ -76,7 +76,7 @@ namespace icl{
       */
   template<class Callback>
   static void exec_threaded(Callback cb,bool loop=true, int sleepMsecs=0){
-    static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,looped);
+    static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
     cbt->setSleepTime(sleepMsecs);
     cbt->add(cb);
   }
