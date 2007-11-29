@@ -685,6 +685,28 @@ public:
   };
 
   // }}}
+  struct DrawGUIWidget3D : public GUIWidget{
+    // {{{ open
+    DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,0){
+      m_poWidget3D = new ICLDrawWidget3D(def.parentWidget());
+      addToGrid(m_poWidget3D);
+      
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<DrawHandle3D>(def.handle(),DrawHandle3D(m_poWidget3D));
+        getGUI()->unlockData();  
+      }
+      setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+    }
+    static string getSyntax(){
+      return string("draw()[general params] \n")+
+      gen_params();
+    }
+  private:
+    ICLDrawWidget3D *m_poWidget3D;
+  };
+
+  // }}}
   struct ComboGUIWidget : public GUIWidget{
     // {{{ open
     ComboGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,-1){
@@ -868,6 +890,7 @@ public:
       MAP_CREATOR_FUNCS["disp"] = create_widget_template<DispGUIWidget>;
       MAP_CREATOR_FUNCS["image"] = create_widget_template<ImageGUIWidget>;
       MAP_CREATOR_FUNCS["draw"] = create_widget_template<DrawGUIWidget>;
+      MAP_CREATOR_FUNCS["draw3D"] = create_widget_template<DrawGUIWidget3D>;
       MAP_CREATOR_FUNCS["combo"] = create_widget_template<ComboGUIWidget>;
       MAP_CREATOR_FUNCS["spinner"] = create_widget_template<SpinnerGUIWidget>;
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;

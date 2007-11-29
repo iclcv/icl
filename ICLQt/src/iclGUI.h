@@ -19,11 +19,13 @@
 #include <iclSpinnerHandle.h>
 #include <iclImageHandle.h>
 #include <iclDrawHandle.h>
+#include <iclDrawHandle3D.h>
 #include <iclDispHandle.h>
 
 
 #include <iclWidget.h>
 #include <iclDrawWidget.h>
+#include <iclDrawWidget3D.h>
 
 #include <QLayout>
 #include <QWidget>
@@ -177,6 +179,7 @@ namespace icl{
       - <b>disp</b> a matrix of labels
       - <b>image</b> an ICLWidget component
       - <b>draw</b> an ICLDrawWidget component
+      - <b>draw3D</b> an ICLDrawWidget3D component
       - <b>combo</b> a combo box
       - <b>spinner</b> a spin box (integer valued with given range)
         
@@ -224,6 +227,8 @@ namespace icl{
       - <b>image</b>\n
         No parameters here!
       - <b>draw</b>\n
+        No parameters here!
+      - <b>draw3D</b>\n
         No parameters here!
       - <b>combo(string ENTRY1,string ENTRY2,...)</b>\n
         Creates a combox with given entries. The entry list is comma separated and must have at least on
@@ -313,6 +318,7 @@ namespace icl{
       <TR> <TD>disp</TD>         <TD>DispHandle</TD>        <TD>0</TD>                  <TD>handle for the label matrix (see below!) </TD>          </TR>
       <TR> <TD>image</TD>        <TD>ImageHandle</TD>       <TD>0</TD>                  <TD>handle for the embedded ICLWidget</TD>                  </TR>
       <TR> <TD>draw</TD>         <TD>DrawHandle</TD>        <TD>0</TD>                  <TD>handle for the embedded ICLDrawWidget</TD>              </TR>
+      <TR> <TD>draw3D</TD>       <TD>DrawHandle<3D/TD>      <TD>0</TD>                  <TD>handle for the embedded ICLDrawWidget3D</TD>            </TR>
       <TR> <TD>combo</TD>        <TD>ComboHandle</TD>       <TD>1 type std::string</TD> <TD>current selected item</TD>                              </TR>
       <TR> <TD>spinner</TD>      <TD>SpinnerHandle</TD>     <TD>1 type int</TD>         <TD>current value</TD>                                      </TR>
       </TABLE>

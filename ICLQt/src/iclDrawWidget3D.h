@@ -63,6 +63,10 @@ namespace icl{
     void color3D(float r, float g, float b, float a);
     
     /// sets up the current modelview-matrix
+    /** - eye position of the camera in the scene
+        - center center of the szene (where the camera is looking at)
+        - up up-vector 
+    */
     void lookAt3D(float eyeX, float eyeY, float eyeZ, float cX, float cY, float cZ, float upX, float upY, float upZ);
     
     /// sets up the current projection-matrix
