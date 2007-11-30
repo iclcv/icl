@@ -149,9 +149,12 @@ namespace icl {
 
 #ifdef WITH_IPP_OPTIMIZATION
   void ConvolutionOp::setIPPFixedMethods (kernel eKernel) {
-     pFixed8u  = 0; pFixedMask8u  = 0; 
-     pFixed16s = 0; pFixedMask16s = 0;
-     pFixed32f = 0; pFixedMask32f = 0;
+    pFixed8u  = 0; 
+    pFixedMask8u  = 0; 
+    pFixed16s = 0; 
+    pFixedMask16s = 0;
+    pFixed32f = 0; 
+    pFixedMask32f = 0;
      switch (m_eKernel) {
        case kernelSobelY3x3:
           pFixed8u  = ippiFilterSobelHoriz_8u_C1R;
@@ -275,7 +278,7 @@ namespace icl {
      pfKernel(0), piKernel(0), m_bBuffered(true), 
      m_eKernel(eKernel), m_eKernelDepth(depth32s)
   {
-     FUNCTION_LOG("");
+    FUNCTION_LOG("");
      initMethods ();
      setKernel (eKernel);
   }
