@@ -5,6 +5,7 @@
 #include "iclCamera.h"
 #include <vector>
 #include <iclSize.h>
+#include <iclUncopyable.h>
 
 // the icl namespace
 namespace icl{
@@ -35,7 +36,7 @@ namespace icl{
       \endcode
       
       */
-  class Szene{
+  class Szene : public Uncopyable{
     public:
     /// Create a new Szene with give view-port size
     /** The view-port-size is given to the internally 
@@ -74,6 +75,16 @@ namespace icl{
     /// passes the given matrix to all objects transform(.)-function
     void transformAllObjs(const Mat &m);
 
+    /// transforms the szene transformation matrix
+    void transform(const Mat &m){
+      m_oTransMat *= m;
+    }
+    
+    /// resets the current szene transformation matrix
+    void resetTransformation() {
+      m_oTransMat = Mat::id();
+    }
+
     /// sets the current view port
     void setViewPort(const Rect &viewPort){
       m_oViewPort = viewPort;
@@ -82,10 +93,17 @@ namespace icl{
     const Rect &getViewPort() const{
       return m_oViewPort;
     }
-    private:
-    
+    /// returns the current szene transformation matrix
+    const Mat &getTransformation() const {
+      return m_oTransMat;
+    }
+
     /// returns the current viewport matrix
     Mat getViewPortMatrix() const;
+    
+    /// shows the current transformation matrices to std::out
+    void showMatrices(const std::string &title="") const;
+    private:
 
     /// current view port
     Rect m_oViewPort;
@@ -95,6 +113,9 @@ namespace icl{
     
     /// list of currently available szene objects
     std::vector<Object*> m_vecObjs;
+    
+    /// current szene trans formation (id by default)
+    Mat m_oTransMat;
   };
   
 }

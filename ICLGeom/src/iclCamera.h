@@ -61,6 +61,14 @@ namespace icl{
     /// returns the camera transformation matrix
     const Mat &getTransformationMatrix();
     
+    /// returns the matrix, that transforms vectors into the camera coordinate system
+    /** (internally called by getTransformationMatrix) */
+    Mat getCoordinateSystemTransformationMatrix() const;
+    
+    /// returns the matrix, that projects vector to the camera plane
+    /** (internally called by getTransformationMatrix) */
+    Mat getProjectionMatrix() const;
+    
     /// returns the current pos-vector
     inline const Vec &getPos() const { return m_oPos; }
 

@@ -3,9 +3,9 @@
 
 namespace icl{
   Szene::Szene(const Rect &viewPort,const Camera &cam):
-    m_oViewPort(viewPort),m_oCam(cam){}
+    m_oViewPort(viewPort),m_oCam(cam),m_oTransMat(Mat::id()){}
   
-  inline Mat Szene::getViewPortMatrix() const{
+  Mat Szene::getViewPortMatrix() const{
     //float dx = m_oViewPort.width/2;
     //float dy = m_oViewPort.height/2;
 
@@ -17,14 +17,18 @@ namespace icl{
                   0     , 0     , 0 , 0 ,
                   0     , 0     , 0 , 1 );
   }
-  
-  void Szene::update(){
-    Mat C = m_oCam.getTransformationMatrix();
-    Mat V = getViewPortMatrix();
-    Mat T = V*C;
 
+  // old     Mat C = m_oCam.getTransformationMatrix();
+  void Szene::update(){
+    Mat C = m_oCam.getCoordinateSystemTransformationMatrix();
+    Mat P = m_oCam.getProjectionMatrix();
+    Mat V = getViewPortMatrix();
+    Mat T = m_oTransMat;
+
+    Mat A = V*P*C*T;
+    
     for(unsigned int i=0;i<m_vecObjs.size();i++){
-      m_vecObjs[i]->project(T);
+      m_vecObjs[i]->project(A);
     }
   }
   
@@ -54,6 +58,22 @@ namespace icl{
     for(unsigned int i=0;i<m_vecObjs.size();i++){
       m_vecObjs[i]->transform(m);
     }
+  }
+
+  void Szene::showMatrices(const std::string &title) const{
+    Mat C = m_oCam.getCoordinateSystemTransformationMatrix();
+    Mat P = m_oCam.getProjectionMatrix();
+    Mat V = getViewPortMatrix();
+    Mat T = m_oTransMat;
+    
+    printf("ICLGeom::Szene \"%s\" \n",title.c_str());
+    // C.show("camera coordinate system transformation matrix (C)");
+    //m_oTransMat.show("transformationmatrix (T)");
+    //V.show("view port matrix (V)");
+    //printf("--\n");
+    (C*T).show("modelview-matrix");
+    (V*P).show("projection-matrix");
+    printf("----------------------------------\n");
   }
 }
 

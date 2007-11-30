@@ -13,7 +13,7 @@ namespace icl{
     m_fF = f>0 ? f : cos((-f/2)*M_PI/180)/sin((-f/2)*M_PI/180);
   }
 
-  const Mat &Camera::getTransformationMatrix(){
+  Mat Camera::getCoordinateSystemTransformationMatrix() const{
     // Transformation matrix ** T **
     /* [ --- hh --- | -hh.p ]
        [ --- uu --- | -uu.p ]
@@ -30,17 +30,24 @@ namespace icl{
     //    T[3] = Vec(0,0,0,1);
     T[3] =-(T*m_oPos);
     T[3][3] = 1;
-
-    
+  
+    return T;
+  }
+  
+  Mat Camera::getProjectionMatrix() const{
     float A = (m_fZFar + m_fZNear)/(m_fZNear - m_fZFar);
     float B = (2*m_fZFar*m_fZNear)/(m_fZNear - m_fZFar);
-
-    Mat P = Mat ( m_fF , 0   ,   0,  0,
+    
+    return  Mat ( m_fF , 0   ,   0,  0,
                   0    , m_fF,   0,  0,
                   0    , 0   ,   A,  B,
                   0    , 0   ,  -1,  0 );
+  }
 
-                 
+
+  const Mat &Camera::getTransformationMatrix(){
+    Mat T = getCoordinateSystemTransformationMatrix();
+    Mat P = getProjectionMatrix();
     
     m_oMatBuf=P*T;    
     return m_oMatBuf;
