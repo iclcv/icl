@@ -8,6 +8,11 @@
 #include <iclCore.h>
 #include <iclGUISyntaxErrorException.h>
 #include <QString>
+
+#include <iclWindowIcon.h>
+#include <QIcon>
+#include <QPixmap>
+
 namespace icl{
   
   GUIWidget::GUIWidget(const GUIDefinition &def, GUIWidget::layoutType lt, int ensureNumInputs,int ensureNumOutputs,int ensureNumParams){
@@ -68,6 +73,8 @@ namespace icl{
       setLayout(m_poOtherLayout);
     }
     m_poGUI = def.getGUI();
+
+    setWindowIcon(QIcon(QPixmap(ICL_WINDOW_ICON)));
   }
   GUIWidget::~GUIWidget(){}
   

@@ -11,10 +11,15 @@
 #include <QImage>
 #include <iclQtPaintEngine.h>
 
+#include <QIcon>
+#include <QPixmap>
+#include <iclWindowIcon.h>
+
 using namespace std;
 namespace icl{
   
   namespace{
+    
     Rect computeRect(const Size &imageSize, const Size &widgetSize, ICLWidget::fitmode mode){
       // {{{ open
 
@@ -83,6 +88,8 @@ namespace icl{
     setMouseTracking(true);
     memset(aiDown,0,3*sizeof(int));
 
+    // icon misc 
+    setWindowIcon(QIcon(QPixmap(ICL_WINDOW_ICON)));
 
   }
 
