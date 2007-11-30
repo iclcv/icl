@@ -282,7 +282,6 @@ namespace icl{
     // {{{ open
     Frustum3DDrawCommand(float left,float right,float bottom,float top,float zNear,float zFar):
       left(left),right(right),bottom(bottom),top(top),zNear(zNear),zFar(zFar){}
-
     virtual void execute(){
       glMatrixMode(GL_PROJECTION);
       glFrustum(left,right,bottom,top,zNear,zFar);
@@ -291,14 +290,25 @@ namespace icl{
   };
 
   // }}} 
+  struct ViewPort3DDrawCommand : public ICLDrawWidget3D::DrawCommand3D{
+    // {{{ open
+    ViewPort3DDrawCommand(float x,float y, float width,float height):
+      x(x),y(y),width(width),height(height){}
+    virtual void execute(){
+      glViewport(x,y,width,height);
+    }
+    float x,y,width,height;
+  };
+
+  // }}} 
   struct Rotate3DDrawCommand : public ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
 
     Rotate3DDrawCommand(float rx,float ry,float rz):rx(rx),ry(ry),rz(rz){}
     virtual void execute(){
+      glRotatef(rz,0,0,1);
       glRotatef(rx,1,0,0);
       glRotatef(ry,0,1,0);
-      glRotatef(rz,0,0,1);
     }
     float rx,ry,rz;
   };
@@ -516,6 +526,9 @@ namespace icl{
   }
   void ICLDrawWidget3D::frustum3D(float left,float right,float bottom, float top,float zNear,float zFar){
     m_vecCommands3D.push_back(new Frustum3DDrawCommand(left,right,bottom,top,zNear,zFar));
+  }
+  void ICLDrawWidget3D::viewport3D(float x,float y, float width, float height){
+    m_vecCommands3D.push_back(new ViewPort3DDrawCommand(x,y,width,height));
   }
   void ICLDrawWidget3D::rotate3D(float rx, float ry, float rz){
     m_vecCommands3D.push_back(new Rotate3DDrawCommand(rx,ry,rz));

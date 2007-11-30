@@ -72,6 +72,9 @@ namespace icl{
     /// sets up the current projection-matrix
     void frustum3D(float left,float right,float bottom, float top,float zNear,float zFar);
     
+    /// sets up the gl view port
+    void viewport3D(float x,float y, float width, float height);
+    
     /// sets up current projection matrix using a perpective projection
     void perspective(float angle, float aspect, float near, float far);
     
