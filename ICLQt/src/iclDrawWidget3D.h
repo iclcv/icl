@@ -99,6 +99,12 @@ namespace icl{
     /// switches the current matrix to projection matrix
     void projection();
     
+    /// creates a glPushMatrix command in the command queue
+    void pushMatrix();
+    
+    /// creates a glPopMatrix command in the command queue
+    void popMatrix();
+
     /// sets the current matrix to the identity matrix
     void id();
     

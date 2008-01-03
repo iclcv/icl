@@ -46,6 +46,18 @@ namespace icl{
 
   // }}}
   
+  template<void (*func)(void)>
+  struct FunctionCommand3D : public ICLDrawWidget3D::DrawCommand3D{
+    // {{{ open
+
+    virtual ~FunctionCommand3D(){}
+    virtual void execute(){
+      func();
+    }
+  };
+
+  // }}}
+
   struct Cube3DDrawCommand : public ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
 
@@ -547,6 +559,12 @@ namespace icl{
   }
   void ICLDrawWidget3D::projection(){
     m_vecCommands3D.push_back(new MatrixMode3DDrawCommand(true));
+  }
+  void ICLDrawWidget3D::pushMatrix(){
+    m_vecCommands3D.push_back(new FunctionCommand3D<glPushMatrix>);
+  }
+  void ICLDrawWidget3D::popMatrix(){
+    m_vecCommands3D.push_back(new FunctionCommand3D<glPopMatrix>);
   }
   void ICLDrawWidget3D::perspective(float angle, float aspect, float nearVal, float farVal){
     m_vecCommands3D.push_back(new Perspective3DCommand(angle,aspect,nearVal,farVal));
