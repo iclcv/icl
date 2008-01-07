@@ -137,6 +137,9 @@ namespace icl{
     
     /// internally used bayer conversion function
     void bayer2gray(icl8u *src, icl8u*dst, int w, int h);
+    
+    /// since rc9 of libdc, a libary context was introduced
+    dc1394_t *get_static_context();
   }
 }
     

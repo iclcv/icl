@@ -278,13 +278,14 @@ namespace icl{
       DCSignalHandler():SignalHandler("SIGINT,SIGSEGV"){}
       virtual void handleSignals(const string &signal){
         // {{{ open
-
+        printf("DCSignalHandler caught the %s signal!\n",signal.c_str());
         printf("releasing cameras ...\n");
         m_oMutex.lock();
         DCGrabberThread::stopAllGrabberThreads();
         m_oMutex.unlock();
         printf("done! (please ignore \"Hangup\" statement)\n");
         killCurrentProcess();
+        exit(0);
         
       }
 
@@ -393,7 +394,8 @@ namespace icl{
       dc1394color_coding_t cc = f->color_coding;
       //      dc1394color_filter_t cf = f->color_filter;
       uint32_t yuv_byte_order = f->yuv_byte_order;
-      uint32_t bit_depth      = f->bit_depth;
+      // PRE7:  uint32_t data_depth      = f->data_depth;
+      uint32_t data_depth      = f->data_depth;
       // uint32_t stride         = f->stride;
       //dc1394video_mode_t vm   = f->video_mode;
       //uint64_t wholedatasize  = f->total_bytes;
@@ -409,12 +411,12 @@ namespace icl{
   
       if(fmt == formatGray){
         Img8u i(Size(width,height),formatGray);
-        dc1394_convert_to_MONO8(data, i.getData(0),width,height,yuv_byte_order, cc, bit_depth);
+        dc1394_convert_to_MONO8(data, i.getData(0),width,height,yuv_byte_order, cc, data_depth);
         return i;
       }else if(fmt == formatRGB){
         Img8u i(Size(width,height),formatRGB);
         icl8u *buf = new icl8u[width*height*4];
-        dc1394_convert_to_RGB8(data,buf,width,height,yuv_byte_order, cc, bit_depth);
+        dc1394_convert_to_RGB8(data,buf,width,height,yuv_byte_order, cc, data_depth);
         interleavedToPlanar(buf,&i);
         return i;
       }else{
@@ -436,7 +438,7 @@ namespace icl{
       dc1394color_coding_t cc = f->color_coding;
       //dc1394color_filter_t cf = f->color_filter;
       uint32_t yuv_byte_order = f->yuv_byte_order;
-      uint32_t bit_depth      = f->bit_depth;
+      uint32_t data_depth      = f->data_depth;
       //uint32_t stride         = f->stride;
       //dc1394video_mode_t vm   = f->video_mode;
       //uint64_t wholedatasize  = f->total_bytes;
@@ -455,7 +457,7 @@ namespace icl{
         bool want_gray_images = false;
         if(want_gray_images){
           ensureCompatible(ppoDst,depth8u, Size(width,height),formatGray);
-          dc1394_convert_to_MONO8(data, (*ppoDst)->asImg<icl8u>()->getData(0),width,height,yuv_byte_order, cc, bit_depth);
+          dc1394_convert_to_MONO8(data, (*ppoDst)->asImg<icl8u>()->getData(0),width,height,yuv_byte_order, cc, data_depth);
         }
         else{
           ensureCompatible(ppoDst,depth8u, Size(width,height),formatRGB);
@@ -466,13 +468,13 @@ namespace icl{
       
       
           dc1394_bayer_decoding_8bit(data,buf,width,height,DC1394_COLOR_FILTER_GBRG,DC1394_BAYER_METHOD_BILINEAR);
-          //      dc1394_convert_to_RGB8(data,buf,width,height,yuv_byte_order, cc, bit_depth);
+          //      dc1394_convert_to_RGB8(data,buf,width,height,yuv_byte_order, cc, data_depth);
           interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
         }
       }
       else if( is_firefly_mono(f->camera) ){
         ensureCompatible(ppoDst,depth8u, Size(width,height),formatGray);
-        dc1394_convert_to_MONO8(data, (*ppoDst)->asImg<icl8u>()->getData(0),width,height,yuv_byte_order, cc, bit_depth);
+        dc1394_convert_to_MONO8(data, (*ppoDst)->asImg<icl8u>()->getData(0),width,height,yuv_byte_order, cc, data_depth);
       }
       else{
         ERROR_LOG("unsupported camera!");
@@ -493,7 +495,7 @@ namespace icl{
 
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
-      if(dev.supports(formatGray) && f->bit_depth == 8){
+      if(dev.supports(formatGray) && f->data_depth == 8){
         ensureCompatible(ppoDst,depth8u, desiredSizeHint,formatGray);
         std::vector<icl8u*> srcData(1,static_cast<icl8u*>(f->image));
         Img8u srcImg(frameSize,formatGray,srcData);
@@ -507,7 +509,7 @@ namespace icl{
                                 frameSize.height,
                                 f->yuv_byte_order, 
                                 f->color_coding,
-                                f->bit_depth);
+                                f->data_depth);
       }
     }
 
@@ -552,7 +554,7 @@ namespace icl{
                                  frameSize.height,
                                  f->yuv_byte_order,
                                  f->color_coding,
-                                 f->bit_depth);
+                                 f->data_depth);
           interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
         }
       }else{
@@ -568,7 +570,7 @@ namespace icl{
                                frameSize.height,
                                f->yuv_byte_order,
                                f->color_coding,
-                               f->bit_depth);
+                               f->data_depth);
         interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
       }
     }
@@ -610,7 +612,7 @@ namespace icl{
       // {{{ open
 
       if(desiredDepthHint != depth8u) return false;
-      if(desiredFormatHint == formatGray && f->bit_depth == 8) return true;
+      if(desiredFormatHint == formatGray && f->data_depth == 8) return true;
       if(desiredSizeHint != Size(f->size[0],f->size[1])) return false;
       if(desiredFormatHint != formatRGB) return false;
       return true;
@@ -635,12 +637,12 @@ namespace icl{
   
       ensureCompatible(image,depth8u,size,fmt);
       if(fmt == formatGray){
-        dc1394_convert_to_MONO8(f->image, (*image)->asImg<icl8u>()->getData(0),size.width,size.height,f->yuv_byte_order,f->color_coding,f->bit_depth);
+        dc1394_convert_to_MONO8(f->image, (*image)->asImg<icl8u>()->getData(0),size.width,size.height,f->yuv_byte_order,f->color_coding,f->data_depth);
       }else if(fmt == formatRGB){
         static std::vector<icl8u> rgbBuffer;
         if((int)rgbBuffer.size() < size.getDim()*3) rgbBuffer.resize(size.getDim()*3);
 
-        //dc1394_convert_to_RGB8(f->image, &(rgbBuffer[0]),size.width,size.height,f->yuv_byte_order,f->color_coding,f->bit_depth);
+        //dc1394_convert_to_RGB8(f->image, &(rgbBuffer[0]),size.width,size.height,f->yuv_byte_order,f->color_coding,f->data_depthyyy);
         dc1394_bayer_decoding_8bit(f->image, 
                                    &(rgbBuffer[0]),
                                    size.width,
@@ -655,6 +657,27 @@ namespace icl{
 
     // }}}
 
+
+    class DCContextCreator{
+      // {{{ open
+
+    public:
+      dc1394_t *context;
+      DCContextCreator(){
+        context = dc1394_new();
+      }
+      ~DCContextCreator(){
+        dc1394_free(context);
+      }
+    };
+
+    // }}}
+    
+    DCContextCreator STATIC_DC_CONTEXT;
+    
+    dc1394_t *get_static_context(){
+      return STATIC_DC_CONTEXT.context;
+    }
   }
 
 }

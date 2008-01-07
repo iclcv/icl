@@ -47,8 +47,8 @@ int main(int n, char **ppc){
       printf("%2d %s (%s)  Port:%d  Node%d \n",ii,
              devs[ii].getModelID().c_str(),
              devs[ii].getVendorID().c_str(),
-             (int)(devs[ii].getPort()),
-             (int)(devs[ii].getNode()) );
+             (int)(devs[ii].getGUID()),
+             (int)(devs[ii].getUnit()) );
     }
     while(i < 0 || i>=(int)devs.size() ){
       printf("chose device:\n>>: ");
@@ -70,8 +70,8 @@ int main(int n, char **ppc){
       printf("%2d %s (%s)  Port:%d  Node%d \n",USECAM,
              devs[USECAM].getModelID().c_str(),
              devs[USECAM].getVendorID().c_str(),
-             (int)(devs[USECAM].getPort()),
-             (int)(devs[USECAM].getNode()) );
+             (int)(devs[USECAM].getGUID()),
+             (int)(devs[USECAM].getUnit()) );
     }else{
       printf("camera idx %d not available possible indices are 0-%d \n",USECAM,((int)devs.size())-1);
       exit(0);

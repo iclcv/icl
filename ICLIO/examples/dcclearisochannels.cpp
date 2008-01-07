@@ -15,18 +15,19 @@ int main(int n, char **ppc){
   
   
   for(unsigned int i=0;i<devs.size();i++){
-    m[devs[i].getPort()].push_back(devs[i].getCam());
-    dc1394_reset_camera(devs[i].getCam());
+    m[devs[i].getUnit()].push_back(devs[i].getCam());
+    dc1394_camera_reset(devs[i].getCam());
     printf("calling reset for camera %d [%s] \n",i,devs[i].getModelID().c_str());
   }
   printf("\n");
   for(cammap::iterator it = m.begin();it != m.end();++it){
-    dc1394_cleanup_iso_channels_and_bandwidth((it->second)[0]);
+    dc1394_iso_release_all((it->second)[0]);
+    //    dc1394_cleanup_iso_channels_and_bandwidth((it->second)[0]);
     printf("cleaning iso channel for port %d \n",it->first);
   }
   printf("\n");
   for(unsigned int i=0;i<devs.size();i++){
-    dc1394_free_camera(devs[i].getCam());
+    dc1394_camera_free(devs[i].getCam());
     printf("releasing camera %d [%s] \n",i,devs[i].getModelID().c_str());
   }
   printf("\n");

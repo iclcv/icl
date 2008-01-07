@@ -30,6 +30,7 @@ namespace icl{
     // {{{ open
 
     ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
+
     if(!m_poGT){
       restartGrabberThread();
     }
@@ -68,7 +69,7 @@ namespace icl{
     // {{{ open
 
     std::vector<DCDevice> v;
-
+    /** RC7::
     dc1394camera_t **ppoCams;
     uint32_t numCams=0;
     dc1394_find_cameras(&ppoCams,&numCams);
@@ -76,6 +77,30 @@ namespace icl{
     for(uint32_t i=0;i<numCams;i++){
       v.push_back(DCDevice(ppoCams[i]));
     }
+
+    **/
+    dc1394_t *context = get_static_context();
+    dc1394camera_list_t *list = 0;
+    dc1394error_t err = dc1394_camera_enumerate(context,&list);
+    if(err != DC1394_SUCCESS){ 
+      if(list){
+        dc1394_camera_free_list(list);
+      }
+      ERROR_LOG("Unable to create device list: returning empty list!");
+      return v;
+    }
+    if(!list){
+      ERROR_LOG("no dc device found!");
+      return v;
+    }
+
+    for(uint32_t i=0;i<list->num;++i){
+      v.push_back(DCDevice(dc1394_camera_new_unit(context,list->ids[i].guid,list->ids[i].unit)));
+    }
+    
+    if(list){
+      dc1394_camera_free_list(list);
+    }    
     return v;
   }
 

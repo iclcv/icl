@@ -96,11 +96,14 @@ namespace icl{
     /// returns the model id string from the wrapped camera or "null" if the device is null
     std::string getModelID() const;
     
-    /// returns the IEEE1394 Port of the device
-    icl32s getPort() const;
+    /// returns the devices Global Unique ID
+    uint64_t getGUID() const;
 
-    /// returns the IEEE1394 Node of the device
-    icl16s getNode() const;
+    /// returns the IEEE1394 Unit of the device
+    icl32s getUnit() const;
+
+    /// returns the IEEE1394 UnitSpecID of the device
+    icl32s getUnitSpecID() const;
     
     /// returns wheather the device is associated to a dc-camera
     bool isNull() const { return m_poCam == 0; }
@@ -152,8 +155,8 @@ namespace icl{
 
     /// resets the camera internally
     /** This function may only be called by the DCGrabber*/
-    void reset() { if(!isNull()) dc1394_reset_camera(m_poCam); }
-    
+    void reset() { if(!isNull()) dc1394_camera_reset(m_poCam); }
+    // PRE7: void reset() { if(!isNull()) dc1394_reset_camera(m_poCam); }
     
     /// associated camera (libdc stays the owner of the pointer)
     dc1394camera_t *m_poCam;

@@ -2,6 +2,7 @@
 #include <iclStrTok.h>
 #include <iclMacros.h>
 #include <iclDC.h>
+#include <stdio.h>
 
 using namespace std;
 using namespace icl::dc;
@@ -122,22 +123,22 @@ namespace icl{
   }
 
   // }}}
-  icl32s DCDevice::getPort() const{
-    // {{{ open
 
+  uint64_t DCDevice::getGUID() const{
     if(isNull()) return -1;
-    return m_poCam->port;
+    return m_poCam->guid;
   }
 
-  // }}}
-  icl16s DCDevice::getNode() const{
-    // {{{ open
-
-    if(isNull()) return (icl16s)-1; /// ??
-    return m_poCam->node;
+  
+  icl32s DCDevice::getUnit() const{
+    if(isNull()) return -1;
+    return m_poCam->unit;
   }
 
-  // }}}
+  icl32s DCDevice::getUnitSpecID() const{
+    if(isNull()) return -1;
+    return m_poCam->unit_spec_ID;
+  }
 
   void DCDevice::setMode(const Mode &mode){
     // {{{ open
@@ -157,7 +158,7 @@ namespace icl{
     if(isNull()){
       printf("null! \n");
     }else{
-      dc1394_print_camera_info(m_poCam);
+      dc1394_camera_print_info(m_poCam,stdout);
       printf("-----------------------------\n");
       printf("supported modes: \n");
       vector<DCDevice::Mode> v = getModes();
