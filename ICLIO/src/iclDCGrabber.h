@@ -19,7 +19,6 @@ namespace icl{
       providing libdc1395.so.2 based camera device access. Internally it
       wraps some additional classes with name prefix "DC". \n
  
-
       The first time the "grab(..)"-function of the DCGrabber is invoked,
       it internally creates a so called DCGrabberThread. This thread
       then will create a so called DCFrameQueue internally. This queue
