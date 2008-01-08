@@ -14,6 +14,7 @@ namespace icl{
   }
   /** \endcond */
   
+
   /// Grabber implementation for handling DC-Devices using libdc1394 (Version >= 2.0.rc9) \ingroup GRABBER_G \ingroup DC_G
   /** The DCGrabber class implements the ICL's Grabber interface for
       providing libdc1395.so.2 based camera device access. Internally it
