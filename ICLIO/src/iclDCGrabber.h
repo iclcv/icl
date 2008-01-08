@@ -119,8 +119,7 @@ namespace icl{
     
     /// Internally used buffer images
     ImgBase *m_poImage, *m_poImageTmp;
-    
-
+  
     /// Internally used image converter
     /** This converter is used, if the wrapped DCGrabberThread
         was not able to satisfy all desired parameter claims.*/
