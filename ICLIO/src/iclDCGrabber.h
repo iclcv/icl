@@ -8,7 +8,6 @@
 #include "iclGrabber.h"
 #include <iclConverter.h>
 
-
 namespace icl{
   /** \cond */
   namespace dc{
