@@ -14,7 +14,7 @@ namespace icl{
   }
   /** \endcond */
   
-  /// Grabber implementation for handling DC-Devices using libdc1394 2.0 \ingroup GRABBER_G \ingroup DC_G
+  /// Grabber implementation for handling DC-Devices using libdc1394 (Version >= 2.0.rc9) \ingroup GRABBER_G \ingroup DC_G
   /** The DCGrabber class implements the ICL's Grabber interface for
       providing libdc1395.so.2 based camera device access. Internally it
       wraps some additional classes with name prefix "DC". \n
@@ -25,7 +25,7 @@ namespace icl{
       is used to handle dma-image-frames, owned by the libdc which have
       been temporarily de-queued from the dma ring buffer queue into 
       the user space. Here, the user has read-only access to these frames.
-      The DCGrabberThread runs as fast the current camera-settings allow
+      The DCGrabberThread runs as fast as the current camera-settings allow
       and de-queues dma-frames from the system space into the user space
       DCFrameQueue and it en-queues old user space frames from this
       DCFrameQueue back into the dma ring buffer. At each time, the newest
@@ -38,7 +38,7 @@ namespace icl{
       which is a container for all currently implemented options. The 
       wrapped classes DCGrabberThread and DCFrameQueue get a pointer to
       this option-struct at construction time, so these objects are able
-      to work with the options currently set inside parent the DCGrabber 
+      to work with the options currently set inside the parent DCGrabber 
       instance.\n
       In addition, another class called DCDevice is used internally as
       a high-level wrapper for the libdc1394's camera struct. This
