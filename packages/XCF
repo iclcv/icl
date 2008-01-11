@@ -19,8 +19,10 @@ ifneq "$(HAVE_XCF)" ""
 
 # Please, place here the include directory of the project
 # (e.g. -I${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/include )
-ABS_INCLUDES:= ${ABS_INCLUDES} \
-               -I${XCF_ROOT}/include
+ABS_INCLUDES := ${ABS_INCLUDES} \
+               `PKG_CONFIG_PATH=${XCF_ROOT}/lib/pkgconfig pkg-config --cflags xcf`
+
+#-I${XCF_ROOT}/include
 
 # Please, do not change this ifeq statement
 ifeq "${HRI_INHERIT_MODE}" "STATIC"
