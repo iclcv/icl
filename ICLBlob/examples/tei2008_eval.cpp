@@ -15,6 +15,9 @@
 #include <iclProgArg.h>
 #include <iclImgChannel.h>
 
+int error_counter = 0;
+
+
 struct InputGrabber : public Grabber{
   struct Blob{
     unsigned int x;
@@ -23,6 +26,13 @@ struct InputGrabber : public Grabber{
     float vx;
     float vy;
     icl8u color[3];
+    int id;
+    void set_new_id(int new_id){
+      if(id != new_id && id != -1){
+        error_counter++;
+      }
+      id = new_id;
+    }
     void show(int idx=-1){
       printf("Blob idx=%d pos=(%d,%d) r=%d vx=%f vy=%f color=(%d,%d,%d)\n",
              idx,x,y,r,vx,vy,color[0],color[1],color[2]);
@@ -37,29 +47,51 @@ struct InputGrabber : public Grabber{
       *c = v;
     }
   }
-  
+
   template<unsigned int N>
   static inline void draw_blob(Img8u &image, Blob &b){
     ImgChannel8u *c =  new ImgChannel8u[N];
     for(unsigned int i=0;i<N;++i){
       c[i] = pickChannel(&image,i);
     }
-
-    int rr = b.r*b.r;
-    int h = image.getHeight();
-    int w = image.getWidth();
-    
-    int ystart = iclMax(-b.r,-b.y);
-    int yend = iclMin(b.r,h-b.y);
-    for(int dy = ystart;dy<=yend;++dy){
-      int y = dy+b.y;
-      int dx = (int)round(::sqrt(rr-dy*dy));
-      int xstart = iclMax((unsigned int)(0),b.x-dx);
-      int xend = iclMin(b.x+dx,(unsigned int)(w-1));
-      for(unsigned int i=0;i<N;++i){
-        memline(&c[i](xstart,y),b.color[i],xend-xstart);
+    b.r +=2;
+    {
+      int rr = b.r*b.r;
+      int h = image.getHeight();
+      int w = image.getWidth();
+      
+      int ystart = iclMax(-b.r,-b.y);
+      int yend = iclMin(b.r,h-b.y-1);
+      for(int dy = ystart;dy<=yend;++dy){
+        int y = dy+b.y;
+        int dx = (int)round(::sqrt(rr-dy*dy));
+        int xstart = iclMax((unsigned int)(0),b.x-dx);
+        int xend = iclMin(b.x+dx,(unsigned int)(w-1));
+        for(unsigned int i=0;i<N;++i){
+          memline(&c[i](xstart,y),0,xend-xstart);
+        }
       }
     }
+
+    b.r -=2;
+    {
+      int rr = b.r*b.r;
+      int h = image.getHeight();
+      int w = image.getWidth();
+      
+      int ystart = iclMax(-b.r,-b.y);
+      int yend = iclMin(b.r,h-b.y-1);
+      for(int dy = ystart;dy<=yend;++dy){
+        int y = dy+b.y;
+        int dx = (int)round(::sqrt(rr-dy*dy));
+        int xstart = iclMax((unsigned int)(0),b.x-dx);
+        int xend = iclMin(b.x+dx,(unsigned int)(w-1));
+        for(unsigned int i=0;i<N;++i){
+          memline(&c[i](xstart,y),b.color[i],xend-xstart);
+        }
+      }
+    }
+
     delete [] c;
   }
  
@@ -70,17 +102,34 @@ struct InputGrabber : public Grabber{
     image.setSize(getDesiredSize());
 
     mingap = 3;
-    minr = 3;
-    maxr = 10;
-    maxv = 1;
-    maxdv = 1;
-    maxtrys = 500;
+    minr = 12;
+    maxr = 20;
+    maxv = 3;
+    maxdv = 2;
+    maxtrys = 100;
     blobcolor[0] = 255;
     blobcolor[1] = 0;
     blobcolor[2] = 0;
 
     setBlobCount(nBlobs);
   }
+  
+  int find_blob(int x, int y){
+    for(unsigned int i=0;i<blobs.size();++i){
+      Blob &b = blobs[i];
+      int dx = b.x-x;
+      int dy = b.y-y;
+      if(sqrt(dx*dx+dy*dy) < b.r){
+        return (int)i;
+      }
+    }
+    return -1;
+  }
+  
+  Blob &get_blob(unsigned int idx){
+    return blobs[idx];
+  }
+  
   bool ok(const Blob &b, int idx_b=-1){
     Rect imageRect = image.getImageRect();
     for(unsigned int i=0;i<blobs.size();++i){
@@ -112,6 +161,7 @@ struct InputGrabber : public Grabber{
       }   
 
     }while(!ok(b));
+    b.id = -1;
     return b;
   }
 
@@ -135,23 +185,39 @@ struct InputGrabber : public Grabber{
       Blob bSave = b;
       unsigned int t=0;
       bool err = false;
-      do{
-        b=bSave;
+      bool cont = false;
+      while(true){
+        err = false;
+        cont = false;
         b.x += (int)round(b.vx);
         b.y += (int)round(b.vy);
-        if(b.x < b.r || b.x > image.getWidth()-b.r) b.vx*=-1;
-        if(b.y < b.r || b.y > image.getHeight()-b.r) b.vy*=-1;
-        if(++t > maxtrys){
-          err = true;
+        if(b.x < b.r || b.x >= image.getWidth()-b.r){
+          b.vx*=-1;
+          cont = true;
         }
-      }while(!err && !ok(b,i));
-      if(err){
-        b=bSave;
-      }else{
-        b.vx += random(-maxdv,maxdv);
-        b.vy += random(-maxdv,maxdv);
-        b.vx = clip(b.vx,-maxv, maxv);
-        b.vy = clip(b.vy,-maxv, maxv);
+        if(b.y < b.r || b.y >= image.getHeight()-b.r){
+          b.vy*=-1;
+          cont = true;
+        }
+        if(cont) continue;
+        if(!ok(b,i)){
+          if(++t > maxtrys){
+            err = true;
+            break;
+          }else{
+            b = bSave;
+            if(random(1.0) > 0.5){
+              b.vx*=-1;
+            }else{
+              b.vy*=-1;
+            }
+            continue;
+          }
+        }else{
+          b.vx = clip(b.vx+(float)random(-maxdv,maxdv),-maxv, maxv);
+          b.vy = clip(b.vy+(float)random(-maxdv,maxdv),-maxv, maxv);
+          break;
+        }
       }
     }
   }
@@ -195,33 +261,15 @@ private:
 };
 
 
-
-
 typedef Array<int> vec;
 
 GUI gui;
 
-static inline vec getCenters(const Img8u &image, Img8u *dstRet){
+static inline vec getCenters(const Img8u &image){
   static ImgRegionDetector rd;
   rd.setRestrictions(10,10000,1,255);
   
-  static Img8u dst(image.getSize(),formatGray);
-  
-  int w = image.getWidth();
-  int h = image.getHeight();
-  const int dim = w*h;
-  const icl8u *r = image.getData(0);
-  const icl8u *g = image.getData(1);
-  const icl8u *b = image.getData(2);
-  
-  
-  icl8u *d = dst.getData(0);
-  
-  for(int i=0;i<dim;++i){
-    d[i] = 255 * ( (r[i] > 100) && (g[i] < 100) && (b[i] < 100) );
-  }
-  
-  const std::vector< BlobData > &bd = rd.detect(&dst);
+  const std::vector< BlobData > &bd = rd.detect(&image);
   
   static vec v;
   v.clear();
@@ -231,21 +279,15 @@ static inline vec getCenters(const Img8u &image, Img8u *dstRet){
     v.push_back(p.x);
     v.push_back(p.y);
   }
-  if(dstRet){
-    dst.deepCopy(dstRet);
-  }
+
   return v;
 }
 
-Mutex datamutex;
-vec DATA;
 
-Mutex drawhandlemutex;
-static DrawHandle *dh;
 
-class WorkThreadA : public Thread{
+class WorkThread : public Thread{
 public:
-  WorkThreadA(){
+  WorkThread(){
     if(pa_defined("-dc")){
       vector<DCDevice> devs = DCGrabber::getDeviceList();
       if(!devs.size()){
@@ -254,43 +296,75 @@ public:
       }
       grabber = new DCGrabber(devs[0]);
     }else{
-      grabber = new InputGrabber(30);
+      grabber = new InputGrabber(pa_subarg<int>("-nblobs",0,30));
     }
     
     grabber->setDesiredSize(Size(640,480));
+    grabber->setDesiredFormat(formatGray);
     gui << "draw[@handle=image@minsize=32x24]";
     gui << ( GUI("hbox") 
-             << "label()[@handle=l1@label=vision fps]"
-             << "label()[@handle=l2@label=linass fps]"
-             << "label()[@handle=l3@label=center count]"
-             << "slider(0,100,10)[@handle=Hsl@out=Vsl@label=sleeptime]"
+             << string("slider(0,100,")+pa_subarg<string>("-sleeptime",0,"10") + ")[@handle=Hsl@out=Vsl@label=sleeptime]"
              << "togglebutton(!off,on)[@out=Vlo@label=Show labels]"
            );
     gui.show();
-    dh = &gui.getValue<DrawHandle>("image");
+
   }
   virtual void run(){
 
     while(1){
-      static Img8u dst;
-      static LabelHandle &l = gui.getValue<LabelHandle>("l1");
-      static FPSEstimator fps(10);
-      l = fps.getFpsString();
-
+      static ICLDrawWidget *w = *gui.getValue<DrawHandle>("image");
 
       const ImgBase *image = grabber->grab();
+      vec v = getCenters(*(image->asImg<icl8u>()));
 
-      vec v = getCenters(*(image->asImg<icl8u>()),&dst);
 
-      datamutex.lock();
-      DATA = v;
-      datamutex.unlock();
+      w->setImage(image);
 
-      drawhandlemutex.lock();
-      (*dh) = &dst;
-      static LabelHandle &lN = gui.getValue<LabelHandle>("l3");
-      lN = (int)v.size();
-      drawhandlemutex.unlock();
+
+
+      w->lock();       
+      w->reset();
+
+      if(v.size()){
+        static PositionTracker<int> pt(10);
+        
+        pt.pushData(v.ptr(),v.size()/2);
+        w->color(255,0,0);
+        for(unsigned int i=0;i<v.size();i+=2){
+          
+          
+          
+          w->sym(v[i],v[i+1],ICLDrawWidget::symCross);
+          static bool &labelsOnFlag = gui.getValue<bool>("Vlo");
+
+          int curr_x = v[i];
+          int curr_y = v[i+1];
+          int curr_id = pt.getID(i/2);
+          
+          int blob_list_idx = ((InputGrabber*)grabber)->find_blob(curr_x,curr_y);
+          if(blob_list_idx == -1){
+            ERROR_LOG("no blob at location found ???");
+          }else{
+            InputGrabber::Blob &b=((InputGrabber*)grabber)->get_blob((unsigned int)blob_list_idx);
+            b.set_new_id(curr_id);
+          }
+          
+          if(labelsOnFlag){
+            static char buf[100];
+            w->text(toStr(curr_id,buf),curr_x,curr_y,10);
+          }
+          
+          
+        }
+      }
+      static FPSEstimator fps(10);
+      w->color(255,255,255);
+      char buf[40];
+      sprintf(buf,"found %4d Blobs    errors %4d   ",v.size()/2,error_counter);
+      w->text(string(buf)+"   "+fps.getFpsString().c_str(),5,5); 
+      
+      w->unlock();
+      w->update();
 
       static int &sleepTime = gui.getValue<int>("Vsl");
       msleep(sleepTime);
@@ -300,56 +374,16 @@ private:
   Grabber *grabber;
 };
 
-class WorkThreadB : public Thread{
-public:
-  virtual void run(){
-    PositionTracker<int> pt;
-    while(1){
-      static LabelHandle &l = gui.getValue<LabelHandle>("l2");
-      static FPSEstimator fps(10);
-      l = fps.getFpsString();
-
-      datamutex.lock();
-      vec v = DATA;
-      datamutex.unlock();
-
-      drawhandlemutex.lock();
-      ICLDrawWidget *w = **dh;
-      w->lock();       
-      w->reset();
-      if(v.size()){
-        pt.pushData(v.ptr(),v.size()/2);
-
-        w->color(255,0,0);
-        for(unsigned int i=0;i<v.size();i+=2){
-          w->sym(v[i],v[i+1],ICLDrawWidget::symCross);
-          static bool &labelsOnFlag = gui.getValue<bool>("Vlo");
-          if(labelsOnFlag){
-            static char buf[100];
-            w->text(toStr(pt.getID(i/2),buf),v[i],v[i+1],10);
-          }
-        }
-      }
-      w->unlock();
-      drawhandlemutex.unlock();
-      w->update();
-
-      static int &sleepTime = gui.getValue<int>("Vsl");
-      msleep(sleepTime);
-    }
-  }
-};
-
 
 int main(int n, char  **ppc){
   pa_explain("-dc","use a dc-grabber as video source");
-  pa_init(n,ppc,"-dc");
+  pa_explain("-nblobs","number of blobs to use");
+  pa_explain("-sleeptime","initial sleeptime value");
+  pa_init(n,ppc,"-dc -nblobs(1) -sleeptime(1)");
   
   QApplication app(n,ppc);
-  WorkThreadA a;
-  WorkThreadB b;
+  WorkThread a;
   a.start();
-  b.start();
   
   return app.exec();
 }
