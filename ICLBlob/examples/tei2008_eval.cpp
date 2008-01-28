@@ -16,6 +16,19 @@
 #include <iclImgChannel.h>
 
 int error_counter = 0;
+int error_frames = 0;
+int frame_counter = 0;
+int error_counter_save = 0;
+
+void update_error_frames_A(){
+  error_counter_save = error_counter;
+}
+
+void update_error_frames_B(){
+  if(error_counter_save != error_counter){
+    error_frames++;
+  }
+}
 
 
 struct InputGrabber : public Grabber{
@@ -101,11 +114,11 @@ struct InputGrabber : public Grabber{
     setDesiredSize(Size(640,480));
     image.setSize(getDesiredSize());
 
-    mingap = 3;
-    minr = 12;
-    maxr = 20;
-    maxv = 3;
-    maxdv = 2;
+    mingap = pa_subarg<int>("-mingap",0,3);
+    minr = pa_subarg<int>("-minr",0,10);
+    maxr = pa_subarg<int>("-maxr",0,20);
+    maxv = pa_subarg<int>("-maxv",0,10);
+    maxdv = pa_subarg<int>("-maxdv",0,2);
     maxtrys = 100;
     blobcolor[0] = 255;
     blobcolor[1] = 0;
@@ -326,10 +339,13 @@ public:
       w->reset();
 
       if(v.size()){
-        static PositionTracker<int> pt(10);
+        static PositionTracker<int> pt(pa_subarg<int>("-thresh",0,2));
         
         pt.pushData(v.ptr(),v.size()/2);
         w->color(255,0,0);
+
+        update_error_frames_A();
+
         for(unsigned int i=0;i<v.size();i+=2){
           
           
@@ -353,14 +369,17 @@ public:
             static char buf[100];
             w->text(toStr(curr_id,buf),curr_x,curr_y,10);
           }
-          
-          
         }
+        update_error_frames_B();
       }
+
+      frame_counter++;
+
+        
       static FPSEstimator fps(10);
       w->color(255,255,255);
       char buf[40];
-      sprintf(buf,"found %4d Blobs    errors %4d   ",v.size()/2,error_counter);
+      sprintf(buf,"blobs:%4d frames:%6d E:frames:%4d all:%4d   ",v.size()/2,frame_counter,error_frames,error_counter);
       w->text(string(buf)+"   "+fps.getFpsString().c_str(),5,5); 
       
       w->unlock();
@@ -377,9 +396,17 @@ private:
 
 int main(int n, char  **ppc){
   pa_explain("-dc","use a dc-grabber as video source");
-  pa_explain("-nblobs","number of blobs to use");
-  pa_explain("-sleeptime","initial sleeptime value");
-  pa_init(n,ppc,"-dc -nblobs(1) -sleeptime(1)");
+  pa_explain("-nblobs","(int) number of blobs to use");
+  pa_explain("-sleeptime","(int) initial sleeptime value");
+  pa_explain("-mingap","(int) minimal distance between two blobs");
+  pa_explain("-minr","(int) minimal radius of blobs");
+  pa_explain("-maxr","(int) maxinal radius of blobs");
+  pa_explain("-maxv","(int) maxinal speed of blobs (in pixles per frame)");
+  pa_explain("-maxdv","(int) maximal acceleration of blobs");
+  pa_explain("-thresh","(int) position tracker threshold for trivial association step");
+
+
+  pa_init(n,ppc,"-dc -nblobs(1) -sleeptime(1) -mingap(1) -minr(1) -maxr(1) -maxv(1) -maxdv(1) -thresh(1)");
   
   QApplication app(n,ppc);
   WorkThread a;
