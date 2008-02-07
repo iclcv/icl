@@ -321,7 +321,6 @@ namespace icl{
   // }}}
   void ICLWidget::mouseReleaseEvent(QMouseEvent *e){
     // {{{ open
-    
     switch(e->button()){
      case Qt::LeftButton: aiDown[0]=0; break;
      case Qt::RightButton: aiDown[2]=0; break;
@@ -363,6 +362,7 @@ namespace icl{
   // }}}
   void ICLWidget::enterEvent(QEvent *e){
     // {{{ open
+
     (void)e;
     m_oOSDMutex.lock();
     m_iMouseX = -1;

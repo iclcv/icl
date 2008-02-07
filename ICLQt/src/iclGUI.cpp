@@ -1018,8 +1018,8 @@ public:
   GUI &GUI::operator<<(const std::string &definition){
     // {{{ open
     if(m_poWidget) { ERROR_LOG("this GUI is already visible"); return *this; }
-    if(definition.length() > 10000) {
-      throw GUISyntaxErrorException("-- long text --","definition string was too large! (>10000 characters)");
+    if(definition.length() > 100000) {
+      throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
     }
 
 #ifndef WIN32
@@ -1062,8 +1062,8 @@ public:
     
     if(label.length()){
       GUI gNew(g);
-      if(gNew.m_sDefinition.length() > 10000) {
-        throw GUISyntaxErrorException("-- long text --","definition string was too large! (>10000 characters)");
+      if(gNew.m_sDefinition.length() > 100000) {
+        throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
       }
       gNew.m_sDefinition = remove_label(g.m_sDefinition,label);
       return ( *this << (  GUI(string("border(")+label+")["+minsize+maxsize+size+"]") << gNew ) );

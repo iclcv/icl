@@ -786,7 +786,10 @@ namespace icl{
     }
     /// waits for the gui to be created completely
     void waitForCreation();
-    
+
+    /// returns the GUI internal dataStore
+    const GUIDataStore &getDataStore() const { return m_oDataStore; }
+
     private:
     void create(QLayout *parentLayout,QWidget *parentWidget, GUIDataStore *ds);
 

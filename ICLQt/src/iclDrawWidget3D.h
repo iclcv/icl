@@ -3,6 +3,7 @@
 
 #include <iclDrawWidget.h>
 #include <vector>
+#include <iclSmartPtr.h>
 
 namespace icl{
 
@@ -113,6 +114,15 @@ namespace icl{
     
     /// create a callback object draw comamnd (ownership is not passed!)
     void callback(GLCallback *cb);
+    
+    /// create a callback object draw command using a smart ptr (so ownership is passed smartly)
+    /** Using smart-pointer callback is recommended, if given callback objects are endangered to be
+        released in some other thread than that one, which fills and clears the DrawWidget3D's 
+        draw command queue. Here it would be possible, that the command queue contains already
+        released objects, which leads to run-time errors, if Qt's GUI-threads tries to execute this
+        callback objects asynchronously.
+    */
+    void callback(SmartPtr<GLCallback> &smartCB);
 
     /// forward declaration of the internally used DrawCommandClass
     class DrawCommand3D;

@@ -10,14 +10,14 @@ namespace icl{
   
   
   void CompabilityLabel::paintEvent(QPaintEvent *evt){
-    QWidget::paintEvent(evt);
-    QPainter p(this);
     m_oMutex.lock();
-
-    p.setPen(QColor(0,0,0));
-    p.drawText(QRect(0,0,width(),height()),Qt::AlignCenter,m_sText);
-    
+    QString t = m_sText;
     m_oMutex.unlock();
+
+    //    QWidget::paintEvent(evt); do i need this explicitly ??
+    QPainter p(this);
+    p.setPen(QColor(0,0,0));
+    p.drawText(QRect(0,0,width(),height()),Qt::AlignCenter,t);
   }
   void CompabilityLabel::setNum(int i){
     m_oMutex.lock();
@@ -33,7 +33,6 @@ namespace icl{
     m_oMutex.lock();
     m_sText = text;
     m_oMutex.unlock();
-    
   }
 
   QString CompabilityLabel::text() const{

@@ -435,7 +435,19 @@ namespace icl{
   };
 
   // }}}
+  struct SmartCallback3DCommand : public ICLDrawWidget3D::DrawCommand3D{
+    // {{{ open
 
+    SmartCallback3DCommand(SmartPtr<ICLDrawWidget3D::GLCallback> &smartCB):m_spCB(smartCB){}
+    virtual void execute(){
+      m_spCB->draw_extern();
+    }
+    SmartPtr<ICLDrawWidget3D::GLCallback> m_spCB;
+  };
+
+  // }}}
+  
+  
  ICLDrawWidget3D::ICLDrawWidget3D(QWidget *parent):ICLDrawWidget(parent){
     // {{{ open
 
@@ -577,6 +589,9 @@ namespace icl{
   }
   void ICLDrawWidget3D::callback(ICLDrawWidget3D::GLCallback *cb){
     m_vecCommands3D.push_back(new Callback3DCommand(cb));
+  }
+  void ICLDrawWidget3D::callback(SmartPtr<ICLDrawWidget3D::GLCallback> &smartCB){
+    m_vecCommands3D.push_back(new SmartCallback3DCommand(smartCB));
   }
 
 

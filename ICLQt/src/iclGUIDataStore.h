@@ -243,6 +243,18 @@ namespace icl{
       std::string type; //<! created using RTTI
       void (*release_func)(DataArray*); //<! data release function called by the parent GUIDataStore object
     };
+    
+    public:
+    /// shows a list of currently contained data
+    void listContents() const{
+      printf("GUIDataStore content: \n");
+      int i=0;
+      for(DataMap::const_iterator it=m_oDataMapPtr->begin(); it != m_oDataMapPtr->end(); ++it){
+        printf("%d: name:\"%s\" type:\"%s\"  arraylen:\"%d\" \n",i++,it->first.c_str(),it->second.type.c_str(),it->second.len);
+      }
+      printf("----------------------\n");
+    }
+    private:
 
     /// internal definition
     typedef std::map<std::string,DataArray> DataMap;
