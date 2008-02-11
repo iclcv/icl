@@ -1,7 +1,7 @@
 #ifndef ICL_COMPABILITY_LABEL_H
 #define ICL_COMPABILITY_LABEL_H
 
-#include <QLabel>
+#include <iclThreadedUpdatableWidget.h>
 #include <QString>
 #include <QMutex>
 
@@ -15,7 +15,7 @@ namespace icl{
       original QLabel but this thread-save reimplementation called
       CompabilityLabel.
   */
-  class CompabilityLabel : public QLabel{
+  class CompabilityLabel : public ThreadedUpdatableWidget{
     public:
     /// Create a new label with given text and given parent widget
     CompabilityLabel(const QString &text, QWidget *parent=0);
@@ -40,7 +40,7 @@ namespace icl{
     QString m_sText;
     
     /// Thread-safety mutex
-    QMutex m_oMutex;
+    mutable QMutex m_oMutex;
   };
 }
 

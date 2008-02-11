@@ -13,6 +13,7 @@
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QMutex>
+#include <QApplication>
 #include <iclConverter.h>
 #include <iclPaintEngine.h>
 #include <iclTypes.h>
@@ -195,7 +196,23 @@ int main(int nArgs, char **ppcArg){
       connect((ICLWidget*)this,SIGNAL(mouseEvent(MouseInteractionInfo*)),
               (MouseInteractionReceiver*)r,SLOT(mouseInteraction(MouseInteractionInfo*)));
     }
+
+    /// this function should be called to update the widget asyncronously from a working thread
+    void updateFromOtherThread(){
+      QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
+    }
     
+    /// overloaded event function processing special thread save update events
+    virtual bool event ( QEvent * event ){
+      ICLASSERT_RETURN_VAL(event,false);
+      if(event->type() == QEvent::User){
+        update();
+        return true;
+      }else{
+        return QWidget::event(event);
+      }
+    } 
+
     public slots:
     /// sets up the current image
     void setImage(const ImgBase *image);

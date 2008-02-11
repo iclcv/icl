@@ -4,8 +4,7 @@
 namespace icl{
 
   CompabilityLabel::CompabilityLabel(const QString &text, QWidget *parent):
-    QLabel("placeholder",parent),m_sText(text){
-    
+    ThreadedUpdatableWidget(parent),m_sText(text){
   }
   
   
@@ -37,9 +36,9 @@ namespace icl{
 
   QString CompabilityLabel::text() const{
     QString retVal;
-    const_cast<CompabilityLabel*>(this)->m_oMutex.lock();
+    m_oMutex.lock();
     retVal = m_sText;
-    const_cast<CompabilityLabel*>(this)->m_oMutex.unlock();
+    m_oMutex.unlock();
     return retVal;
   }
 

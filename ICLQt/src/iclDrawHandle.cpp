@@ -6,7 +6,7 @@ namespace icl{
     (**this)->setImage(image);
   }
   void DrawHandle::update(){
-    (**this)->update();
+    (**this)->updateFromOtherThread();
   }
   
 }
