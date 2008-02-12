@@ -9,6 +9,7 @@
 #include <iclDCGrabberThread.h>
 #include <iclDCDevice.h>
 #include <map>
+#include <iclMutex.h>
 #include <signal.h>
 
 using std::string;
@@ -662,12 +663,27 @@ namespace icl{
       // {{{ open
 
     public:
+      Mutex mutex;
       dc1394_t *context;
-      DCContextCreator(){
-        context = dc1394_new();
+      DCContextCreator():context(0){
       }
       ~DCContextCreator(){
-        dc1394_free(context);
+        release();
+      }
+      void create(){
+        mutex.lock();
+        if(!context){
+          context = dc1394_new();
+        }
+        mutex.unlock();
+      }
+      void release(){
+        mutex.lock();
+        if(context){
+          dc1394_free(context);
+          context = 0;
+        }
+        mutex.unlock();
       }
     };
 
@@ -676,7 +692,12 @@ namespace icl{
     DCContextCreator STATIC_DC_CONTEXT;
     
     dc1394_t *get_static_context(){
+      STATIC_DC_CONTEXT.create();
       return STATIC_DC_CONTEXT.context;
+    }
+    
+    void free_static_context(){
+      STATIC_DC_CONTEXT.release();
     }
   }
 

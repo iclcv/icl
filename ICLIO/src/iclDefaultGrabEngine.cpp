@@ -34,9 +34,13 @@ namespace icl{
     
     if(m_bProgressiveGrabMode){
       if(!m_bStarted){
+        //        printf("----1 \n");
         unicap_start_capture(m_poDevice->getUnicapHandle());
+        //printf("----2 \n");
         m_bStarted = true;
+        //printf("----3 \n");
         unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
+        //printf("----4 \n");
       }
       
       unicap_data_buffer_t *returned_buffer;

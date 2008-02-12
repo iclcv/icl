@@ -73,7 +73,11 @@ namespace icl{
       private: 
       /// private constructor )can only be called by icl::DCGrabber
       DCGrabberThread(dc1394camera_t* c, DCDeviceOptions *options);
-      
+
+
+      /// Destructor
+      ~DCGrabberThread();
+
       /// private image access function
       void getCurrentImage(ImgBase **ppoDst);
       

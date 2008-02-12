@@ -113,7 +113,7 @@ system "cp ./make/dependencyChecks $INSTALLDIR/make";
 foreach my $entry(@dirs) {
     #---- Check makeVar for inlcudes ----
     if ($entry !~ /ICLUtils/) {
-        open(FILE,"./$entry/makeVar") or die "Can not open file: $!";
+        open(FILE,"./$entry/makeVar") or die "Can not open file: $entry $!";
         @makeVarContent = <FILE>;
         close(FILE);
     }

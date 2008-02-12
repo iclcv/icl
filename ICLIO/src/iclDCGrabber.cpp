@@ -61,6 +61,9 @@ namespace icl{
       m_poGT->stop();
       ICL_DELETE(m_poGT);
     }
+    ICL_DELETE(m_poImage);
+    ICL_DELETE(m_poImageTmp);
+    release_dc_cam(m_oDev.getCam());
   }
 
   // }}}

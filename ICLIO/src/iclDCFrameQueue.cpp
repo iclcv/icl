@@ -27,7 +27,7 @@ namespace icl{
       }    
     }
     DCFrameQueue::~DCFrameQueue(){
-      release_dc_cam(m_poCam);
+      //      release_dc_cam(m_poCam);
     }
     
     void DCFrameQueue::step(){

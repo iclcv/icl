@@ -106,7 +106,8 @@ namespace icl{
 
     Time now = icl::Time::now();
     Time dt = now-m_oLastTime;
-    m_fCurrentFps = 1000000.0/dt.toMicroSeconds();
+    long micro = dt.toMicroSeconds();
+    m_fCurrentFps = micro ? 1000000.0/micro : 99999999;
     m_oLastTime = now;
   }
 

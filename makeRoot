@@ -251,7 +251,7 @@ endif
 MKDEPFLAGS:= -fmakeDepend
 
 # Flags for make
-EXTRAMAKEFLAGS:=-s
+EXTRAMAKEFLAGS:=-s -j 3
 
 # Prefix string to be placed before each target name
 TARGET_PREFIX:=
@@ -284,7 +284,7 @@ endif
 #-----------------------------------------------
 # Rule: all (needed, must be the first)
 #-----------------------------------------------
-all: ;
+all: 
 
 #-----------------------------------------------
 # Rule: printvar

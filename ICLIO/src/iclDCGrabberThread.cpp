@@ -17,7 +17,10 @@ namespace icl{
     vector<DCGrabberThread*> g_vecAllThreads;
     bool g_bStopAllGrabberThreadsCalled = false;
 
-    
+    DCGrabberThread::~DCGrabberThread(){
+      stop();
+      ICL_DELETE(m_poFrameQueue);
+    }
     
     void DCGrabberThread::stopAllGrabberThreads(){
       // {{{ open
