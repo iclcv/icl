@@ -1,43 +1,46 @@
 # -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file.
 
+######################################################################
+## Convenience Functions  ############################################
+######################################################################
+ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
+notify_support = $(if ${ICL_SUPPRESS_DEPENDENCY_MESSAGES},, \
+		 $(info | $(1) support enabled: $(2)))
+
+notify_not_found = $(if ${ICL_SUPPRESS_DEPENDENCY_MESSAGES},, \
+		$(info | $(1) not found in:    $(2) (support disabled)))
+
+$(info  +-----------------------------------------------------------------------)
+else
+notify_support =
+notify_not_found =
+endif
+
+
+######################################################################
+## Dependencies ######################################################
+######################################################################
+
 # IPP
 IPP_ROOT ?= /vol/vision/IPP
 ifeq "${OS_TYPE}" "linux"
 
 ifeq "$(wildcard $(IPP_ROOT)/5.2/sharedlib/libipp*.so)" ""
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "IPP 5.2 is not available. Its usage is switched off.")
-endif
-endif
+$(call notify_not_found,IPP 5.2         ,${IPP_ROOT}/5.2/sharedlib);
 else
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "IPP support enabled: ${IPP_ROOT}/5.2/sharedlib")
-endif
-endif
+$(call notify_support,IPP 5.2         ,${IPP_ROOT}/5.2/sharedlib)
 CDEFINES:=$(CDEFINES) -DWITH_IPP_OPTIMIZATION
 CPPDEFINES:=${CPPDEFINES} -DWITH_IPP_OPTIMIZATION
 HAVE_IPP:=TRUE
 endif
 
 endif # linux
-
-
 ifeq "${OS_TYPE}" "macosx"
 
 ifeq "$(wildcard $(IPP_ROOT)/Intel_IPP.framework/Libraries/libipp*.dylib)" ""
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "IPP is not available. Its usage is switched off.")
-endif
-endif
+$(call notify_not_found,IPP-Framework  ,${IPP_ROOT}/Intel_IPP/Libraries);
 else
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "IPP support enabled: ${IPP_ROOT}/lib")
-endif
-endif
+$(call notify_support,IPP IPP-Framework  ,${IPP_ROOT}/Intel_IPP/Libraries)
 CDEFINES:=$(CDEFINES) -DWITH_IPP_OPTIMIZATION
 CPPDEFINES:=$(CPPDEFINES) -DWITH_IPP_OPTIMIZATION
 HAVE_IPP:=TRUE
@@ -45,125 +48,75 @@ endif
 
 endif # macosx
 
+
+# QT
+QTDIR ?= /vol/qt/4.3
+ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
+$(call notify_not_found,Qt              ,${QTDIR}/lib);
+else
+$(call notify_support,Qt              ,${QTDIR}/lib);
+HAVE_QT:=TRUE
+endif
+
 # libJPEG
 LIBJPEG_ROOT ?= /usr
 ifeq "$(wildcard ${LIBJPEG_ROOT}/lib/libjpeg.*)" ""
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "libjpeg is not available. Its usage is switched off.")
-endif
-endif
+$(call notify_not_found,libjpeg.so      ,${LIBJPEG_ROOT}/lib);
 else
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "JPEG support enabled: ${LIBJPEG_ROOT}/lib")
-endif
-endif
+$(call notify_support,libjpeg.so      ,${LIBJPEG_ROOT}/lib);
 CDEFINES:=$(CDEFINES) -DWITH_JPEG_SUPPORT
 CPPDEFINES:=$(CPPDEFINES) -DWITH_JPEG_SUPPORT
 HAVE_LIBJPEG:=TRUE
 endif
 
-# QT
-QTDIR ?= /vol/qt/4.3
-ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "Qt version 4.3 is not available. Qt-specific targets are not built.")
-endif
-endif
-else
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "Qt support enabled: ${QTDIR}/lib")
-endif
-endif
-HAVE_QT:=TRUE
-endif
-
 # libdc1394
 LIBDC_ROOT ?= /vol/video
 ifeq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.*2*)" ""
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "libdc1394.so.2x was not found in ${LIBDC_ROOT}/lib. DCGrabber support disabled.")
-endif
-endif
+$(call notify_not_found,libdc1394.so.2x ,${LIBDC_ROOT}/lib);
 else
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "LIBDC support enabled: ${LIBDC_ROOT}/lib")
-endif
-endif
+$(call notify_support,libdc1394.so.2x ,${LIBDC_ROOT}/lib);
 HAVE_LIBDC:=TRUE
 endif
 
 # libraw1394
 LIBRAW_ROOT ?= /vol/video
 ifeq "$(wildcard ${LIBRAW_ROOT}/lib/libraw1394.so*)" ""
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "libraw1394.so was not found in ${LIBRAW_ROOT}/lib. DCGrabber support disabled.")
-endif
-endif
+$(call notify_not_found,libraw1394.so   ,${LIBRAW_ROOT}/lib);
 HAVE_LIBDC:=
 else
-ifeq "${ICL_DEPENDENCYS_CHECKED}${HAVE_LIBDC}" "TRUE"
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "libraw support enabled: ${LIBRAW_ROOT}/lib")
-endif
-endif
+$(call notify_support,libraw1394.so   ,${LIBRAW_ROOT}/lib);
 endif
 
 # SVS
 SVS_ROOT ?= /vol/vision/SVS/4.2
 ifeq "$(wildcard ${SVS_ROOT}/bin/libsvs.so)" ""
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "SVS library is not available. SVS specific targets are not built.")
-endif
-endif
+$(call notify_not_found,libsvs.so       ,${SVS_ROOT}/bin)
 else
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "SVS support enabled: ${SVS_ROOT}/lib")
-endif
-endif
+$(call notify_support,libsvs.so       ,${SVS_ROOT}/bin)
 HAVE_SVS:=TRUE
 endif
 
 # unicap
 UNICAP_ROOT ?= /vol/video
 ifeq "$(wildcard ${UNICAP_ROOT}/lib/libunicap*.so)" ""
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "libunicap.so was not found in ${UNICAP_ROOT}/lib. Unicap support disabled.")
-endif
-endif
+$(call notify_not_found,libunicap.so    ,${UNICAP_ROOT}/lib)
 else
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "Unicap support enabled: ${UNICAP_ROOT}/lib")
-endif
-endif
+$(call notify_support,libunicap.so    ,${UNICAP_ROOT}/lib)
 HAVE_UNICAP:=TRUE
 endif
 
 #XCF
 XCF_ROOT ?= /vol/xcf
 ifeq "$(wildcard ${XCF_ROOT}/lib/libxcf*.so)" ""
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "libxcf.so was not found in ${XCF_ROOT}/lib. XCF support disabled.")
-endif
-endif
+$(call notify_not_found,libxcf.so       ,${XCF_ROOT}/lib)
 else
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-ifeq "${ICL_SUPPRESS_DEPENDENCY_MESSAGES}" ""
-$(warning "XCF support enabled: ${XCF_ROOT}/lib")
-endif
-endif
+$(call notify_support,libxcf.so       ,${XCF_ROOT}/lib)
 HAVE_XCF:=TRUE
+endif
+
+
+ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
+$(info  +-----------------------------------------------------------------------)
 endif
 
 # ICL dependency check done
