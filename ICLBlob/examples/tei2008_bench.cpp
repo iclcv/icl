@@ -11,10 +11,11 @@
 
 typedef Array<int> vec;
 
-GUI gui;
+GUI gui("vbox");
 
 static inline vec getCenters(const Img8u &image, Img8u *dstRet){
   static ImgRegionDetector rd;
+  static int &threshold= gui.getValue<int>("threshold-val");
   rd.setRestrictions(10,10000,1,255);
   
   static Img8u dst(image.getSize(),formatGray);
@@ -28,9 +29,9 @@ static inline vec getCenters(const Img8u &image, Img8u *dstRet){
   
   
   icl8u *d = dst.getData(0);
-  
+  icl8u t = threshold;
   for(int i=0;i<dim;++i){
-    d[i] = 255 * ( (r[i] > 100) && (g[i] < 100) && (b[i] < 100) );
+    d[i] = 255 * ( (r[i] > 160) && (g[i] < 80) && (b[i] < 100) );
   }
   
   const std::vector< BlobData > &bd = rd.detect(&dst);
@@ -65,11 +66,10 @@ public:
     }
     grabber = new DCGrabber(devs[0]);
     grabber->setDesiredSize(Size(640,480));
-    gui << "draw[@handle=image@minsize=32x24]";
-    gui << ( GUI("hbox") 
-             << "label()[@handle=l1@label=vision fps]"
-             << "label()[@handle=l2@label=linass fps]"
-             << "label()[@handle=l3@label=center count]"
+    //grabber->setDesiredFormat(formatGray);
+    gui << "draw[@handle=image@minsize=32x24]" << "image[@handle=cam-image@minsize=32x24]";
+    gui << ( GUI("hbox[@maxsize=100x3]") 
+             << "slider(0,255,200)[@label=threshold@handle=threshold-h@out=threshold-val]"
              << "slider(0,100,10)[@handle=Hsl@out=Vsl@label=sleeptime]"
              << "togglebutton(!off,on)[@out=Vlo@label=Show labels]"
            );
@@ -80,12 +80,17 @@ public:
 
     while(1){
       static Img8u dst;
-      static LabelHandle &l = gui.getValue<LabelHandle>("l1");
-      static FPSEstimator fps(10);
-      l = fps.getFpsString();
+      //static LabelHandle &l = gui.getValue<LabelHandle>("l1");
+      //static FPSEstimator fps(10);
+      //l = fps.getFpsString();
 
 
       const ImgBase *image = grabber->grab();
+
+      ICLWidget *w = *gui.getValue<ImageHandle>("cam-image");
+      w->setImage(image);
+      w->update();
+
 
       vec v = getCenters(*(image->asImg<icl8u>()),&dst);
 
@@ -95,8 +100,8 @@ public:
 
       drawhandlemutex.lock();
       (*dh) = &dst;
-      static LabelHandle &lN = gui.getValue<LabelHandle>("l3");
-      lN = (int)v.size();
+      //      static LabelHandle &lN = gui.getValue<LabelHandle>("l3");
+      //lN = (int)v.size();
       drawhandlemutex.unlock();
 
       static int &sleepTime = gui.getValue<int>("Vsl");
@@ -112,9 +117,9 @@ public:
   virtual void run(){
     PositionTracker<int> pt;
     while(1){
-      static LabelHandle &l = gui.getValue<LabelHandle>("l2");
-      static FPSEstimator fps(10);
-      l = fps.getFpsString();
+      //   static LabelHandle &l = gui.getValue<LabelHandle>("l2");
+      //static FPSEstimator fps(10);
+      //l = fps.getFpsString();
 
       datamutex.lock();
       vec v = DATA;

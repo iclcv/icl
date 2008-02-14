@@ -189,7 +189,7 @@ namespace icl{
   template<class T>
   inline std::vector<T> parseVec(const std::vector<std::string> &v){
     std::vector<T> r(v.size());
-    std::transform(v.begin(),v.end(),r.begin(2),parse<T>);
+    std::transform(v.begin(),v.end(),r.begin(),parse<T>);
     return r;
   }
   

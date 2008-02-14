@@ -1511,5 +1511,75 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
   // }}}
 
+  template<class T>
+  ImgBasePtrPtr<T>::~ImgBasePtrPtr(){
+    // {{{ open
+    if(!r){
+      ERROR_LOG("Result image is NULL");
+      if(o) delete o;
+      return;
+    }
+    if(r && !o){
+      ERROR_LOG("Result image is NULL");
+      delete r;
+      return;
+    }
+    /// r and o is given !!
+    if(r != rbef ){
+      ERROR_LOG("Detected a pointer reallocation in Implicit Img<T> to ImgBase** cast operation\n"
+                "This warning implicates, that a local ImgBase* was reallocated instead of using\n"
+                "the given Img<T>. To enshure a maximum compability, the new result images data\n"
+                "will be converted interanlly into the given image. To avoid this warning and to\n"
+                "enhance performance, DO NOT USE THE \"bpp(..)\"-FUNCTION\n");
+      printf("convert: \n");
+      r->convert(o);
+      printf("del \n");
+      delete r;
+      printf("ret \n");
+      return;
+    }
+    if(o->getParams() != r->getParams()){
+      // shallow copy back
+      ImgBase *poBase = o;
+      
+      r->shallowCopy(&poBase);
+      //      *o = *r;
+      delete r;
+      return;
+    }
+    
+    delete r;
+  }
+
+  // }}}
+  template<class T>
+  ImgBasePtrPtr<T>::ImgBasePtrPtr(Img<T> &i){
+    r = new Img<T>(i);
+    o = &i;
+    rbef = r;
+  }
+  
+  template<class T>
+  ImgBasePtrPtr<T>::ImgBasePtrPtr(Img<T> *i){
+    // {{{ open
+
+    if(!i){ 
+      o = 0; 
+      r = 0;
+      rbef = 0;
+    }else{
+      r = new Img<T>(*i);
+      o = i;
+      rbef = r;
+    }
+  }
+
+  // }}}
+
+#define ICL_INSTANTIATE_DEPTH(D) template struct ImgBasePtrPtr<icl##D>;
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+
+
 } //namespace icl
 
