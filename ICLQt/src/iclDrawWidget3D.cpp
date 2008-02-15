@@ -590,7 +590,7 @@ namespace icl{
   void ICLDrawWidget3D::callback(ICLDrawWidget3D::GLCallback *cb){
     m_vecCommands3D.push_back(new Callback3DCommand(cb));
   }
-  void ICLDrawWidget3D::callback(SmartPtr<ICLDrawWidget3D::GLCallback,PointerDelOp> &smartCB){
+  void ICLDrawWidget3D::callback(SmartPtr<ICLDrawWidget3D::GLCallback,PointerDelOp> smartCB){
     m_vecCommands3D.push_back(new SmartCallback3DCommand(smartCB));
   }
 
