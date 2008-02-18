@@ -29,6 +29,11 @@ namespace icl{
   const ImgBase *DCGrabber::grab (ImgBase **ppoDst){
     // {{{ open
 
+    if(ppoDst){
+      ERROR_LOG("Giving DCGrabber a destination image != NULL is currently not supported");
+      return 0;
+    }
+
     ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
 
     if(!m_poGT){
