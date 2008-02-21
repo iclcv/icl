@@ -66,7 +66,7 @@ namespace icl{
     QGLWidget(parent), m_poImage(new GLTextureMapBaseImage(0,false)),
     m_poQImageConverter(0),
 #endif
-    m_poQImage(0),
+    m_poQImage(0),m_oMutex(QMutex::Recursive),m_oOSDMutex(QMutex::Recursive),
     m_poOSD(0),m_poCurrOSD(0),m_poShowOSD(0),m_iMouseX(-1), m_iMouseY(-1),
     m_iCurrSelectedChannel(-1),m_bShowNoImageWarning(true){
     // {{{ open
