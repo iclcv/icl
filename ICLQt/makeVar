@@ -81,5 +81,8 @@ SKIP_OBJECTS += iclCamCfgWidget.cpp moc_iclCamDfgWidget.cpp camcfg.cpp
 endif
 endif
 ifeq "$(HAVE_LIBDC)" ""
-SKIP_OBJECTS += iclCamCfgWidget.cpp moc_iclCamDfgWidget.cpp camcfg.cpp
+SKIP_OBJECTS += chroma_demo.cpp 
+SKIP_OBJECTS += iclCamCfgWidget.cpp 
+SKIP_OBJECTS += moc_iclCamDfgWidget.cpp 
+SKIP_OBJECTS += camcfg.cpp
 endif
