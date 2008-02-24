@@ -19,12 +19,12 @@ TARGET_LIB:= ${PROJECT_NAME}
 
 # Please add here all the directories with absolute path
 # (e.g. -L/usr/local/lib) and libraries (e.g. -lsvs) needed by the executables.
+ABS_LIBRARIES:= ${ABS_LIBRARIES} -lpthread
 ifeq "$(HAVE_LIBJPEG)" "TRUE"
-ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-                -lpthread -lz -ljpeg
-else
-ABS_LIBRARIES:= ${ABS_LIBRARIES} \
-								-lpthread -lz
+ABS_LIBRARIES:= ${ABS_LIBRARIES} -ljpeg
+endif
+ifeq "$(HAVE_ZLIB)" "TRUE"
+ABS_LIBRARIES:= ${ABS_LIBRARIES} -lz
 endif
 
 # Please add here all the directories with relative path

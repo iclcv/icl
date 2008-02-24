@@ -69,6 +69,24 @@ CPPDEFINES:=$(CPPDEFINES) -DWITH_JPEG_SUPPORT
 HAVE_LIBJPEG:=TRUE
 endif
 
+# zlib
+ZLIB_ROOT ?= /usr
+ZLIB_SOMETHING_IS_MISSING=FALSE
+ifeq "$(wildcard ${ZLIB_ROOT}/lib/libz.*)" ""
+ZLIB_SOMETHING_IS_MISSING=TRUE
+endif
+ifeq "$(wildcard ${ZLIB_ROOT}/include/zlib.h)" ""
+ZLIB_SOMETHING_IS_MISSING=TRUE
+endif
+ifeq "$(ZLIB_SOMETHING_IS_MISSING)" "TRUE"
+$(call notify_not_found,libz.so/zlib.h  ,${ZLIB_ROOT}/[lib|include]);
+else
+$(call notify_support,libz.so/zlib.h  ,${ZLIB_ROOT}/[lib|include]);
+CDEFINES:=$(CDEFINES) -DWITH_ZLIB_SUPPORT
+CPPDEFINES:=$(CPPDEFINES) -DWITH_ZLIB_SUPPORT
+HAVE_ZLIB:=TRUE
+endif
+
 # libdc1394
 LIBDC_ROOT ?= /vol/video
 ifeq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.*2*)" ""
