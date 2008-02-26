@@ -122,7 +122,7 @@ endif
 #########################################################################
 # Set the priority level
 DIR_PRIORITY:=ICLUtils ICLCore ICLCC
-DIR_LOWPRIORITY:=ICLGeom examples
+DIR_LOWPRIORITY:=ICLGeom ICLAlgorithms examples
 
 #########################################################################
 # Exclude the folowing folder or files

@@ -23,6 +23,8 @@ AGNI_INHERIT_MODE:= DYNAMIC
 # Please include here the inherited projects
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
 include ${PACKAGES}/ICLCore
+include ${PACKAGES}/ICLFilter
+include ${PACKAGES}/ICLBlob
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
