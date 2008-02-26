@@ -104,14 +104,35 @@ namespace icl {
       return Rect((int)(x/d),(int)(y/d),(int)(width/d),(int)(height/d));
     }
 
+   
+    /// adds a size to the rects size
+    Rect operator+(const Size &s) const{
+      return Rect(x,y,width+s.width,height+s.height);
+    }
+
+    /// substracts a size for the rects size
+    Rect operator-(const Size &s) const{
+      return Rect(x,y,width-s.width,height-s.height);
+    }
+    
     /// adds a size to the rects size
     Rect& operator+=(const Size &s){
       width+=s.width; height+=s.height; return *this;
     }
-    
-    /// substracs a size to the rects size
+
+    /// substracs a size from the rects size
     Rect& operator-=(const Size &s){
       width-=s.width; height-=s.height; return *this;
+    }
+    
+    /// adds a Point to the rects offset
+    Rect operator+(const Point &p) const{
+      return Rect(x+p.x,y+p.y,width,height);
+    }
+
+    /// substracts a Point from the rects offset
+    Rect operator-(const Point &p) const{
+      return Rect(x-p.x,y-p.y,width,height);
     }
     
     /// adds a Point to the rects offset
@@ -119,7 +140,7 @@ namespace icl {
       x+=p.x; y+=p.y; return *this;
     }
 
-    /// substracts a Point to the rects offset
+    /// substracts a Point from the rects offset
     Rect& operator-=(const Point &p){
       x-=p.x; y-=p.y; return *this;
     }
