@@ -1,18 +1,35 @@
 #include <iclUsefulFunctions.h>
 #include <iclQuick.h>
+#include <iclProgArg.h>
 
-int main(){
+int main(int n, char **ppc){
+  //  640x480@(5,10)
+  pa_explain("-roi","specify template roi like 640x480@(5,10)");
+  pa_explain("-s","specify significance level range [0,1]");
+  pa_init(n,ppc,"-roi(1) -s(1)");
+  
   Img8u image = cvt8u(create("parrot"));
+  image.scale(Size(640,480));
   
-  image.setROI(Rect(200,400,100,120));
+  Rect roi = translateRect(pa_subarg<string>("-roi",0,"100x120@(200,400)"));
+  roi &= image.getImageRect();
   
-  Img8u templ = cvt8u(copyroi(cvt(image)));  
+  image.setROI(roi);
+  Img8u templ = cvt8u(copyroi(cvt(image)));
+  image.setFullROI();
   
-  show(label(cvt(image),"image"));
-  show(label(cvt(templ),"template"));
+
+  float s = pa_subarg<float>("-s",0,0.9);
+  printf("using significance: %f \n",s);
+  Img8u *buffer = new Img8u;
+  ImgRegionDetector rd;
+  vector<Rect> rs = iclMatchTemplate(image,templ,s,buffer,&rd);
+  tic();
+  for(int i=0;i<1000;i++){
+    rs = iclMatchTemplate(image,templ,s,buffer,&rd);
+  }
+  toc();
   
-  
-  vector<Rect> rs = iclMatchTemplate(image,templ,0.8);
   
   ImgQ resultImage = cvt(image);
   

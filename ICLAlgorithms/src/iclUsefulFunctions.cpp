@@ -1,20 +1,23 @@
 #include "iclUsefulFunctions.h"
 #include <iclProximityOp.h>
+#include <ippi.h>
 
+#include <iclQuick.h>
 namespace icl{
 
   namespace{
     template<int N>
-    inline void apply_inplace_threshold(Img8u image,int dim, icl8u thresh){
+    inline void apply_inplace_threshold(Img8u &image,int dim, icl8u thresh){
       icl8u *pc[N];
       for(int j=0;j<N;++j){
         pc[j] = image.getData(j);
       }
-      
       for(int i=0;i<dim;i++){
+        bool result = true;
         for(int j=0;j<N;++j){
-          pc[0][i] &= pc[j][0] > thresh;
+          result &= (pc[j][i] > thresh);
         }
+        pc[0][i] = result * 255;
       }          
     }
   }
@@ -27,14 +30,17 @@ namespace icl{
     ImgBase *useBuffer = bufferGiven ? bufferGiven : new Img8u;
     ImgRegionDetector *useRD = rdGiven ? rdGiven : new ImgRegionDetector;
 
-    ProximityOp po(ProximityOp::crossCorrCoeff,ProximityOp::valid);
-    po.apply(&src,&templ,&useBuffer);
-    
-    // now search for all maxima in the image that are within the 
-    // given significance
-    
+    useBuffer->setChannels(src.getChannels());
+    useBuffer->setSize(src.getROISize()-templ.getROISize()+Size(1,1));
+    for(int i=0;i<src.getChannels();i++){
+      ippiCrossCorrValid_Norm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
+                                        src.getROISize(), templ.getROIData(i),
+                                        templ.getLineStep(),templ.getROISize(),
+                                        useBuffer->asImg<icl8u>()->getData(i),
+                                        useBuffer->getLineStep(),-8);
+    }    
     Img8u &m = *useBuffer->asImg<icl8u>();
-    icl8u t = float(255)*significance;
+    icl8u t = (icl8u)(float(255)*significance);
     
     switch(m.getChannels()){
       case 1: 
@@ -51,13 +57,12 @@ namespace icl{
         return std::vector<Rect>();
     }
 
+    
     const ImgBase *c0 = useBuffer->shallowCopy(useBuffer->getImageRect(),
                                                std::vector<int>(1,0),
                                                formatMatrix);
-    useRD->setRestrictions(0,2<<30,1,255);
+    useRD->setRestrictions(0,2<<10,1,255);
     const std::vector<BlobData> &blobData = useRD->detect(c0);
-
-    
     std::vector<Rect> resultVec(blobData.size());
     Rect templRect(Point::null,templ.getROISize());
     for(unsigned int i=0;i<blobData.size();i++){
@@ -70,7 +75,7 @@ namespace icl{
     delete c0;
     if(!rdGiven) delete useRD;
     if(!bufferGiven) delete useBuffer;
-       
+    return resultVec;
   }
                                      
   
