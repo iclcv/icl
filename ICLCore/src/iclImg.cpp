@@ -1,5 +1,6 @@
 #include <iclImg.h>
 #include <functional>
+#include <cstring>
 
 namespace icl {
   
