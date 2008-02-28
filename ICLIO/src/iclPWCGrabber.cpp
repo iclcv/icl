@@ -258,8 +258,11 @@ bool usb_grabber_funct(void *data ){
    //blockieren
    pthread_mutex_lock(&usb_frame_mutex[device]);
 
+
    //grab a frame
    PWC_DEBUG_CALL(ioctl(usbvflg_fd[device],VIDIOCMCAPTURE,&(usbvflg_params[device][use_frame])),"error capturing image");
+
+
   
    // Frame wechseln
    use_frame=1-use_frame;
@@ -547,7 +550,6 @@ void save_setparams(int device){
   
   void PWCGrabber::setProperty(const string &property, const string &value){
     // {{{ open
-
     if(property == "size"){
       Size newSize = translateSize(value);
       setGrabbingSize(newSize);
@@ -746,6 +748,11 @@ void save_setparams(int device){
       /* Set CHANNEL and PAL_MODE */
       usbvflg_vchan[m_iDevice].channel=0; /* 0: Tuner, 1: Comp1, 2: S-VHS */
       //    usbvflg_vchan[device].norm=VIDEO_MODE_PAL;
+
+      // restoring the user settings
+      PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCRUSER), "cannot restore user settings");
+      usleep(1500000);
+
       
       PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCSCHAN, &(usbvflg_vchan[m_iDevice])),"error setting video-channel");
       
@@ -795,6 +802,8 @@ void save_setparams(int device){
     //height=vwin.height;
     usbvflg_opencount[m_iDevice]++;
     
+
+
     return true;
   }
   // }}}
