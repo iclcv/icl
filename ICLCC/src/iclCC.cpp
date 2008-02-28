@@ -377,8 +377,8 @@ namespace icl{
         ConstImgIterator<S> itG = src->getROIIterator(1);
         ConstImgIterator<S> itB = src->getROIIterator(2);
         ImgIterator<D> itH = dst->getROIIterator(0);
-        ImgIterator<D> itL = dst->getROIIterator(0);
-        ImgIterator<D> itS = dst->getROIIterator(0);
+        ImgIterator<D> itL = dst->getROIIterator(1);
+        ImgIterator<D> itS = dst->getROIIterator(2);
         for(;itR.inRegion();++itR,++itG,++itB,++itH,++itL,++itS){
           cc_util_rgb_to_hls(Cast<S,icl32f>::cast(*itR),
                              Cast<S,icl32f>::cast(*itG),
