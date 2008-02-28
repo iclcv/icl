@@ -472,6 +472,14 @@ namespace icl{
   **/
   ImgQ operator&&(const ImgQ &a, const ImgQ &b);
 
+  /// pixels-wise binary or (each value is converted to T brefore binary or)
+  template<class T>
+  ImgQ binOR(const ImgQ &a, const ImgQ &b);
+  
+  /// pixels-wise binary or (each value is converted to T brefore binary or)
+  template<class T>
+  ImgQ binAND(const ImgQ &a, const ImgQ &b);
+  
   /** @} **/
   /* }}} */
   

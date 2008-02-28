@@ -797,7 +797,7 @@ namespace icl{
       ImgIterator<ICL_QUICK_TYPE> itB = nb.getROIIterator(c);
       ImgIterator<ICL_QUICK_TYPE> itR = r.getROIIterator(c);
       for(;itA.inRegion();++itA,++itB, ++itR){
-        *itR = *itA || *itB;
+        *itR = 255*( (*itA>0) || (*itB>0) );
       }
     }
     return r;
@@ -816,13 +816,64 @@ namespace icl{
       ImgIterator<ICL_QUICK_TYPE> itB = nb.getROIIterator(c);
       ImgIterator<ICL_QUICK_TYPE> itR = r.getROIIterator(c);
       for(;itA.inRegion();++itA,++itB, ++itR){
-        *itR = *itA && *itB;
+        *itR = 255* ((*itA>0) && (*itB>0) );
       }
     }
     return r;
   }
 
   // }}}
+
+  template<class T>
+  ImgQ binOR(const ImgQ &a, const ImgQ &b){
+    // {{{ open
+    ImgQ na,nb;
+    ImgQ *res = prepare_for_binary_op(a,b,na,nb);
+    ImgQ r = *res;
+    delete res;
+    for(int c=0;c<a.getChannels();c++){
+      ImgIterator<ICL_QUICK_TYPE> itA = na.getROIIterator(c);
+      ImgIterator<ICL_QUICK_TYPE> itB = nb.getROIIterator(c);
+      ImgIterator<ICL_QUICK_TYPE> itR = r.getROIIterator(c);
+      for(;itA.inRegion();++itA,++itB, ++itR){
+        T val = Cast<ICL_QUICK_TYPE,T>::cast(*itA) | Cast<ICL_QUICK_TYPE,T>::cast(*itB);
+        *itR = Cast<T,ICL_QUICK_TYPE>::cast(val);
+      }
+    }
+    return r;
+  }
+
+  // }}}
+  
+  template<class T>
+  ImgQ binAND(const ImgQ &a, const ImgQ &b){
+    // {{{ open
+    ImgQ na,nb;
+    ImgQ *res = prepare_for_binary_op(a,b,na,nb);
+    ImgQ r = *res;
+    delete res;
+    for(int c=0;c<a.getChannels();c++){
+      ImgIterator<ICL_QUICK_TYPE> itA = na.getROIIterator(c);
+      ImgIterator<ICL_QUICK_TYPE> itB = nb.getROIIterator(c);
+      ImgIterator<ICL_QUICK_TYPE> itR = r.getROIIterator(c);
+      for(;itA.inRegion();++itA,++itB, ++itR){
+        T val = Cast<ICL_QUICK_TYPE,T>::cast(*itA) & Cast<ICL_QUICK_TYPE,T>::cast(*itB);
+        *itR = Cast<T,ICL_QUICK_TYPE>::cast(val);
+      }
+    }
+    return r;
+  }
+
+  // }}}
+
+  template ImgQ binOR<icl8u>(const ImgQ&, const ImgQ&);
+  template ImgQ binOR<icl16s>(const ImgQ&, const ImgQ&);
+  template ImgQ binOR<icl32s>(const ImgQ&, const ImgQ&);
+
+  template ImgQ binAND<icl8u>(const ImgQ&, const ImgQ&);
+  template ImgQ binAND<icl16s>(const ImgQ&, const ImgQ&);
+  template ImgQ binAND<icl32s>(const ImgQ&, const ImgQ&);
+
   ImgQ operator,(const ImgQ &a, const ImgQ &b){
     // {{{ open
     if(a.getSize() == Size::null) return copy(b);
