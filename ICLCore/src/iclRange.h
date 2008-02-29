@@ -32,5 +32,10 @@ namespace icl{
     /// tests whether a given value is inside of this range
     virtual bool in(Type value) const { return value >= minVal && value <= maxVal; }
   };
+  
+#define ICL_INSTANTIATE_DEPTH(D) typedef Range<icl##D> Range##D;
+  ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+
 }
 #endif

@@ -124,7 +124,6 @@ namespace icl {
 
   void UnaryCompareOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
      // {{{ open
-
      if (!UnaryOp::prepare (ppoDst, poSrc, depth8u)) return;
      switch (poSrc->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(T) case depth##T:                                              \

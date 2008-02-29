@@ -147,6 +147,55 @@ A special format: formatMatrix may be used for arbitrary purpose.
 
 @see Format
 
+\section CONST_SEC Const-Concept
+ICL Images use the const concept of C++ to ensure pixel data of
+const Images (of type const ImgBase or more precisely const Img<T>)
+is not changed, i.e. it is only accessible for reading. Unfortunately
+this leads to a conflict with the "shallow-copy" concept of ICL images.
+\code
+void func(const Img8u &image){
+    // given image is const -> data must not be changed
+    Img8u x = image;
+    // x is a shallow copy of image (data is shared)
+    x.clear();
+    // this affects also the data of image (which shall not
+    // be permitted
+}
+\endcode
+To avoid this conflict, we tried to forbid creating un-const shallow
+copies of const images by implementing no default copy constructor:
+\code
+Img<T>(const Img<T> &other) {... }
+\endcode
+but an un-const version of this:
+\code
+Img<T>(Img<T> &other) {... }
+\endcode
+Here we face some GCC related problem, because gcc is not able
+for an implicit cast of an Img<T> to an Img<T>& in constructor
+calls:
+\code
+template<class T> class Img<T>{ ... };
+
+Img8u create_image(){ 
+    return Img8u(); 
+}
+
+int main(){
+    Img8u a = create_image();
+    return 0;
+}
+\endcode
+Here, the compiler gives error: "Can't find constructor Img<T>(Img<T>)".
+In fact, this constructor can not exist: it must have the following
+syntax: Img<T>(Img<T>&)
+
+Probably further gcc versions will fix this problem!
+
+<b>Until then, we accept the const leak at constructor and assignment
+operator and reimplemented them as ..(const Img<T> &other) </b>
+
+
 \section IPP-Optimization
 The IPP Intel Performance Primitives is a c-library that contains highly 
 optimized and hardware accelerated functions for image processing, and 

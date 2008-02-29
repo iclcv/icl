@@ -81,13 +81,13 @@ ifeq "${OS_TYPE}" "macosx"
 endif
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CDEFINES:= ${CDEFINES}
+CDEFINES:= ${CDEFINES} -DGCC_VER_423
 
 # Flags for C compiler
 CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CPPDEFINES:= ${CPPDEFINES}
+CPPDEFINES:= ${CPPDEFINES} -DGCC_VER_423
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}

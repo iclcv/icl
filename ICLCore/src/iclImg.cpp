@@ -1517,11 +1517,11 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     // {{{ open
     if(!r){
       ERROR_LOG("Result image is NULL");
-      if(o) delete o;
+      //if(o) delete o; this is not allowed because o could be allocated on the stack
       return;
     }
     if(r && !o){
-      ERROR_LOG("Result image is NULL");
+      ERROR_LOG("bpp() function got a NULL-pointer which is not allowed!");
       delete r;
       return;
     }
@@ -1532,11 +1532,8 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
                 "the given Img<T>. To enshure a maximum compability, the new result images data\n"
                 "will be converted interanlly into the given image. To avoid this warning and to\n"
                 "enhance performance, DO NOT USE THE \"bpp(..)\"-FUNCTION\n");
-      printf("convert: \n");
       r->convert(o);
-      printf("del \n");
       delete r;
-      printf("ret \n");
       return;
     }
     if(o->getParams() != r->getParams()){

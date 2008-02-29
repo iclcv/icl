@@ -112,7 +112,25 @@ namespace icl{
     /** This constructor is necessary for the creation of uninitialized
         dynamic size arrays of ImgChannel objects */
     ImgChannel():m_ptData(0),m_iWidth(0),m_iHeight(0){}
-    
+
+    /// assign operator
+    ImgChannel<T> &operator=(ImgChannel<T> &other){
+      m_ptData = other.m_ptData;
+      m_iWidth = other.m_iWidth;
+      m_iHeight = other.m_iHeight;
+      m_iDim = other.m_iDim;
+      return *this;
+    }
+    /// assign operator
+    const ImgChannel<T> &operator=(const ImgChannel<T> &other) const{
+      m_ptData = other.m_ptData;
+      m_iWidth = other.m_iWidth;
+      m_iHeight = other.m_iHeight;
+      m_iDim = other.m_iDim;
+      return *this;
+    }
+
+
     /// friend function to create ImgChannel objects (not const version)
     /** @see icl::pickChannel<T>(icl::Img<T>*,int) */
     template <class T2>
@@ -122,6 +140,16 @@ namespace icl{
     /** @see icl::pickChannel<T>(const icl::Img<T>*,int) */
     template <class T2>
     friend const ImgChannel<T2> pickChannel(const Img<T2>*,int);
+
+    /// friend function to fill an array with ImgChannel objects (const version)
+    /** @see icl::pickChannel<T>(const icl::Img<T>*,cost ImgChannel<T>*) */
+    template<class T2>
+    friend void pickChannels(const Img<T2>*, const ImgChannel<T2>*);
+
+    /// friend function to fill an array with ImgChannel objects (not const version)
+    /** @see icl::pickChannel<T>(icl::Img<T>*,ImgChannel<T>*) */
+    template<class T2>
+    friend void pickChannels(Img<T2>*,ImgChannel<T2>*);
     
     /// main working function: returns a reference to the pixel at position (x,y)
     /** The data address is calculated by x+ImageWidth*y. <b>Note:</b> no checks
@@ -203,10 +231,10 @@ namespace icl{
       m_iDim = m_iWidth * m_iHeight;
     }
     
-    T *m_ptData;   /**< wrapped image data pointer */
-    int m_iWidth;  /**< wrapped images width */
-    int m_iHeight; /**< wrapped images height */
-    int m_iDim;   /**< wrapped images width*height */
+    mutable T *m_ptData;   /**< wrapped image data pointer */
+    mutable int m_iWidth;  /**< wrapped images width */
+    mutable int m_iHeight; /**< wrapped images height */
+    mutable int m_iDim;   /**< wrapped images width*height */
   };
   
   /// @{ @name ImgChannel<T> creator functions
@@ -231,6 +259,22 @@ namespace icl{
   template<class T>
   inline const ImgChannel<T> pickChannel(const Img<T> *image,int channelIndex){
     return ImgChannel<T>(image,channelIndex);
+  }
+  
+  /// picks all image channels into a given destination vector (const)
+  template<class T>
+  inline void pickChannels(const Img<T> *image, const ImgChannel<T> *dst){
+    for(int i=0;i<image->getChannels();++i){
+      dst[i] = pickChannel<T>(image,i);
+    }
+  }
+
+  /// picks all image channels into a given destination vector
+  template<class T>
+  inline void pickChannels(Img<T> *image, ImgChannel<T> *dst){
+    for(int i=0;i<image->getChannels();++i){
+      dst[i] = pickChannel<T>(image,i);
+    }
   }
   
   /// @} 

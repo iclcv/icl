@@ -246,6 +246,11 @@ namespace icl {
       return Point(x+width,y+height);
     }
 
+    /// returns the center Point of the rect
+    Point center() const {
+      return Point(x+width/2,y+height/2);
+    }
+    
     /// returns the left border position
     int left() const { return x; }
 

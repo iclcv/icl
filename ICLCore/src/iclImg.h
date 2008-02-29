@@ -195,10 +195,20 @@ namespace icl {
         */
     Img(const Size &size, int channels, format fmt, const std::vector<Type*>& vptData);
 
-    /// Copy constructor
+    /// Copy constructor WARNING: Violates const concept
     /** Creates a flat copy of the source image. The new image will contain a
         flat copy of all channels of the source image. This constructor is only
-        applicable to <b>non-const</b> Img<Type> references.  
+        applicable to <b>non-const</b> Img<Type> references.
+        <b>Note:</b> this implicit shallow copy can be exploited to
+        violate ICL's const concept:
+        \code
+        void func(const Img8u &a){
+          Img8u b = a;
+          // b is now unconst and therewith the data of
+          // a can b chaned
+        }
+        \endcode   
+  
         @param tSrc non-const reference of source instance
         **/
     Img(const Img<Type>& tSrc);
@@ -217,23 +227,40 @@ namespace icl {
     operator Img<Type>&(){
       return *this;
     }
-    /// Assign operator (flat copy of channels)
+    /// Assign operator (flat copy of channels) WARNING: Violates const concept
     /** Both images will share their channel data. 
         Use deepCopy() to obtain a copy of an image which is not attached to the 
-        source image.      
+        source image.     
+        <b>Note:</b> this implicit shallow copy can be exploited to
+        violate ICL's const concept:
+        \code
+        void func(const Img8u &a){
+          Img8u b = a;
+          // b is now unconst and therewith the data of
+          // a can b chaned
+        }
+        \endcode        
         @param tSource Reference to source object. 
         **/
-    Img<Type>& operator=(Img<Type>& tSource) {
-      // call private const-version
-      return this->shallowCopy (static_cast<const Img<Type>&>(tSource));
-    }
-
-#ifdef WIN32
     Img<Type>& operator=(const Img<Type>& tSource) {
       // call private const-version
       return this->shallowCopy (static_cast<const Img<Type>&>(tSource));
     }
-#endif
+    /*
+        #ifdef WIN32  
+        Img<Type>& operator=(const Img<Type>& tSource) {
+        // call private const-version
+        return this->shallowCopy (static_cast<const Img<Type>&>(tSource));
+        }
+        #endif
+        
+        #ifdef GCC_VER_423
+        Img<Type>& operator=(const Img<Type>& tSource) {
+        // call private const-version
+        return this->shallowCopy (static_cast<const Img<Type>&>(tSource));
+        }
+        #endif
+    */
 
     /// pixel access operator
     /** This operator may be used, to access the pixel data of the image
