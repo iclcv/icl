@@ -1,5 +1,6 @@
 #include <iclPWCGrabber.h>
 #include <iclImg.h>
+#if !defined(__APPLE__) && !defined(WIN32)
 #include <iclCC.h>
 #include <stdio.h>
 #include <errno.h>
@@ -14,12 +15,93 @@
 #include <semaphore.h>
 #include <sys/time.h>
 #include <string.h>
-
+#endif
 
 using namespace std;
 
 #if defined(__APPLE__) || defined(WIN32)
+namespace icl {
 
+    PWCGrabber::PWCGrabber(void){}
+    PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice){
+      (void) s;
+      (void) fFps;
+      (void) iDevice;
+    }
+    PWCGrabber::~PWCGrabber(void){}
+    std::vector<int> PWCGrabber::getDeviceList(){
+      return std::vector<int>();
+    }
+
+    bool PWCGrabber::init(const Size &s,float fFps, int iDevice, bool echoOff){
+      (void) s;
+      (void) fFps;
+      (void) iDevice;
+      (void) echoOff;
+      return false;
+    }
+    
+    const ImgBase* PWCGrabber::grab(ImgBase **ppoDst){
+      (void) ppoDst;
+      return 0;
+    }
+
+    void PWCGrabber::setProperty(const std::string &property, const std::string &value){
+      (void) property;
+      (void) value;  
+    }
+    
+    std::vector<std::string> PWCGrabber::getPropertyList(){
+      return std::vector<std::string>();
+    }
+    
+    std::string PWCGrabber::getType(const std::string &name){
+      (void) name;
+      return "";
+    }
+
+    std::string PWCGrabber::getInfo(const std::string &name){
+      (void) name;
+      return "";   
+    }
+
+    std::string PWCGrabber::getValue(const std::string &name){
+      (void) name;
+      return "";  
+    }
+    
+    bool PWCGrabber::restoreUserSettings() { return false; }
+    bool PWCGrabber::saveUserSettings()    { return false; }
+    
+    bool PWCGrabber::setGain(signed int iGainValue){
+      (void) iGainValue;
+      return false;  
+    }
+
+    bool PWCGrabber::setGrabbingSize(const Size &size){
+      (void) size;  
+      return false;
+    }
+    bool PWCGrabber::setCompression(int level){
+      (void) level;
+      return false;
+    }
+
+    bool PWCGrabber::setShutterSpeed(int level){
+      (void) level;
+      return false;
+    }
+    bool PWCGrabber::setLED(bool on, int time){
+      return false;
+    }
+    void PWCGrabber::releaseAll(){}
+    bool PWCGrabber::setWhiteBalance(int mode, int manual_red, int manual_blue){
+      (void) mode;
+      (void) manual_red;
+      (void) manual_blue;
+      return false;
+    }
+}
 
 #else
 
