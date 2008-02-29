@@ -1,6 +1,8 @@
 #include "iclUsefulFunctions.h"
 #include <iclProximityOp.h>
+#ifdef WITH_IPP_OPTIMIZATION
 #include <ippi.h>
+#endif 
 
 #include <iclQuick.h>
 namespace icl{
@@ -33,12 +35,17 @@ namespace icl{
     useBuffer->setChannels(src.getChannels());
     useBuffer->setSize(src.getROISize()-templ.getROISize()+Size(1,1));
     for(int i=0;i<src.getChannels();i++){
+#ifdef WITH_IPP_OPTIMIZATION
       ippiCrossCorrValid_Norm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
                                         src.getROISize(), templ.getROIData(i),
                                         templ.getLineStep(),templ.getROISize(),
                                         useBuffer->asImg<icl8u>()->getData(i),
                                         useBuffer->getLineStep(),-8);
+#else
+  ERROR_LOG("not supported without IPP");
+#endif
     }    
+
     Img8u &m = *useBuffer->asImg<icl8u>();
     icl8u t = (icl8u)(float(255)*significance);
     
