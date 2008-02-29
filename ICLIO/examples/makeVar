@@ -69,7 +69,7 @@ DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
 
 ifeq "${OS_TYPE}" "macosx"
-SKIP_OBJECTS:=grabCam.cpp unicap_test.cpp
+SKIP_OBJECTS:= unicap_test.cpp
 endif
 
 ifeq "$(HAVE_LIBDC)" ""
