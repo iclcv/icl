@@ -75,7 +75,11 @@ DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
 SKIP_DIRECTORIES:=
 
+ifeq "$(OS_TYPE)" "macosx"
+SKIP_OBJECTS += wienerop_test.cpp online_gabor_test.cpp
+endif
+
 ifeq "$(HAVE_QT)" ""
-SKIP_OBJECTS += skinControl.cpp
+SKIP_OBJECTS += skinControl.cpp 
 endif
 SKIP_OBJECTS += skin.cpp
