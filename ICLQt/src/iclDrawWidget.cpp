@@ -158,6 +158,32 @@ namespace icl{
 
   // }}}
 
+  class PointsCommand : public IntelligentDrawCommand{
+    // {{{ open
+
+    public:
+    PointsCommand(const std::vector<Point> &pts, int xfac, int yfac):
+      pts(pts),xfac(xfac),yfac(yfac){}
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      if(xfac==1 && yfac==1){
+        for(unsigned int i=0;i<pts.size();i++){
+          e->point(tP(pts[i].x,pts[i].y,s));
+        }
+      }else{
+        for(unsigned int i=0;i<pts.size();i++){
+          e->point(tP(float(pts[i].x)/xfac,float(pts[i].y)/yfac,s));
+        }
+      }
+    }
+    std::vector<Point> pts;
+    int xfac;
+    int yfac;
+  };
+
+  // }}}
+
+
+  
   class LineCommand : public DrawCommand4F{
     // {{{ open
 
@@ -500,6 +526,9 @@ namespace icl{
 
   void ICLDrawWidget::point(float x, float y){
     m_vecCommands.push_back(new PointCommand(x,y));
+  }
+  void ICLDrawWidget::points(const std::vector<Point> &pts, int xfac, int yfac){
+    m_vecCommands.push_back(new PointsCommand(pts,xfac,yfac));
   }
   void ICLDrawWidget::abs(){
     m_vecCommands.push_back(new AbsCommand());

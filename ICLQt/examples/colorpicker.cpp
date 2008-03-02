@@ -2,14 +2,14 @@
 #include <iclQuick.h>
 #include <iclGUI.h>
 #include <iclMouseInteractionReceiver.h>
-#include <iclFileGrabber.h>
+#include <iclGenericGrabber.h>
 #include <iclThread.h>
 #include <iclCC.h>
 #include <iclMutex.h>
 
 GUI *gui;
 ICLDrawWidget *widget;
-FileGrabber *grabber;
+GenericGrabber *grabber;
 bool *running;
 int *sleeptime;
 string *colormode;
@@ -136,11 +136,12 @@ class Runner : public Thread{
 
 
 int main(int n,char **ppc){
-  pa_explain("-input","input-file or filepattern (madatory)");
+  pa_explain("-input","input type pwc, dc, unicap or filepattern (madatory)");
   pa_init(n,ppc,"-input(1)");
-  if(!pa_defined("-input")){ pa_usage("please define input file!"); exit(0); }
+  if(!pa_defined("-input")){ pa_usage("please define input type"); exit(0); }
   
-  grabber = new FileGrabber(pa_subarg("-input",0,string("no input file defined!")));
+  std::string inp = pa_subarg<string>("-input",0,"./*.ppm");
+  grabber = new GenericGrabber(inp=="pwc"||inp == "dc" || inp== "unicap" ? inp : string("file","pwc=0,dc=0,unicap=,file=")+inp);
   
   QApplication app(n,ppc);
   

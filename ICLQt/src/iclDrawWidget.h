@@ -86,6 +86,12 @@ namespace icl{
     /// draws a point at the given location
     void point(float x, float y); 
 
+    /// draws a set of points
+    /** for relative Point coordinates the factors can be set
+        point i is drawn at pts[i].x/xfac and pts[i].y/yfac
+    **/
+    void points(const std::vector<Point> &pts, int xfac=1, int yfac=1);
+    
     /// draws a line from point (x1,y1) to point (x2,y2)
     void line(float x1, float y1, float x2, float y2);
 
