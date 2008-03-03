@@ -1,5 +1,6 @@
 #include <iclUnicapProperty.h>
 #include <math.h>
+#include <cstring>
 using namespace std;
 
 namespace icl{

@@ -2,7 +2,7 @@
 #include <iclImg.h>
 #include <stdio.h>
 #include <map>
-
+#include <cstring>
 
 
 using namespace std;

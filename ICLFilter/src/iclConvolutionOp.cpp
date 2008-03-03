@@ -1,6 +1,6 @@
 #include <iclConvolutionOp.h>
 #include <iclImg.h>
-
+#include <limits>
 
 namespace icl {
   
@@ -287,7 +287,9 @@ namespace icl {
 
   ConvolutionOp::ConvolutionOp () :
      // {{{ open
-     NeighborhoodOp (Size(INT_MAX, INT_MAX)), // huge kernel size -> prepare returns false
+    NeighborhoodOp (Size(std::numeric_limits<int>::max(),
+			 std::numeric_limits<int>::max())
+		    ), // huge kernel size -> prepare returns false
      pfKernel(0), piKernel(0), m_bBuffered(false), 
      m_eKernel(kernelCustom), m_eKernelDepth(depth32s)
   {

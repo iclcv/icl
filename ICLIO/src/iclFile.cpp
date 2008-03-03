@@ -3,7 +3,8 @@
 #include <iclMacros.h>
 #include <iclIOUtils.h>
 #include <sys/stat.h>
-
+#include <cstring>
+using std::memcpy;
 
 #ifdef WITH_ZLIB_SUPPORT
 #include <zlib.h>

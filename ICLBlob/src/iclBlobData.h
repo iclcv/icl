@@ -104,7 +104,7 @@ namespace icl{
       for(icl::regiondetector::ScanLineList::iterator it=sll.begin();it!=sll.end();++it){
         icl::regiondetector::RegionDetectorScanLine *pl = (*it);
         const int iY=pl->y(),iEnd = pl->getEnd();
-        for(int x=pl->getStart();x<=iEnd;pxls.push_back(Point(x++,iY)));
+        for(int x=pl->getStart();x<=iEnd;pxls.push_back(Point(x++,iY))) ;
       }
       return pxls;
     }

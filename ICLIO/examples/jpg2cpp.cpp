@@ -1,7 +1,7 @@
 #include "stdio.h"
 #include <string>
 #include <vector>
-
+#include <cstring>
 
 using namespace std;
 

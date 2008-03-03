@@ -2,6 +2,8 @@
 #include <iclTypes.h>
 #include <iclStringUtils.h>
 #include <iclIOUtils.h>
+#include <cstring>
+using std::strlen;
 
 #ifdef WITH_JPEG_SUPPORT
 #include "iclJPEGHandle.h"

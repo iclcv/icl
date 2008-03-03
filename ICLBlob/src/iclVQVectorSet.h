@@ -2,6 +2,8 @@
 #define VQVECTOR_SET_H
 
 #include <iclMacros.h>
+#include <cstring>
+using std::memcpy;
 
 namespace icl{
   

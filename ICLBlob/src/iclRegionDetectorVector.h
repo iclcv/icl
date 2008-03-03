@@ -1,5 +1,7 @@
 #ifndef REGION_DETECTOR_VECTOR_H
 #define REGION_DETECTOR_VECTOR_H
+#include <cstring>
+using std::memcpy;
 namespace icl{
  namespace regiondetector{
    /// Support class for efficient memory management \ingroup G_RD

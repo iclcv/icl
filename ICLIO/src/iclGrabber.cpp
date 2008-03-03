@@ -1,5 +1,6 @@
 #include "iclGrabber.h"
 #include <algorithm>
+#include <cstring>
 
 using namespace std;
 

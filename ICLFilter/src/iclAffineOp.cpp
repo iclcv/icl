@@ -1,5 +1,7 @@
 #include "iclAffineOp.h"
 #include <iclImg.h>
+#include <cstring>
+using std::memcpy;
 
 namespace icl{
 

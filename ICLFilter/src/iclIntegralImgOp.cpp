@@ -1,4 +1,7 @@
 #include "iclIntegralImgOp.h"
+#include <cstring>
+using std::memset;
+using std::memcpy;
 
 namespace icl{
 

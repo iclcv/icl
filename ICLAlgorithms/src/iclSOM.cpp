@@ -1,6 +1,7 @@
 #include <iclSOM.h>
 #include <iclMacros.h>
 #include <iclException.h>
+#include <cstring>
 
 using namespace std;
 
