@@ -508,7 +508,6 @@ void save_setparams(int device){
           if (usbvflg_buf[m_iDevice]) { // munmap
             munmap(usbvflg_buf[m_iDevice],usbvflg_vmbuf[m_iDevice].size);
             
-	    printf("device %d unmapping %p \n",m_iDevice,usbvflg_buf[m_iDevice]);
             if (usbvflg_verbosity)
               printf("unmapping memory for /dev/video%d\n",m_iDevice);
           }
