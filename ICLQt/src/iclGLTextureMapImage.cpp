@@ -114,20 +114,27 @@ namespace icl{
   }
 
   template<class T>
-  Range<T> GLTextureMapImage<T>::getMinMax(int channel) const{
+  std::vector<Range<T> > GLTextureMapImage<T>::getMinMax() const{
     if(m_bUseSingleBuffer){
       ERROR_LOG("image range cannot be extracted in singleBufferMode");
-      return Range<T>(0,0);
+      return std::vector<Range<T> >();
     }
-    Range<T> mm(std::numeric_limits<T>::max(),std::numeric_limits<T>::min());
+    
+    std::vector<Range<T> > mm(m_iChannels);
+    for(int i=0;i<m_iChannels;i++){
+      mm[i] = Range<T>(std::numeric_limits<T>::max(),std::numeric_limits<T>::min());
+    }
+    
+    Img<T> tmpImage(m_matROISizes[0][0], m_iChannels);
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
-        Img<T> tmpImage(Size(m_iImageW, m_iImageH), m_iChannels);
-        interleavedToPlanar(m_matCellData[x][y],&tmpImage);
-        tmpImage.setROISize(m_matROISizes[x][y]);
-        Range<T> rng = tmpImage.getMinMax(channel);
-        if(mm.minVal > rng.minVal)mm.minVal = rng.minVal;
-        if(mm.maxVal < rng.maxVal)mm.maxVal = rng.maxVal;
+        tmpImage.setROISize(m_matROISizes[x][y]); // bzw [0][0] if all of the buffers have same size
+        interleavedToPlanar(m_matCellData[x][y],&tmpImage); // here pos. give specific line step
+        for(int i=0;i<m_iChannels;i++){
+          Range<T> rng = tmpImage.getMinMax(i);
+          if(mm[i].minVal > rng.minVal)mm[i].minVal = rng.minVal;
+          if(mm[i].maxVal < rng.maxVal)mm[i].maxVal = rng.maxVal;
+        }
       }
     }
     return mm;
@@ -163,7 +170,7 @@ namespace icl{
     ICLASSERT( m_iImageW == image->getWidth());
     ICLASSERT( m_iImageH == image->getHeight());
 
-    if(m_bUseSingleBuffer){
+    if(m_bUseSingleBuffer){ // this is not allowed, because openGL cannot be accessed thread-safe
       setPackAlignment(getDepth<T>(),image->getWidth());
       setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], image);
       
@@ -226,20 +233,37 @@ namespace icl{
     glPixelTransferf(GL_BLUE_BIAS,0);
     
   }
+
   template<class T>
   void GLTextureMapImage<T>::setUpPixelTransfer(depth d, float brightness, float contrast, float intensity, const ImgBase *image){
     // {{{ open
-
+        
     (void)intensity;
     
     icl32f fScaleRGB(0),fBiasRGB(0);
     if( (brightness < 0)  && (contrast < 0) && (intensity < 0)){
+      // image is null, because SingleBufferMode does not work!
+      
+      
       icl64f dScaleRGB,dBiasRGB;
+      
       // auto adaption
-      ICLASSERT(image);
-      Range<icl64f> r = image ? image->getMinMax() : Range<icl64f>(0,255);
-      icl64f l = r.getLength();
-      switch (image->getDepth()){
+      std::vector<Range<T> > channelRanges = getMinMax();
+      
+      Range<icl64f> r;
+      if(channelRanges.size()){
+        r = Range<icl64f>(channelRanges[0].minVal,channelRanges[0].maxVal);
+        for(int i=1;i<m_iChannels;i++){
+          if(channelRanges[i].minVal < r.minVal) r.minVal = channelRanges[i].minVal;
+          if(channelRanges[i].maxVal > r.maxVal) r.maxVal = channelRanges[i].maxVal;
+        }
+      }else{
+        r = Range<icl64f>(0,255);
+      }
+
+      icl64f l = iclMax(double(1),r.getLength());
+
+      switch (getDepth<T>()){
         case depth8u:{
           dScaleRGB  = l ? 255.0/l : 255;
           dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
@@ -295,6 +319,7 @@ namespace icl{
       fBiasRGB-=c/2;
     }
     
+      
     glPixelTransferf(GL_ALPHA_SCALE,fScaleRGB);
     glPixelTransferf(GL_RED_SCALE,fScaleRGB);
     glPixelTransferf(GL_GREEN_SCALE,fScaleRGB);
@@ -344,6 +369,7 @@ namespace icl{
       glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
 
       setPackAlignment(getDepth<T>(),m_iImageW);
+      
       setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], 0);
       
       static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_INT, GL_FLOAT, GL_FLOAT };

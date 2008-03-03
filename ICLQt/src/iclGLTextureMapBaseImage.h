@@ -102,7 +102,7 @@ namespace icl{
     Rect getROI() const;
     
     /// retuns mininum and maximum of the current image
-    Range<icl32f> getMinMax(int iChannel) const;
+    std::vector<Range<icl32f> > getMinMax() const;
     
     /// returns the image color at pixel position (x,y)
     /** if (x,y) is outside the image rect, the returned vector is empty*/

@@ -140,7 +140,7 @@ namespace icl{
     /** This function works very inefficient as it converts the current array of
         cell datas back into an image (using interleavedToPlanar) before it searches for
         the min and max value of the tmp image using its getMinMax(channel) function */
-    Range<T> getMinMax(int channel) const;
+    std::vector<Range<T> > getMinMax() const;
     
     /// retuns the color at a given image location or a zero sized vector, (x,y) is outside the image
     std::vector<icl32f> getColor(int x, int y)const;

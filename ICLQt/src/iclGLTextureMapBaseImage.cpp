@@ -48,7 +48,7 @@ namespace icl{
   }
   
   const ImgBase *GLTextureMapBaseImage::adaptChannels(const ImgBase *image){
-    WARNING_LOG("memory leak here!");
+    WARNING_LOG("memory leak here! at XXX");
     ICLASSERT_RETURN_VAL(image && image->getChannels(), 0);
     switch(image->getChannels()){
       case 1: 
@@ -61,11 +61,19 @@ namespace icl{
         return m_poChannelBuf;
       default: // use first 3 channels
         std::vector<int> idxs; idxs.push_back(0);idxs.push_back(1);idxs.push_back(2);
-        return const_cast<ImgBase*>(image)->selectChannels(idxs,&m_poChannelBuf);
+        return const_cast<ImgBase*>(image)->selectChannels(idxs,&m_poChannelBuf);     // MEMORY LEAK HERE!!! XXX
     }
   }  
 
   void GLTextureMapBaseImage::updateTextures(const ImgBase *imageIn){
+    if(!imageIn || !imageIn->getChannels()){
+      SAVE_DEL(m_po8u);
+      SAVE_DEL(m_po16s);
+      SAVE_DEL(m_po32s);
+      SAVE_DEL(m_po32f);
+      return;
+    }
+
     const ImgBase *image = adaptChannels(imageIn);
     ICLASSERT_RETURN(image);
 
@@ -157,14 +165,25 @@ namespace icl{
     return image;
   }
 
+  namespace{
+    template<class T>
+    std::vector<Range<icl32f> > cast_range_vec(const std::vector<Range<T> > &in){
+      std::vector<Range<icl32f> > out(in.size());
+      for(unsigned int i=0;i<in.size();++i){
+        out[i].minVal = in[i].minVal;
+        out[i].maxVal = in[i].maxVal;
+      }
+      return out;
+    }
+  }
   
-  Range<icl32f> GLTextureMapBaseImage::getMinMax(int channel) const{
-    if(m_po8u)return m_po8u->getMinMax(channel).castTo<icl32f>();
-    if(m_po16s)return m_po16s->getMinMax(channel).castTo<icl32f>();
-    if(m_po32s)return m_po32s->getMinMax(channel).castTo<icl32f>();
-    if(m_po32f)return m_po32f->getMinMax(channel).castTo<icl32f>();
+  std::vector<Range<icl32f> > GLTextureMapBaseImage::getMinMax() const{
+    if(m_po8u)return cast_range_vec(m_po8u->getMinMax());
+    if(m_po16s)return cast_range_vec(m_po16s->getMinMax());
+    if(m_po32s)return cast_range_vec(m_po32s->getMinMax());
+    if(m_po32f)return cast_range_vec(m_po32f->getMinMax());
     ERROR_LOG("getMinMax must not be called before an image was set!");
-    return Range<icl32f>(0,0);
+    return std::vector<Range<icl32f> >();
   }
   
 

@@ -262,9 +262,7 @@ namespace icl{
     // {{{ open
     QFontMetrics m(m_oFont);
     QRect br = m.boundingRect(text.c_str());
-    QImage img;
-    
-    img = QImage(br.width()+2,br.height()+2,QImage::Format_ARGB32);
+    QImage img(br.width()+2,br.height()+2,QImage::Format_ARGB32);
     img.fill(0);
     QPainter painter(&img);
     painter.setFont(m_oFont);

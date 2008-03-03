@@ -141,8 +141,13 @@ namespace icl{
 
   // NO GL case
   void ICLWidget::setImage(const ImgBase *image){ 
-    ICLASSERT_RETURN(image);
-    m_oMutex.lock();
+    Mutex::Locker l(m_oMutex);
+
+    if(!image){
+      m_poQImage = 0;
+      return;
+    }
+
     
     // range mode is not regarded in this fallback impl.
     
@@ -157,8 +162,6 @@ namespace icl{
       m_poQImageConverter->setImage(image);
       m_poQImage = const_cast<QImage*>(m_poQImageConverter->getQImage());
     }
-    m_oMutex.unlock();
-
   }
 #else
 
@@ -206,7 +209,7 @@ namespace icl{
         pe.fill(255,255,255,255);
         
         if(m_bShowNoImageWarning){
-          pe.text(fullRect,"no image");
+          pe.text(fullRect,"[null]");
         }
     }
 
@@ -240,13 +243,19 @@ namespace icl{
   // GL case
   void ICLWidget::setImage(const ImgBase *image){ 
     // {{{ open
-    ICLASSERT_RETURN(image);
-    m_oMutex.lock();
+    QMutexLocker l(&m_oMutex);
 
+    if(!image){
+      m_poImage->updateTextures(0); // in this case [null will be drawn]
+      return;
+    }
+    
     if(m_eRangeMode == rmAuto){
       m_poImage->bci(-1,-1,-1);
     }else if(m_eRangeMode == rmOn){
       m_poImage->bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
+    }else{
+      m_poImage->bci(0,0,0);
     }
     if(m_iCurrSelectedChannel != -1 && m_iCurrSelectedChannel >= 0 && m_iCurrSelectedChannel < image->getChannels()){
       const ImgBase *selectedChannel = image->selectChannel(m_iCurrSelectedChannel);
@@ -262,7 +271,6 @@ namespace icl{
         m_poImageBufferForChannelSelection = 0;
       }
     }
-    m_oMutex.unlock();
   }
 
   // }}}
@@ -516,8 +524,6 @@ namespace icl{
   std::vector<std::string> ICLWidget::getImageInfo(){
     // {{{ open
     std::vector<string> info;
-    info.push_back("not yet implemented!");
-    return info;
 
     GLTextureMapBaseImage* i = m_poImage;
     if(!i || !i->hasImage()){
@@ -538,9 +544,10 @@ namespace icl{
       info.push_back(ac);
     }
     
+    std::vector<Range<icl32f> > ranges = i->getMinMax();
     for(int a=0;a<i->getChannels();a++){
       char ac[200];
-      Range<icl32f> r = i->getMinMax(a);
+      Range<icl32f> r = ranges[a];
       sprintf(ac,"channel %d, min:%f, max:%f",a,r.minVal,r.maxVal);
       info.push_back(ac);
     }
