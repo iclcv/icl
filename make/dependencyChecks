@@ -91,6 +91,7 @@ endif
 LIBDC_ROOT ?= /vol/video
 ifeq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.*2*)" ""
 $(call notify_not_found,libdc1394.so.2x ,${LIBDC_ROOT}/lib);
+HAVE_LIBDC:=
 else
 $(call notify_support,libdc1394.so.2x ,${LIBDC_ROOT}/lib);
 HAVE_LIBDC:=TRUE
@@ -100,15 +101,17 @@ endif
 LIBRAW_ROOT ?= /vol/video
 ifeq "$(wildcard ${LIBRAW_ROOT}/lib/libraw1394.so*)" ""
 $(call notify_not_found,libraw1394.so   ,${LIBRAW_ROOT}/lib);
-HAVE_LIBDC:=
+HAVE_LIBRAW:=
 else
 $(call notify_support,libraw1394.so   ,${LIBRAW_ROOT}/lib);
+HAVE_LIBRAW:=TRUE
 endif
 
 # SVS
 SVS_ROOT ?= /vol/vision/SVS/4.2
 ifeq "$(wildcard ${SVS_ROOT}/bin/libsvs.so)" ""
 $(call notify_not_found,libsvs.so       ,${SVS_ROOT}/bin)
+HAVE_SVS:=
 else
 $(call notify_support,libsvs.so       ,${SVS_ROOT}/bin)
 HAVE_SVS:=TRUE
@@ -118,6 +121,7 @@ endif
 UNICAP_ROOT ?= /vol/video
 ifeq "$(wildcard ${UNICAP_ROOT}/lib/libunicap*.so)" ""
 $(call notify_not_found,libunicap.so    ,${UNICAP_ROOT}/lib)
+HAVE_UNICAP:=
 else
 $(call notify_support,libunicap.so    ,${UNICAP_ROOT}/lib)
 HAVE_UNICAP:=TRUE
@@ -127,6 +131,7 @@ endif
 XCF_ROOT ?= /vol/xcf
 ifeq "$(wildcard ${XCF_ROOT}/lib/libxcf*.so)" ""
 $(call notify_not_found,libxcf.so       ,${XCF_ROOT}/lib)
+HAVE_XCF:=
 else
 $(call notify_support,libxcf.so       ,${XCF_ROOT}/lib)
 HAVE_XCF:=TRUE
