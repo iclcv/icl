@@ -63,7 +63,12 @@ CDEFINES:= ${CDEFINES}
 CFLAGS:= ${CFLAGS} 
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
-CPPDEFINES:= ${CPPDEFINES}
+ifeq "$(HAVE_LIBDC)" "TRUE"
+CPPDEFINES:= ${CPPDEFINES} -DWITH_LIBDC_SUPPORT
+endif
+ifeq "$(HAVE_UNICAP)" "TRUE"
+CPPDEFINES:= ${CPPDEFINES} -DWITH_UNICAP_SUPPORT
+endif
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS} -Wno-long-long
@@ -83,6 +88,7 @@ DIR_LOWPRIORITY:=
 SKIP_DIRECTORIES:=
 
 ifeq "$(HAVE_LIBDC)" ""
+
 SKIP_OBJECTS += iclDCGrabber.cpp iclDCGrabberThread.cpp
 SKIP_OBJECTS += iclDC.cpp iclDCDevice.cpp dcclearisochannels.cpp
 SKIP_OBJECTS += iclDCFrameQueue.cpp iclDC.cpp dctest.cpp dcdeviceinfo.cpp 

@@ -57,6 +57,7 @@ namespace icl{
       if(l[i] == "dc"){
         std::vector<DCDevice> devs = DCGrabber::getDeviceList();
         int idx = to32s(pDC);
+        printf("index is %d devs size is %d \n",idx,devs.size());
         if(idx < 0) idx = 0;
         if(idx >= (int)devs.size()){
           continue;

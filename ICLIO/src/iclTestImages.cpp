@@ -552,7 +552,7 @@ namespace icl{
       if(timeStr[i]==':') timeStr[i]='_';
     }
     
-    string postfix = image->getChannels() == 3 ? ".ppm" : ".pgm";
+    string postfix = ".icl"; // NO-NO-NO! ppm is 8Bit only image->getChannels() == 3 ? ".ppm" : ".pgm";
     string name = string(".tmpImage.")+timeStr+postfix;
     try{
       FileWriter(name).write(image);
