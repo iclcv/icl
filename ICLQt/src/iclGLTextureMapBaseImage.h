@@ -6,6 +6,7 @@
 #include <iclRect.h>
 #include <iclTypes.h>
 #include <iclGLTextureMapImage.h>
+#include <iclMutex.h>
 
 namespace icl{
   
@@ -59,7 +60,6 @@ namespace icl{
     /// Destructor
     ~GLTextureMapBaseImage();
     
-
     /// generalization of the GLTextureImageImages updateTexture(const Img<T> *) function
     void updateTextures(const ImgBase *image);
 
@@ -117,6 +117,10 @@ namespace icl{
     
     /// creates a snapshot of the current buffered image (multi buffer mode only)
     ImgBase *deepCopy() const;
+
+    /// returns the current image statistics (which are automatically updated before)
+    const ImageStatistics &getStatistics();
+
     private:
     /// creates an image with valid channel count 1 or 3
     /** - images with 0 channels are invalid
@@ -150,6 +154,13 @@ namespace icl{
     
     /// stores the current images params
     ImgParams m_oCurrentImageParams;
+    
+    /// Mutex to protect calculation of image statistics from updateTextures calls
+    Mutex m_oImStatMutex;
+    
+    /// current image statistics
+    ImageStatistics m_oImStat;
+
   };  
 }
 

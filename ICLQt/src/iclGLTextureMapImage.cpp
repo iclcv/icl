@@ -594,6 +594,70 @@ namespace icl{
       glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());  
     }
   }
+
+
+  namespace{
+
+    template<class T>
+    inline void histo_entry(T v, double m, vector<int> &h, unsigned int n, double r){
+      // todo check 1000 times +5 times
+      h[ ceil( n*(v-m)/r) ]++;
+    }
+
+    template<class T>
+    void calculate_histo_interleaved(T *data,
+                                     Size dataROISize,
+                                     int dataLineLength,
+                                     int channels, 
+                                     const std::vector<Range64f> ranges,
+                                     std::vector< std::vector<int> >histos){
+      for(int x=0;x<dataROISize.width;++x){
+        for(int y=0;y<dataROISize.height;++y){
+          for(int c=0;c<channels;++c){
+            T &val = data[(x+dataLineLength*y)*channels+c];
+            histo_entry(val,ranges[c].minVal,histos[c],256,ranges[c].getLength());
+          }
+        }
+      }
+    }
+  }
+  
+  template<class T>
+  const ImageStatistics &GLTextureMapImage<T>::updateStatistics(ImageStatistics &s){
+    s.isNull = false;
+    s.d = getDepth<T>();
+    
+    std::vector<Range<T> > rangesT = getMinMax();
+    s.ranges.resize(rangesT.size());
+    for(unsigned int i=0;i<rangesT.size();i++){
+      s.ranges[i].minVal = rangesT[i].minVal;
+      s.ranges[i].maxVal = rangesT[i].maxVal;
+    }
+
+    s.histos.resize(m_iChannels);
+    for(unsigned int i=0;i<s.histos.size();i++){
+      s.histos[i].resize(256);
+      std::fill(s.histos[i].begin(),s.histos[i].end(),0);
+    }
+    
+    std::vector<Range64f> useRanges = s.ranges;
+    if(s.params.getFormat() != formatMatrix){
+      std::fill(useRanges.begin(),useRanges.end(),Range64f(0,255));
+    }
+
+    for(int y=0;y<m_iYCells;++y){
+      for(int x=0;x<m_iXCells;++x){
+        calculate_histo_interleaved(m_matCellData[x][y],
+                                    m_matROISizes[x][y],
+                                    m_iCellSize,
+                                    m_iChannels,
+                                    useRanges,
+                                    s.histos);
+      }
+    }
+    
+    return s;
+  }
   
   template class GLTextureMapImage<icl8u>;
   template class GLTextureMapImage<icl16s>;

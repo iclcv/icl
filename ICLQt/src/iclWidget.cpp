@@ -608,4 +608,14 @@ namespace icl{
 
   // }}}
 
+  const ImageStatistics &ICLWidget::getImageStatistics() {
+    if(m_poImage){
+      return m_poImage->getStatistics();
+    }else{
+      static ImageStatistics xxx;
+      xxx.isNull = true;
+      return xxx;
+    }
+  }
+
 }

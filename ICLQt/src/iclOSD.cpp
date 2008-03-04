@@ -141,7 +141,8 @@ namespace icl{
     m_mapPanels["capture"]=w;
     
     // INFO-Menu
-    m_mapPanels["info"]=new OSDLabel(INFO_ID,getMainRect(),poIW,this,"info");
+    // XXX OLD m_mapPanels["info"]=new OSDLabel(INFO_ID,getMainRect(),poIW,this,"info");
+    m_mapPanels["info"]=new OSDImageStatisticsWidget(INFO_ID,getMainRect(),poIW,this);
 
 
     // MENU-Menu
@@ -202,7 +203,8 @@ namespace icl{
         m_poNavBar->selectIndex(5);
       case NAV_INFO_ID:
         setActive("info");
-        setImageInfo(m_poIW->getImageInfo());
+        // OLD setImageInfo(m_poIW->getImageInfo());
+        // setImageStatistics(m_poIW->getImageStatistics());
         break; 
       case MAIN_MENU_ID:
         m_poNavBar->selectIndex(6);
@@ -303,13 +305,14 @@ namespace icl{
 
   // }}}
 
-  void OSD::setImageInfo(std::vector<string> info){
-    // {{{ open
-    if(m_iCurrID == INFO_ID){
+
+
+  /*
+      void OSD::setImageInfo(std::vector<string> info){
+      if(m_iCurrID == INFO_ID){
       OSDLabel *w = (OSDLabel*)(m_mapPanels["info"]);
       w->setMultiText(info);      
-    }
-  }
-
-  // }}}
+      }
+      }
+  */
 }

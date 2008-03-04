@@ -17,6 +17,7 @@
 #include <iclConverter.h>
 #include <iclPaintEngine.h>
 #include <iclTypes.h>
+#include <iclImageStatistics.h>
 #include <iclMouseInteractionInfo.h>
 #include <iclMouseInteractionReceiver.h>
 
@@ -212,6 +213,8 @@ int main(int nArgs, char **ppcArg){
         return QWidget::event(event);
       }
     } 
+    
+    const ImageStatistics &getImageStatistics();
 
     public slots:
     /// sets up the current image

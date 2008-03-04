@@ -6,6 +6,7 @@
 #include <iclOSDLabel.h>
 #include <iclOSDSlider.h>
 #include <iclOSDNavBar.h>
+#include <iclOSDImageStatisticsWidget.h>
 
 namespace icl{
  
@@ -21,7 +22,7 @@ namespace icl{
     protected:
     virtual void childChanged(int id, void *val);
     void setActive(std::string sName);
-    void setImageInfo(std::vector<std::string> info);
+    // OLD void setImageInfo(std::vector<std::string> info);
 
     /* {{{ help functions */
 

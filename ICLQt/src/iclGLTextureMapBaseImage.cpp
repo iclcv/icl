@@ -66,6 +66,9 @@ namespace icl{
   }  
 
   void GLTextureMapBaseImage::updateTextures(const ImgBase *imageIn){
+
+    Mutex::Locker l(m_oImStatMutex);
+
     if(!imageIn || !imageIn->getChannels()){
       SAVE_DEL(m_po8u);
       SAVE_DEL(m_po16s);
@@ -232,8 +235,28 @@ namespace icl{
       m_po32f->drawTo3D(pCenter,pFirstAxis,pSecondAxis);
       return;
     }
-
   }
+
+  const ImageStatistics &GLTextureMapBaseImage::getStatistics(){
+    Mutex::Locker l(m_oImStatMutex);
+
+    m_oImStat.params = m_oCurrentImageParams;
+
+    if(m_po8u){
+      return m_po8u->updateStatistics(m_oImStat);
+    }
+    if(m_po16s){
+      return m_po16s->updateStatistics(m_oImStat);
+    }
+    if(m_po32s){
+      return m_po32s->updateStatistics(m_oImStat);
+    }
+    if(m_po32f){
+      return m_po32f->updateStatistics(m_oImStat);
+    }
     
+    m_oImStat.isNull = true;
+    return m_oImStat;
+  }
 
 }

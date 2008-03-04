@@ -9,6 +9,7 @@
 
 #include <iclSize.h>
 #include <iclSimpleMatrix.h>
+#include <iclImageStatistics.h>
 #include <iclTypes.h>
 #include <iclImg.h>
 namespace icl{
@@ -147,6 +148,9 @@ namespace icl{
 
     /// creates a deep copy of the current buffered image (only available in multi buffer mode)
     Img<T> *deepCopy() const;
+
+    /// called from the top level GLTextureMapBaseImage
+    const ImageStatistics &updateStatistics(ImageStatistics &s);
     private:
 
     /// internally used for debugging (TODO remove and make glabal function)
