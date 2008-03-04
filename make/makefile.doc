@@ -24,7 +24,10 @@ all: doc
 
 cleanall: cleandoc
 
-clean: cleanall
+# OLD:   clean: cleanall
+# C.E.:  clean should not clean the documentation 
+#      use cleanall or cleandoc instead!
+clean:
 
 printtype:
 	${PRE_CMD}${CMD_ECHO} "Type: MakeDocumentation"
