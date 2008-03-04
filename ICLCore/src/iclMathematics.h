@@ -4,17 +4,11 @@
 #include <iclImg.h>
 #include <iclImgIterator.h>
 #include <vector>
+#include <algorithm>
 #include <cmath>
-/*
-  Math.h
-
-  Written by: Michael Götting (2006)
-              University of Bielefeld
-              AG Neuroinformatik
-              mgoettin@techfak.uni-bielefeld.de
-*/
-
-
+#ifdef WITH_IPP_OPTIMIZATION
+#include <ipps.h>
+#endif
 
 namespace icl {
   
@@ -205,127 +199,153 @@ namespace icl {
 
   /* {{{ mean  */
 
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the mean value from a vector<T>. \ingroup MATH
-    @param iDim an in argument. The dimension of the destination vector
-    @param ptData The data vector
-    @return The mean value form the vector
-  */
-  template <class T>
-  float mean(const T *ptData, int iDim);
+  /// compute mean value of a data range \ingourp MATH
+  /** @param begin start iterator 
+      @param end end iterator*/
+  template <class ForwardIterator>
+  double mean(ForwardIterator begin, ForwardIterator end){
+    if(!(begin-end)) return 0;
+    double sum = 0;
+    while(begin != end) sum += *begin++;
+    return sum / (end-begin);
+  }
+  
+#ifdef WITH_IPP_OPTIMIZATION
+  template<> double mean<const icl32f*>(const icl32f *begin,const icl32f *end){
+    icl32f m = 0;
+    // More fast: ippAlgHintFast
+    ippsMean_32f(begin,end-begin,&m,ippAlgHintAccurate);
+    return m;
+  }
+  template<> double mean<const icl64f*>(const icl64f *begin,const icl64f *end){
+    icl64f m = 0;
+    ippsMean_64f(begin,end-begin,&m);
+    return m;
+  }
+  // Scalfactor version not used ippsMean_16s_Sfs(const Ipp16s* pSrc, int len, Ipp16s* pMean, int scaleFactor)
+  // Scalfactor version not used ippsMean_32s_Sfs(const Ipp32s* pSrc, int len, Ipp32s* pMean, int scaleFactor)
+#endif
+  
+  
 
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the mean value from a vector<T>. \ingroup MATH
-    @param vecData The data vector
-    @return The mean value form the vector
+  /// Computes the mean value of a ImgBase* ingroup MATH
+  /** IPP-Optimized for icl32f and icl64f
+      @param poImg input image
+      @param iChannel channel index (-1 for all channels)
+      @return mean value of image or image channel (optionally: roi)
   */
-  template <class T>
-  float mean(const std::vector<T> &vecData);
-
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the mean value from a vector<T>. \ingroup MATH
-    @param poImg The data Image
-    @param iChannel The number of channels
-    @return The mean value form the vector
-  */
-  template <class T>
-  std::vector<float> mean(const Img<T> *poImg, int iChannel=-1);
-
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the mean value from a vector<T>. \ingroup MATH
-    @param poImg The data Image
-    @param iChannel The number of channels
-    @return The mean value form the vector
-  */
-  std::vector<float> mean(const ImgBase *poImg, int iChannel=-1);
+  std::vector<double> mean(const ImgBase *poImg, int iChannel=-1, bool roiOnly=false);
 
 /* }}} */
   
   /* {{{ variance  */
 
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the variance value from a vector<T>. \ingroup MATH
-    @param ptData The data vector
-    @param iDim an in argument. The dimension of the destination vector
-    @return The variance value form the vector
-  */
-  template <class T>
-  float variance(const T *ptData, int iDim);
 
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the variance value from a vector<T>. \ingroup MATH
-    @param vecData The data vector
-    @return The variance value form the vector
-  */
-  template <class T>
-  float variance(const std::vector<T> &vecData);
 
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the variance value from a vector<T>. \ingroup MATH
-    @param poImg The data vector
-    @param iChannel The number of channels
-    @return The variance value form the vector
+  /// Compute the variance of a given data range with given mean value \ingroup MATH
+  /** @param begin start iterator
+      @param end end iterator
+      @param mean mean value of the range
+      @param empiricMean if true, sum of square distances is devidec by n-1 else by n
   */
-  template <class T>
-  std::vector<float> variance(const Img<T> *poImg, int iChannel=-1);
+  template <class ForwardIterator>
+  double variance(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean=true){
+    if(begin == end) return 0;
+    register double sum = 0;
+    register double d = 0;
+    while(begin != end){
+      d = *begin - mean;
+      sum += d*d;
+      ++begin;
+    }
+    return d/(empiricMean&&end-begin>1 ? end-begin - 1 : end-begin); 
+  }
 
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the variance value from a vector<T>. \ingroup MATH
-    @param poImg The data vector
-    @param iChannel The number of channels
-    @return The variance value form the vector
+  /// Compute the variance of a given data range \ingroup MATH
+  /** @param begin start ForwardIterator
+      @param end end ForwardIterator
   */
-  std::vector<float> variance(const ImgBase *poImg, int iChannel=-1);
+  template <class ForwardIterator>
+  double variance(ForwardIterator begin, ForwardIterator end){
+    return variance(begin,end,mean(begin,end),true);
+  }
+
+
+  /// Compute the variance value of an image a with given mean \ingroup MATH
+  /** @param poImg input imge
+      @param mean vector with channel means
+      @param empiricMean if true, sum of square distances is devidec by n-1 else by n
+      @param iChannel channel index (-1 for all channels)
+      @return The variance value form the vector
+  */
+  std::vector<double> variance(const ImgBase *poImg, const std::vector<double> &mean, bool empiricMean=true,  int iChannel=-1, bool roiOnly=false);
+  
+  /// Compute the variance value of an image a \ingroup MATH
+  /** @param poImg input imge
+      @param iChannel channel index (-1 for all channels)
+      @return The variance value form the vector
+      */
+  std::vector<double> variance(const ImgBase *poImg, int iChannel=-1, bool roiOnly=false); 
+
+
 
 /* }}} */
 
-  /* {{{ deviation  */
+  /* {{{ standard-deviation  */
 
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the deviation value from a vector<T>. \ingroup MATH
-    @param ptData The data vector
-    @param iDim an in argument. The dimension of the destination vector
-    @return The deviation value form the vector
+  /// Compute std-deviation of a data set with given mean (calls sqrt(variance(..))
+  /** @param begin start iterator
+      @param end end iterator
+      @param mean given mean value
+      @param empiricMean if true, sum of square distances is devidec by n-1 else by n
   */
-  template <class T>
-  float deviation(const T *ptData, int iDim);
+  template <class ForwardIterator>
+  double stdDeviation(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean=true){
+    return ::sqrt(variance(begin,end,mean,empiricMean));
+  }
 
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the deviation value from a vector<T>. \ingroup MATH
-    @param vecData The data vector
-    @return The deviation value form the vector
-  */
-  template <class T>
-  float deviation(const std::vector<T> &vecData);
+  /// Compute std-deviation of a data set
+  /** @param begin start iterator
+      @param end end iterator
+      */
+  template <class ForwardIterator>
+  double stdDeviation(ForwardIterator begin, ForwardIterator end){
+    return ::sqrt(variance(begin,end));
+  }
 
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the deviation value from a vector<T>. \ingroup MATH
-    @param poImg The data vector
-    @param iChannel The number of channels
-    @return The deviation value form the vector
+  /// Compute the std::deviation of an image
+  /** @param poImage input image
+      @param iChannel channel index (all channels if -1)
   */
-  template <class T>
-  std::vector<float> deviation(const Img<T> *poImg, int iChannel=-1);
+  std::vector<double> stdDeviation(const ImgBase *poImage, int iChannel=-1, bool roiOnly = false);
 
-  //--------------------------------------------------------------------------
-  /*!
-    @brief Compute the deviation value from a vector<T>. \ingroup MATH
-    @param poImg The data vector
-    @param iChannel The number of channels
-    @return The deviation value form the vector
+  /// Compute the std::deviation of an image with given channel means
+  /** @param poImage input image
+      @param iChannel channel index (all channels if -1)
   */
-  std::vector<float> deviation(const ImgBase *poImg, int iChannel=-1);
+  std::vector<double> stdDeviation(const ImgBase *poImage, const std::vector<double> mean, bool empiricMean=true, int iChannel=-1, bool roiOnly = false);
+
+
+  /// Calculates mean and standard deviation of given data range simultanously
+  /** @param begin start iterator
+      @param end end iterator
+      @return pair p with p.first = mean and p.second = stdDev
+  */
+  template<class ForwardIterator>
+  std::pair<double,double> meanAndStdDev(ForwardIterator begin,ForwardIterator end){
+    std::pair<double,double> md;
+    md.first = mean(begin,end);
+    md.second = stdDeviation(begin,end,md.first,true);
+    return md;
+  }
+
+  /// Calculates mean and standard deviation of given image simultanously
+  /** @param image input image
+      @param iChannel image channel if < 0 all channels are used
+      @return vector v of pairs p with p.first = mean and p.second = stdDev v[i] containing i-th channel's results
+  */
+  std::vector< std::pair<double,double> > meanAndStdDev(const ImgBase *image, int iChannel=-1, bool roiOnly = false);
+  
 
 /* }}} */
 

@@ -17,7 +17,7 @@ using namespace std;
 
 namespace icl{
 
-  // {{{ Random functions: 
+  // {{{ uniform Random 
 
   // this anonymous namespace holds utiliy functions, that are used only here
   namespace { 
@@ -48,8 +48,11 @@ namespace icl{
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
     }
-    
   }
+  
+  // }}}
+
+  // {{{ gaussian random
 
   void gaussRandom(ImgBase *poImage, double mean, double var, const Range<double> &minAndMax, bool roiOnly){
     ICLASSERT_RETURN( poImage );
@@ -81,350 +84,164 @@ namespace icl{
     }
   }   
 
-  /********************************************************
-      ** former implementation taken from the BCL **
-      
-  float gaussRandom(float limit){
-      static int iset=0;
-      static float gset;
-      float fac,r,v1,v2;
-      
-      if  (iset == 0) 
-      {
-      do 
-      {
-      v1=2*random(limit)-1;
-      v2=2*random(limit)-1;
-      r=v1*v1+v2*v2;      
-      } while (r >= 1);
-      
-      fac=sqrt(-2*log(r)/r);
-      gset=v1*fac;
-      iset=1;
-      
-      return (v2*fac);
-      } 
-      else 
-      {
-      iset=0;
-      return (gset);
-      }
-      } 
-   ******************************************************/
-
   // }}}
-
-  // {{{ statistic functions
 
   // {{{ mean
 
-  //--------------------------------------------------------------------------
-  template <class T> 
-  float mean(const T *pfData, int iDim)
-  {
-    FUNCTION_LOG("");
-    if (iDim < 1) {return -1;}
-    
-    //---- Variable initialisation ----
-    float fSum = 0;
-    
-    //---- Compute mean value ----
-    for(int i=0; i<iDim;i++) {
-      fSum += *(pfData+i);   
-    }
-    
-    //---- Return value ----
-    return (fSum / iDim);
-  }
-  
-  template float mean<unsigned char> (const unsigned char*, int);
-  template float mean<int> (const int*, int);
-  template float mean<float> (const float*, int);
-
-  //--------------------------------------------------------------------------
-  template <class T> 
-  float mean(const vector<T> &vecData)
-  {
-    FUNCTION_LOG("");
-    
-    //---- Compute mean value ----
-    return mean(&(vecData[0]), vecData.size());
-  }
-  
-  template float mean<unsigned char> (const vector<unsigned char> &);
-  template float mean<int> (const vector<int> &);
-  template float mean<float> (const vector<float> &);
-
-  //--------------------------------------------------------------------------
-  template <class T> 
-  vector<float> mean(const Img<T> *poImg, int iChannel)
-  {
-    FUNCTION_LOG("");
-    
-    //---- iVariable initialisation ----
-    vector<float> vecMean;
-    
-    //---- Compute mean value ----
-    if (iChannel < 0) {
-      for(int i=0;i<poImg->getChannels();i++) {
-        vecMean.push_back(mean((const T*) poImg->getDataPtr(i),
-                               poImg->getDim()));
-        SUBSECTION_LOG("Mean for channel " << i << " = " << vecMean[i]);
+  namespace{
+    template<class T>
+    double channel_mean(const Img<T> &image, int channel, bool roiOnly){
+      double sum = 0;
+      if(roiOnly && !image.hasFullROI()){
+        ConstImgIterator<T> it = image.getROIIterator(channel);
+        while(it.inRegion()){
+          sum += *it;
+        }
+        return sum/image.getROISize().getDim();
+      }else{
+        return mean(image.getData(channel),image.getData(channel)+image.getDim());
       }
     }
-    else {
-      vecMean.push_back(mean((const T*) poImg->getDataPtr(iChannel),
-                             poImg->getDim()));
-      SUBSECTION_LOG("Mean for channel " << iChannel << " = " << vecMean[0]);
+#ifdef WITH_IPP_OPTIMIZATION
+    template<> double channel_mean<icl8u>(const Img8u &image, int channel, bool roiOnly){
+      icl64f m=0;
+      ippiMean_8u_C1R(roiOnly ? image.getROIData(channel) : image.getData(channel),image.getLineStep(),
+                      roiOnly ? image.getROISize() : image.getROISize(),&m);
+    return m;
     }
+    template<> double channel_mean<icl16s>(const Img16s &image, int channel, bool roiOnly){
+      icl64f m=0;
+      ippiMean_16s_C1R(roiOnly ? image.getROIData(channel) : image.getData(channel),image.getLineStep(),
+                       roiOnly ? image.getROISize() : image.getROISize(),&m);
+      return m;
+    }
+    template<> double channel_mean<icl32f>(const Img32f &image, int channel, bool roiOnly){
+      icl64f m=0;
+    ippiMean_32f_C1R(roiOnly ? image.getROIData(channel) : image.getData(channel),image.getLineStep(),
+                     roiOnly ? image.getROISize() : image.getROISize(),&m, ippAlgHintAccurate);
+    return m;
+    }
+#endif
+  }
+
+  vector<double> mean(const ImgBase *poImg, int iChannel, bool roiOnly){
+    FUNCTION_LOG("");
+    vector<double> vecMean;
+    ICLASSERT_RETURN_VAL(poImg,vecMean);
+
+    int firstChannel = iChannel<0 ? 0 : iChannel;
+    int lastChannel = iChannel<0 ? poImg->getChannels()-1 : firstChannel;
     
-    //---- Return value ----
+    switch(poImg->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                                               \
+      case depth##D:                                                           \
+        for(int i=firstChannel;i<=lastChannel;++i){                            \
+          vecMean.push_back(channel_mean(*poImg->asImg<icl##D>(),i,roiOnly));  \
+        }                                                                      \
+        break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+    }
     return vecMean;
   }
   
-  template vector<float> mean<icl8u>(const Img<icl8u>*, int);
-  template vector<float> mean<icl32f>(const Img<icl32f>*, int);
-
-  //--------------------------------------------------------------------------
-  vector<float> mean(const ImgBase *poImg, int iChannel)
-  {
-    FUNCTION_LOG("");
-    
-    vector<float> tmpVec;
-    
-    switch(poImg->getDepth())
-    {
-      case depth8u:
-        tmpVec = mean(poImg->asImg<icl8u>(), iChannel);
-        break;
-      case depth16s:
-        tmpVec = mean(poImg->asImg<icl16s>(), iChannel);
-        break;
-      case depth32s:
-        tmpVec = mean(poImg->asImg<icl32s>(), iChannel);
-        break;
-      case depth32f:
-        tmpVec = mean(poImg->asImg<icl32f>(), iChannel);
-        break;
-      case depth64f:
-        tmpVec = mean(poImg->asImg<icl64f>(), iChannel);
-        break;
-
-    }
-    
-    // Return
-    return tmpVec;
-  }
-
-// }}}
+  
+  
+  // }}}
 
   // {{{ variance
 
-  //--------------------------------------------------------------------------
-  template <class T> 
-  float variance(const T *pfData, int iDim)
-  {
-    FUNCTION_LOG("");
-    if (iDim < 1) { return -1;}
-
-    //---- Variable initialisation ----
-    float fSum = 0, fMean;
-    
-    //---- Compute variance ----
-    fMean = mean(pfData, iDim);
-    for(int i=0; i<iDim;i++) {
-      fSum += (fMean - *(pfData+i)) * (fMean - *(pfData+i));  
-    }
-    
-    //---- Return value ----
-    return ( fSum / (iDim-1) );
-  }
-  
-  template float variance<unsigned char> (const unsigned char*, int);
-  template float variance<int> (const int*, int);
-  template float variance<float> (const float*, int);
-  
-  //--------------------------------------------------------------------------
-  template <class T> 
-  float variance(const vector<T> &vecData)
-  {
-    FUNCTION_LOG("");
-    
-    // Compute variance
-    return mean(&(vecData[0]), vecData.size());
-  }
-
-  template float variance<unsigned char> (const vector<unsigned char> &);
-  template float variance<int> (const vector<int> &);
-  template float variance<float> (const vector<float> &);
-
-  //--------------------------------------------------------------------------
-  template <class T> 
-  vector<float> variance(const Img<T> *poImg, int iChannel)
-  {
-    FUNCTION_LOG("");
-    
-    //---- iVariable initialisation ----
-    vector<float> vecVariance;
-    
-    //---- Compute variance value ----
-    if (iChannel < 0) {
-      for(int i=0;i<poImg->getChannels();i++) {
-        vecVariance.push_back(variance((const T*) poImg->getDataPtr(i),
-                                       poImg->getDim()));
-        SUBSECTION_LOG("Variance for channel " << i << " = " << 
-                       vecVariance[i]);
+ namespace{
+    template<class T>
+    double channel_var_with_mean(const Img<T> &image, int channel,double mean,bool empiricMean, bool roiOnly){
+      register double sum = 0;
+      register double d = 0;
+      if(roiOnly && !image.hasFullROI()){
+        ConstImgIterator<T> it = image.getROIIterator(channel);
+        while(it.inRegion()){
+          d = *it - mean;
+          sum += d*d;
+          ++it;
+        }
+        return sum/(empiricMean ? iclMax(double(image.getROISize().getDim()-1),double(1)) : image.getROISize().getDim());
+      }else{
+        return variance(image.getData(channel),image.getData(channel)+image.getDim(),mean,empiricMean);
       }
     }
-    else {
-      vecVariance.push_back(variance((const T*) poImg->getDataPtr(iChannel),
-                                     poImg->getDim()));
-      SUBSECTION_LOG("Variance for channel " << iChannel << " = " << 
-                     vecVariance[0]);
-    }
-    
-    //---- Return value ----
-    return vecVariance;
+    // no IPP function available with given mean
   }
-  
-  template vector<float> variance<icl8u>(const Img<icl8u>*, int);
-  template vector<float> variance<icl32f>(const Img<icl32f>*, int);
 
-  //--------------------------------------------------------------------------
-  vector<float> variance(const ImgBase *poImg, int iChannel)
-  {
+  std::vector<double> variance(const ImgBase *poImg, const std::vector<double> &mean, bool empiricMean,  int iChannel, bool roiOnly){
     FUNCTION_LOG("");
-    
-    vector<float> vecVar;
-    
-    switch(poImg->getDepth())
-    {
-      case depth8u:
-        vecVar = variance(poImg->asImg<icl8u>(), iChannel);
-        break;
-      case depth16s:
-        vecVar = variance(poImg->asImg<icl16s>(), iChannel);
-        break; 
-      case depth32s:
-        vecVar = variance(poImg->asImg<icl32s>(), iChannel);
-        break; 
-      case depth32f:
-        vecVar = variance(poImg->asImg<icl32f>(), iChannel);
-        break;
-      case depth64f:
-        vecVar = variance(poImg->asImg<icl64f>(), iChannel);
-        break;
+    vector<double> vecVar;
+    ICLASSERT_RETURN_VAL(poImg,vecVar);
 
-    }
+    int firstChannel = iChannel<0 ? 0 : iChannel;
+    int lastChannel = iChannel<0 ? poImg->getChannels()-1 : firstChannel;
     
-    // Return
+    switch(poImg->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                                                                           \
+      case depth##D:                                                                                       \
+        for(int i=firstChannel,j=0;i<=lastChannel;++i,++j){                                                \
+          ICLASSERT_RETURN_VAL(j<(int)mean.size(),vecVar);                                                 \
+          vecVar.push_back(channel_var_with_mean(*poImg->asImg<icl##D>(),i,mean[j],empiricMean,roiOnly));  \
+        }                                                                                                  \
+      break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+    }
     return vecVar;
-  }
-
-// }}}
- 
-  // {{{ deviation
-
-  //--------------------------------------------------------------------------
-  template <class T> 
-  float deviation(const T *pfData, int iDim)
-  {
-    FUNCTION_LOG("");
-    if (iDim < 1) { return -1;}
-    
-    // Variable initialisation
-    float fVariance = 0;
-    
-    // Compute variance
-    fVariance = variance(pfData, iDim);
-
-    // Return
-    if (fVariance < 0) {return 0;}
-    return sqrt(variance(pfData, iDim));
+  
+  
   }
   
-  template float deviation<unsigned char> (const unsigned char*, int);
-  template float deviation<int> (const int*, int);
-  template float deviation<float> (const float*, int);
-
-  //--------------------------------------------------------------------------
-  template <class T> 
-  float deviation(const vector<T> &vecData)
-  {
-    FUNCTION_LOG("");
-    
-    // Compute deviation
-    return mean(&(vecData[0]), vecData.size());
+  /// Compute the variance value of an image a \ingroup MATH
+  /** @param poImg input imge
+      @param iChannel channel index (-1 for all channels)
+      @return The variance value form the vector
+      */
+  std::vector<double> variance(const ImgBase *poImg, int iChannel, bool roiOnly){
+    return variance(poImg,mean(poImg,iChannel,roiOnly),true,iChannel,roiOnly);
   }
-
-  template float deviation<unsigned char> (const vector<unsigned char> &);
-  template float deviation<int> (const vector<int> &);
-  template float deviation<float> (const vector<float> &);
-
-  //--------------------------------------------------------------------------
-  template <class T> 
-  vector<float> deviation(const Img<T> *poImg, int iChannel)
-  {
-    FUNCTION_LOG("");
-    
-    //---- iVariable initialisation ----
-    vector<float> vecDeviation;
-    
-    //---- Compute deviation value ----
-    if (iChannel < 0) {
-      for(int i=0;i<poImg->getChannels();i++) {
-        vecDeviation.push_back(deviation((const T*) poImg->getDataPtr(i),
-                                       poImg->getDim()));
-        SUBSECTION_LOG("Deviation for channel " << i << " = " << 
-                       vecDeviation[i]);
-      }
-    }
-    else {
-      vecDeviation.push_back(deviation((const T*) poImg->getDataPtr(iChannel),
-                                     poImg->getDim()));
-      SUBSECTION_LOG("Deviation for channel " << iChannel << " = " << 
-                     vecDeviation[0]);
-    }
-    
-    //---- Return value ----
-    return vecDeviation;
-  }
+  // }}}
   
-  template vector<float> deviation<icl8u>(const Img<icl8u>*, int);
-  template vector<float> deviation<icl32f>(const Img<icl32f>*, int);
+  // {{{ std-deviation
 
-  //--------------------------------------------------------------------------
-  vector<float> deviation(const ImgBase *poImg, int iChannel)
-  {
-    FUNCTION_LOG("");
-    
-    vector<float> vecVar;
-    
-    switch(poImg->getDepth())
-    {
-      case depth8u:
-        vecVar = deviation(poImg->asImg<icl8u>(), iChannel);
-        break;
-      case depth16s:
-        vecVar = deviation(poImg->asImg<icl16s>(), iChannel);
-        break; 
-      case depth32s:
-        vecVar = deviation(poImg->asImg<icl32s>(), iChannel);
-        break; 
-      case depth32f:
-        vecVar = deviation(poImg->asImg<icl32f>(), iChannel);
-        break;
-      case depth64f:
-        vecVar = deviation(poImg->asImg<icl64f>(), iChannel);
-        break;
+  std::vector<double> stdDeviation(const ImgBase *poImage, int iChannel, bool roiOnly){
+    std::vector<double> v = variance(poImage,iChannel,roiOnly);
+    for(unsigned int i=0;i<v.size();++i){
+      v[i] = ::sqrt(v[i]);
     }
-    
-    // Return
-    return vecVar;
+    return v;
   }
 
-// }}}
+  /// Compute the std::deviation of an image with given channel means
+  /** @param poImage input image
+      @param iChannel channel index (all channels if -1)
+  */
+  std::vector<double> stdDeviation(const ImgBase *poImage, const std::vector<double> mean, bool empiricMean, int iChannel, bool roiOnly){
+    std::vector<double> v = variance(poImage,mean,empiricMean, iChannel,roiOnly);
 
-// }}}
-  
+    for(unsigned int i=0;i<v.size();++i){
+      v[i] = ::sqrt(v[i]);
+    }
+    return v;
+  }
+  // }}}
+
+  // {{{ mean-and-std-deviation
+  std::vector< std::pair<double,double> > meanAndStdDev(const ImgBase *image, int iChannel, bool roiOnly){
+    std::vector<double> channelMeans = mean(image,iChannel,roiOnly);
+    std::vector<double> channelStdDevs = stdDeviation(image,channelMeans,true,iChannel,roiOnly);
+
+    std::vector< std::pair<double,double> > md(channelMeans.size());
+    for(unsigned int i=0;i<channelMeans.size();++i){
+      md[i].first = channelMeans[i];
+      md[i].second = channelStdDevs[i];
+    }
+    return md;
+  }
+  // }}}
+
 } //namespace icl
+  
