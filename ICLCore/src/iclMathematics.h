@@ -350,7 +350,17 @@ namespace icl {
 /* }}} */
 
 /* }}} */
+                               
+  /* {{{ histogramm functions */
 
+  /// computes the color histogramm of given image channel                               
+  std::vector<int> channelHisto(const ImgBase *image,int channel, int levels=256, bool roiOnly=false);
+  
+  /// computes the color histogramm of given image
+  std::vector<std::vector<int> > hist(const ImgBase *image, int levels=256, bool roiOnly=false);
+
+  /* }}} */                             
+                               
 } //namespace icl
 
 #endif
