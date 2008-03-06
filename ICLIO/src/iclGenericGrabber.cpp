@@ -34,6 +34,8 @@ namespace icl{
       }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "file"){
         pFile = lP[i].substr(5);
       }
+
+      
     }
 
     std::vector<std::string> l = tok(desiredAPIOrder,",");

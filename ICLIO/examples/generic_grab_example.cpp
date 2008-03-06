@@ -17,10 +17,10 @@ void loop(){
   static ImageHandle &image = gui.getValue<ImageHandle>("image");
   static GenericGrabber *grabber = 0;
   static std::map<string,string> params;
-  params["pwc"] = "0";
-  params["dc"] = "0";
-  params["unicap"] = "";
-  params["file"] = "images/*.ppm";
+  params["pwc"] = "pwc=0";
+  params["dc"] = "dc=0";
+  params["unicap"] = "unicap=";
+  params["file"] = "file=images/*.ppm";
   
   while(1){
     static std::string lastComboItem = "";
