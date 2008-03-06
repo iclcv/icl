@@ -1,9 +1,14 @@
 #ifndef OSDIMAGE_STATISTICS_WIDGET_H
 #define OSDIMAGE_STATISTICS_WIDGET_H
 
-#include <iclOSDWidget.h>
+#include "iclOSDWidget.h"
+#include "iclOSDNavBar.h"
+#include "iclOSDButton.h"
+#include "iclOSDHistoWidget.h"
 #include <vector>
 #include <QString>
+#include <iclMutex.h>
+
 
 namespace icl{
   
@@ -12,6 +17,14 @@ namespace icl{
     public:
     OSDImageStatisticsWidget(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent);
     virtual void drawSelf(PaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
+    
+    private:
+    OSDNavBar *m_poChannelNavBar;
+    Mutex m_oMutex;
+    std::vector<OSDHistoWidget *> m_vecHistoWidgets;
+    OSDButton *m_poLogButton;
+    OSDButton *m_poMeanButton;    
+    OSDButton *m_poMedianButton;
   };
 } // namespace
 

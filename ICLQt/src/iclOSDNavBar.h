@@ -9,7 +9,7 @@ namespace icl{
   /** The nav-bar widget contains a count of buttons alligned on a
       horizontal line. One of these buttons is selected (like a
       group of radio buttons), all others are deselected. The selected
-      Button is expaned, and its text is replace by a "full-text" and
+      Button is expanded, and its text is replace by a "full-text" and
       visualized <em>glowing</em>. Each contained button has
       an own ID, short-text and expaned-text.
   */
@@ -20,8 +20,13 @@ namespace icl{
     public:
     OSDNavBar(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent,svec vecNames, svec vecShortNames, ivec vecIDs, int selectedIndex=0);
     void selectIndex(int index);
+    int getSelectedIndex() const { return m_iCurrIndex; }
     virtual void mousePressed(int _x, int _y, int button);
-      
+
+    int getItemCount() const { return (int)m_vecNames.size(); }
+    
+    void updateName(int idx, const std::string &shortName, const std::string &longName);
+
     protected:
 
     static const int s_iGap = 2;

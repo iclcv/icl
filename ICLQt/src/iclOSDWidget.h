@@ -166,7 +166,7 @@ namespace icl{
     static void drawCircle(PaintEngine *e, Rect r,int drawFill, int drawBorder, int over, int pressed);
 
     /// draws a string with given parameters
-    static void drawText(PaintEngine *e, Rect r,std::string sText, int over, int pressed, int highlighted=0);
+    static void drawText(PaintEngine *e, Rect r,std::string sText, int over, int pressed, int highlighted=0, bool centered=true);
 
     /// sets up the currently used color ot the widget 
     static void setCol(PaintEngine *e, int fill, int border, int over, int pressed);

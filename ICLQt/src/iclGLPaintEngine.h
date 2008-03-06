@@ -56,7 +56,7 @@ namespace icl{
     virtual void getFill(int *piColor);
 
     virtual int getFontSize() const{
-      return m_oFont.pixelSize();
+      return m_oFont.pointSize();
     }
 
     protected:

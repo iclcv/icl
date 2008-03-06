@@ -158,9 +158,13 @@ namespace icl{
   }
 
   // }}}
- void OSDWidget::drawText(PaintEngine *e, Rect r,string sText, int hovered, int pressed,int highlighted){
+  void OSDWidget::drawText(PaintEngine *e, Rect r,string sText, int hovered, int pressed,int highlighted, bool centered){
    // {{{ open
     (void)hovered; (void)pressed;
+    
+    PaintEngine::AlignMode m = centered ? PaintEngine::Centered :  PaintEngine::NoAlign;
+
+    r.x--;
     if(highlighted){
       e->color(255,255,255,100);
       
@@ -170,18 +174,17 @@ namespace icl{
       int h=r.height;
 
       
-
-      e->text(Rect(x-1,y-1,w,h),sText,PaintEngine::Centered);
-      e->text(Rect(x,y-1,w,h),sText,PaintEngine::Centered);
-      e->text(Rect(x+1,y-1,w,h),sText,PaintEngine::Centered);
-      e->text(Rect(x-1,y,w,h),sText,PaintEngine::Centered);
-      e->text(Rect(x+1,y,w,h),sText,PaintEngine::Centered);
-      e->text(Rect(x-1,y+1,w,h),sText,PaintEngine::Centered);
-      e->text(Rect(x,y+1,w,h),sText,PaintEngine::Centered);
-      e->text(Rect(x+1,y+1,w,h),sText,PaintEngine::Centered);
+      e->text(Rect(x-1,y-1,w,h),sText,m);
+      e->text(Rect(x,y-1,w,h),sText,m);
+      e->text(Rect(x+1,y-1,w,h),sText,m);
+      e->text(Rect(x-1,y,w,h),sText,m);
+      e->text(Rect(x+1,y,w,h),sText,m);
+      e->text(Rect(x-1,y+1,w,h),sText,m);
+      e->text(Rect(x,y+1,w,h),sText,m);
+      e->text(Rect(x+1,y+1,w,h),sText,m);
     }
     e->color(255,255,255);
-    e->text(r,sText,PaintEngine::Centered);
+    e->text(r,sText,m);
   }
 
   // }}}

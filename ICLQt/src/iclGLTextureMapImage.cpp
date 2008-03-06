@@ -600,8 +600,8 @@ namespace icl{
 
     template<class T>
     inline void histo_entry(T v, double m, vector<int> &h, unsigned int n, double r){
-      // todo check 1000 times +5 times
-      h[ ceil( n*(v-m)/r) ]++;
+      // todo check 1000 times +5 times (3Times done!)
+        h[ ceil( n*(v-m)/(r+1)) ]++;
     }
 
     template<class T>
@@ -609,8 +609,8 @@ namespace icl{
                                      Size dataROISize,
                                      int dataLineLength,
                                      int channels, 
-                                     const std::vector<Range64f> ranges,
-                                     std::vector< std::vector<int> >histos){
+                                     const std::vector<Range64f> &ranges,
+                                     std::vector< std::vector<int> > &histos){
       for(int x=0;x<dataROISize.width;++x){
         for(int y=0;y<dataROISize.height;++y){
           for(int c=0;c<channels;++c){

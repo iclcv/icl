@@ -19,6 +19,15 @@ namespace icl{
     
     selectIndex(selectedIndex);
   }
+  
+  void OSDNavBar::updateName(int idx, const std::string &shortName, const std::string &longName){
+    if(idx >= 0 && idx < (int)m_vecNames.size()){
+      m_vecNames[idx]= longName;
+      m_vecShortNames[idx]= shortName;
+      OSDButton *p = reinterpret_cast<OSDButton*>(m_vecChilds[idx]);
+      p->setText(p->isToggled() ? longName : shortName);
+    }
+  }
 
   void OSDNavBar::selectIndex(int index){
     if(index == m_iCurrIndex) return;

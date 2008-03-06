@@ -12,7 +12,8 @@ namespace icl{
     virtual void mousePressed(int _x, int _y, int button);
     void setText(std::string sText);
     void setToggled(int iToggled);
-    
+
+    bool isToggled() const { return m_iIsToggled; }
     protected:
     std::string m_sText;
     int m_iToggable;

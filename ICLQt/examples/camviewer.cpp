@@ -17,9 +17,7 @@ class MyThread : public QThread{
 public:
   MyThread():
     widget(new ICLWidget(0)),
-    grabber(0),
-    image(imgNew(translateDepth(pa_subarg("-depth",0,std::string("depth8u"))),
-                 Size(640,480),translateFormat(pa_subarg("-format",0,std::string("rgb")))  ))
+    grabber(0)
   {
     if(pa_defined("-input")){
       grabber = new FileGrabber(pa_subarg("-input",0,std::string("nofile.ppm")));
@@ -58,6 +56,14 @@ public:
         grabber = new PWCGrabber(Size(640,480));
       }
     }
+    if(!grabber){
+      ERROR_LOG("Error no grabber found!");
+      exit(-1);
+    }
+
+    grabber->setDesiredSize(translateSize(pa_subarg<string>("-size",0,"320x240")));
+    grabber->setDesiredDepth(translateDepth(pa_subarg<string>("-depth",0,"depth8u")));
+    grabber->setDesiredFormat(translateFormat(pa_subarg<string>("-format",0,"rgb")));
     widget->setGeometry(200,200,640,480);
     widget->show();
   }
@@ -68,14 +74,12 @@ public:
   }
   virtual void run(){
     FileWriter *w=0;
-    if(pa_defined("-file")){
-      w = new FileWriter(pa_subarg("-file",0,std::string("./image_##.ppm")));
+    if(pa_defined("-output-file")){
+      w = new FileWriter(pa_subarg("-output-file",0,std::string("./image_##.ppm")));
     }
-    delete image;
-    image = 0;
-    ImgBase *img2 = image;
     while(1){
-      widget->setImage(grabber->grab(&img2));
+      const ImgBase *image = grabber->grab();
+      widget->setImage(image);
       if(w){
         w->write(image);
       }
@@ -85,13 +89,12 @@ public:
   }
   ICLWidget *widget;
   Grabber *grabber;
-  ImgBase *image;
 };
 
 
 int main(int nArgs, char **ppcArg){
   QApplication a(nArgs,ppcArg);
-  pa_init(nArgs,ppcArg,"-format(1) -depth(1) -file(1) -input(1) -source(1) -dma");
+  pa_init(nArgs,ppcArg,"-format(1) -size(1) -depth(1) -output-file(1) -input(1) -source(1) -dma");
   MyThread x;
   x.start();
   return a.exec();

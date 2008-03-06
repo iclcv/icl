@@ -21,7 +21,7 @@ namespace icl{
     }
     void append(const ImgBase *src, ImgBase *dst){
       switch(src->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: dst->asImg<icl##D>()->append(dst->asImg<icl##D>()); break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: dst->asImg<icl##D>()->append(const_cast<ImgBase*>(src)->asImg<icl##D>()); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
       }
@@ -48,7 +48,6 @@ namespace icl{
   }
   
   const ImgBase *GLTextureMapBaseImage::adaptChannels(const ImgBase *image){
-    WARNING_LOG("memory leak here! at XXX");
     ICLASSERT_RETURN_VAL(image && image->getChannels(), 0);
     switch(image->getChannels()){
       case 1: 
@@ -61,7 +60,7 @@ namespace icl{
         return m_poChannelBuf;
       default: // use first 3 channels
         std::vector<int> idxs; idxs.push_back(0);idxs.push_back(1);idxs.push_back(2);
-        return const_cast<ImgBase*>(image)->selectChannels(idxs,&m_poChannelBuf);     // MEMORY LEAK HERE!!! XXX
+        return const_cast<ImgBase*>(image)->selectChannels(idxs,&m_poChannelBuf);     // MEMORY LEAK HERE!!! XXX (<- IT'S OK!)
     }
   }  
 
