@@ -102,11 +102,17 @@ namespace icl{
   **/
   ImgQ ones(int width, int height, int channels=1);
   
+  /// read file from HD 
+  /** @param filename filename to read (*.jpg, *.ppm, *.pgm)
+  **/
+  ImgQ load(const std::string &filename);
+
   /// read file from HD (converted to destination format)
   /** @param filename filename to read (*.jpg, *.ppm, *.pgm)
       @param fmt image format to convert the result to
   **/
-  ImgQ load(const std::string &filename, format fmt = formatRGB);
+  ImgQ load(const std::string &filename, format fmt);
+
   
   /// create a test image (converted to destination format)
   /** @param name identifier for the image:

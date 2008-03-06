@@ -199,6 +199,19 @@ namespace icl{
   }
 
   // }}}
+  
+  ImgQ load(const string &filename){
+    FileGrabber g(filename);
+    g.setIgnoreDesiredParams(true);
+    ImgQ *image = g.grab()->convert<ICL_QUICK_TYPE>();
+    if(!image){
+      return ImgQ();
+    }
+    ImgQ ret = *image;
+    delete image;
+    return ret;
+  }
+  
   ImgQ load(const string &filename, format fmt){
     // {{{ open
 
