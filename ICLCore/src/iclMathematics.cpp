@@ -259,7 +259,8 @@ namespace icl{
     template<class T>
     inline void histo_entry(T v, double m, vector<int> &h, unsigned int n, double r){
       // todo check 1000 times
-      h[ ceil( n*(v-m)/r) ]++;
+      h[ ceil( n*(v-m)/(r+1)) ]++;
+      //      h[ ceil( n*(v-m)/r) ]++; problem at v=255
     }
     
     template<class T>
