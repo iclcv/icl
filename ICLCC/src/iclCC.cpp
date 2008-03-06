@@ -1200,7 +1200,7 @@ namespace icl{
     if(dst->hasFullROI() && ( srcLineStep == -1 || srcLineStep/((int)sizeof(S)) == dst->getWidth())){
       interleavedToPlanar_Generic_NO_ROI(src,dst);
     }else{
-      interleavedToPlanar_Generic_WITH_ROI(src,dst,srcLineStep);
+      interleavedToPlanar_Generic_WITH_ROI(src,dst,srcLineStep < 0 ? dst->getLineStep()*dst->getChannels() : srcLineStep);
     }
   }
   
@@ -1290,11 +1290,13 @@ namespace icl{
   
   template<class S,class D>
   void planarToInterleaved(const Img<S> *src, D* dst,int dstLineStep){
+    //TODO:: special case for src->getChannels == 1
     planarToInterleaved_Generic(src,dst,dstLineStep);
   }
   
   template<class S, class D>
   void interleavedToPlanar(const S *src, Img<D> *dst, int srcLineStep){
+    //TODO:: special case for src->getChannels == 1
     interleavedToPlanar_Generic(src,dst, srcLineStep);
   }
   
