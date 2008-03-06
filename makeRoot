@@ -251,7 +251,6 @@ endif
 MKDEPFLAGS:= -fmakeDepend
 
 # Flags for make
-
 EXTRAMAKEFLAGS:=-s -j3
 
 # Prefix string to be placed before each target name

@@ -52,7 +52,7 @@ clean: $(_DIRECTORY_ORDER:%=clean_%)
 
 clean_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} clean -C $(subst clean_,,$@)\
-              "_CURR_DIR=$(subst clean_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst clean_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 	${PRE_CMD}${CMD_RM} *~ *.bak
 
 printtype:
@@ -65,13 +65,13 @@ doc: $(_DIRECTORY_ORDER:%=doc_%)
 
 doc_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} doc -C $(subst doc_,,$@)\
-              "_CURR_DIR=$(subst doc_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst doc_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 
 cleandoc: $(_DIRECTORY_ORDER:%=cleandoc_%)
 
 cleandoc_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} cleandoc -C $(subst cleandoc_,,$@)\
-              "_CURR_DIR=$(subst cleandoc_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst cleandoc_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 	${PRE_CMD}${CMD_RM} *~ *.bak
 
 #-----------------------------------------------
@@ -81,7 +81,7 @@ obj: $(_DIRECTORY_ORDER:%=obj_%)
 
 obj_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} obj -C $(subst obj_,,$@)\
-              "_CURR_DIR=$(subst obj_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst obj_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 
 cleanobj: $(_DIRECTORY_ORDER:%=cleanobj_%)
 
@@ -97,13 +97,13 @@ lib: $(_DIRECTORY_ORDER:%=lib_%)
 
 lib_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} lib -C $(subst lib_,,$@)\
-              "_CURR_DIR=$(subst lib_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst lib_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 
 cleanlib: $(_DIRECTORY_ORDER:%=cleanlib_%)
 
 cleanlib_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} cleanlib -C $(subst cleanlib_,,$@)\
-              "_CURR_DIR=$(subst cleanlib_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst cleanlib_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 	${PRE_CMD}${CMD_RM} *~ *.bak
 
 #-----------------------------------------------
@@ -113,13 +113,13 @@ exe: $(_DIRECTORY_ORDER:%=exe_%)
 
 exe_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} exe -C $(subst exe_,,$@)\
-              "_CURR_DIR=$(subst exe_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst exe_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 
 cleanexe: $(_DIRECTORY_ORDER:%=cleanexe_%)
 
 cleanexe_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} cleanexe -C $(subst cleanexe_,,$@)\
-              "_CURR_DIR=$(subst cleanexe_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst cleanexe_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 	${PRE_CMD}${CMD_RM} *~ *.bak
 
 #-----------------------------------------------
@@ -152,13 +152,13 @@ depend: $(_DIRECTORY_ORDER:%=depend_%)
 
 depend_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} depend -C $(subst depend_,,$@)\
-              "_CURR_DIR=$(subst depend_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst depend_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 
 cleandepend: $(_DIRECTORY_ORDER:%=cleandepend_%)
 
 cleandepend_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} cleandepend -C $(subst cleandepend_,,$@)\
-              "_CURR_DIR=$(subst cleandepend_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst cleandepend_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 
 #-----------------------------------------------
 # Rule: run (examples)
@@ -167,4 +167,4 @@ run: $(_DIRECTORY_ORDER:%=run_%)
 
 run_%:
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} run -C $(subst run_,,$@)\
-              "_CURR_DIR=$(subst run_,${strip ${_CURR_DIR}}/,$@)"
+              "_CURR_DIR=$(subst run_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
