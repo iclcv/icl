@@ -1,5 +1,5 @@
-#ifndef ICL_INPLACE_ARITHMETICAL_OP
-#define ICL_INPLACE_ARITHMETICAL_OP
+#ifndef ICL_INPLACE_LOGICAL_OP
+#define ICL_INPLACE_LOGICAL_OP
 
 #include "iclInplaceOp.h"
 
