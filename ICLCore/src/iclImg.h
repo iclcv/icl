@@ -718,6 +718,70 @@ namespace icl {
     /** @{ @name basic in-place image manipulations */
     /* {{{ open */
 
+    
+    /// STL based "for_each" implementations applying an Unary function on each ROI-pixel of given channel
+    /** Example:\n
+        \code
+        #include <iclQuick.h>
+
+        struct Thresh{
+          void operator()(float &f){ f = f>128 ? 0 : 255; }
+        };
+        
+        void ttt(float &f){
+          f = f>128 ? 0 : 255;
+        }
+        
+        int main(){
+          ImgQ a = create("parrot");
+        
+          a.applyPixelFunctionOnChannel(ttt,1);
+          a.applyPixelFunctionOnChannel(Thresh(),0);
+        
+          show(scale(a,0.2));
+          return 0;
+        }       
+        \endcode
+    */
+    template<typename UnaryFunction>
+    Img<Type> &applyPixelFunctionOnChannel(UnaryFunction f, int channel){
+      if(hasFullROI()){
+        std::for_each<Type*,UnaryFunction>(getData(channel),getData(channel)+getDim(),f);
+      }else{
+        for(ImgIterator<Type> it = getROIIterator(channel); it.inRegion(); it.incRow()){
+          std::for_each<Type*,UnaryFunction>(&(*it),&(*it)+it.getROIWidth(),f);
+        }        
+      }
+      return *this;
+    }
+
+    /// STL based "for_each" implementations applying an Unary function on each ROI-pixel
+    /** Example:\n
+        \code
+        #include <iclQuick.h>
+
+        struct Thresh{
+          void operator()(float &f){ f = f>128 ? 0 : 255; }
+        };
+        
+        int main(){
+          ImgQ a = scale(create("parrot"),0.2);
+          a.applyPixelFunction(Thresh());
+          show(a);
+          return 0;
+        }
+
+        \endcode
+    */
+    template<typename UnaryFunction>
+    Img<Type> &applyPixelFunction(UnaryFunction f){
+      for(int c=0;c<getChannels();++c){
+        applyPixelFunctionOnChannel(f,c);
+      }
+      return *this;
+    }
+
+    
     /// perform an in-place resize of the image (keeping the data) 
     /** \copydoc icl::ImgBase::scale(const icl::Size&,icl::scalemode)*/
     virtual void scale(const Size &s, scalemode eScaleMode=interpolateNN);
