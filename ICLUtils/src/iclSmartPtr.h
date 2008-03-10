@@ -148,7 +148,7 @@ namespace icl{
       T *operator-> () const { ICLASSERT(e); return e; }
 
       /// this may be used to check if * or -> operator may be used
-      operator bool() const { return (e == 0); }
+      operator bool() const { return (e != 0); }
   
       /// current reference count
       int use_count() const { return c ? *c : 0; }
