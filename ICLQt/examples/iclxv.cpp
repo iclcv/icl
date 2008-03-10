@@ -1,13 +1,16 @@
 #include <iclQuick.h>
 #include <QApplication>
-#include <iclWidget.h>
+#include <iclDrawWidget.h>
 #include <iclProgArg.h>
 
 int main (int n, char **ppc){
   QApplication app(n,ppc);
-  pa_init(n,ppc,"-input(1) -delete");
+  pa_explain("-input","define image to read");
+  pa_explain("-delete","delete image file after reading");
+  pa_explain("-roi","if set, image roi is visualized");
+  pa_init(n,ppc,"-input(1) -delete -roi");
   
-  ICLWidget w;
+  ICLDrawWidget w;
   w.show();
  
   
@@ -31,6 +34,18 @@ int main (int n, char **ppc){
     fontsize(15);
     text(image, 110,90,"no image set!");
   }
+
+  if(pa_defined("-roi")){
+    w.lock();
+    w.reset();
+    w.color(255,0,0);
+    w.fill(0,0,0,0);
+
+    w.rect(image.getROI().x,image.getROI().y,image.getROI().width,image.getROI().height);
+    w.unlock();
+  }
+  
+  
   w.setImage(&image);
   w.resize(QSize(image.getWidth(),image.getHeight()));
   app.exec();

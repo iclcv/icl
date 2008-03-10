@@ -47,7 +47,7 @@ namespace icl{
     enum Sym {symRect,symCross,symPlus,symTriangle,symCircle};
     
     /// creates a new ICLDrawWidget embedded into the parent component
-    ICLDrawWidget(QWidget *parent);
+    ICLDrawWidget(QWidget *parent=0);
 
     /// destructor2
     ~ICLDrawWidget();
