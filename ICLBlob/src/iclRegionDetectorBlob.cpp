@@ -442,10 +442,10 @@ namespace icl{
       //
     
       //                      0  1  2  3  4  5  6  7  
-      static int dirs[] =   {-w, 1, w,-1,-w, 1, w,-1 };
+      register int dirs[] =   {-w, 1, w,-1,-w, 1, w,-1 };
       //                      3  0  1  2  3  0  1  2 
 
-      static int xdirs[] = {  0, 1, 0,-1, 0, 1, 0,-1 };
+      static  int xdirs[] = {  0, 1, 0,-1, 0, 1, 0,-1 };
       static int ydirs[] = { -1, 0, 1, 0,-1, 0, 1, 0 };
       static int jumps[] = {  3, 0, 1, 2, 3, 0, 1, 2 };
     
