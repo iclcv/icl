@@ -474,11 +474,11 @@ namespace icl{
   void save(const ImgQ &image,const string &filename){
     // {{{ open
 
-    Img<float> bla = Img<float>(Size(5,5),5);
+    //Img<float> bla = Img<float>(Size(5,5),5);
     //    Img<float> blub = bla;
-    ImgQ roi = copyroi(image);
+    //    ImgQ roi = copyroi(image);
     //    roi = copyroi(image);
-    FileWriter(filename).write(&roi);
+    FileWriter(filename).write(&image);
   }
 
   // }}}
@@ -1094,7 +1094,7 @@ namespace icl{
       if(x1 > x2) std::swap(x1,x2);
       const float *color = useFillColor ? FILL : COLOR;
       float A = color[3]/255.0;
-      int cMax = iclMax(image.getChannels(),3);
+      int cMax = iclMin(image.getChannels(),3);
       int xEnd = iclMin(x2,image.getWidth());
       for(int x=iclMax(x1,0);x<=xEnd;++x){
         for(int c=0;c<cMax; ++c){
@@ -1118,7 +1118,7 @@ namespace icl{
       if(y1 > y2) std::swap(y1,y2);
       const float *color = useFillColor ? FILL : COLOR;
       float A = color[3]/255.0;
-      int cMax = iclMax(image.getChannels(),3);
+      int cMax = iclMin(image.getChannels(),3);
       int yEnd = iclMin(y2,image.getHeight()-1);
       for(int y=iclMax(y1,0);y<=yEnd;++y){
         for(int c=0;c<cMax; ++c){
