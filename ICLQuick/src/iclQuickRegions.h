@@ -2,7 +2,7 @@
 #define ICLQUICK_REGIONS_H
 
 #include "iclQuick.h"
-#include <iclBlobData.h>
+#include <iclRegion.h>
 
 namespace icl{
   /// creates a color map of a 3-channel color image
@@ -24,15 +24,15 @@ namespace icl{
   vector<Rect> boundingboxes(const ImgQ &image,int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
   vector<vector<Point> > boundaries(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
   vector<int> boundarielengths(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
-  vector<PCAInfo> pca(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
+  vector<RegionPCAInfo> pca(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
   vector<float> formfactors(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
   
   vector<vector<Point> > pixels(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
   vector<vector<ScanLine> > scanlines(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
 
 
-  void draw(ImgQ &image,const PCAInfo &pcainfo);
-  void draw(ImgQ &image,const vector<PCAInfo> &pcainfos);
+  void draw(ImgQ &image,const RegionPCAInfo &pcainfo);
+  void draw(ImgQ &image,const vector<RegionPCAInfo> &pcainfos);
   void draw(ImgQ &image,const ScanLine &scanline);
   void draw(ImgQ &image,const vector<ScanLine> &scanlines);
   void draw(ImgQ &image,const vector< vector<ScanLine> > &scanlines);

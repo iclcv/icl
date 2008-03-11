@@ -1,10 +1,10 @@
 #include "iclQuickRegions.h"
 #include <iclImgChannel.h>
-#include <iclImgRegionDetector.h>
+#include <iclRegionDetector.h>
 namespace icl{
 
   namespace {
-    ImgRegionDetector s_oRD;
+    RegionDetector s_oRD;
   }
    
   ImgQ colormap(const ImgQ &image, float r, float g, float b){ 
@@ -36,10 +36,11 @@ namespace icl{
     // {{{ open
 
     s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<BlobData> & bd = s_oRD.detect(&image);
+    const vector<Region> & bd = s_oRD.detect(&image);
     vector<Point> result;
     for(unsigned int i=0;i<bd.size();++i){
-      result.push_back(bd[i].getCOG());
+      Point32f cog = bd[i].getCOG();
+      result.push_back(Point(cog.x,cog.y));
     }
     return result;
   }
@@ -49,7 +50,7 @@ namespace icl{
     // {{{ open
 
     s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<BlobData> & bd = s_oRD.detect(&image);
+    const vector<Region> & bd = s_oRD.detect(&image);
     vector<Rect> result;
     for(unsigned int i=0;i<bd.size();++i){
        result.push_back(bd[i].getBoundingBox());
@@ -62,7 +63,7 @@ namespace icl{
     // {{{ open
 
     s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<BlobData> & bd = s_oRD.detect(&image);
+    const vector<Region> & bd = s_oRD.detect(&image);
     vector<vector<Point> > result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getBoundary());
@@ -75,7 +76,7 @@ namespace icl{
     // {{{ open
 
     s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<BlobData> & bd = s_oRD.detect(&image);
+    const vector<Region> & bd = s_oRD.detect(&image);
     vector<int> result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getBoundaryLength());
@@ -84,12 +85,12 @@ namespace icl{
   }
 
   // }}}
-  vector<PCAInfo> pca(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
+  vector<RegionPCAInfo> pca(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
     // {{{ open
 
     s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<BlobData> & bd = s_oRD.detect(&image);
-    vector<PCAInfo> result;
+    const vector<Region> & bd = s_oRD.detect(&image);
+    vector<RegionPCAInfo> result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getPCAInfo());
     }
@@ -102,7 +103,7 @@ namespace icl{
     // {{{ open
 
     s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<BlobData> & bd = s_oRD.detect(&image);
+    const vector<Region> & bd = s_oRD.detect(&image);
     vector<float> result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getFormFactor());
@@ -115,7 +116,7 @@ namespace icl{
     // {{{ open
 
     s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<BlobData> & bd = s_oRD.detect(&image);
+    const vector<Region> & bd = s_oRD.detect(&image);
     vector<vector<Point> >result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getPixels());
@@ -129,7 +130,7 @@ namespace icl{
     // {{{ open
 
     s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<BlobData> & bd = s_oRD.detect(&image);
+    const vector<Region> & bd = s_oRD.detect(&image);
     vector<vector<ScanLine> > result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getScanLines());
@@ -141,7 +142,7 @@ namespace icl{
   // }}}
 
 
-  void draw(ImgQ &image, const PCAInfo &pcainfo){
+  void draw(ImgQ &image, const RegionPCAInfo &pcainfo){
     // {{{ open
 
     float x1 = float(pcainfo.cx)-cos(pcainfo.arc1)*pcainfo.len1;
@@ -163,7 +164,7 @@ namespace icl{
   }
 
   // }}}
-  void draw(ImgQ &image, const vector<PCAInfo> &pcainfos){
+  void draw(ImgQ &image, const vector<RegionPCAInfo> &pcainfos){
     // {{{ open
     for(unsigned int i=0;i<pcainfos.size();++i){
       draw(image,pcainfos[i]);
