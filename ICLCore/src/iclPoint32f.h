@@ -58,6 +58,11 @@ namespace icl{
     Point32f transform(double xfac, double yfac) const{ 
       return Point32f(xfac*x,yfac*y);
     }
+    
+    /// implicit cast to a integer-point
+    operator Point() const {
+      return Point(x,y);
+    } 
 
     /// returns the p-norm of the 2D Vector
     /** - p = 0 -> 2 
