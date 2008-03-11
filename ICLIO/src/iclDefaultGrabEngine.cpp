@@ -34,32 +34,45 @@ namespace icl{
     
     if(m_bProgressiveGrabMode){
       if(!m_bStarted){
-        //        printf("----1 \n");
+        printf("----1 \n");
         unicap_start_capture(m_poDevice->getUnicapHandle());
-        //printf("----2 \n");
+        printf("----2 \n");
         m_bStarted = true;
-        //printf("----3 \n");
+        printf("----3 \n");
         unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
-        //printf("----4 \n");
+        printf("----4 \n");
       }
       
+      printf("----5 \n");
       unicap_data_buffer_t *returned_buffer;
       static const int MAX_TRYS = 10;
       static const long WAIT_TIME = 100000;
+      printf("----6 \n");
       int i=0;
+
+      int success = 0;
+      while(!success){
+        if( !SUCCESS (unicap_poll_buffer(m_poDevice->getUnicapHandle(),&success))){
+          ERROR_LOG("Failed to wait for the buffer to be filled! ( POLL Section)<<");
+        }
+        usleep(1000);
+      }
+      
       for(;i<MAX_TRYS;i++){
+        printf("----7%d \n",i);
         usleep(1000);
         if( SUCCESS (unicap_wait_buffer (m_poDevice->getUnicapHandle(), &returned_buffer))){
           break;
         }else{
           usleep(WAIT_TIME);
         }
-        
+        printf("----8%d \n",i);
       }if(i==MAX_TRYS){
         ERROR_LOG("Failed to wait for the buffer to be filled! ( tried "<<MAX_TRYS<<" times)");        
       }
+      printf("----9 \n");
       unicap_queue_buffer(m_poDevice->getUnicapHandle(),&m_oBuf[NEXT_IDX()]);
-      
+      printf("returning returned buffer is %p data is %p (10)\n",returned_buffer,returned_buffer->data);
       return returned_buffer->data;
     }else{
       if(!m_bStarted){
