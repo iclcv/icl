@@ -10,6 +10,7 @@
 #include <ipps.h>
 #endif
 
+
 namespace icl {
   
   /* {{{ random functions */
@@ -141,7 +142,7 @@ namespace icl {
     an generator function taking no arguments, e.g. random()
   */
   template <class T>
-  void initVector(std::vector<T> &vec, double (*gen)()) {
+  inline void initVector(std::vector<T> &vec, double (*gen)()) {
      FUNCTION_LOG("vector<T> &, Generator");
      std::generate (vec.begin(), vec.end(), gen);
   }
@@ -151,7 +152,7 @@ namespace icl {
     an generator function taking one argument, e.g. randomGauss(max)
   */
   template <class T>
-  void initVector(std::vector<T> &vec, double (*f)(double), double arg) {
+  inline void initVector(std::vector<T> &vec, double (*f)(double), double arg) {
      FUNCTION_LOG("vector<T> &, Function, arg");
      for (typename std::vector<T>::iterator it=vec.begin(), end=vec.end();
           it != end; ++it) {
@@ -171,7 +172,7 @@ namespace icl {
     @return The euclidian distance |v1-v2|
   */
   template <class ForwardIterator> 
-  float euclidian(ForwardIterator v1Begin, ForwardIterator v1End,
+  inline float euclidian(ForwardIterator v1Begin, ForwardIterator v1End,
                   ForwardIterator v2Begin) {
      float fSum = 0.0, fDiff;
      for (; v1Begin != v1End; ++v1Begin, ++v2Begin) {
@@ -188,7 +189,7 @@ namespace icl {
     @return The distance of point a and b
   */
   template <class T>
-  float euclidian(const std::vector<T> &a, const std::vector<T> &b) {
+  inline float euclidian(const std::vector<T> &a, const std::vector<T> &b) {
      ICLASSERT_RETURN_VAL(a.size() == b.size(), float(0));
      return euclidian (a.begin(), a.end(), b.begin());
   }
@@ -203,7 +204,7 @@ namespace icl {
   /** @param begin start iterator 
       @param end end iterator*/
   template <class ForwardIterator>
-  double mean(ForwardIterator begin, ForwardIterator end){
+  inline double mean(ForwardIterator begin, ForwardIterator end){
     if(!(begin-end)) return 0;
     double sum = 0;
     while(begin != end) sum += *begin++;
@@ -211,13 +212,13 @@ namespace icl {
   }
   
 #ifdef WITH_IPP_OPTIMIZATION
-  template<> double mean<const icl32f*>(const icl32f *begin,const icl32f *end){
+  template<> inline double mean<const icl32f*>(const icl32f *begin,const icl32f *end){
     icl32f m = 0;
     // More fast: ippAlgHintFast
     ippsMean_32f(begin,end-begin,&m,ippAlgHintAccurate);
     return m;
   }
-  template<> double mean<const icl64f*>(const icl64f *begin,const icl64f *end){
+  template<> inline double mean<const icl64f*>(const icl64f *begin,const icl64f *end){
     icl64f m = 0;
     ippsMean_64f(begin,end-begin,&m);
     return m;
@@ -249,7 +250,7 @@ namespace icl {
       @param empiricMean if true, sum of square distances is devidec by n-1 else by n
   */
   template <class ForwardIterator>
-  double variance(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean=true){
+  inline double variance(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean=true){
     if(begin == end) return 0;
     register double sum = 0;
     register double d = 0;
@@ -266,7 +267,7 @@ namespace icl {
       @param end end ForwardIterator
   */
   template <class ForwardIterator>
-  double variance(ForwardIterator begin, ForwardIterator end){
+  inline double variance(ForwardIterator begin, ForwardIterator end){
     return variance(begin,end,mean(begin,end),true);
   }
 
@@ -300,7 +301,7 @@ namespace icl {
       @param empiricMean if true, sum of square distances is devidec by n-1 else by n
   */
   template <class ForwardIterator>
-  double stdDeviation(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean=true){
+  inline double stdDeviation(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean=true){
     return ::sqrt(variance(begin,end,mean,empiricMean));
   }
 
@@ -309,7 +310,7 @@ namespace icl {
       @param end end iterator
       */
   template <class ForwardIterator>
-  double stdDeviation(ForwardIterator begin, ForwardIterator end){
+  inline double stdDeviation(ForwardIterator begin, ForwardIterator end){
     return ::sqrt(variance(begin,end));
   }
 
@@ -332,7 +333,7 @@ namespace icl {
       @return pair p with p.first = mean and p.second = stdDev
   */
   template<class ForwardIterator>
-  std::pair<double,double> meanAndStdDev(ForwardIterator begin,ForwardIterator end){
+  inline std::pair<double,double> meanAndStdDev(ForwardIterator begin,ForwardIterator end){
     std::pair<double,double> md;
     md.first = mean(begin,end);
     md.second = stdDeviation(begin,end,md.first,true);
