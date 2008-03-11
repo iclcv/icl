@@ -1,14 +1,13 @@
 #include "iclRegionBasedBlobSearcher.h"
 #include "iclConverter.h"
 #include "iclImg.h"
-#include "iclImgRegionDetector.h"
+#include "iclRegionDetector.h"
 #include <math.h>
 #include <limits>
 #include <iclRegionFilter.h>
 #include <iclFMCreator.h>
 
 namespace icl{
-  using namespace regiondetector;
   using namespace std;
 
   namespace{
@@ -51,11 +50,11 @@ namespace icl{
       return dst;
     }
     // }}}
-    Array<PCAInfo> &cat(const Array<Array<PCAInfo> > &src, Array<PCAInfo> &dst){
+    Array<RegionPCAInfo> &cat(const Array<Array<RegionPCAInfo> > &src, Array<RegionPCAInfo> &dst){
       // {{{ open
       dst.clear();
-      for(Array<Array<PCAInfo> >::const_iterator it = src.begin();it!=src.end();++it){
-        for(Array<PCAInfo>::const_iterator jt = it->begin();jt!= it->end();++jt){
+      for(Array<Array<RegionPCAInfo> >::const_iterator it = src.begin();it!=src.end();++it){
+        for(Array<RegionPCAInfo>::const_iterator jt = it->begin();jt!= it->end();++jt){
           dst.push_back(*jt);
         }
       }
@@ -150,7 +149,7 @@ namespace icl{
   }
 
   // }}}
-    Array<float> &toPOD(const Array<Array<PCAInfo> > &src, Array<float> &dst){
+    Array<float> &toPOD(const Array<Array<RegionPCAInfo> > &src, Array<float> &dst){
       // {{{ open
       
     dst.clear();
@@ -171,7 +170,7 @@ namespace icl{
   RegionBasedBlobSearcher::RegionBasedBlobSearcher(){
     // {{{ open
 
-    m_poRD = new ImgRegionDetector(0,0,0,0);
+    m_poRD = new RegionDetector(0,0,0,0);
     m_poInputImage = 0;
     m_poConverter = new Converter;
   }
@@ -204,7 +203,8 @@ namespace icl{
     m_oCOGsOut.clear();
     for(unsigned int i=0;i<m_oInternalData.size();++i){
       FF &fac = m_oScaleFactors[i];
-      Point p =  m_oInternalData[i]->getCOG();
+      Point32f p32 = m_oInternalData[i]->getCOG();
+      Point p(p32.x,p32.y);
       Point q = p.transform(fac.f1,fac.f2);
       m_oCOGsOut.push_back(q);
       // m_oCOGsOut.push_back(m_oInternalData[i]->getCOG().transform(fac.f1,fac.f2));
@@ -221,7 +221,7 @@ namespace icl{
     m_oCOGsFloatOut.clear();
     for(unsigned int i=0;i<m_oInternalData.size();++i){
       FF &fac = m_oScaleFactors[i];
-      Point32f p =  m_oInternalData[i]->getCOGFloat();
+      Point32f p =  m_oInternalData[i]->getCOG();
       Point32f q = p.transform(fac.f1,fac.f2);
       m_oCOGsFloatOut.push_back(q);
       // m_oCOGsOut.push_back(m_oInternalData[i]->getCOG().transform(fac.f1,fac.f2));
@@ -244,13 +244,13 @@ namespace icl{
   }
 
   // }}}
-  const Array<PCAInfo> &RegionBasedBlobSearcher::getPCAInfo(){
+  const Array<RegionPCAInfo> &RegionBasedBlobSearcher::getPCAInfo(){
     // {{{ open
 
     m_oPCAInfosOut.clear();
     for(unsigned int i=0;i<m_oInternalData.size();++i){
       FF &fac = m_oScaleFactors[i];
-      PCAInfo pcaInfo = m_oInternalData[i]->getPCAInfo();
+      RegionPCAInfo pcaInfo = m_oInternalData[i]->getPCAInfo();
       //      pcaInfo.len1 = .. TODO adapt to factor
       (void)fac;
       m_oPCAInfosOut.push_back(pcaInfo);
@@ -304,7 +304,7 @@ namespace icl{
 
   // }}}
   
-  const Array<BlobData*> &RegionBasedBlobSearcher::getBlobData(){
+  const Array<Region*> &RegionBasedBlobSearcher::getRegions(){
     // {{{ open
 
     return m_oInternalData;
@@ -395,12 +395,12 @@ namespace icl{
     for(unsigned int i=0;i<m_oFMRF.size(); ++i){
       FMCreator &fmc = *(m_oFMRF[i].fmc);
       RegionFilter &rf = *(m_oFMRF[i].rf);
-      m_poRD->setRestrictions(rf.getSizeRange().castTo<unsigned int>(),rf.getValueRange());
+      m_poRD->setRestrictions(rf.getSizeRange().castTo<unsigned int>(),rf.getValueRange().castTo<icl64f>());
       FF factor( (float)(ims.width)/fmc.getSize().width,(float)(ims.height)/fmc.getSize().height);
-      const vector<BlobData> &vecBD = m_poRD->detect(fmc.getFM(getImage(fmc.getSize(),fmc.getFormat(),image)));
+      const vector<Region> &vecBD = m_poRD->detect(fmc.getFM(getImage(fmc.getSize(),fmc.getFormat(),image)));
       for(unsigned int i=0;i<vecBD.size();++i){
         if(rf.validate(vecBD[i])){
-          m_oInternalData.push_back(const_cast<BlobData*>(&(vecBD[i])));        
+          m_oInternalData.push_back(const_cast<Region*>(&(vecBD[i])));        
           m_oScaleFactors.push_back(factor);
         }        
       }
@@ -413,7 +413,7 @@ namespace icl{
       void RegionBasedBlobSearcher::extractRegions(){
       m_oCenters.clear();
       m_oBBs.clear();
-      m_oPCAInfos.clear();
+      m_oRegionPCAInfos.clear();
       
       for(unsigned int i=0;i<m_oFMCreators.size(); ++i){
       FMCreator &fmc = *(m_oFMCreators[i]);

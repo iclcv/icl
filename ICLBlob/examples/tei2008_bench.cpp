@@ -6,7 +6,7 @@
 #include <iclFPSEstimator.h>
 #include <iclArray.h>
 #include <iclStringUtils.h>
-#include <iclImgRegionDetector.h>
+#include <iclRegionDetector.h>
 #include <iclDCGrabber.h>
 
 typedef Array<int> vec;
@@ -14,8 +14,8 @@ typedef Array<int> vec;
 GUI gui("vbox");
 
 static inline vec getCenters(const Img8u &image, Img8u *dstRet){
-  static ImgRegionDetector rd;
-  static int &threshold= gui.getValue<int>("threshold-val");
+  static RegionDetector rd;
+  //static int &threshold= gui.getValue<int>("threshold-val");
   rd.setRestrictions(10,10000,1,255);
   
   static Img8u dst(image.getSize(),formatGray);
@@ -29,12 +29,12 @@ static inline vec getCenters(const Img8u &image, Img8u *dstRet){
   
   
   icl8u *d = dst.getData(0);
-  icl8u t = threshold;
+  //  icl8u t = threshold;
   for(int i=0;i<dim;++i){
     d[i] = 255 * ( (r[i] > 160) && (g[i] < 80) && (b[i] < 100) );
   }
   
-  const std::vector< BlobData > &bd = rd.detect(&dst);
+  const std::vector<icl::Region> &bd = rd.detect(&dst);
   
   static vec v;
   v.clear();

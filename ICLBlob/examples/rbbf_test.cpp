@@ -1,6 +1,6 @@
 #include <iclRegionBasedBlobSearcher.h>
 #include <iclQuick.h>
-#include <iclImgRegionDetector.h>
+#include <iclRegionDetector.h>
 
 vector<icl8u> vec3(icl8u r, icl8u g, icl8u b){
   vector<icl8u> v(3);
@@ -9,33 +9,6 @@ vector<icl8u> vec3(icl8u r, icl8u g, icl8u b){
   v[2] = b;
   return v;
 } 
-
-void testA(){
-  ImgQ A = scale(create("parrot"),0.3);
-  printf("hallo hier \n"); return;
-  A = gray(A);
-  A = levels(A,5);
-  A = filter(A,"median");
-
-  ImgRegionDetector RD(100,1000,100,255);
-  vector<BlobData> data = RD.detect(&A);
-  A = rgb(A);
-  print(A);
-  show(A);
-  for(unsigned int i=0;i<data.size();i++){
-    color(255,255,255);
-    pix(A,data[i].getCOG());  
-       
-    //   color(255,0,0);
-    //pix(A,data[i].getBoundary());
-    
-    //color(255,0,0,100);
-    //pix(A,data[i].getPixels());
-  }
-  A = scale(A,3);
-  
-  show(A);
-}
 
 
 int main(){

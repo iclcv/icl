@@ -30,14 +30,14 @@ namespace icl{
 
   // }}}
 
-  bool RegionFilter::validate(const BlobData &d){
+  bool RegionFilter::validate(const Region &d){
     // {{{ open
     if(m_poValueRange && !m_poValueRange->in(d.getVal())) return false;
     if(m_poSizeRange && ! m_poSizeRange->in(d.getSize())) return false;
     if(m_poBoundaryLengthRange && ! m_poBoundaryLengthRange->in(d.getBoundaryLength())) return false;
     if(m_poFormFactorRange && ! m_poFormFactorRange->in(d.getFormFactor())) return false;
     if(m_poPcaAxisLengthRationRange || m_poPcaFirstMajorAxisAngleRange){
-      PCAInfo info = d.getPCAInfo();
+      RegionPCAInfo info = d.getPCAInfo();
       if(m_poPcaAxisLengthRationRange){
         float frac = iclMax(info.len1 / info.len2, info.len2 / info.len1);
         if(!m_poPcaAxisLengthRationRange->in(frac)) return false;

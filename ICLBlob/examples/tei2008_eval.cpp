@@ -6,7 +6,7 @@
 #include <iclFPSEstimator.h>
 #include <iclArray.h>
 #include <iclStringUtils.h>
-#include <iclImgRegionDetector.h>
+#include <iclRegionDetector.h>
 #include <iclDCGrabber.h>
 
 #include <iclMathematics.h>
@@ -279,10 +279,10 @@ typedef Array<int> vec;
 GUI gui;
 
 static inline vec getCenters(const Img8u &image){
-  static ImgRegionDetector rd;
+  static RegionDetector rd;
   rd.setRestrictions(10,10000,1,255);
   
-  const std::vector< BlobData > &bd = rd.detect(&image);
+  const std::vector<icl::Region> &bd = rd.detect(&image);
   
   static vec v;
   v.clear();

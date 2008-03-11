@@ -7,7 +7,8 @@
 #include <iclRect.h>
 #include <iclTypes.h>
 #include <map>
-#include <iclBlobData.h>
+#include <iclRegion.h>
+#include <iclRegionPCAInfo.h>
 #include <iclRegionFilter.h>
 #include <iclFMCreator.h>
 
@@ -16,7 +17,7 @@ namespace icl{
 
   /** \cond */
   class Converter;          //!< converts images
-  class ImgRegionDetector;  //!< seaches connected regions 
+  class RegionDetector;     //!< seaches connected regions 
   /** \endcond */
 
   /// Class to detect a set of blobs in an image using a region based approach \ingroup G_RBBS
@@ -156,7 +157,7 @@ namespace icl{
     /// extract pca info
     /** @return Array of the found blobs PCA-Information
     */
-    const Array<PCAInfo> &getPCAInfo();
+    const Array<RegionPCAInfo> &getPCAInfo();
 
     /// Extract an Array of boundary pixel arrays
     /** Array of Array if pixels (xyxyxy...-order) */
@@ -184,7 +185,7 @@ namespace icl{
     /** The returned blobdata can be used to access all blob available blob features 
         @return const array of internal used blob data Pointers
         */
-    const Array<BlobData*> &getBlobData();
+    const Array<Region*> &getRegions();
 
     /// add new FMCreator and associated RegionFilter
     /** ownership is passed to the RegionBasedBlobSearcher
@@ -257,7 +258,7 @@ namespace icl{
     Array<Plugin> m_oFMRF;
     
     /// Wrapped ImgRegionDetector
-    ImgRegionDetector *m_poRD;   
+    RegionDetector *m_poRD;   
 
     /// Internal buffer of all FMCreators' calculated blob centers
     Array<Array<Point> > m_oCenters;    
@@ -269,7 +270,7 @@ namespace icl{
     Array<Array<Rect> > m_oBBs;         
     
     /// Internal buffer of all FMCreators' calculated blob PCAInfos
-    Array<Array<PCAInfo> > m_oPCAInfos; 
+    Array<Array<RegionPCAInfo> > m_oPCAInfos; 
     
     /// Output buffer for blob centers
     Array<Point> m_oCOGsOut;
@@ -281,7 +282,7 @@ namespace icl{
     Array<Rect> m_oBBsOut;
 
     /// Output buffer for blob PCA-Infos
-    Array<PCAInfo> m_oPCAInfosOut;
+    Array<RegionPCAInfo> m_oPCAInfosOut;
     
     Array<Array<Point> > m_oBoundariesOut;
     
@@ -303,7 +304,7 @@ namespace icl{
     
     Array<float> m_oFormFactorsPOD;
 
-    Array<BlobData*> m_oInternalData;
+    Array<Region*> m_oInternalData;
 
     struct FF{
       FF(float f1=0, float f2=0): f1(f1),f2(f2){}

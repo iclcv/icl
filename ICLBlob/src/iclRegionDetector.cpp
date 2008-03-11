@@ -1,185 +1,168 @@
 #include <iclRegionDetector.h>
+#include <iclImgChannel.h>
+#include <algorithm>
 
 namespace icl{
-  namespace regiondetector{
-    RegionDetector::RegionDetector(int iW, int iH, int iMinSize,int iMaxSize, int iMinValue, int iMaxValue):
-      m_iW(iW),m_iH(iH),m_iDim(iW*iH),m_iMinSize(iMinSize),
-      m_iMaxSize(iMaxSize),m_iMinValue(iMinValue),m_iMaxValue(iMaxValue){
+  
+  namespace{
+    template<class T>
+    static inline bool eqfunc(const T &a,const T&b){
+      return a == b;
+    }
+  }
+  
+  RegionDetector::RegionDetector(unsigned int minSize, unsigned int maxSize, icl64f minVal, icl64f maxVal):
+    m_uiMinSize(minSize),m_uiMaxSize(maxSize),m_dMinVal(minVal),m_dMaxVal(maxVal){
+  }
+  void RegionDetector::setRestrictions(unsigned int minSize, unsigned int maxSize, icl64f minVal, icl64f maxVal){
+    m_uiMinSize = minSize;
+    m_uiMaxSize = maxSize;
+    m_dMinVal = minVal;
+    m_dMaxVal = maxVal;
+  }
+  void RegionDetector::setRestrictions(const Range<unsigned int> &sizeRange, const Range<icl64f> &valueRange){
+    setRestrictions(sizeRange.minVal,sizeRange.maxVal,valueRange.minVal, valueRange.maxVal);
+  }
+  
+  const std::vector<Region> &RegionDetector::detect(const ImgBase *image){
+    m_vecBlobData.clear();
+    ICLASSERT_RETURN_VAL(image,m_vecBlobData);
+    ICLASSERT_RETURN_VAL(image->getChannels()==1,m_vecBlobData);
+    ICLASSERT_RETURN_VAL(image->getROISize().getDim(),m_vecBlobData);
+    switch(image->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: detect_intern(*image->asImg<icl##D>(),eqfunc<icl##D>); break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+    }
+    return m_vecBlobData;
+  }
 
-      m_ppoLim = new RegionDetectorBlobPart*[m_iDim];
-      memset(m_ppoLim,0,m_iDim*sizeof(RegionDetectorBlobPart*));
+  void RegionDetector::adaptLIM(int w, int h){
+    if((int)m_vecLIM.size() < w*h){
+      m_vecLIM.resize(w*h);
+    }
+  }
+  void RegionDetector::resetPartList(){
+    std::for_each(m_vecParts.begin(),m_vecParts.end(),RegionPart::del_func);
+    m_vecParts.clear();    
+  }
+  inline RegionPart *RegionDetector::newPart(){
+    RegionPart *p = new RegionPart;
+    m_vecParts.push_back(p);
+    return p;
+  }
+
+  namespace{
+    template<class T>
+    class ImgChannelROI{
+    public:
+      inline ImgChannelROI(const Img<T> &image, int channel):
+        chan(pickChannel(&image,channel)),xOffs(image.getROI().x),yOffs(image.getROI().y){
+      }
+      inline const T &operator()(int x, int y) const{
+        return chan(x+xOffs,y+yOffs);
+      }
       
-      m_poBlobPartMM = new BlobPartMemoryManager(1000);
-      m_poScanLineMM = new ScanLineMemoryManager(10000);
-
-      m_poBlobList = new BlobList(0);
-    }
+    private:
+      const ImgChannel<T> chan;
+      int xOffs;
+      int yOffs;
+    };
     
-    RegionDetector::~RegionDetector(){
-      delete [] m_ppoLim;
-      delete m_poBlobPartMM;
-      delete m_poScanLineMM;
-      for(int i=0;i<m_poBlobList->size();i++){
-        delete (*m_poBlobList)[i];
-      }
-      delete m_poBlobList;
-    }
+    template<class T> struct EQFunctor{
+      EQFunctor(const T &ref):ref(ref){}
+      T ref;
+      inline bool operator()(const T &val) const{ return ref == val; }
+    };
+  }
+  
+  template<class T, typename Compare>
+  void RegionDetector::detect_intern(const Img<T> &image, Compare cmp){
+    const int xOffs = image.getROI().x;
+    const int yOffs = image.getROI().x;
+    const int w = image.getROI().width;
+    const int h = image.getROI().height;
 
-
-    void RegionDetector::setSize(const Size &size){
-      if(m_iW != size.width || m_iH != size.height){
-        m_iW = size.width;
-        m_iH = size.height;
-        m_iDim = m_iW*m_iH;
-        
-        delete [] m_ppoLim;
-        m_ppoLim = new RegionDetectorBlobPart*[m_iDim];
-        memset(m_ppoLim,0,m_iDim*sizeof(RegionDetectorBlobPart*));
-      }
-    }
+    adaptLIM(w,h);
+    resetPartList();
+    RegionPart **lim = &m_vecLIM[0];
+    ImgChannelROI<T> data(image,0);
 
     
-    void RegionDetector::setMinSize(int iMinSize){
-      this->m_iMinSize = iMinSize;
-    }
-    void RegionDetector::setMaxSize(int iMaxSize){
-      this->m_iMaxSize = iMaxSize;
-    }
-    void RegionDetector::setMinValue(int iMinValue){
-      this->m_iMinValue = iMinValue;
-    }
-    void RegionDetector::setMaxValue(int iMaxValue){
-      this->m_iMaxValue = iMaxValue;
-    }
+    // first pixel:
+    lim[0] = newPart();
     
-    BlobList *RegionDetector::find_blobs(icl8u *pucData){
-      //TODO remove
-      icl8u *data = pucData;
-      int i;
-      int start_of_curr_pix_line = 0;
-     
-
-      // for the Compability of the *old* code
-      RegionDetectorBlobPart **lim = m_ppoLim;
-      int w = m_iW;
-      int h = m_iH;
-     
-      // first pixel
-      lim[0] = m_poBlobPartMM->next();
-      lim[0]->clear();
-      start_of_curr_pix_line = 0;
-
-      // first row
-      for(i=1;i<w;i++){
-        if(data[i]==data[i-1]){
-          lim[i]=lim[i-1];
-        }else{
-          RegionDetectorScanLine *pl = m_poScanLineMM->next();
-          pl->update(0,start_of_curr_pix_line,i-1,w,data);
-          lim[i-1]->add(pl);
-          start_of_curr_pix_line = i;
-          lim[i] = m_poBlobPartMM->next();
-          lim[i]->clear();
-        }
+    // first line
+    register int slX = 0;
+    for(int x=1;x<w;++x){
+      if( cmp( data(x,0), data(x-1,0))){
+        lim[x] = lim[x-1];
+      }else{
+        lim[x-1]->add(ScanLine(slX+xOffs,yOffs,x-slX));
+        slX = x;
+        lim[x] = newPart();
       }
-      RegionDetectorScanLine *pl = m_poScanLineMM->next();
-      pl->update(0,start_of_curr_pix_line,w-1,w,data);
-      lim[w-1]->add(pl);
-          
-      //rest of the image [1..w-1]x[1..h-1]
-      RegionDetectorBlobPart **r_curr_line;
-      RegionDetectorBlobPart **r_last_line;
-      RegionDetectorBlobPart *r_to_delete;
-      RegionDetectorBlobPart *r_to_keep;
-      icl8u *im_curr_line;
-      icl8u *im_last_line;
-      int x,y,j;
+    }
+    // first line end
+    lim[w-1]->add(ScanLine(slX+xOffs,yOffs,w-slX));
+    
+    // rest pixles
+    for(int y=1;y<h;++y){
+       
+      //1st pix
+      if( eqfunc( data(0,y), data(0,y-1)) ){
+        lim[w*y] = lim[w*(y-1)];
+      }else{
+        lim[w*y] = newPart();
+      }
 
-      for(y=1;y<h;y++){
-        r_curr_line = lim+y*w;
-        r_last_line = r_curr_line-w;
-        im_curr_line = data+y*w;
-        im_last_line = im_curr_line-w;
-
-        //1st pix
-        if(im_curr_line[0] == im_last_line[0]){
-          r_curr_line[0] = r_last_line[0];
-        }
-        else{
-          r_curr_line[0] = m_poBlobPartMM->next();
-          r_curr_line[0]->clear();
-        }
+      RegionPart **limC = lim+w*y;
+      RegionPart **limL = limC-w;
+      const T *dataC = &(data(0,y));
+      const T *dataL = &(data(0,y-1));
       
-        //rest of pixels
-        start_of_curr_pix_line = 0;
+      //rest of pixels
+      slX = 0;
          
-        for(x=1;x<w;x++){
-          if( im_curr_line[x]==im_curr_line[x-1] ){
-        
-            if(im_curr_line[x]==im_last_line[x] && r_curr_line[x-1] != r_last_line[x] ){
-              r_to_delete = r_last_line[x];
-              r_to_keep = r_curr_line[x-1];
-                  
-              r_curr_line[x]=r_to_keep;
-              r_to_keep->add(r_to_delete);
-        
-              for(j=0;j<x;j++){
-                if(r_curr_line[j] == r_to_delete){
-                  r_curr_line[j] = r_to_keep;
-                }
-              }
-              for(j=x+1;j<w;j++){
-                if(r_last_line[j] == r_to_delete){
-                  r_last_line[j] = r_to_keep;
-                }
-              }
-            }
-            else{
-              r_curr_line[x]=r_curr_line[x-1];
-            }   
-          }else{
-            if(im_curr_line[x]==im_last_line[x]){
-              r_curr_line[x]=r_last_line[x];
-            }else{
-              r_curr_line[x]=m_poBlobPartMM->next();
-              r_curr_line[x]->clear();
-            }
-            RegionDetectorScanLine *pl = m_poScanLineMM->next();
-            pl->update(y,start_of_curr_pix_line,x-1,w,data);
-            r_curr_line[x-1]->add(pl);
-            start_of_curr_pix_line = x;
-          }
-        }
-        RegionDetectorScanLine *pl = m_poScanLineMM->next();
-        pl->update(y,start_of_curr_pix_line,w-1,w,data);
-        r_curr_line[w-1]->add(pl);
-      }
-      //Creating RegionDetectorBlobs recursivly
-      //delete old blobs !!
+      for(int x=1;x<w;++x){
+        if( eqfunc( dataC[x] , dataC[x-1] ) ){
+          if( eqfunc( dataC[x] , dataL[x] ) && limC[x-1] != limL[x] ){
+            RegionPart *pOld = limL[x];
+            RegionPart *pNew = limC[x-1];
 
-      for(BlobList::iterator it = m_poBlobList->begin();it!= m_poBlobList->end();it++){
-        delete *it;
-      }
-      m_poBlobList->clear();
-      int iSize;
-      icl8u ucVal;
-      for(BlobPartMemoryManager::iterator it = m_poBlobPartMM->begin();it != m_poBlobPartMM->end();it++){
-        if(!((*it)->is_inside_other_region())){
-          RegionDetectorBlob *b = new RegionDetectorBlob(*it);
-          iSize = b->getSize();
-          ucVal = b->getVal();
-          if((iSize >= m_iMinSize) && (iSize <= m_iMaxSize) && (ucVal >= m_iMinValue) && (ucVal <= m_iMaxValue)){
-            m_poBlobList->push_back(b);
+            limC[x] = pNew;
+            pNew->add(pOld);
+        
+            std::replace_if(&limL[x+1],&limC[x],EQFunctor<RegionPart*>(pOld),pNew);
+        
           }else{
-            delete b;
+            limC[x] = limC[x-1];
+          }   
+        }else{
+          if( eqfunc( dataC[x] , dataL[x] )){
+            limC[x] = limL[x];
+          }else{
+            limC[x] = newPart();
           }
+       
+          limC[x-1]->add(ScanLine(slX+xOffs,y+yOffs,x-slX));
+          slX = x; 
         }
       }
-            
-      m_poBlobPartMM->clear();
-      m_poScanLineMM->clear();
+      limC[w-1]->add(ScanLine(slX+xOffs,y,w-slX-1));
+    }
 
-      return m_poBlobList;
+    for(unsigned int i=0;i<m_vecParts.size();i++){
+      if(m_vecParts[i]->top){
+        const T &val = image(m_vecParts[i]->scanlines[0].x,m_vecParts[i]->scanlines[0].y,0);
+        if(val >= m_dMinVal && val <= m_dMaxVal){
+          m_vecBlobData.push_back(Region(m_vecParts[i],m_uiMaxSize,val,&image));
+          Region &b = m_vecBlobData.back();
+          if((unsigned int)b.getSize() > m_uiMaxSize || (unsigned int)b.getSize() < m_uiMinSize){
+            m_vecBlobData.pop_back();
+          }      
+        }
+      }
     }
   }
 }

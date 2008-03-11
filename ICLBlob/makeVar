@@ -50,7 +50,7 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug flag
-DEBUG:=${DEBUG}
+DEBUG:=$(DEBUG)
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES}
@@ -74,6 +74,7 @@ LDFLAGS:= ${LDFLAGS}
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
 DEBUG_ON:=${DEBUG_ON}
+#DEBUG_ON:=TRUE
 
 ifeq "$(HAVE_QT)" ""
 SKIP_OBJECTS += vqdemo.cpp
