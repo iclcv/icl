@@ -10,7 +10,15 @@ namespace icl{
   
   
   /// Region detection class (also known as "Connected Components)"
-  /** TODO: document this class */
+  /** Regions are detected by special implementation of common "connected components" algorithm:
+      Input image I is processed iteratively from left to right and from top to bottom using a small 
+      iteration window. At location X=I(x,y) the above pixel A=I(x,y-1) and the left pixel L=I(x-1,y) are
+      compared. Here 4 cases can occur:
+      -# X=A but X!=L in this case, X belongs to the region containing L
+      -# X=L but X!=A in this case, X belongs to the region containing A
+      -# X!=A
+      
+  */
   class RegionDetector{
     public:
 

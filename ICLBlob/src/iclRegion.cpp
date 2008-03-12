@@ -70,7 +70,7 @@ namespace icl{
       impl->scanlines.push_back(sl);
       impl->pixcount += sl.len;
       if(impl->pixcount > maxSize) return; /// direct break here
-      impl->cog.x += sl.len * ( sl.x + (0.5*sl.len) );
+      impl->cog.x += sl.len * ( sl.x + (0.5*(sl.len-1)) );
       impl->cog.y += sl.len * sl.y;
     }
     //    printf("collecting part %p with %d other parts\n",p,p->parts.size());
@@ -163,7 +163,6 @@ namespace icl{
 
   const RegionPCAInfo &Region::getPCAInfo() const {
     // {{{ open
-    ERROR_LOG("calculation of pca information is still buggy!");
     if(impl->pcainfo) return *impl->pcainfo;
     
     register int x,end,len;
@@ -278,7 +277,9 @@ namespace icl{
     static int jumps[] = {  3, 0, 1, 2, 3, 0, 1, 2 };
     
     register int dirIdx=0;
-    
+
+    image.print("image n iclRegion::getBoundaryIntern");
+    ERROR_LOG("x Start = " << xStart << "  yStart=" << yStart << "  w=" << w);
     const register T *pStart = data+xStart+yStart*w;
     const register T *p = pStart;
     register int x=xStart;
@@ -291,9 +292,11 @@ namespace icl{
     const register T *pBreak(0);
     register int dirIdxBreak(0);
 
+    ERROR_LOG("a");
       /// seach 2nd pixel -> criterion for end loop
     impl->boundary->push_back(Point(x,y));
     do{
+      ERROR_LOG("dirIdx " << dirIdx);
       cx = x+xdirs[dirIdx];
       cy = y+ydirs[dirIdx];
       cp = p+dirs[dirIdx];

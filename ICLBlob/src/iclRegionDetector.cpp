@@ -149,7 +149,7 @@ namespace icl{
           slX = x; 
         }
       }
-      limC[w-1]->add(ScanLine(slX+xOffs,y,w-slX-1));
+      limC[w-1]->add(ScanLine(slX+xOffs,y+yOffs,w-slX));
     }
 
     for(unsigned int i=0;i<m_vecParts.size();i++){
