@@ -2,7 +2,7 @@
 #define ICL_USEFUL_FUNCTIONS_H
 
 #include <iclImg.h>
-#include <iclImgRegionDetector.h>
+#include <iclRegionDetector.h>
 
 namespace icl{
   
@@ -64,7 +64,7 @@ namespace icl{
                                      const Img8u &templ, 
                                      float significance,
                                      Img8u *buffer=0,
-                                     ImgRegionDetector *rd=0);
+                                     RegionDetector *rd=0);
                                      
   
   

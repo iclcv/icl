@@ -22,7 +22,7 @@ int main(int n, char **ppc){
   float s = pa_subarg<float>("-s",0,0.9);
   printf("using significance: %f \n",s);
   Img8u *buffer = new Img8u;
-  ImgRegionDetector rd;
+  RegionDetector rd;
   vector<Rect> rs = iclMatchTemplate(image,templ,s,buffer,&rd);
   tic();
   for(int i=0;i<1000;i++){

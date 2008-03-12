@@ -28,9 +28,9 @@ namespace icl{
                                      const Img8u &templ, 
                                      float significance,
                                      Img8u *bufferGiven,
-                                     ImgRegionDetector *rdGiven){    
+                                     RegionDetector *rdGiven){    
     ImgBase *useBuffer = bufferGiven ? bufferGiven : new Img8u;
-    ImgRegionDetector *useRD = rdGiven ? rdGiven : new ImgRegionDetector;
+    RegionDetector *useRD = rdGiven ? rdGiven : new RegionDetector;
 
     useBuffer->setChannels(src.getChannels());
     useBuffer->setSize(src.getROISize()-templ.getROISize()+Size(1,1));
@@ -69,7 +69,7 @@ namespace icl{
                                                std::vector<int>(1,0),
                                                formatMatrix);
     useRD->setRestrictions(0,2<<10,1,255);
-    const std::vector<BlobData> &blobData = useRD->detect(c0);
+    const std::vector<Region> &blobData = useRD->detect(c0);
     std::vector<Rect> resultVec(blobData.size());
     Rect templRect(Point::null,templ.getROISize());
     for(unsigned int i=0;i<blobData.size();i++){
