@@ -68,6 +68,8 @@ namespace icl{
   template<class T>
   void LUTOp3Channel<T>::apply(const ImgBase *src, ImgBase **dst){
     ICLASSERT_RETURN(src);
+    ICLASSERT_RETURN(dst);
+    ICLASSERT_RETURN(src != *dst);
     ICLASSERT_RETURN(src->getChannels() == 3);
     if(!prepare(dst,getDepth<T>(), src->getSize(),formatMatrix,1, src->getROI(),src->getTime())){
       ERROR_LOG("unable to prepare output image");

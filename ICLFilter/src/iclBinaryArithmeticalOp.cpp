@@ -120,6 +120,8 @@ namespace icl {
     // {{{ open
     ICLASSERT_RETURN( poSrc1 );
     ICLASSERT_RETURN( poSrc2 );
+    ICLASSERT_RETURN( poDst );
+    
     if(!BinaryOp::check(poSrc1,poSrc2) || !BinaryOp::prepare(poDst,poSrc1)){
       return;
     }

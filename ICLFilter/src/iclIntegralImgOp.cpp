@@ -46,6 +46,9 @@ namespace icl{
     // {{{ open
 
     ICLASSERT_RETURN( poSrc );
+    ICLASSERT_RETURN( poSrc );
+    ICLASSERT_RETURN( poSrc != *ppoDst );
+    
     if(!prepare(ppoDst,  m_eIntegralImageDepth, poSrc->getSize()+Size(2*m_uiBorderSize,2*m_uiBorderSize),
                 formatMatrix, poSrc->getChannels(), Rect::null)) return;
     

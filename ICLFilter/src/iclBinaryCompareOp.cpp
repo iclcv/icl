@@ -130,6 +130,9 @@ namespace icl {
   
   void BinaryCompareOp::apply(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst){
      // {{{ open
+    ICLASSERT_RETURN( poSrc1 );
+    ICLASSERT_RETURN( poSrc2 );
+    ICLASSERT_RETURN( ppoDst );
 
     if(!BinaryOp::check(poSrc1,poSrc2) || !BinaryOp::prepare(ppoDst,poSrc1)) return;
     switch (poSrc1->getDepth()){

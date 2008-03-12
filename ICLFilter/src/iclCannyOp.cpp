@@ -56,6 +56,9 @@ namespace icl {
   void CannyOp::apply (const ImgBase *poSrc, ImgBase **ppoDst)
       // {{{ open
   {
+    ICLASSERT_RETURN( poSrc );
+    ICLASSERT_RETURN( ppoDst );
+    ICLASSERT_RETURN( poSrc != *ppoDst);
     ICLASSERT_RETURN( poSrc->getDepth() == depth32f );
     FUNCTION_LOG("");
     for(int i=0;i<2;i++){

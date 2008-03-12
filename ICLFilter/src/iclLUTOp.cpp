@@ -45,7 +45,11 @@ namespace icl{
   
   
   void LUTOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
+    ICLASSERT_RETURN(poSrc);
+    ICLASSERT_RETURN(ppoDst);
+    ICLASSERT_RETURN(poSrc != *ppoDst);
     
+
     if(poSrc->getDepth() != depth8u){
       poSrc->convert(m_poBuffer);
       poSrc = m_poBuffer;

@@ -226,6 +226,7 @@ namespace icl{
     // {{{ open
     ICLASSERT_RETURN(poSrc);
     ICLASSERT_RETURN(ppoDst);
+    ICLASSERT_RETURN(poSrc != *ppoDst);
 
     bool needSetCheckOnlyToFalseCall = (!getCheckOnly()) && (*ppoDst == poSrc);
     if(needSetCheckOnlyToFalseCall) setCheckOnly(true);

@@ -72,7 +72,9 @@ namespace icl {
     /// check+adapt destination image to properties of given source image
     virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc) {
       // ensure that the checkOnly flag is set to TRUE, if source and destination images are the same pointers, 
-      ICLASSERT_RETURN_VAL( !(ppoDst && (*ppoDst==poSrc) && !getCheckOnly() ), false);
+      // this can not lead to problems, because *ppoDst is reallocated only if its depth differs from
+      // the source images depth (which is not true if poSrc==*ppoDst
+      //ICLASSERT_RETURN_VAL( !(ppoDst && (*ppoDst==poSrc) && !getCheckOnly() ), false); 
       return prepare (ppoDst, poSrc->getDepth(), chooseSize (poSrc),
                       poSrc->getFormat(), poSrc->getChannels (), chooseROI (poSrc),
                       poSrc->getTime());
@@ -82,7 +84,9 @@ namespace icl {
     /// but use explicitly given depth
     virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc, depth eDepth) {
       // ensure that the checkOnly flag is set to TRUE, if source and destination images are the same pointers, 
-      ICLASSERT_RETURN_VAL( !(ppoDst && (*ppoDst==poSrc) && !getCheckOnly() ), false);
+      // this can not lead to problems, because *ppoDst is reallocated only if its depth differs from
+      // the source images depth (which is not true if poSrc==*ppoDst
+      // ICLASSERT_RETURN_VAL( !(ppoDst && (*ppoDst==poSrc) && !getCheckOnly() ), false);
       return prepare (ppoDst, eDepth, chooseSize (poSrc),
                       poSrc->getFormat(), poSrc->getChannels (), chooseROI (poSrc),
                       poSrc->getTime());

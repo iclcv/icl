@@ -125,7 +125,10 @@ namespace icl{
    void AffineOp::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
      // {{{ open
 
-      ICLASSERT_RETURN( poSrc->getDepth() == depth32f || poSrc->getDepth() == depth8u);
+     ICLASSERT_RETURN(poSrc);
+     ICLASSERT_RETURN(ppoDst);
+     ICLASSERT_RETURN(poSrc != *ppoDst);
+     ICLASSERT_RETURN( poSrc->getDepth() == depth32f || poSrc->getDepth() == depth8u);
       double xShift, yShift;
       Size   oSize;
       getShiftAndSize (poSrc->getROI(), oSize, xShift, yShift);

@@ -24,6 +24,7 @@ namespace icl {
     //Variable initialisation
     float p1, p2;
     
+    ERROR_LOG("Implementation should use prepare()-function here!");
     // Check if src image is allready a chroma image
     if (poSrc->getFormat() == icl::formatChroma) {
       ensureCompatible(m_poChroma, poSrc);

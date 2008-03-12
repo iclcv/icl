@@ -72,7 +72,10 @@ namespace icl{
   }
 
   void GaborOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
-    ICLASSERT_RETURN( poSrc && ppoDst );
+    ICLASSERT_RETURN( poSrc );
+    ICLASSERT_RETURN( ppoDst );
+    ICLASSERT_RETURN( poSrc != *ppoDst);
+    
 
     if(!*ppoDst){
       *ppoDst = new Img32f(Size::null,0);

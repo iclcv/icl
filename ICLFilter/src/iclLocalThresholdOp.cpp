@@ -187,6 +187,8 @@ namespace icl{
     ICLASSERT_RETURN( src );
     ICLASSERT_RETURN( src->getSize() != Size::null );
     ICLASSERT_RETURN( src->getChannels() );
+    ICLASSERT_RETURN( dst );
+    ICLASSERT_RETURN( src != *dst );
 
     // cut the roi of src if set
     if(!(src->hasFullROI())){

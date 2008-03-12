@@ -30,7 +30,10 @@ namespace icl {
   
   void WeightedSumOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
     ICLASSERT_RETURN(poSrc);
+    ICLASSERT_RETURN(ppoDst);
+    ICLASSERT_RETURN( *ppoDst != poSrc );
     ICLASSERT_RETURN( (int)m_vecWeights.size() == poSrc->getChannels() );
+    
     
     if(!prepare(ppoDst,
                 poSrc->getDepth() == depth64f ? depth64f : depth32f,
