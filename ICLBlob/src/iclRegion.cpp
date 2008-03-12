@@ -278,8 +278,6 @@ namespace icl{
     
     register int dirIdx=0;
 
-    image.print("image n iclRegion::getBoundaryIntern");
-    ERROR_LOG("x Start = " << xStart << "  yStart=" << yStart << "  w=" << w);
     const register T *pStart = data+xStart+yStart*w;
     const register T *p = pStart;
     register int x=xStart;
@@ -292,11 +290,9 @@ namespace icl{
     const register T *pBreak(0);
     register int dirIdxBreak(0);
 
-    ERROR_LOG("a");
       /// seach 2nd pixel -> criterion for end loop
     impl->boundary->push_back(Point(x,y));
     do{
-      ERROR_LOG("dirIdx " << dirIdx);
       cx = x+xdirs[dirIdx];
       cy = y+ydirs[dirIdx];
       cp = p+dirs[dirIdx];
