@@ -163,7 +163,6 @@ namespace icl{
       v.push_back(string("Depth: ") + translateDepth(s.d));
       v.push_back(string("Format: ") + translateFormat(s.params.getFormat()));
       v.push_back(string("ROI: ") + translateRect(s.params.getROI()));
-      
       for(int i=0;i<maxChannels;i++){
         v.push_back(string("C-")+str(i)+":");
         v.push_back(string("[")+str(s.ranges[i].minVal)+","+str(s.ranges[i].maxVal)+"]");

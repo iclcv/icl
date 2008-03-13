@@ -113,6 +113,27 @@ namespace icl{
     m_aiBCI[0] = b; m_aiBCI[1] = c; m_aiBCI[2] = i;
   }
 
+
+  namespace{
+    
+    template<class T>
+    void calculate_minmax_interleaved(T *data,
+                                      Size dataROISize,
+                                      int dataLineLength,
+                                      int channels,
+                                      std::vector<Range<T> > &ranges){
+      for(int x=0;x<dataROISize.width;++x){
+        for(int y=0;y<dataROISize.height;++y){
+          for(int c=0;c<channels;++c){
+            T &val = data[(x+dataLineLength*y)*channels+c];
+            ranges[c].minVal = iclMin(ranges[c].minVal,val);
+            ranges[c].maxVal = iclMax(ranges[c].maxVal,val);
+          }
+        }
+      }
+    }
+  }
+
   template<class T>
   std::vector<Range<T> > GLTextureMapImage<T>::getMinMax() const{
     if(m_bUseSingleBuffer){
@@ -120,21 +141,11 @@ namespace icl{
       return std::vector<Range<T> >();
     }
     
-    std::vector<Range<T> > mm(m_iChannels);
-    for(int i=0;i<m_iChannels;i++){
-      mm[i] = Range<T>(std::numeric_limits<T>::max(),std::numeric_limits<T>::min());
-    }
+    std::vector<Range<T> > mm(m_iChannels,Range<T>(std::numeric_limits<T>::max(),std::numeric_limits<T>::min()));
     
-    Img<T> tmpImage(m_matROISizes[0][0], m_iChannels);
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
-        tmpImage.setROISize(m_matROISizes[x][y]); // bzw [0][0] if all of the buffers have same size
-        interleavedToPlanar(m_matCellData[x][y],&tmpImage); // here pos. give specific line step
-        for(int i=0;i<m_iChannels;i++){
-          Range<T> rng = tmpImage.getMinMax(i);
-          if(mm[i].minVal > rng.minVal)mm[i].minVal = rng.minVal;
-          if(mm[i].maxVal < rng.maxVal)mm[i].maxVal = rng.maxVal;
-        }
+        calculate_minmax_interleaved(m_matCellData[x][y],m_matROISizes[x][y],m_iCellSize,m_iChannels,mm);
       }
     }
     return mm;

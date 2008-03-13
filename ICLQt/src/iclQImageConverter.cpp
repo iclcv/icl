@@ -120,7 +120,7 @@ QImageConverter::QImageConverter(){
   // {{{ open
 
   for(int i=0;i<5;i++){
-    m_aeStates[5]=undefined;
+    m_aeStates[i]=undefined;
     m_apoBuf[i]=0;
   }
   m_poQBuf = 0;
@@ -133,7 +133,7 @@ QImageConverter::QImageConverter(const ImgBase *image){
   // {{{ open
 
   for(int i=0;i<5;i++){
-    m_aeStates[5]=undefined;
+    m_aeStates[i]=undefined;
     m_apoBuf[i]=0;
   }
   m_poQBuf = 0;
@@ -147,7 +147,7 @@ QImageConverter::QImageConverter(const QImage *qimage){
   // {{{ open
 
   for(int i=0;i<5;i++){
-    m_aeStates[5]=undefined;
+    m_aeStates[i]=undefined;
     m_apoBuf[i]=0;
   }
   m_poQBuf = 0;
