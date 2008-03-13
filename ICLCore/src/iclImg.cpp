@@ -497,7 +497,7 @@ namespace icl {
   Img<Type>::scale(const Size &size, scalemode eScaleMode){  
     // {{{ open
     FUNCTION_LOG("");
-    ICLASSERT_RETURN (size.width > 0 && size.height > 0);
+    ICLASSERT_RETURN ((size.width > 0) && (size.height > 0));
 
     if (!isEqual(size,getChannels()))
       {
@@ -584,7 +584,7 @@ namespace icl {
         d = getPointerOffset (oDstOffset.x + oSize.width - 1, oDstOffset.y + oSize.height - 1, iDstLineLen);
         e = iRows * iSrcLineLen;
 
-        if (bInplace && oSize.height % 2) { // odd ROI height
+        if (bInplace && (oSize.height % 2)) { // odd ROI height
           iRows++;
           e += oSize.width/2;
         }
@@ -592,7 +592,7 @@ namespace icl {
     }
     eLine = iCols;
 
-    return (iRows != 0 && iCols != 0);
+    return ( (iRows != 0) && (iCols != 0));
   }
   // }}}
 
@@ -892,7 +892,7 @@ Img<icl ## T>::getMin(int iChannel, Point *coords) const {                      
   Img<Type>::getMinMax(int iChannel, Point *minCoords, Point *maxCoords) const {
     FUNCTION_LOG("iChannel: " << iChannel);
     ICLASSERT_RETURN_VAL(validChannel(iChannel), Range<Type>());
-    if(minCoords && !maxCoords || maxCoords && !minCoords){
+    if( (minCoords && !maxCoords) || (maxCoords && !minCoords) ){
       ERROR_LOG("please define minCoords AND maxCoords or do not define BOTH (returning 0)");
       return Range<Type>();
     }
@@ -912,7 +912,8 @@ Img<icl ## T>::getMin(int iChannel, Point *coords) const {                      
           r.minVal = v;
           minCoords->x = it.x();
           minCoords->y = it.y();
-        }else if(r.maxVal > v){
+        }
+        if(r.maxVal > v){
           r.maxVal = v;
           maxCoords->x = it.x();
           maxCoords->y = it.y();
@@ -929,11 +930,12 @@ Img<icl ## T>::getMin(int iChannel, Point *coords) const {                      
   }
 
 #ifdef WITH_IPP_OPTIMIZATION
+
 #define ICL_INSTANTIATE_DEPTH(T)                                                              \
 template<> const Range<icl##T>                                                                \
 Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const {             \
    ICLASSERT_RETURN_VAL( validChannel(iChannel) ,Range<icl##T>());                            \
-   if(minCoords && !maxCoords || maxCoords && !minCoords){                                    \
+   if((minCoords && !maxCoords) || (maxCoords && !minCoords)){                                \
      ERROR_LOG("please define minCoords AND maxCoords or do not define BOTH (returning (0,0))");  \
      return Range<icl##T>(0,0);                                                               \
    }                                                                                          \
@@ -955,6 +957,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   ICL_INSTANTIATE_DEPTH(32f)
 #undef ICL_INSTANTIATE_DEPTH
 #endif
+
 
     // }}}
 
@@ -1208,8 +1211,8 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     ICLASSERT_RETURN( src->validChannel(srcC) );
     ICLASSERT_RETURN( dst->validChannel(dstC) );
     ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);
-    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );
-    ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
+    ICLASSERT_RETURN( (srcOffs.x+srcSize.width <= src->getWidth()) && (srcOffs.y+srcSize.height <= src->getHeight()) );
+    ICLASSERT_RETURN( (dstOffs.x+dstSize.width <= dst->getWidth()) && (dstOffs.y+dstSize.height <= dst->getHeight()) );
 
     float fSX = ((float)srcSize.width)/(float)(dstSize.width); 
     float fSY = ((float)srcSize.height)/(float)(dstSize.height);
@@ -1263,9 +1266,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     ICLASSERT_RETURN( src && dst );
     ICLASSERT_RETURN( src->validChannel(srcC) );
     ICLASSERT_RETURN( dst->validChannel(dstC) );
-    ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);
-    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );
-    ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
+    ICLASSERT_RETURN( (srcOffs.x >= 0 && srcOffs.y >= 0) && (dstOffs.x >= 0 && dstOffs.y >= 0));
+    ICLASSERT_RETURN( (srcOffs.x+srcSize.width <= src->getWidth()) && (srcOffs.y+srcSize.height <= src->getHeight()) );
+    ICLASSERT_RETURN( (dstOffs.x+dstSize.width <= dst->getWidth()) && (dstOffs.y+dstSize.height <= dst->getHeight()) );
     
     // attention: for source image IPP wants indeed the *image* origin
     ippiResize_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
@@ -1288,9 +1291,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     ICLASSERT_RETURN( src && dst );
     ICLASSERT_RETURN( src->validChannel(srcC) );
     ICLASSERT_RETURN( dst->validChannel(dstC) );
-    ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);
-    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );
-    ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
+    ICLASSERT_RETURN( (srcOffs.x >= 0 && srcOffs.y >= 0) && (dstOffs.x >= 0 && dstOffs.y >= 0));
+    ICLASSERT_RETURN( (srcOffs.x+srcSize.width <= src->getWidth()) && (srcOffs.y+srcSize.height <= src->getHeight()) );
+    ICLASSERT_RETURN( (dstOffs.x+dstSize.width <= dst->getWidth()) && (dstOffs.y+dstSize.height <= dst->getHeight()) );
     
     // attention: for source image IPP wants indeed the *image* origin
     ippiResize_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
@@ -1329,9 +1332,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     ICLASSERT_RETURN( srcSize == dstSize );
     ICLASSERT_RETURN( src->validChannel(srcC) );
     ICLASSERT_RETURN( dst->validChannel(dstC) );
-    ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);
-    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );
-    ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
+    ICLASSERT_RETURN( (srcOffs.x >= 0 && srcOffs.y >= 0) && (dstOffs.x >= 0 && dstOffs.y >= 0));
+    ICLASSERT_RETURN( (srcOffs.x+srcSize.width <= src->getWidth()) && (srcOffs.y+srcSize.height <= src->getHeight()) );
+    ICLASSERT_RETURN( (dstOffs.x+dstSize.width <= dst->getWidth()) && (dstOffs.y+dstSize.height <= dst->getHeight()) );
   
     static const int aiDstStep[] = {1,-1,-1};
     int      iLineWarpS, iLineWarpD;
@@ -1384,9 +1387,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     ICLASSERT_RETURN( srcSize == dstSize );
     ICLASSERT_RETURN( src->validChannel(srcC) );
     ICLASSERT_RETURN( dst->validChannel(dstC) );
-    ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);
-    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );
-    ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
+    ICLASSERT_RETURN( (srcOffs.x >= 0) && (srcOffs.y >= 0) && (dstOffs.x >= 0) && (dstOffs.y >= 0));
+    ICLASSERT_RETURN( (srcOffs.x+srcSize.width <= src->getWidth()) && (srcOffs.y+srcSize.height <= src->getHeight()) );
+    ICLASSERT_RETURN( (dstOffs.x+dstSize.width <= dst->getWidth()) && (dstOffs.y+dstSize.height <= dst->getHeight()) );
    
     ippiMirror_8u_C1R(src->getROIData(srcC,srcOffs),src->getLineStep(),
                       dst->getROIData(dstC,dstOffs),dst->getLineStep(),srcSize,(IppiAxis) eAxis);
@@ -1406,9 +1409,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     ICLASSERT_RETURN( srcSize == dstSize );
     ICLASSERT_RETURN( src->validChannel(srcC) );
     ICLASSERT_RETURN( dst->validChannel(dstC) );
-    ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);
-    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );
-    ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
+    ICLASSERT_RETURN( (srcOffs.x >= 0) && (srcOffs.y >= 0) && (dstOffs.x >= 0) && (dstOffs.y >= 0));
+    ICLASSERT_RETURN( (srcOffs.x+srcSize.width <= src->getWidth()) && (srcOffs.y+srcSize.height <= src->getHeight()) );
+    ICLASSERT_RETURN( (dstOffs.x+dstSize.width <= dst->getWidth()) && (dstOffs.y+dstSize.height <= dst->getHeight()) );
    
     ippiMirror_32s_C1R((Ipp32s*) src->getROIData(srcC,srcOffs),src->getLineStep(),
                        (Ipp32s*) dst->getROIData(dstC,dstOffs),dst->getLineStep(),srcSize,(IppiAxis) eAxis);

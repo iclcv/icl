@@ -79,8 +79,8 @@ namespace icl{
       sprintf(buf,format,d);
       return buf;
     }else{
-      char buf2[32];
-      sprintf(buf2,format,d);
+      char buf2[64];
+      snprintf(buf2,64,format,d);
       return buf2;
     }
   }
