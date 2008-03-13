@@ -210,7 +210,7 @@ int main(int nArgs, char **ppcArg){
         update();
         return true;
       }else{
-        return QWidget::event(event);
+        return QGLWidget::event(event);
       }
     } 
     
