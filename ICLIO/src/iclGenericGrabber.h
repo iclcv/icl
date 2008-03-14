@@ -83,7 +83,57 @@ namespace icl {
     }
 
     /// returns wheter an underlying grabber could be created
-    bool isNull(){ return m_poGrabber == 0; }
+    bool isNull() const { return m_poGrabber == 0; }
+    
+    const ImgParams &getDesiredParams()const{
+      static ImgParams nullParams;
+      ICLASSERT_RETURN_VAL(!isNull(),nullParams);
+      return m_poGrabber->getDesiredParams();
+    }
+     
+    /// returns current desired image size (default is "320x240"
+    const Size &getDesiredSize()const{
+      static Size nullSize;
+      ICLASSERT_RETURN_VAL(!isNull(),nullSize);
+      return m_poGrabber->getDesiredSize();
+     }
+     
+     /// returns current desired image format (default is formatRGB)
+     format getDesiredFormat() const{
+       ICLASSERT_RETURN_VAL(!isNull(),formatMatrix);
+       return m_poGrabber->getDesiredFormat();
+     }
+
+     /// returns current desired image depth (default is depth8u)
+     depth getDesiredDepth() const{
+       ICLASSERT_RETURN_VAL(!isNull(),depth8u);
+       return m_poGrabber->getDesiredDepth();
+     }
+     
+     /// sets current desired image parameters
+     void setDesiredParams(const ImgParams &p){
+       ICLASSERT_RETURN(!isNull());
+       m_poGrabber->setDesiredParams(p);
+     }
+
+     /// sets current desired image size
+     void setDesiredSize(const Size &s){
+       ICLASSERT_RETURN(!isNull());
+       m_poGrabber->setDesiredSize(s);
+     }
+     
+     /// sets current desired image format
+     void setDesiredFormat(format f){
+       ICLASSERT_RETURN(!isNull());
+       m_poGrabber->setDesiredFormat(f);
+     }
+     
+     /// returns current desired image depth
+     void setDesiredDepth(depth d){
+       ICLASSERT_RETURN(!isNull());
+       m_poGrabber->setDesiredDepth(d);
+     }
+
   };
   
  

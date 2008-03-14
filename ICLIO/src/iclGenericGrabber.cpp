@@ -87,6 +87,7 @@ namespace icl{
       if(l[i] == "file"){
         if(FileList(pFile).size()){
           m_poGrabber = new FileGrabber(pFile);
+          ((FileGrabber*)m_poGrabber)->setIgnoreDesiredParams(false);
           break;
         }else{
           continue;
