@@ -57,8 +57,17 @@ namespace icl{
       char **ppcFiles = match.we_wordv;
       for (unsigned int i=0; i < match.we_wordc; ++i) {
         add(ppcFiles[i]);
+#ifdef __APPLE__
+		free(ppcFiles[i]);
+#endif
       }
+
+// caused funny malloc errors like 
+//		...  malloc: *** error for object 0xe91b944: Non-aligned pointer being freed
+#ifndef __APPLE__
       wordfree(&match);
+#endif /*__APPLE*/
+
 #else
       add(sPattern);
 #endif
