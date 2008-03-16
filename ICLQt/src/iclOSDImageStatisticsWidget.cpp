@@ -24,13 +24,14 @@ namespace icl{
     static const int  OSDISW_LOG_BUTTON_ID = OSDISW_IMAGE_TEXT_INFO_ID+4;
     static const int  OSDISW_MEAN_BUTTON_ID = OSDISW_IMAGE_TEXT_INFO_ID+5;
     static const int  OSDISW_MEDIAN_BUTTON_ID = OSDISW_IMAGE_TEXT_INFO_ID+6;
+    static const int  OSDISW_FILL_BUTTON_ID = OSDISW_IMAGE_TEXT_INFO_ID+7;
     
     
     static const int GAP = 2;
     static const int BORDER = 2;
     static const float REL_NAVBAR_H = 0.12;
     static const float REL_HISTO_W = 0.7;
-    static const int ABS_BUTTON_H = 20;
+    static const int ABS_BUTTON_H = 40;
 
     Rect get_channel_navbar_rect(const Rect &r){
       // {{{ open
@@ -184,12 +185,19 @@ namespace icl{
     }
 
     Rect br = get_button_rect(r);
-    m_poLogButton = new OSDButton(OSDISW_LOG_BUTTON_ID,Rect(br.x,br.y,float(br.width-2*GAP)/3,br.height),poIW,this,"log",true);
+    Rect br_1(br.x,br.y,float(br.width-GAP)/2,float(br.height-GAP)/2);
+    Rect br_2(br.x+br_1.width+GAP,br.y,br_1.width,br_1.height);
+    Rect br_3(br.x,br.y+br_1.height+GAP,br_1.width,br_1.height);
+    Rect br_4(br.x+br_1.width+GAP,br.y+br_1.height+GAP,br_1.width,br_1.height);
+
+    m_poLogButton = new OSDButton(OSDISW_LOG_BUTTON_ID,br_1,poIW,this,"log",true);
     addChild( m_poLogButton );
-    m_poMeanButton = new OSDButton(OSDISW_MEAN_BUTTON_ID,Rect(1+GAP+br.x+float(br.width-2*GAP)/3,br.y,float(br.width-2*GAP)/3,br.height),poIW,this,"blur",true);
+    m_poMeanButton = new OSDButton(OSDISW_MEAN_BUTTON_ID,br_2,poIW,this,"blur",true);
     addChild( m_poMeanButton );
-    m_poMedianButton = new OSDButton(OSDISW_MEDIAN_BUTTON_ID,Rect(1+2*GAP+br.x+2*float(br.width-2*GAP)/3,br.y,float(br.width-2*GAP)/3,br.height),poIW,this,"median",true);
+    m_poMedianButton = new OSDButton(OSDISW_MEDIAN_BUTTON_ID,br_3,poIW,this,"median",true);
     addChild( m_poMedianButton );
+    m_poFillButton = new OSDButton(OSDISW_FILL_BUTTON_ID,br_4,poIW,this,"fill",true);
+    addChild( m_poFillButton );
   }
 
   // }}}
@@ -245,7 +253,8 @@ namespace icl{
     for(int i=0;i<cc;++i){
       m_vecHistoWidgets[i]->setFeatures(m_poLogButton->isToggled(),
                                         m_poMeanButton->isToggled(),
-                                        m_poMedianButton->isToggled());
+                                        m_poMedianButton->isToggled(),
+                                        m_poFillButton->isToggled());
     }
     
     set_up_histo_color(m_vecHistoWidgets,s.params.getFormat());

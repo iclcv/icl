@@ -71,12 +71,25 @@ namespace icl{
       float binDistance = float(r.width)/n;
       float binWidth = binDistance-GAP;
       
+      int lastX = 0;
+      int lastY = 0;
       for(int i=0;i<n;i++){
         float val = histo[i];
         if(m_bLogMode && val) val=(::log(val));
         int h = (float(r.height)/maxElem)*val;
         int y = r.y+r.height-h;
-        e->rect(Rect(r.x+(int)(i*binDistance),y,(int)binWidth,h));
+        int x = r.x+(int)(i*binDistance);
+        if(m_bDrawFilled){
+          e->rect(Rect(x,y,(int)binWidth,h));
+        }else{
+          e->rect(Rect(x,y,(int)binWidth,2));
+          if(i>0){
+            e->line(Point(x+binWidth/2,y),Point(lastX+binWidth/2,lastY));
+          }
+          lastX = x;
+          lastY = y;
+        }
+        
       }
     }
 

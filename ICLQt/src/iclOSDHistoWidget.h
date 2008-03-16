@@ -11,14 +11,15 @@ namespace icl{
   class OSDHistoWidget : public OSDWidget{
     public:
     OSDHistoWidget(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent):
-    OSDWidget(id,r,poIW,poParent),m_bLogMode(false),m_bMeanMode(false),m_bMedianMode(false){}
+    OSDWidget(id,r,poIW,poParent),m_bLogMode(false),m_bMeanMode(false),m_bMedianMode(false),m_bDrawFilled(false){}
     
     virtual void drawSelf(PaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
     
-    void setFeatures(bool logMode, bool meanMode, bool medianMode){
+    void setFeatures(bool logMode, bool meanMode, bool medianMode, bool fill){
       m_bLogMode = logMode;
       m_bMeanMode = meanMode;
       m_bMedianMode = medianMode;
+      m_bDrawFilled = fill;
     }
     
     void setColor(int r, int g, int b){
@@ -37,6 +38,7 @@ namespace icl{
     bool m_bLogMode;
     bool m_bMeanMode;
     bool m_bMedianMode;
+    bool m_bDrawFilled;
     
   };
 } // namespace

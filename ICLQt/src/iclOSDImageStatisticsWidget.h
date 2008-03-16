@@ -25,6 +25,7 @@ namespace icl{
     OSDButton *m_poLogButton;
     OSDButton *m_poMeanButton;    
     OSDButton *m_poMedianButton;
+    OSDButton *m_poFillButton;
   };
 } // namespace
 
