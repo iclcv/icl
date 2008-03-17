@@ -1,6 +1,7 @@
 #ifndef ICL_THREAD_UTILS_H
 #define ICL_THREAD_UTILS_H
 
+#include <stdlib.h>
 #include "iclThread.h"
 #include "iclMutex.h"
 #include <vector>
@@ -44,13 +45,21 @@ namespace icl{
               cbs[i]();
             }
           }
-          mutex.unlock();
           msleep(sleeptime);
         }
         if(!looped) break;
       }
     }
   };
+  /** \endcond */
+ 
+  /** \cond */
+  template<class Callback>
+  void exec_threaded_on_exit_function(int exitCode, void *data){
+    CallbackThread<Callback> *t = reinterpret_cast<CallbackThread<Callback>*>(data);
+    t->stop();
+    delete t;
+  }
   /** \endcond */
   
   /// Start a function or a functor in an own thread \ingroup THREAD 
@@ -79,6 +88,11 @@ namespace icl{
     static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
     cbt->setSleepTime(sleepMsecs);
     cbt->add(cb);
+    static bool first = true;
+    if(first){
+      on_exit(exec_threaded_on_exit_function<Callback>,cbt);
+      first = false;
+    }
   }
 }
 
