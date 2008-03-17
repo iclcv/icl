@@ -720,31 +720,35 @@ namespace icl {
 
     
     /// STL based "for_each" implementations applying an Unary function on each ROI-pixel of given channel
-    /** Example:\n
+    /** Internally this function uses std::for_each
+        Example:\n
         \code
         #include <iclQuick.h>
 
         struct Thresh{
-          void operator()(float &f){ f = f>128 ? 0 : 255; }
+          inline void operator()(float &f){ f = f>128 ? 0 : 255; }
         };
         
-        void ttt(float &f){
+        inline void ttt(float &f){
           f = f>128 ? 0 : 255;
         }
         
         int main(){
           ImgQ a = create("parrot");
         
-          a.applyPixelFunctionOnChannel(ttt,1);
-          a.applyPixelFunctionOnChannel(Thresh(),0);
+          a.forEach_C(ttt,1);
+          a.forEach_C(Thresh(),0);
         
           show(scale(a,0.2));
           return 0;
         }       
         \endcode
+        @param f unary function or functor implementing "AnyType operator()(Type &val)" 
+        @param channel valid channel index for this image
     */
     template<typename UnaryFunction>
-    Img<Type> &applyPixelFunctionOnChannel(UnaryFunction f, int channel){
+    inline Img<Type> &forEach_C(UnaryFunction f, int channel){
+      ICLASSERT_RETURN_VAL(validChannel(channel),*this);
       if(hasFullROI()){
         std::for_each<Type*,UnaryFunction>(getData(channel),getData(channel)+getDim(),f);
       }else{
@@ -756,30 +760,212 @@ namespace icl {
     }
 
     /// STL based "for_each" implementations applying an Unary function on each ROI-pixel
-    /** Example:\n
+    /** Internally using std::for_each by calling Img<T>::forEach_C for all channels
+        Example:\n
         \code
         #include <iclQuick.h>
 
         struct Thresh{
-          void operator()(float &f){ f = f>128 ? 0 : 255; }
+          inline void operator()(float &f){ f = f>128 ? 0 : 255; }
         };
         
         int main(){
           ImgQ a = scale(create("parrot"),0.2);
-          a.applyPixelFunction(Thresh());
+          a.forEach(Thresh());
           show(a);
           return 0;
         }
 
         \endcode
+        @param f unary function or functor implementing "AnyType operator()(Type &val)" 
     */
     template<typename UnaryFunction>
-    Img<Type> &applyPixelFunction(UnaryFunction f){
+    inline Img<Type> &forEach(UnaryFunction f){
       for(int c=0;c<getChannels();++c){
-        applyPixelFunctionOnChannel(f,c);
+        forEach_C(f,c);
       }
       return *this;
     }
+    
+    /// STL based "transform" implementation applying an Unary function on ROI-pixles with given destination image
+    /** Internally this function uses std::transform.         
+        Example:\n
+        \code
+        #include <iclQuick.h>
+        
+        struct Thresh{
+          inline float operator()(const float &f){ return f>128 ? 0 : 255; }
+        };
+        
+        int main(){
+          ImgQ a = scale(create("parrot"),0.2);
+          ImgQ b(a.getParams());
+        
+          a.transform_C(Thresh(),1,2,b);
+          show(b);
+          return 0;
+        }
+        \endcode
+        @param f unary function of functor implementing "dstType operator()(const Type &val)"
+        @param srcChannel valid channel index for this image
+        @param dstChannel valid channel index for dst image
+        @param dst destination image with identical ROI-size to this images ROI-size
+    */
+    template<typename UnaryFunction, class dstType>
+    inline Img<dstType> &transform_C(UnaryFunction f, int srcChannel, int dstChannel, Img<dstType> &dst) const{
+      ICLASSERT_RETURN_VAL(getROISize() == dst.getROISize(),dst);
+      ICLASSERT_RETURN_VAL(validChannel(srcChannel),dst);
+      ICLASSERT_RETURN_VAL(dst.validChannel(dstChannel),dst);
+
+      if(hasFullROI() && dst.hasFullROI()){
+        std::transform(getData(srcChannel),getData(srcChannel)+getDim(),dst.getData(dstChannel),f);
+      }else{
+        ImgIterator<dstType> itDst = dst.getROIIterator(dstChannel);
+        for(ConstImgIterator<Type> it = getROIIterator(srcChannel); it.inRegion(); it.incRow(), itDst.incRow()){
+          std::transform(&(*it),&(*it)+it.getROIWidth(),&(*itDst),f);
+        }        
+      }
+      return dst;
+    }
+  
+    /// STL based "transform" implementation applying an Unary function on ROI-pixles with given destination image
+    /** Internally this function uses std::transform.         
+        Example:\n
+        \code
+        #include <iclQuick.h>
+        
+        inline icl8u t_func(const float &f){ 
+          return f>128 ? 0 : 255; 
+        }
+        
+        int main(){
+          ImgQ a = scale(create("parrot"),0.2);
+          Img8u b(a.getParams());
+        
+          a.transform(t_func,b);
+          show(cvt(b));
+          return 0;
+        }
+
+        \endcode
+        @param f unary function of functor implementing "dstType operator()(const Type &val)"
+        @param dst destination image with identical ROI-size and channel count (compared to this image)
+    */
+    template<typename UnaryFunction,class dstType>
+    inline Img<dstType> &transform(UnaryFunction f, Img<dstType> &dst) const{
+      ICLASSERT_RETURN_VAL(getChannels() == dst.getChannels(),dst);
+      for(int c=0;c<getChannels();++c){
+        transform_C(f,c,c,dst);
+      }
+      return dst;
+    }
+
+
+    /// STL-based "transform function combining two images pixel-wise into a given destination image (with ROI support)"
+    /** Internally this function uses std::transform.         
+        Example:
+        \code
+        #include <iclQuick.h>
+        
+        inline bool gt_func(const float &a,const float &b){
+          return a > b;
+        }
+        struct EqFunctor{
+          bool operator()(const float &a, const float &b){
+            return a == b;
+          }
+        };
+         
+        int main(){
+          ImgQ a = scale(create("parrot"),640,480);
+          ImgQ b = scale(create("women"),640,480);
+        
+          Img8u dst(a.getParams());
+        
+          a.setROI(Rect(10,10,500,400)); 
+          b.setROI(Rect(10,10,500,400));
+          dst.setROI(Rect(10,10,500,400));
+        
+          a.combine_C(std::less<icl32f>(),0,0,0,b,dst);
+          a.combine_C(gt_func,1,1,1,b,dst);  
+          a.combine_C(EqFunctor(),2,2,2,b,dst);
+        
+          dst.setFullROI();
+          show(norm(cvt(dst)));
+          return 0;
+        }
+        \endcode
+        @param f binary function of functor implementing "dstType operator() const(Type &a, otherSrcType &b) const"
+        @param thisChannel valid channel of this image
+        @param otherSrcChannel valid channel index for give 2nd source image
+        @param dstChannel valid channel index of dst image
+        @param otherSrc 2nd source image (ROI-size must be equal to this' ROI size)
+        @param dst destination image (ROI-size must be equal to this' ROI size)
+    */
+    template<typename BinaryFunction, class dstType, class otherSrcType>
+    inline Img<dstType> &combine_C(BinaryFunction f, 
+                                   int thisChannel, 
+                                   int otherSrcChannel, 
+                                   int dstChannel, 
+                                   const Img<otherSrcType> &otherSrc, 
+                                   Img<dstType> &dst) const{
+      ICLASSERT_RETURN_VAL(getROISize() == dst.getROISize()&& getROISize() == otherSrc.getROISize(),dst);
+      ICLASSERT_RETURN_VAL(validChannel(thisChannel),dst);
+      ICLASSERT_RETURN_VAL(otherSrc.validChannel(otherSrcChannel),dst);
+      ICLASSERT_RETURN_VAL(dst.validChannel(dstChannel),dst);
+
+      if(hasFullROI() && dst.hasFullROI() && otherSrc.hasFullROI()){
+        std::transform(getData(thisChannel),getData(thisChannel)+getDim(),otherSrc.getData(otherSrcChannel),dst.getData(dstChannel),f);
+      }else{
+        ImgIterator<dstType> itDst = dst.getROIIterator(dstChannel);
+        ConstImgIterator<otherSrcType> itOtherSrc = otherSrc.getROIIterator(otherSrcChannel);
+        for(ConstImgIterator<Type> it = getROIIterator(thisChannel); it.inRegion(); it.incRow(), itDst.incRow(),itOtherSrc.incRow()){
+          std::transform(&(*it),&(*it)+it.getROIWidth(),&(*itOtherSrc),&(*itDst),f);
+        }        
+      }
+      return dst;
+    }
+
+    
+    /// STL-based "transform function combining two images pixel-wise into a given destination image (with ROI support)"
+    /** This function calls D = F(A,B), with D: destination ROI pixel, F: given binary functor/function,
+        A: pixel of this image and B: pixel of other given src image. Internally this function uses std::transform
+        Beispiel:
+        \code
+        #include <iclQuick.h>
+        
+        int main(){
+          ImgQ a = scale(create("parrot"),640,480);
+          ImgQ b = scale(create("women"),640,480);
+        
+          Img8u dst(a.getParams());
+        
+          a.setROI(Rect(10,10,300,100));
+          b.setROI(Rect(10,10,300,100));
+          dst.setROI(Rect(10,10,300,100));
+        
+          a.combine(std::less<icl32f>(),b,dst);
+        
+          dst.setFullROI();
+          show(norm(cvt(dst)));
+          return 0;
+        }
+
+        \endcode
+        @param f binary function or functor implementing "dstType operator() const(Type &a, otherSrcType &b) const"
+        @param otherSrc 2nd source image
+        @param dst destination image
+    */
+    template<typename BinaryFunction, class dstType, class otherSrcType>
+    inline Img<dstType> &combine(BinaryFunction f, const Img<otherSrcType> &otherSrc, Img<dstType> &dst) const{
+      ICLASSERT_RETURN_VAL(getChannels() == otherSrc.getChannels(),dst);
+      ICLASSERT_RETURN_VAL(getChannels() == dst.getChannels(),dst);
+      for(int c=0;c<getChannels();++c){
+        combine_C(f,c,c,c,otherSrc,dst);
+      }
+      return dst;
+    }
+    
 
     
     /// perform an in-place resize of the image (keeping the data) 

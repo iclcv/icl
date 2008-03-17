@@ -51,7 +51,7 @@ namespace icl{
       switch(t){
 #define CASE(X)                                                                                 \
         case InplaceLogicalOp::X##Op:                                                           \
-          src->applyPixelFunction(Apply<T,InplaceLogicalOp::X##Op>(Cast<icl64f,T>::cast(val))); \
+          src->forEach(Apply<T,InplaceLogicalOp::X##Op>(Cast<icl64f,T>::cast(val))); \
           break
 
         CASE(and);
@@ -81,7 +81,7 @@ namespace icl{
       switch(t){
 #define CASE(X)                                                                               \
         case InplaceLogicalOp::X##Op:                                                         \
-        src->applyPixelFunction(Apply<T,InplaceLogicalOp::X##Op>(Cast<icl64f,T>::cast(val))); \
+        src->forEach(Apply<T,InplaceLogicalOp::X##Op>(Cast<icl64f,T>::cast(val))); \
         break
 
         CASE(and);

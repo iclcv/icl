@@ -42,7 +42,7 @@ namespace icl{
     template<class T>
     Img<T> *apply_inplace_arithmetical_op(Img<T> *src, bool roiOnly, icl64f val, InplaceArithmeticalOp::optype t){
       switch(t){
-#define CASE(X) case InplaceArithmeticalOp::X##Op: src->applyPixelFunction(Apply<T,InplaceArithmeticalOp::X##Op>(val)); break
+#define CASE(X) case InplaceArithmeticalOp::X##Op: src->forEach(Apply<T,InplaceArithmeticalOp::X##Op>(val)); break
         CASE(add);
         CASE(sub);
         CASE(mul);
