@@ -15,6 +15,10 @@ namespace icl{
   */
   class InplaceOp{
     public:
+
+    /// Create a new Inplace op (ROI-only flag is set to true)
+    InplaceOp():m_bROIOnly(true){}
+
     /// apply function transforms source image pixels inplace
     virtual ImgBase* apply(ImgBase *src)=0;
     
