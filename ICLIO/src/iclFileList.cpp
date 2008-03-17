@@ -1,6 +1,10 @@
 #include "iclFileList.h"
 #ifndef WIN32
+#ifndef __APPLE__
 #include <wordexp.h>
+#else // wordexp not supported on osx
+#include <glob.h>
+#endif
 #endif
 #include <iclFile.h>
 #include <iclMacros.h>
@@ -35,6 +39,7 @@ namespace icl{
       std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
 
 #ifndef WIN32
+#ifndef __APPLE__
       wordexp_t match;
       
       // search for file matching the pattern(s)
@@ -57,20 +62,33 @@ namespace icl{
       char **ppcFiles = match.we_wordv;
       for (unsigned int i=0; i < match.we_wordc; ++i) {
         add(ppcFiles[i]);
-#ifdef __APPLE__
-		free(ppcFiles[i]);
-#endif
       }
 
-// caused funny malloc errors like 
-//		...  malloc: *** error for object 0xe91b944: Non-aligned pointer being freed
-#ifndef __APPLE__
       wordfree(&match);
-#endif /*__APPLE*/
+#else /*__APPLE__*/
+      glob_t pglob;
 
-#else
-      add(sPattern);
+      int gflags = GLOB_MARK | GLOB_TILDE;
+//#ifdef __APPLE__ // only supported on __APPLE__
+      gflags |= GLOB_QUOTE;
+//#endif
+
+      int gerr = glob(sPattern.c_str(), gflags, NULL, &pglob);
+      if (gerr) {
+          // refine if necessary
+          throw ICLException ("wrong use of glob");
+          //  pglob.gl_pathc = 0;
+      }
+
+      for (unsigned int i=0; i<pglob.gl_pathc; ++i) {
+            add(pglob.gl_pathv[i]);
+      }
+
+      globfree(&pglob);
 #endif
+#else /* WIN32 */
+      add(sPattern);
+#endif /* WIN32 */
     }
 
     // }}}
