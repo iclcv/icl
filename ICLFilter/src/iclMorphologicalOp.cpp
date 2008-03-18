@@ -97,6 +97,7 @@ namespace icl {
   void MorphologicalOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
     FUNCTION_LOG("");
     if (!prepare (ppoDst, poSrc)) return;
+    
     switch (poSrc->getDepth()){
       case depth8u:
         switch (m_eType){
