@@ -79,7 +79,7 @@ namespace icl{
   template<class T, typename Compare>
   void RegionDetector::detect_intern(const Img<T> &image, Compare cmp){
     const int xOffs = image.getROI().x;
-    const int yOffs = image.getROI().x;
+    const int yOffs = image.getROI().y;
     const int w = image.getROI().width;
     const int h = image.getROI().height;
 

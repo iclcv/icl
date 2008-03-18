@@ -131,7 +131,13 @@ namespace icl{
     // {{{ open
 
     Point p;
+    //    p.y = std::numeric_limits<int>::max();
+    //for(unsigned int i=0;i<impl->scanlines.size();++i){
+    //  p.y = iclMin(impl->scanlines[i].y,p.y);
+    //}
+
     p.y = std::min_element(impl->scanlines.begin(),impl->scanlines.end(),scanline_cmp_y)->y;
+
     p.x = std::numeric_limits<int>::max();
     for(unsigned int i=0;i<impl->scanlines.size();++i){
       if(impl->scanlines.at(i).y == p.y){
@@ -238,6 +244,7 @@ namespace icl{
     Point ul = getUpperLeftPixel();
     int xStart = ul.x;
     int yStart = ul.y;
+    
     
     if(getSize() == 1){
       impl->boundary->push_back(Point(xStart,yStart));
