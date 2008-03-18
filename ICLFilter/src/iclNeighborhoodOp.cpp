@@ -20,26 +20,43 @@ namespace icl {
   }
  
   bool NeighborhoodOp::computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize) {
-    const Size& oSize = poSrc->getSize ();
-    poSrc->getROI (oROIoffset, oROIsize);
-    int a(0);
+    // NEW Code
+    Rect imageRect(Point::null,poSrc->getSize());
+    Rect imageROI = poSrc->getROI();
     
-    if (oROIoffset.x < m_oAnchor.x) oROIoffset.x = m_oAnchor.x;
-    if (oROIoffset.y < m_oAnchor.y) oROIoffset.y = m_oAnchor.y;
-    if (oROIsize.width > (a=oSize.width - (oROIoffset.x + m_oMaskSize.width - m_oAnchor.x - 1))) {
-      oROIsize.width = a;
+    Rect newROI = imageROI & (imageRect+m_oAnchor-m_oMaskSize+Size(1,1));
+    oROIoffset = newROI.ul();
+    oROIsize = newROI.size();
 #ifdef WITH_IPP_OPTIMIZATION // workaround for IPP bug (anchor not correctly handled)
-      if (m_oMaskSize.width % 2 == 0) oROIsize.width--;
+    if (m_oMaskSize.width % 2 == 0) oROIsize.width--;
+    if (m_oMaskSize.height % 2 == 0) oROIsize.height--;
 #endif
-    }
-    if (oROIsize.height > (a=oSize.height - (oROIoffset.y + m_oMaskSize.height - m_oAnchor.y - 1))) {
-      oROIsize.height = a;
-#ifdef WITH_IPP_OPTIMIZATION // workaround for IPP bug (anchor not correctly handled)
-      if (m_oMaskSize.height % 2 == 0) oROIsize.height--;
-#endif
-    }
-    if (oROIsize.width < 1 || oROIsize.height < 1) return false;
-    return true;
+    return !!oROIsize.getDim();
+    // TODO
+    
+    /* OLD Code
+        const Size& oSize = poSrc->getSize ();
+        poSrc->getROI (oROIoffset, oROIsize);
+        
+        int a(0);
+        
+        if (oROIoffset.x < m_oAnchor.x) oROIoffset.x = m_oAnchor.x;
+        if (oROIoffset.y < m_oAnchor.y) oROIoffset.y = m_oAnchor.y;
+        if (oROIsize.width > (a=oSize.width - (oROIoffset.x + m_oMaskSize.width - m_oAnchor.x - 1))) {
+        oROIsize.width = a;
+        #ifdef WITH_IPP_OPTIMIZATION // workaround for IPP bug (anchor not correctly handled)
+        if (m_oMaskSize.width % 2 == 0) oROIsize.width--;
+        #endif
+        }
+        if (oROIsize.height > (a=oSize.height - (oROIoffset.y + m_oMaskSize.height - m_oAnchor.y - 1))) {
+        oROIsize.height = a;
+        #ifdef WITH_IPP_OPTIMIZATION // workaround for IPP bug (anchor not correctly handled)
+        if (m_oMaskSize.height % 2 == 0) oROIsize.height--;
+        #endif
+        }
+        if (oROIsize.width < 1 || oROIsize.height < 1) return false;
+        return true;
+    */
   }
 
   void NeighborhoodOp::applyMT(const ImgBase *poSrc, ImgBase **ppoDst, unsigned int nThreads){
