@@ -162,22 +162,53 @@ namespace icl{
     // {{{ open
 
     public:
-    PointsCommand(const std::vector<Point> &pts, int xfac, int yfac):
-      pts(pts),xfac(xfac),yfac(yfac){}
+    PointsCommand(const std::vector<Point> &pts, int xfac, int yfac, bool connectPoints, bool closeLoop):
+      pts(pts),xfac(xfac),yfac(yfac),connectPoints(connectPoints),closeLoop(closeLoop){}
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-      if(xfac==1 && yfac==1){
-        for(unsigned int i=0;i<pts.size();i++){
-          e->point(tP(pts[i].x,pts[i].y,s));
+      if(!pts.size()) return;
+      if(connectPoints){
+        if(pts.size() == 2){
+          e->line(tP(pts[0].x/xfac,pts[0].y/yfac,s),tP(pts[1].x/xfac,pts[1].y/yfac,s));
+          e->point(tP(pts[0].x/xfac,pts[0].y/yfac,s));
+          e->point(tP(pts[1].x/xfac,pts[1].y/yfac,s));
+          return;
+        }
+        ///  x----------x---------x------------x-------------x
+        ///  0          1         2            3             4  n=5
+        if(xfac==1 && yfac==1){
+          for(unsigned int i=1;i<pts.size();i++){
+            e->line(tP(pts[i-1].x,pts[i-1].y,s),tP(pts[i].x,pts[i].y,s));
+            e->point(tP(pts[i].x,pts[i].y,s));
+          }
+          if(closeLoop){
+            e->line(tP(pts[pts.size()-1].x,pts[pts.size()-1].y,s),tP(pts[0].x,pts[0].y,s));
+          }
+        }else{
+          for(unsigned int i=1;i<pts.size();i++){
+            e->line(tP(float(pts[i-1].x)/xfac,float(pts[i-1].y)/yfac,s),tP(float(pts[i].x)/xfac,float(pts[i].y)/yfac,s));
+            e->point(tP(float(pts[i].x)/xfac,float(pts[i].y)/yfac,s));
+          }
+          if(connectPoints){
+            e->line(tP(float(pts[pts.size()-1].x)/xfac,float(pts[pts.size()-1].y)/yfac,s),tP(float(pts[0].x)/xfac,float(pts[0].y)/yfac,s));
+          }
         }
       }else{
-        for(unsigned int i=0;i<pts.size();i++){
-          e->point(tP(float(pts[i].x)/xfac,float(pts[i].y)/yfac,s));
+        if(xfac==1 && yfac==1){
+          for(unsigned int i=0;i<pts.size();i++){
+            e->point(tP(pts[i].x,pts[i].y,s));
+          }
+        }else{
+          for(unsigned int i=0;i<pts.size();i++){
+            e->point(tP(float(pts[i].x)/xfac,float(pts[i].y)/yfac,s));
+          }
         }
       }
     }
     std::vector<Point> pts;
     int xfac;
     int yfac;
+    bool connectPoints;
+    bool closeLoop;
   };
 
   // }}}
@@ -528,7 +559,10 @@ namespace icl{
     m_vecCommands.push_back(new PointCommand(x,y));
   }
   void ICLDrawWidget::points(const std::vector<Point> &pts, int xfac, int yfac){
-    m_vecCommands.push_back(new PointsCommand(pts,xfac,yfac));
+    m_vecCommands.push_back(new PointsCommand(pts,xfac,yfac,false,false));
+  }
+  void  ICLDrawWidget::linestrip(const std::vector<Point> &pts, bool closeLoop, int xfac, int yfac){
+    m_vecCommands.push_back(new PointsCommand(pts,xfac,yfac,true,closeLoop));
   }
   void ICLDrawWidget::abs(){
     m_vecCommands.push_back(new AbsCommand());
