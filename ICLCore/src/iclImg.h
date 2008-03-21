@@ -1271,6 +1271,19 @@ namespace icl {
 
   /* }}} */
 
+  /** {{{  check function */
+#define CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize)                                             \
+  FUNCTION_LOG("");                                                                                                 \
+  ICLASSERT_RETURN( src && dst );                                                                                   \
+  ICLASSERT_RETURN( srcSize == dstSize );                                                                           \
+  ICLASSERT_RETURN( src->validChannel(srcC) );                                                                      \
+  ICLASSERT_RETURN( dst->validChannel(dstC) );                                                                      \
+  ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);                          \
+  ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );   \
+  ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );   
+
+  /** }}} */
+  
   /* {{{   deepCopyChannelROI */
 
   /// copies the channel roi from one image to another \ingroup IMAGE
@@ -1287,14 +1300,7 @@ namespace icl {
   template <class T>
   inline void deepCopyChannelROI(const Img<T> *src,int srcC, const Point &srcOffs, const Size &srcSize,
                                  Img<T> *dst,int dstC, const Point &dstOffs, const Size &dstSize) {
-    FUNCTION_LOG("");
-    ICLASSERT_RETURN( src && dst );
-    ICLASSERT_RETURN( srcSize == dstSize );
-    ICLASSERT_RETURN( src->validChannel(srcC) );
-    ICLASSERT_RETURN( dst->validChannel(dstC) );
-    ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);
-    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );
-    ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
+    CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
   
     ConstImgIterator<T> itSrc(src->getData(srcC),src->getSize().width,Rect(srcOffs,srcSize));
     ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
@@ -1330,13 +1336,7 @@ namespace icl {
                                 Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize)
   {
     FUNCTION_LOG("");
-    ICLASSERT_RETURN( src && dst );
-    ICLASSERT_RETURN( srcSize == dstSize );
-    ICLASSERT_RETURN( src->validChannel(srcC) );
-    ICLASSERT_RETURN( dst->validChannel(dstC) );
-    ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);
-    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );
-    ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
+    CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
     
     ConstImgIterator<S> itSrc(src->getData(srcC),src->getSize().width,Rect(srcOffs,srcSize));
     ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
@@ -1440,5 +1440,7 @@ namespace icl {
   /* }}} */ 
 
 } //namespace icl
+
+#undef CHECK_VALUES
 
 #endif //Img_H

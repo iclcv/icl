@@ -43,32 +43,15 @@ namespace icl {
   printf(   "| ROI: x: %d, y: %d, w: %d, h: %d \n", getROI().x, getROI().y,getROI().width, getROI().height);
 
   switch (m_eDepth){
-    case depth8u:
-      for(int i=0;i<getChannels();i++){
-        printf("| channel: %d, min: %d, max:%d \n",i,asImg<icl8u>()->getMin(i),asImg<icl8u>()->getMax(i));
-      }
-      break;
-    case depth16s:
-      for(int i=0;i<getChannels();i++){
-        printf("| channel: %d, min: %d, max:%d \n",i,asImg<icl16s>()->getMin(i),asImg<icl16s>()->getMax(i));
-      }
-      break;
-    case depth32s:
-      for(int i=0;i<getChannels();i++){
-        printf("| channel: %d, min: %d, max:%d \n",i,asImg<icl32s>()->getMin(i),asImg<icl32s>()->getMax(i));
-      }
-      break;
-    case depth32f:
-      for(int i=0;i<getChannels();i++){
-        printf("| channel: %d, min: %f, max:%f \n",i,asImg<icl32f>()->getMin(i),asImg<icl32f>()->getMax(i));
-      }
-      break;
-    case depth64f:
-      for(int i=0;i<getChannels();i++){
-        printf("| channel: %d, min: %f, max:%f \n",i,asImg<icl64f>()->getMin(i),asImg<icl64f>()->getMax(i));
-      }
-      break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D:                                                                            \
+    for(int i=0;i<getChannels();++i){                                                                                      \
+      printf("| channel: %d range[%f,%f] \n",i,(double)(asImg<icl##D>()->getMin(i)),(double)(asImg<icl##D>()->getMax(i))); \
+    }                                                                                                                      \
+    break;
+    ICL_INSTANTIATE_ALL_DEPTHS;
     default: ICL_INVALID_DEPTH; break;
+#undef ICL_INSTANTIATE_DEPTH
+      
   }
   
   printf(" -----------------------------------------\n");
