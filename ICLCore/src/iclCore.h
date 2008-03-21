@@ -610,7 +610,8 @@ ICL_INSTANTIATE_ALL_DEPTHS
   /// moves value from source to destination array (with casting on demand) \ingroup GENERAL
   template <class srcT,class dstT>
   inline void convert(const srcT *poSrcStart,const srcT *poSrcEnd, dstT *poDst){
-    while(poSrcStart != poSrcEnd) *poDst++ = Cast<srcT,dstT>::cast(*poSrcStart++);
+    std::transform(poSrcStart,poSrcEnd,poDst,Cast<srcT,dstT>::cast);
+    //    while(poSrcStart != poSrcEnd) *poDst++ = Cast<srcT,dstT>::cast(*poSrcStart++);
   }
   
   // Problems here! (if defined, the compiler gets problems when resolving the most-optimized function
