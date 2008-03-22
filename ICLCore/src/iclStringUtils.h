@@ -132,7 +132,7 @@ namespace icl{
   std::string cat(const std::vector<T> &v, const std::string &delim = ","){
     if(!v.size()) return "";
     std::string ret;
-    for(unsigned int i=0;i<v.size()-1;ret+=(str<T>(v[i])+delim));
+    for(unsigned int i=0;i<v.size()-1;ret+=(str<T>(v[i])+delim),i++);
     return ret+str<T>(v[v.size()-1]);
   }
 
