@@ -27,10 +27,13 @@ namespace icl {
     Rect newROI = imageROI & (imageRect+m_oAnchor-m_oMaskSize+Size(1,1));
     oROIoffset = newROI.ul();
     oROIsize = newROI.size();
+
+
 #ifdef WITH_IPP_OPTIMIZATION // workaround for IPP bug (anchor not correctly handled)
     if (m_oMaskSize.width % 2 == 0) oROIsize.width--;
     if (m_oMaskSize.height % 2 == 0) oROIsize.height--;
 #endif
+    //    ERROR_LOG("params: x:" << oROIoffset.x << ",y:" << oROIoffset.y << ",w:" << oROIsize.width << ",h:" << oROIsize.height);
     return !!oROIsize.getDim();
     // TODO
     

@@ -7,26 +7,33 @@
 
 namespace icl {
   
-  /// Class for Morphological operations  
-  /**
-      (Only available for Img8u and Img32f, IPP only!) \ingroup UNARY \ingroup NBH
-  **/
+  /// Class for Morphological operations  \ingroup UNARY \ingroup NBH
+  /** (Only available for Img8u and Img32f, IPP only!) 
+      
+      \section DST_SIZE Destination Image Sizes
+      Destination image ROI size depend not only on given input ROI size
+      and mask-size, but also on the used optype.
+      In case of default operations (dilate, erode, ... destination ROI
+      size is calculated as in the top level NeighborhoodOp class.
+      <b>But Note:</b> for dilate and erode border, destination image roi
+      size becomes <b>equal</b> to the source images one.
+  */
   class MorphologicalOp : public NeighborhoodOp, public Uncopyable {
   public:
 
   /// this enum specifiy all possible morphological operations
   enum optype { 
-    dilate,
-    erode,
-    dilate3x3,
-    erode3x3,
-    dilateBorderReplicate,
-    erodeBorderReplicate,
-    openBorder,
-    closeBorder,
-    tophatBorder,
-    blackhatBorder,
-    gradientBorder
+    dilate=0,
+    erode=1,
+    dilate3x3=2,
+    erode3x3=3,
+    dilateBorderReplicate=4,
+    erodeBorderReplicate=5,
+    openBorder=6,
+    closeBorder=7,
+    tophatBorder=8,
+    blackhatBorder=9,
+    gradientBorder=10
   };
     /// Constructor that creates a Morphological object, with specified mask size
     /** @param maskSize of odd width and height
@@ -70,15 +77,15 @@ namespace icl {
   private:
 
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
-    void ippiMorphologicalCall (const Img<T> *src, Img<T> *dst);
+    IppStatus ippiMorphologicalCall (const Img<T> *src, Img<T> *dst);
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
-    void ippiMorphologicalCall3x3 (const Img<T> *src, Img<T> *dst);
+    IppStatus ippiMorphologicalCall3x3 (const Img<T> *src, Img<T> *dst);
 
-   template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
-    void ippiMorphologicalBorderReplicateCall (const Img<T> *src, Img<T> *dst,IppiMorphState *state);
+    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
+    IppStatus ippiMorphologicalBorderReplicateCall (const Img<T> *src, Img<T> *dst,IppiMorphState *state);
 
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
-    void ippiMorphologicalBorderCall (const Img<T> *src, Img<T> *dst, IppiMorphAdvState *advState);
+    IppStatus ippiMorphologicalBorderCall (const Img<T> *src, Img<T> *dst, IppiMorphAdvState *advState);
 
     typedef IppiMorphState ICLMorphState ;
     typedef IppiMorphAdvState ICLMorphAdvState;
@@ -88,7 +95,7 @@ namespace icl {
 #endif
   private:
     icl8u * m_pcMask;
-    Size m_sMasksize;
+    Size m_oMaskSizeMorphOp; // actually masksize of NeighborhoodOp and MorphOp may be different
     ICLMorphState* m_pState8u;
     ICLMorphState* m_pState32f;
     ICLMorphAdvState* m_pAdvState8u;
