@@ -221,8 +221,9 @@ namespace icl{
     icl32f fY = (YYn > 0.008856) ? pow (YYn, _13) : 7.787 * YYn + (16 / 116); 
     icl32f fZ = (ZZn > 0.008856) ? pow (ZZn, _13) : 7.787 * ZZn + (16 / 116);
     
-    a = 500.0 * (fX - fY);
-    b = 200.0 * (fY - fZ);
+    a = 500.0 * (fX - fY) + 127;
+    b = 200.0 * (fY - fZ) + 127;
+    
     
     // Cs = sqrt ((as * as) + (bs * bs));
     // hab = atan (bs / as);
