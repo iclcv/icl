@@ -100,6 +100,12 @@ namespace icl{
     
     /// return low-level list of scanlines
     const std::vector<ScanLine> &getScanLines() const;
+
+    /// draws this region scanline by scanline into a given image 
+    /** ROI is not regarded, because the region detectors results are
+        not relative to a ROI offset*/
+    template<class T>
+    void drawTo(Img<T> &image, T val) const;
     
   private:
     /// internally used recursive function for RegionPart-tree traversal
