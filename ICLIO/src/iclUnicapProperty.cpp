@@ -52,7 +52,8 @@ namespace icl{
     // {{{ open
 
     vector<string> v;
-    for(int i=0;i<m_oUnicapPropertyPtr->relations_count;v.push_back(m_oUnicapPropertyPtr->relations[i++]));
+    for(int i=0;i<m_oUnicapPropertyPtr->relations_count;v.push_back(m_oUnicapPropertyPtr->relations[i++]))
+      ;
     return v;
   }
 
@@ -96,9 +97,10 @@ namespace icl{
   vector<double> UnicapProperty::getValueList() const{
     // {{{ open
 
-    ICLASSERT_RETURN_VAL( m_oUnicapPropertyPtr->type == UNICAP_PROPERTY_TYPE_VALUE_LIST ,vector<double>() );
+    ICLASSERT_RETURN_VAL(m_oUnicapPropertyPtr->type == UNICAP_PROPERTY_TYPE_VALUE_LIST, vector<double>());
     vector<double> v;
-    for(int i=0;i<m_oUnicapPropertyPtr->value_list.value_count;v.push_back(m_oUnicapPropertyPtr->value_list.values[i++]));
+    for(int i=0;i<m_oUnicapPropertyPtr->value_list.value_count;v.push_back(m_oUnicapPropertyPtr->value_list.values[i++]))
+      ;
     return v;
   }
 
@@ -107,9 +109,10 @@ namespace icl{
   vector<string> UnicapProperty::getMenu() const{
     // {{{ open
 
-    ICLASSERT_RETURN_VAL( m_oUnicapPropertyPtr->type == UNICAP_PROPERTY_TYPE_MENU , vector<string>());
+    ICLASSERT_RETURN_VAL(m_oUnicapPropertyPtr->type == UNICAP_PROPERTY_TYPE_MENU, vector<string>());
     vector<string> v;
-    for(int i=0;i<m_oUnicapPropertyPtr->menu.menu_item_count;v.push_back(m_oUnicapPropertyPtr->menu.menu_items[i++]));
+    for(int i=0;i<m_oUnicapPropertyPtr->menu.menu_item_count;v.push_back(m_oUnicapPropertyPtr->menu.menu_items[i++]))
+      ;
     return v;
   }
 
