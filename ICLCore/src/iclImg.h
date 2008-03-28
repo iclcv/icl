@@ -18,6 +18,7 @@ namespace icl {
   template<class Type>
   class Img : public ImgBase
   {
+       
     /* this is declare as fried, because it accesses the private append function */
     template<class ImgType> friend 
     const ImgType* combineImages (const std::vector<const ImgType*>& vec, ImgBase** ppoDst);
@@ -127,6 +128,10 @@ namespace icl {
     /* }}} */
 
     public:
+
+    /// null sized and null channel image
+    static const Img<Type> null;
+    
     /* {{{ open */
     /// creates a new image specified by the given param struct
     /** @param params initializing image parameters, if null, then a 

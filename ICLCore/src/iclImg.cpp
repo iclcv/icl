@@ -1490,6 +1490,10 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
   // }}}
 
+  template<class Type>
+  const Img<Type> Img<Type>::null;
+
+  
   // {{{  explicit instantiation of the Img<T> classes 
 
 #define ICL_INSTANTIATE_DEPTH(D) template class Img<icl##D>;
