@@ -462,11 +462,9 @@ namespace icl{
   ImgQ norm(const ImgQ &image){
     // {{{ open
 
-    ImgQ *cpy = image.deepCopyROI();
-    cpy->normalizeAllChannels(Range<ICL_QUICK_TYPE>(0,255));
-    ImgQ x = *cpy;
-    delete cpy;
-    return x;
+    ImgQ cpy = copy(image);
+    cpy.normalizeAllChannels(Range<ICL_QUICK_TYPE>(0,255));
+    return cpy;
   }
 
   // }}}
