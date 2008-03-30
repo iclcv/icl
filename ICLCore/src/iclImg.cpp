@@ -351,7 +351,11 @@ namespace icl {
     if(!poDst){
       poDst = new Img<Type>(getROISize(),getChannels(),getFormat());
     }else{
-      ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize(), NULL);
+      if(poDst->getSize().getDim()){
+        ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize(), NULL);
+      }else{
+        poDst->setSize(getROISize());
+      }
       poDst->setChannels(getChannels());
       poDst->setFormat(getFormat());
     }

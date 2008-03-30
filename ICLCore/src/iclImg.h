@@ -483,7 +483,10 @@ namespace icl {
         essentially like the above function, except getting an Img<Type>* as
         destination image argument, what allows to apply the operation without
         a depth switch.
-        @param poDst destination image, if NULL, a new Img<Type> is created
+        @param poDst destination image, if NULL, a new Img<Type> is created. poDst
+                     must have either ROI size identical to this images ROI size or
+                     zero-dim size (in this case poDst's size is set to this
+                     images ROI size)
         @return deep copy of this images ROI
     **/
     Img<Type> *deepCopyROI(Img<Type> *poDst) const;
