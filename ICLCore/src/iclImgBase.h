@@ -831,6 +831,11 @@ namespace icl {
 
       /* }}} */
     };
+
+  /// puts a string representation of the image into given steam
+  std::ostream &operator<<(std::ostream &s, const ImgBase &image);
+
+ 
 }
 
 #endif 

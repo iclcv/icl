@@ -134,6 +134,8 @@ namespace icl {
        m_poGrabber->setDesiredDepth(d);
      }
 
+     /// only for using a file grabber internally
+     void setIgnoreDesiredParams(bool flag);
   };
   
  

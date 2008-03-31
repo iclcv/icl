@@ -203,7 +203,7 @@ namespace icl{
   double UnicapProperty::translateValue(double value){
     ICLASSERT_RETURN_VAL( getType() == range , value);
     Range<double> r = getRange();
-    if(r.in(value)){
+    if(r.contains(value)){
       double step = getStepping();
       if(step > 0){
         double minVal = r.minVal;
@@ -223,7 +223,7 @@ namespace icl{
       type t=getType();
       ICLASSERT_RETURN( t == range || t==valueList );
       if(t==range){
-        if(getRange().in(value)){
+        if(getRange().contains(value)){
           // find the next value with respect to current stepping or clip it
           value = translateValue(value);
           m_oUnicapPropertyPtr->value = value;

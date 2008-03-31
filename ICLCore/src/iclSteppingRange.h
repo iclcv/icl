@@ -32,12 +32,12 @@ namespace icl{
     }
     
     /// tests whether a given value is inside of this range
-    virtual bool in(Type value) const { 
-      if(stepping == 0) return Range<Type>(Range<Type>::minVal,Range<Type>::maxVal).in(value);
+    virtual bool contains(Type value) const { 
+      if(stepping == 0) return Range<Type>(Range<Type>::minVal,Range<Type>::maxVal).contains(value);
       Type offs = value - Range<Type>::minVal;
       int n = (int)(offs/stepping);
       double n2 = (double)offs/stepping;
-      return Range<Type>::in(value) && double(n) == n2;
+      return Range<Type>::contains(value) && double(n) == n2;
     }
     
     /// returns the nearest value to the given one 

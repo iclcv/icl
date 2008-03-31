@@ -21,6 +21,8 @@ namespace icl {
 #define DEBUG_LOG0(x)
 #endif // DEBUGLEVEL 0
 
+#define DEBUG_LOG(x) DEBUG_LOG0(x)
+
 //---- Debug Level 1 ----
 #if (defined(DEBUGLEVEL_1) || defined(DEBUGLEVEL_2) || defined (DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5)) 
 #define DEBUG_LOG1(x) \
@@ -65,6 +67,9 @@ namespace icl {
 
 /** critical log messages, that may cause application failure*/
 #define ERROR_LOG(x) DEBUG_LOG0("ERROR: " << x);
+
+  /** also critical log messages things that must still be done */
+#define TODO_LOG(x) DEBUG_LOG0("TODO: " << x);
 
 /** uncritical log messages, that may cause calculation errors*/
 #define WARNING_LOG(x) DEBUG_LOG1("WARNING: " << x);

@@ -65,7 +65,7 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
 # Debug status (This variable takes two values: TRUE or FALSE)
-DEBUG_ON:=FALSE
+DEBUG_ON:=$(DEBUG_ON) 
 
 # Debugging flags
 DEBUG:=-O0 -g3

@@ -186,7 +186,7 @@ namespace icl{
   ImgBase* Grabber::prepareOutput (ImgBase **ppoDst) {
      // use internal output image, if ppoDst == 0
      if(!ppoDst) ppoDst = &m_poImage;  
-     
+
      // adapt destination image to desired params and depth
      ensureCompatible(ppoDst, m_eDesiredDepth, m_oDesiredParams);
      return *ppoDst;

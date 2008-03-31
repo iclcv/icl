@@ -1,10 +1,11 @@
- #ifndef ICLCORE_H
+#ifndef ICLCORE_H
 #define ICLCORE_H
 #include <iclMacros.h>
 #include <iclTypes.h>
 #include <iclImgParams.h>
 #include <string>
-
+#include <iostream>
+#include <iclPoint32f.h>
 
 /** 
     \defgroup TYPES Common Data Type Definitions
@@ -562,6 +563,33 @@ namespace icl {
   
   /// getDepth<T> returns to depth enum associated to type T \ingroup GENERAL
   template<class T> inline depth getDepth();
+
+
+  /// puts a string representation (x,y) of given Point into the given stream
+  inline std::ostream &operator<<(std::ostream &s, const Point &p){
+    return s << translatePoint(p);
+  }
+  /// puts a string representation (x,y) of given Point32f into the given stream
+  inline std::ostream &operator<<(std::ostream &s, const Point32f &p){
+    return s << "(" << p.x << ',' << p.y << ")";
+  }
+  /// puts a string representation WxH@(x,y) of given Rect into the given stream
+  inline std::ostream &operator<<(std::ostream &s, const Rect &r){
+    return s << translateRect(r);
+  }
+  /// puts a string representation of format into the given stream
+  inline std::ostream &operator<<(std::ostream &s, format f){
+    return s << translateFormat(f);
+  }
+  /// puts a string representation of depth into the given stream
+  inline std::ostream &operator<<(std::ostream &s, depth d){
+    return s << translateDepth(d);
+  }
+  /// puts a string representation WxH of give size into the given stream
+  inline std::ostream &operator<<(std::ostream &s, const Size &size){
+    return s << translateSize(size);
+  }
+ 
 
   /** \cond */
 #define ICL_INSTANTIATE_DEPTH(T) \

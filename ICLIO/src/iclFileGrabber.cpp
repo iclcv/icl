@@ -189,7 +189,7 @@ namespace icl{
     
     std::map<string,FileGrabberPlugin*>::iterator it = s_mapPlugins.find(toLower(f.getSuffix()));
     if(it == s_mapPlugins.end()){     
-      InvalidFileException(string("file type \"*")+f.getSuffix()+"\"");
+      throw InvalidFileException(string("file type \"*")+f.getSuffix()+"\"");
       return 0;
     }
     if(m_bIgnoreDesiredParams){
@@ -220,8 +220,11 @@ namespace icl{
         throw InvalidFileException(f.getName());
         return 0;
       }
+
       ImgBase* useDestImage = prepareOutput(ppoDst);
-      m_oConverter.apply(m_poBufferImage,useDestImage);    
+
+      m_oConverter.apply(m_poBufferImage,useDestImage);  
+      
       return useDestImage;        
     }
     

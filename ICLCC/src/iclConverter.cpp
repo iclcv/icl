@@ -74,9 +74,10 @@ namespace icl{
       
     int iNeedDepthConversion = poSrc->getDepth() != poDst->getDepth();
       
-    int iNeedColorConversion =  poSrc->getFormat() != formatMatrix && 
-                                poDst->getFormat() != formatMatrix && 
-                                poSrc->getFormat() != poDst->getFormat();
+    int iNeedColorConversion =  poSrc->getFormat() != poDst->getFormat();
+                                //poSrc->getFormat() != formatMatrix && 
+                                //poDst->getFormat() != formatMatrix && 
+                                
     
     int iNeedSizeConversion;
     if(m_bROIOnly){ 
@@ -118,7 +119,6 @@ namespace icl{
           poSrc->deepCopyROI(&m_poROIBuffer);
           this->cc(m_poROIBuffer,poDst);
         }else{
-          
           this->cc(poSrc,poDst);
         }
         break;
@@ -176,12 +176,17 @@ namespace icl{
 
   // }}}
  
-  void Converter::cc(const ImgBase *src, ImgBase *dst){
+  void Converter::cc(const ImgBase *srcIn, ImgBase *dst){
     // {{{ open
 
     FUNCTION_LOG("");
-    ICLASSERT_RETURN( src );
+    ICLASSERT_RETURN( srcIn );
     ICLASSERT_RETURN( dst );
+
+    const ImgBase *src = srcIn;
+    if(!srcIn->hasFullROI()){
+      src = srcIn->shallowCopy(srcIn->getImageRect());
+    }
     
     if(cc_available(src->getFormat(), dst->getFormat()) == ccEmulated){
       SECTION_LOG("optimized emulated cross color conversion using Converter objects buffer");
@@ -190,7 +195,12 @@ namespace icl{
       cc(m_poCCBuffer,dst);
     }else{
       SECTION_LOG("passing directly icl::cc");
+      
       icl::cc(src,dst);
+    }
+
+    if(srcIn != src){
+      ICL_DELETE(src);
     }
   }
 

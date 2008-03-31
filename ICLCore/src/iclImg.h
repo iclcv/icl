@@ -1340,17 +1340,17 @@ namespace icl {
       @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
    **/
   template <class S,class D>
-  inline void convertChannelROI(const Img<S> *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                                Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstSize)
+  inline void convertChannelROI(const Img<S> *src,int srcC, const Point &srcOffs, const Size &srcROISize,
+                                Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstROISize)
   {
     FUNCTION_LOG("");
-    CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
+    CHECK_VALUES(src,srcC,srcOffs,srcROISize,dst,dstC,dstOffs,dstROISize);
     
-    ConstImgIterator<S> itSrc(src->getData(srcC),src->getSize().width,Rect(srcOffs,srcSize));
-    ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
+    ConstImgIterator<S> itSrc(src->getData(srcC),src->getSize().width,Rect(srcOffs,srcROISize));
+    ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstROISize));
     
     for(;itSrc.inRegion();itSrc.incRow(),itDst.incRow()){
-      icl::convert<S,D>(&*itSrc,&*itSrc+srcSize.width,&*itDst);
+      icl::convert<S,D>(&*itSrc,&*itSrc+srcROISize.width,&*itDst);
     }
   }
  

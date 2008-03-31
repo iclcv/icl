@@ -349,4 +349,12 @@ namespace icl {
   // }}}
 
 
+  
+  std::ostream &operator<<(std::ostream &s, const ImgBase &image){
+    return s << "Img<" << image.getDepth() << ">(Size("<<image.getSize() <<"),"
+             << image.getFormat() << ","<<image.getChannels() <<","
+             << image.getROI() << "," << image.getTime() << ")";
+  }
+
+
 } //namespace icl

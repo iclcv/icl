@@ -21,7 +21,9 @@ int main (int argc, char **argv) {
   if(pa_defined("-input")){
     string s = pa_subarg<string>("-input",0,"");
     printf("input file %s \n",s.c_str());
-    FileGrabber(s).grab(&I);
+    FileGrabber  gr(s);
+    gr.setIgnoreDesiredParams(true);
+    gr.grab(&I);
   }
   else{
     printf("working with testimage tree: \n");

@@ -5,6 +5,7 @@
 #endif
 
 #include <iclMacros.h>
+#include <ostream>
 
 namespace icl{
 #ifndef WITH_IPP_OPTIMIZATION

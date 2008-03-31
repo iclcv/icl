@@ -4,6 +4,7 @@
 #include "iclCore.h"
 #include <algorithm>
 #include <limits>
+#include <iostream>
 
 namespace icl{
   
@@ -60,12 +61,19 @@ namespace icl{
     }
     
     /// tests whether a given value is inside of this range
-    virtual bool in(Type value) const { return value >= minVal && value <= maxVal; }
+    virtual bool contains(Type value) const { return value >= minVal && value <= maxVal; }
   };
   
 #define ICL_INSTANTIATE_DEPTH(D) typedef Range<icl##D> Range##D;
   ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
+
+  /// puts a string representation [min,max] of given range into the given stream
+  template<class T> inline std::ostream &operator<<(std::ostream &s, const Range <T> &range){
+    return s << "[" << range.minVal << ',' << range.maxVal << "]";
+  }
+   
+
 
 }
 #endif

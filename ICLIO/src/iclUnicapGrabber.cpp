@@ -130,7 +130,7 @@ namespace icl{
 
       string r=s;
       for(unsigned int i=0;i<r.length();i++){
-        if(uppers.in(r[i])) r[i]-=offs;
+        if(uppers.contains(r[i])) r[i]-=offs;
       }
       return r;
     }
@@ -258,7 +258,7 @@ namespace icl{
 
           Range<double> range = prop.getRange();
           double val = atof(value.c_str());
-          if(range.in(val)){
+          if(range.contains(val)){
             prop.setValue(val);
             m_oDevice.setProperty(prop);
             //      if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
