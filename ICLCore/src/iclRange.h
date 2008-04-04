@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 #include <iostream>
+#include <string>
 
 namespace icl{
   
@@ -68,11 +69,27 @@ namespace icl{
   ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
 
+ 
+  
+  /// translates range into given string representation
+  /** Available for all icl-Types (icl8u,icl16s, icl32s, icl32f and icl64f and
+      for unsigned int */
+  template<class T> 
+  std::string translateRange(const Range<T> &t);
+
+  /// translates string rep of range into new range
+  /** Available for all icl-Types (icl8u,icl16s, icl32s, icl32f and icl64f and
+      for unsigned int */
+
+  template<class T>
+  Range<T> translateRange(const std::string &range);
+  
   /// puts a string representation [min,max] of given range into the given stream
+  /** Available for all icl-Types (icl8u,icl16s, icl32s, icl32f and icl64f and
+      for unsigned int */
   template<class T> inline std::ostream &operator<<(std::ostream &s, const Range <T> &range){
-    return s << "[" << range.minVal << ',' << range.maxVal << "]";
+    return s << translateRange(range);
   }
-   
 
 
 }

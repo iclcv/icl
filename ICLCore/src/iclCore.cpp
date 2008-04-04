@@ -1,6 +1,7 @@
 #include <iclCore.h>
 #include <iclException.h>
 #include <iclImg.h>
+#include <iclStringUtils.h>
 
 using namespace std;
 

@@ -119,6 +119,9 @@ namespace icl{
   template<> inline std::string str<icl64f>(icl64f t){
     return toStr(t);
   }
+  template<> inline std::string str<unsigned int>(unsigned int t){
+    return toStr((int)t);
+  }
   template<> inline std::string str<std::string>(std::string s){
     return s;
   }
@@ -156,6 +159,9 @@ namespace icl{
   }
   template<> inline icl32s parse<icl32s>(const std::string &s){
     return atoi(s.c_str());
+  }
+  template<> inline unsigned int parse<unsigned int>(const std::string &s){
+    return (unsigned int)atoi(s.c_str());
   }
   template<> inline icl32f parse<icl32f>(const std::string &s){
     return Cast<icl64f,icl32f>::cast(atof(s.c_str()));

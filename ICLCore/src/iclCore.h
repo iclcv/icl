@@ -564,7 +564,6 @@ namespace icl {
   /// getDepth<T> returns to depth enum associated to type T \ingroup GENERAL
   template<class T> inline depth getDepth();
 
-
   /// puts a string representation (x,y) of given Point into the given stream
   inline std::ostream &operator<<(std::ostream &s, const Point &p){
     return s << translatePoint(p);
