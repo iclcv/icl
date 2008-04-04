@@ -27,7 +27,7 @@ namespace icl{
       }
     }
     
-    void break_apart(const string &s, string &dir, string &basename, string &suffix, string &filename){
+    void break_apart(string s, string &dir, string &basename, string &suffix, string &filename){
       // {{{ open
 
       size_t p = s.rfind(DIR_SEPERATOR);
@@ -37,18 +37,18 @@ namespace icl{
         dir = "";
         filename = s;
       }else{
-        dir = s.substr(0,p-1);
+        dir = s.substr(0,p);
         filename = s.substr(p+1);
       }
       
       // split suffix
-      p = s.rfind('.');
+      p = filename.rfind('.');
       if(p == string::npos){
         suffix = "";
         basename = filename;
       }else{
-        suffix = s.substr(p);
-        basename = s.substr(0,p);
+        suffix = filename.substr(p);
+        basename = filename.substr(0,p);
         if(suffix == ".gz"){
           p = basename.rfind('.');                   ;
           if(p != string::npos){
@@ -254,7 +254,8 @@ namespace icl{
   // }}}
   File::File(const std::string &name):
     // {{{ open
-    ShallowCopyable<FileImpl,FileImplDelOp>(new FileImpl(name)){}
+    ShallowCopyable<FileImpl,FileImplDelOp>(new FileImpl(name)){
+  }
 
   // }}}
   File::File(const std::string &name, File::OpenMode openmode):
