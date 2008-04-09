@@ -64,9 +64,26 @@ namespace icl{
                                      const Img8u &templ, 
                                      float significance,
                                      Img8u *buffer=0,
-                                     RegionDetector *rd=0);
-                                     
+                                     RegionDetector *rd=0,
+                                     bool useCrossCorrCoeffInsteadOfSqrDistance=false);
+
   
+  std::vector<Rect> iclMatchTemplate(const Img8u &src, 
+                                     const Img8u *srcMask,
+                                     const Img8u &templ, 
+                                     const Img8u *templMask,
+                                     float significance,
+                                     Img8u *srcBuffer=0,
+                                     Img8u *templBuffer=0,
+                                     Img8u *buffer=0,
+                                     bool clipBuffersToROI=true,
+                                     RegionDetector *rd=0,
+                                     bool useCrossCorrCoeffInsteadOfSqrDistance=false);
+  
+                                      
+                                      
+                                      
+
   
 }
 
