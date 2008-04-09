@@ -1552,17 +1552,16 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   }
   
   template<class T>
-  ImgBasePtrPtr<T>::ImgBasePtrPtr(Img<T> *i){
+  ImgBasePtrPtr<T>::ImgBasePtrPtr(Img<T> *inputImage){
     // {{{ open
+    ICLASSERT(inputImage != NULL);
 
-    if(!i){ 
-      o = 0; 
-      r = 0;
-      rbef = 0;
-    }else{
-      r = new Img<T>(*i);
-      o = i;
+    if(inputImage){
+      r = new Img<T>(*inputImage);
+      o = inputImage;
       rbef = r;
+    }else{
+      r = o = rbef = 0;
     }
   }
 
