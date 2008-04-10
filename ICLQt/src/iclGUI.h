@@ -21,6 +21,7 @@
 #include <iclDrawHandle.h>
 #include <iclDrawHandle3D.h>
 #include <iclDispHandle.h>
+#include <iclFPSHandle.h>
 
 
 #include <iclWidget.h>
@@ -182,6 +183,7 @@ namespace icl{
       - <b>draw3D</b> an ICLDrawWidget3D component
       - <b>combo</b> a combo box
       - <b>spinner</b> a spin box (integer valued with given range)
+      - <b>fps</b> label component showing current frames per second
         
       \subsection TYPEPARAMS Type Dependent Parameters
       The 2nd part of the GUI definition string is a comma separated list of type dependent parameters.
@@ -235,6 +237,8 @@ namespace icl{
         element.
       - <b>spinner(int MIN,int MAX,int CURRENT)</b>\n
         An integer valued Spin-Box with a given range {MIN,...,MAX} and a given initial value CURRENT.
+      - <b>fps(int TIME_WINDOW_SIZE)</b>\n
+        A Label component showing current frames per second averaged over last TIME_WINDOW_SIZE time steps.
         
       \subsection GP General Parameters
       The 3rd part of the GUI definition string is a list of so called general params. "General" means here,
@@ -321,6 +325,7 @@ namespace icl{
       <TR> <TD>draw3D</TD>       <TD>DrawHandle<3D/TD>      <TD>0</TD>                  <TD>handle for the embedded ICLDrawWidget3D</TD>            </TR>
       <TR> <TD>combo</TD>        <TD>ComboHandle</TD>       <TD>1 type std::string</TD> <TD>current selected item</TD>                              </TR>
       <TR> <TD>spinner</TD>      <TD>SpinnerHandle</TD>     <TD>1 type int</TD>         <TD>current value</TD>                                      </TR>
+      <TR> <TD>fps</TD>          <TD>FPSHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
       </TABLE>
       
       \section HVV Handles vs. Values

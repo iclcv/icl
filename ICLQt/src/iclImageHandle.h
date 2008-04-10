@@ -22,6 +22,9 @@ namespace icl{
     
     /// make the wrapped ICLWidget show a given image (as set Image)
     void operator=(const ImgBase *image) { setImage(image); }
+
+    /// make the wrapped ICLWidget show a given image (as set Image)
+    void operator=(const ImgBase &image) { setImage(&image); }
     
     /// calles updated internally
     void update();

@@ -803,6 +803,37 @@ public:
 
 // }}}
 
+  struct FPSGUIWidget : public GUIWidget{
+    // {{{ open
+    FPSGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,-1){
+      int np = def.numParams();
+      if(np > 1) throw GUISyntaxErrorException(def.defString(),"need max. 1 parameter here!");
+      int fpsEstimatorTimeWindow = np ? def.intParam(0) : 10;
+      
+      m_poLabel = new CompabilityLabel("fps...",def.parentWidget());
+      
+      addToGrid(m_poLabel);
+      
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<FPSHandle>(def.handle(),FPSHandle(fpsEstimatorTimeWindow,m_poLabel));
+        getGUI()->unlockData();
+      }
+    }
+    static string getSyntax(){
+      return string("fps(TIME_WINDOW=10)[general params] \n"
+                    "  TIME_WINDOW is the number of timesteps, that are used as \n"
+                    "  Low-Pass-Filter for estimated fps counts\n")
+                    +gen_params();
+    }
+    virtual Size getDefaultSize() { 
+      return Size(4,1); 
+    }
+  private:
+    CompabilityLabel *m_poLabel;
+  };
+  
+  // }}}
   /**
       struct HContainerGUIWidget : public GUIWidget{
       // {{{ open
@@ -893,6 +924,7 @@ public:
       MAP_CREATOR_FUNCS["draw3D"] = create_widget_template<DrawGUIWidget3D>;
       MAP_CREATOR_FUNCS["combo"] = create_widget_template<ComboGUIWidget>;
       MAP_CREATOR_FUNCS["spinner"] = create_widget_template<SpinnerGUIWidget>;
+      MAP_CREATOR_FUNCS["fps"] = create_widget_template<FPSGUIWidget>;
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
       //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;
     }
