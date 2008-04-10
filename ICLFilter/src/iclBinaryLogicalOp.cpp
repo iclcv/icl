@@ -82,19 +82,25 @@ namespace icl {
   
   } // end of anonymous namespace 
 
-  void BinaryLogicalOp::apply(const ImgBase *poSrc1,const ImgBase *poSrc2, ImgBase **poDst){
+  void BinaryLogicalOp::apply(const ImgBase *poSrc1,const ImgBase *poSrc2, ImgBase **ppoDst){
     // {{{ open
     ICLASSERT_RETURN( poSrc1 );
     ICLASSERT_RETURN( poSrc2 );
-    ICLASSERT_RETURN( poDst );
-    ICLASSERT_RETURN( poSrc1 != *poDst && poSrc2 != *poDst );
-    if(!BinaryOp::check(poSrc1,poSrc2) || !BinaryOp::prepare(poDst,poSrc1)){
+    ICLASSERT_RETURN( ppoDst );
+    ICLASSERT_RETURN( poSrc1 != *ppoDst && poSrc2 != *ppoDst );
+    if(!BinaryOp::check(poSrc1,poSrc2)){
+      ERROR_LOG("souce images are incompatible (aborting)");
       return;
     }
+    if(!BinaryOp::prepare(ppoDst,poSrc1)){
+      ERROR_LOG("unable to prepare destination image (aborting)");
+      return;
+    }
+    
     switch(m_eOpType){
-      case andOp:  apply_op<andOp>(poSrc1,poSrc2,*poDst); break;
-      case orOp:  apply_op<orOp>(poSrc1,poSrc2,*poDst); break;
-      case xorOp:  apply_op<xorOp>(poSrc1,poSrc2,*poDst); break;
+      case andOp:  apply_op<andOp>(poSrc1,poSrc2,*ppoDst); break;
+      case orOp:  apply_op<orOp>(poSrc1,poSrc2,*ppoDst); break;
+      case xorOp:  apply_op<xorOp>(poSrc1,poSrc2,*ppoDst); break;
     }
   }
   // }}}
