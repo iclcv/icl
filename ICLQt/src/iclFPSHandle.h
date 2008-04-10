@@ -10,6 +10,7 @@
 
 namespace icl{
 
+
   /// Class for Frames-per-second GUI-Label \ingroup HANDLES
   /** FPSHandles are created by the GUI class. FPSHandles must be notified
       each step using its
