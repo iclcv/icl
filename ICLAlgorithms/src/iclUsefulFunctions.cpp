@@ -48,7 +48,7 @@ namespace icl{
                                      RegionDetector *rdGiven,
                                      bool useCrossCorrCoeffInsteadOfSqrDistance){    
 
-    DEBUG_LOG("src:" << src << "\ntempl:" << templ);
+    //DEBUG_LOG("src:" << src << "\ntempl:" << templ);
     Size bufSize = src.getROISize()-templ.getROISize()+Size(1,1);
     ICLASSERT_RETURN_VAL(bufSize.width > 0 && bufSize.height > 0, std::vector<Rect>());
 
@@ -82,7 +82,7 @@ namespace icl{
 
     Img8u &m = *useBuffer->asImg<icl8u>();
     
-    show(cvt(m));
+    //    show(cvt(m));
 
     icl8u t = useCrossCorrCoeffInsteadOfSqrDistance ? (icl8u)(float(255)*significance) : 255 - (icl8u)(float(255)*significance);
     
@@ -111,8 +111,8 @@ namespace icl{
                                                std::vector<int>(1,0),
                                                formatMatrix);
 
-    show(norm(cvt(c0)));
-    useRD->setRestrictions(0,2<<10,1,255);
+    //    show(norm(cvt(c0)));
+    useRD->setRestrictions(0,2<<20,1,255);
     const std::vector<Region> &blobData = useRD->detect(c0);
     std::vector<Rect> resultVec(blobData.size());
     
