@@ -139,7 +139,8 @@ namespace icl {
 
   // }}}
 
-  // }}} 
+  // }}} constructors...
+  
 
   // {{{  operators: "=", ()-(float,float,channel,scalemode)
 
@@ -176,10 +177,10 @@ namespace icl {
 
   // }}}
 
-  // }}} 
+  // }}} operators...
 
   // {{{  ensureCompatible<T>, and ensureDepth<T> utility templates
-  //help function
+
   template<class Type> 
   inline Img<Type>* ensureCompatible (ImgBase** ppoDst, const ImgParams& p)
     // {{{ open
@@ -190,7 +191,6 @@ namespace icl {
   }
   // }}}
 
-  //help function
   template<class Type>
   Img<Type>* ensureDepth(ImgBase **ppoDst){
     // {{{ open
@@ -199,7 +199,7 @@ namespace icl {
   }
   // }}}
 
-  // }}}
+  // }}} enshure ..
 
   // {{{  shallowCopy function
 
@@ -228,9 +228,9 @@ namespace icl {
     return poDst;  
   }
 
-  // }}}
+  // }}} ..
 
-  // }}}
+  // }}} shallow ..
 
   // {{{  copy functions: deepCopy, scaledCopy, flippedCopy convert (with and without ROI)  
 
@@ -303,7 +303,7 @@ namespace icl {
 
   // }}}
   
-  // }}}
+  // }}} with ImgBase**...
 
   // {{{ copy-functions with Img<Type>*-argument
 
@@ -389,8 +389,10 @@ namespace icl {
 
   // }}}
   
-  // }}}
+  // }}} with Img<Type>* ...
   
+  // }}} copy f.. deepCopy,scaledCopy,flippedCopy,convert
+
   // {{{  channel management: detach, append remove, swap,...
 
   template<class Type> void
@@ -492,7 +494,38 @@ namespace icl {
   }
   // }}}
 
-  // }}}
+  template<class Type>
+  Img<Type> Img<Type>::extractChannel(int index){
+    Img<Type> other(getSize(),0);
+    other.append(this,index);
+    other.setROI(getROI());
+    other.setTime(getTime());
+    other.setFormat(formatMatrix);
+    return other;
+  }
+  
+  template<class Type>
+  const Img<Type> Img<Type>::extractChannel(int index) const{
+    return const_cast<Img<Type>*>(this)->extractChannel(index);
+  }
+  
+  template<class Type>
+  Img<Type> Img<Type>::extractChannels(const std::vector<int> &indices){
+    Img<Type> other(getSize(),0);
+    other.append(this,indices);
+    other.setROI(getROI());
+    other.setTime(getTime());
+    other.setFormat(formatMatrix);
+    return other;
+  }
+  
+  template<class Type>
+  const Img<Type> Img<Type>::extractChannels(const std::vector<int> &indices) const{
+    return const_cast<Img<Type>*>(this)->extractChannels(indices);
+  }
+
+
+  // }}} channel management...
 
   // {{{  inplace operations: scale, mirror
 
@@ -686,7 +719,7 @@ namespace icl {
 
   // }}}
 
-  // }}}
+  // }}} inplace operations...
   
   // {{{  setter: setSize, setChannels
 
@@ -736,7 +769,7 @@ namespace icl {
 
   // }}}
 
-  // }}}
+  // }}} setter...
 
   // {{{  Get Min/Max functions: 
 
@@ -965,7 +998,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
     // }}}
 
-    // }}}
+    // }}} Get Min/Max...
 
     // {{{  Auxillary  functions 
 
@@ -1021,7 +1054,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
   // }}}
 
-  // }}}
+  // }}} Auxillary...
 
   // {{{  normalize and clear
 
@@ -1063,7 +1096,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     }
   }
   
-  // }}}
+  // }}} ..
 
   // {{{  normalize main methods
 
@@ -1114,7 +1147,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   }
   // }}}
      
-  // }}}
+  // }}} normalize and clear...
 
   // {{{  Global functions: combineImages , scaledCopyChannelROI
 
@@ -1289,7 +1322,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
                       (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
   }
 
-  // }}} 
+  // }}}
 
   /// IPP-OPTIMIZED specialization for icl32f to icl32f ROI sclaing (using ippiResize)
   template<> inline void 
@@ -1321,7 +1354,6 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 #endif
 
 #undef ICL_INSTANTIATE_DEPTH
-
 
 
   // {{{    flippedCopyChannelROI
@@ -1420,7 +1452,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
 
 
-  // }}}
+  // }}}  flippedCopyChannelROI...
 
   // {{{    flippedCopy / flippedCopyROI
 
@@ -1460,6 +1492,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   }
 
   // }}}
+
   void flippedCopyROI(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst){
     // {{{ open
 
@@ -1490,9 +1523,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
   // }}}
     
-  // }}}
+  // }}} flippedCopy / flippedCopyROI
 
-  // }}}
+  // }}} Global functions ..
 
   template<class Type>
   const Img<Type> Img<Type>::null;
@@ -1544,6 +1577,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   }
 
   // }}}
+
   template<class T>
   ImgBasePtrPtr<T>::ImgBasePtrPtr(Img<T> &i){
     r = new Img<T>(i);

@@ -194,7 +194,7 @@ namespace icl {
     
     /// rects with negative sizes are normalized to Positive sizes
     /** e.g. the rect (5,5,-5,-5) is normalized to (0,0,5,5) */
-    Rect nomalized() const {
+    Rect normalized() const {
        Rect r (*this);
        if (r.width < 0) {r.x += r.width; r.width = -r.width; }
        if (r.height < 0) {r.y += r.height; r.height = -r.height; }

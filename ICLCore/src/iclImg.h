@@ -223,6 +223,11 @@ namespace icl {
     /// Destructor
     ~Img();
 
+    /// null check : null images have 0-Channels and null-size
+    bool isNull() const{
+      return getSize()==Size::null && getChannels() == 0;
+    }
+    
 
     /* }}} */
   
@@ -564,12 +569,33 @@ namespace icl {
   
     /// Append a set of selected channels from source image
     /** @param src source image
-        @param vChannels vector of channels indices*/
+        @param vChannels vector of channels indices */
     void append(Img<Type> *src, const std::vector<int>& vChannels) {
       // call private const-version
       this->append (static_cast<const Img<Type>*>(src), vChannels);
     }  
 
+    /// Returns a new image with a shallow copied single channel of this image
+    /** param index channel index to extract (must be valid, else resulting image 
+                    has no channels and error message) */
+    Img<Type> extractChannel(int index);
+
+    /// Returns a new image with a shallow copied single channel of this image
+    /** param index channel index to extract (must be valid, else resulting image 
+                    has no channels and error message) */
+    const Img<Type> extractChannel(int index) const;
+
+    /// Returns a new image with shallow copied single channels of this image
+    /** param indices channel indices to extract (each must be valid, else error and
+                      channel index that does not match is omitted) */
+    Img<Type> extractChannels(const std::vector<int> &indices);
+
+    /// Returns a new image with shallow copied single channels of this image
+    /** param indices channel indices to extract (each must be valid, else error and
+                      channel index that does not match is omitted) */
+    const Img<Type> extractChannels(const std::vector<int> &indices) const;
+
+    
     /// Swap channel A and B
     /** \copydoc icl::ImgBase::swapChannels(int,int) */
     virtual void swapChannels(int iIndexA, int iIndexB);
