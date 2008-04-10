@@ -237,6 +237,11 @@ namespace icl {
     operator Img<Type>&(){
       return *this;
     }
+
+    operator const Img<Type>&() const {
+      return *this;
+    }
+
     /// Assign operator (flat copy of channels) WARNING: Violates const concept
     /** Both images will share their channel data. 
         Use deepCopy() to obtain a copy of an image which is not attached to the 

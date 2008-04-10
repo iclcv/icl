@@ -66,7 +66,7 @@ namespace icl{
   };
   
 #define ICL_INSTANTIATE_DEPTH(D) typedef Range<icl##D> Range##D;
-  ICL_INSTANTIATE_ALL_DEPTHS;
+  ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
 
  
