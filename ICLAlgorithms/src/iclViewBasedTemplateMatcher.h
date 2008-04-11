@@ -44,6 +44,7 @@ namespace icl{
     
     /// returns the interanly used binary buffer buffer
     const Img8u getBuffer() { return p2o(m_aoBuffers[2].selectChannel(0)); }
+
     private:
     float m_fSignificance;          ///< significance level
     mode m_eMode;                   ///< matching mode

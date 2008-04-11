@@ -1252,8 +1252,8 @@ namespace icl {
       computational costs.
    */
   template<class T>
-  inline T p2o(T *ptr){
-    return *SmartPtr<T>(const_cast<T*>(ptr));
+  static inline T p2o(T *ptr){
+    return *SmartPtr<T,PointerDelOp>(ptr);
   }
 
   /// Combine several images using shallow copy. \ingroup IMAGE 
