@@ -43,7 +43,7 @@ namespace icl{
     const std::vector<Rect> &match(const Img8u &image, const Img8u &templ, const Img8u &imageMask=Img8u::null, const Img8u &templMask=Img8u::null);
     
     /// returns the interanly used binary buffer buffer
-    const Img8u getBuffer() const { return m_aoBuffers[2].extractChannel(0); }
+    const Img8u getBuffer() { return p2o(m_aoBuffers[2].selectChannel(0)); }
     private:
     float m_fSignificance;          ///< significance level
     mode m_eMode;                   ///< matching mode

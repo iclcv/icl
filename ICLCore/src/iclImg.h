@@ -456,7 +456,7 @@ namespace icl {
           @param channelIndex index of the channel to select (if invalid, NULL is returned)
           @return const image containing only the selected channel
       **/
-      const ImgBase *selectChannel(int channelIndex) const{
+      const Img<Type> *selectChannel(int channelIndex) const{
         ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
         std::vector<int> v(1); v[0]= channelIndex; return selectChannels(v);
       }
@@ -1205,6 +1205,56 @@ namespace icl {
   template<class T>
   ImgBasePtrPtr<T> bpp(Img<T> &image) { return ImgBasePtrPtr<T>(image); }
   
+
+ /// Conversion function to transform a pointer into an object
+  /** This function is very common: in many cases, Img<T> member functions
+      return pointer instead of objects. This might lead to some extra code
+      lines, if these pointer are used locally:
+      \code
+      void foo(const Img8u *image){
+        const Img8u *channel0 = image->selectChannel(0);
+        const Img8u *imageWithFullROI = image->shallowCopy(image->getImageRect());
+      
+        // do something with the shallow copies
+        // e.g. call some other functions
+        show_one_channel_image(*channel0);
+        process_image_with_full_roi(*imageWithFullROI);
+
+        delete channel0;
+        delete imageWithFullROI;
+      }
+      \endcode
+      
+      This code can be written much shorter using the *NEW* p2o function:
+      \code
+      void foo(const Img8u *image){
+        show_one_channel_image(p2o(image->selectChannel(0)));
+        process_image_with_full_roi(p2o(image->shallowCopy(image->getImageRect())));
+      }
+      \endcode
+      
+      internally: p2o uses a smart pointer to ensure <b>given pointer is released
+      properly before function returns</b>
+
+      \section IMPL implementation
+      \code
+      template<class T>
+      inline T p2o(T *ptr){
+        return T(*SmartPtr<T>(const_cast<T*>(ptr)));
+      }
+      \endcode
+      
+      \section CMPLX Complexity
+      the function internally creates a smart Pointer object and calls the copy constructor
+      of given T once. Hence the function complexity scales with the implementation of the
+      standard copy constructor of T. Particularly for ICL's Img<T> classes, the default 
+      copy constructor performs a shallow copy internally which induces negligible 
+      computational costs.
+   */
+  template<class T>
+  inline T p2o(T *ptr){
+    return *SmartPtr<T>(const_cast<T*>(ptr));
+  }
 
   /// Combine several images using shallow copy. \ingroup IMAGE 
   template<class ImgType>
