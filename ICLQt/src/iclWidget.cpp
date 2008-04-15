@@ -15,9 +15,133 @@
 #include <QPixmap>
 #include <iclWindowIcon.h>
 
+#include <iclFileWriter.h>
+#include <QInputDialog>
+#include <iclThread.h>
+
+#include <QMutexLocker>
+
 using namespace std;
 namespace icl{
-  
+
+#ifdef DO_NOT_USE_GL_VISUALIZATION
+  class ICLWidget::OutputBufferCapturer{
+    OutputBufferCapturer(ICLWidget *){}
+    // just a empty but defined class here!
+  };
+#else
+  class ICLWidget::OutputBufferCapturer{
+  public:
+    OutputBufferCapturer(ICLWidget *parent):
+      // {{{ open
+
+      parent(parent),capturing(false),filename(""),filewriter(0),mutex(QMutex::Recursive){}
+
+    // }}}
+
+    ~OutputBufferCapturer(){
+      // {{{ open
+
+      ICL_DELETE(filewriter);
+    }
+
+    // }}}
+
+    std::string getNewFilePattern(const std::string &lastFileName){
+      // {{{ open
+
+      bool ok = false;
+      QString name = QInputDialog::getText(parent,
+                                           "Specify output file pattern",
+                                           "Please specify destination file pattern\n"
+                                           "(e.g. images/captured_frame_########.ppm",
+                                           QLineEdit::Normal,lastFileName.c_str(),&ok);
+      if(ok){
+        return name.toLatin1().data();
+      }else{
+        return "";
+      }
+
+    }
+
+    // }}}
+
+    void captureIfOn(){
+      // {{{ open
+
+      QMutexLocker l(&mutex);
+      if(capturing){
+        QImage qim = parent->grabFrameBuffer();
+        converter.setQImage(&qim);
+        filewriter->write(converter.getImg<icl8u>());
+      }
+    }
+
+    // }}}
+    void setCapturing(bool onFlag){
+      // {{{ open
+
+      QMutexLocker l(&mutex);
+      if(capturing == onFlag){
+        ERROR_LOG("already capturing or already not capturing ??");
+        return;
+      }
+
+      if(onFlag){
+        /* Ask for folder ...
+          Ask for creating folder if not existing
+          Ask for overwriting files allowed
+          ...
+        */
+        filename = getNewFilePattern(filename);
+        std::string dirname = File(filename).getDir();
+        if(!File(dirname).exists()){
+          std::string command = string("if [ ! -d ")+dirname+" ] ; then mkdir "+dirname+" ; fi";
+          system(command.c_str());
+          while(!File(dirname).exists()){
+            Thread::msleep(10);
+          }
+        }
+        /// check for overwriting files!!
+        
+        filewriter = new FileWriter(filename);
+      }else{
+        ICL_DELETE(filewriter);        
+      }
+
+      capturing = onFlag;
+    }
+
+    // }}}
+
+    bool isCapturing() const {
+      // {{{ open
+
+      QMutexLocker l(&mutex);
+      return capturing;
+    }
+
+    // }}}
+
+    std::string getNextCapturingFileName() const{
+      // {{{ open
+
+      QMutexLocker l(&mutex);
+      return filewriter->getFilenameGenerator().showNext();
+    }
+
+    // }}}
+
+    
+    ICLWidget *parent;
+    bool capturing;
+    string filename;
+    FileWriter *filewriter;
+    QImageConverter converter;
+    mutable QMutex mutex;
+  };
+#endif
+
   namespace{
     
     Rect computeRect(const Size &imageSize, const Size &widgetSize, ICLWidget::fitmode mode){
@@ -56,6 +180,7 @@ namespace icl{
       }
       return Rect(0,0,iW,iH);
     }
+
     // }}}
   }
   
@@ -68,7 +193,8 @@ namespace icl{
 #endif
     m_poQImage(0),m_oMutex(QMutex::Recursive),m_oOSDMutex(QMutex::Recursive),
     m_poOSD(0),m_poCurrOSD(0),m_poShowOSD(0),m_iMouseX(-1), m_iMouseY(-1),
-    m_iCurrSelectedChannel(-1),m_bShowNoImageWarning(true){
+    m_iCurrSelectedChannel(-1),m_bShowNoImageWarning(true),
+    m_poOutputBufferCapturer(new ICLWidget::OutputBufferCapturer(this)){
     // {{{ open
 
 #ifndef DO_NOT_USE_GL_VISUALIZATION
@@ -109,6 +235,8 @@ namespace icl{
   void ICLWidget::paintGL(){}
   void ICLWidget::resizeGL(int w, int h){ (void)w; (void)h; }
   void ICLWidget::paintEvent(QPaintEvent *e){
+    // {{{ open
+
     m_oMutex.lock();
 
     QtPaintEngine pe(this);   
@@ -139,8 +267,12 @@ namespace icl{
     customPaintEvent(&pe);
   }
 
+  // }}}
+
   // NO GL case
   void ICLWidget::setImage(const ImgBase *image){ 
+    // {{{ open
+
     Mutex::Locker l(m_oMutex);
 
     if(!image){
@@ -163,6 +295,8 @@ namespace icl{
       m_poQImage = const_cast<QImage*>(m_poQImageConverter->getQImage());
     }
   }
+
+  // }}}
 #else
 
   void ICLWidget::initializeGL(){
@@ -226,6 +360,8 @@ namespace icl{
     m_oOSDMutex.unlock();
 
     customPaintEvent(&pe);
+
+    m_poOutputBufferCapturer->captureIfOn();
   }
 
   // }}}
@@ -243,6 +379,7 @@ namespace icl{
   // GL case
   void ICLWidget::setImage(const ImgBase *image){ 
     // {{{ open
+
     QMutexLocker l(&m_oMutex);
 
     if(!image){
@@ -431,7 +568,18 @@ namespace icl{
   }
   // }}}
 
+  void ICLWidget::updateFromOtherThread(){
+    // {{{ open
+
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
+  }
+
+  // }}}
+
+
   void ICLWidget::rebufferImageInternal(){
+    // {{{ open
+
     m_oMutex.lock();
     if(m_poImage && m_poImage->hasImage()){
       if(m_poImageBufferForChannelSelection){
@@ -447,6 +595,9 @@ namespace icl{
       m_oMutex.unlock();
     }
   }
+
+  // }}}
+
   void ICLWidget::childChanged(int id, void *val){  
     // {{{ open
     switch(id){
@@ -512,6 +663,12 @@ namespace icl{
         }
         break;
       }
+      case OSD::CAPTURE_VIDEO_BUTTON_ID:{
+        bool on = *reinterpret_cast<int*>(val);
+        m_poOutputBufferCapturer->setCapturing(on);
+        break;
+      }
+
       default:
         break;
     }
@@ -609,6 +766,8 @@ namespace icl{
   // }}}
 
   const ImageStatistics &ICLWidget::getImageStatistics() {
+    // {{{ open
+
     if(m_poImage){
       return m_poImage->getStatistics();
     }else{
@@ -617,5 +776,21 @@ namespace icl{
       return xxx;
     }
   }
+
+  // }}}
+  bool ICLWidget::isCapturing() const{
+    // {{{ open
+
+    return m_poOutputBufferCapturer->isCapturing();
+  }
+
+  // }}}
+  std::string ICLWidget::getNextCapturingFileName() const{
+    // {{{ open
+
+    return m_poOutputBufferCapturer->getNextCapturingFileName();
+  }
+
+  // }}}
 
 }

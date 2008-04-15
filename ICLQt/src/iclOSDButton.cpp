@@ -19,10 +19,11 @@ namespace icl{
   
   void OSDButton::mousePressed(int _x, int _y, int button){
     (void)_x; (void)_y; (void)button;
-    childChanged(m_iID);
+
     if(m_iToggable){
       m_iIsToggled = !m_iIsToggled;
     }
+    childChanged(m_iID,&m_iIsToggled);
   }
   
   void OSDButton::setText(string sText){

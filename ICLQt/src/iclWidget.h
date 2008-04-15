@@ -199,9 +199,7 @@ int main(int nArgs, char **ppcArg){
     }
 
     /// this function should be called to update the widget asyncronously from a working thread
-    void updateFromOtherThread(){
-      QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
-    }
+    void updateFromOtherThread();
     
     /// overloaded event function processing special thread save update events
     virtual bool event ( QEvent * event ){
@@ -216,6 +214,10 @@ int main(int nArgs, char **ppcArg){
     
     const ImageStatistics &getImageStatistics();
 
+    bool isCapturing() const;
+    
+    std::string getNextCapturingFileName() const;
+    
     public slots:
     /// sets up the current image
     void setImage(const ImgBase *image);
@@ -295,6 +297,12 @@ int main(int nArgs, char **ppcArg){
 
     /// by default: enabled if set to false, it is possible to show no image
     bool m_bShowNoImageWarning;
+
+    /// forward deklaration of internally used implemntation capturing gl output buffer
+    class OutputBufferCapturer;
+    
+    // internal implementation for capturing GL framebuffer
+    OutputBufferCapturer *m_poOutputBufferCapturer;
   };
   
 }

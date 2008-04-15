@@ -44,6 +44,7 @@ namespace icl{
   const int OSD::CAPTURE_ID;
   const int OSD::CAPTURE_LABEL_ID;
   const int OSD::CAPTURE_BUTTON_ID;
+  const int OSD::CAPTURE_VIDEO_BUTTON_ID;
   const int OSD::INFO_ID;
 
   const int OSD::MENU_ID;
@@ -137,7 +138,13 @@ namespace icl{
     
     // CAPTURE-Menu
     w = new OSDWidget(CAPTURE_ID,getMainRect(),poIW,this);  
-    w->addChild(new OSDButton(CAPTURE_BUTTON_ID,getSubRect(2,3),m_poIW,this,"write current image"));
+    w->addChild(new OSDButton(CAPTURE_BUTTON_ID,getSubRect(1,3),m_poIW,this,"write current image"));
+
+    OSDCaptureVideoButton *captureVideoButton = new OSDCaptureVideoButton(CAPTURE_VIDEO_BUTTON_ID,getSubRect(2,3),m_poIW,this);
+    if(m_poIW->isCapturing()){
+      captureVideoButton->setToggled(true);
+    }
+    w->addChild(captureVideoButton);
     m_mapPanels["capture"]=w;
     
     // INFO-Menu
