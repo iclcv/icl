@@ -84,7 +84,7 @@ namespace icl{
 
     // }}}
 
-    string showNext(){
+    string showNext() const{
       
       switch(m_eMode){
         case objectAndImage:{
@@ -188,7 +188,7 @@ namespace icl{
 
   // }}}
   
-  string FilenameGenerator::showNext(){
+  string FilenameGenerator::showNext() const{
     // {{{ open
 
     ICLASSERT_RETURN_VAL(!isNull(),0);

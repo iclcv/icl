@@ -71,7 +71,7 @@ namespace icl{
     std::string next();
 
     /// returns the next file without incrementing the internal counter (preview of next filename)
-    std::string showNext();
+    std::string showNext() const;
     
     /// returns the number of files left (-1) if the FileList's length is infinite
     int filesLeft() const;
