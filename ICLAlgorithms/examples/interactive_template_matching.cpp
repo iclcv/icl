@@ -17,6 +17,9 @@ Mutex mutex;
 bool dragging = false;
 Rect currRect = Rect(Point::null,imageSize).enlarged(-imageSize.width/2);
 
+bool dragging_R  = false;
+Rect currROI(Point::null,imageSize);
+
 
 void init(){
   gui << "draw()[@label=image@minsize=32x24@handle=image]";
@@ -28,7 +31,7 @@ void init(){
 
   GUI controls("vbox[@minsize=7x7]");
   controls << "fslider(0,1,0.9)[@handle=significance-handle@label=significance@out=significance]";
-  controls << "fps(10)[@handle=fps@minsize=5x5]";
+  controls << "fps(50)[@handle=fps@minsize=5x5]";
   controls << "togglebutton(no masks, with masks)[@out=use-masks]";
   controls << "togglebutton(dont clip buffers,clip buffers)[@out=clip-buffers]";
   controls << "togglebutton(square distance,norm. cross corr)[@out=mode]";
@@ -41,24 +44,47 @@ void init(){
     // {{{ open
 
     virtual void processMouseInteraction(MouseInteractionInfo *info){
+      
       if(info->type == MouseInteractionInfo::pressEvent){
-        currRect.x = info->imageX;
-        currRect.y = info->imageY;
-        currRect.width = 1;
-        currRect.height = 1;
+        if(info->downmask[0]){
+          currRect.x = info->imageX;
+          currRect.y = info->imageY;
+          currRect.width = 1;
+          currRect.height = 1;
+          dragging_R=false;
+        }else{
+          currROI.x = info->imageX;
+          currROI.y = info->imageY;
+          currROI.width = 1;
+          currROI.height = 1;
+          dragging_R=true;
+        }
         dragging = true;
+        
       }else if(info->type == MouseInteractionInfo::releaseEvent){
-        Rect r = currRect.normalized() & Rect(Point::null,imageSize);
+
         Mutex::Locker l(mutex);
-        currImage.setROI(r);
-        currTempl.setSize(r.size());
-        currImage.deepCopyROI(&currTempl);
-        templMask.setSize(currTempl.getSize());
-        templMask.clear(-1,255,false);
-        dragging =false;
+        if(dragging_R){
+          currROI = currROI.normalized() & Rect(Point::null,imageSize);
+          dragging = false;
+        }else{
+          Rect r = currRect.normalized() & Rect(Point::null,imageSize);
+          currImage.setROI(r);
+          currTempl.setSize(r.size());
+          currImage.deepCopyROI(&currTempl);
+          templMask.setSize(currTempl.getSize());
+          templMask.clear(-1,255,false);
+          currImage.setFullROI();
+          dragging =false;
+        }
       }else if(info->type == MouseInteractionInfo::dragEvent){
-        currRect.width = info->imageX-currRect.x;
-        currRect.height = info->imageY-currRect.y;
+        if(dragging_R){
+          currROI.width = info->imageX-currROI.x;
+          currROI.height = info->imageY-currROI.y;
+        }else{
+          currRect.width = info->imageX-currRect.x;
+          currRect.height = info->imageY-currRect.y;
+        }
       }
     }
   }
@@ -70,6 +96,21 @@ void init(){
   (*gui.getValue<DrawHandle>("image"))->add(&mouse);
 }
 
+void vis_roi(ICLDrawWidget *w){
+  Rect r = currROI.normalized();
+  w->color(0,0,0,0);
+  w->fill(0,0,0,200);
+  w->rect(Rect(Point::null,Size(imageSize.width,r.y)));
+  w->rect(Rect(0,r.y,r.x,imageSize.height-r.y));
+  w->rect(Rect(r.right(),r.y,imageSize.width-r.right(),imageSize.height-r.y));
+  w->rect(Rect(r.x,r.bottom(),r.width,imageSize.height-r.bottom()));
+  
+  w->color(200,0,255,200);
+  w->fill(255,255,255,0);
+  w->rect(r);
+}
+
+
 void run(){
   static GenericGrabber g("dc,pwc,file","file=images/*.ppm.gz");
   g.setDesiredSize(imageSize);
@@ -79,6 +120,9 @@ void run(){
   while(1){
     mutex.lock();
     g.grab()->convert(&currImage);
+    if(!dragging){
+      currImage.setROI(currROI.normalized() & currImage.getImageRect());
+    }
     mutex.unlock();
     
     static DrawHandle &image = gui.getValue<DrawHandle>("image");
@@ -98,11 +142,19 @@ void run(){
     (*image)->lock();
     (*image)->reset();
     if(dragging){
-      (*image)->color(255,0,0,200);
-      (*image)->fill(255,255,255,50);
-      (*image)->rect(currRect);
+      if(dragging_R){
+        vis_roi(*image);
+      }else{
+        (*image)->color(255,0,0,200);
+        (*image)->fill(255,255,255,50);
+        (*image)->rect(currRect);
+      }      
     }else if(currTempl.getDim()){
-
+      
+      if(currROI != currImage.getImageRect()){
+        vis_roi(*image);
+      }
+      
       static ViewBasedTemplateMatcher matcher;
       matcher.setSignificance(significance);
       matcher.setMode(mode ? ViewBasedTemplateMatcher::crossCorrelation : ViewBasedTemplateMatcher::sqrtDistance);

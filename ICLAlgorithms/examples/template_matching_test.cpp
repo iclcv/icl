@@ -23,10 +23,10 @@ int main(int n, char **ppc){
   printf("using significance: %f \n",s);
   Img8u *buffer = new Img8u;
   RegionDetector rd;
-  vector<Rect> rs = iclMatchTemplate(image,templ,s,buffer,&rd);
+  vector<Rect> rs = iclMatchTemplate(image,templ,s,buffer,false,&rd);
   tic();
   for(int i=0;i<1000;i++){
-    rs = iclMatchTemplate(image,templ,s,buffer,&rd);
+    rs = iclMatchTemplate(image,templ,s,buffer,false,&rd);
   }
   toc();
   

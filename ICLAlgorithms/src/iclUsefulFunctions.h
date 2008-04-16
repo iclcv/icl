@@ -64,6 +64,7 @@ namespace icl{
                                      const Img8u &templ, 
                                      float significance,
                                      Img8u *buffer=0,
+                                     bool clipBuffersToROI=true,
                                      RegionDetector *rd=0,
                                      bool useCrossCorrCoeffInsteadOfSqrDistance=false);
 
