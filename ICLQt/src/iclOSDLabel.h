@@ -13,7 +13,7 @@ namespace icl{
     OSDLabel(int id, Rect r,ImageWidget* poIW , OSDWidget *poParent, std::string sText);
     virtual void drawSelf(PaintEngine *e,int x, int y,int mouseOver,int mouseOverChild, int downmask[3]);
     void setMultiText(std::vector<std::string> smultitext);
-    
+    void setText(const std::string &text) { m_sText = text; }
     protected:
     std::string m_sText;
 

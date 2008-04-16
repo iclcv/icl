@@ -35,7 +35,7 @@ namespace icl{
     OutputBufferCapturer(ICLWidget *parent):
       // {{{ open
 
-      parent(parent),capturing(false),filename(""),filewriter(0),mutex(QMutex::Recursive){}
+      capturingMode(capturingStopped),parent(parent),filename(""),filewriter(0),mutex(QMutex::Recursive){}
 
     // }}}
 
@@ -66,59 +66,85 @@ namespace icl{
 
     // }}}
 
+    void capture(){
+      ICLASSERT_RETURN(filewriter);
+      QImage qim = parent->grabFrameBuffer();
+      converter.setQImage(&qim);
+      try{
+        filewriter->write(converter.getImg<icl8u>());
+      }catch(ICLException &ex){
+        ERROR_LOG("error capturing frame buffer: " << ex.what());
+      }
+    }
+    
     void captureIfOn(){
       // {{{ open
 
       QMutexLocker l(&mutex);
-      if(capturing){
-        QImage qim = parent->grabFrameBuffer();
-        converter.setQImage(&qim);
-        filewriter->write(converter.getImg<icl8u>());
-      }
-    }
-
-    // }}}
-    void setCapturing(bool onFlag){
-      // {{{ open
-
-      QMutexLocker l(&mutex);
-      if(capturing == onFlag){
-        ERROR_LOG("already capturing or already not capturing ??");
-        return;
-      }
-
-      if(onFlag){
-        /* Ask for folder ...
-          Ask for creating folder if not existing
-          Ask for overwriting files allowed
-          ...
-        */
-        filename = getNewFilePattern(filename);
-        std::string dirname = File(filename).getDir();
-        if(!File(dirname).exists()){
-          std::string command = string("if [ ! -d ")+dirname+" ] ; then mkdir "+dirname+" ; fi";
-          system(command.c_str());
-          while(!File(dirname).exists()){
-            Thread::msleep(10);
+      if(capturingMode == capturingStarted){
+        if(frameskip){
+          if(frameindex == frameskip){
+            capture();
+            frameindex = 0;
+          }else{
+            frameindex++;
           }
+        }else{
+          capture();
         }
-        /// check for overwriting files!!
-        
-        filewriter = new FileWriter(filename);
-      }else{
-        ICL_DELETE(filewriter);        
       }
+    }
 
-      capturing = onFlag;
+    // }}}
+    void setCapturing(ICLWidgetCaptureMode newMode){
+      // {{{ open
+      QMutexLocker l(&mutex);
+      ICLWidgetCaptureMode &oldMode = this->capturingMode;
+      if(oldMode == newMode) return;
+      switch(newMode){
+        case capturingStarted:
+          if(this->capturingMode == capturingStopped){
+            filename = getNewFilePattern(filename);
+            std::string dirname = File(filename).getDir();
+            if(!File(dirname).exists()){
+              std::string command = string("if [ ! -d ")+dirname+" ] ; then mkdir "+dirname+" ; fi";
+              system(command.c_str());
+              while(!File(dirname).exists()){
+                Thread::msleep(10);
+              }
+            }
+            ICL_DELETE(filewriter);
+            try{
+              filewriter = new FileWriter(filename);
+            }catch(ICLException &ex){
+              ERROR_LOG("invalid file pattern:" << filename << std::endl << "Exception:\"" << ex.what() << "\"");
+              filewriter = 0;
+              filename = "";
+              return;
+            }            
+          }
+          this->capturingMode = newMode;
+          // else mode becomes paused (noting more)
+          break;
+        case capturingStopped:
+          ICL_DELETE(filewriter);
+          this->capturingMode = newMode;
+          break;
+        case capturingPaused:
+          if(oldMode == capturingStarted){
+            this->capturingMode = newMode;
+          }
+          break;
+      }
     }
 
     // }}}
 
-    bool isCapturing() const {
+    ICLWidgetCaptureMode getCaptureMode() const {
       // {{{ open
 
       QMutexLocker l(&mutex);
-      return capturing;
+      return capturingMode;
     }
 
     // }}}
@@ -127,18 +153,33 @@ namespace icl{
       // {{{ open
 
       QMutexLocker l(&mutex);
-      return filewriter->getFilenameGenerator().showNext();
+      if(filewriter){
+        return filewriter->getFilenameGenerator().showNext();
+      }else{
+        return "currently not recording...";
+      }
     }
 
     // }}}
 
-    
+    void setFrameSkip(unsigned int frameskip){
+      QMutexLocker l(&mutex);
+      this->frameskip = frameskip;
+      this->frameindex = 0;
+    }
+    unsigned int getFrameSkip() const {
+      QMutexLocker l(&mutex);
+      return frameskip;
+    }
+
+    ICLWidgetCaptureMode capturingMode;
     ICLWidget *parent;
-    bool capturing;
     string filename;
     FileWriter *filewriter;
     QImageConverter converter;
     mutable QMutex mutex;
+    unsigned int frameskip;
+    unsigned int frameindex;
   };
 #endif
 
@@ -663,12 +704,17 @@ namespace icl{
         }
         break;
       }
-      case OSD::CAPTURE_VIDEO_BUTTON_ID:{
-        bool on = *reinterpret_cast<int*>(val);
-        m_poOutputBufferCapturer->setCapturing(on);
+      case OSD::CAPTURE_VIDEO_START_BUTTON_ID:
+        m_poOutputBufferCapturer->setCapturing(capturingStarted);
         break;
-      }
-
+      case OSD::CAPTURE_VIDEO_STOP_BUTTON_ID:
+        m_poOutputBufferCapturer->setCapturing(capturingStopped);
+        break;
+      case OSD::CAPTURE_VIDEO_PAUSE_BUTTON_ID:
+        m_poOutputBufferCapturer->setCapturing(capturingPaused);
+        break;
+      case OSD::CAPTURE_VIDEO_FRAME_SKIP_SLIDER_ID:
+        m_poOutputBufferCapturer->setFrameSkip(*reinterpret_cast<int*>(val));
       default:
         break;
     }
@@ -778,10 +824,10 @@ namespace icl{
   }
 
   // }}}
-  bool ICLWidget::isCapturing() const{
+  ICLWidgetCaptureMode ICLWidget::getCaptureMode() const{
     // {{{ open
 
-    return m_poOutputBufferCapturer->isCapturing();
+    return m_poOutputBufferCapturer->getCaptureMode();
   }
 
   // }}}
@@ -792,5 +838,9 @@ namespace icl{
   }
 
   // }}}
+
+  unsigned int ICLWidget::getCapturingFrameSkip() const{
+    return m_poOutputBufferCapturer->getFrameSkip();
+  }
 
 }

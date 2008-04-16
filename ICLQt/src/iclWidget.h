@@ -20,6 +20,7 @@
 #include <iclImageStatistics.h>
 #include <iclMouseInteractionInfo.h>
 #include <iclMouseInteractionReceiver.h>
+#include "iclWidgetCaptureMode.h"
 
 class QImage;
 
@@ -212,11 +213,17 @@ int main(int nArgs, char **ppcArg){
       }
     } 
     
+    /// returns current ImageStatistics struct (used by OSD)
     const ImageStatistics &getImageStatistics();
 
-    bool isCapturing() const;
+    /// returns current captureMode (on,off or paused) (used by OSD)
+    ICLWidgetCaptureMode getCaptureMode() const;
     
+    /// returns next capturing filename (used by OSD)
     std::string getNextCapturingFileName() const;
+    
+    /// returns capturing frameskip counter (used and setup in the OSD)
+    unsigned int getCapturingFrameSkip() const;
     
     public slots:
     /// sets up the current image

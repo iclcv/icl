@@ -7,7 +7,7 @@
 #include <iclOSDSlider.h>
 #include <iclOSDNavBar.h>
 #include <iclOSDImageStatisticsWidget.h>
-#include <iclOSDCaptureVideoButton.h>
+#include <iclOSDCaptureVideoWidget.h>
 
 namespace icl{
  
@@ -98,7 +98,11 @@ namespace icl{
     static const int CAPTURE_ID = 600;
     static const int CAPTURE_LABEL_ID = 601;
     static const int CAPTURE_BUTTON_ID = 602;
-    static const int CAPTURE_VIDEO_BUTTON_ID = 603;
+    static const int CAPTURE_VIDEO_WIDGET_ID = 603;
+    static const int CAPTURE_VIDEO_START_BUTTON_ID = 604;
+    static const int CAPTURE_VIDEO_STOP_BUTTON_ID = 605;
+    static const int CAPTURE_VIDEO_PAUSE_BUTTON_ID = 606;
+    static const int CAPTURE_VIDEO_FRAME_SKIP_SLIDER_ID = 607;
     static const int INFO_ID = 700;
     
     /* {{{ MENU constants */
