@@ -1,6 +1,30 @@
 #include "iclDCDeviceFeatures.h"
 #include <map>
+#include <iclStringUtils.h>
+#include <iclRange.h>
 namespace icl{
+  
+  std::string str(dc1394feature_t t){
+#define X(x) if(t==DC1394_FEATURE_##x) return #x;
+    X(BRIGHTNESS);X(EXPOSURE);X(SHARPNESS);X(WHITE_BALANCE);X(HUE);
+    X(SATURATION);X(GAMMA);X(SHUTTER);X(GAIN);X(IRIS);X(FOCUS);
+    X(TEMPERATURE);X(TRIGGER);X(TRIGGER_DELAY);X(WHITE_SHADING);
+    X(FRAME_RATE);X(ZOOM);X(PAN);X(TILT);X(OPTICAL_FILTER);
+    X(CAPTURE_SIZE);X(CAPTURE_QUALITY);
+    return "undefined";
+#undef X
+    }
+  template<> dc1394feature_t parse<dc1394feature_t>(const std::string &s){
+#define X(x) if(s==#x) return DC1394_FEATURE_##x;      
+    X(BRIGHTNESS);X(EXPOSURE);X(SHARPNESS);X(WHITE_BALANCE);X(HUE);
+    X(SATURATION);X(GAMMA);X(SHUTTER);X(GAIN);X(IRIS);X(FOCUS);
+    X(TEMPERATURE);X(TRIGGER);X(TRIGGER_DELAY);X(WHITE_SHADING);
+    X(FRAME_RATE);X(ZOOM);X(PAN);X(TILT);X(OPTICAL_FILTER);
+    X(CAPTURE_SIZE);X(CAPTURE_QUALITY);
+    return (dc1394feature_t)0;
+  }
+#undef X
+
   
   class DCDeviceFeaturesImpl{
   public:
@@ -10,47 +34,153 @@ namespace icl{
       dc1394_feature_get_all(dev.getCam(),&features);
 
       for(int i=0;i<DC1394_FEATURE_NUM;++i){
-        dc1394_feature_get(dev.getCam(),&features.feature[i]);
+        dc1394feature_info_t &info =  features.feature[i];
+        dc1394_feature_get(dev.getCam(),&info);
+        if(info.available){
+          featureMap[str(info.id)] = &info;
+        }
       }
-      
-      /****
-      typedef enum {
-        DC1394_FEATURE_BRIGHTNESS= 416,
-        DC1394_FEATURE_EXPOSURE,
-        DC1394_FEATURE_SHARPNESS,
-        DC1394_FEATURE_WHITE_BALANCE,
-        DC1394_FEATURE_HUE,
-        DC1394_FEATURE_SATURATION,
-        DC1394_FEATURE_GAMMA,
-        DC1394_FEATURE_SHUTTER,
-        DC1394_FEATURE_GAIN,
-        DC1394_FEATURE_IRIS,
-        DC1394_FEATURE_FOCUS,
-        DC1394_FEATURE_TEMPERATURE,
-        DC1394_FEATURE_TRIGGER,
-        DC1394_FEATURE_TRIGGER_DELAY,
-        DC1394_FEATURE_WHITE_SHADING,
-        DC1394_FEATURE_FRAME_RATE,
-        DC1394_FEATURE_ZOOM,
-        DC1394_FEATURE_PAN,
-        DC1394_FEATURE_TILT,
-        DC1394_FEATURE_OPTICAL_FILTER,
-        DC1394_FEATURE_CAPTURE_SIZE,
-        DC1394_FEATURE_CAPTURE_QUALITY
-      } dc1394feature_id_t;
-
-      ***/
-      
     }
     ~DCDeviceFeaturesImpl(){}
+
+    void setProperty(const std::string &name, const std::string &value){
+      std::vector<std::string> pl = getPropertyList();
+      ICLASSERT_RETURN(find(pl.begin(),pl.end(),name) != pl.end());
+      
+      if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
+        dc1394feature_info_t *info = getInfoPtr(name);
+        ICLASSERT_RETURN(info);
+        
+        dc1394feature_mode_t newMode = value=="auto" ? DC1394_FEATURE_MODE_AUTO : 
+                                       value=="manual" ? DC1394_FEATURE_MODE_MANUAL :
+                                       DC1394_FEATURE_MODE_ONE_PUSH_AUTO;
+        dc1394_feature_set_mode(dev.getCam(),info->id,newMode);
+        
+        info->current_mode = newMode;
+      }else if(name == "WHITE_BALANCE_BU"){
+        dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
+        ICLASSERT_RETURN(info);
+        info->BU_value = parse<int>(value);
+        dc1394_feature_whitebalance_set_value(dev.getCam(),info->BU_value,info->RV_value);
+      }else if(name == "WHITE_BALANCE_RV"){
+        dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
+        ICLASSERT_RETURN(info);
+        info->RV_value = parse<int>(value);
+        dc1394_feature_whitebalance_set_value(dev.getCam(),info->BU_value,info->RV_value);
+      }else{
+        dc1394feature_info_t *info = getInfoPtr(name);
+        ICLASSERT_RETURN(info);
+        info->value = parse<int>(value);
+        dc1394_feature_set_value(dev.getCam(),info->id,info->value);
+      }
+    }
+    
+    std::vector<std::string> getPropertyList(){
+      // {{{ open
+
+      std::vector<std::string> v;
+      for(std::map<std::string,dc1394feature_info_t*>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
+        std::string name = it->first;
+        dc1394feature_modes_t &modes = it->second->modes;
+        for(unsigned int i=0;i<modes.num;++i){
+          if(modes.modes[i] == DC1394_FEATURE_MODE_MANUAL){
+            if(name == "WHITE_BALANCE"){
+              v.push_back(name+"_BU");
+              v.push_back(name+"_RV");
+            }else{
+              v.push_back(name);
+            }
+          }else if(modes.modes[i] == DC1394_FEATURE_MODE_AUTO){
+            v.push_back(it->first+"-mode");            
+          }
+        }
+      }
+      return v;
+    }
+
+    // }}}
+
+    /**
+        - "range" the propertyis a double value in a given range 
+        - "value-list" the property is a double value in a list of possible values
+        - "menu" the property  is a string value in a list of possible values
+        - "command" property param has no additional parameters (this feature is 
+        **/
+    std::string getType(const std::string &name){
+      dc1394feature_info_t *info = getInfoPtr(name);
+      ICLASSERT_RETURN_VAL(info,"");
+      
+      if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
+        return "menu"; // this will contain "manual or auto"
+      }else{
+        return "range"; 
+      }
+    }
+    
+    std::string getInfo(const std::string &name){
+      dc1394feature_info_t *info = getInfoPtr(name);
+      ICLASSERT_RETURN_VAL(info,"");
+      if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
+        return "{manual,auto}";
+      }else{
+        return translateRange(Range<int>(info->min,info->max));
+      }
+      return "";
+    }
+    
+    std::string getValue(const std::string &name){
+      if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
+        dc1394feature_info_t *info = getInfoPtr(name);
+        ICLASSERT_RETURN_VAL(info,"");
+        return info->current_mode == DC1394_FEATURE_MODE_AUTO ? "auto" :
+               info->current_mode == DC1394_FEATURE_MODE_MANUAL ? "manual" :
+               "one-push-auto";
+      }else if(name == "WHITE_BALANCE_BU"){
+        dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
+        ICLASSERT_RETURN_VAL(info,"");
+        return str(info->BU_value);
+      }else if(name == "WHITE_BALANCE_RV"){
+        dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
+        ICLASSERT_RETURN_VAL(info,"");
+        return str(info->RV_value);
+      }else{
+        dc1394feature_info_t *info = getInfoPtr(name);
+        ICLASSERT_RETURN_VAL(info,"");
+        return str(info->value);
+      }
+      return "";
+    }
     
     void show(){
+      printf("############## libdc1394 info : \n");
       for(std::map<std::string,dc1394feature_info_t*>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
         dc1394_feature_print (it->second,stdout);
       }
+
+      printf("############## DCDeviceFeatures info : \n");
+      std::vector<std::string> ps = getPropertyList();
+      for(unsigned int i=0;i<ps.size();++i){
+        std::string &name = ps[i];
+        printf("---------------------------\n");
+        printf("Feature : \"%s\" \n",name.c_str());
+        printf("Type is : \"%s\" \n",getType(name).c_str());
+        printf("Info is : \"%s\" \n",getInfo(name).c_str());
+        printf("Value is: \"%s\" \n",getValue(name).c_str());
+        printf("---------------------------\n");
+      }
     }
     
+
+    
   private:
+    dc1394feature_info_t *getInfoPtr(const std::string &name){
+      std::map<std::string,dc1394feature_info_t*>::iterator it = featureMap.find(name);
+      if(it != featureMap.end()){
+        return it->second;
+      }
+      return 0;
+    }
+    
     DCDevice dev;
     dc1394featureset_t features;       
     std::map<std::string,dc1394feature_info_t*> featureMap;
