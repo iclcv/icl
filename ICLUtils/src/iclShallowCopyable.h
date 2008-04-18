@@ -98,6 +98,7 @@ namespace icl{
   template<class Impl,class DelOp=PointerDelOp>
   class ShallowCopyable{
     public:
+    typedef ShallowCopyable<Impl,DelOp> ParentSC;
     
     /// returns wheter the objects implementation holds a null pointer
     bool isNull() const { return impl.get()==NULL; }
