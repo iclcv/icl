@@ -39,14 +39,14 @@ namespace icl{
   class DCDeviceFeaturesImpl{
   public:
     
-    DCDeviceFeaturesImpl(DCDevice &dev):dev(dev){
+    DCDeviceFeaturesImpl(const DCDevice &dev):dev(dev){
       // {{{ open
 
-      dc1394_feature_get_all(dev.getCam(),&features);
+      dc1394_feature_get_all(this->dev.getCam(),&features);
 
       for(int i=0;i<DC1394_FEATURE_NUM;++i){
         dc1394feature_info_t &info =  features.feature[i];
-        dc1394_feature_get(dev.getCam(),&info);
+        dc1394_feature_get(this->dev.getCam(),&info);
         if(info.available){
           featureMap[str(info.id)] = &info;
         }
@@ -55,6 +55,10 @@ namespace icl{
 
     // }}}
     ~DCDeviceFeaturesImpl(){}
+
+    bool supportsProperty(const std::string &name) const{
+      return getInfoPtr(name) != 0;
+    }
 
     void setProperty(const std::string &name, const std::string &value){
       // {{{ open
@@ -140,9 +144,9 @@ namespace icl{
       dc1394feature_info_t *info = getInfoPtr(name);
       ICLASSERT_RETURN_VAL(info,"");
       if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
-        return "{manual,auto}";
+        return "{\"manual\",\"auto\"}";
       }else{
-        return translateRange(Range<int>(info->min,info->max));
+        return translateRange(Range<int>(info->min,info->max))+":1";
       }
       return "";
     }
@@ -202,7 +206,7 @@ namespace icl{
 
     
   private:
-    dc1394feature_info_t *getInfoPtr(const std::string &name){
+    dc1394feature_info_t *getInfoPtr(const std::string &name) const {
       // {{{ open
 
       unsigned int l = name.length();
@@ -211,7 +215,7 @@ namespace icl{
       }else if(l > 3 && ((name.substr(l-3) == "_RV")||(name.substr(l-3)=="_BU"))){
         return getInfoPtr(name.substr(0,l-3));
       }else{
-        std::map<std::string,dc1394feature_info_t*>::iterator it = featureMap.find(name);
+        std::map<std::string,dc1394feature_info_t*>::const_iterator it = featureMap.find(name);
         if(it != featureMap.end()){
           return it->second;
         }
@@ -235,7 +239,7 @@ namespace icl{
   // }}}
   
   
-  DCDeviceFeatures::DCDeviceFeatures(DCDevice &dev):
+  DCDeviceFeatures::DCDeviceFeatures(const DCDevice &dev):
     // {{{ open
 
     ParentSC(dev.isNull() ? 0 : new DCDeviceFeaturesImpl(dev)){}
@@ -257,6 +261,11 @@ namespace icl{
   }
 
   // }}}
+
+  bool DCDeviceFeatures::supportsProperty(const std::string &name) const{
+    ICLASSERT_RETURN_VAL(!isNull(),false);
+    return impl->supportsProperty(name);
+  }
 
   void DCDeviceFeatures::setProperty(const std::string &name, const std::string &value){
     // {{{ open

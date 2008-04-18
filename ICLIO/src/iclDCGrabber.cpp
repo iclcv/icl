@@ -10,7 +10,7 @@ namespace icl{
   DCGrabber::DCGrabber(const DCDevice &dev):
     // {{{ open
 
-    m_oDev(dev),m_poGT(0),m_poImage(0), m_poImageTmp(0)
+    m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_poImage(0), m_poImageTmp(0)
   {
     dc::install_signal_handler();
 
@@ -146,10 +146,10 @@ namespace icl{
       }else{
         ERROR_LOG("parameter image-labeling has values \"on\" and \"off\", nothing known about \""<<value<<"\"");
       }
-    }else if(m_oDev.isFeatureAvailable(property)){
-      m_oDev.setFeatureValue(property,value);
+    }else if(m_oDeviceFeatures.supportsProperty(property)){
+      m_oDeviceFeatures.setProperty(property,value);
     }else{
-      ERROR_LOG("nothing known about a property named \""<<property<<"\", value was \""<<value<<"\"");
+      ERROR_LOG("unsupported property " << property);
     }
   }
   std::vector<std::string> DCGrabber::getPropertyList(){
@@ -163,20 +163,18 @@ namespace icl{
     v.push_back("size");
     v.push_back("enable-image-labeling");
     
-    std::vector<std::string> v2 = m_oDev.getFeatures();
-    for(unsigned int i=0;i<v2.size();i++){
-      v.push_back(v2[i]);
-    }
+    std::vector<std::string> v3 = m_oDeviceFeatures.getPropertyList();
+    std::copy(v3.begin(),v3.end(),back_inserter(v));
+    
     return v;
   }
 
   std::string DCGrabber::getType(const std::string &name){
     if((m_oDev.needsBayerDecoding() && name == "bayer-quality") || 
-       name == "format" ||
-       name == "size" ||
-       name == "enable-image-labeling") return "menu";
-    if(m_oDev.isFeatureAvailable(name)){
-      return m_oDev.getFeatureType(name);
+       name == "format" || name == "size" || name == "enable-image-labeling"){
+      return "menu";
+    }else if(m_oDeviceFeatures.supportsProperty(name)){
+      return m_oDeviceFeatures.getType(name);
     }
     return "";// range command undefined
   }
@@ -203,8 +201,8 @@ namespace icl{
       return "{\"on\",\"off\"}";
     }else if(name == "size"){
       return "{\"adjusted by format\"}";
-    }else if(m_oDev.isFeatureAvailable(name)){
-      return m_oDev.getFeatureInfo(name);
+    }else if(m_oDeviceFeatures.supportsProperty(name)){
+      return m_oDeviceFeatures.getInfo(name);
     }
     return "";
   }
@@ -223,8 +221,8 @@ namespace icl{
       }
     }else if(name == "size"){
       return "adjusted by format";
-    }else if(m_oDev.isFeatureAvailable(name)){
-      return m_oDev.getFeatureValue(name);
+    }else if(m_oDeviceFeatures.supportsProperty(name)){
+      return m_oDeviceFeatures.getValue(name);
     }
     return "";
   }

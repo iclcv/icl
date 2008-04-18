@@ -48,8 +48,10 @@ namespace icl{
     DCDeviceFeatures();
 
     /// Default constructor with given DCDevice struct
-    DCDeviceFeatures(DCDevice &dev);
+    DCDeviceFeatures(const DCDevice &dev);
 
+    // returns whether given property is available
+    bool supportsProperty(const std::string &name) const;
 
     /// Sets a property to a new value
     /** call getPropertyList() to see which properties are supported 

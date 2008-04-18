@@ -4,6 +4,7 @@
 
 #include "iclDC.h"
 #include "iclDCDevice.h"
+#include "iclDCDeviceFeatures.h"
 #include "iclDCDeviceOptions.h"
 #include "iclGrabber.h"
 #include <iclConverter.h>
@@ -115,6 +116,9 @@ namespace icl{
     
     /// Wrapped DCDevice struct
     DCDevice m_oDev;
+
+    /// Features corrsponding to m_oDev
+    DCDeviceFeatures m_oDeviceFeatures;
     
     /// Wrapped DCGrabberThread struct
     dc::DCGrabberThread *m_poGT;    
