@@ -8,16 +8,19 @@
 namespace icl{
   
   /** cond */
-  class DCDeviceFeatureImpl;
-  struct DCDeviceFeatureImplDelOp{
-    static void delete_func(DCDeviceFeatureImpl *impl);
+  class DCDeviceFeaturesImpl;
+  struct DCDeviceFeaturesImplDelOp{
+    static void delete_func(DCDeviceFeaturesImpl *impl);
   };
   /** endcond */
   
-  class DCDeviceFeatures : public ShallowCopyAble<DCDeviceFeatureImpl,DCDeviceFeatureImplDelOp> {
+  class DCDeviceFeatures : public ShallowCopyable<DCDeviceFeaturesImpl,DCDeviceFeaturesImplDelOp> {
     public:
     DCDeviceFeatures();
     DCDeviceFeatures(DCDevice &dev);
+    
+    void show() const;
+    
   };
 }
 #endif
