@@ -164,7 +164,11 @@ namespace icl{
       }
       return *reinterpret_cast<T*>(da.data);
     }
-    
+      
+    template<class T>
+    inline const T &getValue(const std::string &id) const{
+      return const_cast<GUIDataStore*>(this)->getValue<T>(id);
+    }
     /// returns the RTTI string type identifier, for the entry associated with id
     /** @param id name of the entry
         @return RTTI string type identifier
@@ -182,7 +186,7 @@ namespace icl{
     /** @param id name of the entry
         @return whether the entry associated with id has type T */
     template<class T>
-    inline bool checkType(const std::string &id){
+    inline bool checkType(const std::string &id) const{
       if(!contains(id)){
         ERROR_LOG("id "<<  id  << " not found \n");
         return false;
@@ -194,7 +198,7 @@ namespace icl{
     /** @param id name of the entry to check
         @return whether the entry for id is an array 
     */
-    inline bool isArray(const std::string &id){
+    inline bool isArray(const std::string &id) const{
       if(!contains(id)){
         ERROR_LOG("id "<<  id  << " not found \n");
         return false;
@@ -253,6 +257,10 @@ namespace icl{
         printf("%d: name:\"%s\" type:\"%s\"  arraylen:\"%d\" \n",i++,it->first.c_str(),it->second.type.c_str(),it->second.len);
       }
       printf("----------------------\n");
+    }
+
+    void clear(){
+      *this = GUIDataStore();
     }
     private:
 
