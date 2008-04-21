@@ -20,7 +20,7 @@ ifeq "$(HAVE_QT)" "TRUE"
 # Please, place here the include directory of the project
 # (e.g. -I${AGNI_GLOBAL_ROOT}/Modules/DisplayWindow/1.0/include )
 ABS_INCLUDES:= ${ABS_INCLUDES} \
-	`PKG_CONFIG_PATH=$(QTDIR)/lib/pkgconfig:$(PKG_CONFIG_PATH) pkg-config --cflags QtCore QtGui QtOpenGL`
+	`PKG_CONFIG_PATH=$(QTDIR)/lib/pkgconfig:$(PKG_CONFIG_PATH) pkg-config --cflags QtCore QtGui QtOpenGL QtXml`
 
 
 # Please, do not change this ifeq statement
@@ -45,7 +45,7 @@ else
 
 ifeq "${OS_TYPE}" "linux"
 
-QT_LIB_DIRS_FROM_PKG_CONFIG=$(shell PKG_CONFIG_PATH=$(QTDIR)/lib/pkgconfig:$(PKG_CONFIG_PATH) pkg-config --libs-only-L QtCore QtGui QtOpenGL)
+QT_LIB_DIRS_FROM_PKG_CONFIG=$(shell PKG_CONFIG_PATH=$(QTDIR)/lib/pkgconfig:$(PKG_CONFIG_PATH) pkg-config --libs-only-L QtCore QtGui QtOpenGL QtXml)
 QT_RPATH_VAR=$(subst -L,,$(QT_LIB_DIRS_FROM_PKG_CONFIG))
 QT_RPATH_VAR:=$(QT_RPATH_VAR:%=-Wl,-rpath=%)
 
@@ -53,7 +53,7 @@ QT_RPATH_VAR:=$(QT_RPATH_VAR:%=-Wl,-rpath=%)
 ABS_LIBRARIES:=${ABS_LIBRARIES}\
 		$(QT_RPATH_VAR)\
 		$(QT_LIB_DIRS_FROM_PKG_CONFIG) \
-		-lQtCore -lQtGui -lQtOpenGL -lGL -lGLU
+		-lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -lQtXml
 
 endif
 ifeq "${OS_TYPE}" "macosx"
@@ -61,7 +61,8 @@ ABS_LIBRARIES:=${ABS_LIBRARIES} -F${QTDIR}/lib \
                         -framework QtCore \
                         -framework QtGui \
                         -framework QtOpenGL \
-				-framework OpenGL
+                        -framework QtXml \
+			-framework OpenGL
 endif
 
 # Please, do not remove this endif statement
