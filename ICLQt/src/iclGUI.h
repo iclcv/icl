@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <iclSmartPtr.h>
-#include <iclGUIDataStore.h>
+#include <iclDataStore.h>
 #include <iclButtonHandle.h>
 #include <iclBoxHandle.h>
 #include <iclBorderHandle.h>
@@ -266,7 +266,7 @@ namespace icl{
       (<b>Note: input pins have been replaced by the GUIHandles, but they remain in the API.</b>)
       In contrast to software frameworks like Neo/NST or TDI, no explicit connection must be established 
       to access a GUI objects input/and output data. Instead, a component allocates a mutex-locked variable
-      inside of a so called GUIDataStore that is created by its top level GUI component, and updates this
+      inside of a so called DataStore that is created by its top level GUI component, and updates this
       variable any time a Qt-GUI-Event on this components occurs. Let's have a look on a short example to
       understand this better:
       \code
@@ -283,7 +283,7 @@ namespace icl{
         // no slider data can be accessed
 
         // make g visible, This will create all embedded Qt-Widgets internally and
-        // it will allocate data for each component in the GUIs internal GUIDataStore.
+        // it will allocate data for each component in the GUIs internal DataStore.
         g.show();
       
         // now a single integer value is allocated, which is assigned to the 
@@ -793,16 +793,16 @@ namespace icl{
     void waitForCreation();
 
     /// returns the GUI internal dataStore
-    const GUIDataStore &getDataStore() const { return m_oDataStore; }
+    const DataStore &getDataStore() const { return m_oDataStore; }
 
     private:
-    void create(QLayout *parentLayout,QWidget *parentWidget, GUIDataStore *ds);
+    void create(QLayout *parentLayout,QWidget *parentWidget, DataStore *ds);
 
     /// own definition string
     std::string m_sDefinition;
     std::vector<GUI*> m_vecChilds;
     GUIWidget *m_poWidget;
-    GUIDataStore m_oDataStore;
+    DataStore m_oDataStore;
     bool m_bCreated;
     QWidget *m_poParent;
   };  

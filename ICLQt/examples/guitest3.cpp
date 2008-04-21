@@ -1,5 +1,5 @@
 #include "iclGUI.h"
-#include <iclGUIDataStore.h>
+#include <iclDataStore.h>
 #include <iclSize.h>
 #include <iclImg.h>
 #include <iclThread.h>

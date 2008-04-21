@@ -1111,7 +1111,7 @@ public:
 
   // }}}
   
-  void GUI::create(QLayout *parentLayout,QWidget *parentWidget, GUIDataStore *ds){
+  void GUI::create(QLayout *parentLayout,QWidget *parentWidget, DataStore *ds){
     // {{{ open
     if(ds) m_oDataStore = *ds;
     try{

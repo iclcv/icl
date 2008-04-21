@@ -1,5 +1,5 @@
-#ifndef ICL_GUI_DATA_STORE_H
-#define ICL_GUI_DATA_STORE_H
+#ifndef ICL_DATA_STORE_H
+#define ICL_DATA_STORE_H
 
 #include <string>
 #include <map>
@@ -26,21 +26,21 @@ namespace icl{
       Identification) which is not very fast. Also the access functions 
       getValue() and getArray() are not very fast, because the underlying memory
       is organized in a std::map, which must be searched. Hence, the more
-      elements a GUIDataStore object contains, the slower a single data element
+      elements a DataStore object contains, the slower a single data element
       will be accessible (it's just a map internally :-) ). \n
       To accelerate data access just store a reference to the data element or
       a pointer anywhere and work with that pointer!.
    */
-  class GUIDataStore{
+  class DataStore{
     public:
-    /// Default constructor (create a new GUIDataStore object)
-    inline GUIDataStore(){
+    /// Default constructor (create a new DataStore object)
+    inline DataStore(){
       m_oDataMapPtr = SmartDataMapPtr(new DataMap);
       m_oMutexPtr = SmartMutexPtr(new QMutex);
     }
     
     /// Destructor (deletes all remaining data)
-    inline ~GUIDataStore(){
+    inline ~DataStore(){
       for(DataMap::iterator it = m_oDataMapPtr->begin(); it != m_oDataMapPtr->end(); ++it){
         DataArray &da = it->second;
         da.release_func(&da);
@@ -167,7 +167,7 @@ namespace icl{
       
     template<class T>
     inline const T &getValue(const std::string &id) const{
-      return const_cast<GUIDataStore*>(this)->getValue<T>(id);
+      return const_cast<DataStore*>(this)->getValue<T>(id);
     }
     /// returns the RTTI string type identifier, for the entry associated with id
     /** @param id name of the entry
@@ -232,7 +232,7 @@ namespace icl{
     struct DataArray{
       
       /// delete function, given to the data Array after construction to delete its own data
-      /** @param da filled with the "this" argument internally by the Parent GUIDataStore object
+      /** @param da filled with the "this" argument internally by the Parent DataStore object
       */
       template<class T>
       static void release_data_array(DataArray *da){
@@ -245,13 +245,13 @@ namespace icl{
       void *data; //<! identified using the type string
       int len;    //<! length of the data array or 0 if it was created using () instead of []
       std::string type; //<! created using RTTI
-      void (*release_func)(DataArray*); //<! data release function called by the parent GUIDataStore object
+      void (*release_func)(DataArray*); //<! data release function called by the parent DataStore object
     };
     
     public:
     /// shows a list of currently contained data
     void listContents() const{
-      printf("GUIDataStore content: \n");
+      printf("DataStore content: \n");
       int i=0;
       for(DataMap::const_iterator it=m_oDataMapPtr->begin(); it != m_oDataMapPtr->end(); ++it){
         printf("%d: name:\"%s\" type:\"%s\"  arraylen:\"%d\" \n",i++,it->first.c_str(),it->second.type.c_str(),it->second.len);
@@ -260,7 +260,7 @@ namespace icl{
     }
 
     void clear(){
-      *this = GUIDataStore();
+      *this = DataStore();
     }
     private:
 
