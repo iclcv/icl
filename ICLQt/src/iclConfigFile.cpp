@@ -80,7 +80,7 @@ namespace icl{
     template<> void add_f<T>(DataStore &ds,             \
                              const std::string &id,        \
                              const std::string &value){    \
-      ds.allocValue(id,VAL);                               \
+      ds.allocValue(string("config.")+id,VAL);             \
     }                                                      \
     template<> std::string get_type_str<T>(){              \
       return #T;                                           \

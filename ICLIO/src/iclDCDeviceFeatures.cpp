@@ -183,21 +183,14 @@ namespace icl{
     void show(){
       // {{{ open
 
-      printf("############## libdc1394 info : \n");
-      for(std::map<std::string,dc1394feature_info_t*>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
-        dc1394_feature_print (it->second,stdout);
-      }
-
-      printf("############## DCDeviceFeatures info : \n");
       std::vector<std::string> ps = getPropertyList();
       for(unsigned int i=0;i<ps.size();++i){
         std::string &name = ps[i];
-        printf("---------------------------\n");
-        printf("Feature : \"%s\" \n",name.c_str());
-        printf("Type is : \"%s\" \n",getType(name).c_str());
-        printf("Info is : \"%s\" \n",getInfo(name).c_str());
-        printf("Value is: \"%s\" \n",getValue(name).c_str());
-        printf("---------------------------\n");
+        printf("Feature:%20s  Type:%7s  Info:%20s  Value:%10s\n",
+               name.c_str(),
+               getType(name).c_str(),
+               getInfo(name).c_str(),
+               getValue(name).c_str());
       }
     }
 
