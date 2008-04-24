@@ -25,6 +25,7 @@ namespace icl{
     }
     
     string skipWhitespaces(const string &s){
+      if(!s.length()) return "";
       return s.substr(s.find_first_not_of(' '));
     }
     int ti(const std::string &value){

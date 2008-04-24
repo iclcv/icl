@@ -42,8 +42,8 @@ namespace icl{
     do {
       nextLine = ioutils::skipWhitespaces(file.readLine());
       vector<string> ts = tok(nextLine," ");
-      if(ts.size() < 3) break;
-    
+      
+      if(ts.size() < 3) continue;
       string sKey = ts[1];
     
       if (sKey == "NumFeatures" || sKey == "NumImages") {
@@ -66,7 +66,7 @@ namespace icl{
       if(getChannelsOfFormat(oInfo.imageFormat) != oInfo.channelCount){
         oInfo.imageFormat = formatMatrix;
       }
-    } while (true);
+    } while (nextLine.length()==0 || nextLine[0]=='#');
     
     // }}}
 
