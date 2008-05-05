@@ -2,6 +2,7 @@
 #define ICL_CONVEX_HULL_MONOTONE_CHAIN_H
 
 #include <iclGeomDefs.h>
+#include <iclPoint.h>
 namespace icl{
   
   /// Utility Structure used for the Convex-Hull Algorithm
@@ -48,5 +49,13 @@ namespace icl{
       Return: the number of points in H[]
   **/
   int chainHull_2D(CHPoint* P, int n, CHPoint* H);
+
+  /// New implementation of convex hull monotone chain algorithm!
+  /** @param P list of Point (input) call-by-value, as we need an inplace-sort
+               internally
+      @return list of points of the convex hull first point is identical 
+      to the last point in this list!
+  */
+  std::vector<Point> convexHull(std::vector<Point> P);
 }
 #endif

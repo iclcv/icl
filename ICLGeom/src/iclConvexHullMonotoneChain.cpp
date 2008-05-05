@@ -1,7 +1,49 @@
 #include "iclConvexHullMonotoneChain.h"
+#include <algorithm>
+#include <vector>
+using namespace std;
+
 
 namespace icl{
+  
+  bool operator <(const Point &a, const Point &p){
+    return a.x < p.x || (a.x == p.x && a.y < p.y);
+  }
+  // Implementation was found here: http://www.algorithmist.com/index.php/Monotone_Chain_Convex_Hull.cpp
+  // 2D cross product.
+  // Return a positive value, if OAB makes a counter-clockwise turn,
+  // negative for clockwise turn, and zero if the points are collinear.
+  int cross(const Point &O, const Point &A, const Point &B){
+    return (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
+  }
+  
+  // Returns a list of points on the convex hull in counter-clockwise order.
+  // Note: the last point in the returned list is the same as the first one.
+  vector<Point> convexHull(vector<Point> P){
+    int n = P.size(), k = 0;
+    vector<Point> H(2*n);
+    
+    // Sort points lexicographically
+    sort(P.begin(), P.end());
+    
+    // Build lower hull
+    for (int i = 0; i < n; i++) {
+      while (k >= 2 && cross(H[k-2], H[k-1], P[i]) <= 0) k--;
+      H[k++] = P[i];
+    }
+    
+    // Build upper hull
+    for (int i = n-2, t = k+1; i >= 0; i--) {
+      while (k >= t && cross(H[k-2], H[k-1], P[i]) <= 0) k--;
+      H[k++] = P[i];
+    }
+    
+    H.resize(k);
+    return H;
+  }
+  
   int chainHull_2D(CHPoint* P, int n, CHPoint* H){
+    ERROR_LOG("do not use the implementation of monotone chain algorithm!");
     // the output array H[] will be used as the stack
     int    bot=0, top=(-1);  // indices for bottom and top of the stack
     int    i;                // array scan index
