@@ -126,10 +126,10 @@ namespace icl {
      // {{{ open
     ICLASSERT_RETURN(poSrc);
     ICLASSERT_RETURN(ppoDst);
-    ICLASSERT_RETURN(!((*ppoDst)->getDepth()!=depth8u && (*ppoDst)==poSrc));
-    
-    
-    
+    if( *ppoDst ){
+      ICLASSERT_RETURN( (*ppoDst)->getDepth()==depth8u || (*ppoDst) != poSrc );
+    }
+  
      if (!UnaryOp::prepare (ppoDst, poSrc, depth8u)) return;
      switch (poSrc->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(T) case depth##T:                                              \
