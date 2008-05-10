@@ -104,14 +104,18 @@ namespace icl {
       int iHeight  = extract<int>(p["height"]);
       depth eDepth = translateDepth(extract<string>(p["depth"]));
       int iChannels   = extract<int>(p["channels"]);
+
+      std::cout << "jfdjfldsjfld: "<< (string)extract<string>(p["format"]) << std::endl;
       icl::format fmt = translateFormat(extract<string>(p["format"]));
 
-      Location  r (l, "ROI");
-      icl::Rect roi ((int) extract<int>(r["offsetX"]), 
-                     (int) extract<int>(r["offsetY"]),
-                     (int) extract<int>(r["width"]),
-                     (int) extract<int>(r["height"]));
-
+      LocationPtr  r = find(l, "ROI");
+      icl::Rect roi(0, 0, iWidth, iHeight);
+      if(r) {
+        roi = icl::Rect((int) extract<int>((*r)["offsetX"]), 
+                        (int) extract<int>((*r)["offsetY"]),
+                        (int) extract<int>((*r)["width"]),
+                        (int) extract<int>((*r)["height"]));
+      }
 
       poImg = ensureCompatible (&poImg, eDepth, Size(iWidth, iHeight), 
                                 iChannels, fmt, roi);
