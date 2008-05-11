@@ -10,7 +10,9 @@ namespace icl{
     public:
     /// Constructor
     TranslateOp (double dX=0.0, double dY=0.0, scalemode eInterpolate=interpolateLIN) :
-      AffineOp (eInterpolate) {}
+      AffineOp (eInterpolate) {
+        setTranslation(dX,dY);
+      }
     
     /// performs a translation
     /**

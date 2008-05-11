@@ -10,7 +10,9 @@ namespace icl{
     public:
     /// Constructor
     RotateOp (double dAngle=0.0, scalemode eInterpolate=interpolateLIN) :
-      AffineOp (eInterpolate) {}
+      AffineOp (eInterpolate) {
+        setAngle(dAngle);
+      }
     
     /// sets the rotation angle
     /**

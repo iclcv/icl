@@ -10,7 +10,9 @@ namespace icl{
     public:
     /// Constructor
     ScaleOp (double factorX=0.0, double factorY=0.0, scalemode eInterpolate=interpolateLIN) :
-      AffineOp (eInterpolate) {}
+    AffineOp (eInterpolate) {
+      setScale(factorX,factorY);
+    }
     
     /// performs a scale
     /**

@@ -49,7 +49,7 @@ namespace icl{
     }
     
     /// Applies the affine transform to the image
-    void apply (const ImgBase *poSrc, ImgBase **ppoDst);
+    virtual void apply (const ImgBase *poSrc, ImgBase **ppoDst);
     
     private:
     /// array of class methods used to transform depth8u and depth32f images
