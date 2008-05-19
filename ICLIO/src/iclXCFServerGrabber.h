@@ -1,6 +1,6 @@
 #ifdef HAVE_XCF
-#ifndef ICLXCFGRABBER_H
-#define ICLXCFGRABBER_H
+#ifndef ICL_XCF_SERVER_GRABBER_H
+#define ICL_XCF_SERVER_GRABBER_H
 
 #include <iclGrabber.h>
 #include <string>
@@ -12,19 +12,19 @@ namespace icl {
   
 
    /// Grabber to access XCF Image Server \ingroup GRABBER_G
-   /** The XCFGrabber provides access to an XCF Image Server. */
+   /** The XCFServerGrabber provides access to an XCF Image Server. */
   
-   class XCFGrabber : public Grabber {
+   class XCFServerGrabber : public Grabber {
    public:
     
       /// Base constructor
-      XCFGrabber(const std::string& sServer, 
+      XCFServerGrabber(const std::string& sServer, 
                  ::XCF::RecoverLevel l = (::XCF::RecoverLevel)
                  ::XCF::Implementation::Properties::singleton()
                  ->getPropertyAsInt("XCF.Global.RecoverLevel"));
     
       /// Destructor
-      ~XCFGrabber(void);
+      ~XCFServerGrabber(void);
     
       /// grabbing function  
       /** \copydoc icl::Grabber::grab(ImgBase**)*/

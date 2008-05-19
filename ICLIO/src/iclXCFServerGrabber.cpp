@@ -1,4 +1,4 @@
-#include <iclXCFGrabber.h>
+#include <iclXCFServerGrabber.h>
 #include <xmltio/xmltio.hpp>
 
 #include "iclXCFUtils.h"
@@ -9,7 +9,7 @@ using namespace xmltio;
 namespace icl {
 
 
-   XCFGrabber::XCFGrabber (const std::string& sServer, XCF::RecoverLevel l) :
+   XCFServerGrabber::XCFServerGrabber (const std::string& sServer, XCF::RecoverLevel l) :
       m_locRequest ("<IMAGEREQUEST>"
                     "<GRAB stereo=\"false\" timestamp=\"\"/>"
                     "</IMAGEREQUEST>", "/IMAGEREQUEST/GRAB"), 
@@ -25,13 +25,13 @@ namespace icl {
                                              m_oDesiredParams.getSize());
    }
 
-   XCFGrabber::~XCFGrabber () {
+   XCFServerGrabber::~XCFServerGrabber () {
       m_remoteServer->destroy ();
       delete m_poBayerConverter;
       delete m_poSource;
    }
 
-   void XCFGrabber::makeOutput (const xmltio::Location& l, ImgBase *poOutput) {
+   void XCFServerGrabber::makeOutput (const xmltio::Location& l, ImgBase *poOutput) {
       LocationPtr locBayer = xmltio::find (l, "PROPERTIES/@bayerPattern");
       if (locBayer) {
          const string& bayerPattern =  extract<string>(*locBayer);
@@ -50,7 +50,7 @@ namespace icl {
       }
    }
 
-   const ImgBase* XCFGrabber::grab (ImgBase **ppoDst) {
+   const ImgBase* XCFServerGrabber::grab (ImgBase **ppoDst) {
       receive (m_result);
 
       Location loc (m_result->getXML(), "/IMAGESET/IMAGE");
@@ -61,7 +61,7 @@ namespace icl {
       return poOutput;
    }
 
-   void XCFGrabber::grab (std::vector<ImgBase*>& vGrabbedImages) {
+   void XCFServerGrabber::grab (std::vector<ImgBase*>& vGrabbedImages) {
       receive (m_result);
 
       vGrabbedImages.resize (m_result->getBinaryMap().size());
@@ -77,11 +77,11 @@ namespace icl {
       }
    }
    
-   void XCFGrabber::setRequest (const string& sRequest) {
+   void XCFServerGrabber::setRequest (const string& sRequest) {
       m_locRequest = Location (sRequest, "/IMAGEREQUEST/GRAB");
    }
 
-   void XCFGrabber::receive (XCF::CTUPtr& result) {
+   void XCFServerGrabber::receive (XCF::CTUPtr& result) {
       m_locRequest["timestamp"] = ""; // most-recent image
       m_remoteServer->callMethod ("retrieveImage", 
                                   m_locRequest.getDocumentText(), result);

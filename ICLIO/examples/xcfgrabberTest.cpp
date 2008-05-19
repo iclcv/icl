@@ -1,6 +1,6 @@
 #ifdef HAVE_XCF
 #include <vector>
-#include <iclXCFGrabber.h>
+#include <iclXCFServerGrabber.h>
 #ifdef WIN32
 #include <log4cxx/PropertyConfigurator.h>
 #endif
@@ -12,7 +12,7 @@ int main() {
 #ifdef WIN32
 	log4cxx::PropertyConfigurator::configure(std::string("log4cxx.props"));
 #endif
-	XCFGrabber *grabber = new XCFGrabber("XCFSonyFwImageServer");
+	XCFServerGrabber *grabber = new XCFServerGrabber("XCFSonyFwImageServer");
 	grabber->setRequest("<IMAGEREQUEST>"
                     	"<GRAB stereo=\"true\" timestamp=\"\"/>"
                     	"</IMAGEREQUEST>");
