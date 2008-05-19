@@ -10,22 +10,6 @@
 
 namespace icl {
   
-   /// Create descriptive XML xmltio::Location for given ICL image
-	xmltio::Location createXML(const ImgBase* poImg, 
-                              const std::string& uri="image", 
-                              const std::string& bayerPattern="");
-   /// Pack image into XCF binary transport unit
-   XCF::Binary::TransportUnitPtr packImage (const ImgBase* poImg, 
-                                            XCF::Binary::TransportUnitPtr btu=0);
-   /// Extract image from XCF composite transport unit using given XML description 
-   /** ICL image poImg is created from XCF composite transport unit
-       @arg ctu   CTU containing various images in its IMAGESET
-       @arg l     XML Location describing parameters of image
-       @arg poImg destination image pointer
-   */
-   void extractImage (const XCF::CTUPtr ctu, const xmltio::Location& l, 
-                      ImgBase*& poImg);
-
 
    /// Grabber to access XCF Image Server \ingroup GRABBER_G
    /** The XCFGrabber provides access to an XCF Image Server. */
