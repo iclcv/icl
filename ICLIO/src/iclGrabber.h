@@ -7,6 +7,7 @@
 #include <iclConverter.h>
 #include <vector>
 #include <iclSteppingRange.h>
+#include <iclUncopyable.h>
 /*
   Grabber.h
 
@@ -22,7 +23,7 @@ namespace icl {
   /** \endcond */
   
   /// Common interface class for all grabbers \ingroup GRABBER_G
-  class Grabber {
+  class Grabber : public Uncopyable{
     public:
     /// Basic Grabber constructor
     /** sets desired params to:

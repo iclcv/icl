@@ -7,6 +7,7 @@
 #include <iclImgBase.h>
 #include <xcf/RemoteServer.hpp>
 #include <xmltio/Location.hpp>
+#include <vector>
 
 namespace icl{
   class XCFUtils{
@@ -16,6 +17,20 @@ namespace icl{
     static void CTUtoImage(const XCF::CTUPtr ctu, const xmltio::Location& l, ImgBase** ppoImage);
 
     static  XCF::Binary::TransportUnitPtr ImageToCTU(const ImgBase* image, XCF::Binary::TransportUnitPtr btu);
+
+    struct ImageDescription{
+      std::string uri;
+      Size size;
+      depth imagedepth;
+      int channels;
+      format imageformat;
+      Rect roi;
+      Time time;
+    };
+    static ImageDescription getImageDescription(const xmltio::Location &l);
+    
+    static void serialize(const ImgBase *image, std::vector<unsigned char> &dst);
+    static void unserialize(const std::vector<unsigned char> &src, const ImageDescription &descr, ImgBase **dst);
   };  
 }
 

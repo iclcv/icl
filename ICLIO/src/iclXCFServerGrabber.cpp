@@ -56,7 +56,7 @@ namespace icl {
       Location loc (m_result->getXML(), "/IMAGESET/IMAGE");
 
       ImgBase *poOutput = prepareOutput (ppoDst);
-      XCFUtils::CTUtoImage(m_result, loc, &m_poSource);
+      XCFUtils::CTUtoImage(m_result, loc,&m_poSource);
       makeOutput (loc, poOutput);
       return poOutput;
    }

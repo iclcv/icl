@@ -3,7 +3,6 @@
 
 #include <string>
 #include <map>
-#include <iclUncopyable.h>
 #include <iclFileGrabberPlugin.h>
 #include <iclFileList.h>
 #include <iclGrabber.h>
@@ -23,7 +22,7 @@ namespace icl{
       }
       \endcode
   **/
-  class FileGrabber : public Grabber, public Uncopyable{
+  class FileGrabber : public Grabber{
     public:
     
     /// for the internal plugin concept

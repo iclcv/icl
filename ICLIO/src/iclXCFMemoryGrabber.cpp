@@ -1,3 +1,4 @@
+
 #include "iclXCFMemoryGrabber.h"
 
 #include <log4cxx/propertyconfigurator.h>
@@ -13,6 +14,8 @@
 
 #include <iclStringUtils.h>
 #include <cstring>
+#include "iclXCFUtils.h"
+#include <iclConverter.h>
 
 using memory::interface::MemoryPtr;
 using memory::interface::MemoryInterface;
@@ -26,26 +29,30 @@ using memory::interface::Attachments;
 
 namespace icl{
 
-  struct XCFMemoryGrabberImpl{
-    std::string xpath;
-    MemoryPtr memInterface;
-    boost::shared_ptr<EventSource> evtSrc;
-    TriggeredAction *action;
-    Condition condition;
-    Subscription *subscription;
+  struct XCFMemoryGrabberImpl : public Grabber{
+    std::string m_xpath;
+    MemoryPtr m_memInterface;
+    boost::shared_ptr<EventSource> m_evtSrc;
+    TriggeredAction *m_action;
+    Condition m_condition;
+    Subscription *m_subscription;
+    bool m_ignoreDesired;
+    ImgBase *m_buffer;
+    Attachments m_attachments;
+    Converter m_converter;
     
     XCFMemoryGrabberImpl(const std::string &memoryName,const std::string &xpath):
-      xpath(xpath),action(0),subscription(0){
+      m_xpath(xpath),m_action(0),m_subscription(0),m_ignoreDesired(false),m_buffer(0){
       try{
-        memInterface = MemoryPtr(MemoryInterface::getInstance(memoryName));
+        m_memInterface = MemoryPtr(MemoryInterface::getInstance(memoryName));
 
-        evtSrc = boost::shared_ptr<EventSource>(new EventSource());
+        m_evtSrc = boost::shared_ptr<EventSource>(new EventSource());
         
-        action = new TriggeredAction(boost::bind(&EventSource::push, evtSrc, _1));
+        m_action = new TriggeredAction(boost::bind(&EventSource::push, m_evtSrc, _1));
         
-        condition = Condition(Event::INSERT,xpath);
+        m_condition = Condition(Event::INSERT,m_xpath);
         
-        subscription = new Subscription(memInterface->add(condition,*action));
+        m_subscription = new Subscription(m_memInterface->add(m_condition,*m_action));
         
       }catch(const MemoryInterfaceException& ex){
         std::cerr << "MemoryInterfaceException: " << ex.what() << std::endl;
@@ -55,38 +62,58 @@ namespace icl{
         std::cerr << "An Unknown Error Occured!" << std::endl;
       }
     }
+    ~XCFMemoryGrabberImpl(){
+      ICL_DELETE(m_action);
+      ICL_DELETE(m_subscription);
+      ICL_DELETE(m_buffer);
+    }
     
-    const ImgBase *grab(const ImgBase **ppoDst){
+    const ImgBase *grab(ImgBase **ppoDst){
       Event e;
-      if(evtSrc->next(e)){ // this call locks!
+      if(m_evtSrc->next(e)){ // this call locks!
         
-        Attachments a;
-        memInterface->getAttachments(e.getDocument().getRootLocation().getDocumentText(),a);
+        
+        xmltio::Location loc(e.getDocument(),xmltio::XPath("/IMAGESET/IMAGE"));
+        
+        ImgBase *poOutput = 0;
+        XCFUtils::ImageDescription d = XCFUtils::getImageDescription(loc);
+          
+        ImgBase **usedDstImage = m_ignoreDesired ? ppoDst : &m_buffer;
+        poOutput->setTime (d.time);
+          
+        m_memInterface->getAttachments(e.getDocument().getRootLocation().getDocumentText(),m_attachments);
+        
+        XCFUtils::unserialize(m_attachments[d.uri],d,usedDstImage);
+        
+        if(!m_ignoreDesired){
+          *ppoDst = prepareOutput (ppoDst); 
+          m_converter.apply(*usedDstImage,*ppoDst);
+        }
+        return *ppoDst;
         
         // now extract the image from e.getDocument() and the binary attachment!
       }else{
-        // exception or something
+        ERROR_LOG("Unable to grab next image from memory");
+        return 0;
       }
-      return 0;
-      
     }
   };
 
 
   /// this can be implemented only if XCFMemoryGrabberImpl is defined properly (here)
   void XCFMemoryGrabberImplDelOp::delete_func(XCFMemoryGrabberImpl *impl){
-      ICL_DELETE(impl);
+    ERROR_LOG("this class should not be used yet, because it was not tested at all!");
+    ICL_DELETE(impl);
   }
   
 
 
   XCFMemoryGrabber::XCFMemoryGrabber(const std::string &memoryName, const std::string &imageXPath):
-    ParentSC(new XCFMemoryGrabberImpl(memoryName,imageXPath)){
+    impl(new XCFMemoryGrabberImpl(memoryName,imageXPath)){
     
   }
 
-  const ImgBase *XCFMemoryGrabber::grab(const ImgBase **ppoDst){
-    ICLASSERT_RETURN_VAL(!isNull(),0);
+  const ImgBase *XCFMemoryGrabber::grab(ImgBase **ppoDst){
     return impl->grab(ppoDst);
   }
 

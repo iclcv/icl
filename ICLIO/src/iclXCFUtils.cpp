@@ -1,5 +1,7 @@
 #ifdef HAVE_XCF
 #include "iclXCFUtils.h"
+#include <iclCore.h>
+#include <cstring>
 
 namespace icl{
 
@@ -84,32 +86,39 @@ namespace icl{
     // }}}
   }
 
-  void XCFUtils::CTUtoImage (const XCF::CTUPtr ctu, const xmltio::Location& l, ImgBase** ppoImg){
-    // {{{ open
-
-    const std::string& sURI = xmltio::extract<std::string>(l["uri"]);
+  XCFUtils::ImageDescription XCFUtils::getImageDescription(const xmltio::Location &l){
+    ImageDescription d;
+    d.uri = xmltio::extract<std::string>(l["uri"]);
+    
     xmltio::Location  p(l, "PROPERTIES");
-    int iWidth   = xmltio::extract<int>(p["width"]);
-    int iHeight  = xmltio::extract<int>(p["height"]);
-    depth eDepth = translateDepth(xmltio::extract<std::string>(p["depth"]));
-    int iChannels   = xmltio::extract<int>(p["channels"]);
-    icl::format fmt = translateFormat(xmltio::extract<std::string>(p["format"]));
+    d.size.width = xmltio::extract<int>(p["width"]);
+    d.size.height  = xmltio::extract<int>(p["height"]);
+    d.imagedepth = translateDepth(xmltio::extract<std::string>(p["depth"]));
+    d.channels   = xmltio::extract<int>(p["channels"]);
+    d.imageformat = translateFormat(xmltio::extract<std::string>(p["format"]));
     
     xmltio::Location  r (l, "ROI");
-    icl::Rect roi ((int) xmltio::extract<int>(r["offsetX"]), 
-                   (int) xmltio::extract<int>(r["offsetY"]),
-                   (int) xmltio::extract<int>(r["width"]),
-                   (int) xmltio::extract<int>(r["height"]));
-
-
-    *ppoImg = ensureCompatible (ppoImg, eDepth, Size(iWidth, iHeight), 
-                                iChannels, fmt, roi);
+    d.roi = Rect((int) xmltio::extract<int>(r["offsetX"]), 
+                 (int) xmltio::extract<int>(r["offsetY"]),
+                 (int) xmltio::extract<int>(r["width"]),
+                 (int) xmltio::extract<int>(r["height"]));
     
-    Time::value_type t = xmltio::extract<Time::value_type>(l[xmltio::XPath("TIMESTAMPS/CREATED/@timestamp")]);
-    (*ppoImg)->setTime (Time::microSeconds (t));
+    d.time = Time::microSeconds(xmltio::extract<Time::value_type>(l[xmltio::XPath("TIMESTAMPS/CREATED/@timestamp")]));
+
+    return d;
+  }
+
+  void XCFUtils::CTUtoImage (const XCF::CTUPtr ctu, const xmltio::Location& l, ImgBase** ppoImg){
+    // {{{ open
+    ImageDescription d = getImageDescription(l);
+
+    *ppoImg = ensureCompatible (ppoImg, d.imagedepth, d.size,d.channels,d.imageformat,d.roi);
     
-    XCF::Binary::TransportUnitPtr btu = ctu->getBinary (sURI);
-    switch (eDepth) {
+    (*ppoImg)->setTime (d.time);
+
+    
+    XCF::Binary::TransportUnitPtr btu = ctu->getBinary (d.uri);
+    switch ((*ppoImg)->getDepth()) {
       case depth8u:
         CTUtoImage_Template<XCF::Binary::TransportVecByte, Ice::Byte> (*ppoImg, btu);
         break;
@@ -150,6 +159,37 @@ namespace icl{
   }
 
   // }}}
+
+  void XCFUtils::serialize(const ImgBase *image, std::vector<unsigned char> &dst){
+    // {{{ open
+
+    ICLASSERT_RETURN(image);
+    unsigned int channeldim = image->getDim()*icl::getSizeOf(image->getDepth());
+    dst.resize(channeldim*image->getChannels());
+    
+    for(int i=0;i<image->getChannels();++i){
+      memcpy(dst.data()+i*channeldim,image->getDataPtr(i),channeldim);
+    }    
+  }
+
+  // }}}
+
+  void XCFUtils::unserialize(const std::vector<unsigned char> &src, const XCFUtils::ImageDescription &d, ImgBase **dst){
+    // {{{ open
+
+    unsigned int channeldim = d.size.width*d.size.height*icl::getSizeOf(d.imagedepth);
+    ICLASSERT_RETURN( src.size() == channeldim*d.channels );    
+    *dst = ensureCompatible (dst, d.imagedepth, d.size,d.channels,d.imageformat,d.roi);
+    ImgBase *image = *dst;
+    image->setTime(d.time);
+    
+    for(int i=0;i<d.channels;++i){
+      memcpy(image->getDataPtr(0),src.data()+i*channeldim,channeldim);
+    }
+  }
+
+  // }}}
+
 }
 
 
