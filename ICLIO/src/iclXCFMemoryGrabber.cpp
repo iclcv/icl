@@ -63,6 +63,7 @@ namespace icl{
       }
     }
     ~XCFMemoryGrabberImpl(){
+      m_memInterface->unsubscribe (*m_subscription);
       ICL_DELETE(m_action);
       ICL_DELETE(m_subscription);
       ICL_DELETE(m_buffer);
@@ -70,18 +71,18 @@ namespace icl{
     
     const ImgBase *grab(ImgBase **ppoDst){
       Event e;
-      if(m_evtSrc->next(e)){ // this call locks!
-        
-        
-        xmltio::Location loc(e.getDocument(),xmltio::XPath("/IMAGESET/IMAGE"));
-        
+      while (m_evtSrc->next(e)) { // this call locks!
+        xmltio::LocationPtr loc = xmltio::find (e.getDocument(),m_xpath);
+        if (!loc) break;
+
         ImgBase *poOutput = 0;
-        XCFUtils::ImageDescription d = XCFUtils::getImageDescription(loc);
+        XCFUtils::ImageDescription d = XCFUtils::getImageDescription(*loc);
           
         ImgBase **usedDstImage = m_ignoreDesired ? ppoDst : &m_buffer;
         poOutput->setTime (d.time);
           
-        m_memInterface->getAttachments(e.getDocument().getRootLocation().getDocumentText(),m_attachments);
+        m_memInterface->getAttachments(e.getDocument().getRootLocation().getDocumentText(),
+                                       m_attachments);
         
         XCFUtils::unserialize(m_attachments[d.uri],d,usedDstImage);
         
@@ -90,12 +91,11 @@ namespace icl{
           m_converter.apply(*usedDstImage,*ppoDst);
         }
         return *ppoDst;
-        
-        // now extract the image from e.getDocument() and the binary attachment!
-      }else{
-        ERROR_LOG("Unable to grab next image from memory");
-        return 0;
       }
+
+      // if we arrive here, something went wrong
+      ERROR_LOG("Unable to grab next image from memory");
+      return 0;
     }
   };
 
