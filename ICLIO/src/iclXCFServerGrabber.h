@@ -2,7 +2,7 @@
 #ifndef ICL_XCF_SERVER_GRABBER_H
 #define ICL_XCF_SERVER_GRABBER_H
 
-#include <iclGrabber.h>
+#include <iclXCFGrabberBase.h>
 #include <string>
 #include <xcf/RemoteServer.hpp>
 #include <xmltio/Location.hpp>
@@ -14,7 +14,7 @@ namespace icl {
    /// Grabber to access XCF Image Server \ingroup GRABBER_G
    /** The XCFServerGrabber provides access to an XCF Image Server. */
   
-   class XCFServerGrabber : public Grabber {
+   class XCFServerGrabber : public XCFGrabberBase {
    public:
     
       /// Base constructor
@@ -26,18 +26,7 @@ namespace icl {
       /// Destructor
       ~XCFServerGrabber(void);
     
-      /// grabbing function  
-      /** \copydoc icl::Grabber::grab(ImgBase**)*/
-      virtual const ImgBase* grab(ImgBase **ppoDst=0);
-      
-      /// grabbing a whole image set, e.g. from a stereo camera
-      /** The vector of images is resized to match the number of grabbed
-          images. Existing images in the vector are adapted to the desired
-          output depth and parameters. Ownership for all grabbed images goes
-          to the caller! 
-      */
-      void grab (std::vector<ImgBase*>& vGrabbedImages);
-
+   
       /// set XCF recover level
       void setRecoverLevel (XCF::RecoverLevel l) {
          m_remoteServer->setRecoverLevel (l);
@@ -46,17 +35,13 @@ namespace icl {
       /// set request string for image server
       void setRequest (const std::string& sRequest);
 
-   private:   
+   protected:   
       /// retrieve most current image set in provided composite transport unit
-      void receive (XCF::CTUPtr& result);
-      void makeOutput (const xmltio::Location& l, ImgBase* poOutput);
+      virtual void receive (XCF::CTUPtr& result);
       
+    private:
       xmltio::Location     m_locRequest;
       XCF::RemoteServerPtr m_remoteServer;
-      XCF::CTUPtr          m_result;
-      ImgBase*             m_poSource;
-      BayerConverter*	   m_poBayerConverter;
-      ImgBase*             m_poBayer;
    };
   
 }
