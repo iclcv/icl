@@ -107,7 +107,31 @@ namespace icl{
 
     return d;
   }
-
+  
+  void XCFUtils::createOutputImage(const xmltio::Location& l, 
+                                   ImgBase *poSrc, 
+                                   ImgBase *poOutput, 
+                                   ImgBase **poBayerBuffer, 
+                                   BayerConverter *poBC, 
+                                   Converter *poConv) {
+    xmltio::LocationPtr locBayer = xmltio::find (l, "PROPERTIES/@bayerPattern");
+    if (locBayer) {
+      const std::string& bayerPattern =  xmltio::extract<std::string>(*locBayer);
+      ImgParams p = poSrc->getParams();
+      p.setFormat (formatRGB);
+      *poBayerBuffer = icl::ensureCompatible (poBayerBuffer, poSrc->getDepth(), p);
+         
+      poBC->setBayerImgSize(poSrc->getSize());
+      //poBC->setConverterMethod(BayerConverter::nearestNeighbor);
+      poBC->setBayerPattern(BayerConverter::translateBayerPattern(bayerPattern));
+      
+      poBC->apply(poSrc->asImg<icl8u>(), poBayerBuffer);
+      poConv->apply (*poBayerBuffer, poOutput);
+    } else {
+      poConv->apply (poSrc, poOutput);
+    }
+  }
+      
   void XCFUtils::CTUtoImage (const XCF::CTUPtr ctu, const xmltio::Location& l, ImgBase** ppoImg){
     // {{{ open
     ImageDescription d = getImageDescription(l);

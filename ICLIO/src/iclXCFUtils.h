@@ -5,9 +5,12 @@
 #include <string>
 #include <xmltio/xmltio.hpp>
 #include <iclImgBase.h>
+#include <iclBayer.h>
+#include <iclConverter.h>
 #include <xcf/RemoteServer.hpp>
 #include <xmltio/Location.hpp>
 #include <vector>
+
 
 namespace icl{
   class XCFUtils{
@@ -18,6 +21,12 @@ namespace icl{
 
     static  XCF::Binary::TransportUnitPtr ImageToCTU(const ImgBase* image, XCF::Binary::TransportUnitPtr btu);
 
+    static void createOutputImage(const xmltio::Location& l, 
+                                  ImgBase *poSrc, 
+                                  ImgBase *poOutput, 
+                                  ImgBase **poBayerBuffer, 
+                                  BayerConverter *poBC, 
+                                  Converter *poConv);
     struct ImageDescription{
       std::string uri;
       Size size;

@@ -28,27 +28,13 @@ namespace icl {
    XCFServerGrabber::~XCFServerGrabber () {
       m_remoteServer->destroy ();
       delete m_poBayerConverter;
-      delete m_poSource;
+      ICL_DELETE(m_poSource);
+      ICL_DELETE(m_poBayer)
    }
 
-   void XCFServerGrabber::makeOutput (const xmltio::Location& l, ImgBase *poOutput) {
-      LocationPtr locBayer = xmltio::find (l, "PROPERTIES/@bayerPattern");
-      if (locBayer) {
-         const string& bayerPattern =  extract<string>(*locBayer);
-         ImgParams p = m_poSource->getParams();
-         p.setFormat (formatRGB);
-         m_poBayer = ensureCompatible (&m_poBayer, m_poSource->getDepth(), p);
-         
-         m_poBayerConverter->setBayerImgSize(m_poSource->getSize());
-         //m_poBayerConverter->setConverterMethod(BayerConverter::nearestNeighbor);
-         m_poBayerConverter->setBayerPattern(BayerConverter::translateBayerPattern(bayerPattern));
-         
-         m_poBayerConverter->apply(m_poSource->asImg<icl8u>(), &m_poBayer);
-         m_oConverter.apply (m_poBayer, poOutput);
-      } else {
-         m_oConverter.apply (m_poSource, poOutput);
-      }
-   }
+  void XCFServerGrabber::makeOutput (const xmltio::Location& l, ImgBase *poOutput) {
+    XCFUtils::createOutputImage(l,m_poSource,poOutput,&m_poBayer,m_poBayerConverter,&m_oConverter);
+  }
 
    const ImgBase* XCFServerGrabber::grab (ImgBase **ppoDst) {
       receive (m_result);
