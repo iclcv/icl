@@ -4,9 +4,12 @@
 
 namespace icl{
 
-  XCFPublisherGrabber::XCFPublisherGrabber(const std::string &streamName){
+  XCFPublisherGrabber::XCFPublisherGrabber(const std::string &streamName, 
+                                           XCF::RecoverLevel l){
     m_subscriber = XCF::Subscriber::create(streamName, XCF::NONE);
     m_subscriber->setOnlyReceiveLast (true);
+    // and on success, set desired recover level
+    m_subscriber->setRecoverLevel (l);
   }
 
   XCFPublisherGrabber::~XCFPublisherGrabber(){
@@ -16,18 +19,15 @@ namespace icl{
   
   void XCFPublisherGrabber::receive (XCF::CTUPtr& result){
     ICLASSERT_RETURN(m_subscriber->isAlive());
-    bool ok = false;
-    while(!ok){
-      ok = true;
+    while(true){
       try{
         result = m_subscriber->receiveBinary(true);
+        return;
       }catch(XCF::PublisherEmptyException &ex){
-        ok = false;
         Thread::msleep(100);
       }
     }
-  }
-  
+  } 
   
 }
 

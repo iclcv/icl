@@ -45,16 +45,16 @@ namespace icl {
    const ImgBase* XCFGrabberBase::grab (ImgBase **ppoDst) {
      receive (m_result);
      
-     //     Location loc (m_result->getXML(), "/IMAGESET/IMAGE"); // why /IMAGESET/IMAGE
-     LocationPtr loc = xmltio::find(xmltio::Location(m_result->getXML()), "//IMAGE");
+     LocationPtr loc = xmltio::find(xmltio::Location(m_result->getXML()), 
+                                    "//IMAGE[@uri]");
      
      if(loc){
        ImgBase *poOutput = prepareOutput (ppoDst);
-       XCFUtils::CTUtoImage(m_result, *loc,&m_poSource);
+       XCFUtils::CTUtoImage(m_result, *loc, &m_poSource);
        makeOutput (*loc, poOutput);
        return poOutput;
      }else{
-       ERROR_LOG("unable to find XPath: \"//IMAGE\"");
+       ERROR_LOG("unable to find XPath: \"//IMAGE[@uri]\"");
        return 0;
      }
    }
@@ -62,20 +62,29 @@ namespace icl {
    void XCFGrabberBase::grab (std::vector<ImgBase*>& vGrabbedImages) {
       receive (m_result);
 
-      vGrabbedImages.resize (m_result->getBinaryMap().size());
-      xmltio::LocationPtr locResult  = xmltio::find(xmltio::Location(m_result->getXML()), "//IMAGESET");
-      if(locResult){
-        XPathIterator locIt = XPath("IMAGE").evaluate(*locResult);
-        vector<ImgBase*>::iterator imgIt  = vGrabbedImages.begin();
-        vector<ImgBase*>::iterator imgEnd = vGrabbedImages.end();
-        for (; (!locIt == false) && (imgIt != imgEnd); ++locIt, ++imgIt) {
-          *imgIt = prepareOutput (&(*imgIt));
-          XCFUtils::CTUtoImage(m_result, *locIt, &m_poSource);
-          makeOutput (*locIt, *imgIt);
-        }
-      }else{
-       ERROR_LOG("unable to find XPath: \"//IMAGESET\"");
+      xmltio::Location doc (m_result->getXML());
+      vector<ImgBase*>::iterator imgIt  = vGrabbedImages.begin();
+      vector<ImgBase*>::iterator imgEnd = vGrabbedImages.end();
+      unsigned int nCount = 0;
+      for (XPathIterator imLoc = XPath("//IMAGE[@uri]").evaluate(doc);
+           imLoc; ++imLoc) {
+         ImgBase *poOutput=0;
+         if (imgIt != imgEnd) {
+            // use existing images
+            poOutput = prepareOutput (&(*imgIt));
+            ++imgIt;
+         } else {
+            // create new image
+            poOutput = 0;
+            poOutput = prepareOutput (&poOutput);
+            vGrabbedImages.push_back (poOutput);
+         }
+         XCFUtils::CTUtoImage(m_result, *imLoc, &m_poSource);
+         makeOutput (*imLoc, poOutput);
+         nCount++;
       }
+      // shrink vGrabbedImages to number of actually grabbed images
+      vGrabbedImages.resize (nCount);
    }
    
 }

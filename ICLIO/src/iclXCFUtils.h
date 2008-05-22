@@ -16,7 +16,7 @@ namespace icl{
   class XCFUtils{
     public:
     static const std::string &createEmptyXMLDoc();
-    static xmltio::Location createXMLDoc(const ImgBase* image, const std::string& uri, const std::string& bayerPattern);
+    static xmltio::Location createXMLDoc(const ImgBase* image, const std::string& uri, const std::string& bayerPattern = "");
     static void CTUtoImage(const XCF::CTUPtr ctu, const xmltio::Location& l, ImgBase** ppoImage);
 
     static  XCF::Binary::TransportUnitPtr ImageToCTU(const ImgBase* image, XCF::Binary::TransportUnitPtr btu);
