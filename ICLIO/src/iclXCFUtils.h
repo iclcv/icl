@@ -35,6 +35,7 @@ namespace icl{
       format imageformat;
       Rect roi;
       Time time;
+      void show();
     };
     static ImageDescription getImageDescription(const xmltio::Location &l);
     

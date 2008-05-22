@@ -45,27 +45,36 @@ namespace icl {
    const ImgBase* XCFGrabberBase::grab (ImgBase **ppoDst) {
      receive (m_result);
      
-     Location loc (m_result->getXML(), "/IMAGESET/IMAGE"); // besser mit find
+     //     Location loc (m_result->getXML(), "/IMAGESET/IMAGE"); // why /IMAGESET/IMAGE
+     LocationPtr loc = xmltio::find(xmltio::Location(m_result->getXML()), "//IMAGE");
      
-     ImgBase *poOutput = prepareOutput (ppoDst);
-     XCFUtils::CTUtoImage(m_result, loc,&m_poSource);
-     makeOutput (loc, poOutput);
-     return poOutput;
+     if(loc){
+       ImgBase *poOutput = prepareOutput (ppoDst);
+       XCFUtils::CTUtoImage(m_result, *loc,&m_poSource);
+       makeOutput (*loc, poOutput);
+       return poOutput;
+     }else{
+       ERROR_LOG("unable to find XPath: \"//IMAGE\"");
+       return 0;
+     }
    }
 
    void XCFGrabberBase::grab (std::vector<ImgBase*>& vGrabbedImages) {
       receive (m_result);
 
       vGrabbedImages.resize (m_result->getBinaryMap().size());
-      xmltio::Location locResult (m_result->getXML(), "/IMAGESET"); // besser mit find
-
-      XPathIterator locIt = XPath("IMAGE").evaluate(locResult);
-      vector<ImgBase*>::iterator imgIt  = vGrabbedImages.begin();
-      vector<ImgBase*>::iterator imgEnd = vGrabbedImages.end();
-      for (; (!locIt == false) && (imgIt != imgEnd); ++locIt, ++imgIt) {
-         *imgIt = prepareOutput (&(*imgIt));
-         XCFUtils::CTUtoImage(m_result, *locIt, &m_poSource);
-         makeOutput (*locIt, *imgIt);
+      xmltio::LocationPtr locResult  = xmltio::find(xmltio::Location(m_result->getXML()), "//IMAGESET");
+      if(locResult){
+        XPathIterator locIt = XPath("IMAGE").evaluate(*locResult);
+        vector<ImgBase*>::iterator imgIt  = vGrabbedImages.begin();
+        vector<ImgBase*>::iterator imgEnd = vGrabbedImages.end();
+        for (; (!locIt == false) && (imgIt != imgEnd); ++locIt, ++imgIt) {
+          *imgIt = prepareOutput (&(*imgIt));
+          XCFUtils::CTUtoImage(m_result, *locIt, &m_poSource);
+          makeOutput (*locIt, *imgIt);
+        }
+      }else{
+       ERROR_LOG("unable to find XPath: \"//IMAGESET\"");
       }
    }
    

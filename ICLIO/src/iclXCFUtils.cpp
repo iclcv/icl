@@ -52,22 +52,22 @@ namespace icl{
     template <class XCF_T, typename ICE_T>
     static void CTUtoImage_Template (ImgBase* poImg, XCF::Binary::TransportUnitPtr btu) {
       // {{{ open
+      const std::vector<ICE_T> &v = dynamic_cast<XCF_T*>(btu.get())->value;
+      unsigned int channeldim = poImg->getDim()*getSizeOf(poImg->getDepth());
+      ICLASSERT_RETURN( v.size()*sizeof(ICE_T) == channeldim*poImg->getChannels() );
+      
+      const unsigned char *vData = reinterpret_cast<const unsigned char*>(v.data());
 
-      XCF_T *pTypedBTU = dynamic_cast<XCF_T*>(btu.get());
-      const std::vector<ICE_T> &vecImage = pTypedBTU->value;
-    
-      int imgSize = poImg->getDim() * getSizeOf(poImg->getDepth());
-      for (int i=0, nChannels=poImg->getChannels(); i < nChannels; i++) {
-         memcpy(poImg->getDataPtr(i), &vecImage[i*imgSize], imgSize);
+      for(int i=0;i<poImg->getChannels();++i){
+        memcpy(poImg->getDataPtr(i),vData+i*channeldim, channeldim);
       }
-   }
+    }
 
     // }}}
 
     template <class XCF_T, typename ICE_T>
     XCF::Binary::TransportUnitPtr ImageToCTU_Template(const ImgBase* poImg, XCF::Binary::TransportUnitPtr btu) {
       // {{{ open
-
       XCF_T *pTypedBTU = dynamic_cast<XCF_T*>(btu.get());
       // on type mismatch, create new instance
       if (!pTypedBTU) pTypedBTU = new XCF_T;
@@ -131,6 +131,12 @@ namespace icl{
       poConv->apply (poSrc, poOutput);
     }
   }
+
+  void XCFUtils::ImageDescription::show(){
+    std::cout << "URI:" << uri << " Size:" << size << " Depth:" << imagedepth << 
+    " Channels:" << channels << " Format:" << imageformat << " ROI:" << roi << "Time:" <<
+    time.toMicroSeconds() << std::endl;
+  }
       
   void XCFUtils::CTUtoImage (const XCF::CTUPtr ctu, const xmltio::Location& l, ImgBase** ppoImg){
     // {{{ open
@@ -140,8 +146,9 @@ namespace icl{
     
     (*ppoImg)->setTime (d.time);
 
-    
+
     XCF::Binary::TransportUnitPtr btu = ctu->getBinary (d.uri);
+
     switch ((*ppoImg)->getDepth()) {
       case depth8u:
         CTUtoImage_Template<XCF::Binary::TransportVecByte, Ice::Byte> (*ppoImg, btu);
@@ -187,13 +194,15 @@ namespace icl{
   void XCFUtils::serialize(const ImgBase *image, std::vector<unsigned char> &dst){
     // {{{ open
 
+    
     ICLASSERT_RETURN(image);
     unsigned int channeldim = image->getDim()*icl::getSizeOf(image->getDepth());
     dst.resize(channeldim*image->getChannels());
     
     for(int i=0;i<image->getChannels();++i){
       memcpy(dst.data()+i*channeldim,image->getDataPtr(i),channeldim);
-    }    
+    }
+    
   }
 
   // }}}
@@ -208,7 +217,7 @@ namespace icl{
     image->setTime(d.time);
     
     for(int i=0;i<d.channels;++i){
-      memcpy(image->getDataPtr(0),src.data()+i*channeldim,channeldim);
+      memcpy(image->getDataPtr(i),src.data()+i*channeldim,channeldim);
     }
   }
 

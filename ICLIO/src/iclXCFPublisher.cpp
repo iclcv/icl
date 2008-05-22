@@ -22,7 +22,7 @@ namespace icl{
     m_ctu->setXML(xml);
     m_btu = XCFUtils::ImageToCTU(image,m_btu);
     m_ctu->deleteAllBinaries();
-    m_ctu->addBinary(m_btu);
+    m_ctu->addBinary(m_uri,m_btu);
     m_publisher->send(m_ctu);
   }
   
