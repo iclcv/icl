@@ -47,6 +47,26 @@ namespace icl{
 
   // }}}
 
+  /***
+      xmltio::Location XCFUtils::createXMLDoc(const std::vector<ImgBase*> images,
+      const std::vector<std::string> &uris,
+      const std::vector<std::string> &bayerPatterns){
+      
+      ICLASSERT_RETURN_VAL(images.size(),xmltio::Location(std::string()));
+      ICLASSERT_RETURN_VAL(uris.size(),xmltio::Location(std::string()));
+      ICLASSERT_RETURN_VAL(bayerPatterns.size(),xmltio::Location(std::string()));
+      ICLASSERT_RETURN_VAL(images.size() == uris.size() && images.size() == bayerPatterns.size() ,xmltio::Location(std::string()));
+      
+      xmltio::Location loc = createXMLDoc(images[0],uris[0],bayerPatterns[0]);
+      
+      for(unsigned int i=1;i<image.size(); i++){
+      xmltio::Location li = createXMLDoc(images[i],uris[i],bayerPatterns[i]);
+      
+      }
+      }
+  */
+
+
 
   namespace{
     template <class XCF_T, typename ICE_T>
