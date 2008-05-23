@@ -76,7 +76,7 @@ if (!-e "$INSTALLDIR/bin"){
 
 if (!-e "$INSTALLDIR/include"){
     print "make dir: $INSTALLDIR/include\n";
-    system "mkdir -p $INSTALLDIR/include";
+    system "mkdir -m 775 -p $INSTALLDIR/include";
     }
 
 if (!-e "$INSTALLDIR/packages"){
@@ -86,7 +86,7 @@ if (!-e "$INSTALLDIR/packages"){
 
 if (!-e "$INSTALLDIR/lib/pkgconfig"){
     print "make dir: $INSTALLDIR/lib/pkgconfig\n";
-    system "mkdir -p $INSTALLDIR/lib/pkgconfig";
+    system "mkdir -m 775 -p $INSTALLDIR/lib/pkgconfig";
 }
 
 if (!-e "$INSTALLDIR/make"){
