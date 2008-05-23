@@ -10,7 +10,10 @@ namespace icl{
 
   class XCFPublisherGrabber : public XCFGrabberBase{
     public:
-    XCFPublisherGrabber(const std::string &streamName, XCF::RecoverLevel l);
+    XCFPublisherGrabber(const std::string &streamName, 
+                        ::XCF::RecoverLevel l = (::XCF::RecoverLevel)
+                        ::XCF::Implementation::Properties::singleton()
+                        ->getPropertyAsInt("XCF.Global.RecoverLevel"));
     virtual ~XCFPublisherGrabber();
     
     /// set XCF recover level
