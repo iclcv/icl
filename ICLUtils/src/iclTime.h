@@ -33,6 +33,8 @@ namespace icl{
       
       Time();
 
+      Time(value_type);
+      
       // No copy constructor and assignment operator necessary. The
       // automatically generated copy constructor and assignment
       // operator do the right thing.
@@ -220,7 +222,6 @@ namespace icl{
 
    private:
 
-      Time(value_type);
 
       value_type _usec;
    };

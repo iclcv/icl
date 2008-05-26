@@ -94,6 +94,52 @@ namespace icl{
       first = false;
     }
   }
+
+  template<class Callback>
+  static void exec_threaded_A(Callback cb,bool loop=true, int sleepMsecs=0){
+    static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
+    cbt->setSleepTime(sleepMsecs);
+    cbt->add(cb);
+    static bool first = true;
+    if(first){
+      on_exit(exec_threaded_on_exit_function<Callback>,cbt);
+      first = false;
+    }
+  }
+  template<class Callback>
+  static void exec_threaded_B(Callback cb,bool loop=true, int sleepMsecs=0){
+    static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
+    cbt->setSleepTime(sleepMsecs);
+    cbt->add(cb);
+    static bool first = true;
+    if(first){
+      on_exit(exec_threaded_on_exit_function<Callback>,cbt);
+      first = false;
+    }
+  }
+  template<class Callback>
+  static void exec_threaded_C(Callback cb,bool loop=true, int sleepMsecs=0){
+    static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
+    cbt->setSleepTime(sleepMsecs);
+    cbt->add(cb);
+    static bool first = true;
+    if(first){
+      on_exit(exec_threaded_on_exit_function<Callback>,cbt);
+      first = false;
+    }
+  }
+  template<class Callback>
+  static void exec_threaded_D(Callback cb,bool loop=true, int sleepMsecs=0){
+    static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
+    cbt->setSleepTime(sleepMsecs);
+    cbt->add(cb);
+    static bool first = true;
+    if(first){
+      on_exit(exec_threaded_on_exit_function<Callback>,cbt);
+      first = false;
+    }
+  }
+
 }
 
 #endif
