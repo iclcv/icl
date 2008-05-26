@@ -9,7 +9,10 @@ using namespace xmltio;
 namespace icl {
 
 
-   XCFServerGrabber::XCFServerGrabber (const std::string& sServer, XCF::RecoverLevel l) :
+   XCFServerGrabber::XCFServerGrabber (const std::string& sServer, 
+                                       const std::string& sMethodName,
+                                       XCF::RecoverLevel l) :
+      m_methodName (sMethodName),
       m_locRequest ("<IMAGEREQUEST>"
                     "<GRAB stereo=\"false\" timestamp=\"\"/>"
                     "</IMAGEREQUEST>", "/IMAGEREQUEST/GRAB"), 
@@ -32,7 +35,11 @@ namespace icl {
   
   void XCFServerGrabber::receive (XCF::CTUPtr& result) {
     m_locRequest["timestamp"] = ""; // most-recent image
-    m_remoteServer->callMethod ("retrieveImage", 
-                                m_locRequest.getDocumentText(), result);
+    try {
+       m_remoteServer->callMethod (m_methodName, 
+                                   m_locRequest.getDocumentText(), result);
+    } catch (XCF::GenericException &e) {
+       ERROR_LOG("xcf exception: " << e.reason);
+    }
   }
 }

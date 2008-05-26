@@ -19,6 +19,7 @@ namespace icl {
     
       /// Base constructor
       XCFServerGrabber(const std::string& sServer, 
+                       const std::string& sMethodName = "retrieve",
                  ::XCF::RecoverLevel l = (::XCF::RecoverLevel)
                  ::XCF::Implementation::Properties::singleton()
                  ->getPropertyAsInt("XCF.Global.RecoverLevel"));
@@ -39,7 +40,8 @@ namespace icl {
       /// retrieve most current image set in provided composite transport unit
       virtual void receive (XCF::CTUPtr& result);
       
-    private:
+   private:
+      std::string          m_methodName;
       xmltio::Location     m_locRequest;
       XCF::RemoteServerPtr m_remoteServer;
    };
