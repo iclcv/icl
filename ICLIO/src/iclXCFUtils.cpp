@@ -117,12 +117,13 @@ namespace icl{
     d.channels   = xmltio::extract<int>(p["channels"]);
     d.imageformat = translateFormat(xmltio::extract<std::string>(p["format"]));
     
-    xmltio::Location  r (l, "ROI");
-    d.roi = Rect((int) xmltio::extract<int>(r["offsetX"]), 
-                 (int) xmltio::extract<int>(r["offsetY"]),
-                 (int) xmltio::extract<int>(r["width"]),
-                 (int) xmltio::extract<int>(r["height"]));
-    
+    xmltio::LocationPtr  r = xmltio::find (l, "ROI");
+    if (r) {
+       d.roi = Rect((int) xmltio::extract<int>((*r)["offsetX"]), 
+                    (int) xmltio::extract<int>((*r)["offsetY"]),
+                    (int) xmltio::extract<int>((*r)["width"]),
+                    (int) xmltio::extract<int>((*r)["height"]));
+    }
     d.time = Time::microSeconds(xmltio::extract<Time::value_type>(l[xmltio::XPath("TIMESTAMPS/CREATED/@timestamp")]));
 
     return d;
