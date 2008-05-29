@@ -9,6 +9,7 @@
 #include <iclConverter.h>
 #include <xcf/RemoteServer.hpp>
 #include <xmltio/Location.hpp>
+#include <Memory/Interface.hpp>
 #include <vector>
 
 
@@ -33,6 +34,21 @@ namespace icl{
                                   ImgBase **poBayerBuffer, 
                                   BayerConverter *poBC, 
                                   Converter *poConv);
+    
+    static void getImage(memory::interface::MemoryPtr &mem, 
+                         const std::string &xmlDoc,
+                         ImgBase **dst,
+                         memory::interface::Attachments *reusableAttachment=0,
+                         const std::string &xpath="//IMAGE");
+    
+    static void attachImage(memory::interface::MemoryPtr &mem, 
+                            xmltio::Location &anchor,
+                            const std::string &imageURI,
+                            const ImgBase *image,
+                            memory::interface::Attachments *reusableAttachment=0,
+                            bool insertInsteadOfReplace=true);
+    
+
     struct ImageDescription{
       std::string uri;
       Size size;

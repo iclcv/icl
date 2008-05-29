@@ -3,7 +3,15 @@
 #include <iclCore.h>
 #include <cstring>
 
+using memory::interface::Attachments;
+
+using xmltio::TIODocument;
+using xmltio::Location;
+using xmltio::XPath;
+
 namespace icl{
+
+  
 
   const std::string &XCFUtils::createEmptyXMLDoc(){
     // {{{ open
@@ -47,25 +55,60 @@ namespace icl{
 
   // }}}
 
-  /***
-      xmltio::Location XCFUtils::createXMLDoc(const std::vector<ImgBase*> images,
-      const std::vector<std::string> &uris,
-      const std::vector<std::string> &bayerPatterns){
-      
-      ICLASSERT_RETURN_VAL(images.size(),xmltio::Location(std::string()));
-      ICLASSERT_RETURN_VAL(uris.size(),xmltio::Location(std::string()));
-      ICLASSERT_RETURN_VAL(bayerPatterns.size(),xmltio::Location(std::string()));
-      ICLASSERT_RETURN_VAL(images.size() == uris.size() && images.size() == bayerPatterns.size() ,xmltio::Location(std::string()));
-      
-      xmltio::Location loc = createXMLDoc(images[0],uris[0],bayerPatterns[0]);
-      
-      for(unsigned int i=1;i<image.size(); i++){
-      xmltio::Location li = createXMLDoc(images[i],uris[i],bayerPatterns[i]);
-      
-      }
-      }
-  */
+  void XCFUtils::getImage(memory::interface::MemoryPtr &mem, 
+                          const std::string &xmlDoc,
+                          ImgBase **dst, 
+                          Attachments *reusableAttachment,
+                          const std::string &xpath){
+    // {{{ open
 
+    Attachments *attToUse = reusableAttachment ? reusableAttachment : new Attachments;
+    
+    mem->getAttachments(xmlDoc, *attToUse);
+    TIODocument doc(xmlDoc);
+    Location docRootLoc = doc.getRootLocation();
+    
+    ImageDescription d = getImageDescription(docRootLoc[XPath(xpath)]);
+    
+    unserialize((*attToUse)[d.uri],d, dst);
+    
+    if(!reusableAttachment){
+      delete attToUse;
+    }
+  }
+
+  // }}}
+
+  void XCFUtils::attachImage(memory::interface::MemoryPtr &mem, 
+                             xmltio::Location &anchor,
+                             const std::string &imageURI,
+                             const ImgBase *image,
+                             memory::interface::Attachments *reusableAttachment,
+                             bool insertInsteadOfReplace){
+    ICLASSERT_RETURN(mem);
+    ICLASSERT_RETURN(image);
+    
+    Attachments *attToUse = reusableAttachment ? reusableAttachment : new Attachments;
+    
+    xmltio::Location imageLoc = XCFUtils::createXMLDoc(image,imageURI,"");
+    XCFUtils::serialize(image,(*attToUse)[imageURI]);
+
+    anchor.add(imageLoc);
+
+    if(insertInsteadOfReplace){
+      mem->insert(anchor.getDocument().getRootLocation().getDocumentText(), attToUse);
+    }else{
+      try{
+        mem->replace(anchor.getDocument().getRootLocation().getDocumentText(), attToUse);
+      }catch(const std::exception &ex){
+        ERROR_LOG("Caught std::exception: \"" << ex.what() << "\""); throw;
+      }
+    }
+    
+    if(!reusableAttachment){
+      delete attToUse;
+    }
+  }
 
 
   namespace{
