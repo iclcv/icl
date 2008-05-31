@@ -1050,9 +1050,14 @@ namespace icl {
 
         \section PERF Performace Twearks
         Source and destination channel count is given as template parameter, to allow
-        the compiler to leave out loops over single values or to unloop short loops.
-        
-        Some more comments here lateron!
+        the compiler to leave out loops over single values or to unroll short ones. Besides,
+        the compiler is able to use fixed sized arrays on the stack, instead of dynamically 
+        allocated heap arrays. By this means performance of reduce_channels is accelerated
+        by factor <b>12</b>.
+
+        \section BENCHMARK Benchmarks
+        Exemplarily, the example function above takes about 4-5ms on a 2GHz Core2Duo (using 
+        -O4 and -funroll-loop optimization of gcc) on a VGA-sized image (640x480)
     */
     template<typename Tdst, int Nthis, int Ndst, typename ReduceFunc>
     void reduce_channels(Img<Tdst> &dst, ReduceFunc reduce) const {
