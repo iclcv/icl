@@ -1006,6 +1006,83 @@ namespace icl {
     }
     
 
+
+    private:
+    /// private helper function called from reduce_channels template
+    template<typename Tsrc, typename Tdst, int Nsrc, int Ndst, typename ReduceFunc>
+    static inline void reduce_arrays(const Tsrc *src[Nsrc], Tdst *dst[Ndst], unsigned int dim, ReduceFunc reduce){
+      for(int i=dim-1;i>=0;--i){
+        Tsrc tsrc[Nsrc];      
+        Tdst tdst[Ndst];
+        for(int j=0;j<Nsrc;tsrc[j]=src[j][i],++j);
+        reduce(tsrc,tdst);
+        for(int j=0;j<Ndst;dst[j][i]=tdst[j],++j);
+        
+      }
+    }
+    
+    public:
+    
+
+    /// Utility function for combining image channels into another image
+    /** In some application we want to combine an images channels pixel-by-pixel
+        in any way and to store the result (or even results) in a 2nd image
+        at the corresponding image location. This can easily be performed using
+        the reduce channels template function. Look at the following example:
+        <CODE>
+        struct Thresh{
+           Thresh(int t):t(t*3){}
+           int t;    
+           void operator()(const icl8u src[6], icl8u dst[1]) const{
+             *dst = 255*( (abs(src[0]-src[3])+abs(src[1]-src[4])+abs(src[2]-src[5])) > t);
+           }
+        };
+
+        Img8u bgMask(const Img8u &image,const Img8u &bgImage, int tollerance){
+           Img8u imageAndBG;
+           imageAndBG.append(&const_cast<Img8u&>(image));   // const_cast is ok here,
+           imageAndBG.append(&const_cast<Img8u&>(bgImage)); // we will not change them!
+           Img8u dst(image.getSize(),formatMatrix);
+           imageAndBG.reduce_channels<icl8u,6,1,Thresh>(dst,Thresh(tollerance));
+           return dst;
+        }
+        </CODE>
+
+        \section PERF Performace Twearks
+        Source and destination channel count is given as template parameter, to allow
+        the compiler to leave out loops over single values or to unloop short loops.
+        
+        Some more comments here lateron!
+    */
+    template<typename Tdst, int Nthis, int Ndst, typename ReduceFunc>
+    void reduce_channels(Img<Tdst> &dst, ReduceFunc reduce) const {
+      ICLASSERT_RETURN(this->getROISize() == dst.getROISize());
+      ICLASSERT_RETURN((Nthis > 0) && (Ndst > 0));
+      ICLASSERT_RETURN((this->getChannels()==Nthis) &&  (dst.getChannels()==Ndst));
+      
+      const Type *psrc[Nthis];
+      Tdst *pdst[Ndst];  
+      if(this->hasFullROI() && dst.hasFullROI()){
+        for(int i=0;i<Nthis;psrc[i]=this->getData(i),++i);
+        for(int i=0;i<Ndst;pdst[i]=dst.getData(i),++i);
+        reduce_arrays<Type,Tdst,Nthis,Ndst,ReduceFunc>(psrc,pdst,this->getDim(),reduce);
+      }else{
+        ConstImgIterator<Type> itSrc[Nthis];
+        ImgIterator<Tdst> itDst[Ndst];
+        for(int i=0;i<Nthis;itSrc[i]=this->getROIIterator(i),++i);
+        for(int i=0;i<Ndst;itDst[i]=dst.getROIIterator(i),++i);
+        
+        for(int l=this->getROI().height-1, w=this->getROI().width ;l>=0;--l){
+          for(int i=0;i<Nthis;itSrc[i].incRow(),++i){
+            psrc[i]=&(*(itSrc[i]));
+          }
+          for(int i=0;i<Ndst;itDst[i].incRow(),++i){
+            pdst[i]=&(*(itDst[i]));
+          }
+          reduce_arrays<Type,Tdst,Nthis,Ndst,ReduceFunc>(psrc,pdst,w,reduce);
+        }
+      }
+    }
     
     /// perform an in-place resize of the image (keeping the data) 
     /** \copydoc icl::ImgBase::scale(const icl::Size&,icl::scalemode)*/
