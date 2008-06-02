@@ -2,7 +2,8 @@
 #define ICL_CHROMA_GUI_H
 
 #include <iclGUI.h>
-#include <iclParable.h>
+#include <iclChromaClassifier.h>
+#include <iclChromaAndRGBClassifier.h>
 
 namespace icl{
 
@@ -35,60 +36,6 @@ namespace icl{
     Q_OBJECT;
     public:
     
-    /// Classifier interface using RG-chromaticity space and two parables \ingroup COMMON
-    struct ChromaClassifier{
-      public:
-      /// classifies a given R-G-Pixel
-      inline bool operator()(icl8u chromaR, icl8u chromaG) const{
-        return parables[0](chromaR) > chromaG && parables[1](chromaR) < chromaG;
-      }
-      /// classifies a given r-g-b-Pixel
-      inline bool operator()(icl8u r, icl8u g, icl8u b) const{
-        int sum = r+g+b+1;
-        return (*this)((255*r)/sum,(255*g)/sum);
-      }
-      /// Shows this classifier to std::out
-      void show()const{
-        parables.show();
-      }
-      /// Used two parables
-      ParableSet parables;
-    };
-    
-    /// Combination classifier using RG-chroma. as well as RGB-thresholded reference color classifiation \ingroup COMMON
-    struct CombiClassifier{
-      /// classifies a given r-g-b-Pixel
-      /**The function is:
-          \code
-          bool is_pixel_skin_colored(int r, int g, int b, ChromaClassifier c, int refcol[3], int threshold[3]){
-             return c(r,g,b) 
-                    && abs(r-refcol[0])<threshold[0]
-                    && abs(g-refcol[1])<threshold[1]
-                    && abs(b-refcol[2])<threshold[2];
-          }
-          \endcode
-      */
-      inline bool operator()(icl8u r, icl8u g, icl8u b) const{
-        return c(r,g,b) && ::abs(r-ref[0])<thresh[0] && ::abs(g-ref[1])<thresh[1] && ::abs(b-ref[2])<thresh[2];
-      }
-      /// wrapped ChromaClassifier
-      ChromaClassifier c;
-      
-      /// r-g-b reference color
-      icl8u ref[3];
-      
-      /// r-g-b threshold
-      icl8u thresh[3];
-      
-      /// shows this classifier to std::out
-      void show()const{
-        printf("Combi-Classifier\n");
-        c.show();
-        printf("reference color:  %d %d %d \n",ref[0],ref[1],ref[2]);
-        printf("color thresholds: %d %d %d \n",thresh[0],thresh[1],thresh[2]);
-      }
-    };
-    
     /// Create a new ChromaGUI with given parent widget
     ChromaGUI(QWidget *parent=0);
     
@@ -96,8 +43,7 @@ namespace icl{
     ChromaClassifier getChromaClassifier();
 
     /// retuns a CombiClassifier with current parameters
-    CombiClassifier getCombiClassifier();
-    
+    ChromaAndRGBClassifier getChromaAndRGBClassifier();
     
     public slots:
     /// used for the blue-value visualization slider

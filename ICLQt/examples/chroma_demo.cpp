@@ -49,7 +49,7 @@ struct MyThread : public Thread{
       };
       ImgChannel8u s = pickChannel(&segImage,0);
       
-      ChromaGUI::CombiClassifier classi = cg->getCombiClassifier();
+      ChromaAndRGBClassifier classi = cg->getChromaAndRGBClassifier();
 
       for(int x=0;x<size.width;x++){
         for(int y=0;y<size.height;y++){

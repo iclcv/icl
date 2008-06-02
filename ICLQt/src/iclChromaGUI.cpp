@@ -314,7 +314,7 @@ namespace icl{
   }
 
   // }}}
-  ChromaGUI::ChromaClassifier ChromaGUI::getChromaClassifier(){
+  ChromaClassifier ChromaGUI::getChromaClassifier(){
     // {{{ open
 
     ChromaClassifier c = { m_poChromaWidget->getParables() };
@@ -322,10 +322,10 @@ namespace icl{
   }
 
   // }}}
-  ChromaGUI::CombiClassifier ChromaGUI::getCombiClassifier(){
+  ChromaAndRGBClassifier ChromaGUI::getChromaAndRGBClassifier(){
     // {{{ open
 
-    CombiClassifier c;
+    ChromaAndRGBClassifier c;
     c.c = getChromaClassifier();
     c.ref[0] = m_aoSliderHandles[0][0].getValue();
     c.ref[1] = m_aoSliderHandles[0][1].getValue();
