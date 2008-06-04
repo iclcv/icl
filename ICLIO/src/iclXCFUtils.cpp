@@ -275,7 +275,15 @@ namespace icl{
     // {{{ open
 
     unsigned int channeldim = d.size.width*d.size.height*icl::getSizeOf(d.imagedepth);
-    ICLASSERT_RETURN( src.size() == channeldim*d.channels );    
+    if(src.size() != channeldim*d.channels){
+      if(src.size() < channeldim*d.channels){
+        ERROR_LOG("Unable to unserialize, dimension mismatch: src-vector.size="<<src.size()<<" channeldim*d.channels="<<channeldim*d.channels);
+        return;
+      }else{
+        ERROR_LOG("WARNING dimension mismatch: src-vector.size="<<src.size()<<" channeldim*d.channels="<<channeldim*d.channels);
+      }
+    }
+
     *dst = ensureCompatible (dst, d.imagedepth, d.size,d.channels,d.imageformat,d.roi);
     ImgBase *image = *dst;
     image->setTime(d.time);
