@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iclDataStore.h>
+#include <iclException.h>
 
 namespace icl{
 
@@ -94,6 +95,13 @@ namespace icl{
   */
   class ConfigFile : public DataStore{
     public:
+    struct EntryNotFoundException : public ICLException{
+      std::string entryName;
+      std::string typeName;
+      EntryNotFoundException(const std::string &entryName, const std::string &typeName):
+      ICLException(entryName+" could not be found!"),entryName(entryName),typeName(typeName){}
+      virtual ~EntryNotFoundException() throw(){}
+    };
     
     /// Default constructor creating an empty ConfigFile instance
     /** The empty ConfigFile has the following string representation:
@@ -185,7 +193,22 @@ namespace icl{
         return def;
       }
     }
-    
+
+    /// returns a given value from the internal document hash-map
+    /** This function is equivalent to the getValue<T> function template
+        provided by the parent DataStore class, except this function applies
+        two additional checks first:
+        - checking if entry "id" is actually contained (if not, an ConfigFile::EntryNotFoundException is thrown)
+        - checking if entry "id" has actually the given type (if not, an ConfigFile::EntryNotFoundException is thrown)
+    */
+    template<class T>
+    inline const T try_get(const std::string &id) const throw (EntryNotFoundException){
+      if(!contains(id) || !checkType<T>(id)){
+        throw EntryNotFoundException(id,get_type_name<T>());
+      }
+      return getValue<T>(id);
+    }
+
     // ---------------- static misc ----------------------------
     
     
