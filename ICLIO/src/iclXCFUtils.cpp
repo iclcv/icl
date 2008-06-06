@@ -167,7 +167,7 @@ namespace icl{
                     (int) xmltio::extract<int>((*r)["width"]),
                     (int) xmltio::extract<int>((*r)["height"]));
     }
-    d.time = Time::microSeconds(xmltio::extract<Time::value_type>(l[xmltio::XPath("TIMESTAMP/CREATED/@timestamp")]));
+    d.time = Time::microSeconds(xmltio::extract<Time::value_type>(l[xmltio::XPath("TIMESTAMPS/CREATED/@timestamp")]));
 
     return d;
   }
