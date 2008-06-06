@@ -95,14 +95,14 @@ namespace icl{
 
     anchor.add(imageLoc);
 
-    if(insertInsteadOfReplace){
-      mem->insert(anchor.getDocument().getRootLocation().getDocumentText(), attToUse);
-    }else{
-      try{
-        mem->replace(anchor.getDocument().getRootLocation().getDocumentText(), attToUse);
-      }catch(const std::exception &ex){
-        ERROR_LOG("Caught std::exception: \"" << ex.what() << "\""); throw;
-      }
+    try{
+       if(insertInsteadOfReplace){
+          mem->insert(anchor.getDocument().getRootLocation().getDocumentText(), attToUse);
+       }else{
+          mem->replace(anchor.getDocument().getRootLocation().getDocumentText(), attToUse);
+       }
+    }catch(const std::exception &ex){
+       ERROR_LOG("Caught std::exception: \"" << ex.what() << "\""); throw;
     }
     
     if(!reusableAttachment){

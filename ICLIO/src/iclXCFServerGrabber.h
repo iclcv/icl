@@ -19,7 +19,7 @@ namespace icl {
     
       /// Base constructor
       XCFServerGrabber(const std::string& sServer, 
-                       const std::string& sMethodName = "retrieve",
+                       const std::string& sMethodName = "retrieveImage",
                  ::XCF::RecoverLevel l = (::XCF::RecoverLevel)
                  ::XCF::Implementation::Properties::singleton()
                  ->getPropertyAsInt("XCF.Global.RecoverLevel"));

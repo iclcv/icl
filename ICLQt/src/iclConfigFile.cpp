@@ -105,7 +105,6 @@ namespace icl{
     SPECIALIZE(Range<float>,translateRange<float>(value),translateRange(val));
 #undef SPECIALIZE
 
-
     // }}}
     
     // {{{ static map of add-functions
