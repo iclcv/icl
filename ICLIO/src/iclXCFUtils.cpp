@@ -18,9 +18,9 @@ namespace icl{
 
     static const std::string s("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                                "<IMAGE uri=\"\">"
-                               "<TIMESTAMP>"
+                               "<TIMESTAMPS>"
                                "<CREATED timestamp=\"\"/>"
-                               "</TIMESTAMP>"
+                               "</TIMESTAMPS>"
                                "<PROPERTIES width=\"\" height=\"\" depth=\"\" channels=\"\" format=\"\"/>"
                                "<ROI offsetX=\"\" offsetY=\"\" width=\"\" height=\"\" />"
                                "</IMAGE>");
@@ -49,7 +49,7 @@ namespace icl{
     r["width"]	 = poImg->getROIWidth();
     r["height"]	 = poImg->getROIHeight();
     
-    l[xmltio::XPath("TIMESTAMP/CREATED/@timestamp")] = poImg->getTime().toMicroSeconds();
+    l[xmltio::XPath("TIMESTAMPS/CREATED/@timestamp")] = poImg->getTime().toMicroSeconds();
     return l;
   }
 
