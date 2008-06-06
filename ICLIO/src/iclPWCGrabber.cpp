@@ -4,7 +4,9 @@
 #include <iclCC.h>
 #include <stdio.h>
 #include <errno.h>
+#include <sys/time.h>
 #include <sys/types.h>
+
 #include <linux/videodev.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -13,7 +15,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <sys/time.h>
+
 #include <string.h>
 #endif
 
