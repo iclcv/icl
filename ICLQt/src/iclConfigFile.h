@@ -147,6 +147,14 @@ namespace icl{
     /// Sets up a new title to the internal document
     void setTitle(const std::string &title);
     
+    /// Sets up a default prefix automatically put before each given key
+    void setDefaultPrefix(const std::string &defaultPrefix){
+      m_sDefaultPrefix = defaultPrefix;
+    }
+    
+    /// Returns given default prefix
+    const std::string &getDefaultPrefix() const { return m_sDefaultPrefix; }
+    
     /// Adds a new data element to the ConfigFile
     /** Warning: if not unique decidable, an explicit information about the
         value type T is compulsory.
@@ -186,7 +194,8 @@ namespace icl{
         - checking if entry "id" has actually the given type (if not, def is returned)
     */
     template<class T>
-    inline const T get(const std::string &id,const T &def=T()) const{
+    inline const T get(const std::string &idIn,const T &def=T()) const{
+      std::string id = m_sDefaultPrefix+idIn;
       if(contains(id) && checkType<T>(id)){
         return getValue<T>(id);
       }else{
@@ -202,7 +211,8 @@ namespace icl{
         - checking if entry "id" has actually the given type (if not, an ConfigFile::EntryNotFoundException is thrown)
     */
     template<class T>
-    inline const T try_get(const std::string &id) const throw (EntryNotFoundException){
+    inline const T try_get(const std::string &idIn) const throw (EntryNotFoundException){
+      std::string id = m_sDefaultPrefix+idIn;
       if(!contains(id) || !checkType<T>(id)){
         throw EntryNotFoundException(id,get_type_name<T>());
       }
@@ -240,6 +250,8 @@ namespace icl{
     
     /// internally used utility function
     void updateTitleFromDocument();
+
+    std::string m_sDefaultPrefix;
   };
   
   

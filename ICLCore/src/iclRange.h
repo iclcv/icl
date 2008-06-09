@@ -63,6 +63,17 @@ namespace icl{
     
     /// tests whether a given value is inside of this range
     virtual bool contains(Type value) const { return value >= minVal && value <= maxVal; }
+    
+    // camparison operator
+    bool operator==(const Range<Type> &other) const{
+      return minVal==other.minVal && maxVal == other.maxVal;
+    }
+    
+    // camparison operator
+    bool operator!=(const Range<Type> &other) const{
+      return minVal!=other.minVal || maxVal != other.maxVal;
+    }
+
   };
   
 #define ICL_INSTANTIATE_DEPTH(D) typedef Range<icl##D> Range##D;

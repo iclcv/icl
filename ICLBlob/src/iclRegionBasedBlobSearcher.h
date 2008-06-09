@@ -11,6 +11,7 @@
 #include <iclRegionPCAInfo.h>
 #include <iclRegionFilter.h>
 #include <iclFMCreator.h>
+#include <iclUncopyable.h>
 
 
 namespace icl{
@@ -75,7 +76,7 @@ namespace icl{
       since revision 567 all function have been optimized in that way, that image-regions
       are extracted only once.
   **/
-  class RegionBasedBlobSearcher{
+  class RegionBasedBlobSearcher : public Uncopyable{
     public:
     /// Internal used struct to associate FMCreator and RegionFilters
     struct Plugin{

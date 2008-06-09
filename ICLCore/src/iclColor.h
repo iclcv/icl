@@ -5,7 +5,8 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-//#include <bits/stl_function.h>
+#include <vector>
+#include <sstream>
 
 namespace icl{
 
@@ -45,6 +46,7 @@ namespace icl{
     T c[N];
     public:
     
+    /// Default constructor (e.g. use Color(255,0,0) for RED)
     GeneralColor(T c0=0, T c1=0, T c2=0, T c3=0, T c4=0, T c5=0){
       if(N>0) c[0]=c0;
       if(N>1) c[1]=c1;
@@ -80,51 +82,61 @@ namespace icl{
       *this = iclCreateColor(name);
     }
     
+    /// Templated copy constructor
     template<class otherT, int otherN>
     GeneralColor(const GeneralColor<otherT,otherN> &other){
       *this = other;
     }
     
-    template<class otherT>
+    /// Create with given data pointer (deeply copied internally)
     GeneralColor(T *data){
       for(int i=0;i<N;c[i]=data[i],++i);
     }
     
+    /// convert into other depth
     template<class otherT>
     GeneralColor<otherT,N> cvt() const {
       return GeneralColor<otherT,N>(*this);
     }
 
+    /// convert into other channel channel count
     template<int otherN>
     GeneralColor<T,otherN> cvt() const {
       return GeneralColor<T,otherN>(*this);
     }
     
+    /// convert into color with other channel count and depth
     template<class otherT, int otherN>
     GeneralColor<otherT,otherN> cvt() const {
       return GeneralColor<otherT,otherN>(*this);
     }
     
+    /// returns i-th component
     T & operator[](unsigned int idx){
       return c[idx];
     }
 
+    /// returns i-th component (const)
     const T & operator[](unsigned int idx) const{
       return c[idx];
     }
     
+    /// return internal data pointer
     T *data() { return c; }
 
+    /// return internal data pointer (const)
     const T* data() const { return c; }
     
+    /// Assign by another color with differnt template params
     template<class otherT,int otherN>
     GeneralColor<T,N> &operator=(const GeneralColor<otherT,otherN> &other){
       for(int i=0;(i<N)&&(i<otherN);++i){
-        c[i]=Cast<otherT,T>(other.c[i]);
+        c[i]=Cast<otherT,T>::cast(other[i]);
       }
       for(int i=otherN;i<N;++i){
         c[i] = 0;
       }
+      return *this;
     }
     
     template<class otherT, int otherN>
@@ -148,13 +160,13 @@ namespace icl{
     
     template<class otherT, int otherN>
     GeneralColor<T,N> &operator+=(const GeneralColor<otherT,otherN> &other){
-      std::transform(c,c+iclMin(otherN,N),other.c,c,std::plus<T>());
+      std::transform(c,c+iclMin(otherN,N),other.data(),c,std::plus<T>());
       return *this;
     }
 
     template<class otherT, int otherN>
     GeneralColor<T,N> &operator-=(const GeneralColor<otherT,otherN> &other){
-      std::transform(c,c+iclMin(otherN,N),other.c,c,std::minus<T>());
+      std::transform(c,c+iclMin(otherN,N),other.data(),c,std::minus<T>());
       return *this;
     }
 
@@ -169,6 +181,20 @@ namespace icl{
       return (*this)*(1.0/d);
     }
     
+    bool operator==(const GeneralColor<T,N> &other) const{
+      for(int i=0;i<N;++i){
+        if(c[i]!=other[i]) return false;
+      }
+      return true;
+    }
+    bool operator!=(const GeneralColor<T,N> &other) const{
+      for(int i=0;i<N;++i){
+        if(c[i]==other[i]) return true;
+      }
+      return false;
+    }
+
+    
     GeneralColor<T,N> darker(double factor=0.8){
       return (*this)*factor;
     }
@@ -177,7 +203,9 @@ namespace icl{
       return (*this)/factor;
     }
     
-
+    std::vector<T> asVec() const{
+      return std::vector<T>(c,c+N);
+    }
   };
 
   /** \cond */
@@ -199,7 +227,41 @@ namespace icl{
     iclToStream(str,c[N-1]) << ')';
     return str;
   }
+
+
+  template<class T, int N>
+  inline GeneralColor<T,N> translateGeneralColor(std::string s){
+    if(!s.size()){
+      ERROR_LOG("unable to translate " << s << " into GeneralColor type");
+      return GeneralColor<T,N>();
+    }
+    std::replace_if(s.begin(),s.end(),bind2nd(std::equal_to<char>(),','),' ');
+    std::replace_if(s.begin(),s.end(),bind2nd(std::equal_to<char>(),')'),' ');
+    std::istringstream str(s);
+    GeneralColor<T,N> color;
+    for(int i=0;i<N;++i){
+      try{
+        str >> color[i];
+      }catch(const std::exception &ex){
+        ERROR_LOG("unable to translate \"" << s << "\" into GeneralColor type");
+        return GeneralColor<T,N>();
+      }
+    }
+    return color;
+  }
   
+  template<class T, int N>
+  inline std::string translateGeneralColor(const GeneralColor<T,N> &color){
+    std::ostringstream s; s << color; return s.str();
+  }
+  
+  inline Color translateColor(const std::string &str){
+    return translateGeneralColor<icl8u,3>(str);
+  }
+  
+  inline std::string translateColor(const Color &color){
+    return translateGeneralColor(color);
+  }
 
   
 }

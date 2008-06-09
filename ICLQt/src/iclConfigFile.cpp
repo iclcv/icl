@@ -13,6 +13,7 @@
 #include <QTextStream>
 #include <list>
 #include <vector>
+#include <iclColor.h>
 
 using namespace std;
 
@@ -101,8 +102,9 @@ namespace icl{
     SPECIALIZE(Size,translateSize(value),translateSize(val));
     SPECIALIZE(Point,translatePoint(value),translatePoint(val));
     SPECIALIZE(Rect,translateRect(value),translateRect(val));
-    SPECIALIZE(Range<int>,translateRange<int>(value),translateRange(val));
-    SPECIALIZE(Range<float>,translateRange<float>(value),translateRange(val));
+    SPECIALIZE(Range32s,translateRange<int>(value),translateRange(val));
+    SPECIALIZE(Range32f,translateRange<float>(value),translateRange(val));
+    SPECIALIZE(Color,translateColor(value),translateColor(val));
 #undef SPECIALIZE
 
     // }}}
@@ -135,9 +137,10 @@ namespace icl{
         ADD_TEMPL(string);
         ADD_TEMPL(Size);
         ADD_TEMPL(Rect);
-        ADD_TEMPL(Range<int>);
-        ADD_TEMPL(Range<float>);
+        ADD_TEMPL(Range32s);
+        ADD_TEMPL(Range32f);
         ADD_TEMPL(Point);
+        ADD_TEMPL(Color);
 #undef ADD_TEMPL
       }
     } addFunctionInitializer;
@@ -481,7 +484,8 @@ namespace icl{
   // }}}
   
   template<class T>
-  void ConfigFile::add(const std::string &id, const T &val){
+  void ConfigFile::add(const std::string &idIn, const T &val){
+    std::string id=m_sDefaultPrefix + idIn;
     if(contains(id) && !checkType<T>(id)){
       ERROR_LOG("id " << id << "is already set with different type!");
       return;
@@ -496,7 +500,7 @@ namespace icl{
   }
 
 #define X(T) template void ConfigFile::add<T>(const std::string&,const T&)
-  X(char); X(unsigned char); X(short); X(unsigned short); X(int); X(unsigned int);
+  X(char); X(unsigned char); X(short); X(unsigned short); X(int); X(unsigned int); X(Color);
   X(float); X(double); X(string); X(Size); X(Point); X(Rect); X(Range<int>); X(Range<float>);
 #undef X
 
