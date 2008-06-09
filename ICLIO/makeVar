@@ -103,6 +103,6 @@ SKIP_OBJECTS += iclUnicapGrabEngine.cpp iclUnicapConvertEngine.cpp
 endif
 
 ifeq "$(HAVE_XCF)" ""
-SKIP_OBJECTS += iclXCFGrabber.cpp
+SKIP_OBJECTS += iclXCFGrabber.cpp iclXCFMemoryGrabber.cpp iclXCFGrabberBase.cpp iclXCFPublisherGrabber.cpp iclXCFServerGrabber.cpp xcf_publisher_test.cpp
 endif
 
