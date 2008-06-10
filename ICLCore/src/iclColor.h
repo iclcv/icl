@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
+#include <iclStringUtils.h>
 
 namespace icl{
 
@@ -229,24 +230,16 @@ namespace icl{
   }
 
 
+
   template<class T, int N>
   inline GeneralColor<T,N> translateGeneralColor(std::string s){
-    if(!s.size()){
+    if(s.size()<2){
       ERROR_LOG("unable to translate " << s << " into GeneralColor type");
       return GeneralColor<T,N>();
     }
-    std::replace_if(s.begin(),s.end(),bind2nd(std::equal_to<char>(),','),' ');
-    std::replace_if(s.begin(),s.end(),bind2nd(std::equal_to<char>(),')'),' ');
-    std::istringstream str(s);
     GeneralColor<T,N> color;
-    for(int i=0;i<N;++i){
-      try{
-        str >> color[i];
-      }catch(const std::exception &ex){
-        ERROR_LOG("unable to translate \"" << s << "\" into GeneralColor type");
-        return GeneralColor<T,N>();
-      }
-    }
+    std::vector<T> v = icl::parseVecStr<T>(s.substr(1,s.length()-2),",");
+    std::copy(v.begin(),v.begin()+iclMin(N,(int)v.size()),color.data());
     return color;
   }
   
