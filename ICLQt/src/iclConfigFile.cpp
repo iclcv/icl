@@ -525,4 +525,11 @@ namespace icl{
   }
 
   // }}}
+
+  std::ostream &operator<<(ostream &s, const ConfigFile &cf){
+    QString string;
+    QTextStream stream(&string);
+    stream << static_cast<QDomNode&>(*cf.m_spXMLDocHandle);
+    return s << stream.readAll().toLatin1().data();
+  }
 }

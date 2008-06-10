@@ -4,7 +4,7 @@
 #include <string>
 #include <iclDataStore.h>
 #include <iclException.h>
-
+#include <iostream>
 namespace icl{
 
   /// Utility class for creating and reading XML-based hierarchical configuration files 
@@ -252,9 +252,15 @@ namespace icl{
     void updateTitleFromDocument();
 
     std::string m_sDefaultPrefix;
+
+    /// ostream operator is allowed to access privat members
+    friend std::ostream &operator<<(std::ostream&,const ConfigFile&);
   };
   
   
+  /// Default ostream operator to put a ConfigFile into a stream
+  std::ostream &operator<<(std::ostream &s, const ConfigFile &cf);
+
 }
 
 #endif
