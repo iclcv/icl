@@ -97,9 +97,15 @@ namespace icl{
 
     try{
        if(insertInsteadOfReplace){
-          mem->insert(anchor.getDocument().getRootLocation().getDocumentText(), attToUse);
+          mem->insert(anchor.getDocumentText(), attToUse);
        }else{
-          mem->replace(anchor.getDocument().getRootLocation().getDocumentText(), attToUse);
+#if 0
+          mem->replace(anchor.getDocumentText(), attToUse);
+#else
+          std::ostringstream oss;
+          oss << "/*[@dbxml:id=" << Location(anchor, "/*[@dbxml:id]").getTextValue() << "]";
+          mem->replaceByXPath(oss.str(), anchor.getDocumentText(), attToUse);
+#endif
        }
     }catch(const std::exception &ex){
        ERROR_LOG("Caught std::exception: \"" << ex.what() << "\""); throw;

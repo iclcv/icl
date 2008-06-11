@@ -12,8 +12,13 @@ namespace icl {
 
   
 
-   /// Grabber to access XCF Image Server \ingroup GRABBER_G
-   /** The XCFServerGrabber provides access to an XCF Image Server. */
+   /// Grabber to access XCF Image Server and XCF Publisher \ingroup GRABBER_G
+   /** XCFGrabberBase serves as a base class to XCFServerGrabber and 
+       XCFPublisherGrabber. 
+                  1GBit           100MBit
+       Server     48 Hz           10 Hz
+       Publisher  69 Hz           12 Hz
+   */
   
    class XCFGrabberBase : public Grabber {
    public:
