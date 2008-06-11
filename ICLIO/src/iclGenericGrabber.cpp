@@ -99,9 +99,4 @@ namespace icl{
       ERROR_LOG("Generic Grabber was not able to find any suitable device!");
     }
   }  
-  void GenericGrabber::setIgnoreDesiredParams(bool flag){
-    if(m_sType == "file"){
-       reinterpret_cast<FileGrabber*>(m_poGrabber)->setIgnoreDesiredParams(flag);
-    }
-  }
 }

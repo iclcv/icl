@@ -164,7 +164,11 @@ namespace icl{
     d.size.height  = xmltio::extract<int>(p["height"]);
     d.imagedepth = translateDepth(xmltio::extract<std::string>(p["depth"]));
     d.channels   = xmltio::extract<int>(p["channels"]);
-    d.imageformat = translateFormat(xmltio::extract<std::string>(p["format"]));
+    try{
+      d.imageformat = translateFormat(xmltio::extract<std::string>(p["format"]));
+    }catch(const InvalidFormatException &ex){
+      d.imageformat = formatMatrix;
+    }
     
     xmltio::LocationPtr  r = xmltio::find (l, "ROI");
     if (r) {

@@ -25,12 +25,13 @@ namespace icl {
   
   void XCFGrabberBase::makeOutput (const xmltio::Location& l, ImgBase *poOutput) {
     xmltio::LocationPtr locBayer = xmltio::find (l, "PROPERTIES/@bayerPattern");
+
     if (locBayer) {
       const std::string& bayerPattern =  xmltio::extract<std::string>(*locBayer);
       ImgParams p = m_poSource->getParams();
       p.setFormat (formatRGB);
       m_poBayerBuffer = icl::ensureCompatible (&m_poBayerBuffer, m_poSource->getDepth(), p);
-         
+      
       m_poBayerConverter->setBayerImgSize(m_poSource->getSize());
       //poBC->setConverterMethod(BayerConverter::nearestNeighbor);
       m_poBayerConverter->setBayerPattern(BayerConverter::translateBayerPattern(bayerPattern));
@@ -49,10 +50,19 @@ namespace icl {
                                     "//IMAGE[@uri]");
      
      if(loc){
-       ImgBase *poOutput = prepareOutput (ppoDst);
-       XCFUtils::CTUtoImage(m_result, *loc, &m_poSource);
-       makeOutput (*loc, poOutput);
-       return poOutput;
+       if(!getIgnoreDesiredParams()){
+         ImgBase *poOutput = prepareOutput (ppoDst);
+         XCFUtils::CTUtoImage(m_result, *loc, &m_poSource);
+         makeOutput (*loc, poOutput);
+         return poOutput;
+       }else if(!ppoDst){
+         XCFUtils::CTUtoImage(m_result, *loc, &m_poSource);
+         //makeOutput (*loc, poOutput); bayer pattern is not yet supported here
+         return m_poSource;
+       }else{
+         XCFUtils::CTUtoImage(m_result, *loc, ppoDst);
+         return *ppoDst;
+       }
      }else{
        ERROR_LOG("unable to find XPath: \"//IMAGE[@uri]\"");
        return 0;
@@ -61,7 +71,11 @@ namespace icl {
 
    void XCFGrabberBase::grab (std::vector<ImgBase*>& vGrabbedImages) {
       receive (m_result);
-
+      static bool first = true;
+      if(first){
+        first = false;
+        ERROR_LOG("please note that mulitiple image grabbing does not support to ignore grabbers desired parameters!");
+      }
       xmltio::Location doc (m_result->getXML());
       vector<ImgBase*>::iterator imgIt  = vGrabbedImages.begin();
       vector<ImgBase*>::iterator imgEnd = vGrabbedImages.end();

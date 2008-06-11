@@ -71,9 +71,6 @@ namespace icl{
     /// returns the next to-be-grabbed file name
     const std::string &getNextFileName() const;
     
-    /// sets whether to ignore desired params or not (TODO as "setProperty(...)")
-    void setIgnoreDesiredParams(bool flag);
-
     /// pre-buffers all images internally
     /** This function is called automatically,if the "buffer"-flag of the constructor is set.
         The function internally pre-buffers all images, that are contained in the current
@@ -134,9 +131,6 @@ namespace icl{
     
     /// flag whether to pre-buffer images or not
     bool m_bBufferImages;
-    
-    /// flag whether to ignore the parent Grabber's desired params
-    bool m_bIgnoreDesiredParams;
     
     /// A special buffer image
     ImgBase *m_poBufferImage;

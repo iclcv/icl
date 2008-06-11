@@ -32,10 +32,11 @@ namespace icl {
         - foramt = formatRGB 
     **/
     Grabber() : 
-       m_oDesiredParams (Size(320,240), formatRGB),
-       m_eDesiredDepth (depth8u), 
-       m_poImage (0)
-       {}
+    m_oDesiredParams (Size(320,240), formatRGB),
+    m_eDesiredDepth (depth8u), 
+    m_poImage (0),
+    m_bIgnoreDesiredParams(false)
+    {}
 
     
     /// Destructor
@@ -171,43 +172,52 @@ namespace icl {
      /// @{ @name functions for get/set desired params
 
      /// returns current desired image params (size and format)
-     const ImgParams &getDesiredParams()const{
+     virtual const ImgParams &getDesiredParams()const{
        return m_oDesiredParams;
      }
      
      /// returns current desired image size (default is "320x240"
-     const Size &getDesiredSize()const{
+     virtual const Size &getDesiredSize()const{
        return m_oDesiredParams.getSize();
      }
      
      /// returns current desired image format (default is formatRGB)
-     format getDesiredFormat() const{
+     virtual format getDesiredFormat() const{
        return m_oDesiredParams.getFormat();
      }
 
      /// returns current desired image depth (default is depth8u)
-     depth getDesiredDepth() const{
+     virtual depth getDesiredDepth() const{
        return m_eDesiredDepth;
      }
 
      /// sets current desired image parameters
-     void setDesiredParams(const ImgParams &p){
+     virtual void setDesiredParams(const ImgParams &p){
        m_oDesiredParams = p;
      }
 
      /// sets current desired image size
-     void setDesiredSize(const Size &s){
+     virtual void setDesiredSize(const Size &s){
        m_oDesiredParams.setSize(s);
      }
      
      /// sets current desired image format
-     void setDesiredFormat(format f){
+     virtual void setDesiredFormat(format f){
        m_oDesiredParams.setFormat(f);
      }
      
      /// returns current desired image depth
-     void setDesiredDepth(depth d){
+     virtual void setDesiredDepth(depth d){
        m_eDesiredDepth = d;
+     }
+     
+     /// set up ignore-desired params flag
+     virtual void setIgnoreDesiredParams(bool flag){
+       m_bIgnoreDesiredParams = flag;
+     }
+     
+     virtual bool getIgnoreDesiredParams() const {
+       return m_bIgnoreDesiredParams;
      }
      
      /// @}
@@ -235,6 +245,9 @@ namespace icl {
          runtime memory allocation and deallocations. 
      */
      ImgBase  *m_poImage;
+
+     /// Flag to indicate whether desired parametes should be ignored
+     bool m_bIgnoreDesiredParams;
 
   }; // class
  

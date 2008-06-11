@@ -85,57 +85,64 @@ namespace icl {
     /// returns wheter an underlying grabber could be created
     bool isNull() const { return m_poGrabber == 0; }
     
-    const ImgParams &getDesiredParams()const{
+    virtual const ImgParams &getDesiredParams()const{
       static ImgParams nullParams;
       ICLASSERT_RETURN_VAL(!isNull(),nullParams);
       return m_poGrabber->getDesiredParams();
     }
      
     /// returns current desired image size (default is "320x240"
-    const Size &getDesiredSize()const{
+    virtual const Size &getDesiredSize()const{
       static Size nullSize;
       ICLASSERT_RETURN_VAL(!isNull(),nullSize);
       return m_poGrabber->getDesiredSize();
      }
      
      /// returns current desired image format (default is formatRGB)
-     format getDesiredFormat() const{
+     virtual format getDesiredFormat() const{
        ICLASSERT_RETURN_VAL(!isNull(),formatMatrix);
        return m_poGrabber->getDesiredFormat();
      }
 
      /// returns current desired image depth (default is depth8u)
-     depth getDesiredDepth() const{
+     virtual depth getDesiredDepth() const{
        ICLASSERT_RETURN_VAL(!isNull(),depth8u);
        return m_poGrabber->getDesiredDepth();
      }
      
      /// sets current desired image parameters
-     void setDesiredParams(const ImgParams &p){
+     virtual void setDesiredParams(const ImgParams &p){
        ICLASSERT_RETURN(!isNull());
        m_poGrabber->setDesiredParams(p);
      }
 
      /// sets current desired image size
-     void setDesiredSize(const Size &s){
+     virtual void setDesiredSize(const Size &s){
        ICLASSERT_RETURN(!isNull());
        m_poGrabber->setDesiredSize(s);
      }
      
      /// sets current desired image format
-     void setDesiredFormat(format f){
+     virtual void setDesiredFormat(format f){
        ICLASSERT_RETURN(!isNull());
        m_poGrabber->setDesiredFormat(f);
      }
      
      /// returns current desired image depth
-     void setDesiredDepth(depth d){
+     virtual void setDesiredDepth(depth d){
        ICLASSERT_RETURN(!isNull());
        m_poGrabber->setDesiredDepth(d);
      }
-
-     /// only for using a file grabber internally
-     void setIgnoreDesiredParams(bool flag);
+     
+     virtual void setIgnoreDesiredParams(bool flag){
+       ICLASSERT_RETURN(!isNull());
+       m_poGrabber->setIgnoreDesiredParams(flag);
+     }
+     virtual bool getIgnoreDesiredParams() const{
+       ICLASSERT_RETURN_VAL(!isNull(),false);
+       return m_poGrabber->getIgnoreDesiredParams();
+     }
+     
   };
   
  

@@ -61,10 +61,11 @@ namespace icl{
     m_oFileList(pattern),
     m_iCurrIdx(0),
     m_bBufferImages(false),
-    m_bIgnoreDesiredParams(ignoreDesired),
     m_poBufferImage(0){
     
     ICLASSERT_RETURN(!m_oFileList.isNull());
+
+    setIgnoreDesiredParams(ignoreDesired);
     
     if(buffer){
       bufferImages(false);
@@ -153,14 +154,6 @@ namespace icl{
     // {{{ open
 
     return m_oFileList[m_iCurrIdx];
-  }
-
-  // }}}
-  
-  void FileGrabber::setIgnoreDesiredParams(bool flag){
-    // {{{ open
-
-    m_bIgnoreDesiredParams = flag;
   }
 
   // }}}
