@@ -142,7 +142,7 @@ installall:
 	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 0
 
 cleaninstall:
-	${PRE_CMD}${CMD_ECHO} "**** Uninstall ${PROJECT_ROOT_NAME} ****"
+	${PRE_CMD}${CMD_ECHO} "**** Uninstalling ${PROJECT_ROOT_NAME} ****"
 	${PRE_CMD}perl ./install/Uninstall ${PROJECT_ROOT_NAME}
 
 #-----------------------------------------------

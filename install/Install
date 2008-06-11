@@ -16,7 +16,7 @@ my $installMode = $ARGV[1]; # 0: remove & install all (include, lib, doc)
 #------------------
 #Get version number
 #------------------
-open(FILE,"./makeVar") or die "Can not open file: $!";
+open(FILE,"./makeVar") or die "Cannot open file: $!";
 @content = <FILE>;
 close(FILE);
 
@@ -33,7 +33,7 @@ foreach my $line(@content) {
 #---------------------------
 #Walk through directory tree
 #---------------------------
-opendir(DIR,"./") or die "Can not open DIR: $!";
+opendir(DIR,"./") or die "Cannot open DIR: $!";
 my @dirs = grep { /ICL/ } readdir(DIR);
 closedir(DIR);
 
@@ -43,60 +43,61 @@ my $currDir=&Cwd::cwd();
 
 #---- Remove old install tree before installing the new one ----
 if ($installMode == 0 || $installMode == 1 || $installMode == 3) {
-    print "---- Remove header files in: $INSTALLDIR/include \n";
+    print "---- Removing header files in: $INSTALLDIR/include \n";
     system "rm -Rf $INSTALLDIR/include/*.h";
-    print "---- Remove example files in: $INSTALLDIR/bin \n";
+    print "---- Removing example files in: $INSTALLDIR/bin \n";
     system "rm -Rf $INSTALLDIR/bin/*";
-    print "---- Remove libraries in: $INSTALLDIR/lib \n";
+    print "---- Removing libraries in: $INSTALLDIR/lib \n";
     system "rm -Rf $INSTALLDIR/lib/*";
-    print "---- Remove packages in: $INSTALLDIR/packages \n";
+    print "---- Removing packages in: $INSTALLDIR/packages \n";
     system "rm -Rf $INSTALLDIR/packages/*";
 }
 
 if ($installMode == 0 || $installMode == 2) {
-    print "---- Remove docs in: $INSTALLDIR/doc \n";
+    print "---- Removing docs in: $INSTALLDIR/doc \n";
     system "rm -Rf $INSTALLDIR/doc/*";
 }
 
 #---- Create install tree ----
 if (!-e "$INSTALLDIR"){
-    print "make dir: $INSTALLDIR\n";
-    system "mkdir -p $INSTALLDIR";
+    print "creating directory: $INSTALLDIR\n";
+    system "mkdir -p -m 775 $INSTALLDIR";
+    system "chmod -R g+w $ENV{ICL_INSTALL_ROOT}/${projectRootName}";
     }
 
 if (!-e "$INSTALLDIR/lib"){
-    print "make dir: $INSTALLDIR/lib\n";
-    system "mkdir -p $INSTALLDIR/lib";
+    print "creating directory: $INSTALLDIR/lib\n";
+    system "mkdir -p -m 775 $INSTALLDIR/lib";
     }
 
 if (!-e "$INSTALLDIR/bin"){
-    print "make dir: $INSTALLDIR/bin\n";
-    system "mkdir -p $INSTALLDIR/bin";
+    print "creating directory: $INSTALLDIR/bin\n";
+    system "mkdir -p -m 775 $INSTALLDIR/bin";
     }
 
 if (!-e "$INSTALLDIR/include"){
-    print "make dir: $INSTALLDIR/include\n";
+    print "creating directory: $INSTALLDIR/include\n";
     system "mkdir -m 775 -p $INSTALLDIR/include";
     }
 
 if (!-e "$INSTALLDIR/packages"){
-    print "make dir: $INSTALLDIR/packages\n";
-    system "mkdir -p $INSTALLDIR/packages";
+    print "creating directory: $INSTALLDIR/packages\n";
+    system "mkdir -p -m 775 $INSTALLDIR/packages";
 }
 
 if (!-e "$INSTALLDIR/lib/pkgconfig"){
-    print "make dir: $INSTALLDIR/lib/pkgconfig\n";
+    print "creating directory: $INSTALLDIR/lib/pkgconfig\n";
     system "mkdir -m 775 -p $INSTALLDIR/lib/pkgconfig";
 }
 
 if (!-e "$INSTALLDIR/make"){
-    print "make dir: $INSTALLDIR/make\n";
-    system "mkdir -p $INSTALLDIR/make";
+    print "creating directory: $INSTALLDIR/make\n";
+    system "mkdir -p -m 775 $INSTALLDIR/make";
 }
 
 if (!-e "$INSTALLDIR/doc"){
-    print "make dir: $INSTALLDIR/doc\n";
-    system "mkdir -p $INSTALLDIR/doc";
+    print "creating directory: $INSTALLDIR/doc\n";
+    system "mkdir -p -m 775 $INSTALLDIR/doc";
 }
 
 #---- Copy extern projects files----
@@ -105,9 +106,11 @@ my @externPackageList = grep { !/ICL/ && !/\./ } readdir(DIR);
 closedir(DIR);
 
 foreach my $externPackage(@externPackageList) {
-    system "cp ./packages/$externPackage $INSTALLDIR/packages";
+    #system "cp ./packages/$externPackage $INSTALLDIR/packages";
+    system "install -m 664 ./packages/$externPackage $INSTALLDIR/packages/"
 }
-system "cp ./make/dependencyChecks $INSTALLDIR/make";
+#system "cp ./make/dependencyChecks $INSTALLDIR/make";
+system "install -m 664  ./make/dependencyChecks $INSTALLDIR/make/";
 
 #---- Install the whole stuff ----
 foreach my $entry(@dirs) {
@@ -128,16 +131,22 @@ foreach my $entry(@dirs) {
     # ---- Install content ----
     if ($installMode == 0 || $installMode == 1) { 
         print "---- Copying header files: $entry/src\n";
-        system "cp ./$entry/src/*.h $INSTALLDIR/include";
-        
+#        system "cp ./$entry/src/*.h $INSTALLDIR/include";
+        system "install -m 664 ./$entry/src/*.h $INSTALLDIR/include/";
         if ($entry !~ /ICLUtils/) {
             print "---- Copying libraries: $entry/lib\n";
             if ("$OS_SYSTEM" eq "macosx") {
-                system "cp ./$entry/lib/*.dylib $INSTALLDIR/lib";
-                system "cp ./$entry/lib/*.a $INSTALLDIR/lib";
+                #system "cp ./$entry/lib/*.dylib $INSTALLDIR/lib";
+                #system "cp ./$entry/lib/*.a $INSTALLDIR/lib";
+                system "install -m 775 ./$entry/lib/*.dylib $INSTALLDIR/lib";
+                system "install -m 775 ./$entry/lib/*.a $INSTALLDIR/lib";
             } else {
-                system "cp -d ./$entry/lib/*.so* $INSTALLDIR/lib";
-                system "cp -d ./$entry/lib/*.a $INSTALLDIR/lib";
+#                system "cp -d ./$entry/lib/*.so* $INSTALLDIR/lib";
+#                system "cp -d ./$entry/lib/*.a $INSTALLDIR/lib";
+
+                system "install -m 775 ./$entry/lib/*.so* $INSTALLDIR/lib";
+                system "install -m 775 ./$entry/lib/*.a $INSTALLDIR/lib";
+
             }
             
             # ---- Copy examples ----
@@ -147,7 +156,9 @@ foreach my $entry(@dirs) {
             closedir(DIR);
             foreach my $exampleEntry (@exampleList) {
                 $exampleEntry =~ /(^.*)\.cpp/;
-                system "cp ./$entry/examples/$1* $INSTALLDIR/bin";
+#                system "cp ./$entry/examples/$1* $INSTALLDIR/bin";
+                system "install -m 775 ./$entry/examples/$1* $INSTALLDIR/bin";
+                system "chmod -x $INSTALLDIR/bin/*.cpp";
             }
         }
     }
@@ -177,12 +188,14 @@ foreach my $entry(@dirs) {
                 system "ln -s $currDir/$entry/examples/$1* $INSTALLDIR/bin 2> /dev/null";
             }
         }
+        system "chmod -R g+w $INSTALLDIR";
     }
     
     # ---- Install documentation ----
     if ($installMode == 0 || $installMode == 2) {
         print "---- Copying documentation: $entry/doc\n";
         system "cp -r ./$entry/doc/documentation/* $INSTALLDIR/doc/$entry";
+        system "chmod -R g+w $INSTALLDIR/doc";
         generate_documentation($INSTALLDIR, @dirs);        
     }
 
@@ -209,6 +222,7 @@ sub generate_documentation {
     #---- Copy static documentation files ----
     system "mkdir -p $INSTALLDIR/doc/html";
     system "cp -r ./doc/html/* $INSTALLDIR/doc/html";
+    system "chmod -R g+w $INSTALLDIR/doc";
     
     #---- Generate menu content ----
     @projects = sort(@projects);
@@ -247,6 +261,7 @@ sub generate_documentation {
     open(FILE, ">$INSTALLDIR/doc/html/menu.html") or die "cannot write to menu.html:$!";
     print FILE $menuTable;
     close(FILE);
+    chmod(0664,"$INSTALLDIR/doc/html/menu.html");
 }
 
 # }}}
@@ -301,6 +316,7 @@ sub generate_packagevar {
     open(FILE, ">$INSTALLDIR/packages/$entry") or die "cannot write packageVar:$!";
     print FILE $pkgContent;
     close(FILE);
+    chmod(0664,"$INSTALLDIR/packages/$entry");
 }
 # }}}
 
@@ -348,6 +364,7 @@ sub generate_BashSrc {
     open(FILE, ">$installdir/BashSrc") or die "cannot write BashSrc:$!";
     print FILE $BashSrcContent;
     close(FILE);
+    chmod(0664,"$installdir/BashSrc");
 }
 
 # }}}
@@ -380,6 +397,7 @@ sub generate_pkgconfig {
     open(FILE, ">$INSTALLDIR/lib/pkgconfig/$entry.pc") or die "cannot write pkgconfig file:$!";
     print FILE $pkgContent;
     close(FILE);
+    chmod(0664,"$INSTALLDIR/lib/pkgconfig/$entry.pc");
 }
 
 # }}}
