@@ -25,6 +25,7 @@ void receive_loop(){
   }
 }
 
+
 void send_app(){
 
   while(first || pa_defined("-loop")){
@@ -34,7 +35,13 @@ void send_app(){
       image = cvt8u(scale(create("parrot"),0.3));
     }else{
       static GenericGrabber g("file",string("file=")+pa_subarg<string>("-source",0,"./images/*.ppm"));
+      static const Size imageSize = translateSize(pa_subarg<string>("-size",0,"320x240"));
+      g.setDesiredSize(imageSize);
       image = const_cast<Img8u&>(*g.grab()->asImg<icl8u>());
+    }
+    if(pa_defined("-emulate-mask")){
+      static Img8u mask = cvt8u(thresh(scale(gray(create("parrot")),image.getWidth(),image.getHeight()),128));
+      image.append(&mask,0);
     }
     p.publish(&image);
     first = false;
@@ -65,7 +72,9 @@ int main(int n, char **ppc){
   pa_explain("-r","receiver application");
   pa_explain("-loop","loop application");
   pa_explain("-sleep","sleep time between calls (in ms def=1000)");
-  pa_init(n,ppc,"-s -r -loop -sleep(1) -source(1)");
+  pa_explain("-emulate-mask","emulate 4th channel mask (sending only)");
+  pa_explain("-size","output image size (sending only)");
+  pa_init(n,ppc,"-s -r -loop -sleep(1) -source(1) -emulate-mask -size(1)");
 
   std::string uri = pa_subarg<std::string>("-imageuri",0,"the-uri");
   std::string stream = pa_subarg<std::string>("-streamname",0,"the-stream-name");
