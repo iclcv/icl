@@ -101,10 +101,14 @@ namespace icl{
        }else{
 #if 0
           mem->replace(anchor.getDocumentText(), attToUse);
-#else
           std::ostringstream oss;
-          oss << "/*[@dbxml:id=" << Location(anchor, "/*[@dbxml:id]").getTextValue() << "]";
+//---------
+          oss << "/*[@dbxml:id=" << anchor.getDocument().getID() << "]";
           mem->replaceByXPath(oss.str(), anchor.getDocumentText(), attToUse);
+#else
+          
+          anchor["dlgid"] = anchor.getDocument().getID();
+          mem->insert(anchor.getDocumentText(), attToUse);
 #endif
        }
     }catch(const std::exception &ex){
