@@ -26,7 +26,9 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QLabel>
-
+#include <QTabBar>
+#include <QMainWindow>
+#include <QDockWidget>
 
 
 #include <map>
@@ -685,6 +687,43 @@ public:
   };
 
   // }}}
+
+
+  struct MultiDrawGUIWidget : public GUIWidget{
+    // {{{ open
+    MultiDrawGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::vboxLayout,0,0,-1){
+
+      
+      m_poTabBar = new QTabBar(def.parentWidget());
+      m_poDrawWidget = new ICLDrawWidget(def.parentWidget());
+      
+      m_poTabBar->setMaximumHeight(25);
+      getGUIWidgetLayout()->addWidget(m_poTabBar);
+      getGUIWidgetLayout()->addWidget(m_poDrawWidget);
+
+      for(unsigned int i=0;i<def.numParams();++i){
+        m_poTabBar->addTab(def.param(i).c_str());
+      }
+      
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<MultiDrawHandle>(def.handle(),MultiDrawHandle(m_poDrawWidget,m_poTabBar));
+        getGUI()->unlockData();  
+      }
+      setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+    }
+    static string getSyntax(){
+      return string("multidraw(TAB-LIST)[general params] \n")+
+      gen_params();
+    }
+    private:
+      QTabBar *m_poTabBar;
+      ICLDrawWidget *m_poDrawWidget;
+  };
+
+  // }}}
+
+
   struct DrawGUIWidget3D : public GUIWidget{
     // {{{ open
     DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,0){
@@ -925,6 +964,7 @@ public:
       MAP_CREATOR_FUNCS["combo"] = create_widget_template<ComboGUIWidget>;
       MAP_CREATOR_FUNCS["spinner"] = create_widget_template<SpinnerGUIWidget>;
       MAP_CREATOR_FUNCS["fps"] = create_widget_template<FPSGUIWidget>;
+      MAP_CREATOR_FUNCS["multidraw"] = create_widget_template<MultiDrawGUIWidget>;
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
       //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;
     }

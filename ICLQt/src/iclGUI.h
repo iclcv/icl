@@ -22,6 +22,7 @@
 #include <iclDrawHandle3D.h>
 #include <iclDispHandle.h>
 #include <iclFPSHandle.h>
+#include <iclMultiDrawHandle.h>
 
 
 #include <iclWidget.h>
