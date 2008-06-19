@@ -88,6 +88,12 @@ namespace icl {
     FUNCTION_LOG("float, float");
     return ((max - min) * random() + min); 
   }
+  
+  /// equivalent to random (r.minVal,r.maxVal)
+  template<class T>
+  inline double random(const Range<T> &r){
+    return random((double)r.minVal,(double)r.maxVal);
+  }
  
   //--------------------------------------------------------------------------
   /*!
