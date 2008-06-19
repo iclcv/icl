@@ -50,10 +50,10 @@ QT_RPATH_VAR=$(subst -L,,$(QT_LIB_DIRS_FROM_PKG_CONFIG))
 QT_RPATH_VAR:=$(QT_RPATH_VAR:%=-Wl,-rpath=%)
 
 
-ABS_LIBRARIES:=${ABS_LIBRARIES}\
-		$(QT_RPATH_VAR)\
+ABS_LIBRARIES:= $(QT_RPATH_VAR)\
 		$(QT_LIB_DIRS_FROM_PKG_CONFIG) \
-		-lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -lQtXml
+		-lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -lQtXml \
+		${ABS_LIBRARIES}	
 
 endif
 ifeq "${OS_TYPE}" "macosx"
