@@ -21,7 +21,7 @@ namespace icl{
     
     CallbackThread(int sleeptimeMsec, bool looped):
     sleeptime(sleeptimeMsec),looped(looped){
-      start();
+  
     }
 
     void setSleepTime(int sleepTimeMsecs){
@@ -86,10 +86,12 @@ namespace icl{
   template<class Callback>
   static void exec_threaded(Callback cb,bool loop=true, int sleepMsecs=0){
     static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
+
     cbt->setSleepTime(sleepMsecs);
     cbt->add(cb);
     static bool first = true;
     if(first){
+      cbt->start();
       on_exit(exec_threaded_on_exit_function<Callback>,cbt);
       first = false;
     }
@@ -100,8 +102,10 @@ namespace icl{
     static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
     cbt->setSleepTime(sleepMsecs);
     cbt->add(cb);
+
     static bool first = true;
     if(first){
+      cbt->start();
       on_exit(exec_threaded_on_exit_function<Callback>,cbt);
       first = false;
     }
@@ -113,6 +117,7 @@ namespace icl{
     cbt->add(cb);
     static bool first = true;
     if(first){
+      cbt->start();
       on_exit(exec_threaded_on_exit_function<Callback>,cbt);
       first = false;
     }
@@ -124,6 +129,7 @@ namespace icl{
     cbt->add(cb);
     static bool first = true;
     if(first){
+      cbt->start();
       on_exit(exec_threaded_on_exit_function<Callback>,cbt);
       first = false;
     }
@@ -135,6 +141,7 @@ namespace icl{
     cbt->add(cb);
     static bool first = true;
     if(first){
+      cbt->start();
       on_exit(exec_threaded_on_exit_function<Callback>,cbt);
       first = false;
     }
