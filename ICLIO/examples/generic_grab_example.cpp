@@ -21,7 +21,6 @@ void loop(){
   params["dc"] = "dc=0";
   params["unicap"] = "unicap=";
   params["file"] = "file=images/*.ppm";
-  
   while(1){
     static std::string lastComboItem = "";
     std::string type = combo.getSelectedItem();
@@ -57,6 +56,6 @@ int main(int n, char **ppc){
   init();
 
   exec_threaded(loop);  
-  
+
   return app.exec();
 }
