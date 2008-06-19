@@ -246,7 +246,7 @@ void batch_mode(){
 
 
 /* Call e.g. 
-examples/local_threshold -nogui -input file 'file=/home/celbrech/Desktop/Bilder/*jpg' -config ./local-threshold-params.xml -output './images/image_#####.ppm'    
+examples/local_threshold -nogui -input file 'file=/home/celbrech/Desktop/Bilder/ *jpg' -config ./local-threshold-params.xml -output './images/image_#####.ppm'    
 */
 int main (int argc, char **argv) {
   pa_explain("-input","generic-grabbers generic grabbers params");

@@ -4,4 +4,6 @@
 #include <iclQt.h>
 #include <iclQuick.h>
 #include <iclGenericGrabber.h>
-
+#include <iclProgArg.h>
+#include <iclMutex.h>
+#include <iclFileWriter.h>

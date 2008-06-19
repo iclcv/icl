@@ -99,8 +99,19 @@ namespace icl{
   
   void BorderedObject::calculateConvexHull(BorderedObject::LineStrip &dst){
     // {{{ open
-    
+    /* new:::
     dst.clear();
+    VecArray &p = Object::getPointsProj();
+    vector<Point> input(p.size());
+    for(unsigned int i=0;i<p.size();++i){
+      input[i] = Point(p[i].x(),p[i].y(),&p[i]);
+    } 
+    vector<Point> output == convexHull(input);
+
+    for(int i=0;i<nHullPts;i++){
+      dst.push_back(Vec(output[i].x,output[i].y));
+    }
+    */
     VecArray &p = Object::getPointsProj();
     vector<CHPoint> input(p.size());
     for(unsigned int i=0;i<p.size();++i){
@@ -112,6 +123,7 @@ namespace icl{
     for(int i=0;i<nHullPts;i++){
       dst.push_back(output[i].v);
     }
+    
   }
 
   // }}}

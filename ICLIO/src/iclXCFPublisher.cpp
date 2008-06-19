@@ -5,7 +5,7 @@
 
 namespace icl{
   
-  XCFPublisher::XCFPublisher(const std::string &streamName, const std::string &imageURI):m_uri(imageURI){
+  XCFPublisher::XCFPublisher(const std::string &streamName, const std::string &imageURI):m_uri(imageURI),m_streamName(streamName){
     m_publisher= XCF::Publisher::create(streamName);
     m_ctu = new XCF::CTU();
     m_btu = new XCF::Binary::TransportUnit();

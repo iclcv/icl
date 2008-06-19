@@ -16,12 +16,16 @@ namespace icl{
     ~XCFPublisher();
 
     void publish(const ImgBase *image);
+
+    const std::string &getImageURI() const { return m_uri; }
+    const std::string &getStreamName() const { return m_streamName; }
     
     private:
     XCF::PublisherPtr m_publisher;
     XCF::Binary::TransportUnitPtr m_btu;
     XCF::CTUPtr m_ctu;
     std::string m_uri;
+    std::string m_streamName;
   };
 }
 

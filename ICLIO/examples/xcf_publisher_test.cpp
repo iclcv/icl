@@ -40,7 +40,20 @@ void send_app(){
       image = const_cast<Img8u&>(*g.grab()->asImg<icl8u>());
     }
     if(pa_defined("-emulate-mask")){
-      static Img8u mask = cvt8u(thresh(scale(gray(create("parrot")),image.getWidth(),image.getHeight()),128));
+
+      static Img8u mask;
+      static bool first = true;
+      if(first){
+        first = false;
+        static ImgQ q = zeros(image.getWidth(),image.getHeight(),1);
+        color(255,255,255,255);
+        fill(255,255,255,255);
+        Rect r = q.getImageRect();
+        circle(q,r.center().x,r.center().y,r.height/2-5);
+        mask = cvt8u(q);
+        show(q);
+      }
+
       image.append(&mask,0);
     }
     p.publish(&image);
