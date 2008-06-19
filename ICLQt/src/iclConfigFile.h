@@ -230,7 +230,18 @@ namespace icl{
     
     /// returns the global ConfigFile
     static const ConfigFile &getConfig(){ return s_oConfig; }
-    
+
+    /// equivalent to ConfigFile::getConfig().get...
+    template<class T>
+    static const T sget(const std::string &id, const T &def=T()){
+      return getConfig().get<T>(id,def);
+    }
+    /// equivalent to ConfigFile::getConfig().try_get...
+    template<class T>
+    static const T stry_get(const std::string &id) throw (EntryNotFoundException){
+      return getConfig().try_get<T>(id);
+    }
+      
     private:
     /// filename
     std::string m_sFileName;
@@ -260,7 +271,10 @@ namespace icl{
   
   /// Default ostream operator to put a ConfigFile into a stream
   std::ostream &operator<<(std::ostream &s, const ConfigFile &cf);
+  
 
 }
+
+
 
 #endif
