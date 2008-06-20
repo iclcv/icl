@@ -171,9 +171,8 @@ namespace icl{
       return *this;
     }
 
-    template<class otherT, int otherN>
     GeneralColor<T,N> &operator*=(double d){
-      std::transform(c,c+iclMin(otherN,N),c,std::bind2nd(std::multiplies<T>(),d));
+      std::transform(c,c+N,c,std::bind2nd(std::multiplies<T>(),d));
       return *this;
     }
 
