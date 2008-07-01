@@ -1014,9 +1014,9 @@ namespace icl {
       for(int i=dim-1;i>=0;--i){
         Tsrc tsrc[Nsrc];      
         Tdst tdst[Ndst];
-        for(int j=0;j<Nsrc;tsrc[j]=src[j][i],++j);
+        for(int j=0;j<Nsrc;tsrc[j]=src[j][i],++j) {}
         reduce(tsrc,tdst);
-        for(int j=0;j<Ndst;dst[j][i]=tdst[j],++j);
+        for(int j=0;j<Ndst;dst[j][i]=tdst[j],++j) {}
         
       }
     }
@@ -1068,14 +1068,14 @@ namespace icl {
       const Type *psrc[Nthis];
       Tdst *pdst[Ndst];  
       if(this->hasFullROI() && dst.hasFullROI()){
-        for(int i=0;i<Nthis;psrc[i]=this->getData(i),++i);
-        for(int i=0;i<Ndst;pdst[i]=dst.getData(i),++i);
+        for(int i=0;i<Nthis;psrc[i]=this->getData(i),++i) {}
+        for(int i=0;i<Ndst;pdst[i]=dst.getData(i),++i) {}
         reduce_arrays<Type,Tdst,Nthis,Ndst,ReduceFunc>(psrc,pdst,this->getDim(),reduce);
       }else{
         ConstImgIterator<Type> itSrc[Nthis];
         ImgIterator<Tdst> itDst[Ndst];
-        for(int i=0;i<Nthis;itSrc[i]=this->getROIIterator(i),++i);
-        for(int i=0;i<Ndst;itDst[i]=dst.getROIIterator(i),++i);
+        for(int i=0;i<Nthis;itSrc[i]=this->getROIIterator(i),++i) {}
+        for(int i=0;i<Ndst;itDst[i]=dst.getROIIterator(i),++i) {}
         
         for(int l=this->getROI().height-1, w=this->getROI().width ;l>=0;--l){
           for(int i=0;i<Nthis;itSrc[i].incRow(),++i){
