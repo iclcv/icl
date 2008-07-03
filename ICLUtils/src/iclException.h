@@ -4,6 +4,7 @@
 #include <iostream>
 #include <exception>
 #include <string>
+#include <stdexcept>
 /*
   ICLException.h
 
@@ -16,15 +17,10 @@
 
 namespace icl {
   /// Base class for Exception handling in the ICL \ingroup EX
-  class ICLException : public std::exception
+  class ICLException : public std::runtime_error
   {
-  private:
-    std::string m_sMessage;
-    
   public:
-    ICLException (const std::string &msg) throw() : m_sMessage(msg) {}
-    virtual ~ICLException() throw() {};
-    virtual const char* what() const throw() {return m_sMessage.c_str();}
+    ICLException (const std::string &msg) throw() : runtime_error(msg){}
     void report();
   };
 
