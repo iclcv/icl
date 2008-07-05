@@ -11,6 +11,13 @@
 #include <iclDynMatrix.h>
 #include <iclCore.h>
 
+/**
+    TODO:
+    Matrix: operatoren [int] und (int) entfernen -> unintuitiv und kollidiert mit RowVector und so
+            const_iterator ermöglichen -> volatile variablen und ++, -- -= und so const machen ...
+
+*/
+
 namespace icl{
   
   /// Powerful and highly flexible Matrix class implementation
@@ -240,6 +247,20 @@ namespace icl{
     const T &at(unsigned int col,unsigned int row) const throw (InvalidIndexException){
       return const_cast<FixedMatrix*>(this)->at(col,row);
     }
+    
+    /// linear data view element access
+    /** This function is very useful e.g. for derived classes
+        FixedRowVector and FixedColVector */
+    T &operator[](unsigned int idx){
+      return m_data[idx];
+    }
+    /// linear data view element access (const)
+    /** This function is very useful e.g. for derived classes
+        FixedRowVector and FixedColVector */
+    const T &operator[](unsigned int idx) const{
+      return m_data[idx];
+    }
+    
 
     /// iterator type
     typedef T* iterator;
@@ -275,7 +296,7 @@ namespace icl{
       typedef unsigned int difference_type;
       
       /// wrapped data pointer (held shallowly)
-      T *p;
+      mutable T *p;
       
       /// the stride is equal to parent Matrix' classes COLS template parameter
       static const unsigned int STRIDE = COLS;
@@ -290,28 +311,62 @@ namespace icl{
         p+=STRIDE;
         return *this;
       }
+      /// prefix increment operator (const)
+      const col_iterator &operator++() const{
+        p+=STRIDE;
+        return *this;
+      }
       /// postfix increment operator
       col_iterator operator++(int){
         col_iterator tmp = *this;
         ++(*this);
         return tmp;
       }
+      /// postfix increment operator (const)
+      const col_iterator operator++(int) const{
+        col_iterator tmp = *this;
+        ++(*this);
+        return tmp;
+      }
+
       /// prefix decrement operator
       col_iterator &operator--(){
         p-=STRIDE;
         return *this;
       }
+
+      /// prefix decrement operator (const)
+      const col_iterator &operator--() const{
+        p-=STRIDE;
+        return *this;
+      }
+
       /// postfix decrement operator
       col_iterator operator--(int){
         col_iterator tmp = *this;
         --(*this);
         return tmp;
       }
+
+      /// postfix decrement operator (const)
+      const col_iterator operator--(int) const{
+        col_iterator tmp = *this;
+        --(*this);
+        return tmp;
+      }
+
       /// jump next n elements (inplace)
       col_iterator &operator+=(difference_type n){
         p += n * STRIDE;
         return *this;
       }
+
+      /// jump next n elements (inplace) (const)
+      const col_iterator &operator+=(difference_type n) const{
+        p += n * STRIDE;
+        return *this;
+      }
+
 
       /// jump backward next n elements (inplace)
       col_iterator &operator-=(difference_type n){
@@ -319,18 +374,41 @@ namespace icl{
         return *this;
       }
 
+      /// jump backward next n elements (inplace) (const)
+      const col_iterator &operator-=(difference_type n) const{
+        p -= n * STRIDE;
+        return *this;
+      }
+
+
       /// jump next n elements
       col_iterator operator+(difference_type n) {
         col_iterator tmp = *this;
         tmp+=n;
         return tmp;
       }
+
+      /// jump next n elements (const)
+      const col_iterator operator+(difference_type n) const{
+        col_iterator tmp = *this;
+        tmp+=n;
+        return tmp;
+      }
+
       /// jump backward next n elements
       col_iterator operator-(difference_type n) {
         col_iterator tmp = *this;
         tmp-=n;
         return tmp;
       }
+
+      /// jump backward next n elements (const)
+      const col_iterator operator-(difference_type n) const {
+        col_iterator tmp = *this;
+        tmp-=n;
+        return tmp;
+      }
+
       
       /// Dereference operator
       T &operator*(){
@@ -343,22 +421,22 @@ namespace icl{
       }
 
       /// comparison operator ==
-      bool operator==(const col_iterator &i){ return p == i.p; }
+      bool operator==(const col_iterator &i) const{ return p == i.p; }
 
       /// comparison operator !=
-      bool operator!=(const col_iterator &i){ return p != i.p; }
+      bool operator!=(const col_iterator &i) const{ return p != i.p; }
 
       /// comparison operator <
-      bool operator<(const col_iterator &i){ return p < i.p; }
+      bool operator<(const col_iterator &i) const{ return p < i.p; }
 
       /// comparison operator <=
-      bool operator<=(const col_iterator &i){ return p <= i.p; }
+      bool operator<=(const col_iterator &i) const{ return p <= i.p; }
 
       /// comparison operator >=
-      bool operator>=(const col_iterator &i){ return p >= i.p; }
+      bool operator>=(const col_iterator &i) const{ return p >= i.p; }
 
       /// comparison operator >
-      bool operator>(const col_iterator &i){ return p > i.p; }
+      bool operator>(const col_iterator &i) const{ return p > i.p; }
 
     };
   
@@ -439,23 +517,8 @@ namespace icl{
       return FixedMatrix<T,1,ROWS>(&*col_begin(idx),shallowcopy);
     }
 
-    /// returns a matrix row-reference (data is copied shallowly)
-    FixedMatrix<T,COLS,1> operator[](unsigned int idx){
-      return FixedMatrix<T,COLS,1>(&*row_begin(idx),shallowcopy);
-    }
-    /// returns a matrix column-reference (data is copied shallowly)
-    FixedMatrix<T,1,ROWS> operator()(unsigned int idx){
-      return FixedMatrix<T,1,ROWS>(&*col_begin(idx),shallowcopy);
-    }
-    /// returns a matrix row-reference (data is copied shallowly) (const)
-    const FixedMatrix<T,COLS,1> operator[](unsigned int idx) const{
-      return FixedMatrix<T,COLS,1>(&*row_begin(idx),shallowcopy);
-    }
-    /// returns a matrix column-reference (data is copied shallowly) (const)
-    const FixedMatrix<T,1,ROWS> operator()(unsigned int idx) const{
-      return FixedMatrix<T,1,ROWS>(&*col_begin(idx),shallowcopy);
-    }
 
+    
     /// create identity matrix 
     /** if matrix is not a spare one, upper left square matrix
         is initialized with the fitting identity matrix and other
