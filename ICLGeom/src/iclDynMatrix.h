@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <iclException.h>
+#include <iclMacros.h>
 
 namespace icl{
   struct InvalidMatrixDimensionException :public ICLException{
@@ -45,6 +46,10 @@ namespace icl{
 
     DynMatrix(const DynMatrix &other):m_rows(other.m_rows),m_cols(other.m_cols),m_data(new T[dim()]){
       std::copy(other.begin(),other.end(),begin());
+    }
+
+    ~DynMatrix(){
+      ICL_DELETE(m_data);
     }
     DynMatrix &operator=(const DynMatrix &other){
       if(dim() != other.dim()){
@@ -137,22 +142,22 @@ namespace icl{
       std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
       return d;
     }
-    DynMatrix operator-(const DynMatrix &m){
+    DynMatrix operator-(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
       if(cols() != m.cols() || rows() != m.row()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
       return d;
     }
-    DynMatrix &operator+=(const DynMatrix &m){
+    DynMatrix &operator+=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+      if(cols() != m.cols() || rows() != m.row()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       std::transform(begin(),end(),m.begin(),begin(),std::plus<T>());
       return *this;
     }
-    DynMatrix &operator-=(const DynMatrix &m){
+    DynMatrix &operator-=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+      if(cols() != m.cols() || rows() != m.row()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       std::transform(begin(),end(),m.begin(),begin(),std::minus<T>());
       return *this;
     }
-
-
   
     T &operator()(unsigned int col,unsigned int row){
       return m_data[col+cols()*row];
@@ -262,7 +267,7 @@ namespace icl{
 
 
 
-    friend std::ostream &operator<<(std::ostream &s,const DynMatrix &m){
+    friend inline std::ostream &operator<<(std::ostream &s,const DynMatrix &m){
       for(unsigned int i=0;i<m.rows();++i){
         s << "| ";
         std::copy(m.row_begin(i),m.row_end(i),std::ostream_iterator<T>(s," "));
@@ -281,6 +286,14 @@ namespace icl{
       }
       return d;
     }
+    
+    /// sets new data internally and returns old data pointer (for experts only!)
+    T *set_data(T *newData){
+      T *old_data = m_data;
+      m_data = newData;
+      return old_data;
+    }
+    
   private:
     int m_rows;
     int m_cols;
