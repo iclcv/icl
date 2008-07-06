@@ -19,13 +19,13 @@ namespace icl {
       static inline T apply(const T t){ return t*t; }
     };
     template<class T> struct PixelFuncNoVal<T,UnaryArithmeticalOp::sqrtOp>{
-      static inline T apply(const T t){ return Cast<double,T>::cast(sqrt((double)t)); } 
+      static inline T apply(const T t){ return clipped_cast<double,T>(sqrt((double)t)); } 
     };
     template<class T> struct PixelFuncNoVal<T,UnaryArithmeticalOp::lnOp>{
-      static inline T apply(const T t){ return Cast<double,T>::cast(log((double)t)); } 
+      static inline T apply(const T t){ return clipped_cast<double,T>(log((double)t)); } 
     };
     template<class T> struct PixelFuncNoVal<T,UnaryArithmeticalOp::expOp>{
-      static inline T apply(const T t){ return Cast<double,T>::cast(exp((double)t)); } 
+      static inline T apply(const T t){ return clipped_cast<double,T>(exp((double)t)); } 
     };
     template<class T> struct PixelFuncNoVal<T,UnaryArithmeticalOp::absOp>{
       static inline T apply(const T t){ return AbsFunc<T>::f(t); }
@@ -199,7 +199,7 @@ namespace icl {
       switch(src->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                                 \
         case depth##D: LoopFuncWithVal<icl##D, OT>::apply(src->asImg<icl##D >(), \
-        dst->asImg<icl##D >(), Cast<icl64f,icl##D>::cast(val)); break;
+        dst->asImg<icl##D >(), clipped_cast<icl64f,icl##D>(val)); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH  
         default: ICL_INVALID_DEPTH;

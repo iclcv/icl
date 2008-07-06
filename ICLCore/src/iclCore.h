@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include <iclPoint32f.h>
+#include <iclClippedCast.h>
 
 /** 
     \defgroup TYPES Common Data Type Definitions
@@ -308,82 +309,6 @@ This namespace is dedicated for ICLCore- and all additional Computer-Vision
 packages, that are based on the ICLCore classes.
 **/
 namespace icl {
-
-/* {{{ clip function*/
-
-  /// clips a value into the range [tMin,tMax] \ingroup GENERAL
-  template <class T>
-  inline T clip(T tX, T tMin, T tMax){ return tX < tMin ? tMin : tX > tMax ? tMax : tX; }
- 
-  /* }}} */
-
-/* {{{ Cast class */
-  
-  /// Generic Casting operator \ingroup GENERAL
-  /** Use Cast<srcT, dstT>::cast (value) to cast values safely from
-      one srcT type to dstT. If destination type is e.g. icl8u, the source
-      value is clipped to the range [0..255].
-  */
-  template<typename srcT, typename dstT> struct Cast {
-     static dstT cast (srcT v) {return static_cast<dstT>(v);}
-  };
-
-  /** \cond */
-  /// casting class from any to icl8u type
-  template<class srcT> struct Cast<srcT,icl8u>{
-    static icl8u cast (srcT v) { return static_cast<icl8u>(clip<srcT>(v,0,255)); }
-  };
-  
-  /// casting class form any to icl16s type
-  template<class srcT> struct Cast<srcT,icl16s>{
-    static icl16s cast (srcT v) { return static_cast<icl16s>(clip<srcT>(v,-32767,32768)); }
-  };
-  /// casting class specialized form icl8u to icl16s type
-  template<> struct Cast<icl8u,icl16s>{
-    static icl16s cast (icl8u v) { return static_cast<icl16s>(v); }
-  };
-   
-  /// casting class form any to icl32s type
-  template<class srcT> struct Cast<srcT,icl32s>{
-    static icl32s cast (srcT v) { return static_cast<icl32s>(clip<srcT>(v,-2147483647,2147483647)); }
-  };
-  /// casting class specialized form icl8u to icl32s type
-  template<> struct Cast<icl8u,icl32s>{
-    static icl32s cast (icl8u v) { return static_cast<icl32s>(v); }
-  };
-  /// casting class specialized form icl16s to icl32s type
-  template<> struct Cast<icl16s,icl32s>{
-    static icl32s cast (icl16s v) { return static_cast<icl32s>(v); }
-  };
-
-  /// casting class form T to T type (just returning the param itself)
-  template<typename T> struct Cast<T, T> {
-    static T cast (T v) {return v;}
-  };
-
-  /// casing class form icl8u to icl8u type
-  template<> struct Cast<icl8u, icl8u> {
-     static icl8u cast (icl8u v) {return v;}
-  };
-  /// casing class form icl16s to icl16s type
-  template<> struct Cast<icl16s, icl16s> {
-     static icl16s cast (icl16s v) {return v;}
-  };
-  /// casing class form icl32s to icl32s type
-  template<> struct Cast<icl32s, icl32s> {
-     static icl32s cast (icl32s v) {return v;}
-  };
-  /// casing class form icl32f to icl32f type
-  template<> struct Cast<icl32f, icl32f> {
-     static icl32f cast (icl32f v) {return v;}
-  };
-  /// casing class form icl64f to icl64f type
-  template<> struct Cast<icl64f, icl64f> {
-     static icl64f cast (icl64f v) {return v;}
-  };
-  /** \endcond */
-
-/* }}} */
  
 /* {{{ Global functions */
 
@@ -637,7 +562,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
   /// moves value from source to destination array (with casting on demand) \ingroup GENERAL
   template <class srcT,class dstT>
   inline void convert(const srcT *poSrcStart,const srcT *poSrcEnd, dstT *poDst){
-    std::transform(poSrcStart,poSrcEnd,poDst,Cast<srcT,dstT>::cast);
+    std::transform(poSrcStart,poSrcEnd,poDst,clipped_cast<srcT,dstT>);
     //    while(poSrcStart != poSrcEnd) *poDst++ = Cast<srcT,dstT>::cast(*poSrcStart++);
   }
   

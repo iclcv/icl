@@ -21,7 +21,7 @@ namespace icl{
     
   
     
-#define CAST(x) Cast<srcT,icl8u>::cast(x)
+#define CAST(x) clipped_cast<srcT,icl8u>(x)
     template<class dstT, class srcT>
     void apply_lut_op_3(const Img<srcT> &src, Img<dstT> &dst, dstT *lut, icl8u shift){
       const unsigned int fac1 = 256>>shift;

@@ -17,13 +17,13 @@ namespace icl{
       int dim = poSrc->getDim();
       buffer.resize(3*dim);
       switch(poSrc->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D)                                             \
-        case depth##D:{                                                      \
-          const icl##D *src = poSrc->asImg<icl##D>()->getData(0);            \
-          icl8u *dst = &buffer[0];                                           \
-          for(int i=0;i<dim;i++){                                            \
-            dst[3*i]=dst[3*i+1]=dst[3*i+2]=Cast<icl##D,icl8u>::cast(src[i]); \
-          }                                                                  \
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+        case depth##D:{                                                 \
+          const icl##D *src = poSrc->asImg<icl##D>()->getData(0);       \
+          icl8u *dst = &buffer[0];                                      \
+          for(int i=0;i<dim;i++){                                       \
+            dst[3*i]=dst[3*i+1]=dst[3*i+2]=clipped_cast<icl##D,icl8u>(src[i]); \
+          }                                                             \
           break;}                                         
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
@@ -40,8 +40,8 @@ namespace icl{
           const icl##D *src2 = poSrc->asImg<icl##D>()->getData(1);           \
           icl8u *dst = &buffer[0];                                           \
           for(int i=0;i<dim;i++){                                            \
-            dst[3*i]=Cast<icl##D,icl8u>::cast(src1[i]);                      \
-            dst[3*i+1]=Cast<icl##D,icl8u>::cast(src2[i]);                    \
+            dst[3*i]=clipped_cast<icl##D,icl8u>(src1[i]);                      \
+            dst[3*i+1]=clipped_cast<icl##D,icl8u>(src2[i]);                    \
             dst[3*i+2]=0;                                                    \
           }                                                                  \
           break;}                                         

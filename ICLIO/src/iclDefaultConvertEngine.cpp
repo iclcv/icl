@@ -15,9 +15,9 @@ namespace icl{
       icl32s u2 = 14343*u - 1828717; 
       icl32s v2 = 20231*v - 2579497; 
       
-      r = Cast<icl32s,icl8u>::cast(y +  ( ( 290 * v2 ) >> 22 ));
-      g = Cast<icl32s,icl8u>::cast(y -  ( ( 100  * u2 + 148 * v2) >> 22 ));
-      b = Cast<icl32s,icl8u>::cast(y +  ( ( 518 * u2 ) >> 22 ));
+      r = clipped_cast<icl32s,icl8u>(y +  ( ( 290 * v2 ) >> 22 ));
+      g = clipped_cast<icl32s,icl8u>(y -  ( ( 100  * u2 + 148 * v2) >> 22 ));
+      b = clipped_cast<icl32s,icl8u>(y +  ( ( 518 * u2 ) >> 22 ));
     } 
   }
   

@@ -141,7 +141,7 @@ namespace icl {
       switch(src->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                                 \
         case depth##D: LoopFuncWithVal<icl##D, OT>::apply(src->asImg<icl##D >(), \
-        dst->asImg<icl##D >(), Cast<icl32s,icl##D>::cast(val)); break;
+        dst->asImg<icl##D >(), clipped_cast<icl32s,icl##D>(val)); break;
         ICL_INSTANTIATE_ALL_INT_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH  
         default: ICL_INVALID_DEPTH;

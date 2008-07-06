@@ -291,7 +291,7 @@ namespace icl {
    // {{{ ImgBase* versions
 
 #define ICL_INSTANTIATE_DEPTH(T) \
-    case depth ## T: tlt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(t)); break;
+    case depth ## T: tlt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(t)); break;
   void ThresholdOp::tlt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
     // {{{ open
   {
@@ -305,7 +305,7 @@ namespace icl {
   // }}}
   
 #define ICL_INSTANTIATE_DEPTH(T) \
-    case depth ## T: tgt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(t)); break;
+    case depth ## T: tgt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(t)); break;
   void ThresholdOp::tgt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
     // {{{ open
   {
@@ -319,7 +319,7 @@ namespace icl {
   // }}}
   
 #define ICL_INSTANTIATE_DEPTH(T) \
-    case depth ## T: tltgt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(tMin), Cast<icl32f,icl ## T>::cast(tMax)); break;
+    case depth ## T: tltgt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(tMin), clipped_cast<icl32f,icl ## T>(tMax)); break;
   void ThresholdOp::tltgt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f tMin, icl32f tMax)
     // {{{ open
   {
@@ -333,7 +333,7 @@ namespace icl {
   // }}}
   
 #define ICL_INSTANTIATE_DEPTH(T) \
-    case depth ## T: tltVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(t), Cast<icl32f,icl ## T>::cast(val)); break;
+    case depth ## T: tltVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(t), clipped_cast<icl32f,icl ## T>(val)); break;
   void ThresholdOp::tltVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
     // {{{ open
   {
@@ -347,7 +347,7 @@ namespace icl {
   // }}}
   
 #define ICL_INSTANTIATE_DEPTH(T) \
-    case depth ## T: tgtVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(t), Cast<icl32f,icl ## T>::cast(val)); break;
+    case depth ## T: tgtVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(t), clipped_cast<icl32f,icl ## T>(val)); break;
   void ThresholdOp::tgtVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
     // {{{ open
   {
@@ -361,8 +361,8 @@ namespace icl {
   // }}}
   
 #define ICL_INSTANTIATE_DEPTH(T) \
-    case depth ## T: tltgtVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), Cast<icl32f,icl ## T>::cast(tMin),\
-                Cast<icl32f,icl ##T>::cast(minVal), Cast<icl32f,icl ## T>::cast(tMax), Cast<icl32f,icl ## T>::cast(maxVal));break;
+    case depth ## T: tltgtVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(tMin),\
+                clipped_cast<icl32f,icl ##T>(minVal), clipped_cast<icl32f,icl ## T>(tMax), clipped_cast<icl32f,icl ## T>(maxVal));break;
   void ThresholdOp::tltgtVal(const ImgBase *poSrc, ImgBase **ppoDst, 
                            icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal)
     // {{{ open

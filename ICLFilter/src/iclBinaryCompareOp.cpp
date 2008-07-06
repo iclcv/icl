@@ -136,11 +136,11 @@ namespace icl {
 
     if(!BinaryOp::check(poSrc1,poSrc2) || !BinaryOp::prepare(ppoDst,poSrc1)) return;
     switch (poSrc1->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(T) case depth##T:                            \
-                                 cmp(poSrc1->asImg<icl##T>(),              \
-                                 poSrc2->asImg<icl##T>(),                  \
-                                  (*ppoDst)->asImg<icl8u>(),               \
-                                 Cast<icl64f,icl##T>::cast(m_dTolerance), \
+#define ICL_INSTANTIATE_DEPTH(T) case depth##T:                             \
+                                 cmp(poSrc1->asImg<icl##T>(),               \
+                                 poSrc2->asImg<icl##T>(),                   \
+                                  (*ppoDst)->asImg<icl8u>(),                \
+                                 clipped_cast<icl64f,icl##T>(m_dTolerance), \
                                  m_eOpType); break;
        ICL_INSTANTIATE_ALL_DEPTHS;
        default: ICL_INVALID_FORMAT; break;

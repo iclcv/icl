@@ -144,10 +144,10 @@ namespace {
       const int DIM = src.getDim();
       register int idx(0);
       for(int i=0;i<DIM;i++){
-        idx = C2*Cast<S,icl8u>::cast(s1[i]) + C1*Cast<S,icl8u>::cast(s2[i]) + Cast<S,icl8u>::cast(s3[i]);
-        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
-        d3[i] = Cast<icl8u,D>::cast(l3[idx]);
+        idx = C2*clipped_cast<S,icl8u>(s1[i]) + C1*clipped_cast<S,icl8u>(s2[i]) + clipped_cast<S,icl8u>(s3[i]);
+        d1[i] = clipped_cast<icl8u,D>(l1[idx]);
+        d2[i] = clipped_cast<icl8u,D>(l2[idx]);
+        d3[i] = clipped_cast<icl8u,D>(l3[idx]);
       }
     }
   }
@@ -171,9 +171,9 @@ namespace {
       const int DIM = src.getDim();
       register int idx(0);
       for(int i=0;i<DIM;i++){
-        idx = C2*Cast<S,icl8u>::cast(s1[i]) + C1*Cast<S,icl8u>::cast(s2[i]) + Cast<S,icl8u>::cast(s3[i]);
-        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+        idx = C2*clipped_cast<S,icl8u>(s1[i]) + C1*clipped_cast<S,icl8u>(s2[i]) + clipped_cast<S,icl8u>(s3[i]);
+        d1[i] = clipped_cast<icl8u,D>(l1[idx]);
+        d2[i] = clipped_cast<icl8u,D>(l2[idx]);
       }
     }
   }
@@ -195,8 +195,8 @@ namespace {
       const int DIM = src.getDim();
       register int idx(0);
       for(int i=0;i<DIM;i++){
-        idx = C2*Cast<S,icl8u>::cast(s1[i]) + C1*Cast<S,icl8u>::cast(s2[i]) + Cast<S,icl8u>::cast(s3[i]);
-        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+        idx = C2*clipped_cast<S,icl8u>(s1[i]) + C1*clipped_cast<S,icl8u>(s2[i]) + clipped_cast<S,icl8u>(s3[i]);
+        d1[i] = clipped_cast<icl8u,D>(l1[idx]);
       }
     }
   }
@@ -220,10 +220,10 @@ namespace {
       const int DIM = src.getDim();
       register int idx(0);
       for(int i=0;i<DIM;i++){
-        idx = C1*Cast<S,icl8u>::cast(s1[i]) + Cast<S,icl8u>::cast(s2[i]);
-        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
-        d3[i] = Cast<icl8u,D>::cast(l3[idx]);
+        idx = C1*clipped_cast<S,icl8u>(s1[i]) + clipped_cast<S,icl8u>(s2[i]);
+        d1[i] = clipped_cast<icl8u,D>(l1[idx]);
+        d2[i] = clipped_cast<icl8u,D>(l2[idx]);
+        d3[i] = clipped_cast<icl8u,D>(l3[idx]);
       }
     }
   }
@@ -247,9 +247,9 @@ namespace {
       const int DIM = src.getDim();
       register int idx(0);
       for(int i=0;i<DIM;i++){
-        idx = C1*Cast<S,icl8u>::cast(s1[i]) + Cast<S,icl8u>::cast(s2[i]);
-        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+        idx = C1*clipped_cast<S,icl8u>(s1[i]) + clipped_cast<S,icl8u>(s2[i]);
+        d1[i] = clipped_cast<icl8u,D>(l1[idx]);
+        d2[i] = clipped_cast<icl8u,D>(l2[idx]);
       }
     }
   }
@@ -271,8 +271,8 @@ namespace {
       const int DIM = src.getDim();
       register int idx(0);
       for(int i=0;i<DIM;i++){
-        idx = C1*Cast<S,icl8u>::cast(s1[i]) + Cast<S,icl8u>::cast(s2[i]);
-        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
+        idx = C1*clipped_cast<S,icl8u>(s1[i]) + clipped_cast<S,icl8u>(s2[i]);
+        d1[i] = clipped_cast<icl8u,D>(l1[idx]);
       }
     }
   }
@@ -295,10 +295,10 @@ namespace {
       const int DIM = src.getDim();
       register int idx(0);
       for(int i=0;i<DIM;i++){
-        idx = Cast<S,icl8u>::cast(s1[i]);
-        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
-        d3[i] = Cast<icl8u,D>::cast(l3[idx]);
+        idx = clipped_cast<S,icl8u>(s1[i]);
+        d1[i] = clipped_cast<icl8u,D>(l1[idx]);
+        d2[i] = clipped_cast<icl8u,D>(l2[idx]);
+        d3[i] = clipped_cast<icl8u,D>(l3[idx]);
       }
     }
   }
@@ -321,9 +321,9 @@ namespace {
       const int DIM = src.getDim();
       register int idx(0);
       for(int i=0;i<DIM;i++){
-        idx = Cast<S,icl8u>::cast(s1[i]);
-        d1[i] = Cast<icl8u,D>::cast(l1[idx]);
-        d2[i] = Cast<icl8u,D>::cast(l2[idx]);
+        idx = clipped_cast<S,icl8u>(s1[i]);
+        d1[i] = clipped_cast<icl8u,D>(l1[idx]);
+        d2[i] = clipped_cast<icl8u,D>(l2[idx]);
       }
     }
   }
@@ -343,7 +343,7 @@ namespace {
       
       const int DIM = src.getDim();
       for(int i=0;i<DIM;i++){
-        d1[i] = Cast<icl8u,D>::cast(l1[Cast<S,icl8u>::cast(s1[i])]);
+        d1[i] = clipped_cast<icl8u,D>(l1[clipped_cast<S,icl8u>(s1[i])]);
       }
     }
   }

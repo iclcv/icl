@@ -189,7 +189,7 @@ namespace icl {
 #define ICL_INSTANTIATE_DEPTH(D)       \
       case depth##D:                   \
       asImg<icl##D>()->clear(iChannel, \
-      Cast<icl64f,icl##D>::cast(val),  \
+      clipped_cast<icl64f,icl##D>(val),  \
       bROIOnly); break;
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH   

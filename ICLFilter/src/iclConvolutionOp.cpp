@@ -448,7 +448,7 @@ namespace icl {
           {
              buffer += (*m) * (*sR);
           }
-          *d = Cast<KernelT, ImageT>::cast(buffer / factor);
+          *d = clipped_cast<KernelT, ImageT>(buffer / factor);
        }
     }
   }

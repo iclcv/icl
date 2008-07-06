@@ -132,7 +132,7 @@ namespace icl{
     template<class otherT,int otherN>
     GeneralColor<T,N> &operator=(const GeneralColor<otherT,otherN> &other){
       for(int i=0;(i<N)&&(i<otherN);++i){
-        c[i]=Cast<otherT,T>::cast(other[i]);
+        c[i]=clipped_cast(other[i]);
       }
       for(int i=otherN;i<N;++i){
         c[i] = 0;

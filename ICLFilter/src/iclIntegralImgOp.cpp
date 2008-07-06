@@ -104,18 +104,18 @@ namespace icl{
     I *dst = intImage;
   
     // fist pixel
-    *dst++ = Cast<T,I>::cast(*src++);
+    *dst++ = clipped_cast<T,I>(*src++);
     
     // fist row
     for(const T *srcEnd=src+w-1;src<srcEnd;++src,++dst){
-      *dst = Cast<T,I>::cast(*src) + *(dst-1);
+      *dst = clipped_cast<T,I>(*src) + *(dst-1);
     }
     
     // first column
     src = image+w;
     dst = intImage+w;
     for(const T *srcEnd=src+w*(h-1);src<srcEnd;src+=w,dst+=w){
-      *dst =  Cast<T,I>::cast(*src) + *(dst-w);
+      *dst =  clipped_cast<T,I>(*src) + *(dst-w);
     }
 
     // rest of the image up to last row
@@ -125,7 +125,7 @@ namespace icl{
     for(int y=1;y<h;++y){
       int idx = y*w+1;
       for(int x=1;x<w;++x,++idx){
-        dst[idx] =  Cast<T,I>::cast(src[idx]) + dst[idx-1] + dst[idx-w] - dst[idx-w-1];
+        dst[idx] =  clipped_cast<T,I>(src[idx]) + dst[idx-1] + dst[idx-w] - dst[idx-w-1];
       }
     } 
   }
@@ -205,12 +205,12 @@ namespace icl{
     I *dst = intImage;
   
     // first pixel
-    *dst++ =  Cast<T,I>::cast(*src++);
+    *dst++ =  clipped_cast<T,I>(*src++);
   
   
     // fist row
     for(const T *srcEnd=src+w-1;src<srcEnd;++src,++dst){
-      *dst =  Cast<T,I>::cast(*src) + *(dst-1);
+      *dst =  clipped_cast<T,I>(*src) + *(dst-1);
     }
   
     
@@ -218,7 +218,7 @@ namespace icl{
     src = image+w;
     dst = intImage+iw;
     for(const T *srcEnd=src+w*(h-1);src<srcEnd;src+=w,dst+=iw){
-      *dst =  Cast<T,I>::cast(*src) + *(dst-iw);
+      *dst =  clipped_cast<T,I>(*src) + *(dst-iw);
     }
 
     
@@ -231,7 +231,7 @@ namespace icl{
     for(int y=1;y<h;++y){
       idx = y*iw+1;
       for(int x=1;x<w;++x,++idx){
-        dst[idx] =  Cast<T,I>::cast(src[x+y*w]) + dst[idx-1] + dst[idx-iw] - dst[idx-iw-1];
+        dst[idx] =  clipped_cast<T,I>(src[x+y*w]) + dst[idx-1] + dst[idx-iw] - dst[idx-iw-1];
       }
     } 
     

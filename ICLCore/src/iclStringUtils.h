@@ -8,6 +8,7 @@
 #include "iclTypes.h"
 #include "iclCore.h"
 #include <ctype.h>
+#include <sstream>
 namespace icl{
   
   inline char toLower(const char &c){
@@ -100,32 +101,10 @@ namespace icl{
   /// convert an iclXXX into a string (implemented for iclXXX and std::string) \ingroup STRUTILS
   template<class T>
   inline std::string str(T t){
-    ERROR_LOG("str(..) is not implemented for non-ICL types");
-    return "";
+    std::ostringstream s;
+    s << t;
+    return s.str();
   }
-  /** \cond  specializations are not part of the documentation*/
-  template<> inline std::string str<icl8u>(icl8u t){
-    return toStr((int)t);
-  }
-  template<> inline std::string str<icl16s>(icl16s t){
-    return toStr((int)t);
-  }
-  template<> inline std::string str<icl32s>(icl32s t){
-    return toStr(t);
-  }
-  template<> inline std::string str<icl32f>(icl32f t){
-    return toStr((double)t);
-  }
-  template<> inline std::string str<icl64f>(icl64f t){
-    return toStr(t);
-  }
-  template<> inline std::string str<unsigned int>(unsigned int t){
-    return toStr((int)t);
-  }
-  template<> inline std::string str<std::string>(std::string s){
-    return s;
-  }
-  /** \endcond */
   
   /// creates a delim-separated string of str'ed values of given vector \ingroup STRUTILS
   /** e.g. if v is {1,2,3} and delim is '-' the resulting string will be
@@ -146,30 +125,11 @@ namespace icl{
   /** @see to8u to16s to32s to32f to64f */
   template<class T>
   inline T parse(const std::string &s){
-    ERROR_LOG("parse(..) is not implemented for non-ICL types");
-    return 0;
+    std::istringstream str(s);
+    T t;
+    str >> t;
+    return t;
   }
-
-  /** \cond  specializations are not part of the documentation*/
-  template<> inline icl8u parse<icl8u>(const std::string &s){
-    return Cast<icl32s,icl8u>::cast(atoi(s.c_str()));
-  }
-  template<> inline icl16s parse<icl16s>(const std::string &s){
-    return Cast<icl32s,icl16s>::cast(atoi(s.c_str()));
-  }
-  template<> inline icl32s parse<icl32s>(const std::string &s){
-    return atoi(s.c_str());
-  }
-  template<> inline unsigned int parse<unsigned int>(const std::string &s){
-    return (unsigned int)atoi(s.c_str());
-  }
-  template<> inline icl32f parse<icl32f>(const std::string &s){
-    return Cast<icl64f,icl32f>::cast(atof(s.c_str()));
-  }
-  template<> inline icl64f parse<icl64f>(const std::string &s){
-    return atof(s.c_str());
-  }
-  /** \endcond */
   
   /// cast a string to an icl8u (parse) \ingroup STRUTILS
   inline icl8u to8u(const std::string &s) { 

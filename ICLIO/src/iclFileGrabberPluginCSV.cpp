@@ -17,7 +17,7 @@ namespace icl{
       // {{{ open
 
       for(unsigned int i=0;i<v.size();i++){
-        data[i] = Cast<icl64f,T>::cast(atof(v[i].c_str()));
+        data[i] = clipped_cast<icl64f,T>(atof(v[i].c_str()));
       }
     }
 

@@ -353,13 +353,13 @@ namespace icl{
         ConstImgIterator<S> itB = src->getROIIterator(2);
         ImgIterator<D> itGray = dst->getROIIterator(0);
         for(;itGray.inRegion();++itR,++itG,++itB,++itGray){
-          *itGray = Cast<S,D>::cast((*itR + *itG + *itB)/3);
+          *itGray = clipped_cast<S,D>((*itR + *itG + *itB)/3);
         }
       }else{
         GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
         D *gr = dst->getData(0);
         for(int i=0;i<dim;++i){
-          gr[i] = Cast<S,D>::cast((r[i]+g[i]+b[i])/3);
+          gr[i] = clipped_cast<S,D>((r[i]+g[i]+b[i])/3);
         }
       }
     }
@@ -381,26 +381,26 @@ namespace icl{
         ImgIterator<D> itL = dst->getROIIterator(1);
         ImgIterator<D> itS = dst->getROIIterator(2);
         for(;itR.inRegion();++itR,++itG,++itB,++itH,++itL,++itS){
-          cc_util_rgb_to_hls(Cast<S,icl32f>::cast(*itR),
-                             Cast<S,icl32f>::cast(*itG),
-                             Cast<S,icl32f>::cast(*itB),
+          cc_util_rgb_to_hls(clipped_cast<S,icl32f>(*itR),
+                             clipped_cast<S,icl32f>(*itG),
+                             clipped_cast<S,icl32f>(*itB),
                              reg_h,reg_l,reg_s);
-          *itH = Cast<icl32f,D>::cast(reg_h);
-          *itL = Cast<icl32f,D>::cast(reg_l);
-          *itS = Cast<icl32f,D>::cast(reg_s);
+          *itH = clipped_cast<icl32f,D>(reg_h);
+          *itL = clipped_cast<icl32f,D>(reg_l);
+          *itS = clipped_cast<icl32f,D>(reg_s);
         }
       }else{
         GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
         GET_3_CHANNEL_POINTERS_NODIM(D,dst,h,l,s);
         
         for(int i=0;i<dim;++i){
-          cc_util_rgb_to_hls(Cast<S,icl32f>::cast(r[i]),
-                             Cast<S,icl32f>::cast(g[i]),
-                             Cast<S,icl32f>::cast(b[i]),
+          cc_util_rgb_to_hls(clipped_cast<S,icl32f>(r[i]),
+                             clipped_cast<S,icl32f>(g[i]),
+                             clipped_cast<S,icl32f>(b[i]),
                              reg_h,reg_l,reg_s);
-          h[i] = Cast<icl32f,D>::cast(reg_h);
-          l[i] = Cast<icl32f,D>::cast(reg_l);
-          s[i] = Cast<icl32f,D>::cast(reg_s);
+          h[i] = clipped_cast<icl32f,D>(reg_h);
+          l[i] = clipped_cast<icl32f,D>(reg_l);
+          s[i] = clipped_cast<icl32f,D>(reg_s);
         }
       }
     }
@@ -417,8 +417,8 @@ namespace icl{
       for(int i=0;i<dim;++i){
         sum = r[i]+g[i]+b[i];
         sum+=!sum; //avoid division by zero
-        cromaR[i]=Cast<S,D>::cast((r[i]*255)/sum);
-        cromaG[i]=Cast<S,D>::cast((g[i]*255)/sum);
+        cromaR[i]=clipped_cast<S,D>((r[i]*255)/sum);
+        cromaG[i]=clipped_cast<S,D>((g[i]*255)/sum);
       }
     }
     
@@ -432,13 +432,13 @@ namespace icl{
       GET_3_CHANNEL_POINTERS_NODIM(D,dst,y,u,v);
       register icl32s reg_y, reg_u, reg_v;
       for(int i=0;i<dim;++i){ 
-        cc_util_rgb_to_yuv(Cast<S,icl32s>::cast(r[i]),
-                           Cast<S,icl32s>::cast(g[i]),
-                           Cast<S,icl32s>::cast(b[i]),
+        cc_util_rgb_to_yuv(clipped_cast<S,icl32s>(r[i]),
+                           clipped_cast<S,icl32s>(g[i]),
+                           clipped_cast<S,icl32s>(b[i]),
                            reg_y, reg_u, reg_v);
-        y[i] = Cast<icl32s,D>::cast(reg_y);
-        u[i] = Cast<icl32s,D>::cast(reg_u);
-        v[i] = Cast<icl32s,D>::cast(reg_v);
+        y[i] = clipped_cast<icl32s,D>(reg_y);
+        u[i] = clipped_cast<icl32s,D>(reg_u);
+        v[i] = clipped_cast<icl32s,D>(reg_v);
       }
     }
     
@@ -453,14 +453,14 @@ namespace icl{
       
       register icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
       for(int i=0;i<dim;++i){ 
-        cc_util_rgb_to_xyz(Cast<S,icl32f>::cast(r[i]),
-                           Cast<S,icl32f>::cast(g[i]),
-                           Cast<S,icl32f>::cast(b[i]),
+        cc_util_rgb_to_xyz(clipped_cast<S,icl32f>(r[i]),
+                           clipped_cast<S,icl32f>(g[i]),
+                           clipped_cast<S,icl32f>(b[i]),
                            reg_X,reg_Y,reg_Z);
         cc_util_xyz_to_lab(reg_X,reg_Y,reg_Z,reg_L,reg_a,reg_b);
-        LL[i] = Cast<icl32f,D>::cast(reg_L);
-        aa[i] = Cast<icl32f,D>::cast(reg_a);
-        bb[i] = Cast<icl32f,D>::cast(reg_b);
+        LL[i] = clipped_cast<icl32f,D>(reg_L);
+        aa[i] = clipped_cast<icl32f,D>(reg_a);
+        bb[i] = clipped_cast<icl32f,D>(reg_b);
       }
     }
     
@@ -480,13 +480,13 @@ namespace icl{
         ImgIterator<D> itG = dst->getROIIterator(1);
         ImgIterator<D> itB = dst->getROIIterator(2);
         for(;itG.inRegion();++itG,++itR,++itGray,++itB){
-          *itR = *itG = *itB = Cast<S,D>::cast(*itGray);
+          *itR = *itG = *itB = clipped_cast<S,D>(*itGray);
         }
       }else{
         const S *gr = src->getData(0);
         GET_3_CHANNEL_POINTERS_DIM(D,dst,r,g,b,dim);
         for(int i=0;i<dim;++i){
-          r[i] = g[i] = b[i] = Cast<S,D>::cast(gr[i]);
+          r[i] = g[i] = b[i] = clipped_cast<S,D>(gr[i]);
         }
       }
     }
@@ -504,7 +504,7 @@ namespace icl{
         ImgIterator<D> itL = dst->getROIIterator(1);
         ImgIterator<D> itS = dst->getROIIterator(2);
         for(;itG.inRegion();++itG,++itH,++itL,++itS){
-          *itL = Cast<S,D>::cast(*itG);
+          *itL = clipped_cast<S,D>(*itG);
           *itH = *itS = D(0);
         }
       }else{
@@ -512,7 +512,7 @@ namespace icl{
         GET_3_CHANNEL_POINTERS_DIM(D,dst,h,l,s,dim);
         for(int i=0;i<dim;++i){
           h[i] = s[i] = D(0);
-          l[i] = Cast<S,D>::cast(gr[i]);
+          l[i] = clipped_cast<S,D>(gr[i]);
         }
       }
     }
@@ -530,14 +530,14 @@ namespace icl{
         ImgIterator<D> itU = dst->getROIIterator(1);
         ImgIterator<D> itV = dst->getROIIterator(2);
         for(;itG.inRegion();++itG,++itY,++itU,++itV){
-          *itY = Cast<S,D>::cast(*itG);
+          *itY = clipped_cast<S,D>(*itG);
           *itU = *itV = D(127);
         }
       }else{
         const S *gr = src->getData(0);
         GET_3_CHANNEL_POINTERS_DIM(D,dst,y,u,v,dim);
         for(int i=0;i<dim;++i){
-          y[i] = Cast<S,D>::cast(gr[i]);
+          y[i] = clipped_cast<S,D>(gr[i]);
           u[i] = v[i] = D(127);
         }
       }
@@ -556,14 +556,14 @@ namespace icl{
         ImgIterator<D> itA = dst->getROIIterator(1);
         ImgIterator<D> itB = dst->getROIIterator(2);
         for(;itG.inRegion();++itG,++itL,++itA,++itB){
-          *itL = Cast<S,D>::cast(*itG);
+          *itL = clipped_cast<S,D>(*itG);
           *itA = *itB = D(127);
         }
       }else{
         const S *gr = src->getData(0);
         GET_3_CHANNEL_POINTERS_DIM(D,dst,L,a,b,dim);
         for(int i=0;i<dim;++i){
-          L[i] = Cast<S,D>::cast(gr[i]);
+          L[i] = clipped_cast<S,D>(gr[i]);
           a[i] = b[i] = D(127);
         }
       }
@@ -615,26 +615,26 @@ namespace icl{
         ImgIterator<D> itG = dst->getROIIterator(1);
         ImgIterator<D> itB = dst->getROIIterator(2);
         for(;itH.inRegion();++itH,++itL,++itS,++itR,++itG,++itB){
-          cc_util_hls_to_rgb(Cast<S,icl32f>::cast(*itH),
-                             Cast<S,icl32f>::cast(*itL),
-                             Cast<S,icl32f>::cast(*itS),
+          cc_util_hls_to_rgb(clipped_cast<S,icl32f>(*itH),
+                             clipped_cast<S,icl32f>(*itL),
+                             clipped_cast<S,icl32f>(*itS),
                              reg_r,reg_g,reg_b);
-          *itR = Cast<icl32f,D>::cast(reg_r);
-          *itG = Cast<icl32f,D>::cast(reg_g);
-          *itB = Cast<icl32f,D>::cast(reg_b);
+          *itR = clipped_cast<icl32f,D>(reg_r);
+          *itG = clipped_cast<icl32f,D>(reg_g);
+          *itB = clipped_cast<icl32f,D>(reg_b);
         }
       }else{
         GET_3_CHANNEL_POINTERS_DIM(const S,src,h,l,s,dim);
         GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
         
         for(int i=0;i<dim;++i){
-          cc_util_hls_to_rgb(Cast<S,icl32f>::cast(h[i]),
-                             Cast<S,icl32f>::cast(l[i]),
-                             Cast<S,icl32f>::cast(s[i]),
+          cc_util_hls_to_rgb(clipped_cast<S,icl32f>(h[i]),
+                             clipped_cast<S,icl32f>(l[i]),
+                             clipped_cast<S,icl32f>(s[i]),
                              reg_r,reg_g,reg_b);
-          r[i] = Cast<icl32f,D>::cast(reg_r);
-          g[i] = Cast<icl32f,D>::cast(reg_g);
-          b[i] = Cast<icl32f,D>::cast(reg_b);
+          r[i] = clipped_cast<icl32f,D>(reg_r);
+          g[i] = clipped_cast<icl32f,D>(reg_g);
+          b[i] = clipped_cast<icl32f,D>(reg_b);
         }
       }
     }
@@ -672,27 +672,27 @@ namespace icl{
         ImgIterator<D> itG = dst->getROIIterator(1);
         ImgIterator<D> itBl = dst->getROIIterator(2);
         for(;itL.inRegion();++itL,++itA,++itB,++itR,++itG,++itBl){
-          cc_util_lab_to_xyz(Cast<S,icl32f>::cast(*itL),
-                             Cast<S,icl32f>::cast(*itA),
-                             Cast<S,icl32f>::cast(*itB),
+          cc_util_lab_to_xyz(clipped_cast<S,icl32f>(*itL),
+                             clipped_cast<S,icl32f>(*itA),
+                             clipped_cast<S,icl32f>(*itB),
                              reg_x,reg_y,reg_z);
           cc_util_xyz_to_rgb(reg_x,reg_y,reg_z,reg_r,reg_g,reg_b);
-          *itR  = Cast<icl32f,D>::cast(reg_r);
-          *itG  = Cast<icl32f,D>::cast(reg_g);
-          *itBl = Cast<icl32f,D>::cast(reg_b);
+          *itR  = clipped_cast<icl32f,D>(reg_r);
+          *itG  = clipped_cast<icl32f,D>(reg_g);
+          *itBl = clipped_cast<icl32f,D>(reg_b);
         }
       }else{
         GET_3_CHANNEL_POINTERS_DIM(const S,src,ll,aa,bb,dim);
         GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
         for(int i=0;i<dim;++i){
-          cc_util_lab_to_xyz(Cast<S,icl32f>::cast(ll[i]),
-                             Cast<S,icl32f>::cast(aa[i]),
-                             Cast<S,icl32f>::cast(bb[i]),
+          cc_util_lab_to_xyz(clipped_cast<S,icl32f>(ll[i]),
+                             clipped_cast<S,icl32f>(aa[i]),
+                             clipped_cast<S,icl32f>(bb[i]),
                              reg_x,reg_y,reg_z);
           cc_util_xyz_to_rgb(reg_x,reg_y,reg_z,reg_r,reg_g,reg_b);
-          r[i] = Cast<icl32f,D>::cast(reg_r);
-          g[i] = Cast<icl32f,D>::cast(reg_g);
-          b[i] = Cast<icl32f,D>::cast(reg_b);
+          r[i] = clipped_cast<icl32f,D>(reg_r);
+          g[i] = clipped_cast<icl32f,D>(reg_g);
+          b[i] = clipped_cast<icl32f,D>(reg_b);
         }
       }
     }
@@ -730,25 +730,25 @@ namespace icl{
         ImgIterator<D> itG = dst->getROIIterator(1);
         ImgIterator<D> itB = dst->getROIIterator(2);
         for(;itY.inRegion();++itY,++itU,++itV,++itR,++itG,++itB){
-          cc_util_yuv_to_rgb(Cast<S,icl32s>::cast(*itY),
-                             Cast<S,icl32s>::cast(*itU),
-                             Cast<S,icl32s>::cast(*itV),
+          cc_util_yuv_to_rgb(clipped_cast<S,icl32s>(*itY),
+                             clipped_cast<S,icl32s>(*itU),
+                             clipped_cast<S,icl32s>(*itV),
                              reg_r, reg_g, reg_b);
-          *itR = Cast<icl32s,D>::cast(reg_r);
-          *itG = Cast<icl32s,D>::cast(reg_g);
-          *itB = Cast<icl32s,D>::cast(reg_b);
+          *itR = clipped_cast<icl32s,D>(reg_r);
+          *itG = clipped_cast<icl32s,D>(reg_g);
+          *itB = clipped_cast<icl32s,D>(reg_b);
         }
       }else{
         GET_3_CHANNEL_POINTERS_DIM(const S,src,y,u,v,dim);
         GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
         for(int i=0;i<dim;++i){
-          cc_util_yuv_to_rgb(Cast<S,icl32s>::cast(y[i]),
-                             Cast<S,icl32s>::cast(u[i]),
-                             Cast<S,icl32s>::cast(v[i]),
+          cc_util_yuv_to_rgb(clipped_cast<S,icl32s>(y[i]),
+                             clipped_cast<S,icl32s>(u[i]),
+                             clipped_cast<S,icl32s>(v[i]),
                              reg_r, reg_g, reg_b);
-          r[i] = Cast<icl32s,D>::cast(reg_r);
-          g[i] = Cast<icl32s,D>::cast(reg_g);
-          b[i] = Cast<icl32s,D>::cast(reg_b);
+          r[i] = clipped_cast<icl32s,D>(reg_r);
+          g[i] = clipped_cast<icl32s,D>(reg_g);
+          b[i] = clipped_cast<icl32s,D>(reg_b);
         }
       }
     }
@@ -949,8 +949,8 @@ namespace icl{
         const S* s0 = src[0];
         const S* s1 = src[1];
         while (dst<dstEnd){
-          *dst++ = Cast<S,D>::cast(*s0++);
-          *dst++ = Cast<S,D>::cast(*s1++);
+          *dst++ = clipped_cast<S,D>(*s0++);
+          *dst++ = clipped_cast<S,D>(*s1++);
         }
         break;
       }case 3:{
@@ -959,9 +959,9 @@ namespace icl{
         const S* s1 = src[1];
         const S* s2 = src[2];
         while (dst<dstEnd){
-          *dst++ = Cast<S,D>::cast(*s0++);
-          *dst++ = Cast<S,D>::cast(*s1++);
-          *dst++ = Cast<S,D>::cast(*s2++);
+          *dst++ = clipped_cast<S,D>(*s0++);
+          *dst++ = clipped_cast<S,D>(*s1++);
+          *dst++ = clipped_cast<S,D>(*s2++);
         }
         break;
       }case 4:{
@@ -971,10 +971,10 @@ namespace icl{
         const S* s2 = src[2];
         const S* s3 = src[3];
         while (dst<dstEnd){
-          *dst++ = Cast<S,D>::cast(*s0++);
-          *dst++ = Cast<S,D>::cast(*s1++);
-          *dst++ = Cast<S,D>::cast(*s2++);
-          *dst++ = Cast<S,D>::cast(*s3++);
+          *dst++ = clipped_cast<S,D>(*s0++);
+          *dst++ = clipped_cast<S,D>(*s1++);
+          *dst++ = clipped_cast<S,D>(*s2++);
+          *dst++ = clipped_cast<S,D>(*s3++);
         }
         break;
       }default:{
@@ -982,7 +982,7 @@ namespace icl{
         const S** srcEnd = src+channels;
         while (dst<dstEnd){
           for (const S** p=src;p<srcEnd;++(*p),++p,++dst ){
-            *dst=Cast<S,D>::cast(*(*p));
+            *dst=clipped_cast<S,D>(*(*p));
           }
         }
       }
@@ -1086,8 +1086,8 @@ namespace icl{
         D* d0 = dst[0];
         D* d1 = dst[1];
         while (src<srcEnd){
-          *d0++ = Cast<S,D>::cast(*src++);
-          *d1++ = Cast<S,D>::cast(*src++);
+          *d0++ = clipped_cast<S,D>(*src++);
+          *d1++ = clipped_cast<S,D>(*src++);
         }
         break;
       }case 3:{
@@ -1096,9 +1096,9 @@ namespace icl{
         D* d1 = dst[1];
         D* d2 = dst[2];
         while (src<srcEnd){
-          *d0++ = Cast<S,D>::cast(*src++);
-          *d1++ = Cast<S,D>::cast(*src++);
-          *d2++ = Cast<S,D>::cast(*src++);
+          *d0++ = clipped_cast<S,D>(*src++);
+          *d1++ = clipped_cast<S,D>(*src++);
+          *d2++ = clipped_cast<S,D>(*src++);
         }
         break;
       }
@@ -1109,10 +1109,10 @@ namespace icl{
         D* d2 = dst[2];      
         D* d3 = dst[3];
         while (src<srcEnd){
-          *d0++ = Cast<S,D>::cast(*src++);
-          *d1++ = Cast<S,D>::cast(*src++);
-          *d2++ = Cast<S,D>::cast(*src++);
-          *d3++ = Cast<S,D>::cast(*src++);
+          *d0++ = clipped_cast<S,D>(*src++);
+          *d1++ = clipped_cast<S,D>(*src++);
+          *d2++ = clipped_cast<S,D>(*src++);
+          *d3++ = clipped_cast<S,D>(*src++);
         }
         break;
       }
@@ -1121,7 +1121,7 @@ namespace icl{
         D** dstEnd = dst+channels;
         while (src<srcEnd){
           for (D** p=dst;p<dstEnd;++(*p),++p,++src ){
-            *(*p) = Cast<S,D>::cast(*src);
+            *(*p) = clipped_cast<S,D>(*src);
           }
         }
       }
@@ -1235,7 +1235,7 @@ namespace icl{
       for(int y=0;y<srcSize.height;++y){
         for(int x=0;x<srcSize.width;++x){
           for (int i=0;i<c;++i, ++src){
-            *(itDsts[i]) = Cast<S,D>::cast(*src);
+            *(itDsts[i]) = clipped_cast<S,D>(*src);
             itDsts[i]++;
           }
         }
@@ -1249,7 +1249,7 @@ namespace icl{
         convert<S,D>(src,src+srcSize.getDim(),dst->getData(0));
       }else{
         std::vector<S*> tmpSrcChannelData;
-        tmpSrcChannelData.push_back(const_cast<S*>(src));
+        tmpSrcChannelData.push_back(const_clipped_cast<S*>(src));
         Img<S> tmpSrcImg(srcSize,c,tmpSrcChannelData);
         tmpSrcImg.convertROI(dst);
       }
@@ -1265,7 +1265,7 @@ namespace icl{
       const S* srcEnd=src+srcSize.getDim()*c;
       while (src<srcEnd){
         for (D** p=pp;p<ppEnd;++(*p),++p,++src){
-          *(*p)= Cast<S,D>::cast(*src);
+          *(*p)= clipped_cast<S,D>(*src);
         }
       }
       delete [] pp;
@@ -1277,7 +1277,7 @@ namespace icl{
       const S* srcEnd=src+srcSize.getDim()*c;
       while (src<srcEnd){
         for (int i=0;i<c;++i, ++src){
-          *(itDsts[i]) = Cast<S,D>::cast(*src);
+          *(itDsts[i]) = clipped_cast<S,D>(*src);
           itDsts[i]++;
         }
       }

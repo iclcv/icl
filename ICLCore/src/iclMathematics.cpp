@@ -17,7 +17,7 @@ namespace icl{
       for(int c=0;c<image->getChannels();++c){
         ImgIterator<T> it = roiOnly ? image->getROIIterator(c) : image->getIterator(c);
         while(it.inRegion()){
-          *it++ = Cast<double,T>::cast( random(range.minVal, range.maxVal) );
+          *it++ = clipped_cast<double,T>( random(range.minVal, range.maxVal) );
         }
       }
     } 
@@ -26,7 +26,7 @@ namespace icl{
       for(int c=0;c<image->getChannels();++c){
         ImgIterator<T> it = roiOnly ? image->getROIIterator(c) : image->getIterator(c);
         while(it.inRegion()){
-          *it++ = Cast<double,T>::cast( gaussRandom(mean,var,range) );
+          *it++ = clipped_cast<double,T>( gaussRandom(mean,var,range) );
         }
       }
     }
@@ -244,13 +244,13 @@ namespace icl{
       if(roiOnly && !image.hasFullROI()){
         ConstImgIterator<T> it = image.getROIIterator(c);
         for(;it.inRegion();++it){
-          h[Cast<T,icl8u>::cast(*it)]++;
+          h[clipped_cast<T,icl8u>(*it)]++;
         }
       }else{
         const T* p = image.getData(c);
         const T* pEnd = p+image.getDim();
         while(p<pEnd){
-          h[Cast<T,icl8u>::cast(*p++)]++;
+          h[clipped_cast<T,icl8u>(*p++)]++;
         }
       }
     }

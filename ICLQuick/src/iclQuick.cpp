@@ -847,8 +847,8 @@ namespace icl{
       ImgIterator<ICL_QUICK_TYPE> itB = nb.getROIIterator(c);
       ImgIterator<ICL_QUICK_TYPE> itR = r.getROIIterator(c);
       for(;itA.inRegion();++itA,++itB, ++itR){
-        T val = Cast<ICL_QUICK_TYPE,T>::cast(*itA) | Cast<ICL_QUICK_TYPE,T>::cast(*itB);
-        *itR = Cast<T,ICL_QUICK_TYPE>::cast(val);
+        T val = clipped_cast<ICL_QUICK_TYPE,T>(*itA) | clipped_cast<ICL_QUICK_TYPE,T>(*itB);
+        *itR = clipped_cast<T,ICL_QUICK_TYPE>(val);
       }
     }
     return r;
@@ -868,8 +868,8 @@ namespace icl{
       ImgIterator<ICL_QUICK_TYPE> itB = nb.getROIIterator(c);
       ImgIterator<ICL_QUICK_TYPE> itR = r.getROIIterator(c);
       for(;itA.inRegion();++itA,++itB, ++itR){
-        T val = Cast<ICL_QUICK_TYPE,T>::cast(*itA) & Cast<ICL_QUICK_TYPE,T>::cast(*itB);
-        *itR = Cast<T,ICL_QUICK_TYPE>::cast(val);
+        T val = clipped_cast<ICL_QUICK_TYPE,T>(*itA) & clipped_cast<ICL_QUICK_TYPE,T>(*itB);
+        *itR = clipped_cast<T,ICL_QUICK_TYPE>(val);
       }
     }
     return r;

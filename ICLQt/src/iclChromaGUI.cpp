@@ -259,8 +259,8 @@ namespace icl{
           s[0] += cr(i+po[p].x,255-i+po[p].y); 
           s[1] += cg(i+po[p].x,255-i+po[p].y); 
         }
-        cr(i,255-i) = Cast<icl32f,icl8u>::cast(float(s[0])/(nn*nn));
-        cg(i,255-i) = Cast<icl32f,icl8u>::cast(float(s[1])/(nn*nn));
+        cr(i,255-i) = clipped_cast<icl32f,icl8u>(float(s[0])/(nn*nn));
+        cg(i,255-i) = clipped_cast<icl32f,icl8u>(float(s[1])/(nn*nn));
       }
       setImage(&image);
       update();

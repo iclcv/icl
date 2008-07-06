@@ -1,6 +1,5 @@
 #include <iclDynMatrix.h>
 #include <iclMacros.h>
-#include <iclTypes.h>
 
 #ifdef WITH_IPP_OPTIMIZATION
 #include <ippm.h>
@@ -30,21 +29,19 @@ namespace icl{
   
   template<class T>
   DynMatrix<T> DynMatrix<T>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
-    ERROR_LOG("not implemented (only with IPP and only for icl32f and icl64f)");
+    ERROR_LOG("not implemented (only with IPP and only for float and double)");
     return DynMatrix<T>(1,1);
   }
 #ifdef WITH_IPP_OPTIMIZATION
-  template<> DynMatrix<icl32f> DynMatrix<icl32f>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
-    return apply_dyn_matrix_inv<icl32f,ippmInvert_m_32f>(*this);
+  template<> DynMatrix<float> DynMatrix<float>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
+    return apply_dyn_matrix_inv<float,ippmInvert_m_32f>(*this);
   }
-  template<> DynMatrix<icl64f> DynMatrix<icl64f>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
-    return apply_dyn_matrix_inv<icl64f,ippmInvert_m_64f>(*this);
+  template<> DynMatrix<double> DynMatrix<double>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
+    return apply_dyn_matrix_inv<double,ippmInvert_m_64f>(*this);
   }
 #endif
   
-#define ICL_INSTANTIATE_DEPTH(D) \
-  template DynMatrix<icl##D> DynMatrix<icl##D>::inv()const throw (InvalidMatrixDimensionException,SingularMatrixException);
-  ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
+  template DynMatrix<float> DynMatrix<float>::inv()const throw (InvalidMatrixDimensionException,SingularMatrixException);
+  template DynMatrix<double> DynMatrix<double>::inv()const throw (InvalidMatrixDimensionException,SingularMatrixException);
 
 }

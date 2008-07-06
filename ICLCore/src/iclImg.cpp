@@ -167,11 +167,11 @@ namespace icl {
     // {{{ open
 
     switch(eScaleMode) {
-      case 0: return Cast<float, Type>::cast (subPixelNN (fX, fY, iChannel));
-      case 1: return Cast<float, Type>::cast (subPixelLIN (fX, fY, iChannel));
+      case 0: return clipped_cast<float, Type>(subPixelNN (fX, fY, iChannel));
+      case 1: return clipped_cast<float, Type>(subPixelLIN (fX, fY, iChannel));
       default: 
         ERROR_LOG ("interpolation method not yet implemented!");
-        return Cast<float, Type>::cast (subPixelLIN (fX, fY, iChannel));
+        return clipped_cast<float, Type>(subPixelLIN (fX, fY, iChannel));
     }
   }
 
@@ -1107,7 +1107,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
       icl64f fScale  = (icl64f)(dstRange.getLength()) / (icl64f)(srcRange.getLength());
       icl64f fShift  = (icl64f)(srcRange.maxVal * dstRange.minVal - srcRange.minVal * dstRange.maxVal) / srcRange.getLength();
       for(iterator p=getROIIterator(c); p.inRegion(); ++p) {
-        *p = Cast<icl64f,Type>::cast( icl::clip( fShift + (icl64f)(*p) * fScale, icl64f(dstRange.minVal),icl64f(dstRange.maxVal) ) );
+        *p = clipped_cast<icl64f,Type>( icl::clip( fShift + (icl64f)(*p) * fScale, icl64f(dstRange.minVal),icl64f(dstRange.maxVal) ) );
       }
     }
   }
@@ -1290,7 +1290,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     int yD = 0;
     float yS = srcOffs.y + fSY * yD;
     for(; itDst.inRegion(); ++itDst) {
-      *itDst = Cast<float, T>::cast ((src->*subPixelMethod)(srcOffs.x + fSX * xD, yS, srcC));
+      *itDst = clipped_cast<float, T>((src->*subPixelMethod)(srcOffs.x + fSX * xD, yS, srcC));
       if (++xD == dstSize.width) {
         yS = srcOffs.y + fSY * ++yD;
         xD = 0;

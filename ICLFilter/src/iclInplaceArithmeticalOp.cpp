@@ -20,7 +20,7 @@ namespace icl{
     template<class T> struct Apply<T,InplaceArithmeticalOp::O##Op>{  \
       Apply(icl64f val):val(val){}                                   \
       inline void operator()(T &t){                                  \
-        t= Cast<icl64f,T>::cast(F);                                  \
+        t= clipped_cast<icl64f,T>(F);                                \
       }                                                              \
       icl64f val;                                                    \
     };

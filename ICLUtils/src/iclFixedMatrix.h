@@ -9,14 +9,7 @@
 
 #include <iclException.h>
 #include <iclDynMatrix.h>
-#include <iclCore.h>
-
-/**
-    TODO:
-    Matrix: operatoren [int] und (int) entfernen -> unintuitiv und kollidiert mit RowVector und so
-            const_iterator ermöglichen -> volatile variablen und ++, -- -= und so const machen ...
-
-*/
+#include <iclClippedCast.h>
 
 namespace icl{
   

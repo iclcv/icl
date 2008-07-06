@@ -58,7 +58,7 @@ namespace icl{
     /// casts this range into another depth
     template<class dstType>
     const Range<dstType> castTo() const{
-      return Range<dstType>(Cast<Type,dstType>::cast(minVal),Cast<Type,dstType>::cast(maxVal));
+      return Range<dstType>(clipped_cast<Type,dstType>(minVal),clipped_cast<Type,dstType>(maxVal));
     }
     
     /// tests whether a given value is inside of this range

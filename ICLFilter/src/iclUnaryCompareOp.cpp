@@ -134,8 +134,8 @@ namespace icl {
      switch (poSrc->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(T) case depth##T:                                              \
                                  icl::cmp(poSrc->asImg<icl##T>(),(*ppoDst)->asImg<icl8u>(),  \
-                                 Cast<icl64f,icl##T>::cast(m_dValue),                        \
-                                 Cast<icl64f,icl##T>::cast(m_dTolerance),                   \
+                                 clipped_cast<icl64f,icl##T>(m_dValue),                        \
+                                 clipped_cast<icl64f,icl##T>(m_dTolerance),                   \
                                  m_eOpType); break;
        ICL_INSTANTIATE_ALL_DEPTHS;
        default: ICL_INVALID_FORMAT; break;

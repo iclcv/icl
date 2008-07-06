@@ -26,9 +26,9 @@ namespace icl{
     /// casts this range into another depth
     template<class dstType>
     const SteppingRange<dstType> castTo() const{
-      return SteppingRange<dstType>(Cast<Type,dstType>::cast(Range<Type>::minVal),
-                                    Cast<Type,dstType>::cast(Range<Type>::maxVal),
-                                    Cast<Type,dstType>::cast(stepping));
+      return SteppingRange<dstType>(clipped_cast<Type,dstType>(Range<Type>::minVal),
+                                    clipped_cast<Type,dstType>(Range<Type>::maxVal),
+                                    clipped_cast<Type,dstType>(stepping));
     }
     
     /// tests whether a given value is inside of this range
