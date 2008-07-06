@@ -192,58 +192,143 @@ namespace icl{
   
     struct col_iterator : public std::iterator<std::random_access_iterator_tag,T>{
       typedef unsigned int difference_type;
-      T *p;
-      unsigned int stride;
+      mutable T *p;
+      const unsigned int stride;
       col_iterator(T *col_begin,unsigned int stride):p(col_begin),stride(stride){}
+
+
+    /// prefix increment operator
       col_iterator &operator++(){
         p+=stride;
         return *this;
       }
+      /// prefix increment operator (const)
+      const col_iterator &operator++() const{
+        p+=stride;
+        return *this;
+      }
+      /// postfix increment operator
       col_iterator operator++(int){
         col_iterator tmp = *this;
         ++(*this);
         return tmp;
       }
+      /// postfix increment operator (const)
+      const col_iterator operator++(int) const{
+        col_iterator tmp = *this;
+        ++(*this);
+        return tmp;
+      }
+
+      /// prefix decrement operator
       col_iterator &operator--(){
         p-=stride;
         return *this;
       }
+
+      /// prefix decrement operator (const)
+      const col_iterator &operator--() const{
+        p-=stride;
+        return *this;
+      }
+
+      /// postfix decrement operator
       col_iterator operator--(int){
         col_iterator tmp = *this;
         --(*this);
         return tmp;
       }
+
+      /// postfix decrement operator (const)
+      const col_iterator operator--(int) const{
+        col_iterator tmp = *this;
+        --(*this);
+        return tmp;
+      }
+
+      /// jump next n elements (inplace)
       col_iterator &operator+=(difference_type n){
         p += n * stride;
         return *this;
       }
 
+      /// jump next n elements (inplace) (const)
+      const col_iterator &operator+=(difference_type n) const{
+        p += n * stride;
+        return *this;
+      }
+
+
+      /// jump backward next n elements (inplace)
       col_iterator &operator-=(difference_type n){
         p -= n * stride;
         return *this;
       }
+
+      /// jump backward next n elements (inplace) (const)
+      const col_iterator &operator-=(difference_type n) const{
+        p -= n * stride;
+        return *this;
+      }
+
+
+      /// jump next n elements
       col_iterator operator+(difference_type n) {
         col_iterator tmp = *this;
         tmp+=n;
         return tmp;
       }
+
+      /// jump next n elements (const)
+      const col_iterator operator+(difference_type n) const{
+        col_iterator tmp = *this;
+        tmp+=n;
+        return tmp;
+      }
+
+      /// jump backward next n elements
       col_iterator operator-(difference_type n) {
         col_iterator tmp = *this;
         tmp-=n;
         return tmp;
       }
+
+      /// jump backward next n elements (const)
+      const col_iterator operator-(difference_type n) const {
+        col_iterator tmp = *this;
+        tmp-=n;
+        return tmp;
+      }
+
+      
+      /// Dereference operator
       T &operator*(){
         return *p;
       }
+
+      /// const Dereference operator
       T operator*() const{
         return *p;
       }
 
-#define X(OP) bool operator OP(const col_iterator &i){ return p OP i.p; }
-      X(==)X(<)X(>)X(<=)X(>=)X(!=)
-#undef X
+      /// comparison operator ==
+      bool operator==(const col_iterator &i) const{ return p == i.p; }
 
-      };
+      /// comparison operator !=
+      bool operator!=(const col_iterator &i) const{ return p != i.p; }
+
+      /// comparison operator <
+      bool operator<(const col_iterator &i) const{ return p < i.p; }
+
+      /// comparison operator <=
+      bool operator<=(const col_iterator &i) const{ return p <= i.p; }
+
+      /// comparison operator >=
+      bool operator>=(const col_iterator &i) const{ return p >= i.p; }
+
+      /// comparison operator >
+      bool operator>(const col_iterator &i) const{ return p > i.p; }
+    };
   
     typedef const col_iterator const_col_iterator;
 

@@ -96,7 +96,7 @@ namespace icl{
     */
     template<class otherT>
     FixedMatrix(const FixedMatrix<otherT,COLS,ROWS> &other):m_data(new T[dim]),m_ownData(true){
-      std::transform(other.begin(),other.end(),begin(),Cast<otherT,T>::cast);
+      std::transform(other.begin(),other.end(),begin(),clipped_cast<otherT,T>);
     } 
     
     /// Assignment operator
@@ -106,7 +106,7 @@ namespace icl{
     */
     template<class otherT>
     FixedMatrix &operator=(const FixedMatrix<otherT,COLS,ROWS> &other){
-      std::transform(other.begin(),other.end(),begin(),Cast<otherT,T>::cast);
+      std::transform(other.begin(),other.end(),begin(),clipped_cast<otherT,T>);
       return *this;
     }
     

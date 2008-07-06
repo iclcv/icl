@@ -25,10 +25,10 @@ namespace icl{
     /// copy constructor 
     template<class OtherT>
     inline Vec4D(const Vec4D<OtherT> &v){
-      data[0] = Cast<OtherT,T>::cast(v.x());
-      data[1] = Cast<OtherT,T>::cast(v.y());
-      data[2] = Cast<OtherT,T>::cast(v.z());
-      data[3] = Cast<OtherT,T>::cast(v.h());
+      data[0] = clipped_cast<OtherT,T>(v.x());
+      data[1] = clipped_cast<OtherT,T>(v.y());
+      data[2] = clipped_cast<OtherT,T>(v.z());
+      data[3] = clipped_cast<OtherT,T>(v.h());
     }
     
     /// returns (*this)[0]
@@ -59,10 +59,10 @@ namespace icl{
     /// Assign operator (other vec)
     template<class OtherT>
     inline Vec4D &operator=(const Vec4D<OtherT> &v) { 
-      x()=Cast<OtherT,T>::cast(v.x());
-      y()=Cast<OtherT,T>::cast(v.y());
-      z()=Cast<OtherT,T>::cast(v.z());
-      h()=Cast<OtherT,T>::cast(v.h());
+      x()=clipped_cast<OtherT,T>(v.x());
+      y()=clipped_cast<OtherT,T>(v.y());
+      z()=clipped_cast<OtherT,T>(v.z());
+      h()=clipped_cast<OtherT,T>(v.h());
       return *this;
     }
     
