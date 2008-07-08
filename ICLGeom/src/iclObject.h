@@ -69,10 +69,10 @@ namespace icl{
     virtual ~Object();
       
     /// multiplies T with a homogeneous translation matrix and re-calculates all transformed points
-    virtual void translate(float dx, float dy, float dz){ transform(Mat::trans(dx,dy,dz)); }
+    virtual void translate(float dx, float dy, float dz){ transform(create_hom_4x4_trans<float>(dx,dy,dz)); }
     
     /// multiplies T with a homogeneous rotation matrix and re-calculates all transformed points
-    virtual void rotate(float rx, float ry, float rz){ transform(Mat::rot(rx,ry,rz)); }
+    virtual void rotate(float rx, float ry, float rz){ transform(create_hom_4x4<float>(rx,ry,rz)); }
     
     /// multiplies T with an arbitrary homogeneous matrix and re-.calculates all transformed points
     virtual void transform(const Mat &m);

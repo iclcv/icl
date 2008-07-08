@@ -82,7 +82,7 @@ namespace icl{
     inline float getFocalLength() const{ return m_fF; }
     
     /// returns the current horizontal vector (norm x up)
-    inline Vec getHorz()const{ return m_oNorm.cross(m_oUp); }
+    inline Vec getHorz()const{ return cross(m_oNorm,m_oUp); }
 
     /// show some camera information to std::out
     void show(const std::string &title) const;
@@ -99,7 +99,7 @@ namespace icl{
         @param arcZ angle around the z-axis
     **/
     void rotate(float arcX, float arcY, float arcZ){
-      transform(Mat::rot(arcX,arcY,arcZ));
+      transform(create_hom_4x4(arcX,arcY,arcZ));
     }
     /// translates the current pos-vector
     void translate(float dx, float dy, float dz){ 

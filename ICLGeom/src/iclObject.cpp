@@ -9,6 +9,7 @@ namespace icl{
   Object::Object():T(Mat::id()),m_bPointsVisible(true),m_bLinesVisible(true),
                    m_bTrianglesVisible(true),m_bQuadsVisible(true){ 
     // {{{ open
+    
   }
 
   // }}}
@@ -21,22 +22,25 @@ namespace icl{
 
   void Object::project(const Mat &CAMMATRIX){
     // {{{ open
+
     for(unsigned int i=0;i<m_vecPtsTrans.size();++i){ 
-      m_vecPtsProj[i] = (CAMMATRIX*m_vecPtsTrans[i]);
-      m_vecPtsProj[i].homogenize();
-      m_vecPtsProj[i].z() = m_vecPtsTrans[i].z();
+      m_vecPtsProj[i] = homogenize(CAMMATRIX*m_vecPtsTrans[i]);
+      //      m_vecPtsProj[i].homogenize();
+      m_vecPtsProj[i][2] =  m_vecPtsTrans[i][2];
     }
   }
 
   // }}}
   void Object::transform(const Mat &m){
     // {{{ open
-
     T=T*m;
+
     for(unsigned int i=0;i<m_vecPtsOrig.size();++i){ 
       m_vecPtsTrans[i] = (T*m_vecPtsOrig[i]);
       //m_vecPtsTrans[i] = (T*m_vecPtsOrig[i]).homogenize(); this is not necessary as long as T is just Rot.Scale.Transl
     }
+
+    
   }
 
   // }}}
@@ -47,6 +51,7 @@ namespace icl{
     m_vecPtsTrans.push_back(T*p);
     m_vecPtsProj.push_back(Vec(0,0,0,1));
     m_vecPtsColors.push_back(color);
+    
   }
 
   // }}}
@@ -110,7 +115,8 @@ namespace icl{
 
       inline P3():a(0),b(0),c(0),color(0),z(0){}
       inline P3(const Vec *a,const Vec *b,const Vec *c, const Vec *color):a(a),b(b),c(c),color(color){
-        z = (a->z()+b->z()+c->z())/3;
+        //        z = (a->z()+b->z()+c->z())/3;
+        z = ( (*a)[2] + (*b)[2] + (*c)[2] )/3;
       }
       const Vec *a,*b,*c,*color;
       float z;
@@ -125,7 +131,8 @@ namespace icl{
 
       inline P4():a(0),b(0),c(0),d(0),color(0),z(0){}
       inline P4(const Vec *a,const Vec *b,const Vec *c, const Vec *d, const Vec *color):a(a),b(b),c(c),d(d),color(color){
-        z = (a->z()+b->z()+c->z()+d->z())/4;
+        //        z = (a->z()+b->z()+c->z()+d->z())/4;
+        z = ( (*a)[2] + (*b)[2] + (*c)[2] +(*c)[2]) / 4;
       }
       const Vec *a,*b,*c,*d,*color;
       float z;
@@ -189,7 +196,8 @@ namespace icl{
         widget->color((int)c[0],(int)c[1],(int)c[2],(int)c[3]);
         const Vec &a = m_vecPtsProj[m_vecConnections[i].first];
         const Vec &b = m_vecPtsProj[m_vecConnections[i].second];
-        widget->line(a.x(),a.y(),b.x(),b.y());
+        //        widget->line(a.x(),a.y(),b.x(),b.y());
+        widget->line(a[0],a[1],b[0],b[1]);
       }
     }
     if(m_bPointsVisible){
@@ -198,7 +206,8 @@ namespace icl{
         widget->color((int)c[0],(int)c[1],(int)c[2],(int)c[3]);
         const Vec &v = m_vecPtsProj[i];
         static const float r = 0.5;
-        widget->ellipse(v.x()-r/2,v.y()-r/2,r,r);
+        //        widget->ellipse(v.x()-r/2,v.y()-r/2,r,r);        
+        widget->ellipse(v[0]-r/2,v[1]-r/2,r,r);
       }
     }
   }
@@ -258,17 +267,18 @@ namespace icl{
         const Vec &a = m_vecPtsProj[m_vecConnections[i].first];
         const Vec &b = m_vecPtsProj[m_vecConnections[i].second];
         line(*image,
-             (int)(a.x()),
-             (int)(a.y()),
-             (int)(b.x()),
-             (int)(b.y()) );
+             (int)a[0],
+             (int)a[1],
+             (int)b[0],
+             (int)b[1]);
       }
     }
     if(m_bPointsVisible){
       for(unsigned int i=0;i<m_vecPtsProj.size();i++){
         color(255,0,0);
         const Vec &v = m_vecPtsProj[i];
-        pix(*image,(int)(v.x()),(int)(v.y()));
+        pix(*image,(int)v[0],(int)v[1]);
+        // std::cout << "drawing point: " << m_vecPtsProj[i].transp() << std::endl;
         /*
             circle(*image,
             (int)(v.x()),

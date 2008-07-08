@@ -6,13 +6,37 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 #include <iclException.h>
 #include <iclDynMatrix.h>
 #include <iclClippedCast.h>
 
 namespace icl{
-  
+  /// Forward for IteratorRange ...
+  template<class T,unsigned int COLS,unsigned int ROWS> class FixedMatrix;
+
+  template<class Iterator>
+  struct IteratorRange{
+    Iterator begin,end;
+    inline IteratorRange(Iterator begin, Iterator end):begin(begin),end(end){}
+    template<class otherIterator>
+    IteratorRange &operator=(const IteratorRange<otherIterator> &r){
+      std::copy(r.begin,r.end,begin);
+    }
+
+    template<class T,unsigned int COLS,unsigned int ROWS> 
+    IteratorRange &operator=(const FixedMatrix<T,COLS,ROWS> &m);
+
+    // this assignent will only work, if types are compatible
+  };
+
+  template<class Iterator>
+  std::ostream &operator<<(std::ostream &s, const IteratorRange<Iterator> &r){
+    std::copy(r.begin,r.end,std::ostream_iterator<float>(s,","));
+    return s;
+  }
+
   /// Powerful and highly flexible Matrix class implementation
   /** By using fixed template parameters as Matrix dimensions,
       specializations to e.g. row or column vectors, are also
@@ -21,6 +45,13 @@ namespace icl{
   template<class T,unsigned int COLS,unsigned int ROWS>
   class FixedMatrix{
     public:
+
+    /// returning a reference to a null matrix
+    static const FixedMatrix &null(){
+      static FixedMatrix null_matrix(T(0));
+      return null_matrix;
+    }
+
     /// count of matrix elements (COLS x ROWS)
     static const unsigned int DIM = COLS*ROWS;
     
@@ -46,7 +77,7 @@ namespace icl{
     FixedMatrix():m_data(new T[DIM]),m_ownData(true){}
     
     /// Create Matrix and initialize elements with given value
-    FixedMatrix(const T &initValue):m_data(new T[DIM]){
+    FixedMatrix(const T &initValue):m_data(new T[DIM]),m_ownData(true){
       std::fill(begin(),end(),initValue);
     }
 
@@ -60,7 +91,6 @@ namespace icl{
         case deepcopy:
           m_data = new T[DIM];
           std::copy(srcdata,srcdata+dim(),begin());
-          m_ownData = true;
           break;
         case shallowcopy:
           m_data = srcdata;
@@ -68,7 +98,6 @@ namespace icl{
           break;
         case takeownership:
           m_data = srcdata;
-          m_ownData = true;
           break;
       }
     }
@@ -78,19 +107,42 @@ namespace icl{
         allowed here 
         @params srcdata const source data pointer copied deeply
     */
-    FixedMatrix(const T *srcdata):m_data(new T[dim]),m_ownData(true){
+    FixedMatrix(const T *srcdata):m_data(new T[DIM]),m_ownData(true){
       std::copy(srcdata,srcdata+dim(),begin());
     }
 
+    FixedMatrix(const FixedMatrix &other):m_data(new T[DIM]),m_ownData(true){
+      std::copy(other.begin(),other.end(),begin());
+    }
+    
     /// Copy-Constructor
     /** If source Matrix data type differs from this' data type icl::Cast class is
         used to cast between the data types 
         @param other source matrix copied deeply
     */
     template<class otherT>
-    FixedMatrix(const FixedMatrix<otherT,COLS,ROWS> &other):m_data(new T[dim]),m_ownData(true){
+    FixedMatrix(const FixedMatrix<otherT,COLS,ROWS> &other):m_data(new T[DIM]),m_ownData(true){
       std::transform(other.begin(),other.end(),begin(),clipped_cast<otherT,T>);
     } 
+
+    
+    /// Create matrix with given initializer elements (16 values max)
+    FixedMatrix(const T& v0,const T& v1,const T& v2=0,const T& v3=0,
+                const T& v4=0,const T& v5=0,const T& v6=0,const T& v7=0,  
+                const T& v8=0,const T& v9=0,const T& v10=0,const T& v11=0,  
+                const T& v12=0,const T& v13=0,const T& v14=0,const T& v15=0):
+    m_data(new T[DIM]),m_ownData(true){
+#define ARG(N) if(COLS*ROWS > N) m_data[N]=v##N
+                    ARG(0);ARG(1);ARG(2);ARG(3);ARG(4);ARG(5);ARG(6);ARG(7);
+                    ARG(8);ARG(9);ARG(10);ARG(11);ARG(12);ARG(13);ARG(14);ARG(15);
+#undef ARG
+    }  
+
+    template<class OtherIterator>
+    FixedMatrix(const IteratorRange<OtherIterator> &r):m_data(new T[DIM]),m_ownData(true){
+      std::copy(r.begin(),r.end(),begin());
+    } 
+   
     
     /// Assignment operator
     /** If source Matrix data type differs from this' data type icl::Cast class is
@@ -99,6 +151,7 @@ namespace icl{
     */
     template<class otherT>
     FixedMatrix &operator=(const FixedMatrix<otherT,COLS,ROWS> &other){
+      if(this = &other) return *this;
       std::transform(other.begin(),other.end(),begin(),clipped_cast<otherT,T>);
       return *this;
     }
@@ -109,21 +162,15 @@ namespace icl{
       return *this;
     }
 
-    /// Matrix multiplication (essential)
-    /** matrices multiplication A*B is only valid if cols(A) is equal to rows(B).
-        Resulting matrix has dimensions cols(B) x rows(A)
-        @param m right operator in matrix multiplication
-    */
-    template<unsigned int MCOLS>
-    FixedMatrix<T,MCOLS,ROWS> operator*(const FixedMatrix<T,MCOLS,COLS> &m){
-      FixedMatrix<T,MCOLS,ROWS> d;
-      for(unsigned int c=0;c<COLS;++c){
-        for(unsigned int r=0;r<ROWS;++r){
-          d(c,r) = std::inner_product(row_begin(r),row_end(r),m.col_begin(c),0);
-        }
-      }
-      return d;
+    /// Assign all elements with given values from range
+    template<class OtherIterator>
+    FixedMatrix &operator=(const IteratorRange<OtherIterator> &r){
+      std::copy(r.begin(),r.end(),begin());
+      return *this;
     }
+    
+    
+
 
     /// Matrix devision
     /** A/B is equal to A*inv(B)
@@ -152,7 +199,7 @@ namespace icl{
       return d;
     }
 
-    /// Multiply all elements by a scalar (inplace)
+    /// moved outside the class  Multiply all elements by a scalar (inplace)
     FixedMatrix &operator*=(T f){
       std::transform(begin(),end(),begin(),std::bind2nd(std::multiplies<T>(),f));
       return *this;
@@ -160,7 +207,7 @@ namespace icl{
 
     /// Divide all elements by a scalar
     FixedMatrix operator/(T f) const{
-      return this->operator*(1/4);
+      return this->operator*(1/f);
     }
 
     /// Divide all elements by a scalar
@@ -219,6 +266,16 @@ namespace icl{
       std::transform(begin(),end(),m.begin(),begin(),std::minus<T>());
       return *this;
     }
+
+    /// Prefix - operator 
+    /** M + (-M) = 0;
+    */
+    FixedMatrix operator-() const {
+      FixedMatrix cpy(*this);
+      std::transform(cpy.begin(),cpy.end(),cpy.begin(),std::negate<T>());
+      return cpy;
+    }
+
 
     /// Element access operator
     T &operator()(unsigned int col,unsigned int row){
@@ -284,7 +341,7 @@ namespace icl{
   
     /// internal struct for row-wise iteration with stride=COLS
     struct col_iterator : public std::iterator<std::random_access_iterator_tag,T>{
-      
+
       /// just for compatibility with STL
       typedef unsigned int difference_type;
       
@@ -294,10 +351,8 @@ namespace icl{
       /// the stride is equal to parent Matrix' classes COLS template parameter
       static const unsigned int STRIDE = COLS;
       
-      private:
       /// Constructor
       col_iterator(T *col_begin):p(col_begin){}
-      public:
       
       /// prefix increment operator
       col_iterator &operator++(){
@@ -402,6 +457,10 @@ namespace icl{
         return tmp;
       }
 
+      /// steps between two iterators ... (todo: check!)
+      difference_type operator-(const col_iterator &i) const{
+        return (p-i.p)/STRIDE;
+      }
       
       /// Dereference operator
       T &operator*(){
@@ -409,7 +468,7 @@ namespace icl{
       }
 
       /// const Dereference operator
-      T operator*() const{
+      const T &operator*() const{
         return *p;
       }
 
@@ -473,6 +532,44 @@ namespace icl{
     const_row_iterator row_end(unsigned int row) const { return m_data+(row+1)*cols(); }
 
 
+    /// Matrix multiplication (essential)
+    /** matrices multiplication A*B is only valid if cols(A) is equal to rows(B).
+        Resulting matrix has dimensions cols(B) x rows(A)
+        @param m right operator in matrix multiplication
+    */
+    template<unsigned int MCOLS>
+    FixedMatrix<T,MCOLS,ROWS> operator*(const FixedMatrix<T,MCOLS,COLS> &m) const{
+      //      std::cout << "Operator* called A*B" << std::endl;
+      //std::cout << "A:\n" << *this << "\nB:\n" << m << std::endl;
+      FixedMatrix<T,MCOLS,ROWS> d;
+      for(unsigned int c=0;c<MCOLS;++c){
+        for(unsigned int r=0;r<ROWS;++r){
+          //          std::cout << "A*B" << std::endl;
+          //  std::cout << "A.row("<<r<<"): " << row(r) << "\n B.col("<<c<<"): " << m.col(c) << std::endl;
+          d(c,r) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));//,row_end(r),m.col_begin(c),0);
+          //std::cout << "\nresult is :" << d(c,r) << std::endl;
+        }
+      }
+      //std::cout << "Result is:\n" << d << std::endl;
+      return d;
+    }
+    /**          __MCOLS__
+                |         |
+                |         |
+              COLS        |
+                |         |
+                |_________|
+                
+       --COLS--  __________
+       |      | |         |
+       |      | |         |
+     ROWS     | |         |
+       |      | |         |
+       |______| |_________|
+
+    */
+
+
     /// invert the matrix (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
     /** This function internally uses an instance of DynMatrix<T> */
     FixedMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
@@ -483,34 +580,41 @@ namespace icl{
       std::copy(mi.begin(),mi.end(),r.begin());      
       return r;
     }
+    
+    /// calculate matrix determinant
+    T det() const throw(InvalidMatrixDimensionException){
+      DynMatrix<T> m(COLS,ROWS,m_data,false);
+      return m.det();
+    }
   
     /// returns matrix's transposed
     FixedMatrix<T,ROWS,COLS> transp() const{
       FixedMatrix<T,ROWS,COLS> d;
-      for(int i=0;i<cols();++i){
+      for(unsigned int i=0;i<cols();++i){
         std::copy(col_begin(i),col_end(i),d.row_begin(i));
       }
       return d;
     }
 
-    /// returns a matrix row-reference (data is copied shallowly)
-    FixedMatrix<T,COLS,1> row(unsigned int idx){
-      return FixedMatrix<T,COLS,1>(&*row_begin(idx),shallowcopy);
-    }
-    /// returns a matrix column-reference (data is copied shallowly)
-    FixedMatrix<T,1,ROWS> col(unsigned int idx){
-      return FixedMatrix<T,1,ROWS>(&*col_begin(idx),shallowcopy);
-    }
-    /// returns a matrix row-reference (data is copied shallowly) (const)
-    const FixedMatrix<T,COLS,1> row(unsigned int idx) const{
-      return FixedMatrix<T,COLS,1>(&*row_begin(idx),shallowcopy);
-    }
-    /// returns a matrix column-reference (data is copied shallowly) (const)
-    const FixedMatrix<T,1,ROWS> col(unsigned int idx) const{
-      return FixedMatrix<T,1,ROWS>(&*col_begin(idx),shallowcopy);
+    /// returns a matrix row-reference  iterator pair
+    IteratorRange<row_iterator> row(unsigned int idx){
+      return IteratorRange<row_iterator>(row_begin(idx),row_end(idx));
     }
 
+    /// returns a matrix row-reference  iterator pair (const)
+    IteratorRange<const_row_iterator> row(unsigned int idx) const{
+      return IteratorRange<const_row_iterator>(row_begin(idx),row_end(idx));
+    }
 
+    /// returns a matrix col-reference  iterator pair
+    IteratorRange<col_iterator> col(unsigned int idx){
+      return IteratorRange<col_iterator>(col_begin(idx),col_end(idx));
+    }
+
+    /// returns a matrix col-reference  iterator pair (const)
+    IteratorRange<const_col_iterator> col(unsigned int idx) const{
+      return IteratorRange<const_col_iterator>(col_begin(idx),col_end(idx));
+    }
     
     /// create identity matrix 
     /** if matrix is not a spare one, upper left square matrix
@@ -524,18 +628,30 @@ namespace icl{
       }
       return m;
     }
+
+    /// Calculates the length of the matrix data vector
+    inline double length(T norm=2) const{ 
+      double sumSquares = 0;
+      for(unsigned int i=0;i<DIM;++i){
+        sumSquares += ::pow((*this)[i],(double)norm);
+      }
+      return ::pow( sumSquares, 1.0/norm);
+    }
     
   };
 
-  
+ 
+
   /// Matrix multiplication (inplace)
   /** inplace matrix multiplication does only work for squared source and 
       destination matrices of identical size */
-  template<class T2, unsigned int ROWS_AND_COLS>
-  inline FixedMatrix<T2,ROWS_AND_COLS,ROWS_AND_COLS> &operator*=(FixedMatrix<T2,ROWS_AND_COLS,ROWS_AND_COLS> &a,
-                                                                 const FixedMatrix<T2,ROWS_AND_COLS,ROWS_AND_COLS> &b){
-    return a.operator=(a*b);
+  template<class T, unsigned int M_ROWS_AND_COLS,unsigned int V_COLS>
+  inline FixedMatrix<T,V_COLS,M_ROWS_AND_COLS> &operator*=(FixedMatrix<T,V_COLS,M_ROWS_AND_COLS> &v,
+                                                           const FixedMatrix<T,M_ROWS_AND_COLS,M_ROWS_AND_COLS> &m){
+    return v = (m*v);
   } 
+
+
 
   /// put the matrix into a std::ostream (human readable)
   template<class T, unsigned int COLS, unsigned int ROWS>
@@ -584,6 +700,23 @@ namespace icl{
     m(3,2)=dy;
     return m;
   }
+
+  /// calculate the trace of a square matrix
+  template<class T, unsigned int ROWS_AND_COLS>
+  FixedMatrix<T,1,ROWS_AND_COLS> trace(const FixedMatrix<T,ROWS_AND_COLS,ROWS_AND_COLS> &m){
+    FixedMatrix<T,1,ROWS_AND_COLS> t;
+    for(unsigned int i=0;i<ROWS_AND_COLS;++i){
+      t[i] = m(i,i);
+    }
+    return t;
+  }
+
+  template<class OtherIterator> template<class T, unsigned int COLS, unsigned int ROWS>
+  inline IteratorRange<OtherIterator> &IteratorRange<OtherIterator>::operator=(const FixedMatrix<T,COLS,ROWS> &m){
+    std::copy(m.begin(),m.end(),begin);
+    return *this;
+  }
+    
     
 
 

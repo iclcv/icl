@@ -363,6 +363,10 @@ namespace icl{
 
     /// invert the matrix (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
     DynMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException);
+
+    /// invert the matrix (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
+    T det() const throw (InvalidMatrixDimensionException);
+
   
     DynMatrix transp() const{
       DynMatrix d(rows(),cols());

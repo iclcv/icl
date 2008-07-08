@@ -71,8 +71,8 @@ namespace icl{
     //m_oTransMat.show("transformationmatrix (T)");
     //V.show("view port matrix (V)");
     //printf("--\n");
-    (C*T).show("modelview-matrix");
-    (V*P).show("projection-matrix");
+    std::cout << "modelview-matrix:" << std::endl << (C*T) << std::endl;
+    std::cout << "projection-matrix:" << std::endl << (V*P) << std::endl;
     printf("----------------------------------\n");
   }
 }

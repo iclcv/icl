@@ -65,7 +65,7 @@ namespace icl{
         const LineStrip &b = borders[i];
         for(unsigned int j=0;j<b.size();j++){
           const Vec *v = b[j];
-          widget->ellipse(v->x()-1,v->y()-1,1,1);
+          widget->ellipse((*v)[0]-1,(*v)[1]-1,1,1);
         }
       }
     }
@@ -115,7 +115,7 @@ namespace icl{
     VecArray &p = Object::getPointsProj();
     vector<CHPoint> input(p.size());
     for(unsigned int i=0;i<p.size();++i){
-      input[i] = CHPoint(p[i].x(),p[i].y(),&p[i]);
+      input[i] = CHPoint(p[i][0],p[i][1],&p[i]);
     } 
     std::sort(input.begin(),input.end());
     vector<CHPoint> output(p.size());

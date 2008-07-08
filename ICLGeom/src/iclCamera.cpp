@@ -21,16 +21,21 @@ namespace icl{
        [--------------------]
        [ 0   0   0  |   1   ]
     */
-    Vec nn = m_oNorm.normalized();
-    Vec ut = m_oUp.normalized();
-    Vec hh = nn.cross(ut);
-    Vec uu = hh.cross(nn);
-    
-    Mat T = Mat( hh, uu, -nn, 0).transposed();
+    Vec nn = normalize(m_oNorm);
+    Vec ut = normalize(m_oUp);
+    Vec hh = cross(nn,ut);
+    Vec uu = cross(hh,nn);
+
+    Mat T;
+    T.col(0) = hh;
+    T.col(1) = uu;
+    T.col(2) = -nn;
+    T.col(3) = Vec(0.0);
+    T = T.transp();
     //    T[3] = Vec(0,0,0,1);
-    T[3] =-(T*m_oPos);
-    T[3][3] = 1;
-  
+    T.col(3) =-(T*m_oPos);
+    T(3,3) = 1;
+
     return T;
   }
   
@@ -55,7 +60,7 @@ namespace icl{
 
   void Camera::show(const std::string &title) const{
     printf("cam: %s \n",title.c_str());
-    Mat(m_oNorm,m_oUp,m_oPos,m_fF).show("norm,up,pos,f");
+    std::cout << "norm:\n" << m_oNorm << "\nup:\n" << m_oUp << "\npos:\n" << m_oPos << "\nf: " << m_fF << std::endl;
   }
   
 

@@ -27,33 +27,45 @@ public:
     w->setImage(&image);
     w2->setImage(&image);
 
-    szene = new Szene(Rect(0,0,640,480));
+
+    const Vec pos=Vec(0,0,30,0);
+    const Vec norm=Vec(0,0,-1,0); 
+    const Vec up=Vec(1,0,0,0); 
+    float f=-45;
+    float zNear=0.1;
+    float zFar=100;
+    
+    szene = new Szene(Rect(0,0,640,480),Camera(pos,norm,up,f,zNear,zFar));
     
     for(int x=-1;x<2;x++){
       for(int y=-1;y<2;y++){
         for(int z=-1;z<2;z++){
-          szene->add(new CubeObject(10*x,10*y,10*z-15,5));
+          szene->add(new CubeObject(10*x,10*y,10*z,5));
         }
       }
     }
   }
   virtual void run(){
     Camera &cam = szene->getCam();
-    cam.setFocalLength(1); /// 1 equals 90° view arc !
+    cam.setFocalLength(1.6); /// 1 equals 90° view arc !
     while(1){
 
       w->lock();
       w->reset();
 
-      szene->transformAllObjs(Mat::rot(0.02,0.03,0));  
-      
+      szene->transformAllObjs(create_hom_4x4<float>(0.02,0.03,0));  
+    
+      //      szene->update();
+      //szene->render(w);
+
       for(int x=0;x<3;x++){
         for(int y=0;y<3;y++){
-          szene->setViewPort(Rect(x*640/3,y*480/3,640/3,480/3));
+          szene->setViewPort(Rect(x*640/3,y*480/3,640/3,480/3).enlarged(-10));
           szene->update();
           szene->render(w);
         }
       }
+
       w->unlock();
       w->update();
 
