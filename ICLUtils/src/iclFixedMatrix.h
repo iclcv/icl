@@ -13,29 +13,95 @@
 #include <iclClippedCast.h>
 
 namespace icl{
-  /// Forward for IteratorRange ...
-  template<class T,unsigned int COLS,unsigned int ROWS> class FixedMatrix;
 
-  template<class Iterator>
-  struct IteratorRange{
-    Iterator begin,end;
-    inline IteratorRange(Iterator begin, Iterator end):begin(begin),end(end){}
-    template<class otherIterator>
-    IteratorRange &operator=(const IteratorRange<otherIterator> &r){
-      std::copy(r.begin,r.end,begin);
+  /// FixedMatrix base struct defining datamode enum
+  struct FixedMatrixBase{
+    /// mode enum used for the FixedMatrix(T *data) constructor
+    enum dataMode{
+      deepcopy,     //!< given data pointer is copied deeply
+      shallowcopy,  //!< given data pointer is used (ownership is not passed)
+      takeownership //!< given data pointer is used (ownership is passed) 
+    };
+
+    /// Optimized copy function template (for N>30 using std::copy, otherwise a simple loop is used)
+    template<class SrcIterator, class DstIterator, unsigned int N>
+    static void optimized_copy(SrcIterator srcBegin, SrcIterator srcEnd, DstIterator dstBegin){
+      if(N>30){
+        std::copy(srcBegin,srcEnd,dstBegin);
+      }else{
+        while(srcBegin != srcEnd){
+          //          *dstBegin++ = *srcBegin++;
+          *dstBegin =
+          *srcBegin;
+
+          dstBegin++;
+          srcBegin++;
+        }
+      }
     }
-
-    template<class T,unsigned int COLS,unsigned int ROWS> 
-    IteratorRange &operator=(const FixedMatrix<T,COLS,ROWS> &m);
-
-    // this assignent will only work, if types are compatible
   };
+    
+  /** \cond */
+  /// Forward Declaration fo FixedMatrixPart struct
+  template<class T,unsigned int COLS,unsigned int ROWS> class FixedMatrix;
+  /** \endcond */
+  
 
-  template<class Iterator>
-  std::ostream &operator<<(std::ostream &s, const IteratorRange<Iterator> &r){
-    std::copy(r.begin,r.end,std::ostream_iterator<float>(s,","));
-    return s;
-  }
+  /// Utility struct for FixedMatrix sub-parts
+  /** FixedMatrix member functions row and col return an instance of this
+      utility structure. FixedMatrixPart instances wrap a range of Iterators
+      (begin- and end-Iterator) of template parameter type. Once created, 
+      FixedMatrixParts can not be setup with different Iterators. All further 
+      Assignments will only copy the ranged data represented by the source
+      and destination iterator pairs.\\
+      To avoid problems with ranges of different size, FixedMatrixPart instances
+      are 'templated' to the range size (template parameter N)
+  **/
+  template<class T,unsigned int N, class Iterator>
+  class FixedMatrixPart : public FixedMatrixBase{
+
+    public:
+    /// Start iterator 
+    Iterator begin;
+    
+    /// End iterator
+    Iterator end;
+  
+    /// Creates a new FixedMatrixPart instance with given Iterator Pair
+    FixedMatrixPart(Iterator begin, Iterator end):begin(begin),end(end){}
+    
+    /// Assignment with a new value (all data in range will be assigned with that value)
+    FixedMatrixPart& operator=(const T &value){
+      std::fill(begin,end,value);
+      return *this;
+    }
+    /// Assignment with another (identical) instance of FixedMatrixPart
+    /** Internally std::copy is used */
+    FixedMatrixPart& operator=(const FixedMatrixPart &other){
+      FixedMatrixBase::optimized_copy<Iterator,Iterator,N>(other.begin,other.end,begin);
+      return *this;
+    }
+    
+    /// Assignment with another (compatible) instance of FixedMatrixPart
+    /** For compatibility. Iterator type and destination type may differ but
+        RangeSize must be equal */
+    template<class OtherIterator, class OtherT>
+    FixedMatrixPart& operator=(const FixedMatrixPart<OtherT,N,OtherIterator> &other){
+      std::transform(other.begin,other.end,begin,clipped_cast<OtherT,T>);
+      return *this;
+    }
+    
+    /// Assignment with a compatible FixedMatrix instance (FixedMatrix DIM must be euqal to Part-size)
+    /** DIM equality is forced by Argument template parameters <...,COLS,N/COLS> */
+    template<unsigned int COLS>
+    FixedMatrixPart& operator=(const FixedMatrix<T,COLS,N/COLS> &m);
+
+    /// Assignment with a FixedMatrix instance (FixedMatrix DIM must be euqal to Part-size)
+    /** DIM equality is forced by Argument template parameters <...,COLS,N/COLS> */
+    template<class T2, unsigned int COLS>
+    FixedMatrixPart& operator=(const FixedMatrix<T2,COLS,N/COLS> &m);
+    
+  };
 
   /// Powerful and highly flexible Matrix class implementation
   /** By using fixed template parameters as Matrix dimensions,
@@ -43,7 +109,7 @@ namespace icl{
       as performant as possible.
   */
   template<class T,unsigned int COLS,unsigned int ROWS>
-  class FixedMatrix{
+  class FixedMatrix : public FixedMatrixBase{
     public:
 
     /// returning a reference to a null matrix
@@ -54,13 +120,6 @@ namespace icl{
 
     /// count of matrix elements (COLS x ROWS)
     static const unsigned int DIM = COLS*ROWS;
-    
-    /// mode enum used for the FixedMatrix(T *data) constructor
-    enum dataMode{
-      deepcopy,     //!< given data pointer is copied deeply
-      shallowcopy,  //!< given data pointer is used (ownership is not passed)
-      takeownership //!< given data pointer is used (ownership is passed) 
-    };
     
     private:
     
@@ -84,13 +143,14 @@ namespace icl{
     /// Create matrix with given data pointer
     /** @param srcData source data pointer to use
         @param mode specifies what to do with given data pointer
-                    @see dataMode
+                    @see FixedMatrixBase::dataMode
     */
     FixedMatrix(T *srcdata, dataMode mode):m_ownData(true){
       switch(mode){
         case deepcopy:
           m_data = new T[DIM];
-          std::copy(srcdata,srcdata+dim(),begin());
+          FixedMatrixBase::optimized_copy<T*,T*,DIM>(srcdata,srcdata+dim(),begin());
+          //std::copy(srcdata,srcdata+dim(),begin());
           break;
         case shallowcopy:
           m_data = srcdata;
@@ -108,50 +168,106 @@ namespace icl{
         @params srcdata const source data pointer copied deeply
     */
     FixedMatrix(const T *srcdata):m_data(new T[DIM]),m_ownData(true){
-      std::copy(srcdata,srcdata+dim(),begin());
-    }
-
-    FixedMatrix(const FixedMatrix &other):m_data(new T[DIM]),m_ownData(true){
-      std::copy(other.begin(),other.end(),begin());
+      FixedMatrixBase::optimized_copy<T*,T*,DIM>(srcdata,srcdata+dim(),begin());
+      //std::copy(srcdata,srcdata+dim(),begin());
     }
     
-    /// Copy-Constructor
-    /** If source Matrix data type differs from this' data type icl::Cast class is
-        used to cast between the data types 
-        @param other source matrix copied deeply
-    */
+    /** \cond */
+#define A1(N) const T& v ## N
+#define A2(N1,N2) A1(N1),A1(N2)
+#define A3(N1,N2,N3) A1(N1),A2(N2,N3)
+#define A4(N1,N2,N3,N4) A2(N1,N2),A2(N3,N4)
+
+#define B1(N) if(COLS*ROWS>N) m_data[N] = v ## N
+#define B2(N1,N2) B1(N1);B1(N2)
+#define B3(N1,N2,N3) B1(N1);B2(N2,N3)
+#define B4(N1,N2,N3,N4) B2(N1,N2);B2(N3,N4)
+
+#define FM_INIT m_data(new T[DIM]),m_ownData(true)
+
+    FixedMatrix(A2(0,1)):FM_INIT{ B2(0,1); }
+    FixedMatrix(A3(0,1,2)):FM_INIT{ B3(0,1,2); }
+    FixedMatrix(A4(0,1,2,3)):FM_INIT{ B4(0,1,2,3); }
+
+    FixedMatrix(A4(0,1,2,3),A1(4)):FM_INIT{ B4(0,1,2,3);B1(4); }
+    FixedMatrix(A4(0,1,2,3),A2(4,5)):FM_INIT{ B4(0,1,2,3);B2(4,5); }    
+    FixedMatrix(A4(0,1,2,3),A3(4,5,6)):FM_INIT{ B4(0,1,2,3);B3(4,5,6); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7); }
+
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A1(8)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B1(8); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A2(8,9)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B2(8,9); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A3(8,9,10)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B3(8,9,10); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11); }
+
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A1(12)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B1(12); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A2(12,13)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B2(12,13); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A3(12,13,14)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B3(12,13,14); }
+
+    /** \endcond */
+
+    /// Create matrix with given initializer elements (16 values max)
+    /** Although there are no default parameters, this function can be called with any count of arguments (max. 16).
+        This is achieved by heavy efficiently by C-Macro based overloading of the FixedMatrix constructor. To keep
+        FixedMatrix documentation clean of all overloaded constructor versions, they have been excluded from 
+        documentation explicitly. */
+    
+    FixedMatrix(const T& v0,const T& v1,const T& v2,const T& v3,
+                const T& v4,const T& v5,const T& v6,const T& v7,  
+                const T& v8,const T& v9,const T& v10,const T& v11,  
+                const T& v12,const T& v13,const T& v14,const T& v15):FM_INIT{
+      B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B4(12,13,14,15);
+    } 
+    /** \cond */
+#undef A1
+#undef A2
+#undef A3
+#undef A4
+#undef B1
+#undef B2
+#undef B3
+#undef B4
+#undef MF_INIT
+    /** \endcond */
+
+    // Range based constructor 
+    //   template<class OtherT, class OtherIterator>
+    //FixedMatrix(const RangedPart<OtherIterator> &r):m_data(new T[DIM]),m_ownData(true){
+    //  std::copy(r.begin(),r.end(),begin());
+    //} 
+   
+    /// Range based constructor for STL compatiblitiy 
+    /** Range size must be compatible to the new matrix's dimension */
+    template<class OtherIterator>
+    FixedMatrix(OtherIterator begin, OtherIterator end):m_data(new T[DIM]),m_ownData(true){
+      FixedMatrixBase::optimized_copy<OtherIterator,T*,DIM>(begin,end,begin());
+      //      std::copy(begin,end,begin());
+    }
+
+    // Explicit Copy template based constructor (deep copy)
+    FixedMatrix(const FixedMatrix &other):m_data(new T[DIM]),m_ownData(true){
+      FixedMatrixBase::optimized_copy<const T*,T*,DIM>(other.begin(),other.end(),begin());
+      //std::copy(other.begin(),other.end(),begin());
+    }
+
+    // Explicit Copy template based constructor (deep copy)
     template<class otherT>
     FixedMatrix(const FixedMatrix<otherT,COLS,ROWS> &other):m_data(new T[DIM]),m_ownData(true){
       std::transform(other.begin(),other.end(),begin(),clipped_cast<otherT,T>);
-    } 
-
+    }
     
-    /// Create matrix with given initializer elements (16 values max)
-    FixedMatrix(const T& v0,const T& v1,const T& v2=0,const T& v3=0,
-                const T& v4=0,const T& v5=0,const T& v6=0,const T& v7=0,  
-                const T& v8=0,const T& v9=0,const T& v10=0,const T& v11=0,  
-                const T& v12=0,const T& v13=0,const T& v14=0,const T& v15=0):
-    m_data(new T[DIM]),m_ownData(true){
-#define ARG(N) if(COLS*ROWS > N) m_data[N]=v##N
-                    ARG(0);ARG(1);ARG(2);ARG(3);ARG(4);ARG(5);ARG(6);ARG(7);
-                    ARG(8);ARG(9);ARG(10);ARG(11);ARG(12);ARG(13);ARG(14);ARG(15);
-#undef ARG
-    }  
-
-    template<class OtherIterator>
-    FixedMatrix(const IteratorRange<OtherIterator> &r):m_data(new T[DIM]),m_ownData(true){
-      std::copy(r.begin(),r.end(),begin());
-    } 
-   
+    /// Assignment operator (with compatible data type) (deep copy)
+    FixedMatrix &operator=(const FixedMatrix &other){
+      if(this == &other) return *this;
+      FixedMatrixBase::optimized_copy<const T*,T*,DIM>(other.begin(),other.end(),begin());
+      //std::copy(other.begin(),other.end(),begin());
+      return *this;
+    }
     
-    /// Assignment operator
-    /** If source Matrix data type differs from this' data type icl::Cast class is
-        used to cast between the data types 
-        @param other source matrix copied deeply
-    */
+    /// Assignment operator (with compatible data type) (deep copy)
+    /** Internally using std::transform with icl::clipped_cast<otherT,T> */
     template<class otherT>
     FixedMatrix &operator=(const FixedMatrix<otherT,COLS,ROWS> &other){
-      if(this = &other) return *this;
+      if(this == &other) return *this;
       std::transform(other.begin(),other.end(),begin(),clipped_cast<otherT,T>);
       return *this;
     }
@@ -162,15 +278,20 @@ namespace icl{
       return *this;
     }
 
-    /// Assign all elements with given values from range
-    template<class OtherIterator>
-    FixedMatrix &operator=(const IteratorRange<OtherIterator> &r){
-      std::copy(r.begin(),r.end(),begin());
+    /// Assign matrix elements with sup-part of another matrix (identical types)
+    template<class Iterator>
+    FixedMatrix &operator=(const FixedMatrixPart<T,DIM,Iterator> &r){ 
+      //      std::copy(r.begin,r.end,begin());
+      FixedMatrixBase::optimized_copy<Iterator,T*,DIM>(r.begin,r.end,begin());
       return *this;
     }
-    
-    
 
+    /// Assign matrix elements with sup-part of another matrix (compatible types)
+    template<class otherT, class Iterator>
+    FixedMatrix &operator=(const FixedMatrixPart<otherT,DIM,Iterator> &r){ 
+      std::transform(r.begin,r.end,begin(),clipped_cast<otherT,T>);
+      return *this;
+    }
 
     /// Matrix devision
     /** A/B is equal to A*inv(B)
@@ -539,18 +660,17 @@ namespace icl{
     */
     template<unsigned int MCOLS>
     FixedMatrix<T,MCOLS,ROWS> operator*(const FixedMatrix<T,MCOLS,COLS> &m) const{
-      //      std::cout << "Operator* called A*B" << std::endl;
-      //std::cout << "A:\n" << *this << "\nB:\n" << m << std::endl;
       FixedMatrix<T,MCOLS,ROWS> d;
-      for(unsigned int c=0;c<MCOLS;++c){
-        for(unsigned int r=0;r<ROWS;++r){
-          //          std::cout << "A*B" << std::endl;
-          //  std::cout << "A.row("<<r<<"): " << row(r) << "\n B.col("<<c<<"): " << m.col(c) << std::endl;
-          d(c,r) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));//,row_end(r),m.col_begin(c),0);
-          //std::cout << "\nresult is :" << d(c,r) << std::endl;
-        }
-      }
-      //std::cout << "Result is:\n" << d << std::endl;
+      
+      // for(unsigned int c=0;c<MCOLS;++c){
+      //   for(unsigned int r=0;r<ROWS;++r){
+      
+      
+      // for(unsigned int c=0;c<MCOLS;++c){
+      //   for(unsigned int r=0;r<ROWS;++r){
+      //     d(c,r) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
+      //   }
+      // }
       return d;
     }
     /**          __MCOLS__
@@ -577,7 +697,8 @@ namespace icl{
       DynMatrix<T> mi = m.inv();
       m.set_data(0);
       FixedMatrix r;
-      std::copy(mi.begin(),mi.end(),r.begin());      
+      FixedMatrixBase::optimized_copy<T*,T*,DIM>(mi.begin(),mi.end(),begin());
+      //      std::copy(mi.begin(),mi.end(),r.begin());      
       return r;
     }
     
@@ -591,29 +712,30 @@ namespace icl{
     FixedMatrix<T,ROWS,COLS> transp() const{
       FixedMatrix<T,ROWS,COLS> d;
       for(unsigned int i=0;i<cols();++i){
-        std::copy(col_begin(i),col_end(i),d.row_begin(i));
+        FixedMatrixBase::optimized_copy<const_col_iterator, typename FixedMatrix<T,ROWS,COLS>::row_iterator,DIM>(col_begin(i),col_end(i),d.row_begin(i));
+        //        std::copy(col_begin(i),col_end(i),d.row_begin(i));
       }
       return d;
     }
 
     /// returns a matrix row-reference  iterator pair
-    IteratorRange<row_iterator> row(unsigned int idx){
-      return IteratorRange<row_iterator>(row_begin(idx),row_end(idx));
+    FixedMatrixPart<T,COLS,row_iterator> row(unsigned int idx){
+      return FixedMatrixPart<T,COLS,row_iterator>(row_begin(idx),row_end(idx));
     }
 
     /// returns a matrix row-reference  iterator pair (const)
-    IteratorRange<const_row_iterator> row(unsigned int idx) const{
-      return IteratorRange<const_row_iterator>(row_begin(idx),row_end(idx));
+    FixedMatrixPart<T,COLS,const_row_iterator> row(unsigned int idx) const{
+      return FixedMatrixPart<T,COLS,const_row_iterator>(row_begin(idx),row_end(idx));
     }
 
     /// returns a matrix col-reference  iterator pair
-    IteratorRange<col_iterator> col(unsigned int idx){
-      return IteratorRange<col_iterator>(col_begin(idx),col_end(idx));
+    FixedMatrixPart<T,ROWS,col_iterator> col(unsigned int idx){
+      return FixedMatrixPart<T,ROWS,col_iterator>(col_begin(idx),col_end(idx));
     }
 
     /// returns a matrix col-reference  iterator pair (const)
-    IteratorRange<const_col_iterator> col(unsigned int idx) const{
-      return IteratorRange<const_col_iterator>(col_begin(idx),col_end(idx));
+    FixedMatrixPart<T,ROWS,const_col_iterator> col(unsigned int idx) const{
+      return FixedMatrixPart<T,ROWS,const_col_iterator>(col_begin(idx),col_end(idx));
     }
     
     /// create identity matrix 
@@ -711,13 +833,20 @@ namespace icl{
     return t;
   }
 
-  template<class OtherIterator> template<class T, unsigned int COLS, unsigned int ROWS>
-  inline IteratorRange<OtherIterator> &IteratorRange<OtherIterator>::operator=(const FixedMatrix<T,COLS,ROWS> &m){
-    std::copy(m.begin(),m.end(),begin);
+
+  /** \cond  declared and documented above */
+  template<class T,unsigned int N, class Iterator> template<unsigned int COLS>
+  inline FixedMatrixPart<T,N,Iterator>& FixedMatrixPart<T,N,Iterator>::operator=(const FixedMatrix<T,COLS,N/COLS> &m){
+    FixedMatrixBase::optimized_copy<const T*,Iterator,N>(m.begin(),m.end(),begin);
+    //std::copy(m.begin(),m.end(),begin);
     return *this;
   }
-    
-    
+  template<class T,unsigned int N, class Iterator> template<class T2, unsigned int COLS>
+  inline FixedMatrixPart<T,N,Iterator>& FixedMatrixPart<T,N,Iterator>::operator=(const FixedMatrix<T2,COLS,N/COLS> &m){
+    std::transform(m.begin(),m.end(),begin,clipped_cast<T2,T>);
+    return *this;
+  }
+  /** \endcond */
 
 
 }
