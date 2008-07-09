@@ -12,6 +12,10 @@
 #include <iclDynMatrix.h>
 #include <iclClippedCast.h>
 
+#ifdef WITH_IPP_OPTIMIZATION
+#include <ippm.h>
+#endif
+
 namespace icl{
 
   /// FixedMatrix base struct defining datamode enum
@@ -142,67 +146,24 @@ namespace icl{
       FixedMatrixBase::optimized_copy<T*,T*,DIM>(srcdata,srcdata+dim(),begin());
       //std::copy(srcdata,srcdata+dim(),begin());
     }
-    
-    /** \cond */
-#define A1(N) const T& v ## N
-#define A2(N1,N2) A1(N1),A1(N2)
-#define A3(N1,N2,N3) A1(N1),A2(N2,N3)
-#define A4(N1,N2,N3,N4) A2(N1,N2),A2(N3,N4)
-
-#define B1(N) if(COLS*ROWS>N) m_data[N] = v ## N
-#define B2(N1,N2) B1(N1);B1(N2)
-#define B3(N1,N2,N3) B1(N1);B2(N2,N3)
-#define B4(N1,N2,N3,N4) B2(N1,N2);B2(N3,N4)
-
-    FixedMatrix(A2(0,1)){ B2(0,1); }
-    FixedMatrix(A3(0,1,2)){ B3(0,1,2); }
-    FixedMatrix(A4(0,1,2,3)){ B4(0,1,2,3); }
-
-    FixedMatrix(A4(0,1,2,3),A1(4)){ B4(0,1,2,3);B1(4); }
-    FixedMatrix(A4(0,1,2,3),A2(4,5)){ B4(0,1,2,3);B2(4,5); }    
-    FixedMatrix(A4(0,1,2,3),A3(4,5,6)){ B4(0,1,2,3);B3(4,5,6); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7)){ B4(0,1,2,3);B4(4,5,6,7); }
-
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A1(8)){ B4(0,1,2,3);B4(4,5,6,7);B1(8); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A2(8,9)){ B4(0,1,2,3);B4(4,5,6,7);B2(8,9); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A3(8,9,10)){ B4(0,1,2,3);B4(4,5,6,7);B3(8,9,10); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11)){ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11); }
-
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A1(12)){ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B1(12); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A2(12,13)){ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B2(12,13); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A3(12,13,14)){ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B3(12,13,14); }
-
-    /** \endcond */
 
     /// Create matrix with given initializer elements (16 values max)
-    /** Although there are no default parameters, this function can be called with any count of arguments (max. 16).
-        This is achieved by heavy efficiently by C-Macro based overloading of the FixedMatrix constructor. To keep
-        FixedMatrix documentation clean of all overloaded constructor versions, they have been excluded from 
-        documentation explicitly. */
-    
-    FixedMatrix(const T& v0,const T& v1,const T& v2,const T& v3,
-                const T& v4,const T& v5,const T& v6,const T& v7,  
-                const T& v8,const T& v9,const T& v10,const T& v11,  
-                const T& v12,const T& v13,const T& v14,const T& v15){
-      B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B4(12,13,14,15);
+    /** default parameters for unnecessary parameters are not created when 
+        compiled with -O4        
+    **/
+    FixedMatrix(const T& v0,const T& v1,const T& v2=0,const T& v3=0,
+                const T& v4=0,const T& v5=0,const T& v6=0,const T& v7=0,  
+                const T& v8=0,const T& v9=0,const T& v10=0,const T& v11=0,  
+                const T& v12=0,const T& v13=0,const T& v14=0,const T& v15=0){
+#define C1(N) if(DIM>N) m_data[N]=v##N
+#define C4(A,B,C,D) C1(A);C1(B);C1(C);C1(D)
+      C4(0,1,2,3);C4(4,5,6,7);C4(8,9,10,11);C4(12,13,14,15);
+#undef C1
+#undef C2
     } 
     /** \cond */
-#undef A1
-#undef A2
-#undef A3
-#undef A4
-#undef B1
-#undef B2
-#undef B3
-#undef B4
     /** \endcond */
 
-    // Range based constructor 
-    //   template<class OtherT, class OtherIterator>
-    //FixedMatrix(const RangedPart<OtherIterator> &r){
-    //  std::copy(r.begin(),r.end(),begin());
-    //} 
-   
     /// Range based constructor for STL compatiblitiy 
     /** Range size must be compatible to the new matrix's dimension */
     template<class OtherIterator>
@@ -620,38 +581,58 @@ namespace icl{
     /// row end iterator (const)
     const_row_iterator row_end(unsigned int row) const { return m_data+(row+1)*cols(); }
 
-
+    /// inpace matrix multiplication (dst = (*this)*m)
+    /** Inplace matrix multiplication for 4x4-float-matrices (using ipp-optimization)
+        is approximately twice as fast as D=A*B operator based multiplication
+        \section BM Benchmark 
+        1.000.000 Multiplications of 4x4-float matrices (using ipp-optimization) on a 2GHz 
+        Core-2-Duo take about 145ms using inplace multiplication and  about 290ms using
+        not-inplace multiplication. 
+        
+        @param m right matrix multiplication operand
+        @dst destination of matrix multiplication
+        @see operator*(const FixedMatrix<T,MCOLS,COLS>&) 
+    */
+    template<unsigned int MCOLS>
+    void mult(const FixedMatrix<T,MCOLS,COLS> &m,  FixedMatrix<T,MCOLS,ROWS> &dst) const{
+      for(unsigned int c=0;c<MCOLS;++c){
+        for(unsigned int r=0;r<ROWS;++r){
+          //          std::cout << "calling inner_product" << std::endl;
+          dst(c,r) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
+        }
+      }      
+    }
     /// Matrix multiplication (essential)
     /** matrices multiplication A*B is only valid if cols(A) is equal to rows(B).
-        Resulting matrix has dimensions cols(B) x rows(A)
+        Resulting matrix has dimensions cols(B) x rows(A). Matrix mutliplication
+        is ipp-optimized for float and double and for (2x2-, 3x3- and 4x4- matrices)
         @param m right operator in matrix multiplication
+        @return 
+
+        multiplication sceme
+        <pre>
+                 __MCOLS__
+                |      c  |
+                |      c  |
+              COLS     c  |  = right operand
+                |      c  |
+                |______c__|
+                
+        _COLS__  __________
+       |      | |      /\ |
+       |      | |      |  |  = result
+     ROWS     | |      |  |
+       |rrrrrr| |<-----x  |  x is inner product <r,c>
+       |______| |_________|
+        </pre>
     */
     template<unsigned int MCOLS>
     FixedMatrix<T,MCOLS,ROWS> operator*(const FixedMatrix<T,MCOLS,COLS> &m) const{
       FixedMatrix<T,MCOLS,ROWS> d;
-      
-      for(unsigned int c=0;c<MCOLS;++c){
-        for(unsigned int r=0;r<ROWS;++r){
-          d(c,r) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
-        }
-      }
+      mult(m,d);
       return d;
     }
-    /**          __MCOLS__
-                |         |
-                |         |
-              COLS        |
-                |         |
-                |_________|
-                
-       --COLS--  __________
-       |      | |         |
-       |      | |         |
-     ROWS     | |         |
-       |      | |         |
-       |______| |_________|
-
-    */
+ 
 
 
     /// invert the matrix (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
@@ -723,7 +704,21 @@ namespace icl{
       }
       return ::pow( sumSquares, 1.0/norm);
     }
-    
+
+    /// Element-wise comparison with other matrix
+    template<class otherT>
+    bool operator==(const FixedMatrix<otherT,COLS,ROWS> &m) const{
+      for(unsigned int i=0;i<DIM;++i){
+        if(m_data[i] != m[i]) return false;
+      }
+      return true;
+    }    
+    /// Element-wise comparison with other matrix
+    template<class otherT>
+    bool operator!=(const FixedMatrix<otherT,COLS,ROWS> &m) const{
+      return !this->operator==(m);
+    }    
+
   };
 
  
@@ -812,6 +807,32 @@ namespace icl{
   }
   /** \endcond */
 
+#ifdef WITH_IPP_OPTIMIZATION
+#define OPTIMIZED_MATRIX_MULTIPLICATION(LEFT_COLS,LEFT_ROWS,RIGHT_COLS,TYPE,IPPSUFFIX) \
+  template<> template<>                                                                \
+  inline void                                                                          \
+  FixedMatrix<TYPE,RIGHT_COLS,LEFT_ROWS>::mult                                         \
+     (                                                                                 \
+        const FixedMatrix<TYPE,RIGHT_COLS,LEFT_COLS> &m,                               \
+        FixedMatrix<TYPE,RIGHT_COLS,LEFT_ROWS> &dst                                    \
+     ) const {                                                                         \
+    static const unsigned int ST=sizeof(TYPE);                                         \
+    ippmMul_mm_##IPPSUFFIX(data(),LEFT_COLS*ST,ST,LEFT_COLS,LEFT_ROWS,                 \
+                           m.data(),RIGHT_COLS*ST,ST,RIGHT_COLS,LEFT_COLS,             \
+                           dst.data(),RIGHT_COLS*ST,ST);                               \
+  }
+
+  OPTIMIZED_MATRIX_MULTIPLICATION(2,2,2,float,32f);
+  OPTIMIZED_MATRIX_MULTIPLICATION(3,3,3,float,32f);  
+  OPTIMIZED_MATRIX_MULTIPLICATION(4,4,4,float,32f);
+
+  OPTIMIZED_MATRIX_MULTIPLICATION(2,2,2,double,64f);
+  OPTIMIZED_MATRIX_MULTIPLICATION(3,3,3,double,64f);  
+  OPTIMIZED_MATRIX_MULTIPLICATION(4,4,4,double,64f);
+#undef OPTIMIZED_MATRIX_MULTIPLICATION
+ 
+
+#endif
 
 }
 
