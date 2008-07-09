@@ -16,13 +16,6 @@ namespace icl{
 
   /// FixedMatrix base struct defining datamode enum
   struct FixedMatrixBase{
-    /// mode enum used for the FixedMatrix(T *data) constructor
-    enum dataMode{
-      deepcopy,     //!< given data pointer is copied deeply
-      shallowcopy,  //!< given data pointer is used (ownership is not passed)
-      takeownership //!< given data pointer is used (ownership is passed) 
-    };
-
     /// Optimized copy function template (for N>30 using std::copy, otherwise a simple loop is used)
     template<class SrcIterator, class DstIterator, unsigned int N>
     static void optimized_copy(SrcIterator srcBegin, SrcIterator srcEnd, DstIterator dstBegin){
@@ -121,10 +114,10 @@ namespace icl{
     /// count of matrix elements (COLS x ROWS)
     static const unsigned int DIM = COLS*ROWS;
     
-    private:
+    protected:
     
     /// internal data storage
-    T *m_data;
+    T m_data[COLS*ROWS];
     
     /// flag to indicate whether current data pointer is owned and must be freed in the desturctor
     bool m_ownData;
@@ -133,41 +126,19 @@ namespace icl{
     
     /// Default constructor 
     /** New data is created internally but elements are not initialized */
-    FixedMatrix():m_data(new T[DIM]),m_ownData(true){}
+    FixedMatrix(){}
     
     /// Create Matrix and initialize elements with given value
-    FixedMatrix(const T &initValue):m_data(new T[DIM]),m_ownData(true){
+    FixedMatrix(const T &initValue){
       std::fill(begin(),end(),initValue);
     }
 
-    /// Create matrix with given data pointer
-    /** @param srcData source data pointer to use
-        @param mode specifies what to do with given data pointer
-                    @see FixedMatrixBase::dataMode
-    */
-    FixedMatrix(T *srcdata, dataMode mode):m_ownData(true){
-      switch(mode){
-        case deepcopy:
-          m_data = new T[DIM];
-          FixedMatrixBase::optimized_copy<T*,T*,DIM>(srcdata,srcdata+dim(),begin());
-          //std::copy(srcdata,srcdata+dim(),begin());
-          break;
-        case shallowcopy:
-          m_data = srcdata;
-          m_ownData = false;
-          break;
-        case takeownership:
-          m_data = srcdata;
-          break;
-      }
-    }
-    
     /// Create matrix with given data pointer (const version)
     /** As given data pointer is const, no shallow pointer copies are
         allowed here 
         @params srcdata const source data pointer copied deeply
     */
-    FixedMatrix(const T *srcdata):m_data(new T[DIM]),m_ownData(true){
+    FixedMatrix(const T *srcdata){
       FixedMatrixBase::optimized_copy<T*,T*,DIM>(srcdata,srcdata+dim(),begin());
       //std::copy(srcdata,srcdata+dim(),begin());
     }
@@ -183,25 +154,23 @@ namespace icl{
 #define B3(N1,N2,N3) B1(N1);B2(N2,N3)
 #define B4(N1,N2,N3,N4) B2(N1,N2);B2(N3,N4)
 
-#define FM_INIT m_data(new T[DIM]),m_ownData(true)
+    FixedMatrix(A2(0,1)){ B2(0,1); }
+    FixedMatrix(A3(0,1,2)){ B3(0,1,2); }
+    FixedMatrix(A4(0,1,2,3)){ B4(0,1,2,3); }
 
-    FixedMatrix(A2(0,1)):FM_INIT{ B2(0,1); }
-    FixedMatrix(A3(0,1,2)):FM_INIT{ B3(0,1,2); }
-    FixedMatrix(A4(0,1,2,3)):FM_INIT{ B4(0,1,2,3); }
+    FixedMatrix(A4(0,1,2,3),A1(4)){ B4(0,1,2,3);B1(4); }
+    FixedMatrix(A4(0,1,2,3),A2(4,5)){ B4(0,1,2,3);B2(4,5); }    
+    FixedMatrix(A4(0,1,2,3),A3(4,5,6)){ B4(0,1,2,3);B3(4,5,6); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7)){ B4(0,1,2,3);B4(4,5,6,7); }
 
-    FixedMatrix(A4(0,1,2,3),A1(4)):FM_INIT{ B4(0,1,2,3);B1(4); }
-    FixedMatrix(A4(0,1,2,3),A2(4,5)):FM_INIT{ B4(0,1,2,3);B2(4,5); }    
-    FixedMatrix(A4(0,1,2,3),A3(4,5,6)):FM_INIT{ B4(0,1,2,3);B3(4,5,6); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A1(8)){ B4(0,1,2,3);B4(4,5,6,7);B1(8); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A2(8,9)){ B4(0,1,2,3);B4(4,5,6,7);B2(8,9); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A3(8,9,10)){ B4(0,1,2,3);B4(4,5,6,7);B3(8,9,10); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11)){ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11); }
 
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A1(8)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B1(8); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A2(8,9)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B2(8,9); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A3(8,9,10)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B3(8,9,10); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11); }
-
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A1(12)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B1(12); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A2(12,13)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B2(12,13); }
-    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A3(12,13,14)):FM_INIT{ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B3(12,13,14); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A1(12)){ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B1(12); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A2(12,13)){ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B2(12,13); }
+    FixedMatrix(A4(0,1,2,3),A4(4,5,6,7),A4(8,9,10,11),A3(12,13,14)){ B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B3(12,13,14); }
 
     /** \endcond */
 
@@ -214,7 +183,7 @@ namespace icl{
     FixedMatrix(const T& v0,const T& v1,const T& v2,const T& v3,
                 const T& v4,const T& v5,const T& v6,const T& v7,  
                 const T& v8,const T& v9,const T& v10,const T& v11,  
-                const T& v12,const T& v13,const T& v14,const T& v15):FM_INIT{
+                const T& v12,const T& v13,const T& v14,const T& v15){
       B4(0,1,2,3);B4(4,5,6,7);B4(8,9,10,11);B4(12,13,14,15);
     } 
     /** \cond */
@@ -226,32 +195,31 @@ namespace icl{
 #undef B2
 #undef B3
 #undef B4
-#undef MF_INIT
     /** \endcond */
 
     // Range based constructor 
     //   template<class OtherT, class OtherIterator>
-    //FixedMatrix(const RangedPart<OtherIterator> &r):m_data(new T[DIM]),m_ownData(true){
+    //FixedMatrix(const RangedPart<OtherIterator> &r){
     //  std::copy(r.begin(),r.end(),begin());
     //} 
    
     /// Range based constructor for STL compatiblitiy 
     /** Range size must be compatible to the new matrix's dimension */
     template<class OtherIterator>
-    FixedMatrix(OtherIterator begin, OtherIterator end):m_data(new T[DIM]),m_ownData(true){
+    FixedMatrix(OtherIterator begin, OtherIterator end){
       FixedMatrixBase::optimized_copy<OtherIterator,T*,DIM>(begin,end,begin());
       //      std::copy(begin,end,begin());
     }
 
     // Explicit Copy template based constructor (deep copy)
-    FixedMatrix(const FixedMatrix &other):m_data(new T[DIM]),m_ownData(true){
+    FixedMatrix(const FixedMatrix &other){
       FixedMatrixBase::optimized_copy<const T*,T*,DIM>(other.begin(),other.end(),begin());
       //std::copy(other.begin(),other.end(),begin());
     }
 
     // Explicit Copy template based constructor (deep copy)
     template<class otherT>
-    FixedMatrix(const FixedMatrix<otherT,COLS,ROWS> &other):m_data(new T[DIM]),m_ownData(true){
+    FixedMatrix(const FixedMatrix<otherT,COLS,ROWS> &other){
       std::transform(other.begin(),other.end(),begin(),clipped_cast<otherT,T>);
     }
     
@@ -635,10 +603,10 @@ namespace icl{
     col_iterator col_end(unsigned int col) { return col_iterator(m_data+col+dim()); }
   
     /// returns an iterator iterating over a certain column (const)
-    const_col_iterator col_begin(unsigned int col) const { return col_iterator(m_data+col); }
+    const_col_iterator col_begin(unsigned int col) const { return col_iterator(const_cast<T*>(m_data)+col); }
 
     /// row end iterator const
-    const_col_iterator col_end(unsigned int col) const { return col_iterator(m_data+col+dim()); }
+    const_col_iterator col_end(unsigned int col) const { return col_iterator(const_cast<T*>(m_data)+col+dim()); }
 
     /// returns an iterator iterating over a certain row
     row_iterator row_begin(unsigned int row) { return m_data+row*cols(); }
@@ -662,15 +630,11 @@ namespace icl{
     FixedMatrix<T,MCOLS,ROWS> operator*(const FixedMatrix<T,MCOLS,COLS> &m) const{
       FixedMatrix<T,MCOLS,ROWS> d;
       
-      // for(unsigned int c=0;c<MCOLS;++c){
-      //   for(unsigned int r=0;r<ROWS;++r){
-      
-      
-      // for(unsigned int c=0;c<MCOLS;++c){
-      //   for(unsigned int r=0;r<ROWS;++r){
-      //     d(c,r) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
-      //   }
-      // }
+      for(unsigned int c=0;c<MCOLS;++c){
+        for(unsigned int r=0;r<ROWS;++r){
+          d(c,r) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
+        }
+      }
       return d;
     }
     /**          __MCOLS__

@@ -34,7 +34,6 @@ namespace icl{
   void Object::transform(const Mat &m){
     // {{{ open
     T=T*m;
-
     for(unsigned int i=0;i<m_vecPtsOrig.size();++i){ 
       m_vecPtsTrans[i] = (T*m_vecPtsOrig[i]);
       //m_vecPtsTrans[i] = (T*m_vecPtsOrig[i]).homogenize(); this is not necessary as long as T is just Rot.Scale.Transl

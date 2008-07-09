@@ -27,7 +27,7 @@ namespace icl{
     inline LabelHandle *operator[](int x){ return (***this)[x]; }
 
     /// column access operator (use h[x][y] to access elements)
-    inline LabelHandle *operator[](int x) const{ return (***this)[x]; }
+    inline const LabelHandle *operator[](int x) const{ return (***this)[x]; }
 
     /// width of the matrix (max x index is w()-1
     inline int w() const { return (***this).w(); }

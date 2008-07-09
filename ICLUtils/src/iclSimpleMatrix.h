@@ -105,7 +105,7 @@ namespace icl{
     inline T *operator[](int x){ return m_oData.get()+m_iH*x; }
 
     /// returning a pointer to the column vector at given x offset
-    inline T *operator[](int x) const{ return m_oData.get()+m_iH*x; }
+    inline const T *operator[](int x) const{ return m_oData.get()+m_iH*x; }
 
     /// performs a deep copy of the matrix into a destination matrix
     inline void deepCopy(SimpleMatrix &m) const{
