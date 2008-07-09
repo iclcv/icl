@@ -2,6 +2,7 @@
 #define ICL_POINT_32F_H
 
 #include "iclPoint.h"
+#include <iclClippedCast.h>
 
 namespace icl{
   
@@ -61,7 +62,8 @@ namespace icl{
     
     /// implicit cast to a integer-point
     operator Point() const {
-      return Point(x,y);
+      return Point(clipped_cast<float,int>(x),
+                   clipped_cast<float,int>(x));
     } 
 
     /// returns the p-norm of the 2D Vector
