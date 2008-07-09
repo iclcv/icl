@@ -106,6 +106,14 @@ namespace icl{
     return s.str();
   }
   
+  /// specialized for icl8u
+  template<>
+  inline std::string str(icl8u t){
+    std::ostringstream s;
+    s << (int)t;
+    return s.str();
+  }
+  
   /// creates a delim-separated string of str'ed values of given vector \ingroup STRUTILS
   /** e.g. if v is {1,2,3} and delim is '-' the resulting string will be
       "1-2-3" 
