@@ -116,33 +116,59 @@ CMD_CHMOD=chmod
 #  setenv CONFIG_GUESS_OUT `config.guess`
 #  setenv CONFIG_GUESS_ID `config.guess|tr -c "[A-Za-z0-9\-]" "_"`
 #
-ifeq "${CONFIG_GUESS_OUT}" ""
- SYSTEM_INFO= $(shell ./${_DOT_DOT}/config.guess)
-else
- SYSTEM_INFO= ${CONFIG_GUESS_OUT}
-endif
 
-ifeq "${CONFIG_GUESS_ID}" ""
-  SYSTEM_ID= $(patsubst %_,%,$(subst -, ,$(shell echo ${SYSTEM_INFO}|${CMD_DTR} -c "[A-Za-z0-9\-]" "_")))
-else
-  SYSTEM_ID= $(patsubst %_,%,$(subst -, ,${CONFIG_GUESS_ID}))
-endif
+#OLD:
+#ifeq "${CONFIG_GUESS_OUT}" ""
+# SYSTEM_INFO= $(shell ./${_DOT_DOT}/config.guess)
+#else
+# SYSTEM_INFO= ${CONFIG_GUESS_OUT}
+#endif
 
-ARCH_TYPE= $(word 1, ${SYSTEM_ID})
-VENDOR_NAME= $(word 2, ${SYSTEM_ID})
-OS_NAME= $(word 3, ${SYSTEM_ID})
+#ifeq "${CONFIG_GUESS_ID}" ""
+#  SYSTEM_ID= $(patsubst %_,%,$(subst -, ,$(shell echo ${SYSTEM_INFO}|${CMD_DTR} -c "[A-Za-z0-9\-]" "_")))
+#else
+#  SYSTEM_ID= $(patsubst %_,%,$(subst -, ,${CONFIG_GUESS_ID}))
+#endif
 
-ifeq "$(findstring windows,${OS_NAME})" "windows"
+#ARCH_TYPE= $(word 1, ${SYSTEM_ID})
+#VENDOR_NAME= $(word 2, ${SYSTEM_ID})
+#OS_NAME= $(word 3, ${SYSTEM_ID})
+
+#ifeq "$(findstring windows,${OS_NAME})" "windows"
+# OS_TYPE=windows
+# CPPDEFINES:=${CPPDEFINES} -DWINDOWS
+# CDEFINES:=${CDEFINES} -DWINDOWS
+#endif
+#ifeq "$(findstring linux,${OS_NAME})" "linux"
+# OS_TYPE=linux
+# CPPDEFINES:=${CPPDEFINES} -DLINUX
+# CDEFINES:=${CDEFINES} -DLINUX
+#endif
+#ifeq "$(findstring darwin,${OS_NAME})" "darwin"
+# OS_TYPE=macosx
+# CPPDEFINES:=${CPPDEFINES} -DMACOSX
+# CDEFINES:=${CDEFINES} -DMACOSX
+#endif
+
+UNAME_OUTPUT:=${shell uname}
+UNAME_OUTPUT_WIN:=$(shell echo "${UNAME_OUTPUT}" | grep -i windows)
+UNAME_OUTPUT_LIN:=$(shell echo "${UNAME_OUTPUT}" | grep -i linux)
+UNAME_OUTPUT_MAC:=$(shell echo "${UNAME_OUTPUT}" | grep -i darwin)
+
+ifneq "${UNAME_OUTPUT_WIN}" ""
+# $(info "WIN! : ${UNAME_OUTPUT_WIN}")
  OS_TYPE=windows
  CPPDEFINES:=${CPPDEFINES} -DWINDOWS
  CDEFINES:=${CDEFINES} -DWINDOWS
 endif
-ifeq "$(findstring linux,${OS_NAME})" "linux"
+ifneq "${UNAME_OUTPUT_LIN}" ""
+# $(info "LIN! ${UNAME_OUTPUT_LIN}")
  OS_TYPE=linux
  CPPDEFINES:=${CPPDEFINES} -DLINUX
  CDEFINES:=${CDEFINES} -DLINUX
 endif
-ifeq "$(findstring darwin,${OS_NAME})" "darwin"
+ifneq "${UNAME_OUTPUT_MAC}" ""
+# $(info "MAC! ${UNAME_OUTPUT_MAC}")
  OS_TYPE=macosx
  CPPDEFINES:=${CPPDEFINES} -DMACOSX
  CDEFINES:=${CDEFINES} -DMACOSX
