@@ -143,7 +143,7 @@ namespace icl{
         @params srcdata const source data pointer copied deeply
     */
     FixedMatrix(const T *srcdata){
-      FixedMatrixBase::optimized_copy<T*,T*,DIM>(srcdata,srcdata+dim(),begin());
+      FixedMatrixBase::optimized_copy<const T*,T*,DIM>(srcdata,srcdata+dim(),begin());
       //std::copy(srcdata,srcdata+dim(),begin());
     }
 
@@ -732,14 +732,26 @@ namespace icl{
     return v = (m*v);
   } 
 
+  /** \cond */
+  template<class T>
+  inline std::ostream &fixed_matrix_aux_to_stream(std::ostream &s,const T &t){
+    return s << t;
+  }
+  template<>
+  inline std::ostream &fixed_matrix_aux_to_stream(std::ostream &s,const unsigned char &t){
+    return s << (int)t;
+  }
 
+  /** \endcond */
 
   /// put the matrix into a std::ostream (human readable)
   template<class T, unsigned int COLS, unsigned int ROWS>
   inline std::ostream &operator<<(std::ostream &s,const FixedMatrix<T,COLS,ROWS> &m){
     for(unsigned int i=0;i<m.rows();++i){
       s << "| ";
-      std::copy(m.row_begin(i),m.row_end(i),std::ostream_iterator<T>(s," "));
+      for(unsigned int j=0;j<COLS;++j){
+        s << fixed_matrix_aux_to_stream(s,m(j,i)) << " ";
+      }
       s << "|" << std::endl;
     }
     return s;
