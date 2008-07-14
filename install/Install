@@ -195,7 +195,8 @@ foreach my $entry(@dirs) {
     if ($installMode == 0 || $installMode == 2) {
         print "---- Copying documentation: $entry/doc\n";
         system "cp -r ./$entry/doc/documentation/* $INSTALLDIR/doc/$entry";
-        system "chmod -R g+w $INSTALLDIR/doc";
+        system "chmod -R g+wX $INSTALLDIR/doc";
+        system "chmod -R o+rX $INSTALLDIR/doc";
         generate_documentation($INSTALLDIR, @dirs);        
     }
 
