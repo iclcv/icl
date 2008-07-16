@@ -185,6 +185,7 @@ namespace icl{
       - <b>combo</b> a combo box
       - <b>spinner</b> a spin box (integer valued with given range)
       - <b>fps</b> label component showing current frames per second
+      - <b>multidraw</b> tabbed widget of draw widget components accessible via string index
         
       \subsection TYPEPARAMS Type Dependent Parameters
       The 2nd part of the GUI definition string is a comma separated list of type dependent parameters.
@@ -240,7 +241,25 @@ namespace icl{
         An integer valued Spin-Box with a given range {MIN,...,MAX} and a given initial value CURRENT.
       - <b>fps(int TIME_WINDOW_SIZE)</b>\n
         A Label component showing current frames per second averaged over last TIME_WINDOW_SIZE time steps.
-        
+      - <b>multidraw(string buffermode=!one, string buffermethod=!deepcopy, CommaSepListOfTabs)</b>\n
+        Creates a tabbed widget containing an image widget on each tab to visualize multiple images 
+        simultaneously (selectable by mouse using tabs). Internally this is achieved using a single
+        DrawWidget which is set up with different images. The calling variable <em>buffermode</em> (possible 
+        values are "!all" or "!one") allows to 
+        to set up the widget to buffer all images internally (dependent on value of buffermethod either using 
+        ImageBase::deepCopy (value "!deepcopy") or using a shallow pointer copy (value "!shallowcopy") ) or to buffer 
+        images only, when corresponding tab is really shown actually. <b>Note</b> that obviously the control parameters
+        begin with a '!'-character!\n      
+        The <b>multidraw</b> component provides a powerful handle, which implements
+        the array-index operator([]) with std::string-argument to manipulate the content of a certain tab
+        only.\n
+        If your application runs at high frame rate (e.g. 15Hz), it will be sufficient to use default
+        settings (buffermode=one). Otherwise, if application runs slowly (e.g. only 2Hz, this) it will become
+        more responsive if buffermode is set to "all". If images displayed are held permanently, it will
+        speed up performance if buffermethod is set to "shallowcopy" then.
+      
+      
+
       \subsection GP General Parameters
       The 3rd part of the GUI definition string is a list of so called general params. "General" means here,
       that these params are available for all components, whereas some of these parameters must be compatible
@@ -327,6 +346,7 @@ namespace icl{
       <TR> <TD>combo</TD>        <TD>ComboHandle</TD>       <TD>1 type std::string</TD> <TD>current selected item</TD>                              </TR>
       <TR> <TD>spinner</TD>      <TD>SpinnerHandle</TD>     <TD>1 type int</TD>         <TD>current value</TD>                                      </TR>
       <TR> <TD>fps</TD>          <TD>FPSHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
+      <TR> <TD>multidraw</TD>    <TD>MultiDrawHandle</TD>   <TD>0</TD>                  <TD>handle of [string]-accessible ICLDrawWidgets</TD>       </TR>
       </TABLE>
       
       \section HVV Handles vs. Values

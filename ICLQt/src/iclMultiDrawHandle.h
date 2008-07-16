@@ -1,10 +1,11 @@
-#ifndef ICL_MULTI_DRAW_HANDLE
-#define ICL_MULTI_DRAW_HANDLE
+#ifndef ICL_MULTI_DRAW_HANDLE_H
+#define ICL_MULTI_DRAW_HANDLE_H
 
 #include <iclGUIHandle.h>
 #include <QTabBar>
 #include <vector>
 #include <map>
+#include <QObject>
 
 namespace icl{
   
@@ -14,11 +15,17 @@ namespace icl{
   /** \endcond */
 
   /// Handle class for image components \ingroup HANDLES
-  class MultiDrawHandle : public GUIHandle<ICLDrawWidget>{
+  class MultiDrawHandle : public QObject, public GUIHandle<ICLDrawWidget>{
+    Q_OBJECT
+
     public:
     /// create a new ImageHandel
-    MultiDrawHandle(ICLDrawWidget *w=0, QTabBar *t=0);
-    
+    MultiDrawHandle(ICLDrawWidget *w=0, QTabBar *t=0,std::vector<ImgBase*> *imageBuffer=0,  bool bufferAll=false, bool bufferDeeply=true);
+
+    MultiDrawHandle(const MultiDrawHandle &other);
+
+    ~MultiDrawHandle();
+
     class Assigner{
       public:
       MultiDrawHandle *d;
@@ -39,10 +46,17 @@ namespace icl{
     std::string getSelected();
     bool isSelected(const std::string &text);
 
+    public slots:
+    void tabChanged(int idx);
+    
+
     private:
 
+    std::vector<ImgBase*> *m_imageBuffer;
     QTabBar *m_tabBar;
     std::map<std::string,int> m_map;
+    bool m_bufferAll;
+    bool m_bufferDeeply;
   };
   
 }

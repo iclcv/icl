@@ -692,7 +692,36 @@ public:
   struct MultiDrawGUIWidget : public GUIWidget{
     // {{{ open
     MultiDrawGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::vboxLayout,0,0,-1){
-
+      m_bAll = false;
+      m_bDeep = true;
+      
+      bool x[2]= {false,false};
+      bool err = false;
+      for(unsigned int i=0;i<def.numParams();++i){
+        if(def.param(i) == "!one") {
+          m_bAll = false;
+          if(x[0]) err = true;
+          x[0] = true;
+        }
+        if(def.param(i) == "!all"){
+          m_bAll = true;
+          if(x[0]) err = true;
+          x[0] = true;
+        }
+        if(def.param(i) == "!deepcopy"){
+          m_bDeep = true;          
+          if(x[1]) err = true;
+          x[1] = true;
+        } 
+        if(def.param(i) == "!shallowcopy"){
+          m_bDeep = false;
+          if(x[1]) err = true;
+          x[1] = true;
+        } 
+      }
+      if(err){
+        throw GUISyntaxErrorException(def.defString(),"any two parameters are doubled or contradictory");
+      }
       
       m_poTabBar = new QTabBar(def.parentWidget());
       m_poDrawWidget = new ICLDrawWidget(def.parentWidget());
@@ -702,12 +731,14 @@ public:
       getGUIWidgetLayout()->addWidget(m_poDrawWidget);
 
       for(unsigned int i=0;i<def.numParams();++i){
-        m_poTabBar->addTab(def.param(i).c_str());
+        std::string s = def.param(i);
+        if(s.length() && s[0] == '!') continue;
+        m_poTabBar->addTab(s.c_str());
       }
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<MultiDrawHandle>(def.handle(),MultiDrawHandle(m_poDrawWidget,m_poTabBar));
+        getGUI()->allocValue<MultiDrawHandle>(def.handle(),MultiDrawHandle(m_poDrawWidget,m_poTabBar,&m_vecImageBuffer,m_bAll, m_bDeep));
         getGUI()->unlockData();  
       }
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -717,8 +748,13 @@ public:
       gen_params();
     }
     private:
-      QTabBar *m_poTabBar;
-      ICLDrawWidget *m_poDrawWidget;
+    
+    QTabBar *m_poTabBar;
+    ICLDrawWidget *m_poDrawWidget;
+    std::vector<ImgBase *> m_vecImageBuffer;
+    
+    bool m_bAll;
+    bool m_bDeep;
   };
 
   // }}}
