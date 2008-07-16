@@ -53,7 +53,6 @@ DEBUG:= ${DEBUG}
 
 # Decide if debug is on or off
 DEBUG_ON:= ${DEBUG_ON}
-DEBUG_ON:=TRUE
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES}
