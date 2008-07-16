@@ -183,6 +183,18 @@ namespace icl{
     FixedMatrix(const FixedMatrix<otherT,COLS,ROWS> &other){
       std::transform(other.begin(),other.end(),begin(),clipped_cast<otherT,T>);
     }
+
+    /// Create matrix of a sub-part of another matrix (identical types)
+    template<class Iterator>
+    FixedMatrix (const FixedMatrixPart<T,DIM,Iterator> &r){ 
+      FixedMatrixBase::optimized_copy<Iterator,T*,DIM>(r.begin,r.end,begin());
+    }
+
+    /// Create matrix of a sub-part of another matrix (compatible types)
+    template<class otherT, class Iterator>
+    FixedMatrix(const FixedMatrixPart<otherT,DIM,Iterator> &r){ 
+      std::transform(r.begin,r.end,begin(),clipped_cast<otherT,T>);
+    }
     
     /// Assignment operator (with compatible data type) (deep copy)
     FixedMatrix &operator=(const FixedMatrix &other){
@@ -581,7 +593,7 @@ namespace icl{
     /// row end iterator (const)
     const_row_iterator row_end(unsigned int row) const { return m_data+(row+1)*cols(); }
 
-    /// inpace matrix multiplication (dst = (*this)*m)
+    /// inplace matrix multiplication (dst = (*this)*m)
     /** Inplace matrix multiplication for 4x4-float-matrices (using ipp-optimization)
         is approximately twice as fast as D=A*B operator based multiplication
         \section BM Benchmark 

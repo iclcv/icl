@@ -25,6 +25,7 @@ namespace icl{
     static string s_sProgName;
     static unsigned int s_iArgCount;
     static std::map<string,int> s_oARG_LUT; 
+    static std::vector<std::string> s_vecDanglingArgs;
 
     // }}}
 
@@ -137,10 +138,12 @@ namespace icl{
         // s_oArgs contains given args
         // s_oARG_LUT contains the parameter count for all allowed args
         // s_oArgMap contains subargs for all given args
+        // s_vecDanglingArgs contains args that are not defined in init and those that that are no subargs
         for(unsigned int i=0;i<s_oArgs.size();i++){
           string &s = s_oArgs[i];
           if(s_oARG_LUT.find(s) == s_oARG_LUT.end()){
             if(skipUnknownArgs){
+              s_vecDanglingArgs.push_back(s);
               continue;
             }else{
               printf("error: nothing known about arg %s [index=%d]\n ",s.c_str(),i);
@@ -173,6 +176,7 @@ namespace icl{
 
     // }}}
     
+
     
     inline const string &progName(){
       // {{{ open
@@ -335,7 +339,13 @@ namespace icl{
     return progarg::defined(param);
   }
 
+  const std::vector<std::string> &pa_dangling_args(){
+    return progarg::s_vecDanglingArgs;
+  }
+
   // }}}
+
+
 
   // {{{ implementation of the pa_arg template
 

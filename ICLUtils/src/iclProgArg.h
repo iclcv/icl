@@ -2,6 +2,7 @@
 #define PROG_ARG_H
 
 #include <string>
+#include <vector>
 
 namespace icl{
   
@@ -147,6 +148,10 @@ int main(int n, char **ppc){
   
   /// returns weather a certain argument was actually given \ingroup PA
   bool pa_defined(const std::string &param);
+
+  /// returns list of args not defined in pa_defined and not subargs of those
+  /** only available if pa_init was called with skipUnknownArgs*/
+  const std::vector<std::string> &pa_dangling_args();
   
   /// access to the actually given program arguments \ingroup PA
   /** <b>Note:</b> The index references all actually given args directly,
