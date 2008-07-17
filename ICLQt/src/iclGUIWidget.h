@@ -28,7 +28,12 @@ namespace icl{
     };
     
     /// create a new GUIWidget ( this constructor must be called by all subclasses )
-    GUIWidget(const GUIDefinition &def, layoutType lt=gridLayout, int ensureNumInputs=-1,int ensureNumOutputs=-1,int ensureNumParams=-1);
+    GUIWidget(const GUIDefinition &def, 
+              layoutType lt=gridLayout, 
+              int ensureNumInputs=-1,
+              int ensureNumOutputs=-1,
+              int ensureNumParams=-1, 
+              const Size &defMinSize=Size(0,0));
 
 
     /// Destructor
@@ -48,9 +53,6 @@ namespace icl{
     /// virtual function which must be implemented for a components custom "new-data"-event
     virtual void processIO(){}
 
-    /// returns the size in Cells if no size is given if (Size::null, it is not set)
-    virtual Size getDefaultSize() { return Size::null; }
-    
     /// this function must be reimplemented for other layouts the hbox, vbox or grid
     virtual QLayout *getGUIWidgetLayout() { return m_poGridLayout ? (QLayout*)m_poGridLayout : m_poOtherLayout; }
     

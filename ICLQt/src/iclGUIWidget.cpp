@@ -15,7 +15,12 @@
 
 namespace icl{
   
-  GUIWidget::GUIWidget(const GUIDefinition &def, GUIWidget::layoutType lt, int ensureNumInputs,int ensureNumOutputs,int ensureNumParams){
+  GUIWidget::GUIWidget(const GUIDefinition &def, 
+                       GUIWidget::layoutType lt, 
+                       int ensureNumInputs,
+                       int ensureNumOutputs,
+                       int ensureNumParams,
+                       const Size &defMinSize){
     if(ensureNumInputs > 0 && (int)def.numInputs() != ensureNumInputs){
       throw GUISyntaxErrorException(def.defString(),(QString("input count must be ")+QString::number(ensureNumInputs)+" here").toLatin1().data());
     } 
@@ -31,8 +36,7 @@ namespace icl{
     Size givenSize = def.size();
     Size givenMinSize = def.minSize();
     Size givenMaxSize = def.maxSize();
-    Size defSize = getDefaultSize();
-    
+        
     if(givenSize != Size::null){
        setMinimumSize(QSize(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH));
        setMaximumSize(QSize(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH));
@@ -43,9 +47,10 @@ namespace icl{
       if(givenMaxSize != Size::null){
         setMaximumSize(QSize(givenMaxSize.width*GUI::CELLW,givenMaxSize.height*GUI::CELLH));
       }
-    }else if(defSize != Size::null){
-      setMinimumSize(QSize(defSize.width*GUI::CELLW,defSize.height*GUI::CELLH));
-      setMaximumSize(QSize(defSize.width*GUI::CELLW,defSize.height*GUI::CELLH));
+    }else if(defMinSize != Size::null){
+      //resize(QSize(defMinSize.width*GUI::CELLW,defMinSize.height*GUI::CELLH));
+      setMinimumSize(QSize(defMinSize.width*GUI::CELLW,defMinSize.height*GUI::CELLH));
+      //setMaximumSize(QSize(defSize.width*GUI::CELLW,defSize.height*GUI::CELLH));
     }
     
     if(def.parentLayout()) def.parentLayout()->addWidget(this);
@@ -76,6 +81,7 @@ namespace icl{
 
     setWindowIcon(QIcon(QPixmap(ICL_WINDOW_ICON)));
   }
+
   GUIWidget::~GUIWidget(){}
   
   void GUIWidget::ioSlot(){
