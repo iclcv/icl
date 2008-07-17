@@ -58,7 +58,7 @@ int main (int n, char **ppc){
     for(unsigned int i=0;i<pa_dangling_args().size();++i){
       std::string s = pa_dangling_args()[i];
       try{
-        FileGrabber grabber(s);
+        FileGrabber grabber(s,false,true);
         const ImgBase *image = grabber.grab();
         if(!image) throw ICLException("");
         maxSize.width = iclMax(image->getWidth(),maxSize.width);
