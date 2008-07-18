@@ -753,7 +753,6 @@ namespace icl{
   inline std::ostream &fixed_matrix_aux_to_stream(std::ostream &s,const unsigned char &t){
     return s << (int)t;
   }
-
   /** \endcond */
 
   /// put the matrix into a std::ostream (human readable)
@@ -762,7 +761,8 @@ namespace icl{
     for(unsigned int i=0;i<m.rows();++i){
       s << "| ";
       for(unsigned int j=0;j<COLS;++j){
-        s << fixed_matrix_aux_to_stream(s,m(j,i)) << " ";
+        fixed_matrix_aux_to_stream<T>(s,m(j,i)) << " ";
+        //s << m(j,i) << " ";
       }
       s << "|" << std::endl;
     }
