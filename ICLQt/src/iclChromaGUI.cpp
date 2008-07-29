@@ -10,7 +10,9 @@
 #include <iclImgChannel.h>
 #include <QFile>
 #include <QTextStream>
-
+#include <iclBoxHandle.h>
+#include <iclButtonHandle.h>
+#include <QPushButton>
 
 using namespace std;
 namespace icl{
@@ -202,7 +204,6 @@ namespace icl{
     // }}}
     void updateDrawings(){
       // {{{ open
-
       P[0] = Parable(D[0].pos()*255,D[1].pos()*255,D[2].pos()*255);
       P[1] = Parable(D[3].pos()*255,D[4].pos()*255,D[5].pos()*255);
       setImage(&image);
@@ -229,6 +230,7 @@ namespace icl{
     void updateImage(icl8u blue){
       // {{{ open
 
+
       ImgChannel8u cr = pickChannel(&image,0);
       ImgChannel8u cg = pickChannel(&image,1);    
       ImgChannel8u cb = pickChannel(&image,2);
@@ -239,17 +241,21 @@ namespace icl{
           cb(x,y) = blue; 
         }
       }
+
+
+
       // some misc
       static const int n = 1;
       static const int nn = 2*n+1;
       static Point o[nn][nn];
+            
       static Point *po = &(o[0][0]);
       static bool first = true;
       if(first){ 
         first = false;
         for(int x=-n;x<=n;x++){
           for(int y=-n;y<=n;y++){
-            o[x+2][y+2] = Point(x,y);
+            o[x+1][y+1] = Point(x,y);
           }
         }
       }
@@ -275,9 +281,10 @@ namespace icl{
   };
 
 
-  ChromaGUI::ChromaGUI(QWidget *parent):GUI("vbox[@handle=parent]",parent){
+  ChromaGUI::ChromaGUI(QWidget *parent):QObject(parent),GUI("vbox[@handle=parent]",parent){
     // {{{ open
 
+    
     (*this) << "vbox[@handle=image@label=Chromaticity Space@minsize=18x16]";
     
     (*this) << ( GUI("hbox") 
@@ -295,9 +302,12 @@ namespace icl{
     
     show();
     
+   
+    
     BoxHandle &h = getValue<BoxHandle>("image");
     m_poChromaWidget = new ChromaWidget(*h);
     h.add(m_poChromaWidget);
+
 
     m_aoSliderHandles[0][0] = getValue<SliderHandle>("red");
     m_aoSliderHandles[0][1] = getValue<SliderHandle>("green");
@@ -306,11 +316,20 @@ namespace icl{
     m_aoSliderHandles[1][0] = getValue<SliderHandle>("red-thresh");
     m_aoSliderHandles[1][1] = getValue<SliderHandle>("green-thresh");  
     m_aoSliderHandles[1][2] = getValue<SliderHandle>("blue-thresh");
+ 
 
-    QObject::connect((QObject*)*(getValue<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),(QObject*)this,SLOT(blueSliderChanged(int)));
+    QObject::connect((QObject*)*(getValue<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),
+                     (QObject*)this,SLOT(blueSliderChanged(int)));
 
-    QObject::connect((QObject*)*(getValue<ButtonHandle>("load")),SIGNAL(clicked(bool)),(QObject*)this,SLOT(load()));
-    QObject::connect((QObject*)*(getValue<ButtonHandle>("save")),SIGNAL(clicked(bool)),(QObject*)this,SLOT(save()));
+    QObject::connect((QObject*)*(getValue<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),
+                     (QObject*)this,SLOT(blueSliderChanged(int)));
+    
+    QObject::connect((QObject*)*getValue<ButtonHandle>("load"),SIGNAL(clicked(bool)),
+                     (QObject*)this,SLOT(load()));
+    
+    
+    QObject::connect((QObject*)*(getValue<ButtonHandle>("save")),SIGNAL(clicked(bool)),
+                     (QObject*)this,SLOT(save()));
   }
 
   // }}}

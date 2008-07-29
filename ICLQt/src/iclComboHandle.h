@@ -13,9 +13,11 @@ namespace icl{
   /// Handle class for combo components \ingroup HANDLES
   class ComboHandle : public GUIHandle<QComboBox>{
     public:
-    
+    /// create an empty handle
+    ComboHandle(){}
+
     /// create a new ComboHandle wrapping a given QComboBox
-    ComboHandle(QComboBox *cb=0):GUIHandle<QComboBox>(cb){}
+    ComboHandle(QComboBox *cb, GUIWidget *w):GUIHandle<QComboBox>(cb,w){}
     
     /// add an item
     void add(const std::string &item);

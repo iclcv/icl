@@ -17,9 +17,13 @@ namespace icl{
       @see GUI */
   class FPSHandle : public GUIHandle<CompabilityLabel>{
     public:
+
+    // create an empty handle
+    FPSHandle():GUIHandle<CompabilityLabel>(),m_oFpsEstimator(1){}
+
     /// Create a new LabelHandle
-    FPSHandle(int fpsEstimatorFrames=1,CompabilityLabel *l=0):
-    GUIHandle<CompabilityLabel>(l),m_oFpsEstimator(fpsEstimatorFrames){}
+    FPSHandle(int fpsEstimatorFrames,CompabilityLabel *l, GUIWidget *w):
+    GUIHandle<CompabilityLabel>(l,w),m_oFpsEstimator(fpsEstimatorFrames){}
     
     // notifies and updates the internal fps estimator and the shown fps-string
     void update(){

@@ -14,8 +14,9 @@ namespace icl{
     public:
     /// Create an empty slider handle
     FSliderHandle();
+
     /// create a slider handle
-    FSliderHandle(QSlider *sl,float minV, float maxV, int range);
+    FSliderHandle(QSlider *sl,float minV, float maxV, int range, GUIWidget *w);
     
     /// set the min value
     void setMin(float min);

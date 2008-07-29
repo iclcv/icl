@@ -2,11 +2,11 @@
 #include <QSlider>
 
 namespace icl{
-  FSliderHandle::FSliderHandle():GUIHandle<QSlider>(0),
+  FSliderHandle::FSliderHandle():GUIHandle<QSlider>(),
     m_fMin(0),m_fMax(0),m_iSliderRange(0){
   }
-  FSliderHandle::FSliderHandle(QSlider *sl,float minV, float maxV, int range):
-    GUIHandle<QSlider>(sl),m_fMin(minV),m_fMax(maxV),m_iSliderRange(range){
+  FSliderHandle::FSliderHandle(QSlider *sl,float minV, float maxV, int range, GUIWidget *w):
+    GUIHandle<QSlider>(sl,w),m_fMin(minV),m_fMax(maxV),m_iSliderRange(range){
     updateMB();
   }
   void FSliderHandle::setMin(float min){

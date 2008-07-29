@@ -11,8 +11,12 @@ namespace icl{
   /// Class for handling "float" textfield components \ingroup HANDLES
   class FloatHandle : public GUIHandle<QLineEdit> {
     public:
-    /// Creat a new FloatHandel
-    FloatHandle(QLineEdit *le=0):GUIHandle<QLineEdit>(le){}
+    
+    /// Create an empty handle
+    FloatHandle(){}
+    
+    /// Create a new FloatHandel
+    FloatHandle(QLineEdit *le, GUIWidget *w):GUIHandle<QLineEdit>(le,w){}
     
     /// make the associated text field show a float
     void operator=(float f);

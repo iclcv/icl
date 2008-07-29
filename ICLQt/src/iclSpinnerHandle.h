@@ -14,8 +14,12 @@ namespace icl{
   class SpinnerHandle : public GUIHandle<QSpinBox>{
 
     public:
+    
+    /// Create an empty spinner handle
+    SpinnerHandle(){}
+    
     /// create a new SpinnerHandle with given QSpinBox* to wrap
-    SpinnerHandle(QSpinBox *sb=0) : GUIHandle<QSpinBox>(sb){}
+    SpinnerHandle(QSpinBox *sb, GUIWidget *w) : GUIHandle<QSpinBox>(sb,w){}
     
     /// set the min value
     void setMin(int min);

@@ -4,7 +4,7 @@
 #include <iclGUI.h>
 #include <iclChromaClassifier.h>
 #include <iclChromaAndRGBClassifier.h>
-
+#include <iclSliderHandle.h>
 namespace icl{
 
   /** \cond */
@@ -33,7 +33,7 @@ namespace icl{
       can also be adjusted using GUI components.
   **/
   class ChromaGUI : public QObject, public GUI{
-    Q_OBJECT;
+    Q_OBJECT
     public:
     
     /// Create a new ChromaGUI with given parent widget

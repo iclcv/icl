@@ -19,9 +19,14 @@ namespace icl{
     Q_OBJECT
 
     public:
-    /// create a new ImageHandel
-    MultiDrawHandle(ICLDrawWidget *w=0, QTabBar *t=0,std::vector<ImgBase*> *imageBuffer=0,  bool bufferAll=false, bool bufferDeeply=true);
+    
+    /// Create an empty draw handle
+    MultiDrawHandle();
 
+    /// create a new ImageHandel
+    MultiDrawHandle(ICLDrawWidget *w, QTabBar *t,std::vector<ImgBase*> *imageBuffer,  bool bufferAll, bool bufferDeeply, GUIWidget *guiw);
+
+    /// explicit copy constructor
     MultiDrawHandle(const MultiDrawHandle &other);
 
     ~MultiDrawHandle();

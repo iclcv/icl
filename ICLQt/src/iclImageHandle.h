@@ -14,8 +14,11 @@ namespace icl{
   /// Handle class for image components \ingroup HANDLES
   class ImageHandle : public GUIHandle<ICLWidget>{
     public:
+    /// Create an empty handle
+    ImageHandle(){}
+    
     /// create a new ImageHandel
-    ImageHandle(ICLWidget *w=0):GUIHandle<ICLWidget>(w){}
+    ImageHandle(ICLWidget *w, GUIWidget *guiw):GUIHandle<ICLWidget>(w,guiw){}
     
     /// make the wrapped ICLWidget show a given image
     void setImage(const ImgBase *image);

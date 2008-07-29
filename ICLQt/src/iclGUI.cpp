@@ -30,6 +30,24 @@
 #include <QMainWindow>
 #include <QDockWidget>
 
+#include <iclButtonHandle.h>
+#include <iclBoxHandle.h>
+#include <iclBorderHandle.h>
+#include <iclButtonGroupHandle.h>
+#include <iclLabelHandle.h>
+#include <iclSliderHandle.h>
+#include <iclFSliderHandle.h>
+#include <iclIntHandle.h>
+#include <iclFloatHandle.h>
+#include <iclStringHandle.h>
+#include <iclComboHandle.h>
+#include <iclSpinnerHandle.h>
+#include <iclImageHandle.h>
+#include <iclDrawHandle.h>
+#include <iclDrawHandle3D.h>
+#include <iclDispHandle.h>
+#include <iclFPSHandle.h>
+#include <iclMultiDrawHandle.h>
 
 #include <map>
 
@@ -62,7 +80,8 @@ namespace icl{
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(this));//def.parentWidget()));
+        //        DEBUG_LOG("allocating h box handle");
+        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(this,this));//def.parentWidget()));
         getGUI()->unlockData();
       }
     }
@@ -78,7 +97,8 @@ namespace icl{
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(this));//def.parentWidget()));
+        //DEBUG_LOG("allocating v box handle");
+        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(this,this));//def.parentWidget()));
         getGUI()->unlockData();
       }
     }
@@ -102,7 +122,7 @@ namespace icl{
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<BorderHandle>(def.handle(),BorderHandle(m_poGroupBox));
+        getGUI()->allocValue<BorderHandle>(def.handle(),BorderHandle(m_poGroupBox,this));
         getGUI()->unlockData();
       }
       
@@ -128,7 +148,7 @@ namespace icl{
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        m_poClickedEvent = &getGUI()->allocValue<ButtonHandle>(def.handle(),ButtonHandle(b));
+        m_poClickedEvent = &getGUI()->allocValue<ButtonHandle>(def.handle(),ButtonHandle(b,this));
         getGUI()->unlockData();
       }else{
         m_poClickedEvent = 0;
@@ -140,9 +160,9 @@ namespace icl{
       gen_params();
     }
     virtual void processIO(){
-      if(m_poClickedEvent){
-        m_poClickedEvent->trigger();
-      }
+      //      if(m_poClickedEvent){
+      //  m_poClickedEvent->cb();
+      //}
     }
   private:
     ButtonHandle *m_poClickedEvent;
@@ -179,7 +199,7 @@ namespace icl{
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<ButtonGroupHandle>(def.handle(),ButtonGroupHandle(&m_vecButtons));
+        getGUI()->allocValue<ButtonGroupHandle>(def.handle(),ButtonGroupHandle(&m_vecButtons,this));
         getGUI()->unlockData();
       }
     }
@@ -240,7 +260,7 @@ namespace icl{
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        m_poHandle = &getGUI()->allocValue<ButtonHandle>(def.handle(),ButtonHandle(m_poButton));
+        m_poHandle = &getGUI()->allocValue<ButtonHandle>(def.handle(),ButtonHandle(m_poButton,this));
         getGUI()->unlockData();
       }else{
         m_poHandle = 0;
@@ -256,9 +276,9 @@ namespace icl{
     virtual void processIO(){
       *m_pbToggled = !(*m_pbToggled);
       m_poButton->setText(m_asText[*m_pbToggled].c_str());
-      if(m_poHandle){
-        m_poHandle->trigger();
-      }
+      //if(m_poHandle){
+      //  m_poHandle->cb();
+      //}
     }
   private:
     QPushButton *m_poButton;
@@ -281,7 +301,7 @@ namespace icl{
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<LabelHandle>(def.handle(),LabelHandle(m_poLabel));
+        getGUI()->allocValue<LabelHandle>(def.handle(),LabelHandle(m_poLabel,this));
         getGUI()->unlockData();
       }
     }
@@ -347,7 +367,7 @@ namespace icl{
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<SliderHandle>(def.handle(),SliderHandle(m_poSlider));
+        getGUI()->allocValue<SliderHandle>(def.handle(),SliderHandle(m_poSlider,this));
         getGUI()->unlockData();
       }
     }
@@ -361,6 +381,7 @@ namespace icl{
       gen_params();
     }
     virtual void processIO(){
+      //cb();
       //iStep is handled as a value that must '%' the slider to 0
       *m_piValue = m_poSlider->value();
     }
@@ -427,7 +448,7 @@ namespace icl{
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<FSliderHandle>(def.handle(),FSliderHandle(m_poSlider,fMin,fMax,10000));
+        getGUI()->allocValue<FSliderHandle>(def.handle(),FSliderHandle(m_poSlider,fMin,fMax,10000,this));
         getGUI()->unlockData();
       }
     }
@@ -478,7 +499,7 @@ public:
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<IntHandle>(def.handle(),IntHandle(m_poLineEdit));
+        getGUI()->allocValue<IntHandle>(def.handle(),IntHandle(m_poLineEdit,this));
         getGUI()->unlockData();
       }
     }
@@ -520,7 +541,7 @@ public:
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<FloatHandle>(def.handle(),FloatHandle(m_poLineEdit));
+        getGUI()->allocValue<FloatHandle>(def.handle(),FloatHandle(m_poLineEdit,this));
         getGUI()->unlockData();
       }
 
@@ -576,7 +597,7 @@ public:
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<StringHandle>(def.handle(),StringHandle(m_poLineEdit));
+        getGUI()->allocValue<StringHandle>(def.handle(),StringHandle(m_poLineEdit,this));
         getGUI()->unlockData();
       }
 
@@ -620,14 +641,14 @@ public:
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<DispHandle>(def.handle(),DispHandle(m_poLabelMatrix));
+        getGUI()->allocValue<DispHandle>(def.handle(),DispHandle(m_poLabelMatrix,this));
         getGUI()->unlockData();  
       }
         
       for(int x=0;x<nW;x++){
         for(int y=0;y<nH;y++){
           CompabilityLabel *l = new CompabilityLabel("",def.parentWidget());
-          (*m_poLabelMatrix)[x][y] = LabelHandle(l);
+          (*m_poLabelMatrix)[x][y] = LabelHandle(l,this);
           addToGrid(l,x,y);
         }
       }
@@ -655,7 +676,7 @@ public:
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<ImageHandle>(def.handle(),ImageHandle(m_poWidget));
+        getGUI()->allocValue<ImageHandle>(def.handle(),ImageHandle(m_poWidget,this));
         getGUI()->unlockData();  
       }
       
@@ -678,7 +699,7 @@ public:
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<DrawHandle>(def.handle(),DrawHandle(m_poWidget));
+        getGUI()->allocValue<DrawHandle>(def.handle(),DrawHandle(m_poWidget,this));
         getGUI()->unlockData();  
       }
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -743,7 +764,7 @@ public:
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<MultiDrawHandle>(def.handle(),MultiDrawHandle(m_poDrawWidget,m_poTabBar,&m_vecImageBuffer,m_bAll, m_bDeep));
+        getGUI()->allocValue<MultiDrawHandle>(def.handle(),MultiDrawHandle(m_poDrawWidget,m_poTabBar,&m_vecImageBuffer,m_bAll, m_bDeep,this));
         getGUI()->unlockData();  
       }
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -773,7 +794,7 @@ public:
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<DrawHandle3D>(def.handle(),DrawHandle3D(m_poWidget3D));
+        getGUI()->allocValue<DrawHandle3D>(def.handle(),DrawHandle3D(m_poWidget3D,this));
         getGUI()->unlockData();  
       }
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -818,7 +839,7 @@ public:
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<ComboHandle>(def.handle(),ComboHandle(m_poCombo));
+        getGUI()->allocValue<ComboHandle>(def.handle(),ComboHandle(m_poCombo,this));
         getGUI()->unlockData();  
       }
     }
@@ -858,7 +879,7 @@ public:
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<SpinnerHandle>(def.handle(),SpinnerHandle(m_poSpinBox));
+        getGUI()->allocValue<SpinnerHandle>(def.handle(),SpinnerHandle(m_poSpinBox,this));
         getGUI()->unlockData();  
       }
 
@@ -894,7 +915,7 @@ public:
       
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<FPSHandle>(def.handle(),FPSHandle(fpsEstimatorTimeWindow,m_poLabel));
+        getGUI()->allocValue<FPSHandle>(def.handle(),FPSHandle(fpsEstimatorTimeWindow,m_poLabel,this));
         getGUI()->unlockData();
       }
     }
@@ -1238,6 +1259,19 @@ public:
 #else
 		Sleep(100);
 #endif
+    }
+  }
+  
+  void GUI::registerCallback(CallbackPtr cb, const std::string &handleNamesList){
+    StrTok tok(handleNamesList,",");
+    while(tok.hasMoreTokens()){
+      getValue<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
+    }
+  }
+  void GUI::removeCallbacks(const std::string &handleNamesList){
+    StrTok tok(handleNamesList,",");
+    while(tok.hasMoreTokens()){
+      getValue<GUIHandleBase>(tok.nextToken(),false).removeCallbacks();
     }
   }
 

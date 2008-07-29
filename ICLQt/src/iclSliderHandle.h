@@ -11,8 +11,11 @@ namespace icl{
   /// Handle class for slider componets \ingroup HANDLES
   class SliderHandle : public GUIHandle<QSlider>{
     public:
+    /// Creates and empty slider handle
+    SliderHandle(){}
+
     /// create a slider handle
-    SliderHandle(QSlider *sl=0):GUIHandle<QSlider>(sl){}
+    SliderHandle(QSlider *sl, GUIWidget *w):GUIHandle<QSlider>(sl,w){}
     
     /// set the min value
     void setMin(int min);

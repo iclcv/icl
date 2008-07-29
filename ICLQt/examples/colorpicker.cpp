@@ -1,11 +1,7 @@
-#include <iclProgArg.h>
-#include <iclQuick.h>
-#include <iclGUI.h>
+#include <iclCommon.h>
 #include <iclMouseInteractionReceiver.h>
 #include <iclGenericGrabber.h>
-#include <iclThread.h>
 #include <iclCC.h>
-#include <iclMutex.h>
 
 GUI *gui;
 ICLDrawWidget *widget;
@@ -161,8 +157,8 @@ int main(int n,char **ppc){
   running = &gui->getValue<bool>("run");
   sleeptime = &gui->getValue<int>("sleep");
   colormode = &gui->getValue<string>("colormode");
-  gui->getValue<ButtonHandle>("reset").registerCallback(reset_list);
-  gui->getValue<ButtonHandle>("calc").registerCallback(calc_mean);
+  gui->getValue<ButtonHandle>("reset").registerCallback(new GUI::Callback(reset_list));
+  gui->getValue<ButtonHandle>("calc").registerCallback(new GUI::Callback(calc_mean));
   
   
   

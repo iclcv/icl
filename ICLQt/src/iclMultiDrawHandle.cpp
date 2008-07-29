@@ -3,9 +3,11 @@
 #include <iclImgBase.h>
 
 namespace icl{
-  
-  MultiDrawHandle::MultiDrawHandle(ICLDrawWidget *w, QTabBar *t,std::vector<ImgBase*> *imageBuffer, bool bufferAll, bool copyDeep):
-    GUIHandle<ICLDrawWidget>(w),m_imageBuffer(imageBuffer),m_tabBar(t),m_bufferAll(bufferAll),m_bufferDeeply(copyDeep){
+   MultiDrawHandle::MultiDrawHandle():
+    GUIHandle<ICLDrawWidget>(),m_imageBuffer(0),m_tabBar(0),m_bufferAll(false),m_bufferDeeply(true){
+  }
+  MultiDrawHandle::MultiDrawHandle(ICLDrawWidget *w, QTabBar *t,std::vector<ImgBase*> *imageBuffer, bool bufferAll, bool copyDeep, GUIWidget *guiw):
+    GUIHandle<ICLDrawWidget>(w,guiw),m_imageBuffer(imageBuffer),m_tabBar(t),m_bufferAll(bufferAll),m_bufferDeeply(copyDeep){
     
     if(!t) return;
     for(int i=0;i<t->count();++i){
@@ -27,7 +29,7 @@ namespace icl{
   }
 
   MultiDrawHandle::MultiDrawHandle(const MultiDrawHandle &other):
-    GUIHandle<ICLDrawWidget>(const_cast<ICLDrawWidget*>(*other)){
+    GUIHandle<ICLDrawWidget>(const_cast<ICLDrawWidget*>(*other), const_cast<MultiDrawHandle&>(other).getGUIWidget()){
 
     m_imageBuffer = other.m_imageBuffer;
     m_tabBar = other.m_tabBar;

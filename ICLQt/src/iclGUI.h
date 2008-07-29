@@ -5,24 +5,6 @@
 #include <vector>
 #include <iclSmartPtr.h>
 #include <iclDataStore.h>
-#include <iclButtonHandle.h>
-#include <iclBoxHandle.h>
-#include <iclBorderHandle.h>
-#include <iclButtonGroupHandle.h>
-#include <iclLabelHandle.h>
-#include <iclSliderHandle.h>
-#include <iclFSliderHandle.h>
-#include <iclIntHandle.h>
-#include <iclFloatHandle.h>
-#include <iclStringHandle.h>
-#include <iclComboHandle.h>
-#include <iclSpinnerHandle.h>
-#include <iclImageHandle.h>
-#include <iclDrawHandle.h>
-#include <iclDrawHandle3D.h>
-#include <iclDispHandle.h>
-#include <iclFPSHandle.h>
-#include <iclMultiDrawHandle.h>
 
 
 #include <iclWidget.h>
@@ -789,8 +771,8 @@ namespace icl{
     
     /// wraps the datastores getValue function
     template<class T> 
-    T &getValue(const std::string &id){
-      return m_oDataStore.getValue<T>(id);
+    T &getValue(const std::string &id, bool typeCheck=true){
+      return m_oDataStore.getValue<T>(id,typeCheck);
     }
 
     /// wraps the datastores getArray function
@@ -815,6 +797,41 @@ namespace icl{
 
     /// returns the GUI internal dataStore
     const DataStore &getDataStore() const { return m_oDataStore; }
+    
+    
+    /// Callback helper class: Default implementation calls a callback function 
+    class Callback{
+      /// typedef to wrapped function (only for default implementation)
+      typedef void (*callback_function)(void);
+      
+      /// internally used default callback function
+      callback_function m_func;
+      
+      protected:
+      /// create a new callback object
+      Callback():m_func(0){}
+      
+      public:
+      /// Default implementations constructor with given callback function
+      Callback(callback_function func):m_func(func){}
+      
+      /// vitual execution function
+      virtual void exec(){
+        if(m_func) m_func();
+      }
+    };
+    typedef SmartPtr<Callback,PointerDelOp> CallbackPtr;
+    
+    /// registers a callback function on each component 
+    /** @param cb callback to execute 
+        @param handleNamesList comma-separated list of handle names 
+        ownership is passed to the childrens; deletion is performed by
+        the smart pointers that are used...
+    */
+    void registerCallback(CallbackPtr cb, const std::string &handleNamesList);
+
+    /// removes all callbacks from components
+    void removeCallbacks(const std::string &handleNamesList);
 
     private:
     void create(QLayout *parentLayout,QWidget *parentWidget, DataStore *ds);

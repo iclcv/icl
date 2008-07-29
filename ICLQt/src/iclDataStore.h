@@ -51,7 +51,7 @@ namespace icl{
     /// internally used wrapper function for RTTI
     template<class T>
     static inline const std::string &get_type_name(){
-      static std::string NAME = typeid(T()).name();
+      static std::string NAME = typeid(T).name();
       return NAME;
     }
    
@@ -95,6 +95,7 @@ namespace icl{
       da.data = new T(val);
       da.len = 0; // indicates a single value !
       da.type = get_type_name<T>();
+
       da.release_func = DataArray::release_data_array<T>;
       return *(reinterpret_cast<T*>(da.data));
     }
@@ -128,7 +129,9 @@ namespace icl{
         ERROR_LOG("id "<<  id  << " not found \n");
         return 0;
       }
+
       DataArray &da = (*m_oDataMapPtr)[id];
+
       if(da.type != get_type_name<T>()){
         ERROR_LOG("unable to cast "<<  id  << " to a given type "<< get_type_name<T>() <<"\n");
         return 0;
@@ -146,14 +149,17 @@ namespace icl{
         @return reference to the value that is associated with the given id
     */
     template<class T>
-    inline T &getValue(const std::string &id){
+    inline T &getValue(const std::string &id, bool checkType=true){
       static T _NULL;
       if(!contains(id)){
         ERROR_LOG("id "<<  id  << " not found \n");
         return _NULL;
       }
+
+      // orig
       DataArray &da = (*m_oDataMapPtr)[id];
-      if(da.type != get_type_name<T>()){
+      //DEBUG_LOG("type of da is " << da.type);
+      if(checkType && (da.type != get_type_name<T>())){
         ERROR_LOG("unable to cast "<<  id  << " to a given type "<< get_type_name<T>() <<"\n");
         ERROR_LOG("type is " << da.type << "\n");
         return _NULL;
@@ -166,9 +172,12 @@ namespace icl{
     }
       
     template<class T>
-    inline const T &getValue(const std::string &id) const{
-      return const_cast<DataStore*>(this)->getValue<T>(id);
+    inline const T &getValue(const std::string &id, bool checkType=true) const{
+      return const_cast<DataStore*>(this)->getValue<T>(id,checkType);
     }
+
+   
+    
     /// returns the RTTI string type identifier, for the entry associated with id
     /** @param id name of the entry
         @return RTTI string type identifier

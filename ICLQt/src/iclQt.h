@@ -11,6 +11,27 @@
 #include <iclThread.h>
 #include <iclThreadUtils.h>
 #include <iclMutex.h>
+
+#include <iclButtonHandle.h>
+#include <iclBoxHandle.h>
+#include <iclBorderHandle.h>
+#include <iclButtonGroupHandle.h>
+#include <iclLabelHandle.h>
+#include <iclSliderHandle.h>
+#include <iclFSliderHandle.h>
+#include <iclIntHandle.h>
+#include <iclFloatHandle.h>
+#include <iclStringHandle.h>
+#include <iclComboHandle.h>
+#include <iclSpinnerHandle.h>
+#include <iclImageHandle.h>
+#include <iclDrawHandle.h>
+#include <iclDrawHandle3D.h>
+#include <iclDispHandle.h>
+#include <iclFPSHandle.h>
+#include <iclMultiDrawHandle.h>
+
+
 /** 
     \defgroup COMMON "Most common classes"
     \defgroup HANDLES "GUI Component Handle classes"

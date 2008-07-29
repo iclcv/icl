@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <iclSize.h>
+#include <iclGUI.h>
+#include <iclUncopyable.h>
 
 /** \cond */
 class QGridLayout;
@@ -13,11 +15,10 @@ class QLayout;
 namespace icl{
   /** \cond */
   class GUIDefinition;
-  class GUI;
   /** \endcond */
 
   /// Abstract class for GUI components \ingroup UNCOMMON
-  class GUIWidget : public QWidget{
+  class GUIWidget : public QWidget, public Uncopyable{
     Q_OBJECT;
     public:
     enum layoutType{
@@ -58,12 +59,33 @@ namespace icl{
     
     /// returns the underlying GUI structure
     GUI *getGUI(){ return m_poGUI; }
+
+    /// registers a callback on this gui widget
+    void registerCallback(GUI::CallbackPtr cb){
+      m_vecCallbacks.push_back(cb);
+    }
+    /// remove all callbacks from this widget
+    void removeCallbacks(){
+      m_vecCallbacks.clear();
+    }
+
+    /// Callback execution 
+    /** this function must be called by each special component
+        when registered callbacks should be executed
+    */
+    void cb(){
+      for(unsigned int i=0;i<m_vecCallbacks.size();++i){
+        m_vecCallbacks[i]->exec();
+      }
+    }
     
     private:
     /// initial layout managers
     QGridLayout *m_poGridLayout;
     QLayout *m_poOtherLayout;
     GUI *m_poGUI;
+
+    std::vector<GUI::CallbackPtr> m_vecCallbacks;
   };
 }
 #endif

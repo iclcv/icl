@@ -20,7 +20,7 @@ namespace icl{
     ButtonGroupHandle(){}
 
     /// Craete a valid handle
-    ButtonGroupHandle(RadioButtonVec *buttons): GUIHandle<RadioButtonVec>(buttons){ }
+    ButtonGroupHandle(RadioButtonVec *buttons, GUIWidget *w): GUIHandle<RadioButtonVec>(buttons,w){ }
     
     /// select a button with given index
     void select(int id);

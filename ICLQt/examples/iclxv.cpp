@@ -1,11 +1,7 @@
-#include <iclQuick.h>
-#include <QApplication>
-#include <iclDrawWidget.h>
-#include <iclProgArg.h>
 #include <iostream>
 #include <iterator>
 #include <iclFileGrabber.h>
-#include <iclGUI.h>
+#include <iclCommon.h>
 
 GUI gui;
 ICLDrawWidget *w=0;

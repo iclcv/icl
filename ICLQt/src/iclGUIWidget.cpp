@@ -86,6 +86,7 @@ namespace icl{
   
   void GUIWidget::ioSlot(){
     this->processIO();
+    cb();
   }
   
   void GUIWidget::addToGrid(QWidget *widget, int x, int y, int w, int h){

@@ -11,10 +11,10 @@ namespace icl{
   class BoxHandle : public GUIHandle<QWidget>{
     public:
     /// create an empty handle
-    BoxHandle(): GUIHandle<QWidget>(0){}
+    BoxHandle(): GUIHandle<QWidget>(){}
     
     /// create a difined handle
-    BoxHandle(QWidget *w):GUIHandle<QWidget>(w){}
+    BoxHandle(QWidget *w, GUIWidget *guiw):GUIHandle<QWidget>(w,guiw){}
     
     /// returns the associated layout
     QLayout *getLayout() { return (**this)->layout(); }

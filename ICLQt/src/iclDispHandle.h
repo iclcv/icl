@@ -20,8 +20,11 @@ namespace icl{
   /// Handle class for disp components \ingroup HANDLE
   class DispHandle : public GUIHandle<LabelMatrix>{
     public:
+    /// create an empty handle
+    DispHandle(){}
+
     /// Create a new DispHandle with given 
-    DispHandle(LabelMatrix *lm=0) : GUIHandle<LabelMatrix>(lm){}
+    DispHandle(LabelMatrix *lm, GUIWidget *w) : GUIHandle<LabelMatrix>(lm,w){}
     
     /// column access operator (use h[x][y] to access elements)
     inline LabelHandle *operator[](int x){ return (***this)[x]; }

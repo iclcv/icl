@@ -16,8 +16,12 @@ namespace icl{
       @see GUI */
   class LabelHandle : public GUIHandle<CompabilityLabel>{
     public:
+    
+    /// Create an empty handle
+    LabelHandle(){}
+    
     /// Create a new LabelHandle
-    LabelHandle(CompabilityLabel *l=0):GUIHandle<CompabilityLabel>(l){}
+    LabelHandle(CompabilityLabel *l, GUIWidget *w):GUIHandle<CompabilityLabel>(l,w){}
     
     ///  assign a std::string (makes the underlying label show that string)
     void operator=(const std::string &text);

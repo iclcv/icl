@@ -14,8 +14,11 @@ namespace icl{
   /// Class for handling "int" textfield components \ingroup HANDLES
   class StringHandle : public GUIHandle<QLineEdit>{
     public:
+    /// Creates an empty string handle
+    StringHandle(){}
+    
     /// Create a new Int handle
-    StringHandle(QLineEdit *le=0):GUIHandle<QLineEdit>(le){}
+    StringHandle(QLineEdit *le, GUIWidget *w):GUIHandle<QLineEdit>(le,w){}
     
     /// makes the associated textfield show the given text
     void operator=(const std::string &text);
