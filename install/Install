@@ -390,6 +390,7 @@ sub generate_pkgconfig {
     $pkgContent .= "\n";
     $pkgContent .= "Name: $entry\n";    
     $pkgContent .= "Version: $version\n";
+	$pkgContent .= "Description: ICL Package: $entry\n";
     $pkgContent .= "Requires: $requiredList\n";
     $pkgContent .= "Libs: -L\${prefix}/lib -l$entry\n";
     $pkgContent .= "Cflags: -I\${prefix}/include\n";
