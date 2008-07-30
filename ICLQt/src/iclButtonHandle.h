@@ -42,7 +42,12 @@ namespace icl{
     bool wasTriggered(bool reset=true);
     
     /// trigger this event (sets the internal boolean variable to true)
-    //    void trigger();
+    void trigger(bool execCallbacks=true){
+      m_bTriggered = true;
+      if(execCallbacks){
+        cb();
+      }
+    }
     
     /// sets the internal boolean variable to false
     void reset();
