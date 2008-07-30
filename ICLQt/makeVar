@@ -51,9 +51,7 @@ ABS_OBJECTS:= ${ABS_OBJECTS}
 # that are needed by the executables.
 REL_OBJECTS:= $(REL_OBJECTS:%=../%)
 
-
 DEBUG_ON:=${DEBUG_ON}
-DEBUG_ON:=TRUE
 
 # Compilation defines for C (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
 CDEFINES:= ${CDEFINES}

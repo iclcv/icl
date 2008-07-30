@@ -138,6 +138,16 @@ namespace icl{
     str >> t;
     return t;
   }
+  /** \cond */
+  template<>
+  inline icl8u parse<icl8u>(const std::string &s){
+    std::istringstream str(s);
+    int t;
+    str >> t;
+    return icl8u(t);
+  }
+  /** \endcond */
+
   
   /// cast a string to an icl8u (parse) \ingroup STRUTILS
   inline icl8u to8u(const std::string &s) { 

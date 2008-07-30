@@ -14,6 +14,7 @@
 
 #include <iclProgArg.h>
 #include <iclImgChannel.h>
+#include <iclCommon.h>
 
 int error_counter = 0;
 int error_frames = 0;

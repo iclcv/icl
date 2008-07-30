@@ -5,7 +5,7 @@
 #include <iclGUI.h>
 #include <iclPWCGrabber.h>
 #include <iclFPSEstimator.h>
-
+#include <iclCommon.h>
 
 
 

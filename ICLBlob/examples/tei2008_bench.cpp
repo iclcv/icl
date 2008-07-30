@@ -8,7 +8,7 @@
 #include <iclStringUtils.h>
 #include <iclRegionDetector.h>
 #include <iclDCGrabber.h>
-
+#include <iclCommon.h>
 typedef Array<int> vec;
 
 GUI gui("vbox");

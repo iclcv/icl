@@ -112,7 +112,7 @@ void run(){
   static int &masksize = gui.getValue<int>("masksize");
   static int &thresh = gui.getValue<int>("threshold");
   static float &gamma = gui.getValue<float>("gamma");
-  gui.getValue<ButtonHandle>("save").registerCallback(save);
+  gui.getValue<ButtonHandle>("save").registerCallback(new GUI::Callback(save));
   
   static LocalThresholdOp t;
   

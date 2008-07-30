@@ -45,9 +45,8 @@ namespace icl{
   
 
   Color translateColor(const std::string &s){
-    if(s.size()<2){
-      ERROR_LOG("unable to translate " << s << " into GeneralColor type");
-      return Color(icl8u(0));
+    if(s.length() < 2){
+      return Color(0,0,0);
     }
     Color color;
     std::vector<icl8u> v = icl::parseVecStr<icl8u>(s.substr(1,s.length()-2),",");
