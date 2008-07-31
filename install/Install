@@ -12,6 +12,7 @@ my $installMode = $ARGV[1]; # 0: remove & install all (include, lib, doc)
                             # 1: remove & install include, lib
                             # 2: remove & install doc
                             # 3: remove & install as link include, lib
+my $configList = $ARGV[2]; # list of config packages
 
 #------------------
 #Get version number
@@ -120,7 +121,11 @@ foreach my $externPackage(@externPackageList) {
             push(@extpkgconfigs, $line);
         }
     }
-    generate_extern_pkgconfig($externPackage, $INSTALLDIR, @extpkgconfigs);
+
+    #print "THis is the received config list: -$configList-\n";
+
+
+    generate_extern_pkgconfig($externPackage, $INSTALLDIR, @extpkgconfigs, $configList);
 }
 
 #system "cp ./make/dependencyChecks $INSTALLDIR/make";
@@ -426,11 +431,18 @@ sub generate_extern_pkgconfig {
     my @dirContent;
     $installdir =~ /^.*\/(\d*.\d*)/;
     my $version = $1;
+ 
+    #print "entry is here -$entry-\n";
+    #print "configList here is -$configList-\n";
 
-    foreach my $ext (@extpkgconfigs) {
-        if( $ext =~ /^REQUIRES_PKGCONFIG:=(.*)/ ){
-            $requiredList .= $1." ";
+    if( $configList =~ /.*\[$entry\].*/ ){
+        foreach my $ext (@extpkgconfigs) {
+            if( $ext =~ /^REQUIRES_PKGCONFIG:=(.*)/ ){
+                $requiredList .= $1." ";
+            }
         }
+    }else{
+        #print "skipping entry $entry\n";
     }
     
     #---- Generate content ----

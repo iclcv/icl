@@ -27,7 +27,9 @@ include ${PACKAGES}/ICLCC
 include ${PACKAGES}/ICLIO
 include ${PACKAGES}/ICLFilter
 include ${PACKAGES}/ICLBlob
+ifeq "${HAVE_QT}" "TRUE"
 include ${PACKAGES}/ICLQt
+endif
 
 # Please add here all the directories with absolute path
 # (e.g. -I/usr/local/include) that contain include files needed by the sources.
@@ -69,7 +71,11 @@ CDEFINES:= ${CDEFINES}
 CFLAGS:= ${CFLAGS}
 
 # Compilation defines for C++ (e.g. -DASSERT, -DEXCEPTION, -DREENTRANT)
+ifeq "${HAVE_QT}" "TRUE"
+CPPDEFINES:= ${CPPDEFINES} -DHAVE_QT
+else
 CPPDEFINES:= ${CPPDEFINES}
+endif
 
 # Flags for C++ compiler
 CPPFLAGS:= ${CPPFLAGS}
@@ -88,3 +94,7 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
 SKIP_DIRECTORIES:=
+
+ifeq "$(HAVE_QT)" ""
+SKIP_OBJECTS += thread_test.cpp iclquick_test.cpp gui_test.cpp
+endif

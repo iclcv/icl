@@ -717,7 +717,7 @@ namespace icl{
   **/
   void circle(ImgQ &image, int x, int y, int r);
   
-  /// renders a text into an image 
+  /// renders a text into an image (only available with Qt-Support)
   /** This functin renders a text into a 3 or 1 channel image
       using the a QPainter internally.
       @param image destination image
@@ -727,7 +727,7 @@ namespace icl{
   **/
   void text(ImgQ &image, int x, int y,const string &text);
 
-   /// renders a text into an image 
+   /// renders a text into an image (only available with Qt-Support)
   /** This functin renders a text into an 3 or 1 channel image
       using the a QPainter internally.
       @param image destination image
@@ -736,20 +736,20 @@ namespace icl{
   **/
   inline void text(ImgQ &image, const Point &p,const string &sText){ text(image,p.x,p.y,sText); }
 
-  /// labels an image in the upper left corner
+  /// labels an image in the upper left corner (only available with Qt-Support)
   /** @param image image to label
       @param text text label
       @return labeled source image (= given image)
    **/
   ImgQ label(const ImgQ &image, const string &text);
 
-  /// sets up the current font
+  /// sets up the current font  (only available with Qt-Support)
   /** @param size new font size 12 by default 
       @param family font family string "Arial" by default
   **/
   void font(int size, const string &family="Arial");
   
-  /// sets up current fontsize
+  /// sets up current fontsize (only available with Qt-Support)
   /** @param size new font size (default is 12) **/
   void fontsize(int size);
   /** @} **/

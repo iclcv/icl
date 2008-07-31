@@ -87,3 +87,7 @@ LDDYNFLAGS:= ${LDDYNFLAGS}
 DIR_PRIORITY:=
 DIR_LOWPRIORITY:=
 SKIP_DIRECTORIES:=
+
+ifeq "$(HAVE_QT)" ""
+SKIP_OBJECTS += interactive_template_matching.cpp
+endif

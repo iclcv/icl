@@ -92,8 +92,9 @@ ifeq "$(HAVE_LIBDC)" ""
 SKIP_OBJECTS += iclDCGrabber.cpp iclDCGrabberThread.cpp
 SKIP_OBJECTS += iclDC.cpp iclDCDevice.cpp dcclearisochannels.cpp
 SKIP_OBJECTS += iclDCFrameQueue.cpp iclDC.cpp dctest.cpp dcdeviceinfo.cpp 
-SKIP_OBJECTS += dcmultitest.cpp test3D.cpp
-endif
+SKIP_OBJECTS += dcmultitest.cpp test3D.cpp iclDCDeviceFeatures.cpp
+SKIP_OBJECTS += dccam-setup.cpp dcfeatures_test.cpp grabCam.cpp
+endif 
 
 ifeq "$(HAVE_UNICAP)" ""
 SKIP_OBJECTS += iclUnicapGrabber.cpp unicap_test.cpp 
@@ -106,3 +107,7 @@ ifeq "$(HAVE_XCF)" ""
 SKIP_OBJECTS += iclXCFGrabber.cpp iclXCFMemoryGrabber.cpp iclXCFGrabberBase.cpp iclXCFPublisherGrabber.cpp iclXCFServerGrabber.cpp xcf_publisher_test.cpp
 endif
 
+ifeq "$(HAVE_QT)" ""
+SKIP_OBJECTS += camrecorder.cpp dccam-setup.cpp dcmulticam.cpp dctest.cpp 
+SKIP_OBJECTS += generic_grab_example.cpp
+endif

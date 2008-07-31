@@ -127,19 +127,19 @@ cleanexe_%:
 #-----------------------------------------------
 install:
 	${PRE_CMD}${CMD_ECHO} "**** Installing Project: ${PROJECT_ROOT_NAME} ****"
-	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 1
+	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 1 ${CONFIG_LIST}
 
 installdoc:
 	${PRE_CMD}${CMD_ECHO} "**** Installing Project documentation for: ${PROJECT_ROOT_NAME} ****"
-	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 2
+	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 2 ${CONFIG_LIST}
 
 installlink:
 	${PRE_CMD}${CMD_ECHO} "**** Installing Project: ${PROJECT_ROOT_NAME} ****"
-	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 3
+	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 3 ${CONFIG_LIST}
 
 installall:
 	${PRE_CMD}${CMD_ECHO} "**** Installing Project documentation for: ${PROJECT_ROOT_NAME} ****"
-	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 0
+	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 0 ${CONFIG_LIST}
 
 cleaninstall:
 	${PRE_CMD}${CMD_ECHO} "**** Uninstalling ${PROJECT_ROOT_NAME} ****"

@@ -77,7 +77,8 @@ DEBUG_ON:=${DEBUG_ON}
 #DEBUG_ON:=TRUE
 
 ifeq "$(HAVE_QT)" ""
-SKIP_OBJECTS += vqdemo.cpp
+SKIP_OBJECTS += vqdemo.cpp tei2008_bench.cpp 
+SKIP_OBJECTS += tei2008_eval.cpp regioninspector.cpp
 endif
 
 ifeq "$(HAVE_LIBDC)" ""

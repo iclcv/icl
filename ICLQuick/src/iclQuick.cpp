@@ -17,12 +17,16 @@
 #include <iclFileWriter.h>
 #include <iclUnaryCompareOp.h>
 #include <iclLUTOp.h>
-#include <iclQImageConverter.h>
 #include <iclTimer.h>
+
+#ifdef HAVE_QT
+#include <iclQImageConverter.h>
 #include <QPainter>
 #include <QImage>
 #include <QFont>
 #include <QApplication>
+#endif
+
 #include <iclLine.h>
 #include <iclPoint32f.h>
 
@@ -1288,6 +1292,7 @@ namespace icl{
   void text(ImgQ &image, int xoffs, int yoffs, const string &text){
     // {{{ open
     // first rendering the text 
+#ifdef HAVE_QT
     int n = 0;
     char ** ppc = 0;
     if(!qApp){
@@ -1322,6 +1327,10 @@ namespace icl{
         }
       }
     }
+#else
+    (void)image;(void)xoffs; (void)yoffs; (void)text; 
+    ERROR_LOG("this feature is not a");
+#endif
   }
 
   // }}}

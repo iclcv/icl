@@ -87,7 +87,7 @@ CPPDEFINES:= ${CPPDEFINES}
 # Please, place here C++ flags (for static compilation)
 CPPFLAGS:= ${CPPFLAGS}
 
-REQUIRES_PKGCONFIG:=IPP
+REQUIRES_PKGCONFIG:=Intel-IPP
 
 
 # Please, don't forget to set the appropriate AGNI_GLOBAL_ROOT in your environment.

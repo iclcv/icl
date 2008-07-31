@@ -17,6 +17,8 @@ notify_not_found =
 endif
 
 
+CONFIG_LIST=""
+
 ######################################################################
 ## Dependencies ######################################################
 ######################################################################
@@ -32,6 +34,7 @@ $(call notify_support,IPP 5.2         ,${IPP_ROOT}/5.2/sharedlib)
 CDEFINES:=$(CDEFINES) -DWITH_IPP_OPTIMIZATION
 CPPDEFINES:=${CPPDEFINES} -DWITH_IPP_OPTIMIZATION
 HAVE_IPP:=TRUE
+CONFIG_LIST:="${CONFIG_LIST},[IPP]"
 endif
 
 endif # linux
@@ -44,6 +47,7 @@ $(call notify_support,IPP IPP-Framework  ,${IPP_ROOT}/Intel_IPP/Libraries)
 CDEFINES:=$(CDEFINES) -DWITH_IPP_OPTIMIZATION
 CPPDEFINES:=$(CPPDEFINES) -DWITH_IPP_OPTIMIZATION
 HAVE_IPP:=TRUE
+CONFIG_LIST:="${CONFIG_LIST},[IPP]"
 endif
 
 endif # macosx
@@ -56,6 +60,7 @@ $(call notify_not_found,Qt              ,${QTDIR}/lib);
 else
 $(call notify_support,Qt              ,${QTDIR}/lib);
 HAVE_QT:=TRUE
+CONFIG_LIST:="${CONFIG_LIST},[Qt]"
 endif
 
 # libJPEG
@@ -95,6 +100,7 @@ HAVE_LIBDC:=
 else
 $(call notify_support,libdc1394.so.2x ,${LIBDC_ROOT}/lib);
 HAVE_LIBDC:=TRUE
+CONFIG_LIST:="${CONFIG_LIST},[DC1394]"
 endif
 
 # libraw1394
@@ -115,6 +121,7 @@ HAVE_SVS:=
 else
 $(call notify_support,libsvs.so       ,${SVS_ROOT}/bin)
 HAVE_SVS:=TRUE
+CONFIG_LIST:="${CONFIG_LIST},[SVS]"
 endif
 
 # unicap
@@ -125,6 +132,7 @@ HAVE_UNICAP:=
 else
 $(call notify_support,libunicap.so    ,${UNICAP_ROOT}/lib)
 HAVE_UNICAP:=TRUE
+CONFIG_LIST:="${CONFIG_LIST},[Unicap]"
 endif
 
 #XCF
@@ -135,6 +143,7 @@ HAVE_XCF:=
 else
 $(call notify_support,libxcf.so       ,${XCF_ROOT}/lib)
 HAVE_XCF:=TRUE
+CONFIG_LIST:="${CONFIG_LIST},[XCF]"
 endif
 
 
@@ -142,5 +151,7 @@ ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
 $(info  +-----------------------------------------------------------------------)
 endif
 
+export CONFIG_LIST
 # ICL dependency check done
 export ICL_DEPENDENCYS_CHECKED=TRUE
+

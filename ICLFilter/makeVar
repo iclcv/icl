@@ -76,3 +76,7 @@ LDFLAGS:= ${LDFLAGS}
 LDDYNFLAGS:= ${LDDYNFLAGS}
 
 SKIP_OBJECTS:=iclSkinOp.cpp
+
+ifeq "$(HAVE_QT)" ""
+SKIP_OBJECTS += local_threshold.cpp online_gabor_test.cpp
+endif

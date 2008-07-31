@@ -111,7 +111,6 @@ include ${SRC_ROOT}/make/dependencyChecks
 # Exclude the folowing folder or files
 ifeq "$(HAVE_QT)" ""
 SKIP_DIRECTORIES += ICLQt 
-SKIP_DIRECTORIES += ICLQuick
 SKIP_DIRECTORIES += ICLGeom
 endif
 
