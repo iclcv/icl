@@ -60,6 +60,7 @@ CPPDEFINES:= ${CPPDEFINES}
 # Please, place here C++ flags (for static compilation)
 CPPFLAGS:= ${CPPFLAGS}
 
+REQUIRES_PKGCONFIG:=libunicap
 
 endif # HAVE Unicap
 endif # UNICAP_MAKEVAR

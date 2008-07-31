@@ -62,6 +62,7 @@ CPPDEFINES:= ${CPPDEFINES} -DHAVE_XCF -pthread
 # Please, place here C++ flags (for static compilation)
 CPPFLAGS:= ${CPPFLAGS}
 
+REQUIRES_PKGCONFIG:=xcf
 
 endif # HAVE XCF
 endif # XCF_MAKEVAR

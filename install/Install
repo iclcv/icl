@@ -107,8 +107,22 @@ closedir(DIR);
 
 foreach my $externPackage(@externPackageList) {
     #system "cp ./packages/$externPackage $INSTALLDIR/packages";
-    system "install -m 664 ./packages/$externPackage $INSTALLDIR/packages/"
+    system "install -m 664 ./packages/$externPackage $INSTALLDIR/packages/";
+
+    open(FILE,"./packages/$externPackage") or die "Can not open file: ./packages/$externPackage!";
+    @makeVarContent = <FILE>;
+    close(FILE);
+
+    # create extern package pkgconfig_
+    my @extpkgconfigs = ();
+    foreach my $line(@makeVarContent) {
+        if ($line =~ /^REQUIRES_PKGCONFIG.*/) {
+            push(@extpkgconfigs, $line);
+        }
+    }
+    generate_extern_pkgconfig($externPackage, $INSTALLDIR, @extpkgconfigs);
 }
+
 #system "cp ./make/dependencyChecks $INSTALLDIR/make";
 system "install -m 664  ./make/dependencyChecks $INSTALLDIR/make/";
 
@@ -394,6 +408,41 @@ sub generate_pkgconfig {
     $pkgContent .= "Requires: $requiredList\n";
     $pkgContent .= "Libs: -L\${prefix}/lib -l$entry\n";
     $pkgContent .= "Cflags: -I\${prefix}/include\n";
+
+    #---- Write pkg-config file ----
+    open(FILE, ">$INSTALLDIR/lib/pkgconfig/$entry.pc") or die "cannot write pkgconfig file:$!";
+    print FILE $pkgContent;
+    close(FILE);
+    chmod(0664,"$INSTALLDIR/lib/pkgconfig/$entry.pc");
+}
+
+# }}}
+
+sub generate_extern_pkgconfig {
+# {{{ open
+    
+    my ($entry, $installdir, @extpkgconfigs) = @_;
+    my ($pkgContent, $requiredList);
+    my @dirContent;
+    $installdir =~ /^.*\/(\d*.\d*)/;
+    my $version = $1;
+
+    foreach my $ext (@extpkgconfigs) {
+        if( $ext =~ /^REQUIRES_PKGCONFIG:=(.*)/ ){
+            $requiredList .= $1." ";
+        }
+    }
+    
+    #---- Generate content ----
+    $pkgContent .= "# This is the pkg-config file for: $entry\n";
+    $pkgContent .= "prefix=\n";
+    $pkgContent .= "\n";
+    $pkgContent .= "Name: $entry\n";    
+    $pkgContent .= "Version: $version\n";
+    $pkgContent .= "Description: External ICL Package: $entry\n";
+    $pkgContent .= "Requires: $requiredList\n";
+    $pkgContent .= "Libs: \n";
+    $pkgContent .= "Cflags: \n";
 
     #---- Write pkg-config file ----
     open(FILE, ">$INSTALLDIR/lib/pkgconfig/$entry.pc") or die "cannot write pkgconfig file:$!";

@@ -7,7 +7,7 @@
 
 
 namespace icl{
-
+#ifdef WITH_IPP_OPTIMIZATION
  template<class T, IppStatus (*ippFunc)(const T*,int,int,T*,T*,int,int,int)>                                                               
   DynMatrix<T> apply_dyn_matrix_inv(const DynMatrix<T> &s){                                                                                 
     if(s.cols() != s.rows()){                                                                                                               
@@ -43,7 +43,7 @@ namespace icl{
     }
     return det;
   }
-
+#endif
 
   
   template<class T>
@@ -55,7 +55,7 @@ namespace icl{
   template<class T>
   T DynMatrix<T>::det() const throw (InvalidMatrixDimensionException){
     ERROR_LOG("not implemented (only with IPP and only for float and double)");
-    return DynMatrix<T>(1,1);
+    return T();
   }
 
 

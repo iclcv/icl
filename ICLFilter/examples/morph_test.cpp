@@ -1,5 +1,8 @@
 #include <iclQuick.h>
 #include <iclMorphologicalOp.h>
+
+#ifdef WITH_IPP_OPTIMIZATION
+
 #include <ippi.h>
 int main(){
   Img8u image = cvt8u(thresh(gray(scale(create("parrot"),280,400)),128));
@@ -84,3 +87,6 @@ int main(){
   
 
 }
+#else
+int main(){}
+#endif

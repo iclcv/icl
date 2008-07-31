@@ -82,6 +82,7 @@ CPPDEFINES:= ${CPPDEFINES}
 CPPFLAGS:= ${CPPFLAGS}
 
 # Please, don't forget to set the appropriate AGNI_GLOBAL_ROOT in your environment.
+REQUIRES_PKGCONFIG:=QtCore QtGui QtOpenGL QtXml
 
 endif # Qt4 test
 endif # QT_MAKEVAR

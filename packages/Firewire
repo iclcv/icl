@@ -61,6 +61,7 @@ CPPDEFINES:= ${CPPDEFINES}
 # Please, place here C++ flags (for static compilation)
 CPPFLAGS:= ${CPPFLAGS}
 
+REQUIRES_PKGCONFIG:=libdc1394-2
 
 endif # HAVE Firewire
 endif # FIREWIRE_MAKEVAR
