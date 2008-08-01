@@ -496,6 +496,7 @@ namespace icl{
     }else{
       allocValue<T>(id,val);
     }
+    
     add_to_doc(*m_spXMLDocHandle,id,get_type_str<T>(),get_value_str<T>(val));
   }
 

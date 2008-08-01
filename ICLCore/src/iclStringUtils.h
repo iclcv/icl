@@ -9,8 +9,10 @@
 #include "iclCore.h"
 #include <ctype.h>
 #include <sstream>
+#include <limits>
 namespace icl{
-  
+
+
   inline char toLower(const char &c){
     return tolower(c);
   }
@@ -130,7 +132,7 @@ namespace icl{
   
   
   /// parses a string into template parameter (defined for iclXX and std::string) \ingroup STRUTILS
-  /** @see to8u to16s to32s to32f to64f */
+  /** @see to8u to16s to32s to32f to64f (*/
   template<class T>
   inline T parse(const std::string &s){
     std::istringstream str(s);
@@ -145,6 +147,25 @@ namespace icl{
     int t;
     str >> t;
     return icl8u(t);
+  } 
+
+  template<>
+  inline icl32f parse<icl32f>(const std::string &s){
+    if(s == "inf") return std::numeric_limits<icl32f>::infinity();
+    if(s == "-inf") return -std::numeric_limits<icl32f>::infinity();
+    std::istringstream str(s);
+    icl32f f;
+    str >> f;
+    return f;
+  }
+  template<>
+  inline icl64f parse<icl64f>(const std::string &s){
+    if(s == "inf") return std::numeric_limits<icl64f>::infinity();
+    if(s == "-inf") return -std::numeric_limits<icl64f>::infinity();
+    std::istringstream str(s);
+    icl64f f;
+    str >> f;
+    return f;
   }
   /** \endcond */
 

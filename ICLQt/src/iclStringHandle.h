@@ -11,14 +11,15 @@ class QLineEdit;
 
 namespace icl{
   
-  /// Class for handling "int" textfield components \ingroup HANDLES
+  /// Class for handling "string" textfield components \ingroup HANDLES
   class StringHandle : public GUIHandle<QLineEdit>{
     public:
     /// Creates an empty string handle
     StringHandle(){}
     
     /// Create a new Int handle
-    StringHandle(QLineEdit *le, GUIWidget *w):GUIHandle<QLineEdit>(le,w){}
+    StringHandle(QLineEdit *le,std::string *str, GUIWidget *w):
+    GUIHandle<QLineEdit>(le,w),m_str(str){}
     
     /// makes the associated textfield show the given text
     void operator=(const std::string &text);
@@ -29,8 +30,14 @@ namespace icl{
     /// makes the associated textfield show the given text
     void operator=(const char *text) {(*this) = std::string(text); }
     
-    /// returns the current text
+    /// returns the current text (only updated when enter is pressed)
     std::string getValue() const;
+
+    /// returns the currently shown text of the textfield
+    std::string getCurrentText() const;
+
+    private:
+    std::string *m_str;
   };
 }
 

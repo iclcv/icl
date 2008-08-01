@@ -597,7 +597,7 @@ public:
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<StringHandle>(def.handle(),StringHandle(m_poLineEdit,this));
+        getGUI()->allocValue<StringHandle>(def.handle(),StringHandle(m_poLineEdit,m_psOutput,this));
         getGUI()->unlockData();
       }
 
