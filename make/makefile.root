@@ -34,17 +34,23 @@ endif
 export _DBG_INDICATOR
 export DEBUG_FLAGS
 
+CFG_FILE=${SRC_ROOT}/config
+
 #-----------------------------------------------
 # Specify PHONY targets here
 #-----------------------------------------------
-.PHONY : install installdoc installlink installall cleaninstall	 
+.PHONY : install installdoc installlink installall cleaninstall
 
 #-----------------------------------------------
 # Rule: all & cleanall & clean & printtype
 #-----------------------------------------------
-all: ${ALL_EXEC_LIST}
+all:  ${ALL_EXEC_LIST}
 
-cleanall: $(ALL_EXEC_LIST:%=clean%)
+
+$(CFG_FILE):
+	$(error 'config' not found -> call configure at top level first)	
+
+cleanall: $(CFG_FILE) $(ALL_EXEC_LIST:%=clean%)
 	${PRE_CMD}${CMD_FINAL}
 
 clean: $(_DIRECTORY_ORDER:%=clean_%)
@@ -77,9 +83,9 @@ cleandoc_%:
 #-----------------------------------------------
 # Rule: obj & cleanobj
 #-----------------------------------------------
-obj: $(_DIRECTORY_ORDER:%=obj_%)
+obj: $(CFG_FILE) $(_DIRECTORY_ORDER:%=obj_%)
 
-obj_%:
+obj_%: $(CFG_FILE) 
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} obj -C $(subst obj_,,$@)\
               "_CURR_DIR=$(subst obj_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 
@@ -93,9 +99,9 @@ cleanobj_%:
 #-----------------------------------------------
 # Rule: lib & cleanlib
 #-----------------------------------------------
-lib: $(_DIRECTORY_ORDER:%=lib_%)
+lib: $(CFG_FILE) $(_DIRECTORY_ORDER:%=lib_%)
 
-lib_%:
+lib_%: $(CFG_FILE) 
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} lib -C $(subst lib_,,$@)\
               "_CURR_DIR=$(subst lib_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 
@@ -109,9 +115,9 @@ cleanlib_%:
 #-----------------------------------------------
 # Rule: exe & cleanexe
 #-----------------------------------------------
-exe: $(_DIRECTORY_ORDER:%=exe_%)
+exe: $(CFG_FILE) $(_DIRECTORY_ORDER:%=exe_%)
 
-exe_%:
+exe_%: $(CFG_FILE) 
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} exe -C $(subst exe_,,$@)\
               "_CURR_DIR=$(subst exe_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 
@@ -125,32 +131,32 @@ cleanexe_%:
 #-----------------------------------------------
 # Rule: install & cleaninstall
 #-----------------------------------------------
-install:
+install: $(CFG_FILE) 
 	${PRE_CMD}${CMD_ECHO} "**** Installing Project: ${PROJECT_ROOT_NAME} ****"
 	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 1 ${CONFIG_LIST}
 
-installdoc:
+installdoc: $(CFG_FILE)
 	${PRE_CMD}${CMD_ECHO} "**** Installing Project documentation for: ${PROJECT_ROOT_NAME} ****"
 	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 2 ${CONFIG_LIST}
 
-installlink:
+installlink: $(CFG_FILE)
 	${PRE_CMD}${CMD_ECHO} "**** Installing Project: ${PROJECT_ROOT_NAME} ****"
 	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 3 ${CONFIG_LIST}
 
-installall:
+installall: $(CFG_FILE)
 	${PRE_CMD}${CMD_ECHO} "**** Installing Project documentation for: ${PROJECT_ROOT_NAME} ****"
 	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 0 ${CONFIG_LIST}
 
-cleaninstall:
+cleaninstall: $(CFG_FILE)
 	${PRE_CMD}${CMD_ECHO} "**** Uninstalling ${PROJECT_ROOT_NAME} ****"
 	${PRE_CMD}perl ./install/Uninstall ${PROJECT_ROOT_NAME}
 
 #-----------------------------------------------
 # Rule: depend
 #-----------------------------------------------
-depend: $(_DIRECTORY_ORDER:%=depend_%)
+depend: $(CFG_FILE) $(_DIRECTORY_ORDER:%=depend_%)
 
-depend_%:
+depend_%: $(CFG_FILE)
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} depend -C $(subst depend_,,$@)\
               "_CURR_DIR=$(subst depend_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=
 
@@ -163,8 +169,8 @@ cleandepend_%:
 #-----------------------------------------------
 # Rule: run (examples)
 #-----------------------------------------------
-run: $(_DIRECTORY_ORDER:%=run_%)
+run: $(CFG_FILE) $(_DIRECTORY_ORDER:%=run_%)
 
-run_%:
+run_%: $(CFG_FILE)
 	${PRE_CMD}${CMD_MAKE} ${EXTRAMAKEFLAGS} run -C $(subst run_,,$@)\
               "_CURR_DIR=$(subst run_,${strip ${_CURR_DIR}}/,$@)" MAKEFLAGS=

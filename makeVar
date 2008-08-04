@@ -106,7 +106,13 @@ CMD_LD=g++
 
 #########################################################################
 # Dependency checks
+#########################################################################
 include ${SRC_ROOT}/make/dependencyChecks
+
+# now we include the config file (never mind build yet or earlier)
+include ${SRC_ROOT}/config
+
+
 
 # Exclude the folowing folder or files
 ifeq "$(HAVE_QT)" ""
@@ -120,9 +126,11 @@ endif
 
 #########################################################################
 # Set the priority level
+#########################################################################
 DIR_PRIORITY:=ICLUtils ICLCore ICLCC
 DIR_LOWPRIORITY:=ICLGeom ICLAlgorithms examples
 
 #########################################################################
 # Exclude the folowing folder or files
+#########################################################################
 SKIP_DIRECTORIES += 

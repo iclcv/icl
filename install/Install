@@ -129,7 +129,8 @@ foreach my $externPackage(@externPackageList) {
 }
 
 #system "cp ./make/dependencyChecks $INSTALLDIR/make";
-system "install -m 664  ./make/dependencyChecks $INSTALLDIR/make/";
+#system "install -m 664  ./make/dependencyChecks $INSTALLDIR/make/";
+system "install -m 664  ./config $INSTALLDIR/";
 
 #---- Install the whole stuff ----
 foreach my $entry(@dirs) {

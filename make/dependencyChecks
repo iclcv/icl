@@ -1,53 +1,98 @@
 # -*-mode: Makefile;-*-  ;; Have EMACS always use makefile-mode for this file.
 
-######################################################################
-## Convenience Functions  ############################################
-######################################################################
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
-notify_support = $(if ${ICL_SUPPRESS_DEPENDENCY_MESSAGES},, \
-		 $(info | $(1) support enabled: $(2)))
+ifeq "${ICL_DEPENDENCIES_CHECKED}" ""
 
-notify_not_found = $(if ${ICL_SUPPRESS_DEPENDENCY_MESSAGES},, \
-		$(info | $(1) not found in:    $(2) (support disabled)))
+## search for configuration file
+CFG_FILE:=${SRC_ROOT}/config
+CONFIG:=$(wildcard ${CFG_FILE})
 
-$(info  +-----------------------------------------------------------------------)
-else
-notify_support =
-notify_not_found =
+ifeq "$(CREATE_CONFIG)" "TRUE"
+
+ifneq "${CONFIG}" ""
+$(info saving old conifg to ${CFG_FILE}.old)
+$(shell mv ${CFG_FILE} ${CFG_FILE}.old)
 endif
 
+##########################################################################################
+## Config Convenience Functions  #########################################################
+##########################################################################################
 
-CONFIG_LIST=""
+# writes anything into the configfile
+CFG=$(shell echo $1 >> ${CFG_FILE})
 
-######################################################################
-## Dependencies ######################################################
-######################################################################
+# e.g. for $1=IPP: writes IPP_ROOT=$(IPP_ROOT) into the config file
+CFG_SET_ROOT=$(shell echo $1_ROOT:=${$1_ROOT} >> ${CFG_FILE})
+
+# e.g. for $1=IPP: writes HAVE_IPP=TRUE into the config file
+CFG_HAVE_TRUE=$(shell echo HAVE_$1:=TRUE >> ${CFG_FILE})
+
+# e.g. for $1=IPP: writes HAVE_IPP= into the config file
+CFG_HAVE_FALSE=$(shell echo HAVE_$1:= >> ${CFG_FILE})
+
+# e.g. for $1=CFLAGS and $2=-DHAVE_IPP: Writes CFLAGS=$(CFLAGS) -DHAVE_IPP into the config file
+#CFG_VAR_ADD=$(shell echo 'ifeq' '"$${CONFIG_READ}"' '""\n'$1:='$${$1} $2\nendif' >> ${CFG_FILE});
+CFG_VAR_ADD=$(shell echo $1:='$${$1} $2' >> ${CFG_FILE});
+
+# e.g. for $1=IPP: writes CONFIG_LIST:=$(CONFIG_LIST),[IPP] into the config file
+#CFG_LIST_ADD=$(shell echo 'ifeq' '"$${CONFIG_READ}"' '""\n'CONFIG_LIST:='$${CONFIG_LIST},['$1']\nendif'>> ${CFG_FILE});
+CFG_LIST_ADD=$(shell echo CONFIG_LIST:='$${CONFIG_LIST},['$1']'>> ${CFG_FILE});
+
+# write a comment into the config file
+CFG_COMMENT = $(shell echo "\# " $1 >> ${CFG_FILE});
+
+# starts a new section in the config file
+CFG_HEADER = $(shell echo "\n\# Configuration for ["$1"]"  >> ${CFG_FILE});
+
+# writes an info statement into the config file, that notifies support for $1
+CFG_NOTIFY_ENABLED = $(shell echo 'ifeq' '"$${CONFIG_READ}"' '""\n''$$(info | '$1' support enabled: '$2')\nendif' >> ${CFG_FILE} )
+
+# writes an info statement into the config file, that notifies $1 is not supported
+CFG_NOTIFY_DISABLED = $(shell echo 'ifeq' '"$${CONFIG_READ}"' '""\n''$$(info | '$1' not found in:    '$2' (support disabled))\nendif'  >> ${CFG_FILE} )
+
+##########################################################################################
+## Create Dependency config file #########################################################
+##########################################################################################
+E=e
+$(call CFG_COMMENT ,"ICL-Configuration File (auto generated)")
+$(call CFG ,CONFIG_LIST="")
+$(call CFG,'ifeq "$${CONFIG_READ}" ""\n$$(info  +-----------------------------------------------------------------------)\nendif' );
 
 # IPP
 IPP_ROOT ?= /vol/vision/IPP
 ifeq "${OS_TYPE}" "linux"
+$(call CFG_HEADER   	,IPP)
 
 ifeq "$(wildcard $(IPP_ROOT)/5.2/sharedlib/libipp*.so)" ""
-$(call notify_not_found,IPP 5.2         ,${IPP_ROOT}/5.2/sharedlib);
+$(call CFG_NOTIFY_DISABLED,'IPP 5.2         ',${IPP_ROOT}/5.2/sharedlib);
+$(call CFG_HAVE_FALSE   ,IPP)
 else
-$(call notify_support,IPP 5.2         ,${IPP_ROOT}/5.2/sharedlib)
-CDEFINES:=$(CDEFINES) -DWITH_IPP_OPTIMIZATION
-CPPDEFINES:=${CPPDEFINES} -DWITH_IPP_OPTIMIZATION
-HAVE_IPP:=TRUE
-CONFIG_LIST:="${CONFIG_LIST},[IPP]"
+
+$(call CFG_NOTIFY_ENABLED,'IPP 5.2         ',${IPP_ROOT}/5.2/sharedlib);
+$(call CFG_SET_ROOT     ,IPP)
+$(call CFG_VAR_ADD      ,CDEFINES,-DWITH_IPP_OPTIMIZATION)
+$(call CFG_VAR_ADD      ,CPPDEFINES,-DWITH_IPP_OPTIMIZATION)
+$(call CFG_HAVE_TRUE    ,IPP)
+$(call CFG_LIST_ADD	,IPP)
+
 endif
+
 
 endif # linux
 ifeq "${OS_TYPE}" "macosx"
 
+$(call CFG_HEADER   	,IPP)
 ifeq "$(wildcard $(IPP_ROOT)/Intel_IPP.framework/Libraries/libipp*.dylib)" ""
-$(call notify_not_found,IPP-Framework  ,${IPP_ROOT}/Intel_IPP/Libraries);
+$(call CFG_NOTIFY_DISABLED,'IPP-Framework  ',${IPP_ROOT}/Intel_IPP/Libraries);
+$(call CFG_HAVE_FALSE   ,IPP)
 else
-$(call notify_support,IPP IPP-Framework  ,${IPP_ROOT}/Intel_IPP/Libraries)
-CDEFINES:=$(CDEFINES) -DWITH_IPP_OPTIMIZATION
-CPPDEFINES:=$(CPPDEFINES) -DWITH_IPP_OPTIMIZATION
-HAVE_IPP:=TRUE
-CONFIG_LIST:="${CONFIG_LIST},[IPP]"
+
+$(call CFG_NOTIFY_ENABLED,'IPP-Framework  ',${IPP_ROOT}/Intel_IPP/Libraries)
+$(call CFG_SET_ROOT     ,IPP)
+$(call CFG_VAR_ADD      ,CDEFINES,-DWITH_IPP_OPTIMIZATION)
+$(call CFG_VAR_ADD      ,CPPDEFINES,-DWITH_IPP_OPTIMIZATION)
+$(call CFG_HAVE_TRUE    ,IPP)
+$(call CFG_LIST_ADD	,IPP)
+
 endif
 
 endif # macosx
@@ -55,27 +100,41 @@ endif # macosx
 
 # QT
 QTDIR ?= /vol/qt/4.3
+$(call CFG_HEADER	,Qt)
+
 ifeq "$(shell $(QTDIR)/bin/qmake --version 2>&1 | grep 'Using Qt version 4.')" ""
-$(call notify_not_found,Qt              ,${QTDIR}/lib);
+$(call CFG_NOTIFY_DISABLED,'Qt              ',${QTDIR}/lib);
 else
-$(call notify_support,Qt              ,${QTDIR}/lib);
-HAVE_QT:=TRUE
-CONFIG_LIST:="${CONFIG_LIST},[Qt]"
+
+$(call CFG_NOTIFY_ENABLED,'Qt              ',${QTDIR}/lib);
+$(call CFG		,QTDIR:=${QTDIR})
+$(call CFG_HAVE_TRUE	,QT)
+$(call CFG_LIST_ADD	,Qt)
+
 endif
 
 # libJPEG
 LIBJPEG_ROOT ?= /usr
+$(call CFG_HEADER	,LIBJPEG)
+
 ifeq "$(wildcard ${LIBJPEG_ROOT}/lib/libjpeg.*)" ""
-$(call notify_not_found,libjpeg.so      ,${LIBJPEG_ROOT}/lib);
+$(call CFG_NOTIFY_DISABLED,'libjpeg.so      ',${LIBJPEG_ROOT}/lib);
+$(call CFG_HAVE_FALSE	,LIBJPEG)
 else
-$(call notify_support,libjpeg.so      ,${LIBJPEG_ROOT}/lib);
-CDEFINES:=$(CDEFINES) -DWITH_JPEG_SUPPORT
-CPPDEFINES:=$(CPPDEFINES) -DWITH_JPEG_SUPPORT
-HAVE_LIBJPEG:=TRUE
+
+$(call CFG_NOTIFY_ENABLED,'libjpeg.so      ',${LIBJPEG_ROOT}/lib);
+$(call CFG_SET_ROOT	,LIBJPEG)
+$(call CFG_VAR_ADD	,CDEFINES,-DWITH_JPEG_SUPPORT)
+$(call CFG_VAR_ADD	,CPPDEFINES,-DWITH_JPEG_SUPPORT)
+$(call CFG_HAVE_TRUE	,LIBJPEG)
+
 endif
+
 
 # zlib
 ZLIB_ROOT ?= /usr
+$(call CFG_HEADER	,ZLIB)
+
 ZLIB_SOMETHING_IS_MISSING=FALSE
 ifeq "$(wildcard ${ZLIB_ROOT}/lib/libz.*)" ""
 ZLIB_SOMETHING_IS_MISSING=TRUE
@@ -83,75 +142,115 @@ endif
 ifeq "$(wildcard ${ZLIB_ROOT}/include/zlib.h)" ""
 ZLIB_SOMETHING_IS_MISSING=TRUE
 endif
+
 ifeq "$(ZLIB_SOMETHING_IS_MISSING)" "TRUE"
-$(call notify_not_found,libz.so/zlib.h  ,${ZLIB_ROOT}/[lib|include]);
+$(call CFG_NOTIFY_DISABLED,'libz.so/zlib.h  ','${ZLIB_ROOT}/[lib|include]');
+$(call CFG_HAVE_FALSE	,ZLIB)
 else
-$(call notify_support,libz.so/zlib.h  ,${ZLIB_ROOT}/[lib|include]);
-CDEFINES:=$(CDEFINES) -DWITH_ZLIB_SUPPORT
-CPPDEFINES:=$(CPPDEFINES) -DWITH_ZLIB_SUPPORT
-HAVE_ZLIB:=TRUE
+
+$(call CFG_NOTIFY_ENABLED,'libz.so/zlib.h  ','${ZLIB_ROOT}/[lib|include]');
+$(call CFG_SET_ROOT	,ZLIB)
+$(call CFG_VAR_ADD	,CDEFINES,-DWITH_ZLIB_SUPPORT)
+$(call CFG_VAR_ADD	,CPPDEFINES,-DWITH_ZLIB_SUPPORT)
+$(call CFG_HAVE_TRUE	,ZLIB)
+
 endif
 
 # libdc1394
 LIBDC_ROOT ?= /vol/video
+$(call CFG_HEADER	,LIBDC)
+
 ifeq "$(wildcard ${LIBDC_ROOT}/lib/libdc1394.*2*)" ""
-$(call notify_not_found,libdc1394.so.2x ,${LIBDC_ROOT}/lib);
-HAVE_LIBDC:=
+$(call CFG_NOTIFY_DISABLED,'libdc1394.so.2x ',${LIBDC_ROOT}/lib);
+$(call CFG_HAVE_FALSE	,LIBDC)
 else
-$(call notify_support,libdc1394.so.2x ,${LIBDC_ROOT}/lib);
-HAVE_LIBDC:=TRUE
-CONFIG_LIST:="${CONFIG_LIST},[DC1394]"
+
+$(call CFG_NOTIFY_ENABLED,'libdc1394.so.2x ',${LIBDC_ROOT}/lib);
+$(call CFG_SET_ROOT	,LIBDC)
+$(call CFG_HAVE_TRUE	,LIBDC)
+$(call CFG_LIST_ADD	,LIBDC)
+
 endif
 
 # libraw1394
 LIBRAW_ROOT ?= /vol/video
+$(call CFG_HEADER	,LIBRAW)
+
 ifeq "$(wildcard ${LIBRAW_ROOT}/lib/libraw1394.so*)" ""
-$(call notify_not_found,libraw1394.so   ,${LIBRAW_ROOT}/lib);
-HAVE_LIBRAW:=
+$(call CFG_NOTIFY_DISABLED,'libraw1394.so   ',${LIBRAW_ROOT}/lib);
+$(call CFG_HAVE_FALSE	,LIBRAW)
 else
-$(call notify_support,libraw1394.so   ,${LIBRAW_ROOT}/lib);
-HAVE_LIBRAW:=TRUE
+
+$(call CFG_NOTIFY_ENABLED,'libraw1394.so   ',${LIBRAW_ROOT}/lib);
+$(call CFG_SET_ROOT	,LIBRAW)
+$(call CFG_HAVE_TRUE	,LIBRAW)
+
 endif
 
 # SVS
 SVS_ROOT ?= /vol/vision/SVS/4.2
+$(call CFG_HEADER	,SVS)
+
 ifeq "$(wildcard ${SVS_ROOT}/bin/libsvs.so)" ""
-$(call notify_not_found,libsvs.so       ,${SVS_ROOT}/bin)
-HAVE_SVS:=
+$(call CFG_NOTIFY_DISABLED,'libsvs.so       ',${SVS_ROOT}/bin)
+$(call CFG_HAVE_FALSE	,SVS)
 else
-$(call notify_support,libsvs.so       ,${SVS_ROOT}/bin)
-HAVE_SVS:=TRUE
-CONFIG_LIST:="${CONFIG_LIST},[SVS]"
+
+$(call CFG_NOTIFY_ENABLED,'libsvs.so       ',${SVS_ROOT}/bin)
+$(call CFG_SET_ROOT	,SVS)
+$(call CFG_HAVE_TRUE	,SVS)
+$(call CFG_LIST_ADD	,SVS)
+
 endif
 
 # unicap
 UNICAP_ROOT ?= /vol/video
+$(call CFG_HEADER	,Unicap)
+
 ifeq "$(wildcard ${UNICAP_ROOT}/lib/libunicap*.so)" ""
-$(call notify_not_found,libunicap.so    ,${UNICAP_ROOT}/lib)
-HAVE_UNICAP:=
+$(call CFG_NOTIFY_DISABLED,'libunicap.so    ',${UNICAP_ROOT}/lib)
+$(call CFG_HAVE_FALSE	,UNICAP)
 else
-$(call notify_support,libunicap.so    ,${UNICAP_ROOT}/lib)
-HAVE_UNICAP:=TRUE
-CONFIG_LIST:="${CONFIG_LIST},[Unicap]"
+
+$(call CFG_NOTIFY_ENABLED,'libunicap.so    ',${UNICAP_ROOT}/lib)
+$(call CFG_SET_ROOT	,UNICAP)
+$(call CFG_HAVE_TRUE	,UNICAP)
+$(call CFG_LIST_ADD	,Unicap)
+
 endif
 
 #XCF
 XCF_ROOT ?= /vol/xcf
+$(call CFG_HEADER	,XCF)
+
 ifeq "$(wildcard ${XCF_ROOT}/lib/libxcf*.so)" ""
-$(call notify_not_found,libxcf.so       ,${XCF_ROOT}/lib)
-HAVE_XCF:=
+$(call CFG_NOTIFY_DISABLED,'libxcf.so       ',${XCF_ROOT}/lib)
+$(call CFG_HAVE_FALSE	,XCF)
 else
-$(call notify_support,libxcf.so       ,${XCF_ROOT}/lib)
-HAVE_XCF:=TRUE
-CONFIG_LIST:="${CONFIG_LIST},[XCF]"
+
+$(call CFG_NOTIFY_ENABLED,'libxcf.so       ',${XCF_ROOT}/lib)
+$(call CFG_SET_ROOT	,XCF)
+$(call CFG_HAVE_TRUE	,XCF)
+$(call CFG_LIST_ADD	,XCF)
+
 endif
 
+$(call CFG,'\n# some final misc')
 
-ifeq "${ICL_DEPENDENCYS_CHECKED}" ""
+$(call CFG,'ifeq "$${CONFIG_READ}" ""\n$$(info  +-----------------------------------------------------------------------)\nendif' );
+
+
+$(call CFG,export CONFIG_LIST)
+$(call CFG,export CONFIG_READ=TRUE)
+
 $(info  +-----------------------------------------------------------------------)
+$(info  | created this configuration (stored at ${CFG_FILE}))
+
+# #ifeq "${CREATE_CONFIG}" "TRUE"
 endif
 
-export CONFIG_LIST
 # ICL dependency check done
-export ICL_DEPENDENCYS_CHECKED=TRUE
+export ICL_DEPENDENCIES_CHECKED=TRUE
+# endif for if config not found
+endif 
 
