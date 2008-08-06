@@ -17,37 +17,39 @@ endif
 ## Config Convenience Functions  #########################################################
 ##########################################################################################
 
+CFG_ECHO=/bin/echo -e
+
 # writes anything into the configfile
-CFG=$(shell echo $1 >> ${CFG_FILE})
+CFG=$(shell ${CFG_ECHO} $1 >> ${CFG_FILE})
 
 # e.g. for $1=IPP: writes IPP_ROOT=$(IPP_ROOT) into the config file
-CFG_SET_ROOT=$(shell echo $1_ROOT:=${$1_ROOT} >> ${CFG_FILE})
+CFG_SET_ROOT=$(shell ${CFG_ECHO} $1_ROOT:=${$1_ROOT} >> ${CFG_FILE})
 
 # e.g. for $1=IPP: writes HAVE_IPP=TRUE into the config file
-CFG_HAVE_TRUE=$(shell echo HAVE_$1:=TRUE >> ${CFG_FILE})
+CFG_HAVE_TRUE=$(shell ${CFG_ECHO} HAVE_$1:=TRUE >> ${CFG_FILE})
 
 # e.g. for $1=IPP: writes HAVE_IPP= into the config file
-CFG_HAVE_FALSE=$(shell echo HAVE_$1:= >> ${CFG_FILE})
+CFG_HAVE_FALSE=$(shell ${CFG_ECHO} HAVE_$1:= >> ${CFG_FILE})
 
 # e.g. for $1=CFLAGS and $2=-DHAVE_IPP: Writes CFLAGS=$(CFLAGS) -DHAVE_IPP into the config file
-#CFG_VAR_ADD=$(shell echo 'ifeq' '"$${CONFIG_READ}"' '""\n'$1:='$${$1} $2\nendif' >> ${CFG_FILE});
-CFG_VAR_ADD=$(shell echo $1:='$${$1} $2' >> ${CFG_FILE});
+#CFG_VAR_ADD=$(shell ${CFG_ECHO} 'ifeq' '"$${CONFIG_READ}"' '""\n'$1:='$${$1} $2\nendif' >> ${CFG_FILE});
+CFG_VAR_ADD=$(shell ${CFG_ECHO} $1:='$${$1} $2' >> ${CFG_FILE});
 
 # e.g. for $1=IPP: writes CONFIG_LIST:=$(CONFIG_LIST),[IPP] into the config file
-#CFG_LIST_ADD=$(shell echo 'ifeq' '"$${CONFIG_READ}"' '""\n'CONFIG_LIST:='$${CONFIG_LIST},['$1']\nendif'>> ${CFG_FILE});
-CFG_LIST_ADD=$(shell echo CONFIG_LIST:='$${CONFIG_LIST},['$1']'>> ${CFG_FILE});
+#CFG_LIST_ADD=$(shell ${CFG_ECHO} 'ifeq' '"$${CONFIG_READ}"' '""\n'CONFIG_LIST:='$${CONFIG_LIST},['$1']\nendif'>> ${CFG_FILE});
+CFG_LIST_ADD=$(shell ${CFG_ECHO} CONFIG_LIST:='$${CONFIG_LIST},['$1']'>> ${CFG_FILE});
 
 # write a comment into the config file
-CFG_COMMENT = $(shell echo "\# " $1 >> ${CFG_FILE});
+CFG_COMMENT = $(shell ${CFG_ECHO} "\# " $1 >> ${CFG_FILE});
 
 # starts a new section in the config file
-CFG_HEADER = $(shell echo "\n\# Configuration for ["$1"]"  >> ${CFG_FILE});
+CFG_HEADER = $(shell ${CFG_ECHO} "\n\# Configuration for ["$1"]"  >> ${CFG_FILE});
 
 # writes an info statement into the config file, that notifies support for $1
-CFG_NOTIFY_ENABLED = $(shell echo 'ifeq' '"$${CONFIG_READ}"' '""\n''$$(info | '$1' support enabled: '$2')\nendif' >> ${CFG_FILE} )
+CFG_NOTIFY_ENABLED = $(shell ${CFG_ECHO} 'ifeq' '"$${CONFIG_READ}"' '""\n''$$(info | '$1' support enabled: '$2')\nendif' >> ${CFG_FILE} )
 
 # writes an info statement into the config file, that notifies $1 is not supported
-CFG_NOTIFY_DISABLED = $(shell echo 'ifeq' '"$${CONFIG_READ}"' '""\n''$$(info | '$1' not found in:    '$2' (support disabled))\nendif'  >> ${CFG_FILE} )
+CFG_NOTIFY_DISABLED = $(shell ${CFG_ECHO} 'ifeq' '"$${CONFIG_READ}"' '""\n''$$(info | '$1' not found in:    '$2' (support disabled))\nendif'  >> ${CFG_FILE} )
 
 ##########################################################################################
 ## Create Dependency config file #########################################################
