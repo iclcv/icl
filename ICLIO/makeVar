@@ -24,6 +24,7 @@ AGNI_INHERIT_MODE:= DYNAMIC
 # (e.g. include ${AGNI_GLOBAL_ROOT}/Basics/Base/1.0/packageVar)
 include ${PACKAGES}/ICLCC
 include ${PACKAGES}/ICLCore
+include ${PACKAGES}/ImageMagic
 include ${PACKAGES}/Unicap
 include ${PACKAGES}/DC1394
 include ${PACKAGES}/XCF

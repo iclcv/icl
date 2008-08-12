@@ -651,8 +651,6 @@ ICL_INSTANTIATE_ALL_DEPTHS
       maxVal = c>maxVal ? c : maxVal;
     }
   }  
-                          
- 
 
   /* }}} */
 

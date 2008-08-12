@@ -148,8 +148,8 @@ installall: $(CFG_FILE)
 	${PRE_CMD}perl ./install/Install ${PROJECT_ROOT_NAME} 0 ${CONFIG_LIST}
 
 cleaninstall: $(CFG_FILE)
-	${PRE_CMD}${CMD_ECHO} "**** Uninstalling ${PROJECT_ROOT_NAME} ****"
-	${PRE_CMD}perl ./install/Uninstall ${PROJECT_ROOT_NAME}
+	${PRE_CMD}${CMD_ECHO} "**** Uninstalling ${PROJECT_ROOT_NAME} from ${ICL_INSTALL_ROOT} ****"
+	${PRE_CMD}perl ./install/Uninstall ${PROJECT_ROOT_NAME} ${ICL_INSTALL_ROOT}
 
 #-----------------------------------------------
 # Rule: depend

@@ -219,7 +219,38 @@ $(call CFG_SET_ROOT	,UNICAP)
 $(call CFG_HAVE_TRUE	,UNICAP)
 $(call CFG_LIST_ADD	,Unicap)
 
+
 endif
+
+
+##new
+# ImageMagick++
+IMAGEMAGIC_ROOT ?= /usr
+$(call CFG_HEADER	,ImageMagic++)
+
+IMAGEMAGIC_AVAILABLE=TRUE
+ifeq "$(wildcard ${IMAGEMAGIC_ROOT}/lib/libMagick++*.so)" ""
+IMAGEMAGIC_AVAILABLE=FALSE
+endif
+ifeq "$(wildcard ${IMAGEMAGIC_ROOT}/include/Magick++.h)" ""
+IMAGEMAGIC_AVAILABLE=FALSE
+endif
+ifeq "${IMAGEMAGIC_AVAILABLE}" "FALSE"
+$(call CFG_NOTIFY_DISABLED,'libMagick++.so  ','${IMAGEMAGIC_ROOT}/[lib|include]')
+$(call CFG_HAVE_FALSE	,IMAGEMAGIC)
+else
+
+$(call CFG_NOTIFY_ENABLED,'libMagick++.so  ','${IMAGEMAGIC_ROOT}/[lib|include]')
+$(call CFG_SET_ROOT	,IMAGEMAGIC)
+$(call CFG_HAVE_TRUE	,IMAGEMAGIC)
+$(call CFG_VAR_ADD	,CDEFINES,-DWITH_IMAGEMAGIC_SUPPORT)
+$(call CFG_VAR_ADD	,CPPDEFINES,-DWITH_IMAGEMAGIC_SUPPORT)
+$(call CFG_LIST_ADD	,ImageMagic)
+
+endif
+
+##/new
+
 
 #XCF
 XCF_ROOT ?= /vol/xcf

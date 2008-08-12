@@ -7,7 +7,9 @@
 #include "iclFileWriterPluginPNM.h" 
 #include "iclFileWriterPluginCSV.h" 
 #include "iclFileWriterPluginJPEG.h" 
-
+#ifdef WITH_IMAGEMAGIC_SUPPORT
+#include "iclFileWriterPluginImageMagick.h"
+#endif
 using namespace std;
 using namespace icl::ioutils;
 
@@ -32,6 +34,26 @@ namespace icl{
       FileWriter::s_mapPlugins[".pnm.gz"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".icl.gz"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".csv.gz"] = new FileWriterPluginCSV;
+#endif
+      
+#ifdef WITH_IMAGEMAGIC_SUPPORT
+      
+      static const char *imageMagickFormats[] = {
+        "png","gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
+        "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",
+        "epsf","epsi","ept","fax","gplt","gray","hpgl","html","ico","info",
+        "jbig","jng","jp2","jpc","man","mat","miff","mono","mng","mpeg","m2v",
+        "mpc","msl","mtv","mvg","palm","pbm","pcd","pcds","pcl","pcx","pdb",
+        "pfa","pfb","picon","pict","pix","ps","ps2","ps3","psd","ptif","pwp",
+        "rad","rgb","pgba","rla","rle","sct","sfw","sgi","shtml","sun","svg",
+        "tga","tiff","tim","ttf","txt","uil","uyuv","vicar","viff","wbmp",
+        "wmf","wpg","xbm","xcf","xpm","xwd","ydbcr","ycbcra","yuv",0
+      };
+      for(const char **pc=imageMagickFormats;*pc;++pc){
+        FileWriter::s_mapPlugins[std::string(".")+*pc] = new FileWriterPluginImageMagick;
+      }
+
+
 #endif
       // add plugins
     }

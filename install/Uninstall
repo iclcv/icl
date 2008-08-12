@@ -4,7 +4,7 @@ use Data::Dumper;
 my ($majVer, $minVer);
 my @content;
 my $projectRootName = $ARGV[0];
-
+my $installRoot = $ARGV[1];
 #------------------
 #Get version number
 #------------------
@@ -22,7 +22,7 @@ foreach my $line(@content) {
     }   
 }
 
-my $INSTALLDIR="$ENV{AGNI_LOCAL_ROOT}/${projectRootName}/${majVer}.${minVer}";
+my $INSTALLDIR="${installRoot}/${projectRootName}/${majVer}.${minVer}";
 
 #---- Remove install tree ----
 system "rm -Rf $INSTALLDIR/";

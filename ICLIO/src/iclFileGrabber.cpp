@@ -10,7 +10,7 @@
 #include <iclFileGrabberPluginPNM.h>
 #include <iclFileGrabberPluginJPEG.h>
 #include <iclFileGrabberPluginCSV.h>
-
+#include <iclFileGrabberPluginImageMagick.h>
 
 using namespace std;
 
@@ -37,6 +37,26 @@ namespace icl{
       FileGrabber::s_mapPlugins[".icl.gz"] = new FileGrabberPluginPNM; 
       FileGrabber::s_mapPlugins[".csv.gz"] = new FileGrabberPluginCSV;       
 #endif
+
+#ifdef WITH_IMAGEMAGIC_SUPPORT
+      static const char *imageMagickFormats[] = {
+        "png","gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
+        "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",
+        "epsf","epsi","ept","fax","gplt","gray","hpgl","html","ico","info",
+        "jbig","jng","jp2","jpc","man","mat","miff","mono","mng","mpeg","m2v",
+        "mpc","msl","mtv","mvg","palm","pbm","pcd","pcds","pcl","pcx","pdb",
+        "pfa","pfb","picon","pict","pix","ps","ps2","ps3","psd","ptif","pwp",
+        "rad","rgb","pgba","rla","rle","sct","sfw","sgi","shtml","sun","svg",
+        "tga","tiff","tim","ttf","txt","uil","uyuv","vicar","viff","wbmp",
+        "wmf","wpg","xbm","xcf","xpm","xwd","ydbcr","ycbcra","yuv",0
+      };
+      
+      for(const char **pc=imageMagickFormats;*pc;++pc){
+        FileGrabber::s_mapPlugins[std::string(".")+*pc] = new FileGrabberPluginImageMagick;
+      }
+#endif
+      
+      
 
       // add additional plugins to the map
     }
