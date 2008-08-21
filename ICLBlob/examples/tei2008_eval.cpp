@@ -4,7 +4,6 @@
 #include <iclGUI.h>
 
 #include <iclFPSEstimator.h>
-#include <iclArray.h>
 #include <iclStringUtils.h>
 #include <iclRegionDetector.h>
 #include <iclDCGrabber.h>
@@ -275,7 +274,7 @@ private:
 };
 
 
-typedef Array<int> vec;
+typedef std::vector<int> vec;
 
 GUI gui;
 
@@ -342,7 +341,7 @@ public:
       if(v.size()){
         static PositionTracker<int> pt(pa_subarg<int>("-thresh",0,2));
         
-        pt.pushData(v.ptr(),v.size()/2);
+        pt.pushData(v.data(),v.size()/2);
         w->color(255,0,0);
 
         update_error_frames_A();

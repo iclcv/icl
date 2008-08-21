@@ -1,7 +1,6 @@
 #ifndef REGIONBASEDBLOBSEARCHER_H
 #define REGIONBASEDBLOBSEARCHER_H
 
-#include <iclArray.h>
 #include <iclSize.h>
 #include <iclPoint.h>
 #include <iclRect.h>
@@ -114,79 +113,79 @@ namespace icl{
     void extractRegions(const ImgBase *image);
     
     /// access a list of center of gravities
-    /** @return "xyxyxy"- ordered int Array containing the data
+    /** @return "xyxyxy"- ordered int std::vector containing the data
     **/
-    const Array<int> &getCOGsPOD();
+    const std::vector<int> &getCOGsPOD();
 
     /// access a list of center of gravities (floating point precision)
-    /** @return "xyxyxy"- ordered int Array containing the data
+    /** @return "xyxyxy"- ordered int std::vector containing the data
     **/
-    const Array<float> &getCOGsFloatPOD();
+    const std::vector<float> &getCOGsFloatPOD();
 
 
     /// access a list of center of gravities
-    /** @return Array of blob center positions 
+    /** @return std::vector of blob center positions 
     **/
-    const Array<Point> &getCOGs();
+    const std::vector<Point> &getCOGs();
  
     /// access a list of center of gravities (floating point precision)
-    /** @return Array of blob center positions 
+    /** @return std::vector of blob center positions 
     **/
-    const Array<Point32f> &getCOGsFloat();
+    const std::vector<Point32f> &getCOGsFloat();
     
 
     /// access to bounding boxes
     /** This function produces resuls only for RegionFilters 
         that use the "special-features".
-        @return "xywh,xywh,.."-ordered int Array containing data
+        @return "xywh,xywh,.."-ordered int std::vector containing data
     **/
-    const Array<int> &getBoundingBoxesPOD();
+    const std::vector<int> &getBoundingBoxesPOD();
 
     /// access to bounding boxes
     /** This function produces resuls only for RegionFilters 
         that use the "special-features".
-        @return Array of blobs bounding boxes
+        @return std::vector of blobs bounding boxes
     **/
-    const Array<Rect> &getBoundingBoxes();
+    const std::vector<Rect> &getBoundingBoxes();
     
     /// Access to pca information
     /** Data order is [axis1-length, axis2-length, axis1-angle, axis2-angle, ...] 
         @return ordered array of float with local pca information
     */
-    const Array<float> &getPCAInfoPOD();
+    const std::vector<float> &getPCAInfoPOD();
 
     /// extract pca info
-    /** @return Array of the found blobs PCA-Information
+    /** @return std::vector of the found blobs PCA-Information
     */
-    const Array<RegionPCAInfo> &getPCAInfo();
+    const std::vector<RegionPCAInfo> &getPCAInfo();
 
-    /// Extract an Array of boundary pixel arrays
-    /** Array of Array if pixels (xyxyxy...-order) */
-    const Array<Array<int> > &getBoundariesPOD();
+    /// Extract an std::vector of boundary pixel arrays
+    /** std::vector of std::vector if pixels (xyxyxy...-order) */
+    const std::vector<std::vector<int> > &getBoundariesPOD();
     
     
-    /// Extract an Array of boundary pixel arrays
-    /** @return Array of Array of Pixels */
-    const Array<Array<Point> > &getBoundaries();
+    /// Extract an std::vector of boundary pixel arrays
+    /** @return std::vector of std::vector of Pixels */
+    const std::vector<std::vector<Point> > &getBoundaries();
 
     
-    /// Extract an Array of detected blobs boundary lengths
+    /// Extract an std::vector of detected blobs boundary lengths
     /** This funtion is in POD-style, so no non-POD function is available
-        @return Array of boundary pixle counts 
+        @return std::vector of boundary pixle counts 
     **/
-    const Array<int> &getBoundaryLengthsPOD();
+    const std::vector<int> &getBoundaryLengthsPOD();
     
-    /// Extract an Array of detected blobs form-factors (see BlobData)
+    /// Extract an std::vector of detected blobs form-factors (see BlobData)
     /** This funtion is in POD-style, so no non-POD function is available
-        @return Array of Form-Factors 
+        @return std::vector of Form-Factors 
     **/
-    const Array<float> &getFormFactorsPOD();
+    const std::vector<float> &getFormFactorsPOD();
 
     /// Extract an array of detected blob data pointers
     /** The returned blobdata can be used to access all blob available blob features 
         @return const array of internal used blob data Pointers
         */
-    const Array<Region*> &getRegions();
+    const std::vector<Region*> &getRegions();
 
     /// add new FMCreator and associated RegionFilter
     /** ownership is passed to the RegionBasedBlobSearcher
@@ -255,63 +254,63 @@ namespace icl{
     ///map of maps containing converted images
     sizemap m_mmImages;          
     
-    /// Array of all currently hold FMCreators and corresponding RegionFilters
-    Array<Plugin> m_oFMRF;
+    /// std::vector of all currently hold FMCreators and corresponding RegionFilters
+    std::vector<Plugin> m_oFMRF;
     
     /// Wrapped ImgRegionDetector
     RegionDetector *m_poRD;   
 
     /// Internal buffer of all FMCreators' calculated blob centers
-    Array<Array<Point> > m_oCenters;    
+    std::vector<std::vector<Point> > m_oCenters;    
 
     /// Internal buffer of all FMCreators' calculated blob centers
-    Array<Array<Point32f> > m_oCentersFloat;    
+    std::vector<std::vector<Point32f> > m_oCentersFloat;    
 
     /// Internal buffer of all FMCreators' calculated blob bounding boxes
-    Array<Array<Rect> > m_oBBs;         
+    std::vector<std::vector<Rect> > m_oBBs;         
     
     /// Internal buffer of all FMCreators' calculated blob PCAInfos
-    Array<Array<RegionPCAInfo> > m_oPCAInfos; 
+    std::vector<std::vector<RegionPCAInfo> > m_oPCAInfos; 
     
     /// Output buffer for blob centers
-    Array<Point> m_oCOGsOut;
+    std::vector<Point> m_oCOGsOut;
     
     /// Output buffer for blob centers (floating point precision)
-    Array<Point32f> m_oCOGsFloatOut;
+    std::vector<Point32f> m_oCOGsFloatOut;
     
     /// Output buffer for blob bounding boxes
-    Array<Rect> m_oBBsOut;
+    std::vector<Rect> m_oBBsOut;
 
     /// Output buffer for blob PCA-Infos
-    Array<RegionPCAInfo> m_oPCAInfosOut;
+    std::vector<RegionPCAInfo> m_oPCAInfosOut;
     
-    Array<Array<Point> > m_oBoundariesOut;
+    std::vector<std::vector<Point> > m_oBoundariesOut;
     
     /// POD-Output buffer for blob centers
-    Array<int> m_oCOGsOutPOD;
+    std::vector<int> m_oCOGsOutPOD;
 
     /// POD-Output buffer for blob centers (floating point precision)
-    Array<float> m_oCOGsFloatOutPOD;
+    std::vector<float> m_oCOGsFloatOutPOD;
 
     /// POD-Output buffer for blob bounding boxes
-    Array<int> m_oBBsOutPOD;
+    std::vector<int> m_oBBsOutPOD;
 
     /// POD-Output buffer for blob PCA-Infos
-    Array<float> m_oPCAInfosOutPOD;
+    std::vector<float> m_oPCAInfosOutPOD;
 
-    Array<Array<int> > m_oBoundariesPOD;
+    std::vector<std::vector<int> > m_oBoundariesPOD;
     
-    Array<int> m_oBoundaryLengthsPOD;
+    std::vector<int> m_oBoundaryLengthsPOD;
     
-    Array<float> m_oFormFactorsPOD;
+    std::vector<float> m_oFormFactorsPOD;
 
-    Array<Region*> m_oInternalData;
+    std::vector<Region*> m_oInternalData;
 
     struct FF{
       FF(float f1=0, float f2=0): f1(f1),f2(f2){}
       float f1,f2; 
     };
-    Array<FF> m_oScaleFactors; 
+    std::vector<FF> m_oScaleFactors; 
     
     /// Currently set input image
     ImgBase *m_poInputImage;     

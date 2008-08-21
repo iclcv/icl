@@ -51,7 +51,7 @@ int main(){
     
   
   color(0,255,0,100);
-  const Array<Array<Point> > &boundaries = R.getBoundaries();
+  const std::vector<std::vector<Point> > &boundaries = R.getBoundaries();
   for(unsigned int i=0;i<boundaries.size();i++){
     pix(A,boundaries[i]);
   }

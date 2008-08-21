@@ -38,9 +38,9 @@ int main(int nargs, char **ppc){
   rbbs.add(fmc,rf);
   rbbs.extractRegions(&A);
   
-  const Array<Point> &centers = rbbs.getCOGs();
+  const std::vector<Point> &centers = rbbs.getCOGs();
 
-  const Array<Array<Point> > &boundaries = rbbs.getBoundaries();
+  const std::vector<std::vector<Point> > &boundaries = rbbs.getBoundaries();
   ImgQ B = rgb(fm2);
 
   for(unsigned int i=0;i<centers.size();i++){

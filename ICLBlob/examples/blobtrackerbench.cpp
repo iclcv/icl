@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include <iclImg.h>
-#include <iclArray.h>
 #include <iclMathematics.h>
 #include <iclTimer.h>
 
@@ -14,7 +13,7 @@
 using namespace std;
 using namespace icl;
 
-typedef Array<int> vec;
+typedef std::vector<int> vec;
 
 int main(int n, char  **ppc){
   PositionTracker<int> pt;
@@ -32,11 +31,11 @@ int main(int n, char  **ppc){
     for(int i=0;i<N*K;i++){
       pi[i] = random(static_cast<unsigned int>(10));
     }
-    pt.pushData(vec(pi,N),vec(pi,N));    
+    pt.pushData(vec(pi,pi+N),vec(pi,pi+N));    
     Timer t(1); t.start();
     for(int i=0;i<D;i++){
       int *ppp = pi+N*i;
-      pt.pushData(vec(ppp,N),vec(ppp,N));    
+      pt.pushData(vec(ppp,ppp+N),vec(ppp,ppp+N));    
     }
     printf("average time of 10 = %fms \n",float(t.stopSilent())/(10*1000.0));
     delete pi;

@@ -2,7 +2,6 @@
 #define ICLMEDIAN_H
 
 #include <iclNeighborhoodOp.h>
-#include <iclArray.h>
 
 namespace icl {
 

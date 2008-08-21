@@ -3,7 +3,6 @@
 
 #include <iclUnaryOp.h>
 #include <iclImg.h>
-#include <iclArray.h>
 #include <iclUncopyable.h>
 
 namespace icl {

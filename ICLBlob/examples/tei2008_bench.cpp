@@ -4,12 +4,11 @@
 #include <iclGUI.h>
 
 #include <iclFPSEstimator.h>
-#include <iclArray.h>
 #include <iclStringUtils.h>
 #include <iclRegionDetector.h>
 #include <iclDCGrabber.h>
 #include <iclCommon.h>
-typedef Array<int> vec;
+typedef std::vector<int> vec;
 
 GUI gui("vbox");
 
@@ -130,7 +129,7 @@ public:
       w->lock();       
       w->reset();
       if(v.size()){
-        pt.pushData(v.ptr(),v.size()/2);
+        pt.pushData(v.data(),v.size()/2);
 
         w->color(255,0,0);
         for(unsigned int i=0;i<v.size();i+=2){

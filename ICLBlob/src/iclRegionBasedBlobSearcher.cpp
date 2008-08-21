@@ -15,11 +15,11 @@ namespace icl{
     /// struct to use a Size struct as std::map - key
    
 
-    Array<Point> &cat(const Array<Array<Point> > &src, Array<Point> &dst){
+    std::vector<Point> &cat(const std::vector<std::vector<Point> > &src, std::vector<Point> &dst){
       // {{{ open
       dst.clear();
-      for(Array<Array<Point> >::const_iterator it = src.begin();it!=src.end();++it){
-        for(Array<Point>::const_iterator jt = it->begin();jt!= it->end();++jt){
+      for(std::vector<std::vector<Point> >::const_iterator it = src.begin();it!=src.end();++it){
+        for(std::vector<Point>::const_iterator jt = it->begin();jt!= it->end();++jt){
           dst.push_back(*jt);
         }
       }
@@ -27,11 +27,11 @@ namespace icl{
     }
     // }}}
 
-    Array<Point32f> &cat(const Array<Array<Point32f> > &src, Array<Point32f> &dst){
+    std::vector<Point32f> &cat(const std::vector<std::vector<Point32f> > &src, std::vector<Point32f> &dst){
       // {{{ open
       dst.clear();
-      for(Array<Array<Point32f> >::const_iterator it = src.begin();it!=src.end();++it){
-        for(Array<Point32f>::const_iterator jt = it->begin();jt!= it->end();++jt){
+      for(std::vector<std::vector<Point32f> >::const_iterator it = src.begin();it!=src.end();++it){
+        for(std::vector<Point32f>::const_iterator jt = it->begin();jt!= it->end();++jt){
           dst.push_back(*jt);
         }
       }
@@ -39,22 +39,22 @@ namespace icl{
     }
     // }}}
 
-    Array<Rect> &cat(const Array<Array<Rect> > &src, Array<Rect> &dst){
+    std::vector<Rect> &cat(const std::vector<std::vector<Rect> > &src, std::vector<Rect> &dst){
       // {{{ open
       dst.clear();
-      for(Array<Array<Rect> >::const_iterator it = src.begin();it!=src.end();++it){
-        for(Array<Rect>::const_iterator jt = it->begin();jt!= it->end();++jt){
+      for(std::vector<std::vector<Rect> >::const_iterator it = src.begin();it!=src.end();++it){
+        for(std::vector<Rect>::const_iterator jt = it->begin();jt!= it->end();++jt){
           dst.push_back(*jt);
         }
       }
       return dst;
     }
     // }}}
-    Array<RegionPCAInfo> &cat(const Array<Array<RegionPCAInfo> > &src, Array<RegionPCAInfo> &dst){
+    std::vector<RegionPCAInfo> &cat(const std::vector<std::vector<RegionPCAInfo> > &src, std::vector<RegionPCAInfo> &dst){
       // {{{ open
       dst.clear();
-      for(Array<Array<RegionPCAInfo> >::const_iterator it = src.begin();it!=src.end();++it){
-        for(Array<RegionPCAInfo>::const_iterator jt = it->begin();jt!= it->end();++jt){
+      for(std::vector<std::vector<RegionPCAInfo> >::const_iterator it = src.begin();it!=src.end();++it){
+        for(std::vector<RegionPCAInfo>::const_iterator jt = it->begin();jt!= it->end();++jt){
           dst.push_back(*jt);
         }
       }
@@ -62,7 +62,7 @@ namespace icl{
     }
     // }}}
 
-    Array<int> &toPOD(const Array<Array<Point> >&src, Array<int> &dst){
+    std::vector<int> &toPOD(const std::vector<std::vector<Point> >&src, std::vector<int> &dst){
       // {{{ open
 
     dst.clear();
@@ -76,7 +76,7 @@ namespace icl{
   }
 
   // }}}
-    Array<int> &toPOD(const Array<Point> &src, Array<int> &dst){
+    std::vector<int> &toPOD(const std::vector<Point> &src, std::vector<int> &dst){
       // {{{ open
 
     dst.clear();
@@ -89,7 +89,7 @@ namespace icl{
 
     // }}}   
 
-    Array<float> &toPOD(const Array<Point32f> &src, Array<float> &dst){
+    std::vector<float> &toPOD(const std::vector<Point32f> &src, std::vector<float> &dst){
       // {{{ open
       
       dst.clear();
@@ -102,11 +102,11 @@ namespace icl{
     
     // }}}       
 
-    Array<Array<int> > &toPOD(const Array<Array<Point> >&src, Array<Array<int> > &dst){
+    std::vector<std::vector<int> > &toPOD(const std::vector<std::vector<Point> >&src, std::vector<std::vector<int> > &dst){
       // {{{ open
       dst.clear();
       for(unsigned int i=0;i<src.size();++i){
-        dst.push_back(Array<int>());
+        dst.push_back(std::vector<int>());
         for(unsigned int j=0;j<src[i].size();++j){
           dst[i].push_back(src[i][j].x);
           dst[i].push_back(src[i][j].y);
@@ -117,11 +117,11 @@ namespace icl{
 
   // }}}
 
-    Array<Array<float> > &toPOD(const Array<Array<Point32f> >&src, Array<Array<float> > &dst){
+    std::vector<std::vector<float> > &toPOD(const std::vector<std::vector<Point32f> >&src, std::vector<std::vector<float> > &dst){
       // {{{ open
       dst.clear();
       for(unsigned int i=0;i<src.size();++i){
-        dst.push_back(Array<float>());
+        dst.push_back(std::vector<float>());
         for(unsigned int j=0;j<src[i].size();++j){
           dst[i].push_back(src[i][j].x);
           dst[i].push_back(src[i][j].y);
@@ -133,7 +133,7 @@ namespace icl{
   // }}}
 
 
-    Array<int> &toPOD(const Array<Array<Rect> > &src, Array<int> &dst){
+    std::vector<int> &toPOD(const std::vector<std::vector<Rect> > &src, std::vector<int> &dst){
       // {{{ open
 
     dst.clear();
@@ -149,7 +149,7 @@ namespace icl{
   }
 
   // }}}
-    Array<float> &toPOD(const Array<Array<RegionPCAInfo> > &src, Array<float> &dst){
+    std::vector<float> &toPOD(const std::vector<std::vector<RegionPCAInfo> > &src, std::vector<float> &dst){
       // {{{ open
       
     dst.clear();
@@ -197,7 +197,7 @@ namespace icl{
 
   // }}}
 
-  const Array<Point> &RegionBasedBlobSearcher::getCOGs(){
+  const std::vector<Point> &RegionBasedBlobSearcher::getCOGs(){
     // {{{ open
 
     m_oCOGsOut.clear();
@@ -215,7 +215,7 @@ namespace icl{
   // }}}
 
 
-  const Array<Point32f> &RegionBasedBlobSearcher::getCOGsFloat(){
+  const std::vector<Point32f> &RegionBasedBlobSearcher::getCOGsFloat(){
     // {{{ open
 
     m_oCOGsFloatOut.clear();
@@ -232,7 +232,7 @@ namespace icl{
   // }}}
 
 
-  const Array<Rect> &RegionBasedBlobSearcher::getBoundingBoxes(){
+  const std::vector<Rect> &RegionBasedBlobSearcher::getBoundingBoxes(){
     // {{{ open
 
     m_oBBsOut.clear();
@@ -244,7 +244,7 @@ namespace icl{
   }
 
   // }}}
-  const Array<RegionPCAInfo> &RegionBasedBlobSearcher::getPCAInfo(){
+  const std::vector<RegionPCAInfo> &RegionBasedBlobSearcher::getPCAInfo(){
     // {{{ open
 
     m_oPCAInfosOut.clear();
@@ -261,15 +261,15 @@ namespace icl{
   // }}}
 
   
-  const Array<Array<Point> > &RegionBasedBlobSearcher::getBoundaries(){
+  const std::vector<std::vector<Point> > &RegionBasedBlobSearcher::getBoundaries(){
     // {{{ open
 
     m_oBoundariesOut.clear();
     for(unsigned int i=0;i<m_oInternalData.size();++i){
       RegionBasedBlobSearcher::FF &fac = m_oScaleFactors[i];
       const vector<Point> &b = m_oInternalData[i]->getBoundary();
-      m_oBoundariesOut.push_back(Array<Point>());
-      Array<Point> &l = m_oBoundariesOut[i];
+      m_oBoundariesOut.push_back(std::vector<Point>());
+      std::vector<Point> &l = m_oBoundariesOut[i];
       for(unsigned int j=0;j<b.size();++j){
         l.push_back(b[j].transform(fac.f1,fac.f2));
       }
@@ -280,7 +280,7 @@ namespace icl{
 
   // }}}
   
-  const Array<int> &RegionBasedBlobSearcher::getBoundaryLengthsPOD(){
+  const std::vector<int> &RegionBasedBlobSearcher::getBoundaryLengthsPOD(){
     // {{{ open
 
     m_oBoundaryLengthsPOD.clear();
@@ -292,7 +292,7 @@ namespace icl{
 
   // }}}
   
-  const Array<float> &RegionBasedBlobSearcher::getFormFactorsPOD(){
+  const std::vector<float> &RegionBasedBlobSearcher::getFormFactorsPOD(){
     // {{{ open
 
     m_oFormFactorsPOD.clear();
@@ -304,14 +304,14 @@ namespace icl{
 
   // }}}
   
-  const Array<Region*> &RegionBasedBlobSearcher::getRegions(){
+  const std::vector<Region*> &RegionBasedBlobSearcher::getRegions(){
     // {{{ open
 
     return m_oInternalData;
   }
 
   // }}}
-  const Array<int> &RegionBasedBlobSearcher::getCOGsPOD(){
+  const std::vector<int> &RegionBasedBlobSearcher::getCOGsPOD(){
     // {{{ open
 		getCOGs();
     return toPOD(m_oCOGsOut,m_oCOGsOutPOD);
@@ -319,7 +319,7 @@ namespace icl{
 
   // }}}
 
-  const Array<float> &RegionBasedBlobSearcher::getCOGsFloatPOD(){
+  const std::vector<float> &RegionBasedBlobSearcher::getCOGsFloatPOD(){
     // {{{ open
     getCOGsFloat();
     return toPOD(m_oCOGsFloatOut,m_oCOGsFloatOutPOD);
@@ -327,14 +327,14 @@ namespace icl{
 
   // }}}
 
-  const Array<int> &RegionBasedBlobSearcher::getBoundingBoxesPOD(){
+  const std::vector<int> &RegionBasedBlobSearcher::getBoundingBoxesPOD(){
     // {{{ open 
     getBoundingBoxes();
     return toPOD(m_oBBs,m_oBBsOutPOD);
   }
 
   // }}}
-  const Array<float> &RegionBasedBlobSearcher::getPCAInfoPOD(){
+  const std::vector<float> &RegionBasedBlobSearcher::getPCAInfoPOD(){
     // {{{ open
     getPCAInfo();
     return toPOD(m_oPCAInfos,m_oPCAInfosOutPOD);
@@ -342,7 +342,7 @@ namespace icl{
 
   // }}}
 
-  const Array<Array<int> > &RegionBasedBlobSearcher::getBoundariesPOD(){
+  const std::vector<std::vector<int> > &RegionBasedBlobSearcher::getBoundariesPOD(){
     // {{{ open
     getBoundaries();
     return toPOD(getBoundaries(),m_oBoundariesPOD);
@@ -388,8 +388,8 @@ namespace icl{
   void RegionBasedBlobSearcher::extractRegions(const ImgBase *image){
     // {{{ open
 
-    m_oInternalData.clear(); // Array<BlobData*>
-    m_oScaleFactors.clear(); // Array<FF> >  
+    m_oInternalData.clear(); // std::vector<BlobData*>
+    m_oScaleFactors.clear(); // std::vector<FF> >  
     const Size &ims = image->getSize();
     
     for(unsigned int i=0;i<m_oFMRF.size(); ++i){
@@ -424,9 +424,9 @@ namespace icl{
       float facx =  (float)(m_poInputImage->getSize().width) / (float)(fmc.getSize().width);
       float facy =  (float)(m_poInputImage->getSize().height) / (float)(fmc.getSize().height);
       
-      m_oCenters.push_back(Array<Point>());
-      m_oBBs.push_back(Array<Rect>());
-      m_oPCAInfos.push_back(Array<PCAInfo>());
+      m_oCenters.push_back(std::vector<Point>());
+      m_oBBs.push_back(std::vector<Rect>());
+      m_oPCAInfos.push_back(std::vector<PCAInfo>());
       
       const vector<BlobData> &vecBD = m_poRD->detect(fm);
       for(vector<BlobData>::const_iterator it = vecBD.begin();it!= vecBD.end();it++){
