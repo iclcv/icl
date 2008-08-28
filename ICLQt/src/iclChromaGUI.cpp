@@ -13,6 +13,7 @@
 #include <iclBoxHandle.h>
 #include <iclButtonHandle.h>
 #include <QPushButton>
+#include <iclChromaClassifierIO.h>
 
 using namespace std;
 namespace icl{
@@ -118,18 +119,40 @@ namespace icl{
     }
 
     // }}}
-    const ParableSet getParables() const{
+    const Parable* getParables() const{
       // {{{ open
 
-      return ParableSet((Parable*)P);
+      return P;
     }
 
     // }}}
     void save(const std::string &filename,const std::vector<int>&other) const{
       // {{{ open
-
+      
       ICLASSERT_RETURN(other.size() == 7);
-      printf("saving current state! \n");
+      ChromaAndRGBClassifier carc;
+      carc.c.parables[0] = P[0];
+      carc.c.parables[1] = P[1];
+      std::copy(other.begin(),other.begin()+3,carc.ref);
+      std::copy(other.begin()+4,other.begin()+6,carc.thresh);
+      
+      printf("saving current state [XML]! \n");
+      ChromaClassifierIO::save(carc,filename);
+      
+      // now reopen that file and add gui-informamtion
+      ConfigFile f(filename);
+      static std::string x[6] = {"xpos","ypos","dim","red","green","blue"};
+      for(int i=0;i<6;i++){
+        const Dragger &d = D[i];
+        float fs[6] = { d.pos().x, d.pos().y,d.dim(), d.col().r, d.col().g, d.col().b }; 
+        for(int j=0;j<6;++j){
+          f.add(std::string("config.gui-info.dragger-")+str(i)+"."+x[j],fs[j]);
+        }
+      }
+      f.add("config.gui-info.blue-slider-value",other[6]);
+      f.save();
+
+      /*
       QFile file(filename.c_str());
       if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
         ERROR_LOG("can't open file!");
@@ -154,50 +177,78 @@ namespace icl{
       
       file.flush();
       file.close();
+     */
     }
 
     // }}}
     void load(const std::string &filename,std::vector<int> &other){
       // {{{ open
-
-      QFile file(filename.c_str());
-      if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
-        ERROR_LOG("can't open file!");
-        return;
+      if(other.size() != 7){
+        other.resize(7);
       }
-      QTextStream in(&file);
+      ChromaAndRGBClassifier carc = ChromaClassifierIO::loadRGB(filename);
+      P[0] = carc.c.parables[0];
+      P[1] = carc.c.parables[1];
+      std::copy(carc.ref,carc.ref+3,other.begin());
+      std::copy(carc.thresh,carc.thresh+3,other.begin()+3);
       
-      QString line = in.readLine(); // ICL Croma...
-      if(line != "ICL ChromaWidget Configuration File"){
-        ERROR_LOG("invalide file format!");
-        return;
-      }
-      line = in.readLine(); // Parable 0:
-      line = in.readLine(); // a,b,c
-      P[0].a = line.section(',',0,0).toFloat();
-      P[0].b = line.section(',',1,1).toFloat();
-      P[0].c = line.section(',',2,2).toFloat();
-      line = in.readLine(); // Parable 1:
-      line = in.readLine(); // a,b,c
-      P[1].a = line.section(',',0,0).toFloat();
-      P[1].b = line.section(',',1,1).toFloat();
-      P[1].c = line.section(',',2,2).toFloat();
-      
+      // now reopen that file and add gui-informamtion
+      ConfigFile f(filename);
+      static std::string x[6] = {"xpos","ypos","dim","red","green","blue"};
+    
       for(int i=0;i<6;i++){
-        line = in.readLine(); // Draggable ...
-        line = in.readLine(); // x,y,d,r,g,b
-        D[i].setPos(Point32f(line.section(',',0,0).toFloat(),line.section(',',1,1).toFloat()));
-        D[i].setDim(line.section(',',2,2).toFloat());
-        D[i].setColor(line.section(',',3,3).toFloat(),line.section(',',4,4).toFloat(),line.section(',',5,5).toFloat());
+        std::string pfx = std::string("config.gui-info.dragger-")+str(i)+".";
+        D[i].setColor(f.get<float>(pfx+"red"),f.get<float>(pfx+"green"),f.get<float>(pfx+"blue"));
+        D[i].setDim(f.get<float>(pfx+"dim"));
+        D[i].setPos(Point32f(f.get<float>(pfx+"xpos"),f.get<float>(pfx+"ypos")));
+        
+        //  float fs[6] = { D[i].pos().x, D[i].pos().y,D[i].dim(), D[i].col().r, D[i].col().g, D[i].col().b }; 
+        //for(int j=0;j<6;++j){
+        //  f.add(std::string("config.gui-info.dragger-")+str(i)+"."+x[j],fs[j]);
+        //}
       }
-      
-      other.clear();
-      line = in.readLine(); // Reference Colors...
-      line = in.readLine();
-      for(int i=0;i<7;i++) other.push_back(line.section(',',i,i).toInt());
-      
-      file.close();
-      
+      other[6] = f.get<int>("config.gui-info.blue-slider-value");
+                          
+
+      /*
+          QFile file(filename.c_str());
+          if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+          ERROR_LOG("can't open file!");
+          return;
+          }
+          QTextStream in(&file);
+          
+          QString line = in.readLine(); // ICL Croma...
+          if(line != "ICL ChromaWidget Configuration File"){
+          ERROR_LOG("invalide file format!");
+          return;
+          }
+          line = in.readLine(); // Parable 0:
+          line = in.readLine(); // a,b,c
+          P[0].a = line.section(',',0,0).toFloat();
+          P[0].b = line.section(',',1,1).toFloat();
+          P[0].c = line.section(',',2,2).toFloat();
+          line = in.readLine(); // Parable 1:
+          line = in.readLine(); // a,b,c
+          P[1].a = line.section(',',0,0).toFloat();
+          P[1].b = line.section(',',1,1).toFloat();
+          P[1].c = line.section(',',2,2).toFloat();
+          
+          for(int i=0;i<6;i++){
+          line = in.readLine(); // Draggable ...
+          line = in.readLine(); // x,y,d,r,g,b
+          D[i].setPos(Point32f(line.section(',',0,0).toFloat(),line.section(',',1,1).toFloat()));
+          D[i].setDim(line.section(',',2,2).toFloat());
+          D[i].setColor(line.section(',',3,3).toFloat(),line.section(',',4,4).toFloat(),line.section(',',5,5).toFloat());
+          }
+          
+          other.clear();
+          line = in.readLine(); // Reference Colors...
+          line = in.readLine();
+          for(int i=0;i<7;i++) other.push_back(line.section(',',i,i).toInt());
+          
+          file.close();
+      */
       updateDrawings();
     }
 
@@ -336,7 +387,9 @@ namespace icl{
   ChromaClassifier ChromaGUI::getChromaClassifier(){
     // {{{ open
 
-    ChromaClassifier c = { m_poChromaWidget->getParables() };
+    ChromaClassifier c;
+    c.parables[0] = m_poChromaWidget->getParables()[0];
+    c.parables[1] = m_poChromaWidget->getParables()[1];
     return c;
   }
 
