@@ -160,9 +160,9 @@ namespace icl{
       gen_params();
     }
     virtual void processIO(){
-      //      if(m_poClickedEvent){
-      //  m_poClickedEvent->cb();
-      //}
+      if(m_poClickedEvent){
+        m_poClickedEvent->m_bTriggered = true;
+      }
     }
   private:
     ButtonHandle *m_poClickedEvent;
@@ -275,7 +275,11 @@ namespace icl{
     }
     virtual void processIO(){
       *m_pbToggled = !(*m_pbToggled);
-      m_poButton->setText(m_asText[*m_pbToggled].c_str());
+      m_poButton->setText(m_asText[*m_pbToggled].c_str());    
+      if(m_poHandle){
+        m_poHandle->m_bTriggered = true;
+      }
+
       //if(m_poHandle){
       //  m_poHandle->cb();
       //}

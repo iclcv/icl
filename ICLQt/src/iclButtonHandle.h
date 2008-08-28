@@ -16,6 +16,9 @@ namespace icl{
   class ButtonHandle : public GUIHandle<QPushButton>{
     public:
     
+    friend class ButtonGUIWidget;
+    friend class ToggleButtonGUIWidget;
+    
     /// typedefinition for a callback function
     //typedef void (*callback)(void);
     
