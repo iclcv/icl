@@ -7,7 +7,6 @@
 using namespace std;
 
 namespace icl{
-  
 
   namespace {
     inline void yuv_to_rgb(const icl32s y,const icl32s u,const icl32s v, icl8u &r, icl8u &g, icl8u &b){
@@ -56,11 +55,11 @@ namespace icl{
       
     }else if(fourcc == "UYVY"){ //  YUV422 size = 320x240 || 640x480 ORDER: U Y1 V Y2
       ensureCompatible(ppoDst,depth8u,size,formatRGB);
-#ifdef HAVE_IPP 
+#ifdef WITH_IPP_OPTIMIZATION 
       // 3Times faster on -O4
       m_oCvtBuf.resize(size.getDim()*3);
-      ippiCbYCr422ToRGB_8u_C2C3R(rawData,2*size.width, *m_oCvtBuf,3*size.width, size);
-      interleavedToPlanar(*m_oCvtBuf,(*ppoDst)->asImg<icl8u>());
+      ippiCbYCr422ToRGB_8u_C2C3R(rawData,2*size.width, m_oCvtBuf.data(),3*size.width, size);
+      interleavedToPlanar(m_oCvtBuf.data(),(*ppoDst)->asImg<icl8u>());
 #else
       const icl8u *s = rawData;
       register int width = size.width;

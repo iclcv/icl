@@ -1,9 +1,11 @@
 #ifndef ICL_DEFAULT_CONVERT_ENGINE_H
 #define ICL_DEFUALT_CONVERT_ENGINE_H
 #include "iclUnicapConvertEngine.h"
-#include <iclArray.h>
+#include <vector>
+
 namespace icl{
   
+
   /// Basic implemenation for the UnicapCovertEngine \ingroup UNICAP_G
   /** providing abilities to convert the following formats:
       - Y444 YUV 4-4-4 interleaved (no sub sampling of U and V channel \n
@@ -37,7 +39,7 @@ namespace icl{
 
     private:
     /// internal used data buffer for conversion
-    Array<icl8u> m_oCvtBuf;
+    std::vector<icl8u> m_oCvtBuf;
   };
 }
 
