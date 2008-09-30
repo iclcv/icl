@@ -93,7 +93,7 @@ namespace icl{
         return mean(image.getData(channel),image.getData(channel)+image.getDim());
       }
     }
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
     template<> double channel_mean<icl8u>(const Img8u &image, int channel, bool roiOnly){
       icl64f m=0;
       ippiMean_8u_C1R(roiOnly ? image.getROIData(channel) : image.getData(channel),image.getLineStep(),
@@ -283,7 +283,7 @@ namespace icl{
       }
     }    
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
     
 #define COMPUTE_DEFAULT_HISTO_256_TEMPLATE(D)                                                                                \
     template<> void compute_default_histo_256<icl##D>(const Img##D &image, int c, vector<int> &h, bool roiOnly){             \

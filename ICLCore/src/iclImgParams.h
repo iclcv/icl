@@ -33,10 +33,11 @@ namespace icl{
     /// creates a null ImgParams object
     /** @see setup
         @see null   
-    */
-    ImgParams(const ImgParams &params=null)
-       { setup(params.getSize(), params.getFormat(), params.getChannels(), params.getROI()); }
-    
+        */
+    ImgParams(const ImgParams &params=null):
+      m_oSize(params.m_oSize),m_iChannels(params.m_iChannels),
+      m_eFormat(params.m_eFormat),m_oROI(params.m_oROI){}
+
     /// creates an ImgParams object with specified size, channels, roi and formatMatrix
     /** @see setup */
     ImgParams(const Size &size, int channels, const Rect &roi = Rect::null)

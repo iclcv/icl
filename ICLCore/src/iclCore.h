@@ -204,7 +204,7 @@ optimized and hardware accelerated functions for image processing, and
 other numerical problems for all processors providing the SSE command set, 
 i.e. most new Intel and AMD processors.
 To provide access to IPP/IPPI functionality, the ImgCore library can be 
-compiled with <b>WITH_IPP_OPTIMIZATIONS</b> defined. In this case, the 
+compiled with <b>HAVE_IPPS</b> defined. In this case, the 
 following adaptions are performed:
 - the icl data types icl32f and icl8u are defined as the ipp compatible
   type Ipp32f and Ipp8u.
@@ -533,7 +533,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
   } 
 
   /** \cond */
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   template <>
   inline void copy<icl8u>(const icl8u *poSrcStart, const icl8u *poSrcEnd, icl8u *poDst){
     ippsCopy_8u(poSrcStart,poDst,(poSrcEnd-poSrcStart));
@@ -576,7 +576,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
       #undef ICL_INSTANTIATE_DEPTH
    **/ 
   
-#ifdef WITH_IPP_OPTIMIZATION 
+#ifdef HAVE_IPP 
   /// from icl8u functions
   template<> inline void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst){
     ippsConvert_8u32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));

@@ -5,14 +5,14 @@
 #include <iclSize.h>
 #include <stdio.h>
 #include <algorithm>
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #include <ipp.h>
 #endif
 
 
 namespace icl {
   
-#ifndef WITH_IPP_OPTIMIZATION
+#ifndef HAVE_IPP
   /// fallback implementation for the IppiRect struct, defined in the ippi lib \ingroup TYPES
   struct IppiRect {
 

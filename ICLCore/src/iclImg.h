@@ -1408,7 +1408,7 @@ namespace icl {
   }
 
   /** \cond */
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   /// IPP-OPTIMIZED specialization for icl8u clearing (using ippiSet)
   template <>
   inline void clearChannelROI(Img<icl8u> *im, int c, icl8u clearVal, const Point &offs, const Size &size){

@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #include <ipps.h>
 #endif
 
@@ -23,7 +23,7 @@ namespace icl {
     @sa void randomSeed()
   */
   inline void randomSeed(long int seedval) {
-#ifdef WIN32
+#ifdef SYSTEM_WINDOWS
 	  srand(seedval);
 #else
 	  srand48(seedval);
@@ -217,7 +217,7 @@ namespace icl {
     return sum / (end-begin);
   }
   
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   template<> inline double mean<const icl32f*>(const icl32f *begin,const icl32f *end){
     icl32f m = 0;
     // More fast: ippAlgHintFast

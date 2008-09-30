@@ -1,13 +1,13 @@
 #ifndef ICL_SIZE_H
 #define ICL_SIZE_H
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #include <ipp.h>
 #endif
 
 
 namespace icl {
-#ifndef WITH_IPP_OPTIMIZATION
+#ifndef HAVE_IPP
   /// fallback implementation for the IppiSize struct, defined in the ippi lib
   struct IppiSize {
     // width

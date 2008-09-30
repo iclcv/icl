@@ -1,6 +1,6 @@
 #ifndef ICL_POINT_H
 #define ICL_POINT_H
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #include <ipp.h>
 #endif
 
@@ -8,7 +8,7 @@
 #include <ostream>
 
 namespace icl{
-#ifndef WITH_IPP_OPTIMIZATION
+#ifndef HAVE_IPP
   /// fallback implementation for the IppiPoint struct, defined in the ippi libb \ingroup TYPES
   struct IppiPoint {
     /// xpos

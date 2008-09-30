@@ -1,9 +1,9 @@
 #include <iclImgParams.h>
 #include <iclCore.h>
-
+#include <sstream>
 
 namespace icl{
-  const ImgParams ImgParams::null(0,0,0,0,0,0,0);
+  const ImgParams ImgParams::null(0,0,0,formatMatrix,0,0,0,0);
 
   ImgParams::ImgParams(const Size &size, format fmt, const Rect &roi) {
     // {{{ open
@@ -25,6 +25,7 @@ namespace icl{
 
   ImgParams::ImgParams(int width, int height, int channels, format fmt, int roiX, int roiY, int roiWidth, int roiHeight){
     // {{{ open
+    //    ERROR_LOG("creating ImgParams: (" << width << "," << height << "," << channels << "," << fmt << "...)");
     setup(Size(width,height),fmt, channels, Rect(roiX,roiY,roiWidth,roiHeight));
   }
   // }}}
@@ -47,9 +48,16 @@ namespace icl{
     FUNCTION_LOG("setup(width="<<size.width<<",height="<<size.height<<",format="<<translateFormat(fmt)<<
                  ",channels="<<channels<<",ROI=("<<roi.x<<","<<roi.y<<","<<roi.width<<","<<roi.height<<"))");
 
-
+    /*
     ICLASSERT_THROW(fmt == formatMatrix || channels == getChannelsOfFormat(fmt),
                     InvalidImgParamException("format and channels"))
+   */
+
+    std::ostringstream str;
+    str << "incompatible format (" << translateFormat(fmt) << ") and channelcount (" << channels << ")";
+    ICLASSERT_THROW(fmt == formatMatrix || channels == getChannelsOfFormat(fmt),
+                    InvalidImgParamException(str.str()));
+
     m_oSize = size;
     m_eFormat = fmt;
     m_iChannels = channels;

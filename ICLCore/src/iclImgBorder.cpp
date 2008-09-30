@@ -138,7 +138,7 @@ namespace icl{
     
     switch (poImage->getDepth()){
       case depth8u:
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
         for(int c=0;c<poImage->getChannels();c++){
           ippiCopyReplicateBorder_8u_C1IR(poImage->asImg<icl8u>()->getROIData(c),poImage->getLineStep(),
                                         poImage->getROISize(),poImage->getSize(), 
@@ -149,7 +149,7 @@ namespace icl{
 #endif
         break;
       case depth32f:
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
         for(int c=0;c<poImage->getChannels();c++){ /// icl32f-case using Ipp32s method
           ippiCopyReplicateBorder_32s_C1IR((Ipp32s*)(poImage->asImg<icl8u>()->getROIData(c)),poImage->getLineStep(),
                                          poImage->getROISize(),poImage->getSize(), 

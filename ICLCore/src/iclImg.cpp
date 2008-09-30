@@ -698,7 +698,7 @@ namespace icl {
   }
 
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   template <>
   void Img<icl8u>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
     ippiMirror_8u_C1IR(getROIData(iChannel,oOffset),getLineStep(), oSize, (IppiAxis) eAxis);
@@ -816,7 +816,7 @@ namespace icl {
       return vMax;
     }
   }
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #define ICL_INSTANTIATE_DEPTH(T)                                                                            \
 template<> icl ## T                                                                                         \
 Img<icl ## T>::getMax(int iChannel,Point *coords) const {                                                   \
@@ -882,7 +882,7 @@ Img<icl ## T>::getMax(int iChannel,Point *coords) const {                       
     }
     return vMin;
   }
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #define ICL_INSTANTIATE_DEPTH(T)                                                                         \
 template<> icl##T                                                                                        \
 Img<icl ## T>::getMin(int iChannel, Point *coords) const {                                               \
@@ -966,7 +966,7 @@ Img<icl ## T>::getMin(int iChannel, Point *coords) const {                      
     return r;
   }
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 
 #define ICL_INSTANTIATE_DEPTH(T)                                                              \
 template<> const Range<icl##T>                                                                \
@@ -1112,7 +1112,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     }
   }
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   template <> void 
   Img<icl32f>::normalize(int iChannel, const Range<icl32f> &srcRange, const Range<icl32f> &dstRange){
     FUNCTION_LOG("");
@@ -1305,7 +1305,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
                                   Img<icl##D>*,int,const Point&,const Size&,scalemode); 
 
   /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   template<> inline void 
   scaledCopyChannelROI<icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                               Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
@@ -1407,7 +1407,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
                                  const Img<icl##D> *src, int srcC, const Point &srcOffs, const Size &srcSize,   \
                                  Img<icl##D> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   /// IPP-OPTIMIZED specialization for icl8u image flipping
   template <>
   inline void flippedCopyChannelROI<icl8u>(axis eAxis, 

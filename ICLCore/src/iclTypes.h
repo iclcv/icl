@@ -1,13 +1,13 @@
 #ifndef ICL_TYPES_H
 #define ICL_TYPES_H
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #include <ipp.h>
 #endif
 
 namespace icl {
   
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   /// 64Bit floating point type for the ICL \ingroup TYPES
   typedef Ipp64f icl64f;
 
@@ -85,7 +85,7 @@ namespace icl {
   };
   
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   /// for scaling of Img images theses functions are provided \ingroup TYPES
   enum scalemode{
     interpolateNN=IPPI_INTER_NN,      /**< nearest neighbor interpolation */
@@ -103,7 +103,7 @@ namespace icl {
 
   /// for flipping of images \ingroup TYPES
   enum axis{
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
     axisHorz=ippAxsHorizontal, /**> horizontal image axis */
     axisVert=ippAxsVertical,   /**> vertical image axis */
     axisBoth=ippAxsBoth        /**> flip both axis */
