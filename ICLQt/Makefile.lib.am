@@ -28,6 +28,7 @@ ${MOC_FILES} \
 ../src/iclButtonHandle.cpp \
 ../src/iclCamThread.cpp \
 ../src/iclChromaGUI.cpp \
+../src/iclChromaClassifierIO.cpp \
 ../src/iclComboHandle.cpp \
 ../src/iclCompabilityLabel.cpp \
 ../src/iclConfigFile.cpp \
@@ -78,6 +79,7 @@ include_HEADERS= \
 ../src/iclButtonHandle.h \
 ../src/iclCamThread.h \
 ../src/iclChromaGUI.h \
+../src/iclChromaClassifierIO.h \
 ../src/iclComboHandle.h \
 ../src/iclCompabilityLabel.h \
 ../src/iclConfigFile.h \

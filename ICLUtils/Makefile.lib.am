@@ -17,7 +17,6 @@ libICLUtils_la_SOURCES= \
 
 include_HEADERS= \
 ../src/config.h \
-../src/iclArray.h \
 ../src/iclClippedCast.h \
 ../src/iclCompatMacros.h \
 ../src/iclDynMatrix.h \
@@ -27,7 +26,6 @@ include_HEADERS= \
 ../src/iclFixedMatrix.h \
 ../src/iclFixedVector.h \
 ../src/iclFPSEstimator.h \
-../src/iclIteratorRange.h \
 ../src/iclMacros.h \
 ../src/iclMultiThreader.h \
 ../src/iclMutex.h \
