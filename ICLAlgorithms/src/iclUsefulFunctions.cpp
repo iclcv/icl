@@ -1,7 +1,7 @@
 #include "iclUsefulFunctions.h"
 #include <iclProximityOp.h>
 #include <iclBinaryLogicalOp.h>
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #include <ippi.h>
 #endif 
 
@@ -80,7 +80,7 @@ namespace icl{
       useBuffer->setROI(Rect(bufOffs,bufSize));
     }
     for(int i=0;i<src.getChannels();i++){
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
       if(useCrossCorrCoeffInsteadOfSqrDistance){
         ippiCrossCorrValid_Norm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
                                           src.getROISize(), templ.getROIData(i),

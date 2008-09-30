@@ -1,19 +1,9 @@
 #ifndef SVS_H
 #define SVS_H
 
-/*
-  SVS.h
-
-  Written by: Andre Justus (2007)
-              University of Bielefeld
-              AG Neuroinformatik
-              ajustus@techfak.uni-bielefeld.de
-*/
-
 
 #include <iclImg.h>
 #include <iclImgBase.h> 
-//#include "/vol/vision/SVS/4.2/src/svsclass.h"
 #include <svsclass.h>
 #include <iclMacros.h>
 
