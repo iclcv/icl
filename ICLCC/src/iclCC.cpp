@@ -1301,7 +1301,7 @@ namespace icl{
     interleavedToPlanar_Generic(src,dst, srcLineStep);
   }
   
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 
  // {{{ PLANAR_2_INTERLEAVED_IPP
 
@@ -1383,7 +1383,7 @@ namespace icl{
   EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl32s);
   EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl32f);
   EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl64f);
-#ifndef WITH_IPP_OPTIMIZATION
+#ifndef HAVE_IPP
   EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl8u);
   EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl16s);
   EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl32s);
@@ -1397,7 +1397,7 @@ namespace icl{
 
   void convertYUV420ToRGB8(const unsigned char *pucSrc,const Size &s, Img8u *poDst){
     // {{{ open
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
     const icl8u *apucSrc[] = {pucSrc,pucSrc+s.getDim(), pucSrc+s.getDim()+s.getDim()/4};
     icl8u *apucDst[] = {poDst->getData(0),poDst->getData(1),poDst->getData(2)};
     ippiYUV420ToRGB_8u_P3(apucSrc,apucDst,s); 

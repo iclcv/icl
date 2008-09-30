@@ -19,10 +19,10 @@ namespace icl{
     }
     /// Shows this classifier to std::out
     void show()const{
-      ERROR_LOG("not yet implemented!");
+      parables.show();
     }
     /// Used two parables
-    Parable parables[2];
+    ParableSet parables;
   };  
 }
 
