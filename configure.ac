@@ -417,7 +417,7 @@ ICL_PC_ENTRY([Version: $PACKAGE_VERSION])
 ICL_PC_ENTRY([])
 ICL_PC_ENTRY([Requires:$ICL_PC_REQ])
 ICL_PC_ENTRY([])
-ICL_PC_ENTRY([Libs: -L${libdir} -Wl,-rpath=${libdir}/lib $ICL_PC_LIBS])
+ICL_PC_ENTRY([Libs: -L${libdir} -Wl,-rpath=${libdir} $ICL_PC_LIBS])
 ICL_PC_ENTRY([])
 ICL_PC_ENTRY([Cflags: -I${includedir} $ICL_PC_CFLAGS])
 
