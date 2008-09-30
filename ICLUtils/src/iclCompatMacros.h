@@ -1,7 +1,7 @@
 #ifndef ICL_COMPAT_MACROS_H
 #define ICL_COMPAT_MACROS_H
 
-#ifdef WIN32
+#ifdef SYSTEM_WINDOWS
 #	define IPP_DECL __stdcall
 #	ifndef _USE_MATH_DEFINES
 #	define _USE_MATH_DEFINES

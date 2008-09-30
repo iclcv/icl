@@ -12,7 +12,7 @@
 #include <iclDynMatrix.h>
 #include <iclClippedCast.h>
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #include <ippm.h>
 #endif
 
@@ -831,7 +831,7 @@ namespace icl{
   }
   /** \endcond */
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #define OPTIMIZED_MATRIX_MULTIPLICATION(LEFT_COLS,LEFT_ROWS,RIGHT_COLS,TYPE,IPPSUFFIX) \
   template<> template<>                                                                \
   inline void                                                                          \

@@ -6,7 +6,7 @@
 #include <iclMacros.h>
 #include <iclMutex.h>
 
-#ifdef MACOSX
+#ifdef SYSTEM_APPLE
 #define SIGPOLL SIGIO
 #endif
 

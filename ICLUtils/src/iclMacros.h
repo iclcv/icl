@@ -139,11 +139,11 @@ namespace icl {
 /** Utility macros and defines */
 
 // ?? why not as macro? -> no type problems
-#ifdef WIN32
+#ifdef SYSTEM_WINDOWS
 #define iclMin(A,B) ((A)<(B)?(A):(B))
 #define iclMax(A,B) ((A)>(B)?(A):(B))
 #endif
-#ifdef MACOSX
+#ifdef SYSTEM_APPLE
 #define iclMin(A,B) ((A)<(B)?(A):(B))
 #define iclMax(A,B) ((A)>(B)?(A):(B))
 #else

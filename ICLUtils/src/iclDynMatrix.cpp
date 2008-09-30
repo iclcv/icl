@@ -1,13 +1,13 @@
 #include <iclDynMatrix.h>
 #include <iclMacros.h>
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 #include <ippm.h>
 #endif
 
 
 namespace icl{
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
  template<class T, IppStatus (*ippFunc)(const T*,int,int,T*,T*,int,int,int)>                                                               
   DynMatrix<T> apply_dyn_matrix_inv(const DynMatrix<T> &s){                                                                                 
     if(s.cols() != s.rows()){                                                                                                               
@@ -59,7 +59,7 @@ namespace icl{
   }
 
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   template<> DynMatrix<float> DynMatrix<float>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
     return apply_dyn_matrix_inv<float,ippmInvert_m_32f>(*this);
   }
