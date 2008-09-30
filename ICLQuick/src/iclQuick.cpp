@@ -413,7 +413,7 @@ namespace icl{
     static map<string,UnaryOp*> M;
     bool inited = false;
     if(!inited){
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
       static icl8u mask[9] = {1,1,1,1,1,1,1,1,1};
 #endif
       static Size s3x3(3,3);
@@ -422,7 +422,7 @@ namespace icl{
       M["gauss"] = new ConvolutionOp(ConvolutionOp::kernelGauss3x3);
       M["laplace"] = new ConvolutionOp(ConvolutionOp::kernelLaplace3x3);
       M["median"] = new MedianOp(Size(3,3));
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
       M["dilation"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::dilate);
       M["erosion"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::erode);
       M["opening"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::openBorder);
@@ -486,7 +486,7 @@ namespace icl{
   // }}}
   
   namespace{
-    string g_sShowCommand = "iclxv -input %s -delete";
+    string g_sShowCommand = "icl-xv -input %s -delete";
     string g_sRmCommand = "";
     int g_iMsecBeforeDelete = 0;
   }
