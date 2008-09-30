@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Language" content="de">
+    <meta http-equiv="Content-Type"
+          content="text/html; charset=windows-1252">
+    <title>Menu</title>
+    <base target="Inhalt">
+  </head>
+  <body>
+    <div align="center">
+      <table border="0" 
+             width="100%" 
+             id="table1" 
+             bgcolor="#C0C0C0" 
+             cellspacing="1" 
+             cellpadding="0">
+        <tr>
+          <td>
+            <div align="center">
+              <table border="0" 
+                     width="100%" 
+                     id="table2" 
+                     bgcolor="#C0C0C0" 
+                     cellspacing="4" 
+                     cellpadding="0">
+                <tr>
+                  <td>
+                    <p align="center"><font color="#000080"><u><b>Main menu</b></u>
+                  </td>
+                </tr>
+                <!-- ICL_PROJECT_ENTRIES -->
+              </table>
+              <br>
+  </body>
+</html>

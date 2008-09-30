@@ -1,0 +1,32 @@
+SUBDIRS=lib bin
+
+.PHONY:doc
+
+doc:
+	@echo creating documentation
+	@if [ ! -d doc ] ; then mkdir doc ; fi
+	@(cd doc ; if [ ! -f doxyfile ] ; then ln -s ../../doxyfile . ; fi ; doxygen)
+
+cleandoc:
+	@echo removing documentation
+	@rm -rf doc
+
+clean-local: cleandoc
+
+
+#EXTRA_DIST = doc/html
+
+install-data-local:
+	@if [ -d doc/html ] ; then \
+		echo installing documentation for ${subdir} && \
+		${MKDIR_P} ${prefix}/doc && \
+		${MKDIR_P} ${prefix}/doc/${subdir} && \
+		${INSTALL_DATA} doc/html/* ${prefix}/doc/${subdir}/ \
+	; else \
+		echo no documentation in ${subdir} found ... skipping && \
+		echo documentation must be build explicitly using 'make doc' \
+	; fi
+
+uninstall-local:
+	@echo uninstalling documentation
+	rm -rf ${prefix}/doc/${subdir}
