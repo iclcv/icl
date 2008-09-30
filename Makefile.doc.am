@@ -1,5 +1,5 @@
 SUBDIRS=lib bin
-
+MKDIR_P ?= mkdir -p
 .PHONY:doc
 
 doc:
