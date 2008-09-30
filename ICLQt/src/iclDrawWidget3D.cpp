@@ -1,7 +1,7 @@
 #include <iclDrawWidget3D.h>
 #include <iclGLTextureMapBaseImage.h>
 
-#ifdef MACOSX
+#ifdef SYSTEM_APPLE
 #include <OpenGL/gl.h>
 #else
 #include <GL/gl.h>
