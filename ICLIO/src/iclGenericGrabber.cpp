@@ -3,15 +3,15 @@
 #include <iclFileGrabber.h>
 #include <iclFileList.h>
 
-#ifdef LINUX
+#ifdef SYSTEM_LINUX
 #include <iclPWCGrabber.h>
 #endif
 
-#ifdef WITH_LIBDC_SUPPORT
+#ifdef HAVE_LIBDC
 #include <iclDCGrabber.h>
 #endif
 
-#ifdef WITH_UNICAP_SUPPORT
+#ifdef HAVE_UNICAP
 #include <iclUnicapGrabber.h>
 #endif
 
@@ -41,7 +41,7 @@ namespace icl{
     std::vector<std::string> l = tok(desiredAPIOrder,",");
     
     for(unsigned int i=0;i<l.size();++i){
-#ifdef LINUX
+#ifdef SYSTEM_LINUX
       if(l[i] == "pwc"){
         PWCGrabber *pwc = new PWCGrabber;
         if(pwc->init(Size(640,480),24,to32s(pPWC))){
@@ -55,7 +55,7 @@ namespace icl{
       }
 #endif
       
-#ifdef WITH_LIBDC_SUPPORT
+#ifdef HAVE_LIBDC
       if(l[i] == "dc"){
         std::vector<DCDevice> devs = DCGrabber::getDeviceList();
         int idx = to32s(pDC);
@@ -71,7 +71,7 @@ namespace icl{
       }
 #endif
 
-#ifdef WITH_UNICAP_SUPPORT
+#ifdef HAVE_UNICAP
       if(l[i] == "unicap"){
         static std::vector<UnicapDevice> devs = UnicapGrabber::getDeviceList(pUnicap);
         if(!devs.size()){

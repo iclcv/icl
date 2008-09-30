@@ -1,7 +1,7 @@
 #ifndef ICL_JPEG_HANDLE_H
 #define ICL_JPEG_HANDLE_H
 
-#ifdef WITH_JPEG_SUPPORT
+#ifdef HAVE_LIBJPEG
 
 #include <stdio.h>
 #include <jerror.h>
@@ -37,11 +37,11 @@ namespace icl{
 
 /** \endcond */
 
-#else // no JPEG_SUPPORT
+#else // not HAVE_LIBJPEG
 namespace icl{
   /** \cond */
   struct JPEGDataHandle{};
   /** \endcond */
 }
-#endif // JPEG_SUPPORT 
+#endif // not HAVE_LIBJPEG
 #endif // GUARDIAN

@@ -1,8 +1,7 @@
 #ifndef ICL_DEFAULT_CONVERT_ENGINE_H
 #define ICL_DEFUALT_CONVERT_ENGINE_H
 #include "iclUnicapConvertEngine.h"
-#include <vector>
-
+#include <iclArray.h>
 namespace icl{
   
   /// Basic implemenation for the UnicapCovertEngine \ingroup UNICAP_G
@@ -38,7 +37,7 @@ namespace icl{
 
     private:
     /// internal used data buffer for conversion
-    std::vector<icl8u> m_oCvtBuf;
+    Array<icl8u> m_oCvtBuf;
   };
 }
 

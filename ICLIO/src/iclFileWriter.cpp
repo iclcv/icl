@@ -6,8 +6,10 @@
 // plugins
 #include "iclFileWriterPluginPNM.h" 
 #include "iclFileWriterPluginCSV.h" 
+#ifdef HAVE_LIBJPEG
 #include "iclFileWriterPluginJPEG.h" 
-#ifdef WITH_IMAGEMAGIC_SUPPORT
+#endif
+#ifdef HAVE_IMAGEMAGICK
 #include "iclFileWriterPluginImageMagick.h"
 #endif
 using namespace std;
@@ -26,9 +28,16 @@ namespace icl{
       FileWriter::s_mapPlugins[".pnm"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".icl"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".csv"] = new FileWriterPluginCSV;
+
+#ifdef HAVE_LIBJPEG
       FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginJPEG;
       FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginJPEG;
-#ifdef WITH_ZLIB_SUPPORT
+#elif HAVE_IMAGEMAGICK
+      FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginMagick;
+      FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginJMagick;
+#endif
+
+#ifdef HAVE_LIBZ
       FileWriter::s_mapPlugins[".ppm.gz"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".pgm.gz"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".pnm.gz"] = new FileWriterPluginPNM;
@@ -36,7 +45,7 @@ namespace icl{
       FileWriter::s_mapPlugins[".csv.gz"] = new FileWriterPluginCSV;
 #endif
       
-#ifdef WITH_IMAGEMAGIC_SUPPORT
+#ifdef HAVE_IMAGEMAGICK
       
       static const char *imageMagickFormats[] = {
         "png","gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",

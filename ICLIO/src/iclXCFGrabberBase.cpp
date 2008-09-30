@@ -1,3 +1,4 @@
+#ifdef HAVE_XCF
 #include <iclXCFGrabberBase.h>
 #include <xmltio/xmltio.hpp>
 
@@ -102,3 +103,4 @@ namespace icl {
    }
    
 }
+#endif

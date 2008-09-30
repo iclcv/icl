@@ -1,6 +1,6 @@
 #include <iclPWCGrabber.h>
 #include <iclImg.h>
-#if !defined(__APPLE__) && !defined(WIN32)
+#ifdef SYSTEM_LINUX
 #include <iclCC.h>
 #include <stdio.h>
 #include <errno.h>
@@ -21,9 +21,9 @@
 
 using namespace std;
 
-#if defined(__APPLE__) || defined(WIN32)
+#ifndef SYSTEM_LINUX
 namespace icl {
-
+  // Dummy implementation...
     PWCGrabber::PWCGrabber(void){}
     PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice){
       (void) s;

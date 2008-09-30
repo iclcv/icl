@@ -63,7 +63,7 @@ namespace icl{
         @param rmCommand command to remove the temporary image (something like
                          "rm -rf %s" */
     static void show(const ImgBase *image, 
-                     const std::string &showCommand="iclxv -input %s -delete",
+                     const std::string &showCommand="icl-xv -input %s -delete",
                      long msec_to_rm_call=0,
                      const std::string &rmCommand="");
     private:

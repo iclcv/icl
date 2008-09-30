@@ -2,14 +2,14 @@
 #include <iclCC.h>
 #include <iclCore.h>
 
-#ifdef WITH_IMAGEMAGIC_SUPPORT  
+#ifdef HAVE_IMAGEMAGICK  
 #include <Magick++.h>
 #endif
 
 namespace icl{
 
 
-#ifdef WITH_IMAGEMAGIC_SUPPORT  
+#ifdef HAVE_IMAGEMAGICK  
   struct FileGrabberPluginImageMagick::InternalData{
     std::vector<icl8u> buffer;
 

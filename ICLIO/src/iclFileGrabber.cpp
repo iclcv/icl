@@ -8,10 +8,15 @@
 #include <iclStringUtils.h>
 // plugins
 #include <iclFileGrabberPluginPNM.h>
-#include <iclFileGrabberPluginJPEG.h>
 #include <iclFileGrabberPluginCSV.h>
-#include <iclFileGrabberPluginImageMagick.h>
 
+#ifdef HAVE_LIBJPEG
+#include <iclFileGrabberPluginJPEG.h>
+#endif
+
+#ifdef HAVE_IMAGEMAGICK
+#include <iclFileGrabberPluginImageMagick.h>
+#endif
 using namespace std;
 
 namespace icl{
@@ -26,11 +31,17 @@ namespace icl{
       FileGrabber::s_mapPlugins[".pgm"] = new FileGrabberPluginPNM; 
       FileGrabber::s_mapPlugins[".pnm"] = new FileGrabberPluginPNM; 
       FileGrabber::s_mapPlugins[".icl"] = new FileGrabberPluginPNM; 
-      FileGrabber::s_mapPlugins[".jpg"] = new FileGrabberPluginJPEG; 
-      FileGrabber::s_mapPlugins[".jpeg"] = new FileGrabberPluginJPEG; 
       FileGrabber::s_mapPlugins[".csv"] = new FileGrabberPluginCSV; 
 
-#ifdef WITH_ZLIB_SUPPORT
+#ifdef HAVE_LIBJPEG
+      FileGrabber::s_mapPlugins[".jpg"] = new FileGrabberPluginJPEG; 
+      FileGrabber::s_mapPlugins[".jpeg"] = new FileGrabberPluginJPEG; 
+#elif HAVE_IMAGEMAGICK
+      FileGrabber::s_mapPlugins[".jpg"] = new FileGrabberPluginImageMagick;
+      FileGrabber::s_mapPlugins[".jpeg"] = new FileGrabberPluginImageMagick;
+#endif
+
+#ifdef HAVE_LIBZ
       FileGrabber::s_mapPlugins[".ppm.gz"] = new FileGrabberPluginPNM; 
       FileGrabber::s_mapPlugins[".pgm.gz"] = new FileGrabberPluginPNM; 
       FileGrabber::s_mapPlugins[".pnm.gz"] = new FileGrabberPluginPNM; 
@@ -38,7 +49,7 @@ namespace icl{
       FileGrabber::s_mapPlugins[".csv.gz"] = new FileGrabberPluginCSV;       
 #endif
 
-#ifdef WITH_IMAGEMAGIC_SUPPORT
+#ifdef HAVE_IMAGEMAGICK
       static const char *imageMagickFormats[] = {
         "png","gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
         "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",

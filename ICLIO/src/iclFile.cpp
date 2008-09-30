@@ -6,7 +6,7 @@
 #include <cstring>
 using std::memcpy;
 
-#ifdef WITH_ZLIB_SUPPORT
+#ifdef HAVE_LIBZ
 #include <zlib.h>
 #endif
 
@@ -83,7 +83,7 @@ namespace icl{
 
     // }}}
 
-#ifdef WITH_ZLIB_SUPPORT
+#ifdef HAVE_LIBZ
     void buffer_file_gz(gzFile fp, vector<unsigned char> &data){
       // {{{ open
 
@@ -122,7 +122,7 @@ namespace icl{
       // {{{ open
 
       name(name),handle(0),
-#ifdef WITH_ZLIB_SUPPORT
+#ifdef HAVE_LIBZ
       gzipped(ioutils::endsWith(name,".gz")),
 #endif
       bufferoffset(0),
@@ -138,7 +138,7 @@ namespace icl{
 
       ICLASSERT_RETURN(!handle);
       const char *pcOpenMode = s_apcOpenModes[openmode];
-#ifdef WITH_ZLIB_SUPPORT
+#ifdef HAVE_LIBZ
       if(gzipped){
         handle = gzopen(name.c_str(),pcOpenMode);
       }else{
@@ -164,7 +164,7 @@ namespace icl{
 
       const char *pcOpenMode = s_apcOpenModes[openmode];
       
-#ifdef WITH_ZLIB_SUPPORT
+#ifdef HAVE_LIBZ
       if(gzipped){
         gzclose((gzFile)handle);
         handle = gzopen(name.c_str(),pcOpenMode);
@@ -185,7 +185,7 @@ namespace icl{
       // {{{ open
 
       ICLASSERT_RETURN(handle);
-#ifdef WITH_ZLIB_SUPPORT
+#ifdef HAVE_LIBZ
       if(gzipped){
         gzclose((gzFile)handle);
       }else{
@@ -203,7 +203,7 @@ namespace icl{
 
       ICLASSERT_RETURN(handle);
       if(buffer.size()) return;
-#ifdef WITH_ZLIB_SUPPORT
+#ifdef HAVE_LIBZ
       if(gzipped){
         buffer_file_gz((gzFile)handle,buffer);
       }else{
@@ -224,7 +224,7 @@ namespace icl{
     string filename;
 
     void *handle;
-#ifdef WITH_ZLIB_SUPPORT
+#ifdef HAVE_LIBZ
     bool gzipped;
 #endif
     vector<icl8u> buffer;
@@ -339,7 +339,7 @@ namespace icl{
 
     int bytesWritten = 0;
       
-#ifdef WITH_ZLIB_SUPPORT
+#ifdef HAVE_LIBZ
     if(impl->gzipped){
       while(bytesWritten < len){
         bytesWritten += gzwrite((gzFile)(impl->handle),data,len); 

@@ -22,7 +22,7 @@ namespace icl{
   iclcc color conversion function, because it deals with images, that are
   composed of channels with different sizes. 
   A dedicated conversion function: <i>convertYUV420ToRGB8</i> which is IPP-
-  optimized if the WITH_IPP_OPTIMIZATION flag is defined, is used instead.
+  optimized if the HAVE_IPP flag is defined, is used instead.
   ICLs color conversion routines do not support conversion from any to 
   to any format, so not all destination formats are supported directly.
   Directly supported formats are:

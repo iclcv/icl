@@ -1,6 +1,6 @@
 #include <iclFileWriterPluginImageMagick.h>
 
-#ifdef WITH_IMAGEMAGIC_SUPPORT
+#ifdef HAVE_IMAGEMAGICK
 #include <Magick++.h>
 #include <iclCC.h>
 #include <iclConverter.h>
@@ -9,7 +9,7 @@
 
 namespace icl{
   
-#ifdef WITH_IMAGEMAGIC_SUPPORT
+#ifdef HAVE_IMAGEMAGICK
   class FileWriterPluginImageMagick::InternalData{
   public:
     InternalData(){
@@ -28,7 +28,7 @@ namespace icl{
     ICL_DELETE(m_data);
   }
   
-#ifdef WITH_IMAGEMAGIC_SUPPORT
+#ifdef HAVE_IMAGEMAGICK
   Magick::StorageType get_magick_storage_type(depth d){
     switch(d){
       case depth8u: return Magick::CharPixel;

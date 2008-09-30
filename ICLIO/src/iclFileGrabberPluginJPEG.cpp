@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace icl{
-#ifdef WITH_JPEG_SUPPORT
+#ifdef HAVE_LIBJPEG
   void FileGrabberPluginJPEG::grab(File &file, ImgBase **dest){
     // {{{ open 
     ICLASSERT_RETURN(dest);
@@ -148,7 +148,7 @@ namespace icl{
   void FileGrabberPluginJPEG::grab(File &file, ImgBase **dest){
     ERROR_LOG("JPEG support currently not available! \n" << 
               "To enabled JPEG support: you have to compile the ICLIO package\n" <<
-              "with -DWITH_JPEG_SUPPORT compiler flag AND with a valid\n" << 
+              "with -DHAVE_LIBJPEG compiler flag AND with a valid\n" << 
               "LIBJPEG_ROOT set.");    
     ERROR_LOG("Destination image is set to NULL, which may cause further errors!");
     (void) file;

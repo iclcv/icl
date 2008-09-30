@@ -5,7 +5,7 @@
 #include <cstring>
 using std::strlen;
 
-#ifdef WITH_JPEG_SUPPORT
+#ifdef HAVE_LIBJPEG
 #include "iclJPEGHandle.h"
 #endif
 
@@ -22,7 +22,7 @@ namespace icl{
   Mutex FileWriterPluginJPEG::s_oBufferImageMutex;
  
   
-#ifdef WITH_JPEG_SUPPORT
+#ifdef HAVE_LIBJPEG
   void FileWriterPluginJPEG::write(File &file, const ImgBase *image){
     ICLASSERT_RETURN(image);
     format fmt = image->getFormat();
@@ -168,7 +168,7 @@ namespace icl{
 
     ERROR_LOG("JPEG support currently not available! \n" << 
               "To enabled JPEG support: you have to compile the ICLIO package\n" <<
-              "with -DWITH_JPEG_SUPPORT compiler flag AND with a valid\n" << 
+              "with -DHAVE_LIBJPEG compiler flag AND with a valid\n" << 
               "LIBJPEG_ROOT set.");    
     (void) file;
     (void) poSrc;
