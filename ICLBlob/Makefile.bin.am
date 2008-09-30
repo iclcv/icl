@@ -1,0 +1,70 @@
+XLDFLAGS= ${LDFLAGS} \
+	-L../../ICLUtils/lib/ -lICLUtils \
+	-L../../ICLCore/lib/ -lICLCore \
+	-L../../ICLCC/lib/ -lICLCC \
+	-L../../ICLQuick/lib/ -lICLQuick \
+	-L../../ICLFilter/lib -lICLFilter \
+	-L../../ICLIO/lib -lICLIO \
+	-L../../ICLBlob/lib -lICLBlob
+
+XCXXFLAGS= ${CXXFLAGS} \
+	-I../../ICLUtils/src \
+	-I../../ICLCore/src \
+	-I../../ICLCC/src \
+	-I../../ICLQuick/src \
+	-I../../ICLFilter/src \
+	-I../../ICLIO/src \
+	-I../../ICLBlob/src
+
+if HAVE_QT_COND
+XLDFLAGS+=-L../../ICLQt/lib/ -lICLQt
+XCXXFLAGS+=-I../../ICLQt/src
+endif
+
+#################################################################################
+## Applications that depend on noting ###########################################
+#################################################################################
+bin_PROGRAMS= \
+icl-blobtracker-benchmark \
+icl-region-based-blob-finder-test \
+icl-region-detector-test
+
+# explicit sources, ldflags and cxxflags
+icl_blobtracker_benchmark_SOURCES=../examples/blobtracker-benchmark.cpp
+icl_blobtracker_benchmark_LDFLAGS=${XLDFLAGS}
+icl_blobtracker_benchmark_CXXFLAGS=${XCXXFLAGS}
+
+icl_region_based_blob_finder_test_SOURCES=../examples/region-based-blob-finder-test.cpp
+icl_region_based_blob_finder_test_LDFLAGS=${XLDFLAGS}
+icl_region_based_blob_finder_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_region_detector_test_SOURCES=../examples/region-detector-test.cpp
+icl_region_detector_test_LDFLAGS=${XLDFLAGS}
+icl_region_detector_test_CXXFLAGS=${XCXXFLAGS}
+
+
+if HAVE_QT_COND
+
+bin_PROGRAMS+= \
+icl-region-inspector-demo \
+icl-tangible-grains-benchmark \
+icl-tangible-grains-demo \
+icl-vector-quantisation-test
+
+icl_region_inspector_demo_SOURCES=../examples/region-inspector-demo.cpp
+icl_region_inspector_demo_LDFLAGS=${XLDFLAGS}
+icl_region_inspector_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_tangible_grains_benchmark_SOURCES=../examples/tangible-grains-benchmark.cpp
+icl_tangible_grains_benchmark_LDFLAGS=${XLDFLAGS}
+icl_tangible_grains_benchmark_CXXFLAGS=${XCXXFLAGS}
+
+icl_tangible_grains_demo_SOURCES=../examples/tangible-grains-demo.cpp
+icl_tangible_grains_demo_LDFLAGS=${XLDFLAGS}
+icl_tangible_grains_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_vector_quantisation_test_SOURCES=../examples/vector-quantisation-test.cpp
+icl_vector_quantisation_test_LDFLAGS=${XLDFLAGS}
+icl_vector_quantisation_test_CXXFLAGS=${XCXXFLAGS}
+
+endif

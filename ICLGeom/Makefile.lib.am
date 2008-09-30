@@ -1,0 +1,29 @@
+# libtool libs
+lib_LTLIBRARIES=libICLGeom.la
+
+libICLGeom_la_SOURCES= \
+../src/iclBorderedObject.cpp \
+../src/iclCamera.cpp \
+../src/iclConvexHullMonotoneChain.cpp \
+../src/iclCubeObject.cpp \
+../src/iclObject.cpp \
+../src/iclSzene.cpp
+
+include_HEADERS= \
+../src/iclBorderedObject.h \
+../src/iclCamera.h \
+../src/iclConvexHullMonotoneChain.h \
+../src/iclCubeObject.h \
+../src/iclGeomDefs.h \
+../src/iclGeom.h \
+../src/iclObject.h \
+../src/iclSzene.h
+
+
+libICLGeom_la_CXXFLAGS=${AM_CXXFLAGS} \
+	-I../../ICLCore/src \
+	-I../../ICLUtils/src \
+	-I../../ICLCC/src \
+	-I../../ICLFilter/src \
+	-I../../ICLQt/src \
+	-I../../ICLQuick/src

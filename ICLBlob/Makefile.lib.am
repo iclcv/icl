@@ -1,0 +1,43 @@
+# libtool libs
+lib_LTLIBRARIES=libICLBlob.la
+
+libICLBlob_la_SOURCES= \
+../src/iclColorBlobSearcher.cpp \
+../src/iclDefaultColorBlobSearcher.cpp \
+../src/iclExtrapolator.cpp \
+../src/iclFMCreator.cpp \
+../src/iclHungarianAlgorithm.cpp \
+../src/iclPositionTracker.cpp \
+../src/iclRegionBasedBlobSearcher.cpp \
+../src/iclRegion.cpp \
+../src/iclRegionDetector.cpp \
+../src/iclRegionFilter.cpp \
+../src/iclRegionPCAInfo.cpp \
+../src/iclVQ2D.cpp
+
+include_HEADERS= \
+../src/iclBlob.h \
+../src/iclColorBlobSearcher.h \
+../src/iclDefaultColorBlobSearcher.h \
+../src/iclExtrapolator.h \
+../src/iclFMCreator.h \
+../src/iclFoundBlob.h \
+../src/iclHungarianAlgorithm.h \
+../src/iclPixelRatingGroup.h \
+../src/iclPixelRating.h \
+../src/iclPositionTracker.h \
+../src/iclRegionBasedBlobSearcher.h \
+../src/iclRegionDetector.h \
+../src/iclRegionFilter.h \
+../src/iclRegion.h \
+../src/iclRegionPart.h \
+../src/iclRegionPCAInfo.h \
+../src/iclScanLine.h \
+../src/iclVQ2D.h \
+../src/iclVQClusterInfo.h \
+../src/iclVQVectorSet.h
+
+libICLBlob_la_CXXFLAGS=${AM_CXXFLAGS} \
+	-I../../ICLCore/src \
+	-I../../ICLUtils/src \
+	-I../../ICLCC/src 

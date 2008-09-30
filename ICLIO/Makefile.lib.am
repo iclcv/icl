@@ -1,0 +1,142 @@
+# libtool libs
+OBJDIR=./obj
+lib_LTLIBRARIES=libICLIO.la
+
+libICLIO_la_SOURCES= \
+../src/iclDemoImageFlowers.cpp \
+../src/iclDemoImageMacaw.cpp \
+../src/iclDemoImageWindows.cpp \
+../src/iclFile.cpp \
+../src/iclFileGrabber.cpp \
+../src/iclFileGrabberPluginCSV.cpp \
+../src/iclFileGrabberPluginPNM.cpp \
+../src/iclFileList.cpp \
+../src/iclFilenameGenerator.cpp \
+../src/iclFileWriter.cpp \
+../src/iclFileWriterPluginCSV.cpp \
+../src/iclFileWriterPluginPNM.cpp \
+../src/iclGenericGrabber.cpp \
+../src/iclGrabber.cpp \
+../src/iclIO.cpp \
+../src/iclIOUtils.cpp \
+../src/iclTestImages.cpp
+
+include_HEADERS= \
+../src/iclIO.h \
+../src/iclFileGrabber.h \
+../src/iclFileGrabberPluginCSV.h \
+../src/iclFileGrabberPlugin.h \
+../src/iclFileGrabberPluginPNM.h \
+../src/iclGenericGrabber.h \
+../src/iclGrabber.h \
+../src/iclFileGrabber.h \
+../src/iclFile.h \
+../src/iclFileList.h \
+../src/iclFilenameGenerator.h \
+../src/iclFileWriter.h \
+../src/iclIOUtils.h \
+../src/iclJPEGHandle.h \
+../src/iclTestImages.h \
+../src/iclFileWriterPlugin.h \
+../src/iclFileGrabberPlugin.h \
+../src/iclFileWriterPluginCSV.h \
+../src/iclFileWriterPlugin.h \
+../src/iclFileWriterPluginPNM.h
+
+if HAVE_LIBJPEG_COND
+libICLIO_la_SOURCES+= \
+../src/iclJPEGHandle.cpp \
+../src/iclFileGrabberPluginJPEG.cpp \
+../src/iclFileWriterPluginJPEG.cpp
+
+include_HEADERS+= \
+../src/iclFileGrabberPluginJPEG.h \
+../src/iclFileWriterPluginJPEG.h
+endif
+
+
+if HAVE_IMAGEMAGICK_COND
+libICLIO_la_SOURCES+= \
+../src/iclFileWriterPluginImageMagick.cpp \
+../src/iclFileGrabberPluginImageMagick.cpp
+
+include_HEADERS+= \
+../src/iclFileWriterPluginImageMagick.h \
+../src/iclFileGrabberPluginImageMagick.h
+endif
+
+
+if SYSTEM_LINUX_COND
+libICLIO_la_SOURCES+= \
+../src/iclPWCGrabber.cpp
+
+include_HEADERS+= \
+../src/iclPWCGrabber.h
+endif
+
+
+if HAVE_LIBDC_COND
+libICLIO_la_SOURCES+= \
+../src/iclDC.cpp \
+../src/iclDCDevice.cpp \
+../src/iclDCDeviceFeatures.cpp \
+../src/iclDCFrameQueue.cpp \
+../src/iclDCGrabber.cpp \
+../src/iclDCGrabberThread.cpp
+
+include_HEADERS+= \
+../src/iclDCDeviceFeatures.h \
+../src/iclDCDevice.h \
+../src/iclDCDeviceOptions.h \
+../src/iclDCFrameQueue.h \
+../src/iclDCGrabber.h \
+../src/iclDCGrabberThread.h \
+../src/iclDC.h 
+endif
+
+if HAVE_UNICAP_COND
+if SYSTEM_LINUX_COND
+libICLIO_la_SOURCES+= \
+../src/iclDefaultConvertEngine.cpp \
+../src/iclDefaultGrabEngine.cpp \
+../src/iclUnicapDevice.cpp \
+../src/iclUnicapFormat.cpp \
+../src/iclUnicapGrabber.cpp \
+../src/iclUnicapProperty.cpp
+
+include_HEADERS+= \
+../src/iclUnicapConvertEngine.h \
+../src/iclUnicapDevice.h \
+../src/iclUnicapFormat.h \
+../src/iclUnicapGrabber.h \
+../src/iclUnicapGrabEngine.h \
+../src/iclUnicapProperty.h \
+../src/iclDefaultConvertEngine.h \
+../src/iclDefaultGrabEngine.h
+endif
+endif
+
+if HAVE_XCF_COND
+libICLIO_la_SOURCES+= \
+../src/iclXCFGrabberBase.cpp \
+../src/iclXCFMemoryGrabber.cpp \
+../src/iclXCFPublisher.cpp \
+../src/iclXCFPublisherGrabber.cpp \
+../src/iclXCFServerGrabber.cpp \
+../src/iclXCFUtils.cpp
+
+include_HEADERS+= \
+../src/iclXCFGrabberBase.h \
+../src/iclXCFMemoryGrabber.h \
+../src/iclXCFPublisherGrabber.h \
+../src/iclXCFPublisher.h \
+../src/iclXCFServerGrabber.h \
+../src/iclXCFUtils.h
+endif
+
+# include other packages here!
+libICLIO_la_CXXFLAGS=${AM_CXXFLAGS} \
+	-I../../ICLUtils/src \
+	-I../../ICLCore/src \
+	-I../../ICLCC/src \
+	-I../../ICLIO/src 

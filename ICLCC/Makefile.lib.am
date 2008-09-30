@@ -1,0 +1,25 @@
+# libtool libs
+lib_LTLIBRARIES=libICLCC.la
+
+libICLCC_la_SOURCES= \
+../src/iclBayer.cpp \
+../src/iclCC.cpp \
+../src/iclCCLUT.cpp \
+../src/iclColor.cpp \
+../src/iclConverter.cpp \
+../src/iclFixedConverter.cpp
+
+include_HEADERS= \
+../src/iclBayer.h \
+../src/iclCC.h \
+../src/iclCCLUT.h \
+../src/iclChromaAndRGBClassifier.h \
+../src/iclChromaClassifier.h \
+../src/iclColor.h \
+../src/iclConverter.h \
+../src/iclFixedConverter.h \
+../src/iclParable.h
+
+libICLCC_la_CXXFLAGS=${AM_CXXFLAGS} \
+	-I../../ICLCore/src \
+	-I../../ICLUtils/src 

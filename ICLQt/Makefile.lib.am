@@ -1,0 +1,158 @@
+# libtool libs
+lib_LTLIBRARIES=libICLQt.la
+
+%.moc.cpp: %.h
+	@QT_MOC@ -o $@ $<
+
+MOC_FILES= \
+../src/iclWidget.moc.cpp \
+../src/iclMouseInteractionReceiver.moc.cpp \
+../src/iclDoubleSlider.moc.cpp \
+../src/iclImgParamWidget.moc.cpp \
+../src/iclStringSignalButton.moc.cpp \
+../src/iclCamThread.moc.cpp \
+../src/iclGUIWidget.moc.cpp \
+../src/iclChromaGUI.moc.cpp \
+../src/iclMultiDrawHandle.moc.cpp
+
+if HAVE_UNICAP_COND
+if HAVE_LIBDC_COND
+MOC_FILES+=../src/iclCamCfgWidget.moc.cpp
+endif
+endif
+
+libICLQt_la_SOURCES= \
+${MOC_FILES} \
+../src/iclBorderHandle.cpp \
+../src/iclButtonGroupHandle.cpp \
+../src/iclButtonHandle.cpp \
+../src/iclCamThread.cpp \
+../src/iclChromaGUI.cpp \
+../src/iclComboHandle.cpp \
+../src/iclCompabilityLabel.cpp \
+../src/iclConfigFile.cpp \
+../src/iclDoubleSlider.cpp \
+../src/iclDragger.cpp \
+../src/iclDrawHandle3D.cpp \
+../src/iclDrawHandle.cpp \
+../src/iclDrawWidget3D.cpp \
+../src/iclDrawWidget.cpp \
+../src/iclFloatHandle.cpp \
+../src/iclFSliderHandle.cpp \
+../src/iclGLPaintEngine.cpp \
+../src/iclGLTextureMapBaseImage.cpp \
+../src/iclGLTextureMapImage.cpp \
+../src/iclGLTextureMapPaintEngine.cpp \
+../src/iclGUI.cpp \
+../src/iclGUIDefinition.cpp \
+../src/iclGUIWidget.cpp \
+../src/iclImageHandle.cpp \
+../src/iclImgParamWidget.cpp \
+../src/iclIntHandle.cpp \
+../src/iclLabelHandle.cpp \
+../src/iclMouseInteractionReceiver.cpp \
+../src/iclMultiDrawHandle.cpp \
+../src/iclOSDButton.cpp \
+../src/iclOSDCaptureVideoWidget.cpp \
+../src/iclOSD.cpp \
+../src/iclOSDHistoWidget.cpp \
+../src/iclOSDImageStatisticsWidget.cpp \
+../src/iclOSDLabel.cpp \
+../src/iclOSDNavBar.cpp \
+../src/iclOSDSlider.cpp \
+../src/iclOSDWidget.cpp \
+../src/iclQImageConverter.cpp \
+../src/iclQtPaintEngine.cpp \
+../src/iclSliderHandle.cpp \
+../src/iclSpinnerHandle.cpp \
+../src/iclStringHandle.cpp \
+../src/iclStringSignalButton.cpp \
+../src/iclWidget.cpp
+
+
+include_HEADERS= \
+../src/iclBorderBox.h \
+../src/iclBorderHandle.h \
+../src/iclBoxHandle.h \
+../src/iclButtonGroupHandle.h \
+../src/iclButtonHandle.h \
+../src/iclCamThread.h \
+../src/iclChromaGUI.h \
+../src/iclComboHandle.h \
+../src/iclCompabilityLabel.h \
+../src/iclConfigFile.h \
+../src/iclDataStore.h \
+../src/iclDispHandle.h \
+../src/iclDoubleSlider.h \
+../src/iclDragger.h \
+../src/iclDrawHandle3D.h \
+../src/iclDrawHandle.h \
+../src/iclDrawWidget3D.h \
+../src/iclDrawWidget.h \
+../src/iclFloatHandle.h \
+../src/iclFPSHandle.h \
+../src/iclFSliderHandle.h \
+../src/iclGLPaintEngine.h \
+../src/iclGLTextureMapBaseImage.h \
+../src/iclGLTextureMapImage.h \
+../src/iclGLTextureMapPaintEngine.h \
+../src/iclGUIDefinition.h \
+../src/iclGUI.h \
+../src/iclGUIHandleBase.h \
+../src/iclGUIHandle.h \
+../src/iclGUISyntaxErrorException.h \
+../src/iclGUIWidget.h \
+../src/iclImageHandle.h \
+../src/iclImageStatistics.h \
+../src/iclImgParamWidget.h \
+../src/iclIntHandle.h \
+../src/iclLabelHandle.h \
+../src/iclMouseInteractionInfo.h \
+../src/iclMouseInteractionReceiver.h \
+../src/iclMultiDrawHandle.h \
+../src/iclOSDButton.h \
+../src/iclOSDCaptureVideoWidget.h \
+../src/iclOSD.h \
+../src/iclOSDHistoWidget.h \
+../src/iclOSDImageStatisticsWidget.h \
+../src/iclOSDLabel.h \
+../src/iclOSDNavBar.h \
+../src/iclOSDSlider.h \
+../src/iclOSDWidget.h \
+../src/iclPaintEngine.h \
+../src/iclQImageConverter.h \
+../src/iclQt.h \
+../src/iclQtPaintEngine.h \
+../src/iclSliderHandle.h \
+../src/iclSpinnerHandle.h \
+../src/iclStringHandle.h \
+../src/iclStringSignalButton.h \
+../src/iclThreadedUpdatableWidget.h \
+../src/iclWidgetCaptureMode.h \
+../src/iclWidget.h \
+../src/iclWindowIcon.h
+
+if HAVE_UNICAP_COND
+if HAVE_LIBDC_COND
+libICLQt_la_SOURCES+=../src/iclCamCfgWidget.cpp
+include_HEADERS+=../src/iclCamCfgWidget.h
+endif
+endif
+
+# include other packages here!
+libICLQt_la_CXXFLAGS=${AM_CXXFLAGS} \
+	-I../../ICLUtils/src \
+	-I../../ICLCore/src \
+	-I../../ICLCC/src \
+	-I../../ICLIO/src
+
+#libICLQt_la_LIBS=${LIBS} \
+#	-L../../ICLUtils/lib -lICLUtils \
+#	-L../../ICLCore/lib -lICLCore \
+#	-L../../ICLCC/lib -lICLCC \
+#	-L../../ICLIO/lib -lICLIO
+
+clean-local:
+	@echo deleting .moc-files
+	@rm -rf ${MOC_FILES}
+

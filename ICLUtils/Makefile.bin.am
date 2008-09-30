@@ -1,0 +1,16 @@
+XLDFLAGS= ${LDFLAGS} \
+	-L../../ICLUtils/lib/ -lICLUtils
+XCXXFLAGS= ${CXXFLAGS} \
+	-I../../ICLUtils/src
+
+#################################################################################
+## Applications that depend on noting ###########################################
+#################################################################################
+bin_PROGRAMS= \
+icl_progargdemo
+
+# explicit sources, ldflags and cxxflags
+icl_progargdemo_SOURCES=../examples/progargdemo.cpp
+icl_progargdemo_LDFLAGS=${XLDFLAGS}
+icl_progargdemo_CXXFLAGS=${XCXXFLAGS}
+

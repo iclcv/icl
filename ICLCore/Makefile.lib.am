@@ -1,0 +1,48 @@
+# libtool libs
+lib_LTLIBRARIES=libICLCore.la
+
+libICLCore_la_SOURCES= \
+../src/iclCore.cpp \
+../src/iclImgBase.cpp \
+../src/iclImgBorder.cpp \
+../src/iclImg.cpp \
+../src/iclImgParams.cpp \
+../src/iclLine32f.cpp \
+../src/iclLine.cpp \
+../src/iclMathematics.cpp \
+../src/iclPoint32f.cpp \
+../src/iclPoint.cpp \
+../src/iclRange.cpp \
+../src/iclRect32f.cpp \
+../src/iclRect.cpp \
+../src/iclSize32f.cpp \
+../src/iclSize.cpp \
+../src/iclStringUtils.cpp
+
+
+include_HEADERS= \
+../src/iclCore.h \
+../src/iclImgBase.h \
+../src/iclImgBorder.h \
+../src/iclImgChannel.h \
+../src/iclImg.h \
+../src/iclImgIterator.h \
+../src/iclImgParams.h \
+../src/iclLine32f.h \
+../src/iclLine.h \
+../src/iclMathematics.h \
+../src/iclPoint32f.h \
+../src/iclPoint.h \
+../src/iclRange.h \
+../src/iclRect32f.h \
+../src/iclRect.h \
+../src/iclSize32f.h \
+../src/iclSize.h \
+../src/iclSteppingRange.h \
+../src/iclStringUtils.h \
+../src/iclTypes.h
+
+
+libICLCore_la_CXXFLAGS=${AM_CXXFLAGS} \
+	-I../../ICLUtils/src
+

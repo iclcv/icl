@@ -1,0 +1,90 @@
+XLDFLAGS= ${LDFLAGS} \
+	-L../../ICLUtils/lib/ -lICLUtils \
+	-L../../ICLCore/lib/ -lICLCore \
+	-L../../ICLCC/lib/ -lICLCC \
+	-L../../ICLQt/lib/ -lICLQt \
+	-L../../ICLQuick/lib/ -lICLQuick \
+	-L../../ICLIO/lib -lICLIO \
+	-L../../ICLFilter/lib -lICLFilter \
+	-L../../ICLBlob/lib -lICLBlob
+
+XCXXFLAGS= ${CXXFLAGS} \
+	-I../../ICLUtils/src \
+	-I../../ICLCore/src \
+	-I../../ICLCC/src \
+	-I../../ICLQt/src \
+	-I../../ICLQuick/src \
+	-I../../ICLIO/src \
+	-I../../ICLFilter/src \
+	-I../../ICLBlob/src
+
+#################################################################################
+## Applications that depend on noting ###########################################
+#################################################################################
+bin_PROGRAMS= \
+icl-3D-demo \
+icl-camviewer-demo \
+icl-camviewer-lite \
+icl-chroma-demo \
+icl-colorpicker \
+icl-gui-test \
+icl-interactive-filter-demo \
+icl-mouseinteraction-demo \
+icl-visualization-demo \
+icl-xv
+
+if HAVE_LIBDC_COND
+if HAVE_UNICAP_COND
+bin_PROGRAMS+=icl-camcfg
+endif
+endif
+
+# explicit sources, ldflags and cxxflags
+icl_3D_demo_SOURCES=../examples/3D-demo.cpp
+icl_3D_demo_LDFLAGS=${XLDFLAGS}
+icl_3D_demo_CXXFLAGS=${XCXXFLAGS}
+
+if HAVE_LIBDC_COND
+if HAVE_UNICAP_COND
+icl_camcfg_SOURCES=../examples/camcfg.cpp
+icl_camcfg_LDFLAGS=${XLDFLAGS}
+icl_camcfg_CXXFLAGS=${XCXXFLAGS}
+endif
+endif
+
+icl_camviewer_demo_SOURCES=../examples/camviewer-demo.cpp
+icl_camviewer_demo_LDFLAGS=${XLDFLAGS}
+icl_camviewer_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_camviewer_lite_SOURCES=../examples/camviewer-lite.cpp
+icl_camviewer_lite_LDFLAGS=${XLDFLAGS}
+icl_camviewer_lite_CXXFLAGS=${XCXXFLAGS}
+
+icl_chroma_demo_SOURCES=../examples/chroma-demo.cpp
+icl_chroma_demo_LDFLAGS=${XLDFLAGS}
+icl_chroma_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_colorpicker_SOURCES=../examples/colorpicker.cpp
+icl_colorpicker_LDFLAGS=${XLDFLAGS}
+icl_colorpicker_CXXFLAGS=${XCXXFLAGS}
+
+icl_gui_test_SOURCES=../examples/gui-test.cpp
+icl_gui_test_LDFLAGS=${XLDFLAGS}
+icl_gui_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_interactive_filter_demo_SOURCES=../examples/interactive-filter-demo.cpp
+icl_interactive_filter_demo_LDFLAGS=${XLDFLAGS}
+icl_interactive_filter_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_mouseinteraction_demo_SOURCES=../examples/mouseinteraction-demo.cpp
+icl_mouseinteraction_demo_LDFLAGS=${XLDFLAGS}
+icl_mouseinteraction_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_visualization_demo_SOURCES=../examples/visualization-demo.cpp
+icl_visualization_demo_LDFLAGS=${XLDFLAGS}
+icl_visualization_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_xv_SOURCES=../examples/xv.cpp
+icl_xv_LDFLAGS=${XLDFLAGS}
+icl_xv_CXXFLAGS=${XCXXFLAGS}
+

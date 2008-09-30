@@ -1,0 +1,47 @@
+# libtool libs
+lib_LTLIBRARIES=libICLUtils.la
+
+libICLUtils_la_SOURCES= \
+../src/iclDynMatrix.cpp \
+../src/iclException.cpp \
+../src/iclFixedMatrix.cpp \
+../src/iclMultiThreader.cpp \
+../src/iclProgArg.cpp \
+../src/iclSemaphore.cpp \
+../src/iclSignalHandler.cpp \
+../src/iclSmartPtr.cpp \
+../src/iclStrTok.cpp \
+../src/iclThread.cpp \
+../src/iclTime.cpp \
+../src/iclTimer.cpp
+
+include_HEADERS= \
+../src/config.h \
+../src/iclArray.h \
+../src/iclClippedCast.h \
+../src/iclCompatMacros.h \
+../src/iclDynMatrix.h \
+../src/iclDynVector.h \
+../src/iclException.h \
+../src/iclFastMedianList.h \
+../src/iclFixedMatrix.h \
+../src/iclFixedVector.h \
+../src/iclFPSEstimator.h \
+../src/iclIteratorRange.h \
+../src/iclMacros.h \
+../src/iclMultiThreader.h \
+../src/iclMutex.h \
+../src/iclProgArg.h \
+../src/iclSemaphore.h \
+../src/iclShallowCopyable.h \
+../src/iclSignalHandler.h \
+../src/iclSimpleMatrix.h \
+../src/iclSmartPtr.h \
+../src/iclStackTimer.h \
+../src/iclStrTok.h \
+../src/iclThread.h \
+../src/iclThreadUtils.h \
+../src/iclTime.h \
+../src/iclTimer.h \
+../src/iclUncopyable.h \
+../src/iclUtils.h

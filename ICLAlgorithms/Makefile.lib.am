@@ -1,0 +1,39 @@
+# libtool libs
+lib_LTLIBRARIES=libICLAlgorithms.la
+
+libICLAlgorithms_la_SOURCES= \
+../src/iclSOM.cpp
+
+include_HEADERS= \
+../src/iclSOM2D.h \
+../src/iclSOM.h
+
+libICLAlgorithms_la_CXXFLAGS=${AM_CXXFLAGS} \
+-I../../ICLCore/src \
+-I../../ICLUtils/src \
+-I../../ICLCC/src \
+-I../../ICLIO/src \
+-I../../ICLFilter/src \
+-I../../ICLBlob/src \
+-I../../ICLQuick/src \
+-I../../ICLAlgorithms/src
+
+if HAVE_IPP_COND
+libICLAlgorithms_la_SOURCES+= \
+../src/iclUsefulFunctions.cpp \
+../src/iclViewBasedTemplateMatcher.cpp
+
+include_HEADERS+= \
+../src/iclUsefulFunctions.h \
+../src/iclViewBasedTemplateMatcher.h
+endif
+
+
+if HAVE_SVS_COND	
+libICLAlgorithms_la_SOURCES+= \
+../src/iclSVS.cpp 
+
+include_HEADERS+= \
+../src/iclSVS.h
+
+endif

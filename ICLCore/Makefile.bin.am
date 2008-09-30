@@ -1,0 +1,19 @@
+XLDFLAGS= ${LDFLAGS} \
+	-L../../ICLUtils/lib/ -lICLUtils \
+	-L../../ICLCore/lib/ -lICLCore
+
+XCXXFLAGS= ${CXXFLAGS} \
+	-I../../ICLUtils/src \
+	-I../../ICLCore/src
+
+#################################################################################
+## Applications that depend on noting ###########################################
+#################################################################################
+bin_PROGRAMS= \
+icl-img-example
+
+# explicit sources, ldflags and cxxflags
+icl_img_example_SOURCES=../examples/img-example.cpp
+icl_img_example_LDFLAGS=${XLDFLAGS}
+icl_img_example_CXXFLAGS=${XCXXFLAGS}
+

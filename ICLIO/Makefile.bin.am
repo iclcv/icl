@@ -1,0 +1,139 @@
+XLDFLAGS= ${LDFLAGS} \
+	-L../../ICLUtils/lib/ -lICLUtils \
+	-L../../ICLCore/lib/ -lICLCore \
+	-L../../ICLCC/lib/ -lICLCC \
+	-L../../ICLQuick/lib/ -lICLQuick \
+	-L../../ICLIO/lib -lICLIO \
+	-L../../ICLBlob/lib -lICLBlob \
+	-L../../ICLFilter/lib -lICLFilter
+
+XCXXFLAGS= ${CXXFLAGS} \
+	-I../../ICLUtils/src \
+	-I../../ICLCore/src \
+	-I../../ICLCC/src \
+	-I../../ICLQuick/src \
+	-I../../ICLBlob/src \
+	-I../../ICLFilter/src
+
+if HAVE_QT_COND
+XLDFLAGS+=-L../../ICLQt/lib/ -lICLQt
+XCXXFLAGS+=-I../../ICLQt/src
+endif
+
+#################################################################################
+## Applications that depend on noting ###########################################
+#################################################################################
+bin_PROGRAMS= \
+icl-write-file-example \
+icl-testimages-example \
+icl-jpg2cpp
+
+# explicit sources, ldflags and cxxflags
+icl_write_file_example_SOURCES=../examples/write-file-example.cpp
+icl_write_file_example_LDFLAGS=${XLDFLAGS}
+icl_write_file_example_CXXFLAGS=${XCXXFLAGS}
+
+icl_testimages_example_SOURCES=../examples/testimages-example.cpp
+icl_testimages_example_LDFLAGS=${XLDFLAGS}
+icl_testimages_example_CXXFLAGS=${XCXXFLAGS}
+
+icl_jpg2cpp_SOURCES=../examples/jpg2cpp.cpp
+icl_jpg2cpp_LDFLAGS=${XLDFLAGS}
+icl_jpg2cpp_CXXFLAGS=${XCXXFLAGS}
+
+#################################################################################
+## Applications that depend on libdc/Qt #########################################
+#################################################################################
+if HAVE_LIBDC_COND
+bin_PROGRAMS+= \
+icl-dccam-setup \
+icl-dcclearisochannels \
+icl-dcdeviceinfo \
+icl-dcmulticam2-example
+
+
+# explicit sources, ldflags and cxxflags
+icl_dccam_setup_SOURCES=../examples/dccam-setup.cpp
+icl_dccam_setup_LDFLAGS=${XLDFLAGS}
+icl_dccam_setup_CXXFLAGS=${XCXXFLAGS}
+
+icl_dcmulticam2_example_SOURCES=../examples/dcmulticam2-example.cpp
+icl_dcmulticam2_example_LDFLAGS=${XLDFLAGS}
+icl_dcmulticam2_example_CXXFLAGS=${XCXXFLAGS}
+
+icl_dcclearisochannels_SOURCES=../examples/dcclearisochannels.cpp
+icl_dcclearisochannels_LDFLAGS=${XLDFLAGS}
+icl_dcclearisochannels_CXXFLAGS=${XCXXFLAGS}
+
+icl_dcdeviceinfo_SOURCES=../examples/dcdeviceinfo.cpp
+icl_dcdeviceinfo_LDFLAGS=${XLDFLAGS}
+icl_dcdeviceinfo_CXXFLAGS=${XCXXFLAGS}
+
+if HAVE_QT_COND
+bin_PROGRAMS+= \
+icl-dcmulticam-example \
+icl-dccam-grab-example
+
+icl_dcmulticam_example_SOURCES=../examples/dcmulticam-example.cpp
+icl_dcmulticam_example_LDFLAGS=${XLDFLAGS}
+icl_dcmulticam_example_CXXFLAGS=${XCXXFLAGS}
+
+icl_dccam_grab_example_SOURCES=../examples/dccam-grab-example.cpp
+icl_dccam_grab_example_LDFLAGS=${XLDFLAGS}
+icl_dccam_grab_example_CXXFLAGS=${XCXXFLAGS}
+endif
+
+endif
+
+#################################################################################
+## Applications that depend on XCF/Qt ###########################################
+#################################################################################
+if HAVE_XCF_COND
+bin_PROGRAMS+= \
+icl_xcf-grabber-benchmark
+
+# explicit sources, ldflags and cxxflags
+icl_xcf_grabber_benchmark_SOURCES=../examples/xcf-grabber-benchmark.cpp
+icl_xcf_grabber_benchmark_LDFLAGS=${XLDFLAGS}
+icl_xcf_grabber_benchmark_CXXFLAGS=${XCXXFLAGS}
+
+if HAVE_QT_COND
+bin_PROGRAMS+= \
+icl_xcf-publisher
+icl_xcf_publisher_SOURCES=../examples/xcf-publisher.cpp
+icl_xcf_publisher_LDFLAGS=${XLDFLAGS}
+icl_xcf_publisher_CXXFLAGS=${XCXXFLAGS}
+endif
+
+endif
+
+#################################################################################
+## Applications that depend on Unicap/Qt ########################################
+#################################################################################
+if HAVE_UNICAP_COND
+bin_PROGRAMS+= \
+icl_unicap-grab-example
+
+icl_unicap_grab_example_SOURCES=../examples/unicap-grab-example.cpp
+icl_unicap_grab_example_LDFLAGS=${XLDFLAGS}
+icl_unicap_grab_example_CXXFLAGS=${XCXXFLAGS}
+endif
+
+
+#################################################################################
+## Applications that depend on Qt ###############################################
+#################################################################################
+if HAVE_QT_COND
+bin_PROGRAMS+= \
+icl-camrecorder \
+icl-generic-grab-example
+
+icl_camrecorder_SOURCES=../examples/camrecorder.cpp
+icl_camrecorder_LDFLAGS=${XLDFLAGS}
+icl_camrecorder_CXXFLAGS=${XCXXFLAGS}
+
+icl_generic_grab_example_SOURCES=../examples/generic-grab-example.cpp
+icl_generic_grab_example_LDFLAGS=${XLDFLAGS}
+icl_generic_grab_example_CXXFLAGS=${XCXXFLAGS}
+
+endif

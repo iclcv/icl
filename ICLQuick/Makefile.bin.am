@@ -1,0 +1,53 @@
+XLDFLAGS= ${LDFLAGS} \
+	-L../../ICLUtils/lib/ -lICLUtils \
+	-L../../ICLCore/lib/ -lICLCore \
+	-L../../ICLCC/lib/ -lICLCC \
+	-L../../ICLBlob/lib/ -lICLBlob \
+	-L../../ICLQuick/lib/ -lICLQuick \
+	-L../../ICLFilter/lib -lICLFilter \
+	-L../../ICLIO/lib -lICLIO
+XCXXFLAGS= ${CXXFLAGS} \
+	-I../../ICLUtils/src \
+	-I../../ICLCore/src \
+	-I../../ICLCC/src \
+	-I../../ICLQuick/src \
+	-I../../ICLFilter/src \
+	-I../../ICLIO/src \
+	-I../../ICLBlob/src
+
+if HAVE_QT_COND
+XLDFLAGS+=-L../../ICLQt/lib/ -lICLQt
+XCXXFLAGS+=-I../../ICLQt/src
+endif
+
+
+#################################################################################
+## Applications that depend on noting ###########################################
+#################################################################################
+bin_PROGRAMS= \
+icl-quick-test
+
+# explicit sources, ldflags and cxxflags
+icl_quick_test_SOURCES=../examples/quick-test.cpp
+icl_quick_test_LDFLAGS=${XLDFLAGS}
+icl_quick_test_CXXFLAGS=${XCXXFLAGS}
+
+#################################################################################
+## Applications that depend on Qt ###############################################
+#################################################################################
+
+if HAVE_QT_COND
+
+bin_PROGRAMS+= \
+icl-meanshift-test \
+icl-thread-test
+
+icl_meanshift_test_SOURCES=../examples/meanshift-test.cpp
+icl_meanshift_test_LDFLAGS=${XLDFLAGS}
+icl_meanshift_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_thread_test_SOURCES=../examples/thread-test.cpp
+icl_thread_test_LDFLAGS=${XLDFLAGS}
+icl_thread_test_CXXFLAGS=${XCXXFLAGS}
+
+endif

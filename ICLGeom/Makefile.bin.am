@@ -1,0 +1,38 @@
+XLDFLAGS= ${LDFLAGS} \
+	-L../../ICLUtils/lib/ -lICLUtils \
+	-L../../ICLCore/lib/ -lICLCore \
+	-L../../ICLCC/lib/ -lICLCC \
+	-L../../ICLQt/lib/ -lICLQt \
+	-L../../ICLQuick/lib/ -lICLQuick \
+	-L../../ICLFilter/lib -lICLFilter \
+	-L../../ICLIO/lib -lICLIO \
+	-L../../ICLBlob/lib -lICLBlob \
+	-L../../ICLGeom/lib -lICLGeom
+
+XCXXFLAGS= ${CXXFLAGS} \
+	-I../../ICLUtils/src \
+	-I../../ICLCore/src \
+	-I../../ICLCC/src \
+	-I../../ICLQt/src \
+	-I../../ICLQuick/src \
+	-I../../ICLFilter/src \
+	-I../../ICLIO/src \
+	-I../../ICLBlob/src \
+	-I../../ICLGeom/src
+
+#################################################################################
+## Applications that depend on noting ###########################################
+#################################################################################
+bin_PROGRAMS= \
+icl-dyn-matrix-test \
+icl-geom-3D-demo
+
+# explicit sources, ldflags and cxxflags
+icl_dyn_matrix_test_SOURCES=../examples/dyn-matrix-test.cpp
+icl_dyn_matrix_test_LDFLAGS=${XLDFLAGS}
+icl_dyn_matrix_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_geom_3D_demo_SOURCES=../examples/geom-3D-demo.cpp
+icl_geom_3D_demo_LDFLAGS=${XLDFLAGS}
+icl_geom_3D_demo_CXXFLAGS=${XCXXFLAGS}
+

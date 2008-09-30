@@ -1,0 +1,119 @@
+XLDFLAGS= ${LDFLAGS} \
+	-L../../ICLUtils/lib/ -lICLUtils \
+	-L../../ICLCore/lib/ -lICLCore \
+	-L../../ICLCC/lib/ -lICLCC \
+	-L../../ICLQuick/lib/ -lICLQuick \
+	-L../../ICLIO/lib -lICLIO \
+	-L../../ICLFilter/lib -lICLFilter \
+	-L../../ICLBlob/lib -lICLBlob
+
+XCXXFLAGS= ${CXXFLAGS} \
+	-I../../ICLUtils/src \
+	-I../../ICLCore/src \
+	-I../../ICLCC/src \
+	-I../../ICLQuick/src \
+	-I../../ICLIO/src \
+	-I../../ICLFilter/src \
+	-I../../ICLBlob/src
+
+if HAVE_QT_COND
+XLDFLAGS+=-L../../ICLQt/lib/ -lICLQt
+XCXXFLAGS+=-I../../ICLQt/src
+endif
+
+
+#################################################################################
+## Applications that depend on noting ###########################################
+#################################################################################
+bin_PROGRAMS= \
+icl-arithmetical-op-test \
+icl-champfer-op-test \
+icl-inplace-op-test \
+icl-logical-op-test \
+icl-median-op-test \
+icl-morphological-op-test \
+icl-proximity-op-test \
+icl-threshold-op-test \
+icl-unary-op-mt-test \
+icl-weight-channels-op-test \
+icl-weighted-sum-op-test
+
+
+
+# explicit sources, ldflags and cxxflags
+icl_arithmetical_op_test_SOURCES=../examples/arithmetical-op-test.cpp
+icl_arithmetical_op_test_LDFLAGS=${XLDFLAGS}
+icl_arithmetical_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_champfer_op_test_SOURCES=../examples/champfer-op-test.cpp
+icl_champfer_op_test_LDFLAGS=${XLDFLAGS}
+icl_champfer_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_inplace_op_test_SOURCES=../examples/inplace-op-test.cpp
+icl_inplace_op_test_LDFLAGS=${XLDFLAGS}
+icl_inplace_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_logical_op_test_SOURCES=../examples/logical-op-test.cpp
+icl_logical_op_test_LDFLAGS=${XLDFLAGS}
+icl_logical_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_median_op_test_SOURCES=../examples/median-op-test.cpp
+icl_median_op_test_LDFLAGS=${XLDFLAGS}
+icl_median_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_morphological_op_test_SOURCES=../examples/morphological-op-test.cpp
+icl_morphological_op_test_LDFLAGS=${XLDFLAGS}
+icl_morphological_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_proximity_op_test_SOURCES=../examples/proximity-op-test.cpp
+icl_proximity_op_test_LDFLAGS=${XLDFLAGS}
+icl_proximity_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_threshold_op_test_SOURCES=../examples/threshold-op-test.cpp
+icl_threshold_op_test_LDFLAGS=${XLDFLAGS}
+icl_threshold_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_unary_op_mt_test_SOURCES=../examples/unary-op-mt-test.cpp
+icl_unary_op_mt_test_LDFLAGS=${XLDFLAGS}
+icl_unary_op_mt_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_weight_channels_op_test_SOURCES=../examples/weight-channels-op-test.cpp
+icl_weight_channels_op_test_LDFLAGS=${XLDFLAGS}
+icl_weight_channels_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_weighted_sum_op_test_SOURCES=../examples/weighted-sum-op-test.cpp
+icl_weighted_sum_op_test_LDFLAGS=${XLDFLAGS}
+icl_weighted_sum_op_test_CXXFLAGS=${XCXXFLAGS}
+
+
+if HAVE_IPP_COND
+
+bin_PROGRAMS+= \
+icl-canny-op-test \
+icl-wiener-op-test
+
+icl_canny_op_test_SOURCES=../examples/canny-op-test.cpp
+icl_canny_op_test_LDFLAGS=${XLDFLAGS}
+icl_canny_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_wiener_op_test_SOURCES=../examples/wiener-op-test.cpp
+icl_wiener_op_test_LDFLAGS=${XLDFLAGS}
+icl_wiener_op_test_CXXFLAGS=${XCXXFLAGS}
+
+endif
+
+if HAVE_QT_COND
+bin_PROGRAMS+= \
+icl-local-threashold-op-test \
+icl-gabor-op-online-example
+
+icl_gabor_op_online_example_SOURCES=../examples/gabor-op-online-example.cpp
+icl_gabor_op_online_example_LDFLAGS=${XLDFLAGS}
+icl_gabor_op_online_example_CXXFLAGS=${XCXXFLAGS}
+
+icl_local_threashold_op_test_SOURCES=../examples/local-threashold-op-test.cpp
+icl_local_threashold_op_test_LDFLAGS=${XLDFLAGS}
+icl_local_threashold_op_test_CXXFLAGS=${XCXXFLAGS}
+
+endif
+
