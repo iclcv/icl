@@ -1,4 +1,4 @@
-# -*-mode: Perl;-*-  ;; Have EMACS always use perl-mode for this file.
+## -*-mode: Perl;-*-  ;; Have EMACS always use perl-mode for this file.
 
 use strict;
 use Cwd;
