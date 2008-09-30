@@ -3,7 +3,8 @@
 
 AC_PREREQ(2.61)
 AC_INIT([ICL],[4.0],[celbrech@techfak.uni-bielefeld.de])
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+#AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([foreign])
 
 # PACKAGE_DESCRIPTION... Image Component Library [[ICL]] (a C++ computer vision library
 
