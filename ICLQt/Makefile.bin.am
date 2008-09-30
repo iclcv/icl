@@ -29,7 +29,7 @@ icl-chroma-demo \
 icl-colorpicker \
 icl-gui-test \
 icl-interactive-filter-demo \
-icl-mouseinteraction-demo \
+icl-mouse-interaction-demo \
 icl-visualization-demo \
 icl-xv
 
@@ -76,9 +76,9 @@ icl_interactive_filter_demo_SOURCES=../examples/interactive-filter-demo.cpp
 icl_interactive_filter_demo_LDFLAGS=${XLDFLAGS}
 icl_interactive_filter_demo_CXXFLAGS=${XCXXFLAGS}
 
-icl_mouseinteraction_demo_SOURCES=../examples/mouseinteraction-demo.cpp
-icl_mouseinteraction_demo_LDFLAGS=${XLDFLAGS}
-icl_mouseinteraction_demo_CXXFLAGS=${XCXXFLAGS}
+icl_mouse_interaction_demo_SOURCES=../examples/mouse-interaction-demo.cpp
+icl_mouse_interaction_demo_LDFLAGS=${XLDFLAGS}
+icl_mouse_interaction_demo_CXXFLAGS=${XCXXFLAGS}
 
 icl_visualization_demo_SOURCES=../examples/visualization-demo.cpp
 icl_visualization_demo_LDFLAGS=${XLDFLAGS}
