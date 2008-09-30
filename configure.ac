@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([ICL],[3.1],[bugreport@icl.com])
+AC_INIT([ICL],[4.0],[celbrech@techfak.uni-bielefeld.de])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 # PACKAGE_DESCRIPTION... Image Component Library [[ICL]] (a C++ computer vision library
