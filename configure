@@ -1,4 +1,0 @@
-# parse arguments: 
-# CXXFLAGS CFLAGS LDFLAGS
-
-make config CREATE_CONFIG=TRUE
