@@ -240,7 +240,7 @@ namespace icl{
 
   // }}}
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   template<>
   void create_integral_channel_with_border<icl8u,Ipp32s>(const icl8u *image, int w, int h, Ipp32s *intImage, int border){
     // {{{ open

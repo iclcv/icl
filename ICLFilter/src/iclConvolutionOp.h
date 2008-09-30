@@ -264,7 +264,7 @@ namespace icl {
     /// static array of image- and kernel-type selective generic convolution methods
     static void (ConvolutionOp::*aGenericMethods[depthLast+1][2])(const ImgBase *poSrc, ImgBase *poDst);
 
-#ifdef WITH_IPP_OPTIMIZATION 
+#ifdef HAVE_IPP 
     template<typename T, IppStatus (IPP_DECL *)(const T*, int, T*, int, IppiSize, const Ipp32s*, IppiSize, IppiPoint, int)>
     void ippGenericConvIntKernel (const ImgBase *poSrc, ImgBase *poDst);
     template<typename T, IppStatus (IPP_DECL *)(const T*, int, T*, int, IppiSize, const Ipp32f*, IppiSize, IppiPoint)>

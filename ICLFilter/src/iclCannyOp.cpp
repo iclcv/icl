@@ -4,7 +4,7 @@
 
 namespace icl {
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   // without ipp non of the function is implemented
   CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh):
     // {{{ open

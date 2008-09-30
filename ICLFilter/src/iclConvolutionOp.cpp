@@ -147,7 +147,7 @@ namespace icl {
      }
   }
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   void ConvolutionOp::setIPPFixedMethods (kernel eKernel) {
     pFixed8u  = 0; 
     pFixedMask8u  = 0; 
@@ -229,7 +229,7 @@ namespace icl {
      // clear all method pointers
      for (unsigned int i=depth8u; i <= depthLast; i++) aMethods[i] = 0;
      
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
      setIPPFixedMethods(eKernel);
 #endif
      // set (still) undefined method pointers to generic fallback versions
@@ -350,7 +350,7 @@ namespace icl {
 
   // }}}
  
-#ifdef WITH_IPP_OPTIMIZATION 
+#ifdef HAVE_IPP 
 
   // {{{ generic ipp convolution
 
@@ -459,7 +459,7 @@ namespace icl {
 
   // array of image- and kernel-type selective generic convolution methods
   void (ConvolutionOp::*ConvolutionOp::aGenericMethods[depthLast+1][2])(const ImgBase *poSrc, ImgBase *poDst) = {
-#ifdef WITH_IPP_OPTIMIZATION 
+#ifdef HAVE_IPP 
      {&ConvolutionOp::ippGenericConvIntKernel<icl8u,ippiFilter_8u_C1R>,
       &ConvolutionOp::ippGenericConvFloatKernel<icl8u,ippiFilter32f_8u_C1R>},
 
@@ -474,7 +474,7 @@ namespace icl {
 #endif
      {&ConvolutionOp::cGenericConv<icl32s,int,true>,
       &ConvolutionOp::cGenericConv<icl32s,float,false>},
-#ifdef WITH_IPP_OPTIMIZATION 
+#ifdef HAVE_IPP 
      {0,
       &ConvolutionOp::ippGenericConvFloatKernel<icl32f,ippiFilter_32f_C1R>},
 #else

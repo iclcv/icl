@@ -4,7 +4,7 @@
 namespace icl {
 
   
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   
   namespace{
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint, float[], icl8u*)>

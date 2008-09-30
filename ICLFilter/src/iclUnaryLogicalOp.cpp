@@ -64,7 +64,7 @@ namespace icl {
     // }}}
 
     
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
     /*** IPP function specializations for "no val":
     ***/
     template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T*, int, IppiSize)>

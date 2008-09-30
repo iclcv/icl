@@ -13,7 +13,7 @@ namespace icl {
       */
   class BinaryCompareOp : public BinaryOp {
     public:
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
     /// this enum specifiy all possible compare operations
     enum optype{
       lt   = ippCmpLess,      /**< "<"- relation */

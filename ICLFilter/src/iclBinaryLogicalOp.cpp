@@ -33,7 +33,7 @@ namespace icl {
     // }}}
   
    
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
     template <typename T, IppStatus (IPP_DECL *func) (const T*, int,const T*, int, T*, int, IppiSize)>
     inline void ipp_call(const Img<T> *src1,const Img<T> *src2, Img<T> *dst){
       // {{{ open

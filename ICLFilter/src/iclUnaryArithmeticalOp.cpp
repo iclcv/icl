@@ -80,7 +80,7 @@ namespace icl {
     // }}}
 
     
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
     /*** IPP function specializations for "no val":
         sqrOp=10,
         sqrtOp=11,

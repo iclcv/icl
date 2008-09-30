@@ -29,7 +29,7 @@ namespace icl {
 
     // }}}
     
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
 
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint)>
     void ippMedian(const Img<T>* src, Img<T> *dst, const Size& maskSize,const Point &roiOffset, const Point &oAnchor) {

@@ -77,7 +77,7 @@ namespace icl {
   // }}}
    
 
-#ifdef WITH_IPP_OPTIMIZATION 
+#ifdef HAVE_IPP 
   template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*,int,T,icl8u*,int,IppiSize,IppCmpOp)>
   inline void ippCall(const Img<T> *src, T value, Img8u *dst, UnaryCompareOp::optype cmpOp){
     // {{{ open

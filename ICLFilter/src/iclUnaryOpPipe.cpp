@@ -22,7 +22,7 @@ namespace icl{
     int length = getLength();
     switch(length){
       case 0: ERROR_LOG("length must be > 0"); break;
-      case 1: getOp(0)->apply(src,dst); break;
+      case 1: getOp(0)->apply(src,dst);
       default:
         getOp(0)->apply(src,&getImage(0));
         for(int i=1;i<length-1;i++){

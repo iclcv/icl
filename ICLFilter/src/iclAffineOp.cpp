@@ -6,7 +6,7 @@ using std::memcpy;
 namespace icl{
 
   
-#ifdef WITH_IPP_OPTIMIZATION 
+#ifdef HAVE_IPP 
    template<>
    void AffineOp::affine<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
      // {{{ open

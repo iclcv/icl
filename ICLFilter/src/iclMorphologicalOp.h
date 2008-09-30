@@ -73,7 +73,7 @@ namespace icl {
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);
     
 
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   private:
 
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>

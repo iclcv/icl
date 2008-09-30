@@ -2,7 +2,7 @@
 #include <iclImg.h>
 
 namespace icl {
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   // {{{ Constructor / Destructor
 
   MorphologicalOp::MorphologicalOp (const Size& maskSize, char* pcMask, optype eOptype) {

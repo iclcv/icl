@@ -2,7 +2,7 @@
 #include <iclImg.h>
 
 namespace icl {
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   namespace{
 
     template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, IppiSize, const T*, int, IppiSize, icl32f*, int)>
