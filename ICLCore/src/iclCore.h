@@ -4,6 +4,8 @@
 #include <iclTypes.h>
 #include <iclImgParams.h>
 #include <string>
+#include <cstring>
+using std::memcpy;
 #include <iostream>
 #include <iclPoint32f.h>
 #include <iclClippedCast.h>
