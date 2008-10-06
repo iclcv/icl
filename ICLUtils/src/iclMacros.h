@@ -146,7 +146,8 @@ namespace icl {
 #ifdef SYSTEM_APPLE
 #define iclMin(A,B) ((A)<(B)?(A):(B))
 #define iclMax(A,B) ((A)>(B)?(A):(B))
-#else
+#endif
+#ifdef SYSTEM_LINUX
 #define iclMin(A,B) std::min(A,B)
 #define iclMax(A,B) std::max(A,B)
 #endif
