@@ -12,6 +12,9 @@ echo -n "checking system architecture..."
 ARCH=`./config.guess | cut -f 3 -d '-' | tr [[:lower:]] [[:upper:]]`
 if test "$ARCH" = "DARWIN" ; then
    ARCH=APPLE
+
+elif test "$ARCH" = "CYGWIN" ; then
+   ARCH=WINDOWS
 fi
 echo " $ARCH (adding -DSYSTEM_$ARCH to CXXFLAGS)"
 
@@ -20,6 +23,7 @@ CXXFLAGS="$CXXFLAGS -Isrc -I../src -DSYSTEM_${ARCH}"
 #linux: -D SYSTEM_LINUX
 #macosx -D SYSTEM_APPLE
 #windows -D SYSTEM_WINDOWS
+
 
 AM_CONDITIONAL([SYSTEM_LINUX_COND],[test x$ARCH = xLINUX])
 AM_CONDITIONAL([SYSTEM_APPLE_COND],[test x$ARCH = xAPPLE])
