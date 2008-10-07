@@ -95,8 +95,10 @@ namespace icl {
    }
 
    std::string
-   Time::toString() const
-   {
+   Time::toString() const{
+     return toStringFormated("%x %H:%M:%S:%#",32);
+   }
+  /*
       time_t time = static_cast<long>(_usec / 1000000);
 
       struct tm* t;
@@ -111,13 +113,54 @@ namespace icl {
       char buf[32];
       strftime(buf, sizeof(buf), "%x %H:%M:%S", t);
 
-      std::ostringstream os;
-      os << buf << ":";
-      os.fill('0');
-      os.width(3);
-      os << static_cast<long>(_usec % 1000000 / 1000);
+     std::string buf = toStringFormated("%x %H:%M:%S:",32);
+     std::ostringstream os;
+     os << buf << ":";
+     os.fill('0');
+     os.width(3);
+     os << static_cast<long>(_usec % 1000000 / 1000);
       return os.str();
-   }
+      */
+  
+  
+  std::string Time::toStringFormated(const std::string &pattern,unsigned int bufferSize) const{
+    
+    std::ostringstream os;
+
+    for(unsigned int i=0;i<pattern.length()-1;++i){
+      if(pattern[i]=='%'){
+        ++i;
+        switch(pattern[i]){
+          case '*': os << (_usec % 1000000); break; 
+          case '#': os << (_usec % 1000000 / 1000); break;
+          case '-': os << (_usec % 1000); break;
+          default:
+            os << pattern[i-1];
+            os << pattern[i];
+        }
+      }else{
+        os << pattern[i];
+      }
+    }
+    
+    
+    time_t time = static_cast<long>(_usec / 1000000);
+    
+    struct tm* t;
+#ifdef SYSTEM_WINDOWS
+    t = localtime(&time);
+#else
+    struct tm tr;
+    localtime_r(&time, &tr);
+    t = &tr;
+#endif
+    
+    char *buf = new char[bufferSize];
+    strftime(buf,bufferSize,os.str().c_str(),t);
+    std::string s(buf);
+    delete [] buf;
+    return s;
+  }
 
    Time::Time(value_type usec) :
       _usec(usec)

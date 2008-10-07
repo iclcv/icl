@@ -53,6 +53,20 @@ namespace icl{
       double toMicroSecondsDouble() const;
 
       std::string toString() const;
+      
+      /// allows to create a formated string using strftime system-functions
+      /** Please refer to your system dependent strftime reference:
+          <b>please note, that strftime is does not support milli and micro-second accuracy,
+          </b>. So this feature is implemented here.
+          Please use
+          - %* for the remaining usecs less then the last second
+          - %# for the remaining millisecond less then the last second
+          - %- for the remaining usecs less then the last millisecond
+
+          For example, the default toString() functions uses this time patterns: "%x %H:%M:%S:%#"
+          
+      */
+      std::string toStringFormated(const std::string &fmt,unsigned int bufferSize=32) const;
 
       //xcf4cis stuff
       Time age() const {
