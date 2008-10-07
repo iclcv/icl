@@ -30,8 +30,8 @@ namespace icl {
    Time::now()
    {
 #ifdef SYSTEM_WINDOWS
-      struct _timeb tb;
-      _ftime(&tb);
+      struct timeb tb;
+      ftime(&tb);
       return Time(tb.time * static_cast<value_type>(1000000) + tb.millitm * static_cast<value_type>(1000));
 #else
       struct timeval tv;

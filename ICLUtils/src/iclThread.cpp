@@ -3,8 +3,9 @@
 #include "iclMacros.h"
 //#include <sched.h>
 #include <pthread.h>
-//#include <unistd.h>
-
+#ifdef SYSTEM_LINUX
+#include <unistd.h>
+#endif
 
 namespace icl{
   
@@ -65,17 +66,19 @@ namespace icl{
   }
   
   void Thread::msleep(unsigned int msecs){
-#ifndef WIN32
+#ifndef SYSTEM_WINDOWS
     usleep(msecs*1000);
 #else
-	  System::Threading::Thread::Sleep(msecs);
+	  //System::Threading::Thread::Sleep(msecs);
+    sleep(msecs);
 #endif
   }
   void Thread::sleep(float secs){
-#ifndef WIN32
+#ifndef SYSTEM_WINDOWS
     usleep((long)secs*1000000);
 #else
-	  System::Threading::Thread::Sleep(secs*1000);
+    sleep(secs*1000);
+//	  System::Threading::Thread::Sleep(secs*1000);
 #endif
   }
   

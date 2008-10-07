@@ -10,6 +10,8 @@
 #include <iclTime.h>
 #ifdef WIN32
 #include <iclWin32.h>
+#else
+#include <unistd.h>
 #endif
 
 using std::vector;

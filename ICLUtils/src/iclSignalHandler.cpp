@@ -5,6 +5,8 @@
 #include <signal.h>
 #include <iclMacros.h>
 #include <iclMutex.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifdef SYSTEM_APPLE
 #define SIGPOLL SIGIO
