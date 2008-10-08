@@ -15,28 +15,49 @@ namespace icl{
         }
       }
     }
+
+    float signum(float n){
+      if (n < 0) return -1;
+      if (n > 0) return 1;
+      return 0;
+    }
   }
 
   DemoGrabber::DemoGrabber(float maxFPS){
     m_x = Point32f(0.5,0.5);
     m_v = Point32f(0.01, 0.01);
-    m_color = Color(255,100,50);
-    m_size = Size32f(0.02,0.02);
+    m_color = Color(255,50,10);
+    m_size = Size32f(0.06,0.09);
     m_maxFPS = maxFPS;
+    m_maxV = Point32f(0.2,0.2);
     m_lastTime = Time::now();
   }
   const ImgBase* DemoGrabber::grab(ImgBase **ppoDst){
     ImgBase *image = prepareOutput(ppoDst);
-    
+    image->clear();
+
     m_v += Point32f(icl::random(-0.001, 0.001),icl::random(-0.001, 0.001));
+
+    m_v.x = clip(m_v.x,-m_maxV.x,m_maxV.x); 
+    m_v.y = clip(m_v.y,-m_maxV.y,m_maxV.y); 
+
     m_x += m_v;
     if(m_x.x>1 || m_x.x<0){
       m_v.x *= -1;
-      m_x.x += m_v.x;
+      if(m_x.x>1){
+        m_x.x = 1;
+      }else{
+        m_x.x = 0;
+      }
     }
     if(m_x.y>1 || m_x.y<0){
       m_v.y *= -1;
-      m_x.y += m_v.y;
+      if(m_x.y>1){
+        m_x.y = 1;
+      }else{
+        m_x.y = 0;
+      }
+
     }
     Size s = image->getSize();
     Rect r((int)((m_x.x-m_size.width)*s.width),

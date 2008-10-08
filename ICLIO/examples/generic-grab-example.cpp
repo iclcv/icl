@@ -2,6 +2,7 @@
 #include <iclQt.h>
 #include <iclGUI.h>
 #include <iclQuick.h>
+#include <iclIO.h>
 
 GUI gui("vbox");
 
@@ -38,8 +39,7 @@ void loop(){
       image = grabber->grab();
     }else{
       ImgQ buf = zeros(640,480,3);
-      color(255,0,0);
-      text(buf,150,200,string("no ")+type+"-grabber available");
+      labelImage(&buf,string("no ")+type+"-grabber available");
       image = &buf;
     }
 

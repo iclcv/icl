@@ -26,6 +26,9 @@ namespace icl{
     /// Current rel. velocity of the rect
     Point32f m_v;
 
+    /// maximum velocity of the rect
+    Point32f m_maxV;
+
     /// relative size of the rect
     Size32f m_size;
 
