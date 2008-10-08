@@ -96,7 +96,9 @@ namespace icl{
     bool running() const;
   
     protected:
-    
+
+    /// exits the thread using pthread_exit (must be called from within the run function)
+    void exit();
 
     /// internal used lock function
     /** This function (and unlock) can be used inside the reimplementation of
