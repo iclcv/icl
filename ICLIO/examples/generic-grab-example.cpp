@@ -7,7 +7,7 @@ GUI gui("vbox");
 
 void init(){
   gui << "image[@minsize=32x24@handle=image]" 
-      << "combo(pwc,dc,unicap,file)[@handle=combo@out=xxx]";
+      << "combo(pwc,dc,unicap,file,demo)[@handle=combo@out=xxx]";
   
   gui.show();
 }
@@ -21,6 +21,7 @@ void loop(){
   params["dc"] = "dc=0";
   params["unicap"] = "unicap=";
   params["file"] = "file=images/*.ppm";
+  params["demo"] = "";
   while(1){
     static std::string lastComboItem = "";
     std::string type = combo.getSelectedItem();

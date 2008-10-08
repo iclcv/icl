@@ -19,7 +19,8 @@ libICLIO_la_SOURCES= \
 ../src/iclGrabber.cpp \
 ../src/iclIO.cpp \
 ../src/iclIOUtils.cpp \
-../src/iclTestImages.cpp
+../src/iclTestImages.cpp \
+../src/iclDemoGrabber.cpp
 
 include_HEADERS= \
 ../src/iclIO.h \
@@ -41,7 +42,8 @@ include_HEADERS= \
 ../src/iclFileGrabberPlugin.h \
 ../src/iclFileWriterPluginCSV.h \
 ../src/iclFileWriterPlugin.h \
-../src/iclFileWriterPluginPNM.h
+../src/iclFileWriterPluginPNM.h \
+../src/iclDemoGrabber.h
 
 if HAVE_LIBJPEG_COND
 libICLIO_la_SOURCES+= \

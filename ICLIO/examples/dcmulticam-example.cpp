@@ -18,7 +18,7 @@ public:
     std::vector<DCDevice> devs = DCGrabber::getDeviceList();
     if(!devs.size()){
       ERROR_LOG("no dc device found -> exiting!");
-      exit(-1);
+      ::exit(-1);
     }
     w = new ICLWidget(0);
     w->setGeometry(100,100,640,480);

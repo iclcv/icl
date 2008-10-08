@@ -15,6 +15,7 @@
 #include <iclUnicapGrabber.h>
 #endif
 
+#include <iclDemoGrabber.h>
 
 
 namespace icl{
@@ -33,9 +34,9 @@ namespace icl{
         pUnicap = lP[i].substr(7);
       }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "file"){
         pFile = lP[i].substr(5);
-      }
-
-      
+      }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "demo"){
+        pFile = lP[i].substr(5);
+      }      
     }
 
     std::vector<std::string> l = tok(desiredAPIOrder,",");
@@ -59,7 +60,7 @@ namespace icl{
       if(l[i] == "dc"){
         std::vector<DCDevice> devs = DCGrabber::getDeviceList();
         int idx = to32s(pDC);
-        printf("index is %d devs size is %d \n",idx,devs.size());
+        //printf("index is %d devs size is %d \n",idx,devs.size());
         if(idx < 0) idx = 0;
         if(idx >= (int)devs.size()){
           continue;
@@ -93,6 +94,10 @@ namespace icl{
         }else{
           continue;
         }
+      }
+      if(l[i] == "demo"){
+        m_poGrabber = new DemoGrabber(30);
+        m_sType = "demo";
       }
     }
     if(!m_poGrabber && notifyErrors){
