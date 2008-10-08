@@ -78,6 +78,9 @@ namespace icl{
       Time restSleepTime = neededInterval-(now-m_lastTime);
       Thread::msleep(restSleepTime.toMilliSeconds());
     }
+    
+    image->setTime(now);
+    
     return image;
     
   }
