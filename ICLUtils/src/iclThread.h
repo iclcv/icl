@@ -91,6 +91,9 @@ namespace icl{
     /// sets the current thread to sleep for some seconds
     /** @param secs time in secs to sleep  ( float precision!)**/
     static void sleep(float secs);
+    
+    /// this function is not tested very well
+    bool running() const;
   
     protected:
     

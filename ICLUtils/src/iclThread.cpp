@@ -81,11 +81,18 @@ namespace icl{
 //	  System::Threading::Thread::Sleep(secs*1000);
 #endif
   }
+
+  // Maybe this works
+  bool Thread::running() const{
+    Mutex::Locker l(impl->mutex);
+    return impl->on;
+  }
   
   void *icl_thread_handler(void *t){
     ((Thread*)t)->run();
     pthread_exit(0);
     return 0;
   }
+
 
 }
