@@ -26,7 +26,8 @@ endif
 bin_PROGRAMS= \
 icl-write-file-example \
 icl-testimages-example \
-icl-jpg2cpp
+icl-jpg2cpp \
+icl-multicam-viewer-example
 
 # explicit sources, ldflags and cxxflags
 icl_write_file_example_SOURCES=../examples/write-file-example.cpp
@@ -36,6 +37,10 @@ icl_write_file_example_CXXFLAGS=${XCXXFLAGS}
 icl_testimages_example_SOURCES=../examples/testimages-example.cpp
 icl_testimages_example_LDFLAGS=${XLDFLAGS}
 icl_testimages_example_CXXFLAGS=${XCXXFLAGS}
+
+icl_multicam_viewer_example_SOURCES=../examples/multicam-viewer-example.cpp
+icl_multicam_viewer_example_LDFLAGS=${XLDFLAGS}
+icl_multicam_viewer_example_CXXFLAGS=${XCXXFLAGS}
 
 icl_jpg2cpp_SOURCES=../examples/jpg2cpp.cpp
 icl_jpg2cpp_LDFLAGS=${XLDFLAGS}

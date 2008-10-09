@@ -413,12 +413,14 @@ namespace icl{
       if(fmt == formatGray){
         Img8u i(Size(width,height),formatGray);
         dc1394_convert_to_MONO8(data, i.getData(0),width,height,yuv_byte_order, cc, data_depth);
+        i.setTime(Time(f->timestamp));
         return i;
       }else if(fmt == formatRGB){
         Img8u i(Size(width,height),formatRGB);
         icl8u *buf = new icl8u[width*height*4];
         dc1394_convert_to_RGB8(data,buf,width,height,yuv_byte_order, cc, data_depth);
         interleavedToPlanar(buf,&i);
+        i.setTime(Time(f->timestamp));
         return i;
       }else{
         printf("extract_image unsupported format !\n");
@@ -480,7 +482,9 @@ namespace icl{
       else{
         ERROR_LOG("unsupported camera!");
       }
-  
+      if(ppoDst && *ppoDst){
+        (*ppoDst)->setTime(Time(f->timestamp));
+      }
     }
 
     // }}}
@@ -511,6 +515,9 @@ namespace icl{
                                 f->yuv_byte_order, 
                                 f->color_coding,
                                 f->data_depth);
+      }
+      if(ppoDst && *ppoDst){
+        (*ppoDst)->setTime(Time(f->timestamp));
       }
     }
 
@@ -573,6 +580,9 @@ namespace icl{
                                f->color_coding,
                                f->data_depth);
         interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
+      }
+      if(ppoDst && *ppoDst){
+        (*ppoDst)->setTime(Time(f->timestamp));
       }
     }
 
