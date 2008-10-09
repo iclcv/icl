@@ -18,6 +18,7 @@ fi
 echo " $ARCH (adding -DSYSTEM_$ARCH to CXXFLAGS)"
 
 CXXFLAGS="$CXXFLAGS -Isrc -I../src -DSYSTEM_${ARCH}"
+ICL_EXTEND_PC_FLAGS([],[-DSYSTEM_${ARCH}],[])
 
 #linux: -D SYSTEM_LINUX
 #macosx -D SYSTEM_APPLE
