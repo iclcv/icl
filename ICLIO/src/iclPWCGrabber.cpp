@@ -915,7 +915,6 @@ void save_setparams(int device){
   icl8u *pV = pY+(int)(1.25*m_iWidth*m_iHeight);
 
   
-  poOutput->setTime(g_Time[m_iDevice]);
   if(poOutput->getFormat() == formatRGB &&
      poOutput->getDepth() == depth8u &&
      poOutput->getWidth() == m_iWidth &&
@@ -967,8 +966,10 @@ void save_setparams(int device){
     convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),m_poRGB8Image);
     m_oConverter.apply(m_poRGB8Image,poOutput);
   }
+  poOutput->setTime(g_Time[m_iDevice]);
+  //  std::cout << "creating this timestammmp" << poOutput->getTime().toString() << std::endl;
+
   pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);
-  
   return poOutput;
 }
 
