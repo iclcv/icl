@@ -104,4 +104,19 @@ namespace icl{
       ERROR_LOG("Generic Grabber was not able to find any suitable device!");
     }
   }  
+  
+  void GenericGrabber::resetBus(const std::string &deviceList, bool verbose){
+    std::vector<std::string> ts = tok(deviceList,",");
+    
+    for(unsigned int i=0;i<ts.size();++i){
+      const std::string &t = ts[i];
+#ifdef HAVE_LIBDC
+      if(t == "dc"){
+        DCGrabber::dc1394_reset_bus(verbose);
+      }
+#endif
+      // others are not supported yet
+    }
+  
+  }
 }

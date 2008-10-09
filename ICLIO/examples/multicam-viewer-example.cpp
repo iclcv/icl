@@ -1,9 +1,6 @@
 #include <iclCommon.h>
 #include <iclGenericGrabber.h>
 #include <stdexcept>
-#ifdef SYSTEM_LINUX
-#include <iclDCGrabber.h>
-#endif
 
 #define DBG(X) if(pa_defined("-v")) std::cout << X << std::endl
 
@@ -27,7 +24,7 @@ void run(){
   for(int i=0;i<numCams;++i){
     ImageHandle &ih = gui.getValue<ImageHandle>(std::string("view-")+str(i));
     const ImgBase *image = grabbers[i]->grab();
-    DBG("grabber " << names[i] << "(" << infos[i] << ") grabbed image:" << *image << " TimeStamp:" << image->getTime().toString());
+    DBG("grabber " << names[i] << "(" << infos[i] << ") grabbed image:" << *image << " TimStamp:" << image->getTime().toString());
     ih = image;
     ih.update();
     Thread::msleep(5);
@@ -56,11 +53,8 @@ int main(int n, char **ppc){
         if(first && name == "dc"){
           first = false;
           DBG("resetting dc bus");
-#ifdef SYSTEM_LINUX
-          DCGrabber::dc1394_reset_bus();
-#else
+          GenericGrabber::resetBus("dc");
           DBG("unsuported platform (only supported on linux)");
-#endif
           DBG("dc bus has been resetted");
         }
       }

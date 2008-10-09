@@ -37,6 +37,9 @@ namespace icl {
                    const std::string &params="pwc=0,dc=0,file=images/*.ppm",
                    bool notifyErrors = true);
     
+    /// resets resource on given devices (e.g. firewire bus)
+    static void resetBus(const std::string &deviceList="dc", bool verbose=false);
+    
     std::string getType() const { 
       return m_sType; 
     }
