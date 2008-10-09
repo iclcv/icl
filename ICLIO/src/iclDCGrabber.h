@@ -105,8 +105,13 @@ namespace icl{
     
     
     /// Returns a list of all connected DCDevices
-    static std::vector<DCDevice> getDeviceList();
+    static std::vector<DCDevice> getDeviceList(bool resetBusFirst=false);
 
+    /// calls dc1394_reset_bus functions (see DCDevice)
+    static void dc1394_reset_bus(bool verbose=false){
+      DCDevice::dc1394_reset_bus(verbose);
+    }
+    
     private:
     /// internally used function to restart the DCGrabberThread
     /** useful if the grabber thread must have been deleted 

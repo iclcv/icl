@@ -48,6 +48,9 @@ namespace icl{
     /// DCDevices may only be created by the DCGrabbers private function
     friend class icl::dc::DCGrabberThread;
     
+    /// save version to call dc1394_reset_bus (after call all other cams become useless)
+    static void dc1394_reset_bus(bool verbose=false);
+    
     /// Internally used Mode struct (combination of videomode and framerate)
     struct Mode{
       /// creates a new Mode with given videomode and framerate

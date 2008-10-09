@@ -1,5 +1,7 @@
 #include "iclDCFrameQueue.h"
 #include "iclDC.h"
+#include <iclMacros.h>
+
 namespace icl{
   namespace dc{
     
@@ -17,9 +19,21 @@ namespace icl{
 #else
       for(int i=0;i<m_iBuffers;i++){
 #endif
-        dc1394video_frame_t *frame;
-        dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
+        dc1394video_frame_t *frame=0;
+        dc1394error_t err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
+ 
+        (void)err;
+        // this does not work dc1394_capture_dequeu crashes when the bus is broken
+        //if(err != DC1394_SUCCESS || !frame){
+        //  ERROR_LOG("dc1394_capture_dequeue was not successfull -> trying to reset the bus");
+        //  resetBus();
+        //  dc1394error_t err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
+        //  if(err != DC1394_SUCCESS || !frame){
+        //    ERROR_LOG("reseting the bus was not successful");
+        //  }
+        //}
         push(frame);
+
       }
       for(int i=0;i<m_iQueuedBuffers;i++){
         dc1394video_frame_t *frame = pop();
@@ -29,7 +43,9 @@ namespace icl{
     DCFrameQueue::~DCFrameQueue(){
       //      release_dc_cam(m_poCam);
     }
-    
+    void DCFrameQueue::resetBus(){
+      dc1394_reset_bus(m_poCam);
+    }
     void DCFrameQueue::step(){
       dc1394video_frame_t *frame = pop();
       dc1394_capture_enqueue(m_poCam,frame); 

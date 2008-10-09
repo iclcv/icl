@@ -1,6 +1,9 @@
 #include <iclCommon.h>
 #include <iclGenericGrabber.h>
 #include <stdexcept>
+#ifdef SYSTEM_LINUX
+#include <iclDCGrabber.h>
+#endif
 
 #define DBG(X) if(pa_defined("-v")) std::cout << X << std::endl
 
@@ -39,14 +42,29 @@ int main(int n, char **ppc){
   pa_explain("-3","see -1");
   pa_explain("-4","see -1");
   pa_explain("-size","set grabbers desired grabbing size");
+  pa_explain("-reset-bus","calls dc1394_reset_bus before creating dc grabbers");
   pa_explain("-v","show some debuggin output");
-  pa_init(n,ppc,"-1(2) -2(2) -3(2) -4(2) -size(1) -v");
+  pa_init(n,ppc,"-1(2) -2(2) -3(2) -4(2) -size(1) -v -reset-bus");
   QApplication app(n,ppc);
   
   for(int i=0;i<4;++i){
     std::string p=std::string("-")+str(i);
     if(pa_defined(p)){
       std::string name = pa_subarg<std::string>(p,0,"");
+      if(pa_defined("-reset-bus")){
+        static bool first = true;
+        if(first && name == "dc"){
+          first = false;
+          DBG("resetting dc bus");
+#ifdef SYSTEM_LINUX
+          DCGrabber::dc1394_reset_bus();
+#else
+          DBG("unsuported platform (only supported on linux)");
+#endif
+          DBG("dc bus has been resetted");
+        }
+      }
+      
       std::string info = name+"="+pa_subarg<std::string>(p,1,"0");
       if(name != "" && info != ""){
         names.push_back(name);        

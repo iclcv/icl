@@ -2,6 +2,7 @@
 #include "iclDCGrabberThread.h"
 #include <iclSignalHandler.h>
 #include <iclIO.h>
+#include <dc1394/iso.h>
 
 namespace icl{
   using namespace std;
@@ -12,6 +13,7 @@ namespace icl{
 
     m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_poImage(0), m_poImageTmp(0)
   {
+    
     dc::install_signal_handler();
 
     m_oOptions.bayermethod = DC1394_BAYER_METHOD_BILINEAR;
@@ -73,20 +75,14 @@ namespace icl{
 
   // }}}
 
-  std::vector<DCDevice> DCGrabber::getDeviceList(){
+  
+  std::vector<DCDevice> DCGrabber::getDeviceList(bool resetBusFirst){
     // {{{ open
-
-    std::vector<DCDevice> v;
-    /** RC7::
-    dc1394camera_t **ppoCams;
-    uint32_t numCams=0;
-    dc1394_find_cameras(&ppoCams,&numCams);
-    
-    for(uint32_t i=0;i<numCams;i++){
-      v.push_back(DCDevice(ppoCams[i]));
+    if(resetBusFirst){
+      DCGrabber::dc1394_reset_bus(false);
     }
-
-    **/
+    std::vector<DCDevice> v;
+    
     dc1394_t *context = get_static_context();
     dc1394camera_list_t *list = 0;
     dc1394error_t err = dc1394_camera_enumerate(context,&list);
@@ -104,6 +100,16 @@ namespace icl{
 
     for(uint32_t i=0;i<list->num;++i){
       v.push_back(DCDevice(dc1394_camera_new_unit(context,list->ids[i].guid,list->ids[i].unit)));
+
+      //std::cout << "trying to release all former iso data flow for camera " << v.back().getCam() << std::endl;
+      //dc1394_iso_release_all(v.back().getCam());
+      
+      if(!i){
+        // This is very hard so when an icl application is started, 
+        // it will reset the bus first ??
+        //dc1394_reset_bus(v.back().getCam());
+      }
+                   
     }
     
     if(list){

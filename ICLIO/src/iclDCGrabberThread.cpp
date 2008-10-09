@@ -21,10 +21,19 @@ namespace icl{
       stop();
       ICL_DELETE(m_poFrameQueue);
     }
+    void DCGrabberThread::resetBus(){
+      dc1394_reset_bus(m_poCam);
+    }
     
     void DCGrabberThread::stopAllGrabberThreads(){
       // {{{ open
-
+      
+      
+      for(unsigned int i=0; i<g_vecAllThreads.size();++i){
+        std::cout << "[unclean break detected] resetting bus for camera " << i << std::endl; 
+        g_vecAllThreads[i]->resetBus();
+      }
+      
       g_oGrabberThreadMutex.lock();
       g_bStopAllGrabberThreadsCalled = true;
 

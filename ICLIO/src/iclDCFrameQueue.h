@@ -68,6 +68,9 @@ namespace icl{
       
       /// shows some debugging information for the wrapped camera
       void showDetails() const;
+
+      /// calls dc1394_reset_bus  (not save!)
+      void resetBus();
       
       private:
       /// wrapped queue structure

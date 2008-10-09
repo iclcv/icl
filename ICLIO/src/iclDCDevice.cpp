@@ -3,6 +3,7 @@
 #include <iclMacros.h>
 #include <iclDC.h>
 #include <stdio.h>
+#include <iclThread.h>
 
 using namespace std;
 using namespace icl::dc;
@@ -84,6 +85,40 @@ namespace icl{
 
   // }}}
 
+  void DCDevice::dc1394_reset_bus(bool verbose){
+    dc1394_t * d;
+    dc1394camera_list_t * list;
+    dc1394camera_t *camera;
+    dc1394error_t err;
+    
+    d = dc1394_new ();
+    err=dc1394_camera_enumerate (d, &list);
+    DC1394_ERR(err,"Failed to enumerate cameras");
+    
+    if (list->num == 0) {
+      dc1394_log_error("No cameras found");
+      return;
+    }
+    
+    camera = dc1394_camera_new (d, list->ids[0].guid);
+    if (!camera) {
+      dc1394_log_error("Failed to initialize camera with guid %llx", list->ids[0].guid);
+      return;
+    }
+    dc1394_camera_free_list (list);
+    
+    if(verbose){
+      printf("Using camera with GUID %llx\n", camera->guid);
+      printf ("Reseting bus...\n");
+    }
+    
+    ::dc1394_reset_bus (camera);
+    
+    dc1394_camera_free (camera);
+    dc1394_free (d);
+    
+    Thread::msleep(1000);
+  }
 
   
   vector<DCDevice::Mode> DCDevice::getModes() const{
