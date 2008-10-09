@@ -305,7 +305,7 @@ public:
       vector<DCDevice> devs = DCGrabber::getDeviceList();
       if(!devs.size()){
         ERROR_LOG("no device found");
-        exit(-1);
+        ::exit(-1);
       }
       grabber = new DCGrabber(devs[0]);
     }else{
