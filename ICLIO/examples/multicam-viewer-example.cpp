@@ -27,7 +27,7 @@ void run(){
     DBG("grabber " << names[i] << "(" << infos[i] << ") grabbed image:" << *image << " TimStamp:" << image->getTime().toString());
     ih = image;
     ih.update();
-    Thread::msleep(5);
+    Thread::msleep(10);
   }  
 }
 
