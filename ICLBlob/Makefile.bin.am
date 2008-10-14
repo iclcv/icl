@@ -47,15 +47,25 @@ if HAVE_QT_COND
 
 bin_PROGRAMS+= \
 icl-region-inspector-demo \
-icl-tangible-grains-benchmark \
-icl-tangible-grains-demo \
 icl-vector-quantisation-test
 
 icl_region_inspector_demo_SOURCES=../examples/region-inspector-demo.cpp
 icl_region_inspector_demo_LDFLAGS=${XLDFLAGS}
 icl_region_inspector_demo_CXXFLAGS=${XCXXFLAGS}
 
+icl_vector_quantisation_test_SOURCES=../examples/vector-quantisation-test.cpp
+icl_vector_quantisation_test_LDFLAGS=${XLDFLAGS}
+icl_vector_quantisation_test_CXXFLAGS=${XCXXFLAGS}
+
+endif
+
+
 if HAVE_LIBDC_COND
+if HAVE_QT_COND
+
+bin_PROGRAMS+= \
+icl-tangible-grains-benchmark \
+icl-tangible-grains-demo
 
 icl_tangible_grains_benchmark_SOURCES=../examples/tangible-grains-benchmark.cpp
 icl_tangible_grains_benchmark_LDFLAGS=${XLDFLAGS}
@@ -66,9 +76,4 @@ icl_tangible_grains_demo_LDFLAGS=${XLDFLAGS}
 icl_tangible_grains_demo_CXXFLAGS=${XCXXFLAGS}
 
 endif
-
-icl_vector_quantisation_test_SOURCES=../examples/vector-quantisation-test.cpp
-icl_vector_quantisation_test_LDFLAGS=${XLDFLAGS}
-icl_vector_quantisation_test_CXXFLAGS=${XCXXFLAGS}
-
 endif
