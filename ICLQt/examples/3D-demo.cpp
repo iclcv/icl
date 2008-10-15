@@ -1,7 +1,7 @@
 #include <iclWidget.h>
 #include <iclDrawWidget3D.h>
 #include <iclFileGrabber.h>
-#include <iclDCGrabber.h>
+#include <iclGenericGrabber.h>
 #include <QApplication>
 #include <QThread>
 #include <iclTestImages.h>
@@ -27,12 +27,8 @@ public:
   }
   
   virtual void run(){
-    Grabber *g=0;
-    vector<DCDevice> devs = DCGrabber::getDeviceList();
-    if(!devs.size()){
-      g = new FileGrabber("images/*.ppm",true);
-    }else{
-      g = new DCGrabber(devs[0]);
+    GenericGrabber *g=new GenericGrabber("dc,pwc,file","dc=0,pwc=0,file=images/*.ppm");
+    if(g->getType() == "dc"){
       g->setProperty("format","DC1394_VIDEO_MODE_640x480_MONO8@DC1394_FRAMERATE_60");
     }
     g->setDesiredSize(size);
