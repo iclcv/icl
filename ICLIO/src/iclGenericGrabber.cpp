@@ -4,7 +4,9 @@
 #include <iclFileList.h>
 
 #ifdef SYSTEM_LINUX
+#ifdef HAVE_VIDEODEV
 #include <iclPWCGrabber.h>
+#endif
 #endif
 
 #ifdef HAVE_LIBDC
@@ -43,6 +45,7 @@ namespace icl{
     
     for(unsigned int i=0;i<l.size();++i){
 #ifdef SYSTEM_LINUX
+#ifdef HAVE_VIDEODEV
       if(l[i] == "pwc"){
         PWCGrabber *pwc = new PWCGrabber;
         if(pwc->init(Size(640,480),24,to32s(pPWC))){
@@ -54,6 +57,7 @@ namespace icl{
           continue;
         }
       }
+#endif
 #endif
       
 #ifdef HAVE_LIBDC

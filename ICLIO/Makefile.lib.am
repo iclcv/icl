@@ -69,13 +69,14 @@ endif
 
 
 if SYSTEM_LINUX_COND
+if HAVE_VIDEODEV_COND
 libICLIO_la_SOURCES+= \
 ../src/iclPWCGrabber.cpp
 
 include_HEADERS+= \
 ../src/iclPWCGrabber.h
 endif
-
+endif
 
 if HAVE_LIBDC_COND
 libICLIO_la_SOURCES+= \

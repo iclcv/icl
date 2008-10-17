@@ -220,6 +220,35 @@ fi
 
 AM_CONDITIONAL([HAVE_LIBZ_COND],[test x$HAVE_LIBZ = xTRUE])
 
+#########################################################################################
+ICL_NOTIFY_CHECK([videodev       ])
+#########################################################################################
+
+ICL_WITH_ROOT([VIDEODEV],[/usr])
+HAVE_VIDEODEV=TRUE
+
+ICL_PUSH_FLAG_VARS
+ICL_EXTEND_FLAG_VARS_TMP_FOR(VIDEODEV,lib,include)                
+        
+AC_LANG([C++])
+AC_CHECK_HEADER([linux/videodev.h],[],[HAVE_LIBZ=FALSE])
+AC_CHECK_HEADER([sys/ioctl.h],[],[HAVE_LIBZ=FALSE])
+AC_CHECK_HEADER([sys/mman.h],[],[HAVE_LIBZ=FALSE])
+AC_CHECK_HEADER([fcntl.h],[],[HAVE_LIBZ=FALSE])
+
+ICL_POP_FLAG_VARS
+
+if test "$HAVE_VIDEODEV" = "TRUE" ; then
+
+ICL_EXTEND_FLAG_VARS_2(
+        [VIDEODEV],
+        [],
+        [],
+        [-I$VIDEODEV_ROOT/include],
+        [-DHAVE_VIDEODEV])
+fi
+
+AM_CONDITIONAL([HAVE_VIDEODEV_COND],[test x$HAVE_VIDEODEV = xTRUE])
 
 
 #########################################################################################
@@ -348,6 +377,7 @@ ICL_NOTIFY_SUPPORT([UNICAP],       [Unicap   ])
 ICL_NOTIFY_SUPPORT([QT],           [Qt       ])
 ICL_NOTIFY_SUPPORT([LIBJPEG],      [libjpeg  ])
 ICL_NOTIFY_SUPPORT([LIBZ],         [libz     ])
+ICL_NOTIFY_SUPPORT([VIDEODEV],     [videodev ])
 ICL_NOTIFY_SUPPORT([SVS],          [SVS      ])
 ICL_NOTIFY_SUPPORT([XCF],          [XCF      ])
 ICL_NOTIFY_SUPPORT([IMAGEMAGICK],  [Magick++ ])
@@ -409,6 +439,7 @@ ICL_PC_ENTRY_FOR_ROOT([LIBDC])
 ICL_PC_ENTRY_FOR_ROOT([UNICAP])
 ICL_PC_ENTRY_FOR_ROOT([QT])
 ICL_PC_ENTRY_FOR_ROOT([LIBJPEG])
+ICL_PC_ENTRY_FOR_ROOT([VIDEODEV])
 ICL_PC_ENTRY_FOR_ROOT([LIBZ])
 ICL_PC_ENTRY_FOR_ROOT([SVS])
 ICL_PC_ENTRY_FOR_ROOT([XCF])
