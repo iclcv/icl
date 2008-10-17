@@ -89,8 +89,10 @@ namespace icl{
   }
   void Thread::exit(){
     Mutex::Locker l(impl->mutex);
-    impl->on = false;
-    pthread_exit(impl->data);
+    if(impl->on){
+      impl->on = false;
+      pthread_exit(impl->data);
+    }
   }
   
   void *icl_thread_handler(void *t){
