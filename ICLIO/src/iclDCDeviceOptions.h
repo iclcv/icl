@@ -19,6 +19,9 @@ namespace icl{
 
     /// flag whether images should be labeled or not
     bool enable_image_labeling;
+
+    /// iso MBits
+    int isoMBits;
   };
 }
 

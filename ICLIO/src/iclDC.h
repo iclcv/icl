@@ -146,6 +146,17 @@ namespace icl{
         device was opened by a DCGrabber (note, that getDeviceList must be called)
     **/
     void free_static_context();
+
+    
+    /// sets iso transmission speed for the wrapped dc1394 context
+    /** @param mbits mbits value (usefull might be 800 whereby 400 is default)
+                     values that do not make sense are ignored.
+                     The current libdc library documentation lists the following
+                     available speed values: 100, 200, 400, 800, 1600, 3200. But 
+                     please note, that 1600 and 3200 are not supported by any camera 
+                     yet. These values are only reserved for later technologies
+    */
+    void set_iso_speed(dc1394camera_t *cam, int mbits);
   }
 }
     

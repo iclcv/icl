@@ -36,7 +36,7 @@ namespace icl{
     Q_OBJECT
     public:
     /// Constructor
-    CamCfgWidget();
+    CamCfgWidget(int isoMBits=400);
     
     /// Destructor
     ~CamCfgWidget();
@@ -128,6 +128,8 @@ namespace icl{
     Size m_oVideoSize;                    //!< current video size
     format m_eVideoFormat;                //!< current video format
     icl::depth m_eVideoDepth;             //!< current video depth
+
+    int m_isoMBits;                       //!< mbit count for dc devices
   
   };
 }

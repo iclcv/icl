@@ -25,7 +25,7 @@ namespace icl{
     class DCFrameQueue{
       public:
       /// Creates a new DCFrameQueue objects with given camera, DMABuffer size and count of queued buffers
-      DCFrameQueue(dc1394camera_t* c, DCDeviceOptions *options, int nDMABuffers=5, int nQueuedBuffers=1);
+      DCFrameQueue(dc1394camera_t* c, DCDeviceOptions *options,int nDMABuffers=5, int nQueuedBuffers=1);
 
       /// releases the internal camera using icl::dc::release_dc_cam()
       ~DCFrameQueue();

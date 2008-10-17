@@ -22,12 +22,15 @@ namespace icl {
     /** @param devicePriorityList Comma separated list of device tokens (no white spaces).
                                   something like "dc,pwc,file,unicap" with arbitrary order
                                   undesired devices can be left out!
+                                  <b>new additionally you can define ad dc800 device for using 
+                                  firewire 800 now</b>
         
         @param params comma seperated device depend parameter list: e.g.
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
                                   Semantics:\n
                                   - pwc=device-index (int)
                                   - dc=device-index (int)
+                                  - dc800=device-index (int)
                                   - file=pattern (string)
                                   - unicap=device pattern (string)
         @param notifiyErrors if set to false, no error output is given; use isNull() function 

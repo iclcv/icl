@@ -501,5 +501,11 @@ namespace icl{
 
   // }}}
 
+  void DCDevice::setISOSpeed(int mbits){
+    // {{{ open
+    ICLASSERT_RETURN(!isNull());
+    dc::set_iso_speed(getCam(),mbits);
+  }
+  // }}}
     
 }

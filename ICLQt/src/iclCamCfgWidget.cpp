@@ -26,7 +26,7 @@ using namespace std;
 
 namespace icl{
   
-  CamCfgWidget::CamCfgWidget() :m_poGrabber(0), m_bDisableSlots(false), m_bCapturing(false) {
+  CamCfgWidget::CamCfgWidget(int isoMBits) :m_poGrabber(0), m_bDisableSlots(false), m_bCapturing(false), m_isoMBits(isoMBits) {
     // {{{ open
 
     // TOP LEVEL
@@ -207,7 +207,7 @@ namespace icl{
       
       for(unsigned int i=0;i<m_vecDCDeviceList.size();i++){
         if(m_vecDCDeviceList[i].getModelID() == text.toLatin1().data()){
-          m_poGrabber = new DCGrabber(m_vecDCDeviceList[i]);
+          m_poGrabber = new DCGrabber(m_vecDCDeviceList[i], m_isoMBits);
           break;
         }
       }

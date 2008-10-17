@@ -146,6 +146,10 @@ namespace icl{
     
     /// sets the current value of the given feature
     void setFeatureValue(const std::string &feature, const std::string &value);
+
+    /// sets the cameras iso speed
+    /** @see icl::dc::set_iso_speed(int) */
+    void setISOSpeed(int mbits);
     
     private:    
     /// Creates a new device (pivate; called by DCGrabber::getDeviceList())

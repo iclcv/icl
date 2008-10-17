@@ -313,7 +313,9 @@ namespace icl{
       
       // switch over the camera
       // TODO use max here
-      dc1394_video_set_iso_speed(c,DC1394_ISO_SPEED_400);
+      
+      set_iso_speed(c,options->isoMBits);
+      // old      dc1394_video_set_iso_speed(c,DC1394_ISO_SPEED_400);
       
       
       if((int)options->videomode != -1){
@@ -709,6 +711,27 @@ namespace icl{
     void free_static_context(){
       STATIC_DC_CONTEXT.release();
     }
-  }
 
+    void set_iso_speed(dc1394camera_t* c, int mbits){
+      ICLASSERT_RETURN(c);
+      switch(mbits){
+#define CASE(X)                                                            \
+        case X:                                                            \
+        if(mbits>400){                                                     \
+          dc1394_video_set_operation_mode(c,DC1394_OPERATION_MODE_1394B);  \
+          }else{                                                           \
+          dc1394_video_set_operation_mode(c,DC1394_OPERATION_MODE_LEGACY); \
+        }                                                                  \
+        dc1394_video_set_iso_speed(c,DC1394_ISO_SPEED_##X);                \
+        break
+        CASE(100); CASE(200); CASE(400); CASE(800);
+#undef CASE
+        case 1600: case 3200:
+          ERROR_LOG("iso speed 1600 and isospeed 3200 are not yet supported"); break;
+        default:
+          ERROR_LOG("invalid iso speed value: " << mbits << "(supported values are: 100,200,400 and 800)");
+      }
+    }
+  }
+  
 }

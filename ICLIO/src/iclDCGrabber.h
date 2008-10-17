@@ -59,7 +59,7 @@ namespace icl{
     /// Constructor creates a new DCGrabber instance from a given DCDevice
     /** @param dev DCDevice to use (this device can only be created by the
                    static function getDeviceList() */
-    DCGrabber(const DCDevice &dev=DCDevice::null);
+    DCGrabber(const DCDevice &dev=DCDevice::null, int isoMBits=400);
 
     /// Destructor
     ~DCGrabber();

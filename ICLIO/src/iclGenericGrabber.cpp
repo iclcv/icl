@@ -25,13 +25,15 @@ namespace icl{
 
     m_poGrabber = 0;
     std::vector<std::string> lP = tok(params,",");
-    std::string pPWC,pDC,pUnicap,pFile;
+    std::string pPWC,pDC,pDC800,pUnicap,pFile;
 
     for(unsigned int i=0;i<lP.size();++i){
       if(lP[i].length() > 4 && lP[i].substr(0,3) == "pwc"){
         pPWC = lP[i].substr(4);
       }else if(lP[i].length() > 3 && lP[i].substr(0,2) == "dc"){
         pDC = lP[i].substr(3);
+      }else if(lP[i].length() > 3 && lP[i].substr(0,5) == "dc800"){
+        pDC = lP[i].substr(6);
       }else if(lP[i].length() > 7 && lP[i].substr(0,6) == "unicap"){
         pUnicap = lP[i].substr(7);
       }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "file"){
@@ -61,16 +63,16 @@ namespace icl{
 #endif
       
 #ifdef HAVE_LIBDC
-      if(l[i] == "dc"){
+      if(l[i] == "dc" || l[i] == "dc800"){
         std::vector<DCDevice> devs = DCGrabber::getDeviceList();
-        int idx = to32s(pDC);
+        int idx = (l[i]=="dc") ? to32s(pDC) : to32s(pDC800);
         //printf("index is %d devs size is %d \n",idx,devs.size());
         if(idx < 0) idx = 0;
         if(idx >= (int)devs.size()){
           continue;
         }else{
-          m_poGrabber = new DCGrabber(devs[idx]);
-          m_sType = "dc";
+          m_poGrabber = new DCGrabber(devs[idx], l[i]=="dc"?400:800);
+          m_sType = l[i];
           break;
         }        
       }
@@ -115,7 +117,7 @@ namespace icl{
     for(unsigned int i=0;i<ts.size();++i){
       const std::string &t = ts[i];
 #ifdef HAVE_LIBDC
-      if(t == "dc"){
+      if(t == "dc" || t == "dc800"){
         DCGrabber::dc1394_reset_bus(verbose);
       }
 #endif

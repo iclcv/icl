@@ -8,7 +8,7 @@ namespace icl{
   using namespace std;
   using namespace icl::dc;
   
-  DCGrabber::DCGrabber(const DCDevice &dev):
+  DCGrabber::DCGrabber(const DCDevice &dev, int isoMBits):
     // {{{ open
 
     m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_poImage(0), m_poImageTmp(0)
@@ -23,6 +23,8 @@ namespace icl{
     m_oOptions.videomode = (dc1394video_mode_t)-1; // use default
     
     m_oOptions.enable_image_labeling = false;
+    
+    m_oOptions.isoMBits = isoMBits;
     
   }
 
