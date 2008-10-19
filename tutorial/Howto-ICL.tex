@@ -1,0 +1,50 @@
+%wir benutzen koma-skript
+\documentclass[a4paper,10pt,english]{scrreprt}
+
+
+\usepackage{listings}
+\usepackage[x11names]{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=black,urlcolor=blue]{hyperref}
+%\usepackage{ngerman}
+\usepackage{graphicx}
+\usepackage{pgf}
+\usepackage{tikz}
+\usepackage{amsmath,amsfonts,amssymb}
+
+\input{commands}
+\input{hyph}
+
+
+\title{Howto-ICL}
+\author{Christof Elbrechter}
+
+\lstset{language=c++}
+\lstset{backgroundcolor=\color{gray!20}, numbers=left, frame=single, framerule=0pt, framesep=1ex,captionpos=t}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Short Introduction here \dots
+Dieses Skript wurde mit der hervorragenden Software \LaTeX erstellt.
+
+\end{abstract}
+
+\pagebreak
+
+\tableofcontents
+
+
+\pagebreak
+
+
+
+\includechapter{Introduction}{introduction}
+
+
+
+\end{document}
+
+
+% LocalWords:  Purpose
