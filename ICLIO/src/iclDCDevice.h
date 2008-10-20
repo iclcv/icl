@@ -85,7 +85,7 @@ namespace icl{
     };
     
     /// returns the camera, which is associated with this device (fixed)
-    dc1394camera_t *getCam(){ return m_poCam; }
+    dc1394camera_t *getCam() const { return m_poCam; }
 
     /// returns the current mode
     Mode getMode() const{ return Mode(m_poCam); }
