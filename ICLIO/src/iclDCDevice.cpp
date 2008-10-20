@@ -398,6 +398,9 @@ namespace icl{
   
   string DCDevice::getFeatureInfo(const string &feature) const{
     // {{{ open
+    
+    //    DEBUG_LOG("feature is " << feature);
+    
     if(isNull()) return "";
     if(is_trigger_name(feature,true)){
       const std::string f = feature.substr(8);
