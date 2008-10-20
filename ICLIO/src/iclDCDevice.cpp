@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <iclThread.h>
 
+#include <algorithm>
+
 using namespace std;
 using namespace icl::dc;
 namespace icl{
@@ -308,9 +310,20 @@ namespace icl{
     // {{{ open
 
     if(isNull()) return false; 
-    dc1394bool_t isAvailable=DC1394_FALSE;
-    dc1394_feature_is_present(m_poCam,feature_from_string(s),&isAvailable);
-    return isAvailable == DC1394_TRUE ? true : false;
+    if(s.length()> 8 && s.substr(0,8)=="trigger-"){
+      static const std::string ts[] = {"power","mode","source","from-software"};
+      if(std::find(ts,ts+4,s.substr(8)) != ts+5){
+        return true;
+      }else{
+        dc1394_bool_t hasPolarity = false;
+        dc1394_external_trigger_has_polarity(getCam(),&hasPolarity);
+        return hasPolarity;
+      }
+    }else{
+      dc1394bool_t isAvailable=DC1394_FALSE;
+      dc1394_feature_is_present(m_poCam,feature_from_string(s),&isAvailable);
+      return isAvailable == DC1394_TRUE ? true : false;
+    }
   }
 
   // }}}
@@ -327,6 +340,19 @@ namespace icl{
         }
       }
     }
+    
+    dc1394_bool_t hasPolarity = false;
+    dc1394_external_trigger_has_polarity(getCam(),&hasPolarity);
+    if(hasPolarity){
+      v.push_back("trigger-polarity");
+    }
+    v.push_back("trigger-power");
+    v.push_back("trigger-mode");
+    v.push_back("trigger-source");
+    v.push_back("trigger-from-software");
+    
+
+
     return supported;
   }
 
@@ -335,6 +361,13 @@ namespace icl{
   string DCDevice::getFeatureType(const string &feature) const{
     // {{{ open
     if(isNull()) return "";
+    if(s.length()> 8 && s.substr(0,8)=="trigger-"){
+      static const std::string fs[] = {"power","mode","source","from-software","polarity"};
+      if(std::find(ts,ts+4,s.substr(8)) != ts+6){
+        return "menu";
+      }
+    }
+
     dc1394feature_t f = feature_from_string(feature);
     dc1394bool_t hasAbsoluteControl;
     dc1394_feature_has_absolute_control(m_poCam,f,&hasAbsoluteControl);
