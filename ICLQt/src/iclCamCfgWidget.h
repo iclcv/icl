@@ -9,7 +9,7 @@
 #include <iclDCDevice.h>
 #include <iclTypes.h>
 #include <QMutex>
-
+#include <QSplitter>
 /** \cond **/  
 class QHBoxLayout;
 class QComboBox;
@@ -32,11 +32,11 @@ namespace icl{
   /** \endcond **/  
 
   /// Complex widget class, which is used in the Camera configuration tool camcfg \ingroup UNCOMMON
-  class CamCfgWidget : public QWidget{
+  class CamCfgWidget : public QSplitter{
     Q_OBJECT
     public:
     /// Constructor
-    CamCfgWidget(int isoMBits=400);
+    CamCfgWidget(int isoMBits=400, QWidget *parent=0);
     
     /// Destructor
     ~CamCfgWidget();
@@ -88,10 +88,15 @@ namespace icl{
     /// called when a new grabber is selcted
     void fillLayout(QLayout *l, Grabber *dev);
 
-    QVBoxLayout *m_poVTopLevelLayout;    //!< the top level vertical layout
-    QHBoxLayout *m_poTopLevelLayout;     //!< the top level horizontal layout
+    //QVBoxLayout *m_poVTopLevelLayout;    //!< the top level vertical layout
+    //QHBoxLayout *m_poTopLevelLayout;     //!< the top level horizontal layout
+    
+    QSplitter *m_poBottomSplitter;     //!< the vertical lower level horizonntal splitter
+
     ICLWidget *m_poICLWidget;            //!< image visualizing widget
-    QWidget *m_poHBoxWidget;             //!< top level hbox widget
+    
+    //QWidget *m_poHBoxWidget;             //!< top level hbox widget
+    
     QWidget *m_poCenterPanel;            //!< top level center widget
     QWidget *m_poRightPanel;             //!< top level right widget
     QVBoxLayout *m_poCenterPanelLayout;  //!< internaly layout

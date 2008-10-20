@@ -26,20 +26,23 @@ using namespace std;
 
 namespace icl{
   
-  CamCfgWidget::CamCfgWidget(int isoMBits) :m_poGrabber(0), m_bDisableSlots(false), m_bCapturing(false), m_isoMBits(isoMBits) {
+  CamCfgWidget::CamCfgWidget(int isoMBits, QWidget *parent):
+    QSplitter(Qt::Vertical,parent),m_poGrabber(0), m_bDisableSlots(false), m_bCapturing(false), m_isoMBits(isoMBits) {
     // {{{ open
 
     // TOP LEVEL
-    m_poTopLevelLayout = new QHBoxLayout(0);
-    m_poVTopLevelLayout = new QVBoxLayout(0);
+    //m_poTopLevelLayout = new QHBoxLayout(0);
+    //m_poVTopLevelLayout = new QVBoxLayout(0);
 
-    m_poHBoxWidget = new QWidget(this);
+    //m_poHBoxWidget = new QWidget(this);
+    m_poBottomSplitter = new QSplitter(Qt::Horizontal,this);
+
     m_poICLWidget = new ICLWidget(this);
     m_poICLWidget->setGeometry(0,0,640,480);
-    m_poVTopLevelLayout->addWidget(m_poICLWidget);
-    m_poVTopLevelLayout->addWidget(m_poHBoxWidget);
-    m_poHBoxWidget->setLayout(m_poTopLevelLayout);
-    
+    this->addWidget(m_poICLWidget);
+    this->addWidget(m_poBottomSplitter);
+    //m_poHBoxWidget->setLayout(m_poTopLevelLayout);
+    //m_poHBoxWidget->setMaximumHeight(400);
     /// THREE PANELS
     m_poCenterPanel = new QWidget(this);
     m_poTabWidget = new QTabWidget(this);
@@ -47,7 +50,8 @@ namespace icl{
     m_poTabWidget->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     m_poCenterPanelLayout = new QVBoxLayout(m_poCenterPanel);
     m_poCenterPanel->setLayout(m_poCenterPanelLayout);
-    m_poTopLevelLayout->addWidget(m_poCenterPanel);
+    //m_poTopLevelLayout->addWidget(m_poCenterPanel);
+    m_poBottomSplitter->addWidget(m_poCenterPanel);
 
     /// CENTER WIDGETS
     m_poDeviceCombo = new QComboBox(this);
@@ -143,7 +147,10 @@ namespace icl{
       m_poTabWidget->addTab(sa,name);
       m_poTabWidget->setTabEnabled(jAll++,false);
     }
-    m_poTopLevelLayout->addWidget(m_poTabWidget);
+    
+    //m_poTopLevelLayout->addWidget(m_poTabWidget);
+    m_poBottomSplitter->addWidget(m_poTabWidget);
+
     m_bDisableSlots = false;
     if(m_poDeviceCombo->count()){
       createGrabber(m_poDeviceCombo->currentText());     
@@ -151,7 +158,7 @@ namespace icl{
     }
  
     /// FINISHING : FINAL LAYOUTING
-    setLayout(m_poVTopLevelLayout);
+    //    setLayout(m_poVTopLevelLayout);
     setGeometry(50,50,800,800);
     setWindowTitle("ICL Camera Configuration Tool");
     m_poTimer = new QTimer(this);
