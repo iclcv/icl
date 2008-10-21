@@ -23,24 +23,7 @@ namespace icl{
       
   **/
   
-  namespace{
-    bool is_trigger_name(const std::string &n, bool withPolarity=false){
-      if(n.length() < 8 || n.substr(0,8) != "trigger-") return false;
-      const std::string s = n.substr(8);
-      return s=="power" || s=="mode" || s=="source" || s=="from-software" || (withPolarity && s=="polarity");
-    }
-    
-    bool has_trigger_polarity(dc1394camera_t *cam){
-      dc1394bool_t hasPolarity = DC1394_FALSE;
-      dc1394_external_trigger_has_polarity(cam,&hasPolarity);
-      return hasPolarity;
-    }
-    std::string switch_to_string(dc1394switch_t s){
-      return s==DC1394_OFF ? "off" :
-             s==DC1394_ON  ? "on" : "";
-    }
-    
-  }
+
   
   const DCDevice DCDevice::null = DCDevice(0);
 
@@ -56,6 +39,7 @@ namespace icl{
       TRANSLATE(apple_ISight);
       TRANSLATE(fireI_1_2);
       TRANSLATE(imagingSource_DFx_21BF04);
+      TRANSLATE(pointGrey_Flea2_FL2_08S2C);
 #undef TRANSLATE
       default: return "unknownCameraType";
     }    
@@ -70,10 +54,12 @@ namespace icl{
     if(name == "pointGreyFire_FlyMVMono" ) return pointGreyFire_FlyMVMono;
 #define TRANSLATE(X) else if( name == #X ) return X
     TRANSLATE(pointGreyFire_FlyMVColor);
+    TRANSLATE(pointGreyFire_FlyMVMono);
     TRANSLATE(sony_DFW_VL500_2_30);
     TRANSLATE(apple_ISight);
     TRANSLATE(fireI_1_2);
     TRANSLATE(imagingSource_DFx_21BF04);
+    TRANSLATE(pointGrey_Flea2_FL2_08S2C);
 #undef TRANSLATE 
     else return unknownCameraType;
   }
@@ -97,6 +83,8 @@ namespace icl{
       return fireI_1_2;
     }else if( string(cam->model) == "DFx 21BF04"){
       return imagingSource_DFx_21BF04;
+    }else if( string(cam->model) == "Flea2 FL2-08S2C" ){
+      return pointGrey_Flea2_FL2_08S2C;
     }else{
       ERROR_LOG("unsupported camera: \"" << cam->model << "\"");
       return unknownCameraType;
@@ -248,7 +236,9 @@ namespace icl{
       case apple_ISight:
       case fireI_1_2:
       case imagingSource_DFx_21BF04:
-        return fmt == formatRGB ||  fmt == formatMatrix;
+        return fmt == formatRGB || fmt == formatMatrix;
+      case pointGrey_Flea2_FL2_08S2C:
+        return fmt == formatRGB || fmt == formatMatrix; // maybe also yuv ??
       case unknownCameraType:
       default:
         return false;
@@ -262,8 +252,14 @@ namespace icl{
     // {{{ open
 
     if(isNull()) return false;
+    static const Size s10(1024,768);
+    static const Size s80(800,600);
     static const Size s64(640,480);
-    static const Size s32(640,480);
+    static const Size s32(320,240);
+    static const Size s16(160,120);
+    
+    
+    
     switch(m_eCameraTypeID){
       case pointGreyFire_FlyMVMono: 
       case imagingSource_DFx_21BF04:
@@ -273,6 +269,8 @@ namespace icl{
       case apple_ISight:
       case fireI_1_2:
         return size == s64 || size == s32;
+      case pointGrey_Flea2_FL2_08S2C:
+        return size == s10 || size == s80 || size == s64 || size == s32 || size == s16;
       case unknownCameraType:
       default:
         return false;
@@ -291,6 +289,7 @@ namespace icl{
       case apple_ISight:
       case sony_DFW_VL500_2_30:
       case fireI_1_2:
+      case pointGrey_Flea2_FL2_08S2C:
         return false;
       case pointGreyFire_FlyMVColor:
         return true;
@@ -324,275 +323,8 @@ namespace icl{
   // }}}
 
 
-  bool DCDevice::isFeatureAvailable(const string &s) const { 
-    // {{{ open
 
-    if(isNull()) return false; 
-    if(is_trigger_name(s)){
-      return true;
-    }else if(has_trigger_polarity(getCam())){
-      return true;
-    }else{
-      dc1394bool_t isAvailable=DC1394_FALSE;
-      dc1394_feature_is_present(m_poCam,feature_from_string(s),&isAvailable);
-      return isAvailable == DC1394_TRUE ? true : false;
-    }
-  }
 
-  // }}}
-  vector<string> DCDevice::getFeatures() const{
-    // {{{ open
-
-    const vector<string> &v = getListOfAllFeatures();
-    vector<string> supported;
-    for(unsigned int i=0;i<v.size();++i){
-      if(isFeatureAvailable(v[i])){
-        string featureType = getFeatureType(v[i]);
-        if(featureType == "range" || featureType == "menu"){
-          supported.push_back(v[i]);
-        }
-      }
-    }
-    
-    if(has_trigger_polarity(getCam())){
-      supported.push_back("trigger-polarity");
-    }
-    supported.push_back("trigger-power");
-    supported.push_back("trigger-mode");
-    supported.push_back("trigger-source");
-    supported.push_back("trigger-from-software");
-
-    return supported;
-  }
-
-  // }}}
-  
-  string DCDevice::getFeatureType(const string &feature) const{
-    // {{{ open
-    if(isNull()) return "";
-    if(is_trigger_name(feature,true)){
-      return "menu";
-    }
-    
-    dc1394feature_t f = feature_from_string(feature);
-    dc1394bool_t hasAbsoluteControl;
-    dc1394_feature_has_absolute_control(m_poCam,f,&hasAbsoluteControl);
-    if(hasAbsoluteControl){
-      dc1394switch_t absoluteControlModeSet;
-      dc1394_feature_get_absolute_control(m_poCam,f,&absoluteControlModeSet);
-      if(absoluteControlModeSet == DC1394_OFF){
-        dc1394_feature_set_absolute_control(m_poCam,f,DC1394_ON);
-      }
-      return "range";
-    }
-    
-    dc1394bool_t isSwitchable;
-    dc1394_feature_is_switchable(m_poCam,f,&isSwitchable);
-    if(isSwitchable){
-      return "menu";
-    }
-    return "";
-  }
-
-  // }}}
-  
-  string DCDevice::getFeatureInfo(const string &feature) const{
-    // {{{ open
-    
-    //    DEBUG_LOG("feature is " << feature);
-    
-    if(isNull()) return "";
-    if(is_trigger_name(feature,true)){
-      const std::string f = feature.substr(8);
-      if(f=="polarity"){
-        return "{\"low\",\"high\"}";
-      }else if(f=="power"){
-        return "{\"on\",\"off\"}";
-      }else if(f=="mode"){
-        return "{\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"14\",\"15\"}";
-      }else if(f=="source"){
-        return "{\"0\",\"1\",\"2\",\"3\"}";
-      }else if(f=="from-software"){
-        return "{\"on\",\"off\"}";
-      }else{
-        return "";
-      }
-    }
-    dc1394feature_t f = feature_from_string(feature);
-    dc1394bool_t hasAbsoluteControl;
-    dc1394_feature_has_absolute_control(m_poCam,f,&hasAbsoluteControl);
-    if(hasAbsoluteControl){
-      dc1394switch_t absoluteControlModeSet;
-      dc1394_feature_get_absolute_control(m_poCam,f,&absoluteControlModeSet);
-      if(absoluteControlModeSet == DC1394_OFF){
-        dc1394_feature_set_absolute_control(m_poCam,f,DC1394_ON);
-      }
-      float minVal,maxVal;
-      dc1394_feature_get_absolute_boundaries(m_poCam,f,&minVal,&maxVal);
-      char buf[100];
-      sprintf(buf,"[%f,%f]:0",minVal,maxVal);
-      return buf;
-    }
-    dc1394bool_t isSwitchable;
-    dc1394_feature_is_switchable(m_poCam,f,&isSwitchable);
-    if(isSwitchable){
-      return "{\"on\",\"off\"}";
-    } 
-    return "";
-  }
-
-  // }}}
-
-  string DCDevice::getFeatureValue(const string &feature) const{
-    // {{{ open
-    if(isNull()) return "";
-    if(is_trigger_name(feature,true)){
-      const std::string f = feature.substr(8);
-      if(f=="polarity"){
-        dc1394trigger_polarity_t t;
-        dc1394_external_trigger_get_polarity(getCam(),&t);
-        return t==DC1394_TRIGGER_ACTIVE_LOW  ? "low" :
-               t==DC1394_TRIGGER_ACTIVE_HIGH ? "high" : "";
-      }else if(f=="power"){
-        dc1394switch_t s;
-        dc1394_external_trigger_get_power(getCam(),&s);
-        return switch_to_string(s);
-      }else if(f=="mode"){
-        dc1394trigger_mode_t m;
-        dc1394_external_trigger_get_mode(getCam(),&m);
-        static const char* values[] = {"0","1","2","3","4","5","14","15"};
-        int idx = (int)m - (int)DC1394_TRIGGER_MODE_0;
-        if(idx >= 0 && idx < 8){
-          return values[idx];
-        }else{
-          return "";
-        }
-      }else if(f=="source"){
-        dc1394trigger_source_t s;
-        dc1394_external_trigger_get_source(getCam(),&s);
-        static const char *values [] = {"0","1","2","3"};
-        int idx = (int)s - (int)DC1394_TRIGGER_SOURCE_0;
-        if(idx >=0 && idx < 4){
-          return values[idx];
-        }else{
-          return "";
-        }
-      }else if(f=="from-software"){
-        dc1394switch_t s;
-        dc1394_software_trigger_get_power(getCam(),&s);
-        return switch_to_string(s);
-      }else{
-        return "";
-      }
-    }
-
-    dc1394feature_t f = feature_from_string(feature);
-    dc1394bool_t hasAbsoluteControl;
-    dc1394_feature_has_absolute_control(m_poCam,f,&hasAbsoluteControl);
-    if(hasAbsoluteControl){
-      dc1394switch_t absoluteControlModeSet;
-      dc1394_feature_get_absolute_control(m_poCam,f,&absoluteControlModeSet);
-      if(absoluteControlModeSet == DC1394_OFF){
-        dc1394_feature_set_absolute_control(m_poCam,f,DC1394_ON);
-      }
-      float val=0;
-      dc1394_feature_get_absolute_value(m_poCam,f,&val);
-      char buf[20];
-      sprintf(buf,"%f",val);
-      return buf;
-    }
-    dc1394bool_t isSwitchable;
-    dc1394_feature_is_switchable(m_poCam,f,&isSwitchable);
-    if(isSwitchable){
-      dc1394switch_t pwr = DC1394_OFF;
-      dc1394_feature_get_power(m_poCam,f,&pwr);
-      return pwr == DC1394_OFF ? "off" : "on";
-    } 
-    return "0";
-  }
-
-  // }}}
-  
-  void DCDevice::setFeatureValue(const string &feature, const string &value){
-    // {{{ open
-    if(isNull()) return;
-    if(is_trigger_name(feature,true)){
-      const std::string f = feature.substr(8);
-      if(f=="polarity"){
-        if(value == "low"){
-          dc1394_external_trigger_set_polarity(getCam(),DC1394_TRIGGER_ACTIVE_LOW);
-        }else if (value == "high"){
-          dc1394_external_trigger_set_polarity(getCam(),DC1394_TRIGGER_ACTIVE_HIGH);
-        }else{
-          ERROR_LOG("invalid value for feature trigger-polarity: " << value);
-        }        
-      }else if(f=="power"){
-        if(value == "on"){
-          dc1394_external_trigger_set_power(getCam(),DC1394_ON);
-        }else if(value == "off"){
-          dc1394_external_trigger_set_power(getCam(),DC1394_OFF);
-        }else{
-          ERROR_LOG("invalid value for feature trigger-power: " << value);
-        }
-      }else if(f=="mode"){
-        if(value == "0")dc1394_external_trigger_set_mode(getCam(),DC1394_TRIGGER_MODE_0);
-        else if(value == "1")dc1394_external_trigger_set_mode(getCam(),DC1394_TRIGGER_MODE_1);
-        else if(value == "2")dc1394_external_trigger_set_mode(getCam(),DC1394_TRIGGER_MODE_2);
-        else if(value == "3")dc1394_external_trigger_set_mode(getCam(),DC1394_TRIGGER_MODE_3);
-        else if(value == "4")dc1394_external_trigger_set_mode(getCam(),DC1394_TRIGGER_MODE_4);
-        else if(value == "5")dc1394_external_trigger_set_mode(getCam(),DC1394_TRIGGER_MODE_5);
-        else if(value == "14")dc1394_external_trigger_set_mode(getCam(),DC1394_TRIGGER_MODE_14);
-        else if(value == "15")dc1394_external_trigger_set_mode(getCam(),DC1394_TRIGGER_MODE_15);
-        else ERROR_LOG("invalid value for feature trigger-mode: " << value);
-      }else if(f=="source"){
-        if(value == "0") dc1394_external_trigger_set_source(getCam(),DC1394_TRIGGER_SOURCE_0);
-        else if(value == "1") dc1394_external_trigger_set_source(getCam(),DC1394_TRIGGER_SOURCE_1);
-        else if(value == "2") dc1394_external_trigger_set_source(getCam(),DC1394_TRIGGER_SOURCE_2);
-        else if(value == "3") dc1394_external_trigger_set_source(getCam(),DC1394_TRIGGER_SOURCE_3);
-        else ERROR_LOG("invalid value for feature trigger-source: " << value);
-      }else if(f=="from-software"){
-        if(value == "on"){
-          dc1394_software_trigger_set_power(getCam(),DC1394_ON);
-        }else if(value == "off"){
-          dc1394_software_trigger_set_power(getCam(),DC1394_OFF);
-        }else{
-          ERROR_LOG("invalid value for feature trigger-from-software: " << value);
-        }
-      }else{
-        ERROR_LOG("invalid feature name: " << feature << "(value was " << value << ")");
-      }
-      return;
-    }
-
-    dc1394feature_t f = feature_from_string(feature);
-
-    dc1394bool_t hasAbsoluteControl;
-    dc1394_feature_has_absolute_control(m_poCam,f,&hasAbsoluteControl);
-    if(hasAbsoluteControl){
-      dc1394switch_t absoluteControlModeSet;
-      dc1394_feature_get_absolute_control(m_poCam,f,&absoluteControlModeSet);
-      if(absoluteControlModeSet == DC1394_OFF){
-        dc1394_feature_set_absolute_control(m_poCam,f,DC1394_ON);
-      }
-      float val = atof(value.c_str());
-      dc1394_feature_set_absolute_value(m_poCam,f,val);
-      return;
-    }
-
-    dc1394bool_t isSwitchable;
-    dc1394_feature_is_switchable(m_poCam,f,&isSwitchable);
-    if(isSwitchable){
-      if(value != "on" && value != "off"){
-        ERROR_LOG("feature \""<<feature<<"\" cannot be set to \""<<value<<"\", values are \"on\" and \"off\"");
-        return;
-      }
-      dc1394switch_t pwr = value == "on" ? DC1394_OFF : DC1394_ON;
-      dc1394_feature_set_power(m_poCam,f,pwr);
-    } 
-  }
-
-  // }}}
-  
   DCDevice::Mode::Mode(dc1394camera_t *cam){
     // {{{ open
 

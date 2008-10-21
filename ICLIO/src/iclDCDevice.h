@@ -23,6 +23,7 @@ namespace icl{
     enum CameraTypeID{
       pointGreyFire_FlyMVMono,
       pointGreyFire_FlyMVColor,
+      pointGrey_Flea2_FL2_08S2C,
       sony_DFW_VL500_2_30,
       apple_ISight,
       fireI_1_2,
@@ -128,7 +129,8 @@ namespace icl{
        
     /// returns the bayer-filter layout (for the current set format)
     dc1394color_filter_t getBayerFilterLayout() const;
-    
+
+    /* this functions have been moved into a dedicated feature class DCDeviceFeatures    
     /// returns wheter a given feature is available on this camera
     bool isFeatureAvailable(const std::string &feature) const;
 
@@ -146,6 +148,8 @@ namespace icl{
     
     /// sets the current value of the given feature
     void setFeatureValue(const std::string &feature, const std::string &value);
+    */
+
 
     /// sets the cameras iso speed
     /** @see icl::dc::set_iso_speed(int) */
