@@ -51,13 +51,22 @@ namespace icl{
       dc1394_capture_enqueue(m_poCam,frame); 
       
       frame=0;
+      DEBUG_LOG("before");
       // OLD      dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
       dc1394error_t err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_POLL,&frame);
+      // dc1394error_t err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
+      DEBUG_LOG("after");
       // OLD RC7:     while(err !=  DC1394_SUCCESS ){ // sometimes frame was NULL but err was SUCCESS
       while(err !=  DC1394_SUCCESS || !frame){
         usleep(0);
+        
+        DEBUG_LOG("before (in loop)");
         err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_POLL,&frame);
+        //err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
+        DEBUG_LOG("after (in loop)");
       }
+      DEBUG_LOG("after the loop");
+      
       push(frame);
     }    
     
