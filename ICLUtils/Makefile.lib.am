@@ -6,6 +6,7 @@ libICLUtils_la_SOURCES= \
 ../src/iclException.cpp \
 ../src/iclFixedMatrix.cpp \
 ../src/iclMultiThreader.cpp \
+../src/iclThreadUtils.cpp \
 ../src/iclProgArg.cpp \
 ../src/iclSemaphore.cpp \
 ../src/iclSignalHandler.cpp \

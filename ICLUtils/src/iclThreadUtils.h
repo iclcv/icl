@@ -9,6 +9,21 @@
 namespace icl{
 
   /** \cond */
+  
+  // internally all created callback thread are registered
+  // by this means we're able to stop all these threads calling
+  // stop_all_threads before our program exits
+  void register_thread(Thread *t);
+  /** \endcond */
+  
+  /// this global function can be called to stop all theads created using exec_threaded functions
+  /**
+      When exec threaded is called, the statically created thread is added to a global list.
+      When calling this function, all these threads are stopped.      
+  */
+  void stop_all_threads();
+  
+  /** \cond */
   /// Utility class used in the exec_threaded template function 
   template<class Callback>
   class CallbackThread : public Thread{
@@ -21,6 +36,7 @@ namespace icl{
     
     CallbackThread(int sleeptimeMsec, bool looped):
     sleeptime(sleeptimeMsec),looped(looped){
+      register_thread(this);
   
     }
 

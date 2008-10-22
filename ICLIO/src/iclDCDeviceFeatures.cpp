@@ -83,10 +83,14 @@ namespace icl{
     std::string get_trigger_feature_value(dc1394camera_t *cam, const std::string &name){
       const std::string f = name.substr(8);
       if(f=="polarity"){
-        dc1394trigger_polarity_t t;
-        dc1394_external_trigger_get_polarity(cam,&t);
-        return t==DC1394_TRIGGER_ACTIVE_LOW  ? "low" :
-               t==DC1394_TRIGGER_ACTIVE_HIGH ? "high" : "";
+        if(has_trigger_polarity(cam)){
+          dc1394trigger_polarity_t t=DC1394_TRIGGER_ACTIVE_LOW;
+          dc1394_external_trigger_get_polarity(cam,&t);
+          if(t == DC1394_TRIGGER_ACTIVE_HIGH) return "high";
+          else return "low";
+        }else{
+          return "low";
+        }
       }else if(f=="power"){
         dc1394switch_t s;
         dc1394_external_trigger_get_power(cam,&s);

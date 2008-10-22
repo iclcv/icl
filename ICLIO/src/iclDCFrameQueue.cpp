@@ -49,23 +49,25 @@ namespace icl{
     void DCFrameQueue::step(){
       dc1394video_frame_t *frame = pop();
       dc1394_capture_enqueue(m_poCam,frame); 
-      
+#define POLICY_TYPE DC1394_CAPTURE_POLICY_POLL
       frame=0;
-      DEBUG_LOG("before");
+
       // OLD      dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
-      dc1394error_t err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_POLL,&frame);
+      dc1394error_t err = dc1394_capture_dequeue(m_poCam,POLICY_TYPE,&frame);
       // dc1394error_t err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
-      DEBUG_LOG("after");
+
       // OLD RC7:     while(err !=  DC1394_SUCCESS ){ // sometimes frame was NULL but err was SUCCESS
+      // DEBUG_LOG("entering loop");
+      int nLoopTimes = 0;
       while(err !=  DC1394_SUCCESS || !frame){
-        usleep(0);
+        usleep(500);
         
-        DEBUG_LOG("before (in loop)");
-        err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_POLL,&frame);
+        err = dc1394_capture_dequeue(m_poCam,POLICY_TYPE,&frame);
         //err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
-        DEBUG_LOG("after (in loop)");
+        
+        nLoopTimes++;
       }
-      DEBUG_LOG("after the loop");
+      //DEBUG_LOG("loop exited, it was called " << nLoopTimes << " times");
       
       push(frame);
     }    
