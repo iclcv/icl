@@ -10,7 +10,7 @@ ChromaGUI  *cg;
 
 void run(){
   Size size = Size(320,240);
-  GenericGrabber grabber("dc,pwc,file",string("dc=1,pwc=1,file=")+pa_subarg<string>("-file",0,"./images/*.ppm"));
+  GenericGrabber grabber("dc,pwc,file",string("dc=0,pwc=0,file=")+pa_subarg<string>("-file",0,"./images/*.ppm"));
 
   Img8u segImage(size,1);
   Img8u *image = new Img8u(size,formatRGB);

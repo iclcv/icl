@@ -9,6 +9,7 @@
 #include <iclException.h>
 #include <iclSimpleMatrix.h>
 #include <iclWidget.h>
+#include <iclFile.h>
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -29,9 +30,14 @@
 #include <QTabBar>
 #include <QMainWindow>
 #include <QDockWidget>
+#include <QTabWidget>
+#include <QApplication>
+
+#include <iclProxyLayout.h>
 
 #include <iclButtonHandle.h>
 #include <iclBoxHandle.h>
+#include <iclTabHandle.h>
 #include <iclBorderHandle.h>
 #include <iclButtonGroupHandle.h>
 #include <iclLabelHandle.h>
@@ -49,12 +55,15 @@
 #include <iclFPSHandle.h>
 #include <iclMultiDrawHandle.h>
 
+
 #include <map>
 
 using namespace std;
 using namespace icl;
 
 namespace icl{
+
+  
   static const std::string &gen_params(){
     // {{{ open
 
@@ -108,6 +117,54 @@ namespace icl{
   };
 
   // }}}
+
+
+  struct TabGUIWidget : public GUIWidget, public ProxyLayout{
+    // {{{ open
+    TabGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::noLayout,0,0){
+      m_layout = new QGridLayout(this);
+      m_tabWidget = new QTabWidget(this);
+      m_layout->addWidget(m_tabWidget,0,0);
+      m_layout->setContentsMargins(2,2,2,2);
+      m_nextTabIdx = 0;
+      m_tabNames = def.allParams();
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<TabHandle>(def.handle(),TabHandle(m_tabWidget,this));
+        getGUI()->unlockData();
+      }
+    }
+    
+    // implements the ProxyLayout interface, what should be done if components are added
+    // using the GUI-stream operator <<
+    virtual void addWidget(GUIWidget *widget){
+      QString tabName;
+      if(m_nextTabIdx < m_tabNames.size()){
+        tabName = m_tabNames[m_nextTabIdx].c_str();
+      }else{
+        ERROR_LOG("no tab name defined for " << (m_nextTabIdx) << "th tab");
+        tabName = QString("Tab ")+QString::number(m_nextTabIdx);
+      }
+      m_tabWidget->addTab(widget,tabName);
+      m_nextTabIdx++;
+    }
+    
+    // as this implements also to proxy layout class, this interface function
+    // can directly return itself 
+    virtual ProxyLayout *getProxyLayout() { return this; }
+    
+    static string getSyntax(){
+      return string("tab(COMMA_SEPERATED_TAB_LIST)[general params]\n")+gen_params();
+    }
+    
+    std::vector<std::string> m_tabNames;
+    QTabWidget *m_tabWidget;
+    int m_nextTabIdx;
+    QGridLayout *m_layout;
+  };
+  // }}}
+
   struct BorderGUIWidget : public GUIWidget{
     // {{{ open
 
@@ -1029,6 +1086,8 @@ public:
       MAP_CREATOR_FUNCS["spinner"] = create_widget_template<SpinnerGUIWidget>;
       MAP_CREATOR_FUNCS["fps"] = create_widget_template<FPSGUIWidget>;
       MAP_CREATOR_FUNCS["multidraw"] = create_widget_template<MultiDrawGUIWidget>;
+      MAP_CREATOR_FUNCS["tab"] = create_widget_template<TabGUIWidget>;
+
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
       //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;
     }
@@ -1215,24 +1274,32 @@ public:
 
   // }}}
   
-  void GUI::create(QLayout *parentLayout,QWidget *parentWidget, DataStore *ds){
+  void GUI::create(QLayout *parentLayout,ProxyLayout *proxy,QWidget *parentWidget, DataStore *ds){
     // {{{ open
     if(ds) m_oDataStore = *ds;
     try{
-      GUIDefinition def(m_sDefinition,this,parentLayout,parentWidget);
+      GUIDefinition def(m_sDefinition,this,parentLayout,proxy,parentWidget);
       
       m_poWidget = create_widget(def);
+
+      if(!parentWidget){
+        //        std::cout << "setting window title:" << QApplication::applicationName().toLatin1().data() << std::endl;
+        m_poWidget->setWindowTitle(File(QApplication::arguments().at(0).toLatin1().data()).getBaseName().c_str());
+      }
+      
       if(!m_poWidget){
         ERROR_LOG("Widget could not be created ( aborting to avoid errors ) \n");
         exit(0);
       }
       QLayout *layout = m_poWidget->getGUIWidgetLayout();
-      if(!layout && m_vecChilds.size()){
+      ProxyLayout *proxy = m_poWidget->getProxyLayout();
+
+      if(!layout && !proxy && m_vecChilds.size()){
         ERROR_LOG("GUI widget has no layout, "<< m_vecChilds.size() <<" child components can't be added!");
         return;
       }
       for(unsigned int i=0;i<m_vecChilds.size();i++){
-        m_vecChilds[i]->create(layout,m_poWidget,&m_oDataStore);
+        m_vecChilds[i]->create(layout,proxy,m_poWidget,&m_oDataStore);
       }
       m_bCreated = true;
     }catch(GUISyntaxErrorException &ex){
@@ -1247,9 +1314,9 @@ public:
   void GUI::show(){
     // {{{ open
     if(m_poParent){
-      create(m_poParent->layout(),m_poParent,0);
+      create(m_poParent->layout(),0,m_poParent,0);
     }else{
-      create(0,0,0);
+      create(0,0,0,0);
     }
     m_poWidget->show();
   }

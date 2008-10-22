@@ -15,6 +15,7 @@ class QLayout;
 namespace icl{
   /** \cond */
   class GUIDefinition;
+  class ProxyLayout;
   /** \endcond */
 
   /// Abstract class for GUI components \ingroup UNCOMMON
@@ -56,6 +57,9 @@ namespace icl{
 
     /// this function must be reimplemented for other layouts the hbox, vbox or grid
     virtual QLayout *getGUIWidgetLayout() { return m_poGridLayout ? (QLayout*)m_poGridLayout : m_poOtherLayout; }
+    
+    /// this shall help to add containes that dont work with layouts (such as tab-widgets)
+    virtual ProxyLayout *getProxyLayout() { return 0; }
     
     /// returns the underlying GUI structure
     GUI *getGUI(){ return m_poGUI; }

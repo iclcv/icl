@@ -3,6 +3,8 @@
 #include <iclSize.h>
 #include <iclStrTok.h>
 #include <iclCore.h>
+#include <iclProxyLayout.h>
+
 using namespace std;
 
 namespace icl{
@@ -60,9 +62,10 @@ namespace icl{
   
   
   
-  GUIDefinition::GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout, QWidget *parentWidget)
+  GUIDefinition::GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout, icl::ProxyLayout *proxyLayout, QWidget *parentWidget)
     // {{{ open
-    :m_sDefinitionString(def),m_iMargin(2),m_iSpacing(2),m_poGUI(gui),m_poParentLayout(parentLayout),m_poParentWidget(parentWidget){
+    :m_sDefinitionString(def),m_iMargin(2),m_iSpacing(2),m_poGUI(gui),m_poParentLayout(parentLayout),
+     m_poParentWidget(parentWidget),m_poParentProxyLayout(proxyLayout){
     
     // SYNTAX: type(commaSeperatedparamList)[@out=outNameList@inp=inNameList@size=Size@label=label]
     string paramList;

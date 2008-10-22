@@ -75,6 +75,7 @@ include_HEADERS= \
 ../src/iclBorderBox.h \
 ../src/iclBorderHandle.h \
 ../src/iclBoxHandle.h \
+../src/iclTabHandle.h \
 ../src/iclButtonGroupHandle.h \
 ../src/iclButtonHandle.h \
 ../src/iclCamThread.h \
@@ -132,7 +133,8 @@ include_HEADERS= \
 ../src/iclThreadedUpdatableWidget.h \
 ../src/iclWidgetCaptureMode.h \
 ../src/iclWidget.h \
-../src/iclWindowIcon.h
+../src/iclWindowIcon.h \
+../src/iclProxyLayout.h
 
 if HAVE_UNICAP_COND
 if HAVE_LIBDC_COND

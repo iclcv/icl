@@ -13,13 +13,14 @@ class QWidget;
 namespace icl{
   /** \cond */
   class GUI;
+  class ProxyLayout;
   /** \endcond */
 
   /// Utilty class to simplify creation of GUI components \ingroup UNCOMMON
   class GUIDefinition{
     public:
     /// create a new GUI Definition
-    GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout=0, QWidget *parentWidget=0);
+    GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout=0, ProxyLayout *parentProxyLayout=0, QWidget *parentWidget=0);
       
     /// return the type string
     const std::string &type() const { return m_sType; }
@@ -50,6 +51,9 @@ namespace icl{
     
     /// return the parent layout or null if there is nor parent
     QLayout *parentLayout() const { return m_poParentLayout; }
+    
+    /// returns the parent widgets proxy layout
+    ProxyLayout *getProxyLayout() const { return m_poParentProxyLayout; }
 
     /// returns the number of params
     unsigned int numParams() const { return m_vecParams.size(); }
@@ -83,6 +87,9 @@ namespace icl{
     
     /// returns the current parent widget (or 0 if there is non)
     QWidget *parentWidget() const { return m_poParentWidget; }
+    
+    /// returns a list of all parameters
+    const std::vector<std::string> &allParams() const { return m_vecParams; }
 
   private:
     std::string m_sDefinitionString;       //<! whole definition string
@@ -100,6 +107,7 @@ namespace icl{
     GUI *m_poGUI;                          //<! parent GUI
     QLayout *m_poParentLayout;             //<! parent layout or NULL if there is no parent
     QWidget *m_poParentWidget;             //<! parent widget to avoid reparenting calls
+    ProxyLayout *m_poParentProxyLayout;    //<! parent widget proxy layout
   };
 }
 

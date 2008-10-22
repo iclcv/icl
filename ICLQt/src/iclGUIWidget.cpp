@@ -1,6 +1,8 @@
 #include "iclGUIWidget.h"
 #include "iclGUIDefinition.h"
 #include "iclGUI.h"
+#include "iclProxyLayout.h"
+
 #include <QLayout>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -54,6 +56,7 @@ namespace icl{
     }
     
     if(def.parentLayout()) def.parentLayout()->addWidget(this);
+    if(def.getProxyLayout()) def.getProxyLayout()->addWidget(this);
 
     switch(lt){
       case noLayout: 

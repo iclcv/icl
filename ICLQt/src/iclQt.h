@@ -30,6 +30,7 @@
 #include <iclDispHandle.h>
 #include <iclFPSHandle.h>
 #include <iclMultiDrawHandle.h>
+#include <iclTabHandle.h>
 
 
 /** 

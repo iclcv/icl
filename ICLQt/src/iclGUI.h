@@ -24,6 +24,7 @@ namespace icl{
 
   /** \cond */
   class GUIWidget;
+  class ProxyLayout;
   /** \endcond */
 
   /// Simple but powerful GUI Toolkit for the ICL \ingroup COMMON
@@ -150,6 +151,7 @@ namespace icl{
       of the TYPE_DEPENDEND_PARAMS list depends on this string. Possible type strings are:
       - <b>hbox</b> a horizontal layouted container 
       - <b>vbox</b> a vertical layouted container
+      - <b>tab</b> a tabbed contatiner widget 
       - <b>border</b> a vertical layouted container with a labeled border
       - <b>button</b> a push button
       - <b>buttongroup</b> a set of radio buttons (exclusive)
@@ -168,6 +170,8 @@ namespace icl{
       - <b>spinner</b> a spin box (integer valued with given range)
       - <b>fps</b> label component showing current frames per second
       - <b>multidraw</b> tabbed widget of draw widget components accessible via string index
+
+      
         
       \subsection TYPEPARAMS Type Dependent Parameters
       The 2nd part of the GUI definition string is a comma separated list of type dependent parameters.
@@ -178,6 +182,9 @@ namespace icl{
         No params here! 
       - <b>vbox</b>\n
         No params here!
+      - <b>tab(string TAB_LABEL_1, string TAB_LABEL_2,..)</b>\n
+        If more components are added, than names were given, error messages are shown, and the 
+        tabs are added with some dummy names (e.g. "Tab 3")
       - <b>border(string LABEL)</b>\n
         LABEL defines the border label of that layout widget. <b>Please Note:</b> that labels
         and borders can also be added using a "@label=xxx" token in the list of general parameters.
@@ -310,6 +317,7 @@ namespace icl{
       <TABLE>
       <TR> <TD><b>type</b></TD>  <TD><b>handle</b></TD>     <TD><b>outputs</b></TD>     <TD><b>meaning</b></TD>                                     </TR>
       <TR> <TD>vbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
+      <TR> <TD>tab</TD>          <TD>TabHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
       <TR> <TD>hbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
       <TR> <TD>border</TD>       <TD>BorderHandle</TD>      <TD>0</TD>                  <TD>-</TD>                                                  </TR>
       <TR> <TD>button</TD>       <TD>ButtonHandle</TD>      <TD>1 type GUIEvent</TD>    <TD>handle for this button (see below!)</TD>                </TR>
@@ -713,6 +721,82 @@ namespace icl{
       \endcode
 
       \image html Image07_GUIInGUI.jpg
+
+
+      \subsection TABS Tabbed widges
+      One of the newes features are tabbed container widgets. These GUIs can be created
+      with a comma separated string list containing tab labels. Each time a new child-
+      component is added, it is added into the next free tab. If more tabs are added than names
+      have been given, new tabs are added with dummy names, but an error will be shown. Tab widges 
+      as as easy to use as all the other ICL gui widgets, tab widgets can again contain other
+      tab widgets, and of course also external/foreign QWidgets can be added directly using the 
+      tab widget's Handle of type TabHandle. The TabHandle provides an 'add'-function as well
+      as an 'insert'-function to insert another component at a certain tab index. For more
+      complex manipulation of the wrapped QTabWidget, it can be obtained conveniently by 
+      'dereferencing' the TabHandle. (TabHandle &h = ...; QTabWidget *w=*h;)
+      
+      Here's an example for using tabs (available as gui-test-2.cpp):
+      
+      \code 
+      #include <iclCommon.h>
+      #include <QProgressBar>
+      
+      GUI gui;
+      
+      void run(){
+        Img8u image = cvt8u(scale(create("parrot"),0.2));
+        ImageHandle *ws[3] = {
+          &gui.getValue<ImageHandle>("image1"),
+          &gui.getValue<ImageHandle>("image2"),
+          &gui.getValue<ImageHandle>("image3")
+        };
+        ButtonHandle &click = gui.getValue<ButtonHandle>("click");
+        while(1){
+          for(int i=0;i<3;++i){
+            *ws[i] = image;
+            ws[i]->update();
+          }
+          if(click.wasTriggered()){
+            std::cout << "button 'click' was triggered!" << std::endl;
+          }
+          Thread::msleep(50);
+        }
+      }
+      
+      int main(int n, char **ppc){
+        QApplication app(n,ppc);
+      
+        gui = GUI("tab(a,b,c,d,e,f)[@handle=tab]");
+        
+        gui << "image[@handle=image1@label=image1]"
+            << "image[@handle=image2@label=image2]"
+            << "image[@handle=image3@label=image3]";
+      
+        GUI v("tab(a,b,c,d,e,f)[@label=internal tab widget]");
+            v << "slider(-1000,1000,0)[@out=the-int1@maxsize=35x1@label=slider1@minsize=1x2]"
+              << "slider(-1000,1000,0)[@out=the-int2@maxsize=35x1@label=slider2@minsize=1x2]"
+              << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3@minsize=1x2]"
+              << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
+              << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
+              << "button(click me)[@handle=click]";
+      
+      
+        gui << v;
+      
+        gui.show();
+      
+        gui.getValue<TabHandle>("tab").insert(2,new ICLWidget,"ext. 1");
+        gui.getValue<TabHandle>("tab").add(new QProgressBar,"ext. 2");
+     
+        exec_threaded(run);
+      
+        return app.exec();
+      }
+      \endcode
+
+      \image html Image08_Tabs.jpg
+      
+
       
       \subsection LOCK Locking
       Some interface types involve the danger to be corrupted when accessed by the working thread
@@ -834,7 +918,7 @@ namespace icl{
     void removeCallbacks(const std::string &handleNamesList);
 
     private:
-    void create(QLayout *parentLayout,QWidget *parentWidget, DataStore *ds);
+    void create(QLayout *parentLayout,ProxyLayout *proxy, QWidget *parentWidget, DataStore *ds);
 
     /// own definition string
     std::string m_sDefinition;
