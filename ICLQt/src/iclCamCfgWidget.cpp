@@ -26,8 +26,13 @@ using namespace std;
 
 namespace icl{
   
-  CamCfgWidget::CamCfgWidget(int isoMBits, QWidget *parent):
-    QSplitter(Qt::Vertical,parent),m_poGrabber(0), m_bDisableSlots(false), m_bCapturing(false), m_isoMBits(isoMBits) {
+  CamCfgWidget::CamCfgWidget(int isoMBits,
+                             bool resetDCBus,
+                             bool omitDoubledDCFrames, 
+                             QWidget *parent):
+    QSplitter(Qt::Vertical,parent),m_poGrabber(0), 
+    m_bDisableSlots(false), m_bCapturing(false), 
+    m_isoMBits(isoMBits),m_omitDoubledDCFrames(omitDoubledDCFrames),m_oFPSE(10) {
     // {{{ open
 
     // TOP LEVEL
@@ -66,7 +71,7 @@ namespace icl{
     m_poCaptureButton = new QPushButton("capture!",this);
     m_poCaptureButton->setCheckable(true);
 
-    m_poFpsLabel  = new QLabel("fps: ---",this);
+    m_poFpsLabel  = new CompabilityLabel("fps: ---",this);
     m_poGrabButtonAndFpsLabelWidget = new QWidget(this);
     m_poGrabButtonAndFpsLabelLayout = new QHBoxLayout(m_poGrabButtonAndFpsLabelWidget);
     m_poGrabButtonAndFpsLabelLayout->addWidget(m_poCaptureButton);
@@ -110,7 +115,7 @@ namespace icl{
     }
         
     /// add DC devices
-    m_vecDCDeviceList = DCGrabber::getDeviceList();
+    m_vecDCDeviceList = DCGrabber::getDeviceList(resetDCBus);
     for(unsigned int j=0;j<m_vecDCDeviceList.size();j++){
       QString name = QString("[DC]")+m_vecDCDeviceList[j].getModelID().c_str();
       m_poDeviceCombo->addItem(name);
@@ -214,7 +219,7 @@ namespace icl{
       
       for(unsigned int i=0;i<m_vecDCDeviceList.size();i++){
         if(m_vecDCDeviceList[i].getModelID() == text.toLatin1().data()){
-          m_poGrabber = new DCGrabber(m_vecDCDeviceList[i], m_isoMBits);
+          m_poGrabber = new DCGrabber(m_vecDCDeviceList[i], m_isoMBits,m_omitDoubledDCFrames);
           break;
         }
       }
@@ -392,8 +397,13 @@ namespace icl{
       const ImgBase *image = m_poGrabber->grab();
       m_poICLWidget->setImage(image);
       m_poICLWidget->updateFromOtherThread();
+
+      m_poFpsLabel->setText(m_oFPSE.getFpsString().c_str());
+      m_poFpsLabel->updateFromOtherThread();
     }
     m_oGrabberMutex.unlock();
+    
+
     /****
         static float accu = 0;
         static const float fac = 0.1;

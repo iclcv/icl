@@ -10,6 +10,10 @@
 #include <iclTypes.h>
 #include <QMutex>
 #include <QSplitter>
+#include <iclCompabilityLabel.h>
+#include <iclFPSEstimator.h>
+
+
 /** \cond **/  
 class QHBoxLayout;
 class QComboBox;
@@ -36,7 +40,7 @@ namespace icl{
     Q_OBJECT
     public:
     /// Constructor
-    CamCfgWidget(int isoMBits=400, QWidget *parent=0);
+    CamCfgWidget(int isoMBits=400,bool resetDCBus=false,bool omitDoubledDCFrames=false, QWidget *parent=0);
     
     /// Destructor
     ~CamCfgWidget();
@@ -104,7 +108,7 @@ namespace icl{
     QScrollArea *m_poPropertyScrollArea; //!< internaly scroll-area (for the list of properties)
     
     QPushButton *m_poCaptureButton;      //!< button for start/stop capturing (togglebutton)
-    QLabel *m_poFpsLabel;                //!< lable that shows the current fps (inactive)
+    CompabilityLabel *m_poFpsLabel;      //!< lable that shows the current fps (inactive)
     QWidget *m_poGrabButtonAndFpsLabelWidget;       //!< container widget
     QHBoxLayout *m_poGrabButtonAndFpsLabelLayout;   //!< container layout
 
@@ -135,6 +139,10 @@ namespace icl{
     icl::depth m_eVideoDepth;             //!< current video depth
 
     int m_isoMBits;                       //!< mbit count for dc devices
+
+    bool m_omitDoubledDCFrames;           //!< if set, DCGrabbers are set up to omit doubled frames
+
+    FPSEstimator m_oFPSE;                 //!< used to estimate the grabbers fps
   
   };
 }

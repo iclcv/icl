@@ -59,7 +59,7 @@ namespace icl{
     /// Constructor creates a new DCGrabber instance from a given DCDevice
     /** @param dev DCDevice to use (this device can only be created by the
                    static function getDeviceList() */
-    DCGrabber(const DCDevice &dev=DCDevice::null, int isoMBits=400);
+    DCGrabber(const DCDevice &dev=DCDevice::null, int isoMBits=400, bool suppressDoubledImages=false);
 
     /// Destructor
     ~DCGrabber();
@@ -138,6 +138,9 @@ namespace icl{
 
     /// Internal DCDeviceOptions struct
     DCDeviceOptions m_oOptions;
+
+    /// if set, each dc video frame can only be grabbed once
+    bool m_bSuppressDoubledImages;
   };
   
 }

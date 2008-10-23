@@ -21,7 +21,10 @@
 
 
 namespace icl{
-  GenericGrabber::GenericGrabber(const std::string &desiredAPIOrder, const std::string &params, bool notifyErrors){
+  GenericGrabber::GenericGrabber(const std::string &desiredAPIOrder, 
+                                 const std::string &params, 
+                                 bool notifyErrors,
+                                 bool suppressDoubledImages){
 
     m_poGrabber = 0;
     std::vector<std::string> lP = tok(params,",");
@@ -71,7 +74,7 @@ namespace icl{
         if(idx >= (int)devs.size()){
           continue;
         }else{
-          m_poGrabber = new DCGrabber(devs[idx], l[i]=="dc"?400:800);
+          m_poGrabber = new DCGrabber(devs[idx], l[i]=="dc"?400:800,suppressDoubledImages);
           m_sType = l[i];
           break;
         }        

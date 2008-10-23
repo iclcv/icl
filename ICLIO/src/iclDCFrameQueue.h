@@ -87,7 +87,6 @@ namespace icl{
       
       /// count of queued buffers
       int m_iQueuedBuffers;
-      
     };
   }
 }

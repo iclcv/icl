@@ -35,16 +35,27 @@ namespace icl {
                                   - unicap=device pattern (string)
         @param notifiyErrors if set to false, no error output is given; use isNull() function 
                              at runtime instead!
+
+        @suppressDoubledImages if set, this flag makes the wrapped grabber return each
+                               video frame only once. Currently this feature is only supported
+                               for the DCGrabber
     */
     GenericGrabber(const std::string &devicePriorityList="dc,pwc,file", 
                    const std::string &params="pwc=0,dc=0,file=images/*.ppm",
-                   bool notifyErrors = true);
+                   bool notifyErrors = true,
+                   bool suppressDoubledImages = false);
     
     /// resets resource on given devices (e.g. firewire bus)
     static void resetBus(const std::string &deviceList="dc", bool verbose=false);
-    
+   
+    /// return the actual grabber type
     std::string getType() const { 
       return m_sType; 
+    }
+    
+    /// returns the wrapped grabber itself
+    Grabber *getGrabber() const { 
+      return m_poGrabber; 
     }
     
     /// Destructor

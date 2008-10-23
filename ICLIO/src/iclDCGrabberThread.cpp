@@ -47,10 +47,14 @@ namespace icl{
 
     // }}}
     
-    DCGrabberThread::DCGrabberThread(dc1394camera_t* c, DCDeviceOptions *options):
+    DCGrabberThread::DCGrabberThread(dc1394camera_t* c,
+                                     DCDeviceOptions *options, 
+                                     bool suppressDoubledImages):
       // {{{ open
 
-      m_poFrameQueue(0),m_poCam(c),m_poOptions(options){
+      m_poFrameQueue(0),m_poCam(c),m_poOptions(options),
+      m_bSuppressDoubledImages(suppressDoubledImages),
+      m_lastFramesTimeStamp(0){
       g_oGrabberThreadMutex.lock();
       g_vecAllThreads.push_back(this);
       g_oGrabberThreadMutex.unlock();
@@ -114,7 +118,19 @@ namespace icl{
     
       m_poFrameQueue->lock();
       
+      Time &lastTime = m_lastFramesTimeStamp;
       dc1394video_frame_t *frame = m_poFrameQueue->back();
+
+      if(lastTime != Time(0)){
+        while(Time(frame->timestamp) <= lastTime){
+          m_poFrameQueue->unlock();
+          usleep(100);
+          m_poFrameQueue->lock();
+          frame = m_poFrameQueue->back();
+        }
+      }
+      
+      lastTime = Time(frame->timestamp);
       
       DCDevice dev(m_poCam);
 

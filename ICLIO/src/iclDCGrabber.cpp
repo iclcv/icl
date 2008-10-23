@@ -8,10 +8,11 @@ namespace icl{
   using namespace std;
   using namespace icl::dc;
   
-  DCGrabber::DCGrabber(const DCDevice &dev, int isoMBits):
+  DCGrabber::DCGrabber(const DCDevice &dev, int isoMBits, bool suppressDoubledImages):
     // {{{ open
 
-    m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_poImage(0), m_poImageTmp(0)
+    m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_poImage(0),
+    m_poImageTmp(0), m_bSuppressDoubledImages(suppressDoubledImages)
   {
     
     dc::install_signal_handler();
@@ -128,7 +129,7 @@ namespace icl{
       //      m_poGT->waitFor();
       delete m_poGT;
     }
-    m_poGT = new DCGrabberThread(m_oDev.getCam(),&m_oOptions);
+    m_poGT = new DCGrabberThread(m_oDev.getCam(),&m_oOptions, m_bSuppressDoubledImages);
     m_poGT->start();
     usleep(10*1000);
   }
