@@ -121,7 +121,7 @@ namespace icl{
       Time &lastTime = m_lastFramesTimeStamp;
       dc1394video_frame_t *frame = m_poFrameQueue->back();
 
-      if(lastTime != Time(0)){
+      if(m_bSuppressDoubledImages && lastTime != Time(0)){
         while(Time(frame->timestamp) <= lastTime){
           m_poFrameQueue->unlock();
           usleep(100);
@@ -129,8 +129,8 @@ namespace icl{
           frame = m_poFrameQueue->back();
         }
       }
+      lastTime = Time(frame->timestamp);      
       
-      lastTime = Time(frame->timestamp);
       
       DCDevice dev(m_poCam);
 
