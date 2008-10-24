@@ -705,8 +705,8 @@ void save_setparams(int device){
     v.push_back("white balance blue");
     v.push_back("shutter speed");
     v.push_back("compression level");
-    v.push_back("led on");
-    v.push_back("led off");
+    //v.push_back("led on"); this doesn't work
+    //v.push_back("led off");
     return v;
   }
 
@@ -769,6 +769,7 @@ void save_setparams(int device){
   }
   
   bool PWCGrabber::init(const Size &s,float fFps, int iDevice, bool echoOff)  {
+    ICLASSERT_RETURN_VAL(iDevice >=0 && iDevice <=4,false);
     if (iDevice >= 0){
       releaseAll ();
     }

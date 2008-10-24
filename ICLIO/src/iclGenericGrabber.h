@@ -69,6 +69,12 @@ namespace icl {
       return m_poGrabber->grab(ppoDst);
     }
 
+    /// returns a list of all properties, that can be set
+    virtual std::vector<std::string> getPropertyList(){
+      ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
+      return m_poGrabber->getPropertyList();
+    }
+
     /// setting up properties of underlying grabber
     virtual void setProperty(const std::string &property, const std::string &value){
       ICLASSERT_RETURN(!isNull());

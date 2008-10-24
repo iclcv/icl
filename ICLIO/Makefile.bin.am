@@ -54,13 +54,18 @@ bin_PROGRAMS+= \
 icl-dccam-setup \
 icl-dcclearisochannels \
 icl-dcdeviceinfo \
-icl-dcmulticam2-example
+icl-dcmulticam2-example \
+icl-dccam-params
 
 
 # explicit sources, ldflags and cxxflags
 icl_dccam_setup_SOURCES=../examples/dccam-setup.cpp
 icl_dccam_setup_LDFLAGS=${XLDFLAGS}
 icl_dccam_setup_CXXFLAGS=${XCXXFLAGS}
+
+icl_dccam_params_SOURCES=../examples/dccam-params.cpp
+icl_dccam_params_LDFLAGS=${XLDFLAGS}
+icl_dccam_params_CXXFLAGS=${XCXXFLAGS}
 
 icl_dcmulticam2_example_SOURCES=../examples/dcmulticam2-example.cpp
 icl_dcmulticam2_example_LDFLAGS=${XLDFLAGS}
