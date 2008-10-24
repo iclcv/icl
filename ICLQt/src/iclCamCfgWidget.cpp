@@ -26,13 +26,12 @@ using namespace std;
 
 namespace icl{
   
-  CamCfgWidget::CamCfgWidget(int isoMBits,
-                             bool resetDCBus,
-                             bool omitDoubledDCFrames, 
-                             QWidget *parent):
+  CamCfgWidget::CamCfgWidget(const CamCfgWidget::CreationFlags &flags,QWidget *parent):
     QSplitter(Qt::Vertical,parent),m_poGrabber(0), 
     m_bDisableSlots(false), m_bCapturing(false), 
-    m_isoMBits(isoMBits),m_omitDoubledDCFrames(omitDoubledDCFrames),m_oFPSE(10) {
+    m_isoMBits(flags.isoMBits),
+    m_omitDoubledDCFrames(flags.omitDoubledDCFrames),
+    m_oFPSE(10) {
     // {{{ open
 
     // TOP LEVEL
@@ -95,64 +94,74 @@ namespace icl{
 
     /// RIGHT WIDGETS-----------------------------------------
     m_bDisableSlots = true;
-
-    /// add unicap devices: ?? how to deactivate dc devices ??
-    m_vecDeviceList = UnicapGrabber::getDeviceList();
+    
     int jAll = 0;
-    for(unsigned int j=0;j<m_vecDeviceList.size();j++){
-      QString name = QString("[UNICAP]")+m_vecDeviceList[j].getID().c_str();
-      m_poDeviceCombo->addItem(name);
-      QWidget *w = new QWidget(this);
-      QVBoxLayout *l = new QVBoxLayout(w);
-      QScrollArea *sa = new QScrollArea(this);
-      UnicapGrabber grabber(m_vecDeviceList[j]);
-      fillLayout(l,&grabber);
-      sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-      w->setLayout(l);
-      sa->setWidget(w);      
-      m_poTabWidget->addTab(sa,name);
-      m_poTabWidget->setTabEnabled(jAll++,false);
-    }
-        
-    /// add DC devices
-    m_vecDCDeviceList = DCGrabber::getDeviceList(resetDCBus);
-    for(unsigned int j=0;j<m_vecDCDeviceList.size();j++){
-      QString name = QString("[DC]")+m_vecDCDeviceList[j].getModelID().c_str();
-      m_poDeviceCombo->addItem(name);
-      QWidget *w = new QWidget(this);
-      QVBoxLayout *l = new QVBoxLayout(w);
-      QScrollArea *sa = new QScrollArea(this);
-      DCGrabber grabber(m_vecDCDeviceList[j]);
-      //      grabber.grab();
-      fillLayout(l,&grabber);
-      sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-      w->setLayout(l);
-      sa->setWidget(w);      
-      m_poTabWidget->addTab(sa,name);
-      m_poTabWidget->setTabEnabled(jAll++,false);
-    }
-    
-    /// add philips webcam devices
-    m_vecPWCDeviceList = PWCGrabber::getDeviceList();
-
-    for(unsigned int j=0;j<m_vecPWCDeviceList.size();j++){
-      QString name  = QString("[PWC] Philips 740 Webcam [device ")+QString::number(j)+"]";
-      m_poDeviceCombo->addItem(name);
-      QWidget *w = new QWidget(this);
-      QVBoxLayout *l = new QVBoxLayout(w);
-      QScrollArea *sa = new QScrollArea(this);
-      PWCGrabber grabber;
-      if(!grabber.init(Size::null,24,j)){
-        printf("error while initializing grabber device %d! \n",j);
+    if(!flags.disableUnicap){
+      /// add unicap devices: ?? how to deactivate dc devices ??
+      m_vecDeviceList = UnicapGrabber::getDeviceList();
+     
+      for(unsigned int j=0;j<m_vecDeviceList.size();j++){
+        QString name = QString("[UNICAP]")+m_vecDeviceList[j].getID().c_str();
+        m_poDeviceCombo->addItem(name);
+        QWidget *w = new QWidget(this);
+        QVBoxLayout *l = new QVBoxLayout(w);
+        QScrollArea *sa = new QScrollArea(this);
+        sa->setWidgetResizable(true);
+        UnicapGrabber grabber(m_vecDeviceList[j]);
+        fillLayout(l,&grabber);
+        sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+        w->setLayout(l);
+        sa->setWidget(w);      
+        m_poTabWidget->addTab(sa,name);
+        m_poTabWidget->setTabEnabled(jAll++,false);
       }
-      fillLayout(l,&grabber);
-      sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-      w->setLayout(l);
-      sa->setWidget(w);      
-      m_poTabWidget->addTab(sa,name);
-      m_poTabWidget->setTabEnabled(jAll++,false);
+    }
+     
+    if(!flags.disableDC){
+      /// add DC devices
+      m_vecDCDeviceList = DCGrabber::getDeviceList(flags.resetDCBus);
+      for(unsigned int j=0;j<m_vecDCDeviceList.size();j++){
+        QString name = QString("[DC]")+m_vecDCDeviceList[j].getModelID().c_str();
+        m_poDeviceCombo->addItem(name);
+        QWidget *w = new QWidget(this);
+        QVBoxLayout *l = new QVBoxLayout(w);
+        QScrollArea *sa = new QScrollArea(this);
+        sa->setWidgetResizable(true);
+        DCGrabber grabber(m_vecDCDeviceList[j]);
+        //      grabber.grab();
+        fillLayout(l,&grabber);
+        sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+        w->setLayout(l);
+        sa->setWidget(w);      
+        m_poTabWidget->addTab(sa,name);
+        m_poTabWidget->setTabEnabled(jAll++,false);
+      }
     }
     
+    if(!flags.disablePWC){
+      /// add philips webcam devices
+      m_vecPWCDeviceList = PWCGrabber::getDeviceList();
+      
+      for(unsigned int j=0;j<m_vecPWCDeviceList.size();j++){
+        QString name  = QString("[PWC] Philips 740 Webcam [device ")+QString::number(j)+"]";
+        m_poDeviceCombo->addItem(name);
+        QWidget *w = new QWidget(this);
+        QVBoxLayout *l = new QVBoxLayout(w);
+        QScrollArea *sa = new QScrollArea(this);
+        sa->setWidgetResizable(true);
+        PWCGrabber grabber;
+        if(!grabber.init(Size::null,24,j)){
+          printf("error while initializing grabber device %d! \n",j);
+        }
+        fillLayout(l,&grabber);
+        sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+        w->setLayout(l);
+        sa->setWidget(w);      
+        m_poTabWidget->addTab(sa,name);
+        m_poTabWidget->setTabEnabled(jAll++,false);
+      }
+    }
+
     //m_poTopLevelLayout->addWidget(m_poTabWidget);
     m_poBottomSplitter->addWidget(m_poTabWidget);
 
@@ -500,6 +509,7 @@ namespace icl{
         ds->setDoubleValue(atof(grabber->getValue(prop).c_str()));
         
         BorderBox *poBorderBox = new BorderBox(prop.c_str(),ds,PARENT);
+        poBorderBox->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
         l->addWidget(poBorderBox);
         connect(ds,SIGNAL(doubleValueChanged(const QString&,double)),this,SLOT(propertySliderChanged(const QString&,double)));
       }else if(typeStr == "valueList"){
@@ -521,6 +531,7 @@ namespace icl{
         }
         connect(cb,SIGNAL(currentIndexChanged(QString)),this,SLOT(propertyComboBoxChanged(QString)));
         BorderBox *poBorderBox = new BorderBox(prop.c_str(),cb,PARENT);
+        poBorderBox->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
         l->addWidget(poBorderBox);
       }else if(typeStr == "menu"){
         QString propName = QString("[")+prop.c_str()+"]";
@@ -539,11 +550,14 @@ namespace icl{
         }
         connect(cb,SIGNAL(currentIndexChanged(QString)),this,SLOT(propertyComboBoxChanged(QString)));
         BorderBox *poBorderBox = new BorderBox(prop.c_str(),cb,PARENT);
+        poBorderBox->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
+
         l->addWidget(poBorderBox);
       }else if(typeStr == "command"){
         StringSignalButton *b = new StringSignalButton(prop.c_str(),PARENT);
         connect(b,SIGNAL(clicked(QString)),this,SLOT(propertyButtonClicked(QString)));
         BorderBox *poBorderBox = new BorderBox(prop.c_str(),b,PARENT);
+        poBorderBox->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
         l->addWidget(poBorderBox);
       }
       m_bDisableSlots = false;

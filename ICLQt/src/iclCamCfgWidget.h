@@ -39,8 +39,29 @@ namespace icl{
   class CamCfgWidget : public QSplitter{
     Q_OBJECT
     public:
+    
+    struct CreationFlags{
+    CreationFlags(int isoMBits=400,
+                  bool resetDCBus=false, 
+                  bool omitDoubledDCFrames=true,
+                  bool disableUnicap=false,
+                  bool disableDC=false,
+                  bool disablePWC=false):
+        isoMBits(isoMBits),resetDCBus(resetDCBus),
+        omitDoubledDCFrames(omitDoubledDCFrames),
+        disableUnicap(disableUnicap),disableDC(disableDC),
+        disablePWC(disablePWC){}
+      
+      int isoMBits;
+      bool resetDCBus;
+      bool omitDoubledDCFrames;
+      bool disableUnicap;
+      bool disableDC;
+      bool disablePWC;
+    };
+    
     /// Constructor
-    CamCfgWidget(int isoMBits=400,bool resetDCBus=false,bool omitDoubledDCFrames=false, QWidget *parent=0);
+    CamCfgWidget(const CreationFlags &flags,QWidget *parent=0);
     
     /// Destructor
     ~CamCfgWidget();
