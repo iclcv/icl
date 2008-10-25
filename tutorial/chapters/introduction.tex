@@ -19,20 +19,8 @@ This document is intended as a (more or less short) tutorial for the computer vi
 \item \textbf{ICL-Projects:}\\Development of ICL-bases applications can be performed very conveniently using a special makefile system and directory structure provided by the so called \emph{ICLProjects} svn branch. How to get these projects, how to add own projects here and how to include other projects and external libraries is shown in this (currently) last part. 
 \end{enumerate} 
 
-\section{What is the ICL}
-Briefly said, the ICL is a C++ computer vision library. During design and development, two main design goals stood in the foreground [???]: \small{\textbf{i)}} Optimal Performance and \small{\textbf{ii)}} Simple and easy to use interfaces.
-\subsection{Optimal Performance} 
-Computer vision is one of the subjects, where even the processing power of modern multi-core CPU's can easily be exhausted. Therefore we decided to provide data interfaces that allow to implement algorithms as efficient as possible. In this context, three main aspects have to be mentioned:
-\begin{enumerate}
-\item \textbf{Providing the possibility of shallow data copies:}\\
-When image data is obtained by other algorithms, modules or libraries, it must be possible to use this data (generally passed via pointers) directly without having to copy it deeply. Unfortunately there are two paradigms of storing and handling image data: \small{\textbf{i)}} Interleaved (here, several image channels are mixed and usually image data is allocated as a single data block; RGB image data is stored in RGBRGBRGB... manner) \small{\textbf{i)}} Planar (where each channel is stored in an own data block).\\
-Of course, providing an image structure that is capable of working with both data formats natively would allow optimal performance. Unfortunately this would entail a large effort for implementing algorithms also supporting all these formats. Hence we decided to support only planar data layout supplemented with some very efficient conversion functions.
-\item \textbf{Providing low-level data access:}\\
-In contrast to the aspect above, we also provide low level data access to allow to pass ICL-image data to foreign algorithms shallowly (if these algorithms are able work with interleaved data. Otherwise we also provide fast conversion routines).
-\item \textbf{Native but optional support for SIMD instruction sets:}\\
-SIMD (Single Instruction Mutltiple Data)
-\end{enumerate}
 
-\subsection{Simple, easy to use object orientated interfaces:}
+The following chapter will examine core features and design principles of the ICL.
+
 
 
