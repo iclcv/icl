@@ -32,6 +32,7 @@
 #include <QDockWidget>
 #include <QTabWidget>
 #include <QApplication>
+#include <QSplitter>
 
 #include <iclProxyLayout.h>
 
@@ -54,6 +55,7 @@
 #include <iclDispHandle.h>
 #include <iclFPSHandle.h>
 #include <iclMultiDrawHandle.h>
+#include <iclSplitterHandle.h>
 
 
 #include <map>
@@ -118,6 +120,56 @@ namespace icl{
 
   // }}}
 
+  struct SplitterGUIWidgetBase : public GUIWidget, public ProxyLayout{
+    // {{{ open
+    SplitterGUIWidgetBase(const GUIDefinition &def, bool horz):GUIWidget(def,GUIWidget::noLayout,0,0){
+      m_layout = new QGridLayout(this);
+      m_splitter = new QSplitter(horz ? Qt::Horizontal:Qt::Vertical , this);
+      m_layout->addWidget(m_splitter,0,0);
+      m_layout->setContentsMargins(2,2,2,2);
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<SplitterHandle>(def.handle(),SplitterHandle(m_splitter,this));
+        getGUI()->unlockData();
+      }
+    }
+    
+    // implements the ProxyLayout interface, what should be done if components are added
+    // using the GUI-stream operator <<
+    virtual void addWidget(GUIWidget *widget){
+      m_splitter->addWidget(widget);
+    }
+    
+    // as this implements also to proxy layout class, this interface function
+    // can directly return itself 
+    virtual ProxyLayout *getProxyLayout() { return this; }
+    
+    //static string getSyntax(){
+    //  return string("(COMMA_SEPERATED_TAB_LIST)[general params]\n")+gen_params();
+    //}
+    QSplitter *m_splitter;
+    QGridLayout *m_layout;
+  };
+  // }}}
+  
+  struct HSplitterGUIWidget : public SplitterGUIWidgetBase{
+    // {{{ open
+    HSplitterGUIWidget(const GUIDefinition &def):SplitterGUIWidgetBase(def,true){}
+    static string getSyntax(){
+      return string("hsplit()[general params]\n")+gen_params();
+    }
+  };
+  // }}}
+
+  struct VSplitterGUIWidget : public SplitterGUIWidgetBase{
+    // {{{ open
+    VSplitterGUIWidget(const GUIDefinition &def):SplitterGUIWidgetBase(def,false){}
+    static string getSyntax(){
+      return string("vsplit()[general params]\n")+gen_params();
+    }
+  };
+  // }}}
 
   struct TabGUIWidget : public GUIWidget, public ProxyLayout{
     // {{{ open
@@ -1087,6 +1139,8 @@ public:
       MAP_CREATOR_FUNCS["fps"] = create_widget_template<FPSGUIWidget>;
       MAP_CREATOR_FUNCS["multidraw"] = create_widget_template<MultiDrawGUIWidget>;
       MAP_CREATOR_FUNCS["tab"] = create_widget_template<TabGUIWidget>;
+      MAP_CREATOR_FUNCS["hsplit"] = create_widget_template<HSplitterGUIWidget>;
+      MAP_CREATOR_FUNCS["vsplit"] = create_widget_template<VSplitterGUIWidget>;
 
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
       //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;

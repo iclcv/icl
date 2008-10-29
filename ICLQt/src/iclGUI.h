@@ -152,6 +152,8 @@ namespace icl{
       - <b>hbox</b> a horizontal layouted container 
       - <b>vbox</b> a vertical layouted container
       - <b>tab</b> a tabbed contatiner widget 
+      - <b>hsplit<b> a horizontal layouted containter (boundaries can be moved manually)
+      - <b>vsplit<b> a vertical layouted containter (boundaries can be moved manually)
       - <b>border</b> a vertical layouted container with a labeled border
       - <b>button</b> a push button
       - <b>buttongroup</b> a set of radio buttons (exclusive)
@@ -185,6 +187,10 @@ namespace icl{
       - <b>tab(string TAB_LABEL_1, string TAB_LABEL_2,..)</b>\n
         If more components are added, than names were given, error messages are shown, and the 
         tabs are added with some dummy names (e.g. "Tab 3")
+      - <b>hsplit</b>\n
+        No params here!
+      - <b>vsplit</b>\n
+        No params here!
       - <b>border(string LABEL)</b>\n
         LABEL defines the border label of that layout widget. <b>Please Note:</b> that labels
         and borders can also be added using a "@label=xxx" token in the list of general parameters.
@@ -317,8 +323,10 @@ namespace icl{
       <TABLE>
       <TR> <TD><b>type</b></TD>  <TD><b>handle</b></TD>     <TD><b>outputs</b></TD>     <TD><b>meaning</b></TD>                                     </TR>
       <TR> <TD>vbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>tab</TD>          <TD>TabHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
       <TR> <TD>hbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
+      <TR> <TD>tab</TD>          <TD>TabHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
+      <TR> <TD>hsplit</TD>       <TD>SplitterHandle</TD>    <TD>0</TD>                  <TD>-</TD>                                                  </TR>
+      <TR> <TD>vsplit</TD>       <TD>SplitterHandle</TD>    <TD>0</TD>                  <TD>-</TD>                                                  </TR>
       <TR> <TD>border</TD>       <TD>BorderHandle</TD>      <TD>0</TD>                  <TD>-</TD>                                                  </TR>
       <TR> <TD>button</TD>       <TD>ButtonHandle</TD>      <TD>1 type GUIEvent</TD>    <TD>handle for this button (see below!)</TD>                </TR>
       <TR> <TD>buttongroup</TD>  <TD>ButtonGroupHandle</TD> <TD>1 type int</TD>         <TD>index of the currently toggled radio button </TD>       </TR>
@@ -343,7 +351,7 @@ namespace icl{
 
       
       In some cases accessing a components value is not enough. E.g. if a "label" component
-      should be used to show another string, of if a slider should be set externally to a
+      should be used to show another string, or a slider should be set externally to a
       specific value. \n
       To facilitate working with GUI objects, each component is able to allocate a so called
       "handle"-object of itself in its parent GUI-objects data store. This will be done
@@ -353,8 +361,10 @@ namespace icl{
       functionalities for storing a T-pointer (template parameter) and which offers functions
       to access this pointer (the *operator). A ButtonHandle for example inherits
       the GUIHandle<QPushButton>, so it wraps a QPushButton* internally. For a more
-      convenient working process, each handle has some special functions which provide
-      and abstract and direct access of the underlying class without knowing it.
+      convenient use, each handle has some special functions that provide
+      an abstracted direct access to the underlying class without knowing it. E.g. the image handle
+      provides a 'setImage(ImgBase*)'-function and an 'update()'-function, which are sufficient to 
+      make the underlying widget display another image.
       
       \code
       #include <iclGUI.h>
@@ -552,87 +562,110 @@ namespace icl{
       
       \image html Image06_ButtonDemo.jpg
       
-      \subsubsection EAB Events and Buttons
+      \subsubsection EAB Registering callbacks at GUI-Components
       
       In some applications it might be necessary to associate an event to a button click,
-      which is called immediately if the button is clicked. This is quite useful e.g. to interrupt
-      the current working thread. However this feature is more complex, then the claim of the
-      ICL GUI API can stand, this feature is a "must-have" and it is wrapped into the GUI API
-      to avoid that it is implemented many times elsewhere.\n
-      First we have to decide how we formalize an "event". Here an event is a callback-function or a
-      function object which can be triggered (the function is called). To differentiate between
-      these Callback-Objects and functions, two type-definition were made inside of the ButtonHandle
-      class:
-      \code
-      /// Special Utility class for handling Button clicks in the ICL GUI API \ingroup HANDLES
-      class ButtonHandle : public GUIHandle<QPushButton>{
-        public:
-      
-        /// type definition for a callback function
-        typedef void (*callback)(void);
-    
-        /// Interface for callback objects (functors)
-        struct Callback{
-          /// Destructor
-          virtual ~Callback(){}
-          /// call back function (pure virtual)
-          virtual void operator()() = 0;
-        };
-      
-        ...
-      \endcode
-      Each button handle provides two functions named "registerCallback(..)" to add callbacks
-      to a button, which are called exactly when the button is pressed. The following example 
-      extends the example above by a simple exit button:
+      which is called immediately if the button is clicked, or either when another GUI interaction
+      is performed. This is quite useful e.g. to interrupt the current working thread. 
+      Actually, this feature is a "must-have" and it is integrated deeply into the GUI's structure.\n
+      We use the special class 'GUI::CallbackPtr' as event type. This callbacks can be registered at
+      most of the GUI components, and as long as such a callback is not unregistered the underlying function
+      is called whenever the corresponding component is added. Furthermore all top-level GUI's provide
+      the ability to register a given callback to all child widgets recursively.
+      Callbacks can be registered at handles as well as at subclasses of icl::GUIWidget.
 
+      
+      The following example can also be found as ICLQt/examples/gui-callback-test.cpp
       \code
-      #include <iclGUI.h>
-      #include <iclThread.h>
-      
-      using namespace icl;
-      
-      /// Use a static gui pointer (accessible in main an in the Thread class
-      GUI *gui = 0;
-      
-      // create a Thread class, which implements the working loop. For this example
-      // this loop will test each second if the button was pressed or not
-      class DemoThread : public Thread{
-       ... see above!
-      };
 
-      // a simple callback function (type "void (*callback)(void)"
-      void exit_callback(void){
-        printf("exit callback was called \n");
-        exit(0);
-      }
-      
-      int main(int n, char**ppc){
-        // create a QApplication object
-        QApplication app(n,ppc);
-      
-        // create the top level container
-        gui = new GUI;  
-      
-        // add a button to this container
-        (*gui) << "button(Click me!)[@handle=b]";
-        (*gui) << "button(Exit!)[@handle=exit]";
-      
-        // show it
-        gui->show();
-      
-        // register the call back function
-        gui->getValue<ButtonHandle>("exit").registerCallback(exit_callback);
-      
-        // create the working loop thread
-        DemoThread t;
-      
-        // start it
-        t.start();
-      
-        // enter Qt's event loop
-        return app.exec();
-      }
-      \endcode
+#include <iclCommon.h>
+
+/// We use a global gui to be able to access it outside main 
+GUI gui;
+// This global LableHandle is obtained ones from the gui
+// when it was created using gui.show(). Remember that
+// gui.getValue performs a string lookup using a std::map
+// with is kind of complex
+LabelHandle h;
+
+// Our working thread, calling it's run function 
+// asynchronously to the GUI Thread
+class DemoThread : public Thread{
+  virtual void run(){
+    while(true){
+      h = Time::now().toString();
+      sleep(2);
+    }
+  }
+};
+
+// a simple callback function of type "void (*callback)(void)"
+void exit_callback(void){
+  printf("exit callback was called \n");
+  exit(0);
+}
+
+// another one (we can also access the GUI from here)
+void click_callback(){
+  h = "hello!";
+  std::cout << "hello" << std::endl;
+}
+
+// a more complex callback implementing the GUI::Callback interface
+// In contrast to simple functions, this callbacks are able to have 'own data'
+struct MyCallback : public GUI::Callback{
+  Time m_lastTime;
+  virtual void exec(){
+    Time now = Time::now();
+    Time dt = m_lastTime-now;
+    gui.getValue<LabelHandle>("time-diff-label") = dt.toString();
+    m_lastTime = now;
+  }
+};
+
+int main(int n, char**ppc){
+  // create a QApplication object
+  QApplication app(n,ppc);
+  
+  // create some nice components
+  gui << "label(something)[@handle=current-time-label@label=current time]"
+      << "label(something)[@handle=time-diff-label@label=time since last call]"
+      << "button(Click me!)[@handle=click]"
+      << "button(Click me too!)[@handle=click-2]"
+      << "button(Exit!)[@handle=exit]";
+  
+  
+  // create and show the GUI
+  gui.show();
+  h = gui.getValue<LabelHandle>("current-time-label");
+  
+  // register callbacks
+  gui.getValue<ButtonHandle>("exit").registerCallback(new GUI::Callback(exit_callback));
+  gui.getValue<ButtonHandle>("click").registerCallback(new GUI::Callback(click_callback));
+  gui.getValue<ButtonHandle>("click-2").registerCallback(new MyCallback);
+  
+  // create the working loop thread
+  DemoThread t;
+  
+  // start it
+  t.start();
+  
+  // enter Qt's event loop
+  app.exec();
+  
+  // stop the thread immediately when the window is closed
+  t.stop();
+}
+ 
+
+      Please note, that some special Qt-Functionality just becomes usable with this callback
+      mechanism, namely showing Dialogs. Unfortunately, Qt-Dialogs can only be invoked to
+      become visible from the GUI-Thread itself. Hence if you try to call e.g. 
+      QInputDialog::getDouble(...) from your working thread, your application will get stuck
+      or even crash with some async-error message. 
+      Therefore QDialogs must be created/shown using callbacks.
+
+     \endcode
       
       
       \subsection EMB Embedding external QWidgets
@@ -723,17 +756,20 @@ namespace icl{
       \image html Image07_GUIInGUI.jpg
 
 
-      \subsection TABS Tabbed widges
-      One of the newes features are tabbed container widgets. These GUIs can be created
-      with a comma separated string list containing tab labels. Each time a new child-
-      component is added, it is added into the next free tab. If more tabs are added than names
-      have been given, new tabs are added with dummy names, but an error will be shown. Tab widges 
-      as as easy to use as all the other ICL gui widgets, tab widgets can again contain other
-      tab widgets, and of course also external/foreign QWidgets can be added directly using the 
-      tab widget's Handle of type TabHandle. The TabHandle provides an 'add'-function as well
-      as an 'insert'-function to insert another component at a certain tab index. For more
-      complex manipulation of the wrapped QTabWidget, it can be obtained conveniently by 
-      'dereferencing' the TabHandle. (TabHandle &h = ...; QTabWidget *w=*h;)
+      \subsection TABS Tabbed and Split Widgets
+      One of the newest features are tabbed (and split) container widgets. Tabbed Widgets
+      can be created with a comma separated string list containing tab labels; split-Widgets 
+      have no parameters -- just like the other box container widgets. Each time a new child-
+      component is added, it is added into the next free tab (or split section). If more 
+      tabs are added than names
+      have been given, new tabs are added with dummy names, but an error will be shown. 
+      Tab- and  Split-widgets 
+      are as easy to use as all the other ICL gui widgets, they widgets can again contain other
+      container widgets, and of course also external/foreign QWidgets can be added directly using the 
+      widget's Handle of type TabHandle (resp. SplitterHandle). These Handles provides an 'add'-function as well
+      as an 'insert'-function to insert another component at a certain tab index/split slice. For more
+      complex manipulation of the wrapped QTabWidget/QSplitter, it can be obtained conveniently by 
+      'dereferencing' the Handle instance. (e.g. TabHandle &h = ...; QTabWidget *w=*h;)
       
       Here's an example for using tabs (available as gui-test-2.cpp):
       

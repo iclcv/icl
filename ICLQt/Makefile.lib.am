@@ -106,6 +106,7 @@ include_HEADERS= \
 ../src/iclGUISyntaxErrorException.h \
 ../src/iclGUIWidget.h \
 ../src/iclImageHandle.h \
+../src/iclSplitterHandle.h \
 ../src/iclImageStatistics.h \
 ../src/iclImgParamWidget.h \
 ../src/iclIntHandle.h \

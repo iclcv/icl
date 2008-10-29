@@ -40,6 +40,16 @@ int main(int n, char **ppc){
     << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
     << "button(click me)[@handle=click]";
 
+  v << ( GUI("vsplit")
+         << "combo(a,b,c,e,d,f)[@out=bla1@label=combo a]"
+         << "combo(a,b,c,e,d,f)[@out=bla2@label=combo b]"
+         << "combo(a,b,c,e,d,f)[@out=bla3@label=combo c]"
+         << (
+               GUI("hsplit") 
+               << "slider(0,100,50)[@out=fjd-1@label=A]"
+               << "slider(0,100,50)[@out=fjd-2@label=B]"
+            )
+         );
   
   gui << v;
 
