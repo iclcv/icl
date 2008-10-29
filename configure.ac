@@ -124,6 +124,11 @@ if test "$HAVE_UNICAP" = "TRUE" ; then
 
 ICL_USE_PC_INPUT([UNICAP],[libunicap])
 
+# for compatibility with new Ubuntu hardy unicap version (0.9.3)
+CPPFLAGS="$CPPFLAGS -DUNICAP_FLAGS_NOT_AS_ENUM"
+CXXCPP="$CXXCPP -DUNICAP_FLAGS_NOT_AS_ENUM"
+ICL_EXTEND_PC_FLAGS([],[-DUNICAP_FLAGS_NOT_AS_ENUM],[])
+
 fi
 
 AM_CONDITIONAL([HAVE_UNICAP_COND],[test x$HAVE_UNICAP = xTRUE])
