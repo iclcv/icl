@@ -2,12 +2,12 @@
 #include <iclQt.h>
 #include <iclProgArg.h>
 #include <iclRegionDetector.h>
-#include <iclFileGrabber.h>
+#include <iclGenericGrabber.h>
 #include <iclStringUtils.h>
 
 #include <algorithm>
 
-GUI gui("hbox");
+GUI gui("hsplit");
 RegionDetector rd;
 Mutex mutex;
 
@@ -60,7 +60,10 @@ void run(){
   for(unsigned int i=0;i<pa_argcount();++i){
     file += pa_arg<string>(i) + " ";
   }
-  static FileGrabber g(file);
+  static GenericGrabber g(pa_subarg<std::string>("-d",0,"pwc"),
+                          pa_subarg<std::string>("-d",0,"pwc")+"="+
+                          pa_subarg<std::string>("-d",1,"0"));
+  g.setDesiredSize(translateSize(pa_subarg<string>("-size",0,"640x480")));
   g.setIgnoreDesiredParams(false);
   g.setDesiredFormat(formatGray);
 
@@ -133,7 +136,10 @@ void run(){
 
 int main(int n, char **ppc){
   QApplication app(n,ppc);
-  pa_init(n,ppc);
+  
+  pa_explain("-d","define device parameters (e.g. -d dc 0 or -d file image/*.ppm)");
+  pa_explain("-size","define image size (e.g. -size 640x480)");
+  pa_init(n,ppc,"-d(2) -size(1)");
 
   init();
   
