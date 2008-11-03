@@ -222,6 +222,7 @@ namespace icl{
     if(m_poGrabber) delete m_poGrabber;
     m_poGrabber = 0;
     
+    DEBUG_LOG("creating grabber with this prefix: " << prefix.toLatin1().data() );
     if(prefix == "DC"){
       
       m_vecDCDeviceList = DCGrabber::getDeviceList();
@@ -256,19 +257,19 @@ namespace icl{
 
 
 
-      if(text == "Philips 740 Webcam [device 0]"){
+      if(text == " Philips 740 Webcam [device 0]"){
         m_poGrabber = new PWCGrabber(Size::null,40,0);
-      }else if(text == "Philips 740 Webcam [device 1]"){
+      }else if(text == " Philips 740 Webcam [device 1]"){
         m_poGrabber = new PWCGrabber(Size::null,40,1);
-      }else if(text == "Philips 740 Webcam [device 2]"){
+      }else if(text == " Philips 740 Webcam [device 2]"){
         m_poGrabber = new PWCGrabber(Size::null,40,2);
-      }else if(text == "Philips 740 Webcam [device 3]"){
+      }else if(text == " Philips 740 Webcam [device 3]"){
         m_poGrabber = new PWCGrabber(Size::null,40,3);
       }
     }
 
     if(!m_poGrabber){
-      ERROR_LOG("video device "<< text.toLatin1().data() << "no longer available found!");
+      ERROR_LOG("video device "<< text.toLatin1().data() << "no longer available!");
       m_oGrabberMutex.unlock();
       return;
     }
