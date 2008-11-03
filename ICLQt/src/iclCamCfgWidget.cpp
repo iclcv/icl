@@ -222,7 +222,6 @@ namespace icl{
     if(m_poGrabber) delete m_poGrabber;
     m_poGrabber = 0;
     
-    DEBUG_LOG("creating grabber with this prefix: " << prefix.toLatin1().data() );
     if(prefix == "DC"){
       
       m_vecDCDeviceList = DCGrabber::getDeviceList();
