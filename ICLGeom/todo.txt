@@ -1,0 +1,7 @@
+icl-logo muss noch optimiert werden...
+Bin gerade in ICLProjects/ICLGREFIT... zugange
+ICLGeom ist nun FAST auf den Stand von OpenGL, bis auf,
+das roty und rotz invertiert werden müssen ... damit lässt sich für die visualisierung vermutlich leben ..
+Was ist denn mit dem GL-ViewPort (ist der wirklich verkehrt herum ...) -> testen ..
+
+Weiter geht es dann mit einem Handmodel nach klaudia nölkers ..
