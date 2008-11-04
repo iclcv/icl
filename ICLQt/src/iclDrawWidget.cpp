@@ -213,6 +213,46 @@ namespace icl{
 
   // }}}
 
+ class Points32fCommand : public IntelligentDrawCommand{
+    // {{{ open
+
+    public:
+    Points32fCommand(const std::vector<Point32f> &pts, bool connectPoints, bool closeLoop):
+      pts(pts),connectPoints(connectPoints),closeLoop(closeLoop){}
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      if(!pts.size()) return;
+      if(connectPoints){
+        if(pts.size() == 2){
+          e->line(tP(pts[0].x,pts[0].y,s),tP(pts[1].x,pts[1].y,s));
+          e->point(tP(pts[0].x,pts[0].y,s));
+          e->point(tP(pts[1].x,pts[1].y,s));
+          return;
+        }
+        ///  x----------x---------x------------x-------------x
+        ///  0          1         2            3             4  n=5
+        
+        for(unsigned int i=1;i<pts.size();i++){
+          e->line(tP(pts[i-1].x,pts[i-1].y,s),tP(pts[i].x,pts[i].y,s));
+          e->point(tP(pts[i].x,pts[i].y,s));
+        }
+        if(closeLoop){
+          e->line(tP(pts[pts.size()-1].x,pts[pts.size()-1].y,s),tP(pts[0].x,pts[0].y,s));
+        }
+      }else{
+        for(unsigned int i=0;i<pts.size();i++){
+          e->point(tP(pts[i].x,pts[i].y,s));
+        }
+      }
+    }
+    std::vector<Point32f> pts;
+    int xfac;
+    int yfac;
+    bool connectPoints;
+    bool closeLoop;
+  };
+
+  // }}}
+
 
   
   class LineCommand : public DrawCommand4F{
@@ -561,9 +601,17 @@ namespace icl{
   void ICLDrawWidget::points(const std::vector<Point> &pts, int xfac, int yfac){
     m_vecCommands.push_back(new PointsCommand(pts,xfac,yfac,false,false));
   }
+  void ICLDrawWidget::points(const std::vector<Point32f> &pts){
+    m_vecCommands.push_back(new Points32fCommand(pts,false,false));
+  }
+
   void  ICLDrawWidget::linestrip(const std::vector<Point> &pts, bool closeLoop, int xfac, int yfac){
     m_vecCommands.push_back(new PointsCommand(pts,xfac,yfac,true,closeLoop));
   }
+  void  ICLDrawWidget::linestrip(const std::vector<Point32f> &pts, bool closeLoop){
+    m_vecCommands.push_back(new Points32fCommand(pts,true,closeLoop));
+  }
+
   void ICLDrawWidget::abs(){
     m_vecCommands.push_back(new AbsCommand());
   }

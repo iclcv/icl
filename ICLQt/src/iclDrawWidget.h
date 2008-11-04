@@ -92,11 +92,17 @@ namespace icl{
     **/
     void points(const std::vector<Point> &pts, int xfac=1, int yfac=1);
 
+    /// draws a set of points
+    void points(const std::vector<Point32f> &pts);
+    
     /// draws a set of connected points
     /** for relative Point coordinates the factors can be set
         point i is drawn at pts[i].x/xfac and pts[i].y/yfac
     **/
     void linestrip(const std::vector<Point> &pts, bool closeLoop=true, int xfac=1, int yfac=1);
+
+    /// draws a set of connected points
+    void linestrip(const std::vector<Point32f> &pts, bool closeLoop=true);
     
     
     /// draws a line from point (x1,y1) to point (x2,y2)
