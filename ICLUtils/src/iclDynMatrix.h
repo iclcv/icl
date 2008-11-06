@@ -37,7 +37,7 @@ namespace icl{
       m_rows(rows),m_cols(cols){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       if(deepCopy){
-        m_data = new T[dim];
+        m_data = new T[dim()];
         std::copy(data,data+dim(),begin());
       }else{
         m_data = data;

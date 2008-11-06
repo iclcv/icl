@@ -650,18 +650,18 @@ namespace icl{
     /// invert the matrix (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
     /** This function internally uses an instance of DynMatrix<T> */
     FixedMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
-      DynMatrix<T> m(COLS,ROWS,m_data,false);
+      DynMatrix<T> m(COLS,ROWS,const_cast<T*>(m_data),false);
       DynMatrix<T> mi = m.inv();
       m.set_data(0);
       FixedMatrix r;
-      FixedMatrixBase::optimized_copy<T*,T*,DIM>(mi.begin(),mi.end(),begin());
+      FixedMatrixBase::optimized_copy<T*,T*,DIM>(mi.begin(),mi.end(),r.begin());
       //      std::copy(mi.begin(),mi.end(),r.begin());      
       return r;
     }
     
     /// calculate matrix determinant
     T det() const throw(InvalidMatrixDimensionException){
-      DynMatrix<T> m(COLS,ROWS,m_data,false);
+      DynMatrix<T> m(COLS,ROWS,const_cast<T*>(m_data),false);
       return m.det();
     }
   
