@@ -76,4 +76,104 @@ namespace icl{
   INSTANTIATE(float);
   INSTANTIATE(double);
 #undef INSTANTIATE
+
+
+#ifdef USE_OPTIMIZED_INV_AND_DET_FOR_2X2_3X3_AND_4X4_MATRICES
+  template<class T> 
+  void icl_util_get_fixed_4x4_matrix_inv(const T *src, T*dst){
+    T d = icl_util_get_fixed_4x4_matrix_det(src);
+    if(!d) throw SingularMatrixException("matrix is too singular");
+    const T &m00=*src++; const T &m01=*src++; const T &m02=*src++; const T &m03=*src++;
+    const T &m10=*src++; const T &m11=*src++; const T &m12=*src++; const T &m13=*src++;
+    const T &m20=*src++; const T &m21=*src++; const T &m22=*src++; const T &m23=*src++;
+    const T &m30=*src++; const T &m31=*src++; const T &m32=*src++; const T &m33=*src++;
+    *dst++ = ( m12*m23*m31 - m13*m22*m31 + m13*m21*m32 - m11*m23*m32 - m12*m21*m33 + m11*m22*m33 )/d;
+    *dst++ = ( m03*m22*m31 - m02*m23*m31 - m03*m21*m32 + m01*m23*m32 + m02*m21*m33 - m01*m22*m33 )/d;
+    *dst++ = ( m02*m13*m31 - m03*m12*m31 + m03*m11*m32 - m01*m13*m32 - m02*m11*m33 + m01*m12*m33 )/d;
+    *dst++ = ( m03*m12*m21 - m02*m13*m21 - m03*m11*m22 + m01*m13*m22 + m02*m11*m23 - m01*m12*m23 )/d;
+    *dst++ = ( m13*m22*m30 - m12*m23*m30 - m13*m20*m32 + m10*m23*m32 + m12*m20*m33 - m10*m22*m33 )/d;
+    *dst++ = ( m02*m23*m30 - m03*m22*m30 + m03*m20*m32 - m00*m23*m32 - m02*m20*m33 + m00*m22*m33 )/d;
+    *dst++ = ( m03*m12*m30 - m02*m13*m30 - m03*m10*m32 + m00*m13*m32 + m02*m10*m33 - m00*m12*m33 )/d;
+    *dst++ = ( m02*m13*m20 - m03*m12*m20 + m03*m10*m22 - m00*m13*m22 - m02*m10*m23 + m00*m12*m23 )/d;
+    *dst++ = ( m11*m23*m30 - m13*m21*m30 + m13*m20*m31 - m10*m23*m31 - m11*m20*m33 + m10*m21*m33 )/d;
+    *dst++ = ( m03*m21*m30 - m01*m23*m30 - m03*m20*m31 + m00*m23*m31 + m01*m20*m33 - m00*m21*m33 )/d;
+    *dst++ = ( m01*m13*m30 - m03*m11*m30 + m03*m10*m31 - m00*m13*m31 - m01*m10*m33 + m00*m11*m33 )/d;
+    *dst++ = ( m03*m11*m20 - m01*m13*m20 - m03*m10*m21 + m00*m13*m21 + m01*m10*m23 - m00*m11*m23 )/d;
+    *dst++ = ( m12*m21*m30 - m11*m22*m30 - m12*m20*m31 + m10*m22*m31 + m11*m20*m32 - m10*m21*m32 )/d;
+    *dst++ = ( m01*m22*m30 - m02*m21*m30 + m02*m20*m31 - m00*m22*m31 - m01*m20*m32 + m00*m21*m32 )/d;
+    *dst++ = ( m02*m11*m30 - m01*m12*m30 - m02*m10*m31 + m00*m12*m31 + m01*m10*m32 - m00*m11*m32 )/d;
+    *dst++ = ( m01*m12*m20 - m02*m11*m20 + m02*m10*m21 - m00*m12*m21 - m01*m10*m22 + m00*m11*m22 )/d;
+  }
+
+  template<class T> 
+  void icl_util_get_fixed_3x3_matrix_inv(const T *src, T*dst){
+    T d = icl_util_get_fixed_3x3_matrix_det(src);
+    if(!d) throw SingularMatrixException("matrix is too singular");
+    const T &a = *src++; const T &b = *src++; const T &c = *src++;
+    const T &e = *src++; const T &f = *src++; const T &g = *src++;
+    const T &h = *src++; const T &i = *src++; const T &j = *src++;
+    *dst++ = ( -f*h + e*i )/d;
+    *dst++ = ( c*h - b*i )/d;
+    *dst++ = ( - c*e + b*f )/d;
+    *dst++ = ( f*g  - d*i )/d;
+    *dst++ = ( - c*g + a*i )/d;
+    *dst++ = ( - d*b + a*e )/d;
+    *dst++ = ( - e*g + d*h )/d;
+    *dst++ = ( b*g - a*h )/d;
+    *dst++ = ( - b*d + a*e )/d;
+    
+  }
+  template<class T> 
+  void icl_util_get_fixed_2x2_matrix_inv(const T *src, T*dst){
+    T d = icl_util_get_fixed_2x2_matrix_det(src);
+    if(!d) throw SingularMatrixException("matrix is too singular");
+    *dst++ = src[3]/d;
+    *dst++ = -src[1]/d;
+    *dst++ = -src[2]/d;
+    *dst++ = src[0]/d;
+  }
+
+  template<class T> 
+  T icl_util_get_fixed_4x4_matrix_det(const T *src){
+    const T &m00=*src++; const T &m01=*src++; const T &m02=*src++; const T &m03=*src++;
+    const T &m10=*src++; const T &m11=*src++; const T &m12=*src++; const T &m13=*src++;
+    const T &m20=*src++; const T &m21=*src++; const T &m22=*src++; const T &m23=*src++;
+    const T &m30=*src++; const T &m31=*src++; const T &m32=*src++; const T &m33=*src++;
+    return
+    m03 * m12 * m21 * m30-m02 * m13 * m21 * m30-m03 * m11 * m22 * m30+m01 * m13 * m22 * m30+
+    m02 * m11 * m23 * m30-m01 * m12 * m23 * m30-m03 * m12 * m20 * m31+m02 * m13 * m20 * m31+
+    m03 * m10 * m22 * m31-m00 * m13 * m22 * m31-m02 * m10 * m23 * m31+m00 * m12 * m23 * m31+
+    m03 * m11 * m20 * m32-m01 * m13 * m20 * m32-m03 * m10 * m21 * m32+m00 * m13 * m21 * m32+
+    m01 * m10 * m23 * m32-m00 * m11 * m23 * m32-m02 * m11 * m20 * m33+m01 * m12 * m20 * m33+
+    m02 * m10 * m21 * m33-m00 * m12 * m21 * m33-m01 * m10 * m22 * m33+m00 * m11 * m22 * m33;
+  }
+  template<class T> 
+  T icl_util_get_fixed_3x3_matrix_det(const T *src){
+    const T &a = *src++; const T &b = *src++; const T &c = *src++;
+    const T &d = *src++; const T &e = *src++; const T &f = *src++;
+    const T &g = *src++; const T &h = *src++; const T &i = *src++;
+    return ( a*e*i + b*f*g + c*d*h ) - ( g*e*c + h*f*a + i*d*b);
+  }
+  template<class T> 
+  T icl_util_get_fixed_2x2_matrix_det(const T *src){
+    return src[0]*src[3]-src[1]*src[2];
+  }
+
+#define INSTANTIATE_INV_AND_DET_OPT_FUNCS(T,D)                             \
+  template void icl_util_get_fixed_##D##x##D##_matrix_inv<T>(const T*,T*); \
+  template T icl_util_get_fixed_##D##x##D##_matrix_det<T>(const T*);
+
+INSTANTIATE_INV_AND_DET_OPT_FUNCS(float,2);
+INSTANTIATE_INV_AND_DET_OPT_FUNCS(float,3);
+INSTANTIATE_INV_AND_DET_OPT_FUNCS(float,4);
+
+INSTANTIATE_INV_AND_DET_OPT_FUNCS(double,2);
+INSTANTIATE_INV_AND_DET_OPT_FUNCS(double,3);
+INSTANTIATE_INV_AND_DET_OPT_FUNCS(double,4);
+
+#undef INSTANTIATE_INV_AND_DET_OPT_FUNCS
+
+
+#endif
+  
 }

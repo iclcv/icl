@@ -648,7 +648,9 @@ namespace icl{
 
 
     /// invert the matrix (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
-    /** This function internally uses an instance of DynMatrix<T> */
+    /** This function internally uses an instance of DynMatrix<T> 
+        Additionally implemented (in closed form) for float and double for 2x2 3x3 and 4x4 matrices
+    */
     FixedMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
       DynMatrix<T> m(COLS,ROWS,const_cast<T*>(m_data),false);
       DynMatrix<T> mi = m.inv();
@@ -659,7 +661,10 @@ namespace icl{
       return r;
     }
     
-    /// calculate matrix determinant
+    /// calculate matrix determinant (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
+    /** This function internally uses an instance of DynMatrix<T> 
+        Additionally implemented (in closed form) for float and double for 2x2 3x3 and 4x4 matrices
+    */
     T det() const throw(InvalidMatrixDimensionException){
       DynMatrix<T> m(COLS,ROWS,const_cast<T*>(m_data),false);
       return m.det();
@@ -856,6 +861,53 @@ namespace icl{
 #undef OPTIMIZED_MATRIX_MULTIPLICATION
  
 
+#endif
+
+#define USE_OPTIMIZED_INV_AND_DET_FOR_2X2_3X3_AND_4X4_MATRICES
+#ifdef USE_OPTIMIZED_INV_AND_DET_FOR_2X2_3X3_AND_4X4_MATRICES
+
+  /** \cond */
+  // this functions are implemented in iclFixedMatrix.cpp. All templates are
+  // instantiated for float and double
+
+  template<class T> 
+  void icl_util_get_fixed_4x4_matrix_inv(const T *src, T*dst);
+  template<class T> 
+  void icl_util_get_fixed_3x3_matrix_inv(const T *src, T*dst);
+  template<class T> 
+  void icl_util_get_fixed_2x2_matrix_inv(const T *src, T*dst);
+
+  template<class T> 
+  T icl_util_get_fixed_4x4_matrix_det(const T *src);
+  template<class T> 
+  T icl_util_get_fixed_3x3_matrix_det(const T *src);
+  template<class T> 
+  T icl_util_get_fixed_2x2_matrix_det(const T *src);
+
+#define SPECIALISED_MATRIX_INV_AND_DET(D,T) \
+  template<>                                                            \
+  FixedMatrix<T,D,D> FixedMatrix<T,D,D>::inv() const                    \
+  throw (InvalidMatrixDimensionException,SingularMatrixException){      \
+    FixedMatrix<T,D,D> r;                                               \
+    icl_util_get_fixed_##D##x##D##_matrix_inv<T>(begin(),r.begin());    \
+    return r;                                                           \
+  }                                                                     \
+  template<>                                                            \
+  T FixedMatrix<T,D,D>::det() const                                     \
+  throw(InvalidMatrixDimensionException){                               \
+    return icl_util_get_fixed_##D##x##D##_matrix_det<T>(begin());       \
+  }
+
+  SPECIALISED_MATRIX_INV_AND_DET(2,float);
+  SPECIALISED_MATRIX_INV_AND_DET(3,float);
+  SPECIALISED_MATRIX_INV_AND_DET(4,float);
+  SPECIALISED_MATRIX_INV_AND_DET(2,double);
+  SPECIALISED_MATRIX_INV_AND_DET(3,double);
+  SPECIALISED_MATRIX_INV_AND_DET(4,double);
+
+#undef SPECIALISED_MATRIX_INV_AND_DET
+  
+/** \endcond */
 #endif
 
 }
