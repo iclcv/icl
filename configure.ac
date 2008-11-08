@@ -299,6 +299,7 @@ ICL_PUSH_FLAG_VARS
 ICL_EXTEND_FLAG_VARS_TMP_FOR(QT,lib/,include/qt4)                
         
 AC_LANG([C++])
+
 AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtCore.pc],[],[HAVE_QT=FALSE])
 AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtOpenGL.pc],[],[HAVE_QT=FALSE])
 AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtGui.pc],[],[HAVE_QT=FALSE])
@@ -313,6 +314,8 @@ CPPFLAGS="$CPPFLAGS $ICL_QT_CXXFLAGS"
 QT_MOC=`pkg-config --variable=moc_location QtCore`
 AC_SUBST([QT_MOC])
 
+AC_CHECK_LIB([GLU],[gluLookAt],[],[HAVE_QT=FALSE])
+AC_CHECK_HEADER([GL/glu.h],[],[HAVE_QT=FALSE])
 
 AC_CHECK_HEADER([QtCore],[],[HAVE_QT=FALSE])
 AC_CHECK_HEADER([QtGui],[],[HAVE_QT=FALSE])
@@ -323,7 +326,7 @@ AC_CHECK_LIB([QtGui],[main],[],[HAVE_QT=FALSE])
 AC_CHECK_LIB([QtOpenGL],[main],[],[HAVE_QT=FALSE])
 AC_CHECK_LIB([QtXml],[main],[],[HAVE_QT=FALSE])
 
-
+ICL_EXTEND_FLAG_VARS_2([],[-lGLU],[],[],[])
 
 if test "$HAVE_QT" = "FALSE" ; then
 
