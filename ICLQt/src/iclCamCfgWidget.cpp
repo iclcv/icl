@@ -19,6 +19,7 @@
 #include <QTimer>
 #include <QPushButton>
 #include <QGroupBox>
+#include <iclThread.h>
 
 
 using namespace icl;
@@ -405,10 +406,13 @@ namespace icl{
     if(m_poGrabber){
       const ImgBase *image = m_poGrabber->grab();
       m_poICLWidget->setImage(image);
-      m_poICLWidget->updateFromOtherThread();
+      //m_poICLWidget->updateFromOtherThread();
+      //Thread::msleep(20);
+      m_poICLWidget->update();
 
       m_poFpsLabel->setText(m_oFPSE.getFpsString().c_str());
-      m_poFpsLabel->updateFromOtherThread();
+      //m_poFpsLabel->updateFromOtherThread();
+      m_poICLWidget->update();
     }
     m_oGrabberMutex.unlock();
     
