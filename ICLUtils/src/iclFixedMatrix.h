@@ -104,6 +104,33 @@ namespace icl{
   /** By using fixed template parameters as Matrix dimensions,
       specializations to e.g. row or column vectors, are also
       as performant as possible.
+      
+      \section PERF Performance
+      Here are some benchmark results (measured on a 2GHz Core2Duo). All results are means of
+      10000 measurements using float matrices.
+      - <b>invert matrix: inv() </b>\n
+        - 1000 x inv 2x2 matrix 74 ns   [optimized C++]
+        - 1000 x inv 3x3 matrix 248 ns  [optimized C++]
+        - 1000 x inv 4x4 matrix 721 ns  [optimized C++]
+        - 1000 x inv 5x5 matrix 1.1 ms  [IPP only]
+
+      - <b>matrix determinant: det() </b>\n
+        - 1000 x det 2x2 matrix 11 ns   [optimized C++]
+        - 1000 x det 3x3 matrix 48 ns   [optimized C++]
+        - 1000 x det 4x4 matrix 138 ns  [optimized C++]
+        - 1000 x det 5x5 matrix 604 ns  [IPP only]
+
+      - <b>add two matrices using operator+: A+B </b>\n
+        - 1000 x add 2x2 matrices 7 ns  [STL's transform template ]
+        - 1000 x add 3x3 matrices 14 ns [STL's transform template ]
+        - 1000 x add 4x4 matrices 21 ns [STL's transform template ]
+        - 1000 x add 5x5 matrices 58 ns [STL's transform template ]
+
+      - <b>multiply two matrices (matrix multiplication): A*B </b>\n
+        - 1000 x multiply 2x2 matrices 55 ns [IPP if available]
+        - 1000 x multiply 3x3 matrices 63 ns [IPP if available]
+        - 1000 x multiply 4x4 matrices 79 ns [IPP if available]
+        - 1000 x multiply 5x5 matrices 238 ns [generic C++ implementation for A*B]
   */
   template<class T,unsigned int COLS,unsigned int ROWS>
   class FixedMatrix : public FixedMatrixBase{
@@ -149,7 +176,7 @@ namespace icl{
 
     /// Create matrix with given initializer elements (16 values max)
     /** default parameters for unnecessary parameters are not created when 
-        compiled with -O4        
+        compiled with -O4
     **/
     FixedMatrix(const T& v0,const T& v1,const T& v2=0,const T& v3=0,
                 const T& v4=0,const T& v5=0,const T& v6=0,const T& v7=0,  
@@ -598,8 +625,9 @@ namespace icl{
         is approximately twice as fast as D=A*B operator based multiplication
         \section BM Benchmark 
         1.000.000 Multiplications of 4x4-float matrices (using ipp-optimization) on a 2GHz 
-        Core-2-Duo take about 145ms using inplace multiplication and  about 290ms using
-        not-inplace multiplication. 
+        Core-2-Duo take about 145ms using inplace multiplication and about 290ms using
+        not-inplace multiplication. \n
+        TODO: These results differ from the general matrix benchmarks ??
         
         @param m right matrix multiplication operand
         @dst destination of matrix multiplication
