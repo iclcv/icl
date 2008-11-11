@@ -667,7 +667,9 @@ namespace icl{
     */
     T det() const throw(InvalidMatrixDimensionException){
       DynMatrix<T> m(COLS,ROWS,const_cast<T*>(m_data),false);
-      return m.det();
+      T d = m.det();
+      m.set_data(0);
+      return d;
     }
   
     /// returns matrix's transposed
