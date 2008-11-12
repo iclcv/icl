@@ -1,7 +1,6 @@
 #ifndef ICL_DEMO_GRABBER_H
 #define ICL_DEMO_GRABBER_H
 
-#include <iclGrabber.h>
 #include <iclColor.h>
 #include <iclTime.h>
 #include <iclSize32f.h>
@@ -53,7 +52,7 @@ namespace icl{
       some real unexpected behaviour */
   class DemoGrabber : public GrabberHandle<DemoGrabberImpl>{
     public:
-    DemoGrabber(float maxFPS=30){
+    inline DemoGrabber(float maxFPS=30){
       std::string id = str(maxFPS);
       if(isNew(id)){
         initialize(new DemoGrabberImpl(maxFPS),id);

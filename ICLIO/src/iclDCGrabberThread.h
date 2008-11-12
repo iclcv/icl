@@ -14,7 +14,7 @@
 namespace icl{
 
   /** \cond */
-  class DCGrabber;
+  class DCGrabberImpl;
   /** \endcond */
   
   namespace dc{
@@ -60,7 +60,7 @@ namespace icl{
     class DCGrabberThread : public Thread{
       public: 
       /// A DCGrabberThread can only be instantiated by a DCGrabber
-      friend class icl::DCGrabber;
+      friend class icl::DCGrabberImpl;
 
       /// the thread function (moved frames) 
       virtual void run();

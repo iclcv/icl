@@ -9,7 +9,7 @@
 
 namespace icl{
   /** \cond */
-  class DCGrabber;
+  class DCGrabberImpl;
   namespace dc{
     class DCGrabberThread;
   }
@@ -44,7 +44,7 @@ namespace icl{
     static const DCDevice null;
     
     /// DCDevices may only be created by the DCGrabbers private function
-    friend class icl::DCGrabber;
+    friend class icl::DCGrabberImpl;
 
     /// DCDevices may only be created by the DCGrabbers private function
     friend class icl::dc::DCGrabberThread;
@@ -108,6 +108,10 @@ namespace icl{
 
     /// returns the IEEE1394 UnitSpecID of the device
     icl32s getUnitSpecID() const;
+
+    /// returns a unique string identifier for this device
+    /** currently: getModelID + "-" +getGUID() */
+    std::string getUniqueStringIdentifier() const;
     
     /// returns wheather the device is associated to a dc-camera
     bool isNull() const { return m_poCam == 0; }

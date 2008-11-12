@@ -9,20 +9,34 @@
 #include <string>
 
 namespace icl{
+  /** \cond */
+  template <class G> class GrabberHandle;
+  /** \endcond */
   
-  /** \cond just an internal structure */
+  /// Internal storage class for the GrabberHandle wrapper class
   template<class G>
-  struct GrabberHandleInstance{
+  class GrabberHandleInstance{
+    /// only GrabberHandle are allowed to create this structs
+    template <class G2> friend class GrabberHandle;
+    
+    /// creates a new Instance with given id, and Grabber-Pointer
     GrabberHandleInstance(std::string id="", G* ptr = 0):
       id(id),ptr(ptr){}
+
+    public:
+    /// Destructor
     ~GrabberHandleInstance(){
       ICL_DELETE(ptr);
     }
+    /// Grabbers id
     std::string id;
+    
+    /// Underlying Grabber instance
     G *ptr;
+    
+    /// mutex protecting ptr
     Mutex mutex;
   };
-  /** \endcond */
 
 
   /// Wrapper class for Grabber instances to provide "shared" grabber instances
@@ -76,30 +90,40 @@ namespace icl{
   */
   template<class G>
   class GrabberHandle : public Grabber{
+
     public:
 
     typedef SmartPtr<GrabberHandleInstance<G>,PointerDelOp> InstancePtr;
     typedef std::map<std::string,InstancePtr> InstanceMap;
 
+    protected:
+    /// only used internally, returns the GrabberHandles internal ID
     inline std::string getID() const{
       ICLASSERT_RETURN_VAL(!isNull(),"");
       return m_instance->id;
     } 
     
+    /// used in derived classes to determine wheter device is shared or new
     static inline bool isNew(const std::string &id){
       Mutex::Locker l(s_mutex);
       return s_instances.find(id) == s_instances.end();
     }
 
+    /// used in derived classes to initialize itself as a shared copy 
     inline void initialize(const std::string &id){
       Mutex::Locker l(s_mutex);
       m_instance = s_instances[id];
     }
+    
+    /// used inderived classes to initialize itself as brand new instance
     inline void initialize(G* g, const std::string &id){
       ICLASSERT_RETURN(isNew(id));
       Mutex::Locker l(s_mutex);
       m_instance = s_instances[id] = InstancePtr(new GrabberHandleInstance<G>(id,g));
     }
+    public:
+
+    /// Destructor
     inline ~GrabberHandle(){
       if(isNull()) return;
       Mutex::Locker l(s_mutex);
@@ -115,45 +139,63 @@ namespace icl{
         // m_instance itself is released automatically by it's destructor
       }
     }
-    
+
+    /// Determine wheter the underlying grabber was created correctly
     inline bool isNull() const{
       return !static_cast<bool>(m_instance);
     }
+   
+    /// calles underlying grabber's grab function
     virtual inline const ImgBase* grab(ImgBase **ppoDst=0){
       ICLASSERT_RETURN_VAL(!isNull(),0);
       Mutex::Locker l(m_instance->mutex);
       return m_instance->ptr->grab(ppoDst);
     }
+    /// calles underlying grabber's setProperty function
     virtual inline void setProperty(const std::string &property, const std::string &value){      
       ICLASSERT_RETURN(!isNull());
       Mutex::Locker l(m_instance->mutex);
       m_instance->ptr->setProperty(property,value);
     }
+    /// calles underlying grabber's getPropertyList function
     virtual inline std::vector<std::string> getPropertyList(){
       ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
       Mutex::Locker l(m_instance->mutex);
       return m_instance->ptr->getPropertyList();
     }
+    /// calles underlying grabber's supportsProperty function
     virtual inline  bool supportsProperty(const std::string &property){
       ICLASSERT_RETURN_VAL(!isNull(),false);
       Mutex::Locker l(m_instance->mutex);
       return m_instance->ptr->supportsProperty(property);
     }
+    /// calles underlying grabber's getType function
     virtual inline std::string getType(const std::string &name){
       ICLASSERT_RETURN_VAL(!isNull(),"undefined");
       Mutex::Locker l(m_instance->mutex);
       return m_instance->ptr->getType(name);
     }
+    /// calles underlying grabber's getInfo function
     virtual inline std::string getInfo(const std::string &name){
       ICLASSERT_RETURN_VAL(!isNull(),"undefined");
       Mutex::Locker l(m_instance->mutex);
       return m_instance->ptr->getInfo(name);
     }
+    /// calles underlying grabber's getValue function
     virtual inline std::string getValue(const std::string &name){
       ICLASSERT_RETURN_VAL(!isNull(),"undefined");
       Mutex::Locker l(m_instance->mutex);
       return m_instance->ptr->getValue(name);
     }
+
+    /// returns all current instances available
+    static inline const InstanceMap &getInstanceMap() { return s_instances; }
+    
+    /// locks the static instance map (obtainable using getInstanceMap())
+    static inline void lockInstanceMap() { s_mutex.lock(); }
+
+    /// un-locks the static instance map (obtainable using getInstanceMap())
+    static inline void unlockInstanceMap() { s_mutex.unlock(); }
   
     protected:
     /// internal instance pointer

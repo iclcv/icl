@@ -8,7 +8,7 @@ namespace icl{
   using namespace std;
   using namespace icl::dc;
   
-  DCGrabber::DCGrabber(const DCDevice &dev, int isoMBits, bool suppressDoubledImages):
+  DCGrabberImpl::DCGrabberImpl(const DCDevice &dev, int isoMBits, bool suppressDoubledImages):
     // {{{ open
 
     m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_poImage(0),
@@ -31,7 +31,7 @@ namespace icl{
 
   // }}}
   
-  const ImgBase *DCGrabber::grab (ImgBase **ppoDst){
+  const ImgBase *DCGrabberImpl::grab (ImgBase **ppoDst){
     // {{{ open
 
     if(ppoDst){
@@ -65,7 +65,7 @@ namespace icl{
 
   // }}}
   
-  DCGrabber::~DCGrabber(){
+  DCGrabberImpl::~DCGrabberImpl(){
     // {{{ open
     if(m_poGT){
       m_poGT->stop();
@@ -79,10 +79,10 @@ namespace icl{
   // }}}
 
   
-  std::vector<DCDevice> DCGrabber::getDeviceList(bool resetBusFirst){
+  std::vector<DCDevice> DCGrabberImpl::getDeviceList(bool resetBusFirst){
     // {{{ open
     if(resetBusFirst){
-      DCGrabber::dc1394_reset_bus(false);
+      DCGrabberImpl::dc1394_reset_bus(false);
     }
     std::vector<DCDevice> v;
     
@@ -123,7 +123,7 @@ namespace icl{
 
   // }}}
   
-  void DCGrabber::restartGrabberThread(){
+  void DCGrabberImpl::restartGrabberThread(){
     if(m_poGT){
       m_poGT->stop();
       //      m_poGT->waitFor();
@@ -134,7 +134,7 @@ namespace icl{
     usleep(10*1000);
   }
 
-  void DCGrabber::setProperty(const std::string &property, const std::string &value){
+  void DCGrabberImpl::setProperty(const std::string &property, const std::string &value){
     if(m_oDev.isNull()) return;
     if(property == "bayer-quality"){
       m_oOptions.bayermethod = bayermethod_from_string(value);
@@ -161,7 +161,7 @@ namespace icl{
       ERROR_LOG("unsupported property " << property);
     }
   }
-  std::vector<std::string> DCGrabber::getPropertyList(){
+  std::vector<std::string> DCGrabberImpl::getPropertyList(){
     std::vector<std::string> v;
     if(m_oDev.isNull()) return v;
     
@@ -178,7 +178,7 @@ namespace icl{
     return v;
   }
 
-  std::string DCGrabber::getType(const std::string &name){
+  std::string DCGrabberImpl::getType(const std::string &name){
     if((m_oDev.needsBayerDecoding() && name == "bayer-quality") || 
        name == "format" || name == "size" || name == "enable-image-labeling"){
       return "menu";
@@ -188,7 +188,7 @@ namespace icl{
     return "";// range command undefined
   }
  
-  std::string DCGrabber::getInfo(const std::string &name){
+  std::string DCGrabberImpl::getInfo(const std::string &name){
     if(m_oDev.isNull()) return "";
     if(m_oDev.needsBayerDecoding() && name == "bayer-quality"){
       return "{"
@@ -215,7 +215,7 @@ namespace icl{
     }
     return "";
   }
-  std::string DCGrabber::getValue(const std::string &name){
+  std::string DCGrabberImpl::getValue(const std::string &name){
     if(m_oDev.isNull()) return "";  
 
     if(m_oDev.needsBayerDecoding() && name == "bayer-quality") return to_string(m_oOptions.bayermethod);

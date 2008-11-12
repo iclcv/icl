@@ -6,6 +6,7 @@
 #include <iclThread.h>
 
 #include <algorithm>
+#include <iclStringUtils.h>
 
 using namespace std;
 using namespace icl::dc;
@@ -181,6 +182,18 @@ namespace icl{
   icl32s DCDevice::getUnitSpecID() const{
     if(isNull()) return -1;
     return m_poCam->unit_spec_ID;
+  }
+
+  std::string DCDevice::getUniqueStringIdentifier() const{
+    if(isNull()) return "null";
+    union GUID{
+      uint64_t t64;
+      uint32_t t32[2];
+    } guid;
+    guid.t64 = getGUID();
+
+    return getModelID()+"-"+str(guid.t32[0])+"."+str(guid.t32[1]);
+    
   }
 
   void DCDevice::setMode(const Mode &mode){

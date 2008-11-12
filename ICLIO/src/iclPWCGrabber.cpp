@@ -24,18 +24,18 @@ using namespace std;
 #ifndef SYSTEM_LINUX
 namespace icl {
   // Dummy implementation...
-    PWCGrabber::PWCGrabber(void){}
-    PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice){
+    PWCGrabberImpl::PWCGrabberImpl(void){}
+    PWCGrabberImpl::PWCGrabberImpl(const Size &s, float fFps, int iDevice){
       (void) s;
       (void) fFps;
       (void) iDevice;
     }
-    PWCGrabber::~PWCGrabber(void){}
-    std::vector<int> PWCGrabber::getDeviceList(){
+    PWCGrabberImpl::~PWCGrabberImpl(void){}
+    std::vector<int> PWCGrabberImpl::getDeviceList(){
       return std::vector<int>();
     }
 
-    bool PWCGrabber::init(const Size &s,float fFps, int iDevice, bool echoOff){
+    bool PWCGrabberImpl::init(const Size &s,float fFps, int iDevice, bool echoOff){
       (void) s;
       (void) fFps;
       (void) iDevice;
@@ -43,61 +43,61 @@ namespace icl {
       return false;
     }
     
-    const ImgBase* PWCGrabber::grab(ImgBase **ppoDst){
+    const ImgBase* PWCGrabberImpl::grab(ImgBase **ppoDst){
       (void) ppoDst;
       return 0;
     }
 
-    void PWCGrabber::setProperty(const std::string &property, const std::string &value){
+    void PWCGrabberImpl::setProperty(const std::string &property, const std::string &value){
       (void) property;
       (void) value;  
     }
     
-    std::vector<std::string> PWCGrabber::getPropertyList(){
+    std::vector<std::string> PWCGrabberImpl::getPropertyList(){
       return std::vector<std::string>();
     }
     
-    std::string PWCGrabber::getType(const std::string &name){
+    std::string PWCGrabberImpl::getType(const std::string &name){
       (void) name;
       return "";
     }
 
-    std::string PWCGrabber::getInfo(const std::string &name){
+    std::string PWCGrabberImpl::getInfo(const std::string &name){
       (void) name;
       return "";   
     }
 
-    std::string PWCGrabber::getValue(const std::string &name){
+    std::string PWCGrabberImpl::getValue(const std::string &name){
       (void) name;
       return "";  
     }
     
-    bool PWCGrabber::restoreUserSettings() { return false; }
-    bool PWCGrabber::saveUserSettings()    { return false; }
+    bool PWCGrabberImpl::restoreUserSettings() { return false; }
+    bool PWCGrabberImpl::saveUserSettings()    { return false; }
     
-    bool PWCGrabber::setGain(signed int iGainValue){
+    bool PWCGrabberImpl::setGain(signed int iGainValue){
       (void) iGainValue;
       return false;  
     }
 
-    bool PWCGrabber::setGrabbingSize(const Size &size){
+    bool PWCGrabberImpl::setGrabbingSize(const Size &size){
       (void) size;  
       return false;
     }
-    bool PWCGrabber::setCompression(int level){
+    bool PWCGrabberImpl::setCompression(int level){
       (void) level;
       return false;
     }
 
-    bool PWCGrabber::setShutterSpeed(int level){
+    bool PWCGrabberImpl::setShutterSpeed(int level){
       (void) level;
       return false;
     }
-    bool PWCGrabber::setLED(bool on, int time){
+    bool PWCGrabberImpl::setLED(bool on, int time){
       return false;
     }
-    void PWCGrabber::releaseAll(){}
-    bool PWCGrabber::setWhiteBalance(int mode, int manual_red, int manual_blue){
+    void PWCGrabberImpl::releaseAll(){}
+    bool PWCGrabberImpl::setWhiteBalance(int mode, int manual_red, int manual_blue){
       (void) mode;
       (void) manual_red;
       (void) manual_blue;
@@ -430,26 +430,26 @@ void save_setparams(int device){
 }
 // }}}
   
-  PWCGrabber::PWCGrabber(void) : m_poRGB8Image(0) {
+  PWCGrabberImpl::PWCGrabberImpl(void) : m_poRGB8Image(0) {
     m_iDevice  = -1;
   }
   
-  PWCGrabber::PWCGrabber(const Size &s, float fFps, int iDevice) : 
+  PWCGrabberImpl::PWCGrabberImpl(const Size &s, float fFps, int iDevice) : 
     m_iDevice(-1),m_poRGB8Image(0) {
     if (!init(s, fFps, iDevice)) { exit(0); }
   }
 
-  PWCGrabber::~PWCGrabber(void) {
+  PWCGrabberImpl::~PWCGrabberImpl(void) {
     releaseAll();
     delete m_poRGB8Image;
   }
   
-  vector<int> PWCGrabber::getDeviceList(){
+  vector<int> PWCGrabberImpl::getDeviceList(){
     // {{{ open
 
     vector<int> v;
     for(int i=0;i<4;i++){
-      PWCGrabber *g = new PWCGrabber;
+      PWCGrabberImpl *g = new PWCGrabberImpl;
       if(g->init(Size::null,40,i,true)){
         v.push_back(i);
       }
@@ -460,7 +460,7 @@ void save_setparams(int device){
 
   // }}}
   
-  void PWCGrabber::releaseAll(){
+  void PWCGrabberImpl::releaseAll(){
     // {{{ open 
     if (m_poRGB8Image){
       delete m_poRGB8Image; 
@@ -520,7 +520,7 @@ void save_setparams(int device){
   
   // }}}
   
-  bool PWCGrabber::setGrabbingSize(const Size &size){
+  bool PWCGrabberImpl::setGrabbingSize(const Size &size){
     // {{{ open
 
     if(size != Size(160,120) && size != Size(320,240) && size != Size(640,480)){
@@ -532,7 +532,7 @@ void save_setparams(int device){
 
   // }}}
 
-  string PWCGrabber::getType(const std::string &name){
+  string PWCGrabberImpl::getType(const std::string &name){
     if(name == "size" || name == "white balance mode" || name == "compression level"){
       return "menu";
     }else if(name == "gain" || name == "white balance red" || name == "white balance blue" || 
@@ -545,7 +545,7 @@ void save_setparams(int device){
     }    
   }
   
-  string PWCGrabber::getInfo(const std::string &name){
+  string PWCGrabberImpl::getInfo(const std::string &name){
     if(name == "size"){
       return "{\"160x120\",\"320x240\",\"640x480\"}";
     }else if(name == "gain" || name == "white balance red" || name == "white balance blue"){
@@ -567,13 +567,13 @@ void save_setparams(int device){
     }
   }
   
-  string PWCGrabber::getValue(const std::string &name){
+  string PWCGrabberImpl::getValue(const std::string &name){
     if(name == "size"){
       return translateSize(Size(m_iWidth,m_iHeight));
     }else if(name == "gain"){
       unsigned int g = 0;
       PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAGC, &g), "cannot get PWC gain");
-      return toStr(int(g));
+      return str(int(g));
       //char buf[20];
       //sprintf(buf,"%d",g);
       //return buf;
@@ -581,12 +581,12 @@ void save_setparams(int device){
       pwc_whitebalance wb;
       PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAWB, &wb), "cannot get PWC white balance");
       if(name == "white balance red"){ 
-        return toStr(int(wb.manual_red));
+        return str(int(wb.manual_red));
         //        char buf[20];
         //sprintf(buf,"%d",wb.manual_red);
         //return buf;
       }else if(name == "white balance blue"){ 
-        return toStr(int(wb.manual_blue));
+        return str(int(wb.manual_blue));
         //        char buf[20];
         //sprintf(buf,"%d",wb.manual_blue);
         //return buf;
@@ -604,7 +604,7 @@ void save_setparams(int device){
       return "YUV 4-2-0 planar";
     }else if(name == "shutter speed"){
       signed int level = usbvflg_shutter_speeds[m_iDevice];
-      return toStr(int(level));
+      return str(int(level));
       //      char buf[20];
       //sprintf(buf,"%d",level);
       //return buf;
@@ -621,17 +621,17 @@ void save_setparams(int device){
     }else if (name == "led on"){
       struct pwc_leds leds;
       PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice],VIDIOCPWCGLED , &leds), "cannot get \"led on\" value");
-      return toStr(int(leds.led_on));
+      return str(int(leds.led_on));
     }
     else if (name == "led off"){
       struct pwc_leds leds;
       PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice],VIDIOCPWCGLED , &leds), "cannot get \"led off\" value");
-      return toStr(int(leds.led_off));
+      return str(int(leds.led_off));
     }
     return "undefined";
   }
   
-  void PWCGrabber::setProperty(const string &property, const string &value){
+  void PWCGrabberImpl::setProperty(const string &property, const string &value){
     // {{{ open
     if(property == "size"){
       Size newSize = translateSize(value);
@@ -691,7 +691,7 @@ void save_setparams(int device){
 
   // }}}
   
-  std::vector<std::string> PWCGrabber::getPropertyList(){
+  std::vector<std::string> PWCGrabberImpl::getPropertyList(){
     // {{{ open
 
     std::vector<std::string> v;
@@ -712,18 +712,18 @@ void save_setparams(int device){
 
   // }}}
   
-  bool PWCGrabber::restoreUserSettings(){
+  bool PWCGrabberImpl::restoreUserSettings(){
     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCRUSER), "cannot restore user settings");
     usleep(1500000);
     return true;
   }
   
-  bool PWCGrabber::saveUserSettings(){
+  bool PWCGrabberImpl::saveUserSettings(){
     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSUSER), "cannot save user settings");
     return true;
   }
   
-  bool PWCGrabber::setGain(signed int iGainValue) {
+  bool PWCGrabberImpl::setGain(signed int iGainValue) {
     if (iGainValue > 65535){
       return false;
     }
@@ -731,7 +731,7 @@ void save_setparams(int device){
     return true;
   }
   
-  bool PWCGrabber::setWhiteBalance(int mode, int manual_red, int manual_blue){
+  bool PWCGrabberImpl::setWhiteBalance(int mode, int manual_red, int manual_blue){
     pwc_whitebalance wb;
     
     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAWB, &wb), "cannot get white balance");
@@ -747,20 +747,20 @@ void save_setparams(int device){
     return true;
   }
 
-  bool PWCGrabber::setCompression(int level){
+  bool PWCGrabberImpl::setCompression(int level){
     ICLASSERT_RETURN_VAL( level >=0 && level <=3 ,false);
     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSCQUAL, &level), "cannot set compression level");
     return true;
   }
   
-  bool PWCGrabber::setShutterSpeed(int level){
+  bool PWCGrabberImpl::setShutterSpeed(int level){
     ICLASSERT_RETURN_VAL( level >=-1 && level <= 65535 ,false);
     PWC_DEBUG_CALL(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCSSHUTTER, &level), "cannot set shutter speed");
     usbvflg_shutter_speeds[m_iDevice] = level;
     return true;
   }
   
-  bool PWCGrabber::setLED(bool on, int time){
+  bool PWCGrabberImpl::setLED(bool on, int time){
     struct pwc_leds leds;
     leds.led_on = on ? time : 0;
     leds.led_off = on ? 0 : time;
@@ -768,7 +768,7 @@ void save_setparams(int device){
     return true;
   }
   
-  bool PWCGrabber::init(const Size &s,float fFps, int iDevice, bool echoOff)  {
+  bool PWCGrabberImpl::init(const Size &s,float fFps, int iDevice, bool echoOff)  {
     ICLASSERT_RETURN_VAL(iDevice >=0 && iDevice <=4,false);
     if (iDevice >= 0){
       releaseAll ();
@@ -894,7 +894,7 @@ void save_setparams(int device){
   
   
   
-  const ImgBase* PWCGrabber::grab(ImgBase **ppoDst){
+  const ImgBase* PWCGrabberImpl::grab(ImgBase **ppoDst){
     // {{{ open 
 
   ImgBase *poOutput = prepareOutput (ppoDst);

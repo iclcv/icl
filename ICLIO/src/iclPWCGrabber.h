@@ -1,7 +1,7 @@
 #ifndef ICLPWCGRABBER_H
 #define ICLPWCGRABBER_H
 
-#include <iclGrabber.h>
+#include <iclGrabberHandle.h>
 #include <iclConverter.h>
 #include <string>
 
@@ -39,13 +39,15 @@ namespace icl{
   @see Converter
   */
   
-  class PWCGrabber : public Grabber {
-  public:
-    
+  class PWCGrabberImpl : public Grabber {
+    public:    
+    friend class PWCGrabber;
+
+    private:
     /// Base constructor (recommended)
     /** call init(..) savely after object creation to avoid an exit(-1) call when the 
         desired device was not found **/
-    PWCGrabber(void);
+    PWCGrabberImpl(void);
     
     /// Deprecated contstructor for direct instantiation of a valid grabber object
     /** use the default contructor instead and call init(..) to get initialization 
@@ -53,11 +55,11 @@ namespace icl{
         @param s internal grabbing size for pwc if Size::null, the current size is used!
         @param fFps speed of the internal grabber thread 
         @param iDevice /dev/video - device to use (0..4) **/
-    PWCGrabber(const Size &s, float fFps=30, int iDevice = 0); 
+    PWCGrabberImpl(const Size &s, float fFps=30, int iDevice = 0); 
 
-    
+    public:
     /// Destructor
-    ~PWCGrabber(void);
+    ~PWCGrabberImpl(void);
     
     /// creates a list with all available PWC device indices
     /** The resulting vector contains device indices form 0 to 3
@@ -95,7 +97,7 @@ namespace icl{
     /** \copydoc icl::Grabber::setProperty(const std::string&,const std::string&) **/
     virtual void setProperty(const std::string &property, const std::string &value);
     
-    /// returns a list of properties, that can be set using setProperty
+    /// returns a list of properties, that can be set usingsetProperty
     /** @return list of supported property names **/
     virtual std::vector<std::string> getPropertyList();
     
@@ -200,6 +202,55 @@ namespace icl{
 
     /// converter used for output formatYUV conversion
     Converter m_oConverterHalfSize;
+  };
+
+
+  /// Phillips Webcam grabber using pwc interface \ingroup GRABBER_G \ingroup DC_G
+  /** for more details: @see PWCGrabberImpl */
+  class PWCGrabber : public GrabberHandle<PWCGrabberImpl>{
+    static inline std::string create_id(int dev){
+      return std::string("device-")+str(dev);
+    }
+    
+    public:
+    /// returns a list of available pwc devices 
+    /** @see PWCGrabberImpl for more details*/
+    static inline std::vector<int> getDeviceList(){
+      return PWCGrabberImpl::getDeviceList();
+    }
+    
+    /// creates a new PWCGrabber instance
+    /** @see PWCGrabberImpl for more details */
+    inline PWCGrabber(const Size &s, float fFps=30, int iDevice = 0){
+      std::string id = create_id(iDevice);
+      if(isNew(id)){
+        initialize(new PWCGrabberImpl(s,fFps,iDevice),id);
+      }else{
+        initialize(id);
+      }
+    }
+    /// empty constructor (initialize late using init())
+    /** @see PWCGrabberImpl for more details */
+    inline PWCGrabber(){}
+    
+    /// save initialization of the PWCGrabber instance
+    /** @see PWCGrabberImpl for more details */
+    inline bool init(const Size &s,float fFps=30, int iDevice = 0, bool echoOff=false){
+      std::string id = create_id(iDevice);
+      if(isNew(id)){
+        initialize(new PWCGrabberImpl,id);
+        Mutex::Locker l(m_instance->mutex);
+        return m_instance.get()->ptr->init(s,fFps,iDevice,echoOff);
+      }else{
+        initialize(id);
+        // resetting the parameters
+        Mutex::Locker l(m_instance->mutex);
+        m_instance.get()->ptr->setGrabbingSize(s);
+        return true;
+      }
+
+    }
+    
   };
   
 }

@@ -6,7 +6,7 @@
 #include "iclDCDevice.h"
 #include "iclDCDeviceFeatures.h"
 #include "iclDCDeviceOptions.h"
-#include "iclGrabber.h"
+#include "iclGrabberHandle.h"
 #include <iclConverter.h>
 
 namespace icl{
@@ -54,15 +54,22 @@ namespace icl{
       "getDeviceList()" can be used to detect currently supported cameras.
       @see DCDevice, DCDeviceOptions, DCGrabberThread, DCFrameQueue
   */
-  class DCGrabber : public Grabber{
-    public: 
-    /// Constructor creates a new DCGrabber instance from a given DCDevice
+  class DCGrabberImpl : public Grabber{
+    public:
+    friend class DCGrabber;
+    
+    private:
+    
+    /// Constructor creates a new DCGrabberImpl instance from a given DCDevice
     /** @param dev DCDevice to use (this device can only be created by the
                    static function getDeviceList() */
-    DCGrabber(const DCDevice &dev=DCDevice::null, int isoMBits=400, bool suppressDoubledImages=false);
+    DCGrabberImpl(const DCDevice &dev=DCDevice::null, int isoMBits=400, bool suppressDoubledImages=false);
 
+    public: 
+    
+    
     /// Destructor
-    ~DCGrabber();
+    ~DCGrabberImpl();
     
     /// Sets a property to a new value
     /** call getPropertyList() to see which properties are supported 
@@ -143,6 +150,34 @@ namespace icl{
     bool m_bSuppressDoubledImages;
   };
   
+  
+  /// Grabber implementation for grabbing images from firewire cameras using libdc1394-2 \ingroup GRABBER_G \ingroup DC_G
+  /** This is just a wrapper class of the underlying DCGrabberImpl class */
+  struct DCGrabber : public GrabberHandle<DCGrabberImpl>{
+    
+    /// create a new DCGrabber
+    /** @see DCGrabberImpl for more details*/
+    inline DCGrabber(const DCDevice &dev=DCDevice::null, int isoMBits=400, bool suppressDoubledImages=false){
+      if(dev.isNull()) return;
+      std::string id = dev.getUniqueStringIdentifier();
+      if(isNew(id)){
+        initialize(new DCGrabberImpl(dev,isoMBits,suppressDoubledImages),id);
+      }else{
+        initialize(id);
+      }
+    }
+    /// Returns a list of all connected DCDevices
+    /** @see DCGrabberImpl for more details */
+    static inline std::vector<DCDevice> getDeviceList(bool resetBusFirst=false){
+      return DCGrabberImpl::getDeviceList(resetBusFirst);
+    }
+
+    /// calls dc1394_reset_bus functions (see DCDevice)
+    /** @see DCGrabberImpl for more details */
+    static inline void dc1394_reset_bus(bool verbose=false){
+      return DCGrabberImpl::dc1394_reset_bus(verbose);
+    }    
+  };
 }
   
 #endif
