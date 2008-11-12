@@ -28,7 +28,7 @@ namespace icl{
 
     m_poGrabber = 0;
     std::vector<std::string> lP = tok(params,",");
-    std::string pPWC,pDC,pDC800,pUnicap,pFile;
+    std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo;
 
     for(unsigned int i=0;i<lP.size();++i){
       if(lP[i].length() > 4 && lP[i].substr(0,3) == "pwc"){
@@ -42,7 +42,7 @@ namespace icl{
       }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "file"){
         pFile = lP[i].substr(5);
       }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "demo"){
-        pFile = lP[i].substr(5);
+        pDemo = lP[i].substr(5);
       }      
     }
 
@@ -105,7 +105,7 @@ namespace icl{
         }
       }
       if(l[i] == "demo"){
-        m_poGrabber = new DemoGrabber(30);
+        m_poGrabber = new DemoGrabber(to32s(pDemo));
         m_sType = "demo";
       }
     }

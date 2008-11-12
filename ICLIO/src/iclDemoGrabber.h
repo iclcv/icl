@@ -6,20 +6,23 @@
 #include <iclTime.h>
 #include <iclSize32f.h>
 
+#include <iclGrabberHandle.h>
+
 namespace icl{
-  /// Demo Grabber implementation providing am image with a moving rect
-  /** This grabber can be used as placeholder whenever no senseful Grabber
-      is available. It can be set up to work at a certain fps to avoid
-      some real unexpected behaviour*/
-  class DemoGrabber : public Grabber{
+
+  
+  /// Implementation class for the DemoGrabber
+  class DemoGrabberImpl : public Grabber{
     public:
-    /// Create a DemoGrabber with given max. fps count
-    DemoGrabber(float maxFPS=30);
-    
+    friend class DemoGrabber;
+
     /// default grab function
     virtual const ImgBase* grab(ImgBase **ppoDst=0);
     
     private:
+    /// Create a DemoGrabber with given max. fps count
+    DemoGrabberImpl(float maxFPS=30);
+
     /// Current rel. location of the rect
     Point32f m_x; 
     
@@ -42,6 +45,23 @@ namespace icl{
     Time m_lastTime;
     
   };  
+  /** \endcond */
+
+  /// Demo Grabber class providing am image with a moving rect
+  /** This grabber can be used as placeholder whenever no senseful Grabber
+      is available. It can be set up to work at a certain fps to avoid
+      some real unexpected behaviour */
+  class DemoGrabber : public GrabberHandle<DemoGrabberImpl>{
+    public:
+    DemoGrabber(float maxFPS=30){
+      std::string id = str(maxFPS);
+      if(isNew(id)){
+        initialize(new DemoGrabberImpl(maxFPS),id);
+      }else{
+        initialize(id);
+      }
+    }
+  };
 }
 
 #endif

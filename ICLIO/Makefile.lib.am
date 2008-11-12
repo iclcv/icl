@@ -30,6 +30,7 @@ include_HEADERS= \
 ../src/iclFileGrabberPluginPNM.h \
 ../src/iclGenericGrabber.h \
 ../src/iclGrabber.h \
+../src/iclGrabberHandle.h \
 ../src/iclFileGrabber.h \
 ../src/iclFile.h \
 ../src/iclFileList.h \
@@ -75,6 +76,7 @@ libICLIO_la_SOURCES+= \
 
 include_HEADERS+= \
 ../src/iclPWCGrabber.h
+
 endif
 endif
 

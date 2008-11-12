@@ -411,8 +411,8 @@ namespace icl{
       m_poICLWidget->update();
 
       m_poFpsLabel->setText(m_oFPSE.getFpsString().c_str());
-      //m_poFpsLabel->updateFromOtherThread();
-      m_poICLWidget->update();
+      m_poFpsLabel->updateFromOtherThread();
+      //m_poICLWidget->update();
     }
     m_oGrabberMutex.unlock();
     

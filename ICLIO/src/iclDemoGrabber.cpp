@@ -22,8 +22,9 @@ namespace icl{
       return 0;
     }
   }
+  
 
-  DemoGrabber::DemoGrabber(float maxFPS){
+  DemoGrabberImpl::DemoGrabberImpl(float maxFPS){
     m_x = Point32f(0.5,0.5);
     m_v = Point32f(0.01, 0.01);
     m_color = Color(255,50,10);
@@ -32,7 +33,7 @@ namespace icl{
     m_maxV = Point32f(0.2,0.2);
     m_lastTime = Time::now();
   }
-  const ImgBase* DemoGrabber::grab(ImgBase **ppoDst){
+  const ImgBase* DemoGrabberImpl::grab(ImgBase **ppoDst){
     ImgBase *image = prepareOutput(ppoDst);
     image->clear();
 
@@ -80,9 +81,13 @@ namespace icl{
     }
     
     image->setTime(now);
+    m_lastTime = now;
     
     return image;
     
   }
 
+  
+
 }
+

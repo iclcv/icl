@@ -14,7 +14,7 @@ void init_gui(){
   GUI g1("hbox[@minsize=1x1]");
   GUI g2("hbox[@minsize=1x1]");
   for(int i=0;i<4 && i<numCams;++i){
-    (i<2?g1:g2) << std::string("image[@minsize=1x1@handle=view-")+str(i)+"@label=cam: "+names[i]+"(info:"+infos[i]+")]";
+    (i<2?g1:g2) << std::string("image[@minsize=1x1@handle=view-")+str(i)+"@label=cam: "+names[i]+"|info:"+infos[i]+"|]";
   }
   gui << g1 << g2;
   gui.show();
@@ -45,7 +45,7 @@ int main(int n, char **ppc){
   QApplication app(n,ppc);
   
   for(int i=0;i<4;++i){
-    std::string p=std::string("-")+str(i);
+    std::string p=std::string("-")+str(i+1);
     if(pa_defined(p)){
       std::string name = pa_subarg<std::string>(p,0,"");
       if(pa_defined("-reset-bus")){
