@@ -5,6 +5,8 @@
 #include <ipp.h>
 #endif
 
+#include <string>
+
 
 namespace icl {
 #ifndef HAVE_IPP
@@ -26,11 +28,110 @@ namespace icl {
     /// null is w=0, h=0
     static const Size null;
     
+    /// Quater QVGA res. 160x120
+    static const Size QQVGA;
+    
+    /// Color Graphics Adapter res. 320x200
+    static const Size CGA;
+
+    /// Qauter VGA res. 320x240
+    static const Size QVGA;
+    
+    /// Half VGA res. 480x320
+    static const Size HVGA;
+
+    /// Enhanced Graphics Adapter res. 640x350
+    static const Size EGA;
+
+    /// Video Graphics Array res. 640x480
+    static const Size VGA;
+
+    /// Wide VGA res. 800x480
+    static const Size WVGA;
+
+    /// Super VGA res. 800x600
+    static const Size SVGA;
+
+    /// Quater HD res. 960x540
+    static const Size QHD;
+
+    /// Double VGA res. 960x640
+    static const Size DVGA;
+
+    /// Extended Graphics Array res. 1024x768 (also known as EVGA)
+    static const Size XGA;
+    
+    /// XGA Plus res. 1152 x 864 
+    static const Size XGAP;
+
+    /// Double Super VGA res. 1200x800 
+    static const Size DSVGA;
+
+    /// Half Definition res. 1280x720
+    static const Size HD720;
+
+    /// Wide XGA res. 1280x800
+    static const Size WXGA;
+
+    /// Wide XGA Plus res. 1440x900
+    static const Size WXGAP;
+
+    /// Quad VGA res. 1280x960
+    static const Size SXVGA;
+
+    /// Super XGA res. 1280x1024
+    static const Size SXGA;
+
+    /// Wide Super XGA res. 1600x900
+    static const Size WSXGA;
+
+    /// Super XGA Plus res. 1400x1050
+    static const Size SXGAP;
+
+    /// Wide Super XGA Plus res. 1600x1050
+    static const Size WSXGAP;
+
+    /// Ultra XGA res. 1600x1200
+    static const Size UXGA;
+
+    /// High definition res. 1920x1080 
+    static const Size HD1080;
+
+    /// Wide UXGA res. 1920x1080
+    static const Size WUXGA;
+
+    /// Ultra Definietion res. 3840x2160
+    static const Size UD;
+
+
+    // video formats
+    
+    /// Common Intermediate Format res. 352x288
+    static const Size CIF;
+    
+    /// Source Imput Format res. 360x240
+    static const Size SIF;
+
+    /// Semi Quater CIF res. 128x96
+    static const Size SQCIF;
+
+    /// Quater CIF res. 176x144
+    static const Size QCIF;
+
+    /// Phase alternating Line res. 768x576 (many other formats are known as PAL)
+    static const Size PAL;
+
+    /// National Television System Commitee res. 640x480 (many other formats are known as NTSC)
+    static const Size NTSC;
+
+    /// creates a size from the given size string (e.g. "VGA" -> Size(640,480) )
+    static const Size &fromString(const std::string &name);
+    
     /// deep copy of another Size
     inline Size(const Size &s=null){ this->width = s.width;this->height = s.height; }
     
     /// creates a specified size
-   inline Size(int width,int height){ this->width = width; this->height = height; }
+    inline Size(int width,int height){ this->width = width; this->height = height; }
 
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }

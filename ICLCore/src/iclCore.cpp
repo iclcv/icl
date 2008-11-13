@@ -118,6 +118,10 @@ namespace icl{
   /** if the string could not be parsed, the returned size is "(-1,-1)" */
   Size translateSize(const std::string &size){
     // {{{ open
+    // extended:
+    if(size=="null") return Size::null;
+    Size s = Size::fromString(size);
+    if(s!=Size::null) return s;
 
     unsigned int pos = size.find('x',0);
     if(pos == string::npos || pos == 0 || pos == size.length()-1 ) return Size::null;
