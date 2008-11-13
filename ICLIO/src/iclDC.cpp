@@ -316,6 +316,7 @@ namespace icl{
       // TODO use max here
       
       set_iso_speed(c,options->isoMBits);
+
       // old      dc1394_video_set_iso_speed(c,DC1394_ISO_SPEED_400);
       
       
@@ -715,6 +716,8 @@ namespace icl{
 
     void set_iso_speed(dc1394camera_t* c, int mbits){
       ICLASSERT_RETURN(c);
+      if(!mbits) return; // this is the default value for "do nothing"
+
       switch(mbits){
 #define CASE(X)                                                            \
         case X:                                                            \

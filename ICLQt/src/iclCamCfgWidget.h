@@ -36,33 +36,45 @@ namespace icl{
   /** \endcond **/  
 
   /// Complex widget class, which is used in the Camera configuration tool camcfg \ingroup UNCOMMON
-  class CamCfgWidget : public QSplitter{
+  struct CamCfgWidget : public QSplitter{
     Q_OBJECT
+  
     public:
-    
     struct CreationFlags{
-    CreationFlags(int isoMBits=400,
+    CreationFlags(int isoMBits=0,
                   bool resetDCBus=false, 
-                  bool omitDoubledDCFrames=true,
                   bool disableUnicap=false,
                   bool disableDC=false,
-                  bool disablePWC=false):
+                  bool disablePWC=false,
+                  const std::string &deviceHintList=""):
         isoMBits(isoMBits),resetDCBus(resetDCBus),
-        omitDoubledDCFrames(omitDoubledDCFrames),
         disableUnicap(disableUnicap),disableDC(disableDC),
-        disablePWC(disablePWC){}
+        disablePWC(disablePWC),deviceHintList(deviceHintList){}
       
       int isoMBits;
       bool resetDCBus;
-      bool omitDoubledDCFrames;
       bool disableUnicap;
       bool disableDC;
       bool disablePWC;
+      std::string deviceHintList;
     };
     
     /// Constructor
-    CamCfgWidget(const CreationFlags &flags,QWidget *parent=0);
+    CamCfgWidget(const CreationFlags &flags,QWidget *parent=0):QSplitter(Qt::Vertical,parent){
+      initialize(flags);
+    }
     
+    /// alternative constructor
+    CamCfgWidget(const std::string &devHintList, QWidget *parent=0):QSplitter(Qt::Vertical,parent){
+      CreationFlags flags; flags.deviceHintList = devHintList;
+      initialize(flags);
+    }
+    
+    private:
+    /// initialization function
+    void initialize(CreationFlags flags);
+    
+    public:
     /// Destructor
     ~CamCfgWidget();
 
@@ -160,8 +172,6 @@ namespace icl{
     icl::depth m_eVideoDepth;             //!< current video depth
 
     int m_isoMBits;                       //!< mbit count for dc devices
-
-    bool m_omitDoubledDCFrames;           //!< if set, DCGrabbers are set up to omit doubled frames
 
     FPSEstimator m_oFPSE;                 //!< used to estimate the grabbers fps
   

@@ -18,7 +18,10 @@ public:
     }
 
     gui << "image[@handle=image@label=image preview]";
-    gui << "fps(10)[@handle=fps@label=current fps@maxsize=100x3]";
+    gui << ( GUI ("hbox") 
+             << "fps(10)[@handle=fps@label=current fps@maxsize=100x3]"
+             << "camcfg(dc)"
+           );
     gui.show();
     
     w = *gui.getValue<ImageHandle>("image");    
@@ -26,7 +29,7 @@ public:
     static Size size = translateSize(pa_subarg<std::string>("-size",0,"VGA"));
     
     for(unsigned int i=0;i<devs.size();i++){
-      gs.push_back(new DCGrabber(devs[i],400,pa_defined("-o")));
+      gs.push_back(new DCGrabber(devs[i]));
       printf("adding camera %s \n",devs[i].getModelID().c_str());
 
       gs[gs.size()-1]->setDesiredSize(size);
@@ -110,10 +113,9 @@ int main(int nArgs, char **ppcArg){
   pa_explain("-size","grabbing size");
   pa_explain("-output","write grabbed into file (parameter is the directory)");
   pa_explain("-r","reset dc bus first");
-  pa_explain("-o","omit double frames while grabbing");
   pa_explain("-fps","grabbers fps value");
   pa_explain("-t","use external trigger");
-  pa_init(nArgs,ppcArg,"-size(1) -output(1) -r -o -fps(1) -t");
+  pa_init(nArgs,ppcArg,"-size(1) -output(1) -r -fps(1) -t");
   
   MyThread *x=new MyThread;
   x->start();

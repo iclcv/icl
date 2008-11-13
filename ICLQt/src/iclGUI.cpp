@@ -57,6 +57,9 @@
 #include <iclMultiDrawHandle.h>
 #include <iclSplitterHandle.h>
 
+#include <iclCamCfgWidget.h>
+#include <iclStringUtils.h>
+
 
 #include <map>
 
@@ -83,6 +86,27 @@ namespace icl{
   }
 
   // }}}
+
+  struct CamCfgGUIWidget : public GUIWidget{
+    // {{{ open
+    CamCfgGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,0){
+      m_button = new QPushButton("camcfg",this);
+      connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
+      
+      m_cfg = new CamCfgWidget(icl::cat(def.allParams(),","));
+      
+      addToGrid(m_button);
+    }
+    virtual void processIO(){
+      m_cfg->show();
+    }
+    static string getSyntax(){
+      return string("camcfg(dev=hint-list)[general params]\n")+gen_params();
+    }
+    CamCfgWidget *m_cfg;
+    QPushButton *m_button;
+  };
+
 
   struct HBoxGUIWidget : public GUIWidget{
     // {{{ open
@@ -1141,6 +1165,7 @@ public:
       MAP_CREATOR_FUNCS["tab"] = create_widget_template<TabGUIWidget>;
       MAP_CREATOR_FUNCS["hsplit"] = create_widget_template<HSplitterGUIWidget>;
       MAP_CREATOR_FUNCS["vsplit"] = create_widget_template<VSplitterGUIWidget>;
+      MAP_CREATOR_FUNCS["camcfg"] = create_widget_template<CamCfgGUIWidget>;
 
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
       //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;

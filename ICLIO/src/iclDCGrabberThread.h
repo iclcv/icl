@@ -76,8 +76,7 @@ namespace icl{
       
       private: 
       /// private constructor )can only be called by icl::DCGrabber
-      DCGrabberThread(dc1394camera_t* c, DCDeviceOptions *options, bool suppressDoubledImages);
-
+      DCGrabberThread(dc1394camera_t* c, DCDeviceOptions *options);
 
       /// Destructor
       ~DCGrabberThread();
@@ -115,9 +114,6 @@ namespace icl{
       
       /// Parents DCGrabbers options pointer
       DCDeviceOptions *m_poOptions;
-
-      /// if set, each video frame can only be grabbed once
-      bool m_bSuppressDoubledImages;
 
       /// to remember the time stamp of the last frame grabbed
       Time m_lastFramesTimeStamp;

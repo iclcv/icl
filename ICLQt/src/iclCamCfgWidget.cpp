@@ -10,6 +10,7 @@
 #include <iclBorderBox.h>
 #include <iclImgParamWidget.h>
 #include <iclStringSignalButton.h>
+#include <iclStringUtils.h>
 
 #include <QHBoxLayout>
 #include <QComboBox>
@@ -27,12 +28,13 @@ using namespace std;
 
 namespace icl{
   
-  CamCfgWidget::CamCfgWidget(const CamCfgWidget::CreationFlags &flags,QWidget *parent):
-    QSplitter(Qt::Vertical,parent),m_poGrabber(0), 
-    m_bDisableSlots(false), m_bCapturing(false), 
-    m_isoMBits(flags.isoMBits),
-    m_omitDoubledDCFrames(flags.omitDoubledDCFrames),
-    m_oFPSE(10) {
+  void CamCfgWidget::initialize(CamCfgWidget::CreationFlags flags){
+
+    m_poGrabber = 0;
+    m_bDisableSlots = false;
+    m_bCapturing = false;
+    m_isoMBits = flags.isoMBits;
+    m_oFPSE = FPSEstimator(10);
     // {{{ open
 
     // TOP LEVEL
@@ -95,11 +97,41 @@ namespace icl{
 
     /// RIGHT WIDGETS-----------------------------------------
     m_bDisableSlots = true;
+
+
+    /// parse the device hint list..
+    bool useHintList = flags.deviceHintList != "";
+
+    std::map<std::string,std::string> hints;
+    
+    if(useHintList){
+      std::vector<std::string> tokens = tok(flags.deviceHintList,",");
+      
+      for(unsigned int i=0;i<tokens.size();++i){
+        if(tokens[i].size() > 2){
+          string::size_type p = tokens[i].find('=');
+          std::string dev = tokens[i].substr(0,p);
+          if(p != string::npos && p < tokens[i].size() ){
+            hints[dev] = tokens[i].substr(p+1);
+          }else{
+            hints[dev] = "";
+          }
+        }else{
+          ERROR_LOG("token is too short: " << tokens[i]);
+        }
+      }
+      
+      flags.disableUnicap = (hints.find("unicap") == hints.end());
+      flags.disableDC = (hints.find("dc") == hints.end());
+      flags.disablePWC = (hints.find("pwc") == hints.end());
+    }
+
+    
     
     int jAll = 0;
     if(!flags.disableUnicap){
       /// add unicap devices: ?? how to deactivate dc devices ??
-      m_vecDeviceList = UnicapGrabber::getDeviceList();
+      m_vecDeviceList = UnicapGrabber::getDeviceList(hints["unicap"]);
      
       for(unsigned int j=0;j<m_vecDeviceList.size();j++){
         QString name = QString("[UNICAP]")+m_vecDeviceList[j].getID().c_str();
@@ -122,6 +154,10 @@ namespace icl{
       /// add DC devices
       m_vecDCDeviceList = DCGrabber::getDeviceList(flags.resetDCBus);
       for(unsigned int j=0;j<m_vecDCDeviceList.size();j++){
+        if(useHintList && hints["dc"] != ""){
+          int dev = to32s(hints["dc"]);
+          if(dev != j) continue;
+        }
         QString name = QString("[DC]")+m_vecDCDeviceList[j].getUniqueStringIdentifier().c_str();
         m_poDeviceCombo->addItem(name);
         QWidget *w = new QWidget(this);
@@ -144,6 +180,12 @@ namespace icl{
       m_vecPWCDeviceList = PWCGrabber::getDeviceList();
       
       for(unsigned int j=0;j<m_vecPWCDeviceList.size();j++){
+
+        if(useHintList && hints["pwc"] != ""){
+          int dev = to32s(hints["pwc"]);
+          if(dev != j) continue;
+        }
+
         QString name  = QString("[PWC] Philips 740 Webcam [device ")+QString::number(j)+"]";
         m_poDeviceCombo->addItem(name);
         QWidget *w = new QWidget(this);
@@ -174,8 +216,6 @@ namespace icl{
  
     /// FINISHING : FINAL LAYOUTING
     //    setLayout(m_poVTopLevelLayout);
-    setGeometry(50,50,800,800);
-    setWindowTitle("ICL Camera Configuration Tool");
     m_poTimer = new QTimer(this);
     connect(m_poTimer,SIGNAL(timeout()),this,SLOT(updateImage()));
     show();
@@ -229,7 +269,7 @@ namespace icl{
       
       for(unsigned int i=0;i<m_vecDCDeviceList.size();i++){
         if(m_vecDCDeviceList[i].getUniqueStringIdentifier() == text.toLatin1().data()){
-          m_poGrabber = new DCGrabber(m_vecDCDeviceList[i], m_isoMBits,m_omitDoubledDCFrames);
+          m_poGrabber = new DCGrabber(m_vecDCDeviceList[i], m_isoMBits);
           break;
         }
       }
@@ -311,7 +351,6 @@ namespace icl{
     
     if(m_poGrabber){
       m_oGrabberMutex.lock();
-      DEBUG_LOG("setting up desired params: " << width << " .. " <<"height"<< height << "...");
       m_poGrabber->setDesiredSize(m_oVideoSize);
       m_poGrabber->setDesiredDepth(m_eVideoDepth);
       m_poGrabber->setDesiredFormat(m_eVideoFormat);

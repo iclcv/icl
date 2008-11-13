@@ -22,6 +22,9 @@ namespace icl{
 
     /// iso MBits
     int isoMBits;
+    
+    /// if set, each frame can be grabbed only once
+    bool suppressDoubledImages;
   };
 }
 

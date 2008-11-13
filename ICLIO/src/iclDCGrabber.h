@@ -62,8 +62,19 @@ namespace icl{
     
     /// Constructor creates a new DCGrabberImpl instance from a given DCDevice
     /** @param dev DCDevice to use (this device can only be created by the
-                   static function getDeviceList() */
-    DCGrabberImpl(const DCDevice &dev=DCDevice::null, int isoMBits=400, bool suppressDoubledImages=false);
+                   static function getDeviceList() 
+        @param iclMBits give the initializer a hint to set instantiated
+                        grabber to a specific iso mode by default
+                        allowed values are 
+                        - 400 -> IEEE-1394-A (400MBit)
+                        - 800 -> IEEE-1394-B (800MBit)
+                        - 0 (default) value is not chaged!
+                        
+                        (please note, that this parameter can also
+                        be set by the property iso-speed)
+                                
+        */
+    DCGrabberImpl(const DCDevice &dev=DCDevice::null, int isoMBits=0);
 
     public: 
     
@@ -145,9 +156,6 @@ namespace icl{
 
     /// Internal DCDeviceOptions struct
     DCDeviceOptions m_oOptions;
-
-    /// if set, each dc video frame can only be grabbed once
-    bool m_bSuppressDoubledImages;
   };
   
   
@@ -157,11 +165,11 @@ namespace icl{
     
     /// create a new DCGrabber
     /** @see DCGrabberImpl for more details*/
-    inline DCGrabber(const DCDevice &dev=DCDevice::null, int isoMBits=400, bool suppressDoubledImages=false){
+    inline DCGrabber(const DCDevice &dev=DCDevice::null, int isoMBits=0){
       if(dev.isNull()) return;
       std::string id = dev.getUniqueStringIdentifier();
       if(isNew(id)){
-        initialize(new DCGrabberImpl(dev,isoMBits,suppressDoubledImages),id);
+        initialize(new DCGrabberImpl(dev,isoMBits),id);
       }else{
         initialize(id);
       }

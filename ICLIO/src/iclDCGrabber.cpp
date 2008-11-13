@@ -8,11 +8,11 @@ namespace icl{
   using namespace std;
   using namespace icl::dc;
   
-  DCGrabberImpl::DCGrabberImpl(const DCDevice &dev, int isoMBits, bool suppressDoubledImages):
+  DCGrabberImpl::DCGrabberImpl(const DCDevice &dev, int isoMBits):
     // {{{ open
 
     m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_poImage(0),
-    m_poImageTmp(0), m_bSuppressDoubledImages(suppressDoubledImages)
+    m_poImageTmp(0)
   {
     
     dc::install_signal_handler();
@@ -26,6 +26,8 @@ namespace icl{
     m_oOptions.enable_image_labeling = false;
     
     m_oOptions.isoMBits = isoMBits;
+
+    m_oOptions.suppressDoubledImages = true;
     
   }
 
@@ -93,11 +95,11 @@ namespace icl{
       if(list){
         dc1394_camera_free_list(list);
       }
-      ERROR_LOG("Unable to create device list: returning empty list!");
+      // ERROR_LOG("Unable to create device list: returning empty list!");
       return v;
     }
     if(!list){
-      ERROR_LOG("no dc device found!");
+      //ERROR_LOG("no dc device found!");
       return v;
     }
 
@@ -129,14 +131,16 @@ namespace icl{
       //      m_poGT->waitFor();
       delete m_poGT;
     }
-    m_poGT = new DCGrabberThread(m_oDev.getCam(),&m_oOptions, m_bSuppressDoubledImages);
+    m_poGT = new DCGrabberThread(m_oDev.getCam(),&m_oOptions);
     m_poGT->start();
     usleep(10*1000);
   }
 
   void DCGrabberImpl::setProperty(const std::string &property, const std::string &value){
     if(m_oDev.isNull()) return;
-    if(property == "bayer-quality"){
+    if(property == "omit-doubled-frames"){
+      m_oOptions.suppressDoubledImages = value == "on" ? true : value == "off" ? false : m_oOptions.suppressDoubledImages;
+    }else if(property == "bayer-quality"){
       m_oOptions.bayermethod = bayermethod_from_string(value);
     }else if(property == "format"){
       DCDevice::Mode m(value);
@@ -146,6 +150,15 @@ namespace icl{
         if(m_poGT){
           restartGrabberThread();
         }
+      }
+    }else if(property == "iso-speed"){
+      if(value == "800"){
+        dc::set_iso_speed(m_oDev.getCam(),800);
+        m_oOptions.isoMBits = 800;
+      }
+      else if(value == "400"){
+        dc::set_iso_speed(m_oDev.getCam(),400);
+        m_oOptions.isoMBits = 400;
       }
     }else if(property == "enable-image-labeling"){
       if(value == "on"){
@@ -168,9 +181,11 @@ namespace icl{
     if(m_oDev.needsBayerDecoding()){
       v.push_back("bayer-quality");
     }
+    v.push_back("omit-doubled-frames");
     v.push_back("format");
     v.push_back("size");
     v.push_back("enable-image-labeling");
+    v.push_back("iso-speed");
     
     std::vector<std::string> v3 = m_oDeviceFeatures.getPropertyList();
     std::copy(v3.begin(),v3.end(),back_inserter(v));
@@ -180,7 +195,9 @@ namespace icl{
 
   std::string DCGrabberImpl::getType(const std::string &name){
     if((m_oDev.needsBayerDecoding() && name == "bayer-quality") || 
-       name == "format" || name == "size" || name == "enable-image-labeling"){
+       name == "format" || name == "size" ||
+       name == "omit-doubled-frames" || name == "iso-speed" || 
+       name == "enable-image-labeling"){
       return "menu";
     }else if(m_oDeviceFeatures.supportsProperty(name)){
       return m_oDeviceFeatures.getType(name);
@@ -206,10 +223,12 @@ namespace icl{
         v.push_back(mv[i].toString());
       }
       return Grabber::translateStringVec(v);
-    }else if(name == "enable-image-labeling"){
+    }else if(name == "enable-image-labeling" || name == "omit-doubled-frames"){
       return "{\"on\",\"off\"}";
     }else if(name == "size"){
       return "{\"adjusted by format\"}";
+    }else if(name == "iso-speed"){
+      return "{\"400\",\"800\"}";
     }else if(m_oDeviceFeatures.supportsProperty(name)){
       return m_oDeviceFeatures.getInfo(name);
     }
@@ -228,6 +247,14 @@ namespace icl{
       }else{
         return "off";
       }
+    }else if(name == "omit-doubled-frames"){
+      if(m_oOptions.suppressDoubledImages){
+        return "on";
+      }else{
+        return "off";
+      }
+    }else if(name == "iso-speed"){
+      return m_oOptions.isoMBits == 400 ? "400" : "800";
     }else if(name == "size"){
       return "adjusted by format";
     }else if(m_oDeviceFeatures.supportsProperty(name)){
