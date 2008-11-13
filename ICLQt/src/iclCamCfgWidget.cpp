@@ -122,7 +122,7 @@ namespace icl{
       /// add DC devices
       m_vecDCDeviceList = DCGrabber::getDeviceList(flags.resetDCBus);
       for(unsigned int j=0;j<m_vecDCDeviceList.size();j++){
-        QString name = QString("[DC]")+m_vecDCDeviceList[j].getModelID().c_str();
+        QString name = QString("[DC]")+m_vecDCDeviceList[j].getUniqueStringIdentifier().c_str();
         m_poDeviceCombo->addItem(name);
         QWidget *w = new QWidget(this);
         QVBoxLayout *l = new QVBoxLayout(w);
@@ -228,7 +228,7 @@ namespace icl{
       m_vecDCDeviceList = DCGrabber::getDeviceList();
       
       for(unsigned int i=0;i<m_vecDCDeviceList.size();i++){
-        if(m_vecDCDeviceList[i].getModelID() == text.toLatin1().data()){
+        if(m_vecDCDeviceList[i].getUniqueStringIdentifier() == text.toLatin1().data()){
           m_poGrabber = new DCGrabber(m_vecDCDeviceList[i], m_isoMBits,m_omitDoubledDCFrames);
           break;
         }
@@ -311,6 +311,7 @@ namespace icl{
     
     if(m_poGrabber){
       m_oGrabberMutex.lock();
+      DEBUG_LOG("setting up desired params: " << width << " .. " <<"height"<< height << "...");
       m_poGrabber->setDesiredSize(m_oVideoSize);
       m_poGrabber->setDesiredDepth(m_eVideoDepth);
       m_poGrabber->setDesiredFormat(m_eVideoFormat);

@@ -45,6 +45,5 @@ namespace icl{
   /// Creates a (r,g,b) string representation for a color structure
   std::string translateColor(const Color &color);
 
-  
 }
 #endif

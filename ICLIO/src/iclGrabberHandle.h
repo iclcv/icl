@@ -188,6 +188,69 @@ namespace icl{
       return m_instance->ptr->getValue(name);
     }
 
+
+    /// returns current desired image size (default is "320x240"
+    virtual const Size &getDesiredSize()const{
+      ICLASSERT_RETURN_VAL(!isNull(),Size::null);
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance->ptr->getDesiredSize();
+    }
+    
+    /// returns current desired image format (default is formatRGB)
+    virtual format getDesiredFormat() const{
+      ICLASSERT_RETURN_VAL(!isNull(),formatMatrix);
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance->ptr->getDesiredFormat();
+    }
+    
+    /// returns current desired image depth (default is depth8u)
+    virtual depth getDesiredDepth() const{
+      ICLASSERT_RETURN_VAL(!isNull(),depth8u);
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance->ptr->getDesiredDepth();
+    }
+    
+    /// sets current desired image parameters
+    virtual void setDesiredParams(const ImgParams &p){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_instance->mutex);
+      m_instance->ptr->setDesiredParams(p);
+    }
+    
+    /// sets current desired image size
+    virtual void setDesiredSize(const Size &s){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_instance->mutex);
+      m_instance->ptr->setDesiredSize(s);
+    }
+    
+    /// sets current desired image format
+    virtual void setDesiredFormat(format f){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_instance->mutex);
+      m_instance->ptr->setDesiredFormat(f);
+    }
+    
+    /// returns current desired image depth
+    virtual void setDesiredDepth(depth d){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_instance->mutex);
+      m_instance->ptr->setDesiredDepth(d);
+    }
+    
+    /// set up ignore-desired params flag
+    virtual void setIgnoreDesiredParams(bool flag){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_instance->mutex);
+       m_instance->ptr->setIgnoreDesiredParams(flag);
+    }
+    
+    virtual bool getIgnoreDesiredParams() const {
+      ICLASSERT_RETURN_VAL(!isNull(),true);
+      Mutex::Locker l(m_instance->mutex);
+       return m_instance->ptr->getIgnoreDesiredParams();
+    }
+
     /// returns all current instances available
     static inline const InstanceMap &getInstanceMap() { return s_instances; }
     

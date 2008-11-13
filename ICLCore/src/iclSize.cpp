@@ -38,6 +38,7 @@ namespace icl{
   const Size Size::NTSC(640,480);
 
   const Size &Size::fromString(const std::string &name){
+    static const Size neg1(-1,-1);
     static std::map<std::string,const Size*> m;
     static bool first = true;
     if(first){
@@ -54,6 +55,6 @@ namespace icl{
     }
     std::map<std::string,const Size*>::iterator it = m.find(name);
     if(it!=m.end()) return *it->second;
-    else return Size::null;
+    else return neg1;
   }
 }
