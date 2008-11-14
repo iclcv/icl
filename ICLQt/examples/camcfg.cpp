@@ -26,6 +26,7 @@ int main(int nArgs, char **ppcArg){
 
   w.setGeometry(50,50,800,800);
   w.setWindowTitle("camcfg (ICL Camera Configuration Tool)");
+  w.show();
 
   
   return a.exec();
