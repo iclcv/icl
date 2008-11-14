@@ -13,7 +13,7 @@ namespace icl{
     static string cutName(const string &s){
       // {{{ open
       
-      unsigned int pos = s.find("=",0);
+      string::size_type pos = s.find("=",0);
       if(pos == string::npos){
         throw GUISyntaxErrorException(s,"missing '=' character!");
         return "";
@@ -26,10 +26,10 @@ namespace icl{
     }
     
     static void split_string(const std::string &s, string &type, string &params, string &optparams){
-      unsigned int obrPos = s.find('(');
-      unsigned int cbrPos = s.find(')');
-      unsigned int obrPos2 = s.find('[');
-      unsigned int cbrPos2 = s.find(']');
+      string::size_type obrPos = s.find('(');
+      string::size_type cbrPos = s.find(')');
+      string::size_type obrPos2 = s.find('[');
+      string::size_type cbrPos2 = s.find(']');
       
       if(obrPos != string::npos){
         if(cbrPos == string::npos) throw GUISyntaxErrorException(s,"missing ')' character!");

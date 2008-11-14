@@ -417,8 +417,8 @@ namespace {
   strvec tokenize(string s,string sDelims){
     // {{{ open
     
-    unsigned int iPos;
-    unsigned int iLastPos = 0;
+    string::size_type iPos;
+    string::size_type iLastPos = 0;
     vector<string> oTokens;
     iPos = s.find_first_of( sDelims, iLastPos );
     // we don't want empty tokens

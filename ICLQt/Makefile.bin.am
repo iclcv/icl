@@ -23,7 +23,6 @@ XCXXFLAGS= ${CXXFLAGS} \
 #################################################################################
 bin_PROGRAMS= \
 icl-3D-demo \
-icl-camviewer-demo \
 icl-camviewer-lite \
 icl-chroma-demo \
 icl-colorpicker \
@@ -33,11 +32,12 @@ icl-gui-callback-test \
 icl-interactive-filter-demo \
 icl-mouse-interaction-demo \
 icl-visualization-demo \
-icl-xv
+icl-xv \
+icl-camcfg
 
 if HAVE_LIBDC_COND
 if HAVE_UNICAP_COND
-bin_PROGRAMS+=icl-camcfg
+bin_PROGRAMS+= icl-camviewer-demo
 endif
 endif
 
@@ -48,15 +48,15 @@ icl_3D_demo_CXXFLAGS=${XCXXFLAGS}
 
 if HAVE_LIBDC_COND
 if HAVE_UNICAP_COND
-icl_camcfg_SOURCES=../examples/camcfg.cpp
-icl_camcfg_LDFLAGS=${XLDFLAGS}
-icl_camcfg_CXXFLAGS=${XCXXFLAGS}
-endif
-endif
-
 icl_camviewer_demo_SOURCES=../examples/camviewer-demo.cpp
 icl_camviewer_demo_LDFLAGS=${XLDFLAGS}
 icl_camviewer_demo_CXXFLAGS=${XCXXFLAGS}
+endif
+endif
+
+icl_camcfg_SOURCES=../examples/camcfg.cpp
+icl_camcfg_LDFLAGS=${XLDFLAGS}
+icl_camcfg_CXXFLAGS=${XCXXFLAGS}
 
 icl_camviewer_lite_SOURCES=../examples/camviewer-lite.cpp
 icl_camviewer_lite_LDFLAGS=${XLDFLAGS}

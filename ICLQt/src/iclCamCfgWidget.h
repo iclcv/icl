@@ -5,8 +5,12 @@
 #include <vector>
 #include <QString>
 #include <QWidget>
+#ifdef HAVE_UNICAP
 #include <iclUnicapDevice.h>
+#endif
+#ifdef HAVE_LIBDC
 #include <iclDCDevice.h>
+#endif
 #include <iclTypes.h>
 #include <QMutex>
 #include <QSplitter>
@@ -60,12 +64,12 @@ namespace icl{
     };
     
     /// Constructor
-    CamCfgWidget(const CreationFlags &flags,QWidget *parent=0):QSplitter(Qt::Vertical,parent){
+    inline CamCfgWidget(const CreationFlags &flags,QWidget *parent=0):QSplitter(Qt::Vertical,parent){
       initialize(flags);
     }
     
     /// alternative constructor
-    CamCfgWidget(const std::string &devHintList, QWidget *parent=0):QSplitter(Qt::Vertical,parent){
+    inline CamCfgWidget(const std::string &devHintList, QWidget *parent=0):QSplitter(Qt::Vertical,parent){
       CreationFlags flags; flags.deviceHintList = devHintList;
       initialize(flags);
     }
@@ -161,10 +165,15 @@ namespace icl{
     Grabber *m_poGrabber;                //!< current grabber instance
     
     // UnicapDevice m_oUnicapDevice;
+#ifdef HAVE_UNICAP
     std::vector<UnicapDevice> m_vecDeviceList;   //!< unicap device list
+#endif
+#ifdef HAVE_LIBDC
     std::vector<DCDevice> m_vecDCDeviceList;     //!< DCDevice list
+#endif
+#ifdef HAVE_VIDEODEV
     std::vector<int> m_vecPWCDeviceList;         //!< PWCDevice list
-    
+#endif
     ImgParamWidget *m_poImgParamWidget;   //!< widget to ajust image params ( grabbers desired params)
     
     bool m_bDisableSlots;                 //!< internal flag for temporarily disable all slots (to disable endless recursions)

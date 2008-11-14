@@ -1,9 +1,18 @@
 #include "iclCamCfgWidget.h"
 #include "iclStackTimer.h"
 
+#ifdef HAVE_VIDEODEV
 #include <iclPWCGrabber.h>
+#endif
+
+#ifdef HAVE_UNICAP
 #include <iclUnicapGrabber.h>
+#endif
+
+#ifdef HAVE_LIBDC
 #include <iclDCGrabber.h>
+#endif
+
 #include <iclWidget.h>
 #include <iclDoubleSlider.h>
 #include <iclThread.h>
@@ -129,6 +138,8 @@ namespace icl{
     
     
     int jAll = 0;
+
+#ifdef HAVE_UNICAP
     if(!flags.disableUnicap){
       /// add unicap devices: ?? how to deactivate dc devices ??
       m_vecDeviceList = UnicapGrabber::getDeviceList(hints["unicap"]);
@@ -149,7 +160,9 @@ namespace icl{
         m_poTabWidget->setTabEnabled(jAll++,false);
       }
     }
+#endif
      
+#ifdef HAVE_LIBDC
     if(!flags.disableDC){
       /// add DC devices
       m_vecDCDeviceList = DCGrabber::getDeviceList(flags.resetDCBus);
@@ -174,7 +187,9 @@ namespace icl{
         m_poTabWidget->setTabEnabled(jAll++,false);
       }
     }
+#endif
     
+#ifdef HAVE_VIDEODEV
     if(!flags.disablePWC){
       /// add philips webcam devices
       m_vecPWCDeviceList = PWCGrabber::getDeviceList();
@@ -204,6 +219,7 @@ namespace icl{
         m_poTabWidget->setTabEnabled(jAll++,false);
       }
     }
+#endif
 
     //m_poTopLevelLayout->addWidget(m_poTabWidget);
     m_poBottomSplitter->addWidget(m_poTabWidget);
@@ -273,7 +289,7 @@ namespace icl{
     m_poGrabber = 0;
     
     if(prefix == "DC"){
-      
+#ifdef HAVE_LIBDC
       m_vecDCDeviceList = DCGrabber::getDeviceList();
       
       for(unsigned int i=0;i<m_vecDCDeviceList.size();i++){
@@ -282,7 +298,9 @@ namespace icl{
           break;
         }
       }
+#endif
     }else if(prefix == "UNICAP"){
+#ifdef HAVE_UNICAP
       m_vecDCDeviceList.clear();
       icl::dc::free_static_context();
 
@@ -296,15 +314,14 @@ namespace icl{
           break;
         }
       }
+#endif
     }else if(prefix == "PWC"){
-
+#ifdef HAVE_VIDEODEV
       m_vecDCDeviceList.clear();
 
       icl::dc::free_static_context();
 
-      Thread::sleep(2);
-
-
+      Thread::sleep(1);
 
       if(text == " Philips 740 Webcam [device 0]"){
         m_poGrabber = new PWCGrabber(Size::null,40,0);
@@ -315,6 +332,7 @@ namespace icl{
       }else if(text == " Philips 740 Webcam [device 3]"){
         m_poGrabber = new PWCGrabber(Size::null,40,3);
       }
+      #endif
     }
 
     if(!m_poGrabber){

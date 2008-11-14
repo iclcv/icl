@@ -1189,7 +1189,7 @@ public:
   string extract_label(string s){
     // {{{ open
 
-    unsigned int p = s.find('[');
+    string::size_type p = s.find('[');
     if(p == string::npos) return "";
     s = s.substr(p+1);
     if(!s.length()) return "";
@@ -1209,7 +1209,7 @@ public:
   string extract_minsize(string s){
     // {{{ open
     
-    unsigned int p = s.find('[');
+    string::size_type p = s.find('[');
     if(p == string::npos) return "";
     s = s.substr(p+1);
     if(!s.length()) return "";
@@ -1229,7 +1229,7 @@ public:
   string extract_maxsize(string s){
     // {{{ open
     
-    unsigned int p = s.find('[');
+    string::size_type p = s.find('[');
     if(p == string::npos) return "";
     s = s.substr(p+1);
     if(!s.length()) return "";
@@ -1249,7 +1249,7 @@ public:
   string extract_size(string s){
     // {{{ open
     
-    unsigned int p = s.find('[');
+    string::size_type p = s.find('[');
     if(p == string::npos) return "";
     s = s.substr(p+1);
     if(!s.length()) return "";
