@@ -108,7 +108,7 @@ namespace icl{
       std::vector<std::string> tokens = tok(flags.deviceHintList,",");
       
       for(unsigned int i=0;i<tokens.size();++i){
-        if(tokens[i].size() > 2){
+        if(tokens[i].size() >= 2){
           string::size_type p = tokens[i].find('=');
           std::string dev = tokens[i].substr(0,p);
           if(p != string::npos && p < tokens[i].size() ){
@@ -218,10 +218,19 @@ namespace icl{
     //    setLayout(m_poVTopLevelLayout);
     m_poTimer = new QTimer(this);
     connect(m_poTimer,SIGNAL(timeout()),this,SLOT(updateImage()));
-    show();
+    //show();
   }
 
   // }}}
+
+  void CamCfgWidget::setVisible (bool visible){
+    if(!visible){
+      if(m_poCaptureButton->isChecked()){
+        m_poCaptureButton->setChecked(false);
+      }
+    }
+    QSplitter::setVisible(visible);
+  }
   
   CamCfgWidget::~CamCfgWidget(){
     if(m_bCapturing){

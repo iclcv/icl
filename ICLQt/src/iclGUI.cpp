@@ -93,8 +93,10 @@ namespace icl{
       m_button = new QPushButton("camcfg",this);
       connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
       
+      DEBUG_LOG("creating camcfg widget");
       m_cfg = new CamCfgWidget(icl::cat(def.allParams(),","));
-      
+      DEBUG_LOG("created camcfg widget");      
+
       addToGrid(m_button);
     }
     virtual void processIO(){

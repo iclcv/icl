@@ -172,6 +172,7 @@ namespace icl{
       - <b>spinner</b> a spin box (integer valued with given range)
       - <b>fps</b> label component showing current frames per second
       - <b>multidraw</b> tabbed widget of draw widget components accessible via string index
+      - <b>camcfg</b> single button, showing a camera configuration widget when clicked
 
       
         
@@ -252,7 +253,8 @@ namespace icl{
         settings (buffermode=one). Otherwise, if application runs slowly (e.g. only 2Hz, this) it will become
         more responsive if buffermode is set to "all". If images displayed are held permanently, it will
         speed up performance if buffermethod is set to "shallowcopy" then.
-      
+      - <b>camcfg(Comma-Separated-device-hint-list)<b>
+        See section \ref CAMCFG for more details
       
 
       \subsection GP General Parameters
@@ -321,30 +323,31 @@ namespace icl{
       
       
       <TABLE>
-      <TR> <TD><b>type</b></TD>  <TD><b>handle</b></TD>     <TD><b>outputs</b></TD>     <TD><b>meaning</b></TD>                                     </TR>
-      <TR> <TD>vbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>hbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>tab</TD>          <TD>TabHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>hsplit</TD>       <TD>SplitterHandle</TD>    <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>vsplit</TD>       <TD>SplitterHandle</TD>    <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>border</TD>       <TD>BorderHandle</TD>      <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>button</TD>       <TD>ButtonHandle</TD>      <TD>1 type GUIEvent</TD>    <TD>handle for this button (see below!)</TD>                </TR>
-      <TR> <TD>buttongroup</TD>  <TD>ButtonGroupHandle</TD> <TD>1 type int</TD>         <TD>index of the currently toggled radio button </TD>       </TR>
-      <TR> <TD>togglebutton</TD> <TD>ButtonHandle</TD>      <TD>1 type bool</TD>        <TD>true=toggled, false=untoggled</TD>                      </TR>
-      <TR> <TD>label</TD>        <TD>LabelHandle</TD>       <TD>0</TD>                  <TD>handle for this label (see below!)</TD>                 </TR>
-      <TR> <TD>slider</TD>       <TD>SliderHandle</TD>      <TD>1 type int</TD>         <TD>current slider value</TD>                               </TR>
-      <TR> <TD>fslider</TD>      <TD>FSliderHandle</TD>     <TD>1 type float</TD>       <TD>current slider value</TD>                               </TR>
-      <TR> <TD>int</TD>          <TD>IntHandle</TD>         <TD>1 type int</TD>         <TD>current text input field content</TD>                   </TR>
-      <TR> <TD>float</TD>        <TD>FloatHandle</TD>       <TD>1 type float</TD>       <TD>current text input field content</TD>                   </TR>
-      <TR> <TD>string</TD>       <TD>StringHandle</TD>      <TD>1 type std::string</TD> <TD>current text input field content</TD>                   </TR>
-      <TR> <TD>disp</TD>         <TD>DispHandle</TD>        <TD>0</TD>                  <TD>handle for the label matrix (see below!) </TD>          </TR>
-      <TR> <TD>image</TD>        <TD>ImageHandle</TD>       <TD>0</TD>                  <TD>handle for the embedded ICLWidget</TD>                  </TR>
-      <TR> <TD>draw</TD>         <TD>DrawHandle</TD>        <TD>0</TD>                  <TD>handle for the embedded ICLDrawWidget</TD>              </TR>
-      <TR> <TD>draw3D</TD>       <TD>DrawHandle<3D/TD>      <TD>0</TD>                  <TD>handle for the embedded ICLDrawWidget3D</TD>            </TR>
-      <TR> <TD>combo</TD>        <TD>ComboHandle</TD>       <TD>1 type std::string</TD> <TD>current selected item</TD>                              </TR>
-      <TR> <TD>spinner</TD>      <TD>SpinnerHandle</TD>     <TD>1 type int</TD>         <TD>current value</TD>                                      </TR>
-      <TR> <TD>fps</TD>          <TD>FPSHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                  </TR>
-      <TR> <TD>multidraw</TD>    <TD>MultiDrawHandle</TD>   <TD>0</TD>                  <TD>handle of [string]-accessible ICLDrawWidgets</TD>       </TR>
+      <TR> <TD><b>type</b></TD>  <TD><b>handle</b></TD>     <TD><b>outputs</b></TD>     <TD><b>meaning</b></TD>                                      </TR>
+      <TR> <TD>vbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>hbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>tab</TD>          <TD>TabHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>hsplit</TD>       <TD>SplitterHandle</TD>    <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>vsplit</TD>       <TD>SplitterHandle</TD>    <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>border</TD>       <TD>BorderHandle</TD>      <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>button</TD>       <TD>ButtonHandle</TD>      <TD>1 type GUIEvent</TD>    <TD>handle for this button (see below!)</TD>                 </TR>
+      <TR> <TD>buttongroup</TD>  <TD>ButtonGroupHandle</TD> <TD>1 type int</TD>         <TD>index of the currently toggled radio button </TD>        </TR>
+      <TR> <TD>togglebutton</TD> <TD>ButtonHandle</TD>      <TD>1 type bool</TD>        <TD>true=toggled, false=untoggled</TD>                       </TR>
+      <TR> <TD>label</TD>        <TD>LabelHandle</TD>       <TD>0</TD>                  <TD>handle for this label (see below!)</TD>                  </TR>
+      <TR> <TD>slider</TD>       <TD>SliderHandle</TD>      <TD>1 type int</TD>         <TD>current slider value</TD>                                </TR>
+      <TR> <TD>fslider</TD>      <TD>FSliderHandle</TD>     <TD>1 type float</TD>       <TD>current slider value</TD>                                </TR>
+      <TR> <TD>int</TD>          <TD>IntHandle</TD>         <TD>1 type int</TD>         <TD>current text input field content</TD>                    </TR>
+      <TR> <TD>float</TD>        <TD>FloatHandle</TD>       <TD>1 type float</TD>       <TD>current text input field content</TD>                    </TR>
+      <TR> <TD>string</TD>       <TD>StringHandle</TD>      <TD>1 type std::string</TD> <TD>current text input field content</TD>                    </TR>
+      <TR> <TD>disp</TD>         <TD>DispHandle</TD>        <TD>0</TD>                  <TD>handle for the label matrix (see below!) </TD>           </TR>
+      <TR> <TD>image</TD>        <TD>ImageHandle</TD>       <TD>0</TD>                  <TD>handle for the embedded ICLWidget</TD>                   </TR>
+      <TR> <TD>draw</TD>         <TD>DrawHandle</TD>        <TD>0</TD>                  <TD>handle for the embedded ICLDrawWidget</TD>               </TR>
+      <TR> <TD>draw3D</TD>       <TD>DrawHandle<3D/TD>      <TD>0</TD>                  <TD>handle for the embedded ICLDrawWidget3D</TD>             </TR>
+      <TR> <TD>combo</TD>        <TD>ComboHandle</TD>       <TD>1 type std::string</TD> <TD>current selected item</TD>                               </TR>
+      <TR> <TD>spinner</TD>      <TD>SpinnerHandle</TD>     <TD>1 type int</TD>         <TD>current value</TD>                                       </TR>
+      <TR> <TD>fps</TD>          <TD>FPSHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>multidraw</TD>    <TD>MultiDrawHandle</TD>   <TD>0</TD>                  <TD>handle of [string]-accessible ICLDrawWidgets</TD>        </TR>
+      <TR> <TD>camcfg</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>maybe we can add a handle to the underlying CamCfgW.</TD></TR>
       </TABLE>
       
       \section HVV Handles vs. Values
@@ -833,6 +836,22 @@ int main(int n, char**ppc){
       \image html Image08_Tabs.jpg
       
 
+      \subsection CAMCFG Camera Configuration
+      In some camera based applications it might be helpful or even necessary to adapt camera 
+      parameters at run-time. In this case, the camcfg component can be used. Simply add an
+      embedded GUI component named camcfg, which gets a hint about which cameras should be 
+      configurable on that component. As the underlying CamCfgWidget's GUI is quite complex,
+      it is shown in an extra window, therefore only a single button labeled "camcfg" is embedded
+      into the GUI.\n
+      The hints, the camcfg GUI components obtains from the parameter list must be structured as
+      follows: The parameter list consists of comma-separated tokens quite similar to the parameter
+      list of a GenericGrabber. Some examples should be much better to explain it here:
+      - "dc" : just make dc devices configurable
+      - "dc,pwc,unicap" : enable configuration of dc, pwc and unicap devices
+      - "dc=0" : just dc device 0 is configurable
+      - "dc=1,pwc=0" : ok, now it becomes clearer: Enable configuration for dc device 1 and for
+                       pwc device 0 (not very common)
+      
       
       \subsection LOCK Locking
       Some interface types involve the danger to be corrupted when accessed by the working thread

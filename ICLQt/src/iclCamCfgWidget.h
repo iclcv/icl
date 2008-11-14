@@ -80,6 +80,9 @@ namespace icl{
 
     /// getter of the current image for "abusing" the CamCfgWidget as a Grabber
     virtual const ImgBase *getCurrentImage();
+
+    /// reimplemented
+    virtual void setVisible (bool visible);
     
     public slots:
     /// slot for processing events on the device combo box

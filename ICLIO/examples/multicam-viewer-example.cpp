@@ -19,8 +19,8 @@ void init_gui(){
   gui << g1 << g2;
   gui.show();
   
-  //GUI g5("camcfg(pwc)");
-  //g5.show();
+  GUI g5("camcfg(dc)");
+  g5.show();
 }
 
 void run(){
