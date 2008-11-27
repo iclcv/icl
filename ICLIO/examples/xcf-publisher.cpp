@@ -6,6 +6,7 @@
 #include <iclQt.h>
 #include <iclGenericGrabber.h>
 #include <iclFPSEstimator.h>
+#include <iclIO.h>
 std::string uri = "the-uri";
 std::string stream = "the-stream";
 
@@ -37,6 +38,7 @@ void send_app(){
       static Img8u createdImage = cvt8u(scale(create("parrot"),imageSize.width,imageSize.height));
       image = createdImage;
       image.setTime(Time::now());
+      labelImage(&image,image.getTime().toString());
     }else{
       static GenericGrabber g("file",string("file=")+pa_subarg<string>("-source",0,"./images/*.ppm"));
       static const Size imageSize = translateSize(pa_subarg<string>("-size",0,"320x240"));
