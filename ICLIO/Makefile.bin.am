@@ -100,7 +100,7 @@ endif
 #################################################################################
 if HAVE_XCF_COND
 bin_PROGRAMS+= \
-icl_xcf-grabber-benchmark
+icl-xcf-grabber-benchmark
 
 # explicit sources, ldflags and cxxflags
 icl_xcf_grabber_benchmark_SOURCES=../examples/xcf-grabber-benchmark.cpp
@@ -109,7 +109,7 @@ icl_xcf_grabber_benchmark_CXXFLAGS=${XCXXFLAGS}
 
 if HAVE_QT_COND
 bin_PROGRAMS+= \
-icl_xcf-publisher
+icl-xcf-publisher
 icl_xcf_publisher_SOURCES=../examples/xcf-publisher.cpp
 icl_xcf_publisher_LDFLAGS=${XLDFLAGS}
 icl_xcf_publisher_CXXFLAGS=${XCXXFLAGS}
@@ -122,7 +122,7 @@ endif
 #################################################################################
 if HAVE_UNICAP_COND
 bin_PROGRAMS+= \
-icl_unicap-grab-example
+icl-unicap-grab-example
 
 icl_unicap_grab_example_SOURCES=../examples/unicap-grab-example.cpp
 icl_unicap_grab_example_LDFLAGS=${XLDFLAGS}

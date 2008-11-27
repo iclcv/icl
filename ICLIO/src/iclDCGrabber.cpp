@@ -228,7 +228,11 @@ namespace icl{
     }else if(name == "size"){
       return "{\"adjusted by format\"}";
     }else if(name == "iso-speed"){
-      return "{\"400\",\"800\"}";
+      if(m_oDev.getCam()->bmode_capable == DC1394_TRUE){
+        return "{\"400\",\"800\"}";
+      }else{
+        return "{\"400\"}";
+      }
     }else if(m_oDeviceFeatures.supportsProperty(name)){
       return m_oDeviceFeatures.getInfo(name);
     }

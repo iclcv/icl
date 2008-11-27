@@ -717,6 +717,10 @@ namespace icl{
     void set_iso_speed(dc1394camera_t* c, int mbits){
       ICLASSERT_RETURN(c);
       if(!mbits) return; // this is the default value for "do nothing"
+      if(mbits > 400 && !c->bmode_capable == DC1394_TRUE){
+        ERROR_LOG("device does not support IEEE 1394-B mode");
+        return;
+      }
 
       switch(mbits){
 #define CASE(X)                                                            \

@@ -5,6 +5,7 @@
 #include <iclThread.h>
 #include <iclQt.h>
 #include <iclGenericGrabber.h>
+#include <iclFPSEstimator.h>
 std::string uri = "the-uri";
 std::string stream = "the-stream";
 
@@ -31,8 +32,11 @@ void send_app(){
   while(first || pa_defined("-loop")){
     static XCFPublisher p(stream,uri);
     Img8u image;
-    if(pa_subarg("-source",0,string("create")) == "create"){;
-      image = cvt8u(scale(create("parrot"),0.3));
+    if(pa_subarg("-source",0,string("create")) == "create"){
+      static const Size imageSize = translateSize(pa_subarg<string>("-size",0,"320x240"));
+      static Img8u createdImage = cvt8u(scale(create("parrot"),imageSize.width,imageSize.height));
+      image = createdImage;
+      image.setTime(Time::now());
     }else{
       static GenericGrabber g("file",string("file=")+pa_subarg<string>("-source",0,"./images/*.ppm"));
       static const Size imageSize = translateSize(pa_subarg<string>("-size",0,"320x240"));
@@ -42,9 +46,9 @@ void send_app(){
     if(pa_defined("-emulate-mask")){
 
       static Img8u mask;
-      static bool first = true;
-      if(first){
-        first = false;
+      static bool first2 = true;
+      if(first2){
+        first2 = false;
         static ImgQ q = zeros(image.getWidth(),image.getHeight(),1);
         color(255,255,255,255);
         fill(255,255,255,255);
@@ -59,6 +63,20 @@ void send_app(){
     p.publish(&image);
     first = false;
     Thread::msleep(pa_subarg("-sleep",0,1000));
+    static bool showFPS = pa_defined("-fps");
+    if(showFPS){
+      static const int N = 10; // display each N times
+      static int i = 0;
+      static FPSEstimator fps(10);
+      if(i++ == N){
+        i = 0;
+        std::cout << "sending with " << fps.getFpsString() << std::endl;
+        std::cout << "image was " << image <<  " timestamp" << image.getTime().toString() << std::endl;
+        std::cout << "" << std::endl;
+      }else{
+        fps.getFpsString();
+      }
+    }    
   }
 }
 
@@ -87,7 +105,8 @@ int main(int n, char **ppc){
   pa_explain("-sleep","sleep time between calls (in ms def=1000)");
   pa_explain("-emulate-mask","emulate 4th channel mask (sending only)");
   pa_explain("-size","output image size (sending only)");
-  pa_init(n,ppc,"-s -r -loop -sleep(1) -source(1) -emulate-mask -size(1)");
+  pa_explain("-fps","display fps while sending");
+  pa_init(n,ppc,"-s -r -loop -sleep(1) -source(1) -emulate-mask -size(1) -fps");
 
   std::string uri = pa_subarg<std::string>("-imageuri",0,"the-uri");
   std::string stream = pa_subarg<std::string>("-streamname",0,"the-stream-name");
