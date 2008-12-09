@@ -132,12 +132,12 @@ class Runner : public Thread{
 
 
 int main(int n,char **ppc){
-  pa_explain("-input","input type pwc, dc, unicap or filepattern (madatory)");
-  pa_init(n,ppc,"-input(1)");
+  pa_explain("-input","input type pwc, dc, unicap or filepattern (madatory)\ne.g. -input dc 0 or -input file image.ppm");
+  pa_init(n,ppc,"-input(2)");
   if(!pa_defined("-input")){ pa_usage("please define input type"); exit(0); }
   
   std::string inp = pa_subarg<string>("-input",0,"./*.ppm");
-  grabber = new GenericGrabber(inp=="pwc"||inp == "dc" || inp== "unicap" ? inp : string("file","pwc=0,dc=0,unicap=,file=")+inp);
+  grabber = new GenericGrabber(pa_subarg<string>("-input",0,""),pa_subarg<string>("-input",0,"")+"="+pa_subarg<string>("-input",1,""));
   
   QApplication app(n,ppc);
   
