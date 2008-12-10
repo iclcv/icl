@@ -63,7 +63,7 @@ namespace icl{
     /// implicit cast to a integer-point
     operator Point() const {
       return Point(clipped_cast<float,int>(x),
-                   clipped_cast<float,int>(x));
+                   clipped_cast<float,int>(y));
     } 
 
     /// returns the p-norm of the 2D Vector
