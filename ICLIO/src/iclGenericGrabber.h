@@ -44,6 +44,8 @@ namespace icl {
                    const std::string &params="pwc=0,dc=0,file=images/*.ppm",
                    bool notifyErrors = true);
     
+
+    
     /// resets resource on given devices (e.g. firewire bus)
     static void resetBus(const std::string &deviceList="dc", bool verbose=false);
    
@@ -166,7 +168,8 @@ namespace icl {
      }
      
   };
-  
+
+#define FROM_PROGARG(ARG) pa_subarg<std::string>(ARG,0,""),pa_subarg<std::string>(ARG,0,"")+"="+pa_subarg<std::string>(ARG,1,"")
  
 } 
 

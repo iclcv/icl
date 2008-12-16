@@ -5,21 +5,21 @@
 namespace icl{
   namespace{
     template<class SrcType, class DstType, typename ippfunc>
-    inline void ipp_call_fixed(const Img<SrcType> &src, Img<DstType> &dst, int channel, ippfunc func){
-      func(src.getROIData(channel),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize());
+    inline void ipp_call_fixed(const Img<SrcType> &src, Img<DstType> &dst, int channel, ippfunc func, ConvolutionOp &op){
+      func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize());
     }
     template<class SrcType, class DstType, typename ippfunc>
-    inline void ipp_call_fixed_mask(const Img<SrcType> &src, Img<DstType> &dst, int channel, IppiMaskSize m, ippfunc func){
-      func(src.getROIData(channel),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize(),m);
+    inline void ipp_call_fixed_mask(const Img<SrcType> &src, Img<DstType> &dst, int channel, IppiMaskSize m, ippfunc func, ConvolutionOp &op){
+      func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize(),m);
     }
     template<class ImageType,typename ippfunc>
     inline void ipp_call_filter_int(const Img<ImageType> &src, Img<ImageType> &dst, const int *kernel, int channel, ConvolutionOp &op, ippfunc func){
-      func(src.getROIData(channel),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize(),
+      func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize(),
               kernel, op.getKernel().getSize(), op.getAnchor(), op.getKernel().getFactor() );
     }
     template<class ImageType,typename ippfunc>
     inline void ipp_call_filter_float(const Img<ImageType> &src, Img<ImageType> &dst, const float *kernel, int channel, ConvolutionOp &op, ippfunc func){
-      func(src.getROIData(channel),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),
+      func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),
               dst.getROISize(), kernel, op.getKernel().getSize(), op.getAnchor() );
     }
 
@@ -40,37 +40,77 @@ namespace icl{
         *d++ = clipped_cast<KernelType, DstType>(buffer / factor);
       }
     }
+
+    template<class KernelType, class SrcType, class DstType>
+    void generic_cpp_convolution_3x3(const Img<SrcType> &src, Img<DstType> &dst,const KernelType *k, ConvolutionOp &op, int c){
+    
+      register const SrcType *s = src.getROIData(c,op.getROIOffset());
+      register DstType *d = dst.getROIData(c);
+      register int factor = op.getKernel().getFactor();
+      
+      register const int xEnd = dst.getROISize().width;
+      register const int yEnd = dst.getROISize().height;
+      register const KernelType m[9] = {k[0],k[1],k[2],k[3],k[4],k[5],k[6],k[7],k[8]};
+      register const int dy = src.getWidth();
+      
+      if(factor != 1){
+        for(int y=0;y<yEnd;++y){
+          for(int x=0;x<xEnd;++x){
+            d[x] = ( s[x-dy-1]*m[0] + s[x-dy]*m[1] + s[x-dy+1]*m[2] +
+                     s[x-1]*m[3] + s[x]*m[4] + s[x+1]*m[5] +
+                     s[x+dy-1]*m[6] + s[x+dy]*m[7] + s[x+dy+1]*m[8] ) / factor;
+          }
+          s+=src.getWidth();
+          d+=dst.getWidth();
+        }
+      }else{
+        for(int y=0;y<yEnd;++y){
+          for(int x=0;x<xEnd;++x){
+            d[x] = ( s[x-dy-1]*m[0] + s[x-dy]*m[1] + s[x-dy+1]*m[2] +
+                     s[x-1]*m[3] + s[x]*m[4] + s[x+1]*m[5] +
+                     s[x+dy-1]*m[6] + s[x+dy]*m[7] + s[x+dy+1]*m[8] );
+          }
+          s+=src.getWidth();
+          d+=dst.getWidth();
+        }
+      }
+    }
+
     
     template<class KernelType, class SrcType, class DstType, ConvolutionKernel::fixedType t>
     inline void convolute(const Img<SrcType> &src, Img<DstType> &dst,const KernelType *k, ConvolutionOp &op, int c){
       /// here we call the generic conv method and do not implement the convolution directly to 
       /// get rid of the 4th template parameter 't' which is not regarded in this general case
-      DEBUG_LOG("calling generic conv " << c);
-        
-      generic_cpp_convolution(src,dst,k,op,c);
+      if(op.getAnchor() == Point(1,1) && op.getMaskSize() == Size(3,3)){
+        generic_cpp_convolution_3x3(src,dst,k,op,c);
+      }else{
+        generic_cpp_convolution(src,dst,k,op,c);
+      }
     }
+    
+
 
 #ifdef HAVE_IPP
     /// define specializations of convolute-template
 
     // note: each specialization is doubled because the kernel-type template parameters is handled in the IPP
-#define FIXED_SPEC(SD,DD,KT,IPPF)                                                                                               \
-    template<> inline void                                                                                                      \
-    convolute<int,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const int*,ConvolutionOp&, int c){     \
-      ipp_call_fixed(src,dst,c,IPPF);                                                                                           \
-    }                                                                                                                           \
-    template<> inline void                                                                                                      \
-    convolute<float,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const float*,ConvolutionOp&, int c){ \
-      ipp_call_fixed(src,dst,c,IPPF);                                                                                           \
+#define FIXED_SPEC(SD,DD,KT,IPPF)                                                                                                   \
+    template<> inline void                                                                                                          \
+    convolute<int,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const int*,ConvolutionOp &op, int c){      \
+      ipp_call_fixed(src,dst,c,IPPF,op);                                                                                            \
+    }                                                                                                                               \
+    template<> inline void                                                                                                          \
+    convolute<float,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const float*,ConvolutionOp &op, int c){  \
+      ipp_call_fixed(src,dst,c,IPPF,op);                                                                                            \
     }    
-#define FIXED_SPEC_M(SD,DD,KT,IPPF,MASK)                                                                                        \
-    template<> inline void                                                                                                      \
-    convolute<int,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const int*,ConvolutionOp&, int c){     \
-      ipp_call_fixed_mask(src,dst,c,MASK,IPPF);                                                                                 \
-    }                                                                                                                           \
-    template<> inline void                                                                                                      \
-    convolute<float,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const float*,ConvolutionOp&, int c){ \
-      ipp_call_fixed_mask(src,dst,c,MASK,IPPF);                                                                                 \
+#define FIXED_SPEC_M(SD,DD,KT,IPPF,MASK)                                                                                            \
+    template<> inline void                                                                                                          \
+    convolute<int,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const int*,ConvolutionOp &op, int c){      \
+      ipp_call_fixed_mask(src,dst,c,MASK,IPPF,op);                                                                                  \
+    }                                                                                                                               \
+    template<> inline void                                                                                                          \
+    convolute<float,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const float*,ConvolutionOp &op, int c){  \
+      ipp_call_fixed_mask(src,dst,c,MASK,IPPF,op);                                                                                  \
     }
 #define CONV_SPEC(KD,ID,IPPF)                                                                                                           \
     template<> inline void                                                                                                              \
