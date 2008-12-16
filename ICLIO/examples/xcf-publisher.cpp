@@ -15,21 +15,26 @@ GUI gui;
 bool first = true;
 
 void receive_loop(){
-  static XCFPublisherGrabber g(stream);
-  while(true){
-    const ImgBase *image = g.grab();
-    static ICLWidget *widget = *gui.getValue<ImageHandle>("image");
-    static FPSHandle &fps  = gui.getValue<FPSHandle>("fps");
-    fps.update();
-    widget->setImage(image);
-    widget->updateFromOtherThread();
+  try{
+    static XCFPublisherGrabber g(stream);
+    g.setIgnoreDesiredParams(true);
+    while(true){
+      const ImgBase *image = g.grab();
+      static ICLWidget *widget = *gui.getValue<ImageHandle>("image");
+      static FPSHandle &fps  = gui.getValue<FPSHandle>("fps");
+      fps.update();
+      widget->setImage(image);
+      widget->updateFromOtherThread();
     Thread::msleep(pa_subarg("-sleep",0,1000));
+    }
+  }catch(XCF::InitializeException &ex){
+    ERROR_LOG("exception:" << ex.reason);
   }
 }
 
 
 void send_app(){
-
+  try{
   while(first || pa_defined("-loop")){
     static XCFPublisher p(stream,uri);
     Img8u image;
@@ -80,6 +85,10 @@ void send_app(){
       }
     }    
   }
+  }catch(XCF::InitializeException &ex){
+    ERROR_LOG("exception:" << ex.reason);
+  }
+
 }
 
 void receive_app(int n, char **ppc){
@@ -99,8 +108,8 @@ void receive_app(int n, char **ppc){
 
 int main(int n, char **ppc){
   pa_explain("-source","for sender application only allowed values are create|filepattern");
-  pa_explain("-streamname","stream name for sender and receiver application");
-  pa_explain("-imageuri","URI for image packages");
+  pa_explain("-streamname","stream name for sender and receiver application (by default: the-stream)");
+  pa_explain("-imageuri","URI for image packages (by default the-uri)");
   pa_explain("-s","sender application");
   pa_explain("-r","receiver application");
   pa_explain("-loop","loop application");
@@ -108,10 +117,10 @@ int main(int n, char **ppc){
   pa_explain("-emulate-mask","emulate 4th channel mask (sending only)");
   pa_explain("-size","output image size (sending only)");
   pa_explain("-fps","display fps while sending");
-  pa_init(n,ppc,"-s -r -loop -sleep(1) -source(1) -emulate-mask -size(1) -fps");
+  pa_init(n,ppc,"-streamname(1) -imageuri(1) -s -r -loop -sleep(1) -source(1) -emulate-mask -size(1) -fps");
 
-  std::string uri = pa_subarg<std::string>("-imageuri",0,"the-uri");
-  std::string stream = pa_subarg<std::string>("-streamname",0,"the-stream-name");
+  uri = pa_subarg<std::string>("-imageuri",0,"the-uri");
+  stream = pa_subarg<std::string>("-streamname",0,"the-stream");
   
   if(pa_defined("-s")){
     send_app();

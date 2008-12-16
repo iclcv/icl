@@ -7,6 +7,7 @@ libICLFilter_la_SOURCES= \
 ../src/iclBinaryCompareOp.cpp \
 ../src/iclBinaryLogicalOp.cpp \
 ../src/iclChamferOp.cpp \
+../src/iclConvolutionKernel.cpp \
 ../src/iclConvolutionOp.cpp \
 ../src/iclDynamicConvolutionOp.cpp \
 ../src/iclGaborOp.cpp \
@@ -42,6 +43,7 @@ include_HEADERS= \
 ../src/iclBinaryLogicalOp.h \
 ../src/iclBinaryOp.h \
 ../src/iclChamferOp.h \
+../src/iclConvolutionKernel.h \
 ../src/iclConvolutionOp.h \
 ../src/iclDynamicConvolutionOp.h \
 ../src/iclFilter.h \

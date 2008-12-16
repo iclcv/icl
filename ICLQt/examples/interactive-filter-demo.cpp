@@ -1,6 +1,6 @@
 #include <iclDrawWidget.h>
 #include <iclImg.h>
-#include <iclPWCGrabber.h>
+#include <iclGenericGrabber.h>
 #include <iclConvolutionOp.h>
 #include <QApplication>
 #include <QThread>
@@ -14,7 +14,7 @@ using namespace std;
 class MyThread : public QThread, public MouseInteractionReceiver{
 public:
   MyThread():widget(new ICLDrawWidget(0)),
-             grabber(new PWCGrabber(Size(640,480))) {
+             grabber(new GenericGrabber) {
     grabber->setDesiredSize(Size(640,480));
     widget->setGeometry(200,200,640,480);
     widget->show();
@@ -26,7 +26,7 @@ public:
     x = -1;
     y = -1;
     r = g = b = 0; 
-    k = ConvolutionOp::kernelGauss3x3;
+    k = ConvolutionKernel::gauss3x3;
     sKernel = "gauss";
     return;
   }
@@ -51,7 +51,7 @@ public:
           }
           // drawing filter result for the roi image
           const ImgBase *image = grabbedImage->shallowCopy(roi);
-          ConvolutionOp conv(k); 
+          ConvolutionOp conv(ConvolutionKernel(k),false); 
           ImgBase *dst = 0;
           conv.apply(image,&dst);   
           dst->normalizeAllChannels(Range<icl64f>(0,255));
@@ -89,17 +89,17 @@ public:
       b=(int)info->color[2];
     }
     if(info->type==MouseInteractionInfo::pressEvent){
-      if(k==ConvolutionOp::kernelGauss3x3){
-        k = ConvolutionOp::kernelSobelX3x3;
+      if(k==ConvolutionKernel::gauss3x3){
+        k = ConvolutionKernel::sobelX3x3;
         sKernel = "sobelx";
-      }else if(k == ConvolutionOp::kernelSobelX3x3){
-        k = ConvolutionOp::kernelSobelY3x3;
+      }else if(k == ConvolutionKernel::sobelX3x3){
+        k = ConvolutionKernel::sobelY3x3;
         sKernel = "sobel-y";
-      }else if(k == ConvolutionOp::kernelSobelY3x3){
-        k = ConvolutionOp::kernelLaplace3x3;
+      }else if(k == ConvolutionKernel::sobelY3x3){
+        k = ConvolutionKernel::laplace3x3;
         sKernel = "laplace";
-      }else if(k == ConvolutionOp::kernelLaplace3x3){
-        k = ConvolutionOp::kernelGauss3x3;
+      }else if(k == ConvolutionKernel::laplace3x3){
+        k = ConvolutionKernel::gauss3x3;
         sKernel = "gauss";
       }
     }
@@ -107,10 +107,10 @@ public:
   
 private:
   ICLDrawWidget *widget;
-  PWCGrabber *grabber;
+  GenericGrabber *grabber;
   int x,y;
   int r,g,b;
-  ConvolutionOp::kernel k;
+  ConvolutionKernel::fixedType k;
   string sKernel;
 };
 

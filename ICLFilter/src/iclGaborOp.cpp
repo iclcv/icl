@@ -85,7 +85,7 @@ namespace icl{
     poDst->setSize(Size::null);
     
     for(unsigned int i=0;i<m_vecKernels.size();i++){
-      ConvolutionOp co(m_vecKernels[i].getData(0),m_oKernelSize, false);
+      ConvolutionOp co(ConvolutionKernel(m_vecKernels[i].getData(0),m_oKernelSize, false));
       co.setCheckOnly(false);
       co.setClipToROI(true);
 
@@ -107,7 +107,7 @@ namespace icl{
     const ImgBase *poSrcROIPix = poSrc->shallowCopy(Rect(p,Size(1,1)));
 
     for(unsigned int i=0;i<m_vecKernels.size();i++){
-      ConvolutionOp co(m_vecKernels[i].getData(0),m_oKernelSize, false);
+      ConvolutionOp co(ConvolutionKernel(m_vecKernels[i].getData(0),m_oKernelSize, false));
       co.setCheckOnly(false);
       co.setClipToROI(true);
 

@@ -25,7 +25,7 @@ namespace icl{
      poKernel->convertROI(poKernelBuf);
 
      // set ConvolutionOp kernel from float data
-     ConvolutionOp::setKernel (poKernelBuf->getData(0), poKernelBuf->getSize(), false);
+     ConvolutionOp::setKernel (ConvolutionKernel(poKernelBuf->getData(0), poKernelBuf->getSize(), false));
   }
 
  }

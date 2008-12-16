@@ -79,7 +79,14 @@ namespace icl {
       ICLException(std::string("Invalid Depth in: ")+functionName) {}
     virtual ~InvalidDepthException() throw() {}
   };
-
+ 
+  /// Exception thrown if a function should process an unsupported sizes (e.g. with negative dim..) \ingroup EX
+  class InvalidSizeException : public ICLException {
+    public:
+    InvalidSizeException(const std::string &functionName) throw():
+      ICLException(std::string("Invalid Size in: ")+functionName) {}
+    virtual ~InvalidSizeException() throw() {}
+  };
 #define ICL_FILE_LOCATION  (std::string(__FUNCTION__) + "(" + __FILE__ + ")")
 #define ICL_INVALID_FORMAT throw InvalidFormatException(ICL_FILE_LOCATION)
 #define ICL_INVALID_DEPTH  throw InvalidDepthException(ICL_FILE_LOCATION)

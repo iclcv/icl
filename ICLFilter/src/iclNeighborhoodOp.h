@@ -64,6 +64,7 @@ namespace icl {
     void setROIOffset(const Point &offs){
       m_oROIOffset = offs;
     }
+    public:
     const Size &getMaskSize() const{
       return m_oMaskSize;
     } 
@@ -73,6 +74,7 @@ namespace icl {
     const Point &getROIOffset() const{
       return m_oROIOffset;
     }
+    protected:
 
     /// prepare filter operation: ensure compatible image format and size
     virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc);

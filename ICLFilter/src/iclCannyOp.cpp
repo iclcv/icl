@@ -14,8 +14,8 @@ namespace icl {
     FUNCTION_LOG("");
     m_apoDXY[0] = NULL;
     m_apoDXY[1] = NULL;
-    m_apoDXYOps[0] = new ConvolutionOp(ConvolutionOp::kernelSobelX3x3);
-    m_apoDXYOps[1] = new ConvolutionOp(ConvolutionOp::kernelSobelY3x3);
+    m_apoDXYOps[0] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3));
+    m_apoDXYOps[1] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelY3x3));
   }
 
   // }}}
