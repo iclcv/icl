@@ -7,6 +7,7 @@
 #include <iclTypes.h>
 #include <iclGLTextureMapImage.h>
 #include <iclMutex.h>
+#include <QMutex>
 
 namespace icl{
   
@@ -44,7 +45,8 @@ namespace icl{
     **/
     GLTextureMapBaseImage(const ImgBase* image = 0, bool useSingleBuffer = false): 
     m_po8u(0),m_po16s(0),m_po32s(0),m_po32f(0), m_poChannelBuf(0),
-    m_bUseSingleBuffer(useSingleBuffer){
+    m_bUseSingleBuffer(useSingleBuffer),m_oImStatMutex(QMutex::Recursive),
+    m_bFallBackBufferFor64fImagesIsUsed(false){
       m_oCurrentImageParams = ImgParams(Size::null,0);
       m_aiBCI[0]=m_aiBCI[1]=m_aiBCI[2]=0; 
       if(useSingleBuffer){
@@ -155,12 +157,17 @@ namespace icl{
     /// stores the current images params
     ImgParams m_oCurrentImageParams;
     
-    /// Mutex to protect calculation of image statistics from updateTextures calls
-    Mutex m_oImStatMutex;
+    /// Mutex to protect calculation of image statistics from updateTextures calls (Q-.. because it must be recursive)
+    QMutex m_oImStatMutex;
     
     /// current image statistics
     ImageStatistics m_oImStat;
-
+    
+    /// 64Bit images are visualized as float images
+    Img32f m_oFallBackBufferFor64fImages;
+    
+    /// indicates whether buffer above is currently used
+    bool m_bFallBackBufferFor64fImagesIsUsed;
   };  
 }
 

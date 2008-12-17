@@ -1,5 +1,5 @@
 #include <iclGLTextureMapBaseImage.h>
-
+#include <QMutexLocker>
 
 namespace icl{
 
@@ -66,7 +66,7 @@ namespace icl{
 
   void GLTextureMapBaseImage::updateTextures(const ImgBase *imageIn){
 
-    Mutex::Locker l(m_oImStatMutex);
+    QMutexLocker l(&m_oImStatMutex);
 
     if(!imageIn || !imageIn->getChannels()){
       SAVE_DEL(m_po8u);
@@ -91,6 +91,7 @@ namespace icl{
       m_po##D->bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);                   \
     }                                                                   \
     m_po##D->updateTextures(image->asImg<icl##D>());                    \
+    m_bFallBackBufferFor64fImagesIsUsed = false;                        \
     break;  
     
     switch(image->getDepth()){
@@ -115,9 +116,12 @@ namespace icl{
         SAVE_DEL(m_po32s);
         APPLY_FOR(32f);
       case depth64f:{ // fallback!!
-        Img<icl32f> *tmp = image->convert(depth32f)->asImg<icl32f>();
-        updateTextures(tmp);
-        delete tmp;
+        //Img<icl32f> *tmp = image->convert(depth32f)->asImg<icl32f>();
+        image->convert(&m_oFallBackBufferFor64fImages);
+        updateTextures(&m_oFallBackBufferFor64fImages);
+        //        delete tmp;
+        m_bFallBackBufferFor64fImagesIsUsed = true;
+        break;
       }default:
         ICL_INVALID_DEPTH;
         break;
@@ -237,25 +241,29 @@ namespace icl{
   }
 
   const ImageStatistics &GLTextureMapBaseImage::getStatistics(){
-    Mutex::Locker l(m_oImStatMutex);
+    QMutexLocker l(&m_oImStatMutex);
 
     m_oImStat.params = m_oCurrentImageParams;
 
     if(m_po8u){
       return m_po8u->updateStatistics(m_oImStat);
     }
-    if(m_po16s){
+    else if(m_po16s){
       return m_po16s->updateStatistics(m_oImStat);
     }
-    if(m_po32s){
+    else if(m_po32s){
       return m_po32s->updateStatistics(m_oImStat);
     }
-    if(m_po32f){
-      return m_po32f->updateStatistics(m_oImStat);
+    else if(m_po32f){
+      m_po32f->updateStatistics(m_oImStat);
+      if(m_bFallBackBufferFor64fImagesIsUsed){
+        m_oImStat.d = depth64f;
+      }
+      return m_oImStat;
+    }else{
+      m_oImStat.isNull = true;
+      return m_oImStat;
     }
-    
-    m_oImStat.isNull = true;
-    return m_oImStat;
   }
 
 }
