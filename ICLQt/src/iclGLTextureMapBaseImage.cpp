@@ -91,7 +91,7 @@ namespace icl{
       m_po##D->bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);                   \
     }                                                                   \
     m_po##D->updateTextures(image->asImg<icl##D>());                    \
-    m_bFallBackBufferFor64fImagesIsUsed = false;                        \
+    m_bBufferForUnsupportedTypesIsUsed = false;                        \
     break;  
     
     switch(image->getDepth()){
@@ -105,24 +105,28 @@ namespace icl{
         SAVE_DEL(m_po32s);
         SAVE_DEL(m_po32f);
         APPLY_FOR(16s);
-      case depth32s:
-        SAVE_DEL(m_po8u);
-        SAVE_DEL(m_po16s);
-        SAVE_DEL(m_po32f);
-        APPLY_FOR(32s);
+      /* currently this seems not to work, so we draw int images also as floats
+            case depth32s:
+            SAVE_DEL(m_po8u);
+            SAVE_DEL(m_po16s);
+            SAVE_DEL(m_po32f);
+            APPLY_FOR(32s);
+      */
       case depth32f:
         SAVE_DEL(m_po8u);
         SAVE_DEL(m_po16s);
         SAVE_DEL(m_po32s);
         APPLY_FOR(32f);
-      case depth64f:{ // fallback!!
+      case depth32s:
+      case depth64f: // fallback!!
         //Img<icl32f> *tmp = image->convert(depth32f)->asImg<icl32f>();
-        image->convert(&m_oFallBackBufferFor64fImages);
-        updateTextures(&m_oFallBackBufferFor64fImages);
+        image->convert(&m_oBufferForUnsupportedTypes);
+        updateTextures(&m_oBufferForUnsupportedTypes);
         //        delete tmp;
-        m_bFallBackBufferFor64fImagesIsUsed = true;
+        m_bBufferForUnsupportedTypesIsUsed = true;
+        m_eUnsupportedTypeDepth = image->getDepth();
         break;
-      }default:
+      default:
         ICL_INVALID_DEPTH;
         break;
     }    
@@ -256,8 +260,8 @@ namespace icl{
     }
     else if(m_po32f){
       m_po32f->updateStatistics(m_oImStat);
-      if(m_bFallBackBufferFor64fImagesIsUsed){
-        m_oImStat.d = depth64f;
+      if(m_bBufferForUnsupportedTypesIsUsed){
+        m_oImStat.d = m_eUnsupportedTypeDepth;
       }
       return m_oImStat;
     }else{

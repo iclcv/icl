@@ -286,6 +286,14 @@ namespace icl{
           dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
           break;
         }
+          /* orig: not working but... why drawn as float
+              case depth32s:{ // drawn as float
+              dScaleRGB  = l ? 255.0/l : 255;
+              dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
+              // if not working properly: dBiasRGB /= 255.0
+              break;
+              }
+          */
         case depth32s:{ // drawn as float
           dScaleRGB  = l ? 255.0/l : 255;
           dBiasRGB = (- dScaleRGB * r.minVal)/255.0;
@@ -314,14 +322,17 @@ namespace icl{
       fBiasRGB = (float)brightness/255.0;
       fScaleRGB  = 1;
       switch(d){
-      case depth8u:
-        fScaleRGB = 1; break;
+        case depth8u:
+          fScaleRGB = 1; 
+          break;
         case depth16s:
-          fScaleRGB = 127; break; // or 255 ?
-      case depth32s:
+          fScaleRGB = 127; 
+          break; // or 255 ?
+        case depth32s:
         case depth32f:
-      case depth64f:
-        fScaleRGB = 1.0/255; break;
+        case depth64f:
+          fScaleRGB = 1.0/255; 
+          break;
       }
       
       float c = (float)contrast/255;
@@ -378,14 +389,17 @@ namespace icl{
     if(!m_bUseSingleBuffer){
       
       glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
-
+      
+      depth d = getDepth<T>();
+      int depthIdx = (int)d;
+      
       setPackAlignment(getDepth<T>(),m_iImageW);
       
       setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], 0);
       
-      static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_INT, GL_FLOAT, GL_FLOAT };
+      static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_FLOAT, GL_FLOAT, GL_FLOAT };
       GLenum glType = aeGLTypes[getDepth<T>()];
-      
+
       for(int y=0;y<m_iYCells;++y){
         for(int x=0;x<m_iXCells;++x){
           glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
