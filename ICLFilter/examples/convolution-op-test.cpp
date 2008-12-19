@@ -14,7 +14,7 @@ void init(){
          << "draw[@minsize=16x12@handle=dst@label=result image]";
   
   controls << "combo(QQVGA,CGA,QVGA,HVGA,!VGA,SVGA,XGA,HD720,WXGA,SXGA,SXGAP,HD1080)[@label=source size@handle=src-size@out=__0]"
-           << "combo(depth8u,depth16s,depth32s,depth32f,depths64f)[@label=source depth@handle=src-depth@out=__1]"
+           << "combo(depth8u,depth16s,depth32s,depth32f,depth64f)[@label=source depth@handle=src-depth@out=__1]"
            << "combo(full,ul,ur,ll,rl,center)[@label=source roi@handle=src-roi@out=__2]"
            << "combo(custom,sobelX3x3,sobelY3x3,sobelX5x5,sobelY5x5,!gauss3x3,gauss5x5,laplace3x3,laplace5x5)[@label=kernel-type@handle=kernel-type@out=__3]"
            << "togglebutton(off,on)[@label=force unsigned@out=force-unsigned]"

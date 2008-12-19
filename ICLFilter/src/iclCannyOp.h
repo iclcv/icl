@@ -106,6 +106,7 @@ namespace icl {
       UnaryOp *m_apoDXYOps[2];
       icl32f m_fLowThresh, m_fHighThresh; // internally used thresholds
       bool m_bDeleteOps;
+      Img32f m_buffer;
    };
 } // namespace icl
 #endif

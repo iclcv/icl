@@ -195,7 +195,7 @@ namespace icl{
     /** Range size must be compatible to the new matrix's dimension */
     template<class OtherIterator>
     FixedMatrix(OtherIterator begin, OtherIterator end){
-      FixedMatrixBase::optimized_copy<OtherIterator,T*,DIM>(begin,end,begin());
+      FixedMatrixBase::optimized_copy<OtherIterator,T*,DIM>(begin,end,this->begin());
       //      std::copy(begin,end,begin());
     }
 

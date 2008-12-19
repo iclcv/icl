@@ -56,11 +56,16 @@ namespace icl {
   void CannyOp::apply (const ImgBase *poSrc, ImgBase **ppoDst)
       // {{{ open
   {
+
+    FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc );
     ICLASSERT_RETURN( ppoDst );
     ICLASSERT_RETURN( poSrc != *ppoDst);
-    ICLASSERT_RETURN( poSrc->getDepth() == depth32f );
-    FUNCTION_LOG("");
+    if(poSrc->getDepth() != depth32f){
+      poSrc->convert(&m_buffer);
+      poSrc = &m_buffer;
+    }
+
     for(int i=0;i<2;i++){
       m_apoDXYOps[i]->setClipToROI (true);
       m_apoDXYOps[i]->apply(poSrc,m_apoDXY+i);
