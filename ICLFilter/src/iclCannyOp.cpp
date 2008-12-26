@@ -6,30 +6,25 @@ namespace icl {
 
 #ifdef HAVE_IPP
   // without ipp non of the function is implemented
-  CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh):
+  CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh,bool preBlur):
     // {{{ open
-
-    m_pucBuffer8u(0),m_fLowThresh(lowThresh), 
-    m_fHighThresh(highThresh), m_bDeleteOps(true){
+    m_lowT(lowThresh),m_highT(highThresh),m_ownOps(true),m_preBlur(preBlur),m_preBlurBuffer(0){
     FUNCTION_LOG("");
-    m_apoDXY[0] = NULL;
-    m_apoDXY[1] = NULL;
-    m_apoDXYOps[0] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3));
-    m_apoDXYOps[1] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelY3x3));
+    m_ops[0] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3));
+    m_ops[1] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelY3x3));
+    m_derivatives[0]=m_derivatives[1]=0;
   }
 
   // }}}
   
-  CannyOp::CannyOp(UnaryOp *dxOp, UnaryOp *dyOp,icl32f lowThresh, icl32f highThresh, bool deleteOps):
+  CannyOp::CannyOp(UnaryOp *dxOp, UnaryOp *dyOp,icl32f lowThresh, icl32f highThresh, bool deleteOps, bool preBlur):
     // {{{ open
-
-    m_pucBuffer8u(0),m_fLowThresh(lowThresh), 
-    m_fHighThresh(highThresh), m_bDeleteOps(deleteOps) {
+    m_lowT(lowThresh),m_highT(highThresh),m_ownOps(deleteOps),m_preBlur(preBlur),m_preBlurBuffer(0){
     FUNCTION_LOG("");
-    m_apoDXY[0] = NULL;
-    m_apoDXY[1] = NULL;
-    m_apoDXYOps[0] = dxOp;
-    m_apoDXYOps[1] = dyOp;
+    m_ops[0] = dxOp;
+    m_ops[1] = dyOp;
+
+    m_derivatives[0]=m_derivatives[1]=0;
   }
 
   // }}}
@@ -38,17 +33,16 @@ namespace icl {
     // {{{ open
 
     FUNCTION_LOG("");
-    if(m_pucBuffer8u){
-      delete [] m_pucBuffer8u;
-    }
-    if (m_apoDXY[0]){delete m_apoDXY[0];}
-    if (m_apoDXY[1]){delete m_apoDXY[1];}
-    if(m_bDeleteOps){
-      if(m_apoDXYOps[0]) delete m_apoDXYOps[0];
-      if(m_apoDXYOps[1]) delete m_apoDXYOps[1];
-    }
-  }
 
+    for(int i=0;i<2;++i){
+      if(m_ownOps){
+        ICL_DELETE(m_ops[i]);
+      }
+      ICL_DELETE(m_derivatives[i]);
+    }
+    ICL_DELETE(m_preBlurBuffer);
+  }
+  
   // }}}
 
   /// no CannyOp::apply without ipp
@@ -61,39 +55,52 @@ namespace icl {
     ICLASSERT_RETURN( poSrc );
     ICLASSERT_RETURN( ppoDst );
     ICLASSERT_RETURN( poSrc != *ppoDst);
-    if(poSrc->getDepth() != depth32f){
-      poSrc->convert(&m_buffer);
-      poSrc = &m_buffer;
+
+    if(m_preBlur){
+      ConvolutionOp con(ConvolutionKernel(ConvolutionKernel::gauss3x3));
+      con.setClipToROI(false);
+      con.apply(poSrc,&m_preBlurBuffer);
+      poSrc = m_preBlurBuffer;
     }
+
 
     for(int i=0;i<2;i++){
-      m_apoDXYOps[i]->setClipToROI (true);
-      m_apoDXYOps[i]->apply(poSrc,m_apoDXY+i);
-    }
-    if (!prepare (ppoDst, m_apoDXY[0], depth8u)) return;
-
-    int bufferSizeNeeded;
-    ippiCannyGetSize(m_apoDXY[0]->getSize(), &bufferSizeNeeded);
-    if(bufferSizeNeeded != m_iBufferSize){
-      if(m_pucBuffer8u) delete m_pucBuffer8u;
-      m_pucBuffer8u = new icl8u[bufferSizeNeeded];
-      m_iBufferSize = bufferSizeNeeded;
+      m_ops[i]->setClipToROI (true);
+      m_ops[i]->apply(poSrc,&m_derivatives[i]);
     }
     
-    for (int c=m_apoDXY[0]->getChannels()-1; c >= 0; --c) {
-      ippiCanny_32f8u_C1R (m_apoDXY[0]->asImg<icl32f>()->getROIData (c), m_apoDXY[0]->getLineStep(),
-                           m_apoDXY[1]->asImg<icl32f>()->getROIData (c), m_apoDXY[1]->getLineStep(),
-                           (*ppoDst)->asImg<icl8u>()->getROIData (c), (*ppoDst)->getLineStep(),
-                           (*ppoDst)->getROISize(),m_fLowThresh,m_fHighThresh,m_pucBuffer8u);
-    }
+    if (!prepare (ppoDst, m_derivatives[0], depth8u)) return;
+
+    int minSize=0;
+    ippiCannyGetSize(m_derivatives[0]->getSize(), &minSize);
+    m_cannyBuf.resize(minSize);
+    
+    for (int c=m_derivatives[0]->getChannels()-1; c >= 0; --c) {
+      switch(m_derivatives[0]->getDepth()){
+        case depth32f:
+          ippiCanny_32f8u_C1R (m_derivatives[0]->asImg<icl32f>()->getROIData(c), m_derivatives[0]->getLineStep(),
+                               m_derivatives[1]->asImg<icl32f>()->getROIData(c), m_derivatives[1]->getLineStep(),
+                               (*ppoDst)->asImg<icl8u>()->getROIData(c), (*ppoDst)->getLineStep(),
+                               (*ppoDst)->getROISize(),m_lowT,m_highT,m_cannyBuf.data());
+          break;
+        case depth16s:
+          ippiCanny_16s8u_C1R (m_derivatives[0]->asImg<icl16s>()->getROIData(c), m_derivatives[0]->getLineStep(),
+                               m_derivatives[1]->asImg<icl16s>()->getROIData(c), m_derivatives[1]->getLineStep(),
+                               (*ppoDst)->asImg<icl8u>()->getROIData(c), (*ppoDst)->getLineStep(),
+                               (*ppoDst)->getROISize(),m_lowT,m_highT,m_cannyBuf.data());
+          break;
+        default:
+          ICL_INVALID_DEPTH;
+      }
+    }    
   }
    // }}}
   
   void CannyOp::setThresholds(icl32f lo, icl32f hi){
     // {{{ open
 
-    m_fLowThresh = lo;
-    m_fHighThresh = hi;
+    m_lowT= lo;
+    m_highT = hi;
   }
 
   // }}}
@@ -101,14 +108,14 @@ namespace icl {
   icl32f CannyOp::getLowThreshold()const {
     // {{{ open
 
-    return m_fLowThresh;
+    return m_lowT;
   }
 
   // }}}
   icl32f CannyOp::getHighThreshold()const {
     // {{{ open
 
-    return m_fHighThresh;
+    return m_highT;
   }
 
   // }}}
