@@ -6,7 +6,7 @@ using namespace std;
 using namespace icl;
 
 int main(int nArgs, char **ppcArg){
-#ifdef WITH_IPP_OPTIMIZATION
+#ifdef HAVE_IPP
   const ImgBase *src;
    ImgBase *dst=0,*dst2=0,*dst3=0,*dst4=0;
    string srcName("src.ppm");
@@ -20,11 +20,11 @@ int main(int nArgs, char **ppcArg){
    
    
    // test 1
-   ConvolutionOp* pConv = new ConvolutionOp(ConvolutionOp::kernelSobelX3x3);
+   ConvolutionOp* pConv = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3));
    pConv->setClipToROI (true);
    pConv->apply (src, &dst2);
    
-   pConv = new ConvolutionOp(ConvolutionOp::kernelSobelY3x3);
+   pConv = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelY3x3));
    pConv->setClipToROI (true);
    pConv->apply (src, &dst3);
 
