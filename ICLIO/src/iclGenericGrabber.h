@@ -21,11 +21,20 @@ namespace icl {
     /// Create a generic grabber instance with given device priority list
     /** @param devicePriorityList Comma separated list of device tokens (no white spaces).
                                   something like "dc,pwc,file,unicap" with arbitrary order
-                                  undesired devices can be left out!
-                                  <b>new additionally you can define ad dc800 device for using 
-                                  firewire 800 now</b>
+                                  undesired devices can be left out. In particular you can 
+                                  also give only a single desired device type e.g. "pwc".
+                                  The following device types are supported:
+                                  - <b>pwc</b> pwc grabber 
+                                  - <b>dc</b> dc grabber 
+                                  - <b>dc800</b> dc grabber but with 800MBit iso-speed 
+                                  - <b>unicap</b> unicap grabber 
+                                  - <b>file</b> file grabber
+                                  - <b>demo</b> demo grabber (moving red spot)
+                                  - <b>xcfp</b> xcf publisher grabber
+                                  - <b>xcfs</b> xcf server grabber
+                                  - <b>xcfm</b> xcf memory grabber
         
-        @param params comma seperated device depend parameter list: e.g.
+        @param params comma separated device depend parameter list: e.g.
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
                                   Semantics:\n
                                   - pwc=device-index (int)
@@ -33,6 +42,10 @@ namespace icl {
                                   - dc800=device-index (int)
                                   - file=pattern (string)
                                   - unicap=device pattern (string)
+                                  - demo=anything (not regarded)
+                                  - xcfp=publisher's-stream-name (string)
+                                  - xcfs=server-name (string) (currently method name is always "retreiveImage")
+                                  - xcfm=memory-name (string) (currently image-xpath is always "//IMAGE")
         @param notifiyErrors if set to false, no error output is given; use isNull() function 
                              at runtime instead!
 

@@ -17,6 +17,12 @@
 #include <iclUnicapGrabber.h>
 #endif
 
+#ifdef HAVE_XCF
+#include <iclXCFPublisherGrabber.h>
+#include <iclXCFServerGrabber.h>
+#include <iclXCFMemoryGrabber.h>
+#endif
+
 #include <iclDemoGrabber.h>
 
 
@@ -27,7 +33,9 @@ namespace icl{
 
     m_poGrabber = 0;
     std::vector<std::string> lP = tok(params,",");
-    std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo;
+    
+    // todo optimize this code using a map or a table or ...
+    std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pXCF_P,pXCF_S,pXCF_M;
 
     for(unsigned int i=0;i<lP.size();++i){
       if(lP[i].length() > 4 && lP[i].substr(0,3) == "pwc"){
@@ -42,7 +50,15 @@ namespace icl{
         pFile = lP[i].substr(5);
       }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "demo"){
         pDemo = lP[i].substr(5);
-      }      
+      }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfp"){
+        pXCF_P = lP[i].substr(5);
+      }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfs"){
+        pXCF_S = lP[i].substr(5);
+      }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfm"){
+        pXCF_M = lP[i].substr(5);
+      }
+
+
     }
 
     std::vector<std::string> l = tok(desiredAPIOrder,",");
@@ -90,6 +106,52 @@ namespace icl{
           m_sType = "unicap";
           break;
         }        
+      }
+#endif
+
+
+#ifdef HAVE_XCF
+      if(l[i].size()==4 && l[i].substr(0,3) == "xcf"){
+        switch(l[i][3]){
+          case 's':
+            try{
+              m_poGrabber = new XCFServerGrabber(pXCF_S);
+            }catch(...){
+              if(notifyErrors){
+                m_poGrabber = 0;
+                ERROR_LOG("unable to create XCFServerGrabber("<<pXCF_S<<")");
+              }
+            }
+            break;
+          case 'p':
+            try{
+              m_poGrabber = new XCFPublisherGrabber(pXCF_P);
+            }catch(...){
+              if(notifyErrors){
+                m_poGrabber = 0;
+                ERROR_LOG("unable to create XCFPublisherGrabber("<<pXCF_P<<")");
+              }
+            }
+            break;
+          case 'm':
+            try{
+              m_poGrabber = new XCFMemoryGrabber(pXCF_M);
+            }catch(...){
+              if(notifyErrors){
+                m_poGrabber = 0;
+                ERROR_LOG("unable to create XCFMemoryGrabber("<<pXCF_M<<")");
+              }
+            }
+            break;
+          default:
+            break;
+        }
+        if(m_poGrabber){
+          m_sType = l[i];
+          break;
+        }else{
+          continue;
+        }
       }
 #endif
       
