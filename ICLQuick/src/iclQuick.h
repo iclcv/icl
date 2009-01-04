@@ -682,6 +682,12 @@ namespace icl{
   **/
   inline void line(ImgQ &image, const Point &p1, const Point &p2){ line(image,p1.x,p1.y, p2.x,p2.y); }
 
+  /// draws a strip of connected lines
+  /** @param image destination image
+      @param pts list of points
+      @param closeLoop if true, then also the first and the last point is connected */
+  void linestrip(ImgQ &image, const std::vector<Point> &pts, bool closeLoop=true);
+  
   /// draw a single pixel into an image
   /** @param image destination image 
       @param x xpos of the pixel 

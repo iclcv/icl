@@ -1217,6 +1217,17 @@ namespace icl{
 
   // }}}
 
+  void linestrip(ImgQ &image, const std::vector<Point> &pts, bool closeLoop){
+    /// {{{ open
+    if(!pts.size()) return;
+    for(unsigned int i=0;i<pts.size()-1;++i){
+      line(image,pts[i],pts[i+1]);
+    }
+    if(closeLoop){
+      line(image,pts.front(),pts.back());
+    }    
+  }
+  // }}}
   
   void triangle(ImgQ &image,int x1, int y1, int x2, int y2, int x3, int y3 ){
     // {{{ open
@@ -1329,7 +1340,7 @@ namespace icl{
     }
 #else
     (void)image;(void)xoffs; (void)yoffs; (void)text; 
-    ERROR_LOG("this feature is not a");
+    ERROR_LOG("this feature is not supported without Qt-Support");
 #endif
   }
 
