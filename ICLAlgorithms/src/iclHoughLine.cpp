@@ -3,6 +3,7 @@
 #include <iclRange.h>
 #include <iclFixedMatrix.h>
 #include <cmath>
+#include <iclImgChannel.h>
 
 namespace icl{
 
@@ -24,6 +25,87 @@ namespace icl{
     m_offset = Point32f(c,s)*distance;
     m_direction = Point32f(-s,c);
   }
+
+  namespace{
+    
+    template<class T, int C, bool withAlpha>
+    void taintPixel(ImgChannel<T> cs[C],int x, int y, const icl32f col[C]){
+      if(withAlpha){
+        const float a = col[3]/255;
+        for(int c=0;c<C;++c){
+          T &p = cs[c](x,y);
+          p = clipped_cast<icl32f,T>(a*col[c]+(1.0-a)*p);
+        }
+      }else{
+        for(int c=0;c<C;++c){
+          cs[c](x,y)=clipped_cast<icl32f,T>(col[c]);        
+        }
+      }
+    }
+
+
+    template<class T, int C, bool withAlpha>
+    void sample_line_t_c_a(Img<T> &image,const HoughLine &p, const icl32f col[C]){
+      ImgChannel<T> cs[C];
+      pickChannels(&image,cs);
+      
+      // sampling y(x) = mx+b
+      float m = -1.0/::tan(p.theta());
+      float b = p.rho()/sin(p.theta());
+      
+      for(int x=image.getWidth()-1;x>=0;--x){
+        int y = ::round(m*x+b);
+        if(y>=0 && y<image.getHeight()){
+          taintPixel<T,C,withAlpha>(cs,x,y,col);
+        }
+      }
+      
+      m = -::tan(p.theta());
+      b = p.rho()/cos(p.theta());
+      
+      for(int y=image.getHeight()-1;y>=0;--y){
+        int x = ::round(m*y+b);
+        if(x >= 0 && x < image.getWidth()){
+          taintPixel<T,C,withAlpha>(cs,x,y,col);
+        }
+      }
+    }
+    
+    template<class T>
+    void sample_line_c(Img<T> &image,const HoughLine &p, const icl32f *col){
+      if(col[3] == 255){
+        switch(image.getChannels()){
+          case 1: sample_line_t_c_a<T,1,false>(image,p,col); break;
+          case 2: sample_line_t_c_a<T,2,false>(image,p,col); break;
+          case 3: sample_line_t_c_a<T,3,false>(image,p,col); break;
+          default:
+            ERROR_LOG("sampling lines is only supported for 1,2,3 and channel images");
+        }
+      }else{
+        switch(image.getChannels()){
+          case 1: sample_line_t_c_a<T,1,true>(image,p,col); break;
+          case 2: sample_line_t_c_a<T,2,true>(image,p,col); break;
+          case 3: sample_line_t_c_a<T,3,true>(image,p,col); break;
+          default:
+            ERROR_LOG("sampling lines is only supported for 1,2,3 and channel images");
+        }
+      }
+    }
+  }
+  
+  void HoughLine::sample(ImgBase *image, icl32f r, icl32f g, icl32f b, icl32f alpha) const{
+    const icl32f color[4] = {r,g,b,alpha};
+    switch(image->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                          \
+      case depth##D:                                      \
+      sample_line_c(*image->asImg<icl##D>(),*this,color);     \
+      break;                                                        
+      
+      ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+      }
+  }
+
   
   Point32f HoughLine::getIntersection(const HoughLine &a, const HoughLine &b){
     

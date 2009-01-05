@@ -2,7 +2,7 @@
 #define ICL_HOUGH_LINE_H
 
 #include <iclPoint32f.h>
-#include <iclTypes.h>
+#include <iclImgBase.h>
 #include <vector>
 
 namespace icl{
@@ -29,10 +29,12 @@ namespace icl{
     /** @param distance distance from the origin
         @param angle angle of vector perpendicular to the line */
     HoughLine(icl32f distance, icl32f angle);
+
+    /// draws the line into an image
+    void sample(ImgBase *image, icl32f r, icl32f g, icl32f b, icl32f alpha=255) const;
     
     /// Computes the intersection between two lines
-    /**
-        Assuming two lines given in polar coordinates
+    /** Assuming two lines given in polar coordinates
         \f[ x \cos(\alpha) + y \sin(\alpha) - r = 0 \f],
 
         which can be seen geometrically, as a line that is perpendicular
@@ -93,6 +95,12 @@ namespace icl{
 
     /// indicator for no found intersection (lines intersect in infinity -- max-float)
     static const Point32f NO_INTERSECTION;
+    
+    /// convenence function for transf. into IppPointPolar
+    float rho() const { return m_distance; }
+
+    /// convenence function for transf. into IppPointPolar
+    float theta() const { return m_angle; }
     
   private:
     float m_distance;
