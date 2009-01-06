@@ -183,6 +183,7 @@ namespace icl {
   };
 
 #define FROM_PROGARG(ARG) pa_subarg<std::string>(ARG,0,""),pa_subarg<std::string>(ARG,0,"")+"="+pa_subarg<std::string>(ARG,1,"")
+#define FROM_PROGARG_DEF(ARG,DEFDEV,DEFINFO) pa_subarg<std::string>(ARG,0,DEFDEV),pa_subarg<std::string>(ARG,0,DEFDEV)+"="+pa_subarg<std::string>(ARG,1,DEFINFO)
  
 } 
 
