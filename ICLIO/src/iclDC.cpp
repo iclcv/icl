@@ -504,22 +504,23 @@ namespace icl{
 
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
-      if(dev.supports(formatGray) && f->data_depth == 8){
+      /** old ??      if(dev.supports(formatGray) && f->data_depth == 8){
         ensureCompatible(ppoDst,depth8u, desiredSizeHint,formatGray);
         std::vector<icl8u*> srcData(1,static_cast<icl8u*>(f->image));
         Img8u srcImg(frameSize,formatGray,srcData);
         Img8u *dst = (*ppoDst)->asImg<icl8u>();
         srcImg.scaledCopy(dst);
       }else{
-        ensureCompatible(ppoDst,depth8u,frameSize,formatGray);
-        dc1394_convert_to_MONO8(f->image, 
-                                (*ppoDst)->asImg<icl8u>()->getData(0),
-                                frameSize.width,
-                                frameSize.height,
-                                f->yuv_byte_order, 
-                                f->color_coding,
-                                f->data_depth);
-      }
+       end old**/
+      ensureCompatible(ppoDst,depth8u,frameSize,formatGray);
+      dc1394_convert_to_MONO8(f->image, 
+                              (*ppoDst)->asImg<icl8u>()->getData(0),
+                              frameSize.width,
+                              frameSize.height,
+                              f->yuv_byte_order, 
+                              f->color_coding,
+                              f->data_depth);
+      //  old }
       if(ppoDst && *ppoDst){
         (*ppoDst)->setTime(Time(f->timestamp));
       }
@@ -539,8 +540,10 @@ namespace icl{
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
       ensureCompatible(ppoDst,depth8u, frameSize,formatRGB);
-      if(dev.supports(formatRGB)){
-        if(dev.needsBayerDecoding()){
+     
+      /** old implementation (now we do not see 
+          if(dev.supports(formatRGB)){
+          if(dev.needsBayerDecoding()){
           if((int)dataBuffer.size() < frameSize.getDim()*3){
             dataBuffer.resize(frameSize.getDim()*3);
           }
@@ -585,8 +588,34 @@ namespace icl{
                                f->data_depth);
         interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
       }
-      if(ppoDst && *ppoDst){
-        (*ppoDst)->setTime(Time(f->timestamp));
+      **/
+      if(dev.needsBayerDecoding()){
+        if((int)dataBuffer.size() < frameSize.getDim()*3){
+            dataBuffer.resize(frameSize.getDim()*3);
+        }
+        dc1394_bayer_decoding_8bit(f->image,
+                                   dataBuffer.data(),
+                                   frameSize.width,
+                                   frameSize.height,
+                                   dev.getBayerFilterLayout(),
+                                   bayerMethod);
+        interleavedToPlanar(dataBuffer.data(),(*ppoDst)->asImg<icl8u>());
+      }else{
+        /// rgb works directly TODO
+        if((int)dataBuffer.size() < frameSize.getDim()*3){
+          dataBuffer.resize(frameSize.getDim()*3);
+        }
+        dc1394_convert_to_RGB8(f->image,
+                               dataBuffer.data(),
+                               frameSize.width,
+                               frameSize.height,
+                               f->yuv_byte_order,
+                               f->color_coding,
+                               f->data_depth);
+        interleavedToPlanar(dataBuffer.data(),(*ppoDst)->asImg<icl8u>());
+        if(ppoDst && *ppoDst){
+          (*ppoDst)->setTime(Time(f->timestamp));
+        }
       }
     }
 

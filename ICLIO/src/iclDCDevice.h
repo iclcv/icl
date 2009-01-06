@@ -21,9 +21,12 @@ namespace icl{
 
     /// Enumeration of supported cameras
     enum CameraTypeID{
-      pointGreyFire_FlyMVMono,
-      pointGreyFire_FlyMVColor,
-      pointGrey_Flea2_FL2_08S2C,
+      pointGrey_Fire_FlyMVMono,
+      pointGrey_Fire_FlyMVColor,
+      pointGrey_Flea2_08S2C,
+      pointGrey_Flea2_03S2M,
+      pointGrey_Flea2_03S2C,
+      pointGrey_Flea2G_13S2CC,
       sony_DFW_VL500_2_30,
       apple_ISight,
       fireI_1_2,
@@ -119,12 +122,16 @@ namespace icl{
     /// shows some device information 
     void show(const std::string &title="DCDevice") const;
        
-    /// returns whether the Device supports a given icl-format
-    bool supports(format fmt) const;
+#if 0
+    // this functions have been removed due to adaption
+    // of icl::dc::extract_image_to ... functions
 
     /// returns whether the Device supports a given icl-format
-    bool supports(const Size &size) const;    
+    //bool supports(format fmt) const;
 
+    /// returns whether the Device supports a given icl-format
+    //bool supports(const Size &size) const;    
+#endif
     /// returns whether the Device supports a given mode
     bool supports(const Mode &mode) const;
     
@@ -163,6 +170,9 @@ namespace icl{
     /// Creates a new device (pivate; called by DCGrabber::getDeviceList())
     DCDevice(dc1394camera_t *cam):
     m_poCam(cam),m_eCameraTypeID(estimateCameraType(cam)){}
+
+    DCDevice(dc1394camera_t *cam, CameraTypeID id):
+    m_poCam(cam),m_eCameraTypeID(id){}
 
     /// sets the current mode of this device
     /** This function may only be called by the DCGrabber*/
