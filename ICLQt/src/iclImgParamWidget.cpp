@@ -23,11 +23,13 @@ namespace icl{
     m_poDepthCombo = new QComboBox;
     m_poFormatCombo = new QComboBox;
     
+    m_poSizeCombo->addItem("-grabber-");
     m_poSizeCombo->addItem("160x120");
     m_poSizeCombo->addItem("320x240");
     m_poSizeCombo->addItem("640x480");
     m_poSizeCombo->addItem("800x600");
     m_poSizeCombo->addItem("1024x768");
+    m_poSizeCombo->addItem("1600x1200");
     
     for(format f=formatGray; f<=formatLast; f=(format)(f+1)){
       m_poFormatCombo->addItem(translateFormat(f).c_str());
@@ -47,7 +49,7 @@ namespace icl{
     
     setLayout(m_poLayout);
     
-    setup(320,240,(int)depth8u,(int)formatRGB);
+    setup(-1,-1,(int)depth8u,(int)formatRGB);
   }
 
   // }}}
@@ -55,7 +57,7 @@ namespace icl{
   namespace{
     QString sizeToStr(const Size &size){
       // {{{ open
-      
+      if(size == Size(-1,-1)) return "-grabber-";
       static char buf[100];
       sprintf(buf,"%dx%d",size.width,size.height);
       return buf;
@@ -64,6 +66,7 @@ namespace icl{
     // }}}
     Size strToSize(const QString &s){
       // {{{ open
+      if(s == "-grabber-") return Size(-1,-1);
       return Size(s.section('x',0,0).toInt(), s.section('x',1,1).toInt());
     }
     

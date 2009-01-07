@@ -48,16 +48,21 @@ namespace icl{
     }
     
     ppoDst = ppoDst ? ppoDst : &m_poImage;
-    ImgBase **ppoDstTmp = &m_poImageTmp;
-    bool desiredParamsFullfilled = false;
-
-    m_poGT->getCurrentImage(ppoDst,ppoDstTmp,desiredParamsFullfilled,
-                            getDesiredSize(),getDesiredFormat(), getDesiredDepth(),
-                            bayermethod_from_string(getValue("bayer-quality")) );
     
-    if(!desiredParamsFullfilled){
-      ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
-      m_oConverter.apply(*ppoDstTmp,*ppoDst);
+    if(getIgnoreDesiredParams()){
+      m_poGT->getCurrentImage(ppoDst,bayermethod_from_string(getValue("bayer-quality")));
+    }else{
+      ImgBase **ppoDstTmp = &m_poImageTmp;
+      bool desiredParamsFullfilled = false;
+      
+      m_poGT->getCurrentImage(ppoDst,ppoDstTmp,desiredParamsFullfilled,
+                              getDesiredSize(),getDesiredFormat(), getDesiredDepth(),
+                              bayermethod_from_string(getValue("bayer-quality")) );
+      
+      if(!desiredParamsFullfilled){
+        ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
+        m_oConverter.apply(*ppoDstTmp,*ppoDst);
+      }
     }
     if(m_oOptions.enable_image_labeling){
       labelImage(*ppoDst,m_oDev.getModelID());

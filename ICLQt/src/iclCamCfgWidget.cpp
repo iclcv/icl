@@ -94,6 +94,7 @@ namespace icl{
     m_poCenterPanelLayout->addWidget(poBorderBox);
     int w,h,d,f;
     m_poImgParamWidget->getParams(w,h,d,f);
+
     visImageParamChanged(w,h,d,f);
 
     connect(m_poImgParamWidget,SIGNAL(somethingChanged(int,int,int,int)),this,SLOT(visImageParamChanged(int,int,int,int)));
@@ -340,9 +341,14 @@ namespace icl{
       m_oGrabberMutex.unlock();
       return;
     }
-    m_poGrabber->setDesiredSize(m_oVideoSize);
-    m_poGrabber->setDesiredDepth(m_eVideoDepth);
-    m_poGrabber->setDesiredFormat(m_eVideoFormat);
+    if(m_oVideoSize == Size(-1,-1)){
+      m_poGrabber->setIgnoreDesiredParams(true);
+    }else{
+      m_poGrabber->setIgnoreDesiredParams(false);
+      m_poGrabber->setDesiredSize(m_oVideoSize);
+      m_poGrabber->setDesiredDepth(m_eVideoDepth);
+      m_poGrabber->setDesiredFormat(m_eVideoFormat);
+    }
     m_oGrabberMutex.unlock();
 
     if(wasCapturing){
@@ -378,9 +384,14 @@ namespace icl{
     
     if(m_poGrabber){
       m_oGrabberMutex.lock();
-      m_poGrabber->setDesiredSize(m_oVideoSize);
-      m_poGrabber->setDesiredDepth(m_eVideoDepth);
-      m_poGrabber->setDesiredFormat(m_eVideoFormat);
+      if(m_oVideoSize == Size(-1,-1)){
+        m_poGrabber->setIgnoreDesiredParams(true);
+      }else{
+        m_poGrabber->setIgnoreDesiredParams(false);
+        m_poGrabber->setDesiredSize(m_oVideoSize);
+        m_poGrabber->setDesiredDepth(m_eVideoDepth);
+        m_poGrabber->setDesiredFormat(m_eVideoFormat);
+      }
       m_oGrabberMutex.unlock();
     }
   }
@@ -472,6 +483,7 @@ namespace icl{
     m_oGrabberMutex.lock();
     if(m_poGrabber){
       const ImgBase *image = m_poGrabber->grab();
+
       m_poICLWidget->setImage(image);
       //m_poICLWidget->updateFromOtherThread();
       //Thread::msleep(20);

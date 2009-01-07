@@ -102,6 +102,13 @@ namespace icl{
                            format desiredFormatHint,
                            depth desiredDepthHint,
                            dc1394bayer_method_t bayerMethod=DC1394_BAYER_METHOD_BILINEAR);
+
+      /// returns the current image directly (if no desried parameters are set)
+      void getCurrentImage(ImgBase **ppoDst, 
+                           dc1394bayer_method_t bayerMethod=DC1394_BAYER_METHOD_BILINEAR);
+
+      
+      dc1394video_frame_t *waitForNextImageFrame();
       
       /// internally used DCFrameQueue object
       DCFrameQueue *m_poFrameQueue;

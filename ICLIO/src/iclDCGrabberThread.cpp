@@ -103,6 +103,41 @@ namespace icl{
 
     // }}}
 
+
+    dc1394video_frame_t *DCGrabberThread::waitForNextImageFrame(){
+      Time &lastTime = m_lastFramesTimeStamp;
+      dc1394video_frame_t *frame = m_poFrameQueue->back();
+      
+      if(m_poOptions->suppressDoubledImages && lastTime != Time(0)){
+        while(Time(frame->timestamp) <= lastTime){
+          m_poFrameQueue->unlock();
+          usleep(100);
+          m_poFrameQueue->lock();
+          frame = m_poFrameQueue->back();
+        }
+      }
+      lastTime = Time(frame->timestamp);      
+      return frame;
+    }
+    
+    /// returns the current image directly (if no desried parameters are set)
+    void DCGrabberThread::getCurrentImage(ImgBase **ppoDst, 
+                                          dc1394bayer_method_t bayerMethod){
+      
+      // {{{ open
+      while(!m_poFrameQueue) usleep(1000*10);
+      
+      m_poFrameQueue->lock();
+      
+      extract_image_to_2(waitForNextImageFrame(),DCDevice(m_poCam),ppoDst,m_oRGBInterleavedBuffer,bayerMethod);
+
+      m_poFrameQueue->unlock();
+      
+      
+    }
+    // }}}
+
+
     void DCGrabberThread::getCurrentImage(ImgBase **ppoDst, 
                                           ImgBase **ppoDstTmp,
                                           bool &desiredParamsFullfilled,
@@ -116,19 +151,7 @@ namespace icl{
     
       m_poFrameQueue->lock();
       
-      Time &lastTime = m_lastFramesTimeStamp;
-      dc1394video_frame_t *frame = m_poFrameQueue->back();
-
-      if(m_poOptions->suppressDoubledImages && lastTime != Time(0)){
-        while(Time(frame->timestamp) <= lastTime){
-          m_poFrameQueue->unlock();
-          usleep(100);
-          m_poFrameQueue->lock();
-          frame = m_poFrameQueue->back();
-        }
-      }
-      lastTime = Time(frame->timestamp);      
-      
+      dc1394video_frame_t *frame = waitForNextImageFrame();
       
       DCDevice dev(m_poCam);
 

@@ -114,6 +114,14 @@ namespace icl{
                           depth desiredDepthHint,
                           std::vector<icl8u> &dataBuffer,
                           dc1394bayer_method_t bayerMethod);
+    
+    /// extracts the given frame (in most appropiate way)
+    /** here, no desired params are necessary */
+    void extract_image_to_2(dc1394video_frame_t *f,
+                            const DCDevice &dev, 
+                            ImgBase **ppoDst, 
+                            std::vector<icl8u> &dataBuffer,
+                            dc1394bayer_method_t bayerMethod);
 
     /// determins if the desired parameters can be fullfilled by extract_image_to(..) \ingroup DC_G
     /** TODO !!*/

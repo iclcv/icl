@@ -42,7 +42,7 @@ namespace icl{
                       float deltaAngular=0.1,
                       float deltaRadial=1.0,
                       int minPointsPerLine = 2,
-                      SmartPtr<UnaryOp> preprocessor=new CannyOp(240,255,true));
+                      SmartPtr<UnaryOp,PointerDelOp> preprocessor=new CannyOp(240,255,true));
     
     /// extract lines regarding current parameters
     const std::vector<HoughLine> detectLines(const ImgBase *image);
@@ -50,14 +50,61 @@ namespace icl{
     /// Destructor
     ~HoughLineDetector();
 
+    /// set smax line count (buffers are updated)
+    void setMaxLines(int maxLines);
     
+    /// get max line count
+    inline int getMaxLines() const { return m_maxLines; }
+
+    /// sets new preprocessor
+    void setPreprocessor(SmartPtr<UnaryOp,PointerDelOp> preprocessor);
+
+    /// returns current preprocessor
+    inline SmartPtr<UnaryOp,PointerDelOp> getPreprocessor() const{
+      return m_preprocessor;
+    }
+    
+    /// set up a new size hint
+    /** internal buffer is adapted if size's dim becomes larger */
+    void setSizeHint(const Size &size);
+    
+    /// returns current buffer's associated ROI dim
+    inline Size getBufferROIDim() const { return m_roiDimForBuffer; }
+
+    /// sets new angular step (buffers are updated) 
+    void setDeltaAngular(float da);
+    
+    /// returns current angular steps
+    inline float getDeltaAngular() const { return m_deltaAngular; }
+
+    /// sets new radial step (buffers are updated)
+    void setDeltaRadial(float dr);
+    
+    /// returns current radial step
+    inline float getDeltaRadial() const { return m_deltaRadial; }
+    
+    /// sets new step values (buffers are updated)
+    void setDelta(float deltaRadial, float deltaAngular);
+    
+    /// sets new value for min-points-per-line
+    void setMinPointsPerLine(int minPts);
+    
+    /// returns current min-points-per-line value
+    inline int getMinPointsPerLine() const { return m_minPointsPerLine; }
+    
+    /// returns a const instance of the current preprocessing buffer (for debugging)
+    inline const ImgBase *getPreprocessingBuffer() const { return m_preprocessingBuffer; }
+
+    /// returns a const instance of the current depth-8u buffer (for debugging)
+    inline const Img8u &getInputBuffer8u() const { return m_inputBuffer8u; }
     
     private:
 
+    /// internally used (updates buffers)
     void updateBufferSize();
     
     int m_maxLines;
-    SmartPtr<UnaryOp> m_preprocessor;
+    SmartPtr<UnaryOp,PointerDelOp> m_preprocessor;
     std::vector<icl8u> m_buffer;
     Size m_roiDimForBuffer;
     std::vector<HoughLine> m_lines;

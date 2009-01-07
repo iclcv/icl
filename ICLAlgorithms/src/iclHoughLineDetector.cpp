@@ -9,16 +9,17 @@ namespace icl{
                                        float deltaAngular,
                                        float deltaRadial,
                                        int minPointsPerLine,
-                                       SmartPtr<UnaryOp> preprocessor):
+                                       SmartPtr<UnaryOp,PointerDelOp> preprocessor):
     m_maxLines(maxLines),m_preprocessor(preprocessor),
     m_roiDimForBuffer(sizeHint),m_deltaAngular(deltaAngular),
     m_deltaRadial(deltaRadial),m_minPointsPerLine(minPointsPerLine),
     m_detectionLineBuffer(0),m_preprocessingBuffer(0)
   {
-    updateBufferSize();
+
     if(maxLines <= 0){
       throw ICLException("max line count must be positive integer");
     }
+    updateBufferSize();
   }
 
   HoughLineDetector::~HoughLineDetector(){
@@ -90,4 +91,43 @@ namespace icl{
     }
     return m_lines;
   }
+
+
+  void HoughLineDetector::setMaxLines(int maxLines){
+    m_maxLines = maxLines;
+    updateBufferSize();
+  }
+  
+  void HoughLineDetector::setPreprocessor(SmartPtr<UnaryOp,PointerDelOp> preprocessor){
+    m_preprocessor = preprocessor;
+  }
+
+    
+  void HoughLineDetector::setSizeHint(const Size &size){
+    m_roiDimForBuffer = size;
+    updateBufferSize();
+  }
+  
+  void HoughLineDetector::setDeltaAngular(float da){
+    m_deltaAngular = da;
+    updateBufferSize();
+  }
+  
+  
+  void HoughLineDetector::setDeltaRadial(float dr){
+    m_deltaRadial = dr;
+    updateBufferSize();
+  }
+
+  void HoughLineDetector::setDelta(float deltaRadial, float deltaAngular){
+    m_deltaAngular = deltaAngular;
+    m_deltaRadial = deltaRadial;
+    updateBufferSize();
+  }
+  
+
+  void HoughLineDetector:: setMinPointsPerLine(int minPts){
+    m_minPointsPerLine = minPts;
+  }
+
 }

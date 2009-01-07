@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QString>
+#include <iclTypes.h>
 
 /** \cond **/
 class QComboBox;
@@ -28,6 +29,7 @@ namespace icl{
     
     signals:
     void somethingChanged(int width, int height, int d, int format);
+
     
     private:
     QComboBox *m_poSizeCombo;

@@ -501,17 +501,9 @@ namespace icl{
                                 std::vector<icl8u> &dataBuffer,
                                dc1394bayer_method_t bayerMethod){
       // {{{ open
-
+      DEBUG_LOG("color_filter:" << f->color_filter);
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
-      /** old ??      if(dev.supports(formatGray) && f->data_depth == 8){
-        ensureCompatible(ppoDst,depth8u, desiredSizeHint,formatGray);
-        std::vector<icl8u*> srcData(1,static_cast<icl8u*>(f->image));
-        Img8u srcImg(frameSize,formatGray,srcData);
-        Img8u *dst = (*ppoDst)->asImg<icl8u>();
-        srcImg.scaledCopy(dst);
-      }else{
-       end old**/
       ensureCompatible(ppoDst,depth8u,frameSize,formatGray);
       dc1394_convert_to_MONO8(f->image, 
                               (*ppoDst)->asImg<icl8u>()->getData(0),
@@ -537,59 +529,13 @@ namespace icl{
                               dc1394bayer_method_t bayerMethod){
       
       // {{{ open
+      DEBUG_LOG("color_filter:" << f->color_filter);
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
       ensureCompatible(ppoDst,depth8u, frameSize,formatRGB);
      
-      /** old implementation (now we do not see 
-          if(dev.supports(formatRGB)){
-          if(dev.needsBayerDecoding()){
-          if((int)dataBuffer.size() < frameSize.getDim()*3){
-            dataBuffer.resize(frameSize.getDim()*3);
-          }
-          icl8u *buf = &(dataBuffer[0]);
-          
-          dc1394_bayer_decoding_8bit(f->image,
-                                     buf,
-                                     frameSize.width,
-                                     frameSize.height,
-                                     dev.getBayerFilterLayout(),
-                                     bayerMethod);
-          interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
-        }else{
-          /// rgb works directly TODO
-          if((int)dataBuffer.size() < frameSize.getDim()*3){
-            dataBuffer.resize(frameSize.getDim()*3);
-          }
-          icl8u *buf = &(dataBuffer[0]);
-          
-          dc1394_convert_to_RGB8(f->image,
-                                 buf,
-                                 frameSize.width,
-                                 frameSize.height,
-                                 f->yuv_byte_order,
-                                 f->color_coding,
-                                 f->data_depth);
-          interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
-        }
-      }else{
-        // camera does not support RGB directly (use dc function)
-        if((int)dataBuffer.size() < frameSize.getDim()*3){
-          dataBuffer.resize(frameSize.getDim()*3);
-        }
-        icl8u *buf = &(dataBuffer[0]);
-       
-        dc1394_convert_to_RGB8(f->image,
-                               buf,
-                               frameSize.width,
-                               frameSize.height,
-                               f->yuv_byte_order,
-                               f->color_coding,
-                               f->data_depth);
-        interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
-      }
-      **/
       if(dev.needsBayerDecoding()){
+      //      if(f->color_filter){ unfortunately this is not set for some cams??
         if((int)dataBuffer.size() < frameSize.getDim()*3){
             dataBuffer.resize(frameSize.getDim()*3);
         }
@@ -598,6 +544,7 @@ namespace icl{
                                    frameSize.width,
                                    frameSize.height,
                                    dev.getBayerFilterLayout(),
+                                   //f->color_filter,
                                    bayerMethod);
         interleavedToPlanar(dataBuffer.data(),(*ppoDst)->asImg<icl8u>());
       }else{
@@ -646,6 +593,55 @@ namespace icl{
       }
     }
 
+    // }}}
+
+    void extract_image_to_2(dc1394video_frame_t *f,
+                            const DCDevice &dev, 
+                            ImgBase **ppoDst, 
+                            std::vector<icl8u> &dataBuffer,
+                            dc1394bayer_method_t bayerMethod){
+      // {{{ open xxx
+      ICLASSERT_RETURN( f );
+      unsigned char *data = f->image;
+      int width = (int)f->size[0];
+      int height = (int)f->size[1];
+      dc1394color_coding_t cc = f->color_coding;
+      //dc1394color_filter_t cf = f->color_filter; // not set (why ever)
+      uint32_t yuv_byte_order = f->yuv_byte_order;
+      uint32_t data_depth      = f->data_depth;
+    
+      if(dev.needsBayerDecoding()){
+        ensureCompatible(ppoDst,depth8u, Size(width,height),formatRGB);
+        if((int)dataBuffer.size() < width*height*3){
+          dataBuffer.resize(width*height*3);
+        }
+        dc1394_bayer_decoding_8bit(data,dataBuffer.data(),width,height,dev.getBayerFilterLayout(),bayerMethod);
+        //      dc1394_convert_to_RGB8(data,buf,width,height,yuv_byte_order, cc, data_depth);
+        interleavedToPlanar(dataBuffer.data(),(*ppoDst)->asImg<icl8u>());
+      }else{
+        static const dc1394color_coding_t gray_ccs[5] = {
+          DC1394_COLOR_CODING_MONO8,
+          DC1394_COLOR_CODING_MONO16,
+          DC1394_COLOR_CODING_MONO16S,
+          DC1394_COLOR_CODING_RAW8,
+          DC1394_COLOR_CODING_RAW16
+        };
+        if(std::find(gray_ccs,gray_ccs+5,cc)==gray_ccs+5){
+          ensureCompatible(ppoDst,depth8u, Size(width,height),formatRGB);
+          if((int)dataBuffer.size() < width*height*3){
+            dataBuffer.resize(width*height*3);
+          }
+          dc1394_convert_to_RGB8(data,dataBuffer.data(),width,height,yuv_byte_order,cc,data_depth);
+          interleavedToPlanar(dataBuffer.data(),(*ppoDst)->asImg<icl8u>());
+        }else{
+          ensureCompatible(ppoDst,depth8u, Size(width,height),formatGray);
+          dc1394_convert_to_MONO8(data, (*ppoDst)->asImg<icl8u>()->getData(0),width,height,yuv_byte_order, cc, data_depth);
+        }
+      }
+      if(ppoDst && *ppoDst){
+        (*ppoDst)->setTime(Time(f->timestamp));
+      }
+    }
     // }}}
     
     bool can_extract_image_to(dc1394video_frame_t *f,
