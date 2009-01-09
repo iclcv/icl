@@ -501,7 +501,7 @@ namespace icl{
                                 std::vector<icl8u> &dataBuffer,
                                dc1394bayer_method_t bayerMethod){
       // {{{ open
-      DEBUG_LOG("color_filter:" << f->color_filter);
+      //      DEBUG_LOG("color_filter:" << f->color_filter);
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
       ensureCompatible(ppoDst,depth8u,frameSize,formatGray);
@@ -529,7 +529,7 @@ namespace icl{
                               dc1394bayer_method_t bayerMethod){
       
       // {{{ open
-      DEBUG_LOG("color_filter:" << f->color_filter);
+      //      DEBUG_LOG("color_filter:" << f->color_filter);
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
       ensureCompatible(ppoDst,depth8u, frameSize,formatRGB);
