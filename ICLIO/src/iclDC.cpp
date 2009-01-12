@@ -505,13 +505,43 @@ namespace icl{
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
       ensureCompatible(ppoDst,depth8u,frameSize,formatGray);
-      dc1394_convert_to_MONO8(f->image, 
-                              (*ppoDst)->asImg<icl8u>()->getData(0),
-                              frameSize.width,
-                              frameSize.height,
-                              f->yuv_byte_order, 
-                              f->color_coding,
-                              f->data_depth);
+
+      if(dev.needsBayerDecoding()){
+        //      if(f->color_filter){ unfortunately this is not set for some cams??
+        if((int)dataBuffer.size() < frameSize.getDim()*3){
+          dataBuffer.resize(frameSize.getDim()*3);
+        }
+        dc1394_bayer_decoding_8bit(f->image,
+                                   dataBuffer.data(),
+                                   frameSize.width,
+                                   frameSize.height,
+                                   dev.getBayerFilterLayout(),
+                                   //f->color_filter,  this will not work ...
+                                   bayerMethod);
+        icl8u *dst = (*ppoDst)->asImg<icl8u>()->getData(0);
+        const icl8u *src = dataBuffer.data();
+        const icl8u *dstEnd = dst+frameSize.getDim();
+
+#ifdef HAVE_IPP
+        int step = frameSize.width*sizeof(icl8u);
+        ippiRGBToGray_8u_C3C1R(src,step*3,dst,step,frameSize); 
+#else
+        for(;dst < dstEnd; src+=3, ++dst){
+          // we took this conversion from the IPP-manual for compability with IPP
+          // function 
+          *dst = clipped_cast<float,icl8u>(0.299*src[0]+0.587*src[1]+0.114*src[2]);
+        }
+#endif
+        
+      }else{
+        dc1394_convert_to_MONO8(f->image, 
+                                (*ppoDst)->asImg<icl8u>()->getData(0),
+                                frameSize.width,
+                                frameSize.height,
+                                f->yuv_byte_order, 
+                                f->color_coding,
+                                f->data_depth);
+      }
       //  old }
       if(ppoDst && *ppoDst){
         (*ppoDst)->setTime(Time(f->timestamp));
