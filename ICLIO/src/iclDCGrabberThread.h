@@ -82,7 +82,7 @@ namespace icl{
       ~DCGrabberThread();
 
       /// private image access function
-      void getCurrentImage(ImgBase **ppoDst);
+      //void getCurrentImage(ImgBase **ppoDst,dc1394color_filter_t bayerLayout);
       
       /// complex function to get the next image
       /** The function gets all desired params from the top level grabber, which it
@@ -101,10 +101,12 @@ namespace icl{
                            const Size &desiredSizeHint, 
                            format desiredFormatHint,
                            depth desiredDepthHint,
+                           dc1394color_filter_t bayerLayout,
                            dc1394bayer_method_t bayerMethod=DC1394_BAYER_METHOD_BILINEAR);
 
       /// returns the current image directly (if no desried parameters are set)
       void getCurrentImage(ImgBase **ppoDst, 
+                           dc1394color_filter_t bayerLayout,
                            dc1394bayer_method_t bayerMethod=DC1394_BAYER_METHOD_BILINEAR);
 
       

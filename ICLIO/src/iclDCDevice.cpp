@@ -31,6 +31,7 @@ namespace icl{
   
   const DCDevice DCDevice::null = DCDevice(0);
 
+#if 0
   // **NEW-CAM** (optional)
   std::string DCDevice::translate(DCDevice::CameraTypeID id){
     // {{{ open
@@ -76,10 +77,28 @@ namespace icl{
   }
 
   // }}}
-  
-  // **NEW-CAM** 
-  DCDevice::CameraTypeID DCDevice::estimateCameraType(dc1394camera_t *cam){
+#endif
+
+  std::string DCDevice::getTypeID(const std::string &model, const std::string &vendor){
     // {{{ open
+
+    return vendor + " -- " + model;
+  }
+
+  // }}}
+
+  std::string DCDevice::getTypeID(const dc1394camera_t *cam){
+    // {{{ open
+    if(!cam) return "";
+    return getTypeID(cam->model, cam->vendor);
+  }
+
+  // }}}
+
+
+  /************************************* old *******************************
+  DCDevice::CameraTypeID DCDevice::estimateCameraType(dc1394camera_t *cam){
+
     if(!cam){
       return unknownCameraType;
     }else if( is_firefly_mono(cam) ){
@@ -111,13 +130,7 @@ namespace icl{
       return unknownCameraType;
     }  
   }
-
-  // }}}
-
-  // **NEW-CAM** 
   bool DCDevice::needsBayerDecoding() const{
-    // {{{ open
-
     if(isNull()) return false; 
     switch(m_eCameraTypeID){
       case pointGrey_Fire_FlyMVMono: 
@@ -150,19 +163,64 @@ namespace icl{
       }
     }
   }
+***********************************************************************/
+  // **NEW-CAM**
+  dc1394color_filter_t DCDevice::getBayerFilterLayout() const{
+    // {{{ open
+
+    switch(m_eBayerFilterMode){
+      case BF_RGGB:
+      case BF_GBRG:
+      case BF_GRBG:
+      case BF_BGGR: 
+        return (dc1394color_filter_t)m_eBayerFilterMode;
+      case BF_FROM_FEATURE:
+        return (dc1394color_filter_t)1;
+      case BF_FROM_MODE:
+        if(getTypeID(m_poCam) == "Imaging Source -- DFx_21BF04"){
+          if(getMode().videomode != DC1394_VIDEO_MODE_640x480_YUV422){
+            return DC1394_COLOR_FILTER_GBRG;
+          }else{
+            return (dc1394color_filter_t)0;
+          }
+        }
+      case BF_NONE: 
+      default:
+        return (dc1394color_filter_t)0;
+    }
+  }
 
   // }}}
   
   // **NEW-CAM**   
-  dc1394color_filter_t DCDevice::getBayerFilterLayout() const{
+  void DCDevice::estimateBayerFilterMode(){
     // {{{ open
-    if(isNull()) return (dc1394color_filter_t)0;
-    switch(m_eCameraTypeID){
-      case pointGrey_Fire_FlyMVColor:
-      case imagingSource_DFx_21BF04:
-        return DC1394_COLOR_FILTER_GBRG;
-      default:
-        return (dc1394color_filter_t)0;
+    
+    if(isNull()) m_eBayerFilterMode = BF_NONE;
+    std::string id = getTypeID(m_poCam);
+    if(id== "Point Grey Research -- Firefly MV FFMV-03MTC"){
+      m_eBayerFilterMode = BF_GBRG;
+    }else if("Imaging Source -- DFx_21BF04"){
+      m_eBayerFilterMode = BF_FROM_MODE;
+    }else{
+      // this is a list of builtin cameras that dont't have
+      // a bayer filter 
+      static std::set<std::string> builtin;
+      if(!builtin.size()){
+        builtin.insert("SONY -- DFW-VL500 2.30");
+        builtin.insert("Point Grey Research -- Firefly MV FFMV-03MTM");
+        builtin.insert("Apple Computer, Inc. -- iSight");
+        builtin.insert("Fire-i 1.2-Vendor -- Fire-i 1.2");
+        builtin.insert("Point Grey Research -- Flea2 FL2-08S2C");
+        builtin.insert("Point Grey Research -- Flea2 FL2-03S2M");
+        builtin.insert("Point Grey Research -- Flea2 FL2-03S2C");
+        builtin.insert("Point Grey Research -- Flea2 FL2G-13S2C");
+      }
+      if(std::find(builtin.begin(),builtin.end(),id) != builtin.end()){
+        m_eBayerFilterMode = BF_NONE;
+      }else{
+        m_eBayerFilterMode = BF_FROM_FEATURE;
+      }
     }
   }
 
@@ -170,6 +228,8 @@ namespace icl{
 
 
   void DCDevice::dc1394_reset_bus(bool verbose){
+    // {{{ open
+
     dc1394_t * d;
     dc1394camera_list_t * list;
     dc1394camera_t *camera;
@@ -204,7 +264,7 @@ namespace icl{
     Thread::msleep(1000);
   }
 
-  
+  // }}}
   vector<DCDevice::Mode> DCDevice::getModes() const{
     // {{{ open
 
@@ -242,24 +302,33 @@ namespace icl{
   }
 
   // }}}
-
   uint64_t DCDevice::getGUID() const{
+    // {{{ open
+
     if(isNull()) return -1;
     return m_poCam->guid;
   }
 
-  
+  // }}}
   icl32s DCDevice::getUnit() const{
+    // {{{ open
+
     if(isNull()) return -1;
     return m_poCam->unit;
   }
 
+  // }}}
   icl32s DCDevice::getUnitSpecID() const{
+    // {{{ open
+
     if(isNull()) return -1;
     return m_poCam->unit_spec_ID;
   }
 
+  // }}}
   std::string DCDevice::getUniqueStringIdentifier() const{
+    // {{{ open
+
     if(isNull()) return "null";
     union GUID{
       uint64_t t64;
@@ -271,6 +340,7 @@ namespace icl{
     
   }
 
+  // }}}
   void DCDevice::setMode(const Mode &mode){
     // {{{ open
 
@@ -310,64 +380,6 @@ namespace icl{
 
   // }}}
  
-  /***  removed 
-
-      bool DCDevice::supports(format fmt) const{
-      DEBUG_LOG("");
-      return false;
-      if(isNull()) return false;
-      switch(m_eCameraTypeID){
-      case pointGrey_Fire_FlyMVMono:
-      return fmt == formatGray || fmt == formatMatrix;
-      case pointGrey_Fire_FlyMVColor:
-      case sony_DFW_VL500_2_30:
-      case apple_ISight:
-      case fireI_1_2:
-      case imagingSource_DFx_21BF04:
-      return fmt == formatRGB || fmt == formatMatrix;
-      case pointGrey_Flea2_08S2C:
-      return fmt == formatRGB || fmt == formatMatrix; // maybe also yuv ??
-      case pointGrey_Flea2_03S2C:
-      return fmt == formatRGB || fmt == formatMatrix; // maybe also yuv ??
-      case pointGrey_Flea2_03S2M:
-      return fmt == formatGray || fmt == formatMatrix; // maybe also yuv ??
-      case pointGrey_Flea2G_13S2CC:
-      return fmt == formatRGB || fmt == formatMatrix; // maybe also yuv ??
-      case unknownCameraType:
-      default:
-      return false;
-      }
-      }
-      
-      bool DCDevice::supports(const Size &size) const{
-      
-      DEBUG_LOG("");
-      return false;
-      if(isNull()) return false;
-      switch(m_eCameraTypeID){
-      case pointGrey_Fire_FlyMVMono: 
-      case imagingSource_DFx_21BF04:
-      return size == Size::VGA;
-      case pointGrey_Fire_FlyMVColor:
-      case sony_DFW_VL500_2_30:
-      case apple_ISight:
-      case fireI_1_2:
-      return size == Size::VGA || size == Size::QVGA;
-      case pointGrey_Flea2_08S2C:
-      return size == Size::XGA || size == Size::SVGA || size == Size::VGA || size == Size::QVGA || size == Size::QQVGA;
-      case pointGrey_Flea2_03S2C:
-      case pointGrey_Flea2_03S2M:
-      return size == Size::VGA;
-      case pointGrey_Flea2G_13S2CC:
-      return size == Size::VGA || size == Size::QVGA;
-      case unknownCameraType:
-      default:
-      return false;
-      }
-      }
-      ****/
-  
-
 
 
 

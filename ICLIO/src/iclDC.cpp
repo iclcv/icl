@@ -24,39 +24,43 @@ namespace icl{
 
     string to_string(dc1394video_mode_t vm){
       // {{{ open
+#define MODE_SWITCH_A(S,F) case DC1394_VIDEO_MODE_##S##_##F: return #S "-" #F
+#define MODE_SWITCH_B(S) case DC1394_VIDEO_MODE_##S: return #S
       switch(vm){
-        MODE_SWITCH(DC1394_VIDEO_MODE_160x120_YUV444);
-        MODE_SWITCH(DC1394_VIDEO_MODE_320x240_YUV422);
-        MODE_SWITCH(DC1394_VIDEO_MODE_640x480_YUV411);
-        MODE_SWITCH(DC1394_VIDEO_MODE_640x480_YUV422);
-        MODE_SWITCH(DC1394_VIDEO_MODE_640x480_RGB8);
-        MODE_SWITCH(DC1394_VIDEO_MODE_640x480_MONO8);
-        MODE_SWITCH(DC1394_VIDEO_MODE_640x480_MONO16);
-        MODE_SWITCH(DC1394_VIDEO_MODE_800x600_YUV422);
-        MODE_SWITCH(DC1394_VIDEO_MODE_800x600_RGB8);
-        MODE_SWITCH(DC1394_VIDEO_MODE_800x600_MONO8);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1024x768_YUV422);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1024x768_RGB8);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1024x768_MONO8);
-        MODE_SWITCH(DC1394_VIDEO_MODE_800x600_MONO16);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1024x768_MONO16);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1280x960_YUV422);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1280x960_RGB8);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1280x960_MONO8);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1600x1200_YUV422);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1600x1200_RGB8);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1600x1200_MONO8);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1280x960_MONO16);
-        MODE_SWITCH(DC1394_VIDEO_MODE_1600x1200_MONO16);
-        MODE_SWITCH(DC1394_VIDEO_MODE_EXIF);
-        MODE_SWITCH(DC1394_VIDEO_MODE_FORMAT7_0);
-        MODE_SWITCH(DC1394_VIDEO_MODE_FORMAT7_1);
-        MODE_SWITCH(DC1394_VIDEO_MODE_FORMAT7_2);
-        MODE_SWITCH(DC1394_VIDEO_MODE_FORMAT7_3);
-        MODE_SWITCH(DC1394_VIDEO_MODE_FORMAT7_4);
-        MODE_SWITCH(DC1394_VIDEO_MODE_FORMAT7_5);
-        MODE_SWITCH(DC1394_VIDEO_MODE_FORMAT7_6);
-        MODE_SWITCH(DC1394_VIDEO_MODE_FORMAT7_7);
+        MODE_SWITCH_A(160x120,YUV444);
+        MODE_SWITCH_A(320x240,YUV422);
+        MODE_SWITCH_A(640x480,YUV411);
+        MODE_SWITCH_A(640x480,YUV422);
+        MODE_SWITCH_A(640x480,RGB8);
+        MODE_SWITCH_A(640x480,MONO8);
+        MODE_SWITCH_A(640x480,MONO16);
+        MODE_SWITCH_A(800x600,YUV422);
+        MODE_SWITCH_A(800x600,RGB8);
+        MODE_SWITCH_A(800x600,MONO8);
+        MODE_SWITCH_A(1024x768,YUV422);
+        MODE_SWITCH_A(1024x768,RGB8);
+        MODE_SWITCH_A(1024x768,MONO8);
+        MODE_SWITCH_A(800x600,MONO16);
+        MODE_SWITCH_A(1024x768,MONO16);
+        MODE_SWITCH_A(1280x960,YUV422);
+        MODE_SWITCH_A(1280x960,RGB8);
+        MODE_SWITCH_A(1280x960,MONO8);
+        MODE_SWITCH_A(1600x1200,YUV422);
+        MODE_SWITCH_A(1600x1200,RGB8);
+        MODE_SWITCH_A(1600x1200,MONO8);
+        MODE_SWITCH_A(1280x960,MONO16);
+        MODE_SWITCH_A(1600x1200,MONO16);
+        MODE_SWITCH_B(EXIF);
+        MODE_SWITCH_A(FORMAT7,0);
+        MODE_SWITCH_A(FORMAT7,1);
+        MODE_SWITCH_A(FORMAT7,2);
+        MODE_SWITCH_A(FORMAT7,3);
+        MODE_SWITCH_A(FORMAT7,4);
+        MODE_SWITCH_A(FORMAT7,5);
+        MODE_SWITCH_A(FORMAT7,6);
+        MODE_SWITCH_A(FORMAT7,7);
+#undef MODE_SWITCH_A
+#undef MODE_SWITCH_B
         default: return "unknown video mode";
       }
     }
@@ -64,16 +68,19 @@ namespace icl{
     // }}}
     string to_string(dc1394framerate_t fr){
       // {{{ open
-
+#define FR_SWITCH_A(L) case DC1394_FRAMERATE_##L: return #L "Hz";
+#define FR_SWITCH_B(L,R) case DC1394_FRAMERATE_##L##_##R: return #L "." #R "Hz"
       switch(fr){
-        MODE_SWITCH(DC1394_FRAMERATE_1_875);
-        MODE_SWITCH(DC1394_FRAMERATE_3_75);
-        MODE_SWITCH(DC1394_FRAMERATE_7_5);
-        MODE_SWITCH(DC1394_FRAMERATE_15);
-        MODE_SWITCH(DC1394_FRAMERATE_30);
-        MODE_SWITCH(DC1394_FRAMERATE_60);
-        MODE_SWITCH(DC1394_FRAMERATE_120);
-        MODE_SWITCH(DC1394_FRAMERATE_240);
+        FR_SWITCH_B(1,875);
+        FR_SWITCH_B(3,75);
+        FR_SWITCH_B(7,5);
+        FR_SWITCH_A(15);
+        FR_SWITCH_A(30);
+        FR_SWITCH_A(60);
+        FR_SWITCH_A(120);
+        FR_SWITCH_A(240);
+#undef FR_SWITCH_A
+#undef FR_SWITCH_B
         default: return "unknown framerate";
       }
     }
@@ -143,54 +150,65 @@ namespace icl{
       
     dc1394video_mode_t videomode_from_string(const string &s){
       // {{{ open
-
-      MODE_SWITCH_IF(DC1394_VIDEO_MODE_160x120_YUV444);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_320x240_YUV422);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_640x480_YUV411);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_640x480_YUV422);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_640x480_RGB8);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_640x480_MONO8);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_640x480_MONO16);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_800x600_YUV422);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_800x600_RGB8);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_800x600_MONO8);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1024x768_YUV422);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1024x768_RGB8);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1024x768_MONO8);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_800x600_MONO16);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1024x768_MONO16);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1280x960_YUV422);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1280x960_RGB8);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1280x960_MONO8);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1600x1200_YUV422);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1600x1200_RGB8);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1600x1200_MONO8);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1280x960_MONO16);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_1600x1200_MONO16);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_EXIF);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_FORMAT7_0);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_FORMAT7_1);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_FORMAT7_2);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_FORMAT7_3);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_FORMAT7_4);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_FORMAT7_5);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_FORMAT7_6);
-      MODE_SWITCH_ELSE(DC1394_VIDEO_MODE_FORMAT7_7);
+#define MODE_SWITCH_B_IF(S,F) if(s==#S "-" #F) return DC1394_VIDEO_MODE_##S##_##F
+#define MODE_SWITCH_B_ELIF(S,F) else MODE_SWITCH_B_IF(S,F)
+#define MODE_SWITCH_C_ELIF(S) else if(s==#S) return DC1394_VIDEO_MODE_##S
+      
+      MODE_SWITCH_B_IF(160x120,YUV444);
+      MODE_SWITCH_B_ELIF(320x240,YUV422);
+      MODE_SWITCH_B_ELIF(640x480,YUV411);
+      MODE_SWITCH_B_ELIF(640x480,YUV422);
+      MODE_SWITCH_B_ELIF(640x480,RGB8);
+      MODE_SWITCH_B_ELIF(640x480,MONO8);
+      MODE_SWITCH_B_ELIF(640x480,MONO16);
+      MODE_SWITCH_B_ELIF(800x600,YUV422);
+      MODE_SWITCH_B_ELIF(800x600,RGB8);
+      MODE_SWITCH_B_ELIF(800x600,MONO8);
+      MODE_SWITCH_B_ELIF(1024x768,YUV422);
+      MODE_SWITCH_B_ELIF(1024x768,RGB8);
+      MODE_SWITCH_B_ELIF(1024x768,MONO8);
+      MODE_SWITCH_B_ELIF(800x600,MONO16);
+      MODE_SWITCH_B_ELIF(1024x768,MONO16);
+      MODE_SWITCH_B_ELIF(1280x960,YUV422);
+      MODE_SWITCH_B_ELIF(1280x960,RGB8);
+      MODE_SWITCH_B_ELIF(1280x960,MONO8);
+      MODE_SWITCH_B_ELIF(1600x1200,YUV422);
+      MODE_SWITCH_B_ELIF(1600x1200,RGB8);
+      MODE_SWITCH_B_ELIF(1600x1200,MONO8);
+      MODE_SWITCH_B_ELIF(1280x960,MONO16);
+      MODE_SWITCH_B_ELIF(1600x1200,MONO16);
+      MODE_SWITCH_C_ELIF(EXIF);
+      MODE_SWITCH_B_ELIF(FORMAT7,0);
+      MODE_SWITCH_B_ELIF(FORMAT7,1);
+      MODE_SWITCH_B_ELIF(FORMAT7,2);
+      MODE_SWITCH_B_ELIF(FORMAT7,3);
+      MODE_SWITCH_B_ELIF(FORMAT7,4);
+      MODE_SWITCH_B_ELIF(FORMAT7,5);
+      MODE_SWITCH_B_ELIF(FORMAT7,6);
+      MODE_SWITCH_B_ELIF(FORMAT7,7);
+#undef MODE_SWITCH_B_ELIF
+#undef MODE_SWITCH_B_IF
       return (dc1394video_mode_t)-1;
+      
     }
 
     // }}}
     dc1394framerate_t framerate_from_string(const string &s){
       // {{{ open
+#define FR_SWITCH_A(L) if(s== #L "Hz") return DC1394_FRAMERATE_##L
+#define FR_SWITCH_B(L,R) if(s== #L "." #R "Hz") return DC1394_FRAMERATE_##L##_##R
+      
+      FR_SWITCH_B(1,875);
+      FR_SWITCH_B(3,75);
+      FR_SWITCH_B(7,5);
+      FR_SWITCH_A(15);
+      FR_SWITCH_A(30);
+      FR_SWITCH_A(60);
+      FR_SWITCH_A(120);
+      FR_SWITCH_A(240);
 
-      MODE_SWITCH_IF(DC1394_FRAMERATE_1_875);
-      MODE_SWITCH_ELSE(DC1394_FRAMERATE_3_75);
-      MODE_SWITCH_ELSE(DC1394_FRAMERATE_7_5);
-      MODE_SWITCH_ELSE(DC1394_FRAMERATE_15);
-      MODE_SWITCH_ELSE(DC1394_FRAMERATE_30);
-      MODE_SWITCH_ELSE(DC1394_FRAMERATE_60);
-      MODE_SWITCH_ELSE(DC1394_FRAMERATE_120);
-      MODE_SWITCH_ELSE(DC1394_FRAMERATE_240);
+#undef FR_SWICH_A
+#undef FR_SWICH_B
       return (dc1394framerate_t)-1;
     }
 
@@ -259,20 +277,6 @@ namespace icl{
 
     // }}}
 
-    bool is_firefly_color(dc1394camera_t* c){
-      // {{{ open
-
-      return string(c->model) == "Firefly MV FFMV-03MTC";
-    }
-
-    // }}}
-    bool is_firefly_mono(dc1394camera_t* c){
-      // {{{ open
-
-      return string(c->model) == "Firefly MV FFMV-03MTM";
-    }
-
-    // }}}
     
     
     class DCSignalHandler : public SignalHandler{
@@ -280,15 +284,15 @@ namespace icl{
       DCSignalHandler():SignalHandler("SIGINT,SIGSEGV"){}
       virtual void handleSignals(const string &signal){
         // {{{ open
-        printf("DCSignalHandler caught the %s signal!\n",signal.c_str());
-        printf("releasing cameras ...\n");
+        printf("[Unclean break detected. Signal \"%s\"]\n",signal.c_str());
+
         m_oMutex.lock();
         DCGrabberThread::stopAllGrabberThreads();
         m_oMutex.unlock();
-        printf("done! (please ignore \"Hangup\" statement)\n");
+        // printf("done! (please ignore \"Hangup\" statement)\n");
+        // 
+
         killCurrentProcess();
-        exit(0);
-        
       }
 
       // }}}
@@ -388,113 +392,9 @@ namespace icl{
     }
 
     // }}}
-    
-    Img8u extract_image(dc1394video_frame_t *f, format fmt){
-      // {{{ open
 
-      ICLASSERT_RETURN_VAL( f , Img8u());
-      unsigned char *data = f->image;
-      int width = (int)f->size[0];
-      int height = (int)f->size[1];
-      dc1394color_coding_t cc = f->color_coding;
-      //      dc1394color_filter_t cf = f->color_filter;
-      uint32_t yuv_byte_order = f->yuv_byte_order;
-      // PRE7:  uint32_t data_depth      = f->data_depth;
-      uint32_t data_depth      = f->data_depth;
-      // uint32_t stride         = f->stride;
-      //dc1394video_mode_t vm   = f->video_mode;
-      //uint64_t wholedatasize  = f->total_bytes;
-      //uint32_t datasize       = f->image_bytes;
-      //uint32_t padding_bytes  = f->padding_bytes;
-      //uint32_t bpp            = f->bytes_per_packet;
-      //uint32_t ppf            = f->packets_per_frame;
-      //uint64_t timestamp      = f->timestamp;
-      //uint32_t frames_behind  = f->frames_behind;
-      //dc1394camera_t *cam     = f->camera;
-      //uint32_t ringbufferid   = f->id;
-      //uint64_t allocated_bytes= f->allocated_image_bytes;
-  
-      if(fmt == formatGray){
-        Img8u i(Size(width,height),formatGray);
-        dc1394_convert_to_MONO8(data, i.getData(0),width,height,yuv_byte_order, cc, data_depth);
-        i.setTime(Time(f->timestamp));
-        return i;
-      }else if(fmt == formatRGB){
-        Img8u i(Size(width,height),formatRGB);
-        icl8u *buf = new icl8u[width*height*4];
-        dc1394_convert_to_RGB8(data,buf,width,height,yuv_byte_order, cc, data_depth);
-        interleavedToPlanar(buf,&i);
-        i.setTime(Time(f->timestamp));
-        return i;
-      }else{
-        printf("extract_image unsupported format !\n");
-      }
-  
-      return Img8u();
-    }
-
-    // }}}
-    
-    void extract_image_to(dc1394video_frame_t *f, ImgBase **ppoDst, vector<icl8u> &rgbInterleavedBuffer){
-      // {{{ open
-
-      ICLASSERT_RETURN( f );
-      unsigned char *data = f->image;
-      int width = (int)f->size[0];
-      int height = (int)f->size[1];
-      dc1394color_coding_t cc = f->color_coding;
-      //dc1394color_filter_t cf = f->color_filter;
-      uint32_t yuv_byte_order = f->yuv_byte_order;
-      uint32_t data_depth      = f->data_depth;
-      //uint32_t stride         = f->stride;
-      //dc1394video_mode_t vm   = f->video_mode;
-      //uint64_t wholedatasize  = f->total_bytes;
-      //uint32_t datasize       = f->image_bytes;
-      //uint32_t padding_bytes  = f->padding_bytes;
-      //uint32_t bpp            = f->bytes_per_packet;
-      //uint32_t ppf            = f->packets_per_frame;
-      //uint64_t timestamp      = f->timestamp;
-      //uint32_t frames_behind  = f->frames_behind;
-      //dc1394camera_t *cam     = f->camera;
-      //uint32_t ringbufferid   = f->id;
-      //uint64_t allocated_bytes= f->allocated_image_bytes;
-
-
-      if( is_firefly_color(f->camera) ){
-        bool want_gray_images = false;
-        if(want_gray_images){
-          ensureCompatible(ppoDst,depth8u, Size(width,height),formatGray);
-          dc1394_convert_to_MONO8(data, (*ppoDst)->asImg<icl8u>()->getData(0),width,height,yuv_byte_order, cc, data_depth);
-        }
-        else{
-          ensureCompatible(ppoDst,depth8u, Size(width,height),formatRGB);
-          if((int)rgbInterleavedBuffer.size() < width*height*3){
-            rgbInterleavedBuffer.resize(width*height*3);
-          }
-          icl8u *buf = &(rgbInterleavedBuffer[0]);
-      
-      
-          dc1394_bayer_decoding_8bit(data,buf,width,height,DC1394_COLOR_FILTER_GBRG,DC1394_BAYER_METHOD_BILINEAR);
-          //      dc1394_convert_to_RGB8(data,buf,width,height,yuv_byte_order, cc, data_depth);
-          interleavedToPlanar(buf,(*ppoDst)->asImg<icl8u>());
-        }
-      }
-      else if( is_firefly_mono(f->camera) ){
-        ensureCompatible(ppoDst,depth8u, Size(width,height),formatGray);
-        dc1394_convert_to_MONO8(data, (*ppoDst)->asImg<icl8u>()->getData(0),width,height,yuv_byte_order, cc, data_depth);
-      }
-      else{
-        ERROR_LOG("unsupported camera!");
-      }
-      if(ppoDst && *ppoDst){
-        (*ppoDst)->setTime(Time(f->timestamp));
-      }
-    }
-
-    // }}}
-    
     void extract_image_to_gray(dc1394video_frame_t *f,
-                                const DCDevice &dev, 
+                               dc1394color_filter_t bayerLayout,
                                 ImgBase **ppoDst, 
                                 const Size &desiredSizeHint, 
                                 depth desiredDepthHint,
@@ -506,7 +406,7 @@ namespace icl{
       Size frameSize(f->size[0],f->size[1]);
       ensureCompatible(ppoDst,depth8u,frameSize,formatGray);
 
-      if(dev.needsBayerDecoding()){
+      if(bayerLayout){
         //      if(f->color_filter){ unfortunately this is not set for some cams??
         if((int)dataBuffer.size() < frameSize.getDim()*3){
           dataBuffer.resize(frameSize.getDim()*3);
@@ -515,8 +415,7 @@ namespace icl{
                                    dataBuffer.data(),
                                    frameSize.width,
                                    frameSize.height,
-                                   dev.getBayerFilterLayout(),
-                                   //f->color_filter,  this will not work ...
+                                   bayerLayout,
                                    bayerMethod);
         icl8u *dst = (*ppoDst)->asImg<icl8u>()->getData(0);
         const icl8u *src = dataBuffer.data();
@@ -551,7 +450,7 @@ namespace icl{
     // }}}
     
     void extract_image_to_rgb(dc1394video_frame_t *f,
-                              const DCDevice &dev, 
+                              dc1394color_filter_t bayerLayout,
                               ImgBase **ppoDst, 
                               const Size &desiredSizeHint, 
                               depth desiredDepthHint,
@@ -559,25 +458,30 @@ namespace icl{
                               dc1394bayer_method_t bayerMethod){
       
       // {{{ open
-      //      DEBUG_LOG("color_filter:" << f->color_filter);
+
       (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
-      ensureCompatible(ppoDst,depth8u, frameSize,formatRGB);
      
-      if(dev.needsBayerDecoding()){
-      //      if(f->color_filter){ unfortunately this is not set for some cams??
-        if((int)dataBuffer.size() < frameSize.getDim()*3){
+      if(bayerLayout){
+        if(f->data_depth == 16){
+          ensureCompatible(ppoDst,depth16s, frameSize,formatRGB);
+          
+          ERROR_LOG("16Bit bayer decoding is not supported yet");
+        }else{
+          ensureCompatible(ppoDst,depth8u, frameSize,formatRGB);
+          if((int)dataBuffer.size() < frameSize.getDim()*3){
             dataBuffer.resize(frameSize.getDim()*3);
+          }
+          dc1394_bayer_decoding_8bit(f->image,
+                                     dataBuffer.data(),
+                                     frameSize.width,
+                                     frameSize.height,
+                                     bayerLayout,
+                                     bayerMethod);
+          interleavedToPlanar(dataBuffer.data(),(*ppoDst)->asImg<icl8u>());
         }
-        dc1394_bayer_decoding_8bit(f->image,
-                                   dataBuffer.data(),
-                                   frameSize.width,
-                                   frameSize.height,
-                                   dev.getBayerFilterLayout(),
-                                   //f->color_filter,
-                                   bayerMethod);
-        interleavedToPlanar(dataBuffer.data(),(*ppoDst)->asImg<icl8u>());
       }else{
+        ensureCompatible(ppoDst,depth8u, frameSize,formatRGB);
         /// rgb works directly TODO
         if((int)dataBuffer.size() < frameSize.getDim()*3){
           dataBuffer.resize(frameSize.getDim()*3);
@@ -599,7 +503,7 @@ namespace icl{
     // }}}
 
     void extract_image_to(dc1394video_frame_t *f,
-                          const DCDevice &dev, 
+                          dc1394color_filter_t bayerLayout,
                           ImgBase **ppoDst, 
                           const Size &desiredSizeHint, 
                           format desiredFormatHint,
@@ -615,10 +519,10 @@ namespace icl{
       Size frameSize(f->size[0],f->size[1]);
       switch(desiredFormatHint){
         case formatGray:
-          extract_image_to_gray(f,dev,ppoDst,desiredSizeHint,desiredDepthHint,dataBuffer,bayerMethod);
+          extract_image_to_gray(f,bayerLayout,ppoDst,desiredSizeHint,desiredDepthHint,dataBuffer,bayerMethod);
           break;
         default: // rgb is returned .. and converted lateron
-          extract_image_to_rgb(f,dev,ppoDst,desiredSizeHint,desiredDepthHint,dataBuffer,bayerMethod);
+          extract_image_to_rgb(f,bayerLayout,ppoDst,desiredSizeHint,desiredDepthHint,dataBuffer,bayerMethod);
           break;
       }
     }
@@ -626,11 +530,12 @@ namespace icl{
     // }}}
 
     void extract_image_to_2(dc1394video_frame_t *f,
-                            const DCDevice &dev, 
+                            dc1394color_filter_t bayerLayout,
                             ImgBase **ppoDst, 
                             std::vector<icl8u> &dataBuffer,
                             dc1394bayer_method_t bayerMethod){
       // {{{ open xxx
+      
       ICLASSERT_RETURN( f );
       unsigned char *data = f->image;
       int width = (int)f->size[0];
@@ -640,14 +545,30 @@ namespace icl{
       uint32_t yuv_byte_order = f->yuv_byte_order;
       uint32_t data_depth      = f->data_depth;
     
-      if(dev.needsBayerDecoding()){
-        ensureCompatible(ppoDst,depth8u, Size(width,height),formatRGB);
-        if((int)dataBuffer.size() < width*height*3){
-          dataBuffer.resize(width*height*3);
+      if(bayerLayout){
+        if(data_depth == 16){
+          ensureCompatible(ppoDst,depth16s, Size(width,height),formatRGB);
+          
+          ERROR_LOG("16Bit bayer decoding is not supported yet");
+          /** This does not work
+              if((int)dataBuffer.size() < width*height*3*2){
+              dataBuffer.resize(width*height*3*2);
+              }
+              dc1394_bayer_decoding_16bit((const uint16_t*)data, (uint16_t*)dataBuffer.data(),
+              width,height,bayerLayout, bayerMethod, 0);
+              
+              interleavedToPlanar((const icl16s*)dataBuffer.data(),(*ppoDst)->asImg<icl16s>());
+           **/
+        }else{
+          ensureCompatible(ppoDst,depth8u, Size(width,height),formatRGB);
+          if((int)dataBuffer.size() < width*height*3){
+            dataBuffer.resize(width*height*3);
+          }
+          dc1394_bayer_decoding_8bit(data,dataBuffer.data(),width,height,bayerLayout,bayerMethod);
+          interleavedToPlanar(dataBuffer.data(),(*ppoDst)->asImg<icl8u>());
         }
-        dc1394_bayer_decoding_8bit(data,dataBuffer.data(),width,height,dev.getBayerFilterLayout(),bayerMethod);
-        //      dc1394_convert_to_RGB8(data,buf,width,height,yuv_byte_order, cc, data_depth);
-        interleavedToPlanar(dataBuffer.data(),(*ppoDst)->asImg<icl8u>());
+
+
       }else{
         static const dc1394color_coding_t gray_ccs[5] = {
           DC1394_COLOR_CODING_MONO8,
@@ -675,7 +596,6 @@ namespace icl{
     // }}}
     
     bool can_extract_image_to(dc1394video_frame_t *f,
-                              const DCDevice &dev, 
                               const Size &desiredSizeHint, 
                               format desiredFormatHint,
                               depth desiredDepthHint){
@@ -690,10 +610,11 @@ namespace icl{
 
     // }}}
 
-
-    void grab_frame(dc1394camera_t* c, ImgBase **image){
+#if 0
+    void grab_frame(int DUMMY,dc1394camera_t* c, ImgBase **image){
       // {{{ open
-
+      ERROR_LOG("this function has been removed!");
+      /**
       ICLASSERT_RETURN(image);
       format fmt = *image ? (*image)->getFormat() : formatRGB;
       ICLASSERT_RETURN( fmt == formatGray || fmt == formatRGB );
@@ -723,10 +644,12 @@ namespace icl{
         interleavedToPlanar(&(rgbBuffer[0]),(*image)->asImg<icl8u>());
       }
       dc1394_capture_enqueue(c,f);
+
+      **/
     }
 
     // }}}
-
+#endif
 
     class DCContextCreator{
       // {{{ open

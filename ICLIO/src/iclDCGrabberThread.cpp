@@ -6,6 +6,7 @@
 #include <iclDCDevice.h>
 #include <algorithm>
 #include <vector>
+#include <iclDCGrabber.h>
 
 
 using namespace std;
@@ -27,24 +28,29 @@ namespace icl{
     
     void DCGrabberThread::stopAllGrabberThreads(){
       // {{{ open
-      
-      
-      for(unsigned int i=0; i<g_vecAllThreads.size();++i){
-        std::cout << "[unclean break detected] resetting bus for camera " << i << std::endl; 
-        g_vecAllThreads[i]->resetBus();
-      }
+
+      /* Why ???
+          for(unsigned int i=0; i<g_vecAllThreads.size();++i){
+          std::cout << "[unclean break detected] resetting bus for camera " << i << std::endl; 
+          g_vecAllThreads[i]->resetBus();
+          }
+      */
       
       g_oGrabberThreadMutex.lock();
       g_bStopAllGrabberThreadsCalled = true;
 
       for(unsigned int i=0;i<g_vecAllThreads.size();i++){
+        std::cout << "> stopping grabber thread for camera " << i << std::endl; 
         g_vecAllThreads[i]->stop();
       }
       g_vecAllThreads.clear();
       g_bStopAllGrabberThreadsCalled = false;
       g_oGrabberThreadMutex.unlock();
+      
+      std::cout << "> resetting firewire bus" << std::endl;
+      DCGrabber::dc1394_reset_bus(false);
     }
-
+    
     // }}}
     
     DCGrabberThread::DCGrabberThread(dc1394camera_t* c,
@@ -56,15 +62,19 @@ namespace icl{
       g_oGrabberThreadMutex.lock();
       g_vecAllThreads.push_back(this);
       g_oGrabberThreadMutex.unlock();
+
+      m_poFrameQueue = new DCFrameQueue(c,options);
     }
 
     // }}}
     
     void DCGrabberThread::run(){
       // {{{ open
-      if(!m_poFrameQueue){
-        m_poFrameQueue = new DCFrameQueue(m_poCam, m_poOptions);
-      }
+
+      // I moved this to the constructor (why was it placed here?)
+      //if(!m_poFrameQueue){
+      // m_poFrameQueue = new DCFrameQueue(m_poCam, m_poOptions);
+      //}
       while(true){
         lock();
         m_poFrameQueue->step();
@@ -91,18 +101,6 @@ namespace icl{
     }
 
     // }}}
-    
-    void DCGrabberThread::getCurrentImage(ImgBase **ppoDst){
-      // {{{ open
-      
-      while(!m_poFrameQueue) usleep(1000*10);
-      m_poFrameQueue->lock();
-      extract_image_to(m_poFrameQueue->back(),ppoDst,m_oRGBInterleavedBuffer);
-      m_poFrameQueue->unlock();
-    }
-
-    // }}}
-
 
     dc1394video_frame_t *DCGrabberThread::waitForNextImageFrame(){
       Time &lastTime = m_lastFramesTimeStamp;
@@ -122,14 +120,15 @@ namespace icl{
     
     /// returns the current image directly (if no desried parameters are set)
     void DCGrabberThread::getCurrentImage(ImgBase **ppoDst, 
+                                          dc1394color_filter_t bayerLayout,
                                           dc1394bayer_method_t bayerMethod){
       
       // {{{ open
-      while(!m_poFrameQueue) usleep(1000*10);
-      
+      while(!m_poFrameQueue) Thread::msleep(10);
+
       m_poFrameQueue->lock();
       
-      extract_image_to_2(waitForNextImageFrame(),DCDevice(m_poCam),ppoDst,m_oRGBInterleavedBuffer,bayerMethod);
+      extract_image_to_2(waitForNextImageFrame(),bayerLayout,ppoDst,m_oRGBInterleavedBuffer,bayerMethod);
 
       m_poFrameQueue->unlock();
       
@@ -144,20 +143,21 @@ namespace icl{
                                           const Size &desiredSizeHint, 
                                           format desiredFormatHint,
                                           depth desiredDepthHint,
+                                          dc1394color_filter_t bayerLayout,
                                           dc1394bayer_method_t bayerMethod){
       // {{{ open
-      while(!m_poFrameQueue) usleep(1000*10);
+
+      while(!m_poFrameQueue) Thread::msleep(10);
 
     
       m_poFrameQueue->lock();
       
       dc1394video_frame_t *frame = waitForNextImageFrame();
       
-      DCDevice dev(m_poCam);
+      desiredParamsFullfilled = can_extract_image_to(frame,desiredSizeHint,desiredFormatHint,desiredDepthHint);
 
-      desiredParamsFullfilled = can_extract_image_to(frame,dev,desiredSizeHint,desiredFormatHint,desiredDepthHint);
-
-      extract_image_to(frame,dev,
+      extract_image_to(frame,
+                       bayerLayout,
                        desiredParamsFullfilled ? ppoDst : ppoDstTmp,
                        desiredSizeHint,
                        desiredFormatHint,

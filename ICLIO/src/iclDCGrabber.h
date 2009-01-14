@@ -156,6 +156,9 @@ namespace icl{
 
     /// Internal DCDeviceOptions struct
     DCDeviceOptions m_oOptions;
+    
+    /// only for unknown device types
+    std::string m_sUserDefinedBayerPattern;
   };
   
   

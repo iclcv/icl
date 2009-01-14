@@ -28,6 +28,8 @@ namespace icl{
     m_oOptions.isoMBits = isoMBits;
 
     m_oOptions.suppressDoubledImages = true;
+
+    m_sUserDefinedBayerPattern = "NONE"; // by default, unknown devices do not need bayer pattern
     
   }
 
@@ -48,15 +50,27 @@ namespace icl{
     }
     
     ppoDst = ppoDst ? ppoDst : &m_poImage;
+
+    dc1394color_filter_t bayerLayout = m_oDev.getBayerFilterLayout();
+    if((int)bayerLayout == 1){
+      std::string s = getValue("bayer-layout");
+      if(s == "RGGB") bayerLayout = DC1394_COLOR_FILTER_RGGB;
+      else if(s == "GBRG")bayerLayout = DC1394_COLOR_FILTER_GBRG;
+      else if(s == "GRBG")bayerLayout = DC1394_COLOR_FILTER_GRBG;
+      else if(s == "BGGR") bayerLayout = DC1394_COLOR_FILTER_BGGR;
+      else if(s == "NONE") bayerLayout = (dc1394color_filter_t)(0);
+      else bayerLayout = (dc1394color_filter_t)0;
+    }
     
     if(getIgnoreDesiredParams()){
-      m_poGT->getCurrentImage(ppoDst,bayermethod_from_string(getValue("bayer-quality")));
+      m_poGT->getCurrentImage(ppoDst,bayerLayout,bayermethod_from_string(getValue("bayer-quality")));
     }else{
       ImgBase **ppoDstTmp = &m_poImageTmp;
       bool desiredParamsFullfilled = false;
       
       m_poGT->getCurrentImage(ppoDst,ppoDstTmp,desiredParamsFullfilled,
                               getDesiredSize(),getDesiredFormat(), getDesiredDepth(),
+                              bayerLayout,
                               bayermethod_from_string(getValue("bayer-quality")) );
       
       if(!desiredParamsFullfilled){
@@ -173,6 +187,20 @@ namespace icl{
       }else{
         ERROR_LOG("parameter image-labeling has values \"on\" and \"off\", nothing known about \""<<value<<"\"");
       }
+    }else if(property == "bayer-layout"){
+      if((int)(m_oDev.getBayerFilterLayout()) == 1){
+        if(value == "RGGB" || value == "GBRG" || value == "GRBG" || value == "BGGR" || value == "NONE"){
+          m_sUserDefinedBayerPattern = value;        
+        }else{
+          ERROR_LOG("parameter bayer layout does only support this values:\n"
+                    " \"RGGB\",\"GBRG\", \"GRBG\", \"BGGR\" and \"NONE\",\""
+                    " nothing known about \"" << value << "\"");
+        }
+      }else{
+        ERROR_LOG("This device does not support \"bayer-layout\" as user defined property\n"
+                  "Either no bayer filter is necessary or it is a builtin camera with a\n"
+                  "fixed bayer filter layout");
+      }
     }else if(m_oDeviceFeatures.supportsProperty(property)){
       m_oDeviceFeatures.setProperty(property,value);
     }else{
@@ -183,14 +211,15 @@ namespace icl{
     std::vector<std::string> v;
     if(m_oDev.isNull()) return v;
     
-    if(m_oDev.needsBayerDecoding()){
-      v.push_back("bayer-quality");
-    }
     v.push_back("omit-doubled-frames");
     v.push_back("format");
     v.push_back("size");
     v.push_back("enable-image-labeling");
     v.push_back("iso-speed");
+    if((int)(m_oDev.getBayerFilterLayout()) == 1){
+      v.push_back("bayer-layout");
+      v.push_back("bayer-quality");
+    }
     
     std::vector<std::string> v3 = m_oDeviceFeatures.getPropertyList();
     std::copy(v3.begin(),v3.end(),back_inserter(v));
@@ -199,10 +228,10 @@ namespace icl{
   }
 
   std::string DCGrabberImpl::getType(const std::string &name){
-    if((m_oDev.needsBayerDecoding() && name == "bayer-quality") || 
+    if(name == "bayer-quality" || 
        name == "format" || name == "size" ||
        name == "omit-doubled-frames" || name == "iso-speed" || 
-       name == "enable-image-labeling"){
+       name == "enable-image-labeling" || name == "bayer-layout"){
       return "menu";
     }else if(m_oDeviceFeatures.supportsProperty(name)){
       return m_oDeviceFeatures.getType(name);
@@ -212,7 +241,7 @@ namespace icl{
  
   std::string DCGrabberImpl::getInfo(const std::string &name){
     if(m_oDev.isNull()) return "";
-    if(m_oDev.needsBayerDecoding() && name == "bayer-quality"){
+    if(name == "bayer-quality"){
       return "{"
       "\"DC1394_BAYER_METHOD_NEAREST\","
       "\"DC1394_BAYER_METHOD_BILINEAR\","
@@ -238,6 +267,8 @@ namespace icl{
       }else{
         return "{\"400\"}";
       }
+    }else if(name == "bayer-layout"){
+      return "{\"RGGB\",\"GBRG\",\"GRBG\",\"BGGR\",\"NONE\"}";
     }else if(m_oDeviceFeatures.supportsProperty(name)){
       return m_oDeviceFeatures.getInfo(name);
     }
@@ -246,8 +277,9 @@ namespace icl{
   std::string DCGrabberImpl::getValue(const std::string &name){
     if(m_oDev.isNull()) return "";  
 
-    if(m_oDev.needsBayerDecoding() && name == "bayer-quality") return to_string(m_oOptions.bayermethod);
-    else if(name == "format"){
+    if(m_oDev.getBayerFilterLayout() && name == "bayer-quality"){
+      return to_string(m_oOptions.bayermethod);
+    }else if(name == "format"){
       if(m_oDev.isNull()) return "";
       return m_oDev.getMode().toString();
     }else if(name == "enable-image-labeling"){
@@ -266,6 +298,13 @@ namespace icl{
       return m_oOptions.isoMBits == 400 ? "400" : "800";
     }else if(name == "size"){
       return "adjusted by format";
+    }else if(name == "bayer-layout"){
+      if((int)(m_oDev.getBayerFilterLayout()) == 1){
+        return m_sUserDefinedBayerPattern;
+      }else{
+        ERROR_LOG("this device does  not support feature \"bayer-layout\" as a features");
+        return "";
+      }
     }else if(m_oDeviceFeatures.supportsProperty(name)){
       return m_oDeviceFeatures.getValue(name);
     }
