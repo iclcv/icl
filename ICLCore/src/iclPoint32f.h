@@ -60,12 +60,6 @@ namespace icl{
       return Point32f(xfac*x,yfac*y);
     }
     
-    /// implicit cast to a integer-point
-    operator Point() const {
-      return Point(clipped_cast<float,int>(x),
-                   clipped_cast<float,int>(y));
-    } 
-
     /// returns the p-norm of the 2D Vector
     /** - p = 0 -> 2 
         - p = 1 -> city block norm x+y 

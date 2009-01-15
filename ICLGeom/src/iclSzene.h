@@ -51,8 +51,23 @@ namespace icl{
     */
     Szene(const Rect &viewPort=Rect(0,0,320,240),const Camera &cam=Camera() );
     
+    /// Copy constructor (contained objects are not copied)
+    Szene(const Szene &other){
+      *this = other;
+    }
+
+    /// Destructor
+    ~Szene();
+    
+    /// Assignment operator (contained objects are not copied)
+    /** internal objects are deleted */
+    Szene &operator=(const Szene &other);
+
     /// returns the szenes camera
     Camera &getCam(){ return m_oCam; }
+
+    /// returns the szenes camera
+    const Camera &getCam() const{ return m_oCam; }
     
     /// renders the szene into the given draw-widget
     void render(ICLDrawWidget *w) const;
@@ -60,10 +75,10 @@ namespace icl{
     /// renders the szene into the given image
     void render(Img32f *image) const;
     
-    /// adds a new Object to the szene
+    /// adds a new Object to the szene (objects ownership is passed)
     void add(Object *obj);
     
-    /// removes this Object from the szene
+    /// removes this Object from the szene (object is released internally)
     void remove(Object *obj);
     
     /// updates all objects in the szene

@@ -5,6 +5,24 @@ namespace icl{
   Szene::Szene(const Rect &viewPort,const Camera &cam):
     m_oViewPort(viewPort),m_oCam(cam),m_oTransMat(Mat::id()){}
   
+  Szene::~Szene(){
+    for(unsigned int i=0;i<m_vecObjs.size();++i){
+      delete m_vecObjs[i];
+    }
+  }
+  
+  Szene &Szene::operator=(const Szene &other){
+    m_oViewPort = other.m_oViewPort;
+    m_oCam = other.m_oCam;
+
+    for(unsigned int i=0;i<m_vecObjs.size();++i){
+      delete m_vecObjs[i];
+    }
+    m_vecObjs.clear();
+    m_oTransMat = other.m_oTransMat;
+    return *this;
+  }
+
   Mat Szene::getViewPortMatrix() const{
     //float dx = m_oViewPort.width/2;
     //float dy = m_oViewPort.height/2;
@@ -50,6 +68,7 @@ namespace icl{
   void Szene::remove(Object *obj){
     std::vector<Object*>::iterator it = find(m_vecObjs.begin(),m_vecObjs.end(),obj);
     if(it != m_vecObjs.end()){
+      delete *it;
       m_vecObjs.erase(it);
     }
   }

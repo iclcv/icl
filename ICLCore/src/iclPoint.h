@@ -18,6 +18,10 @@ namespace icl{
   };
 #else
 #endif
+
+  /** \cond */
+  class Point32f;
+  /** \endcond */
   
   /// Point class of the ICL used e.g. for the Images ROI offset \ingroup TYPES
   class Point : public IppiPoint{
@@ -28,6 +32,9 @@ namespace icl{
     /// deep copy of a Point
     Point(const Point& p=null){ this->x = p.x; this->y = p.y; }
 
+    /// Create a point from given float point (values are rounded)
+    Point(const Point32f &p);
+    
     /// create a special point
     Point(int x,int y){this->x = x;this->y = y;}
 

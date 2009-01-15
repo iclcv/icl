@@ -50,7 +50,7 @@ namespace icl{
   }
 
 
-  const Mat &Camera::getTransformationMatrix(){
+  const Mat &Camera::getTransformationMatrix() const {
     Mat T = getCoordinateSystemTransformationMatrix();
     Mat P = getProjectionMatrix();
     

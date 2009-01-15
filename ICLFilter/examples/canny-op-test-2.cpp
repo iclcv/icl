@@ -1,15 +1,18 @@
 #include <iclCannyOp.h>
 #include <iclCommon.h>
 #include <iclConvolutionOp.h>
-//#include <iclUnaryOpPipe.h>
-GUI gui;
+#include <iclCC.h>
+
+GUI gui("vsplit");
 
 void init(){
   gui << "image[@handle=image@minsize=32x24]";
-  gui << "fslider(0,2000,10)[@out=low@label=low@maxsize=100x2@handle=low-handle]";
-  gui << "fslider(0,2000,100)[@out=high@label=high@maxsize=100x2@handle=high-handle]";
-  gui << "togglebutton(off,on)[@out=pre-gauss@handle=pre-gauss-handle@label=gaussian PP])";
-  gui << "label(time)[@handle=dt@label=filter time in ms]";
+  gui << ( GUI() 
+           <<  "fslider(0,2000,10)[@out=low@label=low@maxsize=100x2@handle=low-handle]"
+           << "fslider(0,2000,100)[@out=high@label=high@maxsize=100x2@handle=high-handle]"
+           << "togglebutton(off,on)[@out=pre-gauss@handle=pre-gauss-handle@label=gaussian PP])"
+           << "label(time)[@handle=dt@label=filter time in ms]"
+          );
   gui.show();
 }
 
@@ -23,11 +26,21 @@ void update(){
   float &high = gui.getValue<float>("high");
   bool &preGauss = gui.getValue<bool>("pre-gauss");
   
+  static ImgBase *depthAdapted = 0;
+  
   CannyOp canny(low,high,preGauss);
   static ImgBase *dst = 0;
 
   Time t = Time::now();
-  canny.apply(grabber.grab(),&dst);
+  const ImgBase *im= grabber.grab();
+  if(!pa_defined("-format")){
+    canny.apply(im,&dst);
+  }else{
+    static std::string fmtStr = pa_subarg<std::string>("-format",0,"rgb");
+    ensureCompatible(&depthAdapted,depth8u,im->getSize(),translateFormat(fmtStr));
+    cc(im,depthAdapted);
+    canny.apply(depthAdapted,&dst);
+  }
   dt = (Time::now()-t).toMilliSecondsDouble();
   
   image = dst;
@@ -36,7 +49,7 @@ void update(){
 
 
 int main(int n, char **ppc){
-  pa_init(n,ppc,"-input(2)");
+  pa_init(n,ppc,"-input(2) -format(1)");
   QApplication app(n,ppc);
   
   init();

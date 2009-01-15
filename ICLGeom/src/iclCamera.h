@@ -58,8 +58,9 @@ namespace icl{
     m_oPos(cam.m_oPos),m_oNorm(cam.m_oNorm),m_oUp(cam.m_oUp),m_fF(cam.m_fF),
       m_fZNear(cam.m_fZNear),m_fZFar(cam.m_fZFar){}
     
+    
     /// returns the camera transformation matrix
-    const Mat &getTransformationMatrix();
+    const Mat &getTransformationMatrix() const;
     
     /// returns the matrix, that transforms vectors into the camera coordinate system
     /** (internally called by getTransformationMatrix) */
@@ -122,7 +123,7 @@ namespace icl{
     float m_fZNear;     ///!< nearest clipping plane (must be > 0 and < zFar)
     float m_fZFar;      ///!< farest clipping plane (must be > 0 and < zFar)
     
-    Mat m_oMatBuf; //!< internal buffer for the current transformation matrix
+    mutable Mat m_oMatBuf; //!< internal buffer for the current transformation matrix
     
   };
 }
