@@ -4,6 +4,7 @@
 
 namespace icl{
   namespace{
+#ifdef HAVE_IPP
     template<class SrcType, class DstType, typename ippfunc>
     inline void ipp_call_fixed(const Img<SrcType> &src, Img<DstType> &dst, int channel, ippfunc func, ConvolutionOp &op){
       func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize());
@@ -22,7 +23,7 @@ namespace icl{
       func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),
               dst.getROISize(), kernel, op.getKernel().getSize(), op.getAnchor() );
     }
-
+#endif
 
     template<class KernelType, class SrcType, class DstType>
     void generic_cpp_convolution(const Img<SrcType> &src, Img<DstType> &dst,const KernelType *k, ConvolutionOp &op, int c){

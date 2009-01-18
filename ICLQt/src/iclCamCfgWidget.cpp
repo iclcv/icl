@@ -302,9 +302,11 @@ namespace icl{
 #endif
     }else if(prefix == "UNICAP"){
 #ifdef HAVE_UNICAP
+
+#ifdef HAVE_LIBDC
       m_vecDCDeviceList.clear();
       icl::dc::free_static_context();
-
+#endif
       Thread::sleep(1);
       
       //search for a unicap grabber:
@@ -318,10 +320,11 @@ namespace icl{
 #endif
     }else if(prefix == "PWC"){
 #ifdef HAVE_VIDEODEV
+
+#ifdef HAVE_LIBDC
       m_vecDCDeviceList.clear();
-
       icl::dc::free_static_context();
-
+#endif
       Thread::sleep(1);
 
       if(text == " Philips 740 Webcam [device 0]"){
