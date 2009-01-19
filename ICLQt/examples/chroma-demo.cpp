@@ -10,7 +10,7 @@ ChromaGUI  *cg;
 
 void run(){
   Size size = Size(320,240);
-  GenericGrabber grabber("dc,pwc,file",string("dc=0,pwc=0,file=")+pa_subarg<string>("-file",0,"./images/*.ppm"));
+  GenericGrabber grabber(FROM_PROGARG("-input"));
 
   Img8u segImage(size,1);
   Img8u *image = new Img8u(size,formatRGB);
@@ -43,8 +43,9 @@ void run(){
 }
 
 int main(int nArgs, char **ppcArgs){
+  ExecThread x(run);  
   QApplication app(nArgs,ppcArgs);
-  pa_init(nArgs, ppcArgs,"-file(1)");
+  pa_init(nArgs, ppcArgs,"-input(2)");
   
   gui = new GUI("hbox");
   (*gui) << ( GUI("vbox")  
@@ -56,7 +57,7 @@ int main(int nArgs, char **ppcArgs){
 
   cg = new ChromaGUI(*gui->getValue<BoxHandle>("box"));
 
-  exec_threaded(run);
+  x.run();
   
   return app.exec();
 }

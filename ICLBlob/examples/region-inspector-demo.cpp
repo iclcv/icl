@@ -135,6 +135,7 @@ void run(){
 
 
 int main(int n, char **ppc){
+  ExecThread x(run);
   QApplication app(n,ppc);
   
   pa_explain("-d","define device parameters (e.g. -d dc 0 or -d file image/*.ppm)");
@@ -143,7 +144,7 @@ int main(int n, char **ppc){
 
   init();
   
-  exec_threaded(run);
+  x.run();
   
   return app.exec();
 }

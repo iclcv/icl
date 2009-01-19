@@ -8,4 +8,6 @@ int main(int n, char **ppc){
   ImgQ image = gray(scale(create("parrot"),0.4));
   
   FileWriter(std::string("image.")+s).write(&image);
+  
+  std::cout << "wrote file image." << s << std::endl;
 }

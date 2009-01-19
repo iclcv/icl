@@ -35,24 +35,10 @@ icl-visualization-demo \
 icl-xv \
 icl-camcfg
 
-if HAVE_LIBDC_COND
-if HAVE_UNICAP_COND
-bin_PROGRAMS+= icl-camviewer-demo
-endif
-endif
-
 # explicit sources, ldflags and cxxflags
 icl_3D_demo_SOURCES=../examples/3D-demo.cpp
 icl_3D_demo_LDFLAGS=${XLDFLAGS}
 icl_3D_demo_CXXFLAGS=${XCXXFLAGS}
-
-if HAVE_LIBDC_COND
-if HAVE_UNICAP_COND
-icl_camviewer_demo_SOURCES=../examples/camviewer-demo.cpp
-icl_camviewer_demo_LDFLAGS=${XLDFLAGS}
-icl_camviewer_demo_CXXFLAGS=${XCXXFLAGS}
-endif
-endif
 
 icl_camcfg_SOURCES=../examples/camcfg.cpp
 icl_camcfg_LDFLAGS=${XLDFLAGS}

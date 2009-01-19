@@ -65,6 +65,10 @@ namespace icl{
     impl->mutex.unlock();
   }
   
+  void Thread::usleep(unsigned int usec){
+    ::usleep(usec);
+  }
+
   void Thread::msleep(unsigned int msecs){
 #ifndef SYSTEM_WINDOWS
     usleep(msecs*1000);
@@ -75,7 +79,7 @@ namespace icl{
   }
   void Thread::sleep(float secs){
 #ifndef SYSTEM_WINDOWS
-    usleep((long)secs*1000000);
+    ::usleep((long)secs*1000000);
 #else
     sleep(secs*1000);
 //	  System::Threading::Thread::Sleep(secs*1000);

@@ -57,7 +57,8 @@ namespace icl{
                                    "ignore desired params" flag is set to false by default.
 
         */
-    FileGrabber(const std::string &pattern, bool buffer=false, bool ignoreDesiredParams=false);
+    FileGrabber(const std::string &pattern, bool buffer=false, bool ignoreDesiredParams=false) 
+      throw(FileNotFoundException);
 
     /// Destructor
     virtual ~FileGrabber();

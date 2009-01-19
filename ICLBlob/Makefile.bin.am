@@ -46,16 +46,12 @@ icl_region_detector_test_CXXFLAGS=${XCXXFLAGS}
 if HAVE_QT_COND
 
 bin_PROGRAMS+= \
-icl-region-inspector-demo \
-icl-vector-quantisation-test
+icl-region-inspector-demo
+
 
 icl_region_inspector_demo_SOURCES=../examples/region-inspector-demo.cpp
 icl_region_inspector_demo_LDFLAGS=${XLDFLAGS}
 icl_region_inspector_demo_CXXFLAGS=${XCXXFLAGS}
-
-icl_vector_quantisation_test_SOURCES=../examples/vector-quantisation-test.cpp
-icl_vector_quantisation_test_LDFLAGS=${XLDFLAGS}
-icl_vector_quantisation_test_CXXFLAGS=${XCXXFLAGS}
 
 endif
 

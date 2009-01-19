@@ -2,32 +2,14 @@
 #include "iclCC.h"
 #include "iclImg.h"
 #include "iclTestImages.h"
+#include <iclCommon.h>
+#include <iclBinaryArithmeticalOp.h>
 
-using namespace icl;
-using namespace std;
 
-template<class T>
-Img64f *createDiffImageTemplate(Img<T> *src, Img<T> *dst){
-  Img64f *res = new Img64f(src->getParams());
-
-  for(int c=0;c<src->getChannels();++c){
-    Img64f::iterator r = res->getIterator(c);
-    for(ImgIterator<T> s=src->getIterator(c),d=dst->getIterator(c);s.inRegion();++s,++d,++r){
-      icl64f buf = icl64f((*s)-(*d));
-      *r = buf > 0 ? buf : -buf;
-    }
-  }
-  return res;
-}
-
-ImgBase *createDiffImage(ImgBase *src, ImgBase *dst){
-  ICLASSERT_RETURN_VAL(src && dst && src->getDepth() == dst->getDepth() && src->getParams() == dst->getParams() ,0);
-  switch(src->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return createDiffImageTemplate(src->asImg<icl##D>(),dst->asImg<icl##D>());
-    ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
-  }
-  return 0;
+ImgBase *createDiffImage(ImgBase *a, ImgBase *b){
+  ImgBase *r = 0;
+  BinaryArithmeticalOp(BinaryArithmeticalOp::absSubOp).apply(a,b,&r);
+  return r;
 }
 
 icl64f errorSum(Img64f *img){
@@ -56,7 +38,7 @@ int main(){
   printf("This is the Converter test application: \n"
          "It reads the maccaw2.ppm image in ICLCC/examples, \n"
          "with params depth64f, formatRGB and Size(750,1002).\n"
-         "This image is converted to depth8u,formatLAB and \n"
+         "This image is converted to depth8u,formatYUV and \n"
          "Size(222,817) and then converted back. The resulting \n"
          "Image should differ averagely not more than 15 \n"
          "from the original image. \n"
@@ -65,12 +47,12 @@ int main(){
          "The result is \"successful\" if all 6 estimated \n"
          "average pixel errors are < 15. \n\n" );
   /// test for PCA compress
-  Img64f *image = TestImages::create("parrot",formatRGB,depth64f)->asImg<icl64f>();
+  Img64f image = cvt64f(create("parrot"));
   
   /// Testing 64f,rgb,750,1002 -> 8u,lab,222x817 ->  and back
-  
-  ImgBase *src = image->deepCopy();
-  ImgBase *mid = new Img8u(Size(222,817), formatLAB);
+
+  ImgBase *src = image.deepCopy();
+  ImgBase *mid = new Img8u(Size(222,817), formatYUV);
   ImgBase *dst = new Img64f(src->getParams());
   
   
@@ -93,7 +75,9 @@ int main(){
       foundErr = true;
       printf("per pixel error for mode %s is too high: %f \n",getName(i).c_str(),err/(diff->getDim()*diff->getChannels()));
     }    
+    show( scale((label(cvt(dst),"result"),label(cvt(diff),"diff-map")),0.2) );
     delete diff;    
+
   }
   delete src;
   delete mid;

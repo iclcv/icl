@@ -92,14 +92,14 @@ void send_app(){
 }
 
 void receive_app(int n, char **ppc){
-  
+  ExecThread x(receive_loop);
   QApplication app(n,ppc);
 
   gui << "image[@handle=image@minsize=32x24]" << "fps(20)[@size=32x3@handle=fps]";
   gui.show();
 
   if(pa_defined("-loop")){
-    exec_threaded(receive_loop);
+    x.run();
   }else{
     receive_loop();
   }

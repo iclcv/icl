@@ -1,6 +1,6 @@
 #include "iclFileList.h"
-#ifndef WIN32
-#ifndef __APPLE__
+#ifndef SYSTEM_WINDOWS
+#ifndef SYSTEM_APPLE
 #include <wordexp.h>
 #else // wordexp not supported on osx
 #include <glob.h>
@@ -38,8 +38,8 @@ namespace icl{
       string sPattern = pattern;
       std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
 
-#ifndef WIN32
-#ifndef __APPLE__
+#ifndef SYSTEM_WINDOWS
+#ifndef SYSTEM_APPLE
       wordexp_t match;
       
       // search for file matching the pattern(s)
@@ -61,7 +61,9 @@ namespace icl{
       
       char **ppcFiles = match.we_wordv;
       for (unsigned int i=0; i < match.we_wordc; ++i) {
-        add(ppcFiles[i]);
+        if(!strchr(ppcFiles[i],'*')){
+          add(ppcFiles[i]);
+        }
       }
 
       wordfree(&match);
@@ -81,7 +83,10 @@ namespace icl{
       }
 
       for (unsigned int i=0; i<pglob.gl_pathc; ++i) {
-            add(pglob.gl_pathv[i]);
+        /// only add those patterns without remaining wildchards
+        if(!strchr(pglob.gl_pathv[i],'*')){
+          add(pglob.gl_pathv[i]);
+        }
       }
 
       globfree(&pglob);

@@ -60,33 +60,6 @@ namespace icl{
     }
   };
 
-  /// Utility class that implements a cheap copyable set of two parables \ingroup UNCOMMON
-  /** Although this class could be used to create ParableSets of 
-      arbitrary size, it is used to create Parable-Pairs.*/
-  struct ParableSet{
-    /// create a new ParableSet with a given Parable* to wrap
-    ParableSet(Parable *p=0):p(p){}
-
-    /// Internally wrapped Parable *
-    Parable *p;
-    
-    /// access one of the two parables
-    /** @param idx parable index 0 or 1
-    **/
-    Parable &operator[](int idx) { return p[idx]; }
-
-    /// access one of the two parables (const)
-    /** @param idx parable index 0 or 1
-    **/
-    const Parable &operator[](int idx) const{ return p[idx]; }
-
-    /// shows both variables to std out
-    void show()const{
-      printf("Parable Set: \n");
-      p[0].show();
-      p[1].show();
-    }
-  };
 }
 
 

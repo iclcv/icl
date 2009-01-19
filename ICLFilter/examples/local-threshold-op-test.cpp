@@ -260,11 +260,12 @@ int main (int argc, char **argv) {
   if(pa_defined("-nogui")){
     batch_mode();    
   }else{
+    ExecThread x(run);
     QApplication app(argc,argv);
     
     init();
     
-    exec_threaded(run);
+    x.run();
     
     return app.exec();
   }

@@ -4,6 +4,7 @@
 #include <iclGrabber.h>
 #include <string>
 #include <iclMacros.h>
+#include <iclException.h>
 
 namespace icl {
 
@@ -46,8 +47,7 @@ namespace icl {
                                   - xcfp=publisher's-stream-name (string)
                                   - xcfs=server-name (string) (currently method name is always "retreiveImage")
                                   - xcfm=memory-name (string) (currently image-xpath is always "//IMAGE")
-        @param notifiyErrors if set to false, no error output is given; use isNull() function 
-                             at runtime instead!
+        @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
 
         @suppressDoubledImages if set, this flag makes the wrapped grabber return each
                                video frame only once. Currently this feature is only supported
@@ -55,7 +55,7 @@ namespace icl {
     */
     GenericGrabber(const std::string &devicePriorityList="dc,pwc,file", 
                    const std::string &params="pwc=0,dc=0,file=images/*.ppm",
-                   bool notifyErrors = true);
+                   bool notifyErrors = true) throw (ICLException);
     
 
     

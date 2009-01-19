@@ -1,47 +1,29 @@
-#include <iclWidget.h>
-#include <iclDrawWidget.h>
-#include <iclPWCGrabber.h>
-#include <QApplication>
-#include <QThread>
-#include <iclTestImages.h>
-using namespace icl;
-using namespace std;
+#include <iclCommon.h>
 
-Size size(160,120);
+GUI gui;
+void run(){
+  static GenericGrabber g(FROM_PROGARG("-input"));
+  while(true){
+    gui.getValue<ImageHandle>("image") = g.grab();
+    gui.getValue<ImageHandle>("image").update();
+    Thread::msleep(10);
+  }
+}
 
-class MyThread : public QThread{
-public:
-  MyThread(int device){
-    this->device = device;
-    widget = new ICLWidget(0);
-    widget->setGeometry(200,200,640,480);
-    widget->show();
-    start();
+
+int main(int n, char**ppc){
+  ExecThread x(run);
+  pa_explain("-input","define input grabber parameters\ne.g. -dc 0 or -file *.ppm");
+  pa_init(n,ppc,"-input(2)");
+  if(!pa_defined("-input")){
+    pa_usage("please define argument \"-input\"");
+    exit(-1);
   }
-  ~MyThread(){
-    exit();
-    msleep(250);
-  }
+  QApplication app(n,ppc);
+  gui << "image()[@handle=image@minsize=16x12]";
+  gui.show();
+
+  x.run();
   
-  virtual void run(){
-    PWCGrabber g(size,24,device);
-    g.setDesiredSize(size);
-    while(1){
-      widget->setImage(g.grab());
-      widget->update();
-    }
-  }
-  int device;
-  ICLWidget *widget;
-};
-
-
-int main(int nArgs, char **ppcArg){
-  int device=0;
-  if(nArgs == 2){
-    device = atoi(ppcArg[1]);
-  }
-  QApplication a(nArgs,ppcArg);
-  MyThread x(device);
-  return a.exec();
+  return app.exec();
 }

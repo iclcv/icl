@@ -24,13 +24,9 @@ XCXXFLAGS= ${CXXFLAGS} \
 ## Applications that depend on noting ###########################################
 #################################################################################
 bin_PROGRAMS= \
-icl-dyn-matrix-test \
 icl-geom-3D-demo
 
 # explicit sources, ldflags and cxxflags
-icl_dyn_matrix_test_SOURCES=../examples/dyn-matrix-test.cpp
-icl_dyn_matrix_test_LDFLAGS=${XLDFLAGS}
-icl_dyn_matrix_test_CXXFLAGS=${XCXXFLAGS}
 
 icl_geom_3D_demo_SOURCES=../examples/geom-3D-demo.cpp
 icl_geom_3D_demo_LDFLAGS=${XLDFLAGS}

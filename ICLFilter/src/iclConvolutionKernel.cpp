@@ -94,7 +94,7 @@ namespace icl{
     }else{
       idata = data;
     }    
-    isnull = !!idata;
+    isnull = !idata;
   }
   ConvolutionKernel::ConvolutionKernel(float *data, const Size &size, bool deepCopy) throw (InvalidSizeException):
     size(size),fdata(0),idata(0),factor(factor),isnull(false),owned(deepCopy),ft(custom){
@@ -104,7 +104,7 @@ namespace icl{
     }else{
       fdata = data;
     }    
-    isnull = !!fdata;
+    isnull = !fdata;
   }
   
   

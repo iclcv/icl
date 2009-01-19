@@ -1,29 +1,16 @@
 #include <iclMedianOp.h>
-#include <iclTestImages.h>
-#include <iclFileWriter.h>
-
-using namespace icl;
-using namespace std;
+#include <iclCommon.h>
 
 int main(){
-  ImgBase *image = TestImages::create("parrot",formatRGB,depth8u);
+  Img8u image = cvt8u(scale(create("parrot"),0.4));
   
-  MedianOp mos[] = { 
-    MedianOp(Size(3,3)),
-    MedianOp(Size(5,5)),
-    MedianOp(Size(4,4)) 
-  };
+  Size s[3] = { Size(3,3),Size(4,4),Size(10,10) };
 
-
-  for(int i=0;i<3;i++){
+  for(int i=0;i<3;++i){
     ImgBase *dst = 0;
-    mos[i].apply(image,&dst);
-    char buf[100];
-    sprintf(buf,"image_%d.ppm",i);
-    FileWriter(buf).write(dst);
+    MedianOp(s[i]).apply(&image,&dst);
+    
+    show(label(cvt(dst),std::string("mask-size:")+translateSize(s[i])));
     delete dst;
-    dst = 0;
   }
-  
-  return 0;
 }

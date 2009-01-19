@@ -19,10 +19,13 @@ namespace icl{
     }
     /// Shows this classifier to std::out
     void show()const{
-      parables.show();
+      std::cout << "chroma classifier:" << std::endl;
+      parables[0].show();
+      parables[1].show();
     }
     /// Used two parables
-    ParableSet parables;
+    //    ParableSet parables;
+    Parable parables[2];
   };  
 }
 

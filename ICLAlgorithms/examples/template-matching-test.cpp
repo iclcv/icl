@@ -24,8 +24,9 @@ int main(int n, char **ppc){
   Img8u *buffer = new Img8u;
   RegionDetector rd;
   vector<Rect> rs = iclMatchTemplate(image,templ,s,buffer,false,&rd);
+  std::cout << "Estimating Time for 100 Iterations ..." << std::endl;
   tic();
-  for(int i=0;i<1000;i++){
+  for(int i=0;i<100;i++){
     rs = iclMatchTemplate(image,templ,s,buffer,false,&rd);
   }
   toc();

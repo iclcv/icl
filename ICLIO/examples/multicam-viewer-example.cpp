@@ -14,7 +14,7 @@ void init_gui(){
   GUI g1("hbox[@minsize=1x1]");
   GUI g2("hbox[@minsize=1x1]");
   for(int i=0;i<4 && i<numCams;++i){
-    (i<2?g1:g2) << std::string("image[@minsize=1x1@handle=view-")+str(i)+"@label=cam: "+names[i]+"|info:"+infos[i]+"|]";
+    (i<2?g1:g2) << std::string("image[@minsize=5x5@handle=view-")+str(i)+"@label=cam: "+names[i]+"|info:"+infos[i]+"|]";
   }
   gui << g1 << g2;
   gui.show();
@@ -35,6 +35,8 @@ void run(){
 }
 
 int main(int n, char **ppc){
+  ExecThread x(run);
+  
   pa_explain("-1","defines the first cameras parameter e.g. -1 dc 0\n"
              "uses the first dc device found on the bus\n"
              "currently supported (pwc,dc,file,demo,unicap)");
@@ -80,7 +82,7 @@ int main(int n, char **ppc){
   
   init_gui();
   
-  exec_threaded(run);
+  x.run();
   
   app.exec();
 }

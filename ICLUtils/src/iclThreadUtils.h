@@ -4,9 +4,97 @@
 #include <stdlib.h>
 #include "iclThread.h"
 #include "iclMutex.h"
+#include "iclUncopyable.h"
+#include "iclException.h"
 #include <vector>
 
 namespace icl{
+  
+  /** \cond */
+  struct ExecThreadImpl;
+  /** \endcond */
+  
+  /// Threading Util
+  /** <b>Please notice:</b> ExecThread instances should be created as first stack-object.
+      By this means, C++ ensures, that the execution is stopped safely before any other
+      data is released (the stack is released in top-down order)
+      
+      This is the replacement class for the former
+
+      exec_threaded function: 
+      
+      exec_threaded caused a lot of problems because its internal threads could not be
+      stopped safely. 
+      
+      Use an exec Thread as follows:
+      
+      <code>
+      void run{
+         // threaded function ...
+      }
+      
+      int main(int n, char **ppc){
+         ExecThread x(run); // alway on the top of the stack
+         pa_init(...);
+         QApplication app(n,ppc);
+         
+         x.run();
+      
+         return app.exec();      
+      }
+      </code>
+      
+      \section AD Additional information
+      Please note, that the given callback function is already executed in a loop
+      by default. If you use some infinite loop in your passed callback function,
+      the ExecThread's destructor might not be able to 'join' the underlying thread.
+      Hence if your callback function looks like this:
+      <code>
+      void run(){
+         int x = 43;
+         float foo = 8
+         while(true){
+            bar();
+            blub();
+         }
+      }
+      </code>
+      
+      you have to add at least a 'Thread::usleep(0)' call to your infinite loop. If your run-
+      callback is only used once at runtime, you can also use the static keyword for initializations
+      (x and foo in the example above) and remove the while(true)-statement:
+       <code>
+      void run(){
+         static int x = 43;
+         static float foo = 8
+
+         bar();
+         blub();
+      }
+      </code>
+      
+  */
+  struct ExecThread : public Uncopyable{
+    
+    /// callback structure
+    typedef void (*callback)(void);
+    
+    /// Create a new instance with up to 6 callback functions
+    /** functions a-f are called successively. If all functions are NULL, an exception is thrown */
+    ExecThread(callback a, callback b=0, callback c=0, callback d=0, callback e=0, callback f=0)
+    throw (ICLException);
+    
+    /// Destructor stops threaded execution
+    ~ExecThread();
+    
+    /// This function must be called to start threaded execution
+    void run(bool looped=true);
+
+    private:
+    /// Internal representation of data and threading tools 
+    ExecThreadImpl *impl;
+  };
+
 
   /** \cond */
   
@@ -101,6 +189,7 @@ namespace icl{
       */
   template<class Callback>
   static void exec_threaded(Callback cb,bool loop=true, int sleepMsecs=0){
+    ERROR_LOG("Please note that exec_threaded is deprecated-> use an instance of ExecThread instead (package ICLUtils)");
     static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
 
     cbt->setSleepTime(sleepMsecs);
@@ -115,6 +204,7 @@ namespace icl{
 
   template<class Callback>
   static void exec_threaded_A(Callback cb,bool loop=true, int sleepMsecs=0){
+    ERROR_LOG("Please note that exec_threaded is deprecated-> use an instance of ExecThread instead (package ICLUtils)");
     static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
     cbt->setSleepTime(sleepMsecs);
     cbt->add(cb);
@@ -128,6 +218,7 @@ namespace icl{
   }
   template<class Callback>
   static void exec_threaded_B(Callback cb,bool loop=true, int sleepMsecs=0){
+    ERROR_LOG("Please note that exec_threaded is deprecated-> use an instance of ExecThread instead (package ICLUtils)");
     static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
     cbt->setSleepTime(sleepMsecs);
     cbt->add(cb);
@@ -140,6 +231,7 @@ namespace icl{
   }
   template<class Callback>
   static void exec_threaded_C(Callback cb,bool loop=true, int sleepMsecs=0){
+    ERROR_LOG("Please note that exec_threaded is deprecated-> use an instance of ExecThread instead (package ICLUtils)");
     static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
     cbt->setSleepTime(sleepMsecs);
     cbt->add(cb);
@@ -152,6 +244,7 @@ namespace icl{
   }
   template<class Callback>
   static void exec_threaded_D(Callback cb,bool loop=true, int sleepMsecs=0){
+    ERROR_LOG("Please note that exec_threaded is deprecated-> use an instance of ExecThread instead (package ICLUtils)");
     static CallbackThread<Callback> *cbt = new CallbackThread<Callback>(sleepMsecs,loop);
     cbt->setSleepTime(sleepMsecs);
     cbt->add(cb);

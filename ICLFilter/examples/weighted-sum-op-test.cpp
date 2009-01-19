@@ -28,7 +28,5 @@ int main() {
   for(int i=0;i<100;i++){
     apply_weighted_sum(wo,src,ppoDst);
   }
-  
-  //TestImages::xv(dst,".testimage.pgm");
   return 0;
 }

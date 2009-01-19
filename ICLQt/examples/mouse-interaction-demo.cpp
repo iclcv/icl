@@ -1,32 +1,8 @@
-#include <iclWidget.h>
-#include <iclImg.h>
-#include <iclPWCGrabber.h>
-#include <QApplication>
-#include <QThread>
-#include <QGridLayout>
-#include <QPushButton>
+#include <iclCommon.h>
 #include <iclTimer.h>
 
-
-using namespace icl;
-
-class MyThread : public QThread{
-public:
-  MyThread(){
-    widget = new ICLWidget(0);
-    widget->setGeometry(200,200,640,480);
-    widget->show();
-    grabber = new PWCGrabber(Size(640,480));
-  }
-  virtual void run(){
-    while(1){
-      widget->setImage(grabber->grab());
-      widget->update();
-    }
-  }
-  PWCGrabber *grabber;
-  ICLWidget *widget;
-};
+GenericGrabber *grabber;
+ICLWidget *widget;
 
 
 class Receiver : public MouseInteractionReceiver{
@@ -59,17 +35,28 @@ public:
         break;
     }
   } 
-};
+} r;
 
-int main(int nArgs, char **ppcArg){
-  QApplication a(nArgs,ppcArg);
-  
-  MyThread x;
-  Receiver r;                                   
-  
-  QObject::connect(x.widget,SIGNAL(mouseEvent(MouseInteractionInfo*)),
-                   &r,SLOT(mouseInteraction(MouseInteractionInfo*)));
+void init(){
+  widget = new ICLWidget(0);
+  widget->setGeometry(200,200,640,480);
+  widget->show();
+  grabber = new GenericGrabber;
+  widget->add(&r);
+}  
+void run(){
+  widget->setImage(grabber->grab());
+  widget->update();
+}
 
-  x.start();
+
+
+int main(int n, char **ppc){
+  ExecThread x(run);
+  QApplication a(n,ppc);
+  
+  init();
+
+  x.run();
   return a.exec();
 }

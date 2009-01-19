@@ -84,6 +84,10 @@ namespace icl{
     /// at the end of the stop function, this function is called
     virtual void finalize(){}
 
+    
+    /// just calling usleep
+    static void usleep(unsigned int usec);
+        
     /// sets the current thread to sleep for some milli-seconds
     /** @param msecs time in msecs to sleep **/
     static void msleep(unsigned int msecs);

@@ -24,12 +24,13 @@
 #endif
 
 #include <iclDemoGrabber.h>
+#include <iclException.h>
 
 
 namespace icl{
   GenericGrabber::GenericGrabber(const std::string &desiredAPIOrder, 
                                  const std::string &params, 
-                                 bool notifyErrors){
+                                 bool notifyErrors) throw(ICLException){
 
     m_poGrabber = 0;
     std::vector<std::string> lP = tok(params,",");
@@ -61,6 +62,10 @@ namespace icl{
 
     }
 
+    std::string errStr;
+#define ADD_ERR(X,A) errStr += errStr.size() ? std::string(",") : ""; \
+                     errStr += std::string(#X)+"("+A+")" 
+
     std::vector<std::string> l = tok(desiredAPIOrder,",");
     
     for(unsigned int i=0;i<l.size();++i){
@@ -68,11 +73,12 @@ namespace icl{
 #ifdef HAVE_VIDEODEV
       if(l[i] == "pwc"){
         PWCGrabber *pwc = new PWCGrabber;
-        if(pwc->init(Size(640,480),24,to32s(pPWC))){
+        if(pwc->init(Size(640,480),24,to32s(pPWC),true)){
           m_poGrabber = pwc;
           m_sType = "pwc";
           break;
         }else{
+          ADD_ERR(pwc,pPWC);
           delete pwc;
           continue;
         }
@@ -87,6 +93,11 @@ namespace icl{
         //printf("index is %d devs size is %d \n",idx,devs.size());
         if(idx < 0) idx = 0;
         if(idx >= (int)devs.size()){
+          if(l[i]=="dc"){
+            ADD_ERR(dc,pDC);
+          }else{
+            ADD_ERR(dc800,pDC800);
+          }
           continue;
         }else{
           m_poGrabber = new DCGrabber(devs[idx], l[i]=="dc"?400:800);
@@ -100,6 +111,7 @@ namespace icl{
       if(l[i] == "unicap"){
         static std::vector<UnicapDevice> devs = UnicapGrabber::getDeviceList(pUnicap);
         if(!devs.size()){
+          ADD_ERR(unicap,pUnicap);
           continue;
         }else{
           m_poGrabber = new UnicapGrabber(devs[0]);
@@ -119,7 +131,7 @@ namespace icl{
             }catch(...){
               if(notifyErrors){
                 m_poGrabber = 0;
-                ERROR_LOG("unable to create XCFServerGrabber("<<pXCF_S<<")");
+                ADD_ERR(xcf-server,pXCF_S);
               }
             }
             break;
@@ -129,7 +141,7 @@ namespace icl{
             }catch(...){
               if(notifyErrors){
                 m_poGrabber = 0;
-                ERROR_LOG("unable to create XCFPublisherGrabber("<<pXCF_P<<")");
+                ADD_ERR(xcf-publisher,pXCF_P);
               }
             }
             break;
@@ -139,7 +151,7 @@ namespace icl{
             }catch(...){
               if(notifyErrors){
                 m_poGrabber = 0;
-                ERROR_LOG("unable to create XCFMemoryGrabber("<<pXCF_M<<")");
+                ADD_ERR(xcf-memory,pXCF_M);
               }
             }
             break;
@@ -156,12 +168,17 @@ namespace icl{
 #endif
       
       if(l[i] == "file"){
-        if(FileList(pFile).size()){
-          m_poGrabber = new FileGrabber(pFile);
-          ((FileGrabber*)m_poGrabber)->setIgnoreDesiredParams(false);
-          m_sType = "file";
-          break;
-        }else{
+        try{
+          if(FileList(pFile).size()){
+            m_poGrabber = new FileGrabber(pFile);
+            ((FileGrabber*)m_poGrabber)->setIgnoreDesiredParams(false);
+            break;
+          }else{
+            ADD_ERR(file,pFile);
+            continue;
+          }
+        }catch(icl::FileNotFoundException &ex){
+          ADD_ERR(file,pFile);
           continue;
         }
       }
@@ -171,7 +188,8 @@ namespace icl{
       }
     }
     if(!m_poGrabber && notifyErrors){
-      ERROR_LOG("Generic Grabber was not able to find any suitable device!");
+      std::string errMsg("generic grabber was not able to find anny suitable device\ntried:");
+      throw ICLException(errMsg+errStr);
     }
   }  
   

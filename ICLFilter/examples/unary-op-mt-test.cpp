@@ -11,6 +11,7 @@ int main(int n, char **ppc){
   
   ImgBase *dst = 0;
 
+  ERROR_LOG("multi-threaded filtering does not work correctly yet!");
   // UnaryArithmeticalOp op(UnaryArithmeticalOp::addOp, 100);
   //  ConvolutionOp op(ConvolutionOp::kernelSobelX5x5);
   //LocalThresholdOp op(30,0,0);
@@ -21,13 +22,12 @@ int main(int n, char **ppc){
   int nt = pa_subarg<int>("-n",0,1);
   printf("applying with %d threads \n",nt);
   tic();
-  for(int i=0;i<10000;i++){
+  for(int i=0;i<1000;i++){
     op.applyMT(&image,&dst,nt);
   }
   toc();
   
-  save(cvt(dst),"image.ppm");
-  //show(cvt(dst));
+  show(cvt(dst));
   return 0;
 }
 

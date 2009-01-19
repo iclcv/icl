@@ -1,9 +1,7 @@
 #include <iclThresholdOp.h>
 #include <iclImg.h>
-#include <iclTestImages.h>
 #include <iclTimer.h>
-
-using namespace icl;
+#include <iclCommon.h>
 
 static const char *apc[38]={ // 40 x 38
   ".................................###....",
@@ -138,7 +136,7 @@ int main(){
   t2->convertROI(&t);
 
   printf("showing results\n");
-  TestImages::xv(&t,"threshold_results.pgm");
+  show(cvt(t));
 
   printf("Original colors are [0,100,200,255]\n");
   printf("Image order is: \n");

@@ -33,6 +33,7 @@ void run(){
 }
 
 int main(int n, char **ppc){
+  ExecThread x(run);
   QApplication app(n,ppc);
   
   gui = GUI("hbox");
@@ -51,7 +52,7 @@ int main(int n, char **ppc){
 
   gui.show();
 
-  exec_threaded(run);
+  x.run();
   
   return app.exec();
 }

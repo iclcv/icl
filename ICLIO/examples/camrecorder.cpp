@@ -93,6 +93,8 @@ void loop(){
 
 
 int main(int n, char **ppc){
+  ExecThread x(loop);
+
   QApplication app(n,ppc);
   pa_explain("-size","image size");
   
@@ -101,7 +103,7 @@ int main(int n, char **ppc){
   
   init();
 
-  exec_threaded(loop);  
+  x.run();
   
   return app.exec();
 }

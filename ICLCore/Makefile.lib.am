@@ -40,8 +40,8 @@ include_HEADERS= \
 ../src/iclSize.h \
 ../src/iclSteppingRange.h \
 ../src/iclStringUtils.h \
-../src/iclTypes.h
-
+../src/iclTypes.h \
+../src/iclRandom.h
 
 libICLCore_la_CXXFLAGS=${AM_CXXFLAGS} \
 	-I../../ICLUtils/src

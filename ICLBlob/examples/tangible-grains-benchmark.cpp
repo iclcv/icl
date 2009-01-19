@@ -1,20 +1,20 @@
-#include <iclQuick.h>
 #include <iclPositionTracker.h>
-#include <iclThread.h>
-#include <iclGUI.h>
-
 #include <iclFPSEstimator.h>
-#include <iclStringUtils.h>
 #include <iclRegionDetector.h>
-#include <iclDCGrabber.h>
 #include <iclCommon.h>
+
 typedef std::vector<int> vec;
 
 GUI gui("vbox");
+Mutex datamutex;
+vec DATA;
+Mutex drawhandlemutex;
+static DrawHandle *dh;
+GenericGrabber *grabber = 0;
+
 
 static inline vec getCenters(const Img8u &image, Img8u *dstRet){
   static RegionDetector rd;
-  //static int &threshold= gui.getValue<int>("threshold-val");
   rd.setRestrictions(10,10000,1,255);
   
   static Img8u dst(image.getSize(),formatGray);
@@ -49,115 +49,86 @@ static inline vec getCenters(const Img8u &image, Img8u *dstRet){
   return v;
 }
 
-Mutex datamutex;
-vec DATA;
-
-Mutex drawhandlemutex;
-static DrawHandle *dh;
-
-class WorkThreadA : public Thread{
-public:
-  WorkThreadA(){
-    vector<DCDevice> devs = DCGrabber::getDeviceList();
-    if(!devs.size()){
-      ERROR_LOG("no device found");
-      ::exit(-1);
-    }
-    grabber = new DCGrabber(devs[0]);
-    grabber->setDesiredSize(Size(640,480));
-    //grabber->setDesiredFormat(formatGray);
-    gui << "draw[@handle=image@minsize=32x24]" << "image[@handle=cam-image@minsize=32x24]";
-    gui << ( GUI("hbox[@maxsize=100x3]") 
-             << "slider(0,255,200)[@label=threshold@handle=threshold-h@out=threshold-val]"
-             << "slider(0,100,10)[@handle=Hsl@out=Vsl@label=sleeptime]"
-             << "togglebutton(!off,on)[@out=Vlo@label=Show labels]"
+void init_gui_and_grabber(){
+  grabber = new GenericGrabber(FROM_PROGARG("-input"));
+  grabber->setDesiredSize(Size(640,480));
+  gui << ( GUI("hbox") << "draw[@handle=image@minsize=32x24]" << "image[@handle=cam-image@minsize=32x24]" );
+  gui << ( GUI("hbox[@maxsize=100x3]") 
+           << "slider(0,255,200)[@label=threshold@handle=threshold-h@out=threshold-val]"
+           << "slider(0,100,10)[@handle=Hsl@out=Vsl@label=sleeptime]"
+           << "togglebutton(!off,on)[@out=Vlo@label=Show labels]"
            );
-    gui.show();
-    dh = &gui.getValue<DrawHandle>("image");
-  }
-  virtual void run(){
-
-    while(1){
-      static Img8u dst;
-      //static LabelHandle &l = gui.getValue<LabelHandle>("l1");
-      //static FPSEstimator fps(10);
-      //l = fps.getFpsString();
+  gui.show();
+  dh = &gui.getValue<DrawHandle>("image");
+}
 
 
-      const ImgBase *image = grabber->grab();
+void run_thread_1(){
+  static Img8u dst;
+  const ImgBase *image = grabber->grab();
+  
+  ICLWidget *w = *gui.getValue<ImageHandle>("cam-image");
+  w->setImage(image);
+  w->update();
+  
+  
+  vec v = getCenters(*(image->asImg<icl8u>()),&dst);
+  
+  datamutex.lock();
+  DATA = v;
+  datamutex.unlock();
+  
+  drawhandlemutex.lock();
+  (*dh) = &dst;
+  drawhandlemutex.unlock();
+  
+  static int &sleepTime = gui.getValue<int>("Vsl");
+  Thread::msleep(sleepTime);
+}
 
-      ICLWidget *w = *gui.getValue<ImageHandle>("cam-image");
-      w->setImage(image);
-      w->update();
+void run_thread_2(){
+  static PositionTracker<int> pt;
 
-
-      vec v = getCenters(*(image->asImg<icl8u>()),&dst);
-
-      datamutex.lock();
-      DATA = v;
-      datamutex.unlock();
-
-      drawhandlemutex.lock();
-      (*dh) = &dst;
-      //      static LabelHandle &lN = gui.getValue<LabelHandle>("l3");
-      //lN = (int)v.size();
-      drawhandlemutex.unlock();
-
-      static int &sleepTime = gui.getValue<int>("Vsl");
-      msleep(sleepTime);
-    }
-  }
-private:
-  DCGrabber *grabber;
-};
-
-class WorkThreadB : public Thread{
-public:
-  virtual void run(){
-    PositionTracker<int> pt;
-    while(1){
-      //   static LabelHandle &l = gui.getValue<LabelHandle>("l2");
-      //static FPSEstimator fps(10);
-      //l = fps.getFpsString();
-
-      datamutex.lock();
-      vec v = DATA;
-      datamutex.unlock();
-
-      drawhandlemutex.lock();
-      ICLDrawWidget *w = **dh;
-      w->lock();       
-      w->reset();
-      if(v.size()){
-        pt.pushData(v.data(),v.size()/2);
-
-        w->color(255,0,0);
-        for(unsigned int i=0;i<v.size();i+=2){
-          w->sym(v[i],v[i+1],ICLDrawWidget::symCross);
-          static bool &labelsOnFlag = gui.getValue<bool>("Vlo");
-          if(labelsOnFlag){
-            static char buf[100];
-            w->text(toStr(pt.getID(i/2),buf),v[i],v[i+1],10);
-          }
-        }
+  datamutex.lock();
+  vec v = DATA;
+  datamutex.unlock();
+  
+  drawhandlemutex.lock();
+  ICLDrawWidget *w = **dh;
+  w->lock();       
+  w->reset();
+  if(v.size()){
+    pt.pushData(v.data(),v.size()/2);
+    
+    w->color(255,0,0);
+    for(unsigned int i=0;i<v.size();i+=2){
+      w->sym(v[i],v[i+1],ICLDrawWidget::symCross);
+      static bool &labelsOnFlag = gui.getValue<bool>("Vlo");
+      if(labelsOnFlag){
+        static char buf[100];
+        w->text(toStr(pt.getID(i/2),buf),v[i],v[i+1],10);
       }
-      w->unlock();
-      drawhandlemutex.unlock();
-      w->update();
-
-      static int &sleepTime = gui.getValue<int>("Vsl");
-      msleep(sleepTime);
     }
   }
-};
+  w->unlock();
+  drawhandlemutex.unlock();
+  w->update();
+  
+  static int &sleepTime = gui.getValue<int>("Vsl");
+  Thread::msleep(sleepTime);
+}
+
 
 
 int main(int n, char  **ppc){
+  ExecThread a(run_thread_1),b(run_thread_2);
+  
   QApplication app(n,ppc);
-  WorkThreadA a;
-  WorkThreadB b;
-  a.start();
-  b.start();
+  pa_init(n,ppc,"-input(2)");
+  init_gui_and_grabber();
+  
+  a.run();
+  b.run();
   
   return app.exec();
 }

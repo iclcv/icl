@@ -2,12 +2,24 @@ XLDFLAGS= ${LDFLAGS} \
 	-L../../ICLUtils/lib/ -lICLUtils \
 	-L../../ICLCore/lib/ -lICLCore \
 	-L../../ICLCC/lib/ -lICLCC \
-	-L../../ICLIO/lib -lICLIO
+	-L../../ICLQuick/lib/ -lICLQuick \
+	-L../../ICLIO/lib -lICLIO \
+	-L../../ICLFilter/lib -lICLFilter \
+	-L../../ICLBlob/lib -lICLBlob
+
 XCXXFLAGS= ${CXXFLAGS} \
 	-I../../ICLUtils/src \
 	-I../../ICLCore/src \
 	-I../../ICLCC/src \
-	-I../../ICLIO/src
+	-I../../ICLQuick/src \
+	-I../../ICLIO/src \
+	-I../../ICLFilter/src \
+	-I../../ICLBlob/src
+
+if HAVE_QT_COND
+XLDFLAGS+=-L../../ICLQt/lib/ -lICLQt
+XCXXFLAGS+=-I../../ICLQt/src
+endif
 
 #################################################################################
 ## Applications that depend on noting ###########################################

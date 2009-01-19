@@ -53,74 +53,78 @@ ConvolutionKernel::fixedType get_kernel(const std::string &name){
 }
 
 void run(){
-  DrawHandle src = gui.getValue<DrawHandle>("src");
-  DrawHandle dst = gui.getValue<DrawHandle>("dst");
+  static DrawHandle src = gui.getValue<DrawHandle>("src");
+  static DrawHandle dst = gui.getValue<DrawHandle>("dst");
 
-  ComboHandle srcSize = gui.getValue<ComboHandle>("src-size");
-  ComboHandle srcDepth = gui.getValue<ComboHandle>("src-depth");
-  ComboHandle srcROI = gui.getValue<ComboHandle>("src-roi");
-  ComboHandle kernel = gui.getValue<ComboHandle>("kernel-type");
+  static ComboHandle srcSize = gui.getValue<ComboHandle>("src-size");
+  static ComboHandle srcDepth = gui.getValue<ComboHandle>("src-depth");
+  static ComboHandle srcROI = gui.getValue<ComboHandle>("src-roi");
+  static ComboHandle kernel = gui.getValue<ComboHandle>("kernel-type");
   
-  bool &forceUnsigned = gui.getValue<bool>("force-unsigned");
-  bool &clipToROI = gui.getValue<bool>("clip-to-roi");
+  static bool &forceUnsigned = gui.getValue<bool>("force-unsigned");
+  static bool &clipToROI = gui.getValue<bool>("clip-to-roi");
 
-  FPSHandle fps = gui.getValue<FPSHandle>("fps");
-  LabelHandle applyTime = gui.getValue<LabelHandle>("apply-time");
+  static FPSHandle fps = gui.getValue<FPSHandle>("fps");
+  static LabelHandle applyTime = gui.getValue<LabelHandle>("apply-time");
   
-  GenericGrabber grabber(FROM_PROGARG("-input"));  
+  static GenericGrabber grabber(FROM_PROGARG("-input"));  
   grabber.setIgnoreDesiredParams(false);
 
-  ImgBase *dstImage = 0;
-  while(true){
-    grabber.setDesiredSize(translateSize(srcSize.getSelectedItem()));
-    grabber.setDesiredDepth(translateDepth(srcDepth.getSelectedItem()));
-    
-    const ImgBase *grabbedImage = grabber.grab();
-    Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage->getImageRect());
-    const ImgBase *roiedImage = grabbedImage->shallowCopy(roi);
-    
-    ConvolutionOp conv(ConvolutionKernel(get_kernel(kernel.getSelectedItem())),forceUnsigned);
-    conv.setClipToROI(clipToROI);
-    
-    Time t = Time::now();
-    conv.apply(roiedImage,&dstImage);
-    applyTime = (Time::now()-t).toStringFormated("%Ss %#ms %-us");
-    ostringstream sstr; sstr << *dstImage;
-    
-    src = roiedImage;
-    (*src)->lock();
-    (*src)->reset();
-    (*src)->color(255,0,0,255);
-    (*src)->fill(0,0,0,0);
-    (*src)->rect(roi.enlarged(-1));
-    (*src)->unlock();
-    
-    dst = dstImage;
-    
-    (*dst)->lock();
-    (*dst)->reset();
-    (*dst)->color(255,0,0,255);
-    (*dst)->text(sstr.str(),10,10,-1,-1,7);
-    (*dst)->unlock();
-    
-    
-    src.update();
-    dst.update();
-    fps.update();
-    
-    delete roiedImage;
-    
-  }
+  static ImgBase *dstImage = 0;
+
+
+  
+  grabber.setDesiredSize(translateSize(srcSize.getSelectedItem()));
+  grabber.setDesiredDepth(translateDepth(srcDepth.getSelectedItem()));
+  
+  const ImgBase *grabbedImage = grabber.grab();
+  Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage->getImageRect());
+  const ImgBase *roiedImage = grabbedImage->shallowCopy(roi);
+  
+  ConvolutionOp conv(ConvolutionKernel(get_kernel(kernel.getSelectedItem())),forceUnsigned);
+  conv.setClipToROI(clipToROI);
+  
+  Time t = Time::now();
+  conv.apply(roiedImage,&dstImage);
+  applyTime = (Time::now()-t).toStringFormated("%Ss %#ms %-us");
+  ostringstream sstr; sstr << *dstImage;
+  
+  src = roiedImage;
+  (*src)->lock();
+  (*src)->reset();
+  (*src)->color(255,0,0,255);
+  (*src)->fill(0,0,0,0);
+  (*src)->rect(roi.enlarged(-1));
+  (*src)->unlock();
+  
+  dst = dstImage;
+  
+  (*dst)->lock();
+  (*dst)->reset();
+  (*dst)->color(255,0,0,255);
+  (*dst)->text(sstr.str(),10,10,-1,-1,7);
+  (*dst)->unlock();
+  
+  
+  src.update();
+  dst.update();
+  fps.update();
+  
+  delete roiedImage;
+  //Thread::msleep(1);
+  //usleep(0);
+
 }
 
 int main(int n, char **ppc){
+  ExecThread x(run);
   pa_init(n,ppc,"-input(2)");
 
   QApplication app(n,ppc);
   
   init();
 
-  exec_threaded(run);
+  x.run();
   
   return app.exec();
 

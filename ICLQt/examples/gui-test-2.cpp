@@ -24,6 +24,7 @@ void run(){
 }
 
 int main(int n, char **ppc){
+  ExecThread x(run);
   QApplication app(n,ppc);
   
   gui = GUI("tab(a,b,c,d,e,f)[@handle=tab]");
@@ -58,7 +59,7 @@ int main(int n, char **ppc){
   gui.getValue<TabHandle>("tab").insert(2,new ICLWidget,"ext. 1");
   gui.getValue<TabHandle>("tab").add(new QProgressBar,"ext. 2");
 
-  exec_threaded(run);
+  x.run();
   
   return app.exec();
 }

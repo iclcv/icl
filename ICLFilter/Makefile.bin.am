@@ -29,10 +29,7 @@ bin_PROGRAMS= \
 icl-arithmetical-op-test \
 icl-champfer-op-test \
 icl-inplace-op-test \
-icl-logical-op-test \
 icl-median-op-test \
-icl-morphological-op-test \
-icl-proximity-op-test \
 icl-threshold-op-test \
 icl-unary-op-mt-test \
 icl-weight-channels-op-test \
@@ -58,21 +55,9 @@ icl_convolution_op_test_SOURCES=../examples/convolution-op-test.cpp
 icl_convolution_op_test_LDFLAGS=${XLDFLAGS}
 icl_convolution_op_test_CXXFLAGS=${XCXXFLAGS}
 
-icl_logical_op_test_SOURCES=../examples/logical-op-test.cpp
-icl_logical_op_test_LDFLAGS=${XLDFLAGS}
-icl_logical_op_test_CXXFLAGS=${XCXXFLAGS}
-
 icl_median_op_test_SOURCES=../examples/median-op-test.cpp
 icl_median_op_test_LDFLAGS=${XLDFLAGS}
 icl_median_op_test_CXXFLAGS=${XCXXFLAGS}
-
-icl_morphological_op_test_SOURCES=../examples/morphological-op-test.cpp
-icl_morphological_op_test_LDFLAGS=${XLDFLAGS}
-icl_morphological_op_test_CXXFLAGS=${XCXXFLAGS}
-
-icl_proximity_op_test_SOURCES=../examples/proximity-op-test.cpp
-icl_proximity_op_test_LDFLAGS=${XLDFLAGS}
-icl_proximity_op_test_CXXFLAGS=${XCXXFLAGS}
 
 icl_threshold_op_test_SOURCES=../examples/threshold-op-test.cpp
 icl_threshold_op_test_LDFLAGS=${XLDFLAGS}
@@ -96,7 +81,9 @@ if HAVE_IPP_COND
 bin_PROGRAMS+= \
 icl-canny-op-test \
 icl-canny-op-test-2 \
-icl-wiener-op-test
+icl-wiener-op-test \
+icl-morphological-op-test
+
 
 icl_canny_op_test_SOURCES=../examples/canny-op-test.cpp
 icl_canny_op_test_LDFLAGS=${XLDFLAGS}
@@ -109,6 +96,10 @@ icl_canny_op_test_2_CXXFLAGS=${XCXXFLAGS}
 icl_wiener_op_test_SOURCES=../examples/wiener-op-test.cpp
 icl_wiener_op_test_LDFLAGS=${XLDFLAGS}
 icl_wiener_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_morphological_op_test_SOURCES=../examples/morphological-op-test.cpp
+icl_morphological_op_test_LDFLAGS=${XLDFLAGS}
+icl_morphological_op_test_CXXFLAGS=${XCXXFLAGS}
 
 endif
 

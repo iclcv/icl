@@ -1,15 +1,10 @@
 #include <iclQuick.h>
 #include <iclMorphologicalOp.h>
 
-#ifdef WITH_IPP_OPTIMIZATION
-
-#include <ippi.h>
 int main(){
   Img8u image = cvt8u(thresh(gray(scale(create("parrot"),280,400)),128));
   Img8u imageG = cvt8u(gray(scale(create("parrot"),280,400)));
   Img8u imageC = cvt8u(scale(create("parrot"),280,400));
-  
-  
   
   MorphologicalOp::optype ts[11]={ 
     MorphologicalOp::dilate,
@@ -83,10 +78,5 @@ int main(){
   show( (result1%X%result2) );
   show( (result1G%X%result2G) );
   show( (result1C%X%result2C) );
-  
-  
-
 }
-#else
-int main(){}
-#endif
+

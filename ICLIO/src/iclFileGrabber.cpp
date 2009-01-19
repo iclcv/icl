@@ -86,7 +86,7 @@ namespace icl{
   
   FileGrabber::FileGrabber():m_iCurrIdx(0){}
   
-  FileGrabber::FileGrabber(const std::string &pattern, bool buffer, bool ignoreDesired):
+  FileGrabber::FileGrabber(const std::string &pattern, bool buffer, bool ignoreDesired) throw(FileNotFoundException):
     // {{{ open
 
     m_oFileList(pattern),
@@ -94,7 +94,10 @@ namespace icl{
     m_bBufferImages(false),
     m_poBufferImage(0){
     
-    ICLASSERT_RETURN(!m_oFileList.isNull());
+    if(!m_oFileList.size()){
+      throw FileNotFoundException(pattern);
+    }
+
 
     setIgnoreDesiredParams(ignoreDesired);
     
@@ -145,7 +148,7 @@ namespace icl{
       m_vecImageBuffer = buf;
       m_oFileList = FileList(correctNames);
       if(!buf.size()){
-        throw ICLException("FileGrabber got a file list without any valid entry");
+        throw FileNotFoundException("...");
       }
     }
     m_bBufferImages = true;
