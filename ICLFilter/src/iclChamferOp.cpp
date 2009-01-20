@@ -52,10 +52,11 @@ namespace icl{
         }
 
       }else{
-        ConstImgIterator<T> src = poSrc->getROIIterator(channel);
-        ImgIterator<icl32s> dst = poDst->getROIIterator(channel);
+        const ImgIterator<T> src = poSrc->beginROI(channel);
+        const ImgIterator<T> srcEnd = poSrc->endROI(channel);
+        ImgIterator<icl32s> dst = poDst->beginROI(channel);
         
-        for(;src.inRegion();++src,++dst){
+        for(;src != srcEnd ;++src,++dst){
           *dst = *src ? 0 : maxVal;
         }
       }

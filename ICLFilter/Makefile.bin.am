@@ -79,19 +79,13 @@ icl_weighted_sum_op_test_CXXFLAGS=${XCXXFLAGS}
 if HAVE_IPP_COND
 
 bin_PROGRAMS+= \
-icl-canny-op-test \
-icl-canny-op-test-2 \
+icl-interactive-canny-demo \
 icl-wiener-op-test \
 icl-morphological-op-test
 
-
-icl_canny_op_test_SOURCES=../examples/canny-op-test.cpp
-icl_canny_op_test_LDFLAGS=${XLDFLAGS}
-icl_canny_op_test_CXXFLAGS=${XCXXFLAGS}
-
-icl_canny_op_test_2_SOURCES=../examples/canny-op-test-2.cpp
-icl_canny_op_test_2_LDFLAGS=${XLDFLAGS}
-icl_canny_op_test_2_CXXFLAGS=${XCXXFLAGS}
+icl_interactive_canny_demo_SOURCES=../examples/interactive-canny-demo.cpp
+icl_interactive_canny_demo_LDFLAGS=${XLDFLAGS}
+icl_interactive_canny_demo_CXXFLAGS=${XCXXFLAGS}
 
 icl_wiener_op_test_SOURCES=../examples/wiener-op-test.cpp
 icl_wiener_op_test_LDFLAGS=${XLDFLAGS}

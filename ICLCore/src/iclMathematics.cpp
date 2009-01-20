@@ -2,95 +2,23 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <numeric>
 
 
 using namespace std;
 
 namespace icl{
 
-  // {{{ uniform Random 
-
-  // this anonymous namespace holds utiliy functions, that are used only here
-  namespace { 
-    template<class T>
-    void uniform_image_random(Img<T> *image, const Range<double> &range, bool roiOnly){
-      for(int c=0;c<image->getChannels();++c){
-        ImgIterator<T> it = roiOnly ? image->getROIIterator(c) : image->getIterator(c);
-        while(it.inRegion()){
-          *it++ = clipped_cast<double,T>( random(range.minVal, range.maxVal) );
-        }
-      }
-    } 
-    template<class T>
-    void gaussian_image_random(Img<T> *image,double mean, double var, const Range<double> &range, bool roiOnly){
-      for(int c=0;c<image->getChannels();++c){
-        ImgIterator<T> it = roiOnly ? image->getROIIterator(c) : image->getIterator(c);
-        while(it.inRegion()){
-          *it++ = clipped_cast<double,T>( gaussRandom(mean,var,range) );
-        }
-      }
-    }
-  }
-    
-  void random(ImgBase *poImage, const Range<double> &range, bool roiOnly){
-    ICLASSERT_RETURN( poImage );
-    switch(poImage->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: uniform_image_random(poImage->asImg<icl##D>(),range,roiOnly); break;
-      ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
-    }
-  }
-  
-  // }}}
-
-  // {{{ gaussian random
-
-  void gaussRandom(ImgBase *poImage, double mean, double var, const Range<double> &minAndMax, bool roiOnly){
-    ICLASSERT_RETURN( poImage );
-    switch(poImage->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: gaussian_image_random(poImage->asImg<icl##D>(),mean,var,minAndMax,roiOnly); break;
-      ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
-    }
-  }
-  
-  //--------------------------------------------------------------------------
-  double gaussRandom(double mu, double sigma){
-    static bool haveNextGaussian = false;
-    static double nextGaussian = 0;
-    if(haveNextGaussian){
-      haveNextGaussian = false;
-      return nextGaussian*sigma + mu;
-    } else{
-      double v1(0), v2(0), s(0);
-      do{
-        v1 = 2 * random(1.0)-1;
-        v2 = 2 * random(1.0)-1;
-        s = v1*v1 + v2*v2;
-      }while(s>=1 || s == 0);
-      double fac = sqrt(-2.0*log(s)/s);
-      nextGaussian = v2 * fac;
-      haveNextGaussian = true;
-      return v1 * fac * sigma + mu;
-    }
-  }   
-
-  // }}}
 
   // {{{ mean
 
   namespace{
     template<class T>
     double channel_mean(const Img<T> &image, int channel, bool roiOnly){
-      double sum = 0;
       if(roiOnly && !image.hasFullROI()){
-        ConstImgIterator<T> it = image.getROIIterator(channel);
-        while(it.inRegion()){
-          sum += *it;
-        }
-        return sum/image.getROISize().getDim();
+        return mean(image.beginROI(channel),image.endROI(channel));
       }else{
-        return mean(image.getData(channel),image.getData(channel)+image.getDim());
+        return mean(image.begin(channel),image.end(channel));
       }
     }
 #ifdef HAVE_IPP
@@ -148,15 +76,9 @@ namespace icl{
       register double sum = 0;
       register double d = 0;
       if(roiOnly && !image.hasFullROI()){
-        ConstImgIterator<T> it = image.getROIIterator(channel);
-        while(it.inRegion()){
-          d = *it - mean;
-          sum += d*d;
-          ++it;
-        }
-        return sum/(empiricMean ? iclMax(double(image.getROISize().getDim()-1),double(1)) : image.getROISize().getDim());
+        return variance(image.beginROI(channel),image.endROI(channel),mean,empiricMean);
       }else{
-        return variance(image.getData(channel),image.getData(channel)+image.getDim(),mean,empiricMean);
+        return variance(image.begin(channel),image.end(channel),mean,empiricMean);
       }
     }
     // no IPP function available with given mean
@@ -242,8 +164,9 @@ namespace icl{
     void compute_default_histo_256(const Img<T> &image, int c, vector<int> &h, bool roiOnly){
       ICLASSERT_RETURN(h.size() == 256);
       if(roiOnly && !image.hasFullROI()){
-        ConstImgIterator<T> it = image.getROIIterator(c);
-        for(;it.inRegion();++it){
+        const ImgIterator<T> it = image.beginROI(c);
+        const ImgIterator<T> itEnd = image.endROI(c);
+        for(;it!=itEnd;++it){
           h[clipped_cast<T,icl8u>(*it)]++;
         }
       }else{
@@ -270,8 +193,9 @@ namespace icl{
       unsigned int n = h.size();
 
       if(roiOnly && !image.hasFullROI()){
-        ConstImgIterator<T> it = image.getROIIterator(c);
-        for(;it.inRegion();++it){
+        const ImgIterator<T> it = image.beginROI(c);
+        const ImgIterator<T> itEnd = image.endROI(c);
+        for(;it!=itEnd;++it){
           histo_entry(*it,range.minVal,h,n,r);
         }
       }else{

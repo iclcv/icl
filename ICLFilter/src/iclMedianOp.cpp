@@ -14,10 +14,11 @@ namespace icl {
       typename std::vector<T>::iterator itMedian = oList.begin()+((oMaskSize.width * oMaskSize.height)/2);
       
       for (int c=0;c<src->getChannels();c++){
-        ConstImgIterator<T> s(src->getData(c),src->getWidth(), Rect(roiOffset, dst->getROISize()));
-        ImgIterator<T> d= dst->getROIIterator(c); 
-        for(;s.inRegion();++s,++d){
-          for(ConstImgIterator<T> sR(s,oMaskSize,oAnchor); sR.inRegion(); ++sR, ++itList){
+        const ImgIterator<T> s(const_cast<T*>(src->getData(c)),src->getWidth(), Rect(roiOffset, dst->getROISize()));
+        const ImgIterator<T> sEnd = ImgIterator<T>::create_end_roi_iterator(src,c,Rect(roiOffset, dst->getROISize()));
+        ImgIterator<T> d= dst->beginROI(c); 
+        for(;s != sEnd;++s,++d){
+          for(const ImgIterator<T> sR(s,oMaskSize,oAnchor); sR.inRegionSubROI(); ++sR, ++itList){
             *itList = *sR;
           }
           std::sort(oList.begin(),oList.end());

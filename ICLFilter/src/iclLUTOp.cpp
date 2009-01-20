@@ -70,9 +70,10 @@ namespace icl{
     ICLASSERT_RETURN( lut.size() >= 256 );
     
     for(int c=src->getChannels()-1; c >= 0; --c) {
-      ConstImgIterator<icl8u> itSrc = src->getROIIterator(c);
-      ImgIterator<icl8u> itDst = dst->getROIIterator(c);
-      for(;itSrc.inRegion(); ++itSrc, ++itDst){
+      const ImgIterator<icl8u> itSrc = src->beginROI(c);
+      const ImgIterator<icl8u> itSrcEnd = src->endROI(c);
+      ImgIterator<icl8u> itDst = dst->beginROI(c);
+      for(;itSrc != itSrcEnd ; ++itSrc, ++itDst){
         *itDst = lut[*itSrc];
       }
     }    

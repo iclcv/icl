@@ -606,9 +606,10 @@ namespace icl{
     // {{{ open
     ImgQ res(image.getROISize(),image.getChannels());
     for(int c=0;c<image.getChannels();++c){
-      ConstImgIterator<ICL_QUICK_TYPE> itI = image.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itRes = res.getROIIterator(c);
-      for(;itI.inRegion();++itI,++itRes){
+      const ImgIterator<ICL_QUICK_TYPE> itI = image.beginROI(c);
+      const ImgIterator<ICL_QUICK_TYPE> itIEnd = image.endROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itRes = res.beginROI(c);
+      for(;itI != itIEnd ;++itI,++itRes){
         *itRes = val - (*itI);
       }
     }
@@ -627,9 +628,10 @@ namespace icl{
     // {{{ open
     ImgQ res(image.getROISize(),image.getChannels());
     for(int c=0;c<image.getChannels();++c){
-      ConstImgIterator<ICL_QUICK_TYPE> itI = image.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itRes = res.getROIIterator(c);
-      for(;itI.inRegion();++itI,++itRes){
+      const ImgIterator<ICL_QUICK_TYPE> itI = image.beginROI(c);
+      const ImgIterator<ICL_QUICK_TYPE> itIEnd = image.endROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itRes = res.beginROI(c);
+      for(;itI != itIEnd;++itI,++itRes){
         *itRes = ((*itI) == 0) ? 0 :  val / (*itI);
       }
     }
@@ -726,9 +728,10 @@ namespace icl{
     ImgQ r(image.getROISize(),image.getChannels(),image.getFormat());
     r.setTime(image.getTime());
     for(int c=0;c<image.getChannels();++c){
-      ConstImgIterator<ICL_QUICK_TYPE> itSrc = image.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itDst = r.getIterator(c);
-      for(;itSrc.inRegion();++itSrc,++itDst){
+      const ImgIterator<ICL_QUICK_TYPE> itSrc = image.beginROI(c);
+      const ImgIterator<ICL_QUICK_TYPE> itSrcEnd = image.endROI(c);
+      ImgQ::iterator itDst = r.begin(c);
+      for(;itSrc != itSrcEnd ;++itSrc,++itDst){
         *itDst = *itSrc < threshold ? 0 : 255;
       }
     }    
@@ -808,10 +811,11 @@ namespace icl{
   
     delete res;
     for(int c=0;c<a.getChannels();c++){
-      ImgIterator<ICL_QUICK_TYPE> itA = na.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itB = nb.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itR = r.getROIIterator(c);
-      for(;itA.inRegion();++itA,++itB, ++itR){
+      ImgIterator<ICL_QUICK_TYPE> itA = na.beginROI(c);
+      const ImgIterator<ICL_QUICK_TYPE> itAEnd = na.endROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itB = nb.beginROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itR = r.beginROI(c);
+      for(;itA != itAEnd;++itA,++itB, ++itR){
         *itR = 255*( (*itA>0) || (*itB>0) );
       }
     }
@@ -827,10 +831,11 @@ namespace icl{
     ImgQ r = *res;
     delete res;
     for(int c=0;c<a.getChannels();c++){
-      ImgIterator<ICL_QUICK_TYPE> itA = na.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itB = nb.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itR = r.getROIIterator(c);
-      for(;itA.inRegion();++itA,++itB, ++itR){
+      ImgIterator<ICL_QUICK_TYPE> itA = na.beginROI(c);
+      const ImgIterator<ICL_QUICK_TYPE> itAEnd = na.endROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itB = nb.beginROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itR = r.beginROI(c);
+      for(;itA != itAEnd;++itA,++itB, ++itR){
         *itR = 255* ((*itA>0) && (*itB>0) );
       }
     }
@@ -847,10 +852,11 @@ namespace icl{
     ImgQ r = *res;
     delete res;
     for(int c=0;c<a.getChannels();c++){
-      ImgIterator<ICL_QUICK_TYPE> itA = na.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itB = nb.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itR = r.getROIIterator(c);
-      for(;itA.inRegion();++itA,++itB, ++itR){
+      ImgIterator<ICL_QUICK_TYPE> itA = na.beginROI(c);
+      const ImgIterator<ICL_QUICK_TYPE> itAEnd = na.endROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itB = nb.beginROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itR = r.beginROI(c);
+      for(;itA != itAEnd;++itA,++itB, ++itR){
         T val = clipped_cast<ICL_QUICK_TYPE,T>(*itA) | clipped_cast<ICL_QUICK_TYPE,T>(*itB);
         *itR = clipped_cast<T,ICL_QUICK_TYPE>(val);
       }
@@ -868,10 +874,11 @@ namespace icl{
     ImgQ r = *res;
     delete res;
     for(int c=0;c<a.getChannels();c++){
-      ImgIterator<ICL_QUICK_TYPE> itA = na.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itB = nb.getROIIterator(c);
-      ImgIterator<ICL_QUICK_TYPE> itR = r.getROIIterator(c);
-      for(;itA.inRegion();++itA,++itB, ++itR){
+      ImgIterator<ICL_QUICK_TYPE> itA = na.beginROI(c);
+      const ImgIterator<ICL_QUICK_TYPE> itAEnd = na.endROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itB = nb.beginROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itR = r.beginROI(c);
+      for(;itA != itAEnd;++itA,++itB, ++itR){
         T val = clipped_cast<ICL_QUICK_TYPE,T>(*itA) & clipped_cast<ICL_QUICK_TYPE,T>(*itB);
         *itR = clipped_cast<T,ICL_QUICK_TYPE>(val);
       }

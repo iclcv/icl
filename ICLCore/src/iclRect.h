@@ -210,7 +210,7 @@ namespace icl {
     bool contains(int x, int y) const{
       return this->x<=x && right()>=x && this->y<=y && bottom()>=y;
     }
-    
+
     /// let the rect grow by k pixles into each direction
     /** if k<0 the rect becomes smaller
         E.g. Rect(10,10,90,90).enlarge(10) creates a Rect (0,0,100,100)

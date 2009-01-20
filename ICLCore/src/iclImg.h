@@ -1,5 +1,5 @@
-#ifndef Img_H
-#define Img_H
+#ifndef ICL_IMG_H
+#define ICL_IMG_H
 
 #include <iclImgBase.h>
 #include <iclImgIterator.h>
@@ -11,10 +11,6 @@
 
 namespace icl {
   /// The Img class implements the ImgBase Image interface with type specific functionalities \ingroup IMAGE \ingroup TYPES
-  /**
-      @author Michael Goetting (mgoettin@TechFak.Uni-Bielefeld.de) 
-      @author Christof Elbrechter (celbrech@TechFak.Uni-Bielefeld.de)
-      **/
   template<class Type>
   class Img : public ImgBase
   {
@@ -25,19 +21,19 @@ namespace icl {
    
     /// Private assign operator (internally used)
     /** This must be kept private! Because the assign operator could otherwise be exploited
-        to violate the Img's const concept (Ask Robert Haschke)  
+        to violate the Img's const concept
     **/
     Img<Type>& shallowCopy(const Img<Type>& tSource);
     
     /// private append function for a specified image channel
     /** This must be kept private! Because it could otherwise be exploited
-        to violate the Img's const concept (Ask Robert Haschke)  
+        to violate the Img's const concept
     **/
     void append(const Img<Type> *src, int iChannel=-1);
 
     /// private append function for a specified image channel
     /** This must be kept private! Because it could otherwise be exploited
-        to violate the Img's const concept (Ask Robert Haschke)  
+        to violate the Img's const concept
     **/
     void append(const Img<Type> *src, const std::vector<int>& vChannels);
 
@@ -234,10 +230,12 @@ namespace icl {
     /** @{ @name operators */
     /* {{{ open */
     
+    /// implicit cast to it's own reference (?)
     operator Img<Type>&(){
       return *this;
     }
 
+    /// implicit cast to it's own reference (?) (const)
     operator const Img<Type>&() const {
       return *this;
     }
@@ -299,7 +297,7 @@ namespace icl {
         as it offers a very intuitive access to the pixel data. 
         <b>Note:</b> The also provided ImgIterator provides an 
         additional ROI handling mechanism and is more than 5 times 
-        faster. @see ImgIterator @see getIterator() @see getROIIterator()
+        faster. @see ImgIterator @see getIterator() @see beginROI()
   
         @param iX X-Position of the referenced pixel
         @param iY Y-Position of the referenced pixel
@@ -319,7 +317,7 @@ namespace icl {
     /// sub-pixel access using linear interpolation
     float subPixelLIN(float fX, float fY, int iChannel) const;
   
-    /// sub-pixel access using region average interpolation
+    /// sub-pixel access using region average interpolation (not supported/possible)
     float subPixelRA(float fX, float fY, int iChannel) const;
 
     /// sub-pixel access operator, uses given interpolation method
@@ -791,7 +789,8 @@ namespace icl {
       if(hasFullROI()){
         std::for_each<Type*,UnaryFunction>(getData(channel),getData(channel)+getDim(),f);
       }else{
-        for(ImgIterator<Type> it = getROIIterator(channel); it.inRegion(); it.incRow()){
+        const_roi_iterator end = endROI(channel);
+        for(ImgIterator<Type> it = beginROI(channel); it != end; it.incRow()){
           std::for_each<Type*,UnaryFunction>(&(*it),&(*it)+it.getROIWidth(),f);
         }        
       }
@@ -859,8 +858,9 @@ namespace icl {
       if(hasFullROI() && dst.hasFullROI()){
         std::transform(getData(srcChannel),getData(srcChannel)+getDim(),dst.getData(dstChannel),f);
       }else{
-        ImgIterator<dstType> itDst = dst.getROIIterator(dstChannel);
-        for(ConstImgIterator<Type> it = getROIIterator(srcChannel); it.inRegion(); it.incRow(), itDst.incRow()){
+        ImgIterator<dstType> itDst = dst.beginROI(dstChannel);
+        const_roi_iterator end = endROI(srcChannel);
+        for(const_roi_iterator it = beginROI(srcChannel); it != end; it.incRow(), itDst.incRow()){
           std::transform(&(*it),&(*it)+it.getROIWidth(),&(*itDst),f);
         }        
       }
@@ -956,9 +956,10 @@ namespace icl {
       if(hasFullROI() && dst.hasFullROI() && otherSrc.hasFullROI()){
         std::transform(getData(thisChannel),getData(thisChannel)+getDim(),otherSrc.getData(otherSrcChannel),dst.getData(dstChannel),f);
       }else{
-        ImgIterator<dstType> itDst = dst.getROIIterator(dstChannel);
-        ConstImgIterator<otherSrcType> itOtherSrc = otherSrc.getROIIterator(otherSrcChannel);
-        for(ConstImgIterator<Type> it = getROIIterator(thisChannel); it.inRegion(); it.incRow(), itDst.incRow(),itOtherSrc.incRow()){
+        ImgIterator<dstType> itDst = dst.beginROI(dstChannel);
+        const ImgIterator<otherSrcType> itOtherSrc = otherSrc.beginROI(otherSrcChannel);
+        const_roi_iterator end = endROI(thisChannel);
+        for(const_roi_iterator it = beginROI(thisChannel); it!=end; it.incRow(), itDst.incRow(),itOtherSrc.incRow()){
           std::transform(&(*it),&(*it)+it.getROIWidth(),&(*itOtherSrc),&(*itDst),f);
         }        
       }
@@ -1072,10 +1073,10 @@ namespace icl {
         for(int i=0;i<Ndst;pdst[i]=dst.getData(i),++i) {}
         reduce_arrays<Type,Tdst,Nthis,Ndst,ReduceFunc>(psrc,pdst,this->getDim(),reduce);
       }else{
-        ConstImgIterator<Type> itSrc[Nthis];
+        const_roi_iterator itSrc[Nthis];
         ImgIterator<Tdst> itDst[Ndst];
-        for(int i=0;i<Nthis;itSrc[i]=this->getROIIterator(i),++i) {}
-        for(int i=0;i<Ndst;itDst[i]=dst.getROIIterator(i),++i) {}
+        for(int i=0;i<Nthis;itSrc[i]=this->beginROI(i),++i) {}
+        for(int i=0;i<Ndst;itDst[i]=dst.beginROI(i),++i) {}
         
         for(int l=this->getROI().height-1, w=this->getROI().width ;l>=0;--l){
           for(int i=0;i<Nthis;itSrc[i].incRow(),++i){
@@ -1145,13 +1146,105 @@ namespace icl {
   
     /** @{ @name pixel access using roi iterator */          
     /* {{{ open */
+    
+    /// iterator type (just a data pointer)
+    typedef Type* iterator;
+
+    /// const iterator type (just a const pointer)
+    typedef const Type* const_iterator;
 
     /// type definition for ROI iterator
-    typedef ImgIterator<Type> iterator;
+    typedef ImgIterator<Type> roi_iterator;
 
     /// type definition for a const ROI iterator
-    typedef ConstImgIterator<Type> const_iterator;
+    typedef const ImgIterator<Type> const_roi_iterator;
+    // old    typedef constConstImgIterator<Type> const_iterator;
+    
 
+
+    /// returns the image iterator (equal to getData(channel))
+    iterator begin(int channel){
+      return getData(channel);
+    }
+    
+    /// returns the image iterator (equal to getData(channel)) (const)
+    const_iterator begin(int channel) const{
+      return const_cast<Img<Type>*>(this)->begin(channel);
+    }
+
+    /// returns the image end-iterator (equal to getData(channel)+getDim())
+    iterator end(int channel){
+      return getData(channel)+getDim();
+    }
+
+    /// returns the image end-iterator (const)
+    const_iterator end(int channel) const{
+      return getData(channel)+getDim();
+    }
+
+    /// returns the iterator for an images ROI
+    inline roi_iterator beginROI(int channel){
+      ICLASSERT_RETURN_VAL(validChannel(channel), roi_iterator());
+      return roi_iterator(getData(channel),getWidth(),getROI());
+    } 
+
+    /// returns the iterator for an images ROI (const)
+    inline const_roi_iterator beginROI(int channel) const{
+      ICLASSERT_RETURN_VAL(validChannel(channel), roi_iterator());
+      return const_cast<Img<Type>*>(this)->beginROI(channel);
+    } 
+    
+    /// returns the end-iterator for an images ROI
+    /** the returned iterator must not be incremented or decremented! */
+    inline roi_iterator endROI(int channel) {
+      ICLASSERT_RETURN_VAL(validChannel(channel), roi_iterator());
+      return roi_iterator::create_end_roi_iterator(this,channel,getROI());
+    }
+
+    /// returns the end-iterator for an images ROI (const)
+    inline const_roi_iterator endROI(int channel) const{
+      ICLASSERT_RETURN_VAL(validChannel(channel), roi_iterator());
+      return const_roi_iterator::create_end_roi_iterator(this,channel,getROI());
+    }
+
+    
+    /// returns the x,y-coordinates of a pointer whithin a given channel
+    /** E.g channel c's pointer of image I points to adress p=1005, image width is
+        10 and data depth is 1 (icl-8u image). Then I.getLocation(1006,c) returns
+        Point(1,0) and I.getLocation(1015,c) returns Point(0,1).\n
+        The following rule is always true:
+        <code>
+        Point p = somewhat;
+        image i = somewhat;
+        p == i.getLocation(i.getData(0)+p.x+image.getWidth()*p.y,any-valid-channel);
+        </code>
+        Optionally, returned point can be calculated w.r.t. the images roi offset.
+    **/
+    Point getLocation(const Type *p, int channel, bool relToROI=false) const{
+      ICLASSERT_RETURN_VAL(validChannel(channel), Point::null);
+      ICLASSERT_RETURN_VAL(getDim(), Point::null);
+      int offs = (int)(getData(channel)-p);
+      int x = offs%getWidth();
+      int y = offs/getWidth();
+      if(relToROI){
+        return Point(x-getROI().x,y-getROI().y);
+      }else{
+        return Point(x,y);
+      }
+    }
+    
+    /// shows the image value by value at std::out
+    /** Warning: <b>SLOW</b>
+        @param format this string is passed to printf internally
+               uchars can be printed e.g. using format="3.0"
+        @param visROI indicates ROI-pixels with a 'r'-postfix (only
+               if image has no full-ROI)
+    **/
+    void printAsMatrix(const std::string &format="5.3", bool visROI=true) const;
+
+
+#if 0
+    REMOVED since ICL 4.1
     /// returns the iterator for the hole image 
     /** The following example taken from ImgIterator.h will show
         the iterator usage:
@@ -1185,7 +1278,7 @@ namespace icl {
         @return roi-iterator
         @see getIterator
         */
-    inline iterator getROIIterator(int iChannel)
+    inline iterator beginROI(int iChannel)
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
       ICLASSERT_RETURN_VAL(validChannel(iChannel), iterator());
@@ -1199,14 +1292,14 @@ namespace icl {
       ICLASSERT_RETURN_VAL(validChannel(iChannel), const_iterator());
       return const_iterator(getData(iChannel),getWidth(),Rect(Point::null,getSize()));
     }
-    /// const version of getROIIterator
-    inline const_iterator getROIIterator(int iChannel) const
+    /// const version of beginROI
+    inline const_iterator beginROI(int iChannel) const
     {
       FUNCTION_LOG("begin(" << iChannel << ")");
       ICLASSERT_RETURN_VAL(validChannel(iChannel), const_iterator());
       return const_iterator(getData(iChannel),getWidth(),getROI());
     } 
- 
+ #endif
     /// @}
 
     /* }}} */
@@ -1400,11 +1493,10 @@ namespace icl {
   inline void clearChannelROI(Img<T> *im, int c, T clearVal, const Point &offs, const Size &size) {
     FUNCTION_LOG("");
     ICLASSERT_RETURN( im );
-    for(ImgIterator<T> it(im->getData(c),im->getSize().width,Rect(offs,size));
-        it.inRegion(); ++it)
-      {
-        *it = clearVal;
-      }  
+
+    ImgIterator<T> it(im->getData(c),im->getSize().width,Rect(offs,size));
+    const ImgIterator<T> itEnd = ImgIterator<T>::create_end_roi_iterator(im,c,Rect(offs,size));
+    std::fill(it,itEnd,clearVal);
   }
 
   /** \cond */
@@ -1455,6 +1547,8 @@ namespace icl {
 
   /** }}} */
   
+
+  
   /* {{{   deepCopyChannelROI */
 
   /// copies the channel roi from one image to another \ingroup IMAGE
@@ -1473,10 +1567,11 @@ namespace icl {
                                  Img<T> *dst,int dstC, const Point &dstOffs, const Size &dstSize) {
     CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
   
-    ConstImgIterator<T> itSrc(src->getData(srcC),src->getSize().width,Rect(srcOffs,srcSize));
+    const ImgIterator<T> itSrc(const_cast<T*>(src->getData(srcC)),src->getSize().width,Rect(srcOffs,srcSize));
     ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-  
-    for(;itSrc.inRegion();itSrc.incRow(),itDst.incRow()){
+    const ImgIterator<T> itSrcEnd = ImgIterator<T>::create_end_roi_iterator(src,srcC,Rect(srcOffs,srcSize));
+
+    for(;itSrc != itSrcEnd;itSrc.incRow(),itDst.incRow()){
       icl::copy<T>(&*itSrc,&*itSrc+srcSize.width,&*itDst);
     }
   }
@@ -1509,10 +1604,10 @@ namespace icl {
     FUNCTION_LOG("");
     CHECK_VALUES(src,srcC,srcOffs,srcROISize,dst,dstC,dstOffs,dstROISize);
     
-    ConstImgIterator<S> itSrc(src->getData(srcC),src->getSize().width,Rect(srcOffs,srcROISize));
+    const ImgIterator<S> itSrc(const_cast<S*>(src->getData(srcC)),src->getSize().width,Rect(srcOffs,srcROISize));
     ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstROISize));
-    
-    for(;itSrc.inRegion();itSrc.incRow(),itDst.incRow()){
+    const ImgIterator<S> itSrcEnd = ImgIterator<S>::create_end_roi_iterator(src,srcC,Rect(srcOffs,srcROISize));
+    for(;itSrc != itSrcEnd ;itSrc.incRow(),itDst.incRow()){
       icl::convert<S,D>(&*itSrc,&*itSrc+srcROISize.width,&*itDst);
     }
   }

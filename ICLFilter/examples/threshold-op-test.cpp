@@ -53,8 +53,11 @@ void performance () {
 
   t.start();
   for(int i=0;i<N;i++){
-    for(Img8u::iterator s=src.getIterator(0),d=dst.getIterator(0);
-        s.inRegion();++s,++d){
+    Img8u::const_iterator s=src.begin(0);
+    Img8u::const_iterator sEnd=src.end(0);
+
+    Img8u::iterator d=dst.begin(0);
+    for(;s!=sEnd;++s,++d){
       (*d) = (*s) > tetta ? 255 : 0;
     }
   }
@@ -68,9 +71,10 @@ void performance () {
 
 int main(){
   Img8u im(Size(40,38),1);
-  for(ImgIterator<icl8u> it = im.getIterator(0);it.inRegion();++it){
-    int x = it.x();
-    int y = it.y();
+  for(Img8u::iterator it = im.begin(0);it != im.end(0) ;++it){
+    Point p = im.getLocation(it,0);
+    int x = p.x;
+    int y = p.y;
     switch(apc[y][x]){
       case '.': *it = 255; break;
       case 'a': *it = 100; break;

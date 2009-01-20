@@ -788,11 +788,23 @@ namespace icl {
 
   // fallback for all types
   template<class Type> Type 
-  Img<Type>::getMax(int iChannel, Point *coords) const {
-    FUNCTION_LOG("iChannel: " << iChannel);
-    ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
-
+  Img<Type>::getMax(int channel, Point *coords) const {
+    FUNCTION_LOG("iChannel: " << channel);
+    ICLASSERT_RETURN_VAL( validChannel(channel), 0 );
+    ICLASSERT_RETURN_VAL( getROISize().getDim(), 0 );
+    if(hasFullROI()){
+      const_iterator it = std::max_element(begin(channel),end(channel));
+      if(coords)*coords = getLocation(it,channel);
+      return *it;
+    }else{
+      const_roi_iterator it = std::max_element(beginROI(channel),endROI(channel));
+      if(coords)*coords = getLocation(&*it,channel);
+      return *it;
+    }
+#if 0
+    OLDER IMPLEMENTATION
     const_iterator it = getROIIterator(iChannel);
+    
     if (!it.inRegion()) return 0; // empty region
     Type vMax = *it; 
     
@@ -815,6 +827,7 @@ namespace icl {
       }
       return vMax;
     }
+#endif
   }
 #ifdef HAVE_IPP
 #define ICL_INSTANTIATE_DEPTH(T)                                                                            \
@@ -853,7 +866,22 @@ Img<icl ## T>::getMax(int iChannel,Point *coords) const {                       
 
   // fallback for all types
   template<class Type> Type 
-  Img<Type>::getMin(int iChannel, Point *coords) const {
+  Img<Type>::getMin(int channel, Point *coords) const {
+ FUNCTION_LOG("iChannel: " << channel);
+    ICLASSERT_RETURN_VAL( validChannel(channel), 0 );
+    ICLASSERT_RETURN_VAL( getROISize().getDim(), 0 );
+    if(hasFullROI()){
+      const_iterator it = std::min_element(begin(channel),end(channel));
+      if(coords)*coords = getLocation(it,channel);
+      return *it;
+    }else{
+      const_roi_iterator it = std::min_element(beginROI(channel),endROI(channel));
+      if(coords)*coords = getLocation(&*it,channel);
+      return *it;
+    }
+    
+#if 0 
+    OLDER IMPL...
     FUNCTION_LOG("iChannel: " << iChannel);
     ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
 
@@ -881,6 +909,7 @@ Img<icl ## T>::getMax(int iChannel,Point *coords) const {                       
       }
     }
     return vMin;
+#endif
   }
 #ifdef HAVE_IPP
 #define ICL_INSTANTIATE_DEPTH(T)                                                                         \
@@ -923,19 +952,67 @@ Img<icl ## T>::getMin(int iChannel, Point *coords) const {                      
     }
     return r;
   }
+  
+  template<class iterator>
+  std::pair<iterator,iterator> get_min_and_max_element_util(iterator begin, iterator end){
+    std::pair<iterator,iterator> mm;
+    if(begin == end) return mm;
+    mm.first = begin;
+    mm.second = begin;
+    for(++begin; begin != end; ++begin){
+      if(*begin < *mm.first) mm.first = begin;
+      if(*begin > *mm.second) mm.second = begin;
+    }
+    return mm;
+  }
 
   // fallback for all types
   template<class Type> const Range<Type>
-  Img<Type>::getMinMax(int iChannel, Point *minCoords, Point *maxCoords) const {
+  Img<Type>::getMinMax(int channel, Point *minCoords, Point *maxCoords) const {
+    ICLASSERT_RETURN_VAL( validChannel(channel), Range<Type>() );
+    ICLASSERT_RETURN_VAL( getROISize().getDim(), Range<Type>() );
+    if(hasFullROI()){
+      std::pair<const_iterator,const_iterator> its = get_min_and_max_element_util(begin(channel),end(channel));
+      if(minCoords){
+        *minCoords = getLocation(its.first,channel);
+        *maxCoords = getLocation(its.second,channel);
+      }
+      return Range<Type>(*its.first,*its.second);
+    }else{
+      std::pair<const_roi_iterator,const_roi_iterator> its = get_min_and_max_element_util(beginROI(channel),endROI(channel));
+      if(minCoords){
+        *minCoords = getLocation(&*its.first,channel);
+        *maxCoords = getLocation(&*its.second,channel);
+      }
+      return Range<Type>(*its.first,*its.second);
+    }
+#if 0
+    older version ...
+
     FUNCTION_LOG("iChannel: " << iChannel);
     ICLASSERT_RETURN_VAL(validChannel(iChannel), Range<Type>());
     if( (minCoords && !maxCoords) || (maxCoords && !minCoords) ){
       ERROR_LOG("please define minCoords AND maxCoords or do not define BOTH (returning 0)");
       return Range<Type>();
     }
+    ICLASSERT_RETURN_VAL(getROISize().getDim(),Range<Type>());
 
     Range<Type> r;
 
+    Type *minPtr=0;
+    type *maxPtr=0;
+    if(hasFullROI()){
+      const_iterator it = begin(iChannel);
+      const_iterator itEnd = end(iChannel);
+      Type min = *it, max=*it;
+      it++;
+      for(;it!=itEnd;++it){
+        min = iclMin(min,*it);
+        max = iclMax(max,*it);
+      }
+      
+    }
+    
     const_iterator it = getROIIterator(iChannel);
     if (!it.inRegion()) return Range<Type>(); // empty region: return with 0, 0
     r.minVal = r.maxVal = *it;
@@ -964,6 +1041,8 @@ Img<icl ## T>::getMin(int iChannel, Point *coords) const {                      
       }
     }
     return r;
+#endif
+
   }
 
 #ifdef HAVE_IPP
@@ -1106,7 +1185,8 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     for(int c = getStartIndex(iChannel);c<getEndIndex(iChannel);c++){
       icl64f fScale  = (icl64f)(dstRange.getLength()) / (icl64f)(srcRange.getLength());
       icl64f fShift  = (icl64f)(srcRange.maxVal * dstRange.minVal - srcRange.minVal * dstRange.maxVal) / srcRange.getLength();
-      for(iterator p=getROIIterator(c); p.inRegion(); ++p) {
+      const_roi_iterator e = endROI(c);
+      for(roi_iterator p=beginROI(c);p!=e; ++p) {
         *p = clipped_cast<icl64f,Type>( icl::clip( fShift + (icl64f)(*p) * fScale, icl64f(dstRange.minVal),icl64f(dstRange.maxVal) ) );
       }
     }
@@ -1285,11 +1365,11 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     }
 
     ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-
+    const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst,dstC,Rect(dstOffs,dstSize));
     int xD = 0;
     int yD = 0;
     float yS = srcOffs.y + fSY * yD;
-    for(; itDst.inRegion(); ++itDst) {
+    for(; itDst != itDstEnd ; ++itDst) {
       *itDst = clipped_cast<float, T>((src->*subPixelMethod)(srcOffs.x + fSX * xD, yS, srcC));
       if (++xD == dstSize.width) {
         yS = srcOffs.y + fSY * ++yD;
@@ -1525,6 +1605,44 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     
   // }}} flippedCopy / flippedCopyROI
 
+  // {{{ printAsMatrix
+  template<class Type>
+  void Img<Type>::printAsMatrix(const std::string &fmt, bool visROI) const{
+    std::cout << "image matrix:    size: " << getSize() << std::endl;
+    std::cout << "             channels: " << getChannels() << std::endl;
+    std::cout << "                  ROI: " << (hasFullROI() ? std::string("full") : translateRect(getROI())) << std::endl;
+    std::string fmtFull="%";
+    visROI = visROI && !hasFullROI();
+    if(visROI){
+      fmtFull+=fmt+"f%c";
+    }else{
+      fmtFull+=fmt+"f ";
+    }
+    Rect r = getROI();
+    r.width-=1;
+    r.height-=1;
+    for(int i=0;i<getChannels();++i){
+      std::cout << "channel " << i << std::endl;
+
+      for(int y=0;y<getHeight();++y){
+        std::cout << "| ";
+        for(int x=0;x<getWidth();++x){
+          if(visROI){
+            printf(fmtFull.c_str(),(icl64f)(*this)(x,y,i),(r.contains(x,y)?'r':' '));
+          }else{
+            printf(fmtFull.c_str(),(icl64f)(*this)(x,y,i));
+          }
+        }
+        std::cout << "|" << std::endl;
+      }
+      std::cout << "--------------------" << std::endl;
+    }
+  }
+  
+
+  
+  // }}}
+  
   // }}} Global functions ..
 
   template<class Type>

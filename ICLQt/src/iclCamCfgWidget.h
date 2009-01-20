@@ -16,6 +16,8 @@
 #include <QSplitter>
 #include <iclCompabilityLabel.h>
 #include <iclFPSEstimator.h>
+#include <iclSize.h>
+
 
 
 /** \cond **/  

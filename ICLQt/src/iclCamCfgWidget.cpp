@@ -31,7 +31,6 @@
 #include <QGroupBox>
 #include <iclThread.h>
 
-
 using namespace icl;
 using namespace std;
 

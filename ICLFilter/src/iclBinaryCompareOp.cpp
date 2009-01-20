@@ -38,10 +38,11 @@ namespace icl {
   inline void fallbackCompare(const Img<T> *src1,const Img<T> *src2,Img<icl8u> *dst){
     // {{{ open
     for(int c=src1->getChannels()-1; c >= 0; --c) {
-      ConstImgIterator<T> itSrc1 = src1->getROIIterator(c);
-      ConstImgIterator<T> itSrc2 = src2->getROIIterator(c);
-      ImgIterator<icl8u>  itDst = dst->getROIIterator(c);
-      for(;itSrc1.inRegion(); ++itSrc1,++itSrc2, ++itDst){
+      const ImgIterator<T> itSrc1 = src1->beginROI(c);
+       const ImgIterator<T> itEnd = src1->endROI(c);
+      const ImgIterator<T> itSrc2 = src2->beginROI(c);
+      ImgIterator<icl8u>  itDst = dst->beginROI(c);
+      for(;itSrc1 != itEnd ; ++itSrc1,++itSrc2, ++itDst){
         *itDst = C<T>::cmp(*itSrc1,*itSrc2);
       }
     }
@@ -53,10 +54,11 @@ namespace icl {
   inline void fallbackCompareWithTolerance(const Img<T> *src1,const Img<T> *src2, Img8u *dst,T tolerance) {
     // {{{ open
      for(int c=src1->getChannels()-1; c >= 0; --c) {
-       ConstImgIterator<T> itSrc1 = src1->getROIIterator(c);
-       ConstImgIterator<T> itSrc2 = src2->getROIIterator(c);
-       ImgIterator<icl8u>  itDst = dst->getROIIterator(c);
-       for(;itSrc1.inRegion(); ++itSrc1,++itSrc2, ++itDst){
+       const ImgIterator<T> itSrc1 = src1->beginROI(c);
+       const ImgIterator<T> itEnd = src1->endROI(c);
+       const ImgIterator<T> itSrc2 = src2->beginROI(c);
+       ImgIterator<icl8u>  itDst = dst->beginROI(c);
+       for(;itSrc1 != itEnd; ++itSrc1,++itSrc2, ++itDst){
          *itDst = CompareOp_eqt<T>::cmp(*itSrc1,*itSrc2,tolerance);
        }
      }

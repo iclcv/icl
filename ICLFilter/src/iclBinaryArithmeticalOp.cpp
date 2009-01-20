@@ -27,8 +27,9 @@ namespace icl {
       // {{{ open
       static inline void apply(const  Img<T> *src1, const Img<T> *src2, Img<T> *dst ){
         for(int c=src1->getChannels()-1; c >= 0; --c) {
-          ImgIterator<T> itDst = dst->getROIIterator(c);
-          for(ConstImgIterator<T> itSrc1 = src1->getROIIterator(c),itSrc2 = src2->getROIIterator(c) ; itSrc1.inRegion(); ++itSrc1, ++itSrc2, ++itDst){
+          ImgIterator<T> itDst = dst->beginROI(c);
+          for(const ImgIterator<T> itSrc1 = src1->beginROI(c),itSrc2 = src2->beginROI(c),
+              itSrc1End = src1->endROI(c); itSrc1 != itSrc1End; ++itSrc1, ++itSrc2, ++itDst){
             *itDst = PixelFunc<T,OT>::apply(*itSrc1,*itSrc2);
           }
         }

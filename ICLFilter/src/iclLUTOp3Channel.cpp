@@ -45,18 +45,19 @@ namespace icl{
         }
 
       }else{
-        ConstImgIterator<srcT> itSrcR= src.getROIIterator(0);        
-        ConstImgIterator<srcT> itSrcG= src.getROIIterator(1);        
-        ConstImgIterator<srcT> itSrcB= src.getROIIterator(2);        
+        const ImgIterator<srcT> itSrcR= src.beginROI(0);        
+        const ImgIterator<srcT> itSrcG= src.beginROI(1);        
+        const ImgIterator<srcT> itSrcB= src.beginROI(2);        
         
-        ImgIterator<dstT> itDst = dst.getROIIterator(0);
+        ImgIterator<dstT> itDst = dst.beginROI(0);
+        const ImgIterator<dstT> itDstEnd = dst.endROI(0);
         if(shift){
-          while(itDst.inRegion()){
+          while(itDst != itDstEnd){
             *itDst++  = lut[ (CAST(*itSrcR++)>>shift) + (fac1*(CAST(*itSrcG++)>>shift)) + (fac2*(CAST(*itSrcB++)>>shift)) ];
             
           }        
         }else{
-          while(itDst.inRegion()){
+          while(itDst != itDstEnd){
             *itDst++  = lut[ CAST(*itSrcR++) + 256*CAST(*itSrcG++) + 65536*CAST(*itSrcB++) ];
           }        
         }

@@ -1,6 +1,7 @@
 #include <iclConvolutionKernel.h>
 #include <iclMacros.h>
 #include <cmath>
+#include <algorithm>
 
 namespace icl{
   namespace{

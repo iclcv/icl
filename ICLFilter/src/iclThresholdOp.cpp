@@ -84,9 +84,10 @@ namespace icl {
       ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
 
       for(int c=src->getChannels()-1; c >= 0; --c) {
-         ConstImgIterator<T> itSrc = src->getROIIterator(c);
-         ImgIterator<T> itDst = dst->getROIIterator(c);
-         for(;itSrc.inRegion(); ++itSrc, ++itDst){
+         const ImgIterator<T> itSrc = src->beginROI(c);
+         const ImgIterator<T> itSrcEnd = src->endROI(c);
+         ImgIterator<T> itDst = dst->beginROI(c);
+         for(;itSrc != itSrcEnd; ++itSrc, ++itDst){
             *itDst = threshold(*itSrc);
          }
       }

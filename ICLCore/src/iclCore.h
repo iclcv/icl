@@ -52,7 +52,8 @@ such as Neo/NST or TDI.
   - type of pixels (see <b>data types</b>)
   - color format (see <b>color formats</b>)
   - raw image data access
-  - Region of Interest (see <b>Region of Interests</b> (ROI))
+  - iterator based data access
+  - Region of Interest (see <b>Region of Interests</b> \ref ROI (ROI))
 
   It has no public constructors so it has to be used as interface
   class for the derived template classes Img<Type>.
@@ -132,6 +133,14 @@ The advantage of integer types is, that computation is faster
 than using floats.
  
 @see Depth, icl8u, icl32f
+
+\section ROI region of Interest (ROI)
+Each image can be set up with a rectangular region of interest. Algorithms 
+work only on the pixels within the ROI. If a function does not support
+ROI handling it will be noticed in the documentation. There are several ways
+to realize ROI handling in functions. The most common way is to use the
+ImgIterator with can be accessed using the STL-style functions beginROI(channel) and
+endROI(channel). 
 
 \section Color Formats
 An ImgBase image provides some information about the (color) format, that

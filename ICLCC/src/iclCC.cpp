@@ -348,11 +348,12 @@ namespace icl{
     static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
       if(roiOnly){
-        ConstImgIterator<S> itR = src->getROIIterator(0);
-        ConstImgIterator<S> itG = src->getROIIterator(1);
-        ConstImgIterator<S> itB = src->getROIIterator(2);
-        ImgIterator<D> itGray = dst->getROIIterator(0);
-        for(;itGray.inRegion();++itR,++itG,++itB,++itGray){
+        const ImgIterator<S> itR = src->beginROI(0);
+        const ImgIterator<S> itG = src->beginROI(1);
+        const ImgIterator<S> itB = src->beginROI(2);
+        ImgIterator<D> itGray = dst->beginROI(0);
+        const ImgIterator<D> itEnd = dst->endROI(0);
+        for(;itGray!= itEnd;++itR,++itG,++itB,++itGray){
           *itGray = clipped_cast<S,D>((*itR + *itG + *itB)/3);
         }
       }else{
@@ -374,13 +375,14 @@ namespace icl{
 
       register icl32f reg_h, reg_l, reg_s;
       if(roiOnly){
-        ConstImgIterator<S> itR = src->getROIIterator(0);
-        ConstImgIterator<S> itG = src->getROIIterator(1);
-        ConstImgIterator<S> itB = src->getROIIterator(2);
-        ImgIterator<D> itH = dst->getROIIterator(0);
-        ImgIterator<D> itL = dst->getROIIterator(1);
-        ImgIterator<D> itS = dst->getROIIterator(2);
-        for(;itR.inRegion();++itR,++itG,++itB,++itH,++itL,++itS){
+        const ImgIterator<S> itR = src->beginROI(0);
+        const ImgIterator<S> itG = src->beginROI(1);
+        const ImgIterator<S> itB = src->beginROI(2);
+        ImgIterator<D> itH = dst->beginROI(0);
+        ImgIterator<D> itL = dst->beginROI(1);
+        ImgIterator<D> itS = dst->beginROI(2);
+        const ImgIterator<S> itEnd = src->endROI(0);
+        for(;itR!= itEnd;++itR,++itG,++itB,++itH,++itL,++itS){
           cc_util_rgb_to_hls(clipped_cast<S,icl32f>(*itR),
                              clipped_cast<S,icl32f>(*itG),
                              clipped_cast<S,icl32f>(*itB),
@@ -475,11 +477,12 @@ namespace icl{
     static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
       if(roiOnly){
-        ConstImgIterator<S> itGray = src->getROIIterator(0);
-        ImgIterator<D> itR = dst->getROIIterator(0);
-        ImgIterator<D> itG = dst->getROIIterator(1);
-        ImgIterator<D> itB = dst->getROIIterator(2);
-        for(;itG.inRegion();++itG,++itR,++itGray,++itB){
+        const ImgIterator<S> itGray = src->beginROI(0);
+        ImgIterator<D> itR = dst->beginROI(0);
+        ImgIterator<D> itG = dst->beginROI(1);
+        ImgIterator<D> itB = dst->beginROI(2);
+        const ImgIterator<D> itEnd = dst->endROI(0);
+        for(;itR!= itEnd;++itG,++itR,++itGray,++itB){
           *itR = *itG = *itB = clipped_cast<S,D>(*itGray);
         }
       }else{
@@ -499,11 +502,12 @@ namespace icl{
     static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
       if(roiOnly){
-        ConstImgIterator<S> itG = src->getROIIterator(0);
-        ImgIterator<D> itH = dst->getROIIterator(0);
-        ImgIterator<D> itL = dst->getROIIterator(1);
-        ImgIterator<D> itS = dst->getROIIterator(2);
-        for(;itG.inRegion();++itG,++itH,++itL,++itS){
+        const ImgIterator<S> itG = src->beginROI(0);
+        ImgIterator<D> itH = dst->beginROI(0);
+        ImgIterator<D> itL = dst->beginROI(1);
+        ImgIterator<D> itS = dst->beginROI(2);
+        const ImgIterator<D> itEnd = dst->endROI(0);
+        for(;itH!= itEnd;++itG,++itH,++itL,++itS){
           *itL = clipped_cast<S,D>(*itG);
           *itH = *itS = D(0);
         }
@@ -525,11 +529,13 @@ namespace icl{
     static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
       if(roiOnly){
-        ConstImgIterator<S> itG = src->getROIIterator(0);
-        ImgIterator<D> itY = dst->getROIIterator(0);
-        ImgIterator<D> itU = dst->getROIIterator(1);
-        ImgIterator<D> itV = dst->getROIIterator(2);
-        for(;itG.inRegion();++itG,++itY,++itU,++itV){
+        const ImgIterator<S> itG = src->beginROI(0);
+        ImgIterator<D> itY = dst->beginROI(0);
+        ImgIterator<D> itU = dst->beginROI(1);
+        ImgIterator<D> itV = dst->beginROI(2);
+
+        const ImgIterator<S> itEnd = src->endROI(0);
+        for(;itG!= itEnd;++itG,++itY,++itU,++itV){
           *itY = clipped_cast<S,D>(*itG);
           *itU = *itV = D(127);
         }
@@ -551,11 +557,12 @@ namespace icl{
     static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
       FUNCTION_LOG("");
       if(roiOnly){
-        ConstImgIterator<S> itG = src->getROIIterator(0);
-        ImgIterator<D> itL = dst->getROIIterator(0);
-        ImgIterator<D> itA = dst->getROIIterator(1);
-        ImgIterator<D> itB = dst->getROIIterator(2);
-        for(;itG.inRegion();++itG,++itL,++itA,++itB){
+        const ImgIterator<S> itG = src->beginROI(0);
+        ImgIterator<D> itL = dst->beginROI(0);
+        ImgIterator<D> itA = dst->beginROI(1);
+        ImgIterator<D> itB = dst->beginROI(2);
+        const ImgIterator<S> itEnd = src->endROI(0);
+        for(;itG!= itEnd;++itG,++itL,++itA,++itB){
           *itL = clipped_cast<S,D>(*itG);
           *itA = *itB = D(127);
         }
@@ -608,13 +615,14 @@ namespace icl{
       
       register icl32f reg_r(0), reg_g(0), reg_b(0);
       if(roiOnly){
-        ConstImgIterator<S> itH = src->getROIIterator(0);
-        ConstImgIterator<S> itL = src->getROIIterator(1);
-        ConstImgIterator<S> itS = src->getROIIterator(2);
-        ImgIterator<D> itR = dst->getROIIterator(0);
-        ImgIterator<D> itG = dst->getROIIterator(1);
-        ImgIterator<D> itB = dst->getROIIterator(2);
-        for(;itH.inRegion();++itH,++itL,++itS,++itR,++itG,++itB){
+        const ImgIterator<S> itH = src->beginROI(0);
+        const ImgIterator<S> itL = src->beginROI(1);
+        const ImgIterator<S> itS = src->beginROI(2);
+        ImgIterator<D> itR = dst->beginROI(0);
+        ImgIterator<D> itG = dst->beginROI(1);
+        ImgIterator<D> itB = dst->beginROI(2);
+        const ImgIterator<S> itEnd = src->endROI(0);
+        for(;itH!= itEnd;++itH,++itL,++itS,++itR,++itG,++itB){
           cc_util_hls_to_rgb(clipped_cast<S,icl32f>(*itH),
                              clipped_cast<S,icl32f>(*itL),
                              clipped_cast<S,icl32f>(*itS),
@@ -665,13 +673,14 @@ namespace icl{
       FUNCTION_LOG("");
       register icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
       if(roiOnly){
-        ConstImgIterator<S> itL = src->getROIIterator(0);
-        ConstImgIterator<S> itA = src->getROIIterator(1);
-        ConstImgIterator<S> itB = src->getROIIterator(2);
-        ImgIterator<D> itR = dst->getROIIterator(0);
-        ImgIterator<D> itG = dst->getROIIterator(1);
-        ImgIterator<D> itBl = dst->getROIIterator(2);
-        for(;itL.inRegion();++itL,++itA,++itB,++itR,++itG,++itBl){
+        const ImgIterator<S> itL = src->beginROI(0);
+        const ImgIterator<S> itA = src->beginROI(1);
+        const ImgIterator<S> itB = src->beginROI(2);
+        ImgIterator<D> itR = dst->beginROI(0);
+        ImgIterator<D> itG = dst->beginROI(1);
+        ImgIterator<D> itBl = dst->beginROI(2);
+        const ImgIterator<S> itEnd = src->endROI(0);
+        for(;itL!= itEnd;++itL,++itA,++itB,++itR,++itG,++itBl){
           cc_util_lab_to_xyz(clipped_cast<S,icl32f>(*itL),
                              clipped_cast<S,icl32f>(*itA),
                              clipped_cast<S,icl32f>(*itB),
@@ -723,13 +732,14 @@ namespace icl{
       FUNCTION_LOG("");
       register icl32s reg_r, reg_g, reg_b;
       if(roiOnly){
-        ConstImgIterator<S> itY = src->getROIIterator(0);
-        ConstImgIterator<S> itU = src->getROIIterator(1);
-        ConstImgIterator<S> itV = src->getROIIterator(2);
-        ImgIterator<D> itR = dst->getROIIterator(0);
-        ImgIterator<D> itG = dst->getROIIterator(1);
-        ImgIterator<D> itB = dst->getROIIterator(2);
-        for(;itY.inRegion();++itY,++itU,++itV,++itR,++itG,++itB){
+        const ImgIterator<S> itY = src->beginROI(0);
+        const ImgIterator<S> itU = src->beginROI(1);
+        const ImgIterator<S> itV = src->beginROI(2);
+        ImgIterator<D> itR = dst->beginROI(0);
+        ImgIterator<D> itG = dst->beginROI(1);
+        ImgIterator<D> itB = dst->beginROI(2);
+        const ImgIterator<S> itEnd = src->endROI(0);
+        for(;itY!= itEnd;++itY,++itU,++itV,++itR,++itG,++itB){
           cc_util_yuv_to_rgb(clipped_cast<S,icl32s>(*itY),
                              clipped_cast<S,icl32s>(*itU),
                              clipped_cast<S,icl32s>(*itV),
@@ -1230,7 +1240,7 @@ namespace icl{
       }
       ImgIterator<D> *itDsts = new ImgIterator<D>[c];
       for(int i=0;i<c;i++){
-        itDsts[i] = dst->getROIIterator(i);
+        itDsts[i] = dst->beginROI(i);
       }
       for(int y=0;y<srcSize.height;++y){
         for(int x=0;x<srcSize.width;++x){
@@ -1272,7 +1282,7 @@ namespace icl{
     }else{ // roi handling with iterators
       ImgIterator<D> *itDsts = new ImgIterator<D>[c];
       for(int i=0;i<c;i++){
-        itDsts[i] = dst->getROIIterator(i);
+        itDsts[i] = dst->beginROI(i);
       }
       const S* srcEnd=src+srcSize.getDim()*c;
       while (src<srcEnd){

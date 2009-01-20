@@ -7,10 +7,10 @@
 #include <iclUncopyable.h>
 
 namespace icl{
-  /// Image Line etection using IPP's Hough transformation for lines (IPP only)
+  /// Image line detection using IPP's Hough transformation for lines (IPP only)
   /** This class provides the following functionalities:
       - hough transformation for lines (using IPP function)
-      - optional preprocessing an input image with given unary op (by default: Canny-edge detector)
+      - optional preprocessing of input image with choosable unary op (by default: Canny-edge detector)
       - internal handling of IPP-buffer
       - internal transformation from IppPointPolar line representation into richer HoughLine structure
       - automatic adaption of input-image/preprocessor output to depth8u

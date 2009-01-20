@@ -457,9 +457,9 @@ namespace {
 
   // creating image
   Img8u *image = new Img8u(Size(w,h),formatRGB);
-  Img8u::iterator it[3] = {  image->getIterator(0),
-                             image->getIterator(1),
-                             image->getIterator(2)  };
+  Img8u::iterator it[3] = {  image->begin(0),
+                             image->begin(1),
+                             image->begin(2)  };
 
   // paring image content
   for(int y=0;y<h;y++){

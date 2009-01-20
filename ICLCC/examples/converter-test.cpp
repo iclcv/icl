@@ -4,7 +4,7 @@
 #include "iclTestImages.h"
 #include <iclCommon.h>
 #include <iclBinaryArithmeticalOp.h>
-
+#include <numeric>
 
 ImgBase *createDiffImage(ImgBase *a, ImgBase *b){
   ImgBase *r = 0;
@@ -15,9 +15,7 @@ ImgBase *createDiffImage(ImgBase *a, ImgBase *b){
 icl64f errorSum(Img64f *img){
   icl64f err=0;
   for(int c=0;c<img->getChannels();++c){
-    for(Img64f::iterator r = img->getIterator(c);r.inRegion();++r){
-      err += *r;
-    }
+    err += std::accumulate(img->begin(c),img->end(c),icl64f(0));
   }
   return err;
 }

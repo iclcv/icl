@@ -54,6 +54,9 @@ namespace icl{
     return iclMin(val, max);
   }
   
+#if 0
+  // removed due to lack of usebility: use std::fill(i.begin(c),i.end(c),URand(range)) instead
+  
   /// fill an image with uniform distributed random values in the given range \ingroup MATH
   /** @param poImage image to fill with random values (NULL is not allowed) 
       @param range for the random value 
@@ -69,7 +72,7 @@ namespace icl{
       @param roiOnly decides whether to apply the operation on the whole image or on its ROI only 
   **/
   void gaussRandom(ImgBase *poImage, double mean, double var, const Range<double> &minAndMax, bool roiOnly=true);
-
+#endif
   /// Generate a gaussian random number with given mean and variance \ingroup MATH
   /** @param mean mode of the gaussian
       @param var variance of the gaussian
@@ -143,6 +146,19 @@ namespace icl{
     
     /// returns gaussRandom(this->mean,this->var)
     inline operator icl64f() const { return gaussRandom(mean,var); }
+  };
+
+  /// lightweight Random generator class for gaussian distributed numbers clipped to a given range
+  /** @see URand*/
+  class GRandClip{
+    icl64f mean,var;
+    Range64f range;
+    public:
+    /// Create with optionally given mean and variance
+    inline GRandClip(icl64f mean, icl64f var,const Range64f &range):mean(mean),var(var),range(range){}
+    
+    /// returns gaussRandom(this->mean,this->var)
+    inline operator icl64f() const { return gaussRandom(mean,var,range); }
   };
 
 

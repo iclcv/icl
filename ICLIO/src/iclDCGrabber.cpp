@@ -38,10 +38,12 @@ namespace icl{
   const ImgBase *DCGrabberImpl::grab (ImgBase **ppoDst){
     // {{{ open
 
-    if(ppoDst){
-      ERROR_LOG("Giving DCGrabber a destination image != NULL is currently not supported");
-      return 0;
-    }
+    /*
+        if(ppoDst){
+        ERROR_LOG("Giving DCGrabber a destination image != NULL is currently not supported");
+        return 0;
+        }
+     */
 
     ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
 
@@ -65,6 +67,7 @@ namespace icl{
     if(getIgnoreDesiredParams()){
       m_poGT->getCurrentImage(ppoDst,bayerLayout,bayermethod_from_string(getValue("bayer-quality")));
     }else{
+      // Somethings goes wrong here!
       ImgBase **ppoDstTmp = &m_poImageTmp;
       bool desiredParamsFullfilled = false;
       

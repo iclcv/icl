@@ -27,15 +27,16 @@ namespace icl{
 
     template<class KernelType, class SrcType, class DstType>
     void generic_cpp_convolution(const Img<SrcType> &src, Img<DstType> &dst,const KernelType *k, ConvolutionOp &op, int c){
-      ConstImgIterator<SrcType> s(src.getData(c), src.getWidth(),Rect(op.getROIOffset(), dst.getROISize()));
-      ImgIterator<DstType>      d = dst.getROIIterator(c);
+      const ImgIterator<SrcType> s(const_cast<SrcType*>(src.getData(c)), src.getWidth(),Rect(op.getROIOffset(), dst.getROISize()));
+      const ImgIterator<SrcType> sEnd = ImgIterator<SrcType>::create_end_roi_iterator(&src,c, Rect(op.getROIOffset(), dst.getROISize()));
+      ImgIterator<DstType>      d = dst.beginROI(c);
       Point an = op.getAnchor();
       Size si = op.getMaskSize();
       int factor = op.getKernel().getFactor();
-      for(; s.inRegion(); ++s){
+      for(; s != sEnd; ++s){
         const KernelType *m = k; 
         KernelType buffer = 0;
-        for(ConstImgIterator<SrcType> sR (s,si,an);sR.inRegion(); ++sR, ++m){
+        for(const ImgIterator<SrcType> sR (s,si,an);sR.inRegionSubROI(); ++sR, ++m){
           buffer += (*m) * (KernelType)(*sR);
         }
         *d++ = clipped_cast<KernelType, DstType>(buffer / factor);

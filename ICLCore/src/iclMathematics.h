@@ -57,10 +57,14 @@ namespace icl {
       @param end end iterator*/
   template <class ForwardIterator>
   inline double mean(ForwardIterator begin, ForwardIterator end){
-    if(!(begin-end)) return 0;
+    if(begin == end) return 0;
     double sum = 0;
-    while(begin != end) sum += *begin++;
-    return sum / (end-begin);
+    int num = 0;
+    while(begin != end){
+      sum += *begin++;
+      num++;
+    }
+    return sum / num;
   }
   
 #ifdef HAVE_IPP
@@ -106,12 +110,14 @@ namespace icl {
     if(begin == end) return 0;
     register double sum = 0;
     register double d = 0;
+    int num = 0;
     while(begin != end){
       d = *begin - mean;
       sum += d*d;
       ++begin;
+      num++;
     }
-    return d/(empiricMean&&end-begin>1 ? end-begin - 1 : end-begin); 
+    return d/(empiricMean&&num>1 ? num - 1 : num); 
   }
 
   /// Compute the variance of a given data range \ingroup MATH

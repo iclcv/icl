@@ -23,8 +23,8 @@ namespace icl {
 
       static inline void apply(const  Img<T> *src, Img<T> *dst ){
         for(int c=src->getChannels()-1; c >= 0; --c) {
-          ImgIterator<T> itDst = dst->getROIIterator(c);
-          for(ConstImgIterator<T> itSrc = src->getROIIterator(c) ; itSrc.inRegion(); ++itSrc, ++itDst){
+          ImgIterator<T> itDst = dst->beginROI(c);
+          for(const ImgIterator<T> itSrc = src->beginROI(c),itSrcEnd=src->endROI(c) ; itSrc!=itSrcEnd; ++itSrc, ++itDst){
             *itDst = PixelFuncNoVal<T,OT>::apply(*itSrc);
           }
         }
@@ -53,8 +53,8 @@ namespace icl {
 
       static inline void apply(const  Img<T> *src, Img<T> *dst, T val ){
         for(int c=src->getChannels()-1; c >= 0; --c) {
-          ImgIterator<T> itDst = dst->getROIIterator(c);
-          for(ConstImgIterator<T> itSrc = src->getROIIterator(c) ; itSrc.inRegion(); ++itSrc, ++itDst){
+          ImgIterator<T> itDst = dst->beginROI(c);
+          for(const ImgIterator<T> itSrc = src->beginROI(c),itSrcEnd = src->endROI(c) ; itSrc!=itSrcEnd; ++itSrc, ++itDst){
             *itDst = PixelFuncWithVal<T,OT>::apply(*itSrc,val);
           }
         }

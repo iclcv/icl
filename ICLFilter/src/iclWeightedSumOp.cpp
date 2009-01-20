@@ -7,19 +7,21 @@ namespace icl {
     template <class T, class D>
     void apply_ws(const Img<T> *src, Img<D> *dst, const vector<D>& weights) {
      
-      ConstImgIterator<T> itSrc = src->getROIIterator(0);
-      ImgIterator<D> itDst = dst->getROIIterator(0);
+      const ImgIterator<T> itSrc = src->beginROI(0);
+      const ImgIterator<T> itSrcEnd = src->endROI(0);
+      ImgIterator<D> itDst = dst->beginROI(0);
       
       D w = weights[0];
-      for(;itSrc.inRegion(); ++itSrc, ++itDst){
+      for(;itSrc != itSrcEnd; ++itSrc, ++itDst){
         *itDst = *itSrc * w;
       }
       
       for (int c=src->getChannels()-1; c > 0; c--) {
         w = weights[c];
-        itSrc = src->getROIIterator(c);
-        itDst = dst->getROIIterator(0);
-        for(;itSrc.inRegion(); ++itSrc, ++itDst){
+        const ImgIterator<T> itSrc = src->beginROI(c);
+        const ImgIterator<T> itSrcEnd = src->endROI(c);
+        ImgIterator<D> itDst = dst->beginROI(0);
+        for(;itSrc!=itSrcEnd; ++itSrc, ++itDst){
           *itDst += *itSrc * w;
         }
       }

@@ -10,10 +10,21 @@ XCXXFLAGS= ${CXXFLAGS} \
 ## Applications that depend on noting ###########################################
 #################################################################################
 bin_PROGRAMS= \
-icl-img-example
+icl-img-example \
+icl-copy-channel-roi-example \
+icl-img-iterator-benchmark
 
 # explicit sources, ldflags and cxxflags
 icl_img_example_SOURCES=../examples/img-example.cpp
 icl_img_example_LDFLAGS=${XLDFLAGS}
 icl_img_example_CXXFLAGS=${XCXXFLAGS}
+
+icl_copy_channel_roi_example_SOURCES=../examples/copy-channel-roi-example.cpp
+icl_copy_channel_roi_example_LDFLAGS=${XLDFLAGS}
+icl_copy_channel_roi_example_CXXFLAGS=${XCXXFLAGS}
+
+
+icl_img_iterator_benchmark_SOURCES=../examples/img-iterator-benchmark.cpp
+icl_img_iterator_benchmark_LDFLAGS=${XLDFLAGS}
+icl_img_iterator_benchmark_CXXFLAGS=${XCXXFLAGS}
 

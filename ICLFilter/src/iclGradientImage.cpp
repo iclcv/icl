@@ -56,10 +56,11 @@ namespace icl{
       
       for(int i=0;i<X.getChannels();++i){
         if(roiOnly){
-          ConstImgIterator<icl16s> itX = X.getROIIterator(i);
-          ConstImgIterator<icl16s> itY = Y.getROIIterator(i);
-          ImgIterator<icl32f> itR = R.getROIIterator(i);
-          for(;itX.inRegion();++itX,++itY,++itR){
+          const ImgIterator<icl16s> itX = X.beginROI(i);
+          const ImgIterator<icl16s> itXEnd = X.endROI(i);
+          const ImgIterator<icl16s> itY = Y.beginROI(i);
+          ImgIterator<icl32f> itR = R.beginROI(i);
+          for(;itX != itXEnd ;++itX,++itY,++itR){
             *itR = LUT(*itX,*itY);
           }
         }else{
