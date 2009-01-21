@@ -32,7 +32,7 @@ namespace icl{
     /// pure virtual apply function, that must be implemented in all derived classes
     virtual void apply(const ImgBase *operand1, ImgBase **dst)=0;
 
-    /// *NEW* apply function for multithreaded filtering
+    /// *NEW* apply function for multithreaded filtering (currently even slower than using one thread)
     virtual void applyMT(const ImgBase *operand1, ImgBase **dst, unsigned int nThreads);
     
     /// sets if the image should be clip to ROI or not

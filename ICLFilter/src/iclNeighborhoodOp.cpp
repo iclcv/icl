@@ -81,7 +81,16 @@ namespace icl {
     const std::vector<ImgBase*> srcs = ImageSplitter::split(srcROIAdapted,nThreads);
     std::vector<ImgBase*> dsts = ImageSplitter::split(*ppoDst,nThreads);
     delete srcROIAdapted;
+
+    /*
+        DEBUG_LOG("src image:" << *poSrc);
+        for(int i=0;i<srcs.size();++i){
+        DEBUG_LOG("part " << i << " roi:" << srcs[i]->getROI());
+        }
+    */
     
+
+
     MultiThreader::WorkSet works(nThreads);
     
     for(unsigned int i=0;i<nThreads;i++){

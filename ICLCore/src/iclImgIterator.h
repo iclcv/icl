@@ -260,6 +260,21 @@ icl8u find_min_iterator_cpp_inRegion(const Img8u &i){
        m_ptDataOrigin(roOrigin.m_ptDataOrigin),
        m_ptDataCurr(roOrigin.m_ptDataCurr - a.x - a.y*m_iImageWidth) {init();}
     
+    inline ImgIterator &operator=(const ImgIterator &other){
+      m_iImageWidth = other.m_iImageWidth;
+      m_ROISize = other.m_ROISize;
+      m_iLineStep = other.m_iLineStep;
+      m_ptDataOrigin = other.m_ptDataOrigin;
+      m_ptDataCurr = other.m_ptDataCurr;
+      m_ptDataEnd = other.m_ptDataEnd;
+      m_ptCurrLineEnd = other.m_ptCurrLineEnd;
+      return *this;
+    }
+
+    inline const ImgIterator& operator=(const ImgIterator &other) const{
+      return (*const_cast<ImgIterator*>(this)) = other;
+    }
+
     /// retuns a reference of the current pixel value (const)
     /** changes on *p (p is of type ImgIterator) will effect
         the image data       

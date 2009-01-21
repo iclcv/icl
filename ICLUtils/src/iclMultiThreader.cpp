@@ -37,16 +37,21 @@ namespace icl{
 
       while(!m_bEnd){
         m_apoSems[m_bCurr]->acquire(1);
-        
+        Thread::usleep(0);
         m_oWorkMutex.lock();
+        Thread::usleep(0);
         if(work){
+
           work->perform();
         }
+        Thread::usleep(0);
         m_oWorkMutex.unlock();
-        
+        Thread::usleep(0);
         m_poSemDone->release(1);
-        
+        Thread::usleep(0);
         m_bCurr = !m_bCurr;
+        
+        Thread::usleep(0);
       }
     }
 
