@@ -392,6 +392,64 @@ namespace icl{
     }
 
     // }}}
+    
+    namespace{
+      void rgb_to_gray_util(const icl8u *src, icl8u *dst, const icl8u *dstEnd, const Size &frameSize){
+
+#ifdef HAVE_IPP
+        int step = frameSize.width*sizeof(icl8u);
+        ippiRGBToGray_8u_C3C1R(src,step*3,dst,step,frameSize); 
+#else
+        for(;dst < dstEnd; src+=3, ++dst){
+          // we took this conversion from the IPP-manual for compability with IPP
+          // function 
+          *dst = clipped_cast<float,icl8u>(0.299*src[0]+0.587*src[1]+0.114*src[2]);
+        }
+#endif
+      }
+
+      void convert_YUV411_to_gray8(uint8_t *restrict src, uint8_t *restrict dest, uint32_t width, uint32_t height){
+        register int i = (width*height) + ( (width*height) >> 1 )-1;
+        register int j = (width*height)-1;
+        
+        while (i >= 0) {
+          dest[j--] = (uint8_t) src[i--];
+          dest[j--] = (uint8_t) src[i--];
+          i--;
+          dest[j--] = (uint8_t) src[i--];
+          dest[j--] = (uint8_t) src[i--];
+          i--;
+        }
+      }
+      void convert_YUV422_to_gray8(uint8_t *restrict src, uint8_t *restrict dest, uint32_t width, uint32_t height,uint32_t byte_order){
+        register int i = ((width*height) << 1)-1;
+        register int j = (width*height)-1;
+        switch(byte_order){
+          case DC1394_BYTE_ORDER_UYVY:
+            while (i >= 0) {
+              dest[j--]= (uint8_t)src[i--]; i--;
+              dest[j--]= (uint8_t)src[i--]; i--;
+            }
+            break;
+          case DC1394_BYTE_ORDER_YUYV:
+            while (i >= 0) {
+              i--; dest[j--]= (uint8_t)src[i--];
+              i--; dest[j--]= (uint8_t)src[i--];
+            }
+            break;
+          default:
+            ERROR_LOG("illegal byte_order: " << byte_order);
+        }
+      }
+      void convert_YUV444_to_gray8(uint8_t *restrict src, uint8_t *restrict dest, uint32_t width, uint32_t height){
+        register int i = (width*height) + ( (width*height) << 1 ) -1;
+        register int j = (width*height)-1;
+        
+        while (i >= 0) {
+          i--; dest[j--] = src[i--]; i--;
+        }
+      }
+    }
 
     void extract_image_to_gray(dc1394video_frame_t *f,
                                dc1394color_filter_t bayerLayout,
@@ -421,25 +479,45 @@ namespace icl{
         const icl8u *src = dataBuffer.data();
         const icl8u *dstEnd = dst+frameSize.getDim();
 
-#ifdef HAVE_IPP
-        int step = frameSize.width*sizeof(icl8u);
-        ippiRGBToGray_8u_C3C1R(src,step*3,dst,step,frameSize); 
-#else
-        for(;dst < dstEnd; src+=3, ++dst){
-          // we took this conversion from the IPP-manual for compability with IPP
-          // function 
-          *dst = clipped_cast<float,icl8u>(0.299*src[0]+0.587*src[1]+0.114*src[2]);
-        }
-#endif
+        rgb_to_gray_util(src,dst,dstEnd,frameSize);
         
       }else{
-        dc1394_convert_to_MONO8(f->image, 
-                                (*ppoDst)->asImg<icl8u>()->getData(0),
-                                frameSize.width,
-                                frameSize.height,
-                                f->yuv_byte_order, 
-                                f->color_coding,
-                                f->data_depth);
+        for(int i=0;i<100;++i) std::cout << (int)(f->image[i]) << " ";
+        std::cout << std::endl;
+        icl8u *dstData = (*ppoDst)->asImg<icl8u>()->getData(0);
+        dc1394error_t err = dc1394_convert_to_MONO8(f->image, 
+                                                    dstData,
+                                                    frameSize.width,
+                                                    frameSize.height,
+                                                    f->yuv_byte_order, 
+                                                    f->color_coding,
+                                                    f->data_depth);
+        if(err == DC1394_FUNCTION_NOT_SUPPORTED){
+          switch(f->color_coding){
+            case DC1394_COLOR_CODING_MONO8:
+            case DC1394_COLOR_CODING_MONO16S:
+              if(f->data_depth == 8){
+                memcpy(dstData,f->image,frameSize.getDim());
+              }else{
+                icl::convert((icl16s*)f->image,((icl16s*)f->image)+frameSize.getDim(),dstData);
+              }
+              break;
+            case DC1394_COLOR_CODING_YUV411:
+              convert_YUV411_to_gray8(f->image,dstData,frameSize.width,frameSize.height);
+              break;
+            case DC1394_COLOR_CODING_YUV422:
+              convert_YUV422_to_gray8(f->image,dstData,frameSize.width,frameSize.height,f->yuv_byte_order);
+              break;
+            case DC1394_COLOR_CODING_YUV444:
+              convert_YUV444_to_gray8(f->image,dstData,frameSize.width,frameSize.height);
+              break;
+            case DC1394_COLOR_CODING_RGB8:
+              rgb_to_gray_util(f->image,dstData,dstData+frameSize.getDim(),frameSize);
+              break;
+            default:
+              ERROR_LOG("unable to convert DC1394_COLOR_CODING-type: " << f->color_coding);
+          }
+        }
       }
       //  old }
       if(ppoDst && *ppoDst){
@@ -602,9 +680,10 @@ namespace icl{
       // {{{ open
 
       if(desiredDepthHint != depth8u) return false;
-      if(desiredFormatHint == formatGray && f->data_depth == 8) return true;
       if(desiredSizeHint != Size(f->size[0],f->size[1])) return false;
+      if(desiredFormatHint == formatGray && f->data_depth == 8) return true;
       if(desiredFormatHint != formatRGB) return false;
+
       return true;
     }
 

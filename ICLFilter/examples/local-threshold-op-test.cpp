@@ -86,7 +86,6 @@ void update_zoom(Img8u &prevImage){
   static Img8u zoomRegion(zoomSize,formatGray);
   prevImage.setROI(Rect(p.x-zoomSize.width/2,p.y-zoomSize.height/2,zoomSize.width,zoomSize.height) & prevImage.getImageRect());
 
-  DEBUG_LOG("image:" << prevImage << "\nzoomImage:"<< zoomRegion);
   if(prevImage.getROISize() == zoomSize){
     prevImage.deepCopyROI(&zoomRegion);
   }
