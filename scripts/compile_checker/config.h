@@ -9,8 +9,8 @@ static string all[A]={
   "LIBZ","VIDEODEV","SVS","QT","XCF"
 };
 
-static const int S=3;
-static const string simple[S]={"SVS","LIBZ","LIBJPEG"};
+static const int S=4;
+static const string simple[S]={"SVS","LIBZ","LIBJPEG","IMAGEMAGICK"};
 
 static const string def="/usr";
 static const int M=3;
@@ -40,4 +40,8 @@ static const string deactivate="SWITCH_OFF";
   const int C = (int)complex.size(); 
 
 
+
+
 #endif
+
+
