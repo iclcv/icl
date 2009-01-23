@@ -54,6 +54,9 @@ namespace icl{
       case 3: 
       case 4: return image;
       case 2:  /// add an empty channel
+        if(m_poChannelBuf && (m_poChannelBuf->getChannels() == 3)){
+          m_poChannelBuf->swapChannels(0,2);
+        }
         ensureCompatible(&m_poChannelBuf,image->getDepth(),image->getSize(),1);
         append(image,m_poChannelBuf);
         m_poChannelBuf->swapChannels(0,2);
