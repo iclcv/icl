@@ -1,1 +1,1 @@
-CXXFLAGS="-O0 -g3" ./configure --with-SVS-Root=/vol/vision/SVS/4.2 --prefix=/vol/vision/ICL/`./VERSION.sh` --with-UNICAP-Root=/vol/video --with-LIBDC-Root=/vol/video --with-IPP-Root=/vol/vision/IPP/6.0
+CXXFLAGS="-O0 -g3" ./configure --with-SVS-Root=/vol/nivision/SVS/4.2 --prefix=/vol/nivision/ICL/`./VERSION.sh` --with-UNICAP-Root=/vol/nivision --with-LIBDC-Root=/vol/nivision --with-IPP-Root=/vol/nivision/IPP/6.0
