@@ -683,6 +683,7 @@ namespace icl {
     /** @return image range in terms of a Range<icl64f> struct
     **/
     const Range<icl64f> getMinMax() const;
+
                     
     /// @}
     /* }}} */

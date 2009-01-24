@@ -15,7 +15,7 @@ namespace icl {
       
       for (int c=0;c<src->getChannels();c++){
         const ImgIterator<T> s(const_cast<T*>(src->getData(c)),src->getWidth(), Rect(roiOffset, dst->getROISize()));
-        const ImgIterator<T> sEnd = ImgIterator<T>::create_end_roi_iterator(src,c,Rect(roiOffset, dst->getROISize()));
+        const ImgIterator<T> sEnd = ImgIterator<T>::create_end_roi_iterator(src->getData(c),src->getWidth(),Rect(roiOffset, dst->getROISize()));
         ImgIterator<T> d= dst->beginROI(c); 
         for(;s != sEnd;++s,++d){
           for(const ImgIterator<T> sR(s,oMaskSize,oAnchor); sR.inRegionSubROI(); ++sR, ++itList){

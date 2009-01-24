@@ -2,7 +2,6 @@
 #include <iclImg.h>
 #include <iclPoint.h>
 
-#include <iclImgChannel.h>
 #include <limits>
 #include <math.h>
 #include <vector>
@@ -34,7 +33,7 @@ namespace icl{
         return Point( (int)ceil(float(s.x)/f), (int)ceil(float(s.y)/f) );
       }
       inline Rect scale(const Rect &r, int f){
-        return Rect(scale(r.ul(),f), scale(r.size(),f) );
+        return Rect(scale(r.ul(),f), scale(r.getSize(),f) );
       }
     }
 
@@ -43,8 +42,8 @@ namespace icl{
       // {{{ open
       if(poSrc->hasFullROI() && poDst->hasFullROI()){
         
-        ImgChannel<T> src = pickChannel(poSrc,channel);
-        ImgChannel32s dst = pickChannel(poDst,channel);
+        Channel<T> src = poSrc->extractChannel(channel);
+        Channel32s dst = poDst->extractChannel(channel);
         
         /// initialization
         for(int i=0;i<src.getDim();i++){
@@ -76,8 +75,8 @@ namespace icl{
       if(poSrc->hasFullROI() && poDst->hasFullROI()){
         int xEnd = poSrc->getWidth();
         int yEnd = poSrc->getHeight();
-        const ImgChannel<T> src = pickChannel(poSrc,channel);
-        ImgChannel32s dst = pickChannel(poDst,channel);
+        const Channel<T> src = poSrc->extractChannel(channel);
+        Channel32s dst = poDst->extractChannel(channel);
         for(int x=0;x<xEnd;++x){
           for(int y=0;y<yEnd;++y){
             if(src(x,y)) dst(x/scaleFactor,y/scaleFactor) = 0;
@@ -91,8 +90,9 @@ namespace icl{
         int xDstStart = poDst->getROI().x;
         int yDstStart = poDst->getROI().y;
 
-        const ImgChannel<T> src = pickChannel(poSrc,channel);
-        ImgChannel32s dst = pickChannel(poDst,channel);
+        const Channel<T> src = poSrc->extractChannel(channel);
+        Channel32s dst = poDst->extractChannel(channel);
+        
         poDst->clear(channel,maxVal,true);
         Rect r = poDst->getROI();
         for(int x=xSrcStart;x<xSrcEnd;++x){
@@ -130,8 +130,8 @@ namespace icl{
       if(poDst->hasFullROI()){
         int w = poDst->getWidth();
         int h = poDst->getHeight();
-        ImgChannel32s dst = pickChannel(poDst,channel);
-
+        Channel32s dst = poDst->extractChannel(channel);
+        
         // forward loop
         for(int x=1;x<w-1;++x){
           for(int y=1;y<h;++y){
@@ -161,7 +161,9 @@ namespace icl{
           dst(x,h1) = dst(x,h2) ;
         }
       }else{
-        ImgChannel32s dst = pickChannel(poDst,channel);
+
+        Channel32s dst = poDst->extractChannel(channel);
+
         Rect r = poDst->getROI();
      
         int rX = r.x;
@@ -350,7 +352,7 @@ namespace icl{
     inline double apply_directed_hausdorff_distance(const Img32s *chamferImage, const std::vector<Point> &model, HausdorffMetricMode hmm,PenaltyMode pm){
       // {{{ open
 
-      ImgChannel32s chan = pickChannel(chamferImage,0);   
+      Channel32s chan = chamferImage->extractChannel(0);
       register int x,y;      
       Rect imageRect = Rect(Point::null,chamferImage->getSize());
       for(unsigned int i=0;i<model.size();++i){
@@ -369,8 +371,8 @@ namespace icl{
     inline double apply_directed_hausdorff_distance_2(const Img32s *chamferImage, const Img32s *modelChamferImage, HausdorffMetricMode hmm,PenaltyMode pm){
       // {{{ open
 
-      ImgChannel32s chan = pickChannel(chamferImage,0);   
-      ImgChannel32s modelChan = pickChannel(modelChamferImage,0);   
+      Channel32s chan = chamferImage->extractChannel(0);
+      Channel32s modelChan = modelChamferImage->extractChannel(0);   
       Rect imageRect = Rect(Point::null,chamferImage->getSize());
       Rect modelROI = modelChamferImage->getROI() & imageRect;
       
@@ -403,7 +405,7 @@ namespace icl{
     
     ensureCompatible(image,depth32s, size, 1, formatMatrix, roi);
     (*image)->clear(0,bg);
-    ImgChannel32s c = pickChannel((*image)->asImg<icl32s>(),0);
+    Channel32s c = (*image)->asImg<icl32s>()->extractChannel(0);
     for(unsigned int i=0;i<model.size();++i){
       if(roi.contains(model[i].x,model[i].y)){
         c(model[i].x,model[i].y) = fg;

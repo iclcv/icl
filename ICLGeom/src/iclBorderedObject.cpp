@@ -2,7 +2,6 @@
 #include <stack>
 #include <algorithm>
 #include <iclImg.h>
-#include <iclImgChannel.h>
 #include <iclDrawWidget.h>
 #include <vector>
 #include <iclQuick.h>

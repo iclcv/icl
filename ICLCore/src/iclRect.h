@@ -48,7 +48,13 @@ namespace icl {
                 ............................
                 ............................
       </pre>
-  
+      
+      Please note, that a rect fits a discrete set of points: For instance the 
+      Rect (x=2,y=1,width=3,height=4) contains exactly 3x4=12 points i.e. those
+      ones with \f$x \elem {2,3,4}\f$ and \f$y \elem {1,2,3,4}\f$. Hence a full
+      image roi of an image of size 640x480 has an offset of (0,0), a size of
+      640x480, but it contains only x-values within the range 0-639 and y-values 
+      within range 0-479.  
   */
   
   class Rect : public IppiRect{
@@ -206,9 +212,14 @@ namespace icl {
        return x<=r.x && y <= r.y && right() >= r.right() && bottom() >= r.bottom();
     }
     
-    /// returns if the Rect contains a given point
+    /// returns if the Rect contains a given point (pixel-based)
+    /** <b>Note:</b> We are talking here in terms of pixel-based rects:
+        The rect x=5,y=5,width=10,height=20 contains the x-indices withing the
+        interval [5,15[ (half-opened interval). In terms of discrete X-values,
+        the intervall meets the set {5,6,...13,14}. The same is true for
+        Y-values.*/
     bool contains(int x, int y) const{
-      return this->x<=x && right()>=x && this->y<=y && bottom()>=y;
+      return this->x<=x && right()>x && this->y<=y && bottom()>y;
     }
 
     /// let the rect grow by k pixles into each direction
@@ -264,7 +275,7 @@ namespace icl {
     int top() const { return y; }
 
     /// returns the size of the rect
-    Size size() const { return Size(width,height); }
+    Size getSize() const { return Size(width,height); }
 
     Rect transform(double xfac, double yfac) const { 
       return Rect((int)(xfac*x),(int)(yfac*y),(int)(xfac*width), (int)(yfac*height)); 

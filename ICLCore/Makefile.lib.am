@@ -24,7 +24,7 @@ include_HEADERS= \
 ../src/iclCore.h \
 ../src/iclImgBase.h \
 ../src/iclImgBorder.h \
-../src/iclImgChannel.h \
+../src/iclChannel.h \
 ../src/iclImg.h \
 ../src/iclImgIterator.h \
 ../src/iclImgParams.h \

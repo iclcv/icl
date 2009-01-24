@@ -2,7 +2,6 @@
 #include <iclDrawWidget.h>
 #include <iclQuick.h>
 #include <iclImg.h>
-#include <iclImgChannel.h>
 
 namespace icl{
   

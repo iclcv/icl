@@ -1,6 +1,5 @@
 #include <iclChromaGUI.h>
 #include <iclCommon.h>
-#include <iclImgChannel.h>
 
 using namespace icl;
 using namespace std;
@@ -21,12 +20,8 @@ void run(){
     gui->getValue<ImageHandle>("image") = image;
     gui->getValue<ImageHandle>("image").update();
     
-    ImgChannel8u c[3] = { 
-      pickChannel(image->asImg<icl8u>(),0),
-      pickChannel(image->asImg<icl8u>(),1),
-      pickChannel(image->asImg<icl8u>(),2)
-    };
-    ImgChannel8u s = pickChannel(&segImage,0);
+    Channel8u c[3]; image->asImg<icl8u>()->extractChannels(c);
+    Channel8u s = segImage.extractChannel(0);
     
     ChromaAndRGBClassifier classi = cg->getChromaAndRGBClassifier();
     

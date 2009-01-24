@@ -33,7 +33,7 @@ Rect get_roi(const std::string &info,const Rect &full){
   if(info == "full"){
     return full;
   }
-  Size size = full.size()/2;
+  Size size = full.getSize()/2;
 
   if(info == "center"){
     return Rect(Point(full.width/4,full.height/4),size);

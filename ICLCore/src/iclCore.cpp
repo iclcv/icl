@@ -135,7 +135,7 @@ namespace icl{
   std::string translateRect(const Rect &r){
     // {{{ open
 
-    return translateSize(r.size())+string("@")+translatePoint(r.ul());
+    return translateSize(r.getSize())+string("@")+translatePoint(r.ul());
   }
 
   // }}}

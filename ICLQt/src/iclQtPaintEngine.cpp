@@ -73,7 +73,7 @@ namespace icl{
   void QtPaintEngine::image(const Rect &r,ImgBase *image, AlignMode mode){
     // {{{ open
     if(!image)return;
-    ensureCompatible(&m_poScaledImage,image->getDepth(),r.size(),image->getChannels());
+    ensureCompatible(&m_poScaledImage,image->getDepth(),r.getSize(),image->getChannels());
     image->scaledCopy(&m_poScaledImage);
     m_oQImageConverter.setImage(m_poScaledImage);
 

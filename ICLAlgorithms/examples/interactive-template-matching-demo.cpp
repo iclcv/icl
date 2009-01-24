@@ -70,7 +70,7 @@ void init(){
         }else{
           Rect r = currRect.normalized() & Rect(Point::null,imageSize);
           currImage.setROI(r);
-          currTempl.setSize(r.size());
+          currTempl.setSize(r.getSize());
           currImage.deepCopyROI(&currTempl);
           templMask.setSize(currTempl.getSize());
           templMask.clear(-1,255,false);

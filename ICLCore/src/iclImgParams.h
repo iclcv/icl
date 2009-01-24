@@ -115,7 +115,7 @@ namespace icl{
     void setROI(const Point &offset, const Size &roisize);
     
     /// sets the image ROI to the given rectangle
-    void setROI(const Rect &roi) { setROI (roi.ul(),roi.size()); }
+    void setROI(const Rect &roi) { setROI (roi.ul(),roi.getSize()); }
    
     /// checks, eventually adapts and finally sets the image ROI offset
     void setROIOffsetAdaptive(const Point &offset);
@@ -140,7 +140,7 @@ namespace icl{
     Rect& adaptROI(Rect &roi) const;
 
     /// returns ROISize == ImageSize
-    bool hasFullROI() const { return m_oROI.size() == m_oSize;}
+    bool hasFullROI() const { return m_oROI.getSize() == m_oSize;}
 
     /// sets the ROI to 0,0,image-width,image-height
     void setFullROI(){ setROI(Point::null, getSize()); }
@@ -166,7 +166,7 @@ namespace icl{
     const Point getROIOffset() const { return m_oROI.ul(); }
 
     /// returns the objects ROI size 
-    const Size getROISize() const{ return m_oROI.size(); }
+    const Size getROISize() const{ return m_oROI.getSize(); }
 
     /// returns the objects image width
     int getWidth() const { return m_oSize.width; }

@@ -67,7 +67,7 @@ namespace icl{
         // clear the corners
         for(int i=0;i<4;i++)
           {
-            clearChannelROI<T>(poImage,c,aPix[i],aR[i].ul(),aR[i].size());
+            clearChannelROI<T>(poImage,c,aPix[i],aR[i].ul(),aR[i].getSize());
           }
         // copy the borders
         // <left>

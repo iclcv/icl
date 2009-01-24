@@ -1,6 +1,5 @@
 #include "iclGaborOp.h"
 #include "iclConvolutionOp.h"
-#include <iclImgChannel.h>
 #include <math.h>
 
 using namespace std;
@@ -126,7 +125,7 @@ namespace icl{
     int xCenter = size.width/2;
     int yCenter = size.height/2;
     
-    ImgChannel32f k = pickChannel(poKernelImage,0);
+    Channel32f k = poKernelImage->extractChannel(0);
     
     gamma *=gamma;
     sigma *=sigma*2;

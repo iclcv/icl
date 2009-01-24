@@ -215,12 +215,12 @@ icl8u find_min_iterator_cpp_inRegion(const Img8u &i){
 
     public:
     
-    static inline const ImgIterator<Type> create_end_roi_iterator(const Img<Type> *src, 
-                                                                  int srcC, 
+    static inline const ImgIterator<Type> create_end_roi_iterator(const Type *data,
+                                                                  int width,
                                                                   const Rect &roi){
       
-      ImgIterator<Type> i(const_cast<Type*>(src->getData(srcC)),src->getWidth(),roi);
-      i.m_ptDataCurr = i.m_ptDataEnd - roi.width + src->getWidth();
+      ImgIterator<Type> i(const_cast<Type*>(data),width,roi);
+      i.m_ptDataCurr = i.m_ptDataEnd - roi.width + width;
       i.m_ptCurrLineEnd = i.m_ptDataCurr + roi.width;
       return i;
     }
@@ -240,7 +240,7 @@ icl8u find_min_iterator_cpp_inRegion(const Img8u &i){
      */
     inline ImgIterator(Type *ptData,int iImageWidth,const Rect &roROI):
        m_iImageWidth(iImageWidth),
-       m_ROISize(roROI.size()), 
+       m_ROISize(roROI.getSize()), 
        m_ptDataOrigin(ptData),
        m_ptDataCurr(ptData+roROI.x+roROI.y*iImageWidth) {init();}
 

@@ -5,6 +5,7 @@
 #include <iclImgIterator.h>
 #include <iclSmartPtr.h>
 #include <iclException.h>
+#include <iclChannel.h>
 #include <cmath>
 #include <algorithm>
 
@@ -326,6 +327,39 @@ namespace icl {
     /// @}
 
     /* }}} */
+
+    /** @{ @name extractChannel functions */
+    /* {{{ open  */
+    inline Channel<Type> extractChannel(int channel) { 
+      return Channel<Type>(getData(channel),getSize(),getROI());
+    }
+
+    inline const Channel<Type> extractChannel(int channel) const { 
+      return const_cast<Img<Type>*>(this)->extractChannel(channel);
+    }
+    
+    inline void extractChannels(Channel<Type> *dst){
+      ICLASSERT_RETURN(dst);
+      for(int i=0;i<getChannels();++i){
+        dst[i] = extractChannel(i);
+      }
+    }
+    inline void extractChannels(Channel<Type> *dst) const{
+      (void)dst;
+      ERROR_LOG("extracting channels of a const Img into an un-const Channel\n"
+                "is forbidden as it violates const concept");
+    }
+
+    
+    inline void extractChannels(const Channel<Type> *dst) const{
+      return const_cast<Img<Type>*>(this)->extractChannels(const_cast<Channel<Type>*>(dst));
+    }
+
+
+    /// @}
+
+    /* }}} */
+
   
     /** @{ @name shallow/deepCopy  functions */
     /* {{{ open  */
@@ -581,22 +615,22 @@ namespace icl {
     /// Returns a new image with a shallow copied single channel of this image
     /** param index channel index to extract (must be valid, else resulting image 
                     has no channels and error message) */
-    Img<Type> extractChannel(int index);
+    Img<Type> extractChannelImg(int index);
 
     /// Returns a new image with a shallow copied single channel of this image
     /** param index channel index to extract (must be valid, else resulting image 
                     has no channels and error message) */
-    const Img<Type> extractChannel(int index) const;
+    const Img<Type> extractChannelImg(int index) const;
 
     /// Returns a new image with shallow copied single channels of this image
     /** param indices channel indices to extract (each must be valid, else error and
                       channel index that does not match is omitted) */
-    Img<Type> extractChannels(const std::vector<int> &indices);
+    Img<Type> extractChannelImg(const std::vector<int> &indices);
 
     /// Returns a new image with shallow copied single channels of this image
     /** param indices channel indices to extract (each must be valid, else error and
                       channel index that does not match is omitted) */
-    const Img<Type> extractChannels(const std::vector<int> &indices) const;
+    const Img<Type> extractChannelImg(const std::vector<int> &indices) const;
 
     
     /// Swap channel A and B
@@ -1198,13 +1232,13 @@ namespace icl {
     /** the returned iterator must not be incremented or decremented! */
     inline roi_iterator endROI(int channel) {
       ICLASSERT_RETURN_VAL(validChannel(channel), roi_iterator());
-      return roi_iterator::create_end_roi_iterator(this,channel,getROI());
+      return roi_iterator::create_end_roi_iterator(getData(channel),getWidth(),getROI());
     }
 
     /// returns the end-iterator for an images ROI (const)
     inline const_roi_iterator endROI(int channel) const{
       ICLASSERT_RETURN_VAL(validChannel(channel), roi_iterator());
-      return const_roi_iterator::create_end_roi_iterator(this,channel,getROI());
+      return const_roi_iterator::create_end_roi_iterator(getData(channel),getWidth(),getROI());
     }
 
     
@@ -1495,7 +1529,7 @@ namespace icl {
     ICLASSERT_RETURN( im );
 
     ImgIterator<T> it(im->getData(c),im->getSize().width,Rect(offs,size));
-    const ImgIterator<T> itEnd = ImgIterator<T>::create_end_roi_iterator(im,c,Rect(offs,size));
+    const ImgIterator<T> itEnd = ImgIterator<T>::create_end_roi_iterator(im->getData(c),im->getWidth(),Rect(offs,size));
     std::fill(it,itEnd,clearVal);
   }
 
@@ -1569,7 +1603,7 @@ namespace icl {
   
     const ImgIterator<T> itSrc(const_cast<T*>(src->getData(srcC)),src->getSize().width,Rect(srcOffs,srcSize));
     ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-    const ImgIterator<T> itSrcEnd = ImgIterator<T>::create_end_roi_iterator(src,srcC,Rect(srcOffs,srcSize));
+    const ImgIterator<T> itSrcEnd = ImgIterator<T>::create_end_roi_iterator(src->getData(srcC),src->getWidth(),Rect(srcOffs,srcSize));
 
     for(;itSrc != itSrcEnd;itSrc.incRow(),itDst.incRow()){
       icl::copy<T>(&*itSrc,&*itSrc+srcSize.width,&*itDst);
@@ -1606,7 +1640,7 @@ namespace icl {
     
     const ImgIterator<S> itSrc(const_cast<S*>(src->getData(srcC)),src->getSize().width,Rect(srcOffs,srcROISize));
     ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstROISize));
-    const ImgIterator<S> itSrcEnd = ImgIterator<S>::create_end_roi_iterator(src,srcC,Rect(srcOffs,srcROISize));
+    const ImgIterator<S> itSrcEnd = ImgIterator<S>::create_end_roi_iterator(src->getData(srcC),src->getWidth(),Rect(srcOffs,srcROISize));
     for(;itSrc != itSrcEnd ;itSrc.incRow(),itDst.incRow()){
       icl::convert<S,D>(&*itSrc,&*itSrc+srcROISize.width,&*itDst);
     }

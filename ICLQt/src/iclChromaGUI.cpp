@@ -7,7 +7,6 @@
 #include <iclDrawWidget.h>
 #include <iclMouseInteractionReceiver.h>
 #include <iclImg.h>
-#include <iclImgChannel.h>
 #include <QFile>
 #include <QTextStream>
 #include <iclBoxHandle.h>
@@ -282,14 +281,13 @@ namespace icl{
       // {{{ open
 
 
-      ImgChannel8u cr = pickChannel(&image,0);
-      ImgChannel8u cg = pickChannel(&image,1);    
-      ImgChannel8u cb = pickChannel(&image,2);
+      Channel8u rgb[3]; 
+      image.extractChannels(rgb);
       
       for(int x=0;x<256;x++){
         for(int y=0;y<255-x;y++){
-          Dragger::Color::xyb_to_rg(cr(x,y),cg(x,y),blue,float(x)/255,float(y)/255);
-          cb(x,y) = blue; 
+          Dragger::Color::xyb_to_rg(rgb[0](x,y),rgb[1](x,y),blue,float(x)/255,float(y)/255);
+          rgb[2](x,y) = blue; 
         }
       }
 
@@ -313,11 +311,11 @@ namespace icl{
       for(int i=n;i<256-n;i++){
         int s[2] = {0,0};
         for(int p=0;p<nn*nn;p++){
-          s[0] += cr(i+po[p].x,255-i+po[p].y); 
-          s[1] += cg(i+po[p].x,255-i+po[p].y); 
+          s[0] += rgb[0](i+po[p].x,255-i+po[p].y); 
+          s[1] += rgb[1](i+po[p].x,255-i+po[p].y); 
         }
-        cr(i,255-i) = clipped_cast<icl32f,icl8u>(float(s[0])/(nn*nn));
-        cg(i,255-i) = clipped_cast<icl32f,icl8u>(float(s[1])/(nn*nn));
+        rgb[0](i,255-i) = clipped_cast<icl32f,icl8u>(float(s[0])/(nn*nn));
+        rgb[1](i,255-i) = clipped_cast<icl32f,icl8u>(float(s[1])/(nn*nn));
       }
       setImage(&image);
       update();

@@ -12,7 +12,6 @@
 #include <iclPoint32f.h>
 
 #include <iclProgArg.h>
-#include <iclImgChannel.h>
 #include <iclCommon.h>
 
 int error_counter = 0;
@@ -63,10 +62,9 @@ struct InputGrabber : public Grabber{
 
   template<unsigned int N>
   static inline void draw_blob(Img8u &image, Blob &b){
-    ImgChannel8u *c =  new ImgChannel8u[N];
-    for(unsigned int i=0;i<N;++i){
-      c[i] = pickChannel(&image,i);
-    }
+    Channel8u c[N];
+    image.extractChannels(c);
+
     b.r +=2;
     {
       int rr = b.r*b.r;
@@ -104,8 +102,6 @@ struct InputGrabber : public Grabber{
         }
       }
     }
-
-    delete [] c;
   }
  
   

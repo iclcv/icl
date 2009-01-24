@@ -175,7 +175,7 @@ namespace icl{
     FUNCTION_LOG("");
     m_oROI.x = 0;
     m_oROI.y = 0;
-    setROISizeAdaptive (roi.size());
+    setROISizeAdaptive (roi.getSize());
     setROIOffsetAdaptive (roi.ul());
   }
 

@@ -2,8 +2,8 @@
 #include <iclPoint32f.h>
 #include <iclRange.h>
 #include <iclFixedMatrix.h>
+#include <iclImg.h>
 #include <cmath>
-#include <iclImgChannel.h>
 
 namespace icl{
 
@@ -29,7 +29,7 @@ namespace icl{
   namespace{
     
     template<class T, int C, bool withAlpha>
-    void taintPixel(ImgChannel<T> cs[C],int x, int y, const icl32f col[C]){
+    void taintPixel(Channel<T> cs[C],int x, int y, const icl32f col[C]){
       if(withAlpha){
         const float a = col[3]/255;
         for(int c=0;c<C;++c){
@@ -46,8 +46,8 @@ namespace icl{
 
     template<class T, int C, bool withAlpha>
     void sample_line_t_c_a(Img<T> &image,const HoughLine &p, const icl32f col[C]){
-      ImgChannel<T> cs[C];
-      pickChannels(&image,cs);
+      Channel<T> cs[C];
+      image.extractChannels(cs);
       
       // sampling y(x) = mx+b
       float m = -1.0/::tan(p.theta());

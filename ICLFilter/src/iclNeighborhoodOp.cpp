@@ -26,7 +26,7 @@ namespace icl {
     
     Rect newROI = imageROI & (imageRect+m_oAnchor-m_oMaskSize+Size(1,1));
     oROIoffset = newROI.ul();
-    oROIsize = newROI.size();
+    oROIsize = newROI.getSize();
 
 
 #ifdef HAVE_IPP // workaround for IPP bug (anchor not correctly handled)

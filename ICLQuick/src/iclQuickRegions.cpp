@@ -1,5 +1,4 @@
 #include "iclQuickRegions.h"
-#include <iclImgChannel.h>
 #include <iclRegionDetector.h>
 namespace icl{
 
@@ -12,8 +11,9 @@ namespace icl{
     ICLASSERT_RETURN_VAL(image.getChannels()==3,ImgQ());
     ImgQ result = zeros(image.getWidth(),image.getHeight());
     
-    ImgChannel32f rgb[3] = {pickChannel(&image,0),pickChannel(&image,1),pickChannel(&image,2)};
-    ImgChannel32f m = pickChannel(&result,0);
+    Channel32f rgb[3];
+    image.extractChannels(rgb);
+    Channel32f m = result.extractChannel(0);
 
     for(int x=0;x<image.getWidth();x++){
       for(int y=0;y<image.getHeight();y++){

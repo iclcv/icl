@@ -495,7 +495,7 @@ namespace icl {
   // }}}
 
   template<class Type>
-  Img<Type> Img<Type>::extractChannel(int index){
+  Img<Type> Img<Type>::extractChannelImg(int index){
     Img<Type> other(getSize(),0);
     other.append(this,index);
     other.setROI(getROI());
@@ -505,12 +505,12 @@ namespace icl {
   }
   
   template<class Type>
-  const Img<Type> Img<Type>::extractChannel(int index) const{
-    return const_cast<Img<Type>*>(this)->extractChannel(index);
+  const Img<Type> Img<Type>::extractChannelImg(int index) const{
+    return const_cast<Img<Type>*>(this)->extractChannelImg(index);
   }
   
   template<class Type>
-  Img<Type> Img<Type>::extractChannels(const std::vector<int> &indices){
+  Img<Type> Img<Type>::extractChannelImg(const std::vector<int> &indices){
     Img<Type> other(getSize(),0);
     other.append(this,indices);
     other.setROI(getROI());
@@ -520,8 +520,8 @@ namespace icl {
   }
   
   template<class Type>
-  const Img<Type> Img<Type>::extractChannels(const std::vector<int> &indices) const{
-    return const_cast<Img<Type>*>(this)->extractChannels(indices);
+  const Img<Type> Img<Type>::extractChannelImg(const std::vector<int> &indices) const{
+    return const_cast<Img<Type>*>(this)->extractChannelImg(indices);
   }
 
 
@@ -1365,7 +1365,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     }
 
     ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-    const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst,dstC,Rect(dstOffs,dstSize));
+    const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst->getData(dstC),dst->getWidth(),Rect(dstOffs,dstSize));
     int xD = 0;
     int yD = 0;
     float yS = srcOffs.y + fSY * yD;

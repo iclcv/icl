@@ -18,13 +18,13 @@ namespace icl{
   }
   string UnicapFormat::getID() const { return m_oUnicapFormatPtr->identifier; }
   Rect UnicapFormat::getRect() const { return cvt(m_oUnicapFormatPtr->size); }
-  Size UnicapFormat::getSize() const { return getRect().size(); }
+  Size UnicapFormat::getSize() const { return getRect().getSize(); }
   
   Rect UnicapFormat::getMinRect() const { return cvt(m_oUnicapFormatPtr->min_size); }  
   Rect UnicapFormat::getMaxRect() const { return cvt(m_oUnicapFormatPtr->max_size); }  
   
-  Size UnicapFormat::getMinSize() const { return getMinRect().size(); }
-  Size UnicapFormat::getMaxSize() const { return getMaxRect().size(); }
+  Size UnicapFormat::getMinSize() const { return getMinRect().getSize(); }
+  Size UnicapFormat::getMaxSize() const { return getMaxRect().getSize(); }
   
   int UnicapFormat::getHStepping() const { return m_oUnicapFormatPtr->h_stepping; }
   int UnicapFormat::getVStepping() const { return m_oUnicapFormatPtr->v_stepping; }
@@ -53,7 +53,7 @@ namespace icl{
   }
   vector<Size> UnicapFormat::getPossibleSizes() const{
     vector<Size> v;
-    for(int i=0;i< m_oUnicapFormatPtr->size_count; v.push_back(cvt(m_oUnicapFormatPtr->sizes[i++]).size()))
+    for(int i=0;i< m_oUnicapFormatPtr->size_count; v.push_back(cvt(m_oUnicapFormatPtr->sizes[i++]).getSize()))
       ;
     return v;
   }
