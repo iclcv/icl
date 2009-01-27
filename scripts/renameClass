@@ -9,6 +9,7 @@ if [ ! "$#" = "2" ] ; then
     exit -1
 fi
 
+
 DIR=`pwd`
 SRC_NAME=$1
 DST_NAME=$2
