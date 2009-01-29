@@ -17,7 +17,8 @@ libICLCore_la_SOURCES= \
 ../src/iclRect.cpp \
 ../src/iclSize32f.cpp \
 ../src/iclSize.cpp \
-../src/iclStringUtils.cpp
+../src/iclStringUtils.cpp \
+../src/iclRandom.cpp
 
 
 include_HEADERS= \

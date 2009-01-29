@@ -1,5 +1,10 @@
 #ifndef ICL_RANDOM_H
-#define ICL_RANDO_H
+#define ICL_RANDOM_H
+
+#include <cmath>
+#include <cstdlib>
+#include <iclTime.h>
+#include <iclRange.h>
 
 namespace icl{
   /// Initilaize the random number generator. \ingroup MATH
