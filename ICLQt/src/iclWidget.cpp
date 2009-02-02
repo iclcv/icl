@@ -422,7 +422,6 @@ namespace icl{
     // {{{ open
 
     QMutexLocker l(&m_oMutex);
-
     if(!image){
       m_poImage->updateTextures(0); // in this case [null will be drawn]
       return;
@@ -781,13 +780,15 @@ namespace icl{
   // }}}
   MouseInteractionInfo *ICLWidget::updateMouseInfo(MouseInteractionInfo::Type type){
     // {{{ open
-    if(!m_poImage || !m_poImage->hasImage() ) return &m_oMouseInfo;
+    if(!m_poImage || !m_poImage->hasImage() ){
+      return &m_oMouseInfo;
+    }
     m_oMouseInfo.type = type;
     m_oMouseInfo.widgetX = m_iMouseX;
     m_oMouseInfo.widgetY = m_iMouseY;
  
     memcpy(m_oMouseInfo.downmask,aiDown,3*sizeof(int));
-    
+
     m_oMutex.lock();
     Rect r = computeRect(m_poImage->getSize(), Size(width(),height()), m_eFitMode);
     //if(m_poImage && op.on && r.contains(m_iMouseX, m_iMouseY)){

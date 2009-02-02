@@ -118,7 +118,7 @@ namespace icl{
     /** @param filename if filename is found and it contains a valid ConfigFile structure,
                         it is read into the ConfigFile instance. Otherwise, filename is
                         stored internally for later use if load(void) or save(void) is called. */
-    ConfigFile(const std::string &filename);
+    ConfigFile(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException);
     
     /// return the current filename
     const std::string &getFileName() const { 
@@ -132,11 +132,11 @@ namespace icl{
     
     /// loads the ConfigFile from given filename and updates internal filename variable
     /** Warning: old data content is lost! */
-    void load(const std::string &filename);
+    void load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException);
 
     /// loads the ConfigFile using internal filename variable
     /** Warning: old data content is lost! */
-    void load();
+    void load() throw(FileNotFoundException,InvalidFileFormatException);
 
     /// Writes data to disk using given filename
     void save(const std::string &filename) const;

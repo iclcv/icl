@@ -5,6 +5,24 @@
 #include <iclCommon.h>
 #include <iclBinaryArithmeticalOp.h>
 #include <numeric>
+#include <iclStackTimer.h>
+int main(){
+
+  Img8u a(Size(1000,1000),formatRGB);
+  Img32f b(Size(1000,1000),formatGray);
+
+  for(int i=0;i<5;++i){
+    cc(&a,&b);
+  }
+
+  {
+    BENCHMARK_THIS_FUNCTION  
+    for(int i=0;i<1000;++i){
+      cc(&a,&b);
+    }
+  }
+}
+
 
 ImgBase *createDiffImage(ImgBase *a, ImgBase *b){
   ImgBase *r = 0;
@@ -32,7 +50,7 @@ string getName(int i){
   return "wrong mode";
 }
 
-int main(){
+int main2(){
   printf("This is the Converter test application: \n"
          "It reads the maccaw2.ppm image in ICLCC/examples, \n"
          "with params depth64f, formatRGB and Size(750,1002).\n"

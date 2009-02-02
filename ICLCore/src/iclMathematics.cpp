@@ -182,7 +182,7 @@ namespace icl{
     template<class T>
     inline void histo_entry(T v, double m, vector<int> &h, unsigned int n, double r){
       // todo check 1000 times
-      h[ ceil( n*(v-m)/(r+1)) ]++;
+      h[ floor( n*(v-m)/(r+1)) ]++;
       //      h[ ceil( n*(v-m)/r) ]++; problem at v=255
     }
     
@@ -199,10 +199,10 @@ namespace icl{
           histo_entry(*it,range.minVal,h,n,r);
         }
       }else{
-        const T* p = image.getData(c);
-        const T* pEnd = p+image.getDim();
+        const T* p = image.begin(c);
+        const T* pEnd = image.end(c);
         while(p<pEnd){
-          histo_entry(*p,range.minVal,h,n,r);
+          histo_entry(*p++,range.minVal,h,n,r);
         }
       }
     }    
@@ -261,7 +261,7 @@ namespace icl{
       }else{
         compute_complex_histo(image,c,h,roiOnly);
       }
-                               }
+    }
   }
   
   vector<int> channelHisto(const ImgBase *image,int channel, int levels, bool roiOnly){

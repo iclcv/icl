@@ -379,7 +379,7 @@ namespace icl{
   
 
 
-  void ConfigFile::load(){
+  void ConfigFile::load()throw(FileNotFoundException,InvalidFileFormatException){
     // {{{ open
 
     load(m_sFileName);
@@ -387,7 +387,7 @@ namespace icl{
 
   // }}}
   
-  void ConfigFile::load(const std::string &filename){
+  void ConfigFile::load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException){
     // {{{ open
 
     ICLASSERT_RETURN(filename != "");
@@ -398,12 +398,12 @@ namespace icl{
     if(!file.open(QIODevice::ReadOnly)){
       m_sFileName = "";
       ERROR_LOG("Unable to open config file \"" << filename << "\"");
-      return;
+      throw FileNotFoundException(filename);
     }
     if(!doc.setContent(&file)){
       m_sFileName = "";
       ERROR_LOG("Unable parse document file (XML-Error) in \"" << filename << "\"");
-      return;
+      throw InvalidFileFormatException();
     }
     
     m_sFileName = filename;
@@ -444,7 +444,7 @@ namespace icl{
 
   // }}}
 
-  ConfigFile::ConfigFile(const std::string &filename):
+  ConfigFile::ConfigFile(const std::string &filename)throw(FileNotFoundException,InvalidFileFormatException):
     // {{{ open
     m_spXMLDocHandle(new XMLDocHandle){
 
