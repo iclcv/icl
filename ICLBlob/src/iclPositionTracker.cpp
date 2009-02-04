@@ -595,7 +595,7 @@ namespace icl{
   // }}}
   
   template class  PositionTracker<icl32s>;
-  // template class  PositionTracker<icl32f>;
+  template class  PositionTracker<icl32f>;
   //template class  PositionTracker<icl64f>;
 
 }
