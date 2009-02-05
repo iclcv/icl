@@ -59,7 +59,7 @@
 
 #include <iclCamCfgWidget.h>
 #include <iclStringUtils.h>
-
+#include <iclToggleButton.h>
 
 #include <map>
 
@@ -366,30 +366,21 @@ namespace icl{
   public:
     ToggleButtonGUIWidget(const GUIDefinition &def):
       GUIWidget(def,GUIWidget::gridLayout,0,1,2, Size(0,0)){
-      m_asText[0] = def.param(0);
-      m_asText[1] = def.param(1);
-      m_iCurr = 0;
-      if(m_asText[1].length() && m_asText[1][0] == '!'){
-        m_asText[1]=m_asText[1].substr(1);
-        m_iCurr = 1;
-      }
-      if(m_asText[0].length() && m_asText[0][0] == '!'){
-        m_asText[0]=m_asText[0].substr(1);
-        m_iCurr = 0;
-      }
-      
-      m_poButton = new QPushButton(m_asText[0].c_str(),def.parentWidget());
-      m_poButton->setCheckable(1);
-      if(m_iCurr){
+
+      bool initToggled = false;
+      if(def.param(1).length() && def.param(1)[0] == '!'){
+        initToggled = true;
         m_poButton->setChecked(true);
-        m_poButton->setText(m_asText[1].c_str());
       }
+
+      getGUI()->lockData();
+      bool *stateRef = &getGUI()->allocValue<bool>(def.output(0),initToggled);
+      getGUI()->unlockData();
+      
+      m_poButton = new ToggleButton(def.param(0),def.param(1),def.parentWidget(),stateRef);
+
       addToGrid(m_poButton);
       connect(m_poButton,SIGNAL(pressed()),this,SLOT(ioSlot()));
-      
-      getGUI()->lockData();
-      m_pbToggled = &getGUI()->allocValue<bool>(def.output(0),m_iCurr?true:false);
-      getGUI()->unlockData();
 
       if(def.handle() != ""){
         getGUI()->lockData();
@@ -407,22 +398,14 @@ namespace icl{
       gen_params();
     }
     virtual void processIO(){
-      *m_pbToggled = !(*m_pbToggled);
-      m_poButton->setText(m_asText[*m_pbToggled].c_str());    
       if(m_poHandle){
         m_poHandle->m_bTriggered = true;
       }
-
-      //if(m_poHandle){
-      //  m_poHandle->cb();
-      //}
     }
   private:
-    QPushButton *m_poButton;
+    ToggleButton *m_poButton;
     ButtonHandle *m_poHandle;
     bool *m_pbToggled;
-    string m_asText[2];
-    int m_iCurr;
   };
 
 // }}}
@@ -1426,3 +1409,5 @@ public:
   }
 
 }
+
+//  LocalWords:  if

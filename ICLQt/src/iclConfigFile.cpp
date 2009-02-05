@@ -164,8 +164,10 @@ namespace icl{
       // {{{ open
 
       while(!n.isNull()) {
+        if(n.isComment()){ n=n.nextSibling(); continue; }
         if(n.isElement()){
           QDomElement e = n.toElement();
+
           if(e.tagName() == "data"){
             ICLASSERT_RETURN(e.hasAttribute("id"));
             ICLASSERT_RETURN(e.hasAttribute("type"));
@@ -205,8 +207,10 @@ namespace icl{
 
       if(parts.size() == 1){
         while(!n.isNull()){
+          if(n.isComment()){ n=n.nextSibling(); continue; }
           if(n.isElement()){
             QDomElement e = n.toElement();
+
             if(e.tagName() == "data"){
               ICLASSERT_RETURN_VAL(e.hasAttribute("id"),0);
               ICLASSERT_RETURN_VAL(e.hasAttribute("type"),0);
@@ -283,8 +287,10 @@ namespace icl{
       if(parts.size() == 1){
         // printf("parts size is 1 entry is %s \n",parts.front().c_str());
         while(!n.isNull()){
+          if(n.isComment()){ n=n.nextSibling(); continue; }
           if(n.isElement()){
             QDomElement e = n.toElement();
+
             if(e.tagName() == "data"){
               ICLASSERT_RETURN(e.hasAttribute("id"));
               ICLASSERT_RETURN(e.hasAttribute("type"));
@@ -326,7 +332,7 @@ namespace icl{
         return;
       }else{
         while(!n.isNull()) {
-          
+          if(n.isComment()){ n=n.nextSibling(); continue; }
           if(n.isElement()){
             QDomElement e = n.toElement();
             //  printf("testing node with tag: -%s-\n",e.tagName().toLatin1().data());
