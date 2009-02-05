@@ -18,7 +18,7 @@ namespace icl{
     void toggleStateChanged(bool toggled);
 
     private:
-    std::string m_text[0];
+    std::string m_text[2];
     bool *m_stateRef;
   };  
 }
