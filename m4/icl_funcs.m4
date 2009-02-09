@@ -85,8 +85,9 @@ ICL_$1_LIBS="$ICL_$1_LIBS `pkg-config --libs-only-l $2`"
 ICL_$1_CXXFLAGS=`pkg-config --cflags-only-I $2`
 ICL_$1_CXXCPP="`pkg-config --cflags-only-other $2` -DHAVE_$1"
 ICL_EXTEND_FLAG_VARS([$ICL_$1_LIBS],[$ICL_$1_LDLAGS],[$ICL_$1_CXXFLAGS],[$ICL_$1_CXXCPP])
-ICL_EXTEND_PC_FLAGS([],[-DHAVE_$1],[$2])
+ICL_EXTEND_PC_FLAGS([ICL_$1_LDFLAGS],[-DHAVE_$1],[$2])
 ])
+
 
 AC_DEFUN([ICL_EXTEND_FLAG_VARS_2],
         [ICL_$1_LIBS="$2"
