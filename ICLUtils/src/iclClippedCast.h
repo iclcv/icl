@@ -10,12 +10,29 @@ namespace icl{
     return tX < tMin ? tMin : tX > tMax ? tMax : tX; 
   }
   
+  
+  template<class T>
+  inline bool is_float_type(){
+    return false;
+  }
+  
+  /** \cond */
+  template<> inline bool is_float_type<float>() { return true; }  
+  template<> inline bool is_float_type<double>() { return true; }  
+  /** \endcond */
+  
   /// utility cast function wrapping the standard lib's numerical_limits template
   template<class S, class D> 
   inline D clipped_cast(S src){
-    return src < std::numeric_limits<D>::min() ? std::numeric_limits<D>::min() : 
-           src > std::numeric_limits<D>::max() ? std::numeric_limits<D>::max() : 
-           static_cast<D>(src);
+    if(is_float_type<D>()){ //hopefully this is const enough for optimize this expresseion out
+      return src < -std::numeric_limits<D>::max() ? -std::numeric_limits<D>::max() : 
+      src > std::numeric_limits<D>::max() ? std::numeric_limits<D>::max() : 
+      static_cast<D>(src);
+    }else{
+      return src < std::numeric_limits<D>::min() ? std::numeric_limits<D>::min() : 
+      src > std::numeric_limits<D>::max() ? std::numeric_limits<D>::max() : 
+      static_cast<D>(src);
+    }
   }
   
   /** \cond */
