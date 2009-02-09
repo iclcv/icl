@@ -370,7 +370,6 @@ namespace icl{
       bool initToggled = false;
       if(def.param(1).length() && def.param(1)[0] == '!'){
         initToggled = true;
-        m_poButton->setChecked(true);
       }
 
       getGUI()->lockData();
@@ -378,7 +377,10 @@ namespace icl{
       getGUI()->unlockData();
       
       m_poButton = new ToggleButton(def.param(0),def.param(1),def.parentWidget(),stateRef);
-
+      if(initToggled){
+        m_poButton->setChecked(true);
+      }
+      
       addToGrid(m_poButton);
       connect(m_poButton,SIGNAL(pressed()),this,SLOT(ioSlot()));
 
