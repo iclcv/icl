@@ -25,7 +25,7 @@ void init(){
 
 }
 void run(){
-  std::string defFormat = "__isel_%3.2f_amtec_%2.2f_lights_undef_left.tiff.jpeg";
+  std::string defFormat = "_isel_%3.2f_amtec_%2.2f_lights_undef_left.tiff.jpeg";
   // isel -> ry, amtec = rx
   SteppingRange<icl32f> rxrange(0,350,10);
   SteppingRange<icl32f> ryrange(-25,75,10);
@@ -55,7 +55,7 @@ void run(){
           static char filename[1024];
           sprintf(filename,fmt.c_str(),rx,ry);
           widget->updateAndSaveFrameBuffer(filename);
-          Thread::msleep(1);
+          Thread::msleep(10);
         }else{
           widget->updateFromOtherThread();
           Thread::msleep(10);
