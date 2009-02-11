@@ -80,7 +80,7 @@ ICL_PC_REQ="$ICL_PC_REQ $3"])
 AC_DEFUN([ICL_USE_PC_INPUT],[
 export PKG_CONFIG_PATH="$$1_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
 ICL_$1_LIBS=`pkg-config --libs-only-L $2`
-ICL_$1_LDFLAGS=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath=-L|g"`
+ICL_$1_LDFLAGS=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath=|g"`
 ICL_$1_LIBS="$ICL_$1_LIBS `pkg-config --libs-only-l $2`"
 ICL_$1_CXXFLAGS=`pkg-config --cflags-only-I $2`
 ICL_$1_CXXCPP="`pkg-config --cflags-only-other $2` -DHAVE_$1"
