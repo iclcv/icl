@@ -184,10 +184,18 @@ namespace icl{
     // {{{ open
 
     ImageCube3DDrawCommand(float x,float y,float z, float d, const ImgBase *image):x(x),y(y),z(z),d(d){
-      glimage = new GLTextureMapBaseImage(image);
+      glimages.push_back(new GLTextureMapBaseImage(image));
     }
+    ImageCube3DDrawCommand(float x,float y,float z, float d, const ImgBase *images[6]):x(x),y(y),z(z),d(d){
+      for(int i=0;i<6;++i){
+        glimages.push_back(new GLTextureMapBaseImage(images[i]));
+      }
+    }
+
     ~ImageCube3DDrawCommand(){
-      delete glimage;
+      for(unsigned int i=0;i<glimages.size();++i){
+        delete glimages[i];
+      }
     }
     virtual void execute(){
       
@@ -209,14 +217,23 @@ namespace icl{
       float G[3] = {x-d, y-d, z-d};
       float H[3] = {x-d, y+d, z-d};
 
-      glimage->drawTo3D(A,B,E);
-      glimage->drawTo3D(A,D,E);
-      glimage->drawTo3D(A,D,B);
-
-      glimage->drawTo3D(G,H,C);
-      glimage->drawTo3D(G,H,F);
-      glimage->drawTo3D(G,F,C);
-      
+      if(glimages.size() == 1){
+        glimages[0]->drawTo3D(A,B,E);
+        glimages[0]->drawTo3D(A,D,E);
+        glimages[0]->drawTo3D(A,D,B);
+        
+        glimages[0]->drawTo3D(G,H,C);
+        glimages[0]->drawTo3D(G,H,F);
+        glimages[0]->drawTo3D(G,F,C);
+      }else{
+        glimages[0]->drawTo3D(A,B,E);
+        glimages[1]->drawTo3D(A,D,E);
+        glimages[2]->drawTo3D(A,D,B);
+        
+        glimages[3]->drawTo3D(G,H,C);
+        glimages[4]->drawTo3D(G,H,F);
+        glimages[5]->drawTo3D(G,F,C);
+      }
       d*=2;
 
       if(wasLightingEnabled){
@@ -224,7 +241,7 @@ namespace icl{
       }
     }
     float x,y,z,d;
-    GLTextureMapBaseImage *glimage;
+    std::vector<GLTextureMapBaseImage*> glimages;
   };
 
   // }}}
@@ -538,6 +555,9 @@ namespace icl{
   }
   void ICLDrawWidget3D::imagecube3D(float cx, float cy, float cz, float d, const ImgBase *image){
     m_vecCommands3D.push_back(new ImageCube3DDrawCommand(cx,cy,cz,d,image));
+  }
+  void ICLDrawWidget3D::imagecube3D(float cx, float cy, float cz, float d, const ImgBase *images[6]){
+    m_vecCommands3D.push_back(new ImageCube3DDrawCommand(cx,cy,cz,d,images));
   }
   void ICLDrawWidget3D::image3D(float cX,float cY,float cZ,float aX, float aY,float aZ,float bX,float bY,float bZ, const ImgBase *image){
     m_vecCommands3D.push_back(new Image3DDrawCommand(cX,cY,cZ,aX,aY,aZ,bX,bY,bZ,image));

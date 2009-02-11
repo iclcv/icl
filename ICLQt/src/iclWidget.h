@@ -201,6 +201,9 @@ int main(int nArgs, char **ppcArg){
 
     /// this function should be called to update the widget asyncronously from a working thread
     void updateFromOtherThread();
+
+    /// updates the widget and writes the new framebuffer into the file (slow)
+    void updateAndSaveFrameBuffer(const std::string &filename);
     
     /// overloaded event function processing special thread save update events
     virtual bool event ( QEvent * event ){
@@ -308,8 +311,14 @@ int main(int nArgs, char **ppcArg){
     /// forward deklaration of internally used implemntation capturing gl output buffer
     class OutputBufferCapturer;
     
-    // internal implementation for capturing GL framebuffer
+    /// internal implementation for capturing GL framebuffer
     OutputBufferCapturer *m_poOutputBufferCapturer;
+    
+    /// if set, current framebuffer is written to this file 
+    std::string m_sFrameBufferCaptureFileName;
+    
+    /// protects the string above
+    QMutex m_oFrameBufferCaptureFileNameMutex;
   };
   
 }

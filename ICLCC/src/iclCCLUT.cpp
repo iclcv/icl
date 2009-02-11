@@ -1,64 +1,18 @@
 #include <iclCCLUT.h>
 #include <iclCC.h>
+
 using namespace std;
 using namespace icl;
 
-namespace{
-  const int C1 = 256;
-  const int C2 = 256*256;
-  const int C3 = 256*256*256;
-  icl8u ROW[256];
-  char BACK_LINE[] = { char(27), char(91), char(65), char(0)};// "\E[A\0"
-  struct ROW_INIT { ROW_INIT(){ for(int i=0;i<256;i++) ROW[i] = icl8u(i); } };
-  ROW_INIT __RI;
-
-  int BAR_LEN = 30;
-  
-  string PROGRESS_STR;
-}
-namespace icl{
-  void progress_init(const std::string &text){
-    // {{{ open
-
-    printf("\n");
-    printf("%s%s\n",BACK_LINE,text.c_str());
-    PROGRESS_STR = text;
-  }
-
-  // }}}
-  
-  void progress_finish(){
-    // {{{ open
-
-    printf("%s%s:100%s[##############################]\n",BACK_LINE,PROGRESS_STR.c_str(),"%");
-    
-  }
-
-  // }}}
-  
-  void progress(int curr, int max){
-    // {{{ open
-
-    printf("%s%s:",BACK_LINE,PROGRESS_STR.c_str());
-    float frac = (float)curr/(float)max;
-    printf("%3d%s",(int)(frac*100),"%");
-    
-    int N1 = (int)(frac*BAR_LEN);
-    int N2 = BAR_LEN - N1;
-    
-    printf("[");
-    for(int i=0;i<N1;i++){
-      printf("#");
-    }
-    for(int i=0;i<N2;i++){
-      printf("=");
-    }
-    printf("]\n");
-    
-  }
-}
 namespace {
   // }}}
+  static const int C1 = 256;
+  static const int C2 = 256*256;
+  static const int C3 = 256*256*256;
+
+  static unsigned char ROW[256];
+  struct ROW_INIT { ROW_INIT(){ for(int i=0;i<256;i++) ROW[i] = (unsigned char)(i); } } __RI;;
+
   
   template<class T>
   inline vector<T*> get_ptrs(Img<T> &image, int offs=0){

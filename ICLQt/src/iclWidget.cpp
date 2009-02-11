@@ -403,6 +403,24 @@ namespace icl{
     customPaintEvent(&pe);
 
     m_poOutputBufferCapturer->captureIfOn();
+
+    /// new!
+    {
+      QMutexLocker l(&m_oFrameBufferCaptureFileNameMutex);
+      if(m_sFrameBufferCaptureFileName != ""){
+        FileWriter w(m_sFrameBufferCaptureFileName);
+        QImage qim = grabFrameBuffer();
+        QImageConverter converter(&qim);
+        try{
+          w.write(converter.getImg<icl8u>());
+        }catch(...){
+          ERROR_LOG("unable to write framebuffer to file: \"" 
+                    << m_sFrameBufferCaptureFileName << "\"");
+        }
+        m_sFrameBufferCaptureFileName = "";
+      }
+    }
+
   }
 
   // }}}
@@ -842,6 +860,15 @@ namespace icl{
 
   unsigned int ICLWidget::getCapturingFrameSkip() const{
     return m_poOutputBufferCapturer->getFrameSkip();
+  }
+
+  void ICLWidget::updateAndSaveFrameBuffer(const std::string &filename){
+    {
+      QMutexLocker l(&m_oFrameBufferCaptureFileNameMutex);
+      m_sFrameBufferCaptureFileName = filename;
+    }
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
+    QCoreApplication::processEvents();
   }
 
 }

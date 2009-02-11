@@ -13,7 +13,7 @@ void init(){
   widget->show();
 }
 void run(){
-  GenericGrabber g;
+  GenericGrabber g(FROM_PROGARG_DEF("-input","pwc","0"));
   g.setDesiredSize(size);
   
   static float rz = 2;    
@@ -64,6 +64,8 @@ void run(){
 
 
 int main(int n, char **ppc){
+  pa_explain("-input","e.g. -input dc 0 or -input file images/*.ppm1");
+  pa_init(n,ppc,"-input(2)");
   ExecThread x(run);
   QApplication a(n,ppc);
   init();

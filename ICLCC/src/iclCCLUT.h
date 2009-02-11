@@ -4,17 +4,9 @@
 #include <iclImg.h>
 #include <vector>
 #include <string>
+#include <iclConsoleProgress.h>
 
 namespace icl{
-
-  /// static utility function for displaying some progress information in console
-  void progress_init(const std::string &text="Creating LUT");
-
-  /// static utility function for displaying some progress information in console
-  void progress_finish();
-
-  /// static utility function for displaying some progress information in console
-  void progress(int curr, int max);
 
   class CCLUT{
     public:
@@ -28,7 +20,7 @@ namespace icl{
   };
   
   
-  /// TODO basisklass CCLUT
+  /// TODO basisclass CCLUT
   /// unterklassen CCLUT3x3 usw
   /** evtl: kleinere luts durch internes runtersamplen der
       farbinfos z.B. factor 2 oder 4

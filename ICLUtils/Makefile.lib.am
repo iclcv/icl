@@ -14,7 +14,8 @@ libICLUtils_la_SOURCES= \
 ../src/iclStrTok.cpp \
 ../src/iclThread.cpp \
 ../src/iclTime.cpp \
-../src/iclTimer.cpp
+../src/iclTimer.cpp \
+../src/iclConsoleProgress.cpp
 
 include_HEADERS= \
 ../src/config.h \
@@ -43,4 +44,5 @@ include_HEADERS= \
 ../src/iclTime.h \
 ../src/iclTimer.h \
 ../src/iclUncopyable.h \
-../src/iclUtils.h
+../src/iclUtils.h \
+../src/iclConsoleProgress.h

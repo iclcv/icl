@@ -138,7 +138,7 @@ namespace icl{
         on the underlying image, but not on the Channel struct itself. Hence
         all class data is mutable */
     const Channel<T> &operator=(const Channel<T> &other) const{
-      return *const_cast<Channel*>(this) = other;
+      return *const_cast<Channel*>(this) = const_cast<Channel<T>&>(other);
     }
 
     /// main working function: returns a reference to the pixel at position (x,y)

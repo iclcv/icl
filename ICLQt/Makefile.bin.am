@@ -23,6 +23,7 @@ XCXXFLAGS= ${CXXFLAGS} \
 #################################################################################
 bin_PROGRAMS= \
 icl-3D-demo \
+icl-3D-demo-2 \
 icl-camviewer-lite \
 icl-chroma-demo \
 icl-colorpicker \
@@ -39,6 +40,10 @@ icl-camcfg
 icl_3D_demo_SOURCES=../examples/3D-demo.cpp
 icl_3D_demo_LDFLAGS=${XLDFLAGS}
 icl_3D_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_3D_demo_2_SOURCES=../examples/3D-demo-2.cpp
+icl_3D_demo_2_LDFLAGS=${XLDFLAGS}
+icl_3D_demo_2_CXXFLAGS=${XCXXFLAGS}
 
 icl_camcfg_SOURCES=../examples/camcfg.cpp
 icl_camcfg_LDFLAGS=${XLDFLAGS}

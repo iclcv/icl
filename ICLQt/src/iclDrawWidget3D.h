@@ -57,6 +57,10 @@ namespace icl{
     /// draws a 3D cube with size d at given location (x,y,z)
     void imagecube3D(float cx, float cy, float cz, float d, const ImgBase *image);
 
+    /// draws a 3D cube with size d at given location (x,y,z)
+    /** @param images array of images to draw on each face of the cube*/
+    void imagecube3D(float cx, float cy, float cz, float d, const ImgBase *images[6]);
+
     /// draw a 3D image texture into the parallelogram defined by the base vector c and two direction vector a and b
     void image3D(float cX,float cY,float cZ,float aX, float aY,float aZ,float bX,float bY,float bZ, const ImgBase *image);
 
