@@ -4,7 +4,7 @@
 #include <iclGeomDefs.h>
 #include <iclBorderedObject.h>
 #include <iclCubeObject.h>
-#include <iclSzene.h>
+#include <iclScene.h>
 #include <iclCamera.h>
 
 #endif

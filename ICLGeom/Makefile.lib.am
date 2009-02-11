@@ -7,7 +7,7 @@ libICLGeom_la_SOURCES= \
 ../src/iclConvexHullMonotoneChain.cpp \
 ../src/iclCubeObject.cpp \
 ../src/iclObject.cpp \
-../src/iclSzene.cpp
+../src/iclScene.cpp
 
 include_HEADERS= \
 ../src/iclBorderedObject.h \
@@ -17,7 +17,7 @@ include_HEADERS= \
 ../src/iclGeomDefs.h \
 ../src/iclGeom.h \
 ../src/iclObject.h \
-../src/iclSzene.h
+../src/iclScene.h
 
 
 libICLGeom_la_CXXFLAGS=${AM_CXXFLAGS} \

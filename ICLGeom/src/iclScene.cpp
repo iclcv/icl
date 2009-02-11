@@ -1,17 +1,17 @@
-#include <iclSzene.h>
+#include <iclScene.h>
 #include <iclStackTimer.h>
 
 namespace icl{
-  Szene::Szene(const Rect &viewPort,const Camera &cam):
+  Scene::Scene(const Rect &viewPort,const Camera &cam):
     m_oViewPort(viewPort),m_oCam(cam),m_oTransMat(Mat::id()){}
   
-  Szene::~Szene(){
+  Scene::~Scene(){
     for(unsigned int i=0;i<m_vecObjs.size();++i){
       delete m_vecObjs[i];
     }
   }
   
-  Szene &Szene::operator=(const Szene &other){
+  Scene &Scene::operator=(const Scene &other){
     m_oViewPort = other.m_oViewPort;
     m_oCam = other.m_oCam;
 
@@ -23,7 +23,7 @@ namespace icl{
     return *this;
   }
 
-  Mat Szene::getViewPortMatrix() const{
+  Mat Scene::getViewPortMatrix() const{
     //float dx = m_oViewPort.width/2;
     //float dy = m_oViewPort.height/2;
 
@@ -37,7 +37,7 @@ namespace icl{
   }
 
   // old     Mat C = m_oCam.getTransformationMatrix();
-  void Szene::update(){
+  void Scene::update(){
     Mat C = m_oCam.getCoordinateSystemTransformationMatrix();
     Mat P = m_oCam.getProjectionMatrix();
     Mat V = getViewPortMatrix();
@@ -50,22 +50,22 @@ namespace icl{
     }
   }
   
-  void Szene::render(ICLDrawWidget *w) const{
+  void Scene::render(ICLDrawWidget *w) const{
     for(unsigned int i=0;i<m_vecObjs.size();i++){
       m_vecObjs[i]->render(w);
     }
   }
-  void Szene::render(Img32f *image) const{
+  void Scene::render(Img32f *image) const{
     for(unsigned int i=0;i<m_vecObjs.size();i++){
       m_vecObjs[i]->render(image);
     }            
   }
   
-  void Szene::add(Object *obj){
+  void Scene::add(Object *obj){
     m_vecObjs.push_back(obj);
   }
   
-  void Szene::remove(Object *obj){
+  void Scene::remove(Object *obj){
     std::vector<Object*>::iterator it = find(m_vecObjs.begin(),m_vecObjs.end(),obj);
     if(it != m_vecObjs.end()){
       delete *it;
@@ -73,19 +73,19 @@ namespace icl{
     }
   }
   
-  void Szene::transformAllObjs(const Mat &m){
+  void Scene::transformAllObjs(const Mat &m){
     for(unsigned int i=0;i<m_vecObjs.size();i++){
       m_vecObjs[i]->transform(m);
     }
   }
 
-  void Szene::showMatrices(const std::string &title) const{
+  void Scene::showMatrices(const std::string &title) const{
     Mat C = m_oCam.getCoordinateSystemTransformationMatrix();
     Mat P = m_oCam.getProjectionMatrix();
     Mat V = getViewPortMatrix();
     Mat T = m_oTransMat;
     
-    printf("ICLGeom::Szene \"%s\" \n",title.c_str());
+    printf("ICLGeom::Scene \"%s\" \n",title.c_str());
     // C.show("camera coordinate system transformation matrix (C)");
     //m_oTransMat.show("transformationmatrix (T)");
     //V.show("view port matrix (V)");

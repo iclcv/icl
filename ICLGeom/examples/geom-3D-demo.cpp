@@ -1,7 +1,7 @@
 #include <iclQuick.h>
 #include <iclGeom.h>
 
-#include <iclSzene.h>
+#include <iclScene.h>
 #include <iclCamera.h>
 #include <iclCubeObject.h>
 
@@ -35,44 +35,44 @@ public:
     float zNear=0.1;
     float zFar=100;
     
-    szene = new Szene(Rect(0,0,640,480),Camera(pos,norm,up,f,zNear,zFar));
+    scene = new Scene(Rect(0,0,640,480),Camera(pos,norm,up,f,zNear,zFar));
     
     for(int x=-1;x<2;x++){
       for(int y=-1;y<2;y++){
         for(int z=-1;z<2;z++){
-          szene->add(new CubeObject(10*x,10*y,10*z,5));
+          scene->add(new CubeObject(10*x,10*y,10*z,5));
         }
       }
     }
   }
   virtual void run(){
-    Camera &cam = szene->getCam();
+    Camera &cam = scene->getCam();
     cam.setFocalLength(1.6); /// 1 equals 90° view arc !
     while(1){
 
       w->lock();
       w->reset();
 
-      szene->transformAllObjs(create_hom_4x4<float>(0.02,0.03,0));  
+      scene->transformAllObjs(create_hom_4x4<float>(0.02,0.03,0));  
     
-      //      szene->update();
-      //szene->render(w);
+      //      scene->update();
+      //scene->render(w);
 
       for(int x=0;x<3;x++){
         for(int y=0;y<3;y++){
-          szene->setViewPort(Rect(x*640/3,y*480/3,640/3,480/3).enlarged(-10));
-          szene->update();
-          szene->render(w);
+          scene->setViewPort(Rect(x*640/3,y*480/3,640/3,480/3).enlarged(-10));
+          scene->update();
+          scene->render(w);
         }
       }
 
       w->unlock();
       w->update();
 
-      szene->setViewPort(Rect(0,0,640,480));
-      szene->update();
+      scene->setViewPort(Rect(0,0,640,480));
+      scene->update();
       image.clear();
-      szene->render(&image);
+      scene->render(&image);
       w2->setImage(&image);
       w2->update();
       msleep(50);
@@ -80,7 +80,7 @@ public:
     }
   }
   ImgQ image;
-  Szene *szene;
+  Scene *scene;
   ICLDrawWidget *w,*w2;
 };
 

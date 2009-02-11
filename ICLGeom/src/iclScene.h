@@ -14,12 +14,12 @@ namespace icl{
   class ICLDrawWidget;
   /** \endcond*/
   
-  /// class for a 3D Szene containing objects and a camera
-  /** The szene class is top level class for 3D geometry handling
+  /// class for a 3D Scene containing objects and a camera
+  /** The scene class is top level class for 3D geometry handling
       using the ICLGeom package.
       
-      A Szene has a virtual camera and a list of all currently available
-      Objects. After Objects have been added, the szene cam be updated.
+      A Scene has a virtual camera and a list of all currently available
+      Objects. After Objects have been added, the scene cam be updated.
       This must be done each time, when 
       - Objects have been changed
       - The camera has been changed
@@ -27,7 +27,7 @@ namespace icl{
       E.g.
       \code
       Size size(640,480);
-      Szene s(size);
+      Scene s(size);
       s.add(new CubeObject(...));
       s.cam.transform(...));
       s.update();
@@ -36,9 +36,9 @@ namespace icl{
       \endcode
       
       */
-  class Szene : public Uncopyable{
+  class Scene : public Uncopyable{
     public:
-    /// Create a new Szene with give view-port size
+    /// Create a new Scene with give view-port size
     /** The view-port-size is given to the internally 
         created camera
         @param viewPort view-port size, which must be equal
@@ -49,39 +49,39 @@ namespace icl{
                          function.
         @param cam TODO
     */
-    Szene(const Rect &viewPort=Rect(0,0,320,240),const Camera &cam=Camera() );
+    Scene(const Rect &viewPort=Rect(0,0,320,240),const Camera &cam=Camera() );
     
     /// Copy constructor (contained objects are not copied)
-    Szene(const Szene &other){
+    Scene(const Scene &other){
       *this = other;
     }
 
     /// Destructor
-    ~Szene();
+    ~Scene();
     
     /// Assignment operator (contained objects are not copied)
     /** internal objects are deleted */
-    Szene &operator=(const Szene &other);
+    Scene &operator=(const Scene &other);
 
-    /// returns the szenes camera
+    /// returns the scenes camera
     Camera &getCam(){ return m_oCam; }
 
-    /// returns the szenes camera
+    /// returns the scenes camera
     const Camera &getCam() const{ return m_oCam; }
     
-    /// renders the szene into the given draw-widget
+    /// renders the scene into the given draw-widget
     void render(ICLDrawWidget *w) const;
 
-    /// renders the szene into the given image
+    /// renders the scene into the given image
     void render(Img32f *image) const;
     
-    /// adds a new Object to the szene (objects ownership is passed)
+    /// adds a new Object to the scene (objects ownership is passed)
     void add(Object *obj);
     
-    /// removes this Object from the szene (object is released internally)
+    /// removes this Object from the scene (object is released internally)
     void remove(Object *obj);
     
-    /// updates all objects in the szene
+    /// updates all objects in the scene
     /** This function has to be called after 
         -# the camera has been changed or
         -# objects have been changed or added */
@@ -90,12 +90,12 @@ namespace icl{
     /// passes the given matrix to all objects transform(.)-function
     void transformAllObjs(const Mat &m);
 
-    /// transforms the szene transformation matrix
+    /// transforms the scene transformation matrix
     void transform(const Mat &m){
       m_oTransMat *= m;
     }
     
-    /// resets the current szene transformation matrix
+    /// resets the current scene transformation matrix
     void resetTransformation() {
       m_oTransMat = Mat::id();
     }
@@ -108,7 +108,7 @@ namespace icl{
     const Rect &getViewPort() const{
       return m_oViewPort;
     }
-    /// returns the current szene transformation matrix
+    /// returns the current scene transformation matrix
     const Mat &getTransformation() const {
       return m_oTransMat;
     }
@@ -123,13 +123,13 @@ namespace icl{
     /// current view port
     Rect m_oViewPort;
     
-    /// szene camera
+    /// scene camera
     Camera m_oCam;
     
-    /// list of currently available szene objects
+    /// list of currently available scene objects
     std::vector<Object*> m_vecObjs;
     
-    /// current szene trans formation (id by default)
+    /// current scene trans formation (id by default)
     Mat m_oTransMat;
   };
   
