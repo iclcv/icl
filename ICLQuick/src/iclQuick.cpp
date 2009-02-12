@@ -918,6 +918,11 @@ namespace icl{
   template ImgQ binAND<icl16s>(const ImgQ&, const ImgQ&);
   template ImgQ binAND<icl32s>(const ImgQ&, const ImgQ&);
 
+  template ImgQ binXOR<icl8u>(const ImgQ&, const ImgQ&);
+  template ImgQ binXOR<icl16s>(const ImgQ&, const ImgQ&);
+  template ImgQ binXOR<icl32s>(const ImgQ&, const ImgQ&);
+
+
   ImgQ operator,(const ImgQ &a, const ImgQ &b){
     // {{{ open
     if(a.getSize() == Size::null) return copy(b);
