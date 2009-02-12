@@ -865,6 +865,28 @@ namespace icl{
   }
 
   // }}}
+
+  template<class T>
+  ImgQ binXOR(const ImgQ &a, const ImgQ &b){
+    // {{{ open
+    ImgQ na,nb;
+    ImgQ *res = prepare_for_binary_op(a,b,na,nb);
+    ImgQ r = *res;
+    delete res;
+    for(int c=0;c<a.getChannels();c++){
+      ImgIterator<ICL_QUICK_TYPE> itA = na.beginROI(c);
+      const ImgIterator<ICL_QUICK_TYPE> itAEnd = na.endROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itB = nb.beginROI(c);
+      ImgIterator<ICL_QUICK_TYPE> itR = r.beginROI(c);
+      for(;itA != itAEnd;++itA,++itB, ++itR){
+        T val = clipped_cast<ICL_QUICK_TYPE,T>(*itA) ^ clipped_cast<ICL_QUICK_TYPE,T>(*itB);
+        *itR = clipped_cast<T,ICL_QUICK_TYPE>(val);
+      }
+    }
+    return r;
+  }
+
+  // }}}
   
   template<class T>
   ImgQ binAND(const ImgQ &a, const ImgQ &b){
