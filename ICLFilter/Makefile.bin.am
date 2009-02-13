@@ -34,7 +34,8 @@ icl-threshold-op-test \
 icl-unary-op-mt-test \
 icl-weight-channels-op-test \
 icl-weighted-sum-op-test \
-icl-convolution-op-test
+icl-convolution-op-test \
+icl-warp-op-test
 
 
 
@@ -74,6 +75,10 @@ icl_weight_channels_op_test_CXXFLAGS=${XCXXFLAGS}
 icl_weighted_sum_op_test_SOURCES=../examples/weighted-sum-op-test.cpp
 icl_weighted_sum_op_test_LDFLAGS=${XLDFLAGS}
 icl_weighted_sum_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_warp_op_test_SOURCES=../examples/warp-op-test.cpp
+icl_warp_op_test_LDFLAGS=${XLDFLAGS}
+icl_warp_op_test_CXXFLAGS=${XCXXFLAGS}
 
 
 if HAVE_IPP_COND

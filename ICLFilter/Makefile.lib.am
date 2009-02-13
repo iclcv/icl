@@ -32,7 +32,8 @@ libICLFilter_la_SOURCES= \
 ../src/iclUnaryOp.cpp \
 ../src/iclUnaryOpPipe.cpp \
 ../src/iclWeightChannelsOp.cpp \
-../src/iclWeightedSumOp.cpp
+../src/iclWeightedSumOp.cpp \
+../src/iclWarpOp.cpp
 
 
 include_HEADERS= \
@@ -75,7 +76,8 @@ include_HEADERS= \
 ../src/iclUnaryOpPipe.h \
 ../src/iclUnaryOpWork.h \
 ../src/iclWeightChannelsOp.h \
-../src/iclWeightedSumOp.h
+../src/iclWeightedSumOp.h \
+../src/iclWarpOp.h
 
 
 
