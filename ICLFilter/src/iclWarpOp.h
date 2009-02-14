@@ -60,18 +60,41 @@ namespace icl{
    */
   class WarpOp : public UnaryOp{
     public:
-    WarpOp(const Img32f &warpMap=Img32f(), 
-           scalemode mode=interpolateLIN,
-           bool allowWarpMapScaling=true);
     
+    /// create a new WarpOp instance
+    /** This constructor has been made explicit to avoid ambiguity in case of
+        calling WarpOp(ImgQ()) or something like that.
+        @param warpMap map that contains new x-coortinates in the first channel
+                           and new y-coordinates in the 2nd one
+        @param mode interpolation mode either interpolateLIN or interpolateNN
+        @param allowWarpMapScaling if set to true, the WarpOp instance will
+               internally create a scaled warp map in case of differing warp map
+               and image size
+    **/
+    explicit WarpOp(const Img32f &warpMap=Img32f(), 
+                    scalemode mode=interpolateLIN,
+                    bool allowWarpMapScaling=true);
+    
+    /// Sets a new scalemode (either interpolateLIN or interpolateNN)    
     void setScaleMode(scalemode scaleMode);
+
+    /// Sets a new warp map
     void setWarpMap(const Img32f &warpMap);
+
+    /// Sets the allow warp-map-scaling features
+    /** @see WarpOp(const Img32f&,scalemode,bool)*/
     void setAllowWarpMapScaling(bool allow);
 
+    /// returns the current scalemode
     scalemode getScaleMode() const { return m_scaleMode; }
+
+    /// returns the current warp map
     const Img32f &getWarpMap() const { return m_warpMap; }
-    bool getAllowWarpMapScaling() const{ return m_allowWarpMapScaling; }
+
+    /// returns whether warp map scaling is allowed
+    bool getAllowWarpMapScaling() const { return m_allowWarpMapScaling; }
     
+    /// virtual apply function
     virtual void apply(const ImgBase *src, ImgBase **dst);
     
     private:

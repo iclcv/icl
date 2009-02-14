@@ -138,6 +138,8 @@ namespace icl{
     ICLASSERT_RETURN(src);
     ICLASSERT_RETURN(dst);
     ICLASSERT_RETURN(src != *dst);
+    ICLASSERT_RETURN(m_warpMap.getSize() != Size::null);
+
     if(!src->hasFullROI()){
       ERROR_LOG("warp op does currently not support ROI");
       return;
