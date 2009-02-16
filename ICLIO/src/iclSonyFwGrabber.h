@@ -37,7 +37,7 @@ namespace icl {
 
     /// grabbing function  
     /** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    
-    virtual const ImgBase* grab(ImgBase **poDst=0);
+    virtual const ImgBase* grabUD(ImgBase **poDst=0);
 
     void grabStereo (ImgBase*& ppoDstLeft, ImgBase*& ppoDstRight);
     void grabStereoTrigger (ImgBase*& leftImage, ImgBase*& rightImage);

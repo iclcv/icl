@@ -44,7 +44,7 @@ namespace icl {
     }
   }
 
-   const ImgBase* XCFGrabberBase::grab (ImgBase **ppoDst) {
+   const ImgBase* XCFGrabberBase::grabUD (ImgBase **ppoDst) {
      receive (m_result);
      
      LocationPtr loc = xmltio::find(xmltio::Location(m_result->getXML()), 

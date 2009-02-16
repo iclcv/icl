@@ -119,7 +119,7 @@ namespace icl{
       
     /// grab function grabs an image (destination image is adapted on demand)
     /** @copydoc icl::Grabber::grab(ImgBase**) **/
-    virtual const ImgBase *grab (ImgBase **ppoDst=0);
+    virtual const ImgBase *grabUD (ImgBase **ppoDst=0);
     
     
     /// Returns a list of all connected DCDevices

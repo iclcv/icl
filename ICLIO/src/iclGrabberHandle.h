@@ -146,10 +146,10 @@ namespace icl{
     }
    
     /// calles underlying grabber's grab function
-    virtual inline const ImgBase* grab(ImgBase **ppoDst=0){
+    virtual inline const ImgBase* grabUD(ImgBase **ppoDst=0){
       ICLASSERT_RETURN_VAL(!isNull(),0);
       Mutex::Locker l(m_instance->mutex);
-      return m_instance->ptr->grab(ppoDst);
+      return m_instance->ptr->grabUD(ppoDst);
     }
     /// calles underlying grabber's setProperty function
     virtual inline void setProperty(const std::string &property, const std::string &value){      

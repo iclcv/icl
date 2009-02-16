@@ -69,7 +69,7 @@ namespace icl{
       ICL_DELETE(m_buffer);
     }
     
-    const ImgBase *grab(ImgBase **ppoDst){
+    const ImgBase *grabUD(ImgBase **ppoDst){
       Event e;
       while (m_evtSrc->next(e)) { // this call locks!
         xmltio::LocationPtr loc = xmltio::find (e.getDocument(),m_xpath);
@@ -113,7 +113,7 @@ namespace icl{
     
   }
 
-  const ImgBase *XCFMemoryGrabber::grab(ImgBase **ppoDst){
+  const ImgBase *XCFMemoryGrabber::grabUD(ImgBase **ppoDst){
     return impl->grab(ppoDst);
   }
 

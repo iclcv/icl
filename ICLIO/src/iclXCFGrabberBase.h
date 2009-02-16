@@ -31,7 +31,7 @@ namespace icl {
     
     /// grabbing function  
     /** \copydoc icl::Grabber::grab(ImgBase**)*/
-    virtual const ImgBase* grab(ImgBase **ppoDst=0);
+    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
       
     /// grabbing a whole image set, e.g. from a stereo camera
     /** The vector of images is resized to match the number of grabbed
@@ -40,6 +40,9 @@ namespace icl {
         to the caller! 
      */
     void grab (std::vector<ImgBase*>& vGrabbedImages);
+
+    /// just imported from parent class
+    Grabber::grab;
   
     /// TODO: use internally
     void setIgnoreDesiredParams(bool flag){

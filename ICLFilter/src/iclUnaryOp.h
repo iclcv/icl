@@ -34,6 +34,9 @@ namespace icl{
 
     /// *NEW* apply function for multithreaded filtering (currently even slower than using one thread)
     virtual void applyMT(const ImgBase *operand1, ImgBase **dst, unsigned int nThreads);
+
+    /// applys the filter usign an internal buffer as output image
+    const ImgBase *apply(const ImgBase *src);
     
     /// sets if the image should be clip to ROI or not
     /**
@@ -82,6 +85,8 @@ namespace icl{
     private:
   
     OpROIHandler m_oROIHandler;
+    
+    ImgBase *m_buf;
   };    
 }
 #endif

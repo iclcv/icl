@@ -5,9 +5,10 @@
 
 namespace icl{
 
-  UnaryOp::UnaryOp():m_poMT(0){};
+  UnaryOp::UnaryOp():m_poMT(0),m_buf(0){};
   
-  UnaryOp::UnaryOp(const UnaryOp &other):m_poMT(0),m_oROIHandler(other.m_oROIHandler){}
+  UnaryOp::UnaryOp(const UnaryOp &other):
+    m_poMT(0),m_oROIHandler(other.m_oROIHandler),m_buf(0){}
   
   UnaryOp &UnaryOp::operator=(const UnaryOp &other){
     m_oROIHandler = other.m_oROIHandler;
@@ -16,7 +17,14 @@ namespace icl{
   }
   UnaryOp::~UnaryOp(){
     ICL_DELETE( m_poMT );
+    ICL_DELETE( m_buf );
   }
+  
+  const ImgBase *UnaryOp::apply(const ImgBase *src){
+    apply(src,&m_buf);
+    return m_buf;
+  }
+
   
   void UnaryOp::applyMT(const ImgBase *poSrc, ImgBase **ppoDst, unsigned int nThreads){
     ICLASSERT_RETURN( nThreads > 0 );

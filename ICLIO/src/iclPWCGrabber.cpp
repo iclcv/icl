@@ -43,7 +43,7 @@ namespace icl {
       return false;
     }
     
-    const ImgBase* PWCGrabberImpl::grab(ImgBase **ppoDst){
+    const ImgBase* PWCGrabberImpl::grabUD(ImgBase **ppoDst){
       (void) ppoDst;
       return 0;
     }
@@ -894,7 +894,7 @@ void save_setparams(int device){
   
   
   
-  const ImgBase* PWCGrabberImpl::grab(ImgBase **ppoDst){
+  const ImgBase* PWCGrabberImpl::grabUD(ImgBase **ppoDst){
     // {{{ open 
 
   ImgBase *poOutput = prepareOutput (ppoDst);

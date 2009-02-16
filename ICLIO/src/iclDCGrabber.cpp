@@ -35,7 +35,7 @@ namespace icl{
 
   // }}}
   
-  const ImgBase *DCGrabberImpl::grab (ImgBase **ppoDst){
+  const ImgBase *DCGrabberImpl::grabUD (ImgBase **ppoDst){
     // {{{ open
 
     /*

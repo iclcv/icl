@@ -8,6 +8,7 @@
 #include <vector>
 #include <iclSteppingRange.h>
 #include <iclUncopyable.h>
+#include <iclDistFromProgArgUtil.h>
 /*
   Grabber.h
 
@@ -20,6 +21,7 @@
 namespace icl {
   /** \cond */
   class ImgBase;
+  class WarpOp;
   /** \endcond */
   
   /// Common interface class for all grabbers \ingroup GRABBER_G
@@ -35,12 +37,12 @@ namespace icl {
     m_oDesiredParams (Size(320,240), formatRGB),
     m_eDesiredDepth (depth8u), 
     m_poImage (0),
-    m_bIgnoreDesiredParams(false)
-    {}
+    m_bIgnoreDesiredParams(false),m_warp(0),m_distortionBuffer(0){}
+
 
     
     /// Destructor
-    virtual ~Grabber() { if(m_poImage) delete m_poImage;}
+    virtual ~Grabber();
 
     /// **NEW** grab function grabs an image (destination image is adapted on demand)
     /** This new grab function is one of the main parts of the ICL Grabber interface. Its 
@@ -59,8 +61,27 @@ namespace icl {
         @param ppoDst destination image (pointer-to-pointer)
         @return grabbed image (if ppoDst != 0 and depth matches) equal to *ppoDst
      **/
-     virtual const ImgBase* grab(ImgBase **ppoDst=0) = 0;
+     virtual const ImgBase* grabUD(ImgBase **ppoDst=0) = 0;
 
+
+    /// **NEW** grab function grabs an image (destination image is adapted on demand)
+    /** This new grab function is one of the main parts of the ICL Grabber interface. Its 
+        underlying philosophy is as follows:
+        - if ppoDst is NULL, a constant image (owned by the grabber) is retuned. 
+        The returned image will have the desired depth and image params, which is ensured
+        by an appropriate conversion from the originally grabbed image if neccessary.
+        - if ppoDst is valid, but it points to a NULL-Pointer (ppoDst!=NULL but *ppoDst==NULL),
+        a new image is created exacly at (*ppoDst). This image is owned by the calling 
+        aplication and not by the Grabber.
+        - if ppoDst is valid, and it points to a valid ImgBase*, this ImgBase* is exploited
+        as possible. If its depth differs from the currently "desired" depth value, it is 
+        released, and a new image with the "desired" params and depth is created at (*ppoDst).
+        Otherwise, the the ImgBase* at *poDst is adapted in format, channel count and size
+        to the "desired" params, before it is filled with data and returned
+        @param ppoDst destination image (pointer-to-pointer)
+        @return grabbed image (if ppoDst != 0 and depth matches) equal to *ppoDst
+     **/
+     const ImgBase *grab(ImgBase **ppoDst=0);
 
      /// @{ @name get/set properties  
 
@@ -221,7 +242,44 @@ namespace icl {
      }
      
      /// @}
+
      
+     /// @{ @name distortion functions
+     
+     /// enabled the distortion plugin for the grabber using radial distortion parameters
+     /** distortion is calculated as follows: 
+         \code    
+         Point32f distort(int xi, int yi){
+           const double &x0 = params[0];
+           const double &y0 = params[1];
+           const double &f = params[2]/100000000.0;
+           const double &s = params[3];
+         
+           float x = s*(xi-x0);
+           float y = s*(yi-y0);
+           float p = 1 - f * (x*x + y*y);
+           return Point32f(p*x + x0,p*y + y0);
+         }
+         \endcode
+         
+         - Good params for pwc camera are { 354.5, 185, 25.7, 1.00904}
+         - optimal parameters can be found using the ICL-application
+           'icl-calib-radial-distortion'
+
+     */
+     void enableDistortion(double params[4],const Size &size, scalemode m=interpolateLIN);
+
+     /// enables distortion for given warp map
+     void enableDistortion(const Img32f &warpMap, scalemode m=interpolateLIN);
+     
+     /// disables distortion
+     void disableDistortion();
+     
+     /// returns whether distortion is currently enabled
+     bool isDistortionEnabled() const { return !!m_warp; }
+     
+     /// @}
+
     protected:
      /// prepare depth and params of output image according to desired settings
      ImgBase* prepareOutput (ImgBase **ppoDst);
@@ -249,8 +307,15 @@ namespace icl {
      /// Flag to indicate whether desired parametes should be ignored
      bool m_bIgnoreDesiredParams;
 
-  }; // class
+     /// for distortion
+     WarpOp *m_warp;
+     
+     /// for distortion
+     ImgBase *m_distortionBuffer;
+  }; 
  
+
+
 } // namespace icl
 
 #endif

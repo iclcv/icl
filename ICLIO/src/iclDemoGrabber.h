@@ -16,7 +16,7 @@ namespace icl{
     friend class DemoGrabber;
 
     /// default grab function
-    virtual const ImgBase* grab(ImgBase **ppoDst=0);
+    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
     
     private:
     /// Create a DemoGrabber with given max. fps count

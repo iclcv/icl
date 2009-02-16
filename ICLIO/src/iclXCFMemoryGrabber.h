@@ -22,7 +22,7 @@ namespace icl{
     XCFMemoryGrabber(const std::string &memoryName,const std::string &imageXPath="//IMAGE");
 
     /// get next image
-    virtual const ImgBase *grab(ImgBase **ppoDst=0);
+    virtual const ImgBase *grabUD(ImgBase **ppoDst=0);
    
     // TODO setIgnoreDesiredParams(bool) 
     // TODO const xmltio::TIODocment *getLastDocument() const;

@@ -192,7 +192,7 @@ namespace icl{
 
   // }}}
   
-  const ImgBase *FileGrabber::grab(ImgBase **ppoDst){
+  const ImgBase *FileGrabber::grabUD(ImgBase **ppoDst){
     // {{{ open
 
     if(m_bBufferImages){

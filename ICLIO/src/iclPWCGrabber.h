@@ -89,7 +89,7 @@ namespace icl{
     
     /// grabbing function  
     /** \copydoc icl::Grabber::grab(ImgBase**)  **/    
-    virtual const ImgBase* grab(ImgBase **ppoDst=0);
+    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
 
     /** @{ @name properties and parameters */
     

@@ -1,4 +1,5 @@
 #include "iclGrabber.h"
+#include <iclWarpOp.h>
 #include <algorithm>
 #include <cstring>
 
@@ -34,6 +35,13 @@ namespace icl{
 
     // }}}
   }
+
+  Grabber::~Grabber() { 
+    ICL_DELETE( m_poImage );
+    ICL_DELETE( m_distortionBuffer );
+    ICL_DELETE( m_warp );
+  }
+
   
   bool Grabber::supportsProperty(const std::string &property){
     // {{{ open
@@ -191,4 +199,63 @@ namespace icl{
      ensureCompatible(ppoDst, m_eDesiredDepth, m_oDesiredParams);
      return *ppoDst;
   }
+
+  
+  const ImgBase *Grabber::grab(ImgBase **ppoDst){
+    if(!m_warp) return grabUD(ppoDst);
+    
+    if(ppoDst){
+      m_warp->apply(grabUD(),ppoDst);
+      return *ppoDst;
+    }else{
+      m_warp->apply(grabUD(),&m_distortionBuffer);
+      return m_distortionBuffer;
+    }
+  }
+
+
+
+  static inline void distort_point(const double params[4], int xi, int yi,float &xd, float &yd){
+    const double &x0 = params[0];
+    const double &y0 = params[1];
+    const double &f = params[2]/100000000.0;
+    const double &s = params[3];
+    
+    float x = s*(xi-x0);
+    float y = s*(yi-y0);
+    float p = 1 - f * (x*x + y*y);
+    xd = (p*x + x0);
+    yd = (p*y + y0);
+  }
+  
+  void Grabber::enableDistortion(double params[4],const Size &size, scalemode m){
+    Img32f image(size,2);
+    Channel32f cs[2];
+    image.extractChannels(cs);
+    
+    for(float xi=0;xi<size.width;++xi){
+      for(float yi=0;yi<size.height; ++yi){
+        distort_point(params,xi,yi,cs[0](xi,yi),cs[1](xi,yi));
+      }
+    }
+    enableDistortion(image,m);
+  }
+  
+  
+  void Grabber::enableDistortion(const Img32f &warpMap, scalemode m){
+    if(!m_warp){
+      m_warp = new WarpOp;
+    }
+    m_warp->setWarpMap(warpMap);
+    m_warp->setScaleMode(m);
+  }
+  
+  void Grabber::disableDistortion(){
+    ICL_DELETE(m_warp);
+    ICL_DELETE(m_distortionBuffer);
+  }
+  
+
+
+
 }

@@ -376,7 +376,7 @@ namespace icl {
       }
    }
 
-	const ImgBase* SonyFwGrabber::grab(ImgBase **ppoDst) {
+	const ImgBase* SonyFwGrabber::grabUD(ImgBase **ppoDst) {
 		ImgBase *poOutput = prepareOutput (ppoDst);
 		
 		//---- Initialize variables ----

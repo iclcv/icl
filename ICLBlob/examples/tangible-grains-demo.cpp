@@ -231,7 +231,7 @@ struct InputGrabber : public Grabber{
     }
   }
   
-  virtual const ImgBase *grab(ImgBase **dst=0){
+  virtual const ImgBase *grabUD(ImgBase **dst=0){
     ICLASSERT_RETURN_VAL(!dst,0);
     ICLASSERT_RETURN_VAL(getDesiredDepth() == depth8u,0);
 

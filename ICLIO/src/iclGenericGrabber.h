@@ -78,9 +78,9 @@ namespace icl {
     }
     
     /// grabbing function
-    virtual const ImgBase* grab(ImgBase **ppoDst=0){
+    virtual const ImgBase* grabUD(ImgBase **ppoDst=0){
       ICLASSERT_RETURN_VAL(!isNull(),0);
-      return m_poGrabber->grab(ppoDst);
+      return m_poGrabber->grabUD(ppoDst);
     }
 
     /// returns a list of all properties, that can be set

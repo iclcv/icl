@@ -64,7 +64,7 @@ namespace icl{
     virtual ~FileGrabber();
     
     /// grab implementation
-    virtual const ImgBase *grab(ImgBase **ppoDst=0);
+    virtual const ImgBase *grabUD(ImgBase **ppoDst=0);
     
     /// returns the count of files that are available
     unsigned int getFileCount() const;

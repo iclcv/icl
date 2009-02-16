@@ -33,7 +33,7 @@ namespace icl{
     m_maxV = Point32f(0.2,0.2);
     m_lastTime = Time::now();
   }
-  const ImgBase* DemoGrabberImpl::grab(ImgBase **ppoDst){
+  const ImgBase* DemoGrabberImpl::grabUD(ImgBase **ppoDst){
     ImgBase *image = prepareOutput(ppoDst);
     image->clear();
 

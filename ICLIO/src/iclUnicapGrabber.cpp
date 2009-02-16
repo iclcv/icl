@@ -554,7 +554,7 @@ namespace icl{
 
   // }}}
 
-  const ImgBase* UnicapGrabber::grab(ImgBase **ppoDst){
+  const ImgBase* UnicapGrabber::grabUD(ImgBase **ppoDst){
     // {{{ open
 
     ICLASSERT_RETURN_VAL(m_poGrabEngine , 0);
