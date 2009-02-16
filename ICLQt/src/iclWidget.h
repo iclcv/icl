@@ -192,6 +192,10 @@ int main(int nArgs, char **ppcArg){
     
     /// returns whether a "NULL-Image" is warned in the image (...)
     void setShowNoImageWarning(bool enabled=true){ m_bShowNoImageWarning=enabled; }
+    
+    bool getMenuEnabled() const { return m_menuEnabled; }
+
+    void setMenuEnabled(bool enabled);
 
     /// calls QObject::connect to establish an explicit connection
     void add(MouseInteractionReceiver *r){
@@ -319,6 +323,9 @@ int main(int nArgs, char **ppcArg){
     
     /// protects the string above
     QMutex m_oFrameBufferCaptureFileNameMutex;
+
+    /// flag whether menu is enabled or not
+    bool m_menuEnabled;
   };
   
 }

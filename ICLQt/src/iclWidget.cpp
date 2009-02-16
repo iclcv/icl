@@ -257,7 +257,7 @@ namespace icl{
 
     // icon misc 
     setWindowIcon(QIcon(QPixmap(ICL_WINDOW_ICON)));
-
+    m_menuEnabled = true;
   }
 
   // }}}
@@ -393,7 +393,7 @@ namespace icl{
     GLPaintEngine pe(this);
 
     m_oOSDMutex.lock();
-    if(m_poCurrOSD){
+    if(m_menuEnabled && m_poCurrOSD){
       float m = iclMin(((float)iclMin(width(),height()))/100,6.0f);
       pe.font("Arial",(int)(1.5*m)+5,PaintEngine::DemiBold);
       m_poCurrOSD->_drawSelf(&pe,m_iMouseX,m_iMouseY,aiDown);
@@ -510,7 +510,7 @@ namespace icl{
     }
     
     m_oOSDMutex.lock();
-    if(m_poCurrOSD && m_poCurrOSD->mouseOver(e->x(),e->y())){
+    if(m_menuEnabled && m_poCurrOSD && m_poCurrOSD->mouseOver(e->x(),e->y())){
       m_iMouseX = e->x();
       m_iMouseY = e->y();
       m_poCurrOSD->_mousePressed(e->x(),e->y(),e->button());
@@ -532,7 +532,7 @@ namespace icl{
    m_oOSDMutex.lock();
    m_iMouseX = e->x();
    m_iMouseY = e->y();
-   if(m_poCurrOSD){
+   if(m_menuEnabled && m_poCurrOSD){
      m_poCurrOSD->_mouseReleased(e->x(),e->y(),e->button());
      if(!m_poCurrOSD->mouseOver(e->x(),e->y())){
        /// emitting signal
@@ -549,7 +549,7 @@ namespace icl{
     m_oOSDMutex.lock();
     m_iMouseX = e->x();
     m_iMouseY = e->y();
-    if(m_poCurrOSD && m_poCurrOSD->mouseOver(e->x(),e->y())){
+    if(m_menuEnabled && m_poCurrOSD && m_poCurrOSD->mouseOver(e->x(),e->y())){
       m_poCurrOSD->_mouseMoved(e->x(),e->y(),aiDown);
     }else{
       /// emitting signal
@@ -584,14 +584,16 @@ namespace icl{
   }
 
   // }}}
-  void ICLWidget::leaveEvent(QEvent *e){
+  void ICLWidget::leaveEvent(QEvent*){
     // {{{ open
-    (void)e;
-    m_oOSDMutex.lock();
-    if(m_poCurrOSD == m_poShowOSD){
-      m_poCurrOSD = 0;
+    if(m_menuEnabled){
+      m_oOSDMutex.lock();
+      if(m_poCurrOSD == m_poShowOSD){
+        m_poCurrOSD = 0;
+      }
+      m_oOSDMutex.unlock();
     }
-    m_oOSDMutex.unlock();
+    
     m_iMouseX = -1;
     m_iMouseY = -1;
    
@@ -604,6 +606,7 @@ namespace icl{
     // {{{ open
     resizeGL(e->size().width(),e->size().height());
 
+    if(!m_menuEnabled) return;
     m_oOSDMutex.lock();
     if(m_poOSD && isVisible()){
       QSize s = e->size();
@@ -633,6 +636,18 @@ namespace icl{
   }
 
   // }}}
+
+  void ICLWidget::setMenuEnabled(bool enabled){
+    if(!enabled){
+      m_oOSDMutex.lock();
+      ICL_DELETE(m_poOSD);
+      ICL_DELETE(m_poShowOSD);
+      m_poCurrOSD = 0;
+      m_oOSDMutex.unlock();
+    }
+    
+    m_menuEnabled = enabled;
+  }
 
 
   void ICLWidget::rebufferImageInternal(){

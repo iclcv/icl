@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iclTime.h>
 #include <iclRange.h>
+#include <iclClippedCast.h>
 
 namespace icl{
   /// Initilaize the random number generator. \ingroup MATH
@@ -94,7 +95,7 @@ namespace icl{
       @sa double(double,double,const Range<double>&), 
   **/
   inline double gaussRandom(double mean, double var, const Range<double> &range){
-    return icl::clip( gaussRandom(mean,var), range.minVal, range.maxVal);
+    return clip<double>( gaussRandom(mean,var), range.minVal, range.maxVal);
   }
 
   /// lightweight Random generator class for uniform random distributions

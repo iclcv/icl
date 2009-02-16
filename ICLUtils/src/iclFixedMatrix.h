@@ -305,7 +305,7 @@ namespace icl{
     }
 
     /// Add a scalar to each element
-    FixedMatrix operator+(const T &t){
+    FixedMatrix operator+(const T &t) const{
       FixedMatrix d;
       std::transform(begin(),end(),d.begin(),std::bind2nd(std::plus<T>(),t));
       return d;
@@ -319,7 +319,7 @@ namespace icl{
 
 
     /// Substract a scalar from each element
-    FixedMatrix operator-(const T &t){
+    FixedMatrix operator-(const T &t) const{
       FixedMatrix d;
       std::transform(begin(),end(),d.begin(),std::bind2nd(std::minus<T>(),t));
       return d;
@@ -332,7 +332,7 @@ namespace icl{
     }
 
     /// Element-wise matrix addition
-    FixedMatrix operator+(const FixedMatrix &m){
+    FixedMatrix operator+(const FixedMatrix &m) const{
       FixedMatrix d;
       std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
       return d;
@@ -345,7 +345,7 @@ namespace icl{
     }
 
     /// Element-wise matrix subtraction
-    FixedMatrix operator-(const FixedMatrix &m){
+    FixedMatrix operator-(const FixedMatrix &m) const{
       FixedMatrix d;
       std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
       return d;

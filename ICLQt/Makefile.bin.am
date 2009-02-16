@@ -6,7 +6,8 @@ XLDFLAGS= ${LDFLAGS} \
 	-L../../ICLQuick/lib/ -lICLQuick \
 	-L../../ICLIO/lib -lICLIO \
 	-L../../ICLFilter/lib -lICLFilter \
-	-L../../ICLBlob/lib -lICLBlob
+	-L../../ICLBlob/lib -lICLBlob \
+	-L../../ICLAlgorithms/lib -lICLAlgorithms
 
 XCXXFLAGS= ${CXXFLAGS} \
 	-I../../ICLUtils/src \
@@ -16,7 +17,8 @@ XCXXFLAGS= ${CXXFLAGS} \
 	-I../../ICLQuick/src \
 	-I../../ICLIO/src \
 	-I../../ICLFilter/src \
-	-I../../ICLBlob/src
+	-I../../ICLBlob/src \
+	-I../../ICLAlgorithms/src
 
 #################################################################################
 ## Applications that depend on noting ###########################################
@@ -34,7 +36,8 @@ icl-interactive-filter-demo \
 icl-mouse-interaction-demo \
 icl-visualization-demo \
 icl-xv \
-icl-camcfg
+icl-camcfg \
+icl-calib-radial-distortion
 
 # explicit sources, ldflags and cxxflags
 icl_3D_demo_SOURCES=../examples/3D-demo.cpp
@@ -88,4 +91,10 @@ icl_visualization_demo_CXXFLAGS=${XCXXFLAGS}
 icl_xv_SOURCES=../examples/xv.cpp
 icl_xv_LDFLAGS=${XLDFLAGS}
 icl_xv_CXXFLAGS=${XCXXFLAGS}
+
+icl_calib_radial_distortion_SOURCES= \
+	../examples/calib-radial-distortion.cpp \
+	../examples/calib-radial-distortion-tools.cpp 
+icl_calib_radial_distortion_LDFLAGS=${XLDFLAGS}
+icl_calib_radial_distortion_CXXFLAGS=${XCXXFLAGS}
 

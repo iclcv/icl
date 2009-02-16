@@ -144,4 +144,5 @@ libICLIO_la_CXXFLAGS=${AM_CXXFLAGS} \
 	-I../../ICLUtils/src \
 	-I../../ICLCore/src \
 	-I../../ICLCC/src \
-	-I../../ICLIO/src 
+	-I../../ICLIO/src \
+	-I../../ICLFilter/src 
