@@ -1,16 +1,10 @@
 #include <iclXCFPublisher.h>
 #include <iclXCFPublisherGrabber.h>
-#include <iclProgArg.h>
-#include <iclQuick.h>
-#include <iclThread.h>
-#include <iclQt.h>
-#include <iclGenericGrabber.h>
+#include <iclCommon.h>
 #include <iclFPSEstimator.h>
 #include <iclIO.h>
-std::string uri = "the-uri";
-std::string stream = "the-stream";
-
-GUI gui;
+std::string uri,stream;
+GUI gui("vbox");
 
 bool first = true;
 
@@ -25,7 +19,7 @@ void receive_loop(){
       fps.update();
       widget->setImage(image);
       widget->updateFromOtherThread();
-    Thread::msleep(pa_subarg("-sleep",0,1000));
+      Thread::msleep(pa_subarg("-sleep",0,100));
     }
   }catch(XCF::InitializeException &ex){
     ERROR_LOG("exception:" << ex.reason);
@@ -34,22 +28,18 @@ void receive_loop(){
 
 
 void send_app(){
-  try{
-  while(first || pa_defined("-loop")){
+  ImageHandle IH;
+  FPSHandle FPS;
+  if(!pa_defined("-no-gui")){
+    IH = gui.getValue<ImageHandle>("image");
+    FPS= gui.getValue<FPSHandle>("fps");
+  }
+ 
+  while(first || !pa_defined("-single-shot")){
     static XCFPublisher p(stream,uri);
+    static GenericGrabber grabber(FROM_PROGARG("-input"));
     Img8u image;
-    if(pa_subarg("-source",0,string("create")) == "create"){
-      static const Size imageSize = translateSize(pa_subarg<string>("-size",0,"320x240"));
-      static Img8u createdImage = cvt8u(scale(create("parrot"),imageSize.width,imageSize.height));
-      image = createdImage;
-      image.setTime(Time::now());
-      labelImage(&image,image.getTime().toString());
-    }else{
-      static GenericGrabber g("file",string("file=")+pa_subarg<string>("-source",0,"./images/*.ppm"));
-      static const Size imageSize = translateSize(pa_subarg<string>("-size",0,"320x240"));
-      g.setDesiredSize(imageSize);
-      image = const_cast<Img8u&>(*g.grab()->asImg<icl8u>());
-    }
+    grabber.grab()->convert(&image);
     if(pa_defined("-emulate-mask")){
 
       static Img8u mask;
@@ -68,25 +58,14 @@ void send_app(){
       image.append(&mask,0);
     }
     p.publish(&image);
+    if(!pa_defined("-no-gui")){
+      IH = image;
+      IH.update();
+      FPS.update();
+    }
     first = false;
-    Thread::msleep(pa_subarg("-sleep",0,1000));
-    static bool showFPS = pa_defined("-fps");
-    if(showFPS){
-      static const int N = 10; // display each N times
-      static int i = 0;
-      static FPSEstimator fps(10);
-      if(i++ == N){
-        i = 0;
-        std::cout << "sending with " << fps.getFpsString() << std::endl;
-        std::cout << "image was " << image <<  " timestamp" << image.getTime().toString() << std::endl;
-        std::cout << "" << std::endl;
-      }else{
-        fps.getFpsString();
-      }
-    }    
-  }
-  }catch(XCF::InitializeException &ex){
-    ERROR_LOG("exception:" << ex.reason);
+    static int sleep = pa_subarg("-sleep",0,100);
+    Thread::msleep(sleep);
   }
 
 }
@@ -98,7 +77,7 @@ void receive_app(int n, char **ppc){
   gui << "image[@handle=image@minsize=32x24]" << "fps(20)[@size=32x3@handle=fps]";
   gui.show();
 
-  if(pa_defined("-loop")){
+  if(!pa_defined("-single-shot")){
     x.run();
   }else{
     receive_loop();
@@ -106,29 +85,46 @@ void receive_app(int n, char **ppc){
   app.exec();
 }
 
+std::string create_camcfg(const std::string&, const std::string &hint){
+  return str("camcfg(")+hint+")[@maxsize=5x2]";
+}
+
 int main(int n, char **ppc){
-  pa_explain("-source","for sender application only allowed values are create|filepattern");
-  pa_explain("-streamname","stream name for sender and receiver application (by default: the-stream)");
-  pa_explain("-imageuri","URI for image packages (by default the-uri)");
-  pa_explain("-s","sender application");
+  pa_explain("-input","for sender application only allowed ICL default\n"
+             " input specificationn e.g. -input pwc 0 or -input file bla/*.ppm");
+  pa_explain("-stream","stream name for sender and receiver application (by default: the-stream)");
+  pa_explain("-uri","URI for image packages (by default the-uri)");
+  pa_explain("-s","sender application (default)");
   pa_explain("-r","receiver application");
-  pa_explain("-loop","loop application");
-  pa_explain("-sleep","sleep time between calls (in ms def=1000)");
+  pa_explain("-single-shot","no loop application");
+  pa_explain("-sleep","sleep time between calls (in ms def=100)");
   pa_explain("-emulate-mask","emulate 4th channel mask (sending only)");
   pa_explain("-size","output image size (sending only)");
-  pa_explain("-fps","display fps while sending");
-  pa_init(n,ppc,"-streamname(1) -imageuri(1) -s -r -loop -sleep(1) -source(1) -emulate-mask -size(1) -fps");
+  pa_explain("-no-gui","dont display a GUI (sender app only)");
+  pa_init(n,ppc,"-stream(1) -uri(1) -s -r -single-shot -sleep(1) -input(2) -emulate-mask -size(1) -no-gui");
 
-  uri = pa_subarg<std::string>("-imageuri",0,"the-uri");
-  stream = pa_subarg<std::string>("-streamname",0,"the-stream");
+  uri = pa_subarg<std::string>("-uri",0,"IMAGE");
+  stream = pa_subarg<std::string>("-stream",0,"stream");
   
-  if(pa_defined("-s")){
-    send_app();
-    
-  }else if(pa_defined("-r")){
+  if(!pa_defined("-r")){
+    if(!pa_defined("-no-gui")){
+      QApplication app(n,ppc);
+      ExecThread x(send_app);
+      gui << "image[@handle=image@minsize=12x8]" 
+          << ( GUI("hbox[@maxsize=100x2]") 
+               << create_camcfg(FROM_PROGARG("-input"))
+               << "fps(10)[@handle=fps]"
+               );
+      gui.show();
+      x.run();
+      return app.exec();
+    }else{
+      send_app();
+    }
+  }else {
     receive_app(n,ppc);
-  }else{
-    pa_usage("please specify -r xor -s");
+    
+    send_app();
   }
   
 }
