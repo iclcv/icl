@@ -78,6 +78,19 @@ namespace icl{
     int getBoundaryLength() const;
     
     /// returns the Form-Factor of the Region (Boundary²/4PI*Size)
+    /** Please note that the formfactor for smaller regions is 
+        always a bit higher as expected for an ideal regions. 
+        This problem occurs due to using a 4-neighbourhood for 
+        calculating the boundary length of a blob.
+        
+        The formfactor formula is designed in that way, that
+        an ideal circly has a formfactor of 1 and all other --
+        less round -- regions have a higher form factor:
+        
+        - circle 1
+        - square 4/PI
+        - cuboid (W=2*H) = 4.5/PI
+    */
     float getFormFactor() const;
     
     /// returns the upper left pixel of the Regions (internally used mainly)

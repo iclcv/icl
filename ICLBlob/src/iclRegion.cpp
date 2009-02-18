@@ -158,10 +158,10 @@ namespace icl{
 
   float Region::getFormFactor() const {
     // {{{ open
-
+    static const float factor = 1.0/4*M_PI;
     int U = getBoundaryLength();
     int A = getSize();
-    return  float(U*U)/(4*M_PI*A);
+    return  float (factor*(U*U))/A;
   }
 
   // }}}
