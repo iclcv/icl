@@ -38,6 +38,9 @@ void send_app(){
   while(first || !pa_defined("-single-shot")){
     static XCFPublisher p(stream,uri);
     static GenericGrabber grabber(FROM_PROGARG("-input"));
+    grabber.setDesiredSize(translateSize(pa_subarg<std::string>("-size",0,"VGA")));
+    grabber.setIgnoreDesiredParams(false);
+
     Img8u image;
     grabber.grab()->convert(&image);
     if(pa_defined("-emulate-mask")){
@@ -99,7 +102,7 @@ int main(int n, char **ppc){
   pa_explain("-single-shot","no loop application");
   pa_explain("-sleep","sleep time between calls (in ms def=100)");
   pa_explain("-emulate-mask","emulate 4th channel mask (sending only)");
-  pa_explain("-size","output image size (sending only)");
+  pa_explain("-size","output image size (sending only, default: VGA)");
   pa_explain("-no-gui","dont display a GUI (sender app only)");
   pa_init(n,ppc,"-stream(1) -uri(1) -s -r -single-shot -sleep(1) -input(2) -emulate-mask -size(1) -no-gui");
 
