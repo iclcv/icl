@@ -264,7 +264,7 @@ namespace icl{
       f.getUnicapFormat()->size.width = newSize.height;
       setFormat(f);
     }else{
-      ERROR_LOG("nes size is supported for current format");          
+      ERROR_LOG("this size is not supported for current format");          
     }
   }
   

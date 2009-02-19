@@ -3,6 +3,10 @@
 #include <iclCommon.h>
 #include <iclFPSEstimator.h>
 #include <iclIO.h>
+
+#include <iclMedianOp.h>
+#include <iclConvolutionOp.h>
+
 std::string uri,stream;
 GUI gui("vbox");
 
@@ -26,8 +30,24 @@ void receive_loop(){
   }
 }
 
+const ImgBase *grab_image(){
+  static GenericGrabber grabber(FROM_PROGARG("-input"));
+  bool first = true; 
+  if(first){
+    first = false;
+    grabber.setDesiredSize(translateSize(pa_subarg<std::string>("-size",0,"VGA")));
+    grabber.setIgnoreDesiredParams(false);
+    if(pa_defined("-dist")){
+      grabber.enableDistortion(DIST_FROM_PROGARG("-dist"),
+                               translateSize(pa_subarg<std::string>("-size",0,"VGA")));
+    }
+  }
+  const ImgBase *image = grabber.grab();
+  return grabber.grab();
+}
 
 void send_app(){
+  static XCFPublisher p(stream,uri);
   ImageHandle IH;
   FPSHandle FPS;
   if(!pa_defined("-no-gui")){
@@ -36,13 +56,32 @@ void send_app(){
   }
  
   while(first || !pa_defined("-single-shot")){
-    static XCFPublisher p(stream,uri);
-    static GenericGrabber grabber(FROM_PROGARG("-input"));
-    grabber.setDesiredSize(translateSize(pa_subarg<std::string>("-size",0,"VGA")));
-    grabber.setIgnoreDesiredParams(false);
 
     Img8u image;
-    grabber.grab()->convert(&image);
+    if(pa_defined("-pp")){
+      static UnaryOp *pp = 0;
+      if(!pp){
+        static std::string pps = pa_subarg<std::string>("-pp",0,"");
+        if(pps == "gauss"){
+          pp = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3));
+        }else if(pps == "gauss5") {
+          pp = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss5x5));
+        }else if(pps == "median"){
+          pp = new MedianOp(Size(3,3));
+        }else if(pps == "median5"){
+          pp = new MedianOp(Size(5,5));
+        }else{
+          ERROR_LOG("undefined preprocessing mode");
+          ::exit(0);
+        }
+      }
+      pp->setClipToROI(false);
+      pp->apply(grab_image(),bpp(&image));
+    }else{
+      grab_image()->convert(&image);
+    }
+
+
     if(pa_defined("-emulate-mask")){
 
       static Img8u mask;
@@ -57,9 +96,10 @@ void send_app(){
         mask = cvt8u(q);
         show(q);
       }
-
       image.append(&mask,0);
     }
+
+
     p.publish(&image);
     if(!pa_defined("-no-gui")){
       IH = image;
@@ -104,8 +144,21 @@ int main(int n, char **ppc){
   pa_explain("-emulate-mask","emulate 4th channel mask (sending only)");
   pa_explain("-size","output image size (sending only, default: VGA)");
   pa_explain("-no-gui","dont display a GUI (sender app only)");
-  pa_init(n,ppc,"-stream(1) -uri(1) -s -r -single-shot -sleep(1) -input(2) -emulate-mask -size(1) -no-gui");
+  pa_explain("-pp","select preprocessing (one of \n"
+             "\t- gauss 3x3 gaussian blur\n"
+             "\t- gauss5 5x5 gaussian blur\n"
+             "\t- median 3x3 median filter\n"
+             "\t- median5 5x5 median filter\n");
+  pa_explain("-dist","give 4 parameters for radial lens distortion.\n"
+             "\tThis parameters can be obtained using ICL application\n"
+             "\ticl-calib-radial-distortion");
+  pa_explain("-reset","reset bus on startup");
+  pa_init(n,ppc,"-stream(1) -uri(1) -s -r -single-shot -sleep(1) -input(2) -emulate-mask -size(1) -no-gui -pp(1) -dist(4) -reset");
 
+  if(pa_defined("-reset")){
+    GenericGrabber::resetBus();
+  }
+  
   uri = pa_subarg<std::string>("-uri",0,"IMAGE");
   stream = pa_subarg<std::string>("-stream",0,"stream");
   

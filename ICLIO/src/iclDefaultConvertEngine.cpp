@@ -33,7 +33,7 @@ namespace icl{
     UnicapFormat f = m_poDevice->getCurrentUnicapFormat();
     string fourcc = f.getFourCC();
     Size size = f.getSize();
-    
+
     if(desiredParams.getFormat() == formatYUV){
       // do something else !!!
     }
