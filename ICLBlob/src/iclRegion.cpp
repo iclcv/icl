@@ -7,7 +7,7 @@
 namespace icl{ 
 
   struct RegionImpl{
-    RegionImpl(icl64f val, const ImgBase *image):pixcount(0),val(val),image(image),bb(0),pcainfo(0),boundary(0),pixels(0){
+    RegionImpl(icl64f val, const ImgBase *image):pixcount(0),val(val),image(image),bb(0),pcainfo(0),boundary(0),pixels(0),boundary_length(-1){
       scanlines.reserve(100);
     }
     ~RegionImpl(){
@@ -25,6 +25,7 @@ namespace icl{
     RegionPCAInfo *pcainfo;
     std::vector<Point> *boundary;
     std::vector<Point> *pixels;
+    float boundary_length;
   };
 
   void RegionImplDelOp::delete_func( RegionImpl* impl){
@@ -148,10 +149,54 @@ namespace icl{
 
   // }}}
 
-  int Region::getBoundaryLength() const {
+  int Region::getBoundaryPointCount() const {
     // {{{ open
 
     return (int)getBoundary().size();
+  }
+
+  // Estimates the boundary length by counting how often the three
+  // 3-pixel gradients 0 deg, 26.57 deg and 45 deg occour in the boundary and
+  // summing these segments' lengths together.
+  // 0 deg gradient | 26.57 deg grad | 45 deg grad
+  // ooo      oxo   | oox      ooo   | oox      ooo
+  // xXx  OR  xXo   | xXo  OR  xXo   | oXo  OR  oXo
+  // ooo      ooo   | ooo      xoo   | xoo      xox
+  // Also, instead of just iterating over the boundary points, we need to leave
+  // out some of them, since e.g. a 45 deg line looks like this:
+  // ooxx                ooox
+  // oxxo   but we need  ooxo
+  // xxoo                oxoo
+  float Region::getBoundaryLength() const {
+    if (impl->boundary_length != -1) return impl->boundary_length;
+    
+    const std::vector<Point> &b = getBoundary();
+    if (b.size() < 2) return b.size();
+    
+    const float length[3] = {1, 1/cos(atan(0.5)), 1/cos(atan(1))}; // length of segment types
+    int grad[3] = {0}, type; // counters for segment types
+    Point pre = b[b.size()-2];
+    Point cur = b[b.size()-1];
+    Point post;
+    
+    for (unsigned i=0; i < b.size(); i++) {
+      // search for the first point not in the 8 neighbourhood of current point
+      if ((abs(b[i].x - cur.x) > 1) || (abs(b[i].y - cur.y) > 1)) {
+        // found one, so pre, cur and post are the three points to look at
+        type = 0;
+        if ((pre.x != cur.x) && (pre.y != cur.y)) type++;
+        if ((post.x != cur.x) && (post.y != cur.y)) type++;
+        grad[type]++;			
+	    
+        // set pre, cur and post to new values
+        pre = cur;
+        cur = post;
+        post = b[i];
+      } else post = b[i];
+    }
+	
+    impl->boundary_length = length[0]*grad[0] + length[1]*grad[1] + length[2]*grad[2];
+    return impl->boundary_length;
   }
 
   // }}}

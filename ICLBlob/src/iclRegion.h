@@ -75,7 +75,17 @@ namespace icl{
     icl64f getVal() const;
     
     /// returns the size of boundary pixel array of the Region
-    int getBoundaryLength() const;
+    int getBoundaryPointCount() const;
+    
+    /// returns the estimated length of the boundary
+    /**
+     * This methods gives a much better estimation of the boundary
+     * length than getBoundaryPointCount(). The change in the estimated
+     * length should be no larger than 5 to 10 % under rotation of the
+     * object. \n
+     * Complexity: linear in boundary length.
+     */
+    float getBoundaryLength() const;
     
     /// returns the Form-Factor of the Region (Boundary²/4PI*Size)
     /** Please note that the formfactor for smaller regions is 
