@@ -212,7 +212,7 @@ namespace icl{
         if(checkType<T>(id)){
           return getValue<T>(id);
         }else{
-          static T _def(0);
+          static T _def;
           ERROR_LOG("type missmatch for entry \"" << idIn << "\"");
           return _def;
         }
