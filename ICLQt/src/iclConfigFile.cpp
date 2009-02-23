@@ -51,7 +51,7 @@ namespace icl{
   }
 
 
-  namespace{
+  namespace {
     
     struct FileCloser{
       // {{{ open
@@ -176,7 +176,11 @@ namespace icl{
             ICLASSERT_RETURN(t.isText());
             QString idStr = e.attribute("id");
             QString typeStr = e.attribute("type");
-            dsPush(ds,prefix==""?idStr:prefix+"."+idStr,typeStr,t.toText().data());
+            QString key = prefix==""?idStr:prefix+"."+idStr; 
+            dsPush(ds,key,typeStr,t.toText().data());
+            if(e.hasAttribute("range")){
+              ((ConfigFile&)ds).defineRangeForKey(str("config.")+key.toLatin1().data(),translateRange<double>(e.attribute("range").toLatin1().data()));
+            }
           }else if(e.tagName() == "section"){
             ICLASSERT_RETURN(e.hasAttribute("id"));
             QString idStr = e.attribute("id");
@@ -443,12 +447,32 @@ namespace icl{
   
   ConfigFile::ConfigFile():
     // {{{ open
-    m_spXMLDocHandle(new XMLDocHandle){
-        
+    m_spXMLDocHandle(new XMLDocHandle),m_ranges(new std::map<std::string,Range64f>()){
+    
     updateTitleFromDocument();
+  }
+  
+  // }}}
+
+  void ConfigFile::defineRangeForKey(const std::string &id, const Range64f &r){
+    // {{{ open
+    (*m_ranges.get())[id] = r;
   }
 
   // }}}
+  
+  const Range64f *ConfigFile::getRange(const std::string &id) const{
+    // {{{ open
+    std::map<std::string,Range64f>::const_iterator it = m_ranges->find(id);
+    if(it != m_ranges->end() ){
+      return &(*m_ranges.get())[id];
+    }else{
+      return 0;
+    }
+  }
+
+  // }}}
+
 
   ConfigFile::ConfigFile(const std::string &filename)throw(FileNotFoundException,InvalidFileFormatException):
     // {{{ open

@@ -8,6 +8,8 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
+#include <list>
+
 namespace icl{
 
   /// GUI  support class to change GUI entries at runtime
@@ -31,8 +33,11 @@ namespace icl{
       The new ConfigGUI enables you to change the entries of a ConfigFile dynamically
       at runtime. Furthermore, you can save your current adaption progress to another
       -- or even the same -- xml configuration file.
+      
+      In addition, ConfigFile float- and int-entries can be set up with a range-property to 
+      enable the ConfigFileGUI to create a slider for this entry (@see ConfigFile for more details)
   */
-  class ConfigFileGUI : public QObject, public GUI{
+  class ConfigFileGUI : public QObject, public GUI, public GUI::Callback{
     Q_OBJECT;
     ConfigFile *m_config;
     bool m_own;
@@ -51,6 +56,9 @@ namespace icl{
     /// returns the root widget of the ConfigFileGUI
     QWidget *getWidget();
     
+    /// for GUI::Callback
+    virtual void exec();
+    
     private slots:
     void itemDoubleClicked(QTreeWidgetItem *item, int column);
     void save();
@@ -58,6 +66,14 @@ namespace icl{
     void load();
     void reload();
     void updateTree();
+    
+    private:
+    struct NamedGUI{
+      GUI gui;
+      std::string id;
+      std::string type;
+    };
+    std::list<NamedGUI> m_sliders;
   };
   
 }

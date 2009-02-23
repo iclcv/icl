@@ -1,10 +1,14 @@
 #ifndef ICL_CONFIG_FILE_H
 #define ICL_CONFIG_FILE_H
 
+#include <iostream>
 #include <string>
+#include <map>
 #include <iclDataStore.h>
 #include <iclException.h>
-#include <iostream>
+#include <iclRange.h>
+
+
 namespace icl{
 
   /// Utility class for creating and reading XML-based hierarchical configuration files 
@@ -13,7 +17,8 @@ namespace icl{
       ConfigFile objects can e.g. be used, to locally read a configuration file or
       to create a configuration file. Besides a static singleton ConfigFile object 
       accessible via ConfigFile::getConfig can be used as a global configuration for
-      applications.
+      applications. \n
+      Furthermore a powerful runtime-editor called ConfigFileGUI is available!.
       
       ConfigFiles are XML-based (using Qt's XML package for parsing and creating XML
       structure). The document is hierarchical as the following example demonstrates
@@ -36,6 +41,17 @@ namespace icl{
       \</config\> 
       </pre>
       
+      \subsection RANGES Data Ranges
+      
+      In addition to the syntax above, each data-tag can be set up with a range property. Currently
+      data ranges are only used for int- and float- typed data elements. If a range property is defined like this
+      
+      <pre>
+      \<data id="threshold" type="int" range="[0,255]"\>127\</data\>
+      </pre>
+
+      The ConfigFileGUI editor will automatically create an integer slider with given range for this entry.
+      This feature is also available for float-typed entries.
 
       When accessing ConfigFile data members, each hierarchy level must be
       separated using the '.' character. So e.g. the filename can be accessed using
@@ -93,6 +109,7 @@ namespace icl{
       
       Internally data is stored in the parent classes (DataStore) hash maps to optimize
       data access. ConfigFile data key is the the '.'-concatenated identifier.
+
       
   */
   class ConfigFile : protected DataStore{
@@ -282,6 +299,7 @@ namespace icl{
       return getConfig().try_get<T>(id);
     }
 
+    
     /// this function is imported from the parent DataStore class
     DataStore::getEntryList;
 
@@ -296,9 +314,18 @@ namespace icl{
 
     /// this function is imported from the parent DataStore class
     DataStore::unlock;
+
+    /// defined the range for given number-type-valued key
+    /** This feature is used by the ConfigFileGUI to create appropriate slider
+        ranges if requested */
+    void defineRangeForKey(const std::string &id, const Range64f &r);
     
-    
+    /// returns predefined range for given id (or 0 if no range was defined for this key)
+    /** This feature is only used by the config file GUI */
+    const Range64f *getRange(const std::string &id) const;
+
     private:
+
     /// filename
     std::string m_sFileName;
     
@@ -319,6 +346,9 @@ namespace icl{
     void updateTitleFromDocument();
 
     std::string m_sDefaultPrefix;
+    
+    /// for ranged sliders within the config file GUI
+    SmartPtr<std::map<std::string,Range64f>,PointerDelOp> m_ranges;
 
     /// ostream operator is allowed to access privat members
     friend std::ostream &operator<<(std::ostream&,const ConfigFile&);

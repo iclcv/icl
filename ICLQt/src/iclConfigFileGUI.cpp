@@ -6,6 +6,8 @@
 #include <iclButtonHandle.h>
 #include <iclBoxHandle.h>
 #include <iclSplitterHandle.h>
+#include <iclSliderHandle.h>
+#include <iclFSliderHandle.h>
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -227,11 +229,49 @@ namespace icl{
             item = n;
           }else{
             QTreeWidgetItem *n = new QTreeWidgetItem(item);
+            QString t = get_entry_type(es[i]);
+            QString e = get_entry_text(es[i],config);
             n->setForeground(0,QColor(60,150,255));
             n->setText(0,tk[j].c_str());
-            n->setText(1,get_entry_text(es[i],config));
-            n->setText(2,get_entry_type(es[i]));
+            n->setText(1,e);
+            n->setText(2,t);
             item->addChild(n);
+#define YES_USE_SLIDERS_PLEASE
+#ifdef YES_USE_SLIDERS_PLEASE
+
+            if(t == "float" || t == "int"){
+              const Range64f *r = config.getRange(es[i].key);
+              if(r){
+                std::string p = str("[@minsize=5x1@out=v@handle=h]");
+                m_sliders.push_back(NamedGUI());
+                GUI &gui = m_sliders.back().gui;
+                gui = GUI("hbox[@handle=b]");
+                std::string el = e.toLatin1().data();
+                bool ok = true;
+                if(t == "float"){
+                  gui << str("fslider(")+str(r->minVal)+','+str(r->maxVal)+','+el+')'+p;
+                  gui.create();
+                  gui.getValue<FSliderHandle>("h").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
+                }else if (t == "int"){
+                  gui << str("slider(")+str((int)r->minVal)+','+str((int)r->maxVal)+','+el+')'+p;
+                  gui.create();
+                  gui.getValue<SliderHandle>("h").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
+                }else{
+                  ok = false;
+                }
+                
+                if(ok){
+
+                  m_sliders.back().id = es[i].key;
+                  m_sliders.back().type = t.toLatin1().data();
+                  m_tree->setItemWidget(n,1,*gui.getValue<BoxHandle>("b"));
+                  n->setText(1,"");
+                }else{
+                  m_sliders.pop_back();
+                }
+              }
+            }
+#endif
           }
         }
       }
@@ -503,6 +543,18 @@ namespace icl{
     }else{
       ERROR_LOG("undefined type:" << type);
       return false;
+    }
+  }
+
+  void ConfigFileGUI::exec(){
+    for(std::list<ConfigFileGUI::NamedGUI>::iterator it = m_sliders.begin();it!=m_sliders.end();++it){
+      if(it->type == "int"){
+        int i = it->gui.getValue<int>("v");
+        m_config->set(it->id,i);
+      }else if(it->type == "float"){
+        float f = it->gui.getValue<float>("v");
+        m_config->set(it->id,f);
+      }
     }
   }
 
