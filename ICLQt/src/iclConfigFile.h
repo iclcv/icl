@@ -84,8 +84,10 @@ namespace icl{
       - Size 
       - Point 
       - Rect 
-      - Range<int>
-      - Range<float>
+      - Range32s
+      - Range32f
+      
+      // additionally we need a fixed matrix type (e.g. color)
       
       \section PERF Performance
       
@@ -93,8 +95,9 @@ namespace icl{
       data access. ConfigFile data key is the the '.'-concatenated identifier.
       
   */
-  class ConfigFile : public DataStore{
+  class ConfigFile : protected DataStore{
     public:
+
     struct EntryNotFoundException : public ICLException{
       std::string entryName;
       std::string typeName;
@@ -186,15 +189,50 @@ namespace icl{
     void add(const std::string &id, const T &val);
 
 
-    /// returns a given value from the internal document hash-map
+    /// updates a value within the config file
+    template<class T>
+    void set(const std::string &id, const T &val);
+    
+    /// returns a given value from the internal document hash-map (un const)
     /** This function is equivalent to the getValue<T> function template
         provided by the parent DataStore class, except this function applies
         two additional checks first:
+
         - checking if entry "id" is actually contained (if not, def is returned)
         - checking if entry "id" has actually the given type (if not, def is returned)
+
+        This is the un-const version, so\n
+        If the given entry (+current default prefix) is not found whithin the
+        parent data store, it is allocated and initialized with the default value.
     */
     template<class T>
-    inline const T get(const std::string &idIn,const T &def=T()) const{
+    inline const T &get(const std::string &idIn,const T &def=T()){
+      std::string id = m_sDefaultPrefix+idIn;
+      if(contains(id)){
+        if(checkType<T>(id)){
+          return getValue<T>(id);
+        }else{
+          static T _def(0);
+          ERROR_LOG("type missmatch for entry \"" << idIn << "\"");
+          return _def;
+        }
+      }else{
+        add(id,def);
+        return getValue<T>(id);
+      }
+    }
+
+    /// returns a given value from the internal document hash-map (const version)
+    /** Essentially, this function behaves like the un-const version, except, it
+        does not return a reference to the data store entry, but a deeply copied
+        value. If idIn (+current default prefix) is not found, the (given) default
+        value is returned;
+        
+        If a const reference to a value within a const ConfigFile is needed,
+        one has to use try_get(const std::string&)
+    */
+    template<class T>
+    inline T get(const std::string &idIn,const T &def=T()) const{
       std::string id = m_sDefaultPrefix+idIn;
       if(contains(id) && checkType<T>(id)){
         return getValue<T>(id);
@@ -202,6 +240,8 @@ namespace icl{
         return def;
       }
     }
+
+
 
     /// returns a given value from the internal document hash-map
     /** This function is equivalent to the getValue<T> function template
@@ -211,7 +251,7 @@ namespace icl{
         - checking if entry "id" has actually the given type (if not, an ConfigFile::EntryNotFoundException is thrown)
     */
     template<class T>
-    inline const T try_get(const std::string &idIn) const throw (EntryNotFoundException){
+    inline const T &try_get(const std::string &idIn) const throw (EntryNotFoundException){
       std::string id = m_sDefaultPrefix+idIn;
       if(!contains(id) || !checkType<T>(id)){
         throw EntryNotFoundException(id,get_type_name<T>());
@@ -238,10 +278,26 @@ namespace icl{
     }
     /// equivalent to ConfigFile::getConfig().try_get...
     template<class T>
-    static const T stry_get(const std::string &id) throw (EntryNotFoundException){
+    static const T &stry_get(const std::string &id) throw (EntryNotFoundException){
       return getConfig().try_get<T>(id);
     }
-      
+
+    /// this function is imported from the parent DataStore class
+    DataStore::getEntryList;
+
+    /// this function is imported from the parent DataStore class
+    DataStore::show;
+
+    /// this function is imported from the parent DataStore class
+    DataStore::contains;
+
+    /// this function is imported from the parent DataStore class
+    DataStore::lock;
+
+    /// this function is imported from the parent DataStore class
+    DataStore::unlock;
+    
+    
     private:
     /// filename
     std::string m_sFileName;

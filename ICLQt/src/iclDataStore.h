@@ -232,10 +232,10 @@ namespace icl{
       
     }
     // internally locks the datastore
-    inline void lock() { m_oMutexPtr->lock(); }
+    inline void lock() const { m_oMutexPtr->lock(); }
     
     /// internally unlocks the data store
-    inline void unlock() { m_oMutexPtr->unlock(); }
+    inline void unlock() const { m_oMutexPtr->unlock(); }
     private:
     /// internally used data handling structure
     struct DataArray{
@@ -267,10 +267,31 @@ namespace icl{
       }
       printf("----------------------\n");
     }
-
+    // removes all data from this data store
     void clear(){
       *this = DataStore();
     }
+    
+    /// entry struct used in getEntryList function
+    struct Entry{
+      Entry(){}
+      Entry(const std::string &key,const std::string &type, int len):
+        key(key),type(type),len(len){}
+      std::string key;
+      std::string type;
+      int len;
+    };
+    
+    /// returns a list of all entries
+    std::vector<Entry> getEntryList() const{
+      std::vector<Entry> es;
+      for(DataMap::const_iterator it = m_oDataMapPtr->begin(); 
+          it != m_oDataMapPtr->end(); ++it){
+        es.push_back(Entry(it->first,it->second.type,it->second.len));
+      }
+      return es;
+    }
+
     private:
 
     /// internal definition
@@ -286,7 +307,7 @@ namespace icl{
     SmartDataMapPtr m_oDataMapPtr;
     
     /// mutex to handle syncronous calls
-    SmartMutexPtr m_oMutexPtr;
+    mutable SmartMutexPtr m_oMutexPtr;
   };
 }
 

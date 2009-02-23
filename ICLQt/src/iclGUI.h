@@ -173,6 +173,8 @@ namespace icl{
       - <b>fps</b> label component showing current frames per second
       - <b>multidraw</b> tabbed widget of draw widget components accessible via string index
       - <b>camcfg</b> single button, showing a camera configuration widget when clicked
+      - <b>config</b> single button or embedded tree-view that enables 
+        runtime adaption of configuration file parameters
 
       
         
@@ -255,7 +257,11 @@ namespace icl{
         speed up performance if buffermethod is set to "shallowcopy" then.
       - <b>camcfg(Comma-Separated-device-hint-list)<b>
         See section \ref CAMCFG for more details
-      
+      - <b>config</b>one of 'embedded' or 'popup' (whithout the '-ticks). If param is embedded, the
+        ConfigFileGUI's tree-view (including some additional buttons for loading and saving configuration files)
+        will be embedded directly where the component was put into the layout. Otherwise - if param is
+        popup - only a single button labled 'config' is embedded. This button can be triggered to show
+        an extra widget of type ConfigFileGUI
 
       \subsection GP General Parameters
       The 3rd part of the GUI definition string is a list of so called general params. "General" means here,
@@ -347,7 +353,8 @@ namespace icl{
       <TR> <TD>spinner</TD>      <TD>SpinnerHandle</TD>     <TD>1 type int</TD>         <TD>current value</TD>                                       </TR>
       <TR> <TD>fps</TD>          <TD>FPSHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>multidraw</TD>    <TD>MultiDrawHandle</TD>   <TD>0</TD>                  <TD>handle of [string]-accessible ICLDrawWidgets</TD>        </TR>
-      <TR> <TD>camcfg</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>maybe we can add a handle to the underlying CamCfgW.</TD></TR>
+      <TR> <TD>camcfg</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>maybe we can add a handle to the parent  CamCfgW.</TD>   </TR>
+      <TR> <TD>config</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>maybe we can add a handle to the parent ConfigFi.</TD>   </TR>
       </TABLE>
       
       \section HVV Handles vs. Values
@@ -852,6 +859,20 @@ int main(int n, char**ppc){
       - "dc=1,pwc=0" : ok, now it becomes clearer: Enable configuration for dc device 1 and for
                        pwc device 0 (not very common)
       
+      \subsection CONFIG Embedded or Popup'ed ConfigFileGUI's
+      Another recent component is the 'config' GUI component. It provides a mechanism to change
+      configuration file entries at runtime. This functionality is encapsulated within the 
+      ConfigFileGUI class (see documentation for further details). The 'config'-GUI component can
+      be used in two ways:
+      -# As a single button that occurs embedded and which can be triggered to show an extra widget
+         of type ConfigFileGUI
+      -# As an embedded complex tree-view with some additional buttons for loading and saving
+         the current content of the configuration as xml-file
+
+      Please note, that there is no possibility to pass a custom configuration file to the GUI component
+      except the current static ConfigFile accessible as ConfigFile::getConfig(). Please ensure,
+      that your configuration file is already loaded into the static ConfigFile instance, when you
+      create your GUI by calling create() or show().
       
       \subsection LOCK Locking
       Some interface types involve the danger to be corrupted when accessed by the working thread
@@ -868,7 +889,7 @@ int main(int n, char**ppc){
       identification) interface is used, to decide whether the correct template parameter
       was used, otherwise an error occurs, and the program is aborted.\n
       So it is much faster to extract a value from a gui only once (at reference or pointer) and
-      work with this reference later on.
+      to work with this reference later on.
   */
   class GUI{
     public:
@@ -921,7 +942,13 @@ int main(int n, char**ppc){
     }
     
     /// internally creates everything
+    virtual void create();
+
+    /// internally creates everything (and makes the gui visible)
     virtual void show();
+    
+    /// make this gui invisible (noting more)
+    virtual void hide();
     
     /// internally locks the datastore
     inline void lockData() {

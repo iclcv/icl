@@ -295,7 +295,7 @@ namespace icl{
               ICLASSERT_RETURN(e.hasAttribute("id"));
               ICLASSERT_RETURN(e.hasAttribute("type"));
               if(e.attribute("id") == QString(parts.front().c_str())){
-                printf("warning overwriting entry \"%s\"\n",parts.front().c_str());
+                //printf("warning overwriting entry \"%s\"\n",parts.front().c_str());
                 if(e.attribute("type") != type.c_str()){
                   printf("warning type changes from %s to %s \n",e.attribute("type").toLatin1().data(),type.c_str());
                 }
@@ -490,7 +490,7 @@ namespace icl{
   // }}}
   
   template<class T>
-  void ConfigFile::add(const std::string &idIn, const T &val){
+  void ConfigFile::set(const std::string &idIn, const T &val){
     std::string id=m_sDefaultPrefix + idIn;
     if(contains(id) && !checkType<T>(id)){
       ERROR_LOG("id " << id << "is already set with different type!");
@@ -504,6 +504,17 @@ namespace icl{
     }
     
     add_to_doc(*m_spXMLDocHandle,id,get_type_str<T>(),get_value_str<T>(val));
+  }
+
+  
+  template<class T>
+  void ConfigFile::add(const std::string &idIn, const T &val){
+    std::string id=m_sDefaultPrefix + idIn;
+    if(contains(id)){
+      ERROR_LOG("unable to add already existing entry \"" << id << "\" (use set instead)");
+    }else{
+      set<T>(idIn,val);
+    }
   }
 
 #define X(T) template void ConfigFile::add<T>(const std::string&,const T&)

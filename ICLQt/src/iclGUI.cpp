@@ -57,6 +57,7 @@
 #include <iclMultiDrawHandle.h>
 #include <iclSplitterHandle.h>
 
+#include <iclConfigFileGUI.h>
 #include <iclCamCfgWidget.h>
 #include <iclStringUtils.h>
 #include <iclToggleButton.h>
@@ -104,6 +105,34 @@ namespace icl{
       return string("camcfg(dev=hint-list)[general params]\n")+gen_params();
     }
     CamCfgWidget *m_cfg;
+    QPushButton *m_button;
+  };
+
+  struct ConfigFileGUIWidget : public GUIWidget{
+    // {{{ open
+    ConfigFileGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,1){
+      
+      if(def.param(0) == "embedded"){
+        m_button = 0;
+        m_cfg = new ConfigFileGUI(ConfigFile::getConfig(),this);
+        m_cfg->create();
+        addToGrid(m_cfg->getWidget());
+      }else if(def.param(0) == "popup"){
+        m_button = new QPushButton("config",this);
+        connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
+        m_cfg = new ConfigFileGUI;
+        addToGrid(m_button);
+      }else{
+        throw GUISyntaxErrorException(def.defString(),"allowed parameters are \"embedded\" or \"popup\"");
+      }
+    }
+    virtual void processIO(){
+      m_cfg->show();
+    }
+    static string getSyntax(){
+      return string("config(popup|embedded)[general params]\n")+gen_params();
+    }
+    ConfigFileGUI *m_cfg;
     QPushButton *m_button;
   };
 
@@ -1151,6 +1180,7 @@ public:
       MAP_CREATOR_FUNCS["hsplit"] = create_widget_template<HSplitterGUIWidget>;
       MAP_CREATOR_FUNCS["vsplit"] = create_widget_template<VSplitterGUIWidget>;
       MAP_CREATOR_FUNCS["camcfg"] = create_widget_template<CamCfgGUIWidget>;
+      MAP_CREATOR_FUNCS["config"] = create_widget_template<ConfigFileGUIWidget>;
 
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
       //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;
@@ -1375,13 +1405,28 @@ public:
 
   // }}}
   
+
+  void GUI::hide(){
+    if(m_bCreated){
+      m_poWidget->show();
+    }else{
+      ERROR_LOG("unable hide GUI that has not been created yet, call create() or show() first!");
+    } 
+  }
+
+  void GUI::create(){
+    if(!m_bCreated){
+      if(m_poParent){
+        create(m_poParent->layout(),0,m_poParent,0);
+      }else{
+        create(0,0,0,0);
+      }
+    }
+  }
+
   void GUI::show(){
     // {{{ open
-    if(m_poParent){
-      create(m_poParent->layout(),0,m_poParent,0);
-    }else{
-      create(0,0,0,0);
-    }
+    create();
     m_poWidget->show();
   }
 

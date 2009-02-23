@@ -37,7 +37,8 @@ icl-mouse-interaction-demo \
 icl-visualization-demo \
 icl-xv \
 icl-camcfg \
-icl-calib-radial-distortion
+icl-calib-radial-distortion \
+icl-config-gui-example
 
 # explicit sources, ldflags and cxxflags
 icl_3D_demo_SOURCES=../examples/3D-demo.cpp
@@ -87,6 +88,10 @@ icl_mouse_interaction_demo_CXXFLAGS=${XCXXFLAGS}
 icl_visualization_demo_SOURCES=../examples/visualization-demo.cpp
 icl_visualization_demo_LDFLAGS=${XLDFLAGS}
 icl_visualization_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_config_gui_example_SOURCES=../examples/config-gui-example.cpp
+icl_config_gui_example_LDFLAGS=${XLDFLAGS}
+icl_config_gui_example_CXXFLAGS=${XCXXFLAGS}
 
 icl_xv_SOURCES=../examples/xv.cpp
 icl_xv_LDFLAGS=${XLDFLAGS}

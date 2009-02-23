@@ -15,7 +15,8 @@ MOC_FILES= \
 ../src/iclChromaGUI.moc.cpp \
 ../src/iclMultiDrawHandle.moc.cpp \
 ../src/iclCamCfgWidget.moc.cpp \
-../src/iclToggleButton.moc.cpp
+../src/iclToggleButton.moc.cpp \
+../src/iclConfigFileGUI.moc.cpp
 
 libICLQt_la_SOURCES= \
 ${MOC_FILES} \
@@ -66,8 +67,8 @@ ${MOC_FILES} \
 ../src/iclStringSignalButton.cpp \
 ../src/iclWidget.cpp \
 ../src/iclCamCfgWidget.cpp \
-../src/iclToggleButton.cpp
-
+../src/iclToggleButton.cpp \
+../src/iclConfigFileGUI.cpp
 
 include_HEADERS= \
 ../src/iclBorderBox.h \
@@ -135,7 +136,9 @@ include_HEADERS= \
 ../src/iclWindowIcon.h \
 ../src/iclProxyLayout.h \
 ../src/iclCamCfgWidget.h \
-../src/iclToggleButton.h
+../src/iclToggleButton.h \
+../src/iclConfigEntry.h \
+../src/iclConfigFileGUI.h
 
 # include other packages here!
 libICLQt_la_CXXFLAGS=${AM_CXXFLAGS} \
