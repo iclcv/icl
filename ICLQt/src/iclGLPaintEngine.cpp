@@ -189,7 +189,7 @@ namespace icl{
     glVertex2f((GLfloat)r.x,(GLfloat)r.bottom());
     glEnd();
     
-    point(Point(r.x-1,r.bottom()+1));
+    point(Point(r.right(),r.y));
     
   }
   void GLPaintEngine::triangle(const Point &a, const Point &b, const Point &c){
