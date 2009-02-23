@@ -1,0 +1,73 @@
+Within the ICL, images are represented as a set of image channels of the same size:
+
+\iclfigure{image-1}{ICL image scheme}{height=150px}
+
+
+\section{A Functional View on Images}
+More generally, an image can be understood as a function:
+
+\begin{equation}
+I(\mathbb{R} \times{} \mathbb{R} \times{} \mathbb{N^+} )\rightarrow\mathbb{R} 
+\end{equation}
+
+An image function expects three arguments: The first two arguments are referencing some location within the 2D-image plane (the spacial domain) and the last argument references a single channel from the image. Of course, this scheme is more general then our image presented in figure \ref{image-1}. Image processing must be tackled numerically efficient, so we need a less complex functional description:
+
+\begin{equation}
+  I(\mathbb{N^+} \times{} \mathbb{N^+} \times{} \mathbb{N^+} )\rightarrow\mathbb{R} 
+\end{equation}
+
+
+This function can be understood in 2 different ways:
+\begin{enumerate}
+ \item A function expecting three arguments and returning a single pixel value within the referenced channel.
+ \item A function that expects only two arguments and which's value domain is $\mathbb{R}^C$ where $C$ is the channel count of the image
+\end{enumerate} 
+
+We decided to implement the first one, because of a fundamental design principle: We decided to use planar data layout, which cannot be combined with the 2nd point view on the image function. E.g. there has to be some pixel access function that returns the pixel value at some image location $(x,y)$. This would have to return some vector structure (e.g. a \inlinecode{std::vector}) which is sure possible, but not very efficient in C++.\\
+Moreover the spacial domain of an image is always limited to the image size, which again restricts the image function. Together with a positive but finite channel count of an image we approach this function:
+
+\begin{equation}
+  I(\{0,..,W_I-1\} \times{} \{0,..,H_I-1\} \times{} \{0,..,C_I-1\} ) \rightarrow \mathbb{R} 
+\end{equation}
+
+
+Where the images dimension is $W_I \times{}H_I$ and it has $C_I$ channels. In particular we can see here, that image coordinates origin is pixel $(0,0)$ and not $(1,1)$ like e.g. in Matlab\footnote{see www.mathworks.de}. 
+
+
+\section{Value-Domain}
+Further we have to take a look at the value-domanin of an image. 
+Of course, we cannot use $\mathbb{R}$ :-). The native data type that comes closest to the real numbers is obviously a double precision floating point number (\inlinecode{double}). Unfortunately floating point processing is still slower than integer processing on common CPUs. This is the reason why most frameworks and algorithms work on byte-valued image data. On common systems, a byte (mostly 8Bit, in C++ realized by the \inlinecode{unsigned char} data type), is the smallest directly addressable data unit. Of course you can access even single bits, but in most cases, algorithm performance is worse here due to the need of bit-shifting an masking on the byte-aligned data.\\
+In short, bytes have a very limited range $\{0,..,255\}$ but processing performance is optimal. Furthermore most input- and output-devices (cameras, frame-grabbers and even most common file formats) use 24bit color resolution, which can be implemented very naturally using 3 byte-valued image channels (e.g. RGB).
+Unfortunately in there are many situations, where the 8bit-range of bytes is too limited. For example if one wants to create a feature map\footnote{Here a map is nothing else then an ordinary image -- consider a city map that contains some locally arranged information}. Often, the range of image features cannot be mapped to $\{0,..,255\}$ especially if feature values need to have a good resolution between $0$ and $1$ as well as for very high values. To make a long story short, sometimes there is also need for float-valued pixels.
+
+Hence we decided to provide a flexible image structure called \inlinecode{Img}\iclclassref{Core}{Img} that uses C++-templating for supporting most different data types.
+
+\section{Image Features}
+Once having clarified the basics for the image representation, we can have a look on some extra image features. Although size and channel count have already been mentioned above, here is a list of native features\footnote{This must not be misunderstood here: This are not features like intensity or image moments but features of the image structure} of an ICL image:
+
+\begin{enumerate}
+
+\item \textbf{Size}
+\\The 2D-spacial extend of the image. Common sizes are e.g. $640 \times{} 480$ which is calles \emph{VGA}. Sizes are represented by a special \inlinecode{Size}-structure \iclclassref{Core}{Size}. Uninitialized image have size of $0 \times{} 0$. Image size can be defined in the constructor, or it can be adapted/obtained using '\inlinecode{void setSize(const Size&)}' and '\inlinecode{const Size &getSize() const}' respectively. Please note, that changing an images size using \inlinecode{setSize} involves a complete lose of all image data. For scaling also the images contents, a dedicated function named \inlinecode{scale} is provided. 
+\item \textbf{Channels}\\
+ Channel count of an image is represented by a single \inlinecode{int} value. We do not use an \inlinecode{unsigned int} as we sometimes use a negative channel index to indicate that e.g. a function should work on all image channels. In contrast to most other image features, the channel count depends on another feature: the image \emph{format} (See below for more details). An uninitialized image has $0$ channels; channel count can be set/obtained using '\inlinecode{void setChannels(int num)}'/'\inlinecode{int getChannels() const}'. If channel count is increased by a \inlinecode{setChannels}-call, old channels are not touched. If otherwise, channel count is decreased, only the last channels are removed -- other channels remain untouched (image data is not changed, data is not reallocated).
+
+\item \textbf{Format}\\
+This additional feature defines an images \emph{color-format}. Currently 6+1 formats are defined by the \inlinecode{format}-enum \iclnamespaceref{Core}. 6+1 means, that there are 6 \emph{real} color-formats\footnote{yes! gray is also a color format here} (Gray,RGB,YUV,HLS,LAB,Chroma) which each implies a related channel count (see above), and a dedicated format named \inlinecode{formatMatrix} that may have any number of channels. Setting an images format using \inlinecode{void setFormat(format fmt)} also adapts the channel count if necessary. Changing an images channel count to a value that does not match the channel count that is associated with it's current format automatically sets the image format to \inlinecode{formatMatrix}.\\
+Additionally it's important to mention, that all color-formats use a value range of $[0,255]$ regardless of the current pixel data type. I.e. also \inlinecode{float}-images expect e.g. RGB-values in range $[0,255]$ and not as one might expect in range $[0,1]$. Of course, you can setup a \inlinecode{float}-images pixels to any desired values, but color conversion functions \iclnamespaceref{CC} and image visualization work with this range.
+
+\item \textbf{Region-of-Interest}\\
+In many image processing applications computations must be performed only on a sub-region of the image. 
+
+\end{enumerate}
+
+% there is a structure called ImgParams
+% all setter function do only work on demand
+
+
+
+
+
+
+
+

@@ -25,6 +25,39 @@
   }%
 }%
 
+\input{icl-file-root}
+
+%\newcommand{\iclfileroot}{%
+%  file:///vol/nivision/ICL/4.1%
+%}%
+
+\newcommand{\iclrefref}{%
+  {\tiny{\textbf{\href{\iclfileroot/doc/ICL/index.html}{[ICL-Reference]}}}}%
+}%
+
+%  {\tiny{\textbf{\href{file:///vol/nivision/ICL/4.1/doc/ICL#1/icl#2_8h.html}{[ICL#1:icl#2.h]}}}}%
+\newcommand{\iclheaderref}[2]{%
+  {\tiny{\textbf{\href{\iclfileroot/doc/ICL#1/icl#2_8h.html}{[ICL#1:icl#2.h]}}}}%
+}%
+%  {\tiny{\textbf{\href{file:///vol/nivision/ICL/4.1/doc/ICL#1/namespaceicl.html}{[ICL#1:functions]}}}}%
+\newcommand{\iclnamespaceref}[1]{%
+  {\tiny{\textbf{\href{\iclfileroot/doc/ICL#1/namespaceicl.html}{[ICL#1:functions]}}}}%
+}%
+
+%  {\tiny{\textbf{\href{file:///vol/nivision/ICL/4.1/doc/ICL#1/classicl_1_1#2.html}{[ICL#1:#2]}}}}%
+\newcommand{\iclclassref}[2]{%
+  {\tiny{\textbf{\href{\iclfileroot/doc/ICL#1/classicl_1_1#2.html}{[ICL#1:#2]}}}}%
+}
+\newcommand{\iclstructref}[2]{%
+  {\tiny{\textbf{\href{\iclfileroot/doc/ICL#1/structicl_1_1#2.html}{[ICL#1:#2]}}}}%
+}
+
+
+%  {\tiny{\textbf{\href{file:///vol/nivision/ICL/4.1/doc/ICL#1/index.html}{[ICL#1]}}}}%
+\newcommand{\iclpackageref}[2]{%
+  {\tiny{\textbf{\href{\iclfileroot/doc/ICL#1/index.html}{[ICL#1]}}}}%
+}
+
 
 \newcommand{\reference}[1]{%
   {(\small{$\Rightarrow$})}
@@ -34,19 +67,26 @@
   \end{flushleft}%
   }%
 }%
-\newcommand{\mylabelledfig}[4]{
+
+
+% #1: filename
+% #2: label
+% #3: caption
+% #4: size etc. e.g. width=40px
+\newcommand{\iclfigure}[3]{
 \begin{figure}[!ht]
   \centering
-  \includegraphics[#4]{#1}
+  \includegraphics[#3]{media/#1}
   \caption{
-    #3
+    #2
     %\picfilename{#1}
   }
-  \label{#2}
+  \label{#1}
 \end{figure}
 }
 
-\newcommand{\includechapter}[2]{\chapter{#1\label{sec:#2}}\input{chapters/#2}\pagebreak}
+
+\newcommand{\includechapter}[2]{\chapter{#1\label{cha:#2}}\input{chapters/#2}\pagebreak}
 
 %\newcommand{\inlinecode}[1]{\textbf{\texttt{#1}}}
 \newcommand{\inlinecode}[1]{\lstinline[breaklines=false]^#1^}

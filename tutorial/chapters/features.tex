@@ -1,0 +1,180 @@
+ The ICL is a computer-vision library, so it provides of course a large set of computer-vision functions. However a lot of additional components (like the Qt-GUI wrapper API \iclclassref{Qt}{GUI} or the program argument evaluation tools \iclheaderref{Utils}{ProgArg}) turned out to be very useful even for general purpose programming. 
+
+\section{Large variety of simple-to-use Algorithms}
+As IPP developers supposable thought a lot about the set of algorithms to provide with their library, a first step in ICL implementation was to provide simple and \emph{care-free} wrappers for fundamental image manipulation functions provided by the IPP. Manipulation functions can be split into several subsets to facilitate the overview:
+\begin{itemize}
+
+\item Data copy and convert functions.\\
+\iclnamespaceref{Core}, \iclclassref{Core}{Img}, \iclclassref{Core}{ImgBase}
+
+\item Statistic functions (like min- or max elements/indices) or mean pixel value etc.\\
+\iclnamespaceref{Core}, \iclclassref{Core}{Img}, \iclheaderref{Core}{Mathematics}
+
+\item Arithmetical operations (e.g. pixel-wise addition of two images etc)\\
+\iclclassref{Filter}{UnaryArithmeticalOp}, \iclclassref{Filter}{BinaryArithmeticalOp}.
+
+\item Logical operations (e.g. pixel wise OR etc..)\\ 
+\iclclassref{Filter}{UnaryLogicalOp}, \iclclassref{Filter}{BinaryLogicalOp}.
+
+\item Affine transformations (pixel locations are changed)\\
+\iclclassref{Filter}{AffineOp}, \iclclassref{Filter}{RotateOp}, \iclclassref{Filter}{ScaleOp}, (...), \iclclassref{Filter}{WarpOp}  
+
+\item Thresholding and comparison functions.\\
+\iclclassref{Filter}{UnaryCompareOp}, \iclclassref{Filter}{BinaryCompareOp}, \iclclassref{Filter}{ThresholdOp}, \iclclassref{Filter}{LocalThresholdOp}, 
+
+\item Morphological operations\\
+\iclclassref{Filter}{MorphologicalOp}
+
+\item Convolution functions.\\
+\iclclassref{Filter}{ConvolutionOp}, \iclclassref{Filter}{DynamicConvolutionOp}
+
+\item Proximity-Measurement functions (E.g. normalized cross correlation)\\
+\iclclassref{Filter}{ProximityOp}
+
+\item Canny-Edge-Detector\\
+\iclclassref{Filter}{CannyOp}
+
+\item Integral-Image computation\\
+\iclclassref{Filter}{IntegralImgOp}
+
+\item Local-Threshold operations\\
+\iclclassref{Filter}{LocalThresholdOp}
+
+\item Color-Format conversion\\
+\iclclassref{CC}{Converter}, \iclheaderref{CC}{CC}
+
+\item Lookup table operations\\
+\iclclassref{Filter}{LUTOp}, \iclclassref{Filter}{LUT2D}, \iclclassref{Filter}{LUTOp3Channel}
+
+\item Disparity image computation (using SVS-Wrapper)\\
+\iclclassref{Algorithms}{SVS}
+
+\item Blob detection and tracking algorithms\\
+\iclclassref{Blob}{ColorBlobSearcher}, \iclclassref{Blob}{ReginBasedBlobSearcher}, \iclclassref{Blob}{PositionTracker}
+
+\item Connected component analysis\\
+\iclclassref{Blob}{RegionDetector}
+
+\item Image-File grabber and writer support for most common image formats (.ppm,.pnm,.pgm,.icl: native, many many other formats using an libmagick++-Wrapper)\\
+\iclclassref{IO}{FileGrabber}, \iclclassref{IO}{FileWriter}, \iclclassref{IO}{GenericGrabber}
+
+\item Camera grabber support for a large set of cameras (FireWire-cams using libdc1394, Phillips-Webcam-Grabber, v4l and v4l2 Grabber using Unicap\footnote{http://www.unicap-imaging.org/} wrapper\\
+\iclclassref{IO}{DCGrabber}, \iclclassref{IO}{PWCGrabber}, \iclclassref{IO}{UnicapGrabber}, \iclclassref{IO}{GenericGrabber}
+
+\item XCF\footnote{https://code.ai.techfak.uni-bielefeld.de/trac/xcf}-grabber and publisher)\\
+\iclclassref{IO}{XCFMemoryGrabber}, \iclclassref{IO}{XCFPublisherGrabber}, \iclclassref{IO}{XCFServerGrabber},
+\iclclassref{IO}{XCFPublisher}, \iclheaderref{IO}{XCFUtils}   
+
+\item Image visualization and annotation using Qt\\
+\iclclassref{Qt}{GUI}, \iclclassref{Qt}{ICLWidget}, \iclclassref{Qt}{ICLDrawWidget}, \iclclassref{Qt}{ICLDrawWidget3D},
+
+\item Prototyping API ICLQuick\\
+\iclnamespaceref{Quick}
+
+\item Image annotation and pixel based drawing functions\\
+\iclnamespaceref{Quick}
+
+\end{itemize}
+
+
+
+\section{Well-chosen selection of ready-to-use Tools}
+In addition to the set of functionalities regarding image processing, ICL provides a variety of usability tools and classes, that facilitate application development significantly. Here is a short listing:
+
+\begin{itemize}
+\item \textbf{ICLUtils package:} \iclpackageref{Utils}:\\
+\begin{itemize}
+        \item Thread and Mutex class (wrapping pthread functionalities)\\
+          \iclclassref{Utils}{Thread} \iclclassref{Utils}{Mutex}
+
+        \item Matrix/Vector class providing some BLAS functionalities\\
+          \iclstructref{Utils}{DynMatrix} \iclstructref{Utils}{DynVector}
+
+        \item FixedMatrix/Vector class (providing matrix dimensions as template parameters and therewith allowing compilers a lot of optimizations)\\
+          \iclclassref{Utils}{FixedMatrix} \iclstructref{Utils}{FixedColVector} \iclstructref{Utils}{FixedRowVector}
+
+        \item Time and Timing classes including benchmarking times\\
+           \iclclassref{Utils}{Time} \iclclassref{Utils}{Timer} \iclclassref{Utils}{StackTimer}
+
+        \item String Tokenizer class\\
+           \iclclassref{Utils}{StringTokenizer}
+
+        \item Shallow- and Un- copyable interfaces\\
+           \iclclassref{Utils}{Uncopyable} \iclclassref{Utils}{ShallowCopyable}
+
+        \item The so called \emph{ProgArg} environment, that allows to define and extract program parameters\\
+           \iclheaderref{Utils}{ProgArg}
+           
+        \item Clipped data type conversion using the \inlinecode{clipped_cast}-template\\
+           \iclheaderref{Utils}{ClippedCast}
+
+        \item ICL-related exceptions\\
+           \iclheaderref{Utils}{Exception}
+
+        \item (Debugging)-Macros \\
+           \iclheaderref{Utils}{Macros}
+\end{itemize}
+
+\item \textbf{ICLCore package:} \iclpackageref{Core}\\
+\begin{itemize}
+        \item StringUtils environment for conversion of common data-types into strings and vice versa\\
+          \iclheaderref{Core}{StringUtils}
+
+        \item Statistic functions and random number generators\\
+          \iclheaderref{Core}{Random}
+
+        \item Mathematic / and statistic functions\\
+          \iclheaderref{Core}{Mathmatics}
+
+        \item A set of most common data types like Rects, Lines, Ranges, and Points \\
+          \iclclassref{Core}{Rect} \iclclassref{Core}{Line} \iclstructref{Core}{Range}
+          \iclclassref{Core}{Point} \iclclassref{Core}{Point32f} (...)
+
+\end{itemize}
+
+\item \textbf{ICLIO package:} \iclpackageref{IO}\\
+\begin{itemize}
+        \item A simple File implementation providing reading and writing of files as well as reading and writing zipped file (using a wrapper of libz)\\
+           \iclclassref{IO}{File}
+        
+        \item A FileNameGenerator structure that allows generation of enumerated file names (e.g. for writing a list of files)\\
+           \iclclassref{IO}{FileNameGenerator}
+
+        \item A FileList structure that expands file patterns (e.g. 'images/*.jpg') to a list of files that match to the pattern.\\
+           \iclclassref{IO}{FileList}
+\end{itemize}
+
+
+\item \textbf{ICLGeom package:} \iclpackageref{Geom}\\
+\begin{itemize}
+        \item Camera and Scene implementation that allows 3D-Modelling and polygon based rendering (no raytracing!!, and no Z-buffering) \\
+             \iclclassref{Geom}{Camera} \iclclassref{Geom}{Szene}
+
+        \item Object interface that enables to handle objects within a scene\\
+        \iclclassref{Geom}{Object}
+\end{itemize}
+
+\item \textbf{ICLAlgorithms package:} \iclpackageref{Algorithms}\\
+\begin{itemize}
+        \item A generic N-to-M dimensional SOM (self organizing map) implementation\\
+        \iclclassref{Algorithms}{SOM} \iclclassref{Algorithms}{SOM2D}
+\end{itemize}
+
+\item \textbf{ICLQt package:} \iclpackageref{Qt}\\
+\begin{itemize}
+        \item A powerful Qt-Wrapper for simple and off-the-cuff creation of most complex GUI's components. Here about 20 common GUI components\footnote{including sliders and buttons as well as image-visualization and augmentation compenents} can be layouted and synchronized very conveniently\\
+          \iclclassref{Qt}{GUI}
+
+        \item An xml-configuration file class (ConfigFile). That allows simple definition and extraction of configuration parameters.\\
+          \iclclassref{Qt}{ConfigFile}
+
+        \item A GUI-Widget to change configuration file entries at run-time.\\
+          \iclclassref{Qt}{ConfigFileGUI}
+\end{itemize}
+
+\item Remaining packages are ICLCC \iclpackageref{CC}, ICLQuick \iclpackageref{Quick}, ICLFilter \iclpackageref{Filter} and ICLBlob \iclpackageref{Blob}\\
+The most common functions in this packages are for image processing only, so they are not mentioned in this section.
+
+
+\end{itemize}
+
