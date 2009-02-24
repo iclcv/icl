@@ -160,7 +160,7 @@ namespace icl{
     // recursivly add given QDomNode to the data store
     // each new section id is added to the prefix delimited with 
     // a single '.' character
-    void load_rec(DataStore &ds,QDomNode n, QString prefix){
+    void load_rec(DataStore &ds,QDomNode n, QString prefix, ConfigFile &cfg){
       // {{{ open
 
       while(!n.isNull()) {
@@ -179,12 +179,12 @@ namespace icl{
             QString key = prefix==""?idStr:prefix+"."+idStr; 
             dsPush(ds,key,typeStr,t.toText().data());
             if(e.hasAttribute("range")){
-              ((ConfigFile&)ds).defineRangeForKey(str("config.")+key.toLatin1().data(),translateRange<double>(e.attribute("range").toLatin1().data()));
+              cfg.defineRangeForKey(str("config.")+key.toLatin1().data(),translateRange<double>(e.attribute("range").toLatin1().data()));
             }
           }else if(e.tagName() == "section"){
             ICLASSERT_RETURN(e.hasAttribute("id"));
             QString idStr = e.attribute("id");
-            load_rec(ds,e.firstChild(),prefix==""?idStr:prefix+"."+idStr);
+            load_rec(ds,e.firstChild(),prefix==""?idStr:prefix+"."+idStr,cfg);
           }else if(e.tagName() == "title"){  
             QDomNode title = e.firstChild();
             ICLASSERT_RETURN(title.isText());
@@ -423,7 +423,7 @@ namespace icl{
 
 
     
-    load_rec(*this,doc.documentElement().firstChild(),"");
+    load_rec(*this,doc.documentElement().firstChild(),"",*this);
 
 
     updateTitleFromDocument();
@@ -476,7 +476,7 @@ namespace icl{
 
   ConfigFile::ConfigFile(const std::string &filename)throw(FileNotFoundException,InvalidFileFormatException):
     // {{{ open
-    m_spXMLDocHandle(new XMLDocHandle){
+    m_spXMLDocHandle(new XMLDocHandle),m_ranges(new std::map<std::string,Range64f>()){
 
     load(filename);    
   }
