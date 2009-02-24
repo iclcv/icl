@@ -801,6 +801,12 @@ namespace icl {
         ICLASSERT_RETURN_VAL(otherImage,false);
         return getParams() == otherImage->getParams() && getDepth() == otherImage->getDepth();
       }
+
+      /// returns whether image data is currently shared
+      /** This function does only return true, if all channel pointers
+          have reference count 1 -- i.e. all channels are currently
+          not shared with another image */
+      virtual bool isIndependent() const=0;
       /// @}
       /* }}} */
 

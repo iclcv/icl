@@ -1276,64 +1276,9 @@ namespace icl {
     **/
     void printAsMatrix(const std::string &format="5.3", bool visROI=true) const;
 
-
-#if 0
-    REMOVED since ICL 4.1
-    /// returns the iterator for the hole image 
-    /** The following example taken from ImgIterator.h will show
-        the iterator usage:
-        \code
-        void channel_convolution_3x3(Img32f &src, Img32f &dst,icl32f *pfMask, int iChannel){
-           for(Img32f::iterator s=src.getIterator(iChannel) d=dst.getIterator(iChannel) ; s.inRegion() ; s++,d++){
-              icl32f *m = pfMask;
-              (*d) = 0;
-              for(Img32f::iterator sR(s, 3, 3); sR.inRegion(); sR++,m++){
-                 (*d) += (*sR) * (*m);
-              }
-           }  
-        }
-        \endcode
-        <b>Note:</b> The performance hints illustrated in the
-        ImgIterator documentation.
-        @param iChannel selected channel index
-        @return iterator
-        @see ImgIterator
-        @see end
-    **/
-    inline iterator getIterator(int iChannel)
-    {
-      FUNCTION_LOG("begin(" << iChannel << ")");
-      ICLASSERT_RETURN_VAL(validChannel(iChannel), iterator());
-      return iterator(getData(iChannel),getWidth(),Rect(Point::null,getSize()));
-    }
-    /// returns an iterator to an images ROI pixels
-    /** this function behaves essentially like the above function 
-        @param iChannel selects a channel
-        @return roi-iterator
-        @see getIterator
-        */
-    inline iterator beginROI(int iChannel)
-    {
-      FUNCTION_LOG("begin(" << iChannel << ")");
-      ICLASSERT_RETURN_VAL(validChannel(iChannel), iterator());
-      return iterator(getData(iChannel),getWidth(),getROI());
-    } 
-
-    /// const version of getIterator
-    inline const_iterator getIterator(int iChannel) const
-    {
-      FUNCTION_LOG("begin(" << iChannel << ")");
-      ICLASSERT_RETURN_VAL(validChannel(iChannel), const_iterator());
-      return const_iterator(getData(iChannel),getWidth(),Rect(Point::null,getSize()));
-    }
-    /// const version of beginROI
-    inline const_iterator beginROI(int iChannel) const
-    {
-      FUNCTION_LOG("begin(" << iChannel << ")");
-      ICLASSERT_RETURN_VAL(validChannel(iChannel), const_iterator());
-      return const_iterator(getData(iChannel),getWidth(),getROI());
-    } 
- #endif
+    /// shows wheter all image channels are currently not share with another image
+    /** @copydoc bool ImgBase::isIndependent() const */
+    virtual bool isIndependent() const;
     /// @}
 
     /* }}} */

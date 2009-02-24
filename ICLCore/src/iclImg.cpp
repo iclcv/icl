@@ -402,10 +402,11 @@ namespace icl {
     ICLASSERT_RETURN(iIndex < getChannels());
     
     //---- Make the whole Img independent ----
-    for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++)
-      {
+    for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++){
+      if(m_vecChannels[i].use_count() > 1){
         m_vecChannels[i] = createChannel (getData(i));
       }
+    }
   }
 
   // }}}
@@ -1642,6 +1643,17 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
   
   // }}}
+
+
+  template<class T>
+  bool Img<T>::isIndependent() const{
+    for(int i=0;i<getChannels();++i){
+      if(m_vecChannels[i].use_count() > 1){
+        return false;
+      }
+    }
+    return true;
+  }
   
   // }}} Global functions ..
 
