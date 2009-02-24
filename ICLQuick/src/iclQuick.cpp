@@ -9,6 +9,7 @@
 
 #include <iclCC.h>
 #include <map>
+#include <list>
 #include <iclConvolutionOp.h>
 #include <iclMedianOp.h>
 #include <iclMorphologicalOp.h>
@@ -31,10 +32,72 @@
 #include <iclPoint32f.h>
 
 
+#define USE_TEMP_IMAGES
 
 
 namespace icl{
   namespace {
+
+#ifdef USE_TEMP_IMAGES
+    static std::list<ImgQ> TEMP_IMAGES;
+    
+    ImgQ &get_temp_image(const ImgParams &params){
+      ImgQ * independentOne = 0;
+      for(std::list<ImgQ>::iterator it = TEMP_IMAGES.begin(); it != TEMP_IMAGES.end();++it){
+        if(it->isIndependent()){
+          if(it->getParams() == params){
+            //DEBUG_LOG("reusing image with given params");
+            return *it;
+          }else{
+            if(independentOne){
+              independentOne = &*it;
+            }
+          }
+        }
+      }
+      if(independentOne){
+        //DEBUG_LOG("reusing independent image (changing parameters)");
+        independentOne->setParams(params);
+        return *independentOne;
+      }else{
+        //DEBUG_LOG("creating new image");
+        TEMP_IMAGES.push_back(ImgQ(params));
+        return TEMP_IMAGES.back();
+      }
+    }
+    ImgQ &get_temp_image(){
+      for(std::list<ImgQ>::iterator it = TEMP_IMAGES.begin(); it != TEMP_IMAGES.end();++it){
+        if(it->isIndependent()){
+          return *it;
+        }
+      }
+      TEMP_IMAGES.push_back(ImgQ());
+      return TEMP_IMAGES.back();
+    }
+
+    inline ImgQ get_temp_image(const Size &size, int channels){
+      return get_temp_image(ImgParams(size,channels));
+    }
+
+#define TEMP_IMG_P(params) get_temp_image(params) 
+#define TEMP_IMG_SC(size,channels) get_temp_image(size,channels) 
+
+#define TEMP_IMG_PTR_P(params) new ImgQ(get_temp_image(params))
+#define TEMP_IMG_PTR_SC(size,channels) new ImgQ(get_temp_image(size,channels))
+
+#else
+
+#define TEMP_IMG_P(params) ImgQ(params)
+#define TEMP_IMG_SC(size,channels) ImgQ(size,channels)
+
+#define TEMP_IMG_PTR_P(params) new ImgQ(params)
+#define TEMP_IMG_PTR_SC(size,channels) new ImgQ(size,channels)
+
+#endif
+
+  
+
+    
     struct Color{
       // {{{ open
 
@@ -104,21 +167,24 @@ namespace icl{
       if(a.getROISize() == b.getROISize() && a.getChannels() == b.getChannels()){
         na = copy(a);
         nb = copy(b);
-        return new ImgQ(a.getParams());
+        //return new ImgQ(a.getParams());
+        return TEMP_IMG_PTR_P(a.getParams());
       }
 
     Size sa = a.getROISize(), sb = b.getROISize();
     Size sr(max(sa.width,sb.width), max(sa.height,sb.height) );
     int cr = max(a.getChannels(),b.getChannels());
       
-    na = ImgQ(sr,a.getChannels());
+    //    na = ImgQ(sr,a.getChannels());
+    na = TEMP_IMG_SC(sr,a.getChannels());
     na.setROI(a.getROI());
     a.deepCopyROI(&na);
     na.setFullROI();
     na.setChannels(cr);
 
 
-    nb = ImgQ(sr,b.getChannels());
+    //nb = ImgQ(sr,b.getChannels());
+    nb = TEMP_IMG_SC(sr,b.getChannels());
     nb.setROI(b.getROI());
     b.deepCopyROI(&nb);
     nb.setFullROI();
@@ -137,31 +203,35 @@ namespace icl{
       binop.setClipToROI(true);
 
       if(a.getROISize() == b.getROISize() && a.getChannels() == b.getChannels()){
-          ImgBase *res = new ImgQ(a.getParams());
-          binop.apply(&a,&b,&res);
-          ImgQ x = *(res->asImg<ICL_QUICK_TYPE>());
-          delete res;
-          return x;
+        //ImgBase *res = new ImgQ(a.getParams());
+        ImgBase *res = TEMP_IMG_PTR_P(a.getParams());
+        binop.apply(&a,&b,&res);
+        ImgQ x = *(res->asImg<ICL_QUICK_TYPE>());
+        delete res;
+        return x;
       }
       
       Size sa = a.getROISize(), sb = b.getROISize();
       Size sr(max(sa.width,sb.width), max(sa.height,sb.height) );
       int cr = max(a.getChannels(),b.getChannels());
       
-      ImgQ na(sr,a.getChannels());
+      //      ImgQ na(sr,a.getChannels());
+      ImgQ na = TEMP_IMG_SC(sr,a.getChannels());
       na.setROI(a.getROI());
       a.deepCopyROI(&na);
       na.setFullROI();
       na.setChannels(cr);
       
       
-      ImgQ nb(sr,b.getChannels());
+      //      ImgQ nb(sr,b.getChannels());
+      ImgQ nb = TEMP_IMG_SC(sr,b.getChannels());
       nb.setROI(b.getROI());
       b.deepCopyROI(&nb);
       nb.setFullROI();
       nb.setChannels(cr);
       
-      ImgBase * res = new ImgQ(na.getParams());
+      //      ImgBase * res = new ImgQ(na.getParams());
+      ImgBase *res = TEMP_IMG_PTR_P(na.getParams());
       
       binop.apply(&na,&nb,&res);
       ImgQ x = *(res->asImg<ICL_QUICK_TYPE>());
@@ -173,11 +243,17 @@ namespace icl{
     inline ImgQ apply_unary_arithmetical_op(const ImgQ &image,ICL_QUICK_TYPE val, UnaryArithmeticalOp::optype ot){
       // {{{ open
 
-      ImgBase *dst = 0;
-      UnaryArithmeticalOp(ot,val).apply(&image,&dst);
-      ImgQ r = *(dst->asImg<ICL_QUICK_TYPE>());
-      delete dst;
-      return r;
+      /* old  !!
+          ImgBase *dst = 0;
+          UnaryArithmeticalOp(ot,val).apply(&image,&dst);
+          ImgQ r = *(dst->asImg<ICL_QUICK_TYPE>());
+          delete dst;
+          return r;
+      */
+      ImgQ dst = TEMP_IMG_P(image.getParams());
+      UnaryArithmeticalOp(ot,val).apply(&image,bpp(dst));
+      return dst;
+      
     }
 
     // }}}
@@ -189,17 +265,17 @@ namespace icl{
 
   ImgQ zeros(int width, int height, int channels){
     // {{{ open
-
-    return ImgQ(Size(width,height),channels);
+    ImgQ i = TEMP_IMG_SC(Size(width,height),channels);
+    i.clear(-1,0.0,false);
+    return i;
   }
 
   // }}}
   ImgQ ones(int width, int height, int channels){
     // {{{ open
-
-    ImgQ a(Size(width,height),channels);
-    a.clear(-1,1.0,false);
-    return a;
+    ImgQ i = TEMP_IMG_SC(Size(width,height),channels);
+    i.clear(-1,1.0,false);
+    return i;
   }
 
   // }}}
@@ -207,13 +283,27 @@ namespace icl{
   ImgQ load(const string &filename){
     FileGrabber g(filename);
     g.setIgnoreDesiredParams(true);
-    ImgQ *image = g.grab()->convert<ICL_QUICK_TYPE>();
-    if(!image){
+    const ImgBase *grabbedImage = 0;
+    try{
+      grabbedImage = g.grab();
+    }catch(const ICLException &ex){
+      ERROR_LOG("exception: "  << ex.what());
+    }
+    if(!grabbedImage){
       return ImgQ();
     }
-    ImgQ ret = *image;
-    delete image;
-    return ret;
+    ImgQ buf = TEMP_IMG_P(grabbedImage->getParams());
+    grabbedImage->convert(&buf);
+    return buf;
+    /*
+        ImgQ *image = g.grab()->convert<ICL_QUICK_TYPE>();
+        if(!image){
+        return ImgQ();
+        }
+        ImgQ ret = *image;
+        delete image;
+        return ret;
+    */
   }
   
   ImgQ load(const string &filename, format fmt){
@@ -221,17 +311,34 @@ namespace icl{
 
     FileGrabber g(filename);
     g.setIgnoreDesiredParams(true);
-    
-    ImgQ *image = g.grab()->convert<ICL_QUICK_TYPE>();
-    if(!image){
+    const ImgBase *gi  = 0;
+    try{
+      gi = g.grab();
+    }catch(const ICLException &ex){
+      ERROR_LOG("exception: "  << ex.what());
+    }
+    if(!gi){
       return ImgQ();
     }
-    
-    ImgQ im(image->getSize(),fmt);
-    im.setTime(image->getTime());
-    cc(image,&im);
-    delete image;
-    return im;
+    ImgQ buf = TEMP_IMG_SC(gi->getSize(),getChannelsOfFormat(fmt));
+    cc(gi,&buf);
+
+    return buf;
+    /*
+        FileGrabber g(filename);
+        g.setIgnoreDesiredParams(true);
+        
+        ImgQ *image = g.grab()->convert<ICL_QUICK_TYPE>();
+        if(!image){
+        return ImgQ();
+        }
+        
+        //ImgQ im(image->getSize(),fmt);
+        im.setTime(image->getTime());
+        cc(image,&im);
+        delete image;
+        return im;
+    */
 
   }
 
@@ -446,20 +553,31 @@ namespace icl{
   // }}}
   ImgQ copy(const ImgQ &image){
     // {{{ open
-
-    ImgQ *cpy = image.deepCopy()->asImg<ICL_QUICK_TYPE>();
-    ImgQ im = *cpy;
-    delete cpy;
+    ImgQ im = TEMP_IMG_P(image.getParams());
+    image.deepCopy(&im);
     return im;
+    /*
+        ImgQ *cpy = image.deepCopy()->asImg<ICL_QUICK_TYPE>();
+        ImgQ im = *cpy;
+        delete cpy;
+        return im;
+    */
   }
 
   // }}}
   ImgQ copyroi(const ImgQ &image){
     // {{{ open
-    ImgQ *cpy = image.deepCopyROI()->asImg<ICL_QUICK_TYPE>();
-    ImgQ im = *cpy;
-    delete cpy;
-    return im;
+    ImgQ cpy = TEMP_IMG_SC(image.getROISize(),image.getChannels());
+    cpy.setFormat(image.getFormat());
+    cpy.setTime(image.getTime());
+    image.deepCopyROI(&cpy);
+    return cpy;
+    /*
+        ImgQ *cpy = image.deepCopyROI()->asImg<ICL_QUICK_TYPE>();
+        ImgQ im = *cpy;
+        delete cpy;
+        return im;
+    */
   }
 
   // }}}
@@ -604,7 +722,10 @@ namespace icl{
   // }}}
   ImgQ operator-(float val, const ImgQ &image){
     // {{{ open
-    ImgQ res(image.getROISize(),image.getChannels());
+    //    ImgQ res(image.getROISize(),image.getChannels());
+
+    ImgQ res = TEMP_IMG_SC(image.getROISize(),image.getChannels());
+    
     for(int c=0;c<image.getChannels();++c){
       const ImgIterator<ICL_QUICK_TYPE> itI = image.beginROI(c);
       const ImgIterator<ICL_QUICK_TYPE> itIEnd = image.endROI(c);
@@ -626,7 +747,10 @@ namespace icl{
   // }}}
   ImgQ operator/(float val, const ImgQ &image){
     // {{{ open
-    ImgQ res(image.getROISize(),image.getChannels());
+    //ImgQ res(image.getROISize(),image.getChannels());
+    
+    ImgQ res = TEMP_IMG_SC(image.getROISize(),image.getChannels());
+    
     for(int c=0;c<image.getChannels();++c){
       const ImgIterator<ICL_QUICK_TYPE> itI = image.beginROI(c);
       const ImgIterator<ICL_QUICK_TYPE> itIEnd = image.endROI(c);
@@ -643,8 +767,11 @@ namespace icl{
 
   ImgQ cc(const ImgQ& image, format fmt){
     // {{{ open
-    ImgQ dst(image.getSize(),fmt);
-    ImgQ src = copyroi(image);
+    //    ImgQ dst(image.getSize(),fmt);
+    ImgQ dst = TEMP_IMG_SC(image.getROISize(),getChannelsOfFormat(fmt));
+    dst.setFormat(fmt);
+
+    ImgQ src = image;//copyroi(image); // just a shallow copy here!
     if(src.getFormat() == formatMatrix && src.getChannels()==1) src.setFormat(formatGray);
     cc(&src,&dst);
     return dst;
@@ -698,6 +825,9 @@ namespace icl{
   }
 
   // }}}
+  
+  // TODO ...
+  
   ImgQ channel(const ImgQ &image, int channel){
     // {{{ open
     const ImgQ *c = image.selectChannel(channel)->asImg<ICL_QUICK_TYPE>();
@@ -725,14 +855,16 @@ namespace icl{
   ImgQ thresh(const ImgQ &image, float threshold){
     // {{{ open
 
-    ImgQ r(image.getROISize(),image.getChannels(),image.getFormat());
+    //ImgQ r(image.getROISize(),image.getChannels(),image.getFormat());
+    ImgQ r = TEMP_IMG_SC(image.getROISize(),image.getChannels());
+    r.setFormat(image.getFormat());
     r.setTime(image.getTime());
     for(int c=0;c<image.getChannels();++c){
       const ImgIterator<ICL_QUICK_TYPE> itSrc = image.beginROI(c);
       const ImgIterator<ICL_QUICK_TYPE> itSrcEnd = image.endROI(c);
       ImgQ::iterator itDst = r.begin(c);
       for(;itSrc != itSrcEnd ;++itSrc,++itDst){
-        *itDst = *itSrc < threshold ? 0 : 255;
+        *itDst = 255*(*itSrc > threshold);
       }
     }    
     return r;
@@ -927,7 +1059,9 @@ namespace icl{
     // {{{ open
     if(a.getSize() == Size::null) return copy(b);
     if(b.getSize() == Size::null) return copy(a);
-    ImgQ r = zeros(a.getWidth()+b.getWidth(),max(a.getHeight(),b.getHeight()),max(a.getChannels(),b.getChannels()));
+    //ImgQ r = zeros();
+    ImgQ r = TEMP_IMG_SC(Size(a.getWidth()+b.getWidth(),max(a.getHeight(),b.getHeight())),max(a.getChannels(),b.getChannels()));
+    
     r.setROI(a.getROI());
     roi(r) = a;
 
