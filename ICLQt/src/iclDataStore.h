@@ -41,11 +41,13 @@ namespace icl{
     
     /// Destructor (deletes all remaining data)
     inline ~DataStore(){
-      for(DataMap::iterator it = m_oDataMapPtr->begin(); it != m_oDataMapPtr->end(); ++it){
-        DataArray &da = it->second;
-        da.release_func(&da);
+      if(m_oDataMapPtr.use_count() == 1){
+        for(DataMap::iterator it = m_oDataMapPtr->begin(); it != m_oDataMapPtr->end(); ++it){
+          DataArray &da = it->second;
+          da.release_func(&da);
+        }
+        m_oDataMapPtr->clear();
       }
-      m_oDataMapPtr->clear();
     }
     
     /// internally used wrapper function for RTTI

@@ -1,7 +1,7 @@
 #ifndef ICL_CONFIG_ENTRY_H
 #define ICL_CONFIG_ENTRY_H
 
-#include <iciConfigFile.h>
+#include <iclConfigFile.h>
 
 namespace icl{
 
@@ -22,11 +22,12 @@ namespace icl{
     inline ConfigEntry(const std::string &key,
                        const T &def=T(),
                        const ConfigFile &cfg=ConfigFile::getConfig()){
+      
       m_config = const_cast<ConfigFile*>(&cfg);
-      m_conifg.lock();
+      m_config->lock();
       if(cfg.contains(key)){
-        if(cfg.checkType<T>()){
-          m_entry = &cfg.getValue<T>(key);
+        if(cfg.checkType<T>(key)){
+          m_entry = &((DataStore&)cfg).getValue<T>(key);
         }else{
           ERROR_LOG("type missmatch: Entry \"" << key << "\" (using default)");
           m_def = def;
@@ -36,7 +37,7 @@ namespace icl{
         m_def = def;
         m_entry = &def;
       }
-      m_config.unlock();
+      m_config->unlock();
     }
 
     /// returns reference value
@@ -49,7 +50,7 @@ namespace icl{
     }
     
   private:
-    const T m_def;
+    T m_def;
     const T *m_entry;
     ConfigFile *m_config;
   };

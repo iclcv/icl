@@ -315,6 +315,12 @@ namespace icl{
     /// this function is imported from the parent DataStore class
     DataStore::unlock;
 
+    /// just imported form the parent DataStore class
+    template<class T>
+    inline bool checkType(const std::string &id) const{
+      return DataStore::checkType<T>(id);
+    }
+
     /// defined the range for given number-type-valued key
     /** This feature is used by the ConfigFileGUI to create appropriate slider
         ranges if requested */
