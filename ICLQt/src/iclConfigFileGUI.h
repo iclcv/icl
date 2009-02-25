@@ -72,8 +72,9 @@ namespace icl{
       GUI gui;
       std::string id;
       std::string type;
+      QTreeWidgetItem *item;
     };
-    std::list<NamedGUI> m_sliders;
+    std::list<NamedGUI> m_guis;
   };
   
 }

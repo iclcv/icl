@@ -179,7 +179,12 @@ namespace icl{
             QString key = prefix==""?idStr:prefix+"."+idStr; 
             dsPush(ds,key,typeStr,t.toText().data());
             if(e.hasAttribute("range")){
-              cfg.defineRangeForKey(str("config.")+key.toLatin1().data(),translateRange<double>(e.attribute("range").toLatin1().data()));
+              std::string k = str("config.")+key.toLatin1().data();
+              cfg.setRestriction(k,ConfigFile::KeyRestriction(translateRange<double>(e.attribute("range").toLatin1().data())));
+            }else if(e.hasAttribute("values")){
+              std::string k = str("config.")+key.toLatin1().data();
+              std::string values = e.attribute("values").toLatin1().data();
+              cfg.setRestriction(k,ConfigFile::KeyRestriction(values.substr(1,values.length()-2)));
             }
           }else if(e.tagName() == "section"){
             ICLASSERT_RETURN(e.hasAttribute("id"));
@@ -447,25 +452,25 @@ namespace icl{
   
   ConfigFile::ConfigFile():
     // {{{ open
-    m_spXMLDocHandle(new XMLDocHandle),m_ranges(new std::map<std::string,Range64f>()){
+    m_spXMLDocHandle(new XMLDocHandle),m_restrictions(new std::map<std::string,KeyRestriction>()){
     
     updateTitleFromDocument();
   }
   
   // }}}
 
-  void ConfigFile::defineRangeForKey(const std::string &id, const Range64f &r){
+  void ConfigFile::setRestriction(const std::string &id, const ConfigFile::KeyRestriction &r){
     // {{{ open
-    (*m_ranges.get())[id] = r;
+    (*m_restrictions.get())[id] = r;
   }
 
   // }}}
   
-  const Range64f *ConfigFile::getRange(const std::string &id) const{
+  const ConfigFile::KeyRestriction *ConfigFile::getRestriction(const std::string &id) const{
     // {{{ open
-    std::map<std::string,Range64f>::const_iterator it = m_ranges->find(id);
-    if(it != m_ranges->end() ){
-      return &(*m_ranges.get())[id];
+    std::map<std::string,KeyRestriction>::const_iterator it = m_restrictions->find(id);
+    if(it != m_restrictions->end() ){
+      return &(*m_restrictions.get())[id];
     }else{
       return 0;
     }
@@ -476,7 +481,7 @@ namespace icl{
 
   ConfigFile::ConfigFile(const std::string &filename)throw(FileNotFoundException,InvalidFileFormatException):
     // {{{ open
-    m_spXMLDocHandle(new XMLDocHandle),m_ranges(new std::map<std::string,Range64f>()){
+    m_spXMLDocHandle(new XMLDocHandle),m_restrictions(new std::map<std::string,KeyRestriction>()){
 
     load(filename);    
   }

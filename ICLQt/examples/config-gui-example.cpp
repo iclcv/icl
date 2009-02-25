@@ -7,7 +7,7 @@ int main(int n, char **ppc){
   
   ConfigFile::loadConfig(pa_subarg<std::string>("-c",0,"config.xml"));
   GUI gui("vbox");
-  gui << "config(embedded)" << "config(popup)";
+  gui << "config(embedded)";
   gui.show();
   //  ConfigFileGUI gui(ConfigFile::getConfig());
   //gui.show();

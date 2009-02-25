@@ -7,12 +7,14 @@
 #include <iclBoxHandle.h>
 #include <iclSplitterHandle.h>
 #include <iclSliderHandle.h>
+#include <iclComboHandle.h>
 #include <iclFSliderHandle.h>
 
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QFileDialog>
+#include <QComboBox>
 
 using std::string;
 
@@ -238,16 +240,46 @@ namespace icl{
             item->addChild(n);
 #define YES_USE_SLIDERS_PLEASE
 #ifdef YES_USE_SLIDERS_PLEASE
+            if(t == "string"){
+              const ConfigFile::KeyRestriction *restriction = config.getRestriction(es[i].key);
+              if(restriction && restriction->hasValues){
+                const std::string &values = restriction->values;
+                std::string p = str("[@minsize=3x1@out=v@handle=h]");
+                m_guis.push_back(NamedGUI());
+                GUI &gui = m_guis.back().gui;
+                gui = GUI(str("combo(")+values+")"+p);
+                gui.create();
+                
+                ComboHandle &ch = gui.getValue<ComboHandle>("h");
+                ch.registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
+                
+                int idx = (*ch)->findText(e);
+                if(idx!=-1){
+                  (*ch)->setCurrentIndex(idx);
+                }else{
+                  ERROR_LOG("Entry: " << es[i].key << ":\nValue list does not contain initial value");
+                }
+                
+                m_guis.back().id = es[i].key;
+                m_guis.back().type = t.toLatin1().data();
+                m_guis.back().item = n;
+                m_tree->setItemWidget(n,1,*gui.getValue<ComboHandle>("h"));
 
-            if(t == "float" || t == "int"){
-              const Range64f *r = config.getRange(es[i].key);
-              if(r){
+                n->setText(1,"");
+              }
+            }else if(t == "float" || t == "int"){
+              const ConfigFile::KeyRestriction *restriction = config.getRestriction(es[i].key);
+              if(restriction && restriction->hasRange){
+                const Range64f *r = &restriction->range;
                 std::string p = str("[@minsize=5x1@out=v@handle=h]");
-                m_sliders.push_back(NamedGUI());
-                GUI &gui = m_sliders.back().gui;
+                m_guis.push_back(NamedGUI());
+                GUI &gui = m_guis.back().gui;
                 gui = GUI("hbox[@handle=b]");
                 std::string el = e.toLatin1().data();
                 bool ok = true;
+                if(!r->contains(to64f(el))){
+                  ERROR_LOG("Entry: " << es[i].key << ":\nInitial value is out of given range");
+                }
                 if(t == "float"){
                   gui << str("fslider(")+str(r->minVal)+','+str(r->maxVal)+','+el+')'+p;
                   gui.create();
@@ -262,12 +294,13 @@ namespace icl{
                 
                 if(ok){
 
-                  m_sliders.back().id = es[i].key;
-                  m_sliders.back().type = t.toLatin1().data();
+                  m_guis.back().id = es[i].key;
+                  m_guis.back().type = t.toLatin1().data();
+                  m_guis.back().item = n;
                   m_tree->setItemWidget(n,1,*gui.getValue<BoxHandle>("b"));
                   n->setText(1,"");
                 }else{
-                  m_sliders.pop_back();
+                  m_guis.pop_back();
                 }
               }
             }
@@ -547,13 +580,16 @@ namespace icl{
   }
 
   void ConfigFileGUI::exec(){
-    for(std::list<ConfigFileGUI::NamedGUI>::iterator it = m_sliders.begin();it!=m_sliders.end();++it){
+    for(std::list<ConfigFileGUI::NamedGUI>::iterator it = m_guis.begin();it!=m_guis.end();++it){
       if(it->type == "int"){
         int i = it->gui.getValue<int>("v");
         m_config->set(it->id,i);
       }else if(it->type == "float"){
         float f = it->gui.getValue<float>("v");
         m_config->set(it->id,f);
+      }else if(it->type == "string"){
+        std::string s = it->gui.getValue<std::string>("v");
+        m_config->set(it->id,s);
       }
     }
   }
@@ -561,6 +597,11 @@ namespace icl{
   void ConfigFileGUI::itemDoubleClicked(QTreeWidgetItem *item, int column){
     if(column != 1 || item->text(2) == "unsupported" || item->text(2) == ""){
       return;
+    }
+    for(std::list<ConfigFileGUI::NamedGUI>::iterator it = m_guis.begin();it!=m_guis.end();++it){
+      if(it->item == item){
+        return;
+      }
     }
     QStringList keys;
     for(QTreeWidgetItem *curr = item; curr ;curr=curr->parent()){

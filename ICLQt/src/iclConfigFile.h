@@ -41,17 +41,29 @@ namespace icl{
       \</config\> 
       </pre>
       
-      \subsection RANGES Data Ranges
+      \subsection RANGES Data Ranges and Value lists
       
-      In addition to the syntax above, each data-tag can be set up with a range property. Currently
-      data ranges are only used for int- and float- typed data elements. If a range property is defined like this
+      In addition to the syntax above, each data-tag can be set up with a range property or a value list. <b>Currently
+      data ranges are only used for int- and float- typed data elements</b>. If a range property is defined like this
       
       <pre>
       \<data id="threshold" type="int" range="[0,255]"\>127\</data\>
       </pre>
 
-      The ConfigFileGUI editor will automatically create an integer slider with given range for this entry.
-      This feature is also available for float-typed entries.
+      the ConfigFileGUI editor will automatically create an integer slider with given range for this entry.
+      (As mentioned above, this feature is also available for float-typed entries).
+      
+      <b>Value lists are only supported for string-typed entries!</b> value lists must be defined like this:
+      <pre>
+      \<data id="grabber-type" type="string" values="[pwc,dc,file,unicap]"\>dc\</data\>
+      </pre>
+      (Don't forget enclosing brackets). Value lists are translated to a combobox containing all given entries.
+      It's self-evident. that the initial value must be within the value list (otherwise an error is shown, and
+      the combo-box value is out of date until the combo-box is use for the first time. The same is true for
+      ranged float- or int-entry restriction.
+      
+
+      \subsection OTHERS Other Information
 
       When accessing ConfigFile data members, each hierarchy level must be
       separated using the '.' character. So e.g. the filename can be accessed using
@@ -321,14 +333,30 @@ namespace icl{
       return DataStore::checkType<T>(id);
     }
 
+    
+    struct KeyRestriction{
+      inline KeyRestriction():
+        hasRange(false),hasValues(false){}
+      inline KeyRestriction(const Range64f &r):
+        range(r),hasRange(true),hasValues(false){}
+      inline KeyRestriction(const std::string &values):
+        values(values),hasRange(false),hasValues(true){}
+
+      Range64f range;
+      std::string values;
+
+      bool hasRange;
+      bool hasValues;
+    };
+    
     /// defined the range for given number-type-valued key
     /** This feature is used by the ConfigFileGUI to create appropriate slider
         ranges if requested */
-    void defineRangeForKey(const std::string &id, const Range64f &r);
-    
+    void setRestriction(const std::string &id, const KeyRestriction &r);
+
     /// returns predefined range for given id (or 0 if no range was defined for this key)
     /** This feature is only used by the config file GUI */
-    const Range64f *getRange(const std::string &id) const;
+    const KeyRestriction *getRestriction(const std::string &id) const;
 
     private:
 
@@ -354,7 +382,7 @@ namespace icl{
     std::string m_sDefaultPrefix;
     
     /// for ranged sliders within the config file GUI
-    SmartPtr<std::map<std::string,Range64f>,PointerDelOp> m_ranges;
+    SmartPtr<std::map<std::string,KeyRestriction>,PointerDelOp> m_restrictions;
 
     /// ostream operator is allowed to access privat members
     friend std::ostream &operator<<(std::ostream&,const ConfigFile&);
