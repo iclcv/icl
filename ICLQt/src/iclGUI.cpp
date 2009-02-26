@@ -322,7 +322,7 @@ namespace icl{
       gen_params();
     }
     virtual void processIO(){
-      if(m_poClickedEvent){
+      if(m_poClickedEvent){      
         m_poClickedEvent->m_bTriggered = true;
       }
     }

@@ -85,22 +85,15 @@ namespace icl{
     DynMatrix operator*(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
       if(m.rows() != cols()) throw IncompatibleMatrixDimensionException("A*B : rows(A) must be cols(B)");
       DynMatrix d(m.cols(),rows());
-      for(unsigned int c=0;c<cols();++c){
-        for(unsigned int r=0;r<rows();++r){
+      for(unsigned int c=0;c<d.cols();++c){
+        for(unsigned int r=0;r<d.rows();++r){
           d(c,r) = std::inner_product(row_begin(r),row_end(r),m.col_begin(c),0);
         }
       }
       return d;
     }
     DynMatrix &operator*=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
-      if(m.rows() != cols()) throw IncompatibleMatrixDimensionException("A*B : rows(A) must be cols(B)");
-      DynMatrix d(m.cols(),rows());
-      for(unsigned int c=0;c<cols();++c){
-        for(unsigned int r=0;r<rows();++r){
-          d(c,r) = std::inner_product(row_begin(r),row_end(r),m.col_begin(c),0);
-        }
-      }
-      return *this=d;
+      return *this=((*this)*m);
     }
     
     DynMatrix operator/(const DynMatrix &m) const 
@@ -300,6 +293,10 @@ namespace icl{
         return tmp;
       }
 
+      difference_type operator-(const col_iterator &other) const{
+        return (p-other.p)/stride;
+      }
+
       
       /// Dereference operator
       T &operator*(){
@@ -370,8 +367,10 @@ namespace icl{
   
     DynMatrix transp() const{
       DynMatrix d(rows(),cols());
-      for(int i=0;i<cols();++i){
-        std::copy(col_begin(i),col_end(i),d.row_begin(i));
+      for(unsigned int x=0;x<cols();++x){
+        for(unsigned int y=0;y<rows();++y){
+          d(y,x) = (*this)(x,y);
+        }
       }
       return d;
     }

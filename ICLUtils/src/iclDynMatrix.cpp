@@ -12,11 +12,12 @@ namespace icl{
   DynMatrix<T> apply_dyn_matrix_inv(const DynMatrix<T> &s){                                                                                 
     if(s.cols() != s.rows()){                                                                                                               
       throw InvalidMatrixDimensionException("inverse matrix can only be calculated on square matrices");                                    
-    }                                                                                                                                       
-    unsigned int wh = s.cols();                                                                                                             
+    }    
+
+    unsigned int wh = s.cols();    
     DynMatrix<T> d(wh,wh);                                                                                                                  
     std::vector<T> buffer(wh*wh+wh);                                                                                                        
-                                                                                                                                            
+                                       
     IppStatus st = ippFunc(s.data(),wh*sizeof(T),sizeof(T),                                                                                 
                            buffer.data(),                                                                                                   
                            d.data(),wh*sizeof(T),sizeof(T),                                                                                 
