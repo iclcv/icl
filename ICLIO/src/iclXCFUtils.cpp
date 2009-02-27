@@ -99,13 +99,13 @@ namespace icl{
        if(insertInsteadOfReplace){
           mem->insert(anchor.getDocumentText(), attToUse);
        }else{
+         
+         mem->replace(anchor.getDocumentText(), attToUse);
+         std::ostringstream oss;
+         //---------
+         oss << "/*[@dbxml:id=" << anchor.getDocument().getID() << "]";
+         mem->replaceByXPath(oss.str(), anchor.getDocumentText(), attToUse);
 #if 0
-          mem->replace(anchor.getDocumentText(), attToUse);
-          std::ostringstream oss;
-//---------
-          oss << "/*[@dbxml:id=" << anchor.getDocument().getID() << "]";
-          mem->replaceByXPath(oss.str(), anchor.getDocumentText(), attToUse);
-#else
           
           anchor["dlgid"] = anchor.getDocument().getID();
           mem->insert(anchor.getDocumentText(), attToUse);
