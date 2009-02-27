@@ -87,7 +87,7 @@ namespace icl{
       DynMatrix d(m.cols(),rows());
       for(unsigned int c=0;c<d.cols();++c){
         for(unsigned int r=0;r<d.rows();++r){
-          d(c,r) = std::inner_product(row_begin(r),row_end(r),m.col_begin(c),0);
+          d(c,r) = std::inner_product(row_begin(r),row_end(r),m.col_begin(c),T(0));
         }
       }
       return d;
