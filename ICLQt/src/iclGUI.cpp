@@ -498,9 +498,11 @@ namespace icl{
       m_poSlider->setMaximum(iMax);
       m_poSlider->setValue(iCurr);
      
-      int iAbsMax = iMax > -iMin ? iMax : -iMin;
-      int iAddOneForSign = iMax < -iMin;
-      m_poLCD = new QLCDNumber(QString::number(iAbsMax).length()+iAddOneForSign,def.parentWidget());
+      int nDigits = iclMax(QString::number(iMin).length(),QString::number(iMax).length());
+      //      int iAbsMax = iMax > -iMin ? iMax : -iMin;
+      //int iAddOneForSign = iMax < -iMin;
+      // m_poLCD = new QLCDNumber(QString::number(iAbsMax).length()+iAddOneForSign,def.parentWidget());
+      m_poLCD = new QLCDNumber(nDigits,def.parentWidget());
       m_poLCD->display(iCurr);
       
       if(iVerticalFlag){
@@ -1410,7 +1412,7 @@ public:
     if(m_bCreated){
       m_poWidget->show();
     }else{
-      ERROR_LOG("unable hide GUI that has not been created yet, call create() or show() first!");
+      ERROR_LOG("unable to hide GUI that has not been created yet, call create() or show() first!");
     } 
   }
 

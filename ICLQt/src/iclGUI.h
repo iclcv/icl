@@ -947,8 +947,13 @@ int main(int n, char**ppc){
     /// internally creates everything (and makes the gui visible)
     virtual void show();
     
-    /// make this gui invisible (noting more)
+    /// make this gui invisible (nothing more)
     virtual void hide();
+    
+    /// returns the root widget of the gui (only avialable after create() or show())
+    inline GUIWidget *getRootWidget(){
+      return m_poWidget;
+    }
     
     /// internally locks the datastore
     inline void lockData() {
