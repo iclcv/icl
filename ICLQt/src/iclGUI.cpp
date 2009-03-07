@@ -499,8 +499,9 @@ namespace icl{
       m_poSlider->setValue(iCurr);
      
       int nDigits = iclMax(QString::number(iMin).length(),QString::number(iMax).length());
-      //      int iAbsMax = iMax > -iMin ? iMax : -iMin;
-      //int iAddOneForSign = iMax < -iMin;
+      // what is this ???
+      // int iAbsMax = iMax > -iMin ? iMax : -iMin;
+      // int iAddOneForSign = iMax < -iMin;
       // m_poLCD = new QLCDNumber(QString::number(iAbsMax).length()+iAddOneForSign,def.parentWidget());
       m_poLCD = new QLCDNumber(nDigits,def.parentWidget());
       m_poLCD->display(iCurr);
