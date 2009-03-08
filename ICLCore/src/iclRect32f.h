@@ -137,7 +137,7 @@ namespace icl {
     
     /// rects with negative sizes are normalized to Positive sizes
     /** e.g. the rect (5,5,-5,-5) is normalized to (0,0,5,5) */
-    Rect32f nomalized() const {
+    Rect32f normalized() const {
        Rect32f r (*this);
        if (r.width < 0) {r.x += r.width; r.width = -r.width; }
        if (r.height < 0) {r.y += r.height; r.height = -r.height; }
@@ -173,20 +173,20 @@ namespace icl {
     
     
     /// returns upper left point of the rect
-    Point ul() const {
-      return Point((int)x,(int)y);
+    Point32f ul() const {
+      return Point32f(x,y);
     }
     /// returns lower left point of the rect
-    Point ll() const {
-      return Point((int)x,(int)(y+height));
+    Point32f ll() const {
+      return Point32f(x,y+height);
     }
     /// returns upper right point of the rect
-    Point ur() const {
-      return Point((int)(x+width),(int)y);
+    Point32f ur() const {
+      return Point32f(x+width,y);
     }
     /// returns lower right point of the rect
-    Point lr() const {
-      return Point((int)(x+width),(int)(y+height));
+    Point32f lr() const {
+      return Point32f(x+width,y+height);
     }
 
     /// returns the left border position

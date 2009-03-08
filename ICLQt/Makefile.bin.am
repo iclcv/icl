@@ -38,9 +38,15 @@ icl-visualization-demo \
 icl-xv \
 icl-camcfg \
 icl-calib-radial-distortion \
-icl-config-gui-example
+icl-config-gui-example \
+icl-widget2-example
 
 # explicit sources, ldflags and cxxflags
+icl_widget2_example_SOURCES=../examples/widget2-example.cpp
+icl_widget2_example_LDFLAGS=${XLDFLAGS}
+icl_widget2_example_CXXFLAGS=${XCXXFLAGS}
+
+
 icl_3D_demo_SOURCES=../examples/3D-demo.cpp
 icl_3D_demo_LDFLAGS=${XLDFLAGS}
 icl_3D_demo_CXXFLAGS=${XCXXFLAGS}

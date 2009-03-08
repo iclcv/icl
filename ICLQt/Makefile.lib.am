@@ -6,6 +6,7 @@ lib_LTLIBRARIES=libICLQt.la
 
 MOC_FILES= \
 ../src/iclWidget.moc.cpp \
+../src/iclWidget2.moc.cpp \
 ../src/iclMouseInteractionReceiver.moc.cpp \
 ../src/iclDoubleSlider.moc.cpp \
 ../src/iclImgParamWidget.moc.cpp \
@@ -66,6 +67,7 @@ ${MOC_FILES} \
 ../src/iclStringHandle.cpp \
 ../src/iclStringSignalButton.cpp \
 ../src/iclWidget.cpp \
+../src/iclWidget2.cpp \
 ../src/iclCamCfgWidget.cpp \
 ../src/iclToggleButton.cpp \
 ../src/iclConfigFileGUI.cpp
@@ -133,6 +135,7 @@ include_HEADERS= \
 ../src/iclThreadedUpdatableWidget.h \
 ../src/iclWidgetCaptureMode.h \
 ../src/iclWidget.h \
+../src/iclWidget2.h \
 ../src/iclWindowIcon.h \
 ../src/iclProxyLayout.h \
 ../src/iclCamCfgWidget.h \
