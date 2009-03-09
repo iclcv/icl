@@ -51,15 +51,6 @@ ${MOC_FILES} \
 ../src/iclLabelHandle.cpp \
 ../src/iclMouseInteractionReceiver.cpp \
 ../src/iclMultiDrawHandle.cpp \
-../src/iclOSDButton.cpp \
-../src/iclOSDCaptureVideoWidget.cpp \
-../src/iclOSD.cpp \
-../src/iclOSDHistoWidget.cpp \
-../src/iclOSDImageStatisticsWidget.cpp \
-../src/iclOSDLabel.cpp \
-../src/iclOSDNavBar.cpp \
-../src/iclOSDSlider.cpp \
-../src/iclOSDWidget.cpp \
 ../src/iclQImageConverter.cpp \
 ../src/iclQtPaintEngine.cpp \
 ../src/iclSliderHandle.cpp \
@@ -67,7 +58,6 @@ ${MOC_FILES} \
 ../src/iclStringHandle.cpp \
 ../src/iclStringSignalButton.cpp \
 ../src/iclWidget.cpp \
-../src/iclWidget2.cpp \
 ../src/iclCamCfgWidget.cpp \
 ../src/iclToggleButton.cpp \
 ../src/iclConfigFileGUI.cpp
@@ -115,15 +105,6 @@ include_HEADERS= \
 ../src/iclMouseInteractionInfo.h \
 ../src/iclMouseInteractionReceiver.h \
 ../src/iclMultiDrawHandle.h \
-../src/iclOSDButton.h \
-../src/iclOSDCaptureVideoWidget.h \
-../src/iclOSD.h \
-../src/iclOSDHistoWidget.h \
-../src/iclOSDImageStatisticsWidget.h \
-../src/iclOSDLabel.h \
-../src/iclOSDNavBar.h \
-../src/iclOSDSlider.h \
-../src/iclOSDWidget.h \
 ../src/iclPaintEngine.h \
 ../src/iclQImageConverter.h \
 ../src/iclQt.h \
@@ -135,7 +116,6 @@ include_HEADERS= \
 ../src/iclThreadedUpdatableWidget.h \
 ../src/iclWidgetCaptureMode.h \
 ../src/iclWidget.h \
-../src/iclWidget2.h \
 ../src/iclWindowIcon.h \
 ../src/iclProxyLayout.h \
 ../src/iclCamCfgWidget.h \
