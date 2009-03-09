@@ -564,7 +564,7 @@ namespace icl{
     
     memset(m_poState->bg,0,4*sizeof(unsigned char));
 
-    setShowNoImageWarning(false);
+    setShowNoImageWarnings(false);
   }
 
     // }}}

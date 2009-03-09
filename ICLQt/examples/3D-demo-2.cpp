@@ -54,7 +54,7 @@ void run(){
         if(output){
           static char filename[1024];
           sprintf(filename,fmt.c_str(),rx,ry);
-          widget->updateAndSaveFrameBuffer(filename);
+          //widget->updateAndSaveFrameBuffer(filename);
           Thread::msleep(10);
         }else{
           widget->updateFromOtherThread();

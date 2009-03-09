@@ -1,5 +1,5 @@
-#ifndef ICLWIDGET_2_H
-#define ICLWIDGET_2_H
+#ifndef ICLWIDGET_H
+#define ICLWIDGET_H
 
 #include <QGLWidget>
 #include <iclImgBase.h>
@@ -111,7 +111,7 @@ int main(int nArgs, char **ppcArg){
       exactly what you want!!!)
       @see ICLDrawWidget
   */
-  class ICLWidget2 : public QGLWidget{
+  class ICLWidget : public QGLWidget{
     Q_OBJECT
     public:
 
@@ -134,10 +134,10 @@ int main(int nArgs, char **ppcArg){
     };   
     
     /// creates a new ICLWidget within the parent widget
-    ICLWidget2(QWidget *parent=0);
+    ICLWidget(QWidget *parent=0);
     
     /// destructor
-    virtual ~ICLWidget2();
+    virtual ~ICLWidget();
 
     /// GLContext initialization
     virtual void initializeGL();
@@ -175,32 +175,20 @@ int main(int nArgs, char **ppcArg){
     /// returns the rect, that is currently used to draw the image into
     Rect getImageRect();
 
-    /** .
-        /// returns the current fitmode
-        fitmode getFitMode(){return m_eFitMode;}
+    fitmode getFitMode();
         
-        /// returns the current rangemode
-        rangemode getRangeMode(){return m_eRangeMode;}
-    **/
+    rangemode getRangeMode();
 
     /// returns a list of image specification string (used by the OSD)
     std::vector<std::string> getImageInfo();
 
     
-    /// returns whether a "NULL-Image" is warned in the image (...)
-    //    void setShowNoImageWarning(bool enabled=true){ m_bShowNoImageWarning=enabled; }
+    /// calls QObject::connect to establish an explicit connection
+    void add(MouseInteractionReceiver *r){
+      connect((ICLWidget*)this,SIGNAL(mouseEvent(MouseInteractionInfo*)),
+              (MouseInteractionReceiver*)r,SLOT(mouseInteraction(MouseInteractionInfo*)));
+    }
     
-    //    bool getMenuEnabled() const { return m_menuEnabled; }
-
-    //void setMenuEnabled(bool enabled);
-
-    /*
-        /// calls QObject::connect to establish an explicit connection
-        void add(MouseInteractionReceiver *r){
-        connect((ICLWidget*)this,SIGNAL(mouseEvent(MouseInteractionInfo*)),
-        (MouseInteractionReceiver*)r,SLOT(mouseInteraction(MouseInteractionInfo*)));
-        }
-    */
 
     /// this function should be called to update the widget asyncronously from a working thread
     void updateFromOtherThread();
@@ -220,6 +208,9 @@ int main(int nArgs, char **ppcArg){
     const ImageStatistics &getImageStatistics();
 
     void setMenuEnabled(bool enabled);
+    
+    void setShowNoImageWarnings(bool showWarnings);
+    
     public slots:
     /// sets up the current image
     void setImage(const ImgBase *image);

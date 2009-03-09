@@ -6,7 +6,6 @@ lib_LTLIBRARIES=libICLQt.la
 
 MOC_FILES= \
 ../src/iclWidget.moc.cpp \
-../src/iclWidget2.moc.cpp \
 ../src/iclMouseInteractionReceiver.moc.cpp \
 ../src/iclDoubleSlider.moc.cpp \
 ../src/iclImgParamWidget.moc.cpp \
