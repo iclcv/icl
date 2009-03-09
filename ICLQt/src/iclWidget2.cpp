@@ -138,7 +138,7 @@ namespace icl{
         entries[i].histo = s.histos[i];
         fillColor(i,entries[i].color);
       }
-      
+      update();
     }
     
     virtual void paintEvent(QPaintEvent *e){

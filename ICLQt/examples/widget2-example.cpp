@@ -6,9 +6,8 @@
 ICLWidget2 *w = 0;
 
 void run(){
-  //  static GenericGrabber g("file","/home/celbrech/images/chrissi-heller.jpg*");
-  static ImgQ image = scale(create("parrot"),0.5);
-  w->setImage(&image);
+  static GenericGrabber g("pwc","pwc=0");
+  w->setImage(g.grab());
   w->update();
   Thread::msleep(50);
 }
