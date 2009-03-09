@@ -1314,11 +1314,13 @@ public:
       throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
     }
 
-#ifndef WIN32
-    usleep(1000*100);
-#else
+    /**
+        //#ifndef WIN32
+        usleep(1000*100);
+        #else
 	Sleep(100);
-#endif
+        //#endif
+    **/
 
     string label = extract_label(definition);
     string minsize = extract_minsize(definition);

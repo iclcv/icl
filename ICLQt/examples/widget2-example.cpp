@@ -14,15 +14,28 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  ExecThread t(run);
-  QApplication app(n,ppc);
-
-  w = new ICLWidget2(0);
-  w->setGeometry(QRect(100,100,640,480));
-  w->show();
-
-  t.run();
-  
-  return app.exec();
+  pa_init(n,ppc,"-loop");
+  if(pa_defined("-loop")){
+    ExecThread t(run);
+    QApplication app(n,ppc);
+    
+    w = new ICLWidget2(0);
+    w->setGeometry(QRect(100,100,640,480));
+    w->show();
+    
+    t.run();
+    
+    return app.exec();
+  }else{
+    QApplication app(n,ppc);
+    
+    w = new ICLWidget2(0);
+    w->setGeometry(QRect(100,100,640,480));
+    w->show();
+    
+    run();
+    
+    return app.exec();
+  }
   
 }

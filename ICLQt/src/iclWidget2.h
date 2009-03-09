@@ -115,7 +115,8 @@ int main(int nArgs, char **ppcArg){
     Q_OBJECT
     public:
 
-    class Data;    
+    class Data;   
+    friend class OutputBufferCapturer;
     
     /// determines how the image is fit into the widget geometry
     enum fitmode{ 
@@ -218,6 +219,7 @@ int main(int nArgs, char **ppcArg){
     /// returns current ImageStatistics struct (used by OSD)
     const ImageStatistics &getImageStatistics();
 
+    void setMenuEnabled(bool enabled);
     public slots:
     /// sets up the current image
     void setImage(const ImgBase *image);
@@ -234,10 +236,9 @@ int main(int nArgs, char **ppcArg){
     virtual void enterEvent(QEvent *e);
     virtual void leaveEvent(QEvent *e);
     virtual void resizeEvent(QResizeEvent *e);
-    virtual void childChanged(int id, void *val);
+    
 
-
-    public slots:
+    private slots:
     void showHideMenu();
     void setMenuEmbedded(bool embedded);
 
@@ -249,15 +250,26 @@ int main(int nArgs, char **ppcArg){
     void scaleModeChanged(int modeIdx);
     void currentChannelChanged(int modeIdx);
 
-    private:
+    void captureCurrentImage();
+    void captureCurrentFrameBuffer();
     
+    void recordButtonToggled(bool checked);
+    void pauseButtonToggled(bool checked);
+    void stopButtonClicked();
+    void skipFramesChanged(int frameSkip);
+    void menuTabChanged(int index);
+    
+    private:
+    const Img8u &grabFrameBufferICL();
+    std::string getImageCaptureFileName();
+    void updateInfoTab();
+
+    
+    void rebufferImageInternal();
 
     class OutputBufferCapturer;
     
     Data *m_data;
-    
-    /// if parameters are changed in the gui
-    void rebufferImageInternal();
 
     /// prepares the current MouseInteractionInfo struct for being emitted
     MouseInteractionInfo *updateMouseInfo(MouseInteractionInfo::Type type);

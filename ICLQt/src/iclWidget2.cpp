@@ -16,190 +16,51 @@
 #include <iclWindowIcon.h>
 
 #include <iclFileWriter.h>
-#include <QInputDialog>
 #include <iclThread.h>
 
+#include <QInputDialog>
 #include <QMutexLocker>
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QComboBox>
 #include <QSlider>
 #include <QSizePolicy>
+#include <QFileDialog>
+#include <QSpinBox>
 
 #include <iclGUI.h>
 #include <iclTabHandle.h>
 #include <iclBoxHandle.h>
+#include <iclButtonHandle.h>
 #include <iclComboHandle.h>
+#include <iclStringHandle.h>
+#include <iclSpinnerHandle.h>
 #include <iclSliderHandle.h>
-
+#include <iclStringUtils.h>
 
 #include <iclRect32f.h>
 #include <iclRange.h>
-
+#include <iclStackTimer.h>
+#include <iclTimer.h>
 
 using namespace std;
 namespace icl{
-  class ICLWidget2::OutputBufferCapturer{
-  public:
-    OutputBufferCapturer(ICLWidget2 *parent):
-      // {{{ open
 
-      capturingMode(capturingStopped),parent(parent),filename(""),filewriter(0),mutex(QMutex::Recursive){}
-
-    // }}}
-
-    ~OutputBufferCapturer(){
-      // {{{ open
-
-      ICL_DELETE(filewriter);
-    }
-
-    // }}}
-
-    std::string getNewFilePattern(const std::string &lastFileName){
-      // {{{ open
-
-      bool ok = false;
-      QString name = QInputDialog::getText(parent,
-                                           "Specify output file pattern",
-                                           "Please specify destination file pattern\n"
-                                           "(e.g. images/captured_frame_########.ppm",
-                                           QLineEdit::Normal,lastFileName.c_str(),&ok);
-      if(ok){
-        return name.toLatin1().data();
-      }else{
-        return "";
-      }
-
-    }
-
-    // }}}
-
-    void capture(){
-      ICLASSERT_RETURN(filewriter);
-      QImage qim = parent->grabFrameBuffer();
-      converter.setQImage(&qim);
-      try{
-        filewriter->write(converter.getImg<icl8u>());
-      }catch(ICLException &ex){
-        ERROR_LOG("error capturing frame buffer: " << ex.what());
-      }
-    }
-    
-    void captureIfOn(){
-      // {{{ open
-
-      QMutexLocker l(&mutex);
-      if(capturingMode == capturingStarted){
-        if(frameskip){
-          if(frameindex == frameskip){
-            capture();
-            frameindex = 0;
-          }else{
-            frameindex++;
-          }
-        }else{
-          capture();
-        }
-      }
-    }
-
-    // }}}
-    void setCapturing(ICLWidgetCaptureMode newMode){
-      // {{{ open
-      QMutexLocker l(&mutex);
-      ICLWidgetCaptureMode &oldMode = this->capturingMode;
-      if(oldMode == newMode) return;
-      switch(newMode){
-        case capturingStarted:
-          if(this->capturingMode == capturingStopped){
-            filename = getNewFilePattern(filename);
-            std::string dirname = File(filename).getDir();
-            if(!File(dirname).exists()){
-              std::string command = string("if [ ! -d ")+dirname+" ] ; then mkdir "+dirname+" ; fi";
-              system(command.c_str());
-              while(!File(dirname).exists()){
-                Thread::msleep(10);
-              }
-            }
-            ICL_DELETE(filewriter);
-            try{
-              filewriter = new FileWriter(filename);
-            }catch(ICLException &ex){
-              ERROR_LOG("invalid file pattern:" << filename << std::endl << "Exception:\"" << ex.what() << "\"");
-              filewriter = 0;
-              filename = "";
-              return;
-            }            
-          }
-          this->capturingMode = newMode;
-          // else mode becomes paused (noting more)
-          break;
-        case capturingStopped:
-          ICL_DELETE(filewriter);
-          this->capturingMode = newMode;
-          break;
-        case capturingPaused:
-          if(oldMode == capturingStarted){
-            this->capturingMode = newMode;
-          }
-          break;
-      }
-    }
-
-    // }}}
-
-    ICLWidgetCaptureMode getCaptureMode() const {
-      // {{{ open
-
-      QMutexLocker l(&mutex);
-      return capturingMode;
-    }
-
-    // }}}
-
-    std::string getNextCapturingFileName() const{
-      // {{{ open
-
-      QMutexLocker l(&mutex);
-      if(filewriter){
-        return filewriter->getFilenameGenerator().showNext();
-      }else{
-        return "currently not recording...";
-      }
-    }
-
-    // }}}
-
-    void setFrameSkip(unsigned int frameskip){
-      QMutexLocker l(&mutex);
-      this->frameskip = frameskip;
-      this->frameindex = 0;
-    }
-    unsigned int getFrameSkip() const {
-      QMutexLocker l(&mutex);
-      return frameskip;
-    }
-
-    ICLWidgetCaptureMode capturingMode;
-    ICLWidget2 *parent;
-    string filename;
-    FileWriter *filewriter;
-    QImageConverter converter;
-    mutable QMutex mutex;
-    unsigned int frameskip;
-    unsigned int frameindex;
-  };
+#define LOCK_SECTION QMutexLocker SECTION_LOCKER(&m_data->mutex)
 
   class ZoomAdjustmentWidgetParent;
   
   struct ICLWidget2::Data{
+    // {{{ open
+
     Data(ICLWidget2 *parent):
       channelSelBuf(0),image(new GLTextureMapBaseImage(0,false)),
       qimageConv(0),qimage(0),mutex(QMutex::Recursive),fm(fmHoldAR),
-      rm(rmOff),mouse(-1,-1),selChannel(-1),showNoImageWarnings(true),
-      outputCap(new ICLWidget2::OutputBufferCapturer(parent)),menuOn(true),
-      menuptr(0),showMenuButton(0),embedMenuButton(0),zoomAdjuster(0)
+      rm(rmOff),bciUpdateAuto(false),channelUpdateAuto(false),
+      mouse(-1,-1),selChannel(-1),showNoImageWarnings(true),
+      outputCap(0),menuOn(true),
+      menuptr(0),showMenuButton(0),embedMenuButton(0),zoomAdjuster(0),
+      qic(0),menuEnabled(true),infoTab(0)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
@@ -211,7 +72,8 @@ namespace icl{
       ICL_DELETE(image);
       ICL_DELETE(qimageConv);
       ICL_DELETE(qimage);
-      ICL_DELETE(outputCap);
+      ICL_DELETE(qic);
+      // ICL_DELETE(outputCap); this must be done by the parent widget
     }
 
     ImgBase *channelSelBuf;
@@ -222,6 +84,8 @@ namespace icl{
     fitmode fm;
     rangemode rm;
     int bci[3];
+    bool *bciUpdateAuto;
+    bool *channelUpdateAuto;
     bool downMask[3];
     Point mouse;
     int selChannel;
@@ -237,9 +101,12 @@ namespace icl{
     QPushButton *embedMenuButton;
     Rect32f zoomRect;
     ZoomAdjustmentWidgetParent *zoomAdjuster;
-
+    QImageConverter *qic;
+    bool menuEnabled;
+    QWidget *infoTab;
     
     void adaptMenuSize(const QSize &parentSize){
+      if(!menuptr) return;
       static const int MARGIN = 5;
       static const int TOP_MARGIN = 20;
       int w = parentSize.width()-2*MARGIN;
@@ -251,68 +118,169 @@ namespace icl{
     }
   };
 
+  // }}}
 
+  struct ICLWidget2::OutputBufferCapturer{
+    // {{{ open
 
-#define LOCK_SECTION QMutexLocker SECTION_LOCKER(&m_data->mutex)
-
-  namespace{
+    ICLWidget2 *parent;
+    ICLWidget2::Data *data;
     
-    Rect computeRect(const Size &imageSize, const Size &widgetSize, ICLWidget2::fitmode mode,const Rect32f &relZoomRect=Rect32f::null){
-      // {{{ open
-
-      int iImageW = imageSize.width;
-      int iImageH = imageSize.height;
-      int iW = widgetSize.width;
-      int iH = widgetSize.height;
-      
-      switch(mode){
-        case ICLWidget2::fmNoScale:
-          // set up the image rect to be centeed
-          return Rect((iW -iImageW)/2,(iH -iImageH)/2,iImageW,iImageH); 
-          break;
-        case ICLWidget2::fmHoldAR:{
-          // check if the image is more "widescreen" as the widget or not
-          // and adapt image-rect
-          float fWidgetAR = (float)iW/(float)iH;
-          float fImageAR = (float)iImageW/(float)iImageH;
-          if(fImageAR >= fWidgetAR){ //Image is more "widescreen" then the widget
-            float fScaleFactor = (float)iW/(float)iImageW;
-            return Rect(0,(iH-(int)floor(iImageH*fScaleFactor))/2,
-                        (int)floor(iImageW*fScaleFactor),(int)floor(iImageH*fScaleFactor));
-          }else{
-            float fScaleFactor = (float)iH/(float)iImageH;
-            return Rect((iW-(int)floor(iImageW*fScaleFactor))/2,0,
-                        (int)floor(iImageW*fScaleFactor),(int)floor(iImageH*fScaleFactor));
-          }
-          break;
-        }
-        case ICLWidget2::fmFit:
-          // the image is force to fit into the widget
-          return Rect(0,0,iW,iH);
-          break;
-        case ICLWidget2::fmZoom:{
-          const Rect32f &rel = relZoomRect;
-          float x = (rel.x/rel.width)*widgetSize.width;
-          float y = (rel.y/rel.height)*widgetSize.height;
-          
-          float relRestX = 1.0-rel.right();
-          float relRestY = 1.0-rel.bottom();
-
-          float restX = (relRestX/rel.width)*widgetSize.width; 
-          float restY = (relRestY/rel.height)*widgetSize.height;
-          
-          return Rect(round(-x),round(-y),round(x+widgetSize.width+restX),round(y+widgetSize.height+restY));
-          break;
-        }
-      }
-      return Rect(0,0,iW,iH);
+    bool recording;
+    bool paused;
+    enum CaptureTarget { SET_IMAGES, FRAME_BUFFER };
+    CaptureTarget target;
+    Mutex mutex;
+    FileWriter *fileWriter;
+    int frameSkip;
+    int frameIdx;
+  public:
+    OutputBufferCapturer(ICLWidget2 *parent, ICLWidget2::Data *data):
+      parent(parent),data(data),target(SET_IMAGES),fileWriter(0),
+      frameSkip(0),frameIdx(0){}
+    
+    ~OutputBufferCapturer(){
+      ICL_DELETE(fileWriter);
     }
 
-    // }}}
+    void ensureDirExists(const QString &dirName){
+      if(!dirName.length()){
+        throw ICLException("empty file pattern");
+      }
+      if(dirName[0] == '/'){
+        QDir("/").mkpath(dirName);
+      }else{
+        QDir("./").mkpath(dirName);
+      }
+    }
+    bool startRecording(CaptureTarget t, const std::string &filePattern, int frameskip){
+      Mutex::Locker l(mutex);
+      target = t;
+      ICL_DELETE(fileWriter);
+      try{
+        fileWriter = new FileWriter(filePattern);
+        ensureDirExists(File(filePattern).getDir().c_str());
+      }catch(ICLException &ex){
+        ERROR_LOG("unable to create filewriter with this pattern: " << filePattern << "\nerror:"<< ex.what());
+      }
+      recording = true;
+    }
+    bool setPaused(bool val){
+      Mutex::Locker l(mutex);
+      paused = val;
+    }
+    bool stopRecording(){
+      Mutex::Locker l(mutex);
+      recording = false;
+    }
+    
+    void captureImageHook(){
+      Mutex::Locker l(mutex);
+      if(!recording || paused || (target != SET_IMAGES) ) return;
+      ICLASSERT_RETURN(fileWriter);
+      DEBUG_LOG("here!");
+      if(frameIdx < frameSkip){
+        frameIdx++;
+        return;
+      }else{
+        frameIdx = 0;
+      }
+      try{
+        ImgBase *image = data->image->deepCopy();
+        fileWriter->write(image);
+        delete image;
+      }catch(ICLException &ex){
+        ERROR_LOG("unable to capture current image:" << ex.what());
+      }
+    }
+
+    void captureFrameBufferHook(){
+      Mutex::Locker l(mutex);
+      if(!recording || paused || (target != FRAME_BUFFER)) return;
+      ICLASSERT_RETURN(fileWriter);
+      DEBUG_LOG("here!");
+
+      if(frameIdx < frameSkip){
+        frameIdx++;
+        return;
+      }else{
+        frameIdx = 0;
+      }
+      try{
+        const Img8u &fb = parent->grabFrameBufferICL();
+        fileWriter->write(&fb);
+      }catch(ICLException &ex){
+        ERROR_LOG("unable to capture frame buffer:" << ex.what());
+      }
+    }
+    std::string getNextFileName(){
+      Mutex::Locker l(mutex);
+      if(fileWriter){
+        return fileWriter->getFilenameGenerator().showNext();
+      }else{
+        return "currently not recording...";
+      }
+    }
+  };
+
+  // }}}
+  
+  static Rect computeRect(const Size &imageSize, const Size &widgetSize, ICLWidget2::fitmode mode,const Rect32f &relZoomRect=Rect32f::null){
+    // {{{ open
+
+    int iImageW = imageSize.width;
+    int iImageH = imageSize.height;
+    int iW = widgetSize.width;
+    int iH = widgetSize.height;
+    
+    switch(mode){
+      case ICLWidget2::fmNoScale:
+        // set up the image rect to be centeed
+        return Rect((iW -iImageW)/2,(iH -iImageH)/2,iImageW,iImageH); 
+        break;
+      case ICLWidget2::fmHoldAR:{
+        // check if the image is more "widescreen" as the widget or not
+        // and adapt image-rect
+        float fWidgetAR = (float)iW/(float)iH;
+        float fImageAR = (float)iImageW/(float)iImageH;
+        if(fImageAR >= fWidgetAR){ //Image is more "widescreen" then the widget
+          float fScaleFactor = (float)iW/(float)iImageW;
+          return Rect(0,(iH-(int)floor(iImageH*fScaleFactor))/2,
+                      (int)floor(iImageW*fScaleFactor),(int)floor(iImageH*fScaleFactor));
+        }else{
+          float fScaleFactor = (float)iH/(float)iImageH;
+          return Rect((iW-(int)floor(iImageW*fScaleFactor))/2,0,
+                      (int)floor(iImageW*fScaleFactor),(int)floor(iImageH*fScaleFactor));
+        }
+        break;
+      }
+      case ICLWidget2::fmFit:
+        // the image is force to fit into the widget
+        return Rect(0,0,iW,iH);
+        break;
+      case ICLWidget2::fmZoom:{
+        const Rect32f &rel = relZoomRect;
+        float x = (rel.x/rel.width)*widgetSize.width;
+        float y = (rel.y/rel.height)*widgetSize.height;
+        
+        float relRestX = 1.0-rel.right();
+        float relRestY = 1.0-rel.bottom();
+        
+        float restX = (relRestX/rel.width)*widgetSize.width; 
+        float restY = (relRestY/rel.height)*widgetSize.height;
+          
+        return Rect(round(-x),round(-y),round(x+widgetSize.width+restX),round(y+widgetSize.height+restY));
+        break;
+      }
+    }
+    return Rect(0,0,iW,iH);
   }
 
+  // }}}
 
   struct ZoomAdjustmentWidget : public QWidget{
+    // {{{ open
+
     Rect32f &r;
     bool downMask[3];
     
@@ -326,15 +294,16 @@ namespace icl{
     Point32f dragAllOffs;
     Point32f currPos;
     
-    ZoomAdjustmentWidget(QWidget *parent, Rect32f &r):QWidget(parent),r(r){
+    QWidget *parentICLWidget;
+    
+    ZoomAdjustmentWidget(QWidget *parent, Rect32f &r, QWidget *parentICLWidget):
+      QWidget(parent),r(r),parentICLWidget(parentICLWidget),mode(NONE),dragAll(false){
       downMask[0]=downMask[1]=downMask[2]=false;
       //      r = Rect32f(0,0,width(),height());
       for(int i=0;i<4;++i){
         edgesHovered[i] = edgesDragged[i] = false;
       }
-      mode = NONE;
       setMouseTracking(true);
-      dragAll = false;
     }
 
     float xr2a(float rel){
@@ -453,6 +422,7 @@ namespace icl{
       }else{
         r = Rect32f(p.x(),p.y(),0.0001,0.0001);
         mode = CREATE;
+        parentICLWidget->update();
       }
     }
     void leftUp(const QPointF &p){
@@ -479,6 +449,7 @@ namespace icl{
         ERROR_LOG("this should not happen!");
       }
       normalize();
+      parentICLWidget->update();
     }
     
     void move(const QPointF &p){
@@ -501,6 +472,7 @@ namespace icl{
       if(dragAll){
         r.x = p.x()+dragAllOffs.x;
         r.y = p.y()+dragAllOffs.y;
+        parentICLWidget->update();
       }
     }
     
@@ -537,12 +509,16 @@ namespace icl{
     }
   };
 
+  // }}}
+
   struct ZoomAdjustmentWidgetParent : public QWidget{
+    // {{{ open
+
     Size imageSize;
     ZoomAdjustmentWidget *aw;
-    ZoomAdjustmentWidgetParent(const Size &imageSize, QWidget *parent, Rect32f &r):
+    ZoomAdjustmentWidgetParent(const Size &imageSize, QWidget *parent, Rect32f &r, QWidget *parentICLWidget):
       QWidget(parent),imageSize(imageSize==Size::null ? Size(100,100): imageSize){
-      aw = new ZoomAdjustmentWidget(this,r);
+      aw = new ZoomAdjustmentWidget(this,r,parentICLWidget);
     }
     void updateAWSize(){
       Rect r = computeRect(imageSize,Size(width(),height()), ICLWidget2::fmHoldAR);
@@ -558,17 +534,45 @@ namespace icl{
       updateAWSize();
     }    
   };
-  
+
+  // }}}
 
   static void create_menu(ICLWidget2 *widget,ICLWidget2::Data *data){
+    // {{{ open
+
     Mutex::Locker locker(data->menuMutex);
+
+    if(data->menuptr){
+      QObject::disconnect(*data->menu.getValue<ComboHandle>("bci-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(bciModeChanged(int)));
+      QObject::disconnect(*data->menu.getValue<ComboHandle>("fit-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(scaleModeChanged(int)));
+      QObject::disconnect(*data->menu.getValue<ComboHandle>("channel"),SIGNAL(currentIndexChanged(int)),widget,SLOT(currentChannelChanged(int)));
+      
+      QObject::disconnect(*data->menu.getValue<SliderHandle>("brightness"),SIGNAL(valueChanged(int)),widget,SLOT(brightnessChanged(int)));
+      QObject::disconnect(*data->menu.getValue<SliderHandle>("contrast"),SIGNAL(valueChanged(int)),widget,SLOT(contrastChanged(int)));
+      QObject::disconnect(*data->menu.getValue<SliderHandle>("intensity"),SIGNAL(valueChanged(int)),widget,SLOT(intensityChanged(int)));
+      
+      
+      QObject::disconnect(*data->menu.getValue<ButtonHandle>("cap-image"),SIGNAL(clicked()),widget,SLOT(captureCurrentImage()));
+      QObject::disconnect(*data->menu.getValue<ButtonHandle>("cap-fb"),SIGNAL(clicked()),widget,SLOT(captureCurrentFrameBuffer()));
+      
+
+      QObject::disconnect(*data->menu.getValue<ButtonHandle>("auto-cap-record"),SIGNAL(toggled(bool)),widget,SLOT(recordButtonToggled(bool)));
+      QObject::disconnect(*data->menu.getValue<ButtonHandle>("auto-cap-pause"),SIGNAL(toggled(bool)),widget,SLOT(pauseButtonToggled(bool)));
+      QObject::disconnect(*data->menu.getValue<ButtonHandle>("auto-cap-stop"),SIGNAL(clicked()),widget,SLOT(stopButtonClicked()));
+      QObject::disconnect(*data->menu.getValue<ComboHandle>("auto-cap-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(stopButtonClicked()));
+      QObject::disconnect(*data->menu.getValue<SpinnerHandle>("auto-cap-frameskip"),SIGNAL(valueChanged(int)),widget,SLOT(skipFramesChanged(int)));
+
+    }
 
     // OK, we need to extract default values for all gui elements if gui is already defined!
     data->menu = GUI("tab(bci,scale,channel,capture,info)[@handle=root@minsize=5x7]",widget);
 
     GUI bciGUI("vbox");
 
-    bciGUI << "combo(off,auto,custom)[@label=bci-mode@handle=bci-mode@out=bci-mode-out]"
+    bciGUI << ( GUI("hbox")
+                << "combo(off,auto,custom)[@label=bci-mode@handle=bci-mode@out=bci-mode-out]"
+                << "togglebutton(manual,auto)[@label=update mode@out=bci-update-mode]"
+              )
            << "slider(-255,255,0)[@handle=brightness@label=brightness@out=_2]"
            << "slider(-255,255,0)[@handle=contrast@label=contrast@out=_1]"
            << "slider(-255,255,0)[@handle=intensity@label=intensity@out=_0]";
@@ -577,18 +581,55 @@ namespace icl{
     scaleGUI << "combo(hold aspect ratio,force fit,no scale, zoom)[@maxsize=100x2@handle=fit-mode@label=scale mode@out=_3]";
     scaleGUI << "hbox[@handle=scale-widget@minsize=4x3]";
 
-    GUI channelGUI("combo(all,channel #0,channel #1,channel #2, channel #3)[@maxsize=100x2@handle=channel@label=visualized channel@out=_4]");
-    
-    GUI captureGUI("vsplit");
-    
-    GUI infoGUI("hsplit");
+    GUI channelGUI("vbox");
+    channelGUI << "combo(all,channel #0,channel #1,channel #2, channel #3)[@maxsize=100x2@handle=channel@label=visualized channel@out=_4]"
+               << "togglebutton(manual,auto)[@maxsize=100x2@label=update mode@out=channel-update-mode]";
 
-    data->menu << bciGUI << scaleGUI << channelGUI << captureGUI;
+    GUI captureGUI("vbox");
+     
+    captureGUI << ( GUI("hbox[@label=single shot]")
+                    << "button(image)[@handle=cap-image]"
+                    << "button(frame buffer)[@handle=cap-fb]"
+                    << "combo(image.pnm,image_TIME.pnm,ask me)[@label=filename@handle=cap-filename@out=_5]"
+                   );
+    
+    GUI autoCapGUI("vbox[@label=automatic]");
+    autoCapGUI << ( GUI("hbox")
+                    << "combo(image,frame buffer)[@label=mode@handle=auto-cap-mode@out=_6]"
+                    << "spinner(0,100,0)[@label=frame skip@handle=auto-cap-frameskip@out=_10]"
+                    << "string(captured/image_####.ppm,100)[@label=file pattern@handle=auto-cap-filepattern@out=_7]"
+                  )
+               << ( GUI("hbox")
+                    << "togglebutton(record,record)[@handle=auto-cap-record@out=_8]"
+                    << "togglebutton(pause,pause)[@handle=auto-cap-pause@out=_9]"
+                    << "button(stop)[@handle=auto-cap-stop]"
+                  );
+    captureGUI << autoCapGUI;    
+    
+    GUI infoGUI("vbox[@handle=info-tab]");
+    infoGUI << ( GUI("hbox[@minsize=5x2@maxsize=100x2]")
+                 << "combo(all ,channel #0, channel #1,channel #2, channel #3)[@handle=histo-channel@out=_15]"
+                 << "togglebutton(median,median)[@handle=median@out=_11]"
+                 << "togglebutton(log,log)[@handle=log@out=_12]"
+                 << "togglebutton(blur,blur)[@handle=blur@out=_13]"
+                 << "togglebutton(fill,fill)[@handle=fill@out=_14]"
+               )
+            <<  ( GUI("hsplit")
+                  << "hbox[@label=histogramm@minsize=2x2]"
+                  << "label[@label=params@minsize=2x3]"
+                );
+
+    data->menu << bciGUI << scaleGUI << channelGUI << captureGUI << infoGUI;
+
     data->menu.create();
 
     data->menuptr = data->menu.getRootWidget();
     data->menuptr->setParent(widget);
     
+    data->bciUpdateAuto = &data->menu.getValue<bool>("bci-update-mode");
+    data->channelUpdateAuto = &data->menu.getValue<bool>("channel-update-mode");
+
+    data->infoTab = *data->menu.getValue<BoxHandle>("info-tab");
     
     QObject::connect(*data->menu.getValue<ComboHandle>("bci-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(bciModeChanged(int)));
     QObject::connect(*data->menu.getValue<ComboHandle>("fit-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(scaleModeChanged(int)));
@@ -598,31 +639,41 @@ namespace icl{
     QObject::connect(*data->menu.getValue<SliderHandle>("contrast"),SIGNAL(valueChanged(int)),widget,SLOT(contrastChanged(int)));
     QObject::connect(*data->menu.getValue<SliderHandle>("intensity"),SIGNAL(valueChanged(int)),widget,SLOT(intensityChanged(int)));
     
-    data->zoomAdjuster = new ZoomAdjustmentWidgetParent(Size::null,0,data->zoomRect);
+    data->zoomAdjuster = new ZoomAdjustmentWidgetParent(Size::null,0,data->zoomRect,widget);
     data->menu.getValue<BoxHandle>("scale-widget").add(data->zoomAdjuster);
-    /*
-        QWidget *scaleBox = *data->menu.getValue<BoxHandle>("scale-widget");
-        QWidget *zoomWidget = new ZoomAdjustmentWidget(0);
-        zoomWidget->setMinimumSize(QSize(200,200));
-        zoomWidget->setSizePolicy(QSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum));
-        zoomWidget->show();
-        //if(scaleBox->layout()){
-        //  scaleBox->layout()->addWidget(zoomWidget);
-        //}
-    */
-                     
+
+    QObject::connect(*data->menu.getValue<ButtonHandle>("cap-image"),SIGNAL(clicked()),widget,SLOT(captureCurrentImage()));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("cap-fb"),SIGNAL(clicked()),widget,SLOT(captureCurrentFrameBuffer()));
+    
+
+    QObject::connect(*data->menu.getValue<ButtonHandle>("auto-cap-record"),SIGNAL(toggled(bool)),widget,SLOT(recordButtonToggled(bool)));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("auto-cap-pause"),SIGNAL(toggled(bool)),widget,SLOT(pauseButtonToggled(bool)));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("auto-cap-stop"),SIGNAL(clicked()),widget,SLOT(stopButtonClicked()));
+    QObject::connect(*data->menu.getValue<ComboHandle>("auto-cap-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(stopButtonClicked()));
+    QObject::connect(*data->menu.getValue<SpinnerHandle>("auto-cap-frameskip"),SIGNAL(valueChanged(int)),widget,SLOT(skipFramesChanged(int)));
+    
+    QObject::connect(*data->menu.getValue<TabHandle>("root"),SIGNAL(currentChanged(int)),widget,SLOT(menuTabChanged(int)));
   }
+
+  // }}}
   
   void update_data(const Size &newImageSize, ICLWidget2::Data *data){
+    // {{{ open
+
     data->menuMutex.lock();
-    if(data->zoomAdjuster->isVisible()){
-      data->zoomAdjuster->updateImageSize(newImageSize);
+    if(data->menuptr){
+      if(data->zoomAdjuster->isVisible()){
+        data->zoomAdjuster->updateImageSize(newImageSize);
+      }
     }
     data->menuMutex.unlock();
-
   }
 
+  // }}}
+
   QPushButton *create_top_button(const QString &text,QWidget *parent, int x, int w,bool checkable,bool checked,const char *signal, const char *slot){
+    // {{{ open
+
     QPushButton *b = new QPushButton(text,parent);
     if(checkable){
       b->setCheckable(true);
@@ -636,7 +687,13 @@ namespace icl{
     return b;
   }
 
+  // }}}
+
+  // ------------ ICLWidget2 ------------------------------
+
   ICLWidget2::ICLWidget2(QWidget *parent) : 
+    // {{{ open
+
     m_data(new ICLWidget2::Data(this)){
     
     // TODO (just if mouse interaction receiver is added)
@@ -645,37 +702,72 @@ namespace icl{
     
     m_data->showMenuButton = create_top_button("menu",this,2,45,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
     m_data->embedMenuButton = create_top_button("embedded",this,49,65,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
-    create_menu(this,m_data);
+    //create_menu(this,m_data);
   }
-  
+
   // }}}
+  
   ICLWidget2::~ICLWidget2(){
     // {{{ open
+
+    ICL_DELETE(m_data->outputCap);// just because of the classes definition order 
     delete m_data; 
   }
-  
-  // }}}
 
+  // }}}
   
   void ICLWidget2::bciModeChanged(int modeIdx){
+    // {{{ open
+
     switch(modeIdx){
       case 0: m_data->rm = rmOff; break;
       case 1: m_data->rm = rmAuto; break;
       case 2: m_data->rm = rmOn; break;
       default: ERROR_LOG("invalid range mode index");
     }
+    if(*m_data->bciUpdateAuto){
+      rebufferImageInternal();
+    }
   }
+
+  // }}}
+
   void ICLWidget2::brightnessChanged(int val){
+    // {{{ open
+
     m_data->bci[0] = val;
+    if(*m_data->bciUpdateAuto){
+      rebufferImageInternal();
+    }
   }
+
+  // }}}
+
   void ICLWidget2::contrastChanged(int val){
+    // {{{ open
+
     m_data->bci[1] = val;
+    if(*m_data->bciUpdateAuto){
+      rebufferImageInternal();
+    }
   }
+
+  // }}}
+
   void ICLWidget2::intensityChanged(int val){
+    // {{{ open
+
     m_data->bci[2] = val;
+    if(*m_data->bciUpdateAuto){
+      rebufferImageInternal();
+    }
   }
+
+  // }}}
   
   void ICLWidget2::scaleModeChanged(int modeIdx){
+    // {{{ open
+
     //hold aspect ratio,force fit,no scale, zoom
     switch(modeIdx){
       case 0: m_data->fm = fmHoldAR; break;
@@ -684,18 +776,42 @@ namespace icl{
       case 3: m_data->fm = fmZoom; break;
       default: ERROR_LOG("invalid scale mode index");
     }
+    update();
   }
+
+  // }}}
+
   void ICLWidget2::currentChannelChanged(int modeIdx){
+    // {{{ open
+
     m_data->selChannel = modeIdx - 1;
+    if(*m_data->channelUpdateAuto){
+      rebufferImageInternal();
+    }
   }
+
+  // }}}
   
 
   void ICLWidget2::showHideMenu(){
+    // {{{ open
+
+    if(!m_data->menuptr){
+      create_menu(this,m_data);
+    }
     m_data->menuptr->setVisible(!m_data->menuptr->isVisible());
+
     m_data->adaptMenuSize(size());
   }
-  
+
+  // }}}
   void ICLWidget2::setMenuEmbedded(bool embedded){
+    // {{{ open
+
+    if(!m_data->menuptr){
+      create_menu(this,m_data);
+    }
+
     bool visible = m_data->menuptr->isVisible();
     if(embedded){
       delete m_data->menuptr;
@@ -708,10 +824,188 @@ namespace icl{
     m_data->menuptr->setVisible(visible);
   }
 
+  // }}}
 
+  void ICLWidget2::recordButtonToggled(bool checked){
+    // {{{ open
+
+    if(!m_data->outputCap){
+      m_data->outputCap = new OutputBufferCapturer(this,m_data);
+    }
+    if(checked){
+      Mutex::Locker l(m_data->menuMutex);
+      OutputBufferCapturer::CaptureTarget t = m_data->menu.getValue<ComboHandle>("auto-cap-mode").getSelectedIndex()?
+                                       OutputBufferCapturer::SET_IMAGES :  OutputBufferCapturer::FRAME_BUFFER;
+
+      const std::string filePattern = m_data->menu.getValue<StringHandle>("auto-cap-filepattern").getCurrentText();
+      int frameSkip = m_data->menu.getValue<SpinnerHandle>("auto-cap-frameskip").getValue(); //xxx
+      m_data->outputCap->startRecording(t,filePattern,frameSkip);
+    }else{
+      m_data->outputCap->stopRecording();
+    }
+  }
+
+  // }}}
+
+  void ICLWidget2::pauseButtonToggled(bool checked){
+    // {{{ open
+
+    if(!m_data->outputCap){
+      m_data->outputCap = new OutputBufferCapturer(this,m_data);
+    }
+    m_data->outputCap->setPaused(checked);
+  }
+
+  // }}}
+
+  void ICLWidget2::stopButtonClicked(){
+    // {{{ open
+
+    m_data->outputCap->stopRecording();
+    Mutex::Locker l(m_data->menuMutex);
+    (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
+  }
+
+  // }}}
+  
+  void ICLWidget2::skipFramesChanged(int frameSkip){
+    // {{{ open
+
+    if(!m_data->outputCap){
+      m_data->outputCap->frameSkip = frameSkip;
+    }
+  }
+
+  // }}}
+
+  void ICLWidget::menuTabChanged(int index){
+    // {{{ open
+
+    if(index == 4){
+      updateInfoTab();
+    }
+  }
+
+  // }}}
+
+  void ICLWidget2::updateInfoTab(){
+    // {{{ open
+
+    // xxx TODO
+  }
+
+  // }}}
+  
+  std::string ICLWidget2::getImageCaptureFileName(){
+    // {{{ open
+
+    Mutex::Locker l(m_data->menuMutex);
+    ComboHandle &h = m_data->menu.getValue<ComboHandle>("cap-filename");
+    std::string filename="image.pnm";
+    switch(h.getSelectedIndex()){
+      case 1:{
+        string t = Time::now().toString();
+        for(unsigned int i=0;i<t.length();i++){
+          if(t[i]=='/')t[i]='.';
+          if(t[i]==' ')t[i]='_';
+        }
+        filename = str("image_")+t+str(".pnm");
+        break;
+      }
+      case 2:{
+        QString name = QFileDialog::getSaveFileName(this,"filename ...","./",
+                                                    "common formats (*.pnm *.ppm *.pgm *.jpg *.png)\nall files (*.*)");
+        filename = name.toLatin1().data();
+        break;
+      }
+      default:
+        break;
+    }
+    return filename;
+  }
+
+  // }}}
+
+  void ICLWidget2::captureCurrentImage(){
+    // {{{ open
+
+    ImgBase *buf = 0;
+    {
+      LOCK_SECTION;
+      if(m_data->image){
+        buf = m_data->image->deepCopy();
+      }
+    }
+
+    if(buf){
+      std::string filename = getImageCaptureFileName();
+      if(filename != ""){
+        try{
+          FileWriter(filename).write(buf);          
+        }catch(const ICLException &ex){
+          ERROR_LOG("unable to capture current image: " << ex.what());
+        }
+      }
+      delete buf;
+    }
+  }
+
+  // }}}
+
+  const Img8u &ICLWidget2::grabFrameBufferICL(){
+    // {{{ open
+
+    if(!m_data->qic){
+      m_data->qic = new QImageConverter;
+    }
+    QImage qim = grabFrameBuffer();
+    m_data->qic->setQImage(&qim);
+    return *m_data->qic->getImg<icl8u>();
+  }
+
+  // }}}
+  
+  void ICLWidget2::captureCurrentFrameBuffer(){
+    // {{{ open
+
+    const Img8u &fb = grabFrameBufferICL();
+    std::string filename = getImageCaptureFileName();
+    if(filename == "") return;
+    
+    try{
+      FileWriter(filename).write(&fb);
+    }catch(ICLException &ex){
+      ERROR_LOG("error capturing frame buffer: " << ex.what());
+    }
+  }
+
+  // }}}
+  
+  void ICLWidget2::rebufferImageInternal(){
+    // {{{ open
+
+    m_data->mutex.lock();
+    if(m_data->image && m_data->image->hasImage()){
+      if(m_data->channelSelBuf){
+        m_data->mutex.unlock();
+        setImage(m_data->channelSelBuf);
+      }else{
+        ImgBase *tmpImage = m_data->image->deepCopy();
+        m_data->mutex.unlock();
+        setImage(tmpImage);
+        delete tmpImage;
+      }
+    }else{
+      m_data->mutex.unlock();
+    }
+    update();
+  }
+
+  // }}}
   
   void ICLWidget2::initializeGL(){
     // {{{ open
+
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glShadeModel(GL_FLAT);
     glEnable(GL_TEXTURE_2D);
@@ -726,6 +1020,7 @@ namespace icl{
   }
 
   // }}}
+
   void ICLWidget2::resizeGL(int w, int h){
     // {{{ open
 
@@ -768,21 +1063,8 @@ namespace icl{
     GLPaintEngine pe(this);
     {
       LOCK_SECTION;
-      /***
-          m_oOSDMutex.lock();
-          if(m_menuEnabled && m_poCurrOSD){
-          float m = iclMin(((float)iclMin(width(),height()))/100,6.0f);
-          pe.font("Arial",(int)(1.5*m)+5,PaintEngine::DemiBold);
-          m_poCurrOSD->_drawSelf(&pe,m_iMouseX,m_iMouseY,aiDown);
-          }
-          m_oOSDMutex.unlock();
-      **/
       customPaintEvent(&pe);
-
-      /***      
-          m_poOutputBufferCapturer->captureIfOn();
-          
-          
+      /****
           {
           QMutexLocker l(&m_oFrameBufferCaptureFileNameMutex);
           if(m_sFrameBufferCaptureFileName != ""){
@@ -797,14 +1079,16 @@ namespace icl{
           }
           m_sFrameBufferCaptureFileName = "";
           }
-      ***/
+       ***/
+    }
+    if(m_data->outputCap){
+      m_data->outputCap->captureFrameBufferHook();
     }
     
   }
 
   // }}}
 
-  // GL case
   void ICLWidget2::paintEvent(QPaintEvent *e){
     // {{{ open
 
@@ -814,10 +1098,8 @@ namespace icl{
   // }}}
 
   
-  // GL case
   void ICLWidget2::setImage(const ImgBase *image){ 
     // {{{ open
-
     LOCK_SECTION;
     if(!image){
       m_data->image->updateTextures(0); // in this case [null will be drawn]
@@ -844,6 +1126,13 @@ namespace icl{
     }else{
       m_data->image->updateTextures(image);
       ICL_DELETE(m_data->channelSelBuf);
+    }
+
+    if(m_data->outputCap){
+      m_data->outputCap->captureImageHook();
+    }
+    if(m_data->infoTab && m_data->infoTab->isVisible()){
+      updateInfoTab();
     }
   }
 
@@ -880,22 +1169,6 @@ namespace icl{
       case Qt::RightButton: m_data->downMask[2]=true; break;
       default: m_data->downMask[1] = true; break;
     }
-    
-    /*
-        m_oOSDMutex.lock();
-        if(m_menuEnabled && m_poCurrOSD && m_poCurrOSD->mouseOver(e->x(),e->y())){
-        m_iMouseX = e->x();
-        m_iMouseY = e->y();
-        m_poCurrOSD->_mousePressed(e->x(),e->y(),e->button());
-        }else{
-        /// emitting signal
-        emit mouseEvent(updateMouseInfo(MouseInteractionInfo::pressEvent));
-        }
-        m_oOSDMutex.unlock();
-    */
-    
-    // TODO only if something really changed!
-    // update();
   }
   // }}}
 
@@ -907,100 +1180,40 @@ namespace icl{
       case Qt::RightButton: m_data->downMask[2]=false; break;
       default: m_data->downMask[1] = false; break;
     }
-    /**
-        m_oOSDMutex.lock();
-        m_iMouseX = e->x();
-        m_iMouseY = e->y();
-        if(m_menuEnabled && m_poCurrOSD){
-        m_poCurrOSD->_mouseReleased(e->x(),e->y(),e->button());
-        if(!m_poCurrOSD->mouseOver(e->x(),e->y())){
-        /// emitting signal
-        emit mouseEvent(updateMouseInfo(MouseInteractionInfo::releaseEvent));
-        }
-        }
-        
-        m_oOSDMutex.unlock();
-        update();
-    **/
 
   }
   // }}}
   void ICLWidget2::mouseMoveEvent(QMouseEvent *e){
     // {{{ open
-    /**
-        m_oOSDMutex.lock();
-        m_iMouseX = e->x();
-        m_iMouseY = e->y();
-        if(m_menuEnabled && m_poCurrOSD && m_poCurrOSD->mouseOver(e->x(),e->y())){
-        m_poCurrOSD->_mouseMoved(e->x(),e->y(),aiDown);
-        }else{
-        /// emitting signal
-        if(aiDown[0] || aiDown[1] || aiDown[2]){
-        emit mouseEvent(updateMouseInfo(MouseInteractionInfo::dragEvent));
-        }else{
-        emit mouseEvent(updateMouseInfo(MouseInteractionInfo::moveEvent));
-        }
-        }
-        m_oOSDMutex.unlock();
-        **/
-    // update();
   }
   // }}}
   void ICLWidget2::enterEvent(QEvent *e){
     // {{{ open
-
-    m_data->showMenuButton->show();
-    m_data->embedMenuButton->show();
-    // TODO show the new osd on/off button here!
-    /**
-        (void)e;
-        m_oOSDMutex.lock();
-        m_iMouseX = -1;
-        m_iMouseY = -1;
-        if(!m_poOSD){
-        m_poOSD = new OSD(0,Rect(3,3,width()-10,height()-10),this,0);
-        m_poShowOSD = new OSDButton(SHOW_OSD_ID,Rect(width()-80,height()-23,75,18),this,0,"menu");
-        
-        }
-        if(m_poCurrOSD == 0){
-        m_poCurrOSD = m_poShowOSD;
-        }
-        m_oOSDMutex.unlock();
-        update();
-        emit mouseEvent(updateMouseInfo(MouseInteractionInfo::enterEvent));
-    **/
+    if(m_data->menuEnabled){
+      m_data->showMenuButton->show();
+      m_data->embedMenuButton->show();
+    }
   }
+  // }}}
+
   void ICLWidget2::setVisible(bool visible){
+    // {{{ open
     QGLWidget::setVisible(visible);
     m_data->showMenuButton->setVisible(false);
     m_data->embedMenuButton->setVisible(false);
-    m_data->menuptr->setVisible(false);
-    m_data->adaptMenuSize(size());
+    if(m_data->menuptr){
+      m_data->menuptr->setVisible(false);
+      m_data->adaptMenuSize(size());
+    }
   }
 
   // }}}
   void ICLWidget2::leaveEvent(QEvent*){
     // {{{ open
-    m_data->showMenuButton->hide();
-    m_data->embedMenuButton->hide();
-
-    // TODO hide the new OSD here
-
-    /**
-        if(m_menuEnabled){
-        m_oOSDMutex.lock();
-        if(m_poCurrOSD == m_poShowOSD){
-        m_poCurrOSD = 0;
-        }
-        m_oOSDMutex.unlock();
-        }
-        
-        m_iMouseX = -1;
-        m_iMouseY = -1;
-        
-        update();
-        emit mouseEvent(updateMouseInfo(MouseInteractionInfo::leaveEvent));
-     **/
+    if(m_data->menuEnabled){
+      m_data->showMenuButton->hide();
+      m_data->embedMenuButton->hide();
+    }
   }
 
   // }}}
@@ -1009,29 +1222,6 @@ namespace icl{
     resizeGL(e->size().width(),e->size().height());
     m_data->adaptMenuSize(size());
 
-    // Menu should adapt itself using a Qt-Layout manager
-    /** 
-        if(!m_menuEnabled) return;
-        m_oOSDMutex.lock();
-        if(m_poOSD && isVisible()){
-        QSize s = e->size();
-        int iLastOSD = 0; // none
-        if(m_poCurrOSD == m_poOSD) iLastOSD = 1; // osd
-        else if(m_poCurrOSD == m_poShowOSD) iLastOSD = 2; // show osd
-        m_poCurrOSD = 0;
-        
-        int iLastShownID = ((OSD*)m_poOSD)->getCurrID();
-        delete m_poOSD;
-        delete m_poShowOSD;
-        m_poOSD = new OSD(0,Rect(3,3,s.width()-10,s.height()-10),this,0);
-        m_poShowOSD = new OSDButton(SHOW_OSD_ID,Rect(s.width()-80,s.height()-23,75,18),this,0,"menu");
-        ((OSD*)m_poOSD)->setCurrID(iLastShownID);
-        
-        if(iLastOSD == 1) m_poCurrOSD = m_poOSD;
-        else if(iLastOSD == 2) m_poCurrOSD = m_poShowOSD;
-        }
-        m_oOSDMutex.unlock();
-     **/
   }
   // }}}
 
@@ -1043,122 +1233,10 @@ namespace icl{
 
   // }}}
 
-  //  void ICLWidget2::setMenuEnabled(bool enabled){
-    // TODO
-    /**
-        if(!enabled){
-        m_oOSDMutex.lock();
-        ICL_DELETE(m_poOSD);
-        ICL_DELETE(m_poShowOSD);
-        m_poCurrOSD = 0;
-        m_oOSDMutex.unlock();
-        }
-        
-        m_menuEnabled = enabled;
-
-  }
-    **/
-
-  void ICLWidget2::rebufferImageInternal(){
+  void ICLWidget2::setMenuEnabled(bool enabled){
     // {{{ open
-    LOCK_SECTION;
-    if(m_data->image && m_data->image->hasImage()){
-      if(m_data->channelSelBuf){
-        setImage(m_data->channelSelBuf);
-      }else{
-        ImgBase *tmpImage = m_data->image->deepCopy();
-        setImage(tmpImage);
-        delete tmpImage;
-      }
-    }
-  }
 
-  // }}}
-
-  void ICLWidget2::childChanged(int id, void *val){  
-    // {{{ open
-    // this is really deprecated now!
-    /***
-    switch(id){
-      case SHOW_OSD_ID:
-        m_poCurrOSD = m_poOSD;
-        break;
-      case OSD::BOTTOM_EXIT_ID:
-        m_poCurrOSD = m_poShowOSD;
-        break;
-      case OSD::FITMODE_NOSCALE_ID:
-        m_eFitMode = fmNoScale;
-        break;
-      case OSD::FITMODE_HOLDAR_ID:
-        m_eFitMode = fmHoldAR;
-        break;
-      case OSD::FITMODE_FIT_ID:
-        m_eFitMode = fmFit;
-        break;
-      case OSD::ADJUST_BRIGHTNESS_SLIDER_ID:
-        m_aiBCI[0] = *(int*)val;
-        rebufferImageInternal();
-        break;
-      case OSD::ADJUST_CONTRAST_SLIDER_ID:
-        m_aiBCI[1] = *(int*)val;
-        rebufferImageInternal();
-        break;
-      case OSD::ADJUST_INTENSITY_SLIDER_ID:
-        m_aiBCI[2] = *(int*)val;
-        rebufferImageInternal();
-        break;
-      case OSD::ADJUST_MODE_NONE_ID:
-        m_eRangeMode = rmOff;
-        rebufferImageInternal();
-        break;
-      case OSD::ADJUST_MODE_MANUAL_ID:
-        m_eRangeMode = rmOn;
-        rebufferImageInternal();
-        break;
-      case OSD::ADJUST_MODE_AUTO_ID:
-        m_eRangeMode = rmAuto;
-        rebufferImageInternal();
-        break;
-      case OSD::CHANNELS_SLIDER_ID:
-        m_iCurrSelectedChannel = *(int*)val;
-        rebufferImageInternal();
-        break;
-      case OSD::CAPTURE_BUTTON_ID:{
-        // capturing current image:
-        m_oMutex.lock();  
-        ImgBase *buf = 0;
-        if(m_poImage){
-          buf = m_poImage->deepCopy();
-        }
-        m_oMutex.unlock();  
-        if(buf){
-          string t = Time::now().toString();
-          for(unsigned int i=0;i<t.length();i++){
-            if(t[i]=='/')t[i]='.';
-            if(t[i]==' ')t[i]='_';
-          }
-          FileWriter(string("./snapshot_[")+t+string("].pnm")).write(buf);
-          delete buf;
-        }
-        break;
-      }
-      case OSD::CAPTURE_VIDEO_START_BUTTON_ID:
-        m_poOutputBufferCapturer->setCapturing(capturingStarted);
-        break;
-      case OSD::CAPTURE_VIDEO_STOP_BUTTON_ID:
-        m_poOutputBufferCapturer->setCapturing(capturingStopped);
-        break;
-      case OSD::CAPTURE_VIDEO_PAUSE_BUTTON_ID:
-        m_poOutputBufferCapturer->setCapturing(capturingPaused);
-        break;
-      case OSD::CAPTURE_VIDEO_FRAME_SKIP_SLIDER_ID:
-        m_poOutputBufferCapturer->setFrameSkip(*reinterpret_cast<int*>(val));
-      default:
-        break;
-    }
-
-    update();
-    **/
+    m_data->menuEnabled = enabled;
   }
 
   // }}}
@@ -1167,36 +1245,32 @@ namespace icl{
     // {{{ open
     std::vector<string> info;
 
-    // TODO adapt ....
-    /**
-        GLTextureMapBaseImage* i = m_poImage;
-        if(!i || !i->hasImage()){
-        info.push_back("Image is NULL");
-        return info;
-        }
-        info.push_back(string("depth:   ")+translateDepth(m_poImage->getDepth()).c_str());
-        info.push_back(string("size:    ")+QString::number(i->getSize().width).toLatin1().data()+" x "+
-        QString::number(i->getSize().height).toLatin1().data());
-        info.push_back(string("channels:")+QString::number(i->getChannels()).toLatin1().data());
-        info.push_back(string("format:  ")+translateFormat(i->getFormat()).c_str());
-        if(i->getROI() == Rect(Point::null,i->getSize())){
-        info.push_back("roi:   full");
-        }else{
-        char ac[200];
-        Rect r = i->getROI();
-        sprintf(ac,"roi:   ((%d,%d),(%d x %d))",r.x,r.y,r.width,r.height);
-        info.push_back(ac);
-        }
-        
-        std::vector<Range<icl32f> > ranges = i->getMinMax();
-        for(int a=0;a<i->getChannels();a++){
-        char ac[200];
-        Range<icl32f> r = ranges[a];
-        sprintf(ac,"channel %d, min:%f, max:%f",a,r.minVal,r.maxVal);
-        info.push_back(ac);
-        }
-        return info;
-     **/
+    GLTextureMapBaseImage* i = m_data->image;
+    if(!i || !i->hasImage()){
+      info.push_back("Image is NULL");
+      return info;
+    }
+    info.push_back(string("depth:   ")+translateDepth(i->getDepth()));
+    info.push_back(string("size:    ")+translateSize(i->getSize()));
+    info.push_back(string("channels:")+str(i->getChannels()));
+    info.push_back(string("format:  ")+translateFormat(i->getFormat()));
+    if(i->getROI() == Rect(Point::null,i->getSize())){
+      info.push_back("roi:   full");
+    }else{
+      char ac[200];
+      Rect r = i->getROI();
+      sprintf(ac,"roi:   ((%d,%d),(%d x %d))",r.x,r.y,r.width,r.height);
+      info.push_back(ac);
+    }
+    
+    std::vector<Range<icl32f> > ranges = i->getMinMax();
+    for(int a=0;a<i->getChannels();a++){
+      char ac[200];
+      Range<icl32f> r = ranges[a];
+      sprintf(ac,"channel %d, min:%f, max:%f",a,r.minVal,r.maxVal);
+      info.push_back(ac);
+    }
+    return info;
   }
 
   // }}}
@@ -1270,6 +1344,7 @@ namespace icl{
       return xxx;
     }
   }
+  // }}}
 
 
 
