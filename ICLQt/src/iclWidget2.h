@@ -116,14 +116,14 @@ int main(int nArgs, char **ppcArg){
     public:
 
     class Data;   
-    friend class OutputBufferCapturer;
+    class OutputBufferCapturer;
     
     /// determines how the image is fit into the widget geometry
     enum fitmode{ 
-      fmNoScale,  /**< the image is not scaled it is centered to the image rect */
-      fmHoldAR,   /**< the image is scaled to fit into the image rect, but its aspect ratio is hold */
-      fmFit,      /**< the image is fit into the frame ( this may change the images aspect ratio)*/
-      fmZoom      /**< new mode where an image rect can be specified in the gui ... */
+      fmNoScale=0,  /**< the image is not scaled it is centered to the image rect */
+      fmHoldAR=1,   /**< the image is scaled to fit into the image rect, but its aspect ratio is hold */
+      fmFit=2,      /**< the image is fit into the frame ( this may change the images aspect ratio)*/
+      fmZoom=3      /**< new mode where an image rect can be specified in the gui ... */
     };
     
     /// determines intensity adaption mode 
@@ -258,7 +258,8 @@ int main(int nArgs, char **ppcArg){
     void stopButtonClicked();
     void skipFramesChanged(int frameSkip);
     void menuTabChanged(int index);
-    
+    void histoPanelParamChanged();
+
     private:
     const Img8u &grabFrameBufferICL();
     std::string getImageCaptureFileName();
@@ -267,8 +268,6 @@ int main(int nArgs, char **ppcArg){
     
     void rebufferImageInternal();
 
-    class OutputBufferCapturer;
-    
     Data *m_data;
 
     /// prepares the current MouseInteractionInfo struct for being emitted

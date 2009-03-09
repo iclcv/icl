@@ -18,6 +18,8 @@
 #include <iclFileWriter.h>
 #include <iclThread.h>
 
+#include <QTimer>
+#include <QLabel>
 #include <QInputDialog>
 #include <QMutexLocker>
 #include <QPushButton>
@@ -31,6 +33,8 @@
 #include <iclGUI.h>
 #include <iclTabHandle.h>
 #include <iclBoxHandle.h>
+#include <iclSplitterHandle.h>
+#include <iclLabelHandle.h>
 #include <iclButtonHandle.h>
 #include <iclComboHandle.h>
 #include <iclStringHandle.h>
@@ -50,6 +54,194 @@ namespace icl{
 
   class ZoomAdjustmentWidgetParent;
   
+  struct HistogrammWidget : public QWidget{
+    // {{{ open
+
+    static inline int median_of_3(int a, int b, int c){
+      if( a > b){
+        if(a > c) return c;
+        else return a;
+      }else{
+        if(b > c) return c;
+        else return b;
+      }
+    }
+    static inline int median_of_5(int *p){
+      int a[5]= {p[0],p[1],p[2],p[3],p[4]};
+      std::sort(a,a+5);
+      return a[2];
+    }
+
+    static inline int mean_of_3(int a, int b, int c){
+      return (a+b+b+c)/4;
+    }
+    
+    static inline int mean_of_5(int *p){
+      return (p[0]+3*p[1]+5*p[2]+3*p[3]+p[4])/13;
+    }
+    struct Entry{
+      float color[3];
+      std::vector<int> histo;
+    };
+    std::vector<Entry> entries;
+
+    bool logOn,meanOn,medianOn,fillOn;
+    int selChannel;
+    Mutex mutex;
+
+    /*
+        virtual QSize sizeHint(){
+        return QSize(1000,1000);
+        }
+    */
+    HistogrammWidget(QWidget *parent):
+      QWidget(parent),logOn(false),meanOn(false),medianOn(false),fillOn(false),selChannel(-1){
+      
+      /*
+          setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+          if(parent){
+          parent->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+          }
+      */
+    }
+    
+    void setFeatures(bool logOn, bool meanOn, bool medianOn, bool fillOn, int selChannel){
+      this->logOn = logOn;
+      this->meanOn = meanOn;
+      this->medianOn = medianOn;
+      this->fillOn = fillOn;
+      this->selChannel = selChannel;
+    }
+    void fillColor(int i,float color[3]){
+      switch(i){
+        case 0: color[0]=255;color[1]=0;color[2]=0; break;
+        case 1: color[0]=0;color[1]=255;color[2]=0; break;
+        case 2: color[0]=0;color[1]=0;color[2]=255; break;
+        default: color[0]=255;color[1]=255;color[2]=255; break;
+      }
+    }
+    QWidget::update;
+    void update(const ImageStatistics &s){
+      Mutex::Locker l(mutex);
+      if(s.isNull){
+        entries.clear();
+        return;
+      }
+      
+      // xxx todo process somewhere else 
+      /** ImgParams params;
+          depth d;
+          std::vector<Range64f> ranges;
+      ***/
+      entries.resize(s.histos.size());
+      for(unsigned int i=0;i<s.histos.size();++i){
+        entries[i].histo = s.histos[i];
+        fillColor(i,entries[i].color);
+      }
+      
+    }
+    
+    virtual void paintEvent(QPaintEvent *e){
+      Mutex::Locker l(mutex);
+      QWidget::paintEvent(e);
+      QPainter p(this);
+      if(!fillOn){
+        p.setRenderHint(QPainter::Antialiasing);
+      }
+      p.setBrush(Qt::NoBrush);
+      p.setPen(QColor(50,50,50));
+      p.drawRect(QRectF(0,0,width(),height()));
+
+
+      static const int BORDER = 2;
+      static float GAP = 0;
+      Rect32f r = Rect32f(0,0,width(),height()).enlarged(-BORDER);
+      
+      for(unsigned int e=0;e<entries.size();++e){
+        if(!(selChannel == -1 || selChannel == e)) continue;
+        std::vector<int> histo = entries[e].histo;
+        if(!histo.size()) continue;
+        int n = (int)histo.size();
+        
+        if(medianOn){
+          histo[1] =  median_of_3(entries[e].histo[0],entries[e].histo[1],entries[e].histo[2]);
+          for(int i=2;i<n-2;++i){
+            histo[i] = median_of_5(&entries[e].histo[i-2]);
+          }
+          histo[n-2] =  median_of_3(entries[e].histo[n-3],entries[e].histo[n-2],entries[e].histo[n-1]);
+        }else if(meanOn){
+          histo[1] =  mean_of_3(entries[e].histo[0],entries[e].histo[1],entries[e].histo[2]);
+          for(int i=2;i<n-2;++i){
+            histo[i] = mean_of_5(&entries[e].histo[i-2]);
+          }      
+          histo[n-2] =  mean_of_3(entries[e].histo[n-3],entries[e].histo[n-2],entries[e].histo[n-1]);
+        }
+      
+        p.setPen(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2]));
+        if(fillOn){
+          p.setBrush(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2]));
+        }
+        float maxElem = *max_element(histo.begin(),histo.end());
+        if(logOn) maxElem = ::log(maxElem);
+        
+        if(maxElem){
+          float binDistance = r.width/n;
+          float binWidth = binDistance-GAP;
+          
+          float lastX = 0,lastY=0;
+          for(int i=0;i<n;i++){
+            float val = histo[i];
+            if(logOn && val) val=(::log(val));
+            float h = (r.height/maxElem)*val;
+            float y = r.y+r.height-h;
+            float x = r.x+(int)(i*binDistance);
+            if(fillOn){
+              p.drawRect(QRectF(x,y,binWidth,h));
+            }
+            if(i>0){
+              p.drawLine(QPointF(x+binWidth/2,y),QPointF(lastX+binWidth/2,lastY));
+            }
+            lastX = x;
+            lastY = y;
+          }
+        }
+      }
+    }
+  };
+
+  // }}}
+  
+  
+  struct RecordIndicator : public QWidget{
+    QTimer timer;
+    double t;
+    RecordIndicator(QWidget *parent):QWidget(parent){
+      connect(&timer,SIGNAL(timeout()),this,SLOT(update()));
+      t = Time::now().toMilliSecondsDouble();
+    }
+    virtual void setVisible(bool vis){
+      QWidget::setVisible(vis);
+      if(vis){
+        timer.start(50);
+      }else{
+        timer.stop();
+      }
+    }
+    float col(){
+      return  0.5*(sin((Time::now().toMilliSecondsDouble()-t)/500.0)+1);
+    }
+    virtual void paintEvent(QPaintEvent *e){
+      QPainter p(this);
+      p.setRenderHint(QPainter::Antialiasing);
+      p.setBrush(QColor(200+(int)(55*col()),0,50));
+      p.setPen(QColor(50,50,50));
+      p.drawRect(QRectF(0,0,width(),height()));
+      
+      p.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,"recording");
+    }
+    
+  };
+  
   struct ICLWidget2::Data{
     // {{{ open
 
@@ -60,7 +252,7 @@ namespace icl{
       mouse(-1,-1),selChannel(-1),showNoImageWarnings(true),
       outputCap(0),menuOn(true),
       menuptr(0),showMenuButton(0),embedMenuButton(0),zoomAdjuster(0),
-      qic(0),menuEnabled(true),infoTab(0)
+      qic(0),menuEnabled(true),infoTab(0),recordIndicator(0)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
@@ -104,7 +296,14 @@ namespace icl{
     QImageConverter *qic;
     bool menuEnabled;
     QWidget *infoTab;
+    HistogrammWidget *histoWidget;
+    QWidget *recordIndicator;
     
+    void updateRecordIndicatorGeometry(const QSize &parentSize){
+      if(!recordIndicator) return;
+      recordIndicator->setGeometry(QRect(parentSize.width()-75,-2,70,18));
+    }
+
     void adaptMenuSize(const QSize &parentSize){
       if(!menuptr) return;
       static const int MARGIN = 5;
@@ -115,6 +314,7 @@ namespace icl{
       w = iclMax(menuptr->minimumWidth(),w);
       h = iclMax(menuptr->minimumHeight(),h);
       menuptr->setGeometry(QRect(MARGIN,TOP_MARGIN,w,h));
+      updateRecordIndicatorGeometry(parentSize);
     }
   };
 
@@ -132,6 +332,7 @@ namespace icl{
     CaptureTarget target;
     Mutex mutex;
     FileWriter *fileWriter;
+    std::string filePattern;
     int frameSkip;
     int frameIdx;
   public:
@@ -157,13 +358,16 @@ namespace icl{
       Mutex::Locker l(mutex);
       target = t;
       ICL_DELETE(fileWriter);
+      this->filePattern = filePattern;
       try{
         fileWriter = new FileWriter(filePattern);
         ensureDirExists(File(filePattern).getDir().c_str());
       }catch(ICLException &ex){
         ERROR_LOG("unable to create filewriter with this pattern: " << filePattern << "\nerror:"<< ex.what());
+        return false;
       }
       recording = true;
+      return true;
     }
     bool setPaused(bool val){
       Mutex::Locker l(mutex);
@@ -178,7 +382,6 @@ namespace icl{
       Mutex::Locker l(mutex);
       if(!recording || paused || (target != SET_IMAGES) ) return;
       ICLASSERT_RETURN(fileWriter);
-      DEBUG_LOG("here!");
       if(frameIdx < frameSkip){
         frameIdx++;
         return;
@@ -198,7 +401,6 @@ namespace icl{
       Mutex::Locker l(mutex);
       if(!recording || paused || (target != FRAME_BUFFER)) return;
       ICLASSERT_RETURN(fileWriter);
-      DEBUG_LOG("here!");
 
       if(frameIdx < frameSkip){
         frameIdx++;
@@ -542,47 +744,30 @@ namespace icl{
 
     Mutex::Locker locker(data->menuMutex);
 
-    if(data->menuptr){
-      QObject::disconnect(*data->menu.getValue<ComboHandle>("bci-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(bciModeChanged(int)));
-      QObject::disconnect(*data->menu.getValue<ComboHandle>("fit-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(scaleModeChanged(int)));
-      QObject::disconnect(*data->menu.getValue<ComboHandle>("channel"),SIGNAL(currentIndexChanged(int)),widget,SLOT(currentChannelChanged(int)));
-      
-      QObject::disconnect(*data->menu.getValue<SliderHandle>("brightness"),SIGNAL(valueChanged(int)),widget,SLOT(brightnessChanged(int)));
-      QObject::disconnect(*data->menu.getValue<SliderHandle>("contrast"),SIGNAL(valueChanged(int)),widget,SLOT(contrastChanged(int)));
-      QObject::disconnect(*data->menu.getValue<SliderHandle>("intensity"),SIGNAL(valueChanged(int)),widget,SLOT(intensityChanged(int)));
-      
-      
-      QObject::disconnect(*data->menu.getValue<ButtonHandle>("cap-image"),SIGNAL(clicked()),widget,SLOT(captureCurrentImage()));
-      QObject::disconnect(*data->menu.getValue<ButtonHandle>("cap-fb"),SIGNAL(clicked()),widget,SLOT(captureCurrentFrameBuffer()));
-      
-
-      QObject::disconnect(*data->menu.getValue<ButtonHandle>("auto-cap-record"),SIGNAL(toggled(bool)),widget,SLOT(recordButtonToggled(bool)));
-      QObject::disconnect(*data->menu.getValue<ButtonHandle>("auto-cap-pause"),SIGNAL(toggled(bool)),widget,SLOT(pauseButtonToggled(bool)));
-      QObject::disconnect(*data->menu.getValue<ButtonHandle>("auto-cap-stop"),SIGNAL(clicked()),widget,SLOT(stopButtonClicked()));
-      QObject::disconnect(*data->menu.getValue<ComboHandle>("auto-cap-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(stopButtonClicked()));
-      QObject::disconnect(*data->menu.getValue<SpinnerHandle>("auto-cap-frameskip"),SIGNAL(valueChanged(int)),widget,SLOT(skipFramesChanged(int)));
-
-    }
-
     // OK, we need to extract default values for all gui elements if gui is already defined!
     data->menu = GUI("tab(bci,scale,channel,capture,info)[@handle=root@minsize=5x7]",widget);
 
     GUI bciGUI("vbox");
 
+    std::string bcis[3]={"custom,","off,","auto"};
+    bcis[((int)data->rm)-1] = str("!")+bcis[((int)data->rm)-1];
+    bool bciAuto = data->bciUpdateAuto && *data->bciUpdateAuto;
     bciGUI << ( GUI("hbox")
-                << "combo(off,auto,custom)[@label=bci-mode@handle=bci-mode@out=bci-mode-out]"
-                << "togglebutton(manual,auto)[@label=update mode@out=bci-update-mode]"
+                << str("combo(")+bcis[0]+bcis[1]+bcis[2]+")[@label=bci-mode@handle=bci-mode@out=bci-mode-out]"
+                << str("togglebutton(manual,")+(bciAuto?"!":"")+"auto)[@label=update mode@out=bci-update-mode]"
               )
-           << "slider(-255,255,0)[@handle=brightness@label=brightness@out=_2]"
-           << "slider(-255,255,0)[@handle=contrast@label=contrast@out=_1]"
-           << "slider(-255,255,0)[@handle=intensity@label=intensity@out=_0]";
+           << str("slider(-255,255,")+str(data->bci[0])+")[@handle=brightness@label=brightness@out=_2]"
+           << str("slider(-255,255,")+str(data->bci[1])+")[@handle=contrast@label=contrast@out=_1]"
+           << str("slider(-255,255,")+str(data->bci[2])+")[@handle=intensity@label=intensity@out=_0]";
     
     GUI scaleGUI("vbox");
-    scaleGUI << "combo(hold aspect ratio,force fit,no scale, zoom)[@maxsize=100x2@handle=fit-mode@label=scale mode@out=_3]";
+    std::string em[4]={"no scale,","hold aspect ratio,","force fit,","zoom"};
+    em[data->fm] = str("!")+em[data->fm];
+    scaleGUI << str("combo(")+em[0]+em[1]+em[2]+em[3]+")[@maxsize=100x2@handle=fit-mode@label=scale mode@out=_3]";
     scaleGUI << "hbox[@handle=scale-widget@minsize=4x3]";
 
     GUI channelGUI("vbox");
-    channelGUI << "combo(all,channel #0,channel #1,channel #2, channel #3)[@maxsize=100x2@handle=channel@label=visualized channel@out=_4]"
+    channelGUI << "combo(all,channel #0,channel #1,channel #2,channel #3)[@maxsize=100x2@handle=channel@label=visualized channel@out=_4]"
                << "togglebutton(manual,auto)[@maxsize=100x2@label=update mode@out=channel-update-mode]";
 
     GUI captureGUI("vbox");
@@ -593,30 +778,36 @@ namespace icl{
                     << "combo(image.pnm,image_TIME.pnm,ask me)[@label=filename@handle=cap-filename@out=_5]"
                    );
     
+    bool autoCapFB = data->outputCap && data->outputCap->target==ICLWidget2::OutputBufferCapturer::FRAME_BUFFER;
+    int autoCapFS = data->outputCap ? (data->outputCap->frameSkip) : 0;
+    std::string autoCapFP = data->outputCap ? data->outputCap->filePattern : str("captured/image_####.ppm");
+    bool autoCapRec = data->outputCap && data->outputCap->recording;
+    bool autoCapPau = data->outputCap && data->outputCap->paused;
+
     GUI autoCapGUI("vbox[@label=automatic]");
     autoCapGUI << ( GUI("hbox")
-                    << "combo(image,frame buffer)[@label=mode@handle=auto-cap-mode@out=_6]"
-                    << "spinner(0,100,0)[@label=frame skip@handle=auto-cap-frameskip@out=_10]"
-                    << "string(captured/image_####.ppm,100)[@label=file pattern@handle=auto-cap-filepattern@out=_7]"
+                    << str("combo(image,")+(autoCapFB?"!":"")+"frame buffer)[@label=mode@handle=auto-cap-mode@out=_6]"
+                    << str("spinner(0,100,")+str(autoCapFS)+")[@label=frame skip@handle=auto-cap-frameskip@out=_10]"
+                    << str("string(")+autoCapFP+",100)[@label=file pattern@handle=auto-cap-filepattern@out=_7]"
                   )
                << ( GUI("hbox")
-                    << "togglebutton(record,record)[@handle=auto-cap-record@out=_8]"
-                    << "togglebutton(pause,pause)[@handle=auto-cap-pause@out=_9]"
+                    << str("togglebutton(record,")+(autoCapRec?"!":"")+"record)[@handle=auto-cap-record@out=_8]"
+                    << str("togglebutton(pause,")+(autoCapPau?"!":"")+"pause)[@handle=auto-cap-pause@out=_9]"
                     << "button(stop)[@handle=auto-cap-stop]"
                   );
     captureGUI << autoCapGUI;    
     
-    GUI infoGUI("vbox[@handle=info-tab]");
-    infoGUI << ( GUI("hbox[@minsize=5x2@maxsize=100x2]")
+    GUI infoGUI("vsplit[@handle=info-tab]");
+    infoGUI << ( GUI("hbox")
                  << "combo(all ,channel #0, channel #1,channel #2, channel #3)[@handle=histo-channel@out=_15]"
-                 << "togglebutton(median,median)[@handle=median@out=_11]"
-                 << "togglebutton(log,log)[@handle=log@out=_12]"
-                 << "togglebutton(blur,blur)[@handle=blur@out=_13]"
-                 << "togglebutton(fill,fill)[@handle=fill@out=_14]"
+                 << "togglebutton(median,median)[@handle=median@out=median-on]"
+                 << "togglebutton(log,log)[@handle=log@out=log-on]"
+                 << "togglebutton(blur,blur)[@handle=blur@out=blur-on]"
+                 << "togglebutton(fill,fill)[@handle=fill@out=fill-on]"
                )
             <<  ( GUI("hsplit")
-                  << "hbox[@label=histogramm@minsize=2x2]"
-                  << "label[@label=params@minsize=2x3]"
+                  << "hbox[@label=histogramm@handle=histo-box@minsize=12x10]"
+                  << "label[@label=params@handle=image-info-label]"
                 );
 
     data->menu << bciGUI << scaleGUI << channelGUI << captureGUI << infoGUI;
@@ -629,7 +820,10 @@ namespace icl{
     data->bciUpdateAuto = &data->menu.getValue<bool>("bci-update-mode");
     data->channelUpdateAuto = &data->menu.getValue<bool>("channel-update-mode");
 
-    data->infoTab = *data->menu.getValue<BoxHandle>("info-tab");
+    data->infoTab = *data->menu.getValue<SplitterHandle>("info-tab");
+    
+    data->histoWidget = new HistogrammWidget(*data->menu.getValue<BoxHandle>("histo-box"));
+    data->menu.getValue<BoxHandle>("histo-box").add(data->histoWidget);
     
     QObject::connect(*data->menu.getValue<ComboHandle>("bci-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(bciModeChanged(int)));
     QObject::connect(*data->menu.getValue<ComboHandle>("fit-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(scaleModeChanged(int)));
@@ -653,6 +847,13 @@ namespace icl{
     QObject::connect(*data->menu.getValue<SpinnerHandle>("auto-cap-frameskip"),SIGNAL(valueChanged(int)),widget,SLOT(skipFramesChanged(int)));
     
     QObject::connect(*data->menu.getValue<TabHandle>("root"),SIGNAL(currentChanged(int)),widget,SLOT(menuTabChanged(int)));
+    
+    QObject::connect(*data->menu.getValue<ButtonHandle>("fill"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("blur"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("median"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("log"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.getValue<ComboHandle>("histo-channel"),SIGNAL(currentIndexChanged(int)),widget,SLOT(histoPanelParamChanged()));
+
   }
 
   // }}}
@@ -792,7 +993,6 @@ namespace icl{
 
   // }}}
   
-
   void ICLWidget2::showHideMenu(){
     // {{{ open
 
@@ -838,10 +1038,20 @@ namespace icl{
                                        OutputBufferCapturer::SET_IMAGES :  OutputBufferCapturer::FRAME_BUFFER;
 
       const std::string filePattern = m_data->menu.getValue<StringHandle>("auto-cap-filepattern").getCurrentText();
-      int frameSkip = m_data->menu.getValue<SpinnerHandle>("auto-cap-frameskip").getValue(); //xxx
-      m_data->outputCap->startRecording(t,filePattern,frameSkip);
+      int frameSkip = m_data->menu.getValue<SpinnerHandle>("auto-cap-frameskip").getValue();
+      bool ok = m_data->outputCap->startRecording(t,filePattern,frameSkip);
+      if(!ok){
+        (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
+      }else{
+        if(!m_data->recordIndicator){
+          m_data->recordIndicator = new RecordIndicator(this);
+          m_data->updateRecordIndicatorGeometry(size());
+        }
+        m_data->recordIndicator->show();
+      }
     }else{
       m_data->outputCap->stopRecording();
+      m_data->recordIndicator->hide();
     }
   }
 
@@ -861,9 +1071,11 @@ namespace icl{
   void ICLWidget2::stopButtonClicked(){
     // {{{ open
 
-    m_data->outputCap->stopRecording();
-    Mutex::Locker l(m_data->menuMutex);
-    (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
+    if(m_data->outputCap){
+      m_data->outputCap->stopRecording();
+      Mutex::Locker l(m_data->menuMutex);
+      (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
+    }
   }
 
   // }}}
@@ -871,14 +1083,14 @@ namespace icl{
   void ICLWidget2::skipFramesChanged(int frameSkip){
     // {{{ open
 
-    if(!m_data->outputCap){
+    if(m_data->outputCap){
       m_data->outputCap->frameSkip = frameSkip;
     }
   }
 
   // }}}
 
-  void ICLWidget::menuTabChanged(int index){
+  void ICLWidget2::menuTabChanged(int index){
     // {{{ open
 
     if(index == 4){
@@ -888,10 +1100,30 @@ namespace icl{
 
   // }}}
 
+  void ICLWidget2::histoPanelParamChanged(){
+    // {{{ open
+    Mutex::Locker l(m_data->menuMutex);
+    if(!m_data->histoWidget) return;
+    m_data->histoWidget->setFeatures(m_data->menu.getValue<bool>("log-on"),
+                                     m_data->menu.getValue<bool>("blur-on"),
+                                     m_data->menu.getValue<bool>("median-on"),
+                                     m_data->menu.getValue<bool>("fill-on"),
+                                     m_data->menu.getValue<ComboHandle>("histo-channel").getSelectedIndex()-1);
+
+    m_data->histoWidget->update();
+    
+  }
+  // }}}
   void ICLWidget2::updateInfoTab(){
     // {{{ open
+    Mutex::Locker l(m_data->menuMutex);
+    if(m_data->histoWidget && m_data->histoWidget->isVisible()){
+      m_data->histoWidget->update(getImageStatistics());
+      // xxx TODO
+      std::vector<string> s = getImageInfo();
+      m_data->menu.getValue<LabelHandle>("image-info-label") = cat(s,"\n");
+    }
 
-    // xxx TODO
   }
 
   // }}}
@@ -1097,7 +1329,6 @@ namespace icl{
 
   // }}}
 
-  
   void ICLWidget2::setImage(const ImgBase *image){ 
     // {{{ open
     LOCK_SECTION;
@@ -1144,12 +1375,14 @@ namespace icl{
   }
 
   // }}}
+
   void ICLWidget2::setRangeMode(rangemode rm){
     // {{{ open
     m_data->rm = rm;
   }
 
   // }}}
+
   void ICLWidget2::setBCI(int brightness, int contrast, int intensity){
     // {{{ open
     m_data->bci[0] = brightness;
@@ -1157,6 +1390,7 @@ namespace icl{
     m_data->bci[2] = intensity;
   }
   // }}}
+
   void ICLWidget2::customPaintEvent(PaintEngine*){
     // {{{ open
   }
@@ -1183,10 +1417,12 @@ namespace icl{
 
   }
   // }}}
+
   void ICLWidget2::mouseMoveEvent(QMouseEvent *e){
     // {{{ open
   }
   // }}}
+
   void ICLWidget2::enterEvent(QEvent *e){
     // {{{ open
     if(m_data->menuEnabled){
@@ -1208,6 +1444,7 @@ namespace icl{
   }
 
   // }}}
+
   void ICLWidget2::leaveEvent(QEvent*){
     // {{{ open
     if(m_data->menuEnabled){
@@ -1217,6 +1454,7 @@ namespace icl{
   }
 
   // }}}
+
   void ICLWidget2::resizeEvent(QResizeEvent *e){
     // {{{ open
     resizeGL(e->size().width(),e->size().height());
@@ -1257,18 +1495,13 @@ namespace icl{
     if(i->getROI() == Rect(Point::null,i->getSize())){
       info.push_back("roi:   full");
     }else{
-      char ac[200];
-      Rect r = i->getROI();
-      sprintf(ac,"roi:   ((%d,%d),(%d x %d))",r.x,r.y,r.width,r.height);
-      info.push_back(ac);
+      info.push_back(translateRect(i->getROI()));
     }
     
     std::vector<Range<icl32f> > ranges = i->getMinMax();
     for(int a=0;a<i->getChannels();a++){
-      char ac[200];
-      Range<icl32f> r = ranges[a];
-      sprintf(ac,"channel %d, min:%f, max:%f",a,r.minVal,r.maxVal);
-      info.push_back(ac);
+      info.push_back(str("channel "+str(a)+":"));
+      info.push_back(str("   ")+translateRange(ranges[a]));
     }
     return info;
   }
@@ -1288,6 +1521,7 @@ namespace icl{
   }
 
   // }}}
+
   Rect ICLWidget2::getImageRect(){
     // {{{ open
 
@@ -1295,6 +1529,7 @@ namespace icl{
   }
 
   // }}}
+
   MouseInteractionInfo *ICLWidget2::updateMouseInfo(MouseInteractionInfo::Type type){
     // {{{ open
     
