@@ -112,7 +112,7 @@ void vis_roi(ICLDrawWidget *w){
 
 
 void run(){
-  static GenericGrabber g("dc,pwc,file","file=images/*.ppm.gz");
+  static GenericGrabber g(FROM_PROGARG("-input"));
   g.setDesiredSize(imageSize);
 
 
@@ -192,6 +192,8 @@ void run(){
 }
 
 int main(int n, char **ppc){
+  pa_explain("-input","define input device (like -input dc 0 or -input file images/image.ppm)");
+  pa_init(n,ppc,"-input(2)");
   ExecThread x(run);
   QApplication app(n,ppc);
   
