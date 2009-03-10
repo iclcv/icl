@@ -87,7 +87,7 @@ void run(){
 
 void init(){
   widget = new ICLDrawWidget;
-  grabber = new GenericGrabber;
+  grabber = new GenericGrabber(FROM_PROGARG("-input"));
   grabber->resetBus();
   grabber->setDesiredSize(Size(640,480));
   widget->setGeometry(200,200,640,480);
@@ -99,12 +99,6 @@ void init(){
 
 
 int main(int n, char **ppc){
-  ExecThread x(run);
-
-  QApplication a(n,ppc);
-  init();
-
-  x.run();
-
-  return a.exec();
+  ICLApplication app(n,ppc,"-input(2)",init,run);
+  return app.exec();
 }

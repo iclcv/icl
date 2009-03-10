@@ -59,7 +59,8 @@ ${MOC_FILES} \
 ../src/iclWidget.cpp \
 ../src/iclCamCfgWidget.cpp \
 ../src/iclToggleButton.cpp \
-../src/iclConfigFileGUI.cpp
+../src/iclConfigFileGUI.cpp \
+../src/iclApplication.cpp
 
 include_HEADERS= \
 ../src/iclBorderBox.h \
@@ -120,7 +121,8 @@ include_HEADERS= \
 ../src/iclCamCfgWidget.h \
 ../src/iclToggleButton.h \
 ../src/iclConfigEntry.h \
-../src/iclConfigFileGUI.h
+../src/iclConfigFileGUI.h \
+../src/iclApplication.h
 
 # include other packages here!
 libICLQt_la_CXXFLAGS=${AM_CXXFLAGS} \

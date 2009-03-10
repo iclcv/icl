@@ -7,3 +7,4 @@
 #include <iclProgArg.h>
 #include <iclMutex.h>
 #include <iclFileWriter.h>
+#include <iclApplication.h>
