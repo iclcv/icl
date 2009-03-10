@@ -40,6 +40,7 @@
 #include <iclSpinnerHandle.h>
 #include <iclSliderHandle.h>
 #include <iclStringUtils.h>
+#include <iclThreadedUpdatableWidget.h>
 
 #include <iclRect32f.h>
 #include <iclRange.h>
@@ -52,7 +53,7 @@ namespace icl{
 
   class ZoomAdjustmentWidgetParent;
   
-  struct HistogrammWidget : public QWidget{
+  struct HistogrammWidget : public ThreadedUpdatableWidget{
     // {{{ open
 
     static inline int median_of_3(int a, int b, int c){
@@ -93,7 +94,7 @@ namespace icl{
         }
     */
     HistogrammWidget(QWidget *parent):
-      QWidget(parent),logOn(false),meanOn(false),medianOn(false),fillOn(false),selChannel(-1){
+      ThreadedUpdatableWidget(parent),logOn(false),meanOn(false),medianOn(false),fillOn(false),selChannel(-1){
       
       /*
           setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -118,7 +119,9 @@ namespace icl{
         default: color[0]=255;color[1]=255;color[2]=255; break;
       }
     }
-    QWidget::update;
+    virtual void update(){
+      QWidget::update();
+    }
     void update(const ImageStatistics &s){
       Mutex::Locker l(mutex);
       if(s.isNull){
@@ -136,7 +139,7 @@ namespace icl{
         entries[i].histo = s.histos[i];
         fillColor(i,entries[i].color);
       }
-      update();
+      updateFromOtherThread();
     }
     
     virtual void paintEvent(QPaintEvent *e){
@@ -244,20 +247,20 @@ namespace icl{
 
   // }}}
 
- struct ImageInfoIndicator : public QWidget{
+  struct ImageInfoIndicator : public ThreadedUpdatableWidget{
     // {{{ open
 
    ImgParams p;
    icl::depth d;
-   ImageInfoIndicator(QWidget *parent):QWidget(parent){
+   ImageInfoIndicator(QWidget *parent):ThreadedUpdatableWidget(parent){
      d = (icl::depth)(-2);
      setBackgroundRole(QPalette::Window);
    }
-   QWidget::update;
+
    void update(const ImgParams p, icl::depth d){
      this->p = p;
      this->d = d;
-     update();
+     updateFromOtherThread();
    }
    inline std::string dstr(){
      switch(d){
@@ -306,7 +309,8 @@ namespace icl{
       outputCap(0),menuOn(true),
       menuptr(0),showMenuButton(0),embedMenuButton(0),zoomAdjuster(0),
       qic(0),menuEnabled(true),infoTab(0),recordIndicator(0),
-      imageInfoIndicatorEnabled(true)
+      imageInfoIndicatorEnabled(true),infoTabVisible(false),
+      selectedTabIndex(0)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
@@ -354,6 +358,8 @@ namespace icl{
     QWidget *recordIndicator;
     ImageInfoIndicator *imageInfoIndicator;
     bool imageInfoIndicatorEnabled;
+    bool infoTabVisible; // xxx
+    bool selectedTabIndex;
 
     void updateImageInfoIndicatorGeometry(const QSize &parentSize){
       imageInfoIndicator->setGeometry(QRect(parentSize.width()-152,parentSize.height()-16,150,16));
@@ -1061,12 +1067,22 @@ namespace icl{
     if(!m_data->menuptr){
       create_menu(this,m_data);
     }
-    m_data->menuptr->setVisible(!m_data->menuptr->isVisible());
 
+    m_data->menuptr->setVisible(!m_data->menuptr->isVisible());
+    if(m_data->menuptr->isVisible()){
+      if(m_data->selectedTabIndex == 4){
+        m_data->infoTabVisible = true;
+      }else{
+        m_data->infoTabVisible = false;
+      }
+    }else{
+      m_data->infoTabVisible = false;
+    }
     m_data->adaptMenuSize(size());
   }
 
   // }}}
+  
   void ICLWidget::setMenuEmbedded(bool embedded){
     // {{{ open
 
@@ -1154,9 +1170,12 @@ namespace icl{
 
   void ICLWidget::menuTabChanged(int index){
     // {{{ open
-
+    m_data->selectedTabIndex = index;
     if(index == 4){
+      m_data->infoTabVisible = true;
       updateInfoTab();
+    }else{
+      m_data->infoTabVisible = false;
     }
   }
 
@@ -1176,10 +1195,11 @@ namespace icl{
     
   }
   // }}}
+ 
   void ICLWidget::updateInfoTab(){
     // {{{ open
     Mutex::Locker l(m_data->menuMutex);
-    if(m_data->histoWidget && m_data->histoWidget->isVisible()){
+    if(m_data->histoWidget && m_data->infoTabVisible){
       m_data->histoWidget->update(getImageStatistics());
       // xxx TODO
       std::vector<string> s = getImageInfo();
@@ -1324,6 +1344,7 @@ namespace icl{
   }
 
   // }}}
+ 
   void ICLWidget::paintGL(){
     // {{{ open
     m_data->mutex.lock();
