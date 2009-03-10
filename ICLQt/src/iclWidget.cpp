@@ -362,7 +362,7 @@ namespace icl{
     bool selectedTabIndex;
 
     void updateImageInfoIndicatorGeometry(const QSize &parentSize){
-      imageInfoIndicator->setGeometry(QRect(parentSize.width()-152,parentSize.height()-16,150,16));
+      imageInfoIndicator->setGeometry(QRect(parentSize.width()-222,parentSize.height()-16,220,16));
     }
     
     void updateRecordIndicatorGeometry(const QSize &parentSize){
@@ -948,9 +948,9 @@ namespace icl{
       b->setChecked(checked);
     }
     b->setGeometry(QRect(x,-2,w,18));
-    b->setAutoFillBackground(false);
-    b->setAttribute(Qt::WA_OpaquePaintEvent);
-    b->setAttribute(Qt::WA_NoSystemBackground);
+    //b->setAutoFillBackground(false);
+    //b->setAttribute(Qt::WA_OpaquePaintEvent);
+    //b->setAttribute(Qt::WA_NoSystemBackground);
     QObject::connect(b,signal,parent,slot);
     return b;
   }
@@ -1113,7 +1113,7 @@ namespace icl{
     if(checked){
       Mutex::Locker l(m_data->menuMutex);
       OutputBufferCapturer::CaptureTarget t = m_data->menu.getValue<ComboHandle>("auto-cap-mode").getSelectedIndex()?
-                                       OutputBufferCapturer::SET_IMAGES :  OutputBufferCapturer::FRAME_BUFFER;
+                                              OutputBufferCapturer::FRAME_BUFFER :  OutputBufferCapturer::SET_IMAGES;
 
       const std::string filePattern = m_data->menu.getValue<StringHandle>("auto-cap-filepattern").getCurrentText();
       int frameSkip = m_data->menu.getValue<SpinnerHandle>("auto-cap-frameskip").getValue();
@@ -1481,6 +1481,7 @@ namespace icl{
       case Qt::RightButton: m_data->downMask[2]=true; break;
       default: m_data->downMask[1] = true; break;
     }
+    emit mouseEvent(updateMouseInfo(MouseInteractionInfo::pressEvent));
   }
   // }}}
 
@@ -1492,6 +1493,7 @@ namespace icl{
       case Qt::RightButton: m_data->downMask[2]=false; break;
       default: m_data->downMask[1] = false; break;
     }
+    emit mouseEvent(updateMouseInfo(MouseInteractionInfo::releaseEvent));
 
   }
   // }}}
@@ -1500,6 +1502,12 @@ namespace icl{
     // {{{ open
     m_data->mouseX = e->x();
     m_data->mouseY = e->y();
+    
+    if(m_data->downMask[0] || m_data->downMask[1] || m_data->downMask[2]){
+      emit mouseEvent(updateMouseInfo(MouseInteractionInfo::dragEvent));
+    }else{
+      emit mouseEvent(updateMouseInfo(MouseInteractionInfo::moveEvent));
+    }
   }
   // }}}
   
@@ -1513,6 +1521,30 @@ namespace icl{
       m_data->imageInfoIndicator->show();
       m_data->updateImageInfoIndicatorGeometry(size());
     }
+    emit mouseEvent(updateMouseInfo(MouseInteractionInfo::enterEvent));
+  }
+  // }}}
+
+  void ICLWidget::leaveEvent(QEvent*){
+    // {{{ open
+    if(m_data->menuEnabled){
+      m_data->showMenuButton->hide();
+      m_data->embedMenuButton->hide();
+    }
+    if(m_data->imageInfoIndicatorEnabled){
+      m_data->imageInfoIndicator->hide();
+    }
+    emit mouseEvent(updateMouseInfo(MouseInteractionInfo::leaveEvent));
+  }
+
+  // }}}
+
+
+  void ICLWidget::resizeEvent(QResizeEvent *e){
+    // {{{ open
+    resizeGL(e->size().width(),e->size().height());
+    m_data->adaptMenuSize(size());
+
   }
   // }}}
 
@@ -1530,26 +1562,6 @@ namespace icl{
 
   // }}}
 
-  void ICLWidget::leaveEvent(QEvent*){
-    // {{{ open
-    if(m_data->menuEnabled){
-      m_data->showMenuButton->hide();
-      m_data->embedMenuButton->hide();
-    }
-    if(m_data->imageInfoIndicatorEnabled){
-      m_data->imageInfoIndicator->hide();
-    }
-  }
-
-  // }}}
-
-  void ICLWidget::resizeEvent(QResizeEvent *e){
-    // {{{ open
-    resizeGL(e->size().width(),e->size().height());
-    m_data->adaptMenuSize(size());
-
-  }
-  // }}}
 
   ICLWidget::fitmode ICLWidget::getFitMode(){
     // {{{ open
@@ -1658,7 +1670,7 @@ namespace icl{
     // {{{ open
     MouseInteractionInfo &mii = m_data->mouseInfo;
 
-    if(m_data->image || !m_data->image->hasImage()){
+    if(!m_data->image || !m_data->image->hasImage()){
       return &mii;
     }
     mii.type = type;
