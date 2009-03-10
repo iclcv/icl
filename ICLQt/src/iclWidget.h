@@ -209,6 +209,8 @@ int main(int nArgs, char **ppcArg){
 
     void setMenuEnabled(bool enabled);
     
+    void setImageInfoIndicatorEnabled(bool enabled);
+    
     void setShowNoImageWarnings(bool showWarnings);
     
     public slots:

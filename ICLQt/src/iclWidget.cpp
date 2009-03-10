@@ -43,6 +43,7 @@
 
 #include <iclRect32f.h>
 #include <iclRange.h>
+#include <iclTypes.h>
 
 using namespace std;
 namespace icl{
@@ -231,7 +232,7 @@ namespace icl{
     }
     virtual void paintEvent(QPaintEvent *e){
       QPainter p(this);
-      p.setRenderHint(QPainter::Antialiasing);
+      p.setRenderHint(QPainter::TextAntialiasing);
       p.setBrush(QColor(200+(int)(55*col()),0,50));
       p.setPen(QColor(50,50,50));
       p.drawRect(QRectF(0,0,width(),height()));
@@ -239,6 +240,57 @@ namespace icl{
       p.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,"recording");
     }
     
+  };
+
+  // }}}
+
+ struct ImageInfoIndicator : public QWidget{
+    // {{{ open
+
+   ImgParams p;
+   icl::depth d;
+   ImageInfoIndicator(QWidget *parent):QWidget(parent){
+     d = (icl::depth)(-2);
+     setBackgroundRole(QPalette::Window);
+   }
+   QWidget::update;
+   void update(const ImgParams p, icl::depth d){
+     this->p = p;
+     this->d = d;
+     update();
+   }
+   inline std::string dstr(){
+     switch(d){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return #D;
+       ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+       default: return "?";
+     }
+   }
+   inline std::string rstr(){
+     if(p.getROISize() == p.getSize()) return "full";
+     return translateRect(p.getROI());
+   }
+
+   inline std::string fstr(){
+     if(p.getFormat() == formatMatrix){
+       return str("mat(")+str(p.getChannels())+")";
+     }else{
+       return translateFormat(p.getFormat());
+     }
+   }
+   virtual void paintEvent(QPaintEvent *e){
+     QWidget::paintEvent(e);
+     QPainter pa(this);
+     pa.setRenderHint(QPainter::Antialiasing);
+     pa.setBrush(QColor(210,210,210));
+     pa.setPen(QColor(50,50,50));
+     pa.drawRect(QRectF(0,0,width(),height()));
+     static const char D[] = "-";
+     
+     std::string info = dstr()+D+translateSize(p.getSize())+D+rstr()+D+fstr();
+     pa.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,info.c_str());
+   }
   };
 
   // }}}
@@ -253,7 +305,8 @@ namespace icl{
       mouseX(-1),mouseY(-1),selChannel(-1),showNoImageWarnings(true),
       outputCap(0),menuOn(true),
       menuptr(0),showMenuButton(0),embedMenuButton(0),zoomAdjuster(0),
-      qic(0),menuEnabled(true),infoTab(0),recordIndicator(0)
+      qic(0),menuEnabled(true),infoTab(0),recordIndicator(0),
+      imageInfoIndicatorEnabled(true)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
@@ -299,8 +352,12 @@ namespace icl{
     QWidget *infoTab;
     HistogrammWidget *histoWidget;
     QWidget *recordIndicator;
+    ImageInfoIndicator *imageInfoIndicator;
+    bool imageInfoIndicatorEnabled;
 
-
+    void updateImageInfoIndicatorGeometry(const QSize &parentSize){
+      imageInfoIndicator->setGeometry(QRect(parentSize.width()-152,parentSize.height()-16,150,16));
+    }
     
     void updateRecordIndicatorGeometry(const QSize &parentSize){
       if(!recordIndicator) return;
@@ -318,6 +375,7 @@ namespace icl{
       h = iclMax(menuptr->minimumHeight(),h);
       menuptr->setGeometry(QRect(MARGIN,TOP_MARGIN,w,h));
       updateRecordIndicatorGeometry(parentSize);
+      updateImageInfoIndicatorGeometry(parentSize);
     }
   };
 
@@ -906,7 +964,8 @@ namespace icl{
     
     m_data->showMenuButton = create_top_button("menu",this,2,45,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
     m_data->embedMenuButton = create_top_button("embedded",this,49,65,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
-    //create_menu(this,m_data);
+    m_data->imageInfoIndicator = new ImageInfoIndicator(this);
+    //m_data->imageInfoIndicator->setGeometry(QRect(116,0,150,16));
   }
 
   // }}}
@@ -1267,59 +1326,55 @@ namespace icl{
   // }}}
   void ICLWidget::paintGL(){
     // {{{ open
-    {
-      LOCK_SECTION;
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    m_data->mutex.lock();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
       
-      if(m_data->image && m_data->image->hasImage()){
-        Rect r;
-        if(m_data->fm == fmZoom){
-          Mutex::Locker locker(m_data->menuMutex);
-          r = computeRect(m_data->image->getSize(),getSize(),fmZoom,m_data->zoomAdjuster->aw->r);
-        }else{
-          r = computeRect(m_data->image->getSize(),getSize(),m_data->fm);
-        }
-        m_data->image->drawTo(r,getSize());
+    if(m_data->image && m_data->image->hasImage()){
+      Rect r;
+      if(m_data->fm == fmZoom){
+        Mutex::Locker locker(m_data->menuMutex);
+        r = computeRect(m_data->image->getSize(),getSize(),fmZoom,m_data->zoomAdjuster->aw->r);
       }else{
-        GLPaintEngine pe(this);
-        pe.fill(0,0,0,255);
-        Rect fullRect(0,0,width(),height());
-        pe.rect(fullRect);
-        pe.color(255,255,255,255);
-        pe.fill(255,255,255,255);
-        
-        if(m_data->showNoImageWarnings){
-          pe.text(fullRect,"[null]");
-        }
+        r = computeRect(m_data->image->getSize(),getSize(),m_data->fm);
+      }
+      m_data->image->drawTo(r,getSize());
+    }else{
+      GLPaintEngine pe(this);
+      pe.fill(0,0,0,255);
+      Rect fullRect(0,0,width(),height());
+      pe.rect(fullRect);
+      pe.color(255,255,255,255);
+      pe.fill(255,255,255,255);
+      
+      if(m_data->showNoImageWarnings){
+        pe.text(fullRect,"[null]");
       }
     }
-
+    m_data->mutex.unlock();
     
     GLPaintEngine pe(this);
-    {
-      LOCK_SECTION;
-      customPaintEvent(&pe);
-      /****
-          {
+    m_data->mutex.lock();
+    customPaintEvent(&pe);
+    m_data->mutex.unlock();
+    /****
+        {
           QMutexLocker l(&m_oFrameBufferCaptureFileNameMutex);
-          if(m_sFrameBufferCaptureFileName != ""){
-          FileWriter w(m_sFrameBufferCaptureFileName);
-          QImage qim = grabFrameBuffer();
-          QImageConverter converter(&qim);
-          try{
-          w.write(converter.getImg<icl8u>());
-          }catch(...){
-          ERROR_LOG("unable to write framebuffer to file: \"" 
-          << m_sFrameBufferCaptureFileName << "\"");
-          }
-          m_sFrameBufferCaptureFileName = "";
-          }
-       ***/
-    }
+        if(m_sFrameBufferCaptureFileName != ""){
+        FileWriter w(m_sFrameBufferCaptureFileName);
+        QImage qim = grabFrameBuffer();
+        QImageConverter converter(&qim);
+        try{
+        w.write(converter.getImg<icl8u>());
+        }catch(...){
+        ERROR_LOG("unable to write framebuffer to file: \"" 
+        << m_sFrameBufferCaptureFileName << "\"");
+        }
+        m_sFrameBufferCaptureFileName = "";
+        }
+        ***/
     if(m_data->outputCap){
       m_data->outputCap->captureFrameBufferHook();
     }
-    
   }
 
   // }}}
@@ -1365,6 +1420,7 @@ namespace icl{
     if(m_data->outputCap){
       m_data->outputCap->captureImageHook();
     }
+    m_data->imageInfoIndicator->update(image->getParams(),image->getDepth());
     updateInfoTab();
   }
 
@@ -1432,6 +1488,10 @@ namespace icl{
       m_data->showMenuButton->show();
       m_data->embedMenuButton->show();
     }
+    if(m_data->imageInfoIndicatorEnabled){
+      m_data->imageInfoIndicator->show();
+      m_data->updateImageInfoIndicatorGeometry(size());
+    }
   }
   // }}}
 
@@ -1440,6 +1500,7 @@ namespace icl{
     QGLWidget::setVisible(visible);
     m_data->showMenuButton->setVisible(false);
     m_data->embedMenuButton->setVisible(false);
+    m_data->imageInfoIndicator->setVisible(false);
     if(m_data->menuptr){
       m_data->menuptr->setVisible(false);
       m_data->adaptMenuSize(size());
@@ -1453,6 +1514,9 @@ namespace icl{
     if(m_data->menuEnabled){
       m_data->showMenuButton->hide();
       m_data->embedMenuButton->hide();
+    }
+    if(m_data->imageInfoIndicatorEnabled){
+      m_data->imageInfoIndicator->hide();
     }
   }
 
@@ -1504,6 +1568,12 @@ namespace icl{
     m_data->menuEnabled = enabled;
   }
 
+  // }}}
+
+  void ICLWidget::setImageInfoIndicatorEnabled(bool enabled){
+    // {{{ open
+    m_data->imageInfoIndicatorEnabled = enabled;
+  }
   // }}}
  
   std::vector<std::string> ICLWidget::getImageInfo(){
@@ -1558,6 +1628,7 @@ namespace icl{
     }else{
       r = computeRect(m_data->image->getSize(),getSize(),m_data->fm);
     }
+    return r;
   }
 
   // }}}
