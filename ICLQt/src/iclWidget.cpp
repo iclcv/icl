@@ -212,15 +212,71 @@ namespace icl{
 
   // }}}
   
+  struct OSDButton : public QPushButton{
+    // {{{ open
+
+    bool down;
+    bool over;
+    QString toggledText,untoggledText;
+
+    OSDButton(const QString &toggledText, const QString &untoggledText, QWidget *parent):
+      QPushButton("",parent),down(false),over(false),toggledText(toggledText),untoggledText(untoggledText){
+    }
+    
+    virtual void paintEvent(QPaintEvent *e){
+      QPainter p(this);
+      p.setPen(QColor(0,20,50));
+      QColor c(30,180,255);
+      if(over && !down){
+        p.setBrush(c.darker(90));
+      }else if(down){
+        p.setBrush(c.darker(110));
+      }else if(isChecked()){
+        p.setBrush(c.darker(120));
+      }else{
+        p.setBrush(c);
+      }
+      p.setRenderHint(QPainter::Antialiasing);
+      p.drawRect(QRectF(0,0,width(),height()));
+      if(isChecked()){
+        p.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,toggledText);
+      }else{
+        p.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,untoggledText);
+      }
+    }
+    virtual void mousePressEvent(QMouseEvent *event){
+      QPushButton::mousePressEvent(event);
+      down = true;
+      update();
+    }
+    virtual void mouseReleaseEvent(QMouseEvent *event){
+      QPushButton::mouseReleaseEvent(event);
+      down = false;
+      update();
+    }
+    virtual void leaveEvent(QEvent *event){
+      QPushButton::leaveEvent(event);
+      over = false;
+    }
+    virtual void enterEvent(QEvent *event){
+      QPushButton::enterEvent(event);
+      over = true;
+    }
+
+  };
+
+  // }}}
   
-  struct RecordIndicator : public QWidget{
+  struct RecordIndicator : public QPushButton{
     // {{{ open
 
     QTimer timer;
     double t;
-    RecordIndicator(QWidget *parent):QWidget(parent){
+    bool over;
+    RecordIndicator(QWidget *parent):QPushButton("",parent),over(false){
       connect(&timer,SIGNAL(timeout()),this,SLOT(update()));
       t = Time::now().toMilliSecondsDouble();
+      setToolTip("click to stop");
     }
     virtual void setVisible(bool vis){
       QWidget::setVisible(vis);
@@ -235,12 +291,21 @@ namespace icl{
     }
     virtual void paintEvent(QPaintEvent *e){
       QPainter p(this);
-      p.setRenderHint(QPainter::TextAntialiasing);
-      p.setBrush(QColor(200+(int)(55*col()),0,50));
-      p.setPen(QColor(50,50,50));
+      p.setRenderHint(QPainter::Antialiasing);
+      QColor c(200+(int)(55*col()),0,50);
+      p.setBrush(over?c.darker(90):c);
+      p.setPen(QColor(70,30,30));
       p.drawRect(QRectF(0,0,width(),height()));
       
       p.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,"recording");
+    }
+    virtual void leaveEvent(QEvent *event){
+      QPushButton::leaveEvent(event);
+      over = false;
+    }
+    virtual void enterEvent(QEvent *event){
+      QPushButton::enterEvent(event);
+      over = true;
     }
     
   };
@@ -362,12 +427,12 @@ namespace icl{
     bool selectedTabIndex;
 
     void updateImageInfoIndicatorGeometry(const QSize &parentSize){
-      imageInfoIndicator->setGeometry(QRect(parentSize.width()-222,parentSize.height()-16,220,16));
+      imageInfoIndicator->setGeometry(QRect(parentSize.width()-252,parentSize.height()-18,250,18));
     }
     
     void updateRecordIndicatorGeometry(const QSize &parentSize){
       if(!recordIndicator) return;
-      recordIndicator->setGeometry(QRect(parentSize.width()-75,-2,70,18));
+      recordIndicator->setGeometry(QRect(parentSize.width()-75,0,70,18));
     }
 
     void adaptMenuSize(const QSize &parentSize){
@@ -939,15 +1004,18 @@ namespace icl{
 
   // }}}
 
-  QPushButton *create_top_button(const QString &text,QWidget *parent, int x, int w,bool checkable,bool checked,const char *signal, const char *slot){
+  QPushButton *create_top_button(const QString &toggledText,
+                                 QString untoggledText, QWidget *parent, 
+                                 int x, int w,bool checkable, 
+                                 bool checked,const char *signal, const char *slot){
     // {{{ open
-
-    QPushButton *b = new QPushButton(text,parent);
+    
+    QPushButton *b = new OSDButton(toggledText,untoggledText,parent);
     if(checkable){
       b->setCheckable(true);
       b->setChecked(checked);
     }
-    b->setGeometry(QRect(x,-2,w,18));
+    b->setGeometry(QRect(x,0,w,18));
     //b->setAutoFillBackground(false);
     //b->setAttribute(Qt::WA_OpaquePaintEvent);
     //b->setAttribute(Qt::WA_NoSystemBackground);
@@ -968,8 +1036,8 @@ namespace icl{
     setMouseTracking(true);
     setWindowIcon(QIcon(QPixmap(ICL_WINDOW_ICON)));
     
-    m_data->showMenuButton = create_top_button("menu",this,2,45,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
-    m_data->embedMenuButton = create_top_button("embedded",this,49,65,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
+    m_data->showMenuButton = create_top_button("menu","menu",this,2,45,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
+    m_data->embedMenuButton = create_top_button("embedded","detached",this,49,65,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
     m_data->imageInfoIndicator = new ImageInfoIndicator(this);
     //m_data->imageInfoIndicator->setGeometry(QRect(116,0,150,16));
   }
@@ -989,9 +1057,9 @@ namespace icl{
     // {{{ open
 
     switch(modeIdx){
-      case 0: m_data->rm = rmOff; break;
-      case 1: m_data->rm = rmAuto; break;
-      case 2: m_data->rm = rmOn; break;
+      case 0: m_data->rm = rmOn; break;
+      case 1: m_data->rm = rmOff; break;
+      case 2: m_data->rm = rmAuto; break;
       default: ERROR_LOG("invalid range mode index");
     }
     if(*m_data->bciUpdateAuto){
@@ -1039,9 +1107,9 @@ namespace icl{
 
     //hold aspect ratio,force fit,no scale, zoom
     switch(modeIdx){
-      case 0: m_data->fm = fmHoldAR; break;
-      case 1: m_data->fm = fmFit; break;
-      case 2: m_data->fm = fmNoScale; break;
+      case 0: m_data->fm = fmNoScale; break;
+      case 1: m_data->fm = fmHoldAR; break;
+      case 2: m_data->fm = fmFit; break;
       case 3: m_data->fm = fmZoom; break;
       default: ERROR_LOG("invalid scale mode index");
     }
@@ -1097,6 +1165,7 @@ namespace icl{
       m_data->adaptMenuSize(size());
     }else{
       m_data->menuptr->setParent(0);
+      m_data->menuptr->setWindowTitle("menu...");
       m_data->menuptr->setGeometry(QRect(mapToGlobal(pos())+QPoint(2,2),QSize(width()-4,height()-2)));
     }
     m_data->menuptr->setVisible(visible);
@@ -1123,6 +1192,7 @@ namespace icl{
       }else{
         if(!m_data->recordIndicator){
           m_data->recordIndicator = new RecordIndicator(this);
+          connect(m_data->recordIndicator,SIGNAL(clicked()),this,SLOT(stopButtonClicked()));
           m_data->updateRecordIndicatorGeometry(size());
         }
         m_data->recordIndicator->show();
