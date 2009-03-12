@@ -1,3 +1,5 @@
+// {{{ includes
+
 #include <iclWidget.h>
 #include <iclImg.h>
 #include <iclGLTextureMapBaseImage.h>
@@ -45,6 +47,8 @@
 #include <iclRect32f.h>
 #include <iclRange.h>
 #include <iclTypes.h>
+
+// }}}
 
 using namespace std;
 namespace icl{
@@ -1037,7 +1041,7 @@ namespace icl{
     setWindowIcon(QIcon(QPixmap(ICL_WINDOW_ICON)));
     
     m_data->showMenuButton = create_top_button("menu","menu",this,2,45,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
-    m_data->embedMenuButton = create_top_button("embedded","detached",this,49,65,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
+    m_data->embedMenuButton = create_top_button("embedded","detached",this,49,75,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
     m_data->imageInfoIndicator = new ImageInfoIndicator(this);
     //m_data->imageInfoIndicator->setGeometry(QRect(116,0,150,16));
   }
