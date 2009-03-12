@@ -371,6 +371,33 @@ fi
 
 AM_CONDITIONAL([HAVE_XCF_COND],[test x$HAVE_XCF = xTRUE])
 
+#########################################################################################
+## removing default pathes /include /usr/include /lib /usr/lib ##########################
+#########################################################################################
+
+LIBS=`echo ${LIBS} | sed "s|-L/usr/lib | |g"`
+LIBS=`echo ${LIBS} | sed "s|-L/lib | |g"`
+
+echo LDFLAGS before:
+echo $LDFLAGS
+
+LDFLAGS=`echo ${LDFLAGS} | sed "s|-Wl,-rpath=/usr/lib | |g"`
+LDFLAGS=`echo ${LDFLAGS} | sed "s|-Wl,-rpath=/lib | |g"`
+echo ""
+echo LDFLAGS cleaned:
+echo $LDFLAGS
+
+CXXFLAGS=`echo ${CXXFLAGS} | sed "s|-I/usr/include | |g"`
+CXXFLAGS=`echo ${CXXFLAGS} | sed "s|-I/include | |g"`
+
+ICL_PC_LIBS=`echo ${ICL_PC_LIBS} | sed "s|-L/usr/lib | |g"`
+ICL_PC_LIBS=`echo ${ICL_PC_LIBS} | sed "s|-L/lib | |g"`
+ICL_PC_LIBS=`echo ${ICL_PC_LIBS} | sed "s|-Wl,-rpath=/usr/lib | |g"`
+ICL_PC_LIBS=`echo ${ICL_PC_LIBS} | sed "s|-Wl,-rpath=/lib | |g"`
+
+ICL_PC_CFLAGS=`echo ${ICL_PC_CFLAGS} | sed "s|-I/usr/include | |g"`
+ICL_PC_CFLAGS=`echo ${ICL_PC_CFLAGS} | sed "s|-I/include | |g"`
+
 
 #########################################################################################
 ## Summary ...                        ###################################################
