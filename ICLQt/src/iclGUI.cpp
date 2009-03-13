@@ -275,6 +275,7 @@ namespace icl{
 
     BorderGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,1){ 
       m_poGroupBox = new QGroupBox(def.param(0).c_str(),def.parentWidget());
+      m_poGroupBox->setFlat(true);
       m_poLayout = new QVBoxLayout;
       m_poLayout->setMargin(def.margin());
       m_poLayout->setSpacing(def.spacing());

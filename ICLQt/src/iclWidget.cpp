@@ -184,7 +184,8 @@ namespace icl{
       
         p.setPen(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2]));
         if(fillOn){
-          p.setBrush(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2]));
+          p.setPen(Qt::NoPen);
+          p.setBrush(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2],100));
         }
         float maxElem = *max_element(histo.begin(),histo.end());
         if(logOn) maxElem = ::log(maxElem);
@@ -324,6 +325,10 @@ namespace icl{
    ImageInfoIndicator(QWidget *parent):ThreadedUpdatableWidget(parent){
      d = (icl::depth)(-2);
      setBackgroundRole(QPalette::Window);
+     //#if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
+     //setAttribute(Qt::WA_TranslucentBackground);
+     //#endif
+
    }
 
    void update(const ImgParams p, icl::depth d){
@@ -355,8 +360,10 @@ namespace icl{
      QWidget::paintEvent(e);
      QPainter pa(this);
      pa.setRenderHint(QPainter::Antialiasing);
+
      pa.setBrush(QColor(210,210,210));
      pa.setPen(QColor(50,50,50));
+
      pa.drawRect(QRectF(0,0,width(),height()));
      static const char D[] = "-";
      
@@ -448,7 +455,8 @@ namespace icl{
       
       w = iclMax(menuptr->minimumWidth(),w);
       h = iclMax(menuptr->minimumHeight(),h);
-      menuptr->setGeometry(QRect(MARGIN,TOP_MARGIN,w,h));
+      // xxx
+      // menuptr->setGeometry(QRect(MARGIN,TOP_MARGIN,w,h));
       updateRecordIndicatorGeometry(parentSize);
       updateImageInfoIndicatorGeometry(parentSize);
     }
@@ -908,11 +916,14 @@ namespace icl{
 
     GUI captureGUI("vbox");
      
-    captureGUI << ( GUI("hbox[@label=single shot]")
-                    << "button(image)[@handle=cap-image]"
-                    << "button(frame buffer)[@handle=cap-fb]"
+    captureGUI << ( GUI("hbox")
+                    << ( GUI("hbox[@label=single shot]") 
+                         << "button(image)[@handle=cap-image]"
+                         << "button(frame buffer)[@handle=cap-fb]"
+                       )
                     << "combo(image.pnm,image_TIME.pnm,ask me)[@label=filename@handle=cap-filename@out=_5]"
-                   );
+                  );
+                  
     
     bool autoCapFB = data->outputCap && data->outputCap->target==ICLWidget::OutputBufferCapturer::FRAME_BUFFER;
     int autoCapFS = data->outputCap ? (data->outputCap->frameSkip) : 0;
@@ -947,11 +958,20 @@ namespace icl{
                 );
 
     data->menu << bciGUI << scaleGUI << channelGUI << captureGUI << infoGUI;
-
+    
     data->menu.create();
 
     data->menuptr = data->menu.getRootWidget();
     data->menuptr->setParent(widget);
+    // xxx new layout test
+    widget->setLayout(new QGridLayout);
+    widget->layout()->setContentsMargins(5,22,5,5);
+    widget->layout()->addWidget(data->menuptr);
+
+    /// xxx new bg tset
+    data->menuptr->setAutoFillBackground(true);
+    //data->menuptr->setStyleSheet("QWidget { background : rgba(200,200,200,10) }");
+    
     
     data->bciUpdateAuto = &data->menu.getValue<bool>("bci-update-mode");
     data->channelUpdateAuto = &data->menu.getValue<bool>("channel-update-mode");
@@ -1393,7 +1413,6 @@ namespace icl{
   
   void ICLWidget::initializeGL(){
     // {{{ open
-
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glShadeModel(GL_FLAT);
     glEnable(GL_TEXTURE_2D);
