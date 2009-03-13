@@ -198,10 +198,14 @@ namespace icl{
     
     if(isNull()) m_eBayerFilterMode = BF_NONE;
     std::string id = getTypeID(m_poCam);
+    // DEBUG_LOG("id is :-" << id << "-");
+    // "SONY -- XCD-V50CR"
     if(id== "Point Grey Research -- Firefly MV FFMV-03MTC"){
       m_eBayerFilterMode = BF_GBRG;
-    }else if("Imaging Source -- DFx_21BF04"){
+    }else if(id == "Imaging Source -- DFx_21BF04"){
       m_eBayerFilterMode = BF_FROM_MODE;
+    }else if(id == "SONY -- XCD-V50CR"){
+      m_eBayerFilterMode = BF_GBRG;
     }else{
       // this is a list of builtin cameras that dont't have
       // a bayer filter 
