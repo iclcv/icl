@@ -88,7 +88,7 @@ namespace icl{
     };
     std::vector<Entry> entries;
 
-    bool logOn,meanOn,medianOn,fillOn;
+    bool logOn,meanOn,medianOn,fillOn,accuMode;
     int selChannel;
     Mutex mutex;
 
@@ -98,7 +98,8 @@ namespace icl{
         }
     */
     HistogrammWidget(QWidget *parent):
-      ThreadedUpdatableWidget(parent),logOn(false),meanOn(false),medianOn(false),fillOn(false),selChannel(-1){
+      ThreadedUpdatableWidget(parent),logOn(false),meanOn(false),medianOn(false),
+      fillOn(false),selChannel(-1),accuMode(false){
       
       /*
           setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -108,12 +109,13 @@ namespace icl{
       */
     }
     
-    void setFeatures(bool logOn, bool meanOn, bool medianOn, bool fillOn, int selChannel){
+    void setFeatures(bool logOn, bool meanOn, bool medianOn, bool fillOn, int selChannel, bool accuMode=false){
       this->logOn = logOn;
       this->meanOn = meanOn;
       this->medianOn = medianOn;
       this->fillOn = fillOn;
       this->selChannel = selChannel;
+      this->accuMode = accuMode;
     }
     void fillColor(int i,float color[3]){
       switch(i){
@@ -150,9 +152,8 @@ namespace icl{
       Mutex::Locker l(mutex);
       QWidget::paintEvent(e);
       QPainter p(this);
-      if(!fillOn){
-        p.setRenderHint(QPainter::Antialiasing);
-      }
+
+      p.setRenderHint(QPainter::Antialiasing);
       p.setBrush(Qt::NoBrush);
       p.setPen(QColor(50,50,50));
       p.drawRect(QRectF(0,0,width(),height()));
@@ -162,6 +163,30 @@ namespace icl{
       static float GAP = 0;
       Rect32f r = Rect32f(0,0,width(),height()).enlarged(-BORDER);
       
+      std::vector<QPolygonF> polys(entries.size());
+      if(fillOn){
+        for(unsigned int e=0;e<entries.size();++e){
+          polys[e] << QPointF(width(),height());
+          polys[e] << QPointF(0,height());
+        }
+      }
+      // TODO fix accuMode
+      // TODO use overAll max elem to be able to compare bins
+      float maxElem = 0;
+      if(accuMode){
+        for(unsigned int e=1;e<entries.size();++e){
+          ICLASSERT_RETURN(entries[0].histo.size() == entries[e].histo.size());
+        }
+        for(unsigned int i=0;i<entries[0].histo.size();++i){
+          int accu = 0;
+          for(unsigned int e=1;e<entries.size();++e){
+            accu += entries[e].histo[i];
+          }
+          if(accu > maxElem) maxElem = accu;
+        }
+      }
+
+      std::vector<std::vector<int> > oldHistos(entries.size());
       for(unsigned int e=0;e<entries.size();++e){
         if(!(selChannel == -1 || selChannel == e)) continue;
         std::vector<int> histo = entries[e].histo;
@@ -183,11 +208,11 @@ namespace icl{
         }
       
         p.setPen(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2]));
-        if(fillOn){
-          p.setPen(Qt::NoPen);
-          p.setBrush(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2],100));
+
+        
+        if(!accuMode){
+          maxElem = *max_element(histo.begin(),histo.end());
         }
-        float maxElem = *max_element(histo.begin(),histo.end());
         if(logOn) maxElem = ::log(maxElem);
         
         if(maxElem){
@@ -197,20 +222,41 @@ namespace icl{
           float lastX = 0,lastY=0;
           for(int i=0;i<n;i++){
             float val = histo[i];
+            float valUnder = 0;
+            if(accuMode){
+              for(int j=0;j<e;++j){
+                valUnder += oldHistos[j][i];
+              }
+              val += valUnder;
+            }
+            
             if(logOn && val) val=(::log(val));
+            
             float h = (r.height/maxElem)*val;
+            if(accuMode){
+              h -= (r.height/maxElem)*valUnder;
+            }
             float y = r.y+r.height-h;
             float x = r.x+(int)(i*binDistance);
             if(fillOn){
-              p.drawRect(QRectF(x,y,binWidth,h));
-            }
-            if(i>0){
+              // old xxx p.drawRect(QRectF(x,y,binWidth,h));
+              polys[e] << QPointF(lastX+binWidth/2,lastY);
+              if(i==n-1){
+                polys[e] << QPointF(x+binWidth/2,y);
+              }
+            }else if(i>0){
               p.drawLine(QPointF(x+binWidth/2,y),QPointF(lastX+binWidth/2,lastY));
             }
             lastX = x;
             lastY = y;
           }
         }
+        if(fillOn){
+          p.setPen(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2],255));
+          p.setBrush(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2],100));
+          p.drawPolygon(polys[e]);
+        }
+        oldHistos[e]=histo;
       }
     }
   };
