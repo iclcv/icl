@@ -1151,6 +1151,8 @@ namespace icl{
 
     data->menuMutex.lock();
     if(data->menuptr){
+      // TODO this cannot be done at runtime -> so the zoom adjusters state must be tracked in 
+      // another way ...
       if(data->zoomAdjuster->isVisible()){
         data->zoomAdjuster->updateImageSize(newImageSize);
       }
@@ -1208,6 +1210,33 @@ namespace icl{
 
   // }}}
 
+  QPushButton *create_top_button_3(const std::string &which, QWidget *parent, 
+                                   int x, int w,bool checkable, 
+                                   bool checked,const char *signal, const char *slot){
+    // {{{ open
+    
+    QPushButton *b = new QPushButton(parent);
+    if(which == "menu"){
+      b->setIcon(IconFactory::create_tool_icon_qicon());
+    }else if(which == "embed"){
+      b->setIcon(IconFactory::create_locked_icon_qicon());
+    }else if(which == "zoom"){
+      b->setIcon(IconFactory::create_zoom_icon_qicon());
+    }else{
+      ERROR_LOG("which " << which << " you meant?");
+      return 0;
+    }
+    if(checkable){
+      b->setCheckable(true);
+      b->setChecked(checked);
+    }
+    b->setGeometry(QRect(x,2,w,20));
+    QObject::connect(b,signal,parent,slot);
+    return b;
+  }
+
+  // }}}
+
 
   // ------------ ICLWidget ------------------------------
 
@@ -1222,8 +1251,8 @@ namespace icl{
     
     //    m_data->showMenuButton = create_top_button("menu","menu",this,2,45,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
     //m_data->embedMenuButton = create_top_button("embedded","detached",this,49,75,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
-    m_data->showMenuButton = create_top_button_2("menu",this,2,18,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
-    m_data->embedMenuButton = create_top_button_2("embed",this,22,18,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
+    m_data->showMenuButton = create_top_button_3("menu",this,2,20,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
+    m_data->embedMenuButton = create_top_button_3("embed",this,24,20,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
 
     m_data->imageInfoIndicator = new ImageInfoIndicator(this);
     //m_data->imageInfoIndicator->setGeometry(QRect(116,0,150,16));
