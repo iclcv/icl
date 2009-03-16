@@ -11,7 +11,7 @@
 #include <iclQImageConverter.h>
 #include <QImage>
 
-#include <iclIcons.h>
+#include <iclIconFactory.h>
 
 #include <iclFileWriter.h>
 #include <iclThread.h>

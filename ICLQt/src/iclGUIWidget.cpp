@@ -11,9 +11,7 @@
 #include <iclGUISyntaxErrorException.h>
 #include <QString>
 
-#include <iclIcons.h>
-#include <QIcon>
-#include <QPixmap>
+#include <iclIconFactory.h>
 
 namespace icl{
   

@@ -1,4 +1,4 @@
-#include <iclIcons.h>
+#include <iclIconFactory.h>
 #include <iclImg.h>
 #include <iclQImageConverter.h>
 
