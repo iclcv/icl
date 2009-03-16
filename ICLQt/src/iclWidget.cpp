@@ -11,9 +11,7 @@
 #include <iclQImageConverter.h>
 #include <QImage>
 
-#include <QIcon>
-#include <QPixmap>
-#include <iclWindowIcon.h>
+#include <iclIcons.h>
 
 #include <iclFileWriter.h>
 #include <iclThread.h>
@@ -263,6 +261,7 @@ namespace icl{
 
   // }}}
   
+  /** Original button
   struct OSDButton : public QPushButton{
     // {{{ open
 
@@ -317,7 +316,94 @@ namespace icl{
   };
 
   // }}}
+  **/
+
+  struct OSDButton : public QPushButton{
+    // {{{ open
+
+    bool down;
+    bool over;
+    QString toggledText,untoggledText;
+
+    OSDButton(const QString &toggledText, const QString &untoggledText, QWidget *parent):
+      QPushButton("",parent),down(false),over(false),toggledText(toggledText),untoggledText(untoggledText){
+    }
+    
+    virtual void drawSymbol(QPainter &p, bool checked, bool down, bool over){
+      p.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,checked?toggledText:untoggledText);
+    }
+    
+    virtual void paintEvent(QPaintEvent *e){
+      QPainter p(this);
+      p.setPen(QColor(0,20,50));
+      QColor c(30,180,255);
+      if(over && !down){
+        p.setBrush(c.darker(90));
+      }else if(down){
+        p.setBrush(c.darker(110));
+      }else if(isChecked()){
+        p.setBrush(c.darker(120));
+      }else{
+        p.setBrush(c);
+      }
+      p.setRenderHint(QPainter::Antialiasing);
+      p.drawRect(QRectF(0,0,width(),height()));
+      
+      if(isChecked()){
+        p.setPen(QColor(255,255,255,220));
+      }else{
+        p.setPen(QColor(0,0,0,220));
+      }
+      drawSymbol(p,isChecked(),down,over);
+    }
+    virtual void mousePressEvent(QMouseEvent *event){
+      QPushButton::mousePressEvent(event);
+      down = true;
+      update();
+    }
+    virtual void mouseReleaseEvent(QMouseEvent *event){
+      QPushButton::mouseReleaseEvent(event);
+      down = false;
+      update();
+    }
+    virtual void leaveEvent(QEvent *event){
+      QPushButton::leaveEvent(event);
+      over = false;
+    }
+    virtual void enterEvent(QEvent *event){
+      QPushButton::enterEvent(event);
+      over = true;
+    }
+
+  };
+
+  // }}}
+
+  struct OSDButton_Menu : public OSDButton{
+    // {{{ open
+
+    OSDButton_Menu(QWidget *parent):OSDButton("!","!",parent){}
+  };
+
+  // }}}
+
+  struct OSDButton_Embed : public OSDButton{
+    // {{{ open
+
+    OSDButton_Embed(QWidget *parent):OSDButton("E","D",parent){}
+  };
+
+  // }}}
+
+  struct OSDButton_Zoom : public OSDButton{
+    // {{{ open
+
+    OSDButton_Zoom(QWidget *parent):OSDButton("Z","Z",parent){}
+  };
+
+  // }}}
   
+
   struct RecordIndicator : public QPushButton{
     // {{{ open
 
@@ -1095,6 +1181,34 @@ namespace icl{
 
   // }}}
 
+  QPushButton *create_top_button_2(const std::string &which, QWidget *parent, 
+                                   int x, int w,bool checkable, 
+                                   bool checked,const char *signal, const char *slot){
+    // {{{ open
+    
+    QPushButton *b = 0;
+    if(which == "menu"){
+      b = new OSDButton_Menu(parent);
+    }else if(which == "embed"){
+      b = new OSDButton_Embed(parent);
+    }else if(which == "zoom"){
+      b = new OSDButton_Zoom(parent);
+    }else{
+      ERROR_LOG("which " << which << " you meant?");
+      return 0;
+    }
+    if(checkable){
+      b->setCheckable(true);
+      b->setChecked(checked);
+    }
+    b->setGeometry(QRect(x,0,w,18));
+    QObject::connect(b,signal,parent,slot);
+    return b;
+  }
+
+  // }}}
+
+
   // ------------ ICLWidget ------------------------------
 
   ICLWidget::ICLWidget(QWidget *parent) : 
@@ -1104,10 +1218,13 @@ namespace icl{
     
     // TODO (just if mouse interaction receiver is added)
     setMouseTracking(true);
-    setWindowIcon(QIcon(QPixmap(ICL_WINDOW_ICON)));
+    setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
     
-    m_data->showMenuButton = create_top_button("menu","menu",this,2,45,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
-    m_data->embedMenuButton = create_top_button("embedded","detached",this,49,75,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
+    //    m_data->showMenuButton = create_top_button("menu","menu",this,2,45,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
+    //m_data->embedMenuButton = create_top_button("embedded","detached",this,49,75,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
+    m_data->showMenuButton = create_top_button_2("menu",this,2,18,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
+    m_data->embedMenuButton = create_top_button_2("embed",this,22,18,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
+
     m_data->imageInfoIndicator = new ImageInfoIndicator(this);
     //m_data->imageInfoIndicator->setGeometry(QRect(116,0,150,16));
   }

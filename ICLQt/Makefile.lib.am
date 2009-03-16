@@ -62,7 +62,8 @@ ${MOC_FILES} \
 ../src/iclToggleButton.cpp \
 ../src/iclConfigFileGUI.cpp \
 ../src/iclApplication.cpp \
-../src/iclPlotWidget.cpp
+../src/iclPlotWidget.cpp \
+../src/iclIcons.cpp
 
 include_HEADERS= \
 ../src/iclBorderBox.h \
@@ -118,7 +119,7 @@ include_HEADERS= \
 ../src/iclThreadedUpdatableWidget.h \
 ../src/iclWidgetCaptureMode.h \
 ../src/iclWidget.h \
-../src/iclWindowIcon.h \
+../src/iclIcons.h \
 ../src/iclProxyLayout.h \
 ../src/iclCamCfgWidget.h \
 ../src/iclToggleButton.h \

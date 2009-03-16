@@ -11,7 +11,7 @@
 #include <iclGUISyntaxErrorException.h>
 #include <QString>
 
-#include <iclWindowIcon.h>
+#include <iclIcons.h>
 #include <QIcon>
 #include <QPixmap>
 
@@ -82,7 +82,7 @@ namespace icl{
     }
     m_poGUI = def.getGUI();
 
-    setWindowIcon(QIcon(QPixmap(ICL_WINDOW_ICON)));
+    setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
   }
 
   GUIWidget::~GUIWidget(){}
