@@ -13,6 +13,9 @@ namespace icl{
     }
 
     int getCellSize(const Size &imageSize){
+      if(imageSize == Size(16,16)) return 16;
+      if(imageSize == Size(32,32)) return 32;
+      if(imageSize.getDim() < 100) return 16;
       if(imageSize.getDim() < 100) return 16;
       if(imageSize.getDim() < 2500) return 32;
       if(imageSize.getDim() < 10000) return 64;
@@ -210,21 +213,21 @@ namespace icl{
     if(m_po32f) { m_po32f->bci(b,c,i); return; }
   }
 
-  void GLTextureMapBaseImage::drawTo(const Rect &rect, const Size &windowSize){
+  void GLTextureMapBaseImage::drawTo(const Rect &rect, const Size &windowSize, scalemode mode){
     if(m_po8u){
-      m_po8u->drawTo(rect,windowSize);
+      m_po8u->drawTo(rect,windowSize,mode);
       return;
     }
     if(m_po32f){
-      m_po32f->drawTo(rect,windowSize);
+      m_po32f->drawTo(rect,windowSize,mode);
       return;
     }
     if(m_po16s){
-      m_po16s->drawTo(rect,windowSize);
+      m_po16s->drawTo(rect,windowSize,mode);
       return;
     }
     if(m_po32s){
-      m_po32s->drawTo(rect,windowSize);
+      m_po32s->drawTo(rect,windowSize,mode);
       return;
     }
   }

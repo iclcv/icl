@@ -66,7 +66,10 @@ namespace icl{
     void updateTextures(const ImgBase *image);
 
     /// this call is passed to the current valid GLTextureMapImage 
-    void drawTo(const Rect &rect, const Size &windowSize);
+    /** @param rect rectangle to draw the image into
+        @param window size parent ICLWidget window size
+        @param mode mode to use when image size does not match (performed in hardware)*/
+    void drawTo(const Rect &rect, const Size &windowSize, scalemode smode=interpolateNN);
 
     /// draw the image into the rectangle specified by Center and two given axis
     /** Example:

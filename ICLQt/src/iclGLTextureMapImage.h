@@ -102,7 +102,7 @@ namespace icl{
     void updateTextures(const Img<T> *image);
   
     /// draws the image into the given rect on a GL context with given window and view port size 
-    void drawTo(const Rect &rect, const Size &windowSize);
+    void drawTo(const Rect &rect, const Size &windowSize, scalemode mode=interpolateNN);
 
     /// draw the image into the rectangle specified by Center and two given axis
     /** Example:

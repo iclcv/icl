@@ -48,7 +48,7 @@ namespace icl{
       for(int x=0;x<m_iXCells;++x){
         m_matROISizes[x][y].width  = m_iRestX ? (x==m_iXCells-1 ? m_iRestX : m_iCellSize) : m_iCellSize;
         m_matROISizes[x][y].height = m_iRestY ? (y==m_iYCells-1 ? m_iRestY : m_iCellSize) : m_iCellSize;
-        if(!m_bUseSingleBuffer){
+       if(!m_bUseSingleBuffer){
           m_matCellData[x][y] = new T[m_iCellDataSize];
         }
       }
@@ -384,7 +384,7 @@ namespace icl{
   }
   
   template<class T>
-  void GLTextureMapImage<T>::drawTo(const Rect &rect, const Size &windowSize){
+  void GLTextureMapImage<T>::drawTo(const Rect &rect, const Size &windowSize, scalemode mode){
     // {{{ open
     if(!m_bUseSingleBuffer){
       
@@ -406,8 +406,8 @@ namespace icl{
           
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
           
           if(m_iChannels == 1){
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData[x][y]);

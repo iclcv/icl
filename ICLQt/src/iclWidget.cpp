@@ -403,6 +403,93 @@ namespace icl{
 
   // }}}
   
+  struct OSDGLButton{
+    enum IconType {Tool,Zoom,Lock, Unlock};
+    enum Event { Move, Press, Release, Enter, Leave,Draw};
+    Rect bounds;
+    bool toggable;
+    Img8u icon;    
+    Img8u downIcon;
+    
+    bool over;
+    bool down;
+    bool toggled;
+    bool visible;
+    
+    GLTextureMapBaseImage tmImage;
+
+    typedef void (ICLWidget::*VoidCallback)();
+    typedef void (ICLWidget::*BoolCallback)(bool);
+    VoidCallback vcb;
+    BoolCallback bcb;
+    
+    static inline const Img8u &get_icon(IconType icon){
+      switch(icon){
+        case Tool: return IconFactory::create_tool_icon_image(); break;
+        case Zoom: return IconFactory::create_zoom_icon_image(); break;
+        case Unlock: return IconFactory::create_unlocked_icon_image(); break;
+        case Lock: return IconFactory::create_locked_icon_image(); break;
+      }
+      static Img8u undef(Size(32,32),4);
+      return undef;
+    }
+    OSDGLButton(int x, int y, int w, int h, IconType icon, VoidCallback vcb=0):
+      bounds(x,y,w,h),toggable(false),over(false),down(false),
+      toggled(false),visible(false),vcb(vcb),bcb(0){
+      this->icon = get_icon(icon);
+    }
+    OSDGLButton(int x, int y, int w, int h, IconType icon, IconType downIcon, BoolCallback bcb=0, bool toggled = false):
+      bounds(x,y,w,h),toggable(true),over(false),down(false),
+      toggled(toggled),visible(false),vcb(0),bcb(bcb){
+      this->icon = get_icon(icon);
+      this->downIcon = get_icon(downIcon);
+    }
+    void drawGL(const Size &windowSize){
+      if(!visible) return;
+      tmImage.bci(over*20,down*20,0);
+      const Img8u &im = toggled ? downIcon : icon;
+      tmImage.updateTextures(&im);
+      tmImage.drawTo(bounds,windowSize,interpolateLIN);
+    }
+    bool update_mouse_move(int x, int y, ICLWidget *parent){
+      return (over = bounds.contains(x,y)); 
+    }
+
+    bool update_mouse_press(int x, int y,ICLWidget *parent){
+      if(bounds.contains(x,y)){
+        down = true;
+        if(toggable){
+          toggled = !toggled;
+          if(bcb) (parent->*bcb)(toggled);
+        }else{
+          if(vcb) (parent->*vcb)();
+        }
+        return true;
+      }else{
+        return false;
+      }
+    }
+    bool update_mouse_release(int x, int y, ICLWidget *parent){
+      down = false;
+      return bounds.contains(x,y);
+    }
+
+    bool event(int x, int y, Event evt, ICLWidget *parent){
+      switch(evt){
+        case Move: return update_mouse_move(x,y,parent);
+        case Press: return update_mouse_press(x,y,parent);
+        case Release: return update_mouse_release(x,y,parent);
+        case Enter:
+        case Leave: 
+          visible = evt==Enter;
+          return bounds.contains(x,y);
+        case Draw: 
+          drawGL(Size(parent->width(),parent->height()));
+          return false;
+      }
+    }
+   
+  };
 
   struct RecordIndicator : public QPushButton{
     // {{{ open
@@ -510,7 +597,7 @@ namespace icl{
     // {{{ open
 
     Data(ICLWidget *parent):
-      channelSelBuf(0),image(new GLTextureMapBaseImage(0,false)),
+      parent(parent),channelSelBuf(0),image(new GLTextureMapBaseImage(0,false)),
       qimageConv(0),qimage(0),mutex(QMutex::Recursive),fm(fmHoldAR),
       rm(rmOff),bciUpdateAuto(false),channelUpdateAuto(false),
       mouseX(-1),mouseY(-1),selChannel(-1),showNoImageWarnings(true),
@@ -533,7 +620,7 @@ namespace icl{
       ICL_DELETE(qic);
       // ICL_DELETE(outputCap); this must be done by the parent widget
     }
-
+    ICLWidget *parent;
     ImgBase *channelSelBuf;
     GLTextureMapBaseImage *image;
     QImageConverter *qimageConv;
@@ -568,6 +655,15 @@ namespace icl{
     bool imageInfoIndicatorEnabled;
     bool infoTabVisible; // xxx
     bool selectedTabIndex;
+    std::vector<OSDGLButton*> glbuttons;
+    
+    bool event(int x, int y, OSDGLButton::Event evt){
+      bool any = false;
+      for(unsigned int i=0;i<glbuttons.size();++i){
+        any |= glbuttons[i]->event(x,y,evt,parent);
+      }
+      return any;
+    }
 
     void updateImageInfoIndicatorGeometry(const QSize &parentSize){
       imageInfoIndicator->setGeometry(QRect(parentSize.width()-252,parentSize.height()-18,250,18));
@@ -1096,9 +1192,12 @@ namespace icl{
     data->menuptr = data->menu.getRootWidget();
     data->menuptr->setParent(widget);
     // xxx new layout test
-    widget->setLayout(new QGridLayout);
-    widget->layout()->setContentsMargins(5,22,5,5);
+    if(!widget->layout()){
+      widget->setLayout(new QGridLayout);
+      widget->layout()->setContentsMargins(5,22,5,5);
+    }
     widget->layout()->addWidget(data->menuptr);
+
 
     /// xxx new bg tset
     data->menuptr->setAutoFillBackground(true);
@@ -1251,8 +1350,12 @@ namespace icl{
     
     //    m_data->showMenuButton = create_top_button("menu","menu",this,2,45,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
     //m_data->embedMenuButton = create_top_button("embedded","detached",this,49,75,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
-    m_data->showMenuButton = create_top_button_3("menu",this,2,20,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
-    m_data->embedMenuButton = create_top_button_3("embed",this,24,20,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
+    
+    //m_data->showMenuButton = create_top_button_3("menu",this,2,20,false,false,SIGNAL(clicked()),SLOT(showHideMenu()));
+    //m_data->embedMenuButton = create_top_button_3("embed",this,24,20,true,true,SIGNAL(toggled(bool)),SLOT(setMenuEmbedded(bool)));
+    
+    m_data->glbuttons.push_back(new OSDGLButton(2,2,20,20,OSDGLButton::Tool,&ICLWidget::showHideMenu));
+    m_data->glbuttons.push_back(new OSDGLButton(24,2,20,20,OSDGLButton::Unlock,OSDGLButton::Lock,&ICLWidget::setMenuEmbedded,true));
 
     m_data->imageInfoIndicator = new ImageInfoIndicator(this);
     //m_data->imageInfoIndicator->setGeometry(QRect(116,0,150,16));
@@ -1662,6 +1765,8 @@ namespace icl{
     m_data->mutex.lock();
     customPaintEvent(&pe);
     m_data->mutex.unlock();
+    
+    m_data->event(0,0,OSDGLButton::Draw);
     /****
         {
           QMutexLocker l(&m_oFrameBufferCaptureFileNameMutex);
@@ -1761,6 +1866,8 @@ namespace icl{
 
   void ICLWidget::mousePressEvent(QMouseEvent *e){
     // {{{ open
+    if(m_data->event(e->x(),e->y(),OSDGLButton::Press)) return;
+
     switch(e->button()){
       case Qt::LeftButton: m_data->downMask[0]=true; break;
       case Qt::RightButton: m_data->downMask[2]=true; break;
@@ -1772,7 +1879,7 @@ namespace icl{
 
   void ICLWidget::mouseReleaseEvent(QMouseEvent *e){
     // {{{ open
-
+    if(m_data->event(e->x(),e->y(),OSDGLButton::Release)) return;
     switch(e->button()){
       case Qt::LeftButton: m_data->downMask[0]=false; break;
       case Qt::RightButton: m_data->downMask[2]=false; break;
@@ -1785,6 +1892,7 @@ namespace icl{
 
   void ICLWidget::mouseMoveEvent(QMouseEvent *e){
     // {{{ open
+    if(m_data->event(e->x(),e->y(),OSDGLButton::Move)) return;
     m_data->mouseX = e->x();
     m_data->mouseY = e->y();
     
@@ -1798,9 +1906,11 @@ namespace icl{
   
   void ICLWidget::enterEvent(QEvent*){
     // {{{ open
+
     if(m_data->menuEnabled){
-      m_data->showMenuButton->show();
-      m_data->embedMenuButton->show();
+      if(m_data->event(-1,-1,OSDGLButton::Enter)) return;
+      // xxx m_data->showMenuButton->show();
+      // xxx m_data->embedMenuButton->show();
     }
     if(m_data->imageInfoIndicatorEnabled){
       m_data->imageInfoIndicator->show();
@@ -1813,8 +1923,9 @@ namespace icl{
   void ICLWidget::leaveEvent(QEvent*){
     // {{{ open
     if(m_data->menuEnabled){
-      m_data->showMenuButton->hide();
-      m_data->embedMenuButton->hide();
+      if(m_data->event(-1,-1,OSDGLButton::Leave)) return;
+      // xxx m_data->showMenuButton->hide();
+      // xxx m_data->embedMenuButton->hide();
     }
     if(m_data->imageInfoIndicatorEnabled){
       m_data->imageInfoIndicator->hide();
@@ -1836,8 +1947,8 @@ namespace icl{
   void ICLWidget::setVisible(bool visible){
     // {{{ open
     QGLWidget::setVisible(visible);
-    m_data->showMenuButton->setVisible(false);
-    m_data->embedMenuButton->setVisible(false);
+    // xxx m_data->showMenuButton->setVisible(false);
+    // xxx m_data->embedMenuButton->setVisible(false);
     m_data->imageInfoIndicator->setVisible(false);
     if(m_data->menuptr){
       m_data->menuptr->setVisible(false);
