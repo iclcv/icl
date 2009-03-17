@@ -252,6 +252,8 @@ int main(int nArgs, char **ppcArg){
     void skipFramesChanged(int frameSkip);
     void menuTabChanged(int index);
     void histoPanelParamChanged();
+    
+    void setEmbeddedZoomModeEnabled(bool enabled);
 
     private:
     const Img8u &grabFrameBufferICL();
