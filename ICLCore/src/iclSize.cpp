@@ -46,7 +46,7 @@ namespace icl{
 #define A(X) m[#X] = &Size::X
       A(null);A(QQVGA);A(CGA);A(QVGA);
       A(HVGA);A(EGA);A(VGA);A(WVGA);A(SVGA);
-      A(QHD);A(DVGA);A(XGAP);A(DSVGA);
+      A(QHD);A(DVGA);A(XGA);A(XGAP);A(DSVGA);
       A(HD720);A(WXGA);A(WXGAP);A(SXVGA);A(SXGA);
       A(WSXGA);A(SXGAP);A(UXGA);A(HD1080);
       A(WUXGA);A(UD);A(CIF);A(SIF);A(SQCIF);
