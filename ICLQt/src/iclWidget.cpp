@@ -1679,11 +1679,20 @@ namespace icl{
       }else{
         if(m_data->embeddedZoomRect){
           Rect32f &r = *m_data->embeddedZoomRect;
-          const Size wSize(width(),height());
-          m_data->zoomRect.x = r.x/wSize.width;
-          m_data->zoomRect.y = r.y/wSize.height;
-          m_data->zoomRect.width = r.width/wSize.width;
-          m_data->zoomRect.height = r.height/wSize.height;
+          //const Size wSize(width(),height());
+          Rect ir = getImageRect();
+          
+          Rect32f &nr = m_data->zoomRect;
+          nr.x = (r.x-ir.x)/float(ir.width);
+          nr.y = (r.y-ir.y)/float(ir.height);
+          nr.width = r.width/ir.width;
+          nr.height = r.height/ir.height;
+          /*
+              m_data->zoomRect.x = r.x/wSize.width;
+              m_data->zoomRect.y = r.y/wSize.height;
+              m_data->zoomRect.width = r.width/wSize.width;
+              m_data->zoomRect.height = r.height/wSize.height;
+          */
           m_data->pushScaleModeAndChangeToZoom();
         }
         ICL_DELETE(m_data->embeddedZoomRect);
