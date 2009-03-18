@@ -254,7 +254,9 @@ int main(int nArgs, char **ppcArg){
     void histoPanelParamChanged();
     
     void setEmbeddedZoomModeEnabled(bool enabled);
-
+    
+    void setLinInterpolationEnabled(bool enabled);
+    
     private:
     const Img8u &grabFrameBufferICL();
     std::string getImageCaptureFileName();
