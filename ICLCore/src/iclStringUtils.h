@@ -119,8 +119,11 @@ namespace icl{
   /// specialized for std::string input (this is quiet silly)
   template<> inline std::string str(const std::string &s) { return s; }
 
-  /// specialized for const char pointers (this doesn't work currently)??
-  //  template<> inline std::string str<char*>(const char* &pc) { return pc; }
+  /// specialized for const char pointers
+  template<> inline std::string str(char* const &pc) { return pc; }
+
+  /// specialized for const char pointers
+  template<> inline std::string str(const char* const &pc) { return pc; }
 
   /// creates a delim-separated string of str'ed values of given vector \ingroup STRUTILS
   /** e.g. if v is {1,2,3} and delim is '-' the resulting string will be
