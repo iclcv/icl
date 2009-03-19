@@ -171,7 +171,14 @@ INST_OTHER_TYPES
     FROM_TO(Img32s*,D,HOW)                        \
     FROM_TO(Img32f*,D,HOW)                        \
     FROM_TO(Img64f*,D,HOW)                        \
-    FROM_TO(ImgBase*,D,HOW)                            
+    FROM_TO(ImgBase*,D,HOW)                       \
+    FROM_TO(const Img8u*,D,HOW)                         \
+    FROM_TO(const Img16s*,D,HOW)                        \
+    FROM_TO(const Img32s*,D,HOW)                        \
+    FROM_TO(const Img32f*,D,HOW)                        \
+    FROM_TO(const Img64f*,D,HOW)                        \
+    FROM_TO(const ImgBase*,D,HOW)                       \
+  
 
 #define FROM_TO_NUM(S,HOW_FROM,HOW_TO) \
     FROM_NUM(S,HOW_FROM)               \
@@ -268,7 +275,6 @@ namespace icl{
 #define TYPE(T) (DataStore::get_type_name<T>())
 #define ADD(X,Y) m[TYPE(X)][TYPE(Y)] = new AssignSpecial<X,Y>;
 
-
     // X = X
 #define INST_TYPE(T) ADD(T,T)
     INST_OTHER_TYPES
@@ -360,13 +366,19 @@ namespace icl{
     ADD(Img64f,X)       \
     ADD(ImgBase,X)                   
 
-#define FROM_IMG_PTR_ADD(X)                     \
-    ADD(Img8u*,X)                               \
-    ADD(Img16s*,X)                              \
-    ADD(Img32s*,X)                              \
-    ADD(Img32f*,X)                              \
-    ADD(Img64f*,X)                              \
-    ADD(ImgBase*,X)                            
+#define FROM_IMG_PTR_ADD(X)    \
+    ADD(Img8u*,X)              \
+    ADD(Img16s*,X)             \
+    ADD(Img32s*,X)             \
+    ADD(Img32f*,X)             \
+    ADD(Img64f*,X)             \
+    ADD(ImgBase*,X)            \
+    ADD(const Img8u*,X)        \
+    ADD(const Img16s*,X)       \
+    ADD(const Img32s*,X)       \
+    ADD(const Img32f*,X)       \
+    ADD(const Img64f*,X)       \
+    ADD(const ImgBase*,X)                            
 
     
     // ComboHandle
@@ -440,10 +452,16 @@ namespace icl{
     static AssignMap *am = 0;
     if(!am) am = create_assign_map();
     AssignMap::iterator it1 = am->find(srcType);
-    if(it1 == am->end()) throw DataStore::UnassignableTypesException(srcType,dstType); 
+    if(it1 == am->end()){
+      throw DataStore::UnassignableTypesException(srcType,dstType); 
+    }
     std::map< const std::string, Assign*>::iterator it2 = it1->second.find(dstType);
-    if(it2 == it1->second.end()) throw DataStore::UnassignableTypesException(srcType,dstType); 
+    if(it2 == it1->second.end()){
+      throw DataStore::UnassignableTypesException(srcType,dstType); 
+    }
     bool success = (*it2->second)(src, dst);
-    if(!success) throw DataStore::UnassignableTypesException(srcType,dstType);
+    if(!success){
+      throw DataStore::UnassignableTypesException(srcType,dstType);
+    }
   }
 }
