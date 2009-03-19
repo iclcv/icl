@@ -41,7 +41,7 @@ namespace icl{
   void ComboHandle::setSelectedIndex(int idx){
     cb()->setCurrentIndex(idx);
   }
-  void ComboHandle::setSelctedItem(const std::string &item){
+  void ComboHandle::setSelectedItem(const std::string &item){
     int idx = getIndex(item);
     if(idx >=0 && idx< getItemCount()){
       cb()->setCurrentIndex(idx);

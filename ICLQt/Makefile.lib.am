@@ -63,7 +63,8 @@ ${MOC_FILES} \
 ../src/iclConfigFileGUI.cpp \
 ../src/iclApplication.cpp \
 ../src/iclPlotWidget.cpp \
-../src/iclIconFactory.cpp
+../src/iclIconFactory.cpp \
+../src/iclDataStore.cpp
 
 include_HEADERS= \
 ../src/iclBorderBox.h \
@@ -126,7 +127,8 @@ include_HEADERS= \
 ../src/iclConfigFileGUI.h \
 ../src/iclApplication.h \
 ../src/iclPlotWidget.h \
-../src/iclIconFactory.h
+../src/iclIconFactory.h \
+../src/iclContainerHandle.h
 
 
 # include other packages here!

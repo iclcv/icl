@@ -4,11 +4,12 @@
 #include <QWidget>
 #include <QLayout>
 #include <iclGUIHandle.h>
+#include <iclContainerHandle.h>
 
 namespace icl{
   
   /// A Handle for container GUI components (hbox and vbox) \ingroup HANDLES
-  class BoxHandle : public GUIHandle<QWidget>{
+  class BoxHandle : public GUIHandle<QWidget>, public ContainerHandle{
     public:
     /// create an empty handle
     BoxHandle(): GUIHandle<QWidget>(){}
@@ -20,7 +21,11 @@ namespace icl{
     QLayout *getLayout() { return (**this)->layout(); }
     
     /// adds an external compnent to the underlying widgets layout
-    void add(QWidget *comp){ getLayout()->addWidget(comp); }
+    /** name is ignored */
+    virtual void add(QWidget *comp, const QString &name=""){ getLayout()->addWidget(comp); }
+
+    /// this does not work here (calls add, idx and name is ignored)
+    virtual void insert(int idx, QWidget *comp, const QString &name=""){add(comp,name); }
   };  
 }
 

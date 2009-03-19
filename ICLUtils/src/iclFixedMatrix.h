@@ -150,9 +150,6 @@ namespace icl{
     /// internal data storage
     T m_data[COLS*ROWS];
     
-    /// flag to indicate whether current data pointer is owned and must be freed in the desturctor
-    bool m_ownData;
-
     public:
     
     /// Default constructor 

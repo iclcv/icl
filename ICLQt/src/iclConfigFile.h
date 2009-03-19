@@ -326,6 +326,11 @@ namespace icl{
 
     /// this function is imported from the parent DataStore class
     DataStore::unlock;
+    
+    // this function is imported from the parent DataStore class
+    /* this is not useful here, setting a Data does not update the XML structure and
+       getting an element is easier using ConfigFile::get() */
+    // DataStore::operator[];
 
     /// just imported form the parent DataStore class
     template<class T>

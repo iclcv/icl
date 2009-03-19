@@ -6,6 +6,7 @@
 #include <iclSmartPtr.h>
 #include <iclException.h>
 #include <iclChannel.h>
+#include <iclPixelRef.h>
 #include <cmath>
 #include <algorithm>
 
@@ -307,8 +308,25 @@ namespace icl {
     Type& operator()(int iX, int iY, int iChannel) {
       return const_cast<Type&>(static_cast<const Img<Type>*>(this)->operator()(iX,iY,iChannel)); 
     }
+    
+    /// as above, but const
     const Type& operator()(int iX, int iY, int iChannel) const { 
       return getData(iChannel)[iX+getWidth()*iY]; 
+    }
+    
+    /// extracts a pixels channel values at once
+    /** This enables the user to write
+        <code>
+        imageA(x,y) = imageB(a,b);
+        </code>
+    */
+    inline PixelRef<Type> operator()(int x, int y){
+      return PixelRef<Type>(x,y,getWidth(),m_vecChannels);
+    }
+
+    /// as above, but const 
+    inline const PixelRef<Type> operator()(int x, int y) const{
+      return const_cast<Img<Type>*>(this)->operator()(x,y);
     }
 
     /// sub-pixel access using nearest neighbor interpolation

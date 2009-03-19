@@ -3,11 +3,12 @@
 
 #include <QSplitter>
 #include <iclGUIHandle.h>
+#include <iclContainerHandle.h>
 
 namespace icl{
   
   /// A Handle for SplitterWidget container GUI components  \ingroup HANDLES
-  class SplitterHandle : public GUIHandle<QSplitter>{
+  class SplitterHandle : public GUIHandle<QSplitter>, public ContainerHandle{
     public:
     /// create an empty handle
     SplitterHandle(): GUIHandle<QSplitter>(){}
@@ -16,12 +17,14 @@ namespace icl{
     SplitterHandle(QSplitter *w, GUIWidget *guiw):GUIHandle<QSplitter>(w,guiw){}
     
     /// adds an external compnent to the splitter widget
-    void add(QWidget *comp){
+    /** name is ignored */
+    virtual void add(QWidget *comp, const QString &name=""){
       (**this)->addWidget(comp);
     }
 
     /// inserts a widget at givel location
-    void insert(int idx, QWidget *comp){
+    /** name is ignored */
+    virtual void insert(int idx, QWidget *comp, const QString &name=""){
       (**this)->insertWidget(idx,comp);
     }
   };  

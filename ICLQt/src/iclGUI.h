@@ -941,6 +941,11 @@ int main(int n, char**ppc){
       return m_oDataStore.getArray<T>(id,lenDst);
     }
     
+    /// returns a Data instance from the datastore
+    DataStore::Data operator[](const std::string &key){
+      return m_oDataStore.operator[](key);
+    }
+    
     /// internally creates everything
     virtual void create();
 

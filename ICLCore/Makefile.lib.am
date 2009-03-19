@@ -42,7 +42,8 @@ include_HEADERS= \
 ../src/iclSteppingRange.h \
 ../src/iclStringUtils.h \
 ../src/iclTypes.h \
-../src/iclRandom.h
+../src/iclRandom.h \
+../src/iclPixelRef.h
 
 libICLCore_la_CXXFLAGS=${AM_CXXFLAGS} \
 	-I../../ICLUtils/src

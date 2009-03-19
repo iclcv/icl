@@ -8,11 +8,12 @@ namespace icl{
   ICLApplication::ICLApplication(int n, char **ppc, 
                                  const std::string &paInitString,
                                  callback init, callback run)
-    throw (SecondSingeltonException):QApplication(n,ppc){
+    throw (SecondSingeltonException){
     if(s_app) throw SecondSingeltonException("only one instance is allowed!");
     if(paInitString != ""){
       pa_init(n,ppc,paInitString);
     }
+    app = new QApplication(n,ppc);
     s_app = this;
     if(init) addInit(init);
     if(run) addThread(run);
@@ -25,6 +26,7 @@ namespace icl{
     s_app = 0;
     s_threads.clear();
     s_inits.clear();
+    delete app;
   }
   
   void ICLApplication::addThread(callback cb){
@@ -45,7 +47,7 @@ namespace icl{
     for(unsigned int i=0;i<s_threads.size();++i){
       s_threads[i]->run();
     }
-    return QApplication::exec();
+    return app->exec();
   }
   
   

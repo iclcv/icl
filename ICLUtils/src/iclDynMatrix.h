@@ -28,13 +28,13 @@ namespace icl{
   template<class T>
   struct DynMatrix{
     DynMatrix(unsigned int cols,unsigned int rows, T initValue=0) throw (InvalidMatrixDimensionException) : 
-    m_rows(rows),m_cols(cols){
+    m_rows(rows),m_cols(cols),m_ownData(true){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       m_data = new T[cols*rows];
       std::fill(begin(),end(),initValue);
     }
     DynMatrix(unsigned int cols,unsigned int rows, T *data, bool deepCopy=true) throw (InvalidMatrixDimensionException) : 
-      m_rows(rows),m_cols(cols){
+      m_rows(rows),m_cols(cols),m_ownData(deepCopy){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       if(deepCopy){
         m_data = new T[dim()];
@@ -44,12 +44,13 @@ namespace icl{
       }
     }
 
-    DynMatrix(const DynMatrix &other):m_rows(other.m_rows),m_cols(other.m_cols),m_data(new T[dim()]){
+    DynMatrix(const DynMatrix &other):
+    m_rows(other.m_rows),m_cols(other.m_cols),m_data(new T[dim()]),m_ownData(true){
       std::copy(other.begin(),other.end(),begin());
     }
 
     ~DynMatrix(){
-      ICL_DELETE(m_data);
+      if(m_data && m_ownData) delete [] m_data;
     }
     DynMatrix &operator=(const DynMatrix &other){
       if(dim() != other.dim()){
@@ -130,24 +131,24 @@ namespace icl{
     }
 
     DynMatrix operator+(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
-      if(cols() != m.cols() || rows() != m.row()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
+      if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
       return d;
     }
     DynMatrix operator-(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
-      if(cols() != m.cols() || rows() != m.row()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
+      if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
       return d;
     }
     DynMatrix &operator+=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
-      if(cols() != m.cols() || rows() != m.row()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
+      if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       std::transform(begin(),end(),m.begin(),begin(),std::plus<T>());
       return *this;
     }
     DynMatrix &operator-=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
-      if(cols() != m.cols() || rows() != m.row()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
+      if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       std::transform(begin(),end(),m.begin(),begin(),std::minus<T>());
       return *this;
     }
@@ -386,6 +387,7 @@ namespace icl{
     int m_rows;
     int m_cols;
     T *m_data;
+    bool m_ownData;
   };
 
 }

@@ -50,7 +50,7 @@ namespace icl{
     void setSelectedIndex(int idx);
     
     /// sets the current item
-    void setSelctedItem(const std::string &item);
+    void setSelectedItem(const std::string &item);
     
     private:
     /// utility function (internally used)

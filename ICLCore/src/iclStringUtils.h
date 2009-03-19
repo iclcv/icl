@@ -102,7 +102,7 @@ namespace icl{
   
   /// convert an iclXXX into a string (implemented for iclXXX and std::string) \ingroup STRUTILS
   template<class T>
-  inline std::string str(T t){
+  inline std::string str(const T &t){
     std::ostringstream s;
     s << t;
     return s.str();
@@ -110,7 +110,7 @@ namespace icl{
   
   /// specialized for icl8u
   template<>
-  inline std::string str(icl8u t){
+  inline std::string str(const icl8u &t){
     std::ostringstream s;
     s << (int)t;
     return s.str();
@@ -119,12 +119,9 @@ namespace icl{
   /// specialized for std::string input (this is quiet silly)
   template<> inline std::string str(const std::string &s) { return s; }
 
-  /// specialized for const char pointers
-  template<> inline std::string str(const char *pc) { return pc; }
+  /// specialized for const char pointers (this doesn't work currently)??
+  //  template<> inline std::string str<char*>(const char* &pc) { return pc; }
 
-  /// specialized for char pointers
-  template<> inline std::string str(char *pc) { return pc; }
-  
   /// creates a delim-separated string of str'ed values of given vector \ingroup STRUTILS
   /** e.g. if v is {1,2,3} and delim is '-' the resulting string will be
       "1-2-3" 

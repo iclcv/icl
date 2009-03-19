@@ -62,8 +62,10 @@ namespace icl{
       \endcode
       I guess there's nothing more to explain, isn't it?
   */
-  class ICLApplication : public QApplication{
+  class ICLApplication{
+    
     public:
+    QApplication *app;
     
     /// just type definition for convenience a void valued function with no args)
     typedef void (*callback)(void);
