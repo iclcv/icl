@@ -78,5 +78,22 @@ namespace icl{
                   0     , 0     , 0 , 1 );
   }
   
+  Vec Camera::screenToCameraFrame(const Point32f &pixel) const{
+    // optimization:
+    float dx = m_viewPort.x+m_viewPort.width/2;
+    float dy = m_viewPort.y+m_viewPort.height/2;
+    float slope = iclMin(m_viewPort.width,m_viewPort.height)/2;
+    return Vec(pixel.x/slope-dx,pixel.y/slope-dy,m_F,1);
+    
+    /*
+        Mat V = getViewPortMatrix(); V(2,2) = 1;
+        return V.inv() * Vec(pixel.x,pixel.y,m_F,1); 
+    */
+  }
+
+
+  Vec Camera::cameraToWorldFrame(const Vec &Xc) const{
+    return getCoordinateSystemTransformationMatrix().inv()*Xc;
+  }
 
 }

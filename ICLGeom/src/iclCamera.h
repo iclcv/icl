@@ -151,6 +151,18 @@ namespace icl{
       return m_viewPort;
     }
     
+    /// Transforms a point at given camera pixel location into the camera frame
+    Vec screenToCameraFrame(const Point32f &pixel) const;
+    
+    /// Transforms a point from the camera coordinate System into the world coordinate system
+    Vec cameraToWorldFrame(const Vec &Xc) const;
+    
+    /// Returns where a given pixel (on the chip is currently in the world)
+    /** i.e. The world location of the camera's CCD-Element for a given pixel */
+    Vec screenToWorldFrame(const Point32f &pixel) const{
+      return cameraToWorldFrame(screenToCameraFrame(pixel));
+    }
+    
     
   private:
     Vec m_pos;        //!< center position vector
