@@ -170,10 +170,10 @@ int main(int nArgs, char **ppcArg){
     Size getSize() { return Size(width(),height()); }
     
     /// returns the current images size
-    Size getImageSize();
+    Size getImageSize(bool fromGUIThread=false);
 
     /// returns the rect, that is currently used to draw the image into
-    Rect getImageRect();
+    Rect getImageRect(bool fromGUIThread=false);
 
     fitmode getFitMode();
         

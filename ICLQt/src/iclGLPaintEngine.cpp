@@ -37,7 +37,7 @@ namespace icl{
     m_poWidget(widget),m_bBCIAutoFlag(false), m_oFont(QFont("Arial",30)),
     m_poImageBufferForIncompatibleDepth(0){
     
-    widget->makeCurrent();
+    // widget->makeCurrent();
     
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();

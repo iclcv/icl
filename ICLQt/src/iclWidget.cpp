@@ -1129,6 +1129,7 @@ namespace icl{
 
   void ICLWidget::setEmbeddedZoomModeEnabled(bool enabled){
     // {{{ open
+
     m_data->embeddedZoomMode = enabled;
     if(!enabled){
       ICL_DELETE(m_data->embeddedZoomRect);
@@ -1140,6 +1141,7 @@ namespace icl{
     }
     
   }
+
   // }}} 
 
   void ICLWidget::setLinInterpolationEnabled(bool enabled){
@@ -1261,7 +1263,7 @@ namespace icl{
     }else{
       m_data->menuptr->setParent(0);
       m_data->menuptr->setWindowTitle("menu...");
-      m_data->menuptr->setGeometry(QRect(mapToGlobal(pos())+QPoint(2,2),QSize(width()-4,height()-2)));
+      m_data->menuptr->setGeometry(QRect(mapToGlobal(pos())+QPoint(width()+5,0),QSize(450,350)));
     }
     m_data->menuptr->setVisible(visible);
   }
@@ -1509,9 +1511,12 @@ namespace icl{
  
   void ICLWidget::paintGL(){
     // {{{ open
-    m_data->mutex.lock();
+    //    m_data->mutex.lock();
+    
+    LOCK_SECTION;
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-      
+    GLPaintEngine *pe = 0;
     if(m_data->image && m_data->image->hasImage()){
       Rect r;
       if(m_data->fm == fmZoom){
@@ -1522,59 +1527,34 @@ namespace icl{
       }
       m_data->image->drawTo(r,getSize(),m_data->useLinInterpolation?interpolateLIN:interpolateNN);
     }else{
-      GLPaintEngine pe(this);
-      pe.fill(0,0,0,255);
-      Rect fullRect(0,0,width(),height());
-      pe.rect(fullRect);
-      pe.color(255,255,255,255);
-      pe.fill(255,255,255,255);
+      pe = new GLPaintEngine(this);
+      pe->fill(0,0,0,255);
+      pe->rect(Rect(0,0,width(),height()));
       
       if(m_data->showNoImageWarnings){
-        pe.text(fullRect,"[null]");
+        pe->text(Rect(0,0,width(),height()),"[null]");
       }
     }
-    m_data->mutex.unlock();
 
-    Thread::msleep(0);
+    if(!pe) pe = new GLPaintEngine(this);
+    pe->color(255,255,255,255);
+    pe->fill(255,255,255,255);
+    customPaintEvent(pe);
     
-    GLPaintEngine pe(this);
-
-    // m_data->mutex.lock();
-    customPaintEvent(&pe);
-    // m_data->mutex.unlock();
-
-
-    m_data->event(0,0,OSDGLButton::Draw);
-
-
-    Thread::msleep(0);
-    
-    if(m_data->embeddedZoomRect){
-      pe.color(0,150,255,200);
-      pe.fill(0,150,255,50);
-      Rect32f &r = *m_data->embeddedZoomRect; 
-      pe.rect(Rect((int)r.x,(int)r.y,(int)r.width,(int)r.height));
-    }
-    
-    /****
-        {
-          QMutexLocker l(&m_oFrameBufferCaptureFileNameMutex);
-        if(m_sFrameBufferCaptureFileName != ""){
-        FileWriter w(m_sFrameBufferCaptureFileName);
-        QImage qim = grabFrameBuffer();
-        QImageConverter converter(&qim);
-        try{
-        w.write(converter.getImg<icl8u>());
-        }catch(...){
-        ERROR_LOG("unable to write framebuffer to file: \"" 
-        << m_sFrameBufferCaptureFileName << "\"");
-        }
-        m_sFrameBufferCaptureFileName = "";
-        }
-        ***/
     if(m_data->outputCap){
       m_data->outputCap->captureFrameBufferHook();
     }
+
+    if(m_data->embeddedZoomRect){
+      pe->color(0,150,255,200);
+      pe->fill(0,150,255,50);
+      Rect32f &r = *m_data->embeddedZoomRect; 
+      pe->rect(Rect((int)r.x,(int)r.y,(int)r.width,(int)r.height));
+    }
+
+    m_data->event(0,0,OSDGLButton::Draw);
+
+    ICL_DELETE(pe);
   }
 
   // }}}
@@ -1723,6 +1703,7 @@ namespace icl{
     emit mouseEvent(updateMouseInfo(MouseInteractionInfo::releaseEvent));
     update();
   }
+
   // }}}
 
   void ICLWidget::mouseMoveEvent(QMouseEvent *e){
@@ -1887,22 +1868,32 @@ namespace icl{
 
   // }}}
 
-  Size ICLWidget::getImageSize(){
+  Size ICLWidget::getImageSize(bool fromGUIThread){
     // {{{ open
-    LOCK_SECTION;
+    if(fromGUIThread){
+      m_data->mutex.lock();
+    }
     Size s;
     if(m_data->image){
       s = m_data->image->getSize(); 
     }else{
       s = Size(width(),height());
     }
+    if(fromGUIThread){
+      m_data->mutex.unlock();
+    }
+
     return s;
   }
 
   // }}}
 
-  Rect ICLWidget::getImageRect(){
+  Rect ICLWidget::getImageRect(bool fromGUIThread){
     // {{{ open
+    if(fromGUIThread){
+      m_data->mutex.lock();
+    }
+
     Rect r;
     if(m_data->fm == fmZoom){
       Mutex::Locker locker(m_data->menuMutex);
@@ -1910,6 +1901,10 @@ namespace icl{
     }else{
       r = computeRect(m_data->image->getSize(),getSize(),m_data->fm);
     }
+    if(fromGUIThread){
+      m_data->mutex.unlock();
+    }
+
     return r;
   }
 

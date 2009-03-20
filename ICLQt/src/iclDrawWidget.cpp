@@ -678,9 +678,9 @@ namespace icl{
     //Rect r = getImageRect();
     m_poState->aa = false;
     m_poState->rel = false;
-    m_poState->rect = getImageRect();
+    m_poState->rect = getImageRect(true);
     m_poState->size = Size(width(),height());
-    m_poState->imsize = getImageSize();
+    m_poState->imsize = getImageSize(true);
     m_poState->symsize = QSizeF(5,5);
     memset(m_poState->bg,0,4*sizeof(unsigned char));
     e->font("Arial",8,PaintEngine::DemiBold);
