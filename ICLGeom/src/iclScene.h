@@ -26,8 +26,7 @@ namespace icl{
 
       E.g.
       \code
-      Size size(640,480);
-      Scene s(size);
+      Scene s;
       s.add(new CubeObject(...));
       s.cam.transform(...));
       s.update();
@@ -41,15 +40,10 @@ namespace icl{
     /// Create a new Scene with give view-port size
     /** The view-port-size is given to the internally 
         created camera
-        @param viewPort view-port size, which must be equal
-                         to the view-port (image-size) of the
-                         given ICLDrawWidget if the corresponding
-                         render-function is called, resp. the 
-                         size of the Img32f for the other render-
-                         function.
-        @param cam TODO
+        
+        @param cam scene camera
     */
-    Scene(const Rect &viewPort=Rect(0,0,320,240),const Camera &cam=Camera() );
+    Scene(const Camera &cam=Camera() );
     
     /// Copy constructor (contained objects are not copied)
     Scene(const Scene &other){
@@ -64,10 +58,10 @@ namespace icl{
     Scene &operator=(const Scene &other);
 
     /// returns the scenes camera
-    Camera &getCam(){ return m_oCam; }
+    Camera &getCam(){ return m_cam; }
 
     /// returns the scenes camera
-    const Camera &getCam() const{ return m_oCam; }
+    const Camera &getCam() const{ return m_cam; }
     
     /// renders the scene into the given draw-widget
     void render(ICLDrawWidget *w) const;
@@ -92,45 +86,31 @@ namespace icl{
 
     /// transforms the scene transformation matrix
     void transform(const Mat &m){
-      m_oTransMat *= m;
+      m_transMat *= m;
     }
     
     /// resets the current scene transformation matrix
     void resetTransformation() {
-      m_oTransMat = Mat::id();
+      m_transMat = Mat::id();
     }
 
-    /// sets the current view port
-    void setViewPort(const Rect &viewPort){
-      m_oViewPort = viewPort;
-    }
-    /// returns the current view port
-    const Rect &getViewPort() const{
-      return m_oViewPort;
-    }
     /// returns the current scene transformation matrix
     const Mat &getTransformation() const {
-      return m_oTransMat;
+      return m_transMat;
     }
 
-    /// returns the current viewport matrix
-    Mat getViewPortMatrix() const;
-    
     /// shows the current transformation matrices to std::out
     void showMatrices(const std::string &title="") const;
     private:
-
-    /// current view port
-    Rect m_oViewPort;
     
     /// scene camera
-    Camera m_oCam;
+    Camera m_cam;
     
+    /// current scene transformation matrix (e.g. to rotate the scene)
+    Mat m_transMat;
+
     /// list of currently available scene objects
-    std::vector<Object*> m_vecObjs;
-    
-    /// current scene trans formation (id by default)
-    Mat m_oTransMat;
+    std::vector<Object*> m_objs;
   };
   
 }

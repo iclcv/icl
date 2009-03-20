@@ -1534,13 +1534,20 @@ namespace icl{
       }
     }
     m_data->mutex.unlock();
+
+    Thread::msleep(0);
     
     GLPaintEngine pe(this);
-    m_data->mutex.lock();
+
+    // m_data->mutex.lock();
     customPaintEvent(&pe);
-    m_data->mutex.unlock();
-    
+    // m_data->mutex.unlock();
+
+
     m_data->event(0,0,OSDGLButton::Draw);
+
+
+    Thread::msleep(0);
     
     if(m_data->embeddedZoomRect){
       pe.color(0,150,255,200);
