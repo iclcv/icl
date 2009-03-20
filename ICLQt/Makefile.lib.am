@@ -6,7 +6,7 @@ lib_LTLIBRARIES=libICLQt.la
 
 MOC_FILES= \
 ../src/iclWidget.moc.cpp \
-../src/iclMouseInteractionReceiver.moc.cpp \
+../src/iclMouseGrabber.moc.cpp \
 ../src/iclDoubleSlider.moc.cpp \
 ../src/iclImgParamWidget.moc.cpp \
 ../src/iclStringSignalButton.moc.cpp \
@@ -49,7 +49,7 @@ ${MOC_FILES} \
 ../src/iclImgParamWidget.cpp \
 ../src/iclIntHandle.cpp \
 ../src/iclLabelHandle.cpp \
-../src/iclMouseInteractionReceiver.cpp \
+../src/iclMouseGrabber.cpp \
 ../src/iclMultiDrawHandle.cpp \
 ../src/iclQImageConverter.cpp \
 ../src/iclQtPaintEngine.cpp \
@@ -106,8 +106,8 @@ include_HEADERS= \
 ../src/iclImgParamWidget.h \
 ../src/iclIntHandle.h \
 ../src/iclLabelHandle.h \
-../src/iclMouseInteractionInfo.h \
-../src/iclMouseInteractionReceiver.h \
+../src/iclMouseEvent.h \
+../src/iclMouseGrabber.h \
 ../src/iclMultiDrawHandle.h \
 ../src/iclPaintEngine.h \
 ../src/iclQImageConverter.h \
