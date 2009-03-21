@@ -263,6 +263,7 @@ namespace icl{
   
   struct OSDGLButton{
     // {{{ open
+
     enum IconType {Tool,Zoom,Lock, Unlock,RedZoom,RedCam, NNInter, LINInter};
     enum Event { Move, Press, Release, Enter, Leave,Draw};
     Rect bounds;
@@ -356,6 +357,7 @@ namespace icl{
       }
     }
   };
+
   // }}}
 
 
@@ -460,7 +462,7 @@ namespace icl{
     bool downMask[3];
     int mouseX,mouseY;
     int selChannel;
-    MouseInteractionInfo mouseInfo;
+    MouseEvent mouseEvent;
     bool showNoImageWarnings;
     ICLWidget::OutputBufferCapturer *outputCap;
     bool menuOn;
@@ -1652,7 +1654,7 @@ namespace icl{
       case Qt::RightButton: m_data->downMask[2]=true; break;
       default: m_data->downMask[1] = true; break;
     }
-    emit mouseEvent(updateMouseInfo(MouseInteractionInfo::pressEvent));
+    emit mouseEvent(createMouseEvent(MousePressEvent));
     update();
   }
   // }}}
@@ -1700,7 +1702,7 @@ namespace icl{
       case Qt::RightButton: m_data->downMask[2]=false; break;
       default: m_data->downMask[1] = false; break;
     }
-    emit mouseEvent(updateMouseInfo(MouseInteractionInfo::releaseEvent));
+    emit mouseEvent(createMouseEvent(MouseReleaseEvent));
     update();
   }
 
@@ -1726,9 +1728,9 @@ namespace icl{
     m_data->mouseY = e->y();
     
     if(m_data->downMask[0] || m_data->downMask[1] || m_data->downMask[2]){
-      emit mouseEvent(updateMouseInfo(MouseInteractionInfo::dragEvent));
+      emit mouseEvent(createMouseEvent(MouseDragEvent));
     }else{
-      emit mouseEvent(updateMouseInfo(MouseInteractionInfo::moveEvent));
+      emit mouseEvent(createMouseEvent(MouseMoveEvent));
     }
     update();
   }
@@ -1747,7 +1749,7 @@ namespace icl{
       m_data->imageInfoIndicator->show();
       m_data->updateImageInfoIndicatorGeometry(size());
     }
-    emit mouseEvent(updateMouseInfo(MouseInteractionInfo::enterEvent));
+    emit mouseEvent(createMouseEvent(MouseEnterEvent));
     update();
   }
   // }}}
@@ -1763,7 +1765,7 @@ namespace icl{
     if(m_data->imageInfoIndicatorEnabled){
       m_data->imageInfoIndicator->hide();
     }
-    emit mouseEvent(updateMouseInfo(MouseInteractionInfo::leaveEvent));
+    emit mouseEvent(createMouseEvent(MouseLeaveEvent));
     update();
   }
 
@@ -1910,35 +1912,40 @@ namespace icl{
 
   // }}}
 
-  MouseInteractionInfo *ICLWidget::updateMouseInfo(MouseInteractionInfo::Type type){
+  const MouseEvent &ICLWidget::createMouseEvent(MouseEventType type){
     // {{{ open
-    MouseInteractionInfo &mii = m_data->mouseInfo;
+    MouseEvent &evt = m_data->mouseEvent;
 
-    if(!m_data->image || !m_data->image->hasImage()){
-      return &mii;
-    }
-    mii.type = type;
-    mii.widgetX = m_data->mouseX;
-    mii.widgetY = m_data->mouseY;
-    
-    std::copy(m_data->downMask,m_data->downMask+3,mii.downmask);
-    
     LOCK_SECTION;
-    Rect r = getImageRect();
-        //if(m_poImage && op.on && r.contains(m_iMouseX, m_iMouseY)){
-        //    if(r.contains(m_iMouseX, m_iMouseY)){
-    float boxX = m_data->mouseX - r.x;
-    float boxY = m_data->mouseY - r.y;
-    mii.imageX = (int) rint((boxX*(m_data->image->getSize().width))/r.width);
-    mii.imageY = (int) rint((boxY*(m_data->image->getSize().height))/r.height);
-    if(r.contains(m_data->mouseX,m_data->mouseY)){
-      mii.color = m_data->image->getColor(mii.imageX,mii.imageY);
+    if(!m_data->image || !m_data->image->hasImage()){
+      return evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
+                              Point(-1,-1),
+                              Point32f(-1,-1),
+                              m_data->downMask,
+                              std::vector<double>(),
+                              type,this);
+    
     }else{
-      mii.color.resize(0);
+      Rect r = getImageRect();
+      float boxX = m_data->mouseX - r.x;
+      float boxY = m_data->mouseY - r.y;
+      int imageX = (int) rint((boxX*(m_data->image->getSize().width))/r.width);
+      int imageY = (int) rint((boxY*(m_data->image->getSize().height))/r.height);
+
+      float relImageX = float(imageX)/m_data->image->getSize().width;
+      float relImageY = float(imageY)/m_data->image->getSize().height;
+
+      std::vector<double> color;
+      if(r.contains(m_data->mouseX,m_data->mouseY)){
+        color = m_data->image->getColor(imageX,imageY);
+      }
+      return evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
+                              Point(imageX,imageY),
+                              Point32f(relImageX,relImageY),
+                              m_data->downMask,
+                              color,
+                              type,this);
     }
-    mii.relImageX = float(mii.imageX)/m_data->image->getSize().width;
-    mii.relImageY = float(mii.imageY)/m_data->image->getSize().height;
-    return &mii;
   }
 
   // }}}
@@ -1956,6 +1963,37 @@ namespace icl{
   }
   // }}}
 
+  void ICLWidget::install(MouseHandler *h){
+    // {{{ open
 
+    connect(this,SIGNAL(mouseEvent(const MouseEvent &)),
+            h,SLOT(handleEvent(const MouseEvent &e)));  
+  }
+
+  // }}}
+
+  void ICLWidget::uninstall(MouseHandler *h){
+    // {{{ open
+
+    disconnect(this,SIGNAL(mouseEvent(const MouseEvent &)),
+               h,SLOT(handleEvent(const MouseEvent &e)));  
+  }
+
+  // }}}
+
+  bool ICLWidget::event(QEvent *event){
+    // {{{ open
+
+    ICLASSERT_RETURN_VAL(event,false);
+    if(event->type() == QEvent::User){
+      update();
+      return true;
+    }else{
+      return QGLWidget::event(event);
+    }
+  } 
+
+  // }}}
 
 }
+

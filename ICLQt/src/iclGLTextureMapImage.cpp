@@ -152,10 +152,10 @@ namespace icl{
   }
  
   template<class T>
-  vector<icl32f> GLTextureMapImage<T>::getColor(int x, int y) const{
+  vector<icl64f> GLTextureMapImage<T>::getColor(int x, int y) const{
     if(m_bUseSingleBuffer){
       ERROR_LOG("getting image colors is not supported in single buffer mode");
-      return vector<icl32f>();
+      return vector<icl64f>();
     }
     if(x>=0 && y>=0 && x<m_iImageW && y<m_iImageH){
       int xCell = x/m_iCellSize;
@@ -163,13 +163,13 @@ namespace icl{
       int xOffs = x%m_iCellSize;
       int yOffs = y%m_iCellSize;
       T *data = m_matCellData[xCell][yCell] + m_iChannels * (xOffs + yOffs*m_iCellSize);
-      vector<icl32f> color;
+      vector<icl64f> color;
       for(int c=0;c<m_iChannels;c++){
         color.push_back(data[c]);
       }
       return color;
     }
-    return vector<icl32f>();
+    return vector<icl64f>();
   }
   
 

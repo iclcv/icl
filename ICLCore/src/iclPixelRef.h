@@ -32,6 +32,12 @@ namespace icl{
     std::vector<T*> m_data;
     
     public:
+    
+    /// Empty constructor, create a null pixel ref with 0 length
+    inline PixelRef(){}
+    
+    /// returs whether this instance is null (created with the empty constructor)
+    inline bool isNull() const { return !m_data->size(); }
 
     /// single constructor to create a pixelref instance
     /** This should not be used manually. Rather you should use Img<T>'s operator()(int x, int y) */

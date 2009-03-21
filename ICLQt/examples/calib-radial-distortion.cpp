@@ -1,7 +1,6 @@
 #include <iclCommon.h>
 #include <iclWarpOp.h>
 #include <iclDynMatrix.h>
-#include <iclMouseInteractionReceiver.h>
 
 #include <QPushButton>
 #include <iclLocalThresholdOp.h>

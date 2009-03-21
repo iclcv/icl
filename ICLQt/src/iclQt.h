@@ -5,7 +5,7 @@
 #include <iclDrawWidget.h>
 #include <iclDrawWidget3D.h>
 #include <iclGUI.h>
-#include <iclMouseInteractionReceiver.h>
+#include <iclMouseHandler.h>
 
 #include <QApplication>
 #include <iclThread.h>

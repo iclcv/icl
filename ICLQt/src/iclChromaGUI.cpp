@@ -5,7 +5,7 @@
 #include "iclParable.h"
 #include "iclDragger.h"
 #include <iclDrawWidget.h>
-#include <iclMouseInteractionReceiver.h>
+#include <iclMouseHandler.h>
 #include <iclImg.h>
 #include <QFile>
 #include <QTextStream>
@@ -17,14 +17,14 @@
 using namespace std;
 namespace icl{
 
-  struct ChromaWidget : public ICLDrawWidget, public MouseInteractionReceiver{
+  struct ChromaWidget : public ICLDrawWidget, public MouseHandler{
 
     ChromaWidget(QWidget *parent = 0):ICLDrawWidget(parent){
       // {{{ open
 
       image = Img8u(Size(256,256),formatRGB);
       
-      add(this);
+      install(this);
       
       static const float d = 0.015;
       D[0] = Dragger(Point32f(0.1,0.1),d, Dragger::Color(255,0,0));
@@ -40,15 +40,15 @@ namespace icl{
     }
 
     // }}}
-    virtual void processMouseInteraction(MouseInteractionInfo *info){
+    virtual void process(const MouseEvent &event){
       // {{{ open
 
-      Point32f p = Point32f(info->relImageX,info->relImageY);
+      Point32f p = event.getRelPos(); //Point32f(info->relImageX,info->relImageY);
       
-      bool left = *(info->downmask);
+      bool left = event.isLeft();//*(info->downmask);
       
-      switch(info->type){
-        case MouseInteractionInfo::moveEvent:
+      switch(event.getType()){
+        case MouseMoveEvent:
           if(left){
             for(int i=0;i<6;i++){
               D[i].setOver(D[i].hit(p));
@@ -66,7 +66,7 @@ namespace icl{
             }
           }
           break;
-        case MouseInteractionInfo::dragEvent:
+        case MouseDragEvent:
           if(left){
             for(int i=0;i<6;i++){
               if(D[i].dragged()){
@@ -82,7 +82,7 @@ namespace icl{
             }
           }
           break;
-        case MouseInteractionInfo::pressEvent:
+        case MousePressEvent:
           if(left){
             for(int i=0;i<6;i++){
               if(D[i].hit(p)){
@@ -98,7 +98,7 @@ namespace icl{
             }
           }
           break;
-        case MouseInteractionInfo::releaseEvent:
+        case MouseReleaseEvent:
           for(int i=0;i<6;i++){
             D[i].drop();
           }

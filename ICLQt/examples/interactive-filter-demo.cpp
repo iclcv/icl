@@ -10,32 +10,30 @@ ConvolutionKernel::fixedType k;
 string sKernel;
 
 
-struct Mouse :  public MouseInteractionReceiver{
-  virtual void processMouseInteraction(MouseInteractionInfo *info){
-    x=info->imageX;
-    y=info->imageY;
-    if(info->color.size() == 3){
-      r=(int)info->color[0];
-      g=(int)info->color[1];
-      b=(int)info->color[2];
-    }
-    if(info->type==MouseInteractionInfo::pressEvent){
-      if(k==ConvolutionKernel::gauss3x3){
-        k = ConvolutionKernel::sobelX3x3;
-        sKernel = "sobelx";
-      }else if(k == ConvolutionKernel::sobelX3x3){
-        k = ConvolutionKernel::sobelY3x3;
-        sKernel = "sobel-y";
-      }else if(k == ConvolutionKernel::sobelY3x3){
-        k = ConvolutionKernel::laplace3x3;
-        sKernel = "laplace";
-      }else if(k == ConvolutionKernel::laplace3x3){
-        k = ConvolutionKernel::gauss3x3;
-        sKernel = "gauss";
-      }
+void mouse(const MouseEvent &event){
+  x=event.getX();
+  y=event.getY();
+  if(event.getColor().size() == 3){
+    r=(int)event.getColor()[0];
+    g=(int)event.getColor()[1];
+    b=(int)event.getColor()[2];
+  }
+  if(event.isPressEvent()){
+    if(k==ConvolutionKernel::gauss3x3){
+      k = ConvolutionKernel::sobelX3x3;
+      sKernel = "sobelx";
+    }else if(k == ConvolutionKernel::sobelX3x3){
+      k = ConvolutionKernel::sobelY3x3;
+      sKernel = "sobel-y";
+    }else if(k == ConvolutionKernel::sobelY3x3){
+      k = ConvolutionKernel::laplace3x3;
+      sKernel = "laplace";
+    }else if(k == ConvolutionKernel::laplace3x3){
+      k = ConvolutionKernel::gauss3x3;
+      sKernel = "gauss";
     }
   }
-} MouseIO;
+}
 
 void run(){
   const ImgBase *grabbedImage = grabber->grab();
@@ -92,7 +90,7 @@ void init(){
   grabber->setDesiredSize(Size(640,480));
   widget->setGeometry(200,200,640,480);
   widget->show();
-  widget->add(&MouseIO);
+  widget->install(new MouseHandler(mouse));
 }
 
 

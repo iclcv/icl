@@ -1,6 +1,4 @@
 #include <iclCommon.h>
-#include <iclMouseInteractionReceiver.h>
-#include <iclGenericGrabber.h>
 #include <iclCC.h>
 
 GUI *gui;
@@ -29,42 +27,42 @@ struct XC{
 
 vector<XC> colorbuffer;
 
+
   
-class Handler : public MouseInteractionReceiver{
-  virtual void processMouseInteraction(MouseInteractionInfo *info){
-    mutex.lock();
-    if(info->type == MouseInteractionInfo::pressEvent){
-      std::vector<float> &c = info->color; 
-      if(c.size() == 1){
-        printf("color: %d \n",(int)c[0]);
-      }else if(c.size() > 2){
-        // Assertion ; input type is rgb!!
-        if(*colormode == "rgb"){
-          printf("rgb: %d %d %d \n",(int)c[0],(int)c[1],(int)c[2]);          
-          colorbuffer.push_back(XC(c[0],c[1],c[2]));
-        }else if (*colormode == "hls"){
-          icl32f hls[3];
-          cc_util_rgb_to_hls (c[0],c[1],c[2],hls[0],hls[1],hls[2]);
-          printf("hls: %d %d %d \n",(int)hls[0],(int)hls[1],(int)hls[2]);      
-          colorbuffer.push_back(XC(hls));
-        }
-        else if (*colormode == "yuv"){
-          icl32s yuv[3];
-          cc_util_rgb_to_yuv ((int)c[0],(int)c[1],(int)c[2],yuv[0],yuv[1],yuv[2]);
-          printf("yuv: %d %d %d \n",yuv[0],(int)yuv[1],(int)yuv[2]);          
-          colorbuffer.push_back(XC(yuv[0],yuv[1],yuv[2]));
-        }
-        else if(*colormode == "gray"){
-          printf("gray: %d \n",(int)((c[0]+c[1]+c[2])/3));
-        }
-        else{
-          printf("error color mode is (%s) \n",colormode->c_str());
-        }
+void mouse(const MouseEvent &event){
+  mutex.lock();
+  if(event.isPressEvent()){
+    const std::vector<icl64f> &c = event.getColor();
+    if(c.size() == 1){
+      printf("color: %d \n",(int)c[0]);
+    }else if(c.size() > 2){
+      // Assertion ; input type is rgb!!
+      if(*colormode == "rgb"){
+        printf("rgb: %d %d %d \n",(int)c[0],(int)c[1],(int)c[2]);          
+        colorbuffer.push_back(XC(c[0],c[1],c[2]));
+      }else if (*colormode == "hls"){
+        icl32f hls[3];
+        cc_util_rgb_to_hls (c[0],c[1],c[2],hls[0],hls[1],hls[2]);
+        printf("hls: %d %d %d \n",(int)hls[0],(int)hls[1],(int)hls[2]);      
+        colorbuffer.push_back(XC(hls));
+      }
+      else if (*colormode == "yuv"){
+        icl32s yuv[3];
+        cc_util_rgb_to_yuv ((int)c[0],(int)c[1],(int)c[2],yuv[0],yuv[1],yuv[2]);
+        printf("yuv: %d %d %d \n",yuv[0],(int)yuv[1],(int)yuv[2]);          
+        colorbuffer.push_back(XC(yuv[0],yuv[1],yuv[2]));
+      }
+      else if(*colormode == "gray"){
+        printf("gray: %d \n",(int)((c[0]+c[1]+c[2])/3));
+      }
+      else{
+        printf("error color mode is (%s) \n",colormode->c_str());
       }
     }
-    mutex.unlock();
-  }  
-};
+  }
+  mutex.unlock();
+}  
+
 
 void reset_list(){
   mutex.lock();
@@ -106,40 +104,11 @@ void calc_mean(){
   mutex.unlock();
 }
 
-void run_func(){
-  while(!(*running)){
-    usleep(100*1000);
-  }
-  const ImgBase *image = grabber->grab();
-  if(!image){
-    printf("no image found \n");
-    exit(0);
-  }
-  widget->setImage(image);
-  widget->update();
-  usleep(1000*(*sleeptime));
-}
-
-class Runner : public Thread{
-  virtual void run(){
-    while(1){
-      run_func();
-    } 
-  } 
-};
-
-
-
-
-int main(int n,char **ppc){
-  pa_explain("-input","input type pwc, dc, unicap or filepattern (madatory)\ne.g. -input dc 0 or -input file image.ppm");
-  pa_init(n,ppc,"-input(2)");
+void init(){
   if(!pa_defined("-input")){ pa_usage("please define input type"); exit(0); }
   
   std::string inp = pa_subarg<string>("-input",0,"./*.ppm");
   grabber = new GenericGrabber(pa_subarg<string>("-input",0,""),pa_subarg<string>("-input",0,"")+"="+pa_subarg<string>("-input",1,""));
-  
-  QApplication app(n,ppc);
   
   gui = new GUI;
   (*gui) << "draw[@label=image@handle=image@size=32x24]";
@@ -160,16 +129,26 @@ int main(int n,char **ppc){
   gui->getValue<ButtonHandle>("reset").registerCallback(new GUI::Callback(reset_list));
   gui->getValue<ButtonHandle>("calc").registerCallback(new GUI::Callback(calc_mean));
   
-  
-  
-  Handler h;
-  QObject::connect(widget,SIGNAL(mouseEvent(MouseInteractionInfo*)),&h,SLOT(mouseInteraction(MouseInteractionInfo*)));
-  Runner r;
-          
-          
-  r.start();
-  
-  
-  
-  return app.exec();
+  widget->install(new MouseHandler(mouse));
+}
+
+
+void run(){
+  while(!(*running)){
+    usleep(100*1000);
+  }
+  const ImgBase *image = grabber->grab();
+  if(!image){
+    printf("no image found \n");
+    exit(0);
+  }
+  widget->setImage(image);
+  widget->update();
+  usleep(1000*(*sleeptime));
+}
+
+
+int main(int n,char **ppc){
+  pa_explain("-input","input type pwc, dc, unicap or filepattern (madatory)\ne.g. -input dc 0 or -input file image.ppm");
+  return ICLApplication(n,ppc,"-input(2)",init,run).exec();
 }

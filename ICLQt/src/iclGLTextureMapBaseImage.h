@@ -111,7 +111,7 @@ namespace icl{
     
     /// returns the image color at pixel position (x,y)
     /** if (x,y) is outside the image rect, the returned vector is empty*/
-    std::vector<icl32f> getColor(int x, int y) const;
+    std::vector<icl64f> getColor(int x, int y) const;
     
     /// sets up brightness, contrast and intensity
     /** if b=c=i, then brightness and contrast is adpated automatically */

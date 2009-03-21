@@ -163,12 +163,12 @@ namespace icl{
     return m_oCurrentImageParams.getROI();
   }
 
-  std::vector<icl32f>  GLTextureMapBaseImage::getColor(int x, int y) const{
+  std::vector<icl64f>  GLTextureMapBaseImage::getColor(int x, int y) const{
     if(m_po8u) return m_po8u->getColor(x,y);
     if(m_po16s) return m_po16s->getColor(x,y);
     if(m_po32s) return m_po32s->getColor(x,y);
     if(m_po32f) return m_po32f->getColor(x,y);
-    return std::vector<icl32f>();
+    return std::vector<icl64f>();
   }
 
   ImgBase *GLTextureMapBaseImage::deepCopy() const{

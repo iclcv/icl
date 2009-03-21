@@ -12,8 +12,7 @@
 #include <iclPaintEngine.h>
 #include <iclTypes.h>
 #include <iclImageStatistics.h>
-#include <iclMouseInteractionInfo.h>
-#include <iclMouseInteractionReceiver.h>
+#include <iclMouseHandler.h>
 #include "iclWidgetCaptureMode.h"
 
 class QImage;
@@ -175,34 +174,31 @@ int main(int nArgs, char **ppcArg){
     /// returns the rect, that is currently used to draw the image into
     Rect getImageRect(bool fromGUIThread=false);
 
+    /// returns current fit-mode
     fitmode getFitMode();
         
+    /// returns current range mode
     rangemode getRangeMode();
 
     /// returns a list of image specification string (used by the OSD)
     std::vector<std::string> getImageInfo();
 
     
-    /// calls QObject::connect to establish an explicit connection
-    void add(MouseInteractionReceiver *r){
-      connect((ICLWidget*)this,SIGNAL(mouseEvent(MouseInteractionInfo*)),
-              (MouseInteractionReceiver*)r,SLOT(mouseInteraction(MouseInteractionInfo*)));
-    }
+    /// adds a new mouse handler via signal-slot connection
+    /** Ownership is not passed ! */
+    void install(MouseHandler *h);
+
+    /// deletes mouse handler connection 
+    /** Ownership was not passed -> h is not deletec  */
+    void uninstall(MouseHandler *h);
+    
     
 
     /// this function should be called to update the widget asyncronously from a working thread
     void updateFromOtherThread();
     
     /// overloaded event function processing special thread save update events
-    virtual bool event ( QEvent * event ){
-      ICLASSERT_RETURN_VAL(event,false);
-      if(event->type() == QEvent::User){
-        update();
-        return true;
-      }else{
-        return QGLWidget::event(event);
-      }
-    } 
+    virtual bool event(QEvent *event);
     
     /// returns current ImageStatistics struct (used by OSD)
     const ImageStatistics &getImageStatistics();
@@ -219,7 +215,7 @@ int main(int nArgs, char **ppcArg){
 
     signals:
     /// invoked when any mouse interaction was performed
-    void mouseEvent(MouseInteractionInfo *info);
+    void mouseEvent(const MouseEvent &event);
 
 
     public:
@@ -258,17 +254,23 @@ int main(int nArgs, char **ppcArg){
     void setLinInterpolationEnabled(bool enabled);
     
     private:
+    /// internally used, grabs the current framebuffer as Img8u 
     const Img8u &grabFrameBufferICL();
+    
+    /// internal utility function
     std::string getImageCaptureFileName();
+    
+    /// internal utility function
     void updateInfoTab();
 
-    
+    /// just internally used
     void rebufferImageInternal();
 
+    /// Internal data class (large, so it's hidden)
     Data *m_data;
 
-    /// prepares the current MouseInteractionInfo struct for being emitted
-    MouseInteractionInfo *updateMouseInfo(MouseInteractionInfo::Type type);
+    /// creates internal event instance
+    const MouseEvent &createMouseEvent(MouseEventType type);
 
   };
   

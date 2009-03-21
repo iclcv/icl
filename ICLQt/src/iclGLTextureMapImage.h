@@ -144,7 +144,7 @@ namespace icl{
     std::vector<Range<T> > getMinMax() const;
     
     /// retuns the color at a given image location or a zero sized vector, (x,y) is outside the image
-    std::vector<icl32f> getColor(int x, int y)const;
+    std::vector<icl64f> getColor(int x, int y)const;
 
     /// creates a deep copy of the current buffered image (only available in multi buffer mode)
     Img<T> *deepCopy() const;

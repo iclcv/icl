@@ -11,16 +11,15 @@ GUI gui("hsplit");
 RegionDetector rd;
 Mutex mutex;
 
-struct MouseIO : public MouseInteractionReceiver{
+struct MouseIO : public MouseHandler{
   int x,y;
   MouseIO():x(0),y(0){}
-  virtual void processMouseInteraction(MouseInteractionInfo *info){
-    x = info->imageX;
-    y = info->imageY;
+  virtual void process(const MouseEvent &evt){
+    x = evt.getX();
+    y = evt.getY();
   }
-};
+} mouseIO;
 
-MouseIO mouseIO;
 
 void init(){
   gui << "draw[@minsize=32x24@label=image@handle=image]";
@@ -68,7 +67,7 @@ void run(){
   g.setDesiredFormat(formatGray);
 
   static ICLDrawWidget &d = **gui.getValue<DrawHandle>("image");
-  d.add(&mouseIO);
+  d.install(&mouseIO);
 
   static LabelHandle &valHandle = gui.getValue<LabelHandle>("val-handle");
   static LabelHandle &cogHandle = gui.getValue<LabelHandle>("cog-handle");
