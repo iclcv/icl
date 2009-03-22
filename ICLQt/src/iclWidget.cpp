@@ -1966,8 +1966,8 @@ namespace icl{
   void ICLWidget::install(MouseHandler *h){
     // {{{ open
 
-    connect(this,SIGNAL(mouseEvent(const MouseEvent &)),
-            h,SLOT(handleEvent(const MouseEvent &e)));  
+    connect(this,SIGNAL(mouseEvent(const MouseEvent&)),
+            h,SLOT(handleEvent(const MouseEvent&)));  
   }
 
   // }}}

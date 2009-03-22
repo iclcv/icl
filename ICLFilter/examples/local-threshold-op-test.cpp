@@ -50,14 +50,11 @@ void init(){
   zoomGUI.show();
 }
 
-struct MouseIO : public MouseInteractionReceiver{
-  virtual void processMouseInteraction(MouseInteractionInfo *info){
-    if(info->downmask[0] || info->downmask[1] || info->downmask[2]){
-      zoomCenter = Point(info->imageX,info->imageY);
-    }
+void mouse(const MouseEvent &event){
+  if(event.isPressEvent() || event.isDragEvent()){
+    zoomCenter = event.getPos();
   }
-} mouseIO;
-
+}
 void save(){
   static int &masksize = gui.getValue<int>("masksize");
   static int &thresh = gui.getValue<int>("threshold");
@@ -107,7 +104,7 @@ void run(){
 
   static ImageHandle &orig = gui.getValue<ImageHandle>("orig");
   static ImageHandle &prev = gui.getValue<ImageHandle>("prev");
-  (*prev)->add(&mouseIO);
+  (*prev)->install(new MouseHandler(mouse));
   static ButtonHandle &next = gui.getValue<ButtonHandle>("next");
   static bool &loop = gui.getValue<bool>("run");
   static int &masksize = gui.getValue<int>("masksize");

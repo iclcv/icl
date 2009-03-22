@@ -83,7 +83,7 @@ int main(int n, char **ppc){
       m_handler(0){}
 
     
-    private slots:
+    public slots:
 
     /// connected to the ICLWidget's signal mouseEventOccured
     void handleEvent(const MouseEvent &event);

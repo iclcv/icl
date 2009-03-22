@@ -21,6 +21,42 @@ bool dragging_R  = false;
 Rect currROI(Point::null,imageSize);
 
 
+void mouse(const MouseEvent &e){
+  if(e.isPressEvent()){
+    if(e.isLeft()){
+      currRect = Rect(e.getPos(),Size(1,1));
+      dragging_R=false;
+    }else{
+      currROI = Rect(e.getPos(),Size(1,1));
+      dragging_R=true;
+    }
+      dragging = true;
+  }else if(e.isReleaseEvent()){
+    Mutex::Locker l(mutex);
+    if(dragging_R){
+      currROI = currROI.normalized() & Rect(Point::null,imageSize);
+      dragging = false;
+    }else{
+      Rect r = currRect.normalized() & Rect(Point::null,imageSize);
+      currImage.setROI(r);
+      currTempl.setSize(r.getSize());
+      currImage.deepCopyROI(&currTempl);
+      templMask.setSize(currTempl.getSize());
+      templMask.clear(-1,255,false);
+      currImage.setFullROI();
+      dragging =false;
+    }
+  }else if(e.isDragEvent()){
+    if(dragging_R){
+      currROI.width = e.getX()-currROI.x;
+      currROI.height = e.getY()-currROI.y;
+    }else{
+      currRect.width = e.getX()-currRect.x;
+      currRect.height = e.getY()-currRect.y;
+    }
+  }
+}
+
 void init(){
   gui << "draw()[@label=image@minsize=32x24@handle=image]";
   gui << ( GUI("vbox") 
@@ -40,60 +76,9 @@ void init(){
    
   gui.show();
 
-  static struct X : public MouseInteractionReceiver {
-    // {{{ open
-
-    virtual void processMouseInteraction(MouseInteractionInfo *info){
-      
-      if(info->type == MouseInteractionInfo::pressEvent){
-        if(info->downmask[0]){
-          currRect.x = info->imageX;
-          currRect.y = info->imageY;
-          currRect.width = 1;
-          currRect.height = 1;
-          dragging_R=false;
-        }else{
-          currROI.x = info->imageX;
-          currROI.y = info->imageY;
-          currROI.width = 1;
-          currROI.height = 1;
-          dragging_R=true;
-        }
-        dragging = true;
-        
-      }else if(info->type == MouseInteractionInfo::releaseEvent){
-
-        Mutex::Locker l(mutex);
-        if(dragging_R){
-          currROI = currROI.normalized() & Rect(Point::null,imageSize);
-          dragging = false;
-        }else{
-          Rect r = currRect.normalized() & Rect(Point::null,imageSize);
-          currImage.setROI(r);
-          currTempl.setSize(r.getSize());
-          currImage.deepCopyROI(&currTempl);
-          templMask.setSize(currTempl.getSize());
-          templMask.clear(-1,255,false);
-          currImage.setFullROI();
-          dragging =false;
-        }
-      }else if(info->type == MouseInteractionInfo::dragEvent){
-        if(dragging_R){
-          currROI.width = info->imageX-currROI.x;
-          currROI.height = info->imageY-currROI.y;
-        }else{
-          currRect.width = info->imageX-currRect.x;
-          currRect.height = info->imageY-currRect.y;
-        }
-      }
-    }
-  }
-
-  // }}}
-  mouse;
+ 
   
-  
-  (*gui.getValue<DrawHandle>("image"))->add(&mouse);
+  (*gui.getValue<DrawHandle>("image"))->install(new MouseHandler(mouse));
 }
 
 void vis_roi(ICLDrawWidget *w){
