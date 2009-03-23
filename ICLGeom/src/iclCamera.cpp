@@ -9,7 +9,8 @@ namespace icl{
                     const Rect &viewPort,
                     float f,
                     float zNear,
-                    float zFar){
+                    float zFar,
+                    bool rightHandedCS){
     m_pos = pos;
     m_norm = norm;
     m_up = up;
@@ -17,6 +18,8 @@ namespace icl{
     m_zFar = zFar;
     m_F = f>0 ? f : cos((-f/2)*M_PI/180)/sin((-f/2)*M_PI/180);
     m_viewPort = viewPort;
+    
+    m_rightHandedCS = rightHandedCS;
   }
   
   Mat Camera::getCoordinateSystemTransformationMatrix() const{
@@ -30,7 +33,15 @@ namespace icl{
     Vec nn = normalize(m_norm);
     Vec ut = normalize(m_up);
     Vec hh = cross(nn,ut);
-    Vec uu = cross(hh,nn);
+    Vec uu;
+
+    if(m_rightHandedCS){
+      // see http://en.wikipedia.org/wiki/Cross_product#Cross_product_and_handedness
+      uu = cross(nn,hh); // now its right handed!
+    }else{
+      uu = cross(hh,nn); // this is for left handed coordinate systems:
+    }
+
 
     Mat T;
     T.col(0) = hh;
@@ -80,15 +91,15 @@ namespace icl{
   
   Vec Camera::screenToCameraFrame(const Point32f &pixel) const{
     // optimization:
-    float dx = m_viewPort.x+m_viewPort.width/2;
-    float dy = m_viewPort.y+m_viewPort.height/2;
-    float slope = iclMin(m_viewPort.width,m_viewPort.height)/2;
-    return Vec(pixel.x/slope-dx,pixel.y/slope-dy,m_F,1);
-    
+
     /*
-        Mat V = getViewPortMatrix(); V(2,2) = 1;
-        return V.inv() * Vec(pixel.x,pixel.y,m_F,1); 
+        float dx = m_viewPort.x+m_viewPort.width/2;
+        float dy = m_viewPort.y+m_viewPort.height/2;
+        float slope = iclMin(m_viewPort.width,m_viewPort.height)/2;
+        return Vec(pixel.x/slope-dx,pixel.y/slope-dy,m_F,1);
     */
+    Mat V = getViewPortMatrix(); V(2,2) = 1;
+    return V.inv() * Vec(pixel.x,pixel.y,m_F,1); 
   }
 
 

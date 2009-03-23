@@ -39,8 +39,9 @@ namespace icl{
                   const Size &viewPortSize=Size::VGA,
                   float f=-45, 
                   float zNear=0.1,
-                  float zFar=100){
-      init(pos,norm,up,Rect(Point::null,viewPortSize),f,zNear,zFar);
+                  float zFar=100,
+                  bool rightHandedCS=true){
+      init(pos,norm,up,Rect(Point::null,viewPortSize),f,zNear,zFar,rightHandedCS);
     }
 
     /// Creates a new camera with given parameters
@@ -70,8 +71,9 @@ namespace icl{
                   const Rect &viewPort,
                   float f=-45, 
                   float zNear=0.1,
-                  float zFar=100){
-      init(pos,norm,up,viewPort,f,zNear,zFar);
+                  float zFar=100,
+                  bool rightHandedCS=true){
+      init(pos,norm,up,viewPort,f,zNear,zFar,rightHandedCS);
     }
     
     
@@ -82,7 +84,8 @@ namespace icl{
    
     /// re-initializes the camera with given data
     void init(const Vec &pos,const Vec &norm, const Vec &up, 
-              const Rect &viewPort, float f, float zNear, float zFar);
+              const Rect &viewPort, float f, float zNear, float zFar,
+              bool rightHandedCS=true);
     
     /// returns the camera transformation matrix
     Mat getTransformationMatrix() const;
@@ -173,6 +176,8 @@ namespace icl{
     float m_zFar;     //!< farest clipping plane (must be > 0 and < zFar)
     
     Rect m_viewPort;  //!< current viewport e.g. (0,0,640,480) for a default VGA camera
+    
+    bool m_rightHandedCS; //!< is camera coordinate system right handed or not (default: true)
   };
 }
 
