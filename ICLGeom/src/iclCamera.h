@@ -162,10 +162,27 @@ namespace icl{
     
     /// Returns where a given pixel (on the chip is currently in the world)
     /** i.e. The world location of the camera's CCD-Element for a given pixel */
-    Vec screenToWorldFrame(const Point32f &pixel) const{
-      return cameraToWorldFrame(screenToCameraFrame(pixel));
-    }
+    Vec screenToWorldFrame(const Point32f &pixel) const;
     
+    /// This is a view-ray's line equation in parameter form
+    struct ViewRay{
+      ViewRay(){}
+      ViewRay(const Vec &o, const Vec &d):offset(o),direction(d){offset[3]=direction[3]=1;}
+      Vec offset;
+      Vec direction;
+    };
+    
+    /// Returns a view-ray equation of given pixel location
+    ViewRay getViewRay(const Point32f &pixel) const;
+
+    /// Returns a view-ray equation of given point in the world
+    ViewRay getViewRay(const Vec &Xw) const;
+    
+    /// Projects a world point to the screen
+    Point32f project(const Vec &Xw) const;
+    
+    /// Projects a set of points (just an optimization)
+    const std::vector<Point32f> project(const std::vector<Vec> &Xws) const;
     
   private:
     Vec m_pos;        //!< center position vector
