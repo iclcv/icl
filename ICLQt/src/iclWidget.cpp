@@ -426,7 +426,7 @@ namespace icl{
       qimageConv(0),qimage(0),mutex(QMutex::Recursive),fm(fmHoldAR),fmSave(fmHoldAR),
       rm(rmOff),bciUpdateAuto(false),channelUpdateAuto(false),
       mouseX(-1),mouseY(-1),selChannel(-1),showNoImageWarnings(true),
-      outputCap(0),menuOn(true),menuptr(0),zoomAdjuster(0),
+      outputCap(0),menuOn(true),menuMutex(QMutex::Recursive),menuptr(0),zoomAdjuster(0),
       qic(0),menuEnabled(true),infoTab(0),
       imageInfoIndicatorEnabled(true),infoTabVisible(false),
       selectedTabIndex(0),embeddedZoomMode(false),
@@ -467,7 +467,7 @@ namespace icl{
     ICLWidget::OutputBufferCapturer *outputCap;
     bool menuOn;
 
-    Mutex menuMutex;    
+    QMutex menuMutex;    
     GUI menu;
     QWidget *menuptr;
     Rect32f zoomRect;
@@ -946,7 +946,7 @@ namespace icl{
   static void create_menu(ICLWidget *widget,ICLWidget::Data *data){
     // {{{ open
 
-    Mutex::Locker locker(data->menuMutex);
+    QMutexLocker locker(&data->menuMutex);
 
     // OK, we need to extract default values for all gui elements if gui is already defined!
     data->menu = GUI("tab(bci,scale,channel,capture,info)[@handle=root@minsize=5x7]",widget);
@@ -1079,7 +1079,7 @@ namespace icl{
   
   void update_data(const Size &newImageSize, ICLWidget::Data *data){
     // {{{ open
-
+    /// XXX
     data->menuMutex.lock();
     if(data->menuptr){
       // TODO this cannot be done at runtime -> so the zoom adjusters state must be tracked in 
@@ -1279,7 +1279,7 @@ namespace icl{
       m_data->outputCap = new OutputBufferCapturer(this,m_data);
     }
     if(checked){
-      Mutex::Locker l(m_data->menuMutex);
+      QMutexLocker l(&m_data->menuMutex);
       OutputBufferCapturer::CaptureTarget t = m_data->menu.getValue<ComboHandle>("auto-cap-mode").getSelectedIndex()?
                                               OutputBufferCapturer::FRAME_BUFFER :  OutputBufferCapturer::SET_IMAGES;
 
@@ -1316,7 +1316,7 @@ namespace icl{
     // {{{ open
     if(m_data->outputCap){
       m_data->outputCap->stopRecording();
-      Mutex::Locker l(m_data->menuMutex);
+      QMutexLocker l(&m_data->menuMutex);
       (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
     }
     m_data->glbuttons[3]->visible = false;
@@ -1350,7 +1350,7 @@ namespace icl{
 
   void ICLWidget::histoPanelParamChanged(){
     // {{{ open
-    Mutex::Locker l(m_data->menuMutex);
+    QMutexLocker l(&m_data->menuMutex);
     if(!m_data->histoWidget) return;
     m_data->histoWidget->setFeatures(m_data->menu.getValue<bool>("log-on"),
                                      m_data->menu.getValue<bool>("blur-on"),
@@ -1365,7 +1365,7 @@ namespace icl{
  
   void ICLWidget::updateInfoTab(){
     // {{{ open
-    Mutex::Locker l(m_data->menuMutex);
+    QMutexLocker l(&m_data->menuMutex);
     if(m_data->histoWidget && m_data->infoTabVisible){
       m_data->histoWidget->update(getImageStatistics());
       // xxx TODO
@@ -1380,7 +1380,7 @@ namespace icl{
   std::string ICLWidget::getImageCaptureFileName(){
     // {{{ open
 
-    Mutex::Locker l(m_data->menuMutex);
+    QMutexLocker l(&m_data->menuMutex);
     ComboHandle &h = m_data->menu.getValue<ComboHandle>("cap-filename");
     std::string filename="image.pnm";
     switch(h.getSelectedIndex()){
@@ -1522,7 +1522,7 @@ namespace icl{
     if(m_data->image && m_data->image->hasImage()){
       Rect r;
       if(m_data->fm == fmZoom){
-        Mutex::Locker locker(m_data->menuMutex);
+        QMutexLocker locker(&m_data->menuMutex);
         r = computeRect(m_data->image->getSize(),getSize(),fmZoom,m_data->zoomRect);//zoomAdjuster->aw->r);
       }else{
         r = computeRect(m_data->image->getSize(),getSize(),m_data->fm);
@@ -1898,7 +1898,7 @@ namespace icl{
 
     Rect r;
     if(m_data->fm == fmZoom){
-      Mutex::Locker locker(m_data->menuMutex);
+      QMutexLocker locker(&m_data->menuMutex);
       r = computeRect(m_data->image->getSize(),getSize(),fmZoom,m_data->zoomRect);
     }else{
       r = computeRect(m_data->image->getSize(),getSize(),m_data->fm);
