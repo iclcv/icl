@@ -78,13 +78,12 @@ namespace icl{
     int getBoundaryPointCount() const;
     
     /// returns the estimated length of the boundary
-    /**
-     * This methods gives a much better estimation of the boundary
-     * length than getBoundaryPointCount(). The change in the estimated
-     * length should be no larger than 5 to 10 % under rotation of the
-     * object. \n
-     * Complexity: linear in boundary length.
-     */
+    /** This methods gives a much better estimation of the boundary
+        length than getBoundaryPointCount(). The change in the estimated
+        length should be no larger than 5 to 10 % under rotation of the
+        object. \n
+        Complexity: linear in boundary length.
+    */
     float getBoundaryLength() const;
     
     /// returns the Form-Factor of the Region (Boundary²/4PI*Size)
@@ -102,6 +101,15 @@ namespace icl{
         - cuboid (W=2*H) = 4.5/PI
     */
     float getFormFactor() const;
+
+    /// Approximate the region boundary by polygon structure
+    /** @see ICLCore :: CornerDetectorCSS for a detailed description of function argmuments
+    */
+    const std::vector<Point32f> &getBoundaryCorners(float angle_thresh=162.,
+                                                    float rc_coeff=1.5, 
+                                                    float sigma=3., 
+                                                    float curvature_cutoff=100., 
+                                                    float straight_line_thresh=0.1) const;
     
     /// returns the upper left pixel of the Regions (internally used mainly)
     Point getUpperLeftPixel() const;

@@ -20,7 +20,6 @@ libICLCore_la_SOURCES= \
 ../src/iclStringUtils.cpp \
 ../src/iclRandom.cpp
 
-
 include_HEADERS= \
 ../src/iclCore.h \
 ../src/iclImgBase.h \
@@ -44,6 +43,11 @@ include_HEADERS= \
 ../src/iclTypes.h \
 ../src/iclRandom.h \
 ../src/iclPixelRef.h
+
+if HAVE_IPP_COND
+libICLCore_la_SOURCES += ../src/iclCornerDetectorCSS.cpp
+include_HEADERS += ../src/iclCornerDetectorCSS.h
+endif
 
 libICLCore_la_CXXFLAGS=${AM_CXXFLAGS} \
 	-I../../ICLUtils/src

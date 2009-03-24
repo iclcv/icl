@@ -3,11 +3,15 @@
 #include <iclMacros.h>
 #include <limits>
 #include <algorithm>
+#include <iclCornerDetectorCSS.h>
 
 namespace icl{ 
 
   struct RegionImpl{
-    RegionImpl(icl64f val, const ImgBase *image):pixcount(0),val(val),image(image),bb(0),pcainfo(0),boundary(0),pixels(0),boundary_length(-1){
+    RegionImpl(icl64f val, const ImgBase *image):
+      pixcount(0),val(val),image(image),bb(0),
+      pcainfo(0),boundary(0),pixels(0),boundary_length(-1),
+      cornerDetector(0){
       scanlines.reserve(100);
     }
     ~RegionImpl(){
@@ -15,6 +19,7 @@ namespace icl{
       ICL_DELETE(pcainfo);
       ICL_DELETE(boundary);
       ICL_DELETE(pixels);
+      ICL_DELETE(cornerDetector);
     }
     std::vector<ScanLine> scanlines;
     icl32s pixcount;
@@ -26,6 +31,7 @@ namespace icl{
     std::vector<Point> *boundary;
     std::vector<Point> *pixels;
     float boundary_length;
+    CornerDetectorCSS *cornerDetector;
   };
 
   void RegionImplDelOp::delete_func( RegionImpl* impl){
@@ -419,6 +425,36 @@ namespace icl{
 
   // }}}
   
+  const std::vector<Point32f> &Region::getBoundaryCorners(float angle_thresh,
+                                                          float rc_coeff, 
+                                                          float sigma, 
+                                                          float curvature_cutoff, 
+                                                          float straight_line_thresh) const{
+    bool needReDetection = false;
+    
+    if(!impl->cornerDetector){
+      impl->cornerDetector = new CornerDetectorCSS(angle_thresh,rc_coeff,sigma,curvature_cutoff,straight_line_thresh);
+      needReDetection = true;
+    }else{
+#define ONE_PARAM(Y,P)                            \
+      if(impl->cornerDetector->get##Y() != P){    \
+        needReDetection = true;                   \
+        impl->cornerDetector->set##Y(P);          \
+      }
+      ONE_PARAM(AngleThreshold,angle_thresh);
+      ONE_PARAM(RCCoeff,rc_coeff);
+      ONE_PARAM(Sigma,sigma);
+      ONE_PARAM(CurvatureCutOffset,curvature_cutoff);
+      ONE_PARAM(StraightLineThreshold,straight_line_thresh);
+#undef ONE_PARAM
+    }
+    if(needReDetection){
+      return impl->cornerDetector->detectCorners(getBoundary());
+    }else{
+      return impl->cornerDetector->getLastCorners();
+    }
+  }
+
 
 
 #define ICL_INSTANTIATE_DEPTH(D) template void Region::drawTo<icl##D>(Img<icl##D>&,icl##D)const;
