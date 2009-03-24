@@ -30,8 +30,8 @@ namespace icl{
 
     virtual void line(const Point &a, const Point &b)=0;
     virtual void point(const Point &p)=0;
-    virtual void image(const Rect &r,ImgBase *image, AlignMode mode = Justify)=0;
-    virtual void image(const Rect &r,const QImage &image, AlignMode mode = Justify)=0;
+    virtual void image(const Rect &r,ImgBase *image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
+    virtual void image(const Rect &r,const QImage &image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
     virtual void rect(const Rect &r)=0;
     virtual void triangle(const Point &a, const Point &b, const Point &c)=0;
     virtual void quad(const Point &a, const Point &b, const Point &c, const Point &d)=0;

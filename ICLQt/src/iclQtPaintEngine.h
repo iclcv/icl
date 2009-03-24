@@ -34,8 +34,8 @@ namespace icl{
 
     virtual void line(const Point &a, const Point &b);
     virtual void point(const Point &p);
-    virtual void image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify);
-    virtual void image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify);
+    virtual void image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
+    virtual void image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
     virtual void rect(const Rect &r);
     virtual void triangle(const Point &a, const Point &b, const Point &c);
     virtual void quad(const Point &a, const Point &b, const Point &c, const Point &d);

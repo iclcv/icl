@@ -122,12 +122,13 @@ namespace icl{
   // }}}
   void GLPaintEngine::line(const Point &a, const Point &b){
     // {{{ open
-
+    glEnable(GL_LINE_SMOOTH);
     glColor4fv(m_afLineColor);
     glBegin(GL_LINES);
     glVertex2f(a.x,a.y);
     glVertex2f(b.x,b.y);
     glEnd();
+    glDisable(GL_LINE_SMOOTH);
   }
 
   // }}}
@@ -142,7 +143,7 @@ namespace icl{
 
   // }}}
 
-  void GLPaintEngine::image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode){
+  void GLPaintEngine::image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode, scalemode sm){
     // {{{ open
 
     Img8u buf;    
@@ -152,12 +153,12 @@ namespace icl{
       buf = Img8u(Size(image.width(),image.height()),4);
     }
     interleavedToPlanar(image.bits(),&buf);
-    this->image(r,&buf,mode);
+    this->image(r,&buf,mode,sm);
   }
 
   // }}}
 
-  void GLPaintEngine::image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode){
+  void GLPaintEngine::image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode, scalemode sm){
     // {{{ open
     
     ICLASSERT_RETURN(image);
@@ -165,7 +166,7 @@ namespace icl{
     GLTextureMapBaseImage texmapImage;
     texmapImage.bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
     texmapImage.updateTextures(image);
-    texmapImage.drawTo(computeRect(r,image->getSize(),mode), Size(m_poWidget->width(),m_poWidget->height()));
+    texmapImage.drawTo(computeRect(r,image->getSize(),mode), Size(m_poWidget->width(),m_poWidget->height()),sm);
   }
 
   // }}}
@@ -193,6 +194,7 @@ namespace icl{
     
   }
   void GLPaintEngine::triangle(const Point &a, const Point &b, const Point &c){
+    glEnable(GL_LINE_SMOOTH);
     glColor4fv(m_afFillColor);
     glBegin(GL_TRIANGLES);
     glVertex2f((GLfloat)a.x,(GLfloat)a.y);
@@ -206,11 +208,12 @@ namespace icl{
     glVertex2f((GLfloat)b.x,(GLfloat)b.y);
     glVertex2f((GLfloat)c.x,(GLfloat)c.y);
     glEnd();
-    
+    glDisable(GL_LINE_SMOOTH);
   }
   // }}}
  
   void GLPaintEngine::quad(const Point &a, const Point &b, const Point &c, const Point &d){
+    glEnable(GL_LINE_SMOOTH);
     glColor4fv(m_afFillColor);
     glBegin(GL_QUADS);
     glVertex2f((GLfloat)a.x,(GLfloat)a.y);
@@ -226,13 +229,14 @@ namespace icl{
     glVertex2f((GLfloat)c.x,(GLfloat)c.y);
     glVertex2f((GLfloat)d.x,(GLfloat)d.y);
     glEnd();
-    
+    glDisable(GL_LINE_SMOOTH);
   }
   // }}}
   
 
   void GLPaintEngine::ellipse(const Rect &r){
     // {{{ open
+    glEnable(GL_LINE_SMOOTH);
     glColor4fv(m_afFillColor);
     GLfloat w2 = 0.5*(r.width);
     GLfloat h2= 0.5*(r.height);
@@ -255,6 +259,7 @@ namespace icl{
     }
     glVertex2f(cx+std::cos(float(0))*w2,cy+std::sin(float(0))*h2);
     glEnd();
+    glDisable(GL_LINE_SMOOTH);
   }
 
   // }}}
@@ -274,7 +279,7 @@ namespace icl{
     painter.drawText(QPoint(1,img.height()-m.descent()-1),text.c_str());
     painter.end();
     
-    image(r,img,mode);
+    image(r,img,mode,interpolateLIN);
     /*
         setupPixelTransfer(depth8u,0,0,0);
         glPixelStorei(GL_UNPACK_ALIGNMENT,4);

@@ -70,19 +70,22 @@ namespace icl{
   }
 
   // }}}
-  void QtPaintEngine::image(const Rect &r,ImgBase *image, AlignMode mode){
+  void QtPaintEngine::image(const Rect &r,ImgBase *image, AlignMode mode, scalemode sm){
     // {{{ open
     if(!image)return;
     ensureCompatible(&m_poScaledImage,image->getDepth(),r.getSize(),image->getChannels());
     image->scaledCopy(&m_poScaledImage);
     m_oQImageConverter.setImage(m_poScaledImage);
 
-    this->image(r,*(m_oQImageConverter.getQImage()),mode);
+    this->image(r,*(m_oQImageConverter.getQImage()),mode,sm);
   }
 
   // }}}
-  void QtPaintEngine::image(const Rect &r,const QImage &image, AlignMode mode){
+  void QtPaintEngine::image(const Rect &r,const QImage &image, AlignMode mode, scalemode sm){
     // {{{ open
+    if(sm == interpolateLIN){
+      m_oPainter.setRenderHint(QPainter::SmoothPixmapTransform);
+    }
     switch(mode){
       case NoAlign:
         m_oPainter.drawImage(QRect(r.x,r.y,r.width,r.height),image);
@@ -93,6 +96,9 @@ namespace icl{
       case Justify:
         m_oPainter.drawImage(QRect(r.x,r.y,r.width,r.height),image);
         break;
+    }
+    if(sm == interpolateLIN){
+      m_oPainter.setRenderHint(QPainter::SmoothPixmapTransform,false);
     }
     
   }
