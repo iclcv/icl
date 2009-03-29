@@ -2,6 +2,21 @@
 #include <math.h>
 
 namespace icl{
+
+
+  Camera::Camera(const Vec &pos, const Vec &rot, const Size &viewPortSize,
+                 float f, float zNear, float zFar, bool rightHandedCS){
+
+    FixedMatrix <double,2,4> nu( 0,0,
+                                 0,1,
+                                 1,0,
+                                 1,1 );
+    nu = create_hom_4x4<double>(rot[0],-rot[1],rot[2])*nu;
+    Vec norm = nu.col(0); norm[3] = 0;
+    Vec up = nu.col(1); up[3] = 0;
+    init(pos,norm,up,Rect(Point::null,viewPortSize),f,zNear,zFar,rightHandedCS);
+  }
+  
   
   void Camera::init(const Vec &pos,
                     const Vec &norm,
@@ -20,6 +35,12 @@ namespace icl{
     m_viewPort = viewPort;
     
     m_rightHandedCS = rightHandedCS;
+
+    /*
+    DEBUG_LOG("init Camera ...");
+    #define X(Y) DEBUG_LOG(#Y << " : " << Y);
+    X(m_pos);    X(m_norm); X(m_up); X(m_zNear); X(m_zFar); X(m_F); X(m_viewPort); X(m_rightHandedCS);
+    */
   }
   
   Mat Camera::getCoordinateSystemTransformationMatrix() const{
@@ -32,7 +53,8 @@ namespace icl{
     */
     Vec nn = normalize(m_norm);
     Vec ut = normalize(m_up);
-    Vec hh = cross(nn,ut);
+    //    Vec hh = cross(nn,ut);
+    Vec hh = cross(ut,nn);
     Vec uu;
 
     if(m_rightHandedCS){
@@ -46,10 +68,12 @@ namespace icl{
     Mat T;
     T.col(0) = hh;
     T.col(1) = uu;
-    T.col(2) = -nn;
+    //T.col(2) = -nn; // WHY? -> because we used hh = cross(nn,ut) before ...
+    T.col(2) = nn;
     T.col(3) = Vec(0.0);
     T = T.transp();
-    //    T[3] = Vec(0,0,0,1);
+    //    ------------------>   very old, i guess, T[3] = Vec(0,0,0,1);
+    
     T.col(3) =-(T*m_pos);
     T(3,3) = 1;
     
@@ -59,7 +83,7 @@ namespace icl{
   Mat Camera::getProjectionMatrix() const{
     float A = (m_zFar + m_zNear)/(m_zNear - m_zFar);
     float B = (2*m_zFar*m_zNear)/(m_zNear - m_zFar);
-    
+
     return  Mat ( m_F , 0   ,   0,  0,
                   0    , m_F,   0,  0,
                   0    , 0   ,   A,  B,
@@ -83,15 +107,23 @@ namespace icl{
     float dx = (m_viewPort.left()+m_viewPort.right())/2;
     float dy = (m_viewPort.top()+m_viewPort.bottom())/2;
     float slope = iclMin(m_viewPort.width/2,m_viewPort.height/2);
+
+    /* THIS IS CORRECT OLD VERSION ...
     return  Mat ( slope , 0     , 0 , dx,
                   0     , slope , 0 , dy,
                   0     , 0     , 0 , 0 ,
                   0     , 0     , 0 , 1 );
+   */
+    return  Mat ( slope , 0     , 0 , dx,
+                  0     , slope , 0 , dy,
+                  0     , 0     , 1 , 0 ,
+                  0     , 0     , 0 , 1 );
+
   }
   
   Vec Camera::screenToCameraFrame(const Point32f &pixel) const{
     // Todo: optimize this code by pre-calculate inverse matrices ...
-    Mat V = getViewPortMatrix(); V(2,2) = 1;
+    Mat V = getViewPortMatrix(); // V(2,2) = 1; this is no longer needed!
     Mat P = getProjectionMatrix();
     return homogenize(P.inv()*homogenize(V.inv() * Vec(pixel.x,pixel.y,m_F,1)));
   }
@@ -129,11 +161,12 @@ namespace icl{
     Mat V = getViewPortMatrix();
     
     Vec vP = homogenize(V*P*C*Xw);
-    
+
     return Point32f(vP[0],vP[1]);
   }
   
   const std::vector<Point32f> Camera::project(const std::vector<Vec> &Xws) const{
+    
     Mat C = getCoordinateSystemTransformationMatrix();
     Mat P = getProjectionMatrix();
     Mat V = getViewPortMatrix();

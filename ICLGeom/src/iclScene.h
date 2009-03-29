@@ -62,6 +62,9 @@ namespace icl{
 
     /// returns the scenes camera
     const Camera &getCam() const{ return m_cam; }
+
+    /// sets a new scene camera
+    void setCam(const Camera &cam) { m_cam = cam; }
     
     /// renders the scene into the given draw-widget
     void render(ICLDrawWidget *w) const;

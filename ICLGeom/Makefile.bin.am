@@ -24,11 +24,15 @@ XCXXFLAGS= ${CXXFLAGS} \
 ## Applications that depend on noting ###########################################
 #################################################################################
 bin_PROGRAMS= \
-icl-geom-3D-demo
-
+icl-geom-3D-demo \
+icl-camera-test
 # explicit sources, ldflags and cxxflags
 
 icl_geom_3D_demo_SOURCES=../examples/geom-3D-demo.cpp
 icl_geom_3D_demo_LDFLAGS=${XLDFLAGS}
 icl_geom_3D_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_camera_test_SOURCES=../examples/camera-test.cpp
+icl_camera_test_LDFLAGS=${XLDFLAGS}
+icl_camera_test_CXXFLAGS=${XCXXFLAGS}
 

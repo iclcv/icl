@@ -31,6 +31,12 @@ namespace icl{
   */
   struct Camera{
 
+    /// Creates a camera from given position and rotation vector
+    /** If the camera rotation is 0,0,0, the cameras normal vector is (0,0,1) and 
+        it's up vector is (0,1,0) */
+    Camera(const Vec &pos, const Vec &rot, const Size &viewPortSize,
+           float f, float zNear=0.01, float zFar=1000, bool rightHandedCS=true);
+    
     /// common constructor with given view port size
     /** Just as the constructor below, but without viewport offset*/
     inline Camera(const Vec &pos=Vec(0,0,10,0),
@@ -38,8 +44,8 @@ namespace icl{
                   const Vec &up=Vec(1,0,0,0),
                   const Size &viewPortSize=Size::VGA,
                   float f=-45, 
-                  float zNear=0.1,
-                  float zFar=100,
+                  float zNear=0.01,
+                  float zFar=1000,
                   bool rightHandedCS=true){
       init(pos,norm,up,Rect(Point::null,viewPortSize),f,zNear,zFar,rightHandedCS);
     }
@@ -70,8 +76,8 @@ namespace icl{
                   const Vec &up,
                   const Rect &viewPort,
                   float f=-45, 
-                  float zNear=0.1,
-                  float zFar=100,
+                  float zNear=0.01,
+                  float zFar=1000,
                   bool rightHandedCS=true){
       init(pos,norm,up,viewPort,f,zNear,zFar,rightHandedCS);
     }
@@ -195,6 +201,12 @@ namespace icl{
     Rect m_viewPort;  //!< current viewport e.g. (0,0,640,480) for a default VGA camera
     
     bool m_rightHandedCS; //!< is camera coordinate system right handed or not (default: true)
+    
+    /*
+        bool m_useGivenMatrices;
+        Mat m_givenTransMat;
+        Mat m_givenProjMat;
+        */
   };
 }
 
