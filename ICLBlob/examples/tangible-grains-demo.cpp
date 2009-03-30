@@ -376,7 +376,7 @@ public:
       w->color(255,255,255);
       char buf[40];
       sprintf(buf,"blobs:%4d frames:%6d E:frames:%4d all:%4d   ",v.size()/2,frame_counter,error_frames,error_counter);
-      w->text(string(buf)+"   "+fps.getFpsString().c_str(),5,5); 
+      w->text(string(buf)+"   "+fps.getFPSString().c_str(),5,5); 
       
       w->unlock();
       w->update();

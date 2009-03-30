@@ -50,7 +50,7 @@ void run(){
     widget->fill(255,255,255,200);
     static FPSEstimator fps(10);
     
-    widget->text(fps.getFpsString(),0.02,0.02,0.2,0.03);
+    widget->text(fps.getFPSString(),0.02,0.02,0.2,0.03);
     
     widget->unlock();
     

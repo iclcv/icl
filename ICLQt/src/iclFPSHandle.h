@@ -27,7 +27,7 @@ namespace icl{
     
     // notifies and updates the internal fps estimator and the shown fps-string
     void update(){
-      lab()->setText(m_oFpsEstimator.getFpsString().c_str());
+      lab()->setText(m_oFpsEstimator.getFPSString().c_str());
       lab()->updateFromOtherThread();
     }
     

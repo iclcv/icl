@@ -26,7 +26,7 @@ XCXXFLAGS= ${CXXFLAGS} \
 bin_PROGRAMS= \
 icl-3D-demo \
 icl-3D-demo-2 \
-icl-camviewer-lite \
+icl-camviewer \
 icl-chroma-demo \
 icl-colorpicker \
 icl-gui-test \
@@ -57,9 +57,9 @@ icl_camcfg_SOURCES=../examples/camcfg.cpp
 icl_camcfg_LDFLAGS=${XLDFLAGS}
 icl_camcfg_CXXFLAGS=${XCXXFLAGS}
 
-icl_camviewer_lite_SOURCES=../examples/camviewer-lite.cpp
-icl_camviewer_lite_LDFLAGS=${XLDFLAGS}
-icl_camviewer_lite_CXXFLAGS=${XCXXFLAGS}
+icl_camviewer_SOURCES=../examples/camviewer.cpp
+icl_camviewer_LDFLAGS=${XLDFLAGS}
+icl_camviewer_CXXFLAGS=${XCXXFLAGS}
 
 icl_chroma_demo_SOURCES=../examples/chroma-demo.cpp
 icl_chroma_demo_LDFLAGS=${XLDFLAGS}

@@ -63,7 +63,7 @@ void run(){
   FPSEstimator fpsEst(5);
   
   while(1){
-    fps = fpsEst.getFpsString();
+    fps = fpsEst.getFPSString();
     
     float params[] = {lambda,theta,psi,gamma,sigma};
     Size size = Size(width,height);

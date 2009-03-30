@@ -11,35 +11,29 @@ namespace icl{
     public:
 
     ///Constructor
-    FPSEstimator(int n=1){
-      reset(n);
-    }
-    void reset(int n){
-      m_iN = n;
-      for(int i=0;i<n;i++){
-        m_qTimes.push_back(Time());
-      }
-    }
-    
-    std::string getFpsString(){
-      m_qTimes.push_back(Time::now());
-      m_qTimes.pop_front();
-      
+    /** Current FPS values are averaged over given intervall n*/
+    FPSEstimator(int n=2);
 
-      if(m_qTimes.front()==Time::null){
-        return "---.---- fps";
-      }else{
-        char acBuf[30];
-        sprintf(acBuf,"%3.4f fps",(1000.0*(m_iN-1))/((m_qTimes.back()-m_qTimes.front()).toMilliSecondsDouble()));
-        return acBuf;
-      }
-    }
-    void showFps(const std::string &text=""){
-      printf("%s:%s\n",text.c_str(),getFpsString().c_str());
-    }
+    /// Sets a new averaging interval
+    void reset(int n);
+    
+    /// pushes current time into the time averaging queue and pop oldest time from the queue
+    virtual void tic() const;
+    
+    /// applies tic() and returns current FPS estimate
+    virtual float getFPSVal() const;
+     
+    /// applies tic() and returns current fps estimate as formated string
+    virtual std::string getFPSString(const std::string &fmt="%3.4f fps", int bufferSize=30) const;
+     
+    /// applies tic() and shows current FPS estimate on std::out
+    virtual void showFPS(const std::string &text="") const;
     
     private:
-    std::deque<Time> m_qTimes;
+    /// internal time queue
+    mutable std::deque<Time> m_qTimes;
+    
+    /// time-queues size
     int m_iN;
   };
 
