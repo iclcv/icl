@@ -44,7 +44,7 @@ namespace icl{
       }else if(lP[i].length() > 3 && lP[i].substr(0,2) == "dc"){
         pDC = lP[i].substr(3);
       }else if(lP[i].length() > 3 && lP[i].substr(0,5) == "dc800"){
-        pDC = lP[i].substr(6);
+        pDC800 = lP[i].substr(6);
       }else if(lP[i].length() > 7 && lP[i].substr(0,6) == "unicap"){
         pUnicap = lP[i].substr(7);
       }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "file"){
