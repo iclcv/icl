@@ -3,30 +3,16 @@
 
 #include <QGLWidget>
 #include <iclImgBase.h>
-#include <QMutex>
-#include <QMouseEvent>
-#include <QPaintEvent>
-#include <QMutex>
-#include <QApplication>
-#include <iclConverter.h>
-#include <iclPaintEngine.h>
 #include <iclTypes.h>
 #include <iclImageStatistics.h>
 #include <iclMouseHandler.h>
 #include "iclWidgetCaptureMode.h"
 
-class QImage;
-
 namespace icl{
 
   /** \cond */
   class PaintEngine;
-  class OSDWidget;
-  class OSD;
-  class OSDButton;
-  class ImgBase;
-  class GLTextureMapBaseImage;
-  class QImageConverter;
+  class OSDGLButton;
   /** \endcond */
   
  
@@ -113,6 +99,14 @@ int main(int nArgs, char **ppcArg){
   class ICLWidget : public QGLWidget{
     Q_OBJECT
     public:
+    /// just used internally 
+    friend class OSDGLButton;
+
+    /// member function callback type for void foo(void) members
+    typedef void (ICLWidget::*VoidCallback)();
+
+    /// member function callback type for void foo(bool) members
+    typedef void (ICLWidget::*BoolCallback)(bool);
 
     class Data;   
     class OutputBufferCapturer;
@@ -208,6 +202,40 @@ int main(int nArgs, char **ppcArg){
     void setImageInfoIndicatorEnabled(bool enabled);
     
     void setShowNoImageWarnings(bool showWarnings);
+
+    /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
+    /** Special buttons can directly be attached to specific ICLWidget slots, 
+        furthermore special button- clicks and toggle events are notified using
+        the ICLWidget-signals specialButtonClicked and specialButtonToggled.
+        
+        @param id handle to reference the button lateron 
+        
+        @param untoggledIcon optional button icon(recommeded: use buttons from the
+               ICLQt::IconFactor class)
+
+        @param toggledIcon optional button icon (recommeded: use buttons from the
+               ICLQt::IconFactor class)
+
+        @param ICLWidgetSlot here you can direcly define a slot from ICLWidget
+               class, the button is attached to. Note, if toggable is true,
+               it has to be a foo(bool)-slot, otherwise you'll need a foo(void)
+               slot.
+    */
+    void addSpecialToggleButton(const std::string &id, 
+                                const ImgBase* untoggledIcon = 0, 
+                                const ImgBase *toggledIcon = 0, 
+                                bool initiallyToggled = 0, 
+                                BoolCallback cb = 0);
+
+    /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
+    /** @see addSpecialToggleButton */
+    void addSpecialButton(const std::string &id, 
+                          const ImgBase* icon = 0, 
+                          VoidCallback = 0);
+
+    
+    /// removes special button with given ID
+    void removeSpecialButton(const std::string &id);
     
     public slots:
     /// sets up the current image
@@ -216,6 +244,10 @@ int main(int nArgs, char **ppcArg){
     signals:
     /// invoked when any mouse interaction was performed
     void mouseEvent(const MouseEvent &event);
+
+    
+    void specialButtonClicked(const std::string &id);
+    void specialButtonToggled(const std::string &id, bool down);
 
 
     public:
@@ -226,8 +258,8 @@ int main(int nArgs, char **ppcArg){
     virtual void leaveEvent(QEvent *e);
     virtual void resizeEvent(QResizeEvent *e);
     
-
-    private slots:
+    
+    public slots:
     void showHideMenu();
     void setMenuEmbedded(bool embedded);
 

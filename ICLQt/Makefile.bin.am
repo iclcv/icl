@@ -39,7 +39,13 @@ icl-xv \
 icl-camcfg \
 icl-calib-radial-distortion \
 icl-config-gui-example \
-icl-datastore-test
+icl-datastore-test \
+icl-special-button-demo
+
+icl_special_button_demo_SOURCES=../examples/special-button-demo.cpp
+icl_special_button_demo_LDFLAGS=${XLDFLAGS}
+icl_special_button_demo_CXXFLAGS=${XCXXFLAGS}
+
 
 icl_datastore_test_SOURCES=../examples/datastore-test.cpp
 icl_datastore_test_LDFLAGS=${XLDFLAGS}

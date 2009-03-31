@@ -11,7 +11,7 @@ namespace icl{
                                  0,1,
                                  1,0,
                                  1,1 );
-    nu = create_hom_4x4<double>(rot[0],-rot[1],rot[2])*nu;
+    nu = create_hom_4x4<double>(rot[0],rot[1],rot[2])*nu;
     Vec norm = nu.col(0); norm[3] = 0;
     Vec up = nu.col(1); up[3] = 0;
     init(pos,norm,up,Rect(Point::null,viewPortSize),f,zNear,zFar,rightHandedCS);

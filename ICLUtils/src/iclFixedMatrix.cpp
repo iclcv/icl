@@ -34,11 +34,11 @@ namespace icl{
   template<class T, bool skip4th> 
   inline void get_3x3_rot_data(T rx, T ry, T rz,T *p){
     T cx = cos(rx);
-    T cy = cos(ry);
-    T cz = cos(rz);
+    T cy = cos(-ry);
+    T cz = cos(-rz);
     T sx = sin(rx);
-    T sy = sin(ry);
-    T sz = sin(rz);
+    T sy = sin(-ry);
+    T sz = sin(-rz);
     *p++=cy*cz-sx*sy*sz; *p++=-sz*cx; *p++=cz*sy+sz*sx*cy; if(skip4th) p++;
     *p++=cy*sz+cz*sx*sy; *p++=cz*cx;  *p++=sz*sy-sx*cy*cz; if(skip4th) p++;
     *p++=-sy*cx;         *p++=sx;     *p++=cx*cy;       

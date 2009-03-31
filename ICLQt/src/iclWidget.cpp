@@ -28,6 +28,9 @@
 #include <QSizePolicy>
 #include <QFileDialog>
 #include <QSpinBox>
+#include <QMouseEvent>
+#include <QPaintEvent>
+
 
 #include <iclGUI.h>
 #include <iclTabHandle.h>
@@ -264,8 +267,11 @@ namespace icl{
   struct OSDGLButton{
     // {{{ open
 
-    enum IconType {Tool,Zoom,Lock, Unlock,RedZoom,RedCam, NNInter, LINInter};
+    enum IconType {Tool,Zoom,Lock, Unlock,RedZoom,RedCam,
+                   NNInter, LINInter, CustomIcon };
     enum Event { Move, Press, Release, Enter, Leave,Draw};
+
+    std::string id;
     Rect bounds;
     bool toggable;
     Img8u icon;    
@@ -275,14 +281,16 @@ namespace icl{
     bool down;
     bool toggled;
     bool visible;
-    
+
     GLTextureMapBaseImage tmImage;
 
     typedef void (ICLWidget::*VoidCallback)();
     typedef void (ICLWidget::*BoolCallback)(bool);
+
     VoidCallback vcb;
     BoolCallback bcb;
-    
+                  
+                  
     static inline const Img8u &get_icon(IconType icon){
       switch(icon){
         case Tool: return IconFactory::create_image("tool");
@@ -293,21 +301,58 @@ namespace icl{
         case RedCam: return IconFactory::create_image("red-camera");
         case NNInter: return IconFactory::create_image("inter-nn");
         case LINInter: return IconFactory::create_image("inter-lin");
+        case CustomIcon: return IconFactory::create_image("custom");
       }
       static Img8u undef(Size(32,32),4);
       return undef;
     }
-    OSDGLButton(int x, int y, int w, int h, IconType icon, VoidCallback vcb=0):
-      bounds(x,y,w,h),toggable(false),over(false),down(false),
+    
+    OSDGLButton(const std::string &id, int x, int y, int w, int h,const ImgBase *icon, VoidCallback vcb=0):
+      id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
+      toggled(false),visible(false),vcb(vcb),bcb(0){
+      if(icon){
+        icon->convert(&this->icon);
+      }else{
+        this->icon = get_icon(CustomIcon);
+      }
+    }
+  
+    
+    OSDGLButton(const std::string &id, int x, int y, int w, int h, IconType icon, VoidCallback vcb=0):
+      id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
       toggled(false),visible(false),vcb(vcb),bcb(0){
       this->icon = get_icon(icon);
     }
-    OSDGLButton(int x, int y, int w, int h, IconType icon, IconType downIcon, BoolCallback bcb=0, bool toggled = false):
-      bounds(x,y,w,h),toggable(true),over(false),down(false),
+    OSDGLButton(const std::string &id, int x, int y, int w, int h, IconType icon, 
+                IconType downIcon, BoolCallback bcb=0, bool toggled = false):
+      id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
       toggled(toggled),visible(false),vcb(0),bcb(bcb){
       this->icon = get_icon(icon);
       this->downIcon = get_icon(downIcon);
     }
+
+    OSDGLButton(const std::string &id, int x, int y, int w, int h, 
+                const ImgBase *untoggledIcon, const ImgBase *toggledIcon, 
+                BoolCallback bcb=0, bool toggled = false):
+      id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
+      toggled(toggled),visible(false),vcb(0),bcb(bcb){
+      if(untoggledIcon){
+        untoggledIcon->convert(&icon);
+      }else{
+        this->icon = get_icon(CustomIcon);
+      }
+      if(toggledIcon){
+        toggledIcon->convert(&downIcon);
+      }else{
+        if(untoggledIcon){
+          untoggledIcon->convert(&downIcon);
+        }else{
+          downIcon = get_icon(CustomIcon);
+        }
+      }
+    }
+
+
     void drawGL(const Size &windowSize){
       if(!visible) return;
       tmImage.bci(over*20,down*20,0);
@@ -327,8 +372,10 @@ namespace icl{
         if(toggable){
           toggled = !toggled;
           if(bcb) (parent->*bcb)(toggled);
+          if(id != "") emit parent->specialButtonToggled(id,toggled);
         }else{
           if(vcb) (parent->*vcb)();
+          if(id != "") emit parent->specialButtonClicked(id);
         }
         return true;
       }else{
@@ -431,7 +478,7 @@ namespace icl{
       imageInfoIndicatorEnabled(true),infoTabVisible(false),
       selectedTabIndex(0),embeddedZoomMode(false),
       embeddedZoomModeJustEnabled(false),embeddedZoomRect(0),
-      useLinInterpolation(false)
+      useLinInterpolation(false),nextButtonX(2)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
@@ -485,12 +532,13 @@ namespace icl{
     Rect32f *embeddedZoomRect;
     std::vector<OSDGLButton*> glbuttons;
     bool useLinInterpolation;
+    int nextButtonX;
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
       for(unsigned int i=0;i<glbuttons.size();++i){
-        if(i == glbuttons.size()-1 && (evt == OSDGLButton::Enter || evt == OSDGLButton::Leave)){
-          break;
+        if(i == 4 && (evt == OSDGLButton::Enter || evt == OSDGLButton::Leave)){
+          continue;
         }
         any |= glbuttons[i]->event(x,y,evt,parent);
       }
@@ -1079,6 +1127,7 @@ namespace icl{
   
   void update_data(const Size &newImageSize, ICLWidget::Data *data){
     // {{{ open
+
     /// XXX
     data->menuMutex.lock();
     if(data->menuptr){
@@ -1095,6 +1144,12 @@ namespace icl{
 
   // ------------ ICLWidget ------------------------------
 
+#define GL_BUTTON_Y 2
+#define GL_BUTTON_W 20
+#define GL_BUTTON_H 20
+#define GL_BUTTON_SPACE 2
+#define GL_BUTTON_X_INC (GL_BUTTON_W+GL_BUTTON_SPACE)
+
   ICLWidget::ICLWidget(QWidget *parent) : 
     // {{{ open
 
@@ -1103,17 +1158,18 @@ namespace icl{
     setMouseTracking(true);
     setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
     
-    int x = 2;
-    m_data->glbuttons.push_back(new OSDGLButton(x,2,20,20,OSDGLButton::Tool,&ICLWidget::showHideMenu));
-    x+=22;
-    m_data->glbuttons.push_back(new OSDGLButton(x,2,20,20,OSDGLButton::Unlock,OSDGLButton::Lock,&ICLWidget::setMenuEmbedded,true));
-    x+=22;
-    m_data->glbuttons.push_back(new OSDGLButton(x,2,20,20,OSDGLButton::NNInter,OSDGLButton::LINInter,&ICLWidget::setLinInterpolationEnabled,false));
-    x+=22;
-    m_data->glbuttons.push_back(new OSDGLButton(x,2,20,20,OSDGLButton::Zoom,OSDGLButton::RedZoom,&ICLWidget::setEmbeddedZoomModeEnabled,false));
-    x+=22;
-    m_data->glbuttons.push_back(new OSDGLButton(x,2,20,20,OSDGLButton::RedCam,&ICLWidget::stopButtonClicked));
-    x+=22;
+    static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
+    int &x = m_data->nextButtonX;
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Tool,&ICLWidget::showHideMenu));
+    x+=GL_BUTTON_X_INC;
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Unlock,OSDGLButton::Lock,&ICLWidget::setMenuEmbedded,true));
+    x+=GL_BUTTON_X_INC;
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::NNInter,OSDGLButton::LINInter,&ICLWidget::setLinInterpolationEnabled,false));
+    x+=GL_BUTTON_X_INC;
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Zoom,OSDGLButton::RedZoom,&ICLWidget::setEmbeddedZoomModeEnabled,false));
+    x+=GL_BUTTON_X_INC;
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::RedCam,&ICLWidget::stopButtonClicked));
+    x+=GL_BUTTON_X_INC;
 
     m_data->imageInfoIndicator = new ImageInfoIndicator(this);
   }
@@ -1128,6 +1184,42 @@ namespace icl{
   }
 
   // }}}
+
+
+  void ICLWidget::addSpecialToggleButton(const std::string &id, 
+                                         const ImgBase* untoggledIcon, 
+                                         const ImgBase *toggledIcon, 
+                                         bool initiallyToggled, 
+                                         ICLWidget::BoolCallback cb){
+    // {{{ open
+
+    static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
+    int &x = m_data->nextButtonX;
+    m_data->glbuttons.push_back(new OSDGLButton(id,x,y,w,h,untoggledIcon,toggledIcon,cb,initiallyToggled));
+    
+    x+=GL_BUTTON_X_INC;
+    
+    
+  }
+
+  // }}}
+  void ICLWidget::addSpecialButton(const std::string &id, 
+                                   const ImgBase* icon, 
+                                   ICLWidget::VoidCallback cb){
+    // {{{ open
+
+    static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
+    int &x = m_data->nextButtonX;
+    m_data->glbuttons.push_back(new OSDGLButton(id,x,y,w,h,icon,cb));
+    
+    x+=GL_BUTTON_X_INC;
+  }
+
+  // }}}
+  
+  void ICLWidget::removeSpecialButton(const std::string &id){
+    DEBUG_LOG("removins special buttons is not yet implemented!");
+  }
 
   void ICLWidget::setEmbeddedZoomModeEnabled(bool enabled){
     // {{{ open
@@ -1381,6 +1473,9 @@ namespace icl{
     // {{{ open
 
     QMutexLocker l(&m_data->menuMutex);
+    if(!m_data->menu.getDataStore().contains("cap-filename")){
+      return "image.pnm";
+    }
     ComboHandle &h = m_data->menu.getValue<ComboHandle>("cap-filename");
     std::string filename="image.pnm";
     switch(h.getSelectedIndex()){
