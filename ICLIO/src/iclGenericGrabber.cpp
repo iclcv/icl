@@ -108,8 +108,6 @@ namespace icl{
         std::vector<DCDevice> devs = DCGrabber::getDeviceList();
         int idx = (l[i]=="dc") ? to32s(pDC) : to32s(pDC800);
 
-        DEBUG_LOG("creating device ibdex " << idx);
-        
         //printf("index is %d devs size is %d \n",idx,devs.size());
         if(idx < 0) idx = 0;
         if(idx >= (int)devs.size()){
