@@ -28,6 +28,7 @@
 
 
 namespace icl{
+  
   GenericGrabber::GenericGrabber(const std::string &desiredAPIOrder, 
                                  const std::string &params, 
                                  bool notifyErrors) throw(ICLException){
@@ -38,27 +39,40 @@ namespace icl{
     // todo optimize this code using a map or a table or ...
     std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pXCF_P,pXCF_S,pXCF_M;
 
+#define PARAM(D,PNAME)                                                  \
+    if(lP[i].length() > strlen(D) && lP[i].substr(0,strlen(D)) == D){   \
+      PNAME = lP[i].substr(strlen(D)+1);                                \
+    }  
     for(unsigned int i=0;i<lP.size();++i){
-      if(lP[i].length() > 4 && lP[i].substr(0,3) == "pwc"){
-        pPWC = lP[i].substr(4);
-      }else if(lP[i].length() > 3 && lP[i].substr(0,2) == "dc"){
-        pDC = lP[i].substr(3);
-      }else if(lP[i].length() > 3 && lP[i].substr(0,5) == "dc800"){
-        pDC800 = lP[i].substr(6);
-      }else if(lP[i].length() > 7 && lP[i].substr(0,6) == "unicap"){
-        pUnicap = lP[i].substr(7);
-      }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "file"){
-        pFile = lP[i].substr(5);
-      }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "demo"){
-        pDemo = lP[i].substr(5);
-      }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfp"){
-        pXCF_P = lP[i].substr(5);
-      }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfs"){
-        pXCF_S = lP[i].substr(5);
-      }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfm"){
-        pXCF_M = lP[i].substr(5);
-      }
-
+      if(false){}
+      PARAM("pwc",pPWC); PARAM("dc",pDC); PARAM("dc800",pDC800);
+      PARAM("unicap",pUnicap); PARAM("file",pFile);
+      PARAM("demo",pDemo);
+      PARAM("xcfp",pXCF_P);
+      PARAM("xcfs",pXCF_S);
+      PARAM("xcfm",pXCF_M);
+#undef PARAM
+      /*
+          if(lP[i].length() > 4 && lP[i].substr(0,3) == "pwc"){
+          pPWC = lP[i].substr(4);
+          }else if(lP[i].length() > 3 && lP[i].substr(0,2) == "dc"){
+          pDC = lP[i].substr(3);
+          }else if(lP[i].length() > 6 && lP[i].substr(0,5) == "dc800"){
+          pDC800 = lP[i].substr(6);
+          }else if(lP[i].length() > 7 && lP[i].substr(0,6) == "unicap"){
+          pUnicap = lP[i].substr(7);
+          }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "file"){
+          pFile = lP[i].substr(5);
+          }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "demo"){
+          pDemo = lP[i].substr(5);
+          }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfp"){
+          pXCF_P = lP[i].substr(5);
+          }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfs"){
+          pXCF_S = lP[i].substr(5);
+          }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfm"){
+          pXCF_M = lP[i].substr(5);
+          }
+     */
 
     }
 
@@ -88,8 +102,14 @@ namespace icl{
       
 #ifdef HAVE_LIBDC
       if(l[i] == "dc" || l[i] == "dc800"){
+
+
+        
         std::vector<DCDevice> devs = DCGrabber::getDeviceList();
         int idx = (l[i]=="dc") ? to32s(pDC) : to32s(pDC800);
+
+        DEBUG_LOG("creating device ibdex " << idx);
+        
         //printf("index is %d devs size is %d \n",idx,devs.size());
         if(idx < 0) idx = 0;
         if(idx >= (int)devs.size()){
