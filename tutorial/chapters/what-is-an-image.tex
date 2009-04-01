@@ -23,8 +23,9 @@ This function can be understood in 2 different ways:
  \item A function that expects only two arguments and which's value domain is $\mathbb{R}^C$ where $C$ is the channel count of the image
 \end{enumerate} 
 
-We decided to implement the first one, because of a fundamental design principle: We decided to use planar data layout, which cannot be combined with the 2nd point view on the image function. E.g. there has to be some pixel access function that returns the pixel value at some image location $(x,y)$. This would have to return some vector structure (e.g. a \inlinecode{std::vector}) which is sure possible, but not very efficient in C++.\\
-Moreover the spacial domain of an image is always limited to the image size, which again restricts the image function. Together with a positive but finite channel count of an image we approach this function:
+We decided to implement the first one, because of a fundamental design principle: We decided to use planar data layout, which cannot be combined with the 2nd point view on the image function. E.g. there has to be some pixel access function that returns the pixel value at some image location $(x,y)$. This would have to return some vector structure (e.g. a \inlinecode{std::vector}) which is sure possible, but not very efficient in C++.
+Of course, we provide an operator (\inlinecode{operator()(int x, int y)}) which allows to address a pixels with all it's channels, but this is just a convenience feature for code that has no performance constraints.\\
+In addition the spacial domain of images is always limited to the image size, which again restricts the image function. Together with a positive but finite channel count of an image we approach this function:
 
 \begin{equation}
   I(\{0,..,W_I-1\} \times{} \{0,..,H_I-1\} \times{} \{0,..,C_I-1\} ) \rightarrow \mathbb{R} 
@@ -35,10 +36,10 @@ Where the images dimension is $W_I \times{}H_I$ and it has $C_I$ channels. In pa
 
 
 \section{Value-Domain}
-Further we have to take a look at the value-domanin of an image. 
-Of course, we cannot use $\mathbb{R}$ :-). The native data type that comes closest to the real numbers is obviously a double precision floating point number (\inlinecode{double}). Unfortunately floating point processing is still slower than integer processing on common CPUs. This is the reason why most frameworks and algorithms work on byte-valued image data. On common systems, a byte (mostly 8Bit, in C++ realized by the \inlinecode{unsigned char} data type), is the smallest directly addressable data unit. Of course you can access even single bits, but in most cases, algorithm performance is worse here due to the need of bit-shifting and masking on the byte-aligned data.\\
+Further we have to take a look at the value-domanin of images.
+Of course, we cannot use $\mathbb{R}$ :-). The native data type that comes closest to the real numbers is obviously a maximum precision floating point number (C++: \inlinecode{long double}, with normally 96 Bits). Unfortunately floating point processing is still slower than integer processing on common CPUs. This is the reason why most frameworks and algorithms work on byte-valued image data. On common systems, a byte (mostly 8Bit, in C++ realized by the \inlinecode{unsigned char} data type), is the smallest directly addressable data unit. Of course you can access even single bits, but in most cases, algorithm performance is worse here due to the need of bit-shifting and masking on the byte-aligned data.\\
 In short, bytes have a very limited range $\{0,..,255\}$ but processing performance is optimal. Furthermore most input- and output-devices (cameras, frame-grabbers and even most common file formats) use 24bit color resolution, which can be implemented very naturally using 3 byte-valued image channels (e.g. RGB).
-Unfortunately in there are many situations, where the 8bit-range of bytes is too limited. For example if one wants to create a feature map\footnote{Here a map is nothing else then an ordinary image -- consider a city map that contains some locally arranged information}. Often, the range of image features cannot be mapped to $\{0,..,255\}$ especially if feature values need to have a good resolution between $0$ and $1$ as well as for very high values. To make a long story short, sometimes there is also need for float-valued pixels.
+Unfortunately there are many situations, where the 8bit-range of bytes is too limited. For example if one wants to create a feature map\footnote{Here a map is nothing else than an ordinary image -- consider a city map that contains some locally arranged information}. Often, the range of image features cannot be mapped to $\{0,..,255\}$ especially if feature values need to have a good resolution between $0$ and $1$ as well as for very high values. To make a long story short, sometimes there is also need for float-valued pixels.
 
 Hence we decided to provide a flexible image structure called \inlinecode{Img}\iclclassref{Core}{Img} that uses C++-templating for supporting most different data types.
 
@@ -48,24 +49,24 @@ Once having clarified the basics for the image representation, we can have a loo
 \begin{enumerate}
 
 \item \textbf{Size}
-\\The 2D-spacial extend of the image. Common sizes are e.g. $640 \times{} 480$ which is calles \emph{VGA}. Sizes are represented by a special \inlinecode{Size}-structure \iclclassref{Core}{Size}. Uninitialized image have size of $0 \times{} 0$. Image size can be defined in the constructor, or it can be adapted/obtained using '\inlinecode{void setSize(const Size&)}' and '\inlinecode{const Size &getSize() const}' respectively. Please note, that changing an images size using \inlinecode{setSize} involves a complete lose of all image data. For scaling also the images contents, a dedicated function named \inlinecode{scale} is provided. 
+\\The 2D-spacial extend of the image. Common sizes are e.g. $640 \times{} 480$ which is calles \emph{VGA}. Sizes are represented by a special \inlinecode{Size}-structure \iclclassref{Core}{Size}. Uninitialized image have size of $0 \times{} 0$. Image size can be defined in the constructor, or it can be adapted/obtained using '\inlinecode{void setSize(const Size&)}' and '\inlinecode{const Size &getSize() const}' respectively. Please note, that changing an images size using \inlinecode{setSize} involves a complete loss of all image data. For scaling also the images contents, a special function named \inlinecode{scale} is provided. 
 \item \textbf{Channels}\\
  Channel count of an image is represented by a single \inlinecode{int} value. We do not use an \inlinecode{unsigned int} as we sometimes use a negative channel index to indicate that e.g. a function should work on all image channels. In contrast to most other image features, the channel count depends on another feature: the image \emph{format} (See below for more details). An uninitialized image has $0$ channels; channel count can be set/obtained using '\inlinecode{void setChannels(int num)}'/'\inlinecode{int getChannels() const}'. If channel count is increased by a \inlinecode{setChannels}-call, old channels are not touched. If otherwise, channel count is decreased, only the last channels are removed -- other channels remain untouched (image data is not changed, data is not reallocated).
 
 \item \textbf{Format}\\
 This additional feature defines an images \emph{color-format}. Currently 6+1 formats are defined by the \inlinecode{format}-enum \iclnamespaceref{Core}. 6+1 means, that there are 6 \emph{real} color-formats\footnote{yes! gray is also a color format here} (Gray,RGB,YUV,HLS,LAB,Chroma) which each implies a related channel count (see above), and a dedicated format named \inlinecode{formatMatrix} that may have any number of channels. Setting an images format using \inlinecode{void setFormat(format fmt)} also adapts the channel count if necessary. Changing an images channel count to a value that does not match the channel count that is associated with it's current format automatically sets the image format to \inlinecode{formatMatrix}.\\
-Additionally it's important to mention, that all color-formats use a value range of $[0,255]$ regardless of the current pixel data type. I.e. also \inlinecode{float}-images expect e.g. RGB-values in range $[0,255]$ and not as one might expect in range $[0,1]$. Of course, you can setup a \inlinecode{float}-images pixels to any desired values, but color conversion functions \iclnamespaceref{CC} and image visualization work with this range.
+Furthermore it's important to mention, that all color-formats use a value range of $[0,255]$ regardless of the current pixel data type. I.e. also \inlinecode{float}-images expect e.g. RGB-values in range $[0,255]$ and not as one might expect in range $[0,1]$. Of course, you can setup a \inlinecode{float}-images pixels to any desired values, but color conversion functions \iclnamespaceref{CC} and image visualization work with this range.
 
 \item \textbf{Region-of-Interest}\\
-In many image processing applications there's some step withing the processing loop, where further processing can be restricted to a small image region. Most of the time, this so called \emph{Region-of-Interest} -- or short \textbf{ROI} is represented by a rectangular data structure. This helps to specify some interest regions without to be in need of extracting the images ROI by copying it's ROI-pixel deeply into another (smaller) image.\\
-In the ICL, each image is equipped with a ROI-Rectangle of type \inlinecode{Rect} \iclclassref{Core}{Rect}. Nearly all ICL-functions and operators are able to process an images ROI only (e.g. Filters, that are represented by the \inlinecode{UnaryOp}-Interace \iclclassref{Filter}{UnaryOp} can be set up to apply their specific operation only on the ROI-Pixels of an image. One exception is e.g. the \inlinecode{deepCopy} function of an image, which creates a new image with
+In many image processing applications there're steps within the processing loop, where further processing can be restricted to a small image region. Most of the time, this so called \emph{Region-of-Interest} -- or short \textbf{ROI} is represented by a rectangular data structure. This helps to specify some interest regions without the need of extracting the images ROI by copying it's ROI-pixels deeply into another (smaller) image.\\
+In the ICL, each image is equipped with a ROI-Rectangle of type \inlinecode{Rect} \iclclassref{Core}{Rect}. Nearly all ICL-functions and operators are able to process an images ROI only (e.g. Filters, that are represented by the \inlinecode{UnaryOp}-Interace \iclclassref{Filter}{UnaryOp} can be set up to apply their specific operation only on the ROI-Pixels of an image). One exception is e.g. the \inlinecode{deepCopy} function of an image, which creates a new image with
 identical size (and ROI-size). If one wants to copy only an images ROI \inlinecode{deepCopyROI} must be used instead. 
 
 \item \textbf{Time-Stamp}\\
-Another useful image parameter is a time stamp, which commonly is given by the time the images content was grabbed or recorded. ICL uses a \inlinecode{Time} \iclclassref{Utils}{Time} structure here. Most camera grabbers set up grabbed images time stamps to the moment it was grabbed from the camera device.  
+Another useful image parameter is a time stamp, which is commonly given by the time the images content was grabbed or recorded. ICL uses a \inlinecode{Time} \iclclassref{Utils}{Time} structure here. Most camera grabbers set up grabbed images time stamps to the moment it was grabbed from the camera device.  
 
 \item \textbf{Image-Pixel Data Type (depth)}
-The image depth parameter is used to estimate an images pixel data type \textbf{at runtime}. As we will see in the following sections, in most cases, image pixel data type (from now on \emph{image depth}) is already fixed at compilation time due to the use of C++-templating. This feature becomes clearer, when the image implementation was discussed in detail (see Section \ref{sec:image}). The image depth can be obtained using \inlinecode{depth getDepth() const} and depth values are defined by an enum of the same name \iclheaderref{Core}{Types}. Furthermore, it important, that is is no \inlinecode{setDepth} function, which again becomes clear in the next sections. An images depth can be adapted with a group of extra functions \iclnamespaceref{Core}. E.g. the function \inlinecode{ensureDepth} \iclheaderref{Core}{Core} can be used to set an images depth to a certain value. 
+The image depth parameter is used to estimate an images pixel data type \textbf{at runtime}. As we will see in the following sections, in most cases, image pixel data type (from now on \emph{image depth}) is already fixed at compilation time due to the use of C++-templating. This feature becomes clearer, when the image implementation was discussed in detail (see Section \ref{sec:image}). The image depth can be obtained using \inlinecode{depth getDepth() const} and depth values are defined by an enum of the same name \iclheaderref{Core}{Types}. Furthermore, it's important, that there's no \inlinecode{setDepth} function, which again becomes clear in the next sections. An images depth can be adapted with a group of extra functions \iclnamespaceref{Core}. E.g. the function \inlinecode{ensureDepth} \iclheaderref{Core}{Core} can be used to set an images depth to a certain value. 
 
 \end{enumerate}
 
@@ -75,12 +76,12 @@ Here is a short C++ scheme of the image structure\footnote{This is not the actua
 
 
 \subsection {Adjustment and Reinterpretion of Image Parameters}
-At this point, it shall be mentioned, that some image parameters can be changed more easily then other ones. Changing an images size or channel count implies, that image data pointers must be allocated, free'd -- or even reallocated. Futhermore, we will see soon, that the hole image structure must be reallocated if the image depth is changed. However changing the other parameters is sometimes much cheaper: E.g. changing an images ROI or time stamp works without changing the image data itself. Also the image format can be changed as long as the new format is not associated with another channel count\footnote{Ok, reinterpreting an RGB-images channels as an YUV-data does not really make sense, except when the assumption of the RGB image format was already wrong. Most of the time, this feature is necessary to reinterpret matrix-format data into a color-/gray-format or vice versa}.\\
-Futhermore, it's worth mention, that all image parameter manipulating function do only work on demand. E.g. if \inlinecode{setSize} is called on an image that already has the desired size, nothing is done.
+At this point, it shall be mentioned, that some image parameters can be changed more easily\footnote{in terms of processing performance} then other ones. Changing an images size or channel count implies, that image data pointers must be allocated, free'd -- or even reallocated. Futhermore, we will see soon, that the whole image structure must be reallocated if the image depth is changed. However changing the other parameters is sometimes much cheaper: E.g. changing an images ROI or time stamp works without changing the image data itself. Also the image format can be changed as long as the new format is not associated with another channel count\footnote{Ok, reinterpreting an RGB-images channels as an YUV-data does not really make sense, except when the assumption of the RGB image format was already wrong. Most of the time, this feature is necessary to reinterpret matrix-format data into a color-/gray-format or vice versa}.\\
+Futhermore, it's worth mention, that all image parameter manipulating functions do only work on demand. E.g. if \inlinecode{setSize} is called on an image that already has the desired size, nothing is done.
 
 
 \subsection {Image Params Revised}
-To simplify the image class implementation, we introduced a utility data structure called \inlinecode{ImgParams} \iclclassref{Core}{ImgParams}. This structure consists of size, channel count, format, and ROI. Besides, it handles correlation between channel count and format as well as checking and adapting ROIs, that do not fit into the hole image rect. The image itself contains an \inlinecode{ImgParams} structure, a time stamp and a depths variable. Futhermore, one can make two images \inlinecode{A} and \inlinecode{B} compatible (except their depth-values) by calling \inlinecode{B.setParams(A.getParams())}.
+To simplify the image class implementation, we introduced a utility data structure called \inlinecode{ImgParams} \iclclassref{Core}{ImgParams}. This structure consists of size, channel count, format, and ROI. Besides, it handles correlation between channel count and format as well as checking and adapting ROIs, that do not fit into the whole image rect. The image itself contains an \inlinecode{ImgParams} structure, a time stamp and a depth variable. Futhermore, one can make two images \inlinecode{A} and \inlinecode{B} compatible (except their depth-values) by calling \inlinecode{B.setParams(A.getParams())}.
 
 
 \section{The Image}
@@ -89,24 +90,49 @@ Now we are able to put these things together: image features and image data. As 
 \codefile{img-structure-with-params.cpp}{First prototype for \inlinecode{Img}-structure}
 
 Those who are familiar with C++-templating techniques, might have mentioned, that there is still some overhead within the implementation. Although all parameters except the image data vector do not depend on the template parameter \inlinecode{T}, they are a part of each template instance.\\
-Furthermore, there's a special problem regarding C++ template classes, which can easily be stated with out \inlinecode{Img}-example: different template instances (e.g. \inlinecode{Img<int>} and \inlinecode{Img<float>}) have no common data structure at runtime. So there's no higher-level structure which can be used as an interface for different \inlinecode{Img<T>}-classes.\\
-This were the reasons why we decided to implement a base class for all \inlinecode{Img<T>} template instances called \inlinecode{ImgBase} \iclclassref{Core}{ImgBase}. Basically, \inlinecode{Img} and \inlinecode{ImgBase} are linked like this:
+Furthermore, there's a special problem regarding C++ template classes, which can easily be stated with the \inlinecode{Img}-example: different template instances (e.g. \inlinecode{Img<int>} and \inlinecode{Img<float>}) have no common data structure at runtime. So there's no higher-level structure which can be used as an interface for different \inlinecode{Img<T>}-classes.\\
+This is why we decided to implement a base class for all \inlinecode{Img<T>} template instances called \inlinecode{ImgBase} \iclclassref{Core}{ImgBase}. Basically, \inlinecode{Img} and \inlinecode{ImgBase} are linked like this:
 
 \codefile{img-and-img-base-scheme.cpp}{Inheritance scheme for \inlinecode{Img} and \inlinecode{ImgBase} classes} 
 
-At this point we are able to explain the necessity of the depth parameter in the \inlinecode{ImgBase} class. Consider there is a function (e.g. named \inlinecode{threshold}) that shall work with arbitrary image depths, so it must expect an \inlinecode{ImgBase}-parameter\footnote{as pointer or reference as inheritance does not work otherwise}:
+
+\section{Typedef-Confusions}
+To facilitate handling ICL image template types, we provide a set of \inlinecode{typedef}s within the \iclheaderref{Core}{Types}-header. In the first instance, there's a set of \inlinecode{typedef}s for some C++-POD\footnote{Plain Old Data-Types like \inlinecode{int}, \inlinecode{unsigned char}, \inlinecode{float} etc...}-types:
+
+\codefile{icl-D-typedefs.cpp}{ICL's POD-typedefs} 
+
+As one can see, typedefs are made compatible to Intel IPP-typedefs in case of having IPP-support, otherwise according C/C++ types are used directly. Beyond that, by copying Intel IPP's type suffixes, we will be able to define macros that construct IPP function names dynamically.\\ Once having defined this types, also class instances of the \inlinecode{Img<T>}-template can be \inlinecode{typedef}'ed to more convenient typenames:
+
+\codefile{img-D-typedefs.cpp}{ICL's Image-Types} 
+
+To confuse the reader even a little more, also the runtime type identification \inlinecode{enum depth} uses the same type suffixes:
+
+\codefile{icl-depth-enum.cpp}{The depth enumeration} 
+
+All this types (or values in case of the \inlinecode{depth-enum}) engage during implementation, as the following section will illustrate. The \emph{take-home-message} of this section is:\\
+\begin{itemize}
+\item An \inlinecode{ImgX} uses \inlinecode{iclX}'s as pixel values.
+\item \inlinecode{ImgX} is just a \inlinecode{typedef} for \inlinecode{Img<iclX>}.
+\item An \inlinecode{ImgX}'s \inlinecode{getDepth()}-member function returns \inlinecode{depthX}, which is essential if you want to determine the actual type of an \inlinecode{ImgBase}-pointer or -reference.
+\item Currently \inlinecode{X} may be \inlinecode{8u, 16s, 32s, 32f, 64f}.
+\end{itemize}
+
+
+\section{Implementing depth-independent functions}
+
+At this point we are able to explain the necessity of the depth parameter in the \inlinecode{ImgBase} class in detail. Consider there is a function (e.g. named \inlinecode{threshold}) that shall work with arbitrary image depths, so it must expect an \inlinecode{ImgBase}-parameter\footnote{as pointer or reference as inheritance does not work otherwise}:
 
 \displaycode{void threshold(ImgBase *image, double t);}
 
-The depth parameter with within the \inlinecode{ImgBase} serves as runtime type identifier to perform a save cast into the real data type at runtime.
+The depth parameter within the \inlinecode{ImgBase} serves as runtime type identifier to perform a save cast into the real data type at runtime.
 
 \codefile{cast-imgbase-to-img-threshold-example.cpp}{Type-safe casting (downwards within the inheritance tree)}
 
 Ok, probably there are some contradictions:\\
 
 \begin{itemize}
-\item \textbf{Type-safe casting downwards within the inheritance tree can is already supported by the C++-RTTI\footnote{RunTime-Type-Identification}-interface}\\
-Yes, it is, but it's very slow in comparison to comparing a single enumeration value.
+\item \textbf{Type-safe casting downwards within the inheritance tree is already supported by the C++-RTTI\footnote{RunTime-Type-Identification}-interface}\\
+Yes, it is, but it's very slow in comparison to comparing a single enumeration value. I figured out, that using \inlinecode{dynamic\_cast} instead of switching over the \inlinecode{depth enum} is about 20 times slower when compiling optimized.
 
 \item \textbf{Function implementation gets very complicated and we cannot exploit the fact, that \inlinecode{Img} instances are templates}\\
 No - and yes we can! The code above was just an example to explain how it can be implemented. A real implementation of an image threshold could look like this:
@@ -114,15 +140,33 @@ No - and yes we can! The code above was just an example to explain how it can be
 \codefile{cast-imgbase-to-img-threshold-example-real.cpp}{Type-safe threshold implementation revised}
 
 \item \textbf{This helps only to exploit templating, switching over all types produces still a lot of code}\\
-There is a special ICL-macro that helps to implement such switch calls. It is called \inlinecode{ICL\_INSTANTIATE\_ALL\_DEPTHS}. This this macro calls another macro, that defines how to instantiate a single depth: \inlinecode{ICL\_INSTANTIATE\_DEPTH(D)}, where \inlinecode{D} is the depth/ICL-type suffix (e.g. 8u or 32f) must be defined. \inlinecode{ICL\_INSTANTIATE\_DEPTH(D)} must be defined for each single case, an it must be undefined after the call to
+There is a special ICL-macro that helps to implement such \inlinecode{switch}-calls, which is called \inlinecode{ICL\_INSTANTIATE\_ALL\_DEPTHS}. This macro then calls another macro named \inlinecode{ICL\_INSTANTIATE\_DEPTH(D)}, which defines how process a specific depth -- and which must be defined by the programmer before \inlinecode{ICL\_INSTANTIATE\_ALL\_DEPTHS} can be called. \inlinecode{ICL\_INSTANTIATE\_ALL\_DEPTHS} then just expands to  \inlinecode{ICL\_INSTANTIATE\_DEPTH(8u)} \inlinecode{ICL\_INSTANTIATE\_DEPTH(16s)} etc. Of course \inlinecode{ICL\_INSTANTIATE\_DEPTH(D)} must be undefined after calling \inlinecode{ICL\_INSTANTIATE\_ALL\_DEPTHS} to allow to use this feature again later. The full threshold implementation could look like this\footnote{Ok, we use another macro called \inlinecode{ICL\_INVALID\_DEPTH} here, which just throws an appropriate exception}:
 
+\codefile{cast-imgbase-to-img-threshold-example-macro.cpp}{Using the \inlinecode{ICL\_INSTANTIATE\_ALL\_DEPTHS}-macro}
 
 \end{itemize}
 
+\section {Shallow Copy Concept}
 
-todo icl##D
-and depth##D
-k"onnen wir nach depth feature packen!!
+In contrast to e.g. Java, C++ copies all objects deeply on default. If a reference copy is desired (e.g. as function arguments) one can simply use the \inlinecode{&} character to make a function argument be copied by reference (shallowly). Unfortunately this mechanism cannot be transcribed to function return values, as often Function return values are temporary objects \emph{living} on the function stack which cannot be passed by reference as return values. Hence, temporaries must:
+\begin{enumerate}
+\item be copied on the function return interface\footnote{There is a special case, when this isn't necessary, namely if the return values is stored in a brand new instance of that type, but often this is not appropriate.}
+\item or be passed as a pointer (allocated on the heap)
+\end{enumerate}
+Copying data always involves a large overhead especially when large data arrays have to be copied deeply. If a function returns a pointer, there's always some implementational overhead for deleting the image pointer later on, however this could be forgotten accidently, which would leads to a memory leak then.\\
+This is why we broke with the C++ convention of \emph{deep copy on default} for the image class:
+\begin{center}
+\textbf{images are copied shallowly on default!}\\[20pt]
+\end{center}
+More precisely, \textbf{image channel data} is copied shallowly, and all other image parameters are copied deeply. This can be interpreted as follows:
+An \inlinecode{Img<T>} instance corresponds to a \textbf{view} on the underlying image channel data.
+
+
+\section {Shared Channel Concept}
+
+One of the most significant Features of the ICL is the \emph{shared channel concept} which is not at least the reason for the name \emph{Image Component Library}. As we have seen in the former sections, Images consist of a set of image channels. 
+
+
 
 
 
