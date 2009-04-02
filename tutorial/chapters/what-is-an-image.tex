@@ -172,9 +172,26 @@ Hence, take care when you're copying \inlinecode{const Img<T>}-instances.
 
 \section {Channel Management}
 
-As mentioned above, also single channels can be shared by different \inlinecode{Img<T>} instances. Of course, this does only work for images with an identical depth. The following example demonstrates channel management:
+As mentioned above, also single channels can be shared by different \inlinecode{Img<T>} instances. Of course, this does only work for images with an identical depth ans size. The following example demonstrates channel management:
 
 \codefile{channel-management.cpp}{Image channel management examples}
+
+
+\section {Converting Images}
+
+In some situations, incomming image depth is not sufficient for a certain task. There a two mechanism that may help in that situation:
+\begin{enumerate}
+\item Creation of another image with identical parameters except the first images depth, followed by a source-destination-fashioned pixel-wise conversion.
+\item An \emph{inplace}-adaption of the image-depth, which is only possible for \inlinecode{ImgBase}-instances on the heap.
+\end{enumerate}
+
+This following two sub-sections   will show, how to convert an images depth (sec. \ref{subsec:depth-conversion}) and how to adapt an images depth \emph{inplace}(sec. \ref{subsec:depth-adaption}).
+
+\subsection {\label{subsec:depth-conversion}Image depth-Conversion}
+To avoid misunderstandings, there's another use for the term \emph{conversion}, namely for \emph{color conversion}.
+
+
+\subsection {\label{subsec:depth-adaption}Image depth-Adaption}
 
 
 
