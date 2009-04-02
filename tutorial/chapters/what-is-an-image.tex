@@ -1,4 +1,4 @@
- Within the ICL, images are represented as a set of image channels of the same size:
+x Within the ICL, images are represented as a set of image channels of the same size:
 
 \iclfigure{image-1}{ICL image scheme}{height=150px}
 
@@ -148,7 +148,7 @@ There is a special ICL-macro that helps to implement such \inlinecode{switch}-ca
 
 \section {Shallow Copy Concept}
 
-In contrast to e.g. Java, C++ copies all objects deeply on default. If a reference copy is desired (e.g. as function arguments) one can simply use the \inlinecode{&} character to make a function argument be copied by reference (shallowly). Unfortunately this mechanism cannot be transcribed to function return values, as often Function return values are temporary objects \emph{living} on the function stack which cannot be passed by reference as return values. Hence, temporaries must:
+In contrast to e.g. Java, C++ copies all objects deeply on default. If a reference copy is desired (e.g. as function arguments) one can simply use the \inlinecode{&} character to make a function argument be copied by reference (shallowly). Unfortunately this mechanism cannot be transcribed to function return values. Return values are often temporary objects (that \emph{live} on the function stack) which cannot be passed by reference as return values. Hence, temporaries must:
 \begin{enumerate}
 \item be copied on the function return interface\footnote{There is a special case, when this isn't necessary, namely if the return values is stored in a brand new instance of that type, but often this is not appropriate.}
 \item or be passed as a pointer (allocated on the heap)
@@ -159,13 +159,22 @@ This is why we broke with the C++ convention of \emph{deep copy on default} for 
 \textbf{images are copied shallowly on default!}\\[20pt]
 \end{center}
 More precisely, \textbf{image channel data} is copied shallowly, and all other image parameters are copied deeply. This can be interpreted as follows:
-An \inlinecode{Img<T>} instance corresponds to a \textbf{view} on the underlying image channel data.
+An \inlinecode{Img<T>} instance corresponds to a \textbf{view} on the underlying image channel data. This can be exploited e.g. by having an image \inlinecode{A} which has a full ROI\footnote{this means the ROI-rectangle has offset $(0,0)$ and it's size is similar to the image size.} and another image \inlinecode{B} with a distinct ROI and both images share their channel data. Futhermore this enables us to  construct an image from the channels of a set of other images, to flip image channels or to append image channels shallowly.\\
+However there're of course situations where a deep copy is desired. This can either be done using the \inlinecode{deepCopy()}-function of an image or by calling the \inlinecode{detach()}-function on a shared image (see \iclclassref{Core}{Img} for details).
+
+\codefile{shallow-copied-imgs.cpp}{Deep- and shallow copies of images}
+
+\subsection{Drawbacks of Shallow-Copy-on-Default}
+In short, actually C++ doesn't support shallow copy on default (SCOD) very well. Firstly, there's a C++ convention that says \emph{C++ uses deep copy on default (DCOD)}, so breaking with that convention must be documented well to avoid really unexpected behaviour. Besides, there's another problem with C++'s \inlinecode{const}-concept, which can only hardly be combined properly with SCOD classes. Consider there's a class \inlinecode{I} (e.g. an image class) that realizes SCOD, by implementing at least the copy constructor \inlinecode{I::I(const I&)} and the assignment operator (\inlinecode{I& I::operator=(const I&)}. Now, consider some function interface like \inlinecode{void foo(const I &i)}, which \emph{promises} not to change the function argument \inlinecode{i} due to it's \inlinecode{const}-ness. If the class \inlinecode{I} is implemented correctly it will ensure this actively, by \emph{denying} access to un-\inlinecode{const} member functions and un-\inlinecode{mutable} class members of \inlinecode{i} at compile time. Unfortunately, it's still possible to create an un-\inlinecode{const} shallow copy of \inlinecode{i} to do that nevertheless. All attempts to avoid this will fail, because it's not possible to restrict a shallow copying copy constructor to un-\inlinecode{const} source images or to enforce new shallow copied instances of \inlinecode{const} class instances to be \inlinecode{const}.\\
+Hence, take care when you're copying \inlinecode{const Img<T>}-instances.
 
 
-\section {Shared Channel Concept}
 
-One of the most significant Features of the ICL is the \emph{shared channel concept} which is not at least the reason for the name \emph{Image Component Library}. As we have seen in the former sections, Images consist of a set of image channels. 
+\section {Channel Management}
 
+As mentioned above, also single channels can be shared by different \inlinecode{Img<T>} instances. Of course, this does only work for images with an identical depth. The following example demonstrates channel management:
+
+\codefile{channel-management.cpp}{Image channel management examples}
 
 
 
