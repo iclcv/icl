@@ -188,11 +188,38 @@ In some situations, incomming image depth is not sufficient for a certain task. 
 This following two sub-sections   will show, how to convert an images depth (sec. \ref{subsec:depth-conversion}) and how to adapt an images depth \emph{inplace}(sec. \ref{subsec:depth-adaption}).
 
 \subsection {\label{subsec:depth-conversion}Image depth-Conversion}
-To avoid misunderstandings, there's another use for the term \emph{conversion}, namely for \emph{color conversion}.
+To avoid misunderstandings, there's another use for the term \emph{conversion}, namely for \emph{color conversion} which is discussed in section \ref{sec:color-conversion}.\\
+Image depth conversion is alway applied deeply or pixel-wise, i.e. each single pixel is converted. Type to type conversion is applied with the \inlinecode{clipped\_cast()} template function (see \iclheaderref{Util}{ClippedCast}, that avoids range overflow if the destination data type has a smaller range than the source data type. \emph{Vectorized} conversion (converting a range of type \inlinecode{A} element-wise into a range of type \inlinecode{B} is done by the \inlinecode{convert}-function (\iclheaderref{Core}{Core}), which uses the STL-algorithm \inlinecode{std::transform} to apply \inlinecode{clipped\_cast} element-wise at default. However most\footnote{For most \inlinecode{iclXX} to \inlinecode{iclYY} combinations} common conversion operations e.g. from \inlinecode{icl32f} to \inlinecode{icl8u} are IPP-accelerated if IPP support is enabled.\\
+The \inlinecode{ImgBase}-class provides three dedicated \inlinecode{convert} functions for converting image data. 
+\begin{enumerate}
+\item \inlinecode{Img<T>* ImgBase::convert(Img<T>*dst=NULL)const}\\
+This function allows to specify destination depth from template scope. Furthermore, this templating mechanism automatically matches to the destination depth if \inlinecode{dst} is not \inlinecode{NULL}.
+\item \inlinecode{ImgBase *ImgBase::convert(depth d) const}\\
+This conversion function can be used if destination depth is not known at compile time.
+\item \inlinecode{ImgBase *ImgBase::convert(ImgBase *dst) const}\\
+This function extracts destination depth also at runtime from the given \inlinecode{ImgBase*}.      
+\end{enumerate}
 
 
 \subsection {\label{subsec:depth-adaption}Image depth-Adaption}
 
+As mentioned above, due to the fact, that the \inlinecode{Img<T>} template class inherits the \inlinecode{ImgBase}-class, there's no \inlinecode{setDepth()}-member function within the \inlinecode{ImgBase} class. However in some situations an images depth must be adapted. This is why we need an concededly \emph{ugly} \inlinecode{ImgBase**} interface.
+
+\codefile{img-base-naive-depth-adaption.cpp}{Naive depth adaption}
+
+This can be achieved much easier using the \inlinecode{ensureDepth}-function (\iclheaderref{Core}{Core}). 
+\inlinecode{ensureDepth} uses an \inlinecode{ImgBase**} parameter which allows that a re-allocation of the referenced \inlinecode{ImgBase*} is mentioned in the calling scope. Exceptionally\footnote{Actually this tutorial trys to explain ICL's-function interfaces rather than their current implementation.}, here's the implementation of ICL's \inlinecode{ensureDepth}-function:
+
+\codefile{ensure-depth-implementation.cpp}{Actual implementation of \inlinecode{ensureDepth} function}
+
+The \inlinecode{ImgBase**}-interface is used e.g. for the \inlinecode{Grabber}-interface (\iclclassref{IO}{Grabber}) and for unary- and binary operators (see \iclclassref{Filter}{UnaryOp} and \iclclassref{Filter}{BinaryOp}). To make things a bit more graphic, we risk a short anticipation to the \inlinecode{UnaryOp}-interface.\\
+A unary image operator (represented by the \inlinecode{UnaryOp}-interface), can be seen as a \emph{black-box}, that has an image input and an image output and some functionality that transforms a given input image into the output image. Often this is referenced as an \emph{image-filter}, however we use the term \emph{unary operator} to emphasize, that there are binary operators as well with a different semantics. The unary operator interface consists essentially of a single function:
+
+\displaycode{virtual void apply(const ImgBase *src, ImgBase **dst)=0}
+
+This function \emph{applies} the operators functionality on the input image \inlinecode{src} and stores the result in the output image \inlinecode{dst}. All ICL-operators will adapt the output image automatically in terms of size, channel count, format and even depth. 
+
+ 
 
 
 
