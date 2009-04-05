@@ -1,5 +1,6 @@
 #include "iclFixedMatrix.h"
 #include <cmath>
+#include <string>
 
 namespace icl{
 
@@ -105,22 +106,28 @@ namespace icl{
     *dst++ = ( m01*m12*m20 - m02*m11*m20 + m02*m10*m21 - m00*m12*m21 - m01*m10*m22 + m00*m11*m22 )/d;
   }
 
+  
   template<class T> 
   void icl_util_get_fixed_3x3_matrix_inv(const T *src, T*dst){
-    T d = icl_util_get_fixed_3x3_matrix_det(src);
-    if(!d) throw SingularMatrixException("matrix is too singular");
-    const T &a = *src++; const T &b = *src++; const T &c = *src++;
-    const T &e = *src++; const T &f = *src++; const T &g = *src++;
-    const T &h = *src++; const T &i = *src++; const T &j = *src++;
-    *dst++ = ( -f*h + e*i )/d;
-    *dst++ = ( c*h - b*i )/d;
-    *dst++ = ( - c*e + b*f )/d;
-    *dst++ = ( f*g  - d*i )/d;
-    *dst++ = ( - c*g + a*i )/d;
-    *dst++ = ( - d*b + a*e )/d;
-    *dst++ = ( - e*g + d*h )/d;
-    *dst++ = ( b*g - a*h )/d;
-    *dst++ = ( - b*d + a*e )/d;
+    T det = icl_util_get_fixed_3x3_matrix_det(src);
+
+    if(!det) throw SingularMatrixException("matrix is too singular");
+    
+    const T &m11 = *src++; const T &m12 = *src++; const T &m13 = *src++;
+    const T &m21 = *src++; const T &m22 = *src++; const T &m23 = *src++;
+    const T &m31 = *src++; const T &m32 = *src++; const T &m33 = *src++;
+
+    *dst++ =  (m33*m22-m32*m23)/det;
+    *dst++ = -(m33*m12-m32*m13)/det;    
+    *dst++ =  (m23*m12-m22*m13)/det;
+
+    *dst++ = -(m33*m21-m31*m23)/det;
+    *dst++ =  (m33*m11-m31*m13)/det;
+    *dst++ = -(m23*m11-m21*m13)/det;
+
+    *dst++ =  (m32*m21-m31*m22)/det;
+    *dst++ = -(m32*m11-m31*m12)/det;
+    *dst++ =  (m22*m11-m21*m12)/det;
     
   }
   template<class T> 
