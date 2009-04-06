@@ -675,6 +675,9 @@ namespace icl{
     /// invert the matrix (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
     /** This function internally uses an instance of DynMatrix<T> 
         Additionally implemented (in closed form) for float and double for 2x2 3x3 and 4x4 matrices
+        
+        <b>Note:</b> Inv will not compute a pseudo inverse matrix. Include iclFixedMatrixUtils.h
+        instead and use the non-member template function pinv() instead for pseudo-inverse calculation
     */
     FixedMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
       DynMatrix<T> m(COLS,ROWS,const_cast<T*>(m_data),false);
@@ -682,7 +685,6 @@ namespace icl{
       m.set_data(0);
       FixedMatrix r;
       FixedMatrixBase::optimized_copy<T*,T*,DIM>(mi.begin(),mi.end(),r.begin());
-      //      std::copy(mi.begin(),mi.end(),r.begin());      
       return r;
     }
     
@@ -891,6 +893,7 @@ namespace icl{
 #endif
 
 #define USE_OPTIMIZED_INV_AND_DET_FOR_2X2_3X3_AND_4X4_MATRICES
+
 #ifdef USE_OPTIMIZED_INV_AND_DET_FOR_2X2_3X3_AND_4X4_MATRICES
 
   /** \cond */
@@ -925,12 +928,14 @@ namespace icl{
     return icl_util_get_fixed_##D##x##D##_matrix_det<T>(begin());       \
   }
 
+
   SPECIALISED_MATRIX_INV_AND_DET(2,float);
   SPECIALISED_MATRIX_INV_AND_DET(3,float);
   SPECIALISED_MATRIX_INV_AND_DET(4,float);
   SPECIALISED_MATRIX_INV_AND_DET(2,double);
   SPECIALISED_MATRIX_INV_AND_DET(3,double);
   SPECIALISED_MATRIX_INV_AND_DET(4,double);
+
 
 #undef SPECIALISED_MATRIX_INV_AND_DET
   

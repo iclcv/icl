@@ -7,10 +7,15 @@ XCXXFLAGS= ${CXXFLAGS} \
 ## Applications that depend on noting ###########################################
 #################################################################################
 bin_PROGRAMS= \
-icl_progargdemo
+icl-progargdemo \
+icl-dyn-matrix-test
 
 # explicit sources, ldflags and cxxflags
 icl_progargdemo_SOURCES=../examples/progargdemo.cpp
 icl_progargdemo_LDFLAGS=${XLDFLAGS}
 icl_progargdemo_CXXFLAGS=${XCXXFLAGS}
+
+icl_dyn_matrix_test_SOURCES=../examples/dyn-matrix-test.cpp
+icl_dyn_matrix_test_LDFLAGS=${XLDFLAGS}
+icl_dyn_matrix_test_CXXFLAGS=${XCXXFLAGS}
 

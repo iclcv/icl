@@ -3,6 +3,8 @@
 
 #ifdef HAVE_IPP
 #include <ipp.h>
+#else
+#include <stdint.h>
 #endif
 
 namespace icl {
@@ -31,13 +33,13 @@ namespace icl {
   typedef float icl32f;
 
   /// 32bit signed integer type for the ICL \ingroup TYPES
-  typedef int icl32s;
+  typedef int32_t icl32s;
   
   /// 16bit signed integer type for the ICL (range [-32767, 32768 ]) \ingroup TYPES
-  typedef short int icl16s;
+  typedef int16_t icl16s;
 
   /// 8Bit unsigned integer type for the ICL \ingroup TYPES
-  typedef unsigned char icl8u;
+  typedef uint8_t icl8u;
 
 #endif
 
