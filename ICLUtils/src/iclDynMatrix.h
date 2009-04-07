@@ -229,11 +229,17 @@ namespace icl{
   
     /// element access operator (x,y)-access index begin 0!
     T &operator()(unsigned int col,unsigned int row){
+#ifdef DYN_MATRIX_INDEX_CHECK
+      if(col >= m_cols || row >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
+#endif
       return m_data[col+cols()*row];
     }
 
     /// element access operator (x,y)-access index begin 0! (const)
     const T &operator() (unsigned int col,unsigned int row) const{
+#ifdef DYN_MATRIX_INDEX_CHECK
+      if(col >= m_cols || row >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
+#endif
       return m_data[col+cols()*row];
     }
 
@@ -248,12 +254,23 @@ namespace icl{
       return const_cast<DynMatrix*>(this)->at(col,row);
     }
     
+
+    
     /// linear access to actual data array
-    T &operator[](unsigned int idx) { return m_data[idx]; }
+    T &operator[](unsigned int idx) { 
+      idx_check(idx);
+      if(idx >= dim()) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index [" << idx<< "]");
+
+      return m_data[idx]; 
+      
+    }
     
 
     /// linear access to actual data array (const)
-    const T &operator[](unsigned int idx) const { return m_data[idx]; }
+    const T &operator[](unsigned int idx) const { 
+      idx_check(idx);
+      return m_data[idx]; 
+    }
     
     /// applies an L_l norm on the matrix elements (all elements are treated as vector)
     T norm(double l=2) const{
@@ -452,28 +469,52 @@ namespace icl{
     const_iterator end() const { return m_data+dim(); }
   
     /// returns an iterator running through a certain matrix column 
-    col_iterator col_begin(unsigned int col) { return col_iterator(m_data+col,cols()); }
+    col_iterator col_begin(unsigned int col) {       
+      col_check(col);
+      return col_iterator(m_data+col,cols()); 
+    }
 
     /// returns an iterator end of a certain matrix column 
-    col_iterator col_end(unsigned int col) { return col_iterator(m_data+col+dim(),cols()); }
+    col_iterator col_end(unsigned int col) {
+      col_check(col);
+      return col_iterator(m_data+col+dim(),cols()); 
+    }
   
     /// returns an iterator running through a certain matrix column (const)
-    const_col_iterator col_begin(unsigned int col) const { return col_iterator(m_data+col,cols()); }
+    const_col_iterator col_begin(unsigned int col) const { 
+      col_check(col);
+      return col_iterator(m_data+col,cols()); 
+    }
 
     /// returns an iterator end of a certain matrix column (const)
-    const_col_iterator col_end(unsigned int col) const { return col_iterator(m_data+col+dim(),cols()); }
+    const_col_iterator col_end(unsigned int col) const { 
+      col_check(col);
+      return col_iterator(m_data+col+dim(),cols()); 
+    }
 
     /// returns an iterator running through a certain matrix row 
-    row_iterator row_begin(unsigned int row) { return m_data+row*cols(); }
+    row_iterator row_begin(unsigned int row) { 
+      row_check(row);
+      return m_data+row*cols(); 
+    }
 
     /// returns an iterator of a certains row's end
-    row_iterator row_end(unsigned int row) { return m_data+(row+1)*cols(); }
+    row_iterator row_end(unsigned int row) { 
+      row_check(row);
+      return m_data+(row+1)*cols(); 
+    }
 
     /// returns an iterator running through a certain matrix row  (const)
-    const_row_iterator row_begin(unsigned int row) const { return m_data+row*cols(); }
+    const_row_iterator row_begin(unsigned int row) const { 
+      row_check(row);
+      return m_data+row*cols(); 
+    }
 
     /// returns an iterator of a certains row's end (const)
-    const_row_iterator row_end(unsigned int row) const { return m_data+(row+1)*cols(); }
+    const_row_iterator row_end(unsigned int row) const {
+      row_check(row);
+      return m_data+(row+1)*cols(); 
+    }
     
     /// used to visualize matrix entries
     friend inline std::ostream &operator<<(std::ostream &s,const DynMatrix &m){
@@ -487,22 +528,26 @@ namespace icl{
     
     /// Extracts a shallow copied matrix row
     DynMatrix row(int row){
+      row_check(row);
       return DynMatrix(m_cols,1,row_begin(row),false);
     }
 
     /// Extracts a shallow copied matrix row (const)
     const DynMatrix row(int row) const{
+      row_check(row);
       return DynMatrix(m_cols,1,const_cast<T*>(row_begin(row)),false);
     }
 
     /* here we need a helper struct!
         /// Extracts a shallow copied matrix column
         DynMatrix col(int col){
+        col_check(col);
         return DynMatrix(1,m_rows,m_data+col,false);
         }
         
         /// Extracts a shallow copied matrix column (const)
         const DynMatrix col(int col) const{
+        col_check(col);
         return DynMatrix(1,m_rows,const_cast<T*>(m_data+col),false);
         }
     */
@@ -554,6 +599,33 @@ namespace icl{
     }
     
   private:
+    inline void row_check(unsigned int row) const{
+#ifdef DYN_MATRIX_INDEX_CHECK
+      if(row >= m_rows) ERROR_LOG("access to row index " << row << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
+#else
+      (void)row;
+#endif
+    }
+    inline void col_check(unsigned int col) const{
+#ifdef DYN_MATRIX_INDEX_CHECK
+      if(col >= m_cols) ERROR_LOG("access to column index " << col << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
+#else
+      (void)col;
+#endif
+    }
+    inline void idx_check(unsigned int col, unsigned int row) const{
+      col_check(col);
+      row_check(row);
+    }
+    
+    inline void idx_check(unsigned int idx) const{
+#ifdef DYN_MATRIX_INDEX_CHECK
+      if(idx >= dim()) ERROR_LOG("access to linear index " << idx << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
+#else
+      (void)idx;
+#endif
+    }
+
     int m_rows;
     int m_cols;
     T *m_data;

@@ -116,11 +116,48 @@ double iF[] = {
   -0.3719909,  -0.0822011,   0.1071590,   0.4525974
 };
 
+const int J_DIM = 4;
+const double J_DET =  0.053777;
+double J[] = {
+  0.827244,   0.089357,   0.962606,   0.917073,
+  0.105635,   0.613869,   0.046746,   0.095781,
+  0.976612,   0.248304,   0.907173,   0.794252,
+  0.449633,   0.124991,   0.920790,   0.531229
+};
+double iJ[] = {
+  -2.670293,  -0.966794,   3.811385,  -0.914378,
+  -0.244665,   1.648349,  -0.092019,   0.262751,
+  -1.762969,  -0.411050,   0.328774,   2.626011,
+  5.373498,   1.142943,  -3.774184,  -1.957183,
+};
 
+const int K_DIM = 6;
+const double K_DET = -0.0087545;
+double K[] = {
+  0.637750,0.527936,0.019758,0.744938,0.349333,0.638757,
+  0.583847,0.727741,0.149663,0.116770,0.056763,0.163995,
+  0.428722,0.592850,0.900388,0.119288,0.397983,0.497385,
+  0.279848,0.689939,0.845674,0.439895,0.631890,0.872326,
+  0.912083,0.857675,0.118353,0.610002,0.166882,0.219193,
+  0.704139,0.737904,0.349323,0.934496,0.218207,0.451971
+};
+
+double iK[] = {
+  2.12666,-0.69989,2.89490,-2.69725,0.14227,-0.80055,
+  -2.00766,1.81287,-2.65979,2.39622,0.61764,0.18227,
+  -0.55777,-0.34078,1.65817,-0.91536,-0.87850,1.27989,
+  -0.91326,-1.28262,-0.89634,0.53093,0.62645,1.41395,
+  -1.56067,-5.29049,-1.59218,3.46220,7.64912,-4.51440,
+  3.03742,3.60016,1.17280,-1.77183,-5.53921,1.42897
+};
 
 void rnd3(double &d){
-  d = double(int(d*1000))/1000.0;
+  d = double(int(d*10000))/10000.0;
 }
+double rnd3_2(double d){
+  return double(int(d*10000))/10000.0;
+}
+
 
 DynMatrix<double> rnd3(DynMatrix<double> M){
   for(int x=0;x<M.cols();++x){
@@ -163,11 +200,24 @@ void fixed_benchmark(const FixedMatrix<double,W,H> &M){
 
 
 int main(int n, char **ppc){
+  pa_init(n,ppc,"-no-pinv -no-bench -no-inv");
   for(int i=0;i<36;++i) iB[i]/=10.0;
 
   std::cout << "All matrices must be 0!" << std::endl;
-
 #define SHOW(A) std::cout << (#A) << ":\n" << (A) << "\n"
+  
+  
+  if(!pa_defined("-no-inv")){
+#define IT(A)                                                           \
+    DynMatrix<double> square##A(A##_DIM,A##_DIM,A);                     \
+    std::cout << "det-difference: " << rnd3_2(square##A.det() - A##_DET) << std::endl; \
+    DynMatrix<double> square##A##_Inv(A##_DIM,A##_DIM,i##A);            \
+    SHOW(rnd3(square##A.inv()-square##A##_Inv));
+    
+    IT(J);
+    IT(K);
+  }
+
 #define MM(A,W,H)                                           \
   DynMatrix<double> dyn##A(W,H,A);                          \
   DynMatrix<double> idyn##A(H,W,i##A);                      \
@@ -178,15 +228,22 @@ int main(int n, char **ppc){
   FixedMatrix<double,H,W> my_ifix##A = pinv(fix##A);        \
   SHOW(rnd3(ifix##A-my_ifix##A));
 
-  MM(A,4,6);
-  MM(B,3,12);
-  MM(C,3,12);
-  MM(D,3,4);
-  MM(E,2,2);
-  MM(F,8,4);
+  if(!pa_defined("-no-pinv")){
+    MM(A,4,6);
+    MM(B,3,12);
+    MM(C,3,12);
+    MM(D,3,4);
+    MM(E,2,2);
+    MM(F,8,4);
+  }
   
-  std::cout << "starting benchmark (1000*10 operations on 4x6 source matrix)" << std::endl;
-  
-  dyn_benchmark(dynA);
-  fixed_benchmark(fixA);
+  if(!pa_defined("-no-bench")){
+    std::cout << "starting benchmark (1000*10 operations on 4x6 source matrix)" << std::endl;
+    DynMatrix<double> dyn(4,6,A);
+    FixedMatrix<double,4,6> fix(A);
+    
+    dyn_benchmark(dyn);
+    fixed_benchmark(fix);
+  }
+
 }

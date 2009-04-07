@@ -1,9 +1,11 @@
+#define DYN_MATRIX_INDEX_CHECK
 #include <iclDynMatrix.h>
 #include <iclMacros.h>
 
 #ifdef HAVE_IPP
 #include <ippm.h>
 #endif
+
 
 
 namespace icl{
@@ -46,7 +48,8 @@ namespace icl{
     }
     return det;
   }
-
+#endif
+  
   template<class T>
   static double dot(const DynMatrix<T> &a, const DynMatrix<T> &b){
     ICLASSERT_RETURN_VAL(a.dim() == b.dim(),0.0);
@@ -58,8 +61,118 @@ namespace icl{
   }
 
 
+
+  /// strikes out certain row and column -> optimization: Use a boolean array for that
   template<class T>
-  static void apply_dyn_matrix_decompose_QR(const DynMatrix<T> &A, DynMatrix<T> &Q, DynMatrix<T> &R){
+  static void get_minor_matrix(const DynMatrix<T> &M,int col, int row, DynMatrix<T> &D){
+    /// we assert M is squared here, and D has size M.size()-Size(1,1)
+    
+    int nextCol=0,nextRow=0;
+    const unsigned int dim = M.cols();
+    for(unsigned int i=0;i<dim;++i){  
+      if(i!=row){  
+        nextCol = 0;
+        for(unsigned int j=0;j<dim;j++){  
+          if(j!=col){
+            D(nextCol++,nextRow) = M(j,i);
+          }  
+        }  
+        nextRow++;
+      }  
+    }  
+  }
+
+  
+  template<class T>
+  DynMatrix<T> DynMatrix<T>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
+    //void MatrixInversion(float **A, int order, float **Y)  
+    //DEBUG_LOG("calculating inv() from:\n" << *this);
+    // get the determinant of a  
+    double detVal = det();
+    if(!detVal) throw SingularMatrixException("Determinant was 0 -> (matrix is singular to machine precision)");
+    detVal = 1.0/detVal;
+
+    unsigned int order = cols();
+
+    DynMatrix M(order-1,order-1);
+    DynMatrix I(order,order);
+    
+    // memory allocation  
+    //float *temp = new float[(order-1)*(order-1)];  
+    //float **minor = new float*[order-1];  
+    //for(int i=0;i<order-1;i++)  
+    //minor[i] = temp+(i*(order-1));  
+
+    for(unsigned int i=0;i<order;i++){      
+      for(unsigned int j=0;j<order;j++){  
+        get_minor_matrix(*this,i,j,M);
+      // get the co-factor (matrix) of A(j,i)  
+        //GetMinor(A,minor,j,i,order);  
+        I(j,i) = detVal * M.det();
+        //             Y[i][j] = det*CalcDeterminant(minor,order-1);  
+        if((i+j)%2){  
+          I(j,i) *= -1;//Y[i][j] = -Y[i][j];  
+        }  
+      }  
+    }
+    return I;
+    // release memory  
+    //delete [] minor[0];  
+    //delete [] minor;  
+  }  
+    
+
+
+
+  
+  template<class T>
+  T DynMatrix<T>::det() const throw (InvalidMatrixDimensionException){
+    unsigned int order = cols();
+    if(order != rows()) throw(InvalidMatrixDimensionException("Determinant can only be calculated on squared matrices"));
+
+    switch(order){
+      case 0: throw(InvalidMatrixDimensionException("Matrix order must be > 0"));
+      case 1: return *m_data;
+      case 2: return m_data[0]*m_data[3]-m_data[1]*m_data[2];
+      case 3: {
+        const T *src = m_data;
+        const T &a = *src++; const T &b = *src++; const T &c = *src++;
+        const T &d = *src++; const T &e = *src++; const T &f = *src++;
+        const T &g = *src++; const T &h = *src++; const T &i = *src++;
+        return ( a*e*i + b*f*g + c*d*h ) - ( g*e*c + h*f*a + i*d*b);
+      }
+      case 4: {
+        const T *src = m_data;
+        const T &m00=*src++; const T &m01=*src++; const T &m02=*src++; const T &m03=*src++;
+        const T &m10=*src++; const T &m11=*src++; const T &m12=*src++; const T &m13=*src++;
+        const T &m20=*src++; const T &m21=*src++; const T &m22=*src++; const T &m23=*src++;
+        const T &m30=*src++; const T &m31=*src++; const T &m32=*src++; const T &m33=*src++;
+        return
+        m03 * m12 * m21 * m30-m02 * m13 * m21 * m30-m03 * m11 * m22 * m30+m01 * m13 * m22 * m30+
+        m02 * m11 * m23 * m30-m01 * m12 * m23 * m30-m03 * m12 * m20 * m31+m02 * m13 * m20 * m31+
+        m03 * m10 * m22 * m31-m00 * m13 * m22 * m31-m02 * m10 * m23 * m31+m00 * m12 * m23 * m31+
+        m03 * m11 * m20 * m32-m01 * m13 * m20 * m32-m03 * m10 * m21 * m32+m00 * m13 * m21 * m32+
+        m01 * m10 * m23 * m32-m00 * m11 * m23 * m32-m02 * m11 * m20 * m33+m01 * m12 * m20 * m33+
+        m02 * m10 * m21 * m33-m00 * m12 * m21 * m33-m01 * m10 * m22 * m33+m00 * m11 * m22 * m33;
+      }
+      default:{  
+        // the determinant value  
+        T det = 0;  
+        DynMatrix<T> D(order-1,order-1);
+        for(int i=0;i<order;++i){
+          get_minor_matrix(*this,i,0,D);
+          det += ::pow(-1.0,i) * (*this)(i,0) * D.det();
+        }
+        return det;
+      }
+    }
+  }
+
+  template<class T>
+  void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const 
+    throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException){
+    
+    const DynMatrix<T> &A = *this;
     int rows = A.rows();
     int cols = A.cols();
     DynMatrix<T> a(1,rows), q(1,rows);	// For storing column matrices.
@@ -87,34 +200,17 @@ namespace icl{
     }
     R = R.transp();
   }
-
-
-#endif
-
-  
-  template<class T>
-  DynMatrix<T> DynMatrix<T>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
-    ERROR_LOG("not implemented (only with IPP and only for float and double)");
-    return DynMatrix<T>(1,1);
-  }
-
-  template<class T>
-  T DynMatrix<T>::det() const throw (InvalidMatrixDimensionException){
-    ERROR_LOG("not implemented (only with IPP and only for float and double)");
-    return T();
-  }
-
-
-  template<class T>
-  void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const 
-    throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException){
-    ERROR_LOG("not implemented (only with IPP and only for float and double)");
-  }
   
   template<class T> 
   DynMatrix<T> DynMatrix<T>::pinv() const throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException){
-    ERROR_LOG("not implemented (only with IPP and only for float and double)");
-    return DynMatrix<T>();
+    DynMatrix<T> Q(1,1),R(1,1);
+    if(cols() > rows()){
+      transp().decompose_QR(Q,R);
+      return (R.inv() * Q.transp()).transp();
+    }else{
+      decompose_QR(Q,R);
+      return R.inv() * Q.transp();
+    }
   }
   
 
@@ -133,39 +229,6 @@ namespace icl{
   template<> double DynMatrix<double>::det() const throw (InvalidMatrixDimensionException){
     return apply_dyn_matrix_det<double,ippmDet_m_64f>(*this);
   }
-
-  template<> void DynMatrix<float>::decompose_QR(DynMatrix &Q, DynMatrix &R) const 
-    throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException){
-    return apply_dyn_matrix_decompose_QR<float>(*this,Q,R);
-  }
-  template<> void DynMatrix<double>::decompose_QR(DynMatrix &Q, DynMatrix &R) const 
-    throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException){
-    return apply_dyn_matrix_decompose_QR<double>(*this,Q,R);
-  }
-
-  template<> DynMatrix<double> DynMatrix<double>::pinv() const throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException){
-    DynMatrix<double> Q(1,1),R(1,1);
-    if(rows() < cols()){
-      transp().decompose_QR(Q,R);
-      return (R.inv() * Q.transp()).transp();
-    }else{
-      decompose_QR(Q,R);
-      return R.inv() * Q.transp();
-    }
-  }
-  template<> DynMatrix<float> DynMatrix<float>::pinv() const throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException){
-    DynMatrix<float> Q(1,1),R(1,1);
-    if(rows() > cols()){
-      DynMatrix<float> T = transp();
-      decompose_QR(Q,R);
-      return (R.inv() * Q.transp()).transp();
-    }else{
-      decompose_QR(Q,R);
-      return R.inv() * Q.transp();
-    }
-  }
-  
-
 #endif
   
   template DynMatrix<float> DynMatrix<float>::inv()const throw (InvalidMatrixDimensionException,SingularMatrixException);
