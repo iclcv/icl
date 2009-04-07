@@ -152,6 +152,13 @@ namespace icl {
 #define iclMax(A,B) std::max(A,B)
 #endif
 
+#ifndef iclMin
+#define iclMin(A,B) ((A)<(B)?(A):(B))
+#endif
+#ifndef iclMax
+#define iclMax(A,B) ((A)>(B)?(A):(B))
+#endif
+
 // template <typename T,t>
 // inline const T &iclMin(const T &a, const T &b) {if (a < b) return a; return b;}
 // template <typename T>
