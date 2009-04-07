@@ -7,7 +7,6 @@
 #endif
 
 
-
 namespace icl{
 
 #ifdef HAVE_IPP
@@ -85,45 +84,23 @@ namespace icl{
   
   template<class T>
   DynMatrix<T> DynMatrix<T>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
-    //void MatrixInversion(float **A, int order, float **Y)  
-    //DEBUG_LOG("calculating inv() from:\n" << *this);
-    // get the determinant of a  
     double detVal = det();
     if(!detVal) throw SingularMatrixException("Determinant was 0 -> (matrix is singular to machine precision)");
     detVal = 1.0/detVal;
 
-    unsigned int order = cols();
-
-    DynMatrix M(order-1,order-1);
-    DynMatrix I(order,order);
-    
-    // memory allocation  
-    //float *temp = new float[(order-1)*(order-1)];  
-    //float **minor = new float*[order-1];  
-    //for(int i=0;i<order-1;i++)  
-    //minor[i] = temp+(i*(order-1));  
-
-    for(unsigned int i=0;i<order;i++){      
-      for(unsigned int j=0;j<order;j++){  
+    DynMatrix M(cols()-1,cols()-1),I(cols(),cols());
+  
+    for(unsigned int i=0;i<cols();i++){      
+      for(unsigned int j=0;j<cols();j++){  
         get_minor_matrix(*this,i,j,M);
-      // get the co-factor (matrix) of A(j,i)  
-        //GetMinor(A,minor,j,i,order);  
         I(j,i) = detVal * M.det();
-        //             Y[i][j] = det*CalcDeterminant(minor,order-1);  
         if((i+j)%2){  
-          I(j,i) *= -1;//Y[i][j] = -Y[i][j];  
+          I(j,i) *= -1;
         }  
       }  
     }
     return I;
-    // release memory  
-    //delete [] minor[0];  
-    //delete [] minor;  
   }  
-    
-
-
-
   
   template<class T>
   T DynMatrix<T>::det() const throw (InvalidMatrixDimensionException){
@@ -169,36 +146,30 @@ namespace icl{
   }
 
   template<class T>
-  void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const 
-    throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException){
+  void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const throw (QRDecompException){
     
-    const DynMatrix<T> &A = *this;
-    int rows = A.rows();
-    int cols = A.cols();
-    DynMatrix<T> a(1,rows), q(1,rows);	// For storing column matrices.
+    DynMatrix<T> A = *this; // Working copy
+    DynMatrix<T> a(1,rows()), q(1,rows());
     
-    Q.setBounds(cols,rows);
-    R.setBounds(cols,cols);
+    Q.setBounds(cols(),rows());
+    R.setBounds(cols(),cols());
     
     std::fill(R.begin(),R.end(),0.0);
-    
-    for (int i = 0; i < cols; i++) {
-      std::copy(A.col_begin(i),A.col_end(i),a.begin());
-      R(i,i)  = a.norm();
+
+    for (int i=0;i<cols();i++) {
+      a = A.col(i);
+      R(i,i) = a.norm();
       if(!R(i,i)) throw QRDecompException("Error in QR-decomposition");
-      q = a/R(i,i);		// Normalization.
+      q = a/R(i,i);   // Normalization.
      
-      std::copy(q.begin(),q.end(),Q.col_begin(i));
-      
-      // remove vector components parallel to q(*,i)
-      for (int j = i+1; j < cols; j++) {
-        std::copy(A.col_begin(j),A.col_end(j),a.begin());
-        R(i,j) = dot(q, a);
-        a = a - q * R(i,j);
-        std::copy(a.begin(),a.end(),A.col_begin(j));
+      Q.col(i) = q;
+      // remove components parallel to q(*,i)
+      for (int j=i+1;j<cols();j++) {
+        a = A.col(j);
+        R(j,i) = dot(q, a);
+        A.col(j) = a - q * R(j,i);
       }
     }
-    R = R.transp();
   }
   
   template<class T> 
@@ -247,96 +218,3 @@ namespace icl{
     throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException);
 }
 
-/** C++ fallback hint TODO...
-# // matrix inversioon  
-# // the result is put in Y  
-# void MatrixInversion(float **A, int order, float **Y)  
-# {  
-#     // get the determinant of a  
-#     double det = 1.0/CalcDeterminant(A,order);  
-#   
-#     // memory allocation  
-#     float *temp = new float[(order-1)*(order-1)];  
-#     float **minor = new float*[order-1];  
-#     for(int i=0;i<order-1;i++)  
-#         minor[i] = temp+(i*(order-1));  
-#   
-#     for(int j=0;j<order;j++)  
-#     {  
-#         for(int i=0;i<order;i++)  
-#         {  
-#             // get the co-factor (matrix) of A(j,i)  
-#             GetMinor(A,minor,j,i,order);  
-#             Y[i][j] = det*CalcDeterminant(minor,order-1);  
-#             if( (i+j)%2 == 1)  
-#                 Y[i][j] = -Y[i][j];  
-#         }  
-#     }  
-#   
-#     // release memory  
-#     delete [] minor[0];  
-#     delete [] minor;  
-# }  
-#   
-# // calculate the cofactor of element (row,col)  
-# int GetMinor(float **src, float **dest, int row, int col, int order)  
-# {  
-#     // indicate which col and row is being copied to dest  
-#     int colCount=0,rowCount=0;  
-#   
-#     for(int i = 0; i < order; i++ )  
-#     {  
-#         if( i != row )  
-#         {  
-#             colCount = 0;  
-#             for(int j = 0; j < order; j++ )  
-#             {  
-#                 // when j is not the element  
-#                 if( j != col )  
-#                 {  
-#                     dest[rowCount][colCount] = src[i][j];  
-#                     colCount++;  
-#                 }  
-#             }  
-#             rowCount++;  
-#         }  
-#     }  
-#   
-#     return 1;  
-# }  
-
-# // Calculate the determinant recursively.  
-# double CalcDeterminant( float **mat, int order)  
-# {  
-#     // order must be >= 0  
-#     // stop the recursion when matrix is a single element  
-#     if( order == 1 )  
-#         return mat[0][0];  
-#   
-#     // the determinant value  
-#     float det = 0;  
-#   
-#     // allocate the cofactor matrix  
-#     float **minor;  
-#     minor = new float*[order-1];  
-#     for(int i=0;i<order-1;i++)  
-#         minor[i] = new float[order-1];  
-#   
-#     for(int i = 0; i < order; i++ )  
-#     {  
-#         // get minor of element (0,i)  
-#         GetMinor( mat, minor, 0, i , order);  
-#         // the recusion is here!  
-#         det += pow( -1.0, i ) * mat[0][i] * CalcDeterminant( minor,order-1 );  
-#     }  
-#   
-#     // release memory  
-#     for(int i=0;i<order-1;i++)  
-#         delete [] minor[i];  
-#     delete [] minor;  
-#   
-#     return det;  
-# }  
-
-
-*/

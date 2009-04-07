@@ -28,7 +28,6 @@ namespace icl{
     QRDecompException(const std::string &msg):ICLException(msg){}
   };
   
-  
   template<class T>
   struct DynMatrix{
     
@@ -452,9 +451,76 @@ namespace icl{
       /// comparison operator >
       bool operator>(const col_iterator &i) const{ return p > i.p; }
     };
-  
+    
     /// const column iterator typedef
     typedef const col_iterator const_col_iterator;
+
+    /// Internally used Utility structure referencing a matrix column shallowly
+    struct DynMatrixColumn{
+#ifdef DYN_MATRIX_INDEX_CHECK
+#define DYN_MATRIX_COLUMN_CHECK(C,E) if(C) ERROR_LOG(E)
+#else
+#define DYN_MATRIX_COLUMN_CHECK(C,E)
+#endif
+      /// Matrix reference
+      DynMatrix<T> *matrix;
+      
+      /// referenced column in matrix
+      unsigned int column;
+      
+      /// create from source matrix and column index
+      DynMatrixColumn(const DynMatrix<T> *matrix, unsigned int column):
+      matrix(const_cast<DynMatrix<T>*>(matrix)),column(column){
+        DYN_MATRIX_COLUMN_CHECK(column >= matrix->cols(),"invalid column index");
+      }
+      
+      /// Create from source matrix (only works if matrix has only single column = column-vector)
+      DynMatrixColumn(const DynMatrix<T> &matrix):
+      matrix(const_cast<DynMatrix<T>*>(&matrix)),column(0){
+        DYN_MATRIX_COLUMN_CHECK(matrix->cols() != 1,"source matrix must have exactly ONE column");
+      }
+      /// Shallow copy from another matrix column reference
+      DynMatrixColumn(const DynMatrixColumn &c):
+      matrix(c.matrix),column(c.column){}
+      
+      /// returns column begin
+      col_iterator begin() { return matrix->col_begin(column); }
+      
+      /// returns column end
+      col_iterator end() { return matrix->col_end(column); }
+
+      /// returns column begin (const)
+      const col_iterator begin() const { return matrix->col_begin(column); }
+
+      /// returns column end (const)
+      const col_iterator end() const { return matrix->col_end(column); }
+
+      /// returns column length (matrix->rows())
+      unsigned int dim() const { return matrix->rows(); }
+      
+      /// assignment by another column
+      DynMatrixColumn &operator=(const DynMatrixColumn &c){
+        DYN_MATRIX_COLUMN_CHECK(dim() != c.dim(),"dimension missmatch");
+        std::copy(c.begin(),c.end(),begin());
+        return *this;
+      }
+        
+      DynMatrixColumn &operator=(const DynMatrix &src){
+        DYN_MATRIX_COLUMN_CHECK(dim() != src.dim(),"dimension missmatch");
+        std::copy(src.begin(),src.end(),begin());
+        return *this;
+      }      
+    };
+
+    DynMatrix &operator=(const DynMatrixColumn &col){
+      DYN_MATRIX_COLUMN_CHECK(dim() != col.dim(),"dimension missmatch");
+      std::copy(col.begin(),col.end(),begin());
+      return *this;
+    }
+
+#undef DYN_MATRIX_COLUMN_CHECK
+    
+    
 
     /// returns an iterator to the begin of internal data array
     iterator begin() { return m_data; }
@@ -538,28 +604,23 @@ namespace icl{
       return DynMatrix(m_cols,1,const_cast<T*>(row_begin(row)),false);
     }
 
-    /* here we need a helper struct!
-        /// Extracts a shallow copied matrix column
-        DynMatrix col(int col){
-        col_check(col);
-        return DynMatrix(1,m_rows,m_data+col,false);
-        }
-        
-        /// Extracts a shallow copied matrix column (const)
-        const DynMatrix col(int col) const{
-        col_check(col);
-        return DynMatrix(1,m_rows,const_cast<T*>(m_data+col),false);
-        }
-    */
+    /// Extracts a shallow copied matrix column
+    DynMatrixColumn col(int col){
+      return DynMatrixColumn(this,col);
+    }
+
+    const DynMatrixColumn col(int col) const{
+      return DynMatrixColumn(this,col);
+    }
 
     /// applies QR-decomposition (only for icl32f and icl64f)
-    void decompose_QR(DynMatrix &Q, DynMatrix &R) const throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException);
+    void decompose_QR(DynMatrix &Q, DynMatrix &R) const throw (QRDecompException);
     
-    /// invert the matrix (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
+    /// invert the matrix (only for icl32f and icl64f)
     DynMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException);
     
     /// calculates the Moore-Penrose pseudo-inverse (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
-    /** Internally, this functions uses an QR-decomposition based approach, which is much more stable than
+    /** Internally, this functions uses a QR-decomposition based approach, which is much more stable than
         the naiv approach pinv(X) * X*(X*X')^(-1)
         \code
         DynMatrix Q,R;
@@ -570,7 +631,7 @@ namespace icl{
     DynMatrix pinv() const throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException);
 
 
-    /// invert the matrix (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
+    /// matrix determinant (only for icl32f and icl64f)
     T det() const throw (InvalidMatrixDimensionException);
 
     /// matrix transposed
