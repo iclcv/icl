@@ -164,6 +164,14 @@ namespace icl{
 
     return Point32f(vP[0],vP[1]);
   }
+
+  FixedMatrix<float,4,2> Camera::get4Dto2DMatrix() const{
+    Mat C = getCoordinateSystemTransformationMatrix();
+    Mat P = getProjectionMatrix();
+    Mat V = getViewPortMatrix();
+    
+    return FixedMatrix<float,4,2> ((V*P*C).begin());
+  }
   
   const std::vector<Point32f> Camera::project(const std::vector<Vec> &Xws) const{
     

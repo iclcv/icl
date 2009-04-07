@@ -104,6 +104,9 @@ namespace icl{
     /** (internally called by getTransformationMatrix) */
     Mat getProjectionMatrix() const;
     
+    /// returns the complete camera transformation
+    FixedMatrix<float,4,2> get4Dto2DMatrix() const;
+    
     /// returns the current pos-vector
     inline const Vec &getPos() const { return m_pos; }
 
