@@ -172,9 +172,53 @@ This is a utility function that helps to apply a safe cast on an \inlinecode{Img
 \end{itemize}
 
 \subsection{Statistic Functions}
-Actually we didn't want to implement these functions as member functions, because it's really hard to decide, which functions are \emph{fundamental enough} for becoming an image member function, and which others are not. However, it turned out, that at least obtaining an images minimum and maximum pixel value (and location) must be accessible directly. Hence there's a set of member functions \inlinecode{getMin}, \inlinecode{getMax} and \inlinecode{getMinMax} in the \inlinecode{ImgBase}-class.
+Actually we didn't want to implement these functions as member functions, because it's really hard to decide, which functions are \emph{fundamental enough} for becoming an image member function, and which others are not. However, it turned out, that at least obtaining an images minimum and maximum pixel value (and location) must be accessible directly. Hence there's a set of member functions \inlinecode{getMin}, \inlinecode{getMax} and \inlinecode{getMinMax} in the \inlinecode{ImgBase}-class. All these functions return \inlinecode{icl64f} values results, although internal calculation is performed on the native image data type. The use of \inlinecode{icl64f} enables us to provide this function already in the ImgBase class.
 
 \subsection{Inplace Adaption Functions}
 This functions directly adapt an images parameters and/or it's pixel values:
+\begin{itemize}
+\item The \inlinecode{scale()}-function resizes the images internally by reallocating a new image with desired size, scaling itself into this new image using the given interpolation method and assigning itself with that new image. As new data is allocated and old data is freed, this function has a relative poor performance.
+\item \inlinecode{mirror()} can be use to flip one (or even both) image axis in-place. As this is done by swapping pixels, this function is quite fast. In addition, \inlinecode{mirror} can be setup to work on the images ROI only.
+\item The \inlinecode{clear()}-function can be used to fill all image pixels with a given value. If the given channel argument isn't $-1$, the operation is only applied on the given channel. Additionally, it can be setup to clear the images ROI only.
+\end{itemize}
+
+\subsection{Normalization functions}
+\begin{itemize}
+\item \inlinecode{normalizeChannel}
+\item \inlinecode{normalizeAllChannels}
+\item \inlinecode{normalizeImg}.
+\end{itemize} 
+\emph{Normalization} means transforming the value range of an image by a linear function $f(x)=mx+b$, to make the resulting value range fit into a given intervall. E.g. this can be used to \emph{rescale} a floating input image with range $[0,1]$ into ICL's default value range $[0,255]$ by choosing $m=255$ and $b=0$. \\
+All these functions can be used to normalize image values to a certain range. \inlinecode{normalizeChannel} and \inlinecode{normalizeImg} can be called with single \inlinecode{Range64f} (\iclclassref{Core}{Range}) only. In this case, the images source range is obtained using \inlinecode{getMinMax}. If otherwise, the source range is given, this step can be skipped. \inlinecode{normalizeAllChannels} applies normalization channel by channel whereas \inlinecode{normalizeImg} estimates the source range by computing the range of all channels.
+
+\subsection{Utility functions}
+\inlinecode{isEqual()} can be used to compare image parameters. \inlinecode{print} prints image parameters and channel value ranges to std::cout\footnote{Please note that an ImgBase-reference can also be \emph{streamed} into an C++-\inlinecode{std::ostream}}. The \inlinecode{isIndependent()} function returns true if the reference counter of all channel data pointers is one\footnote{I.e. these channels are currently not \emph{shared} with another image}.
+
+\section{Pixel Access Function (in the Img-Template)}
+
+
+The \inlinecode{Img<T>}-template class provides all image functions, that allow direct access to the pixel data. There are several mechanisms to obtain read- and write access to image pixels, which are introduced following sub sections.
+
+\subsection{Operator()(x,y,channel)}
+
+
+\subsection{PixelRef-Type -- Operator()(x,y)}
+
+
+\subsection{Iterators and ROI-Iterators}
+
+
+\subsection{Image Channel }
+
+
+\subsection{Raw-Data Access}
+
+
+
+\section{Additional Functions in the Img-Template}
+
+
+
+
 
 
