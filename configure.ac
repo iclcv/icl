@@ -46,7 +46,7 @@ fi
 ICL_NOTIFY_CHECK([IPP           ])
 #########################################################################################
 
-ICL_WITH_ROOT([IPP],[/vol/vision/IPP/5.2])
+ICL_WITH_ROOT([IPP],[/vol/nivision/IPP/6.0])
 
 HAVE_IPP=TRUE
 ICL_PUSH_FLAG_VARS
