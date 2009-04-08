@@ -1218,8 +1218,12 @@ namespace icl{
   // }}}
   
   void ICLWidget::removeSpecialButton(const std::string &id){
+    // {{{ open
+
     DEBUG_LOG("removins special buttons is not yet implemented!");
   }
+
+  // }}}
 
   void ICLWidget::setEmbeddedZoomModeEnabled(bool enabled){
     // {{{ open
@@ -1489,8 +1493,10 @@ namespace icl{
         break;
       }
       case 2:{
+        m_data->menuMutex.unlock();
         QString name = QFileDialog::getSaveFileName(this,"filename ...","./",
                                                     "common formats (*.pnm *.ppm *.pgm *.jpg *.png)\nall files (*.*)");
+        m_data->menuMutex.lock();
         filename = name.toLatin1().data();
         break;
       }
