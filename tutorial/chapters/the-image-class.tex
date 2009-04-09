@@ -197,21 +197,86 @@ All these functions can be used to normalize image values to a certain range. \i
 \section{Pixel Access Function (in the Img-Template)}
 
 
-The \inlinecode{Img<T>}-template class provides all image functions, that allow direct access to the pixel data. There are several mechanisms to obtain read- and write access to image pixels, which are introduced following sub sections.
+The \inlinecode{Img<T>}-template class provides all image functions, that allow direct access to the pixel data. There are several mechanisms to obtain read- and write access to image pixels, which are introduced in the following sub sections. For comparison, each technique is used to implement a simple threshold operation on an \inlinecode{Img8u}-source image. Additionally some benchmark results are provided to compare the performance of the presented techniques. All these benchmarks were applied on a 2GHz Core-2-Duo machine, with a VGA-sized three channel image.
 
-\subsection{Operator()(x,y,channel)}
+\subsection{Operator()(x,y,channel)\label{sec:x-y-channel-operator}}
+Regarding the \emph{image function} (see section \ref{sec:the-image-function}), the \inlinecode{()}-operator with three parameters is the most intuitive way to access pixel data, however it's quite slow in comparison to other pixel access functions. In the \inlinecode{Img<T>} template class, image data is stored using a managed pointer type called \inlinecode{SmartPtr} \iclclassref{Utils}{SmartPtr}. This implies the following steps for the \inlinecode{()(x,y,channel)}-operator implementation:
+\begin{enumerate}
+\item Find the correct \inlinecode{SmartPtr} for the given channel argument.
+\item Dereference the \inlinecode{SmartPtr} to get access to it's wrapped data pointer.
+\item Calculate data pointer offset using \inlinecode{x + image.getWidth()*y}
+\item Dereference the data pointer at that offset.
+\end{enumerate}
+Although all these steps are implemented inline to allow the compiler some optimizations, performance is quite poor:
 
+\codefile{threshold-1.cpp}{Naive threshold implementation using the function-operator}
+
+However, this code can easily be optimized to double it's performance:
+
+\codefile{threshold-1b.cpp}{Optimized threshold implementation using the function-operator}
+
+Here, the outer loop iterates though the image channels, which enables the compiler to optimize cache flow due to the planar data layout of our images. Furthermore, performance is enhanced significantly by calling the \inlinecode{(x,y,channel}-operator only once per pixel and channel. Besides the \inlinecode{:?}-operator can be replaced by \inlinecode{255*(pix>t)} here, which leads to less code branching.
 
 \subsection{PixelRef-Type -- Operator()(x,y)}
+
+The \inlinecode{()}-operator is overloaded. If the channel argument is omitted, it returns a special \inlinecode{PixelRef} \iclclassref{Core}{PixelRef} type, that references all channels at the given location at once. It's implemented as a C++-template to support image pixel types natively. It must be mentioned that this is also not the fastest technique for image pixel access.
+
+\codefile{threshold-2.cpp}{Pixel access with the PixelRef type}
+
+Ok, the \inlinecode{PixelRef}-classes performance is even worse, so it's existence must be justified here. It can e.g. be used to copy one pixel (e.g. RGB) of one image into another one, particularly when performance is negligible e.g. when processing mouse-clicks or in offline- or prototyping applications.However it provides simple access to whole image pixels at once with simple code, e.g: 
+\displaycode{imageA(4,3) = imageB(12,3);} 
+
 
 
 \subsection{Iterators and ROI-Iterators}
 
+Iterators can be used to access pixel values successively. There are two different iterator types that can be obtained from \inlinecode{Img<T>}-instances. The \emph{normal} iterator is just an ordinary data pointer and it provides STL-style data access via  \inlinecode{begin()} and \inlinecode{end()}. As image data is split into channels, it's of course not possible to provide an efficient iterator running from the upper left pixel of channel $0$ to the lower right pixel of the last image channel. Instead, \inlinecode{begin()} and \inlinecode{end()} must be called with a channel argument.\\
+The second iterator uses a special structure called \inlinecode{ImgIterator} \iclclassref{Core}{ImgIterator}. It provides a highly optimized interface to iterate over an images ROI only. Such ROI-iterators can be obtained using \inlinecode{beginROI(channel)} and \inlinecode{endROI(channel)}. Internally, each increment-operation must check for being on the right-hand side of the current image ROI to estimate the actual pointer increment. The optimized implementation uses a special g++ feature\footnote{This is also accessible using the \inlinecode{ICL\_UNLIKELY}-macro \iclheaderref{Utils}{Macros}} that allows the compiler to optimize pipelining due to the prior knowledge of a really unexpected entering of an \inlinecode{if}-body.\\
+Of course, the benchmarking functions above are currently not implemented with ROI support, but this would not affect their performance due to their \inlinecode{x-y}-style implementation. 
 
-\subsection{Image Channel }
+\codefile{threshold-3.cpp}{Iterator based pixel access}
+
+The upper function in this code section is also used for the function with ROI support\footnote{C++-templates rock!}.
+
+\codefile{threshold-3b.cpp}{Iterator based pixel access with ROI support}
+
+Please note, that the iterator based implementation runs nearly 10 times fastern then using the \inlinecode{(x,y,channel)}-operator and more than 30 times faster than the \inlinecode{(x,y)}-operator. Furthermore it's really interesting, that ROI support doesn't decrease performance significantly.\\
+Lastly it's worth mention, that iterator based pixel access profits from compiler-performed loop unrolling\footnote{g++-flag -funroll-loops}. If this feature is enabled, computation time drops from 0.96 ms to 0.75 ms.
+
+\subsection{Image Channel}
+Image channels can be used, to accelerate channel data access significantly in comparison to the \inlinecode{(x,y,channel)}-operator while preserving convenience of use. As explained in section \ref{sec:x-y-channel-operator}, the \inlinecode{(x,y,channel)}-operator has to apply a lot of operation to get access to the pixel data pointer itself. As image data is stored in a dynamic array\footnote{Actually in a \inlinecode{std::vector<SmartPtr<T>>}} there're optimization opportunities for the compiler.
+
+\codefile{threshold-4.cpp}{Image channel based pixel access}
+
+Performance is still not so good, however we must regard that image channels should be used to get random \inlinecode{(x,y)}-access. If linear access is desired, image channels can also be used for linear data access:
+
+\codefile{threshold-4b.cpp}{Using image channel for linear data access}
+
+Here, we approach performance of the iterator based pixel access.
+
+
+
+\subsection{Higher-Order templates (ForEach...)}
+                                   
+Now we approach the real cool stuff :-). Those who are familiar with the STL-algorithm package will supposably have become a fan of \inlinecode{std::for\_each} and \inlinecode{std::transform}\footnote{available in the \inlinecode{<algorithm>} header}. The \inlinecode{Img<T>} template class also provides such cool function templates. 
+\begin{itemize}
+\item \inlinecode{forEach} can be used to apply a function or a functor on each pixel separately. The pixel function gets only a single argument, so it can be used simply to apply inplace-pixel transformations, however arbitrary functions can of course be implemented theoretically due to the used of arbitrary functor objects. But there are better ways for other functionalities.
+ 
+\item \inlinecode{transform} gets an additional destination image argument to store results in that image.
+
+\item \inlinecode{combine} gets two additional arguments. It can be used to combine two images pixel-wise and by storing the result in another image. E.g. to compare two images pixel-wise.
+\item \inlinecode{reduce\_channels} can be used to apply a function on all image channels simultaneously. Furthermore also all channels of the destination image are available in the iterated function. For more details take a look into the function documentation.
+\end{itemize}
+
+Internally all this functions provide optimized ROI support by processing image ROI's line by line. Lines are processed by passing the given fuctor to an appropriate STL-algorithm.  
+
+\codefile{threshold-5.cpp}{Use of Img::forEach for an image threshold operation}
 
 
 \subsection{Raw-Data Access}
+
+
+\subsection{Using an Intel-IPP Function}
 
 
 

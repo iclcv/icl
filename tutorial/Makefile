@@ -56,7 +56,7 @@ allshow: all show
 
 
 edit:
-	$(EDITOR) Howto-ICL.tex
+	$(EDITOR) chapters/the-image-class.tex
 
 weiter: all show edit
 
