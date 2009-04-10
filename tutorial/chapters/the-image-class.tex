@@ -228,7 +228,7 @@ Ok, the \inlinecode{PixelRef}-classes performance is even worse, so it's existen
 
 
 
-\subsection{Iterators and ROI-Iterators}
+\subsection{Iterators and ROI-Iterators\label{sec:iterator-based-data-access}}
 
 Iterators can be used to access pixel values successively. There are two different iterator types that can be obtained from \inlinecode{Img<T>}-instances. The \emph{normal} iterator is just an ordinary data pointer and it provides STL-style data access via  \inlinecode{begin()} and \inlinecode{end()}. As image data is split into channels, it's of course not possible to provide an efficient iterator running from the upper left pixel of channel $0$ to the lower right pixel of the last image channel. Instead, \inlinecode{begin()} and \inlinecode{end()} must be called with a channel argument.\\
 The second iterator uses a special structure called \inlinecode{ImgIterator} \iclclassref{Core}{ImgIterator}. It provides a highly optimized interface to iterate over an images ROI only. Such ROI-iterators can be obtained using \inlinecode{beginROI(channel)} and \inlinecode{endROI(channel)}. Internally, each increment-operation must check for being on the right-hand side of the current image ROI to estimate the actual pointer increment. The optimized implementation uses a special g++ feature\footnote{This is also accessible using the \inlinecode{ICL\_UNLIKELY}-macro \iclheaderref{Utils}{Macros}} that allows the compiler to optimize pipelining due to the prior knowledge of a really unexpected entering of an \inlinecode{if}-body.\\
@@ -274,10 +274,24 @@ Internally all this functions provide optimized ROI support by processing image 
 
 
 \subsection{Raw-Data Access}
+Of course there are functions to obtain raw data access to the channel data pointers. Actually default iterators\footnote{which can be obtained using \inlinecode{begin(channel)} and \inlinecode{end(channel)}} are implemented as simple pointers (see section \ref{sec:iterator-based-data-access}).
+The member functions \inlinecode{getData(channel)} and \inlinecode{getROIData(channel)} can be used for explicit raw data access. \inlinecode{getROIData(channel)} returns a pointer to the upper left pixel of the current image ROI. In case of a full image ROI, it's identical to the \inlinecode{getData(channel)}-function. Raw data access is needed in several situations:
+\begin{itemize}
+\item Using functions from other image processing libraries. Here, data can be passed by pointers sometimes. However a lot of other libraries (including current OpenCV) use interleaved data layout for most operations. Fortunately Intel IPP works well with planar image data, but this is discussed in section \ref{sec:raw-data-access-for-ipp-calls}.
+\item Using other external pointer based functions (e.g. if one has a function to pass a POD-pointer via network or something like that).
+\item Writing an optimized function, that works directly on the raw-data of an image. 
+\end{itemize}
+
+Although the iterator based implementation above actually works on the image raw-data, here's a raw-data pointer based implementation of our threshold implementation.
+
+\codefile{threshold-6.cpp}{Threshold implementation on image raw data}
+
+Obviously, the programmer was a real fan of loop-unrolling and yes -- it's a bit faster.
 
 
-\subsection{Using an Intel-IPP Function}
+\subsection{Using an Intel-IPP Function\label{sec:raw-data-access-for-ipp-calls}}
 
+... 
 
 
 \section{Additional Functions in the Img-Template}
