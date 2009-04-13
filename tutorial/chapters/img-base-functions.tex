@@ -1,0 +1,80 @@
+This section introduces the \inlinecode{ImgBase}-class and it's essential functions. The section begins with some explanations on image depth conversion/adaption (see section \ref{sec:depth-conversion} and \ref{sec:depth-adaption}). Subsequent, further image functions available in the \inlinecode{ImgBase}-class will be presented and discussed. 
+
+\section {\label{sec:depth-conversion}Image depth-Conversion}
+To avoid misunderstandings, there's another use for the term \emph{conversion}, namely for \emph{color conversion} which is discussed in section \ref{sec:color-conversion}\todo{Ref..}.\\
+Image depth conversion is alway applied deeply or pixel-wise, i.e. each single pixel is converted. Type to type conversion is applied with the \inlinecode{clipped\_cast()} template function (see \iclheaderref{Util}{ClippedCast}, that avoids range overflow if the destination data type has a smaller range than the source data type. \emph{Vectorized} conversion (converting a range of type \inlinecode{A} element-wise into a range of type \inlinecode{B} is done by the \inlinecode{convert}-function (\iclheaderref{Core}{Core}), which uses the STL-algorithm \inlinecode{std::transform} to apply \inlinecode{clipped\_cast} element-wise at default. However most\footnote{For most \inlinecode{iclXX} to \inlinecode{iclYY} combinations} common conversion operations e.g. from \inlinecode{icl32f} to \inlinecode{icl8u} are IPP-accelerated if IPP support is enabled.\\
+The \inlinecode{ImgBase}-class provides three dedicated \inlinecode{convert} functions for converting image data. 
+\begin{enumerate}
+\item \inlinecode{Img<T>* ImgBase::convert(Img<T>*dst=NULL)const}\\
+This function allows to specify destination depth from template scope. Furthermore, this templating mechanism automatically matches to the destination depth if \inlinecode{dst} is not \inlinecode{NULL}.
+\item \inlinecode{ImgBase *ImgBase::convert(depth d) const}\\
+This conversion function can be used if destination depth is not known at compile time.
+\item \inlinecode{ImgBase *ImgBase::convert(ImgBase *dst) const}\\
+This function extracts destination depth also at runtime from the given \inlinecode{ImgBase*}.      
+\end{enumerate}
+
+
+\section {\label{sec:depth-adaption}Image depth-Adaption}
+
+As mentioned above, due to the fact, that the \inlinecode{Img<T>} template class inherits the \inlinecode{ImgBase}-class, there's no \inlinecode{setDepth()}-member function within the \inlinecode{ImgBase} class. However in some situations an images depth must be adapted. This is why we need an concededly \emph{ugly} \inlinecode{ImgBase**} interface.
+
+\codefile{img-base-naive-depth-adaption.cpp}{Naive depth adaption}
+
+This can be achieved much easier using the \inlinecode{ensureDepth}-function (\iclheaderref{Core}{Core}). 
+\inlinecode{ensureDepth} uses an \inlinecode{ImgBase**} parameter which allows that a re-allocation of the referenced \inlinecode{ImgBase*} is mentioned in the calling scope. Exceptionally\footnote{Actually this tutorial trys to explain ICL's-function interfaces rather than their current implementation.}, here's the implementation of ICL's \inlinecode{ensureDepth}-function:
+
+\codefile{ensure-depth-implementation.cpp}{Actual implementation of \inlinecode{ensureDepth} function}
+
+The \inlinecode{ImgBase**}-interface is used e.g. for the \inlinecode{Grabber}-interface (\iclclassref{IO}{Grabber}) and for unary- and binary operators (see \iclclassref{Filter}{UnaryOp} and \iclclassref{Filter}{BinaryOp}). To make things a bit more graphic, we risk a short anticipation to the \inlinecode{UnaryOp}-interface.\\
+A unary image operator (represented by the \inlinecode{UnaryOp}-interface), can be seen as a \emph{black-box}, that has an image input and an image output and some functionality that transforms a given input image into the output image. Often this is referenced as an \emph{image-filter}, however we use the term \emph{unary operator} to emphasize, that there are binary operators as well with a different semantics. The unary operator interface consists essentially of a single function:
+
+\displaycode{virtual void apply(const ImgBase *src, ImgBase **dst)=0}
+
+This function \emph{applies} the operators functionality to the input image \inlinecode{src} and stores the result to the output image \inlinecode{dst}. All ICL-operators will adapt the output image automatically in terms of size, channel count, format, ROI, time stamp and even depth. The following example shows how to use a convolution-operator within a looped application:
+
+\codefile{unary-op-loop-example.cpp}{Using unary operators in a loop} 
+
+Please notice, that \inlinecode{dst} is used within the loop. The apply function of \inlinecode{ConvolutionOp} adapts \inlinecode{dst} if necessary, otherwise, it just re-uses \inlinecode{dst}. By this means \inlinecode{dst} is just allocated once, unless input image parameters aren't constant.
+
+
+\section{Futher ImgBase-functions}
+
+
+\begin{itemize}
+\item \inlinecode{convertROI(..)}\\
+An image conversion with \inlinecode{ImgBase::convert()} doesn't work on images ROI only. It's semantics is to create anned using one of the three \inlinecode{ImgBase::convertROI()}-functions, which behave identical to the corresponding \inlinecode{convert}-functions, except they use the input images ROI only. This implies, that a \inlinecode{convertROI}-call on a \emph{full-ROI'ed} image is semantically identical to a \inlinecode{convert}-call.
+\item \inlinecode{scaledCopy()} and \inlinecode{scaledCopyROI()}\\
+This two function families can be used to create scaled instances of an image. Scaling can be performed using one of three different interpolation techniques. The interpolation method can be set using the \inlinecode{scalemode}-enumeration \iclheaderref{Core}{Types}):
+\begin{enumerate}
+  \item Nearest-neighbour (\inlinecode{scalemode} value \inlinecode{interpolateNN}:  Simple, but very fast\footnote{More details can easily be found in the internet}.
+  \item Linear (\inlinecode{scalemode} value \inlinecode{interpolateLIN}: More sophisticated, less moire-effects, softer edges in case of up-scaling.
+  \item Region-Average: (\inlinecode{scalemode} value \inlinecode{interpolateRA}: Only for downscaling, only available with IPP-Support, best results for downscaling.  
+\end{enumerate}
+Again \inlinecode{scaledCopyROI} scales the source ROI only, and results in a full-ROI'ed image, whereas \inlinecode{scaledCopy} scaled the whole image including it's ROI.
+\item \inlinecode{asImg<T>()}-template function:\\
+This is a utility function that helps to apply a safe cast on an \inlinecode{ImgBase}-image into a certain \inlinecode{Img<T>*}. Internally the source images \inlinecode{depth}-values is checked to be equal to the desired depth. If this check fails, an error message is shown and a NULL-pointer is returned.
+
+\end{itemize}
+
+\subsection{Statistic Functions}
+Actually we didn't want to implement these functions as member functions, because it's really hard to decide, which functions are \emph{fundamental enough} for becoming an image member function, and which others are not. However, it turned out, that at least obtaining an images minimum and maximum pixel value (and location) must be accessible directly. Hence there's a set of member functions \inlinecode{getMin}, \inlinecode{getMax} and \inlinecode{getMinMax} in the \inlinecode{ImgBase}-class. All these functions return \inlinecode{icl64f} values results, although internal calculation is performed on the native image data type. The use of \inlinecode{icl64f} enables us to provide this function already in the ImgBase class.
+
+\subsection{Inplace Adaption Functions}
+This functions directly adapt an images parameters and/or it's pixel values:
+\begin{itemize}
+\item The \inlinecode{scale()}-function resizes the images internally by reallocating a new image with desired size, scaling itself into this new image using the given interpolation method and assigning itself with that new image. As new data is allocated and old data is freed, this function has a relative poor performance.
+\item \inlinecode{mirror()} can be use to flip one (or even both) image axis in-place. As this is done by swapping pixels, this function is quite fast. In addition, \inlinecode{mirror} can be setup to work on the images ROI only.
+\item The \inlinecode{clear()}-function can be used to fill all image pixels with a given value. If the given channel argument isn't $-1$, the operation is only applied on the given channel. Additionally, it can be setup to clear the images ROI only.
+\end{itemize}
+
+\subsection{Normalization functions}
+\begin{itemize}
+\item \inlinecode{normalizeChannel}
+\item \inlinecode{normalizeAllChannels}
+\item \inlinecode{normalizeImg}.
+\end{itemize} 
+\emph{Normalization} means transforming the value range of an image by a linear function $f(x)=mx+b$, to make the resulting value range fit into a given intervall. E.g. this can be used to \emph{rescale} a floating input image with range $[0,1]$ into ICL's default value range $[0,255]$ by choosing $m=255$ and $b=0$. \\
+All these functions can be used to normalize image values to a certain range. \inlinecode{normalizeChannel} and \inlinecode{normalizeImg} can be called with single \inlinecode{Range64f} (\iclclassref{Core}{Range}) only. In this case, the images source range is obtained using \inlinecode{getMinMax}. If otherwise, the source range is given, this step can be skipped. \inlinecode{normalizeAllChannels} applies normalization channel by channel whereas \inlinecode{normalizeImg} estimates the source range by computing the range of all channels.
+
+\subsection{Utility functions}
+\inlinecode{isEqual()} can be used to compare image parameters. \inlinecode{print} prints image parameters and channel value ranges to std::cout\footnote{Please note that an ImgBase-reference can also be \emph{streamed} into an C++-\inlinecode{std::ostream}}. The \inlinecode{isIndependent()} function returns true if the reference counter of all channel data pointers is one\footnote{I.e. these channels are currently not \emph{shared} with another image}.
