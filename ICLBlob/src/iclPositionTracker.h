@@ -206,7 +206,7 @@ namespace icl{
   class PositionTracker{
     public:
     /// Empty default constructor without any optimization
-    PositionTracker():m_bTryOptimize(false),m_tThreshold(0){}
+    PositionTracker():m_bTryOptimize(false),m_tThreshold(0),m_bAlternateIDAllocation(false){}
 
     /// *NEW* constructor with optimization enabled and given theshold
     /** @param threshold threshold for optimization (must be > 0) \ref OPT_ */
@@ -219,6 +219,15 @@ namespace icl{
 
     /// as above
     void pushData(const std::vector<valueType> &xs, const std::vector<valueType> &ys);
+    
+    /** Switch between continuous and restocking ID allocation. Restocking means, that a new object 
+        will get the smallest avialable ID (formerly used by an older object which is no longer existing), instead of a brand new.
+        @param on if true IDs will we be allocated continuously
+    */
+    void setAlternateIDAllocation(bool status)
+    {
+        m_bAlternateIDAllocation = status;
+    };
 
     /// returns the unique id of a just pushe data point (x,y)
     /** A problem occurs, if more than on point with coordinates (x,y) was 
@@ -256,7 +265,10 @@ namespace icl{
     
     /// flag to indicate whether to try optimization (trivial assignment)
     bool m_bTryOptimize;
-    
+
+    /// flag to indicate which type of ID allocation should be used    
+    bool m_bAlternateIDAllocation;
+
     /// threshold distance
     valueType m_tThreshold;
   };

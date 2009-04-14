@@ -169,24 +169,32 @@ namespace icl{
   }
 
   // }}}
+
   
   inline vector<int> get_n_new_ids(const vector<int> &currentIDS, int n){
    // {{{ open
-    
-
     vector<int> ids;
     set<int> lut;
     for(unsigned int i=0;i<currentIDS.size();i++){
       lut.insert( currentIDS[i] );
     }
-    for(int i=0,id=0;i<n;i++){
-      while(lut.find(id) != lut.end()){
-        id++;
+    if(!m_bAlternateIDAllocation){
+      for(int i=0,id=0;i<n;i++){
+        while(lut.find(id) != lut.end()){
+          id++;
+        }
+        ids.push_back(id);
+        lut.insert(id);      
       }
-      ids.push_back(id);
-      lut.insert(id);      
+      return ids;
+    }else{
+      int startID = *(lut.rbegin());
+      for(int i=0;i<n;i++){
+        ++startID;
+        ids.push_back(startID);
+      }
+      return ids;
     }
-    return ids;
   }
 
   // }}}
@@ -565,7 +573,8 @@ namespace icl{
     */
 
   // }}}
-                                 
+
+                            
   template<class valueType>
   int PositionTracker<valueType>::getID(valueType x, valueType y){
     // {{{ open
