@@ -175,12 +175,11 @@ namespace icl{
    // {{{ open 
     vector<int> ids;
     set<int> lut;
-    for(unsigned int i=0;i<currentIDS.size();i++){
-      lut.insert( currentIDS[i] );
-    }
-    
     switch(iaMode){
       case allocateFirstFreeIDs:
+        for(unsigned int i=0;i<currentIDS.size();i++){
+          lut.insert( currentIDS[i] );
+        }
         for(int i=0,id=0;i<n;i++){
           while(lut.find(id) != lut.end()){
             id++;
@@ -190,10 +189,9 @@ namespace icl{
         }
         return ids;
       case allocateBrandNewIDs:{
-        int startID = *(lut.rbegin());
         for(int i=0;i<n;i++){
-          ++startID;
-          ids.push_back(startID);
+          ids.push_back(m_currentID);
+          ++m_currentID;
         }
         return ids;
       }

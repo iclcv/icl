@@ -218,7 +218,7 @@ namespace icl{
     
 
     /// Empty default constructor without any optimization
-    PositionTracker():m_bTryOptimize(false),m_tThreshold(0),m_IDAllocationMode(allocateFirstFreeIDs){}
+    PositionTracker():m_bTryOptimize(false),m_tThreshold(0),m_IDAllocationMode(allocateFirstFreeIDs),m_currentID(0){}
 
     /// *NEW* constructor with optimization enabled and given theshold
     /** @param threshold threshold for optimization (must be > 0) \ref OPT_ */
@@ -281,6 +281,9 @@ namespace icl{
 
     /// flag to indicate which type of ID allocation should be used    
     IDAllocationMode m_IDAllocationMode;
+
+    /// first unused ID
+    int m_currentID
 
     /// threshold distance
     valueType m_tThreshold;
