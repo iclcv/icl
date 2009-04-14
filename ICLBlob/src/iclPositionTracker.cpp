@@ -171,29 +171,35 @@ namespace icl{
   // }}}
 
   
-  inline vector<int> get_n_new_ids(const vector<int> &currentIDS, int n){
-   // {{{ open
+  inline vector<int> get_n_new_ids(const vector<int> &currentIDS, int n, icl::IDAllocationMode iaMode){
+   // {{{ open 
     vector<int> ids;
     set<int> lut;
     for(unsigned int i=0;i<currentIDS.size();i++){
       lut.insert( currentIDS[i] );
     }
-    if(!m_bAlternateIDAllocation){
-      for(int i=0,id=0;i<n;i++){
-        while(lut.find(id) != lut.end()){
-          id++;
+    
+    switch(iaMode){
+      case allocateFirstFreeIDs:
+        for(int i=0,id=0;i<n;i++){
+          while(lut.find(id) != lut.end()){
+            id++;
+          }
+          ids.push_back(id);
+          lut.insert(id);      
         }
-        ids.push_back(id);
-        lut.insert(id);      
+        return ids;
+      case allocateBrandNewIDs:{
+        int startID = *(lut.rbegin());
+        for(int i=0;i<n;i++){
+          ++startID;
+          ids.push_back(startID);
+        }
+        return ids;
       }
-      return ids;
-    }else{
-      int startID = *(lut.rbegin());
-      for(int i=0;i<n;i++){
-        ++startID;
-        ids.push_back(startID);
-      }
-      return ids;
+      default:
+        ERROR_LOG("unsupported IDAllocationmode");
+        return ids;
     }
   }
 
@@ -362,7 +368,8 @@ namespace icl{
                                  vector<int>               &ids, 
                                  vector<int>               &assignment,  
                                  vector<valueType>         newData[2],
-                                 vector<int>               &good){
+                                 vector<int>               &good,
+                                 icl::IDAllocationMode iaMode){
     // {{{ open
 
     DIFF *= -1; // now positive
@@ -399,7 +406,7 @@ namespace icl{
       printf("WARNING: newDataColsValues[X].size()[%d] is != DIFF[%d]",(int)newDataColsValues[X].size(),DIFF);
     }
         
-    vector<int> newIDS = get_n_new_ids(ids,DIFF);
+    vector<int> newIDS = get_n_new_ids(ids,DIFF,iaMode);
     
     for(int i=0;i<DIFF;i++){
       for(int j=0;j<3;j++){
@@ -461,7 +468,7 @@ namespace icl{
     const int DIFF = DATA_MATRIX_HEIGHT - NEW_DATA_DIMENSION;
 
     if(DIFF <  0){
-       push_data_intern_diff_ltz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
+      push_data_intern_diff_ltz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount, m_IDAllocationMode);
     }else if(DIFF > 0){
        push_data_intern_diff_gtz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
     }else{

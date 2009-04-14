@@ -6,6 +6,13 @@
 
 
 namespace icl{
+
+  /// How should new ID's be allocated
+  enum IDAllocationMode{
+    allocateFirstFreeIDs, // re-using old ID's
+    allocateBrandNewIDs   // using next brand-new ID
+  };
+
   
   /// Class for tracking 2D positions 
   /** 
@@ -202,15 +209,22 @@ namespace icl{
       used. Otherwise the default algorithm is applied, and the optimization has no effect. <b>Note:</b> If the given threshold
       is smaller or equal to zero or the data dimension changes from on push call to another, no optimization is performed.
   */
+
   template<class valueType>
   class PositionTracker{
     public:
+    
+   
+    
+
     /// Empty default constructor without any optimization
-    PositionTracker():m_bTryOptimize(false),m_tThreshold(0),m_bAlternateIDAllocation(false){}
+    PositionTracker():m_bTryOptimize(false),m_tThreshold(0),m_IDAllocationMode(allocateFirstFreeIDs){}
 
     /// *NEW* constructor with optimization enabled and given theshold
     /** @param threshold threshold for optimization (must be > 0) \ref OPT_ */
-    PositionTracker(valueType threshold):m_bTryOptimize(true),m_tThreshold(threshold){}
+    PositionTracker(valueType threshold):
+      m_bTryOptimize(true),m_tThreshold(threshold),
+      m_IDAllocationMode(allocateFirstFreeIDs){}
     
     /// most common function, adds a new data row, and causes all internal computation (see above)
     /** @param xys data vector with xyxy.. data order 
@@ -224,10 +238,9 @@ namespace icl{
         will get the smallest avialable ID (formerly used by an older object which is no longer existing), instead of a brand new.
         @param on if true IDs will we be allocated continuously
     */
-    void setAlternateIDAllocation(bool status)
-    {
-        m_bAlternateIDAllocation = status;
-    };
+    void setIDAllocationMode(IDAllocationMode mode){
+      m_IDAllocationMode = mode;
+    }
 
     /// returns the unique id of a just pushe data point (x,y)
     /** A problem occurs, if more than on point with coordinates (x,y) was 
@@ -267,7 +280,7 @@ namespace icl{
     bool m_bTryOptimize;
 
     /// flag to indicate which type of ID allocation should be used    
-    bool m_bAlternateIDAllocation;
+    IDAllocationMode m_IDAllocationMode;
 
     /// threshold distance
     valueType m_tThreshold;
