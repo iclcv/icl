@@ -224,7 +224,7 @@ namespace icl{
     /** @param threshold threshold for optimization (must be > 0) \ref OPT_ */
     PositionTracker(valueType threshold):
       m_bTryOptimize(true),m_tThreshold(threshold),
-      m_IDAllocationMode(allocateFirstFreeIDs){}
+      m_IDAllocationMode(allocateFirstFreeIDs),m_currentID(0){}
     
     /// most common function, adds a new data row, and causes all internal computation (see above)
     /** @param xys data vector with xyxy.. data order 
@@ -279,11 +279,11 @@ namespace icl{
     /// flag to indicate whether to try optimization (trivial assignment)
     bool m_bTryOptimize;
 
+    /// first unused ID
+    int m_currentID;
+
     /// flag to indicate which type of ID allocation should be used    
     IDAllocationMode m_IDAllocationMode;
-
-    /// first unused ID
-    int m_currentID
 
     /// threshold distance
     valueType m_tThreshold;
