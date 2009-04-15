@@ -190,8 +190,9 @@ namespace icl{
         return ids;
       case allocateBrandNewIDs:{
         for(int i=0;i<n;i++){
-          ids.push_back(m_currentID);
-          ++m_currentID;
+          ERROR_LOG("this is not implemented correctly !!");
+          //          ids.push_back(m_currentID);
+          //++m_currentID;
         }
         return ids;
       }
