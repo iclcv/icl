@@ -5,8 +5,11 @@
 #include <iclFixedMatrix.h>
 #include <iclFixedVector.h>
 #include <vector>
+#include <iclColor.h>
 
 namespace icl{
+  /// color for geometry primitives
+  typedef Color4D32f GeomColor;
 
   /// Matrix Typedef of float matrices
   typedef FixedMatrix<icl32f,4,4> Mat4D32f;

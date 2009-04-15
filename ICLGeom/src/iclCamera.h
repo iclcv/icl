@@ -1,12 +1,14 @@
 #ifndef ICL_CAMERA_H
 #define ICL_CAMERA_H
 
+#include <iclLockable.h>
 #include <iclObject.h>
 #include <iclSize.h>
 
 // the icl namespace
 namespace icl{
-  
+
+   
   /// Camera class 
   /** The camera class implements 3 different homogeneous transformations:
       -# World-Coordinate-System (CS) to Cam-CS transformation
@@ -29,7 +31,7 @@ namespace icl{
       function, it is possible to get a combined homogeneous transformation matrix, which transforms and projects
       objects into the given view-port.
   */
-  struct Camera{
+  struct Camera : public Lockable{
 
     /// Creates a camera from given position and rotation vector
     /** If the camera rotation is 0,0,0, the cameras normal vector is (0,0,1) and 
@@ -120,7 +122,7 @@ namespace icl{
     inline float getFocalLength() const{ return m_F; }
     
     /// returns the current horizontal vector (norm x up)
-    inline Vec getHorz()const{ return cross(m_norm,m_up); }
+    Vec getHorz()const;
 
     /// show some camera information to std::out
     void show(const std::string &title="") const;
@@ -130,7 +132,7 @@ namespace icl{
       m_norm *= m;
       m_up *= m;
     }
-    
+
     /// rotates norm and up by the given angles
     /** @param arcX angle around the x-axis
         @param arcY angle around the y-axis
@@ -192,8 +194,14 @@ namespace icl{
     
     /// Projects a set of points (just an optimization)
     const std::vector<Point32f> project(const std::vector<Vec> &Xws) const;
+
+    /// Projects a set of points (just an optimization)
+    void project(const std::vector<Vec> &Xws, std::vector<Point32f> &dst) const;
+
+    /// Projects a set of points (results are x,y,z,1)
+    void project(const std::vector<Vec> &Xws, std::vector<Vec> &dstXYZ) const;
     
-  private:
+    private:
     Vec m_pos;        //!< center position vector
     Vec m_norm;       //!< norm vector
     Vec m_up;         //!< up vector
@@ -204,12 +212,6 @@ namespace icl{
     Rect m_viewPort;  //!< current viewport e.g. (0,0,640,480) for a default VGA camera
     
     bool m_rightHandedCS; //!< is camera coordinate system right handed or not (default: true)
-    
-    /*
-        bool m_useGivenMatrices;
-        Mat m_givenTransMat;
-        Mat m_givenProjMat;
-        */
   };
 }
 

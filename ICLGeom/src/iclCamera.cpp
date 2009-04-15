@@ -173,19 +173,50 @@ namespace icl{
     return FixedMatrix<float,4,2> ((V*P*C).begin());
   }
   
-  const std::vector<Point32f> Camera::project(const std::vector<Vec> &Xws) const{
-    
+
+
+  /// Projects a set of points (just an optimization)
+  void Camera::project(const std::vector<Vec> &Xws, std::vector<Point32f> &dst) const{
+    dst.resize(Xws.size());
     Mat C = getCoordinateSystemTransformationMatrix();
     Mat P = getProjectionMatrix();
     Mat V = getViewPortMatrix();
     Mat M = V*P*C;
-    std::vector<Point32f> v(Xws.size());
     for(unsigned int i=0;i<Xws.size();++i){
       Vec vP = homogenize(M*Xws[i]);
-      v[i].x = vP[0];
-      v[i].y = vP[1];
+      dst[i].x = vP[0];
+      dst[i].y = vP[1];
     }
+  }
+
+  /// Projects a set of points (results are x,y,z,1)
+  void Camera::project(const std::vector<Vec> &Xws, std::vector<Vec> &dstXYZ) const{
+    dstXYZ.resize(Xws.size());
+    Mat C = getCoordinateSystemTransformationMatrix();
+    Mat P = getProjectionMatrix();
+    Mat V = getViewPortMatrix();
+    Mat M = V*P*C;
+    for(unsigned int i=0;i<Xws.size();++i){
+      dstXYZ[i] = homogenize(M*Xws[i]);
+    }
+  }
+
+
+  const std::vector<Point32f> Camera::project(const std::vector<Vec> &Xws) const{
+    std::vector<Point32f> v;
+    project(Xws,v);
     return v;
   }
+
+  Vec Camera::getHorz() const {
+    Vec nn = normalize(m_norm);
+    Vec ut = normalize(m_up);
+    if(m_rightHandedCS){
+       return cross(ut,nn);
+    }else{
+      return cross(nn,ut);
+    }
+  }
+  
 
 }
