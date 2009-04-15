@@ -171,7 +171,7 @@ namespace icl{
   // }}}
 
   
-  inline vector<int> get_n_new_ids(const vector<int> &currentIDS, int n, icl::IDAllocationMode iaMode){
+  inline vector<int> get_n_new_ids(const vector<int> &currentIDS, int n, icl::IDAllocationMode iaMode, int& lowestUnusedID){
    // {{{ open 
     vector<int> ids;
     set<int> lut;
@@ -190,9 +190,8 @@ namespace icl{
         return ids;
       case allocateBrandNewIDs:{
         for(int i=0;i<n;i++){
-          ERROR_LOG("this is not implemented correctly !!");
-          //          ids.push_back(m_currentID);
-          //++m_currentID;
+          ids.push_back(lowestUnusedID);
+          ++lowestUnusedID;
         }
         return ids;
       }
@@ -368,7 +367,8 @@ namespace icl{
                                  vector<int>               &assignment,  
                                  vector<valueType>         newData[2],
                                  vector<int>               &good,
-                                 icl::IDAllocationMode iaMode){
+                                 icl::IDAllocationMode iaMode,
+                                 int                       &lowestUnusedID){
     // {{{ open
 
     DIFF *= -1; // now positive
@@ -405,7 +405,7 @@ namespace icl{
       printf("WARNING: newDataColsValues[X].size()[%d] is != DIFF[%d]",(int)newDataColsValues[X].size(),DIFF);
     }
         
-    vector<int> newIDS = get_n_new_ids(ids,DIFF,iaMode);
+    vector<int> newIDS = get_n_new_ids(ids,DIFF,iaMode, lowestUnusedID);
     
     for(int i=0;i<DIFF;i++){
       for(int j=0;j<3;j++){
@@ -467,7 +467,7 @@ namespace icl{
     const int DIFF = DATA_MATRIX_HEIGHT - NEW_DATA_DIMENSION;
 
     if(DIFF <  0){
-      push_data_intern_diff_ltz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount, m_IDAllocationMode);
+      push_data_intern_diff_ltz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount, m_IDAllocationMode, m_currentID);
     }else if(DIFF > 0){
        push_data_intern_diff_gtz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
     }else{

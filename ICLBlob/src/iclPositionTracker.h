@@ -4,7 +4,6 @@
 #include <vector>
 #include <deque>
 
-
 namespace icl{
 
   /// How should new ID's be allocated
