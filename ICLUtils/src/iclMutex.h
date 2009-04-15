@@ -4,6 +4,11 @@
 #include <iclUncopyable.h>
 
 namespace icl{
+
+  /** \cond */
+  class Lockable;
+  /** \endcond */  
+
   /// Mutex class of the ICL \ingroup THREAD
   /** This mutex class is a simple object oriented wrapper of the
       pthread_mutex_t struct.
@@ -42,6 +47,12 @@ namespace icl{
 
       /// Locks the given mutex until the section is leaved
       Locker(Mutex &m);
+
+      /// Locks given lockable unti destruction
+      Locker(Lockable *l);
+
+      /// Locks given lockable unti destruction
+      Locker(Lockable &l);
 
       /// unlocks the given mutex (automatically called for objects on the stack)
       ~Locker();

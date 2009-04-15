@@ -17,7 +17,8 @@ libICLUtils_la_SOURCES= \
 ../src/iclTimer.cpp \
 ../src/iclConsoleProgress.cpp \
 ../src/iclFPSEstimator.cpp \
-../src/iclFPSLimiter.cpp
+../src/iclFPSLimiter.cpp \
+../src/iclMutex.cpp 
 
 include_HEADERS= \
 ../src/config.h \
@@ -50,4 +51,5 @@ include_HEADERS= \
 ../src/iclConsoleProgress.h \
 ../src/iclFPSLimiter.h \
 ../src/iclFixedMatrixUtils.h \
-../src/iclUncopiedInstance.h
+../src/iclUncopiedInstance.h \
+../src/iclLockable.h
