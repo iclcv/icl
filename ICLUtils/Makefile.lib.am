@@ -49,4 +49,5 @@ include_HEADERS= \
 ../src/iclUtils.h \
 ../src/iclConsoleProgress.h \
 ../src/iclFPSLimiter.h \
-../src/iclFixedMatrixUtils.h
+../src/iclFixedMatrixUtils.h \
+../src/iclUncopiedInstance.h
