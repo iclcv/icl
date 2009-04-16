@@ -23,6 +23,7 @@ namespace icl{
       a(a),b(b),c(c),d(d),color(color),type(quad){
     }
 
+    /// not reverse ordering
     bool operator<(const Primitive &other) const{
       return z < other.z;
     }

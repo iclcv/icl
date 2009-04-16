@@ -37,6 +37,16 @@ namespace icl{
     ICLASSERT_RETURN_VAL(l,v);
     return v/l;
   }
+  /// normalize a vector to length 1
+  template<class T>
+  inline FixedColVector<T,4> normalize3(const FixedMatrix<T,1,4> &v,const double& h=1) { 
+    double l = ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    ICLASSERT_RETURN_VAL(l,v);
+    Vec n = v/l;
+    // XXX 
+    n[3]=h;
+    return n;
+  }
 
   /// homogenize a vector be normalizing 4th component to 1
   template<class T>

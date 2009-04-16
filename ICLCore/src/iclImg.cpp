@@ -1,6 +1,7 @@
 #include <iclImg.h>
 #include <functional>
 #include <cstring>
+#include <iclRect32f.h>
 
 namespace icl {
   
@@ -1125,11 +1126,28 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   
   // sub-pixel access using region average interpolation
   template<class Type>
-  float Img<Type>::subPixelRA(float fX, float fY, int iChannel) const {
+  float Img<Type>::subPixelRA(float x, float y, float w, float h, int iChannel) const{
     // {{{ open
 
     ERROR_LOG ("region average interpolation is not yet implemented!");
-    return subPixelLIN (fX, fY, iChannel);
+    return subPixelLIN (x, y, iChannel);
+
+    Rect32f r(x,y,w,h);
+    Rect o(floor(x),floor(y),ceil(x+w)-floor(x),ceil(y+h)-floor(y));
+    if(o != (o & getImageRect()) ){
+      ERROR_LOG("given rect extends image bounds");
+      return 0;
+    }
+    float UL = (Rect32f(o.x,o.y,1,1) & r).getDim();    
+    float UR = (Rect32f(o.right()-1,o.y,1,1) & r).getDim();
+    float LL = (Rect32f(o.x,o.bottom()-1,1,1) & r).getDim();    
+    float LR = (Rect32f(o.right()-1,o.bottom()-1,1,1) & r).getDim();    
+    
+    float U=0,R=0,B=0,L=0;
+    //    ... hmmmm
+
+     ERROR_LOG ("region average interpolation is not yet implemented!");
+    return subPixelLIN (x, y, iChannel);
   }
 
   // }}}

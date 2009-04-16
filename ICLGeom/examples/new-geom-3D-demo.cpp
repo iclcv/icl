@@ -4,6 +4,7 @@
 #include <iclScene2.h>
 #include <iclCamera.h>
 #include <iclCommon.h>
+#include <iclFPSLimiter.h>
 
 GUI gui("hsplit");
 
@@ -11,88 +12,108 @@ ImgQ image;
 Scene2 scene;
 ICLDrawWidget *w;
 ICLWidget *w2;
-ICLDrawWidget3D *w3D;
+ICLDrawWidget3D *w3D_1;
+ICLDrawWidget3D *w3D_2;
 
-struct CameraInteractor : public MouseHandler{
-  Camera *camera;
-  Point32f anchor;
-  Camera camSave;
-  CameraInteractor(Camera *camera):camera(camera){}
-  
-  virtual void process(const MouseEvent &evt){
-    Mutex::Locker l(scene);
-
-    if(evt.isPressEvent()){
-      anchor = evt.getRelPos();
-      camSave = *camera;
-    }
-    if(evt.isDragEvent()){
-      Point32f delta = evt.getRelPos()-anchor;
-      *camera = camSave;      
-      if(evt.isLeft()){
-        camera->transform(create_hom_4x4<float>(delta.x,delta.y,0));
-      }else if(evt.isMiddle()){
-        camera->translate( (camera->getUp()*delta.y*3) + 
-                           (camera->getHorz()*delta.x*3) );
-      }else if(evt.isRight()){
-        camera->translate(camera->getNorm()*(-delta.y*10));
-      }
-    }
-  }
-};
-
+void cuboid(const std::string &id,
+            float x, float y, float z,
+            float dx, float dy, float dz,
+            float r, float g, float b, float alpha=255){
+  (void)id;
+  float data[] = {x,y,z,dx,dy,dz};
+  Object2 * o = new Object2("cuboid",data);
+  GeomColor c(r,g,b,alpha);
+  o->setColor(Primitive::line,c);
+  o->setColor(Primitive::triangle,c);
+  o->setColor(Primitive::quad,c);
+  //o->setVisible(Primitive::vertex,false);
+  o->setVisible(Primitive::line,false);
+  //o->setVisible(Primitive::triangle,false);
+  //o->setVisible(Primitive::quad,false);
+  scene.addObject(o);
+}
 
 void init(){
   gui << "draw[@minsize=16x12@handle=left@label=Rendered into DrawWidget]";
-  gui << "image[@minsize=16x12@handle=right@label=Rendered into ImgQ]";
-  gui << "draw3D[@minsize=16x12@handle=gl@label=Rendered into GL-Context]";
+  //gui << "image[@minsize=16x12@handle=right@label=Rendered into ImgQ]";
+  gui << "draw3D[@minsize=16x12@handle=gl-1@label=Rendered into GL-Context]";
+  gui << "draw3D[@minsize=16x12@handle=gl-2@label=Rendered into GL-Context]";
 
   GUI con("vbox[@maxsize=6x100]");
   con << "fslider(0.1,10,1.7,vertical)[@label=F@out=f]";
+  con << "fps(10)[@handle=fps]";
   
   gui << con;
   gui.show();
   
   w = *gui.getValue<DrawHandle>("left");
-  w2 = *gui.getValue<ImageHandle>("right");  
-  w3D = *gui.getValue<DrawHandle3D>("gl");
+  //w2 = *gui.getValue<ImageHandle>("right");  
+  w3D_1 = *gui.getValue<DrawHandle3D>("gl-1");
+  w3D_2 = *gui.getValue<DrawHandle3D>("gl-2");
   
   image = ImgQ(Size(640,480),formatRGB);
+  
   w->setImage(&image);
-  w2->setImage(&image);
-  w3D->setImage(&image);
+  //w2->setImage(&image);
+  w3D_1->setImage(&image);
+  w3D_2->setImage(&image);
   
-  scene.addCamera(Camera());
+  Vec pos(0,-200,100);
+  Vec fp(0,85,50);
+  Vec up(0,0,1);
+  scene.addCamera(Camera(pos,normalize(fp-pos),up,Size::VGA));
 
-  //  static CameraInteractor MouseNavigator(&scene.getCamera(0));
-  w->install(scene.getMouseHandler(0));//MouseNavigator);
-  w2->install(scene.getMouseHandler(0));
-  w3D->install(scene.getMouseHandler(0));
+  Vec pos2(0,-50,150);
+  Vec fp2(0,0,0);
+  Vec up2(0,1,0);
+  scene.addCamera(Camera(pos2,normalize(fp2-pos2),up2,Size::VGA));
 
+
+  cuboid("worktop",
+         0,80,-5,
+         160,160,10,
+         100,100,100);
   
-  float cubeData[4] = {0,0,0,1};
-  scene.addObject(new Object2("cube",cubeData));
-  
-  //float workTopData[] = {0,0,0,10};
-  
-  /*
-      for(int x=-1;x<2;x++){
-      for(int y=-1;y<2;y++){
-      for(int z=-1;z<2;z++){
-      scene.add(new CubeObject(10*x,10*y,10*z,5));
-      }
-      }
-      }
-  */
+  cuboid("column-1",
+         -75,5,50,
+         10,10,100,
+         150,150,150);
+
+  cuboid("column-2",
+         75,5,50,
+         10,10,100,
+         150,150,150);
+
+  cuboid("column-3",
+         -75,155,50,
+         10,10,100,
+         150,150,150);
+
+  cuboid("column-4",
+         75,155,50,
+         10,10,100,
+         150,150,150);
+
+  w3D_1->install(scene.getMouseHandler(0));
+  w3D_2->install(scene.getMouseHandler(1));
+  w->install(scene.getMouseHandler(0));
 }
 
 
 void run(){
-  Camera &cam = scene.getCamera(0);
-  cam.setViewPort(Rect(0,0,640,480));  
+  Camera &cam0 = scene.getCamera(0);
+  Camera &cam1 = scene.getCamera(1);
+  cam0.setViewPort(Rect(0,0,640,480));  
+  cam1.setViewPort(Rect(0,0,640,480));  
 
+  FPSLimiter limiter(25);
+  
   while(1){
-    cam.setFocalLength(gui["f"].as<float>()); /// 1 equals 90° view arc !
+    gui["fps"].update();
+    cam0.setFocalLength(gui["f"].as<float>()); /// 1 equals 90° view arc !
+    cam1.setFocalLength(gui["f"].as<float>()); /// 1 equals 90° view arc !
+    
+
     w->lock();
     w->reset();
     
@@ -100,21 +121,33 @@ void run(){
     
     w->unlock();
     w->update();
-    
-    image.clear();
-    scene.render(image,0);
-    w2->setImage(&image);
-    w2->update();
+        
+    /*
+        image.clear();
+        
+        //scene.render(image,0);
+        //w2->setImage(&image);
+        //w2->update();
+    */
 
-    Thread::msleep(20);
-
-    w3D->lock();
-    w3D->reset3D();
+    w3D_1->lock();
+    w3D_1->reset3D();
     //w3D->reset();
-    w3D->callback(scene.getGLCallback(0));
+    w3D_1->callback(scene.getGLCallback(0));
     //scene.render(*w3D,0);
-    w3D->unlock();
-    w3D->update();
+    w3D_1->unlock();
+    w3D_1->update();
+
+
+    w3D_2->lock();
+    w3D_2->reset3D();
+    //w3D->reset();
+    w3D_2->callback(scene.getGLCallback(1));
+    //scene.render(*w3D,0);
+    w3D_2->unlock();
+    w3D_2->update();
+
+    limiter.wait();
   }
 }
 

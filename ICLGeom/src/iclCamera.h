@@ -120,6 +120,16 @@ namespace icl{
 
     /// returns the current focal length
     inline float getFocalLength() const{ return m_F; }
+
+    /// sets new up  vector
+    inline void setUp(const Vec &newUp){ 
+      m_up = normalize3(newUp,0); 
+    }
+
+    /// sets new norm  vector
+    inline void setNorm(const Vec &newNorm){ 
+      m_norm = normalize3(newNorm,0); 
+    }
     
     /// returns the current horizontal vector (norm x up)
     Vec getHorz()const;

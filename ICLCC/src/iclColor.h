@@ -22,7 +22,7 @@ namespace icl{
   typedef FixedColVector<icl8u,4> Color4D;
 
   /// Special color type for e.g. rgba color information (float)
-  typedef FixedColVector<icl32f,3> Color4D32f;
+  typedef FixedColVector<icl32f,4> Color4D32f;
   
   // Create a color by given name (see GeneralColor Constructor)
   const Color &iclCreateColor(std::string name);

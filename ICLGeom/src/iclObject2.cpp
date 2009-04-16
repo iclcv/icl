@@ -72,7 +72,7 @@ namespace icl{
       float x = *params++;
       float y = *params++;
       float z = *params++;
-      float k = *params/2;
+      float k = *params/2.0;
 
       addVertex(Vec(x+k,y-k,z+k,1));
       addVertex(Vec(x+k,y+k,z+k,1));
@@ -109,9 +109,9 @@ namespace icl{
       float x = *params++;
       float y = *params++;
       float z = *params++;
-      float dx = *params++;
-      float dy = *params++;
-      float dz = *params++;
+      float dx = *params++/2.0;
+      float dy = *params++/2.0;
+      float dz = *params++/2.0;
 
       addVertex(Vec(x+dx,y-dy,z+dz,1));
       addVertex(Vec(x+dx,y+dy,z+dz,1));

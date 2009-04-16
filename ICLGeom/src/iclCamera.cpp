@@ -27,8 +27,8 @@ namespace icl{
                     float zFar,
                     bool rightHandedCS){
     m_pos = pos;
-    m_norm = norm;
-    m_up = up;
+    m_norm = normalize3(norm,0);
+    m_up = normalize3(up,0);
     m_zNear = zNear;
     m_zFar = zFar;
     m_F = f>0 ? f : cos((-f/2)*M_PI/180)/sin((-f/2)*M_PI/180);
@@ -51,8 +51,9 @@ namespace icl{
        [--------------------]
        [ 0   0   0  |   1   ]
     */
-    Vec nn = normalize(m_norm);
-    Vec ut = normalize(m_up);
+    const Vec &nn = m_norm;
+    const Vec &ut = m_up;
+
     //    Vec hh = cross(nn,ut);
     Vec hh = cross(ut,nn);
     Vec uu;
@@ -69,7 +70,7 @@ namespace icl{
     T.col(0) = hh;
     T.col(1) = uu;
     //T.col(2) = -nn; // WHY? -> because we used hh = cross(nn,ut) before ...
-    T.col(2) = nn;
+    T.col(2) = nn; 
     T.col(3) = Vec(0.0);
     T = T.transp();
     //    ------------------>   very old, i guess, T[3] = Vec(0,0,0,1);
@@ -209,8 +210,8 @@ namespace icl{
   }
 
   Vec Camera::getHorz() const {
-    Vec nn = normalize(m_norm);
-    Vec ut = normalize(m_up);
+    Vec nn = m_norm;
+    Vec ut = m_up;
     if(m_rightHandedCS){
        return cross(ut,nn);
     }else{

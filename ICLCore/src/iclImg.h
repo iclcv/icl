@@ -336,8 +336,8 @@ namespace icl {
     /// sub-pixel access using linear interpolation
     float subPixelLIN(float fX, float fY, int iChannel) const;
   
-    /// sub-pixel access using region average interpolation (not supported/possible)
-    float subPixelRA(float fX, float fY, int iChannel) const;
+    /// sub-pixel access using region average interpolation
+    float subPixelRA(float x, float y, float w, float h, int iChannel) const;
 
     /// sub-pixel access operator, uses given interpolation method
     Type operator()(float fX, float fY, int iChannel, scalemode eMode) const;

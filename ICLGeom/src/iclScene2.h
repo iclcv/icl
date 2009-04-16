@@ -46,8 +46,12 @@ namespace icl{
 
     ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
 
+    void setLightSimulationEnabled(bool enabled);
+    bool getLightSimulationEnabled() const;
+    
     private:
 
+    float getMaxSceneDim() const;
     void render(RenderPlugin &p, int camIndex);
     
     std::vector<Camera> m_cameras;
@@ -56,6 +60,8 @@ namespace icl{
     
     std::vector<SceneMouseHandler*> m_mouseHandlers;
     std::vector<GLCallback*> m_glCallbacks;
+    
+    bool m_lightSimulationEnabled;
   };
 }
 
