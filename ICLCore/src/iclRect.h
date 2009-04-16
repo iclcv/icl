@@ -51,7 +51,7 @@ namespace icl {
       
       Please note, that a rect fits a discrete set of points: For instance the 
       Rect (x=2,y=1,width=3,height=4) contains exactly 3x4=12 points i.e. those
-      ones with \f$x \elem {2,3,4}\f$ and \f$y \elem {1,2,3,4}\f$. Hence a full
+      ones with \f$x \in {2,3,4}\f$ and \f$y \in {1,2,3,4}\f$. Hence a full
       image roi of an image of size 640x480 has an offset of (0,0), a size of
       640x480, but it contains only x-values within the range 0-639 and y-values 
       within range 0-479.  
