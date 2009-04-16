@@ -22,7 +22,8 @@ include_HEADERS= \
 ../src/iclObject.h \
 ../src/iclScene.h \
 ../src/iclObject2.h \
-../src/iclScene2.h
+../src/iclScene2.h \
+../src/iclPrimitive.h
 
 
 
