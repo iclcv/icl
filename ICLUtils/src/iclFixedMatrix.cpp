@@ -183,4 +183,48 @@ INSTANTIATE_INV_AND_DET_OPT_FUNCS(double,4);
 
 #endif
   
+
+  template<class T>
+  FixedMatrix<T,3,3> create_rot_3D(T axisX, T axisY, T axisZ, T angle){
+    angle /= 2;
+    T a = cos(angle);
+    T sa = sin(angle);
+    T b = axisX * sa;
+    T c = axisY * sa;
+    T d = axisZ * sa;
+    
+    T a2=a*a, b2=b*b, c2=c*c, d2=d*d;
+    T ab=a*b, ac=a*c, ad=a*d, bc=b*c, bd=b*d, cd=c*d;
+    
+    return FixedMatrix<T,3,3>(a2+b2-c2-d2,  2*bc-2*ad,   2*ac+2*bd,  
+                              2*ad+2*bd,    a2-b2+c2-d2, 2*cd-2*ab,  
+                              2*bd-2*ac,    2*ab+2*cd,   a2-b2-c2+d2);
+  }
+
+
+  template<class T>
+  FixedMatrix<T,4,4> create_rot_4x4(T axisX, T axisY, T axisZ, T angle){
+    angle /= 2;
+    T a = cos(angle);
+    T sa = sin(angle);
+    T b = axisX * sa;
+    T c = axisY * sa;
+    T d = axisZ * sa;
+    
+    T a2=a*a, b2=b*b, c2=c*c, d2=d*d;
+    T ab=a*b, ac=a*c, ad=a*d, bc=b*c, bd=b*d, cd=c*d;
+    
+    return FixedMatrix<T,4,4>(a2+b2-c2-d2,  2*bc-2*ad,   2*ac+2*bd,   0,
+                              2*ad+2*bd,    a2-b2+c2-d2, 2*cd-2*ab,   0,
+                              2*bd-2*ac,    2*ab+2*cd,   a2-b2-c2+d2, 0,
+                              0,            0,           0,           1);
+  }
+  
+  
+  template FixedMatrix<float,4,4> create_rot_4x4(float,float,float,float);
+  template FixedMatrix<double,4,4> create_rot_4x4(double,double,double,double);
+
+  template FixedMatrix<float,3,3> create_rot_3D(float,float,float,float);
+  template FixedMatrix<double,3,3> create_rot_3D(double,double,double,double);
+
 }

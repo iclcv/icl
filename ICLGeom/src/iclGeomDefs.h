@@ -75,6 +75,29 @@ namespace icl{
   }
 
   typedef std::vector<Vec> VecArray;
+
+  inline Vec rotate_vector(const Vec &axis, float angle, const Vec &vec){
+    return create_rot_4x4(axis[0],axis[1],axis[2],angle)*vec;
+    /*
+        angle /= 2;
+        float a = cos(angle);
+        float sa = sin(angle);
+        float b = axis[0] * sa;
+        float c = axis[1] * sa;
+        float d = axis[2] * sa;
+        
+        float a2=a*a, b2=b*b, c2=c*c, d2=d*d;
+        float ab=a*b, ac=a*c, ad=a*d, bc=b*c, bd=b*d, cd=c*d;
+        
+        Mat X(a2+b2-c2-d2,  2*bc-2*ad,   2*ac+2*bd,   0,
+        2*ad+2*bd,    a2-b2+c2-d2, 2*cd-2*ab,   0,
+        2*bd-2*ac,    2*ab+2*cd,   a2-b2-c2+d2, 0,
+        0,            0,           0,           1);
+        
+        return X * vec;
+    */
+  }
+
 }
 
 

@@ -20,23 +20,6 @@ namespace icl{
   };
 
   
-  // TODO optimize
-  Vec rotate_vector(const Vec &axis, float angle, const Vec &vec){
-    angle /= 2;
-    float a = cos(angle);
-    float sa = sin(angle);
-    float b = axis[0] * sa;
-    float c = axis[1] * sa;
-    float d = axis[2] * sa;
-    
-    Mat X(a*a + b*b - c*c -d*c , 2*b*c - 2*a*d, 2*a*c + 2*b*d,0,
-          2*a*d + 2*d*c, a*a - b*b + c*c -d*d, 2*c*d-2*a*b,0,
-          2*b*d - 2*a*c, 2*a*b + 2*c*d, a*a - b*b - c*c +d*d, 0,
-          0, 0, 0, 1 );
-    
-    return X * vec;
-  }
-  
   struct  Scene2::SceneMouseHandler : public MouseHandler{
     int cameraIndex;
     Scene2 *parent;

@@ -820,14 +820,21 @@ namespace icl{
     return m;
   }
 
+  /// create 3D rotation matrix that rotates about given axis by given angle (float and double only)
+  template<class T>
+  FixedMatrix<T,3,3> create_rot_3D(T axisX, T axisY, T axisZ, T angle);
   
   /// creates a 3D rotation matrix (defined for float and double)
   template<class T>
   FixedMatrix<T,3,3> create_rot_3D(T rx,T ry,T rz);
 
-  /// creates a 3D homogen matrix (defined for float and double)
+  /// creates a 3D homogeneous matrix (defined for float and double)
   template<class T>
   FixedMatrix<T,4,4> create_hom_4x4(T rx, T ry, T rz, T dx=0, T dy=0, T dz=0, T v0=0, T v1=0, T v2=0);
+
+  /// create 4D homogeneous matrix that rotates about given axis by given angle float and double only)
+  template<class T>
+  FixedMatrix<T,4,4> create_rot_4x4(T axisX, T axisY, T axisZ, T angle);
 
 
   /// creates a 3D homogen matrix with translation part only (defined for float and double)
@@ -941,6 +948,7 @@ namespace icl{
   
 /** \endcond */
 #endif
+
 
 }
 
