@@ -103,7 +103,7 @@ namespace icl{
          mem->replace(anchor.getDocumentText(), attToUse);
          std::ostringstream oss;
          //---------
-         oss << "/*[@dbxml:id=" << anchor.getDocument().getID() << "]";
+         oss << "/*[@dbxml:id='" << anchor.getDocument().getID() << "']";
          mem->replaceByXPath(oss.str(), anchor.getDocumentText(), attToUse);
 #if 0
           
