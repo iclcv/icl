@@ -945,7 +945,7 @@ namespace icl{
 #if QT_VERSION >= 0x040400
 #define MOUSE_EVENT_POS e->posF()
 #else
-#define MOUSE_EVENT_POS QPointF(e->pos().x,e->pos().y)
+#define MOUSE_EVENT_POS QPointF(e->pos().x(),e->pos().y())
 #endif
     virtual void mousePressEvent(QMouseEvent *e){
       down(e->button()) = true;
