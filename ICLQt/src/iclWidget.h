@@ -7,6 +7,7 @@
 #include <iclImageStatistics.h>
 #include <iclMouseHandler.h>
 #include "iclWidgetCaptureMode.h"
+#include <iclGUI.h>
 
 namespace icl{
 
@@ -183,10 +184,24 @@ int main(int nArgs, char **ppcArg){
     void install(MouseHandler *h);
 
     /// deletes mouse handler connection 
-    /** Ownership was not passed -> h is not deletec  */
+    /** Ownership was not passed -> h is not deleted  */
     void uninstall(MouseHandler *h);
-    
-    
+
+    /// registeres a simple callback 
+    /** @param cb callback functor to use
+        @param eventList comma-separated list of events. Supported types are:
+               - all (for all events)
+               - move (mouse if moved, no button pressed)
+               - drag  (mouse is moved, at least one button is pressed)
+               - press, (guess what)
+               - release (button released)
+               - enter  (mouse cursor enters the widget)
+               - leave  (mouse cursor leaved the widget)
+    */
+    void registerCallback(GUI::CallbackPtr cb, const std::string &eventList="drag,press");
+
+    /// removes all callbacks registered using registerCallback
+    void removeCallbacks();
 
     /// this function should be called to update the widget asyncronously from a working thread
     void updateFromOtherThread();

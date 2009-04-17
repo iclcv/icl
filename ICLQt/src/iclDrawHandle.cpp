@@ -8,5 +8,11 @@ namespace icl{
   void DrawHandle::update(){
     (**this)->updateFromOtherThread();
   }
+  void DrawHandle::registerCallback(GUI::CallbackPtr cb, const std::string &events){
+    (**this)->registerCallback(cb,events);
+  }
+  void DrawHandle::removeCallbacks(){
+    (**this)->removeCallbacks();
+  }
   
 }

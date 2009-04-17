@@ -25,7 +25,18 @@ namespace icl{
     }
     
     /// registers a callback on this gui widget
-    void registerCallback(GUI::CallbackPtr cb){
+    /** This function can be re-implemented to bypass event propagation. By default,
+        events are passed to the parent GUIWidget which, then again passes the events
+        implementation-dependently to the actual widget.
+
+        @param cb callback functor to call
+        @param events comma separated list of event types to register on.
+               This list is handled internally by each special GUIHandlerBase implementation
+               currently only the ImageHandle DrawHandle and DrawHandle3D re-implement this 
+               functionality. At default, events is not regarded at all 
+    */
+    virtual void registerCallback(GUI::CallbackPtr cb, const std::string &events="all"){
+      (void)events;
       if(m_poGUIWidget){
         m_poGUIWidget->registerCallback(cb);
       }else{
@@ -33,7 +44,8 @@ namespace icl{
       }
     }
     
-    void removeCallbacks(){
+    /// removes all callbacks from parent GUIWidget component
+    virtual void removeCallbacks(){
       if(m_poGUIWidget){
         m_poGUIWidget->removeCallbacks();
       }else{
@@ -41,8 +53,8 @@ namespace icl{
       }
     }
     
-    /// envokes all registered callbacks to be called!
-    void cb(){
+    /// envokes all registered callbacks
+    virtual void cb(){
       if(m_poGUIWidget){
         m_poGUIWidget->cb();
       }else{

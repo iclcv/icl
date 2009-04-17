@@ -492,8 +492,12 @@ namespace icl{
       ICL_DELETE(qimage);
       ICL_DELETE(qic);
       ICL_DELETE(embeddedZoomRect);
+      
+      deleteAllCallbacks();
       // ICL_DELETE(outputCap); this must be done by the parent widget
     }
+    
+    
     ICLWidget *parent;
     ImgBase *channelSelBuf;
     GLTextureMapBaseImage *image;
@@ -533,6 +537,7 @@ namespace icl{
     std::vector<OSDGLButton*> glbuttons;
     bool useLinInterpolation;
     int nextButtonX;
+    std::vector<MouseHandler*> callbacks;
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
@@ -545,6 +550,13 @@ namespace icl{
       return any;
     }
 
+    void deleteAllCallbacks(){
+      for(unsigned int i=0;i<callbacks.size();++i){
+        delete callbacks[i];
+      }
+      callbacks.clear();
+    }
+    
     void updateImageInfoIndicatorGeometry(const QSize &parentSize){
       imageInfoIndicator->setGeometry(QRect(parentSize.width()-252,parentSize.height()-18,250,18));
     }
@@ -930,13 +942,17 @@ namespace icl{
       }
     }
     
-    
+#if QT_VERSION >= 0x040400
+#define MOUSE_EVENT_POS e->posF()
+#else
+#define MOUSE_EVENT_POS QPointF(e->pos().x,e->pos().y)
+#endif
     virtual void mousePressEvent(QMouseEvent *e){
       down(e->button()) = true;
       if(e->button() == Qt::LeftButton){
-        leftDown(a2r(e->posF()));
+        leftDown(a2r(MOUSE_EVENT_POS));
       }else if(e->button() == Qt::RightButton){
-        rightDown(a2r(e->posF()));
+        rightDown(a2r(MOUSE_EVENT_POS));
       }
       update();
     }
@@ -944,20 +960,20 @@ namespace icl{
     virtual void mouseReleaseEvent(QMouseEvent *e){
       down(e->button()) = false;
       if(e->button() == Qt::LeftButton){
-        leftUp(a2r(e->posF()));
+        leftUp(a2r(MOUSE_EVENT_POS));
       }else if(e->button() == Qt::RightButton){
-        rightUp(a2r(e->posF()));
+        rightUp(a2r(MOUSE_EVENT_POS));
       }      
       update();
     }
     
     virtual void mouseMoveEvent(QMouseEvent *e){
       if(downMask[0]){
-        leftDrag(a2r(e->posF()));
+        leftDrag(a2r(MOUSE_EVENT_POS));
       }else if(downMask[2]){
-        rightDrag(a2r(e->posF()));
+        rightDrag(a2r(MOUSE_EVENT_POS));
       }else{
-        move(a2r(e->posF()));
+        move(a2r(MOUSE_EVENT_POS));
       }
       update();
     }
@@ -2096,5 +2112,61 @@ namespace icl{
 
   // }}}
 
+  void ICLWidget::registerCallback(GUI::CallbackPtr cb, const std::string &eventList){
+    // {{{ open
+    struct CallbackHandler : public MouseHandler{
+      GUI::CallbackPtr cb;
+      std::vector<MouseEventType> evts;
+      bool m_all;
+      CallbackHandler(GUI::CallbackPtr cb ,const std::string &eventList):
+        m_all(false),cb(cb){
+        std::vector<std::string> eventVec = icl::tok(eventList,",");
+        for(unsigned int i=0;i<eventVec.size();++i){
+          const std::string &e = eventVec[i];
+          if(e == "all"){
+            m_all == true;
+            break;
+          }else if(e == "move"){
+            evts.push_back(MouseMoveEvent);
+          }else if(e == "drag"){
+            evts.push_back(MouseDragEvent);
+          }else if(e == "press"){
+            evts.push_back(MousePressEvent);
+          }else if(e == "release"){
+            evts.push_back(MouseReleaseEvent);
+          }else if(e == "enter"){
+            evts.push_back(MouseEnterEvent);
+          }else if(e == "leave"){
+            evts.push_back(MouseLeaveEvent);
+          }
+        }
+      }
+      virtual void process(const MouseEvent &evt){
+        if(m_all){
+          cb->exec();
+          return;
+        }
+        MouseEventType t = evt.getType();
+        for(unsigned int i=0;i<evts.size();++i){
+          if(evts[i] == t){
+            cb->exec();
+            return;
+          }
+        }
+      }
+    };
+    MouseHandler *cbh = new CallbackHandler(cb,eventList);
+    m_data->callbacks.push_back(cbh);
+    install(cbh);
+  }
+  // }}}
+  
+  void ICLWidget::removeCallbacks(){
+    // {{{ open
+
+    m_data->deleteAllCallbacks();
+  }
+
+  // }}}
 }
 

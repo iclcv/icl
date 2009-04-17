@@ -62,6 +62,10 @@
 #include <iclStringUtils.h>
 #include <iclToggleButton.h>
 
+#include <iclWidget.h>
+#include <iclDrawWidget.h>
+#include <iclDrawWidget3D.h>
+
 #include <map>
 
 using namespace std;

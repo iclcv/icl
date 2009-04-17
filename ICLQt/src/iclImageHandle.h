@@ -31,6 +31,12 @@ namespace icl{
     
     /// calles updated internally
     void update();
+
+    /// passes callback registration to wrapped ICLWidget instance)
+    virtual void registerCallback(GUI::CallbackPtr cb, const std::string &events="all");
+    
+    /// passes callback registration to wrapped ICLWidget instance)
+    virtual void removeCallbacks();
                   
   };
   

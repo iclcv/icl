@@ -3,6 +3,7 @@
 #include <iclGUIWidget.h>
 #include <iclMutex.h>
 #include <algorithm>
+#include <iclMathematics.h>
 
 namespace icl{
 

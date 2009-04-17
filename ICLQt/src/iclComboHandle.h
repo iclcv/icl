@@ -54,10 +54,10 @@ namespace icl{
     
     private:
     /// utility function (internally used)
-    QComboBox *cb() { return **this; } 
+    QComboBox *cbx() { return **this; } 
 
     /// utility function (internally used)
-    const QComboBox *cb() const{ return **this; } 
+    const QComboBox *cbx() const{ return **this; } 
   };
   
 }

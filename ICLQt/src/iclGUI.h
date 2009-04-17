@@ -6,11 +6,6 @@
 #include <iclSmartPtr.h>
 #include <iclDataStore.h>
 
-
-#include <iclWidget.h>
-#include <iclDrawWidget.h>
-#include <iclDrawWidget3D.h>
-
 #include <QLayout>
 #include <QWidget>
 #include <QApplication>
