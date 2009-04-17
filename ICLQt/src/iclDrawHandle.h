@@ -4,7 +4,6 @@
 #include <iclGUIHandle.h>
 
 namespace icl{
-  
   /** \cond */
   class ICLDrawWidget;
   class ImgBase;
