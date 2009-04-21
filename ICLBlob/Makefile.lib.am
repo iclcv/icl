@@ -8,6 +8,7 @@ libICLBlob_la_SOURCES= \
 ../src/iclFMCreator.cpp \
 ../src/iclHungarianAlgorithm.cpp \
 ../src/iclPositionTracker.cpp \
+../src/iclVectorTracker.cpp \
 ../src/iclRegionBasedBlobSearcher.cpp \
 ../src/iclRegion.cpp \
 ../src/iclRegionDetector.cpp \
@@ -25,7 +26,7 @@ include_HEADERS= \
 ../src/iclHungarianAlgorithm.h \
 ../src/iclPixelRatingGroup.h \
 ../src/iclPixelRating.h \
-../src/iclPositionTracker.h \
+../src/iclVectorTracker.h \
 ../src/iclRegionBasedBlobSearcher.h \
 ../src/iclRegionDetector.h \
 ../src/iclRegionFilter.h \

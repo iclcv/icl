@@ -46,12 +46,23 @@ icl_region_detector_test_CXXFLAGS=${XCXXFLAGS}
 if HAVE_QT_COND
 
 bin_PROGRAMS+= \
-icl-region-inspector-demo
+icl-region-inspector-demo \
+icl-vector-tracker-demo \
+icl-interactive-vector-tracker-benchmark
+
 
 
 icl_region_inspector_demo_SOURCES=../examples/region-inspector-demo.cpp
 icl_region_inspector_demo_LDFLAGS=${XLDFLAGS}
 icl_region_inspector_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_vector_tracker_demo_SOURCES=../examples/vector-tracker-demo.cpp
+icl_vector_tracker_demo_LDFLAGS=${XLDFLAGS}
+icl_vector_tracker_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_interactive_vector_tracker_benchmark_SOURCES=../examples/interactive-vector-tracker-benchmark.cpp
+icl_interactive_vector_tracker_benchmark_LDFLAGS=${XLDFLAGS}
+icl_interactive_vector_tracker_benchmark_CXXFLAGS=${XCXXFLAGS}
 
 endif
 

@@ -1,6 +1,5 @@
 #ifndef POSITIONTRACKER_H 
 #define POSITIONTRACKER_H 
-#include "iclExtrapolator.h"
 #include <vector>
 #include <deque>
 
