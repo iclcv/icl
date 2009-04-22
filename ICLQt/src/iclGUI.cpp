@@ -410,7 +410,11 @@ namespace icl{
       bool *stateRef = &getGUI()->allocValue<bool>(def.output(0),initToggled);
       getGUI()->unlockData();
       
-      m_poButton = new ToggleButton(def.param(0),def.param(1),def.parentWidget(),stateRef);
+      std::string t1 = def.param(0);
+      std::string t2 = def.param(1);
+      if(t1.length() && t1[0]=='!') t1 = t1.substr(1);
+      if(t2.length() && t2[0]=='!') t2 = t2.substr(1);
+      m_poButton = new ToggleButton(t1,t2,def.parentWidget(),stateRef);
       if(initToggled){
         m_poButton->setChecked(true);
       }

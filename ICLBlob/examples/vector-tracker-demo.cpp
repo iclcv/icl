@@ -294,9 +294,9 @@ typedef std::vector<int> vec;
 GUI gui;
 InputGrabber *grabber = 0;
 
-static inline vec getCenters(const Img8u &image){
+static vec getCenters(const Img8u &image){
   static RegionDetector rd;
-  rd.setRestrictions(10,10000,1,255);
+  rd.setRestrictions(10,100000,1,255);
   
   const std::vector<icl::Region> &bd = rd.detect(&image);
   
@@ -311,6 +311,23 @@ static inline vec getCenters(const Img8u &image){
   return v;
 }
 
+static std::vector<std::vector<float> > getCentersAndSizes(const Img8u &image){
+  static RegionDetector rd;
+  rd.setRestrictions(10,100000,1,255);
+  
+  const std::vector<icl::Region> &bd = rd.detect(&image);
+  
+  std::vector<std::vector<float> > v;
+
+  for(unsigned int i=0;i<bd.size();++i){
+    Point p = bd[i].getCOG();
+    float x[] = { p.x,p.y, bd[i].getSize() };
+    v.push_back(std::vector<float>(x,x+3));
+  }
+  return v;
+}
+
+
 void init(){
     grabber = new InputGrabber(pa_subarg<int>("-nblobs",0,30));
     grabber->setDesiredSize(Size(640,480));
@@ -318,7 +335,7 @@ void init(){
     gui << "draw[@handle=image@minsize=32x24]";
     gui << ( GUI("hbox") 
              << string("slider(0,100,")+pa_subarg<string>("-sleeptime",0,"10") + ")[@handle=Hsl@out=Vsl@label=sleeptime]"
-             << "togglebutton(!off,on)[@out=Vlo@label=Show labels]"
+             << "togglebutton(off,!on)[@out=Vlo@label=Show labels]"
            );
     gui.show();
 
@@ -330,12 +347,19 @@ void run(){
   
   const ImgBase *image = grabber->grab();
 
-  vec v = getCenters(*(image->asImg<icl8u>()));
-  std::vector<std::vector<float> > vVT;
-  for(int i=0;i<v.size()/2;++i){
-    std::vector<float> el(2); el[0] = v[2*i]; el[1] = v[2*i+1];
-    vVT.push_back(el);
-  }
+  std::vector<std::vector<float> > vVT = getCentersAndSizes(*(image->asImg<icl8u>()));
+
+
+  /*
+      std::vector<std::vector<float> > vVT;
+      for(int i=0;i<v.size()/2;++i){
+      std::vector<float> el(3); 
+      el[0] = v[2*i]; 
+      el[1] = v[2*i+1];
+      
+      vVT.push_back(el);
+      }
+  */
 
   w->setImage(image);
 
@@ -346,11 +370,12 @@ void run(){
 
   if(vVT.size()){
     
-    std::vector<float> normFactors(2);
+    std::vector<float> normFactors(3);
     normFactors[0] = pa_subarg<float>("-norm",0,1.0);
     normFactors[1] = pa_subarg<float>("-norm",1,1.0);
+    normFactors[2] = pa_subarg<float>("-norm",2,1000);
 
-    static VectorTracker vt(2,                               // dim
+    static VectorTracker vt(3,                               // dim (x,y,size)
                             10000,                           // a large distance 
                             normFactors,                     // weights,
                             pa_subarg<std::string>("-iam",0,"new") == "new" ? VectorTracker::brandNew  : VectorTracker::firstFree,
@@ -363,13 +388,15 @@ void run(){
     
     update_error_frames_A();
     
-    for(unsigned int i=0;i<v.size();i+=2){
-      w->sym(v[i],v[i+1],ICLDrawWidget::symCross);
+    for(unsigned int i=0;i<vVT.size();i++){
+      int curr_id = vt.getID(i);
+      int curr_x = vVT[i][0];
+      int curr_y = vVT[i][1];
+
+      w->sym(curr_x,curr_y,ICLDrawWidget::symCross);
       static bool &labelsOnFlag = gui.getValue<bool>("Vlo");
       
-      int curr_x = v[i];
-      int curr_y = v[i+1];
-      int curr_id = vt.getID(i/2);
+
       
       int blob_list_idx = ((InputGrabber*)grabber)->find_blob(curr_x,curr_y);
       if(blob_list_idx == -1){
@@ -393,8 +420,8 @@ void run(){
   static FPSEstimator fps(10);
   w->color(255,255,255);
   char buf[400];
-  sprintf(buf,"blobs:%4d frames:%6d E:frames:%4d all:%4d   ",v.size()/2,frame_counter,error_frames,error_counter);
-  w->text(string(buf)+"   "+fps.getFPSString().c_str(),5,5); 
+  sprintf(buf,"blobs:%4d frames:%6d Error-frames:%4d Errors:%4d   ",vVT.size(),frame_counter,error_frames,error_counter);
+  w->text(string(buf)+"   "+fps.getFPSString().c_str(),5,5,-1,-1,8); 
   
   w->unlock();
   w->update();
@@ -415,7 +442,9 @@ int main(int n, char  **ppc){
   pa_explain("-maxdv","(int) maximal acceleration of blobs");
   pa_explain("-thresh","(int) position tracker threshold for trivial association step");
   pa_explain("-iam","one of {new,or free}");
-  pa_explain("-norm","give norm factors for x and y distances");
+  pa_explain("-norm","give norm factors for x and y distances and for the region size");
 
-  return ICLApplication(n,ppc,"-norm(2) -iam(1) -nblobs(1) -sleeptime(1) -mingap(1) -minr(1) -maxr(1) -maxv(1) -maxdv(1) -thresh(1)",init,run).exec();
+  return ICLApplication(n,ppc,"-norm(3) -iam(1) -nblobs(1) -sleeptime(1) "
+                        "-mingap(1) -minr(1) -maxr(1) -maxv(1) -maxdv(1) "
+                        "-thresh(1)",init,run).exec();
 }

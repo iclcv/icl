@@ -7,7 +7,57 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include <set>
 namespace icl{
+
+  struct CameraObject : public Object2{
+    Scene2 *scene;
+    int cameraIndex;
+    std::vector<Vec> verticesPushed;
+    
+    static const float *def_params(){
+      static float p[6]={0,0,-5,5,6,10};
+      return p;
+    }
+    
+    CameraObject(Scene2 *parent, int cameraIndex):
+      Object2("cuboid",def_params()),
+      scene(parent),cameraIndex(cameraIndex){
+      
+      static float xs[8] = {-1,1,2,2,1,-1,-2,-2};
+      static float ys[8] = {2,2,1,-1,-2,-2,-1,1};
+      for(int i=0;i<8;++i){
+        addVertex(Vec(xs[i],ys[i],3,1));
+      }
+      for(int i=0;i<8;++i){
+        addVertex(Vec(xs[i]*0.6,ys[i]*0.6,0,1));
+        addLine(i+8,i+16);
+        if(i)addQuad(i+8,i+16,i+15,i+7);
+        else addQuad(8,16,23,15);
+      }
+      setColor(Primitive::line,GeomColor(200,200,200,255));
+      setColor(Primitive::quad,GeomColor(255,0,0,200));
+      
+      addVertex(Vec(0,0,-0.1,1)); // center: 24
+      addVertex(Vec(4,0,-0.1,1)); // x-axis: 25
+      addVertex(Vec(0,4,-0.1,1)); // y-axis: 26
+      
+      addLine(24,25,GeomColor(255,0,0,255));
+      addLine(24,26,GeomColor(0,255,0,255));
+      
+      setVisible(Primitive::vertex,false);
+      setVisible(Primitive::line,true);
+      verticesPushed=m_vertices;
+    }
+    
+    virtual void prepareForRendering() {
+      const Camera &cam = scene->getCamera(cameraIndex);
+      Mat T = cam.getCoordinateSystemTransformationMatrix().inv();
+      for(unsigned int i=0;i<m_vertices.size();++i){
+        m_vertices[i] = T*verticesPushed[i]; 
+      }
+    }
+  };
 
   struct Scene2::GLCallback : public ICLDrawWidget3D::GLCallback{
     int cameraIndex;
@@ -131,7 +181,7 @@ namespace icl{
   };
   
   
-  Scene2::Scene2():m_lightSimulationEnabled(true){}
+  Scene2::Scene2():m_lightSimulationEnabled(true),m_drawCamerasEnabled(true){}
   Scene2::~Scene2(){}
   Scene2::Scene2(const Scene2 &scene){
     *this = scene;
@@ -154,14 +204,18 @@ namespace icl{
       m_glCallbacks[i] = new GLCallback(scene.m_glCallbacks[i]->cameraIndex,this);
     }
     m_lightSimulationEnabled = scene.m_lightSimulationEnabled;
+    m_drawCamerasEnabled = scene.m_drawCamerasEnabled;
   }
   
   void Scene2::addCamera(const Camera &cam){
     m_cameras.push_back(cam);
+    m_cameraObjects.push_back(new CameraObject(this,m_cameraObjects.size()-1));
   }
   void Scene2::removeCamera(int index){
     ICLASSERT_RETURN(index > 0 && index < m_cameras.size());
     m_cameras.erase(m_cameras.begin()+index);
+    delete m_cameraObjects[index];
+    m_cameraObjects.erase(m_cameraObjects.begin()+index);
   }
   Camera &Scene2::getCamera(int camIndex){
     return m_cameras[camIndex];
@@ -183,9 +237,21 @@ namespace icl{
     m_objects.push_back(object);
   }
   void Scene2::removeObject(int idx, bool deleteObject){
+    ICLASSERT_RETURN(idx >= 0 && idx < m_objects.size());
     Object2 *p = m_objects[idx];
     if(deleteObject) delete p;
     m_objects.erase(m_objects.begin()+idx);
+  }
+  void Scene2::removeObjects(int startIndex, int endIndex, bool deleteObjects){
+    if(endIndex < 0) endIndex = m_objects.size();
+    ICLASSERT_RETURN(startIndex >= 0 && startIndex < m_objects.size());
+    ICLASSERT_RETURN(endIndex >= 0 && endIndex <= m_objects.size());
+    ICLASSERT_RETURN(endIndex > startIndex);
+    
+    int pos = startIndex;
+    while(startIndex++ < endIndex){
+      removeObject(pos,deleteObjects);
+    }
   }
   
   void Scene2::clear(bool camerasToo){
@@ -260,14 +326,24 @@ namespace icl{
   void Scene2::render(RenderPlugin &renderer, int camIndex){
     Mutex::Locker l(this);
     ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
+
+    std::vector<Object2*> allObjects(m_objects);
+    if(m_drawCamerasEnabled){
+      for(unsigned int i=0;i<m_cameraObjects.size();++i){
+        if(i == camIndex) continue;
+        allObjects.push_back(m_cameraObjects[i]);
+      }
+    }
     
     if((int)m_projections.size() <= camIndex){
       m_projections.resize(camIndex+1);
     }
-    m_projections[camIndex].resize(m_objects.size());
+    m_projections[camIndex].resize(allObjects.size());
        
-    for(unsigned int i=0;i<m_objects.size();++i){
-      Object2 *o = m_objects[i];
+    for(unsigned int i=0;i<allObjects.size();++i){
+      Object2 *o = allObjects[i];
+      o->prepareForRendering();
+
       m_cameras[camIndex].project(o->getVertices(),m_projections[camIndex][i]);
       std::vector<Primitive> &ps = o->getPrimitives();
       for(unsigned int j=0;j<ps.size();++j){
@@ -277,12 +353,26 @@ namespace icl{
       std::sort(ps.begin(),ps.end());
     }
     
-    std::vector<ProjectedObject2> sorted(m_objects.size());
-    for(unsigned int i=0;i<sorted.size();++i){
-      sorted[i] = ProjectedObject2(m_objects[i],&m_projections[camIndex][i]);
+
+    // ok, i guess there's some bug in std::sort or something ...
+    /*
+        std::vector<ProjectedObject2> sorted(allObjects.size());
+        for(unsigned int i=0;i<sorted.size();++i){
+        sorted[i] = ProjectedObject2(allObjects[i],&m_projections[camIndex][i]);
+        }
+        
+        DEBUG_LOG("starting to sort ..");
+        std::sort(sorted.begin(),sorted.end());
+        DEBUG_LOG("done");
+    */
+    
+    /// fallback using a std::multiset
+    std::multiset<ProjectedObject2> sortedSet;
+    for(unsigned int i=0;i<allObjects.size();++i){
+      sortedSet.insert(ProjectedObject2(allObjects[i],&m_projections[camIndex][i]));
     }
-    std::sort(sorted.begin(),sorted.end());
-      
+    std::vector<ProjectedObject2> sorted(sortedSet.begin(),sortedSet.end()); 
+    
     for(unsigned int i=0;i<sorted.size();++i){  
       Object2 *o = sorted[i].obj;
       std::vector<Primitive> &primitives = o->getPrimitives();
@@ -394,9 +484,21 @@ namespace icl{
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_POINT_SMOOTH);
     glEnable(GL_POLYGON_SMOOTH);
+    
+    std::vector<Object2*> allObjects(m_objects);
+    if(m_drawCamerasEnabled){
+      for(unsigned int i=0;i<m_cameraObjects.size();++i){
+        if(i == camIndex) continue;
+        allObjects.push_back(m_cameraObjects[i]);
+      }
+    }
 
-    for(unsigned int i=0;i<m_objects.size();++i){
-      Object2 *o = m_objects[i];
+    for(unsigned int i=0;i<allObjects.size();++i){
+      // don't draw camera x in view x
+      if(i==m_objects.size()+camIndex) continue;
+
+      Object2 *o = allObjects[i];
+      o->prepareForRendering();
       std::vector<Vec> &ps = o->m_vertices;
       for(unsigned int j=0;j<o->m_primitives.size();++j){
         Primitive &p = o->m_primitives[j];
@@ -497,6 +599,14 @@ namespace icl{
   bool Scene2::getLightSimulationEnabled() const{
     return m_lightSimulationEnabled;
   }
+
+  void Scene2::setDrawCamerasEnabled(bool enabled){
+    m_drawCamerasEnabled = enabled;
+  }
+  bool Scene2::getDrawCamerasEnabled() const{
+    return m_drawCamerasEnabled;
+  }
+  
   
   float Scene2::getMaxSceneDim() const{
     Range32f rangeXYZ[3]={Range32f::limits(),Range32f::limits(),Range32f::limits()};

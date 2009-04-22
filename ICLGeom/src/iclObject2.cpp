@@ -66,7 +66,7 @@ namespace icl{
     }
   }
 
-  Object2::Object2(const std::string &type, float *params){
+  Object2::Object2(const std::string &type,const float *params){
     std::fill(m_visible,m_visible+5,true);
     if(type == "cube"){
       float x = *params++;
@@ -144,6 +144,31 @@ namespace icl{
       addQuad(1,2,6,5,GeomColor(0,100,180,155));
       addQuad(0,1,5,4,GeomColor(0,100,200,155));
       addQuad(3,2,6,7,GeomColor(0,100,220,155));
+    }else if(type == "sphere"){
+      float x = *params++;
+      float y = *params++;
+      float z = *params++;
+      float r = *params++/2.0;
+      int slices = (int)*params++;
+      int steps = (int)*params;
+      
+      float dA = (2*M_PI)/slices;
+      float dB = (2*M_PI)/steps;
+
+      Vec v(r,0,0,1),offs(x,y,z),zAxis(0,0,1),yAxis(0,1,0);
+      int idx = 0;
+      
+      for(int i=0;i<slices;++i){
+        float a = i*dA/2.0;//-M_PI/2.0;
+        Vec v2 = rotate_vector(zAxis,i*dA,v);
+        for(int j=0;j<steps;++j,++idx){
+          addVertex(offs+rotate_vector(yAxis,j*dB,v2));
+          if(i>0 && j>0){
+            addLine(idx,idx-1);
+            addLine(idx,idx-slices);
+          }
+        }
+      }
     }else{
       ERROR_LOG("unknown type:" << type);
     }

@@ -39,6 +39,8 @@ namespace icl{
     
     void addObject(Object2 *object);
     void removeObject(int idx, bool deleteObject = true);
+    void removeObjects(int startIndex, int endIndex=-1, bool deleteObjects=true);
+    int getObjectCount() const { return m_objects.size(); }
     
     void clear(bool camerasToo=false);
     
@@ -48,6 +50,8 @@ namespace icl{
 
     void setLightSimulationEnabled(bool enabled);
     bool getLightSimulationEnabled() const;
+    void setDrawCamerasEnabled(bool enabled);
+    bool getDrawCamerasEnabled() const;
     
     private:
 
@@ -56,12 +60,14 @@ namespace icl{
     
     std::vector<Camera> m_cameras;
     std::vector<Object2*> m_objects;
+    std::vector<Object2*> m_cameraObjects;
     std::vector<std::vector<std::vector<Vec> > >m_projections;//[cam][obj][vertex]
     
     std::vector<SceneMouseHandler*> m_mouseHandlers;
     std::vector<GLCallback*> m_glCallbacks;
     
     bool m_lightSimulationEnabled;
+    bool m_drawCamerasEnabled;
   };
 }
 

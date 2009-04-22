@@ -29,7 +29,7 @@ namespace icl{
     float operator()(const Vec &a, const Vec &b) const{
       float sum  = 0;
       for(int i=0;i<a.size();++i){
-        sum += square(a[i]-b[i])/v[i];
+        sum += square((a[i]-b[i])/v[i]);
       }
       return ::sqrt(sum);
     }

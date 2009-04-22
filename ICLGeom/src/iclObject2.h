@@ -18,8 +18,9 @@ namespace icl{
     /** currently allowed:
         "cube" params: [x,y,z,radius];
         "cuboid" params: [x,y,z,dx,dy,dz]
+        "sphere" params: [x,y,z,radius,slices,steps]
     */
-    Object2(const std::string &type, float *params);
+    Object2(const std::string &type,const float *params);
     
     /// Empty destructor (but virtual)
     virtual ~Object2(){}
@@ -67,7 +68,11 @@ namespace icl{
     /// calculates mean z of all primitives
     void updateZFromPrimitives();
     
-    private:
+    /// called by the renderer before the object is rendered
+    /** here, dynamic object types can adapt e.g. their vertices or colors*/
+    virtual void prepareForRendering() {}
+    
+    protected:
     std::vector<Vec> m_vertices;
     std::vector<GeomColor> m_vertexColors;
     std::vector<Primitive> m_primitives;
