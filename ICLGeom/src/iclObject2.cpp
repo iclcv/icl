@@ -104,16 +104,11 @@ namespace icl{
       addLine(3,7);
       
       addQuad(0,1,2,3,GeomColor(0,100,120,155));//
-      //addQuad(4,5,6,7,GeomColor(0,100,140,155));
       addQuad(7,6,5,4,GeomColor(0,100,140,155)); // ?
       addQuad(0,3,7,4,GeomColor(0,100,160,155));//
-
-      //addQuad(1,2,6,5,GeomColor(0,100,180,155));
       addQuad(5,6,2,1,GeomColor(0,100,180,155)); // ?
-      
-      addQuad(0,1,5,4,GeomColor(0,100,200,155));
-      //addQuad(3,2,6,7,GeomColor(0,100,220,155));
-      addQuad(7,6,2,3,GeomColor(0,100,220,155));
+      addQuad(4,5,1,0,GeomColor(0,100,200,155));
+      addQuad(3,2,6,7,GeomColor(0,100,220,155));
 
     }else if(type == "cuboid"){
       float x = *params++;
@@ -148,18 +143,13 @@ namespace icl{
       addLine(2,6);
       addLine(3,7);
       
-      // corrector order for auto normals
+      // Vertex order: alwas counter clock-wise
       addQuad(0,1,2,3,GeomColor(0,100,120,155));//
-      //addQuad(4,5,6,7,GeomColor(0,100,140,155));
       addQuad(7,6,5,4,GeomColor(0,100,140,155)); // ?
       addQuad(0,3,7,4,GeomColor(0,100,160,155));//
-
-      //addQuad(1,2,6,5,GeomColor(0,100,180,155));
       addQuad(5,6,2,1,GeomColor(0,100,180,155)); // ?
-      
-      addQuad(0,1,5,4,GeomColor(0,100,200,155));
-      //addQuad(3,2,6,7,GeomColor(0,100,220,155));
-      addQuad(7,6,2,3,GeomColor(0,100,220,155));
+      addQuad(4,5,1,0,GeomColor(0,100,200,155));
+      addQuad(3,2,6,7,GeomColor(0,100,220,155));
       
     }else if(type == "sphere"){
       float x = *params++;

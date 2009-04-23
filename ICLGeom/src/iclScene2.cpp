@@ -567,6 +567,8 @@ namespace icl{
               Vec &b = ps[p.b];
               Vec &c = ps[p.c];
               Vec &d = ps[p.d];
+              // left hand normal ?!
+              glNormal3fv(normalize(cross(b-c,d-c)).data());
               GLTextureMapBaseImage tim(&p.tex);
               tim.drawTo3D(a.begin(),b.begin(),d.begin());
               break;
