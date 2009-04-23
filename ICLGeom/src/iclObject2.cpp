@@ -24,7 +24,7 @@ namespace icl{
   }
   
   Object2::Object2(){
-    std::fill(m_visible,m_visible+5,true);
+    std::fill(m_visible,m_visible+Primitive::PRIMITIVE_TYPE_COUNT,true);
   }
   
   void Object2::addVertex(const Vec &p, const GeomColor &color){
@@ -42,6 +42,10 @@ namespace icl{
   
   void Object2::addQuad(int a, int b, int c, int d, const GeomColor &color){
     m_primitives.push_back(Primitive(a,b,c,d,color));
+  }
+
+  void Object2::addTexture(int a, int b, int c, int d, const Img8u &texture,bool deepCopy){
+    m_primitives.push_back(Primitive(a,b,c,d,texture,deepCopy));
   }
 
   Object2 *Object2::copy() const{
@@ -99,12 +103,18 @@ namespace icl{
       addLine(2,6);
       addLine(3,7);
       
-      addQuad(0,1,2,3,GeomColor(0,100,120,155));
-      addQuad(4,5,6,7,GeomColor(0,100,140,155));
-      addQuad(0,3,7,4,GeomColor(0,100,160,155));
-      addQuad(1,2,6,5,GeomColor(0,100,180,155));
+      addQuad(0,1,2,3,GeomColor(0,100,120,155));//
+      //addQuad(4,5,6,7,GeomColor(0,100,140,155));
+      addQuad(7,6,5,4,GeomColor(0,100,140,155)); // ?
+      addQuad(0,3,7,4,GeomColor(0,100,160,155));//
+
+      //addQuad(1,2,6,5,GeomColor(0,100,180,155));
+      addQuad(5,6,2,1,GeomColor(0,100,180,155)); // ?
+      
       addQuad(0,1,5,4,GeomColor(0,100,200,155));
-      addQuad(3,2,6,7,GeomColor(0,100,220,155));
+      //addQuad(3,2,6,7,GeomColor(0,100,220,155));
+      addQuad(7,6,2,3,GeomColor(0,100,220,155));
+
     }else if(type == "cuboid"){
       float x = *params++;
       float y = *params++;
@@ -138,12 +148,19 @@ namespace icl{
       addLine(2,6);
       addLine(3,7);
       
-      addQuad(0,1,2,3,GeomColor(0,100,120,155));
-      addQuad(4,5,6,7,GeomColor(0,100,140,155));
-      addQuad(0,3,7,4,GeomColor(0,100,160,155));
-      addQuad(1,2,6,5,GeomColor(0,100,180,155));
+      // corrector order for auto normals
+      addQuad(0,1,2,3,GeomColor(0,100,120,155));//
+      //addQuad(4,5,6,7,GeomColor(0,100,140,155));
+      addQuad(7,6,5,4,GeomColor(0,100,140,155)); // ?
+      addQuad(0,3,7,4,GeomColor(0,100,160,155));//
+
+      //addQuad(1,2,6,5,GeomColor(0,100,180,155));
+      addQuad(5,6,2,1,GeomColor(0,100,180,155)); // ?
+      
       addQuad(0,1,5,4,GeomColor(0,100,200,155));
-      addQuad(3,2,6,7,GeomColor(0,100,220,155));
+      //addQuad(3,2,6,7,GeomColor(0,100,220,155));
+      addQuad(7,6,2,3,GeomColor(0,100,220,155));
+      
     }else if(type == "sphere"){
       float x = *params++;
       float y = *params++;

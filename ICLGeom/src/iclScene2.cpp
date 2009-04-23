@@ -3,11 +3,14 @@
 #include <iclImg.h>
 #include <iclQuick.h>
 #include <iclGeomDefs.h>
+#include <iclGLTextureMapBaseImage.h>
+#include <iclStringUtils.h>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
 
 #include <set>
+
 namespace icl{
 
   struct CameraObject : public Object2{
@@ -16,14 +19,14 @@ namespace icl{
     std::vector<Vec> verticesPushed;
     
     static const float *def_params(){
-      static float p[6]={0,0,-5,5,6,10};
+      static float p[6]={0,0,-5,6,5,10};
       return p;
     }
     
     CameraObject(Scene2 *parent, int cameraIndex):
       Object2("cuboid",def_params()),
       scene(parent),cameraIndex(cameraIndex){
-      
+
       static float xs[8] = {-1,1,2,2,1,-1,-2,-2};
       static float ys[8] = {2,2,1,-1,-2,-2,-1,1};
       for(int i=0;i<8;++i){
@@ -35,8 +38,8 @@ namespace icl{
         if(i)addQuad(i+8,i+16,i+15,i+7);
         else addQuad(8,16,23,15);
       }
-      setColor(Primitive::line,GeomColor(200,200,200,255));
-      setColor(Primitive::quad,GeomColor(255,0,0,200));
+      setColor(Primitive::line,GeomColor(0,0,0,255));
+      setColor(Primitive::quad,GeomColor(255,0,0,255));
       
       addVertex(Vec(0,0,-0.1,1)); // center: 24
       addVertex(Vec(4,0,-0.1,1)); // x-axis: 25
@@ -47,6 +50,22 @@ namespace icl{
       
       setVisible(Primitive::vertex,false);
       setVisible(Primitive::line,true);
+
+      const std::string &name = parent->getCamera(cameraIndex).getName();
+      if(name != ""){
+        addVertex(Vec(3.1, 1.5, -0.1 ,1));  // 27
+        addVertex(Vec(3.1, 1.5, -9.8 ,1));  // 28
+        addVertex(Vec(3.1,-1.5, -9.8 ,1));  // 29
+        addVertex(Vec(3.1,-1.5, -0.1 ,1));  // 30
+
+        ImgQ image(Size(200,30),3);
+        std::fill(image.begin(0),image.end(0),255);
+        color(255,255,255,255);
+        fontsize(25);
+        text(image,2,-10,name);
+        addTexture(27,28,29,30,cvt8u(image));
+      }
+
       verticesPushed=m_vertices;
     }
     
@@ -209,7 +228,7 @@ namespace icl{
   
   void Scene2::addCamera(const Camera &cam){
     m_cameras.push_back(cam);
-    m_cameraObjects.push_back(new CameraObject(this,m_cameraObjects.size()-1));
+    m_cameraObjects.push_back(new CameraObject(this,m_cameraObjects.size()));
   }
   void Scene2::removeCamera(int index){
     ICLASSERT_RETURN(index > 0 && index < m_cameras.size());
@@ -288,6 +307,7 @@ namespace icl{
         p.z = (ps[p.a][2]+ps[p.b][2]+ps[p.c][2])/3.0; 
         break;
       case Primitive::quad: 
+      case Primitive::texture:
         p.z = (ps[p.a][2]+ps[p.b][2]+ps[p.c][2]+ps[p.d][2])/4.0; 
         break;
       default:
@@ -420,8 +440,12 @@ namespace icl{
             renderer.quad(ps[p.a][0],ps[p.a][1],ps[p.b][0],ps[p.b][1],
                           ps[p.c][0],ps[p.c][1],ps[p.d][0],ps[p.d][1]);
             break;
-          }default:
-            ERROR_LOG("unsupported primitive type");
+           }case Primitive::texture:{
+              // not yet supported
+           }
+            break;
+           default:
+             ERROR_LOG("unsupported primitive type");
         }
       }
       if(o->isVisible(Primitive::vertex)){
@@ -494,9 +518,6 @@ namespace icl{
     }
 
     for(unsigned int i=0;i<allObjects.size();++i){
-      // don't draw camera x in view x
-      if(i==m_objects.size()+camIndex) continue;
-
       Object2 *o = allObjects[i];
       o->prepareForRendering();
       std::vector<Vec> &ps = o->m_vertices;
@@ -532,7 +553,7 @@ namespace icl{
             Vec &c = ps[p.c];
             Vec &d = ps[p.d];
             
-            glNormal3fv(normalize(cross(a-c,b-c)).data());
+            glNormal3fv(normalize(cross(d-c,b-c)).data());
 
             glVertex3fv(a.data());              
             glVertex3fv(b.data());
@@ -540,7 +561,17 @@ namespace icl{
             glVertex3fv(d.data());
             glEnd();
             break;
-           }default:
+           }case Primitive::texture:{
+              glColor4f(1,1,1,1);
+              Vec &a = ps[p.a];
+              Vec &b = ps[p.b];
+              Vec &c = ps[p.c];
+              Vec &d = ps[p.d];
+              GLTextureMapBaseImage tim(&p.tex);
+              tim.drawTo3D(a.begin(),b.begin(),d.begin());
+              break;
+           }
+          default:
             ERROR_LOG("unsupported primitive type");
         }
       }

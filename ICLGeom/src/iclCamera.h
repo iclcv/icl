@@ -84,12 +84,6 @@ namespace icl{
       init(pos,norm,up,viewPort,f,zNear,zFar,rightHandedCS);
     }
     
-    
-    /// Default copy constructor copies all but the internal matrix buffer
-    inline Camera(const Camera &cam){
-      init(cam.m_pos,cam.m_norm,cam.m_up,cam.m_viewPort,cam.m_F,cam.m_zNear,cam.m_zFar);
-    }    
-   
     /// re-initializes the camera with given data
     void init(const Vec &pos,const Vec &norm, const Vec &up, 
               const Rect &viewPort, float f, float zNear, float zFar,
@@ -211,6 +205,12 @@ namespace icl{
     /// Projects a set of points (results are x,y,z,1)
     void project(const std::vector<Vec> &Xws, std::vector<Vec> &dstXYZ) const;
     
+    /// sets a new camera name (at default camera name is "")
+    void setName(const std::string &name){ m_name = name; }
+    
+    /// returns the camera name
+    const std::string &getName() const { return m_name; }
+
     private:
     Vec m_pos;        //!< center position vector
     Vec m_norm;       //!< norm vector
@@ -222,6 +222,8 @@ namespace icl{
     Rect m_viewPort;  //!< current viewport e.g. (0,0,640,480) for a default VGA camera
     
     bool m_rightHandedCS; //!< is camera coordinate system right handed or not (default: true)
+    
+    std::string m_name; //!< name of the camera (visualized in the scene2 if set)
   };
 }
 

@@ -55,6 +55,9 @@ namespace icl{
     /// adds a new triangle to this onject
     void addQuad(int a, int b, int c, int d, const GeomColor &color=GeomColor(0,100,250,255)); 
     
+    /// adds a textured quad to this object
+    void addTexture(int a, int b, int c, int d, const Img8u &texture, bool deepCopy=false);
+    
     /// tints all Primitives with given type in given color
     void setColor(Primitive::Type t,const GeomColor &color);
     
@@ -76,7 +79,7 @@ namespace icl{
     std::vector<Vec> m_vertices;
     std::vector<GeomColor> m_vertexColors;
     std::vector<Primitive> m_primitives;
-    bool m_visible[5];
+    bool m_visible[Primitive::PRIMITIVE_TYPE_COUNT];
     float m_z;
   };
 }
