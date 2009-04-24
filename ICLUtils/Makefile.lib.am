@@ -52,4 +52,5 @@ include_HEADERS= \
 ../src/iclFPSLimiter.h \
 ../src/iclFixedMatrixUtils.h \
 ../src/iclUncopiedInstance.h \
-../src/iclLockable.h
+../src/iclLockable.h \
+../src/iclMatrixSubRectIterator.h

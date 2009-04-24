@@ -11,6 +11,7 @@
 #include <iclException.h>
 #include <iclDynMatrix.h>
 #include <iclClippedCast.h>
+#include <iclMatrixSubRectIterator.h>
 
 #ifdef HAVE_IPP
 #include <ippm.h>
@@ -99,6 +100,8 @@ namespace icl{
     FixedMatrixPart& operator=(const FixedMatrix<T2,COLS,N/COLS> &m);
     
   };
+
+
 
   /// Powerful and highly flexible Matrix class implementation
   /** By using fixed template parameters as Matrix dimensions,
@@ -728,6 +731,21 @@ namespace icl{
     FixedMatrixPart<T,ROWS,const_col_iterator> col(unsigned int idx) const{
       return FixedMatrixPart<T,ROWS,const_col_iterator>(col_begin(idx),col_end(idx));
     }
+
+    /// extracts a rectangular matrix sub region
+    template<unsigned int X,unsigned int Y,unsigned int WIDTH,unsigned int HEIGHT>
+    FixedMatrixPart<T,WIDTH*HEIGHT,MatrixSubRectIterator<T> > part(){
+      return FixedMatrixPart<T,WIDTH*HEIGHT,MatrixSubRectIterator<T> >( 
+                 MatrixSubRectIterator<T>(begin(),COLS,X,Y,WIDTH,HEIGHT),
+                 MatrixSubRectIterator<T>::create_end_iterator(begin(),COLS,X,Y,WIDTH,HEIGHT));
+    }
+
+    /// extracts a rectangular matrix sub region (const)
+    template<unsigned int X,unsigned int Y,unsigned int WIDTH,unsigned int HEIGHT>
+    const FixedMatrixPart<T,WIDTH*HEIGHT,MatrixSubRectIterator<T> > part() const{
+      return const_cast<FixedMatrix<T,COLS,ROWS>*>(this)->part<X,Y,WIDTH,HEIGHT>();
+    }
+
     
     /// create identity matrix 
     /** if matrix is not a spare one, upper left square matrix
@@ -789,18 +807,11 @@ namespace icl{
   }
   /** \endcond */
 
-  /// put the matrix into a std::ostream (human readable)
+  /// put the matrix into a std::ostream (human readable) 
+  /** Internally, this function wraps a DynMatrix<T> shallowly around m*/
   template<class T, unsigned int COLS, unsigned int ROWS>
   inline std::ostream &operator<<(std::ostream &s,const FixedMatrix<T,COLS,ROWS> &m){
-    for(unsigned int i=0;i<m.rows();++i){
-      s << "| ";
-      for(unsigned int j=0;j<COLS;++j){
-        fixed_matrix_aux_to_stream<T>(s,m(j,i)) << " ";
-        //s << m(j,i) << " ";
-      }
-      s << "|" << std::endl;
-    }
-    return s;
+    return s << DynMatrix<T>(COLS,ROWS,const_cast<T*>(m.begin()),false);
   }
 
   /// creates a 2D rotation matrix (defined for float and double)

@@ -12,6 +12,18 @@
 #include <iclMacros.h>
 
 namespace icl{
+
+  /** \cond */
+  template<class T>
+  inline std::ostream &icl_aux_to_stream(std::ostream &s,const T &t){
+    return s << t;
+  }
+  template<>
+  inline std::ostream &icl_aux_to_stream(std::ostream &s,const unsigned char &t){
+    return s << (int)t;
+  }
+  /** \endcond */
+
   struct InvalidMatrixDimensionException :public ICLException{
     InvalidMatrixDimensionException(const std::string &msg):ICLException(msg){}
   };
@@ -93,7 +105,7 @@ namespace icl{
 
     /// resets matrix dimensions  
     void setBounds(unsigned int cols, unsigned int rows, bool holdContent=false, const T &initializer=0) throw (InvalidMatrixDimensionException){
-      if(cols == m_cols && rows==m_rows) return;
+      if((int)cols == m_cols && (int)rows==m_rows) return;
       if(!(cols*rows)) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       DynMatrix M(cols,rows,initializer);
       if(holdContent){
@@ -229,7 +241,7 @@ namespace icl{
     /// element access operator (x,y)-access index begin 0!
     T &operator()(unsigned int col,unsigned int row){
 #ifdef DYN_MATRIX_INDEX_CHECK
-      if(col >= m_cols || row >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
+      if((int)col >= m_cols || (int)row >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
 #endif
       return m_data[col+cols()*row];
     }
@@ -237,7 +249,7 @@ namespace icl{
     /// element access operator (x,y)-access index begin 0! (const)
     const T &operator() (unsigned int col,unsigned int row) const{
 #ifdef DYN_MATRIX_INDEX_CHECK
-      if(col >= m_cols || row >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
+      if((int)col >= m_cols || (int)row >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
 #endif
       return m_data[col+cols()*row];
     }
@@ -274,7 +286,7 @@ namespace icl{
     /// applies an L_l norm on the matrix elements (all elements are treated as vector)
     T norm(double l=2) const{
       double accu = 0;
-      for(int i=0;i<dim();++i){
+      for(unsigned int i=0;i<dim();++i){
         accu += ::pow(double(m_data[i]),l);
       }
       return ::pow(double(accu),1.0/l);
@@ -586,8 +598,13 @@ namespace icl{
     friend inline std::ostream &operator<<(std::ostream &s,const DynMatrix &m){
       for(unsigned int i=0;i<m.rows();++i){
         s << "| ";
-        std::copy(m.row_begin(i),m.row_end(i),std::ostream_iterator<T>(s," "));
-        s << "|" << std::endl;
+        for(unsigned int j=0;j<m.cols();++j){
+          icl_aux_to_stream<T>(s,m(j,i)) << " ";
+        }
+        s << "|";
+        if(i<m.rows()-1){
+          s << std::endl;
+        }
       }
       return s;
     }
@@ -662,14 +679,14 @@ namespace icl{
   private:
     inline void row_check(unsigned int row) const{
 #ifdef DYN_MATRIX_INDEX_CHECK
-      if(row >= m_rows) ERROR_LOG("access to row index " << row << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
+      if((int)row >= m_rows) ERROR_LOG("access to row index " << row << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
 #else
       (void)row;
 #endif
     }
     inline void col_check(unsigned int col) const{
 #ifdef DYN_MATRIX_INDEX_CHECK
-      if(col >= m_cols) ERROR_LOG("access to column index " << col << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
+      if((int)col >= m_cols) ERROR_LOG("access to column index " << col << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
 #else
       (void)col;
 #endif

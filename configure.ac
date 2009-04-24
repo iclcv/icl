@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([ICL],[4.2],[celbrech@techfak.uni-bielefeld.de])
+AC_INIT([ICL],[4.3.0],[celbrech@techfak.uni-bielefeld.de])
 #AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AM_INIT_AUTOMAKE([foreign])
 
@@ -17,7 +17,7 @@ elif test "$ARCH" = "CYGWIN" ; then
 fi
 echo " $ARCH (adding -DSYSTEM_$ARCH to CXXFLAGS)"
 
-CXXFLAGS="$CXXFLAGS -Isrc -I../src -DSYSTEM_${ARCH}"
+CXXFLAGS="$CXXFLAGS -Isrc -I../src -DSYSTEM_${ARCH} -Wno-long-long -Wall"
 ICL_EXTEND_PC_FLAGS([],[-DSYSTEM_${ARCH}],[])
 
 #linux: -D SYSTEM_LINUX

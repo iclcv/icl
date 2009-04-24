@@ -8,7 +8,7 @@ namespace icl{
     bool looped;
     
     inline void one_cycle(){
-      for(int i=0;i<cbs.size();++i){
+      for(unsigned int i=0;i<cbs.size();++i){
         cbs[i]();
       }
       /// allow thread join from outside!

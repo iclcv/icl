@@ -29,6 +29,7 @@ namespace icl{
     void removeCamera(int index);
     Camera &getCamera(int camIndex = 0);
     const Camera &getCamera(int camIndex =0) const;
+    inline int getCameraCount() const { return (int)m_cameras.size(); }
 
     void render(Img32f &image, int camIndex = 0);
     void render(ICLDrawWidget &widget, int camIndex = 0);

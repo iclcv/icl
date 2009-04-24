@@ -216,13 +216,13 @@ namespace icl{
     
 
     /// Empty default constructor without any optimization
-    PositionTracker():m_bTryOptimize(false),m_tThreshold(0),m_IDAllocationMode(allocateFirstFreeIDs),m_currentID(0){}
+    PositionTracker():m_bTryOptimize(false),m_currentID(0),m_IDAllocationMode(allocateFirstFreeIDs),m_tThreshold(0){}
 
     /// *NEW* constructor with optimization enabled and given theshold
     /** @param threshold threshold for optimization (must be > 0) \ref OPT_ */
     PositionTracker(valueType threshold):
-      m_bTryOptimize(true),m_tThreshold(threshold),
-      m_IDAllocationMode(allocateFirstFreeIDs),m_currentID(0){}
+      m_bTryOptimize(true),m_currentID(0),
+      m_IDAllocationMode(allocateFirstFreeIDs),m_tThreshold(threshold){}
     
     /// most common function, adds a new data row, and causes all internal computation (see above)
     /** @param xys data vector with xyxy.. data order 

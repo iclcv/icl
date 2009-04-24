@@ -116,7 +116,7 @@ namespace icl{
   
 
   WarpOp::WarpOp(const Img32f &warpMap,scalemode mode, bool allowWarpMapScaling):
-    m_scaleMode(mode),m_allowWarpMapScaling(allowWarpMapScaling){
+    m_allowWarpMapScaling(allowWarpMapScaling),m_scaleMode(mode){
     warpMap.deepCopy(&m_warpMap);
     prepare_warp_table_inplace(m_warpMap);
   }

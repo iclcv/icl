@@ -160,8 +160,8 @@ double rnd3_2(double d){
 
 
 DynMatrix<double> rnd3(DynMatrix<double> M){
-  for(int x=0;x<M.cols();++x){
-    for(int y=0;y<M.rows();++y){
+  for(unsigned int x=0;x<M.cols();++x){
+    for(unsigned int y=0;y<M.rows();++y){
       rnd3(M(x,y));
     }
   }
@@ -170,8 +170,8 @@ DynMatrix<double> rnd3(DynMatrix<double> M){
 
 template<unsigned int W, unsigned int H>
 FixedMatrix<double,W,H> rnd3(FixedMatrix<double,W,H> M){
-  for(int x=0;x<M.cols();++x){
-    for(int y=0;y<M.rows();++y){
+  for(unsigned int x=0;x<M.cols();++x){
+    for(unsigned int y=0;y<M.rows();++y){
       rnd3(M(x,y));
     }
   }

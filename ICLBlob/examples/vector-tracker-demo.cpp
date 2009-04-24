@@ -294,22 +294,24 @@ typedef std::vector<int> vec;
 GUI gui;
 InputGrabber *grabber = 0;
 
-static vec getCenters(const Img8u &image){
-  static RegionDetector rd;
-  rd.setRestrictions(10,100000,1,255);
-  
-  const std::vector<icl::Region> &bd = rd.detect(&image);
-  
-  static vec v;
-  v.clear();
-
-  for(unsigned int i=0;i<bd.size();++i){
+/*
+    static vec getCenters(const Img8u &image){
+    static RegionDetector rd;
+    rd.setRestrictions(10,100000,1,255);
+    
+    const std::vector<icl::Region> &bd = rd.detect(&image);
+    
+    static vec v;
+    v.clear();
+    
+    for(unsigned int i=0;i<bd.size();++i){
     Point p = bd[i].getCOG();
     v.push_back(p.x);
     v.push_back(p.y);
-  }
-  return v;
-}
+    }
+    return v;
+    }
+*/
 
 static std::vector<std::vector<float> > getCentersAndSizes(const Img8u &image){
   static RegionDetector rd;

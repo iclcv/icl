@@ -73,8 +73,6 @@ namespace icl{
  namespace{
     template<class T>
     double channel_var_with_mean(const Img<T> &image, int channel,double mean,bool empiricMean, bool roiOnly){
-      register double sum = 0;
-      register double d = 0;
       if(roiOnly && !image.hasFullROI()){
         return variance(image.beginROI(channel),image.endROI(channel),mean,empiricMean);
       }else{

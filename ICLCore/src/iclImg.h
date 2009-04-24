@@ -843,7 +843,7 @@ namespace icl {
       }else{
         const_roi_iterator end = endROI(channel);
         for(ImgIterator<Type> it = beginROI(channel); it != end; it.incRow()){
-          std::for_each<Type*,UnaryFunction>(&(*it),&(*it)+it.getROIWidth(),f);
+          std::for_each<Type*,UnaryFunction>(&(*it),&(*it)+it.getSubRectWidth(),f);
         }        
       }
       return *this;
@@ -913,7 +913,7 @@ namespace icl {
         ImgIterator<dstType> itDst = dst.beginROI(dstChannel);
         const_roi_iterator end = endROI(srcChannel);
         for(const_roi_iterator it = beginROI(srcChannel); it != end; it.incRow(), itDst.incRow()){
-          std::transform(&(*it),&(*it)+it.getROIWidth(),&(*itDst),f);
+          std::transform(&(*it),&(*it)+it.getSubRectWidth(),&(*itDst),f);
         }        
       }
       return dst;

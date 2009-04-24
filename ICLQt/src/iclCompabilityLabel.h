@@ -35,9 +35,18 @@ namespace icl{
     /// returns the current text (also thread save)
     QString text() const;
     
+    /// returns current alignment
+    Qt::Alignment getAlignment() const;
+    
+    /// sets new text alignment 
+    void setAlignment(Qt::Alignment a);
+    
     private:
     /// current text (protected by the mutex)
     QString m_sText;
+    
+    /// text alignment
+    Qt::Alignment m_alignment;
     
     /// Thread-safety mutex
     mutable QMutex m_oMutex;

@@ -4,7 +4,7 @@
 namespace icl{
 
   CompabilityLabel::CompabilityLabel(const QString &text, QWidget *parent):
-    ThreadedUpdatableWidget(parent),m_sText(text){
+    ThreadedUpdatableWidget(parent),m_sText(text),m_alignment(Qt::AlignCenter){
   }
   
   
@@ -16,7 +16,7 @@ namespace icl{
     //    QWidget::paintEvent(evt); do i need this explicitly ??
     QPainter p(this);
     p.setPen(QColor(0,0,0));
-    p.drawText(QRect(0,0,width(),height()),Qt::AlignCenter,t);
+    p.drawText(QRect(0,0,width(),height()),m_alignment,t);
   }
   void CompabilityLabel::setNum(int i){
     m_oMutex.lock();
@@ -41,6 +41,15 @@ namespace icl{
     m_oMutex.unlock();
     return retVal;
   }
+
+  Qt::Alignment CompabilityLabel::getAlignment() const{
+    return m_alignment;
+  }
+  
+  void CompabilityLabel::setAlignment(Qt::Alignment a){
+    m_alignment = a;
+  }
+
 
 }
 

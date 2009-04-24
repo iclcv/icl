@@ -14,7 +14,7 @@ namespace icl{
 
   static float eucl_dist(const Vec &a, const Vec &b){
     float sum  = 0;
-    for(int i=0;i<a.size();++i){
+    for(unsigned int i=0;i<a.size();++i){
       sum += square(a[i]-b[i]);
     }
     return ::sqrt(sum);
@@ -28,7 +28,7 @@ namespace icl{
     PearsonDist(const std::vector<float> &normFactors):v(normFactors){ }
     float operator()(const Vec &a, const Vec &b) const{
       float sum  = 0;
-      for(int i=0;i<a.size();++i){
+      for(unsigned int i=0;i<a.size();++i){
         sum += square((a[i]-b[i])/v[i]);
       }
       return ::sqrt(sum);
@@ -144,7 +144,7 @@ namespace icl{
       int maxWH = iclMax(w,h);
       SimpleMatrix<float> distMat(maxWH,maxWH);
       std::fill(distMat.data(),distMat.data()+distMat.dim(),largeVal);
-      for(int x=0;x<newData.size();++x){
+      for(unsigned int x=0;x<newData.size();++x){
         for(int y=0;y<height;++y){
           distMat[x][y] = dist_func(newData[x],pred(y));
         }
@@ -179,7 +179,7 @@ namespace icl{
       for(unsigned int i=0;i<idxs.size();++i){
         hold[ idxs[i] ] = false;
       }
-      for(unsigned int y=0;y<height;++y){
+      for(int y=0;y<height;++y){
         if(hold[y]){
           for(int c=0;c<4;++c){
             newCols[c]->push_back((*cols[c])[y]);
@@ -220,12 +220,12 @@ namespace icl{
     Data(int dim, bool tryOpt,VectorTracker::IDmode idMode, 
          float distanceThreshold, float largeVal, 
          const std::vector<float> &normFactors):
-      VTMat(dim),nextID(0),tryOpt(tryOpt),idMode(idMode),
+      VTMat(dim),tryOpt(tryOpt),nextID(0),idMode(idMode),
       thresh(distanceThreshold),largeVal(largeVal),
       normFactors(normFactors){
       
       bool all1 = true;
-      for(int i=0;i<normFactors.size();++i){
+      for(unsigned int i=0;i<normFactors.size();++i){
         if(normFactors[i] != 1) all1 = true;
         if(normFactors[i] == 0){
           ERROR_LOG("detected normfactor[" << i << "]  == 0  (deactivating normfactors to avoid div0 - errors))");

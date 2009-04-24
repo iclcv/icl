@@ -100,7 +100,7 @@ namespace icl{
     */
     HistogrammWidget(QWidget *parent):
       ThreadedUpdatableWidget(parent),logOn(false),meanOn(false),medianOn(false),
-      fillOn(false),selChannel(-1),accuMode(false){
+      fillOn(false),accuMode(false),selChannel(-1){
       
       /*
           setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -189,7 +189,7 @@ namespace icl{
 
       std::vector<std::vector<int> > oldHistos(entries.size());
       for(unsigned int e=0;e<entries.size();++e){
-        if(!(selChannel == -1 || selChannel == e)) continue;
+        if(!(selChannel == -1 || selChannel == (int)e)) continue;
         std::vector<int> histo = entries[e].histo;
         if(!histo.size()) continue;
         int n = (int)histo.size();
@@ -225,7 +225,7 @@ namespace icl{
             float val = histo[i];
             float valUnder = 0;
             if(accuMode){
-              for(int j=0;j<e;++j){
+              for(unsigned int j=0;j<e;++j){
                 valUnder += oldHistos[j][i];
               }
               val += valUnder;
@@ -402,6 +402,7 @@ namespace icl{
           drawGL(Size(parent->width(),parent->height()));
           return false;
       }
+      return false;
     }
   };
 
@@ -636,10 +637,12 @@ namespace icl{
     bool setPaused(bool val){
       Mutex::Locker l(mutex);
       paused = val;
+      return paused;
     }
     bool stopRecording(){
       Mutex::Locker l(mutex);
       recording = false;
+      return recording;
     }
     
     void captureImageHook(){
@@ -763,7 +766,7 @@ namespace icl{
     QWidget *parentICLWidget;
     
     ZoomAdjustmentWidget(QWidget *parent, Rect32f &r, QWidget *parentICLWidget):
-      QWidget(parent),r(r),parentICLWidget(parentICLWidget),mode(NONE),dragAll(false){
+      QWidget(parent),r(r),mode(NONE),dragAll(false),parentICLWidget(parentICLWidget){
       downMask[0]=downMask[1]=downMask[2]=false;
       //      r = Rect32f(0,0,width(),height());
       for(int i=0;i<4;++i){
@@ -1911,7 +1914,6 @@ namespace icl{
 
   // }}}
 
-
   ICLWidget::fitmode ICLWidget::getFitMode(){
     // {{{ open
 
@@ -2119,12 +2121,12 @@ namespace icl{
       std::vector<MouseEventType> evts;
       bool m_all;
       CallbackHandler(GUI::CallbackPtr cb ,const std::string &eventList):
-        m_all(false),cb(cb){
+        cb(cb),m_all(false){
         std::vector<std::string> eventVec = icl::tok(eventList,",");
         for(unsigned int i=0;i<eventVec.size();++i){
           const std::string &e = eventVec[i];
           if(e == "all"){
-            m_all == true;
+            m_all = true;
             break;
           }else if(e == "move"){
             evts.push_back(MouseMoveEvent);

@@ -53,7 +53,7 @@ namespace icl{
   static double dot(const DynMatrix<T> &a, const DynMatrix<T> &b){
     ICLASSERT_RETURN_VAL(a.dim() == b.dim(),0.0);
     double s = 0;
-    for(int i=0;i<a.dim();++i){
+    for(unsigned int i=0;i<a.dim();++i){
       s += a[i] * b[i];
     }
     return s;
@@ -156,7 +156,7 @@ namespace icl{
     
     std::fill(R.begin(),R.end(),0.0);
 
-    for (int i=0;i<cols();i++) {
+    for (unsigned int i=0;i<cols();i++) {
       a = A.col(i);
       R(i,i) = a.norm();
       if(!R(i,i)) throw QRDecompException("Error in QR-decomposition");
@@ -164,7 +164,7 @@ namespace icl{
      
       Q.col(i) = q;
       // remove components parallel to q(*,i)
-      for (int j=i+1;j<cols();j++) {
+      for (unsigned int j=i+1;j<cols();j++) {
         a = A.col(j);
         R(j,i) = dot(q, a);
         A.col(j) = a - q * R(j,i);

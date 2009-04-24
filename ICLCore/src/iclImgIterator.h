@@ -2,12 +2,12 @@
 #define ICLITERATOR_H
 
 #include <iclCore.h>
-#include <iterator>
+#include <iclMatrixSubRectIterator.h>
 
 namespace icl{
-  /// Iterator class used to iterate though an Images ROI-pixels \ingroup IMAGE
+  /// Iterator class used to iterate through an Images ROI-pixels \ingroup IMAGE
   /** 
-  The ImgIterator is a utility to iterate line by line though
+  The ImgIterator is a utility to iterate line by line through
   all ROI-pixels of an image. The following ASCII image 
   shows an images ROI.
   <pre>
@@ -203,46 +203,29 @@ icl8u find_min_iterator_cpp_inRegion(const Img8u &i){
 
   */
   template <typename Type>
-  class ImgIterator : public std::iterator<std::forward_iterator_tag,Type>{
-    private:
-    inline void init () {
-       m_iLineStep = m_iImageWidth - m_ROISize.width + 1;
-       m_ptDataEnd = m_ptDataCurr;
-       if (m_ROISize.width > 0)
-          m_ptDataEnd += m_ROISize.width + (m_ROISize.height-1) * m_iImageWidth;
-       m_ptCurrLineEnd = m_ptDataCurr + m_ROISize.width - 1;
-    }
-
+  class ImgIterator : public MatrixSubRectIterator<Type>{
     public:
     
     static inline const ImgIterator<Type> create_end_roi_iterator(const Type *data,
                                                                   int width,
                                                                   const Rect &roi){
-      
       ImgIterator<Type> i(const_cast<Type*>(data),width,roi);
-      i.m_ptDataCurr = i.m_ptDataEnd - roi.width + width;
-      i.m_ptCurrLineEnd = i.m_ptDataCurr + roi.width;
+      i.m_dataCurr = i.m_dataEnd - roi.width + width;
+      i.m_currLineEnd = i.m_dataCurr + roi.width;
       return i;
     }
 
     /** Creates an ImgIterator object */
     /// Default Constructor
-    inline ImgIterator():
-       m_iImageWidth(0),
-       m_ROISize(Size::null), 
-       m_ptDataOrigin(0),
-       m_ptDataCurr(0) {init();}
+    inline ImgIterator(){}
 
      /** 2nd Constructor creates an ImgIterator object with Type "Type"
          @param ptData pointer to the corresponding channel data
          @param iImageWidth width of the corresponding image
          @param roROI ROI rect for the iterator
      */
-    inline ImgIterator(Type *ptData,int iImageWidth,const Rect &roROI):
-       m_iImageWidth(iImageWidth),
-       m_ROISize(roROI.getSize()), 
-       m_ptDataOrigin(ptData),
-       m_ptDataCurr(ptData+roROI.x+roROI.y*iImageWidth) {init();}
+    inline ImgIterator(Type *data,int imageWidth,const Rect &roi):
+    MatrixSubRectIterator<Type>(data,imageWidth,roi.x,roi.y,roi.width,roi.height){}
 
     /// 3rd Constructor to create sub-regions of an Img-image
     /** This 3rd constructor creates a sub-region iterator, which may be
@@ -254,209 +237,34 @@ icl8u find_min_iterator_cpp_inRegion(const Img8u &i){
         @param a mask anchor
     */
 
-    inline ImgIterator(const ImgIterator<Type> &roOrigin, const Size &s, const Point &a):
-       m_iImageWidth(roOrigin.m_iImageWidth),
-       m_ROISize(s), 
-       m_ptDataOrigin(roOrigin.m_ptDataOrigin),
-       m_ptDataCurr(roOrigin.m_ptDataCurr - a.x - a.y*m_iImageWidth) {init();}
-    
-    inline ImgIterator &operator=(const ImgIterator &other){
-      m_iImageWidth = other.m_iImageWidth;
-      m_ROISize = other.m_ROISize;
-      m_iLineStep = other.m_iLineStep;
-      m_ptDataOrigin = other.m_ptDataOrigin;
-      m_ptDataCurr = other.m_ptDataCurr;
-      m_ptDataEnd = other.m_ptDataEnd;
-      m_ptCurrLineEnd = other.m_ptCurrLineEnd;
-      return *this;
+    inline ImgIterator(const ImgIterator<Type> &origin, const Size &s, const Point &a){
+      *this = origin;
+      ImgIterator<Type>::m_dataCurr = origin.m_dataCurr - a.x - a.y * origin.m_matrixWidth;
+      ImgIterator<Type>::init();
     }
-
-    inline const ImgIterator& operator=(const ImgIterator &other) const{
-      return (*const_cast<ImgIterator*>(this)) = other;
-    }
-
-    /// retuns a reference of the current pixel value (const)
-    /** changes on *p (p is of type ImgIterator) will effect
-        the image data       
-    */
-    inline const Type &operator*() const { return *m_ptDataCurr;  }
-
-    /// retuns a reference of the current pixel value
-    /** changes on *p (p is of type ImgIterator) will effect
-        the image data       
-    */
-    inline Type &operator*(){  return *m_ptDataCurr;  }
-    
-    /// moves to the next iterator position (Prefix ++it)
-    /** The image ROI will be scanned line by line
-        beginning on the bottom left iterator.
-       <pre>
-
-           +-- begin here (index 0)
-           |  
-    .......|.................
-    .......V.................
-    .......012+-->+8<---------- first line wrap after 
-    .......9++++++++.........   this pixel (index 8)
-    .......+++++++++.........
-    .......+++++++++.........
-    .......++++++++X<---------- last valid pixel
-    ....+->I.................
-        |  
-    'I' is the first invalid iterator
-    (p.inRegion() will become false)
-  
-
-       </pre>
-       
-       In most cases The ++ operator will just increase the
-       current x position and update the reference to the
-       current pixel data. If the end of a line is reached, then
-       the position is set to the beginning of the next line.
-    */
-    inline ImgIterator& operator++(){
-      if ( ICL_UNLIKELY(m_ptDataCurr == m_ptCurrLineEnd) ){
-        m_ptDataCurr += m_iLineStep;
-        m_ptCurrLineEnd += m_iImageWidth;
-      }else{
-        m_ptDataCurr++;
-      }
-      return *this;
-    }
-
-    /// const version of pre increment operator
-    inline const ImgIterator& operator++() const{
-      return ++(*const_cast<ImgIterator*>(this));
-    }
-
-    /** postfix operator++ (used -O3 to avoid
-        loss of performace when using the "it++"-operator
-        In most cases the "++it"-operator will ensure
-        best performace.
-    **/
-    inline ImgIterator operator++(int){
-      ImgIterator current (*this);
-      ++(*this); // call prefix operator
-      return current; // return previous
-    }
-
-    /// const version of post increment operator
-    inline const ImgIterator operator++(int) const{
-      return (*const_cast<ImgIterator*>(this))++;
-    }
-    
 
     /// to check if iterator is still inside the ROI
     /** This function was replaced by STL-like begin(), end() logic
         Although in some cases it might be quite useful, so
         we renamed it rather than deleting it
         @see operator++ */
-    inline bool inRegionSubROI() const
-    {
-      return m_ptDataCurr < m_ptDataEnd;          
+    inline bool inRegionSubROI() const{
+      return ImgIterator<Type>::inSubRect();
     }
 
-
-
-    /// compare two iterators
-    inline bool operator!=(const ImgIterator<Type> &it) const{
-      return m_ptDataCurr != it.m_ptDataCurr;
+    /// Allows to assign const instances
+    inline ImgIterator<Type> &operator=(const MatrixSubRectIterator<Type> &other){
+      MatrixSubRectIterator<Type>::operator=(other);
+      return *this;
     }
-    /// compare two iterators
-    inline bool operator==(const ImgIterator<Type> &it) const{
-      return m_ptDataCurr == it.m_ptDataCurr;
-    }
-    /// compare two iterators
-    inline bool operator<(const ImgIterator<Type> &it) const{
-      return m_ptDataCurr < it.m_ptDataCurr;
-    }
-    /// compare two iterators
-    inline bool operator>(const ImgIterator<Type> &it) const{
-      return m_ptDataCurr > it.m_ptDataCurr;
-    }
-    /// compare two iterators
-    inline bool operator<=(const ImgIterator<Type> &it) const{
-      return m_ptDataCurr <= it.m_ptDataCurr;
-    }
-    /// compare two iterators
-    inline bool operator>=(const ImgIterator<Type> &it) const{
-      return m_ptDataCurr >= it.m_ptDataCurr;
-    }
-
-
-    /// returns the length of each row processed by this iterator
-    /** @return row length 
-     */
-    inline int getROIWidth() const
-       {
-          return m_ROISize.width;
-       }
     
-    inline int getROIHeight() const
-       {
-          return m_ROISize.height;
-       }
-    
-    /// move the pixel vertically forward
-    /** current x value is hold, the current y-value is
-        incremented by iLines
-        @param iLines amount of lines to jump over
-    */
-    inline void incRow(int iLines=1) const {
-      m_ptDataCurr += iLines * m_iImageWidth;
-      m_ptCurrLineEnd += iLines * m_iImageWidth;
+    /// Allows to assign const instances
+    inline const ImgIterator<Type> &operator=(const MatrixSubRectIterator<Type> &other) const{
+      MatrixSubRectIterator<Type>::operator=(other);
+      return *this;
     }
 
-    /// returns the current x position of the iterator (image-coordinates)
-    /** @return current x position*/
-    inline int x(){
-      return (m_ptDataCurr-m_ptDataOrigin) % m_iImageWidth;
-    }
 
-    /// returns the current y position of the iterator (image-coordinates)
-    /** @return current y position*/
-    inline int y(){
-      return (m_ptDataCurr-m_ptDataOrigin) / m_iImageWidth;
-    }       
-    
-    private:
-    /// corresponding images width
-    int m_iImageWidth;
-    
-    /// ROI size of the iterator
-    Size m_ROISize;
-
-    /// result of m_iImageWidth - m_iROIWidth
-    int m_iLineStep;
-
-    /// pointer to the image data pointer (bottom left pixel)
-    Type *m_ptDataOrigin;
-
-    /// pointer to the current data element
-    mutable Type *m_ptDataCurr;
-
-    /// pointer to the first invalid pixel of ptDataOrigin
-    Type *m_ptDataEnd;
-
-    /// pointer to the first invalid pixel of the current line
-    mutable Type *m_ptCurrLineEnd;
-    
   };
-  /**
-      template <typename Type>
-      class ConstImgIterator : public ImgIterator<const Type> {
-      public:
-      /// Default Constructor: creates an empty ConstImgIterator object
-      ConstImgIterator() : ImgIterator<const Type>() {}
-      
-      /// 2nd Constructor creates an ImgIterator object with type "Type"
-      ConstImgIterator(const Type *ptData,int iImageWidth,const Rect &roROI) :
-      ImgIterator<const Type>(ptData, iImageWidth, roROI) {}
-      
-      /// 3rd Constructor to create sub-regions of an image
-      ConstImgIterator(const ConstImgIterator<Type> &roOrigin, const Size &s, const Point &a) :
-      ImgIterator<const Type>(roOrigin, s, a) {}
-      };
-   **/
 }
 #endif

@@ -1138,13 +1138,15 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
       ERROR_LOG("given rect extends image bounds");
       return 0;
     }
-    float UL = (Rect32f(o.x,o.y,1,1) & r).getDim();    
-    float UR = (Rect32f(o.right()-1,o.y,1,1) & r).getDim();
-    float LL = (Rect32f(o.x,o.bottom()-1,1,1) & r).getDim();    
-    float LR = (Rect32f(o.right()-1,o.bottom()-1,1,1) & r).getDim();    
-    
-    float U=0,R=0,B=0,L=0;
-    //    ... hmmmm
+    /*
+        float UL = (Rect32f(o.x,o.y,1,1) & r).getDim();    
+        float UR = (Rect32f(o.right()-1,o.y,1,1) & r).getDim();
+        float LL = (Rect32f(o.x,o.bottom()-1,1,1) & r).getDim();    
+        float LR = (Rect32f(o.right()-1,o.bottom()-1,1,1) & r).getDim();    
+        
+        float U=0,R=0,B=0,L=0;
+        //    ... hmmmm
+     */
 
      ERROR_LOG ("region average interpolation is not yet implemented!");
     return subPixelLIN (x, y, iChannel);
