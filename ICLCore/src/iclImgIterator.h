@@ -264,6 +264,16 @@ icl8u find_min_iterator_cpp_inRegion(const Img8u &i){
       return *this;
     }
 
+    /// returns ROIS width
+    int getROIWidth() const {
+      return MatrixSubRectIterator<Type>::getSubRectWidth();
+    }
+
+    /// returns ROIS width
+    int getROIHeight() const {
+      return MatrixSubRectIterator<Type>::getSubRectHeight();
+    }
+
 
   };
 }
