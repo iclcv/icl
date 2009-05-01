@@ -124,6 +124,12 @@ namespace icl{
     inline void setNorm(const Vec &newNorm){ 
       m_norm = normalize3(newNorm,0); 
     }
+
+    /// sets camera pos pos[3] is set to 1 automatically
+    inline void setPos(const Vec &pos){
+      m_pos[3]=1;
+      m_pos = pos;
+    }
     
     /// returns the current horizontal vector (norm x up)
     Vec getHorz()const;

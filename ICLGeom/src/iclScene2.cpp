@@ -108,14 +108,18 @@ namespace icl{
       }
       if(evt.isDragEvent()){
         Point32f delta = evt.getRelPos()-anchor;
-        camera = camSave;      
-        if(evt.isLeft()){
+        camera = camSave;   
+        if(evt.isLeft() && evt.isRight()){
+          Vec v = camSave.getUp()*delta.y + camSave.getHorz()*delta.x;
+          v[3] = 0;
+          camera.translate( v * speed);
+        }else if(evt.isLeft()){
           // rotate norm about up (by delta.x)
           Vec norm = camera.getNorm();
           Vec up = camera.getUp();
           norm = rotate_vector(up, delta.x, norm);
 
-          // rotate norm and up about horz (by delta.x)
+          // rotate norm and up about horz (by delta.y)
           norm = rotate_vector(camera.getHorz(), -delta.y, norm);
           up = rotate_vector(camera.getHorz(), -delta.y, up);
 
@@ -123,9 +127,30 @@ namespace icl{
           camera.setUp(up);
 
         }else if(evt.isMiddle()){
-          Vec v = camSave.getUp()*delta.y + camSave.getHorz()*delta.x;
-          v[3] = 0;
-          camera.translate( v * speed);
+          // rotate norm about up (by delta.x)
+          Vec norm = camera.getNorm();
+          Vec up = camera.getUp();
+          Vec horz = camera.getHorz();
+
+          Vec upSave = up;
+          Vec horzSave = camera.getHorz();
+
+
+          norm = rotate_vector(up, delta.x, norm);
+          
+          // rotate norm and up about horz (by delta.y)
+          norm = rotate_vector(camera.getHorz(), delta.y, norm);
+          up = rotate_vector(camera.getHorz(), delta.y, up);
+          
+          camera.setNorm(norm);
+          camera.setUp(up);
+          
+          Vec pos = camera.getPos();
+          //TODO what are the correct axis?
+          pos = rotate_vector(upSave,delta.x,pos);
+          pos = rotate_vector(horzSave,delta.y,pos);
+          
+          camera.setPos(pos);
         }else if(evt.isRight()){
           camera.translate(camSave.getNorm()*(-delta.y*speed));
           
@@ -224,6 +249,7 @@ namespace icl{
     }
     m_lightSimulationEnabled = scene.m_lightSimulationEnabled;
     m_drawCamerasEnabled = scene.m_drawCamerasEnabled;
+    return *this;
   }
   
   void Scene2::addCamera(const Camera &cam){
@@ -231,7 +257,7 @@ namespace icl{
     m_cameraObjects.push_back(new CameraObject(this,m_cameraObjects.size()));
   }
   void Scene2::removeCamera(int index){
-    ICLASSERT_RETURN(index > 0 && index < m_cameras.size());
+    ICLASSERT_RETURN(index > 0 && index <(int) m_cameras.size());
     m_cameras.erase(m_cameras.begin()+index);
     delete m_cameraObjects[index];
     m_cameraObjects.erase(m_cameraObjects.begin()+index);
@@ -256,15 +282,15 @@ namespace icl{
     m_objects.push_back(object);
   }
   void Scene2::removeObject(int idx, bool deleteObject){
-    ICLASSERT_RETURN(idx >= 0 && idx < m_objects.size());
+    ICLASSERT_RETURN(idx >= 0 && idx < (int)m_objects.size());
     Object2 *p = m_objects[idx];
     if(deleteObject) delete p;
     m_objects.erase(m_objects.begin()+idx);
   }
   void Scene2::removeObjects(int startIndex, int endIndex, bool deleteObjects){
     if(endIndex < 0) endIndex = m_objects.size();
-    ICLASSERT_RETURN(startIndex >= 0 && startIndex < m_objects.size());
-    ICLASSERT_RETURN(endIndex >= 0 && endIndex <= m_objects.size());
+    ICLASSERT_RETURN(startIndex >= 0 && startIndex < (int)m_objects.size());
+    ICLASSERT_RETURN(endIndex >= 0 && endIndex <= (int)m_objects.size());
     ICLASSERT_RETURN(endIndex > startIndex);
     
     int pos = startIndex;
@@ -338,7 +364,7 @@ namespace icl{
       
       // NOT reverse ordering
       bool operator<(const ProjectedObject2 &other) const{
-        obj->getZ() < other.obj->getZ();
+        return obj->getZ() < other.obj->getZ();
       }
     };
   }
@@ -350,7 +376,7 @@ namespace icl{
     std::vector<Object2*> allObjects(m_objects);
     if(m_drawCamerasEnabled){
       for(unsigned int i=0;i<m_cameraObjects.size();++i){
-        if(i == camIndex) continue;
+        if((int)i == camIndex) continue;
         allObjects.push_back(m_cameraObjects[i]);
       }
     }
@@ -431,7 +457,7 @@ namespace icl{
             Vec &a = vx[p.a];
             Vec &b = vx[p.b];
             Vec &c = vx[p.c];
-            Vec &d = vx[p.c];
+            //Vec &d = vx[p.c];
 
             if(m_lightSimulationEnabled){
               renderer.color(adapt_color_by_light_simulation(a,b,c,p.color));
@@ -505,14 +531,26 @@ namespace icl{
     }
 
 
+    /*
+        glShadeModel( GL_SMOOTH );
+        glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
+        glHint( GL_POINT_SMOOTH_HINT, GL_NICEST );
+        glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST );
+        glEnable( GL_BLEND );
+        glEnable( GL_POINT_SMOOTH );
+        glEnable( GL_LINE_SMOOTH );
+        glEnable( GL_POLYGON_SMOOTH );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+     */
+    
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_POINT_SMOOTH);
     glEnable(GL_POLYGON_SMOOTH);
-    
+
     std::vector<Object2*> allObjects(m_objects);
     if(m_drawCamerasEnabled){
       for(unsigned int i=0;i<m_cameraObjects.size();++i){
-        if(i == camIndex) continue;
+        if((int)i == camIndex) continue;
         allObjects.push_back(m_cameraObjects[i]);
       }
     }
@@ -655,8 +693,8 @@ namespace icl{
           if(ps[j][k] > rangeXYZ[k].maxVal) rangeXYZ[k].maxVal = ps[j][k];
         }
       }
-      return iclMax(iclMax(rangeXYZ[1].getLength(),rangeXYZ[2].getLength()),rangeXYZ[0].getLength());
     }
+    return iclMax(iclMax(rangeXYZ[1].getLength(),rangeXYZ[2].getLength()),rangeXYZ[0].getLength());
   }
 
 
