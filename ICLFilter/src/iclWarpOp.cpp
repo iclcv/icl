@@ -62,7 +62,7 @@ namespace icl{
 
 #ifdef HAVE_IPP
   template<>  
-  static void apply_warp<icl8u>(const Channel32f warpMap[2], 
+  void apply_warp<icl8u>(const Channel32f warpMap[2], 
                                 const Img<icl8u> &src, 
                                 Img<icl8u> &dst,
                                 scalemode mode){
@@ -78,7 +78,7 @@ namespace icl{
     }
   }
   template<>  
-  static void apply_warp<icl32f>(const Channel32f warpMap[2], 
+  void apply_warp<icl32f>(const Channel32f warpMap[2], 
                                  const Img<icl32f> &src, 
                                  Img<icl32f> &dst,
                                  scalemode mode){
