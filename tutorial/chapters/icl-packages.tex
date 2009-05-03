@@ -15,17 +15,37 @@ By using \emph{templated} dimension parameters, matrix dimension is fixed at com
 The \inlinecode{FixedMatrix} class provides row- and column iterators, as well as extraction functions for rows, columns or rectangular sub-matrices.
 Here's a concise example:
 \codefile{fixed-matrix-demo-1.cpp}{Example for usage of the \inlinecode{FixedMatrix}-template class}
+Please note, that \inlinecode{FixedMatrix}-pseudo inverse calculation is out-sourced to a dedicated header \iclheaderref{Utils}{FixedMatrixUtils}.
 
 \subsubsection{DynMatrix Template Class\iclclassref{DynMatrix}{Utils}}
-\todo{describe}
 
-\todo{further parts of Utils-package}
+In contrast to the \inlinecode{FixedMatrix} template class, the \inlinecode{DynMatrix} template class uses a single template parameter which defines the actual datatype of the matrix elements. Matrix dimensions are dynamic at runtime, which enables us to provide e.g. a \inlinecode{setBounds} member function. In addition, \inlinecode{DynMatrix} instances can be assigned with \inlinecode{DynMatrix} instances of another size. Dynamic sized data types need dynamic data handling\footnote{using \inlinecode{new []} and \inlinecode{delete []}}. This besides allows a more flexible mechanism: Optional shallow data wrapping. \inlinecode{DynMatrix} instances can be set up to handle their data autonomously (using \inlinecode{new []} in the constructor and \inlinecode{delete []} in the destructor), or to \emph{count on} external data handling. Most other functionalities such as matrix multiplication or matrix inverse are also available here. Actually, matrix inverse in the \inlinecode{FixedMatrix} class is implemented by a shallow wrapping \inlinecode{DynMatrix} function call.
+
+
+
+\subsection{Time and Timing classes}
+ICL provides some time and timer classes to facilitate handling of time values and frame rates:
+\begin{itemize}
+\item The \inlinecode{Time} class (\iclclassref{Utils}{Time}) is the basis for timing classes. It provides a static function \inlinecode{now()} to obtain the current system time, as well as a variety manipulation and conversion functions.
+\item The \inlinecode{Timer} (\iclclassref{Utils}{Timer}) class allows to compute time differences e.g. for benchmarking.
+\item The \inlinecode{StackTimer} (\iclclassref{Utils}{StackTimer}) can be used with the macro \inlinecode{BENCHMARK\_THIS\_FUNCTION} to profile a function.
+\item \inlinecode{FPSEstimator} (\iclclassref{Utils}{FPSEstimator}) and \inlinecode{FPSLimiter} (\iclclassref{Utils}{FPSLimiter}) can be used to compute or to limit the FPS\footnote{Frames Per Second} count of a application.
+\end{itemize}
+
+\subsection{Threading Classes}
+The \inlinecode{Thread}-class (\iclclassref{Utils}{Thread}) and the \inlinecode{Mutex}-class (\iclclassref{Utils}{Mutex}) are simple object-oriented wrappers for the pthread library.
+
+\subsection{ProgArg-Environment} 
+As a lot of applications need to parse command line parameters, ICL provides a simple interface to define, explain, extract and parse command line arguments (\iclheaderref{Utils}{ProgArg}). Application arguments are always fixed and need to be accessible globally, so the program argument environment is  implemented as a set of global functions each having the \inlinecode{pa_}-prefix. \inlinecode{pa\_init()} can be used to define the list of allowed program arguments and their specific count of sub-arguments\footnote{E.g consider a program argument \inlinecode{-size} could be implemented with a single sub-argument: the size.}. \inlinecode{pa\_exmplain()} explains sub-arguments. \inlinecode{pa\_defined()} and \inlinecode{pa\_arg()} are used to obtain information of the actual given program arguments.  The \inlinecode{pa\_subarg()} template function can be used to extract and parse given sub-arguments e.g. as \inlinecode{int}:
+\displaycode{int c = pa\_subarg<int>("-channels",0,3);}
+or as \inlinecode{std::string}
+\displaycode{Size size = translateSize(pa\_subarg<std::string>("-size",0,"VGA"));}. More information can be found in the documentation.
 
 
 
 \section{ICLCore}
 
-Documentation: \iclpackageref{Core}\\
+[Documentation: \iclpackageref{Core}]\\
 The Core-package contains, apart from the image base class \inlinecode{ImgBase} and template classes \inlinecode{Img<T>}, fundamental image processing functions and utility classes. In particular, it contains the header \iclheaderref{Core}{Types}, that declares most common ICL data types and enumerations. Furthermore, there are mathematic functions, random number generators, utility functions for converting and copying images and some utility structures like rectangles, points and lines.
 
 \subsection{Image classes}
