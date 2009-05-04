@@ -1,7 +1,7 @@
 This section introduces the \inlinecode{ImgBase}-class and it's essential functions. The section begins with some explanations on image depth conversion/adaption (see section \ref{sec:depth-conversion} and \ref{sec:depth-adaption}). Subsequent, further image functions available in the \inlinecode{ImgBase}-class will be presented and discussed. 
 
 \section {\label{sec:depth-conversion}Image depth-Conversion}
-To avoid misunderstandings, there's another use for the term \emph{conversion}, namely for \emph{color conversion} which is discussed in section \ref{sec:color-conversion}\todo{Ref..}.\\
+To avoid misunderstandings, there's another use for the term \emph{conversion}, namely for \emph{color conversion} which is discussed in section \ref{sec:cc}\\
 Image depth conversion is alway applied deeply or pixel-wise, i.e. each single pixel is converted. Type to type conversion is applied with the \inlinecode{clipped\_cast()} template function (see \iclheaderref{Util}{ClippedCast}, that avoids range overflow if the destination data type has a smaller range than the source data type. \emph{Vectorized} conversion (converting a range of type \inlinecode{A} element-wise into a range of type \inlinecode{B} is done by the \inlinecode{convert}-function (\iclheaderref{Core}{Core}), which uses the STL-algorithm \inlinecode{std::transform} to apply \inlinecode{clipped\_cast} element-wise at default. However most\footnote{For most \inlinecode{iclXX} to \inlinecode{iclYY} combinations} common conversion operations e.g. from \inlinecode{icl32f} to \inlinecode{icl8u} are IPP-accelerated if IPP support is enabled.\\
 The \inlinecode{ImgBase}-class provides three dedicated \inlinecode{convert} functions for converting image data. 
 \begin{enumerate}

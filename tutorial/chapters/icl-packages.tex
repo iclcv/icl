@@ -82,8 +82,29 @@ The \inlinecode{Line} and \inlinecode{Line32f} classes (\iclclassref{Core}{Line}
 At last, there's a template class representing ranges: \iclstructref{Core}{Range} and it's extension \iclstructref{Core}{SteppingRange}.
 
 \subsection{String-Utilities}
-To facilitate string processing (which is still a bit complicated in C++), the header \iclheaderref{Core}{StringUtils} is provided in the ICL-Core package. It contains functions to parse \inlinecode{std::strings} into given data types (template based, \inlinecode{T parse<T>(const std::string&)} and to convert given data-types into strings (\inlinecode{std::string str(const T&)}). Furthermore, there are variants of these functions, that work in \inlinecode{std::vector} instances to convert or parse ranges at once.
+To facilitate string processing (which is still a bit complicated in C++), the header \iclheaderref{Core}{StringUtils} is provided in the ICL-Core package. It contains functions to parse \inlinecode{std::strings} into given data types (template based, \inlinecode{T parse<T>(const std::string&)} and to convert given data-types into strings (\inlinecode{std::string str(const T&)}). Furthermore, there are variants of these functions, that work on \inlinecode{std::vector} instances to convert or parse ranges at once.\\
+Moreover, ICL provides conversion functions to translate sizes, formats, depths etc. into strings and back. These functions are located in the \iclheaderref{Core}{Core} and their names are \inlinecode{translateSize}, \inlinecode{translateFormat} etc.
 
 
+\section{ICLCC\label{sec:cc}}
+
+[Documentation: \iclpackageref{CC}]\\
+The \textbf{C}olor \textbf{C}conversion package provides a powerful environment for converting images color formats. Additionally data layout conversion functions (\inlinecode{interleavedToPlanar} and \inlinecode{planarToInterleaved} are implemented in this package (available by including the \iclheaderref{CC}{CC}-header) and a powerful \inlinecode{Converter}-class (\iclclassref{CC}{Converter}), that allows convert images with different sizes, formats and depths\footnote{or even all at once} into each other while preserving image content.
 
 
+\subsection{Color Conversion}
+
+As illustrated in section \ref{sec:image-features} ICL images possess a \inlinecode{format} parameter that defines the images actual color format (e.g. RGB HLS or gray). As most algorithms process images regardless their color formats, color conversion was outsourced into the dedicated \iclpackageref{CC}-package. Basically, all color conversion algorithms are implemented with a single function called \inlinecode{cc} (also available in the \iclheaderref{CC}{CC}-header. \inlinecode{cc} is able to convert pixels from a source image into a given destination image. Source and destination color formats are extracted automatically from the given images. Optionally, \inlinecode{cc} can be setup to process an images ROI only.\\
+Base format for color conversion is the \emph{sRGB}\footnote{\hrefn{http://en.wikipedia.org/wiki/SRGB}} format (represented by the \inlinecode{format}-enum value \inlinecode{formatRGB}). All other formats can be converted \emph{from} and \emph{into} the sRGB-format natively. Some other \emph{cross-conversions} are implemented by first converting source image pixels into sRGB, before conversion from sRGB into the desired destination format is available. The \iclheaderref{CC}{CC}-header provides a good overview of the implemented formats and their conversion performance.\\
+If color conversion performance is not fast enough, it can be optimized using a lookup table, that can be created on automatically on demand by calling the \inlinecode{createLUT} function.\\
+By the way, the color conversion function \inlinecode{cc} is implemented using massive template-expansion. This enables \inlinecode{cc} to perform a \inlinecode{depth}-conversion simultaneously (by the way, this is why \inlinecode{iclCC.cpp} needs that much time to compile).
+
+\subsection{General Parameter Conversion}
+
+If also an images size must be adapted, there's need for some temporary buffers. The \inlinecode{Converter} (\iclclassref{CC}{Converter}) class automatically handles internal buffers for \inlinecode{depth}-, \inlinecode{size}- and \inlinecode{format}-conversion. Furthermore it provides the ability to select the order of different conversion steps.
+ 
+
+ 
+\subsection{Data Layout Conversion}
+
+As motivated in chapter \ref{cha:what-is-the-icl}, ICL's images do always use planar data layout, however sometimes available image data is interleaved, or ICL-image data must be converted into interleaved data layout. 
