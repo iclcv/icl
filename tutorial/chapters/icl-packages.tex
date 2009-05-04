@@ -49,11 +49,41 @@ or as \inlinecode{std::string}
 The Core-package contains, apart from the image base class \inlinecode{ImgBase} and template classes \inlinecode{Img<T>}, fundamental image processing functions and utility classes. In particular, it contains the header \iclheaderref{Core}{Types}, that declares most common ICL data types and enumerations. Furthermore, there are mathematic functions, random number generators, utility functions for converting and copying images and some utility structures like rectangles, points and lines.
 
 \subsection{Image classes}
+The image classes have been described in detail in chapter \ref{cha:img-base-functions} and \ref{cha:img-class-functions}.
+
 
 \subsection{Types}
+Types and enumerations have been presented and discussed in section \ref{sec:typedef-confusions}. Types are declared in \iclheaderref{Core}{Types}.
+
 
 \subsection{Mathematic Functions}
+Also some fundamental mathematic functionalities are provided in the package. The header \iclheaderref{Core}{Mathematics} contains some stochastic utility template functions for computation of mean, variance and standard derivation of a range. Also color-histogram calculating functions (\inlinecode{hist} and \inlinecode{channelHisto}) are available by including this header. More information can be obtained from the header documentation (mentioned above).
+
+
 
 \subsection{Random Number Generators}
+Formerly a part of the header \iclheaderref{Core}{Mathematics}-header, random number generators are not provided by the header \iclheaderref{Core}{Random}. Actually, only two different distributions are currently supported: uniform- and gaussian distribution. However a set of functions are provided for each distribution to facilitate random number (and random range) generation. \\
+Firstly, there's an overloaded \inlinecode{randomSeed()} function, that can be used to initialize the systems random generator engine, with an optinal \emph{seed-value}. If no seed value is given, current system time is used for initialization. Furthermore, a class called \inlinecode{RandomSeeder} (\iclstructref{Core}{RandomSeeder}) is provided which can be instantiated on some stack to force random number generation engine initialization at program startup. \\
+In Addition, there's a set of initializer functors (\iclclassref{Core}{URand},\iclclassref{Core}{URandI},\iclclassref{Core}{GRand} and \iclclassref{Core}{GRandClip}), that can be used e.g. with \inlinecode{std::fill} to initialize range elements randomly. 
+
+\subsection{Utility Structures}
+Firstly, there are 3 main utility structures:
+\begin{enumerate}
+\item The \inlinecode{Size}-class (\iclclassref{Core}{Size}), which in substance consists of an \inlinecode{int}-width and -height parameter, represents e.g. image-, widget-, ROI,  or screen sizes.
+\item The \inlinecode{Point}-class (\iclclassref{Core}{Point} ; and it's \inlinecode{float}-precision variation \inlinecode{Point32f}; \iclclassref{Core}{Point32f}), should be used to defined 2D-locations e.g. pixel locations, ROI-offsets or perhaps region-centers.
+\item At last, the \inlinecode{Rect}-class (\iclclassref{Core}{Rect}; also available with floating point precision; \iclclassref{Core}{Rect32f}) with essentially combines a \inlinecode{Point} and a \inlinecode{Size} to represent rectangular regions, bounding-boxes, ROI's etc.
+\end{enumerate}
+All these classes are derived from corresponding IPP data types (\inlinecode{ippPoint}, \inlinecode{ippSize} and \inlinecode{ippRect}) in case of having IPP support, which enables the programmer to pass e.g. an \inlinecode{icl::Point} directly to an IPP-function.
+
+\subsubsection{Lines}
+The \inlinecode{Line} and \inlinecode{Line32f} classes (\iclclassref{Core}{Line}, and \iclclassref{Core}{Line32f}). Are provided not only as an interface for representing 2D-Lines given by two points. In actual fact, they provide an efficient mechanism to sample lines into an image grid using Bresenham's line algorithm\footnote{See \hrefn{http://de.wikipedia.org/wiki/Bresenham-Algorithmus}}.
+
+\subsubsection{Ranges}
+At last, there's a template class representing ranges: \iclstructref{Core}{Range} and it's extension \iclstructref{Core}{SteppingRange}.
+
+\subsection{String-Utilities}
+To facilitate string processing (which is still a bit complicated in C++), the header \iclheaderref{Core}{StringUtils} is provided in the ICL-Core package. It contains functions to parse \inlinecode{std::strings} into given data types (template based, \inlinecode{T parse<T>(const std::string&)} and to convert given data-types into strings (\inlinecode{std::string str(const T&)}). Furthermore, there are variants of these functions, that work in \inlinecode{std::vector} instances to convert or parse ranges at once.
+
+
 
 

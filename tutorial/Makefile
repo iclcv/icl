@@ -56,7 +56,7 @@ allshow: all show
 
 
 edit:
-	$(EDITOR) chapters/the-image-class.tex
+	$(EDITOR) chapters/icl-packages.tex
 
 weiter: all show edit
 
