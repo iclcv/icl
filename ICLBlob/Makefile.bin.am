@@ -27,7 +27,8 @@ endif
 bin_PROGRAMS= \
 icl-blobtracker-benchmark \
 icl-region-based-blob-finder-test \
-icl-region-detector-test
+icl-region-detector-test \
+icl-simple-blob-searcher-test
 
 # explicit sources, ldflags and cxxflags
 icl_blobtracker_benchmark_SOURCES=../examples/blobtracker-benchmark.cpp
@@ -41,6 +42,10 @@ icl_region_based_blob_finder_test_CXXFLAGS=${XCXXFLAGS}
 icl_region_detector_test_SOURCES=../examples/region-detector-test.cpp
 icl_region_detector_test_LDFLAGS=${XLDFLAGS}
 icl_region_detector_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_simple_blob_searcher_test_SOURCES=../examples/simple-blob-searcher-test.cpp
+icl_simple_blob_searcher_test_LDFLAGS=${XLDFLAGS}
+icl_simple_blob_searcher_test_CXXFLAGS=${XCXXFLAGS}
 
 
 if HAVE_QT_COND
