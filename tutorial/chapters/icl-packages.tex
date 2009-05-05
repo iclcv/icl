@@ -107,4 +107,32 @@ If also an images size must be adapted, there's need for some temporary buffers.
  
 \subsection{Data Layout Conversion}
 
-As motivated in chapter \ref{cha:what-is-the-icl}, ICL's images do always use planar data layout, however sometimes available image data is interleaved, or ICL-image data must be converted into interleaved data layout. 
+As motivated in chapter \ref{cha:what-is-the-icl}, ICL's images do always use planar data layout, however sometimes available image data is interleaved, or ICL-image data must be converted into interleaved data layout. The \iclheaderref{CC}{CC}-header also provides two conversion functions for this tasks: \displaycode{interleavedToPlanar}
+\displaycode{planarToInterleaved}
+
+Both functions are highly optimized and -- if supported -- IPP accelerated. Additionally, both functions are able to apply a \inlinecode{depth}-conversion too, and the provide source and destination ROI support. As there's no interleaved image format in the ICL, interleaved image data is always just represented by a single data pointer; the interleaved images ROI is determined from the given \inlinecode{lineStep} argument.
+
+
+
+
+
+\section{ICLIO\label{sec:io}}
+
+[Documentation: \iclpackageref{IO}]\\
+
+The IO-package provides functions and classes for reading and writing image from- and to different devices. The most common interface is the \inlinecode{Grabber} (\iclclassref{IO}{Grabber}). All image input devices are implemented as specializations of this \inlinecode{Grabber}-class, which provides a generic interface for grabbing images and setting camera parameters and capture modes (see section \ref{sec:grabber-feature-adjustment}). Currently, the following grabbers are available:
+
+\begin{enumerate}
+\item \inlinecode{FileGrabber} [\iclclassref{IO}{FileGrabber}]:\\
+ For reading image files in most different formats. .ppm, .pnm and .pgm as well as a special icl-format \emph{.icl} are implemented natively without any external software dependencies. .jpeg-files can be read with a wrapper of libjpeg. All other file-formats are passed to an libImageMagic++\footnote{\hrefn{http://www.imagemagick.org/Magick++/}}-wrapper (currently this supports about 100 more or less common file formats)
+%
+\item \inlinecode{DCGrabber} [\iclclassref{IO}{DCGrabber}]:\\
+The \inlinecode{DCGrabber} grabs images from fire-wire aka IEEE-1394 camera devices. Basically it wraps the libdc1394 library\footnote{\hrefn{http://sourceforge.net/projects/libdc1394/}} for accessing cameras, that meet the IIDC DCAM standart\footnote{\hrefn{http://de.wikipedia.org/wiki/DCAM}}, and which gave the grabber it's name. DC-Camera features, image acquisition modes and framerates are made accessible via the Grabbers feature \emph{setter}- and \emph{getter}-functions.
+%
+\item \inlinecode{PWCGrabber} [\iclclassref{IO}{PWCGrabber}]:\\
+The \textbf{P}hillips \textbf{W}eb\textbf{C}am grabber can be used to grab images from cameras that use the linux pwc kernel module\footnote{\hrefn{http://www.saillard.org/linux/pwc/}}.
+\item TODO
+\end{enumerate}
+
+\subsection{Feature Adjustment\label{sec:grabber-feature-adjustment}}
+TODO
