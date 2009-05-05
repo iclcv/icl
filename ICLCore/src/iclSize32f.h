@@ -1,6 +1,8 @@
 #ifndef ICL_SIZE_32F_H
 #define ICL_SIZE_32F_H
 
+#include <iostream>
+
 namespace icl{
   /// Size32f class of the ICL (float valued)
   class Size32f{
@@ -19,7 +21,7 @@ namespace icl{
     inline Size32f(const Size32f &s=null){ this->width = s.width;this->height = s.height; }
     
     /// creates a specified size
-   inline Size32f(float width,float height){ this->width = width; this->height = height; }
+    inline Size32f(float width,float height){ this->width = width; this->height = height; }
 
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }
@@ -57,6 +59,12 @@ namespace icl{
     /// reutrns width*height
     float getDim() const {return width*height;}
   };
+
+  /// ostream operator WIDTHxHEIGHT
+  std::ostream &operator<<(std::ostream &s, const Size32f &s);
+  
+  /// istream operator
+  std::istream &operator>>(std::istream &s, Size32f &s);
 
 }// namespace icl
 

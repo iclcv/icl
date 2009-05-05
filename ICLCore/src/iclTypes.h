@@ -115,9 +115,6 @@ namespace icl {
     axisBoth  /**> flip both axis */
 #endif
   };
-
- 
-
 }
 
 #endif //ICL_TYPES_H

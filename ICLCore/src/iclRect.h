@@ -282,6 +282,13 @@ namespace icl {
     }
   };
 
+  /// ostream operator (x,y)wxy
+  std::ostream &operator<<(std::ostream &s, const Rect &r);
+  
+  /// istream operator
+  std::istream &operator>>(std::istream &s, Rect &r);
+
+
 } // namespace icl
 
 #endif // ICL_RECT_H

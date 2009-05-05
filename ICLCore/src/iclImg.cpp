@@ -1,7 +1,7 @@
 #include <iclImg.h>
 #include <functional>
-#include <cstring>
 #include <iclRect32f.h>
+#include <iclStringUtils.h>
 
 namespace icl {
   
@@ -1631,7 +1631,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   void Img<Type>::printAsMatrix(const std::string &fmt, bool visROI) const{
     std::cout << "image matrix:    size: " << getSize() << std::endl;
     std::cout << "             channels: " << getChannels() << std::endl;
-    std::cout << "                  ROI: " << (hasFullROI() ? std::string("full") : translateRect(getROI())) << std::endl;
+    std::cout << "                  ROI: " << (hasFullROI() ? std::string("full") : str(getROI())) << std::endl;
     std::string fmtFull="%";
     visROI = visROI && !hasFullROI();
     if(visROI){

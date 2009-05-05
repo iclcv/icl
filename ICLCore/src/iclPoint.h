@@ -72,8 +72,14 @@ namespace icl{
     
     /// returns the euclidian distance to another point
     float distanceTo(const Point &p) const;
-    
   };
+  
+  /// ostream operator (x,y)
+  std::ostream &operator<<(std::ostream &s, const Point &p);
+  
+  /// istream operator
+  std::istream &operator>>(std::istream &s, Point &p);
+
   
 } // namespace icl
 

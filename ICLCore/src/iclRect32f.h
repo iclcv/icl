@@ -202,12 +202,19 @@ namespace icl {
     float top() const { return y; }
 
     /// returns the size of the rect
-    Size32f size() const { return Size32f(width,height); }
+    Size32f getSize() const { return Size32f(width,height); }
 
     Rect32f transform(double xfac, double yfac) const { 
       return Rect32f(x*xfac,y*yfac,width*xfac,height*yfac);
     }
   };
+
+  /// ostream operator (x,y)wxy
+  std::ostream &operator<<(std::ostream &s, const Rect32f &r);
+  
+  /// istream operator
+  std::istream &operator>>(std::istream &s, Rect32f &r);
+
 
 } // namespace icl
 

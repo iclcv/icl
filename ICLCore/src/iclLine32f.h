@@ -76,6 +76,13 @@ namespace icl{
     /// end point of this line
     Point32f end;
   };
+
+  /// ostream operator (start-x,start-y)(end-x,end-y)
+  std::ostream &operator<<(std::ostream &s, const Line32f &l);
+  
+  /// istream operator
+  std::istream &operator>>(std::istream &s, Line32f &l);
+
 }
 
 #endif

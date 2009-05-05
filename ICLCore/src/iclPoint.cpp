@@ -12,4 +12,15 @@ namespace icl{
     x = (int)::round(p.x);
     y = (int)::round(p.y);
   }
+
+  std::ostream &operator<<(std::ostream &s, const Point &p){
+    return s << "(" << p.x << ',' << p.y << ")";
+  }
+  
+  std::istream &operator>>(std::istream &s, Point &p){
+    char c;
+    return s >> c >> p.x >> c >> p.y >> c;
+  }
+
+  
 }

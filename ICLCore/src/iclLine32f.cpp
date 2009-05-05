@@ -26,4 +26,14 @@ namespace icl{
     Point endInt = Point( (int)round(end.x), (int)round(end.y) );
     return Line(startInt,endInt).sample(xs,ys,limits);
   }
+
+  /// ostream operator (start-x,start-y)(end-x,end-y)
+  std::ostream &operator<<(std::ostream &s, const Line32f &l){
+    return s << l.start << l.end;
+  }
+  
+  /// istream operator
+  std::istream &operator>>(std::istream &s, Line32f &l){
+    return s >> l.start >> l.end;
+  }
 }

@@ -1082,7 +1082,7 @@ namespace icl {
         in any way and to store the result (or even results) in a 2nd image
         at the corresponding image location. This can easily be performed using
         the reduce channels template function. Look at the following example:
-        <CODE>
+        \code
         struct Thresh{
            Thresh(int t):t(t*3){}
            int t;    
@@ -1099,7 +1099,7 @@ namespace icl {
            imageAndBG.reduce_channels<icl8u,6,1,Thresh>(dst,Thresh(tollerance));
            return dst;
         }
-        </CODE>
+        \endcode
 
         \section PERF Performace Twearks
         Source and destination channel count is given as template parameter, to allow

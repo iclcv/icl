@@ -247,7 +247,15 @@ namespace icl{
 
     /// image roi
     Rect m_oROI;
+
   };
+
+  /// ostream operator SIZExCHANNELS@FORMAT.ROI
+  std::ostream &operator<<(std::ostream &s, const ImgParams &s);
+  
+  /// istream operator
+  std::istream &operator>>(std::istream &s, ImgParams &s);
+
 }
 
 #endif

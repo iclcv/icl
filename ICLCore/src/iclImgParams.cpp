@@ -1,6 +1,6 @@
 #include <iclImgParams.h>
 #include <iclCore.h>
-#include <sstream>
+#include <iclStringUtils.h>
 
 namespace icl{
   const ImgParams ImgParams::null(0,0,0,formatMatrix,0,0,0,0);
@@ -48,15 +48,8 @@ namespace icl{
     FUNCTION_LOG("setup(width="<<size.width<<",height="<<size.height<<",format="<<translateFormat(fmt)<<
                  ",channels="<<channels<<",ROI=("<<roi.x<<","<<roi.y<<","<<roi.width<<","<<roi.height<<"))");
 
-    /*
     ICLASSERT_THROW(fmt == formatMatrix || channels == getChannelsOfFormat(fmt),
-                    InvalidImgParamException("format and channels"))
-   */
-
-    std::ostringstream str;
-    str << "incompatible format (" << translateFormat(fmt) << ") and channelcount (" << channels << ")";
-    ICLASSERT_THROW(fmt == formatMatrix || channels == getChannelsOfFormat(fmt),
-                    InvalidImgParamException(str.str()));
+                    InvalidImgParamException("incompatible format (" + str(fmt) + ") and channel count (" + str(channels) + ")"));
 
     m_oSize = size;
     m_eFormat = fmt;
@@ -189,5 +182,25 @@ namespace icl{
      return roi;
   }
   // }}}
+
+  /// ostream operator SIZExCHANNELS@FORMAT.ROI
+  std::ostream &operator<<(std::ostream &s, const ImgParams &p){
+    return s << p.getSize() << 'x' << p.getChannels() << '@' << p.getFormat() << '.' << p.getROI();
+  }
+  
+  /// istream operator
+  std::istream &operator>>(std::istream &s, ImgParams &p){
+    char c;
+    Size size;
+    int channels;
+    format fmt;
+    Rect roi;
+    s >> size >> c >> channels >> c >> fmt >> c >> roi;
+    
+    p = ImgParams(size,channels,fmt,roi);
+    
+    return s;
+  }
+
 
 }

@@ -1,5 +1,6 @@
 #include <iclImgBase.h>
 #include <iclImg.h>
+#include <iclStringUtils.h>
 
 using namespace std;
 
@@ -30,32 +31,27 @@ namespace icl {
   
   // {{{ utility functions
 
-  void ImgBase::print(const string sTitle) const{
+  void ImgBase::print(const string title) const{
     // {{{ open
-
-  FUNCTION_LOG(sTitle);
-  printf(   " -----------------------------------------\n"
-            "| image: %s\n"
-            "| timestamp: %s\n"
-            "| width: %d, height: %d, channels: %d\n",sTitle.c_str(), this->getTime().toString().c_str(),
-            getSize().width,getSize().height,getChannels());
-  printf(   "| depth: %s  format: %s\n",translateDepth(getDepth()).c_str(), translateFormat(getFormat()).c_str());
-  printf(   "| ROI: x: %d, y: %d, w: %d, h: %d \n", getROI().x, getROI().y,getROI().width, getROI().height);
-
-  switch (m_eDepth){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D:                                                                            \
-    for(int i=0;i<getChannels();++i){                                                                                      \
-      printf("| channel: %d range[%f,%f] \n",i,(double)(asImg<icl##D>()->getMin(i)),(double)(asImg<icl##D>()->getMax(i))); \
-    }                                                                                                                      \
-    break;
-    ICL_INSTANTIATE_ALL_DEPTHS;
-    default: ICL_INVALID_DEPTH; break;
-#undef ICL_INSTANTIATE_DEPTH
-      
-  }
-  
-  printf(" -----------------------------------------\n");
- 
+    
+    FUNCTION_LOG(sTitle);
+    
+    
+    std::cout << " -----------------------------------------" << std::endl
+              << "| image     : " << title  << std::endl
+              << "| timestamp : " << getTime() << std::endl
+              << "| size      : " << getSize() << std::endl
+              << "| channels  : " << getChannels() << std::endl
+              << "| depth     : " << getDepth() << std::endl
+              << "| format    : " << getFormat() << std::endl
+              << "| roi       : " << (hasFullROI() ? str("full") : str(getROI())) << std::endl
+              << " -----------------------------------------" << std::endl;
+    
+    for(int i=0;i<getChannels();++i){
+      std::cout << "| range channel " << i << " :" << getMinMax(i) << std::endl;
+    }
+    
+    std::cout << " -----------------------------------------" << std::endl;
 
 }
 

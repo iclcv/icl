@@ -450,82 +450,23 @@ namespace icl {
   **/
   int getChannelsOfFormat(format fmt);
 
-
-  /// returns a string representation of an Format enum \ingroup GENERAL
-  /** @param eFormat Format enum which string repr. is asked 
-      @return string representation of eFormat
-  **/
-  std::string translateFormat(format eFormat);  
-  
-  /// returns an Format enum, specified by a string \ingroup GENERAL
-  /** This functions implements the opposite direction to the above function,
-      which means, that:
-      <pre>
-      translateFormat(translateFormat(x)) == x
-      </pre>
-      If x is a string or an Format enum.
-      @param sFormat string representation of the format 
-                     which should be returned
-      @return Format, that corresponds to sFormat
-  **/
-  format translateFormat(const std::string& sFormat);
-
-  /// returns a string representation for a depth value \ingroup GENERAL
-  std::string translateDepth(depth eDepth);
-
-  /// creates a depth value form a depth string \ingroup GENERAL
-  depth translateDepth(const std::string& sDepth);
-
-  /// creates a size string like "640x480" \ingroup GENERAL
-  std::string translateSize(const Size &size);
-  
-  /// translates a size string into a size variable \ingroup GENERAL
-  /** if the string could not be parsed, the returned size is "0x0" */
-  Size translateSize(const std::string &sSize);
-
-  /// creates a rect string like "640x480@(5,10)" \ingroup GENERAL
-  std::string translateRect(const Rect &rect);
-  
-  /// translates a rect string into a Rect variable \ingroup GENERAL
-  /** if the string could not be parsed, the returned Rect is "0x0@(0,0)" */
-  Rect translateRect(const std::string &sRect);
-
-  /// creates a point string like "640x480@(5,10)" \ingroup GENERAL
-  std::string translatePoint(const Point &p);
-  
-  /// translates a point string into a Point variable \ingroup GENERAL
-  /** if the string could not be parsed, the returned Poin is "(0,0)" */
-  Point translatePoint(const std::string &p);
-  
   /// getDepth<T> returns to depth enum associated to type T \ingroup GENERAL
   template<class T> inline depth getDepth();
 
-  /// puts a string representation (x,y) of given Point into the given stream
-  inline std::ostream &operator<<(std::ostream &s, const Point &p){
-    return s << translatePoint(p);
-  }
-  /// puts a string representation (x,y) of given Point32f into the given stream
-  inline std::ostream &operator<<(std::ostream &s, const Point32f &p){
-    return s << "(" << p.x << ',' << p.y << ")";
-  }
-  /// puts a string representation WxH@(x,y) of given Rect into the given stream
-  inline std::ostream &operator<<(std::ostream &s, const Rect &r){
-    return s << translateRect(r);
-  }
-  /// puts a string representation of format into the given stream
-  inline std::ostream &operator<<(std::ostream &s, format f){
-    return s << translateFormat(f);
-  }
-  /// puts a string representation of depth into the given stream
-  inline std::ostream &operator<<(std::ostream &s, depth d){
-    return s << translateDepth(d);
-  }
-  /// puts a string representation WxH of give size into the given stream
-  inline std::ostream &operator<<(std::ostream &s, const Size &size){
-    return s << translateSize(size);
-  }
- 
 
+  /// puts a string representation of format into the given stream
+  std::ostream &operator<<(std::ostream &s,const format &f);
+  
+  /// puts a string representation of depth into the given stream
+  std::ostream &operator<<(std::ostream &s,const depth &d);
+
+  /// puts a string representation of format into the given stream
+  std::istream &operator>>(std::istream &s, format &f);
+  
+  /// puts a string representation of depth into the given stream
+  std::istream &operator>>(std::istream &s, depth &d);
+
+  
   /** \cond */
 #define ICL_INSTANTIATE_DEPTH(T) \
   template<> inline depth getDepth<icl ## T>() { return depth ## T; }
@@ -574,18 +515,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
   template <class srcT,class dstT>
   inline void convert(const srcT *poSrcStart,const srcT *poSrcEnd, dstT *poDst){
     std::transform(poSrcStart,poSrcEnd,poDst,clipped_cast<srcT,dstT>);
-    //    while(poSrcStart != poSrcEnd) *poDst++ = Cast<srcT,dstT>::cast(*poSrcStart++);
   }
-  
-  // Problems here! (if defined, the compiler gets problems when resolving the most-optimized function
-  /** \cond */
-  /**
-      #define ICL_INSTANTIATE_DEPTH(D) template<> inline void convert<icl##D,icl##D>  \
-      (const T* src, const T*srcEnd, T *dst){        \
-      icl::copy<icl##D>(src,srcEnd,dst); }
-      ICL_INSTATIATE_ALL_DEPTHS
-      #undef ICL_INSTANTIATE_DEPTH
-   **/ 
   
 #ifdef HAVE_IPP 
   /// from icl8u functions

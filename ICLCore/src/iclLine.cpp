@@ -158,4 +158,16 @@ namespace icl{
   void Line::sample(vector<int> &xs, vector<int> &ys, const Rect &limits ) const{
     bresenham(start.x,end.x,start.y,end.y,xs,ys,limits.x, limits.right(), limits.y, limits.bottom());
   }
+
+
+  /// ostream operator (start-x,start-y)(end-x,end-y)
+  std::ostream &operator<<(std::ostream &s, const Line &l){
+    return s << l.start << l.end;
+  }
+  
+  /// istream operator
+  std::istream &operator>>(std::istream &s, Line &l){
+    return s >> l.start >> l.end;
+  }
+
 }

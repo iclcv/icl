@@ -44,136 +44,129 @@ namespace icl{
 
   // }}}
 
-  string translateFormat(format eFormat){
-    // {{{ open
 
-    switch(eFormat){
-      case formatRGB: return "rgb";
-      case formatHLS: return "hls";
-      case formatLAB: return "lab";
-      case formatYUV: return "yuv";
-      case formatGray: return "gray";
-      case formatMatrix: return "matrix";
-      case formatChroma: return "chroma";
-      default: ICL_INVALID_FORMAT; return "undefined format";        
-    }
+  /// puts a string representation of format into the given stream
+  std::ostream &operator<<(std::ostream &s,const format &f){
+    if( ((int)f<0) || ((int)f)>=7) return s << "formatUnknown";
+    static const char *fmts[7] = { 
+      "formatGray",
+      "formatRGB",
+      "formatHLS",
+      "formatYUV",
+      "formatLAB",
+      "formatChroma",
+      "formatMatrix"
+    };
+    return s << fmts[f];
   }
-
-  // }}}
- 
-  format translateFormat(const string& sFormat){
-    // {{{ open
-
-    if(sFormat.length()<=0){
-      ICL_INVALID_FORMAT;
-      return formatMatrix;
-    }
-    switch(sFormat[0]){
-      case 'r': return formatRGB;
-      case 'h': return formatHLS;
-      case 'l': return formatLAB;
-      case 'y': return formatYUV;
-      case 'g': return formatGray;
-      case 'm': return formatMatrix;
-      case 'c': return formatChroma;
-      default: ICL_INVALID_FORMAT; return formatMatrix;
-    }
-  }
-
-  // }}}
   
-  static string asDepthTypes[] = {"8u","16s","32s","32f","64f"};
-
-  string translateDepth(depth eDepth){
-    // {{{ open
-    return string("depth") + asDepthTypes[eDepth];
+  /// puts a string representation of depth into the given stream
+  std::ostream &operator<<(std::ostream &s,const depth &d){
+    if( ((int)d<0) || ((int)d)>=5) return s << "depthUnknown";
+    static const char *depths[7] = { 
+      "depth8u",
+      "depth16s",
+      "depth32s",
+      "depth32f",
+      "depth64f"
+    };
+    return s << depths[d];
+    
   }
 
-// }}}
-
-  depth translateDepth(const std::string& sDepth){
-    // {{{ open
-    if (sDepth.substr(0,5) == "depth") {
-       string t(sDepth.substr(5));
-       for (int i=0; i <= depthLast; i++)
-          if (t == asDepthTypes[i]) return static_cast<depth>(i);
+  /// puts a string representation of format into the given stream
+  std::istream &operator>>(std::istream &s, format &f){
+    char cs[7]={0};
+    for(int i=0;i<6;++i)s>>cs[i];
+    ICLASSERT(str(cs) == "format");
+    std::fill(cs,cs+7,'\0');
+    s >> cs[0];
+    int rest = 2;
+    std::string expect;
+    switch(cs[0]){
+      case 'G':
+        rest = 3;
+        expect="Gray";
+        f = formatGray;
+        break;
+      case 'R':
+        expect="RGB";
+        f = formatRGB;
+        break;
+      case 'H':
+        expect="HLS";
+        f = formatHLS;
+        break;
+      case 'Y':
+        expect="YUV";
+        f = formatYUV;
+        break;
+      case 'L':
+        expect="LAB";
+        f = formatLAB;
+        break;
+      case 'C':
+        rest = 5;
+        f = formatChroma;
+        expect="Chroma";
+        break;
+      case 'M':
+        rest = 5;
+        f = formatMatrix;
+        expect="Matrix";
+      default:
+        ERROR_LOG("unable to parse format-type");
+        return s;
     }
-    ICL_INVALID_DEPTH;
+    for(int i=0;i<rest;++i){
+      s >> cs[i+1];
+    }
+    const char * const found = cs;
+    ICLASSERT(expect == found);
+    return s;
   }
-
-// }}}
-
-  /// creates a size string like "640x480"
-  std::string translateSize(const Size &size){
-    // {{{ open
-
-    char buf[100];
-    sprintf(buf,"%dx%d",size.width,size.height);
-    return buf;
-  }
-
-  // }}}
   
-  /// translates a size string into a size variable
-  /** if the string could not be parsed, the returned size is "(-1,-1)" */
-  Size translateSize(const std::string &size){
-    // {{{ open
-    // extended:
-    Size s = Size::fromString(size);
-    if(s!=Size(-1,-1)) return s;
-
-    unsigned int pos = size.find('x',0);
-    if(pos == string::npos || pos == 0 || pos == size.length()-1 ) return Size::null;
-    int w = atoi(size.c_str());
-    int h = atoi(size.c_str()+pos+1);
-    return Size(w,h);
+  /// puts a string representation of depth into the given stream
+  std::istream &operator>>(std::istream &s, depth &d){
+    char cs[6]={0};
+    for(int i=0;i<5;++i) s>>cs[i];
+    ICLASSERT(str(cs) == "depth");
+    std::fill(cs,cs+6,'\0');
+    s >> cs[0];
+    switch(cs[0]){
+      case '8': 
+        s >> cs[1];
+        ICLASSERT(str(cs) == "8u");
+        d = depth8u;
+        return s;
+      case '1':
+        s >> cs[1] >> cs[2];
+        ICLASSERT(str(cs) == "16s");
+        d = depth16s;
+        return s;
+      case '3':
+        s >> cs[1] >> cs[2];
+        if(cs[2] == 's'){
+          ICLASSERT(str(cs) == "32s");
+          d = depth32s;
+        }else{
+          ICLASSERT(str(cs) == "32f");
+          d = depth32f;
+        }
+        return s;
+      case '6':    
+        s >> cs[1] >> cs[2];
+        ICLASSERT(str(cs) == "64f");
+        d = depth64f;
+        return s;
+      default:
+        ERROR_LOG("error parsing depth-type");
+        return s;
+    }    
   }
-
-  // }}}
-
-  /// creates a rect string like "640x480@(5,10)"
-  std::string translateRect(const Rect &r){
-    // {{{ open
-
-    return translateSize(r.getSize())+string("@")+translatePoint(r.ul());
-  }
-
-  // }}}
   
-  /// translates a rect string into a Rect variable
-  /** if the string could not be parsed, the returned Rect is "(-1,-1)@-1x-1" */
-  Rect translateRect(const std::string &r){
-    // {{{ open
-
-    int pos = r.find('@',0);
-    return Rect(translatePoint(r.c_str()+pos+1),translateSize(r));
-  }
-
-  // }}}
-  
-  std::string translatePoint(const Point &p){
-    // {{{ open
-
-    char buf[100];
-    sprintf(buf,"(%d,%d)",p.x,p.y);
-    return buf;
-  }
-
-  // }}}
 
 
-  Point translatePoint(const std::string &p){
-    // {{{ open
-
-    unsigned int pos = p.find(',',0);
-    if(pos == string::npos || pos == 0 || pos == p.length()-1 ||
-       p.find('(',0) != 0 || p.find(')',0) != p.length()-1  )   return Point::null;
-    int x = atoi(p.c_str()+1);
-    int y = atoi(p.c_str()+pos+1);
-    return Point(x,y);
-  }
-
-  // }}}
 
   ImgBase *ensureDepth(ImgBase **ppoImage, depth d){
     // {{{ open

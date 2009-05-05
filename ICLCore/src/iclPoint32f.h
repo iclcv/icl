@@ -85,6 +85,13 @@ namespace icl{
     }
     
   };
+
+  /// ostream operator (x,y)
+  std::ostream &operator<<(std::ostream &s, const Point32f &p);
+  
+  /// istream operator
+  std::istream &operator>>(std::istream &s, Point32f &p);
+
   
 } // namespace icl
 

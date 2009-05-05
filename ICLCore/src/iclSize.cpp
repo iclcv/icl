@@ -1,5 +1,7 @@
 #include <iclSize.h>
 #include <map>
+#include <iclStringUtils.h>
+#include <iclMacros.h>
 
 namespace icl{
   const Size Size::null(0,0);
@@ -37,7 +39,7 @@ namespace icl{
   const Size Size::PAL(768,576);
   const Size Size::NTSC(640,480);
 
-  const Size &Size::fromString(const std::string &name){
+  void Size::fromString(const std::string &name, Size &size){
     static const Size neg1(-1,-1);
     static std::map<std::string,const Size*> m;
     static bool first = true;
@@ -54,7 +56,31 @@ namespace icl{
 #undef A      
     }
     std::map<std::string,const Size*>::iterator it = m.find(name);
-    if(it!=m.end()) return *it->second;
-    else return neg1;
+    if(it!=m.end()){
+      size = *it->second;
+      return;
+    }
+    
+    try{
+      size = parse<Size>(name);
+    }catch(...){
+      ERROR_LOG("unable to parse size-string (returning -1x-1");
+      size = Size(-1,-1);
+    }
   }
+
+  std::ostream &operator<<(std::ostream &s, const Size &size){
+    return s << size.width << 'x' << size.height;
+  }
+  
+  std::istream &operator>>(std::istream &s, Size &size){
+    char c;
+    return s >> size.width >> c >> size.height;
+  }
+
+  Size::Size(const std::string &name){
+    fromString(name,*this);
+  }
+  
+
 }

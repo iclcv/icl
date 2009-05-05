@@ -102,16 +102,16 @@ namespace icl{
   /** URand obeject can be used like 'normal double values'. Each time
       some other variable is assigned by it, it returns a random value.
       By this means, e.g. STL-containers can be filled/created with random numbers
-      <code>
+      \code
       std::vector<double> foo(100,URand()); 
       std::fill(foo.begin(),foo.end(),URand(0,42));
-      </code>
+      \endcode
       But do not try to fill an Image with random numbers like this:
-      <code>
+      \code
       Img64f image(Size::VGA,1);
       image.clearAllChannels(URand());
-      </code>
-      Here: URand is only evaluaget at the function interface, so the 
+      \endcode
+      Here: URand is only evaluatet at the function interface, so the 
       image is filled with a single random value;
    */
   class URand{
