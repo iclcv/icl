@@ -2,12 +2,13 @@
 #include <iclWarpOp.h>
 #include <algorithm>
 #include <cstring>
+#include <iclStringUtils.h>
 
 using namespace std;
 
 namespace icl{
 
-  namespace{
+  namespace grabber{
     string toStr(double val){
       // {{{ open
 
@@ -35,6 +36,7 @@ namespace icl{
 
     // }}}
   }
+  using namespace grabber;
 
   Grabber::~Grabber() { 
     ICL_DELETE( m_poImage );
@@ -54,40 +56,44 @@ namespace icl{
 
   string Grabber::translateSteppingRange(const SteppingRange<double>& range){
     // {{{ open
-
-    static const string begin("[");
-    return begin+toStr(range.minVal)+","+toStr(range.maxVal)+"]:"+toStr(range.stepping);
+    return str(range);
+    /*
+        static const string begin("[");
+        return begin+toStr(range.minVal)+","+toStr(range.maxVal)+"]:"+toStr(range.stepping);
+    */
   }
 
   // }}}
   
   SteppingRange<double> Grabber::translateSteppingRange(const string &rangeStr){
     // {{{ open
-
-    const char *str = rangeStr.c_str();  
-    if(*str++ != '['){
-      ERROR_LOG("syntax error: " << rangeStr);
-      return SteppingRange<double>();
-    }
-    char *str2 = 0;
-    double minVal = strtod(str,&str2);
-    if(*str2++ != ','){
-      ERROR_LOG("syntax error: " << rangeStr);
-      return SteppingRange<double>();
-    }
-    str = str2;
-    double maxVal = strtod(str,&str2);
-    if(*str2++ != ']'){
-      ERROR_LOG("syntax error: " << rangeStr);
-      return SteppingRange<double>();
-    }
-    if(*str2++ != ':'){
-      ERROR_LOG("syntax error: " << rangeStr);
-      return SteppingRange<double>();
-    }
-    str = str2;
-    double stepping = strtod(str,&str2);
-    return SteppingRange<double>(minVal,maxVal,stepping);
+    return parse<SteppingRange<double> >(rangeStr);
+    /*
+        const char *str = rangeStr.c_str();  
+        if(*str++ != '['){
+        ERROR_LOG("syntax error: " << rangeStr);
+        return SteppingRange<double>();
+        }
+        char *str2 = 0;
+        double minVal = strtod(str,&str2);
+        if(*str2++ != ','){
+        ERROR_LOG("syntax error: " << rangeStr);
+        return SteppingRange<double>();
+        }
+        str = str2;
+        double maxVal = strtod(str,&str2);
+        if(*str2++ != ']'){
+        ERROR_LOG("syntax error: " << rangeStr);
+        return SteppingRange<double>();
+        }
+        if(*str2++ != ':'){
+        ERROR_LOG("syntax error: " << rangeStr);
+        return SteppingRange<double>();
+        }
+        str = str2;
+        double stepping = strtod(str,&str2);
+        return SteppingRange<double>(minVal,maxVal,stepping);
+    */
   }
 
   // }}}
@@ -97,11 +103,11 @@ namespace icl{
 
     unsigned int s = doubleVec.size();
     if(!s) return "{}";
-    string str = "{";
+    string stri = "{";
     for(unsigned int i=0;i<s-1;i++){
-      str+=toStrComma(doubleVec[i]);
+      stri+=toStrComma(doubleVec[i]);
     }
-    return str+toStr(doubleVec[doubleVec.size()-1])+"}";
+    return stri+grabber::toStr(doubleVec[doubleVec.size()-1])+"}";
   }
 
   // }}}

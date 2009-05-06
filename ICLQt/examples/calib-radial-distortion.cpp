@@ -365,7 +365,7 @@ void init(){
   controls << "image[@maxsize=100x2@label=state@handle=state]";
   controls << "combo(!color,gray,thresh,morph,warp,warp-field,warp-map)[@out=vis@label=visualization]";
   controls << "togglebutton(off,on)[@out=grab-loop-val@handle=grab-loop@label=grab loop]";
-  controls << "fslider(1.6,2.5,1.9)[@out=min-form-factor@label=roundness]";
+  controls << "fslider(1.0,2.0,1.2)[@out=min-form-factor@label=roundness]";
   controls << "button(add)[@handle=add]";
   controls << "button(optimize)[@handle=optimize]";
   controls << "button(save)[@handle=save]";
