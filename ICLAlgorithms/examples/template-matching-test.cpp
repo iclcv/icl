@@ -1,17 +1,18 @@
 #include <iclUsefulFunctions.h>
 #include <iclQuick.h>
 #include <iclProgArg.h>
+#include <iclStringUtils.h>
 
 int main(int n, char **ppc){
   //  640x480@(5,10)
-  pa_explain("-roi","specify template roi like 640x480@(5,10)");
+  pa_explain("-roi","specify template roi like (X,Y)WIDTHxHEIGHT");
   pa_explain("-s","specify significance level range [0,1]");
   pa_init(n,ppc,"-roi(1) -s(1)");
   
   Img8u image = cvt8u(create("parrot"));
   image.scale(Size(640,480));
   
-  Rect roi = translateRect(pa_subarg<string>("-roi",0,"100x120@(200,400)"));
+  Rect roi = parse<Rect>(pa_subarg<string>("-roi",0,"(200,400)100x120"));
   roi &= image.getImageRect();
   
   image.setROI(roi);

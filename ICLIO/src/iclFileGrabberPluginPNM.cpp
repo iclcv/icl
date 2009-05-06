@@ -47,7 +47,7 @@ namespace icl{
       string sKey = ts[1];
     
       if (sKey == "NumFeatures" || sKey == "NumImages") {
-        oInfo.imageCount = ti(ts[2]);
+        oInfo.imageCount = parse<int>(ts[2]);
         if(!oInfo.imageCount) throw InvalidFileFormatException();
         oInfo.channelCount *= oInfo.imageCount;
       } else if (sKey == "ROI") {
@@ -55,12 +55,12 @@ namespace icl{
         continue;
       } else if (sKey == "ImageDepth") {
         if (!bIsICL) continue; // ignore image depth for all formats but ICL
-        oInfo.imageDepth = translateDepth( ts[2] );
+        oInfo.imageDepth = parse<depth>( ts[2] );
         continue;
       } else if (sKey == "Format") {
-        oInfo.imageFormat = translateFormat(ts[2]);
+        oInfo.imageFormat = parse<format>(ts[2]);
       } else if (sKey == "TimeStamp") {
-        oInfo.time = Time::microSeconds(tl(ts[2]));
+        oInfo.time = parse<Time>(ts[2]);
         continue;
       }
       if(getChannelsOfFormat(oInfo.imageFormat) != oInfo.channelCount){

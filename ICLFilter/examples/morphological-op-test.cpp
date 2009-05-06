@@ -1,5 +1,6 @@
 #include <iclQuick.h>
 #include <iclMorphologicalOp.h>
+#include <iclStringUtils.h>
 
 int main(){
   Img8u image = cvt8u(thresh(gray(scale(create("parrot"),280,400)),128));
@@ -60,13 +61,13 @@ int main(){
     mo.apply(&imageG,&dstG);
     mo.apply(&imageC,&dstC);
     if(i<5){
-      result1 = (result1,X,label(cvt(dst),ns[i]+translateSize(dst->getROISize())));
-      result1G = (result1G,X,label(cvt(dstG),ns[i]+translateSize(dst->getROISize())));
-      result1C = (result1C,X,label(cvt(dstC),ns[i]+translateSize(dst->getROISize())));
+      result1 = (result1,X,label(cvt(dst),ns[i]+str(dst->getROISize())));
+      result1G = (result1G,X,label(cvt(dstG),ns[i]+str(dst->getROISize())));
+      result1C = (result1C,X,label(cvt(dstC),ns[i]+str(dst->getROISize())));
     }else{
-      result2 = (result2,X,label(cvt(dst),ns[i]+translateSize(dst->getROISize())));
-      result2G = (result2G,X,label(cvt(dstG),ns[i]+translateSize(dst->getROISize())));
-      result2C = (result2C,X,label(cvt(dstC),ns[i]+translateSize(dst->getROISize())));
+      result2 = (result2,X,label(cvt(dst),ns[i]+str(dst->getROISize())));
+      result2G = (result2G,X,label(cvt(dstG),ns[i]+str(dst->getROISize())));
+      result2C = (result2C,X,label(cvt(dstC),ns[i]+str(dst->getROISize())));
     }
     
     ICL_DELETE( dst );

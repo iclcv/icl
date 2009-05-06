@@ -524,7 +524,7 @@ void save_setparams(int device){
     // {{{ open
 
     if(size != Size(160,120) && size != Size(320,240) && size != Size(640,480)){
-      ERROR_LOG("size "<< translateSize(size) <<" is not supported ");
+      ERROR_LOG("size "<< size <<" is not supported ");
       return false;
     }
     return init(size,m_fFps,m_iDevice);
@@ -569,7 +569,7 @@ void save_setparams(int device){
   
   string PWCGrabberImpl::getValue(const std::string &name){
     if(name == "size"){
-      return translateSize(Size(m_iWidth,m_iHeight));
+      return str(Size(m_iWidth,m_iHeight));
     }else if(name == "gain"){
       unsigned int g = 0;
       PWC_DEBUG_CALL_STR(ioctl(usbvflg_fd[m_iDevice], VIDIOCPWCGAGC, &g), "cannot get PWC gain");
@@ -634,7 +634,7 @@ void save_setparams(int device){
   void PWCGrabberImpl::setProperty(const string &property, const string &value){
     // {{{ open
     if(property == "size"){
-      Size newSize = translateSize(value);
+      Size newSize = parse<Size>(value);
       setGrabbingSize(newSize);
     }else if(property == "format"){
       if(value != "YUV 4-2-0 planar"){

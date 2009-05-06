@@ -5,6 +5,7 @@
 #include <iclFileWriter.h>
 #include <QPushButton>
 #include <iclProgArg.h>
+#include <iclStringUtils.h>
 
 GUI gui("vbox");
 Size size;
@@ -99,7 +100,7 @@ int main(int n, char **ppc){
   pa_explain("-size","image size");
   
   pa_init(n,ppc,"-size(1)");
-  size = translateSize(pa_subarg<string>("-size",0,"640x480"));
+  size = parse<Size>(pa_subarg<string>("-size",0,"640x480"));
   
   init();
 

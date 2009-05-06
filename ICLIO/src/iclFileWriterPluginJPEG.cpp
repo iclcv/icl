@@ -28,7 +28,7 @@ namespace icl{
     format fmt = image->getFormat();
 
     if(fmt != formatGray && fmt != formatRGB && fmt != formatYUV){
-      throw ICLException (translateFormat (fmt)+" not supported by jpeg");
+      throw ICLException (str(fmt)+" not supported by jpeg");
     }
     
     Mutex::Locker _locker(s_oBufferImageMutex);
@@ -54,7 +54,7 @@ namespace icl{
       case formatYUV:  jCS = JCS_YCbCr; break;
       case formatRGB:  jCS = JCS_RGB; break;
       default: 
-        throw ICLException (translateFormat (poSrc->getFormat()) + 
+        throw ICLException (str(poSrc->getFormat()) + 
                             string (" not supported by jpeg"));
     }
     

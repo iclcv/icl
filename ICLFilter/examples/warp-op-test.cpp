@@ -26,7 +26,7 @@ void run(){
 
   grabber.setDesiredSize(Size::VGA);
   grabber.setDesiredFormat(formatRGB);
-  grabber.setDesiredDepth(translateDepth(d));
+  grabber.setDesiredDepth(parse<depth>(d));
 
   if(warp){
     static WarpOp op(load(pa_subarg<std::string>("-w",0,"no-input-defined")));

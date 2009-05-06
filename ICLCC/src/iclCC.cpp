@@ -910,25 +910,25 @@ namespace icl{
       }
       case ccUnavailable:{
         ERROR_LOG("no color conversion [" << 
-                  translateFormat(src->getFormat()) << 
+                  src->getFormat() << 
                   "-->" << 
-                  translateFormat(dst->getFormat()) << 
+                  dst->getFormat() << 
                   "] (depth:" <<
-                  translateDepth(src->getDepth()) <<
+                  src->getDepth() <<
                   "-->" << 
-                  translateDepth(dst->getDepth()) <<
+                  dst->getDepth() <<
                   ") available!" );
         break;
       }
       case ccImpossible:{
         ERROR_LOG("color conversion [" << 
-                  translateFormat(src->getFormat()) << 
+                  src->getFormat() << 
                   "-->" << 
-                  translateFormat(dst->getFormat()) << 
+                  dst->getFormat() << 
                   "] (depth:" <<
-                  translateDepth(src->getDepth()) <<
+                  src->getDepth() <<
                   "-->" << 
-                  translateDepth(dst->getDepth()) <<
+                  dst->getDepth() <<
                   ") impossible!" );
         break;
       }

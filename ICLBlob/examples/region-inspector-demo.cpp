@@ -62,7 +62,7 @@ void run(){
   static GenericGrabber g(pa_subarg<std::string>("-d",0,"pwc"),
                           pa_subarg<std::string>("-d",0,"pwc")+"="+
                           pa_subarg<std::string>("-d",1,"0"));
-  g.setDesiredSize(translateSize(pa_subarg<string>("-size",0,"640x480")));
+  g.setDesiredSize(parse<Size>(pa_subarg<string>("-size",0,"640x480")));
   g.setIgnoreDesiredParams(false);
   g.setDesiredFormat(formatGray);
 
@@ -109,7 +109,7 @@ void run(){
         d.linestrip(boundary);
         
         valHandle = r.getVal();
-        cogHandle = translatePoint(r.getCOG());
+        cogHandle = str(r.getCOG());
         sizeHandle = r.getSize();
         ffHandle = r.getFormFactor();
         evratioHandle = r.getPCAInfo().len2/r.getPCAInfo().len1;

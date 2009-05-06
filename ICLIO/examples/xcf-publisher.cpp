@@ -35,14 +35,14 @@ const ImgBase *grab_image(){
   bool first = true; 
   if(first){
     first = false;
-    grabber.setDesiredSize(translateSize(pa_subarg<std::string>("-size",0,"VGA")));
+    grabber.setDesiredSize(parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
     grabber.setIgnoreDesiredParams(false);
     if(pa_defined("-dist")){
       grabber.enableDistortion(DIST_FROM_PROGARG("-dist"),
-                               translateSize(pa_subarg<std::string>("-size",0,"VGA")));
+                               parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
     }
   }
-  const ImgBase *image = grabber.grab();
+  //  const ImgBase *image = grabber.grab();
   return grabber.grab();
 }
 

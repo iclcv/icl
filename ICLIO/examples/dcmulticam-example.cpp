@@ -30,7 +30,7 @@ void init(){
   
   w = *gui.getValue<ImageHandle>("image");    
   
-  static Size size = translateSize(pa_subarg<std::string>("-size",0,"VGA"));
+  static Size size = parse<Size>(pa_subarg<std::string>("-size",0,"VGA"));
   
   for(unsigned int i=0;i<devs.size();i++){
     gs.push_back(new DCGrabber(devs[i]));
@@ -59,7 +59,7 @@ struct CleanUp{
 
 void run(){
     static FPSHandle &fps = gui.getValue<FPSHandle>("fps");
-    static Size size = translateSize(pa_subarg<std::string>("-size",0,"VGA"));
+    static Size size = parse<Size>(pa_subarg<std::string>("-size",0,"VGA"));
     static bool write = pa_defined("-output");
     static std::string prfx = pa_subarg<std::string>("-o",0,"/tmp/images/");
     

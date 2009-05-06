@@ -10,7 +10,7 @@ int main(){
     ImgBase *dst = 0;
     MedianOp(s[i]).apply(&image,&dst);
     
-    show(label(cvt(dst),std::string("mask-size:")+translateSize(s[i])));
+    show(label(cvt(dst),std::string("mask-size:")+str(s[i])));
     delete dst;
   }
 }

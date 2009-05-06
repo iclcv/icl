@@ -6,11 +6,7 @@
 
 #include <QComboBox>
 #include <QHBoxLayout>
-#include <string>
-
-
-
-using namespace std;
+#include <iclStringUtils.h>
 
 namespace icl{
   
@@ -32,11 +28,11 @@ namespace icl{
     m_poSizeCombo->addItem("1600x1200");
     
     for(format f=formatGray; f<=formatLast; f=(format)(f+1)){
-      m_poFormatCombo->addItem(translateFormat(f).c_str());
+      m_poFormatCombo->addItem(str(f).c_str());
     }
     
     for(icl::depth d=icl::depth8u; d<=depthLast; d=(icl::depth)(d+1)){
-      m_poDepthCombo->addItem(translateDepth(d).c_str());
+      m_poDepthCombo->addItem(str(d).c_str());
     }
     
     m_poLayout->addWidget(new BorderBox("size",m_poSizeCombo,this));
@@ -120,7 +116,7 @@ namespace icl{
       m_poSizeCombo->setCurrentIndex(sizeIdx);
     }
     
-    QString depthText = translateDepth((icl::depth)dth).c_str();
+    QString depthText = str((icl::depth)dth).c_str();
     int depthIdx = getIndex(depthText,m_poDepthCombo);
     if(depthIdx == -1){
       ERROR_LOG("invalid depth \"" << depthText.toLatin1().data() << "\""); 
@@ -128,7 +124,7 @@ namespace icl{
       m_poDepthCombo->setCurrentIndex(depthIdx);
     }
 
-    QString formatText = translateFormat((format)fmt).c_str();
+    QString formatText = str((format)fmt).c_str();
     int formatIdx = getIndex(formatText,m_poFormatCombo);
     if(formatIdx == -1){
       ERROR_LOG("invalid format \"" << formatText.toLatin1().data() << "\""); 
@@ -146,13 +142,16 @@ namespace icl{
     m_iHeight = s.height;
     emit somethingChanged(m_iWidth,m_iHeight, m_iDepth, m_iFormat);
   }
+  
   void ImgParamWidget::formatChanged(const QString &val){
-    format fmt = translateFormat(string(val.toLatin1().data()));
+    format fmt = parse<format>(str(val.toLatin1().data()));
     m_iFormat = (int)fmt;
     emit somethingChanged(m_iWidth,m_iHeight, m_iDepth, m_iFormat);
   }
+  
   void ImgParamWidget::depthChanged(const QString &val){
-    icl::depth d = translateDepth(string(val.toLatin1().data()));
+    std::string x = str(val.toLatin1().data());
+    icl::depth d = parse<icl::depth>(x);
     m_iDepth = (int)d;
     emit somethingChanged(m_iWidth,m_iHeight, m_iDepth, m_iFormat);
   }

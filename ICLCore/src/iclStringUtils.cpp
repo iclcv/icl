@@ -7,6 +7,38 @@ using std::vector;
 
 namespace icl{
 
+  std::string toStr(int i, const char* format, char *buf){
+    if(buf){
+      sprintf(buf,format,i);
+      return buf;
+    }else{
+      char buf2[32];
+      sprintf(buf2,format,i);
+      return buf2;
+    }
+  }
+  
+  std::string toStr(double d, const char* format, char *buf){
+    if(buf){
+      sprintf(buf,format,d);
+      return buf;
+    }else{
+      char buf2[64];
+      snprintf(buf2,64,format,d);
+      return buf2;
+    }
+  }
+  
+  std::string toStr(int i, char *buf){
+    return toStr(i,"%d",buf);
+  }
+  
+  std::string toStr(double d, char *buf){
+    return toStr(d,"%f",buf);
+  }
+ 
+
+
   /** ICL wrapper for the C-style tolower function \ingroup STRUTILS */
   inline static char toLowerX(const char &c){
     return tolower(c);

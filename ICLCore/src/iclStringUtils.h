@@ -23,7 +23,7 @@ namespace icl{
   /// compability function that reads a datatype instance from a stream \ingroup STRUTILS
   /** This must be used, to ensure, icl8u data is read as (int) rather as char*/
   template<class T>
-  inline std::istream &icl_from_stream(std::istream &s, T t){
+  inline std::istream &icl_from_stream(std::istream &s, T &t){
     return s >> t;
   }
 
@@ -33,7 +33,7 @@ namespace icl{
     return s << (int)t;
   }
 
-  template<> inline std::istream &icl_from_stream(std::istream &s, icl8u t){
+  template<> inline std::istream &icl_from_stream(std::istream &s, icl8u &t){
     int tmp;
     s >> tmp;
     t = (icl8u)tmp;
@@ -43,16 +43,16 @@ namespace icl{
 
   
   /// inplace lower case conversion \ingroup STRUTILS
-  inline std::string &toLowerI(std::string &s);
+  std::string &toLowerI(std::string &s);
   
   /// inplace upper case conversion \ingroup STRUTILS
-  inline std::string &toUpperI(std::string &s);
+  std::string &toUpperI(std::string &s);
 
   /// lower case conversion \ingroup STRUTILS
-  inline std::string toLower(const std::string &s);
+  std::string toLower(const std::string &s);
   
   /// upper case conversion \ingroup STRUTILS
-  inline std::string toUpper(const std::string &s);
+  std::string toUpper(const std::string &s);
 
   /// tokenizes a string with given delimiters (internally using a temporary StrTok instance) \ingroup STRUTILS
   std::vector<std::string> tok(const std::string &s, const std::string &delims=" ");
@@ -119,7 +119,7 @@ namespace icl{
   template<class T>
   std::string cat(const std::vector<T> &v, const std::string &delim = ","){
     std::ostringstream s;
-    std::copy(v.begin(),v.end(),std::ostream_iterator<T>(s,delim));
+    std::copy(v.begin(),v.end(),std::ostream_iterator<T>(s,delim.c_str()));
     return s.str();
   }
 
@@ -155,19 +155,19 @@ namespace icl{
 
   
   /// cast a string to an icl8u (parse) \ingroup STRUTILS
-  inline icl8u to8u(const std::string &s);
+  icl8u to8u(const std::string &s);
 
   /// cast a string to an icl16s (parse) \ingroup STRUTILS
-  inline icl16s to16s(const std::string &s);
+  icl16s to16s(const std::string &s);
 
   /// cast a string to an icl32ss (parse) \ingroup STRUTILS
-  inline icl32s to32s(const std::string &s);
+  icl32s to32s(const std::string &s);
 
   /// cast a string to an icl32f (parse) \ingroup STRUTILS
-  inline icl32f to32f(const std::string &s);
+  icl32f to32f(const std::string &s);
 
   /// cast a string to an icl64f (parse) \ingroup STRUTILS
-  inline icl64f to64f(const std::string &s);
+  icl64f to64f(const std::string &s);
   
   /// parse a vector of strings into a vector of T's \ingroup STRUTILS
   template<class T>
@@ -193,3 +193,5 @@ namespace icl{
 }
 
 #endif
+
+

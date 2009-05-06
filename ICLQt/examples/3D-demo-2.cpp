@@ -10,7 +10,7 @@ Img8u faces[6];
 ImgBase *facesB[6];
 
 void init(){
-  size = translateSize(pa_subarg<std::string>("-size",0,"VGA"));
+  size = Size(pa_subarg<std::string>("-size",0,"VGA"));
   
   FileGrabber g(pa_subarg<std::string>("-input",0,"no_files_yspecified"));
 

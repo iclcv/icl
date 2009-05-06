@@ -29,10 +29,10 @@ int main(int n, char **ppc){
   
   mode = pa_subarg("-mode",0,std::string("DC1394_VIDEO_MODE_640x480_MONO8@DC1394_FRAMERATE_30"));
   
-  size = translateSize(pa_subarg("-size",0,std::string("640x480")));
+  size = parse<Size>(pa_subarg("-size",0,std::string("640x480")));
   if(size == Size::null) size = Size(640,480);
   
-  fmt = translateFormat(pa_subarg("-format",0,std::string("rgb")));
+  fmt = parse<format>(pa_subarg("-format",0,std::string("formatRGB")));
   if(fmt == formatMatrix) fmt = formatGray;
   
   int i = USECAM; 

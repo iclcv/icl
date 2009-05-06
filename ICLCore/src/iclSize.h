@@ -131,7 +131,7 @@ namespace icl {
     inline Size(int width,int height){ this->width = width; this->height = height; }
 
     /// creates a size from given string (e.g. VGA, CIF, or 1024x768)
-    Size(const std::string &name);
+    explicit Size(const std::string &name);
 
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }
@@ -168,17 +168,13 @@ namespace icl {
     
     /// reutrns width*height
     int getDim() const {return width*height;}
-    
-    private:
-    /// creates a size from the given size string (e.g. "VGA" -> Size(640,480) )
-    void fromString(const std::string &name, Size &size);
-    
   };
 
   /// ostream operator WIDTHxHEIGHT
   std::ostream &operator<<(std::ostream &s, const Size &s);
   
-  /// istream operator
+  /// istream operator parses a size from a string
+  /** also called in Size::Size(const std::string&)**/
   std::istream &operator>>(std::istream &s, Size &s);
   
 }// namespace icl

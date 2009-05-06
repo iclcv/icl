@@ -144,7 +144,7 @@ namespace icl{
   }
   
   ConfigFileGUI::ConfigFileGUI(const ConfigFile &config, QWidget *parent) throw(ICLException):
-    GUI("hsplit[@handle=parent]",parent),m_tree(new QTreeWidget),m_own(false){
+    GUI("hsplit[@handle=parent]",parent),m_own(false),m_tree(new QTreeWidget){
     
     m_tree->setColumnCount(3);
     loadConfig(config);
@@ -430,10 +430,11 @@ namespace icl{
 
   template<> bool update_entry_templ<std::string>(const std::string &key,const std::string &val,ConfigFile &cfg){
     cfg.set<std::string>(key,val);
+    return true;
   }
 
   Size toSize(const QString &val, bool *ok){
-    Size s = Size::fromString(val.toLatin1().data());
+    Size s(val.toLatin1().data());
     if(s != Size(-1,-1)){
       *ok = true;
       return s;

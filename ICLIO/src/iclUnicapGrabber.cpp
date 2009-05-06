@@ -6,7 +6,7 @@
 #include <iclConverter.h>
 #include <iclCC.h>
 #include "iclUnicapDevice.h"
-#include <iclStrTok.h>
+#include <iclStringUtils.h>
 
 #include "iclUnicapGrabEngine.h"
 #include "iclUnicapConvertEngine.h"
@@ -138,13 +138,15 @@ namespace icl{
     // }}}
     string sizeVecToStr(const vector<Size> &v){
       // {{{ open
-
       if(!v.size()) return "{}";
-      string s = "{";
+      std::ostringstream os;
+
+      os << '{';
       for(unsigned int i=0;i<v.size()-1;i++){
-        s+=string("\"")+translateSize(v[i])+"\",";
+        os << '"' << v[i] << '"' << ",";
       }      
-      return s+string("\"")+translateSize(v[v.size()-1])+"\"}";
+      os << '"' << v.back() << '"' << '}';
+      return os.str();
     }
 
     // }}}
@@ -160,8 +162,7 @@ namespace icl{
     m_oMutex.lock();
     if(p == "size"){
       // {{{ open
-
-      vector<string> ts = StrTok(value,"x").allTokens();
+      vector<string> ts = tok(value,"x");
       if(ts.size() != 2){
         ERROR_LOG("unable to set parameter size to \""<<value<<"\" (expected syntax WxH)");
         m_oMutex.unlock();
@@ -191,7 +192,7 @@ namespace icl{
     }else if(p == "size&format"){
       // {{{ open
 
-      vector<string> tmp = StrTok(value,"&").allTokens();
+      vector<string> tmp = tok(value,"&");
       if(tmp.size() != 2){
         ERROR_LOG("unable to set parameter format&size to \""<<value<<"\" (expected syntax WxH&FORMAT_ID)");
         m_oMutex.unlock();
@@ -200,7 +201,7 @@ namespace icl{
 
       string size = tmp[0];
       string fmt = tmp[1];
-      vector<string> ts = StrTok(size,"x").allTokens();
+      vector<string> ts = tok(size,"x");
       if(ts.size() != 2){
         ERROR_LOG("unable to set size of parameter format&size to \""<<size<<"\" (expected syntax WxH)");
         m_oMutex.unlock();
@@ -389,7 +390,7 @@ namespace icl{
         Size others[] = {fmt.getSize(),fmt.getMinSize(),fmt.getMaxSize()};
         for(int i=0;i<3;i++){
           if(others[i] != Size::null && others[i] != Size(-1,-1)){
-            return string("{\"")+translateSize(others[i])+"\"}";
+            return string("{\"")+str(others[i])+"\"}";
           }
         }
         return "{}";
@@ -417,7 +418,7 @@ namespace icl{
         vector<Size> sizes = fmts[i].getPossibleSizes();
         if(sizes.size()){
           for(unsigned int j=0;j<sizes.size();j++){
-            s+=string("\"")+fmts[i].getID()+"&"+translateSize(sizes[j])+"\"";
+            s+=string("\"")+fmts[i].getID()+"&"+str(sizes[j])+"\"";
             if(i==fmts.size()-1 && j == sizes.size()-1){
               s+="}";
             }else{
@@ -428,7 +429,7 @@ namespace icl{
           Size others[] = {fmts[i].getSize(),fmts[i].getMinSize(),fmts[i].getMaxSize()};
           for(int j=0;j<3;j++){
             if(others[j] != Size::null && others[j] != Size(-1,-1)){
-              s+=string("\"")+fmts[i].getID()+"&"+translateSize(others[j])+"\"";
+              s+=string("\"")+fmts[i].getID()+"&"+str(others[j])+"\"";
               break;
             }
           }
@@ -530,11 +531,11 @@ namespace icl{
       }
     }
     if(name == "size"){
-      return translateSize(m_oDevice.getCurrentSize());
+      return str(m_oDevice.getCurrentSize());
     }else if(name == "format"){
       return m_oDevice.getFormatID();
     }else if(name == "size&format"){
-      return translateSize(m_oDevice.getCurrentSize())+"&"+m_oDevice.getFormatID();
+      return str(m_oDevice.getCurrentSize())+"&"+m_oDevice.getFormatID();
     }else if(name == "dma"){
       if( m_bUseDMA ){
         return "on";
@@ -736,8 +737,7 @@ namespace icl{
       // {{{ open
 
       dst.clear();
-      StrTok t(filter,"\n");
-      const std::vector<string> &toks = t.allTokens();
+      const std::vector<string> toks = tok(filter,"\n");
       vector<ParamFilter*> filters;
       for(unsigned int i=0;i<toks.size();++i){
         static const char* apcOps[] = {"==","~=","*="};

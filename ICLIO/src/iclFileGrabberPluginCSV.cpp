@@ -90,11 +90,11 @@ namespace icl{
           ERROR_LOG("Invalid ICL-CSV filen name appendix in \"" << filename << "\"[CODE 2]"); 
           break;
         }
-        oInfo.imageDepth = translateDepth(ts[1]);
-        oInfo.imageFormat = translateFormat(ts[2]);
-        oInfo.size = translateSize(whc[0]+"x"+whc[1]);
+        oInfo.imageDepth = parse<depth>(ts[1]);
+        oInfo.imageFormat = parse<format>(ts[2]);
+        oInfo.size = parse<Size>(whc[0]+"x"+whc[1]);
         oInfo.roi = Rect(Point::null,oInfo.size);
-        oInfo.channelCount = atoi(whc[2].c_str());
+        oInfo.channelCount = parse<int>(whc[2]);
         oInfo.time = Time();
         break;
       }
@@ -109,10 +109,10 @@ namespace icl{
           oInfo.roi = Rect(atoi(ts[2].c_str()),atoi(ts[3].c_str()),atoi(ts[4].c_str()),atoi(ts[5].c_str()));
           continue;
         } else if (ts[1] == "ImageDepth") {
-          oInfo.imageDepth = translateDepth( ts[2] );
+          oInfo.imageDepth = parse<depth>( ts[2] );
           continue;
         } else if (ts[1] == "Format") {
-          oInfo.imageFormat = translateFormat(ts[2]);
+          oInfo.imageFormat = parse<format>(ts[2]);
         } else if (ts[1] == "TimeStamp") {
           oInfo.time = Time::microSeconds(atoi(ts[2].c_str()));
           continue;

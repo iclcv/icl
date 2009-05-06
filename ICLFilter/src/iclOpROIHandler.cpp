@@ -15,9 +15,10 @@ namespace icl {
       ICLASSERT_RETURN_VAL( dst->getChannels () == nChannels ,false);
       ICLASSERT_RETURN_VAL( dst->getFormat () == eFormat ,false);
       if(dst->getROISize() != roi.getSize()){
-        printf("ERROR_HERE!! dst->getROI() is %s  roi is %s \n",translateRect(dst->getROI()).c_str(),translateRect(roi).c_str());
+        ERROR_LOG("ROI size missmatch: given: "<< roi.getSize() 
+                  << "  destination: "<< dst->getROISize());
+        return false;
       }
-      ICLASSERT_RETURN_VAL( dst->getROISize () == roi.getSize(), false);
       
       dst->setTime(timestamp);
     } else {

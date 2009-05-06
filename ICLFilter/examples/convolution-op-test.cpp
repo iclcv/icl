@@ -74,8 +74,8 @@ void run(){
 
 
   
-  grabber.setDesiredSize(translateSize(srcSize.getSelectedItem()));
-  grabber.setDesiredDepth(translateDepth(srcDepth.getSelectedItem()));
+  grabber.setDesiredSize(parse<Size>(srcSize.getSelectedItem()));
+  grabber.setDesiredDepth(parse<depth>(srcDepth.getSelectedItem()));
   
   const ImgBase *grabbedImage = grabber.grab();
   Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage->getImageRect());

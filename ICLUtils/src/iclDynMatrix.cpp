@@ -261,10 +261,18 @@ namespace icl{
     char c;
     for(unsigned int i=0;i<m.rows();++i){
       s >> c; // trailing '|'
+      if ( (c >= '0') && (c <= '9') ){
+        s.unget();
+      }
       for(unsigned int j=0;j<m.cols();++j){
         icl_from_stream<T>(s,m(j,i));
+        s >> c;
+        if( c != ',') s.unget();
       }
       s >> c; // ending '|'
+      if ( (c >= '0') && (c <= '9') ){
+        s.unget();
+      }
     }
     return s;
   }

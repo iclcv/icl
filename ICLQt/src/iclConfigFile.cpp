@@ -99,12 +99,12 @@ namespace icl{
     SPECIALIZE(float,to32f(value),str(val));
     SPECIALIZE(double,to64f(value),str(val));
     SPECIALIZE(string,value,val);
-    SPECIALIZE(Size,translateSize(value),translateSize(val));
-    SPECIALIZE(Point,translatePoint(value),translatePoint(val));
-    SPECIALIZE(Rect,translateRect(value),translateRect(val));
-    SPECIALIZE(Range32s,translateRange<int>(value),translateRange(val));
-    SPECIALIZE(Range32f,translateRange<float>(value),translateRange(val));
-    SPECIALIZE(Color,translateColor(value),translateColor(val));
+    SPECIALIZE(Size,parse<Size>(value),str(val));
+    SPECIALIZE(Point,parse<Point>(value),str(val));
+    SPECIALIZE(Rect,parse<Rect>(value),str(val));
+    SPECIALIZE(Range32s,parse<Range<int> >(value),str(val));
+    SPECIALIZE(Range32f,parse<Range<float> >(value),str(val));
+    SPECIALIZE(Color,color_from_string(value),str(val));
 #undef SPECIALIZE
 
     // }}}
@@ -180,7 +180,7 @@ namespace icl{
             dsPush(ds,key,typeStr,t.toText().data());
             if(e.hasAttribute("range")){
               std::string k = str("config.")+key.toLatin1().data();
-              cfg.setRestriction(k,ConfigFile::KeyRestriction(translateRange<double>(e.attribute("range").toLatin1().data())));
+              cfg.setRestriction(k,ConfigFile::KeyRestriction(parse<Range<double> >(e.attribute("range").toLatin1().data())));
             }else if(e.hasAttribute("values")){
               std::string k = str("config.")+key.toLatin1().data();
               std::string values = e.attribute("values").toLatin1().data();

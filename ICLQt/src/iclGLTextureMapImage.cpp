@@ -390,8 +390,8 @@ namespace icl{
       
       glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
       
-      depth d = getDepth<T>();
-      int depthIdx = (int)d;
+      //depth d = getDepth<T>();
+      //int depthIdx = (int)d;
       
       setPackAlignment(getDepth<T>(),m_iImageW);
       

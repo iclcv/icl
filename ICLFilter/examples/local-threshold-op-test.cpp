@@ -79,7 +79,7 @@ void update_zoom(Img8u &prevImage){
   Point p = zoomCenter;
   
   if(!prevImage.getImageRect().contains(p.x,p.y)) return;
-  static const Size zoomSize = translateSize(pa_subarg<string>("-zoomsize",0,"640x480"));
+  static const Size zoomSize = parse<Size>(pa_subarg<string>("-zoomsize",0,"640x480"));
   static Img8u zoomRegion(zoomSize,formatGray);
   prevImage.setROI(Rect(p.x-zoomSize.width/2,p.y-zoomSize.height/2,zoomSize.width,zoomSize.height) & prevImage.getImageRect());
 

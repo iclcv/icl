@@ -395,7 +395,9 @@ namespace icl{
     for(unsigned int i=0;i<m_oFMRF.size(); ++i){
       FMCreator &fmc = *(m_oFMRF[i].fmc);
       RegionFilter &rf = *(m_oFMRF[i].rf);
-      m_poRD->setRestrictions(rf.getSizeRange().castTo<unsigned int>(),rf.getValueRange().castTo<icl64f>());
+      
+      Range<unsigned int> sizeRange(rf.getSizeRange().minVal, rf.getSizeRange().maxVal);
+      m_poRD->setRestrictions(sizeRange,rf.getValueRange().castTo<icl64f>());
       FF factor( (float)(ims.width)/fmc.getSize().width,(float)(ims.height)/fmc.getSize().height);
       const vector<Region> &vecBD = m_poRD->detect(fmc.getFM(getImage(fmc.getSize(),fmc.getFormat(),image)));
       for(unsigned int i=0;i<vecBD.size();++i){

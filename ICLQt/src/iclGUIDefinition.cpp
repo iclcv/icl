@@ -1,6 +1,7 @@
 #include "iclGUIDefinition.h"
 #include "iclGUISyntaxErrorException.h"
 #include <iclSize.h>
+#include <iclStringUtils.h>
 #include <iclStrTok.h>
 #include <iclCore.h>
 #include <iclProxyLayout.h>
@@ -82,9 +83,9 @@ namespace icl{
         string s = t.nextToken();
         if(!s.find("out",0)) m_vecOutputs = StrTok(cutName(s),",").allTokens();
         else if(!s.find("inp",0)) m_vecInputs = StrTok(cutName(s),",").allTokens();  
-        else if(!s.find("size",0)) m_oSize = translateSize(cutName(s));
-        else if(!s.find("minsize",0)) m_oMinSize = translateSize(cutName(s));
-        else if(!s.find("maxsize",0)) m_oMaxSize = translateSize(cutName(s));
+        else if(!s.find("size",0)) m_oSize = parse<Size>(cutName(s));
+        else if(!s.find("minsize",0)) m_oMinSize = parse<Size>(cutName(s));
+        else if(!s.find("maxsize",0)) m_oMaxSize = parse<Size>(cutName(s));
         else if(!s.find("label",0)) m_sLabel = cutName(s);
         else if(!s.find("handle",0)) m_sHandle = cutName(s);
         else if(!s.find("margin",0)) m_iMargin = (int)abs(atoi(cutName(s).c_str()));
@@ -148,7 +149,7 @@ namespace icl{
     
     printf("GUI of type \"%s\" \n",m_sType.c_str());
     printf("label is \"%s\" \n",m_sLabel.c_str());
-    printf("size is \"%s\" \n",translateSize(m_oSize).c_str());
+    printf("size is \"%s\" \n",str(m_oSize).c_str());
     printf("params: \n");
     for(unsigned int i=0;i<m_vecParams.size();i++){
       printf("  nr %d: \"%s\" \n",i,m_vecParams[i].c_str());

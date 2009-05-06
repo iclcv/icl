@@ -1,7 +1,7 @@
 #include "iclColor.h"
 #include <map>
 #include <ctype.h>
-#include <algorithm>
+#include <iclStringUtils.h>
 
 namespace icl{
   
@@ -27,42 +27,22 @@ namespace icl{
         t["gray50"] = Color(50,50,50);
       }
     };
-    void to_lower2(char &c){
-      c = tolower(c);
-    }
   }
   
-  const Color &iclCreateColor(std::string str){
-    std::for_each(str.begin(),str.end(),to_lower2);
+  static const Color *create_named_color(std::string str){
+    toLowerI(str);
     static ColorMap cm;
     ColorMap::iterator it = cm.find(str);
-    if(it != cm.end()) return  it->second;
-    else{
-      static Color &black = cm["black"];
-      return black;
-    }  
+    if(it != cm.end()) return  &it->second;
+    else return 0;
   }
   
-
-  Color translateColor(const std::string &s){
-    if(s.length() < 2){
-      return Color(0,0,0);
-    }
-    Color color;
-    std::vector<icl8u> v = icl::parseVecStr<icl8u>(s.substr(1,s.length()-2),",");
-    std::copy(v.begin(),v.begin()+iclMin(3,(int)v.size()),color.data());
-    return color;
+  Color color_from_string(const std::string &name){
+    const Color *col = create_named_color(name);
+    if(col) return *col;
+    return parse<Color>(name);
   }
 
-  std::string translateColor(const Color &color){
-    std::ostringstream s; 
-    s << '(';
-    for(unsigned int i=0;i<color.dim()-1;++i){
-      s << (int)color[i] << ',';
-    }
-    s << (int)color[color.dim()-1] << ')';
-    return s.str();
-  }
-
+ 
  
 }

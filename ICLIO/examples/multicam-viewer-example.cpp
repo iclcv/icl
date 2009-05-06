@@ -70,7 +70,7 @@ int main(int n, char **ppc){
         infos.push_back(info);
         grabbers.push_back(new GenericGrabber(name,info));
         if(pa_defined("-size")){
-          grabbers.back()->setDesiredSize(translateSize(pa_subarg<std::string>("-size",0,"320x240")));
+          grabbers.back()->setDesiredSize(Size(pa_subarg<std::string>("-size",0,"VGA")));
         }
         numCams++;
       }      

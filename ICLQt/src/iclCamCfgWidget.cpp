@@ -169,7 +169,7 @@ namespace icl{
       for(unsigned int j=0;j<m_vecDCDeviceList.size();j++){
         if(useHintList && hints["dc"] != ""){
           int dev = to32s(hints["dc"]);
-          if(dev != j) continue;
+          if(dev != (int)j) continue;
         }
         QString name = QString("[DC]")+m_vecDCDeviceList[j].getUniqueStringIdentifier().c_str();
         m_poDeviceCombo->addItem(name);
@@ -198,7 +198,7 @@ namespace icl{
 
         if(useHintList && hints["pwc"] != ""){
           int dev = to32s(hints["pwc"]);
-          if(dev != j) continue;
+          if(dev != (int)j) continue;
         }
 
         QString name  = QString("[PWC] Philips 740 Webcam [device ")+QString::number(j)+"]";

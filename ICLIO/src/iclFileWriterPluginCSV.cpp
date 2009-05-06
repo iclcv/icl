@@ -20,27 +20,35 @@ namespace icl{
     //////////////////////////////////////////////////////////////////////
 
     if(s_bExtendFileName){
-      string newFileName = file.getDir()+
-                           file.getBaseName()+
-                           "-ICL:"+translateSize(image->getSize())+
-                           "x"+toStr(image->getChannels())+
-                           ":"+translateDepth(image->getDepth())+
-                           ":"+translateFormat(image->getFormat())+
-                           file.getSuffix();
-      file = File(newFileName);
+      std::ostringstream os;
+      os << file.getDir() << file.getBaseName() << "-ICL:" << image->getSize() << 'x'
+         << image->getChannels() << ':' <<image->getDepth() << ':' <<image->getFormat()
+         << file.getSuffix();
+      /*
+          string newFileName = file.getDir()+
+          file.getBaseName()+
+          "-ICL:"+translateSize(image->getSize())+
+          "x"+toStr(image->getChannels())+
+          ":"+translateDepth(image->getDepth())+
+          ":"+translateFormat(image->getFormat())+
+          file.getSuffix();
+      */
+      file = File(os.str());
     }
     
     file.open(File::writeText);
     
     if(!s_bExtendFileName){
+      std::ostringstream os;
       static const string H = "# ";
-      file.write(H+"Size "+str(image->getWidth())+" "+str(image->getHeight())+'\n');
-      file.write(H+"Channels "+str(image->getChannels())+'\n');
       Rect roi = image->getROI();
-      file.write(H+"ROI "+str(roi.x)+" "+str(roi.y)+" "+str(roi.width)+" "+str(roi.height)+'\n');
-      file.write(H+"Format "+translateFormat(image->getFormat())+'\n');
-      file.write(H+"ImageDepth "+translateDepth(image->getDepth())+'\n');
-      file.write(H+"TimeStamp "+ioutils::time2str(image->getTime().toMicroSeconds())+'\n');
+      os << H << "Size " << image->getWidth() << ' ' << image->getHeight() << std::endl
+         << H << "Channels " << image->getChannels() << std::endl
+         << H << "ROI" << roi.x << ' ' << roi.y << ' '  << roi.width << ' ' << roi.height << std::endl
+         << H << "Format " << image->getFormat() << std::endl
+         << H << "ImageDepth " << image->getDepth() << std::endl
+         << H << "TimeStamp " << image->getTime() << std::endl;
+      file << os.str();
     }
 
     //////////////////////////////////////////////////////////////////////

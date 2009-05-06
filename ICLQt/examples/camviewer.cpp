@@ -5,7 +5,7 @@ GUI gui;
 FPSLimiter *fpsLimiter = 0;
 void run(){
   static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredSize(translateSize(pa_subarg<std::string>("-size",0,"VGA")));
+  g.setDesiredSize(parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
   if(pa_defined("-dist")){
     g.enableDistortion(DIST_FROM_PROGARG("-dist"),g.getDesiredSize());
   }

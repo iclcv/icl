@@ -39,11 +39,21 @@ namespace icl{
 
   /// Parses a color string representation into a color structur
   /** If an error occurs, a warning is shown and black color is returned 
+      first checks for some default color names:
+      - black
+      - white
+      - red
+      - green
+      - blue
+      - cyan
+      - magenta
+      - yellow
+      - gray50
+      - gray100
+      - gray150
+      - gray200
   */
-  Color translateColor(const std::string &s);
-
-  /// Creates a (r,g,b) string representation for a color structure
-  std::string translateColor(const Color &color);
+  Color color_from_string(const std::string &name);
 
 }
 #endif

@@ -1,7 +1,7 @@
 #ifdef HAVE_XCF
 #include "iclXCFUtils.h"
 #include <iclCore.h>
-#include <cstring>
+#include <iclStringUtils.h>
 
 using memory::interface::Attachments;
 
@@ -38,9 +38,9 @@ namespace icl{
     xmltio::Location p(l, "PROPERTIES");
     p["width"]	  = poImg->getWidth();
     p["height"]	  = poImg->getHeight();
-    p["depth"]	  = translateDepth(poImg->getDepth());
+    p["depth"]	  = str(poImg->getDepth());
     p["channels"] = poImg->getChannels();
-    p["format"]	  = translateFormat(poImg->getFormat());
+    p["format"]	  = str(poImg->getFormat());
     if (bayerPattern != "") p["bayerPattern"] = bayerPattern;
     
     xmltio::Location r(l, "ROI");
@@ -166,10 +166,10 @@ namespace icl{
     xmltio::Location  p(l, "PROPERTIES");
     d.size.width = xmltio::extract<int>(p["width"]);
     d.size.height  = xmltio::extract<int>(p["height"]);
-    d.imagedepth = translateDepth(xmltio::extract<std::string>(p["depth"]));
+    d.imagedepth = parse<depth>(xmltio::extract<std::string>(p["depth"]));
     d.channels   = xmltio::extract<int>(p["channels"]);
     try{
-      d.imageformat = translateFormat(xmltio::extract<std::string>(p["format"]));
+      d.imageformat = parse<format>(xmltio::extract<std::string>(p["format"]));
     }catch(const InvalidFormatException &ex){
       d.imageformat = formatMatrix;
     }

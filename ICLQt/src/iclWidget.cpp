@@ -438,14 +438,14 @@ namespace icl{
    }
    inline std::string rstr(){
      if(p.getROISize() == p.getSize()) return "full";
-     return translateRect(p.getROI());
+     return str(p.getROI());
    }
 
    inline std::string fstr(){
      if(p.getFormat() == formatMatrix){
        return str("mat(")+str(p.getChannels())+")";
      }else{
-       return translateFormat(p.getFormat());
+       return str(p.getFormat());
      }
    }
    virtual void paintEvent(QPaintEvent *e){
@@ -459,7 +459,7 @@ namespace icl{
      pa.drawRect(QRectF(0,0,width(),height()));
      static const char D[] = "-";
      
-     std::string info = dstr()+D+translateSize(p.getSize())+D+rstr()+D+fstr();
+     std::string info = dstr()+D+str(p.getSize())+D+rstr()+D+fstr();
      pa.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,info.c_str());
    }
   };
@@ -1969,20 +1969,20 @@ namespace icl{
       info.push_back("Image is NULL");
       return info;
     }
-    info.push_back(string("depth:   ")+translateDepth(i->getDepth()));
-    info.push_back(string("size:    ")+translateSize(i->getSize()));
+    info.push_back(string("depth:   ")+str(i->getDepth()));
+    info.push_back(string("size:    ")+str(i->getSize()));
     info.push_back(string("channels:")+str(i->getChannels()));
-    info.push_back(string("format:  ")+translateFormat(i->getFormat()));
+    info.push_back(string("format:  ")+str(i->getFormat()));
     if(i->getROI() == Rect(Point::null,i->getSize())){
       info.push_back("roi:   full");
     }else{
-      info.push_back(translateRect(i->getROI()));
+      info.push_back(str(i->getROI()));
     }
     
     std::vector<Range<icl32f> > ranges = i->getMinMax();
     for(int a=0;a<i->getChannels();a++){
       info.push_back(str("channel "+str(a)+":"));
-      info.push_back(str("   ")+translateRange(ranges[a]));
+      info.push_back(str("   ")+str(ranges[a]));
     }
     return info;
   }

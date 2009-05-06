@@ -166,7 +166,7 @@ namespace icl{
       int idx = 0;
       
       for(int i=0;i<slices;++i){
-        float a = i*dA/2.0;//-M_PI/2.0;
+        //float a = i*dA/2.0;//-M_PI/2.0;
         Vec v2 = rotate_vector(zAxis,i*dA,v);
         for(int j=0;j<steps;++j,++idx){
           addVertex(offs+rotate_vector(yAxis,j*dB,v2));

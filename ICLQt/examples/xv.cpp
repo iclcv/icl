@@ -69,7 +69,7 @@ int main (int n, char **ppc){
         std::cout << "(skipping!)" << std::endl;
       }
     }
-    gui << std::string("multidraw(")+imageList+",!all,!deepcopy)[@minsize="+icl::translateSize(maxSize/20)+"@handle=image]";
+    gui << std::string("multidraw(")+imageList+",!all,!deepcopy)[@minsize="+icl::str(maxSize/20)+"@handle=image]";
     gui.show();
     
     MultiDrawHandle &h = gui.getValue<MultiDrawHandle>("image");

@@ -11,7 +11,7 @@ namespace icl{
                          ICLWidget* widget):
     m_widgetPos(widgetPos),m_imagePos(imagePos),
     m_relImagePos(relImagePos),
-    m_color(color),m_type(type),m_widget(widget){
+    m_color(color),m_widget(widget),m_type(type){
     
     std::copy(downMask,downMask+3,m_downMask);
   }
@@ -19,7 +19,7 @@ namespace icl{
   MouseEvent::MouseEvent():
     m_widgetPos(Point::null),m_imagePos(Point::null),
     m_relImagePos(Point32f::null),
-    m_type(MouseLeaveEvent),m_widget(0){
+    m_widget(0),m_type(MouseLeaveEvent){
     
     std::fill(m_downMask,m_downMask+3,false);
   }

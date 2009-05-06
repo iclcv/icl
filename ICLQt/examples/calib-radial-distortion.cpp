@@ -307,7 +307,7 @@ void add(void){
 void save_warp_map(){
   static DrawHandle &d = gui.getValue<DrawHandle>("image");
   
-  std::string defName = str("./warp-map-")+translateSize(WARP_MAP.getSize())+
+  std::string defName = str("./warp-map-")+str(WARP_MAP.getSize())+
   "-"+str(DIST_FACTOR[0])+"-"+str(DIST_FACTOR[1])+"-"+str(DIST_FACTOR[2])+"-"+str(DIST_FACTOR[3])+".icl";
   QString name = QFileDialog::getSaveFileName(*d,"save warp-map ... ",defName.c_str(),
                                               "Float Images (*.icl *.pgm *.pnm)");
@@ -397,7 +397,7 @@ void run(){
   static DrawHandle &d = gui.getValue<DrawHandle>("image");
   static ICLDrawWidget &w = **d;
   static bool &grab = gui.getValue<bool>("grab-loop-val");
-  static ButtonHandle &add = gui.getValue<ButtonHandle>("add");
+  //static ButtonHandle &add = gui.getValue<ButtonHandle>("add");
   static ButtonHandle &opt = gui.getValue<ButtonHandle>("optimize");
 
   if(grab){

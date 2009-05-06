@@ -1,7 +1,7 @@
 #include "iclDCDeviceFeatures.h"
 #include <map>
 #include <iclStringUtils.h>
-#include <iclRange.h>
+#include <iclSteppingRange.h>
 namespace icl{
   
   namespace{
@@ -299,7 +299,7 @@ namespace icl{
       }else if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
         return "{\"manual\",\"auto\"}";
       }else{
-        return translateRange(Range<int>(info->min,info->max))+":1";
+        return str(SteppingRange<int>(info->min, info->max,1));
       }
       return "";
     }

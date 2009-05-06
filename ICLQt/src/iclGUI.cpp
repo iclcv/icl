@@ -249,7 +249,7 @@ namespace icl{
     // using the GUI-stream operator <<
     virtual void addWidget(GUIWidget *widget){
       QString tabName;
-      if(m_nextTabIdx < m_tabNames.size()){
+      if(m_nextTabIdx < (int)m_tabNames.size()){
         tabName = m_tabNames[m_nextTabIdx].c_str();
       }else{
         ERROR_LOG("no tab name defined for " << (m_nextTabIdx) << "th tab");
@@ -1336,9 +1336,10 @@ public:
     string maxsize = extract_maxsize(definition);
     string size = extract_size(definition);
     
-    if(minsize.length()) minsize = string("@minsize=")+translateSize(translateSize(minsize)+Size(1,1));
-    if(maxsize.length()) maxsize = string("@maxsize=")+translateSize(translateSize(maxsize)+Size(1,1));
-    if(size.length()) size = string("@size=")+translateSize(translateSize(size)+Size(1,1));
+    Size S11(1,1);
+    if(minsize.length()) minsize = string("@minsize=")+str(parse<Size>(minsize)+S11);
+    if(maxsize.length()) maxsize = string("@maxsize=")+str(parse<Size>(maxsize)+S11);
+    if(size.length()) size = string("@size=")+str(parse<Size>(size)+S11);
 
     if(label.length()){
       string rest = remove_label(definition,label);
@@ -1359,10 +1360,12 @@ public:
     string maxsize = extract_maxsize(g.m_sDefinition);
     string size = extract_size(g.m_sDefinition);
     
-    if(minsize.length()) minsize = string("@minsize=")+translateSize(translateSize(minsize)+Size(1,1));
-    if(maxsize.length()) maxsize = string("@maxsize=")+translateSize(translateSize(maxsize)+Size(1,1));
-    if(size.length()) size = string("@size=")+translateSize(translateSize(size)+Size(1,1));
-    
+    Size S11(1,1);
+    if(minsize.length()) minsize = string("@minsize=")+str(parse<Size>(minsize)+S11);
+    if(maxsize.length()) maxsize = string("@maxsize=")+str(parse<Size>(maxsize)+S11);
+    if(size.length()) size = string("@size=")+str(parse<Size>(size)+S11);
+
+
     if(label.length()){
       GUI gNew(g);
       if(gNew.m_sDefinition.length() > 100000) {
