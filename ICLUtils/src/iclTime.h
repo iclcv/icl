@@ -1,4 +1,5 @@
 #include <string>
+#include <stdint.h>
 // **********************************************************************
 //
 // Copyright (c) 2003-2005 ZeroC, Inc. All rights reserved.
@@ -17,25 +18,18 @@ namespace icl{
   /// ICL Time class (taken from the Ice lib) \ingroup TIME
   class Time {
     public:
-//
-// Definitions of 64-bit integer type used for timestamp
-//
-#if defined(_MSC_VER)
-      typedef __int64       value_type;
-#elif defined(__SUNPRO_CC)
-      typedef long long     value_type;
-#else
-      typedef int64_t       value_type;
-#endif
 
-	  // undefined time: 0
-      static const Time null;
-      
-      Time();
-
-      Time(value_type);
-      
-      // No copy constructor and assignment operator necessary. The
+    /// internal data type (64Bit integer)
+    typedef int64_t value_type;
+    
+    // undefined time: 0
+    static const Time null;
+    
+    Time();
+    
+    Time(value_type);
+    
+    // No copy constructor and assignment operator necessary. The
       // automatically generated copy constructor and assignment
       // operator do the right thing.
     
@@ -70,177 +64,184 @@ namespace icl{
 
       //xcf4cis stuff
       Time age() const {
-         return Time::microSeconds(Time::now()._usec - _usec);
+         return Time::microSeconds(Time::now().m_usec - m_usec);
       }
 
       Time operator-() const
          {
-            return Time(-_usec);
+            return Time(-m_usec);
          }
 
       Time operator-(const Time& rhs) const
          {
-            return Time(_usec - rhs._usec);
+            return Time(m_usec - rhs.m_usec);
          }
 
       Time operator+(const Time& rhs) const
          {
-            return Time(_usec + rhs._usec);
+            return Time(m_usec + rhs.m_usec);
          }
 
       Time& operator+=(const Time& rhs)
          {
-            _usec += rhs._usec;
+            m_usec += rhs.m_usec;
             return *this;
          }
 
       Time& operator-=(const Time& rhs)
          {
-            _usec -= rhs._usec;
+            m_usec -= rhs.m_usec;
             return *this;
          }
 
       bool operator<(const Time& rhs) const
          {
-            return _usec < rhs._usec;
+            return m_usec < rhs.m_usec;
          }
 
       bool operator<=(const Time& rhs) const
          {
-            return _usec <= rhs._usec;
+            return m_usec <= rhs.m_usec;
          }
 
       bool operator>(const Time& rhs) const
          {
-            return _usec > rhs._usec;
+            return m_usec > rhs.m_usec;
          }
 
       bool operator>=(const Time& rhs) const
          {
-            return _usec >= rhs._usec;
+            return m_usec >= rhs.m_usec;
          }
 
       bool operator==(const Time& rhs) const
          {
-            return _usec == rhs._usec;
+            return m_usec == rhs.m_usec;
          }
 
       bool operator!=(const Time& rhs) const
          {
-            return _usec != rhs._usec;
+            return m_usec != rhs.m_usec;
          }
 
       Time& operator*=(const Time& rhs)
          {
-            _usec *= rhs._usec;
+            m_usec *= rhs.m_usec;
             return *this;
          }
 
       Time operator*(const Time& rhs) const
          {
             Time t;
-            t._usec = _usec * rhs._usec;
+            t.m_usec = m_usec * rhs.m_usec;
             return t;
          }
 
       Time& operator/=(const Time& rhs)
          {
-            _usec /= rhs._usec;
+            m_usec /= rhs.m_usec;
             return *this;
          }
 
       Time operator/(const Time& rhs) const
          {
             Time t;
-            t._usec = _usec / rhs._usec;
+            t.m_usec = m_usec / rhs.m_usec;
             return t;
          }
 
       Time& operator*=(int rhs)
          {
-            _usec *= rhs;
+            m_usec *= rhs;
             return *this;
          }
 
       Time operator*(int rhs) const
          {
             Time t;
-            t._usec = _usec * rhs;
+            t.m_usec = m_usec * rhs;
             return t;
          }
 
       Time& operator/=(int rhs)
          {
-            _usec /= rhs;
+            m_usec /= rhs;
             return *this;
          }
 
       Time operator/(int rhs) const
          {
             Time t;
-            t._usec = _usec / rhs;
+            t.m_usec = m_usec / rhs;
             return t;
          }
 
       Time& operator*=(value_type rhs)
          {
-            _usec *= rhs;
+            m_usec *= rhs;
             return *this;
          }
 
       Time operator*(value_type rhs) const
          {
             Time t;
-            t._usec = _usec * rhs;
+            t.m_usec = m_usec * rhs;
             return t;
          }
 
       Time& operator/=(value_type rhs)
          {
-            _usec /= rhs;
+            m_usec /= rhs;
             return *this;
          }
 
       Time operator/(value_type rhs) const
          {
             Time t;
-            t._usec = _usec / rhs;
+            t.m_usec = m_usec / rhs;
             return t;
          }
 
       Time& operator*=(double rhs)
          {
-            _usec = static_cast<value_type>(static_cast<double>(_usec) * rhs);
+            m_usec = static_cast<value_type>(static_cast<double>(m_usec) * rhs);
             return *this;
          }
 
       Time operator*(double rhs) const
          {
             Time t;
-            t._usec = static_cast<value_type>(static_cast<double>(_usec) * rhs);
+            t.m_usec = static_cast<value_type>(static_cast<double>(m_usec) * rhs);
             return t;
          }
 
       Time& operator/=(double rhs)
          {
-            _usec = static_cast<value_type>(static_cast<double>(_usec) / rhs);
+            m_usec = static_cast<value_type>(static_cast<double>(m_usec) / rhs);
             return *this;
          }
 
       Time operator/(double rhs) const
          {
             Time t;
-            t._usec = static_cast<value_type>(static_cast<double>(_usec) / rhs);
+            t.m_usec = static_cast<value_type>(static_cast<double>(m_usec) / rhs);
             return t;
          }
 
+      friend std::ostream& operator<<(std::ostream&, const Time&);
+      
+      friend std::istream& operator>>(std::istream&, Time&);
+
    private:
 
-
-      value_type _usec;
+      value_type m_usec;
    };
-
+  
+   /// writes Time instances value type into the stream
    std::ostream& operator<<(std::ostream&, const Time&);
+
+   /// reads Time instances value type from the stream
+   std::istream& operator>>(std::istream&, Time&);
 
 } // End namespace icl
 

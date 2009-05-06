@@ -1,6 +1,7 @@
 #define DYN_MATRIX_INDEX_CHECK
 #include <iclDynMatrix.h>
 #include <iclMacros.h>
+#include <stdint.h>
 
 #ifdef HAVE_IPP
 #include <ippm.h>
@@ -216,5 +217,67 @@ namespace icl{
     throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException);
   template DynMatrix<double> DynMatrix<double>::pinv() const 
     throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException);
+
+
+  template<class T>
+  static inline std::ostream &icl_to_stream(std::ostream &s, T t){
+    return s << t;
+  }
+
+  template<class T>
+  static inline std::istream &icl_from_stream(std::istream &s, T &t){
+    return s >> t;
+  }
+  
+  template<> inline std::ostream &icl_to_stream(std::ostream &s, uint8_t t){
+    return s << (int)t;
+  }
+  
+  template<> inline std::istream &icl_from_stream(std::istream &s, uint8_t &t){
+    int tmp;
+    s >> tmp;
+    t = (uint8_t)tmp;
+    return s;
+  }
+
+
+  template<class T>
+  std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m){
+    for(unsigned int i=0;i<m.rows();++i){
+      s << "| ";
+      for(unsigned int j=0;j<m.cols();++j){
+        icl_to_stream<T>(s,m(j,i)) << " ";
+      }
+      s << "|";
+      if(i<m.rows()-1){
+        s << std::endl;
+      }
+    }
+    return s;
+  }
+
+  template<class T>
+  std::istream &operator>>(std::istream &s,DynMatrix<T> &m){
+    char c;
+    for(unsigned int i=0;i<m.rows();++i){
+      s >> c; // trailing '|'
+      for(unsigned int j=0;j<m.cols();++j){
+        icl_from_stream<T>(s,m(j,i));
+      }
+      s >> c; // ending '|'
+    }
+    return s;
+  }
+
+#define X(T)                                                            \
+  template std::ostream &operator<<(std::ostream&,const DynMatrix<T>&); \
+  template std::istream &operator>>(std::istream&,DynMatrix<T>&)
+  
+  X(uint8_t);
+  X(int16_t);
+  X(int32_t);
+  X(float);
+  X(double);
+  
 }
 

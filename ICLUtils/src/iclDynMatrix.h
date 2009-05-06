@@ -13,17 +13,6 @@
 
 namespace icl{
 
-  /** \cond */
-  template<class T>
-  inline std::ostream &icl_aux_to_stream(std::ostream &s,const T &t){
-    return s << t;
-  }
-  template<>
-  inline std::ostream &icl_aux_to_stream(std::ostream &s,const unsigned char &t){
-    return s << (int)t;
-  }
-  /** \endcond */
-
   struct InvalidMatrixDimensionException :public ICLException{
     InvalidMatrixDimensionException(const std::string &msg):ICLException(msg){}
   };
@@ -594,21 +583,6 @@ namespace icl{
       return m_data+(row+1)*cols(); 
     }
     
-    /// used to visualize matrix entries
-    friend inline std::ostream &operator<<(std::ostream &s,const DynMatrix &m){
-      for(unsigned int i=0;i<m.rows();++i){
-        s << "| ";
-        for(unsigned int j=0;j<m.cols();++j){
-          icl_aux_to_stream<T>(s,m(j,i)) << " ";
-        }
-        s << "|";
-        if(i<m.rows()-1){
-          s << std::endl;
-        }
-      }
-      return s;
-    }
-    
     /// Extracts a shallow copied matrix row
     DynMatrix row(int row){
       row_check(row);
@@ -709,6 +683,15 @@ namespace icl{
     T *m_data;
     bool m_ownData;
   };
+
+  /// ostream operator implemented for uchar, short, int, float and double matrices
+  template<class T>
+  std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m);
+
+  /// istream operator implemented for uchar, short, int, float and double matrices
+  template<class T>
+  std::istream &operator>>(std::istream &s,DynMatrix<T> &m);
+
 
 }
 

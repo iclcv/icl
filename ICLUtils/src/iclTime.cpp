@@ -22,7 +22,7 @@ namespace icl {
    const Time Time::null(0);
    
    Time::Time() :
-      _usec(0)
+      m_usec(0)
    {
    }
 
@@ -61,37 +61,37 @@ namespace icl {
    Time::value_type
    Time::toSeconds() const
    {
-      return _usec / 1000000;
+      return m_usec / 1000000;
    }
 
    Time::value_type
    Time::toMilliSeconds() const
    {
-      return _usec / 1000;
+      return m_usec / 1000;
    }
 
    Time::value_type
    Time::toMicroSeconds() const
    {
-      return _usec;
+      return m_usec;
    }
 
    double
    Time::toSecondsDouble() const
    {
-      return _usec / 1000000.0;
+      return m_usec / 1000000.0;
    }
 
    double
    Time::toMilliSecondsDouble() const
    {
-      return _usec / 1000.0;
+      return m_usec / 1000.0;
    }
 
    double
    Time::toMicroSecondsDouble() const
    {
-      return static_cast<double>(_usec);
+      return static_cast<double>(m_usec);
    }
 
    std::string
@@ -99,7 +99,7 @@ namespace icl {
      return toStringFormated("%x %H:%M:%S:%#",32);
    }
   /*
-      time_t time = static_cast<long>(_usec / 1000000);
+      time_t time = static_cast<long>(m_usec / 1000000);
 
       struct tm* t;
 #ifdef SYSTEM_WINDOWS
@@ -118,7 +118,7 @@ namespace icl {
      os << buf << ":";
      os.fill('0');
      os.width(3);
-     os << static_cast<long>(_usec % 1000000 / 1000);
+     os << static_cast<long>(m_usec % 1000000 / 1000);
       return os.str();
       */
   
@@ -131,9 +131,9 @@ namespace icl {
       if(pattern[i]=='%'){
         ++i;
         switch(pattern[i]){
-          case '*': os << (_usec % 1000000); break; 
-          case '#': os << (_usec % 1000000 / 1000); break;
-          case '-': os << (_usec % 1000); break;
+          case '*': os << (m_usec % 1000000); break; 
+          case '#': os << (m_usec % 1000000 / 1000); break;
+          case '-': os << (m_usec % 1000); break;
           default:
             os << pattern[i-1];
             os << pattern[i];
@@ -144,7 +144,7 @@ namespace icl {
     }
     
     
-    time_t time = static_cast<long>(_usec / 1000000);
+    time_t time = static_cast<long>(m_usec / 1000000);
     
     struct tm* t;
 #ifdef SYSTEM_WINDOWS
@@ -161,16 +161,16 @@ namespace icl {
     delete [] buf;
     return s;
   }
+  
+  Time::Time(value_type usec) :
+    m_usec(usec)
+  {}
 
-   Time::Time(value_type usec) :
-      _usec(usec)
-   {
+   std::ostream& operator<<(std::ostream& out, const Time& t){
+     return out << t.m_usec;
    }
 
-   std::ostream&
-   operator<<(std::ostream& out, const Time& tm)
-   {
-      return out << tm.toMicroSeconds() / 1000000.0;
-   }
-
+  std::istream& operator>>(std::istream& in, Time &t){
+    return in >> t.m_usec;
+  }
 }

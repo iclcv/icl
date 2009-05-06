@@ -796,23 +796,21 @@ namespace icl{
     return v = (m*v);
   } 
 
-  /** \cond */
-  template<class T>
-  inline std::ostream &fixed_matrix_aux_to_stream(std::ostream &s,const T &t){
-    return s << t;
-  }
-  template<>
-  inline std::ostream &fixed_matrix_aux_to_stream(std::ostream &s,const unsigned char &t){
-    return s << (int)t;
-  }
-  /** \endcond */
-
   /// put the matrix into a std::ostream (human readable) 
   /** Internally, this function wraps a DynMatrix<T> shallowly around m*/
   template<class T, unsigned int COLS, unsigned int ROWS>
   inline std::ostream &operator<<(std::ostream &s,const FixedMatrix<T,COLS,ROWS> &m){
     return s << DynMatrix<T>(COLS,ROWS,const_cast<T*>(m.begin()),false);
   }
+
+  /// read matrix from std::istream (human readable) 
+  /** Internally, this function wraps a DynMatrix<T> shallowly around m*/
+  template<class T, unsigned int COLS, unsigned int ROWS>
+  inline std::istream &operator>>(std::istream &s,FixedMatrix<T,COLS,ROWS> &m){
+    DynMatrix<T> dynM(COLS,ROWS,const_cast<T*>(m.begin()),false);
+    return s >> dynM;
+  }
+
 
   /// creates a 2D rotation matrix (defined for float and double)
   template<class T>
