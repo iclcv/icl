@@ -238,8 +238,14 @@ icl8u find_min_iterator_cpp_inRegion(const Img8u &i){
     */
 
     inline ImgIterator(const ImgIterator<Type> &origin, const Size &s, const Point &a){
-      *this = origin;
-      ImgIterator<Type>::m_dataCurr = origin.m_dataCurr - a.x - a.y * origin.m_matrixWidth;
+      ImgIterator<Type>::m_matrixWidth=origin.m_matrixWidth;
+      ImgIterator<Type>::m_subRectWidth=s.width;
+      ImgIterator<Type>::m_subRectHeight=s.height;
+      //ImgIterator<Type>::m_lineStep=origin.m_matrixWidth - s.width + 1;
+      ImgIterator<Type>::m_dataOrigin=origin.m_dataOrigin;
+      ImgIterator<Type>::m_dataCurr=origin.m_dataCurr - a.x - a.y * origin.m_matrixWidth;
+      //ImgIterator<Type>::m_dataEnd=ImgIterator<Type>::m_dataCurr+s.width+origin.m_matrixWidth*s.height;
+      //ImgIterator<Type>::m_currLineEnd = ImgIterator<Type>::m_dataCurr+s.width;
       ImgIterator<Type>::init();
     }
 

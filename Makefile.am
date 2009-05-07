@@ -25,10 +25,12 @@ install-data-local:
 	${MKDIR_P} ${prefix}/lib
 	${MKDIR_P} ${prefix}/lib/pkgconfig
 	if [ -e icl.pc ] ; then ${INSTALL_DATA} icl.pc ${prefix}/lib/pkgconfig ; fi
+	${INSTALL_PROGRAM} scripts/icl-make ${prefix}/bin
 
 
 uninstall-local:
 	@for S in ${PACKAGES} ; do ${MAKE} ${AM_FLAGS} -C$$S uninstall-local ; done
 	@rm -rf ${prefix}/doc/ICL
 	@rm -rf ${prefix}/lib/pkgconfig
+	@rm -rf ${prefix}/bin/icl-make
 

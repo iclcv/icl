@@ -34,7 +34,9 @@ void init(){
   labels << ( GUI("hbox") 
               << "togglebutton(stopped,grabbing)[@out=grabbing@handle=grab-handle@minsize=3x2]"
               << "button(grab next)[@handle=grab-next-handle@minsize=3x2]"
-             );
+              );
+  labels << "slider(2,256,256)[@out=levels@label=reduce levels]";
+  
   
   gui << labels;
   
@@ -59,9 +61,7 @@ void run(){
   for(unsigned int i=0;i<pa_argcount();++i){
     file += pa_arg<string>(i) + " ";
   }
-  static GenericGrabber g(pa_subarg<std::string>("-d",0,"pwc"),
-                          pa_subarg<std::string>("-d",0,"pwc")+"="+
-                          pa_subarg<std::string>("-d",1,"0"));
+  static GenericGrabber g(FROM_PROGARG("-input"));
   g.setDesiredSize(parse<Size>(pa_subarg<string>("-size",0,"640x480")));
   g.setIgnoreDesiredParams(false);
   g.setDesiredFormat(formatGray);
@@ -77,15 +77,36 @@ void run(){
   static LabelHandle &blHandle = gui.getValue<LabelHandle>("bl-handle");
   static bool &grabButtonDown = gui.getValue<bool>("grabbing");
   static ButtonHandle &grabNextHandle = gui.getValue<ButtonHandle>("grab-next-handle");
+  int &levels = gui.getValue<int>("levels");
 
-  const Img8u *image = 0;
+  static int lastLevels = levels;
+  static const Img8u *grabbedImage;
+  static Img8u reducedLevels;  
+
+  const Img8u *useImage = 0;
   const std::vector<icl::Region> *rs = 0;
   while(1){
-    if(grabNextHandle.wasTriggered() || !image || grabButtonDown){
-      image = g.grab()->asImg<icl8u>();
-      d.setImage(image);
-      rs = &rd.detect(image);
+    if(grabNextHandle.wasTriggered() || !useImage || grabButtonDown){
+      grabbedImage = g.grab()->asImg<icl8u>();
+      useImage = grabbedImage;
+
+      if(levels != 256){
+        reducedLevels = cvt8u(icl::levels(cvt(grabbedImage),levels));
+        useImage = &reducedLevels;
+      }
+      
+      d.setImage(useImage);
+      rs = &rd.detect(useImage);
+    }else if(lastLevels != levels){
+      if(levels != 256){
+        reducedLevels = cvt8u(icl::levels(cvt(grabbedImage),levels));
+        useImage = &reducedLevels;
+      }else{
+        useImage = grabbedImage;
+      }
     }
+    lastLevels = levels;
+    
     d.lock();
     d.reset();
     
@@ -93,7 +114,7 @@ void run(){
     Point m(mouseIO.x,mouseIO.y);
     mutex.unlock();
   
-    if(image->getImageRect().contains(m.x,m.y)){
+    if(useImage->getImageRect().contains(m.x,m.y)){
       // find the region, that contains mouseX,mouseY
       std::vector<icl::Region>::const_iterator it = find_if(rs->begin(),rs->end(),RegionContainsPoint(m));
       if(it != rs->end()){
@@ -137,9 +158,9 @@ int main(int n, char **ppc){
   ExecThread x(run);
   QApplication app(n,ppc);
   
-  pa_explain("-d","define device parameters (e.g. -d dc 0 or -d file image/*.ppm)");
+  pa_explain("-input","define device parameters (e.g. -d dc 0 or -d file image/*.ppm)");
   pa_explain("-size","define image size (e.g. -size 640x480)");
-  pa_init(n,ppc,"-d(2) -size(1)");
+  pa_init(n,ppc,"-input(2) -size(1)");
 
   init();
   

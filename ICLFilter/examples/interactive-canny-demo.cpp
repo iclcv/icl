@@ -2,17 +2,23 @@
 #include <iclCommon.h>
 #include <iclConvolutionOp.h>
 //#include <iclUnaryOpPipe.h>
-GUI gui;
+
+GUI gui("vsplit");
 
 void init(){
   gui << "image[@handle=image@minsize=32x24]";
-  gui << "fslider(0,2000,10)[@out=low@label=low@maxsize=100x2@handle=low-handle]";
-  gui << "fslider(0,2000,100)[@out=high@label=high@maxsize=100x2@handle=high-handle]";
-  gui <<  ( GUI("hbox")  
+  
+  GUI gui2;
+  gui2 << "fslider(0,2000,10)[@out=low@label=low@maxsize=100x2@handle=low-handle]";
+  gui2 << "fslider(0,2000,100)[@out=high@label=high@maxsize=100x2@handle=high-handle]";
+  gui2 <<  ( GUI("hbox")  
            << "togglebutton(off,on)[@out=pre-gauss@handle=pre-gauss-handle@label=gaussian]"
            << "label(time)[@handle=dt@label=filter time in ms]"
            << "togglebutton(stopped,running)[@out=run@label=capture]"
            << "camcfg()" );
+
+  gui << gui2;
+
   gui.show();
 }
 

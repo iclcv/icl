@@ -110,8 +110,8 @@ namespace icl{
         expect="yuv";
         f = formatYUV;
         break;
-      case 'L':
-        expect="LAB";
+      case 'l':
+        expect="lab";
         f = formatLAB;
         break;
       case 'c':
@@ -123,6 +123,7 @@ namespace icl{
         rest = 5;
         f = formatMatrix;
         expect="matrix";
+        break;
       default:
         ERROR_LOG("unable to parse format-type");
         return s;

@@ -21,6 +21,7 @@ namespace icl {
           for(const ImgIterator<T> sR(s,oMaskSize,oAnchor); sR.inRegionSubROI(); ++sR, ++itList){
             *itList = *sR;
           }
+          return;
           std::sort(oList.begin(),oList.end());
           *d = *itMedian;
           itList = oList.begin();
