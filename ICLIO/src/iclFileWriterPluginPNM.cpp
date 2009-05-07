@@ -121,13 +121,14 @@ namespace icl{
 
     
     std::ostringstream os;
+
     static const string H = "# ";
     Rect roi = poSrc->getROI();
 
     os   << H << "TimeStamp " << poSrc->getTime() << std::endl
          << H << "NumFeatures " << iNumImages << std::endl
-         << H << "PoSrcDepth " << poSrc->getDepth() << std::endl
-         << H << "ROI" << roi.x << ' ' << roi.y << ' '  << roi.width << ' ' << roi.height << std::endl
+         << H << "ImageDepth " << poSrc->getDepth() << std::endl
+         << H << "ROI " << roi.x << ' ' << roi.y << ' '  << roi.width << ' ' << roi.height << std::endl
          << H << "Format " << poSrc->getFormat() << std::endl // not shure, this is new!
          << poSrc->getWidth() << " " << poSrc->getHeight()*(bICL ? 1 : iNumImages) << endl << 255 << endl;
     

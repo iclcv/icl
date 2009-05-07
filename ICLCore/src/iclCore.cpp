@@ -77,60 +77,77 @@ namespace icl{
   /// puts a string representation of format into the given stream
   std::istream &operator>>(std::istream &s, format &f){
     char cs[7]={0};
-    for(int i=0;i<6;++i)s>>cs[i];
-    ICLASSERT(str(cs) == "format");
+    
+    s >> cs[0]; 
+    s.unget();
+    if(cs[0] == 'f'){
+      for(int i=0;i<6;++i)s>>cs[i];
+      ICLASSERT(str(cs) == "format");
+    }else{
+      // nothing, this is just a compability mode for 
+      // someone forgetting the format prefix!
+    }
     std::fill(cs,cs+7,'\0');
     s >> cs[0];
+    cs[0] = tolower(cs[0]);
     int rest = 2;
     std::string expect;
     switch(cs[0]){
-      case 'G':
+      case 'g':
         rest = 3;
-        expect="Gray";
+        expect="gray";
         f = formatGray;
         break;
-      case 'R':
-        expect="RGB";
+      case 'r':
+        expect="rgb";
         f = formatRGB;
         break;
-      case 'H':
-        expect="HLS";
+      case 'h':
+        expect="hls";
         f = formatHLS;
         break;
-      case 'Y':
-        expect="YUV";
+      case 'y':
+        expect="yuv";
         f = formatYUV;
         break;
       case 'L':
         expect="LAB";
         f = formatLAB;
         break;
-      case 'C':
+      case 'c':
         rest = 5;
         f = formatChroma;
-        expect="Chroma";
+        expect="chroma";
         break;
-      case 'M':
+      case 'm':
         rest = 5;
         f = formatMatrix;
-        expect="Matrix";
+        expect="matrix";
       default:
         ERROR_LOG("unable to parse format-type");
         return s;
     }
     for(int i=0;i<rest;++i){
       s >> cs[i+1];
+      cs[i+1] = tolower(cs[i+1]);
     }
-    const char * const found = cs;
-    ICLASSERT(expect == found);
+    if(expect != cs){
+      ERROR_LOG("unabled t parse format: found: " << cs << " expected:" << expect);
+    }
     return s;
   }
   
   /// puts a string representation of depth into the given stream
   std::istream &operator>>(std::istream &s, depth &d){
     char cs[6]={0};
-    for(int i=0;i<5;++i) s>>cs[i];
-    ICLASSERT(str(cs) == "depth");
+    s >> cs[0];
+    s.unget();
+    if(cs[0] == 'd'){
+      for(int i=0;i<5;++i) s>>cs[i];
+      ICLASSERT(str(cs) == "depth");
+    }else{
+      // compability mode for someone forgetting the depth-prefix
+    }
     std::fill(cs,cs+6,'\0');
     s >> cs[0];
     switch(cs[0]){

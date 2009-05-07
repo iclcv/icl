@@ -1143,6 +1143,7 @@ ImgBase* createImage_macaw(){
      buf[j] = auc_ExtraData_macaw[i];
   }
   f.write(buf,DIM);
+
   f.close();
   delete [] buf;
   image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grab()->deepCopy();
