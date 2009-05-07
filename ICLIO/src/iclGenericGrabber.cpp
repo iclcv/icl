@@ -206,7 +206,7 @@ namespace icl{
       }
     }
     if(!m_poGrabber && notifyErrors){
-      std::string errMsg("generic grabber was not able to find anny suitable device\ntried:");
+      std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
       throw ICLException(errMsg+errStr);
     }
   }  
