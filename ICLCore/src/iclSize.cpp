@@ -78,6 +78,7 @@ namespace icl{
       s >> str;
       size_from_string(str,size);
     }
+    return s;
   }
 
   Size::Size(const std::string &name){

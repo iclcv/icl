@@ -70,10 +70,10 @@ namespace icl{
     int nextCol=0,nextRow=0;
     const unsigned int dim = M.cols();
     for(unsigned int i=0;i<dim;++i){  
-      if(i!=row){  
+      if((int)i!=row){  
         nextCol = 0;
         for(unsigned int j=0;j<dim;j++){  
-          if(j!=col){
+          if((int)j!=col){
             D(nextCol++,nextRow) = M(j,i);
           }  
         }  
@@ -137,7 +137,7 @@ namespace icl{
         // the determinant value  
         T det = 0;  
         DynMatrix<T> D(order-1,order-1);
-        for(int i=0;i<order;++i){
+        for(unsigned int i=0;i<order;++i){
           get_minor_matrix(*this,i,0,D);
           det += ::pow(-1.0,i) * (*this)(i,0) * D.det();
         }

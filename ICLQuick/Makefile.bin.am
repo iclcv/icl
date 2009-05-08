@@ -24,17 +24,17 @@ endif
 #################################################################################
 ## Applications that depend on noting ###########################################
 #################################################################################
+
+if HAVE_QT_COND
+
 bin_PROGRAMS= \
-icl-quick-test
+icl-quick-test \
+icl-quick-benchmark 
 
 # explicit sources, ldflags and cxxflags
 icl_quick_test_SOURCES=../examples/quick-test.cpp
 icl_quick_test_LDFLAGS=${XLDFLAGS}
 icl_quick_test_CXXFLAGS=${XCXXFLAGS}
-
-
-if HAVE_QT_COND
-bin_PROGRAMS+=icl-quick-benchmark 
 
 icl_quick_benchmark_SOURCES=../examples/quick-benchmark.cpp
 icl_quick_benchmark_LDFLAGS=${XLDFLAGS}

@@ -18,7 +18,8 @@ libICLCore_la_SOURCES= \
 ../src/iclSize32f.cpp \
 ../src/iclSize.cpp \
 ../src/iclStringUtils.cpp \
-../src/iclRandom.cpp
+../src/iclRandom.cpp \
+../src/iclCornerDetectorCSS.cpp
 
 include_HEADERS= \
 ../src/iclCore.h \
@@ -42,12 +43,8 @@ include_HEADERS= \
 ../src/iclStringUtils.h \
 ../src/iclTypes.h \
 ../src/iclRandom.h \
-../src/iclPixelRef.h
-
-if HAVE_IPP_COND
-libICLCore_la_SOURCES += ../src/iclCornerDetectorCSS.cpp
-include_HEADERS += ../src/iclCornerDetectorCSS.h
-endif
+../src/iclPixelRef.h \
+../src/iclCornerDetectorCSS.h
 
 libICLCore_la_CXXFLAGS=${AM_CXXFLAGS} \
 	-I../../ICLUtils/src

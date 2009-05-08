@@ -26,8 +26,8 @@ endif
 bin_PROGRAMS= \
 icl-write-file-example \
 icl-testimages-example \
-icl-jpg2cpp \
-icl-multicam-viewer-example
+icl-jpg2cpp
+
 
 # explicit sources, ldflags and cxxflags
 icl_write_file_example_SOURCES=../examples/write-file-example.cpp
@@ -37,10 +37,6 @@ icl_write_file_example_CXXFLAGS=${XCXXFLAGS}
 icl_testimages_example_SOURCES=../examples/testimages-example.cpp
 icl_testimages_example_LDFLAGS=${XLDFLAGS}
 icl_testimages_example_CXXFLAGS=${XCXXFLAGS}
-
-icl_multicam_viewer_example_SOURCES=../examples/multicam-viewer-example.cpp
-icl_multicam_viewer_example_LDFLAGS=${XLDFLAGS}
-icl_multicam_viewer_example_CXXFLAGS=${XCXXFLAGS}
 
 icl_jpg2cpp_SOURCES=../examples/jpg2cpp.cpp
 icl_jpg2cpp_LDFLAGS=${XLDFLAGS}
@@ -104,7 +100,9 @@ icl_xcf_grabber_benchmark_CXXFLAGS=${XCXXFLAGS}
 
 if HAVE_QT_COND
 bin_PROGRAMS+= \
-icl-xcf-publisher
+icl-xcf-publisher \
+icl-multicam-viewer-example
+
 icl_xcf_publisher_SOURCES=../examples/xcf-publisher.cpp
 icl_xcf_publisher_LDFLAGS=${XLDFLAGS}
 icl_xcf_publisher_CXXFLAGS=${XCXXFLAGS}
@@ -140,5 +138,9 @@ icl_camrecorder_CXXFLAGS=${XCXXFLAGS}
 icl_generic_grab_example_SOURCES=../examples/generic-grab-example.cpp
 icl_generic_grab_example_LDFLAGS=${XLDFLAGS}
 icl_generic_grab_example_CXXFLAGS=${XCXXFLAGS}
+
+icl_multicam_viewer_example_SOURCES=../examples/multicam-viewer-example.cpp
+icl_multicam_viewer_example_LDFLAGS=${XLDFLAGS}
+icl_multicam_viewer_example_CXXFLAGS=${XCXXFLAGS}
 
 endif

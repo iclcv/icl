@@ -18,6 +18,7 @@ fi
 echo " $ARCH (adding -DSYSTEM_$ARCH to CXXFLAGS)"
 
 CXXFLAGS="$CXXFLAGS -Isrc -I../src -DSYSTEM_${ARCH} -Wno-long-long -Wall"
+LDFLAGS="$LDFLAGS -lpthread"
 ICL_EXTEND_PC_FLAGS([],[-DSYSTEM_${ARCH}],[])
 
 #linux: -D SYSTEM_LINUX
@@ -236,10 +237,10 @@ ICL_PUSH_FLAG_VARS
 ICL_EXTEND_FLAG_VARS_TMP_FOR(VIDEODEV,lib,include)                
         
 AC_LANG([C++])
-AC_CHECK_HEADER([linux/videodev.h],[],[HAVE_LIBZ=FALSE])
-AC_CHECK_HEADER([sys/ioctl.h],[],[HAVE_LIBZ=FALSE])
-AC_CHECK_HEADER([sys/mman.h],[],[HAVE_LIBZ=FALSE])
-AC_CHECK_HEADER([fcntl.h],[],[HAVE_LIBZ=FALSE])
+AC_CHECK_HEADER([linux/videodev.h],[],[HAVE_VIDEODEV=FALSE])
+AC_CHECK_HEADER([sys/ioctl.h],[],[HAVE_VIDEODEV=FALSE])
+AC_CHECK_HEADER([sys/mman.h],[],[HAVE_VIDEODEV=FALSE])
+AC_CHECK_HEADER([fcntl.h],[],[HAVE_VIDEODEV=FALSE])
 
 ICL_POP_FLAG_VARS
 

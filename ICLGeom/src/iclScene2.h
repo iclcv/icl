@@ -4,8 +4,12 @@
 #include <iclObject2.h>
 #include <iclCamera.h>
 #include <iclImg.h>
+
+#ifdef HAVE_QT
 #include <iclMouseHandler.h>
 #include <iclDrawWidget3D.h>
+#endif
+
 #include <iclLockable.h>
 
 namespace icl{
@@ -17,7 +21,9 @@ namespace icl{
   class Scene2 : public Lockable{
     public:
     struct RenderPlugin;
+#ifdef HAVE_QT
     struct SceneMouseHandler;
+#endif
     struct GLCallback;
     
     Scene2();
@@ -45,9 +51,10 @@ namespace icl{
     
     void clear(bool camerasToo=false);
     
+#ifdef HAVE_QT
     MouseHandler *getMouseHandler(int camIndex=0);
-
     ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
+#endif
 
     void setLightSimulationEnabled(bool enabled);
     bool getLightSimulationEnabled() const;
@@ -64,7 +71,10 @@ namespace icl{
     std::vector<Object2*> m_cameraObjects;
     std::vector<std::vector<std::vector<Vec> > >m_projections;//[cam][obj][vertex]
     
+#ifdef HAVE_QT
     std::vector<SceneMouseHandler*> m_mouseHandlers;
+#endif
+
     std::vector<GLCallback*> m_glCallbacks;
     
     bool m_lightSimulationEnabled;

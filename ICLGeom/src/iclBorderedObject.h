@@ -42,8 +42,10 @@ namespace icl{
     /// extended projection function (projects and updates all border points)
     virtual void project(const Mat &cameramatrix);
     
+#ifdef HAVE_QT
     /// extended rendering function (renders the object and visualizes the border points)
     virtual void render(ICLDrawWidget *widget) const;
+#endif
 
     /// extended rendering function (renders the object and visualizes the border points)
     virtual void render(Img32f *image) const;

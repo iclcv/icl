@@ -3,7 +3,7 @@
 #include <iclTestImages.h>
 #include <iclConverter.h>
 
-#ifndef MACOSX
+#ifdef HAVE_VIDEODEV
 #include <iclPWCGrabber.h>
 #endif
 
@@ -145,7 +145,7 @@ namespace icl{
     string FONTFAMILY = "Times";
 
 
-#ifndef MACOSX
+#ifdef HAVE_VIDEODEV
     static PWCGrabber *G[4] = {0,0,0,0};
     struct PWCReleaser{
       // {{{ open
@@ -479,7 +479,7 @@ namespace icl{
 
   ImgQ pwc(int device, const Size &size, format fmt, bool releaseGrabber){
     // {{{ open
-#ifndef MACOSX
+#ifdef HAVE_VIDEODEV
     if(device > 4){
       ERROR_LOG("device must be in 1,2,3 or 4");
       return ImgQ();

@@ -23,6 +23,9 @@ XCXXFLAGS= ${CXXFLAGS} \
 #################################################################################
 ## Applications that depend on noting ###########################################
 #################################################################################
+
+if HAVE_QT_COND
+
 bin_PROGRAMS= \
 icl-geom-3D-demo \
 icl-new-geom-3D-demo \
@@ -41,3 +44,4 @@ icl_camera_test_SOURCES=../examples/camera-test.cpp
 icl_camera_test_LDFLAGS=${XLDFLAGS}
 icl_camera_test_CXXFLAGS=${XCXXFLAGS}
 
+endif

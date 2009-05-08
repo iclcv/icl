@@ -1,7 +1,9 @@
 #include <iclObject.h>
+#ifdef HAVE_QT
 #include <iclDrawWidget.h>
+#endif
+
 #include <iclQuick.h>
-#include <iclImg.h>
 
 namespace icl{
   
@@ -142,6 +144,7 @@ namespace icl{
     // }}}
 
   }
+#ifdef HAVE_QT
   void Object::render(ICLDrawWidget *widget) const{
     // {{{ open
     
@@ -209,6 +212,7 @@ namespace icl{
       }
     }
   }
+#endif
 
   // }}}
   void Object::render(Img32f *image) const{

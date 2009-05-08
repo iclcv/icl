@@ -1,14 +1,16 @@
 #include <iclScene2.h>
+
+#ifdef HAVE_QT
 #include <iclDrawWidget.h>
-#include <iclImg.h>
+#include <iclGLTextureMapBaseImage.h>
+#endif
+
 #include <iclQuick.h>
 #include <iclGeomDefs.h>
-#include <iclGLTextureMapBaseImage.h>
 #include <iclStringUtils.h>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
-
 #include <set>
 
 namespace icl{
@@ -77,7 +79,7 @@ namespace icl{
       }
     }
   };
-
+#ifdef HAVE_QT
   struct Scene2::GLCallback : public ICLDrawWidget3D::GLCallback{
     int cameraIndex;
     Scene2 *parent;
@@ -87,6 +89,7 @@ namespace icl{
       parent->render(cameraIndex);
     }
   };
+
 
   
   struct  Scene2::SceneMouseHandler : public MouseHandler{
@@ -166,7 +169,7 @@ namespace icl{
       speed = maxSceneDim;
     }
   };
-
+#endif
   
   struct Scene2::RenderPlugin{
     virtual void color(const GeomColor &c)=0;
@@ -201,6 +204,8 @@ namespace icl{
       icl::triangle(image,x3,y3,x4,y4,x1,y1);
     }
   };
+
+#ifdef HAVE_QT
   struct ICLDrawWidgetRenderPlugin : public Scene2::RenderPlugin{
     ICLDrawWidget &w;
     ICLDrawWidgetRenderPlugin(ICLDrawWidget &w):w(w){}
@@ -223,7 +228,7 @@ namespace icl{
       w.quad(x1,y1,x2,y2,x3,y3,x4,y4);
     }
   };
-  
+#endif  
   
   Scene2::Scene2():m_lightSimulationEnabled(true),m_drawCamerasEnabled(true){}
   Scene2::~Scene2(){}
@@ -238,15 +243,19 @@ namespace icl{
     for(unsigned int i=0;i<m_objects.size();++i){
       m_objects[i] = scene.m_objects[i]->copy();
     }
+#ifdef HAVE_QT
     m_mouseHandlers.resize(scene.m_mouseHandlers.size());
     for(unsigned int i=0;i<m_mouseHandlers.size();++i){
       m_mouseHandlers[i] = new SceneMouseHandler(scene.m_mouseHandlers[i]->cameraIndex,this,scene.m_mouseHandlers[i]->speed);
     }
+
     
     m_glCallbacks.resize(scene.m_glCallbacks.size());
     for(unsigned int i=0;i<m_glCallbacks.size();++i){
       m_glCallbacks[i] = new GLCallback(scene.m_glCallbacks[i]->cameraIndex,this);
     }
+#endif
+
     m_lightSimulationEnabled = scene.m_lightSimulationEnabled;
     m_drawCamerasEnabled = scene.m_drawCamerasEnabled;
     return *this;
@@ -273,10 +282,12 @@ namespace icl{
     ImgQRenderPlugin p(image);
     render(p,camIndex);
   }
+#ifdef HAVE_QT
   void Scene2::render(ICLDrawWidget &widget, int camIndex){
     ICLDrawWidgetRenderPlugin p(widget);
     render(p,camIndex);
   }
+#endif
   
   void Scene2::addObject(Object2 *object){
     m_objects.push_back(object);
@@ -310,7 +321,7 @@ namespace icl{
     if(camerasToo){
       m_cameras.clear();
     }      
-
+#ifdef HAVE_QT
     for(unsigned int i=0;i<m_mouseHandlers.size();++i){
       delete m_mouseHandlers[i];
     }
@@ -320,6 +331,7 @@ namespace icl{
       delete m_glCallbacks[i];
     }
     m_glCallbacks.clear();
+#endif
 
   }
 
@@ -600,6 +612,7 @@ namespace icl{
             glEnd();
             break;
            }case Primitive::texture:{
+#ifdef HAVE_QT
               glColor4f(1,1,1,1);
               Vec &a = ps[p.a];
               Vec &b = ps[p.b];
@@ -610,7 +623,11 @@ namespace icl{
               GLTextureMapBaseImage tim(&p.tex);
               tim.drawTo3D(a.begin(),b.begin(),d.begin());
               break;
-           }
+
+#else
+            ERROR_LOG("texture mapping only supported with IPP");
+#endif
+          }
           default:
             ERROR_LOG("unsupported primitive type");
         }
@@ -635,7 +652,7 @@ namespace icl{
   }
 
 
-
+#ifdef HAVE_IPP
   MouseHandler *Scene2::getMouseHandler(int camIndex){
     ICLASSERT_RETURN_VAL(camIndex >= 0 && camIndex < (int)m_cameras.size(),0);
     // search for already exsiting mouse handler for given camera
@@ -662,6 +679,7 @@ namespace icl{
     m_glCallbacks.push_back(new GLCallback(camIndex,this));
     return m_glCallbacks.back();
   }
+#endif
 
 
   void Scene2::setLightSimulationEnabled(bool enabled){

@@ -216,6 +216,7 @@ namespace icl{
     
     for(unsigned int i=0;i<ts.size();++i){
       const std::string &t = ts[i];
+      (void)t; // to avoid warnings in case of no dc support
 #ifdef HAVE_LIBDC
       if(t == "dc" || t == "dc800"){
         DCGrabber::dc1394_reset_bus(verbose);

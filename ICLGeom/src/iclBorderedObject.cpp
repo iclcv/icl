@@ -1,10 +1,11 @@
-#include <iclBorderedObject.h>
 #include <stack>
-#include <algorithm>
+#include <iclBorderedObject.h>
 #include <iclImg.h>
-#include <iclDrawWidget.h>
-#include <vector>
 #include <iclQuick.h>
+
+#ifdef HAVE_QT
+#include <iclDrawWidget.h>
+#endif
 
 #include "iclConvexHullMonotoneChain.h"
 
@@ -51,6 +52,7 @@ namespace icl{
 
   // }}}
   
+#ifdef HAVE_QT
   void BorderedObject::render(ICLDrawWidget *widget) const{
     // {{{ open
 
@@ -72,6 +74,7 @@ namespace icl{
   }
 
   // }}}
+#endif
 
   void BorderedObject::render(Img32f *image) const{
     // {{{ open

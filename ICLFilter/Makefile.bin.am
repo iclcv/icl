@@ -33,11 +33,7 @@ icl-median-op-test \
 icl-threshold-op-test \
 icl-unary-op-mt-test \
 icl-weight-channels-op-test \
-icl-weighted-sum-op-test \
-icl-convolution-op-test \
-icl-warp-op-test
-
-
+icl-weighted-sum-op-test
 
 # explicit sources, ldflags and cxxflags
 icl_arithmetical_op_test_SOURCES=../examples/arithmetical-op-test.cpp
@@ -51,10 +47,6 @@ icl_champfer_op_test_CXXFLAGS=${XCXXFLAGS}
 icl_inplace_op_test_SOURCES=../examples/inplace-op-test.cpp
 icl_inplace_op_test_LDFLAGS=${XLDFLAGS}
 icl_inplace_op_test_CXXFLAGS=${XCXXFLAGS}
-
-icl_convolution_op_test_SOURCES=../examples/convolution-op-test.cpp
-icl_convolution_op_test_LDFLAGS=${XLDFLAGS}
-icl_convolution_op_test_CXXFLAGS=${XCXXFLAGS}
 
 icl_median_op_test_SOURCES=../examples/median-op-test.cpp
 icl_median_op_test_LDFLAGS=${XLDFLAGS}
@@ -76,9 +68,6 @@ icl_weighted_sum_op_test_SOURCES=../examples/weighted-sum-op-test.cpp
 icl_weighted_sum_op_test_LDFLAGS=${XLDFLAGS}
 icl_weighted_sum_op_test_CXXFLAGS=${XCXXFLAGS}
 
-icl_warp_op_test_SOURCES=../examples/warp-op-test.cpp
-icl_warp_op_test_LDFLAGS=${XLDFLAGS}
-icl_warp_op_test_CXXFLAGS=${XCXXFLAGS}
 
 
 if HAVE_IPP_COND
@@ -86,7 +75,18 @@ if HAVE_IPP_COND
 bin_PROGRAMS+= \
 icl-interactive-canny-demo \
 icl-wiener-op-test \
-icl-morphological-op-test
+icl-morphological-op-test \
+icl-convolution-op-test \
+icl-warp-op-test
+
+icl_warp_op_test_SOURCES=../examples/warp-op-test.cpp
+icl_warp_op_test_LDFLAGS=${XLDFLAGS}
+icl_warp_op_test_CXXFLAGS=${XCXXFLAGS}
+
+
+icl_convolution_op_test_SOURCES=../examples/convolution-op-test.cpp
+icl_convolution_op_test_LDFLAGS=${XLDFLAGS}
+icl_convolution_op_test_CXXFLAGS=${XCXXFLAGS}
 
 icl_interactive_canny_demo_SOURCES=../examples/interactive-canny-demo.cpp
 icl_interactive_canny_demo_LDFLAGS=${XLDFLAGS}
