@@ -8,6 +8,27 @@ namespace icl{
     return (x<0) ? -1 : (x>0) ? 1 : 0;
   }
 
+
+  // just for beeing idependent from ipp, we have an inefficient implementation of 1D convolution here!
+  void CornerDetectorCSS::convolute_1D(float *vec, int dim, float *kernel, int kernelDim, float *dst){
+#ifdef HAVE_IPP
+    ippsConv_32f(vec,dim,kernel,kernelDim,dst);
+#else
+    int dstLen = dim+kernelDim-1;
+    for(int n=0;n<dstLen;++n){
+      double buf = 0;
+      for(int k=0;k<=n;++k){
+        if(k<dim && (n-k)<kernelDim){
+          buf += vec[k] * kernel[n-k];
+        }
+      }
+      dst[n] = buf;
+    }
+#endif
+  }
+
+
+
   int CornerDetectorCSS::gaussian(icl32f **gau, float sigma, float cutoff) {
     float ssq = sigma*sigma;
     int width;
@@ -32,7 +53,7 @@ namespace icl{
 
     for (int i=0; i<length-1; i++) {
       if ((x[i+1]-x[i])*search > 0) {
-        extrema.push_back(i); // eextremaen indicies are minima, odd indicies are maxima
+        extrema.push_back(i); // even extrema indicies are minima, odd indicies are maxima
         search = -search; 
       }
     }
@@ -182,8 +203,8 @@ namespace icl{
 
     // do the convolution
     icl32f xx_big[l4w], yy_big[l4w];
-    ippsConv_32f(x, l2w, h, 2*W+1, xx_big);
-    ippsConv_32f(y, l2w, h, 2*W+1, yy_big);
+    convolute_1D(x, l2w, h, 2*W+1, xx_big);
+    convolute_1D(y, l2w, h, 2*W+1, yy_big);
     icl32f *xx = &xx_big[W], *yy = &yy_big[W];
 
     // calculate the first derivation

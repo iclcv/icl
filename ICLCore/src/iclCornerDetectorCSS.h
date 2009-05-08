@@ -99,6 +99,21 @@ namespace icl{
       inline float getSigma() const { return sigma; }
       inline float getCurvatureCutOffset() const { return curvature_cutoff; }
       inline float getStraightLineThreshold() const { return straight_line_thresh;}
+
+
+      /// Small wrapper for ippsConv_32f
+      /** @param dst destination data pointer of size dim+kernelDim -1
+
+          Performs the following operation
+
+          \f[  \mbox{dst}[n] = \sum\limits_{k=0}^n \mbox{src}[k] \cdot \mbox{kernel}[n-k] \f]
+          
+          for all \f$ n \in [0,\mbox{dim}+\mbox{kernelDim}-1]\f$
+
+          with \f$ \mbox{src}[x] = 0 \f$ for \f$ x \not\in [0,\mbox{dim}-1] \f$
+          and \f$ \mbox{kernel}[x] = 0\f$ for \f$ x \not\in [0,\mbox{kernelDim}-1] \f$
+      */
+      static void convolute_1D(float *vec, int dim, float *kernel, int kernelDim, float *dst);
       
     private:
       /// parameters
