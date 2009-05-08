@@ -49,7 +49,7 @@ namespace icl{
 
   // }}}
   
-  void showDataMatrix(deque<vector<int> > m[2]){
+  void showDataMatrix(std::deque<std::vector<int> > m[2]){
     // {{{ open
 
     int DIM = m[0][0].size();
@@ -66,7 +66,7 @@ namespace icl{
 
 
   template<class valueType>
-  void removeElemsFromVector(vector<valueType> &v,const  std::vector<int> &rows){
+  void removeElemsFromVector(std::vector<valueType> &v,const  std::vector<int> &rows){
     // {{{ open
     vector<valueType> newV;//(v.size()-rows.size());
     int r=0,vidx=0;
@@ -86,12 +86,12 @@ namespace icl{
   // }}}
   
   template<class valueType>
-  void removeRowsFromDataMatrix(deque<vector<valueType> > *m,const std::vector<int> &rows){
+  void removeRowsFromDataMatrix(std::deque<std::vector<valueType> > *m,const std::vector<int> &rows){
     // {{{ open
 
     /// rows must be sorted !
     for(int d=0; d <= 1; d++){
-      deque<vector<valueType> > &md = m[d];
+      std::deque<std::vector<valueType> > &md = m[d];
       for(int x=0;x<3;x++){ 
         vector<valueType> &v = md[x];
         removeElemsFromVector(v,rows);
@@ -153,7 +153,7 @@ namespace icl{
   // }}}
   
   template<class valueType>
-  inline vector<valueType> predict(int dim, deque<vector<valueType> > &data, const vector<int> &good){
+  inline vector<valueType> predict(int dim, std::deque<std::vector<valueType> > &data, const vector<int> &good){
     // {{{ open
     vector<valueType> pred;
     for(int y=0 ; y < dim; ++y){
@@ -205,7 +205,7 @@ namespace icl{
   
   template<class valueType>
   void push_and_rearrange_data(int                       dim, 
-                               deque<vector<valueType> > data[2],
+                               std::deque<std::vector<valueType> > data[2],
                                const vector<int>         &assignment,
                                const vector<valueType>   newData[2]){
     // {{{ open
@@ -224,7 +224,7 @@ namespace icl{
 
   template<class valueType>
   void push_data_intern_diff_zero(int dim,
-                                  deque<vector<valueType> > data[2], 
+                                  std::deque<vector<valueType> > data[2], 
                                   vector<int>               &assignment,  
                                   vector<valueType>         newData[2],
                                   vector<int>               &good){
@@ -254,7 +254,7 @@ namespace icl{
 
   template<class valueType>
   bool push_data_first_optimized_try(int dim,
-                                     deque<vector<valueType> > data[2], 
+                                     std::deque<vector<valueType> > data[2], 
                                      vector<int>               &assignment,  
                                      vector<valueType>         newData[2],
                                      vector<int>               &good,

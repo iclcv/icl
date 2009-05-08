@@ -652,7 +652,7 @@ namespace icl{
   }
 
 
-#ifdef HAVE_IPP
+#ifdef HAVE_QT
   MouseHandler *Scene2::getMouseHandler(int camIndex){
     ICLASSERT_RETURN_VAL(camIndex >= 0 && camIndex < (int)m_cameras.size(),0);
     // search for already exsiting mouse handler for given camera

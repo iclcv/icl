@@ -47,17 +47,12 @@ icl_jpg2cpp_CXXFLAGS=${XCXXFLAGS}
 #################################################################################
 if HAVE_LIBDC_COND
 bin_PROGRAMS+= \
-icl-dccam-setup \
 icl-dcclearisochannels \
 icl-dcdeviceinfo \
 icl-dccam-params
 
 
 # explicit sources, ldflags and cxxflags
-icl_dccam_setup_SOURCES=../examples/dccam-setup.cpp
-icl_dccam_setup_LDFLAGS=${XLDFLAGS}
-icl_dccam_setup_CXXFLAGS=${XCXXFLAGS}
-
 icl_dccam_params_SOURCES=../examples/dccam-params.cpp
 icl_dccam_params_LDFLAGS=${XLDFLAGS}
 icl_dccam_params_CXXFLAGS=${XCXXFLAGS}
@@ -72,8 +67,13 @@ icl_dcdeviceinfo_CXXFLAGS=${XCXXFLAGS}
 
 if HAVE_QT_COND
 bin_PROGRAMS+= \
+icl-dccam-setup \
 icl-dcmulticam-example \
 icl-dccam-grab-example
+
+icl_dccam_setup_SOURCES=../examples/dccam-setup.cpp
+icl_dccam_setup_LDFLAGS=${XLDFLAGS}
+icl_dccam_setup_CXXFLAGS=${XCXXFLAGS}
 
 icl_dcmulticam_example_SOURCES=../examples/dcmulticam-example.cpp
 icl_dcmulticam_example_LDFLAGS=${XLDFLAGS}

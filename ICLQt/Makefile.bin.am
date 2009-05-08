@@ -37,7 +37,6 @@ icl-mouse-interaction-demo \
 icl-visualization-demo \
 icl-xv \
 icl-camcfg \
-icl-calib-radial-distortion \
 icl-config-gui-example \
 icl-datastore-test \
 icl-special-button-demo
@@ -107,11 +106,18 @@ icl_xv_SOURCES=../examples/xv.cpp
 icl_xv_LDFLAGS=${XLDFLAGS}
 icl_xv_CXXFLAGS=${XCXXFLAGS}
 
+
+if HAVE_IPP_COND
+bin_PROGRAMS += \
+	icl-calib-radial-distortion
+
 icl_calib_radial_distortion_SOURCES= \
 	../examples/calib-radial-distortion.cpp \
-	../examples/calib-radial-distortion-tools.cpp \
-	../examples/calib-radial-distortion.h
+	../examples/calib-radial-distortion-tools.cpp
 
 icl_calib_radial_distortion_LDFLAGS=${XLDFLAGS}
 icl_calib_radial_distortion_CXXFLAGS=${XCXXFLAGS}
+
+endif
+
 

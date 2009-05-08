@@ -136,7 +136,9 @@ namespace icl{
     const VecArray &getPointsProj() const{ return m_vecPtsProj; }
     
     /// renders the object into a draw widget (using the current projected points)
+#ifdef HAVE_QT
     virtual void render(ICLDrawWidget *widget) const;
+#endif
 
     /// renders the object into an image (using the current projected points)
     virtual void render(Img32f *image) const;
