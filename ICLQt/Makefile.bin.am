@@ -109,7 +109,9 @@ icl_xv_CXXFLAGS=${XCXXFLAGS}
 
 icl_calib_radial_distortion_SOURCES= \
 	../examples/calib-radial-distortion.cpp \
-	../examples/calib-radial-distortion-tools.cpp 
+	../examples/calib-radial-distortion-tools.cpp \
+	../examples/calib-radial-distortion.h
+
 icl_calib_radial_distortion_LDFLAGS=${XLDFLAGS}
 icl_calib_radial_distortion_CXXFLAGS=${XCXXFLAGS}
 
