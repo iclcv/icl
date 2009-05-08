@@ -38,7 +38,8 @@ include_HEADERS= \
 ../src/iclVQ2D.h \
 ../src/iclVQClusterInfo.h \
 ../src/iclVQVectorSet.h \
-../src/iclSimpleBlobSearcher.h
+../src/iclSimpleBlobSearcher.h \
+../src/iclPositionTracker.h
 
 libICLBlob_la_CXXFLAGS=${AM_CXXFLAGS} \
 	-I../../ICLCore/src \
