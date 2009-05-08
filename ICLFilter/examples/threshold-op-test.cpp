@@ -75,6 +75,7 @@ int main(){
     Point p = im.getLocation(it,0);
     int x = p.x;
     int y = p.y;
+    DEBUG_LOG("X:" << x << " Y:" << y);
     switch(apc[y][x]){
       case '.': *it = 255; break;
       case 'a': *it = 100; break;

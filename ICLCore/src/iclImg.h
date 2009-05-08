@@ -1272,18 +1272,7 @@ namespace icl {
         </code>
         Optionally, returned point can be calculated w.r.t. the images roi offset.
     **/
-    Point getLocation(const Type *p, int channel, bool relToROI=false) const{
-      ICLASSERT_RETURN_VAL(validChannel(channel), Point::null);
-      ICLASSERT_RETURN_VAL(getDim(), Point::null);
-      int offs = (int)(getData(channel)-p);
-      int x = offs%getWidth();
-      int y = offs/getWidth();
-      if(relToROI){
-        return Point(x-getROI().x,y-getROI().y);
-      }else{
-        return Point(x,y);
-      }
-    }
+    Point getLocation(const Type *p, int channel, bool relToROI=false) const;
     
     /// shows the image value by value at std::out
     /** Warning: <b>SLOW</b>

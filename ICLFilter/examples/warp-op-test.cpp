@@ -52,7 +52,7 @@ int main(int n, char **ppc){
   pa_init(n,ppc,"-w(1) -input(2)");
 
   if(!pa_defined("-w") || !pa_defined("-input")){
-    pa_usage("please define -i arg");
+    pa_usage("please define -input and -w args");
     exit(-1);
   }
   

@@ -216,6 +216,11 @@ void detect_vis(bool add=false){
   cc(&IMAGE,&grayIm);
   
   static LocalThresholdOp lt(35,-10,0);
+  static int &threshold = gui.getValue<int>("thresh");
+  static int &maskSize = gui.getValue<int>("mask-size");
+  lt.setGlobalThreshold(threshold);
+  lt.setMaskSize(maskSize);
+  
   static ImgBase *ltIm = 0;
   lt.apply(&grayIm,&ltIm);
 
@@ -362,10 +367,13 @@ void init(){
   
   gui << "draw[@minsize=32x24@handle=image]";
   GUI controls("vbox[@minsize=10x1]");
-  controls << "image[@maxsize=100x2@label=state@handle=state]";
+  controls << "image[@maxsize=100x2@minsize=5x2label=state@handle=state]";
   controls << "combo(!color,gray,thresh,morph,warp,warp-field,warp-map)[@out=vis@label=visualization]";
   controls << "togglebutton(off,on)[@out=grab-loop-val@handle=grab-loop@label=grab loop]";
-  controls << "fslider(1.0,2.0,1.2)[@out=min-form-factor@label=roundness]";
+  controls << "fslider(0.8,2.0,1.1)[@out=min-form-factor@label=roundness]";
+  controls << (GUI("vbox[@label=local threshold]") 
+               << "slider(2,100,10)[@out=mask-size@label=mask size]"
+               << "slider(-20,20,-10)[@out=thresh@label=threshold]");
   controls << "button(add)[@handle=add]";
   controls << "button(optimize)[@handle=optimize]";
   controls << "button(save)[@handle=save]";
