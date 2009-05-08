@@ -100,9 +100,9 @@ namespace icl{
           mem->insert(anchor.getDocumentText(), attToUse);
        }else{
          
-         mem->replace(anchor.getDocumentText(), attToUse);
-         std::ostringstream oss;
+//         mem->replace(anchor.getDocumentText(), attToUse);
          //---------
+         std::ostringstream oss;
          oss << "/*[@dbxml:id='" << anchor.getDocument().getID() << "']";
          mem->replaceByXPath(oss.str(), anchor.getDocumentText(), attToUse);
 #if 0
