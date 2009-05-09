@@ -97,18 +97,21 @@ namespace icl{
 
     try{
        if(insertInsteadOfReplace){
+#if 1 
+          // to workaround the replace-bug of the C++ memory
+          // we add the current id as dlgid
+          // this is needed for the (old) ERBI robot setup
+          anchor["dlgid"] = anchor.getDocument().getID();
+#endif
           mem->insert(anchor.getDocumentText(), attToUse);
        }else{
          
-//         mem->replace(anchor.getDocumentText(), attToUse);
-         //---------
-         std::ostringstream oss;
-         oss << "/*[@dbxml:id='" << anchor.getDocument().getID() << "']";
-         mem->replaceByXPath(oss.str(), anchor.getDocumentText(), attToUse);
-#if 0
-          
-          anchor["dlgid"] = anchor.getDocument().getID();
-          mem->insert(anchor.getDocumentText(), attToUse);
+#if 0 // replace igores attachments currently
+          mem->replace(anchor.getDocumentText(), attToUse);
+#else
+          std::ostringstream oss;
+          oss << "/*[@dbxml:id='" << anchor.getDocument().getID() << "']";
+          mem->replaceByXPath(oss.str(), anchor.getDocumentText(), attToUse);
 #endif
        }
     }catch(const std::exception &ex){
