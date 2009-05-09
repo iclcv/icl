@@ -1,7 +1,6 @@
 #ifndef ICL_DYN_VECTOR_H
 #define ICL_DYN_VECTOR_H
 
-#include <iclTypes.h>
 #include <valarray>
 
 namespace icl{
