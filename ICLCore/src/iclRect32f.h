@@ -8,7 +8,11 @@
 
 namespace icl {
   
-  /// Floatin point precision implementation of the Rect class \ingroup TYPES
+  /** \çond */
+  class Rect;
+  /** \endçond */
+  
+  /// Floating point precision implementation of the Rect class \ingroup TYPES
   class Rect32f{
     public:
    
@@ -44,6 +48,9 @@ namespace icl {
       this->width = r.width;
       this->height = r.height;
     }
+    
+    /// create a floating point rect from given int-valued rect
+    Rect32f(const Rect &rect);
 
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }

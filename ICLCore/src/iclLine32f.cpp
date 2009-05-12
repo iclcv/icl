@@ -1,10 +1,13 @@
-#include "iclLine32f.h"
+#include <iclLine32f.h>
+#include <iclLine.h>
 #include <math.h>
 #include <algorithm>
 
 using namespace std;
 
 namespace icl{
+
+  Line32f::Line32f(const Line &l):start(l.start),end(l.end){}
 
   Line32f::Line32f(Point32f start, float arc, float length):
     start(start){

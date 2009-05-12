@@ -2,11 +2,15 @@
 #define ICL_LINE_32f_H
 
 #include <iclPoint32f.h>
-#include "iclLine.h"
 #include <iclRect.h>
 #include <vector>
 
 namespace icl{
+
+  /** \cond */
+  class Line;
+  /** \endcond */
+  
   /// The ICLs abstract line class describing a line from Point "start" to Point "end" \ingroup TYPES
   /** @see icl::Line
   */
@@ -31,7 +35,7 @@ namespace icl{
     
     /// Creates a line by a given integer line
     /** @param l interger line*/
-    Line32f(const Line &l):start(l.start),end(l.end){} 
+    Line32f(const Line &l);
 
     /// translates a line by a given vector
     /** @param p translation vector
