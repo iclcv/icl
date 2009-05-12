@@ -229,6 +229,28 @@ namespace icl{
     /// returns the camera name
     const std::string &getName() const { return m_name; }
 
+    /// removes the view port transformation from given point
+    Point32f removeViewPortTransformation(const Point32f &f) const;
+
+    /// 3D position estimation using Pseudo-inverse approach
+    /** @param camera list
+        @param positions projection of searched 3D point on the screen of cameras
+                         index i belongs to camera i
+        @param normalizedViewPort if set to false, positions have to be
+                                  in the cameras viewPort-coordinate system
+                                  e.g. within a default image rectangle (0,0)640x480.
+                                  Otherwise, positions are expected to be in cameras normalized 
+                                  default coordinate system [-1,1]² (please note, that somtimes
+                                  this coordinate system is flipped in x- and y-direction
+        @param removeInvalidPoints if set, given points, that are currently not visible in
+                                   the corresponding cameras viewport are removed, before the 
+                                   computation of 3D position is applied
+    */
+    static Vec estimate_3D(const std::vector<Camera*> cams, 
+                           const std::vector<Point32f> &UVs,
+                           bool normalizedViewPort=false,
+                           bool removeInvalidPoints=false);
+
     private:
     Vec m_pos;        //!< center position vector
     Vec m_norm;       //!< norm vector

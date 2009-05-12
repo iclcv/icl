@@ -231,6 +231,75 @@ namespace icl{
       return cross(nn,ut);
     }
   }
-  
+
+
+  static Vec estimate_3D_internal(const std::vector<Camera*> cams, 
+                                  const std::vector<Point32f> &UVs,
+                                  bool normalizedViewPort){
+    // {{{ open
+    ICLASSERT_RETURN_VAL(cams.size() > 1, 0.0);
+    int N = (int)cams.size();
+    DynMatrix<float> A(3,N*2);
+    DynMatrix<float> B(1,N*2);
+    
+    for(int i=0;i<N;++i){
+      const Camera &cam = *cams[i];
+      float lambda = cam.getFocalLength();
+      Mat T = cam.getCoordinateSystemTransformationMatrix();
+      FixedRowVector<float,3> x = T.part<0,0,3,1>(),
+      y = T.part<0,1,3,1>(),
+      z = T.part<0,2,3,1>();
+      FixedColVector<float,3> t = T.part<3,0,1,3>();
+      
+      // UVs[i] is in screen coordinates, so we have to re-transform it into normalized viewport coordinates
+        
+      Point32f uv = normalizedViewPort ? UVs[i] : cam.removeViewPortTransformation(UVs[i]);
+      float u = uv.x;
+      float v = uv.y;
+      
+      A.row(2*i+0) = DynMatrix<float>(3,1,(x*lambda - z*u).data());
+      A.row(2*i+1) = DynMatrix<float>(3,1,(y*lambda - z*v).data());
+      
+      B[2*i+0] = t[2]*u - lambda*t[0];  
+      B[2*i+1] = t[2]*v - lambda*t[1];  
+    }
+    
+    DynMatrix<float> p = A.pinv() * B;
+    
+    return Vec(p.begin());
+  }
+
+  // }}}
+
+  Point32f Camera::removeViewPortTransformation(const Point32f &f) const{
+    // {{{ open
+    
+    Vec uv = getViewPortMatrix().inv() * Vec(f.x,f.y,0,1);
+    return Point32f(-uv[0],-uv[1]);
+  }
+  // }}}
+
+  Vec Camera::estimate_3D(const std::vector<Camera*> cams, 
+                          const std::vector<Point32f> &UVs,
+                          bool normalizedViewPort,
+                          bool removeInvalidPoints){
+    // {{{ open
+    ICLASSERT_RETURN_VAL(cams.size() == UVs.size(),0.0);
+    if(removeInvalidPoints){
+      std::vector<Camera*> camsOk;
+      std::vector<Point32f> uvsOk;
+      for(unsigned int i=0;i<cams.size();++i){
+        Rect32f vp = normalizedViewPort ? cams[i]->getNormalizedViewPort() : cams[i]->getViewPort(); 
+        if(vp.contains(UVs[i].x,UVs[i].y)){
+          camsOk.push_back(cams[i]);
+          uvsOk.push_back(UVs[i]);
+        }
+      }
+      return estimate_3D_internal(camsOk,uvsOk,normalizedViewPort);
+    }else{
+      return estimate_3D_internal(cams,UVs,normalizedViewPort);
+    }
+  }
+  // }}}
 
 }
