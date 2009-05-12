@@ -121,6 +121,19 @@ namespace icl{
                   0     , 0     , 0 , 1 );
 
   }
+
+  float Camera::getViewPortAspectRatio() const{
+    return float(m_viewPort.width)/m_viewPort.height;
+  }
+
+  Rect32f Camera::getNormalizedViewPort() const{
+    float ar = getViewPortAspectRatio();
+    if(ar > 1){
+      return Rect32f(-ar,-1,2*ar,2);
+    }else{
+      return Rect32f(-1,-ar,2,2*ar);
+    }
+  }
   
   Vec Camera::screenToCameraFrame(const Point32f &pixel) const{
     // Todo: optimize this code by pre-calculate inverse matrices ...
@@ -138,19 +151,11 @@ namespace icl{
   Vec Camera::screenToWorldFrame(const Point32f &pixel) const{
     return cameraToWorldFrame(screenToCameraFrame(pixel));
   }
-  /*
-      struct ViewRay{
-      Vec offset;
-      Vec direction;
-      };
-  */
   
-  /// Returns a view-ray equation of given pixel location
   Camera::ViewRay Camera::getViewRay(const Point32f &pixel) const{
     return ViewRay(m_pos, screenToWorldFrame(pixel)-m_pos);
   }
   
-  /// Returns a view-ray equation of given point in the world
   Camera::ViewRay Camera::getViewRay(const Vec &Xw) const{
     return ViewRay(m_pos, Xw-m_pos);
   }
@@ -166,6 +171,16 @@ namespace icl{
     return Point32f(vP[0],vP[1]);
   }
 
+  Point32f Camera::projectToNormalizedViewPort(const Vec &v) const{
+    Mat C = getCoordinateSystemTransformationMatrix();
+    Mat P = getProjectionMatrix();
+    
+    Vec vP = homogenize(P*C*v);
+    
+    return Point32f(-vP[0],-vP[1]); // (-) ? 
+  }
+
+
   FixedMatrix<float,4,2> Camera::get4Dto2DMatrix() const{
     Mat C = getCoordinateSystemTransformationMatrix();
     Mat P = getProjectionMatrix();
@@ -173,9 +188,7 @@ namespace icl{
     
     return FixedMatrix<float,4,2> ((V*P*C).begin());
   }
-  
-
-
+ 
   /// Projects a set of points (just an optimization)
   void Camera::project(const std::vector<Vec> &Xws, std::vector<Point32f> &dst) const{
     dst.resize(Xws.size());

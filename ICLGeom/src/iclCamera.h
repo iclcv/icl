@@ -4,6 +4,7 @@
 #include <iclLockable.h>
 #include <iclObject.h>
 #include <iclSize.h>
+#include <iclRect32f.h>
 
 // the icl namespace
 namespace icl{
@@ -175,6 +176,14 @@ namespace icl{
       return m_viewPort;
     }
     
+    /// returns normalized viewport of size [-1,1²] (+Aspect-Ratio)
+    /** The normalized viewport is give when projecting points without
+        transforming them by the ViewPort transformation matrix */
+    Rect32f getNormalizedViewPort() const;
+    
+    /// retruns the viewports aspect-ratio (width/height)
+    float getViewPortAspectRatio() const;
+    
     /// Transforms a point at given camera pixel location into the camera frame
     Vec screenToCameraFrame(const Point32f &pixel) const;
     
@@ -201,6 +210,9 @@ namespace icl{
     
     /// Projects a world point to the screen
     Point32f project(const Vec &Xw) const;
+
+    /// Projects a given point into normalized viewport coordinates
+    Point32f projectToNormalizedViewPort(const Vec &v) const;
     
     /// Projects a set of points (just an optimization)
     const std::vector<Point32f> project(const std::vector<Vec> &Xws) const;
