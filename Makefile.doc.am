@@ -9,7 +9,7 @@ doc:
 
 cleandoc:
 	@echo removing documentation
-	@rm -rf doc
+	@rm -rf doc/html
 
 clean-local: cleandoc
 
