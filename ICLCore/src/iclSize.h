@@ -171,11 +171,11 @@ namespace icl {
   };
 
   /// ostream operator WIDTHxHEIGHT
-  std::ostream &operator<<(std::ostream &s, const Size &s);
+  std::ostream &operator<<(std::ostream &os, const Size &s);
   
   /// istream operator parses a size from a string
   /** also called in Size::Size(const std::string&)**/
-  std::istream &operator>>(std::istream &s, Size &s);
+  std::istream &operator>>(std::istream &is, Size &s);
   
 }// namespace icl
 

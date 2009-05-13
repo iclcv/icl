@@ -1,5 +1,6 @@
 #include "iclProgArg.h"
 #include <string>
+#include <cstdio>
 
 using namespace icl;
 using std::string;

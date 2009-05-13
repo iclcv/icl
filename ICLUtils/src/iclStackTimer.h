@@ -5,6 +5,7 @@
 #include <iclTimer.h>
 #include <string>
 #include <iclMacros.h>
+#include <cstdio>
 
 namespace icl{
   /// Tool for benchmarking method calls \ingroup TIME

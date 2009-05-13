@@ -1,6 +1,7 @@
 #include "iclStringUtils.h"
 #include "iclStrTok.h"
 #include <limits>
+#include <cstdio>
 
 using std::string;
 using std::vector;

@@ -251,10 +251,10 @@ namespace icl{
   };
 
   /// ostream operator SIZExCHANNELS@FORMAT.ROI
-  std::ostream &operator<<(std::ostream &s, const ImgParams &s);
+  std::ostream &operator<<(std::ostream &os, const ImgParams &p);
   
   /// istream operator
-  std::istream &operator>>(std::istream &s, ImgParams &s);
+  std::istream &operator>>(std::istream &is, ImgParams &p);
 
 }
 

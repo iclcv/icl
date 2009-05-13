@@ -1,6 +1,6 @@
 #include <iclFPSEstimator.h>
 #include <iclMacros.h>
-
+#include <cstdio>
 namespace icl{
   FPSEstimator::FPSEstimator(int n){
     reset(n);

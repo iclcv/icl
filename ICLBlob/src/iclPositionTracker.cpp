@@ -4,6 +4,7 @@
 #include <math.h>
 #include <set>
 #include <limits>
+#include <cstdio>
 
 /**                             new data
                          | o   o  x(t)  o   o

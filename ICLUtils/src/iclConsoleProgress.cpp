@@ -1,5 +1,5 @@
 #include <iclConsoleProgress.h>
-
+#include <cstdio>
 using namespace std;
 using namespace icl;
 

@@ -61,10 +61,10 @@ namespace icl{
   };
 
   /// ostream operator WIDTHxHEIGHT
-  std::ostream &operator<<(std::ostream &s, const Size32f &s);
+  std::ostream &operator<<(std::ostream &os, const Size32f &s);
   
   /// istream operator
-  std::istream &operator>>(std::istream &s, Size32f &s);
+  std::istream &operator>>(std::istream &is, Size32f &s);
 
 }// namespace icl
 

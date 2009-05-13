@@ -8,6 +8,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <iclException.h>
+#include <cstdio>
 
 namespace icl{
   
