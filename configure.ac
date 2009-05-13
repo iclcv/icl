@@ -106,6 +106,38 @@ AM_CONDITIONAL([HAVE_LIBDC_COND],[test x$HAVE_LIBDC = xTRUE])
 
 
 #########################################################################################
+ICL_NOTIFY_CHECK([OpenGL        ])
+#########################################################################################
+
+ICL_WITH_ROOT([OPENGL],[/usr])
+HAVE_OPENGL=TRUE
+
+ICL_PUSH_FLAG_VARS
+
+ICL_EXTEND_FLAG_VARS_TMP_FOR(OPENGL,lib,include)
+AC_CHECK_HEADER([GL/gl.h],[],[HAVE_OPENGL=FALSE])
+AC_CHECK_HEADER([GL/glu.h],[],[HAVE_OPENGL=FALSE])
+AC_CHECK_LIB([GL],[glBegin],[],[HAVE_OPENGL=FALSE])
+AC_CHECK_LIB([GLU],[gluLookAt],[],[HAVE_OPENGL=FALSE])
+
+ICL_POP_FLAG_VARS
+
+if test "$HAVE_OPENGL" = "TRUE" ; then
+
+ICL_EXTEND_FLAG_VARS_2(
+        [OPENGL],
+        [-L$OPENGL_ROOT/lib -lGL -lGLU],
+        [-Wl,-rpath=${OPENGL_ROOT}/lib],
+        [-I$OPENGL_ROOT/include],
+        [-DHAVE_OPENGL])
+
+fi
+
+AM_CONDITIONAL([HAVE_OPENGL_COND],[test x$HAVE_OPEN = xTRUE])
+
+
+
+#########################################################################################
 ICL_NOTIFY_CHECK([Unicap        ])
 #########################################################################################
 
@@ -410,6 +442,7 @@ AC_MSG_NOTICE([+---------------------------------------+])
 ICL_NOTIFY_SUPPORT([IPP],          [IPP      ])
 ICL_NOTIFY_SUPPORT([LIBDC],        [libdc1394])
 ICL_NOTIFY_SUPPORT([UNICAP],       [Unicap   ])
+ICL_NOTIFY_SUPPORT([OPENGL],       [OpenGL   ])
 ICL_NOTIFY_SUPPORT([QT],           [Qt       ])
 ICL_NOTIFY_SUPPORT([LIBJPEG],      [libjpeg  ])
 ICL_NOTIFY_SUPPORT([LIBZ],         [libz     ])
@@ -473,6 +506,7 @@ ICL_PC_ENTRY([])
 ICL_PC_ENTRY_FOR_ROOT([IPP])
 ICL_PC_ENTRY_FOR_ROOT([LIBDC])
 ICL_PC_ENTRY_FOR_ROOT([UNICAP])
+ICL_PC_ENTRY_FOR_ROOT([OPENGL])
 ICL_PC_ENTRY_FOR_ROOT([QT])
 ICL_PC_ENTRY_FOR_ROOT([LIBJPEG])
 ICL_PC_ENTRY_FOR_ROOT([VIDEODEV])
@@ -492,9 +526,6 @@ ICL_PC_ENTRY([Libs: -L${libdir} -Wl,-rpath=${libdir} $ICL_PC_LIBS])
 ICL_PC_ENTRY([])
 ICL_PC_ENTRY([Cflags: -I${includedir} $ICL_PC_CFLAGS])
 
-
-# This is not done -> ICLProjects Makefile system must be adapted!
-#ICL_CREATE_PROJECTS_COMPABILITY_FILES()
 
 # make autoconf create makefile 
 # note: this macros is not able to work with variables,
