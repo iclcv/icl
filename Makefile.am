@@ -6,6 +6,7 @@ PACKAGES = @ICL_BUILD_PACKAGES@
 EXTRA_DIST=bootstrap.sh @ICL_DOC_MAKEFILES_DIST@ doxyfile doc scripts ICLQt/examples/calib-radial-distortion-tools.h VERSION.sh 
 MKDIR_P ?= mkdir -p
 
+
 .PHONY: doc
 
 doc:

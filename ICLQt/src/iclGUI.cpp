@@ -580,13 +580,13 @@ namespace icl{
       getGUI()->unlockData();
       
       int iVerticalFlag = vertical(def);
-      float fMin = def.floatParam(0);
-      float fMax = def.floatParam(1);
+      m_fMinVal = def.floatParam(0);
+      m_fMaxVal = def.floatParam(1);
       float fCurr = def.floatParam(2);
       int nDigits = 6;
       
-      m_fM = (fMax-fMin)/10000.0;
-      m_fB = fMin;
+      m_fM = (m_fMaxVal-m_fMinVal)/10000.0;
+      m_fB = m_fMinVal;
       
       if(iVerticalFlag){
         m_poSlider = new QSlider(Qt::Vertical,def.parentWidget());
@@ -611,7 +611,7 @@ namespace icl{
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<FSliderHandle>(def.handle(),FSliderHandle(m_poSlider,fMin,fMax,10000,this));
+        getGUI()->allocValue<FSliderHandle>(def.handle(),FSliderHandle(m_poSlider,&m_fMinVal,&m_fMaxVal,&m_fM,&m_fB,10000,this));
         getGUI()->unlockData();
       }
     }
@@ -635,6 +635,7 @@ namespace icl{
     QLCDNumber *m_poLCD;
     float *m_pfValue;
     float m_fM,m_fB;
+    float m_fMinVal, m_fMaxVal;
     int f2i(float f){
       return (int)((f-m_fB)/m_fM);
     }
@@ -1395,7 +1396,8 @@ public:
 
       if(!parentWidget){
         //        std::cout << "setting window title:" << QApplication::applicationName().toLatin1().data() << std::endl;
-        m_poWidget->setWindowTitle(File(QApplication::arguments().at(0).toLatin1().data()).getBaseName().c_str());
+        //m_poWidget->setWindowTitle(File(QApplication::arguments().at(0).toLatin1().data()).getBaseName().c_str());
+        m_poWidget->setWindowTitle(File(QApplication::applicationName().toLatin1().data()).getBaseName().c_str());
       }
       
       if(!m_poWidget){

@@ -9,5 +9,9 @@ if [ "$1" = "--help" ] ; then
     exit 0 ;
 fi
 
+if [ "`pkg-config --exists icl && echo yes || echo no`" == "no" ] ; then
+    echo "icl.pc could not be found in your PKG_CONFIG_PATH" ;
+    exit -1 ;
+fi
 
 CXXFLAGS="$CXXFLAGS $(pkg-config --cflags icl) -I." LDFLAGS="$LDFLAGS $(pkg-config --libs icl)" make $1

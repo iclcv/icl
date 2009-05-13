@@ -73,24 +73,8 @@ icl_weighted_sum_op_test_CXXFLAGS=${XCXXFLAGS}
 if HAVE_IPP_COND
 
 bin_PROGRAMS+= \
-icl-interactive-canny-demo \
 icl-wiener-op-test \
-icl-morphological-op-test \
-icl-convolution-op-test \
-icl-warp-op-test
-
-icl_warp_op_test_SOURCES=../examples/warp-op-test.cpp
-icl_warp_op_test_LDFLAGS=${XLDFLAGS}
-icl_warp_op_test_CXXFLAGS=${XCXXFLAGS}
-
-
-icl_convolution_op_test_SOURCES=../examples/convolution-op-test.cpp
-icl_convolution_op_test_LDFLAGS=${XLDFLAGS}
-icl_convolution_op_test_CXXFLAGS=${XCXXFLAGS}
-
-icl_interactive_canny_demo_SOURCES=../examples/interactive-canny-demo.cpp
-icl_interactive_canny_demo_LDFLAGS=${XLDFLAGS}
-icl_interactive_canny_demo_CXXFLAGS=${XCXXFLAGS}
+icl-morphological-op-test
 
 icl_wiener_op_test_SOURCES=../examples/wiener-op-test.cpp
 icl_wiener_op_test_LDFLAGS=${XLDFLAGS}
@@ -100,7 +84,29 @@ icl_morphological_op_test_SOURCES=../examples/morphological-op-test.cpp
 icl_morphological_op_test_LDFLAGS=${XLDFLAGS}
 icl_morphological_op_test_CXXFLAGS=${XCXXFLAGS}
 
+if HAVE_QT_COND
+
+bin_PROGRAMS+= \
+icl-interactive-canny-demo \
+icl-convolution-op-test \
+icl-warp-op-test
+
+icl_interactive_canny_demo_SOURCES=../examples/interactive-canny-demo.cpp
+icl_interactive_canny_demo_LDFLAGS=${XLDFLAGS}
+icl_interactive_canny_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_warp_op_test_SOURCES=../examples/warp-op-test.cpp
+icl_warp_op_test_LDFLAGS=${XLDFLAGS}
+icl_warp_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_convolution_op_test_SOURCES=../examples/convolution-op-test.cpp
+icl_convolution_op_test_LDFLAGS=${XLDFLAGS}
+icl_convolution_op_test_CXXFLAGS=${XCXXFLAGS}
+
 endif
+
+endif
+
 
 if HAVE_QT_COND
 bin_PROGRAMS+= \

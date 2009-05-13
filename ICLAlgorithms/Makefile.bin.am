@@ -29,19 +29,22 @@ bin_PROGRAMS=
 
 if HAVE_IPP_COND
 bin_PROGRAMS+= \
-icl-interactive-template-matching-demo \
 icl-template-matching-test
-
-
-# explicit sources, ldflags and cxxflags
-icl_interactive_template_matching_demo_SOURCES=../examples/interactive-template-matching-demo.cpp
-icl_interactive_template_matching_demo_LDFLAGS=${XLDFLAGS}
-icl_interactive_template_matching_demo_CXXFLAGS=${XCXXFLAGS}
-
 
 icl_template_matching_test_SOURCES=../examples/template-matching-test.cpp
 icl_template_matching_test_LDFLAGS=${XLDFLAGS}
 icl_template_matching_test_CXXFLAGS=${XCXXFLAGS}
+
+if HAVE_QT_COND
+bin_PROGRAMS+= \
+icl-interactive-template-matching-demo
+
+icl_interactive_template_matching_demo_SOURCES=../examples/interactive-template-matching-demo.cpp
+icl_interactive_template_matching_demo_LDFLAGS=${XLDFLAGS}
+icl_interactive_template_matching_demo_CXXFLAGS=${XCXXFLAGS}
+endif
+
+
 endif
 
 #################################################################################

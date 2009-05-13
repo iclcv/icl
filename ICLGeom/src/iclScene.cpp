@@ -38,11 +38,14 @@ namespace icl{
     }
   }
   
+#ifdef HAVE_QT
   void Scene::render(ICLDrawWidget *w) const{
     for(unsigned int i=0;i<m_objs.size();i++){
       m_objs[i]->render(w);
     }
   }
+#endif
+
   void Scene::render(Img32f *image) const{
     for(unsigned int i=0;i<m_objs.size();i++){
       m_objs[i]->render(image);

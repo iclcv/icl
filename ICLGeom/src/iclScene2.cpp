@@ -9,8 +9,11 @@
 #include <iclGeomDefs.h>
 #include <iclStringUtils.h>
 
+#ifdef HAVE_OPENGL
 #include <GL/gl.h>
 #include <GL/glu.h>
+#endif
+
 #include <set>
 
 namespace icl{
@@ -508,6 +511,7 @@ namespace icl{
   }
   
   void Scene2::render(int camIndex){
+#ifdef HAVE_OPENGL
     Mutex::Locker l(this);
     ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
     Camera &cam = m_cameras[camIndex];
@@ -649,6 +653,7 @@ namespace icl{
         glDisable(flags[i]);
       }
     }
+#endif
   }
 
 

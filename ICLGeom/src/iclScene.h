@@ -10,10 +10,14 @@
 // the icl namespace
 namespace icl{
   
+
   /** \cond */
+#ifdef HAVE_QT
   class ICLDrawWidget;
+#endif
   /** \endcond*/
-  
+
+
   /// class for a 3D Scene containing objects and a camera
   /** The scene class is top level class for 3D geometry handling
       using the ICLGeom package.
@@ -66,9 +70,10 @@ namespace icl{
     /// sets a new scene camera
     void setCam(const Camera &cam) { m_cam = cam; }
     
+#ifdef HAVE_QT
     /// renders the scene into the given draw-widget
     void render(ICLDrawWidget *w) const;
-
+#endif
     /// renders the scene into the given image
     void render(Img32f *image) const;
     
