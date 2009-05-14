@@ -2,6 +2,7 @@
 #define ICL_REGION_PART_H
 
 #include <iclScanLine.h>
+#include <vector>
 
 namespace icl{
   

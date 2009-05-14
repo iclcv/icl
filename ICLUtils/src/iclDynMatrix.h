@@ -33,7 +33,7 @@ namespace icl{
   struct DynMatrix{
     
     /// Default empty constructor creates a null-matrix
-    DynMatrix():m_rows(0),m_cols(0),m_ownData(true),m_data(0){}
+    DynMatrix():m_rows(0),m_cols(0),m_data(0),m_ownData(true){}
     
     /// Create a dyn matrix with given dimensions (and optional initialValue)
     DynMatrix(unsigned int cols,unsigned int rows,const  T &initValue=0) throw (InvalidMatrixDimensionException) : 

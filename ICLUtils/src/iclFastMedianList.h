@@ -2,7 +2,7 @@
 #define ICL_FASTMEDIANLIST_H
 
 #include <string.h>
-
+#include <cmath>
 namespace icl{
   /// Utility class for fast calculation of a median (calculating a median in O(N)) \ingroup G_UTILS
   /** The median of a set S is defined by the element of sorted S at indes |S|/2
