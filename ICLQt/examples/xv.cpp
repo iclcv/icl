@@ -3,6 +3,8 @@
 #include <iclFileGrabber.h>
 #include <iclCommon.h>
 
+//#include <QScreen>
+
 GUI gui;
 ICLDrawWidget *w=0;
 
@@ -69,7 +71,7 @@ int main (int n, char **ppc){
         std::cout << "(skipping!)" << std::endl;
       }
     }
-    gui << std::string("multidraw(")+imageList+",!all,!deepcopy)[@minsize="+icl::str(maxSize/20)+"@handle=image]";
+    gui << std::string("multidraw(")+imageList+",!all,!deepcopy)[@handle=image]";
     gui.show();
     
     MultiDrawHandle &h = gui.getValue<MultiDrawHandle>("image");
@@ -99,7 +101,10 @@ int main (int n, char **ppc){
   
   if(image.getDim()){
     w->setImage(&image);
-    w->resize(QSize(image.getWidth(),image.getHeight()));
+    Rect r = image.getImageRect();
+    // does not work    QScreen &screen = *QScreen::instance();
+    r = r & Rect(0,0,1024,768);
+    w->resize(QSize(r.width,r.height));
   }
   
   app.exec();
