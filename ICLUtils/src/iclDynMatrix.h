@@ -11,6 +11,11 @@
 #include <iclException.h>
 #include <iclMacros.h>
 
+#ifdef HAVE_IPP
+#include <ipp.h>
+#endif
+
+
 namespace icl{
 
   struct InvalidMatrixDimensionException :public ICLException{
@@ -33,10 +38,10 @@ namespace icl{
   struct DynMatrix{
     
     /// Default empty constructor creates a null-matrix
-    DynMatrix():m_rows(0),m_cols(0),m_data(0),m_ownData(true){}
+    inline DynMatrix():m_rows(0),m_cols(0),m_data(0),m_ownData(true){}
     
     /// Create a dyn matrix with given dimensions (and optional initialValue)
-    DynMatrix(unsigned int cols,unsigned int rows,const  T &initValue=0) throw (InvalidMatrixDimensionException) : 
+    inline DynMatrix(unsigned int cols,unsigned int rows,const  T &initValue=0) throw (InvalidMatrixDimensionException) : 
     m_rows(rows),m_cols(cols),m_ownData(true){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       m_data = new T[cols*rows];
@@ -46,7 +51,7 @@ namespace icl{
     /// Create a matrix with given data
     /** Data can be wrapped deeply or shallowly. If the latter is true, given data pointer
         will not be released in the destructor*/
-    DynMatrix(unsigned int cols,unsigned int rows, T *data, bool deepCopy=true) throw (InvalidMatrixDimensionException) : 
+    inline DynMatrix(unsigned int cols,unsigned int rows, T *data, bool deepCopy=true) throw (InvalidMatrixDimensionException) : 
       m_rows(rows),m_cols(cols),m_ownData(deepCopy){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       if(deepCopy){
@@ -58,7 +63,7 @@ namespace icl{
     }
 
     /// Create a matrix with given data (const version: deepCopy only)
-    DynMatrix(unsigned int cols,unsigned int rows,const T *data) throw (InvalidMatrixDimensionException) : 
+    inline DynMatrix(unsigned int cols,unsigned int rows,const T *data) throw (InvalidMatrixDimensionException) : 
       m_rows(rows),m_cols(cols),m_ownData(true){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       m_data = new T[dim()];
@@ -66,21 +71,21 @@ namespace icl{
     }
 
     /// Default copy constructor
-    DynMatrix(const DynMatrix &other):
+    inline DynMatrix(const DynMatrix &other):
     m_rows(other.m_rows),m_cols(other.m_cols),m_data(new T[dim()]),m_ownData(true){
       std::copy(other.begin(),other.end(),begin());
     }
     
     /// returns with this matrix has a valid data pointer
-    bool isNull() const { return !m_data; }
+    inline bool isNull() const { return !m_data; }
 
     /// Destructor (deletes data if no wrapped shallowly)
-    ~DynMatrix(){
+    inline ~DynMatrix(){
       if(m_data && m_ownData) delete [] m_data;
     }
 
     /// Assignment operator (using deep-copy)
-    DynMatrix &operator=(const DynMatrix &other){
+    inline DynMatrix &operator=(const DynMatrix &other){
       if(dim() != other.dim()){
         delete m_data;
         m_data = new T[other.dim()];
@@ -93,7 +98,7 @@ namespace icl{
     }
 
     /// resets matrix dimensions  
-    void setBounds(unsigned int cols, unsigned int rows, bool holdContent=false, const T &initializer=0) throw (InvalidMatrixDimensionException){
+    inline void setBounds(unsigned int cols, unsigned int rows, bool holdContent=false, const T &initializer=0) throw (InvalidMatrixDimensionException){
       if((int)cols == m_cols && (int)rows==m_rows) return;
       if(!(cols*rows)) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       DynMatrix M(cols,rows,initializer);
@@ -115,48 +120,75 @@ namespace icl{
   
   
     /// Multiply elements with scalar
-    DynMatrix operator*(T f) const{
-      DynMatrix d(cols(),rows());
-      std::transform(begin(),end(),d.begin(),std::bind2nd(std::multiplies<T>(),f));
-      return d;
+    inline DynMatrix operator*(T f) const{
+      DynMatrix dst(cols(),rows());
+      return mult(f,dst);
+    }
+
+    /// Multiply elements with scalar (in source destination fashion)
+    inline DynMatrix &mult(T f, DynMatrix &dst) const{
+      dst.setBounds(cols(),rows());
+      std::transform(begin(),end(),dst.begin(),std::bind2nd(std::multiplies<T>(),f));
+      return dst;      
     }
 
     /// Multiply elements with scalar (inplace)
-    DynMatrix &operator*=(T f){
+    inline DynMatrix &operator*=(T f){
       std::transform(begin(),end(),begin(),std::bind2nd(std::multiplies<T>(),f));
       return *this;
     }
 
     /// Device elements by scalar
-    DynMatrix operator/(T f) const{
+    inline DynMatrix operator/(T f) const{
       return this->operator*(1/f);
     }
 
     /// Device elements by scalar (inplace)
-    DynMatrix &operator/=(T f){
+    inline DynMatrix &operator/=(T f){
       return this->operator*=(1/f);
     }
 
-  
-    /// Essential matrix multiplication
-    DynMatrix operator*(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
+    /// Matrix multiplication (in source destination fashion) [IPP-Supported]
+    inline DynMatrix &mult(const DynMatrix &m, DynMatrix &dst) const throw (IncompatibleMatrixDimensionException){
       if(m.rows() != cols()) throw IncompatibleMatrixDimensionException("A*B : rows(A) must be cols(B)");
-      DynMatrix d(m.cols(),rows());
-      for(unsigned int c=0;c<d.cols();++c){
-        for(unsigned int r=0;r<d.rows();++r){
-          d(c,r) = std::inner_product(row_begin(r),row_end(r),m.col_begin(c),T(0));
+      dst.setBounds(m.cols(),rows());
+      for(unsigned int c=0;c<dst.cols();++c){
+        for(unsigned int r=0;r<dst.rows();++r){
+          dst(c,r) = std::inner_product(row_begin(r),row_end(r),m.col_begin(c),T(0));
         }
       }
-      return d;
+      return dst;
+    }
+
+    /// Elementwise matrix multiplication (in source destination fashion) [IPP-Supported]
+    inline DynMatrix &elementwise_mult(const DynMatrix &m, DynMatrix &dst) const throw (IncompatibleMatrixDimensionException){
+      if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A.*B dimension mismatch");
+      dst.setBounds(cols(),rows());
+      for(int i=0;i<dim();++i){
+	dst[i] = m_data[i] * m[i];
+      }
+      return dst;
+    }
+
+    /// Elementwise matrix multiplication (without destination matrix) [IPP-Supported]
+    inline DynMatrix elementwise_mult(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
+      DynMatrix dst(cols(),rows());
+      return elementwise_mult(m,dst);
     }
     
-    /// inplace matrix multiplication applying this = this*m
-    DynMatrix &operator*=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+    /// Essential matrix multiplication [IPP-Supported]
+    inline DynMatrix operator*(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
+      DynMatrix d(m.cols(),rows());
+      return mult(m,d);
+    }
+    
+    /// inplace matrix multiplication applying this = this*m [IPP-Supported]
+    inline DynMatrix &operator*=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
       return *this=((*this)*m);
     }
     
-    /// inplace matrix devision (calling this/m.inv())
-    DynMatrix operator/(const DynMatrix &m) const 
+    /// inplace matrix devision (calling this/m.inv()) [IPP-Supported]
+    inline DynMatrix operator/(const DynMatrix &m) const 
       throw (IncompatibleMatrixDimensionException,
              InvalidMatrixDimensionException,
              SingularMatrixException){
@@ -164,7 +196,7 @@ namespace icl{
     }
 
     /// inplace matrix devision (calling this/m.inv()) (inplace)
-    DynMatrix &operator/=(const DynMatrix &m) const 
+    inline DynMatrix &operator/=(const DynMatrix &m) const 
       throw (IncompatibleMatrixDimensionException,
              InvalidMatrixDimensionException,
              SingularMatrixException){
@@ -172,33 +204,33 @@ namespace icl{
     }
 
     /// adds a scalar to each element
-    DynMatrix operator+(const T &t){
+    inline DynMatrix operator+(const T &t){
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),d.begin(),std::bind2nd(std::plus<T>(),t));
       return d;
     }
 
     /// substacts a scalar from each element
-    DynMatrix operator-(const T &t){
+    inline DynMatrix operator-(const T &t){
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),d.begin(),std::bind2nd(std::minus<T>(),t));
       return d;
     }
 
     /// adds a scalar to each element (inplace)
-    DynMatrix &operator+=(const T &t){
+    inline DynMatrix &operator+=(const T &t){
       std::transform(begin(),end(),begin(),std::bind2nd(std::plus<T>(),t));
       return *this;
     }
 
     /// substacts a scalar from each element (inplace)
-    DynMatrix &operator-=(const T &t){
+    inline DynMatrix &operator-=(const T &t){
       std::transform(begin(),end(),begin(),std::bind2nd(std::minus<T>(),t));
       return *this;
     }
 
     /// Matrix addition
-    DynMatrix operator+(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+    inline DynMatrix operator+(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
@@ -206,7 +238,7 @@ namespace icl{
     }
 
     /// Matrix substraction
-    DynMatrix operator-(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+    inline DynMatrix operator-(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
@@ -214,21 +246,21 @@ namespace icl{
     }
 
     /// Matrix addition (inplace)
-    DynMatrix &operator+=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+    inline DynMatrix &operator+=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       std::transform(begin(),end(),m.begin(),begin(),std::plus<T>());
       return *this;
     }
 
     /// Matrix substraction (inplace)
-    DynMatrix &operator-=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+    inline DynMatrix &operator-=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       std::transform(begin(),end(),m.begin(),begin(),std::minus<T>());
       return *this;
     }
   
     /// element access operator (x,y)-access index begin 0!
-    T &operator()(unsigned int col,unsigned int row){
+    inline T &operator()(unsigned int col,unsigned int row){
 #ifdef DYN_MATRIX_INDEX_CHECK
       if((int)col >= m_cols || (int)row >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
 #endif
@@ -236,7 +268,7 @@ namespace icl{
     }
 
     /// element access operator (x,y)-access index begin 0! (const)
-    const T &operator() (unsigned int col,unsigned int row) const{
+    inline const T &operator() (unsigned int col,unsigned int row) const{
 #ifdef DYN_MATRIX_INDEX_CHECK
       if((int)col >= m_cols || (int)row >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
 #endif
@@ -244,20 +276,20 @@ namespace icl{
     }
 
     /// element access with index check
-    T &at(unsigned int col,unsigned int row) throw (InvalidIndexException){
+    inline T &at(unsigned int col,unsigned int row) throw (InvalidIndexException){
       if(col>=cols() || row >= rows()) throw InvalidIndexException("row or col index too large");
       return m_data[col+cols()*row];
     }
 
     /// element access with index check (const)
-    const T &at(unsigned int col,unsigned int row) const throw (InvalidIndexException){
+    inline const T &at(unsigned int col,unsigned int row) const throw (InvalidIndexException){
       return const_cast<DynMatrix*>(this)->at(col,row);
     }
     
 
     
     /// linear access to actual data array
-    T &operator[](unsigned int idx) { 
+    inline T &operator[](unsigned int idx) { 
       idx_check(idx);
       if(idx >= dim()) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index [" << idx<< "]");
 
@@ -267,13 +299,13 @@ namespace icl{
     
 
     /// linear access to actual data array (const)
-    const T &operator[](unsigned int idx) const { 
+    inline const T &operator[](unsigned int idx) const { 
       idx_check(idx);
       return m_data[idx]; 
     }
     
     /// applies an L_l norm on the matrix elements (all elements are treated as vector)
-    T norm(double l=2) const{
+    inline T norm(double l=2) const{
       double accu = 0;
       for(unsigned int i=0;i<dim();++i){
         accu += ::pow(double(m_data[i]),l);
@@ -313,144 +345,144 @@ namespace icl{
       typedef unsigned int difference_type;
       mutable T *p;
       const unsigned int stride;
-      col_iterator(T *col_begin,unsigned int stride):p(col_begin),stride(stride){}
+      inline col_iterator(T *col_begin,unsigned int stride):p(col_begin),stride(stride){}
 
 
     /// prefix increment operator
-      col_iterator &operator++(){
+      inline col_iterator &operator++(){
         p+=stride;
         return *this;
       }
       /// prefix increment operator (const)
-      const col_iterator &operator++() const{
+      inline const col_iterator &operator++() const{
         p+=stride;
         return *this;
       }
       /// postfix increment operator
-      col_iterator operator++(int){
+      inline col_iterator operator++(int){
         col_iterator tmp = *this;
         ++(*this);
         return tmp;
       }
       /// postfix increment operator (const)
-      const col_iterator operator++(int) const{
+      inline const col_iterator operator++(int) const{
         col_iterator tmp = *this;
         ++(*this);
         return tmp;
       }
 
       /// prefix decrement operator
-      col_iterator &operator--(){
+      inline col_iterator &operator--(){
         p-=stride;
         return *this;
       }
 
       /// prefix decrement operator (const)
-      const col_iterator &operator--() const{
+      inline const col_iterator &operator--() const{
         p-=stride;
         return *this;
       }
 
       /// postfix decrement operator
-      col_iterator operator--(int){
+      inline col_iterator operator--(int){
         col_iterator tmp = *this;
         --(*this);
         return tmp;
       }
 
       /// postfix decrement operator (const)
-      const col_iterator operator--(int) const{
+      inline const col_iterator operator--(int) const{
         col_iterator tmp = *this;
         --(*this);
         return tmp;
       }
 
       /// jump next n elements (inplace)
-      col_iterator &operator+=(difference_type n){
+      inline col_iterator &operator+=(difference_type n){
         p += n * stride;
         return *this;
       }
 
       /// jump next n elements (inplace) (const)
-      const col_iterator &operator+=(difference_type n) const{
+      inline const col_iterator &operator+=(difference_type n) const{
         p += n * stride;
         return *this;
       }
 
 
       /// jump backward next n elements (inplace)
-      col_iterator &operator-=(difference_type n){
+      inline col_iterator &operator-=(difference_type n){
         p -= n * stride;
         return *this;
       }
 
       /// jump backward next n elements (inplace) (const)
-      const col_iterator &operator-=(difference_type n) const{
+      inline const col_iterator &operator-=(difference_type n) const{
         p -= n * stride;
         return *this;
       }
 
 
       /// jump next n elements
-      col_iterator operator+(difference_type n) {
+      inline col_iterator operator+(difference_type n) {
         col_iterator tmp = *this;
         tmp+=n;
         return tmp;
       }
 
       /// jump next n elements (const)
-      const col_iterator operator+(difference_type n) const{
+      inline const col_iterator operator+(difference_type n) const{
         col_iterator tmp = *this;
         tmp+=n;
         return tmp;
       }
 
       /// jump backward next n elements
-      col_iterator operator-(difference_type n) {
+      inline col_iterator operator-(difference_type n) {
         col_iterator tmp = *this;
         tmp-=n;
         return tmp;
       }
 
       /// jump backward next n elements (const)
-      const col_iterator operator-(difference_type n) const {
+      inline const col_iterator operator-(difference_type n) const {
         col_iterator tmp = *this;
         tmp-=n;
         return tmp;
       }
 
-      difference_type operator-(const col_iterator &other) const{
+      inline difference_type operator-(const col_iterator &other) const{
         return (p-other.p)/stride;
       }
 
       
       /// Dereference operator
-      T &operator*(){
+      inline T &operator*(){
         return *p;
       }
 
       /// const Dereference operator
-      T operator*() const{
+      inline T operator*() const{
         return *p;
       }
 
       /// comparison operator ==
-      bool operator==(const col_iterator &i) const{ return p == i.p; }
+      inline bool operator==(const col_iterator &i) const{ return p == i.p; }
 
       /// comparison operator !=
-      bool operator!=(const col_iterator &i) const{ return p != i.p; }
+      inline bool operator!=(const col_iterator &i) const{ return p != i.p; }
 
       /// comparison operator <
-      bool operator<(const col_iterator &i) const{ return p < i.p; }
+      inline bool operator<(const col_iterator &i) const{ return p < i.p; }
 
       /// comparison operator <=
-      bool operator<=(const col_iterator &i) const{ return p <= i.p; }
+      inline bool operator<=(const col_iterator &i) const{ return p <= i.p; }
 
       /// comparison operator >=
-      bool operator>=(const col_iterator &i) const{ return p >= i.p; }
+      inline bool operator>=(const col_iterator &i) const{ return p >= i.p; }
 
       /// comparison operator >
-      bool operator>(const col_iterator &i) const{ return p > i.p; }
+      inline bool operator>(const col_iterator &i) const{ return p > i.p; }
     };
     
     /// const column iterator typedef
@@ -470,50 +502,50 @@ namespace icl{
       unsigned int column;
       
       /// create from source matrix and column index
-      DynMatrixColumn(const DynMatrix<T> *matrix, unsigned int column):
+      inline DynMatrixColumn(const DynMatrix<T> *matrix, unsigned int column):
       matrix(const_cast<DynMatrix<T>*>(matrix)),column(column){
         DYN_MATRIX_COLUMN_CHECK(column >= matrix->cols(),"invalid column index");
       }
       
       /// Create from source matrix (only works if matrix has only single column = column-vector)
-      DynMatrixColumn(const DynMatrix<T> &matrix):
+      inline DynMatrixColumn(const DynMatrix<T> &matrix):
       matrix(const_cast<DynMatrix<T>*>(&matrix)),column(0){
         DYN_MATRIX_COLUMN_CHECK(matrix->cols() != 1,"source matrix must have exactly ONE column");
       }
       /// Shallow copy from another matrix column reference
-      DynMatrixColumn(const DynMatrixColumn &c):
+      inline DynMatrixColumn(const DynMatrixColumn &c):
       matrix(c.matrix),column(c.column){}
       
       /// returns column begin
-      col_iterator begin() { return matrix->col_begin(column); }
+      inline col_iterator begin() { return matrix->col_begin(column); }
       
       /// returns column end
-      col_iterator end() { return matrix->col_end(column); }
+      inline col_iterator end() { return matrix->col_end(column); }
 
       /// returns column begin (const)
-      const col_iterator begin() const { return matrix->col_begin(column); }
+      inline const col_iterator begin() const { return matrix->col_begin(column); }
 
       /// returns column end (const)
-      const col_iterator end() const { return matrix->col_end(column); }
+      inline const col_iterator end() const { return matrix->col_end(column); }
 
       /// returns column length (matrix->rows())
-      unsigned int dim() const { return matrix->rows(); }
+      inline unsigned int dim() const { return matrix->rows(); }
       
       /// assignment by another column
-      DynMatrixColumn &operator=(const DynMatrixColumn &c){
+      inline DynMatrixColumn &operator=(const DynMatrixColumn &c){
         DYN_MATRIX_COLUMN_CHECK(dim() != c.dim(),"dimension missmatch");
         std::copy(c.begin(),c.end(),begin());
         return *this;
       }
         
-      DynMatrixColumn &operator=(const DynMatrix &src){
+      inline DynMatrixColumn &operator=(const DynMatrix &src){
         DYN_MATRIX_COLUMN_CHECK(dim() != src.dim(),"dimension missmatch");
         std::copy(src.begin(),src.end(),begin());
         return *this;
       }      
     };
 
-    DynMatrix &operator=(const DynMatrixColumn &col){
+    inline DynMatrix &operator=(const DynMatrixColumn &col){
       DYN_MATRIX_COLUMN_CHECK(dim() != col.dim(),"dimension missmatch");
       std::copy(col.begin(),col.end(),begin());
       return *this;
@@ -524,83 +556,83 @@ namespace icl{
     
 
     /// returns an iterator to the begin of internal data array
-    iterator begin() { return m_data; }
+    inline iterator begin() { return m_data; }
 
     /// returns an iterator to the end of internal data array
-    iterator end() { return m_data+dim(); }
+    inline iterator end() { return m_data+dim(); }
   
     /// returns an iterator to the begin of internal data array (const)
-    const_iterator begin() const { return m_data; }
+    inline const_iterator begin() const { return m_data; }
 
     /// returns an iterator to the end of internal data array (const)
-    const_iterator end() const { return m_data+dim(); }
+    inline const_iterator end() const { return m_data+dim(); }
   
     /// returns an iterator running through a certain matrix column 
-    col_iterator col_begin(unsigned int col) {       
+    inline col_iterator col_begin(unsigned int col) {       
       col_check(col);
       return col_iterator(m_data+col,cols()); 
     }
 
     /// returns an iterator end of a certain matrix column 
-    col_iterator col_end(unsigned int col) {
+    inline col_iterator col_end(unsigned int col) {
       col_check(col);
       return col_iterator(m_data+col+dim(),cols()); 
     }
   
     /// returns an iterator running through a certain matrix column (const)
-    const_col_iterator col_begin(unsigned int col) const { 
+    inline const_col_iterator col_begin(unsigned int col) const { 
       col_check(col);
       return col_iterator(m_data+col,cols()); 
     }
 
     /// returns an iterator end of a certain matrix column (const)
-    const_col_iterator col_end(unsigned int col) const { 
+    inline const_col_iterator col_end(unsigned int col) const { 
       col_check(col);
       return col_iterator(m_data+col+dim(),cols()); 
     }
 
     /// returns an iterator running through a certain matrix row 
-    row_iterator row_begin(unsigned int row) { 
+    inline row_iterator row_begin(unsigned int row) { 
       row_check(row);
       return m_data+row*cols(); 
     }
 
     /// returns an iterator of a certains row's end
-    row_iterator row_end(unsigned int row) { 
+    inline row_iterator row_end(unsigned int row) { 
       row_check(row);
       return m_data+(row+1)*cols(); 
     }
 
     /// returns an iterator running through a certain matrix row  (const)
-    const_row_iterator row_begin(unsigned int row) const { 
+    inline const_row_iterator row_begin(unsigned int row) const { 
       row_check(row);
       return m_data+row*cols(); 
     }
 
     /// returns an iterator of a certains row's end (const)
-    const_row_iterator row_end(unsigned int row) const {
+    inline const_row_iterator row_end(unsigned int row) const {
       row_check(row);
       return m_data+(row+1)*cols(); 
     }
     
     /// Extracts a shallow copied matrix row
-    DynMatrix row(int row){
+    inline DynMatrix row(int row){
       row_check(row);
       return DynMatrix(m_cols,1,row_begin(row),false);
     }
 
     /// Extracts a shallow copied matrix row (const)
-    const DynMatrix row(int row) const{
+    inline const DynMatrix row(int row) const{
       row_check(row);
       return DynMatrix(m_cols,1,const_cast<T*>(row_begin(row)),false);
     }
 
     /// Extracts a shallow copied matrix column
-    DynMatrixColumn col(int col){
+    inline DynMatrixColumn col(int col){
       return DynMatrixColumn(this,col);
     }
 
-    const DynMatrixColumn col(int col) const{
+    inline const DynMatrixColumn col(int col) const{
       return DynMatrixColumn(this,col);
     }
 
@@ -626,7 +658,7 @@ namespace icl{
     T det() const throw (InvalidMatrixDimensionException);
 
     /// matrix transposed
-    DynMatrix transp() const{
+    inline DynMatrix transp() const{
       DynMatrix d(rows(),cols());
       for(unsigned int x=0;x<cols();++x){
         for(unsigned int y=0;y<rows();++y){
@@ -637,7 +669,7 @@ namespace icl{
     }
     
     /// sets new data internally and returns old data pointer (for experts only!)
-    T *set_data(T *newData){
+    inline T *set_data(T *newData){
       T *old_data = m_data;
       m_data = newData;
       return old_data;
@@ -692,6 +724,63 @@ namespace icl{
   template<class T>
   std::istream &operator>>(std::istream &s,DynMatrix<T> &m);
 
+
+#ifdef HAVE_IPP
+  /** \cond */
+  
+#define DYN_MATRIX_MULT_SPECIALIZE(IPPT)                                                                \
+  template<>	    							                                \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(                                            \
+      const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const	                                \
+    throw (IncompatibleMatrixDimensionException){			                                \
+    if(m.rows() != cols()) throw IncompatibleMatrixDimensionException("A*B : rows(A) must be cols(B)");	\
+    dst.setBounds(m.cols(),rows());					                                \
+    ippmMul_mm_##IPPT(data(),sizeof(Ipp##IPPT)*cols(),sizeof(Ipp##IPPT),cols(),rows(),                  \
+		      m.data(),sizeof(Ipp##IPPT)*m.cols(),sizeof(Ipp##IPPT),m.cols(),m.rows(),          \
+		      dst.data(),m.cols()*sizeof(Ipp##IPPT),sizeof(Ipp##IPPT));	                        \
+    return dst;					\
+  }
+
+  DYN_MATRIX_MULT_SPECIALIZE(32f)
+  DYN_MATRIX_MULT_SPECIALIZE(64f)
+#undef DYN_MATRIX_MULT_SPECIALIZE
+
+
+#define DYN_MATRIX_ELEMENT_WISE_MULT_SPECIALIZE(IPPT)	                      \
+    template<>								      \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_mult(      \
+          const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const     \
+      throw (IncompatibleMatrixDimensionException){                           \
+    if((m.cols() != cols()) || (m.rows() != rows())){                         \
+      throw IncompatibleMatrixDimensionException("A.*B dimension mismatch");  \
+    }                                                                         \
+    dst.setBounds(cols(),rows());                                             \
+    ippsMul_##IPPT(data(),m.data(),dst.data(),dim());                         \
+    return dst;                                                               \
+  }
+
+  DYN_MATRIX_ELEMENT_WISE_MULT_SPECIALIZE(32f)
+  DYN_MATRIX_ELEMENT_WISE_MULT_SPECIALIZE(64f)
+
+#undef DYN_MATRIX_ELEMENT_WISE_MULT_SPECIALIZE
+    /** \endcond */
+
+#define DYN_MATRIX_MULT_BY_CONSTANT(IPPT)	             \
+    template<>						     \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult( \
+      Ipp##IPPT f, DynMatrix<Ipp##IPPT> &dst) const{         \
+    dst.setBounds(cols(),rows());                            \
+    ippsMulC_##IPPT(data(),f, dst.data(),dim());             \
+    return dst;                                              \
+  }
+
+DYN_MATRIX_MULT_BY_CONSTANT(32f)
+DYN_MATRIX_MULT_BY_CONSTANT(64f)
+
+#undef DYN_MATRIX_MULT_BY_CONSTANT
+
+
+#endif
 
 }
 

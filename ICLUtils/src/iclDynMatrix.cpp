@@ -1,11 +1,7 @@
-#define DYN_MATRIX_INDEX_CHECK
 #include <iclDynMatrix.h>
 #include <iclMacros.h>
 #include <stdint.h>
 
-#ifdef HAVE_IPP
-#include <ippm.h>
-#endif
 
 
 namespace icl{
