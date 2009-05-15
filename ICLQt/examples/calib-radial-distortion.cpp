@@ -232,6 +232,7 @@ void detect_vis(bool add=false){
   
 
   static RegionDetector rd(100,50000,0,0);
+  rd.setRestrictions(gui.getValue<int>("min-blob-size"),50000,0,0);
   const std::vector<icl::Region> &rs = rd.detect(moIm);
   
   static std::string &vis = gui.getValue<std::string>("vis");
@@ -371,6 +372,7 @@ void init(){
   controls << "combo(!color,gray,thresh,morph,warp,warp-field,warp-map)[@out=vis@label=visualization]";
   controls << "togglebutton(off,on)[@out=grab-loop-val@handle=grab-loop@label=grab loop]";
   controls << "fslider(0.8,2.0,1.1)[@out=min-form-factor@label=roundness]";
+  controls << "slider(10,10000,500)[@out=min-blob-size@label=min blob size]";
   controls << (GUI("vbox[@label=local threshold]") 
                << "slider(2,100,10)[@out=mask-size@label=mask size]"
                << "slider(-20,20,-10)[@out=thresh@label=threshold]");
