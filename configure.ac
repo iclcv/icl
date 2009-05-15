@@ -18,6 +18,7 @@ fi
 echo " $ARCH (adding -DSYSTEM_$ARCH to CXXFLAGS)"
 
 CXXFLAGS="$CXXFLAGS -Isrc -I../src -DSYSTEM_${ARCH} -Wno-long-long -Wall"
+
 LDFLAGS="$LDFLAGS -lpthread"
 ICL_EXTEND_PC_FLAGS([],[-DSYSTEM_${ARCH}],[])
 
@@ -40,7 +41,6 @@ AC_CHECK_PROG([HAVE_PKG_CONFIG],[pkg-config],[TRUE],[FALSE])
 if test "$HAVE_PKG_CONFIG" = "FALSE" ; then
 AC_MSG_ERROR([unable to find 'pkg-config' in PATH (please install and/or adapt path variable])
 fi
-
 
 
 #########################################################################################
