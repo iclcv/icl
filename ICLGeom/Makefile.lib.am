@@ -9,8 +9,8 @@ libICLGeom_la_SOURCES= \
 ../src/iclObject.cpp \
 ../src/iclScene.cpp \
 ../src/iclObject2.cpp \
-../src/iclScene2.cpp
-
+../src/iclScene2.cpp \
+../src/iclExtrinsicCameraCalibrator.cpp
 
 include_HEADERS= \
 ../src/iclBorderedObject.h \
@@ -23,7 +23,8 @@ include_HEADERS= \
 ../src/iclScene.h \
 ../src/iclObject2.h \
 ../src/iclScene2.h \
-../src/iclPrimitive.h
+../src/iclPrimitive.h \
+../src/iclExtrinsicCameraCalibrator.h
 
 
 
