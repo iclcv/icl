@@ -35,7 +35,7 @@ namespace icl{
     Size size = f.getSize();
 
     if(desiredParams.getFormat() == formatYUV){
-      // do something else !!!
+      // do something else !!! .. something faster ??
     }
 
     if(fourcc == "Y444"){ //  YUV444 size 160x120 ORDER: U Y V
@@ -55,7 +55,7 @@ namespace icl{
       
     }else if(fourcc == "UYVY"){ //  YUV422 size = 320x240 || 640x480 ORDER: U Y1 V Y2
       ensureCompatible(ppoDst,depth8u,size,formatRGB);
-#ifdef WITH_IPP_OPTIMIZATION 
+#ifdef HAVE_IPP
       // 3Times faster on -O4
       m_oCvtBuf.resize(size.getDim()*3);
       ippiCbYCr422ToRGB_8u_C2C3R(rawData,2*size.width, m_oCvtBuf.data(),3*size.width, size);
@@ -88,11 +88,18 @@ namespace icl{
     }else if(fourcc == "YUYV"){
       ensureCompatible(ppoDst,depth8u,size,formatRGB);
 
+#ifdef HAVE_IPP
+      // 3Times faster on -O4
+      m_oCvtBuf.resize(size.getDim()*3);
+      //ippiCbYCr422ToRGB_8u_C2C3R(rawData,2*size.width, m_oCvtBuf.data(),3*size.width, size);
+      ippiYCbCr422ToRGB_8u_C2C3R(rawData,2*size.width, m_oCvtBuf.data(),3*size.width, size);
+      interleavedToPlanar(m_oCvtBuf.data(),(*ppoDst)->asImg<icl8u>());
+#else
       icl8u *dstR = (*ppoDst)->asImg<icl8u>()->getData(0);
       icl8u *dstG = (*ppoDst)->asImg<icl8u>()->getData(1);
       icl8u *dstB = (*ppoDst)->asImg<icl8u>()->getData(2);
       
-      const icl8u *pSrcEnd = rawData+size.getDim()+size.getDim()/2;
+      const icl8u *pSrcEnd = rawData+2*size.getDim();
       for(const icl8u *pSrc = rawData; pSrc <pSrcEnd ;){
         icl8u y1 = *pSrc++;
         icl8u u = *pSrc++;
@@ -102,6 +109,7 @@ namespace icl{
         yuv_to_rgb(y1,u,v,*dstR++,*dstG++,*dstB++);
         yuv_to_rgb(y2,u,v,*dstR++,*dstG++,*dstB++);     
       }
+#endif
     }else if(fourcc == "Y411"){// YUV411 size = 640x480 ORDER: U Y1 Y2 V Y3 Y4
       ensureCompatible(ppoDst,depth8u,size,formatRGB);
 

@@ -26,13 +26,23 @@ endif
 bin_PROGRAMS= \
 icl-write-file-example \
 icl-testimages-example \
-icl-jpg2cpp
+icl-jpg2cpp \
+icl-convert \
+icl-create
 
 
 # explicit sources, ldflags and cxxflags
 icl_write_file_example_SOURCES=../examples/write-file-example.cpp
 icl_write_file_example_LDFLAGS=${XLDFLAGS}
 icl_write_file_example_CXXFLAGS=${XCXXFLAGS}
+
+icl_convert_SOURCES=../examples/convert.cpp
+icl_convert_LDFLAGS=${XLDFLAGS}
+icl_convert_CXXFLAGS=${XCXXFLAGS}
+
+icl_create_SOURCES=../examples/create.cpp
+icl_create_LDFLAGS=${XLDFLAGS}
+icl_create_CXXFLAGS=${XCXXFLAGS}
 
 icl_testimages_example_SOURCES=../examples/testimages-example.cpp
 icl_testimages_example_LDFLAGS=${XLDFLAGS}

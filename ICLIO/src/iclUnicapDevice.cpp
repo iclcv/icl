@@ -257,11 +257,11 @@ namespace icl{
   
   void UnicapDevice::setFormatSize(const Size &newSize){
     // {{{ open
-    
+
     UnicapFormat f = getCurrentUnicapFormat();
     if(f.checkSize(newSize)){
       f.getUnicapFormat()->size.width = newSize.width;
-      f.getUnicapFormat()->size.width = newSize.height;
+      f.getUnicapFormat()->size.height = newSize.height;
       setFormat(f);
     }else{
       ERROR_LOG("this size is not supported for current format");          

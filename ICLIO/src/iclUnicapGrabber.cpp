@@ -27,6 +27,7 @@ namespace icl{
     m_oDevice(device),m_poConversionBuffer(0),
     m_poGrabEngine(0),m_poConvertEngine(0), m_bUseDMA(false),
     m_bProgressiveGrabMode(true){
+
     init();
   }
 
@@ -44,6 +45,7 @@ namespace icl{
     }else{
       ERROR_LOG("no device found for filter: \""<<deviceFilter<<"\"!");
     }    
+
     init();
   }
 
@@ -63,7 +65,6 @@ namespace icl{
 
   void UnicapGrabber::init(){
     // {{{ open
-
     string modelname = m_oDevice.getModelName();
     if(modelname == "Philips 740 webcam"){
       //      printf("Using PWCGrabEngine !\n");
