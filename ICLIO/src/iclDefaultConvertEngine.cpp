@@ -4,6 +4,10 @@
 #include <iclImg.h>
 #include <iclCC.h>
 
+
+#include <iclFile.h>
+#include <iclFileGrabber.h>
+
 using namespace std;
 
 namespace icl{
@@ -28,7 +32,7 @@ namespace icl{
       return false;
     }
   }
-  
+ 
   void DefaultConvertEngine::cvt(const icl8u *rawData, const ImgParams &desiredParams, depth desiredDepth, ImgBase **ppoDst){
     UnicapFormat f = m_poDevice->getCurrentUnicapFormat();
     string fourcc = f.getFourCC();
@@ -37,7 +41,7 @@ namespace icl{
     if(desiredParams.getFormat() == formatYUV){
       // do something else !!! .. something faster ??
     }
-
+    
     if(fourcc == "Y444"){ //  YUV444 size 160x120 ORDER: U Y V
       ensureCompatible(ppoDst,depth8u,size,formatRGB);
       
@@ -131,7 +135,29 @@ namespace icl{
         yuv_to_rgb(y3,u,v,*dstR++,*dstG++,*dstB++);
         yuv_to_rgb(y4,u,v,*dstR++,*dstG++,*dstB++);
       }
-      
+    }else if(fourcc == "MJPG"){
+      ensureCompatible(ppoDst,depth8u,size,formatRGB);
+#ifdef HAVE_LIBJPEG
+      static bool first = true;
+      if(first){
+        first = false;
+        DEBUG_LOG(":\n"
+                  "this is just a fallback implementation buffering jpeg data on\n"
+                  "the hard disc ...\n");
+      }
+      static const std::string tmpFileName = "/tmp/unicap-default-convert-engine.tmp.jpeg"; 
+      File file(tmpFileName,File::writeBinary);
+      file.write(rawData,size.getDim()*4);
+      try{
+        FileGrabber(tmpFileName).grab()->convert(*ppoDst);
+      }catch(ICLException &ex){
+        ERROR_LOG("current Motion JPEG image could not be read!");
+      }
+#else
+      DEBUG_LOG("Motion-JPEG is not supported without jpeg-support!\n"
+                "You need to recompile the ICL with libjpeg support");
+#endif
+
     }else if(fourcc == "Y800" || fourcc == "GREY" || fourcc == "GRAY" ){// Gray8Bit size = 640x480
       ensureCompatible(ppoDst,depth8u,size,formatGray);
       copy(rawData,rawData+size.getDim(),(*ppoDst)->asImg<icl8u>()->getData(0));

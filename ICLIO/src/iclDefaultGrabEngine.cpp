@@ -6,9 +6,10 @@ namespace icl{
     m_poDevice(device), m_iCurrBuf(0), m_bUseDMA(useDMA), m_bStarted(false), m_bProgressiveGrabMode(progressiveGrabMode){
     
     UnicapFormat fmt = m_poDevice->getCurrentUnicapFormat();
+    int bufferSize = fmt.getBufferSize() ? fmt.getBufferSize() : fmt.getSize().getDim()*4; // just something large here
     for(int i=0;i<NBUFS;i++){
-      m_oBuf[i].buffer_size = useDMA ? 0 : fmt.getBufferSize();
-      m_oBuf[i].data = useDMA ? 0 :new unsigned char[fmt.getBufferSize()];
+      m_oBuf[i].buffer_size = useDMA ? 0 : bufferSize;
+      m_oBuf[i].data = useDMA ? 0 :new unsigned char[bufferSize];
       m_oBuf[i].type = useDMA ? UNICAP_BUFFER_TYPE_SYSTEM : UNICAP_BUFFER_TYPE_USER;
       fmt.getUnicapFormat()->buffer_type = useDMA ? UNICAP_BUFFER_TYPE_SYSTEM : UNICAP_BUFFER_TYPE_USER;
     }

@@ -240,12 +240,20 @@ namespace icl{
   // }}}
   void UnicapDevice::setFormatID(const string &fmtID){
     // {{{ open
-    
+
     // search the format from the formatlist by id
     for(unsigned int i=0;i<m_oFormats.size();i++){
-      if(m_oFormats[i].getID() == fmtID ){
+      UnicapFormat &fi = m_oFormats[i];
+      if(fi.getID() == fmtID ){
         UnicapFormat f = getCurrentUnicapFormat();
-        sprintf(f.getUnicapFormat()->identifier,fmtID.c_str());
+        unicap_rect_t size = f.getUnicapFormat()->size;
+        *f.getUnicapFormat() = *fi.getUnicapFormat(); 
+        if(f.checkSize(Size(size.width,size.height))){
+          f.getUnicapFormat()->size = size;
+        }
+        // old, but we need to copy the whole format
+        // sprintf(f.getUnicapFormat()->identifier,fmtID.c_str());
+        // f.getUnicapFormat()->fourcc = fi.getUnicapFormat()->fourcc;
         setFormat(f);
         return;
       }
@@ -272,7 +280,6 @@ namespace icl{
   
   void UnicapDevice::setFormat(const string &fmtID, const Size &newSize){
     // {{{ open
-    
     for(unsigned int i=0;i<m_oFormats.size();i++){
       if(m_oFormats[i].getID() == fmtID ){
         if(m_oFormats[i].checkSize(newSize)){
