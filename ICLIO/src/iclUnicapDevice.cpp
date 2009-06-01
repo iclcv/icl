@@ -27,7 +27,9 @@ namespace icl{
       
       // properties
       unicap_status_t status = STATUS_SUCCESS;
-      for(int i=0;SUCCESS(status);i++){
+      //for(int i=0;SUCCESS(status);i++){
+      for(int i=0;i<SUCCESS (status);i++){
+        TODO_LOG("maybe we do not get all properties here!?");
         m_oProperties.push_back(UnicapProperty(m_oUnicapHandle));
         status = unicap_enumerate_properties(m_oUnicapHandle, NULL, m_oProperties[i].getUnicapProperty(),i);
         if (!SUCCESS (status)){

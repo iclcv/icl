@@ -74,7 +74,6 @@ namespace icl{
       m_poConvertEngine = 0;
     
     }else if(modelname == "DFW-VL500 2.30"){ // sony cams !
-      //printf("Using SonyGrabEngine !\n");
       m_poGrabEngine = new DefaultGrabEngine(&m_oDevice,m_bUseDMA, m_bProgressiveGrabMode);
       m_poConvertEngine = new DefaultConvertEngine(&m_oDevice);
       
@@ -569,42 +568,67 @@ namespace icl{
     ICLASSERT_RETURN_VAL(m_poGrabEngine , 0);
 
     if(!ppoDst) ppoDst = &m_poImage;  
-    ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
-    
 
-    // indicates whether a conversion to the desired parameters will be needed
-    bool needFinalConversion = false; // assume, that no conversion is needed
-    
-    // get the image from the grabber
-    m_oMutex.lock();
-    m_poGrabEngine->lockGrabber();
-    if(m_poGrabEngine->needsConversion()){
-      const icl8u *rawData = m_poGrabEngine->getCurrentFrameUnconverted();
-      if(m_poConvertEngine->isAbleToProvideParams(m_oDesiredParams,m_eDesiredDepth)){
-        m_poConvertEngine->cvt(rawData,m_oDesiredParams,m_eDesiredDepth,ppoDst);
+
+    if(getIgnoreDesiredParams()){
+      m_oMutex.lock();
+      m_poGrabEngine->lockGrabber();
+
+      // ---
+      if(m_poGrabEngine->needsConversion()){
+        const icl8u *rawData = m_poGrabEngine->getCurrentFrameUnconverted();
+        m_poConvertEngine->cvtNative(rawData,ppoDst);
       }else{
-        m_poConvertEngine->cvt(rawData,m_oDesiredParams,m_eDesiredDepth,&m_poConversionBuffer);
-        needFinalConversion = true;
+        ERROR_LOG("unable to estimate hardware image parameters!\n"
+                  "returning empty image with desired params");
+        ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
+        return *ppoDst;
       }
+
+    
+      // ---
+      
+      m_poGrabEngine->unlockGrabber();
+      m_oMutex.unlock();
+      updateFps();
+      return *ppoDst;
     }else{
-      if(m_poGrabEngine->isAbleToProvideParams(m_oDesiredParams,m_eDesiredDepth)){
-        m_poGrabEngine->getCurrentFrameConverted(m_oDesiredParams,m_eDesiredDepth,ppoDst);
+      ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
+      
+      // indicates whether a conversion to the desired parameters will be needed
+      bool needFinalConversion = false; // assume, that no conversion is needed
+      
+      // get the image from the grabber
+      m_oMutex.lock();
+      m_poGrabEngine->lockGrabber();
+      if(m_poGrabEngine->needsConversion()){
+        const icl8u *rawData = m_poGrabEngine->getCurrentFrameUnconverted();
+        if(m_poConvertEngine->isAbleToProvideParams(m_oDesiredParams,m_eDesiredDepth)){
+          m_poConvertEngine->cvt(rawData,m_oDesiredParams,m_eDesiredDepth,ppoDst);
+        }else{
+          m_poConvertEngine->cvt(rawData,m_oDesiredParams,m_eDesiredDepth,&m_poConversionBuffer);
+          needFinalConversion = true;
+        }
       }else{
-        m_poGrabEngine->getCurrentFrameConverted(m_oDesiredParams,m_eDesiredDepth,&m_poConversionBuffer);
-        needFinalConversion = true;
+        if(m_poGrabEngine->isAbleToProvideParams(m_oDesiredParams,m_eDesiredDepth)){
+          m_poGrabEngine->getCurrentFrameConverted(m_oDesiredParams,m_eDesiredDepth,ppoDst);
+        }else{
+          m_poGrabEngine->getCurrentFrameConverted(m_oDesiredParams,m_eDesiredDepth,&m_poConversionBuffer);
+          needFinalConversion = true;
+        }
       }
+      m_poGrabEngine->unlockGrabber();
+      
+      
+      /// 3rd step: the image, got by the Grab/Convert-Engine must not have the desired
+      /// parameters, so: check and convert on demand
+      if(needFinalConversion){
+        m_oConverter.apply(m_poConversionBuffer,*ppoDst);
+      }
+      m_oMutex.unlock();
+      updateFps();
+      return *ppoDst;
     }
-    m_poGrabEngine->unlockGrabber();
-    
-    
-    /// 3rd step: the image, got by the Grab/Convert-Engine must not have the desired
-    /// parameters, so: check and convert on demand
-    if(needFinalConversion){
-      m_oConverter.apply(m_poConversionBuffer,*ppoDst);
-    }
-    m_oMutex.unlock();
-    updateFps();
-    return *ppoDst;
   }
 
   // }}}

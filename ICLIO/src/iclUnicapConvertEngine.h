@@ -30,6 +30,9 @@ namespace icl{
 
     /// returns whether this engine is able to provide given paramters
     virtual bool isAbleToProvideParams(const ImgParams &desiredParams, depth desiredDepth) const = 0;
+    
+    /// converts given frame to native sized rgb depth8u image
+    virtual void cvtNative(const icl8u *rawData, ImgBase **ppoDst);
     protected:
     
     /// internal storage of the associated UnicapDevice

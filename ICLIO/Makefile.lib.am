@@ -104,6 +104,7 @@ endif
 if HAVE_UNICAP_COND
 if SYSTEM_LINUX_COND
 libICLIO_la_SOURCES+= \
+../src/iclUnicapConvertEngine.cpp \
 ../src/iclDefaultConvertEngine.cpp \
 ../src/iclDefaultGrabEngine.cpp \
 ../src/iclUnicapDevice.cpp \

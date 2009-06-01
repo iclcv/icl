@@ -161,7 +161,9 @@ namespace icl{
       file.write(rawData,size.getDim()*4);
       file.write(rawData,len);
       try{
-        FileGrabber(tmpFileName).grab()->convert(*ppoDst);
+        FileGrabber fg(tmpFileName);
+        fg.setIgnoreDesiredParams(true);
+        fg.grab()->convert(*ppoDst);
       }catch(ICLException &ex){
         ERROR_LOG("current Motion JPEG image could not be read!");
       }
