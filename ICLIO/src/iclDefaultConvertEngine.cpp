@@ -147,7 +147,19 @@ namespace icl{
       }
       static const std::string tmpFileName = "/tmp/unicap-default-convert-engine.tmp.jpeg"; 
       File file(tmpFileName,File::writeBinary);
+
+      // estimate length of the jpeg image buffer: JPEG End Of Image Marker (EOI): 0xff 0xd9
+      int len = 0;
+      for(int i=0,li=4*size.getDim()-1;i<li;++i){
+        if(rawData[i]==0xff && rawData[i+1]==0xd9){
+          break;
+        }else{
+          len++;
+        }
+      }
+      
       file.write(rawData,size.getDim()*4);
+      file.write(rawData,len);
       try{
         FileGrabber(tmpFileName).grab()->convert(*ppoDst);
       }catch(ICLException &ex){
