@@ -7,6 +7,7 @@
 
 #include <iclFile.h>
 #include <iclFileGrabber.h>
+#include <iclJPEGDecoder.h>
 
 using namespace std;
 
@@ -136,37 +137,17 @@ namespace icl{
         yuv_to_rgb(y4,u,v,*dstR++,*dstG++,*dstB++);
       }
     }else if(fourcc == "MJPG"){
-      ensureCompatible(ppoDst,depth8u,size,formatRGB);
 #ifdef HAVE_LIBJPEG
-      static bool first = true;
-      if(first){
-        first = false;
-        DEBUG_LOG(":\n"
-                  "this is just a fallback implementation buffering jpeg data on\n"
-                  "the hard disc ...\n");
-      }
-      static const std::string tmpFileName = "/tmp/unicap-default-convert-engine.tmp.jpeg"; 
-      File file(tmpFileName,File::writeBinary);
-
-      // estimate length of the jpeg image buffer: JPEG End Of Image Marker (EOI): 0xff 0xd9
-      int len = 0;
-      for(int i=0,li=4*size.getDim()-1;i<li;++i){
-        if(rawData[i]==0xff && rawData[i+1]==0xd9){
-          break;
-        }else{
-          len++;
-        }
-      }
-      
-      file.write(rawData,size.getDim()*4);
-      file.write(rawData,len);
       try{
-        FileGrabber fg(tmpFileName);
-        fg.setIgnoreDesiredParams(true);
-        fg.grab()->convert(*ppoDst);
-      }catch(ICLException &ex){
-        ERROR_LOG("current Motion JPEG image could not be read!");
+        // naive check for a correct jpeg file:
+        const unsigned char *p = rawData;
+        ICLASSERT_THROW(*p++ == 0xFF,1); // SOI Marker
+        ICLASSERT_THROW(*p++ == 0xD8,2);
+        JPEGDecoder::decode(rawData,4*size.getDim(),ppoDst);
+      }catch(...){
+        ensureCompatible(ppoDst,depth8u,size,formatRGB);        
       }
+      return;
 #else
       DEBUG_LOG("Motion-JPEG is not supported without jpeg-support!\n"
                 "You need to recompile the ICL with libjpeg support");

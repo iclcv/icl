@@ -10,6 +10,7 @@ namespace icl{
     for(int i=0;i<NBUFS;i++){
       m_oBuf[i].buffer_size = useDMA ? 0 : bufferSize;
       m_oBuf[i].data = useDMA ? 0 :new unsigned char[bufferSize];
+      if(m_oBuf[i].data) *m_oBuf[i].data = 0; // hack for detection of unfinished motion-jpeg stream
       m_oBuf[i].type = useDMA ? UNICAP_BUFFER_TYPE_SYSTEM : UNICAP_BUFFER_TYPE_USER;
       fmt.getUnicapFormat()->buffer_type = useDMA ? UNICAP_BUFFER_TYPE_SYSTEM : UNICAP_BUFFER_TYPE_USER;
     }

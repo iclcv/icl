@@ -8,6 +8,10 @@ namespace icl{
   /// interface for ImageGrabber Plugins for reading different file types \ingroup FILEIO_G
   class FileGrabberPlugin{
     public:
+#ifdef HAVE_LIBJPEG
+    friend class JPEGDecoder;
+#endif
+
     virtual ~FileGrabberPlugin() {}
     /// pure virtual grab function
     virtual void grab(File &file, ImgBase **dest)=0;

@@ -52,11 +52,13 @@ if HAVE_LIBJPEG_COND
 libICLIO_la_SOURCES+= \
 ../src/iclJPEGHandle.cpp \
 ../src/iclFileGrabberPluginJPEG.cpp \
-../src/iclFileWriterPluginJPEG.cpp
+../src/iclFileWriterPluginJPEG.cpp \
+../src/iclJPEGDecoder.cpp
 
 include_HEADERS+= \
 ../src/iclFileGrabberPluginJPEG.h \
-../src/iclFileWriterPluginJPEG.h
+../src/iclFileWriterPluginJPEG.h \
+../src/iclJPEGDecoder.h
 endif
 
 
