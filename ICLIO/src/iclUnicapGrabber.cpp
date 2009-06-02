@@ -371,12 +371,6 @@ namespace icl{
     for(unsigned int i=0;i<ps.size();i++){
       v.push_back(ps[i].getID());
     }
-
-    DEBUG_LOG("All properties:");
-    for(unsigned int i=0;i<v.size();++i){
-      std::cout << i << "\n: " << v[i] << std::endl;
-    }
-    
     return v;
   }
 

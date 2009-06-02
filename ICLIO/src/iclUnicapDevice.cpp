@@ -24,12 +24,18 @@ namespace icl{
     }
     
     if(open()){
+      /*      
+          unicap_property_t property;
+          for(int i = 0; SUCCESS( unicap_enumerate_properties( m_oUnicapHandle, NULL, &property, i ) ); i++ ){
+          printf("enumerated property: %s \n",property.identifier);
+          }
+       */
+
       
       // properties
       unicap_status_t status = STATUS_SUCCESS;
       //for(int i=0;SUCCESS(status);i++){
-      for(int i=0;i<SUCCESS (status);i++){
-        TODO_LOG("maybe we do not get all properties here!?");
+      for(int i=0;SUCCESS (status);i++){
         m_oProperties.push_back(UnicapProperty(m_oUnicapHandle));
         status = unicap_enumerate_properties(m_oUnicapHandle, NULL, m_oProperties[i].getUnicapProperty(),i);
         if (!SUCCESS (status)){
