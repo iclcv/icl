@@ -18,10 +18,13 @@ namespace icl{
       unicap_void_device( m_oUnicapDevicePtr.get() );
       return;
     }
+#define DEACTIVATE_PWC_CAM_IN_UNICAP
+#ifdef DEACTIVATE_PWC_CAM_IN_UNICAP
     if(getModelName() == "Philips 740 webcam"){
       unicap_void_device( m_oUnicapDevicePtr.get() );
       return;
     }
+#endif
     
     if(open()){
       /*      
@@ -239,8 +242,7 @@ namespace icl{
   
   void UnicapDevice::setFormat(UnicapFormat &fmt){
     // {{{ open
-    
-    if(!SUCCESS(unicap_set_format(m_oUnicapHandle,fmt.getUnicapFormat()))){
+   if(!SUCCESS(unicap_set_format(m_oUnicapHandle,fmt.getUnicapFormat()))){
       ERROR_LOG("failed to set up unicap format! \n");
     }
   }
