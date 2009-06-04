@@ -1757,7 +1757,7 @@ namespace icl{
 
   void ICLWidget::mousePressEvent(QMouseEvent *e){
     // {{{ open
-    
+
     if(m_data->embeddedZoomMode){
       m_data->embeddedZoomRect = new Rect32f(e->x(),e->y(),0.1,0.1);
       update();
@@ -1777,6 +1777,7 @@ namespace icl{
     emit mouseEvent(createMouseEvent(MousePressEvent));
     update();
   }
+
   // }}}
 
   void ICLWidget::mouseReleaseEvent(QMouseEvent *e){
@@ -1830,7 +1831,7 @@ namespace icl{
 
   void ICLWidget::mouseMoveEvent(QMouseEvent *e){
     // {{{ open
-    
+
     if(m_data->embeddedZoomMode && m_data->embeddedZoomRect){
       m_data->embeddedZoomRect->width = e->x()-m_data->embeddedZoomRect->x;
       m_data->embeddedZoomRect->height = e->y()-m_data->embeddedZoomRect->y;
@@ -1854,6 +1855,7 @@ namespace icl{
     }
     update();
   }
+
   // }}}
   
   void ICLWidget::enterEvent(QEvent*){
@@ -1872,10 +1874,12 @@ namespace icl{
     emit mouseEvent(createMouseEvent(MouseEnterEvent));
     update();
   }
+
   // }}}
 
   void ICLWidget::leaveEvent(QEvent*){
     // {{{ open
+
     if(m_data->menuEnabled){
       if(m_data->event(-1,-1,OSDGLButton::Leave)){
         update();
@@ -2039,7 +2043,7 @@ namespace icl{
     if(!m_data->image || !m_data->image->hasImage()){
       return evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
                               Point(-1,-1),
-                              Point32f(-1,-1),
+                              Point32f((float)m_data->mouseX/float(width()),(float)m_data->mouseY/float(height())),
                               m_data->downMask,
                               std::vector<double>(),
                               type,this);
