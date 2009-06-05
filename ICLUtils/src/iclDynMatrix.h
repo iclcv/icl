@@ -175,6 +175,25 @@ namespace icl{
       DynMatrix dst(cols(),rows());
       return elementwise_mult(m,dst);
     }
+
+    /// Elementwise division (in source destination fashion) [IPP-Supported]
+    inline DynMatrix &elementwise_div(const DynMatrix &m, DynMatrix &dst) const throw (IncompatibleMatrixDimensionException){
+      if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A./B dimension mismatch");
+      dst.setBounds(cols(),rows());
+      for(int i=0;i<dim();++i){
+	dst[i] = m_data[i] / m[i];
+      }
+      return dst;
+    }
+
+    /// Elementwise matrix multiplication (without destination matrix) [IPP-Supported]
+    inline DynMatrix elementwise_div(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
+      DynMatrix dst(cols(),rows());
+      return elementwise_div(m,dst);
+    }
+
+    
+    
     
     /// Essential matrix multiplication [IPP-Supported]
     inline DynMatrix operator*(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
@@ -746,23 +765,27 @@ namespace icl{
 #undef DYN_MATRIX_MULT_SPECIALIZE
 
 
-#define DYN_MATRIX_ELEMENT_WISE_MULT_SPECIALIZE(IPPT)	                      \
+#define DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(IPPT)	                      \
     template<>								      \
-    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_mult(      \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div(      \
           const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const     \
       throw (IncompatibleMatrixDimensionException){                           \
     if((m.cols() != cols()) || (m.rows() != rows())){                         \
-      throw IncompatibleMatrixDimensionException("A.*B dimension mismatch");  \
+      throw IncompatibleMatrixDimensionException("A./B dimension mismatch");  \
     }                                                                         \
     dst.setBounds(cols(),rows());                                             \
-    ippsMul_##IPPT(data(),m.data(),dst.data(),dim());                         \
+    ippsDiv_##IPPT(data(),m.data(),dst.data(),dim());                         \
     return dst;                                                               \
   }
 
-  DYN_MATRIX_ELEMENT_WISE_MULT_SPECIALIZE(32f)
-  DYN_MATRIX_ELEMENT_WISE_MULT_SPECIALIZE(64f)
+  DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(32f)
+  DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(64f)
 
-#undef DYN_MATRIX_ELEMENT_WISE_MULT_SPECIALIZE
+#undef DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE
+
+
+
+
     /** \endcond */
 
 #define DYN_MATRIX_MULT_BY_CONSTANT(IPPT)	             \
