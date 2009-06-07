@@ -118,7 +118,35 @@ namespace icl{
       M.set_data(0);
     }
   
-  
+    /// tests weather a matrix is enough similar to another matrix
+    inline bool isSimilar(const DynMatrix &other, T tollerance=0.0001) const{
+      if(other.cols() != cols() || other.rows() != rows()) return false;
+      for(unsigned int i=0;i<dim();++i){
+        T diff = m_data[i] - other.m_data[i];
+        if((diff?diff:-diff) > tollerance) return false;
+      }
+      return true;
+    }
+    
+    /// elementwise comparison (==)
+    inline bool operator==(const DynMatrix &other) const{
+      if(other.cols() != cols() || other.rows() != rows()) return false;
+      for(unsigned int i=0;i<dim();++i){
+        if(m_data[i] !=  other.m_data[i]) return false;
+      }
+      return true;
+    }
+
+    /// elementwise comparison (!=)
+    inline bool operator!=(const DynMatrix &other) const{
+      if(other.cols() != cols() || other.rows() != rows()) return false;
+      for(unsigned int i=0;i<dim();++i){
+        if(m_data[i] !=  other.m_data[i]) return true;
+      }
+      return false;
+    }
+
+
     /// Multiply elements with scalar
     inline DynMatrix operator*(T f) const{
       DynMatrix dst(cols(),rows());
@@ -331,6 +359,8 @@ namespace icl{
       }
       return ::pow(double(accu),1.0/l);
     }
+
+    
 
     /// default iterator type (just a data-pointer) 
     typedef T* iterator;
@@ -686,6 +716,32 @@ namespace icl{
       }
       return d;
     }
+
+    /// inner product of data pointers (not matrix-mulitiplication)
+    /** computes the inner-product of data vectors */
+    T inner_product(const DynMatrix<T> &other) const {
+      return std::inner_product(begin(),end(),other.begin(),T(0));
+    }
+    
+    /// returns diagonal-elements as column-vector
+    DynMatrix<T> diag() const{
+      ICLASSERT_RETURN_VAL(cols()==rows(),DynMatrix<T>());
+      DynMatrix<T> d(1,rows());
+      for(int i=0;i<rows();++i){
+        d[i] = (*this)(i,i);
+      }
+      return d;
+    }
+    
+    /// computes the sum of all diagonal elements
+    T trace() const{
+      ICLASSERT_RETURN_VAL(cols()==rows(),0);
+      double accu = 0;
+      for(int i=0;i<dim();i+=cols()+1){
+        accu += m_data[i];
+      }
+      return accu;
+    }
     
     /// sets new data internally and returns old data pointer (for experts only!)
     inline T *set_data(T *newData){
@@ -786,7 +842,7 @@ namespace icl{
 
 
 
-    /** \endcond */
+
 
 #define DYN_MATRIX_MULT_BY_CONSTANT(IPPT)	             \
     template<>						     \
@@ -801,9 +857,34 @@ DYN_MATRIX_MULT_BY_CONSTANT(32f)
 DYN_MATRIX_MULT_BY_CONSTANT(64f)
 
 #undef DYN_MATRIX_MULT_BY_CONSTANT
+ 
+#define DYN_MATRIX_NORM_SPECIALZE(T,IPPT)                  \
+  template<>                                               \
+  inline T DynMatrix<T> ::norm(double l) const{            \
+    if(l==1){                                              \
+      T val;                                               \
+      ippsNorm_L1_##IPPT(m_data,dim(),&val);               \
+      return val;                                          \
+    }else if(l==2){                                        \
+      T val;                                               \
+      ippsNorm_L2_##IPPT(m_data,dim(),&val);               \
+      return val;                                          \
+    }                                                      \
+    double accu = 0;                                       \
+    for(unsigned int i=0;i<dim();++i){                     \
+      accu += ::pow(double(m_data[i]),l);                  \
+    }                                                      \
+    return ::pow(accu,1.0/l);                              \
+  }
+ 
+ DYN_MATRIX_NORM_SPECIALZE(float,32f)
+ // DYN_MATRIX_NORM_SPECIALZE(double,64f)
+ 
+#undef DYN_MATRIX_NORM_SPECIALZE
 
+ /** \endcond */
 
-#endif
+#endif // HAVE_IPP
 
 }
 

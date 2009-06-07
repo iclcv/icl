@@ -9,6 +9,7 @@ XCXXFLAGS= ${CXXFLAGS} \
 bin_PROGRAMS= \
 icl-progargdemo \
 icl-dyn-matrix-test \
+icl-dyn-matrix-utils-test \
 icl-fixed-matrix-test \
 icl-matrix-stream-operator-test
 
@@ -20,6 +21,10 @@ icl_progargdemo_CXXFLAGS=${XCXXFLAGS}
 icl_dyn_matrix_test_SOURCES=../examples/dyn-matrix-test.cpp
 icl_dyn_matrix_test_LDFLAGS=${XLDFLAGS}
 icl_dyn_matrix_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_dyn_matrix_utils_test_SOURCES=../examples/dyn-matrix-utils-test.cpp
+icl_dyn_matrix_utils_test_LDFLAGS=${XLDFLAGS}
+icl_dyn_matrix_utils_test_CXXFLAGS=${XCXXFLAGS}
 
 icl_fixed_matrix_test_SOURCES=../examples/fixed-matrix-test.cpp
 icl_fixed_matrix_test_LDFLAGS=${XLDFLAGS}
