@@ -2,14 +2,21 @@
 #include <iclFixedMatrixUtils.h>
 #include <iclDynMatrix.h>
 
+#include <iclStochasticOptimizer.h>
+#include <iclRandom.h>
+
 namespace icl{
   
 
-  ExtrinsicCameraCalibrator::ExtrinsicCameraCalibrator(const std::string method)
+  ExtrinsicCameraCalibrator::ExtrinsicCameraCalibrator(const std::string method, float *params)
         throw (ExtrinsicCameraCalibrator::UnknownCalibrationMethodException):
     m_method(method){
-    if(method != "linear"){
+    if(method != "linear" && method != "linear+stochastic"){
       throw UnknownCalibrationMethodException();
+    }
+    if(method == "linear+stochastic"){
+      m_params.push_back(params ? params[0] : 10000);
+      m_params.push_back(params ? params[1] : 0.001);
     }
   }
 
@@ -43,11 +50,58 @@ namespace icl{
   static Vec vec3to4(const FixedMatrix<float,1,3> &v,float x=0){
     return Vec(v[0],v[1],v[2],x);
   }
+  
+  
+  class StochasticCameraOptimizer : public StochasticOptimizer{
+    Camera cam;
+    const std::vector<Vec> &XWs;
+    const std::vector<Point32f> &XIs;
+    float data[6];
+    float noise[6];
+    float noiseVar;
+  public:
+    StochasticCameraOptimizer(const Camera &cam, 
+                              const std::vector<Vec> &XWs,
+                              const std::vector<Point32f> &XIs,
+                              float noiseVar):
+      StochasticOptimizer(6/*pos and rot*/),cam(cam),XWs(XWs),
+      XIs(XIs),noiseVar(noiseVar)
+    {
+      randomSeed();
+    }
+    Camera camFromData(const float *data){
+      Camera cam = this->cam;
+      cam.translate(data[0],data[1],data[2]);
+      cam.rotate(data[3],data[4],data[5]);
+      return cam;
+    }
     
+  protected:
+    virtual void reinitialize(){
+      std::fill(data,data+6,0);
+    }
+    virtual float *getData(){ return data; }
+    virtual float getError(const float *data){
+      Camera cam = camFromData(data);
+      float err = 0;
+      const std::vector<Point32f> XIs2 = cam.project(XWs);
+      for(unsigned int i=0;i<XIs.size();++i){
+        err += (XIs[i]-XIs2[i]).norm();
+      }
+      return err;
+    }
+    virtual const float *getNoise(int currentTime, int endTime){
+      (void)currentTime;(void)endTime;
+      std::fill(noise,noise+6,GRand(0,noiseVar));
+      return noise;
+    }
+  };
+  
   Camera ExtrinsicCameraCalibrator::calibrate(std::vector<Vec> XWs, 
                                               std::vector<Point32f> XIs,
                                               const Size &imageSize, 
-                                              const float focalLength) const throw (ExtrinsicCameraCalibrator::InvalidWorldPositionException,
+                                              const float focalLength,
+                                              float *rmse) const throw (ExtrinsicCameraCalibrator::InvalidWorldPositionException,
                                                                                     ExtrinsicCameraCalibrator::NotEnoughDataPointsException){
     if(XWs.size() > XIs.size()){
       ERROR_LOG("got more world points than image points (erasing additional world points)");
@@ -59,8 +113,17 @@ namespace icl{
     if(XWs.size() < 6){
       throw NotEnoughDataPointsException();
     }
-       
-    if(m_method == "linear"){
+
+    /// this is important here !
+    for(unsigned int i=0;i<XWs.size();++i){
+      XWs[i][3]=1;
+    }
+
+    if(m_method == "linear" || m_method == "linear+stochastic"){
+      std::vector<Point32f> XIs_save;
+      if(m_method == "linear+stochastic"){
+        XIs_save = XIs;
+      }
       float fInv = 1.0/focalLength;
       Camera cam;
       cam.setViewPort(Rect(Point::null,imageSize));
@@ -96,9 +159,32 @@ namespace icl{
       Vec norm = vec3to4(R.transp()*FixedMatrix<float,1,3>(0,0,1));
       Vec up = vec3to4(R.transp()*FixedMatrix<float,1,3>(0,1,0));
       
-      return Camera(pos,norm, up, Rect(Point::null,imageSize),focalLength);
+      if(m_method == "linear+stochastic"){
+        Camera cam(pos,norm, up, Rect(Point::null,imageSize),focalLength);
+        StochasticCameraOptimizer stochOpt(cam,XWs,XIs_save,m_params[1]); 
+        StochasticOptimizer::Result result = stochOpt.optimize(m_params[0]);
+        cam = stochOpt.camFromData(result.data);
+        estimateRMSE(XWs,XIs_save,cam,rmse);
+        return cam;
+      }else{
+        Camera cam(pos,norm, up, Rect(Point::null,imageSize),focalLength);
+        estimateRMSE(XWs,XIs,cam,rmse);
+        return cam;
+      }
     }
-    
     return Camera();
   }
+
+  void ExtrinsicCameraCalibrator::estimateRMSE(const std::vector<Vec> &worldPoints,                      
+                                               const std::vector<Point32f> XIs,
+                                               const Camera &cam, float *rmse){
+    if(!rmse)return;
+    float err = 0;
+    const std::vector<Point32f> XIs2 = cam.project(worldPoints);
+    for(unsigned int i=0;i<XIs.size();++i){
+      err += (XIs[i]-XIs2[i]).norm();
+    }
+    *rmse = err;
+  }
+
 }
