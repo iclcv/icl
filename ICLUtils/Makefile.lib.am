@@ -19,7 +19,8 @@ libICLUtils_la_SOURCES= \
 ../src/iclFPSEstimator.cpp \
 ../src/iclFPSLimiter.cpp \
 ../src/iclMutex.cpp \
-../src/iclDynMatrixUtils.cpp
+../src/iclDynMatrixUtils.cpp \
+../src/iclStochasticOptimizer.cpp
 
 include_HEADERS= \
 ../src/config.h \
@@ -55,4 +56,5 @@ include_HEADERS= \
 ../src/iclDynMatrixUtils.h \
 ../src/iclUncopiedInstance.h \
 ../src/iclLockable.h \
-../src/iclMatrixSubRectIterator.h
+../src/iclMatrixSubRectIterator.h \
+../src/iclStochasticOptimizer.h
