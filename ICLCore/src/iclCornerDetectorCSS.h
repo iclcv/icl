@@ -132,13 +132,13 @@ namespace icl{
       inline void setAngleThreshold(float value){ angle_thresh = value; }
       inline void setRCCoeff(float value){ rc_coeff = value; }
       inline void setSigma(float value){ sigma = value; }
-      inline void setCurvatureCutOff(float value){ curvature_cutoff = value; }
+      inline void setCurvatureCutoff(float value){ curvature_cutoff = value; }
       inline void setStraightLineThreshold(float value) { straight_line_thresh = value; }
 
       inline float getAngleThreshold() const { return angle_thresh;}
       inline float getRCCoeff() const { return rc_coeff; }
       inline float getSigma() const { return sigma; }
-      inline float getCurvatureCutOff() const { return curvature_cutoff; }
+      inline float getCurvatureCutoff() const { return curvature_cutoff; }
       inline float getStraightLineThreshold() const { return straight_line_thresh;}
 
 			inline void setDebugMode(bool value) { debug_mode = value; }

@@ -444,7 +444,7 @@ namespace icl{
       ONE_PARAM(AngleThreshold,angle_thresh);
       ONE_PARAM(RCCoeff,rc_coeff);
       ONE_PARAM(Sigma,sigma);
-      ONE_PARAM(CurvatureCutOffset,curvature_cutoff);
+      ONE_PARAM(CurvatureCutoff,curvature_cutoff);
       ONE_PARAM(StraightLineThreshold,straight_line_thresh);
 #undef ONE_PARAM
     }
