@@ -6,7 +6,7 @@
   ICLASSERT_RETURN_VAL( (m1.cols() == m2.cols()) && (m1.rows() == m2.rows()) , RET)
 
 
-//#undef HAVE_IPP
+#undef HAVE_IPP
 
 namespace icl{
 
@@ -298,6 +298,11 @@ namespace icl{
     }
   }
 
+
+
+ 
+
+
 #else
   // **************************************************************************
   // No IPP fallbacks 
@@ -451,9 +456,195 @@ namespace icl{
   template void matrix_minmax(const DynMatrix<float> &m, float dst[2],int*,int*,int*,int*);
   template void matrix_minmax(const DynMatrix<double> &m, double dst[2],int*,int*,int*,int*);
 
-#undef CHECK_DIM 
 
 #endif //HAVE_IPP 
+
+
+  /// ------------------------------------------------------------
+  /// ipp and non-ipp mixed ...
+  /// ------------------------------------------------------------
+
+
+  // MEAN ***************************
+  template<class T> T matrix_mean(const DynMatrix<T> &m){
+    return std::accumulate(m.begin(),m.end(),T(0))/m.dim();
+  }
+
+#ifdef HAVE_IPP
+  template<> float matrix_mean(const DynMatrix<float> &m){
+    float v=0; ippsMean_32f(m.begin(),m.dim(),&v,ippAlgHintNone);  return v;
+  }
+
+  template<> double matrix_mean(const DynMatrix<double> &m){
+    double v=0; ippsMean_64f(m.begin(),m.dim(),&v); return v;
+  }
+#endif // HAVE_IPP
+
+  template float matrix_mean(const DynMatrix<float>&);
+  template double matrix_mean(const DynMatrix<double>&);
+
+
+  // VAR ***************************
+  template<class T> struct var_functor{
+    T mean,&accu;
+    static inline T util_sqr(const T &t){ return t*t; }
+    var_functor(const T &mean, T &accu):mean(mean),accu(accu){}
+    void operator()(const T&x) const { accu += util_sqr(mean-x); }
+  };
+
+  template<class T>
+  T matrix_var(const DynMatrix<T> &m){
+    if(m.dim()<2){ return 0; }
+    T var = 0;
+    std::for_each(m.begin(),m.end(),var_functor<T>(matrix_mean(m),var));
+    return var/(m.dim()-1);
+  }
+
+#ifdef HAVE_IPP
+  template<> float matrix_var(const DynMatrix<float> &m){
+    float v=0; ippsStdDev_32f(m.begin(),m.dim(),&v,ippAlgHintNone); return v*v; 
+  }
+  template<> double matrix_var(const DynMatrix<double> &m){
+    double v=0; ippsStdDev_64f(m.begin(),m.dim(),&v); return v*v; 
+  }
+#endif // HAVE_IPP
+
+  template float matrix_var(const DynMatrix<float>&);
+  template double matrix_var(const DynMatrix<double>&);
+
+   // VAR (2)***************************
+  template<class T>
+  T matrix_var(const DynMatrix<T> &m, T mean, bool empiricalMean){
+    if(m.dim()<2){ return 0; }
+    T var = 0;
+    std::for_each(m.begin(),m.end(),var_functor<T>(mean,var));
+    int norm = empiricalMean ? (m.dim()-1) : m.dim();
+    return var/norm;
+  }
+  template float matrix_var(const DynMatrix<float>&, float, bool);
+  template double matrix_var(const DynMatrix<double>&, double, bool);
+
+
+  // MEANVAR ***************************
+  template<class T>
+  void matrix_meanvar(const DynMatrix<T> &m, T *mean, T*var){
+    T meanVal = matrix_mean(m);
+    T varVal = matrix_var(m,meanVal,true);
+    if(mean) *mean=meanVal;
+    if(var) *var=varVal;
+  }
+
+#ifdef HAVE_IPP
+  template<> void matrix_meanvar(const DynMatrix<float> &m, float *mean, float *var){
+    ICLASSERT_RETURN(mean && var);
+    ippsMeanStdDev_32f(m.begin(),m.dim(),mean,var,ippAlgHintNone);
+    *var = (*var)*(*var);
+  }
+  template<> void matrix_meanvar(const DynMatrix<double> &m, double *mean, double*var){
+    ICLASSERT_RETURN(mean && var);
+    ippsMeanStdDev_64f(m.begin(),m.dim(),mean,var);
+    *var = (*var)*(*var);
+  }
+#endif // HAVE_IPP
+
+  template void matrix_meanvar(const DynMatrix<float>&,float*,float*);
+  template void matrix_meanvar(const DynMatrix<double>&,double*,double*);
+  
+
+  // STDDEV ***************************
+  template<class T>
+  T matrix_stddev(const DynMatrix<T> &m){
+    return ::sqrt(matrix_var(m));
+  }
+
+  template float matrix_stddev(const DynMatrix<float>&);
+  template double matrix_stddev(const DynMatrix<double>&);
+
+  template<class T>
+  T matrix_stddev(const DynMatrix<T> &m, T mean, bool empiricalMean){
+    return ::sqrt(matrix_var(m,mean,empiricalMean));
+  }
+
+  template float matrix_stddev(const DynMatrix<float>&,float,bool);
+  template double matrix_stddev(const DynMatrix<double>&,double,bool);
+
+
+  template<class T>
+  struct muladd_functor_1{
+    T alpha,gamma;
+    inline muladd_functor_1(const T &alpha, const T &gamma):alpha(alpha),gamma(gamma){}
+    inline T operator()(const T&a) const{
+      return alpha*a + gamma;
+    }
+  };
+  template<class T>
+  struct muladd_functor_2{
+    T alpha,beta,gamma;
+    inline muladd_functor_2(const T &alpha, const T &beta,const T &gamma):alpha(alpha),beta(beta),gamma(gamma){}
+    inline T operator()(const T&a, const T&b) const{
+      return alpha*a + beta*b + gamma;
+    }
+  };
+
+  
+  template<class T>
+  DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, const DynMatrix<T> &b, T beta, T gamma, DynMatrix<T> &dst){
+    CHECK_DIM(a,b,dst);
+    if(!alpha) return matrix_muladd(b,beta,gamma,dst);
+    if(!beta) return matrix_muladd(a,alpha,gamma,dst);
+    dst.setBounds(a.cols(),a.rows());
+    std::transform(a.begin(),a.end(),b.begin(),dst.begin(),muladd_functor_2<T>(alpha,beta,gamma));
+    return dst;
+  }
+  template DynMatrix<float> &matrix_muladd(const DynMatrix<float>&,float,const DynMatrix<float>&,float,float,DynMatrix<float>&);
+  template DynMatrix<double> &matrix_muladd(const DynMatrix<double>&,double,const DynMatrix<double>&,double,double,DynMatrix<double>&);
+
+
+  template<class T>
+  DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, T gamma, DynMatrix<T> &dst){
+    dst.setBounds(a.cols(),a.rows());
+    if(!alpha){
+      std::fill(dst.begin(),dst.end(),gamma);
+    }else{
+      std::transform(a.begin(),a.end(),dst.begin(),muladd_functor_1<T>(alpha,gamma));
+    }
+    return dst;
+  }
+  template DynMatrix<float> &matrix_muladd(const DynMatrix<float>&,float,float,DynMatrix<float>&);
+  template DynMatrix<double> &matrix_muladd(const DynMatrix<double>&,double,double,DynMatrix<double>&);
+
+  template<class T>
+  struct mask_functor{
+    T operator()(const unsigned char &mask,const T &m) const{
+      return mask ? m : 0;
+    }
+  };
+  
+  template<class T>
+  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<T> &m){
+    CHECK_DIM(mask,m,m);
+    std::transform(mask.begin(),mask.end(),m.begin(),m.begin(),mask_functor<T>());
+    return m;
+  }
+
+  template DynMatrix<float> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<float> &m);
+  template DynMatrix<double> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<double> &m);
+
+    /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0)
+  template<class T>
+  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst){
+    CHECK_DIM(mask,m,dst);
+    dst.setBounds(m.cols(),m.rows());
+    std::transform(mask.begin(),mask.end(),m.begin(),dst.begin(),mask_functor<T>());
+    return dst;
+  }
+
+  template DynMatrix<float> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<float> &m, DynMatrix<float> &dst);
+  template DynMatrix<double> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<double> &m, DynMatrix<double> &dst);
+
+
+#undef CHECK_DIM 
+
 }
 
 

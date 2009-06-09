@@ -236,7 +236,8 @@ namespace icl{
   DynMatrix<T> &matrix_pow(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
 
 
-  /** @ } */ 
+  /** @} */ 
+  /** @{ @name statistical functions */ 
 
   /// find minimum element of matrix (optionally find location too)  [IPP-optimized]
   /** For float and double only
@@ -271,7 +272,81 @@ namespace icl{
                      int *minx=0, int *miny=0,
                      int *maxx=0, int *maxy=0);
   
+  
+  /// calculate matrix mean value  [IPP-optimized]
+  /** For float and double only */
+  template<class T>
+  T matrix_mean(const DynMatrix<T> &m);
+
+  /// calculate matrix variance  [IPP-optimized]
+ /** For float and double only */
+  template<class T>
+  T matrix_var(const DynMatrix<T> &m);
+
+  /// calculate matrix variance with given mean
+  /** For float and double only
+      @param m source matrix
+      @param mean given sample mean
+      @param empiricalMean if true, then the given mean was computed from the data, too, and
+                           therefore, the intermediate result 'sum of square distances' has
+                           to be normalized with m.dim()-1. The reason is that, the the empirical
+                           mean minimizes the variance 'per-definition', so we substract that
+                           degree of freedom here. If empiricalMean is false, intermediate
+                           sum-of-squares is normalized by m.dim() only.
+      */
+  template<class T>
+  T matrix_var(const DynMatrix<T> &m, T mean, bool empiricalMean=true);
+
+  /// computes matrix mean and variance at once  [IPP-optimized]
+  /** For float and double only 
+      note thatn mean and var must not be null
+  */
+  template<class T>
+  void matrix_meanvar(const DynMatrix<T> &m, T *mean, T*var);
+
+  /// computes matrix standard deviation (sqrt(var)) [IPP-optimized]
+  /** For float and double only */
+  template<class T>
+  T matrix_stddev(const DynMatrix<T> &m);
+  
+  /// calculate matrix standard deviation with given mean
+  /** For float and double only 
+      @param m source matrix
+      @param mean given sample mean
+      @param empiricalMean if true, then the given mean was computed from the data, too, and
+                           therefore, the intermediate result 'sum of square distances' has
+                           to be normalized with m.dim()-1. The reason is that, the the empirical
+                           mean minimizes the variance 'per-definition', so we substract that
+                           degree of freedom here. If empiricalMean is false, intermediate
+                           sum-of-squares is normalized by m.dim() only.
+  */
+  template<class T>
+  T matrix_stddev(const DynMatrix<T> &m, T mean, bool empiricalMean=true);
  
+  /** @} */ 
+
+  /** @{  @name other functions ...*/ 
+  /// computes alpha*a + beta*b + gamma
+  /** For float and double only */
+  template<class T>
+  DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, const DynMatrix<T> &b, T beta, T gamma, DynMatrix<T> &dst);
+
+  /// computes alpha*a + gamma
+  /** For float and double only */
+  template<class T>
+  DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, T gamma, DynMatrix<T> &dst);
+  
+  /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0) (inplace)
+  /** For float and double only */
+  template<class T>
+  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<T> &m);
+
+  /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0)
+  /** For float and double only */
+  template<class T>
+  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst);
+  
+   /** @} */ 
 }
 
 #endif

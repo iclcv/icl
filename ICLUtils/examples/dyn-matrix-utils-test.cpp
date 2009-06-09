@@ -23,6 +23,11 @@ struct CheckClass{
     matrix_init(M,val);
     return M;
   }
+  static DynMatrix<unsigned char> ucmat(unsigned char val){
+    DynMatrix<unsigned char> M(COLS,ROWS);
+    matrix_init(M,val);
+    return M;
+  }
   static DynMatrix<T> &mat_ref(T val){
     static DynMatrix<T> M(COLS,ROWS);
     matrix_init(M,val);
@@ -82,6 +87,29 @@ struct CheckClass{
     ICLASSERT( p[0] == 0 && p[1] == 0 );
     ICLASSERT( p[2] == (int)M.cols()-1 );
     ICLASSERT( p[3] == (int)M.rows()-1 );
+
+    /// mean
+    ICLASSERT( matrix_mean(mat(5)) == 5 );
+    ICLASSERT( fabs( matrix_var(mat(5)) ) < 0.0000001);
+    ICLASSERT( fabs( matrix_stddev(mat(5)) ) < 0.0000001);
+
+    T mv[2];
+    matrix_meanvar( mat(5),mv,mv+1);
+    ICLASSERT(mv[0] == 5);
+    ICLASSERT(mv[1] == 0);
+
+    ICLASSERT( matrix_muladd( mat(2), T(3), mat(5), T(4), T(4), mat_ref(0) ) == mat(30) );
+    ICLASSERT( matrix_muladd( mat(2), T(3), T(4), mat_ref(0) ) == mat(10) );
+    
+    ICLASSERT( matrix_mask( ucmat(1), mat_ref(7)) == mat(7) );
+    ICLASSERT( matrix_mask( ucmat(0), mat_ref(7)) == mat(0) );
+
+    ICLASSERT( matrix_mask( ucmat(1), mat(7), dst) == mat(7) );
+    ICLASSERT( matrix_mask( ucmat(0), mat(7), dst) == mat(0) );
+
+    
+    
+    
   }
 };
 
