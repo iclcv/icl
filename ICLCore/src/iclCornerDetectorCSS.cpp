@@ -29,20 +29,26 @@ namespace icl{
 
 
 
-  int CornerDetectorCSS::gaussian(icl32f **gau, float sigma, float cutoff) {
+  int CornerDetectorCSS::gaussian(GaussianKernel &gauss, float sigma, float cutoff) {
+    // do we need to recalculate the gaussian kernel?
+    if ((sigma == gauss.sigma) && (cutoff == gauss.cutoff)) return gauss.width;
+    // --yes, the parameters changed...
+    gauss.sigma = sigma;
+    gauss.cutoff = cutoff;
     float ssq = sigma*sigma;
     int width;
     for (width=1; exp(-(width*width)/(2*ssq)) > cutoff; width++);
     width = max(1, width-1);
-
+    gauss.width = width;
     float sum = 0;
-    *gau = (icl32f*)malloc(sizeof(icl32f)*(width*2+1));
+    // first free the old memory
+    gauss.gau.resize(width*2+1);
     for (int i=-width; i<=width; i++) {
-      (*gau)[i+width] = exp(-(i*i)/(2*ssq))/(2*M_PI*ssq);
-      sum += (*gau)[i+width];
+      gauss.gau[i+width] = exp(-(i*i)/(2*ssq))/(2*M_PI*ssq);
+      sum += gauss.gau[i+width];
     }
     for (int i=0; i<width*2+1; i++) {
-      (*gau)[i] /= sum;
+      gauss.gau[i] /= sum;
     }
     return width;
   }
@@ -178,20 +184,44 @@ namespace icl{
     std::copy(boundary.begin(),boundary.end(),inputBuffer.begin());
     return detectCorners(inputBuffer);
   }
+  
+  void atov(vector<Point32f> &v, icl32f *x, icl32f *y, int length) {
+  	v.clear();
+  	for (int i=0; i < length; i++) v.push_back(Point32f(x[i],y[i]));
+  }
 
   const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point32f> &boundary) {
     //debug_output = true;
+    if (debug_mode) {
+    	debug_inf.boundary = boundary;
+    	debug_inf.angle_thresh = angle_thresh;
+     	debug_inf.rc_coeff = rc_coeff;
+    	debug_inf.straight_line_thresh = straight_line_thresh;
+    }
     corners.clear();
-    int L=boundary.size();
+    
+    // Copy first half to the end and second half to the beginning of the
+    // boundary, so we become independent from where the start/end point of the
+    // boundary is.
+    int n = boundary.size();
+    int offset = n/2;
+    int L = n + 2*offset;
     icl32f x_in[L], y_in[L];
-    for (int i=0; i<L; i++) { x_in[i] = boundary[i].x; y_in[i] = boundary[i].y; }
+    for (int i=0; i<offset; i++) { x_in[i] = boundary[n-offset+i].x; y_in[i] = boundary[n-offset+i].y; }
+    for (int i=0; i<n; i++) { x_in[offset+i] = boundary[i].x; y_in[offset+i] = boundary[i].y; }
+    for (int i=0; i<offset; i++) { x_in[offset+n+i] = boundary[i].x; y_in[offset+n+i] = boundary[i].y; }
+    
 
-    icl32f* h;
-    int W = gaussian(&h, sigma, 0.0001); // W ... size of gauss kernel
+    int W = gaussian(m_gauss, sigma, 0.0001); // W ... size of gauss kernel
+    if (debug_mode) {
+    	debug_inf.gk = m_gauss;
+    	debug_inf.offset = W+offset;
+    }
+    if (L <= W) return corners;
+    icl32f* h = m_gauss.gau.data();
     const int l2w = L+2*W;
     const int l4w = L+4*W;
-    if (L <= W) return corners;
-
+    
     // closed curve -> copy end points to begin and begin points to end
     icl32f x[l2w], y[l2w];
     memcpy(x, &x_in[L-W], W*sizeof(icl32f));
@@ -206,6 +236,7 @@ namespace icl{
     convolute_1D(x, l2w, h, 2*W+1, xx_big);
     convolute_1D(y, l2w, h, 2*W+1, yy_big);
     icl32f *xx = &xx_big[W], *yy = &yy_big[W];
+    if (debug_mode) atov(debug_inf.smoothed_boundary, xx, yy, l2w);
 
     // calculate the first derivation
     icl32f xu[l2w], yu[l2w];
@@ -227,30 +258,39 @@ namespace icl{
 
     // calculate the curvature values
     icl32f k[l2w];
+    if (debug_mode) debug_inf.kurvature.clear();
     for (int i=0; i<l2w; i++) {
       k[i] = abs((xu[i]*yuu[i] - xuu[i]*yu[i]) / pow((xu[i]*xu[i] + yu[i]*yu[i]),1.5f));
       k[i] = float(round(k[i]*curvature_cutoff))/curvature_cutoff; // very important to suppess noise
+      if (debug_mode) debug_inf.kurvature.push_back(k[i]);
     }
 
     // get the maxima of the curvature
     findExtrema(extrema, k, l2w);
+    if (debug_mode) debug_inf.extrema = extrema;
 
     // remove round corners
     removeRoundCorners(rc_coeff, k, extrema);
+    if (debug_mode) debug_inf.extrema_without_round_corners = extrema;
 
     // remove false corners due to boundary noise and trivial details
     removeFalseCorners(angle_thresh, xx, yy, k, l2w, extrema, corner_angles, straight_line_thresh);
-
+    if (debug_mode) debug_inf.extrema_without_false_corners = extrema;
+    
     // extract the coordinates of the detected corners
     corners.clear();
     vector<float> angles_tmp;
     for (unsigned i=0; i<extrema.size(); i++) {
-      if (extrema[i] >= W and extrema[i] < L+W) {
+      if (extrema[i] >= offset+W and extrema[i] < L-offset+W) {
         corners.push_back(Point32f(x_in[extrema[i]-W], y_in[extrema[i]-W]));
         angles_tmp.push_back(corner_angles[i]);
       }
     }
     corner_angles = angles_tmp;
+    if (debug_mode) {
+    	debug_inf.corners = corners;
+    	debug_inf.angles = corner_angles;
+    }
     return corners;
   }
 }

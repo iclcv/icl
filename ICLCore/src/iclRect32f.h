@@ -8,9 +8,9 @@
 
 namespace icl {
   
-  /** \çond */
+  /** \cond */
   class Rect;
-  /** \endçond */
+  /** \endcond */
   
   /// Floating point precision implementation of the Rect class \ingroup TYPES
   class Rect32f{
@@ -116,8 +116,8 @@ namespace icl {
 
     /// intersection of two Rect32fs
     Rect32f operator&(const Rect32f &r) const {
-       Point ul ((int)iclMax (x, r.x), (int)iclMax (y, r.y));
-       Point lr ((int)iclMin (right(), r.right()), (int)iclMin (bottom(), r.bottom()));
+       Point32f ul (iclMax (x, r.x), iclMax (y, r.y));
+       Point32f lr (iclMin (right(), r.right()), iclMin (bottom(), r.bottom()));
        Rect32f result (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
        if (result.width > 0 && result.height > 0) return result;
        else return null;
@@ -131,8 +131,8 @@ namespace icl {
     
     /// union of two Rect32fs
     Rect32f operator|(const Rect32f &r) const {
-       Point ul ((int)iclMin (x, r.x), (int)iclMin (y, r.y));
-       Point lr ((int)iclMax (right(), r.right()), (int)iclMax (bottom(), r.bottom()));
+       Point32f ul (iclMin (x, r.x), iclMin (y, r.y));
+       Point32f lr (iclMax (right(), r.right()), iclMax (bottom(), r.bottom()));
        return Rect32f (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
     }
 

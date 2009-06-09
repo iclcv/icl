@@ -60,6 +60,9 @@ namespace icl{
       return Point32f(xfac*x,yfac*y);
     }
     
+    /// returns the euclidian distance to another point
+    float distanceTo(const Point32f &p) const;
+    
     /// returns the p-norm of the 2D Vector
     /** - p = 0 -> 2 
         - p = 1 -> city block norm x+y 
