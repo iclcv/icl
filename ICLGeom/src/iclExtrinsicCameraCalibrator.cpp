@@ -88,7 +88,7 @@ namespace icl{
       for(unsigned int i=0;i<XIs.size();++i){
         err += (XIs[i]-XIs2[i]).norm();
       }
-      return err;
+      return err/XIs.size();
     }
     virtual const float *getNoise(int currentTime, int endTime){
       (void)currentTime;(void)endTime;
@@ -184,7 +184,7 @@ namespace icl{
     for(unsigned int i=0;i<XIs.size();++i){
       err += (XIs[i]-XIs2[i]).norm();
     }
-    *rmse = err;
+    *rmse = err/XIs.size();
   }
 
 }
