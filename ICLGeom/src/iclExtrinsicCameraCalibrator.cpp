@@ -56,16 +56,18 @@ namespace icl{
     Camera cam;
     const std::vector<Vec> &XWs;
     const std::vector<Point32f> &XIs;
-    float data[6];
-    float noise[6];
+    float data[7];
+    float noise[7];
     float noiseVar;
+    bool optimizeFocalLength;
   public:
     StochasticCameraOptimizer(const Camera &cam, 
                               const std::vector<Vec> &XWs,
                               const std::vector<Point32f> &XIs,
-                              float noiseVar):
-      StochasticOptimizer(6/*pos and rot*/),cam(cam),XWs(XWs),
-      XIs(XIs),noiseVar(noiseVar)
+                              float noiseVar,
+                              bool optimizeFocalLength):
+      StochasticOptimizer(optimizeFocalLength ? 7 : 6/*(f) and pos and rot*/),cam(cam),XWs(XWs),
+      XIs(XIs),noiseVar(noiseVar),optimizeFocalLength(optimizeFocalLength)
     {
       randomSeed();
     }
@@ -73,12 +75,13 @@ namespace icl{
       Camera cam = this->cam;
       cam.translate(data[0],data[1],data[2]);
       cam.rotate(data[3],data[4],data[5]);
+      if(optimizeFocalLength) cam.setFocalLength(this->cam.getFocalLength()+data[6]);
       return cam;
     }
     
   protected:
     virtual void reinitialize(){
-      std::fill(data,data+6,0);
+      std::fill(data,data+7,0);
     }
     virtual float *getData(){ return data; }
     virtual float getError(const float *data){
@@ -92,7 +95,7 @@ namespace icl{
     }
     virtual const float *getNoise(int currentTime, int endTime){
       (void)currentTime;(void)endTime;
-      std::fill(noise,noise+6,GRand(0,noiseVar));
+      std::fill(noise,noise+7,GRand(0,noiseVar));
       return noise;
     }
   };
@@ -101,8 +104,9 @@ namespace icl{
                                               std::vector<Point32f> XIs,
                                               const Size &imageSize, 
                                               const float focalLength,
-                                              float *rmse) const throw (ExtrinsicCameraCalibrator::InvalidWorldPositionException,
-                                                                                    ExtrinsicCameraCalibrator::NotEnoughDataPointsException){
+                                              float *rmse, 
+                                              bool optimizeFocalLength) const throw (ExtrinsicCameraCalibrator::InvalidWorldPositionException,
+                                                                                     ExtrinsicCameraCalibrator::NotEnoughDataPointsException){
     if(XWs.size() > XIs.size()){
       ERROR_LOG("got more world points than image points (erasing additional world points)");
       XWs.resize(XIs.size());
@@ -161,7 +165,7 @@ namespace icl{
       
       if(m_method == "linear+stochastic"){
         Camera cam(pos,norm, up, Rect(Point::null,imageSize),focalLength);
-        StochasticCameraOptimizer stochOpt(cam,XWs,XIs_save,m_params[1]); 
+        StochasticCameraOptimizer stochOpt(cam,XWs,XIs_save,m_params[1], optimizeFocalLength); 
         StochasticOptimizer::Result result = stochOpt.optimize(m_params[0]);
         cam = stochOpt.camFromData(result.data);
         estimateRMSE(XWs,XIs_save,cam,rmse);

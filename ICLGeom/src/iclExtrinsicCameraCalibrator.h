@@ -52,8 +52,9 @@ namespace icl{
                      std::vector<Point32f> imagePoints,
                      const Size &imageSize, 
                      const float focalLength,
-                     float *rmse=0) const throw (InvalidWorldPositionException,
-                                                 NotEnoughDataPointsException);
+                     float *rmse=0,
+                     bool optimizeFocalLength = false) const throw (InvalidWorldPositionException,
+                                                                    NotEnoughDataPointsException);
     
     private:
     static void estimateRMSE(const std::vector<Vec> &worldPoints,                      

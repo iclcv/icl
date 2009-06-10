@@ -21,7 +21,7 @@ using namespace std;
 
 namespace icl{
 
-  UnicapGrabber::UnicapGrabber(const UnicapDevice &device):
+  UnicapGrabberImpl::UnicapGrabberImpl(const UnicapDevice &device):
     // {{{ open
 
     m_oDevice(device),m_poConversionBuffer(0),
@@ -33,7 +33,7 @@ namespace icl{
 
   // }}}
   
-  UnicapGrabber::UnicapGrabber(const std::string &deviceFilter, unsigned int useIndex):
+  UnicapGrabberImpl::UnicapGrabberImpl(const std::string &deviceFilter, unsigned int useIndex):
     // {{{ open
 
     m_poConversionBuffer(0),m_poGrabEngine(0),
@@ -51,7 +51,7 @@ namespace icl{
 
   // }}}
 
-  UnicapGrabber::~UnicapGrabber(){
+  UnicapGrabberImpl::~UnicapGrabberImpl(){
     // {{{ open
     m_oMutex.lock();
     ICL_DELETE(m_poGrabEngine);
@@ -63,7 +63,7 @@ namespace icl{
 
   // }}}
 
-  void UnicapGrabber::init(){
+  void UnicapGrabberImpl::init(){
     // {{{ open
 
     string modelname = m_oDevice.getModelName();
@@ -71,7 +71,7 @@ namespace icl{
 #define DEACTIVATE_PWC_CAM_IN_UNICAP
 #ifdef DEACTIVATE_PWC_CAM_IN_UNICAP
       //      printf("Using PWCGrabEngine !\n");
-      ERROR_LOG("Philips 740 webcam is not supported by the UnicapGrabber !");
+      ERROR_LOG("Philips 740 webcam is not supported by the UnicapGrabberImpl !");
       m_poGrabEngine = 0 ; //new PWCGrabEngine(&m_oDevice);
       m_poConvertEngine = 0;
 #else
@@ -107,7 +107,7 @@ namespace icl{
 
   // }}}
 
-  void UnicapGrabber::updateFps(){
+  void UnicapGrabberImpl::updateFps(){
     // {{{ open
 
     Time now = icl::Time::now();
@@ -119,7 +119,7 @@ namespace icl{
 
   // }}}
 
-  float UnicapGrabber::getCurrentFps() const{
+  float UnicapGrabberImpl::getCurrentFps() const{
     // {{{ open
     
     return m_fCurrentFps;
@@ -158,7 +158,7 @@ namespace icl{
     // }}}
   }
   
-  void UnicapGrabber::setProperty(const std::string &property, const std::string &value){
+  void UnicapGrabberImpl::setProperty(const std::string &property, const std::string &value){
     // {{{ open
     
     //    bool verbose = true;
@@ -268,9 +268,9 @@ namespace icl{
           if(range.contains(val)){
             prop.setValue(val);
             m_oDevice.setProperty(prop);
-            //      if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
+            //      if(verbose) printf("UnicapGrabberImpl::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
           }else{
-            printf("UnicapGrabber::setParam() value %f is out of range [%f..%f]\n",val,range.minVal, range.maxVal);
+            printf("UnicapGrabberImpl::setParam() value %f is out of range [%f..%f]\n",val,range.minVal, range.maxVal);
           }
           break;
         }
@@ -284,7 +284,7 @@ namespace icl{
           bool foundValue = false;
           for(unsigned int j=0;j<valueList.size();j++){
             if(abs(valueList[j]-val)<0.00001){
-              //              if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
+              //              if(verbose) printf("UnicapGrabberImpl::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
               prop.setValue(valueList[j]);
               m_oDevice.setProperty(prop);
               foundValue = true;
@@ -303,7 +303,7 @@ namespace icl{
                 valueListStr+="}";
               }
             }
-            // printf("UnicapGrabber::setParam() value %f is not in value list %s \n",val,valueListStr.c_str());
+            // printf("UnicapGrabberImpl::setParam() value %f is not in value list %s \n",val,valueListStr.c_str());
           }
           break;
         }
@@ -318,12 +318,12 @@ namespace icl{
             if(force_lower_case(men[j])==val){
               prop.setMenuItem(men[j]);
               m_oDevice.setProperty(prop);
-              //  if(verbose) printf("UnicapGrabber::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
+              //  if(verbose) printf("UnicapGrabberImpl::setParam(%s=%s) [done]\n",param.c_str(),value.c_str());
               foundEntry = true;
             }
           }
           if(!foundEntry){
-            printf("UnicapGrabber::setParam() value is entry %s is not an valide menu entry \n",value.c_str());
+            printf("UnicapGrabberImpl::setParam() value is entry %s is not an valide menu entry \n",value.c_str());
             printf("menu={");
             for(unsigned int j=0;j<men.size();j++){
               printf("%s%s",men[j].c_str(),j<men.size()-1 ? "," : "}");
@@ -363,7 +363,7 @@ namespace icl{
   // }}}
   
   
-  vector<string> UnicapGrabber::getPropertyList(){
+  vector<string> UnicapGrabberImpl::getPropertyList(){
     // {{{ open
 
     vector<string> v;
@@ -381,7 +381,7 @@ namespace icl{
 
   // }}}
 
-  string UnicapGrabber::getInfo(const string &name){
+  string UnicapGrabberImpl::getInfo(const string &name){
     // {{{ open
 
     if(name == "size"){
@@ -487,7 +487,7 @@ namespace icl{
 
   // }}}
   
-  string UnicapGrabber::getType(const string &name){
+  string UnicapGrabberImpl::getType(const string &name){
     // {{{ open
 
     static map<UnicapProperty::type,string> *typeMap = 0;
@@ -516,7 +516,7 @@ namespace icl{
 
   // }}}
   
-  string UnicapGrabber::getValue(const std::string &name){
+  string UnicapGrabberImpl::getValue(const std::string &name){
     // {{{ open
 
     // look for a specific property:
@@ -561,7 +561,7 @@ namespace icl{
 
   // }}}
 
-  const ImgBase* UnicapGrabber::grabUD(ImgBase **ppoDst){
+  const ImgBase* UnicapGrabberImpl::grabUD(ImgBase **ppoDst){
     // {{{ open
 
     ICLASSERT_RETURN_VAL(m_poGrabEngine , 0);
@@ -830,7 +830,7 @@ namespace icl{
 
   
   vector<UnicapDevice>
-  UnicapGrabber::getDeviceList(const string &filter){
+  UnicapGrabberImpl::getDeviceList(const string &filter){
     // {{{ open
 
     static std::vector<UnicapDevice> vCurrentDevices;
@@ -851,7 +851,7 @@ namespace icl{
   /* Returning a real vector instead of a const reference to some static variable
      here allows to apply several filterDevices-calls in series */
   vector<UnicapDevice>
-  UnicapGrabber::filterDevices(const std::vector<UnicapDevice> &devices, 
+  UnicapGrabberImpl::filterDevices(const std::vector<UnicapDevice> &devices, 
                                const string &filter){
     // {{{ open
 

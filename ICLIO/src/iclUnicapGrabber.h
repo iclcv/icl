@@ -1,7 +1,7 @@
 #ifndef ICL_UNICAP_GRABBER_H
 #define ICL_UNICAP_GRABBER_H
 
-#include "iclGrabber.h"
+#include "iclGrabberHandle.h"
 #include "iclUnicapDevice.h"
 #include <iclConverter.h>
 #include <iclMutex.h>
@@ -26,12 +26,12 @@ namespace icl{
       constructor. Another way is to create a UnicapDevice by calling the constructor with a so
       called device filter string (more details: see the static getDeviceList() function here.
   **/
-  class UnicapGrabber : public Grabber{
+  class UnicapGrabberImpl : public Grabber{
     public:
     
     /// create a new UnicapGrabber with given UnicapDevice
     /** @param device UnicapDevice, that should be encapsulated in this Grabber */
-    UnicapGrabber(const UnicapDevice &device);
+    UnicapGrabberImpl(const UnicapDevice &device);
     
     /// create a UniapGrabber with given device Filter
     /** @param deviceFilter device filter string (see the static function getDeviceList() for
@@ -40,10 +40,10 @@ namespace icl{
                          useIndex. If useIndex is invalid, an error is written, the grabber becomes
                          invalid (this should not cause crashes, but no warranty).
     **/
-    UnicapGrabber(const std::string &deviceFilter, unsigned int useIndex=0); 
+    UnicapGrabberImpl(const std::string &deviceFilter, unsigned int useIndex=0); 
 
     /// Destructor
-    ~UnicapGrabber();
+    ~UnicapGrabberImpl();
     
     /// grab function grabs an image (destination image is adapted on demand)
     /** @copydoc icl::Grabber::grab(ImgBase**) **/
@@ -170,5 +170,76 @@ namespace icl{
     float m_fCurrentFps;
     
   };
+
+  
+  /// Unicap based grabber for DC and v4l and v4l2 devices \ingroup GRABBER_G \ingroup UNICAP_G
+  /** for more details: @see UnicapGrabberImpl */
+  class UnicapGrabber : public GrabberHandle<UnicapGrabberImpl>{
+    static inline std::string create_id(const UnicapDevice &dev){
+      return dev.getID();
+    }
+    
+    public:
+    
+    /// returns Unicap device list
+    /** @see UnicapGrabberImpl for more details */
+    static std::vector<UnicapDevice> getDeviceList(const std::string &filter=""){
+      return UnicapGrabberImpl::getDeviceList(filter);
+    }
+
+    /// filters unicap device list (not very common)
+    /** @see UnicapGrabberImpl for more details */
+    static std::vector<UnicapDevice> filterDevices(const std::vector<UnicapDevice> &devices, 
+                                                   const std::string &filter){
+      return UnicapGrabberImpl::filterDevices(devices,filter);
+    }
+
+    /// create unicap grabber from given device
+    /** @see UnicapGrabberImpl for more details */
+    inline UnicapGrabber(const UnicapDevice &device){
+      std::string id = create_id(device);
+      if(isNew(id)){
+        initialize(new UnicapGrabberImpl(device),id);
+      }else{
+        initialize(id);
+      }
+    }
+
+    /// create unicap grabber from given deviceFilter
+    /** @see UnicapGrabberImpl for more details */
+    inline UnicapGrabber(const std::string &deviceFilter, unsigned int useIndex=0){
+      const std::vector<UnicapDevice> devList = getDeviceList(deviceFilter);
+      if(devList.size() > useIndex){
+        std::string id = create_id(devList[useIndex]);
+        if(isNew(id)){
+          initialize(new UnicapGrabberImpl(devList[useIndex]),id);
+        }else{
+          initialize(id);
+        }
+      }else{
+        ERROR_LOG("unable to create unicap device with filter " << deviceFilter  << " and index " << useIndex);
+      }
+    }
+
+    /// returns current unicap device
+    /** @see UnicapGrabberImpl for more details */
+    UnicapDevice &getDevice() { 
+      if(isNull()){
+        throw ICLException("cannot return device from null-unicap-grabber-handle");
+      }
+      return m_instance->ptr->getDevice();
+    }
+    
+    /// returns current grabbing speed in FPS
+    /** @see UnicapGrabberImpl for more details */
+    float getCurrentFps() const{
+      if(isNull()){
+        throw ICLException("cannot return current fps from null-unicap-grabber-handle");
+      }
+      return m_instance->ptr->getCurrentFps();
+      
+    }
+  };
+
 }
 #endif
