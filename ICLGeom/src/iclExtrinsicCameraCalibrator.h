@@ -19,50 +19,69 @@ namespace icl{
       NotEnoughDataPointsException():ICLException(__FUNCTION__){}
     };
 
-    /// If a given method is not supported
-    struct UnknownCalibrationMethodException  : public ICLException{
-      UnknownCalibrationMethodException():ICLException(__FUNCTION__){}
+   
+    
+    struct Result{
+      std::string method; //!< calibration method 
+      Camera camera;      //!< found camera parameters
+      float error;        //!< resulting error
     };
 
     
-    /// Creates a new Instance with given calibration method
-    /** @param method currently the following methods are supported:
-        - "linear" linear (least-square base optimization)
-        - "linear+stochastic" linear approach followed by a stochastic search
-          approach (in our test sceneario, this reduced the remaining least square
-          error to about 20%
-        @param params method dependend parameters can be passed here
-                      if params != 0, and method is "linear+stochastic", then
-                      params can be a pointer to two floats,
-                      - params[0] is the count of steps, that should be used for 
-                        stochastic optimization (10000 at default)
-                      - params[1] is the variation variance (0.001 at default)
-    */
-    ExtrinsicCameraCalibrator(const std::string method="linear", float *params = 0)
-      throw (UnknownCalibrationMethodException);
-
-    /// applys a calibration step
+    /// applys linear a calibration
     /** @param worldPoint 3D-homogeneous points in the world 
         @param imagePoints corresponding points located in the image (in image coordinates)
         @param imageSize corresponding image size
         @param focalLength focal length of the camera (currently not estimated internally)
-        @param rmse if no NULL, resulting root-mean-square error is passed to the
-                    content of this pointer */
-    Camera calibrate(std::vector<Vec> worldPoints, 
-                     std::vector<Point32f> imagePoints,
-                     const Size &imageSize, 
-                     const float focalLength,
-                     float *rmse=0,
-                     bool optimizeFocalLength = false) const throw (InvalidWorldPositionException,
-                                                                    NotEnoughDataPointsException);
+
+    */
+    static Result calibrateLinear(std::vector<Vec> worldPoints,
+                                  std::vector<Point32f> imagePoints,
+                                  const Size &imageSize,
+                                  const float &focalLength) throw (InvalidWorldPositionException,
+                                                                   NotEnoughDataPointsException);
+
+    /// applys stochastic calibration originating in a coarse starting guess of camera parameters
+    /** @param worldPoint 3D-homogeneous points in the world 
+        @param imagePoints corresponding points located in the image (in image coordinates)
+        @param startCamera coarse starting guess for camera parameters
+        @param maxSteps maximum number of optimization trials 
+        @param minErrorThreshold optimization is stopped when this error is met
+        @param optimizeFocalLength if set to true, focal length is optimized internally too
+        @param useAnnealing if set to true, internall, an annealing factor is used during 
+                            optimization progress. Current formular:
+                            AnnealingFactor is exp(-5*t) where t runs from 0 to 1 (1 at step maxStep)
+    */
+    static Result calibrateStochastic(std::vector<Vec> worldPoints,
+                                      std::vector<Point32f> imagePoints,
+                                      const Camera &startCamera,
+                                      int maxSteps=10000, float minErrorThreshold=0.1,
+                                      bool optimizeFocalLength=true, bool useAnnealing=true) throw (NotEnoughDataPointsException);
+
+
+    /// Combination of linear and stochastic optimization (most common here)
+    /** Here we use the result from a linear calibration step as origin for the stochastic one. */
+    static Result calibrateLinearAndStochastic(std::vector<Vec> worldPoints,
+                                               std::vector<Point32f> imagePoints,
+                                               const Size &imageSize, 
+                                               const float &focalLength,
+                                               int steps=10000, float minErrorThreshold=0.1,
+                                               bool optimizeFocalLength=true, bool useAnnealing=true) throw (InvalidWorldPositionException, 
+                                                                                                             NotEnoughDataPointsException);
+       
+    /// calculates the root mean square error between projected world points and found marker points
+    static float estimateRMSE(const std::vector<Vec> &worldPoints,                      
+                              const std::vector<Point32f> imagePoints,
+                              const Camera &cam);
     
     private:
-    static void estimateRMSE(const std::vector<Vec> &worldPoints,                      
-                             const std::vector<Point32f> imagePoints,
-                             const Camera &cam, float *rmse);
     
-    std::string m_method;
-    std::vector<float> m_params;
+    /// This class cannot be instantiated
+    ExtrinsicCameraCalibrator(){}
+    
+    /// internally used utility function 
+    static void checkAndFixPoints(std::vector<Vec> &worldPoints, std::vector<Point32f> &imagePoints) throw (NotEnoughDataPointsException);
+    
   };
 
 
