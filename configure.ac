@@ -72,7 +72,9 @@ ICL_EXTEND_FLAG_VARS_2(
         [-L$IPP_ROOT/sharedlib -lippcore -lippi -lipps -lippsr -lippcv -lippm -lippcc -lguide -lpthread],
         [-Wl,-rpath=${IPP_ROOT}/sharedlib],
         [-I$IPP_ROOT/include],
-        [-DHAVE_IPP])
+        [-DHAVE_IPP],
+        [],
+        [])
 
 fi
 
