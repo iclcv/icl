@@ -131,7 +131,9 @@ ICL_EXTEND_FLAG_VARS_2(
         [-L$OPENGL_ROOT/lib -lGL -lGLU],
         [-Wl,-rpath=${OPENGL_ROOT}/lib],
         [-I$OPENGL_ROOT/include],
-        [-DHAVE_OPENGL])
+        [-DHAVE_OPENGL],
+        [],
+        [])
 
 fi
 
@@ -194,7 +196,9 @@ ICL_EXTEND_FLAG_VARS_2(
         [-L$IMAGEMAGICK_ROOT/lib -lMagick++],
         [-Wl,-rpath=$IMAGEMGAGICK_ROOT/lib],
         [-I$IMAGEMAGICK_ROOT/include],
-        [-DHAVE_IMAGEMAGICK])
+        [-DHAVE_IMAGEMAGICK],
+        [],
+        [])
 
 fi
 
@@ -224,7 +228,9 @@ ICL_EXTEND_FLAG_VARS_2(
         [-L$LIBJPEG_ROOT/lib -ljpeg],
         [-Wl,-rpath=$LIBJPEG_ROOT/lib],
         [-I$LIBJPEG_ROOT/include],
-        [-DHAVE_LIBJPEG])
+        [-DHAVE_LIBJPEG],
+        [],
+        [])
 fi
 
 AM_CONDITIONAL([HAVE_LIBJPEG_COND],[test x$HAVE_LIBJPEG = xTRUE])
@@ -255,7 +261,9 @@ ICL_EXTEND_FLAG_VARS_2(
         [-L$LIBZ_ROOT/lib -lz],
         [-Wl,-rpath=$LIBZ_ROOT/lib],
         [-I$LIBZ_ROOT/include],
-        [-DHAVE_LIBZ])
+        [-DHAVE_LIBZ],
+        [],
+        [])
 fi
 
 AM_CONDITIONAL([HAVE_LIBZ_COND],[test x$HAVE_LIBZ = xTRUE])
@@ -285,7 +293,9 @@ ICL_EXTEND_FLAG_VARS_2(
         [],
         [],
         [-I$VIDEODEV_ROOT/include],
-        [-DHAVE_VIDEODEV])
+        [-DHAVE_VIDEODEV],
+        [],
+        [])
 fi
 
 AM_CONDITIONAL([HAVE_VIDEODEV_COND],[test x$HAVE_VIDEODEV = xTRUE])
@@ -315,7 +325,9 @@ ICL_EXTEND_FLAG_VARS_2(
         [-L$SVS_ROOT/bin -lsvs -lsvscalc],
         [-Wl,-rpath=$SVS_ROOT/bin],
         [-I$SVS_ROOT/src],
-        [-DHAVE_SVS])
+        [-DHAVE_SVS],
+        [],
+        [])
 
 fi
 
@@ -361,7 +373,7 @@ AC_CHECK_LIB([QtGui],[main],[],[HAVE_QT=FALSE])
 AC_CHECK_LIB([QtOpenGL],[main],[],[HAVE_QT=FALSE])
 AC_CHECK_LIB([QtXml],[main],[],[HAVE_QT=FALSE])
 
-ICL_EXTEND_FLAG_VARS_2([],[-lGLU],[],[],[])
+ICL_EXTEND_FLAG_VARS_2([],[-lGLU],[],[],[],[],[])
 
 if test "$HAVE_QT" = "FALSE" ; then
 
