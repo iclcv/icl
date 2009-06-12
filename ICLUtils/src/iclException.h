@@ -87,6 +87,15 @@ namespace icl {
       ICLException(std::string("Invalid Size in: ")+functionName) {}
     virtual ~InvalidSizeException() throw() {}
   };
+
+  /// Exception thrown if a string is parsed into a specific type (or something)
+  class ParseException : public ICLException {
+    public:
+    ParseException(const std::string &whatToParse) throw():
+      ICLException(std::string("unable to parse: ")+whatToParse) {}
+    virtual ~ParseException() throw() {}
+  };
+
 #define ICL_FILE_LOCATION  (std::string(__FUNCTION__) + "(" + __FILE__ + ")")
 #define ICL_INVALID_FORMAT throw InvalidFormatException(ICL_FILE_LOCATION)
 #define ICL_INVALID_DEPTH  throw InvalidDepthException(ICL_FILE_LOCATION)
