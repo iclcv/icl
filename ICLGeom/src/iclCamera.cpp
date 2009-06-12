@@ -1,5 +1,7 @@
 #include "iclCamera.h"
 #include <math.h>
+#include <iclStringUtils.h>
+#include <iclSmartPtr.h>
 
 namespace icl{
 
@@ -301,5 +303,30 @@ namespace icl{
     }
   }
   // }}}
+
+  /// ostream operator (writes camera in XML format)
+  std::ostream &operator<<(std::ostream &os, const Camera &cam){
+    return os << "<CAMERA>" << std::endl 
+              << "\t<name>" << cam.getName() << "</name>" << std::endl
+              << "\t<pos>" << cam.getPos().transp() << "</pos>" << std::endl
+              << "\t<norm>" << cam.getNorm().transp() << "</norm>" << std::endl
+              << "\t<up>" << cam.getUp().transp() << "</up>" << std::endl
+              << "\t<focal-length>"<< cam.getFocalLength() << "</focal-length>" << std::endl
+              << "\t<viewport>" << cam.getViewPort() << "</viewport>" << std::endl
+              << "\t<handness>" << (cam.m_rightHandedCS?"right":"left") << "</handness>" << std::endl
+              << "\t<z-near>" << cam.m_zNear << "</z-near>" << std::endl
+              << "\t<z-far>" << cam.m_zFar << "</z-far>" << std::endl
+              << "</CAMERA>";
+  }
+
+#ifdef HAVE_QT_OR_XCF
+
+  std::istream &operator>>(std::istream &is, Camera &cam) throw (ParseException){
+    ERROR_LOG("This is not yet implemented ...");
+    throw ParseException("Camera [Not Implemented]");
+  }
+
+#endif
+
 
 }

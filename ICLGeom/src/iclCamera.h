@@ -5,6 +5,14 @@
 #include <iclObject.h>
 #include <iclSize.h>
 #include <iclRect32f.h>
+#include <iclException.h>
+
+#ifdef HAVE_QT
+#define HAVE_QT_OR_XCF
+#elif HAVE_XCF
+#define HAVE_QT_OR_XCF
+#endif
+
 
 // the icl namespace
 namespace icl{
@@ -251,6 +259,14 @@ namespace icl{
                            bool normalizedViewPort=false,
                            bool removeInvalidPoints=false);
 
+    /// allows access to private data
+    friend std::ostream &operator<<(std::ostream &os, const Camera &cam);
+
+#ifdef HAVE_QT_OR_XCF
+    /// allows access to private data
+    friend std::istream &operator>>(std::istream &is, Camera &cam) throw (ParseException);
+#endif
+
     private:
     Vec m_pos;        //!< center position vector
     Vec m_norm;       //!< norm vector
@@ -265,6 +281,17 @@ namespace icl{
     
     std::string m_name; //!< name of the camera (visualized in the scene2 if set)
   };
+
+
+  /// ostream operator (writes camera in XML format)
+  std::ostream &operator<<(std::ostream &os, const Camera &cam);
+
+
+#ifdef HAVE_QT_OR_XCF
+  /// istream operator parses a camera from an XML-string [needs QT or XCF support]
+  std::istream &operator>>(std::istream &is, Camera &cam) throw (ParseException);
+#endif
+
 }
 
 #endif
