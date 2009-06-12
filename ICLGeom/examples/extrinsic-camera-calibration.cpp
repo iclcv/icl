@@ -122,8 +122,11 @@ std::vector<int> associate(const std::vector<Point32f> &cogs,const Size &imageSi
   URandI ridx(cogs.size()-1);
   float buf[2];
 
-  for(int j=0;j<100;++j){
-    som.setEpsilon(E_start * ::exp(-j/30));
+  static int numSomTrainingSteps = pa_subarg<int>("-som-training-steps",0,100);
+  static float somDecayFactor = pa_subarg<float>("-som-decay-factor",0,5);
+  for(int j=0;j<numSomTrainingSteps;++j){
+    float relativeStep = float(j)/float(numSomTrainingSteps);
+    som.setEpsilon(E_start * ::exp(-relativeStep*somDecayFactor));
     for(int i=0;i<100;++i){
       unsigned int ridxVal = ridx; 
       ICLASSERT(ridxVal < cogs.size());
@@ -651,9 +654,13 @@ int main(int n, char **ppc){
   pa_explain("-show-cam","show current view-camera parameters on std::out");
   pa_explain("-config","define input marker config file (calib-config.xml by default) "
              "-show-cam");
+  pa_explain("-som-training-steps","define count of SOM trainingsteps, that are used to associate markers (default 100)");
   pa_explain("-dist","give 4 distortion parameters");
+  pa_explain("-som-decay-factor","som learning rate at relative time t (t=0..1) is exp(t*factor)");
   pa_explain("-create-empty-config-file","if this flag is given, an empty config file is created as ./new-calib-config.xml");
-  ICLApplication app(n,ppc,"-focal-length(1) -input(2) -nx(1) -ny(1) -orientation(1) -config(1) -dist(4) -create-empty-config-file",init,run);
+  ICLApplication app(n,ppc,"-focal-length(1) -input(2) -nx(1) -ny(1) -orientation(1) "
+                     "-som-training-steps(1) -som-decay-factor(1) "
+                     "-config(1) -dist(4) -create-empty-config-file",init,run);
   
   
  
