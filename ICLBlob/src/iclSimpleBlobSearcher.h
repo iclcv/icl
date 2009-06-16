@@ -55,34 +55,35 @@ namespace icl{
       /// corresponding ref color index
       int refColorIndex;
     };
-
+    
     /// Default constructor
     SimpleBlobSearcher();
 
     /// Destructor
     ~SimpleBlobSearcher();
-
+    
     /// Adds a new reference color, with threshold and size range
     void add(const Color &color, 
              float thresh, 
              const Range32s &sizeRange);
-
+    
     /// removes reference color at given index
     void remove(int index);
-
+    void clear();
     
     /// Actual detection function (no ROI support yet!)
     /** detects blobs in given image*/
+
     const std::vector<Blob> &detect(const Img8u &image);
     
-    private:
+  private:
     /// Internal data representation (hidden)
     class Data;
     
     /// internal data pointer
     Data *m_data;
   };
-
+  
   
 }
 

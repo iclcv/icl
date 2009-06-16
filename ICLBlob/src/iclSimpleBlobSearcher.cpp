@@ -8,7 +8,7 @@ namespace icl{
                                  const Color &refColor, 
                                  int refColorIndex):
     region(region),refColor(refColor),refColorIndex(refColorIndex){}
-
+  
   struct SimpleBlobSearcher::Data{
     std::vector<Color> colors;
     std::vector<float> thresholds;
@@ -16,22 +16,24 @@ namespace icl{
     std::vector<Blob> blobs;
     std::vector<Img8u> buffers;
     std::vector<RegionDetector*> rds;
-    
   };
   
-  SimpleBlobSearcher::SimpleBlobSearcher():m_data(new SimpleBlobSearcher::Data){}
+  SimpleBlobSearcher::SimpleBlobSearcher() :
+    m_data(new SimpleBlobSearcher::Data) {}
   
   SimpleBlobSearcher::~SimpleBlobSearcher(){
     delete m_data;
   }
 
-  void SimpleBlobSearcher::add(const Color &color, float thresh, const Range32s &sizeRange){
+  void SimpleBlobSearcher::add(const Color &color, 
+                               float thresh, 
+                               const Range32s &sizeRange){
     m_data->colors.push_back(color);
     m_data->thresholds.push_back(thresh);
     m_data->rds.push_back(new RegionDetector);
     m_data->ranges.push_back(sizeRange);
   }
- 
+  
   void SimpleBlobSearcher::remove(int index){
     ICLASSERT_RETURN(index >= 0 && index < (int)m_data->colors.size());
     m_data->colors.erase(m_data->colors.begin()+index);
@@ -42,8 +44,14 @@ namespace icl{
     
   }
   
-  static int square(int i){ return i*i;}
-
+  void SimpleBlobSearcher::clear() {
+    for (unsigned int i=0;i<m_data->colors.size();++i) {
+      remove(i);
+    }
+  }
+  
+  static int square(int i){ return i*i; }
+  
   const std::vector<SimpleBlobSearcher::Blob> &SimpleBlobSearcher::detect(const Img8u &image){
     m_data->blobs.clear();
     ICLASSERT_RETURN_VAL(image.getChannels() == 3, m_data->blobs);
@@ -72,7 +80,7 @@ namespace icl{
 
     for(int j=0;j<N;++j){
       RegionDetector &rd = *m_data->rds[j];
-      rd.setRestrictions(m_data->ranges[j].minVal,m_data->ranges[j].maxVal,250,255);
+     rd.setRestrictions(m_data->ranges[j].minVal,m_data->ranges[j].maxVal,250,255);
       const std::vector<Region> &rs = rd.detect(&m_data->buffers[j]);
       for(unsigned int i=0;i<rs.size();++i){
         m_data->blobs.push_back(Blob(&rs[i],m_data->colors[j],j));
