@@ -82,6 +82,8 @@ void apply_calib(const std::vector<Point32f> &cogs, const std::vector<int> &ass,
       ERROR_LOG("what have you done to the combobox?");
   }
   scene.getCamera(CALIB_CAM) = calibrationResult.camera;
+  scene.getCamera(CALIB_CAM).setZFar(10000);
+  scene.getCamera(CALIB_CAM).setZNear(1.0/10000);
   currError = calibrationResult.error;
   
   //  scene.getCamera(CALIB_CAM).show("calib camera");
@@ -89,10 +91,30 @@ void apply_calib(const std::vector<Point32f> &cogs, const std::vector<int> &ass,
 
 // }}}
 
+Rect32f find_bounding_box(const std::vector<Point32f> &ps){
+  // {{{ open
+
+    if(!ps.size()) return Rect32f();
+    Point ul=ps[0];
+    Point lr=ps[0];
+    for(unsigned int i=1;i<ps.size();++i){
+      const float &x = ps[i].x;
+      const float &y = ps[i].y;
+      
+      if(ul.x > x) ul.x = x;
+      if(ul.y > y) ul.y = y;
+      if(lr.x < x) lr.x = x;
+      if(lr.y < y) lr.y = y;
+    }
+    return Rect32f(ul.x,ul.y,lr.x-ul.x,lr.y-ul.y);
+  }
+
+// }}}
+
 std::vector<int> associate(const std::vector<Point32f> &cogs,const Size &imageSize){
   // {{{ open
 
-  int imageW(imageSize.width),imageH(imageSize.height);
+
 
   if(gridW*gridH != (int)cogs.size()){
     return std::vector<int>();
@@ -101,12 +123,25 @@ std::vector<int> associate(const std::vector<Point32f> &cogs,const Size &imageSi
   std::vector<int> ass(cogs.size());
   static std::vector<Range32f> initBounds(2,Range32f(0,1));
   randomSeed();
-  
-  static const float M = 10;         // prototype initialization pixel-margin
+
   static const float E_start = 0.8;
+  
+#ifdef USE_OLD_SOM_INITIALIZATION
+  int imageW(imageSize.width),imageH(imageSize.height);
+  static const float M = 10;         // prototype initialization pixel-margin
   float mx = float(imageW-2*M)/(gridW-1);
   float my = float(imageH-2*M)/(gridH-1);
-  float b = M;
+  float bx = M;
+  float by = M;
+#else
+  // NEW: find cogs' bounding box for SOM initialization
+  Rect32f bb = find_bounding_box(cogs);
+  float mx = float(bb.width)/(gridW-1);
+  float my = float(bb.height)/(gridH-1);
+  float bx = bb.x;
+  float by = bb.y;
+
+#endif
   if(!::som){
     ::som = new SOM2D(2,gridW,gridH,initBounds,0.5,0.5);
   }
@@ -114,8 +149,8 @@ std::vector<int> associate(const std::vector<Point32f> &cogs,const Size &imageSi
   for(int x=0;x<gridW;++x){
     for(int y=0;y<gridH;++y){
       float *p = som.getNeuron(x,y).prototype;
-      p[0] = mx * x + b;
-      p[1] = my * y + b;
+      p[0] = mx * x + bx;
+      p[1] = my * y + by;
     }
   }
 
@@ -124,9 +159,12 @@ std::vector<int> associate(const std::vector<Point32f> &cogs,const Size &imageSi
 
   static int numSomTrainingSteps = pa_subarg<int>("-som-training-steps",0,100);
   static float somDecayFactor = pa_subarg<float>("-som-decay-factor",0,5);
+  static float somNeighbourhoodFactor = pa_subarg<float>("-som-nbh-factor",0,1);
+
   for(int j=0;j<numSomTrainingSteps;++j){
     float relativeStep = float(j)/float(numSomTrainingSteps);
     som.setEpsilon(E_start * ::exp(-relativeStep*somDecayFactor));
+    som.setSigma(somNeighbourhoodFactor);
     for(int i=0;i<100;++i){
       unsigned int ridxVal = ridx; 
       ICLASSERT(ridxVal < cogs.size());
@@ -329,7 +367,9 @@ void init_scene_and_scene_gui(){
 
   scene.addCamera(Camera(Vec(-500,-320,570),
                          Vec(0.879399,0.169548,-0.444871),
-                         Vec(0.339963,0.263626,0.902733)));
+                         Vec(0.339963,0.263626,0.902733),
+                         Size::VGA,
+                         6,0.0001,10000));
   scene.addCamera(Camera(Vec(0.0),Vec(0.0),imageParams.getSize(),focalLength));
 
   ICLDrawWidget3D &w = **sceneGUI.getValue<DrawHandle3D>("scene");
@@ -349,7 +389,12 @@ void init_scene_and_scene_gui(){
 
   // add calibration pattern
   for(unsigned int i=0;i<worldCoords.size();++i){
-    GeomColor col = i < worldCoords.size()/2 ? GeomColor(255,0,0,255) : GeomColor(0,100,255,255);
+    GeomColor col;
+    if(orientation == "horz"){
+      col = i < worldCoords.size()/2 ? GeomColor(255,0,0,255) : GeomColor(0,100,255,255);
+    }else{
+      col = int(i)%(gridW)>=gridW/2 ? GeomColor(255,0,0,255) : GeomColor(0,100,255,255);
+    }
     const Vec &p = worldCoords[i];
     add_cuboid(p[0],p[1],p[2],5,5,5,col);
   }
@@ -466,7 +511,10 @@ void init(){
   controls << (GUI("vbox[@label=local threshold]") 
                << "slider(2,100,10)[@out=mask-size@label=mask size]"
                << "slider(-20,20,-10)[@out=thresh@label=threshold]");
-  controls << "button(show/hide scene)[@handle=show-hide-scene]";
+  controls << (GUI("hbox") 
+               << "button(show/hide scene)[@handle=show-hide-scene]"
+               << "button(show camera)[@handle=show-camera]"
+               );
 
   gui << controls;
   
@@ -489,26 +537,67 @@ void init(){
   }
   
   Vec3 w1o = parse<Vec3>(ConfigFile::sget<std::string>("config.calibration-object.wall-1.offset"));
+  int w1o_idx = ConfigFile::sget<int>("config.calibration-object.wall-1.offset-idx");
   Vec3 w1d1 = parse<Vec3>(ConfigFile::sget<std::string>("config.calibration-object.wall-1.direction-1"));  
   Vec3 w1d2 = parse<Vec3>(ConfigFile::sget<std::string>("config.calibration-object.wall-1.direction-2"));  
 
   Vec3 w2o = parse<Vec3>(ConfigFile::sget<std::string>("config.calibration-object.wall-2.offset"));
+  int w2o_idx = ConfigFile::sget<int>("config.calibration-object.wall-2.offset-idx");
   Vec3 w2d1 = parse<Vec3>(ConfigFile::sget<std::string>("config.calibration-object.wall-2.direction-1"));  
   Vec3 w2d2 = parse<Vec3>(ConfigFile::sget<std::string>("config.calibration-object.wall-2.direction-2"));  
   
+#define USE_SPECIAL_OFFSET_CALCULATION
+#ifdef USE_SPECIAL_OFFSET_CALCULATION
+  if(orientation == "horz"){
+    // WALL i)
+    float x = w1o_idx % gridW;
+    float y = w1o_idx / gridW;
+    w1o -= w1d1 * x + w1d2 *y;
 
-  for(int y=0;y<gridH;++y){
-    for(int x=0;x<gridW;++x){
-      Vec3 v = w1o + w1d1*x + w1d2*y;
+    // WALL ii)
+    w2o_idx -= gridW*gridH;
+    x = w2o_idx % gridW;
+    y = w2o_idx / gridW;
+    w2o -= w2d1 * x + w2d2 *y;
+  }else{
+    // WALL i)
+    float x = w1o_idx % (2*gridW);
+    float y = w1o_idx / (2*gridW);
+    w1o -= w1d1 * x + w1d2 *y;
+
+    // WALL ii)
+    x = w2o_idx % (2*gridW) - gridW;
+    y = w2o_idx / (2*gridW);
+    w2o -= w2d1 * x + w2d2 *y;
+  }
+  
+#endif
+  if(orientation == "horz"){
+    for(int y=0;y<gridH;++y){
+      for(int x=0;x<gridW;++x){
+        Vec3 v = w1o + w1d1*x + w1d2*y;
       worldCoords.push_back(Vec(v[0],v[1],v[2]));
+      }
+    }
+    for(int y=0;y<gridH;++y){
+      for(int x=0;x<gridW;++x){
+        Vec3 v = w2o + w2d1*x + w2d2*y;
+        worldCoords.push_back(Vec(v[0],v[1],v[2]));
+      }
+    }
+  }else{ // vert case ...
+    for(int y=0;y<gridH;++y){
+      for(int x=0;x<gridW;++x){
+        Vec3 v = w1o + w1d1*x + w1d2*y;
+        worldCoords.push_back(Vec(v[0],v[1],v[2]));
+      }
+      for(int x=0;x<gridW;++x){
+        Vec3 v = w2o + w2d1*x + w2d2*y;
+        worldCoords.push_back(Vec(v[0],v[1],v[2]));
+      }
     }
   }
-  for(int y=0;y<gridH;++y){
-    for(int x=0;x<gridW;++x){
-      Vec3 v = w2o + w2d1*x + w2d2*y;
-      worldCoords.push_back(Vec(v[0],v[1],v[2]));
-    }
-  }
+    
 
   if(orientation == "horz"){
     gridH *= 2;
@@ -638,6 +727,11 @@ void run(){
 
     run_scene();
   }
+  
+  static ButtonHandle &showButton = gui.getValue<ButtonHandle>("show-camera");
+  if(showButton.wasTriggered()){
+    scene.getCamera(CALIB_CAM).show("current camera");
+  }
 
   Thread::msleep(10);
 }
@@ -656,10 +750,12 @@ int main(int n, char **ppc){
              "-show-cam");
   pa_explain("-som-training-steps","define count of SOM trainingsteps, that are used to associate markers (default 100)");
   pa_explain("-dist","give 4 distortion parameters");
+  pa_explain("-som-nbh-factor","som epsilon (distance weighting in" 
+             " neighbourhood function [see ICL::ICLAlgorithm::SOM class reference])");
   pa_explain("-som-decay-factor","som learning rate at relative time t (t=0..1) is exp(t*factor)");
   pa_explain("-create-empty-config-file","if this flag is given, an empty config file is created as ./new-calib-config.xml");
   ICLApplication app(n,ppc,"-focal-length(1) -input(2) -nx(1) -ny(1) -orientation(1) "
-                     "-som-training-steps(1) -som-decay-factor(1) "
+                     "-som-training-steps(1) -som-decay-factor(1) -som-nbh-factor(1) "
                      "-config(1) -dist(4) -create-empty-config-file",init,run);
   
   

@@ -183,6 +183,16 @@ namespace icl{
     inline const Rect &getViewPort() const{
       return m_viewPort;
     }
+
+    /// sets position of far clipping plane (must be > 0 and > zNear)
+    inline void setZFar(float zFar){
+      m_zFar = zFar;
+    }
+
+    /// sets position of near clipping plane (must be > 0 and < zFar)
+    inline void setZNear(float zNear){
+      m_zNear = zNear;
+    }
     
     /// returns normalized viewport of size [-1,1²] (+Aspect-Ratio)
     /** The normalized viewport is give when projecting points without
