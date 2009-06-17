@@ -29,7 +29,7 @@ namespace icl{
 
     
     /// applys linear a calibration
-    /** @param worldPoint 3D-homogeneous points in the world 
+    /** @param worldPoints 3D-homogeneous points in the world 
         @param imagePoints corresponding points located in the image (in image coordinates)
         @param imageSize corresponding image size
         @param focalLength focal length of the camera (currently not estimated internally)
@@ -42,7 +42,7 @@ namespace icl{
                                                                    NotEnoughDataPointsException);
 
     /// applys stochastic calibration originating in a coarse starting guess of camera parameters
-    /** @param worldPoint 3D-homogeneous points in the world 
+    /** @param worldPoints 3D-homogeneous points in the world 
         @param imagePoints corresponding points located in the image (in image coordinates)
         @param startCamera coarse starting guess for camera parameters
         @param maxSteps maximum number of optimization trials 

@@ -154,11 +154,11 @@ namespace icl{
     return cameraToWorldFrame(screenToCameraFrame(pixel));
   }
   
-  Camera::ViewRay Camera::getViewRay(const Point32f &pixel) const{
+  ViewRay Camera::getViewRay(const Point32f &pixel) const{
     return ViewRay(m_pos, screenToWorldFrame(pixel)-m_pos);
   }
   
-  Camera::ViewRay Camera::getViewRay(const Vec &Xw) const{
+  ViewRay Camera::getViewRay(const Vec &Xw) const{
     return ViewRay(m_pos, Xw-m_pos);
   }
     
@@ -328,5 +328,21 @@ namespace icl{
 
 #endif
 
+  static inline float sprod_3(const Vec &a, const Vec &b){
+    return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+  }
 
+
+  Vec Camera::getIntersection(const ViewRay &v, const PlaneEquation &plane) throw (ICLException){
+
+    float denom = sprod_3(v.direction, plane.normal);
+    if(!denom) throw ICLException("no intersection -> plane normal is perdendicular to view-ray direction");
+    float lambda = sprod_3(v.offset-plane.offset,plane.normal) / denom;
+    return v(lambda);
+  }
+
+  Vec Camera::estimate3DPosition(const Point32f &pixel, const PlaneEquation &plane) const throw (ICLException){
+    return getIntersection(getViewRay(pixel),plane);
+  }
+  
 }

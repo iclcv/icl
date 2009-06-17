@@ -6,6 +6,8 @@
 #include <iclSize.h>
 #include <iclRect32f.h>
 #include <iclException.h>
+#include <iclPlaneEquation.h>
+#include <iclViewRay.h>
 
 #ifdef HAVE_QT
 #define HAVE_QT_OR_XCF
@@ -18,7 +20,7 @@
 namespace icl{
 
    
-  /// Camera class 
+  /// Sophisticated Camera class 
   /** The camera class implements 3 different homogeneous transformations:
       -# World-Coordinate-System (CS) to Cam-CS transformation
       -# Projection into the image plane
@@ -212,19 +214,29 @@ namespace icl{
     /** i.e. The world location of the camera's CCD-Element for a given pixel */
     Vec screenToWorldFrame(const Point32f &pixel) const;
     
-    /// This is a view-ray's line equation in parameter form
-    struct ViewRay{
-      ViewRay(){}
-      ViewRay(const Vec &o, const Vec &d):offset(o),direction(d){offset[3]=direction[3]=1;}
-      Vec offset;
-      Vec direction;
-    };
-    
     /// Returns a view-ray equation of given pixel location
     ViewRay getViewRay(const Point32f &pixel) const;
 
     /// Returns a view-ray equation of given point in the world
     ViewRay getViewRay(const Vec &Xw) const;
+
+    /// returns estimated 3D point for given pixel and plane equation
+    Vec estimate3DPosition(const Point32f &pixel, const PlaneEquation &plane) const throw (ICLException);
+
+    /// calculates the intersection point between this view ray and a given plane
+    /** Throws an ICLException in case of parallel plane and line 
+        A ViewRay is defined by  \f$V: \mbox{offset} + \lambda \cdot \mbox{direction} \f$
+        A Plane is given by \f$ P: < (X - \mbox{planeOffset}), \mbox{planeNormal}> = 0 \f$
+        
+        Intersection is described by 
+        \f$<(\mbox{offset} + \lambda \cdot \mbox{direction}) - \mbox{planeOffset},planeNormal> = 0\f$
+        which yields: 
+        \f[ \lambda = \frac{<\mbox{offset}-\mbox{planeOffset},\mbox{planeNormal}>}{<\mbox{direction},\mbox{planeNormal}>} \f]
+        and .. obviously, we get no intersection if direction is parallel to planeNormal
+    */
+    static Vec getIntersection(const ViewRay &v, 
+                               const PlaneEquation &plane) throw (ICLException);
+      
     
     /// Projects a world point to the screen
     Point32f project(const Vec &Xw) const;

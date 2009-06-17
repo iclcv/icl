@@ -10,7 +10,9 @@ libICLGeom_la_SOURCES= \
 ../src/iclScene.cpp \
 ../src/iclObject2.cpp \
 ../src/iclScene2.cpp \
-../src/iclExtrinsicCameraCalibrator.cpp
+../src/iclExtrinsicCameraCalibrator.cpp \
+../src/iclPlaneEquation.cpp \
+../src/iclViewRay.cpp
 
 include_HEADERS= \
 ../src/iclBorderedObject.h \
@@ -24,7 +26,10 @@ include_HEADERS= \
 ../src/iclObject2.h \
 ../src/iclScene2.h \
 ../src/iclPrimitive.h \
-../src/iclExtrinsicCameraCalibrator.h
+../src/iclExtrinsicCameraCalibrator.h \
+../src/iclPlaneEquation.h \
+../src/iclViewRay.h
+
 
 
 
