@@ -145,7 +145,7 @@ namespace icl{
       return null_matrix;
     }
 
-    /// count of matrix elements (COLS x ROWS)
+   /// count of matrix elements (COLS x ROWS)
     static const unsigned int DIM = COLS*ROWS;
     
     protected:
@@ -711,6 +711,35 @@ namespace icl{
       }
       return d;
     }
+
+     /// inner product of data pointers (not matrix-mulitiplication)
+    /** computes the inner-product of data vectors */
+    template<unsigned int OTHER_COLS>
+    T inner_product(const FixedMatrix<T,OTHER_COLS,DIM/OTHER_COLS> &other) const {
+      return std::inner_product(begin(),end(),other.begin(),T(0));
+    }
+    
+    /// returns diagonal-elements as column-vector
+    FixedMatrix<T,1,COLS> diag() const{
+      ICLASSERT_RETURN_VAL(COLS==ROWS,(FixedMatrix<T,1,COLS>()));
+      FixedMatrix<T,1,COLS> d;
+      for(int i=0;i<COLS;++i){
+        d[i] = (*this)(i,i);
+      }
+      return d;
+    }
+    
+    /// computes the sum of all diagonal elements
+    T trace() const{
+      ICLASSERT_RETURN_VAL(COLS==ROWS,0);
+      double accu = 0;
+      for(int i=0;i<DIM;i+=COLS+1){
+        accu += m_data[i];
+      }
+      return accu;
+    }
+   
+
 
     /// returns a matrix row-reference  iterator pair
     FixedMatrixPart<T,COLS,row_iterator> row(unsigned int idx){
