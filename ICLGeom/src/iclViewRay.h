@@ -3,6 +3,7 @@
 
 #include <iclGeomDefs.h>
 #include <iclException.h>
+#include <iostream>
 
 namespace icl{
   /** \cond */
@@ -31,6 +32,8 @@ namespace icl{
     Vec operator()(float lambda) const;
   };
 
+  /// ostream operator
+  std::ostream &operator<<(std::ostream &s, const ViewRay &vr);
 }
 
 #endif

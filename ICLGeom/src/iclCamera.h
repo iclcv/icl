@@ -231,7 +231,7 @@ namespace icl{
         Intersection is described by 
         \f$<(\mbox{offset} + \lambda \cdot \mbox{direction}) - \mbox{planeOffset},planeNormal> = 0\f$
         which yields: 
-        \f[ \lambda = \frac{<\mbox{offset}-\mbox{planeOffset},\mbox{planeNormal}>}{<\mbox{direction},\mbox{planeNormal}>} \f]
+        \f[ \lambda = - \frac{<\mbox{offset}-\mbox{planeOffset},\mbox{planeNormal}>}{<\mbox{direction},\mbox{planeNormal}>} \f]
         and .. obviously, we get no intersection if direction is parallel to planeNormal
     */
     static Vec getIntersection(const ViewRay &v, 

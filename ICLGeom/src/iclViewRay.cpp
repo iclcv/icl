@@ -18,4 +18,8 @@ namespace icl{
     return r;
   }
 
+  std::ostream &operator<<(std::ostream &s, const ViewRay &vr){
+    return s << "ViewRay(" << vr.offset.transp() << " + lambda * " << vr.direction.transp() << ")";
+  }
+
 }

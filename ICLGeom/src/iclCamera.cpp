@@ -67,15 +67,24 @@ namespace icl{
       uu = cross(hh,nn); // this is for left handed coordinate systems:
     }
 
-
     Mat T;
-    T.col(0) = hh;
-    T.col(1) = uu;
-    //T.col(2) = -nn; // WHY? -> because we used hh = cross(nn,ut) before ...
-    T.col(2) = nn; 
+    T.row(0) = hh;
+    T.row(1) = uu;
+    T.row(2) = nn;
+    T.row(3) = Vec(0.0);
     T.col(3) = Vec(0.0);
-    T = T.transp();
-    //    ------------------>   very old, i guess, T[3] = Vec(0,0,0,1);
+    /*
+        Mat T;
+        T.col(0) = hh;
+        T.col(1) = uu;
+        T.col(2) = nn; 
+        T.col(3) = Vec(0.0);
+        T = T.transp();
+        //    ------------------>   very old, i guess, T[3] = Vec(0,0,0,1);
+    */
+    //  DEBUG_LOG("T:\n" << T);
+    // DEBUG_LOG("mpos:\n" << m_pos);
+    // DEBUG_LOG("-T*mpos:\n" << -T*m_pos);
     
     T.col(3) =-(T*m_pos);
     T(3,3) = 1;
@@ -141,11 +150,41 @@ namespace icl{
     // Todo: optimize this code by pre-calculate inverse matrices ...
     Mat V = getViewPortMatrix(); // V(2,2) = 1; this is no longer needed!
     Mat P = getProjectionMatrix();
-    return homogenize(P.inv()*homogenize(V.inv() * Vec(pixel.x,pixel.y,m_F,1)));
+    
+    /// *NEW* mirror pixel around image center
+    //Point32f mPixel = m_viewPort.lr() - pixel; could be solved by using -m_F
+    
+    //OLD ??? return homogenize(P.inv()*homogenize(V.inv() * Vec(pixel.x,pixel.y,m_F,1)));
+    Vec p(pixel.x,pixel.y,0,1);
+
+    p = V.inv()*p;
+    //    DEBUG_LOG("p without viewport transform:" <<p.transp());
+    //p = homogenize(p);
+    // DEBUG_LOG("p homog.:" <<p.transp());
+    p = P.inv() * p;
+    //DEBUG_LOG("p unprojected:" <<p.transp());
+
+    p[3]=1;
+
+    //p = homogenize(p);
+    p[2] = -m_F;
+    //DEBUG_LOG("p(unprojecteD)[3]=1:" <<p.transp());
+
+
+    
+    DEBUG_LOG("returning this point on the screen in world coords:" <<p.transp());
+    return p;
+
+
   }
 
 
   Vec Camera::cameraToWorldFrame(const Vec &Xc) const{
+    DEBUG_LOG("CS:" << std::endl << getCoordinateSystemTransformationMatrix() );
+    DEBUG_LOG("inv(CS):" << std::endl << getCoordinateSystemTransformationMatrix().inv() );
+    DEBUG_LOG("given point in camera frame:" << std::endl << Xc.transp() );
+    DEBUG_LOG("inv(CS)*Xc:" << std::endl << getCoordinateSystemTransformationMatrix().inv()*Xc );
+    std::cout << std::endl;
     return getCoordinateSystemTransformationMatrix().inv()*Xc;
   }
 
@@ -337,7 +376,7 @@ namespace icl{
 
     float denom = sprod_3(v.direction, plane.normal);
     if(!denom) throw ICLException("no intersection -> plane normal is perdendicular to view-ray direction");
-    float lambda = sprod_3(v.offset-plane.offset,plane.normal) / denom;
+    float lambda = - sprod_3(v.offset-plane.offset,plane.normal) / denom;
     return v(lambda);
   }
 

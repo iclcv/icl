@@ -2,6 +2,7 @@
 #define ICL_PLANE_EQUATION_H
 
 #include <iclGeomDefs.h>
+#include <iostream>
 
 namespace icl{
   
@@ -17,6 +18,9 @@ namespace icl{
     /// line direction
     Vec normal;
   };
+
+  /// ostream operator
+  std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
 }
 
 #endif
