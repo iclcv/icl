@@ -7,7 +7,7 @@ namespace icl{
 
 
   Camera::Camera(const Vec &pos, const Vec &rot, const Size &viewPortSize,
-                 float f, float zNear, float zFar, bool rightHandedCS){
+                 float f,const CameraChipInfo &chipInfo,float zNear, float zFar, bool rightHandedCS){
 
     FixedMatrix <double,2,4> nu( 0,0,
                                  0,1,
@@ -16,7 +16,7 @@ namespace icl{
     nu = create_hom_4x4<double>(rot[0],rot[1],rot[2])*nu;
     Vec norm = nu.col(0); norm[3] = 0;
     Vec up = nu.col(1); up[3] = 0;
-    init(pos,norm,up,Rect(Point::null,viewPortSize),f,zNear,zFar,rightHandedCS);
+    init(pos,norm,up,Rect(Point::null,viewPortSize),f,chipInfo,zNear,zFar,rightHandedCS);
   }
   
   
@@ -25,6 +25,7 @@ namespace icl{
                     const Vec &up,
                     const Rect &viewPort,
                     float f,
+                    const CameraChipInfo &chipInfo,
                     float zNear,
                     float zFar,
                     bool rightHandedCS){
@@ -37,7 +38,7 @@ namespace icl{
     m_viewPort = viewPort;
     
     m_rightHandedCS = rightHandedCS;
-
+    m_chipInfo = chipInfo;
     /*
     DEBUG_LOG("init Camera ...");
     #define X(Y) DEBUG_LOG(#Y << " : " << Y);
@@ -146,7 +147,9 @@ namespace icl{
     }
   }
   
-  Vec Camera::screenToCameraFrame(const Point32f &pixel) const{
+  /// *NEW* need m_chipInfo
+  Vec Camera::screenToCameraFrame(const Point32f &pixel) const throw (ICLException){
+    if(m_chipInfo.isNull()) throw ICLException(str("no chip size information available (") + __FUNCTION__+")");
     // Todo: optimize this code by pre-calculate inverse matrices ...
     Mat V = getViewPortMatrix(); // V(2,2) = 1; this is no longer needed!
     Mat P = getProjectionMatrix();
@@ -158,42 +161,44 @@ namespace icl{
     Vec p(pixel.x,pixel.y,0,1);
 
     p = V.inv()*p;
+    
+    float ar =  getViewPortAspectRatio();
+    Size32f chip = m_chipInfo.size/2;
+    return Vec( (p[0]/ar)*chip.width,
+                p[1]*chip.height,-m_F,1);
+
+#if 0
     //    DEBUG_LOG("p without viewport transform:" <<p.transp());
     //p = homogenize(p);
     // DEBUG_LOG("p homog.:" <<p.transp());
     p = P.inv() * p;
     //DEBUG_LOG("p unprojected:" <<p.transp());
-
     p[3]=1;
-
     //p = homogenize(p);
     p[2] = -m_F;
     //DEBUG_LOG("p(unprojecteD)[3]=1:" <<p.transp());
-
-
-    
     DEBUG_LOG("returning this point on the screen in world coords:" <<p.transp());
     return p;
-
-
+#endif
   }
 
 
   Vec Camera::cameraToWorldFrame(const Vec &Xc) const{
-    DEBUG_LOG("CS:" << std::endl << getCoordinateSystemTransformationMatrix() );
-    DEBUG_LOG("inv(CS):" << std::endl << getCoordinateSystemTransformationMatrix().inv() );
-    DEBUG_LOG("given point in camera frame:" << std::endl << Xc.transp() );
-    DEBUG_LOG("inv(CS)*Xc:" << std::endl << getCoordinateSystemTransformationMatrix().inv()*Xc );
-    std::cout << std::endl;
+    //DEBUG_LOG("CS:" << std::endl << getCoordinateSystemTransformationMatrix() );
+    //DEBUG_LOG("inv(CS):" << std::endl << getCoordinateSystemTransformationMatrix().inv() );
+    //DEBUG_LOG("given point in camera frame:" << std::endl << Xc.transp() );
+    //DEBUG_LOG("inv(CS)*Xc:" << std::endl << getCoordinateSystemTransformationMatrix().inv()*Xc );
+    //std::cout << std::endl;
     return getCoordinateSystemTransformationMatrix().inv()*Xc;
   }
 
 
-  Vec Camera::screenToWorldFrame(const Point32f &pixel) const{
+  /// *NEW* need m_chipInfo
+  Vec Camera::screenToWorldFrame(const Point32f &pixel) const throw (ICLException){
     return cameraToWorldFrame(screenToCameraFrame(pixel));
   }
   
-  ViewRay Camera::getViewRay(const Point32f &pixel) const{
+  ViewRay Camera::getViewRay(const Point32f &pixel) const throw (ICLException){
     return ViewRay(m_pos, screenToWorldFrame(pixel)-m_pos);
   }
   

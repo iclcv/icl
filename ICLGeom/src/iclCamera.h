@@ -8,6 +8,7 @@
 #include <iclException.h>
 #include <iclPlaneEquation.h>
 #include <iclViewRay.h>
+#include <iclCameraChipInfo.h>
 
 #ifdef HAVE_QT
 #define HAVE_QT_OR_XCF
@@ -41,14 +42,19 @@ namespace icl{
       will only affect the cameras parameter vectors norm, up and pos. By calling the getTransformationMatrix
       function, it is possible to get a combined homogeneous transformation matrix, which transforms and projects
       objects into the given view-port.
+
+      For the computation of 3D-View-Rays, one needs an additional hint on the cameras actual chip bounds. This
+      size (in mm) is passed in shape of a CameraChipInfo utitity structure, which essentially is just 
+      a wrapper of an icl::Size instance.
   */
   struct Camera : public Lockable{
-
+    
     /// Creates a camera from given position and rotation vector
     /** If the camera rotation is 0,0,0, the cameras normal vector is (0,0,1) and 
         it's up vector is (0,1,0) */
     Camera(const Vec &pos, const Vec &rot, const Size &viewPortSize,
-           float f, float zNear=0.01, float zFar=1000, bool rightHandedCS=true);
+           float f,const CameraChipInfo &chipInfo=CameraChipInfo(), 
+           float zNear=0.01, float zFar=1000, bool rightHandedCS=true);
     
     /// common constructor with given view port size
     /** Just as the constructor below, but without viewport offset*/
@@ -57,10 +63,11 @@ namespace icl{
                   const Vec &up=Vec(1,0,0,0),
                   const Size &viewPortSize=Size::VGA,
                   float f=-45, 
+                  const CameraChipInfo &chipInfo=CameraChipInfo(),
                   float zNear=0.01,
                   float zFar=1000,
                   bool rightHandedCS=true){
-      init(pos,norm,up,Rect(Point::null,viewPortSize),f,zNear,zFar,rightHandedCS);
+      init(pos,norm,up,Rect(Point::null,viewPortSize),f,chipInfo,zNear,zFar,rightHandedCS);
     }
 
     /// Creates a new camera with given parameters
@@ -79,6 +86,8 @@ namespace icl{
                   gluPerspective manner as opening angle of the camera
                   view field. Otherwise, f is interpretet as focal
                   length in mm.
+        @param chipInfo information about the actual chipSize of the camera. This is necessary 
+                        if one wants to compute 3D-View-Rays thought a given camera pixel
         @param zNear nearest clipping plane (clipping is not yet implemented, 
                      but zNear is used to estimation the camera projection internally.)
         @param zFar farest clipping plane (clipping is not yet implemented, 
@@ -89,15 +98,17 @@ namespace icl{
                   const Vec &up,
                   const Rect &viewPort,
                   float f=-45, 
+                  const CameraChipInfo &chipInfo=CameraChipInfo(),
                   float zNear=0.01,
                   float zFar=1000,
                   bool rightHandedCS=true){
-      init(pos,norm,up,viewPort,f,zNear,zFar,rightHandedCS);
+      init(pos,norm,up,viewPort,f,chipInfo,zNear,zFar,rightHandedCS);
     }
     
     /// re-initializes the camera with given data
     void init(const Vec &pos,const Vec &norm, const Vec &up, 
-              const Rect &viewPort, float f, float zNear, float zFar,
+              const Rect &viewPort, float f, 
+              const CameraChipInfo &chipInfo, float zNear, float zFar,
               bool rightHandedCS=true);
     
     /// returns the camera transformation matrix
@@ -140,6 +151,14 @@ namespace icl{
     inline void setPos(const Vec &pos){
       m_pos[3]=1;
       m_pos = pos;
+    }
+    
+    inline void setChipInfo(const CameraChipInfo &chipInfo){
+      m_chipInfo = chipInfo;
+    }
+    
+    inline const CameraChipInfo &getChipInfo() const{
+      return m_chipInfo;
     }
     
     /// returns the current horizontal vector (norm x up)
@@ -205,17 +224,20 @@ namespace icl{
     float getViewPortAspectRatio() const;
     
     /// Transforms a point at given camera pixel location into the camera frame
-    Vec screenToCameraFrame(const Point32f &pixel) const;
+    /** *NEW* needs chipInfo (if this is null, an exception is thrown) */
+    Vec screenToCameraFrame(const Point32f &pixel) const throw (ICLException);
     
     /// Transforms a point from the camera coordinate System into the world coordinate system
     Vec cameraToWorldFrame(const Vec &Xc) const;
     
     /// Returns where a given pixel (on the chip is currently in the world)
-    /** i.e. The world location of the camera's CCD-Element for a given pixel */
-    Vec screenToWorldFrame(const Point32f &pixel) const;
+    /** i.e. The world location of the camera's CCD-Element for a given pixel 
+        *NEW* needs chipInfo (if this is null, an exception is thrown) */
+    Vec screenToWorldFrame(const Point32f &pixel) const throw (ICLException);
     
     /// Returns a view-ray equation of given pixel location
-    ViewRay getViewRay(const Point32f &pixel) const;
+    /** *NEW* needs chipInfo (if this is null, an exception is thrown) */
+    ViewRay getViewRay(const Point32f &pixel) const throw (ICLException);
 
     /// Returns a view-ray equation of given point in the world
     ViewRay getViewRay(const Vec &Xw) const;
@@ -302,6 +324,8 @@ namespace icl{
     bool m_rightHandedCS; //!< is camera coordinate system right handed or not (default: true)
     
     std::string m_name; //!< name of the camera (visualized in the scene2 if set)
+    CameraChipInfo m_chipInfo; //!< information about actual chip size of the camera
+    
   };
 
 

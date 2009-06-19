@@ -369,7 +369,9 @@ void init_scene_and_scene_gui(){
                          Vec(0.879399,0.169548,-0.444871),
                          Vec(0.339963,0.263626,0.902733),
                          Size::VGA,
-                         6,0.0001,10000));
+                         6,
+                         CameraChipInfo(),
+                         0.0001,10000));
   scene.addCamera(Camera(Vec(0.0),Vec(0.0),imageParams.getSize(),focalLength));
 
   ICLDrawWidget3D &w = **sceneGUI.getValue<DrawHandle3D>("scene");
