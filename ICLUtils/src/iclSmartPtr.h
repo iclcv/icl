@@ -133,19 +133,40 @@ namespace icl{
       /** If the element pointer is null, an error will
           terminate the program with -1;
       */
-      T &operator* () const { ICLASSERT(e); return *e; }
+      T &operator* () { ICLASSERT(e); return *e; }
+
+      /// returns a reference of the currently hold element (const)
+      /** If the element pointer is null, an error will
+          terminate the program with -1;
+      */
+      const T &operator* () const { ICLASSERT(e); return *e; }
+      
 
       /// returns the pointer to the data
       /** If the element pointer is null, an error will
           terminate the program with -1;
       */
-      T* get () const { return e; }
+      T* get () { return e; }
+
+      /// returns the pointer to the data (const)
+      /** If the element pointer is null, an error will
+          terminate the program with -1;
+      */
+      const T* get () const { return e; }
+
 
       /// returns the currently hold element
       /** If the element pointer is null, an error will
           terminate the program with -1;
       */
-      T *operator-> () const { ICLASSERT(e); return e; }
+      T *operator-> () { ICLASSERT(e); return e; }
+
+      /// returns the currently hold element (const)
+      /** If the element pointer is null, an error will
+          terminate the program with -1;
+      */
+      const T *operator-> () const { ICLASSERT(e); return e; }
+
 
       /// this may be used to check if * or -> operator may be used
       operator bool() const { return (e != 0); }

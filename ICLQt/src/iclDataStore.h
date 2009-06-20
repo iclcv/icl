@@ -414,7 +414,7 @@ namespace icl{
     typedef SmartPtr<QMutex,PointerDelOp> SmartMutexPtr;
  
     /// Smart-Pointer to the underlying data (allows shallow copies)
-    SmartDataMapPtr m_oDataMapPtr;
+    mutable SmartDataMapPtr m_oDataMapPtr;
     
     /// mutex to handle syncronous calls
     mutable SmartMutexPtr m_oMutexPtr;

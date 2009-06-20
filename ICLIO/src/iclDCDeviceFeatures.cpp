@@ -334,7 +334,7 @@ namespace icl{
 
     // }}}
     
-    void show(){
+    void show() {
       // {{{ open
 
       std::vector<std::string> ps = getPropertyList();
@@ -404,7 +404,7 @@ namespace icl{
     // {{{ open
 
     ICLASSERT_RETURN(!isNull());
-    impl->show();
+    const_cast<DCDeviceFeaturesImpl*>(impl.get())->show();
   }
 
   // }}}

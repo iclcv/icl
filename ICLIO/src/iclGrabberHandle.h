@@ -35,7 +35,7 @@ namespace icl{
     G *ptr;
     
     /// mutex protecting ptr
-    Mutex mutex;
+    mutable Mutex mutex;
   };
 
 

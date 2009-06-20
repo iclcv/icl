@@ -88,7 +88,7 @@ namespace icl{
 
   // Maybe this works
   bool Thread::running() const{
-    Mutex::Locker l(impl->mutex);
+    Mutex::Locker l(const_cast<Mutex&>(impl->mutex));
     return impl->on;
   }
   void Thread::exit(){

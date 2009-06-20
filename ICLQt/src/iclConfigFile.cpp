@@ -470,7 +470,8 @@ namespace icl{
     // {{{ open
     std::map<std::string,KeyRestriction>::const_iterator it = m_restrictions->find(id);
     if(it != m_restrictions->end() ){
-      return &(*m_restrictions.get())[id];
+      return &it->second;
+      //      return &(*m_restrictions.get())[id];
     }else{
       return 0;
     }

@@ -198,7 +198,7 @@ namespace icl{
     }
 
     // }}}
-    void bufferData(){
+    void bufferData() {
       // {{{ open
 
       ICLASSERT_RETURN(handle);
@@ -228,7 +228,7 @@ namespace icl{
     bool gzipped;
 #endif
     vector<icl8u> buffer;
-    int bufferoffset;
+    mutable int bufferoffset;
     bool binary;
     string precision;
     char writebuf[100];
@@ -613,7 +613,7 @@ namespace icl{
     static vector<icl8u> _null;
     ICLASSERT_RETURN_VAL(!isNull(),_null);
     ICLASSERT_RETURN_VAL(isOpen(),_null);
-    impl->bufferData();
+    const_cast<FileImpl*>(impl.get())->bufferData();
     return impl->buffer;
   }
 

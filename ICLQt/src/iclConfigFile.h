@@ -376,7 +376,7 @@ namespace icl{
     /** \endcond */
 
     /// shallow copyable smart pointer of the document handle
-    SmartPtr<XMLDocHandle,XMLDocHandleDelOp> m_spXMLDocHandle;
+    mutable SmartPtr<XMLDocHandle,XMLDocHandleDelOp> m_spXMLDocHandle;
     
     /// global ConfigFile instance 
     static ConfigFile s_oConfig;

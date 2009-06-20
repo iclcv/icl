@@ -103,7 +103,7 @@ namespace icl{
       minY = iclMin(minY,it->y);
       maxY = iclMax(maxY,it->y);
     }
-    impl->bb = new Rect(minX,minY,maxX-minX,maxY-minY+1);
+    const_cast<RegionImpl*>(impl.get())->bb = new Rect(minX,minY,maxX-minX,maxY-minY+1);
     return *impl->bb;
   }
 
@@ -201,7 +201,7 @@ namespace icl{
       } else post = b[i];
     }
 	
-    impl->boundary_length = length[0]*grad[0] + length[1]*grad[1] + length[2]*grad[2];
+    const_cast<RegionImpl*>(impl.get())->boundary_length = length[0]*grad[0] + length[1]*grad[1] + length[2]*grad[2];
     return impl->boundary_length;
   }
 
@@ -257,7 +257,7 @@ namespace icl{
     fD = sqrt(fD*fD + fSxy*fSxy);
     double fA  = fP + fD;
     
-    impl->pcainfo = new RegionPCAInfo(2*sqrt(fP + fD),2*sqrt(fP - fD),atan2(fA-fSxx,fSxy),avgX,avgY);
+    const_cast<RegionImpl*>(impl.get())->pcainfo = new RegionPCAInfo(2*sqrt(fP + fD),2*sqrt(fP - fD),atan2(fA-fSxx,fSxy),avgX,avgY);
 
     return *impl->pcainfo;
   }
@@ -268,7 +268,7 @@ namespace icl{
     // {{{ open
 
     if(impl->boundary) return *impl->boundary;
-    impl->boundary = new std::vector<Point>;
+    const_cast<RegionImpl*>(impl.get())->boundary = new std::vector<Point>;
     switch(impl->image->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: calculateBoundaryIntern(*impl->image->asImg<icl##D>()); break;
       ICL_INSTANTIATE_ALL_DEPTHS;
@@ -383,10 +383,10 @@ namespace icl{
   
   const std::vector<Point> &Region::getPixels() const {
     if(impl->pixels) return *impl->pixels;
-    impl->pixels = new std::vector<Point>;
+    const_cast<RegionImpl*>(impl.get())->pixels = new std::vector<Point>;
     
     for(unsigned int i=0;i<impl->scanlines.size();++i){
-      ScanLine &sl = impl->scanlines.at(i);
+      ScanLine &sl = const_cast<RegionImpl*>(impl.get())->scanlines.at(i);
       for(int x=sl.x;x<sl.x+sl.len;++x){
         impl->pixels->push_back(Point(x,sl.y));
       }
@@ -433,7 +433,7 @@ namespace icl{
     bool needReDetection = false;
     
     if(!impl->cornerDetector){
-      impl->cornerDetector = new CornerDetectorCSS(angle_thresh,rc_coeff,sigma,curvature_cutoff,straight_line_thresh);
+      const_cast<RegionImpl*>(impl.get())->cornerDetector = new CornerDetectorCSS(angle_thresh,rc_coeff,sigma,curvature_cutoff,straight_line_thresh);
       needReDetection = true;
     }else{
 #define ONE_PARAM(Y,P)                            \
