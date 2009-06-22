@@ -138,8 +138,25 @@ namespace icl{
   }
   
   Vec Camera::screenToCameraFrame(const Point32f &pixel) const{
-    ERROR_LOG("currently not supported ...");
-    return Vec(0.0);
+    Mat C = getCoordinateSystemTransformationMatrix();
+    FixedMatrix<float,3,3> R = C.part<0,0,3,3>();
+    FixedMatrix<float,3,3> R_inv = R.transp(); // R is orthonormal-> R.inv = R.transp
+    //FixedColVector<float,3> d = C.part<3,0,1,3>();
+    
+    float dx = (m_viewPort.left()+m_viewPort.right())/2;
+    float dy = (m_viewPort.top()+m_viewPort.bottom())/2;
+    float s = iclMin(m_viewPort.width/2,m_viewPort.height/2);
+    float f = m_F;
+    
+    FixedColVector<float,3> X_cam( -(pixel.x - dx)/s,
+                                   -(pixel.y - dy)/s,
+                                    1);
+    FixedColVector<float,3> dir = R_inv * X_cam;
+    return dir.resize<1,4>(1);
+    //FixedColVector<float,3> offs = - (R_inv*d);
+    
+    //    return ViewRay(offs.resize<1,4>(1),dir.resize<1,4>(1));
+    //    return ViewRay(m_pos,dir.resize<1,4>(1));
 #if 0
     // Todo: optimize this code by pre-calculate inverse matrices ...
     Mat V = getViewPortMatrix(); // V(2,2) = 1; this is no longer needed!
@@ -193,7 +210,7 @@ namespace icl{
     Mat C = getCoordinateSystemTransformationMatrix();
     FixedMatrix<float,3,3> R = C.part<0,0,3,3>();
     FixedMatrix<float,3,3> R_inv = R.transp(); // R is orthonormal-> R.inv = R.transp
-    FixedColVector<float,3> d = C.part<3,0,1,3>();
+    //FixedColVector<float,3> d = C.part<3,0,1,3>();
     
     float dx = (m_viewPort.left()+m_viewPort.right())/2;
     float dy = (m_viewPort.top()+m_viewPort.bottom())/2;
@@ -204,9 +221,10 @@ namespace icl{
                                    -(pixel.y - dy)/(s*f),
                                     1);
     FixedColVector<float,3> dir = R_inv * X_cam;
-    FixedColVector<float,3> offs = - (R_inv*d);
+    //FixedColVector<float,3> offs = - (R_inv*d);
     
-    return ViewRay(offs.resize<1,4>(1),dir.resize<1,4>(1));
+    //    return ViewRay(offs.resize<1,4>(1),dir.resize<1,4>(1));
+    return ViewRay(m_pos,dir.resize<1,4>(1));
   }
   
   ViewRay Camera::getViewRay(const Vec &Xw) const{
