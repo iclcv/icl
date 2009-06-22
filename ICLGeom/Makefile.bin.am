@@ -52,4 +52,20 @@ icl_extrinsic_camera_calibration_SOURCES=../examples/extrinsic-camera-calibratio
 icl_extrinsic_camera_calibration_LDFLAGS=${XLDFLAGS}
 icl_extrinsic_camera_calibration_CXXFLAGS=${XCXXFLAGS}
 
+
+if HAVE_QT_COND
+
+# because of using a morphological op !!
+bin_PROGRAMS += \
+icl-intrinsic-camera-calibration
+
+icl_intrinsic_camera_calibration_SOURCES= \
+	../examples/intrinsic-camera-calibration.cpp \
+	../examples/intrinsic-camera-calibration-tools.cpp
+
+icl_intrinsic_camera_calibration_LDFLAGS=${XLDFLAGS}
+icl_intrinsic_camera_calibration_CXXFLAGS=${XCXXFLAGS}
+
+endif
+
 endif

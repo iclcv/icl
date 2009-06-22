@@ -31,7 +31,7 @@ namespace icl{
         @param nXCells cell count of the SOM in x-direction
         @param yXCells cell count of the SOM in y-direction
         @param prototypeBounds @see SOM
-        @param esplion @see SOM
+        @param epslion @see SOM
         @param sigma @see SOM
     */
     SOM2D(unsigned int dataDim, 

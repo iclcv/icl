@@ -55,7 +55,7 @@ namespace icl{
   }
   
   
-  class StochasticCameraOptimizer : public StochasticOptimizer{
+  class StochasticCameraOptimizer : public StochasticOptimizer<float>{
     Camera cam;
     const std::vector<Vec> &XWs;
     const std::vector<Point32f> &XIs;
@@ -71,7 +71,7 @@ namespace icl{
                               float noiseVar,
                               bool optimizeFocalLength,
                               bool useAnnealing):
-      StochasticOptimizer(optimizeFocalLength ? 7 : 6/*(f) and pos and rot*/),cam(cam),XWs(XWs),
+      StochasticOptimizer<float>(optimizeFocalLength ? 7 : 6/*(f) and pos and rot*/),cam(cam),XWs(XWs),
       XIs(XIs),noiseVar(noiseVar),optimizeFocalLength(optimizeFocalLength),useAnnealing(useAnnealing)
     {
       randomSeed();
@@ -270,7 +270,7 @@ namespace icl{
               << " ann: " << (useAnnealing?"yes":"no" )
               );
     StochasticCameraOptimizer stochOpt(cam,XWs,XIs,useAnnealing ? 0.01 : 0.001, optimizeFocalLength, useAnnealing); 
-    StochasticOptimizer::Result resStOpt = stochOpt.optimize(minErrorThreshold,steps);
+    StochasticOptimizer<float>::Result resStOpt = stochOpt.optimize(minErrorThreshold,steps);
     Result result = { 
       "stochastic" ,
       stochOpt.camFromData(resStOpt.data),

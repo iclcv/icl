@@ -8,7 +8,7 @@
 #include <iclMorphologicalOp.h>
 #include <iclCC.h>
 
-#include "calib-radial-distortion-tools.h"
+#include "intrinsic-camera-calibration-tools.h"
 #include <iclSOM2D.h>
 #include <iclMathematics.h>
 #include <QMessageBox>
@@ -26,7 +26,7 @@ double DIST_FACTOR[4];
 
 
 void create_empty_warp_map(){
-  const Size &size = grabber->getDesiredSize();
+  const Size &size = IMAGE.getSize();
   WARP_MAP.setSize(size);
   WARP_MAP.setChannels(2);
 
@@ -54,21 +54,16 @@ inline Point32f distort_point(int xi, int yi){
 }
 
 void update_warp_map(){
-  const Size &size = grabber->getDesiredSize();  
+  const Size &size = IMAGE.getSize();
+  WARP_MAP.setSize(size);
   Channel32f cs[2];
   WARP_MAP.extractChannels(cs);
   
   for(float xi=0;xi<size.width;++xi){
     for(float yi=0;yi<size.height; ++yi){
       Point32f p = distort_point(xi,yi);
-      //      float x = s*(xi-x0);
-      //float y = s*(yi-y0);
-      //float p = 1 - f * (x*x + y*y);
       cs[0](xi,yi) = p.x; //p*x + x0; 
       cs[1](xi,yi) = p.y; //p*y + y0; 
-      
-      // csErr[0](xi,yi) = cs[0](xi,yi) - xi;
-      // csErr[1](xi,yi) = cs[1](xi,yi) - yi;
     }
   }
 }
@@ -132,6 +127,7 @@ std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW,
 
   std::vector<Point32f> sorted(points.size());  
   QMessageBox::StandardButton btn = QMessageBox::No;
+
   while(btn != QMessageBox::Yes){
     for(int j=0;j<100;++j){
       som.setEpsilon(E_start * ::exp(-j/30));
@@ -169,7 +165,8 @@ std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW,
     
     btn = QMessageBox::question(*gui.getValue<DrawHandle>("image"),
                                 "please confirm ...","Is this tesselation correct?",
-                                QMessageBox::Yes| QMessageBox::No);
+                                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    if(btn == QMessageBox::Cancel) throw ICLException("cancel pressed");
   }
   return sorted;
 }// -input file '~/tmp/images/*.ppm' -nx 5 -ny 4
@@ -178,7 +175,11 @@ void optimize_params(){
   Mutex::Locker l(MUTEX);
   
   Size size = grabber->getDesiredSize();
-  calc_distortion(CALIB_DATA,size.width,size.height,DIST_FACTOR);
+  if(gui.getValue<bool>("use-stochastic-opt")){
+    calc_distortion_stochastic_search(CALIB_DATA,IMAGE.getWidth(),IMAGE.getHeight(),DIST_FACTOR);  
+  }else{
+    calc_distortion(CALIB_DATA,IMAGE.getWidth(),IMAGE.getHeight(),DIST_FACTOR);
+  }
   
   std::cout << "distortion factors: {" << DIST_FACTOR[0] << ", " << DIST_FACTOR[1] 
             << ", " << DIST_FACTOR[2] << ", " << DIST_FACTOR[3]  << "}" << std::endl;
@@ -297,11 +298,16 @@ void detect_vis(bool add=false){
       CALIB_DATA.data.push_back(CalibrationStep());
       IMAGE.deepCopy(&CALIB_DATA.data.back().colorImage);
       moIm->convert(&CALIB_DATA.data.back().image);
-      CALIB_DATA.data.back().points = sort_points(pts,
-                                                  CALIB_DATA.nx,
-                                                  CALIB_DATA.ny,
-                                                  grabber->getDesiredSize().width,
-                                                  grabber->getDesiredSize().height);
+      try{
+        CALIB_DATA.data.back().points = sort_points(pts,
+                                                    CALIB_DATA.nx,
+                                                    CALIB_DATA.ny,
+                                                    IMAGE.getWidth(),
+                                                    IMAGE.getHeight());
+      }catch(ICLException &ex){
+        std::cout << "aborted ..." << std::endl;
+        CALIB_DATA.data.pop_back();
+      }
     }
   }
 }
@@ -351,9 +357,17 @@ void create_pattern_gui(){
 }
 
 void init(){
+
+
   CALIB_DATA.nx = pa_subarg<int>("-nx",0,5);
   CALIB_DATA.ny = pa_subarg<int>("-ny",0,4);
 
+  grabber = new GenericGrabber(FROM_PROGARG_DEF("-input","pwc","0"));
+  grabber->setIgnoreDesiredParams(true);
+  grabber->grab()->convert(&IMAGE);
+
+  create_empty_warp_map();
+  
   if(pa_defined("-init")){
     for(int i=0;i<4;++i){
       DIST_FACTOR[0] = pa_subarg<float>("-init",i,0.0f);
@@ -377,6 +391,7 @@ void init(){
                << "slider(2,100,10)[@out=mask-size@label=mask size]"
                << "slider(-20,20,-10)[@out=thresh@label=threshold]");
   controls << "button(add)[@handle=add]";
+  controls << "togglebutton(no,yes)[@out=use-stochastic-opt@label=stochastic mode]";
   controls << "button(optimize)[@handle=optimize]";
   controls << "button(save)[@handle=save]";
   gui << controls;
@@ -388,18 +403,13 @@ void init(){
   //  (*gui.getValue<ImageHandle>("state"))->setFitMode(ICLWidget::fmFit);
   (*gui.getValue<ImageHandle>("state"))->setMenuEnabled(false);
 
-  grabber = new GenericGrabber(FROM_PROGARG_DEF("-input","pwc","0"));
-  grabber->setIgnoreDesiredParams(false);
-  grabber->setDesiredSize(Size::VGA);
-  grabber->setDesiredFormat(formatRGB);
-  grabber->setDesiredDepth(depth32f);
+  
 
   CALIB_DATA.data.reserve(10);
 
   gui.getValue<ButtonHandle>("add").registerCallback(new GUI::Callback(add));
   gui.getValue<ButtonHandle>("save").registerCallback(new GUI::Callback(save_warp_map));
   
-  create_empty_warp_map();
 }
 
 void run(){

@@ -1,4 +1,6 @@
-#include "calib-radial-distortion-tools.h"
+#include "intrinsic-camera-calibration-tools.h"
+#include <iclRandom.h>
+#include <iclStochasticOptimizer.h>
 
 namespace icl{
  
@@ -93,6 +95,61 @@ namespace icl{
     dist_factor[2] = bf[2];
     dist_factor[3] = get_size_factor( bf, xsize, ysize );
   }
+
+  void calc_distortion_stochastic_search(const CalibrationData &data,
+                                         int xsize, int ysize, double dist_factor[4]){
+    struct StochasticIntrinsicCameraParameterOptimizer : public StochasticOptimizer<double>{
+      double *dist_factor;
+      const CalibrationData &data;
+      Size size;
+      double noise[4];
+      StochasticIntrinsicCameraParameterOptimizer(double *dist_factor, const CalibrationData &data, int w, int h):
+        StochasticOptimizer<double>(4),dist_factor(dist_factor),data(data),size(w,h){
+        dist_factor[0] = size.width/2;
+        dist_factor[1] = size.height/2;
+        dist_factor[2] = 0.0;
+        dist_factor[3] = 1.0;
+      }
+      virtual double *getData(){
+        return dist_factor;
+      }
+    
+      virtual double getError(const double *dist){
+        return get_fitting_error(data, const_cast<double*>(dist));
+      }
+      
+      virtual const double *getNoise(int currentTime, int endTime){
+        std::fill(noise,noise+3,GRand(0,0.1));
+        noise[3]=0;
+        return noise;
+      }
+      virtual void reinitialize(){
+        dist_factor[0] = size.width/2;
+        dist_factor[1] = size.height/2;
+        dist_factor[2] = 0.0;
+        dist_factor[3] = 1.0;
+      }
+      /// a pure utility function, which can be implemented in derived classes to notify optization progress (somehow)
+      virtual void notifyProgress(int t, int numSteps, int startError, 
+                                  int currBestError, int currError,const  double *data, int dataDim){
+        if(!(t%100)){
+          
+          std::cout << "t:" << t << " (" << 100*(float(t)/numSteps) << "%  error:" << currBestError << " dist-factor:{"
+                    << dist_factor[0] << "," << dist_factor[1] << ","
+                    << dist_factor[2] << "," << dist_factor[3] << "}" << std::endl;
+        }
+      }
+    };
+  
+    StochasticIntrinsicCameraParameterOptimizer opt(dist_factor,data,xsize,ysize);
+    StochasticOptimizer<double>::Result res = opt.optimize(100000);
+    std::cout << "FINAL RESULT error:" << res.error << " dist-factor:{"
+                    << dist_factor[0] << "," << dist_factor[1] << ","
+                    << dist_factor[2] << "," << dist_factor[3] << "}" << std::endl;
+
+    dist_factor[3] = get_size_factor( dist_factor, xsize, ysize );
+  }
+
 
   double get_size_factor( double dist_factor[4], int xsize, int ysize){
     double  ox, oy, ix, iy;

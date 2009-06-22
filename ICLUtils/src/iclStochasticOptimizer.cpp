@@ -7,33 +7,33 @@
 
 namespace icl{
 
-  StochasticOptimizer::Result::Result(const float *data,float error, float startError, int steps):
+  template<class T>
+  StochasticOptimizerResult<T>::StochasticOptimizerResult(const T *data,T error, T startError, int steps):
     data(data),error(error),startError(startError),steps(steps){
   }
-
-
-  StochasticOptimizer::StochasticOptimizer(int dataDim):
+  
+  template<class T>
+  StochasticOptimizer<T>::StochasticOptimizer(int dataDim):
     m_dataDim(dataDim){
   }
 
-  StochasticOptimizer::Result StochasticOptimizer::optimize(int maxSteps){
-    return optimize(-1,maxSteps);
-  }
-  
-  void StochasticOptimizer::notifyProgress(int,int,int, int, int,const float *, int){}
+  template<class T>  
+  void StochasticOptimizer<T>::notifyProgress(int,int,int, int, int,const T *, int){}
 
-  StochasticOptimizer::Result StochasticOptimizer::optimize(float minError, int maxSteps){
+  template<class T>
+  StochasticOptimizerResult<T> StochasticOptimizer<T>::optimize(T minError, int maxSteps){
     reinitialize();
-    float *data = getData();
-    float error = getError(data);
-    float startError = error;
-    std::vector<float> noisedData(m_dataDim);
+    T *data = getData();
+    T error = getError(data);
+    T startError = error;
+    std::vector<T> noisedData(m_dataDim);
     int t = 0;
     notifyProgress(t,maxSteps,startError,error,error,data,m_dataDim);
     do{
       std::transform(data,data+m_dataDim,getNoise(t,maxSteps),
-                     noisedData.data(),std::plus<float>());
-      float currError = getError(noisedData.data());
+                     noisedData.data(),std::plus<T>());
+      T currError = getError(noisedData.data());
+
       notifyProgress(t,maxSteps,startError,error,currError,data,m_dataDim);
       if(currError < error){
         error = currError;
@@ -46,4 +46,8 @@ namespace icl{
     }while(t<maxSteps);
     return Result(data,error,startError,maxSteps);
   }
+
+  template class StochasticOptimizer<float>;
+  template class StochasticOptimizer<double>;
+  
 }
