@@ -1,13 +1,11 @@
 #ifndef ICL_CONFIG_FILE_H
 #define ICL_CONFIG_FILE_H
 
-#include <iostream>
-#include <string>
-#include <map>
+#include <iclStringUtils.h> 
 #include <iclDataStore.h>
 #include <iclException.h>
 #include <iclRange.h>
-
+#include <map>
 
 namespace icl{
 
@@ -215,13 +213,30 @@ namespace icl{
         type "double" by default:
     */
     template<class T>
-    void add(const std::string &id, const T &val);
+    void add(const std::string &idIn, const T &val){
+      std::string id=m_sDefaultPrefix + idIn;
+      if(contains(id)){
+        ERROR_LOG("unable to add already existing entry \"" << id << "\" (use set instead)");
+      }else{
+        set<T>(idIn,val);
+      }
+    }    
 
-
-    /// updates a value within the config file
+    /// like add, but works if key does not exist too
     template<class T>
-    void set(const std::string &id, const T &val);
+    void set(const std::string &idIn, const T &val){
+      std::string id=m_sDefaultPrefix + idIn;
+      if(contains(id) && !checkType<T>(id)){
+        ERROR_LOG("id " << id << "is already set with different type!");
+        return;
+      }
+      if(contains(id)) getValue<T>(id) = val;
+      else allocValue<T>(id,val);
+      add_to_doc(*m_spXMLDocHandle,id,get_type_str<T>(),str(val));
+    }
+
     
+    /// updates a value within the config file
     /// returns a given value from the internal document hash-map (un const)
     /** This function is equivalent to the getValue<T> function template
         provided by the parent DataStore class, except this function applies
@@ -365,12 +380,19 @@ namespace icl{
 
     private:
 
+
     /// filename
     std::string m_sFileName;
     
     /// internally used XMLDocument type (currently QDomDocument)
     class XMLDocHandle;
 
+    /// internally synchronized an add- or a set call
+    static void add_to_doc(XMLDocHandle &h,const std::string &id,const std::string &type, const std::string &value);
+   
+    template<class T>
+    static std::string get_type_str();
+     
     /** \cond */
     struct XMLDocHandleDelOp{ static void delete_func(XMLDocHandle *h); };
     /** \endcond */

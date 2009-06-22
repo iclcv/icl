@@ -14,6 +14,10 @@
 #include <list>
 #include <vector>
 #include <iclColor.h>
+#include <iclException.h>
+#include <iclSize32f.h>
+#include <iclPoint32f.h>
+#include <iclRect32f.h>
 
 using namespace std;
 
@@ -62,100 +66,78 @@ namespace icl{
     };
 
     // }}}
-    
-    template<class T>
-    void add_f(DataStore&,const std::string&, const std::string&){}
 
-    template<class T> 
-    std::string get_type_str(){ return "";}
-    
-    template<class T>
-    std::string get_value_str(const T&){ return "";}
 
-    // {{{ add_f specializations
 
     // each add_function<T> defines how to transform XML's text 
     // element string into an element of type T
 
-#define SPECIALIZE(T,VAL,VAL_STR)                          \
-    template<> void add_f<T>(DataStore &ds,             \
-                             const std::string &id,        \
-                             const std::string &value){    \
-      ds.allocValue(string("config.")+id,VAL);             \
-    }                                                      \
-    template<> std::string get_type_str<T>(){              \
-      return #T;                                           \
-    }                                                      \
-    template<> std::string get_value_str<T>(const T &val){ \
-      return VAL_STR;                                      \
-    }
-    
-    SPECIALIZE(char,value[0],string()+val);
-    SPECIALIZE(unsigned char,to8u(value),str(val));
-    SPECIALIZE(short,to16s(value),str(val));
-    SPECIALIZE(unsigned short,(unsigned short)to32s(value),str(icl32s(val)));
-    SPECIALIZE(int,to32s(value),str(val));
-    SPECIALIZE(unsigned int,(unsigned int)to32s(value),str(val));
-    SPECIALIZE(float,to32f(value),str(val));
-    SPECIALIZE(double,to64f(value),str(val));
-    SPECIALIZE(string,value,val);
-    SPECIALIZE(Size,parse<Size>(value),str(val));
-    SPECIALIZE(Point,parse<Point>(value),str(val));
-    SPECIALIZE(Rect,parse<Rect>(value),str(val));
-    SPECIALIZE(Range32s,parse<Range<int> >(value),str(val));
-    SPECIALIZE(Range32f,parse<Range<float> >(value),str(val));
-    SPECIALIZE(Color,color_from_string(value),str(val));
-#undef SPECIALIZE
-
-    // }}}
-    
     // {{{ static map of add-functions
-
+    
     // map of add functions (key = type-string, params = variable-ID
     // and variable XML-Text string representation
     typedef void (*add_func)(DataStore&,const std::string&,const std::string&);
     std::map<std::string,add_func> addFunctions;
 
     // }}}
-    
-    // {{{ AddFuncionInitializer struct
 
-    // Utility struct once instantiated statically
-    // to instantiate all add_function_templates "into"
-    // the addFunctions map
-    static struct AddFunctionsInitializer{
-      AddFunctionsInitializer(){
-#define ADD_TEMPL(X) addFunctions[(#X)] = add_f<X>; 
-        ADD_TEMPL(char);
-        ADD_TEMPL(unsigned char); 
-        ADD_TEMPL(short); 
-        ADD_TEMPL(unsigned short);
-        ADD_TEMPL(int);
-        ADD_TEMPL(unsigned int);
-        ADD_TEMPL(float);
-        ADD_TEMPL(double);
-        ADD_TEMPL(string);
-        ADD_TEMPL(Size);
-        ADD_TEMPL(Rect);
-        ADD_TEMPL(Range32s);
-        ADD_TEMPL(Range32f);
-        ADD_TEMPL(Point);
-        ADD_TEMPL(Color);
-#undef ADD_TEMPL
-      }
-    } addFunctionInitializer;
+    template<class T>
+    void add_f(DataStore&,const std::string&, const std::string&){}
 
-    // }}}
+  }
+  template<class T> 
+  std::string ConfigFile::get_type_str(){ return "";}
+  
+#define REGISTER_TYPE(NR,T)                                             \
+  template<>                                                            \
+  std::string ConfigFile::get_type_str<T>(){ return #T; }               \
+  namespace {                                                           \
+    template<> void add_f<T>(DataStore &ds, const std::string &id,      \
+                             const std::string &value){                 \
+      ds.allocValue("config."+id,icl::parse<T>(value));                 \
+    }                                                                   \
+    struct ADD_##NR{                                                    \
+      ADD_##NR(){ addFunctions[#T] = add_f<T>; }                        \
+    } add_##NR;                                                         \
+  }
     
+  REGISTER_TYPE(1,char);
+  REGISTER_TYPE(2,unsigned char);
+  REGISTER_TYPE(3,short);
+  REGISTER_TYPE(4,unsigned short);
+  REGISTER_TYPE(5,int);
+  REGISTER_TYPE(6,unsigned int);
+  REGISTER_TYPE(7,float);
+  REGISTER_TYPE(8,double);
+  REGISTER_TYPE(9,string);
+  REGISTER_TYPE(10,Size);
+  REGISTER_TYPE(11,Point);
+  REGISTER_TYPE(12,Rect);
+  REGISTER_TYPE(13,Size32f);
+  REGISTER_TYPE(14,Point32f);
+  REGISTER_TYPE(15,Rect32f);
+  REGISTER_TYPE(16,Range32s);
+  REGISTER_TYPE(17,Range32f);
+  REGISTER_TYPE(18,Color);
+  REGISTER_TYPE(19,long int);
+  REGISTER_TYPE(20,bool);
+  // }}}
+  
+  namespace{
     void dsPush(DataStore &ds,const QString &id, const QString &type, const QString &value){
       // {{{ open
+      
+      ds.lock();
+      std::map<std::string,add_func>::iterator it = addFunctions.find(type.toLatin1().data());
+      if(it == addFunctions.end()){
+        throw ICLException(str(__FUNCTION__ )+ str(":unable to add ") + type.toLatin1().data() + 
+                           str(" to data store (") + str(__FILE__) + str(":") + str(__LINE__) + str(")"));
+      }
+      it->second(ds,id.toLatin1().data(),value.toLatin1().data());
+      ds.unlock();
+    }
 
-    ds.lock();
-    addFunctions[type.toLatin1().data()](ds,id.toLatin1().data(),value.toLatin1().data());
-    ds.unlock();
-  }
-
-  // }}}
+    // }}}
   
     // recursivly add given QDomNode to the data store
     // each new section id is added to the prefix delimited with 
@@ -375,19 +357,19 @@ namespace icl{
 
     // }}}
     
-    void add_to_doc(QDomDocument &doc, const std::string &name, const std::string &type, const std::string &value){
-      // {{{ open
-
+    
+  }// end of anonymous namespace
+  
+  void ConfigFile::add_to_doc(icl::ConfigFile::XMLDocHandle &doc, const std::string &name, const std::string &type, const std::string &value){
+    // {{{ open
+    
       TokenList tokenList = get_token_list(name);
       ICLASSERT_RETURN(tokenList.size());
       
       add_to_doc_rec(doc,doc.documentElement(),tokenList,type,value);
       
-    }
-
-    // }}}
-    
-  }// end of anonymous namespace
+  }
+  // }}}
   
 
 
@@ -426,10 +408,7 @@ namespace icl{
     
     clear();
 
-
-    
     load_rec(*this,doc.documentElement().firstChild(),"",*this);
-
 
     updateTitleFromDocument();
   }
@@ -519,39 +498,7 @@ namespace icl{
 
   // }}}
   
-  template<class T>
-  void ConfigFile::set(const std::string &idIn, const T &val){
-    std::string id=m_sDefaultPrefix + idIn;
-    if(contains(id) && !checkType<T>(id)){
-      ERROR_LOG("id " << id << "is already set with different type!");
-      return;
-    }
-      
-    if(contains(id)){
-      getValue<T>(id) = val;
-    }else{
-      allocValue<T>(id,val);
-    }
-    
-    add_to_doc(*m_spXMLDocHandle,id,get_type_str<T>(),get_value_str<T>(val));
-  }
-
-  
-  template<class T>
-  void ConfigFile::add(const std::string &idIn, const T &val){
-    std::string id=m_sDefaultPrefix + idIn;
-    if(contains(id)){
-      ERROR_LOG("unable to add already existing entry \"" << id << "\" (use set instead)");
-    }else{
-      set<T>(idIn,val);
-    }
-  }
-
-#define X(T) template void ConfigFile::add<T>(const std::string&,const T&)
-  X(char); X(unsigned char); X(short); X(unsigned short); X(int); X(unsigned int); X(Color);
-  X(float); X(double); X(string); X(Size); X(Point); X(Rect); X(Range<int>); X(Range<float>);
-#undef X
-
+ 
   void ConfigFile::save(const std::string &filename) const{
     // {{{ open
     QFile file(filename.c_str());

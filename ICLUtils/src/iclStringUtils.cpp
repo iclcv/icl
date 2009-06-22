@@ -176,6 +176,13 @@ namespace icl{
     return f;
   }
 
+  bool parse_bool(const std::string &s){
+    std::string s2=toLower(s);
+    if(s == "true" || s == "yes" || s == "1") return true;
+    if(s == "false" || s == "no" || s == "0") return false;
+    return (bool)parse_icl8u(s);
+  }
+
   icl8u to8u(const std::string &s) { 
     return parse<icl8u>(s); 
   }

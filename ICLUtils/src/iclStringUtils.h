@@ -4,12 +4,11 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-//#include <ctype.h>
 #include <iterator>
 #include <sstream>
 #include <iostream>
 
-#include "iclTypes.h"
+#include "iclBasicTypes.h"
 
 namespace icl{
 
@@ -102,6 +101,12 @@ namespace icl{
     return s.str();
   }
 
+  /// specialized for bool
+  template<>
+  inline std::string str(const bool &b){
+    return b ? "true" : "false";
+  }
+
   /// specialized for std::string input (this is quiet silly)
   template<> inline std::string str(const std::string &s) { return s; }
 
@@ -123,6 +128,7 @@ namespace icl{
     return s.str();
   }
 
+
   
   /// parses a string into template parameter (defined for iclXX and std::string) \ingroup STRUTILS
   /** @see to8u to16s to32s to32f to64f (*/
@@ -138,6 +144,7 @@ namespace icl{
   icl8u parse_icl8u(const std::string &s);
   icl32f parse_icl32f(const std::string &s);
   icl64f parse_icl64f(const std::string &s);
+  bool parse_bool(const std::string &s);
 
   template<>
   inline icl8u parse<icl8u>(const std::string &s){
@@ -151,6 +158,11 @@ namespace icl{
   inline icl64f parse<icl64f>(const std::string &s){
     return parse_icl64f(s);
   }
+  template<>
+  inline bool parse<bool>(const std::string &s){
+    return parse_bool(s);
+  }
+
   /** \endcond */
 
   

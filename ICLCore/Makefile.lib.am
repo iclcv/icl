@@ -17,7 +17,6 @@ libICLCore_la_SOURCES= \
 ../src/iclRect.cpp \
 ../src/iclSize32f.cpp \
 ../src/iclSize.cpp \
-../src/iclStringUtils.cpp \
 ../src/iclRandom.cpp \
 ../src/iclCornerDetectorCSS.cpp
 
@@ -40,7 +39,6 @@ include_HEADERS= \
 ../src/iclSize32f.h \
 ../src/iclSize.h \
 ../src/iclSteppingRange.h \
-../src/iclStringUtils.h \
 ../src/iclTypes.h \
 ../src/iclRandom.h \
 ../src/iclPixelRef.h \

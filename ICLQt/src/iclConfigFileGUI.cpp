@@ -26,7 +26,7 @@ namespace icl{
 #define E(T) tt[DataStore::get_type_name<T>().c_str()] = #T
       E(char);E(unsigned char);E(short);E(unsigned short);E(int);
       E(unsigned int);E(float);E(double);E(string);E(Size);
-      E(Point);E(Rect);E(Range32s);E(Range32f);
+      E(Point);E(Rect);E(Range32s);E(Range32f);E(bool);
 #undef E
       
     }
@@ -58,7 +58,7 @@ namespace icl{
 #define E(T) et[#T] = entry_to_string_templ<T>;
       E(char);E(unsigned char);E(short);E(unsigned short);E(int);
       E(unsigned int);E(float);E(double);E(string);E(Size);
-      E(Point);E(Rect);E(Range32s);E(Range32f);
+      E(Point);E(Rect);E(Range32s);E(Range32f);E(bool);
 #undef E
       et["unsupported"] = entry_to_string_no_op;
     }
@@ -192,6 +192,7 @@ namespace icl{
       - Rect 
       - Range32s
       - Range32f
+      - bool
     */
   }
 
@@ -267,6 +268,20 @@ namespace icl{
 
                 n->setText(1,"");
               }
+            }else if(t == "bool"){
+              m_guis.push_back(NamedGUI());
+              GUI &gui = m_guis.back().gui;
+              bool bo = icl::parse<bool>(e.toLatin1().data());
+              std::string tr = bo ? "!true" : "true";
+              std::string fa = !bo ? "!false" : "false";
+              gui = GUI("togglebutton("+fa+","+tr+")[@handle=b@out=v@minsize=5x1]");
+              gui.create();
+              gui.getValue<ButtonHandle>("b").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
+              m_guis.back().id = es[i].key;
+              m_guis.back().type = t.toLatin1().data();
+              m_guis.back().item = n;
+              m_tree->setItemWidget(n,1,*gui.getValue<ButtonHandle>("b"));
+              n->setText(1,"");
             }else if(t == "float" || t == "int"){
               const ConfigFile::KeyRestriction *restriction = config.getRestriction(es[i].key);
               if(restriction && restriction->hasRange){
@@ -345,10 +360,14 @@ namespace icl{
   
   template <class T>
   bool update_entry_templ(const std::string &key,const std::string &val,ConfigFile &cfg){
-    cfg.set<T>(key) = parse<T>(val);
+    try{
+      cfg.set<T>(key,parse<T>(val));
+    }catch(ICLException &ex){
+      return false;
+    }
     return true;
   }
-  
+
   template<> bool update_entry_templ<char>(const std::string &key,const std::string &val,ConfigFile &cfg){
     if(val.size() == 1){
       cfg.set<char>(key,val[0]);
@@ -487,9 +506,9 @@ namespace icl{
   template<> bool update_entry_templ<Rect>(const std::string &key,const std::string &val,ConfigFile &cfg){
     QString qk = val.c_str();
     bool ok = false;
-    Size s = toSize(qk.section('@',0,0),&ok);
+    Size s = toSize(qk.section(')',1,1),&ok);
     if(!ok) return false;
-    Point p = toPoint(qk.section('@',1,1),&ok);
+    Point p = toPoint(qk.section(')',0,0).mid(1),&ok);
     if(ok){
       cfg.set<Rect>(key,Rect(p,s));
       return true;
@@ -590,6 +609,9 @@ namespace icl{
         m_config->set(it->id,f);
       }else if(it->type == "string"){
         std::string s = it->gui.getValue<std::string>("v");
+        m_config->set(it->id,s);
+      }else if(it->type == "bool"){
+        bool s = it->gui.getValue<bool>("v");
         m_config->set(it->id,s);
       }
     }
