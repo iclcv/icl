@@ -7,7 +7,7 @@ namespace icl{
 
 
   Camera::Camera(const Vec &pos, const Vec &rot, const Size &viewPortSize,
-                 float f,const CameraChipInfo &chipInfo,float zNear, float zFar, bool rightHandedCS){
+                 float f,float zNear, float zFar, bool rightHandedCS){
 
     FixedMatrix <double,2,4> nu( 0,0,
                                  0,1,
@@ -16,7 +16,7 @@ namespace icl{
     nu = create_hom_4x4<double>(rot[0],rot[1],rot[2])*nu;
     Vec norm = nu.col(0); norm[3] = 0;
     Vec up = nu.col(1); up[3] = 0;
-    init(pos,norm,up,Rect(Point::null,viewPortSize),f,chipInfo,zNear,zFar,rightHandedCS);
+    init(pos,norm,up,Rect(Point::null,viewPortSize),f,zNear,zFar,rightHandedCS);
   }
   
   
@@ -25,7 +25,6 @@ namespace icl{
                     const Vec &up,
                     const Rect &viewPort,
                     float f,
-                    const CameraChipInfo &chipInfo,
                     float zNear,
                     float zFar,
                     bool rightHandedCS){
@@ -38,7 +37,6 @@ namespace icl{
     m_viewPort = viewPort;
     
     m_rightHandedCS = rightHandedCS;
-    m_chipInfo = chipInfo;
     /*
     DEBUG_LOG("init Camera ...");
     #define X(Y) DEBUG_LOG(#Y << " : " << Y);
@@ -110,23 +108,15 @@ namespace icl{
   
   void Camera::show(const std::string &title) const{
     printf("cam: %s \n",title.c_str());
-    std::cout << "norm:\n" << m_norm << "\nup:\n" << m_up << "\npos:\n" << m_pos << "\nf: " << m_F << std::endl;
+    std::cout << "norm:\n" << m_norm << "\nup:\n" << m_up 
+              << "\npos:\n" << m_pos << "\nf: " << m_F << std::endl;
   }
 
   Mat Camera::getViewPortMatrix() const{
-    //float dx = m_oViewPort.width/2;
-    //float dy = m_oViewPort.height/2;
-    
+
     float dx = (m_viewPort.left()+m_viewPort.right())/2;
     float dy = (m_viewPort.top()+m_viewPort.bottom())/2;
     float slope = iclMin(m_viewPort.width/2,m_viewPort.height/2);
-
-    /* THIS IS CORRECT OLD VERSION ...
-    return  Mat ( slope , 0     , 0 , dx,
-                  0     , slope , 0 , dy,
-                  0     , 0     , 0 , 0 ,
-                  0     , 0     , 0 , 1 );
-   */
     return  Mat ( slope , 0     , 0 , dx,
                   0     , slope , 0 , dy,
                   0     , 0     , 1 , 0 ,
@@ -147,9 +137,10 @@ namespace icl{
     }
   }
   
-  /// *NEW* need m_chipInfo
-  Vec Camera::screenToCameraFrame(const Point32f &pixel) const throw (ICLException){
-    if(m_chipInfo.isNull()) throw ICLException(str("no chip size information available (") + __FUNCTION__+")");
+  Vec Camera::screenToCameraFrame(const Point32f &pixel) const{
+    ERROR_LOG("currently not supported ...");
+    return Vec(0.0);
+#if 0
     // Todo: optimize this code by pre-calculate inverse matrices ...
     Mat V = getViewPortMatrix(); // V(2,2) = 1; this is no longer needed!
     Mat P = getProjectionMatrix();
@@ -166,6 +157,7 @@ namespace icl{
     Size32f chip = m_chipInfo.size/2;
     return Vec( (p[0]/ar)*chip.width,
                 p[1]*chip.height,-m_F,1);
+#endif
 
 #if 0
     //    DEBUG_LOG("p without viewport transform:" <<p.transp());
@@ -193,13 +185,28 @@ namespace icl{
   }
 
 
-  /// *NEW* need m_chipInfo
-  Vec Camera::screenToWorldFrame(const Point32f &pixel) const throw (ICLException){
+  Vec Camera::screenToWorldFrame(const Point32f &pixel) const{
     return cameraToWorldFrame(screenToCameraFrame(pixel));
   }
   
-  ViewRay Camera::getViewRay(const Point32f &pixel) const throw (ICLException){
-    return ViewRay(m_pos, screenToWorldFrame(pixel)-m_pos);
+  ViewRay Camera::getViewRay(const Point32f &pixel) const{
+    Mat C = getCoordinateSystemTransformationMatrix();
+    FixedMatrix<float,3,3> R = C.part<0,0,3,3>();
+    FixedMatrix<float,3,3> R_inv = R.transp(); // R is orthonormal-> R.inv = R.transp
+    FixedColVector<float,3> d = C.part<3,0,1,3>();
+    
+    float dx = (m_viewPort.left()+m_viewPort.right())/2;
+    float dy = (m_viewPort.top()+m_viewPort.bottom())/2;
+    float s = iclMin(m_viewPort.width/2,m_viewPort.height/2);
+    float f = m_F;
+    
+    FixedColVector<float,3> X_cam( -(pixel.x - dx)/(s*f),
+                                   -(pixel.y - dy)/(s*f),
+                                    1);
+    FixedColVector<float,3> dir = R_inv * X_cam;
+    FixedColVector<float,3> offs = - (R_inv*d);
+    
+    return ViewRay(offs.resize<1,4>(1),dir.resize<1,4>(1));
   }
   
   ViewRay Camera::getViewRay(const Vec &Xw) const{
