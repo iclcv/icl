@@ -774,7 +774,23 @@ namespace icl{
     const FixedMatrixPart<T,WIDTH*HEIGHT,MatrixSubRectIterator<T> > part() const{
       return const_cast<FixedMatrix<T,COLS,ROWS>*>(this)->part<X,Y,WIDTH,HEIGHT>();
     }
-
+    
+    /// extends/shrinks matrix dimensions while preserving content on remaining elements (without scaling)
+    /** This is resizing operation, which preserves contents for all remaining matrix elements.
+        If new dimension is smaller than the current dimension, values are deleted.
+        If otherwise new dimension gets larger, new allocated value are initialized with
+        given init value.
+    */
+    template<unsigned int NEW_WIDTH,unsigned int NEW_HEIGHT>
+    inline FixedMatrix<T,NEW_WIDTH,NEW_HEIGHT> resize(const T &init=T(0)){
+      FixedMatrix<T,NEW_WIDTH,NEW_HEIGHT> M(init);
+      for(unsigned int x=0;x<COLS && x < NEW_WIDTH; ++x){
+        for(unsigned int y=0;y<ROWS && y < NEW_HEIGHT; ++y){
+          M(x,y) = (*this)(x,y);
+        }
+      }
+      return M;
+    }
     
     /// create identity matrix 
     /** if matrix is not a spare one, upper left square matrix
