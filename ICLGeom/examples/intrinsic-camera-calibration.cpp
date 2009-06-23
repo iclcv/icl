@@ -174,7 +174,6 @@ std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW,
 void optimize_params(){
   Mutex::Locker l(MUTEX);
   
-  Size size = grabber->getDesiredSize();
   if(gui.getValue<bool>("use-stochastic-opt")){
     calc_distortion_stochastic_search(CALIB_DATA,IMAGE.getWidth(),IMAGE.getHeight(),DIST_FACTOR);  
   }else{
@@ -260,7 +259,7 @@ void detect_vis(bool add=false){
       for(int y=IMAGE.getSize().height-10;y>=0;y-=20){
         Point32f p = distort_point(x,y);
         w.line(x,y,p.x,p.y);
-        w.sym(x,y,ICLDrawWidget::symCircle);
+        w.point(x,y);
       }
     }
     w.unlock();

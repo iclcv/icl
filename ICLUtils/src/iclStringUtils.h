@@ -162,6 +162,10 @@ namespace icl{
   inline bool parse<bool>(const std::string &s){
     return parse_bool(s);
   }
+  template<>
+  inline std::string parse<std::string>(const std::string &s){
+    return s;
+  }
 
   /** \endcond */
 
