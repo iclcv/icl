@@ -731,7 +731,20 @@ void run(){
   
   static ButtonHandle &showButton = gui.getValue<ButtonHandle>("show-camera");
   if(showButton.wasTriggered()){
-    scene.getCamera(CALIB_CAM).show("current camera");
+    //    scene.getCamera(CALIB_CAM).show("current camera");
+    const Camera &c = scene.getCamera(CALIB_CAM);
+    ConfigFile f;
+    f.add("config.title",str("extracted camera ") +Time::now().toString());
+    f.add("config.camera.pos",str(c.getPos().transp()));
+    f.add("config.camera.norm",str(c.getNorm().transp()));
+    f.add("config.camera.up",str(c.getUp().transp()));
+    f.add("config.camera.f",c.getFocalLength());
+    f.add("config.camera.size",str(c.getViewPort().getSize()));
+    
+    std::string filename = pa_subarg<std::string>("-o",0,"extracted-cam-cfg.xml");
+    std::cout << "new config file: (written to " <<  filename << ")" << std::endl;
+    std::cout << f << std::endl;
+    f.save(filename);
   }
 
   Thread::msleep(10);
@@ -744,6 +757,7 @@ int main(int n, char **ppc){
 
   pa_explain("-input","define input device e.g. '-input dc 0' or '-input file *.ppm'");
   pa_explain("-focal-length","define focal length in mm (should be about 16-40 or something)\n[madatory]");
+  pa_explain("-o","define output config xml file name (./extracted-camera-cfg.xml)");
   pa_explain("-orientation","one of horz or vert (orientation of the edge |: vertical  -: horizontal)\n"
              "\t(this can be used to overwrite orientation entry from the config file)");
   pa_explain("-show-cam","show current view-camera parameters on std::out");
@@ -757,7 +771,7 @@ int main(int n, char **ppc){
   pa_explain("-create-empty-config-file","if this flag is given, an empty config file is created as ./new-calib-config.xml");
   ICLApplication app(n,ppc,"-focal-length(1) -input(2) -nx(1) -ny(1) -orientation(1) "
                      "-som-training-steps(1) -som-decay-factor(1) -som-nbh-factor(1) "
-                     "-config(1) -dist(4) -create-empty-config-file",init,run);
+                     "-config(1) -dist(4) -create-empty-config-file -o(1)",init,run);
   
   
  
