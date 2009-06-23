@@ -138,66 +138,18 @@ namespace icl{
   }
   
   Vec Camera::screenToCameraFrame(const Point32f &pixel) const{
-    Mat C = getCoordinateSystemTransformationMatrix();
-    FixedMatrix<float,3,3> R = C.part<0,0,3,3>();
-    FixedMatrix<float,3,3> R_inv = R.transp(); // R is orthonormal-> R.inv = R.transp
-    //FixedColVector<float,3> d = C.part<3,0,1,3>();
-    
     float dx = (m_viewPort.left()+m_viewPort.right())/2;
     float dy = (m_viewPort.top()+m_viewPort.bottom())/2;
     float s = iclMin(m_viewPort.width/2,m_viewPort.height/2);
-    float f = m_F;
     
-    FixedColVector<float,3> X_cam( -(pixel.x - dx)/s,
-                                   -(pixel.y - dy)/s,
-                                    1);
-    FixedColVector<float,3> dir = R_inv * X_cam;
-    return dir.resize<1,4>(1);
-    //FixedColVector<float,3> offs = - (R_inv*d);
-    
-    //    return ViewRay(offs.resize<1,4>(1),dir.resize<1,4>(1));
-    //    return ViewRay(m_pos,dir.resize<1,4>(1));
-#if 0
-    // Todo: optimize this code by pre-calculate inverse matrices ...
-    Mat V = getViewPortMatrix(); // V(2,2) = 1; this is no longer needed!
-    Mat P = getProjectionMatrix();
-    
-    /// *NEW* mirror pixel around image center
-    //Point32f mPixel = m_viewPort.lr() - pixel; could be solved by using -m_F
-    
-    //OLD ??? return homogenize(P.inv()*homogenize(V.inv() * Vec(pixel.x,pixel.y,m_F,1)));
-    Vec p(pixel.x,pixel.y,0,1);
-
-    p = V.inv()*p;
-    
-    float ar =  getViewPortAspectRatio();
-    Size32f chip = m_chipInfo.size/2;
-    return Vec( (p[0]/ar)*chip.width,
-                p[1]*chip.height,-m_F,1);
-#endif
-
-#if 0
-    //    DEBUG_LOG("p without viewport transform:" <<p.transp());
-    //p = homogenize(p);
-    // DEBUG_LOG("p homog.:" <<p.transp());
-    p = P.inv() * p;
-    //DEBUG_LOG("p unprojected:" <<p.transp());
-    p[3]=1;
-    //p = homogenize(p);
-    p[2] = -m_F;
-    //DEBUG_LOG("p(unprojecteD)[3]=1:" <<p.transp());
-    DEBUG_LOG("returning this point on the screen in world coords:" <<p.transp());
-    return p;
-#endif
+    return Vec( (pixel.x - dx)/s,
+                (pixel.y - dy)/s,
+                -m_F,
+                1);
   }
 
 
   Vec Camera::cameraToWorldFrame(const Vec &Xc) const{
-    //DEBUG_LOG("CS:" << std::endl << getCoordinateSystemTransformationMatrix() );
-    //DEBUG_LOG("inv(CS):" << std::endl << getCoordinateSystemTransformationMatrix().inv() );
-    //DEBUG_LOG("given point in camera frame:" << std::endl << Xc.transp() );
-    //DEBUG_LOG("inv(CS)*Xc:" << std::endl << getCoordinateSystemTransformationMatrix().inv()*Xc );
-    //std::cout << std::endl;
     return getCoordinateSystemTransformationMatrix().inv()*Xc;
   }
 
@@ -208,9 +160,10 @@ namespace icl{
   
   ViewRay Camera::getViewRay(const Point32f &pixel) const{
     Mat C = getCoordinateSystemTransformationMatrix();
-    FixedMatrix<float,3,3> R = C.part<0,0,3,3>();
-    FixedMatrix<float,3,3> R_inv = R.transp(); // R is orthonormal-> R.inv = R.transp
-    //FixedColVector<float,3> d = C.part<3,0,1,3>();
+
+    // R is orthonormal-> R.inv = R.transp
+    FixedMatrix<float,3,3> R = C.part<0,0,3,3>(); 
+    FixedMatrix<float,3,3> R_inv = R.transp(); 
     
     float dx = (m_viewPort.left()+m_viewPort.right())/2;
     float dy = (m_viewPort.top()+m_viewPort.bottom())/2;

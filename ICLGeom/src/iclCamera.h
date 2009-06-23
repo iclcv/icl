@@ -31,6 +31,7 @@ namespace icl{
       and its view-port.\n
       The camera is characterized by 3 unity vectors:
       - <b>norm</b> which is the image planes normal vector (sometimes called the view-vector)
+        the norm vector is directed from the camera center to the scene. 
       - <b>up</b> which defines the "roll"-angle of the camera. It points into the positive y-direction
         of the image-plane and is perpendicular to the norm vector
       - <b>pos</b> the camera position vector
@@ -41,6 +42,8 @@ namespace icl{
       will only affect the cameras parameter vectors norm, up and pos. By calling the getTransformationMatrix
       function, it is possible to get a combined homogeneous transformation matrix, which transforms and projects
       objects into the given view-port.
+      
+      
 
   */
   struct Camera : public Lockable{
@@ -207,6 +210,8 @@ namespace icl{
     float getViewPortAspectRatio() const;
     
     /// Transforms a point at given camera pixel location into the camera frame
+    /** Please note that the screen lies behind the camera center, which implies that
+        resulting vectors z-coord is -focal-length */
     Vec screenToCameraFrame(const Point32f &pixel) const;
     
     /// Transforms a point from the camera coordinate System into the world coordinate system
