@@ -642,6 +642,41 @@ namespace icl{
   template DynMatrix<float> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<float> &m, DynMatrix<float> &dst);
   template DynMatrix<double> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<double> &m, DynMatrix<double> &dst);
 
+  
+
+  template<class T>
+  struct matrix_distance_op{
+    T e;
+    matrix_distance_op(const T &e):e(e){}
+    inline T operator()(const T &a, const T&b) const{  return ::pow(a-b,e);   }
+  };
+    
+  template<class T>
+  T matrix_distance(const DynMatrix<T> &m1, const DynMatrix<T> &m2, T norm){
+    CHECK_DIM(m1,m2,-1);
+    ICLASSERT_RETURN_VAL(norm > 0,-1);
+    T result = std::inner_product(m1.begin(),m1.end(),m2.begin(),T(0),std::plus<T>(),matrix_distance_op<T>(norm));
+    return pow(result,1/norm);
+  }
+  
+  template float matrix_distance(const DynMatrix<float> &m1, const DynMatrix<float> &m2, float);
+  template double matrix_distance(const DynMatrix<double> &, const DynMatrix<double> &, double);
+
+
+
+  template<class T>
+  struct matrix_divergence_op{
+    inline T operator()(const T &a, const T&b) const{ return a * log(a/b) - a + b;  }
+  };
+
+  template<class T>
+  T matrix_divergence(const DynMatrix<T> &m1, const DynMatrix<T> &m2){
+    CHECK_DIM(m1,m2,-1);
+    return std::inner_product(m1.begin(),m1.end(),m2.begin(),T(0),std::plus<T>(),matrix_divergence_op<T>());
+  }
+
+  template float matrix_divergence(const DynMatrix<float>&, const DynMatrix<float>&);
+  template double matrix_divergence(const DynMatrix<double>&, const DynMatrix<double>&);
 
 #undef CHECK_DIM 
 

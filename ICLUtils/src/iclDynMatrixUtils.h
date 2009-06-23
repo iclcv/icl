@@ -235,7 +235,24 @@ namespace icl{
   template<class T>
   DynMatrix<T> &matrix_pow(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
 
+  /** @} */ 
+  /** @{ @name matrix distance measurement  */ 
 
+  /// computes norm between matrix vectors
+  /** For float and double only 
+      \f[ D = \left(\sum\limits_{i,j} (A_{ij}-B_{ij})^n\right)^{\frac{1}{n}} \f]
+  */
+  template<class T>
+  T matrix_distance(const DynMatrix<T> &m1, const DynMatrix<T> &m2, T norm=2);
+
+  /// computes generalized Kullback-Leibler-divergence between matrix vectors
+  /** For float and double only 
+      \f[ \mbox{div} = \sum\limits_{i,j} A_{ij} \cdot \log{\frac{A_{ij}}{B_{ij}}} - A_{ij} + B_{ij} \f]
+  */
+  template<class T>
+  T matrix_divergence(const DynMatrix<T> &m1, const DynMatrix<T> &m2);
+  
+  
   /** @} */ 
   /** @{ @name statistical functions */ 
 
