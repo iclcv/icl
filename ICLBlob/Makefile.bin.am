@@ -50,7 +50,8 @@ bin_PROGRAMS+= \
 icl-region-inspector-demo \
 icl-vector-tracker-demo \
 icl-interactive-vector-tracker-benchmark \
-icl-simple-blob-searcher-test
+icl-simple-blob-searcher-test \
+icl-mean-shift-online-demo
 
 
 
@@ -65,6 +66,10 @@ icl_vector_tracker_demo_CXXFLAGS=${XCXXFLAGS}
 icl_interactive_vector_tracker_benchmark_SOURCES=../examples/interactive-vector-tracker-benchmark.cpp
 icl_interactive_vector_tracker_benchmark_LDFLAGS=${XLDFLAGS}
 icl_interactive_vector_tracker_benchmark_CXXFLAGS=${XCXXFLAGS}
+
+icl_mean_shift_online_demo_SOURCES=../examples/mean-shift-online-demo.cpp
+icl_mean_shift_online_demo_LDFLAGS=${XLDFLAGS}
+icl_mean_shift_online_demo_CXXFLAGS=${XCXXFLAGS}
 
 icl_simple_blob_searcher_test_SOURCES=../examples/simple-blob-searcher-test.cpp
 icl_simple_blob_searcher_test_LDFLAGS=${XLDFLAGS}

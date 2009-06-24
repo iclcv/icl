@@ -131,6 +131,12 @@ namespace icl{
     
     /// return low-level list of scanlines
     const std::vector<ScanLine> &getScanLines() const;
+    
+    /// accurate detection of blob center using gray image 
+    template<class T>
+    const Point32f &getAccurateCOG(const Img<T> &grayImage, int bbMargin=2, 
+                                   const T &minThreshold=50, const T &maxThreshold=200,
+                                   bool darkBlob=true) const;
 
     /// draws this region scanline by scanline into a given image 
     /** ROI is not regarded, because the region detectors results are

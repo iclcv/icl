@@ -11,7 +11,7 @@ namespace icl{
     RegionImpl(icl64f val, const ImgBase *image):
       pixcount(0),val(val),image(image),bb(0),
       pcainfo(0),boundary(0),pixels(0),boundary_length(-1),
-      cornerDetector(0){
+      cornerDetector(0),accurateCenter(0){
       scanlines.reserve(100);
     }
     ~RegionImpl(){
@@ -20,6 +20,7 @@ namespace icl{
       ICL_DELETE(boundary);
       ICL_DELETE(pixels);
       ICL_DELETE(cornerDetector);
+      ICL_DELETE(accurateCenter);
     }
     std::vector<ScanLine> scanlines;
     icl32s pixcount;
@@ -32,6 +33,7 @@ namespace icl{
     std::vector<Point> *pixels;
     float boundary_length;
     CornerDetectorCSS *cornerDetector;
+    Point32f *accurateCenter;
   };
 
   void RegionImplDelOp::delete_func( RegionImpl* impl){
@@ -455,9 +457,44 @@ namespace icl{
     }
   }
 
+  template<class T>
+  const Point32f &Region::getAccurateCOG(const Img<T> &grayImage, int bbMargin, 
+                                         const T &minThreshold, const T &maxThreshold,
+                                         bool darkBlob) const{
+    if(impl->accurateCenter) return *impl->accurateCenter;
+    const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->accurateCenter = new Point32f(-1,-1);
+    Point32f &p = *const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->accurateCenter;
+    ICLASSERT_RETURN_VAL(grayImage.getChannels(),p);
+    const Rect &r = getBoundingBox();
+    ICLASSERT_RETURN_VAL(grayImage.getImageRect().contains(r.x,r.y),p);
+    ICLASSERT_RETURN_VAL(grayImage.getImageRect().contains(r.x+r.width-1,r.y+r.height-1),p);
+    const Channel<T> c = grayImage.extractChannel(0);
+    
+    double sum = 0;
+    double cx=0,cy=0;
+    for(int x=r.x; x<r.right();++x){
+      for(int y=r.y;y<r.bottom();++y){
+        double v = icl::clip<T>(c(x,y),minThreshold,maxThreshold)-double(minThreshold);
+        if(darkBlob){
+          v = (maxThreshold-minThreshold)-v;
+        }
+        sum += v;
+        cx += float(x)*v;
+        cy += float(y)*v;
+      }
+    }
+
+    p.x = cx/sum;
+    p.y = cy/sum;
+    
+    return p;
+  }
 
 
-#define ICL_INSTANTIATE_DEPTH(D) template void Region::drawTo<icl##D>(Img<icl##D>&,icl##D)const;
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+  template void Region::drawTo<icl##D>(Img<icl##D>&,icl##D)const;       \
+  template const Point32f &Region::getAccurateCOG<icl##D>(const Img<icl##D>&,int, const icl##D&, const icl##D&, bool) const;
+
   ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
 }

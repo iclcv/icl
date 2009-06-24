@@ -15,7 +15,8 @@ libICLBlob_la_SOURCES= \
 ../src/iclRegionFilter.cpp \
 ../src/iclRegionPCAInfo.cpp \
 ../src/iclVQ2D.cpp \
-../src/iclSimpleBlobSearcher.cpp
+../src/iclSimpleBlobSearcher.cpp \
+../src/iclMeanShiftTracker.cpp
 
 include_HEADERS= \
 ../src/iclBlob.h \
@@ -39,7 +40,8 @@ include_HEADERS= \
 ../src/iclVQClusterInfo.h \
 ../src/iclVQVectorSet.h \
 ../src/iclSimpleBlobSearcher.h \
-../src/iclPositionTracker.h
+../src/iclPositionTracker.h \
+../src/iclMeanShiftTracker.h
 
 libICLBlob_la_CXXFLAGS=${AM_CXXFLAGS} \
 	-I../../ICLCore/src \
