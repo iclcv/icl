@@ -6,6 +6,7 @@
     \defgroup THREAD Support Functions for Multi-Threading 
     \defgroup UTILS General purpose Utiltiy Classes and Functions
     \defgroup PA Programm Argument Evaluation Functions
+    \defgroup XML XML Pasing and Creation Environment
     
     
     
@@ -24,6 +25,7 @@
     -# \ref THREAD
     -# \ref UTILS
     -# \ref PA
+    -# \ref XML
     
     \section PA_ ProgArg evaluation environment ("iclProgArg.h")
     

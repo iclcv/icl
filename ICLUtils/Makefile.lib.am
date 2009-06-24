@@ -21,7 +21,14 @@ libICLUtils_la_SOURCES= \
 ../src/iclMutex.cpp \
 ../src/iclDynMatrixUtils.cpp \
 ../src/iclStochasticOptimizer.cpp \
-../src/iclStringUtils.cpp
+../src/iclStringUtils.cpp \
+../src/iclXMLAttribRef.cpp \
+../src/iclXML.cpp \
+../src/iclXMLNodeFilter.cpp \
+../src/iclXMLDocument.cpp \
+../src/iclXMLNode.cpp \
+../src/iclXMLNodeIterator.cpp	
+
 
 include_HEADERS= \
 ../src/config.h \
@@ -60,4 +67,13 @@ include_HEADERS= \
 ../src/iclLockable.h \
 ../src/iclMatrixSubRectIterator.h \
 ../src/iclStochasticOptimizer.h \
-../src/iclStringUtils.h
+../src/iclStringUtils.h \
+../src/iclXMLAttribRef.h \
+../src/iclXML.h \
+../src/iclXMLNodeFilter.h \
+../src/iclXMLNodeIdx.h \
+../src/iclXMLDocument.h \
+../src/iclXMLNodeConstIterator.h \
+../src/iclXMLNode.h \
+../src/iclXMLNodeIterator.h
+
