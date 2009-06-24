@@ -133,6 +133,29 @@ namespace icl{
     const std::vector<ScanLine> &getScanLines() const;
     
     /// accurate detection of blob center using gray image 
+    /** This more accurate center of gravity computation function works
+        on a gray level image which must describe the region either
+        as high or as low gray values. All pixels within the images bounding box
+        (enlarged by bbMargin) are weighted with their goodness values
+        extracted from the given image. To reduce noise, only values between 
+        minThreshold and maxThreshold are used, where values below minThreshold
+        are weighted with 0 and values above maxThreshold are clipped to
+        maxThreshold. The float-precision weighted sum of all pixel locations
+        within the bounding box is returned.\n
+        @param grayImage source image with region goodness or 'badness'
+                         information
+        @param bbMargin amount of bounding box enlarging (in pixels)
+                        internally the resulting bounding box is -- of course --
+                        clipped to the image rect to avoid seg-faults
+        @param minThreshol minimal value for pixels to be taken into account.
+                           Pixels of minThreshold and below are not regarded
+                           for COG calculation. If darkBlob is true, the minThreshold
+                           becomes the upper limit instead
+        @param maxThreshold as described above
+        @param darkBlob if true, blob pixels must be darker in comparison to the
+                        background pixels (default), otherwise, blob pixels must
+                        be brighter.
+    */
     template<class T>
     const Point32f &getAccurateCOG(const Img<T> &grayImage, int bbMargin=2, 
                                    const T &minThreshold=50, const T &maxThreshold=200,

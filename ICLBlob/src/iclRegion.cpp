@@ -465,9 +465,7 @@ namespace icl{
     const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->accurateCenter = new Point32f(-1,-1);
     Point32f &p = *const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->accurateCenter;
     ICLASSERT_RETURN_VAL(grayImage.getChannels(),p);
-    const Rect &r = getBoundingBox();
-    ICLASSERT_RETURN_VAL(grayImage.getImageRect().contains(r.x,r.y),p);
-    ICLASSERT_RETURN_VAL(grayImage.getImageRect().contains(r.x+r.width-1,r.y+r.height-1),p);
+    Rect r = getBoundingBox().enlarged(bbMargin) & grayImage.getImageRect();
     const Channel<T> c = grayImage.extractChannel(0);
     
     double sum = 0;
