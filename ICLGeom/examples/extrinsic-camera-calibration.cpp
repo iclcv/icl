@@ -42,7 +42,7 @@ struct MaskRect{
   Img8u maskedImage;
   void draw(ICLDrawWidget &w, int imagew, int imageh){
     Mutex::Locker l(mutex);
-    if(rect != Rect::null){
+    if(rect != Rect::null ){
       w.color(0,100,255,255);
       w.fill(0,0,0,0);
       w.rect(rect.x,rect.y,rect.width,rect.height);
@@ -53,13 +53,12 @@ struct MaskRect{
       w.rect(rect.right(),0,imagew-rect.right(),imageh);
       w.rect(rect.x,rect.bottom(),rect.width,imageh-rect.bottom());
       w.rect(rect.x,0,rect.width,rect.y);
-
-      if(curr != Point::null && origin != Point::null){
-        w.color(0,255,40,255);
-        w.fill(0,0,0,0);
-        Rect r(origin, Size(curr.x-origin.x,curr.y-origin.y ));
-        w.rect(r.x,r.y,r.width,r.height);
-      }
+    }
+    if(curr != Point::null && origin != Point::null){
+      w.color(0,255,40,255);
+      w.fill(0,0,0,0);
+      Rect r(origin, Size(curr.x-origin.x,curr.y-origin.y ));
+      w.rect(r.x,r.y,r.width,r.height);
     }
   }
   const Img8u &applyMask(const Img8u &src){
@@ -85,6 +84,7 @@ struct MaskRectMouseHandler : public MouseHandler{
     }
     if(e.isPressEvent()){
       maskRect.origin  = e.getPos();
+      maskRect.curr   = e.getPos();
     }else if(e.isDragEvent()){
       maskRect.curr   = e.getPos();
     }
@@ -92,6 +92,10 @@ struct MaskRectMouseHandler : public MouseHandler{
       if(maskRect.origin != maskRect.curr){
         maskRect.rect = Rect(maskRect.origin, Size(maskRect.curr.x-maskRect.origin.x,
                                                    maskRect.curr.y-maskRect.origin.y ));
+        maskRect.rect = maskRect.rect.normalized();
+        if(maskRect.rect.getDim() < 4) {
+          maskRect.rect = Rect::null;
+        }
       }
       maskRect.origin = Point::null;
       maskRect.curr = Point::null;
