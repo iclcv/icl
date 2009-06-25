@@ -128,7 +128,6 @@ namespace icl{
 
   static XMLAttMapPtr split_tag_name_and_attribs(const std::string &tag_text, std::string &tag_name){
     XMLAttMapPtr att = new std::map<std::string,std::string>;
-    //    DEBUG_LOG("text:" << tag_text);
 
     std::istringstream is(tag_text);
 
@@ -191,7 +190,6 @@ namespace icl{
         throw ParseException("unexpected end of stream (last node was " + str(L.back()) + ")");
       }
     }
-    //    DEBUG_LOG("next tag was ::" << tag_text);
     SimpleNode::Type t = remove_tag_braces_and_get_type(tag_text);
     if(t == SimpleNode::CloseTag){
       if(L.back().type == SimpleNode::OpenTag){
@@ -226,7 +224,6 @@ namespace icl{
   static void parse_intermediate(std::istream &is, std::list<SimpleNode> &L){
     std::ostringstream rest;
     std::string root_tag_text = get_next_tag(is,rest);
-    //    DEBUG_LOG("next tag was ::" << root_tag_text);
     SimpleNode::Type t = remove_tag_braces_and_get_type(root_tag_text);
     add_intermediate_node(L,root_tag_text,t);
     switch(t){
@@ -423,12 +420,14 @@ namespace icl{
     return const_cast<XMLDocument*>(this)->operator[](tag);
   }
   
-  XMLDocument::XMLDocument(const XMLDocument &other){
+  XMLDocument::XMLDocument(const XMLDocument &other):m_root(0){
+    
     *this = other;
   }
   
   XMLDocument &XMLDocument::operator=(const XMLDocument &other){
-    if(other.isNull()){ m_root = XMLNodePtr(0);
+    if(other.isNull()){ 
+      m_root = XMLNodePtr(0);
       m_headerComments.clear();
       m_xmlVersion="";
     }else{
@@ -453,9 +452,11 @@ namespace icl{
   void XMLDocument::save(const XMLDocument &doc, const std::string &fileName) throw (ICLException,NullDocumentException){
     if(doc.isNull()) throw NullDocumentException("unable to save null document");
     std::ofstream f(fileName.c_str());
-    if(!f) throw ICLException("cannot write file " + fileName);
-
-    f << doc;
+    try{
+      f << doc;
+    }catch(const std::exception &ex){
+      throw ICLException(ex.what());
+    }
   }
 
 

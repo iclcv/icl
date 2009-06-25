@@ -101,6 +101,23 @@ namespace icl{
     /// deep copy function
     virtual XMLNodeFilter *deepCopy() const{ return new XMLNodeFilterByPathSubstring(pathPat,delim); }
   };
+
+  /// Filters by given hierarchy depth (always absolute to document root, which has depth 0) 
+  class XMLNodeFilterByLevel : public XMLNodeFilter{
+    public:
+    /// max absolute level allowed
+    int maxLevel;
+    
+    /// create with given path pattern and delimiter within this pattern
+    XMLNodeFilterByLevel(float maxLevel):
+    maxLevel(maxLevel){}
+    
+    /// returns always true
+    virtual bool operator()(const XMLNode&) const;
+    
+    /// deep copy function
+    virtual XMLNodeFilter *deepCopy() const{ return new XMLNodeFilterByLevel(maxLevel); }
+  };
   
   
   /// Utility class for node filter combinations  \ingroup XML

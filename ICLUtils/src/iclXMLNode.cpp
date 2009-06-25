@@ -37,9 +37,6 @@ namespace icl{
   bool XMLNode::isRoot() const{
     return !m_parent;
   }
-  bool XMLNode::hasAttibutes() const{
-    return !m_attribs || attrib_begin() == attrib_end();
-  }
   bool XMLNode::hasAttribute(const std::string &name, const std::string &value) const{
     if(!m_attribs || !isTagNode()) return false;
     const_attrib_iterator it = m_attribs->find(name);
@@ -54,6 +51,13 @@ namespace icl{
     if(!isTagNode()) throw InvalidNodeTypeException("only SINGLE CONTAINER and TEXT nodes have tags");
     return m_tag;
   }
+  
+  const std::string &XMLNode::getComment() const throw (InvalidNodeTypeException){
+    if(!isCommentNode()) throw InvalidNodeTypeException("only COMMENT nodes have comments :-)");
+    return m_comment;
+  }
+  
+
   const std::string & XMLNode::getText() const throw (InvalidNodeTypeException){
     if(!isTextNode()) throw InvalidNodeTypeException("only TEXT can ge asked for getText()");
     return m_text;
@@ -405,10 +409,12 @@ size() : 0;
     cpy->m_document = newDoc;
     if(isContainerNode()){
       for(const_node_iterator it=begin();it!=end();++it){
-        cpy->m_subnodes.push_back((*it)->deepCopy(const_cast<XMLNode*>(this),newDoc));
+        cpy->m_subnodes.push_back((*it)->deepCopy(cpy,newDoc));
       }
     }
-    cpy->m_attribs = XMLAttMapPtr(new XMLAttMap(attrib_begin(), attrib_end()));
+    if(hasAttributes()){
+      cpy->m_attribs = XMLAttMapPtr(new XMLAttMap(attrib_begin(), attrib_end()));
+    }
     cpy->m_text = m_text;
     cpy->m_tag = m_tag;
     cpy->m_comment = m_comment;
@@ -448,7 +454,8 @@ size() : 0;
       if(curr->isTagNode()){
         l.push_front(curr->getTag());
       }else{
-        l.push_front("@comment@");
+        std::string cmt = curr->getComment();
+        l.push_front(str("@comment{")+cmt.substr(0,iclMax(7,(int)cmt.size()-1))+"...}@");
       }
       curr = curr->m_parent;
     }
@@ -511,6 +518,31 @@ size() : 0;
   }
   XMLNodeConstIterator XMLNode::recursive_end() const{
     return XMLNodeConstIterator();
+  }
+
+  bool XMLNode::hasChild(const std::string &tag, int types, int maxDepth,
+                         const std::string attrib1, const std::string &value1,
+                         const std::string attrib2, const std::string &value2,
+                         const std::string attrib3, const std::string &value3) const{
+    XMLNodeFilterCombination c = ((tag=="") ? (const XMLNodeFilter&)XMLNodeFilterByTag(tag) : 
+                                  (const XMLNodeFilter&)XMLNodeFilterAll()) & XMLNodeFilterByType(types);
+    if(maxDepth > 0){
+      c = c | XMLNodeFilterByLevel(maxDepth);
+    }
+    if(attrib1 != ""){
+      c = c | XMLNodeFilterByAttrib(attrib1,value1);
+    }
+    if(attrib2 != ""){
+      c = c | XMLNodeFilterByAttrib(attrib2,value2);
+    }
+    if(attrib3 != ""){
+      c = c | XMLNodeFilterByAttrib(attrib3,value3);
+    }
+    return hasChild(c);
+  }
+
+  bool XMLNode::hasChild(const XMLNodeFilter &filter) const{
+    return getAllChildNodes(filter).size();
   }
 
 }

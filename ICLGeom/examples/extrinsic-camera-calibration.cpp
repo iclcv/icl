@@ -737,11 +737,13 @@ void run(){
   const std::vector<icl::Region> &rsd = rd.detect(&maskedImage);
   std::vector<icl::Region> rs;
   std::vector<Point32f> cogs;
+  std::vector<Point32f> accurate_cogs;
   for(unsigned int i=0;i<rsd.size();++i){
     static float &minFF = gui.getValue<float>("min-form-factor");
     if(rsd[i].getFormFactor() <= minFF){
       rs.push_back(rsd[i]);
       cogs.push_back(rsd[i].getCOG());
+      accurate_cogs.push_back(rsd[i].getAccurateCOG(grayIm));
     }
   }
   
@@ -778,11 +780,17 @@ void run(){
   if(visOverlay){
     w.color(255,0,0);
     w.fill(255,0,0,50);
+    w.symsize(10);
     for(unsigned int i=0;i<rs.size();++i){
       const icl::Region &r = rs[i];
+      w.color(255,0,0);
       w.rect(r.getBoundingBox());
+      w.sym(cogs[i].x,cogs[i].y,ICLDrawWidget::symPlus);
+      w.color(0,255,0);
+      w.sym(accurate_cogs[i].x,accurate_cogs[i].y,ICLDrawWidget::symCross);
     }
     
+    w.color(255,0,0);
     if(somOn && ass.size()){
       vis_som(*som,w);
     }

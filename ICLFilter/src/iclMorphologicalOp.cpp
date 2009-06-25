@@ -5,6 +5,32 @@ namespace icl {
 #ifdef HAVE_IPP
   // {{{ Constructor / Destructor
 
+  /**
+      ippiDilate_8u_C1R
+      ippiErode_8u_C1R
+      ippiDilate3x3_8u_C1R
+      ippiErode3x3_8u_C1R
+      ippiDilateBorderReplicate_8u_C1R
+      ippiErodeBorderReplicate_8u_C1R
+      ippiMorphOpenBorder_8u_C1R
+      ippiMorphCloseBorder_8u_C1R
+      ippiMorphTophatBorder_8u_C1R
+      ippiMorphBlackhatBorder_8u_C1R
+      ippiMorphGradientBorder_8u_C1R
+      
+      ippiDilate_32f_C1R
+      ippiErode_32f_C1R
+      ippiDilate3x3_32f_C1R
+      ippiErode3x3_32f_C1R
+      ippiDilateBorderReplicate_32f_C1R
+      ippiErodeBorderReplicate_32f_C1R
+      ippiMorphOpenBorder_32f_C1R
+      ippiMorphCloseBorder_32f_C1R
+      ippiMorphTophatBorder_32f_C1R
+      ippiMorphBlackhatBorder_32f_C1R
+      ippiMorphGradientBorder_32f_C1R
+  */
+
   MorphologicalOp::MorphologicalOp (const Size& maskSize, char* pcMask, optype eOptype) {
     ICLASSERT_RETURN(maskSize.getDim());
 

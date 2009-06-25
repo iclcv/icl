@@ -89,10 +89,6 @@ namespace icl{
     /// return whether this node is a documents root node
     bool isRoot() const;
     
-    /// returns whether this nodes has attributes
-    bool hasAttibutes() const;
-
-    
     /// returns the nodes tag
     /** throws an exception on comment nodes*/
     const std::string &getTag() const throw (InvalidNodeTypeException);
@@ -100,6 +96,11 @@ namespace icl{
     /// returns nodes text entry
     /** throws an exception on not-text nodes */
     const std::string &getText() const throw (InvalidNodeTypeException);
+
+    /// returns nodes comment 
+    /** throws an exception on not-comment nodes */
+    const std::string &getComment() const throw (InvalidNodeTypeException);
+
     
     /// returns an iterator to he first attribute (const)
     /** throws an exception on comment nodes*/
@@ -169,6 +170,26 @@ namespace icl{
     
     /// Returns this nodes attribute count 
     int getAttributeCount() const ;
+    
+    /// returns whether this node has a child with given properties
+    /** @param tag tagname filter (if "": no tag filter is applied)
+        @param types or-ed list of allowed types (if 0: no type filter is applied)
+        @param maxDepth maximun depths hierarchy depths of search (if 0, no subnode
+                        would be found, so 0 is an indicator for 'any depth'
+        @param attrib1 mandatory attibute (if "": attrib1 and value1 are not used) 
+        @param value1 mandatory value of attrib1 (if "": abbrib1 just has to be present)
+        @param attrib2 mandatory attibute (if "": attrib2 and value2 are not used) 
+        @param value2 mandatory value of attrib2 (if "": abbrib2 just has to be present)
+        @param attrib3 mandatory attibute (if "": attrib3 and value3 are not used) 
+        @param value3 mandatory value of attrib3 (if "": abbrib3 just has to be present)
+    */
+    bool hasChild(const std::string &tag, int types=0xFFFF, int maxDepth=0,
+                  const std::string attrib1="", const std::string &value1="",
+                  const std::string attrib2="", const std::string &value2="",
+                  const std::string attrib3="", const std::string &value3="") const;
+
+    /// returns whether this node has a child wrt. given XMLNodeFilter
+    bool hasChild(const XMLNodeFilter &filter=XMLNodeFilterAll()) const;
 
     /// adds a new child node
     /** If given child node has already a document the DoubledReferenceException is thrown. So if 

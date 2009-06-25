@@ -18,6 +18,9 @@ namespace icl{
   bool XMLNodeFilterByAttrib::operator()(const XMLNode &node) const{
     return node.hasAttribute(attrib,value);
   }
+  bool XMLNodeFilterByLevel::operator()(const XMLNode &node) const{
+    return node.getLevel()<=maxLevel;
+  }
 
 
 

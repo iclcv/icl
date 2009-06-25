@@ -9,6 +9,11 @@
 
 namespace icl{
 
+  /** \cond */
+  class XMLDocument;
+  struct XMLDocumentDelOp{ static void delete_func(XMLDocument *h); };
+  /** \endcond */
+
   /// Utility class for creating and reading XML-based hierarchical configuration files 
   /** ConfigFile class can be used in object based as well as in static manner. 
       
@@ -119,8 +124,6 @@ namespace icl{
       
       Internally data is stored in the parent classes (DataStore) hash maps to optimize
       data access. ConfigFile data key is the the '.'-concatenated identifier.
-
-      
   */
   class ConfigFile : protected DataStore{
     public:
@@ -232,7 +235,7 @@ namespace icl{
       }
       if(contains(id)) getValue<T>(id) = val;
       else allocValue<T>(id,val);
-      add_to_doc(*m_spXMLDocHandle,id,get_type_str<T>(),str(val));
+      add_to_doc(*m_doc,id,get_type_str<T>(),str(val));
     }
 
     
@@ -378,27 +381,22 @@ namespace icl{
     /** This feature is only used by the config file GUI */
     const KeyRestriction *getRestriction(const std::string &id) const;
 
+    /// import listContents function for protected parent DataStore
+    DataStore::listContents;
     private:
 
 
     /// filename
     std::string m_sFileName;
     
-    /// internally used XMLDocument type (currently QDomDocument)
-    class XMLDocHandle;
-
     /// internally synchronized an add- or a set call
-    static void add_to_doc(XMLDocHandle &h,const std::string &id,const std::string &type, const std::string &value);
+    static void add_to_doc(XMLDocument &h,const std::string &id,const std::string &type, const std::string &value);
    
     template<class T>
     static std::string get_type_str();
      
-    /** \cond */
-    struct XMLDocHandleDelOp{ static void delete_func(XMLDocHandle *h); };
-    /** \endcond */
-
     /// shallow copyable smart pointer of the document handle
-    mutable SmartPtr<XMLDocHandle,XMLDocHandleDelOp> m_spXMLDocHandle;
+    mutable SmartPtr<XMLDocument,XMLDocumentDelOp> m_doc;
     
     /// global ConfigFile instance 
     static ConfigFile s_oConfig;

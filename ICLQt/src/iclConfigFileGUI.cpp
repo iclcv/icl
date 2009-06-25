@@ -103,6 +103,7 @@ namespace icl{
   void ConfigFileGUI::saveAs(){
     QString fn = m_config->getFileName().c_str();
     QString fnNew = QFileDialog::getSaveFileName(m_tree,"save...","./","XML-Files (*.xml)");
+    
     if(fnNew == "") return;
     if(fn == fnNew){
       if(QFile(fn+".bak").exists()){
@@ -116,7 +117,7 @@ namespace icl{
         }
       }
     }
-    m_config->save(fn.toLatin1().data());
+    m_config->save(fnNew.toLatin1().data());
   }
 
   void ConfigFileGUI::load(){

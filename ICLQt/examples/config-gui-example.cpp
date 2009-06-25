@@ -6,6 +6,8 @@ int main(int n, char **ppc){
   QApplication app(n,ppc);
   
   ConfigFile::loadConfig(pa_subarg<std::string>("-c",0,"config.xml"));
+
+  ConfigFile::getConfig().listContents();
   GUI gui("vbox");
   gui << "config(embedded)";
   gui.show();
