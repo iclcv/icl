@@ -58,6 +58,9 @@ namespace icl {
       */
       virtual void apply (const ImgBase *poSrc, ImgBase **ppoDst);
       
+      /// Import unaryOps apply function without destination image
+      UnaryOp::apply;
+
       /// returns the lower threshold
       /**
        @return lower threshold

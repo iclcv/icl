@@ -74,6 +74,9 @@ namespace icl{
     
     /// applies all ops sequentially 
     virtual void apply(const ImgBase *src, ImgBase **dst);
+
+    /// Import unaryOps apply function without destination image
+    UnaryOp::apply;
     
     /// returns the number of contained ops
     int getLength() const;

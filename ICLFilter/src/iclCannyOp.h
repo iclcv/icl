@@ -91,6 +91,9 @@ namespace icl {
     */
     virtual void apply(const ImgBase *src, ImgBase **dst);
         
+    /// Import unaryOps apply function without destination image
+    UnaryOp::apply;
+    
     /// sets pre-blur feature enabled or disabled
     void setPreBlur(bool enabled){
       m_preBlur = enabled;

@@ -112,6 +112,8 @@ namespace icl{
     */
     void apply(const ImgBase *posrc, ImgBase **ppoDst); 
 
+    /// Import unaryOps apply function without destination image
+    UnaryOp::apply;
     
     /// creates a set of integral image channels from a given image
     template<class T,class  I>

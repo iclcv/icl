@@ -34,6 +34,71 @@ Scene2 scene;
 GenericGrabber *grabber = 0;
 ImgParams imageParams;
 
+struct MaskRect{
+  Mutex mutex;
+  Point origin;
+  Point curr;
+  Rect rect;
+  Img8u maskedImage;
+  void draw(ICLDrawWidget &w, int imagew, int imageh){
+    Mutex::Locker l(mutex);
+    if(rect != Rect::null){
+      w.color(0,100,255,255);
+      w.fill(0,0,0,0);
+      w.rect(rect.x,rect.y,rect.width,rect.height);
+
+      w.color(0,0,0,0);
+      w.fill(0,100,255,150);
+      w.rect(0,0,rect.x,imageh);
+      w.rect(rect.right(),0,imagew-rect.right(),imageh);
+      w.rect(rect.x,rect.bottom(),rect.width,imageh-rect.bottom());
+      w.rect(rect.x,0,rect.width,rect.y);
+
+      if(curr != Point::null && origin != Point::null){
+        w.color(0,255,40,255);
+        w.fill(0,0,0,0);
+        Rect r(origin, Size(curr.x-origin.x,curr.y-origin.y ));
+        w.rect(r.x,r.y,r.width,r.height);
+      }
+    }
+  }
+  const Img8u &applyMask(const Img8u &src){
+    Mutex::Locker l(mutex);
+    if(rect == Rect::null) return src;
+    maskedImage.setParams(src.getParams());
+    maskedImage.clear();
+    Img8u srcCpy(src);
+    srcCpy.setROI(rect);
+    maskedImage.setROI(rect);
+    srcCpy.deepCopyROI(&maskedImage);
+    return maskedImage;
+  }
+} maskRect;
+
+struct MaskRectMouseHandler : public MouseHandler{
+  
+  virtual void process(const MouseEvent &e){
+    Mutex::Locker l(maskRect.mutex);
+    if(e.isRight()){
+      maskRect.rect = Rect::null;
+      return;
+    }
+    if(e.isPressEvent()){
+      maskRect.origin  = e.getPos();
+    }else if(e.isDragEvent()){
+      maskRect.curr   = e.getPos();
+    }
+    if(e.isReleaseEvent()){
+      if(maskRect.origin != maskRect.curr){
+        maskRect.rect = Rect(maskRect.origin, Size(maskRect.curr.x-maskRect.origin.x,
+                                                   maskRect.curr.y-maskRect.origin.y ));
+      }
+      maskRect.origin = Point::null;
+      maskRect.curr = Point::null;
+    }
+  }
+};
+
 void apply_calib(const std::vector<Point32f> &cogs, const std::vector<int> &ass, const Size &imageSize){
   // {{{ open
 
@@ -522,6 +587,7 @@ void init(){
   gui.show();
   
   gui.registerCallback(new GUI::Callback(show_hide_scene),"show-hide-scene");
+  (*gui.getValue<DrawHandle>("mainview"))->install(new MaskRectMouseHandler);
   
   focalLength = pa_subarg<float>("-focal-length",0,0);
 
@@ -643,7 +709,7 @@ void run(){
     grabber->grab()->convert(&image);
   }
   
-  static Img32f grayIm(image.getSize(),formatGray);
+  static Img8u grayIm(image.getSize(),formatGray);
   cc(&image,&grayIm);
   
   static LocalThresholdOp lt(35,-10,0);
@@ -652,19 +718,19 @@ void run(){
   lt.setGlobalThreshold(threshold);
   lt.setMaskSize(maskSize);
 
-  static ImgBase *ltIm = 0;
-  lt.apply(&grayIm,&ltIm);
+  const ImgBase *ltIm = lt.apply(&grayIm);
 
   static std::vector<char> morphMask(9,1);
   static MorphologicalOp morph(Size(3,3),morphMask.data(),MorphologicalOp::dilate3x3);
   morph.setClipToROI(false);
-  static ImgBase *moIm = 0;
-  morph.apply(ltIm,&moIm);
+  const ImgBase *moIm = morph.apply(ltIm);
+
+  const Img8u &maskedImage = maskRect.applyMask(*moIm->asImg<icl8u>());
 
   static RegionDetector rd(100,50000,0,0);
   rd.setRestrictions(gui.getValue<int>("min-blob-size"),
                      gui.getValue<int>("max-blob-size"),0,0);
-  const std::vector<icl::Region> &rsd = rd.detect(moIm);
+  const std::vector<icl::Region> &rsd = rd.detect(&maskedImage);
   std::vector<icl::Region> rs;
   std::vector<Point32f> cogs;
   for(unsigned int i=0;i<rsd.size();++i){
@@ -699,11 +765,13 @@ void run(){
   if(calibOn && ass.size()){
     apply_calib(cogs,ass,image.getSize());
   }
-
+  
+  ICLDrawWidget &w = **mainView;
+  w.lock();
+  w.reset();
+  maskRect.draw(w,w.getImageSize().width,w.getImageSize().height);
+  
   if(visOverlay){
-    ICLDrawWidget &w = **mainView;
-    w.lock();
-    w.reset();
     w.color(255,0,0);
     w.fill(255,0,0,50);
     for(unsigned int i=0;i<rs.size();++i){
@@ -717,9 +785,9 @@ void run(){
     if(assVisOn && ass.size()){
       vis_ass(cogs,ass,w);
     }
-    w.unlock();
-  }
   
+  }
+  w.unlock();
   mainView.update();
 
   if(sceneGUI.getRootWidget()->isVisible()){

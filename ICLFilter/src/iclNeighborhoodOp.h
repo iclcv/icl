@@ -47,6 +47,9 @@ namespace icl {
     /// *NEW* apply function for multithreaded filtering (reimplemented here for special roi handling!)
     virtual void applyMT(const ImgBase *operand1, ImgBase **dst, unsigned int nThreads);
     
+    /// Import unaryOps apply function without destination image
+    UnaryOp::apply;
+    
     protected:
     NeighborhoodOp() : m_oMaskSize(1,1), m_oAnchor (0,0) {}
     NeighborhoodOp(const Size &size) {

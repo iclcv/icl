@@ -97,6 +97,9 @@ namespace icl{
     /// virtual apply function
     virtual void apply(const ImgBase *src, ImgBase **dst);
     
+    /// Import unaryOps apply function without destination image
+    UnaryOp::apply;
+    
     private:
     bool m_allowWarpMapScaling;
     Img32f m_warpMap;

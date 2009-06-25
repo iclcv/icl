@@ -54,6 +54,9 @@ namespace icl {
      */
      virtual void apply(const ImgBase *src, ImgBase **dst);
      
+     /// Import unaryOps apply function without destination image
+     UnaryOp::apply;
+    
      /// simple lut transformation dst(p) = lut(src(p))
      /** @param src source image
          @param dst destination image

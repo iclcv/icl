@@ -72,7 +72,9 @@ namespace icl {
     /// Performs morph of an image with given optype and mask.
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);
     
-
+    /// Import unaryOps apply function without destination image
+    UnaryOp::apply;
+    
 #ifdef HAVE_IPP
   private:
 

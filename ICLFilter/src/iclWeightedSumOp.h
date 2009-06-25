@@ -53,6 +53,9 @@ namespace icl {
     **/
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);
      
+    /// Import unaryOps apply function without destination image
+    UnaryOp::apply;
+    
     /// returns the current weight vector
     /** @return reference to the current weight vector **/
     const std::vector<icl64f> &getWeights() const { return m_vecWeights; }

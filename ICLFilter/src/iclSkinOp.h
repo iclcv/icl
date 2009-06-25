@@ -41,10 +41,11 @@ class SkinOp : public UnaryOp, public Uncopyable{
   **/
   void apply(const icl::ImgBase *poSrc, icl::ImgBase **ppoDst);
 
+  /// Import unaryOps apply function without destination image
+  UnaryOp::apply;
 
 
-
-
+???
 
 
 

@@ -128,6 +128,9 @@ namespace icl{
       ERROR_LOG("multi threading is not yet supported for this class");
     }
     
+    /// Import unaryOps apply function without destination image
+    UnaryOp::apply;
+    
     /// set a new mask size (a new mask size image must be calculate in the next apply call)
     void setMaskSize(unsigned int maskSize);
     

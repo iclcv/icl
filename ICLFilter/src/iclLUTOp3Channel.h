@@ -193,6 +193,9 @@ namespace icl {
      */
     virtual void apply(const ImgBase *src, ImgBase **dst);
     
+    /// Import unaryOps apply function without destination image
+    UnaryOp::apply;
+    
     /// Sets a new plugin and re-calculates the internal LUT
     /** @param p plugin to use for the creation of the internal lut.
         <b>Note:</b>the LUTOp3Channel takes the ownership

@@ -79,6 +79,9 @@ namespace icl {
     */
     void apply(const ImgBase *src, ImgBase **dst);
     
+    /// Import unaryOps apply function without destination image
+    NeighborhoodOp::apply;
+    
     /// change kernel
     void setKernel (const ConvolutionKernel &kernel){ m_kernel = kernel; }
     

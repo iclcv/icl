@@ -76,6 +76,8 @@ namespace icl {
     **/
     virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
     
+    /// Import unaryOps apply function without destination image
+    UnaryOp::apply;
     private:
     
     /// internal storage of the current optype
