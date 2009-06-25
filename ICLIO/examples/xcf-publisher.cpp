@@ -43,7 +43,22 @@ const ImgBase *grab_image(){
     }
   }
   //  const ImgBase *image = grabber.grab();
-  return grabber.grab();
+  if(!pa_defined("-flip")){
+    return grabber.grab();
+  }else{
+    ImgBase *hack = const_cast<ImgBase*>(grabber.grab());
+    std::string axis = pa_subarg<std::string>("-flip",0,"");
+    if(axis  ==   "x"){
+      hack->mirror(axisVert);
+    }else if(axis  ==  "y"){
+      hack->mirror(axisHorz);
+    }else if(axis == "both" || axis == "xy"){
+      hack->mirror(axisBoth);
+    }else{
+      ERROR_LOG("nothing known about axis " <<  axis << "(allowed arguments are x,y or both)");
+    }
+    return hack;
+  }
 }
 
 void send_app(){
@@ -144,6 +159,8 @@ int main(int n, char **ppc){
   pa_explain("-emulate-mask","emulate 4th channel mask (sending only)");
   pa_explain("-size","output image size (sending only, default: VGA)");
   pa_explain("-no-gui","dont display a GUI (sender app only)");
+  pa_explain("-flip","define axis to flip (allowed sub arguments are"
+             " x, y or both");
   pa_explain("-pp","select preprocessing (one of \n"
              "\t- gauss 3x3 gaussian blur\n"
              "\t- gauss5 5x5 gaussian blur\n"
@@ -153,7 +170,7 @@ int main(int n, char **ppc){
              "\tThis parameters can be obtained using ICL application\n"
              "\ticl-calib-radial-distortion");
   pa_explain("-reset","reset bus on startup");
-  pa_init(n,ppc,"-stream(1) -uri(1) -s -r -single-shot -sleep(1) -input(2) -emulate-mask -size(1) -no-gui -pp(1) -dist(4) -reset");
+  pa_init(n,ppc,"-stream(1) -flip(1) -uri(1) -s -r -single-shot -sleep(1) -input(2) -emulate-mask -size(1) -no-gui -pp(1) -dist(4) -reset");
 
   if(pa_defined("-reset")){
     GenericGrabber::resetBus();
