@@ -941,6 +941,9 @@ int main(int n, char**ppc){
       return m_oDataStore.operator[](key);
     }
     
+    /// returns whether this gui is actually visible
+    virtual bool isVisible() const;
+    
     /// internally creates everything
     virtual void create();
 
@@ -949,6 +952,9 @@ int main(int n, char**ppc){
     
     /// make this gui invisible (nothing more)
     virtual void hide();
+    
+    /// if widget is visible, this hides the widget, otherwise the widget is shown
+    virtual void switchVisibility();
     
     /// returns the root widget of the gui (only avialable after create() or show())
     inline GUIWidget *getRootWidget(){

@@ -1424,10 +1424,19 @@ public:
 
   // }}}
   
+  bool GUI::isVisible() const{
+    if(!m_bCreated) return false;
+    return m_poWidget->isVisible();
+  }
+  
+  void GUI::switchVisibility(){
+    if(isVisible()) show();
+    else hide();
+  }
 
   void GUI::hide(){
     if(m_bCreated){
-      m_poWidget->show();
+      m_poWidget->setVisible(false);
     }else{
       ERROR_LOG("unable to hide GUI that has not been created yet, call create() or show() first!");
     } 
@@ -1446,7 +1455,7 @@ public:
   void GUI::show(){
     // {{{ open
     create();
-    m_poWidget->show();
+    m_poWidget->setVisible(true);
   }
 
   // }}}

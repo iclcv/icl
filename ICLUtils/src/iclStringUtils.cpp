@@ -3,6 +3,8 @@
 #include <limits>
 #include <cstdio>
 
+#include <regex.h>
+
 using std::string;
 using std::vector;
 
@@ -197,5 +199,40 @@ namespace icl{
   }
   icl64f to64f(const std::string &s) {
     return parse<icl64f>(s);
+  }
+
+
+  MatchResult match(const std::string &text, const std::string &regexIn, int num)
+    throw (InvalidRegularExpressionException){
+    string regexSave = regexIn;
+    char *regex = const_cast<char*>(regexSave.c_str());
+    regex_t    re;
+    
+    int cflags = num ? REG_EXTENDED : (REG_EXTENDED|REG_NOSUB);
+    
+    int status = regcomp(&re, regex, cflags);
+    if(status != 0){
+      char buf[256];
+      regerror(status,&re,buf,256);
+      throw InvalidRegularExpressionException(regexIn + "[Error: " + str(buf) + "]");
+    }
+    
+    std::vector<regmatch_t> matchList(num);
+    status = regexec(&re, text.c_str(), num, num ? matchList.data() : NULL, 0);
+    // char buf[256];
+    // regerror(status,&re,buf,256);
+    //throw InvalidRegularExpressionException(regexIn + "[Error: " + str(buf) + "]");
+
+    MatchResult mr;
+    mr.matched = !status;
+    for(int i=0;i<num;++i){
+      int so = matchList[i].rm_so;
+      int eo = matchList[i].rm_eo;
+      if(so != -1 && eo != -1){
+        mr.submatches.push_back(text.substr(so,eo-so));
+      }
+    }
+    regfree(&re);
+    return mr;
   }
 }

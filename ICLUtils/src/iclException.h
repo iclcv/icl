@@ -95,6 +95,15 @@ namespace icl {
       ICLException(std::string("unable to parse: ")+whatToParse) {}
     virtual ~ParseException() throw() {}
   };
+  
+  /// Thrown by iclStringUtils::match if regular Expression is not valid
+  class InvalidRegularExpressionException : public ICLException{
+    public:
+    InvalidRegularExpressionException(const std::string &regex) throw():
+    ICLException("invalid regular expression: '"+regex+"'"){
+    }
+    virtual ~InvalidRegularExpressionException() throw(){}
+  };
 
 #define ICL_FILE_LOCATION  (std::string(__FUNCTION__) + "(" + __FILE__ + ")")
 #define ICL_INVALID_FORMAT throw InvalidFormatException(ICL_FILE_LOCATION)

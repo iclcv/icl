@@ -8,7 +8,8 @@
 #include <sstream>
 #include <iostream>
 
-#include "iclBasicTypes.h"
+#include <iclBasicTypes.h>
+#include <iclException.h>
 
 namespace icl{
 
@@ -206,6 +207,36 @@ namespace icl{
     std::transform(v.begin(),v.end(),r.begin(),str<T>);
     return r;
   }
+
+  
+  /// Utility structure for matching results
+  /** @see icl::match for more details */
+  struct MatchResult{
+    bool matched; //!< was the match successful 
+    
+    struct Match{ 
+      int begin;
+      int end; 
+    };
+    std::vector<std::string> submatches;
+      
+    /// implicit cast to bool
+    /** this enables the user to write \code if(matched("abaabab","aba*")){...} \endcode */
+    operator bool()const{ return matched; }
+  };
+
+  /// Applies a regular expression match on given text and regex pattern (internally using regex.h)
+  /** @param text source string 
+      @param regex regular expression to search in text 
+      @param numMatchesToList If 0 (which is default, result contains only an information
+                              whether the match was successful or not. Sub matche can be recorded optionally
+                              using a numSubMatches value > 0. Please note, that
+                              the whole pattern match is submatches[0] in the resulting MatchResult
+                              if numSubMatches is at least 1 
+      */
+  MatchResult match(const std::string &text, const std::string &regex, int numSubMatches=0)
+    throw (InvalidRegularExpressionException);
+  
 }
 
 #endif
