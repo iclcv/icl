@@ -364,6 +364,35 @@ namespace icl{
   DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst);
   
    /** @} */ 
+
+
+  /** @{  @name special functions for transposed matrices ...*/ 
+  
+  /// special utility type for definition of transposed states for matrices
+  enum transposedDef{ 
+    NONE_T=0, 
+    SRC1_T=1<<0, 
+    SRC2_T=1<<1, 
+    BOTH_T=SRC1_T | SRC2_T,
+  };
+  
+  /// applies matrix mutliplication on optionally transposed matrices
+  /** sometimes, it might be more efficient to call matrix multiplication on imaginary transposed source matrices, to
+      avoid having to apply an additional transposing step. 
+
+      This function is IPP accelerated. In case of having no IPP support, a trivial fallback implementation is
+      provided (something like 
+      \code src1.transp().mult( src2.transp(),dst) ) \endcode in case of having transpDef == BOTH_T
+      @param src1 left operand
+      @param src2 right operand
+      @param dst1 destination matrix (adapted on demand)
+      @param transpDef or-ed list of transposedDef values e.g. (SRC1_T | SRC2_T) mean both matrices are transposed.
+  */
+  template<class T>
+  DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
+  throw (IncompatibleMatrixDimensionException);
+
+  /** @} */ 
 }
 
 #endif

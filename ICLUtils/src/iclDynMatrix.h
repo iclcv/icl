@@ -388,6 +388,15 @@ namespace icl{
 
     /// matrix dimension (width*height) or (cols*rows)
     unsigned int dim() const { return m_rows*m_cols; }
+
+    /// returns sizeof (T)*dim()
+    int stride0() const { return sizeof(T) * dim(); }
+    
+    /// returns sizeof(T)*cols()
+    int stride1() const { return sizeof(T) * cols(); }
+
+    /// returns sizeof (T)
+    int stride2() const { return sizeof(T); }
   
     /// Internal column iterator struct (using height-stride)
     struct col_iterator : public std::iterator<std::random_access_iterator_tag,T>{

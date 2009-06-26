@@ -6,7 +6,7 @@
   ICLASSERT_RETURN_VAL( (m1.cols() == m2.cols()) && (m1.rows() == m2.rows()) , RET)
 
 
-#undef HAVE_IPP
+// #undef HAVE_IPP oops
 
 namespace icl{
 
@@ -677,6 +677,77 @@ namespace icl{
 
   template float matrix_divergence(const DynMatrix<float>&, const DynMatrix<float>&);
   template double matrix_divergence(const DynMatrix<double>&, const DynMatrix<double>&);
+
+  /// matrix functions for transposed matrices ...
+
+  
+  
+  template<class T>
+  DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T: return src1.mult(src2,dst);
+      case SRC1_T: return src1.transp().mult(src2,dst);
+      case SRC2_T: return src1.mult(src2.transp(),dst);
+      case BOTH_T: return src1.transp().mult(src2.transp(),dst);
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+
+#ifdef HAVE_IPP
+  template<class T, typename func>
+  DynMatrix<T> &ipp_mul_t_call(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, func f)throw (IncompatibleMatrixDimensionException){
+    IppStatus status = f(src1.begin(),src1.stride1(),src1.stride2(),src1.cols(),src1.rows(),
+                         src2.begin(),src2.stride1(),src2.stride2(),src2.cols(),src2.rows(),
+                         dst.begin(),dst.stride1(), dst.stride2());
+    if(status != ippStsNoErr){
+      throw IncompatibleMatrixDimensionException(ippGetStatusString(status));
+    }
+    return dst;
+  }
+
+  template<> DynMatrix<float> &matrix_mult_t(const DynMatrix<float> &src1, const DynMatrix<float> &src2, DynMatrix<float> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_mm_32f);
+      case SRC1_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_tm_32f);
+      case SRC2_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_mt_32f);
+      case BOTH_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_tt_32f);
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+  template<> DynMatrix<double> &matrix_mult_t(const DynMatrix<double> &src1, const DynMatrix<double> &src2, DynMatrix<double> &dst, int transpDef)  
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_mm_64f);
+      case SRC1_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_tm_64f);
+      case SRC2_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_mt_64f);
+      case BOTH_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_tt_64f);
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+
+#endif
+  
+  template<> DynMatrix<double> &matrix_mult_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)  
+    throw (IncompatibleMatrixDimensionException);
+  template<> DynMatrix<float> &matrix_mult_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
+    throw (IncompatibleMatrixDimensionException);
+
+
+
+
+
+
+
+
+
+
+
+
 
 #undef CHECK_DIM 
 
