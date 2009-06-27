@@ -27,7 +27,7 @@ class QVBoxLayout;
 class QLabel;
 class QScrollArea;
 class QPushButton;
-class QTimer;
+//class QTimer;
 class QGroupBox;
 class QTabWidget;
 /** \endcond **/  
@@ -39,6 +39,7 @@ namespace icl{
   class DoubleSlider;
   class BorderBox;
   class ImgParamWidget;
+  class Thread;
   /** \endcond **/  
 
   /// Complex widget class, which is used in the Camera configuration tool camcfg \ingroup UNCOMMON
@@ -160,7 +161,8 @@ namespace icl{
     QComboBox *m_poFormatCombo;          //!< provides all formats available on the currently selcted device
     QComboBox *m_poSizeCombo;            //!< provides all sizes available on the currently selcted device
 
-    QTimer *m_poTimer;                   //!< internally used timer (grabbing thread!)
+    Thread *m_thread;                    //!< internal grabbing thread
+
     QMutex m_oGrabberMutex;              //!< mutex to protect the grabbed images
     
     

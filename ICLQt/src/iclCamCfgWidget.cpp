@@ -1,5 +1,6 @@
-#include "iclCamCfgWidget.h"
-#include "iclStackTimer.h"
+#include <iclCamCfgWidget.h>
+#include <iclStackTimer.h>
+#include <iclThread.h>
 
 #ifdef HAVE_VIDEODEV
 #include <iclPWCGrabber.h>
@@ -26,13 +27,44 @@
 #include <QLabel>
 #include <QScrollArea>
 #include <QSizePolicy>
-#include <QTimer>
+//#include <QTimer>
 #include <QPushButton>
 #include <QGroupBox>
 #include <iclThread.h>
 
 using namespace icl;
 using namespace std;
+
+namespace{
+  struct CamCfgThread : public Thread{
+    CamCfgWidget *parent;
+    bool on;
+    CamCfgThread(CamCfgWidget *parent):parent(parent),on(false){
+      start();
+    }
+    virtual void run(){
+      while(1){
+        while(!on){
+          msleep(100);
+        }
+        lock();
+        parent->updateImage();
+        unlock();
+        msleep(10);
+      }
+    } 
+    void setOn(bool on){
+      this->on = on;
+    }
+    void changeOn(){
+      on = !on;
+    }
+    bool isOn() const{
+      return on;
+    }
+  };
+
+}
 
 namespace icl{
   
@@ -232,8 +264,9 @@ namespace icl{
  
     /// FINISHING : FINAL LAYOUTING
     //    setLayout(m_poVTopLevelLayout);
-    m_poTimer = new QTimer(this);
-    connect(m_poTimer,SIGNAL(timeout()),this,SLOT(updateImage()));
+    m_thread = new CamCfgThread(this);
+    //    m_poTimer = new QTimer(this);
+    //connect(m_poTimer,SIGNAL(timeout()),this,SLOT(updateImage()));
     //show();
   }
 
@@ -252,8 +285,10 @@ namespace icl{
     if(m_bCapturing){
       startStopCapture(false);
     }
+    ICL_DELETE(m_thread);
     m_oGrabberMutex.lock();
     ICL_DELETE(m_poGrabber);
+
     m_oGrabberMutex.unlock();
     
   }
@@ -461,7 +496,8 @@ namespace icl{
     if(on){
       if(!m_bCapturing){
         m_bCapturing = true;
-        m_poTimer->start(10);
+        ((CamCfgThread*)m_thread)->setOn(true);
+        //        m_poTimer->start(10);
       }
     }else{
       if(m_bCapturing){
@@ -469,7 +505,8 @@ namespace icl{
           m_bDisableSlots = true;
           m_poCaptureButton->setChecked(false);
           m_bCapturing = false;
-          m_poTimer->stop();
+          ((CamCfgThread*)m_thread)->setOn(false);
+          //          m_poTimer->stop();
           m_bDisableSlots = false;
         }          
       }
