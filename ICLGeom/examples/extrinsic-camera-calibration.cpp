@@ -724,8 +724,7 @@ void run(){
 
   const ImgBase *ltIm = lt.apply(&grayIm);
 
-  static std::vector<char> morphMask(9,1);
-  static MorphologicalOp morph(Size(3,3),morphMask.data(),MorphologicalOp::dilate3x3);
+  static MorphologicalOp morph(MorphologicalOp::dilate3x3);
   morph.setClipToROI(false);
   const ImgBase *moIm = morph.apply(ltIm);
 

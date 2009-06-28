@@ -224,8 +224,7 @@ void detect_vis(bool add=false){
   static ImgBase *ltIm = 0;
   lt.apply(&grayIm,&ltIm);
 
-  static std::vector<char> morphMask(9,1);
-  static MorphologicalOp morph(Size(3,3),morphMask.data(),MorphologicalOp::dilate3x3);
+  static MorphologicalOp morph(MorphologicalOp::dilate3x3);
   morph.setClipToROI(false);
   static ImgBase *moIm = 0;
   morph.apply(ltIm,&moIm);

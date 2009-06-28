@@ -3,9 +3,25 @@
 #include <iclStringUtils.h>
 
 int main(){
+#if 0
   Img8u image = cvt8u(thresh(gray(scale(create("parrot"),280,400)),128));
   Img8u imageG = cvt8u(gray(scale(create("parrot"),280,400)));
   Img8u imageC = cvt8u(scale(create("parrot"),280,400));
+  ImgQ image = thresh(gray(scale(create("parrot"),280,400)),128);
+  ImgQ imageG = gray(scale(create("parrot"),280,400));
+  ImgQ imageC = scale(create("parrot"),280,400);
+#endif
+
+  ImgQ imageC_32f(Size(400,150),formatRGB);
+  color(255,255,255,255);
+  fontsize(45);
+  text(imageC_32f,20,20,"ICL rocks!");
+  ImgQ imageG_32f = gray(imageC_32f);
+  ImgQ image_32f = thresh(imageG_32f,128);
+  
+  Img8u image = cvt8u(image_32f);
+  Img8u imageG = cvt8u(imageG_32f);
+  Img8u imageC = cvt8u(imageC_32f);
   
   MorphologicalOp::optype ts[11]={ 
     MorphologicalOp::dilate,
@@ -36,7 +52,7 @@ int main(){
 
   
   static Size dilationKernelSize(3,3);
-  static std::vector<char> kernel(dilationKernelSize.getDim(),1);
+  static std::vector<icl8u> kernel(dilationKernelSize.getDim(),1);
 
   ImgQ X = zeros(1,1,1);
   
@@ -52,7 +68,7 @@ int main(){
 
   for(int i=0;i<11;++i){
     printf("applying %s \n",ns[i].c_str());
-    MorphologicalOp mo(dilationKernelSize,&kernel[0],ts[i]);
+    MorphologicalOp mo(ts[i],dilationKernelSize,kernel.data());
     ImgBase *dst = 0;
     ImgBase *dstG = 0;
     ImgBase *dstC = 0;
@@ -60,15 +76,10 @@ int main(){
     mo.apply(&image,&dst);
     mo.apply(&imageG,&dstG);
     mo.apply(&imageC,&dstC);
-    if(i<5){
-      result1 = (result1,X,label(cvt(dst),ns[i]+str(dst->getROISize())));
-      result1G = (result1G,X,label(cvt(dstG),ns[i]+str(dst->getROISize())));
-      result1C = (result1C,X,label(cvt(dstC),ns[i]+str(dst->getROISize())));
-    }else{
-      result2 = (result2,X,label(cvt(dst),ns[i]+str(dst->getROISize())));
-      result2G = (result2G,X,label(cvt(dstG),ns[i]+str(dst->getROISize())));
-      result2C = (result2C,X,label(cvt(dstC),ns[i]+str(dst->getROISize())));
-    }
+    
+    result1 = (result1 %X% label(cvt(dst),ns[i]+str(dst->getROISize())));
+    result1G = (result1G %X% label(cvt(dstG),ns[i]+str(dst->getROISize())));
+    result1C = (result1C %X% label(cvt(dstC),ns[i]+str(dst->getROISize())));
     
     ICL_DELETE( dst );
     ICL_DELETE( dstG );
@@ -76,8 +87,8 @@ int main(){
     
 
   }
-  show( (result1%X%result2) );
-  show( (result1G%X%result2G) );
-  show( (result1C%X%result2C) );
+  show( result1);
+  show( result1G);
+  show( result1C);
 }
 

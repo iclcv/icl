@@ -530,10 +530,10 @@ namespace icl{
       M["laplace"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::laplace3x3));
       M["median"] = new MedianOp(Size(3,3));
 #ifdef HAVE_IPP
-      M["dilation"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::dilate);
-      M["erosion"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::erode);
-      M["opening"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::openBorder);
-      M["closing"] = new MorphologicalOp(s3x3,(char*)mask, MorphologicalOp::closeBorder);
+      M["dilation"] = new MorphologicalOp(MorphologicalOp::dilate,s3x3,mask);
+      M["erosion"] = new MorphologicalOp(MorphologicalOp::erode,s3x3,mask);
+      M["opening"] = new MorphologicalOp(MorphologicalOp::openBorder,s3x3,mask);
+      M["closing"] = new MorphologicalOp(MorphologicalOp::closeBorder,s3x3,mask);
 #endif
     }    
     UnaryOp* u = M[filter];
