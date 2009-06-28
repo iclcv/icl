@@ -102,6 +102,27 @@ namespace icl{
     virtual XMLNodeFilter *deepCopy() const{ return new XMLNodeFilterByPathSubstring(pathPat,delim); }
   };
 
+  /// Can be used to filter nodes by regular expressions in their pathes \ingroup XML
+  /** E.g. doc["config"].recursive_begin(XMLNodeFilterByPathRegex(".*section.*")); 
+      Internally this function uses iclStringUtils' icl::match function
+  */
+  class XMLNodeFilterByPathRegex : public XMLNodeFilter{
+    public:
+    std::string regex; //<! internal path substring variable
+    std::string delim;  //<! internal delimiter variable
+    
+    /// create with given path pattern and delimiter within this pattern
+    XMLNodeFilterByPathRegex(const std::string &regex,const std::string &delim=".") throw (InvalidRegularExpressionException);
+    
+    /// returns always true
+    virtual bool operator()(const XMLNode&) const;
+    
+    /// deep copy function
+    virtual XMLNodeFilter *deepCopy() const{ return new XMLNodeFilterByPathSubstring(regex,delim); }
+  };
+
+
+
   /// Filters by given hierarchy depth (always absolute to document root, which has depth 0) 
   class XMLNodeFilterByLevel : public XMLNodeFilter{
     public:

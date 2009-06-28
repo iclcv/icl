@@ -33,7 +33,8 @@ icl-median-op-test \
 icl-threshold-op-test \
 icl-unary-op-mt-test \
 icl-weight-channels-op-test \
-icl-weighted-sum-op-test
+icl-weighted-sum-op-test \
+icl-morphological-op-test
 
 # explicit sources, ldflags and cxxflags
 icl_arithmetical_op_test_SOURCES=../examples/arithmetical-op-test.cpp
@@ -68,40 +69,28 @@ icl_weighted_sum_op_test_SOURCES=../examples/weighted-sum-op-test.cpp
 icl_weighted_sum_op_test_LDFLAGS=${XLDFLAGS}
 icl_weighted_sum_op_test_CXXFLAGS=${XCXXFLAGS}
 
+icl_morphological_op_test_SOURCES=../examples/morphological-op-test.cpp
+icl_morphological_op_test_LDFLAGS=${XLDFLAGS}
+icl_morphological_op_test_CXXFLAGS=${XCXXFLAGS}
 
 
 if HAVE_IPP_COND
 
 bin_PROGRAMS+= \
-icl-wiener-op-test \
-icl-morphological-op-test
+icl-wiener-op-test
 
 icl_wiener_op_test_SOURCES=../examples/wiener-op-test.cpp
 icl_wiener_op_test_LDFLAGS=${XLDFLAGS}
 icl_wiener_op_test_CXXFLAGS=${XCXXFLAGS}
 
-icl_morphological_op_test_SOURCES=../examples/morphological-op-test.cpp
-icl_morphological_op_test_LDFLAGS=${XLDFLAGS}
-icl_morphological_op_test_CXXFLAGS=${XCXXFLAGS}
-
 if HAVE_QT_COND
 
 bin_PROGRAMS+= \
-icl-interactive-canny-demo \
-icl-convolution-op-test \
-icl-warp-op-test
+icl-interactive-canny-demo
 
 icl_interactive_canny_demo_SOURCES=../examples/interactive-canny-demo.cpp
 icl_interactive_canny_demo_LDFLAGS=${XLDFLAGS}
 icl_interactive_canny_demo_CXXFLAGS=${XCXXFLAGS}
-
-icl_warp_op_test_SOURCES=../examples/warp-op-test.cpp
-icl_warp_op_test_LDFLAGS=${XLDFLAGS}
-icl_warp_op_test_CXXFLAGS=${XCXXFLAGS}
-
-icl_convolution_op_test_SOURCES=../examples/convolution-op-test.cpp
-icl_convolution_op_test_LDFLAGS=${XLDFLAGS}
-icl_convolution_op_test_CXXFLAGS=${XCXXFLAGS}
 
 endif
 
@@ -111,7 +100,9 @@ endif
 if HAVE_QT_COND
 bin_PROGRAMS+= \
 icl-local-threshold-op-test \
-icl-gabor-op-online-example
+icl-gabor-op-online-example \
+icl-convolution-op-test \
+icl-warp-op-test
 
 icl_gabor_op_online_example_SOURCES=../examples/gabor-op-online-example.cpp
 icl_gabor_op_online_example_LDFLAGS=${XLDFLAGS}
@@ -120,6 +111,15 @@ icl_gabor_op_online_example_CXXFLAGS=${XCXXFLAGS}
 icl_local_threshold_op_test_SOURCES=../examples/local-threshold-op-test.cpp
 icl_local_threshold_op_test_LDFLAGS=${XLDFLAGS}
 icl_local_threshold_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_warp_op_test_SOURCES=../examples/warp-op-test.cpp
+icl_warp_op_test_LDFLAGS=${XLDFLAGS}
+icl_warp_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_convolution_op_test_SOURCES=../examples/convolution-op-test.cpp
+icl_convolution_op_test_LDFLAGS=${XLDFLAGS}
+icl_convolution_op_test_CXXFLAGS=${XCXXFLAGS}
+
 
 endif
 

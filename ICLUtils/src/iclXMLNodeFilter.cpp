@@ -1,6 +1,6 @@
 #include <iclXMLNodeFilter.h>
 #include <iclXMLNode.h>
-
+#include <iclStringUtils.h>
 namespace icl{
 
   bool XMLNodeFilterByType::operator()(const XMLNode &node) const{
@@ -11,8 +11,19 @@ namespace icl{
     return node.isTagNode() ? (node.getTag()==tag) : false;
   }
 
+  XMLNodeFilterByPathRegex::XMLNodeFilterByPathRegex(const std::string &regex, const std::string &delim) 
+    throw (InvalidRegularExpressionException) :
+    regex(regex),delim(delim){
+    match(" ",regex); // to test if this regex works
+  }
+  
+  
   bool XMLNodeFilterByPathSubstring::operator()(const XMLNode &node) const{
     return node.getPath(delim).find(pathPat) != std::string::npos;
+  }
+
+  bool XMLNodeFilterByPathRegex::operator()(const XMLNode &node) const{
+    return match(node.getPath(delim),regex);
   }
   
   bool XMLNodeFilterByAttrib::operator()(const XMLNode &node) const{

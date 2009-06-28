@@ -51,9 +51,9 @@ icl-region-inspector-demo \
 icl-vector-tracker-demo \
 icl-interactive-vector-tracker-benchmark \
 icl-simple-blob-searcher-test \
-icl-mean-shift-online-demo
-
-
+icl-mean-shift-online-demo \
+icl-tangible-grains-benchmark \
+icl-tangible-grains-demo
 
 icl_region_inspector_demo_SOURCES=../examples/region-inspector-demo.cpp
 icl_region_inspector_demo_LDFLAGS=${XLDFLAGS}
@@ -75,16 +75,6 @@ icl_simple_blob_searcher_test_SOURCES=../examples/simple-blob-searcher-test.cpp
 icl_simple_blob_searcher_test_LDFLAGS=${XLDFLAGS}
 icl_simple_blob_searcher_test_CXXFLAGS=${XCXXFLAGS}
 
-endif
-
-
-if HAVE_LIBDC_COND
-if HAVE_QT_COND
-
-bin_PROGRAMS+= \
-icl-tangible-grains-benchmark \
-icl-tangible-grains-demo
-
 icl_tangible_grains_benchmark_SOURCES=../examples/tangible-grains-benchmark.cpp
 icl_tangible_grains_benchmark_LDFLAGS=${XLDFLAGS}
 icl_tangible_grains_benchmark_CXXFLAGS=${XCXXFLAGS}
@@ -93,5 +83,4 @@ icl_tangible_grains_demo_SOURCES=../examples/tangible-grains-demo.cpp
 icl_tangible_grains_demo_LDFLAGS=${XLDFLAGS}
 icl_tangible_grains_demo_CXXFLAGS=${XCXXFLAGS}
 
-endif
 endif

@@ -900,7 +900,7 @@ int main(int n, char**ppc){
     GUI(const GUI &gui,QWidget *parent=0);
 
     /// Destructor
-    virtual ~GUI(){}
+    virtual ~GUI();
     
     /// stream operator to add new widgets
     virtual GUI &operator<<(const std::string &definition);

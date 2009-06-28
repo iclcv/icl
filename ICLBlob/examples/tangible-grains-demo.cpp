@@ -6,7 +6,6 @@
 #include <iclFPSEstimator.h>
 #include <iclStringUtils.h>
 #include <iclRegionDetector.h>
-#include <iclDCGrabber.h>
 
 #include <iclMathematics.h>
 #include <iclPoint32f.h>
@@ -297,13 +296,8 @@ static inline vec getCenters(const Img8u &image){
 class WorkThread : public Thread{
 public:
   WorkThread(){
-    if(pa_defined("-dc")){
-      vector<DCDevice> devs = DCGrabber::getDeviceList();
-      if(!devs.size()){
-        ERROR_LOG("no device found");
-        ::exit(-1);
-      }
-      grabber = new DCGrabber(devs[0]);
+    if(pa_defined("-input")){
+      grabber = new GenericGrabber(FROM_PROGARG("-input"));
     }else{
       grabber = new InputGrabber(pa_subarg<int>("-nblobs",0,30));
     }
@@ -391,7 +385,7 @@ private:
 
 
 int main(int n, char  **ppc){
-  pa_explain("-dc","use a dc-grabber as video source");
+  pa_explain("-input","if used, an external image source is connected (e.g. -input dc 0, or -input unicap '*')");
   pa_explain("-nblobs","(int) number of blobs to use");
   pa_explain("-sleeptime","(int) initial sleeptime value");
   pa_explain("-mingap","(int) minimal distance between two blobs");
@@ -402,7 +396,7 @@ int main(int n, char  **ppc){
   pa_explain("-thresh","(int) position tracker threshold for trivial association step");
 
 
-  pa_init(n,ppc,"-dc -nblobs(1) -sleeptime(1) -mingap(1) -minr(1) -maxr(1) -maxv(1) -maxdv(1) -thresh(1)");
+  pa_init(n,ppc,"-input(2) -nblobs(1) -sleeptime(1) -mingap(1) -minr(1) -maxr(1) -maxv(1) -maxdv(1) -thresh(1)");
   
   QApplication app(n,ppc);
   WorkThread a;

@@ -1316,6 +1316,12 @@ public:
     m_poParent(parent){
   }
   // }}}
+  
+  GUI::~GUI(){
+    // this leads to seg-faults 
+    //delete m_poWidget;
+  }
+
 
   GUI &GUI::operator<<(const std::string &definition){
     // {{{ open

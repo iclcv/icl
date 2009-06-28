@@ -3,9 +3,10 @@
 
 #ifdef HAVE_IPP
 #include <ipp.h>
-#else
-#include <stdint.h>
 #endif
+
+#include <stdint.h>
+
 
 namespace icl {
   
@@ -43,6 +44,11 @@ namespace icl {
 
 #endif
 
+  /// 32bit unsigned integer type for the ICL \ingroup TYPES
+  typedef uint32_t icl32u;
+
+  /// 16bit unsigned integer type for the ICL \ingroup TYPES
+  typedef uint16_t icl16u;
 }
 
 #endif // include guard
