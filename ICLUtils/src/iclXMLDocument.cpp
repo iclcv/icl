@@ -8,10 +8,8 @@
 namespace icl{
 
   static std::string get_next_tag(std::istream &is, std::ostringstream &rest){
-    /// skips white spaces -> reimplement using preview with is >>c but extraction using is >> somestring 
     char c;
     do{ 
-      //is >> c; 
       if(!is.good()) throw ParseException("unexpected stream end!");
       c = is.get();
       if(c != '<'){
@@ -143,8 +141,14 @@ namespace icl{
           continue;
         }
         std::string n;
+        DEBUG_LOG("n:#"<<n<<"#");
         is >> n;
-        if(!n.size()) throw 100;
+        if(!n.size()){
+          // no more tokens available (except some whitespaces)
+          // if(is.good()) throw 100;
+          // }else{
+          throw std::exception();
+        }
         if(n[0] != '=') throw 101;
         if(n.size() > 1){
           (*att.get())[a] = cut_quotes(n.substr(1));

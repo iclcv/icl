@@ -100,7 +100,7 @@ namespace icl{
                               const std::string &name, 
                               const std::string &type, 
                               const std::string &value){
-
+    
     std::vector<std::string> t = tok(name,".");
     ICLASSERT_RETURN(t.size()>1);
     ICLASSERT_RETURN(t[0]=="config");
@@ -133,6 +133,7 @@ namespace icl{
       case 0:
         n->addTextNode("data",value);
         n->getLastChildNode()("type") = type;
+        n->getLastChildNode()("id") = t.back();
         break;
       case 1:
         (*sn[0])("type") = type;

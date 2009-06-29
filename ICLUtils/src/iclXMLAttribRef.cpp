@@ -15,7 +15,7 @@ namespace icl{
   }
   
   XMLAttribRef &XMLAttribRef::set(const std::string &str){
-    m_map->operator[](m_id) = "\""+str+"\"";
+    m_map->operator[](m_id) = ""+str+"";
     return *this;
   }
 
