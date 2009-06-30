@@ -140,6 +140,39 @@ namespace icl {
 
   // }}}
 
+  template<class Type>
+  static int get_channel_count(const DynMatrix<Type> &c1, 
+                               const DynMatrix<Type> &c2, 
+                               const DynMatrix<Type> &c3, 
+                               const DynMatrix<Type> &c4, 
+                               const DynMatrix<Type> &c5){
+    if(c1.isNull()) return 0;
+    else return 1 + (c2.isNull()?0:1) + (c3.isNull()?0:1) + (c4.isNull()?0:1) + (c5.isNull()?0:1); 
+  }
+  
+  template<class Type>
+  Img<Type>::Img(const DynMatrix<Type> &c1, 
+                 const DynMatrix<Type> &c2, 
+                 const DynMatrix<Type> &c3, 
+                 const DynMatrix<Type> &c4, 
+                 const DynMatrix<Type> &c5) throw (InvalidMatrixDimensionException):
+    ImgBase(icl::getDepth<Type>(),ImgParams(Size(c1.cols(),c1.rows()),get_channel_count(c1,c2,c3,c4,c5))){
+    
+    if(c1.isNull()) return;
+    m_vecChannels.reserve(getChannels());
+    m_vecChannels.push_back(SmartPtr<Type>(const_cast<Type*>(c1.begin()),false));
+#define ADD_CHANNEL(i)                                                  \
+    if(!c##i.isNull()){                                                 \
+      ICLASSERT_THROW(c1.cols() == c##i.cols() && c1.rows() == c##i.rows(), InvalidMatrixDimensionException(__FUNCTION__)); \
+      m_vecChannels.push_back(SmartPtr<Type>(const_cast<Type*>(c##i.begin()),false)); \
+    }
+    ADD_CHANNEL(2)    ADD_CHANNEL(3)    ADD_CHANNEL(4)    ADD_CHANNEL(5)
+#undef ADD_CHANNEL
+    
+    
+  }
+  
+
   // }}} constructors...
   
 

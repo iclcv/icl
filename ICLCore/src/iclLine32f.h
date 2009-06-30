@@ -53,6 +53,12 @@ namespace icl{
     /** @return length of the line */
     float length() const;
 
+    /// returns line angle [ atan2(dy,dx) ]
+    float getAngle() const;
+    
+    /// returns the lines center point [ (start+end)/2 ] 
+    Point32f getCenter() const;
+    
     /// samples this line from start to end point regarding the given limiting rect
     /** @param limits each line point is check for being inside of this rect
                       the eases working e.g. on image planes, that have an finite

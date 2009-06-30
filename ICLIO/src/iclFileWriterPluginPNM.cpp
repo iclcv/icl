@@ -124,7 +124,7 @@ namespace icl{
 
     static const string H = "# ";
     Rect roi = poSrc->getROI();
-
+    
     os   << H << "TimeStamp " << poSrc->getTime() << std::endl
          << H << "NumFeatures " << iNumImages << std::endl
          << H << "ImageDepth " << poSrc->getDepth() << std::endl

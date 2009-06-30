@@ -9,6 +9,7 @@
 #include <iclPixelRef.h>
 #include <cmath>
 #include <algorithm>
+#include <iclDynMatrix.h>
 
 
 namespace icl {
@@ -216,7 +217,25 @@ namespace icl {
         **/
     Img(const Img<Type>& tSrc);
     
-    
+
+    /// This constructor provides tight integration with DynMatrix template class
+    /** creates a shallow Img<Type>-wrapper around a set of DynMatrix instances.
+        <b>Note, of course this consturctor might be used to break DynMatrix's 
+        const concept, so please be aware of this!</b>.
+        The resulting image counts that many channels as given count (up to 5) of
+        non-null DynMatrix<T> instances. All null instances must have the same size,
+        otherwise, an exception of type InvalidMatrixDimensionException is thrown.
+        @param c1 first image channel (mandatory) (if this is null, the image becomes null)
+        @param c2 optional 2nd image channel. Must have the same size as c1.
+        @param c3 optional 3rd image channel. Must have the same size as c1 and c2.
+        @param c4 optional 4th image channel. Must have the same size as c1 - c3.
+        @param c5 optional 5th image channel. Must have the same size as c1 - c4.
+    */
+    Img(const DynMatrix<Type> &c1, 
+        const DynMatrix<Type> &c2=DynMatrix<Type>(), 
+        const DynMatrix<Type> &c3=DynMatrix<Type>(), 
+        const DynMatrix<Type> &c4=DynMatrix<Type>(), 
+        const DynMatrix<Type> &c5=DynMatrix<Type>()) throw (InvalidMatrixDimensionException);
     
     /// Destructor
     ~Img();
@@ -328,6 +347,23 @@ namespace icl {
     inline const PixelRef<Type> operator()(int x, int y) const{
       return const_cast<Img<Type>*>(this)->operator()(x,y);
     }
+    
+    /// extracts an image channel as DynMatrix type
+    /** This function does not work for NULL sized images
+        @see ICLUtils::iclDynMatrix.h
+        @param channel valid channel index */
+    inline DynMatrix<Type> operator[](int channel) throw (InvalidMatrixDimensionException){
+      return DynMatrix<Type>(getWidth(),getHeight(),begin(channel),false);
+    }
+
+    /// extracts an image channel as DynMatrix type (const version)
+    /** This function does not work for NULL sized images
+        @see ICLUtils::iclDynMatrix.h
+        @param channel valid channel index */
+    inline const DynMatrix<Type> operator[](int channel) const{
+      return const_cast<Img<Type>*>(this)->operator[](channel);
+    }
+
 
     /// sub-pixel access using nearest neighbor interpolation
     float subPixelNN(float fX, float fY, int iChannel) const {

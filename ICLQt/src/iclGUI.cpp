@@ -1436,8 +1436,8 @@ public:
   }
   
   void GUI::switchVisibility(){
-    if(isVisible()) show();
-    else hide();
+    if(isVisible()) hide();
+    else show();
   }
 
   void GUI::hide(){

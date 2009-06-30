@@ -375,6 +375,7 @@ namespace icl{
         interleavedToPlanar(m_matCellData[x][y],image,m_iCellSize*m_iChannels*sizeof(T));
       }
     }
+    image->setFullROI();
     return image;
   }
   

@@ -18,6 +18,13 @@ namespace icl{
   float Line32f::length() const{
     return ::sqrt (pow( start.x-end.x,2 ) +  pow(start.y -end.y ,2) );
   }
+  float Line32f::getAngle() const{
+    if(start == end) return 0;
+    return atan2(start.y-end.y,start.x-end.x);
+  }
+  Point32f Line32f::getCenter() const{
+    return (start+end)*.5;
+  }
   
   std::vector<Point> Line32f::sample( const Rect &limits) const{
     Point startInt = Point( (int)round(start.x), (int)round(start.y) );
