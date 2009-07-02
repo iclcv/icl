@@ -13,10 +13,10 @@ namespace icl{
       \code
       #include <iclDynMatrixUtils.h>
       #include <iclRandom.h>
-      
+
       int main(){
          DynMatrix<float> M(10,10);
-      
+
          // initialize all entries with a uniform random number
          matrix_init(M,URand(0,1));
       }
@@ -81,12 +81,12 @@ namespace icl{
   template<class T>
   DynMatrix<T> &matrix_sqr(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise sinus-function (x*x) (inplace) 
+  /// element-wise sinus-function (x*x) (inplace)
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_sin(DynMatrix<T> &m);
 
-  /// element-wise sinus-function (x*x) 
+  /// element-wise sinus-function (x*x)
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_sin(const DynMatrix<T> &m, DynMatrix<T> &dst);
@@ -152,7 +152,7 @@ namespace icl{
   DynMatrix<T> &matrix_reciprocal(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
   /** @} @{ @name unary functions with scalar argument */
-  
+
   /// element-wise power-function (x^exponent) (inplace)
   /** For float and double only */
   template<class T>
@@ -208,59 +208,67 @@ namespace icl{
   /// element-wise atan2 function atan2(y,x)
   /** For float and double only */
   template<class T>
-  DynMatrix<T> &matrix_arctan2(const DynMatrix<T> &my, const DynMatrix<T> &mx, DynMatrix<T> &dst);
+  DynMatrix<T> &matrix_arctan2(const DynMatrix<T> &my, const DynMatrix<T> &mx, DynMatrix<T> &dst)
+	throw (IncompatibleMatrixDimensionException);
 
   /// element-wise addition  [IPP-optimized]
   /** For float and double only */
   template<class T>
-  DynMatrix<T> &matrix_add(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
+  DynMatrix<T> &matrix_add(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
+	throw (IncompatibleMatrixDimensionException);
 
   /// element-wise substraction  [IPP-optimized]
   /** For float and double only */
   template<class T>
-  DynMatrix<T> &matrix_sub(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
+  DynMatrix<T> &matrix_sub(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
+	throw (IncompatibleMatrixDimensionException);
 
   /// element-wise multiplication  [IPP-optimized]
   /** For float and double only */
   template<class T>
-  DynMatrix<T> &matrix_mul(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
+  DynMatrix<T> &matrix_mul(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
+	throw (IncompatibleMatrixDimensionException);
 
   /// element-wise division  [IPP-optimized]
   /** For float and double only */
   template<class T>
-  DynMatrix<T> &matrix_div(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
+  DynMatrix<T> &matrix_div(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
+	throw (IncompatibleMatrixDimensionException);
 
   /// element-wise power
   /** For float and double only */
   template<class T>
-  DynMatrix<T> &matrix_pow(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
+  DynMatrix<T> &matrix_pow(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
+	throw (IncompatibleMatrixDimensionException);
 
-  /** @} */ 
-  /** @{ @name matrix distance measurement  */ 
+  /** @} */
+  /** @{ @name matrix distance measurement  */
 
   /// computes norm between matrix vectors
-  /** For float and double only 
+  /** For float and double only
       \f[ D = \left(\sum\limits_{i,j} (A_{ij}-B_{ij})^n\right)^{\frac{1}{n}} \f]
   */
   template<class T>
-  T matrix_distance(const DynMatrix<T> &m1, const DynMatrix<T> &m2, T norm=2);
+  T matrix_distance(const DynMatrix<T> &m1, const DynMatrix<T> &m2, T norm=2)
+	throw (IncompatibleMatrixDimensionException);
 
   /// computes generalized Kullback-Leibler-divergence between matrix vectors
-  /** For float and double only 
+  /** For float and double only
       \f[ \mbox{div} = \sum\limits_{i,j} A_{ij} \cdot \log{\frac{A_{ij}}{B_{ij}}} - A_{ij} + B_{ij} \f]
   */
   template<class T>
-  T matrix_divergence(const DynMatrix<T> &m1, const DynMatrix<T> &m2);
-  
-  
-  /** @} */ 
-  /** @{ @name statistical functions */ 
+  T matrix_divergence(const DynMatrix<T> &m1, const DynMatrix<T> &m2)
+	throw (IncompatibleMatrixDimensionException);
+
+
+  /** @} */
+  /** @{ @name statistical functions */
 
   /// find minimum element of matrix (optionally find location too)  [IPP-optimized]
   /** For float and double only
       @param m source matrix
-      @param x if no NULL, minimum x-location (column-index) is written to *x 
-      @param y if no NULL, minimum y-location (row-index) is written to *y 
+      @param x if no NULL, minimum x-location (column-index) is written to *x
+      @param y if no NULL, minimum y-location (row-index) is written to *y
   */
   template<class T>
   T matrix_min(const DynMatrix<T> &m, int *x=0, int *y=0);
@@ -268,8 +276,8 @@ namespace icl{
   /// find maximum element of matrix (optionally find location too)  [IPP-optimized]
   /** For float and double only
       @param m source matrix
-      @param x if no NULL, maximum x-location (column-index) is written to *x 
-      @param y if no NULL, maximum y-location (row-index) is written to *y 
+      @param x if no NULL, maximum x-location (column-index) is written to *x
+      @param y if no NULL, maximum y-location (row-index) is written to *y
   */
   template<class T>
   T matrix_max(const DynMatrix<T> &m, int *x=0, int *y=0);
@@ -279,17 +287,17 @@ namespace icl{
       @param m source matrix
       @param dst found min and max value are written to dst\n
                        (dst[0]<-min, dst[1]<-max)
-      @param minx if no NULL, minimum x-location (column-index) is written to *minx 
-      @param miny if no NULL, minimum y-location (row-index) is written to *miny 
-      @param maxx if no NULL, maximum x-location (column-index) is written to *maxx 
-      @param maxy if no NULL, maximum y-location (row-index) is written to *maxy 
+      @param minx if no NULL, minimum x-location (column-index) is written to *minx
+      @param miny if no NULL, minimum y-location (row-index) is written to *miny
+      @param maxx if no NULL, maximum x-location (column-index) is written to *maxx
+      @param maxy if no NULL, maximum y-location (row-index) is written to *maxy
   */
   template<class T>
   void matrix_minmax(const DynMatrix<T> &m, T dst[2],
                      int *minx=0, int *miny=0,
                      int *maxx=0, int *maxy=0);
-  
-  
+
+
   /// calculate matrix mean value  [IPP-optimized]
   /** For float and double only */
   template<class T>
@@ -315,7 +323,7 @@ namespace icl{
   T matrix_var(const DynMatrix<T> &m, T mean, bool empiricalMean=true);
 
   /// computes matrix mean and variance at once  [IPP-optimized]
-  /** For float and double only 
+  /** For float and double only
       note thatn mean and var must not be null
   */
   template<class T>
@@ -325,9 +333,9 @@ namespace icl{
   /** For float and double only */
   template<class T>
   T matrix_stddev(const DynMatrix<T> &m);
-  
+
   /// calculate matrix standard deviation with given mean
-  /** For float and double only 
+  /** For float and double only
       @param m source matrix
       @param mean given sample mean
       @param empiricalMean if true, then the given mean was computed from the data, too, and
@@ -339,49 +347,52 @@ namespace icl{
   */
   template<class T>
   T matrix_stddev(const DynMatrix<T> &m, T mean, bool empiricalMean=true);
- 
-  /** @} */ 
 
-  /** @{  @name other functions ...*/ 
+  /** @} */
+
+  /** @{  @name other functions ...*/
   /// computes alpha*a + beta*b + gamma
   /** For float and double only */
   template<class T>
-  DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, const DynMatrix<T> &b, T beta, T gamma, DynMatrix<T> &dst);
+  DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, const DynMatrix<T> &b, T beta, T gamma, DynMatrix<T> &dst)
+	throw (IncompatibleMatrixDimensionException);
 
   /// computes alpha*a + gamma
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, T gamma, DynMatrix<T> &dst);
-  
+
   /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0) (inplace)
   /** For float and double only */
   template<class T>
-  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<T> &m);
+  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<T> &m)
+	throw (IncompatibleMatrixDimensionException);
 
   /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0)
   /** For float and double only */
   template<class T>
-  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst);
-  
-   /** @} */ 
+  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst)
+   	throw (IncompatibleMatrixDimensionException);
+
+   /** @} */
 
 
-  /** @{  @name special functions for transposed matrices ...*/ 
-  
+  /** @{  @name special functions for transposed matrices ...*/
+
   /// special utility type for definition of transposed states for matrices
-  enum transposedDef{ 
-    NONE_T=0, 
-    SRC1_T=1<<0, 
-    SRC2_T=1<<1, 
+  enum transposedDef{
+    NONE_T=0,
+    SRC1_T=1<<0,
+    SRC2_T=1<<1,
     BOTH_T=SRC1_T | SRC2_T,
   };
-  
+
   /// applies matrix mutliplication on optionally transposed matrices
   /** sometimes, it might be more efficient to call matrix multiplication on imaginary transposed source matrices, to
-      avoid having to apply an additional transposing step. 
+      avoid having to apply an additional transposing step.
 
       This function is IPP accelerated. In case of having no IPP support, a trivial fallback implementation is
-      provided (something like 
+      provided (something like
       \code src1.transp().mult( src2.transp(),dst) ) \endcode in case of having transpDef == BOTH_T
       @param src1 left operand
       @param src2 right operand
@@ -392,7 +403,15 @@ namespace icl{
   DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
   throw (IncompatibleMatrixDimensionException);
 
-  /** @} */ 
+  template<class T>
+  DynMatrix<T> &matrix_add_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
+  throw (IncompatibleMatrixDimensionException);
+
+  template<class T>
+  DynMatrix<T> &matrix_sub_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
+  throw (IncompatibleMatrixDimensionException);
+
+  /** @} */
 }
 
 #endif

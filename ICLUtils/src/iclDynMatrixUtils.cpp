@@ -2,8 +2,32 @@
 #include <cmath>
 #include <iclMacros.h>
 
-#define CHECK_DIM(m1,m2,RET)                                            \
-  ICLASSERT_RETURN_VAL( (m1.cols() == m2.cols()) && (m1.rows() == m2.rows()) , RET)
+// check matrix dimensions: (m1.cols == m2.cols) and (m1.rows == m2.rows)
+//#define CHECK_DIM(m1,m2,RET)
+//  ICLASSERT_RETURN_VAL( (m1.cols() == m2.cols()) && (m1.rows() == m2.rows()), RET)
+
+#define CHECK_DIM( m1, m2, RET )                                               \
+  ICLASSERT_THROW( (m1.cols() == m2.cols()) && (m1.rows() == m2.rows()), IncompatibleMatrixDimensionException(__FUNCTION__) )
+
+// check matrix dimensions: (m1.cols == m2.rows) and (m1.rows == m2.cols)
+#define CHECK_DIM_T( m1, m2, RET )                                             \
+  ICLASSERT_THROW( (m1.cols() == m2.rows()) && (m1.rows() == m2.cols()), IncompatibleMatrixDimensionException(__FUNCTION__) )
+
+// check matrix dimensions: m1.cols == m2.cols
+#define CHECK_DIM_CC( m1, m2, RET )                                            \
+  ICLASSERT_THROW( m1.cols() == m2.cols(), IncompatibleMatrixDimensionException(__FUNCTION__) )
+
+// check matrix dimensions: m1.cols == m2.rows
+#define CHECK_DIM_CR( m1, m2, RET )                                            \
+  ICLASSERT_THROW( m1.cols() == m2.rows(), IncompatibleMatrixDimensionException(__FUNCTION__) )
+
+// check matrix dimensions: m1.rows == m2.cols
+#define CHECK_DIM_RC( m1, m2, RET )                                            \
+  ICLASSERT_THROW( m1.rows() == m2.cols(), IncompatibleMatrixDimensionException(__FUNCTION__) )
+
+// check matrix dimensions: m1.rows == m2.rows
+#define CHECK_DIM_RR( m1, m2, RET )                                            \
+   ICLASSERT_THROW( m1.rows() == m2.rows(), IncompatibleMatrixDimensionException(__FUNCTION__) )
 
 
 // #undef HAVE_IPP oops
@@ -70,7 +94,7 @@ namespace icl{
     std::transform(s,s+len,d,func);                                     \
     return ippStsNoErr;                                                 \
   }
-  
+
   ICL_UNARY_HELP_FUNC(Sin_icl,::sin)
   ICL_UNARY_HELP_FUNC(Cos_icl,::cos)
   ICL_UNARY_HELP_FUNC(Tan_icl,::tan)
@@ -79,7 +103,7 @@ namespace icl{
   ICL_UNARY_HELP_FUNC(Reciprocal_icl,icl::reciprocal)
 
 #undef ICL_UNARY_HELP_FUNC
-  
+
 #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
   template<class T>                                                     \
   DynMatrix<T> &matrix_##op(DynMatrix<T> &m){                           \
@@ -107,32 +131,32 @@ namespace icl{
     return ipp_unary_func<double,ipps##func##_64f>(m,dst);              \
   }                                                                     \
   template<> DynMatrix<float> &matrix_##op(const DynMatrix<float> &m, DynMatrix<float> &dst); \
-  template<> DynMatrix<double> &matrix_##op(const DynMatrix<double> &m, DynMatrix<double> &dst); 
-  
-  INSTANTIATE_DYN_MATRIX_MATH_OP(abs,Abs) 
-  INSTANTIATE_DYN_MATRIX_MATH_OP(log,Ln) 
-  INSTANTIATE_DYN_MATRIX_MATH_OP(exp,Exp) 
-  INSTANTIATE_DYN_MATRIX_MATH_OP(sqrt,Sqrt) 
-  INSTANTIATE_DYN_MATRIX_MATH_OP(sqr,Sqr) 
-  
-  INSTANTIATE_DYN_MATRIX_MATH_OP(sin,Sin_icl) 
-  INSTANTIATE_DYN_MATRIX_MATH_OP(cos,Cos_icl) 
-  INSTANTIATE_DYN_MATRIX_MATH_OP(tan,Tan_icl) 
-  
-  INSTANTIATE_DYN_MATRIX_MATH_OP(arcsin,Arcsin_icl) 
-  INSTANTIATE_DYN_MATRIX_MATH_OP(arccos,Arccos_icl) 
-  INSTANTIATE_DYN_MATRIX_MATH_OP(arctan,Arctan) 
+  template<> DynMatrix<double> &matrix_##op(const DynMatrix<double> &m, DynMatrix<double> &dst);
+
+  INSTANTIATE_DYN_MATRIX_MATH_OP(abs,Abs)
+  INSTANTIATE_DYN_MATRIX_MATH_OP(log,Ln)
+  INSTANTIATE_DYN_MATRIX_MATH_OP(exp,Exp)
+  INSTANTIATE_DYN_MATRIX_MATH_OP(sqrt,Sqrt)
+  INSTANTIATE_DYN_MATRIX_MATH_OP(sqr,Sqr)
+
+  INSTANTIATE_DYN_MATRIX_MATH_OP(sin,Sin_icl)
+  INSTANTIATE_DYN_MATRIX_MATH_OP(cos,Cos_icl)
+  INSTANTIATE_DYN_MATRIX_MATH_OP(tan,Tan_icl)
+
+  INSTANTIATE_DYN_MATRIX_MATH_OP(arcsin,Arcsin_icl)
+  INSTANTIATE_DYN_MATRIX_MATH_OP(arccos,Arccos_icl)
+  INSTANTIATE_DYN_MATRIX_MATH_OP(arctan,Arctan)
   INSTANTIATE_DYN_MATRIX_MATH_OP(reciprocal,Reciprocal_icl)
 
-#undef INSTANTIATE_DYN_MATRIX_MATH_OP  
-  
-  template<class T> struct pow_functor{ 
+#undef INSTANTIATE_DYN_MATRIX_MATH_OP
+
+  template<class T> struct pow_functor{
     const T val;
     inline pow_functor(const T val):val(val){}
     inline double operator()(const T &x) const{
       return pow(x,val);
     }
-  };    
+  };
 
   IppStatus ippsPow_icl_32f_I(float e, float *p, int len){
     std::transform(p,p+len,p,pow_functor<float>(e));
@@ -174,19 +198,19 @@ namespace icl{
   template<> DynMatrix<double> &matrix_##op(const DynMatrix<double> &s,double val, DynMatrix<double> &dst){ \
     return ipp_unary_func_c<double,ipps##func##_64f>(s,val,dst);        \
   }
-  
+
   INSTANTIATE_DYN_MATRIX_MATH_OP(powc,Pow_icl)
   INSTANTIATE_DYN_MATRIX_MATH_OP(addc,AddC)
   INSTANTIATE_DYN_MATRIX_MATH_OP(subc,SubC)
   INSTANTIATE_DYN_MATRIX_MATH_OP(mulc,MulC)
   INSTANTIATE_DYN_MATRIX_MATH_OP(divc,DivC)
 
-#undef INSTANTIATE_DYN_MATRIX_MATH_OP  
+#undef INSTANTIATE_DYN_MATRIX_MATH_OP
 
   ///////////////////////////////////////////////////////////////////////////
   // Binary functions ///////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////
-  
+
   IppStatus ippsArctan2_icl_32f(const float *a, const float *b, float *dst, int len){
     std::transform(b,b+len,a,dst,::atan2);
     return ippStsNoErr;
@@ -203,20 +227,23 @@ namespace icl{
     std::transform(a,a+len,b,dst,::pow);
     return ippStsNoErr;
   }
-  
+
 #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
   template<class T>                                                     \
-  DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst){ \
+  DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) \
+    throw (IncompatibleMatrixDimensionException){                       \
     ERROR_LOG("not implemented for this type!");                        \
     return dst;                                                         \
   }                                                                     \
-  template<> DynMatrix<float> &matrix_##op(const DynMatrix<float> &a, const DynMatrix<float> &b, DynMatrix<float> &dst){ \
+  template<> DynMatrix<float> &matrix_##op(const DynMatrix<float> &a, const DynMatrix<float> &b, DynMatrix<float> &dst) \
+    throw (IncompatibleMatrixDimensionException){                       \
     return ipp_binary_func<float,ipps##func##_32f>(a,b,dst);            \
   }                                                                     \
-  template<> DynMatrix<double> &matrix_##op(const DynMatrix<double> &a, const DynMatrix<double> &b, DynMatrix<double> &dst){ \
+  template<> DynMatrix<double> &matrix_##op(const DynMatrix<double> &a, const DynMatrix<double> &b, DynMatrix<double> &dst) \
+    throw (IncompatibleMatrixDimensionException){                       \
     return ipp_binary_func<double,ipps##func##_64f>(a,b,dst);           \
   }                                                                     \
-  
+
   INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2,Arctan2_icl)
   INSTANTIATE_DYN_MATRIX_MATH_OP(add,Add)
   INSTANTIATE_DYN_MATRIX_MATH_OP(sub,Sub)
@@ -228,7 +255,7 @@ namespace icl{
   ///////////////////////////////////////////////////////////////////////////
   // Other functions ////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////
-  
+
   template<class T>
   T matrix_min(const DynMatrix<T> &m, int *x, int *y){
     ERROR_LOG("not implemented for this type!");
@@ -239,7 +266,7 @@ namespace icl{
     ERROR_LOG("not implemented for this type!");
     return 0;
   }
-  
+
 #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,type,suffix,ippf)             \
   template<> type matrix_##op(const DynMatrix<type> &m, int *x, int *y){ \
     type mVal = 0;                                                      \
@@ -257,7 +284,7 @@ namespace icl{
   INSTANTIATE_DYN_MATRIX_MATH_OP(max,float,32f,Max)
   INSTANTIATE_DYN_MATRIX_MATH_OP(min,double,64f,Min)
   INSTANTIATE_DYN_MATRIX_MATH_OP(max,double,64f,Max)
-  
+
 
 #undef INSTANTIATE_DYN_MATRIX_MATH_OP
 
@@ -300,12 +327,12 @@ namespace icl{
 
 
 
- 
+
 
 
 #else
   // **************************************************************************
-  // No IPP fallbacks 
+  // No IPP fallbacks
   // **************************************************************************
 
 
@@ -330,11 +357,11 @@ namespace icl{
     return dst;                                                         \
   }                                                                     \
   template DynMatrix<float> &matrix_##op(DynMatrix<float> &m);          \
-  template DynMatrix<double> &matrix_##op(DynMatrix<double> &m);       
+  template DynMatrix<double> &matrix_##op(DynMatrix<double> &m);
 
   static inline double sqr(double x) { return x*x; }
   static inline double reciprocal(double x) { return x ? 1.0/x : 0 ; }
-  
+
   INSTANTIATE_DYN_MATRIX_MATH_OP(abs,::fabs)
   INSTANTIATE_DYN_MATRIX_MATH_OP(log,::log)
   INSTANTIATE_DYN_MATRIX_MATH_OP(exp,::exp)
@@ -384,7 +411,7 @@ namespace icl{
   template <class T> static inline T subc(const T &a, const T &b){ return a-b; }
   template <class T> static inline T divc(const T &a, const T &b){ return a/b; }
   template <class T> static inline T mulc(const T &a, const T &b){ return a*b; }
-  
+
   INSTANTIATE_DYN_MATRIX_MATH_OP(powc,::pow)
   INSTANTIATE_DYN_MATRIX_MATH_OP(addc,icl::addc)
   INSTANTIATE_DYN_MATRIX_MATH_OP(subc,icl::subc)
@@ -392,20 +419,23 @@ namespace icl{
   INSTANTIATE_DYN_MATRIX_MATH_OP(divc,icl::divc)
 
 #undef INSTANTIATE_DYN_MATRIX_MATH_OP
-  
 
-  // binary functions 
-  
+
+  // binary functions
+
 #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
   template<class T>                                                     \
-  DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst){ \
+  DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) \
+    throw (IncompatibleMatrixDimensionException){                       \
     CHECK_DIM(a,b,dst);                                                 \
     dst.setBounds(a.cols(),a.rows());                                   \
     std::transform(a.begin(),a.end(),b.begin(),dst.begin(),func);       \
     return dst;                                                         \
   }                                                                     \
-  template DynMatrix<float> &matrix_##op(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&); \
-  template DynMatrix<double> &matrix_##op(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&);
+  template DynMatrix<float> &matrix_##op(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&)     \
+     throw (IncompatibleMatrixDimensionException);                                                                \
+  template DynMatrix<double> &matrix_##op(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&) \
+     throw (IncompatibleMatrixDimensionException);
 
   INSTANTIATE_DYN_MATRIX_MATH_OP(pow,::pow)
   INSTANTIATE_DYN_MATRIX_MATH_OP(add,icl::addc<T>)
@@ -413,11 +443,11 @@ namespace icl{
   INSTANTIATE_DYN_MATRIX_MATH_OP(mul,icl::mulc<T>)
   INSTANTIATE_DYN_MATRIX_MATH_OP(div,icl::divc<T>)
   INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2,::atan2)
-  
-#undef INSTANTIATE_DYN_MATRIX_MATH_OP  
 
-  // others 
-  
+#undef INSTANTIATE_DYN_MATRIX_MATH_OP
+
+  // others
+
   template<class T>
   T matrix_min(const DynMatrix<T> &m, int *x, int *y){
     ICLASSERT_RETURN_VAL(m.cols(),0);
@@ -427,10 +457,10 @@ namespace icl{
     if(y) *y = idx/m.cols();
     return *a;
   }
-  
+
   template float matrix_min(const DynMatrix<float> &m, int *x, int *y);
   template double matrix_min(const DynMatrix<double> &m, int *x, int *y);
-  
+
   template<class T>
   T matrix_max(const DynMatrix<T> &m, int *x, int *y){
     ICLASSERT_RETURN_VAL(m.cols(),0);
@@ -457,7 +487,7 @@ namespace icl{
   template void matrix_minmax(const DynMatrix<double> &m, double dst[2],int*,int*,int*,int*);
 
 
-#endif //HAVE_IPP 
+#endif //HAVE_IPP
 
 
   /// ------------------------------------------------------------
@@ -502,10 +532,10 @@ namespace icl{
 
 #ifdef HAVE_IPP
   template<> float matrix_var(const DynMatrix<float> &m){
-    float v=0; ippsStdDev_32f(m.begin(),m.dim(),&v,ippAlgHintNone); return v*v; 
+    float v=0; ippsStdDev_32f(m.begin(),m.dim(),&v,ippAlgHintNone); return v*v;
   }
   template<> double matrix_var(const DynMatrix<double> &m){
-    double v=0; ippsStdDev_64f(m.begin(),m.dim(),&v); return v*v; 
+    double v=0; ippsStdDev_64f(m.begin(),m.dim(),&v); return v*v;
   }
 #endif // HAVE_IPP
 
@@ -549,7 +579,7 @@ namespace icl{
 
   template void matrix_meanvar(const DynMatrix<float>&,float*,float*);
   template void matrix_meanvar(const DynMatrix<double>&,double*,double*);
-  
+
 
   // STDDEV ***************************
   template<class T>
@@ -586,9 +616,10 @@ namespace icl{
     }
   };
 
-  
+
   template<class T>
-  DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, const DynMatrix<T> &b, T beta, T gamma, DynMatrix<T> &dst){
+  DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, const DynMatrix<T> &b, T beta, T gamma, DynMatrix<T> &dst)
+    throw (IncompatibleMatrixDimensionException){
     CHECK_DIM(a,b,dst);
     if(!alpha) return matrix_muladd(b,beta,gamma,dst);
     if(!beta) return matrix_muladd(a,alpha,gamma,dst);
@@ -596,8 +627,10 @@ namespace icl{
     std::transform(a.begin(),a.end(),b.begin(),dst.begin(),muladd_functor_2<T>(alpha,beta,gamma));
     return dst;
   }
-  template DynMatrix<float> &matrix_muladd(const DynMatrix<float>&,float,const DynMatrix<float>&,float,float,DynMatrix<float>&);
-  template DynMatrix<double> &matrix_muladd(const DynMatrix<double>&,double,const DynMatrix<double>&,double,double,DynMatrix<double>&);
+  template DynMatrix<float> &matrix_muladd(const DynMatrix<float>&,float,const DynMatrix<float>&,float,float,DynMatrix<float>&)
+    throw (IncompatibleMatrixDimensionException);
+  template DynMatrix<double> &matrix_muladd(const DynMatrix<double>&,double,const DynMatrix<double>&,double,double,DynMatrix<double>&)
+    throw (IncompatibleMatrixDimensionException);
 
 
   template<class T>
@@ -619,30 +652,36 @@ namespace icl{
       return mask ? m : 0;
     }
   };
-  
+
   template<class T>
-  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<T> &m){
+  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<T> &m)
+    throw (IncompatibleMatrixDimensionException){
     CHECK_DIM(mask,m,m);
     std::transform(mask.begin(),mask.end(),m.begin(),m.begin(),mask_functor<T>());
     return m;
   }
 
-  template DynMatrix<float> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<float> &m);
-  template DynMatrix<double> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<double> &m);
+  template DynMatrix<float> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<float> &m)
+    throw (IncompatibleMatrixDimensionException);
+  template DynMatrix<double> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<double> &m)
+    throw (IncompatibleMatrixDimensionException);
 
     /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0)
   template<class T>
-  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst){
+  DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst)
+    throw (IncompatibleMatrixDimensionException){
     CHECK_DIM(mask,m,dst);
     dst.setBounds(m.cols(),m.rows());
     std::transform(mask.begin(),mask.end(),m.begin(),dst.begin(),mask_functor<T>());
     return dst;
   }
 
-  template DynMatrix<float> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<float> &m, DynMatrix<float> &dst);
-  template DynMatrix<double> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<double> &m, DynMatrix<double> &dst);
+  template DynMatrix<float> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<float> &m, DynMatrix<float> &dst)
+    throw (IncompatibleMatrixDimensionException);
+  template DynMatrix<double> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<double> &m, DynMatrix<double> &dst)
+    throw (IncompatibleMatrixDimensionException);
 
-  
+
 
   template<class T>
   struct matrix_distance_op{
@@ -650,17 +689,20 @@ namespace icl{
     matrix_distance_op(const T &e):e(e){}
     inline T operator()(const T &a, const T&b) const{  return ::pow(a-b,e);   }
   };
-    
+
   template<class T>
-  T matrix_distance(const DynMatrix<T> &m1, const DynMatrix<T> &m2, T norm){
+  T matrix_distance(const DynMatrix<T> &m1, const DynMatrix<T> &m2, T norm)
+    throw (IncompatibleMatrixDimensionException){
     CHECK_DIM(m1,m2,-1);
     ICLASSERT_RETURN_VAL(norm > 0,-1);
     T result = std::inner_product(m1.begin(),m1.end(),m2.begin(),T(0),std::plus<T>(),matrix_distance_op<T>(norm));
     return pow(result,1/norm);
   }
-  
-  template float matrix_distance(const DynMatrix<float> &m1, const DynMatrix<float> &m2, float);
-  template double matrix_distance(const DynMatrix<double> &, const DynMatrix<double> &, double);
+
+  template float matrix_distance(const DynMatrix<float> &m1, const DynMatrix<float> &m2, float)
+    throw (IncompatibleMatrixDimensionException);
+  template double matrix_distance(const DynMatrix<double> &, const DynMatrix<double> &, double)
+    throw (IncompatibleMatrixDimensionException);
 
 
 
@@ -670,18 +712,21 @@ namespace icl{
   };
 
   template<class T>
-  T matrix_divergence(const DynMatrix<T> &m1, const DynMatrix<T> &m2){
+  T matrix_divergence(const DynMatrix<T> &m1, const DynMatrix<T> &m2)
+    throw (IncompatibleMatrixDimensionException){
     CHECK_DIM(m1,m2,-1);
     return std::inner_product(m1.begin(),m1.end(),m2.begin(),T(0),std::plus<T>(),matrix_divergence_op<T>());
   }
 
-  template float matrix_divergence(const DynMatrix<float>&, const DynMatrix<float>&);
-  template double matrix_divergence(const DynMatrix<double>&, const DynMatrix<double>&);
+  template float matrix_divergence(const DynMatrix<float>&, const DynMatrix<float>&)
+    throw (IncompatibleMatrixDimensionException);
+  template double matrix_divergence(const DynMatrix<double>&, const DynMatrix<double>&)
+    throw (IncompatibleMatrixDimensionException);
 
   /// matrix functions for transposed matrices ...
 
-  
-  
+
+
   template<class T>
   DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
     throw (IncompatibleMatrixDimensionException){
@@ -695,9 +740,36 @@ namespace icl{
     return dst;
   }
 
+  template<class T>
+  DynMatrix<T> &matrix_add_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T: return matrix_add(src1,src2,dst);
+      case SRC1_T: return matrix_add(src1.transp(),src2,dst);
+      case SRC2_T: return matrix_add(src1,src2.transp(),dst);
+      case BOTH_T: return matrix_add(src1.transp(),src2.transp(),dst);
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+
+ template<class T>
+  DynMatrix<T> &matrix_sub_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T: return matrix_sub(src1,src2,dst);
+      case SRC1_T: return matrix_sub(src1.transp(),src2,dst);
+      case SRC2_T: return matrix_sub(src1,src2.transp(),dst);
+      case BOTH_T: return matrix_sub(src1.transp(),src2.transp(),dst);
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+
+
 #ifdef HAVE_IPP
   template<class T, typename func>
-  DynMatrix<T> &ipp_mul_t_call(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, func f)throw (IncompatibleMatrixDimensionException){
+  DynMatrix<T> &ipp_func_t_call(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, func f)throw (IncompatibleMatrixDimensionException){
     IppStatus status = f(src1.begin(),src1.stride1(),src1.stride2(),src1.cols(),src1.rows(),
                          src2.begin(),src2.stride1(),src2.stride2(),src2.cols(),src2.rows(),
                          dst.begin(),dst.stride1(), dst.stride2());
@@ -707,49 +779,188 @@ namespace icl{
     return dst;
   }
 
-  template<> DynMatrix<float> &matrix_mult_t(const DynMatrix<float> &src1, const DynMatrix<float> &src2, DynMatrix<float> &dst, int transpDef)
+template<class T, typename func>
+  DynMatrix<T> &ipp_func_t_call_2(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, func f)throw (IncompatibleMatrixDimensionException){
+    IppStatus status = f(src1.begin(),src1.stride1(),src1.stride2(),
+                         src2.begin(),src2.stride1(),src2.stride2(),
+                         dst.begin(),dst.stride1(), dst.stride2(),
+			 dst.cols(),dst.rows());
+    if(status != ippStsNoErr){
+      throw IncompatibleMatrixDimensionException(ippGetStatusString(status));
+    }
+    return dst;
+  }
+
+
+  template<> DynMatrix<float> &matrix_add_t(const DynMatrix<float> &src1, const DynMatrix<float> &src2, DynMatrix<float> &dst, int transpDef)
     throw (IncompatibleMatrixDimensionException){
     switch(transpDef){
-      case NONE_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_mm_32f);
-      case SRC1_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_tm_32f);
-      case SRC2_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_mt_32f);
-      case BOTH_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_tt_32f);
+      case NONE_T:
+        CHECK_DIM(src1,src2,dst);
+        dst.setBounds(src1.cols(),src1.rows());
+        return ipp_func_t_call_2(src1,src2,dst,ippmAdd_mm_32f);
+      case SRC1_T:
+        CHECK_DIM_T(src1,src2,dst);
+        dst.setBounds(src2.cols(),src2.rows());
+        return ipp_func_t_call_2(src1,src2,dst,ippmAdd_tm_32f);
+      case SRC2_T:
+        CHECK_DIM_T(src1,src2,dst);
+        dst.setBounds(src1.cols(),src1.rows());
+        return ipp_func_t_call_2(src2,src1,dst,ippmAdd_tm_32f);
+      case BOTH_T:
+        CHECK_DIM(src1,src2,dst);
+        dst.setBounds(src1.rows(),src1.cols());
+        return ipp_func_t_call_2(src1,src2,dst,ippmAdd_tt_32f);
       default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
     }
     return dst;
   }
-  template<> DynMatrix<double> &matrix_mult_t(const DynMatrix<double> &src1, const DynMatrix<double> &src2, DynMatrix<double> &dst, int transpDef)  
+  template<> DynMatrix<double> &matrix_add_t(const DynMatrix<double> &src1, const DynMatrix<double> &src2, DynMatrix<double> &dst, int transpDef)
     throw (IncompatibleMatrixDimensionException){
     switch(transpDef){
-      case NONE_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_mm_64f);
-      case SRC1_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_tm_64f);
-      case SRC2_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_mt_64f);
-      case BOTH_T: return ipp_mul_t_call(src1,src2,dst,ippmMul_tt_64f);
+      case NONE_T:
+        CHECK_DIM(src1,src2,dst);
+        dst.setBounds(src1.cols(),src1.rows());
+        return ipp_func_t_call_2(src1,src2,dst,ippmAdd_mm_64f);
+      case SRC1_T:
+        CHECK_DIM_T(src1,src2,dst);
+        dst.setBounds(src2.cols(),src2.rows());
+        return ipp_func_t_call_2(src1,src2,dst,ippmAdd_tm_64f);
+      case SRC2_T:
+        CHECK_DIM_T(src1,src2,dst);
+        dst.setBounds(src1.cols(),src1.rows());
+        return ipp_func_t_call_2(src2,src1,dst,ippmAdd_tm_64f);
+      case BOTH_T:
+        CHECK_DIM(src1,src2,dst);
+        dst.setBounds(src1.rows(),src1.cols());
+        return ipp_func_t_call_2(src1,src2,dst,ippmAdd_tt_64f);
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+
+  template<> DynMatrix<float> &matrix_sub_t(const DynMatrix<float> &src1, const DynMatrix<float> &src2, DynMatrix<float> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T:
+        CHECK_DIM(src1,src2,dst);
+        dst.setBounds(src1.cols(),src1.rows());
+        return ipp_func_t_call_2(src1,src2,dst,ippmSub_mm_32f);
+      case SRC1_T:
+        CHECK_DIM_T(src1,src2,dst);
+        dst.setBounds(src2.cols(),src2.rows());
+        return ipp_func_t_call_2(src1,src2,dst,ippmSub_tm_32f);
+      case SRC2_T:
+        CHECK_DIM_T(src1,src2,dst);
+        dst.setBounds(src1.cols(),src1.rows());
+        return ipp_func_t_call_2(src2,src1,dst,ippmSub_tm_32f);
+      case BOTH_T:
+        CHECK_DIM(src1,src2,dst);
+        dst.setBounds(src1.rows(),src1.cols());
+        return ipp_func_t_call_2(src1,src2,dst,ippmSub_tt_32f);
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+  template<> DynMatrix<double> &matrix_sub_t(const DynMatrix<double> &src1, const DynMatrix<double> &src2, DynMatrix<double> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T:
+        CHECK_DIM(src1,src2,dst);
+        dst.setBounds(src1.cols(),src1.rows());
+        return ipp_func_t_call_2(src1,src2,dst,ippmSub_mm_64f);
+      case SRC1_T:
+        CHECK_DIM_T(src1,src2,dst);
+        dst.setBounds(src2.cols(),src2.rows());
+        return ipp_func_t_call_2(src1,src2,dst,ippmSub_tm_64f);
+      case SRC2_T:
+        CHECK_DIM_T(src1,src2,dst);
+        dst.setBounds(src1.cols(),src1.rows());
+        return ipp_func_t_call_2(src2,src1,dst,ippmSub_tm_64f);
+      case BOTH_T:
+        CHECK_DIM(src1,src2,dst);
+        dst.setBounds(src1.rows(),src1.cols());
+        return ipp_func_t_call_2(src1,src2,dst,ippmSub_tt_64f);
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+
+
+  template<> DynMatrix<float> &matrix_mult_t(const DynMatrix<float> &src1, const DynMatrix<float> &src2, DynMatrix<float> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T:
+        CHECK_DIM_CR(src1,src2,dst);
+        dst.setBounds(src2.cols(),src1.rows());
+        return ipp_func_t_call(src1,src2,dst,ippmMul_mm_32f);
+      case SRC1_T:
+        CHECK_DIM_RR(src1,src2,dst);
+        dst.setBounds(src2.cols(),src1.cols());
+        return ipp_func_t_call(src1,src2,dst,ippmMul_tm_32f);
+      case SRC2_T:
+        CHECK_DIM_CC(src1,src2,dst);
+        dst.setBounds(src2.rows(),src1.rows());
+        return ipp_func_t_call(src1,src2,dst,ippmMul_mt_32f);
+      case BOTH_T:
+        CHECK_DIM_RC(src1,src2,dst);
+        dst.setBounds(src2.rows(),src1.cols());
+        return ipp_func_t_call(src1,src2,dst,ippmMul_tt_32f);
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+  template<> DynMatrix<double> &matrix_mult_t(const DynMatrix<double> &src1, const DynMatrix<double> &src2, DynMatrix<double> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T:
+        CHECK_DIM_CR(src1,src2,dst);
+        dst.setBounds(src2.cols(),src1.rows());
+        return ipp_func_t_call(src1,src2,dst,ippmMul_mm_64f);
+      case SRC1_T:
+        CHECK_DIM_RR(src1,src2,dst);
+        dst.setBounds(src2.cols(),src1.cols());
+        return ipp_func_t_call(src1,src2,dst,ippmMul_tm_64f);
+      case SRC2_T:
+        CHECK_DIM_CC(src1,src2,dst);
+        dst.setBounds(src2.rows(),src1.rows());
+        return ipp_func_t_call(src1,src2,dst,ippmMul_mt_64f);
+      case BOTH_T:
+        CHECK_DIM_RC(src1,src2,dst);
+        dst.setBounds(src2.rows(),src1.cols());
+        return ipp_func_t_call(src1,src2,dst,ippmMul_tt_64f);
       default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
     }
     return dst;
   }
 
 #endif
-  
-  template<> DynMatrix<double> &matrix_mult_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)  
+
+  template<> DynMatrix<double> &matrix_mult_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
     throw (IncompatibleMatrixDimensionException);
   template<> DynMatrix<float> &matrix_mult_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
     throw (IncompatibleMatrixDimensionException);
 
 
+  template<> DynMatrix<double> &matrix_add_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
+    throw (IncompatibleMatrixDimensionException);
+  template<> DynMatrix<float> &matrix_add_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
+    throw (IncompatibleMatrixDimensionException);
 
 
+  template<> DynMatrix<double> &matrix_sub_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
+    throw (IncompatibleMatrixDimensionException);
+  template<> DynMatrix<float> &matrix_sub_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
+    throw (IncompatibleMatrixDimensionException);
 
 
-
-
-
-
-
-
-
-#undef CHECK_DIM 
+// undefine macros
+#undef CHECK_DIM
+#undef CHECK_DIM_T
+#undef CHECK_DIM_CC
+#undef CHECK_DIM_CR
+#undef CHECK_DIM_RC
+#undef CHECK_DIM_RR
 
 }
 
