@@ -4,9 +4,10 @@
 #include <sstream>
 #include <fstream>
 #include <list>
+#include <string.h>
 
 namespace icl{
-
+# if 0
   static std::string get_next_tag(std::istream &is, std::ostringstream &rest){
     char c;
     do{ 
@@ -38,7 +39,47 @@ namespace icl{
         os << c;
       }
     }
-
+#else
+  static std::string get_next_tag(std::istream &is, std::ostringstream &rest){
+    char c;
+    do{ 
+      if(!is.good()) throw ParseException(__FUNCTION__,str(__LINE__),"(document structure not complete,"
+                                          " input stream ended while still tags open)");
+      c = is.get();
+      if(c != '<'){
+        rest << c; 
+      }
+    } while(c != '<');
+    
+    std::ostringstream os;
+    os << c;
+    
+    bool inAttribValue = false;
+    try{
+      do{ 
+        if(!is.good()) throw ParseException(__FUNCTION__,str(__LINE__),"(stream ended within a tag! already read this: '"+
+                                            os.str() + "')");
+        c = is.get(); 
+        os << c;  
+        if(os.str().size()==4 && os.str() == "<!--"){
+          throw 1;
+        }
+        if(c == '"'){
+          inAttribValue = !inAttribValue;
+        }
+      } while(inAttribValue || c != '>');
+    }catch(int){
+      // searching for the corresponding comment end "-->"
+      std::string cs = "!--"; // always the last 3
+      while(cs != "-->"){
+        if(!is.good()) throw ParseException(__FUNCTION__,str(__LINE__),"(stream ended within comment! already read this: '"+
+                                            os.str() + "')");
+        c = is.get();
+        cs = cs.substr(1)+c;
+        os << c;
+      }
+    }
+#endif
     
     
     return os.str();
@@ -83,15 +124,15 @@ namespace icl{
 
   
   SimpleNode::Type remove_tag_braces_and_get_type(std::string &tag_text){
-    if(front(tag_text) != '<') throw ParseException("Camera [CODE 1]"); 
-    if(back(tag_text) != '>') throw ParseException("Camera [CODE 2]"); 
-    if(tag_text.length() < 3) throw ParseException("Camera [CODE 3]");
+    if(front(tag_text) != '<') throw ParseException(__FUNCTION__,str(__LINE__),"(missing '<' at beginning of tag '" + tag_text + "')"); 
+    if(back(tag_text) != '>') throw ParseException(__FUNCTION__,str(__LINE__),"(missing '>' at end of tag '" + tag_text + "')"); 
+    if(tag_text.length() < 3) throw ParseException(__FUNCTION__,str(__LINE__),"(tag empty '<>')");
     tag_text = tag_text.substr(1,tag_text.length()-2);
     if(tag_text[0] == '/'){
       tag_text = tag_text.substr(1);
       return SimpleNode::CloseTag;
     }else if(tag_text[0] == '?'){
-      if(back(tag_text) != '?') throw ParseException("Camera [CODE 6]");
+      if(back(tag_text) != '?') throw ParseException(__FUNCTION__,str(__LINE__),"(xml description tag must end with '?>')");
       tag_text = tag_text.substr(1,tag_text.length()-2);
       return SimpleNode::XMLVersionTag;
     }
@@ -101,17 +142,17 @@ namespace icl{
     }
     else if(tag_text[0] == '!'){
       int len = (int)tag_text.length();
-      if(len < 5) throw ParseException("Camera [CODE 4]");
+      if(len < 5) throw ParseException(__FUNCTION__,str(__LINE__),"(error in comment node: syntax is '<!-- comment -->')");
       if(tag_text[1] != '-' || tag_text[2] != '-' ||
          tag_text[len-1] != '-' || tag_text[len-2] != '-'){
-        throw ParseException("Camera [CODE 5]");
+        throw ParseException(__FUNCTION__,str(__LINE__),"(error in comment node: syntax is '<!-- comment -->')");
       }
       tag_text = tag_text.substr(3,tag_text.length()-5);
       return SimpleNode::CommentTag;
     }
     return SimpleNode::OpenTag;
   }
-  
+#if 0  
   static std::string cut_quotes(const std::string &s){
     if(!s.size()) return "";
     bool f = s[0] == '"';
@@ -123,6 +164,7 @@ namespace icl{
     if (b) return s.substr(0,s.length()-1);
     return s;
   }
+
 
   static XMLAttMapPtr split_tag_name_and_attribs(const std::string &tag_text, std::string &tag_name){
     XMLAttMapPtr att = new std::map<std::string,std::string>;
@@ -141,7 +183,6 @@ namespace icl{
           continue;
         }
         std::string n;
-        DEBUG_LOG("n:#"<<n<<"#");
         is >> n;
         if(!n.size()){
           // no more tokens available (except some whitespaces)
@@ -163,7 +204,78 @@ namespace icl{
       throw ParseException(str("Camera [Code ")+ str(i) +"]");
     }
   }
+#else
+  
+  static inline bool is_letter(char c){
+    return isalnum(c);
+  }
+  
+  static inline bool is_whitespace(char c){
+    return isspace(c);
+  }
 
+  
+  
+
+  
+  static XMLAttMapPtr split_tag_name_and_attribs(const std::string &tag_text, std::string &tag_name){
+    XMLAttMapPtr att = new std::map<std::string,std::string>;
+
+    std::istringstream is(tag_text);
+    //#define XXX std::cout << "["<<c << "]int(" << (int)c << "){"<< __LINE__ <<"}"<< std::endl;
+#define XXX
+    is >> tag_name;
+    try{
+      while(true){
+        char c = is.get();
+        XXX;
+        if(c == -1) return att;
+        while(is_whitespace(c)){
+          c = is.get();
+          XXX;
+          if(c == -1) return att;
+        }
+        if(c=='=') throw int(__LINE__);
+        std::string attrib;
+        while(is_letter(c) && c != '='){
+          attrib += c;
+          c = is.get();
+          XXX;
+          if(c == -1) throw int(__LINE__);
+        }
+        
+        while(c != '='){
+          c = is.get();
+          XXX;
+          if(c == -1) throw int(__LINE__);
+          if(c != '=' && !is_whitespace(c)){
+            throw int(__LINE__);
+          }
+        }
+        
+        while(c != '"'){
+          c = is.get();
+          XXX;
+          if(c == -1) throw int(__LINE__);
+          if(!is_whitespace(c) && (c != '"')) throw int(__LINE__);
+        }
+        std::string value;
+        bool first = true;
+        while(first || c != '"'){
+          first = false;
+          c = is.get();
+          XXX;
+          if(c == -1) throw int(__LINE__);
+          if(c != '"') value += c;
+        }
+        (*att.get())[attrib] = value;
+      }
+    }catch(int line){
+      throw ParseException(__FUNCTION__,str(line),"(tag-text:" + tag_text + ")");
+    }
+  }
+
+#endif
   static void add_intermediate_node(std::list<SimpleNode> &L,std::string tag_text, SimpleNode::Type t){
     switch(t){
       case SimpleNode::CommentTag:

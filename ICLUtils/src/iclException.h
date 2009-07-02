@@ -93,6 +93,8 @@ namespace icl {
     public:
     ParseException(const std::string &whatToParse) throw():
       ICLException(std::string("unable to parse: ")+whatToParse) {}
+    ParseException(const std::string &function, const std::string &line, const std::string &hint="") throw():
+      ICLException("Parsing error in: "+function+" line:"+line + hint){}
     virtual ~ParseException() throw() {}
   };
   

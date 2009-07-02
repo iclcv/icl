@@ -12,7 +12,8 @@ icl-dyn-matrix-test \
 icl-dyn-matrix-utils-test \
 icl-fixed-matrix-test \
 icl-matrix-stream-operator-test \
-icl-regular-expression-test
+icl-regular-expression-test \
+icl-xml-parser-test
 
 # explicit sources, ldflags and cxxflags
 icl_progargdemo_SOURCES=../examples/progargdemo.cpp
@@ -38,4 +39,8 @@ icl_fixed_matrix_test_CXXFLAGS=${XCXXFLAGS}
 icl_matrix_stream_operator_test_SOURCES=../examples/matrix-stream-operator-test.cpp
 icl_matrix_stream_operator_test_LDFLAGS=${XLDFLAGS}
 icl_matrix_stream_operator_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_xml_parser_test_SOURCES=../examples/xml-parser-test.cpp
+icl_xml_parser_test_LDFLAGS=${XLDFLAGS}
+icl_xml_parser_test_CXXFLAGS=${XCXXFLAGS}
 
