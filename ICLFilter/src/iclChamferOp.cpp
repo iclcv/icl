@@ -525,7 +525,8 @@ namespace icl{
                                                      const std::vector<Point> &model, 
                                                      const Size &modelImageSize,
                                                      const Rect &modelImageROI,
-                                                     ImgBase **bufferImage, 
+                                                     ImgBase **bufferImageA, 
+                                                     ImgBase **bufferImageB, 
                                                      ChamferOp::hausdorffMetric m,
                                                      ChamferOp::outerROIPenaltyMode pm,
                                                      icl32s penaltyValue,
@@ -533,15 +534,16 @@ namespace icl{
     // {{{ open
     ICLASSERT_RETURN_VAL(chamferImage,-1);
     ICLASSERT_RETURN_VAL(chamferImage->getChannels() == 1,-1);
-    ICLASSERT_RETURN_VAL(bufferImage,-1);
+    ICLASSERT_RETURN_VAL(bufferImageA,-1);
+    ICLASSERT_RETURN_VAL(bufferImageB,-1);
     
     double hd1 = computeDirectedHausdorffDistance(chamferImage, model,m,pm,penaltyValue);
 
-    renderModel(model,bufferImage, modelImageSize, 0, 255, modelImageROI);
+    renderModel(model,bufferImageA, modelImageSize, 0, 255, modelImageROI);
 
-    co.apply(*bufferImage,bufferImage);
+    co.apply(*bufferImageA,bufferImageB);
     
-    double hd2 = computeDirectedHausdorffDistance((*bufferImage)->asImg<icl32s>(),chamferImage,m,pm,penaltyValue);
+    double hd2 = computeDirectedHausdorffDistance((*bufferImageB)->asImg<icl32s>(),chamferImage,m,pm,penaltyValue);
     
     return m == hausdorff_mean ? (hd1+hd2)/2 : iclMax(hd1,hd2);
     
