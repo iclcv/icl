@@ -8,15 +8,16 @@ namespace icl{
   /// Base class for GUIHandles providing functions to register callbacks \ingroup UNCOMMON
   class GUIHandleBase{
 
-    
     protected:
     /// create a new GUIHandleBase
     GUIHandleBase(GUIWidget *w=0):m_poGUIWidget(w){}
+
     public:
 
     /** \cond */
     friend class icl::GUI;
     friend class icl::DataStore;
+    friend class icl::MultiTypeMap;
     /** \endcond */
     
     /// returns parent GUIWidget pointer

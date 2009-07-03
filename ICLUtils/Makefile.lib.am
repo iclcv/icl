@@ -22,6 +22,7 @@ libICLUtils_la_SOURCES= \
 ../src/iclDynMatrixUtils.cpp \
 ../src/iclStochasticOptimizer.cpp \
 ../src/iclStringUtils.cpp \
+../src/iclMultiTypeMap.cpp \
 ../src/iclXMLAttribRef.cpp \
 ../src/iclXML.cpp \
 ../src/iclXMLNodeFilter.cpp \
@@ -68,6 +69,7 @@ include_HEADERS= \
 ../src/iclMatrixSubRectIterator.h \
 ../src/iclStochasticOptimizer.h \
 ../src/iclStringUtils.h \
+../src/iclMultiTypeMap.h \
 ../src/iclXMLAttribRef.h \
 ../src/iclXML.h \
 ../src/iclXMLNodeFilter.h \
@@ -76,4 +78,5 @@ include_HEADERS= \
 ../src/iclXMLNodeConstIterator.h \
 ../src/iclXMLNode.h \
 ../src/iclXMLNodeIterator.h
+
 

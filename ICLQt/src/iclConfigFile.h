@@ -334,7 +334,7 @@ namespace icl{
     DataStore::getEntryList;
 
     /// this function is imported from the parent DataStore class
-    DataStore::show;
+    DataStore::listContents;
 
     /// this function is imported from the parent DataStore class
     DataStore::contains;
@@ -381,8 +381,6 @@ namespace icl{
     /** This feature is only used by the config file GUI */
     const KeyRestriction *getRestriction(const std::string &id) const;
 
-    /// import listContents function for protected parent DataStore
-    DataStore::listContents;
     private:
 
 

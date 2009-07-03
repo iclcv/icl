@@ -464,4 +464,11 @@ namespace icl{
       throw DataStore::UnassignableTypesException(srcType,dstType);
     }
   }
+
+
+  DataStore::Data DataStore::operator[](const std::string &key) throw (KeyNotFoundException){
+    DataMap::iterator it = m_oDataMapPtr->find(key);
+    if(it == m_oDataMapPtr->end()) throw KeyNotFoundException(key);
+    return Data(&it->second);
+  }
 }

@@ -82,7 +82,7 @@ int main(int n, char **ppc){
   
   if(pa_defined("-i")){
     ConfigFile config(pa_subarg<string>("-i",0,""));
-    config.show();
+    config.listContents();
 
     string configFileModel = config.get<string>("config.camera.modelID");
     string configFileVendor = config.get<string>("config.camera.vendorID");
