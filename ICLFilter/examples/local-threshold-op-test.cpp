@@ -66,9 +66,9 @@ void save(){
                                         ,QLineEdit::Normal,"local-threshold-params.xml",&ok);
   if(ok){  
     ConfigFile f;
-    f.add("config.masksize",masksize);
-    f.add("config.threshold",thresh);
-    f.add("config.gammaslope",gamma);
+    f.set("config.masksize",masksize);
+    f.set("config.threshold",thresh);
+    f.set("config.gammaslope",gamma);
     f.save(qname.toLatin1().data());
   }
 }

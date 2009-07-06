@@ -1,7 +1,10 @@
 #ifndef RANGE_H
 #define RANGE_H
 
-#include "iclCore.h"
+#include <iclBasicTypes.h>
+#include <iclClippedCast.h>
+#include <iclMacros.h>
+
 #include <algorithm>
 #include <limits>
 #include <iostream>

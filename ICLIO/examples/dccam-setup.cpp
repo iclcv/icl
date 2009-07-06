@@ -61,9 +61,9 @@ int main(int n, char **ppc){
   
   if(pa_defined("-o")){
     ConfigFile config;
-    config.setTitle("Camera Configuration File");
-    config.add("config.camera.modelID",dev.getModelID());    
-    config.add("config.camera.vendorID",dev.getVendorID());
+    config["config.title"] = std::string("Camera Configuration File");
+    config.set("config.camera.modelID",dev.getModelID());    
+    config.set("config.camera.vendorID",dev.getVendorID());
     
     DCGrabber g(dev);
     std::vector<string> ps = remove_size(g.getPropertyList());
@@ -72,9 +72,9 @@ int main(int n, char **ppc){
       string &prop = ps[i];
       string type = g.getType(prop); 
       if(type == "range" || type == "value-list"){
-        config.add(prefix+prop,to32f(g.getValue(prop)));
+        config.set(prefix+prop,to32f(g.getValue(prop)));
       }else if(type == "menu"){
-        config.add(prefix+prop,g.getValue(prop));
+        config.set(prefix+prop,g.getValue(prop));
       }
     }
     config.save(pa_subarg<std::string>("-o",0,""));

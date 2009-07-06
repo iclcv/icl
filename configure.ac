@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([ICL],[4.3.3],[celbrech@techfak.uni-bielefeld.de])
+AC_INIT([ICL],[4.4.0],[celbrech@techfak.uni-bielefeld.de])
 #AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AM_INIT_AUTOMAKE([foreign])
 

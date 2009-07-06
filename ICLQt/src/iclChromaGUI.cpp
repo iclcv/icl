@@ -139,17 +139,17 @@ namespace icl{
       ChromaClassifierIO::save(carc,filename);
       
       // now reopen that file and add gui-informamtion
-      ConfigFile f(filename);
+      ConfigFile f;
       static std::string x[6] = {"xpos","ypos","dim","red","green","blue"};
       for(int i=0;i<6;i++){
         const Dragger &d = D[i];
         float fs[6] = { d.pos().x, d.pos().y,d.dim(), d.col().r, d.col().g, d.col().b }; 
         for(int j=0;j<6;++j){
-          f.add(std::string("config.gui-info.dragger-")+str(i)+"."+x[j],fs[j]);
+          f.set(std::string("config.gui-info.dragger-")+str(i)+"."+x[j],fs[j]);
         }
       }
-      f.add("config.gui-info.blue-slider-value",other[6]);
-      f.save();
+      f.set("config.gui-info.blue-slider-value",other[6]);
+      f.save(filename);
 
       /*
       QFile file(filename.c_str());

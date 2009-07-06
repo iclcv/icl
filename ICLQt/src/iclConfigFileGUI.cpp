@@ -16,27 +16,23 @@
 #include <QFileDialog>
 #include <QComboBox>
 
+
+#include <iclPoint.h>
+#include <iclPoint32f.h>
+
+#include <iclSize.h>
+#include <iclSize32f.h>
+
+#include <iclRange.h>
+
+#include <iclRect.h>
+
 using std::string;
 
 namespace icl{
 
-  static const QString &get_entry_type(const DataStore::Entry &e){
-    static std::map<std::string,QString> tt;
-    if(!tt.size()){
-#define E(T) tt[DataStore::get_type_name<T>().c_str()] = #T
-      E(char);E(unsigned char);E(short);E(unsigned short);E(int);
-      E(unsigned int);E(float);E(double);E(string);E(Size);
-      E(Point);E(Rect);E(Range32s);E(Range32f);E(bool);
-#undef E
-      
-    }
-    std::map<std::string,QString>::const_iterator it = tt.find(e.type);
-    if(it != tt.end()){
-      return it->second;
-    }else{
-      static QString def = "unsupported";
-      return def;
-    }
+  static QString get_entry_type(const ConfigFile::Entry &e){
+    return e.getTypeName().c_str();
   }
 
   
@@ -46,30 +42,9 @@ namespace icl{
     return "---";
   }
 
-  template<class T>
-  QString entry_to_string_templ(const std::string &key,const ConfigFile &cfg){
-    const T &v = cfg.try_get<T>(key);
-    return str(v).c_str();
-  }
   
-  static QString get_entry_text(const DataStore::Entry &e, const ConfigFile &cfg){
-    static std::map<QString,entry_to_string_func> et;
-    if(!et.size()){
-#define E(T) et[#T] = entry_to_string_templ<T>;
-      E(char);E(unsigned char);E(short);E(unsigned short);E(int);
-      E(unsigned int);E(float);E(double);E(string);E(Size);
-      E(Point);E(Rect);E(Range32s);E(Range32f);E(bool);
-#undef E
-      et["unsupported"] = entry_to_string_no_op;
-    }
-
-    QString type = get_entry_type(e);
-    std::map<QString,entry_to_string_func>::iterator it = et.find(type);
-    if(it != et.end()){
-      return it->second(e.key,cfg);
-    }else{
-      return "---";
-    }
+  static QString get_entry_text(const ConfigFile::Entry &e){
+    return e.value.c_str();
   }
 
 
@@ -86,37 +61,9 @@ namespace icl{
     return 0;
   }
 
-  void ConfigFileGUI::save(){
-    QString fn = m_config->getFileName().c_str();
-    if(QFile(fn+".bak").exists()){
-      QFile(fn+".bak").remove();
-    }
-    if(QFile(fn).exists()){
-      bool renamed = QFile(fn).rename(fn+".bak");
-      if(!renamed){
-        ERROR_LOG("unable to rename existing file! [File not saved!]");
-        return;
-      }
-    }
-    m_config->save();
-  }
   void ConfigFileGUI::saveAs(){
-    QString fn = m_config->getFileName().c_str();
     QString fnNew = QFileDialog::getSaveFileName(m_tree,"save...","./","XML-Files (*.xml)");
-    
     if(fnNew == "") return;
-    if(fn == fnNew){
-      if(QFile(fn+".bak").exists()){
-        QFile(fn+".bak").remove();
-      }
-      if(QFile(fn).exists()){
-        bool renamed = QFile(fn).rename(fn+".bak");
-        if(!renamed){
-          ERROR_LOG("unable to rename existing file! [File not saved!]");
-          return;
-        }
-      }
-    }
     m_config->save(fnNew.toLatin1().data());
   }
 
@@ -131,12 +78,6 @@ namespace icl{
     }
   }
 
-  void ConfigFileGUI::reload(){
-    m_config->load();
-    loadConfig(*m_config);
-  }
-
-  
   ConfigFileGUI::~ConfigFileGUI(){
     delete m_tree;
   }
@@ -145,33 +86,33 @@ namespace icl{
   }
   
   ConfigFileGUI::ConfigFileGUI(const ConfigFile &config, QWidget *parent) throw(ICLException):
-    GUI("hsplit[@handle=parent]",parent),m_own(false),m_tree(new QTreeWidget){
+    GUI("vbox[@handle=parent]",parent),m_own(false),m_tree(new QTreeWidget){
     
     m_tree->setColumnCount(3);
     loadConfig(config);
     
-    (*this) << str("vbox[@handle=left@label=config:")+config.get<std::string>("config.title","no title")+"]";
-    GUI buttons("vbox[@handle=right@label=controls]");
-    buttons << "button(collapse all)[@handle=collapse]";
-    buttons << "button(expand all)[@handle=expand]";
-    buttons << "button(save)[@handle=save]";
-    buttons << "button(save as ...)[@handle=save-as]";
-    buttons << "button(load ...)[@handle=load]";
-    buttons << "button(reload)[@handle=reload]";
+
+    GUI buttons("hbox[@handle=right@maxsize=1000x2]");
+    buttons << "button(collapse)[@handle=collapse]";
+    buttons << "button(expand)[@handle=expand]";
+    buttons << "button(save)[@handle=save-as]";
+    buttons << "button(load)[@handle=load]";
     buttons << "button(update)[@handle=update]";
 
     (*this) << buttons;
+    (*this) << str("vbox[@handle=left@label=config:")+config.get<std::string>("config.title","no title")+"]";
+    
     this->create();
     
     connect(*getValue<ButtonHandle>("collapse"),SIGNAL(clicked()),m_tree,SLOT(collapseAll()));
     connect(*getValue<ButtonHandle>("expand"),SIGNAL(clicked()),m_tree,SLOT(expandAll()));
-    connect(*getValue<ButtonHandle>("save"),SIGNAL(clicked()),this,SLOT(save()));
+    //connect(*getValue<ButtonHandle>("save"),SIGNAL(clicked()),this,SLOT(save()));
     connect(*getValue<ButtonHandle>("save-as"),SIGNAL(clicked()),this,SLOT(saveAs()));
     connect(*getValue<ButtonHandle>("load"),SIGNAL(clicked()),this,SLOT(load()));
-    connect(*getValue<ButtonHandle>("reload"),SIGNAL(clicked()),this,SLOT(reload()));
+    //connect(*getValue<ButtonHandle>("reload"),SIGNAL(clicked()),this,SLOT(reload()));
     connect(*getValue<ButtonHandle>("update"),SIGNAL(clicked()),this,SLOT(updateTree()));
     
-    (*getValue<SplitterHandle>("parent"))->resize(500,500);
+    (*getValue<BoxHandle>("parent"))->resize(500,500);
 
     getValue<BoxHandle>("left").add(m_tree);
     connect(m_tree,SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),
@@ -198,7 +139,7 @@ namespace icl{
   }
 
   QWidget *ConfigFileGUI::getWidget(){
-    return *getValue<SplitterHandle>("parent");
+    return *getValue<BoxHandle>("parent");
   }
 
   void ConfigFileGUI::loadConfig(const ConfigFile &config){
@@ -210,11 +151,11 @@ namespace icl{
     m_tree->setHeaderLabels (header);
     root->setText(0,"config");
     m_tree->insertTopLevelItem(0,root);
-    std::vector<DataStore::Entry> es = config.getEntryList();
+    const std::vector<const ConfigFile::Entry*> es = config.getEntryList();
     for(unsigned int i=0;i<es.size();++i){
-      if(es[i].key == "config.config.title") continue; // some error here -> todo fix in config file
-      if(es[i].key == "config.title") continue; // some error here -> todo fix in config file
-      const std::vector<std::string> tk = tok(es[i].key,".");
+      if(es[i]->id == "config.config.title") continue; // some error here -> todo fix in config file
+      if(es[i]->id == "config.title") continue; // some error here -> todo fix in config file
+      const std::vector<std::string> tk = tok(es[i]->id,".");
       ICLASSERT_RETURN(tk.front() == "config");
       QTreeWidgetItem *item = root;
       for(unsigned int j=1;j<tk.size();++j){
@@ -223,7 +164,7 @@ namespace icl{
           if(j<tk.size()-1){
             item = c;
           }else{
-            throw ICLException(str("entry found twice: ")+es[i].key);
+            throw ICLException(str("entry found twice: ")+es[i]->id);
           }
         }else{
           if(j<tk.size()-1){
@@ -233,8 +174,8 @@ namespace icl{
             item = n;
           }else{
             QTreeWidgetItem *n = new QTreeWidgetItem(item);
-            QString t = get_entry_type(es[i]);
-            QString e = get_entry_text(es[i],config);
+            QString t = get_entry_type(*es[i]);
+            QString e = get_entry_text(*es[i]);
             n->setForeground(0,QColor(60,150,255));
             n->setText(0,tk[j].c_str());
             n->setText(1,e);
@@ -243,7 +184,7 @@ namespace icl{
 #define YES_USE_SLIDERS_PLEASE
 #ifdef YES_USE_SLIDERS_PLEASE
             if(t == "string"){
-              const ConfigFile::KeyRestriction *restriction = config.getRestriction(es[i].key);
+              const ConfigFile::KeyRestriction *restriction = es[i]->restr.get();
               if(restriction && restriction->hasValues){
                 const std::string &values = restriction->values;
                 std::string p = str("[@minsize=3x1@out=v@handle=h]");
@@ -259,10 +200,10 @@ namespace icl{
                 if(idx!=-1){
                   (*ch)->setCurrentIndex(idx);
                 }else{
-                  ERROR_LOG("Entry: " << es[i].key << ":\nValue list does not contain initial value");
+                  ERROR_LOG("Entry: " << es[i]->id << ":\nValue list does not contain initial value");
                 }
                 
-                m_guis.back().id = es[i].key;
+                m_guis.back().id = es[i]->id;
                 m_guis.back().type = t.toLatin1().data();
                 m_guis.back().item = n;
                 m_tree->setItemWidget(n,1,*gui.getValue<ComboHandle>("h"));
@@ -278,30 +219,30 @@ namespace icl{
               gui = GUI("togglebutton("+fa+","+tr+")[@handle=b@out=v@minsize=5x1]");
               gui.create();
               gui.getValue<ButtonHandle>("b").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
-              m_guis.back().id = es[i].key;
+              m_guis.back().id = es[i]->id;
               m_guis.back().type = t.toLatin1().data();
               m_guis.back().item = n;
               m_tree->setItemWidget(n,1,*gui.getValue<ButtonHandle>("b"));
               n->setText(1,"");
             }else if(t == "float" || t == "int"){
-              const ConfigFile::KeyRestriction *restriction = config.getRestriction(es[i].key);
+              const ConfigFile::KeyRestriction *restriction = es[i]->restr.get();
               if(restriction && restriction->hasRange){
-                const Range64f *r = &restriction->range;
+                const Range64f r(restriction->min,restriction->max);
                 std::string p = str("[@minsize=5x1@out=v@handle=h]");
                 m_guis.push_back(NamedGUI());
                 GUI &gui = m_guis.back().gui;
                 gui = GUI("hbox[@handle=b]");
                 std::string el = e.toLatin1().data();
                 bool ok = true;
-                if(!r->contains(to64f(el))){
-                  ERROR_LOG("Entry: " << es[i].key << ":\nInitial value is out of given range");
+                if(!r.contains(to64f(el))){
+                  ERROR_LOG("Entry: " << es[i]->id << ":\nInitial value is out of given range");
                 }
                 if(t == "float"){
-                  gui << str("fslider(")+str(r->minVal)+','+str(r->maxVal)+','+el+')'+p;
+                  gui << str("fslider(")+str(r.minVal)+','+str(r.maxVal)+','+el+')'+p;
                   gui.create();
                   gui.getValue<FSliderHandle>("h").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
                 }else if (t == "int"){
-                  gui << str("slider(")+str((int)r->minVal)+','+str((int)r->maxVal)+','+el+')'+p;
+                  gui << str("slider(")+str((int)r.minVal)+','+str((int)r.maxVal)+','+el+')'+p;
                   gui.create();
                   gui.getValue<SliderHandle>("h").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
                 }else{
@@ -310,7 +251,7 @@ namespace icl{
                 
                 if(ok){
 
-                  m_guis.back().id = es[i].key;
+                  m_guis.back().id = es[i]->id;
                   m_guis.back().type = t.toLatin1().data();
                   m_guis.back().item = n;
                   m_tree->setItemWidget(n,1,*gui.getValue<BoxHandle>("b"));

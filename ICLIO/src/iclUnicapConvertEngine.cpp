@@ -1,6 +1,7 @@
 #include <iclUnicapConvertEngine.h>
 #include <iclUnicapFormat.h>
 #include <iclUnicapDevice.h>
+#include <iclCore.h>
 
 namespace icl{
 

@@ -20,21 +20,21 @@ namespace icl{
     const char cs[] = "abc";
     for(int p=0;p<2;++p){
       for(int c=0;c<3;++c){
-        f.add(std::string("config.")+name+".parable-"+str(p)+"."+cs[c],auxget(cc.parables[p],c));
+        f.set(std::string("config.")+name+".parable-"+str(p)+"."+cs[c],auxget(cc.parables[p],c));
       }
     }
     f.save(filename);
   }
   void ChromaClassifierIO::save(const ChromaAndRGBClassifier &carc,const std::string &filename){
     save(carc.c,filename,std::string("chroma-and-rgb-classifier"));
-    ConfigFile f(filename);
-    f.add("config.chroma-and-rgb-classifier.ref-color.red",carc.ref[0]);
-    f.add("config.chroma-and-rgb-classifier.ref-color.green",carc.ref[1]);
-    f.add("config.chroma-and-rgb-classifier.ref-color.blue",carc.ref[2]);
-    f.add("config.chroma-and-rgb-classifier.threshold.red",carc.thresh[0]);
-    f.add("config.chroma-and-rgb-classifier.threshold.green",carc.thresh[1]);
-    f.add("config.chroma-and-rgb-classifier.threshold.blue",carc.thresh[2]);
-    f.save();
+    ConfigFile f;
+    f.set("config.chroma-and-rgb-classifier.ref-color.red",carc.ref[0]);
+    f.set("config.chroma-and-rgb-classifier.ref-color.green",carc.ref[1]);
+    f.set("config.chroma-and-rgb-classifier.ref-color.blue",carc.ref[2]);
+    f.set("config.chroma-and-rgb-classifier.threshold.red",carc.thresh[0]);
+    f.set("config.chroma-and-rgb-classifier.threshold.green",carc.thresh[1]);
+    f.set("config.chroma-and-rgb-classifier.threshold.blue",carc.thresh[2]);
+    f.save(filename);
   }
   ChromaClassifier ChromaClassifierIO::load(const std::string &filename, const std::string &name){
     ConfigFile f(filename);

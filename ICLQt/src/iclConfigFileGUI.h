@@ -61,10 +61,8 @@ namespace icl{
     
     private slots:
     void itemDoubleClicked(QTreeWidgetItem *item, int column);
-    void save();
     void saveAs();
     void load();
-    void reload();
     void updateTree();
     
     private:

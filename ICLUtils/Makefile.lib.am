@@ -3,6 +3,13 @@ lib_LTLIBRARIES=libICLUtils.la
 
 libICLUtils_la_SOURCES= \
 ../src/iclDynMatrix.cpp \
+../src/iclPoint32f.cpp \
+../src/iclPoint.cpp \
+../src/iclRange.cpp \
+../src/iclRect32f.cpp \
+../src/iclRect.cpp \
+../src/iclSize32f.cpp \
+../src/iclSize.cpp \
 ../src/iclException.cpp \
 ../src/iclFixedMatrix.cpp \
 ../src/iclMultiThreader.cpp \
@@ -23,6 +30,7 @@ libICLUtils_la_SOURCES= \
 ../src/iclStochasticOptimizer.cpp \
 ../src/iclStringUtils.cpp \
 ../src/iclMultiTypeMap.cpp \
+../src/iclConfigFile.cpp \
 ../src/iclXMLAttribRef.cpp \
 ../src/iclXML.cpp \
 ../src/iclXMLNodeFilter.cpp \
@@ -34,6 +42,14 @@ libICLUtils_la_SOURCES= \
 include_HEADERS= \
 ../src/config.h \
 ../src/iclBasicTypes.h \
+../src/iclPoint32f.h \
+../src/iclPoint.h \
+../src/iclRange.h \
+../src/iclRect32f.h \
+../src/iclRect.h \
+../src/iclSize32f.h \
+../src/iclSize.h \
+../src/iclSteppingRange.h \
 ../src/iclClippedCast.h \
 ../src/iclCompatMacros.h \
 ../src/iclDynMatrix.h \
@@ -70,6 +86,7 @@ include_HEADERS= \
 ../src/iclStochasticOptimizer.h \
 ../src/iclStringUtils.h \
 ../src/iclMultiTypeMap.h \
+../src/iclConfigFile.h \
 ../src/iclXMLAttribRef.h \
 ../src/iclXML.h \
 ../src/iclXMLNodeFilter.h \

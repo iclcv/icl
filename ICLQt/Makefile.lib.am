@@ -29,7 +29,6 @@ ${MOC_FILES} \
 ../src/iclChromaClassifierIO.cpp \
 ../src/iclComboHandle.cpp \
 ../src/iclCompabilityLabel.cpp \
-../src/iclConfigFile.cpp \
 ../src/iclDoubleSlider.cpp \
 ../src/iclDragger.cpp \
 ../src/iclDrawHandle3D.cpp \
@@ -79,7 +78,6 @@ include_HEADERS= \
 ../src/iclChromaClassifierIO.h \
 ../src/iclComboHandle.h \
 ../src/iclCompabilityLabel.h \
-../src/iclConfigFile.h \
 ../src/iclDataStore.h \
 ../src/iclDispHandle.h \
 ../src/iclDoubleSlider.h \

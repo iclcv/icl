@@ -7,8 +7,8 @@ GenericGrabber *grabber = 0;
 
 void init(){
   ConfigFile cfg;
-  cfg.add("config.threshold",int(3));
-  cfg.setRestriction("config.threshold",Range64f(0,255));
+  cfg.set("config.threshold",int(3));
+  cfg.setRestriction("config.threshold",ConfigFile::KeyRestriction(0,255));
   ConfigFile::loadConfig(cfg);
 
 

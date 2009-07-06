@@ -813,12 +813,12 @@ void run(){
     //    scene.getCamera(CALIB_CAM).show("current camera");
     const Camera &c = scene.getCamera(CALIB_CAM);
     ConfigFile f;
-    f.add("config.title",str("extracted camera ") +Time::now().toString());
-    f.add("config.camera.pos",str(c.getPos().transp()));
-    f.add("config.camera.norm",str(c.getNorm().transp()));
-    f.add("config.camera.up",str(c.getUp().transp()));
-    f.add("config.camera.f",c.getFocalLength());
-    f.add("config.camera.size",str(c.getViewPort().getSize()));
+    f.set("config.title",str("extracted camera ") +Time::now().toString());
+    f.set("config.camera.pos",str(c.getPos().transp()));
+    f.set("config.camera.norm",str(c.getNorm().transp()));
+    f.set("config.camera.up",str(c.getUp().transp()));
+    f.set("config.camera.f",c.getFocalLength());
+    f.set("config.camera.size",str(c.getViewPort().getSize()));
     
     std::string filename = pa_subarg<std::string>("-o",0,"extracted-cam-cfg.xml");
     std::cout << "new config file: (written to " <<  filename << ")" << std::endl;

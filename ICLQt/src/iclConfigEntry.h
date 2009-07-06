@@ -12,11 +12,8 @@ namespace icl{
   struct ConfigEntry{
     
     /// Create an empty default Entry referencing a default constructed T
-    inline ConfigEntry():m_def(T()),m_entry(&m_def),m_config(0){}
+    inline ConfigEntry():m_def(T()),m_key(&m_def),m_config(0){}
     
-    inline ConfigEntry(const ConfigEntry &other){
-      *this = other;
-    }
     /// Creates a new ConfigEntry instance
     /** @param key reference key
         @param default value that should be used if key is not found 
@@ -24,61 +21,34 @@ namespace icl{
                its parent config file remains allocated */
     inline ConfigEntry(const std::string &key,
                        const T &def=T(),
-                       const ConfigFile &cfg=ConfigFile::getConfig()){
+                       const ConfigFile &cfg=ConfigFile::getConfig()) throw (ConfigFile::InvalidTypeException){
       
       m_config = const_cast<ConfigFile*>(&cfg);
       m_config->lock();
       if(cfg.contains(key)){
-        if(cfg.checkType<T>(key)){
-          m_entry = &cfg.try_get<T>(key);
-        }else{
-          ERROR_LOG("type missmatch: Entry \"" << key << "\" (using default)");
-          m_def = def;
-          m_entry = &m_def;
-        }
+        T test = cfg[key]; // this causes an InvalidTypeException
+        (void) test;
+        m_key = key;
       }else{
         m_def = def;
-        m_entry = &m_def;
-#ifdef WARN_IF_CONFIG_ENTRY_NOT_FOUND
-        ERROR_LOG("config entry \"" << key << "\" was not found! using default value " << (T)(*this));
-#endif
-
       }
       m_config->unlock();
     }
     
-    /// default copy operator
-    /** If the default value is used, this function ensured, that the default
-        value is copied, but the left values reference pointer is not copied,
-        but setup to reference it's own default value
-    */
-    ConfigEntry &operator=(const ConfigEntry &other){
-      m_config = other.m_config;
-      m_def = other.m_def;
-      if(other.m_entry == &other.m_def){
-        m_entry = &m_def;
-      }else{
-        m_def = other.m_def;
-        m_entry = other.m_entry;
-      }
-      return *this;
-    }
 
     /// returns reference value
     operator T() const{
       ICLASSERT_RETURN_VAL(m_config,T());
-      m_config->lock();
-      T v = *m_entry;
-      m_config->unlock();
-      return v;
+      Mutex::Locker l(*m_config);
+      return m_key.size() ? (*m_config)[m_key] : m_def;
     }
     void debug_show(const std::string &key="any name"){
       DEBUG_LOG("config_entry: " << key);
-      DEBUG_LOG("def= " << m_def << "  entry_ptr = " << m_entry << "  entry_val=" << *m_entry << "  config_ptr=" << m_config);
+      DEBUG_LOG("def= " << m_def << "  entry_ptr = " << m_key << "  entry_val=" << (T)(*this) << "  config_ptr=" << m_config);
     }
   private:
     T m_def;
-    const T *m_entry;
+    std::string m_key;
     ConfigFile *m_config;
   };
   

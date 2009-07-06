@@ -10,13 +10,6 @@ libICLCore_la_SOURCES= \
 ../src/iclLine32f.cpp \
 ../src/iclLine.cpp \
 ../src/iclMathematics.cpp \
-../src/iclPoint32f.cpp \
-../src/iclPoint.cpp \
-../src/iclRange.cpp \
-../src/iclRect32f.cpp \
-../src/iclRect.cpp \
-../src/iclSize32f.cpp \
-../src/iclSize.cpp \
 ../src/iclRandom.cpp \
 ../src/iclCornerDetectorCSS.cpp
 
@@ -31,14 +24,6 @@ include_HEADERS= \
 ../src/iclLine32f.h \
 ../src/iclLine.h \
 ../src/iclMathematics.h \
-../src/iclPoint32f.h \
-../src/iclPoint.h \
-../src/iclRange.h \
-../src/iclRect32f.h \
-../src/iclRect.h \
-../src/iclSize32f.h \
-../src/iclSize.h \
-../src/iclSteppingRange.h \
 ../src/iclTypes.h \
 ../src/iclRandom.h \
 ../src/iclPixelRef.h \

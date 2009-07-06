@@ -28,7 +28,9 @@ namespace icl {
   class InvalidFileFormatException : public ICLException {
   public:
     InvalidFileFormatException () throw() : 
-       ICLException (std::string("invalid file format")) {}
+       ICLException ("invalid file format") {}
+       InvalidFileFormatException (const std::string &hint) throw() : 
+       ICLException ("invalid file format :(" + hint + ")") {}
     virtual ~InvalidFileFormatException() throw() {}
   };
 

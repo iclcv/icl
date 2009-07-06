@@ -6,7 +6,7 @@
 #include <string>
 #include <iclSmartPtr.h>
 #include <iclRange.h>
- 
+
 
 namespace icl{
   /// Wrapper class for the unicap_propterty_t struct \ingroup UNICAP_G
