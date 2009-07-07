@@ -77,18 +77,14 @@ namespace icl{
     /** this function must be called by each special component
         when registered callbacks should be executed
     */
-    void cb(){
-      for(unsigned int i=0;i<m_vecCallbacks.size();++i){
-        m_vecCallbacks[i]->exec();
-      }
-    }
+    void cb();
     
     private:
     /// initial layout managers
     QGridLayout *m_poGridLayout;
     QLayout *m_poOtherLayout;
     GUI *m_poGUI;
-
+    std::string *m_handle;
     std::vector<GUI::CallbackPtr> m_vecCallbacks;
   };
 }

@@ -20,7 +20,7 @@ namespace icl{
                        int ensureNumInputs,
                        int ensureNumOutputs,
                        int ensureNumParams,
-                       const Size &defMinSize){
+                       const Size &defMinSize):m_handle(0){
     if(ensureNumInputs > 0 && (int)def.numInputs() != ensureNumInputs){
       throw GUISyntaxErrorException(def.defString(),(QString("input count must be ")+QString::number(ensureNumInputs)+" here").toLatin1().data());
     } 
@@ -81,9 +81,13 @@ namespace icl{
     m_poGUI = def.getGUI();
 
     setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
+    
+    if(def.handle() != "") m_handle = new std::string(def.handle());
   }
 
-  GUIWidget::~GUIWidget(){}
+  GUIWidget::~GUIWidget(){
+    if(m_handle)delete m_handle;
+  }
   
   void GUIWidget::ioSlot(){
     this->processIO();
@@ -94,6 +98,20 @@ namespace icl{
     ICLASSERT_RETURN(m_poGridLayout && layout() == m_poGridLayout);
     m_poGridLayout->addWidget(widget,y,x,h,w);
   }
+
+  void GUIWidget::cb(){
+    if(m_handle){
+      for(unsigned int i=0;i<m_vecCallbacks.size();++i){
+        m_vecCallbacks[i]->exec();
+          m_vecCallbacks[i]->exec(*m_handle);
+      }
+      }else{
+      for(unsigned int i=0;i<m_vecCallbacks.size();++i){
+        m_vecCallbacks[i]->exec();
+      }
+    }
+  }
+
 }
 
 

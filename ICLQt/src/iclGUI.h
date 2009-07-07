@@ -661,7 +661,45 @@ int main(int n, char**ppc){
   // stop the thread immediately when the window is closed
   t.stop();
 }
- 
+
+     \endcode
+
+
+      \subsubsection CCB Complex Callbacks 
+      
+      In addition to the simple callback structure using an empty exec() function, callbacks
+      use another function type (GUI::Callback::complex_callback_function). Here, the
+      exec-function gets a string argument, which is filled with the source components handle
+      name at runtime. By this means, it is possible to use a single callback function ( or
+      of course a special implementation of the GUI::Callback interface) to handle a set of
+      GUI components' events simultaneously at one code location. The following example, which
+      is also available as icl-complex-gui-callback-test demonstrates use of this 
+      mechanism:
+
+      \code
+#include <iclCommon.h>
+
+GUI gui;
+
+void handle_event(const std::string &handle){
+  DEBUG_LOG("component " << handle << " was triggered!" );
+}
+
+void init(){
+  gui << "slider(0,100,50)[@handle=slider@label=slider@out=_1]"
+      << "togglebutton(off,on)[@handle=togglebutton@label=toggle button@out=_2]"
+      << "button(click me)[@handle=button@label=a button]";
+  gui.show();
+  
+  gui.registerCallback(new GUI::Callback(handle_event),"slider,button,togglebutton");
+}
+
+int main(int n, char **ppc){
+  return ICLApplication(n,ppc,"",init).exec();
+}
+      \endcode
+
+      \subsubsection ABCDE 
 
       Please note, that some special Qt-Functionality just becomes usable with this callback
       mechanism, namely showing Dialogs. Unfortunately, Qt-Dialogs can only be invoked to
@@ -670,7 +708,6 @@ int main(int n, char**ppc){
       or even crash with some async-error message. 
       Therefore QDialogs must be created/shown using callbacks.
 
-     \endcode
       
       
       \subsection EMB Embedding external QWidgets
@@ -980,22 +1017,39 @@ int main(int n, char**ppc){
     class Callback{
       /// typedef to wrapped function (only for default implementation)
       typedef void (*callback_function)(void);
+
+      /// typedef to wrapped function (only used if exec(const std::string&) is not overloaded!)
+      typedef void (*complex_callback_function)(const std::string&);
       
       /// internally used default callback function
       callback_function m_func;
       
+      /// internally used comples  callback function
+      complex_callback_function m_cfunc;
+      
       protected:
       /// create a new callback object
-      Callback():m_func(0){}
+      Callback():m_func(0),m_cfunc(0){}
       
       public:
       /// Default implementations constructor with given callback function
       Callback(callback_function func):m_func(func){}
+
+      /// Default implementations constructor with given complex callback function
+      Callback(complex_callback_function cfunc):m_cfunc(cfunc){}
       
       /// vitual execution function
       virtual void exec(){
         if(m_func) m_func();
       }
+      
+      /// virtual complex execution function
+      /** the complex function is called with given component's handle name, 
+          so it can be */
+      virtual void exec(const std::string &handle){
+        if(m_cfunc) m_cfunc(handle);
+      }
+
     };
     typedef SmartPtr<Callback,PointerDelOp> CallbackPtr;
     
