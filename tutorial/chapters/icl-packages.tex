@@ -11,15 +11,19 @@ Matrix and Vector algebra is very common in a lot of applications. The ICL provi
 
 \subsubsection{FixedMatrix Template Class\iclclassref{FixedMatrix}{Utils}}
 This class uses three template parameters \inlinecode{template<class T, unsigned int COLS, unsigned} \inlinecode{int ROWS>} to represent matrices of fixed size. FixedVectors are implemented as shallow inheriting wrappers of FixedMatrix class instances with \inlinecode{COLS=1} (\inlinecode{FixedColVector}) or \inlinecode{ROWS=1} (\inlinecode{FixedRowVector})\footnote{This cannot be implemented using typedefs, because C++ does not support templated typedefs}.
-By using \emph{templated} dimension parameters, matrix dimension is fixed at compilation time, which enables the compiler to apply a lot of optimizations. Most common vector and matrix algebra functionalities \footnote{As far as I can see, actually a super-set of BLAS-level 3}, including matrix mutliplication (scalar product is just a special case here), QR-Matrix decomposition and matrix inverse and pseudo-inverse\footnote{QR-decomposition-based} implementation. \inlinecode{FixedMatrix} instances resign smart data handling to allow to compiler to apply special optimizations on fixed arrays. In particular, temporary instances (and their data) can be allocated on the stack, rather than having to allocate data on the heap.
+By using \emph{templated} dimension parameters, matrix dimension is fixed at compilation time, which enables the compiler to apply a lot of optimizations. Most common vector and matrix algebra functionalities \footnote{As far as I can see, actually a super-set of BLAS-level 3}, including matrix mutliplication (scalar product is just a special case here), QR-Matrix decomposition and matrix inverse and pseudo-inverse\footnote{QR-decomposition-based} implementation. \inlinecode{FixedMatrix} instances resign smart data handling to enable the compiler to apply special optimizations on fixed arrays. In particular, temporary instances (and their data) can be allocated on the stack, rather than having to allocate data on the heap.
 The \inlinecode{FixedMatrix} class provides row- and column iterators, as well as extraction functions for rows, columns or rectangular sub-matrices.
 Here's a concise example:
 \codefile{fixed-matrix-demo-1.cpp}{Example for usage of the \inlinecode{FixedMatrix}-template class}
-Please note, that \inlinecode{FixedMatrix}-pseudo inverse calculation is out-sourced to a dedicated header \iclheaderref{Utils}{FixedMatrixUtils}.
+Please note, that \inlinecode{FixedMatrix}-pseudo inverse calculation is out-sourced to a dedicated header \iclheaderref{Utils}{FixedMatrixUtils} to reduce complexity of the FixedMatrix header file.
 
 \subsubsection{DynMatrix Template Class\iclclassref{DynMatrix}{Utils}}
 
-In contrast to the \inlinecode{FixedMatrix} template class, the \inlinecode{DynMatrix} template class uses a single template parameter which defines the actual datatype of the matrix elements. Matrix dimensions are dynamic at runtime, which enables us to provide e.g. a \inlinecode{setBounds} member function. In addition, \inlinecode{DynMatrix} instances can be assigned with \inlinecode{DynMatrix} instances of another size. Dynamic sized data types need dynamic data handling\footnote{using \inlinecode{new []} and \inlinecode{delete []}}. This besides allows a more flexible mechanism: Optional shallow data wrapping. \inlinecode{DynMatrix} instances can be set up to handle their data autonomously (using \inlinecode{new []} in the constructor and \inlinecode{delete []} in the destructor), or to \emph{count on} external data handling. Most other functionalities such as matrix multiplication or matrix inverse are also available here. Actually, matrix inverse in the \inlinecode{FixedMatrix} class is implemented by a shallow wrapping \inlinecode{DynMatrix} function call.
+In contrast to the \inlinecode{FixedMatrix} template class, the \inlinecode{DynMatrix} template class uses a single template parameter which defines the actual datatype of the matrix elements. Matrix dimensions are dynamic at runtime, which enables us to provide e.g. a \inlinecode{setBounds} member function. In addition, \inlinecode{DynMatrix} instances can be assigned with \inlinecode{DynMatrix} instances of another size. Dynamic sized data types need dynamic data handling\footnote{using \inlinecode{new []} and \inlinecode{delete []}}. This besides allows a more flexible mechanism: optional shallow data wrapping. \inlinecode{DynMatrix} instances can be set up to handle their data autonomously (using \inlinecode{new []} in the constructor and \inlinecode{delete []} in the destructor), or to \emph{count on} external data handling. Most other functionalities such as matrix multiplication or matrix inverse are also available here. Actually, matrix inverse in the \inlinecode{FixedMatrix} class is implemented by a shallow wrapping \inlinecode{DynMatrix} function call.\\
+In addition to the actual \inlinecode{DynMatrix}-class, we provide another header file that is called \iclheaderref{Utils}{DynMatrixUtils}. This contains a large set of arithmetical functions in different calling manners (source-destination, source-only). Additionally \inlinecode{add}, \inlinecode{sub} and \inlinecode{mult} are provided multiple times to allow e.g. multiplication of two matrices A and B as $A^{\tau}B$ without the need to transpose A explicitly before.\\[10pt]
+The \inlinecode{DynMatrix}-template class is very tightly integrated with the  \inlinecode{Img<T>}-template class. The index operator (\inlinecode{Img<T>::operator[](int channel)} returns an instance of \inlinecode{DynMatrix<T>} that wraps the images channel data shallowly. This enables the programmer switch between image- and matrix notation very easily. Besides \inlinecode{Img<T>} instances can be created as shallow wrappers of a set of \inlinecode{DynMatrix<T>}-instances (one \inlinecode{DynMatrix<T>}-instances corresponds to one image channel) by using an appropriate \inlinecode{Img<T>}-constructor, that takes up to 5 \inlinecode{DynMatrix<T>}-arguments.\\
+This also allows the user to apply arbitrary image processing functions on \inlinecode{DynMatrix<T>} instances.
+
 
 
 
@@ -41,31 +45,6 @@ As a lot of applications need to parse command line parameters, ICL provides a s
 or as \inlinecode{std::string}
 \displaycode{Size size = translateSize(pa\_subarg<std::string>("-size",0,"VGA"));}. More information can be found in the documentation.
 
-
-
-\section{ICLCore}
-
-[Documentation: \iclpackageref{Core}]\\
-The Core-package contains, apart from the image base class \inlinecode{ImgBase} and template classes \inlinecode{Img<T>}, fundamental image processing functions and utility classes. In particular, it contains the header \iclheaderref{Core}{Types}, that declares most common ICL data types and enumerations. Furthermore, there are mathematic functions, random number generators, utility functions for converting and copying images and some utility structures like rectangles, points and lines.
-
-\subsection{Image classes}
-The image classes have been described in detail in chapter \ref{cha:img-base-functions} and \ref{cha:img-class-functions}.
-
-
-\subsection{Types}
-Types and enumerations have been presented and discussed in section \ref{sec:typedef-confusions}. Types are declared in \iclheaderref{Core}{Types}.
-
-
-\subsection{Mathematic Functions}
-Also some fundamental mathematic functionalities are provided in the package. The header \iclheaderref{Core}{Mathematics} contains some stochastic utility template functions for computation of mean, variance and standard derivation of a range. Also color-histogram calculating functions (\inlinecode{hist} and \inlinecode{channelHisto}) are available by including this header. More information can be obtained from the header documentation (mentioned above).
-
-
-
-\subsection{Random Number Generators}
-Formerly a part of the header \iclheaderref{Core}{Mathematics}-header, random number generators are not provided by the header \iclheaderref{Core}{Random}. Actually, only two different distributions are currently supported: uniform- and gaussian distribution. However a set of functions are provided for each distribution to facilitate random number (and random range) generation. \\
-Firstly, there's an overloaded \inlinecode{randomSeed()} function, that can be used to initialize the systems random generator engine, with an optinal \emph{seed-value}. If no seed value is given, current system time is used for initialization. Furthermore, a class called \inlinecode{RandomSeeder} (\iclstructref{Core}{RandomSeeder}) is provided which can be instantiated on some stack to force random number generation engine initialization at program startup. \\
-In Addition, there's a set of initializer functors (\iclclassref{Core}{URand},\iclclassref{Core}{URandI},\iclclassref{Core}{GRand} and \iclclassref{Core}{GRandClip}), that can be used e.g. with \inlinecode{std::fill} to initialize range elements randomly. 
-
 \subsection{Utility Structures}
 Firstly, there are 3 main utility structures:
 \begin{enumerate}
@@ -82,8 +61,47 @@ The \inlinecode{Line} and \inlinecode{Line32f} classes (\iclclassref{Core}{Line}
 At last, there's a template class representing ranges: \iclstructref{Core}{Range} and it's extension \iclstructref{Core}{SteppingRange}.
 
 \subsection{String-Utilities}
-To facilitate string processing (which is still a bit complicated in C++), the header \iclheaderref{Core}{StringUtils} is provided in the ICL-Core package. It contains functions to parse \inlinecode{std::strings} into given data types (template based, \inlinecode{T parse<T>(const std::string&)} and to convert given data-types into strings (\inlinecode{std::string str(const T&)}). Furthermore, there are variants of these functions, that work on \inlinecode{std::vector} instances to convert or parse ranges at once.\\
-Moreover, ICL provides conversion functions to translate sizes, formats, depths etc. into strings and back. These functions are located in the \iclheaderref{Core}{Core} and their names are \inlinecode{translateSize}, \inlinecode{translateFormat} etc.
+To facilitate string processing (which is still a bit complicated in C++), the header \iclheaderref{Utils}{StringUtils} is provided in the ICLUtils package. It contains functions to parse \inlinecode{std::strings} into given data types (template based, \inlinecode{T parse<T>(const std::string&)} and to convert given data-types into strings (\inlinecode{std::string str(const T&)}). Furthermore, there are variants of these functions, that work on \inlinecode{std::vector} instances to convert or parse ranges at once.\\
+Moreover, ICL provides conversion functions to translate sizes, formats, depths etc. into strings and back. These functions are located in the \iclheaderref{Utils}{Utils} and their names are \inlinecode{translateSize}, \inlinecode{translateFormat} etc.
+
+\subsection{Types}
+Types and enumerations have been presented and discussed in section \ref{sec:typedef-confusions}. Types are declared in \iclheaderref{Utils}{BasicTypes}.
+
+\subsection{XML-Parser}
+To be able to use xml-data and configuration files without getting an extra software-dependency, ICL uses it's own simple XML-Parser. This of course entails some issues on the complexity of XML-files, that can be parsed. Actually, some features (like namespaces or XML-schematics) are just not supported at all. Furthermore, we limited XML-nodes to be be parent nodes (that have other child nodes) \textbf{or} \emph{text}-nodes that have a text content (maybe we have to fix that someday :-( ).\\
+However, the XML-Parser works well for our purpose: It can be used to easily parse XML-documents or to query and filter nodes from the Documents tree structure. Furthermore, we use it successfully to create and to parse instances of the \inlinecode{ConfigFile} class, that provides hi convenience for using configuration files in applications (See \ref{subsec:config-file})
+
+\subsection{Configuration Files\label{subsec:config-file}}
+The \iclclassref{Utils}{ConfigFile}-class can be used to facility handling of dynamic configurable applications. Of course, one can make heavily use of program arguments, however this makes is difficult to save parameters or to distribute configuration parameters via revision control systems like e.g. subversion\footnote{\hrefn{http://de.wikipedia.org/wiki/Subversion\_(Software)}}. \inlinecode{ConfigFile} instances can be created very easily in the C++ source code, and their contents can be obtains very simply. Most of the time, a simple one-line statement is sufficient to get a certain entry at runtime. On the other side, the configuration file itself uses a simple XML-subset which facilitates both, parsing of the document as well as referencing entries non-ambiguously. Here's a tiny example:
+
+\codefile{config.xml}{config.xml}
+
+Corresponding source file:
+
+\codefile{config-file.cpp}{ConfigFile use case}
+
+And resulting configuration file:
+
+\codefile{other.xml}{Written configuration file other.xml}
+
+
+\section{ICLCore}
+
+[Documentation: \iclpackageref{Core}]\\
+The Core-package contains, apart from the image base class \inlinecode{ImgBase} and template classes \inlinecode{Img<T>}, fundamental image processing functions and utility classes. In particular, it contains the header \iclheaderref{Core}{Types}, that declares most common ICL data types and enumerations. Furthermore, there are mathematic functions, random number generators, utility functions for converting and copying images and some utility structures like rectangles, points and lines.
+
+\subsection{Image classes}
+The image classes have been described in detail in chapter \ref{cha:img-base-functions} and \ref{cha:img-class-functions}.
+
+
+\subsection{Mathematic Functions}
+Also some fundamental mathematic functionalities are provided in the package. The header \iclheaderref{Core}{Mathematics} contains some stochastic utility template functions for computation of mean, variance and standard derivation of a range. Also color-histogram calculating functions (\inlinecode{hist} and \inlinecode{channelHisto}) are available by including this header. More information can be obtained from the header documentation (mentioned above).
+
+\subsection{Random Number Generators}
+Formerly a part of the header \iclheaderref{Core}{Mathematics}-header, random number generators are not provided by the header \iclheaderref{Core}{Random}. Actually, only two different distributions are currently supported: uniform- and gaussian distribution. However a set of functions are provided for each distribution to facilitate random number (and random range) generation. \\
+Firstly, there's an overloaded \inlinecode{randomSeed()} function, that can be used to initialize the systems random generator engine, with an optinal \emph{seed-value}. If no seed value is given, current system time is used for initialization. Furthermore, a class called \inlinecode{RandomSeeder} (\iclstructref{Core}{RandomSeeder}) is provided which can be instantiated on some stack to force random number generation engine initialization at program startup. \\
+In Addition, there's a set of initializer functors (\iclclassref{Core}{URand},\iclclassref{Core}{URandI},\iclclassref{Core}{GRand} and \iclclassref{Core}{GRandClip}), that can be used e.g. with \inlinecode{std::fill} to initialize range elements randomly. 
+
 
 
 \section{ICLCC\label{sec:cc}}

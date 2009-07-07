@@ -248,9 +248,13 @@ namespace icl{
 
   bool ConfigFile::check_type_internal(const std::string &id, const std::string &rttiTypeID) const throw (EntryNotFoundException,UnregisteredTypeException){
     const Entry &e = get_entry_internal(id);
-    std::map<std::string,std::string>::const_iterator it=s_typeMap.find(rttiTypeID);
-    if(it == s_typeMap.end()) throw UnregisteredTypeException(rttiTypeID);
-    return (it->second == e.rttiType);
+    return e.rttiType == rttiTypeID;
+    /*    
+        DEBUG_LOG("rtti type is " << rttiTypeID << "#registered types:" << s_typeMap.size());
+        std::map<std::string,std::string>::const_iterator it=s_typeMap.find(rttiTypeID);
+        if(it == s_typeMap.end()) throw UnregisteredTypeException(rttiTypeID);
+        return (it->second == e.rttiType);
+    */
   }
 
   ConfigFile::Entry &ConfigFile::get_entry_internal(const std::string &id) throw (EntryNotFoundException){

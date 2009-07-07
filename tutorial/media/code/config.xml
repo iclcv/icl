@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<config>
+  <title>My configuration file</title>
+  <section id="global"> 
+    <data id="radius" type="float">0.8</data>
+    <data id="threshold" type="int">20</data>
+  </section>
+  <section id="local">
+    <data id="filename" type="string">other.xml</data>
+    <data id="T" type="string"> 
+      1 0 0 
+      0 1 0
+      0 0 2
+    </data>
+  </section>
+</config>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<config>
+  <title>no title defined"</title>
+  <section id="foo">
+    <data id="a" type="float">0.8</data>
+    <data id="b" type="string">hello</data>
+  </section>
+</config>
