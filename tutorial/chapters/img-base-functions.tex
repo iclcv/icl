@@ -34,7 +34,13 @@ This function \emph{applies} the operators functionality to the input image \inl
 
 \codefile{unary-op-loop-example.cpp}{Using unary operators in a loop} 
 
-Please notice, that \inlinecode{dst} is used within the loop. The apply function of \inlinecode{ConvolutionOp} adapts \inlinecode{dst} if necessary, otherwise, it just re-uses \inlinecode{dst}. By this means \inlinecode{dst} is just allocated once, unless input image parameters aren't constant.
+Please notice, that \inlinecode{dst} is used within the loop. The apply function of \inlinecode{ConvolutionOp} adapts \inlinecode{dst} if necessary, otherwise, it just re-uses \inlinecode{dst}. By this means \inlinecode{dst} is just allocated once, unless input image parameters aren't constant.\\
+Furthermore, if read-access to the result image of a unary operator is sufficient, the unary operator can manage it's destination image internally by re-using a dedicated
+image buffer, which is a member-variable of the \inlinecode{UnaryOp} class.
+
+\codefile{unary-op-loop-example-no-dst.cpp}{Unary operators in a loop without destination image}
+
+Here, we do not need an explicit destination image, however source-destination fashioned call to \inlinecode{apply} is necessary, if an un-\inlinecode{const} version of the destination image is needed.
 
 
 \section{Futher ImgBase-functions}
@@ -74,7 +80,10 @@ This functions directly adapt an images parameters and/or it's pixel values:
 \item \inlinecode{normalizeImg}.
 \end{itemize} 
 \emph{Normalization} means transforming the value range of an image by a linear function $f(x)=mx+b$, to make the resulting value range fit into a given intervall. E.g. this can be used to \emph{rescale} a floating input image with range $[0,1]$ into ICL's default value range $[0,255]$ by choosing $m=255$ and $b=0$. \\
-All these functions can be used to normalize image values to a certain range. \inlinecode{normalizeChannel} and \inlinecode{normalizeImg} can be called with single \inlinecode{Range64f} (\iclclassref{Core}{Range}) only. In this case, the images source range is obtained using \inlinecode{getMinMax}. If otherwise, the source range is given, this step can be skipped. \inlinecode{normalizeAllChannels} applies normalization channel by channel whereas \inlinecode{normalizeImg} estimates the source range by computing the range of all channels.
+All these functions can be used to normalize image values to a certain range. \inlinecode{normalizeChannel} and \inlinecode{normalizeImg} can be called with single \inlinecode{Range64f} (\iclclassref{Core}{Range}) only. In this case, the images source range is obtained using \inlinecode{getMinMax}. If otherwise, the source range is given, this step can be skipped. \inlinecode{normalizeAllChannels} applies normalization channel by channel whereas \inlinecode{normalizeImg} estimates the source range by computing the range of all channels.\\
+Please note, that ICL internally has an affection to the default pixel value range of $[0,255]$. E.g. ICL's image visualization component \iclclassref{Qt}{ICLWidget}
+displays images by assuming this range. However \inlinecode{ICLWidget} instances can be set up (via function call as well as via its on-screen-menu) to apply an
+automatic- or user defined (brightness/contrast) adaption of image intensities for visualization. Internally this was implemented very efficiently by adapting OpenGL's pixel transfer function.
 
 \subsection{Utility functions}
 \inlinecode{isEqual()} can be used to compare image parameters. \inlinecode{print} prints image parameters and channel value ranges to std::cout\footnote{Please note that an ImgBase-reference can also be \emph{streamed} into an C++-\inlinecode{std::ostream}}. The \inlinecode{isIndependent()} function returns true if the reference counter of all channel data pointers is one\footnote{I.e. these channels are currently not \emph{shared} with another image}.

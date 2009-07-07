@@ -1,7 +1,7 @@
  The ICL is a computer-vision library, so it provides of course a large set of computer-vision functions. However a lot of additional components (like the Qt-GUI wrapper API \iclclassref{Qt}{GUI} or the program argument evaluation tools \iclheaderref{Utils}{ProgArg}) turned out to be very useful even for general purpose programming. 
 
 \section{Large variety of simple-to-use Algorithms}
-As IPP developers supposable thought a lot about the set of algorithms to provide with their library, a first step in ICL implementation was to provide simple and \emph{care-free} wrappers for fundamental image manipulation functions provided by the IPP. Manipulation functions can be split into several subsets to facilitate the overview:
+As IPP developers supposable thought a lot about the set of algorithms that must be provided in a computer-vision toolkit, a first step in ICL implementation was to provide simple and \emph{care-free} wrappers for fundamental image manipulation functions provided by the IPP. Manipulation functions can be split into several subsets to facilitate the overview:
 \begin{itemize}
 
 \item Data copy and convert functions.\\
@@ -74,6 +74,9 @@ As IPP developers supposable thought a lot about the set of algorithms to provid
 \item Image annotation and pixel based drawing functions\\
 \iclnamespaceref{Quick}
 
+\item Camera calibration toolkit (for extrinsic and for intrinsic Camera parameters like, radial distortion)
+\iclnamespaceref{Geom} and ICL-example applications \inlinecode{icl-extrinsic-camera-calibration} and \inlinecode{icl-intrinsic-camera-calibration}
+
 \end{itemize}
 
 
@@ -113,22 +116,31 @@ In addition to the set of functionalities regarding image processing, ICL provid
 
         \item (Debugging)-Macros \\
            \iclheaderref{Utils}{Macros}
+
+        \item StringUtils environment for conversion of common data-types into strings and vice versa \\
+        Including some useful utility functions e.g. a regular-expression matcher.
+          \iclheaderref{Utils}{StringUtils}
+
+        \item A set of most common data types like Rects, Lines, Ranges, and Points \\
+          \iclclassref{Core}{Rect} \iclclassref{Core}{Line} \iclstructref{Core}{Range}
+          \iclclassref{Core}{Point} \iclclassref{Core}{Point32f} (...)
+
+          \item A simple DOM-based XML parser and creator.\\
+          \iclclassref{Utils}{XMLDocument} and \iclclassref{Utils}{XMLNode}
+
+        \item An xml-configuration file class (ConfigFile). That allows simple definition and extraction of configuration parameters.\\
+          \iclclassref{Utils}{ConfigFile}
+
 \end{itemize}
 
 \item \textbf{ICLCore package:} \iclpackageref{Core}\\
 \begin{itemize}
-        \item StringUtils environment for conversion of common data-types into strings and vice versa\\
-          \iclheaderref{Core}{StringUtils}
 
         \item Statistic functions and random number generators\\
           \iclheaderref{Core}{Random}
 
         \item Mathematic / and statistic functions\\
           \iclheaderref{Core}{Mathmatics}
-
-        \item A set of most common data types like Rects, Lines, Ranges, and Points \\
-          \iclclassref{Core}{Rect} \iclclassref{Core}{Line} \iclstructref{Core}{Range}
-          \iclclassref{Core}{Point} \iclclassref{Core}{Point32f} (...)
 
 \end{itemize}
 
@@ -147,11 +159,11 @@ In addition to the set of functionalities regarding image processing, ICL provid
 
 \item \textbf{ICLGeom package:} \iclpackageref{Geom}\\
 \begin{itemize}
-        \item Camera and Scene implementation that allows 3D-Modelling and polygon based rendering (no raytracing!!, and no Z-buffering) \\
-             \iclclassref{Geom}{Camera} \iclclassref{Geom}{Szene}
+        \item Camera and Scene implementation that allows 3D-Modelling and polygon based rendering (no raytracing!!, Z-buffering-support only when using OpenGL) \\
+             \iclclassref{Geom}{Camera} \iclclassref{Geom}{Scene2}
 
         \item Object interface that enables to handle objects within a scene\\
-        \iclclassref{Geom}{Object}
+        \iclclassref{Geom}{Object2}
 \end{itemize}
 
 \item \textbf{ICLAlgorithms package:} \iclpackageref{Algorithms}\\
@@ -164,9 +176,6 @@ In addition to the set of functionalities regarding image processing, ICL provid
 \begin{itemize}
         \item A powerful Qt-Wrapper for simple and off-the-cuff creation of most complex GUI's components. Here about 20 common GUI components\footnote{including sliders and buttons as well as image-visualization and augmentation compenents} can be layouted and synchronized very conveniently\\
           \iclclassref{Qt}{GUI}
-
-        \item An xml-configuration file class (ConfigFile). That allows simple definition and extraction of configuration parameters.\\
-          \iclclassref{Qt}{ConfigFile}
 
         \item A GUI-Widget to change configuration file entries at run-time.\\
           \iclclassref{Qt}{ConfigFileGUI}

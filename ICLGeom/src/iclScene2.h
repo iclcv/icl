@@ -18,6 +18,8 @@ namespace icl{
   class ICLDrawWidget;
   /** \endcond */
 
+  
+  /// *NEW* Scene Implementation 
   class Scene2 : public Lockable{
     public:
     struct RenderPlugin;
