@@ -8,7 +8,7 @@ namespace icl{
   }
 
   bool XMLNodeFilterByTag::operator()(const XMLNode &node) const{
-    return node.isTagNode() ? (node.getTag()==tag) : false;
+    return node.isNode() ? (node.getTag()==tag) : false;
   }
 
   XMLNodeFilterByPathRegex::XMLNodeFilterByPathRegex(const std::string &regex, const std::string &delim) 
@@ -31,6 +31,19 @@ namespace icl{
   }
   bool XMLNodeFilterByLevel::operator()(const XMLNode &node) const{
     return node.getLevel()<=maxLevel;
+  }
+
+  bool XMLNodeFilterByFirstChildNodeType::operator()(const XMLNode &node) const{
+    if(!node.hasChildren()) return false;
+    return node.getFirstChildNode().getType() & types;
+  }
+
+  bool XMLNodeFilterByHasAnyChildOfType::operator()(const XMLNode &node) const{
+    if(!node.hasChildren()) return false;
+    for(XMLNode::const_node_iterator it = node.begin(); it != node.end(); ++it){
+      if( (*it)->getType() & types ) return true;
+    }
+    return false;
   }
 
 

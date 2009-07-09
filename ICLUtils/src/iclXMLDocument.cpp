@@ -80,8 +80,6 @@ namespace icl{
       }
     }
 #endif
-    
-    
     return os.str();
   }
   
@@ -276,92 +274,102 @@ namespace icl{
   }
 
 #endif
-  static void add_intermediate_node(std::list<SimpleNode> &L,std::string tag_text, SimpleNode::Type t){
+  static void add_open_or_single_node(std::list<SimpleNode> &L,std::string tag_text, SimpleNode::Type t){
+    std::string tag_name;
+    XMLAttMapPtr att=split_tag_name_and_attribs(tag_text,tag_name);
+    L.push_back(SimpleNode(tag_name,t,att));
+  }
+  
+  /*
+      static std::string strip(const std::string &s){
+      if(!s.length()) return "";
+      std::string::size_type f = s.find_first_not_of(" \n\t");
+      std::string::size_type l = s.find_last_not_of(" \n\t")+1;
+      return s.substr(f,l-f);
+      }
+  */
+  static inline const std::string &strip(const std::string &s) { return s; }
+  
+  static bool contains_text(const std::string &s){
+    std::istringstream is(s);
+    std::string k;
+    is >> k;
+    if(!k.length()) return false;
+    else return true;
+  }
+  
+  static void parse_intermediate_it(std::istream &is, std::list<SimpleNode> &L){
+
+    std::string tag;
+    SimpleNode::Type t;
+    bool first = true;
+    int level = 1;
+    
+    std::string restStr;
+    // 1st parse leading comments and optional leading XMLVersionTag
+    while(true){
+      std::ostringstream rest;
+      tag = get_next_tag(is,rest);
+      restStr = rest.str();
+      t = remove_tag_braces_and_get_type(tag);
+      if(first && (t == SimpleNode::XMLVersionTag)){
+        if(contains_text(restStr)) throw ParseException("Text sections are not allowed outside root tag");
+        L.push_back(SimpleNode(tag,t));
+        first = false;
+        continue;
+      }
+      first = false;
+      if(t != SimpleNode::CommentTag) break;
+      if(contains_text(restStr)) throw ParseException("Text sections are not allowed outside root tag");
+      L.push_back(SimpleNode(tag,t));
+    }
+    
+    // 2nd parse first node!
     switch(t){
-      case SimpleNode::CommentTag:
-      case SimpleNode::CloseTag:
-      case SimpleNode::XMLVersionTag:
-      case SimpleNode::Text:
-        L.push_back(SimpleNode(tag_text,t));
-        break;
       case SimpleNode::OpenTag:
-      case SimpleNode::SingleTag:{
-        std::string tag_name;
-        XMLAttMapPtr att=split_tag_name_and_attribs(tag_text,tag_name);
-        L.push_back(SimpleNode(tag_name,t,att));
-        break;
-      }
-      default:
-        throw ParseException("found unknown node type!");
-    }
-  }
-  
-  static void parse_intermediate_rek(std::istream &is, std::list<SimpleNode> &L, const std::string &root_tag_text, int &openCnt){
-    std::ostringstream rest;
-    std::string tag_text;
-    try{
-      tag_text = get_next_tag(is,rest);
-    }catch(ParseException &ex){
-      if(L.size()){
-        throw ParseException("unexpected end of stream (last node was " + str(L.back()) + ")");
-      }
-    }
-    SimpleNode::Type t = remove_tag_braces_and_get_type(tag_text);
-    if(t == SimpleNode::CloseTag){
-      if(L.back().type == SimpleNode::OpenTag){
-        add_intermediate_node(L,rest.str(),SimpleNode::Text);
-      }
-    }
-    add_intermediate_node(L,tag_text,t);
-    switch(t){
-      case SimpleNode::XMLVersionTag:
-        throw ParseException("XMLVersion tag must not occur within root tag");
-        break;
-      case SimpleNode::OpenTag:{
-        if(tag_text == root_tag_text) openCnt++;
-        parse_intermediate_rek(is, L, root_tag_text, openCnt);
-        break;
-      }
-      case SimpleNode::CloseTag:
-        if(tag_text == root_tag_text) openCnt--;
-        if(openCnt){
-          parse_intermediate_rek(is, L, root_tag_text, openCnt);
-        }
+        if(contains_text(restStr)) throw ParseException("Text sections are not allowed outside root tag");
+        L.push_back(SimpleNode(tag,t));
         break;
       case SimpleNode::SingleTag:
-      case SimpleNode::CommentTag:
-        parse_intermediate_rek(is, L, root_tag_text, openCnt);
+        if(contains_text(restStr)) throw ParseException("Text sections are not allowed outside root tag");
+        L.push_back(SimpleNode(tag,t));
+        level = 0;
         break;
-      default:
-        throw ParseException("Somehow the parse extracted an unknown or text node type");
-    }
-  }
-  
-  static void parse_intermediate(std::istream &is, std::list<SimpleNode> &L){
-    std::ostringstream rest;
-    std::string root_tag_text = get_next_tag(is,rest);
-    SimpleNode::Type t = remove_tag_braces_and_get_type(root_tag_text);
-    add_intermediate_node(L,root_tag_text,t);
-    switch(t){
       case SimpleNode::XMLVersionTag:
-        if(L.size()>1) throw ParseException("XMLVersion Tag is only allowed as first Node");
-        parse_intermediate(is,L);
-        break;
-      case SimpleNode::CommentTag:
-        parse_intermediate(is,L);
-        break;
-      case SimpleNode::OpenTag:{
-        int openCnt = 1;
-        parse_intermediate_rek(is, L, root_tag_text, openCnt);
-        break;
-      }
+        throw ParseException("XMLVersion tag found after first entry!");
       case SimpleNode::CloseTag:
-        throw ParseException("Found close tag at beginning");
-        break;
-      case SimpleNode::SingleTag:
-        break;
+        throw ParseException("first non-comment-tag was a closing tag!");
       default:
-        throw ParseException("Found unknown or text tag at beginning");
+        throw ParseException("found unkown tag type at document begin!");
+    }
+    
+    // parse rest of the document
+    while(level){
+      std::ostringstream rest;
+      tag = get_next_tag(is,rest);
+      t = remove_tag_braces_and_get_type(tag);
+
+      if(contains_text(rest.str())){
+        L.push_back(SimpleNode(strip(rest.str()),SimpleNode::Text));
+      }
+      switch(t){
+        case SimpleNode::OpenTag:
+        case SimpleNode::SingleTag:
+          add_open_or_single_node(L,tag,t);
+          if(t == SimpleNode::OpenTag) ++level;
+          break;
+        case SimpleNode::XMLVersionTag:
+          throw ParseException("XMLVersion tag found after first entry!");
+        case SimpleNode::CloseTag:
+          L.push_back(SimpleNode(tag,t));
+          --level;
+          break;
+        case SimpleNode::CommentTag:
+          L.push_back(SimpleNode(tag,t));
+          break;
+        default:
+          throw ParseException("found unkown tag type at document begin!");
+      }
     }
   }
   
@@ -380,31 +388,30 @@ namespace icl{
       switch(n.type){
         case SimpleNode::OpenTag:
           parent->m_subnodes.push_back(new XMLNode(parent,parent->m_document));
-          parent->m_type = XMLNode::CONTAINER;
+          parent->m_subnodes.back()->m_type = XMLNode::NODE;
           parent = parent->m_subnodes.back().get();
           parent->m_attribs = n.att;
-          parent->m_tag = n.text;
+          parent->m_content = n.text;
           break;
         case SimpleNode::SingleTag:
           parent->m_subnodes.push_back(new XMLNode(parent,parent->m_document));
           parent->m_subnodes.back()->m_attribs = n.att;
-          parent->m_subnodes.back()->m_tag = n.text;
-          parent->m_subnodes.back()->m_type = XMLNode::SINGLE;
+          parent->m_subnodes.back()->m_content = n.text;
+          parent->m_subnodes.back()->m_type = XMLNode::NODE;
           break;
         case SimpleNode::CommentTag:
           parent->m_subnodes.push_back(new XMLNode(parent,parent->m_document));
-          parent->m_subnodes.back()->m_comment = n.text;
+          parent->m_subnodes.back()->m_content = n.text;
           parent->m_subnodes.back()->m_type = XMLNode::COMMENT;
           break;
         case SimpleNode::Text:
-          if(parent->m_text != "")  throw ParseException("Found 2nd text content for node: " + parent->m_tag);
-          parent->m_text = n.text;
-          parent->m_type = XMLNode::TEXT;
-
+          parent->m_subnodes.push_back(new XMLNode(parent,parent->m_document));
+          parent->m_subnodes.back()->m_content = n.text;
+          parent->m_subnodes.back()->m_type = XMLNode::TEXT;
           break;
         case SimpleNode::CloseTag:
-          if(parent->m_tag != n.text) throw ParseException(str("found closing tag ") + 
-                                                           str(n.text) + " but open tag was " + parent->m_tag);
+          if(parent->m_content != n.text) throw ParseException(str("found closing tag ") + 
+                                                           str(n.text) + " but open tag was " + parent->m_content);
           parent = parent->m_parent;
           break;
         case SimpleNode::XMLVersionTag:
@@ -423,7 +430,7 @@ namespace icl{
                           std::string &xmlVersionDescription){
     xmlVersionDescription = "";
     std::list<SimpleNode> L;
-    icl::parse_intermediate(src,L);
+    icl::parse_intermediate_it(src,L);
 
     if(!L.size()) throw ParseException("Document is empty");
 
@@ -442,25 +449,28 @@ namespace icl{
     switch(n.type){
       case SimpleNode::OpenTag:
         instance->m_attribs = n.att;
-        instance->m_tag = n.text;
+        instance->m_content = n.text;
+        instance->m_type = XMLNode::NODE;
         if(L.back().type != SimpleNode::CloseTag) throw ParseException("Root node's closing tag not found (found:" + str(L.back().text) +')');
         if(L.back().text != n.text) throw ParseException("Root node's closing tag does not match");
         L.pop_back();
-        
-        if(L.front().type == SimpleNode::Text){
-          if(L.size() != 1) throw ParseException("Text and container subnodes must not be mixed (for root nodes as well)");
-          instance->m_text = L.front().text;
-          instance->m_type = XMLNode::TEXT;
-          L.pop_front();
-        }else{
-          instance->m_type = XMLNode::CONTAINER;
-          parse_it(instance,src,&L);
-        }
+        parse_it(instance,src,&L);
+        /*        
+            if(L.front().type == SimpleNode::Text){
+            if(L.size() != 1) throw ParseException("Text and container subnodes must not be mixed (for root nodes as well)");
+            instance->m_text = L.front().text;
+            instance->m_type = XMLNode::TEXT;
+            L.pop_front();
+            }else{
+            instance->m_type = XMLNode::CONTAINER;
+            parse_it(instance,src,&L);
+            }
+        */
         break;
       case SimpleNode::SingleTag:
         instance->m_attribs = L.front().att;
-        instance->m_tag = L.front().text;
-        instance->m_type = XMLNode::SINGLE;
+        instance->m_content = L.front().text;
+        instance->m_type = XMLNode::NODE;
         break;
       case SimpleNode::Text:
         throw ParseException("Root node must not be of type 'text'");
@@ -519,7 +529,7 @@ namespace icl{
     for(unsigned int i=0;i<doc.m_headerComments.size();++i){
       os << "<!--" << doc.m_headerComments[i] << "-->" << std::endl;
     }
-    doc.getRootNode()->serialize(os,0); 
+    doc.getRootNode()->serialize(os,0,false,true); 
     return os;
   }
   
@@ -529,7 +539,7 @@ namespace icl{
 
   XMLNode &XMLDocument::operator[](const std::string &tag) throw (NullDocumentException, ChildNotFoundException){
     if(isNull()) throw NullDocumentException("document was null");
-    if(m_root->getTag() != tag) throw ChildNotFoundException("root nodes tag is " + m_root->m_tag + " and not " + tag);
+    if(m_root->getTag() != tag) throw ChildNotFoundException("root nodes tag is " + m_root->m_content + " and not " + tag);
     return *m_root;
   }
   const XMLNode &XMLDocument::operator[](const std::string &tag) const throw (NullDocumentException, ChildNotFoundException){
@@ -575,6 +585,14 @@ namespace icl{
     }
   }
 
+  XMLNode &XMLDocument::operator*() throw (NullDocumentException){
+    if(isNull()) throw NullDocumentException(std::string("in function:" ) + __FUNCTION__);
+    return *m_root;
+  }
+  
+  const XMLNode &XMLDocument::operator*() const throw (NullDocumentException){
+    return const_cast<XMLDocument*>(this)->operator*();
+  }
 
 
 }

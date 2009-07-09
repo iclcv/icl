@@ -462,6 +462,12 @@ namespace icl{
     /// removes all contents (except config and title node)
     void clear();
     
+    /// returns internal document handle (forward declared here) (const only)
+    /** this function is not available in un-const manner, to avoid that users
+        change the document structure somehow, what would cause inconsistencies 
+        between the internal XMLDocument structure and the ConfigFile data-base */
+    const XMLDocument *getHandle() const { return m_doc.get(); }
+    
     private:
 
     

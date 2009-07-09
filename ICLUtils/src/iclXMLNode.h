@@ -22,22 +22,23 @@ namespace icl{
     public:
     /// Node type enumeration
     /** Dependent on the nodes type, operations are allowed on it or not 
-        - TEXT nodes (like <foo>text</foo> may not have children but attributes
-        - SINGLE nodes (like <foo/> or also <foo></foo> that do not have
-          text content or child-nodes can be setup to have text or childnodes 
-          lateron
-        - CONTAINER nodes (like <foo><bar/></foo> have child nodes but
-          they are not allowe to have text content too
+        - TEXT nodes are only allowed between other nodes and may (of course) not have children
+        - NODE nodes (like <foo/> or also <foo></foo> are allowed to have child nodes. Child nodes
+          may have arbitrary type
         - COMMENT nodes (like <!-- this is a comment -->) can be used
-          to put comments into the document (As comment nodes behave somehow
-          like nodes, they can only be children of CONTAINER nodes
+          to put comments into the document (As comment nodes are treated as normal nodes,
+          they can only be children of CONTAINER nodes)\n
+          Please note, that it is allowed to put comment nodes outside the documents root tags. These comment 
+          nodes are not part of the document tree structure, rather they are accessible by the XMLDocument's
+          getHeaderComments function.
+        - UNDEFINED nodes will only occur in case of heavily incorrect XML documents
         
     */
-    enum Type { TEXT=1,  //<! nodes like <bla>text</bla> 
-                SINGLE=2, //<! nodes like <bla/> 
-                CONTAINER=4, //<! nodes like <foo><bar/></foo> 
-                COMMENT=8, //<! nodes like <!-- foo bar -->
-                UNDEFINED=16 //<! internally used type
+    enum Type { TEXT=1,     //<! text nodes
+                NODE=2,     //<! nodes like <bla/> or <bla>...</bla> 
+                COMMENT=4,  //<! nodes like <!-- foo bar -->
+                UNDEFINED=8, //<! internally used type
+                ALL=TEXT|NODE|COMMENT //<! shortcut for all typs at once
               };
     
           
@@ -68,20 +69,14 @@ namespace icl{
     /// ostream operator
     friend std::ostream &operator<<(std::ostream &os, const XMLNode &node);
 
-    /// returns whether the node is a text node like <foo>text</foo>
-    bool isTextNode() const;
-    
-    /// returns whether the node is a single node like <foo/>
-    bool isSingleNode() const;
-    
-    /// returns whether the node is a container node like <foo><bar/></foo>
-    bool isContainerNode() const;
+    /// returns whether the node is a text node like ...text...
+    bool isText() const;
     
     /// returns whether the node is a comment node like <!-- comment -->
-    bool isCommentNode() const;
+    bool isComment() const;
     
-    /// return whether the node is a so called tag node (text, single or container)
-    bool isTagNode() const;
+    /// return whether the node is 'normal' node that is allowed to have children
+    bool isNode() const;
     
     /// returns whether this node is currently null
     bool isNull() const;
@@ -90,49 +85,49 @@ namespace icl{
     bool isRoot() const;
     
     /// returns the nodes tag
-    /** throws an exception on comment nodes*/
+    /** throws an exception on COMMENT and TEXT nodes*/
     const std::string &getTag() const throw (InvalidNodeTypeException);
 
     /// returns nodes text entry
-    /** throws an exception on not-text nodes */
+    /** throws an exception on COMMENT and NODE nodes */
     const std::string &getText() const throw (InvalidNodeTypeException);
 
     /// returns nodes comment 
-    /** throws an exception on not-comment nodes */
+    /** throws an exception on NODE and TEXT nodes */
     const std::string &getComment() const throw (InvalidNodeTypeException);
 
     
     /// returns an iterator to he first attribute (const)
-    /** throws an exception on comment nodes*/
+    /** throws an exception on non-NODE nodes*/
     const_attrib_iterator attrib_begin() const throw (InvalidNodeTypeException);
 
     /// returns the attribute end iterator (const)
-    /** throws an exception on comment nodes*/
+    /** throws an exception on non-NODE nodes*/
     const_attrib_iterator attrib_end() const throw (InvalidNodeTypeException);
 
 
     /// returns an iterator to he first attribute
-    /** throws an exception on comment nodes*/
+    /** throws an exception on non-NODE nodes*/
     attrib_iterator attrib_begin() throw (InvalidNodeTypeException);
 
     /// returns the attribute end iterator
-    /** throws an exception on comment nodes*/
+    /** throws an exception on non-NODE nodes*/
     attrib_iterator attrib_end() throw (InvalidNodeTypeException);
     
     /// returns the sub node begin iterator (const)
-    /** throws an exception on text and comment nodes */
+    /** throws an exception on non-NODE nodes */
     const_node_iterator begin() const throw (InvalidNodeTypeException);
 
     /// returns the sub node end iterator (const)
-    /** throws an exception on text and comment nodes */
+    /** throws an exception on non-NODE nodes */
     const_node_iterator end() const throw (InvalidNodeTypeException);
 
     /// returns the sub node begin iterator
-    /** throws an exception on text and comment nodes */
+    /** throws an exception on non-NODE nodes */
     node_iterator begin() throw (InvalidNodeTypeException);
 
     /// returns the sub node end iterator
-    /** throws an exception on text and comment nodes */
+    /** throws an exception on non-NODE nodes */
     node_iterator end() throw (InvalidNodeTypeException);
     
 
@@ -151,17 +146,16 @@ namespace icl{
     /// returns this nodes parent node (const) (NULL for root nodes)
     const XMLNode *getParent() const;
 
-
     /// Returns node type
     Type getType() const;
     
-    /// Returns number of children of this node (0 for all but container nodes)
+    /// Returns number of children of this node (0 for all but NODE nodes)
     int getChildCount() const;
     
-    /// Returns whether this node has children at all (equal to isContainerNode())
-    bool hasChilds() const;
+    /// Returns whether this node has children at all (false for all but NODE nodes)
+    bool hasChildren() const;
     
-    /// Returns whether this node has attributs at all (0 for comment nodes, of course)
+    /// Returns whether this node has attributs at all (false for all but NODE nodes)
     bool hasAttributes() const;
     
     /// Returns whether this node has given attribute (with optionally given value)
@@ -227,26 +221,34 @@ namespace icl{
     void addCopy(const XMLNode &child, int idx=-1) throw (InvalidNodeTypeException, ParseException);
 
     /// Adds a new text node to this one at given index
-    /** @param tag tag of the new text node
-        @param text text of the new node
+    /** @param text text of the new node
         @param index destination index (just a hint which is not regarded, if it cannot be fulfilled)
         @see addNode
    */
-    void addTextNode(const std::string &tag, const std::string &text, int index=-1) throw (InvalidNodeTypeException);
+    void addText(const std::string &text, int index=-1) throw (InvalidNodeTypeException);
 
     /// Adds a new single node to this one at given index
     /** @param tag tag of the new text node
         @param index destination index (just a hint which is not regarded, if it cannot be fulfilled)
         @see addNode
-   */
-    void addSingleNode(const std::string &tag, int index=-1)  throw (InvalidNodeTypeException);
+    */
+    void addNode(const std::string &tag, int index=-1)  throw (InvalidNodeTypeException);
+
+    /// Convenience function to add a NODE node with a single child of type TEXT
+    /** @param tag tag of the new NODE node
+        @param text text body of that node
+        @param index destination index (just a hint which is not regarded, if it cannot be fulfilled)
+        @see addNode
+    */
+    void addNodeWithTextContent(const std::string &tag,const std::string &text, int index=-1)  throw (InvalidNodeTypeException);
+
 
     /// Adds a new comment node to this one at given index
     /** @param comment comment to add
         @param index destination index (just a hint which is not regarded, if it cannot be fulfilled)
         @see addNode
-   */
-    void addCommentNode(const std::string &comment, int index=-1)  throw (InvalidNodeTypeException);
+    */
+    void addComment(const std::string &comment, int index=-1)  throw (InvalidNodeTypeException);
 
     /// Adds a new node (or even node hierarchy from xml representation)
     /** @param xml xml representation of new node
@@ -287,8 +289,6 @@ namespace icl{
     
     /// removes all comments from this node and its children
     std::vector<XMLNodePtr> removeAllComments();
-    
-    
 
     /// returns all (recursive) child nodes
     /** recursively collects all child nodes in following order:
@@ -301,14 +301,17 @@ namespace icl{
            <node5/>
         </node1>
         </pre>
+
+        Note: Non-recursive access to all direct child nodes can be obtained by function begin() and end() or
+              also using operator[] in combination with getChildCount()
         @param xpathFilter currently not implemented filter expression (possibly we will provide a
                small subset from XPATH functionality instead
     */
     std::vector<XMLNode*> getAllChildNodes(const XMLNodeFilter &filter=XMLNodeFilterAll());
 
     /// returns list of  (recursive) child nodes matchin expression (which is not yet supported) (const version)
+    /** @see un-const version */
     const std::vector<XMLNode*> getAllChildNodes(const XMLNodeFilter &filter=XMLNodeFilterAll()) const;
-    
     
     /// returns an iterator to all nodes matching given xpath-filter (xpath not yet implemented)
     /** For details on current xpath implementation: @see getAllChildNodes(const std::string&)*/
@@ -382,16 +385,19 @@ namespace icl{
     const XMLNode &operator[](const XMLNodeIdx &idx) const throw (ChildNotFoundException,InvalidNodeTypeException);
     
     /// returns first child node
-    XMLNode &getFirstChildNode() throw (ChildNotFoundException,InvalidNodeTypeException);
+    XMLNode &getFirstChildNode(int types=ALL) throw (ChildNotFoundException,InvalidNodeTypeException);
 
     /// returns first child node (const)
-    const XMLNode &getFirstChildNode() const throw (ChildNotFoundException,InvalidNodeTypeException);
+    const XMLNode &getFirstChildNode(int types=ALL) const throw (ChildNotFoundException,InvalidNodeTypeException);
 
+
+
+    
     /// returns last child node
-    XMLNode &getLastChildNode() throw (ChildNotFoundException,InvalidNodeTypeException);
+    XMLNode &getLastChildNode(int types=ALL) throw (ChildNotFoundException,InvalidNodeTypeException);
 
     /// returns last child node (const)
-    const XMLNode &getLastChildNode() const throw (ChildNotFoundException,InvalidNodeTypeException);
+    const XMLNode &getLastChildNode(int type=ALL) const throw (ChildNotFoundException,InvalidNodeTypeException);
 
     /// returns the tree path from document root to this node with given delimiter
     /** e.g. using this document
@@ -433,9 +439,8 @@ namespace icl{
 
     
     /// Sets the text of this node to a given string
-    /** This does (of course) only work on text typed nodes and on single nodes. Single nodes,
-        that ar set up to have a text value are adapted to text type automatically. On container
-        and on comment nodes, an InvalidNodeTypeException is thrown */
+    /** This does (of course) only work on TEXT
+        nodes, otherwise an InvalidNodeTypeException is thrown */
     void setText(const std::string &text) throw (InvalidNodeTypeException);
 
 
@@ -448,7 +453,7 @@ namespace icl{
       return *this;
     }
     
-    /// deletes this note from it's parent node
+    /// deletes this note from it's parent node and from it's parents document
     XMLNodePtr delSelf();
 
     private:
@@ -475,16 +480,10 @@ namespace icl{
     XMLAttMapPtr m_attribs;
     
     /// text value (only for text nodes)
-    std::string m_text;
+    std::string m_content;
 
-    /// node tag (only for non-comment nodes)
-    std::string m_tag;
-    
-    /// node comment (only for comment nodes)
-    std::string m_comment;
-    
     /// recursive serialization function (used by toString() and ostream-operator)
-    void serialize(std::ostream &s, int level, bool recursive=true) const;
+    void serialize(std::ostream &s, int level, bool lastNodeWasText, bool recursive) const;
 
     /// deep copy function (only accessible internally)
     XMLNodePtr deepCopy(XMLNode *newParent, XMLDocument *newDoc) const;

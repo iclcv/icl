@@ -71,44 +71,63 @@ namespace icl{
     ICLASSERT_RETURN(t[0]=="config");
     XMLNode* n = doc.getRootNode().get();
     for(unsigned int i=1;i<t.size()-1;++i){
-      std::vector<XMLNode*> sn = n->getAllChildNodes(XMLNodeFilterByTag("section") &
+      std::vector<XMLNode*> sn = n->getAllChildNodes(XMLNodeFilterByType(XMLNode::NODE) & 
+                                                     XMLNodeFilterByTag("section") &
                                                      XMLNodeFilterByAttrib("id",t[i]));
       switch(sn.size()){
         case 0:
-          n->addSingleNode("section");
+          n->addNode("section");
           n = &n->getLastChildNode();
           (*n)("id")=t[i];
           break;
         case 1:
-          ICLASSERT_RETURN(!sn[0]->isTextNode());
           n = sn[0];
           break;
         default:
           ERROR_LOG("Warning more then one sub-path found for key \"" << name << "\" [using first!]");
-          ICLASSERT_RETURN(!sn[0]->isTextNode());
           n = sn[0];
           break;
       }
     }
 
-    std::vector<XMLNode*> sn = n->getAllChildNodes(XMLNodeFilterByType(XMLNode::TEXT) &
+    std::vector<XMLNode*> sn = n->getAllChildNodes(XMLNodeFilterByType(XMLNode::NODE) &
                                                    XMLNodeFilterByTag("data") &
                                                    XMLNodeFilterByAttrib("id",t.back()));
+    XMLNode *data = 0;
     switch(sn.size()){
       case 0:
-        n->addTextNode("data",value);
+        n->addNodeWithTextContent("data",value);
         n->getLastChildNode()("type") = type;
         n->getLastChildNode()("id") = t.back();
         break;
       case 1:
         (*sn[0])("type") = type;
-        sn[0]->setText(value);
+        data = sn[0];
         break;
       default:
-        ERROR_LOG("Warning more then one sub-path found for key \"" << name << "\" (data tag doubled) [using first!]");
+        ERROR_LOG("Warning more than one sub-path found for key \"" << name << "\" (data tag doubled) [using first!]");
         (*sn[0])("type") = type;
-        sn[0]->setText(value);
+        data = sn[0];
         break;
+    }
+    if(data){
+      if(!data->hasChildren()){
+        data->addText(value);
+        return;
+      }
+      std::vector<XMLNode*> sn = data->getAllChildNodes(XMLNodeFilterByType(XMLNode::TEXT));
+      switch(sn.size()){
+        case 0:
+          data->addText(value,0);
+          break;
+        case 1:
+          (*sn[0]) = value;
+          break;
+        default:
+          ERROR_LOG("Warning more than one (" << sn.size() << ") text sub-node found in node " + data->toString(false) + "[using first!]");
+          (*sn[0]) = value;
+          break;
+      }
     }
     
   }
@@ -138,9 +157,10 @@ namespace icl{
     m_doc->removeAllComments();
     m_entries.clear();
     const std::vector<XMLNode*> ns = m_doc->getRootNode()->getAllChildNodes( XMLNodeFilterByTag("data") &
-                                                                             XMLNodeFilterByType(XMLNode::TEXT) &
+                                                                             XMLNodeFilterByType(XMLNode::NODE) &
                                                                              XMLNodeFilterByAttrib("id") &
-                                                                             XMLNodeFilterByAttrib("type") );
+                                                                             XMLNodeFilterByAttrib("type") &
+                                                                             XMLNodeFilterByHasAnyChildOfType(XMLNode::TEXT));
     std::string pfx = m_sDefaultPrefix;
     if(pfx.length() && pfx[pfx.length()-1] != '.') pfx+='.';
     
@@ -154,7 +174,7 @@ namespace icl{
       if(contains(key)) throw InvalidFileFormatException("Key: '" + key + "' was found at least twice!");
       Entry &e = m_entries[key];
       e.id = key;
-      e.value = n.getText();
+      e.value = n.getFirstChildNode(XMLNode::TEXT).getText();
       std::map<std::string,std::string>::const_iterator it = s_typeMapReverse.find(n("type"));
       if(it == s_typeMapReverse.end()) throw UnregisteredTypeException(n("type"));
       e.rttiType = it->second;

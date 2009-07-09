@@ -139,6 +139,42 @@ namespace icl{
     /// deep copy function
     virtual XMLNodeFilter *deepCopy() const{ return new XMLNodeFilterByLevel(maxLevel); }
   };
+
+  /// Filters by given node type of first child node
+  class XMLNodeFilterByFirstChildNodeType : public XMLNodeFilter{
+    public:
+    /// ored node types allowed
+    int types;
+    
+    /// create with given ored XMLNode::Type values
+    XMLNodeFilterByFirstChildNodeType(int types):
+    types(types){}
+    
+    /// returns always true
+    virtual bool operator()(const XMLNode&) const;
+    
+    /// deep copy function
+    virtual XMLNodeFilter *deepCopy() const{ return new XMLNodeFilterByFirstChildNodeType(types); }
+  };
+
+  /// Filters nodes by testing them for having any direct child nodes of one of given types
+  class XMLNodeFilterByHasAnyChildOfType : public XMLNodeFilter{
+    public:
+    /// ored node types allowed
+    int types;
+    
+    /// create with given ored XMLNode::Type values
+    XMLNodeFilterByHasAnyChildOfType(int types):
+    types(types){}
+    
+    /// returns always true
+    virtual bool operator()(const XMLNode&) const;
+    
+    /// deep copy function
+    virtual XMLNodeFilter *deepCopy() const{ return new XMLNodeFilterByHasAnyChildOfType(types); }
+  };
+
+
   
   
   /// Utility class for node filter combinations  \ingroup XML
