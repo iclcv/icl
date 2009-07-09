@@ -11,6 +11,7 @@ std::string uri,stream;
 GUI gui("vbox");
 
 bool first = true;
+bool *ppEnabled = 0;
 
 void receive_loop(){
   try{
@@ -37,6 +38,7 @@ const ImgBase *grab_image(){
     first = false;
     grabber.setDesiredSize(parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
     grabber.setIgnoreDesiredParams(false);
+    grabber.setDesiredDepth(depth8u);
     if(pa_defined("-dist")){
       grabber.enableDistortion(DIST_FROM_PROGARG("-dist"),
                                parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
@@ -72,8 +74,11 @@ void send_app(){
  
   while(first || !pa_defined("-single-shot")){
 
+    const ImgBase *grabbedImage = grab_image();
     Img8u image;
-    if(pa_defined("-pp")){
+    
+    
+    if(pa_defined("-pp") && *ppEnabled){
       static UnaryOp *pp = 0;
       if(!pp){
         static std::string pps = pa_subarg<std::string>("-pp",0,"");
@@ -91,11 +96,10 @@ void send_app(){
         }
       }
       pp->setClipToROI(false);
-      pp->apply(grab_image(),bpp(&image));
+      pp->apply(grabbedImage)->convert(&image);
     }else{
-      grab_image()->convert(&image);
+      grabbedImage->convert(&image);
     }
-
 
     if(pa_defined("-emulate-mask")){
 
@@ -183,12 +187,25 @@ int main(int n, char **ppc){
     if(!pa_defined("-no-gui")){
       QApplication app(n,ppc);
       ExecThread x(send_app);
-      gui << "image[@handle=image@minsize=12x8]" 
-          << ( GUI("hbox[@maxsize=100x2]") 
-               << create_camcfg(FROM_PROGARG("-input"))
-               << "fps(10)[@handle=fps]"
+
+      if(pa_defined("-pp")){
+         gui << "image[@handle=image@minsize=12x8]" 
+            << ( GUI("hbox[@maxsize=100x4]") 
+                 << create_camcfg(FROM_PROGARG("-input"))
+                 << "fps(10)[@handle=fps]"
+                 << "togglebutton(off,!on)[@handle=_@out=pp-on@label=preprocessing@minsize=5x2]"
                );
-      gui.show();
+        gui.show();
+        ppEnabled = &gui.getValue<bool>("pp-on");
+      }else{
+        gui << "image[@handle=image@minsize=12x8]" 
+            << ( GUI("hbox[@maxsize=100x2]") 
+                 << create_camcfg(FROM_PROGARG("-input"))
+                 << "fps(10)[@handle=fps]"
+                );
+        gui.show();
+      }
+    
       x.run();
       return app.exec();
     }else{
