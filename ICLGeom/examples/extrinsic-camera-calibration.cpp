@@ -67,8 +67,8 @@ struct MaskRect{
     maskedImage.setParams(src.getParams());
     maskedImage.clear();
     Img8u srcCpy(src);
-    srcCpy.setROI(rect);
-    maskedImage.setROI(rect);
+    srcCpy.setROI(rect & srcCpy.getImageRect());
+    maskedImage.setROI(rect & srcCpy.getImageRect());
     srcCpy.deepCopyROI(&maskedImage);
     return maskedImage;
   }
@@ -518,6 +518,7 @@ void init(){
     of << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>" << std::endl
        << "<config>" << std::endl
        << "  <title>Camera Calibration Config-File</title>" << std::endl
+       << "  <data id=\"world-offset\" type=\"string\">0,0,0</data>" << std::endl
        << "  <section id=\"calibration-object\">" << std::endl
        << "      <data id=\"nx\" type=\"int\">4</data>" << std::endl
        << "      <data id=\"ny\" type=\"int\">3</data>" << std::endl
@@ -616,6 +617,9 @@ void init(){
   int w2o_idx = ConfigFile::sget<int>("config.calibration-object.wall-2.offset-idx");
   Vec3 w2d1 = parse<Vec3>(ConfigFile::sget<std::string>("config.calibration-object.wall-2.direction-1"));  
   Vec3 w2d2 = parse<Vec3>(ConfigFile::sget<std::string>("config.calibration-object.wall-2.direction-2"));  
+  
+  Vec3 worldOffset = parse<Vec3>(ConfigFile::sget<std::string>("config.world-offset"));
+  TODO_LOG("worldOffset is currently ignored! (worldOffset was: " << worldOffset.transp() << ")");
   
 #define USE_SPECIAL_OFFSET_CALCULATION
 #ifdef USE_SPECIAL_OFFSET_CALCULATION
