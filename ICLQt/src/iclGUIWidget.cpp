@@ -103,9 +103,9 @@ namespace icl{
     if(m_handle){
       for(unsigned int i=0;i<m_vecCallbacks.size();++i){
         m_vecCallbacks[i]->exec();
-          m_vecCallbacks[i]->exec(*m_handle);
+        m_vecCallbacks[i]->exec(*m_handle);
       }
-      }else{
+    }else{
       for(unsigned int i=0;i<m_vecCallbacks.size();++i){
         m_vecCallbacks[i]->exec();
       }

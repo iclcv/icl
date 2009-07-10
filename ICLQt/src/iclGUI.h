@@ -1033,10 +1033,10 @@ int main(int n, char **ppc){
       
       public:
       /// Default implementations constructor with given callback function
-      Callback(callback_function func):m_func(func){}
+      Callback(callback_function func):m_func(func),m_cfunc(0){}
 
       /// Default implementations constructor with given complex callback function
-      Callback(complex_callback_function cfunc):m_cfunc(cfunc){}
+      Callback(complex_callback_function cfunc):m_func(0),m_cfunc(cfunc){}
       
       /// vitual execution function
       virtual void exec(){

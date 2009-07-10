@@ -213,10 +213,11 @@ namespace icl{
         child->m_parent = this;
         child->m_document = m_document;
         if(index >= 0 && (int)m_subnodes.size() < index){
-          m_subnodes.push_back(child);
-        }else{
           m_subnodes.insert(begin()+index, child);
+        }else{
+          m_subnodes.push_back(child);
         }
+        break;
       default:
         throw std::logic_error(str("in function:") + __FUNCTION__ +  "(XMLNode::Type value ALL is just a shortcut and"
                                  " cannot be used as a node type");

@@ -233,7 +233,7 @@ namespace icl{
 
   void DCDevice::dc1394_reset_bus(bool verbose){
     // {{{ open
-
+  
     dc1394_t * d;
     dc1394camera_list_t * list;
     dc1394camera_t *camera;
