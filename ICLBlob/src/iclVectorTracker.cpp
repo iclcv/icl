@@ -84,23 +84,31 @@ namespace icl{
         cols[c]->clear();
       }    
     }
-    static Vec predict_vec(const Vec &a, const Vec &b){
+    static Vec predict_vec(const std::vector<bool> &extrapolationMask,const Vec &a, const Vec &b){
       Vec p(a.size());
       for(unsigned int i=0;i<a.size();++i){
-        p[i] = Extrapolator<float,int>::predict(a[i],b[i]);
+        if(extrapolationMask[i]){
+          p[i] = Extrapolator<float,int>::predict(a[i],b[i]);
+        }else{
+          p[i] = b[i];
+        }
       }
       return p;
     }
-    static Vec predict_vec(const Vec &a, const Vec &b, const Vec &c){
+    static Vec predict_vec(const std::vector<bool> &extrapolationMask, const Vec &a, const Vec &b, const Vec &c){
       Vec p(a.size());
       for(unsigned int i=0;i<a.size();++i){
-        p[i] = Extrapolator<float,int>::predict(a[i],b[i],c[i]);
+        if(extrapolationMask[i]){
+          p[i] = Extrapolator<float,int>::predict(a[i],b[i],c[i]);
+        }else{
+          p[i] = c[i];
+        }
       }
       return p;
     }
 
     
-    void predict(){
+    void predict(const std::vector<bool> &extrapolationMask){
       for(int y=0;y<height;++y){
         switch(goodV[y]){
           case 0:
@@ -110,10 +118,10 @@ namespace icl{
             (*cols[3])[y] = (*cols[2])[y]; 
             break;
           case 2: 
-            (*cols[3])[y] = predict_vec( (*cols[1])[y], (*cols[2])[y] );
+            (*cols[3])[y] = predict_vec(extrapolationMask, (*cols[1])[y], (*cols[2])[y] );
             break;
           default: 
-            (*cols[3])[y] = predict_vec( (*cols[0])[y], (*cols[1])[y], (*cols[2])[y] );
+            (*cols[3])[y] = predict_vec(extrapolationMask, (*cols[0])[y], (*cols[1])[y], (*cols[2])[y] );
         }
       }
     }
@@ -222,7 +230,7 @@ namespace icl{
          const std::vector<float> &normFactors):
       VTMat(dim),tryOpt(tryOpt),nextID(0),idMode(idMode),
       thresh(distanceThreshold),largeVal(largeVal),
-      normFactors(normFactors){
+      normFactors(normFactors),extrapolationMask(dim,true){
       
       bool all1 = true;
       for(unsigned int i=0;i<normFactors.size();++i){
@@ -246,6 +254,7 @@ namespace icl{
     float largeVal;
     std::vector<bool> idMask;
     std::vector<float> normFactors;
+    std::vector<bool> extrapolationMask;
     
     virtual void notifyIDLoss(int id){
       // DEBUG_LOG("notify id loss: " << id << "(idsMask.size is " << idMask.size() << ")");
@@ -373,7 +382,7 @@ namespace icl{
       return;
     }
     
-    m_data->predict();
+    m_data->predict(m_data->extrapolationMask);
     SimpleMatrix<float> distMat;
     if((int)m_data->normFactors.size() == m_data->dim){
       distMat = m_data->createDistanceMatrix(newData,PearsonDist(m_data->normFactors),m_data->largeVal);
@@ -478,6 +487,16 @@ namespace icl{
     ICLASSERT_RETURN_VAL(!isNull(),-1);
     return m_data->dim;
   }
+
+  void VectorTracker::setExtrapolationMask(const std::vector<bool> &mask){
+    ICLASSERT_RETURN(m_data->dim == (int)mask.size());
+    m_data->extrapolationMask = mask;
+  }
+  
+  const std::vector<bool> &VectorTracker::getExtrapolationMask() const{
+    return m_data->extrapolationMask;
+  }
+  
 
 } // namespace icl
 

@@ -77,6 +77,18 @@ namespace icl{
     /// return current data dimension
     int getDim() const;
     
+    /// internally sets the extrapolation mask
+    /** By default, the mask contains only true-entries. All dimensions of 
+        current date, that have a true-entry in the mask are extrapolated
+        using a linear model before the internal cost-matrix is created (and if
+        this entry has an age of at least 2 -- so two former entries are available).
+        Dimensions that have a false-entry in the given mask are not-extrapolated
+        over time (which is identical to using a constant extrapolation model) */
+    void setExtrapolationMask(const std::vector<bool> &mask);
+    
+    /// returns current extrapolation mask
+    const std::vector<bool> &getExtrapolationMask() const;
+    
     private:
     
     /// internal data structure (declared and used in iclVectorTracker.cpp only)
