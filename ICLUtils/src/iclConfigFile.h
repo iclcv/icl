@@ -252,7 +252,10 @@ namespace icl{
                         stored internally for later use if load(void) or save(void) is called. */
     ConfigFile(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException);
     
-    
+    /// Creates a ConfigFile from given handle instance
+    /** Note: Ownership is passed to this ConfigFile instance here */
+    ConfigFile(XMLDocument *handle) throw (UnregisteredTypeException);
+
     /// loads the ConfigFile from given filename and updates internal filename variable
     /** Warning: old data content is lost! */
     void load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException);
@@ -469,7 +472,9 @@ namespace icl{
     const XMLDocument *getHandle() const { return m_doc.get(); }
     
     private:
-
+    
+    /// internal utitlity function to parse existing XMLDocument
+    void load_internal();
     
     /// internal utility function
     Entry &get_entry_internal(const std::string &id) throw (EntryNotFoundException);

@@ -3,6 +3,10 @@
 #include <iclStringUtils.h>
 #include <iclSmartPtr.h>
 
+#include <iclConfigFile.h>
+#include <iclXMLDocument.h>
+#include <fstream>
+
 namespace icl{
 
 
@@ -328,27 +332,47 @@ namespace icl{
 
   /// ostream operator (writes camera in XML format)
   std::ostream &operator<<(std::ostream &os, const Camera &cam){
-    return os << "<CAMERA>" << std::endl 
-              << "\t<name>" << cam.getName() << "</name>" << std::endl
-              << "\t<pos>" << cam.getPos().transp() << "</pos>" << std::endl
-              << "\t<norm>" << cam.getNorm().transp() << "</norm>" << std::endl
-              << "\t<up>" << cam.getUp().transp() << "</up>" << std::endl
-              << "\t<focal-length>"<< cam.getFocalLength() << "</focal-length>" << std::endl
-              << "\t<viewport>" << cam.getViewPort() << "</viewport>" << std::endl
-              << "\t<handness>" << (cam.m_rightHandedCS?"right":"left") << "</handness>" << std::endl
-              << "\t<z-near>" << cam.m_zNear << "</z-near>" << std::endl
-              << "\t<z-far>" << cam.m_zFar << "</z-far>" << std::endl
-              << "</CAMERA>";
+    ConfigFile f;
+    f["config.title"] = cam.getName();
+    f["config.camera.pos"] = str(cam.getPos().transp());
+    f["config.camera.norm"] = str(cam.getNorm().transp());
+    f["config.camera.up"] = str(cam.getUp().transp());
+    f["config.camera.f"] = cam.getFocalLength();
+    f["config.camera.viewport"] = str(cam.getViewPort());
+    f["config.camera.handness"] = str(cam.m_rightHandedCS?"right":"left");
+    f["config.camera.zfar"] = cam.m_zFar;
+    f["config.camera.zNear"] = cam.m_zNear;
+    return os;
   }
 
-#ifdef HAVE_QT_OR_XCF
+  void Camera::load_camera_from_stream(std::istream &is, const std::string &prefix,
+                                      Camera &cam){
+    ConfigFile f(new XMLDocument(is));
+    f.setPrefix("prefix");
+    cam.setName(f["title"]);
+    cam.setPos(parse<Vec>(f["camera.pos"]));
+    cam.setNorm(parse<Vec>(f["camera.norm"]));
+    cam.setUp(parse<Vec>(f["camera.up"]));
+
+    cam.setFocalLength(f["camera.f"]);
+    cam.setViewPort(parse<Rect>(f["camera.viewport"]));
+    cam.m_rightHandedCS = (f.get<std::string>("camera.handness") == "right");
+    cam.setZFar(f["camera.zfar"]);
+    cam.setZNear(f["camera.znear"]);
+  }
+  
+  Camera::Camera(const std::string &filename, const std::string &prefix) throw (ParseException){
+    std::ifstream is(filename.c_str());
+    load_camera_from_stream(is,prefix,*this);
+  }
+  Camera::Camera(std::istream &is, const std::string &prefix) throw (ParseException){
+    load_camera_from_stream(is,prefix,*this);
+  }
 
   std::istream &operator>>(std::istream &is, Camera &cam) throw (ParseException){
-    ERROR_LOG("This is not yet implemented ...");
-    throw ParseException("Camera [Not Implemented]");
+    cam = Camera(is);
+    return is;
   }
-
-#endif
 
   static inline float sprod_3(const Vec &a, const Vec &b){
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];

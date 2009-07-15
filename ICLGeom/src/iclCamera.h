@@ -9,11 +9,6 @@
 #include <iclPlaneEquation.h>
 #include <iclViewRay.h>
 
-#ifdef HAVE_QT
-#define HAVE_QT_OR_XCF
-#elif HAVE_XCF
-#define HAVE_QT_OR_XCF
-#endif
 
 
 // the icl namespace
@@ -48,6 +43,20 @@ namespace icl{
   */
   struct Camera : public Lockable{
     
+    /// loads a camera from given file
+    /** @param filename file name of valid configuration file (in ICL's ConfigFile format)
+        @param prefix valid prefix that determines wheret to find the camera within the 
+               given config file (note, that this prefix must end with '.')
+        */
+    Camera(const std::string &filename, const std::string &prefix="config.")  throw (ParseException);
+
+    /// loads a camera from given input stream
+    /** @param filename file name of valid configuration file (in ICL's ConfigFile format)
+        @param prefix valid prefix that determines wheret to find the camera within the 
+               given config file (note, that this prefix must end with '.')
+        */
+    Camera(std::istream &configDataStream, const std::string &prefix="config.")  throw (ParseException);
+
     /// Creates a camera from given position and rotation vector
     /** If the camera rotation is 0,0,0, the cameras normal vector is (0,0,1) and 
         it's up vector is (0,1,0) */
@@ -290,11 +299,10 @@ namespace icl{
     /// allows access to private data
     friend std::ostream &operator<<(std::ostream &os, const Camera &cam);
 
-#ifdef HAVE_QT_OR_XCF
     /// allows access to private data
     friend std::istream &operator>>(std::istream &is, Camera &cam) throw (ParseException);
-#endif
-
+    
+    
     private:
     Vec m_pos;        //!< center position vector
     Vec m_norm;       //!< norm vector
@@ -308,18 +316,19 @@ namespace icl{
     bool m_rightHandedCS; //!< is camera coordinate system right handed or not (default: true)
     
     std::string m_name; //!< name of the camera (visualized in the scene2 if set)
-    
+
+    /// intenal helper function
+    static void load_camera_from_stream(std::istream &is, 
+                                        const std::string &prefix,
+                                        Camera &cam);
   };
 
 
   /// ostream operator (writes camera in XML format)
   std::ostream &operator<<(std::ostream &os, const Camera &cam);
 
-
-#ifdef HAVE_QT_OR_XCF
   /// istream operator parses a camera from an XML-string [needs QT or XCF support]
   std::istream &operator>>(std::istream &is, Camera &cam) throw (ParseException);
-#endif
 
 }
 

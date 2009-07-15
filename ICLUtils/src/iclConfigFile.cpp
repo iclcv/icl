@@ -149,11 +149,7 @@ namespace icl{
     return str.str();
   }
 
-  void ConfigFile::load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException){
-    // {{{ open
-
-    ICLASSERT_RETURN(filename != "");
-    *m_doc = XMLDocument::load(filename);
+  void ConfigFile::load_internal(){
     m_doc->removeAllComments();
     m_entries.clear();
     const std::vector<XMLNode*> ns = m_doc->getRootNode()->getAllChildNodes( XMLNodeFilterByTag("data") &
@@ -191,6 +187,15 @@ namespace icl{
         setRestriction(key,vl.substr(1,vl.size()-2));
       }
     }
+  }
+  
+  void ConfigFile::load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException){
+    // {{{ open
+
+    ICLASSERT_RETURN(filename != "");
+    *m_doc = XMLDocument::load(filename);
+    
+    load_internal();
   }
 
   // }}}
@@ -232,6 +237,11 @@ namespace icl{
   }
 
   // }}}
+  
+  ConfigFile::ConfigFile(XMLDocument *handle) throw (UnregisteredTypeException):
+    m_doc(handle){
+    load_internal();
+  }
   
   void ConfigFile::loadConfig(const std::string &filename){
     // {{{ open
