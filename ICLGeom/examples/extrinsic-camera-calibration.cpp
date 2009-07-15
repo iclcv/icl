@@ -33,6 +33,7 @@ GUI sceneGUI("hsplit");
 Scene2 scene;
 GenericGrabber *grabber = 0;
 ImgParams imageParams;
+Vec worldOffset(0,0,0,0);
 
 struct MaskRect{
   Mutex mutex;
@@ -618,8 +619,9 @@ void init(){
   Vec3 w2d1 = parse<Vec3>(ConfigFile::sget<std::string>("config.calibration-object.wall-2.direction-1"));  
   Vec3 w2d2 = parse<Vec3>(ConfigFile::sget<std::string>("config.calibration-object.wall-2.direction-2"));  
   
-  Vec3 worldOffset = parse<Vec3>(ConfigFile::sget<std::string>("config.world-offset"));
-  TODO_LOG("worldOffset is currently ignored! (worldOffset was: " << worldOffset.transp() << ")");
+  Vec3 wo = parse<Vec3>(ConfigFile::sget<std::string>("config.world-offset"));
+  worldOffset = Vec(wo[0],wo[1],wo[2],0);
+  //TODO_LOG("worldOffset is currently ignored! (worldOffset was: " << worldOffset.transp() << ")");
   
 #define USE_SPECIAL_OFFSET_CALCULATION
 #ifdef USE_SPECIAL_OFFSET_CALCULATION
@@ -814,7 +816,8 @@ void run(){
   
   static ButtonHandle &showButton = gui.getValue<ButtonHandle>("show-camera");
   if(showButton.wasTriggered()){
-    const Camera &c = scene.getCamera(CALIB_CAM);
+    Camera c = scene.getCamera(CALIB_CAM);
+    c.setPos(c.getPos()+worldOffset);
     std::string filename = pa_subarg<std::string>("-o",0,"extracted-cam-cfg.xml");
     std::cout << "new config file: (written to " <<  filename << ")" << std::endl;
     std::cout << c << std::endl;
