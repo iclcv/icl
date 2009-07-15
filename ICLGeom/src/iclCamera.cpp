@@ -342,7 +342,7 @@ namespace icl{
     f["config.camera.handness"] = str(cam.m_rightHandedCS?"right":"left");
     f["config.camera.zfar"] = cam.m_zFar;
     f["config.camera.zNear"] = cam.m_zNear;
-    return os;
+    return os << f;
   }
 
   void Camera::load_camera_from_stream(std::istream &is, const std::string &prefix,
@@ -363,6 +363,7 @@ namespace icl{
     TRY( cam.setZFar(f["camera.zfar"]) );
     TRY( cam.setZNear(f["camera.znear"]) );
 #undef TRY
+    
   }
   
   Camera::Camera(const std::string &filename, const std::string &prefix) throw (ParseException){

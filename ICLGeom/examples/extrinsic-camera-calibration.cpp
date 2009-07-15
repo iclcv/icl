@@ -814,20 +814,13 @@ void run(){
   
   static ButtonHandle &showButton = gui.getValue<ButtonHandle>("show-camera");
   if(showButton.wasTriggered()){
-    //    scene.getCamera(CALIB_CAM).show("current camera");
     const Camera &c = scene.getCamera(CALIB_CAM);
-    ConfigFile f;
-    f.set("config.title",str("extracted camera ") +Time::now().toString());
-    f.set("config.camera.pos",str(c.getPos().transp()));
-    f.set("config.camera.norm",str(c.getNorm().transp()));
-    f.set("config.camera.up",str(c.getUp().transp()));
-    f.set("config.camera.f",c.getFocalLength());
-    f.set("config.camera.size",str(c.getViewPort().getSize()));
-    
     std::string filename = pa_subarg<std::string>("-o",0,"extracted-cam-cfg.xml");
     std::cout << "new config file: (written to " <<  filename << ")" << std::endl;
-    std::cout << f << std::endl;
-    f.save(filename);
+    std::cout << c << std::endl;
+    
+    std::ofstream file(filename.c_str());
+    file << c;
   }
 
   Thread::msleep(10);
