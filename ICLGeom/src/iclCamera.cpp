@@ -348,17 +348,21 @@ namespace icl{
   void Camera::load_camera_from_stream(std::istream &is, const std::string &prefix,
                                       Camera &cam){
     ConfigFile f(new XMLDocument(is));
-    f.setPrefix("prefix");
-    cam.setName(f["title"]);
-    cam.setPos(parse<Vec>(f["camera.pos"]));
-    cam.setNorm(parse<Vec>(f["camera.norm"]));
-    cam.setUp(parse<Vec>(f["camera.up"]));
 
-    cam.setFocalLength(f["camera.f"]);
-    cam.setViewPort(parse<Rect>(f["camera.viewport"]));
-    cam.m_rightHandedCS = (f.get<std::string>("camera.handness") == "right");
-    cam.setZFar(f["camera.zfar"]);
-    cam.setZNear(f["camera.znear"]);
+    f.setPrefix(prefix);
+
+#define TRY(X) try { X; } catch(ICLException &ex) { ERROR_LOG(ex.what()); }
+    TRY( cam.setName(f["title"]) );
+    TRY( cam.setPos(parse<Vec>(f["camera.pos"])) );
+    TRY( cam.setNorm(parse<Vec>(f["camera.norm"])) );
+    TRY( cam.setUp(parse<Vec>(f["camera.up"])) );
+    
+    TRY( cam.setFocalLength(f["camera.f"]) );
+    TRY( cam.setViewPort(parse<Rect>(f["camera.viewport"])) );
+    TRY( cam.m_rightHandedCS = (f.get<std::string>("camera.handness") == "right") );
+    TRY( cam.setZFar(f["camera.zfar"]) );
+    TRY( cam.setZNear(f["camera.znear"]) );
+#undef TRY
   }
   
   Camera::Camera(const std::string &filename, const std::string &prefix) throw (ParseException){
