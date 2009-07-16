@@ -207,7 +207,7 @@ namespace icl{
   
     m_doc(new XMLDocument("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
                           "<config>\n"
-                          "   <title>no title defined\"</title>\n"
+                          "   <data id=\"title\" type=\"string\">no title defined</title>\n"
                           "</config>\n")){
   }
   

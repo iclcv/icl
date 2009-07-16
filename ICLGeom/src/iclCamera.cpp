@@ -341,7 +341,7 @@ namespace icl{
     f["config.camera.viewport"] = str(cam.getViewPort());
     f["config.camera.handness"] = str(cam.m_rightHandedCS?"right":"left");
     f["config.camera.zfar"] = cam.m_zFar;
-    f["config.camera.zNear"] = cam.m_zNear;
+    f["config.camera.znear"] = cam.m_zNear;
     return os << f;
   }
 
