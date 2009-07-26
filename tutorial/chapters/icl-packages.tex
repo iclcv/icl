@@ -149,8 +149,38 @@ The \inlinecode{DCGrabber} grabs images from fire-wire aka IEEE-1394 camera devi
 %
 \item \inlinecode{PWCGrabber} [\iclclassref{IO}{PWCGrabber}]:\\
 The \textbf{P}hillips \textbf{W}eb\textbf{C}am grabber can be used to grab images from cameras that use the linux pwc kernel module\footnote{\hrefn{http://www.saillard.org/linux/pwc/}}.
-\item TODO
+\item \inlinecode{UnicapGrabber} [\iclclassref{IO}{UnicapGrabber}]:\\
+This grabber wraps the \textbf{unicap}-library\footnote{\hrefn{http://unicap-imaging.org/}} which provides a generalized access to fire-wire as well as video-4-linux/video-4-linux-2 devices.  
+\item \inlinecode{DemoGrabber} [\iclclassref{IO}{DemoGrabber}]:\\
+This is just a tiny utility class, which can be used e.g. to test an application if no appropriate source device is currently available. It creates images with a small moving red rectangle.
+\item \inlinecode{GenericGrabber} [\iclclassref{IO}{GenericGrabber}]: \textbf{This is the grabber that should be used by your application!}\\
+The \inlinecode{GenericGrabber} internally wraps one of the other grabbers. Which actual \inlinecode{Grabber}-instance is used internally depends on a string values, which is passed to the \inlinecode{GenericGrabber}-constructor. This enables the programmer to create applications, that are able to work with most different input devices. Using the \inlinecode{GenericGrabber} instead of some other Grabber instances directly provides a lot of advantages:
+\begin{itemize}
+\item Applications that use a generic grabber can simple be set up to use any input device
+\item In particular, one can easily switch from a camera device to stored image files
+\item The compilation procedure of applications doesn't have to check for a particular Grabber/library to be present or something
+\item There's only a single additional pointer access for this improved flexibility
+\end{itemize}
+The \inlinecode{GenericGrabber} constructor gets two arguments. The first argument is one (or a comma-separated list) of \inlinecode{pwc}, \inlinecode{unicap}, \inlinecode{dc}, \inlinecode{file} or  \inlinecode{demoe} and determines the grabber type. If a list if given, it is searched successively for a supported device type. The second argument is also of type \inlinecode{std::string} and provides additional information for the creation of the internal Grabber instance. As each Grabber needs other constructor parameters, this argument's syntax depends on the first argument as well. To allow to specify also arguments to a list of possible device types, the device type is also given here again. Some examples will explain this in detail:
+\begin{itemize}
+\item \inlinecode{GenericGrabber("pwc","pwc=0")}: Creates a \inlinecode{GenericGrabber} instance that wraps a \inlinecode{PWCGrabber} for \texttt{/dev/video0}
+\item \inlinecode{GenericGrabber("pwc,file","pwc=0,file=*.ppm")}: As above, but with file grabber fallback
+\item \inlinecode{GenericGrabber("file","file=images/*.ppm")}: \inlinecode{FileGrabber} that uses all files in \texttt{./images} with suffix \texttt{.ppm}
+\item \inlinecode{GenericGrabber("dc","1")}: internally a \inlinecode{DCGrabber} is wrapped, that uses DC-device index 1 (available devices are enumerated internally)
+\item \inlinecode{GenericGrabber("unicap","*Phillips*")}: Use the first unicap device, which matches the given string pattern
+\item \inlinecode{GenericGrabber("pwc,file,dc","pwc=0,file=images/*.ppm,dc=1")}: An example combination
+\end{itemize}
+In most applications, the actual Grabber, that should be used is determined by a progarg-argument (See \iclheaderref{Utils}{ProgArg}). To enhance convenience for instantiation of  \inlinecode{GenericGrabber}s using progarg input, a special macro \inlinecode{FROM\_PROGARG} is provided. The following example illustrates how to use this macro. 
+\codefile{generic-grabber-from-progarg.cpp}{Creation of a \inlinecode{GenericGrabber} instance from a programm argument}
+
+Now, the resulting application (we call it \inlinecode{app} here) can be run e.g. with \inlinecode{app -input dc 0} to use \inlinecode{DCGrabber} input. or with \inlinecode{app -input file images/*.ppm} to use image files as input.\\ \textbf{Please note} that the progarg-name \inlinecode{-input} is ICL's default for selection of an application's input device. Applications should not break with this conventions, unless, there are more than one input devices that must be specified somehow else (e.g. with \inlinecode{-left} and \inlinecode{-right} resp.)
+
+
 \end{enumerate}
+
+
+\subsection{What is the best Grabber for Fire-Wire devices?}
+Unicap is partially redundant to the \inlinecode{DCGrabber} class, however both interfaces are completely independent. Grabbing from Fire-wire devices runs a little bit faster with the \inlinecode{DCGrabber}-class. The \inlinecode{DCGrabber} class is optimized to provides images with a minimal latency and is a bitter better here. 
 
 \subsection{Feature Adjustment\label{sec:grabber-feature-adjustment}}
 TODO
