@@ -1,5 +1,5 @@
-#ifndef STEPPING_RANGE_H
-#define STEPPING_RANGE_H
+#ifndef ICL_STEPPING_RANGE_H
+#define ICL_STEPPING_RANGE_H
 
 #include "iclRange.h"
 
@@ -59,6 +59,10 @@ namespace icl{
       }
     }    
   };
+
+#define ICL_INSTANTIATE_DEPTH(D) typedef SteppingRange<icl##D> SteppingRange##D;
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
   
 }

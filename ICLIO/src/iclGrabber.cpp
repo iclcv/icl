@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstring>
 #include <iclStringUtils.h>
+#include <iclConfigFile.h>
 
 using namespace std;
 
@@ -259,6 +260,73 @@ namespace icl{
   void Grabber::disableDistortion(){
     ICL_DELETE(m_warp);
     ICL_DELETE(m_distortionBuffer);
+  }
+
+  void Grabber::saveProperties(const std::string &filename, bool writeDesiredParams){
+    ConfigFile f;
+    f["config.title"] = std::string("Camera Configuration File");
+    std::vector<std::string> ps = get_io_property_list();
+    f["config.property-list"] = cat(ps,",");
+    
+    if(writeDesiredParams){
+      f.setPrefix("config.desired-params.");
+      f["ignored"] = getIgnoreDesiredParams();
+      f["size"] = getDesiredSize();
+      // this makes no sense ! f["roi"] = str(getDesiredParams(),getROI());
+      f["format"] = str(getDesiredFormat());
+      f["depth"] = str(getDesiredDepth());
+    }
+    
+    f.setPrefix("config.properties.");
+    
+    for(unsigned int i=0;i<ps.size();++i){
+      string &prop = ps[i];
+      string type = getType(prop); 
+
+      if(type == "range" || type == "value-list"){
+        f[prop] = to32f(getValue(prop));
+      }else if(type == "menu"){
+        f[prop] = getValue(prop);
+      }// type command is skipped!
+    }
+    f.save(filename);
+  }
+  
+  void Grabber::loadProperties(const std::string &filename, bool loadDesiredParams){
+    ConfigFile f(filename);
+    std::vector<std::string> psSupported = get_io_property_list();
+    std::vector<std::string> ps = tok(f["config.property-list"],",");
+
+    if(loadDesiredParams){
+      f.setPrefix("config.desired-params.");
+      try{
+        setIgnoreDesiredParams(f["ignored"]);
+        setDesiredSize(f["size"]);
+        setDesiredDepth(parse<depth>(f["depth"]));
+        setDesiredFormat(parse<format>(f["format"]));
+        // this makes no sense !!  f["roi"] = str(getDesiredParams(),getROI());
+      }catch(...){
+        std::cerr << "Warning: no desired params were found in given property file" << std::endl;
+      }
+    }
+
+    f.setPrefix("config.properties.");
+    
+    for(unsigned int i=0;i<ps.size();++i){
+      if(find(psSupported.begin(),psSupported.end(),ps[i]) == psSupported.end()){
+        std::cerr << "Warning:  property \"" << ps[i] << "\" found in config file but it's not supported by this grabber!\n";
+        continue;
+      }
+      string &prop = ps[i];
+      string type = getType(prop); 
+
+      if(type == "range" || type == "value-list"){
+        setProperty(prop,str(static_cast<float>(f[prop])));
+      }else if(type == "menu"){
+        setProperty(prop,f[prop]);
+      }// type command is skipped!
+    }
+    
   }
   
 

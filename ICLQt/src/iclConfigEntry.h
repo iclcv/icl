@@ -2,6 +2,13 @@
 #define ICL_CONFIG_ENTRY_H
 
 #include <iclConfigFile.h>
+#include <iclPoint.h>
+#include <iclPoint32f.h>
+#include <iclSize.h>
+#include <iclSize32f.h>
+#include <iclRect.h>
+#include <iclRect32f.h>
+#include <iclRange.h>
 
 namespace icl{
 
@@ -56,8 +63,11 @@ namespace icl{
   ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
   typedef  ConfigEntry<Point> CfgPoint;
+  typedef  ConfigEntry<Point32f> CfgPoint32f;
   typedef  ConfigEntry<Size> CfgSize;
+  typedef  ConfigEntry<Size32f> CfgSize32f;
   typedef  ConfigEntry<Rect> CfgRect;
+  typedef  ConfigEntry<Rect32f> CfgRect32f;
   typedef  ConfigEntry<Range32s> CfgRange32s;
   typedef  ConfigEntry<Range32f> CfgRange32f;
 }

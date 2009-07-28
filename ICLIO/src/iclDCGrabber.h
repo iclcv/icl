@@ -187,7 +187,10 @@ namespace icl{
     /** @see DCGrabberImpl for more details */
     static inline void dc1394_reset_bus(bool verbose=false){
       return DCGrabberImpl::dc1394_reset_bus(verbose);
-    }    
+    }   
+    
+    /// filters out the size property, as it is set by the format property
+    virtual std::vector<std::string> get_io_property_list();
   };
 }
   

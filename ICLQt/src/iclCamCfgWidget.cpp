@@ -30,6 +30,10 @@
 //#include <QTimer>
 #include <QPushButton>
 #include <QGroupBox>
+
+#include <QMessageBox>
+#include <QFileDialog>
+
 #include <iclThread.h>
 
 using namespace icl;
@@ -136,6 +140,15 @@ namespace icl{
     connect(m_poSizeCombo,SIGNAL(currentIndexChanged(QString)), SLOT(sizeChanged(QString)));
     connect(m_poCaptureButton,SIGNAL(toggled(bool)),this,SLOT(startStopCapture(bool)));
 
+    
+    m_poLoadButton = new QPushButton("load",this);
+    m_poSaveButton = new QPushButton("save",this);
+    m_poGrabButtonAndFpsLabelLayout->addWidget(m_poLoadButton);
+    m_poGrabButtonAndFpsLabelLayout->addWidget(m_poSaveButton);
+    
+    connect(m_poLoadButton,SIGNAL(clicked()),this,SLOT(loadClicked()));
+    connect(m_poSaveButton,SIGNAL(clicked()),this,SLOT(saveClicked()));
+
     /// RIGHT WIDGETS-----------------------------------------
     m_bDisableSlots = true;
 
@@ -178,13 +191,13 @@ namespace icl{
      
       for(unsigned int j=0;j<m_vecDeviceList.size();j++){
         QString name = QString("[UNICAP]")+m_vecDeviceList[j].getID().c_str();
-        m_poDeviceCombo->addItem(name);
+        m_poDeviceCombo->addItem(name.toLatin1().data());
         QWidget *w = new QWidget(this);
         QVBoxLayout *l = new QVBoxLayout(w);
         QScrollArea *sa = new QScrollArea(this);
         sa->setWidgetResizable(true);
         UnicapGrabber grabber(m_vecDeviceList[j]);
-        fillLayout(l,&grabber);
+        fillLayout(l,&grabber,name.toLatin1().data());
         sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
         w->setLayout(l);
         sa->setWidget(w);      
@@ -211,7 +224,7 @@ namespace icl{
         sa->setWidgetResizable(true);
         DCGrabber grabber(m_vecDCDeviceList[j]);
         //      grabber.grab();
-        fillLayout(l,&grabber);
+        fillLayout(l,&grabber,name.toLatin1().data());
         sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
         w->setLayout(l);
         sa->setWidget(w);      
@@ -243,7 +256,7 @@ namespace icl{
         if(!grabber.init(Size::null,24,j)){
           printf("error while initializing grabber device %d! \n",j);
         }
-        fillLayout(l,&grabber);
+        fillLayout(l,&grabber,name.toLatin1().data());
         sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
         w->setLayout(l);
         sa->setWidget(w);      
@@ -608,20 +621,32 @@ namespace icl{
  
 
 
-  void CamCfgWidget::fillLayout(QLayout *l, Grabber *grabber){
+  void CamCfgWidget::fillLayout(QLayout *l, Grabber *grabber, const std::string &name){
     // {{{ open
 
+    GUIComponentAssociationTable &gcat = m_guiCompAss[name]; // this is created new here!
+    
     vector<string> propertyList = grabber->getPropertyList();
     
     QWidget *PARENT = 0;
     for(unsigned int i=0;i<propertyList.size();i++){
       string &prop = propertyList[i];
+
+
+
       if(prop == "size" || prop == "format") continue; // this two properties are handled externally
-      
+
       string typeStr = grabber->getType(prop);
+
+      GUIComponentAssociation &gca = gcat[prop];
+      gca.type = typeStr;
+
       if(typeStr == "range"){
         SteppingRange<double> sr = Grabber::translateSteppingRange(grabber->getInfo(prop));
         DoubleSlider *ds = new DoubleSlider(PARENT,prop.c_str());
+        
+        gca.widget = ds;
+        
         ds->setMinDouble(sr.minVal);
         ds->setMaxDouble(sr.maxVal);
         if(sr.stepping != 0){
@@ -637,6 +662,10 @@ namespace icl{
       }else if(typeStr == "valueList"){
         QString propName = QString("[")+prop.c_str()+"]";
         QComboBox *cb = new QComboBox(PARENT);
+
+        gca.widget = cb;
+        gca.propName = propName.toLatin1().data();
+        
         vector<double> values = Grabber::translateDoubleVec( grabber->getInfo(prop) );
         string currValue = grabber->getValue(prop);
         int iCurrIdx = -1;
@@ -658,6 +687,10 @@ namespace icl{
       }else if(typeStr == "menu"){
         QString propName = QString("[")+prop.c_str()+"]";
         QComboBox *cb = new QComboBox(PARENT);
+
+        gca.widget = cb;
+        gca.propName = propName.toLatin1().data();
+
         vector<string> men = Grabber::translateStringVec(grabber->getInfo(prop));
         string menuItem = grabber->getValue( prop );
         int iCurrIdx = -1;
@@ -677,6 +710,9 @@ namespace icl{
         l->addWidget(poBorderBox);
       }else if(typeStr == "command"){
         StringSignalButton *b = new StringSignalButton(prop.c_str(),PARENT);
+
+        gca.widget = b;
+
         connect(b,SIGNAL(clicked(QString)),this,SLOT(propertyButtonClicked(QString)));
         BorderBox *poBorderBox = new BorderBox(prop.c_str(),b,PARENT);
         poBorderBox->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
@@ -687,5 +723,88 @@ namespace icl{
   }
   
   // }}}
+
+
+  void CamCfgWidget::loadClicked(){
+    if(!m_poGrabber){
+      QMessageBox::information(this,"No device selected!","You can only load properties if a device is selected (and running)");
+      return;
+    }
+    QString s = QFileDialog::getOpenFileName(this,"Load device properties ...","","XML-files (*.xml)");
+    if(!s.isNull() && s!=""){
+      try{
+        bool wasCapturing = m_bCapturing;
+        if(wasCapturing){
+          startStopCapture(false);
+          Thread::msleep(500);
+        }
+        m_poGrabber->loadProperties(s.toLatin1().data(),false);
+
+        std::string currGrabberName = m_poDeviceCombo->currentText().toLatin1().data();
+        std::map<std::string,GUIComponentAssociationTable>::iterator it = m_guiCompAss.find(currGrabberName);
+        if(it == m_guiCompAss.end()){
+          ERROR_LOG("no GUI components were associated with current grabber ???");
+          if(wasCapturing){
+            Thread::msleep(500);
+            startStopCapture(true);
+          }
+          return;
+        }
+        GUIComponentAssociationTable &gcat = it->second;
+        for(GUIComponentAssociationTable::iterator it2=gcat.begin(); it2 != gcat.end(); ++it2){
+          const std::string &prop = it2->first;
+          GUIComponentAssociation &gca = it2->second;
+
+          if(gca.type == "menu" || gca.type == "value-list"){
+            QComboBox *cb = dynamic_cast<QComboBox*>(gca.widget);
+            if(!cb){
+              ERROR_LOG("invalid component for type menu/value-list (expected QComboBox)");
+            }else{
+              std::string val = m_poGrabber->getValue(prop);
+              if(gca.propName != "") val = gca.propName+" "+val;
+              //DEBUG_LOG("value for property -" << prop << "- is -" << val << "-");
+              int idx = cb->findText(val.c_str());
+              if(idx >= 0){
+                cb->setCurrentIndex(idx);
+              }else{
+                ERROR_LOG("found illegal value-list or menu entry for property: \"" << prop << "\"");
+              }
+            }
+          }else if(gca.type == "range"){
+            DoubleSlider *ds = dynamic_cast<DoubleSlider*>(gca.widget);
+            if(!ds){
+              ERROR_LOG("invalid component for type range (expected DoubleSlider)");
+            }else{
+              ds->setDoubleValue(parse<double>(m_poGrabber->getValue(prop)));
+            }
+          }
+        }
+        if(wasCapturing){
+          Thread::msleep(500);
+          startStopCapture(true);
+        }
+      }catch(ICLException &e){
+        ERROR_LOG(e.what());
+      }
+    }
+    
+   
+  }
+  
+  void CamCfgWidget::saveClicked(){
+    if(!m_poGrabber){
+      QMessageBox::information(this,"No device selected!","You can only save properties if a device is selected (and running)");
+      return;
+    }
+    QString s = QFileDialog::getSaveFileName(this,"Save device properties ...","","XML-files (*.xml)");
+    if(!s.isNull() && s!=""){
+      try{
+        DEBUG_LOG("ignore desired:" << str(m_poGrabber->getIgnoreDesiredParams()));
+        m_poGrabber->saveProperties(s.toLatin1().data(),false);
+      }catch(ICLException &e){
+        ERROR_LOG(e.what());
+      }
+    }
+  }
 }
 

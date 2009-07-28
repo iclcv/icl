@@ -124,8 +124,9 @@ namespace icl{
   **/
   template<class T>
   std::string cat(const std::vector<T> &v, const std::string &delim = ","){
-    std::ostringstream s;
-    std::copy(v.begin(),v.end(),std::ostream_iterator<T>(s,delim.c_str()));
+    if(!v.size()) return "";
+    std::ostringstream s; s << v[0];
+    for(unsigned int i=1;i<v.size();++i){  s << delim << v[i]; }
     return s.str();
   }
 

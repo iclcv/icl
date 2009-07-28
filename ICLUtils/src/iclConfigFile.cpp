@@ -17,6 +17,7 @@
 #include <iclRect32f.h>
 
 #include <iclRange.h>
+#include <iclSteppingRange.h>
 
 using namespace std;
 
@@ -55,6 +56,8 @@ namespace icl{
         REGISTER_CONFIG_FILE_TYPE(Rect32f);
         REGISTER_CONFIG_FILE_TYPE(Range32s);
         REGISTER_CONFIG_FILE_TYPE(Range32f);
+        REGISTER_CONFIG_FILE_TYPE(SteppingRange32s);
+        REGISTER_CONFIG_FILE_TYPE(SteppingRange32f);
         //            REGISTER_CONFIG_FILE_TYPE(Color);
       }
     } StaticConfigFileTypeRegisteringIntance;

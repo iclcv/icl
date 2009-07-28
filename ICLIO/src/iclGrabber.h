@@ -122,6 +122,13 @@ namespace icl {
          particular subclasses.**/
      virtual bool supportsProperty(const std::string &property);
 
+     
+     /// writes all available properties into a file
+     virtual void saveProperties(const std::string &filename, bool writeDesiredParams=true);
+
+     /// reads a camera config file from disc
+     virtual void loadProperties(const std::string &filename, bool loadDesiredParams=true);
+
      /// get type of property 
      /** This is a new minimal configuration interface: When implementing generic
          video device configuration utilities, the programmer needs information about
@@ -281,6 +288,11 @@ namespace icl {
      /// @}
 
     protected:
+
+     /// internally used by the load- and saveProperties
+     /** If any property shall not be save or loaded from configuration file, it must be filtered out by this f*/
+     virtual std::vector<std::string> get_io_property_list() { return getPropertyList(); }
+     
      /// prepare depth and params of output image according to desired settings
      ImgBase* prepareOutput (ImgBase **ppoDst);
 

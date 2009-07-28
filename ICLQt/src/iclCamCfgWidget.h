@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <QString>
 #include <QWidget>
 #ifdef HAVE_UNICAP
@@ -17,6 +18,7 @@
 #include <iclCompabilityLabel.h>
 #include <iclFPSEstimator.h>
 #include <iclSize.h>
+
 
 
 
@@ -125,6 +127,12 @@ namespace icl{
     /// slot to create a new grabber with given id
     void createGrabber(const QString &id);
     
+    /// slot to load a property configuration file
+    void loadClicked();
+    
+    /// slot to save current property settings into a property config-file
+    void saveClicked();
+    
     private:
     /// called when a new grabber is selcted
     void updateSizeCombo();
@@ -133,7 +141,7 @@ namespace icl{
     void updateFormatCombo();
     
     /// called when a new grabber is selcted
-    void fillLayout(QLayout *l, Grabber *dev);
+    void fillLayout(QLayout *l, Grabber *dev, const std::string &name);
 
     //QVBoxLayout *m_poVTopLevelLayout;    //!< the top level vertical layout
     //QHBoxLayout *m_poTopLevelLayout;     //!< the top level horizontal layout
@@ -151,6 +159,8 @@ namespace icl{
     QScrollArea *m_poPropertyScrollArea; //!< internaly scroll-area (for the list of properties)
     
     QPushButton *m_poCaptureButton;      //!< button for start/stop capturing (togglebutton)
+    QPushButton *m_poLoadButton;         //!< button to load a property file from disk
+    QPushButton *m_poSaveButton;         //!< button to write current property setting into a configuration file
     CompabilityLabel *m_poFpsLabel;      //!< lable that shows the current fps (inactive)
     QWidget *m_poGrabButtonAndFpsLabelWidget;       //!< container widget
     QHBoxLayout *m_poGrabButtonAndFpsLabelLayout;   //!< container layout
@@ -191,6 +201,18 @@ namespace icl{
 
     FPSEstimator m_oFPSE;                 //!< used to estimate the grabbers fps
   
+    /** \cond */
+    struct GUIComponentAssociation {
+      //      GUIComponentAssociation(const std::string &
+      std::string type;
+      std::string propName;
+      QWidget *widget;
+    };
+    typedef std::map<std::string, GUIComponentAssociation> GUIComponentAssociationTable;
+    /** \endcond */
+    
+    /// internally used utility widget 
+    std::map<std::string,GUIComponentAssociationTable> m_guiCompAss;
   };
 }
 

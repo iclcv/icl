@@ -2,6 +2,7 @@
 #define ICL_VIEW_BASED_TEMPLATE_MATCHER_H
 
 #include "iclUsefulFunctions.h"
+#include <iclUncopiedInstance.h>
 
 namespace icl{
   
@@ -50,7 +51,7 @@ namespace icl{
     mode m_eMode;                   ///< matching mode
     bool m_bClipBuffersToROI;       ///< buffer clipping mode
     RegionDetector m_oRD;           ///< internally recycled RegionDetector instance
-    Img8u m_aoBuffers[3];           ///< interanlly used buffers
+    UncopiedInstance<Img8u> m_aoBuffers[3];           ///< interanlly used buffers
     std::vector<Rect> m_vecResults; ///< internal result buffer
   };
   
