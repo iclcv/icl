@@ -1654,6 +1654,8 @@ namespace icl{
       pe->rect(Rect(0,0,width(),height()));
       
       if(m_data->showNoImageWarnings){
+        pe->color(0,100,255,230);
+        pe->fontsize(12);
         pe->text(Rect(0,0,width(),height()),"[null]");
       }
     }

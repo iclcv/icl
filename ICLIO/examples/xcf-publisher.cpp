@@ -2,6 +2,7 @@
 #include <iclXCFPublisherGrabber.h>
 #include <iclCommon.h>
 #include <iclFPSEstimator.h>
+#include <iclFPSLimiter.h>
 #include <iclIO.h>
 
 #include <iclMedianOp.h>
@@ -126,8 +127,11 @@ void send_app(){
       FPS.update();
     }
     first = false;
-    static int sleep = pa_subarg("-sleep",0,100);
-    Thread::msleep(sleep);
+    
+    gui_int(fpsLimit);
+    static FPSLimiter limiter(15,10);
+    if(limiter.getMaxFPS() != fpsLimit) limiter.setMaxFPS(fpsLimit);
+    limiter.wait();
   }
 
 }
@@ -159,9 +163,9 @@ int main(int n, char **ppc){
   pa_explain("-s","sender application (default)");
   pa_explain("-r","receiver application");
   pa_explain("-single-shot","no loop application");
-  pa_explain("-sleep","sleep time between calls (in ms def=100)");
   pa_explain("-emulate-mask","emulate 4th channel mask (sending only)");
   pa_explain("-size","output image size (sending only, default: VGA)");
+  pa_explain("-fps","initial max FPS count, further adjustable in the GUI");
   pa_explain("-no-gui","dont display a GUI (sender app only)");
   pa_explain("-flip","define axis to flip (allowed sub arguments are"
              " x, y or both");
@@ -174,7 +178,7 @@ int main(int n, char **ppc){
              "\tThis parameters can be obtained using ICL application\n"
              "\ticl-calib-radial-distortion");
   pa_explain("-reset","reset bus on startup");
-  pa_init(n,ppc,"-stream(1) -flip(1) -uri(1) -s -r -single-shot -sleep(1) -input(2) -emulate-mask -size(1) -no-gui -pp(1) -dist(4) -reset");
+  pa_init(n,ppc,"-stream(1) -flip(1) -uri(1) -s -r -single-shot -input(2) -emulate-mask -size(1) -no-gui -pp(1) -dist(4) -reset -fps(1)");
 
   if(pa_defined("-reset")){
     GenericGrabber::resetBus();
@@ -192,6 +196,7 @@ int main(int n, char **ppc){
          gui << "image[@handle=image@minsize=12x8]" 
             << ( GUI("hbox[@maxsize=100x4]") 
                  << create_camcfg(FROM_PROGARG("-input"))
+                 << ("spinner(1,100,"+str(pa_subarg<int>("-fps",0,15))+")[@out=fpsLimit@label=max fps]")
                  << "fps(10)[@handle=fps]"
                  << "togglebutton(off,!on)[@handle=_@out=pp-on@label=preprocessing@minsize=5x2]"
                );
@@ -199,8 +204,9 @@ int main(int n, char **ppc){
         ppEnabled = &gui.getValue<bool>("pp-on");
       }else{
         gui << "image[@handle=image@minsize=12x8]" 
-            << ( GUI("hbox[@maxsize=100x2]") 
+            << ( GUI("hbox[@maxsize=100x4]") 
                  << create_camcfg(FROM_PROGARG("-input"))
+                 << ("spinner(1,100,"+str(pa_subarg<int>("-fps",0,15))+")[@out=fpsLimit@label=max fps]")
                  << "fps(10)[@handle=fps]"
                 );
         gui.show();
