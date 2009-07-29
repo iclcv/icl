@@ -482,8 +482,8 @@ namespace icl{
         rgb_to_gray_util(src,dst,dstEnd,frameSize);
         
       }else{
-        for(int i=0;i<100;++i) std::cout << (int)(f->image[i]) << " ";
-        std::cout << std::endl;
+        //for(int i=0;i<100;++i) std::cout << (int)(f->image[i]) << " ";
+        //std::cout << std::endl;
         icl8u *dstData = (*ppoDst)->asImg<icl8u>()->getData(0);
         dc1394error_t err = dc1394_convert_to_MONO8(f->image, 
                                                     dstData,
