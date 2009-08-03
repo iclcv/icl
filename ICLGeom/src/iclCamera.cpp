@@ -352,7 +352,8 @@ namespace icl{
     f.setPrefix(prefix);
 
 #define TRY(X) try { X; } catch(ICLException &ex) { ERROR_LOG(ex.what()); }
-    TRY( cam.setName(f["title"]) );
+#define TRY_QUIET(X) try { X; } catch(ICLException&) { }
+    TRY_QUIET( cam.setName(f["title"]) );
     TRY( cam.setPos(parse<Vec>(f["camera.pos"])) );
     TRY( cam.setNorm(parse<Vec>(f["camera.norm"])) );
     TRY( cam.setUp(parse<Vec>(f["camera.up"])) );
@@ -363,6 +364,7 @@ namespace icl{
     TRY( cam.setZFar(f["camera.zfar"]) );
     TRY( cam.setZNear(f["camera.znear"]) );
 #undef TRY
+#undef TRY_QUIET
     
   }
   

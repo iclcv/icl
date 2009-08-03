@@ -5,6 +5,7 @@ XLDFLAGS= ${LDFLAGS} \
 	-L../../ICLQt/lib/ -lICLQt \
 	-L../../ICLQuick/lib/ -lICLQuick \
 	-L../../ICLFilter/lib -lICLFilter \
+	-L../../ICLGeom/lib -lICLGeom \
 	-L../../ICLIO/lib -lICLIO \
 	-L../../ICLBlob/lib -lICLBlob \
 	-L../../ICLAlgorithms/lib -lICLAlgorithms
@@ -12,6 +13,7 @@ XLDFLAGS= ${LDFLAGS} \
 
 XCXXFLAGS= ${CXXFLAGS} \
 	-I../../ICLUtils/src \
+	-I../../ICLGeom/src \
 	-I../../ICLCore/src \
 	-I../../ICLCC/src \
 	-I../../ICLQt/src \
@@ -52,9 +54,15 @@ endif
 #################################################################################
 if HAVE_SVS_COND
 bin_PROGRAMS+= \
-icl-svs-test
+icl-svs-test \
+icl-svs-create-ini-file
 
 icl_svs_test_SOURCES=../examples/svs-test.cpp
 icl_svs_test_LDFLAGS=${XLDFLAGS}
 icl_svs_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_svs_create_ini_file_SOURCES=../examples/svs-create-ini-file.cpp
+icl_svs_create_ini_file_LDFLAGS=${XLDFLAGS}
+icl_svs_create_ini_file_CXXFLAGS=${XCXXFLAGS}
+
 endif
