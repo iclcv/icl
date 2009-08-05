@@ -11,10 +11,14 @@
 namespace icl{
   class XCFPublisher{
     public:
+    XCFPublisher();
     XCFPublisher(const std::string &streamName, const std::string &imageURI);
-
+    
     ~XCFPublisher();
-
+    
+    void createPublisher(const std::string &streamName, 
+                         const std::string &imageURI);
+    
     void publish(const ImgBase *image);
 
     const std::string &getImageURI() const { return m_uri; }

@@ -158,7 +158,7 @@ namespace icl{
 #ifdef WITH_JPEG_SUPPORT
       FileWriterPluginJPEG::setQuality(parse<int>(value));
 #else
-      ERROR_LOG("Unable to set option \"jpg:quality\" (JPEG support is currently disables!)");
+      ERROR_LOG("Unable to set option \"jpg:quality\" (JPEG support is currently disabled!)");
 #endif      
     }else{
       ERROR_LOG("Unsupported Option \"" << option << "\" (value: \"" << value << "\")");

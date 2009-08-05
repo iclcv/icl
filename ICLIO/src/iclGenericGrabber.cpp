@@ -23,6 +23,10 @@
 #include <iclXCFMemoryGrabber.h>
 #endif
 
+#ifdef HAVE_MV
+#include <iclMVGrabber.h>
+#endif
+
 #include <iclDemoGrabber.h>
 #include <iclException.h>
 
@@ -37,7 +41,7 @@ namespace icl{
     std::vector<std::string> lP = tok(params,",");
     
     // todo optimize this code using a map or a table or ...
-    std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pXCF_P,pXCF_S,pXCF_M;
+    std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pXCF_P,pXCF_S,pXCF_M,pMV;
 
 #define PARAM(D,PNAME)                                                  \
     if(lP[i].length() > strlen(D) && lP[i].substr(0,strlen(D)) == D){   \
@@ -45,12 +49,16 @@ namespace icl{
     }  
     for(unsigned int i=0;i<lP.size();++i){
       if(false){}
-      PARAM("pwc",pPWC); PARAM("dc",pDC); PARAM("dc800",pDC800);
-      PARAM("unicap",pUnicap); PARAM("file",pFile);
+      PARAM("pwc",pPWC); 
+      PARAM("dc",pDC); 
+      PARAM("dc800",pDC800);
+      PARAM("unicap",pUnicap); 
+      PARAM("file",pFile);
       PARAM("demo",pDemo);
       PARAM("xcfp",pXCF_P);
       PARAM("xcfs",pXCF_S);
       PARAM("xcfm",pXCF_M);
+      PARAM("mv",pMV);
 #undef PARAM
       /*
           if(lP[i].length() > 4 && lP[i].substr(0,3) == "pwc"){
@@ -77,6 +85,7 @@ namespace icl{
     }
 
     std::string errStr;
+
 #define ADD_ERR(X,A) errStr += errStr.size() ? std::string(",") : ""; \
                      errStr += std::string(#X)+"("+A+")" 
 
@@ -102,9 +111,6 @@ namespace icl{
       
 #ifdef HAVE_LIBDC
       if(l[i] == "dc" || l[i] == "dc800"){
-
-
-        
         std::vector<DCDevice> devs = DCGrabber::getDeviceList();
         int idx = (l[i]=="dc") ? to32s(pDC) : to32s(pDC800);
 
@@ -181,6 +187,21 @@ namespace icl{
           break;
         }else{
           continue;
+        }
+      }
+#endif
+
+#ifdef HAVE_MV
+      if(l[i] == "mv") {
+        std::vector<MVDevice> devs = MVGrabber::getDeviceList();
+        
+        if(!devs.size()) {
+          ADD_ERR(mv,pMV);
+          continue;
+        } else {
+          m_poGrabber = new MVGrabber();
+          m_sType = "mv";
+          break;
         }
       }
 #endif

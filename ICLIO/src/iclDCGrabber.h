@@ -121,7 +121,6 @@ namespace icl{
     /** @copydoc icl::Grabber::grab(ImgBase**) **/
     virtual const ImgBase *grabUD (ImgBase **ppoDst=0);
     
-    
     /// Returns a list of all connected DCDevices
     static std::vector<DCDevice> getDeviceList(bool resetBusFirst=false);
 

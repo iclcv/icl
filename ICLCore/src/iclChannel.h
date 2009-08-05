@@ -122,7 +122,7 @@ namespace icl{
 
     /// Copy an image channel (this could be exploited to violate const concept)
     inline Channel(const Channel &other){
-      *this = other;
+      *this = other;      
     }    
 
     /// assignmet operator

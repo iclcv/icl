@@ -26,9 +26,7 @@ namespace icl{
         - dc1394color_filter_t DCDevice::getBayerFilterLayout() const
       
   **/
-  
 
-  
   const DCDevice DCDevice::null = DCDevice(0);
 
 #if 0

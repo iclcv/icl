@@ -34,6 +34,7 @@ namespace icl {
                                   - <b>xcfp</b> xcf publisher grabber
                                   - <b>xcfs</b> xcf server grabber
                                   - <b>xcfm</b> xcf memory grabber
+                                  - <b>mv</b> matrix vision grabber
         
         @param params comma separated device depend parameter list: e.g.
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
@@ -47,6 +48,7 @@ namespace icl {
                                   - xcfp=publisher's-stream-name (string)
                                   - xcfs=server-name (string) (currently method name is always "retreiveImage")
                                   - xcfm=memory-name (string) (currently image-xpath is always "//IMAGE")
+                                  - mv=device-name (string)
         @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
 
         @suppressDoubledImages if set, this flag makes the wrapped grabber return each
@@ -56,8 +58,6 @@ namespace icl {
     GenericGrabber(const std::string &devicePriorityList="dc,pwc,file", 
                    const std::string &params="pwc=0,dc=0,file=images/*.ppm",
                    bool notifyErrors = true) throw (ICLException);
-    
-
     
     /// resets resource on given devices (e.g. firewire bus)
     static void resetBus(const std::string &deviceList="dc", bool verbose=false);

@@ -2,7 +2,6 @@ XLDFLAGS= ${LDFLAGS} \
 	-L../../ICLUtils/lib/ -lICLUtils \
 	-L../../ICLCore/lib/ -lICLCore \
 	-L../../ICLCC/lib/ -lICLCC \
-	-L../../ICLQt/lib/ -lICLQt \
 	-L../../ICLQuick/lib/ -lICLQuick \
 	-L../../ICLFilter/lib -lICLFilter \
 	-L../../ICLGeom/lib -lICLGeom \
@@ -16,16 +15,15 @@ XCXXFLAGS= ${CXXFLAGS} \
 	-I../../ICLGeom/src \
 	-I../../ICLCore/src \
 	-I../../ICLCC/src \
-	-I../../ICLQt/src \
 	-I../../ICLQuick/src \
 	-I../../ICLFilter/src \
 	-I../../ICLIO/src \
 	-I../../ICLBlob/src \
 	-I../../ICLAlgorithms/src
 
-#################################################################################
-## Applications that depend on IPP ##############################################
-#################################################################################
+###############################################################################
+## Applications that depend on IPP ############################################
+###############################################################################
 
 bin_PROGRAMS=
 
@@ -37,7 +35,16 @@ icl_template_matching_test_SOURCES=../examples/template-matching-test.cpp
 icl_template_matching_test_LDFLAGS=${XLDFLAGS}
 icl_template_matching_test_CXXFLAGS=${XCXXFLAGS}
 
+###############################################################################
+## Applications that depend on IPP and QT #####################################
+###############################################################################
+
 if HAVE_QT_COND
+
+XLDFLAGS += -L../../ICLQt/lib -lICLQt
+
+XCXXFLAGS += -I../../ICLQt/src
+
 bin_PROGRAMS+= \
 icl-interactive-template-matching-demo \
 icl-svs-online-demo
@@ -51,12 +58,11 @@ icl_svs_online_demo_LDFLAGS=${XLDFLAGS}
 icl_svs_online_demo_CXXFLAGS=${XCXXFLAGS}
 endif
 
-
 endif
 
-#################################################################################
-## Applications that depend on SVS ##############################################
-#################################################################################
+###############################################################################
+## Applications that depend on SVS ############################################
+###############################################################################
 if HAVE_SVS_COND
 bin_PROGRAMS+= \
 icl-svs-test \

@@ -86,7 +86,9 @@ namespace icl{
   
   FileGrabber::FileGrabber():m_iCurrIdx(0){}
   
-  FileGrabber::FileGrabber(const std::string &pattern, bool buffer, bool ignoreDesired) throw(FileNotFoundException):
+  FileGrabber::FileGrabber(const std::string &pattern, 
+                           bool buffer, 
+                           bool ignoreDesired) throw(FileNotFoundException):
     // {{{ open
 
     m_oFileList(pattern),
@@ -97,7 +99,6 @@ namespace icl{
     if(!m_oFileList.size()){
       throw FileNotFoundException(pattern);
     }
-
 
     setIgnoreDesiredParams(ignoreDesired);
     

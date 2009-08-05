@@ -47,7 +47,7 @@ namespace icl {
     /// **NEW** grab function grabs an image (destination image is adapted on demand)
     /** This new grab function is one of the main parts of the ICL Grabber interface. Its 
         underlying philosophy is as follows:
-        - if ppoDst is NULL, a constant image (owned by the grabber) is retuned. 
+        - if ppoDst is NULL, a constant image (owned by the grabber) is returned. 
         The returned image will have the desired depth and image params, which is ensured
         by an appropriate conversion from the originally grabbed image if neccessary.
         - if ppoDst is valid, but it points to a NULL-Pointer (ppoDst!=NULL but *ppoDst==NULL),
@@ -56,7 +56,7 @@ namespace icl {
         - if ppoDst is valid, and it points to a valid ImgBase*, this ImgBase* is exploited
         as possible. If its depth differs from the currently "desired" depth value, it is 
         released, and a new image with the "desired" params and depth is created at (*ppoDst).
-        Otherwise, the the ImgBase* at *poDst is adapted in format, channel count and size
+        Otherwise, the ImgBase* at *poDst is adapted in format, channel count and size
         to the "desired" params, before it is filled with data and returned
         @param ppoDst destination image (pointer-to-pointer)
         @return grabbed image (if ppoDst != 0 and depth matches) equal to *ppoDst
