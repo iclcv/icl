@@ -1,15 +1,5 @@
-/*
-  SVS.cpp
-
-  Written by: Andre Justus (2007)
-              University of Bielefeld
-              AG Neuroinformatik
-              ajustus@techfak.uni-bielefeld.de
-*/
-
-
 #include "iclSVS.h"
-//#include "/vol/vision/SVS/4.2/src/svsclass.h"
+#include <iclTime.h>
 
 namespace icl {
   SVS::SVS(){
@@ -99,9 +89,9 @@ namespace icl {
   }
 
   void SVS::loadCalibration(const char *filename){
-    char fn[255];
-    sprintf(fn,"%s",filename);
-    m_pSi->ReadParams(fn);
+    //char fn[255];
+    //sprintf(fn,"%s",filename);
+    m_pSi->ReadParams(const_cast<char*>(filename));
   }
 
   void SVS::load(const Img8u* lim,const Img8u* rim){
@@ -112,8 +102,9 @@ namespace icl {
     setParam(height,lim->getSize().height);
     m_pSvsI->Load(lim->getSize().width,lim->getSize().height,(const_cast<Img8u*>(lim))->getROIData(0),(const_cast<Img8u*>(rim))->getROIData(0));
     m_pSvsI->SetRect(false);
-    m_pSi = m_pSvsI->GetImage(500);
+    m_pSi = m_pSvsI->GetImage(Time::now().toMilliSeconds());
     if (m_oSize.width==0 || m_oSize.width!=lim->getSize().width || m_oSize.height!=lim->getSize().height || m_eFmt!=lim->getFormat()){
+      //ICL_DELETE(m_pDi);
       m_eFmt=lim->getFormat();
       m_oSize=lim->getSize();
       m_pDi = new Img16s(m_oSize,m_eFmt);

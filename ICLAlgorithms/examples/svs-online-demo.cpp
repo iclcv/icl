@@ -10,16 +10,29 @@ void init(){
       << "image[@minsize=12x8@handle=center@label=disparity image]"
       << "image[@minsize=12x8@handle=right@label=right camera image]";
   
+  GUI con;
+  con << "togglebutton(off,on)[@out=fliplr@label=flip left/right]"
+      << "togglebutton(off,on)[@out=halveimages@label=halve image sizes]";
+
+  gui << con;
   gui.show();
   
-  svs.loadCalibration(pa_subarg<std::string>("-ini",0,"").c_str());
+
 }
 
 void run(){
   static GenericGrabber leftG(FROM_PROGARG("-left-cam"));
   static GenericGrabber rightG(FROM_PROGARG("-right-cam"));
-  leftG.setDesiredSize(Size::VGA);
-  rightG.setDesiredSize(Size::VGA);
+
+  gui_bool(halveimages);
+  gui_bool(fliplr);
+  gui_ImageHandle(left);
+  gui_ImageHandle(right);
+  gui_ImageHandle(center);
+
+  
+  leftG.setDesiredSize(Size::VGA/(halveimages?2:1));
+  rightG.setDesiredSize(Size::VGA/(halveimages?2:1));
 
   leftG.setDesiredFormat(formatGray);
   rightG.setDesiredFormat(formatGray);
@@ -27,20 +40,23 @@ void run(){
   leftG.setIgnoreDesiredParams(false);
   rightG.setIgnoreDesiredParams(false);
   
-  const Img8u &lim = (*leftG.grab()->asImg<icl8u>());
-  const Img8u &rim = (*rightG.grab()->asImg<icl8u>());
+  const Img8u *lim = leftG.grab()->asImg<icl8u>();
+  const Img8u *rim = rightG.grab()->asImg<icl8u>();
   
+  if(fliplr){
+    std::swap(lim,rim);
+  }
   
-  svs.load(&lim,&rim);
+  svs.load(lim,rim);
+  static std::string filename = pa_subarg<std::string>("-ini",0,"");
+  svs.loadCalibration(filename.c_str());
+  svs.printvars();
   svs.doStereo();
   const ImgBase *disp = svs.getDisparity();
   
-  gui_ImageHandle(left);
-  gui_ImageHandle(right);
-  gui_ImageHandle(center);
 
-  left = &lim;
-  right = &rim;
+  left = lim;
+  right = rim;
   center = disp;
   left.update();
   right.update();

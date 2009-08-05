@@ -281,12 +281,12 @@ int main(int n, char **ppc){
       std::string &pa = ts[0];
       //std::string &va = ts[1];
 
-#define REPLACE(s,x,v) if(scope == #s && pa == #x) os << pa << " " << v << std::endl
-#define REPLACE_PA(s,x,d) if(scope == #s && pa == #x) os << pa << " " << pa_subarg<std::string>("-" #x,0,str(#d)) << std::endl
+#define REPLACE(s,x,v) if(scope == #s && pa == #x) { os << pa << " " << v << std::endl; continue; }
+#define REPLACE_PA(s,x,d) if(scope == #s && pa == #x) { os << pa << " " << pa_subarg<std::string>("-" #x,0,str(#d)) << std::endl; continue; }
 
 #define REPLACE_PA_LRCAM(x,d) \
-      if(scope == "left camera" && pa == #x) os << pa << " " << pa_subarg<std::string>("-left-" #x,0,str(#d)) << std::endl; \
-      if(scope == "right camera" && pa == #x) os << pa << " " << pa_subarg<std::string>("-right-" #x,0,str(#d)) << std::endl
+      if(scope == "left camera" && pa == #x) { os << pa << " " << pa_subarg<std::string>("-left-" #x,0,str(d)) << std::endl; continue; } \
+      else if(scope == "right camera" && pa == #x){ os << pa << " " << pa_subarg<std::string>("-right-" #x,0,str(d)) << std::endl; continue; }
       
       REPLACE(image,max_linelen,iW);
       REPLACE(image,max_lines,iH);
@@ -349,6 +349,8 @@ int main(int n, char **ppc){
       REPLACE_PA(global,GRy,0);
       REPLACE_PA(global,GRz,0);
 
+      os << p << std::endl;
+      
     }else if (ts.size()){
       Camera &cam = (scope == "left camera") ? left : right;
       float fy = cam.getFocalLength()/pa_subarg<float>("-left-dpy",0,0.007);

@@ -5,6 +5,61 @@
 #include <fstream>
 #include <iclFile.h>
 
+const char *inifile_light[] = {
+  "# SVS Engine v 3.2 Stereo Camera Parameter File",
+  "[left camera]",
+  "pwidth 640", 
+  "pheight 480", 
+  "dpx 0.007000", 
+  "dpy 0.007000", 
+  "sx 1.000000", 
+  "Cx 320.526995", 
+  "Cy 240.809716", 
+  "f 511.363092", 
+  "fy 513.712339", 
+  "alpha 0.000000", 
+  "kappa1 -0.159408", 
+  "kappa2 0.161214", 
+  "kappa3 0.000000", 
+  "tau1 0.000000", 
+  "tau2 0.000000", 
+  "proj", 
+  "5.140000e+002 0.000000e+000 3.065270e+002 0.000000e+000", 
+  "0.000000e+000 5.140000e+002 2.757325e+002 0.000000e+000", 
+  "0.000000e+000 0.000000e+000 1.000000e+000 0.000000e+000", 
+  "rect", 
+  "9.990557e-001 -1.115309e-003 -4.343369e-002", 
+  "1.107551e-003 9.999993e-001 -2.026861e-004", 
+  "4.343389e-002 1.543897e-004 9.990563e-001", 
+  "",
+  "[right camera]",
+  "pwidth 640", 
+  "pheight 480", 
+  "dpx 0.007000", 
+  "dpy 0.007000", 
+  "sx 1.000000", 
+  "Cx 320.916494", 
+  "Cy 240.655358", 
+  "f 521.225593", 
+  "fy 523.525160", 
+  "alpha 0.000000", 
+  "kappa1 -0.152761", 
+  "kappa2 0.142905", 
+  "kappa3 0.000000", 
+  "tau1 0.000000", 
+  "tau2 0.000000", 
+"proj", 
+  "5.140000e+002 0.000000e+000 3.239165e+002 -4.570280e+004", 
+  "0.000000e+000 5.140000e+002 2.757325e+002 0.000000e+000", 
+  "0.000000e+000 0.000000e+000 1.000000e+000 0.000000e+000", 
+"rect", 
+  "9.988248e-001 1.767150e-003 -4.843450e-002", 
+  "-1.758498e-003 9.999985e-001 2.212436e-004", 
+  "4.843481e-002 -1.358116e-004 9.988263e-001", 
+  "",
+  0 
+  };
+
 const char *inifile[] = {
   "# SVS Engine v 3.2 Stereo Camera Parameter File",
   "",
@@ -129,7 +184,10 @@ const char *inifile[] = {
 int main(){
   {
     std::ofstream o("cfg-374374943464543.ini");
-    std::copy(inifile,inifile+(121-7),std::ostream_iterator<std::string>(o,"\n"));
+    for(int i=0;inifile[i];++i){
+      o << inifile[i] << std::endl;
+    }
+    //    std::copy(inifile,inifile+(121-7),std::ostream_iterator<std::string>(o,"\n"));
   }
 
   ImgBase *outImg=0;
@@ -137,8 +195,8 @@ int main(){
   Img8u imgL,imgR;
   
   try{
-    imgL = cvt8u(load("demoImages/face320-cal-L.pgm"));
-    imgR = cvt8u(load("demoImages/face320-cal-R.pgm"));
+    imgL = cvt8u(scale(load("demoImages/face320-cal-L.pgm"),320,240)); /// Why??
+    imgR = cvt8u(scale(load("demoImages/face320-cal-R.pgm"),320,240));
   }catch(const FileNotFoundException &){
     std::cout << "demo images that are necessary for this demo could not be found\n"
               << "in ./demoImages/face320-cal-*.pgm (* is L or R). You can run\n"
@@ -155,13 +213,14 @@ int main(){
   for(int i=0;i<N;i++){
     svs.load(&imgL,&imgR);
     svs.loadCalibration("cfg-374374943464543.ini");
+    svs.printvars();
 
     timer.stopSubTimer("Iterations of Load done");
     svs.doStereo();
     outImg=svs.getDisparity();
   }
   timer.stop("Iterations of get_disparity done");
-  File("cfg-374374943464543.ini").erase();
+  //File("cfg-374374943464543.ini").erase();
   show((label(cvt(imgL),"left image"),
         label(cvt(imgR),"right image"),
         label(cvt(outImg),"depth-image")));
