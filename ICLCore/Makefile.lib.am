@@ -11,7 +11,8 @@ libICLCore_la_SOURCES= \
 ../src/iclLine.cpp \
 ../src/iclMathematics.cpp \
 ../src/iclRandom.cpp \
-../src/iclCornerDetectorCSS.cpp
+../src/iclCornerDetectorCSS.cpp \
+../src/iclSampledLine.cpp
 
 include_HEADERS= \
 ../src/iclCore.h \
@@ -27,7 +28,8 @@ include_HEADERS= \
 ../src/iclTypes.h \
 ../src/iclRandom.h \
 ../src/iclPixelRef.h \
-../src/iclCornerDetectorCSS.h
+../src/iclCornerDetectorCSS.h \
+../src/iclSampledLine.h
 
 libICLCore_la_CXXFLAGS=${AM_CXXFLAGS} \
 	-I../../ICLUtils/src

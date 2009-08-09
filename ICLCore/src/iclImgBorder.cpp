@@ -39,8 +39,9 @@ namespace icl{
   // }}}
   
   // export these functions
-  template void ImgBorder::fixed<icl8u>(Img<icl8u> *im,icl8u *val);
-  template void ImgBorder::fixed<icl32f>(Img<icl32f> *im,icl32f *val);
+#define ICL_INSTANTIATE_DEPTH(D) template void ImgBorder::fixed<icl##D>(Img<icl##D> *im,icl##D *val);
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
   template<class T>
   inline void _copy_border(Img<T> *poImage){
