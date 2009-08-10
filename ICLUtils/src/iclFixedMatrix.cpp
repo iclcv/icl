@@ -6,8 +6,14 @@ namespace icl{
 
   template<class T, bool skip3rd> 
   inline void get_2x2_rot_data(T r ,T *p){
+    // this seems to be wrong as it is symmetric to the first major axis,
+    // which implies rotation about alpha is identical to rotation abount -alpha ??
+
     *p++=cos(r); *p++=sin(r); if(skip3rd) p++;
     *p++=sin(r); *p++=-cos(r);
+
+    //*p++=cos(r); *p++=-sin(r); if(skip3rd) p++;
+    //*p++=sin(r); *p++=cos(r);
   }
 
   
