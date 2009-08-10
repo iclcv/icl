@@ -23,12 +23,17 @@
 #include <iclXCFMemoryGrabber.h>
 #endif
 
+#ifdef HAVE_LIBMESASR
+#include <iclSwissRangerGrabber.h>
+#endif
+
 #ifdef HAVE_MV
 #include <iclMVGrabber.h>
 #endif
 
 #include <iclDemoGrabber.h>
 #include <iclException.h>
+
 
 
 namespace icl{
@@ -41,7 +46,7 @@ namespace icl{
     std::vector<std::string> lP = tok(params,",");
     
     // todo optimize this code using a map or a table or ...
-    std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pXCF_P,pXCF_S,pXCF_M,pMV;
+    std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pXCF_P,pXCF_S,pXCF_M,pMV,pSR;
 
 #define PARAM(D,PNAME)                                                  \
     if(lP[i].length() > strlen(D) && lP[i].substr(0,strlen(D)) == D){   \
@@ -59,6 +64,7 @@ namespace icl{
       PARAM("xcfs",pXCF_S);
       PARAM("xcfm",pXCF_M);
       PARAM("mv",pMV);
+      PARAM("sr",pSR);
 #undef PARAM
       /*
           if(lP[i].length() > 4 && lP[i].substr(0,3) == "pwc"){
@@ -128,6 +134,19 @@ namespace icl{
           m_sType = l[i];
           break;
         }        
+      }
+#endif
+
+#ifdef HAVE_LIBMESASR
+      if(l[i] == "sr"){
+        int device = to32s(pSR);
+        try{
+          m_poGrabber = new SwissRangerGrabber(device);
+        }catch(ICLException &e){
+          ADD_ERR(sr,pSR);
+          continue;
+        }
+        break;
       }
 #endif
 

@@ -12,14 +12,15 @@ int main(int nArgs, char **ppcArg){
   pa_explain("-no-unicap","disable unicap support");
   pa_explain("-no-dc","disable dc grabber support");
   pa_explain("-no-pwc","disable pwc grabber support");
-  pa_init(nArgs,ppcArg,"-800 -r -no-unicap -no-dc -no-pwc");
+  pa_init(nArgs,ppcArg,"-800 -r -no-unicap -no-dc -no-pwc -no-sr");
   QApplication a(nArgs,ppcArg);
   
   CamCfgWidget::CreationFlags flags(pa_defined("-800")?800:400,
                                     pa_defined("-r"),
                                     pa_defined("-no-unicap"),
                                     pa_defined("-no-dc"),
-                                    pa_defined("-no-pwc"));
+                                    pa_defined("-no-pwc"),
+                                    pa_defined("-no-sr"));
   
   
   CamCfgWidget w(flags);

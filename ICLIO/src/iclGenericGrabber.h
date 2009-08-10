@@ -35,6 +35,7 @@ namespace icl {
                                   - <b>xcfs</b> xcf server grabber
                                   - <b>xcfm</b> xcf memory grabber
                                   - <b>mv</b> matrix vision grabber
+                                  - <b>sr</b> SwissRanger camera (mesa-imaging)
         
         @param params comma separated device depend parameter list: e.g.
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
@@ -49,6 +50,7 @@ namespace icl {
                                   - xcfs=server-name (string) (currently method name is always "retreiveImage")
                                   - xcfm=memory-name (string) (currently image-xpath is always "//IMAGE")
                                   - mv=device-name (string)
+                                  - sr=device-serial-number (-1 -> menu, 0 -> auto-select)
         @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
 
         @suppressDoubledImages if set, this flag makes the wrapped grabber return each

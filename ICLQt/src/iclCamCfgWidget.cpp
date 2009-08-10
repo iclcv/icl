@@ -14,6 +14,10 @@
 #include <iclDCGrabber.h>
 #endif
 
+#ifdef HAVE_LIBMESASR
+#include <iclSwissRangerGrabber.h>
+#endif
+
 #include <iclWidget.h>
 #include <iclDoubleSlider.h>
 #include <iclThread.h>
@@ -206,6 +210,26 @@ namespace icl{
       }
     }
 #endif
+
+#ifdef HAVE_LIBMESASR
+    if(!flags.disableSR){
+      try{
+        SwissRangerGrabber grabber;
+        m_poDeviceCombo->addItem("[SR] SwissRanger-Camera");
+        QWidget *w = new QWidget(this);
+        QVBoxLayout *l = new QVBoxLayout(w);
+        QScrollArea *sa = new QScrollArea(this);
+        sa->setWidgetResizable(true);
+        fillLayout(l,&grabber,"[SR] SwissRanger-Camera");
+        sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+        w->setLayout(l);
+        sa->setWidget(w);      
+        m_poTabWidget->addTab(sa,"[SR] SwissRanger-Camera");
+        m_poTabWidget->setTabEnabled(jAll++,false);
+      }catch(...){}
+    }
+
+#endif
      
 #ifdef HAVE_LIBDC
     if(!flags.disableDC){
@@ -346,6 +370,10 @@ namespace icl{
           break;
         }
       }
+#endif
+    }else if(prefix == "SR"){
+#ifdef HAVE_LIBMESASR
+      m_poGrabber = new SwissRangerGrabber;
 #endif
     }else if(prefix == "UNICAP"){
 #ifdef HAVE_UNICAP

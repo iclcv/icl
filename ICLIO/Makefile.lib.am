@@ -48,6 +48,14 @@ include_HEADERS= \
 ../src/iclDemoGrabber.h \
 ../src/iclDistFromProgArgUtil.h
 
+if HAVE_LIBMESASR_COND
+libICLIO_la_SOURCES+= \
+../src/iclSwissRangerGrabber.cpp
+
+include_HEADERS+= \
+../src/iclSwissRangerGrabber.h
+endif
+
 if HAVE_LIBJPEG_COND
 libICLIO_la_SOURCES+= \
 ../src/iclJPEGHandle.cpp \

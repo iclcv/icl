@@ -12,6 +12,7 @@
 #ifdef HAVE_LIBDC
 #include <iclDCDevice.h>
 #endif
+
 #include <iclTypes.h>
 #include <QMutex>
 #include <QSplitter>
@@ -55,16 +56,19 @@ namespace icl{
                   bool disableUnicap=false,
                   bool disableDC=false,
                   bool disablePWC=false,
+                  bool disableSR=false,
                   const std::string &deviceHintList=""):
         isoMBits(isoMBits),resetDCBus(resetDCBus),
         disableUnicap(disableUnicap),disableDC(disableDC),
-        disablePWC(disablePWC),deviceHintList(deviceHintList){}
+          disablePWC(disablePWC),disableSR(disableSR),
+          deviceHintList(deviceHintList){}
       
       int isoMBits;
       bool resetDCBus;
       bool disableUnicap;
       bool disableDC;
       bool disablePWC;
+      bool disableSR;
       std::string deviceHintList;
     };
     
