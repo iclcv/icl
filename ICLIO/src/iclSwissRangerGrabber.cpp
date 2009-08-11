@@ -11,6 +11,15 @@
 
 namespace icl{
 
+  static int swiss_ranger_debug_callback(SRCAM srCam, unsigned int msg, unsigned int param, void* data){
+    (void)srCam;
+    (void)msg;
+    (void)param;
+    (void)data;
+    return 1;
+    DEBUG_LOG("callback called ");
+  }
+
   static std::map<std::string,int> g_props;
   static struct g_props_initializer{
     g_props_initializer(){
@@ -101,12 +110,12 @@ namespace icl{
   
   SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth) throw (ICLException):Grabber(){
 
+    SR_SetCallback(swiss_ranger_debug_callback);
+
     setIgnoreDesiredParams(true);
     
-    DEBUG_LOG("here");
     m_sr = new SwissRanger;
 
-    DEBUG_LOG("here");
     if(serialNumber < 0){
       m_sr->id = SR_OpenDlg(&m_sr->cam,2,0);
       if(m_sr->id <= 0){
