@@ -46,16 +46,24 @@ XLDFLAGS += -L../../ICLQt/lib -lICLQt
 XCXXFLAGS += -I../../ICLQt/src
 
 bin_PROGRAMS+= \
-icl-interactive-template-matching-demo \
-icl-svs-online-demo
+icl-interactive-template-matching-demo
 
 icl_interactive_template_matching_demo_SOURCES=../examples/interactive-template-matching-demo.cpp
 icl_interactive_template_matching_demo_LDFLAGS=${XLDFLAGS}
 icl_interactive_template_matching_demo_CXXFLAGS=${XCXXFLAGS}
 
+
+if HAVE_SVS_COND
+
+bin_PROGRAMS+= \
+icl-svs-online-demo
+
 icl_svs_online_demo_SOURCES=../examples/svs-online-demo.cpp
 icl_svs_online_demo_LDFLAGS=${XLDFLAGS}
 icl_svs_online_demo_CXXFLAGS=${XCXXFLAGS}
+
+endif
+
 endif
 
 endif
