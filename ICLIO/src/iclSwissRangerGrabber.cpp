@@ -43,14 +43,15 @@ namespace icl{
     }
     return -1;
   }
-  static std::string prop(int v){
+  
+  /*static std::string prop(int v){
     for(std::map<std::string,int>::iterator it = g_props.begin();it!=g_props.end();++it){
       if(it->second == v){
         return it->first;
       }
     }
     return "";
-  }
+      }*/
 
   
 #define ICL_SR_SUCCESS 0
@@ -154,7 +155,7 @@ namespace icl{
     //SR_SetMode(m_sr->cam,AM_CONV_GRAY);
     //SR_SetMode(m_sr->cam,AM_COR_FIX_PTRN);
     //SR_SetMode(m_sr->cam,AM_CONF_MAP);
-    SR_SetMode(m_sr->cam,AM_COR_FIX_PTRN|AM_CONV_GRAY|AM_DENOISE_ANF);
+    SR_SetMode(m_sr->cam,AM_COR_FIX_PTRN|AM_CONV_GRAY|AM_DENOISE_ANF|AM_CONF_MAP);
   }
   
   SwissRangerGrabber::~SwissRangerGrabber(){
@@ -166,6 +167,8 @@ namespace icl{
   const ImgBase *SwissRangerGrabber::grabUD(ImgBase **dst){
     Mutex::Locker l(m_mutex);
     SR_Acquire(m_sr->cam);
+    Time captureTime = Time::now();
+    
     static const unsigned int SF = sizeof(float);
     SR_CoordTrfFlt(m_sr->cam, m_sr->buf.getData(0),m_sr->buf.getData(1),m_sr->buf.getData(2),SF,SF,SF);
 
@@ -204,8 +207,11 @@ namespace icl{
     if(dst){
       if(!*dst) *dst = result.deepCopy();
       else result.deepCopy(dst);
+
+      (*dst)->setTime(captureTime);
       return *dst;
     }else{
+      result.setTime(captureTime);
       return &result;
     }
 

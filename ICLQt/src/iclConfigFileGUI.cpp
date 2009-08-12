@@ -89,6 +89,10 @@ namespace icl{
     GUI("vbox[@handle=parent]",parent),m_own(false),m_tree(new QTreeWidget){
     
     m_tree->setColumnCount(3);
+    m_tree->setColumnWidth(0,250);
+    m_tree->setColumnWidth(1,200);
+    m_tree->setColumnWidth(2,50);
+
     loadConfig(config);
     
 

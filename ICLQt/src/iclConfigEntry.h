@@ -14,7 +14,21 @@ namespace icl{
 
   
   /// Utility class for referencing runtime-dynamic ConfigFile entries
-  /** TODO: put in a use case here ... */
+  /** Note, that there's a list of typedef's, to facilitate handling of CfgEntry vaklues :
+      - typedef ConfigEntry<Point> CfgPoint;
+      - typedef ConfigEntry<Size> CfgSize;
+      - typedef ConfigEntry<Rect> CfgRect;
+      - typedef ConfigEntry<Range32s> CfgRange32s;
+      - typedef ConfigEntry<Range32f> CfgRange32f;
+      - typedef ConfigEntry<std::string> CfgString;
+      
+      - typedef ConfigEntry<int> CfgInt;
+      - typedef ConfigEntry<float> CfgFloat;
+      - typedef ConfigEntry<double> CfgDouble;
+      
+      And for all ICL-pod types icl8u, icl16s, ... icl64f there's a typedef to Cfg8u, Cfg16s, ... Cfg64f.
+      
+      TODO: put in a use case here ... */
   template<class T>
   struct ConfigEntry{
     
@@ -51,7 +65,7 @@ namespace icl{
     }
     void debug_show(const std::string &key="any name"){
       DEBUG_LOG("config_entry: " << key);
-      DEBUG_LOG("def= " << m_def << "  entry_ptr = " << m_key << "  entry_val=" << (T)(*this) << "  config_ptr=" << m_config);
+      DEBUG_LOG("def= " << m_def << "  m_key = '" << m_key << "'  entry_val=" << (T)(*this) << "  config_ptr=" << m_config);
     }
   private:
     T m_def;
@@ -62,6 +76,7 @@ namespace icl{
 #define ICL_INSTANTIATE_DEPTH(D) typedef ConfigEntry<icl##D> Cfg##D;
   ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
+
   typedef  ConfigEntry<Point> CfgPoint;
   typedef  ConfigEntry<Point32f> CfgPoint32f;
   typedef  ConfigEntry<Size> CfgSize;
@@ -70,6 +85,12 @@ namespace icl{
   typedef  ConfigEntry<Rect32f> CfgRect32f;
   typedef  ConfigEntry<Range32s> CfgRange32s;
   typedef  ConfigEntry<Range32f> CfgRange32f;
+
+  typedef ConfigEntry<bool> CfgBool;
+  typedef ConfigEntry<int> CfgInt;
+  typedef ConfigEntry<float> CfgFloat;
+  typedef ConfigEntry<double> CfgDouble;
+
 }
 
 

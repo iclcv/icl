@@ -817,6 +817,9 @@ void run(){
   static ButtonHandle &showButton = gui.getValue<ButtonHandle>("show-camera");
   if(showButton.wasTriggered()){
     Camera c = scene.getCamera(CALIB_CAM);
+    std::cout << "------------------------------------------------------" << std::endl;
+    DEBUG_LOG("estimated camera pos is:" << c.getPos());
+    DEBUG_LOG("worldOffset is:" << worldOffset);
     c.setPos(c.getPos()+worldOffset);
     std::string filename = pa_subarg<std::string>("-o",0,"extracted-cam-cfg.xml");
     std::cout << "new config file: (written to " <<  filename << ")" << std::endl;
@@ -824,6 +827,7 @@ void run(){
     
     std::ofstream file(filename.c_str());
     file << c;
+    std::cout << "------------------------------------------------------" << std::endl;
   }
 
   Thread::msleep(10);
