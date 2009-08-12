@@ -331,8 +331,8 @@ namespace icl{
     id(id),cf(cf){}
   
 
-  void ConfigFile::setPrefix(const std::string &defaultPrefix){ 
-    m_sDefaultPrefix = defaultPrefix; 
+  void ConfigFile::setPrefix(const std::string &defaultPrefix) const{ 
+    const_cast<ConfigFile*>(this)->m_sDefaultPrefix = defaultPrefix; 
   }
   
   const std::string &ConfigFile::getPrefix() const { 

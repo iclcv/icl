@@ -264,7 +264,7 @@ namespace icl{
     void save(const std::string &filename) const;
     
     /// Sets up a default prefix automatically put before each given key
-    void setPrefix(const std::string &defaultPrefix);
+    void setPrefix(const std::string &defaultPrefix) const;
     
     /// Returns given default prefix
     const std::string &getPrefix() const;
