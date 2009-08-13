@@ -165,13 +165,13 @@ namespace icl{
     
     for(unsigned int i=0;i<ns.size();++i){
       const XMLNode &n = *ns[i];
-      //      DEBUG_LOG("processing node " << i << ":" <<n.toString(false));
 
       const std::string key = pfx+get_id_path(ns[i]);
 
       /// add data to config file
       if(contains(key)) throw InvalidFileFormatException("Key: '" + key + "' was found at least twice!");
       Entry &e = m_entries[key];
+      e.parent = this;
       e.id = key;
       e.value = n.getFirstChildNode(XMLNode::TEXT).getText();
       std::map<std::string,std::string>::const_iterator it = s_typeMapReverse.find(n("type"));
@@ -280,7 +280,7 @@ namespace icl{
   }
 
   bool ConfigFile::check_type_internal(const std::string &id, const std::string &rttiTypeID) const throw (EntryNotFoundException,UnregisteredTypeException){
-    const Entry &e = get_entry_internal(id);
+    const Entry &e = get_entry_internal(m_sDefaultPrefix+id);
     return e.rttiType == rttiTypeID;
     /*    
         DEBUG_LOG("rtti type is " << rttiTypeID << "#registered types:" << s_typeMap.size());
@@ -307,6 +307,7 @@ namespace icl{
     if(it == s_typeMap.end()) throw UnregisteredTypeException(type);
     std::string id=m_sDefaultPrefix + idIn;  
     Entry &e = m_entries[id];
+    e.parent = this;
     e.id = id;
     e.rttiType = type;
     e.value = val;
@@ -324,7 +325,11 @@ namespace icl{
   }
   
   bool ConfigFile::contains(const std::string &id) const{
-    return (m_entries.find(id) != m_entries.end());
+    if(m_sDefaultPrefix.length()){
+      return (m_entries.find(m_sDefaultPrefix+id) != m_entries.end());
+    }else{
+      return (m_entries.find(id) != m_entries.end());
+    }
   }
 
   ConfigFile::Data::Data(const std::string &id, ConfigFile &cf):
@@ -332,7 +337,7 @@ namespace icl{
   
 
   void ConfigFile::setPrefix(const std::string &defaultPrefix) const{ 
-    const_cast<ConfigFile*>(this)->m_sDefaultPrefix = defaultPrefix; 
+    m_sDefaultPrefix = defaultPrefix; 
   }
   
   const std::string &ConfigFile::getPrefix() const { 
@@ -344,7 +349,9 @@ namespace icl{
   }
   
   const ConfigFile::Data ConfigFile::operator[](const std::string &id) const throw (EntryNotFoundException){
-    if(!contains(id)) throw EntryNotFoundException(id);
+    if(!contains(id)){
+      throw EntryNotFoundException(m_sDefaultPrefix+id);
+    }
     return Data(id,const_cast<ConfigFile&>(*this));
   }
     

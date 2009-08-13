@@ -40,7 +40,7 @@ namespace icl{
         @param default value that should be used if key is not found 
         @param cfg config file to use (note: each entry remains valid as long 
                its parent config file remains allocated */
-    inline ConfigEntry(const std::string &key,
+    inline ConfigEntry(std::string key,
                        const T &def=T(),
                        const ConfigFile &cfg=ConfigFile::getConfig()) throw (ConfigFile::InvalidTypeException){
       

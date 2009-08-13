@@ -207,7 +207,7 @@ namespace icl{
                   ERROR_LOG("Entry: " << es[i]->id << ":\nValue list does not contain initial value");
                 }
                 
-                m_guis.back().id = es[i]->id;
+                m_guis.back().id = es[i]->getRelID();
                 m_guis.back().type = t.toLatin1().data();
                 m_guis.back().item = n;
                 m_tree->setItemWidget(n,1,*gui.getValue<ComboHandle>("h"));
@@ -223,7 +223,7 @@ namespace icl{
               gui = GUI("togglebutton("+fa+","+tr+")[@handle=b@out=v@minsize=5x1]");
               gui.create();
               gui.getValue<ButtonHandle>("b").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
-              m_guis.back().id = es[i]->id;
+              m_guis.back().id = es[i]->getRelID();
               m_guis.back().type = t.toLatin1().data();
               m_guis.back().item = n;
               m_tree->setItemWidget(n,1,*gui.getValue<ButtonHandle>("b"));
@@ -255,7 +255,7 @@ namespace icl{
                 
                 if(ok){
 
-                  m_guis.back().id = es[i]->id;
+                  m_guis.back().id = es[i]->getRelID();
                   m_guis.back().type = t.toLatin1().data();
                   m_guis.back().item = n;
                   m_tree->setItemWidget(n,1,*gui.getValue<BoxHandle>("b"));
@@ -577,6 +577,9 @@ namespace icl{
       keys.push_front(curr->text(0));
     }
     QString key = keys.join(".");
+    if(m_config->getPrefix().length()){
+      key = std::string(key.toLatin1().data()).substr(m_config->getPrefix().length()).c_str();
+    }
     //std::cout << "key was :" << key.toLatin1().data() << std::endl;
     
     QStringList dialogText;

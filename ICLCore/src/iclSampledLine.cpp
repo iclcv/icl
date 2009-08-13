@@ -3,6 +3,8 @@
 namespace icl{
 
   Point SampledLine::buf[MAX_LINE_LENGTH];
+  Point *SampledLine::cur=0;
+  Point *SampledLine::end=0;
 
   template<bool steep, bool steep2, int ystep>
   inline void SampledLine::bresenham_templ(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, Point *p){

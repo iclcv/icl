@@ -182,7 +182,7 @@ namespace icl{
       return NAME;
     }
 
-    /// internally used utitlity function
+    /// internally used utitlity function (id must be given without prefix)
     template<class T>
     inline bool check_type(const std::string &id) const throw (EntryNotFoundException,UnregisteredTypeException){
       return check_type_internal(id,get_rtti_type_id<T>());
@@ -363,10 +363,9 @@ namespace icl{
     */
     template<class T>
     inline T get(const std::string &idIn) const throw (EntryNotFoundException,InvalidTypeException,UnregisteredTypeException){
-      std::string id = m_sDefaultPrefix+idIn;
-      if(!contains(id)) throw EntryNotFoundException(id);
-      if(!check_type<T>(id)) throw InvalidTypeException(id,get_type_name<T>());
-      return parse<T>(m_entries.find(id)->second.value);
+      if(!contains(idIn)) throw EntryNotFoundException(m_sDefaultPrefix+idIn);
+      if(!check_type<T>(idIn)) throw InvalidTypeException(m_sDefaultPrefix+idIn,get_type_name<T>());
+      return parse<T>(m_entries.find(m_sDefaultPrefix+idIn)->second.value);
     }
     
     /// returns a given value from the internal string based representation
@@ -374,10 +373,9 @@ namespace icl{
     */
     template<class T>
     inline T get(const std::string &idIn,const T &def) const throw (InvalidTypeException,UnregisteredTypeException){
-      std::string id = m_sDefaultPrefix+idIn;
-      if(!contains(id)) return def;
-      if(!check_type<T>(id)) throw InvalidTypeException(id,get_type_name<T>());
-      return parse<T>(m_entries.find(id)->second.value);
+      if(!contains(idIn)) return def;
+      if(!check_type<T>(idIn)) throw InvalidTypeException(m_sDefaultPrefix+idIn,get_type_name<T>());
+      return parse<T>(m_entries.find(m_sDefaultPrefix+idIn)->second.value);
     }
 
     /// loads the global ConfigFile from given filename
@@ -442,6 +440,14 @@ namespace icl{
 
       /// returns the written type name that is associated with rttiType internally
       const std::string &getTypeName() const { return s_typeMap[rttiType]; }
+
+      /// returns this entries id relatively to the parent ConfigFiles prefix
+      std::string getRelID() const {
+        const std::string &pfx = parent->getPrefix();
+        if(!pfx.length()) return id;
+        else return id.substr(pfx.length());
+      }
+      ConfigFile *parent; // parent ConfigFile (used to obtain current prefix)
     };
 
     /// iterator type to run through all entries (const only)
@@ -454,7 +460,7 @@ namespace icl{
     const_iterator end() const{ return m_entries.end(); }
     
     /// returns all entries as vector<const Entry*>
-    const std::vector<const Entry*> getEntryList() const{
+    const std::vector<const Entry*> getEntryList(bool relToPrefix=false) const{
       std::vector<const Entry*> v;
       for(const_iterator it =begin();it != end(); ++it){
         v.push_back(&it->second);
@@ -496,7 +502,7 @@ namespace icl{
     
 
     /// current string prefix contents
-    std::string m_sDefaultPrefix;
+    mutable std::string m_sDefaultPrefix;
 
 
     /// DataStore contents
