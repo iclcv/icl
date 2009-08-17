@@ -13,12 +13,17 @@ bin_PROGRAMS= \
 icl-img-example \
 icl-copy-channel-roi-example \
 icl-img-iterator-benchmark \
-icl-reduce-channels-test
+icl-reduce-channels-test \
+icl-sampled-line-test
 
 # explicit sources, ldflags and cxxflags
 icl_img_example_SOURCES=../examples/img-example.cpp
 icl_img_example_LDFLAGS=${XLDFLAGS}
 icl_img_example_CXXFLAGS=${XCXXFLAGS}
+
+icl_sampled_line_test_SOURCES=../examples/sampled-line-test.cpp
+icl_sampled_line_test_LDFLAGS=${XLDFLAGS}
+icl_sampled_line_test_CXXFLAGS=${XCXXFLAGS}
 
 icl_copy_channel_roi_example_SOURCES=../examples/copy-channel-roi-example.cpp
 icl_copy_channel_roi_example_LDFLAGS=${XLDFLAGS}

@@ -26,7 +26,7 @@ namespace icl{
     
     public:
 
-    /// Creats a NULL sampled line
+    /// Creates a NULL sampled line
     SampledLine():m_bufBegin(0),m_bufEnd(0){}
     
     /// Destruktor
