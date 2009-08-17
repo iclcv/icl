@@ -38,12 +38,29 @@ namespace icl{
     if(m_data->buffer.size()<minsize){
       m_data->buffer.resize(minsize);
     }
-    image->getConstPixels(0,0,size.width,size.height);
-    image->writePixels(Magick::RGBQuantum,m_data->buffer.data());
     
+    /**
+        Here we faced an error in the Magick++ library when reading png images ?
+        image->getConstPixels(0,0,size.width,size.height);
+        image->writePixels(Magick::RGBQuantum,m_data->buffer.data());
+        
+        icl::ensureCompatible(dest,depth8u,size,formatRGB);
+        icl::interleavedToPlanar(m_data->buffer.data(),(*dest)->asImg<icl8u>());
+    **/
+
+    const Magick::PixelPacket *pix = image->getConstPixels(0,0,size.width,size.height);
     icl::ensureCompatible(dest,depth8u,size,formatRGB);
-    icl::interleavedToPlanar(m_data->buffer.data(),(*dest)->asImg<icl8u>());
-    
+
+    icl8u *r = (*dest)->asImg<icl8u>()->begin(0);
+    icl8u *g = (*dest)->asImg<icl8u>()->begin(1);
+    icl8u *b = (*dest)->asImg<icl8u>()->begin(2);
+    const int dim = size.getDim();
+    for(int i=0;i<dim;++i){
+      const Magick::PixelPacket &p = pix[i];
+      r[i] = clipped_cast<Magick::Quantum,icl8u>(p.red>>8);
+      g[i] = clipped_cast<Magick::Quantum,icl8u>(p.green>>8);
+      b[i] = clipped_cast<Magick::Quantum,icl8u>(p.blue>>8);
+    }
     ICL_DELETE(image);
   }
   
