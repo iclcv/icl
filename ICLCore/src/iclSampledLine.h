@@ -46,16 +46,16 @@ namespace icl{
 
     /// create a SampledLine instance (only one instance is valid at a time) with given boundig rect parameters
     SampledLine(int aX, int aY, int bX, int bY, int minX, int minY, int maxX, int maxY) {
-      init(aX,bX,aY,bY,minX,maxX,minY,maxY);
+      init(aX,aY,bX,bY,minX,maxX,minY,maxY);
     }
     /// create a SampledLine instance (only one instance is valid at a time)
     SampledLine(const Point &a, const Point &b) { 
-      init(a.x,b.x,a.y,b.y); 
+      init(a.x,a.y,b.x,b.y); 
     }
 
     /// create a SampledLine instance (only one instance is valid at a time) with given boundig rect parameters
     SampledLine(const Point &a, const Point &b, const Rect &bounds){
-      init(a.x,b.x,a.y,b.y,bounds.x,bounds.y,bounds.right(),bounds.bottom());
+      init(a.x,a.y,b.x,b.y,bounds.x,bounds.y,bounds.right(),bounds.bottom());
     }
     
     /// sets the curr pointer back to the buffer start
@@ -75,6 +75,9 @@ namespace icl{
     
     /// returns the next point of this line
     inline const Point &next() { return *m_cur++; }
+    
+    /// returns a former point
+    inline const Point &getPrev(int nBack=1) const { return *(m_cur-nBack); }
     
     /// returns whether this line has remaining points, that have not yet been extracted using next()
     inline bool hasNext() const { return m_cur != m_end; }

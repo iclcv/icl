@@ -91,29 +91,21 @@ namespace icl{
   typedef ConfigEntry<float> CfgFloat;
   typedef ConfigEntry<double> CfgDouble;
 
-  /** \cond */
-  std::string replace_underscores_by_points(std::string s){
-    for(std::string::size_type i=0;i<s.length();++i){
-      if (s[i] == '_'){  s[i]='.'; }
-    }
-    return s;
-  }
-  /** \endcond */
   
-#define cfg_VAL(T,key) static ConfigEntry<T> key##_cfg(replace_underscores_by_points(#key)); T key = key##_cfg
-#define cfg_int(key) cfg_VAL(int,key);
-#define cfg_float(key) cfg_VAL(float,key);
-#define cfg_double(key) cfg_VAL(float,key);
-#define cfg_short(key) cfg_VAL(short,key);
-#define cfg_string(key) cfg_VAL(std::string,key);
-#define cfg_uchar(key) cfg_VAL(icl8u,key);
-#define cfg_bool(key) cfg_VAL(bool,key);
+#define cfg_VAL(T,key,x) static ConfigEntry<T> static_cfg_entry_##x(#key); T x = static_cfg_entry_##x
+#define cfg_int(key,x) cfg_VAL(int,key,x);
+#define cfg_float(key,x) cfg_VAL(float,key,x);
+#define cfg_double(key,x) cfg_VAL(float,key,x);
+#define cfg_short(key,x) cfg_VAL(short,key,x);
+#define cfg_string(key,x) cfg_VAL(std::string,key,x);
+#define cfg_uchar(key,x) cfg_VAL(icl8u,key,x);
+#define cfg_bool(key,x) cfg_VAL(bool,key,x);
 
-#define cfg_8u(key) cfg_VAL(icl8u,key);
-#define cfg_16s(key) cfg_VAL(icl16s,key);
-#define cfg_32s(key) cfg_VAL(icl32s,key);
-#define cfg_32f(key) cfg_VAL(icl32f,key);
-#define cfg_64f(key) cfg_VAL(icl64f,key);
+#define cfg_8u(key,x) cfg_VAL(icl8u,key,x);
+#define cfg_16s(key,x) cfg_VAL(icl16s,key,x);
+#define cfg_32s(key,x) cfg_VAL(icl32s,key,x);
+#define cfg_32f(key,x) cfg_VAL(icl32f,key,x);
+#define cfg_64f(key,x) cfg_VAL(icl64f,key,x);
 }
 
 

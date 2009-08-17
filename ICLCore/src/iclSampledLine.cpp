@@ -3,7 +3,7 @@
 namespace icl{
 
   static int estimate_buf_size(int aX, int aY, int bX, int bY){
-    return iclMax(abs(aX-bX),abs(aY-bY))+1; // +1 ? maybe we make something wrong with the backward ordered sampling
+    return iclMax(abs(aX-bX),abs(aY-bY))+1; //+1 even though a==b -> we have a sigle point!
   }
 
   void SampledLine::init(int aX, int aY, int bX, int bY){
@@ -11,7 +11,7 @@ namespace icl{
     if(n>0){
       m_bufBegin = new Point[n];
       m_bufEnd = m_bufBegin+n;
-      LineSampler::init(aX,aY,bX,bY,m_bufBegin);
+      LineSampler::init(aX,aY,bX,bY,m_bufBegin,n);
       LineSampler::getPointers(&m_cur,&m_end);
     }else{
       m_bufBegin = m_bufEnd = 0;
@@ -22,7 +22,7 @@ namespace icl{
     if(n){
       m_bufBegin = new Point[n];
       m_bufEnd = m_bufBegin+n;
-      LineSampler::init(aX,aY,bX,bY,minX,minY,maxX,maxY,m_bufBegin);
+      LineSampler::init(aX,aY,bX,bY,minX,minY,maxX,maxY,m_bufBegin,n);
       LineSampler::getPointers(&m_cur,&m_end);
     }else{
       m_bufBegin = m_bufEnd = 0;

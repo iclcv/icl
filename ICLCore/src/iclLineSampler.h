@@ -3,6 +3,7 @@
 
 #include <iclPoint.h>
 #include <iclRect.h>
+#include <iclException.h>
 
 namespace icl{
   /// Utility class for efficient line sampling (providing only static functions)
@@ -46,17 +47,17 @@ namespace icl{
     
     /// internal sampling function using bresenham line sampling algorithm
     template<bool steep, bool steep2, int ystep>
-    static void bresenham_templ_2(int x0, int x1, int y0, int y1, Point *p);
+    static void bresenham_templ_2(int x0, int x1, int y0, int y1, Point *p, int bufSize);
 
     /// internal sampling function using bresenham line sampling algorithm
     template<bool steep, bool steep2, int ystep>
-    static void bresenham_templ(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, Point *p);
+    static void bresenham_templ(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, Point *p, int bufSize);
 
     /// internal sampling function using bresenham line sampling algorithm
-    static void bresenham(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, Point *p);
+    static void bresenham(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, Point *p, int bufSize) throw (ICLException);
 
     /// internal sampling function using bresenham line sampling algorithm
-    static void bresenham(int x0, int x1, int y0, int y1, Point *p);
+    static void bresenham(int x0, int x1, int y0, int y1, Point *p, int bufSize) throw (ICLException);
 
     /// internal point buffer
     static Point buf[MAX_LINE_LENGTH];
@@ -74,18 +75,22 @@ namespace icl{
     }
 
     /// create a SampledLine instance (only one instance is valid at a time)
-    static void init(int aX, int aY, int bX, int bY, Point *userBuf=0){ bresenham(aX,bX,aY,bY,get_buf(userBuf)); }
+    static void init(int aX, int aY, int bX, int bY, Point *userBuf=0, int bufSize=0) throw (ICLException){ 
+      bresenham(aX,bX,aY,bY,get_buf(userBuf),bufSize); 
+    }
 
     /// create a SampledLine instance (only one instance is valid at a time) with given boundig rect parameters
-    static void init(int aX, int aY, int bX, int bY, int minX, int minY, int maxX, int maxY, Point *userBuf=0) {
-      bresenham(aX,bX,aY,bY,minX,maxX,minY,maxY,get_buf(userBuf));
+    static void init(int aX, int aY, int bX, int bY, int minX, int minY, int maxX, int maxY, Point *userBuf=0, int bufSize=0) throw (ICLException){
+      bresenham(aX,bX,aY,bY,minX,maxX,minY,maxY,get_buf(userBuf),bufSize);
     }
     /// create a SampledLine instance (only one instance is valid at a time)
-    static void init(const Point &a, const Point &b, Point *userBuf=0) { bresenham(a.x,b.x,a.y,b.y,get_buf(userBuf)); }
+    static void init(const Point &a, const Point &b, Point *userBuf=0, int bufSize=0) throw (ICLException){ 
+      bresenham(a.x,b.x,a.y,b.y,get_buf(userBuf),bufSize); 
+    }
 
     /// create a SampledLine instance (only one instance is valid at a time) with given boundig rect parameters
-    static void init(const Point &a, const Point &b, const Rect &bounds, Point *userBuf=0){
-      bresenham(a.x,b.x,a.y,b.y,bounds.x,bounds.y,bounds.right(),bounds.bottom(), get_buf(userBuf));
+    static void init(const Point &a, const Point &b, const Rect &bounds, Point *userBuf=0, int bufSize=0) throw (ICLException){
+      bresenham(a.x,b.x,a.y,b.y,bounds.x,bounds.y,bounds.right(),bounds.bottom(), get_buf(userBuf),bufSize);
     }
     
     /// gets the next valid point (this function is not overflow-safe)
