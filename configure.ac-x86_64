@@ -249,9 +249,6 @@ AC_ARG_WITH([LIBJPEG],
 
 AM_CONDITIONAL([HAVE_LIBJPEG_COND],[test x$HAVE_LIBJPEG = xTRUE])
 
-
-
-
 ###############################################################################
 # LIBZ
 ###############################################################################
@@ -284,6 +281,14 @@ AC_ARG_WITH([LIBZ],
                 [])
         fi])
 AM_CONDITIONAL([HAVE_LIBZ_COND],[test x$HAVE_LIBZ = xTRUE])
+
+###############################################################################
+# LIBMESASR (for Mesa-Imaging SwissRanger Time-of-Flight 3D cameras)
+###############################################################################
+
+# not available in 64bit mode
+HAVE_LIBMESASR=FALSE
+AM_CONDITIONAL([HAVE_LIBMESASR_COND],[test x$HAVE_LIBMESASR = xTRUE])
 
 ###############################################################################
 # VIDEODEV
@@ -476,17 +481,18 @@ ICL_PC_CFLAGS=`echo ${ICL_PC_CFLAGS} | sed "s|-I/include | |g"`
 AC_MSG_NOTICE([+---------------------------------------+])
 AC_MSG_NOTICE([| Summary                               |])
 AC_MSG_NOTICE([+---------------------------------------+])
-ICL_NOTIFY_SUPPORT([IPP],          [IPP      ])
-ICL_NOTIFY_SUPPORT([LIBDC],        [libdc1394])
-ICL_NOTIFY_SUPPORT([UNICAP],       [Unicap   ])
-ICL_NOTIFY_SUPPORT([OPENGL],       [OpenGL   ])
-ICL_NOTIFY_SUPPORT([QT],           [Qt       ])
-ICL_NOTIFY_SUPPORT([LIBJPEG],      [libjpeg  ])
-ICL_NOTIFY_SUPPORT([LIBZ],         [libz     ])
-ICL_NOTIFY_SUPPORT([VIDEODEV],     [videodev ])
-ICL_NOTIFY_SUPPORT([SVS],          [SVS      ])
-ICL_NOTIFY_SUPPORT([XCF],          [XCF      ])
-ICL_NOTIFY_SUPPORT([IMAGEMAGICK],  [Magick++ ])
+ICL_NOTIFY_SUPPORT([IPP],          [IPP       ])
+ICL_NOTIFY_SUPPORT([LIBDC],        [libdc1394 ])
+ICL_NOTIFY_SUPPORT([UNICAP],       [Unicap    ])
+ICL_NOTIFY_SUPPORT([OPENGL],       [OpenGL    ])
+ICL_NOTIFY_SUPPORT([QT],           [Qt        ])
+ICL_NOTIFY_SUPPORT([LIBJPEG],      [libjpeg   ])
+ICL_NOTIFY_SUPPORT([LIBZ],         [libz      ])
+ICL_NOTIFY_SUPPORT([VIDEODEV],     [videodev  ])
+ICL_NOTIFY_SUPPORT([SVS],          [SVS       ])
+ICL_NOTIFY_SUPPORT([XCF],          [XCF       ])
+ICL_NOTIFY_SUPPORT([IMAGEMAGICK],  [Magick++  ])
+ICL_NOTIFY_SUPPORT([LIBMESASR],    [libmesasr ])
 AC_MSG_NOTICE([+---------------------------------------+])
 
 
