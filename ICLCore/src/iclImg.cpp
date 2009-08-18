@@ -1712,7 +1712,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   Point Img<Type>::getLocation(const Type *p, int channel, bool relToROI) const{
     ICLASSERT_RETURN_VAL(validChannel(channel), Point::null);
     ICLASSERT_RETURN_VAL(getDim(), Point::null);
-    int offs = (int)(getData(channel)-p);
+    int offs = (int)(p-getData(channel));
     int x = offs%getWidth();
     int y = offs/getWidth();
     if(relToROI){
