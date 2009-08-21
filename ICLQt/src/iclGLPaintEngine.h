@@ -38,6 +38,9 @@ namespace icl{
                       PaintEngine::TextWeight weight = PaintEngine::Normal, 
                       PaintEngine::TextStyle style = PaintEngine::StyleNormal);
 
+    virtual void linewidth(float w);
+    virtual void pointsize(float s);
+    
     virtual void line(const Point &a, const Point &b);
     virtual void point(const Point &p);
     virtual void image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
@@ -58,6 +61,13 @@ namespace icl{
     virtual int getFontSize() const{
       return m_oFont.pointSize();
     }
+    virtual float getLineWidth() const {
+      return m_fLineWidth;
+    }
+    virtual float getPointSize() const {
+      return m_fPointSize;
+    }
+
 
     protected:
     void setupRasterEngine(const Rect& r, const Size &s, PaintEngine::AlignMode mode);
@@ -66,6 +76,8 @@ namespace icl{
 
     QGLWidget *m_poWidget;
     
+    float m_fLineWidth;
+    float m_fPointSize;
     float m_afLineColor[4];
     float m_afFillColor[4];
     int m_aiBCI[3];

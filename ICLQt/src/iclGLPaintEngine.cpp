@@ -37,6 +37,9 @@ namespace icl{
     m_poWidget(widget),m_bBCIAutoFlag(false), m_oFont(QFont("Arial",30)),
     m_poImageBufferForIncompatibleDepth(0){
     
+    m_fLineWidth = 1;
+    m_fPointSize = 1;
+
     // widget->makeCurrent();
     
     glMatrixMode(GL_MODELVIEW);
@@ -119,10 +122,20 @@ namespace icl{
     m_afFillColor[3] = (float)a/255.0;
   }
 
+  void GLPaintEngine::linewidth(float w){
+    m_fLineWidth = w;
+  }
+
+  void GLPaintEngine::pointsize(float s){
+    m_fPointSize = s;
+  }
+
+
   // }}}
   void GLPaintEngine::line(const Point &a, const Point &b){
     // {{{ open
     glEnable(GL_LINE_SMOOTH);
+    glLineWidth(m_fLineWidth);
     glColor4fv(m_afLineColor);
     glBegin(GL_LINES);
     glVertex2f(a.x,a.y);
@@ -136,6 +149,7 @@ namespace icl{
     // {{{ open
 
     glColor4fv(m_afLineColor);
+    glPointSize(m_fPointSize);
     glBegin(GL_POINTS);
     glVertex2f((GLfloat)p.x,(GLfloat)p.y);
     glEnd();
@@ -174,6 +188,7 @@ namespace icl{
   void GLPaintEngine::rect(const Rect &r){
     // {{{ open
 
+    glLineWidth(m_fLineWidth);
     glColor4fv(m_afFillColor);
     glBegin(GL_QUADS);
     glVertex2f((GLfloat)r.x,(GLfloat)r.y);
@@ -190,10 +205,12 @@ namespace icl{
     glVertex2f((GLfloat)r.x,(GLfloat)r.bottom());
     glEnd();
     
-    point(Point(r.right(),r.y));
+    
     
   }
   void GLPaintEngine::triangle(const Point &a, const Point &b, const Point &c){
+
+    glLineWidth(m_fLineWidth);
     glEnable(GL_LINE_SMOOTH);
     glColor4fv(m_afFillColor);
     glBegin(GL_TRIANGLES);
@@ -213,7 +230,8 @@ namespace icl{
   // }}}
  
   void GLPaintEngine::quad(const Point &a, const Point &b, const Point &c, const Point &d){
-    glEnable(GL_LINE_SMOOTH);
+
+    glEnable(GL_LINE_SMOOTH);    
     glColor4fv(m_afFillColor);
     glBegin(GL_QUADS);
     glVertex2f((GLfloat)a.x,(GLfloat)a.y);
@@ -221,7 +239,7 @@ namespace icl{
     glVertex2f((GLfloat)c.x,(GLfloat)c.y);
     glVertex2f((GLfloat)d.x,(GLfloat)d.y);
     glEnd();
-    
+
     glColor4fv(m_afLineColor);
     glBegin(GL_LINE_LOOP);
     glVertex2f((GLfloat)a.x,(GLfloat)a.y);
@@ -236,6 +254,7 @@ namespace icl{
 
   void GLPaintEngine::ellipse(const Rect &r){
     // {{{ open
+    glLineWidth(m_fLineWidth);
     glEnable(GL_LINE_SMOOTH);
     glColor4fv(m_afFillColor);
     GLfloat w2 = 0.5*(r.width);

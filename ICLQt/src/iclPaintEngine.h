@@ -28,6 +28,8 @@ namespace icl{
     virtual void fontsize(int size)=0;
     virtual void font(std::string name, int size = -1, TextWeight weight = Normal, TextStyle style = StyleNormal)=0;
 
+    virtual void linewidth(float w)=0;
+    virtual void pointsize(float s)=0;
     virtual void line(const Point &a, const Point &b)=0;
     virtual void point(const Point &p)=0;
     virtual void image(const Rect &r,ImgBase *image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;

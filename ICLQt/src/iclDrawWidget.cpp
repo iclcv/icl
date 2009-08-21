@@ -213,6 +213,45 @@ namespace icl{
 
   // }}}
 
+
+  class PolygonCommand : public IntelligentDrawCommand{
+    // {{{ open
+
+    public:
+    PolygonCommand(const std::vector<Point32f> &pts):pts(pts),center(0,0){
+      if(pts.size()){
+        for(unsigned int i=0;i<pts.size();++i){
+          center += pts[i];
+        }
+        center *= 1.0/pts.size();
+      }
+    }
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      if(!pts.size()< 3) return;
+      
+      int colorSave[4];
+      e->getColor(colorSave);
+      e->color(0,0,0,0);
+      
+      Point c = tP(center.x,center.y,s);
+      
+      const unsigned int n = pts.size();
+      for(unsigned int i=0; i<n;++i){
+        unsigned int next =i+1; 
+        if(next == n) next = 0;
+        const Point32f &a = pts[i];
+        const Point32f &b = pts[i];
+        e->triangle(tP(a.x,a.y,s),tP(b.x,b.y,s),c);
+      }
+      e->color(colorSave[0],colorSave[1],colorSave[2],colorSave[3]);
+    }
+    std::vector<Point32f> pts;
+    Point32f center;
+  };
+
+  // }}}
+
+
  class Points32fCommand : public IntelligentDrawCommand{
     // {{{ open
 
@@ -547,6 +586,36 @@ namespace icl{
   };
 
     // }}}
+
+
+  class LineWidthCommand : public ICLDrawWidget::DrawCommand{
+    // {{{ open
+
+  public:
+    LineWidthCommand(float w):m_w(w){}
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      e->linewidth(m_w);
+    }
+  protected:
+    float m_w;
+  };
+
+    // }}}
+
+  class PointSizeCommand : public ICLDrawWidget::DrawCommand{
+    // {{{ open
+    
+  public:
+    PointSizeCommand(float s):m_s(s){}
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      e->pointsize(m_s);
+    }
+  protected:
+    float m_s;
+  };
+
+  // }}}
+
   
   // }}}
  
@@ -595,6 +664,15 @@ namespace icl{
     m_vecCommands.push_back(new SymSizeCommand(w,h==-1? w : h));
   }
 
+  void ICLDrawWidget::linewidth(float w){
+    m_vecCommands.push_back(new LineWidthCommand(w));
+  }
+
+  void ICLDrawWidget::pointsize(float s){
+    m_vecCommands.push_back(new PointSizeCommand(s));
+  }
+
+
   void ICLDrawWidget::point(float x, float y){
     m_vecCommands.push_back(new PointCommand(x,y));
   }
@@ -610,6 +688,11 @@ namespace icl{
   }
   void  ICLDrawWidget::linestrip(const std::vector<Point32f> &pts, bool closeLoop){
     m_vecCommands.push_back(new Points32fCommand(pts,true,closeLoop));
+  }
+
+  void ICLDrawWidget::polygon(const std::vector<Point32f> &ps){
+    m_vecCommands.push_back(new PolygonCommand(ps));
+    m_vecCommands.push_back(new Points32fCommand(ps,true,true));
   }
 
   void ICLDrawWidget::abs(){

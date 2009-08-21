@@ -122,6 +122,9 @@ namespace icl{
 
     /// draws an ellipse with given parameters (w==H --> circle)
     void ellipse(float x, float y, float w, float h);
+    
+    /// draws a convex polygon
+    void polygon(const std::vector<Point32f> &ps);
 
     /// draws a predefined symbol at the given location
     /** The symbols size can be set using symsize */
@@ -130,6 +133,12 @@ namespace icl{
     /// sets the size for following "sym" draw commands
     void symsize(float w, float h=-1); // if h==-1, h = w;
 
+    /// sets current linewidth (default is 1);
+    void linewidth(float w);
+
+    /// sets current pointsize (default is 1)
+    void pointsize(float s);
+    
     /// sets the draw state machines "edge"-color buffer to a given value
     /** Primitives except images are drawn with the currently set "color"
         and filled with the currently set "fill" 
