@@ -227,7 +227,7 @@ namespace icl{
       }
     }
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-      if(!pts.size()< 3) return;
+      if(pts.size()< 3) return;
       
       int colorSave[4];
       e->getColor(colorSave);
@@ -240,10 +240,16 @@ namespace icl{
         unsigned int next =i+1; 
         if(next == n) next = 0;
         const Point32f &a = pts[i];
-        const Point32f &b = pts[i];
-        e->triangle(tP(a.x,a.y,s),tP(b.x,b.y,s),c);
+        const Point32f &b = pts[next];
+        Point A = tP(a.x,a.y,s);
+        Point B = tP(b.x,b.y,s);
+        e->color(0,0,0,0);
+        e->triangle(A,B,c);
+        e->color(colorSave[0],colorSave[1],colorSave[2],colorSave[3]);
+        e->line(A,B);
       }
-      e->color(colorSave[0],colorSave[1],colorSave[2],colorSave[3]);
+
+      
     }
     std::vector<Point32f> pts;
     Point32f center;
@@ -692,7 +698,6 @@ namespace icl{
 
   void ICLDrawWidget::polygon(const std::vector<Point32f> &ps){
     m_vecCommands.push_back(new PolygonCommand(ps));
-    m_vecCommands.push_back(new Points32fCommand(ps,true,true));
   }
 
   void ICLDrawWidget::abs(){

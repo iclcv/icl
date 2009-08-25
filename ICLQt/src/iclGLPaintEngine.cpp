@@ -210,15 +210,15 @@ namespace icl{
   }
   void GLPaintEngine::triangle(const Point &a, const Point &b, const Point &c){
 
-    glLineWidth(m_fLineWidth);
-    glEnable(GL_LINE_SMOOTH);
     glColor4fv(m_afFillColor);
     glBegin(GL_TRIANGLES);
     glVertex2f((GLfloat)a.x,(GLfloat)a.y);
     glVertex2f((GLfloat)b.x,(GLfloat)b.y);
     glVertex2f((GLfloat)c.x,(GLfloat)c.y);
     glEnd();
-    
+
+    glLineWidth(m_fLineWidth);
+    glEnable(GL_LINE_SMOOTH);    
     glColor4fv(m_afLineColor);
     glBegin(GL_LINE_LOOP);
     glVertex2f((GLfloat)a.x,(GLfloat)a.y);
@@ -336,7 +336,9 @@ namespace icl{
   void GLPaintEngine::getColor(int *piColor){
     // {{{ open
 
-    for(int i=0;i<4;piColor[i]=(int)m_afLineColor[i],i++);
+    for(int i=0;i<4;i++){
+      piColor[i]=(int)(m_afLineColor[i]*255.0);
+    }
   }
 
   // }}}
@@ -344,7 +346,9 @@ namespace icl{
   void GLPaintEngine::getFill(int *piColor){
     // {{{ open
 
-    for(int i=0;i<4;piColor[i]=(int)m_afFillColor[i],i++);
+    for(int i=0;i<4;i++){
+      piColor[i]=(int)(m_afFillColor[i]*255.0);
+    }
   }
 
   // }}}
