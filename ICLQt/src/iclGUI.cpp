@@ -65,6 +65,7 @@
 #include <iclWidget.h>
 #include <iclDrawWidget.h>
 #include <iclDrawWidget3D.h>
+#include <iclThreadedUpdatableSlider.h>
 
 #include <map>
 
@@ -420,7 +421,11 @@ namespace icl{
       }
       
       addToGrid(m_poButton);
-      connect(m_poButton,SIGNAL(pressed()),this,SLOT(ioSlot()));
+      
+      // this must be connected to the toggled function too (not to the clicked() signal) because 
+      // the clicked()-signal is emitted BEFORE the toggled-signale, which makes the button get
+      // out of sync-with it's underlying value :-(
+      connect(m_poButton,SIGNAL(toggled(bool)),this,SLOT(ioSlot()));
 
       if(def.handle() != ""){
         getGUI()->lockData();
@@ -497,9 +502,9 @@ namespace icl{
       int iCurr = def.intParam(2);
       
       if(iVerticalFlag){
-        m_poSlider = new QSlider(Qt::Vertical,def.parentWidget());
+        m_poSlider = new ThreadedUpdatableSlider(Qt::Vertical,def.parentWidget());
       }else{
-        m_poSlider = new QSlider(Qt::Horizontal,def.parentWidget());
+        m_poSlider = new ThreadedUpdatableSlider(Qt::Horizontal,def.parentWidget());
       }
       addToGrid(m_poSlider);
       
@@ -549,7 +554,7 @@ namespace icl{
       *m_piValue = m_poSlider->value();
     }
   private:
-    QSlider *m_poSlider;
+    ThreadedUpdatableSlider *m_poSlider;
     QLCDNumber *m_poLCD;
     int *m_piValue;
     bool m_bVerticalFlag;

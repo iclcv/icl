@@ -58,6 +58,9 @@ namespace icl{
     
     /// for GUI::Callback
     virtual void exec();
+
+    /// for GUI::Callback
+    virtual void exec(const std::string &handle);
     
     private slots:
     void itemDoubleClicked(QTreeWidgetItem *item, int column);

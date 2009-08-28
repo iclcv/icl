@@ -134,6 +134,14 @@ include_HEADERS+= \
 endif
 endif
 
+if HAVE_XINE_COND
+libICLIO_la_SOURCES+= \
+../src/iclVideoGrabber.cpp
+
+include_HEADERS+= \
+../src/iclVideoGrabber.h
+endif
+
 if HAVE_XCF_COND
 libICLIO_la_SOURCES+= \
 ../src/iclXCFGrabberBase.cpp \

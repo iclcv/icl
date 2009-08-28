@@ -64,7 +64,7 @@
 #define gui_LabelHandle(NAME) gui_VAL(LabelHandle,NAME)
 
 /// extract a SliderHandle as reference from GUI object named gui
-#define gui_SliderHandle(NAME) gui_VAL(SliderHandl,NAME)
+#define gui_SliderHandle(NAME) gui_VAL(SliderHandle,NAME)
 
 /// extract a FSliderHandle as reference from GUI object named gui
 #define gui_FSliderHandle(NAME) gui_VAL(FSliderHandle,NAME)

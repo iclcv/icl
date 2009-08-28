@@ -36,6 +36,7 @@ namespace icl {
                                   - <b>xcfm</b> xcf memory grabber
                                   - <b>mv</b> matrix vision grabber
                                   - <b>sr</b> SwissRanger camera (mesa-imaging)
+                                  - <b>video</b> Xine based video grabber (grabbing videos frame by frame)
         
         @param params comma separated device depend parameter list: e.g.
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
@@ -51,6 +52,7 @@ namespace icl {
                                   - xcfm=memory-name (string) (currently image-xpath is always "//IMAGE")
                                   - mv=device-name (string)
                                   - sr=device-serial-number (-1 -> menu, 0 -> auto-select)
+                                  - video=video-filename (string)
         @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
 
         @suppressDoubledImages if set, this flag makes the wrapped grabber return each

@@ -19,6 +19,7 @@ MOC_FILES= \
 ../src/iclConfigFileGUI.moc.cpp \
 ../src/iclPlotWidget.moc.cpp
 
+
 libICLQt_la_SOURCES= \
 ${MOC_FILES} \
 ../src/iclBorderHandle.cpp \
@@ -127,7 +128,10 @@ include_HEADERS= \
 ../src/iclApplication.h \
 ../src/iclPlotWidget.h \
 ../src/iclIconFactory.h \
-../src/iclContainerHandle.h
+../src/iclContainerHandle.h \
+../src/iclSliderUpdateEvent.h \
+../src/iclThreadedUpdatableSlider.h
+
 
 
 # include other packages here!

@@ -814,6 +814,18 @@ namespace icl{
       return ::pow( sumSquares, 1.0/norm);
     }
 
+    /// inplace normalization
+    inline void normalize(T norm=2){
+      T l = (T)length(norm);
+      if(l) (*this) /= l;
+    }
+    
+    /// create a normalized version of this matrix
+    inline FixedMatrix<T,COLS,ROWS> normalized(T norm=2) const{
+      T l = (T)length(norm);
+      return l ?  (*this)/l : *this;
+    }
+
     /// Element-wise comparison with other matrix
     template<class otherT>
     bool operator==(const FixedMatrix<otherT,COLS,ROWS> &m) const{

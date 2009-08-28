@@ -1,5 +1,6 @@
 #include <iclSliderHandle.h>
-#include <QSlider>
+#include <iclThreadedUpdatableSlider.h>
+
 namespace icl{
   
   void SliderHandle::setMin(int min){
@@ -13,7 +14,7 @@ namespace icl{
     setMax(max);
   }
   void SliderHandle::setValue(int val){
-    (**this)->setValue(val);
+    (**this)->setValueFromOtherThread(val);
   }
   int SliderHandle::getMin() const{
     return (**this)->minimum();

@@ -48,6 +48,7 @@
 #include <iclRect32f.h>
 #include <iclRange.h>
 #include <iclTypes.h>
+#include <iclThreadedUpdatableSlider.h>
 
 // }}}
 

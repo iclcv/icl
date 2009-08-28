@@ -359,8 +359,34 @@ AC_ARG_WITH([SVS],
                 [])
         fi])
 AM_CONDITIONAL([HAVE_SVS_COND],[test x$HAVE_SVS = xTRUE])
-                                     
+     
 
+###############################################################################
+# XINE
+###############################################################################
+
+
+AC_ARG_WITH([XINE],
+        [AS_HELP_STRING([--without-XINE],
+                        [disable support for XINE])],
+        [HAVE_XINE=FALSE],
+        [ICL_NOTIFY_CHECK([XINE          ])
+        ICL_WITH_ROOT([XINE],[/usr])
+        HAVE_XINE=TRUE
+
+        ICL_PUSH_FLAG_VARS
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(XINE,lib,include)
+        AC_CHECK_FILE([$XINE_ROOT/lib/pkgconfig/libxine.pc],[],[HAVE_XINE=FALSE])  
+        AC_CHECK_HEADER([xine.h],[],[HAVE_XINE=FALSE])
+        AC_CHECK_HEADER([xine/xineutils.h],[],[HAVE_XINE=FALSE])
+        AC_CHECK_LIB([xine],[xine_new],[],[HAVE_XINE=FALSE])
+
+        ICL_POP_FLAG_VARS
+
+        if test "$HAVE_XINE" = "TRUE" ; then
+           ICL_USE_PC_INPUT([XINE],[libxine])
+        fi])
+AM_CONDITIONAL([HAVE_XINE_COND],[test x$HAVE_XINE = xTRUE])
 
 ###############################################################################
 # Qt
@@ -481,17 +507,19 @@ ICL_PC_CFLAGS=`echo ${ICL_PC_CFLAGS} | sed "s|-I/include | |g"`
 AC_MSG_NOTICE([+---------------------------------------+])
 AC_MSG_NOTICE([| Summary                               |])
 AC_MSG_NOTICE([+---------------------------------------+])
-ICL_NOTIFY_SUPPORT([IPP],          [IPP       ])
-ICL_NOTIFY_SUPPORT([LIBDC],        [libdc1394 ])
-ICL_NOTIFY_SUPPORT([UNICAP],       [Unicap    ])
-ICL_NOTIFY_SUPPORT([OPENGL],       [OpenGL    ])
-ICL_NOTIFY_SUPPORT([QT],           [Qt        ])
-ICL_NOTIFY_SUPPORT([LIBJPEG],      [libjpeg   ])
-ICL_NOTIFY_SUPPORT([LIBZ],         [libz      ])
-ICL_NOTIFY_SUPPORT([VIDEODEV],     [videodev  ])
-ICL_NOTIFY_SUPPORT([SVS],          [SVS       ])
-ICL_NOTIFY_SUPPORT([XCF],          [XCF       ])
-ICL_NOTIFY_SUPPORT([IMAGEMAGICK],  [Magick++  ])
+<<<<<<< .mine
+ICL_NOTIFY_SUPPORT([IPP],          [IPP      ])
+ICL_NOTIFY_SUPPORT([LIBDC],        [libdc1394])
+ICL_NOTIFY_SUPPORT([UNICAP],       [Unicap   ])
+ICL_NOTIFY_SUPPORT([OPENGL],       [OpenGL   ])
+ICL_NOTIFY_SUPPORT([XINE],         [Xine     ])
+ICL_NOTIFY_SUPPORT([QT],           [Qt       ])
+ICL_NOTIFY_SUPPORT([LIBJPEG],      [libjpeg  ])
+ICL_NOTIFY_SUPPORT([LIBZ],         [libz     ])
+ICL_NOTIFY_SUPPORT([VIDEODEV],     [videodev ])
+ICL_NOTIFY_SUPPORT([SVS],          [SVS      ])
+ICL_NOTIFY_SUPPORT([XCF],          [XCF      ])
+ICL_NOTIFY_SUPPORT([IMAGEMAGICK],  [Magick++ ])
 ICL_NOTIFY_SUPPORT([LIBMESASR],    [libmesasr ])
 AC_MSG_NOTICE([+---------------------------------------+])
 
@@ -550,6 +578,7 @@ ICL_PC_ENTRY_FOR_ROOT([IPP])
 ICL_PC_ENTRY_FOR_ROOT([LIBDC])
 ICL_PC_ENTRY_FOR_ROOT([UNICAP])
 ICL_PC_ENTRY_FOR_ROOT([OPENGL])
+ICL_PC_ENTRY_FOR_ROOT([XINE])
 ICL_PC_ENTRY_FOR_ROOT([QT])
 ICL_PC_ENTRY_FOR_ROOT([LIBJPEG])
 ICL_PC_ENTRY_FOR_ROOT([VIDEODEV])

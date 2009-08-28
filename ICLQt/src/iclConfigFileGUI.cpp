@@ -219,8 +219,7 @@ namespace icl{
               GUI &gui = m_guis.back().gui;
               bool bo = icl::parse<bool>(e.toLatin1().data());
               std::string tr = bo ? "!true" : "true";
-              std::string fa = !bo ? "!false" : "false";
-              gui = GUI("togglebutton("+fa+","+tr+")[@handle=b@out=v@minsize=5x1]");
+              gui = GUI("togglebutton(false,"+tr+")[@handle=b@out=v@minsize=5x1]");
               gui.create();
               gui.getValue<ButtonHandle>("b").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
               m_guis.back().id = es[i]->getRelID();
@@ -543,6 +542,11 @@ namespace icl{
       ERROR_LOG("undefined type:" << type);
       return false;
     }
+  }
+
+  void ConfigFileGUI::exec(const std::string &handle){
+    // not used yet ... 
+    // here is space for a later optimization ...
   }
 
   void ConfigFileGUI::exec(){

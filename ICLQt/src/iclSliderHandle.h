@@ -2,20 +2,22 @@
 #define ICL_SLIDER_HANDLE_H
 
 #include <iclGUIHandle.h>
-/** \cond */
-class QSlider;
-/** \endcond */
+
 
 namespace icl{
   
+  /** \cond */
+  class ThreadedUpdatableSlider;
+  /** \endcond */
+ 
   /// Handle class for slider componets \ingroup HANDLES
-  class SliderHandle : public GUIHandle<QSlider>{
+  class SliderHandle : public GUIHandle<ThreadedUpdatableSlider>{
     public:
     /// Creates and empty slider handle
     SliderHandle(){}
 
     /// create a slider handle
-    SliderHandle(QSlider *sl, GUIWidget *w):GUIHandle<QSlider>(sl,w){}
+    SliderHandle(ThreadedUpdatableSlider *sl, GUIWidget *w):GUIHandle<ThreadedUpdatableSlider>(sl,w){}
     
     /// set the min value
     void setMin(int min);

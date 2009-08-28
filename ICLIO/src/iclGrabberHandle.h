@@ -188,6 +188,11 @@ namespace icl{
       return m_instance->ptr->getValue(name);
     }
 
+    virtual inline int isVolatile(const std::string &propertyName){
+      ICLASSERT_RETURN_VAL(!isNull(),0);
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance->ptr->isVolatile(propertyName);
+    }
 
     /// returns current desired image size (default is "320x240"
     virtual const Size &getDesiredSize()const{

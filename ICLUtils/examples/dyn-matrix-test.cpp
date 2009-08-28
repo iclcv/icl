@@ -204,7 +204,6 @@ int main(int n, char **ppc){
   for(int i=0;i<36;++i) iB[i]/=10.0;
 
   std::cout << "All matrices must be 0!" << std::endl;
-#define SHOW(A) std::cout << (#A) << ":\n" << (A) << "\n"
   
   
   if(!pa_defined("-no-inv")){

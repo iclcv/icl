@@ -138,12 +138,13 @@ namespace icl {
          of which type the given property was: \n
          (for detailed description of the types, see also the get Info function)
          Types are:
-         - "range" the propertyis a double value in a given range 
+         - "range" the property is a double value in a given range 
          - "value-list" the property is a double value in a list of possible values
          - "menu" the property  is a string value in a list of possible values
          - "command" property param has no additional parameters (this feature is 
            used e.g. for triggered abilities of grabbing devices, like 
            "save user settings" for the PWCGrabber 
+         - "info" the property is an unchangable internal value (it cannot be set actively)
          - ... (propably some other types are defined later on)
      */
      virtual std::string getType(const std::string &name){
@@ -158,6 +159,7 @@ namespace icl {
          - "[A,B]:C"  for a range with min=A, max=B and stepping = C
          - "{A,B,C,...}" for a value-list and A,B,C are ascii doubles
          - "{A,B,C,...}" for a menu and A,B,C are strings
+         - nothing for "info"-typed properties
          <b>Note:</b> The received string can be translated into C++ data
          with some static utility function in this Grabber class.
          @see translateSteppingRange
@@ -173,6 +175,18 @@ namespace icl {
        (void)name; return "undefined";
      }
 
+     /// Returns whether this property may be changed internally
+     /** For example a video grabber's current stream position. This can be changed
+         from outside, but it is changed when the stream is played. The isVolatile
+         function should return a msec-value that describes how often the corresponding
+         feature might be updated internally or just 0, if the corresponding
+         feature is not volatile at all. The default implementation of isVolatile
+         returns 0 for all features. So if there is no such feature in your grabber,
+         this function must not be adapted at all. "info"-typed Properties might be
+         volatile as well */
+     virtual int isVolatile(const std::string &propertyName){
+       (void)propertyName; return false;
+     }
      
      /// @} 
      /// @{ @name static string conversion functions 
