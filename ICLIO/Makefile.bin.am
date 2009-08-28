@@ -154,3 +154,15 @@ icl_multicam_viewer_example_LDFLAGS=${XLDFLAGS}
 icl_multicam_viewer_example_CXXFLAGS=${XCXXFLAGS}
 
 endif
+
+
+if HAVE_XINE_COND
+
+bin_PROGRAMS+= \
+icl-video-player
+
+icl_video_player_SOURCES=../examples/video-player.cpp
+icl_video_player_LDFLAGS=${XLDFLAGS}
+icl_video_player_CXXFLAGS=${XCXXFLAGS}
+
+endif

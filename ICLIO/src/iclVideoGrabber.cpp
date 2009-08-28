@@ -34,6 +34,13 @@ namespace icl{
       if(!xine_play(stream, 0, 0)){
         throw InvalidFileException("unable to play file stream (filename:" + filename + ")");
       }
+
+      /*
+          const char * const * oop = xine_list_audio_output_plugins (xine);
+          for(const char * const *p=oop;*p;++p){
+          DEBUG_LOG("AUDIO OUTPUT PLUGIN " << str(*p) );
+          }
+      */
     }
     ~XineHandle(){
       xine_close(stream);
@@ -89,7 +96,6 @@ namespace icl{
       }
 
       isSeekable = xine_get_stream_info (xine->stream, XINE_STREAM_INFO_SEEKABLE);
-      //      SHOW(isSeekable);
     }
   };
     
@@ -168,7 +174,6 @@ namespace icl{
   }  
   
   static void convert_frame(icl8u *data, const Size &size,Img8u *image, const std::string &cc4){
-    SHOW(cc4);
     if(cc4 == "DX50" || cc4 == ""){
       int dim4 = size.getDim()/4;
       icl8u *u = data+dim4*4;
@@ -315,7 +320,7 @@ namespace icl{
       m_params->setUserSpeed(parse<int>(value));
     }else if(name == "stream-pos"){
       int streamPos = parse<int>(value);
-      DEBUG_LOG("setting new stream pos to xine:" << streamPos);
+      // DEBUG_LOG("setting new stream pos to xine:" << streamPos);
       ICLASSERT_RETURN(streamPos >= 0);
       ICLASSERT_RETURN(streamPos <= 65535);
       //xine_stop(m_xine->stream);
