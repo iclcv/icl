@@ -58,6 +58,7 @@ namespace icl{
           video stream
         - stream-length is just an 'info' typed variable which will be shown in
           an appropriate GUI 
+        - volume sets up audio volume to a value from (0: mute to 100:max volume)
     */
     virtual std::vector<std::string> getPropertyList();
 
