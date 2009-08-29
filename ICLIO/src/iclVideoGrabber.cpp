@@ -137,7 +137,7 @@ namespace icl{
       }else if(value < 50){
         fpsl.setMaxFPS( ((0.9/50) * value + 0.1) * streamFPS);
       }else{
-        fpsl.setMaxFPS( ((9.0/50) * value + 1.0) * streamFPS);
+        fpsl.setMaxFPS( ((9.0/50) * value - 8.0) * streamFPS);
       }
       speed = value;
     }
@@ -247,15 +247,6 @@ namespace icl{
 
     convert_frame(f.data,Size(f.width,f.height),&image,m_xine->get_4cc());
 
-    /**
-        std::string cc4 = m_xine->get_4cc();
-        
-        static const int NSPECIAL = 1;
-        static std::string SPECIAL[NSPECIAL] = {"DX50"};
-        
-        convertYUV420ToRGB8(f.data,Size(f.width,f.height),&image);
-    **/
-
     xine_free_video_frame (m_xine->vo_port,&f);
 
     
@@ -269,16 +260,14 @@ namespace icl{
   }
   
   std::vector<std::string> VideoGrabber::getPropertyList(){
-    static const std::string ps="speed-mode speed stream-pos stream-length";
+    static const std::string ps="speed-mode speed stream-pos stream-length volume";
     return tok(ps," ");
   }
 
   std::string VideoGrabber::getType(const std::string &name){
     if(name == "speed-mode"){
       return "menu";
-    }else if(name == "speed"){
-      return "range";
-    }else if(name == "stream-pos"){
+    }else if(name == "speed" || name == "stream-pos" || name == "volume"){
       return "range";
     }else if(name == "stream-length"){
       return "info";
@@ -295,6 +284,8 @@ namespace icl{
       return "[0,65535]:1";
     }else if(name == "stream-length"){
       return "something ...";
+    }else if(name == "volume"){
+      return "[0,100]:1";
     }
     return "undefined";
   }
@@ -308,6 +299,8 @@ namespace icl{
       return str(m_params->currPos);
     }else if(name == "stream-length"){
       return str(m_data->streamLength)+" seconds";
+    }else if(name == "volume"){
+      return str(xine_get_param(m_xine->stream,XINE_PARAM_AUDIO_VOLUME));
     }
     return "undefined";
   }
@@ -344,6 +337,11 @@ namespace icl{
       }
     }else if(name == "stream-length"){
       ERROR_LOG("stream-length is an info-variable, that cannot be set up externally!");
+    }else if(name == "volume"){
+      int vol = parse<int>(value);
+      ICLASSERT_RETURN(vol >= 0);
+      ICLASSERT_RETURN(vol <= 100);
+      xine_set_param (m_xine->stream,XINE_PARAM_AUDIO_VOLUME,vol);
     }
   }
     
