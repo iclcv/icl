@@ -55,11 +55,20 @@ namespace icl{
     icl8u *g = (*dest)->asImg<icl8u>()->begin(1);
     icl8u *b = (*dest)->asImg<icl8u>()->begin(2);
     const int dim = size.getDim();
-    for(int i=0;i<dim;++i){
-      const Magick::PixelPacket &p = pix[i];
-      r[i] = clipped_cast<Magick::Quantum,icl8u>(p.red>>8);
-      g[i] = clipped_cast<Magick::Quantum,icl8u>(p.green>>8);
-      b[i] = clipped_cast<Magick::Quantum,icl8u>(p.blue>>8);
+    if(sizeof(Magick::PixelPacket) == 4){
+      for(int i=0;i<dim;++i){
+        const Magick::PixelPacket &p = pix[i];
+        r[i] = clipped_cast<Magick::Quantum,icl8u>(p.red);
+        g[i] = clipped_cast<Magick::Quantum,icl8u>(p.green);
+        b[i] = clipped_cast<Magick::Quantum,icl8u>(p.blue);
+      }
+    }else{
+      for(int i=0;i<dim;++i){
+        const Magick::PixelPacket &p = pix[i];
+        r[i] = clipped_cast<Magick::Quantum,icl8u>(p.red>>8);
+        g[i] = clipped_cast<Magick::Quantum,icl8u>(p.green>>8);
+        b[i] = clipped_cast<Magick::Quantum,icl8u>(p.blue>>8);
+      }
     }
     ICL_DELETE(image);
   }
