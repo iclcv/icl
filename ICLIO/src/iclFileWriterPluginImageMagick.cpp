@@ -108,10 +108,43 @@ namespace icl{
         }
         break;
       }
+
+    case 4:{
+        const ImgBase *useImage = image;
+        
+        try{
+          unsigned int minsize = useImage->getDim()*icl::getSizeOf(useImage->getDepth())*4;
+          if(m_data->interleavedBuffer.size() < minsize){
+            m_data->interleavedBuffer.resize(minsize);
+          }
+          void *data = m_data->interleavedBuffer.data();
+          switch(useImage->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+            case depth##D:                                              \
+            icl::planarToInterleaved(useImage->asImg<icl##D>(),         \
+                                     reinterpret_cast<icl##D*>(data));  \
+            break;
+            ICL_INSTANTIATE_ALL_DEPTHS;
+            default:
+            ICL_INVALID_DEPTH;
+#undef ICL_INSTANTIATE_DEPTH
+          }
+
+          Magick::Image mi(useImage->getWidth(),useImage->getHeight(),"RGBA",
+                           get_magick_storage_type(useImage->getDepth()),
+                           data);
+
+          mi.write(file.getName());
+        }catch(Magick::Error &err){
+          throw ICLException(std::string("ImageMagick-FileWriter::")+err.what());
+        }
+        break;
+      }
       default:
-        ERROR_LOG("Yet ImageMagick FileWriterPlugin supports only 3 and 4 channel data");
+        ERROR_LOG("Yet ImageMagick FileWriterPlugin supports only 1, 3 and 4 channel data");
         throw ICLException("Unable to write image using FileWriterPluginImageMagick");
     }
+
   }
 
 #else
