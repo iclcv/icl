@@ -45,9 +45,11 @@ const ImgBase *grab_image(){
                                parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
     }
   }
+  
+  const ImgBase *img = 0;
   //  const ImgBase *image = grabber.grab();
   if(!pa_defined("-flip")){
-    return grabber.grab();
+    img = grabber.grab();
   }else{
     ImgBase *hack = const_cast<ImgBase*>(grabber.grab());
     std::string axis = pa_subarg<std::string>("-flip",0,"");
@@ -60,8 +62,36 @@ const ImgBase *grab_image(){
     }else{
       ERROR_LOG("nothing known about axis " <<  axis << "(allowed arguments are x,y or both)");
     }
-    return hack;
+    img = hack;
   }
+  
+  if(!pa_defined("-clip")){
+    return img;
+  }else{
+    if(pa_subarg<std::string>("-clip",0,"")=="interactive"){
+      throw ICLException("interactive clipmode is not yet implemented ...");
+    }else{
+      static Rect *r = 0;
+      static ImgBase *clipped = 0;
+      if(!r){
+        r = new Rect;
+        *r = parse<Rect>(pa_subarg<std::string>("-clip",0,""));
+        
+        ICLASSERT_THROW(r->width <= img->getWidth(),ICLException("clipping rect width is larger then image width"));
+        ICLASSERT_THROW(r->height <= img->getHeight(),ICLException("clipping rect height is larger then image height"));
+        ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
+        ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));
+        ICLASSERT_THROW(r->right() < img->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
+        ICLASSERT_THROW(r->bottom() < img->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
+        clipped = imgNew(img->getDepth(),r->getSize(),img->getChannels(),img->getFormat()); 
+      }
+      const ImgBase *tmp = img->shallowCopy(*r);
+      tmp->deepCopyROI(&clipped);
+      delete tmp;
+      img = clipped;
+    }
+  }
+  return img;
 }
 
 void send_app(){
@@ -169,6 +199,7 @@ int main(int n, char **ppc){
   pa_explain("-no-gui","dont display a GUI (sender app only)");
   pa_explain("-flip","define axis to flip (allowed sub arguments are"
              " x, y or both");
+  pa_explain("-clip","define clip-rect ala ((x,y)WxH) or string interactive (which is not yet supported)");
   pa_explain("-pp","select preprocessing (one of \n"
              "\t- gauss 3x3 gaussian blur\n"
              "\t- gauss5 5x5 gaussian blur\n"
@@ -178,7 +209,7 @@ int main(int n, char **ppc){
              "\tThis parameters can be obtained using ICL application\n"
              "\ticl-calib-radial-distortion");
   pa_explain("-reset","reset bus on startup");
-  pa_init(n,ppc,"-stream(1) -flip(1) -uri(1) -s -r -single-shot -input(2) -emulate-mask -size(1) -no-gui -pp(1) -dist(4) -reset -fps(1)");
+  pa_init(n,ppc,"-stream(1) -flip(1) -uri(1) -s -r -single-shot -input(2) -emulate-mask -size(1) -no-gui -pp(1) -dist(4) -reset -fps(1) -clip(1)");
 
   if(pa_defined("-reset")){
     GenericGrabber::resetBus();

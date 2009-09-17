@@ -68,8 +68,8 @@ Moreover, ICL provides conversion functions to translate sizes, formats, depths 
 Types and enumerations have been presented and discussed in section \ref{sec:typedef-confusions}. Types are declared in \iclheaderref{Utils}{BasicTypes}.
 
 \subsection{XML-Parser}
-To be able to use xml-data and configuration files without getting an extra software-dependency, ICL uses it's own simple XML-Parser. This of course entails some issues on the complexity of XML-files, that can be parsed. Actually, some features (like namespaces or XML-schematics) are just not supported at all. Furthermore, we limited XML-nodes to be be parent nodes (that have other child nodes) \textbf{or} \emph{text}-nodes that have a text content (maybe we have to fix that someday :-( ).\\
-However, the XML-Parser works well for our purpose: It can be used to easily parse XML-documents or to query and filter nodes from the Documents tree structure. Furthermore, we use it successfully to create and to parse instances of the \inlinecode{ConfigFile} class, that provides hi convenience for using configuration files in applications (See \ref{subsec:config-file})
+To be able to use xml-data and configuration files without getting an extra software-dependency, ICL uses it's own simple XML-Parser. This of course entails some issues on the complexity of XML-files, that can be parsed. Actually, some features (like namespaces or XML-schematics) are just not supported at all.\\
+However, the XML-Parser works well for our purpose: It can be used to easily parse XML-documents or to query and filter nodes from the Documents tree structure. Furthermore, we use it successfully to create and to parse instances of the \inlinecode{ConfigFile} class, that provides high convenience for using configuration files in applications (See \ref{subsec:config-file})
 
 \subsection{Configuration Files\label{subsec:config-file}}
 The \iclclassref{Utils}{ConfigFile}-class can be used to facility handling of dynamic configurable applications. Of course, one can make heavily use of program arguments, however this makes is difficult to save parameters or to distribute configuration parameters via revision control systems like e.g. subversion\footnote{\hrefn{http://de.wikipedia.org/wiki/Subversion\_(Software)}}. \inlinecode{ConfigFile} instances can be created very easily in the C++ source code, and their contents can be obtains very simply. Most of the time, a simple one-line statement is sufficient to get a certain entry at runtime. On the other side, the configuration file itself uses a simple XML-subset which facilitates both, parsing of the document as well as referencing entries non-ambiguously. Here's a tiny example:
@@ -84,6 +84,10 @@ And resulting configuration file:
 
 \codefile{other.xml}{Written configuration file other.xml}
 
+\subsection{ConfigEntry Utility class}
+The \inlinecode{ConfigEntry}-template class \iclclassref{Qt}{ConfigEntry} provides a convenient access to data entries of a ConfigFile instance. \inlinecode{ConfigEntry} instances are always \emph{templated} to their actual type: e.g. \inlinecode{ConfigEntry<int>} or \inlinecode{ConfigEntry<float>}. \inlinecode{ConfigEntry} objects can be instantiated with a given key-value (which is the '.'-separated path to the referenced ConfigFile element), a default value (which is used, if the given key was not found) and the referenced ConfigFile (which is the singleton static ConfigFile instance by default). Furthermore, \inlinecode{ConfigEntry}-instances can simply be used in the same way as their template parameter type, because they provide an implicit cast-operator for this type.\\
+Using ConfigEntry instances is useful if your application also uses the \inlinecode{ConfigFileGUI} utility class \iclclassref{Qt}{ConfigFileGUI} which is presented in \ref{subsec:configfile-gui}.\\
+In addition, the header \iclheaderref{Qt}{ConfigEntry} provides some convenience macros to create local instances of the \iclclassref{ConfigEntry} class.
 
 \section{ICLCore}
 
@@ -151,8 +155,18 @@ The \inlinecode{DCGrabber} grabs images from fire-wire aka IEEE-1394 camera devi
 The \textbf{P}hillips \textbf{W}eb\textbf{C}am grabber can be used to grab images from cameras that use the linux pwc kernel module\footnote{\hrefn{http://www.saillard.org/linux/pwc/}}.
 \item \inlinecode{UnicapGrabber} [\iclclassref{IO}{UnicapGrabber}]:\\
 This grabber wraps the \textbf{unicap}-library\footnote{\hrefn{http://unicap-imaging.org/}} which provides a generalized access to fire-wire as well as video-4-linux/video-4-linux-2 devices.  
+\item \inlinecode{VideoGrabber} [\iclclassref{IO}{VideoGrabber}]:\\
+This grabber implementation uses libxine\footnote{\hrefn{http://www.xine-project.org}} to use video files as image data source. The VideoGrabber provides functions to adjust video playback speed (by default, videos are grabbed frame by frame, but not faster then the actual movie framerate). Furthermore, if video playback speed is close to the movie framerate, the VideoGrabber will also playback sound. 
+\item \inlinecode{SwissRangerGrabber} [\iclclassref{IO}{SwissRangerGrabber}]:\\
+The SwissRanger is a so-called time-of-flight camera from the Mesa-Imaging company\footnote{\hrefn{http://www.mesa-imaging.ch}}. It uses a set of pulsed IR-LED's to compute depth images. This grabber uses the libmesasr-library for accessing camera features and image data. The SwissRanger camera also provides gray-scale images and a confidence map, which tells the user the estimated accuracy for each depth-pixel.
 \item \inlinecode{DemoGrabber} [\iclclassref{IO}{DemoGrabber}]:\\
 This is just a tiny utility class, which can be used e.g. to test an application if no appropriate source device is currently available. It creates images with a small moving red rectangle.
+\item \inlinecode{XCFPublisherGrabber} [\iclclassref{IO}{XCFPublisherGrabber}]:\\
+This grabber utilizes the XCF-framework to receive images via network. Images can e.g. be send from other applications using the \inlinecode{XCFPublisher} class (\iclclassref{IO}{XCFPublisher} or the demo application \inlinecode{icl-xcf-publisher}.
+\item \inlinecode{XCFMemoryGrabber} [\iclclassref{IO}{XCFMemoryGrabber}]:\\
+Here also XCF is used, but now in combination with the ActiveMemory which is an XML-based active blackbord for interprocess communication. 
+\item \inlinecode{XCFServerGrabber} [\iclclassref{IO}{XCFServerGrabber}]:\\
+This is the 3rd implementation of an XCF-based grabber. This grabber utilized XCF's remote method invocation concept for grabbing images from an image server.
 \item \inlinecode{GenericGrabber} [\iclclassref{IO}{GenericGrabber}]: \textbf{This is the grabber that should be used by your application!}\\
 The \inlinecode{GenericGrabber} internally wraps one of the other grabbers. Which actual \inlinecode{Grabber}-instance is used internally depends on a string values, which is passed to the \inlinecode{GenericGrabber}-constructor. This enables the programmer to create applications, that are able to work with most different input devices. Using the \inlinecode{GenericGrabber} instead of some other Grabber instances directly provides a lot of advantages:
 \begin{itemize}
@@ -183,4 +197,22 @@ Now, the resulting application (we call it \inlinecode{app} here) can be run e.g
 Unicap is partially redundant to the \inlinecode{DCGrabber} class, however both interfaces are completely independent. Grabbing from Fire-wire devices runs a little bit faster with the \inlinecode{DCGrabber}-class. The \inlinecode{DCGrabber} class is optimized to provides images with a minimal latency and is a bitter better here. 
 
 \subsection{Feature Adjustment\label{sec:grabber-feature-adjustment}}
-TODO
+The \inlinecode{Grabber}-interface \iclclassref{IO}{Grabber} defines not only the way, how images can be obtained from \inlinecode{Grabber}-implementations, but also how grabber parameters or properties can be got and set. All grabbers have a special list of properties, which can be obtained by the \inlinecode{getPropertyList}-function. This function must be implemented by all classes that are derived from the \inlinecode{Grabber} class. It returns an \inlinecode{std::vector<std::string>} that contains the \textbf{names} of the supported properties. Each property has a so-called \emph{type}, that is defined by the grabber too (the type of a property is returned by the \inlinecode{getType(propertyName)} function. The type of the property defines how possible property value are defined. Possible types are:
+\begin{itemize}
+\item \textbf{range}\\In this case the property may have values within a defined float range (sometimes with a given fixed stepping between valid values). In a GUI , one might just use a slider to adjust such properties.
+\item \textbf{value-list}\\In this case the properties possible values are defined by a list of possible float values. GUI's will probably use a combo-box containing possible float values for this kind of property.
+\item \textbf{menu}\\Here, also a list defines allowed values, but here, values are strings. Again, such properties can best be adapted interactively by using a combo-box GUI element.
+\item \textbf{command}\\This is a very special property type. Commands have no values at all. A command is e.g. used to make PWC-based camera save it's current parameters to the permanent camera memory. A GUI will provide commands maybe using a push-button component.
+\item \textbf{info}\\ Info properties are read-only, so info-properties can't be set from externally.
+\end{itemize}
+Having estimated which type a certain property has (using the \inlinecode{getType(propertyName)} method in the Grabber class), the property value can be got/set using \inlinecode{getValue} and \inlinecode{setValue} respectively. 
+
+\subsection{Desired Parameters}
+The \inlinecode{Grabber}-interface \iclclassref{IO}{Grabber} also provides functions that handle the Grabbers desired parameters. To explain this one must understand, that there are always two different kinds of image parameters:
+\begin{itemize}
+\item The image parameters, that result from the current settings of the input device. E.g. a firewire camera might provide an image acquisition mode with VGA resolution and RGB color format or (to save bandwidth of the firewire interface) also another VGA-mode where images are YUV-411-encoded. We call this image parameter set the \emph{device-parameters}.
+\item In addition there is another kind of parameters, which we call the \emph{desired parameters}. This parameters describe the size, format, etc. of images that are produced by the \inlinecode{Grabber}-instance. All Grabbers will ensure, that new images have exactly this desired format unless a special flag is set (function \inlinecode{setIgnoreDesiredParams}). \textbf{Note:} In general device parameters are not adapted to simplify creation of an appropriate new image, but the image in device-parameters is converted into the desired parameters.
+\end{itemize}
+We decided to have this two parameter sets to make grabber instances abstract from the underlying device, however there are situations where it is useful to be able to deactivate this mechanism: E.g. if one uses a \inlinecode{FileGrabber} instance, he might want to read the images in the real size, or when obtaining images via network (\inlinecode{XCFPublisherGrabber}). Most of the time camera grabbers provide RGB images when the ignore-desired-params flag is set to true.
+
+
