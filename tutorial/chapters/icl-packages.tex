@@ -215,4 +215,25 @@ The \inlinecode{Grabber}-interface \iclclassref{IO}{Grabber} also provides funct
 \end{itemize}
 We decided to have this two parameter sets to make grabber instances abstract from the underlying device, however there are situations where it is useful to be able to deactivate this mechanism: E.g. if one uses a \inlinecode{FileGrabber} instance, he might want to read the images in the real size, or when obtaining images via network (\inlinecode{XCFPublisherGrabber}). Most of the time camera grabbers provide RGB images when the ignore-desired-params flag is set to true.
 
+\subsection{Using Grabbers}
+
+The essential class of the IO package is the \inlinecode{Grabber}-class. Here's a short example of how to use a Grabber
+
+\codefile{using-a-grabber.cpp}{Simple use of a \inlinecode{Grabber}-instance}
+
+As one can see, the essential function to grab the next image from a \inlinecode{Grabber} instance is called \inlinecode{grab}. The \inlinecode{grab(..)} can be called  in two different ways: If no parameter of type \inlinecode{ImgBase**} is given, the grabber internally handles a buffer image, which is adapted to appropriate parameters and returned as \inlinecode{const ImgBase*} (\inlinecode{const} to emphasise that the \inlinecode{Grabber} instance owns this image. Grabbers ensure, that this image is valid and not changed until the next call to the \inlinecode{grab()}-function or of course until the Grabber instance is released. If one wants to have read/write access to a grabbed image he has several options:
+
+\begin{itemize}
+\item The first option is to pass an \inlinecode{ImgBase**} to the grab function. In this case the grabber will adapt the referenced image parameters or -- if the given \inlinecode{ImgBase**} points to a NULL-\inlinecode{ImgBase*} -- even create it. \textbf{Note:} That some grabbers do not support this feature, however, this is the most accurate version that has also an optimal performace.
+\item Another option is to copy the obtained image using the \inlinecode{ImgBase}-function \inlinecode{deepCopy}. This function returns a new \inlinecode{ImgBase*} which has to be deleted lateron.
+\item If the user wants to have direct access to the image pixels, he has check the actual image depth. This can be bypassed by using the \inlinecode{ImgBase}-function template \inlinecode{convert}.
+\item However sometimes if one know what he's doing it might be possible just to remove the const-ness from the obtained image by using the \inlinecode{const\_cast}-operator of C++.
+\end{itemize} 
+
+The following example demonstrates how to access pixels from a recently grabbed image.
+
+\codefile{using-grabbed-images.cpp}{How to access pixels of grabbed images}
+
+\subsection{File class}
+The \inlinecode{File}-class \iclclassref{File} is a simple File implementation, that provides functions to read or to write files, or to check whether a given file exists. Furthermore, the \inlinecode{File} class is able to handle zipped files if the ICL was compiled with zlib support.
 

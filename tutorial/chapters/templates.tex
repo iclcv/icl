@@ -1,0 +1,7 @@
+This chapter will recapitulate C++-templating techniques. The main images class \iclclassref{Core}{Img} of the ICL is implemented as a template, so understanding C++-templates is a fundamental prerequisite for being able to develop image processing applications with the ICL. Most C++ users know templates well from the standard template library (STL), however using the STL does not necessarily mean, that one is also able to implement templates. Lets start with a simple template function:
+
+\codefile{templates-1.cpp}{Simple template function}
+
+This \inlinecode{swap}-template abtracts from the \emph{to-be-swapped} datatype using the template parameter \inlinecode{T}. The next example shows a class template:
+
+

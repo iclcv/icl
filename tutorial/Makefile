@@ -25,7 +25,7 @@ Howto-ICL.pdf: $(TEX_SOURCES) $(EXAMPLES) $(CHAPTER_SOURCES)
 clean: pdfclean
 
 pdfclean:
-	rm -f *.aux *.toc *.log *.pdf *.dvi
+	rm -f *.aux *.toc *.log *.pdf *.dvi *.out
 
 examplesclean: clean
 	make -C./examples clean
