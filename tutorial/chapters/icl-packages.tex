@@ -237,3 +237,18 @@ The following example demonstrates how to access pixels from a recently grabbed 
 \subsection{File class}
 The \inlinecode{File}-class \iclclassref{File} is a simple File implementation, that provides functions to read or to write files, or to check whether a given file exists. Furthermore, the \inlinecode{File} class is able to handle zipped files if the ICL was compiled with zlib support.
 
+
+\section{ICLBlob\label{sec:blob}}
+The package \iclpackageref{Blob} provides functions for blob-detection/tracking. The most common class of the package is the \inlinecode{RegionDetector}  (see \iclclassref{Blob}{RegionDetector}), which performs a fast connected components analysis on images. The package subsumes different approaches for blob detection, which are presented in the following subsection.
+
+\subsection{What is a \emph{Blob}}
+Here, a \emph{Blob} is a set of connected pixels, that have to fulfill a certain criterion of homogeneity (e.g. all pixels have exactly the same value, or all pixels euclidian color distance to a reference color is below a certain threshold). The term of \emph{connection} must also be defined more exactly, to avoid misunderstandings: We assume pixels to be connected to all pixels in its neighborhood, which in turn is given by the 4 pixels (to the left, to the right, above and below) next to the reference pixel. 
+Even though an also very common neighborhood defined by the 8 nearest pixels to a reference pixel is often used, we resign of it because of its higher computational complexity. 
+
+\subsection{Color based Blob detection}
+The first part of the \iclpackageref{Blob}-package is the Color based Blob detection framework, which essentially consists of the classes \iclclassref{Blob}{ColorBlobSearcher}, \iclclassref{Blob}{DefaultColorBlobSearcher}, \iclclassref{Blob}{FoundBlob}, \iclclassref{Blob}{PixelRating} and \iclclassref{Blob}{PixelRatingGroup}. Introducing documentation can be found in the reference of the \iclclassref{Blob}{ColorBlobSearcher} class.\\
+Within the color based blob detection framework, blobs are detected globally, so different blobs must have different colors.
+
+\subsection{Region detection / connected component analysis}
+Here, the \iclclassref{Blob}{RegionDetector} is the main class. The Region detector performs a fast connected component analysis on images. 
+

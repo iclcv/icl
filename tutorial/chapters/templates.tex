@@ -4,4 +4,12 @@ This chapter will recapitulate C++-templating techniques. The main images class 
 
 This \inlinecode{swap}-template abtracts from the \emph{to-be-swapped} datatype using the template parameter \inlinecode{T}. The next example shows a class template:
 
+\codefile{templates-2.cpp}{Simple template-based vector class implementation}
+
+Ok, these were the basics that C++-programmers should already be able to understand. Now we come to some more advanced techniques. Template can not only abstract from data types, but also from integer types\footnote{Integer types are \inlinecode{int}, and all other non-floting point POD types that have no higher precision \textbf{and} \inlinecode{enum}s}. Lets try to delelop a function, that tranforms and N-channel image into an one-channel image by computing the mean pixel value of all source channels.
+
+\codefile{templates-3.cpp}{Channel-mean function (naive)}
+
+As most of the time, images have 1 2 or 3 channels, the \inlinecode{mean\_val} functions of this examples are not very optimized. We can achieve this by adding a template based implementation:
+
 
