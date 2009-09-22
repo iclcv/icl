@@ -235,7 +235,7 @@ The following example demonstrates how to access pixels from a recently grabbed 
 \codefile{using-grabbed-images.cpp}{How to access pixels of grabbed images}
 
 \subsection{File class}
-The \inlinecode{File}-class \iclclassref{File} is a simple File implementation, that provides functions to read or to write files, or to check whether a given file exists. Furthermore, the \inlinecode{File} class is able to handle zipped files if the ICL was compiled with zlib support.
+The \inlinecode{File}-class \iclclassref{IO}{File} is a simple File implementation, that provides functions to read or to write files, or to check whether a given file exists. Furthermore, the \inlinecode{File} class is able to handle zipped files if the ICL was compiled with zlib support.
 
 
 \section{ICLBlob\label{sec:blob}}
@@ -250,5 +250,16 @@ The first part of the \iclpackageref{Blob}-package is the Color based Blob detec
 Within the color based blob detection framework, blobs are detected globally, so different blobs must have different colors.
 
 \subsection{Region detection / connected component analysis}
-Here, the \iclclassref{Blob}{RegionDetector} is the main class. The Region detector performs a fast connected component analysis on images. 
+Here, the \iclclassref{Blob}{RegionDetector} is the main class. The Region detector performs a fast connected component analysis on images and provides a list of all connected regions in an image (again using the 4-pixel neighbourhood). The \inlinecode{Region} (see \iclclassref{Blob}{Region}) provides many function to compute region features like the center of gravity, the boundary or even local PCA\footnote{Principal Component Analysis (google)} information. Internally, the \inlinecode{RegionDetector} uses an intermediate representation of \inlinecode{Region}s: a list of so called \emph{scan lines}. These scan lines are horizontal image lines with a single identical gray value. Furthermore, they can efficiently be stored by a tuple $(x_{start},x_{end},y,value)$ and most region features can be calculated very efficiently on this lines (in comparison to calculate features on the image pixels). Currently there's no possibility to define certain criterions of homogeneity, than the most simple one which is currently used: all pixels within a certain region must have an identical gray value. 
 
+\subsubsection{SimpleBlobSearcher}
+
+On top of the \inlinecode{RegionDetector} class there's a higher level wrapper for detection of colored blobs in images: the \inlinecode{SimpleBlobSearcher} (see \iclclassref{Blob}{SimpleBlobSearcher}). This class is well documented and shall not be explained here in detail. However, it's nice to know, that the \inlinecode{SimpleBlobSearcher} provides a very simple interface for a reference-color/threshold based detection of multiple blobs in an image.
+
+\subsection{Blob-Tracking}
+
+In comparison to blob detection, \emph{blob tracking} means to track blobs/regions successively through time. Here, the ICL currently provides two different approaches: 
+\begin{itemize}
+\item A simple MeanShiftTracker implementation (see \iclclassref{Blob}{MeanShiftTracker}). The mean-shift algorithm is a very common algorithm in computer vision, which is well-discussed and well interpreted in literature. Our implementation uses the basic mean shift algorithm rather than one of its various extensions.
+\item A generic yet powerful layered approach which basic idea was also patented somewhere from somewhere else\footnote{we found that out later}. The most common class is the \inlinecode{PositionTracker} (see \iclclassref{Blob}{PositionTracker}) and the \inlinecode{VectorTracker} (see \iclclassref{Blob}{VectorTracker}). For more details start reading here: \iclclassref{Blob}{PositionTracker}.
+\end{itemize}
