@@ -149,7 +149,8 @@ libICLIO_la_SOURCES+= \
 ../src/iclXCFPublisher.cpp \
 ../src/iclXCFPublisherGrabber.cpp \
 ../src/iclXCFServerGrabber.cpp \
-../src/iclXCFUtils.cpp
+../src/iclXCFUtils.cpp \
+../src/iclXCFMemoryListener.cpp
 
 include_HEADERS+= \
 ../src/iclXCFGrabberBase.h \
@@ -157,7 +158,8 @@ include_HEADERS+= \
 ../src/iclXCFPublisherGrabber.h \
 ../src/iclXCFPublisher.h \
 ../src/iclXCFServerGrabber.h \
-../src/iclXCFUtils.h
+../src/iclXCFUtils.h \
+../src/iclXCFMemoryListener.h
 endif
 
 # include other packages here!

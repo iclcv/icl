@@ -101,12 +101,17 @@ endif
 #################################################################################
 if HAVE_XCF_COND
 bin_PROGRAMS+= \
-icl-xcf-grabber-benchmark
+icl-xcf-grabber-benchmark \
+icl-memory-listener
 
 # explicit sources, ldflags and cxxflags
 icl_xcf_grabber_benchmark_SOURCES=../examples/xcf-grabber-benchmark.cpp
 icl_xcf_grabber_benchmark_LDFLAGS=${XLDFLAGS}
 icl_xcf_grabber_benchmark_CXXFLAGS=${XCXXFLAGS}
+
+icl_memory_listener_SOURCES=../examples/memory-listener.cpp
+icl_memory_listener_LDFLAGS=${XLDFLAGS}
+icl_memory_listener_CXXFLAGS=${XCXXFLAGS}
 
 if HAVE_QT_COND
 bin_PROGRAMS+= \

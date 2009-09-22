@@ -14,6 +14,8 @@ GUI gui("vbox");
 bool first = true;
 bool *ppEnabled = 0;
 
+GenericGrabber *grabber = 0;
+
 void receive_loop(){
   try{
     static XCFPublisherGrabber g(stream);
@@ -32,26 +34,37 @@ void receive_loop(){
   }
 }
 
-const ImgBase *grab_image(){
-  static GenericGrabber grabber(FROM_PROGARG("-input"));
-  bool first = true; 
-  if(first){
-    first = false;
-    grabber.setDesiredSize(parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
-    grabber.setIgnoreDesiredParams(false);
-    grabber.setDesiredDepth(depth8u);
-    if(pa_defined("-dist")){
-      grabber.enableDistortion(DIST_FROM_PROGARG("-dist"),
-                               parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
-    }
+std::vector<string> remove_size(const vector<string> &v){
+  vector<string> r;
+  for(unsigned int i=0;i<v.size();++i){
+    if(v[i] != "size") r.push_back(v[i]);
   }
+  return r;
+}  
+
+void init_grabber(){
+  grabber = new GenericGrabber(FROM_PROGARG("-input"));
+
+  grabber->setDesiredSize(parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
+  grabber->setIgnoreDesiredParams(false);
+  grabber->setDesiredDepth(depth8u);
+  if(pa_defined("-dist")){
+    grabber->enableDistortion(DIST_FROM_PROGARG("-dist"),
+                             parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
+  }
+  if(pa_defined("-camera-config")){
+    grabber->loadProperties(pa_subarg<string>("-camera-config",0,""),false);
+  }  
+}
+
+const ImgBase *grab_image(){
   
   const ImgBase *img = 0;
   //  const ImgBase *image = grabber.grab();
   if(!pa_defined("-flip")){
-    img = grabber.grab();
+    img = grabber->grab();
   }else{
-    ImgBase *hack = const_cast<ImgBase*>(grabber.grab());
+    ImgBase *hack = const_cast<ImgBase*>(grabber->grab());
     std::string axis = pa_subarg<std::string>("-flip",0,"");
     if(axis  ==   "x"){
       hack->mirror(axisVert);
@@ -185,6 +198,8 @@ std::string create_camcfg(const std::string&, const std::string &hint){
   return str("camcfg(")+hint+")[@maxsize=5x2]";
 }
 
+
+
 int main(int n, char **ppc){
   pa_explain("-input","for sender application only allowed ICL default\n"
              " input specificationn e.g. -input pwc 0 or -input file bla/*.ppm");
@@ -209,7 +224,11 @@ int main(int n, char **ppc){
              "\tThis parameters can be obtained using ICL application\n"
              "\ticl-calib-radial-distortion");
   pa_explain("-reset","reset bus on startup");
-  pa_init(n,ppc,"-stream(1) -flip(1) -uri(1) -s -r -single-shot -input(2) -emulate-mask -size(1) -no-gui -pp(1) -dist(4) -reset -fps(1) -clip(1)");
+  pa_explain("-camera-config","if a valid xml-camera configuration file was given here, the grabber is set up "
+             "with this parameters internally. Valid parameter files can be created with icl-dccam-setup or with "
+             "the icl-camcfg tool. Please note: some grabber parameters might make the grabber crash internally, "
+             "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
+  pa_init(n,ppc,"-stream(1) -flip(1) -uri(1) -s -r -single-shot -input(2) -emulate-mask -size(1) -no-gui -pp(1) -dist(4) -reset -fps(1) -clip(1) -camera-config(1)");
 
   if(pa_defined("-reset")){
     GenericGrabber::resetBus();
@@ -220,6 +239,7 @@ int main(int n, char **ppc){
   
   if(!pa_defined("-r")){
     if(!pa_defined("-no-gui")){
+      init_grabber();
       QApplication app(n,ppc);
       ExecThread x(send_app);
 
@@ -246,11 +266,12 @@ int main(int n, char **ppc){
       x.run();
       return app.exec();
     }else{
+      init_grabber();
       send_app();
     }
   }else {
     receive_app(n,ppc);
-    
+    init_grabber();
     send_app();
   }
   
