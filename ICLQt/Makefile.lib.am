@@ -16,8 +16,7 @@ MOC_FILES= \
 ../src/iclMultiDrawHandle.moc.cpp \
 ../src/iclCamCfgWidget.moc.cpp \
 ../src/iclToggleButton.moc.cpp \
-../src/iclConfigFileGUI.moc.cpp \
-../src/iclPlotWidget.moc.cpp
+../src/iclConfigFileGUI.moc.cpp
 
 
 libICLQt_la_SOURCES= \
@@ -63,7 +62,6 @@ ${MOC_FILES} \
 ../src/iclToggleButton.cpp \
 ../src/iclConfigFileGUI.cpp \
 ../src/iclApplication.cpp \
-../src/iclPlotWidget.cpp \
 ../src/iclIconFactory.cpp \
 ../src/iclDataStore.cpp
 
@@ -126,7 +124,6 @@ include_HEADERS= \
 ../src/iclConfigEntry.h \
 ../src/iclConfigFileGUI.h \
 ../src/iclApplication.h \
-../src/iclPlotWidget.h \
 ../src/iclIconFactory.h \
 ../src/iclContainerHandle.h \
 ../src/iclSliderUpdateEvent.h \

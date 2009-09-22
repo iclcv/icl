@@ -38,15 +38,14 @@ namespace icl{
       - You must synchronize Qt's even-loop with the working thread
       - You have to handle user interaction using Qt's slots and signals
       - You have to create QObject classes using the Q_OBJECT macro and run Qt's meta-object-
-        compiler (moc) on it. (Yet this isn't possible inside of an "examples" or "application"-
-        folder of the ICL makefile structure)
+        compiler (moc) on it. 
       - ...
       - And not at least: You have to layout your GUI using QLayouts, QWidgets and QSizePolicys
       
       Of course, a Qt-nerd will say "OK, but where is the problem!", but most of the ICL- users
-      including me long for a framework that allows you to "create a slider, and access its current
+      including me long for a framework that allows the programmer to "create a slider, and access its current
       value" with not more than 5 lines of additional code.\n
-      The new ICL-GUI API enables you to create a slider with one expression, and to access its value
+      The ICL-GUI API enables you to create a slider with one expression, and to access its value
       with another expression. The following example will demonstrate this:
       \code
       #include <iclGUI.h>
@@ -62,7 +61,7 @@ namespace icl{
       \code
       int val = g.getValue<int>("the slider value");
       \endcode
-      This will show the following GUI (with the very beautiful gnome desktop) 
+      This example produces the following GUI (with the very beautiful gnome desktop) 
       \image html Image01_ASlider.jpg
       
       \section CG Complex GUI's
@@ -100,7 +99,8 @@ namespace icl{
         // get the images drawing context (as an ImageHandle) and induce it 
         // to show a new image
         gui.getValue<ImageHandle>("image") = &image;
-      
+        // or use the shortcut gui["image"] = image;
+            
         // start Qt's event loop
         return app.exec();
       }
@@ -117,7 +117,7 @@ namespace icl{
       In this section we'll have a look on the general syntax for the creation
       of GUI components.\n
       
-      Each GUI definition string can be divided in 3 parts, which are just
+      Each GUI definition string can be split in 3 parts, which are just
       concated: 
       -# a type string
       -# a comma separated list of mandatory and type dependent parameters (in
@@ -131,6 +131,7 @@ namespace icl{
       Examples:
       \code
       GUI g1("slider(0,100,50)");
+      GUI g1("slider(0,100,50,vertical)");
       GUI g2("combo(red,green,blue,yellow,magenty,!cyan,white,black)[@size=3x1@label=colors]");
       GUI g3("image");
       GUI g3("draw[@minsize=20x20]");
@@ -206,10 +207,14 @@ namespace icl{
         Each label component can be used to show dynamic as well as static content. A label can be
         initialized with a given string (or an int/float as string). Later on this content can be
         changed by accessing this label from outside the GUI object.
-      - <b>slider(int MIN,int MAX,int CURRENT)</b>\n
-        A slider is created by a given range {MIN,...,MAX} and a given initial value CURRENT
-      - <b>fslider(float MIN,float MAX,float CURRENT)</b>
-        A fslider is created by a given range {MIN,...,MAX} and a given initial value CURRENT
+      - <b>slider(int MIN,int MAX,int CURRENT[,vertical])</b>\n
+        A slider is created by a given range {MIN,...,MAX} and a given initial value CURRENT. If the 4th 
+        parameter is 'vertical', the slider is layouted in vertical direction. However, this argument is
+        optional.
+      - <b>fslider(float MIN,float MAX,float CURRENT[,vertical])</b>
+        A fslider is created by a given range {MIN,...,MAX} and a given initial value CURRENT. If the 4th 
+        parameter is 'vertical', the slider is layouted in vertical direction. However, this argument is
+        optional.
       - <b>int</b>\n
         An integer input field is created by a given range {MIN,...,MAX} and a given initial value CURRENT.
         The text field will only allow inputs that are inside of this range.
@@ -281,10 +286,10 @@ namespace icl{
 
       \subsection IO Input- and Output-Interface
       Depend on the type of a GUI component, the top level GUI gets additional input and output "pins". 
-      (<b>Note: input pins have been replaced by the GUIHandles, but they remain in the API.</b>)
       In contrast to software frameworks like Neo/NST or TDI, no explicit connection must be established 
       to access a GUI objects input/and output data. Instead, a component allocates a mutex-locked variable
-      inside of a so called DataStore that is created by its top level GUI component, and updates this
+      (inside of an interal GUI data base which is always automatically created by its top level GUI component), 
+      and updates this
       variable any time a Qt-GUI-Event on this components occurs. Let's have a look on a short example to
       understand this better:
       \code
@@ -308,19 +313,21 @@ namespace icl{
         // slider value, and which is updated immediately when the slider is moved.
         // The GUI's getValue<T>() template function can now be used to get a reference
         // (or a pointer) to this slider value
-        int &riSliderValue = g.getValue<int>("the slider value");
+        int &val = g.getValue<int>("the slider value");
       
         // or
-        int *piSliderValue = &g.getValue<int>("the slider value");
+        int *pVal = &g.getValue<int>("the slider value");
         return app.exec();
       }
       \endcode
 
-      Yet, only the most components provide an output pin, however the 
+      Yet, most componets provide only a single output pin, however the 
       GUI-definition syntax can be used to define components with N inputs and M outputs.\n
       As each GUI component has different semantics, the count and the type of it's
       in- and output pins must be regarded. The following list shows all GUI components
-      and explains their individual in- and output interface: 
+      and explains their individual in- and output interface <b>(Please Note, that the definition of 
+      the input and output interface is mandatory, so if you want to create a slider, you have
+      at least to define its output pin name)</b>: 
       
       
       <TABLE>
@@ -369,10 +376,10 @@ namespace icl{
       convenient use, each handle has some special functions that provide
       an abstracted direct access to the underlying class without knowing it. E.g. the image handle
       provides a 'setImage(ImgBase*)'-function and an 'update()'-function, which are sufficient to 
-      make the underlying widget display another image.
+      make the underlying widget display a new image.
       
       \code
-      #include <iclGUI.h>
+      #include <iclCommon.h>
       #include <QSlider>
       
       using namespace icl;
@@ -419,8 +426,7 @@ namespace icl{
       
       \code
       
-      #include <iclGUI.h>
-      #include <iclQuick.h>
+      #include <iclCommon.h>
       
       int main(int n, char **ppc){
         QApplication app(n,ppc);
@@ -506,7 +512,7 @@ namespace icl{
       \subsection BHA Button Handles
       
       The next interface type, that should be introduced here in detail, is the ButtonHandle type,
-      which is used for the "button" type interface. The button itself produces no data; it can
+      which is used for the "button" type element. The button itself produces no data; it can
       only be accessed by using its handle. In contrast to other components, simple buttons
       are producing an event instead of some data. When accessing the button from the working
       thread, you don't need the information if the button is pressed at this time, but you
@@ -514,54 +520,34 @@ namespace icl{
       variable would be sufficient to handle this information, but the following stays doubtful:
       "Who resets this boolean variable, and when?". To avoid this problem the ButtonHandle
       data type, can be triggered (if the button is pressed) an it can be checked using its 
-      wasTriggered() function, which returns if the event was triggered and resets the internal
-      boolean variable to false. The following example code illustrates this:
+      wasTriggered() function, which returns whether the event was triggered and resets the internal
+      boolean variable to false. The following example code illustrates this (Here also the <b>ICLApplication</b>
+      class is used. This class facilitates implementation of multithreaded GUI application significantly) :
 
       \code
-      #include <iclGUI.h>
-      #include <iclThread.h>
-      
-      using namespace icl;
-      
-      /// Use a static gui pointer (accessible in main an in the Thread class
-      GUI *gui = 0;
-      
-      // create a Thread class, which implements the working loop. For this example
-      // this loop will test each second if the button was pressed or not
-      class DemoThread : public Thread{
-        virtual void run(){
-          while(true){
-            if(gui->getValue<ButtonHandle>("b").wasTriggered()){
-              printf("button was triggered! \n");
-            }else{
-              printf("button was not triggered! \n"); 
-            }
-            sleep(1.0);
-          }
+      #include <iclCommon.h>
+
+      /// Use a static gui instance
+      GUI gui;
+
+      // initialization function (passed to ICLApplication)
+      void init(){
+        gui << "button(Click me!)[@handle=b]";
+        gui.show();
+      }
+
+      // 1st threaded function (passed to ICLApplication)
+      void run(){
+        // equivalent to ButtonHandle b = gui.getValue<ButtonHandle>("b")
+        gui_ButtonHandle(b); 
+        if(b.wasTriggered()){
+          printf("button was triggered! \n");
         }
-      };
+        Thread::sleep(1.0);
+      }
       
       int main(int n, char**ppc){
-        // create a QApplication object
-        QApplication app(n,ppc);
-      
-        // create the top level container
-        gui = new GUI;  
-      
-        // add a button to this container
-        (*gui) << "button(Click me!)[@handle=b]";
-      
-        // show it
-        gui->show();
-      
-        // create the working loop thread
-        DemoThread t;
-      
-        // start it
-        t.start();
-      
-        // enter Qt's event loop
-        return app.exec();
+        return ICLApplication(n,ppc,"",init,run).exec();
       }
       \endcode
       
@@ -575,7 +561,7 @@ namespace icl{
       Actually, this feature is a "must-have" and it is integrated deeply into the GUI's structure.\n
       We use the special class 'GUI::CallbackPtr' as event type. This callbacks can be registered at
       most of the GUI components, and as long as such a callback is not unregistered the underlying function
-      is called whenever the corresponding component is added. Furthermore all top-level GUI's provide
+      is called whenever the corresponding component receives certain mouse events. Furthermore all top-level GUI's provide
       the ability to register a given callback to all child widgets recursively.
       Callbacks can be registered at handles as well as at subclasses of icl::GUIWidget.
 
@@ -585,24 +571,17 @@ namespace icl{
 
 #include <iclCommon.h>
 
-/// We use a global gui to be able to access it outside main 
+/// global gui instance
 GUI gui;
-// This global LableHandle is obtained ones from the gui
-// when it was created using gui.show(). Remember that
-// gui.getValue performs a string lookup using a std::map
-// with is kind of complex
-LabelHandle h;
 
 // Our working thread, calling it's run function 
 // asynchronously to the GUI Thread
-class DemoThread : public Thread{
-  virtual void run(){
-    while(true){
-      h = Time::now().toString();
-      sleep(2);
-    }
-  }
-};
+void run(){
+  // shortcut to extract currentTimeLabel from the gui
+  gui_LabelHandle(currentTimeLabel);
+  currentTimeLabel = Time::now().toString();
+  Thread::sleep(1);
+}
 
 // a simple callback function of type "void (*callback)(void)"
 void exit_callback(void){
@@ -612,8 +591,8 @@ void exit_callback(void){
 
 // another one (we can also access the GUI from here)
 void click_callback(){
-  h = "hello!";
-  std::cout << "hello" << std::endl;
+  gui_LabelHandle(currentTimeLabel);
+  currentTimeLabel = "hello!";
 }
 
 // a more complex callback implementing the GUI::Callback interface
@@ -622,19 +601,18 @@ struct MyCallback : public GUI::Callback{
   Time m_lastTime;
   virtual void exec(){
     Time now = Time::now();
-    Time dt = m_lastTime-now;
-    gui.getValue<LabelHandle>("time-diff-label") = dt.toString();
+    Time dt = now-m_lastTime;
+
+    // here we could use the macro gui_LabelHandle(timeDiffLabel) as well
+    gui.getValue<LabelHandle>("timeDiffLabel") = str(dt.toSecondsDouble())+" sec";
     m_lastTime = now;
   }
 };
 
-int main(int n, char**ppc){
-  // create a QApplication object
-  QApplication app(n,ppc);
-  
+void init(){
   // create some nice components
-  gui << "label(something)[@handle=current-time-label@label=current time]"
-      << "label(something)[@handle=time-diff-label@label=time since last call]"
+  gui << "label(something)[@handle=currentTimeLabel@label=current time]"
+      << "label(something)[@handle=timeDiffLabel@label=time since last call]"
       << "button(Click me!)[@handle=click]"
       << "button(Click me too!)[@handle=click-2]"
       << "button(Exit!)[@handle=exit]";
@@ -642,33 +620,29 @@ int main(int n, char**ppc){
   
   // create and show the GUI
   gui.show();
-  h = gui.getValue<LabelHandle>("current-time-label");
   
-  // register callbacks
+  /// sometimes, this works as well !
+  gui["currentTimeLabel"] = Time::now().toString();
+  
+  // register callbacks (on the specific handles)
   gui.getValue<ButtonHandle>("exit").registerCallback(new GUI::Callback(exit_callback));
   gui.getValue<ButtonHandle>("click").registerCallback(new GUI::Callback(click_callback));
-  gui.getValue<ButtonHandle>("click-2").registerCallback(new MyCallback);
+
+  // or let gui find the corresponding components internally
+  gui.registerCallback(new MyCallback,"click-2");
   
-  // create the working loop thread
-  DemoThread t;
-  
-  // start it
-  t.start();
-  
-  // enter Qt's event loop
-  app.exec();
-  
-  // stop the thread immediately when the window is closed
-  t.stop();
 }
 
-     \endcode
+int main(int n, char **ppc){
+  return ICLApplication(n,ppc,"",init,run).exec();
+}
+    \endcode
 
 
       \subsubsection CCB Complex Callbacks 
       
       In addition to the simple callback structure using an empty exec() function, callbacks
-      use another function type (GUI::Callback::complex_callback_function). Here, the
+      may use another function type (GUI::Callback::complex_callback_function). Here, the
       exec-function gets a string argument, which is filled with the source components handle
       name at runtime. By this means, it is possible to use a single callback function ( or
       of course a special implementation of the GUI::Callback interface) to handle a set of
@@ -712,12 +686,12 @@ int main(int n, char **ppc){
       
       \subsection EMB Embedding external QWidgets
       In some cases it might be necessary to embed QWidgets, which are not supported by the GUI-API.
-      For this, the two box-components ("hbox" and "vbox") do also provide a special BoxHandle which
-      wraps the underlying QWidget to provide access to it and its current layout.See the following 
-      example for more details:
+      For this, the two box ("hbox","vbox", "hsplit", "vsplit", and "tab") also provide a special BoxHandle which
+      wraps the underlying QWidget to provide access to it and its current layout. See the following 
+      example for details:
 
       \code
-      #include <iclGUI.h>
+      #include <iclCommon.h>
       #include <QProgressBar>
       
       using namespace icl;
@@ -816,61 +790,54 @@ int main(int n, char **ppc){
       Here's an example for using tabs (available as gui-test-2.cpp):
       
       \code 
-      #include <iclCommon.h>
-      #include <QProgressBar>
-      
-      GUI gui;
-      
-      void run(){
-        Img8u image = cvt8u(scale(create("parrot"),0.2));
-        ImageHandle *ws[3] = {
-          &gui.getValue<ImageHandle>("image1"),
-          &gui.getValue<ImageHandle>("image2"),
-          &gui.getValue<ImageHandle>("image3")
-        };
-        ButtonHandle &click = gui.getValue<ButtonHandle>("click");
-        while(1){
-          for(int i=0;i<3;++i){
-            *ws[i] = image;
-            ws[i]->update();
-          }
-          if(click.wasTriggered()){
-            std::cout << "button 'click' was triggered!" << std::endl;
-          }
-          Thread::msleep(50);
-        }
-      }
-      
-      int main(int n, char **ppc){
-        QApplication app(n,ppc);
-      
-        gui = GUI("tab(a,b,c,d,e,f)[@handle=tab]");
-        
-        gui << "image[@handle=image1@label=image1]"
-            << "image[@handle=image2@label=image2]"
-            << "image[@handle=image3@label=image3]";
-      
-        GUI v("tab(a,b,c,d,e,f)[@label=internal tab widget]");
-            v << "slider(-1000,1000,0)[@out=the-int1@maxsize=35x1@label=slider1@minsize=1x2]"
-              << "slider(-1000,1000,0)[@out=the-int2@maxsize=35x1@label=slider2@minsize=1x2]"
-              << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3@minsize=1x2]"
-              << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
-              << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
-              << "button(click me)[@handle=click]";
-      
-      
-        gui << v;
-      
-        gui.show();
-      
-        gui.getValue<TabHandle>("tab").insert(2,new ICLWidget,"ext. 1");
-        gui.getValue<TabHandle>("tab").add(new QProgressBar,"ext. 2");
-     
-        exec_threaded(run);
-      
-        return app.exec();
-      }
-      \endcode
+#include <iclCommon.h>
+#include <QProgressBar>
+
+GUI gui;
+
+void init(){
+  gui = GUI("tab(a,b,c,d,e,f)[@handle=tab]");
+  
+  gui << "image[@handle=image1@label=image1]"
+      << "image[@handle=image2@label=image2]"
+      << "image[@handle=image3@label=image3]";
+  
+  GUI v("tab(a,b,c,d,e,f)[@label=internal tab widget]");
+  v << "slider(-1000,1000,0)[@out=the-int1@maxsize=35x1@label=slider1@minsize=1x2]"
+    << "slider(-1000,1000,0)[@out=the-int2@maxsize=35x1@label=slider2@minsize=1x2]"
+    << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3@minsize=1x2]"
+    << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
+    << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
+    << "button(click me)[@handle=click]";
+  
+  
+  gui << v;
+  
+  gui.show();
+  
+  gui.getValue<TabHandle>("tab").insert(2,new ICLWidget,"ext. 1");
+  gui.getValue<TabHandle>("tab").add(new QProgressBar,"ext. 2");
+}
+
+
+void run(){
+  static Img8u image = cvt8u(scale(create("parrot"),0.2));
+  gui_ButtonHandle(click);
+  
+  for(int i=0;i<3;++i){
+    gui["image"+str(i+1)] = image;
+    gui["image"+str(i+1)].update();
+  }
+  if(click.wasTriggered()){
+    std::cout << "button 'click' was triggered!" << std::endl;
+  }
+  Thread::msleep(50);
+}
+
+int main(int n, char **ppc){
+  return ICLApplication(n,ppc,"",init,run).exec();
+}
+     \endcode
 
       \image html Image08_Tabs.jpg
       
