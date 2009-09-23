@@ -229,7 +229,7 @@ std::vector<int> associate(const std::vector<Point32f> &cogs,const Size &imageSi
 
   static int numSomTrainingSteps = pa_subarg<int>("-som-training-steps",0,100);
   static float somDecayFactor = pa_subarg<float>("-som-decay-factor",0,5);
-  static float somNeighbourhoodFactor = pa_subarg<float>("-som-nbh-factor",0,1);
+  static float somNeighbourhoodFactor = pa_subarg<float>("-som-nbh-factor",0,0.7);
 
   for(int j=0;j<numSomTrainingSteps;++j){
     float relativeStep = float(j)/float(numSomTrainingSteps);
@@ -849,7 +849,8 @@ int main(int n, char **ppc){
   pa_explain("-som-training-steps","define count of SOM trainingsteps, that are used to associate markers (default 100)");
   pa_explain("-dist","give 4 distortion parameters");
   pa_explain("-som-nbh-factor","som epsilon (distance weighting in" 
-             " neighbourhood function [see ICL::ICLAlgorithm::SOM class reference])");
+             " neighbourhood function [see ICL::ICLAlgorithm::SOM class reference])."
+             " Default value is 0.7 a value of 1.0 lets the SOM become smaller");
   pa_explain("-som-decay-factor","som learning rate at relative time t (t=0..1) is exp(t*factor)");
   pa_explain("-create-empty-config-file","if this flag is given, an empty config file is created as ./new-calib-config.xml");
   ICLApplication app(n,ppc,"-focal-length(1) -input(2) -nx(1) -ny(1) -orientation(1) "
