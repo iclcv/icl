@@ -5,14 +5,21 @@
 using namespace icl;
 
 int main(){
-  FileGrabber grabber("images/*.ppm");
-  ConvolutionKernel kernel(ConvolutionKernel::laplace3x3);
-  ConvolutionOp conv(kernel);  
-  FileWriter writer("images/result_####.ppm");
+  // to read source images
+  FileGrabber grabber("images/*.ppm"); 
+  
+  // convolution operator (indirect subclass of UnaryOp}
+  ConvolutionOp conv(ConvolutionKernel::laplace3x3);  
+
+  // to write destination images
+  FileWriter writer("images/result_####.ppm"); 
+
+  // re-used destination image
   ImgBase *dst = 0;
   
   for(unsigned int i=grabber.getFileCount();i>0;--i){
-    /// use ImgBase** interface
+    // use of the ImgBase** interface &dst 
+    // note: dst is only (re-)allocated/adapted on demand
     conv.apply(grabber.grab(),&dst);
     
     writer.write(dst);

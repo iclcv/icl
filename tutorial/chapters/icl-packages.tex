@@ -239,6 +239,9 @@ The \inlinecode{File}-class \iclclassref{IO}{File} is a simple File implementati
 
 
 \section{ICLBlob\label{sec:blob}}
+
+[Documentation: \iclpackageref{Blob}]\\
+
 The package \iclpackageref{Blob} provides functions for blob-detection/tracking. The most common class of the package is the \inlinecode{RegionDetector}  (see \iclclassref{Blob}{RegionDetector}), which performs a fast connected components analysis on images. The package subsumes different approaches for blob detection, which are presented in the following subsection.
 
 \subsection{What is a \emph{Blob}}
@@ -261,5 +264,49 @@ On top of the \inlinecode{RegionDetector} class there's a higher level wrapper f
 In comparison to blob detection, \emph{blob tracking} means to track blobs/regions successively through time. Here, the ICL currently provides two different approaches: 
 \begin{itemize}
 \item A simple MeanShiftTracker implementation (see \iclclassref{Blob}{MeanShiftTracker}). The mean-shift algorithm is a very common algorithm in computer vision, which is well-discussed and well interpreted in literature. Our implementation uses the basic mean shift algorithm rather than one of its various extensions.
-\item A generic yet powerful layered approach which basic idea was also patented somewhere from somewhere else\footnote{we found that out later}. The most common class is the \inlinecode{PositionTracker} (see \iclclassref{Blob}{PositionTracker}) and the \inlinecode{VectorTracker} (see \iclclassref{Blob}{VectorTracker}). For more details start reading here: \iclclassref{Blob}{PositionTracker}.
+\item A generic yet powerful layered approach which's basic idea was also patented somewhere from somewhere else\footnote{we found that out later}. However, our tracking assignment mechanism better. The most common class is the \inlinecode{PositionTracker} (see \iclclassref{Blob}{PositionTracker}) and the \inlinecode{VectorTracker} (see \iclclassref{Blob}{VectorTracker}). For more details start reading here: \iclclassref{Blob}{PositionTracker}.
 \end{itemize}
+
+
+\section{ICLFilter}
+
+[Documentation: \iclpackageref{Filter}]\\
+
+The ICLFilter package provides a large variety of image filtering classes. When talking about image filters some misapprehensions can arise. To prevent this, the following sub-section will shortly introduce our understanding of image filters.
+
+\subsection{Our Definition of Image \emph{Filters}}
+
+In a most general view on image filters, a filter can be seen as a kind of black box that has N image inputs and M image outputs. However this view brings us a very generic interface for image filters which is most of the time not very feasible. \\
+Most common filters (e.g. binary image operations, linear filters or neighborhood operations) only need a single input and output image. Another larger group of filters subsumes filters that get exactly two input images and that have only a single output image (e.g. arithmetical/logical per-pixel image operations or image comparison filters).
+To avoid a large computational overhead arising of a too general interface, we currently support two dedicated filtering interfaces for the above mentioned 1-1 and 2-1 input-output combinations. To obviate further misunderstandings, we call this filter groups \emph{unary operations} and \emph{binary operations} respectively (represented by the C++-interfaces \iclclassref{Filter}{UnaryOp} and \iclclassref{Filter}{BinaryOp}).
+
+For a better overview, the ICLFilter package documentation is grouped into the following modules:
+
+\begin{enumerate}
+\item Unary operations [\ref{subsec:unary-ops}]
+\item Binary operations [\ref{subsec:binary-ops}]
+\item Affine operations (also unary) [\ref{subsec:affine-ops}]
+\item Neighbourhood operations (also unary) [\ref{subsec:nbh-ops}]
+\item In-place operations [\ref{subsec:inplace-ops}] 
+\item Other operations [\ref{subsec:other-ops}]
+\end{enumerate}
+
+
+\subsection{Unary Operations\label{subsec:unary-ops}}
+Actually, most implemented operations have this type. All implementations in this group implement the \inlinecode{UnaryOp}-interface (see \iclclassref{Filter}{UnaryOp}). Unary operations implement a 1-1 input/output relation which entails, that unary operations cannot be used to apply in-place operations on images\footnote{see subsection \ref{subsec:inplace-ops} for this kind of operations}. Unary operations \emph{always} use two different images: an input image and an output image. If one wants to apply a unary operation on a source image he can either manage the destination image by himself, using the 
+\displaycode{void apply(const ImgBase *src, ImgBase **dst)}
+method or he can let \inlinecode{UnaryOp} instance manage the destination image internally by using the 
+\displaycode{const ImgBase *apply(const ImgBase *src)}
+method. In both cases, the destination image will be adapted to appropriate parameters (which depend on the source image parameters and -- of course -- the certain \inlinecode{UnaryOp}-implementation). In subsection \ref{subsec:unary-op-preview} we already presented some examples of \inlinecode{UnaryOp} usage.\\
+\subsubsection{ClipToROI and CheckOnly}
+todo
+
+\subsection{Binary Operations\label{subsec:binary-ops}}
+
+\subsection{Affine Operations\label{subsec:affine-ops}}
+
+\subsection{Neighbourhood Operations\label{subsec:nbh-ops}}
+
+\subsection{In-Place Operations\label{subsec:inplace-ops}}
+
+\subsection{Other Operations\label{subsec:other-ops}} 

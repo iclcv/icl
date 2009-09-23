@@ -26,6 +26,8 @@ This can be achieved much easier using the \inlinecode{ensureDepth}-function (\i
 \codefile{ensure-depth-implementation.cpp}{Actual implementation of \inlinecode{ensureDepth} function}
 
 The \inlinecode{ImgBase**}-interface is used e.g. for the \inlinecode{Grabber}-interface (\iclclassref{IO}{Grabber}) and for unary- and binary operators (see \iclclassref{Filter}{UnaryOp} and \iclclassref{Filter}{BinaryOp}). To make things a bit more graphic, we risk a short anticipation to the \inlinecode{UnaryOp}-interface.\\
+
+\subsection{A Preview On the UnaryOp class\label{subsec:unary-op-preview}}
 A unary image operator (represented by the \inlinecode{UnaryOp}-interface), can be seen as a \emph{black-box}, that has an image input and an image output and some functionality that transforms a given input image into the output image. Often this is referenced as an \emph{image-filter}, however we use the term \emph{unary operator} to emphasize, that there are binary operators as well with a different semantics. The unary operator interface consists essentially of a single function:
 
 \displaycode{virtual void apply(const ImgBase *src, ImgBase **dst)=0}
@@ -34,7 +36,7 @@ This function \emph{applies} the operators functionality to the input image \inl
 
 \codefile{unary-op-loop-example.cpp}{Using unary operators in a loop} 
 
-Please notice, that \inlinecode{dst} is used within the loop. The apply function of \inlinecode{ConvolutionOp} adapts \inlinecode{dst} if necessary, otherwise, it just re-uses \inlinecode{dst}. By this means \inlinecode{dst} is just allocated once, unless input image parameters aren't constant.\\
+Please notice, that \inlinecode{dst} is used within the loop. The apply function of \inlinecode{ConvolutionOp} adapts \inlinecode{dst} if necessary, otherwise, it just re-uses \inlinecode{dst}. By this means \inlinecode{dst} is just allocated once, unless input image parameters chang.\\
 Furthermore, if read-access to the result image of a unary operator is sufficient, the unary operator can manage it's destination image internally by re-using a dedicated
 image buffer, which is a member-variable of the \inlinecode{UnaryOp} class.
 
