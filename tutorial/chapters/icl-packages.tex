@@ -293,13 +293,39 @@ For a better overview, the ICLFilter package documentation is grouped into the f
 
 
 \subsection{Unary Operations\label{subsec:unary-ops}}
-Actually, most implemented operations have this type. All implementations in this group implement the \inlinecode{UnaryOp}-interface (see \iclclassref{Filter}{UnaryOp}). Unary operations implement a 1-1 input/output relation which entails, that unary operations cannot be used to apply in-place operations on images\footnote{see subsection \ref{subsec:inplace-ops} for this kind of operations}. Unary operations \emph{always} use two different images: an input image and an output image. If one wants to apply a unary operation on a source image he can either manage the destination image by himself, using the 
+Actually, most implemented operations have this type. All implementations in this group implement the \inlinecode{UnaryOp}-interface (see \iclclassref{Filter}{UnaryOp}). Unary operations implement a 1-1 input/output relation which entails, that unary operations cannot be used to apply in-place operations on images\footnote{see subsection \ref{subsec:inplace-ops} for this kind of operations}. Unary operations \emph{always} use two different images: an input image and an output image. If you want to apply a unary operation on a source image you can either manage the destination image by yourself, using the 
 \displaycode{void apply(const ImgBase *src, ImgBase **dst)}
-method or he can let \inlinecode{UnaryOp} instance manage the destination image internally by using the 
+method or you can let the \inlinecode{UnaryOp} instance manage the destination image internally by using the 
 \displaycode{const ImgBase *apply(const ImgBase *src)}
 method. In both cases, the destination image will be adapted to appropriate parameters (which depend on the source image parameters and -- of course -- the certain \inlinecode{UnaryOp}-implementation). In subsection \ref{subsec:unary-op-preview} we already presented some examples of \inlinecode{UnaryOp} usage.\\
-\subsubsection{ClipToROI and CheckOnly}
-todo
+Most \inlinecode{UnaryOp}-subclasses work on the source image's ROI only.\\
+
+A list of all \inlinecode{UnaryOp} implementation can be found in the doxygen collaboration diagram in \iclclassref{Filter}{UnaryOp}
+
+\subsubsection{The bpp-function\label{subsec:bpp}}
+The \inlinecode{bpp} function is a part of the \iclpackageref{Core}-packge and it was already mentioned in section \ref{sec:raw-data-access-for-ipp-calls}. In some special cases (e.g. see the example in subsection \ref{subsec:check-only}), the \inlinecode{ImgBase**}-interface is somehow too general, keeping in mind, that we only need it to enable a function to re-allocate a given image for depth adaption. However, if the programmer is sure that his image has correct depth, he might have to face the following complications: if the destination image is of type \inlinecode{Img<T>} i.e. it's no pointer type, the naive approach to get an \inlinecode{ImgBase**}:
+
+\displaycode{Img<T> image; ImgBase **base = &&image; }
+
+leads to a compiler error because C++ inheritance works only with pointers, but not with pointers to pointers. In other words: a C++ pointer of type \inlinecode{derived*} has always also the type \inlinecode{base*}\footnote{assuming \inlinecode{derived} inherits \inlinecode{base}}, but \inlinecode{derived**} and \inlinecode{base**} have no common type at all. This is why the type of \inlinecode{&&image} is \inlinecode{Img<T>**} but not \inlinecode{ImgBase**}. As a matter of fact, \inlinecode{&&image} can also not even be casted easily to the \inlinecode{ImgBase**} type.
+Furthermore, the application will crash, if after all depth was incorrect, because the implementation would then maybe try to call \inlinecode{delete} on a pointer to an object on the stack.\\
+All this problems are solved by the \inlinecode{bpp}-function. It returns an instance of an internal utility structure which, then again can be casted \emph{implicitly} into an \inlinecode{ImgBase**}. It also checks whether the given image was mistakenly reallocated and notifies this with an error message.
+
+
+\subsubsection{The ClipToROI Flag\label{subsec:clip-to-roi}}
+The \inlinecode{UnaryOp}-class has two special flags, that can be set from externally to influence how input and output images are processed. If the \emph{ClipToROI}-flag is set to \inlinecode{false} (by default, it is set to \inlinecode{true}), the output image size is set to the source image size. As still only the source images ROI is processed, the destination images ROI is set up appropriately here. E.g. if the source image has VGA size\footnote{$640 \times{}480$ pixels} and a centered ROI of size QVGA\footnote{Quater-VGA = $320\times{}240$ pixels}, The destination image will be set up with this parameters as well, however all pixels that are outside it's ROI are not changed. If otherwise, \emph{ClipToROI} is set to \inlinecode{true}, the destination image is clipped to these pixels that are actually determined from the source image. This means for the example above, that the destination image's size is set to the ROI size of the source image (QVGA)\footnote{In some cases, the destination image size/ROI-size becomes even smaller (see subsection \ref{subsec:nbh-ops} for more information about this)}.
+
+\subsubsection{The CheckOnly Flag\label{subsec:check-only}}
+In a few situations, the destination image shall neither be adapted to have the source image size nor to have the size of the source images ROI. E.g. if you want to store results from different \inlinecode{UnaryOp}'s into a single image. In this case, the programmer can set the \inlinecode{UnaryOp's} \emph{CheckOnly} flag to \inlinecode{true}. Now the \inlinecode{UnaryOp}'s \inlinecode{apply}-function will no longer apply any changes to the destination image. It will only check, whether the current destination image parameters are appropriate. I.e. channel count and depth matches (not always exactly to the source image, but these parameters have to meet those that are expected by the certain \inlinecode{UnaryOp} implementation). Furthermore, the destination image's size and ROI size must have been set up correctly, before. Most of the time, it is necessary \textbf{to set ClipToROI to \inlinecode{false} if you set \emph{CheckOnly} to \inlinecode{true}}. The following example shows a common usage of these two flags.
+
+\codefile{check-only-example.cpp}{Example for usage of of the ClipToROI and the CheckOnly flag}
+
+This is the shown result image:
+
+\includegraphics[width=300pt]{media/check-only-example-output}
+
+\subsubsection{UnaryOp-pipes}
+TODO
 
 \subsection{Binary Operations\label{subsec:binary-ops}}
 
