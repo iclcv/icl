@@ -32,7 +32,7 @@ ICL provides some time and timer classes to facilitate handling of time values a
 \begin{itemize}
 \item The \icode{Time} class (\iclclassref{Utils}{Time}) is the basis for timing classes. It provides a static function \icode{now()} to obtain the current system time, as well as a variety manipulation and conversion functions.
 \item The \icode{Timer} (\iclclassref{Utils}{Timer}) class allows to compute time differences e.g. for benchmarking.
-\item The \icode{StackTimer} (\iclclassref{Utils}{StackTimer}) can be used with the macro \icode{BENCHMARK\_THIS\_FUNCTION} to profile a function.
+\item The \icode{StackTimer} (\iclclassref{Utils}{StackTimer}) can be used with the macro \icode{BENCHMARK\_THIS\_FUNCTION} and \icode{BENCHMARK\_THIS\_SECTION} to profile a function.
 \item \icode{FPSEstimator} (\iclclassref{Utils}{FPSEstimator}) and \icode{FPSLimiter} (\iclclassref{Utils}{FPSLimiter}) can be used to compute or to limit the FPS\footnote{Frames Per Second} count of a application.
 \end{itemize}
 
@@ -337,10 +337,23 @@ In contrast to unary operations, binary operations (base class \iclclassref{Filt
 
 As you can see, the only difference to the \icode{UnaryOp}'s interface is an additional second source image argument. All other aspects like ROI-handling or adaption of the given destination image remain equal. In addition to this, when calling the \icode{apply}-function of \icode{BinaryOp} instances, the two source images must have compatible parameters. This means in general, that the two given source images must have identical parameters, however there are some classes where this is not necessary or even not useful.
 
-\subsubsection{Example: Arithmetical Operations}
+\subsubsection{Example: Arithmetical Operations\label{subsec:arithmeticl-unary-ops}}
+A common prototype for binary operations is the \icode{UnaryArtithmeticalOp}-class (see \iclclassref{Filter}{UnaryArtithmeticalOp}). Basically, this class provides pixel-wise addition, subtraction, multiplication and division of images. In addition to this, a special, but also quiet common pixel-wise operation can be used: the absolute value of the difference two images. However, this could also be emulated by a successive use of a binary \emph{minus}-operations followed by a unary \emph{abs} operation, the combination is very useful because it's much faster. The speed advantage is also discussed in subsection \ref{subsec:perf-issues-for-unary-and-binary-ops}.
 
+\subsection{Performance issues for successive use of BinaryOp/UnaryOp instances\label{subsec:perf-issues-for-unary-and-binary-ops}}
+As mentioned in subsection \ref{subsec:arithmeticl-unary-ops}, there are different approaches to compute e.g. the pixel-wise absolute value of differences between two images (which is just an example for complex pixel-wise operations on images). The following code example demonstrates 4 possibilities.
 
+\codefile{abs-diff-successive-ops.cpp}{Comparison of different methods for calculating the pixel-wise absolute value for the differences between two images}
 
+We have to discuss two different performance relevant aspects: 
+
+\begin{itemize}
+\item \textbf{When Intel IPP is used, the actual execution of the arithmetical operation becomes about twice as fast.}\\
+Ok, as presented in section \ref{sec:optimal-performace} we use Intel IPP to obtain optimal performace, however  IPP's function set is quickly exhausted when deliberating \todo{translate correctly!} about all possible arithmetical operations with 3, 4 or even more operands. Hence operations have to be concatenated to obtain more possibilities by using combinations of them. But if operations are concatenated, each single operation will need a temporary image, and lots of data must flow through the processor and the RAM $\rightarrow$ processor interface, which leads us directly to the next point:
+\item \textbf{How often must image data be pushed through the common CPU-architecture bottleneck \emph{memory-interface RAM $\rightarrow$ processor cache}?}\\
+\end{itemize}
+
+         
 \subsection{Affine Operations\label{subsec:affine-ops}}
 
 \subsection{Neighbourhood Operations\label{subsec:nbh-ops}}
