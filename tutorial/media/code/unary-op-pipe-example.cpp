@@ -17,7 +17,7 @@ int main(){
   // create the empty pipe
   UnaryOpPipe pipe;
   
-  // add the UnaryOp's in the correct order
+  // add the UnaryOp's in correct order
   pipe << new ScaleOp(0.25,0.25)
        << new WeightedSumOp(std::vector<icl64f>(ws,ws+3))
        << new UnaryCompareOp(UnaryCompareOp::gt,110)
