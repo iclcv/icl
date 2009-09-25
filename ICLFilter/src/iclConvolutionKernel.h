@@ -116,7 +116,7 @@ copies of shallow copied instances are shallow! */
     ConvolutionKernel(float *data, const Size &size, bool deepCopy=true) throw (InvalidSizeException);
     
     /// create a fixed kernel (optionally as float kernel)
-    explicit ConvolutionKernel(fixedType t, bool useFloats=false);
+    ConvolutionKernel(fixedType t, bool useFloats=false);
     
     /// Destructor
     ~ConvolutionKernel();

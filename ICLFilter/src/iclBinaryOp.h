@@ -10,9 +10,27 @@ namespace icl{
   **/
   class BinaryOp{
     public:
-    virtual ~BinaryOp(){}
+    
+    /// default constructor
+    BinaryOp();
+    
+    /// copy constructor
+    BinaryOp(const BinaryOp &other);
+    
+    /// assignment operator
+    BinaryOp &operator=(const BinaryOp &other);
+    
+    /// virtual destructor
+    virtual ~BinaryOp();
+    
+    
     /// pure virtual apply function
     virtual void apply(const ImgBase *operand1,const ImgBase *operand2, ImgBase **result)=0;
+    
+    /// applyfunction without explicit destination image 
+    /** Usually this function must not be reimplemented, because it's default operation does simply use
+        an internal buffer to call apply(const ImgBase*,const ImgBase*,ImgBase**). */
+    virtual const ImgBase *apply(const ImgBase *operand1, const ImgBase *operand2);
 
     /// sets if the image should be clip to ROI or not
     /**
@@ -73,6 +91,9 @@ namespace icl{
     
   private:
     OpROIHandler m_oROIHandler;
+
+    /// internal image buffer which is used for the apply function without destination image argument
+    ImgBase *m_buf;
   };
 }
 

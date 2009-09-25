@@ -15,7 +15,7 @@
     
     The ICLFilter package provides a large variety of image filtering classes. When talking about 
     <em>image filters</em> some misapprehensions can arise. To prevent this, the following section
-    will shortly introduce our undertanding of image filters.
+    will shortly introduce our understanding of image filters.
     
     \section FILTERS What are Image-Filters
     

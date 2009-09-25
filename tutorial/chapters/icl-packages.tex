@@ -325,9 +325,14 @@ This is the shown result image:
 \includegraphics[width=300pt]{media/check-only-example-output}
 
 \subsubsection{UnaryOp-pipes}
-TODO
+TODO: specialize UnaryOpPipe::apply(src) function to use (different from the default impl. form UnaryOp) the last pipe image.
 
 \subsection{Binary Operations\label{subsec:binary-ops}}
+In contrast to unary operations, binary operations (base class \iclclassref{Filter}{BinaryOp} implement a 2-1 input/output relationship. Binary operations are e.g. a pixel-wise addition and multiplication of images or even a proximity measurement pixel-wise comparison of two images. The \inlinecode{BinaryOp} class uses another signature for its \inlinecode{apply}-function:
+
+\displaycode{void apply(const ImgBase *operand1, const ImgBase *operand2, ImgBase **dst)}
+
+As you can see, the only difference to the \inlinecode{UnaryOp}'s interface is an additional second source image argument.
 
 \subsection{Affine Operations\label{subsec:affine-ops}}
 

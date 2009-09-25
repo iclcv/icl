@@ -32,6 +32,11 @@ namespace icl{
         break;
     }
   }
+
+  const ImgBase *UnaryOpPipe::apply(const ImgBase *src){
+    apply(src,&getLastImage());
+    return getLastImage();
+  }
   
   int UnaryOpPipe::getLength() const {
     return (int)ops.size();

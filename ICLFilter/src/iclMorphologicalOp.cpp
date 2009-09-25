@@ -6,7 +6,6 @@
 #include <iclBinaryArithmeticalOp.h>
 
 
-
 namespace icl {
 #ifndef HAVE_IPP
   template<class T, typename cmp_func>
@@ -256,10 +255,6 @@ namespace icl {
     FUNCTION_LOG("");
     if (!prepare (ppoDst, poSrc)) return;
 
-    // DEBUG_LOG("before");
-    //poSrc->print("source image");
-    //(*ppoDst)->print("destination image");
-    
     IppStatus s = ippStsNoErr;
     switch (poSrc->getDepth()){
       case depth8u:

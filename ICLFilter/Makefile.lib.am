@@ -30,6 +30,7 @@ libICLFilter_la_SOURCES= \
 ../src/iclUnaryCompareOp.cpp \
 ../src/iclUnaryLogicalOp.cpp \
 ../src/iclUnaryOp.cpp \
+../src/iclBinaryOp.cpp \
 ../src/iclUnaryOpPipe.cpp \
 ../src/iclWeightChannelsOp.cpp \
 ../src/iclWeightedSumOp.cpp \

@@ -33,31 +33,26 @@ namespace icl{
       #include <iclMorphologicalOp.h>
       
       int main(){
-        // create an input image (the nice parrot here!)
-        ImgQ inputImage = create("parrot");
+         // create an input image (the nice parrot here!)
+         ImgQ inputImage = create("parrot");
       
-        // create a weight vector (used later on by an instance of the WeightedSumOp class)
-        vector<icl64f> weights(3); weights[0] = 0.2; weights[1] = 0.5; weights[0] = 0.3;
+         // create a weight vector (used later on by an instance of the WeightedSumOp class)
+         vector<icl64f> weights(3); weights[0] = 0.2; weights[1] = 0.5; weights[0] = 0.3;
       
-        // create a dilation mask (used later on by an instance of the MorphologicalOp class)
-        char mask[9] = {1,1,1,1,1,1,1,1,1};
+         // create the empty pipe
+         UnaryOpPipe pipe;
+  
+         // add the UnaryOp's in the correct order
+         pipe << new ScaleOp(0.25,0.25)
+              << new WeightedSumOp(weights)
+              << new UnaryCompareOp(UnaryCompareOp::gt,110)
+              << new MorphologicalOp(MorphologicalOp::erode3x3);
       
-        // create the empty pipe
-        UnaryOpPipe pipe;
+         // apply this pipe on the source image (use the last image as destination)
+         const ImgBase *res = pipe.apply(&inputImage);
       
-        // add the UnaryOp's in the correct order
-        pipe.add(new ScaleOp(0.5,0.5));
-        pipe.add(new WeightedSumOp(weights));
-        pipe.add(new UnaryCompareOp(UnaryCompareOp::lt,128));
-        pipe.add(new MorphologicalOp(Size(3,3),mask,MorphologicalOp::dilate3x3));
-      
-        // apply this pipe on the source image (use the last image as destination)
-        pipe.apply(&inputImage,&pipe.getLastImage());
-      
-        // show the result
-        show(cvt(pipe.getLastImage()));
-      
-        return 0;
+         // show the result using ICLQuick
+         show(cvt(res));
       }
       \endcode
   **/
@@ -69,14 +64,19 @@ namespace icl{
     /// Destructor
     ~UnaryOpPipe();
     
-    /// add a new op to the end of this pipe
+    /// appends a new op on the end of this pipe (ownership of op and im is passed to the pipe)
     void add(UnaryOp *op, ImgBase*im=0);
-    
+
+    /// stream based wrapper for the add function (calls add(op,0))
+    /** ownership of op is passed to the pipe*/
+    UnaryOpPipe &operator<<(UnaryOp *op){
+      add(op); return *this;
+    }    
     /// applies all ops sequentially 
     virtual void apply(const ImgBase *src, ImgBase **dst);
 
-    /// Import unaryOps apply function without destination image
-    UnaryOp::apply;
+    /// This function is reimplemented here; it uses getLastImage() as destination image
+    virtual const ImgBase *apply(const ImgBase *src);
     
     /// returns the number of contained ops
     int getLength() const;
