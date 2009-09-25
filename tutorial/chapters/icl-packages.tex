@@ -318,7 +318,7 @@ The \inlinecode{UnaryOp}-class has two special flags, that can be set from exter
 \subsubsection{The CheckOnly Flag\label{subsec:check-only}}
 In a few situations, the destination image shall neither be adapted to have the source image size nor to have the size of the source images ROI. E.g. if you want to store results from different \inlinecode{UnaryOp}'s into a single image. In this case, the programmer can set the \inlinecode{UnaryOp's} \emph{CheckOnly} flag to \inlinecode{true}. Now the \inlinecode{UnaryOp}'s \inlinecode{apply}-function will no longer apply any changes to the destination image. It will only check, whether the current destination image parameters are appropriate. I.e. channel count and depth matches (not always exactly to the source image, but these parameters have to meet those that are expected by the certain \inlinecode{UnaryOp} implementation). Furthermore, the destination image's size and ROI size must have been set up correctly, before. Most of the time, it is necessary \textbf{to set ClipToROI to \inlinecode{false} if you set \emph{CheckOnly} to \inlinecode{true}}. The following example shows a common usage of these two flags.
 
-\codefile{check-only-example.cpp}{Example for usage of of the ClipToROI and the CheckOnly flag}
+\codefile{check-only-example.cpp}{Example for usage of ClipToROI and the CheckOnly flags}
 
 This is the shown result image:
 
@@ -326,6 +326,8 @@ This is the shown result image:
 
 \subsubsection{UnaryOp-pipes}
 TODO: specialize UnaryOpPipe::apply(src) function to use (different from the default impl. form UnaryOp) the last pipe image.
+
+\codefile{unary-op-pipe-example.cpp}{Example for usage of the UnaryOpPipe class}
 
 \subsection{Binary Operations\label{subsec:binary-ops}}
 In contrast to unary operations, binary operations (base class \iclclassref{Filter}{BinaryOp} implement a 2-1 input/output relationship. Binary operations are e.g. a pixel-wise addition and multiplication of images or even a proximity measurement pixel-wise comparison of two images. The \inlinecode{BinaryOp} class uses another signature for its \inlinecode{apply}-function:
