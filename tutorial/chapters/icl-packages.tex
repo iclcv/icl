@@ -343,18 +343,36 @@ A common prototype for binary operations is the \icode{UnaryArtithmeticalOp}-cla
 \subsection{Performance issues for successive use of BinaryOp/UnaryOp instances\label{subsec:perf-issues-for-unary-and-binary-ops}}
 As mentioned in subsection \ref{subsec:arithmeticl-unary-ops}, there are different approaches to compute e.g. the pixel-wise absolute value of differences between two images (which is just an example for complex pixel-wise operations on images). The following code example demonstrates 4 possibilities.
 
-\codefile{abs-diff-successive-ops.cpp}{Comparison of different methods for calculating the pixel-wise absolute value for the differences between two images}
+\codefile{abs-diff-successive-ops.cpp}{Comparison of different methods for calculating the pixel-wise absolute value for the differences between two images\label{codefile:successive-ops}}
 
 We have to discuss two different performance relevant aspects: 
 
 \begin{itemize}
 \item \textbf{When Intel IPP is used, the actual execution of the arithmetical operation becomes about twice as fast.}\\
-Ok, as presented in section \ref{sec:optimal-performace} we use Intel IPP to obtain optimal performace, however  IPP's function set is quickly exhausted when deliberating \todo{translate correctly!} about all possible arithmetical operations with 3, 4 or even more operands. Hence operations have to be concatenated to obtain more possibilities by using combinations of them. But if operations are concatenated, each single operation will need a temporary image, and lots of data must flow through the processor and the RAM $\rightarrow$ processor interface, which leads us directly to the next point:
-\item \textbf{How often must image data be pushed through the common CPU-architecture bottleneck \emph{memory-interface RAM $\rightarrow$ processor cache}?}\\
+Ok, as presented in section \ref{sec:optimal-performace} we use Intel IPP to obtain optimal performace, however  IPP's function set is quickly exhausted when deliberating \todo{translate correctly!} about all possible arithmetical operations with 3, 4 or even more operands. Hence operations have to be concatenated to obtain more possibilities by using combinations of them. But if this is done, each single operation will need a temporary image, and lots of data must flow through the processor and the RAM $\rightarrow$ processor interface, which leads us directly to the next point:
+\item \textbf{How often must image data be pushed through the common CPU-architecture bottleneck \emph{memory-interface (RAM $\rightarrow$ processor cache)}?}\\
+When applying simple operations on data, processing speed depends mainly on the throughput of the processors memory interface. When applying arithmetical operations step by step, a single pixel from source and destination images must be read several times (assuming cache is not large enough to hold all image data). This entails, that also whole images must be read more then once, which directly stresses the memory interface. 
 \end{itemize}
 
-         
+In listing \ref{codefile:successive-ops} four different alternatives for a simple arithmetical task were presented:
+
+\begin{enumerate}
+\item \textbf{Baseline: using IPP based \icode{BinaryArithmeticalOp}.} [$\Delta t$: 3.3ms]\\
+This is -- apart from some computational overhead that arises from the image and channel management -- presumably the most efficient implementation possible. 
+\item \textbf{Successive use of \icode{BinaryOp} and \icode{UnaryOp} instance.} [$\Delta t$: 5.9ms]\\
+Here, also IPP is used, but due to the separation into two parts, computation time is nearly twice as long. 
+\item \textbf{Pure C++-implementation using \icode{Img::combine}} [$\Delta t$: 6.0ms]\\
+Even though, IPP performs the actual arithmetical operation much faster, pure C++ nearly reaches the performance of the variant above. 
+\item \textbf{Operator based implementation using ICLQuick} [$\Delta t$: 6.2ms]\\
+This is just slightly slower than the 2nd variant although same operators are used internally. We reach this performance here by using a static image buffer selection mechanism to avoid online memory-reallocation and by using shallow copies.
+\item \textbf{Pure C++-implementation using two runs} [$\Delta t$: 7.4ms]\\
+In comparison to the 3rd version, this one is significantly slower, however the performance difference is also not close to 100\%. As the operations (\icode{-} and \icode{fabs}) have not changed, we can assume, that transferring data of two images (source and destination image) to the processor takes about 1.4ms in this case. 
+\end{enumerate}
+
+On balance, we can conclude that it's of course optimal to use dedicated operators (like \icode{BinaryArithmeticalOp(absSubOp)}) if one is available for the desired operation. If not, most of the time it's optimal to apply the operation in a single run (e.g. using the \icode{Img::combine} template function).
+
 \subsection{Affine Operations\label{subsec:affine-ops}}
+Affine operators apply an affine transformation to pixel-\emph{locations}. This e.g. includes image rotation, or translation. ICL's \icode{AffineOp} (see \iclclassref{Filter}{AffineOp}) class allows arbitrary concatenations of \emph{translations}, \emph{rotations} and \emph{scalings}. 
 
 \subsection{Neighbourhood Operations\label{subsec:nbh-ops}}
 

@@ -74,6 +74,19 @@ int main(){
     }
     res = &c;
   }
+
+  { // 5th version, again using simple C++ code, but now
+    // we apply the operation explicitly in two rounds
+    static ImgQ c(a.getParams());
+    static ImgQ buf(a.getParams());
+    for(int i=0;i<100;++i){
+      BENCHMARK_THIS_SECTION(C++ separated); // average time: 7.4ms
+      a.combine(std::minus<float>(),b,buf);
+      buf.transform(::fabs,c);
+    }
+    res = &c;
+  }
+
   
   // show result using ICLQuick function
   show(cvt(res));
