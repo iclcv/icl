@@ -124,10 +124,16 @@ namespace icl {
 
      
      /// writes all available properties into a file
-     virtual void saveProperties(const std::string &filename, bool writeDesiredParams=true);
+     /** @param filename destination xml-filename
+         @param writeDesiredParams if this flag is true, current grabbers desired params are written to the
+                                   config file as well 
+         @param skipUnstable some common grabber parameters e.g. trigger-settings cause problems when
+                             they are read from configuration files, hence these parameters are skipped at default*/
+     virtual void saveProperties(const std::string &filename, bool writeDesiredParams=true, bool skipUnstable=true);
 
      /// reads a camera config file from disc
-     virtual void loadProperties(const std::string &filename, bool loadDesiredParams=true);
+     /** @ see saveProperties */
+     virtual void loadProperties(const std::string &filename, bool loadDesiredParams=true, bool skipUnstable=true);
 
      /// get type of property 
      /** This is a new minimal configuration interface: When implementing generic

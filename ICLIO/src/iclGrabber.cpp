@@ -5,6 +5,8 @@
 #include <iclStringUtils.h>
 #include <iclConfigFile.h>
 
+#include <iclXMLNode.h>
+#include <iclXMLDocument.h>
 using namespace std;
 
 namespace icl{
@@ -261,12 +263,36 @@ namespace icl{
     ICL_DELETE(m_warp);
     ICL_DELETE(m_distortionBuffer);
   }
+  
+  static std::vector<std::string> filter_unstable_params(const std::vector<std::string> ps){
+    std::vector<std::string> fs; fs.reserve(ps.size());
 
-  void Grabber::saveProperties(const std::string &filename, bool writeDesiredParams){
+    static std::string unstable[6]={
+      "trigger-from-software",
+      "trigger-mode",
+      "trigger-polarity",
+      "trigger-power",
+      "trigger-source",
+      "iso-speed"
+    };
+    for(unsigned int i=0;i<ps.size();++i){
+      if(std::find(unstable,unstable+6,ps[i]) == unstable+6){
+        fs.push_back(ps[i]);
+      }
+    }
+    return fs;
+  }
+
+  void Grabber::saveProperties(const std::string &filename, bool writeDesiredParams, bool skipUnstable){
     ConfigFile f;
     f["config.title"] = std::string("Camera Configuration File");
     std::vector<std::string> ps = get_io_property_list();
-    f["config.property-list"] = cat(ps,",");
+    
+    if(skipUnstable){
+      ps = filter_unstable_params(ps);
+    }
+
+    // f["config.property-list"] = cat(ps,","); this is no longer needed!
     
     if(writeDesiredParams){
       f.setPrefix("config.desired-params.");
@@ -292,10 +318,31 @@ namespace icl{
     f.save(filename);
   }
   
-  void Grabber::loadProperties(const std::string &filename, bool loadDesiredParams){
+  void Grabber::loadProperties(const std::string &filename, bool loadDesiredParams, bool skipUnstable){
     ConfigFile f(filename);
     std::vector<std::string> psSupported = get_io_property_list();
-    std::vector<std::string> ps = tok(f["config.property-list"],",");
+
+    if(skipUnstable){
+      psSupported = filter_unstable_params(psSupported);
+    }
+
+    if(f.contains("config.property-list")){
+      ERROR_LOG("the config.property-list tag is deprecated and no longer used");
+    }
+
+    // new version
+    const XMLNodePtr doc = f.getHandle()->getRootNode();
+    ICLASSERT_RETURN(doc);
+    ICLASSERT_RETURN(doc->hasChild("properties)"));
+    const XMLNode &props = (*doc)["properties"];
+    const std::vector<XMLNode*> propNodes = props.getAllChildNodes(XMLNodeFilterByTag("data") & XMLNodeFilterByAttrib("id") & XMLNodeFilterByAttrib("type"));
+    std::vector<std::string> ps(propNodes.size());
+    for(unsigned int i=0;i<ps.size();++i){
+      ps[i] = propNodes[i]->getTag();
+    }
+    
+    // old version
+    //std::vector<std::string> ps = tok(f["config.property-list"],","); // old
 
     if(loadDesiredParams){
       f.setPrefix("config.desired-params.");
