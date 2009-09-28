@@ -52,6 +52,9 @@ namespace icl {
     **/
     virtual void apply(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
 
+    /// import apply symbol from parent class
+    BinaryOp::apply;
+
     /// returns the current optype
     /** @return current optype */
     optype getOpType() const { return m_eOpType; }

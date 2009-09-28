@@ -18,6 +18,9 @@ namespace icl{
     public:
     /// Destructor
     virtual ~BaseAffineOp(){}
+    
+    /// import from super class
+    UnaryOp::apply;
   };
 
 }

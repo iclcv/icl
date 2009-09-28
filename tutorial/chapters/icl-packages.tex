@@ -372,9 +372,18 @@ In comparison to the 3rd version, this one is significantly slower, however the 
 On balance, we can conclude that it's of course optimal to use dedicated operators (like \icode{BinaryArithmeticalOp(absSubOp)}) if one is available for the desired operation. If not, most of the time it's optimal to apply the operation in a single run (e.g. using the \icode{Img::combine} template function).
 
 \subsection{Affine Operations\label{subsec:affine-ops}}
-Affine operators apply an affine transformation to pixel-\emph{locations}. This e.g. includes image rotation, or translation. ICL's \icode{AffineOp} (see \iclclassref{Filter}{AffineOp}) class allows arbitrary concatenations of \emph{translations}, \emph{rotations} and \emph{scalings}. 
+Affine operators apply an affine transformation to pixel-\emph{locations} (e.g. image rotation, or translation). ICL's \icode{AffineOp} (see \iclclassref{Filter}{AffineOp}) class allows to concate sequences of \emph{translations}, \emph{rotations} and \emph{scalings}. Internally, the actual affine transformation is applied using a affine transformation $3 \times{}3$ matrix. Concatenation can be optimized by pre-multiplying the transformation matrices. \todo{this \textbf{must} be implemented as C++-fallback and we have to check what's going on with it}.
 
 \subsection{Neighbourhood Operations\label{subsec:nbh-ops}}
+Another large set of common image processing functions can be formulated as neighbourhood function. Theoretically this are all image operators, where the value of a result pixel $R(x,y)$ depends on a neighbourhood of the corresponding source pixel $N(S(x,y))$. Most of the time, the neighbourhood is defined by a squared region with center $(x,y)$ with a fixed width/height. ICL's base class for neighbourhood operations is \icode{NeighborhoodOp} (see \iclclassref{Filter}{NeighborhoodOp}). Currently the following subclasses are defined:
+
+\begin{itemize}
+\item \textbf{\iclclassref{Filter}{ConvolutionOp}}\\
+Stardard linear image filters. The \icode{ConvolutionOp} provides a set of common fixed filters (like sobel, laplace, gaussian, etc.) as well as 
+\item \textbf{\iclclassref{Filter}{MedianOp}}\\
+\item \textbf{\iclclassref{Filter}{MorphologicalOp}}\\
+\item \textbf{\iclclassref{Filter}{WienerOp}}\\
+\end{itemize}
 
 \subsection{In-Place Operations\label{subsec:inplace-ops}}
 

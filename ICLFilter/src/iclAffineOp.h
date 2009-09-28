@@ -6,43 +6,53 @@
 
 namespace icl{
   /// Class to apply an arbitrary series of affine transformations \ingroup AFFINE \ingroup UNARY
-  /**
-    every affine operation modifies an internal matrix,
-    with the apply function, the matrix will be multiplicated to the image, 
-    so that the desired affine operations are executed on the image.
+  /** Affine operations apply transform pixel locations using affine matrix transformation.
+      To optimize performance concatenated affine transformation's matrices are pre-multiplied.
+      
+      \section BENCH Benchmarks
+      
+      example: a 300x400 rgb 8u-image was scaled by 1.001 and rotated by 1-360 degree in 3.6 degree steps
+               We used a 2Ghz Core2Duo machine and g++ 4.3 with -O4 and -march=native flags set
+
+      With IPP:
+      * neares neighbour interpolation: 1ms
+      * linear interpolation 5ms
+      
+      C++-Fallback:
+      * neares neighbour interpolation: 22ms
+      * linear interpolation 52ms
+
   */
   class AffineOp : public BaseAffineOp, public Uncopyable {
     public:
     /// Constructor
     AffineOp (scalemode eInterpolate=interpolateLIN);
     /// resets the internal Matrix
-    /**
-      to
-      1 0 0
-      0 1 0
-      0 0 
+    /** to
+        <pre>
+        1 0 0
+        0 1 0
+        0 0 
+        </pre>
     */
     void reset  ();
     /// adds a rotation
-    /**
-      @param dAngle angle in degrees (clockwise) 
+    /** @param dAngle angle in degrees (clockwise) 
     */
     void rotate (double dAngle);
     
     ///adds a traslation
-    /**
-      @param x pixels to translate in x-direction
-      @param y pixels to translate in y-direction
-    */
+    /** @param x pixels to translate in x-direction
+        @param y pixels to translate in y-direction
+        */
     void translate (double x, double y) {
       m_aadT[0][2] += x; m_aadT[1][2] += y;
     }
     /// adds a scale
-    /**
-      @param x scale-factor in x-direction
-      @param y scale-factor in y-direction
-      different values for x and y will lead to a dilation / upsetting deformation
-    */
+    /** @param x scale-factor in x-direction
+        @param y scale-factor in y-direction
+        different values for x and y will lead to a dilation / upsetting deformation
+        */
     void scale (double x, double y) {
       m_aadT[0][0] *= x; m_aadT[1][0] *= x;
       m_aadT[0][1] *= y; m_aadT[1][1] *= y;
@@ -50,7 +60,10 @@ namespace icl{
     
     /// Applies the affine transform to the image
     virtual void apply (const ImgBase *poSrc, ImgBase **ppoDst);
-    
+
+    /// import from super-class
+    BaseAffineOp::apply;
+
     private:
     /// array of class methods used to transform depth8u and depth32f images
     void (AffineOp::*m_aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 
@@ -65,7 +78,6 @@ namespace icl{
                           double& xShift, double& yShift);
     private:
     double    m_aadT[2][3];
-    // double    m_dxShift, m_dyShift;
     scalemode m_eInterpolate;
   };
 }

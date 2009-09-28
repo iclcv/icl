@@ -46,6 +46,26 @@ namespace icl{
       calls[     361]  time[ 77.7 ms]  avg[  215 ns]  min[  183 ns]  max[  5.2 ms] {function1}
       calls[     361]  time[  1.7 ms]  avg[    4 ns]  min[    4 ns]  max[   51 ns] {function2}
       </pre>
+
+
+      \section SEC Benchmarking code section
+      If sections of code shall be benchmarked, this can be done with the BENCHMARK_THIS_SECTION
+      macro
+      
+      \code
+      int main(){
+         {
+            BENCHMARK_THIS_SECTION(first section);
+            // do something
+         }
+
+         {
+            BENCHMARK_THIS_SECTION(another section);
+            // do something
+         }
+      
+      }
+      \endcode
   }
   */
   class StackTimer{
@@ -136,6 +156,9 @@ namespace icl{
    
   };
   
+#define BENCHMARK_THIS_SECTION(SECTION_NAME)                            \
+  static StackTimer::StackTimerNotifier __notifier(#SECTION_NAME);      \
+  StackTimer __stacktimer(&__notifier);
   
 #define BENCHMARK_THIS_FUNCTION                                         \
   static StackTimer::StackTimerNotifier __notifier(__FUNCTION__);       \
