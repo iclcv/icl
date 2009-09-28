@@ -824,6 +824,8 @@ namespace icl{
       QMessageBox::information(this,"No device selected!","You can only save properties if a device is selected (and running)");
       return;
     }
+    StandardButton b = QMessageBox::question(this,"prepare saving ...","Remove instable parameters?",QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes);
+    
     QString s = QFileDialog::getSaveFileName(this,"Save device properties ...","","XML-files (*.xml)");
     if(!s.isNull() && s!=""){
       try{
