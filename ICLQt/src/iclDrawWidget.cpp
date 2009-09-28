@@ -41,6 +41,9 @@ namespace icl{
   protected:
     Point tP(float x, float y, ICLDrawWidget::State *s){
       return Point(tX(x,s),tY(y,s));
+    } 
+    Point tP(const Point32f &p, ICLDrawWidget::State *s){
+      return Point(tX(p.x,s),tY(p.y,s));
     }  
     Rect tR(float x, float y, float w, float h, ICLDrawWidget::State *s){
       Point a = tP(x,y,s);
@@ -361,6 +364,66 @@ namespace icl{
     }
   };
  // }}}
+
+  class GridCommand : public IntelligentDrawCommand{
+    // {{{ open
+    std::vector<Point32f> pts;
+    int nx,ny;
+    bool rowMajor;
+  public:
+    GridCommand(const Point32f *points, int nx, int ny, bool rowMajor):
+      pts(points,points+nx*ny),nx(nx),ny(ny),rowMajor(rowMajor){
+    }
+    
+    
+    struct AnyData{
+      std::vector<Point32f> &p;
+      int wh;
+      AnyData(std::vector<Point32f> & p, int wh):p(p),wh(wh){}
+    };
+    struct RowMajorData : public AnyData{
+      RowMajorData(std::vector<Point32f> &p, int w):AnyData(p,w){}
+      const Point32f &operator()(int x, int y) const { return p[x+wh*y]; }
+    };
+    struct ColMajorData : public AnyData{
+      ColMajorData(std::vector<Point32f> &p, int h):AnyData(p,h){}
+      const Point32f &operator()(int x, int y) const { return p[y+wh*x]; }
+    };
+
+    
+    template<class Data>
+    void exec_t(PaintEngine *e, ICLDrawWidget::State *s,const Data &data){
+      for(int x=0;x<nx-1;++x){
+        for(int y=0;y<ny-1;++y){
+          Point a = tP(data(x,y),s);
+          Point b = tP(data(x+1,y),s);
+          Point c = tP(data(x,y+1),s);
+          
+          e->line(a,b);
+          e->line(a,c);
+        }
+      }
+      for(int x=0;x<nx-1;++x){
+        Point a = tP(data(x,ny-1),s);
+        Point b = tP(data(x+1,ny-1),s);
+        e->line(a,b);
+      }
+      for(int y=0;y<ny-1;++y){
+        Point a = tP(data(nx-1,y),s);
+        Point b = tP(data(nx-1,y+1),s);
+        e->line(a,b);
+      }
+    }
+    
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      if(rowMajor){
+        exec_t(e,s,RowMajorData(pts,nx));
+      }else{
+        exec_t(e,s,ColMajorData(pts,ny));
+      }
+    }
+  };
+  // }}}
 
   class SymCommand : public IntelligentDrawCommand{
     // {{{ open
@@ -698,6 +761,10 @@ namespace icl{
 
   void ICLDrawWidget::polygon(const std::vector<Point32f> &ps){
     m_vecCommands.push_back(new PolygonCommand(ps));
+  }
+  
+  void ICLDrawWidget::grid(const Point32f *points, int nx, int ny, bool rowMajor){
+    m_vecCommands.push_back(new GridCommand(points,nx,ny,rowMajor));
   }
 
   void ICLDrawWidget::abs(){

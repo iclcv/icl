@@ -824,13 +824,14 @@ namespace icl{
       QMessageBox::information(this,"No device selected!","You can only save properties if a device is selected (and running)");
       return;
     }
-    StandardButton b = QMessageBox::question(this,"prepare saving ...","Remove instable parameters?",QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes);
+    QMessageBox::StandardButton b = QMessageBox::question(this,"prepare saving ...","Remove instable parameters?\n(recommended)",QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes);
     
+
     QString s = QFileDialog::getSaveFileName(this,"Save device properties ...","","XML-files (*.xml)");
     if(!s.isNull() && s!=""){
       try{
-        DEBUG_LOG("ignore desired:" << str(m_poGrabber->getIgnoreDesiredParams()));
-        m_poGrabber->saveProperties(s.toLatin1().data(),false);
+        //        DEBUG_LOG("ignore desired:" << str(m_poGrabber->getIgnoreDesiredParams()));
+        m_poGrabber->saveProperties(s.toLatin1().data(),false,b==QMessageBox::Yes);
       }catch(ICLException &e){
         ERROR_LOG(e.what());
       }

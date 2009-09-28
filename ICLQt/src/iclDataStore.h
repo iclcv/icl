@@ -40,8 +40,9 @@ namespace icl{
       
       /// Internally used Data- Structure
       struct Event{
-        Event(const std::string &msg=""):message(msg){}
-        std::string message; 
+        Event(const std::string &msg="", void *data=0):message(msg),data(data){}
+        std::string message;
+        void  *data;
       };
       
       friend class DataStore;
@@ -71,6 +72,10 @@ namespace icl{
       /** Currently supported for Data-types ImageHandle, DrawHandle and FPSHandle */
       void update() throw (UnassignableTypesException){ 
         *this = Event("update"); 
+      }
+      
+      void install(void *data){
+        *this  = Event("install",data);
       }
     };
     

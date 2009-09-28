@@ -3,6 +3,7 @@
 
 #include <iclWidget.h>
 #include <QMutex>
+#include <iclPoint32f.h>
 
 namespace icl{
   /** \cond */
@@ -126,6 +127,9 @@ namespace icl{
     /// draws a convex polygon
     void polygon(const std::vector<Point32f> &ps);
 
+    /// draws a regular grid between given points
+    void grid(const Point32f *points, int nx, int ny, bool rowMajor=true);
+    
     /// draws a predefined symbol at the given location
     /** The symbols size can be set using symsize */
     void sym(float x, float y, Sym s);

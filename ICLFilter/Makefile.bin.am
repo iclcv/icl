@@ -102,7 +102,8 @@ bin_PROGRAMS+= \
 icl-local-threshold-op-test \
 icl-gabor-op-online-example \
 icl-convolution-op-test \
-icl-warp-op-test
+icl-warp-op-test \
+icl-interactive-affine-op-example
 
 icl_gabor_op_online_example_SOURCES=../examples/gabor-op-online-example.cpp
 icl_gabor_op_online_example_LDFLAGS=${XLDFLAGS}
@@ -115,6 +116,10 @@ icl_local_threshold_op_test_CXXFLAGS=${XCXXFLAGS}
 icl_warp_op_test_SOURCES=../examples/warp-op-test.cpp
 icl_warp_op_test_LDFLAGS=${XLDFLAGS}
 icl_warp_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_interactive_affine_op_example_SOURCES=../examples/interactive-affine-op-example.cpp
+icl_interactive_affine_op_example_LDFLAGS=${XLDFLAGS}
+icl_interactive_affine_op_example_CXXFLAGS=${XCXXFLAGS}
 
 icl_convolution_op_test_SOURCES=../examples/convolution-op-test.cpp
 icl_convolution_op_test_LDFLAGS=${XLDFLAGS}

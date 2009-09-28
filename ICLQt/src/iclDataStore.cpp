@@ -20,6 +20,7 @@
 #include <iclLabelHandle.h>
 #include <iclButtonHandle.h>
 #include <iclDrawHandle.h>
+#include <iclDrawHandle3D.h>
 #include <iclStringHandle.h>
 
 
@@ -32,6 +33,7 @@
 #include <QPushButton>
 #include <iclWidget.h>
 #include <iclDrawWidget.h>
+#include <iclDrawWidget3D.h>
 
 #include <iclStringUtils.h>
 
@@ -210,12 +212,57 @@ INST_OTHER_TYPES
     // ImageHandle
     FROM_IMG(ImageHandle,dst=src);
     FROM_IMG_PTR(ImageHandle,dst=src);
-    FROM_TO(DataStore::Data::Event,ImageHandle,if(src.message=="update")dst.update());
+    /*
+        template<> struct AssignSpecial<DataStore::Data::Event,ImageHandle> : public Assign{
+      bool apply(DataStore::Data::Event &src, ImageHandle &dst){     
+        if(src.message=="update"){
+          dst.update();
+        }
+        else if(src.message=="install"){
+          (*dst)->install((MouseHandler*)src.data);
+        }
+        return true;
+      }
+      virtual bool operator()(void *src, void *dst){
+        return apply(*reinterpret_cast<DataStore::Data::Event*>(src),
+                     *reinterpret_cast<ImageHandle*>(dst));
+      }
+    };
+    template class AssignSpecial<DataStore::Data::Event,ImageHandle>;
+        */
+
+    FROM_TO(DataStore::Data::Event,ImageHandle,
+            if(src.message=="update"){
+              dst.update();
+            }
+            else if(src.message=="install"){
+              (*dst)->install((MouseHandler*)src.data);
+            });
 
     // DrawHandle
     FROM_IMG(DrawHandle,dst=src);
     FROM_IMG_PTR(DrawHandle,dst=src);
-    FROM_TO(DataStore::Data::Event,DrawHandle,if(src.message=="update")dst.update());
+    FROM_TO(DataStore::Data::Event,DrawHandle,
+            if(src.message=="update"){
+              dst.update();
+            }
+            else if(src.message=="install"){
+              (*dst)->install((MouseHandler*)src.data);
+            });
+    //FROM_TO(DataStore::Data::Event,DrawHandle,if(src.message=="update")dst.update());
+
+    // DrawHandle3D
+    FROM_IMG(DrawHandle3D,(*dst)->setImage(&src));
+    FROM_IMG_PTR(DrawHandle3D,dst=src);
+    //FROM_TO(DataStore::Data::Event,DrawHandle,if(src.message=="update")dst.update());
+    FROM_TO(DataStore::Data::Event,DrawHandle3D,
+            if(src.message=="update"){
+              dst.update();
+            }
+            else if(src.message=="install"){
+              (*dst)->install((MouseHandler*)src.data);
+            });
+
     
     // FPSHandle
     FROM_TO(DataStore::Data::Event,FPSHandle,if(src.message=="update")dst.update());
@@ -398,6 +445,12 @@ namespace icl{
     FROM_IMG_ADD(DrawHandle);
     FROM_IMG_PTR_ADD(DrawHandle);
     ADD(DataStore::Data::Event,DrawHandle);
+
+    // DrawHandle3D
+    FROM_IMG_ADD(DrawHandle3D);
+    FROM_IMG_PTR_ADD(DrawHandle3D);
+    ADD(DataStore::Data::Event,DrawHandle3D
+);
     
     // FPSHandle
     ADD(DataStore::Data::Event,FPSHandle);

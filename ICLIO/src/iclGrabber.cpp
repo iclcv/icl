@@ -332,13 +332,15 @@ namespace icl{
 
     // new version
     const XMLNodePtr doc = f.getHandle()->getRootNode();
-    ICLASSERT_RETURN(doc);
-    ICLASSERT_RETURN(doc->hasChild("properties)"));
-    const XMLNode &props = (*doc)["properties"];
+    ICLASSERT_THROW(doc,ICLException("configuration file's root node was not found"));
+    const std::vector<XMLNode*> propRoot = doc->getAllChildNodes(XMLNodeFilterByTag("section") 
+                                                                 & XMLNodeFilterByAttrib("id","properties"));
+    ICLASSERT_THROW(propRoot.size(),ICLException("no property section found"));
+    const XMLNode &props = *propRoot[0];
     const std::vector<XMLNode*> propNodes = props.getAllChildNodes(XMLNodeFilterByTag("data") & XMLNodeFilterByAttrib("id") & XMLNodeFilterByAttrib("type"));
     std::vector<std::string> ps(propNodes.size());
     for(unsigned int i=0;i<ps.size();++i){
-      ps[i] = propNodes[i]->getTag();
+      ps[i] = (*propNodes[i])("id");
     }
     
     // old version
