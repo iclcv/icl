@@ -5,7 +5,7 @@
 
 namespace icl{
   
-  /// Interface class for inplace operators
+  /// Interface class for inplace operators \ingroup INPLACE
   /** Inplace operators work on image pixels directly. Common examples
       are arithmetical expressions like IMAGE *= 2. Useful inplace 
       operations are arithmetical, logical, binary-logical, or table-lookups.

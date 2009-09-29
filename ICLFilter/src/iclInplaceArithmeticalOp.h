@@ -4,7 +4,7 @@
 #include "iclInplaceOp.h"
 
 namespace icl{
-  /// Inplace implementation for arithmetical operations
+  /// Inplace implementation for arithmetical operations  \ingroup INPLACE
   /** Current supported operations: "+","-","*","/","^2","sqrt2, 
       "ln", "exp" and "abs".\n
       Currently no IPP-Optimization is available      

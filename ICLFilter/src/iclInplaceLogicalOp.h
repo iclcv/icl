@@ -5,7 +5,7 @@
 
 namespace icl{
   
-  /// Filter class for logical in-place operations
+  /// Filter class for logical in-place operations  \ingroup INPLACE
   /** The InplaceLogicalOp class provides functionalities for
       arbitrary logical in-place operations on images. The operator
       can be set to implement a certain operation using a given

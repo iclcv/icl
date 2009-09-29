@@ -6,6 +6,8 @@
 namespace icl{
   
   /// Class to translate images \ingroup UNARY \ingroup AFFINE
+  /** TODO: currently the translation effect is compensated by the AffineOp's 
+      re-centering mechanism*/
   class TranslateOp : public AffineOp {
     public:
     /// Constructor

@@ -6,6 +6,7 @@
     \defgroup BINARY Collection of Binary Operations
     \defgroup AFFINE Collection of Affine Image Operations
     \defgroup NBH Collection of Neighborhood Operations
+    \defgroup INPLACE Collection of Inplace Operations
     \defgroup OTHER Other Classes
     
     
@@ -38,6 +39,7 @@
     -# \ref BINARY
     -# \ref AFFINE
     -# \ref NBH
+    -# \ref INPLACE
     -# \ref OTHER
 
     **/

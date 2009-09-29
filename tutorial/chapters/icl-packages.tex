@@ -288,7 +288,6 @@ For a better overview, the ICLFilter package documentation is grouped into the f
 \item Affine operations (also unary) [\ref{subsec:affine-ops}]
 \item Neighbourhood operations (also unary) [\ref{subsec:nbh-ops}]
 \item In-place operations [\ref{subsec:inplace-ops}] 
-\item Other operations [\ref{subsec:other-ops}]
 \end{enumerate}
 
 
@@ -372,19 +371,47 @@ In comparison to the 3rd version, this one is significantly slower, however the 
 On balance, we can conclude that it's of course optimal to use dedicated operators (like \icode{BinaryArithmeticalOp(absSubOp)}) if one is available for the desired operation. If not, most of the time it's optimal to apply the operation in a single run (e.g. using the \icode{Img::combine} template function).
 
 \subsection{Affine Operations\label{subsec:affine-ops}}
-Affine operators apply an affine transformation to pixel-\emph{locations} (e.g. image rotation, or translation). ICL's \icode{AffineOp} (see \iclclassref{Filter}{AffineOp}) class allows to concate sequences of \emph{translations}, \emph{rotations} and \emph{scalings}. Internally, the actual affine transformation is applied using a affine transformation $3 \times{}3$ matrix. Concatenation can be optimized by pre-multiplying the transformation matrices. \todo{this \textbf{must} be implemented as C++-fallback and we have to check what's going on with it}.
+Affine operators apply an affine transformation to pixel-\emph{locations} (e.g. image rotation, or translation). ICL's \icode{AffineOp} (see \iclclassref{Filter}{AffineOp}) class allows to concate sequences of \emph{translations}, \emph{rotations} and \emph{scalings}. Internally, the actual affine transformation is applied using a affine transformation $3 \times{}3$ matrix. Concatenation can be optimized by pre-multiplying the transformation matrices.
 
 \subsection{Neighbourhood Operations\label{subsec:nbh-ops}}
 Another large set of common image processing functions can be formulated as neighbourhood function. Theoretically this are all image operators, where the value of a result pixel $R(x,y)$ depends on a neighbourhood of the corresponding source pixel $N(S(x,y))$. Most of the time, the neighbourhood is defined by a squared region with center $(x,y)$ with a fixed width/height. ICL's base class for neighbourhood operations is \icode{NeighborhoodOp} (see \iclclassref{Filter}{NeighborhoodOp}). Currently the following subclasses are defined:
 
 \begin{itemize}
 \item \textbf{\iclclassref{Filter}{ConvolutionOp}}\\
-Stardard linear image filters. The \icode{ConvolutionOp} provides a set of common fixed filters (like sobel, laplace, gaussian, etc.) as well as 
+The \icode{ConvolutionOp} provides a set of common fixed (and optimized) filters (like sobel, laplace, gaussian, etc.) as well as an interface to define custom linear image filters. The \icode{ConvolutionKernel} (see \iclclassref{Filter}{ConvolutionFilter}) class can be used here.
 \item \textbf{\iclclassref{Filter}{MedianOp}}\\
+The very common image enhancement filter. 
 \item \textbf{\iclclassref{Filter}{MorphologicalOp}}\\
+Morphological operations like \emph{dilation}, \emph{opening} or \emph{closing} are also a very common tool in image processing. All morphological operators can also be applied on gray scale images, which is described in detail in the IPP manual. Again, this class provides an interface for both, fixed and optimized common operations as well as an interface to use user defined masks.
 \item \textbf{\iclclassref{Filter}{WienerOp}}\\
+The \icode{WienerOp} class implements the wiener filter to remove adaptive noise from images\footnote{\hrefn{http://de.wikipedia.org/wiki/Wiener-Filter}}. Currently, for this operation is no C++ fallback available.
 \end{itemize}
+
+\subsubsection{Destination Image Size Adaption}
+All \icode{NeighborhoodOp} implementations use a special mechanism to determine the destination images (ROI) size. Hence a linear filter can only be applied correctly at pixel positions where no kernel elements are outside the source image rect, the destination image always becomes slightly smaller than the source image, unless the \emph{ClipToROI}-flag (see subsection \ref{subsec:clip-to-roi}) is set to false. In this case, the destination images size is -- as usual -- set to the source image size, but the destination images ROI size becomes a bit smaller in comparison to the source images ROI size.\\
+Here's common example: we use a VGA\footnote{$640 \times{}480$} source image S with a ROI set to the upper left quarter (offset $(0,0)$, size $320 \times{}240$). Besides, we use a common $3\times{}3$-sobel filter. If \emph{ClipToROI} remains true, the destination images size is set to $318 \times{}238$ (one pixel to each side was removed) and it's ROI is set to the whole image. Otherwise, the destination images size is set to VGA, while it's ROI is adapted appropriately: (offset $(1,1)$, size $318 \times{}238$).
+
+
 
 \subsection{In-Place Operations\label{subsec:inplace-ops}}
 
-\subsection{Other Operations\label{subsec:other-ops}} 
+In contrast to unary operations (see subsection \ref{subsec:unary-ops}) the \icode{InplaceOp} (see \iclclassref{Filter}{InplaceOp}), provides an interface to apply \emph{in-place} operations on images. Currently, there are two certain implementation of the \icode{UnaryOp} interface:
+
+\begin{itemize}
+\item \iclclassref{Filter}{InplaceArithmeticalOp}\\
+Arithmetical operators e.g. to add a constant value to all pixels, or to multiply all pixels by a constant.
+\item \iclclassref{Filter}{InplaceLogicalOp}\\
+Logical and binary inplace operations. 
+\end{itemize}
+
+The common interface for inplace operations is the
+
+\displaycode{ImgBase *apply(ImgBase *srcDst)}
+
+function, which always returns the given source image \icode{srcDst} (to be able to use nested apply-expressions like \icode{OP1.apply(OP2.apply(image))}). Inplace operations can also be implemented using the \icode{Img<T>::forEach} function template, however the current arithmetical and logical operators provide also IPP-support which may speed up computation time significantly. 
+
+
+
+\section{ICLQuick\label{sec:quick}}
+
+TODO 
