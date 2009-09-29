@@ -413,5 +413,42 @@ function, which always returns the given source image \icode{srcDst} (to be able
 
 
 \section{ICLQuick\label{sec:quick}}
+[Documentation: \iclpackageref{Quick}]
 
-TODO 
+First, the part \emph{Quick} of the package name must be clarified. Actually, this package should be named \emph{ICLQuickAndDirty}, to emphasise that it was actually designed for prototyping only. This means, that ICLQuick provides functions and functors that are \emph{as convenient as possible}. Only in the remaining range, we tried to make the code fast (actually, the shallow copy concept of images contributed the major part for this). In contrast to the other packages, ICLQuick contains \emph{ready-to-use} global functions only.\\[10pt]
+\textbf{The problem}\\
+In most vision applications, there are parts of the code, that have to be as fast as possible, while the speed of other parts doesn't matter at all. For these parts, e.g. within the initialization section of an application users can easily use ICLQuick's functions to implement faster, and to keep their code tidier.
+Furthermore, ICL can also be used to create offline applications, where the speed issue is also less important. Currently the ICLQuick interface consists of two headers: \iclheaderref{Quick}{Quick} and \iclheaderref{Quick}{QuickRegions}.
+
+\subsection{ICLQuick's image type ImgQ}
+Inside the ICLQuick headers, a special image type named \icode{ImgQ} is used, but\\
+
+\textbf{\icode{ImgQ} is just a typedef to \icode{Img32f}}.\\
+
+I.e. ICLQuick is designed for float-images only, which underlines it's prototyping character. To facilitate usage if ICLQuick's function in combination with images of other types, conversion functions are provided (see subsection \ref{subsubsec:quick-converters}). However the choice of the float image type was obvious as floats are a good compromise between performance and flexibility (see section \ref{sec:image-value-domain} for more details).
+
+\subsection{ICLQuick Functions}
+The function set of the ICLQuick package can be divided into the following subsets:
+
+\begin{itemize}
+\item \textbf{Creator Functions} [see \ref{subsubsec:quick-creators}]
+\item \textbf{Converter Functions} [see \ref{subsubsec:quick-converters}]
+\item \textbf{Filtering Functions} [see \ref{subsubsec:quick-filters}]
+\item \textbf{Output Functions} [see \ref{subsubsec:quick-output}]
+\item \textbf{Arithmetical Operators} [see \ref{subsubsec:quick-arith-operators}]
+\item \textbf{Arithmetical Functions} [see \ref{subsubsec:quick-arith-functions}]
+\item \textbf{Logical Operators} [see \ref{subsubsec:quick-logical-operators}]
+\item \textbf{Image Concatenation Operators} [see \ref{subsubsec:quick-concatenation}]
+\item \textbf{Data/ROI Assignment Functions} [see \ref{subsubsec:quick-roi-assignment}]
+\item \textbf{Drawing Functions} [see \ref{subsubsec:quick-drawing}]
+\item \textbf{tic/toc} [see \ref{subsubsec:quick-tic-toc}] 
+\item \textbf{Region Detection/Analysis} [see \ref{subsubsec:quick-regions}]  
+\end{itemize}
+
+\subsubsection{Creator Functions\label{subsubsec::quick-creators}}
+TODO
+
+
+\subsubsection{Conversion Functions\label{subsubsec:quick-cvt}}
+TODO
+

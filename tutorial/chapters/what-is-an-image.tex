@@ -35,7 +35,7 @@ In addition the spacial domain of images is always limited to the image size, wh
 Where the images dimension is $W_I \times{}H_I$ and it has $C_I$ channels. In particular we can see here, that image coordinates origin is pixel $(0,0)$ and not $(1,1)$ like e.g. in Matlab\footnote{see www.mathworks.de}. 
 
 
-\section{Value-Domain}
+\section{Value-Domain\label{sec:image-value-domain}}
 Further we have to take a look at the value-domanin of images.
 Of course, we cannot use $\mathbb{R}$ :-). The native data type that comes closest to the real numbers is obviously a maximum precision floating point number (C++: \inlinecode{long double}, with normally 96 Bits). Unfortunately floating point processing is still slower than integer processing on common CPUs. This is the reason why most frameworks and algorithms work on byte-valued image data. On common systems, a byte (mostly 8Bit, in C++ realized by the \inlinecode{unsigned char} data type), is the smallest directly addressable data unit. Of course you can access even single bits, but in most cases, algorithm performance is worse here due to the need of bit-shifting and masking on the byte-aligned data.\\
 In short, bytes have a very limited range $\{0,..,255\}$ but processing performance is optimal. Furthermore most input- and output-devices (cameras, frame-grabbers and even most common file formats) use 24bit color resolution, which can be implemented very naturally using 3 byte-valued image channels (e.g. RGB).
