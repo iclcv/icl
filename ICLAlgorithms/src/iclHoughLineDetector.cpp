@@ -1,133 +1,160 @@
 #include <iclHoughLineDetector.h>
-#include <iclException.h>
-
-
+#include <iclDynMatrixUtils.h>
+#include <iclConvolutionOp.h>
 
 namespace icl{
-  HoughLineDetector::HoughLineDetector(int maxLines,
-                                       const Size &sizeHint,
-                                       float deltaAngular,
-                                       float deltaRadial,
-                                       int minPointsPerLine,
-                                       SmartPtr<UnaryOp,PointerDelOp> preprocessor):
-    m_maxLines(maxLines),m_preprocessor(preprocessor),
-    m_roiDimForBuffer(sizeHint),m_deltaAngular(deltaAngular),
-    m_deltaRadial(deltaRadial),m_minPointsPerLine(minPointsPerLine),
-    m_detectionLineBuffer(0),m_preprocessingBuffer(0)
-  {
 
-    if(maxLines <= 0){
-      throw ICLException("max line count must be positive integer");
-    }
-    updateBufferSize();
-  }
 
-  HoughLineDetector::~HoughLineDetector(){
-    ICL_DELETE_ARRAY((IppPointPolar*&)m_detectionLineBuffer);
-    ICL_DELETE(m_preprocessingBuffer);
-  }
-
-  void HoughLineDetector::updateBufferSize(){
-    int size = 0;
-    IppPointPolar delta = {m_deltaRadial,m_deltaAngular};
-    IppStatus status = ippiHoughLineGetSize_8u_C1R(m_roiDimForBuffer,delta,m_maxLines,&size);
-    if(status != ippStsNoErr){
-      ERROR_LOG("error calculating hough buffer size: " << ippGetStatusString(status) << std::endl
-                << "buffer size was not updated!"); 
-    }else{
-      m_buffer.resize(size);
-    }
+  HoughLineDetector::HoughLineDetector(float dRho, float dR, const Range32f rRange, float rInhibitionRange, float rhoInhibitionRange,
+                                       bool gaussianInhib, bool blurHoughSpace,bool dilateEntries,bool blurredSampling):
     
-    ICL_DELETE_ARRAY((IppPointPolar*&)m_detectionLineBuffer);
-    m_detectionLineBuffer = new IppPointPolar[m_maxLines];
-  }
+    m_dRho(dRho),m_dR(dR),m_rRange(rRange),m_rInhib(rInhibitionRange),m_rhoInhib(rhoInhibitionRange),
+    m_gaussianInhibition(gaussianInhib), m_blurHoughSpace(blurHoughSpace),m_dilateEntries(dilateEntries),
+    m_blurredSampling(blurredSampling){
     
-  const std::vector<HoughLine> HoughLineDetector::detectLines(const ImgBase *image){
-    if(!image){
-      ERROR_LOG("input image is NULL");
-      m_lines.clear();
-      return m_lines;
-    }
-    if(m_preprocessor){
-      m_preprocessor->apply(image,&m_preprocessingBuffer);
-      if(!m_preprocessingBuffer){
-        ERROR_LOG("preprocessor produced no image");
-        m_lines.clear();
-        return m_lines;
-      }else{
-        image = m_preprocessingBuffer;
+    
+    m_w = ceil(2*M_PI/dRho);
+    m_h = (rRange.maxVal-rRange.minVal)/dR;
+    
+    m_image = Img32s(Size(m_w,m_h),1);
+    m_lut = m_image.extractChannel(0);
+
+    m_mr = (m_h-1)/(rRange.maxVal-rRange.minVal);
+    m_br = -rRange.minVal * m_mr;
+    
+    m_mrho = (m_w-1)/(2*M_PI);
+
+    if(gaussianInhib){
+      /// create inhibition image
+      float dx = m_rhoInhib/(2*M_PI) * float(m_w);
+      float dy = m_rInhib/(m_rRange.maxVal-m_rRange.minVal) * float(m_h);
+
+      int w = 2*dx, h=2*dy;
+      if(dx >0 && dy >0){
+        m_inhibitImage = Img32f(Size(2*dx,2*dy),1);
+        DynMatrix<float> I = m_inhibitImage[0];
+        
+        Point32f c(I.cols()/2,I.rows()/2);
+        
+        for(unsigned int x=0;x<I.cols();++x){
+          for(unsigned int y=0;y<I.rows();++y){
+            float r = (c-Point32f(x,y)).transform(2./w,2./h).norm();
+            I(x,y) = 1.0 - exp(-r*r);
+          }
+        }
       }
     }
-    if(image->getChannels() != 1){
-      ERROR_LOG("input image (or preprocessed image) has more than on channels" << std::endl
-                << "hough detection works only on one channel images -> using channel 0");
+  }
+  
+  void HoughLineDetector::add_intern(float x, float y){
+    if(m_dilateEntries){
+      add_intern2(x,y);
+      add_intern2(x-1,y);
+      add_intern2(x+2,y);
+      add_intern2(x,y-1);
+      add_intern2(x,y+1);
+    }else{
+      add_intern2(x,y);
     }
-    if(image->getDepth() != depth8u){
-      image->convert(&m_inputBuffer8u);
-      image = &m_inputBuffer8u;
+  }
+  
+  void HoughLineDetector::add_intern2(float x, float y){
+    if(m_blurredSampling){
+      for(float rho=0;rho<2*M_PI;rho+=m_dRho){
+        incLutBlurred(rho,r(rho,x,y));
+      }
+    }else{
+      for(float rho=0;rho<2*M_PI;rho+=m_dRho){
+        incLut(rho,r(rho,x,y));
+      }
     }
-    if(image->getROISize().getDim() > m_roiDimForBuffer.getDim()){
-      m_roiDimForBuffer = image->getROISize();
-      updateBufferSize();
-    }
-    int linesFound = 0;
-    IppPointPolar *linesDetected = (IppPointPolar*)m_detectionLineBuffer;
-    IppPointPolar delta = {m_deltaRadial, m_deltaAngular};
-    IppStatus status = ippiHoughLine_8u32f_C1R(image->asImg<icl8u>()->getROIData(0),
-                                               image->getLineStep(),image->getROISize(),delta,
-                                               m_minPointsPerLine,linesDetected,
-                                               m_maxLines,&linesFound,m_buffer.data());
+  }
+
+  void HoughLineDetector::clear(){
+    std::fill(m_lut.begin(),m_lut.end(),0);
+  }
+
+  static inline int mult_float_int(const int &a, const float &b){
+    return round(a*b);
+  }
     
-    if(status != ippStsNoErr){
-      ERROR_LOG("error applying ippiHoughLine8u32f_C1R(..): " << ippGetStatusString(status) << std::endl
-                << "no lines detected!");
-      m_lines.clear();
-      return m_lines;
+  void HoughLineDetector::apply_inhibition(const Point &p){
+    float dx = m_rhoInhib/(2*M_PI) * float(m_w);
+    float dy = m_rInhib/(m_rRange.maxVal-m_rRange.minVal) * float(m_h);
+    const Rect r(p.x-dx,p.y-dy,2*dx,2*dy);  
+
+    if(m_gaussianInhibition){
+      DynMatrix<float> c0 = m_inhibitImage[0];
+      for(int x=r.x;x<r.right();++x){
+        for(int y=r.y;y<r.bottom();++y){
+          if(!m_inhibitImage.getImageRect().contains(x-r.x,y-r.y)){
+          }else{
+            cyclicLUT(x,y) *= c0(x-r.x,y-r.y);
+          }
+        }
+      }
+    }else{
+      for(int x=r.x;x<r.right();++x){
+        for(int y=r.y;y<r.bottom();++y){
+          cyclicLUT(x,y)=0;
+        }
+      }
+    }
+  }
+
+  void HoughLineDetector::blur_hough_space_if_necessary(){ 
+    if(m_blurHoughSpace){
+      ImgBase *image = 0;
+      ConvolutionOp co(ConvolutionKernel(ConvolutionKernel::gauss3x3));
+      co.setClipToROI(false);
+      co.apply(&m_image,&image);
+      m_image = *image->asImg<icl32s>();
+      ICL_DELETE(image);
+      m_image.setFullROI();
+      m_lut = m_image.extractChannel(0);
+    }
+  }
+  
+  std::vector<StraightLine2D> HoughLineDetector::getLines(int max) {
+    blur_hough_space_if_necessary();
+    
+    std::vector<StraightLine2D> ls;
+    ls.reserve(max);
+    
+    for(int i=0;i<max;++i){
+      Point p(-1,-1);
+      int m = m_image.getMax(0,&p);
+      if(m == 0) return ls;
+      ls.push_back(StraightLine2D(getRho(p.x),getR(p.y)));
+      apply_inhibition(p);
+
     }
     
-    m_lines.resize(linesFound);
-    for(int i=0;i<linesFound;++i){
-      m_lines[i] = HoughLine(linesDetected[i].rho,linesDetected[i].theta);
-    }
-    return m_lines;
+    return ls;
   }
 
-
-  void HoughLineDetector::setMaxLines(int maxLines){
-    m_maxLines = maxLines;
-    updateBufferSize();
-  }
   
-  void HoughLineDetector::setPreprocessor(SmartPtr<UnaryOp,PointerDelOp> preprocessor){
-    m_preprocessor = preprocessor;
-  }
-
+  std::vector<StraightLine2D> HoughLineDetector::getLines(int max, std::vector<float> &significances){
+    blur_hough_space_if_necessary();
     
-  void HoughLineDetector::setSizeHint(const Size &size){
-    m_roiDimForBuffer = size;
-    updateBufferSize();
-  }
-  
-  void HoughLineDetector::setDeltaAngular(float da){
-    m_deltaAngular = da;
-    updateBufferSize();
-  }
-  
-  
-  void HoughLineDetector::setDeltaRadial(float dr){
-    m_deltaRadial = dr;
-    updateBufferSize();
-  }
+    std::vector<StraightLine2D> ls;
+    ls.reserve(max);
+    significances.clear();
+    significances.reserve(max);
+    
+    int firstMax = -1;
+    for(int i=0;i<max;++i){
+      Point p(-1,-1);
+      int m = m_image.getMax(0,&p);
+      if(!i) firstMax = m;
+      significances.push_back(float(m)/firstMax);
+      if(m == 0) return ls;
+      ls.push_back(StraightLine2D(getRho(p.x),getR(p.y)));
+      
+      apply_inhibition(p);
 
-  void HoughLineDetector::setDelta(float deltaRadial, float deltaAngular){
-    m_deltaAngular = deltaAngular;
-    m_deltaRadial = deltaRadial;
-    updateBufferSize();
+    }
+    
+    return ls;
   }
-  
-
-  void HoughLineDetector:: setMinPointsPerLine(int minPts){
-    m_minPointsPerLine = minPts;
-  }
-
 }

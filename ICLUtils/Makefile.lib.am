@@ -36,7 +36,8 @@ libICLUtils_la_SOURCES= \
 ../src/iclXMLNodeFilter.cpp \
 ../src/iclXMLDocument.cpp \
 ../src/iclXMLNode.cpp \
-../src/iclXMLNodeIterator.cpp	
+../src/iclXMLNodeIterator.cpp\
+../src/iclStraightLine2D.cpp	
 
 
 include_HEADERS= \
@@ -94,6 +95,6 @@ include_HEADERS= \
 ../src/iclXMLDocument.h \
 ../src/iclXMLNodeConstIterator.h \
 ../src/iclXMLNode.h \
-../src/iclXMLNodeIterator.h
-
+../src/iclXMLNodeIterator.h \
+../src/iclStraightLine2D.h
 
