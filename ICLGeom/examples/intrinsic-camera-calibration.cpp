@@ -21,11 +21,12 @@ Img32f IMAGE;
 Mutex MUTEX;
 
 CalibrationData CALIB_DATA;
-ImgQ WARP_MAP;
+ImgQ WARP_MAP,MAN_WARP_MAP;
 double DIST_FACTOR[4];
+double MAN_DIST_FACTOR[4];
 
 
-void create_empty_warp_map(){
+void create_empty_warp_map(ImgQ &WARP_MAP){
   const Size &size = IMAGE.getSize();
   WARP_MAP.setSize(size);
   WARP_MAP.setChannels(2);
@@ -41,11 +42,11 @@ void create_empty_warp_map(){
   }
 }
 
-inline Point32f distort_point(int xi, int yi){
-  const double &x0 = DIST_FACTOR[0];
-  const double &y0 = DIST_FACTOR[1];
-  const double &f = DIST_FACTOR[2]/100000000.0;
-  const double &s = DIST_FACTOR[3];
+inline Point32f distort_point(int xi, int yi, double *dist=DIST_FACTOR){
+  const double &x0 = dist[0];
+  const double &y0 = dist[1];
+  const double &f = dist[2]/100000000.0;
+  const double &s = dist[3];
   
   float x = s*(xi-x0);
   float y = s*(yi-y0);
@@ -53,7 +54,7 @@ inline Point32f distort_point(int xi, int yi){
   return Point32f(p*x + x0,p*y + y0);
 }
 
-void update_warp_map(){
+void update_warp_map(ImgQ &WARP_MAP=::WARP_MAP, double *dist=DIST_FACTOR){
   const Size &size = IMAGE.getSize();
   WARP_MAP.setSize(size);
   Channel32f cs[2];
@@ -61,7 +62,7 @@ void update_warp_map(){
   
   for(float xi=0;xi<size.width;++xi){
     for(float yi=0;yi<size.height; ++yi){
-      Point32f p = distort_point(xi,yi);
+      Point32f p = distort_point(xi,yi,dist);
       cs[0](xi,yi) = p.x; //p*x + x0; 
       cs[1](xi,yi) = p.y; //p*y + y0; 
     }
@@ -205,6 +206,77 @@ void set_state(bool good){
   static ImageHandle &h = gui.getValue<ImageHandle>("state");
   h = good ? iGood : iBad;
   h.update();
+}
+
+Point32f currPos;
+
+
+
+void man_show_cb(){
+  std::cout << "params:" << std::endl;
+  std::cout << MAN_DIST_FACTOR[0] << ",";
+  std::cout << MAN_DIST_FACTOR[1] << ",";
+  std::cout << MAN_DIST_FACTOR[2] << ",";
+  std::cout << MAN_DIST_FACTOR[3] << "," << std::endl;
+}
+
+void manual_adjust_cb(){
+  Mutex::Locker l(MUTEX);
+  gui_LabelHandle(manErr);
+  
+  gui_float(manScale);
+  gui_float(manDist);
+  
+  MAN_DIST_FACTOR[0] = currPos.x;
+  MAN_DIST_FACTOR[1] = currPos.y;
+  MAN_DIST_FACTOR[2] = manDist;
+  MAN_DIST_FACTOR[3] = manScale < 0 ? (1.0+manScale/2) : 1+manScale; 
+
+  manErr = get_fitting_error(CALIB_DATA,MAN_DIST_FACTOR);
+  
+  update_warp_map(MAN_WARP_MAP, MAN_DIST_FACTOR);
+}
+
+void mouse(const MouseEvent &evt){
+  if(evt.isPressEvent() || evt.isDragEvent()){
+    currPos = evt.getPos();
+  }
+  manual_adjust_cb();
+}
+
+void manual_adjust(){
+  Mutex::Locker l(MUTEX);
+  static DrawHandle &d = gui.getValue<DrawHandle>("image");
+  static ICLDrawWidget &w = **d;
+
+  static WarpOp warp(MAN_WARP_MAP);
+  warp.setWarpMap(MAN_WARP_MAP);
+  d = warp.apply(&IMAGE);
+  
+  w.color(0,100,255,255);
+  w.fill(0,100,255,100);
+  w.rect(currPos.x-3,currPos.y-3,6,6);
+  
+  gui_bool(manShowGrid);
+  
+  static const int NX = 20;
+  static const int NY = 15;
+  static const float DX = IMAGE.getWidth()/NX;
+  static const float DY = IMAGE.getHeight()/NY;
+  
+  if(manShowGrid){
+    w.color(255,0,0,120);
+    static std::vector<Point32f> grid;
+    if(!grid.size()){
+      grid.reserve( NX*NY);
+      for(int y=0;y<NY;++y){
+        for(int x=0;x<NX;++x){
+          grid.push_back(Point32f(x*DX,y*DY));
+        }
+      }
+    }
+    w.grid(grid.data(),NX,NY,true);
+  }
 }
 
 void detect_vis(bool add=false){
@@ -367,11 +439,14 @@ void init(){
   grabber->setIgnoreDesiredParams(true);
   grabber->grab()->convert(&IMAGE);
 
-  create_empty_warp_map();
+  create_empty_warp_map(WARP_MAP);
+  create_empty_warp_map(MAN_WARP_MAP);
+
   
   if(pa_defined("-init")){
     for(int i=0;i<4;++i){
       DIST_FACTOR[0] = pa_subarg<float>("-init",i,0.0f);
+      MAN_DIST_FACTOR[0] = pa_subarg<float>("-init",i,0.0f);
     }
     update_warp_map();
   }
@@ -392,13 +467,29 @@ void init(){
                << "slider(2,100,10)[@out=mask-size@label=mask size]"
                << ("slider("+str(pa_subarg<int>("-thresh-range",0,-20))+","+
                    str(pa_subarg<int>("-thresh-range",1,20))+",-10)[@out=thresh@label=threshold]") );
-  controls << "togglebutton(no,!yes)[@out=useMorph@label=use morphed image]";
+  controls << "togglebutton(!no,yes)[@out=useMorph@label=use morphed image]";
   controls << "button(add)[@handle=add]";
   controls << "togglebutton(no,yes)[@out=use-stochastic-opt@label=stochastic mode]";
   controls << "button(optimize)[@handle=optimize]";
   controls << "button(save)[@handle=save]";
-  gui << controls;
+
+  GUI manCont("vbox[@minsize=10x1]");
+  manCont <<  ( GUI("hbox")
+                 << "fslider(-100,400,0,vertical)[@out=manDist@label=dist@handle=manDistH]"
+                << "fslider(-1,1,0,vertical)[@out=manScale@label=scale@handle=manScaleH]"
+               )
+          << "label(---)[@maxsize=100x2@handle=manErr]"
+          << "togglebutton(off,on)[@maxsize=100x2@out=manShowGrid@label=grid]"
+          << "button(write)[@maxsize=100x2@handle=manWrite@handle=manWriteH]";
+
+  
+  gui << ( GUI("tab(auto,manual)[@handle=tab]") << controls << manCont );
   gui.show();
+
+  gui.registerCallback(new GUI::Callback(manual_adjust_cb),"manDistH,manScaleH");
+  gui.registerCallback(new GUI::Callback(man_show_cb),"manWriteH");
+  gui["image"].install(new MouseHandler(mouse));
+  
   
   //  gui.getValue<ButtonHandle>("detect").registerCallback(new GUI::Callback(detect));
   (*gui.getValue<ButtonHandle>("grab-loop"))->setChecked(true);
@@ -422,7 +513,9 @@ void run(){
   static bool &grab = gui.getValue<bool>("grab-loop-val");
   //static ButtonHandle &add = gui.getValue<ButtonHandle>("add");
   static ButtonHandle &opt = gui.getValue<ButtonHandle>("optimize");
-
+  
+  gui_TabHandle(tab);
+  
   if(grab){
     Mutex::Locker l(MUTEX);
     grabber->grab()->convert(&IMAGE);
@@ -431,8 +524,12 @@ void run(){
   w.lock();
   w.reset();
   w.unlock();
-  
-  detect_vis(false);
+
+  if((*tab)->currentIndex()  ==   0){
+    detect_vis(false);
+  }else{
+    manual_adjust();
+  }
   
   d.update();
 

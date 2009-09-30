@@ -66,26 +66,39 @@ namespace icl{
     bf[2] = factor[2];
     bf[3] = 1.0;
     printf("[%5.1f, %5.1f, %5.1f] %f\n", bf[0], bf[1], bf[2], min);
-    for( j = -10; j <= 10; j++ ) {
+
+    // CE: changed ranges
+    
+    static const int MINV = -20;
+    static const int MAXV = 20;
+    for( j = MINV; j <= MAXV; j++ ) {
       factor[1] = by + j*5;
-      for( i = -10; i <= 10; i++ ) {
+      for( i = MINV; i <= MAXV; i++ ) {
         factor[0] = bx + i*5;
         error = calc_distortion2( data, factor );
-        if( error < min ) { bf[0] = factor[0]; bf[1] = factor[1];
-          bf[2] = factor[2]; min = error; }
+        if( error < min ) { 
+          bf[0] = factor[0]; 
+          bf[1] = factor[1];
+          bf[2] = factor[2]; 
+          min = error; 
+        }
       }
       printf("[%5.1f, %5.1f, %5.1f] %f\n", bf[0], bf[1], bf[2], min);
     }
 
     bx = bf[0];
     by = bf[1];
-    for( j = -10; j <= 10; j++ ) {
+    for( j = MINV; j <= MAXV; j++ ) {
       factor[1] = by + 0.5 * j;
-      for( i = -10; i <= 10; i++ ) {
+      for( i = MINV; i <= MAXV; i++ ) {
         factor[0] = bx + 0.5 * i;
         error = calc_distortion2( data, factor );
-        if( error < min ) { bf[0] = factor[0]; bf[1] = factor[1];
-          bf[2] = factor[2]; min = error; }
+        if( error < min ) { 
+          bf[0] = factor[0]; 
+          bf[1] = factor[1];
+          bf[2] = factor[2]; 
+          min = error; 
+        }
       }
       printf("[%5.1f, %5.1f, %5.1f] %f\n", bf[0], bf[1], bf[2], min);
     }
@@ -214,13 +227,16 @@ namespace icl{
     dist_factor[2] = 0.0;
     min = get_fitting_error(data,dist_factor);
 
+    static const int MINV = -10;
+    static const int MAXV = 800; // orig: 200
     f = dist_factor[2];
-    for( i = 10; i < 200; i+=10 ) {
+    for( i = MINV; i < MAXV; i+=10 ) {
       dist_factor[2] = i;
       err = get_fitting_error( data, dist_factor );
       if( err < min ) { min = err; f = dist_factor[2]; }
     }
 
+    
     fb = f;
     for( i = -10; i <= 10; i++ ) {
       dist_factor[2] = fb + i;
