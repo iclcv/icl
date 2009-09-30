@@ -224,15 +224,17 @@ void detect_vis(bool add=false){
   static ImgBase *ltIm = 0;
   lt.apply(&grayIm,&ltIm);
 
+  gui_bool(useMorph);
+
+  static ImgBase *moIm = 0;
   static MorphologicalOp morph(MorphologicalOp::dilate3x3);
   morph.setClipToROI(false);
-  static ImgBase *moIm = 0;
   morph.apply(ltIm,&moIm);
   
 
   static RegionDetector rd(100,50000,0,0);
   rd.setRestrictions(gui.getValue<int>("min-blob-size"),50000,0,0);
-  const std::vector<icl::Region> &rs = rd.detect(moIm);
+  const std::vector<icl::Region> &rs = rd.detect(useMorph ? moIm : ltIm);
   
   static std::string &vis = gui.getValue<std::string>("vis");
 
@@ -388,7 +390,9 @@ void init(){
   controls << "slider(10,10000,500)[@out=min-blob-size@label=min blob size]";
   controls << (GUI("vbox[@label=local threshold]") 
                << "slider(2,100,10)[@out=mask-size@label=mask size]"
-               << "slider(-20,20,-10)[@out=thresh@label=threshold]");
+               << ("slider("+str(pa_subarg<int>("-thresh-range",0,-20))+","+
+                   str(pa_subarg<int>("-thresh-range",0,20))+",-10)[@out=thresh@label=threshold]") );
+  controls << "togglebutton(no,!yes)[@out=useMorph@label=use morphed image]";
   controls << "button(add)[@handle=add]";
   controls << "togglebutton(no,yes)[@out=use-stochastic-opt@label=stochastic mode]";
   controls << "button(optimize)[@handle=optimize]";
@@ -447,7 +451,8 @@ int main(int n, char **ppc){
   pa_explain("-input","define input device (e.g. -dc 0 or -file 'images/*.ppm'");
   pa_explain("-init","defined 4 initial values for distortion factors");
   pa_explain("-cp","create an extra widget that shows a calibration pattern");
-  pa_init(n,ppc,"-nx(1) -ny(1) -input(2) -cp -init(4)");
+  pa_explain("-thresh-range","define min and max value for local threshold operators slider for threshold adjustment");
+  pa_init(n,ppc,"-nx(1) -ny(1) -input(2) -cp -init(4) -thresh-range(2)");
   
   ExecThread x(run);
   QApplication app(n,ppc);
