@@ -74,7 +74,7 @@ There is a special ICL-macro that helps to implement such \inlinecode{switch}-ca
 
 \end{itemize}
 
-\section {Shallow Copy Concept}
+\section {Shallow Copy Concept\label{sec:shallow-copy-concept}}
 
 In contrast to e.g. Java, C++ copies all objects deeply on default. If a reference copy is desired (e.g. as function arguments) one can simply use the \inlinecode{&} character to make a function argument be copied by reference (shallowly). Unfortunately this mechanism cannot be transcribed to function return values. Return values are often temporary objects (that \emph{live} on the function stack) which cannot be passed by reference as return values. Hence, temporaries must:
 \begin{enumerate}

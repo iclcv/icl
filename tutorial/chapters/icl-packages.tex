@@ -425,30 +425,36 @@ Inside the ICLQuick headers, a special image type named \icode{ImgQ} is used, bu
 
 \textbf{\icode{ImgQ} is just a typedef to \icode{Img32f}}.\\
 
-I.e. ICLQuick is designed for float-images only, which underlines it's prototyping character. To facilitate usage if ICLQuick's function in combination with images of other types, conversion functions are provided (see subsection \ref{subsubsec:quick-converters}). However the choice of the float image type was obvious as floats are a good compromise between performance and flexibility (see section \ref{sec:image-value-domain} for more details).
+I.e. ICLQuick is designed for float-images only, which underlines it's prototyping character. To facilitate usage if ICLQuick's function in combination with images of other types, conversion functions are provided (see subsection \ref{subsec:quick-functions}/creators). However the choice of the float image type was obvious as floats are a good compromise between performance and flexibility (see section \ref{sec:image-value-domain} for more details).\\
+In this package, all functions work on image references or instances directly, i.e. no pointers are used. Functions that create new images directly return an instance of \icode{ImgQ}, however images are not copied twice deeply here because of ICL's shallow copy concept (see section \ref{sec:shallow-copy-concept}).
 
-\subsection{ICLQuick Functions}
-The function set of the ICLQuick package can be divided into the following subsets:
+\subsection{ICLQuick Functions\label{subsec:quick-functions}}
+The function set of the ICLQuick package can be divided into the following subsets. Most of this functions are declared in the header \iclheaderref{Quick}{Quick}.
 
 \begin{itemize}
-\item \textbf{Creator Functions} [see \ref{subsubsec:quick-creators}]
-\item \textbf{Converter Functions} [see \ref{subsubsec:quick-converters}]
-\item \textbf{Filtering Functions} [see \ref{subsubsec:quick-filters}]
-\item \textbf{Output Functions} [see \ref{subsubsec:quick-output}]
-\item \textbf{Arithmetical Operators} [see \ref{subsubsec:quick-arith-operators}]
-\item \textbf{Arithmetical Functions} [see \ref{subsubsec:quick-arith-functions}]
-\item \textbf{Logical Operators} [see \ref{subsubsec:quick-logical-operators}]
-\item \textbf{Image Concatenation Operators} [see \ref{subsubsec:quick-concatenation}]
-\item \textbf{Data/ROI Assignment Functions} [see \ref{subsubsec:quick-roi-assignment}]
-\item \textbf{Drawing Functions} [see \ref{subsubsec:quick-drawing}]
-\item \textbf{tic/toc} [see \ref{subsubsec:quick-tic-toc}] 
-\item \textbf{Region Detection/Analysis} [see \ref{subsubsec:quick-regions}]  
+\item \textbf{Creator Functions}\\
+Creator functions can be used for a simple creation of new Images. The functions \icode{zeros} and \icode{ones} provide a matlab/octave like interface for image creation:
+\displaycode{ImgQ a=zeros(640,480,3); // empty 3 channel VGA image }
+\displaycode{ImgQ b=ones(800,600,formatGray); // gray SVGA image initial. to 1}
+The \icode{ones} function can easily be combined with the \icode{operator*}(also defined in subsection \iclheaderref{Quick}{Quick}) to create images that are initialized with any value.
+\displaycode{ImgQ c=ones(320,240,3)*3.14; // 3-channel QVGA image initial. to pi}
+In addition to this functions, a 3rd very common creator function named \icode{create} is provided. \icode{create} creates a test image which can be selected by one of the following string identifier: \icode{woman}, \icode{house}, \icode{tree}, \icode{parrot}, \icode{windows} and \icode{flowers}.
+\displaycode{ImgQ d=create("parrot"); // wonderful parrot image}
+Internally, image data is stored in simple byte arrays, that contains the binary data of JPEG-compressed images. Hence, \icode{create} can be used without any image file.\\
+To read an image from hard disc, a simple \icode{load} function is also provided:
+\displaycode{ImgQ e=load("image.png"); // loads an image from file}
+
+\item \textbf{Converter Functions}\\
+\item \textbf{Filtering Functions}\\
+\item \textbf{Output Functions}\\
+\item \textbf{Arithmetical Operators}\\
+\item \textbf{Arithmetical Functions}\\
+\item \textbf{Logical Operators}\\
+\item \textbf{Image Concatenation Operators}\\
+\item \textbf{Data/ROI Assignment Functions}\\
+\item \textbf{Drawing Functions}\\
+\item \textbf{tic/toc}\\
+\item \textbf{Region Detection/Analysis}\\
 \end{itemize}
 
-\subsubsection{Creator Functions\label{subsubsec::quick-creators}}
-TODO
-
-
-\subsubsection{Conversion Functions\label{subsubsec:quick-cvt}}
-TODO
 
