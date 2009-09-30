@@ -268,14 +268,14 @@ void manual_adjust(){
     w.color(255,0,0,120);
     static std::vector<Point32f> grid;
     if(!grid.size()){
-      grid.reserve( NX*NY);
-      for(int y=0;y<NY;++y){
-        for(int x=0;x<NX;++x){
+      grid.reserve( (NX+2)*(NY+2));
+      for(int y=0;y<=(NY+1);++y){
+        for(int x=0;x<=(NX+1);++x){
           grid.push_back(Point32f(x*DX,y*DY));
         }
       }
     }
-    w.grid(grid.data(),NX,NY,true);
+    w.grid(grid.data(),NX+2,NY+2,true);
   }
 }
 
@@ -475,7 +475,7 @@ void init(){
 
   GUI manCont("vbox[@minsize=10x1]");
   manCont <<  ( GUI("hbox")
-                 << "fslider(-100,400,0,vertical)[@out=manDist@label=dist@handle=manDistH]"
+                 << "fslider(-100,1500,0,vertical)[@out=manDist@label=dist@handle=manDistH]"
                 << "fslider(-1,1,0,vertical)[@out=manScale@label=scale@handle=manScaleH]"
                )
           << "label(---)[@maxsize=100x2@handle=manErr]"
