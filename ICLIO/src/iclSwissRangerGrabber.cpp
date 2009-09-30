@@ -27,7 +27,7 @@ namespace icl{
       ENTRY(AM_COR_FIX_PTRN);
       ENTRY(AM_MEDIAN);
       ENTRY(AM_CONV_GRAY);
-      ENTRY(AM_SHORT_RANGE);
+      //ENTRY(AM_SHORT_RANGE);
       ENTRY(AM_CONF_MAP);
       ENTRY(AM_HW_TRIGGER);
       ENTRY(AM_SW_TRIGGER);
@@ -101,15 +101,47 @@ namespace icl{
     }
   }
 
+  template<class T, class S>
+  void fix_unknown_pixels_t(S *conv_map, Channel<T> c, T val){
+    int dim = c.getDim();
+    for(int i=0;i<dim;++i){
+      if ( !conv_map[i]) c[i] = val;
+    }
+  }
+
+  template<class T>
+  void fix_unknown_pixels(const void *conv_map, ImgEntry::DataType t, Channel<T> c, T val){
+    switch(t){
+      case ImgEntry::DT_UCHAR:  fix_unknown_pixels_t((const icl8u*)conv_map,c,val); break;
+      case ImgEntry::DT_CHAR:  fix_unknown_pixels_t((const char*)conv_map,c,val); break;
+      case ImgEntry::DT_USHORT:  fix_unknown_pixels_t((const unsigned short*)conv_map,c,val); break;
+      case ImgEntry::DT_SHORT:  fix_unknown_pixels_t((const icl16s*)conv_map,c,val); break;
+      case ImgEntry::DT_UINT:  fix_unknown_pixels_t((const unsigned int*)conv_map,c,val); break;
+      case ImgEntry::DT_INT:  fix_unknown_pixels_t((const icl32s*)conv_map,c,val); break;
+      case ImgEntry::DT_FLOAT:  fix_unknown_pixels_t((const icl32f*)conv_map,c,val); break;
+      case ImgEntry::DT_DOUBLE:  fix_unknown_pixels_t((const icl64f*)conv_map,c,val); break;
+      default: ERROR_LOG("unknown ImgEntry::DataType value " << (int)t);
+    }
+  }
+
+
+  enum IntensityImageMode{
+    iimUnknownPixelsZero,
+    iimUnknownPixelsMinusOne,
+    iimUnknownPixelsUnchanged
+  };
+  
   struct SwissRangerGrabber::SwissRanger{
     SRCAM cam;
     Size size;
     Img32f buf;
     ImgBase *image;
     int id;
+    int pickChannel;
+    IntensityImageMode iim;
   };
   
-  SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth) throw (ICLException):Grabber(){
+  SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel) throw (ICLException):Grabber(){
 
     SR_SetCallback(swiss_ranger_debug_callback);
 
@@ -130,7 +162,7 @@ namespace icl{
         throw ICLException("unable to open SwissRanger device with serialNumber " + str(serialNumber));
       }   
     }
-    
+    m_sr->iim = iimUnknownPixelsMinusOne;
    
     m_sr->size.width = SR_GetCols(m_sr->cam);
     m_sr->size.height = SR_GetRows(m_sr->cam);
@@ -138,6 +170,7 @@ namespace icl{
     m_sr->buf = Img32f(m_sr->size,3);
     m_sr->image = imgNew(bufferDepth,m_sr->size,0);
     
+    m_sr->pickChannel = pickChannel;
     /** one of 
         AM_COR_FIX_PTRN turns on fix pattern noise correction this 
                         should always be enabled for good distance measurement
@@ -163,6 +196,8 @@ namespace icl{
     SR_Close(m_sr->cam);
     ICL_DELETE(m_sr);
   }
+
+  
   
   const ImgBase *SwissRangerGrabber::grabUD(ImgBase **dst){
     Mutex::Locker l(m_mutex);
@@ -176,8 +211,17 @@ namespace icl{
     
     ImgEntry *imgs = 0;
     int num = SR_GetImageList(m_sr->cam,&imgs);
-    result.setChannels(num);
+    result.setChannels(m_sr->pickChannel<0 ? num : 1);
 
+    ImgEntry *im_DISTANCE = 0;
+    int DISTANCE_idx = -1;
+    ImgEntry *im_AMPLITUDE = 0;
+    int AMPLITUDE_idx = -1;
+    ImgEntry *im_INTENSITY = 0;
+    int INTENSITY_idx = -1;
+    ImgEntry *im_CONF_MAP = 0;
+    int CONF_MAP_idx = -1;
+    
     for(int i=0;i<num;++i){
       if(imgs[i].width != result.getWidth()){
         ERROR_LOG("grabbed image entry size was " << imgs[i].width << " but internal width was set to " << result.getWidth());
@@ -190,18 +234,40 @@ namespace icl{
       ImgEntry::ImgType t = imgs[i].imgType;
       std::string info = "";
       switch(t){
-#define CASE(X) case ImgEntry::IT_##X: info = #X ; break;
+#define CASE(X) case ImgEntry::IT_##X: info = #X ; im_##X = imgs+i; X##_idx = i; break;
         CASE(DISTANCE);CASE(AMPLITUDE);CASE(INTENSITY);CASE(CONF_MAP);
 #undef CASE
         default: info = "unknown"; break;
       }
-      copy_sr_data(imgs[i].data,result.getDataPtr(i),result.getDim(),imgs[i].dataType,result.getDepth());
+      if(m_sr->pickChannel == -1){
+        copy_sr_data(imgs[i].data,result.getDataPtr(i),result.getDim(),imgs[i].dataType,result.getDepth());
+      }else{
+        if(m_sr->pickChannel == i){
+          copy_sr_data(imgs[i].data,result.getDataPtr(0),result.getDim(),imgs[i].dataType,result.getDepth());
+        }
+      }
     }
 
     /// desired parameters cannot be supported!
     if(getIgnoreDesiredParams() != true){
       ERROR_LOG("desired params are not used by the SwissRanger grabbing device");
       setIgnoreDesiredParams(true);
+    }
+
+    if(m_sr->iim != iimUnknownPixelsUnchanged){
+      if(im_CONF_MAP && im_AMPLITUDE){
+        if( (m_sr->pickChannel == -1) || (m_sr->pickChannel == AMPLITUDE_idx) ){
+          int ampChannelIdx = m_sr->pickChannel < 0 ? AMPLITUDE_idx : 0;
+          switch(result.getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) \
+            case depth##D :fix_unknown_pixels<icl##D>(im_CONF_MAP->data, im_CONF_MAP->dataType, \
+                                                      result.asImg<icl##D>()->extractChannel(ampChannelIdx), \
+                                                      m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
+            ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+          }
+        }
+      }
     }
     
     if(dst){
@@ -225,7 +291,13 @@ namespace icl{
 
   void SwissRangerGrabber::setProperty(const std::string &property, const std::string &value){
     Mutex::Locker l(m_mutex);
-    if(!supportsProperty(property)){
+    if(property == "intensity-image-mode"){
+      if(value == "minus one") m_sr->iim = iimUnknownPixelsMinusOne;
+      else if(value == "zero") m_sr->iim = iimUnknownPixelsZero;
+      else if(value == "unchanged") m_sr->iim = iimUnknownPixelsUnchanged;
+      else ERROR_LOG("invalid value \"" << value << "\" for property \"" << property << "\"");
+      return;
+    }else if(!supportsProperty(property)){
       ERROR_LOG("nothing known about a property " << property ); return;
     }
 
@@ -250,6 +322,7 @@ namespace icl{
     v.push_back("AM_HW_TRIGGER");
     v.push_back("AM_SW_TRIGGER");
     v.push_back("AM_DENOISE_ANF");
+    v.push_back("intensity-image-mode");
     return v;
   }
   
@@ -262,7 +335,9 @@ namespace icl{
   }
   
   std::string SwissRangerGrabber::getInfo(const std::string &name){
-    if(supportsProperty(name)){
+    if(name == "intensity-image-mode"){
+      return "{\"zero\",\"minus one\",\"unchanged\"}";
+    }else if(supportsProperty(name)){
       return "{\"on\",\"off\"}";
     }else{
       return "undefined";
@@ -271,7 +346,12 @@ namespace icl{
   
   std::string SwissRangerGrabber::getValue(const std::string &name){
     Mutex::Locker l(m_mutex);
-    if(!supportsProperty(name)){
+    if(name == "intensity-image-mode"){
+      return m_sr->iim == iimUnknownPixelsMinusOne ? "minus one" :
+             m_sr->iim == iimUnknownPixelsZero ? "zero" :
+             "unchanged";
+      
+    }else if(!supportsProperty(name)){
       ERROR_LOG("nothing known about a property " << name ); return "";
     }
     int id = prop(name);

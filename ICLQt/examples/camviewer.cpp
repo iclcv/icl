@@ -37,6 +37,9 @@ void init(){
   if(pa_defined("-maxfps")){
     fpsLimiter = new FPSLimiter(pa_subarg<float>("-maxfps",0,30));
   }
+  if(pa_defined("-bci-auto")){
+    (*gui.getValue<ImageHandle>("image"))->setRangeMode(ICLWidget::rmAuto);
+  }
 }
 
 int main(int n, char**ppc){
@@ -44,6 +47,6 @@ int main(int n, char**ppc){
   pa_explain("-dist","define for parameters for radial distortion.\n"
              "parameters can be obained running 'icl-calib-radial-distortion'");
   pa_explain("-size","desired image size of grabber");
-
-  return ICLApplication(n,ppc,"-input(2) -dist(4) -size(1) -showfps -maxfps(1)",init,run).exec();
+  pa_explain("-bci-auto","set visualization window to auto bci-mode (brightness-contrast-adaption)");
+  return ICLApplication(n,ppc,"-input(2) -dist(4) -size(1) -showfps -maxfps(1) -bci-auto",init,run).exec();
 }

@@ -57,6 +57,7 @@ namespace icl{
       PNAME = lP[i].substr(strlen(D)+1);                                \
     }  
     for(unsigned int i=0;i<lP.size();++i){
+      //      DEBUG_LOG("lP[" << i << "]" << lP[i]);
       if(false){}
       PARAM("pwc",pPWC); 
       PARAM("dc",pDC); 
@@ -144,9 +145,19 @@ namespace icl{
 
 #ifdef HAVE_LIBMESASR
       if(l[i] == "sr"){
-        int device = to32s(pSR);
+        std::vector<std::string> srts = tok(pSR,"c");
+        int device = 0;
+        int channel = -1;
+        if(srts.size() > 1){
+          device = to32s(srts[0]);
+          channel = to32s(srts[1]);
+          DEBUG_LOG("using pick channel channel");
+        }else{
+          device = to32s(srts[0]);
+        }
+
         try{
-          m_poGrabber = new SwissRangerGrabber(device);
+          m_poGrabber = new SwissRangerGrabber(device,depth32f,channel);
         }catch(ICLException &e){
           ADD_ERR(sr,pSR);
           continue;

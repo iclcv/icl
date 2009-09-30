@@ -52,6 +52,9 @@ namespace icl {
                                   - xcfm=memory-name (string) (currently image-xpath is always "//IMAGE")
                                   - mv=device-name (string)
                                   - sr=device-serial-number (-1 -> menu, 0 -> auto-select)
+                                    <b>or</b>
+                                    sr=NcC where N is the device numer as above, c is the character 'c' and C is
+                                    the channel index to pick (0: depth-map, 1: confidence map, 2: intensity image
                                   - video=video-filename (string)
         @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
 

@@ -12,7 +12,8 @@ namespace icl{
     
     /// if serialNumber < 0 -> open device dialog box
     /// if 0 -> select any device
-    SwissRangerGrabber(int serialNumber=0, depth bufferDepth=depth32f) throw (ICLException);
+    SwissRangerGrabber(int serialNumber=0, depth bufferDepth=depth32f, int pickChannel=-1) 
+    throw (ICLException);
 
     ~SwissRangerGrabber();
     
