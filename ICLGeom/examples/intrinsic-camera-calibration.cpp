@@ -391,7 +391,7 @@ void init(){
   controls << (GUI("vbox[@label=local threshold]") 
                << "slider(2,100,10)[@out=mask-size@label=mask size]"
                << ("slider("+str(pa_subarg<int>("-thresh-range",0,-20))+","+
-                   str(pa_subarg<int>("-thresh-range",0,20))+",-10)[@out=thresh@label=threshold]") );
+                   str(pa_subarg<int>("-thresh-range",1,20))+",-10)[@out=thresh@label=threshold]") );
   controls << "togglebutton(no,!yes)[@out=useMorph@label=use morphed image]";
   controls << "button(add)[@handle=add]";
   controls << "togglebutton(no,yes)[@out=use-stochastic-opt@label=stochastic mode]";
