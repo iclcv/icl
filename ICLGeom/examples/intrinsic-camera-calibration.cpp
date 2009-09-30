@@ -25,6 +25,8 @@ ImgQ WARP_MAP,MAN_WARP_MAP;
 double DIST_FACTOR[4];
 double MAN_DIST_FACTOR[4];
 
+Point32f currPos;
+
 
 void create_empty_warp_map(ImgQ &WARP_MAP){
   const Size &size = IMAGE.getSize();
@@ -59,6 +61,9 @@ void update_warp_map(ImgQ &WARP_MAP=::WARP_MAP, double *dist=DIST_FACTOR){
   WARP_MAP.setSize(size);
   Channel32f cs[2];
   WARP_MAP.extractChannels(cs);
+
+  double *params = dist;
+  DEBUG_LOG("creating warp map with params: " << params[0] << ","<< params[1] << ","<< params[2] << ","<< params[3] );
   
   for(float xi=0;xi<size.width;++xi){
     for(float yi=0;yi<size.height; ++yi){
@@ -170,7 +175,7 @@ std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW,
     if(btn == QMessageBox::Cancel) throw ICLException("cancel pressed");
   }
   return sorted;
-}// -input file '~/tmp/images/*.ppm' -nx 5 -ny 4
+}
 
 void optimize_params(){
   Mutex::Locker l(MUTEX);
@@ -181,8 +186,8 @@ void optimize_params(){
     calc_distortion(CALIB_DATA,IMAGE.getWidth(),IMAGE.getHeight(),DIST_FACTOR);
   }
   
-  std::cout << "distortion factors: {" << DIST_FACTOR[0] << ", " << DIST_FACTOR[1] 
-            << ", " << DIST_FACTOR[2] << ", " << DIST_FACTOR[3]  << "}" << std::endl;
+  std::cout << "distortion factors: [ " << DIST_FACTOR[0] << " " << DIST_FACTOR[1] 
+            << " " << DIST_FACTOR[2] << "  " << DIST_FACTOR[3]  << " ]" << std::endl;
 
   update_warp_map();
 }
@@ -208,16 +213,16 @@ void set_state(bool good){
   h.update();
 }
 
-Point32f currPos;
+
 
 
 
 void man_show_cb(){
-  std::cout << "params:" << std::endl;
-  std::cout << MAN_DIST_FACTOR[0] << ",";
-  std::cout << MAN_DIST_FACTOR[1] << ",";
-  std::cout << MAN_DIST_FACTOR[2] << ",";
-  std::cout << MAN_DIST_FACTOR[3] << "," << std::endl;
+  std::cout << "distortion factors:[ " << std::endl;
+  std::cout << MAN_DIST_FACTOR[0] << " ";
+  std::cout << MAN_DIST_FACTOR[1] << " ";
+  std::cout << MAN_DIST_FACTOR[2] << " ";
+  std::cout << MAN_DIST_FACTOR[3] << " ]" << std::endl;
 }
 
 void manual_adjust_cb(){
