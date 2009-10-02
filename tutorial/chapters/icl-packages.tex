@@ -268,7 +268,7 @@ In comparison to blob detection, \emph{blob tracking} means to track blobs/regio
 \end{itemize}
 
 
-\section{ICLFilter}
+\section{ICLFilter\label{sec:filter}}
 
 [Documentation: \iclpackageref{Filter}]\\
 
@@ -418,7 +418,11 @@ function, which always returns the given source image \icode{srcDst} (to be able
 First, the part \emph{Quick} of the package name must be clarified. Actually, this package should be named \emph{ICLQuickAndDirty}, to emphasise that it was actually designed for prototyping only. This means, that ICLQuick provides functions and functors that are \emph{as convenient as possible}. Only in the remaining range, we tried to make the code fast (actually, the shallow copy concept of images contributed the major part for this). In contrast to the other packages, ICLQuick contains \emph{ready-to-use} global functions only.\\[10pt]
 \textbf{The problem}\\
 In most vision applications, there are parts of the code, that have to be as fast as possible, while the speed of other parts doesn't matter at all. For these parts, e.g. within the initialization section of an application users can easily use ICLQuick's functions to implement faster, and to keep their code tidier.
-Furthermore, ICL can also be used to create offline applications, where the speed issue is also less important. Currently the ICLQuick interface consists of two headers: \iclheaderref{Quick}{Quick} and \iclheaderref{Quick}{QuickRegions}.
+Furthermore, ICL can also be used to create offline applications, where the speed issue is also less important. Currently the ICLQuick interface consists of two headers: \iclheaderref{Quick}{Quick} and \iclheaderref{Quick}{QuickRegions}.\\[10pt]
+\textbf{Please note:}\\
+The \iclheaderref{Quick}{Quick}-header also contains a 
+\displaycode{using namespace icl}
+statement!
 
 \subsection{ICLQuick's image type ImgQ}
 Inside the ICLQuick headers, a special image type named \icode{ImgQ} is used, but\\
@@ -445,13 +449,70 @@ To read an image from hard disc, a simple \icode{load} function is also provided
 \displaycode{ImgQ e=load("image.png"); // loads an image from file}
 
 \item \textbf{Converter Functions}\\
+As mentioned before, ICLQuick functions work only on \icode{ImgQ} (a.k.a \icode{ImgQ}) images. To facilitate processing of images with another depth, the \icode{cvt} function can be used. \icode{cvt} is overloaded for all \icode{Img<T>}-types and for all \icode{Img<T>}-pointer-types and always returns a deeply converted(/copied) instance of the source image.\\
+To convert instances of type \icode{ImgQ} into another depth, another set of converter function is provided: \icode{cvt8u}, \icode{cvt16s}, ..., \icode{cvt64f}. The following example illustrates use of \icode{cvt}-functions:
+
+\codefile{quick-cvt-example.cpp}{Example for the ICLQuick-converter-functions}
+
+
 \item \textbf{Filtering Functions}\\
+Again, a definition of \emph{filters} must be found. Here, we have no special interface, except that all so called \emph{filtering functions} get an \icode{const ImgQ&} as first argument partly followed by further arguments) and return a new \icode{ImgQ} instance.\\
+\begin{itemize}
+\item The \icode{filter}-function is a simple wrapper for some common \icode{UnaryOp}s (see subsection \ref{subsec:unary-ops}).  \icode{filter} gets an additional string argument to specify the certain operation, e.g.
+\displaycode{ImgQ a = filter(create("parrot"),"laplace");}
+\item \icode{cc} overloads the \icode{cc}-function from the ICLCC package (see \iclheaderref{CC}{CC}) for \icode{ImgQ} instances.
+\item \icode{rgb}, \icode{gray}, \icode{hls} and \icode{lab} convert an image into a certain color format.
+\item \icode{scale} can be used to scale an image to a give size or by a given factor.
+\item \icode{channel} extracts a single channel from a given image.
+\item \icode{levels} can be used to reduces each image channels possible count of intensity levels. E.g. levels \icode{levels(myImage,2)} creates a binary image and \icode{levels(myImage,4)} removes all but the 2 most significant bits from an images value domain.
+\item \icode{thresh} also creates a binary image but here, the threshold can be given as well.
+\item \icode{copy} creates a \emph{deep} copy of a given image.
+\item \icode{copyroi} extracts an images ROI and returns it as a new image.
+\item \icode{norm} normalizes an images intensity range to range $[0,255]$
+\item \icode{flipx} and \icode{flipy} flip images about either the x- or y-axis.
+\end{itemize}
+Due to the input- output nature of these functions, they can easily and intuitively be concatenated:
+\displaycode{Img8u i = cvt8u(gray(scale(create("parrot"),0.2)));}
+
 \item \textbf{Output Functions}\\
+The output function set consists of two essential functions: \icode{save} and \icode{show}. The \icode{save} function works really straight forward. It gets an image argument and a file name argument and it saves the given image to a file of that name.\\
+The \icode{show} function is much more complicated. But before trying to understand how it works, it has to be explained what is does! \\[10pt]
+\textbf{You can call the \icode{show}-function anywhere in your code to show a given image in a special window (which runs in a brand new process)}.\\[10pt]
+This is -- as you might have noticed -- a very powerful debugging tool. Internally, the \icode{show}-function writes the given image to hard-disc into a temporary file and runs and external program using C++'s \icode{system} function. The external program, which is called is \icode{icl-xv} on default. So if you want to use the \icode{show} function, you have to ensure, that at least \icode{icl-xv} can be found in your \icode{PATH}-variable. We use \icode{icl-xv} because, it is able to delete a given file after it has read it's image data. By this means no temporary files remains on your system. However, if another image viewer tool shall be used, you can call the \icode{showSetup} function\footnote{also a part of the \iclheaderref{Quick}{Quick}-header}, to set up another tool for this. If your favourite viewer is not able to delete visualized images (which is more than probable), you can also define a \icode{system}-delete-command (something like \icode{rm -rf \%s} where \icode{\%s}-token is automatically replace by the temporary image file name) you can define how long the \icode{show}-function shall wait until the temporary image is deleted. 
+
 \item \textbf{Arithmetical Operators}\\
+The ICLFilter package (see \ref{sec:filter}) provides a large set of operators. However, sometimes a more intuitive way to use operators is useful. E.g. if you want to determine the pixel-wise absolute difference between two images the ICLQuick-header allows you to simple write:
+\displaycode{ImgQ x = icl::abs(a-b); }
+As a matter of fact, this is even not significantly slower than using nested \icode{UnaryOP} instances (see subsection \ref{subsec:perf-issues-for-unary-and-binary-ops}).\\
+Currently, the following arithmetical operators are available: \icode{+},\icode{-},\icode{*} and \icode{/} for \icode{ImgQ}-\icode{ImgQ}, for \icode{ImgQ}-\icode{float} and for \icode{float}-\icode{ImgQ} operands. Furthermore, the unary operator \icode{-} to invert an \icode{ImgQ} instances pixel values can be used. 
+
 \item \textbf{Arithmetical Functions}\\
-\item \textbf{Logical Operators}\\
+In addition to the \icode{abs}-function which was alredy used above, the folowing unary arithmetical function are declared in the \iclheaderref{Quick}{Quick}-header: \icode{exp}, \icode{sqrt}, \icode{ln} and \icode{sqr}\footnote{\icode{power of two}}. These functions work equal to filtering functions.
+
+\item \textbf{Logical Operators and Binary-Functions}\\
+Like arithmetical operators, also logical operators can be used to write very code very intuitively. ICLQuick provides the logical operators \icode{||} and \icode{&&} which apply their specific operation pixel- and channel-wise. \\
+Binary operators are not that easy to define in \icode{float}-valued images, hence binary operators were implemented as template-functions. The type parameter, which determines the internal type to perform binary operation on, must always be given explicitly. Possible binary functions are \icode{binOR}, \icode{binAND} and \icode{binXOR}.  
+
 \item \textbf{Image Concatenation Operators}\\
+These operators can be used to concatenate images horizontally, vertically or channel-wise.\\[10pt]
+\textbf{Please Note:} we use the operators \icode{|}, \icode{,} and \icode{\%} for \icode{ImgQ} operands here in a very special way, which is not conform to the C++ standard.\\[10pt]
+The \icode{,}-operator is used for horizontal image concatenation, e.g.:
+\displaycode{ImgQ a=create("flowers"),b=create("parrot");}
+\displaycode{ImgQ c = a,b;}
+If source and destination image heights or channel counts are different, the smaller one is padded with additional black pixels. Please note, that C++ evaluates the \icode{,}-operator always after function arguments are detected, so if you want to pass a \icode{,}-operator expression directly to another function, you have to use explicit braches:
+\displaycode{ImgQ c=filter(a,b,"gauss"); // Error: a,b are two arguments}
+\displaycode{ImgQ c=filter((a,b),"gauss"); // works!}
+For vertical concatenation, the \icode{\%}, which behaves like the \icode{,}-operator, is provided.
+Finally, the \icode{|}-operator can be used for channel-wise concatenation, e.g.:
+\displaycode{ImgQ channel1=..., channel2=..., channel3=...;}
+\displaycode{ImgQ image = c1|c2|c3; // 3 channel image}
+creates a 3 channel image. Please note that image concatenation between images $A$ and $B$ runs in $O(N_A+N_B)$ where $N_X$ is $WIDTH_X \times{}HEIGHT_X \times{} CHANNELS_X$.
+
 \item \textbf{Data/ROI Assignment Functions}\\
+This set consists of two wrappers for the \icode{Img}'s \icode{deepCopyROI}-function please take a look at the following example:
+
+\codefile{quick-copy-roi-example.cpp}{Example for ICLQuick functions \icode{roi} and \icode{data}}
+
 \item \textbf{Drawing Functions}\\
 \item \textbf{tic/toc}\\
 \item \textbf{Region Detection/Analysis}\\

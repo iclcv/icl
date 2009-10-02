@@ -242,6 +242,8 @@ namespace icl{
     Channel32f cs[2];
     image.extractChannels(cs);
     
+    DEBUG_LOG("creating warp map with params: " << params[0] << ","<< params[1] << ","<< params[2] << ","<< params[3] );
+    
     for(float xi=0;xi<size.width;++xi){
       for(float yi=0;yi<size.height; ++yi){
         distort_point(params,xi,yi,cs[0](xi,yi),cs[1](xi,yi));
