@@ -47,7 +47,7 @@ void init_grabber(){
 
   grabber->setDesiredSize(parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
   grabber->setIgnoreDesiredParams(false);
-  grabber->setDesiredDepth(depth8u);
+  grabber->setDesiredDepth(parse<depth>(pa_subarg<std::string>("-depth",0,"depth8u")));
   if(pa_defined("-dist")){
     grabber->enableDistortion(DIST_FROM_PROGARG("-dist"),
                              parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
@@ -119,9 +119,8 @@ void send_app(){
   while(first || !pa_defined("-single-shot")){
 
     const ImgBase *grabbedImage = grab_image();
-    Img8u image;
     
-    
+    const ImgBase *ppImage = 0;
     if(pa_defined("-pp") && *ppEnabled){
       static UnaryOp *pp = 0;
       if(!pp){
@@ -140,32 +139,25 @@ void send_app(){
         }
       }
       pp->setClipToROI(false);
-      pp->apply(grabbedImage)->convert(&image);
+      ppImage  = pp->apply(grabbedImage);
     }else{
-      grabbedImage->convert(&image);
+      ppImage = grabbedImage;
     }
 
-    if(pa_defined("-emulate-mask")){
-
-      static Img8u mask;
-      static bool first2 = true;
-      if(first2){
-        first2 = false;
-        static ImgQ q = zeros(image.getWidth(),image.getHeight(),1);
-        color(255,255,255,255);
-        fill(255,255,255,255);
-        Rect r = q.getImageRect();
-        circle(q,r.center().x,r.center().y,r.height/2-5);
-        mask = cvt8u(q);
-        show(q);
-      }
-      image.append(&mask,0);
+    const ImgBase *normImage = 0;
+    if(pa_defined("-normalize")){
+      static ImgBase *buf = 0;
+      ppImage->deepCopy(&buf);
+      buf->normalizeAllChannels(Range64f(0,255));
+      normImage = buf;
+    }else{
+      normImage = ppImage;
     }
+    
 
-
-    p.publish(&image);
+    p.publish(normImage);
     if(!pa_defined("-no-gui")){
-      IH = image;
+      IH = normImage;
       IH.update();
       FPS.update();
     }
@@ -208,8 +200,9 @@ int main(int n, char **ppc){
   pa_explain("-s","sender application (default)");
   pa_explain("-r","receiver application");
   pa_explain("-single-shot","no loop application");
-  pa_explain("-emulate-mask","emulate 4th channel mask (sending only)");
   pa_explain("-size","output image size (sending only, default: VGA)");
+  pa_explain("-depth","output image size (sending only, default: depth8u)");
+
   pa_explain("-fps","initial max FPS count, further adjustable in the GUI");
   pa_explain("-no-gui","dont display a GUI (sender app only)");
   pa_explain("-flip","define axis to flip (allowed sub arguments are"
@@ -224,11 +217,12 @@ int main(int n, char **ppc){
              "\tThis parameters can be obtained using ICL application\n"
              "\ticl-calib-radial-distortion");
   pa_explain("-reset","reset bus on startup");
+  pa_explain("-normalize","normalize resulting image to [0,255]");
   pa_explain("-camera-config","if a valid xml-camera configuration file was given here, the grabber is set up "
              "with this parameters internally. Valid parameter files can be created with icl-dccam-setup or with "
              "the icl-camcfg tool. Please note: some grabber parameters might make the grabber crash internally, "
              "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
-  pa_init(n,ppc,"-stream(1) -flip(1) -uri(1) -s -r -single-shot -input(2) -emulate-mask -size(1) -no-gui -pp(1) -dist(4) -reset -fps(1) -clip(1) -camera-config(1)");
+  pa_init(n,ppc,"-stream(1) -flip(1) -uri(1) -s -r -single-shot -input(2) -size(1) -no-gui -pp(1) -dist(4) -reset -fps(1) -clip(1) -camera-config(1) -depth(1) -normalize");
 
   if(pa_defined("-reset")){
     GenericGrabber::resetBus();

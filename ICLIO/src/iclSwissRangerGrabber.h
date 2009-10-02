@@ -34,7 +34,13 @@ namespace icl{
 
     virtual std::string getValue(const std::string &name);
     
+    static float getMaxRangeMM(const std::string &modulationFreq) throw (ICLException);
+
+
     private:
+    /// utility function
+    float getMaxRangeVal() const;
+
     SwissRanger *m_sr;
     Mutex m_mutex;
   };

@@ -217,6 +217,15 @@ namespace icl{
     
     /// internally used utility widget 
     std::map<std::string,GUIComponentAssociationTable> m_guiCompAss;
+
+    /// internally used
+    QMutex m_infoLabelMutex;
+    class InfoLabel;
+    std::vector<InfoLabel*> m_infoLabels;
+    
+    public:
+    void updateInfoLabels();
+    
   };
 }
 

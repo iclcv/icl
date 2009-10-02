@@ -57,6 +57,7 @@ namespace{
         }
         lock();
         parent->updateImage();
+        parent->updateInfoLabels();
         unlock();
         msleep(10);
       }
@@ -75,6 +76,33 @@ namespace{
 }
 
 namespace icl{
+
+  struct CamCfgWidget::InfoLabel{
+    CompabilityLabel *label;
+    std::string propName;
+    int tabIdx;
+    void update(Grabber *grabber){
+      std::string t = grabber->getValue(propName);
+      if(t != label->text().toLatin1().data()){
+        label->setText(t.c_str());
+        label->updateFromOtherThread();
+      }
+    }
+  };
+  
+  void CamCfgWidget::updateInfoLabels(){
+    QMutexLocker l(&m_infoLabelMutex);
+    QMutexLocker ql(&m_oGrabberMutex);
+
+    if(!m_poGrabber) return; 
+    for(unsigned int i=0;i<m_infoLabels.size();++i){
+      /// this might be unsafe!
+      if(m_infoLabels[i]->tabIdx == m_poTabWidget->currentIndex()){
+        m_infoLabels[i]->update(m_poGrabber);
+      }
+    }
+  }
+
   
   void CamCfgWidget::initialize(CamCfgWidget::CreationFlags flags){
 
@@ -745,12 +773,26 @@ namespace icl{
         BorderBox *poBorderBox = new BorderBox(prop.c_str(),b,PARENT);
         poBorderBox->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
         l->addWidget(poBorderBox);
+      }else if(typeStr == "info"){
+        QMutexLocker lock(&m_infoLabelMutex);
+        m_infoLabels.push_back(new InfoLabel);
+        InfoLabel &il = *m_infoLabels.back(); 
+        il.label = new CompabilityLabel("",PARENT);
+        il.label->setMinimumSize(QSize(100,15));
+        il.propName = prop;
+        il.tabIdx = m_poTabWidget->count();
+        BorderBox *poBorderBox = new BorderBox(prop.c_str(),il.label,PARENT);
+        poBorderBox->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
+        l->addWidget(poBorderBox);
+        
       }
       m_bDisableSlots = false;
     }
   }
   
   // }}}
+
+ 
 
 
   void CamCfgWidget::loadClicked(){

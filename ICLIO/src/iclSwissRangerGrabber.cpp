@@ -11,6 +11,49 @@
 
 namespace icl{
 
+  static std::string translate_modulation_freq(ModulationFrq m) throw (ICLException){
+    switch(m){
+#define CASE(X) case MF_##X##MHz: return #X+str("MHz");
+      CASE(40);CASE(30);CASE(21);CASE(20);CASE(19);CASE(60);
+      CASE(15);CASE(10);CASE(29);CASE(31);CASE(14_5);CASE(15_5);
+#undef CASE
+      default:
+        throw ICLException("..");
+        return "";
+    }
+  }
+  static ModulationFrq translate_modulation_freq(const std::string &m){
+#define CASE(X) else if(m==(#X)+str("MHz")) {return MF_##X##MHz;}
+    if(0){}
+    CASE(40)CASE(30)CASE(21)CASE(20)CASE(19)CASE(60)
+    CASE(15)CASE(10)CASE(29)CASE(31)CASE(14_5)CASE(15_5)
+#undef CASE
+    throw ICLException("..");
+    return (ModulationFrq)-1;
+  }
+  
+  static float get_max_range_mm(ModulationFrq m){
+    switch(m){
+#define CASE(X,R) case MF_##X##MHz: return R;
+      CASE(40,3750);
+      CASE(30,5000);
+      CASE(21,7140);
+      CASE(20,7500);
+      CASE(19,7890);
+      CASE(60,2500);
+      CASE(15,10000);
+      CASE(10,15000);
+      CASE(29,5170);
+      CASE(31,4840);
+      CASE(14_5,10340);
+      CASE(15_5,9860);
+#undef CASE
+      default: return 0;
+    } 
+  }
+
+  
+
   static int swiss_ranger_debug_callback(SRCAM srCam, unsigned int msg, unsigned int param, void* data){
     (void)srCam;
     (void)msg;
@@ -139,6 +182,7 @@ namespace icl{
     int id;
     int pickChannel;
     IntensityImageMode iim;
+    std::string depthMapUnit;
   };
   
   SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel) throw (ICLException):Grabber(){
@@ -171,33 +215,32 @@ namespace icl{
     m_sr->image = imgNew(bufferDepth,m_sr->size,0);
     
     m_sr->pickChannel = pickChannel;
-    /** one of 
-        AM_COR_FIX_PTRN turns on fix pattern noise correction this 
-                        should always be enabled for good distance measurement
-        AM_MEDIAN 	turns on a 3x3 median filter
-        AM_CONV_GRAY 	Converts the amplitude image to a gray image like from a normal camera.
-        AM_SHORT_RANGE 	For sr4k: this flag results in more precise coordinate 
-                        transformations for small distances(<1m) works only for SR_CoordTrfFlt().
-        AM_CONF_MAP 	For sr4k: process a confidencemap. this map is accesssible with SR_GetImageList.
-        AM_HW_TRIGGER 	For sr4k: Acquisition starts, when a Hardware 
-                        Trigger is received (AM_SW_TRIGGER must also be set).
-        AM_SW_TRIGGER 	For sr4k: Light source is only turned on, when an image is requested.
-        AM_DENOISE_ANF 	For sr4k: Turns on the 3x3 hardware adaptive neighborhood filter.     
-    */
+ 
+    m_sr->depthMapUnit = "16Bit";
     
-    //SR_SetMode(m_sr->cam,AM_CONV_GRAY);
-    //SR_SetMode(m_sr->cam,AM_COR_FIX_PTRN);
-    //SR_SetMode(m_sr->cam,AM_CONF_MAP);
     SR_SetMode(m_sr->cam,AM_COR_FIX_PTRN|AM_CONV_GRAY|AM_DENOISE_ANF|AM_CONF_MAP);
   }
   
+
   SwissRangerGrabber::~SwissRangerGrabber(){
     ICL_DELETE(m_sr->image);
     SR_Close(m_sr->cam);
     ICL_DELETE(m_sr);
   }
 
+
+  float SwissRangerGrabber::getMaxRangeMM(const std::string &modulationFreq) throw (ICLException){
+    return get_max_range_mm(translate_modulation_freq(modulationFreq));
+  }
   
+  float SwissRangerGrabber::getMaxRangeVal() const{
+    const std::string &u = m_sr->depthMapUnit;
+    if(u == "16Bit") return 65535;
+    float unitFactor = (u=="mm")?1:(u=="cm")?0.1:0.001;
+    float maxRange = get_max_range_mm(SR_GetModulationFrequency(m_sr->cam));
+
+    return unitFactor * maxRange;
+  }
   
   const ImgBase *SwissRangerGrabber::grabUD(ImgBase **dst){
     Mutex::Locker l(m_mutex);
@@ -241,9 +284,15 @@ namespace icl{
       }
       if(m_sr->pickChannel == -1){
         copy_sr_data(imgs[i].data,result.getDataPtr(i),result.getDim(),imgs[i].dataType,result.getDepth());
+        if( (m_sr->depthMapUnit != "16Bit") && (t == ImgEntry::IT_DISTANCE)){
+          result.normalizeChannel(i,Range64f(0,65535),Range64f(0,getMaxRangeVal()));
+        }
       }else{
         if(m_sr->pickChannel == i){
           copy_sr_data(imgs[i].data,result.getDataPtr(0),result.getDim(),imgs[i].dataType,result.getDepth());
+          if( (m_sr->depthMapUnit != "16Bit") && (t == ImgEntry::IT_DISTANCE)){
+            result.normalizeChannel(0,Range64f(0,65535),Range64f(0,getMaxRangeVal()));
+          }
         }
       }
     }
@@ -291,12 +340,29 @@ namespace icl{
 
   void SwissRangerGrabber::setProperty(const std::string &property, const std::string &value){
     Mutex::Locker l(m_mutex);
-    if(property == "intensity-image-mode"){
+    if(property == "current-range"){
+      ERROR_LOG("unable to set info-properties");
+    }else if(property == "intensity-image-mode"){
       if(value == "minus one") m_sr->iim = iimUnknownPixelsMinusOne;
       else if(value == "zero") m_sr->iim = iimUnknownPixelsZero;
       else if(value == "unchanged") m_sr->iim = iimUnknownPixelsUnchanged;
       else ERROR_LOG("invalid value \"" << value << "\" for property \"" << property << "\"");
       return;
+    }else if(property == "modulation-frequency"){
+      try{
+        SR_SetModulationFrequency(m_sr->cam, translate_modulation_freq(value));
+      }catch(...){
+        ERROR_LOG("undefined modulation frequency value :" << value);
+      }
+    }else if(property == "depth-map-unit"){
+      if(value != "16Bit" && 
+         value != "mm" && 
+         value != "cm" && 
+         value != "m"){
+        ERROR_LOG("Unknown unit for depth map :" << value);
+      }else{
+        m_sr->depthMapUnit = value;
+      }
     }else if(!supportsProperty(property)){
       ERROR_LOG("nothing known about a property " << property ); return;
     }
@@ -323,11 +389,16 @@ namespace icl{
     v.push_back("AM_SW_TRIGGER");
     v.push_back("AM_DENOISE_ANF");
     v.push_back("intensity-image-mode");
+    v.push_back("modulation-frequency");
+    v.push_back("depth-map-unit");
+    v.push_back("current-range");
     return v;
   }
   
   std::string SwissRangerGrabber::getType(const std::string &name){
-    if(supportsProperty(name)){
+    if(name ==  "current-range"){
+      return "info";
+    }else if(supportsProperty(name)){
       return "menu";
     }else{
       return "undefined";
@@ -335,8 +406,21 @@ namespace icl{
   }
   
   std::string SwissRangerGrabber::getInfo(const std::string &name){
-    if(name == "intensity-image-mode"){
+    if(name == "current-range"){
+      return "just an  info string";
+    }else if(name == "intensity-image-mode"){
       return "{\"zero\",\"minus one\",\"unchanged\"}";
+    }else if(name == "modulation-frequency"){
+      //Mutex::Locker l(m_mutex);
+      //unsigned int serial = SR_ReadSerial(m_sr->cam);
+      // CamType t = {CT_UNKNOWN=0,CT_SR2A,CT_SR2B,CT_SR3K_USB,CT_SR3K_ETH,CT_SR4K_USB,CT_SR4K_ETH,CT_SR4K_B_GIG_E,CT_LAST};
+      //DEBUG_LOG("serial is " << serial);
+      
+      //TODO in current lib version, there is no possibility to find out camera type ??
+      return "{\"40Mhz\",\"30MHz\",\"21MHz\",\"20MHz\",\"19MHz\",\"60MHz\","
+      "\"15MHz\",\"10MHz\",\"29MHz\",\"31MHz\",\"14_5MHz\",\"15_5MHz\"}";
+    }else if(name == "depth-map-unit"){
+      return "{\"16Bit\",\"mm\",\"cm\",\"m\"}";
     }else if(supportsProperty(name)){
       return "{\"on\",\"off\"}";
     }else{
@@ -344,13 +428,23 @@ namespace icl{
     }
   }
   
+
+
   std::string SwissRangerGrabber::getValue(const std::string &name){
     Mutex::Locker l(m_mutex);
-    if(name == "intensity-image-mode"){
+    if(name == "current-range"){
+      ModulationFrq m =  SR_GetModulationFrequency(m_sr->cam);
+      return str(get_max_range_mm(m)) +"mm";
+    }else if(name == "intensity-image-mode"){
       return m_sr->iim == iimUnknownPixelsMinusOne ? "minus one" :
              m_sr->iim == iimUnknownPixelsZero ? "zero" :
              "unchanged";
       
+    }else if(name == "depth-map-unit"){
+      return m_sr->depthMapUnit;
+    }else if(name == "modulation-frequency"){
+      ModulationFrq m =  SR_GetModulationFrequency(m_sr->cam);
+      return translate_modulation_freq(m);
     }else if(!supportsProperty(name)){
       ERROR_LOG("nothing known about a property " << name ); return "";
     }

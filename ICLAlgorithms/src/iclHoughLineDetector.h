@@ -19,7 +19,7 @@ namespace icl{
       
       @section ALG Algorithm
       Image lines (of infinite length) can be described by a tuple (rho,r) and the line
-      equation \f$r = x\cdotcos(rho) + y\cdotsin(rho)\f$. Each pixel (x,y) belongs potentially
+      equation \f$r = x\cdot cos(rho) + y\cdot sin(rho)\f$. Each pixel (x,y) belongs potentially
       to a all lines (rho,r) where this equation is true. 
       Internally, the space of possible lines (sometimes referred a the hough-space) is sampled 
       (internally we use an instance of Img32s).
