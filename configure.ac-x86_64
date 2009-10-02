@@ -194,8 +194,8 @@ AC_ARG_WITH([IMAGEMAGICK],
 
         HAVE_IMAGEMAGICK=TRUE
         ICL_PUSH_FLAG_VARS
-        ICL_EXTEND_FLAG_VARS_TMP_FOR(IMAGEMAGICK,lib,include)                
-        
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(IMAGEMAGICK,lib,include/ImageMagick)
+       
         AC_LANG([C++])
         AC_CHECK_HEADER([Magick++.h],[],[HAVE_IMAGEMAGICK=FALSE])
         AC_CHECK_LIB([Magick++],[InitializeMagick],[],[HAVE_IMAGEMAGICK=FALSE])
@@ -207,7 +207,7 @@ AC_ARG_WITH([IMAGEMAGICK],
                 [IMAGEMAGICK],
                 [-L$IMAGEMAGICK_ROOT/lib -lMagick++],
                 [-Wl,-rpath=$IMAGEMGAGICK_ROOT/lib],
-                [-I$IMAGEMAGICK_ROOT/include],
+                [-I$IMAGEMAGICK_ROOT/include/ImageMagick],
                 [-DHAVE_IMAGEMAGICK],
                 [],
                 [])
