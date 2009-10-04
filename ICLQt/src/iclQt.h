@@ -20,6 +20,7 @@
 #include <iclSliderHandle.h>
 #include <iclFSliderHandle.h>
 #include <iclIntHandle.h>
+#include <iclCheckBoxHandle.h>
 #include <iclFloatHandle.h>
 #include <iclStringHandle.h>
 #include <iclComboHandle.h>
@@ -98,6 +99,9 @@
 
 /// extract a FPSHandle as reference from GUI object named gui
 #define gui_FPSHandle(NAME) gui_VAL(FPSHandle,NAME)
+
+/// extract a CheckBoxHandle as reference from GUI object named gui
+#define gui_CheckBox(NAME) gui_VAL(CheckBoxHandle,NAME)
 
 /// extract a MultiDrawHandle as reference from GUI object named gui
 #define gui_MultiDrawHandle(NAME) gui_VAL(MultiDrawHandle,NAME)

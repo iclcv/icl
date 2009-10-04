@@ -47,7 +47,8 @@ int main(int n, char **ppc){
     << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3@minsize=1x2]"
     << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
     << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
-    << "button(click me)[@handle=click]";
+    << "button(click me)[@handle=click]"
+    << "checkbox(hello,off)[@out=cb]";
   gui << v;
 
   gui.show();

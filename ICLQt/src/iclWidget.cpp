@@ -1607,10 +1607,11 @@ namespace icl{
   
   void ICLWidget::initializeGL(){
     // {{{ open
+
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glShadeModel(GL_FLAT);
     glEnable(GL_TEXTURE_2D);
-    glDisable(GL_DEPTH_TEST);
+    //glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     glOrtho(0, width(), height(), 0, -999999, 999999);

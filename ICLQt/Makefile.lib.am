@@ -32,6 +32,7 @@ ${MOC_FILES} \
 ../src/iclDoubleSlider.cpp \
 ../src/iclDragger.cpp \
 ../src/iclDrawHandle3D.cpp \
+../src/iclCheckBoxHandle.cpp \
 ../src/iclDrawHandle.cpp \
 ../src/iclDrawWidget3D.cpp \
 ../src/iclDrawWidget.cpp \
@@ -127,8 +128,8 @@ include_HEADERS= \
 ../src/iclIconFactory.h \
 ../src/iclContainerHandle.h \
 ../src/iclSliderUpdateEvent.h \
-../src/iclThreadedUpdatableSlider.h
-
+../src/iclThreadedUpdatableSlider.h \
+../src/iclCheckBoxHandle.h
 
 
 # include other packages here!

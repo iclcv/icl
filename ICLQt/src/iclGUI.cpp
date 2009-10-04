@@ -54,8 +54,10 @@
 #include <iclDrawHandle3D.h>
 #include <iclDispHandle.h>
 #include <iclFPSHandle.h>
+#include <iclCheckBoxHandle.h>
 #include <iclMultiDrawHandle.h>
 #include <iclSplitterHandle.h>
+#include <QCheckBox>
 
 #include <iclConfigFileGUI.h>
 #include <iclCamCfgWidget.h>
@@ -454,6 +456,64 @@ namespace icl{
   };
 
 // }}}
+
+
+  struct CheckBoxGUIWidget : public GUIWidget{
+    // {{{ open
+  public:
+    CheckBoxGUIWidget(const GUIDefinition &def):
+      GUIWidget(def,GUIWidget::gridLayout,0,1,2, Size(0,0)){
+
+      bool initChecked = false;
+      if(def.param(1)=="on" || def.param(1) == "yes" || def.param(1) == "checked"){
+        initChecked = true;
+      }
+
+      getGUI()->lockData();
+      m_stateRef = &getGUI()->allocValue<bool>(def.output(0),initChecked);
+      getGUI()->unlockData();
+      
+      std::string t = def.param(0);
+      m_poCheckBox = new QCheckBox(def.param(0).c_str(),def.parentWidget());
+      m_poCheckBox->setTristate(false);
+      if(initChecked){
+        m_poCheckBox->setCheckState(Qt::Checked);
+      }else{
+        m_poCheckBox->setCheckState(Qt::Unchecked);
+      }
+      
+      addToGrid(m_poCheckBox);
+      
+      // this must be connected to the toggled function too (not to the clicked() signal) because 
+      // the clicked()-signal is emitted BEFORE the toggled-signale, which makes the button get
+      // out of sync-with it's underlying value :-(
+      connect(m_poCheckBox,SIGNAL(stateChanged(int)),this,SLOT(ioSlot()));
+
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<CheckBoxHandle>(def.handle(),CheckBoxHandle(m_poCheckBox,this,m_stateRef));
+        getGUI()->unlockData();
+      }
+    }
+    static string getSyntax(){
+      return string("checkbox(TEXT,INIT>)[general params] \n")+
+      string("\tTEXT is the check box text\n");
+      string("\tINIT defines whether the checkbox is initially checked (checked|unchecked)\n")+
+      gen_params();
+    }
+    virtual void processIO(){
+      *m_stateRef = m_poCheckBox->checkState() == Qt::Checked;
+    }
+  private:
+    bool *m_stateRef;
+    QCheckBox *m_poCheckBox;
+  };
+
+// }}}
+
+
+
+
   struct LabelGUIWidget : public GUIWidget{
     // {{{ open
     LabelGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,-1,Size(4,1)){
@@ -1180,6 +1240,7 @@ public:
       MAP_CREATOR_FUNCS["border"] = create_widget_template<BorderGUIWidget>;
       MAP_CREATOR_FUNCS["buttongroup"] = create_widget_template<ButtonGroupGUIWidget>;     
       MAP_CREATOR_FUNCS["togglebutton"] = create_widget_template<ToggleButtonGUIWidget>;
+      MAP_CREATOR_FUNCS["checkbox"] = create_widget_template<CheckBoxGUIWidget>;
       MAP_CREATOR_FUNCS["label"] = create_widget_template<LabelGUIWidget>;
       MAP_CREATOR_FUNCS["slider"] = create_widget_template<SliderGUIWidget>;
       MAP_CREATOR_FUNCS["fslider"] = create_widget_template<FloatSliderGUIWidget>;
@@ -1427,7 +1488,7 @@ public:
       }
       m_bCreated = true;
     }catch(GUISyntaxErrorException &ex){
-      printf(ex.what());
+      ERROR_LOG(ex.what());
       exit(0);
     }
      
