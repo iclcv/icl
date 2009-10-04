@@ -154,6 +154,7 @@ namespace icl{
       - <b>button</b> a push button
       - <b>buttongroup</b> a set of radio buttons (exclusive)
       - <b>togglebutton</b> a button that can be toggled and untoggled
+      - <b>checkbox</b> a standard checkbox
       - <b>label</b> a label displaying static or dynamic content (integers, floats and string)
       - <b>slider</b> a integer-valued slider with given range
       - <b>fslider</b> a float-valued slider with given range
@@ -203,6 +204,8 @@ namespace icl{
       - <b>togglebutton(string UNTOGGLED_TEXT, string TOGGLED_TEXT)</b>\n
         A toggle button switches its text depended on its current "toggle-state". If the button
         should not switch its text, UNTOGGLED_TEXT must be equal to TOGGLED_TEXT.
+      - <b>checkbox(string LABEL, checked|unchecked)</b>\n
+        A checkbox with given label LABEL which is initially checked if 2nd argument is 'checked'
       - <b>label(string TEXT="")</b>\n
         Each label component can be used to show dynamic as well as static content. A label can be
         initialized with a given string (or an int/float as string). Later on this content can be
@@ -341,6 +344,7 @@ namespace icl{
       <TR> <TD>button</TD>       <TD>ButtonHandle</TD>      <TD>1 type GUIEvent</TD>    <TD>handle for this button (see below!)</TD>                 </TR>
       <TR> <TD>buttongroup</TD>  <TD>ButtonGroupHandle</TD> <TD>1 type int</TD>         <TD>index of the currently toggled radio button </TD>        </TR>
       <TR> <TD>togglebutton</TD> <TD>ButtonHandle</TD>      <TD>1 type bool</TD>        <TD>true=toggled, false=untoggled</TD>                       </TR>
+      <TR> <TD>checkbox</TD>     <TD>CheckBoxHandle</TD>    <TD>1 type bool</TD>        <TD>true=checked, false=unchecked</TD>                       </TR>
       <TR> <TD>label</TD>        <TD>LabelHandle</TD>       <TD>0</TD>                  <TD>handle for this label (see below!)</TD>                  </TR>
       <TR> <TD>slider</TD>       <TD>SliderHandle</TD>      <TD>1 type int</TD>         <TD>current slider value</TD>                                </TR>
       <TR> <TD>fslider</TD>      <TD>FSliderHandle</TD>     <TD>1 type float</TD>       <TD>current slider value</TD>                                </TR>
