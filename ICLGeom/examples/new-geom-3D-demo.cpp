@@ -5,6 +5,7 @@
 #include <iclCamera.h>
 #include <iclCommon.h>
 #include <iclFPSLimiter.h>
+#include <iclPrimitive.h>
 
 GUI gui("hsplit");
 
@@ -32,6 +33,45 @@ void cuboid(const std::string &id,
   //o->setVisible(Primitive::quad,false);
   scene.addObject(o);
 }
+
+struct ColorCube : public Object2{
+  ColorCube(float x, float y, float z, float d){
+    addVertex(Vec(x-d,y-d,z-d,1),GeomColor(255,0,0,255));
+    addVertex(Vec(x-d,y+d,z-d,1),GeomColor(255,255,0,255));
+    addVertex(Vec(x+d,y+d,z-d,1),GeomColor(0,255,0,255));
+    addVertex(Vec(x+d,y-d,z-d,1),GeomColor(0,255,255,255));
+
+    addVertex(Vec(x-d,y-d,z+d,1),GeomColor(255,0,255,255));
+    addVertex(Vec(x-d,y+d,z+d,1),GeomColor(255,255,255,255));
+    addVertex(Vec(x+d,y+d,z+d,1),GeomColor(0,0,0,255));
+    addVertex(Vec(x+d,y-d,z+d,1),GeomColor(0,0,255,255));
+
+    addLine(0,1);
+    addLine(1,2);
+    addLine(2,3);
+    addLine(3,0);
+
+    addLine(0,4);
+    addLine(1,5);
+    addLine(2,6);
+    addLine(3,7);
+
+    addLine(4,5);
+    addLine(5,6);
+    addLine(6,7);
+    addLine(7,4);
+
+    addQuad(0,1,2,3);
+    addQuad(7,6,5,4);//4,5,6,7);
+    addQuad(4,5,1,0);//(0,1,5,4);
+    addQuad(5,6,2,1);//(1,2,6,5);
+    addQuad(6,7,3,2);//(2,3,7,6);
+    addQuad(7,4,0,3);//(3,0,4,7);
+
+    setColorsFromVertices(Primitive::quad,true);
+    setColorsFromVertices(Primitive::line,true);
+  }
+};
 
 void init(){
   gui << "draw[@minsize=16x12@handle=left@label=Rendered into DrawWidget]";
@@ -68,7 +108,6 @@ void init(){
   Vec up2(0,1,0);
   scene.addCamera(Camera(pos2,normalize(fp2-pos2),up2,Size::VGA));
 
-
   cuboid("worktop",
          0,80,-5,
          160,160,10,
@@ -93,6 +132,8 @@ void init(){
          75,155,50,
          10,10,100,
          150,150,150);
+
+  scene.addObject(new ColorCube(0,50,50,30));
 
   w3D_1->install(scene.getMouseHandler(0));
   w3D_2->install(scene.getMouseHandler(1));

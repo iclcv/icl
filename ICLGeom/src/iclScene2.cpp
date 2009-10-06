@@ -176,12 +176,14 @@ namespace icl{
   
   struct Scene2::RenderPlugin{
     virtual void color(const GeomColor &c)=0;
-    virtual void line(float x1, float y1, float x2, float y2)=0;
+    virtual void line(float x1, float y1, float x2, float y2, float width)=0;
     virtual void point(float x, float y, float size)=0;
     virtual void triangle(float x1, float y1, float x2, 
-                          float y2, float x3, float y3)=0;    
+                          float y2, float x3, float y3)=0;
+    
     virtual void quad(float x1, float y1, float x2, float y2, 
                       float x3, float y3, float x4, float y4)=0;
+
   };
   
   struct ImgQRenderPlugin : public Scene2::RenderPlugin{
@@ -191,7 +193,8 @@ namespace icl{
       icl::color(c[0],c[1],c[2],c[3]);
       icl::fill(c[0],c[1],c[2],c[3]);
     }
-    virtual void line(float x1, float y1, float x2, float y2){
+    virtual void line(float x1, float y1, float x2, float y2, float width){
+      (void)width; // linewidth is not yet supported!
       icl::line(image,x1,y1,x2,y2);
     }
     virtual void point(float x, float y, float size){
@@ -216,11 +219,13 @@ namespace icl{
       w.color(c[0],c[1],c[2],c[3]);
       w.fill(c[0],c[1],c[2],c[3]);
     }
-    virtual void line(float x1, float y1, float x2, float y2){
+    virtual void line(float x1, float y1, float x2, float y2, float width){
+      w.linewidth(width);
       w.line(x1,y1,x2,y2);
     }
     virtual void point(float x, float y, float size){
-      w.ellipse(x-size/2,y-size/2,size,size);
+      w.pointsize(size);
+      w.point(x,y);
     }
     virtual void triangle(float x1, float y1, float x2, 
                           float y2, float x3, float y3){
@@ -403,6 +408,7 @@ namespace icl{
        
     for(unsigned int i=0;i<allObjects.size();++i){
       Object2 *o = allObjects[i];
+      o->lock();
       o->prepareForRendering();
 
       m_cameras[camIndex].project(o->getVertices(),m_projections[camIndex][i]);
@@ -453,7 +459,7 @@ namespace icl{
             if(m_lightSimulationEnabled){
               renderer.color(p.color);
             }
-            renderer.line(ps[p.a][0],ps[p.a][1],ps[p.b][0],ps[p.b][1]);
+            renderer.line(ps[p.a][0],ps[p.a][1],ps[p.b][0],ps[p.b][1],o->m_lineWidth);
             break;
           case Primitive::triangle:{
 
@@ -495,6 +501,7 @@ namespace icl{
           renderer.point(ps[j][0],ps[j][1],3);
         }
       }
+      o->unlock();
     }
   }
   
@@ -538,30 +545,12 @@ namespace icl{
       glScalef(1.0,ar,1);
     }
     
-
-    GLenum flags[4] = {GL_DEPTH_TEST,GL_LINE_SMOOTH,GL_POINT_SMOOTH,GL_POLYGON_SMOOTH};
     GLboolean on[4] = {0,0,0,0};
-    for(int i=0;i<4;++i){
-      glGetBooleanv(flags[i],on+i);
-      glEnable(flags[i]);
-    }
-
-
-    /*
-        glShadeModel( GL_SMOOTH );
-        glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
-        glHint( GL_POINT_SMOOTH_HINT, GL_NICEST );
-        glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST );
-        glEnable( GL_BLEND );
-        glEnable( GL_POINT_SMOOTH );
-        glEnable( GL_LINE_SMOOTH );
-        glEnable( GL_POLYGON_SMOOTH );
-        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-     */
-    
-    glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_POINT_SMOOTH);
-    glEnable(GL_POLYGON_SMOOTH);
+   GLenum flags[4] = {GL_DEPTH_TEST,GL_LINE_SMOOTH,GL_POINT_SMOOTH,GL_POLYGON_SMOOTH};
+   for(int i=0;i<4;++i){
+     glGetBooleanv(flags[i],on+i);
+     glEnable(flags[i]);
+   }
 
     std::vector<Object2*> allObjects(m_objects);
     if(m_drawCamerasEnabled){
@@ -573,6 +562,10 @@ namespace icl{
 
     for(unsigned int i=0;i<allObjects.size();++i){
       Object2 *o = allObjects[i];
+      
+      glPointSize(o->m_pointSize);
+      glLineWidth(o->m_lineWidth);
+
       o->prepareForRendering();
       std::vector<Vec> &ps = o->m_vertices;
       for(unsigned int j=0;j<o->m_primitives.size();++j){
@@ -582,7 +575,9 @@ namespace icl{
         switch(p.type){
           case Primitive::line:
             glBegin(GL_LINES);
+            if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
             glVertex3fv(ps[p.a].data());              
+            if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
             glVertex3fv(ps[p.b].data());
             glEnd();
 
@@ -592,15 +587,19 @@ namespace icl{
             Vec &a = ps[p.a];
             Vec &b = ps[p.b];
             Vec &c = ps[p.c];
-            
+
             glNormal3fv(normalize(cross(a-c,b-c)).data());
 
+            if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
             glVertex3fv(a.data());              
+            if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
             glVertex3fv(b.data());
+            if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.c]/255).data());
             glVertex3fv(c.data());
             glEnd();
             break;
           }case Primitive::quad:{
+
             glBegin(GL_QUADS);
             Vec &a = ps[p.a];
             Vec &b = ps[p.b];
@@ -609,9 +608,13 @@ namespace icl{
             
             glNormal3fv(normalize(cross(d-c,b-c)).data());
 
+            if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
             glVertex3fv(a.data());              
+            if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
             glVertex3fv(b.data());
+            if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.c]/255).data());
             glVertex3fv(c.data());
+            if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.d]/255).data());
             glVertex3fv(d.data());
             glEnd();
             break;
@@ -629,14 +632,13 @@ namespace icl{
               break;
 
 #else
-            ERROR_LOG("texture mapping only supported with IPP");
+            ERROR_LOG("texture mapping only supported with QT");
 #endif
           }
           default:
             ERROR_LOG("unsupported primitive type");
         }
       }
-      glPointSize(3);
       glBegin(GL_POINTS);
       if(o->isVisible(Primitive::vertex)){
         for(unsigned int j=0;j<ps.size();++j){
@@ -645,7 +647,7 @@ namespace icl{
         }
       }
       glEnd();
-      glPointSize(1);
+
     }
 
     for(int i=0;i<4;++i){

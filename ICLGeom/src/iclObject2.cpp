@@ -23,7 +23,14 @@ namespace icl{
     return m_visible[t];
   }
   
-  Object2::Object2(){
+  Object2::Object2():
+    m_lineColorsFromVertices(false),
+    m_triangleColorsFromVertices(false),
+    m_quadColorsFromVertices(false),
+    m_pointSize(1),
+    m_lineWidth(1)
+  {
+
     std::fill(m_visible,m_visible+Primitive::PRIMITIVE_TYPE_COUNT,true);
   }
   
@@ -70,7 +77,13 @@ namespace icl{
     }
   }
 
-  Object2::Object2(const std::string &type,const float *params){
+  Object2::Object2(const std::string &type,const float *params):
+    m_lineColorsFromVertices(false),
+    m_triangleColorsFromVertices(false),
+    m_quadColorsFromVertices(false),
+    m_pointSize(1),
+    m_lineWidth(1)
+  {
     std::fill(m_visible,m_visible+5,true);
     if(type == "cube"){
       float x = *params++;
@@ -180,5 +193,21 @@ namespace icl{
       ERROR_LOG("unknown type:" << type);
     }
   }
-  
+
+  void Object2::setColorsFromVertices(Primitive::Type t, bool on){
+    switch(t){
+      case Primitive::line:
+        m_lineColorsFromVertices = on;
+        break;
+      case Primitive::triangle:
+        m_triangleColorsFromVertices = on;
+        break;
+      case Primitive::quad:
+        m_quadColorsFromVertices = on;
+        break;
+      default:
+        ERROR_LOG("this operations is only supported for line, triangle and quad primitive types");
+        break;
+    }
+  }
 }

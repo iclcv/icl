@@ -14,7 +14,6 @@ Scene scene(Camera(Vec(0,0,30,0),Vec(0,0,-1,0),Vec(1,0,0,0)));
 ICLDrawWidget *w;
 ICLWidget *w2;
 
-
 void init(){
   gui << "draw[@minsize=16x12@handle=left@label=Rendered into DrawWidget]";
   gui << "image[@minsize=16x12@handle=right@label=Rendered into ImgQ]";

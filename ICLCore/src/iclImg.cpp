@@ -1723,6 +1723,150 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   }
 
 
+  
+  
+  template<class Type>
+  void Img<Type>::fillBorder(bool setFullROI){
+    ICLASSERT_RETURN( !hasFullROI() );
+    Rect im = getImageRect();
+    Rect roi = getROI();
+    
+    Rect rs[4] = { 
+      Rect(0,            0,             roi.x+1               ,roi.y+1),                  // upper left
+      Rect(roi.right()-1,0,             im.width-roi.right()+1,roi.y+1),                  // upper right
+      Rect(roi.right()-1,roi.bottom()-1,im.width-roi.right()+1,im.height-roi.bottom()+1), // lower right
+      Rect(0,            roi.bottom()-1,roi.x+1,               im.height-roi.bottom()+1)  // lower left
+    };
+    
+
+    for(int c=0;c<getChannels();c++){      
+      Type ps[4]={
+        (*this)(roi.x,         roi.y,          c),// = 255; // upper left
+        (*this)(roi.right()-1, roi.y,          c),// = 255; // upper right
+        (*this)(roi.right()-1, roi.bottom()-1, c),// = 255; // lower right
+        (*this)(roi.x,         roi.bottom()-1, c)// = 255; // lower left
+      };
+      // clear the corners
+      for(int i=0;i<4;i++){
+        clearChannelROI<Type>(this,c,ps[i],rs[i].ul(),rs[i].getSize());
+      }
+      // left
+      Point srcOffs = Point(roi.x,roi.y+1);
+      Size srcDstSize = Size(1,roi.height-2);
+      if(roi.x>0){
+        for(Point p(0,roi.y+1);p.x!=roi.x;p.x++){
+          deepCopyChannelROI(this,c, srcOffs, srcDstSize, this,c,p,srcDstSize);
+        }
+      }
+      // right
+      srcOffs.x=roi.right()-1;
+      if(roi.right() < im.right()){
+        for(Point p(srcOffs.x+1,srcOffs.y);p.x<im.width;p.x++){
+          deepCopyChannelROI(this,c, srcOffs, srcDstSize, this,c,p,srcDstSize);
+        }
+      }
+      // top
+      srcOffs = Point(roi.x+1,roi.y);
+      srcDstSize = Size(roi.width-2,1);
+      if(roi.y>0){
+        for(Point p(srcOffs.x,roi.y+1);p.y>=0;p.y--){
+          deepCopyChannelROI(this,c, srcOffs, srcDstSize, this,c,p,srcDstSize);
+        }
+      }
+      // bottom
+      if(roi.bottom()<im.bottom()){
+        srcOffs.y = roi.bottom();
+        for(Point p(srcOffs.x,roi.bottom()+1);p.y<im.height;p.y++){
+          deepCopyChannelROI(this,c, srcOffs, srcDstSize, this,c,p,srcDstSize);
+        }
+      }
+    }
+  }
+
+  template<class Type>
+  void Img<Type>::fillBorder(icl64f val, bool setFullROI){
+    ICLASSERT_RETURN( !hasFullROI() );
+    Rect roi = getROI();
+    Size s = getSize();
+    for(int c=0;c<getChannels();c++){
+      // top
+      clearChannelROI<Type>(this,c,val, Point::null,        
+                         Size(s.width,roi.top()));
+      // bottom
+      clearChannelROI<Type>(this,c,val, Point(0,roi.bottom()),
+                         Size(s.width,s.height-roi.bottom()));
+      // left
+      clearChannelROI<Type>(this,c,val, Point(0,roi.top()),
+                         Size(roi.left(),roi.height));
+      // right
+      clearChannelROI<Type>(this,c,val, roi.ur(),
+                         Size(s.width-roi.right(),roi.height) );
+    }    
+  }
+
+  template<class Type>
+  void Img<Type>::fillBorder(const std::vector<icl64f> &vals, bool setFullROI){
+    ICLASSERT_RETURN( !hasFullROI() );
+    ICLASSERT_RETURN((int)vals.size() >= getChannels());
+    Rect roi = getROI();
+    Size s = getSize();
+    for(int c=0;c<getChannels();c++){
+      // top
+      clearChannelROI<Type>(this,c,vals[c], Point::null,        
+                         Size(s.width,roi.top()));
+      // bottom
+      clearChannelROI<Type>(this,c,vals[c], Point(0,roi.bottom()),
+                         Size(s.width,s.height-roi.bottom()));
+      // left
+      clearChannelROI<Type>(this,c,vals[c], Point(0,roi.top()),
+                         Size(roi.left(),roi.height));
+      // right
+      clearChannelROI<Type>(this,c,vals[c], roi.ur(),
+                         Size(s.width-roi.right(),roi.height) );
+    }    
+  }
+
+  template<class Type>
+  void Img<Type>::fillBorder(const ImgBase *src, bool setFullROI){
+    ICLASSERT_RETURN( !hasFullROI() );
+    ICLASSERT_RETURN( src );
+    ICLASSERT_RETURN( getChannels() <= src->getChannels() );
+
+    Rect roi = getROI();
+    Size s = getSize();
+    
+    Point offs[4] = { 
+      Point::null,              // top
+      Point(0,roi.bottom()),    // bottom
+      Point(0,roi.top()),       // left
+      roi.ur()                  // right
+    };
+    Size size[4] = {                
+      Size(s.width,roi.top()),               // top
+      Size(s.width,s.height-roi.bottom()),   // bottom
+      Size(roi.left(),roi.height),           // left
+      Size(s.width-roi.right(),roi.height)   // right
+    };
+    
+    Rect sroi = src->getROI();
+    for(int i=0;i<4;++i){
+      ICLASSERT_RETURN(sroi.contains(Rect(offs[i],size[i])));
+    }
+
+    switch(src->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                \
+      case depth##D:                            \
+      for(int c=0;c<getChannels();c++){         \
+        for(int i=0;i<4;++i){                   \
+          convertChannelROI<icl##D,Type>(src->asImg<icl##D>(),c,offs[i],size[i],this,c,offs[i],size[i]); \
+        }                                       \
+      }                                         \
+      break;
+ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+    }
+  }
+
 
   // }}} Global functions ..
 

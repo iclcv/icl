@@ -152,7 +152,7 @@ namespace icl{
       case depth32f:
 #ifdef HAVE_IPP
         for(int c=0;c<poImage->getChannels();c++){ /// icl32f-case using Ipp32s method
-          ippiCopyReplicateBorder_32s_C1IR((Ipp32s*)(poImage->asImg<icl8u>()->getROIData(c)),poImage->getLineStep(),
+          ippiCopyReplicateBorder_32f_C1IR(poImage->asImg<icl32f>()->getROIData(c),poImage->getLineStep(),
                                          poImage->getROISize(),poImage->getSize(), 
                                          poImage->getROIOffset().x,poImage->getROIOffset().y);
         }

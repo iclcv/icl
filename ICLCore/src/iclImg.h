@@ -1325,6 +1325,37 @@ namespace icl {
     /// @}
 
     /* }}} */
+
+    /** @{ @name border functions */
+    /* {{{ open */
+      
+    /// extrudes ROI borders through non-ROI borders
+    /** This function can be used fill all image border pixles 
+        (pixels outside the current ROI with the value of the closest
+        ROI-pixel
+        */
+    virtual void fillBorder(bool setFullROI=true);
+    
+    /// fills all non-ROI pixels with a given value
+    virtual void fillBorder(icl64f val, bool setFullROI=true);
+    
+    /// fills all non-ROI pixels with a given value
+    /** here, for each channel a given value is used, so vals.size()
+        must be at least this->getChannels()
+        */
+    virtual void fillBorder(const std::vector<icl64f> &vals, bool setFullROI=true);
+    
+    
+    /// copies images non-border pixels from source image.
+    /** The source image must provided pixel values for each non border
+        pixel of this image. So the source images size must be at least 
+        (X+1)x(Y+1) where (X,Y) is the lower right non-border pixel
+        of this image.*/
+    virtual void fillBorder(const ImgBase *src, bool setFullROI=true);
+    
+    /// @}
+    /* }}} */
+
   
   };// class Img<Type>
 

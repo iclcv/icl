@@ -61,6 +61,21 @@ namespace icl{
     /// tints all Primitives with given type in given color
     void setColor(Primitive::Type t,const GeomColor &color);
     
+    /// sets point size
+    void setPointSize(float pointSize) { m_pointSize = pointSize; }
+
+    /// sets point size
+    void setLineWidth(float lineWidth) { m_lineWidth = lineWidth; }
+
+    /// this function can be implemented by subclasses that need an eplicit locking
+    /** E.g. if an objects data is updated from another thread, you can sub-class 
+        this class and implement a locking mechanism for it*/
+    virtual void lock(){}
+
+    /// this function can be implemented by subclasses that need an eplicit locking
+    /** E.g. if an objects data is updated from another thread, you can sub-class 
+        this class and implement a locking mechanism for it*/
+    virtual void unlock(){}
     
     /// performs a deep copy of this object
     virtual Object2 *copy() const;
@@ -74,6 +89,9 @@ namespace icl{
     /// called by the renderer before the object is rendered
     /** here, dynamic object types can adapt e.g. their vertices or colors*/
     virtual void prepareForRendering() {}
+
+    /// sets how 2D-geom colors are set 
+    void setColorsFromVertices(Primitive::Type t, bool on);
     
     protected:
     std::vector<Vec> m_vertices;
@@ -81,6 +99,13 @@ namespace icl{
     std::vector<Primitive> m_primitives;
     bool m_visible[Primitive::PRIMITIVE_TYPE_COUNT];
     float m_z;
+
+    bool m_lineColorsFromVertices;
+    bool m_triangleColorsFromVertices;
+    bool m_quadColorsFromVertices;
+
+    float m_pointSize;
+    float m_lineWidth;
   };
 }
 
