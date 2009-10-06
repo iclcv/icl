@@ -402,7 +402,7 @@ namespace icl{
     struct col_iterator : public std::iterator<std::random_access_iterator_tag,T>{
       typedef unsigned int difference_type;
       mutable T *p;
-      const unsigned int stride;
+      unsigned int stride;
       inline col_iterator(T *col_begin,unsigned int stride):p(col_begin),stride(stride){}
 
 
