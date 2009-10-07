@@ -33,7 +33,8 @@ icl-geom-3D-demo \
 icl-new-geom-3D-demo \
 icl-camera-test \
 icl-extrinsic-camera-calibration \
-icl-intrinsic-camera-calibration
+icl-intrinsic-camera-calibration \
+icl-show-extrinsic-calibration-grid
 
 # explicit sources, ldflags and cxxflags
 
@@ -52,6 +53,10 @@ icl_camera_test_CXXFLAGS=${XCXXFLAGS}
 icl_extrinsic_camera_calibration_SOURCES=../examples/extrinsic-camera-calibration.cpp
 icl_extrinsic_camera_calibration_LDFLAGS=${XLDFLAGS}
 icl_extrinsic_camera_calibration_CXXFLAGS=${XCXXFLAGS}
+
+icl_show_extrinsic_calibration_grid_SOURCES=../examples/show-extrinsic-calibration-grid.cpp
+icl_show_extrinsic_calibration_grid_LDFLAGS=${XLDFLAGS}
+icl_show_extrinsic_calibration_grid_CXXFLAGS=${XCXXFLAGS}
 
 icl_intrinsic_camera_calibration_SOURCES= \
 	../examples/intrinsic-camera-calibration.cpp \
