@@ -23,4 +23,8 @@ namespace icl{
     lab()->setNum(float(num));
     lab()->updateFromOtherThread();
   }
+  void LabelHandle::operator+=(const std::string &text){
+    lab()->setText(lab()->text() + text.c_str());
+    lab()->updateFromOtherThread();
+  }
 }

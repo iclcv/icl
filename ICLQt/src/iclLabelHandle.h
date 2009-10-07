@@ -38,6 +38,9 @@ namespace icl{
     ///  assign a double (makes the underlying label show that double)
     void operator=(double num);
     
+    /// appends text to the current text
+    void operator+=(const std::string &text);
+    
     private:
     /// utitlity function
     CompabilityLabel *lab() { return **this; }

@@ -25,6 +25,12 @@ namespace icl{
     /// use the *-oprator to get the wrapped component (unconst)
     T *&operator*(){ return m_poContent; }
     
+    /// this can be used for direct access to wrapped type
+    T* operator->(){ return m_poContent; }
+
+    /// this can be used for direct access to wrapped type
+    const T* operator->() const{ return m_poContent; }
+    
     private:
     /// wrapped component
     T *m_poContent;

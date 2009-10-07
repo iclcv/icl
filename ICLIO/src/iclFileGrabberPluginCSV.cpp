@@ -27,7 +27,10 @@ namespace icl{
       // {{{ open
 
       if(image->getWidth() > (int)v.size()){
-        throw InvalidFileFormatException();
+        throw InvalidFileFormatException(str("image width:")+
+                                         str(image->getWidth())+ 
+                                         str(" line width:") + 
+                                         str(v.size()));
       }
       switch(image->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: tokenzie_line_tmpl(v,image->asImg<icl##D>()->getROIData(c,Point(0,y))); break;

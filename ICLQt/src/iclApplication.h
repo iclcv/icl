@@ -87,7 +87,9 @@ namespace icl{
 
         */
     ICLApplication(int argc, char **argv, const std::string &paInitString="", 
-                   callback init=0, callback run=0)throw (SecondSingeltonException);
+                   callback init=0, callback run=0,
+                   callback run2=0, callback run3=0,
+                   callback run4=0, callback run5=0)throw (SecondSingeltonException);
 
     /// Destructor
     ~ICLApplication();
@@ -118,7 +120,14 @@ namespace icl{
     
     /// list of initialization functions
     static std::vector<callback> s_inits;
+    
+    
+    /// list of callback functions
+    static std::vector<callback> s_callbacks;
   };
+
+  /// this is just a shortcut typedef
+  typedef ICLApplication ICLApp; 
 }
 
 #endif
