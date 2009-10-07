@@ -264,11 +264,13 @@ namespace icl{
     
     checkAndFixPoints(XWs,XIs);
     
-    DEBUG_LOG("stoch. opt steps: " << steps 
-              << "   err-thresh:" << minErrorThreshold 
-              << " optF: " << (optimizeFocalLength?"yes":"no" )              
-              << " ann: " << (useAnnealing?"yes":"no" )
-              );
+    /*
+        DEBUG_LOG("stoch. opt steps: " << steps 
+        << "   err-thresh:" << minErrorThreshold 
+        << " optF: " << (optimizeFocalLength?"yes":"no" )              
+        << " ann: " << (useAnnealing?"yes":"no" )
+        );
+    */
     StochasticCameraOptimizer stochOpt(cam,XWs,XIs,useAnnealing ? 0.01 : 0.001, optimizeFocalLength, useAnnealing); 
     StochasticOptimizer<float>::Result resStOpt = stochOpt.optimize(minErrorThreshold,steps);
     Result result = { 

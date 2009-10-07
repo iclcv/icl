@@ -104,7 +104,7 @@ struct MaskRectMouseHandler : public MouseHandler{
   }
 };
 
-void apply_calib(const std::vector<Point32f> &cogs, const std::vector<int> &ass, const Size &imageSize){
+float apply_calib(const std::vector<Point32f> &cogs, const std::vector<int> &ass, const Size &imageSize){
   // {{{ open
 
   std::vector<Point32f> cogsSorted(cogs.size());
@@ -156,7 +156,7 @@ void apply_calib(const std::vector<Point32f> &cogs, const std::vector<int> &ass,
   scene.getCamera(CALIB_CAM).setZNear(1.0/10000);
   currError = calibrationResult.error;
   
-  //  scene.getCamera(CALIB_CAM).show("calib camera");
+  return calibrationResult.error;
 }
 
 // }}}
@@ -586,6 +586,7 @@ void init(){
   controls << (GUI("hbox") 
                << "button(show/hide scene)[@handle=show-hide-scene]"
                << "button(show camera)[@handle=show-camera]"
+               << "button(save best of 10)[@handle=saveBest10]"
                );
 
   gui << controls;
@@ -705,7 +706,9 @@ void init(){
 
 void run(){
   // {{{ open
-
+  
+  static int REMAINING_OPT_FRAMES = -1;
+  
   static DrawHandle &mainView = gui.getValue<DrawHandle>("mainview");
   static std::string &vis = gui.getValue<std::string>("vis");
   static bool &grab = gui.getValue<bool>("grab-loop-val");
@@ -773,8 +776,9 @@ void run(){
     mainView = moIm;
   }
 
+  float lastError = Range32f::limits().maxVal;
   if(calibOn && ass.size()){
-    apply_calib(cogs,ass,image.getSize());
+    lastError = apply_calib(cogs,ass,image.getSize());
   }
   
   ICLDrawWidget &w = **mainView;
@@ -825,9 +829,51 @@ void run(){
     std::cout << "new config file: (written to " <<  filename << ")" << std::endl;
     std::cout << c << std::endl;
     
-    std::ofstream file(filename.c_str());
-    file << c;
+    //std::ofstream file(filename.c_str());
+    //file << c;
     std::cout << "------------------------------------------------------" << std::endl;
+  }
+  gui_ButtonHandle(saveBest10);
+  
+  if(REMAINING_OPT_FRAMES != -1 || saveBest10.wasTriggered()){
+    static Camera cams[10];
+    static float errs[10];
+
+    if(REMAINING_OPT_FRAMES < 0){
+      REMAINING_OPT_FRAMES = 9;
+      cams[REMAINING_OPT_FRAMES] = scene.getCamera(CALIB_CAM);
+      errs[REMAINING_OPT_FRAMES] = lastError;
+      REMAINING_OPT_FRAMES--;
+      std::cout << "captured frame " << (10-REMAINING_OPT_FRAMES) << "/10" << std::endl;
+    }else if(REMAINING_OPT_FRAMES > 0){
+      cams[REMAINING_OPT_FRAMES] = scene.getCamera(CALIB_CAM);
+      errs[REMAINING_OPT_FRAMES] = lastError;
+      REMAINING_OPT_FRAMES--;
+      std::cout << "captured frame " << (10-REMAINING_OPT_FRAMES) << "/10" << std::endl;
+    }else if(REMAINING_OPT_FRAMES == 0){
+      REMAINING_OPT_FRAMES = -1;
+      cams[0] = scene.getCamera(CALIB_CAM);
+      errs[0] = lastError;
+      std::cout << "captured frame " << (10-REMAINING_OPT_FRAMES) << "/10" << std::endl;
+      int idx = (int)(std::min_element(errs,errs+10)-errs);
+      if(errs[0] == Range32f::limits().maxVal){
+        ERROR_LOG("Invalid calibration (nothing saved)");
+      }else{
+        Camera c = cams[idx];
+        std::cout << "------------------------------------------------------" << std::endl;
+        std::cout << "estimated camera pos is:" << c.getPos().transp() <<std::endl;
+        std::cout << "worldOffset is:" << worldOffset.transp() << std::endl;
+        std::cout << "best calibration error was:" << errs[idx] << std::endl << std::endl;
+        c.setPos(c.getPos()+worldOffset);
+        std::string filename = pa_subarg<std::string>("-o",0,"extracted-cam-cfg.xml");
+        std::cout << "new config file: (written to " <<  filename << ")" << std::endl;
+        std::cout << c << std::endl;
+        
+        std::ofstream file(filename.c_str());
+        file << c;
+        std::cout << "------------------------------------------------------" << std::endl;
+      }
+    }
   }
 
   Thread::msleep(10);
