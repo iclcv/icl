@@ -514,8 +514,22 @@ This set consists of two wrappers for the \icode{Img}'s \icode{deepCopyROI}-func
 \codefile{quick-copy-roi-example.cpp}{Example for ICLQuick functions \icode{roi} and \icode{data}}
 
 \item \textbf{Drawing Functions}\\
+This function set can be used to render graphical primitives into an image. Graphical primitives that can be drawn are rectangles, points, lines, triangles, circles and text.\\
+\textbf{Please note} that in most online applications, this is \textbf{not} the recommended way to visualize the current system state (e.g. tracking results or class labels). The drawing functions should only be used for debugging purpose, as they are not optimized at all. The drawing function set works like a \textbf{single threaded} state machine. Current drawing parameters like draw-color or text size can be set using global functions as well. This tiny example explains how it works.
+
+\codefile{quick-drawing-example.cpp}{Example for ICLQuick's drawing functions}
+
+If you execute this application, the following image is shown:
+
+\includegraphics[width=200pt]{media/quick-house.png}
+
+Of course, there are more convenient ways to draw pictures, but in some cases, an image must be annotated somehow. Here ICLQuick's drawing functions will be very helpful.
+
 \item \textbf{tic/toc}\\
+The function \icode{tic} and \icode{toc} can be used to measure a time interval. \icode{tic} starts a global timer and \icode{toc} stops it and prints the length of the time period to standard-out. 
+
 \item \textbf{Region Detection/Analysis}\\
+The Region detection functions are located in the header \iclheaderref{Quick}{QuickRegions}. They can be used for ad-hoc region analysis on \icode{ImgQ} instances. 
 \end{itemize}
 
 
