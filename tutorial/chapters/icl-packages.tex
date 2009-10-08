@@ -533,3 +533,65 @@ The Region detection functions are located in the header \iclheaderref{Quick}{Qu
 \end{itemize}
 
 
+
+
+\section{ICLGeom\label{sec:geom}}
+[Documentation: \iclpackageref{Geom}]
+
+
+The Geom package contains classes for 3D geometry representation. In many applications, e.g. object detection, it is not sufficient to detect an objects (x,y)-coordinates in an image, but also to determine it's 3D position in the scene. The fundamental class of this package is the \icode{Camera}-class (see \iclclassref{Geom}{Camera}). In contrast to a grabber, a camera is represented by extrinsic and intrinsic camera parameters \todo{add camera main axis offset sometimes}. We implemented ICL's camera model close the OpenGL camera model, so currently, a \icode{Camera} is represented by
+\begin{itemize}
+\item A position vector $\vec{p}$, which determines the camera's logical center in the world. for a pinhole camera, this would be the position of the pinhole.
+\item A norm vector $\vec{n}$, which determines the view direction of the camera (currently the normal vector intersects the virtual image plane always in it's center \todo{adapt this in the code first!}).
+\item An \emph{up}-vector $\vec{u}$ which defines the rotation of the image plane about the normal vector.
+\item A view port $v=(v_x,v_y,v_w,v_h)$ (where $v_x$ and $v_y$ are generally $0$). The viewport defines the transformation from logical image coordinates into pixel coordinates.
+\item The focal length $f$ of the camera (im mm).
+\item The near and far clipping plane $z_{far}$ and $z_{near}$ which are only used for OpenGL based visualization. 
+\end{itemize}
+
+The camera projection model transforms a world point $p^W=(p^W_x,p^W_y,p^W_z,1)$ (we use homogeneous coordinates) into image coordinates $p^I=(p^I_x,p^I_y)$ by a concatenation of homogeneous transformations. The first step transforms $p^w$ into the camera frame (not the image coordinate system, which is 2D only) where we call it $p^C$:
+
+\begin{equation}
+p^C = C p^w
+\end{equation}
+
+where $C$ is the camera matrix which is created as follows
+
+\begin{equation}
+C = \left(\begin{array}{cc}
+  R_C & d_C\\
+  0 & 1\\
+  \end{array}\right)
+\end{equation}
+
+
+with
+
+\begin{equation}
+R_C = \left(\begin{array}{ccc}
+  h_x & u_x & n_x \\
+  h_y & u_y & n_y \\
+  h_z & u_z & n_z \\
+  \end{array}\right)
+\end{equation}
+
+The horizontal vector $h$ can be computed by $h=u\times{}n$ and with $d_C=-R_C*p$.\\
+The next transformation is the perspective projection, which can also be expressed by using a homogeneous matrix P:
+
+\begin{equation}
+P = \left(\begin{array}{cccc}
+  f & 0 & 0 & 0\\
+  0 & f & 0 & 0\\
+  0 & 0 & A & B\\
+  0 & 0 & -1 & 0\\
+  \end{array}\right)
+\end{equation}
+
+where $A=(z_{far}+z_{near})/(z_{near}-z_{far})$ and $B = (2 \cdot{}z_{far} \cdot{}z_{near})/(z_{near}-z_{far})$ are used for scaling z values into the
+range between the near and the far clipping plane.
+
+
+
+
+
+
