@@ -5,8 +5,8 @@ namespace icl {
 
   Point32f MeanShiftTracker::applyMeanShiftStep(const Img32f &image, const Point32f &pos){
 
-    Channel32f k = m_kernelImage.extractChannel(0);
-    Channel32f w = image.extractChannel(0);
+    Channel32f k = m_kernelImage[0];
+    Channel32f w = image[0];
 
     double dx = 0;
     double dy = 0;

@@ -56,7 +56,7 @@ namespace icl{
     class ImgChannelROI{
     public:
       inline ImgChannelROI(const Img<T> &image, int channel):
-        chan(image.extractChannel(channel)),xOffs(image.getROI().x),yOffs(image.getROI().y){
+        chan(image[channel]),xOffs(image.getROI().x),yOffs(image.getROI().y){
       }
       inline const T &operator()(int x, int y) const{
         return chan(x+xOffs,y+yOffs);

@@ -588,7 +588,54 @@ P = \left(\begin{array}{cccc}
 \end{equation}
 
 where $A=(z_{far}+z_{near})/(z_{near}-z_{far})$ and $B = (2 \cdot{}z_{far} \cdot{}z_{near})/(z_{near}-z_{far})$ are used for scaling z values into the
-range between the near and the far clipping plane.
+range between the near and the far clipping plane. $P$ is used to transform points from the camera frame into a normalized image plane:
+
+\begin{equation}
+p^N = P p^C
+\end{equation}
+
+In the next step, points $p^N$ have to be transformed by the view-port matrix $V$ into image coordinates.
+
+\begin{equation}
+p^I = \mbox{hom}(V p^N)
+\end{equation}
+
+where $\mbox{hom(x,y,z,h)=(x/h,y/h,z/h,1)}$ and
+
+%    float dx = (m_viewPort.left()+m_viewPort.right())/2;
+%    float dy = (m_viewPort.top()+m_viewPort.bottom())/2;
+%    float slope = iclMin(m_viewPort.width/2,m_viewPort.height/2);
+%    return  Mat ( slope , 0     , 0 , dx,
+%                  0     , slope , 0 , dy,
+%                  0     , 0     , 1 , 0 ,
+%                  0     , 0     , 0 , 1 );
+
+
+\begin{equation}
+V = \left(\begin{array}{cccc}
+  s_V & 0 & 0 & \Delta x_V\\
+  0 & s_V & 0 & \Delta y_V\\
+  0 & 0 & 1 & 0\\
+  0 & 0 & 0 & 1\\
+  \end{array}\right)
+\end{equation}
+ 
+with $\Delta x_V= v_x+v_w/2$, $\Delta y_V= v_y+v_h/2$ and $s_V = \mbox{min}(v_w/2,v_h/2)$.\\
+The resulting transformation is 
+
+\begin{equation}
+p^I = \mbox{hom}(V P C p^W)
+\end{equation}
+
+Where only the first two components of $p^I$ are used. Once have defined the camera transformation model further functions like moving or rotating the camera, or creating view rays for image pixels can be implemented straight forward. Take a look at the \icode{Camera} reference for more details (see \iclclassref{Geom}{Camera}).
+
+
+\subsection{Camera Calibration Applications}
+
+Currently, ICL provides two camera calibration tools are provided: 
+
+
+
 
 
 

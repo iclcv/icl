@@ -61,7 +61,7 @@ template<class T>
   result.setSize(input.getSize());
   const Channel<T> cs[3];
   input.extractChannels(cs);
-  Channel8u dst = result.extractChannel(0);
+  Channel8u dst = result[0];
   t *= 3*255*255;
   for(int i=0;i<cs[0].getDim();++i){
     int d = 0;

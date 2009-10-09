@@ -125,7 +125,7 @@ namespace icl{
     int xCenter = size.width/2;
     int yCenter = size.height/2;
     
-    Channel32f k = poKernelImage->extractChannel(0);
+    Channel32f k = (*poKernelImage)[0];
     
     gamma *=gamma;
     sigma *=sigma*2;

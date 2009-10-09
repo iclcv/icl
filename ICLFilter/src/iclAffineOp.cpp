@@ -33,8 +33,8 @@ namespace icl{
 
     for(int ch=0; ch < poSrc->getChannels(); ch++) {
       const Img<T> &srcI = *poSrc->asImg<T>();
-      const Channel<T> src = poSrc->asImg<T>()->extractChannel(ch);
-      Channel<T> dst = poDst->asImg<T>()->extractChannel(ch);
+      const Channel<T> src = (*poSrc->asImg<T>())[ch];
+      Channel<T> dst = (*poDst->asImg<T>())[ch];
       
       if(m_eInterpolate == interpolateLIN){
         for(int x=sx;x<ex;++x){

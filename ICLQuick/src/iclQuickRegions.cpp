@@ -11,9 +11,8 @@ namespace icl{
     ICLASSERT_RETURN_VAL(image.getChannels()==3,ImgQ());
     ImgQ result = zeros(image.getWidth(),image.getHeight());
     
-    Channel32f rgb[3];
-    image.extractChannels(rgb);
-    Channel32f m = result.extractChannel(0);
+    Channel32f rgb[]={rgb[0],rgb[2],rgb[2]};
+    Channel32f m = result[0];
 
     for(int x=0;x<image.getWidth();x++){
       for(int y=0;y<image.getHeight();y++){

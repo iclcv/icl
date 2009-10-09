@@ -21,7 +21,7 @@ void run(){
     gui->getValue<ImageHandle>("image").update();
     
     Channel8u c[3]; image->asImg<icl8u>()->extractChannels(c);
-    Channel8u s = segImage.extractChannel(0);
+    Channel8u s = segImage[0];
     
     ChromaAndRGBClassifier classi = cg->getChromaAndRGBClassifier();
     

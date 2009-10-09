@@ -47,8 +47,8 @@ namespace icl{
                          Img<T> &dst,
                          scalemode mode){
     for(int c=0;c<src.getChannels();++c){
-      const Channel<T> s = src.extractChannel(c);
-      Channel<T> d = dst.extractChannel(c);
+      const Channel<T> s = src[c];
+      Channel<T> d = dst[c];
       if(mode == interpolateNN){
         apply_warp_2<T,interpolate_pixel_nn<T> >(warpMap,s,d,s.getSize());
       }else if(mode == interpolateLIN){

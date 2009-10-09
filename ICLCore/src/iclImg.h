@@ -236,6 +236,7 @@ namespace icl {
         const DynMatrix<Type> &c3=DynMatrix<Type>(), 
         const DynMatrix<Type> &c4=DynMatrix<Type>(), 
         const DynMatrix<Type> &c5=DynMatrix<Type>()) throw (InvalidMatrixDimensionException);
+
     
     /// Destructor
     ~Img();
@@ -348,20 +349,18 @@ namespace icl {
       return const_cast<Img<Type>*>(this)->operator()(x,y);
     }
     
-    /// extracts an image channel as DynMatrix type
-    /** This function does not work for NULL sized images
-        @see ICLUtils::iclDynMatrix.h
+    /// extracts an image channel 
+    /** @see ICLUtils::iclDynMatrix.h
         @param channel valid channel index */
-    inline DynMatrix<Type> operator[](int channel) throw (InvalidMatrixDimensionException){
-      return DynMatrix<Type>(getWidth(),getHeight(),begin(channel),false);
+    inline Channel<Type> operator[](int channel) {
+      return Channel<Type>(begin(channel),getSize(),getROI());
     }
 
-    /// extracts an image channel as DynMatrix type (const version)
-    /** This function does not work for NULL sized images
-        @see ICLUtils::iclDynMatrix.h
+    /// extracts an image channel 
+    /** @see ICLUtils::iclDynMatrix.h
         @param channel valid channel index */
-    inline const DynMatrix<Type> operator[](int channel) const{
-      return const_cast<Img<Type>*>(this)->operator[](channel);
+    inline const Channel<Type> operator[](int channel) const {
+      return Channel<Type>(const_cast<Type*>(begin(channel)),getSize(),getROI());
     }
 
 
@@ -384,30 +383,66 @@ namespace icl {
 
     /** @{ @name extractChannel functions */
     /* {{{ open  */
-    inline Channel<Type> extractChannel(int channel) { 
-      return Channel<Type>(getData(channel),getSize(),getROI());
-    }
 
-    inline const Channel<Type> extractChannel(int channel) const { 
-      return const_cast<Img<Type>*>(this)->extractChannel(channel);
+    /*inline <Type> operator[](int channel) throw (InvalidMatrixDimensionException){
+      return DynMatrix<Type>(getWidth(),getHeight(),begin(channel),false);
+    }*/
+    
+    /// extracts given channel as DynMatrix<Type>
+    /* This function cannot be called on (0,x) or (x,0)-sized images */
+    inline DynMatrix<Type> extractDynMatrix(int channel) throw (InvalidMatrixDimensionException){ 
+      return DynMatrix<Type>(getWidth(),getHeight(),begin(channel),false);
+    }
+    /// extracts given channel as DynMatrix<Type> const
+    /* This function cannot be called on (0,x) or (x,0)-sized images */
+    inline const DynMatrix<Type> extractDynMatrix(int channel) const throw (InvalidMatrixDimensionException){ 
+      return DynMatrix<Type>(getWidth(),getHeight(),const_cast<Type*>(begin(channel)),false);
     }
     
+    /// extracts all image channels at once into given channel pointer
     inline void extractChannels(Channel<Type> *dst){
       ICLASSERT_RETURN(dst);
       for(int i=0;i<getChannels();++i){
-        dst[i] = extractChannel(i);
+        dst[i] = (*this)[i];
       }
     }
+
+    /// this function is forbidden, it produces an error message
+    /** This would allow the programme to violate the Imgs const concept */
     inline void extractChannels(Channel<Type> *dst) const{
       (void)dst;
       ERROR_LOG("extracting channels of a const Img into an un-const Channel\n"
-                "is forbidden as it violates const concept");
+                "is forbidden because it violates the const concept");
     }
 
-    
+    /// extracts all image channels at once into given channel pointer (const)
+    /** Plese note that the given dst-pointer must also be const */
     inline void extractChannels(const Channel<Type> *dst) const{
       return const_cast<Img<Type>*>(this)->extractChannels(const_cast<Channel<Type>*>(dst));
     }
+
+    /// extracts all data pointers into given destination pointer
+    inline void extractPointers(Type **dst){
+      for(int i=0;i<getChannels();++i){
+        dst[i] = begin(i);
+      }
+    }
+
+    /// this function is forbidden, it produces an error message
+    /** This would allow the programme to violate the Imgs const concept */
+    inline void extractPointers(Type **dst) const{
+      (void)dst;
+      ERROR_LOG("extracting channel data of a const Img into an un-const pointer\n"
+                "is forbidden because it violates the const concept");
+    }
+
+    /// extracts all data pointers into given destination pointer (const)
+    inline void extractPointers(const Type **dst) const{
+      for(int i=0;i<getChannels();++i){
+        dst[i] = begin(i);
+      }
+    }
+
 
 
     /// @}

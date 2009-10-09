@@ -420,7 +420,7 @@ namespace icl{
     ICLASSERT_RETURN(image.getChannels()>0);
 
     const std::vector<ScanLine> &s = getScanLines();
-    Channel<T> channel = image.extractChannel(0);
+    Channel<T> channel = image[0];
     
     std::for_each(s.begin(),s.end(),DrawScanLine<T>(&channel,val));
   }
@@ -466,7 +466,7 @@ namespace icl{
     Point32f &p = *const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->accurateCenter;
     ICLASSERT_RETURN_VAL(grayImage.getChannels(),p);
     Rect r = getBoundingBox().enlarged(bbMargin) & grayImage.getImageRect();
-    const Channel<T> c = grayImage.extractChannel(0);
+    const Channel<T> c = grayImage[0];
     
     double sum = 0;
     double cx=0,cy=0;

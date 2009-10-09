@@ -241,8 +241,7 @@ namespace icl{
     /// calculates the intersection point between this view ray and a given plane
     /** Throws an ICLException in case of parallel plane and line 
         A ViewRay is defined by  \f$V: \mbox{offset} + \lambda \cdot \mbox{direction} \f$
-        A Plane is given by \f$ P: < (X - \mbox{planeOffset}), \mbox{planeNormal}> = 0 \f$
-        
+        A Plane is given by \f$ P: < (X - \mbox{planeOffset}), \mbox{planeNormal}> = 0 \f$        
         Intersection is described by 
         \f$<(\mbox{offset} + \lambda \cdot \mbox{direction}) - \mbox{planeOffset},planeNormal> = 0\f$
         which yields: 

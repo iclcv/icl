@@ -17,7 +17,7 @@ namespace icl{
     m_h = (rRange.maxVal-rRange.minVal)/dR;
     
     m_image = Img32s(Size(m_w,m_h),1);
-    m_lut = m_image.extractChannel(0);
+    m_lut = m_image[0];
 
     m_mr = (m_h-1)/(rRange.maxVal-rRange.minVal);
     m_br = -rRange.minVal * m_mr;
@@ -32,12 +32,12 @@ namespace icl{
       int w = 2*dx, h=2*dy;
       if(dx >0 && dy >0){
         m_inhibitImage = Img32f(Size(2*dx,2*dy),1);
-        DynMatrix<float> I = m_inhibitImage[0];
+        Channel32f I = m_inhibitImage[0];
         
-        Point32f c(I.cols()/2,I.rows()/2);
+        Point32f c(I.getWidth()/2,I.getHeight()/2);
         
-        for(unsigned int x=0;x<I.cols();++x){
-          for(unsigned int y=0;y<I.rows();++y){
+        for(int x=0;x<I.getWidth();++x){
+          for(int y=0;y<I.getHeight();++y){
             float r = (c-Point32f(x,y)).transform(2./w,2./h).norm();
             I(x,y) = 1.0 - exp(-r*r);
           }
@@ -84,7 +84,7 @@ namespace icl{
     const Rect r(p.x-dx,p.y-dy,2*dx,2*dy);  
 
     if(m_gaussianInhibition){
-      DynMatrix<float> c0 = m_inhibitImage[0];
+      Channel32f c0 = m_inhibitImage[0];
       for(int x=r.x;x<r.right();++x){
         for(int y=r.y;y<r.bottom();++y){
           if(!m_inhibitImage.getImageRect().contains(x-r.x,y-r.y)){
@@ -111,7 +111,7 @@ namespace icl{
       m_image = *image->asImg<icl32s>();
       ICL_DELETE(image);
       m_image.setFullROI();
-      m_lut = m_image.extractChannel(0);
+      m_lut = m_image[0];
     }
   }
   

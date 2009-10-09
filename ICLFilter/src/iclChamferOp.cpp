@@ -42,8 +42,8 @@ namespace icl{
       // {{{ open
       if(poSrc->hasFullROI() && poDst->hasFullROI()){
         
-        Channel<T> src = poSrc->extractChannel(channel);
-        Channel32s dst = poDst->extractChannel(channel);
+        Channel<T> src = (*poSrc)[channel];
+        Channel32s dst = (*poDst)[channel];
         
         /// initialization
         for(int i=0;i<src.getDim();i++){
@@ -75,8 +75,8 @@ namespace icl{
       if(poSrc->hasFullROI() && poDst->hasFullROI()){
         int xEnd = poSrc->getWidth();
         int yEnd = poSrc->getHeight();
-        const Channel<T> src = poSrc->extractChannel(channel);
-        Channel32s dst = poDst->extractChannel(channel);
+        const Channel<T> src = (*poSrc)[channel];
+        Channel32s dst = (*poDst)[channel];
         for(int x=0;x<xEnd;++x){
           for(int y=0;y<yEnd;++y){
             if(src(x,y)) dst(x/scaleFactor,y/scaleFactor) = 0;
@@ -90,8 +90,8 @@ namespace icl{
         int xDstStart = poDst->getROI().x;
         int yDstStart = poDst->getROI().y;
 
-        const Channel<T> src = poSrc->extractChannel(channel);
-        Channel32s dst = poDst->extractChannel(channel);
+        const Channel<T> src = (*poSrc)[channel];
+        Channel32s dst = (*poDst)[channel];
         
         poDst->clear(channel,maxVal,true);
         Rect r = poDst->getROI();
@@ -130,7 +130,7 @@ namespace icl{
       if(poDst->hasFullROI()){
         int w = poDst->getWidth();
         int h = poDst->getHeight();
-        Channel32s dst = poDst->extractChannel(channel);
+        Channel32s dst = (*poDst)[channel];
         
         // forward loop
         for(int x=1;x<w-1;++x){
@@ -162,7 +162,7 @@ namespace icl{
         }
       }else{
 
-        Channel32s dst = poDst->extractChannel(channel);
+        Channel32s dst = (*poDst)[channel];
 
         Rect r = poDst->getROI();
      
@@ -352,7 +352,7 @@ namespace icl{
     inline double apply_directed_hausdorff_distance(const Img32s *chamferImage, const std::vector<Point> &model, HausdorffMetricMode hmm,PenaltyMode pm){
       // {{{ open
 
-      Channel32s chan = chamferImage->extractChannel(0);
+      Channel32s chan = (*chamferImage)[0];
       register int x,y;      
       Rect imageRect = Rect(Point::null,chamferImage->getSize());
       for(unsigned int i=0;i<model.size();++i){
@@ -371,8 +371,8 @@ namespace icl{
     inline double apply_directed_hausdorff_distance_2(const Img32s *chamferImage, const Img32s *modelChamferImage, HausdorffMetricMode hmm,PenaltyMode pm){
       // {{{ open
 
-      Channel32s chan = chamferImage->extractChannel(0);
-      Channel32s modelChan = modelChamferImage->extractChannel(0);   
+      Channel32s chan = (*chamferImage)[0];
+      Channel32s modelChan = (*modelChamferImage)[0];
       Rect imageRect = Rect(Point::null,chamferImage->getSize());
       Rect modelROI = modelChamferImage->getROI() & imageRect;
       
@@ -405,7 +405,7 @@ namespace icl{
     
     ensureCompatible(image,depth32s, size, 1, formatMatrix, roi);
     (*image)->clear(0,bg);
-    Channel32s c = (*image)->asImg<icl32s>()->extractChannel(0);
+    Channel32s c = (*(*image)->asImg<icl32s>())[0];
     for(unsigned int i=0;i<model.size();++i){
       if(roi.contains(model[i].x,model[i].y)){
         c(model[i].x,model[i].y) = fg;

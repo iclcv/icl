@@ -310,7 +310,7 @@ namespace icl{
           switch(result.getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) \
             case depth##D :fix_unknown_pixels<icl##D>(im_CONF_MAP->data, im_CONF_MAP->dataType, \
-                                                      result.asImg<icl##D>()->extractChannel(ampChannelIdx), \
+                                                      (*result.asImg<icl##D>())[ampChannelIdx], \
                                                       m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
             ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
