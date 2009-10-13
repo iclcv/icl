@@ -9,28 +9,27 @@ As we will see later on, the ICL is partitioned into currently 10 packages. To e
 }:
 
 \begin{itemize}
-\item [Chapter \ref{cha:what-is-the-icl}] \textbf{What is ICL:}\\ The underlying goals and ideas of ICL are presented. \todo{correct from here!}
-\item [Chapter \ref{cha:features}] \textbf{Feature Overview:}\\ The ICL provides a large set of features, packages, algorithms and utility classes. To motivate the reader for reading also the following chapters, some \emph{highlights} of the ICL are presented here.
-\item [Chapter \ref{cha:what-is-an-image}] \textbf{What is an Image:}\\ An image representation is fundamentally for the development of reusable computer vision algorihtms. The ICL ImgBase \iclclassref{Core}{ImgBase} and Img \iclclassref{Core}{Img} class will be introduced. In particular it will be shown why we use template classes in combination with inheritance and what problems may arise therewith. 
+\item [Chapter \ref{cha:what-is-the-icl}] \textbf{What is ICL:}\\ The underlying goals and ideas of ICL are presented. 
+\item [Chapter \ref{cha:features}] \textbf{Feature Overview:}\\ ICL provides a large set of features, packages, algorithms and utility classes. In order to motivate the reader to continue, some highlights of ICL are presented here.
+\item [Chapter \ref{cha:what-is-an-image}] \textbf{What is an Image?:}\\ A representation of an image is fundamental for the development of reusable computer vision algorithms. The ICL \icode{ImgBase} \iclclassref{Core}{ImgBase} and \icode{Img} \iclclassref{Core}{Img} classes are introduced. In particular we show why we use template classes in combination with inheritance and what problems can arise from this.
 \item [Chapter \ref{cha:the-image-class}]\textbf{Developing an Image Class}\\
-In this section the C++ image classes are developed step-by-step. Particularly, it will be shown, how the \inlinecode{ImgBase}-class (\iclclassref{Core}{ImgBase}) and \inlinecode{Img<T>}-template class (\iclclassref{Core}{Img}) are linked together. 
+In this chapter, the development of the two fundamental ICL C++ image classes is described in a step-by-step manner. In particular, we show how the two classes are linked together.
 \item [Chapter \ref{cha:img-base-functions}]\textbf{The ImgBase Class:}\\
-What are the essential functions of the \inlinecode{ImgBase}-class? Take a look at this chapter to find out.
+The essential functions of the \inlinecode{ImgBase}-class are described in this chapter in detail.
 \item [Chapter \ref{cha:img-class-functions}]\textbf{The Img-Template Class:}\\
-This section explains how to access pixels of image instances. Each pixel access technique has it's advantages and disadvantages. This section provides a lot of examples and benchmarks for that.
-\item [Chapter \ref{cha:icl-packages}]\textbf{ICL Packages (An Overview):}\\ The ICL consists of a set of (currently) 10 sub-packages that more or less base on each other. In this part, the contents and the basic ideas of these packages are introduced and explained. Furthermore, common interfaces will be discussed here.
+This chapter explains the mechanism of how to access the pixels of an image instance. Each technique to access pixels has its advantages and disadvantages. We provide a lot of examples and benchmarks to evaluate them.
+\item [Chapter \ref{cha:icl-packages}]\textbf{ICL Packages (An Overview):}\\ ICL currently consists of a set of 10 sub-packages that partly depend on each other. The contents and the basic ideas behind these packages are introduced and explained here. Furthermore, common interfaces are discussed.
 %\item [Chapter \ref{cha:templates}]\textbf{C++ Templates:}\\ To make later chapters more accessible, C++ templating techniques are explained in detail. Particularly, it will be shown, how templates are translated by the compiler, and how templates can be exploited\\
 %\small{\textbf{i)}} To reduce the amount of redundant source code\\
 %\small{\textbf{ii)}} To accelerate code without using constants for each possible parameter of functions.    
-\item \textbf{Simple Image processing:}\\ How can simple Image processing algorithms be implemented (and how can they implemented elegantly and/or efficiently) using the ICL.
-\item \textbf{Graphical User Interfaces (GUI):}\\ The ICLQt package provides a powerful wrapper for Qt-based applications. In this part it will be shown, how simple and even more complex GUI's can be created and especially, how user input can be synchronized with the applications worker thread.
-\item \textbf{Writing advanced applications:}\\ Here some advanced programming techniques are exemplified: Writing applications with GUI support, managing several threads, handling program arguments and much more.
-\item \textbf{ICL-Development:}\\ICL developers need some deeper insights into the file structure and the makefile system. These information will be given in this part.
-\item \textbf{ICL-Projects:}\\Development of ICL-based applications can be performed very conveniently using a special makefile system and directory structure provided by the so called \emph{ICLProjects} svn repository. How to get these projects, how to add own projects here and how to include other projects and external libraries is shown in this (currently) last part. 
+\item \textbf{Simple Image Processing:}\\ Details on how simple image processing algorithms can be implemented using ICL are presented.
+\item \textbf{Graphical User Interfaces (GUI):}\\ The ICLQt package provides a powerful wrapper for Qt-based applications. In this chapter we show, how simple and complex GUIs can be created and in particular, how user input can be synchronized with the applications worker thread.
+\item \textbf{Writing Advanced Applications:}\\ Some advanced programming techniques are presented here. These include, but are not limited to, writing applications with GUI support, managing several threads and handling program arguments.
+\item \textbf{ICL-Development:}\\ICL developers will need a deeper insights into the file structure and the makefile system. This information is provided in this chapter.
+\item \textbf{ICL-Projects:}\\Development of ICL-based applications can be performed very conveniently using a special makefile system and directory structure provided by the \emph{ICLProjects} svn repository. How to access these projects, how to add projects and how to include other projects and external libraries is presented in this chapter.
 \end{itemize} 
 
-
-The following chapter will examine core features and design principles of the ICL.
+We now examine the core features and design principles of ICL.
 
 
 
