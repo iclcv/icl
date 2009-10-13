@@ -35,6 +35,7 @@ ${MOC_FILES} \
 ../src/iclCheckBoxHandle.cpp \
 ../src/iclDrawHandle.cpp \
 ../src/iclDrawWidget3D.cpp \
+../src/iclStateHandle.cpp \
 ../src/iclDrawWidget.cpp \
 ../src/iclFloatHandle.cpp \
 ../src/iclFSliderHandle.cpp \
@@ -64,6 +65,7 @@ ${MOC_FILES} \
 ../src/iclConfigFileGUI.cpp \
 ../src/iclApplication.cpp \
 ../src/iclIconFactory.cpp \
+../src/iclThreadedUpdatableTextView.cpp \
 ../src/iclDataStore.cpp
 
 include_HEADERS= \
@@ -100,6 +102,7 @@ include_HEADERS= \
 ../src/iclGUISyntaxErrorException.h \
 ../src/iclGUIWidget.h \
 ../src/iclImageHandle.h \
+../src/iclStateHandle.h \
 ../src/iclSplitterHandle.h \
 ../src/iclImageStatistics.h \
 ../src/iclImgParamWidget.h \
@@ -117,6 +120,7 @@ include_HEADERS= \
 ../src/iclStringHandle.h \
 ../src/iclStringSignalButton.h \
 ../src/iclThreadedUpdatableWidget.h \
+../src/iclThreadedUpdatableTextView.h \
 ../src/iclWidgetCaptureMode.h \
 ../src/iclWidget.h \
 ../src/iclProxyLayout.h \

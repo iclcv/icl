@@ -2,14 +2,14 @@
 % chapter introduction
 %
 
-This document is intended as a (more or less short) tutorial for the computer vision library \textbf{ICL} (\textbf{I}mage \textbf{C}omponent \textbf{L}ibrary). It will explain different aspects, that are useful to work with the ICL. The following outline shall give a concise overview over this document:
-
+This document is intended as a tutorial for the \textbf{I}mage \textbf{C}omponent \textbf{L}ibrary (ICL). ICL is a C++-computer vision library. The tutorial explains different important aspects that are needed in order to work with ICL. The following outline gives a concise overview of this document\footnote{
 \textbf{Note:} In this document we use cross-references to the ICL-Doxygen\footnote{see www.doxygen.org} documentation \iclrefref. This links will be displayed like this:
 \iclclassref{Core}{Img}\\
 As we will see later on, the ICL is partitioned into currently 10 packages. To ease orientation, each reference contains an additional package label. If these links don't work, please ensure that you have build the ICL-documentation. Additionally it might be necessary to rebuild this document after adapting the \inlinecode{icl-file-root.tex} file located in \inlinecode{ICL/tutorial} to your current ICL installation directory.
+}:
 
 \begin{itemize}
-\item [Chapter \ref{cha:what-is-the-icl}] \textbf{What is the ICL:}\\ Here, the underlying goals and ideas of the ICL will be presented.
+\item [Chapter \ref{cha:what-is-the-icl}] \textbf{What is ICL:}\\ The underlying goals and ideas of ICL are presented. \todo{correct from here!}
 \item [Chapter \ref{cha:features}] \textbf{Feature Overview:}\\ The ICL provides a large set of features, packages, algorithms and utility classes. To motivate the reader for reading also the following chapters, some \emph{highlights} of the ICL are presented here.
 \item [Chapter \ref{cha:what-is-an-image}] \textbf{What is an Image:}\\ An image representation is fundamentally for the development of reusable computer vision algorihtms. The ICL ImgBase \iclclassref{Core}{ImgBase} and Img \iclclassref{Core}{Img} class will be introduced. In particular it will be shown why we use template classes in combination with inheritance and what problems may arise therewith. 
 \item [Chapter \ref{cha:the-image-class}]\textbf{Developing an Image Class}\\

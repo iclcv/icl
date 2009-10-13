@@ -42,6 +42,7 @@
 #include <iclBorderHandle.h>
 #include <iclButtonGroupHandle.h>
 #include <iclLabelHandle.h>
+#include <iclStateHandle.h>
 #include <iclSliderHandle.h>
 #include <iclFSliderHandle.h>
 #include <iclIntHandle.h>
@@ -68,6 +69,7 @@
 #include <iclDrawWidget.h>
 #include <iclDrawWidget3D.h>
 #include <iclThreadedUpdatableSlider.h>
+#include <iclThreadedUpdatableTextView.h>
 
 #include <map>
 
@@ -541,6 +543,37 @@ namespace icl{
   };
   
   // }}}
+
+
+
+  struct StateGUIWidget : public GUIWidget{
+    // {{{ open
+    StateGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,-1,Size(4,1)){
+      if(def.numParams() > 1) throw GUISyntaxErrorException(def.defString(),"need max. 1 parameter here!");      
+      m_text = new ThreadedUpdatableTextView(def.parentWidget());
+      m_text->setReadOnly(true);
+
+      addToGrid(m_text);
+      
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<StateHandle>(def.handle(),StateHandle(m_text,this,def.numParams()?parse<int>(def.param(0)):1<<30));
+        getGUI()->unlockData();
+      }
+    }
+    static string getSyntax(){
+      return 
+      string("state(MAX_LINES)[general params] \n")+
+      string("\tMAX_LINES is the maximal line count of the state widget, odd lines are removed automatically");
+      gen_params();
+    }
+  private:
+    ThreadedUpdatableTextView *m_text;
+  };
+  
+  // }}}
+
+
   struct SliderGUIWidget : public GUIWidget{
     // {{{ open
 
@@ -1249,6 +1282,7 @@ public:
       MAP_CREATOR_FUNCS["string"] = create_widget_template<StringGUIWidget>;
       MAP_CREATOR_FUNCS["disp"] = create_widget_template<DispGUIWidget>;
       MAP_CREATOR_FUNCS["image"] = create_widget_template<ImageGUIWidget>;
+      MAP_CREATOR_FUNCS["state"] = create_widget_template<StateGUIWidget>;
       MAP_CREATOR_FUNCS["draw"] = create_widget_template<DrawGUIWidget>;
       MAP_CREATOR_FUNCS["draw3D"] = create_widget_template<DrawGUIWidget3D>;
       MAP_CREATOR_FUNCS["combo"] = create_widget_template<ComboGUIWidget>;

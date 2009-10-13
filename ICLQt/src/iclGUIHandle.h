@@ -30,7 +30,9 @@ namespace icl{
 
     /// this can be used for direct access to wrapped type
     const T* operator->() const{ return m_poContent; }
-    
+
+    /// returns whether wrapped pointer is null or not
+    bool isNull() const { return m_poContent; }
     private:
     /// wrapped component
     T *m_poContent;

@@ -22,6 +22,7 @@
 #include <iclIntHandle.h>
 #include <iclCheckBoxHandle.h>
 #include <iclFloatHandle.h>
+#include <iclStateHandle.h>
 #include <iclStringHandle.h>
 #include <iclComboHandle.h>
 #include <iclSpinnerHandle.h>
@@ -111,6 +112,9 @@
 
 /// extract a SplitterHandle as reference from GUI object named gui
 #define gui_SplitterHandle(NAME) gui_VAL(SplitterHandle,NAME)
+
+/// extract a SplitterHandle as reference from GUI object named gui
+#define gui_StateHandle(NAME) gui_VAL(StateHandle,NAME)
 
 /** 
     \defgroup COMMON "Most common classes"
