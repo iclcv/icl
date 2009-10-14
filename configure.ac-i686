@@ -44,7 +44,7 @@ fi
 
 
 ###############################################################################
-# ICL 
+# IPP
 ###############################################################################
 
 AC_ARG_WITH([IPP],
@@ -82,6 +82,42 @@ AC_ARG_WITH([IPP],
                 [])
         fi])
 AM_CONDITIONAL([HAVE_IPP_COND],[test x$HAVE_IPP = xTRUE])
+
+
+###############################################################################
+# MKL
+###############################################################################
+
+AC_ARG_WITH([MKL],
+        [AS_HELP_STRING([--without-MKL],
+                        [disable support for MKL])],
+        [HAVE_MKL=FALSE],
+        [ICL_NOTIFY_CHECK([MKL           ])
+        ICL_WITH_ROOT([MKL],[/vol/nivision/MKL/10.2])
+
+        HAVE_MKL=TRUE
+        ICL_PUSH_FLAG_VARS
+        ICL_EXTEND_FLAG_VARS_TMP_FOR([MKL],[lib/32],[include])
+        
+        AC_CHECK_HEADER([mkl_types.h],[],[HAVE_MKL=FALSE],[])
+        AC_CHECK_HEADER([mkl_cblas.h],[],[HAVE_MKL=FALSE],[])
+
+        AC_CHECK_LIB([mkl_core],[mkl_serv_allocate],[],[HAVE_MKL=FALSE],[-lpthread -lm])
+        
+        ICL_POP_FLAG_VARS
+
+        if test "$HAVE_MKL" = "TRUE" ; then
+
+        ICL_EXTEND_FLAG_VARS_2(
+                [MKL],
+                [-L$MKL_ROOT/lib/32 -lmkl_intel -lmkl_intel_thread -lmkl_core -lpthread],
+                [-Wl,-rpath=${MKL_ROOT}/lib/32],
+                [-I$MKL_ROOT/include],
+                [-DHAVE_MKL],
+                [],
+                [])
+        fi])
+AM_CONDITIONAL([HAVE_MKL_COND],[test x$HAVE_MKL = xTRUE])
 
 
 
@@ -570,6 +606,7 @@ AC_MSG_NOTICE([+---------------------------------------+])
 AC_MSG_NOTICE([| Summary                               |])
 AC_MSG_NOTICE([+---------------------------------------+])
 ICL_NOTIFY_SUPPORT([IPP],          [IPP      ])
+ICL_NOTIFY_SUPPORT([MKL],          [MKL      ])
 ICL_NOTIFY_SUPPORT([LIBDC],        [libdc1394])
 ICL_NOTIFY_SUPPORT([UNICAP],       [Unicap   ])
 ICL_NOTIFY_SUPPORT([OPENGL],       [OpenGL   ])
@@ -639,6 +676,7 @@ ICL_PC_ENTRY([includedir=\${prefix}/include])
 ICL_PC_ENTRY([package=$PACKAGE])
 ICL_PC_ENTRY([])
 ICL_PC_ENTRY_FOR_ROOT([IPP])
+ICL_PC_ENTRY_FOR_ROOT([MKL])
 ICL_PC_ENTRY_FOR_ROOT([LIBDC])
 ICL_PC_ENTRY_FOR_ROOT([UNICAP])
 ICL_PC_ENTRY_FOR_ROOT([OPENGL])

@@ -403,6 +403,20 @@ namespace icl{
   DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
   throw (IncompatibleMatrixDimensionException);
 
+  /// applies matrix mutliplication on optionally transposed matrices (specialized for big matrices)
+  /** sometimes, it might be more efficient to call matrix multiplication on imaginary transposed source matrices, to
+      avoid having to apply an additional transposing step.
+
+      This function is accelerated using Intel MKL. If Intel MKL is not available, function matrix_mult_t is used as fallback.
+      @param src1 left operand
+      @param src2 right operand
+      @param dst1 destination matrix (adapted on demand)
+      @param transpDef or-ed list of transposedDef values e.g. (SRC1_T | SRC2_T) mean both matrices are transposed.
+  */
+  template<class T>
+  DynMatrix<T> &big_matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
+  throw (IncompatibleMatrixDimensionException);
+
   template<class T>
   DynMatrix<T> &matrix_add_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
   throw (IncompatibleMatrixDimensionException);
@@ -415,3 +429,4 @@ namespace icl{
 }
 
 #endif
+

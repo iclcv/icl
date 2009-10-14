@@ -2,6 +2,11 @@
 #include <cmath>
 #include <iclMacros.h>
 
+#ifdef HAVE_MKL
+  #include "mkl_types.h"
+  #include "mkl_cblas.h"
+#endif
+
 // check matrix dimensions: (m1.cols == m2.cols) and (m1.rows == m2.rows)
 //#define CHECK_DIM(m1,m2,RET)
 //  ICLASSERT_RETURN_VAL( (m1.cols() == m2.cols()) && (m1.rows() == m2.rows()), RET)
@@ -741,6 +746,12 @@ namespace icl{
   }
 
   template<class T>
+  DynMatrix<T> &big_matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    return matrix_mult_t( src1, src2, dst, transpDef );
+  }
+
+  template<class T>
   DynMatrix<T> &matrix_add_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
     throw (IncompatibleMatrixDimensionException){
     switch(transpDef){
@@ -784,7 +795,7 @@ template<class T, typename func>
     IppStatus status = f(src1.begin(),src1.stride1(),src1.stride2(),
                          src2.begin(),src2.stride1(),src2.stride2(),
                          dst.begin(),dst.stride1(), dst.stride2(),
-			 dst.cols(),dst.rows());
+                         dst.cols(),dst.rows());
     if(status != ippStsNoErr){
       throw IncompatibleMatrixDimensionException(ippGetStatusString(status));
     }
@@ -910,6 +921,7 @@ template<class T, typename func>
     }
     return dst;
   }
+
   template<> DynMatrix<double> &matrix_mult_t(const DynMatrix<double> &src1, const DynMatrix<double> &src2, DynMatrix<double> &dst, int transpDef)
     throw (IncompatibleMatrixDimensionException){
     switch(transpDef){
@@ -934,11 +946,78 @@ template<class T, typename func>
     return dst;
   }
 
+#endif // HAVE_IPP
+
+
+  // optimized specialization only if MKL was found 
+#ifdef HAVE_MKL
+  template<> DynMatrix<float> &big_matrix_mult_t(const DynMatrix<float> &src1, const DynMatrix<float> &src2, DynMatrix<float> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T:
+        CHECK_DIM_CR(src1,src2,dst);
+        dst.setBounds(src2.cols(),src1.rows());
+        cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, src1.rows(), src2.cols(), src1.cols(), 1.0, src1.begin(), src1.rows(),
+                    src2.begin(), src2.rows(), 0.0, dst.begin(), src1.rows());
+      case SRC1_T:
+        CHECK_DIM_RR(src1,src2,dst);
+        dst.setBounds(src2.cols(),src1.cols());
+        cblas_sgemm(CblasRowMajor, CblasTrans, CblasNoTrans, src1.cols(), src2.cols(), src1.rows(), 1.0, src1.begin(), src1.rows(),
+                    src2.begin(), src2.rows(), 0.0, dst.begin(), src1.cols());
+      case SRC2_T:
+        CHECK_DIM_CC(src1,src2,dst);
+        dst.setBounds(src2.rows(),src1.rows());
+        cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, src1.rows(), src2.rows(), src1.cols(), 1.0, src1.begin(), src1.rows(),
+                    src2.begin(), src2.rows(), 0.0, dst.begin(), src1.rows());
+      case BOTH_T:
+        CHECK_DIM_RC(src1,src2,dst);
+        dst.setBounds(src2.rows(),src1.cols());
+        cblas_sgemm(CblasRowMajor, CblasTrans, CblasTrans, src1.cols(), src2.rows(), src1.rows(), 1.0, src1.begin(), src1.rows(),
+                    src2.begin(), src2.rows(), 0.0, dst.begin(), src1.cols());
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+  template<> DynMatrix<double> &big_matrix_mult_t(const DynMatrix<double> &src1, const DynMatrix<double> &src2, DynMatrix<double> &dst, int transpDef)
+    throw (IncompatibleMatrixDimensionException){
+    switch(transpDef){
+      case NONE_T:
+        CHECK_DIM_CR(src1,src2,dst);
+        dst.setBounds(src2.cols(),src1.rows());
+        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, src1.rows(), src2.cols(), src1.cols(), 1.0, src1.begin(), src1.rows(),
+                    src2.begin(), src2.rows(), 0.0, dst.begin(), src1.rows());
+      case SRC1_T:
+        CHECK_DIM_RR(src1,src2,dst);
+        dst.setBounds(src2.cols(),src1.cols());
+        cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, src1.cols(), src2.cols(), src1.rows(), 1.0, src1.begin(), src1.rows(),
+                    src2.begin(), src2.rows(), 0.0, dst.begin(), src1.cols());
+      case SRC2_T:
+        CHECK_DIM_CC(src1,src2,dst);
+        dst.setBounds(src2.rows(),src1.rows());
+        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, src1.rows(), src2.rows(), src1.cols(), 1.0, src1.begin(), src1.rows(),
+                    src2.begin(), src2.rows(), 0.0, dst.begin(), src1.rows());
+      case BOTH_T:
+        CHECK_DIM_RC(src1,src2,dst);
+        dst.setBounds(src2.rows(),src1.cols());
+        cblas_dgemm(CblasRowMajor, CblasTrans, CblasTrans, src1.cols(), src2.rows(), src1.rows(), 1.0, src1.begin(), src1.rows(),
+                    src2.begin(), src2.rows(), 0.0, dst.begin(), src1.cols());
+      default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
+    }
+    return dst;
+  }
+
 #endif
+
 
   template<> DynMatrix<double> &matrix_mult_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
     throw (IncompatibleMatrixDimensionException);
   template<> DynMatrix<float> &matrix_mult_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
+    throw (IncompatibleMatrixDimensionException);
+
+
+  template<> DynMatrix<double> &big_matrix_mult_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
+    throw (IncompatibleMatrixDimensionException);
+  template<> DynMatrix<float> &big_matrix_mult_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
     throw (IncompatibleMatrixDimensionException);
 
 
@@ -963,6 +1042,7 @@ template<class T, typename func>
 #undef CHECK_DIM_RR
 
 }
+
 
 
 
