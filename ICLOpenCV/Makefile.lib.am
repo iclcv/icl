@@ -1,0 +1,13 @@
+# libtool libs
+lib_LTLIBRARIES=libICLOpenCV.la
+
+libICLOpenCV_la_SOURCES= \
+../src/iclOpenCV.cpp 
+
+include_HEADERS= \
+../src/iclOpenCV.h 
+
+libICLOpenCV_la_CXXFLAGS=${AM_CXXFLAGS} \
+-I../../ICLCore/src \
+-I../../ICLUtils/src
+

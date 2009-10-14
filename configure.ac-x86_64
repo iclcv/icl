@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([ICL],[4.4.3],[celbrech@techfak.uni-bielefeld.de])
+AC_INIT([ICL],[4.5.0],[nivision@techfak.uni-bielefeld.de])
 #AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AM_INIT_AUTOMAKE([foreign])
 
@@ -109,6 +109,39 @@ AC_ARG_WITH([LIBDC],
            ICL_USE_PC_INPUT([LIBDC],[libdc1394-2])
         fi])
 AM_CONDITIONAL([HAVE_LIBDC_COND],[test x$HAVE_LIBDC = xTRUE])
+
+###############################################################################
+# For OpenCV Wrapper
+###############################################################################
+
+AC_ARG_WITH([OPENCV],
+        [AS_HELP_STRING([--without-OPENCV],
+                        [disable support for OPENCV])],
+        [HAVE_OPENCV=FALSE],
+        [ICL_NOTIFY_CHECK([OpenCV V2     ])
+        ICL_WITH_ROOT([OPENCV],[/usr])
+        HAVE_OPENCV=TRUE
+
+        ICL_PUSH_FLAG_VARS
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(OPENCV,lib,include)
+        AC_CHECK_FILE([$OPENCV_ROOT/lib/pkgconfig/opencv.pc],[],[HAVE_OPENCV=FALSE])  
+        AC_CHECK_HEADER([opencv/cv.h],[],[HAVE_OPENCV=FALSE])
+        AC_CHECK_HEADER([opencv/cv.hpp],[],[HAVE_OPENCV=FALSE])
+        AC_CHECK_HEADER([opencv/cvaux.h],[],[HAVE_OPENCV=FALSE])
+        AC_CHECK_HEADER([opencv/cvaux.hpp],[],[HAVE_OPENCV=FALSE])
+        AC_CHECK_HEADER([opencv/cxcore.h],[],[HAVE_OPENCV=FALSE])
+        #AC_CHECK_HEADER([opencv/cxcore.hpp],[],[HAVE_OPENCV=FALSE]) needs include cxcore.h as well?
+        AC_CHECK_LIB([cv],[cvSmooth],[],[HAVE_LIBDC=FALSE])
+        AC_CHECK_LIB([cvaux],[cvSegmentImage],[],[HAVE_LIBDC=FALSE])
+        AC_CHECK_LIB([cxcore],[cvAlloc],[],[HAVE_LIBDC=FALSE])
+
+        ICL_POP_FLAG_VARS
+
+        if test "$HAVE_OPENCV" = "TRUE" ; then
+           ICL_USE_PC_INPUT([OPENCV],[opencv])
+        fi])
+AM_CONDITIONAL([HAVE_OPENCV_COND],[test x$HAVE_OPENCV = xTRUE])
+
 
 
 
@@ -507,7 +540,6 @@ ICL_PC_CFLAGS=`echo ${ICL_PC_CFLAGS} | sed "s|-I/include | |g"`
 AC_MSG_NOTICE([+---------------------------------------+])
 AC_MSG_NOTICE([| Summary                               |])
 AC_MSG_NOTICE([+---------------------------------------+])
-<<<<<<< .mine
 ICL_NOTIFY_SUPPORT([IPP],          [IPP      ])
 ICL_NOTIFY_SUPPORT([LIBDC],        [libdc1394])
 ICL_NOTIFY_SUPPORT([UNICAP],       [Unicap   ])
@@ -520,7 +552,8 @@ ICL_NOTIFY_SUPPORT([VIDEODEV],     [videodev ])
 ICL_NOTIFY_SUPPORT([SVS],          [SVS      ])
 ICL_NOTIFY_SUPPORT([XCF],          [XCF      ])
 ICL_NOTIFY_SUPPORT([IMAGEMAGICK],  [Magick++ ])
-ICL_NOTIFY_SUPPORT([LIBMESASR],    [libmesasr ])
+ICL_NOTIFY_SUPPORT([LIBMESASR],    [libmesasr])
+ICL_NOTIFY_SUPPORT([OPENCV],       [OpenCV V2])
 AC_MSG_NOTICE([+---------------------------------------+])
 
 
@@ -531,6 +564,7 @@ ICLBlob ICLFilter ICLQuick ICLGeom ICLAlgorithms"
 
 # add some dependent packages
 ICL_ADD_PACKAGE_IF([ICLQt],["$HAVE_QT" = "TRUE"])
+ICL_ADD_PACKAGE_IF([ICLOpenCV],["$HAVE_OPENCV" = "TRUE"])
 
 for T in $ICL_BUILD_PACKAGES ; do
     ICL_BUILD_SUBDIRS="$ICL_BUILD_SUBDIRS $T/lib"
@@ -578,14 +612,15 @@ ICL_PC_ENTRY_FOR_ROOT([IPP])
 ICL_PC_ENTRY_FOR_ROOT([LIBDC])
 ICL_PC_ENTRY_FOR_ROOT([UNICAP])
 ICL_PC_ENTRY_FOR_ROOT([OPENGL])
-ICL_PC_ENTRY_FOR_ROOT([XINE])
 ICL_PC_ENTRY_FOR_ROOT([QT])
 ICL_PC_ENTRY_FOR_ROOT([LIBJPEG])
 ICL_PC_ENTRY_FOR_ROOT([VIDEODEV])
+ICL_PC_ENTRY_FOR_ROOT([XINE])
 ICL_PC_ENTRY_FOR_ROOT([LIBZ])
 ICL_PC_ENTRY_FOR_ROOT([SVS])
 ICL_PC_ENTRY_FOR_ROOT([XCF])
 ICL_PC_ENTRY_FOR_ROOT([IMAGEMAGICK])
+ICL_PC_ENTRY_FOR_ROOT([OPENCV])
 ICL_PC_ENTRY(CONFIG_LIST=$PC_CONFIG_PACKAGE_LIST)
 ICL_PC_ENTRY([])
 ICL_PC_ENTRY([Name: $PACKAGE])
@@ -609,6 +644,7 @@ AC_DEFUN([ICL_CONFIG_FILES_FOR_PACKAGE],
 AC_CONFIG_FILES([Makefile])
 ICL_CONFIG_FILES_FOR_PACKAGE([ICLUtils])
 ICL_CONFIG_FILES_FOR_PACKAGE([ICLCore])
+ICL_CONFIG_FILES_FOR_PACKAGE([ICLOpenCV])
 ICL_CONFIG_FILES_FOR_PACKAGE([ICLCC])
 ICL_CONFIG_FILES_FOR_PACKAGE([ICLIO])
 ICL_CONFIG_FILES_FOR_PACKAGE([ICLBlob])

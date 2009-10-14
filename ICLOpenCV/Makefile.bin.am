@@ -1,0 +1,36 @@
+XLDFLAGS= ${LDFLAGS} \
+	-L../../ICLUtils/lib/ -lICLUtils \
+	-L../../ICLCore/lib/ -lICLCore \
+	-L../../ICLOpenCV/lib/ -lICLOpenCV \
+	-L../../ICLCC/lib/ -lICLCC \
+	-L../../ICLQt/lib/ -lICLQt \
+	-L../../ICLQuick/lib/ -lICLQuick \
+	-L../../ICLFilter/lib -lICLFilter \
+	-L../../ICLIO/lib -lICLIO \
+	-L../../ICLBlob/lib -lICLBlob \
+	-L../../ICLAlgorithms/lib -lICLAlgorithms
+
+XCXXFLAGS= ${CXXFLAGS} \
+	-I../../ICLUtils/src \
+	-I../../ICLOpenCV/src \
+	-I../../ICLCore/src \
+	-I../../ICLCC/src \
+	-I../../ICLQuick/src \
+	-I../../ICLFilter/src \
+	-I../../ICLIO/src \
+	-I../../ICLQt/src \
+	-I../../ICLBlob/src \
+	-I../../ICLAlgorithms/src
+
+
+bin_PROGRAMS=
+
+if HAVE_OPENCV_COND
+bin_PROGRAMS+= \
+icl-dummy-app
+
+icl_dummy_app_SOURCES=../examples/dummy-app.cpp
+icl_dummy_app_LDFLAGS=${XLDFLAGS}
+icl_dummy_app_CXXFLAGS=${XCXXFLAGS}
+
+endif
