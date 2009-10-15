@@ -4,6 +4,7 @@
 #include <iclLockable.h>
 #include <iclObject.h>
 #include <iclSize.h>
+#include <iclPoint32f.h>
 #include <iclRect32f.h>
 #include <iclException.h>
 #include <iclPlaneEquation.h>
@@ -61,7 +62,8 @@ namespace icl{
     /** If the camera rotation is 0,0,0, the cameras normal vector is (0,0,1) and 
         it's up vector is (0,1,0) */
     Camera(const Vec &pos, const Vec &rot, const Size &viewPortSize,
-           float f,float zNear=0.01, float zFar=1000, bool rightHandedCS=true);
+           float f, const Point32f &principlePointOffset=Point32f::null,
+           float zNear=0.01, float zFar=1000, bool rightHandedCS=true);
     
     /// common constructor with given view port size
     /** Just as the constructor below, but without viewport offset*/
@@ -70,10 +72,11 @@ namespace icl{
                   const Vec &up=Vec(1,0,0,0),
                   const Size &viewPortSize=Size::VGA,
                   float f=-45, 
+                  const Point32f &principlePointOffset=Point32f::null,
                   float zNear=0.01,
                   float zFar=1000,
                   bool rightHandedCS=true){
-      init(pos,norm,up,Rect(Point::null,viewPortSize),f,zNear,zFar,rightHandedCS);
+      init(pos,norm,up,Rect(Point::null,viewPortSize),f,principlePointOffset,zNear,zFar,rightHandedCS);
     }
 
     /// Creates a new camera with given parameters
@@ -102,15 +105,17 @@ namespace icl{
                   const Vec &up,
                   const Rect &viewPort,
                   float f=-45, 
+                  const Point32f &principlePointOffset=Point32f::null,
                   float zNear=0.01,
                   float zFar=1000,
                   bool rightHandedCS=true){
-      init(pos,norm,up,viewPort,f,zNear,zFar,rightHandedCS);
+      init(pos,norm,up,viewPort,f,principlePointOffset,zNear,zFar,rightHandedCS);
     }
     
     /// re-initializes the camera with given data
     void init(const Vec &pos,const Vec &norm, const Vec &up, 
               const Rect &viewPort, float f, 
+              const Point32f &principlePointOffset,
               float zNear, float zFar,
               bool rightHandedCS=true);
     
@@ -159,6 +164,17 @@ namespace icl{
     /// returns the current horizontal vector (norm x up)
     Vec getHorz()const;
 
+    
+    /// returns current principle point
+    Point32f  getPrinciplePointOffset() const {
+      return m_principlePointOffset;
+    }
+    
+    /// sets current principle point
+    void setPrinciplePointOffset(const Point32f &ppo){
+      m_principlePointOffset = ppo;
+    }
+    
     /// show some camera information to std::out
     void show(const std::string &title="") const;
     
@@ -316,6 +332,8 @@ namespace icl{
     
     std::string m_name; //!< name of the camera (visualized in the scene2 if set)
 
+    Point32f m_principlePointOffset; //!< offset from camera center and optical center
+    
     /// intenal helper function
     static void load_camera_from_stream(std::istream &is, 
                                         const std::string &prefix,

@@ -11,7 +11,8 @@ namespace icl{
 
 
   Camera::Camera(const Vec &pos, const Vec &rot, const Size &viewPortSize,
-                 float f,float zNear, float zFar, bool rightHandedCS){
+                 float f,const Point32f &ppo,
+                 float zNear, float zFar, bool rightHandedCS){
 
     FixedMatrix <double,2,4> nu( 0,0,
                                  0,1,
@@ -20,7 +21,7 @@ namespace icl{
     nu = create_hom_4x4<double>(rot[0],rot[1],rot[2])*nu;
     Vec norm = nu.col(0); norm[3] = 0;
     Vec up = nu.col(1); up[3] = 0;
-    init(pos,norm,up,Rect(Point::null,viewPortSize),f,zNear,zFar,rightHandedCS);
+    init(pos,norm,up,Rect(Point::null,viewPortSize),f,ppo,zNear,zFar,rightHandedCS);
   }
   
   
@@ -29,12 +30,14 @@ namespace icl{
                     const Vec &up,
                     const Rect &viewPort,
                     float f,
+                    const Point32f &ppo,
                     float zNear,
                     float zFar,
                     bool rightHandedCS){
     m_pos = pos;
     m_norm = normalize3(norm,0);
     m_up = normalize3(up,0);
+    m_principlePointOffset = ppo;
     m_zNear = zNear;
     m_zFar = zFar;
     m_F = f>0 ? f : cos((-f/2)*M_PI/180)/sin((-f/2)*M_PI/180);
@@ -98,9 +101,11 @@ namespace icl{
   Mat Camera::getProjectionMatrix() const{
     float A = (m_zFar + m_zNear)/(m_zNear - m_zFar);
     float B = (2*m_zFar*m_zNear)/(m_zNear - m_zFar);
-
-    return  Mat ( m_F , 0   ,   0,  0,
-                  0    , m_F,   0,  0,
+    float px = m_principlePointOffset.x;
+    float py = m_principlePointOffset.y;
+    
+    return  Mat ( m_F , 0   ,   px,  0,
+                  0    , m_F,   py,  0,
                   0    , 0   ,   A,  B,
                   0    , 0   ,  -1,  0 );
   }
@@ -145,6 +150,8 @@ namespace icl{
     float dx = (m_viewPort.left()+m_viewPort.right())/2;
     float dy = (m_viewPort.top()+m_viewPort.bottom())/2;
     float s = iclMin(m_viewPort.width/2,m_viewPort.height/2);
+    
+    /// TODO: here, we have to consider the principle point offset!
     
     return Vec( (pixel.x - dx)/s,
                 (pixel.y - dy)/s,
@@ -338,6 +345,7 @@ namespace icl{
     f["config.camera.norm"] = str(cam.getNorm().transp());
     f["config.camera.up"] = str(cam.getUp().transp());
     f["config.camera.f"] = cam.getFocalLength();
+    f["config.camera.principle-point-offset"] = str(cam.getPrinciplePointOffset());
     f["config.camera.viewport"] = str(cam.getViewPort());
     f["config.camera.handness"] = str(cam.m_rightHandedCS?"right":"left");
     f["config.camera.zfar"] = cam.m_zFar;
@@ -359,6 +367,12 @@ namespace icl{
     TRY( cam.setUp(parse<Vec>(f["camera.up"])) );
     
     TRY( cam.setFocalLength(f["camera.f"]) );
+    if(f.contains("camera.principle-point-offset")){
+      TRY( cam.setPrinciplePointOffset(parse<Point32f>(f["camera.principle-point-offset"]))  );    
+    }else{
+      std::cout << "warnig entry camera.principle-point-offset is missing (using (0,0) )" << std::endl;
+      cam.setPrinciplePointOffset(Point32f::null);
+    }
     TRY( cam.setViewPort(parse<Rect>(f["camera.viewport"])) );
     TRY( cam.m_rightHandedCS = (f.get<std::string>("camera.handness") == "right") );
     TRY( cam.setZFar(f["camera.zfar"]) );
