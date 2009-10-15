@@ -153,18 +153,16 @@ AC_ARG_WITH([OPENCV],
         [AS_HELP_STRING([--without-OPENCV],
                         [disable support for OPENCV])],
         [HAVE_OPENCV=FALSE],
-        [ICL_NOTIFY_CHECK([OpenCV V2     ])
+        [ICL_NOTIFY_CHECK([OpenCV        ])
         ICL_WITH_ROOT([OPENCV],[/usr])
         HAVE_OPENCV=TRUE
 
         ICL_PUSH_FLAG_VARS
-        ICL_EXTEND_FLAG_VARS_TMP_FOR(OPENCV,lib,include)
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(OPENCV,lib,include/opencv)
         AC_CHECK_FILE([$OPENCV_ROOT/lib/pkgconfig/opencv.pc],[],[HAVE_OPENCV=FALSE])  
-        AC_CHECK_HEADER([opencv/cv.h],[],[HAVE_OPENCV=FALSE])
-        AC_CHECK_HEADER([opencv/cv.hpp],[],[HAVE_OPENCV=FALSE])
-        AC_CHECK_HEADER([opencv/cvaux.h],[],[HAVE_OPENCV=FALSE])
-        AC_CHECK_HEADER([opencv/cvaux.hpp],[],[HAVE_OPENCV=FALSE])
-        AC_CHECK_HEADER([opencv/cxcore.h],[],[HAVE_OPENCV=FALSE])
+        AC_CHECK_HEADER([cv.h],[],[HAVE_OPENCV=FALSE])
+        AC_CHECK_HEADER([cvaux.h],[],[HAVE_OPENCV=FALSE])
+        AC_CHECK_HEADER([cxcore.h],[],[HAVE_OPENCV=FALSE])
         #AC_CHECK_HEADER([opencv/cxcore.hpp],[],[HAVE_OPENCV=FALSE]) needs include cxcore.h as well?
         AC_CHECK_LIB([cv],[cvSmooth],[],[HAVE_LIBDC=FALSE])
         AC_CHECK_LIB([cvaux],[cvSegmentImage],[],[HAVE_LIBDC=FALSE])
@@ -589,7 +587,7 @@ ICL_NOTIFY_SUPPORT([SVS],          [SVS      ])
 ICL_NOTIFY_SUPPORT([XCF],          [XCF      ])
 ICL_NOTIFY_SUPPORT([IMAGEMAGICK],  [Magick++ ])
 ICL_NOTIFY_SUPPORT([LIBMESASR],    [libmesasr])
-ICL_NOTIFY_SUPPORT([OPENCV],       [OpenCV V2])
+ICL_NOTIFY_SUPPORT([OPENCV],       [OpenCV  ])
 AC_MSG_NOTICE([+---------------------------------------+])
 
 
