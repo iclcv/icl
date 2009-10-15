@@ -959,21 +959,25 @@ template<class T, typename func>
         dst.setBounds(src2.cols(),src1.rows());
         cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, src1.rows(), src2.cols(), src1.cols(), 1.0, src1.begin(), src1.rows(),
                     src2.begin(), src2.rows(), 0.0, dst.begin(), src1.rows());
+        return dst;
       case SRC1_T:
         CHECK_DIM_RR(src1,src2,dst);
         dst.setBounds(src2.cols(),src1.cols());
         cblas_sgemm(CblasRowMajor, CblasTrans, CblasNoTrans, src1.cols(), src2.cols(), src1.rows(), 1.0, src1.begin(), src1.rows(),
                     src2.begin(), src2.rows(), 0.0, dst.begin(), src1.cols());
+        return dst;
       case SRC2_T:
         CHECK_DIM_CC(src1,src2,dst);
         dst.setBounds(src2.rows(),src1.rows());
         cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, src1.rows(), src2.rows(), src1.cols(), 1.0, src1.begin(), src1.rows(),
                     src2.begin(), src2.rows(), 0.0, dst.begin(), src1.rows());
+        return dst;
       case BOTH_T:
         CHECK_DIM_RC(src1,src2,dst);
         dst.setBounds(src2.rows(),src1.cols());
         cblas_sgemm(CblasRowMajor, CblasTrans, CblasTrans, src1.cols(), src2.rows(), src1.rows(), 1.0, src1.begin(), src1.rows(),
                     src2.begin(), src2.rows(), 0.0, dst.begin(), src1.cols());
+        return dst;
       default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
     }
     return dst;
@@ -986,21 +990,25 @@ template<class T, typename func>
         dst.setBounds(src2.cols(),src1.rows());
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, src1.rows(), src2.cols(), src1.cols(), 1.0, src1.begin(), src1.rows(),
                     src2.begin(), src2.rows(), 0.0, dst.begin(), src1.rows());
+        return dst;
       case SRC1_T:
         CHECK_DIM_RR(src1,src2,dst);
         dst.setBounds(src2.cols(),src1.cols());
         cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, src1.cols(), src2.cols(), src1.rows(), 1.0, src1.begin(), src1.rows(),
                     src2.begin(), src2.rows(), 0.0, dst.begin(), src1.cols());
+        return dst;
       case SRC2_T:
         CHECK_DIM_CC(src1,src2,dst);
         dst.setBounds(src2.rows(),src1.rows());
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, src1.rows(), src2.rows(), src1.cols(), 1.0, src1.begin(), src1.rows(),
                     src2.begin(), src2.rows(), 0.0, dst.begin(), src1.rows());
+        return dst;
       case BOTH_T:
         CHECK_DIM_RC(src1,src2,dst);
         dst.setBounds(src2.rows(),src1.cols());
         cblas_dgemm(CblasRowMajor, CblasTrans, CblasTrans, src1.cols(), src2.rows(), src1.rows(), 1.0, src1.begin(), src1.rows(),
                     src2.begin(), src2.rows(), 0.0, dst.begin(), src1.cols());
+        return dst;
       default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
     }
     return dst;
