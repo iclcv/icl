@@ -58,8 +58,8 @@ As IPP developers supposable thought a lot about the set of algorithms that must
 \item Image-File grabber and writer support for most common image formats (.ppm,.pnm,.pgm,.icl: native, many many other formats using an libmagick++-Wrapper)\\
 \iclclassref{IO}{FileGrabber}, \iclclassref{IO}{FileWriter}, \iclclassref{IO}{GenericGrabber}
 
-\item Camera grabber support for a large set of cameras (FireWire-cams using libdc1394, Phillips-Webcam-Grabber, v4l and v4l2 Grabber using Unicap\footnote{http://www.unicap-imaging.org/} wrapper\\
-\iclclassref{IO}{DCGrabber}, \iclclassref{IO}{PWCGrabber}, \iclclassref{IO}{UnicapGrabber}, \iclclassref{IO}{GenericGrabber}
+\item Camera grabber support for a large set of cameras (FireWire-cams using libdc1394, Phillips-Webcam-Grabber, v4l and v4l2 Grabber using a wrapper the Unicap-Library \footnote{http://www.unicap-imaging.org/} as well as a grabber for SwissRanger\footnote{www.mesaimaging.com}\todo{fix?} cameras\\
+\iclclassref{IO}{DCGrabber}, \iclclassref{IO}{PWCGrabber}, \iclclassref{IO}{UnicapGrabber}, \iclclassref{IO}{GenericGrabber}, \iclclassref{IO}{SwissRangerGrabber}
 
 \item XCF\footnote{https://code.ai.techfak.uni-bielefeld.de/trac/xcf}-grabber and publisher)\\
 \iclclassref{IO}{XCFMemoryGrabber}, \iclclassref{IO}{XCFPublisherGrabber}, \iclclassref{IO}{XCFServerGrabber},
@@ -77,6 +77,8 @@ As IPP developers supposable thought a lot about the set of algorithms that must
 \item Camera calibration toolkit (for extrinsic and for intrinsic Camera parameters like, radial distortion)
 \iclnamespaceref{Geom} and ICL-example applications \inlinecode{icl-extrinsic-camera-calibration} and \inlinecode{icl-intrinsic-camera-calibration}
 
+\item Converters for OpenCVs \icode{CvMat} and \icode{IplImage} structures that allow easy use of OpenCV functions\todo{Not yet implemented!}.\\
+\iclheaderref{OpenCV}{OpenCV} 
 \end{itemize}
 
 
@@ -181,7 +183,7 @@ In addition to the set of functionalities regarding image processing, ICL provid
           \iclclassref{Qt}{ConfigFileGUI}
 \end{itemize}
 
-\item Remaining packages are ICLCC \iclpackageref{CC}, ICLQuick \iclpackageref{Quick}, ICLFilter \iclpackageref{Filter} and ICLBlob \iclpackageref{Blob}\\
+\item Remaining packages are ICLCC \iclpackageref{CC}, ICLQuick \iclpackageref{Quick}, ICLFilter \iclpackageref{Filter} and ICLBlob \iclpackageref{Blob} and ICLOpenCV \iclpackageref{OpenCV}\\
 The most common functions in this packages are for image processing only, so they are not mentioned in this section.
 
 
