@@ -1,9 +1,13 @@
-#include <iclCannyOp.h>
 #include <iclCommon.h>
+
+#include <iclCannyOp.h>
 #include <iclConvolutionOp.h>
-//#include <iclUnaryOpPipe.h>
+
 
 GUI gui("vsplit");
+
+
+void update();
 
 void init(){
   gui << "image[@handle=image@minsize=32x24]";
@@ -12,14 +16,19 @@ void init(){
   gui2 << "fslider(0,2000,10)[@out=low@label=low@maxsize=100x2@handle=low-handle]";
   gui2 << "fslider(0,2000,100)[@out=high@label=high@maxsize=100x2@handle=high-handle]";
   gui2 <<  ( GUI("hbox")  
-           << "togglebutton(off,on)[@out=pre-gauss@handle=pre-gauss-handle@label=gaussian]"
+           << "togglebutton(off,on)[@out=preGauss@handle=pre-gauss-handle@label=gaussian]"
            << "label(time)[@handle=dt@label=filter time in ms]"
-           << "togglebutton(stopped,running)[@out=run@label=capture]"
+           << "togglebutton(stopped,running)[@out=running@label=capture]"
            << "camcfg()" );
 
   gui << gui2;
 
   gui.show();
+
+
+  gui.registerCallback(new GUI::Callback(update),"low-handle,high-handle,pre-gauss-handle");
+  
+  update();
 }
 
 
@@ -29,17 +38,19 @@ void update(){
 
   static GenericGrabber grabber(FROM_PROGARG("-input"));
   grabber.setIgnoreDesiredParams(true);
-  static ImageHandle image = gui.getValue<ImageHandle>("image");
-  static LabelHandle dt = gui.getValue<LabelHandle>("dt");
-  float &low = gui.getValue<float>("low");
-  float &high = gui.getValue<float>("high");
-  bool &preGauss = gui.getValue<bool>("pre-gauss");
+  
+  gui_ImageHandle(image);
+  gui_LabelHandle(dt);
+  gui_float(low);
+  gui_float(high);
+  gui_bool(preGauss);
   
   CannyOp canny(low,high,preGauss);
   static ImgBase *dst = 0;
 
   Time t = Time::now();
   canny.apply(grabber.grab(),&dst);
+  
   dt = (Time::now()-t).toMilliSecondsDouble();
   
   image = dst;
@@ -47,7 +58,7 @@ void update(){
 }
 
 void run(){
-  static bool &running = gui.getValue<bool>("run");
+  gui_bool(running);
   while(!running){
     Thread::msleep(100);
   }
@@ -55,20 +66,8 @@ void run(){
   update();
 }
 
-
-
 int main(int n, char **ppc){
-  ExecThread x(run);
-
-  pa_init(n,ppc,"-input(2)");
-  QApplication app(n,ppc);
-  
-  init();
-  update();
-  gui.registerCallback(new GUI::Callback(update),"low-handle,high-handle,pre-gauss-handle");
-  x.run();
-  
-  
-  return app.exec();
+  return ICLApplication(n,ppc,"-input(2)",init,run).exec();
+ 
   
 }
