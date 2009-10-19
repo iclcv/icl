@@ -15,7 +15,7 @@ read ENTER
 
 if [ "$ENTER" = "" ] ; then
     echo "please wait a sec ..."
-    chmod -R g+w $P ;
+    chmod -R g+w $P 2>&1 | grep "alle meine entchen schwimmen auf dem see" ;
     echo "permissions changed!" ;
 else
     echo "aborted!" ;
