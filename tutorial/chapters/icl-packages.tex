@@ -234,6 +234,10 @@ The following example demonstrates how to access pixels from a recently grabbed 
 
 \codefile{using-grabbed-images.cpp}{How to access pixels of grabbed images}
 
+
+\subsubsection{Distortion Compensation\label{subsubsec:distortion-compensation}}
+The \icode{Grabber}-base class also provides an interface to enable distortion compensation. The \icode{Grabber}s \icode{enableDistortion} function can be used for this. Appropriate distortion parameters can be obtained by using demo application \icode{icl-intrinsic-camera-calibration} which is discussed in detail in section \ref{subsec:icl-intrinsic-camera-calibration}. Internally, distortion compensation is always applied by using a warp-operation, i.e. pixel offset are pre-calculated and stored in a so called warp-map (see \iclclassref{Filter}{WarpOp} for further details).
+
 \subsection{File class}
 The \icode{File}-class \iclclassref{IO}{File} is a simple File implementation, that provides functions to read or to write files, or to check whether a given file exists. Furthermore, the \icode{File} class is able to handle zipped files if the ICL was compiled with zlib support.
 
@@ -580,15 +584,15 @@ The next transformation is the perspective projection, which can also be express
 
 \begin{equation}
 P = \left(\begin{array}{cccc}
-  f & 0 & 0 & 0\\
-  0 & f & 0 & 0\\
+  f & 0 & p_x & 0\\
+  0 & f & p_y & 0\\
   0 & 0 & A & B\\
   0 & 0 & -1 & 0\\
   \end{array}\right)
 \end{equation}
 
 where $A=(z_{far}+z_{near})/(z_{near}-z_{far})$ and $B = (2 \cdot{}z_{far} \cdot{}z_{near})/(z_{near}-z_{far})$ are used for scaling z values into the
-range between the near and the far clipping plane. $P$ is used to transform points from the camera frame into a normalized image plane:
+range between the near and the far clipping plane\footnote{$p=(p_x,p_y) is the offset between the image center and the principle point of the camera. This is not yet used!$}. $P$ is used to transform points from the camera frame into a normalized image plane:
 
 \begin{equation}
 p^N = P p^C
@@ -630,13 +634,36 @@ p^I = \mbox{hom}(V P C p^W)
 Where only the first two components of $p^I$ are used. Once have defined the camera transformation model further functions like moving or rotating the camera, or creating view rays for image pixels can be implemented straight forward. Take a look at the \icode{Camera} reference for more details (see \iclclassref{Geom}{Camera}).
 
 
-\subsection{Camera Calibration Applications}
+\subsection{Camera Calibration Applications\label{subsec:icl-intrinsic-camera-calibration}}
 
 Currently, ICL provides two camera calibration tools:
 
 \begin{itemize}
 \item \icode{icl-intrinsic-camera-calibration}\\
-This tool allows to compute ...
+
+This tool allows to compute lens-distortion parameters automatically. Currently only a single radial distortion model is provided\todo{implement more general distortion model}. The model was taken from the ARToolkit library\footnote{See \hrefn{http://www.hitl.washington.edu/artoolkit/}}. Given a distortion parameter vector $\vec{\Theta}=(x_0,y_0,f,s)$ the undistortion of a distorted point $(x,y)_{dist}$ works as follows:
+
+
+\begin{equation}
+(x,y)_{undist}^\tau = (p x + x_0, p y + y_0)^\tau
+\end{equation}
+%
+where
+%
+\begin{equation}
+(x,y)^\tau = s \cdot{}(x_d-x_0,y_d-y_0)^\tau
+\end{equation}
+%
+and
+%
+\begin{equation}
+p = 1-10^{-8}f(x*x+y*y)
+\end{equation}
+%
+The point $(x_0,y_0)^\tau$ is the distortion center, $f$ is the radial distortion factor and $s$ is a scaling factor, which is used to removed black image edges in case of pincussion distortion. The current optimization procedure was also taken from the ARToolkit library which was published under GPL License as well. It searches best parameters using a hierarchical search approach. The undistortion error is computed from the straightness of the lines that connect the points on the calibration pattern. If the automatic calibration is not able to find appropriate parameters, the user is able to adjust them manually as well\footnote{This is e.g. necessary for the SwissRanger cameras, which need a very high distortion coefficient $f$}.\\
+In contrast to the ARTookit calibration application, \icode{icl-intrinsic-camera-calibration} is able to detect the calibration pattern autonomously. Furthermore, you can run this application with the program-argument \icode{-cp} and e.g. \icode{-nx 4 -ny 3} to make the program spawn an extra window, which shows a calibration pattern\footnote{in this case showing 12 round spots, 4 in x- and 3 in y-direction} that can either be used for print our or directly for calibration by pointing the camera to the monitor. The calibration result can be printed to standard out.\\
+The resulting parameter vector can be passed to \icode{Grabber} instances as explained in \ref{subsubsec:distortion-compensation}.
+
 \item \icode{icl-extrinsic-camera-calibration}\\
 \end{itemize}
 
