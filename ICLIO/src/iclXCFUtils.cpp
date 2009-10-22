@@ -223,6 +223,17 @@ namespace icl{
     // {{{ open
     ImageDescription d = getImageDescription(l);
 
+    if(d.imageformat != formatMatrix && d.channels != getChannelsOfFormat(d.imageformat)){
+      bool first = true;
+      if(first){
+        first = false;
+        ERROR_LOG("format " << str(d.imageformat) << " and channel count " << d.channels << " are incompatible\n"
+                  "using minimal channel count");
+      }
+      
+      d.channels = iclMin(d.channels,getChannelsOfFormat(d.imageformat));
+    }
+
     *ppoImg = ensureCompatible (ppoImg, d.imagedepth, d.size,d.channels,d.imageformat,d.roi);
     
     (*ppoImg)->setTime (d.time);
