@@ -128,10 +128,18 @@ namespace icl{
     template <class XCF_T, typename ICE_T>
     static void CTUtoImage_Template (ImgBase* poImg, XCF::Binary::TransportUnitPtr btu) {
       // {{{ open
-      const std::vector<ICE_T> &v = dynamic_cast<XCF_T*>(btu.get())->value;
+
+      XCF_T* pv = dynamic_cast<XCF_T*>(btu.get());
+      if(!pv){
+        throw ICLException(str(__FUNCTION__) + " unexpected type " + typeid(btu.get()).name() + 
+                           "(Expected type " + typeid(XCF_T*).name());
+      }
+      const std::vector<ICE_T> &v = pv->value;
+
       unsigned int channeldim = poImg->getDim()*getSizeOf(poImg->getDepth());
       ICLASSERT_RETURN( v.size()*sizeof(ICE_T) == channeldim*poImg->getChannels() );
       
+
       const unsigned char *vData = reinterpret_cast<const unsigned char*>(v.data());
 
       for(int i=0;i<poImg->getChannels();++i){
@@ -227,17 +235,20 @@ namespace icl{
       bool first = true;
       if(first){
         first = false;
-        ERROR_LOG("format " << str(d.imageformat) << " and channel count " << d.channels << " are incompatible\n"
+        ERROR_LOG("format " << str(d.imageformat) 
+                  << " and channel count " 
+                  << d.channels << " are incompatible\n"
                   "using minimal channel count");
       }
-      
       d.channels = iclMin(d.channels,getChannelsOfFormat(d.imageformat));
+      if(d.channels != getChannelsOfFormat(d.imageformat)){
+        d.imageformat = formatMatrix;
+      }
     }
 
     *ppoImg = ensureCompatible (ppoImg, d.imagedepth, d.size,d.channels,d.imageformat,d.roi);
     
     (*ppoImg)->setTime (d.time);
-
 
     XCF::Binary::TransportUnitPtr btu = ctu->getBinary (d.uri);
 
