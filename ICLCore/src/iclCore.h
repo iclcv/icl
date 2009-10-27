@@ -1,11 +1,11 @@
-#ifndef ICLCORE_H
-#define ICLCORE_H
+#ifndef ICL_CORE_H
+#define ICL_CORE_H
+
 #include <iclMacros.h>
 #include <iclTypes.h>
 #include <iclImgParams.h>
 #include <string>
 #include <cstring>
-using std::memcpy;
 #include <iostream>
 #include <iclPoint32f.h>
 #include <iclClippedCast.h>
@@ -17,67 +17,57 @@ using std::memcpy;
     \defgroup STRUTILS Utiltiy functions for std::string conversions
     \defgroup MATH Mathematical Utiltiy functions
 
-\mainpage ICL (Image-Component-Library) : ICLCore 
-\section TODO
+\mainpage Image Component Library (ICL) 
 
+At its core, ICL is a C++ computer vision library. During the design and development process, the following main goals took center stage:
+ - Optimal Performace
+ - Simple and easy to use C++-interface
+ - Platform-Independence
+ - No compulsory software dependencies
 
-\section SEC_OVERVIEW Overview
+ICL tutorials can be build independently from the ICL/tutorial folder, or downloaded from <b>TODO</b>
 
-The ICL is a C++ Image-Library, designed for Computer-Vision tasks. It
-supports a multi-channel image class (class ImgBase and template class Img).
-All channels within the image share a common size, region of interest (ROI) and
-depth. This allows to handle color images as 3-channel images for example.
+\section PACKAGES Packages
 
-Despite of the different image depth, most methods of an image class have
-common code. Hence, the different pixel data types are implemented by the
-template class <b>Img<imagedepth></b>. Methods which are independent on the
-image depth are provided by a common interface class, named <b>ImgBase</b>. This
-allows easy and type-clean wrapping of the template classes Img<T> within frameworks
-such as Neo/NST or TDI.
+ICL consists of currently 11 packages that are listed in the main menu at the left.
 
-\subsection Modules
-    If you like to explore the ICLCore documentation by your own, take a 
-    look a the following modules:\n
-    -# \ref TYPES 
-    -# \ref GENERAL
-    -# \ref IMAGE 
-    -# \ref STRUTILS
-    -# \ref MATH 
-
-\subsection SUB_SEC_IMGBASE class ImgBase (abstract interface) 
-    This class provides common, but depth-independent information about 
-    the image structure:
-  - size (in pixels)
-  - channel count  (see <b>channel concept</b>)
-  - type of pixels (see <b>data types</b>)
-  - color format (see <b>color formats</b>)
-  - raw image data access
-  - iterator based data access
-  - Region of Interest (see <b>Region of Interests</b> \ref ROI (ROI))
-
-  It has no public constructors so it has to be used as interface
-  class for the derived template classes Img<Type>.
-  Most of the functions in the ImgBase class are purely virtual which
-  implies, that they are implemented in the derived classes Img<T>.
-
-\subsection SUB_SEC_IMG template class Img<PixelType>
-  Internally each Img<T> object holds a std::vector of so called smart 
-  pointers (class SmartPtr in the ICLUtils package) to the channel
-  data. The Img class provides some additional image information and access
-  functions:
-  - type-save image data access ( using the functions 
-    getData(int channel) and getROIData(int channel)
-  - access to single pixel values using the ()-operator
-  - access to all Image/all ROI pixels using the ImgIterator 
-  (see <b>ImgIterator</b> class reference)
+ - <b>ICLUtils</b> Contains general purpose functions and classes that are currently not part of the C++-STL (e.g. threads or matrices).
+ - <b>ICLCore</b> basically provides class definitions for ICL's image classes Img and ImgBase and related global functions.
+ - <b>ICLCC</b> provides functions and classes for color conversion.
+ - <b>ICLIO</b> extends the range of functions by input and output classes. Camera grabbers different camera types (e.g. IEEE-1394 or Video-4-Linux) can be found here as well a video file grabber or a file writer class.
+ - <b>ICLBlob</b> contains classes for blob detection and tracking and for connected component analysis.
+ - <b>ICLFilter</b> provides classes for most common image filters like linear filters and morphological operators.
+ - <b>ICLQuick</b> provides almost 100 functions and functors for rapid prototyping
+ - <b>ICLGeom</b> contains classes for 3D-modelling and camera calibration. 
+ - <b>ICLQt*</b> contains a Qt-4 based GUI-API that facilitates creation of simple and complex GUI applications significantly. And of course a powerful image visualisation widget called ICLWidget is provided.
+ - <b>ICLAlgorithms</b> contains high level classes like a hough-transformation-based line detector or generic self organizing map (SOM) implementation. 
+ - <b>ICLOpenCV*</b> offers functions for shallow and deep copies from ICL-images types into OpenCV's images types and v.v.
     
-In addition to the classes Img and ImgBase, the ICLCore package
-provides some utility functions, that facilitates working with 
-these classes (see icl namespace for more details).
-  
+    *) The packages ICLQt and ICLOpenCV depend compulsorily on the corresponding external software dependencies Qt4 and OpenCV. Consequently these packages are not available if these dependencies are missing.
 
-@see ImgBase, Img
+\section THE_IMAGE The Image Classes
 
+We use inheritance and class templates for ICL image representation:
+The ImgBase class defines an abstract interface, that manages all image information except image pixel data. These abstract image features are:
+
+ - size (in pixels)
+ - channel count  (see <b>channel concept</b>)
+ - type of pixels (see <b>data types</b>)
+ - color format (see <b>color formats</b>)
+ - raw image data access
+ - Region of Interest (see <b>Region of Interests</b> \ref ROI (ROI)) 
+ - a time stamp 
+
+The ImgBase interfaces is implemented by the template class Img<T> which implements all abstract ImgBase-functions and aggregates a vector of planar image channel data pointers. Internally, these channel data pointers use reference counting to allow shallow image copies. \n
+<b>Img's copy-constructor and assignment operator use shallow copy on default!</b>
+
+The Img<T> template also adds functions for type-safe data access:
+
+ - access to channel data pointers (using getData(channel) or begin(channel))
+ - extraction of single image channels (using operator []) 
+ - extraction of single image pixels (using operator()(x,y,channel-index) for single values or operator()(x,y) to obtain a pixel vector)
+
+ 
 \section SEC_DATA_ORIGN Data Origin
 Common image formats like png or bmp are following the convention,
 that the image origin is the <b>upper left</b> corner of the image.
@@ -228,98 +218,19 @@ following adaptions are performed:
 
 @see Img, ImgChannel
 
-\section _DEBUG_MACROS_ How to use LOG-Macros in the Img
-The ICLUtils package contains the Macros.h header file,
-which provides the common debug macros for ICL classes. The debug system
-knows 6 different debug levels (0-5). Level depended debug messages
-can be written to std::out using the <b>DEBUG_LOG\<LEVEL\></b>-macro.
-The set debug level (0 by default) regulates the verboseness of the 
-ICL library. The debug levels (0-5) are characterized as follows:
-
-<h3>Img debug levels</h3>
-      <table>
-         <tr>  
-            <td><b>level</b></td>
-            <td><b>macro</b></td>
-            <td><b>description</b></td>
-         </tr><tr>  
-            <td><b>level 0</b></td>    
-            <td>ERROR_LOG(x)</td>
-            <td> <b>(default)</b> Only critical error messages 
-                 will be written to std::err. If an exception 
-                 that occurred may cause a program crash, then 
-                 an error message should be written. 
-            </td>
-         </tr><tr> 
-            <td><b>level 1</b></td>    
-            <td>WARNING_LOG(x)</td>
-            <td> Also non critical waring will be written (now to 
-                 std::out. Exceptions, that are notified with the
-                 WARNING_LOG template may not cause a program crash.
-            </td>
-         </tr><tr>  
-            <td><b>level 2</b></td>    
-            <td>FUNCTION_LOG(x)</td>
-            <td> The next debug level will notify each function call
-                 by printing an according message to std::out. Take
-                 care to use the FUNCTION_LOG template in each function
-                 you implement for the Img
-            </td>
-         </tr><tr>  
-            <td><b>level 3</b></td>    
-            <td>SECTION_LOG(x)</td>
-            <td> Sections of functions (like initialization-section,
-                 working-section or end-section) should be commented 
-                 using the SECTION_LOG macro
-            </td>
-         </tr><tr>  
-            <td><b>level 4</b></td>    
-            <td>SUBSECTION_LOG(x)</td>
-            <td> Subsections of functions may be commented 
-                 using the SUBSECTION_LOG macro
-            </td>
-         </tr><tr>  
-            <td><b>level 5</b></td>    
-            <td>LOOP_LOG(x)</td>
-            <td> Debug messages that occur in long loops, e.g. while
-                 iteration over all image pixels, may be written using the
-                 LOOP_LOG macro. Note, that these messages can slow down 
-                 the iteration time to less then 0.1%.
-            </td>
-         </tr>
-      </table>
-
-The following example will show how to use the DEBUG-Macros 
-provided in ImgMacros.h
-  <pre>
-  int sum_vec(int *piVec, int len){
-     FUNCTION_LOG("int *, int");
-     ImgASSERT(piVec); // calls ERROR_LOG
-
-     SECTION_LOG("temp. variale allocation");
-     int sum = 0;
-
-     SECTION_LOG("starting loop");
-     for(int i=0;i<len;i++){
-        LOOP_LOG("addition loop, index: " << i << "curr. value: " << sum);
-        sum += piVec[i];
-        // WARNING_LOG e.g. for range overflow for the int accumulator "sum"
-      }
-     SECTION_LOG("return sum");
-     return sum;
-  }
-  </pre>
-@see ImgMacros.h
-*/
-
-
+\section ICLCore Modules
+    If you like to explore the ICLCore documentation by your own, take a 
+    look a the following modules:\n
+    -# \ref TYPES 
+    -# \ref GENERAL
+    -# \ref IMAGE 
+    -# \ref STRUTILS
+    -# \ref MATH 
 
 /// The ICL-namespace
-/**
-This namespace is dedicated for ICLCore- and all additional Computer-Vision
-packages, that are based on the ICLCore classes.
-**/
-namespace icl {
+/** This namespace is dedicated for ICLCore- and all additional Computer-Vision
+    packages, that are based on the ICLCore classes.
+**/ namespace icl {
  
 /* {{{ Global functions */
 
@@ -467,8 +378,7 @@ namespace icl {
   std::istream &operator>>(std::istream &s, depth &d);
 
   
-  /** \cond */
-#define ICL_INSTANTIATE_DEPTH(T) \
+  /** \cond */ #define ICL_INSTANTIATE_DEPTH(T) \
   template<> inline depth getDepth<icl ## T>() { return depth ## T; }
 ICL_INSTANTIATE_ALL_DEPTHS  
 #undef ICL_INSTANTIATE_DEPTH
@@ -484,8 +394,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
     memcpy(dst,src,(srcEnd-src)*sizeof(T));
   } 
 
-  /** \cond */
-#ifdef HAVE_IPP
+  /** \cond */ #ifdef HAVE_IPP
   template <>
   inline void copy<icl8u>(const icl8u *poSrcStart, const icl8u *poSrcEnd, icl8u *poDst){
     ippsCopy_8u(poSrcStart,poDst,(poSrcEnd-poSrcStart));
