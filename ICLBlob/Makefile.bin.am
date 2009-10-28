@@ -53,7 +53,8 @@ icl-interactive-vector-tracker-benchmark \
 icl-simple-blob-searcher-test \
 icl-mean-shift-online-demo \
 icl-tangible-grains-benchmark \
-icl-tangible-grains-demo
+icl-tangible-grains-demo \
+icl-corner-detection-css-demo
 
 icl_region_inspector_demo_SOURCES=../examples/region-inspector-demo.cpp
 icl_region_inspector_demo_LDFLAGS=${XLDFLAGS}
@@ -82,5 +83,10 @@ icl_tangible_grains_benchmark_CXXFLAGS=${XCXXFLAGS}
 icl_tangible_grains_demo_SOURCES=../examples/tangible-grains-demo.cpp
 icl_tangible_grains_demo_LDFLAGS=${XLDFLAGS}
 icl_tangible_grains_demo_CXXFLAGS=${XCXXFLAGS}
+
+icl_corner_detection_css_demo_SOURCES=../examples/corner-detection-css-demo.cpp
+icl_corner_detection_css_demo_LDFLAGS=${XLDFLAGS}
+icl_corner_detection_css_demo_CXXFLAGS=${XCXXFLAGS}
+
 
 endif

@@ -29,7 +29,6 @@ icl-3D-demo-2 \
 icl-camviewer \
 icl-chroma-demo \
 icl-colorpicker \
-icl-corner-detection-css-demo \
 icl-gui-test \
 icl-gui-test-2 \
 icl-gui-callback-test \
@@ -95,10 +94,6 @@ icl_gui_test_2_CXXFLAGS=${XCXXFLAGS}
 icl_gui_callback_test_SOURCES=../examples/gui-callback-test.cpp
 icl_gui_callback_test_LDFLAGS=${XLDFLAGS}
 icl_gui_callback_test_CXXFLAGS=${XCXXFLAGS}
-
-icl_corner_detection_css_demo_SOURCES=../examples/corner-detection-css-demo.cpp
-icl_corner_detection_css_demo_LDFLAGS=${XLDFLAGS}
-icl_corner_detection_css_demo_CXXFLAGS=${XCXXFLAGS}
 
 icl_interactive_filter_demo_SOURCES=../examples/interactive-filter-demo.cpp
 icl_interactive_filter_demo_LDFLAGS=${XLDFLAGS}
