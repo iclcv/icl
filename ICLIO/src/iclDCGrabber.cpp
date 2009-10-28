@@ -1,7 +1,7 @@
 #include "iclDCGrabber.h"
 #include "iclDCGrabberThread.h"
 #include <iclSignalHandler.h>
-#include <iclIO.h>
+#include <iclIOFunctions.h>
 #include <dc1394/iso.h>
 
 namespace icl{

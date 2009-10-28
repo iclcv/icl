@@ -1,57 +1,52 @@
-#include <iclGenericGrabber.h>
-#include <iclQt.h>
-#include <iclGUI.h>
-#include <iclQuick.h>
-#include <iclIOFunctions.h>
-#include <iclApplication.h>
+#include <iclCommon.h>
 
 GUI gui("vbox");
+GenericGrabber *grabber = 0;
+std::string params[] = {"","0","0","*","*.ppm",""};
+Mutex mutex;
 
-void init(){
-  gui << "image[@minsize=32x24@handle=image]" 
-      << "combo(pwc,dc,unicap,file,demo)[@handle=combo@out=xxx]";
-  
-  gui.show();
-}
+void change_grabber(){
+  Mutex::Locker l(mutex);
+  gui_ComboHandle(source);
 
-void run(){
-  gui_ComboHandle(combo);
-  gui_ImageHandle(image);
-  static GenericGrabber *grabber = 0;
-  static std::map<string,string> params;
-  params["pwc"] = "pwc=0";
-  params["dc"] = "dc=0";
-  params["unicap"] = "unicap=";
-  params["file"] = "file=images/*.ppm";
-  params["demo"] = "";
-  while(1){
-    static std::string lastComboItem = "";
-    std::string type = combo.getSelectedItem();
+  std::string newType = source.getSelectedItem();
+  int idx = source.getSelectedIndex();
 
-    if(lastComboItem != type && (!grabber || grabber->getType() != type)){
+  if(!grabber || grabber->getType() != newType){
+    ICL_DELETE( grabber );
+    try{
+      grabber = new GenericGrabber(newType,newType+"="+params[idx],false);
+    }catch(...){}
+    if(grabber->isNull()){
       ICL_DELETE( grabber );
-      grabber = new GenericGrabber(type,params[type],false);
-      if(grabber->isNull()){
-        ICL_DELETE( grabber );
-      }
     }
-    
-    if(grabber){
-      image = grabber->grab();
-    }else{
-      ImgQ buf = zeros(640,480,3);
-      labelImage(&buf,string("no ")+type+"-grabber available");
-      image = &buf;
-    }
-
-    image.update();
-    Thread::msleep(20);  
-    lastComboItem = type;  
   }
 }
 
+void init(){
+  gui << "image[@minsize=32x24@handle=image]" 
+      << "combo(null,pwc,dc,unicap,file,demo)[@label=source@out=_@handle=source]";
+  
+  gui.show();
+  
+  gui.registerCallback(new GUI::Callback(change_grabber),"source");
 
+  if(pa_defined("-input")){
+    grabber = new GenericGrabber(FROM_PROGARG("-input"));
+  }
+}
+
+void run(){
+  Mutex::Locker l(mutex);
+  
+  if(grabber){
+    gui["image"] = grabber->grab();
+    gui["image"].update();
+  }else{
+    Thread::msleep(20);
+  }
+}
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"",init,run).exec();
+  return ICLApplication(n,ppc,"-input(2)",init,run).exec();
 }
