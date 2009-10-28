@@ -1,5 +1,5 @@
 #include <iclImgParams.h>
-#include <iclCore.h>
+#include <iclCoreFunctions.h>
 #include <iclStringUtils.h>
 
 namespace icl{

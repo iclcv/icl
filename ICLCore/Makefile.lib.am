@@ -2,7 +2,7 @@
 lib_LTLIBRARIES=libICLCore.la
 
 libICLCore_la_SOURCES= \
-../src/iclCore.cpp \
+../src/iclCoreFunctions.cpp \
 ../src/iclImgBase.cpp \
 ../src/iclImgBorder.cpp \
 ../src/iclImg.cpp \
@@ -17,6 +17,7 @@ libICLCore_la_SOURCES= \
 
 include_HEADERS= \
 ../src/iclCore.h \
+../src/iclCoreFunctions.h \
 ../src/iclImgBase.h \
 ../src/iclImgBorder.h \
 ../src/iclChannel.h \

@@ -2,7 +2,7 @@
 #define ICLBASE_H
 
 #include <vector>
-#include <iclCore.h>
+#include <iclCoreFunctions.h>
 #include <iclImgParams.h>
 #include <iclTime.h>
 #include <iclRange.h>

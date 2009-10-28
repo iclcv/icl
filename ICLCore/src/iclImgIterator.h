@@ -1,7 +1,7 @@
-#ifndef ICLITERATOR_H
-#define ICLITERATOR_H
+#ifndef ICL_IMG_ITERATOR_H
+#define ICL_IMG_ITERATOR_H
 
-#include <iclCore.h>
+#include <iclCoreFunctions.h>
 #include <iclMatrixSubRectIterator.h>
 
 namespace icl{
