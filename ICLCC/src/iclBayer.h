@@ -1,8 +1,6 @@
 #ifndef iclBayer_H
 #define iclBayer_H
 
-#include <vector>
-#include <iclCore.h>
 #include <iclImg.h>
 #include <iclUncopyable.h>
 

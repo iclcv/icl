@@ -1,4 +1,4 @@
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <iclConverter.h>
 
 
@@ -9,7 +9,8 @@ namespace icl{
     // {{{ open
 
     m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0), 
-    m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(orderScaleConvertCC) {
+    m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(orderScaleConvertCC),
+    m_scaleMode(interpolateNN){
     FUNCTION_LOG("");
   }
 
@@ -17,7 +18,7 @@ namespace icl{
 
   Converter::Converter(Converter::oporder o, bool bROIOnly):
     m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0), 
-    m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(o){
+    m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(o),m_scaleMode(interpolateNN){
     FUNCTION_LOG("");
     // {{{ open
     
@@ -27,7 +28,8 @@ namespace icl{
   Converter::Converter(const ImgBase *srcImage, ImgBase *dstImage, bool applyToROIOnly):
     // {{{ open
     m_poSizeBuffer(0), m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
-    m_poColorBuffer(0), m_bROIOnly(applyToROIOnly),m_eOpOrder(orderScaleConvertCC){
+    m_poColorBuffer(0), m_bROIOnly(applyToROIOnly),m_eOpOrder(orderScaleConvertCC),
+    m_scaleMode(interpolateNN){
     apply(srcImage,dstImage);
   }
 
@@ -106,9 +108,9 @@ namespace icl{
       case SIZE_ONLY:
         SECTION_LOG("size conversion only");
         if(m_bROIOnly){
-          poSrc->scaledCopyROI(&poDst);
+          poSrc->scaledCopyROI(&poDst,m_scaleMode);
         }else{
-          poSrc->scaledCopy(&poDst);
+          poSrc->scaledCopy(&poDst,m_scaleMode);
         }
         break;
       case COLOR_ONLY:
@@ -129,9 +131,9 @@ namespace icl{
         if(iScalePos < iCCPos){
           ensureCompatible(&m_poSizeBuffer,poSrc->getDepth(), poDst->getSize(), poSrc->getChannels(), poSrc->getFormat()); 
           if(m_bROIOnly){
-            poSrc->scaledCopyROI(&m_poSizeBuffer);
+            poSrc->scaledCopyROI(&m_poSizeBuffer,m_scaleMode);
           }else{
-            poSrc->scaledCopy(&m_poSizeBuffer);
+            poSrc->scaledCopy(&m_poSizeBuffer,m_scaleMode);
           }
           this->cc(m_poSizeBuffer,poDst);
         }else{
@@ -139,11 +141,11 @@ namespace icl{
             poSrc->deepCopyROI(&m_poROIBuffer);
             ensureCompatible(&m_poColorBuffer,poDst->getDepth(),m_poROIBuffer->getSize(),poDst->getChannels(), poDst->getFormat());
             cc(m_poROIBuffer,m_poColorBuffer);
-            m_poColorBuffer->scaledCopy(&poDst);
+            m_poColorBuffer->scaledCopy(&poDst,m_scaleMode);
           }else{
             ensureCompatible(&m_poColorBuffer,poDst->getDepth(),poSrc->getSize(),poDst->getChannels(), poDst->getFormat());
             cc(poSrc,m_poColorBuffer);
-            m_poColorBuffer->scaledCopy(&poDst);
+            m_poColorBuffer->scaledCopy(&poDst,m_scaleMode);
           }
         }       
         break;
@@ -157,16 +159,16 @@ namespace icl{
           dynamicConvert(poSrc,m_poDepthBuffer);
           if(m_bROIOnly){
             m_poDepthBuffer->setROI(poSrc->getROI());
-            m_poDepthBuffer->scaledCopyROI(&poDst);
+            m_poDepthBuffer->scaledCopyROI(&poDst,m_scaleMode);
           }else{
-            m_poDepthBuffer->scaledCopy(&poDst);
+            m_poDepthBuffer->scaledCopy(&poDst,m_scaleMode);
           }
         }else{
           ensureCompatible(&m_poSizeBuffer,poSrc->getDepth(),poDst->getSize(),poSrc->getChannels(), poSrc->getFormat());
           if(m_bROIOnly){
-            poSrc->scaledCopyROI(&m_poSizeBuffer);
+            poSrc->scaledCopyROI(&m_poSizeBuffer,m_scaleMode);
           }else{
-            poSrc->scaledCopy(&m_poSizeBuffer);
+            poSrc->scaledCopy(&m_poSizeBuffer,m_scaleMode);
           }
           dynamicConvert(m_poSizeBuffer,poDst);
         }
@@ -206,5 +208,10 @@ namespace icl{
 
   // }}}
 
+
+  void Converter::setScaleMode(scalemode scaleMode){
+    m_scaleMode = scaleMode;
+  }
+  
 
 }

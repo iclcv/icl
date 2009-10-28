@@ -48,6 +48,9 @@ namespace icl{
         @see Converter 
     **/
     void setOperationOrder(Converter::oporder o){ m_oConverter.setOperationOrder(o); }
+
+    /// sets a new scalemode (default is interpolateNN)
+    void setScaleMode(scalemode scaleMode){ m_oConverter.setScaleMode(scaleMode); }
     private:
 
     /// destination image parameters

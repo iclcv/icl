@@ -1,6 +1,6 @@
 #include <iclSkinOp.h>
 #include <iclImg.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 //#include <iclMathematics.h>
 
 /*

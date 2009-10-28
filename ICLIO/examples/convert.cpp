@@ -11,7 +11,8 @@ int main(int n, char **ppc){
   pa_explain("-format","define output file format");
   pa_explain("-size","define output file size");
   pa_explain("-scale","define size scaling factor");
-  pa_init(n,ppc,"-i(1) -o(1) -depth(1) -format(1) -size(1) -scale(1)",true);
+  pa_explain("-scalemode", "defines scalemode to use (one of NN, LIN, or RA)");
+  pa_init(n,ppc,"-i(1) -o(1) -depth(1) -format(1) -size(1) -scale(1) -scalemode(1)",true);
   
   std::string inFileName,outFileName;
   std::vector<std::string> dargs = pa_dangling_args();
@@ -65,6 +66,7 @@ int main(int n, char **ppc){
     s32 = s32 * pa_subarg<float>("-scale",0,1);
     size.width = round(s32.width);
     size.height = round(s32.height);
+    
   }
   ImgParams p(size,
               channels,
@@ -72,6 +74,19 @@ int main(int n, char **ppc){
   depth d = pa_defined("-depth") ? parse<depth>(pa_subarg<std::string>("-depth",0,"")) : image->getDepth();
               
   FixedConverter conv(p,d);
+  if(pa_defined("-scalemode")){
+    std::string sm = pa_subarg<std::string>("-scalemode",0,"NN");
+    if(sm == "NN"){
+      conv.setScaleMode(interpolateNN);
+    }else if(sm == "LIN"){
+      conv.setScaleMode(interpolateLIN);
+    }else if(sm == "RA"){
+      conv.setScaleMode(interpolateRA);
+    }else{
+      ERROR_LOG("unknown scale mode (allowed modes are NN, LIN and RA)");
+      return -1;
+    }
+  }
   
   ImgBase *dst = 0;
   conv.apply(image,&dst);

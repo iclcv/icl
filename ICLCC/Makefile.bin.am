@@ -26,7 +26,8 @@ endif
 #################################################################################
 bin_PROGRAMS= \
 icl-bayer-benchmark \
-icl-converter-test
+icl-converter-test \
+icl-colorspace-online-demo
 
 # explicit sources, ldflags and cxxflags
 icl_bayer_benchmark_SOURCES=../examples/bayer-benchmark.cpp
@@ -36,4 +37,9 @@ icl_bayer_benchmark_CXXFLAGS=${XCXXFLAGS}
 icl_converter_test_SOURCES=../examples/converter-test.cpp
 icl_converter_test_LDFLAGS=${XLDFLAGS}
 icl_converter_test_CXXFLAGS=${XCXXFLAGS}
+
+
+icl_colorspace_online_demo_SOURCES=../examples/colorspace-online-demo.cpp
+icl_colorspace_online_demo_LDFLAGS=${XLDFLAGS}
+icl_colorspace_online_demo_CXXFLAGS=${XCXXFLAGS}
 

@@ -1,6 +1,7 @@
 #ifdef HAVE_XCF
+
 #include "iclXCFUtils.h"
-#include <iclCore.h>
+#include <iclCoreFunctions.h>
 #include <iclStringUtils.h>
 
 using memory::interface::Attachments;

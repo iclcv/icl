@@ -1,8 +1,5 @@
-#include "iclCC.h"
-#include "iclMacros.h"
-#include "iclCore.h"
+#include "iclCCFunctions.h"
 #include "iclImg.h"
-#include <string>
 #include <map>
 #include "iclCCLUT.h"
 

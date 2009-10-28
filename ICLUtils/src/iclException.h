@@ -5,18 +5,9 @@
 #include <exception>
 #include <string>
 #include <stdexcept>
-/*
-  ICLException.h
-
-  Written by: Michael Götting (2006)
-              University of Bielefeld
-              AG Neuroinformatik
-              mgoettin@techfak.uni-bielefeld.de
-*/
-
 
 namespace icl {
-  /// Base class for Exception handling in the ICL \ingroup EX
+  /// Base class for Exception handling in the ICL \ingroup EXCEPT
   class ICLException : public std::runtime_error
   {
   public:
@@ -24,7 +15,7 @@ namespace icl {
     void report();
   };
 
-  /// Exception for invalid file formats \ingroup EX
+  /// Exception for invalid file formats \ingroup EXCEPT
   class InvalidFileFormatException : public ICLException {
   public:
     InvalidFileFormatException () throw() : 
@@ -34,7 +25,7 @@ namespace icl {
     virtual ~InvalidFileFormatException() throw() {}
   };
 
-  /// Exception thrown if a file could not be opend \ingroup EX
+  /// Exception thrown if a file could not be opend \ingroup EXCEPT
   class FileOpenException : public ICLException {
   public:
     FileOpenException (const std::string& sFileName) throw() : 
@@ -42,7 +33,7 @@ namespace icl {
     virtual ~FileOpenException() throw() {}
   };
   
-  /// Exception thrown if a file could not be found \ingroup EX
+  /// Exception thrown if a file could not be found \ingroup EXCEPT
   class FileNotFoundException : public ICLException {
     public:
     FileNotFoundException (const std::string& sFileName) throw() : 
@@ -50,7 +41,7 @@ namespace icl {
     virtual ~FileNotFoundException() throw() {}
   };
    
-  /// Exception thrown if a file could not be read properly \ingroup EX
+  /// Exception thrown if a file could not be read properly \ingroup EXCEPT
   class InvalidFileException : public ICLException {
     public:
     InvalidFileException (const std::string& sFileName) throw() : 
@@ -58,7 +49,7 @@ namespace icl {
     virtual ~InvalidFileException() throw() {}
   };
   
-  /// Exception called if an image gets invalid params \ingroup EX
+  /// Exception called if an image gets invalid params \ingroup EXCEPT
   class InvalidImgParamException : public ICLException {
     public:
     InvalidImgParamException(const std::string &param) throw():
@@ -66,7 +57,7 @@ namespace icl {
     virtual ~InvalidImgParamException() throw() {}
   };
 
-  /// Exception thrown if a function should process an unsupported image format \ingroup EX
+  /// Exception thrown if a function should process an unsupported image format \ingroup EXCEPT
   class InvalidFormatException : public ICLException {
     public:
     InvalidFormatException(const std::string &functionName) throw():
@@ -74,7 +65,7 @@ namespace icl {
     virtual ~InvalidFormatException() throw() {}
   };
 
-  /// Exception thrown if a function should process an unsupported image depth \ingroup EX
+  /// Exception thrown if a function should process an unsupported image depth \ingroup EXCEPT
   class InvalidDepthException : public ICLException {
     public:
     InvalidDepthException(const std::string &functionName) throw():
@@ -82,7 +73,7 @@ namespace icl {
     virtual ~InvalidDepthException() throw() {}
   };
  
-  /// Exception thrown if a function should process an unsupported sizes (e.g. with negative dim..) \ingroup EX
+  /// Exception thrown if a function should process an unsupported sizes (e.g. with negative dim..) \ingroup EXCEPT
   class InvalidSizeException : public ICLException {
     public:
     InvalidSizeException(const std::string &functionName) throw():
@@ -90,7 +81,7 @@ namespace icl {
     virtual ~InvalidSizeException() throw() {}
   };
 
-  /// Exception thrown if a string is parsed into a specific type (or something)
+  /// Exception thrown if a string is parsed into a specific type (or something) \ingroup EXCEPT
   class ParseException : public ICLException {
     public:
     ParseException(const std::string &whatToParse) throw():
@@ -100,7 +91,7 @@ namespace icl {
     virtual ~ParseException() throw() {}
   };
   
-  /// Thrown by iclStringUtils::match if regular Expression is not valid
+  /// Thrown by iclStringUtils::match if regular Expression is not valid \ingroup EXCEPT
   class InvalidRegularExpressionException : public ICLException{
     public:
     InvalidRegularExpressionException(const std::string &regex) throw():

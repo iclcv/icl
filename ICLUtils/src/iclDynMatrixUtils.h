@@ -8,7 +8,7 @@ namespace icl{
 
   /** @} @{ @name unary functions */
 
-  /// Matrix initialization template
+  /// Matrix initialization template \ingroup LINALG 
   /** This function can e.g. be used to initialize a matrix with random values
       \code
       #include <iclDynMatrixUtils.h>
@@ -31,129 +31,129 @@ namespace icl{
     return m;
   }
 
-  /// element-wise absolute value (inplace) [IPP-optimized]
+  /// element-wise absolute value (inplace) [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_abs(DynMatrix<T> &m);
 
-  /// element-wise absolute value  [IPP-optimized]
+  /// element-wise absolute value  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_abs(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise logarith (basis E) (inplace)  [IPP-optimized]
+  /// element-wise logarith (basis E) (inplace)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_log(DynMatrix<T> &m);
 
-  /// element-wise logarith (basis E)  [IPP-optimized]
+  /// element-wise logarith (basis E)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_log(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise exp-function (inplace)  [IPP-optimized]
+  /// element-wise exp-function (inplace)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_exp(DynMatrix<T> &m);
 
-  /// element-wise exp-function  [IPP-optimized]
+  /// element-wise exp-function  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_exp(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise square-root-function (inplace)  [IPP-optimized]
+  /// element-wise square-root-function (inplace)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_sqrt(DynMatrix<T> &m);
 
-  /// element-wise square-root-function  [IPP-optimized]
+  /// element-wise square-root-function  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_sqrt(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise square-function (x*x) (inplace)  [IPP-optimized]
+  /// element-wise square-function (x*x) (inplace)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_sqr(DynMatrix<T> &m);
 
-  /// element-wise square-function (x*x)  [IPP-optimized]
+  /// element-wise square-function (x*x)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_sqr(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise sinus-function (x*x) (inplace)
+  /// element-wise sinus-function (x*x) (inplace) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_sin(DynMatrix<T> &m);
 
-  /// element-wise sinus-function (x*x)
+  /// element-wise sinus-function (x*x) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_sin(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise cosinus-function (inplace)
+  /// element-wise cosinus-function (inplace) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_cos(DynMatrix<T> &m);
 
-  /// element-wise cosinus-function
+  /// element-wise cosinus-function \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_cos(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise tangent-function (inplace)
+  /// element-wise tangent-function (inplace) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_tan(DynMatrix<T> &m);
 
-  /// element-wise tangent-function
+  /// element-wise tangent-function \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_tan(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise arcus sinus-function (inplace)
+  /// element-wise arcus sinus-function (inplace) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_arcsin(DynMatrix<T> &m);
 
-  /// element-wise arcus sinus-function
+  /// element-wise arcus sinus-function \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_arcsin(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise arcus cosinus-function (inplace)
+  /// element-wise arcus cosinus-function (inplace) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_arccos(DynMatrix<T> &m);
 
-  /// element-wise arcus cosinus-function
+  /// element-wise arcus cosinus-function \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_arccos(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise arcus tangent-function (inplace)
+  /// element-wise arcus tangent-function (inplace) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_arctan(DynMatrix<T> &m);
 
-  /// element-wise arcus tangent-function
+  /// element-wise arcus tangent-function \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_arctan(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
-  /// element-wise reciprocal-function (1/x) (inplace)
+  /// element-wise reciprocal-function (1/x) (inplace) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_reciprocal(DynMatrix<T> &m);
 
-  /// element-wise reciprocal-function (1/x)
+  /// element-wise reciprocal-function (1/x) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_reciprocal(const DynMatrix<T> &m, DynMatrix<T> &dst);
 
   /** @} @{ @name unary functions with scalar argument */
 
-  /// element-wise power-function (x^exponent) (inplace)
+  /// element-wise power-function (x^exponent) (inplace) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_powc(DynMatrix<T> &m, T exponent);
@@ -163,79 +163,79 @@ namespace icl{
   template<class T>
   DynMatrix<T> &matrix_powc(const DynMatrix<T> &m, T exponent, DynMatrix<T> &dst);
 
-  /// element-wise addition of constant value (inplace)  [IPP-optimized]
+  /// element-wise addition of constant value (inplace)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_addc(DynMatrix<T> &m, T val);
 
-  /// element-wise addition of constant value  [IPP-optimized]
+  /// element-wise addition of constant value  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_addc(const DynMatrix<T> &m, T val, DynMatrix<T> &dst);
 
-  /// element-wise substraction of constant value (inplace)  [IPP-optimized]
+  /// element-wise substraction of constant value (inplace)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_subc(DynMatrix<T> &m, T val);
 
-  /// element-wise substraction of constant value  [IPP-optimized]
+  /// element-wise substraction of constant value  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_subc(const DynMatrix<T> &m, T val, DynMatrix<T> &dst);
 
-  /// element-wise division by constant value (inplace)  [IPP-optimized]
+  /// element-wise division by constant value (inplace)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_divc(DynMatrix<T> &m, T  val);
 
-  /// element-wise division by constant value  [IPP-optimized]
+  /// element-wise division by constant value  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_divc(const DynMatrix<T> &m, T val, DynMatrix<T> &dst);
 
-  /// element-wise multiplication with constant value (inplace)  [IPP-optimized]
+  /// element-wise multiplication with constant value (inplace)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_mulc(DynMatrix<T> &m, T val);
 
-  /// element-wise multiplication with constant value  [IPP-optimized]
+  /// element-wise multiplication with constant value  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_mulc(const DynMatrix<T> &m, T val, DynMatrix<T> &dst);
 
   /** @} @{ @name binary functions */
 
-  /// element-wise atan2 function atan2(y,x)
+  /// element-wise atan2 function atan2(y,x) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_arctan2(const DynMatrix<T> &my, const DynMatrix<T> &mx, DynMatrix<T> &dst)
 	throw (IncompatibleMatrixDimensionException);
 
-  /// element-wise addition  [IPP-optimized]
+  /// element-wise addition  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_add(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
 	throw (IncompatibleMatrixDimensionException);
 
-  /// element-wise substraction  [IPP-optimized]
+  /// element-wise substraction  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_sub(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
 	throw (IncompatibleMatrixDimensionException);
 
-  /// element-wise multiplication  [IPP-optimized]
+  /// element-wise multiplication  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_mul(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
 	throw (IncompatibleMatrixDimensionException);
 
-  /// element-wise division  [IPP-optimized]
+  /// element-wise division  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_div(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
 	throw (IncompatibleMatrixDimensionException);
 
-  /// element-wise power
+  /// element-wise power \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_pow(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
@@ -244,7 +244,7 @@ namespace icl{
   /** @} */
   /** @{ @name matrix distance measurement  */
 
-  /// computes norm between matrix vectors
+  /// computes norm between matrix vectors \ingroup LINALG 
   /** For float and double only
       \f[ D = \left(\sum\limits_{i,j} (A_{ij}-B_{ij})^n\right)^{\frac{1}{n}} \f]
   */
@@ -252,7 +252,7 @@ namespace icl{
   T matrix_distance(const DynMatrix<T> &m1, const DynMatrix<T> &m2, T norm=2)
 	throw (IncompatibleMatrixDimensionException);
 
-  /// computes generalized Kullback-Leibler-divergence between matrix vectors
+  /// computes generalized Kullback-Leibler-divergence between matrix vectors \ingroup LINALG 
   /** For float and double only
       \f[ \mbox{div} = \sum\limits_{i,j} A_{ij} \cdot \log{\frac{A_{ij}}{B_{ij}}} - A_{ij} + B_{ij} \f]
   */
@@ -264,7 +264,7 @@ namespace icl{
   /** @} */
   /** @{ @name statistical functions */
 
-  /// find minimum element of matrix (optionally find location too)  [IPP-optimized]
+  /// find minimum element of matrix (optionally find location too)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only
       @param m source matrix
       @param x if no NULL, minimum x-location (column-index) is written to *x
@@ -273,7 +273,7 @@ namespace icl{
   template<class T>
   T matrix_min(const DynMatrix<T> &m, int *x=0, int *y=0);
 
-  /// find maximum element of matrix (optionally find location too)  [IPP-optimized]
+  /// find maximum element of matrix (optionally find location too)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only
       @param m source matrix
       @param x if no NULL, maximum x-location (column-index) is written to *x
@@ -282,7 +282,7 @@ namespace icl{
   template<class T>
   T matrix_max(const DynMatrix<T> &m, int *x=0, int *y=0);
 
-  /// find min- and maxinim element at once (optionally with locations)  [IPP-optimized]
+  /// find min- and maxinim element at once (optionally with locations)  [IPP-optimized] \ingroup LINALG 
   /** For float and double only
       @param m source matrix
       @param dst found min and max value are written to dst\n
@@ -298,17 +298,17 @@ namespace icl{
                      int *maxx=0, int *maxy=0);
 
 
-  /// calculate matrix mean value  [IPP-optimized]
+  /// calculate matrix mean value  [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   T matrix_mean(const DynMatrix<T> &m);
 
-  /// calculate matrix variance  [IPP-optimized]
+  /// calculate matrix variance  [IPP-optimized] \ingroup LINALG 
  /** For float and double only */
   template<class T>
   T matrix_var(const DynMatrix<T> &m);
 
-  /// calculate matrix variance with given mean
+  /// calculate matrix variance with given mean \ingroup LINALG 
   /** For float and double only
       @param m source matrix
       @param mean given sample mean
@@ -322,19 +322,19 @@ namespace icl{
   template<class T>
   T matrix_var(const DynMatrix<T> &m, T mean, bool empiricalMean=true);
 
-  /// computes matrix mean and variance at once  [IPP-optimized]
+  /// computes matrix mean and variance at once  [IPP-optimized] \ingroup LINALG 
   /** For float and double only
       note thatn mean and var must not be null
   */
   template<class T>
   void matrix_meanvar(const DynMatrix<T> &m, T *mean, T*var);
 
-  /// computes matrix standard deviation (sqrt(var)) [IPP-optimized]
+  /// computes matrix standard deviation (sqrt(var)) [IPP-optimized] \ingroup LINALG 
   /** For float and double only */
   template<class T>
   T matrix_stddev(const DynMatrix<T> &m);
 
-  /// calculate matrix standard deviation with given mean
+  /// calculate matrix standard deviation with given mean \ingroup LINALG 
   /** For float and double only
       @param m source matrix
       @param mean given sample mean
@@ -351,24 +351,24 @@ namespace icl{
   /** @} */
 
   /** @{  @name other functions ...*/
-  /// computes alpha*a + beta*b + gamma
+  /// computes alpha*a + beta*b + gamma \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, const DynMatrix<T> &b, T beta, T gamma, DynMatrix<T> &dst)
 	throw (IncompatibleMatrixDimensionException);
 
-  /// computes alpha*a + gamma
+  /// computes alpha*a + gamma \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a,T alpha, T gamma, DynMatrix<T> &dst);
 
-  /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0) (inplace)
+  /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0) (inplace) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<T> &m)
 	throw (IncompatibleMatrixDimensionException);
 
-  /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0)
+  /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0) \ingroup LINALG 
   /** For float and double only */
   template<class T>
   DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst)
@@ -379,7 +379,7 @@ namespace icl{
 
   /** @{  @name special functions for transposed matrices ...*/
 
-  /// special utility type for definition of transposed states for matrices
+  /// special utility type for definition of transposed states for matrices \ingroup LINALG 
   enum transposedDef{
     NONE_T=0,
     SRC1_T=1<<0,
@@ -387,7 +387,7 @@ namespace icl{
     BOTH_T=SRC1_T | SRC2_T,
   };
 
-  /// applies matrix mutliplication on optionally transposed matrices
+  /// applies matrix mutliplication on optionally transposed matrices \ingroup LINALG 
   /** sometimes, it might be more efficient to call matrix multiplication on imaginary transposed source matrices, to
       avoid having to apply an additional transposing step.
 
@@ -403,7 +403,7 @@ namespace icl{
   DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
   throw (IncompatibleMatrixDimensionException);
 
-  /// applies matrix mutliplication on optionally transposed matrices (specialized for big matrices)
+  /// applies matrix mutliplication on optionally transposed matrices (specialized for big matrices) \ingroup LINALG 
   /** sometimes, it might be more efficient to call matrix multiplication on imaginary transposed source matrices, to
       avoid having to apply an additional transposing step.
 
@@ -417,10 +417,12 @@ namespace icl{
   DynMatrix<T> &big_matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
   throw (IncompatibleMatrixDimensionException);
 
+  /// applies matrix addition on optionally transposed matrices \ingroup LINALG 
   template<class T>
   DynMatrix<T> &matrix_add_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
   throw (IncompatibleMatrixDimensionException);
 
+  /// applies matrix substraction on optionally transposed matrices \ingroup LINALG 
   template<class T>
   DynMatrix<T> &matrix_sub_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
   throw (IncompatibleMatrixDimensionException);

@@ -2,7 +2,7 @@
 #include "iclUnicapDevice.h"
 #include <string>
 #include <iclImg.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 
 
 #include <iclFile.h>

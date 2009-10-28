@@ -641,29 +641,35 @@ Currently, ICL provides two camera calibration tools:
 \begin{itemize}
 \item \icode{icl-intrinsic-camera-calibration}\\
 
-This tool allows to compute lens-distortion parameters automatically. Currently only a single radial distortion model is provided\todo{implement more general distortion model}. The model was taken from the ARToolkit library\footnote{See \hrefn{http://www.hitl.washington.edu/artoolkit/}}. Given a distortion parameter vector $\vec{\Theta}=(x_0,y_0,f,s)$ the undistortion of a distorted point $(x,y)_{dist}$ works as follows:
+This tool allows to compute lens-(un)distortion parameters automatically. Currently only a single radial distortion model is provided\todo{implement more general distortion model}. The model was taken from the ARToolkit library\footnote{See \hrefn{http://www.hitl.washington.edu/artoolkit/}}. Given a distortion parameter vector $\vec{\Theta}=(x_0,y_0,f,s)$ the undistortion of a distorted point $(x,y)_{dist}$ works as follows:
 
 
-\begin{equation}
+\begin{equation*}
 (x,y)_{undist}^\tau = (p x + x_0, p y + y_0)^\tau
-\end{equation}
+\end{equation*}
 %
 where
 %
-\begin{equation}
-(x,y)^\tau = s \cdot{}(x_d-x_0,y_d-y_0)^\tau
-\end{equation}
+\begin{equation*}
+(x,y)^\tau = s \cdot{}(x_{dist}-x_0,y_{dist}-y_0)^\tau
+\end{equation*}
 %
 and
 %
-\begin{equation}
+\begin{equation*}
 p = 1-10^{-8}f(x*x+y*y)
-\end{equation}
+\end{equation*}
 %
 The point $(x_0,y_0)^\tau$ is the distortion center, $f$ is the radial distortion factor and $s$ is a scaling factor, which is used to removed black image edges in case of pincussion distortion. The current optimization procedure was also taken from the ARToolkit library which was published under GPL License as well. It searches best parameters using a hierarchical search approach. The undistortion error is computed from the straightness of the lines that connect the points on the calibration pattern. If the automatic calibration is not able to find appropriate parameters, the user is able to adjust them manually as well\footnote{This is e.g. necessary for the SwissRanger cameras, which need a very high distortion coefficient $f$}.\\
-In contrast to the ARTookit calibration application, \icode{icl-intrinsic-camera-calibration} is able to detect the calibration pattern autonomously. Furthermore, you can run this application with the program-argument \icode{-cp} and e.g. \icode{-nx 4 -ny 3} to make the program spawn an extra window, which shows a calibration pattern\footnote{in this case showing 12 round spots, 4 in x- and 3 in y-direction} that can either be used for print our or directly for calibration by pointing the camera to the monitor. The calibration result can be printed to standard out.\\
+In contrast to the ARTookit calibration tool, \icode{icl-intrinsic-camera-calibration} is able to detect the calibration pattern autonomously. Furthermore, you can run this application with the program-argument \icode{-cp} and e.g. \icode{-nx 4 -ny 3} to make the program spawn an extra window, which shows a calibration pattern\footnote{in this case showing 12 round spots, 4 in x- and 3 in y-direction} that can either be used for print out or directly for calibration by pointing the camera to the monitor. The calibration result can be printed to standard out.\\
 The resulting parameter vector can be passed to \icode{Grabber} instances as explained in \ref{subsubsec:distortion-compensation}.
 
+\iclfigure{intrinsic-calib-screenshot}{GUI-screenshot of icl-intrinsic-camera-calibration application. Here, a 2nd screen is used to visualize the 4x3 calibration pattern. A self-organizing-map (SOM) is used to fit a grid to the detection points.}{width=300pt}
+
+\subsubsection{GUI Parameters}
+Internally, the calibration pattern is detected as follows. After converting the input image into a gray-level image, a local threshold operation is applied (see \iclclassref{Filter}{LocalThresholdOp} for details). The values of the GUI elements \emph{mask size} and \emph{threshold} are passed to the underlying \icode{LocalThresholdOp}-instance. Subsequently, a dilation (see \iclclassref{Filter}{MorphologicalOp}) is applied to the thresholded image in order to suppress single black pixels. The \emph{use morphed image}-toggle button can be used to enable this step (by default, is not activated). The resulting binary image is then used as input for a connected component analysis (see \iclclassref{Blob}{RegionDetector}, which is parameterized by the sliders labelled \emph{roundness} and \emph{min blob size} in order to filter out all regions, except those that are small and round enough. \\
+If the amount of matching regions meets the spot count from the calibration pattern\footnote{12 for the example above}, the display in the upper right GUI corner shows a green \emph{good}-string. Now, the user can press the \emph{add}-button to fit a grid into the detected points that is stored internally. The grid is fitted by using a SOM\footnote{see \hrefn{http://en.wikipedia.org/wiki/Self-organizing\_map}} which is implemented in the ICLAlgorithms package (see \iclclassref{Algorithms}{SOM}).\\
+Within the calibration process, all straight lines, i.e horizontal, vertical and diagonal ones, in all currently stored grids are use for calculating the calibration error. 
 \item \icode{icl-extrinsic-camera-calibration}\\
 \end{itemize}
 

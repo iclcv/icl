@@ -6,7 +6,7 @@
 #include <iclLocalThresholdOp.h>
 #include <iclRegionDetector.h>
 #include <iclMorphologicalOp.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 
 #include "intrinsic-camera-calibration-tools.h"
 #include <iclSOM2D.h>

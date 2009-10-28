@@ -4,7 +4,7 @@
 #include <QFontMetrics>
 #include <QPainter>
 #include <iclMathematics.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <iclGLTextureMapBaseImage.h>
 
 using std::string; using std::min;

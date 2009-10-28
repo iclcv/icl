@@ -7,7 +7,7 @@
 #include <iclPWCGrabber.h>
 #endif
 
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <map>
 #include <list>
 #include <iclConvolutionOp.h>

@@ -19,7 +19,7 @@
 
 namespace icl{
 
-  /// FixedMatrix base struct defining datamode enum
+  /// FixedMatrix base struct defining datamode enum \ingroup LINALG
   struct FixedMatrixBase{
     /// Optimized copy function template (for N>30 using std::copy, otherwise a simple loop is used)
     template<class SrcIterator, class DstIterator, unsigned int N>
@@ -45,7 +45,7 @@ namespace icl{
   /** \endcond */
   
 
-  /// Utility struct for FixedMatrix sub-parts
+  /// Utility struct for FixedMatrix sub-parts \ingroup LINALG
   /** FixedMatrix member functions row and col return an instance of this
       utility structure. FixedMatrixPart instances wrap a range of Iterators
       (begin- and end-Iterator) of template parameter type. Once created, 
@@ -103,7 +103,7 @@ namespace icl{
 
 
 
-  /// Powerful and highly flexible Matrix class implementation
+  /// Powerful and highly flexible matrix class implementation \ingroup LINALG
   /** By using fixed template parameters as Matrix dimensions,
       specializations to e.g. row or column vectors, are also
       as performant as possible.
@@ -188,8 +188,6 @@ namespace icl{
 #undef C1
 #undef C2
     } 
-    /** \cond */
-    /** \endcond */
 
     /// Range based constructor for STL compatiblitiy 
     /** Range size must be compatible to the new matrix's dimension */
@@ -428,7 +426,7 @@ namespace icl{
     /// return static member variable DIM (COLS*ROWS)
     static unsigned int dim() { return DIM; }
   
-    /// internal struct for row-wise iteration with stride=COLS
+    /// internal struct for row-wise iteration with stride=COLS \ingroup LINALG
     struct col_iterator : public std::iterator<std::random_access_iterator_tag,T>{
 
       /// just for compatibility with STL

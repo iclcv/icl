@@ -3,7 +3,7 @@
 #include <dc1394/conversions.h>
 
 #include <iclImg.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <iclMutex.h>
 #include <iclSignalHandler.h>
 #include <iclDCGrabberThread.h>

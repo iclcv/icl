@@ -1,7 +1,7 @@
 #include <iclFileGrabberPluginPNM.h>
 #include <iclException.h>
 #include <iclStringUtils.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <iclIOUtils.h>
 
 using namespace std;

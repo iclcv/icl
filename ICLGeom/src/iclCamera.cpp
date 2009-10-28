@@ -97,7 +97,33 @@ namespace icl{
     
     return T;
   }
-  
+
+  /* what the projection does:
+
+
+         1 0 0 0
+         0 1 0 0
+         0 0 1 0
+
+f 0 px   f 0 px 0
+0 f py   0 f py 0
+0 0  1   0 0  1 0
+0 0 ... todo
+          xc
+          yc
+          zc
+           1
+
+f 0 px 0   f*xc + px*zc
+0 f py 0   f*yc + py*zc
+0 0  1 0   zc
+
+hom3: /= zc
+        f*xc/zc + px
+        f*yc/zc + py
+        1
+
+  */  
   Mat Camera::getProjectionMatrix() const{
     float A = (m_zFar + m_zNear)/(m_zNear - m_zFar);
     float B = (2*m_zFar*m_zNear)/(m_zNear - m_zFar);
@@ -110,6 +136,8 @@ namespace icl{
                   0    , 0   ,  -1,  0 );
   }
 
+
+  
 
   Mat Camera::getTransformationMatrix() const {
     return getProjectionMatrix()*getCoordinateSystemTransformationMatrix();
@@ -153,8 +181,9 @@ namespace icl{
     
     /// TODO: here, we have to consider the principle point offset!
     
-    return Vec( (pixel.x - dx)/s,
-                (pixel.y - dy)/s,
+    /// this is somehow (VP)^-1 * pixel; (with fixed z = -m_F) 
+    return Vec( (pixel.x - dx)/s, // maybe -ppo.x/f
+                (pixel.y - dy)/s, // maybe -ppo.y/f
                 -m_F,
                 1);
   }

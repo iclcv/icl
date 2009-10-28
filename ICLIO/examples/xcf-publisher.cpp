@@ -3,7 +3,7 @@
 #include <iclCommon.h>
 #include <iclFPSEstimator.h>
 #include <iclFPSLimiter.h>
-#include <iclIO.h>
+#include <iclIOFunctions.h>
 
 #include <iclMedianOp.h>
 #include <iclConvolutionOp.h>

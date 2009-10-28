@@ -18,22 +18,37 @@
 
 namespace icl{
 
+  /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
   struct InvalidMatrixDimensionException :public ICLException{
     InvalidMatrixDimensionException(const std::string &msg):ICLException(msg){}
   };
+
+  /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
   struct IncompatibleMatrixDimensionException :public ICLException{
     IncompatibleMatrixDimensionException(const std::string &msg):ICLException(msg){}
   };
+
+  /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
   struct  InvalidIndexException : public ICLException{
     InvalidIndexException(const std::string &msg):ICLException(msg){}
   };
+
+  /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
   struct SingularMatrixException : public ICLException{
     SingularMatrixException(const std::string &msg):ICLException(msg){}
   };
+
+  /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
   struct QRDecompException : public ICLException{
     QRDecompException(const std::string &msg):ICLException(msg){}
   };
   
+
+  /// Highly flexible and optimized matrix class implementation  \ingroup LINALG
+  /** In contrast to the FixedMatrix template class, the DynMatrix instances are dynamically sized at runtime
+      The template class is instantiated for the common ICL types
+      uint8_t, int16_t, int32_t, float and double
+  */
   template<class T>
   struct DynMatrix{
     
@@ -398,7 +413,7 @@ namespace icl{
     /// returns sizeof (T)
     int stride2() const { return sizeof(T); }
   
-    /// Internal column iterator struct (using height-stride)
+    /// Internal column iterator struct (using height-stride) \ingroup LINALG
     struct col_iterator : public std::iterator<std::random_access_iterator_tag,T>{
       typedef unsigned int difference_type;
       mutable T *p;
@@ -800,11 +815,11 @@ namespace icl{
     bool m_ownData;
   };
 
-  /// ostream operator implemented for uchar, short, int, float and double matrices
+  /// ostream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
   template<class T>
   std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m);
 
-  /// istream operator implemented for uchar, short, int, float and double matrices
+  /// istream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
   template<class T>
   std::istream &operator>>(std::istream &s,DynMatrix<T> &m);
 

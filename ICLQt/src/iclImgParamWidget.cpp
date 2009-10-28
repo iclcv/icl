@@ -2,7 +2,7 @@
 #include "iclBorderBox.h"
 #include <iclTypes.h>
 #include <iclSize.h>
-#include <iclCore.h>
+#include <iclCoreFunctions.h>
 
 #include <QComboBox>
 #include <QHBoxLayout>

@@ -7,7 +7,7 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <iclCore.h>
+#include <iclCoreFunctions.h>
 #include <iclGUISyntaxErrorException.h>
 #include <QString>
 

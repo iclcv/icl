@@ -85,6 +85,9 @@ namespace icl{
     **/
     void setOperationOrder(oporder o){ m_eOpOrder = o; }
     
+    /// sets a new scale interpolation method (default is interpolateNN)
+    void setScaleMode(scalemode scaleMode);
+    
     private:
     /// converts dependent on the destination images depth
     void dynamicConvert(const ImgBase *src, ImgBase *dst);
@@ -124,6 +127,9 @@ namespace icl{
     /// currently set operation order
     /** @see setOperationOrder */
     oporder m_eOpOrder;
+
+    /// internal scalemode
+    scalemode m_scaleMode;
   };
 }
 

@@ -1,6 +1,6 @@
 #include <iclBayer.h>
 #include "iclImg.h"
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 
 namespace icl {
   

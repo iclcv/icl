@@ -1,6 +1,5 @@
 #include "iclFileGrabberPluginImageMagick.h"
-#include <iclCC.h>
-#include <iclCore.h>
+#include <iclCCFunctions.h>
 
 #ifdef HAVE_IMAGEMAGICK  
 #include <Magick++.h>

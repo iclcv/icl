@@ -1,14 +1,10 @@
 #ifndef ICL_COLOR_H
 #define ICL_COLOR_H
 
-#include <iclCore.h>
-#include <iostream>
-#include <string>
-#include <algorithm>
-#include <vector>
-#include <sstream>
-#include <iclStringUtils.h>
+#include <iclBasicTypes.h>
 #include <iclFixedVector.h>
+#include <string>
+
 namespace icl{
 
   /// Default color type of the ICL

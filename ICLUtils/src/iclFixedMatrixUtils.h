@@ -6,13 +6,13 @@
 
 namespace icl{
   
-  /// computes inner product of two matrices (element-wise scalar product)
+  /// computes inner product of two matrices (element-wise scalar product) \ingroup LINALG
   template<class T, unsigned int WIDTH, unsigned int HEIGHT, unsigned int WIDTH2>
   inline T inner_vector_product(const FixedMatrix<T,WIDTH,HEIGHT> &a, const FixedMatrix<T,WIDTH2,(WIDTH*HEIGHT)/WIDTH2> &b){
     return std::inner_product(a.begin(),a.end(),b.begin(),T(0));
   }
 
-  /// computes the QR decomposition of a matrix
+  /// computes the QR decomposition of a matrix \ingroup LINALG
   template<class T, unsigned int WIDTH, unsigned int HEIGHT>
   inline void decompose_QR(FixedMatrix<T,WIDTH,HEIGHT> A, FixedMatrix<T,WIDTH,HEIGHT> &Q, FixedMatrix<T,WIDTH,WIDTH> &R){
     FixedColVector<T,HEIGHT> a,q;
@@ -32,7 +32,7 @@ namespace icl{
     }
   }
   
-  /// computes the pseudo-inverse of a matrix (using QR-decomposition based approach)
+  /// computes the pseudo-inverse of a matrix (using QR-decomposition based approach) \ingroup LINALG
   template<class T,unsigned  int WIDTH,unsigned  int HEIGHT>
   inline FixedMatrix<T,HEIGHT,WIDTH> pinv(const FixedMatrix<T,WIDTH,HEIGHT> &M){
     if(HEIGHT < WIDTH){
@@ -48,7 +48,7 @@ namespace icl{
     }
   }
 
-  /// Vertical Matrix concatenation 
+  /// Vertical Matrix concatenation  \ingroup LINALG
   /** like ICLQuick image concatenation, dont forget the brackets sometimes */
   template<class T,unsigned  int WIDTH,unsigned  int HEIGHT, unsigned int HEIGHT2>
   inline FixedMatrix<T,WIDTH,HEIGHT+HEIGHT2> operator%(const FixedMatrix<T,WIDTH,HEIGHT> &a,
@@ -59,7 +59,7 @@ namespace icl{
     return M;
   }
 
-  /// Horizontal Matrix concatenation 
+  /// Horizontal Matrix concatenation  \ingroup LINALG
   /** like ICLQuick image concatenation, dont forget the brackets sometimes */
   template<class T,unsigned  int WIDTH,unsigned  int HEIGHT, unsigned int WIDTH2>
   inline FixedMatrix<T,WIDTH+WIDTH2,HEIGHT> operator,(const FixedMatrix<T,WIDTH,HEIGHT> &a,

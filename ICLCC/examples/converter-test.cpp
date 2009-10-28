@@ -1,5 +1,5 @@
 #include "iclConverter.h"
-#include "iclCC.h"
+#include "iclCCFunctions.h"
 #include "iclImg.h"
 #include "iclTestImages.h"
 #include <iclCommon.h>

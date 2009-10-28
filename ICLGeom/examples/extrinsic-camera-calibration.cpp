@@ -9,7 +9,7 @@
 #include <iclLocalThresholdOp.h>
 #include <iclRegionDetector.h>
 #include <iclMorphologicalOp.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 
 #include <iclSOM2D.h>
 #include <iclMathematics.h>

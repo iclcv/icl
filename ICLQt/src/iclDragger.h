@@ -4,7 +4,7 @@
 #include <iclPoint32f.h>
 #include <iclRect32f.h>
 #include <iclTypes.h>
-#include <iclCore.h>
+#include <iclCoreFunctions.h>
 
 namespace icl{
 

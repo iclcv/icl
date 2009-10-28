@@ -8,7 +8,7 @@
 #include <iclLocalThresholdOp.h>
 #include <iclProgArg.h>
 #include <iclThread.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <iclConfigFile.h>
 #include <QInputDialog>
 #include <iclMutex.h>

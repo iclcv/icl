@@ -1,7 +1,7 @@
 #include "iclFileWriterPluginPNM.h"
 #include <string>
 #include <vector>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <iclTime.h>
 #include "iclIOUtils.h"
 #include "iclStringUtils.h"

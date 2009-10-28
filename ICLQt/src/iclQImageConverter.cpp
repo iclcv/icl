@@ -2,8 +2,7 @@
 #include <QImage>
 #include <QVector>
 #include <iclImg.h>
-#include <iclCore.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 
 
 namespace icl{

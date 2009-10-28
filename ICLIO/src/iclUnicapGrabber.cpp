@@ -4,7 +4,7 @@
 #include <map>
 #include <unicap.h>
 #include <iclConverter.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include "iclUnicapDevice.h"
 #include <iclStringUtils.h>
 

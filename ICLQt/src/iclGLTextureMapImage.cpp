@@ -1,5 +1,5 @@
 #include "iclGLTextureMapImage.h"
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <limits>
 #include <cstring>
 using std::memset;

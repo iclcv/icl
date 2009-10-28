@@ -1,4 +1,4 @@
-#include "iclCC.h"
+#include "iclCCFunctions.h"
 #include "iclImg.h"
 #include "iclFileGrabber.h"
 #include "iclFileWriter.h"

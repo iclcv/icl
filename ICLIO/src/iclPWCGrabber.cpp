@@ -1,7 +1,7 @@
 #include <iclPWCGrabber.h>
 #include <iclImg.h>
 #ifdef SYSTEM_LINUX
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <stdio.h>
 #include <errno.h>
 #include <sys/time.h>

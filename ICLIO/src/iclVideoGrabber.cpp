@@ -5,7 +5,7 @@
 #include <xine/xineutils.h>
 #include <iclFile.h>
 #include <vector>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <iclStringUtils.h>
 #include <iclThread.h>
 #include <iclFPSLimiter.h>

@@ -1,5 +1,5 @@
 #include <iclCommon.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 
 GUI *gui;
 ICLDrawWidget *widget;

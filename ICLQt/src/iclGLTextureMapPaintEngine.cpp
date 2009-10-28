@@ -8,7 +8,7 @@ using namespace std;
 #include <iclGLTextureMapBaseImage.h>
 #include <QGLWidget>
 #include <iclQImageConverter.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 
 namespace icl{
   GLTextureMapPaintEngine::GLTextureMapPaintEngine(QGLWidget *widget) : 

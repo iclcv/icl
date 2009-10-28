@@ -1,8 +1,45 @@
-#ifndef ICLIO_H
-#define ICLIO_H
+#ifndef ICL_IO_H
+#define ICL_IO_H
 
-#include <string>
-#include <iclTypes.h>
+#ifdef HAVE_LIBDC
+#include <iclDCGrabber.h>
+#endif
+
+#include <iclDemoGrabber.h>
+#include <iclFileGrabber.h>
+#include <iclFile.h>
+#include <iclFileList.h>
+#include <iclFilenameGenerator.h>
+#include <iclFileWriter.h>
+#include <iclGenericGrabber.h>
+#include <iclIOFunctions.h>
+
+#ifdef HAVE_VIDEODEV
+#include <iclPWCGrabber.h>
+#endif
+
+#ifdef HAVE_LIBMESASR
+#include <iclSwissRangerGrabber.h>
+#endif
+
+#include <iclTestImages.h>
+
+#ifdef HAVE_UNICAP
+#include <iclUnicapGrabber.h>
+#endif
+
+#ifdef HAVE_XINE
+#include <iclVideoGrabber.h>
+#endif 
+
+#ifdef HAVE_XCF
+#include <iclXCFMemoryGrabber.h>
+#include <iclXCFMemoryListener.h>
+#include <iclXCFPublisherGrabber.h>
+#include <iclXCFPublisher.h>
+#include <iclXCFServerGrabber.h>
+#include <iclXCFUtils.h>
+#endif
 
 /**
     \defgroup DC_G LibDC1394-2 based IEEE-1394 Camera Grabber and Control API
@@ -47,22 +84,5 @@
 */
 
 
-/// Provide some common functionality for all file accessing classes
-
-namespace icl {
-
-  /// draws a label into the upper left image corner (TODO another location?) \ingroup UTILS_G
-  /** This utility function can be used e.g. to identify images in longer
-      computation queues. Internally is uses a static map of hard-coded
-      ascii-art letters ('a'-'z)'=('A'-'Z'), ('0'-'9') and ' '-'/' are defined yet.
-      which associates letters to letter images and corresponding offsets.
-      Some tests showed, that is runs very fast (about 100ns per call).
-      Note, that no line-break mechanism is implemented, so the labeling
-      is restricted to a single line, which is cropped, if the label would
-      overlap with the right or bottom  image border.
-  */ 
-  void labelImage(ImgBase *image,const std::string &label);
-
-} //namespace icl
 
 #endif

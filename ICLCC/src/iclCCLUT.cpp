@@ -1,5 +1,5 @@
 #include <iclCCLUT.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 
 using namespace std;
 using namespace icl;

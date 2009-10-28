@@ -3,7 +3,7 @@ lib_LTLIBRARIES=libICLCC.la
 
 libICLCC_la_SOURCES= \
 ../src/iclBayer.cpp \
-../src/iclCC.cpp \
+../src/iclCCFunctions.cpp \
 ../src/iclCCLUT.cpp \
 ../src/iclColor.cpp \
 ../src/iclConverter.cpp \
@@ -12,6 +12,7 @@ libICLCC_la_SOURCES= \
 include_HEADERS= \
 ../src/iclBayer.h \
 ../src/iclCC.h \
+../src/iclCCFunctions.h \
 ../src/iclCCLUT.h \
 ../src/iclChromaAndRGBClassifier.h \
 ../src/iclChromaClassifier.h \

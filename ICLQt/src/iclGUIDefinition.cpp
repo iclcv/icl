@@ -3,7 +3,7 @@
 #include <iclSize.h>
 #include <iclStringUtils.h>
 #include <iclStrTok.h>
-#include <iclCore.h>
+#include <iclCoreFunctions.h>
 #include <iclProxyLayout.h>
 
 using namespace std;

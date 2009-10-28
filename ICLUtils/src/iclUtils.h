@@ -1,9 +1,41 @@
-#include <iclMacros.h>
+#ifndef ICL_UTILS_H
+#define ICL_UTILS_H
+
+#include <iclFixedMatrixUtils.h>
+#include <iclCompatMacros.h>
+#include <iclConfigFile.h>
+#include <iclConsoleProgress.h>
+#include <iclDynMatrixUtils.h>
+#include <iclDynVector.h>
+#include <iclFixedVector.h>
+#include <iclFastMedianList.h>
+#include <iclFPSLimiter.h>
+#include <iclTimer.h>
+#include <iclMultiThreader.h>
+#include <iclMultiTypeMap.h>
+#include <iclProgArg.h>
+#include <iclRange.h>
+#include <iclRect32f.h>
+#include <iclRect.h>
+#include <iclSemaphore.h>
+#include <iclSignalHandler.h>
+#include <iclSimpleMatrix.h>
+#include <iclStackTimer.h>
+#include <iclSteppingRange.h>
+#include <iclStochasticOptimizer.h>
+#include <iclStraightLine2D.h>
+#include <iclStrTok.h>
+#include <iclThreadUtils.h>
+
+#include <iclXMLDocument.h>
+#include <iclXML.h>
+#include <iclXMLNodeFilter.h>
 
 /** 
     \defgroup TIME Time and Timer Support Classes and Functions
-    \defgroup EX Special Exceptions
+    \defgroup EXCEPT Special Exceptions
     \defgroup THREAD Support Functions for Multi-Threading 
+    \defgroup LINALG Linear algebra classes and functions
     \defgroup UTILS General purpose Utiltiy Classes and Functions
     \defgroup PA Programm Argument Evaluation Functions
     \defgroup XML XML Pasing and Creation Environment
@@ -14,15 +46,14 @@
     
     \section OV Overview
     
-    The ICLUtils package contains C++ Support Functions and Classes which do no depend on the
-    underlying ICL-Image API and datatypes. To empasise that classes and functions 
-    <em>are</em> completely independent, they are collected in the external ICLPackage. Further
-    contributions to the ICLUtils package should not have any dependencies not even external ones.
+    The ICLUtils package contains C++ support functions and classes that do no depend on the
+    ICL's image classes. 
     
     The packe can be grouped into the following modules:
     -# \ref TIME
-    -# \ref EX
+    -# \ref EXCEPT
     -# \ref THREAD
+    -# \ref LINALG
     -# \ref UTILS
     -# \ref PA
     -# \ref XML
@@ -70,3 +101,6 @@
     
     
     */
+
+
+#endif

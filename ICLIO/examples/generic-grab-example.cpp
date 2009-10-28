@@ -2,7 +2,8 @@
 #include <iclQt.h>
 #include <iclGUI.h>
 #include <iclQuick.h>
-#include <iclIO.h>
+#include <iclIOFunctions.h>
+#include <iclApplication.h>
 
 GUI gui("vbox");
 
@@ -13,9 +14,9 @@ void init(){
   gui.show();
 }
 
-void loop(){
-  static ComboHandle &combo = gui.getValue<ComboHandle>("combo");
-  static ImageHandle &image = gui.getValue<ImageHandle>("image");
+void run(){
+  gui_ComboHandle(combo);
+  gui_ImageHandle(image);
   static GenericGrabber *grabber = 0;
   static std::map<string,string> params;
   params["pwc"] = "pwc=0";
@@ -52,13 +53,5 @@ void loop(){
 
 
 int main(int n, char **ppc){
-  ExecThread x(loop);
-  
-  QApplication app(n,ppc);
-  
-  init();
-
-  x.run();
-
-  return app.exec();
+  return ICLApplication(n,ppc,"",init,run).exec();
 }

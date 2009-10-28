@@ -1,6 +1,6 @@
 #include <iclStrTok.h>
 #include <iclSize.h>
-#include <iclCore.h>
+#include <iclCoreFunctions.h>
 
 #include <iclGUI.h>
 #include <iclGUIWidget.h>

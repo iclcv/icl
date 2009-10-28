@@ -2,7 +2,7 @@
 
 #ifdef HAVE_IMAGEMAGICK
 #include <Magick++.h>
-#include <iclCC.h>
+#include <iclCCFunctions.h>
 #include <iclConverter.h>
 #include <iclException.h>
 #endif
