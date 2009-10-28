@@ -9,45 +9,44 @@
     \defgroup G_UTILS Utility classes and Functions
     
     \mainpage ICLBlob - A package for detection and tracking of image blobs
+
+    The ICLBlob package contains functions and classes for region and blob detection and
+    for tracking. However, the most common component is the icl::RegionDetector class, 
+    which performs a parameterized connected component analysis on images. Here are some sample
+    application screenshots:
+
+    <TABLE border=0><TR><TD>
+    \image html region-inspector.jpg "icl-region-inspector GUI"
+    </TD><TD> 
+    \image html css-demo.jpg "icl-corner-detection-css-demo GUI"
+    </TD></TR></TABLE>
     
-    \section BLOB_DEF Blobs?
-    At first, we have to define the term "Blob". In literature, many most different
-    definition of image blobs can be found. Hence we give our own definition:
+    \section BLOB_DEF Blobs and Regions
+    At first, we have to define the terms "Blob" and "Region":
     
     <em>
-    A "Blob" is a set of connected pixels. The set of pixels belonging to a single
-    Blob has to fulfill a certain criterion of homogeneity (e.g. "all pixels" 
+    A "Region" is a set of connected pixels. The set of pixels belonging to a single
+    Region has to fulfill a certain criterion of homogeneity (e.g. "all pixels" 
     have exactly the same value"). The term of "connection" must also be defined 
-    more exactly, to avoid misunderstandings. A pixel is connected to all pixels in
-    its neighborhood, which in turn is given by the 4 pixels (to the left, to the 
-    right, above and below) next to the reference pixel. Although a very common
-    neighborhood defined by the 8 nearest pixels to a reference pixel is often used,
-    we resign of it because of its higher computational complexity. 
+    more precisely in order to avoid misunderstandings. A pixel is connected to all pixels in
+    it's neighborhood, which in turn is given by the 4 pixels (to the left, to the 
+    right, above and below) next to the reference pixel. 
+    The also very common neighborhood that contains the 8 nearest neighbours is currently
+    not supported. E.g. a connected component analysis yields a list of Regions.\n\n
+    A Blob is a more general local spot in an image. Blobs don't have to be connected
+    completely.
     </em>
 
     
-    \section SEC_DETECTION_VS_TRACKING Blobs vs. Regions and Detection vs. Tracking
+    \section SEC_DETECTION_VS_TRACKING Detection vs. Tracking
     
-    In the following some pretended synonyms are used very specificly:
-    <b>"blob detection"</b>, <b>"image region extraction"</b> and <b>"blob tracking"</b>.
-    To avoid confusions, we also define these terms precisely:
-    - <b>blob detection:</b> "detection" means "without a temporal apriori knowledge".
-      When we talk about the detection of Blobs in an image, we start from the assumption
-      that we have <b>no</b> special apriori knowledge of where we expect a certain blob
-      to be located in the image.
-    - <b>blob tracking</b> in opposite to "blob detection", the term "blob tracking" 
-      implicated a time concept (-> tracking over time). Tracking is performed in general
-      by the following procedure. In the first step, where we have no apriori knowledge
-      of the location of blobs in the image, we perform simple blob detection. In the
-      following time/processing steps, we compute a prediction of the blob center and
-      use this as apriori knowledge. By this means, we have to search for a certain blob
-      only in the vicinity of the predicted blob center rather that in the whole image.
-    - <b>region detection</b> A second term sometimes used synonymous to the word "blob"
-      is "region". This is correct, as we defined a blob to be a "region" with some 
-      special features. In our region detection API, we assume a regions criterion of
-      homogenity to be the one mentioned above: <em>all pixel within a certain region
-      have exactly the same pixel value</em>.
-    
+    We differentiate explicitly between <em>detection</em> and <em>tracking</em>. 
+    When regions or blobs are <em>detected</em> in an image, no prior knowledge for the supposed 
+    image location is used, i.e. the region/blob is detected in the whole image.\n
+    In contrast, blob <em>tracking</em> of blob means, that blobs are tracked in general
+    from one time step to another, i.e the former blob location is used as prior guess
+    for it's location in the current frame (tracking over time).
+
 
     \section BLOB_APPROACHES Different Blob Detection Approaches
     
@@ -60,37 +59,40 @@
     The Color Blob Searcher API is a template based framework which provides a
     mechanism for a color based blob detection. In this approach each blob is
     determined by a special color, so blobs with identical colors are mixed together.
+    Main class is the icl::ColorBlobSearcher template.
         
     \ref G_RD \n
-    The <b>ImgRegionDetector</b> provides low level functionalities for the detection of
-    <em>connected</em> image regions. The regions that can be found must be connected and
+    The icl::RegionDetector performs a connected component analysis on images.
+    Regions that can be found must be connected and
     must show identical gray values (color images can not be processed yet). Commonly the
-    input image of the ImgRegionDetectors <em>detect(...)-call</em> is a kind of feature
-    map that shows only a small number of different gray values (see the classes
+    input image of the RegionDetector's <em>detect(...)-method</em> is a kind of feature
+    map that shows only a small number of different gray values (see the class
     documentation for more detail). The set of detected image regions can be restricted by:
-    1st: a min. and max.gray value and 2nd: a min. and max pixel count
+    (i) a minimal and maximal gray value and (ii) a minimal and maxmial pixel count
     <b>Note:</b> The algorithm is highly speed-optimized, by using a special kind of 
-    self implemented memory handling, which avoids memory allocation and deallocation at 
+    self developed memory handling, which avoids memory allocation and deallocation at 
     runtime if possible. Given large images with O(pixel count) regions (e.g. ordinary 
     gray images instead of a feature map) the algorithm may need more physical memory than
-    available. A very common function may be <b>ICLFilter/LUT::reduceBits(..)</b>.
+    available. A very common pre-processing function may be <b>ICLFilter/LUT::reduceBits(..)</b>.
 
     
     \ref G_RBBS \n    
-    The RegionBasedBlobSearcher also searches for a set of image blobs, which
+    The icl::RegionBasedBlobSearcher also searches for a set of image blobs, which
     are discriminated <em>here</em> by their spacial location. The <em>connection</em>
     feature is compulsory for blobs. The advantage of this region based approach 
     is, that it is able to detect a large number of image blobs with identical color. 
-    The drawback is the detected blobs have no kind of <em>ID</em>, which could be
+    The drawback is that detected blobs have no kind of <em>ID</em>, which could be
     used for blob <em>tracking</em>. \n
-    The RegionBasedBlobSearcher wraps the ImgRegionDetector and provides an additional
+    The RegionBasedBlobSearcher wraps the icl::RegionDetector and provides an additional
     feature-map creation and region evaluation interface.
+    For standard region based blob detection, the icl::SimpleBlobSearcher might be 
+    sufficient and much more convenient.
         
 
     \ref G_PT \n    
-    The 3 approaches above all perform Blob or region detection. The Position tracker can
-    be used together with these ones to track detected blobs over time.
-
+    The 3 approaches above all perform Blob or region detection. The icl::PositionTracker or 
+    it's generalized version icl::VectorTracker can be used to tracking the resulting regions
+    or blobs through time.
     
     \ref G_UTILS \n    
     In this group some additional support classes and functions are provided
