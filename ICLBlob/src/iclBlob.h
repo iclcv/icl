@@ -1,5 +1,21 @@
-#ifndef ICLBLOB_H
-#define ICLBLOB_H
+#ifndef ICL_BLOB_H
+#define ICL_BLOB_H
+
+#include <iclDefaultColorBlobSearcher.h>
+#include <iclExtrapolator.h>
+#include <iclRegionBasedBlobSearcher.h>
+#include <iclHungarianAlgorithm.h>
+#include <iclMeanShiftTracker.h>
+
+#include <iclPositionTracker.h>
+#include <iclVectorTracker.h>
+#include <iclRegionDetector.h>
+
+#include <iclSimpleBlobSearcher.h>
+
+#include <iclVQ2D.h>
+#include <iclVQClusterInfo.h>
+#include <iclVQVectorSet.h>
 
 /** 
     \defgroup G_CBS Color Blob Searcher API (template based)
