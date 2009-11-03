@@ -844,10 +844,10 @@ public:
       int iMaxLen;
     };
     
-    StringGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,2){
+    StringGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,-1){
       m_poLineEdit = new QLineEdit(def.parentWidget());
-      m_poLineEdit->setValidator(new StringLenValidator(def.intParam(1)));
-      m_poLineEdit->setText(def.param(0).c_str());
+      m_poLineEdit->setValidator(new StringLenValidator(def.numParams() == 2 ? def.intParam(1) : 100));
+      m_poLineEdit->setText(def.numParams()>=1 ? def.param(0).c_str() : "");
       
       QObject::connect(m_poLineEdit,SIGNAL(returnPressed ()),this,SLOT(ioSlot()));
       

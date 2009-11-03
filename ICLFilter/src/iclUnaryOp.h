@@ -65,6 +65,32 @@ namespace icl{
     */
     bool getCheckOnly() const { return m_oROIHandler.getCheckOnly(); }
     
+
+    /// Creates a UnaryOp instance from given string definition
+    /** Supported definitions have the followin syntax:
+        OP_SPEC<(PARAM_LIST)>
+         
+        examples are: 
+        - sobelX3x3
+        - median(5x3)
+        - closeBorder(3x3)
+
+        A complete list of OP_SPECS can be obtained by the static listFromStringOps function.
+        Each specific parameter list's syntax is accessible using the static getFromStringSyntax function.
+        
+    */
+    static UnaryOp *fromString(const std::string &definition) throw (ICLException);
+
+    /// gives a string syntax description for given opSpecifier
+    /** opSpecifier must be a member of the list returned by the static function listFromStringOps */
+    static std::string getFromStringSyntax(const std::string &opSpecifier) throw (ICLException);
+
+    /// returns a list of all supported OP_SPEC values for the fromString function
+    static std::vector<std::string> listFromStringOps();
+
+    /// creates, applies and releases a UnaryOp defined by given definition string
+    static void applyFromString(const std::string &definition, const ImgBase *src, ImgBase **dst) throw (ICLException);
+    
     protected:
     bool prepare (ImgBase **ppoDst, depth eDepth, const Size &imgSize, 
                   format eFormat, int nChannels, const Rect& roi, 
