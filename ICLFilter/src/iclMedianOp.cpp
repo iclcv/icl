@@ -6,12 +6,14 @@
 namespace icl {
   
   namespace{
+    
     template<typename T>
     void apply_median (const Img<T> *src, Img<T> *dst, const Size &oMaskSize,const Point &roiOffset, const Point &oAnchor) {
       // {{{ open
       std::vector<T> oList(oMaskSize.getDim());
       typename std::vector<T>::iterator itList = oList.begin();
       typename std::vector<T>::iterator itMedian = oList.begin()+((oMaskSize.width * oMaskSize.height)/2);
+
       
       for (int c=0;c<src->getChannels();c++){
         const ImgIterator<T> s(const_cast<T*>(src->getData(c)),src->getWidth(), Rect(roiOffset, dst->getROISize()));
@@ -21,7 +23,6 @@ namespace icl {
           for(const ImgIterator<T> sR(s,oMaskSize,oAnchor); sR.inRegionSubROI(); ++sR, ++itList){
             *itList = *sR;
           }
-          return;
           std::sort(oList.begin(),oList.end());
           *d = *itMedian;
           itList = oList.begin();
@@ -72,7 +73,7 @@ namespace icl {
       }
     } 
 
-    // }}}
+    // }}} 
     
     template<> 
     void apply_median<icl16s>(const Img16s *src, Img16s *dst, const Size &maskSize,const Point &roiOffset, const Point &anchor){
