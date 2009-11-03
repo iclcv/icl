@@ -91,5 +91,16 @@ namespace icl{
     
     ImgBase *m_buf;
   };    
+
+
+#define DYNAMIC_UNARY_OP_CREATION_FUNCTION(NAME)       \
+  extern "C" {                                         \
+    UnaryOp *create_##NAME(const std::string &s){      \
+      return NAME(s);                                  \
+    }                                                  \
+  }
+  
 }
+
+
 #endif

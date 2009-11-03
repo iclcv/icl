@@ -1,6 +1,8 @@
 #include <iclThresholdOp.h>
 #include <iclImg.h>
 
+#include <iclStringUtils.h>
+
 namespace icl {
 
   ThresholdOp::ThresholdOp(optype ttype,float lowThreshold, float highThreshold,float lowVal, float highVal){

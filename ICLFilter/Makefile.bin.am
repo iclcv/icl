@@ -103,7 +103,8 @@ icl-local-threshold-op-test \
 icl-gabor-op-online-example \
 icl-convolution-op-test \
 icl-warp-op-test \
-icl-interactive-affine-op-example
+icl-interactive-affine-op-example \
+icl-filter-demo-2
 
 icl_gabor_op_online_example_SOURCES=../examples/gabor-op-online-example.cpp
 icl_gabor_op_online_example_LDFLAGS=${XLDFLAGS}
@@ -112,6 +113,10 @@ icl_gabor_op_online_example_CXXFLAGS=${XCXXFLAGS}
 icl_local_threshold_op_test_SOURCES=../examples/local-threshold-op-test.cpp
 icl_local_threshold_op_test_LDFLAGS=${XLDFLAGS}
 icl_local_threshold_op_test_CXXFLAGS=${XCXXFLAGS}
+
+icl_filter_demo_2_SOURCES=../examples/filter-demo-2.cpp
+icl_filter_demo_2_LDFLAGS=${XLDFLAGS}
+icl_filter_demo_2_CXXFLAGS=${XCXXFLAGS}
 
 icl_warp_op_test_SOURCES=../examples/warp-op-test.cpp
 icl_warp_op_test_LDFLAGS=${XLDFLAGS}
