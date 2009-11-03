@@ -1,4 +1,4 @@
-#include <iclCore.h>
+#include <iclCoreFunctions.h>
 #include <iclException.h>
 #include <iclImg.h>
 #include <iclStringUtils.h>

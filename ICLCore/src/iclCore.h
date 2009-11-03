@@ -22,9 +22,9 @@
 
     At its core, ICL is a C++ computer vision library. During the design and development process, the following main goals took center stage:
     - Optimal Performace
-    - Simple and easy to use C++-interface
+    - Simple and easy to use C++-interface (see \ref EXAMPLE)
     - Platform-Independence
-    - No compulsory software dependencies
+    - No compulsory software dependencies (see \ref EXTERNAL_DEPS)
 
     ICL tutorials can be build independently from the ICL/tutorial folder, or downloaded from <b>TODO</b>
 
@@ -86,6 +86,9 @@
     Consequently these packages are not available if these dependencies are missing.
 
     \section THE_IMAGE The Image Classes
+    
+
+    <TABLE border=0><TR><TD>
 
     We use inheritance and class templates for ICL's image representation:
     The ImgBase class defines an abstract interface, that manages all image information except image pixel data. These abstract image features are:
@@ -109,6 +112,10 @@
     - extraction of single image pixels (using <tt>operator()(x,y,channel-index)</tt> for single values or <tt>operator()(x,y)</tt> to obtain a pixel vector)
     - iterator based access to data of a given channel (using <tt>begin(channel)</tt> and <tt>end(channel)</tt>)
     - iterator based access to the ROI-pixels of a given channel (using <tt>beginROI(channel)</tt> and <tt>endROI(channel)</tt>)
+
+    </TD><TD>
+    \image html image-sketch.png "A sketch of ICL's image type Img<T>"
+    </TD></TR></TABLE>
  
     \section SEC_DATA_ORIGN Data Origin
     As most common image formats image processing use the upper left image corner as data origen, ICL follows this convention as well.
@@ -162,7 +169,7 @@
     <b>A nice rule of thumb is: If processing speed matters, use Img8u images whenever it's possible and avoid Img64f because 
     double processing is much slower on (still common) 32 bit machines (as long as you do not really need double precision)</b> 
 
-    \section ROI region of Interest (ROI)
+    \section ROI Region of Interest (ROI)
     Each image can be set up with a rectangular region of interest. Nearly all algorithms 
     work only on the pixels within the ROI. If a function does not support
     ROI handling it will be noticed in the documentation. There are several ways
@@ -270,6 +277,102 @@
     -# \ref STRUTILS
     -# \ref MATH 
 
+
+    \section EXTERNAL_DEPS Optional 3rd Party Dependencies
+
+    As mentioned above, ICL has a set of external 3rd party software dependencies. All of these dependencies are purely optional for compiling
+    the ICL libraries, however some special functionalities depend compulsorily on certain 3rd party libraries. In the following, 
+    dependent functions, classes and packages are listed:
+
+    <TABLE border=1>
+    <TR><TD>External Package</TD><TD>Version</TD>                  <TD>proprietary</TD><TD>Resource Location</TD><TD>Ubuntu Package</TD><TD>Dependend ICL Components</TD></TR>
+    <TR><TD>Intel IPP</TD>     <TD>6.0 (maybe others)</TD>         <TD>yes</TD> 
+    <TD><a href="http://software.intel.com/en-us/intel-ipp/">Intel Webpage</a></TD>    <TD>not available</TD>
+    <TD><ul>
+    <li> Most basic image pocessing functions are optionally accellerated using an Intel IPP backend
+    <li> ICLFilter:CannoOp class (Canny edge detector) [no fallback]
+    </ul></TD></TR>
+    <TR><TD>Intel MKL</TD>     <TD>10.2 (maybe others)</TD>        <TD>yes</TD> 
+    <TD><a href="http://software.intel.com/en-us/intel-mkl/">Intel Webpage</a></TD>    <TD>not available</TD>
+    <TD><ul>
+    <li> ICLUtils:big_matrix_mult_t (efficient matrix multiplication for large matrices) [fallback: IPP and C++]
+    </ul></TD></TR>
+    <TR><TD>libdc1394</TD>     <TD>2.x (1.x is not supported)</TD> <TD>no</TD>  
+    <TD><a href="http://sourceforge.net/projects/libdc1394">Sourceforge</a></TD>       <TD>libdc1394-2x-dev</TD>
+    <TD><ul>
+    <li> ICLIO:DCGrabber (FireWire Camera Support) [fallback: ICLIO:UnicapGrabber]
+    <li> "dc" plugin for ICLIO:GenericGrabber [fallback: "unicap"-plugin]
+    </ul></TD></TR>
+    <TR><TD>OpenCV</TD>        <TD>1.x and 2.x</TD>                <TD>no</TD>  
+    <TD><a href="http://sourceforge.net/projects/opencvlibrary/">Sourceforge</a></TD>  <TD>libopencv-dev</TD>
+    <TD><ul>
+    <li> ICLOpenCV:image converters [no fallback]
+    </ul></TD></TR>
+    <TR><TD>OpenGL</TD>        <TD>any common</TD>                 <TD>no</TD>  
+    <TD>Graphics card vendor</TD>                                                      <TD>libgl-dev</TD>
+    <TD><ul>
+    <li> Qt dependency depends also on libGL (But GL-headers are needed as well)
+    <li> The whole ICLQt-package and all GUI-applications [no fallback]
+    </ul></TD></TR>
+    <TR><TD>Qt</TD>            <TD>4.4 (or higher)</TD>            <TD>no</TD>
+    <TD><a href="http://qt.nokia.com/downloads">Nokia-Qt Webpage</a></TD>              <TD>libqt4-dev and qt4-dev-tools</TD>
+    <TD><ul>
+    <li> The whole ICLQt-package and all GUI-applications [no fallback]
+    </ul></TD></TR>
+    <TR><TD>Unicap</TD>        <TD>we use 0.2.19 maybe others</TD> <TD>no</TD>
+    <TD><a href="http://sourceforge.net/projects/unicap/">Sourceforge</a></TD>         <TD>formerly: unicap</TD>
+    <TD><ul> 
+    <li> ICLIO:UnicapGrabber (firewire and video 4 linux Support) [firewire fallback: ICLIO:DCGrabber]
+    <li> "unicap" plugin for ICLIO:GenericGrabber [firewire fallback: "dc"-plugin]
+    </ul></TD></TR>
+    <TR><TD>libMagick++</TD>   <TD>any common</TD>                 <TD>no</TD>
+    <TD><a href="http://www.graphicsmagick.org/Magick++/">Sourceforge</a></TD>         <TD>libgraphicsmagick++1-dev and graphicsmagick-libmagick-dev-compat</TD>
+    <TD><ul>
+    <li> Support for most file formats [fallback: C++ for .ppm, .pnm, .pgm, .icl, and .csv (and .gz-versions of all), libjepg for .jpg]
+    <li> No fallback support for other very common formats like .png, .giv, .bmp, ...
+    </ul></TD></TR>
+    <TR><TD>libjpeg</TD>       <TD>any common</TD>                 <TD>no</TD>
+    <TD><a href="http://sourceforge.net/projects/libjpeg/">Sourceforge</a></TD>        <TD>libjpeg-dev</TD>
+    <TD><ul>
+    <li> Support for .jpg (or .jpeg) files [fallback: libMagick++ (which maybe needs libjepg as well)]
+    </ul></TD></TR>
+    <TR><TD>libz</TD>          <TD>any common</TD>                 <TD>no</TD>
+    <TD>Operating System Basics</TD>                                                   <TD>libz-dev</TD>
+    <TD><ul>
+    <li> Zip-Compression/Decompression support for class ICLIO:File. 
+    <li> Zip-Compression/Decompression support for built-in image formats .pnm, .pgm, .ppm, .csv and .icl
+    </ul></TD></TR>
+    <TR><TD>videodev.h</TD>    <TD>from 2.4.x or 2.6.x kernel</TD> <TD>no</TD>  
+    <TD>Linux kernel header</a></TD>                                                   <TD>linux-headers-2.x.x.x-generic</TD>
+    <TD><ul>
+    <li> ICLIO:PWCGrabber (Native Support for Phillips 740 Webcams) [fallback: maybe unicap]
+    </ul></TD></TR>
+    <TR><TD>SVS</TD>           <TD>4.2 (maybe others)</TD>         <TD>yes</TD> 
+    <TD><a href="http://www.videredesign.com/templates/svs.htm">Videre Design</a></TD> <TD>not available</TD>
+    <TD><ul>
+    <li> ICLAlgorithms:SVS stereo vision support class
+    </ul></TD></TR>
+    <TR><TD>libXine</TD>       <TD>any common</TD>                 <TD>no</TD>  
+    <TD><a href="http://sourceforge.net/projects/xine/">Sourceforge</a></TD>           <TD>libxine-dev</TD>
+    <TD><ul>
+    <li> ICLIO:VideoGrabber class (video image source support) [no fallback]
+    <li> "video" plugin for ICLIO:GenericGrabber [no fallback]
+    </ul></TD></TR>
+    <TR><TD>XCF-Framework</TD> <TD>any common</TD>                 <TD>no</TD>  
+    <TD><a href="http://sourceforge.net/projects/xcf/files/">Sourceforge</a></TD>       <TD>not available</TD>
+    <TD><ul>
+    <li> Sending and receiving images via TCP network interface [no fallback]
+    <li> ICLIO:XCFServerGrabber (RMI-based image acquisition)
+    <li> ICLIO:XCFPublisherGrabber (Subscriber for published images)
+    <li> ICLIO:XCFMemoryGrabber (image acquisition for ActiveMemory instance)
+    <li> ICLIO:GenericGrabber plugins "xcfp", "xcfs", and "xcfm"
+    <li> ICLIO:icl-xcf-publisher application
+    <li> ICLIO:MemoryListener utility class
+    <li> Global utility functions from ICLIO:XCFUtils header
+    </ul></TD></TR>    
+    </TABLE> 
+
+
     \section COMPLEX_EXAMPLE A More Complex Example for Interactive Image Thresholding
 
     <TABLE border=0><TR><TD>
@@ -290,9 +393,12 @@
   
       static GenericGrabber g(FROM_PROGARG("-input"));
   
+      // we need a working copy of acquired images for inplace thresholding
       static Img8u image;
       g.grab()->convert(&image);
   
+      // Of course, we could use an instance ThresholdOp here,
+      // but here we demonstrate pixel-access as well
       for(int c=0;c<image.getChannels();++c){
         for(int y=0;y<image.getHeight();++y){
           for(int x=0;x<image.getWidth();++x){
