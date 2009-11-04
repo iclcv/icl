@@ -257,36 +257,100 @@ namespace icl {
 
     IppStatus s = ippStsNoErr;
     switch (poSrc->getDepth()){
-      case depth8u:
+      case depth8u:{
+        const Img8u *src = poSrc->asImg<icl8u>();
+        Img8u *dst = (*ppoDst)->asImg<icl8u>();
         switch (m_eType){
-          case dilate:s=ippiMorphologicalCall<icl8u,ippiDilate_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());break;
-          case erode:s=ippiMorphologicalCall<icl8u,ippiErode_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());break;
-          case dilate3x3:s=ippiMorphologicalCall3x3<icl8u,ippiDilate3x3_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());break;
-          case erode3x3:s=ippiMorphologicalCall3x3<icl8u,ippiErode3x3_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>());break;
-          case dilateBorderReplicate:checkMorphState8u(poSrc->getROISize());s=ippiMorphologicalBorderReplicateCall<icl8u,ippiDilateBorderReplicate_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),m_pState8u);break;
-          case erodeBorderReplicate:checkMorphState8u(poSrc->getROISize());s=ippiMorphologicalBorderReplicateCall<icl8u,ippiErodeBorderReplicate_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),m_pState8u);break;
-          case openBorder:checkMorphAdvState8u(poSrc->getROISize());s=ippiMorphologicalBorderCall<icl8u,ippiMorphOpenBorder_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),m_pAdvState8u);break;
-          case closeBorder:checkMorphAdvState8u(poSrc->getROISize());s=ippiMorphologicalBorderCall<icl8u,ippiMorphCloseBorder_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),m_pAdvState8u);break;
-          case tophatBorder:checkMorphAdvState8u(poSrc->getROISize());s=ippiMorphologicalBorderCall<icl8u,ippiMorphTophatBorder_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),m_pAdvState8u);break;
-          case blackhatBorder:checkMorphAdvState8u(poSrc->getROISize());s=ippiMorphologicalBorderCall<icl8u,ippiMorphBlackhatBorder_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),m_pAdvState8u);break;
-          case gradientBorder:checkMorphAdvState8u(poSrc->getROISize());s=ippiMorphologicalBorderCall<icl8u,ippiMorphGradientBorder_8u_C1R> (poSrc->asImg<icl8u>(),(*ppoDst)->asImg<icl8u>(),m_pAdvState8u);break;
+          case dilate:
+            s=ippiMorphologicalCall<icl8u,ippiDilate_8u_C1R> (src,dst);
+            break;
+          case erode:
+            s=ippiMorphologicalCall<icl8u,ippiErode_8u_C1R> (src,dst);
+            break;
+          case dilate3x3:
+            s=ippiMorphologicalCall3x3<icl8u,ippiDilate3x3_8u_C1R> (src,dst);
+            break;
+          case erode3x3:
+            s=ippiMorphologicalCall3x3<icl8u,ippiErode3x3_8u_C1R> (src,dst);
+            break;
+          case dilateBorderReplicate:
+            checkMorphState8u(src->getROISize());
+            s=ippiMorphologicalBorderReplicateCall<icl8u,ippiDilateBorderReplicate_8u_C1R> (src,dst,m_pState8u);
+            break;
+          case erodeBorderReplicate:
+            checkMorphState8u(src->getROISize());
+            s=ippiMorphologicalBorderReplicateCall<icl8u,ippiErodeBorderReplicate_8u_C1R> (src,dst,m_pState8u);
+            break;
+          case openBorder:
+            checkMorphAdvState8u(src->getROISize());
+            s=ippiMorphologicalBorderCall<icl8u,ippiMorphOpenBorder_8u_C1R> (src,dst,m_pAdvState8u);
+            break;
+          case closeBorder:
+            checkMorphAdvState8u(src->getROISize());
+            s=ippiMorphologicalBorderCall<icl8u,ippiMorphCloseBorder_8u_C1R> (src,dst,m_pAdvState8u);
+            break;
+          case tophatBorder:
+            checkMorphAdvState8u(src->getROISize());
+            s=ippiMorphologicalBorderCall<icl8u,ippiMorphTophatBorder_8u_C1R> (src,dst,m_pAdvState8u);
+            break;
+          case blackhatBorder:
+            checkMorphAdvState8u(src->getROISize());
+            s=ippiMorphologicalBorderCall<icl8u,ippiMorphBlackhatBorder_8u_C1R> (src,dst,m_pAdvState8u);
+            break;
+          case gradientBorder:
+            checkMorphAdvState8u(src->getROISize());
+            s=ippiMorphologicalBorderCall<icl8u,ippiMorphGradientBorder_8u_C1R> (src,dst,m_pAdvState8u);
+            break;
         }
       break;
-      case depth32f:
+      }
+      case depth32f:{
+        const Img32f *src = poSrc->asImg<icl32f>();
+        Img32f *dst = (*ppoDst)->asImg<icl32f>();
         switch (m_eType){
-          case dilate:s=ippiMorphologicalCall<icl32f,ippiDilate_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());break;
-          case erode:s=ippiMorphologicalCall<icl32f,ippiErode_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());break;
-          case dilate3x3:s=ippiMorphologicalCall3x3<icl32f,ippiDilate3x3_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());break;
-          case erode3x3:s=ippiMorphologicalCall3x3<icl32f,ippiErode3x3_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>());break;
-          case dilateBorderReplicate:checkMorphState32f(poSrc->getROISize());s=ippiMorphologicalBorderReplicateCall<icl32f,ippiDilateBorderReplicate_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(),m_pState32f);break;
-          case erodeBorderReplicate:checkMorphState32f(poSrc->getROISize());s=ippiMorphologicalBorderReplicateCall<icl32f,ippiErodeBorderReplicate_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(),m_pState32f);break;
-          case openBorder:checkMorphAdvState32f(poSrc->getROISize());s=ippiMorphologicalBorderCall<icl32f,ippiMorphOpenBorder_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(),m_pAdvState32f);break;
-          case closeBorder:checkMorphAdvState32f(poSrc->getROISize());s=ippiMorphologicalBorderCall<icl32f,ippiMorphCloseBorder_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(),m_pAdvState32f);break;
-          case tophatBorder:checkMorphAdvState32f(poSrc->getROISize());s=ippiMorphologicalBorderCall<icl32f,ippiMorphTophatBorder_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(),m_pAdvState32f);break;
-          case blackhatBorder:checkMorphAdvState32f(poSrc->getROISize());s=ippiMorphologicalBorderCall<icl32f,ippiMorphBlackhatBorder_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(),m_pAdvState32f);break;
-          case gradientBorder:checkMorphAdvState32f(poSrc->getROISize());s=ippiMorphologicalBorderCall<icl32f,ippiMorphGradientBorder_32f_C1R> (poSrc->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(),m_pAdvState32f);break;
+          case dilate:
+            s=ippiMorphologicalCall<icl32f,ippiDilate_32f_C1R> (src,dst);
+            break;
+          case erode:
+            s=ippiMorphologicalCall<icl32f,ippiErode_32f_C1R> (src,dst);
+            break;
+          case dilate3x3:
+            s=ippiMorphologicalCall3x3<icl32f,ippiDilate3x3_32f_C1R> (src,dst);
+            break;
+          case erode3x3:
+            s=ippiMorphologicalCall3x3<icl32f,ippiErode3x3_32f_C1R> (src,dst);
+            break;
+          case dilateBorderReplicate:
+            checkMorphState32f(src->getROISize());
+            s=ippiMorphologicalBorderReplicateCall<icl32f,ippiDilateBorderReplicate_32f_C1R> (src,dst,m_pState32f);
+            break;
+          case erodeBorderReplicate:
+            checkMorphState32f(src->getROISize());
+            s=ippiMorphologicalBorderReplicateCall<icl32f,ippiErodeBorderReplicate_32f_C1R> (src,dst,m_pState32f);
+            break;
+          case openBorder:
+            checkMorphAdvState32f(src->getROISize());
+            s=ippiMorphologicalBorderCall<icl32f,ippiMorphOpenBorder_32f_C1R> (src,dst,m_pAdvState32f);
+            break;
+          case closeBorder:
+            checkMorphAdvState32f(src->getROISize());
+            s=ippiMorphologicalBorderCall<icl32f,ippiMorphCloseBorder_32f_C1R> (src,dst,m_pAdvState32f);
+            break;
+          case tophatBorder:
+            checkMorphAdvState32f(src->getROISize());
+            s=ippiMorphologicalBorderCall<icl32f,ippiMorphTophatBorder_32f_C1R> (src,dst,m_pAdvState32f);
+            break;
+          case blackhatBorder:
+            checkMorphAdvState32f(src->getROISize());
+            s=ippiMorphologicalBorderCall<icl32f,ippiMorphBlackhatBorder_32f_C1R> (src,dst,m_pAdvState32f);
+            break;
+          case gradientBorder:
+            checkMorphAdvState32f(src->getROISize());
+            s=ippiMorphologicalBorderCall<icl32f,ippiMorphGradientBorder_32f_C1R> (src,dst,m_pAdvState32f);
+            break;
         }
-      break;
+        break;
+      }
       default: ICL_INVALID_DEPTH; break;
     }
     if(s != ippStsNoErr){
