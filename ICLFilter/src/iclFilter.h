@@ -16,6 +16,9 @@
     <em>image filters</em> some misapprehensions can arise. To prevent this, the following section
     will shortly introduce our understanding of image filters.
 
+
+    \image html filter-array-demo.png "The icl-filter-array demo application can be used to examine filter chains"
+
     \section FILTERS What are Image-Filters
     
     In a most general view on image filters, a filter is a <em>black box</em> that has N image inputs
