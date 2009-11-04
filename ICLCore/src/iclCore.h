@@ -66,6 +66,7 @@
 
     \section PACKAGES Packages
 
+    <TABLE border=0><TR><TD>
     ICL consists of currently 11 packages that are listed in the main menu at the left.
 
     - <b>ICLUtils</b> Contains general purpose functions and classes that are currently not part of the C++-STL (e.g. threads or matrices).
@@ -84,6 +85,10 @@
     
     (*) The packages ICLQt and ICLOpenCV depend compulsorily on the corresponding external software dependencies Qt4 and OpenCV. 
     Consequently these packages are not available if these dependencies are missing.
+    
+    </TD><TD>
+    \image html icl-components.png "ICL's component collaboration diagram"
+    </TD></TR></TABLE>
 
     \section THE_IMAGE The Image Classes
     
@@ -419,5 +424,4 @@
     \image html thresh.jpg
     </TD></TR></TABLE>
 
-    **/
-#endif
+    **/ #endif

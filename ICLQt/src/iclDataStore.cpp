@@ -90,7 +90,13 @@ INST_OTHER_TYPES
 
 #define ADD(X,Y) template class AssignSpecial<X,Y>;
 
+
    // X = Y for numerical types
+
+#define INST_TYPE(T) ADD(bool,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
+
 #define INST_TYPE(T) ADD(char,T)
     INST_NUM_TYPES
 #undef INST_TYPE
@@ -328,6 +334,10 @@ namespace icl{
 #undef INST_TYPE
     
     // X = Y for numerical types
+#define INST_TYPE(T) ADD(bool,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
+
 #define INST_TYPE(T) ADD(char,T)
     INST_NUM_TYPES
 #undef INST_TYPE
