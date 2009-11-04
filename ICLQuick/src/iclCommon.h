@@ -1,6 +1,6 @@
 #ifdef HAVE_QT
 #include <iclGUI.h>
-#include <iclQt.h>
+#include <iclQtMacros.h>
 #include <iclApplication.h>
 #endif
 

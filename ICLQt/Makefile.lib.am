@@ -114,6 +114,7 @@ include_HEADERS= \
 ../src/iclPaintEngine.h \
 ../src/iclQImageConverter.h \
 ../src/iclQt.h \
+../src/iclQtMacros.h \
 ../src/iclQtPaintEngine.h \
 ../src/iclSliderHandle.h \
 ../src/iclSpinnerHandle.h \

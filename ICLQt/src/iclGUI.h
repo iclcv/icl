@@ -148,8 +148,8 @@ namespace icl{
       - <b>hbox</b> a horizontal layouted container 
       - <b>vbox</b> a vertical layouted container
       - <b>tab</b> a tabbed contatiner widget 
-      - <b>hsplit<b> a horizontal layouted containter (boundaries can be moved manually)
-      - <b>vsplit<b> a vertical layouted containter (boundaries can be moved manually)
+      - <b>hsplit</b> a horizontal layouted containter (boundaries can be moved manually)
+      - <b>vsplit</b> a vertical layouted containter (boundaries can be moved manually)
       - <b>border</b> a vertical layouted container with a labeled border
       - <b>button</b> a push button
       - <b>buttongroup</b> a set of radio buttons (exclusive)
@@ -258,7 +258,7 @@ namespace icl{
         settings (buffermode=one). Otherwise, if application runs slowly (e.g. only 2Hz, this) it will become
         more responsive if buffermode is set to "all". If images displayed are held permanently, it will
         speed up performance if buffermethod is set to "shallowcopy" then.
-      - <b>camcfg(Comma-Separated-device-hint-list)<b>
+      - <b>camcfg(Comma-Separated-device-hint-list)</b>
         See section \ref CAMCFG for more details
       - <b>config</b>one of 'embedded' or 'popup' (whithout the '-ticks). If param is embedded, the
         ConfigFileGUI's tree-view (including some additional buttons for loading and saving configuration files)
