@@ -11,7 +11,7 @@
     \mainpage ICLQt For Rapid Development of GUI-based Computer-Vision Applications
     
     As it's core, this package provides a wrapper API for Qt-based GUI components. The main class of this
-    package is the icl::GUI class. Further essential components are part of the \ref IVF .
+    package is the icl::GUI class (documentation: \ref GUI_INTRO) . Further essential components are part of the \ref IVF .
 
     \section IVF Image Visualisation and Annotation Framework
     
@@ -43,8 +43,8 @@
     by the graphics hardware. The GLTextureMapBaseImage can also be used as video texture.
     
     The next layer is implemented by the icl::ICLWidget class, which inherits Qt's QGLWidget class for
-    creation of an OpenGL context and viewport. The ICLWidget provides a software interface for setting
-    different visualisation parameters as well as a embedded user interface.
+    creation of an embedded OpenGL context and viewport. The ICLWidget provides a software interface for 
+    setting different visualisation parameters (explained as well as a embedded user interface.
 
  
 

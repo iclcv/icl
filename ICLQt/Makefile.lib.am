@@ -97,6 +97,7 @@ include_HEADERS= \
 ../src/iclGLTextureMapPaintEngine.h \
 ../src/iclGUIDefinition.h \
 ../src/iclGUI.h \
+../src/iclGUIDocumentation.h \
 ../src/iclGUIHandleBase.h \
 ../src/iclGUIHandle.h \
 ../src/iclGUISyntaxErrorException.h \
