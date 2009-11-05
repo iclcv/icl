@@ -4,7 +4,11 @@ lib_LTLIBRARIES=libICLQuick.la
 
 libICLQuick_la_SOURCES=../src/iclQuick.cpp ../src/iclQuickRegions.cpp
 
-include_HEADERS=../src/iclQuick.h ../src/iclQuickRegions.h ../src/iclCommon.h
+include_HEADERS= \
+	../src/iclQuick.h \
+	../src/iclQuickDocumentation.h \
+	../src/iclQuickRegions.h \
+	../src/iclCommon.h \
 
 # include other packages here!
 libICLQuick_la_CXXFLAGS=${AM_CXXFLAGS} \
