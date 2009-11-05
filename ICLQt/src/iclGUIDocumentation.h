@@ -9,7 +9,7 @@
 /** \class icl::GUI
     \brief Simple but powerful GUI Toolkit for the ICL \ingroup COMMON 
 
-    \section GUI_INTRO Introduction
+    \section GUI_INTRO Introduction to the ICL GUI Toolkit
       When working on computer-vision tasks, one whats to have some graphical user interface 
       to show the current images. This can be achieved by the use of the ICLQt's ICLWidget and 
       ICLDrawWidget classes. \n

@@ -22,7 +22,7 @@ namespace icl{
     can be used for drawing 2D-primitives step by step into the frame-buffer using 
     OpenGL hardware acceleration. Each implementation of drawing function
     should contain the following steps.
-    <pre>
+    \code
 
     drawWidget->setImage(..);  /// sets up a new background image 
     
@@ -32,15 +32,102 @@ namespace icl{
 
     drawWidget->unlock();   /// enable the widget to be drawed
  
-    </pre>
+    \endcode
 
-    <h2>DrawEngine Interface</h2>
-    By the introduction of the PaintEngine interface we got an additional abstraction
-    layer that generalizes drawing commands like lines, rects, circles and images
-    without regarding the underlying drawing mechanism like X11, DirectDraw or OpenGL.
-    Yet, Only the GLPaintEngine was hold, because:
-    - X11 is not plattform independent
-    - Qt is not fast enough for drawing images
+    \section DRAWING_EXAMPLE Sample Application for Image Segmentation
+    
+    <TABLE border=0><TR><TD>
+    \code
+\#include <iclCommon.h>
+\#include <iclQuickRegions.h>
+
+GUI gui;
+std::vector<double> c(3,255); // ref color
+
+void click(const MouseEvent &e){
+  if(e.isLeft() && !gui["vis"].as<int>()){
+    c = e.getColor();
+  }
+}
+
+void init(){
+  gui << "draw[@handle=draw@minsize=32x24]"
+      << ( GUI("hbox[@maxsize=100x3]")
+           << "combo(image,colormap,levelmap)[@out=_@handle=vis]"
+           << "slider(2,10,5)[@out=levels@label=levels]" );
+  gui.show();
+  gui["draw"].install(new MouseHandler(click));
+}
+
+void run(){
+  static GenericGrabber g(FROM_PROGARG("-input"));
+  g.setDesiredSize(Size::VGA);
+  
+  // extract "draw" component as DrawHandle from "gui" the
+  // DrawHandle provides direct access to the underlying 
+  // ICLDrawWidget by the 'operator->' i.e., it behaves like
+  // an ICLDrawWidget-pointer 
+  gui_DrawHandle(draw);
+  
+  // do some image processing (pretty slow here)
+  ImgQ im = cvt(g.grab());
+  
+  // create a color distance map to current ref-color
+  ImgQ cm = colormap(im,c[0],c[1],c[2]);
+  
+  // re-quantize colormap to reduce levels
+  ImgQ lm = levels(cm,gui["levels"].as<int>());
+  
+
+  // detect connected components
+  vector<vector<Point> > pxs = pixels(lm,0,1<<20,255);
+  vector<vector<Point> > bds = boundaries(lm,0,1<<20,255);
+
+  // visualize selected image 
+  ImgQ *ims[3] = { &im, &cm, &lm};
+  draw = ims[gui["vis"].as<int>()];
+  
+  
+  // begin drawing by locking draw-command queue
+  draw->lock();
+  
+  // removing all former draw commands from the queue 
+  // important: don't forget this step!
+  draw->reset();
+
+  // use drawing state-machine to post draw commands
+  draw->pointsize(2);  
+  
+  draw->color(255,0,0,60);
+  for(unsigned int i=0;i<pxs.size();++i){
+    draw->points(pxs[i]);
+  }
+
+  draw->color(0,100,255,150);
+  for(unsigned int i=0;i<bds.size();++i){
+    draw->linestrip(bds[i]);
+  }
+  
+  // unlock draw-command queue to grant access to
+  // asynchroneous Qt-Event loop
+  draw->unlock();
+
+  // post redraw event (note: dont use draw->update(), because
+  // 'draw->' refers to the underlying ICLDrawWidget, while
+  // 'draw.' refers to the DrawHandle i.e., draw.update() is
+  // equivalent to draw->updateFromOtherThread()
+  draw.update();
+}
+
+int main(int n, char **ppc){
+  return ICLApplication(n,ppc,"-input(2)",init,run).exec();
+}
+
+    \endcode
+
+</TD><TD valign="top">
+    \image html drawing-example.png "Screenshot of sample application"
+</TD></TR></TABLE>
 */
  class ICLDrawWidget : public ICLWidget {
     public:

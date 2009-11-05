@@ -11,11 +11,11 @@ namespace icl{
     ICLASSERT_RETURN_VAL(image.getChannels()==3,ImgQ());
     ImgQ result = zeros(image.getWidth(),image.getHeight());
     
-    Channel32f rgb[]={rgb[0],rgb[2],rgb[2]};
+    Channel32f rgb[]={image[0],image[2],image[2]};
     Channel32f m = result[0];
 
-    for(int x=0;x<image.getWidth();x++){
-      for(int y=0;y<image.getHeight();y++){
+    for(int x=0;x<image.getWidth();++x){
+      for(int y=0;y<image.getHeight();++y){
         float dr = pow((rgb[0])(x,y)-r,2);
         float dg = pow((rgb[1])(x,y)-g,2);
         float db = pow((rgb[2])(x,y)-b,2);

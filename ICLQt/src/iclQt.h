@@ -44,11 +44,28 @@
     
     The next layer is implemented by the icl::ICLWidget class, which inherits Qt's QGLWidget class for
     creation of an embedded OpenGL context and viewport. The ICLWidget provides a software interface for 
-    setting different visualisation parameters (explained as well as a embedded user interface.
+    setting different visualisation parameters (explained in the icl::ICLWidget documentation)  as well as 
+    an embedded user interface for interactive adaption of these parameters. Furthermore, the ICLWidgets 
+    provides a function <tt>setImage(ImgBase*)</tt> to make it show a new image. Internally, the image
+    is buffered into a mutex-protected interleaved intermediate format, which can more easily be transferred
+    to the graphics buffer. By this means, <tt>setImage</tt> can simply be called from the applications
+    working thread without any explicit synchronization. Now, the ICLWidget instances can be setup to
+    visualize this new image by calling <tt>updateFromOtherThread()</tt> (please note, that the QWidget's
+    <tt>update()</tt> function is not threadsafe and therefore it must not be called from outside Qt's
+    GUI-thread). Calls to <tt>updateFromOtherThread</tt> are translated into Qt-Events, which are processed
+    by the current QApplication asynchronously. 
 
- 
+    For image annotation, the icl::ICLDrawWidget is provided. It works like a drawing state-machine
+    that automatically synchronized image annotations with Qt's event loop. Internally, this is achieved
+    by using a mutex protected draw-command queue, which can be filled from the working thread.
+    
+    On the last level, the icl::ICLDrawWidget3D provides an interfaces for drawing OpenGL-based 3D
+    primitives as overlay onto an image;
+    
 
-    </TD><TD>
+    
+
+    </TD><TD valign="top">
     \image html drawing-layers.png "Collaboration in ICL's visualisation and annotation framework"
     </TD></TR></TABLE>
     

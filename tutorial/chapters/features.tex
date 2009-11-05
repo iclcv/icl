@@ -1,22 +1,24 @@
- The ICL is a computer-vision library, so it provides of course a large set of computer-vision functions. However a lot of additional components (like the Qt-GUI wrapper API \iclclassref{Qt}{GUI} or the program argument evaluation tools \iclheaderref{Utils}{ProgArg}) turned out to be very useful even for general purpose programming. 
+ ICL is a computer-vision library, therefore it provides a set of computer-vision related functions. However, a lot of its components (e.g.,the Qt-GUI wrapper API \iclclassref{Qt}{GUI} and the program argument evaluation tools \iclheaderref{Utils}{ProgArg}) turned out to be very useful for general purpose programming. 
 
-\section{Large variety of simple-to-use Algorithms}
-As IPP developers supposable thought a lot about the set of algorithms that must be provided in a computer-vision toolkit, a first step in ICL implementation was to provide simple and \emph{care-free} wrappers for fundamental image manipulation functions provided by the IPP. Manipulation functions can be split into several subsets to facilitate the overview:
+\section{Large Variety of Simple-to-Use Algorithms}
+It is assumed that Intel IPP developers thought hard about the essential components needed in a computer-vision toolkit. With this in mind ICL provides implementations of simple wrappers for most of these essential components. As previously mentioned, fallback implementations are provided for nearly all of these components in cases where Intel IPP is not available.\\
+ICL's computer-vision related functionalities can be grouped into the following subsets:  
+
 \begin{itemize}
 
 \item Data copy and convert functions.\\
 \iclnamespaceref{Core}, \iclclassref{Core}{Img}, \iclclassref{Core}{ImgBase}
 
-\item Statistic functions (like min- or max elements/indices) or mean pixel value etc.\\
+\item Statistic functions (e.g.,min- or max elements/indices) or mean pixel value etc.\\
 \iclnamespaceref{Core}, \iclclassref{Core}{Img}, \iclheaderref{Core}{Mathematics}
 
-\item Arithmetical operations (e.g. pixel-wise addition of two images etc)\\
+\item Arithmetical operations (e.g., pixel-wise addition of two images)\\
 \iclclassref{Filter}{UnaryArithmeticalOp}, \iclclassref{Filter}{BinaryArithmeticalOp}.
 
-\item Logical operations (e.g. pixel wise OR etc..)\\ 
+\item Logical operations (e.g., pixel wise OR)\\ 
 \iclclassref{Filter}{UnaryLogicalOp}, \iclclassref{Filter}{BinaryLogicalOp}.
 
-\item Affine transformations (pixel locations are changed)\\
+\item Affine transformations (i.e., pixel locations are changed)\\
 \iclclassref{Filter}{AffineOp}, \iclclassref{Filter}{RotateOp}, \iclclassref{Filter}{ScaleOp}, (...), \iclclassref{Filter}{WarpOp}  
 
 \item Thresholding and comparison functions.\\
@@ -28,8 +30,9 @@ As IPP developers supposable thought a lot about the set of algorithms that must
 \item Convolution functions.\\
 \iclclassref{Filter}{ConvolutionOp}, \iclclassref{Filter}{DynamicConvolutionOp}
 
-\item Proximity-Measurement functions (E.g. normalized cross correlation)\\
+\item Proximity-Measurement functions (e.g., normalized cross correlation)\\
 \iclclassref{Filter}{ProximityOp}
+\todo{Correct from here!}
 
 \item Canny-Edge-Detector\\
 \iclclassref{Filter}{CannyOp}
