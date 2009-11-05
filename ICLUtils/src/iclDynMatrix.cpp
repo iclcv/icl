@@ -1,7 +1,7 @@
 #include <iclDynMatrix.h>
 #include <iclMacros.h>
 #include <stdint.h>
-
+#include <complex>
 
 
 namespace icl{
@@ -201,6 +201,7 @@ namespace icl{
   
   template DynMatrix<float> DynMatrix<float>::inv()const throw (InvalidMatrixDimensionException,SingularMatrixException);
   template DynMatrix<double> DynMatrix<double>::inv()const throw (InvalidMatrixDimensionException,SingularMatrixException);
+  
   template float DynMatrix<float>::det()const throw (InvalidMatrixDimensionException);
   template double DynMatrix<double>::det()const throw (InvalidMatrixDimensionException);
 
@@ -274,8 +275,8 @@ namespace icl{
   }
 
 #define X(T)                                                            \
-  template std::ostream &operator<<(std::ostream&,const DynMatrix<T>&); \
-  template std::istream &operator>>(std::istream&,DynMatrix<T>&)
+  template std::ostream &operator<<(std::ostream&,const DynMatrix<T >&); \
+  template std::istream &operator>>(std::istream&,DynMatrix<T >&)
   
   X(uint8_t);
   X(int16_t);
@@ -283,5 +284,7 @@ namespace icl{
   X(float);
   X(double);
   
+  X(std::complex<float>); 
+  X(std::complex<double>); 
 }
 
