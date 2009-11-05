@@ -8,7 +8,7 @@ include_HEADERS= \
 	../src/iclQuick.h \
 	../src/iclQuickDocumentation.h \
 	../src/iclQuickRegions.h \
-	../src/iclCommon.h \
+	../src/iclCommon.h
 
 # include other packages here!
 libICLQuick_la_CXXFLAGS=${AM_CXXFLAGS} \

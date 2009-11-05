@@ -74,6 +74,18 @@ namespace icl{
   **/
   ImgQ ieee(int device=0,const Size &size=Size(640,480), format fmt=formatRGB, bool releaseGrabber=false);
 
+  /// grabs a new image from given device
+  /** @param dev device driver type (see Generic Grabber for more details)
+      @param devSpec device specifier
+      @param size output image size (grabbers size if Size::null)
+      @param fmt output format
+      @param releaseGrabber if set to true, the 
+                            correspondig grabbers are deleted 
+                            immediately */
+  ImgQ grab(const std::string &dev, const std::string &devSpec, 
+            const Size &size=Size::null, format fmt=formatRGB,
+            bool releaseGrabber=false);
+  
   /** @} **/
   /* }}} */
 

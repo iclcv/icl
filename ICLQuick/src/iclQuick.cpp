@@ -6,6 +6,7 @@
 #ifdef HAVE_VIDEODEV
 #include <iclPWCGrabber.h>
 #endif
+#include <iclGenericGrabber.h>
 
 #include <iclCCFunctions.h>
 #include <map>
@@ -513,6 +514,45 @@ namespace icl{
   }
 
   // }}}
+
+
+  ImgQ grab(const std::string &dev, const std::string &devSpec, 
+            const Size &size, format fmt, bool releaseGrabber){
+    static std::map<std::string,SmartPtr<GenericGrabber> > grabbers;
+    
+    SmartPtr<GenericGrabber> g;
+    std::string id;
+    if(devSpec.substr(0,dev.length()) != (dev+"=")){
+      id = dev+dev+"="+devSpec;
+    }else{
+      id = dev+devSpec;
+    }
+    std::map<std::string,SmartPtr<GenericGrabber> >::iterator it = grabbers.find(id);
+    if(it != grabbers.end()){
+      g = it->second;
+    }else{
+      g = new GenericGrabber(dev,devSpec);
+      if(!releaseGrabber){
+        grabbers[id] = g;
+      }
+    }
+    ImgQ back;
+    if(size != Size::null){
+      g->setDesiredSize(size);
+      g->setIgnoreDesiredParams(false);
+      g->setDesiredFormat(fmt);
+      g->setDesiredDepth(depth32f);
+      back = *g->grab()->asImg<icl32f>();
+    }else{
+      g->setIgnoreDesiredParams(true);
+      const ImgBase *image = g->grab();
+      back.setSize(image->getSize());
+      back.setFormat(fmt);
+      cc(image,&back);
+    }
+    return back;
+  }
+
   
   ImgQ filter(const ImgQ &image,const string &filter){
     // {{{ open
