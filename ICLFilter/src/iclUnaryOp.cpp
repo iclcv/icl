@@ -10,7 +10,11 @@
 #include <iclMedianOp.h>
 #include <iclRotateOp.h>
 #include <iclScaleOp.h>
+
+#ifdef HAVE_IPP
 #include <iclCannyOp.h>
+#endif
+
 #include <iclChamferOp.h>
 #include <iclGaborOp.h>
 #include <iclUnaryCompareOp.h>
@@ -170,7 +174,7 @@ namespace icl{
       return new ScaleOp(fx,fy,sm);
     }
     
-
+#ifdef HAVE_IPP
      UnaryOp *create_canny(const paramlist &params){
        ICLASSERT_THROW(params.size() == 2 ||params.size() == 3,ICLException(str(__FUNCTION__)+": params list size must be 2 or 3 here"));
        float low = parse<float>(params[0]);
@@ -178,6 +182,7 @@ namespace icl{
        bool preblur = params.size()==3?parse<bool>(params[2]):false;
        return new CannyOp(low,hi,preblur);
      }
+#endif
     
     template<class T>
     UnaryOp *create_any(const paramlist &params){
@@ -293,7 +298,9 @@ namespace icl{
 
       CREATORS["scale"] = Creator(create_scale,"scale","fx (<5),fy (<5)=fx,interplation=NN (one of RA,LIN or NN)");
 
+#ifdef HAVE_IPP
       CREATORS["canny"] = Creator(create_canny,"canny","lowThresh,highThresh,preblur=false (true or false)");
+#endif
 
       CREATORS["chamfer"] = Creator(create_any<ChamferOp>,"chamfer","");
 

@@ -1,6 +1,9 @@
 #ifndef CANNY_H
 #define CANNY_H
 
+#ifdef HAVE_IPP
+
+
 #include <iclUnaryOp.h>
 #include <iclImg.h>
 #include <iclUncopyable.h>
@@ -117,6 +120,12 @@ namespace icl {
 
   };
 } // namespace icl
-#endif
+
+
+#endif 
+// HAVE_IPP
+
+#endif 
+// guard
 
 
