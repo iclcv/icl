@@ -159,6 +159,13 @@
        inkscape:vp_y="0 : 1000 : 0"
        inkscape:vp_x="0 : 526.18109 : 1"
        sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2570"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -170,9 +177,9 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.9277346"
-     inkscape:cx="-1598.9873"
-     inkscape:cy="1108.8304"
+     inkscape:zoom="0.37821608"
+     inkscape:cx="-1060.2326"
+     inkscape:cy="294.95384"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -180,7 +187,7 @@
      inkscape:guide-bbox="true"
      inkscape:window-width="1680"
      inkscape:window-height="973"
-     inkscape:window-x="1680"
+     inkscape:window-x="0"
      inkscape:window-y="25" />
   <metadata
      id="metadata7">
@@ -197,14 +204,6 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <image
-       y="-183.50946"
-       x="-1828.7362"
-       id="image3489"
-       height="276"
-       width="326"
-       sodipodi:absref="/home/celbrech/Desktop/pastedpic_11062009_132153.png"
-       xlink:href="/home/celbrech/Desktop/pastedpic_11062009_132153.png" />
     <rect
        style="opacity:1;fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4580"
@@ -225,9 +224,23 @@
          id="tspan4537"
          x="457.76111"
          y="132.39944">image parameters</tspan></text>
+    <image
+       y="-178.45551"
+       x="-1830.0208"
+       id="image2572"
+       height="276"
+       width="326"
+       sodipodi:absref="/home/celbrech/Desktop/pastedpic_11062009_215424.png"
+       xlink:href="/home/celbrech/Desktop/pastedpic_11062009_215424.png"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <g
        id="g4589"
-       transform="translate(-2131.0917,-151.08404)">
+       transform="translate(-2131.0917,-151.08404)"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70">
       <path
          sodipodi:nodetypes="ccccccccccc"
          id="rect4582"
@@ -248,35 +261,33 @@
     <path
        sodipodi:nodetypes="ccccccccccc"
        id="path4596"
-       d="M -1766.934,-62.306223 L -1612.7794,-62.306223 C -1608.5376,-62.306223 -1605.1228,-66.500293 -1605.1228,-71.709953 L -1605.1228,-83.649808 C -1605.1228,-88.859478 -1608.5376,-93.053538 -1612.7794,-93.053538 L -1746.1677,-93.111268 C -1746.1677,-93.111268 -1757.2716,-90.633718 -1768.407,-115.32604 C -1761.9808,-93.783928 -1766.5871,-92.805378 -1766.9101,-93.192908 C -1771.1518,-93.192908 -1774.5906,-88.859478 -1774.5906,-83.649808 L -1774.5906,-71.709953 C -1774.5906,-66.500293 -1771.1758,-62.306223 -1766.934,-62.306223 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       d="M -1765.8223,-48.002583 L -1611.6677,-48.002583 C -1607.4259,-48.002583 -1604.0111,-52.196653 -1604.0111,-57.406313 L -1604.0111,-69.346168 C -1604.0111,-74.555838 -1607.4259,-78.749898 -1611.6677,-78.749898 L -1745.056,-78.807628 C -1759.0632,-78.585291 -1763.497,-108.79129 -1770.408,-138.37502 C -1767.9839,-107.49475 -1765.4754,-78.501738 -1765.7984,-78.889268 C -1770.0401,-78.889268 -1773.4789,-74.555838 -1773.4789,-69.346168 L -1773.4789,-57.406313 C -1773.4789,-52.196653 -1770.0641,-48.002583 -1765.8223,-48.002583 z"
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="-1765.4454"
-       y="-71.789436"
-       id="text4525"><tspan
+       x="-1767.2241"
+       y="-59.783237"
+       id="text4525"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          id="tspan4527"
-         x="-1765.4454"
-         y="-71.789436"
+         x="-1767.2241"
+         y="-59.783237"
          style="font-size:15.35000038px">image interpolation</tspan></text>
     <path
        style="fill:#00aad4;stroke:#000000;stroke-width:0.99999994;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
-       d="M -1565.5286,-88.473009 L -1428.0511,-88.473009 C -1424.2682,-88.473009 -1421.2228,-84.278949 -1421.2228,-79.069289 L -1421.2228,-67.129429 C -1421.2228,-61.919759 -1424.2682,-57.725699 -1428.0511,-57.725699 L -1565.5286,-57.725699 C -1569.3115,-57.725699 -1572.3569,-61.919759 -1572.3569,-67.129429 C -1572.3569,-67.129429 -1574.6839,-71.895079 -1593.2999,-73.099359 C -1574.4045,-74.502459 -1572.3569,-79.069289 -1572.3569,-79.069289 C -1572.3569,-84.278949 -1569.3115,-88.473009 -1565.5286,-88.473009 z"
+       d="M -1696.7074,-148.50401 L -1532.0674,-148.50401 C -1528.2845,-148.50401 -1525.2391,-144.30995 -1525.2391,-139.10029 L -1525.2391,-127.16043 C -1525.2391,-121.95076 -1528.2845,-117.7567 -1532.0674,-117.7567 L -1696.7074,-117.7567 C -1700.4903,-117.7567 -1703.5357,-124.47576 -1703.5357,-127.16043 C -1703.5357,-127.16043 -1710.7583,-131.76816 -1724.0049,-138.18385 C -1712.6721,-137.07815 -1705.6829,-131.43182 -1703.5357,-139.10029 C -1703.5357,-144.30995 -1700.4903,-148.50401 -1696.7074,-148.50401 z"
        id="rect4605"
-       sodipodi:nodetypes="cccccccccc" />
-    <text
-       transform="scale(1.0030411,0.9969681)"
-       id="text4607"
-       y="-68.070946"
-       x="-1557.8496"
-       style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
-         y="-68.070946"
-         x="-1557.8496"
-         id="tspan4609"
-         sodipodi:role="line">interactive zoom</tspan></text>
+       sodipodi:nodetypes="cccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <path
        sodipodi:nodetypes="ccccccccccc"
        id="path4614"
@@ -291,12 +302,18 @@
        sodipodi:absref="/home/celbrech/projects/ICL/ICLQt/doc/pastedpic_11052009_221941.png"
        xlink:href="pastedpic_11052009_221941.png"
        clip-path="url(#clipPath4662)"
-       transform="translate(-493.24471,225.79618)" />
+       transform="translate(-493.24471,225.79618)"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <path
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -551.1832,799.79497 L -430.12045,799.79497 C -425.87867,799.79497 -422.46381,795.6009 -422.46381,790.39124 L -422.46381,767.17007 C -422.46381,761.9604 -425.87867,757.76634 -430.12045,757.76634 L -530.41688,757.70861 C -530.41688,757.70861 -541.5208,760.18616 -552.65621,735.49384 C -546.23004,757.03595 -550.83634,758.0145 -551.15928,757.62697 C -555.40106,757.62697 -558.83983,761.9604 -558.83983,767.17007 L -558.83983,790.39124 C -558.83983,795.6009 -555.42498,799.79497 -551.1832,799.79497 z"
        id="path4620"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <path
        sodipodi:nodetypes="cccccccccc"
        id="path4625"
@@ -305,18 +322,24 @@
     <path
        sodipodi:nodetypes="ccccccccccc"
        id="path4627"
-       d="M -1784.5968,-20.557763 L -1630.4422,-20.557763 C -1626.2004,-20.557763 -1622.7856,-24.751833 -1622.7856,-29.961493 L -1622.7856,-41.901353 C -1622.7856,-47.111023 -1626.2004,-51.305083 -1630.4422,-51.305083 L -1768.5463,-51.577163 C -1776.4774,-51.791523 -1779.2215,-68.605873 -1793.7866,-114.73363 C -1784.5738,-68.112053 -1779.5341,-49.985153 -1784.5729,-51.444453 C -1788.8147,-51.444453 -1792.2534,-47.111023 -1792.2534,-41.901353 L -1792.2534,-29.961493 C -1792.2534,-24.751833 -1788.8386,-20.557763 -1784.5968,-20.557763 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       d="M -1786.153,-13.814096 L -1631.9984,-13.814096 C -1627.7566,-13.814096 -1624.3418,-18.008166 -1624.3418,-23.217826 L -1624.3418,-35.157686 C -1624.3418,-40.367356 -1627.7566,-44.561416 -1631.9984,-44.561416 L -1770.1025,-44.833496 C -1778.0336,-45.047856 -1781.0921,-90.524841 -1791.2104,-137.54194 C -1787.7784,-89.36401 -1781.0903,-43.241486 -1786.1291,-44.700786 C -1790.3709,-44.700786 -1793.8096,-40.367356 -1793.8096,-35.157686 L -1793.8096,-23.217826 C -1793.8096,-18.008166 -1790.3948,-13.814096 -1786.153,-13.814096 z"
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="-1786.9238"
-       y="-31.714666"
-       id="text4521"><tspan
+       x="-1789.5176"
+       y="-24.452255"
+       id="text4521"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          id="tspan4523"
-         x="-1786.9238"
-         y="-31.714666"
+         x="-1789.5176"
+         y="-24.452255"
          style="font-size:15.35000038px;fill:#ffffff">embed/detach menu</tspan></text>
     <path
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
@@ -327,13 +350,19 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path4631"
        d="M -1811.1767,19.740877 L -1686.2599,19.740877 C -1682.0181,19.740877 -1678.6032,15.546807 -1678.6032,10.337147 L -1678.6032,-1.6027128 C -1678.6032,-6.8123828 -1682.0181,-11.006443 -1686.2599,-11.006443 L -1790.3022,-10.933953 C -1801.3345,-10.803743 -1804.0672,-75.043663 -1813.9863,-137.92272 C -1812.7175,-74.076436 -1804.3912,-9.6865128 -1811.1528,-11.145813 C -1815.3946,-11.145813 -1818.8334,-6.8123828 -1818.8334,-1.6027128 L -1818.8334,10.337147 C -1818.8334,15.546807 -1815.4185,19.740877 -1811.1767,19.740877 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        id="text4633"
        y="9.2891169"
        x="-1812.0774"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          style="font-size:15.35000038px;fill:#ffffff"
          y="9.2891169"
          x="-1812.0774"
@@ -349,7 +378,10 @@
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-552.8291"
        y="774.00226"
-       id="text4666"><tspan
+       id="text4666"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          id="tspan4668"
          x="-552.8291"
@@ -364,13 +396,19 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -480.33534,613.92228 L -662.19766,613.48247 C -666.43944,613.48247 -669.8543,617.67654 -669.8543,622.8862 L -669.8543,668.25126 C -669.8543,673.46093 -666.43944,677.65499 -662.19766,677.65499 L -498.90263,677.71272 C -488.78711,679.03214 -489.99774,696.78564 -484.13999,720.15854 C -484.40889,697.73682 -485.95986,678.28645 -480.35926,678.23417 C -476.11748,678.23417 -472.6787,673.90074 -472.6787,668.69107 L -472.6787,623.32601 C -472.6787,618.11635 -476.09356,613.92228 -480.33534,613.92228 z"
        id="path4672"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-660.258"
        y="630.60193"
-       id="text4674"><tspan
+       id="text4674"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          x="-660.258"
          y="630.60193"
@@ -390,13 +428,19 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path4686"
        d="M -413.04513,562.46506 L -662.63746,562.02525 C -666.87924,562.02525 -670.2941,566.21932 -670.2941,571.42898 L -670.2941,599.20183 C -670.2941,604.4115 -666.87924,608.60556 -662.63746,608.60556 L -455.36191,609.54291 C -443.48717,609.54291 -441.61916,658.96239 -433.56239,720.59835 C -433.83129,658.15435 -433.18323,609.67683 -427.58263,609.62455 C -405.74863,610.50416 -405.38849,604.85131 -405.38849,599.64164 L -405.38849,571.86879 C -405.38849,566.65913 -408.80335,562.46506 -413.04513,562.46506 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        id="text4688"
        y="580.46411"
        x="-662.89679"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          id="tspan4694"
          style="font-size:15.35000038px;fill:#ffffff"
          y="580.46411"
@@ -411,13 +455,19 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path4703"
        d="M -606.78219,849.0215 L -401.17038,849.46131 C -396.9286,849.46131 -393.51374,845.26724 -393.51374,840.05758 L -392.63413,814.48376 C -392.63413,809.27409 -396.04899,805.08003 -400.29077,805.08003 L -587.33529,805.0223 C -597.45081,803.70288 -597.11979,763.51931 -601.21832,735.30855 C -600.94942,757.73027 -600.27806,804.44857 -605.87866,804.50085 C -610.12044,804.50085 -613.55922,808.83428 -613.55922,814.04395 L -614.43883,839.61777 C -614.43883,844.82743 -611.02397,849.0215 -606.78219,849.0215 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        id="text4705"
        y="821.50122"
        x="-607.80481"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          style="font-size:15.35000038px;fill:#ffffff"
          y="821.50122"
          x="-607.80481"
@@ -432,13 +482,19 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -658.67921,918.95054 L -397.21214,919.83016 C -392.97036,919.83016 -389.5555,915.63609 -389.5555,910.42643 L -389.5555,865.50117 C -389.5555,860.2915 -392.97036,856.09744 -397.21214,856.09744 L -622.0799,855.16009 C -633.95464,855.16009 -637.58187,801.78236 -643.43962,738.38718 C -643.17072,800.83118 -644.25858,855.02617 -649.85918,855.07845 C -665.0961,853.75903 -666.33585,859.41188 -666.33585,864.62155 L -666.33585,909.54681 C -666.33585,914.75647 -662.92099,918.95054 -658.67921,918.95054 z"
        id="path4719"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-657.06299"
        y="873.83807"
-       id="text4721"><tspan
+       id="text4721"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-0.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          id="tspan4725"
          sodipodi:role="line"
          x="-657.06299"
@@ -461,18 +517,27 @@
        height="343"
        width="481"
        sodipodi:absref="/home/celbrech/projects/ICL/ICLQt/doc/pastedpic_11052009_223520.png"
-       xlink:href="pastedpic_11052009_223520.png" />
+       xlink:href="pastedpic_11052009_223520.png"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-2.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <path
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -1335.6665,54.18324 L -1084.6341,53.31439 C -1080.3923,53.31439 -1076.9775,57.50846 -1076.9775,62.71812 L -1076.7975,127.48591 C -1076.7975,132.69558 -1080.2124,136.88964 -1084.4542,136.88964 L -1314.7202,137.81623 C -1314.7202,137.81623 -1325.8241,135.33868 -1336.9595,160.031 C -1330.5334,138.48889 -1335.1397,137.51034 -1335.4626,137.89787 C -1339.7044,137.89787 -1343.1432,133.56444 -1343.1432,128.35477 L -1343.3231,63.58697 C -1343.3231,58.37731 -1339.9083,54.18324 -1335.6665,54.18324 z"
        id="path4759"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-2.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-1337.5343"
        y="72.424095"
-       id="text4761"><tspan
+       id="text4761"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-2.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          id="tspan4763"
          x="-1337.5343"
@@ -497,13 +562,19 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path4771"
        d="M -930.24581,269.74983 L -1149.3306,270.61868 C -1153.5724,270.61868 -1156.9872,266.42461 -1156.9872,261.21495 L -1157.1672,196.44716 C -1157.1672,191.23749 -1153.7523,187.04343 -1149.5106,187.04343 L -951.19208,186.11684 C -951.19208,186.11684 -940.08816,188.59439 -928.95275,163.90207 C -935.37892,185.44418 -930.77262,186.42273 -930.44968,186.0352 C -926.2079,186.0352 -922.76912,190.36863 -922.76912,195.5783 L -922.58917,260.3461 C -922.58917,265.55576 -926.00403,269.74983 -930.24581,269.74983 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-2.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        id="text4773"
        y="204.51491"
        x="-1150.1497"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-2.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          style="font-size:15.35000038px;fill:#ffffff"
          y="204.51491"
          x="-1150.1497"
@@ -528,13 +599,19 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:0.99999994;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -1247.7959,320.33663 C -1237.8272,321.07505 -1239.4248,289.26308 -1236.652,236.15601 C -1232.2215,289.32271 -1232.1539,319.22899 -1218.4931,320.70584 L -1032.2745,320.70584 C -1028.4917,320.70584 -1025.4462,322.50561 -1025.4462,327.71527 L -1025.1317,360.79983 C -1025.1317,366.0095 -1028.1771,367.80927 -1031.96,367.80927 L -1228.5954,367.80927 C -1237.6951,367.80927 -1248.6258,377.18828 -1277.3077,370.15347 C -1252.6152,369.3365 -1255.4221,367.30834 -1254.456,359.00213 C -1253.8342,352.62127 -1254.9935,347.25909 -1254.9935,342.04942 C -1254.9935,342.04942 -1289.7462,329.33755 -1297.8526,302.75664 C -1273.4462,335.31721 -1254.9935,330.10956 -1254.9935,330.10956 C -1254.9935,324.8999 -1251.5685,320.05718 -1247.7959,320.33663 z"
        id="path4787"
-       sodipodi:nodetypes="cccccccccccccc" />
+       sodipodi:nodetypes="cccccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-2.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-1244.7241"
        y="340.39102"
-       id="text4789"><tspan
+       id="text4789"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-2.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          x="-1244.7241"
          y="340.39102"
@@ -552,18 +629,27 @@
        height="343"
        width="481"
        sodipodi:absref="/home/celbrech/projects/ICL/ICLQt/doc/pastedpic_11052009_235736.png"
-       xlink:href="pastedpic_11052009_235736.png" />
+       xlink:href="pastedpic_11052009_235736.png"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-3.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <path
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -518.20001,318.73729 L -689.07705,318.64589 C -693.31883,318.64589 -696.73369,322.83999 -696.73369,328.04969 L -696.1361,373.37889 C -696.1361,378.58849 -692.72124,382.78259 -688.47946,382.78259 L -538.36874,382.93169 C -538.36874,382.93169 -527.26482,380.45409 -516.12941,405.14649 C -522.55558,383.60429 -517.94928,382.62579 -517.62634,383.01329 C -513.38456,383.01329 -509.94578,378.67989 -509.94578,373.47019 L -510.54337,328.14099 C -510.54337,322.93139 -513.95823,318.73729 -518.20001,318.73729 z"
        id="path4818"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-3.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-687.56348"
        y="336.71017"
-       id="text4820"><tspan
+       id="text4820"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-3.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          x="-687.56348"
          y="336.71017"
@@ -583,13 +669,19 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -435.70685,385.28359 L -298.65824,385.28359 C -294.41646,385.28359 -291.0016,381.08949 -291.0016,375.87989 L -291.0016,363.93999 C -291.0016,358.73029 -294.41646,354.53629 -298.65824,354.53629 L -414.94053,354.47849 C -414.94053,354.47849 -426.04445,356.95609 -437.17986,332.26379 C -430.75369,353.80589 -435.35999,354.78439 -435.68293,354.39689 C -439.92471,354.39689 -443.36349,358.73029 -443.36349,363.93999 L -443.36349,375.87989 C -443.36349,381.08949 -439.94863,385.28359 -435.70685,385.28359 z"
        id="path4843"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-3.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        id="text4845"
        y="374.61569"
        x="-433.79794"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-3.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          id="tspan4847"
          style="font-size:15.35000038px;fill:#ffffff"
          y="374.61569"
@@ -599,13 +691,19 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path4849"
        d="M -628.15376,70.524293 L -279.15079,70.432893 C -274.90901,70.432893 -271.49415,74.626993 -271.49415,79.836693 L -272.09174,161.71039 C -272.09174,166.92009 -275.5066,171.11409 -279.74838,171.11409 L -607.98503,171.26319 C -607.98503,171.26319 -619.08895,168.78569 -630.22436,193.47789 C -623.79819,171.93579 -628.40449,170.95729 -628.72743,171.34479 C -632.96921,171.34479 -636.40799,167.01139 -636.40799,161.80179 L -635.8104,79.927993 C -635.8104,74.718293 -632.39554,70.524293 -628.15376,70.524293 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-3.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        id="text4851"
        y="87.209938"
        x="-630.02148"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-3.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          style="font-size:15.35000038px;fill:#ffffff"
          y="87.209938"
          x="-630.02148"
@@ -638,12 +736,18 @@
        height="343"
        width="481"
        sodipodi:absref="/home/celbrech/projects/ICL/ICLQt/doc/pastedpic_11062009_000950.png"
-       xlink:href="pastedpic_11062009_000950.png" />
+       xlink:href="pastedpic_11062009_000950.png"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-4.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <path
        sodipodi:nodetypes="ccccccccccc"
        id="path4878"
        d="M -564.33525,1138.6732 L -341.77182,1138.6941 C -337.53002,1138.6941 -334.11522,1142.8882 -334.11522,1148.0978 L -334.82488,1179.9483 C -334.82488,1185.158 -338.23978,1189.352 -342.48158,1189.352 L -544.27861,1189.3889 C -544.27861,1189.3889 -555.38251,1186.9114 -566.51791,1211.6037 C -560.09181,1190.0616 -564.69811,1189.083 -565.02101,1189.4706 C -569.26281,1189.4706 -572.70161,1185.1371 -572.70161,1179.9275 L -571.99185,1148.077 C -571.99185,1142.8673 -568.57705,1138.6732 -564.33525,1138.6732 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-4.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <flowRoot
        xml:space="preserve"
        id="flowRoot4891"
@@ -659,7 +763,10 @@
        y="1159.4175"
        x="-566.31812"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-4.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          id="tspan4905"
          style="font-size:15.35000038px;fill:#ffffff"
          y="1159.4175"
@@ -674,13 +781,19 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -516.96555,1211.8954 L -297.88076,1211.0265 C -293.63896,1211.0265 -290.22416,1215.2206 -290.22416,1220.4302 L -290.04416,1285.198 C -290.04416,1290.4077 -293.45906,1294.6018 -297.70076,1294.6018 L -496.01928,1295.5284 C -496.01928,1295.5284 -507.1232,1293.0508 -518.25861,1317.7431 C -511.83244,1296.201 -516.43874,1295.2225 -516.76168,1295.61 C -521.00346,1295.61 -524.44224,1291.2766 -524.44224,1286.0669 L -524.62219,1221.2991 C -524.62219,1216.0894 -521.20733,1211.8954 -516.96555,1211.8954 z"
        id="path4914"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-4.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-518.49432"
        y="1230.2876"
-       id="text4916"><tspan
+       id="text4916"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-4.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          id="tspan4918"
          x="-518.49432"
@@ -708,7 +821,10 @@
        height="343"
        width="481"
        sodipodi:absref="/home/celbrech/projects/ICL/ICLQt/doc/pastedpic_11062009_001330.png"
-       xlink:href="pastedpic_11062009_001330.png" />
+       xlink:href="pastedpic_11062009_001330.png"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <image
        y="210.98697"
        x="-2041.1533"
@@ -716,33 +832,48 @@
        height="334"
        width="567"
        sodipodi:absref="/home/celbrech/projects/ICL/ICLQt/doc/pastedpic_11062009_001358.png"
-       xlink:href="pastedpic_11062009_001358.png" />
+       xlink:href="pastedpic_11062009_001358.png"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <rect
        style="opacity:1;fill:none;stroke:#00aad4;stroke-width:3.29999995;stroke-miterlimit:4;stroke-dasharray:13.19999981,13.19999981;stroke-dashoffset:0;stroke-opacity:1"
        id="rect2495"
        width="463.00391"
        height="111.97649"
        x="-1938.8287"
-       y="762.98474" />
+       y="762.98474"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <rect
        y="893.83362"
        x="-1940.0869"
        height="124.55811"
        width="463.00391"
        id="rect3279"
-       style="opacity:1;fill:none;stroke:#00aad4;stroke-width:3.29999971;stroke-miterlimit:4;stroke-dasharray:13.19999886,13.19999886;stroke-dashoffset:0;stroke-opacity:1" />
+       style="opacity:1;fill:none;stroke:#00aad4;stroke-width:3.29999971;stroke-miterlimit:4;stroke-dasharray:13.19999886,13.19999886;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <path
        style="fill:#00aad4;stroke:#000000;stroke-width:0.99999994;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -1448.0342,895.65939 L -1349.6474,895.07262 C -1345.8645,895.07262 -1339.8853,899.26668 -1339.8853,904.47634 L -1339.8853,933.43249 C -1339.8853,938.64216 -1346.4513,942.83622 -1350.2342,942.83622 L -1443.9268,943.42299 C -1451.2303,941.07592 -1454.2757,943.33632 -1454.8625,917.00297 C -1454.8625,917.00297 -1457.1895,912.23732 -1475.8055,911.03304 C -1456.9101,909.62994 -1454.8625,905.06311 -1454.8625,905.06311 C -1454.8625,899.85345 -1451.8171,895.65939 -1448.0342,895.65939 z"
        id="path3295"
-       sodipodi:nodetypes="cccccccccc" />
+       sodipodi:nodetypes="cccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        transform="scale(1.0030411,0.9969681)"
        id="text3297"
        y="917.42511"
        x="-1441.9067"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          y="917.42511"
          x="-1441.9067"
          id="tspan3299"
@@ -755,14 +886,20 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -1908.1062,780.76695 L -1753.9516,780.76695 C -1749.7098,780.76695 -1746.295,784.96102 -1746.295,790.17068 L -1746.295,802.11053 C -1746.295,807.3202 -1749.7098,811.51426 -1753.9516,811.51426 L -1887.3399,811.57199 C -1887.3399,811.57199 -1898.4438,809.09444 -1909.5792,833.78676 C -1903.153,812.24465 -1907.7593,811.2661 -1908.0823,811.65363 C -1912.324,811.65363 -1915.7628,807.3202 -1915.7628,802.11053 L -1915.7628,790.17068 C -1915.7628,784.96102 -1912.348,780.76695 -1908.1062,780.76695 z"
        id="path3303"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-1905.0894"
        y="803.987"
        id="text3305"
-       transform="scale(1.0030411,0.9969681)"><tspan
+       transform="scale(1.0030411,0.9969681)"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          id="tspan3307"
          x="-1905.0894"
@@ -771,14 +908,20 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path3309"
        d="M -1706.1868,724.29073 L -1498.3503,724.29073 C -1492.6313,724.29073 -1488.0274,728.4848 -1488.0274,733.69446 L -1488.0274,745.63431 C -1488.0274,750.84398 -1492.6313,755.03804 -1498.3503,755.03804 L -1681.8256,754.43455 C -1698.0254,761.70795 -1717.9553,797.91165 -1734.6214,821.94276 C -1721.6595,797.42517 -1702.0824,768.67546 -1706.1546,755.17741 C -1711.8734,755.17741 -1716.5097,750.84398 -1716.5097,745.63431 L -1716.5097,733.69446 C -1716.5097,728.4848 -1711.9057,724.29073 -1706.1868,724.29073 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        transform="scale(1.0030411,0.9969681)"
        id="text3311"
        y="745.95447"
        x="-1704.4152"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          y="745.95447"
          x="-1704.4152"
          id="tspan3313"
@@ -787,13 +930,19 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -1496.307,762.44015 L -1680.5198,761.79983 C -1684.7616,761.79983 -1688.1764,765.99393 -1688.1764,771.20353 L -1687.4667,803.05403 C -1687.4667,808.26373 -1684.0518,812.45773 -1679.81,812.45773 L -1516.3636,813.15585 C -1516.3636,813.15585 -1505.2597,810.67835 -1494.1243,835.37065 C -1500.5504,813.82855 -1495.9441,812.84995 -1495.6212,813.23755 C -1491.3794,813.23755 -1487.9406,808.90405 -1487.9406,803.69445 L -1488.6504,771.84395 C -1488.6504,766.63425 -1492.0652,762.44015 -1496.307,762.44015 z"
        id="path3325"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-1681.1317"
        y="781.862"
-       id="text3327"><tspan
+       id="text3327"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          x="-1681.1317"
          y="781.862"
@@ -808,14 +957,20 @@
        sodipodi:nodetypes="cccccccscccc"
        id="path3345"
        d="M -1905.9361,855.48459 L -1685.0338,855.11179 C -1680.792,855.11179 -1677.3772,859.30586 -1677.3772,864.51552 L -1677.3772,876.45537 C -1677.3772,881.66504 -1680.792,885.8591 -1685.0338,885.8591 L -1845.4085,886.08768 C -1859.3886,891.12052 -1856.2172,923.60105 -1860.5815,946.25537 C -1861.2611,930.47939 -1854.5305,886.08768 -1871.6754,886.08768 C -1885.7624,886.08768 -1897.0333,886.08768 -1906.1903,886.08768 C -1910.432,886.08768 -1913.5927,882.03784 -1913.5927,876.82817 L -1913.5927,864.88832 C -1913.5927,859.67866 -1910.1779,855.48459 -1905.9361,855.48459 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        transform="scale(1.0030411,0.9969681)"
        id="text3347"
        y="877.81622"
        x="-1904.589"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          y="877.81622"
          x="-1904.589"
          id="tspan3349"
@@ -824,14 +979,20 @@
        sodipodi:nodetypes="cccccccscccc"
        id="path3351"
        d="M -1843.0788,893.14584 L -1606.1945,892.94513 C -1601.9527,892.94513 -1598.5379,897.1392 -1598.5379,902.34886 L -1598.5379,914.28871 C -1598.5379,919.49838 -1601.9527,923.69244 -1606.1945,923.69244 L -1740.5403,923.98955 C -1740.5403,923.98955 -1750.6867,921.27262 -1761.8221,945.96494 C -1758.609,935.19388 -1756.9589,925.29109 -1763.2106,924.75973 C -1767.8236,924.36764 -1842.8934,923.83875 -1843.0549,924.03252 C -1847.2966,924.03252 -1850.7354,919.69909 -1850.7354,914.48942 L -1850.7354,902.54957 C -1850.7354,897.33991 -1847.3206,893.14584 -1843.0788,893.14584 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        transform="scale(1.0030411,0.9969681)"
        id="text3353"
        y="916.02612"
        x="-1840.3674"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          y="916.02612"
          x="-1840.3674"
          id="tspan3355"
@@ -840,14 +1001,20 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path3359"
        d="M -1491.8582,851.50661 L -1577.7538,851.72011 C -1581.9956,851.72011 -1585.4104,855.91421 -1585.4104,861.12381 L -1585.2175,905.11798 C -1585.2175,910.32768 -1581.8026,914.52168 -1577.5608,914.52168 L -1511.9148,915.42299 C -1507.2641,915.42299 -1501.586,921.19 -1500.7857,944.07367 C -1498.6854,921.49807 -1503.3806,916.39832 -1493.2395,915.42299 C -1484.8636,915.42299 -1484.0086,910.11417 -1484.0086,904.90457 L -1484.2016,860.91041 C -1484.2016,855.70071 -1487.6164,851.50661 -1491.8582,851.50661 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-1571.4757"
        y="870.51685"
        id="text3363"
-       transform="scale(1.0030411,0.9969681)"><tspan
+       transform="scale(1.0030411,0.9969681)"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          x="-1571.4757"
          y="870.51685"
@@ -864,13 +1031,19 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -1611.1796,1059.5095 L -1457.025,1059.5095 C -1452.7832,1059.5095 -1449.3684,1055.3154 -1449.3684,1050.1058 L -1449.3684,1038.1659 C -1449.3684,1032.9562 -1452.7832,1028.7622 -1457.025,1028.7622 L -1590.4133,1028.7044 C -1590.4133,1028.7044 -1601.5172,1031.182 -1612.6526,1006.4897 C -1606.2264,1028.0318 -1610.8327,1029.0103 -1611.1557,1028.6228 C -1615.3974,1028.6228 -1618.8362,1032.9562 -1618.8362,1038.1659 L -1618.8362,1050.1058 C -1618.8362,1055.3154 -1615.4214,1059.5095 -1611.1796,1059.5095 z"
        id="path3383"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        id="text3385"
        y="1050.0264"
        x="-1609.691"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          style="font-size:15.35000038px"
          y="1050.0264"
          x="-1609.691"
@@ -880,13 +1053,19 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -1732.6156,1096.1425 L -1573.3454,1096.1425 C -1569.1036,1096.1425 -1565.6888,1091.9484 -1565.6888,1086.7387 L -1565.6888,1074.7989 C -1565.6888,1069.5892 -1569.1036,1065.3951 -1573.3454,1065.3951 L -1716.5651,1065.1231 C -1724.4962,1064.9087 -1727.2403,1048.0943 -1741.8054,1001.9666 C -1732.5926,1048.5882 -1727.5529,1066.7151 -1732.5917,1065.2558 C -1736.8335,1065.2558 -1740.2722,1069.5892 -1740.2722,1074.7989 L -1740.2722,1086.7387 C -1740.2722,1091.9484 -1736.8574,1096.1425 -1732.6156,1096.1425 z"
        id="path3389"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        id="text3391"
        y="1083.524"
        x="-1734.9426"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          style="font-size:15.35000038px;fill:#ffffff"
          y="1083.524"
          x="-1734.9426"
@@ -896,13 +1075,19 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path3401"
        d="M -1907.1525,1059.5095 L -1752.9979,1059.5095 C -1748.7561,1059.5095 -1745.3413,1055.3154 -1745.3413,1050.1058 L -1745.3413,1038.1659 C -1745.3413,1032.9562 -1748.7561,1028.7622 -1752.9979,1028.7622 L -1886.3862,1028.7044 C -1886.3862,1028.7044 -1897.4901,1031.182 -1908.6255,1006.4897 C -1902.1993,1028.0318 -1906.8056,1029.0103 -1907.1286,1028.6228 C -1911.3703,1028.6228 -1914.8091,1032.9562 -1914.8091,1038.1659 L -1914.8091,1050.1058 C -1914.8091,1055.3154 -1911.3943,1059.5095 -1907.1525,1059.5095 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-1906.2555"
        y="1047.7941"
-       id="text3397"><tspan
+       id="text3397"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-5.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          id="tspan3399"
          x="-1906.2555"
@@ -912,14 +1097,20 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path3403"
        d="M -1989.753,239.21121 L -1874.8715,239.21121 C -1870.6297,239.21121 -1867.2149,243.40528 -1867.2149,248.61494 L -1867.2149,260.55479 C -1867.2149,265.76446 -1870.6297,269.95852 -1874.8715,269.95852 L -1968.9867,270.01625 C -1968.9867,270.01625 -1980.0906,267.5387 -1991.226,292.23102 C -1984.7998,270.68891 -1989.4061,269.71036 -1989.7291,270.09789 C -1993.9708,270.09789 -1997.4096,265.76446 -1997.4096,260.55479 L -1997.4096,248.61494 C -1997.4096,243.40528 -1993.9948,239.21121 -1989.753,239.21121 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        transform="scale(1.0030411,0.9969681)"
        id="text3405"
        y="260.78433"
        x="-1986.4885"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          y="260.78433"
          x="-1986.4885"
          id="tspan3407"
@@ -928,14 +1119,20 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -1838.8756,202.70347 L -1612.1315,202.70347 C -1607.8897,202.70347 -1604.4749,206.89754 -1604.4749,212.1072 L -1604.4749,224.04705 C -1604.4749,229.25672 -1607.8897,233.45078 -1612.1315,233.45078 L -1819.3719,233.50851 C -1829.7248,233.256 -1838.3036,262.08987 -1849.439,286.78219 C -1843.0128,265.24008 -1832.7209,233.20262 -1838.8517,233.59015 C -1843.0934,233.59015 -1846.5322,229.25672 -1846.5322,224.04705 L -1846.5322,212.1072 C -1846.5322,206.89754 -1843.1174,202.70347 -1838.8756,202.70347 z"
        id="path3409"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-1837.2032"
        y="223.29898"
        id="text3411"
-       transform="scale(1.0030411,0.9969681)"><tspan
+       transform="scale(1.0030411,0.9969681)"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          id="tspan3413"
          x="-1837.2032"
@@ -944,14 +1141,20 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -1789.7639,236.18107 L -1567.8175,236.18107 C -1563.5757,236.18107 -1560.1609,240.37514 -1560.1609,245.5848 L -1560.1609,257.52465 C -1560.1609,262.73432 -1563.5757,266.92838 -1567.8175,266.92838 L -1768.9976,266.98611 C -1768.9976,266.98611 -1780.1015,264.50856 -1791.2369,289.20088 C -1784.8107,267.65877 -1789.417,266.68022 -1789.74,267.06775 C -1793.9817,267.06775 -1797.4205,262.73432 -1797.4205,257.52465 L -1797.4205,245.5848 C -1797.4205,240.37514 -1794.0057,236.18107 -1789.7639,236.18107 z"
        id="path3415"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-1787.1057"
        y="257.74496"
        id="text3417"
-       transform="scale(1.0030411,0.9969681)"><tspan
+       transform="scale(1.0030411,0.9969681)"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          id="tspan3419"
          x="-1787.1057"
@@ -960,7 +1163,10 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path3421"
        d="M -1613.8349,375.62871 L -1784.7083,375.62871 C -1788.9501,375.62871 -1792.3649,371.43464 -1792.3649,366.22498 L -1792.3649,354.28513 C -1792.3649,349.07546 -1788.9501,344.8814 -1784.7083,344.8814 L -1633.3386,344.82367 C -1622.9857,345.07618 -1600.4392,315.19473 -1579.5264,295.04191 C -1597.1268,317.6316 -1619.9896,345.12956 -1613.8588,344.74203 C -1609.6171,344.74203 -1606.1783,349.07546 -1606.1783,354.28513 L -1606.1783,366.22498 C -1606.1783,371.43464 -1609.5931,375.62871 -1613.8349,375.62871 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        transform="scale(1.0030411,0.9969681)"
        id="text3423"
@@ -978,7 +1184,10 @@
        y="365.97342"
        x="-1780.1429"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          y="365.97342"
          x="-1780.1429"
          id="tspan3435"
@@ -987,14 +1196,20 @@
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
        d="M -1634.8558,340.61124 L -1865.532,340.61124 C -1869.7738,340.61124 -1873.1886,336.41717 -1873.1886,331.20751 L -1873.1886,319.26766 C -1873.1886,314.05799 -1869.7738,309.86393 -1865.532,309.86393 L -1655.6221,309.8062 C -1655.6221,309.8062 -1643.8198,310.88698 -1624.3038,290.38497 C -1638.4122,309.83192 -1635.2027,310.11209 -1634.8797,309.72456 C -1630.638,309.72456 -1627.1992,314.05799 -1627.1992,319.26766 L -1627.1992,331.20751 C -1627.1992,336.41717 -1630.614,340.61124 -1634.8558,340.61124 z"
        id="path3437"
-       sodipodi:nodetypes="ccccccccccc" />
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        transform="scale(1.0030411,0.9969681)"
        id="text3439"
        y="331.17719"
        x="-1864.0095"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          y="331.17719"
          x="-1864.0095"
          id="tspan3441"
@@ -1003,14 +1218,20 @@
        sodipodi:nodetypes="cccccccccc"
        id="path3443"
        d="M -1974.227,351.61565 L -1852.8123,351.61565 C -1849.0294,351.61565 -1845.984,355.80971 -1845.984,361.01937 L -1845.984,372.95923 C -1845.984,378.1689 -1849.0294,382.36296 -1852.8123,382.36296 L -1974.227,382.36296 C -1978.0099,382.36296 -1981.0553,378.1689 -1981.0553,372.95923 C -1981.0553,372.95923 -1983.3823,368.19358 -2001.9983,366.9893 C -1983.1029,365.5862 -1981.0553,361.01937 -1981.0553,361.01937 C -1981.0553,355.80971 -1978.0099,351.61565 -1974.227,351.61565 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:0.99999994;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:0.99999994;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        xml:space="preserve"
        style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="-1967.6171"
        y="372.31543"
        id="text3445"
-       transform="scale(1.0030411,0.9969681)"><tspan
+       transform="scale(1.0030411,0.9969681)"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          sodipodi:role="line"
          id="tspan3447"
          x="-1967.6171"
@@ -1019,13 +1240,19 @@
        sodipodi:nodetypes="ccccccccccc"
        id="path3455"
        d="M -1634.2604,426.55588 L -1805.1375,426.46448 C -1809.3792,426.46448 -1812.7941,430.65858 -1812.7941,435.86828 L -1812.1965,462.26866 C -1812.1965,467.47826 -1808.7816,471.67236 -1804.5399,471.67236 L -1654.4291,471.82146 C -1654.4291,471.82146 -1629.0364,489.18945 -1605.1998,505.14979 C -1624.3272,485.98906 -1634.0097,471.51556 -1633.6867,471.90306 C -1629.445,471.90306 -1626.0062,467.56966 -1626.0062,462.35996 L -1626.6038,435.95958 C -1626.6038,430.74998 -1630.0186,426.55588 -1634.2604,426.55588 z"
-       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
     <text
        id="text3457"
        y="445.02689"
        x="-1809.1033"
        style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-6.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
          id="tspan3463"
          style="font-size:15.35000038px;fill:#ffffff"
          y="445.02689"
@@ -1046,10 +1273,41 @@
            height="28.642296"
            x="-1802.7212"
            y="416.50323" /></flowRegion><flowPara
-         id="flowPara3471"></flowPara></flowRoot>    <path
+         id="flowPara3471" /></flowRoot>    <path
        style="fill:#00aad4;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
-       d="M -1784.5968,-20.557763 L -1630.4422,-20.557763 C -1626.2004,-20.557763 -1622.7856,-24.751833 -1622.7856,-29.961493 L -1622.7856,-41.901353 C -1622.7856,-47.111023 -1626.2004,-51.305083 -1630.4422,-51.305083 L -1768.5463,-51.577163 C -1776.4774,-51.791523 -1779.2215,-68.605873 -1793.7866,-114.73363 C -1784.5738,-68.112053 -1779.5341,-49.985153 -1784.5729,-51.444453 C -1788.8147,-51.444453 -1792.2534,-47.111023 -1792.2534,-41.901353 L -1792.2534,-29.961493 C -1792.2534,-24.751833 -1788.8386,-20.557763 -1784.5968,-20.557763 z"
-       id="path3493"
-       sodipodi:nodetypes="ccccccccccc" />
+       d="M -1745.3673,-83.798844 L -1615.6698,-83.798844 C -1611.428,-83.798844 -1608.0132,-87.992914 -1608.0132,-93.202574 L -1608.0132,-105.14243 C -1608.0132,-110.3521 -1611.428,-114.54616 -1615.6698,-114.54616 L -1724.601,-114.60389 C -1724.601,-114.60389 -1736.3366,-113.23179 -1747.472,-137.92411 C -1741.0458,-116.382 -1745.0204,-114.298 -1745.3434,-114.68553 C -1749.5851,-114.68553 -1753.0239,-110.3521 -1753.0239,-105.14243 L -1753.0239,-93.202574 C -1753.0239,-87.992914 -1749.6091,-83.798844 -1745.3673,-83.798844 z"
+       id="path2563"
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70" />
+    <text
+       transform="scale(1.0030411,0.9969681)"
+       id="text4607"
+       y="-93.940468"
+       x="-1738.7264"
+       style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
+         y="-93.940468"
+         x="-1738.7264"
+         id="tspan4609"
+         sodipodi:role="line">interactive zoom</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:15.35014439px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="-1691.4935"
+       y="-128.47208"
+       id="text2569"
+       transform="scale(1.0030411,0.9969681)"
+       inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/osm-1.png"
+       inkscape:export-xdpi="70"
+       inkscape:export-ydpi="70"><tspan
+         sodipodi:role="line"
+         id="tspan2571"
+         x="-1691.4935"
+         y="-128.47208">stop recording button</tspan></text>
   </g>
 </svg>

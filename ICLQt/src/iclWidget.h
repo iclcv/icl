@@ -96,6 +96,46 @@ int main(int nArgs, char **ppcArg){
       commands in image coordinates. (The last method is more recommended, as it should be
       exactly what you want!!!)
       @see ICLDrawWidget
+
+      \section ICLWIDGET_OSM ICLWidget's On-Screen-Menu
+
+    <TABLE border=0><TR><TD>
+    Bla bla bla
+    </TD><TD>
+    \image html osm-0.png "On-screen-menu's sub-tabs"
+    </TD></TR></TABLE>
+
+    <TABLE border=0><TR><TD>
+    Bla bla bla
+    </TD><TD>
+    \image html osm-2.png "On-screen-menu's 'bci'-tab. Here, brightness and contrast adaption mode can be set up here."
+    </TD></TR></TABLE>
+
+
+    <TABLE border=0><TR><TD>
+    Bla bla bla
+    </TD><TD>
+    \image html osm-3.png "On-screen-menu's 'scale'-tab. This tab can be used to adapt how the image is set into the widget."
+    </TD></TR></TABLE>
+
+    <TABLE border=0><TR><TD>
+    Bla bla bla
+    </TD><TD>
+    \image html osm-4.png "On-screen-menu's 'channel'-tab. Here the widget can be set up to visualize a single image channel only."
+    </TD></TR></TABLE>
+
+    <TABLE border=0><TR><TD>
+    Bla bla bla
+    </TD><TD>
+    \image html osm-5.png "On-screen-menu's 'capture'-tab. This most complex tab is provided to capture the current image or the current frame-buffer. Furthermore, automatic capturing can be activated here."
+    </TD></TR></TABLE>
+
+    <TABLE border=0><TR><TD>
+    Bla bla bla
+    </TD><TD>
+    \image html osm-6.png "On-screen-menu's 'histo'-tab. Here, an online image histogram is shown."
+    </TD></TR></TABLE>
+
   */
   class ICLWidget : public QGLWidget{
     Q_OBJECT

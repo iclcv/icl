@@ -69,26 +69,45 @@
     \image html drawing-layers.png "Collaboration in ICL's visualisation and annotation framework"
     </TD></TR></TABLE>
     
-
+    \section OSM The ICLWidget's On-Screen-Menu
     
-    \section CF Core Features
-    - Hardware acceleration using OpenGL
-    - X11 fallback implementation
-    - "Self organizing" and "low cost" On Screen Display (OSD) for all visualization components
-    - PaintEngine interface for abstracting from the underlying draw engine (OpenGL / X11)
-    - Mouse interaction interface for design of custom interactive applications
-    - ICL GUI API to create GUI applications 
+    <TABLE border=0><TR><TD>
+    
+    The icl::ICLWidget's on-screen-menu provides a lot of basic features to adjust image
+    visualisation parameters, such as brightness-contrast adjustment, or zooming to a certain
+    sub-rectangle of the whole image. Furthermore, it provides basic functionalities for
+    capturing images, to select single image channels and to show an online updated image
+    histogram.\n
+    The on-screen-menu can be activated by the user by mouse. The menu control buttons appear
+    automatically when the mouse is hovered above the widget and disappear automatically when
+    the mouse leaves the widget screen area. In cases where the on-screen-menu isn't needed
+    the automatic appearing of the widget control buttons can be deactivated.
+    
+    The leftmost button shows or hides the menu. By default, the menu is embedded into the 
+    widget. The 2nd button detaches the menu from the widget and makes the menu an independent
+    window. The next button that shows two diagonally aligned filled squares changes
+    the internal image interpolation mode. By default, the image texture is painted using
+    nearest neighbour interpolation, which means that image pixels have hard edges in
+    zoomed view. If the interpolation mode button is toggled a linear interpolation
+    is used for texture rendering.
+    The iterative zoom button, which is left to the image interpolation button, can be
+    used to drag a zooming area. If the image zoom is active, the image zoom button is
+    tainted red. Another click on the image zoom button disabled the image zoom to re-activated
+    the original mode.
+    The rightmost button is only visible if the widget's content is currently recorded
+    from the widgets menu. It can be used as a shotcut to stop recording even if the
+    menu is currently not visible. A detailed explanation of the on-screen-menu itself
+    is provided in the icl::ICLWidget's documentation section \ref ICLWIDGET_OSM.
+    
+    </TD><TD>
+    \image html osm-1.png "Widget control buttons"
+    </TD></TR></TABLE>
 
     \section MOD Modules
 
     - \ref COMMON
     - \ref HANDLES
-    - \ref UNCOMMON
-    
-    
-    For developers: \ref UNCOMMON 
-
-    
+    - (for ICL-developers) \ref UNCOMMON
     
 */
 
