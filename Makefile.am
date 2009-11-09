@@ -27,6 +27,7 @@ install-data-local:
 		${MKDIR_P} ${prefix}/doc && \
 		${MKDIR_P} ${prefix}/doc/ALL && \
 		cp -a alldoc/html/* ${prefix}/doc/ALL/ && \
+		cp -a alldoc/*.html ${prefix}/doc/ALL/ && \
 		chmod -R g+rwX ${prefix}/doc/ALL ; \
 	else \
 		echo "combined documentation for all packages not found (skipping)" ;\

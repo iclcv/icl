@@ -62,7 +62,7 @@
     - Plug in a camera
     - Run your application e.g. with <tt>./viewer -input unicap '*'</tt>
 
-    A more complex example application can be found below! (see \ref COMPLEX_EXAMPLE)
+    An example that demonstrates accessing a grabbed images pixels is provided below (see \ref COMPLEX_EXAMPLE)
 
     \section PACKAGES Packages
 

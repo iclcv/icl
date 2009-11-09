@@ -82,6 +82,7 @@ WARN_LOGFILE           =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  = . ../ICLUtils/src ../ICLCore/src ../ICLCC/src ../ICLIO/src ../ICLFilter/src ../ICLQt/src ../ICLBlob/src ../ICLGeom/src ../ICLQuick/src ../ICLAlgorithm/src ../ICLOpenCV/src
+
 FILE_PATTERNS          = *.h
 RECURSIVE              = NO
 EXCLUDE                = 
