@@ -7,11 +7,15 @@ EXTRA_DIST=bootstrap.sh @ICL_DOC_MAKEFILES_DIST@ doxyfile doc scripts ICLQt/exam
 MKDIR_P ?= mkdir -p
 
 
-.PHONY: doc
+.PHONY: doc alldoc
 
 doc:
 	@echo "creating documentation recursively..."
 	@for S in ${DOCDIRS} ; do ${MAKE} ${AM_FLAGS} -C$$S doc ; done
+
+alldoc:
+	@echo "creating combined documentation for all packages"
+	@(cd alldoc ; doxygen doxyfile.all)
 
 cleandoc:
 	@echo "cleaning documentation recursively..."
@@ -19,6 +23,14 @@ cleandoc:
 
 install-data-local:
 	@for S in ${PACKAGES} ; do ${MAKE} ${AM_FLAGS} -C$$S install-data-local ; done
+	@if [ -d alldoc/html ] ; then \
+		${MKDIR_P} ${prefix}/doc && \
+		${MKDIR_P} ${prefix}/doc/ALL && \
+		cp -a alldoc/html/* ${prefix}/doc/ALL/ && \
+		chmod -R g+rwX ${prefix}/doc/ALL ; \
+	else \
+		echo "combined documentation for all packages not found (skipping)" ;\
+	fi
 	@scripts/create-doc-menu.sh ${PACKAGES}
 	${MKDIR_P} ${prefix}/doc
 	${MKDIR_P} ${prefix}/doc/ICL

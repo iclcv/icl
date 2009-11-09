@@ -14,7 +14,10 @@
    sodipodi:version="0.32"
    inkscape:version="0.46"
    sodipodi:docname="icl-components.svg"
-   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/home/celbrech/projects/ICL/ICLCore/doc/icl-components.png"
+   inkscape:export-xdpi="37.890083"
+   inkscape:export-ydpi="37.890083">
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -26,15 +29,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.6997694"
-     inkscape:cx="353.5414"
-     inkscape:cy="672.83787"
+     inkscape:cx="63.314358"
+     inkscape:cy="615.67618"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:snap-global="true"
      inkscape:window-width="1680"
      inkscape:window-height="973"
-     inkscape:window-x="1680"
+     inkscape:window-x="0"
      inkscape:window-y="25">
     <inkscape:grid
        id="grid3272"
@@ -65,283 +68,247 @@
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
-    <g
-       transform="matrix(1,0,0,1.0443829,55.496365,-56.397022)"
-       id="g3314">
-      <rect
-         rx="10.953944"
-         style="fill:#00aad4;stroke:#000000;stroke-width:1.12774539;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect2383"
-         width="710.73511"
-         height="77.839844"
-         x="-35.496365"
-         y="669.08868"
-         ry="10.488437" />
-      <text
-         xml:space="preserve"
-         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.10083604;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         x="275.13156"
-         y="716.32825"
-         id="text3155"
-         transform="scale(0.9991135,1.0008873)"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan3157"
-           x="275.13156"
-           y="716.32825"
-           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.10083604;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLUtils</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.9958756,0,0,1.0277802,56.445731,-49.127102)"
-       id="g3309">
-      <rect
-         rx="10.999001"
-         style="fill:#ff5555;stroke:#000000;stroke-width:1.13916934;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect3159"
-         width="712.94043"
-         height="77.837654"
-         x="-36.599056"
-         y="585.24701"
-         ry="10.657567" />
-      <text
-         xml:space="preserve"
-         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.11198735;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         x="272.92584"
-         y="632.90216"
-         id="text3161"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan3163"
-           x="272.92584"
-           y="632.90216"
-           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.11198735;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLCore</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.9841012,0,0,1.0253257,65.304893,-51.630536)"
-       id="g3304">
-      <rect
-         rx="11.157246"
-         style="fill:#aade87;stroke:#000000;stroke-width:1.14733469;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect3188"
-         width="628.97766"
-         height="78.023987"
-         x="46.446732"
-         y="501.31125"
-         ry="10.708654" />
-      <text
-         xml:space="preserve"
-         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.11995792;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         x="325.0293"
-         y="549.05957"
-         id="text3190"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan3192"
-           x="325.0293"
-           y="549.05957"
-           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.11995792;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLCC</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.9857231,0,0,1.0255388,64.212513,-55.786529)"
-       id="g3299">
-      <rect
-         rx="11.138886"
-         ry="10.706429"
-         y="417.46857"
-         x="46.446732"
-         height="78.023987"
-         width="628.97766"
-         id="rect3196"
-         style="fill:#aade87;stroke:#000000;stroke-width:1.14627147;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <text
-         id="text3198"
-         y="465.21689"
-         x="328.83789"
-         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.11891985;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         xml:space="preserve"
-         sodipodi:linespacing="125%"><tspan
-           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.11891985;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-           y="465.21689"
-           x="328.83789"
-           id="tspan3200"
-           sodipodi:role="line">ICLIO</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.9901494,0,0,1,61.893739,-48.496263)"
-       id="g3319">
-      <rect
-         rx="15.159014"
-         style="fill:#deaa87;stroke:#000000;stroke-width:1.15821874;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect3208"
-         width="201.98972"
-         height="161.02147"
-         x="48.579117"
-         y="249.83698"
-         ry="15.009688" />
-      <text
-         xml:space="preserve"
-         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.13058221;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         x="103.9353"
-         y="339.29498"
-         id="text3223"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan3225"
-           x="103.9353"
-           y="339.29498"
-           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.13058221;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLBlob</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.9903164,0,0,0.9805197,65.354984,-41.561487)"
-       id="g3324">
-      <rect
-         rx="10.412455"
-         ry="12.338281"
-         y="248.75833"
-         x="257.12936"
-         height="163.17877"
-         width="201.96132"
-         id="rect3227"
-         style="fill:#deaa87;stroke:#000000;stroke-width:1.16956878;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <text
-         id="text3229"
-         y="339.29498"
-         x="308.59244"
-         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.14166152;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         xml:space="preserve"
-         sodipodi:linespacing="125%"><tspan
-           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.14166152;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-           y="339.29498"
-           x="308.59244"
-           id="tspan3231"
-           sodipodi:role="line">ICLFilter</tspan></text>
-    </g>
-    <g
-       id="g3340">
-      <rect
-         style="fill:#ffe680;stroke:#000000;stroke-width:1.15249991;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect3233"
-         width="200"
-         height="160.07414"
-         x="529.99072"
-         y="202.29356"
-         ry="11.15082"
-         rx="11.150819" />
-      <text
-         xml:space="preserve"
-         style="font-size:23.92062569px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.125;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         x="604.61359"
+    <rect
+       ry="10.953944"
+       y="642.38776"
+       x="20"
+       height="81.294601"
+       width="710.73511"
+       id="rect2383"
+       style="fill:#0088aa;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       rx="10.953944" />
+    <text
+       sodipodi:linespacing="125%"
+       transform="scale(0.9776535,1.0228573)"
+       id="text3155"
+       y="676.91528"
+       x="337.9357"
+       style="font-size:24.52681351000000021px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         style="font-size:24.52681351000000021px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+         y="676.91528"
+         x="337.9357"
+         id="tspan3157"
+         sodipodi:role="line">ICLUtils</tspan></text>
+    <rect
+       ry="10.953636"
+       y="552.37817"
+       x="19.997623"
+       height="80"
+       width="710"
+       id="rect3159"
+       style="fill:#ff2a2a;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       rx="10.953636" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text3161"
+       y="591.94989"
+       x="333.46243"
+       style="font-size:24.28085135999999977px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       xml:space="preserve"
+       transform="scale(0.9843565,1.0158921)"><tspan
+         style="font-size:24.28085135999999977px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+         y="591.94989"
+         x="333.46243"
+         id="tspan3163"
+         sodipodi:role="line">ICLCore</tspan></text>
+    <rect
+       ry="10.979858"
+       y="462.37677"
+       x="111.01318"
+       height="80"
+       width="618.97766"
+       id="rect3188"
+       style="fill:#00aa00;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       rx="10.979858" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text3190"
+       y="500.94949"
+       x="393.15128"
+       style="font-size:24.10804749000000058px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       xml:space="preserve"
+       transform="scale(0.9796906,1.0207304)"><tspan
+         style="font-size:24.10804749000000058px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+         y="500.94949"
+         x="393.15128"
+         id="tspan3192"
+         sodipodi:role="line">ICLCC</tspan></text>
+    <rect
+       style="fill:#00aa00;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3196"
+       width="619.9978"
+       height="80.016624"
+       x="109.99613"
+       y="372.34369"
+       ry="10.979857"
+       rx="10.979857" />
+    <text
+       sodipodi:linespacing="125%"
+       xml:space="preserve"
+       style="font-size:24.13041305999999864px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.12499988000000006;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       x="396.12128"
+       y="413.05194"
+       id="text3198"
+       transform="scale(0.9803957,1.0199963)"><tspan
+         sodipodi:role="line"
+         id="tspan3200"
+         x="396.12128"
+         y="413.05194"
+         style="font-size:24.13041305999999864px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.12499988000000006;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLIO</tspan></text>
+    <rect
+       ry="15.009688"
+       y="201.34071"
+       x="109.99432"
+       height="161.02147"
+       width="200"
+       id="rect3208"
+       style="fill:#d40055;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       rx="15.009688" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text3223"
+       y="289.36292"
+       x="165.62299"
+       style="font-size:23.88150024000000116px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       xml:space="preserve"
+       transform="scale(0.9950625,1.004962)"><tspan
+         style="font-size:23.88150024000000116px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+         y="289.36292"
+         x="165.62299"
+         id="tspan3225"
+         sodipodi:role="line">ICLBlob</tspan></text>
+    <rect
+       style="fill:#d40055;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3227"
+       width="200.0056"
+       height="160"
+       x="319.99442"
+       y="202.35095"
+       ry="12.097927"
+       rx="10.311625" />
+    <text
+       sodipodi:linespacing="125%"
+       xml:space="preserve"
+       style="font-size:23.64974022000000176px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       x="369.11972"
+       y="292.57468"
+       id="text3229"
+       transform="scale(1.0049833,0.9950415)"><tspan
+         sodipodi:role="line"
+         id="tspan3231"
+         x="369.11972"
+         y="292.57468"
+         style="font-size:23.64974022000000176px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLFilter</tspan></text>
+    <rect
+       rx="11.150819"
+       ry="11.15082"
+       y="202.29356"
+       x="529.99072"
+       height="160.07414"
+       width="200"
+       id="rect3233"
+       style="fill:#d4aa00;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <text
+       transform="scale(0.98721,1.0129557)"
+       sodipodi:linespacing="125%"
+       id="text3235"
+       y="286.05466"
+       x="604.61359"
+       style="font-size:23.92062569000000138px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         style="font-size:23.92062569000000138px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
          y="286.05466"
-         id="text3235"
-         sodipodi:linespacing="125%"
-         transform="scale(0.98721,1.0129557)"><tspan
-           sodipodi:role="line"
-           id="tspan3237"
-           x="604.61359"
-           y="286.05466"
-           style="font-size:23.92062569px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.125;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLQt</tspan></text>
-    </g>
-    <g
-       id="g3335">
-      <rect
-         ry="9.4946699"
-         y="112.36621"
-         x="529.99438"
-         height="79.433441"
-         width="199.99998"
-         id="rect3239"
-         style="fill:#ac939d;stroke:#000000;stroke-width:1.125;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         rx="8.7801495" />
-      <text
-         id="text3241"
-         y="159.50693"
+         x="604.61359"
+         id="tspan3237"
+         sodipodi:role="line">ICLQt</tspan></text>
+    <rect
+       rx="8.7801495"
+       style="fill:#7137c8;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3239"
+       width="199.99998"
+       height="79.433441"
+       x="529.99438"
+       y="112.36621"
+       ry="9.4946699" />
+    <text
+       transform="scale(0.9914547,1.0086189)"
+       sodipodi:linespacing="125%"
+       xml:space="preserve"
+       style="font-size:23.96501160000000041px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.15250002999999990;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       x="581.02319"
+       y="159.50693"
+       id="text3241"><tspan
+         sodipodi:role="line"
+         id="tspan3243"
          x="581.02319"
-         style="font-size:23.9650116px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.15250003;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         xml:space="preserve"
-         sodipodi:linespacing="125%"
-         transform="scale(0.9914547,1.0086189)"><tspan
-           style="font-size:23.9650116px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.15250003;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-           y="159.50693"
-           x="581.02319"
-           id="tspan3243"
-           sodipodi:role="line">ICLGeom</tspan></text>
-    </g>
-    <g
-       transform="matrix(1,0,0,1.0326304,58.318707,-55.902635)"
-       id="g3279">
-      <rect
-         rx="10.706429"
-         ry="11.055785"
-         y="-41.681293"
-         x="162.96597"
-         height="78.56353"
-         width="416.41229"
-         id="rect3248"
-         style="fill:#5fd38d;stroke:#000000;stroke-width:1.13414478;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         transform="matrix(0,1,-1,0,0,0)" />
-      <text
-         xml:space="preserve"
-         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.10708272;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         x="-439.09985"
-         y="8.8096848"
-         id="text3252"
-         transform="matrix(0,-1,1,0,0,0)"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan3254"
-           x="-439.09985"
-           y="8.8096848"
-           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.10708272;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLOpenCV</tspan></text>
-    </g>
-    <g
-       transform="translate(58.576981,-50.349213)"
-       id="g3284">
-      <rect
-         rx="9.6293659"
-         ry="8.2003231"
-         y="164.12923"
-         x="51.549179"
-         height="78.582169"
-         width="409.87384"
-         id="rect3260"
-         style="fill:#de87cd;stroke:#000000;stroke-width:1.15250003;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <text
-         id="text3262"
-         y="210.99063"
-         x="202.78493"
-         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.125;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         xml:space="preserve"
-         sodipodi:linespacing="125%"><tspan
-           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.125;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-           y="210.99063"
-           x="202.78493"
-           id="tspan3264"
-           sodipodi:role="line">ICLQuick</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.9958756,0,0,1.0277802,53.180715,-60.206378)"
-       id="g4306">
-      <rect
-         style="fill:#b7b7c8;stroke:#000000;stroke-width:1.13916934;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect4304"
-         width="712.94043"
-         height="77.837654"
-         x="-33.320518"
-         y="80.352364"
-         ry="10.657567"
-         rx="9.5640402" />
-      <text
-         xml:space="preserve"
-         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.11198735;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-         x="238.63406"
-         y="125.89229"
-         id="text4302"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan4300"
-           x="238.63406"
-           y="125.89229"
-           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;stroke:#000000;stroke-width:1.11198735;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLAlgorithms</tspan></text>
-    </g>
+         y="159.50693"
+         style="font-size:23.96501160000000041px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.15250002999999990;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLGeom</tspan></text>
+    <rect
+       transform="matrix(0,1,-1,0,0,0)"
+       style="fill:#00d4aa;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3248"
+       width="430"
+       height="78.56353"
+       x="112.38098"
+       y="-100"
+       ry="11.055785"
+       rx="11.055783" />
+    <text
+       sodipodi:linespacing="125%"
+       transform="matrix(0,-1.0161842,0.9840735,0,0,0)"
+       id="text3252"
+       y="68.214813"
+       x="-391.19403"
+       style="font-size:24.38842200999999932px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         style="font-size:24.38842200999999932px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+         y="68.214813"
+         x="-391.19403"
+         id="tspan3254"
+         sodipodi:role="line">ICLOpenCV</tspan></text>
+    <rect
+       style="fill:#ff00cc;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3260"
+       width="409.87384"
+       height="78.582169"
+       x="110.12616"
+       y="113.78001"
+       ry="8.2003231"
+       rx="9.6293659" />
+    <text
+       sodipodi:linespacing="125%"
+       xml:space="preserve"
+       style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       x="261.36191"
+       y="160.64142"
+       id="text3262"><tspan
+         sodipodi:role="line"
+         id="tspan3264"
+         x="261.36191"
+         y="160.64142"
+         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">ICLQuick</tspan></text>
+    <rect
+       rx="9.5245943"
+       ry="10.953636"
+       y="22.378191"
+       x="19.997623"
+       height="80"
+       width="710"
+       id="rect4304"
+       style="fill:#8a6f91;stroke:#000000;stroke-width:1.85;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text4302"
+       y="68.10096"
+       x="295.45245"
+       style="font-size:24.28085135999999977px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       xml:space="preserve"
+       transform="scale(0.9843565,1.0158921)"><tspan
+         style="font-size:24.28085135999999977px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke:#ffffff;stroke-width:1.12500000000000000;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+         y="68.10096"
+         x="295.45245"
+         id="tspan4300"
+         sodipodi:role="line">ICLAlgorithms</tspan></text>
   </g>
 </svg>

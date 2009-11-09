@@ -26,9 +26,7 @@ libICLIO_la_SOURCES= \
 include_HEADERS= \
 ../src/iclIO.h \
 ../src/iclIOFunctions.h \
-../src/iclFileGrabber.h \
 ../src/iclFileGrabberPluginCSV.h \
-../src/iclFileGrabberPlugin.h \
 ../src/iclFileGrabberPluginPNM.h \
 ../src/iclGenericGrabber.h \
 ../src/iclGrabber.h \
@@ -44,7 +42,6 @@ include_HEADERS= \
 ../src/iclFileWriterPlugin.h \
 ../src/iclFileGrabberPlugin.h \
 ../src/iclFileWriterPluginCSV.h \
-../src/iclFileWriterPlugin.h \
 ../src/iclFileWriterPluginPNM.h \
 ../src/iclDemoGrabber.h \
 ../src/iclDistFromProgArgUtil.h

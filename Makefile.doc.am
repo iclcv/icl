@@ -21,7 +21,8 @@ install-data-local:
 		echo installing documentation for ${subdir} && \
 		${MKDIR_P} ${prefix}/doc && \
 		${MKDIR_P} ${prefix}/doc/${subdir} && \
-		${INSTALL_DATA} doc/html/* ${prefix}/doc/${subdir}/ \
+		cp -a doc/html/* ${prefix}/doc/${subdir}/ && \
+		chmod -R g+rwX ${prefix}/doc/${subdir} \
 	; else \
 		echo no documentation in ${subdir} found ... skipping && \
 		echo documentation must be build explicitly using 'make doc' \
