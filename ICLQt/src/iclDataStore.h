@@ -74,8 +74,14 @@ namespace icl{
         *this = Event("update"); 
       }
       
+      /// data must be of type MouseHandler*
       void install(void *data){
         *this  = Event("install",data);
+      }
+      
+      /// cb must be a GUI::Callback*
+      void registerCallback(void *cb){
+        *this = Event("register",cb);
       }
     };
     

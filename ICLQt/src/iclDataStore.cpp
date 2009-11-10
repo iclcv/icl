@@ -237,6 +237,24 @@ INST_OTHER_TYPES
     template class AssignSpecial<DataStore::Data::Event,ImageHandle>;
         */
 
+
+#define INST_REGISTER_EVENT_FOR_HANDLE(T)                               \
+    FROM_TO(DataStore::Data::Event,T##Handle,                           \
+            if(src.message=="register"){                                \
+              dst.registerCallback((GUI::Callback*)src.data);           \
+            }else{                                                      \
+              ERROR_LOG("unable to apply function'" << src.message      \
+                        << "' on " #T "Handle instances");              \
+            });
+
+    INST_REGISTER_EVENT_FOR_HANDLE(Button);
+    INST_REGISTER_EVENT_FOR_HANDLE(Slider);
+    INST_REGISTER_EVENT_FOR_HANDLE(FSlider);
+    INST_REGISTER_EVENT_FOR_HANDLE(Combo);
+    INST_REGISTER_EVENT_FOR_HANDLE(Spinner);
+    // maybe more ...
+
+
     FROM_TO(DataStore::Data::Event,ImageHandle,
             if(src.message=="update"){
               dst.update();
