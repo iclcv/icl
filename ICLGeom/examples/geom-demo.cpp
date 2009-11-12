@@ -1,17 +1,12 @@
-#include <iclQuick.h>
-#include <iclGeom.h>
-
-#include <iclScene2.h>
-#include <iclCamera.h>
 #include <iclCommon.h>
+#include <iclGeom.h>
 #include <iclFPSLimiter.h>
-#include <iclPrimitive.h>
 
 GUI gui;
-
 Scene2 scene;
 
 void init(){
+  // create graphical user interface
   gui << "draw3D[@minsize=16x12@handle=draw@label=scene view]"
       << "fslider(0.5,20,3)[@out=f@handle=focal"
          "@label=focal length@maxsize=100x3]";
@@ -20,7 +15,7 @@ void init(){
   // create scene background
   gui["draw"] = zeros(640,480,0);
 
-  // create camera
+  // create camera and add to scene instance
   Camera cam(Vec(0,0,-10), // position
              Vec(0,0,1),   // view-direction
              Vec(1,0,0),   // up-direction
@@ -40,16 +35,15 @@ void run(){
   /// limit drawing speed to 25 fps
   static FPSLimiter limiter(25);
   gui_DrawHandle3D(draw);
-  gui_float(f);
-  scene.getCamera(0).setFocalLength(f);
+  scene.getCamera(0).setFocalLength(gui.getValue<float>("f"));
 
   draw->lock();
   draw->reset3D();
   draw->callback(scene.getGLCallback(0));
   draw->unlock();
-  limiter.wait();
-  
   draw.update();
+
+  limiter.wait();
 }
 
 

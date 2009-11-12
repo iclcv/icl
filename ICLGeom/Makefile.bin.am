@@ -34,8 +34,13 @@ icl-geom-demo \
 icl-new-geom-3D-demo \
 icl-camera-test \
 icl-extrinsic-camera-calibration \
-icl-show-extrinsic-calibration-grid
+icl-show-extrinsic-calibration-grid \
+icl-swiss-ranger-demo
 
+
+icl_swiss_ranger_demo_SOURCES=../examples/swiss-ranger-demo.cpp
+icl_swiss_ranger_demo_LDFLAGS=${XLDFLAGS}
+icl_swiss_ranger_demo_CXXFLAGS=${XCXXFLAGS}
 
 icl_geom_3D_demo_SOURCES=../examples/geom-3D-demo.cpp
 icl_geom_3D_demo_LDFLAGS=${XLDFLAGS}
