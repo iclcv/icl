@@ -611,11 +611,51 @@ namespace icl{
         return *this;
       }
         
+      /// assigne dyn matrix to matrix columns
       inline DynMatrixColumn &operator=(const DynMatrix &src){
         DYN_MATRIX_COLUMN_CHECK(dim() != src.dim(),"dimension missmatch");
         std::copy(src.begin(),src.end(),begin());
         return *this;
-      }      
+      }   
+
+      /// operator += for other columns
+      inline DynMatrixColumn &operator+=(const DynMatrixColumn &c){
+        DYN_MATRIX_COLUMN_CHECK(dim() != c.dim(),"dimension missmatch");
+        std::transform(c.begin(),c.end(),begin(),begin(),std::plus<T>());
+        return *this;
+      }   
+      
+      /// operator += for other columns
+      inline DynMatrixColumn &operator-=(const DynMatrixColumn &c){
+        DYN_MATRIX_COLUMN_CHECK(dim() != c.dim(),"dimension missmatch");
+        std::transform(c.begin(),c.end(),begin(),begin(),std::minus<T>());
+        return *this;
+      }   
+
+      /// operator += for DynMatrices
+      inline DynMatrixColumn &operator+=(const DynMatrix &m){
+        DYN_MATRIX_COLUMN_CHECK(dim() != m.dim(),"dimension missmatch");
+        std::transform(m.begin(),m.end(),begin(),begin(),std::plus<T>());
+        return *this;
+      }   
+      /// operator -= for DynMatrices
+      inline DynMatrixColumn &operator-=(const DynMatrix &m){
+        DYN_MATRIX_COLUMN_CHECK(dim() != m.dim(),"dimension missmatch");
+        std::transform(m.begin(),m.end(),begin(),begin(),std::minus<T>());
+        return *this;
+      }   
+      
+      /// operator *= for scalars
+      inline DynMatrixColumn &operator*=(const T&val){
+        std::for_each(begin(),end(),std::bind2nd(std::multiplies<T>(),val));
+        return *this;
+      }
+      /// operator /= for scalars
+      inline DynMatrixColumn &operator/=(const T&val){
+        std::for_each(begin(),end(),std::bind2nd(std::divides<T>(),val));
+        return *this;
+      }
+      
     };
 
     inline DynMatrix &operator=(const DynMatrixColumn &col){

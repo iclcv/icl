@@ -1,27 +1,30 @@
-Within the ICL, images are represented as a set of image channels of the same size:
+This chapter first provides a mathematical formalization of an image. Then the development of ICL's image class is presented and discussed in a step-by-step manner.\\
+Within ICL, an image is represented as a set of equal sized image channels \seefig{image-sketch}. 
 
-\iclfigure{image-1}{ICL image scheme}{height=150px}
+\iclfigure{image-sketch}{ICL image scheme}{height=170px}
 
 
-\section{A Functional View on Images\label{sec:the-image-function}}
-More generally, an image can be understood as a function:
+%\section{A Functional View on Images\label{sec:the-image-function}}
+More generally, an image can be represented as the following function:
 
 \begin{equation}
 I(\mathbb{R} \times{} \mathbb{R} \times{} \mathbb{N^+} )\rightarrow\mathbb{R} 
-\end{equation}
+\end{equation}.
 
-An image function expects three arguments: The first two arguments are referencing some location within the 2D-image plane (the spacial domain) and the last argument references a single channel from the image. Of course, this scheme is more general then our image presented in figure \ref{image-1}. Image processing must be tackled numerically efficient, so we need a less complex functional description:
+This image function expects three arguments. The first two arguments reference a location in the 2D-image plane (the spacial domain) and the last argument references a single image channel. Of course, this formulation is more  general than the image scheme presented in \reffig{image-sketch}. Image processing must be handles in a numerically efficient way. Therefore we now provide a less complex functional description:
 
 \begin{equation}
   I(\mathbb{N^+} \times{} \mathbb{N^+} \times{} \mathbb{N^+} )\rightarrow\mathbb{R} 
 \end{equation}
 
 
-This function can be understood in 2 different ways:
+This function can be understood in two different ways:
 \begin{enumerate}
- \item A function expecting three arguments and returning a single pixel value within the referenced channel.
- \item A function that expects only two arguments and which's value domain is $\mathbb{R}^C$ where $C$ is the channel count of the image
+ \item It expects three arguments and returns a single pixel value from the referenced channel.
+ \item It expects only two arguments and returns a vector in $\mathbb{R}^C$\footnote{$C$ is the channel count of the image here}.
 \end{enumerate} 
+
+\todo{Correct with Jonathan from here!}
 
 We decided to implement the first one, because of a fundamental design principle: We decided to use planar data layout, which cannot be combined with the 2nd point view on the image function. E.g. there has to be some pixel access function that returns the pixel value at some image location $(x,y)$. This would have to return some vector structure (e.g. a \inlinecode{std::vector}) which is sure possible, but not very efficient in C++.
 Of course, we provide an operator (\inlinecode{operator()(int x, int y)}) which allows to address a pixels with all it's channels, but this is just a convenience feature for code that has no performance constraints.\\

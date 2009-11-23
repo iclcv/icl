@@ -248,6 +248,7 @@ INST_OTHER_TYPES
             });
 
     INST_REGISTER_EVENT_FOR_HANDLE(Button);
+    INST_REGISTER_EVENT_FOR_HANDLE(ButtonGroup);
     INST_REGISTER_EVENT_FOR_HANDLE(Slider);
     INST_REGISTER_EVENT_FOR_HANDLE(FSlider);
     INST_REGISTER_EVENT_FOR_HANDLE(Combo);
@@ -477,8 +478,7 @@ namespace icl{
     // DrawHandle3D
     FROM_IMG_ADD(DrawHandle3D);
     FROM_IMG_PTR_ADD(DrawHandle3D);
-    ADD(DataStore::Data::Event,DrawHandle3D
-);
+    ADD(DataStore::Data::Event,DrawHandle3D);
     
     // FPSHandle
     ADD(DataStore::Data::Event,FPSHandle);
@@ -490,6 +490,7 @@ namespace icl{
     ADD(Range8u,SliderHandle);
     ADD(Range32s,SliderHandle);
     ADD(Range32f,SliderHandle);
+    ADD(DataStore::Data::Event,SliderHandle);
 
     // IntHandle
     FROM_TO_NUM_ADD(IntHandle);
@@ -501,10 +502,13 @@ namespace icl{
     ADD(Range8u,SpinnerHandle);
     ADD(Range32s,SpinnerHandle);
     ADD(Range32f,SpinnerHandle);
+    ADD(DataStore::Data::Event,SpinnerHandle);
     
     // ButtonGroup
     TO_NUM_ADD(ButtonGroupHandle);
     ADD(ButtonGroupHandle,std::string);
+    ADD(DataStore::Data::Event,ButtonGroupHandle);
+
 
     // FSliderHandle
     FROM_TO_NUM_ADD(FSliderHandle);
@@ -512,6 +516,8 @@ namespace icl{
     ADD(Range8u,FSliderHandle);
     ADD(Range32s,FSliderHandle);
     ADD(Range32f,FSliderHandle);
+    ADD(DataStore::Data::Event,FSliderHandle);
+
     
     // LabelHandle
     FROM_NUM_ADD(LabelHandle);
@@ -521,10 +527,14 @@ namespace icl{
 
     // ButtonHandle
     TO_NUM_ADD(ButtonHandle);
+    ADD(DataStore::Data::Event,ButtonHandle);
     
     // StringHandle
     FROM_TO_NUM_ADD(StringHandle);
     FROM_TO_STR_ADD(StringHandle);
+
+    // ComboHandle
+    ADD(DataStore::Data::Event,ComboHandle);
 
     return &m;
   }
