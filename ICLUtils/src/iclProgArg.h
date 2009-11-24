@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <iclStringUtils.h>
+#include <iclException.h>
 
 namespace icl{
   
@@ -144,7 +146,7 @@ int main(int n, char **ppc){
   
   /// writes the error message followed by a usage definition \ingroup PA
   /** the usage is only defined, if "allowedArgs" was set in pa_init */
-  void pa_usage(const std::string &errorMessage);
+  void pa_usage(const std::string &errorMessage="");
   
   /// returns weather a certain argument was actually given \ingroup PA
   bool pa_defined(const std::string &param);
@@ -153,21 +155,20 @@ int main(int n, char **ppc){
   /** only available if pa_init was called with skipUnknownArgs*/
   const std::vector<std::string> &pa_dangling_args();
   
+  /// internal utility function
+  const std::string &pa_arg_internal(unsigned int index) throw (ICLException);
+
+  /// internal utility function
+  const std::string &pa_subarg_internal(const std::string &param, unsigned int idx) throw (ICLException);
+  
   /// access to the actually given program arguments \ingroup PA
-  /** <b>Note:</b> The index references all actually given args directly,
-      sub args are not evaluated here.
-      Possible types T are: 
-      - string (std::string) 
-      - int 
-      - uint 
-      - bool 
-      - char 
-      - uchar 
-      - float 
-      - double
+  /** <b>Note:</b> Arguments are received as double and than parsed using the 
+      std::istream-operator-based icl::parse-template function.
   */
   template<class T> 
-  T pa_arg(unsigned int index);
+  inline T pa_arg(unsigned int index) throw (ICLException){
+    return parse<T>(pa_arg_internal(index));
+  }
 
   /// access to sub arguments with a given default value \ingroup PA
   /** If the given argument "param" was not actually given, the default argument
@@ -183,7 +184,14 @@ int main(int n, char **ppc){
       - double
   */
   template<class T> 
-  T pa_subarg(std::string param, unsigned int index, T defaultValue);
+  inline T pa_subarg(const std::string &param, unsigned int index, T defaultValue) throw (ICLException){
+      try{
+        return parse<T>(pa_subarg_internal(param,index));
+      }catch(...){}
+      return defaultValue;
+   }
+        
+  
 
 }
 

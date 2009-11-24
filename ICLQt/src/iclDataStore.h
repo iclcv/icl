@@ -64,7 +64,13 @@ namespace icl{
         assign(data->data,data->type,&t,get_type_name<T>());
         return t;
       }
-      
+
+      /// implicit conversion into l-value type (little dangerous)
+      template<class T>
+      operator T() const throw (UnassignableTypesException){
+        return as<T>();
+      }
+
       /// returns the internal type ID (obtained by C++'s RTTI)
       const std::string &getTypeID() const { return data->type; }
       
