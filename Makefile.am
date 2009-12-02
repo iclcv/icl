@@ -41,11 +41,18 @@ install-data-local:
 	${MKDIR_P} ${prefix}/lib/pkgconfig
 	if [ -e icl.pc ] ; then ${INSTALL_DATA} icl.pc ${prefix}/lib/pkgconfig ; fi
 	${INSTALL_PROGRAM} scripts/icl-make ${prefix}/bin
-
+	${INSTALL_PROGRAM} scripts/icl-create-project ${prefix}/bin
+	sed -i "s|RESOURCE_DIR_PLACEHOLDER|${prefix}/etc|g" ${prefix}/bin/icl-create-project
+	${MKDIR_P} ${prefix}/etc
+	${INSTALL_DATA} scripts/icl-create-project-data/*.template ${prefix}/etc
 
 uninstall-local:
 	@for S in ${PACKAGES} ; do ${MAKE} ${AM_FLAGS} -C$$S uninstall-local ; done
 	@rm -rf ${prefix}/doc/ICL
 	@rm -rf ${prefix}/lib/pkgconfig
 	@rm -rf ${prefix}/bin/icl-make
+	@rm -rf ${prefix}/bin/icl-create-project
+	@rm -rf ${prefix}/etc/Makefile.template
+	@rm -rf ${prefix}/etc/Makefile.custom.template
+	@rm -rf ${prefix}/etc/doxyfile.template
 
