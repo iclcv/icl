@@ -144,12 +144,16 @@ namespace icl{
     while(iPos != string::npos){
       iLastPos = iPos;
       iPos = s.find_first_of( sDelims, iLastPos+1 );
-      if(dst.size() > iDstPos){
-        dst[iDstPos] = s.substr(iLastPos+1,iPos-iLastPos-1);
-      }else{
-        dst.push_back(s.substr(iLastPos+1,iPos-iLastPos-1));
+    
+      std::string t = s.substr(iLastPos+1,iPos-iLastPos-1);
+      if(t.length()){
+        if(dst.size() > iDstPos){
+          dst[iDstPos] = t;
+        }else{
+          dst.push_back(t);
+        }
+        iDstPos++;
       }
-      iDstPos++;
     }
     dst.resize(iDstPos);
     return dst;

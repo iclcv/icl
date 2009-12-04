@@ -21,7 +21,10 @@ StrTok::StrTok(string s, string sDelims){
   while(iPos != string::npos){
     iLastPos = iPos;
     iPos = s.find_first_of( sDelims, iLastPos+1 );
-    m_oTokens.push_back(s.substr(iLastPos+1,iPos-iLastPos-1));
+    std::string t = s.substr(iLastPos+1,iPos-iLastPos-1);
+    if(t.length()){
+      m_oTokens.push_back(t);
+    }
   }
   this->m_uiPos = 0;
 }
