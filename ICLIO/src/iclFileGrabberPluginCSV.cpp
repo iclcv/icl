@@ -146,6 +146,11 @@ namespace icl{
         }
       }
       file.reset();
+      line = file.readLine();
+      // skip header again
+      while(file.hasMoreLines() && line.length() && line[0]=='#'){
+        line = file.readLine();
+      }
       oInfo.imageDepth = depth64f;
       oInfo.imageFormat = formatMatrix;
       oInfo.roi = Rect(Point::null,oInfo.size);
