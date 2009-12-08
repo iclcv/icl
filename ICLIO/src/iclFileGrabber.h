@@ -120,6 +120,15 @@ namespace icl{
     */
     void prev();
     
+    
+    /// forces the filegrabber to use a plugin for the given suffix
+    /** suffix must be something like png or csv (without a trailing .)
+        By default, the forced plugin type string is "". In this case,
+        the filename suffix is evaluated to determine the appropriate 
+        grabber plugin.
+    */
+    void forcePluginType(const std::string &suffix);
+    
     private:
     /// internal file list
     FileList m_oFileList;
@@ -138,6 +147,9 @@ namespace icl{
     
     /// map of plugins
     static std::map<std::string,FileGrabberPlugin*> s_mapPlugins;
+    
+    /// forced plugin name
+    std::string m_forcedPluginType;
   };
   
 }

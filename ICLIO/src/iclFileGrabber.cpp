@@ -81,10 +81,14 @@ namespace icl{
 
   // }}}
 
-  static FileGrabberPluginMapInitializer ___filegrabber_plugin_map_initializer__;
+
+  static void init_filegrabber(){
+    static FileGrabberPluginMapInitializer i;
+  }
   
-  
-  FileGrabber::FileGrabber():m_iCurrIdx(0){}
+  FileGrabber::FileGrabber():m_iCurrIdx(0){
+    init_filegrabber();
+  }
   
   FileGrabber::FileGrabber(const std::string &pattern, 
                            bool buffer, 
@@ -96,6 +100,8 @@ namespace icl{
     m_bBufferImages(false),
     m_poBufferImage(0){
     
+    init_filegrabber();
+        
     if(!m_oFileList.size()){
       throw FileNotFoundException(pattern);
     }
@@ -215,9 +221,14 @@ namespace icl{
     if(!f.exists()) throw FileNotFoundException(f.getName());
     if(m_iCurrIdx >= m_oFileList.size()) m_iCurrIdx = 0;
     
-    std::map<string,FileGrabberPlugin*>::iterator it = s_mapPlugins.find(toLower(f.getSuffix()));
+    std::map<string,FileGrabberPlugin*>::iterator it;
+    if( m_forcedPluginType == ""){
+      it = s_mapPlugins.find(toLower(f.getSuffix()));
+    }else{
+      it = s_mapPlugins.find("."+toLower(m_forcedPluginType));
+    }
     if(it == s_mapPlugins.end()){     
-      throw InvalidFileException(string("file type \"*")+f.getSuffix()+"\"");
+      throw InvalidFileException(string("file type (filename was \"")+f.getName()+"\")");
       return 0;
     }
     if(m_bIgnoreDesiredParams){
@@ -260,6 +271,9 @@ namespace icl{
   }
 
   // }}}
-  
+
+  void FileGrabber::forcePluginType(const std::string &suffix){
+    m_forcedPluginType = suffix;
+  }  
 }
 
