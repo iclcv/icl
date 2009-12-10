@@ -73,8 +73,9 @@ namespace icl{
 				std::vector<Point32f> smoothed_boundary;
 				std::vector<float> kurvature;
 				std::vector<int> extrema;
-				std::vector<int> extrema_without_round_corners;
-				std::vector<int> extrema_without_false_corners;
+				std::vector<int> maxima;
+				std::vector<int> maxima_without_round_corners;
+				std::vector<int> maxima_without_false_corners;
 				std::vector<Point32f> corners;
 				std::vector<float> angles;
 				int offset; // the number of additional points at begin and end of

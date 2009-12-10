@@ -267,15 +267,38 @@ namespace icl{
 
     // get the maxima of the curvature
     findExtrema(extrema, k, l2w);
-    if (debug_mode) debug_inf.extrema = extrema;
+    if (debug_mode) {
+    	debug_inf.extrema.clear();
+	    for (unsigned i=0; i<extrema.size(); i++) {
+	      if (extrema[i] >= offset+W and extrema[i] < L-offset+W)
+	        debug_inf.extrema.push_back(extrema[i]);
+	    }
+	    debug_inf.maxima.clear();
+	    for (unsigned i=1; i<extrema.size()-1; i+=2) {
+	      if (extrema[i] >= offset+W and extrema[i] < L-offset+W)
+	        debug_inf.maxima.push_back(extrema[i]);
+	    }
+    }
 
     // remove round corners
     removeRoundCorners(rc_coeff, k, extrema);
-    if (debug_mode) debug_inf.extrema_without_round_corners = extrema;
+    if (debug_mode) {
+    	debug_inf.maxima_without_round_corners.clear();
+	    for (unsigned i=0; i<extrema.size(); i++) {
+	      if (extrema[i] >= offset+W and extrema[i] < L-offset+W)
+	        debug_inf.maxima_without_round_corners.push_back(extrema[i]);
+	    }
+    }
 
     // remove false corners due to boundary noise and trivial details
     removeFalseCorners(angle_thresh, xx, yy, k, l2w, extrema, corner_angles, straight_line_thresh);
-    if (debug_mode) debug_inf.extrema_without_false_corners = extrema;
+    if (debug_mode) {
+    	debug_inf.maxima_without_false_corners.clear();
+	    for (unsigned i=0; i<extrema.size(); i++) {
+	      if (extrema[i] >= offset+W and extrema[i] < L-offset+W)
+	        debug_inf.maxima_without_false_corners.push_back(extrema[i]);
+	    }
+    }
     
     // extract the coordinates of the detected corners
     corners.clear();
