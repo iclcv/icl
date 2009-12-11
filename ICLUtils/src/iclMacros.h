@@ -11,7 +11,7 @@ namespace icl {
 //---- The following DebugMessage can be activated by defining DEBUGLEVEL_{0..5}
 
 // do not comment out debug level 0
-#define DEBUGLEVEL_0
+#define DEBUGLEVEL_1
 
 //---- Debug Level 0 ----
 #if (defined(DEBUGLEVEL_0) ||defined(DEBUGLEVEL_1) || defined(DEBUGLEVEL_2) || defined (DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5)) 

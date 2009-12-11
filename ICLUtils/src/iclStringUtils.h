@@ -55,10 +55,12 @@ namespace icl{
   std::string toUpper(const std::string &s);
 
   /// tokenizes a string with given delimiters (internally using a temporary StrTok instance) \ingroup STRUTILS
-  std::vector<std::string> tok(const std::string &s, const std::string &delims=" ");
+  std::vector<std::string> tok(const std::string &s, const std::string &delims=" ",
+                               bool singleCharDelims=true, char escapeChar='\0');
   
   /// tokenize a string with given delimiters into a result vector (optimized) \ingroup STRUTILS
-  std::vector<std::string> &tok(const std::string &s, const std::string &delim, std::vector<std::string> &dst);
+  std::vector<std::string> &tok(const std::string &s, const std::string &delim, std::vector<std::string> &dst,
+                                bool singleCharDelims=true, char escapeChar='\0');
 
   /// concatinates at string-vector to a single string \ingroup STRUTILS
   std::string cat(const std::vector<std::string> &v);

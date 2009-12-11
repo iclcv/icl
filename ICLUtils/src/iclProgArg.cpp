@@ -213,7 +213,7 @@ namespace icl{
     // {{{ open
 
     if(s_oExplanations.find(arg) != s_oExplanations.end()){
-      WARNING_LOG("Arg \"" << arg << "\" was already explained by " << std::endl << "\"" << ex << "\"");
+      WARNING_LOG("Arg \"" << arg << "\" was already explained by " << std::endl << "\"" << explanation << "\"");
     }
     s_oExplanations[arg] = explanation;
   }

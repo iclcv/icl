@@ -115,47 +115,14 @@ namespace icl{
 
   
   
-  vector<string> tok(const string &s, const string &delims){
-    return StrTok(s,delims).allTokens();
+  vector<string> tok(const string &s, const string &delims, bool singleCharDelims, char escapeChar){
+    return StrTok(s,delims,singleCharDelims,escapeChar).allTokens();
   }
 
 
-  vector<string> &tok(const string &s, const string &sDelims,vector<string> &dst){
-    size_t iPos;
-    size_t iLastPos = 0;
-    
-    unsigned int iDstPos = 0;
-    
-    if(!(s.length())){
-      dst.resize(0);
-      return dst;
-    }
-    iPos = s.find_first_of( sDelims, iLastPos );
-    
-    // we don't want empty tokens
-    if (iPos != iLastPos){
-      if(dst.size() > iDstPos){
-        dst[iDstPos++] = s.substr(iLastPos,iPos-iLastPos);
-      }else{
-        dst.push_back(s.substr(iLastPos,iPos-iLastPos));
-      }
-    }
-    
-    while(iPos != string::npos){
-      iLastPos = iPos;
-      iPos = s.find_first_of( sDelims, iLastPos+1 );
-    
-      std::string t = s.substr(iLastPos+1,iPos-iLastPos-1);
-      if(t.length()){
-        if(dst.size() > iDstPos){
-          dst[iDstPos] = t;
-        }else{
-          dst.push_back(t);
-        }
-        iDstPos++;
-      }
-    }
-    dst.resize(iDstPos);
+  vector<string> &tok(const string &s, const string &delims,bool singleCharDelims, char escapeChar,vector<string> &dst){
+    // todo optimize
+    dst = tok(s,delims,singleCharDelims,escapeChar);
     return dst;
   }
   icl8u parse_icl8u(const std::string &s){
