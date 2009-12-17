@@ -28,7 +28,7 @@ public:
 
 void init(){
   GUI gui2("vbox");
-  gui2 << ( GUI("hbox") 
+  gui2 << ( GUI("hbox")
             << "camcfg(pwc,dc)"
             <<  "combo(color image,binary image)[@out=vis]"
             );
@@ -38,7 +38,7 @@ void init(){
   gui2 << "fslider(0,1000,100)[@out=k_cutoff@label=curvature cutoff]";
   gui2 << "fslider(0,180,162)[@out=max_angle@label=maximum corner angle]";
   gui2 << "fslider(0,180,0.1)[@out=straight_line_thresh@label=straight line threshold]";
-	
+
   gui << ( GUI("hsplit")
            << "draw[@handle=img_in@minsize=16x12]"
            << "draw[@handle=img1@minsize=16x12]"
@@ -73,11 +73,11 @@ void thresh(const Img<T> &input, Img8u &result, float t,const Color &ref){
   for(int i=0;i<cs[0].getDim();++i){
     int d = 0;
     for(int c=0;c<3;++c){
-      d += pow( double(cs[c][i] - ref[c]) ,2.0); 	
-    } 
+      d += pow( double(cs[c][i] - ref[c]) ,2.0);
+    }
     dst[i] = 255 * (d < t);
   }
-} 
+}
 
 template <class T>
 inline std::string to_string (const T& t)
@@ -94,7 +94,7 @@ const vector< Point32f > &getThinnedBoundary(const vector< Point > &b) {
   if (b.size() < 2) return thinned;
   Point pre = b[b.size()-2];
   Point cur = b[b.size()-1];
-  Point post; 
+  Point post;
   for (unsigned i=0; i < b.size(); i++) {
     // search for the first point not in the 8 neighbourhood of current point
     if ((abs(b[i].x - cur.x) > 1) || (abs(b[i].y - cur.y) > 1)) {
@@ -163,17 +163,17 @@ void drawStep2(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_
   }
   // draw extrema without minima and rond corners
   w->color(200,50,50);
-  for (unsigned int i=0; i<css_inf.extrema_without_round_corners.size(); i++) {
-    w->ellipse(float(css_inf.extrema_without_round_corners[i])/n-0.005,1-css_inf.kurvature[css_inf.extrema_without_round_corners[i]]-0.005,0.01,0.01);
+  for (unsigned int i=0; i<css_inf.maxima_without_round_corners.size(); i++) {
+    w->ellipse(float(css_inf.maxima_without_round_corners[i])/n-0.005,1-css_inf.kurvature[css_inf.maxima_without_round_corners[i]]-0.005,0.01,0.01);
   }
-	
+
   int count = 0;
   // draw extrema without false corners
-  for (unsigned int i=0; i<css_inf.extrema_without_false_corners.size(); i++) {
-    float x = float(css_inf.extrema_without_false_corners[i])/n;
-    float y = css_inf.kurvature[css_inf.extrema_without_false_corners[i]];
-    if (css_inf.extrema_without_false_corners[i]>=css_inf.offset &&
-        css_inf.extrema_without_false_corners[i]<n-css_inf.offset) {
+  for (unsigned int i=0; i<css_inf.maxima_without_false_corners.size(); i++) {
+    float x = float(css_inf.maxima_without_false_corners[i])/n;
+    float y = css_inf.kurvature[css_inf.maxima_without_false_corners[i]];
+    if (css_inf.maxima_without_false_corners[i]>=css_inf.offset &&
+        css_inf.maxima_without_false_corners[i]<n-css_inf.offset) {
       w->color(0,0,0);
       w->text(to_string(count++),x,1-y,-1,-1,10);
     } else {
@@ -187,7 +187,7 @@ void drawStep2(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_
 void drawStep3(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_inf) {
 
 }
- 
+
 void drawStep4(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_inf) {
   w->color(0,0,0);
   w->linestrip(css_inf.corners,true);
@@ -211,7 +211,7 @@ void myrun(){
   static Img8u bgImage3(image.getSize(), 1); bgImage3.clear(0,255);
   static Img8u bgImage4(image.getSize(), 1); bgImage4.clear(0,255);
   thresh(image,threshedImage,gui.getValue<float>("t"),refColor);
-	
+
   // draw background images
   static std::string &vis = gui.getValue<std::string>("vis");
   h = (vis == "color image") ? &image : &threshedImage;
@@ -242,10 +242,10 @@ void myrun(){
 
     Point32f cog = rs[i].getCOG();
     w->color(255,0,0,255); w->fill(255,0,0,255);
-    w->ellipse(cog.x-1, cog.y-1,2,2);  
+    w->ellipse(cog.x-1, cog.y-1,2,2);
   }
   w->unlock(); w1->unlock(); w2->unlock(); w3->unlock(); w4->unlock();
-	
+
   // update the draw widgets
   h.update(); h1.update(); h2.update(); h3.update(); h4.update();
   Thread::msleep(500);
