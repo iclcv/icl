@@ -360,16 +360,7 @@ namespace icl{
 
   const ImgBase *CamCfgWidget::getCurrentImage(){
   // {{{ open
-    const ImgBase *image;
-
-    image = 0;
-
-    m_oGrabberMutex.lock();
-    if(m_poGrabber){
-      image = m_poGrabber->grab();
-    }
-    m_oGrabberMutex.unlock();
-    return image;
+    return grabbedImage;
   }
   
   // }}}
@@ -590,19 +581,17 @@ namespace icl{
 
     m_oGrabberMutex.lock();
     if(m_poGrabber){
-      const ImgBase *image = m_poGrabber->grab();
-
-      m_poICLWidget->setImage(image);
-      //m_poICLWidget->updateFromOtherThread();
-      //Thread::msleep(20);
+      grabbedImage = m_poGrabber->grab();
+      
+      m_poICLWidget->setImage(grabbedImage);
       m_poICLWidget->update();
 
       m_poFpsLabel->setText(m_oFPSE.getFPSString().c_str());
       m_poFpsLabel->updateFromOtherThread();
-      //m_poICLWidget->update();
     }
     m_oGrabberMutex.unlock();
     
+    emit(newImageGrabbed(grabbedImage));
 
     /****
         static float accu = 0;

@@ -96,7 +96,10 @@ namespace icl{
 
     /// reimplemented
     virtual void setVisible (bool visible);
-    
+
+    signals:
+    void newImageGrabbed(const ImgBase *image);
+
     public slots:
     /// slot for processing events on the device combo box
     void deviceChanged(const QString &text);
@@ -136,7 +139,7 @@ namespace icl{
     
     /// slot to save current property settings into a property config-file
     void saveClicked();
-    
+
     private:
     /// called when a new grabber is selcted
     void updateSizeCombo();
@@ -223,6 +226,8 @@ namespace icl{
     class InfoLabel;
     std::vector<InfoLabel*> m_infoLabels;
     
+    const ImgBase *grabbedImage;
+
     public:
     void updateInfoLabels();
     
