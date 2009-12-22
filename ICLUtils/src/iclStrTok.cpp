@@ -62,9 +62,6 @@ namespace icl{
       // we don't want empty tokens
       size_t e = escapeIndices.size();
       if (pos-lastPos > e){
-//        SHOW(pos);
-//        SHOW(lastPos);
-//        SHOW(e);
         if(!e){
           m_oTokens.push_back(s.substr(lastPos,pos-lastPos));
         }else{

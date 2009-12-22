@@ -69,7 +69,7 @@ namespace icl {
 
   //----------------------------------------------------------------------------
   template<class Type>
-  Img<Type>::Img(const Size &s, int channels, const std::vector<Type*>& vptData) :
+  Img<Type>::Img(const Size &s, int channels, const std::vector<Type*>& vptData, bool passOwnerShip) :
     // {{{ open
 
     ImgBase(icl::getDepth<Type>(),ImgParams(s,channels)) {
@@ -78,7 +78,7 @@ namespace icl {
   
     typename std::vector<Type*>::const_iterator it = vptData.begin();
     for(int i=0; i<getChannels(); ++i, ++it) {
-      m_vecChannels.push_back(SmartPtr<Type>(*it,false));
+      m_vecChannels.push_back(SmartPtr<Type>(*it,passOwnerShip));
     }
   }
 
@@ -86,7 +86,7 @@ namespace icl {
 
   //----------------------------------------------------------------------------
   template<class Type>
-  Img<Type>::Img(const Size &s, int channels, format fmt, const std::vector<Type*>& vptData) :
+  Img<Type>::Img(const Size &s, int channels, format fmt, const std::vector<Type*>& vptData, bool passOwnerShip) :
     // {{{ open
     ImgBase(icl::getDepth<Type>(),ImgParams(s,channels,fmt)){
     ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
@@ -95,7 +95,7 @@ namespace icl {
   
     typename std::vector<Type*>::const_iterator it = vptData.begin();
     for(int i=0; i<getChannels(); ++i, ++it) {
-      m_vecChannels.push_back(SmartPtr<Type>(*it,false));
+      m_vecChannels.push_back(SmartPtr<Type>(*it,passOwnerShip));
     }
   } 
 
@@ -103,7 +103,7 @@ namespace icl {
 
   //----------------------------------------------------------------------------
   template<class Type>
-  Img<Type>::Img(const Size &s, format eFormat, const std::vector<Type*>& vptData) :
+  Img<Type>::Img(const Size &s, format eFormat, const std::vector<Type*>& vptData, bool passOwnerShip) :
     // {{{ open
     ImgBase(icl::getDepth<Type>(),ImgParams(s,eFormat)){
     ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
@@ -111,7 +111,7 @@ namespace icl {
    
     typename std::vector<Type*>::const_iterator it = vptData.begin();
     for(int i=0; i<getChannels(); ++i, ++it) {
-      m_vecChannels.push_back(SmartPtr<Type>(*it,false));
+      m_vecChannels.push_back(SmartPtr<Type>(*it,passOwnerShip));
     }
   } 
 

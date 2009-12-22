@@ -165,25 +165,27 @@ namespace icl {
     /** The channel count is set to the channel count that is associated with given the format
         @param size new image size
         @param format (color)-format of the image
-        @param vptData holds a pointer to channel data pointers. pptData must contain 
+        @param vptData holds channel data pointers. It must contain 
         enough Type-pointers for the given format. The data must not be 
-        deleted during the "lifetime" of the Img. Call detach after the 
-        constructor call, to induce the Img to allocate own memory for 
-        the image data.
+        deleted during the "lifetime" of the Img unless data ownership
+        is passed to the Img instance by setting passOwnerShip to true. 
+        Call detach after the constructor call, to induce the Img to 
+        allocate own memory for the image data if ownership cannot be passed.
         **/
-    Img(const Size &size, format format, const std::vector<Type*>& vptData);
+    Img(const Size &size, format format, const std::vector<Type*>& vptData, bool passOwnerShip=false);
   
     /// Creates an image with specified size and channel count, using shared data pointers as channel data
     /** the format is set to formatMatrix
         @param size new image size
         @param channels channel count of the image (format is set to "formatMatrix")
-        @param vptData holds a pointer to channel data pointers. pptData must contain 
-        enough Type-pointers for the given format. The data must not be 
-        deleted during the "lifetime" of the Img. Call detach after the 
-        constructor call, to induce the Img to allocate own memory for 
-        the image data.
+        @param vptData holds channel data pointers. It must contain 
+        at least 'channels' data pointers. The data must not be 
+        deleted during the "lifetime" of the Img unless data ownership
+        is passed to the Img instance by setting passOwnerShip to true. 
+        Call detach after the constructor call, to induce the Img to 
+        allocate own memory for the image data if ownership cannot be passed.
         **/
-    Img(const Size &size, int channels, const std::vector<Type*>& vptData);
+    Img(const Size &size, int channels, const std::vector<Type*>& vptData, bool passOwnerShip=false);
 
     /// Crates an image with given size, channel count and format
     /** Note: channel count and format depend on each other, so if
@@ -194,10 +196,11 @@ namespace icl {
         @param fmt format of the image (must be compatible to channels)
         @param vptData array of data pointers, which are used as shared 
         pointers. Ensure, that these pointers are persistent
-        during the lifetime of the image, or call detach, to
+        during the lifetime of the image unless ownership is passed by setting
+        passOwnerShip to true, or call detach, to
         make the image allocate it own memory for the data
         */
-    Img(const Size &size, int channels, format fmt, const std::vector<Type*>& vptData);
+    Img(const Size &size, int channels, format fmt, const std::vector<Type*>& vptData, bool passOwnerShip=false);
 
     /// Copy constructor WARNING: Violates const concept
     /** Creates a flat copy of the source image. The new image will contain a
