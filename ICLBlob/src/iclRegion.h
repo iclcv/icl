@@ -75,7 +75,7 @@ namespace icl{
     icl64f getVal() const;
     
     /// returns the size of boundary pixel array of the Region
-    int getBoundaryPointCount() const;
+    int getBoundaryPointCount(bool thinned=true) const;
     
     /// returns the estimated length of the boundary
     /** This methods gives a much better estimation of the boundary
@@ -124,7 +124,7 @@ namespace icl{
     const RegionPCAInfo &getPCAInfo() const ;
     
     /// returns list of boundary pixels of the region
-    const std::vector<Point> &getBoundary() const;
+    const std::vector<Point> &getBoundary(bool thinned=true) const;
     
     /// returns list of all region pixels
     const std::vector<Point> &getPixels() const;
@@ -174,6 +174,10 @@ namespace icl{
     /// internally used boundary computation function
     template<class T>
     void calculateBoundaryIntern(const Img<T> &image) const;
+    
+    /// internally computes the thinned boundary
+    /** the unthinned (and closed!) boundary must be computed before. */
+    void calculateThinnedBoundaryIntern() const;
   };
 }
 

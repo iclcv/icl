@@ -10,7 +10,7 @@ namespace icl{
   struct RegionImpl{
     RegionImpl(icl64f val, const ImgBase *image):
       pixcount(0),val(val),image(image),bb(0),
-      pcainfo(0),boundary(0),pixels(0),boundary_length(-1),
+      pcainfo(0),boundary(0),thinned_boundary(0),pixels(0),boundary_length(-1),
       cornerDetector(0),accurateCenter(0){
       scanlines.reserve(100);
     }
@@ -18,6 +18,7 @@ namespace icl{
       ICL_DELETE(bb);
       ICL_DELETE(pcainfo);
       ICL_DELETE(boundary);
+      ICL_DELETE(thinned_boundary);
       ICL_DELETE(pixels);
       ICL_DELETE(cornerDetector);
       ICL_DELETE(accurateCenter);
@@ -30,6 +31,7 @@ namespace icl{
     Rect *bb;
     RegionPCAInfo *pcainfo;
     std::vector<Point> *boundary;
+    std::vector<Point> *thinned_boundary;
     std::vector<Point> *pixels;
     float boundary_length;
     CornerDetectorCSS *cornerDetector;
@@ -157,10 +159,10 @@ namespace icl{
 
   // }}}
 
-  int Region::getBoundaryPointCount() const {
+  int Region::getBoundaryPointCount(bool thinned) const {
     // {{{ open
 
-    return (int)getBoundary().size();
+    return (int)getBoundary(thinned).size();
   }
 
   // Estimates the boundary length by counting how often the three
@@ -178,31 +180,27 @@ namespace icl{
   float Region::getBoundaryLength() const {
     if (impl->boundary_length != -1) return impl->boundary_length;
     
-    const std::vector<Point> &b = getBoundary();
+    const std::vector<Point> &b = getBoundary(true); // thinned boundary
     if (b.size() < 2) return b.size();
     
-    const float length[3] = {1, 1/cos(atan(0.5)), 1/cos(atan(1))}; // length of segment types
+    static const float length[3] = {1, 1/cos(atan(0.5)), 1/cos(atan(1))}; // length of segment types
     int grad[3] = {0}, type; // counters for segment types
     Point pre = b[b.size()-2];
     Point cur = b[b.size()-1];
-    Point post;
+    Point post = b[0];
     
     for (unsigned i=0; i < b.size(); i++) {
-      // search for the first point not in the 8 neighbourhood of current point
-      if ((abs(b[i].x - cur.x) > 1) || (abs(b[i].y - cur.y) > 1)) {
-        // found one, so pre, cur and post are the three points to look at
-        type = 0;
-        if ((pre.x != cur.x) && (pre.y != cur.y)) type++;
-        if ((post.x != cur.x) && (post.y != cur.y)) type++;
-        grad[type]++;			
-	    
-        // set pre, cur and post to new values
-        pre = cur;
-        cur = post;
-        post = b[i];
-      } else post = b[i];
+      type = 0;
+      if ((pre.x != cur.x) && (pre.y != cur.y)) type++;
+      if ((post.x != cur.x) && (post.y != cur.y)) type++;
+      grad[type]++;
+
+      // set pre, cur and post to new values
+      pre = cur;
+      cur = post;
+      post = b[i];
     }
-	
+    
     const_cast<RegionImpl*>(impl.get())->boundary_length = length[0]*grad[0] + length[1]*grad[1] + length[2]*grad[2];
     return impl->boundary_length;
   }
@@ -266,17 +264,58 @@ namespace icl{
 
   // }}}
 
-  const std::vector<Point> &Region::getBoundary() const {
+  const std::vector<Point> &Region::getBoundary(bool thinned) const {
     // {{{ open
-
-    if(impl->boundary) return *impl->boundary;
-    const_cast<RegionImpl*>(impl.get())->boundary = new std::vector<Point>;
-    switch(impl->image->getDepth()){
+    
+    if (!impl->boundary) {
+      const_cast<RegionImpl*>(impl.get())->boundary = new std::vector<Point>;
+      switch(impl->image->getDepth()) {
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: calculateBoundaryIntern(*impl->image->asImg<icl##D>()); break;
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
+      }
     }
-    return *impl->boundary;
+
+    if (thinned) {
+      calculateThinnedBoundaryIntern();
+      return *impl->thinned_boundary;
+    } else return *impl->boundary;
+  }
+  
+  // The function expects a closed boundary in *impl->boundary.
+  void Region::calculateThinnedBoundaryIntern() const{
+    if (!impl->thinned_boundary) const_cast<SmartPtr<RegionImpl,RegionImplDelOp>&>(impl)->thinned_boundary = new std::vector<Point>;
+    else impl->thinned_boundary->clear();
+    
+    std::vector<Point> &boundary=*impl->boundary;
+    std::vector<Point> &thinned=*impl->thinned_boundary;
+    
+    unsigned int N = boundary.size();
+    if (N < 3) { // we need at least 3 points in the boundary for thinning
+      thinned = boundary;
+      return;
+    }
+    
+    // first add the first point in boundary to thinned boundary
+    Point last_added = boundary.front();
+    thinned.push_back(last_added);
+  
+    // now iterate through the boundary and decide which points we can drop
+    unsigned int i = 2;
+    while (i < N) {
+      // check whether we can skip the point after 'last_added'
+      // this is possible if the point two points after 'last_added' is still in
+      // the 8 neighbourhood of 'last_added'
+      if ((abs(boundary[i].x - last_added.x) > 1) ||
+          (abs(boundary[i].y - last_added.y) > 1)) i -= 1;
+      last_added = boundary[i];
+      thinned.push_back(last_added);
+      i += 2;
+    }
+  
+    // ensure that first and last point of thinned boundary are connected
+    if ((abs(thinned.front().x - last_added.x) > 1) ||
+        (abs(thinned.front().y - last_added.y) > 1)) thinned.push_back(boundary.back());
   }
 
   // }}}
