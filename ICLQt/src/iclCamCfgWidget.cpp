@@ -454,6 +454,25 @@ namespace icl{
   }
 
   // }}}
+  
+  QString CamCfgWidget::getConfigurationFile(){
+    // {{{ open
+    
+    return configurationFile;
+  }
+
+  // }}}
+
+  void CamCfgWidget::setConfigurationFile(QString config){
+    // {{{ open
+
+    configurationFile = config;
+    if(!config.isEmpty()){
+      load(config);
+    }
+  }
+
+  // }}}
 
   void CamCfgWidget::deviceChanged(const QString &text){
     // {{{ open
@@ -791,81 +810,94 @@ namespace icl{
     }
     QString s = QFileDialog::getOpenFileName(this,"Load device properties ...","","XML-files (*.xml)");
     if(!s.isNull() && s!=""){
-      try{
-        bool wasCapturing = m_bCapturing;
-        if(wasCapturing){
-          startStopCapture(false);
-          Thread::msleep(500);
-        }
-        m_poGrabber->loadProperties(s.toLatin1().data(),false);
-
-        std::string currGrabberName = m_poDeviceCombo->currentText().toLatin1().data();
-        std::map<std::string,GUIComponentAssociationTable>::iterator it = m_guiCompAss.find(currGrabberName);
-        if(it == m_guiCompAss.end()){
-          ERROR_LOG("no GUI components were associated with current grabber ???");
-          if(wasCapturing){
-            Thread::msleep(500);
-            startStopCapture(true);
-          }
-          return;
-        }
-        GUIComponentAssociationTable &gcat = it->second;
-        for(GUIComponentAssociationTable::iterator it2=gcat.begin(); it2 != gcat.end(); ++it2){
-          const std::string &prop = it2->first;
-          GUIComponentAssociation &gca = it2->second;
-
-          if(gca.type == "menu" || gca.type == "value-list"){
-            QComboBox *cb = dynamic_cast<QComboBox*>(gca.widget);
-            if(!cb){
-              ERROR_LOG("invalid component for type menu/value-list (expected QComboBox)");
-            }else{
-              std::string val = m_poGrabber->getValue(prop);
-              if(gca.propName != "") val = gca.propName+" "+val;
-              //DEBUG_LOG("value for property -" << prop << "- is -" << val << "-");
-              int idx = cb->findText(val.c_str());
-              if(idx >= 0){
-                cb->setCurrentIndex(idx);
-              }else{
-                ERROR_LOG("found illegal value-list or menu entry for property: \"" << prop << "\"");
-              }
-            }
-          }else if(gca.type == "range"){
-            DoubleSlider *ds = dynamic_cast<DoubleSlider*>(gca.widget);
-            if(!ds){
-              ERROR_LOG("invalid component for type range (expected DoubleSlider)");
-            }else{
-              ds->setDoubleValue(parse<double>(m_poGrabber->getValue(prop)));
-            }
-          }
-        }
-        if(wasCapturing){
-          Thread::msleep(500);
-          startStopCapture(true);
-        }
-      }catch(ICLException &e){
-        ERROR_LOG(e.what());
-      }
+      load(s);
     }
     
    
   }
   
+
+  void CamCfgWidget::load(QString filename){
+    configurationFile = filename;
+    try{
+      bool wasCapturing = m_bCapturing;
+      if(wasCapturing){
+        startStopCapture(false);
+        Thread::msleep(500);
+      }
+      m_poGrabber->loadProperties(filename.toLatin1().data(),false);
+
+      std::string currGrabberName = m_poDeviceCombo->currentText().toLatin1().data();
+      std::map<std::string,GUIComponentAssociationTable>::iterator it = m_guiCompAss.find(currGrabberName);
+      if(it == m_guiCompAss.end()){
+        ERROR_LOG("no GUI components were associated with current grabber ???");
+        if(wasCapturing){
+          Thread::msleep(500);
+          startStopCapture(true);
+        }
+        return;
+      }
+      GUIComponentAssociationTable &gcat = it->second;
+      for(GUIComponentAssociationTable::iterator it2=gcat.begin(); it2 != gcat.end(); ++it2){
+        const std::string &prop = it2->first;
+        GUIComponentAssociation &gca = it2->second;
+
+        if(gca.type == "menu" || gca.type == "value-list"){
+          QComboBox *cb = dynamic_cast<QComboBox*>(gca.widget);
+          if(!cb){
+            ERROR_LOG("invalid component for type menu/value-list (expected QComboBox)");
+          }else{
+            std::string val = m_poGrabber->getValue(prop);
+            if(gca.propName != "") val = gca.propName+" "+val;
+            //DEBUG_LOG("value for property -" << prop << "- is -" << val << "-");
+            int idx = cb->findText(val.c_str());
+            if(idx >= 0){
+              cb->setCurrentIndex(idx);
+            }else{
+              ERROR_LOG("found illegal value-list or menu entry for property: \"" << prop << "\"");
+            }
+          }
+        }else if(gca.type == "range"){
+          DoubleSlider *ds = dynamic_cast<DoubleSlider*>(gca.widget);
+          if(!ds){
+            ERROR_LOG("invalid component for type range (expected DoubleSlider)");
+          }else{
+            ds->setDoubleValue(parse<double>(m_poGrabber->getValue(prop)));
+          }
+        }
+      }
+      if(wasCapturing){
+        Thread::msleep(500);
+        startStopCapture(true);
+      }
+    }catch(ICLException &e){
+      ERROR_LOG(e.what());
+    }
+  }
+
+
   void CamCfgWidget::saveClicked(){
     if(!m_poGrabber){
       QMessageBox::information(this,"No device selected!","You can only save properties if a device is selected (and running)");
       return;
     }
-    QMessageBox::StandardButton b = QMessageBox::question(this,"prepare saving ...","Remove instable parameters?\n(recommended)",QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes);
-    
 
     QString s = QFileDialog::getSaveFileName(this,"Save device properties ...","","XML-files (*.xml)");
     if(!s.isNull() && s!=""){
-      try{
-        //        DEBUG_LOG("ignore desired:" << str(m_poGrabber->getIgnoreDesiredParams()));
-        m_poGrabber->saveProperties(s.toLatin1().data(),false,b==QMessageBox::Yes);
-      }catch(ICLException &e){
-        ERROR_LOG(e.what());
-      }
+      save(s);
+    }
+  }
+  
+  
+  void CamCfgWidget::save(QString filename){
+    configurationFile = filename;
+    try{
+      QMessageBox::StandardButton b = QMessageBox::question(this,"prepare saving ...","Remove instable parameters?\n(recommended)",QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes);
+    
+      //        DEBUG_LOG("ignore desired:" << str(m_poGrabber->getIgnoreDesiredParams()));
+      m_poGrabber->saveProperties(filename.toLatin1().data(),false,b==QMessageBox::Yes);
+    }catch(ICLException &e){
+      ERROR_LOG(e.what());
     }
   }
 }

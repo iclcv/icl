@@ -96,6 +96,12 @@ namespace icl{
 
     /// reimplemented
     virtual void setVisible (bool visible);
+    
+    /// getter of the current configuration file, if loaded.
+    QString getConfigurationFile();
+
+    /// setter of the current configuration file.
+    void setConfigurationFile(QString config);
 
     signals:
     void newImageGrabbed(const ImgBase *image);
@@ -141,6 +147,11 @@ namespace icl{
     void saveClicked();
 
     private:
+    
+    void save(QString filename);
+    
+    void load(QString filename);
+    
     /// called when a new grabber is selcted
     void updateSizeCombo();
     
@@ -227,6 +238,8 @@ namespace icl{
     std::vector<InfoLabel*> m_infoLabels;
     
     const ImgBase *grabbedImage;
+    
+    QString configurationFile;
 
     public:
     void updateInfoLabels();
