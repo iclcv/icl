@@ -131,6 +131,22 @@ namespace icl{
 
 
   template<class valueType>
+  void PositionTracker<valueType>::pushData(std::vector<Point32f> points){
+    // {{{ open
+
+    int n = points.size();
+    Vec x(n),y(n);
+    for(int i=0;i<n;i++){
+      x[i] = points[i].x;
+      y[i] = points[i].y;
+    }
+    pushData(x,y);
+  }
+
+  // }}}
+
+
+  template<class valueType>
   SimpleMatrix<valueType> createDistMat(const vector<valueType> a[2], const vector<valueType> b[2]){
     // {{{ open
 
