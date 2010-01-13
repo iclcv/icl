@@ -1,12 +1,14 @@
 #                                              -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.61)
-AC_INIT([ICL],[4.5.2],[nivision@techfak.uni-bielefeld.de])
-#AM_INIT_AUTOMAKE([-Wall -Werror foreign])
-AM_INIT_AUTOMAKE([foreign])
+####################################################################################
+# Set some default project values
+#   linux: -D SYSTEM_LINUX, macosx: -D SYSTEM_APPLE, windows: -D SYSTEM_WINDOWS
+####################################################################################
 
-# PACKAGE_DESCRIPTION... Image Component Library [[ICL]] (a C++ computer vision library
+AC_PREREQ(2.61)
+AC_INIT([ICL],[5.0],[nivision@techfak.uni-bielefeld.de])
+AM_INIT_AUTOMAKE([foreign])
 
 echo -n "checking system architecture..."
 ARCH=`./config.guess | cut -f 3 -d '-' | tr [[:lower:]] [[:upper:]]`
@@ -17,15 +19,10 @@ elif test "$ARCH" = "CYGWIN" ; then
 fi
 echo " $ARCH (adding -DSYSTEM_$ARCH to CXXFLAGS)"
 
-CXXFLAGS="$CXXFLAGS -Isrc -I../src -DSYSTEM_${ARCH} -Wno-long-long -Wall"
+CXXFLAGS="$CXXFLAGS -Iinclude -DSYSTEM_${ARCH} -Wno-long-long -Wall"
 
 LDFLAGS="$LDFLAGS -lpthread"
 ICL_EXTEND_PC_FLAGS([],[-DSYSTEM_${ARCH}],[])
-
-#linux: -D SYSTEM_LINUX
-#macosx -D SYSTEM_APPLE
-#windows -D SYSTEM_WINDOWS
-
 
 AM_CONDITIONAL([SYSTEM_LINUX_COND],[test x$ARCH = xLINUX])
 AM_CONDITIONAL([SYSTEM_APPLE_COND],[test x$ARCH = xAPPLE])
@@ -33,20 +30,21 @@ AM_CONDITIONAL([SYSTEM_APPLE_COND],[test x$ARCH = xAPPLE])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADER([ICLUtils/src/config.h])       
 
-# Checks for programs.
+####################################################################################
+# Checks for generic programs.
+####################################################################################
 AC_PROG_CXX
 AC_PROG_LIBTOOL
 AC_PROG_SED
+
 AC_CHECK_PROG([HAVE_PKG_CONFIG],[pkg-config],[TRUE],[FALSE])
 if test "$HAVE_PKG_CONFIG" = "FALSE" ; then
-AC_MSG_ERROR([unable to find 'pkg-config' in PATH (please install and/or adapt path variable])
+AC_MSG_ERROR([unable to find 'pkg-config' please install and/or adapt path variable])
 fi
 
-
 ###############################################################################
-# IPP
+# Check for IPP
 ###############################################################################
-
 AC_ARG_WITH([IPP],
         [AS_HELP_STRING([--without-IPP],
                         [disable support for IPP])],
@@ -85,9 +83,8 @@ AM_CONDITIONAL([HAVE_IPP_COND],[test x$HAVE_IPP = xTRUE])
 
 
 ###############################################################################
-# MKL
+# Check for MKL
 ###############################################################################
-
 AC_ARG_WITH([MKL],
         [AS_HELP_STRING([--without-MKL],
                         [disable support for MKL])],
@@ -122,9 +119,8 @@ AM_CONDITIONAL([HAVE_MKL_COND],[test x$HAVE_MKL = xTRUE])
 
 
 ###############################################################################
-# LIBDC
+# Check for LIBDC
 ###############################################################################
-
 AC_ARG_WITH([LIBDC],
         [AS_HELP_STRING([--without-LIBDC],
                         [disable support for LIBDC])],          
@@ -148,9 +144,8 @@ AM_CONDITIONAL([HAVE_LIBDC_COND],[test x$HAVE_LIBDC = xTRUE])
 
 
 ###############################################################################
-# For OpenCV Wrapper
+# Check for OpenCV
 ###############################################################################
-
 AC_ARG_WITH([OPENCV],
         [AS_HELP_STRING([--without-OPENCV],
                         [disable support for OPENCV])],
@@ -165,7 +160,6 @@ AC_ARG_WITH([OPENCV],
         AC_CHECK_HEADER([cv.h],[],[HAVE_OPENCV=FALSE])
         AC_CHECK_HEADER([cvaux.h],[],[HAVE_OPENCV=FALSE])
         AC_CHECK_HEADER([cxcore.h],[],[HAVE_OPENCV=FALSE])
-        #AC_CHECK_HEADER([opencv/cxcore.hpp],[],[HAVE_OPENCV=FALSE]) needs include cxcore.h as well?
         AC_CHECK_LIB([cv],[cvSmooth],[],[HAVE_LIBDC=FALSE])
         AC_CHECK_LIB([cvaux],[cvSegmentImage],[],[HAVE_LIBDC=FALSE])
         AC_CHECK_LIB([cxcore],[cvAlloc],[],[HAVE_LIBDC=FALSE])
@@ -180,9 +174,8 @@ AM_CONDITIONAL([HAVE_OPENCV_COND],[test x$HAVE_OPENCV = xTRUE])
 
 
 ###############################################################################
-# OpenGL
+# Check for OpenGL
 ###############################################################################
-
 AC_ARG_WITH([OPENGL],
         [AS_HELP_STRING([--without-OPENGL],
                         [disable support for OPENGL])],
@@ -214,11 +207,9 @@ AC_ARG_WITH([OPENGL],
 AM_CONDITIONAL([HAVE_OPENGL_COND],[test x$HAVE_OPEN = xTRUE])
 
 
-
 ###############################################################################
-# Unicap
+# Check for Unicap
 ###############################################################################
-
 AC_ARG_WITH([UNICAP],
         [AS_HELP_STRING([--without-UNICAP],
                         [disable support for UNICAP])],
@@ -246,12 +237,9 @@ AC_ARG_WITH([UNICAP],
 AM_CONDITIONAL([HAVE_UNICAP_COND],[test x$HAVE_UNICAP = xTRUE])
 
 
-
-
 ###############################################################################
-# Image Magick
+# Check for Image Magick
 ###############################################################################
-
 AC_ARG_WITH([IMAGEMAGICK],
         [AS_HELP_STRING([--without-IMAGEMAGICK],
                         [disable support for IMAGEMAGICK])],
@@ -283,9 +271,8 @@ AM_CONDITIONAL([HAVE_IMAGEMAGICK_COND],[test x$HAVE_IMAGEMAGICK = xTRUE])
 
 
 ###############################################################################
-# LIBJPEG
+# Check for LIBJPEG
 ###############################################################################
-
 AC_ARG_WITH([LIBJPEG],
         [AS_HELP_STRING([--without-LIBJPEG],
                         [disable support for LIBJPEG])],
@@ -317,12 +304,9 @@ AC_ARG_WITH([LIBJPEG],
 AM_CONDITIONAL([HAVE_LIBJPEG_COND],[test x$HAVE_LIBJPEG = xTRUE])
 
 
-
-
 ###############################################################################
-# LIBZ
+# Check for LIBZ
 ###############################################################################
-
 AC_ARG_WITH([LIBZ],
         [AS_HELP_STRING([--without-LIBZ],
                         [disable support for LIBZ])],
@@ -352,10 +336,10 @@ AC_ARG_WITH([LIBZ],
         fi])
 AM_CONDITIONAL([HAVE_LIBZ_COND],[test x$HAVE_LIBZ = xTRUE])
 
-###############################################################################
-# LIBMESASR (for Mesa-Imaging SwissRanger Time-of-Flight 3D cameras)
-###############################################################################
 
+###############################################################################
+# Check for LIBMESASR
+###############################################################################
 AC_ARG_WITH([LIBMESASR],
         [AS_HELP_STRING([--without-LIBMESASR],
                         [disable support for libmesasr (for Swiss-Ranger Time-of-Flight cameras)])],
@@ -387,9 +371,8 @@ AM_CONDITIONAL([HAVE_LIBMESASR_COND],[test x$HAVE_LIBMESASR = xTRUE])
 
 
 ###############################################################################
-# VIDEODEV
+# Check for VIDEODEV
 ###############################################################################
-
 AC_ARG_WITH([VIDEODEV],
         [AS_HELP_STRING([--without-VIDEODEV],
                         [disable support for VIDEODEV])],
@@ -423,9 +406,8 @@ AM_CONDITIONAL([HAVE_VIDEODEV_COND],[test x$HAVE_VIDEODEV = xTRUE])
 
 
 ###############################################################################
-# SVS
+# Check for SVS
 ###############################################################################
-
 AC_ARG_WITH([SVS],
         [AS_HELP_STRING([--without-SVS],
                         [disable support for SVS])],
@@ -458,10 +440,8 @@ AM_CONDITIONAL([HAVE_SVS_COND],[test x$HAVE_SVS = xTRUE])
            
 
 ###############################################################################
-# XINE
+# Check for XINE
 ###############################################################################
-
-
 AC_ARG_WITH([XINE],
         [AS_HELP_STRING([--without-XINE],
                         [disable support for XINE])],
@@ -484,10 +464,10 @@ AC_ARG_WITH([XINE],
         fi])
 AM_CONDITIONAL([HAVE_XINE_COND],[test x$HAVE_XINE = xTRUE])
 
-###############################################################################
-# Qt
-###############################################################################
 
+###############################################################################
+# Check for Qt
+###############################################################################
 AC_ARG_WITH([QT],
         [AS_HELP_STRING([--without-QT],
                         [disable support for QT])],
@@ -534,10 +514,10 @@ AC_ARG_WITH([QT],
         fi])
 AM_CONDITIONAL([HAVE_QT_COND],[test x$HAVE_QT = xTRUE])
 
-###############################################################################
-# XCF
-###############################################################################
 
+###############################################################################
+# Check for XCF
+###############################################################################
 AC_ARG_WITH([XCF],
         [AS_HELP_STRING([--without-XCF],
                         [disable support for XCF])],
@@ -568,21 +548,16 @@ AC_ARG_WITH([XCF],
         fi])
 AM_CONDITIONAL([HAVE_XCF_COND],[test x$HAVE_XCF = xTRUE])
 
+
 ###############################################################################
-## removing default pathes /include /usr/include /lib /usr/lib ################
+# removing default pathes /include /usr/include /lib /usr/lib
 ###############################################################################
 
 LIBS=`echo ${LIBS} | sed "s|-L/usr/lib | |g"`
 LIBS=`echo ${LIBS} | sed "s|-L/lib | |g"`
 
-echo LDFLAGS before:
-echo $LDFLAGS
-
 LDFLAGS=`echo ${LDFLAGS} | sed "s|-Wl,-rpath=/usr/lib | |g"`
 LDFLAGS=`echo ${LDFLAGS} | sed "s|-Wl,-rpath=/lib | |g"`
-echo ""
-echo LDFLAGS cleaned:
-echo $LDFLAGS
 
 CXXFLAGS=`echo ${CXXFLAGS} | sed "s|-I/usr/include | |g"`
 CXXFLAGS=`echo ${CXXFLAGS} | sed "s|-I/include | |g"`
@@ -597,9 +572,8 @@ ICL_PC_CFLAGS=`echo ${ICL_PC_CFLAGS} | sed "s|-I/include | |g"`
 
 
 ###############################################################################
-## Summary ...                        #########################################
+# Summary
 ###############################################################################
-
 AC_MSG_NOTICE([+---------------------------------------+])
 AC_MSG_NOTICE([| Summary                               |])
 AC_MSG_NOTICE([+---------------------------------------+])
@@ -621,15 +595,15 @@ ICL_NOTIFY_SUPPORT([OPENCV],       [OpenCV   ])
 AC_MSG_NOTICE([+---------------------------------------+])
 
 
-# create list of packages to build (in correct order)
+###############################################################################
+# Create list of packages to build (in correct order)
+###############################################################################
 ICL_BUILD_PACKAGES="ICLUtils ICLCore ICLCC ICLIO \
-ICLBlob ICLFilter ICLQuick ICLGeom ICLAlgorithms"
-# later we have also: ICLGeom ICLAlgorithms And SVS
+                    ICLBlob ICLFilter ICLQuick ICLGeom ICLAlgorithms"
 
-# add optional packages
+# Add optional packages
 ICL_ADD_PACKAGE_IF([ICLQt],["$HAVE_QT" = "TRUE"])
 ICL_ADD_PACKAGE_IF([ICLOpenCV],["$HAVE_OPENCV" = "TRUE"])
-
 
 for T in $ICL_BUILD_PACKAGES ; do
     ICL_BUILD_SUBDIRS="$ICL_BUILD_SUBDIRS $T/lib"
@@ -637,6 +611,8 @@ for T in $ICL_BUILD_PACKAGES ; do
     ICL_DOC_MAKEFILES_DIST="$ICL_DOC_MAKEFILES_DIST $T/Makefile.am $T/Makefile.in"
     ICL_PC_LIBS="-l$T $ICL_PC_LIBS"
 done
+
+# Add all bin dirs after lib dirs
 for T in $ICL_BUILD_PACKAGES ; do
     ICL_BUILD_SUBDIRS="$ICL_BUILD_SUBDIRS $T/bin"
 done
@@ -650,8 +626,11 @@ AC_SUBST([ICL_DOC_MAKEFILES_DIST])
 
 echo "Build Subdirs are: - $ICL_BUILD_SUBDIRS -"
 
+
+###############################################################################
+# Create package config file
+###############################################################################
 echo "creating package config file: \"icl.pc\""
-# creating package config file
 
 AC_DEFUN([ICL_PC_ENTRY],[echo "$1" >> icl.pc])
 AC_DEFUN([ICL_PC_ENTRY_FOR_ROOT],[
@@ -662,8 +641,6 @@ else
    ICL_PC_ENTRY([$1_ROOT=DISABLED])
 fi])
 rm -rf icl.pc
-
-
 
 ICL_PC_ENTRY([prefix=${prefix}])
 ICL_PC_ENTRY([exec_prefix=\${prefix}])
