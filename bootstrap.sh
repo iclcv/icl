@@ -1,6 +1,5 @@
 #!/bin/bash
-
-autoreconf --install --force 
+autoreconf --install --force
 
 
 #MYCONFIGURE="configure.ac-`uname -m`"

@@ -76,32 +76,73 @@ ICL_PC_CFLAGS="$ICL_PC_CFLAGS $2"
 ICL_PC_REQ="$ICL_PC_REQ $3"])
 
 
-AC_DEFUN([ICL_USE_PC_INPUT],[
+#AC_DEFUN([ICL_USE_PC_INPUT],[
+#export PKG_CONFIG_PATH="$$1_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
+#ICL_$1_LIBS=`pkg-config --libs-only-L $2`
+#ICL_$1_LDFLAGS=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath=|g"`
+#ICL_$1_LIBS="$ICL_$1_LIBS `pkg-config --libs-only-l $2`"
+#ICL_$1_CXXFLAGS=`pkg-config --cflags-only-I $2`
+#ICL_$1_CXXCPP="`pkg-config --cflags-only-other $2` -DHAVE_$1"
+#ICL_EXTEND_FLAG_VARS([$ICL_$1_LIBS],[$ICL_$1_LDFLAGS],[$ICL_$1_CXXCPP],[$ICL_$1_CXXFLAGS])
+#ICL_EXTEND_PC_FLAGS([$ICL_$1_LDFLAGS],[-DHAVE_$1],[$2])
+#])
+
+
+#AC_DEFUN([ICL_EXTEND_FLAG_VARS_2],
+#        [ICL_$1_LIBS="$2"
+#        ICL_$1_LDFLAGS="$3"
+#        ICL_$1_CXXFLAGS="$4 $5"
+#        ICL_$1_CXXCPP="$5"
+#        ICL_$1_CFLAG="$6"
+#        ICL_$1_CPPFLAGS="$7"
+#        LIBS="${LIBS} $ICL_$1_LIBS"
+#        LDFLAGS="$LDFLAGS $ICL_$1_LDFLAGS"
+#        CXXFLAGS="$CXXFLAGS $ICL_$1_CXXFLAGS"
+#        CXXCPP="$CXXCPP $ICL_$1_CXXCPP"
+#        CFLAGS="$CFLAGS $ICL_$1_CFLAGS"
+#        CPPFLAGS="$CPPFLAGS $ICL_$1_CPPFLAGS"
+#        ICL_EXTEND_PC_FLAGS([$ICL_$1_LIBS $ICL_$1_LDFLAGS],[$ICL_$1_CXXFLAGS $ICL_$1_CXXCPP])
+#])
+
+# ICL_DEF_VARS(package,libs,ldflags,cxxflags,cxxcpp)
+AC_DEFUN([ICL_DEF_VARS],
+        [ICL_$1_LIBS="$2"
+        ICL_$1_LDFLAGS="$3"
+        ICL_$1_CXXFLAGS="$4 $5"
+        ICL_$1_CXXCPP="$5"
+])
+
+#ICL_DEF_VARS_FROM_PC(package,pc-name)
+AC_DEFUN([ICL_DEF_VARS_FROM_PC],[
 export PKG_CONFIG_PATH="$$1_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
 ICL_$1_LIBS=`pkg-config --libs-only-L $2`
 ICL_$1_LDFLAGS=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath=|g"`
 ICL_$1_LIBS="$ICL_$1_LIBS `pkg-config --libs-only-l $2`"
 ICL_$1_CXXFLAGS=`pkg-config --cflags-only-I $2`
 ICL_$1_CXXCPP="`pkg-config --cflags-only-other $2` -DHAVE_$1"
-ICL_EXTEND_FLAG_VARS([$ICL_$1_LIBS],[$ICL_$1_LDFLAGS],[$ICL_$1_CXXCPP],[$ICL_$1_CXXFLAGS])
-ICL_EXTEND_PC_FLAGS([$ICL_$1_LDFLAGS],[-DHAVE_$1],[$2])
 ])
 
-
-AC_DEFUN([ICL_EXTEND_FLAG_VARS_2],
-        [ICL_$1_LIBS="$2"
-        ICL_$1_LDFLAGS="$3"
-        ICL_$1_CXXFLAGS="$4 $5"
-        ICL_$1_CXXCPP="$5"
-        ICL_$1_CFLAG="$6"
-        ICL_$1_CPPFLAGS="$7"
-        LIBS="${LIBS} $ICL_$1_LIBS"
-        LDFLAGS="$LDFLAGS $ICL_$1_LDFLAGS"
-        CXXFLAGS="$CXXFLAGS $ICL_$1_CXXFLAGS"
-        CXXCPP="$CXXCPP $ICL_$1_CXXCPP"
-        CFLAGS="$CFLAGS $ICL_$1_CFLAGS"
-        CPPFLAGS="$CPPFLAGS $ICL_$1_CPPFLAGS"
-        ICL_EXTEND_PC_FLAGS([$ICL_$1_LIBS $ICL_$1_LDFLAGS],[$ICL_$1_CXXFLAGS $ICL_$1_CXXCPP])
+# ICL_USE_EXTERNAL_PACKAGE_IN(icl-package,external-package)
+AC_DEFUN([ICL_USE_EXTERNAL_PACKAGE_IN],[
+$1_LIBS="$$1_LIBS $ICL_$2_LIBS"
+$1_CXXFLAGS="$$1_CXXFLAGS $ICL_$2_CXXFLAGS"
+$1_LDFLAGS="$$1_LDFLAGS $ICL_$2_LDFLAGS"
+$1_CXXCPP="$$1_CXXCPP $ICL_$2_CXXCPP"
 ])
 
+# ICL_USE_EXTERNAL_PACKAGE_IN(icl-package,input-package)
+AC_DEFUN([ICL_USE_INTERNAL_PACKAGE_IN],[
+$1_LIBS="$$1_LIBS $$2_LIBS"
+$1_CXXFLAGS="$$1_CXXFLAGS $$2_CXXFLAGS"
+$1_LDFLAGS="$$1_LDFLAGS $$2_LDFLAGS"
+$1_CXXCPP="$$1_CXXCPP $$2_CXXCPP"
+])
+
+# ICL_SUBST_VARIABLES_FOR(icl-package)
+AC_DEFUN([ICL_SUBST_VARIABLES_FOR],[
+  AC_SUBST([$$1_CXXFLAGS])
+  AC_SUBST([$$1_CXXCPP])
+  AC_SUBST([$$1_LDFLAGS])
+  AC_SUBST([$$1_LIBS])
+])
 
