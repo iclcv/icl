@@ -1,9 +1,7 @@
 # libtool libs
 lib_LTLIBRARIES=libICLCore.la
-libICLCore_la_CXXFLAGS=@ICLCore_CXXFLAGS@
-libICLCore_la_LDFLAGS=@ICLCore_LDFLAGS@
-libICLCore_la_CXXCPP=@ICLCore_CXXCPP@
-libICLCore_la_LIBS=@ICLCore_LIBS@
+libICLCore_la_CXXFLAGS=@ICLCore_CXXFLAGS@ @ICLCore_CXXCPP@
+libICLCore_la_LDFLAGS=@ICLCore_LDFLAGS@ @ICLCore_LIBS@
 
 libICLCore_la_SOURCES= \
 ../src/CoreFunctions.cpp \

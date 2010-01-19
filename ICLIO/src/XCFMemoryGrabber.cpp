@@ -16,6 +16,7 @@
 #include <cstring>
 #include <ICLIO/XCFUtils.h>
 #include <ICLCC/Converter.h>
+#include <ICLIO/Grabber.h>
 
 using memory::interface::MemoryPtr;
 using memory::interface::MemoryInterface;

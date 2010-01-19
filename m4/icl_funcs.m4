@@ -104,6 +104,7 @@ ICL_$1_LIBS="$ICL_$1_LIBS `pkg-config --libs-only-l $2`"
 ICL_$1_CXXFLAGS=`pkg-config --cflags-only-I $2`
 ICL_$1_CXXCPP="`pkg-config --cflags-only-other $2` -DHAVE_$1"
 ICL_$1_REQUIRES_PC="$ICL_$1_REQUIRES_PC $2"
+ICL_$1_CXXCPP_PC="$ICL_$1_CXXCPP_PC -DHAVE_$1"
 ])
 
 # ICL_USE_EXTERNAL_PACKAGE_IN(icl-package,external-package)
