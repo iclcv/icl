@@ -537,10 +537,17 @@ ICL_USE_EXTERNAL_PACKAGE_IN([ICLUtils],[MKL])
 ICL_USE_INTERNAL_PACKAGE_IN([ICLCore],[ICLUtils])
 
 # ICLCC
-ICL_USE_INTERNAL_PACKAGE_IN([ICLCC],[ICLUtils]) 
+ICL_USE_INTERNAL_PACKAGE_IN([ICLCC],[ICLCore]) 
+
+# ICLFilter
+ICL_USE_INTERNAL_PACKAGE_IN([ICLFilter],[ICLCC]) 
+
+# ICLBlob
+ICL_USE_INTERNAL_PACKAGE_IN([ICLBlob],[ICLCC]) 
 
 # ICLIO
-ICL_USE_INTERNAL_PACKAGE_IN([ICLIO],[ICLUtils])
+#ICL_USE_INTERNAL_PACKAGE_IN([ICLIO],[ICLUtils]) do we need this recursively?
+ICL_USE_INTERNAL_PACKAGE_IN([ICLIO],[ICLFilter])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[LIBZ])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[LIBJPEG])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[LIBMESASR])
@@ -549,7 +556,26 @@ ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[UNICAP])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[LIBXINE])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[VIDEODEV])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[XCF])
-# maybe we need ICLFilter here as well?!
+
+# ICLQt
+ICL_USE_INTERNAL_PACKAGE_IN([ICLQt],[ICLFilter]) 
+ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[QT])
+ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[OPENGL])
+
+# ICLQuick
+ICL_USE_INTERNAL_PACKAGE_IN([ICLQuick],[ICLQt]) 
+
+# ICLGeom
+ICL_USE_INTERNAL_PACKAGE_IN([ICLGeom],[ICLQuick]) 
+
+# ICLOpenCV
+ICL_USE_INTERNAL_PACKAGE_IN([ICLCore],[ICLCore])
+ICL_USE_EXTERNAL_PACKAGE_IN([ICLOpenCV],[OPENCV])
+
+# ICLOpenCV
+ICL_USE_INTERNAL_PACKAGE_IN([ICLAlgorithms],[ICLOpenCV])
+ICL_USE_INTERNAL_PACKAGE_IN([ICLAlgorithms],[ICLQuick])
+ICL_USE_EXTERNAL_PACKAGE_IN([ICLAlgorithms],[SVS])
 
 ###############################################################################
 # NEW ICLV5: subst make variables for all packages
@@ -559,8 +585,13 @@ ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLUtils)
 ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLCore)
 ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLCC)
 ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLIO)
-
-
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLBlob)
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLFilter)
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLGeom)
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLQt)
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLQuick)
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLOpenGL)
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLAlgorithms)
 
 ###############################################################################
 # Summary
@@ -589,20 +620,16 @@ AC_MSG_NOTICE([+---------------------------------------+])
 ###############################################################################
 # Create list of packages to build (in correct order)
 ###############################################################################
-ICL_BUILD_PACKAGES="ICLUtils ICLCore ICLIO ICLCC"
-#TODO: use all packages
-# \ 
-# ICLBlob ICLFilter ICLQuick ICLGeom ICLAlgorithms"
-# Add optional packages
-# ICL_ADD_PACKAGE_IF([ICLQt],["$HAVE_QT" = "TRUE"])
-# ICL_ADD_PACKAGE_IF([ICLOpenCV],["$HAVE_OPENCV" = "TRUE"])
+ICL_BUILD_PACKAGES="ICLUtils ICLCore ICLIO ICLCC ICLBlob ICLFilter ICLQuick ICLGeom ICLAlgorithms"
 
+# Add optional packages
+ICL_ADD_PACKAGE_IF([ICLQt],["$HAVE_QT" = "TRUE"])
+ICL_ADD_PACKAGE_IF([ICLOpenCV],["$HAVE_OPENCV" = "TRUE"])
 
 for T in $ICL_BUILD_PACKAGES ; do
     ICL_BUILD_SUBDIRS="$ICL_BUILD_SUBDIRS $T/lib"
     ICL_BUILD_DOCDIRS="$ICL_BUILD_DOCDIRS $T"
     ICL_DOC_MAKEFILES_DIST="$ICL_DOC_MAKEFILES_DIST $T/Makefile.am $T/Makefile.in"
-    ICL_PC_LIBS="-l$T $ICL_PC_LIBS"
 done
 
 # Add all bin dirs after lib dirs
@@ -623,68 +650,23 @@ echo "Build Subdirs are: - $ICL_BUILD_SUBDIRS -"
 # NEW ICLV5: create package config files
 ###############################################################################
 
+# if prefix was not explicitly set, it must be adapted to /usr
+# otherwise, the pc-files get the prefix name 'NONE'
 if [[ "$prefix" = "NONE" ]] ; then
    prefix=/usr
 fi 
 
-ICL_CREATE_PC_FOR(ICLUtils)
-ICL_CREATE_PC_FOR(ICLCore)
-ICL_CREATE_PC_FOR(ICLCC)
-ICL_CREATE_PC_FOR(ICLIO)
+ICL_CREATE_PC_FOR([ICLUtils])
+ICL_CREATE_PC_FOR([ICLCore])
+ICL_CREATE_PC_FOR([ICLCC])
+ICL_CREATE_PC_FOR([ICLIO])
 
-ICL_CREATE_PC()
+ICL_CREATE_ICL_PC()
+
 
 ###############################################################################
-# Create package config file
+# Create makefiles ...
 ###############################################################################
-#TODO: adapt: and create sub-package config files here
-#echo "creating package config file: \"icl.pc\""
-#
-#AC_DEFUN([ICL_PC_ENTRY],[echo "$1" >> icl.pc])
-#AC_DEFUN([ICL_PC_ENTRY_FOR_ROOT],[
-#if test "$HAVE_$1" = "TRUE" ; then
-#   ICL_PC_ENTRY([$1_ROOT=$$1_ROOT])
-#   PC_CONFIG_PACKAGE_LIST="$PC_CONFIG_PACKAGE_LIST $1"
-#else
-#   ICL_PC_ENTRY([$1_ROOT=DISABLED])
-#fi])
-#rm -rf icl.pc
-#
-#ICL_PC_ENTRY([prefix=${prefix}])
-#ICL_PC_ENTRY([exec_prefix=\${prefix}])
-#ICL_PC_ENTRY([bindir=\${prefix}/bin])
-#ICL_PC_ENTRY([libdir=\${prefix}/lib])
-#ICL_PC_ENTRY([datadir\${prefix}/share/data])
-#ICL_PC_ENTRY([includedir=\${prefix}/include])
-#ICL_PC_ENTRY([package=$PACKAGE])
-#ICL_PC_ENTRY([])
-#ICL_PC_ENTRY_FOR_ROOT([IPP])
-#ICL_PC_ENTRY_FOR_ROOT([MKL])
-#ICL_PC_ENTRY_FOR_ROOT([LIBDC])
-#ICL_PC_ENTRY_FOR_ROOT([UNICAP])
-#ICL_PC_ENTRY_FOR_ROOT([OPENGL])
-#ICL_PC_ENTRY_FOR_ROOT([QT])
-#ICL_PC_ENTRY_FOR_ROOT([LIBJPEG])
-#ICL_PC_ENTRY_FOR_ROOT([VIDEODEV])
-#ICL_PC_ENTRY_FOR_ROOT([XINE])
-#ICL_PC_ENTRY_FOR_ROOT([LIBZ])
-#ICL_PC_ENTRY_FOR_ROOT([SVS])
-#ICL_PC_ENTRY_FOR_ROOT([XCF])
-#ICL_PC_ENTRY_FOR_ROOT([IMAGEMAGICK])
-#ICL_PC_ENTRY_FOR_ROOT([LIBMESASR])
-#ICL_PC_ENTRY_FOR_ROOT([OPENCV])
-#ICL_PC_ENTRY(CONFIG_LIST=$PC_CONFIG_PACKAGE_LIST)
-#ICL_PC_ENTRY([])
-#ICL_PC_ENTRY([Name: $PACKAGE])
-#ICL_PC_ENTRY([Description: $PACKAGE_DESCRIPTION])
-#ICL_PC_ENTRY([Version: $PACKAGE_VERSION])
-#ICL_PC_ENTRY([])
-#ICL_PC_ENTRY([Requires:$ICL_PC_REQ])
-#ICL_PC_ENTRY([])
-#ICL_PC_ENTRY([Libs: -L${libdir} -Wl,-rpath=${libdir} $ICL_PC_LIBS])
-#ICL_PC_ENTRY([])
-#ICL_PC_ENTRY([Cflags: -I${includedir} $ICL_PC_CFLAGS])
-
 # make autoconf create makefile 
 # note: this macros is not able to work with variables,
 #       so all makefiles must be added here manually
@@ -697,12 +679,12 @@ ICL_CONFIG_FILES_FOR_PACKAGE([ICLUtils])
 ICL_CONFIG_FILES_FOR_PACKAGE([ICLCore])
 ICL_CONFIG_FILES_FOR_PACKAGE([ICLIO])
 ICL_CONFIG_FILES_FOR_PACKAGE([ICLCC])
-#ICL_CONFIG_FILES_FOR_PACKAGE([ICLBlob])
-#ICL_CONFIG_FILES_FOR_PACKAGE([ICLFilter])
-#ICL_CONFIG_FILES_FOR_PACKAGE([ICLQt])
-#ICL_CONFIG_FILES_FOR_PACKAGE([ICLQuick])
-#ICL_CONFIG_FILES_FOR_PACKAGE([ICLGeom])
-#ICL_CONFIG_FILES_FOR_PACKAGE([ICLAlgorithms])
-#ICL_CONFIG_FILES_FOR_PACKAGE([ICLOpenCV])
+ICL_CONFIG_FILES_FOR_PACKAGE([ICLBlob])
+ICL_CONFIG_FILES_FOR_PACKAGE([ICLFilter])
+ICL_CONFIG_FILES_FOR_PACKAGE([ICLQt])
+ICL_CONFIG_FILES_FOR_PACKAGE([ICLQuick])
+ICL_CONFIG_FILES_FOR_PACKAGE([ICLGeom])
+ICL_CONFIG_FILES_FOR_PACKAGE([ICLAlgorithms])
+ICL_CONFIG_FILES_FOR_PACKAGE([ICLOpenCV])
 AC_OUTPUT
 

@@ -76,35 +76,10 @@ ICL_PC_CFLAGS="$ICL_PC_CFLAGS $2"
 ICL_PC_REQ="$ICL_PC_REQ $3"])
 
 
-#AC_DEFUN([ICL_USE_PC_INPUT],[
-#export PKG_CONFIG_PATH="$$1_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
-#ICL_$1_LIBS=`pkg-config --libs-only-L $2`
-#ICL_$1_LDFLAGS=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath=|g"`
-#ICL_$1_LIBS="$ICL_$1_LIBS `pkg-config --libs-only-l $2`"
-#ICL_$1_CXXFLAGS=`pkg-config --cflags-only-I $2`
-#ICL_$1_CXXCPP="`pkg-config --cflags-only-other $2` -DHAVE_$1"
-#ICL_EXTEND_FLAG_VARS([$ICL_$1_LIBS],[$ICL_$1_LDFLAGS],[$ICL_$1_CXXCPP],[$ICL_$1_CXXFLAGS])
-#ICL_EXTEND_PC_FLAGS([$ICL_$1_LDFLAGS],[-DHAVE_$1],[$2])
-#])
-
-
-#AC_DEFUN([ICL_EXTEND_FLAG_VARS_2],
-#        [ICL_$1_LIBS="$2"
-#        ICL_$1_LDFLAGS="$3"
-#        ICL_$1_CXXFLAGS="$4 $5"
-#        ICL_$1_CXXCPP="$5"
-#        ICL_$1_CFLAG="$6"
-#        ICL_$1_CPPFLAGS="$7"
-#        LIBS="${LIBS} $ICL_$1_LIBS"
-#        LDFLAGS="$LDFLAGS $ICL_$1_LDFLAGS"
-#        CXXFLAGS="$CXXFLAGS $ICL_$1_CXXFLAGS"
-#        CXXCPP="$CXXCPP $ICL_$1_CXXCPP"
-#        CFLAGS="$CFLAGS $ICL_$1_CFLAGS"
-#        CPPFLAGS="$CPPFLAGS $ICL_$1_CPPFLAGS"
-#        ICL_EXTEND_PC_FLAGS([$ICL_$1_LIBS $ICL_$1_LDFLAGS],[$ICL_$1_CXXFLAGS $ICL_$1_CXXCPP])
-#])
-
 # ICL_DEF_VARS(package,libs,ldflags,cxxflags,cxxcpp)
+# Registers libs,cflags,... for given external
+# package name.
+# created variables: e.g.  ICL_${package}_LIBS 
 AC_DEFUN([ICL_DEF_VARS],[
 ICL_$1_LIBS="$2"
 ICL_$1_LDFLAGS="$3"
@@ -116,7 +91,11 @@ ICL_$1_CXXFLAGS_PC="$4 $5"
 ICL_$1_CXXCPP_PC="$5"
 ])
 
-#ICL_DEF_VARS_FROM_PC(package,pc-name)
+# ICL_DEF_VARS_FROM_PC(package,pc-name)
+# extracts xcflags and libs from given package config
+# package name and create appropriate configuration
+# variables from this. Furthermore -Wl,-rpath= 
+# LDFLAGS are automatically created
 AC_DEFUN([ICL_DEF_VARS_FROM_PC],[
 export PKG_CONFIG_PATH="$$1_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
 ICL_$1_LIBS=`pkg-config --libs-only-L $2`
@@ -124,24 +103,29 @@ ICL_$1_LDFLAGS=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath=|g"`
 ICL_$1_LIBS="$ICL_$1_LIBS `pkg-config --libs-only-l $2`"
 ICL_$1_CXXFLAGS=`pkg-config --cflags-only-I $2`
 ICL_$1_CXXCPP="`pkg-config --cflags-only-other $2` -DHAVE_$1"
-ICL_$1_REQUIRE_PC="$ICL_$1_REQUIERES_PC $2"
+ICL_$1_REQUIRES_PC="$ICL_$1_REQUIRES_PC $2"
 ])
 
 # ICL_USE_EXTERNAL_PACKAGE_IN(icl-package,external-package)
+# This macro is use if an icl-package $1
+# actually needs to be compiled and linked agains an
+# external package $1
+# Internally the icl-package name specific variables are extended
 AC_DEFUN([ICL_USE_EXTERNAL_PACKAGE_IN],[
 $1_LIBS="$$1_LIBS $ICL_$2_LIBS"
 $1_CXXFLAGS="$$1_CXXFLAGS $ICL_$2_CXXFLAGS"
 $1_LDFLAGS="$$1_LDFLAGS $ICL_$2_LDFLAGS"
 $1_CXXCPP="$$1_CXXCPP $ICL_$2_CXXCPP"
-ICL_$1_REQUIRE_PC="$ICL_$1_REQUIERES_PC $1"
+$1_LIBS_PC="$$1_LIBS_PC $ICL_$2_LIBS_PC"
+$1_CXXFLAGS_PC="$$1_CXXFLAGS_PC $ICL_$2_CXXFLAGS_PC"
+$1_LDFLAGS_PC="$$1_LDFLAGS_PC $ICL_$2_LDFLAGS_PC"
+$1_CXXCPP_PC="$$1_CXXCPP_PC $ICL_$2_CXXCPP_PC"
+$1_REQUIRES_PC="$$1_REQUIRES_PC $ICL_$2_REQUIRES_PC"
 ])
 
 # ICL_USE_EXTERNAL_PACKAGE_IN(icl-package,input-package)
 AC_DEFUN([ICL_USE_INTERNAL_PACKAGE_IN],[
-$1_LIBS="$$1_LIBS $$2_LIBS"
-$1_CXXFLAGS="$$1_CXXFLAGS $$2_CXXFLAGS"
-$1_LDFLAGS="$$1_LDFLAGS $$2_LDFLAGS"
-$1_CXXCPP="$$1_CXXCPP $$2_CXXCPP"
+$1_REQUIRES_PC="$$1_REQUIRES_PC $2"
 ])
 
 # ICL_SUBST_VARIABLES_FOR(icl-package)
@@ -181,11 +165,10 @@ AC_DEFUN([ICL_PC_ENTRY_FOR],[echo "$2" >> $1.pc])
 # ICL_PC_ROOT_ENTRY_FOR(icl-package, external-package)
 AC_DEFUN([ICL_PC_ROOT_ENTRY_FOR],[
 if test "${HAVE_$2}" = "TRUE" ; then
-   ICL_PC_ENTRY_FOR([$1],[$2_ROOT=${$2_ROOT])
+   ICL_PC_ENTRY_FOR([$1],[$2_ROOT=${$2_ROOT}])
 else
    ICL_PC_ENTRY_FOR([$1],[$2_ROOT=DISABLED])
 fi  
-done
 ])
 
 # ICL_PC_ROOT_ENTRIES_FOR(icl-package)
@@ -208,7 +191,7 @@ ICL_PC_ROOT_ENTRY_FOR([$1],[OPENCV])
 ])
 
 # ICL_CREATE_PC_FOR(icl-package)
-AC_DEFUN([ICL_CREATE_PC_FOR],
+AC_DEFUN([ICL_CREATE_PC_FOR],[
 rm -rf $1.pc
 ICL_PC_ENTRY_FOR([$1],[prefix=${prefix}])
 ICL_PC_ENTRY_FOR([$1],[exec_prefix=\${prefix}])
@@ -224,14 +207,15 @@ ICL_PC_ENTRY_FOR([$1],[Name: $1])
 ICL_PC_ENTRY_FOR([$1],[Description: ICL's $1 package])
 ICL_PC_ENTRY_FOR([$1],[Version: $PACKAGE_VERSION])
 ICL_PC_ENTRY_FOR([$1],[])
-ICL_PC_ENTRY_FOR([$1],[Requires:${ICL_$1_REQUIRES_PC}])
+ICL_PC_ENTRY_FOR([$1],[Requires:${$1_REQUIRES_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
-ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -Wl,-rpath=${libdir} ${ICL_$1_LIBS_PC}])
+ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -Wl,-rpath=${libdir} ${$1_LIBS_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
-ICL_PC_ENTRY_FOR([$1],[Cflags: -I${includedir} ${ICL_$1_CXXFLAGS_PC} ${ICL_$1_CXXCPP_PC}])
+ICL_PC_ENTRY_FOR([$1],[Cflags: -I${includedir} ${$1_CXXFLAGS_PC} ${$1_CXXCPP_PC}])
 ])
 
-AC_DEFUN([ICL_CREATE_PC_FOR],[
+# ICL_CREATE_ICL_PC() no parameters
+AC_DEFUN([ICL_CREATE_ICL_PC],[
 rm -rf icl.pc
 ICL_PC_ENTRY_FOR([icl],[prefix=${prefix}])
 ICL_PC_ENTRY_FOR([icl],[exec_prefix=\${prefix}])
