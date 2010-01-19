@@ -105,11 +105,15 @@ ICL_PC_REQ="$ICL_PC_REQ $3"])
 #])
 
 # ICL_DEF_VARS(package,libs,ldflags,cxxflags,cxxcpp)
-AC_DEFUN([ICL_DEF_VARS],
-        [ICL_$1_LIBS="$2"
-        ICL_$1_LDFLAGS="$3"
-        ICL_$1_CXXFLAGS="$4 $5"
-        ICL_$1_CXXCPP="$5"
+AC_DEFUN([ICL_DEF_VARS],[
+ICL_$1_LIBS="$2"
+ICL_$1_LDFLAGS="$3"
+ICL_$1_CXXFLAGS="$4 $5"
+ICL_$1_CXXCPP="$5"
+ICL_$1_LIBS_PC="$2"
+ICL_$1_LDFLAGS_PC="$3"
+ICL_$1_CXXFLAGS_PC="$4 $5"
+ICL_$1_CXXCPP_PC="$5"
 ])
 
 #ICL_DEF_VARS_FROM_PC(package,pc-name)
@@ -120,6 +124,7 @@ ICL_$1_LDFLAGS=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath=|g"`
 ICL_$1_LIBS="$ICL_$1_LIBS `pkg-config --libs-only-l $2`"
 ICL_$1_CXXFLAGS=`pkg-config --cflags-only-I $2`
 ICL_$1_CXXCPP="`pkg-config --cflags-only-other $2` -DHAVE_$1"
+ICL_$1_REQUIRE_PC="$ICL_$1_REQUIERES_PC $2"
 ])
 
 # ICL_USE_EXTERNAL_PACKAGE_IN(icl-package,external-package)
@@ -128,6 +133,7 @@ $1_LIBS="$$1_LIBS $ICL_$2_LIBS"
 $1_CXXFLAGS="$$1_CXXFLAGS $ICL_$2_CXXFLAGS"
 $1_LDFLAGS="$$1_LDFLAGS $ICL_$2_LDFLAGS"
 $1_CXXCPP="$$1_CXXCPP $ICL_$2_CXXCPP"
+ICL_$1_REQUIRE_PC="$ICL_$1_REQUIERES_PC $1"
 ])
 
 # ICL_USE_EXTERNAL_PACKAGE_IN(icl-package,input-package)
@@ -140,9 +146,110 @@ $1_CXXCPP="$$1_CXXCPP $$2_CXXCPP"
 
 # ICL_SUBST_VARIABLES_FOR(icl-package)
 AC_DEFUN([ICL_SUBST_VARIABLES_FOR],[
-  AC_SUBST([$$1_CXXFLAGS])
-  AC_SUBST([$$1_CXXCPP])
-  AC_SUBST([$$1_LDFLAGS])
-  AC_SUBST([$$1_LIBS])
+AC_SUBST([$1_CXXFLAGS])
+AC_SUBST([$1_CXXCPP])
+AC_SUBST([$1_LDFLAGS])
+AC_SUBST([$1_LIBS])
 ])
 
+# ICL_STRIP_FLAGS_FOR(icl-package)
+AC_DEFUN([ICL_STRIP_FLAGS_FOR],[
+$1_LIBS=`echo ${$1_LIBS} | sed "s|-L/usr/lib | |g"`
+$1_LIBS=`echo ${$1_LIBS} | sed "s|-L/lib | |g"`
+$1_LDFLAGS=`echo ${$1_LDFLAGS} | sed "s|-Wl,-rpath=/usr/lib | |g"`
+$1_LDFLAGS=`echo ${$1_LDFLAGS} | sed "s|-Wl,-rpath=/lib | |g"`
+$1_CXXFLAGS=`echo ${$1_CXXFLAGS} | sed "s|-I/usr/include | |g"`
+$1_CXXFLAGS=`echo ${$1_CXXFLAGS} | sed "s|-I/include | |g"`
+$1_LIBS_PC=`echo ${$1_LIBS_PC} | sed "s|-L/usr/lib | |g"`
+$1_LIBS_PC=`echo ${$1_LIBS_PC} | sed "s|-L/lib | |g"`
+$1_LDFLAGS_PC=`echo ${$1_LDFLAGS_PC} | sed "s|-Wl,-rpath=/usr/lib | |g"`
+$1_LDFLAGS_PC=`echo ${$1_LDFLAGS_PC} | sed "s|-Wl,-rpath=/lib | |g"`
+$1_CXXFLAGS_PC=`echo ${$1_CXXFLAGS_PC} | sed "s|-I/usr/include | |g"`
+$1_CXXFLAGS_PC=`echo ${$1_CXXFLAGS_PC} | sed "s|-I/include | |g"`
+])
+
+# ICL_STRIP_AND_SUBST_FLAGS_FOR(icl-package)
+AC_DEFUN([ICL_STRIP_AND_SUBST_FLAGS_FOR],[
+ICL_STRIP_FLAGS_FOR($1)
+ICL_SUBST_VARIABLES_FOR($1)
+])
+
+
+# ICL_PC_ENTRY_FOR(icl-package, text)
+AC_DEFUN([ICL_PC_ENTRY_FOR],[echo "$2" >> $1.pc])
+
+# ICL_PC_ROOT_ENTRY_FOR(icl-package, external-package)
+AC_DEFUN([ICL_PC_ROOT_ENTRY_FOR],[
+if test "${HAVE_$2}" = "TRUE" ; then
+   ICL_PC_ENTRY_FOR([$1],[$2_ROOT=${$2_ROOT])
+else
+   ICL_PC_ENTRY_FOR([$1],[$2_ROOT=DISABLED])
+fi  
+done
+])
+
+# ICL_PC_ROOT_ENTRIES_FOR(icl-package)
+AC_DEFUN([ICL_PC_ROOT_ENTRIES_FOR],[
+ICL_PC_ROOT_ENTRY_FOR([$1],[IPP])
+ICL_PC_ROOT_ENTRY_FOR([$1],[MKL])
+ICL_PC_ROOT_ENTRY_FOR([$1],[LIBDC1349])
+ICL_PC_ROOT_ENTRY_FOR([$1],[UNICAP])
+ICL_PC_ROOT_ENTRY_FOR([$1],[OPENGL])
+ICL_PC_ROOT_ENTRY_FOR([$1],[XINE])
+ICL_PC_ROOT_ENTRY_FOR([$1],[QT])
+ICL_PC_ROOT_ENTRY_FOR([$1],[LIBJPEG])
+ICL_PC_ROOT_ENTRY_FOR([$1],[LIBZ])
+ICL_PC_ROOT_ENTRY_FOR([$1],[VIDEODEV])
+ICL_PC_ROOT_ENTRY_FOR([$1],[SVS])
+ICL_PC_ROOT_ENTRY_FOR([$1],[XCF])
+ICL_PC_ROOT_ENTRY_FOR([$1],[IMAGEMAGICK])
+ICL_PC_ROOT_ENTRY_FOR([$1],[LIBMESASR])
+ICL_PC_ROOT_ENTRY_FOR([$1],[OPENCV])
+])
+
+# ICL_CREATE_PC_FOR(icl-package)
+AC_DEFUN([ICL_CREATE_PC_FOR],
+rm -rf $1.pc
+ICL_PC_ENTRY_FOR([$1],[prefix=${prefix}])
+ICL_PC_ENTRY_FOR([$1],[exec_prefix=\${prefix}])
+ICL_PC_ENTRY_FOR([$1],[bindir=\${prefix}/bin])
+ICL_PC_ENTRY_FOR([$1],[libdir=\${prefix}/lib])
+ICL_PC_ENTRY_FOR([$1],[datadir\${prefix}/share/data])
+ICL_PC_ENTRY_FOR([$1],[includedir=\${prefix}/include])
+ICL_PC_ENTRY_FOR([$1],[package=$1])
+ICL_PC_ENTRY_FOR([$1],[])
+ICL_PC_ROOT_ENTRIES_FOR([$1])
+ICL_PC_ENTRY_FOR([$1],[])
+ICL_PC_ENTRY_FOR([$1],[Name: $1])
+ICL_PC_ENTRY_FOR([$1],[Description: ICL's $1 package])
+ICL_PC_ENTRY_FOR([$1],[Version: $PACKAGE_VERSION])
+ICL_PC_ENTRY_FOR([$1],[])
+ICL_PC_ENTRY_FOR([$1],[Requires:${ICL_$1_REQUIRES_PC}])
+ICL_PC_ENTRY_FOR([$1],[])
+ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -Wl,-rpath=${libdir} ${ICL_$1_LIBS_PC}])
+ICL_PC_ENTRY_FOR([$1],[])
+ICL_PC_ENTRY_FOR([$1],[Cflags: -I${includedir} ${ICL_$1_CXXFLAGS_PC} ${ICL_$1_CXXCPP_PC}])
+])
+
+AC_DEFUN([ICL_CREATE_PC_FOR],[
+rm -rf icl.pc
+ICL_PC_ENTRY_FOR([icl],[prefix=${prefix}])
+ICL_PC_ENTRY_FOR([icl],[exec_prefix=\${prefix}])
+ICL_PC_ENTRY_FOR([icl],[bindir=\${prefix}/bin])
+ICL_PC_ENTRY_FOR([icl],[libdir=\${prefix}/lib])
+ICL_PC_ENTRY_FOR([icl],[datadir\${prefix}/share/data])
+ICL_PC_ENTRY_FOR([icl],[includedir=\${prefix}/include])
+ICL_PC_ENTRY_FOR([icl],[package=icl])
+ICL_PC_ENTRY_FOR([icl],[])
+ICL_PC_ROOT_ENTRIES_FOR([icl])
+ICL_PC_ENTRY_FOR([icl],[])
+ICL_PC_ENTRY_FOR([icl],[Name: icl])
+ICL_PC_ENTRY_FOR([icl],[Description: Image Component Library (ICL)])
+ICL_PC_ENTRY_FOR([icl],[Version: $PACKAGE_VERSION])
+ICL_PC_ENTRY_FOR([icl],[])
+ICL_PC_ENTRY_FOR([icl],[Requires:$ICL_BUILD_PACKAGES])
+ICL_PC_ENTRY_FOR([icl],[])
+ICL_PC_ENTRY_FOR([icl],[Libs:])
+ICL_PC_ENTRY_FOR([icl],[])
+ICL_PC_ENTRY_FOR([icl],[Cflags:])
+])

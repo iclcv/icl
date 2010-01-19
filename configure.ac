@@ -206,31 +206,27 @@ AM_CONDITIONAL([HAVE_OPENGL_COND],[test x$HAVE_OPEN = xTRUE])
 ###############################################################################
 # Check for Unicap
 ###############################################################################
+AC_ARG_WITH([UNICAP],
+        [AS_HELP_STRING([--without-UNICAP],
+                        [disable support for UNICAP])],
+        [HAVE_UNICAP=FALSE],
+        [ICL_NOTIFY_CHECK([Unicap        ])
+        ICL_WITH_ROOT([UNICAP],[/usr])
+        HAVE_UNICAP=TRUE
 
-#AC_ARG_WITH([UNICAP],
-#        [AS_HELP_STRING([--without-UNICAP],
-#                        [disable support for UNICAP])],
-#        [HAVE_UNICAP=FALSE],
-#        [ICL_NOTIFY_CHECK([Unicap        ])
-#        ICL_WITH_ROOT([UNICAP],[/usr])
-#        HAVE_UNICAP=TRUE
-#
-#        ICL_PUSH_FLAG_VARS
-#        ICL_EXTEND_FLAG_VARS_TMP_FOR(UNICAP,lib,include/unicap)                
-#        
-#        AC_CHECK_HEADER([unicap.h],[],[HAVE_UNICAP=FALSE])
-#        AC_CHECK_LIB([unicap],[unicap_check_version],[],[HAVE_UNICAP=FALSE])
-#
-#        ICL_POP_FLAG_VARS
-#
-#        if test "$HAVE_UNICAP" = "TRUE" ; then
-#           ICL_DEF_VARS_FROM_PC([UNICAP],[libunicap])
-#
-#           # for compatibility with new Ubuntu hardy unicap version (0.9.3)
-#           CPPFLAGS="$CPPFLAGS -DUNICAP_FLAGS_NOT_AS_ENUM"
-#           CXXCPP="$CXXCPP -DUNICAP_FLAGS_NOT_AS_ENUM"
-#           ICL_EXTEND_PC_FLAGS([],[-DUNICAP_FLAGS_NOT_AS_ENUM],[])
-#        fi])
+        ICL_PUSH_FLAG_VARS
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(UNICAP,lib,include/unicap)                
+        
+        AC_CHECK_HEADER([unicap.h],[],[HAVE_UNICAP=FALSE])
+        AC_CHECK_LIB([unicap],[unicap_check_version],[],[HAVE_UNICAP=FALSE])
+
+        ICL_POP_FLAG_VARS
+
+        if test "$HAVE_UNICAP" = "TRUE" ; then
+           ICL_DEF_VARS_FROM_PC([UNICAP],[libunicap])
+           UNICAP_CXXCPP="$UNICAP_CXXCPP -DUNICAP_FLAGS_NOT_AS_ENUM"
+           UNICAP_CXXFLAGS="$UNICAP_CXXFLAGS -DUNICAP_FLAGS_NOT_AS_ENUM"
+        fi])
 AM_CONDITIONAL([HAVE_UNICAP_COND],[test x$HAVE_UNICAP = xTRUE])
 
 
@@ -362,183 +358,172 @@ AM_CONDITIONAL([HAVE_LIBMESASR_COND],[test x$HAVE_LIBMESASR = xTRUE])
 ###############################################################################
 # Check for VIDEODEV
 ###############################################################################
-#AC_ARG_WITH([VIDEODEV],
-#        [AS_HELP_STRING([--without-VIDEODEV],
-#                        [disable support for VIDEODEV])],
-#        [HAVE_VIDEODEV=FALSE],
-#        [ICL_NOTIFY_CHECK([videodev       ])
-#        ICL_WITH_ROOT([VIDEODEV],[/usr])
-#        HAVE_VIDEODEV=TRUE
-#
-#        ICL_PUSH_FLAG_VARS
-#        ICL_EXTEND_FLAG_VARS_TMP_FOR(VIDEODEV,lib,include)                
-#        
-#        AC_LANG([C++])
-#        AC_CHECK_HEADER([linux/videodev.h],[],[HAVE_VIDEODEV=FALSE])
-#        AC_CHECK_HEADER([sys/ioctl.h],[],[HAVE_VIDEODEV=FALSE])
-#        AC_CHECK_HEADER([sys/mman.h],[],[HAVE_VIDEODEV=FALSE])
-#        AC_CHECK_HEADER([fcntl.h],[],[HAVE_VIDEODEV=FALSE])
-#
-#        ICL_POP_FLAG_VARS
-#
-#        if test "$HAVE_VIDEODEV" = "TRUE" ; then
-#          ICL_DEF_VARS(
-#            [VIDEODEV],
-#            [],
-#            [],
-#            [-I$VIDEODEV_ROOT/include],
-#            [-DHAVE_VIDEODEV])
-#        fi])
+AC_ARG_WITH([VIDEODEV],
+        [AS_HELP_STRING([--without-VIDEODEV],
+                        [disable support for VIDEODEV])],
+        [HAVE_VIDEODEV=FALSE],
+        [ICL_NOTIFY_CHECK([videodev       ])
+        ICL_WITH_ROOT([VIDEODEV],[/usr])
+        HAVE_VIDEODEV=TRUE
+
+        ICL_PUSH_FLAG_VARS
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(VIDEODEV,lib,include)                
+        
+        AC_LANG([C++])
+        AC_CHECK_HEADER([linux/videodev.h],[],[HAVE_VIDEODEV=FALSE])
+        AC_CHECK_HEADER([sys/ioctl.h],[],[HAVE_VIDEODEV=FALSE])
+        AC_CHECK_HEADER([sys/mman.h],[],[HAVE_VIDEODEV=FALSE])
+        AC_CHECK_HEADER([fcntl.h],[],[HAVE_VIDEODEV=FALSE])
+
+        ICL_POP_FLAG_VARS
+
+        if test "$HAVE_VIDEODEV" = "TRUE" ; then
+          ICL_DEF_VARS(
+            [VIDEODEV],
+            [],
+            [],
+            [-I$VIDEODEV_ROOT/include],
+            [-DHAVE_VIDEODEV])
+        fi])
 AM_CONDITIONAL([HAVE_VIDEODEV_COND],[test x$HAVE_VIDEODEV = xTRUE])
 
 
 ###############################################################################
 # Check for SVS
 ###############################################################################
-#AC_ARG_WITH([SVS],
-#        [AS_HELP_STRING([--without-SVS],
-#                        [disable support for SVS])],
-#        [HAVE_SVS=FALSE],
-#        [ICL_NOTIFY_CHECK([SVS           ])
-#        ICL_WITH_ROOT([SVS],[/usr])
-#        HAVE_SVS=TRUE
-#
-#        ICL_PUSH_FLAG_VARS
-#        ICL_EXTEND_FLAG_VARS_TMP_FOR(SVS,bin,src)                
-#        
-#        AC_LANG([C])
-#        AC_CHECK_HEADER([svs.h],[],[HAVE_SVS=FALSE])
-#        AC_CHECK_LIB([svs],[svsEngineVersion],[],[HAVE_SVS=FALSE],[-lsvscalc])
-#        AC_CHECK_LIB([svscalc],[main],[],[HAVE_SVS=FALSE],[-lsvs])
-#
-#        ICL_POP_FLAG_VARS
-#
-#        if test "$HAVE_SVS" = "TRUE" ; then
-#           ICL_DEF_VARS(
-#                [SVS],
-#                [-L$SVS_ROOT/bin -lsvs -lsvscalc],
-#                [-Wl,-rpath=$SVS_ROOT/bin],
-#                [-I$SVS_ROOT/src],
-#                [-DHAVE_SVS],
-#                [],
-#                [])
-#        fi])
+AC_ARG_WITH([SVS],
+        [AS_HELP_STRING([--without-SVS],
+                        [disable support for SVS])],
+        [HAVE_SVS=FALSE],
+        [ICL_NOTIFY_CHECK([SVS           ])
+        ICL_WITH_ROOT([SVS],[/usr])
+        HAVE_SVS=TRUE
+
+        ICL_PUSH_FLAG_VARS
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(SVS,bin,src)                
+        
+        AC_CHECK_HEADER([svs.h],[],[HAVE_SVS=FALSE])
+        AC_CHECK_LIB([svs],[svsEngineVersion],[],[HAVE_SVS=FALSE],[-lsvscalc])
+        AC_CHECK_LIB([svscalc],[main],[],[HAVE_SVS=FALSE],[-lsvs])
+
+        ICL_POP_FLAG_VARS
+
+        if test "$HAVE_SVS" = "TRUE" ; then
+           ICL_DEF_VARS(
+                [SVS],
+                [-L$SVS_ROOT/bin -lsvs -lsvscalc],
+                [-Wl,-rpath=$SVS_ROOT/bin],
+                [-I$SVS_ROOT/src],
+                [-DHAVE_SVS])
+        fi])
 AM_CONDITIONAL([HAVE_SVS_COND],[test x$HAVE_SVS = xTRUE])
            
 
 ###############################################################################
 # Check for XINE
 ###############################################################################
-#AC_ARG_WITH([XINE],
-#        [AS_HELP_STRING([--without-XINE],
-#                        [disable support for XINE])],
-#        [HAVE_XINE=FALSE],
-#        [ICL_NOTIFY_CHECK([XINE          ])
-#        ICL_WITH_ROOT([XINE],[/usr])
-#        HAVE_XINE=TRUE
-#
-#        ICL_PUSH_FLAG_VARS
-#        ICL_EXTEND_FLAG_VARS_TMP_FOR(XINE,lib,include)
-#        AC_CHECK_FILE([$XINE_ROOT/lib/pkgconfig/libxine.pc],[],[HAVE_XINE=FALSE])  
-#        AC_CHECK_HEADER([xine.h],[],[HAVE_XINE=FALSE])
-#        AC_CHECK_HEADER([xine/xineutils.h],[],[HAVE_XINE=FALSE])
-#        AC_CHECK_LIB([xine],[xine_new],[],[HAVE_XINE=FALSE])
-#
-#        ICL_POP_FLAG_VARS
-#
-#        if test "$HAVE_XINE" = "TRUE" ; then
-#           ICL_DEF_VARS_FROM_PC([XINE],[libxine])
-#        fi])
+AC_ARG_WITH([XINE],
+        [AS_HELP_STRING([--without-XINE],
+                        [disable support for XINE])],
+        [HAVE_XINE=FALSE],
+        [ICL_NOTIFY_CHECK([XINE          ])
+        ICL_WITH_ROOT([XINE],[/usr])
+        HAVE_XINE=TRUE
+
+        ICL_PUSH_FLAG_VARS
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(XINE,lib,include)
+        AC_CHECK_FILE([$XINE_ROOT/lib/pkgconfig/libxine.pc],[],[HAVE_XINE=FALSE])  
+        AC_CHECK_HEADER([xine.h],[],[HAVE_XINE=FALSE])
+        AC_CHECK_HEADER([xine/xineutils.h],[],[HAVE_XINE=FALSE])
+        AC_CHECK_LIB([xine],[xine_new],[],[HAVE_XINE=FALSE])
+
+        ICL_POP_FLAG_VARS
+
+        if test "$HAVE_XINE" = "TRUE" ; then
+           ICL_DEF_VARS_FROM_PC([XINE],[libxine])
+        fi])
 AM_CONDITIONAL([HAVE_XINE_COND],[test x$HAVE_XINE = xTRUE])
 
 
 ###############################################################################
 # Check for Qt
 ###############################################################################
-#AC_ARG_WITH([QT],
-#        [AS_HELP_STRING([--without-QT],
-#                        [disable support for QT])],
-#        [HAVE_QT=FALSE],
-#        [ICL_NOTIFY_CHECK([Qt            ])
-#        ICL_WITH_ROOT([QT],[/usr])
-#        
-#        HAVE_QT=TRUE
-#        ICL_PUSH_FLAG_VARS
-#        ICL_EXTEND_FLAG_VARS_TMP_FOR(QT,lib/,include/qt4)                
-#        
-#        AC_LANG([C++])
-#
-#        AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtCore.pc],[],[HAVE_QT=FALSE])
-#        AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtOpenGL.pc],[],[HAVE_QT=FALSE])
-#        AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtGui.pc],[],[HAVE_QT=FALSE])
-#        AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtXml.pc],[],[HAVE_QT=FALSE])
-#
-#        QT_PACKAGES="QtCore QtOpenGL QtGui QtXml"
-#
-#        ICL_DEF_VARS_FROM_PC([QT],[$QT_PACKAGES])
-#        # todo extend libs by -lGlu somehow!
-#        ICL_QT_LIBS="$ICL_QT_LIBS -lGLU"
-#
-#        # otherwise Qt presence becomes not TRUE
-#        CPPFLAGS="$CPPFLAGS $ICL_QT_CXXFLAGS"
-#        QT_MOC=`pkg-config --variable=moc_location QtCore`
-#        AC_SUBST([QT_MOC])
-#
-#        AC_CHECK_LIB([GLU],[gluLookAt],[],[HAVE_QT=FALSE])
-#        AC_CHECK_HEADER([GL/glu.h],[],[HAVE_QT=FALSE])
-#
-#        AC_CHECK_HEADER([QtCore],[],[HAVE_QT=FALSE])
-#        AC_CHECK_HEADER([QtGui],[],[HAVE_QT=FALSE])
-#        AC_CHECK_HEADER([QtOpenGL],[],[HAVE_QT=FALSE])
-#        AC_CHECK_HEADER([QtXml],[],[HAVE_QT=FALSE])
-#        AC_CHECK_LIB([QtCore],[main],[],[HAVE_QT=FALSE])
-#        AC_CHECK_LIB([QtGui],[main],[],[HAVE_QT=FALSE])
-#        AC_CHECK_LIB([QtOpenGL],[main],[],[HAVE_QT=FALSE])
-#        AC_CHECK_LIB([QtXml],[main],[],[HAVE_QT=FALSE])
-#
-#        if test "$HAVE_QT" = "FALSE" ; then
-#           ICL_POP_FLAG_VARS  
-#        fi])
+AC_ARG_WITH([QT],
+        [AS_HELP_STRING([--without-QT],
+                        [disable support for QT])],
+        [HAVE_QT=FALSE],
+        [ICL_NOTIFY_CHECK([Qt            ])
+        ICL_WITH_ROOT([QT],[/usr])
+        
+        HAVE_QT=TRUE
+        ICL_PUSH_FLAG_VARS
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(QT,lib/,include/qt4)                
+
+        AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtCore.pc],[],[HAVE_QT=FALSE])
+        AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtOpenGL.pc],[],[HAVE_QT=FALSE])
+        AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtGui.pc],[],[HAVE_QT=FALSE])
+        AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtXml.pc],[],[HAVE_QT=FALSE])
+
+        QT_PACKAGES="QtCore QtOpenGL QtGui QtXml"
+
+        # todo check this extra -lGLU
+        ICL_DEF_VARS_FROM_PC([QT],[$QT_PACKAGES])
+        ICL_QT_LIBS="$ICL_QT_LIBS -lGLU"
+        CPPFLAGS="$CPPFLAGS $ICL_QT_CXXFLAGS"
+        LIBS="$LIBS -lGLU"
+        QT_MOC=`pkg-config --variable=moc_location QtCore`
+        AC_SUBST([QT_MOC])
+
+        AC_CHECK_LIB([GLU],[gluLookAt],[],[HAVE_QT=FALSE])
+        AC_CHECK_HEADER([GL/glu.h],[],[HAVE_QT=FALSE])
+
+        AC_CHECK_HEADER([QtCore],[],[HAVE_QT=FALSE])
+        AC_CHECK_HEADER([QtGui],[],[HAVE_QT=FALSE])
+        AC_CHECK_HEADER([QtOpenGL],[],[HAVE_QT=FALSE])
+        AC_CHECK_HEADER([QtXml],[],[HAVE_QT=FALSE])
+        AC_CHECK_LIB([QtCore],[main],[],[HAVE_QT=FALSE])
+        AC_CHECK_LIB([QtGui],[main],[],[HAVE_QT=FALSE])
+        AC_CHECK_LIB([QtOpenGL],[main],[],[HAVE_QT=FALSE])
+        AC_CHECK_LIB([QtXml],[main],[],[HAVE_QT=FALSE])
+
+        if test "$HAVE_QT" = "FALSE" ; then
+           ICL_POP_FLAG_VARS  
+        fi])
 AM_CONDITIONAL([HAVE_QT_COND],[test x$HAVE_QT = xTRUE])
 
 
 ###############################################################################
 # Check for XCF
 ###############################################################################
-#AC_ARG_WITH([XCF],
-#        [AS_HELP_STRING([--without-XCF],
-#                        [disable support for XCF])],
-#        [HAVE_XCF=FALSE],
-#        [ICL_NOTIFY_CHECK([XCF           ])
-#        ICL_WITH_ROOT([XCF],[/vol/xcf])
-#
-#        HAVE_XCF=TRUE
-#        ICL_PUSH_FLAG_VARS
-#        ICL_EXTEND_FLAG_VARS_TMP_FOR(XCF,lib/,include/)                
-#        
-#        AC_LANG([C++])
-#
-#        XCF_PACKAGES="xcf xmltio Memory"
-#        AC_CHECK_FILE([$XCF_ROOT/lib/pkgconfig/xcf.pc],[],[HAVE_XCF=FALSE])
-#        AC_CHECK_FILE([$XCF_ROOT/lib/pkgconfig/xmltio.pc],[],[HAVE_XCF=FALSE])
-#        AC_CHECK_FILE([$XCF_ROOT/lib/pkgconfig/Memory.pc],[],[HAVE_XCF=FALSE])
-#
-#        ICL_DEF_VARS_FROM_PC(XCF,$XCF_PACKAGES)
-#
-#        AC_CHECK_HEADER([xcf/xcf.hpp],[],[HAVE_XCF=FALSE])
-#        AC_CHECK_HEADER([xmltio/xmltio.hpp],[],[HAVE_XCF=FALSE])
-#        AC_CHECK_LIB([xcf],[main],[],[HAVE_XCF=FALSE])
-#        AC_CHECK_LIB([xmltio],[main],[],[HAVE_XCF=FALSE])
-#
-#        if test "$HAVE_XCF" = "FALSE" ; then
-#           ICL_POP_FLAG_VARS
-#        fi])
+AC_ARG_WITH([XCF],
+        [AS_HELP_STRING([--without-XCF],
+                        [disable support for XCF])],
+        [HAVE_XCF=FALSE],
+        [ICL_NOTIFY_CHECK([XCF           ])
+        ICL_WITH_ROOT([XCF],[/vol/xcf])
+
+        HAVE_XCF=TRUE
+        ICL_PUSH_FLAG_VARS
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(XCF,lib/,include/)                
+        
+        AC_LANG([C++])
+
+        XCF_PACKAGES="xcf xmltio Memory"
+        AC_CHECK_FILE([$XCF_ROOT/lib/pkgconfig/xcf.pc],[],[HAVE_XCF=FALSE])
+        AC_CHECK_FILE([$XCF_ROOT/lib/pkgconfig/xmltio.pc],[],[HAVE_XCF=FALSE])
+        AC_CHECK_FILE([$XCF_ROOT/lib/pkgconfig/Memory.pc],[],[HAVE_XCF=FALSE])
+
+        ICL_DEF_VARS_FROM_PC(XCF,$XCF_PACKAGES)
+
+        AC_CHECK_HEADER([xcf/xcf.hpp],[],[HAVE_XCF=FALSE])
+        AC_CHECK_HEADER([xmltio/xmltio.hpp],[],[HAVE_XCF=FALSE])
+        AC_CHECK_LIB([xcf],[main],[],[HAVE_XCF=FALSE])
+        AC_CHECK_LIB([xmltio],[main],[],[HAVE_XCF=FALSE])
+
+        if test "$HAVE_XCF" = "FALSE" ; then
+           ICL_POP_FLAG_VARS
+        fi])
 AM_CONDITIONAL([HAVE_XCF_COND],[test x$HAVE_XCF = xTRUE])
-
-###############################################################################
-# NEW ICLV5: initial CXXFLAGS
-###############################################################################
-
 
 ###############################################################################
 # NEW ICLV5: create dedicated flags for all icl packages
@@ -570,39 +555,11 @@ ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[XCF])
 # NEW ICLV5: subst make variables for all packages
 ###############################################################################
 
-# ICL_SUBST_VARIABLES_FOR(icl-package)
-AC_DEFUN([ICL_SUBST_VARIABLES_FOR],[
-AC_SUBST([$1_CXXFLAGS])
-AC_SUBST([$1_CXXCPP])
-AC_SUBST([$1_LDFLAGS])
-AC_SUBST([$1_LIBS])
-])
-ICL_SUBST_VARIABLES_FOR(ICLUtils)
-ICL_SUBST_VARIABLES_FOR(ICLCore)
-ICL_SUBST_VARIABLES_FOR(ICLCC)
-ICL_SUBST_VARIABLES_FOR(ICLIO)
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLUtils)
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLCore)
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLCC)
+ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLIO)
 
-###############################################################################
-# removing default pathes /include /usr/include /lib /usr/lib
-###############################################################################
-
-# TODO: this has to be done for all package libs ! -> use m4 macro!!
-LIBS=`echo ${LIBS} | sed "s|-L/usr/lib | |g"`
-LIBS=`echo ${LIBS} | sed "s|-L/lib | |g"`
-
-LDFLAGS=`echo ${LDFLAGS} | sed "s|-Wl,-rpath=/usr/lib | |g"`
-LDFLAGS=`echo ${LDFLAGS} | sed "s|-Wl,-rpath=/lib | |g"`
-
-CXXFLAGS=`echo ${CXXFLAGS} | sed "s|-I/usr/include | |g"`
-CXXFLAGS=`echo ${CXXFLAGS} | sed "s|-I/include | |g"`
-
-ICL_PC_LIBS=`echo ${ICL_PC_LIBS} | sed "s|-L/usr/lib | |g"`
-ICL_PC_LIBS=`echo ${ICL_PC_LIBS} | sed "s|-L/lib | |g"`
-ICL_PC_LIBS=`echo ${ICL_PC_LIBS} | sed "s|-Wl,-rpath=/usr/lib | |g"`
-ICL_PC_LIBS=`echo ${ICL_PC_LIBS} | sed "s|-Wl,-rpath=/lib | |g"`
-
-ICL_PC_CFLAGS=`echo ${ICL_PC_CFLAGS} | sed "s|-I/usr/include | |g"`
-ICL_PC_CFLAGS=`echo ${ICL_PC_CFLAGS} | sed "s|-I/include | |g"`
 
 
 ###############################################################################
@@ -662,6 +619,20 @@ AC_SUBST([ICL_DOC_MAKEFILES_DIST])
 
 echo "Build Subdirs are: - $ICL_BUILD_SUBDIRS -"
 
+###############################################################################
+# NEW ICLV5: create package config files
+###############################################################################
+
+if [[ "$prefix" = "NONE" ]] ; then
+   prefix=/usr
+fi 
+
+ICL_CREATE_PC_FOR(ICLUtils)
+ICL_CREATE_PC_FOR(ICLCore)
+ICL_CREATE_PC_FOR(ICLCC)
+ICL_CREATE_PC_FOR(ICLIO)
+
+ICL_CREATE_PC()
 
 ###############################################################################
 # Create package config file
@@ -683,7 +654,7 @@ echo "Build Subdirs are: - $ICL_BUILD_SUBDIRS -"
 #ICL_PC_ENTRY([exec_prefix=\${prefix}])
 #ICL_PC_ENTRY([bindir=\${prefix}/bin])
 #ICL_PC_ENTRY([libdir=\${prefix}/lib])
-#ICL_PC_ENTRY([datadir\${prefix}/data])
+#ICL_PC_ENTRY([datadir\${prefix}/share/data])
 #ICL_PC_ENTRY([includedir=\${prefix}/include])
 #ICL_PC_ENTRY([package=$PACKAGE])
 #ICL_PC_ENTRY([])
