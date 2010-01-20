@@ -1,5 +1,5 @@
-#include <iclSVS.h>
-#include <iclCommon.h>
+#include <ICLAlgorithms/SVS.h>
+#include <ICLQuick/Common.h>
 
 
 static GUI gui("hbox");
