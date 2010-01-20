@@ -1,14 +1,13 @@
-#include "iclExtrapolator.h"
-#include <iclPositionTracker.h>
-#include <iclHungarianAlgorithm.h>
+#include <ICLUtils/Timer.h>
+#include <ICLCore/Img.h>
+#include <ICLCore/Mathematics.h>
+#include <ICLBlob/Extrapolator.h>
+#include <ICLBlob/PositionTracker.h>
+#include <ICLBlob/HungarianAlgorithm.h>
+
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include <iclImg.h>
-#include <iclMathematics.h>
-#include <iclTimer.h>
-
-
 
 using namespace std;
 using namespace icl;
