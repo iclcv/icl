@@ -1,10 +1,9 @@
 #ifndef INTRINSIC_CAMERA_CALIBRATION_TOOLS_H
 #define INTRINSIC_CAMERA_CALIBRATION_TOOLS_H
 
-#include <iclImg.h>
-#include <iclPoint32f.h>
-#include <iclFixedMatrix.h>
-#include <iclFixedVector.h>
+#include <ICLCore/Img.h>
+#include <ICLUtils/Point32f.h>
+#include <ICLUtils/FixedVector.h>
 
 namespace icl{
   typedef FixedColVector<double,2> P64f;

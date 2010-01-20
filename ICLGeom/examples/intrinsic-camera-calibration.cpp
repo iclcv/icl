@@ -1,18 +1,20 @@
-#include <iclCommon.h>
-#include <iclWarpOp.h>
-#include <iclDynMatrix.h>
+#include <ICLQuick/Common.h>
+#include <ICLFilter/WarpOp.h>
+#include <ICLUtils/DynMatrix.h>
 
-#include <QPushButton>
-#include <iclLocalThresholdOp.h>
-#include <iclRegionDetector.h>
-#include <iclMorphologicalOp.h>
-#include <iclCCFunctions.h>
+
+#include <ICLFilter/LocalThresholdOp.h>
+#include <ICLFilter/MorphologicalOp.h>
+#include <ICLBlob/RegionDetector.h>
+#include <ICLCC/CCFunctions.h>
 
 #include "intrinsic-camera-calibration-tools.h"
-#include <iclSOM2D.h>
-#include <iclMathematics.h>
+#include <ICLAlgorithms/SOM2D.h>
+#include <ICLCore/Mathematics.h>
+
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QPushButton>
 
 GUI gui("hsplit");
 GenericGrabber *grabber = 0;

@@ -2,6 +2,7 @@
 lib_LTLIBRARIES=libICLUtils.la
 libICLUtils_la_CXXFLAGS=@ICLUtils_CXXFLAGS@ @ICLUtils_CXXCPP@
 libICLUtils_la_LDFLAGS=@ICLUtils_LDFLAGS@ @ICLUtils_LIBS@
+includedir=${prefix}/include/ICL/ICLUtils
 
 libICLUtils_la_SOURCES= \
 ../src/DynMatrix.cpp \

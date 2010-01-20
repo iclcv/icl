@@ -115,9 +115,10 @@ ICL_USE_INTERNAL_PACKAGE_IN([ICLGeom],[ICLQuick])
 ICL_USE_INTERNAL_PACKAGE_IN([ICLOpenCV],[ICLCore])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLOpenCV],[OPENCV])
 
-# ICLOpenCV
+# ICLAlgorithms
 ICL_USE_INTERNAL_PACKAGE_IN([ICLAlgorithms],[ICLOpenCV])
 ICL_USE_INTERNAL_PACKAGE_IN([ICLAlgorithms],[ICLQuick])
+ICL_USE_INTERNAL_PACKAGE_IN([ICLAlgorithms],[ICLGeom])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLAlgorithms],[SVS])
 
 ###############################################################################

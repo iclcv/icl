@@ -217,7 +217,7 @@ ICL_PC_ENTRY_FOR([$1],[Requires:${$1_REQUIRES_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
 ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -l$1 -Wl,-rpath=${libdir} ${$1_LIBS_PC} ${$1_LDFLAGS_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
-ICL_PC_ENTRY_FOR([$1],[Cflags: -I${includedir} ${$1_CXXFLAGS_PC} ${$1_CXXCPP_PC}])
+ICL_PC_ENTRY_FOR([$1],[Cflags: -I${includedir}/ICL ${$1_CXXFLAGS_PC} ${$1_CXXCPP_PC}])
 ])
 
 # ICL_CREATE_ICL_PC() no parameters

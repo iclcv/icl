@@ -2,6 +2,7 @@
 lib_LTLIBRARIES=libICLFilter.la
 libICLFilter_la_CXXFLAGS=@ICLFilter_CXXFLAGS@ @ICLFilter_CXXCPP@
 libICLFilter_la_LDFLAGS=@ICLFilter_LDFLAGS@ @ICLFilter_LIBS@
+includedir=${prefix}/include/ICL/ICLFilter
 
 libICLFilter_la_SOURCES= \
 ../src/AffineOp.cpp \

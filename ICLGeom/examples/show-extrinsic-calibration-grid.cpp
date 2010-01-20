@@ -1,5 +1,5 @@
-#include <iclCommon.h>
-#include <iclCamera.h>
+#include <ICLQuick/Common.h>
+#include <ICLGeom/Camera.h>
 
 GUI gui;
 std::vector<Point32f> grid;

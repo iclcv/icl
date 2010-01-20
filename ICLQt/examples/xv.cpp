@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iterator>
-#include <iclFileGrabber.h>
-#include <iclCommon.h>
+#include <ICLIO/FileGrabber.h>
+#include <ICLQuick/Common.h>
 
 //#include <QScreen>
 

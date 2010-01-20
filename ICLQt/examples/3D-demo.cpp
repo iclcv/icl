@@ -1,8 +1,6 @@
-#include <iclCommon.h>
-#include <iclDrawWidget3D.h>
-#include <iclFPSEstimator.h>
-using namespace icl;
-using namespace std;
+#include <ICLQuick/Common.h>
+#include <ICLQt/DrawWidget3D.h>
+#include <ICLUtils/FPSEstimator.h>
 
 Size size(320,240);
 ICLDrawWidget3D *widget = 0;

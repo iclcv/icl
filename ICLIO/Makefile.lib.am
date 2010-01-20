@@ -2,6 +2,7 @@
 lib_LTLIBRARIES=libICLIO.la
 libICLIO_la_CXXFLAGS=@ICLIO_CXXFLAGS@ @ICLIO_CXXCPP@
 libICLIO_la_LDFLAGS=@ICLIO_LDFLAGS@ @ICLIO_LIBS@
+includedir=${prefix}/include/ICL/ICLIO
 
 libICLIO_la_SOURCES= \
 ../src/DemoImageFlowers.cpp \

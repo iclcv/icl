@@ -1,13 +1,5 @@
-#include <iclCommon.h>
-#include <iclRect.h>
-#include <iclRect32f.h>
-#include <iclSize.h>
-#include <iclPoint.h>
-#include <iclPoint32f.h>
-#include <iclRange.h>
-#include <iclImg.h>
-
-
+#include <ICLQuick/Common.h>
+#include <ICLUtils/Rect32f.h>
 
 #define INST_NUM_TYPES                           \
   INST_TYPE(char)                                \

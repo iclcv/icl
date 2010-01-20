@@ -2,6 +2,7 @@
 lib_LTLIBRARIES=libICLBlob.la
 libICLBlob_la_CXXFLAGS=@ICLBlob_CXXFLAGS@ @ICLBlob_CXXCPP@
 libICLBlob_la_LDFLAGS=@ICLBlob_LDFLAGS@ @ICLBlob_LIBS@
+includedir=${prefix}/include/ICL/ICLBlob
 
 libICLBlob_la_SOURCES= \
 ../src/ColorBlobSearcher.cpp \

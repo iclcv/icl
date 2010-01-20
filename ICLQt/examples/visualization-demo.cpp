@@ -1,4 +1,4 @@
-#include <iclCommon.h>
+#include <ICLQuick/Common.h>
 
 Grabber *grabber = 0;
 ICLDrawWidget *widget = 0;

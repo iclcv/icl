@@ -2,6 +2,7 @@
 lib_LTLIBRARIES=libICLAlgorithms.la
 libICLAlgorithms_la_CXXFLAGS=@ICLAlgorithms_CXXFLAGS@ @ICLAlgorithms_CXXCPP@
 libICLAlgorithms_la_LDFLAGS=@ICLAlgorithms_LDFLAGS@ @ICLAlgorithms_LIBS@
+includedir=${prefix}/include/ICL/ICLAlgorithms
 
 libICLAlgorithms_la_SOURCES= \
 ../src/SOM.cpp \

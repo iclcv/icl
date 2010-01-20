@@ -1,14 +1,4 @@
-#include <iclCommon.h>
-
-//7#include "iclGUI.h"
-//#include <iclDataStore.h>
-//#include <iclSize.h>
-//#include <iclImg.h>
-//#include <iclThread.h>
-//#include <QApplication>
-//#include <iclQuick.h>
-//#include <iclImageHandle.h>
-//using namespace icl;
+#include <ICLQuick/Common.h>
 
 GUI gui;
 

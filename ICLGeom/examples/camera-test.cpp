@@ -1,11 +1,5 @@
-#include <iclQuick.h>
-#include <iclGeom.h>
-
-#include <iclScene.h>
-#include <iclCamera.h>
-#include <iclCubeObject.h>
-
-#include <iclCommon.h>
+#include <ICLGeom/Geom.h>
+#include <ICLQuick/Common.h>
 
 GUI gui("hsplit");
 Size size = Size::VGA;

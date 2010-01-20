@@ -1,9 +1,9 @@
-#include <iclQt.h>
-#include <iclUsefulFunctions.h>
-#include <iclQuick.h>
-#include <iclGenericGrabber.h>
-#include <iclRegionDetector.h>
-#include <iclViewBasedTemplateMatcher.h>
+#include <ICLQt/Qt.h>
+#include <ICLAlgorithms/UsefulFunctions.h>
+#include <ICLQuick/Quick.h>
+#include <ICLIO/GenericGrabber.h>
+#include <ICLBlob/RegionDetector.h>
+#include <ICLAlgorithms/ViewBasedTemplateMatcher.h>
 
 Size imageSize(640,480);
 GUI gui("hbox");

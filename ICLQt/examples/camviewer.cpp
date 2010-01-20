@@ -1,5 +1,5 @@
-#include <iclCommon.h>
-#include <iclFPSLimiter.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/FPSLimiter.h>
 
 GUI gui;
 FPSLimiter *fpsLimiter = 0;

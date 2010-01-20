@@ -1,11 +1,7 @@
-#include <iclQuick.h>
-#include <iclGeom.h>
-
-#include <iclScene2.h>
-#include <iclCamera.h>
-#include <iclCommon.h>
-#include <iclFPSLimiter.h>
-#include <iclPrimitive.h>
+#include <ICLGeom/Geom.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/FPSLimiter.h>
+// #include <ICLGeom/Primitive.h>
 
 GUI gui("hsplit");
 

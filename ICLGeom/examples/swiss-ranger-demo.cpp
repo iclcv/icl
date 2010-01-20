@@ -1,9 +1,9 @@
-#include <iclCommon.h>
-#include <iclCamera.h>
+#include <ICLQuick/Common.h>
+#include <ICLGeom/Camera.h>
 
-#include <iclScene2.h>
-#include <iclMedianOp.h>
-#include <iclImgBorder.h>
+#include <ICLGeom/Scene2.h>
+#include <ICLFilter/MedianOp.h>
+#include <ICLCore/ImgBorder.h>
 
 GenericGrabber *grabber = 0;
 

@@ -1,23 +1,24 @@
-#include <iclCommon.h>
-#include <iclScene2.h>
-#include <iclExtrinsicCameraCalibrator.h>
-#include <iclCommon.h>
-#include <iclWarpOp.h>
-#include <iclDynMatrix.h>
+#include <ICLQuick/Common.h>
+#include <ICLGeom/Scene2.h>
+#include <ICLGeom/ExtrinsicCameraCalibrator.h>
 
-#include <QPushButton>
-#include <iclLocalThresholdOp.h>
-#include <iclRegionDetector.h>
-#include <iclMorphologicalOp.h>
-#include <iclCCFunctions.h>
+#include <ICLUtils/DynMatrix.h>
+#include <ICLUtils/Point32f.h>
+#include <ICLUtils/ConfigFile.h>
 
-#include <iclSOM2D.h>
-#include <iclMathematics.h>
+#include <ICLFilter/WarpOp.h>
+#include <ICLFilter/LocalThresholdOp.h>
+#include <ICLFilter/MorphologicalOp.h>
+#include <ICLBlob/RegionDetector.h>
+
+#include <ICLCC/CCFunctions.h>
+
+#include <ICLAlgorithms/SOM2D.h>
+#include <ICLCore/Mathematics.h>
+
 #include <QMessageBox>
 #include <QFileDialog>
-#include <iclPoint32f.h>
-#include <iclConfigFile.h>
-#include <iclGeomDefs.h>
+#include <QPushButton>
 
 #include <fstream>
 

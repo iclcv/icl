@@ -2,6 +2,7 @@
 lib_LTLIBRARIES=libICLOpenCV.la
 libICLOpenCV_la_CXXFLAGS=@ICLOpenCV_CXXFLAGS@ @ICLOpenCV_CXXCPP@
 libICLOpenCV_la_LDFLAGS=@ICLOpenCV_LDFLAGS@ @ICLOpenCV_LIBS@
+includedir=${prefix}/include/ICL/ICLOpenCV
 
 libICLOpenCV_la_SOURCES= \
 ../src/OpenCV.cpp 

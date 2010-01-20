@@ -1,4 +1,4 @@
-#include <iclCommon.h>
+#include <ICLQuick/Common.h>
 
 /// global gui instance
 GUI gui;

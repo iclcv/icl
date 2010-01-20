@@ -1,7 +1,7 @@
-#include <iclUsefulFunctions.h>
-#include <iclQuick.h>
-#include <iclProgArg.h>
-#include <iclStringUtils.h>
+#include <ICLAlgorithms/UsefulFunctions.h>
+#include <ICLQuick/Quick.h>
+#include <ICLUtils/ProgArg.h>
+#include <ICLUtils/StringUtils.h>
 
 int main(int n, char **ppc){
   //  640x480@(5,10)

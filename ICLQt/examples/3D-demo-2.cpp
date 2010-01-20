@@ -1,8 +1,8 @@
-#include <iclCommon.h>
-#include <iclDrawWidget3D.h>
-#include <iclFileGrabber.h>
-#include <iclFileWriter.h>
-#include <iclConsoleProgress.h>
+#include <ICLQuick/Common.h>
+#include <ICLQt/DrawWidget3D.h>
+#include <ICLIO/FileGrabber.h>
+#include <ICLIO/FileWriter.h>
+#include <ICLUtils/ConsoleProgress.h>
 
 Size size;
 ICLDrawWidget3D *widget = 0;
