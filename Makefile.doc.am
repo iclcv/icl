@@ -5,7 +5,9 @@ MKDIR_P ?= mkdir -p
 doc:
 	@echo creating documentation
 	@if [ ! -d doc ] ; then mkdir doc ; fi
-	@(cd doc ; if [ ! -f doxyfile ] ; then ln -s ../../doxyfile . ; fi ; doxygen)
+	@(cd doc ; if [ ! -f doxyfile ] ; then \
+		cat ../../doxyfile | sed "s|ICL_SUB_PACKAGE_PLACEHOLDER|${subdir}|g" > doxyfile ; \
+	fi ; doxygen)
 
 cleandoc:
 	@echo removing documentation
