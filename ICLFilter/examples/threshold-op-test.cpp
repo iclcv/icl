@@ -1,7 +1,6 @@
-#include <iclThresholdOp.h>
-#include <iclImg.h>
-#include <iclTimer.h>
-#include <iclCommon.h>
+#include <ICLFilter/ThresholdOp.h>
+#include <ICLUtils/Timer.h>
+#include <ICLQuick/Common.h>
 
 static const char *apc[38]={ // 40 x 38
   ".................................###....",

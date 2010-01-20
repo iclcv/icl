@@ -1,11 +1,5 @@
-#include <iclQuick.h>
-#include <iclQt.h>
-#include <iclProgArg.h>
-#include <iclRegionDetector.h>
-#include <iclGenericGrabber.h>
-#include <iclStringUtils.h>
-
-#include <algorithm>
+#include <ICLQuick/Common.h>
+#include <ICLBlob/RegionDetector.h>
 
 GUI gui("hsplit");
 RegionDetector rd;

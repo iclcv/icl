@@ -1,5 +1,5 @@
-#include <iclCommon.h>
-#include <iclConvolutionOp.h>
+#include <ICLQuick/Common.h>
+#include <ICLFilter/ConvolutionOp.h>
 #include <sstream>
 
 

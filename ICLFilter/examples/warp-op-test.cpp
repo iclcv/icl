@@ -1,5 +1,5 @@
-#include <iclCommon.h>
-#include <iclWarpOp.h>
+#include <ICLQuick/Common.h>
+#include <ICLFilter/WarpOp.h>
 
 GUI gui;
 

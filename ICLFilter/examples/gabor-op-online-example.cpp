@@ -1,6 +1,6 @@
-#include <iclCommon.h>
-#include <iclFPSEstimator.h>
-#include <iclGaborOp.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/FPSEstimator.h>
+#include <ICLFilter/GaborOp.h>
 GUI gui;
 
 inline bool is_equal(const float *a, const float *b, unsigned int n){

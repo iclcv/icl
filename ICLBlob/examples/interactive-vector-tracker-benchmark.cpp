@@ -1,6 +1,6 @@
-#include <iclCommon.h>
-#include <iclRandom.h>
-#include <iclVectorTracker.h>
+#include <ICLQuick/Common.h>
+#include <ICLCore/Random.h>
+#include <ICLBlob/VectorTracker.h>
 
 GUI gui;
 VectorTracker vt;

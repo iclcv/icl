@@ -1,6 +1,6 @@
-#include <iclQuick.h>
-#include <iclMorphologicalOp.h>
-#include <iclStringUtils.h>
+#include <ICLQuick/Quick.h>
+#include <ICLFilter/MorphologicalOp.h>
+#include <ICLUtils/StringUtils.h>
 
 int main(){
 #if 0

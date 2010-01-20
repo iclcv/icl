@@ -2,7 +2,7 @@
 #include <ICLCC/CCFunctions.h>
 #include <ICLIO/TestImages.h>
 #include <ICLQuick/Common.h>
-#include <ICLFilter/lBinaryArithmeticalOp.h>
+#include <ICLFilter/BinaryArithmeticalOp.h>
 #include <ICLUtils/StackTimer.h>
 #include <numeric>
 

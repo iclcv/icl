@@ -1,6 +1,7 @@
-#include <iclCommon.h>
-#include <iclAffineOp.h>
-#include <iclStackTimer.h>
+#include <ICLQuick/Common.h>
+#include <ICLFilter/AffineOp.h>
+#include <ICLUtils/StackTimer.h>
+
 GUI gui("hsplit[@minsize=32x24]");
 Img8u image;
 

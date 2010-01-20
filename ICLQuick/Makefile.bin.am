@@ -1,26 +1,3 @@
-XLDFLAGS= ${LDFLAGS} \
-	-L../../ICLUtils/lib/ -lICLUtils \
-	-L../../ICLCore/lib/ -lICLCore \
-	-L../../ICLCC/lib/ -lICLCC \
-	-L../../ICLBlob/lib/ -lICLBlob \
-	-L../../ICLQuick/lib/ -lICLQuick \
-	-L../../ICLFilter/lib -lICLFilter \
-	-L../../ICLIO/lib -lICLIO
-XCXXFLAGS= ${CXXFLAGS} \
-	-I../../ICLUtils/src \
-	-I../../ICLCore/src \
-	-I../../ICLCC/src \
-	-I../../ICLQuick/src \
-	-I../../ICLFilter/src \
-	-I../../ICLIO/src \
-	-I../../ICLBlob/src
-
-if HAVE_QT_COND
-XLDFLAGS+=-L../../ICLQt/lib/ -lICLQt
-XCXXFLAGS+=-I../../ICLQt/src
-endif
-
-
 #################################################################################
 ## Applications that depend on noting ###########################################
 #################################################################################
@@ -33,12 +10,12 @@ icl-quick-benchmark
 
 # explicit sources, ldflags and cxxflags
 icl_quick_test_SOURCES=../examples/quick-test.cpp
-icl_quick_test_LDFLAGS=${XLDFLAGS}
-icl_quick_test_CXXFLAGS=${XCXXFLAGS}
+icl_quick_test_LDFLAGS=${ICLQuick_EXAMPLE_LDFLAGS}
+icl_quick_test_CXXFLAGS=${ICLQuick_EXAMPLE_CXXFLAGS}
 
 icl_quick_benchmark_SOURCES=../examples/quick-benchmark.cpp
-icl_quick_benchmark_LDFLAGS=${XLDFLAGS}
-icl_quick_benchmark_CXXFLAGS=${XCXXFLAGS}
+icl_quick_benchmark_LDFLAGS=${ICLQuick_EXAMPLE_LDFLAGS}
+icl_quick_benchmark_CXXFLAGS=${ICLQuick_EXAMPLE_CXXFLAGS}
 
 endif 
 

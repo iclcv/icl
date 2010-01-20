@@ -1,4 +1,4 @@
-#include <ICLCore/Common.h>
+#include <ICLQuick/Common.h>
 #include <ICLIO/GenericGrabber.h>
 
 namespace{

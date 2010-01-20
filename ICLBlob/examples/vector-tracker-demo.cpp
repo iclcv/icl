@@ -1,16 +1,9 @@
-#include <iclQuick.h>
-#include <iclVectorTracker.h>
-#include <iclThread.h>
-#include <iclGUI.h>
-
-#include <iclFPSEstimator.h>
-#include <iclStringUtils.h>
-#include <iclRegionDetector.h>
-
-
-#include <iclMathematics.h>
-#include <iclCommon.h>
-#include <iclLockable.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/FPSEstimator.h>
+#include <ICLBlob/RegionDetector.h>
+#include <ICLCore/Mathematics.h>
+#include <ICLUtils/Lockable.h>
+#include <ICLBlob/VectorTracker.h>
 
 int error_counter = 0;
 int error_frames = 0;

@@ -1,6 +1,6 @@
-#include <iclCommon.h>
-#include <iclMeanShiftTracker.h>
-#include <iclMouseHandler.h>
+#include <ICLQuick/Common.h>
+#include <ICLBlob/MeanShiftTracker.h>
+#include <ICLQt/MouseHandler.h>
 
 
 Mutex m;

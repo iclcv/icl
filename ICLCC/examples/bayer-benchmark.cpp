@@ -2,7 +2,7 @@
 #include <ICLCore/Img.h>
 #include <ICLIO/FileGrabber.h>
 #include <ICLIO/FileWriter.h>
-#include <ICLIO/Bayer.h>
+#include <ICLCC/Bayer.h>
 #include <ICLUtils/Timer.h>
 
 using namespace icl;

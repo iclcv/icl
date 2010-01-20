@@ -1,25 +1,3 @@
-XLDFLAGS= ${LDFLAGS} \
-	-L../../ICLUtils/lib/ -lICLUtils \
-	-L../../ICLCore/lib/ -lICLCore \
-	-L../../ICLCC/lib/ -lICLCC \
-	-L../../ICLQt/lib/ -lICLQt \
-	-L../../ICLQuick/lib/ -lICLQuick \
-	-L../../ICLIO/lib -lICLIO \
-	-L../../ICLFilter/lib -lICLFilter \
-	-L../../ICLBlob/lib -lICLBlob \
-	-L../../ICLAlgorithms/lib -lICLAlgorithms
-
-XCXXFLAGS= ${CXXFLAGS} \
-	-I../../ICLUtils/src \
-	-I../../ICLCore/src \
-	-I../../ICLCC/src \
-	-I../../ICLQt/src \
-	-I../../ICLQuick/src \
-	-I../../ICLIO/src \
-	-I../../ICLFilter/src \
-	-I../../ICLBlob/src \
-	-I../../ICLAlgorithms/src
-
 #################################################################################
 ## Applications that depend on noting ###########################################
 #################################################################################
@@ -44,75 +22,75 @@ icl-complex-gui-callback-test \
 icl-image-compare
 
 icl_special_button_demo_SOURCES=../examples/special-button-demo.cpp
-icl_special_button_demo_LDFLAGS=${XLDFLAGS}
-icl_special_button_demo_CXXFLAGS=${XCXXFLAGS}
+icl_special_button_demo_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_special_button_demo_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_complex_gui_callback_test_SOURCES=../examples/complex-gui-callback-test.cpp
-icl_complex_gui_callback_test_LDFLAGS=${XLDFLAGS}
-icl_complex_gui_callback_test_CXXFLAGS=${XCXXFLAGS}
+icl_complex_gui_callback_test_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_complex_gui_callback_test_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_image_compare_SOURCES=../examples/image-compare.cpp
-icl_image_compare_LDFLAGS=${XLDFLAGS}
-icl_image_compare_CXXFLAGS=${XCXXFLAGS}
+icl_image_compare_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_image_compare_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_datastore_test_SOURCES=../examples/datastore-test.cpp
-icl_datastore_test_LDFLAGS=${XLDFLAGS}
-icl_datastore_test_CXXFLAGS=${XCXXFLAGS}
+icl_datastore_test_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_datastore_test_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_3D_demo_SOURCES=../examples/3D-demo.cpp
-icl_3D_demo_LDFLAGS=${XLDFLAGS}
-icl_3D_demo_CXXFLAGS=${XCXXFLAGS}
+icl_3D_demo_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_3D_demo_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_3D_demo_2_SOURCES=../examples/3D-demo-2.cpp
-icl_3D_demo_2_LDFLAGS=${XLDFLAGS}
-icl_3D_demo_2_CXXFLAGS=${XCXXFLAGS}
+icl_3D_demo_2_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_3D_demo_2_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_camcfg_SOURCES=../examples/camcfg.cpp
-icl_camcfg_LDFLAGS=${XLDFLAGS}
-icl_camcfg_CXXFLAGS=${XCXXFLAGS}
+icl_camcfg_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_camcfg_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_camviewer_SOURCES=../examples/camviewer.cpp
-icl_camviewer_LDFLAGS=${XLDFLAGS}
-icl_camviewer_CXXFLAGS=${XCXXFLAGS}
+icl_camviewer_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_camviewer_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_chroma_demo_SOURCES=../examples/chroma-demo.cpp
-icl_chroma_demo_LDFLAGS=${XLDFLAGS}
-icl_chroma_demo_CXXFLAGS=${XCXXFLAGS}
+icl_chroma_demo_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_chroma_demo_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_colorpicker_SOURCES=../examples/colorpicker.cpp
-icl_colorpicker_LDFLAGS=${XLDFLAGS}
-icl_colorpicker_CXXFLAGS=${XCXXFLAGS}
+icl_colorpicker_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_colorpicker_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_gui_test_SOURCES=../examples/gui-test.cpp
-icl_gui_test_LDFLAGS=${XLDFLAGS}
-icl_gui_test_CXXFLAGS=${XCXXFLAGS}
+icl_gui_test_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_gui_test_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_gui_test_2_SOURCES=../examples/gui-test-2.cpp
-icl_gui_test_2_LDFLAGS=${XLDFLAGS}
-icl_gui_test_2_CXXFLAGS=${XCXXFLAGS}
+icl_gui_test_2_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_gui_test_2_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_gui_callback_test_SOURCES=../examples/gui-callback-test.cpp
-icl_gui_callback_test_LDFLAGS=${XLDFLAGS}
-icl_gui_callback_test_CXXFLAGS=${XCXXFLAGS}
+icl_gui_callback_test_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_gui_callback_test_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_interactive_filter_demo_SOURCES=../examples/interactive-filter-demo.cpp
-icl_interactive_filter_demo_LDFLAGS=${XLDFLAGS}
-icl_interactive_filter_demo_CXXFLAGS=${XCXXFLAGS}
+icl_interactive_filter_demo_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_interactive_filter_demo_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_mouse_interaction_demo_SOURCES=../examples/mouse-interaction-demo.cpp
-icl_mouse_interaction_demo_LDFLAGS=${XLDFLAGS}
-icl_mouse_interaction_demo_CXXFLAGS=${XCXXFLAGS}
+icl_mouse_interaction_demo_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_mouse_interaction_demo_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_visualization_demo_SOURCES=../examples/visualization-demo.cpp
-icl_visualization_demo_LDFLAGS=${XLDFLAGS}
-icl_visualization_demo_CXXFLAGS=${XCXXFLAGS}
+icl_visualization_demo_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_visualization_demo_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_config_gui_example_SOURCES=../examples/config-gui-example.cpp
-icl_config_gui_example_LDFLAGS=${XLDFLAGS}
-icl_config_gui_example_CXXFLAGS=${XCXXFLAGS}
+icl_config_gui_example_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_config_gui_example_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_xv_SOURCES=../examples/xv.cpp
-icl_xv_LDFLAGS=${XLDFLAGS}
-icl_xv_CXXFLAGS=${XCXXFLAGS}
+icl_xv_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
+icl_xv_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 

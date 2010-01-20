@@ -1,4 +1,4 @@
-#include <iclCommon.h>
+#include <ICLQuick/Common.h>
 
 int main(int nArgs, char **ppcArg){
 

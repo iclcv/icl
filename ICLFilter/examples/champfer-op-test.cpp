@@ -1,6 +1,6 @@
-#include <iclQuick.h>
-#include <iclChamferOp.h>
-#include <iclStackTimer.h>
+#include <ICLQuick/Quick.h>
+#include <ICLFilter/ChamferOp.h>
+#include <ICLUtils/StackTimer.h>
 
 void test_func_8(const ImgBase *src, ImgBase **dst){
   BENCHMARK_THIS_FUNCTION;

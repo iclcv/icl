@@ -1,8 +1,8 @@
-#include <iclQuick.h>
-#include <iclUnaryArithmeticalOp.h>
-#include <iclConvolutionOp.h>
-#include <iclLocalThresholdOp.h>
-#include <iclProgArg.h>
+#include <ICLQuick/Quick.h>
+#include <ICLFilter/UnaryArithmeticalOp.h>
+#include <ICLFilter/ConvolutionOp.h>
+#include <ICLFilter/LocalThresholdOp.h>
+#include <ICLUtils/ProgArg.h>
 
 int main(int n, char **ppc){
   pa_explain("-n","number of threads as int");

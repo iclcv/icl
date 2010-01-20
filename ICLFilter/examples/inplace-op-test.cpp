@@ -1,6 +1,6 @@
-#include <iclQuick.h>
-#include <iclInplaceArithmeticalOp.h>
-#include <iclInplaceLogicalOp.h>
+#include <ICLQuick/Quick.h>
+#include <ICLFilter/InplaceArithmeticalOp.h>
+#include <ICLFilter/InplaceLogicalOp.h>
 
 int main(){
   ImgQ a = scale(create("parrot"),0.5);

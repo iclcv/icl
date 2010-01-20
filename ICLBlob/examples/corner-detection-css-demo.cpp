@@ -1,11 +1,11 @@
 // Copyright 2009 Erik Weitnauer
 /// Visulalization of the CSS corner detection algorithm.
 
-#include <iclCommon.h>
-#include <iclColor.h>
-#include <iclRegionDetector.h>
-#include <iclLine.h>
-#include <iclCornerDetectorCSS.h>
+#include <ICLQuick/Common.h>
+#include <ICLCC/Color.h>
+#include <ICLBlob/RegionDetector.h>
+#include <ICLCore/Line.h>
+#include <ICLCore/CornerDetectorCSS.h>
 
 GUI gui("vsplit[@handle=B]");
 

@@ -1,7 +1,7 @@
-#include <iclWeightChannelsOp.h>
-#include <iclCommon.h>
-#include <iclStackTimer.h>
-#include <iclMathematics.h>
+#include <ICLFilter/WeightChannelsOp.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/StackTimer.h>
+#include <ICLCore/Mathematics.h>
 #include <vector>
 
 void apply_weighted_channel(WeightChannelsOp &wc, 

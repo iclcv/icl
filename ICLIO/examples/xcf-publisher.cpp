@@ -1,9 +1,9 @@
 #include <ICLIO/XCFPublisher.h>
 #include <ICLIO/XCFPublisherGrabber.h>
-#include <ICLCore/Common.h>
+#include <ICLQuick/Common.h>
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLUtils/FPSLimiter.h>
-#include <iICLIO/IOFunctions.h>
+#include <ICLIO/IOFunctions.h>
 
 #include <ICLFilter/MedianOp.h>
 #include <ICLFilter/ConvolutionOp.h>

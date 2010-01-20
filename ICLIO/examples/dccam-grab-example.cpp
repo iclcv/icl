@@ -1,6 +1,6 @@
 #include <QApplication>
 #include <QTimer>
-#include <ICLIO/CamThread.h>
+#include <ICLQt/CamThread.h>
 #include <ICLIO/DCGrabber.h>
 #include <ICLUtils/ProgArg.h>
 

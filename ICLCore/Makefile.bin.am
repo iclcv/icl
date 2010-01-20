@@ -1,8 +1,8 @@
-XLDFLAGS= ${LDFLAGS} \
+ICLCore_EXAMPLE_LDFLAGS= ${LDFLAGS} \
 	-L../../ICLUtils/lib/ -lICLUtils \
 	-L../../ICLCore/lib/ -lICLCore
 
-XCXXFLAGS= ${CXXFLAGS} \
+ICLCore_EXAMPLE_CXXFLAGS= ${CXXFLAGS} \
 	-I../../ICLUtils/src \
 	-I../../ICLCore/src
 
@@ -18,24 +18,24 @@ icl-sampled-line-test
 
 # explicit sources, ldflags and cxxflags
 icl_img_example_SOURCES=../examples/img-example.cpp
-icl_img_example_LDFLAGS=${XLDFLAGS}
-icl_img_example_CXXFLAGS=${XCXXFLAGS}
+icl_img_example_LDFLAGS=${ICLCore_EXAMPLE_LDFLAGS}
+icl_img_example_CXXFLAGS=${ICLCore_EXAMPLE_CXXFLAGS}
 
 icl_sampled_line_test_SOURCES=../examples/sampled-line-test.cpp
-icl_sampled_line_test_LDFLAGS=${XLDFLAGS}
-icl_sampled_line_test_CXXFLAGS=${XCXXFLAGS}
+icl_sampled_line_test_LDFLAGS=${ICLCore_EXAMPLE_LDFLAGS}
+icl_sampled_line_test_CXXFLAGS=${ICLCore_EXAMPLE_CXXFLAGS}
 
 icl_copy_channel_roi_example_SOURCES=../examples/copy-channel-roi-example.cpp
-icl_copy_channel_roi_example_LDFLAGS=${XLDFLAGS}
-icl_copy_channel_roi_example_CXXFLAGS=${XCXXFLAGS}
+icl_copy_channel_roi_example_LDFLAGS=${ICLCore_EXAMPLE_LDFLAGS}
+icl_copy_channel_roi_example_CXXFLAGS=${ICLCore_EXAMPLE_CXXFLAGS}
 
 
 icl_img_iterator_benchmark_SOURCES=../examples/img-iterator-benchmark.cpp
-icl_img_iterator_benchmark_LDFLAGS=${XLDFLAGS}
-icl_img_iterator_benchmark_CXXFLAGS=${XCXXFLAGS}
+icl_img_iterator_benchmark_LDFLAGS=${ICLCore_EXAMPLE_LDFLAGS}
+icl_img_iterator_benchmark_CXXFLAGS=${ICLCore_EXAMPLE_CXXFLAGS}
 
 # explicit sources, ldflags and cxxflags
 icl_reduce_channels_test_SOURCES=../examples/reduce-channels-test.cpp
-icl_reduce_channels_test_LDFLAGS=${XLDFLAGS}
-icl_reduce_channels_test_CXXFLAGS=${XCXXFLAGS}
+icl_reduce_channels_test_LDFLAGS=${ICLCore_EXAMPLE_LDFLAGS}
+icl_reduce_channels_test_CXXFLAGS=${ICLCore_EXAMPLE_CXXFLAGS}
 

@@ -1,17 +1,10 @@
-#include <iclQuick.h>
-#include <iclPositionTracker.h>
-#include <iclThread.h>
-#include <iclGUI.h>
+#include <ICLBlob/PositionTracker.h>
+#include <ICLBlob/RegionDetector.h>
 
-#include <iclFPSEstimator.h>
-#include <iclStringUtils.h>
-#include <iclRegionDetector.h>
+#include <ICLUtils/FPSEstimator.h>
 
-#include <iclMathematics.h>
-#include <iclPoint32f.h>
-
-#include <iclProgArg.h>
-#include <iclCommon.h>
+#include <ICLCore/Mathematics.h>
+#include <ICLQuick/Common.h>
 
 int error_counter = 0;
 int error_frames = 0;

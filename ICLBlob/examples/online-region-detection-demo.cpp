@@ -1,6 +1,6 @@
-#include <iclCommon.h>
-#include <iclRegionDetector.h>
-#include <iclColor.h>
+#include <ICLQuick/Common.h>
+#include <ICLBlob/RegionDetector.h>
+#include <ICLCC/Color.h>
 
 // global data (GUI and reference color)
 GUI gui("draw[@handle=draw@minsize=16x12]");

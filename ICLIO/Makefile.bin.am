@@ -1,25 +1,3 @@
-XLDFLAGS= ${LDFLAGS} \
-	-L../../ICLUtils/lib/ -lICLUtils \
-	-L../../ICLCore/lib/ -lICLCore \
-	-L../../ICLCC/lib/ -lICLCC \
-	-L../../ICLQuick/lib/ -lICLQuick \
-	-L../../ICLIO/lib -lICLIO \
-	-L../../ICLBlob/lib -lICLBlob \
-	-L../../ICLFilter/lib -lICLFilter
-
-XCXXFLAGS= ${CXXFLAGS} \
-	-I../../ICLUtils/src \
-	-I../../ICLCore/src \
-	-I../../ICLCC/src \
-	-I../../ICLQuick/src \
-	-I../../ICLBlob/src \
-	-I../../ICLFilter/src
-
-if HAVE_QT_COND
-XLDFLAGS+=-L../../ICLQt/lib/ -lICLQt
-XCXXFLAGS+=-I../../ICLQt/src
-endif
-
 #################################################################################
 ## Applications that depend on noting ###########################################
 #################################################################################
@@ -33,24 +11,24 @@ icl-create
 
 # explicit sources, ldflags and cxxflags
 icl_write_file_example_SOURCES=../examples/write-file-example.cpp
-icl_write_file_example_LDFLAGS=${XLDFLAGS}
-icl_write_file_example_CXXFLAGS=${XCXXFLAGS}
+icl_write_file_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_write_file_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_convert_SOURCES=../examples/convert.cpp
-icl_convert_LDFLAGS=${XLDFLAGS}
-icl_convert_CXXFLAGS=${XCXXFLAGS}
+icl_convert_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_convert_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_create_SOURCES=../examples/create.cpp
-icl_create_LDFLAGS=${XLDFLAGS}
-icl_create_CXXFLAGS=${XCXXFLAGS}
+icl_create_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_create_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_testimages_example_SOURCES=../examples/testimages-example.cpp
-icl_testimages_example_LDFLAGS=${XLDFLAGS}
-icl_testimages_example_CXXFLAGS=${XCXXFLAGS}
+icl_testimages_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_testimages_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_jpg2cpp_SOURCES=../examples/jpg2cpp.cpp
-icl_jpg2cpp_LDFLAGS=${XLDFLAGS}
-icl_jpg2cpp_CXXFLAGS=${XCXXFLAGS}
+icl_jpg2cpp_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_jpg2cpp_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 #################################################################################
 ## Applications that depend on libdc/Qt #########################################
@@ -64,16 +42,16 @@ icl-dccam-params
 
 # explicit sources, ldflags and cxxflags
 icl_dccam_params_SOURCES=../examples/dccam-params.cpp
-icl_dccam_params_LDFLAGS=${XLDFLAGS}
-icl_dccam_params_CXXFLAGS=${XCXXFLAGS}
+icl_dccam_params_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_dccam_params_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_dcclearisochannels_SOURCES=../examples/dcclearisochannels.cpp
-icl_dcclearisochannels_LDFLAGS=${XLDFLAGS}
-icl_dcclearisochannels_CXXFLAGS=${XCXXFLAGS}
+icl_dcclearisochannels_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_dcclearisochannels_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_dcdeviceinfo_SOURCES=../examples/dcdeviceinfo.cpp
-icl_dcdeviceinfo_LDFLAGS=${XLDFLAGS}
-icl_dcdeviceinfo_CXXFLAGS=${XCXXFLAGS}
+icl_dcdeviceinfo_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_dcdeviceinfo_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 if HAVE_QT_COND
 bin_PROGRAMS+= \
@@ -82,16 +60,16 @@ icl-dcmulticam-example \
 icl-dccam-grab-example
 
 icl_dccam_setup_SOURCES=../examples/dccam-setup.cpp
-icl_dccam_setup_LDFLAGS=${XLDFLAGS}
-icl_dccam_setup_CXXFLAGS=${XCXXFLAGS}
+icl_dccam_setup_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_dccam_setup_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_dcmulticam_example_SOURCES=../examples/dcmulticam-example.cpp
-icl_dcmulticam_example_LDFLAGS=${XLDFLAGS}
-icl_dcmulticam_example_CXXFLAGS=${XCXXFLAGS}
+icl_dcmulticam_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_dcmulticam_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_dccam_grab_example_SOURCES=../examples/dccam-grab-example.cpp
-icl_dccam_grab_example_LDFLAGS=${XLDFLAGS}
-icl_dccam_grab_example_CXXFLAGS=${XCXXFLAGS}
+icl_dccam_grab_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_dccam_grab_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 endif
 
 endif
@@ -106,12 +84,12 @@ icl-memory-listener
 
 # explicit sources, ldflags and cxxflags
 icl_xcf_grabber_benchmark_SOURCES=../examples/xcf-grabber-benchmark.cpp
-icl_xcf_grabber_benchmark_LDFLAGS=${XLDFLAGS}
-icl_xcf_grabber_benchmark_CXXFLAGS=${XCXXFLAGS}
+icl_xcf_grabber_benchmark_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_xcf_grabber_benchmark_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_memory_listener_SOURCES=../examples/memory-listener.cpp
-icl_memory_listener_LDFLAGS=${XLDFLAGS}
-icl_memory_listener_CXXFLAGS=${XCXXFLAGS}
+icl_memory_listener_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_memory_listener_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 if HAVE_QT_COND
 bin_PROGRAMS+= \
@@ -119,8 +97,8 @@ icl-xcf-publisher \
 icl-multicam-viewer-example
 
 icl_xcf_publisher_SOURCES=../examples/xcf-publisher.cpp
-icl_xcf_publisher_LDFLAGS=${XLDFLAGS}
-icl_xcf_publisher_CXXFLAGS=${XCXXFLAGS}
+icl_xcf_publisher_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_xcf_publisher_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 endif
 
 endif
@@ -133,8 +111,8 @@ bin_PROGRAMS+= \
 icl-unicap-grab-example
 
 icl_unicap_grab_example_SOURCES=../examples/unicap-grab-example.cpp
-icl_unicap_grab_example_LDFLAGS=${XLDFLAGS}
-icl_unicap_grab_example_CXXFLAGS=${XCXXFLAGS}
+icl_unicap_grab_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_unicap_grab_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 endif
 
 
@@ -147,16 +125,16 @@ icl-camrecorder \
 icl-generic-grab-example
 
 icl_camrecorder_SOURCES=../examples/camrecorder.cpp
-icl_camrecorder_LDFLAGS=${XLDFLAGS}
-icl_camrecorder_CXXFLAGS=${XCXXFLAGS}
+icl_camrecorder_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_camrecorder_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_generic_grab_example_SOURCES=../examples/generic-grab-example.cpp
-icl_generic_grab_example_LDFLAGS=${XLDFLAGS}
-icl_generic_grab_example_CXXFLAGS=${XCXXFLAGS}
+icl_generic_grab_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_generic_grab_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_multicam_viewer_example_SOURCES=../examples/multicam-viewer-example.cpp
-icl_multicam_viewer_example_LDFLAGS=${XLDFLAGS}
-icl_multicam_viewer_example_CXXFLAGS=${XCXXFLAGS}
+icl_multicam_viewer_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_multicam_viewer_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 endif
 
@@ -167,7 +145,7 @@ bin_PROGRAMS+= \
 icl-video-player
 
 icl_video_player_SOURCES=../examples/video-player.cpp
-icl_video_player_LDFLAGS=${XLDFLAGS}
-icl_video_player_CXXFLAGS=${XCXXFLAGS}
+icl_video_player_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_video_player_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 endif

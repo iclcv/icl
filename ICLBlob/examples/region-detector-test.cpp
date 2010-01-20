@@ -1,6 +1,6 @@
-#include <iclQuick.h>
-#include <iclQuickRegions.h>
-#include <iclRegionDetector.h>
+#include <ICLQuick/Quick.h>
+#include <ICLQuick/QuickRegions.h>
+#include <ICLBlob/RegionDetector.h>
 
 
 int main(){
