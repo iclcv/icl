@@ -1,11 +1,6 @@
-#include <iclGenericGrabber.h>
-#include <iclQt.h>
-#include <iclGUI.h>
-#include <iclQuick.h>
-#include <iclFileWriter.h>
+#include <ICLQuick/Common.h>
+#include <ICLIO/FileWriter.h>
 #include <QPushButton>
-#include <iclProgArg.h>
-#include <iclStringUtils.h>
 
 GUI gui("vbox");
 Size size;

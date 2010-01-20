@@ -1,6 +1,5 @@
-#include <iclFileWriter.h>
-#include <iclQuick.h>
-#include <string>
+#include <ICLIO/FileWriter.h>
+#include <ICLQuick/Quick.h>
 
 int main(int n, char **ppc){
   std::string s = (n>1) ? ppc[1] : "ppm";

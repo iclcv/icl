@@ -1,9 +1,9 @@
-#include <iclQuick.h>
-#include <iclProgArg.h>
-#include <iclStringUtils.h>
-#include <iclFixedConverter.h>
-#include <iclFileWriter.h>
-#include <iclSize32f.h>
+#include <ICLQuick/Quick.h>
+#include <ICLUtils/ProgArg.h>
+#include <ICLUtils/StringUtils.h>
+#include <ICLCC/FixedConverter.h>
+#include <ICLIO/FileWriter.h>
+#include <ICLUtils/Size32f.h>
 
 int main(int n, char **ppc){
   pa_init(n,ppc,"-o(1) -size(1) -depth(1) -format(1)",true);

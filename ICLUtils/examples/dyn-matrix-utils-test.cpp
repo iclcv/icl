@@ -1,4 +1,4 @@
-#include <iclDynMatrixUtils.h>
+#include <ICLUtils/DynMatrixUtils.h>
 
 using namespace icl;
 

@@ -1,8 +1,8 @@
-#include <iclDCGrabber.h>
-#include <iclDCDeviceFeatures.h>
-#include <iclConfigFile.h>
-#include <iclProgArg.h>
-#include <iclStringUtils.h>
+#include <ICLIO/DCGrabber.h>
+#include <ICLIO/DCDeviceFeatures.h>
+#include <ICLUtils/ConfigFile.h>
+#include <ICLUtils/ProgArg.h>
+#include <ICLUtils/StringUtils.h>
 
 using namespace icl;
 using namespace std;

@@ -1,4 +1,4 @@
-#include <iclFixedMatrix.h>
+#include <ICLUtils/FixedMatrix.h>
 #include <iostream>
 #include <sstream>
 

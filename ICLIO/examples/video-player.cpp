@@ -1,5 +1,5 @@
-#include <iclCommon.h>
-#include <iclVideoGrabber.h>
+#include <ICLQuick/Common.h>
+#include <ICLIO/VideoGrabber.h>
 
 GUI gui("vsplit");
 std::string fileName;

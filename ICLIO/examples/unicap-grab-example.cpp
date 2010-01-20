@@ -1,6 +1,6 @@
-#include <iclUnicapGrabber.h>
-#include <iclQuick.h>
-#include <iclStackTimer.h>
+#include <ICLIO/UnicapGrabber.h>
+#include <ICLQuick/Quick.h>
+#include <ICLUtils/StackTimer.h>
 
 void grab_single_frame(UnicapGrabber &g){
   BENCHMARK_THIS_FUNCTION;

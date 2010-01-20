@@ -1,5 +1,4 @@
-#include <iclDCGrabber.h>
-
+#include <ICLIO/DCGrabber.h>
 
 using namespace std;
 using namespace icl;

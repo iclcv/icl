@@ -1,6 +1,6 @@
-#include <iclTestImages.h>
-#include <iclImg.h>
-#include <iclQuick.h>
+#include <ICLIO/TestImages.h>
+#include <ICLCore/Img.h>
+#include <ICLQuick/Quick.h>
 
 int main(){ 
   

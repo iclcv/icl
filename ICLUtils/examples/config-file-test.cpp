@@ -1,6 +1,6 @@
-#include <iclProgArg.h>
-#include <iclStringUtils.h>
-#include <iclConfigFile.h>
+#include <ICLUtils/ProgArg.h>
+#include <ICLUtils/StringUtils.h>
+#include <ICLUtils/ConfigFile.h>
 
 using namespace icl;
 

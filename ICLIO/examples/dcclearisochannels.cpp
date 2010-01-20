@@ -1,5 +1,5 @@
-#include <iclDCGrabber.h>
-#include <iclDC.h>
+#include <ICLIO/DCGrabber.h>
+#include <ICLIO/DC.h>
 #include <map>
 #include <vector>
 

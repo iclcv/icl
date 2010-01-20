@@ -1,5 +1,5 @@
-#include <iclFileWriter.h>
-#include <iclSonyFwGrabber.h>
+#include <ICLIO/FileWriter.h>
+#include <ICLIO/SonyFwGrabber.h>
 
 using namespace std;
 using namespace icl;

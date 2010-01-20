@@ -2,6 +2,8 @@
 #include <ICLUtils/StackTimer.h>
 #include <ICLUtils/Thread.h>
 
+#include <ICLIO/Grabber.h>
+
 #ifdef HAVE_VIDEODEV
 #include <ICLIO/PWCGrabber.h>
 #endif

@@ -1,7 +1,7 @@
-#include <iclImg.h>
-#include <iclStackTimer.h>
-#include <iclRandom.h>
-#include <algorithm>
+#include <ICLCore/Img.h>
+#include <ICLUtils/StackTimer.h>
+#include <ICLCore/Random.h>
+
 /**
 no opt:
 -O4 -march=native -funroll-loops Centrino-Pro 2x2GHz (using single core)

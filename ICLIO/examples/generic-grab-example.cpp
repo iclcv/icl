@@ -1,4 +1,4 @@
-#include <iclCommon.h>
+#include <ICLUtils/Common.h>
 
 GUI gui("vbox");
 GenericGrabber *grabber = 0;
