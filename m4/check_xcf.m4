@@ -24,8 +24,9 @@ AC_ARG_WITH([XCF],
         AC_CHECK_LIB([xcf],[main],[],[HAVE_XCF=FALSE])
         AC_CHECK_LIB([xmltio],[main],[],[HAVE_XCF=FALSE])
 
-        if test "$HAVE_XCF" = "FALSE" ; then
-           ICL_POP_FLAG_VARS
-        fi])
+        #if test "$HAVE_XCF" = "FALSE" ; then
+        ICL_POP_FLAG_VARS
+        #fi
+        ])
 AM_CONDITIONAL([HAVE_XCF_COND],[test x$HAVE_XCF = xTRUE])
 ])

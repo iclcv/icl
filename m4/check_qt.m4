@@ -37,8 +37,9 @@ AC_ARG_WITH([QT],
         AC_CHECK_LIB([QtOpenGL],[main],[],[HAVE_QT=FALSE])
         AC_CHECK_LIB([QtXml],[main],[],[HAVE_QT=FALSE])
 
-        if test "$HAVE_QT" = "FALSE" ; then
+#        if test "$HAVE_QT" = "FALSE" ; then
            ICL_POP_FLAG_VARS  
-        fi])
+ #       fi
+       ])
 AM_CONDITIONAL([HAVE_QT_COND],[test x$HAVE_QT = xTRUE])
 ])

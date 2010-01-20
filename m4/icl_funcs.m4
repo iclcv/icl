@@ -215,7 +215,7 @@ ICL_PC_ENTRY_FOR([$1],[Version: $PACKAGE_VERSION])
 ICL_PC_ENTRY_FOR([$1],[])
 ICL_PC_ENTRY_FOR([$1],[Requires:${$1_REQUIRES_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
-ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -Wl,-rpath=${libdir} ${$1_LIBS_PC}])
+ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -l$1 -Wl,-rpath=${libdir} ${$1_LIBS_PC} ${$1_LDFLAGS_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
 ICL_PC_ENTRY_FOR([$1],[Cflags: -I${includedir} ${$1_CXXFLAGS_PC} ${$1_CXXCPP_PC}])
 ])
@@ -242,4 +242,13 @@ ICL_PC_ENTRY_FOR([icl],[])
 ICL_PC_ENTRY_FOR([icl],[Libs:])
 ICL_PC_ENTRY_FOR([icl],[])
 ICL_PC_ENTRY_FOR([icl],[Cflags:])
+])
+
+# ICL_DEF_EXAMPLE_FLAGS_FOR(for which package, include which other packages)
+AC_DEFUN([ICL_DEF_EXAMPLE_FLAGS_FOR],[
+$1_EXAMPLE_LDFLAGS=`PKG_CONFIG_PATH=.:$PKG_CONFIG_PATH pkg-config --libs $2`
+$1_EXAMPLE_CXXFLAGS=`PKG_CONFIG_PATH=.:$PKG_CONFIG_PATH pkg-config --cflags $2`
+$1_EXAMPLE_CXXFLAGS="-I../../include $$1_EXAMPLE_CXXFLAGS"
+AC_SUBST($1_EXAMPLE_LDFLAGS)
+AC_SUBST($1_EXAMPLE_CXXFLAGS)
 ])

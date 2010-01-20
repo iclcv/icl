@@ -44,7 +44,7 @@ AC_MSG_ERROR([unable to find 'pkg-config' please install and/or adapt path varia
 fi
 
 ###############################################################################
-# NEW ICLV5: out-sourced dependency checks -> search ./m4/check_*.m4
+# NEW ICLV5: out-sourced dependency checks -> search in ./m4/check_*.m4
 ###############################################################################
 
 ICL_CHECK_IPP()
@@ -62,6 +62,9 @@ ICL_CHECK_SVS()
 ICL_CHECK_XINE()
 ICL_CHECK_QT()
 ICL_CHECK_XCF()
+
+echo "LDFLAGS ARE: $LDFLAGS"
+echo "CXXFLAGS ARE: $CXXFLAGS"
 
 ###############################################################################
 # NEW ICLV5: create dedicated flags for all icl packages
@@ -107,7 +110,7 @@ ICL_USE_INTERNAL_PACKAGE_IN([ICLQuick],[ICLQt])
 ICL_USE_INTERNAL_PACKAGE_IN([ICLGeom],[ICLQuick]) 
 
 # ICLOpenCV
-ICL_USE_INTERNAL_PACKAGE_IN([ICLCore],[ICLCore])
+ICL_USE_INTERNAL_PACKAGE_IN([ICLOpenCV],[ICLCore])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLOpenCV],[OPENCV])
 
 # ICLOpenCV
@@ -130,6 +133,8 @@ ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLQt)
 ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLQuick)
 ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLOpenCV)
 ICL_STRIP_AND_SUBST_FLAGS_FOR(ICLAlgorithms)
+
+
 
 ###############################################################################
 # Summary
@@ -207,6 +212,22 @@ ICL_CREATE_PC_FOR([ICLOpenCV])
 ICL_CREATE_PC_FOR([ICLAlgorithms])
 
 ICL_CREATE_ICL_PC()
+
+###############################################################################
+# NEW ICLV5: create and subst variables for Makefile.bin.am's
+###############################################################################
+
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLUtils],[ICLUtils])
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLCore],[ICLCore])
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLCC],[ICLQuick])
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLIO],[ICLQuick])
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLBlob],[ICLQuick])
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLFilter],[ICLQuick])
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLGeom],[ICLAlgorithms])
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLQt],[ICLAlgorithms])
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLQuick],[ICLQuick])
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLOpenCV],[ICLAlgorithms])
+ICL_DEF_EXAMPLE_FLAGS_FOR([ICLAlgorithms],[ICLAlgorithms])
 
 
 ###############################################################################
