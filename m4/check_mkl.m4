@@ -13,7 +13,7 @@ AC_ARG_WITH([MKL],
         AC_CHECK_HEADER([mkl_types.h],[],[HAVE_MKL=FALSE],[])
         AC_CHECK_HEADER([mkl_cblas.h],[],[HAVE_MKL=FALSE],[])
 
-        AC_CHECK_LIB([mkl_core],[mkl_serv_allocate],[],[HAVE_MKL=FALSE],[-lpthread -lm])
+        AC_CHECK_LIB([mkl_core],[mkl_serv_allocate],[],[HAVE_MKL=FALSE],[-pthread -lm])
         
         ICL_POP_FLAG_VARS
 
@@ -21,7 +21,7 @@ AC_ARG_WITH([MKL],
 
         ICL_DEF_VARS(
                 [MKL],
-                [-L$MKL_ROOT/lib/32 -lmkl_intel -lmkl_intel_thread -lmkl_core -lpthread],
+                [-L$MKL_ROOT/lib/32 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -pthread],
                 [-Wl,-rpath=${MKL_ROOT}/lib/32],
                 [-I$MKL_ROOT/include],
                 [-DHAVE_MKL])

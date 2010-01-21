@@ -20,6 +20,8 @@ fi
 echo " $ARCH (adding -DSYSTEM_$ARCH to CXXFLAGS)"
 
 CXXFLAGS="$CXXFLAGS -DSYSTEM_${ARCH} -Wno-long-long -Wall -I../../include"
+#Workaround for missing pthread symbols on some systems ?!
+LDFLAGS="$LDFLAGS -pthread"
 
 #TODO where is -lpthread missing?
 #LDFLAGS="$LDFLAGS -lpthread"
