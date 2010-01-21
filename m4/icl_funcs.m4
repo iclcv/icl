@@ -196,9 +196,10 @@ ICL_PC_ROOT_ENTRY_FOR([$1],[LIBMESASR])
 ICL_PC_ROOT_ENTRY_FOR([$1],[OPENCV])
 ])
 
-# ICL_CREATE_PC_FOR(icl-package)
+# ICL_CREATE_PC_FOR(icl-package,what has to be true)
 AC_DEFUN([ICL_CREATE_PC_FOR],[
 rm -rf $1.pc
+if [[ $2 == "TRUE" ]] ; then
 ICL_PC_ENTRY_FOR([$1],[prefix=${prefix}])
 ICL_PC_ENTRY_FOR([$1],[exec_prefix=\${prefix}])
 ICL_PC_ENTRY_FOR([$1],[bindir=\${prefix}/bin])
@@ -218,6 +219,7 @@ ICL_PC_ENTRY_FOR([$1],[])
 ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -l$1 -Wl,-rpath=${libdir} ${$1_LIBS_PC} ${$1_LDFLAGS_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
 ICL_PC_ENTRY_FOR([$1],[Cflags: -I${includedir}/ICL ${$1_CXXFLAGS_PC} ${$1_CXXCPP_PC}])
+fi
 ])
 
 # ICL_CREATE_ICL_PC() no parameters
