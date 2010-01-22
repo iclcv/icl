@@ -19,6 +19,9 @@
 #include <ICLUtils/Range.h>
 #include <ICLUtils/SteppingRange.h>
 
+#include <ICLUtils/FixedMatrix.h>
+#include <ICLUtils/FixedVector.h>
+
 using namespace std;
 
 namespace icl{
@@ -59,6 +62,27 @@ namespace icl{
         REGISTER_CONFIG_FILE_TYPE(SteppingRange32s);
         REGISTER_CONFIG_FILE_TYPE(SteppingRange32f);
         //            REGISTER_CONFIG_FILE_TYPE(Color);
+
+        typedef  FixedMatrix<float,3,3> Mat3x3;
+        typedef  FixedMatrix<float,3,4> Mat3x4;
+        typedef  FixedMatrix<float,4,3> Mat4x3;
+        typedef  FixedMatrix<float,4,4> Mat4x4;
+
+        REGISTER_CONFIG_FILE_TYPE(Mat3x3);
+        REGISTER_CONFIG_FILE_TYPE(Mat3x4);
+        REGISTER_CONFIG_FILE_TYPE(Mat4x3);
+        REGISTER_CONFIG_FILE_TYPE(Mat4x4);
+
+        typedef  FixedColVector<float,3> ColVec3;
+        typedef  FixedColVector<float,4> ColVec4;
+
+        typedef  FixedRowVector<float,3> RowVec3;
+        typedef  FixedRowVector<float,4> RowVec4;
+
+        REGISTER_CONFIG_FILE_TYPE(ColVec3);
+        REGISTER_CONFIG_FILE_TYPE(ColVec4);
+        REGISTER_CONFIG_FILE_TYPE(RowVec3);
+        REGISTER_CONFIG_FILE_TYPE(RowVec4);
       }
     } StaticConfigFileTypeRegisteringIntance;
   }
