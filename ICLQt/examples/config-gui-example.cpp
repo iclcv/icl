@@ -1,5 +1,5 @@
-#include <iclCommon.h>
-#include <iclConfigFile.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/ConfigFile.h>
 
 int main(int n, char **ppc){
   pa_init(n,ppc,"-c(1)");

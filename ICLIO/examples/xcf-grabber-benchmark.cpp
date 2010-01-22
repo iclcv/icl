@@ -1,6 +1,6 @@
 #ifdef HAVE_XCF
 #include <vector>
-#include <iclXCFServerGrabber.h>
+#include <ICLIO/XCFServerGrabber.h>
 #ifdef WIN32
 #include <log4cxx/PropertyConfigurator.h>
 #endif

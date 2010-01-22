@@ -1,27 +1,3 @@
-XLDFLAGS= ${LDFLAGS} \
-	-L../../ICLUtils/lib/ -lICLUtils \
-	-L../../ICLCore/lib/ -lICLCore \
-	-L../../ICLCC/lib/ -lICLCC \
-	-L../../ICLQt/lib/ -lICLQt \
-	-L../../ICLQuick/lib/ -lICLQuick \
-	-L../../ICLFilter/lib -lICLFilter \
-	-L../../ICLIO/lib -lICLIO \
-	-L../../ICLBlob/lib -lICLBlob \
-	-L../../ICLGeom/lib -lICLGeom \
-	-L../../ICLAlgorithms/lib -lICLAlgorithms
-
-XCXXFLAGS= ${CXXFLAGS} \
-	-I../../ICLUtils/src \
-	-I../../ICLCore/src \
-	-I../../ICLCC/src \
-	-I../../ICLQt/src \
-	-I../../ICLQuick/src \
-	-I../../ICLFilter/src \
-	-I../../ICLIO/src \
-	-I../../ICLBlob/src \
-	-I../../ICLGeom/src \
-	-I../../ICLAlgorithms/src
-
 #################################################################################
 ## Applications that depend on noting ###########################################
 #################################################################################
@@ -39,32 +15,32 @@ icl-swiss-ranger-demo
 
 
 icl_swiss_ranger_demo_SOURCES=../examples/swiss-ranger-demo.cpp
-icl_swiss_ranger_demo_LDFLAGS=${XLDFLAGS}
-icl_swiss_ranger_demo_CXXFLAGS=${XCXXFLAGS}
+icl_swiss_ranger_demo_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
+icl_swiss_ranger_demo_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
 icl_geom_3D_demo_SOURCES=../examples/geom-3D-demo.cpp
-icl_geom_3D_demo_LDFLAGS=${XLDFLAGS}
-icl_geom_3D_demo_CXXFLAGS=${XCXXFLAGS}
+icl_geom_3D_demo_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
+icl_geom_3D_demo_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
 icl_geom_demo_SOURCES=../examples/geom-demo.cpp
-icl_geom_demo_LDFLAGS=${XLDFLAGS}
-icl_geom_demo_CXXFLAGS=${XCXXFLAGS}
+icl_geom_demo_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
+icl_geom_demo_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
 icl_new_geom_3D_demo_SOURCES=../examples/new-geom-3D-demo.cpp
-icl_new_geom_3D_demo_LDFLAGS=${XLDFLAGS}
-icl_new_geom_3D_demo_CXXFLAGS=${XCXXFLAGS}
+icl_new_geom_3D_demo_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
+icl_new_geom_3D_demo_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
 icl_camera_test_SOURCES=../examples/camera-test.cpp
-icl_camera_test_LDFLAGS=${XLDFLAGS}
-icl_camera_test_CXXFLAGS=${XCXXFLAGS}
+icl_camera_test_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
+icl_camera_test_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
 icl_extrinsic_camera_calibration_SOURCES=../examples/extrinsic-camera-calibration.cpp
-icl_extrinsic_camera_calibration_LDFLAGS=${XLDFLAGS}
-icl_extrinsic_camera_calibration_CXXFLAGS=${XCXXFLAGS}
+icl_extrinsic_camera_calibration_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
+icl_extrinsic_camera_calibration_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
 icl_show_extrinsic_calibration_grid_SOURCES=../examples/show-extrinsic-calibration-grid.cpp
-icl_show_extrinsic_calibration_grid_LDFLAGS=${XLDFLAGS}
-icl_show_extrinsic_calibration_grid_CXXFLAGS=${XCXXFLAGS}
+icl_show_extrinsic_calibration_grid_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
+icl_show_extrinsic_calibration_grid_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
 
 if HAVE_IPP_COND
@@ -76,8 +52,8 @@ icl_intrinsic_camera_calibration_SOURCES= \
 	../examples/intrinsic-camera-calibration.cpp \
 	../examples/intrinsic-camera-calibration-tools.cpp
 
-icl_intrinsic_camera_calibration_LDFLAGS=${XLDFLAGS}
-icl_intrinsic_camera_calibration_CXXFLAGS=${XCXXFLAGS}
+icl_intrinsic_camera_calibration_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
+icl_intrinsic_camera_calibration_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
 endif
 

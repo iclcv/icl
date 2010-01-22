@@ -1,11 +1,11 @@
-#include "iclConverter.h"
-#include "iclCCFunctions.h"
-#include "iclImg.h"
-#include "iclTestImages.h"
-#include <iclCommon.h>
-#include <iclBinaryArithmeticalOp.h>
+#include <ICLCC/Converter.h>
+#include <ICLCC/CCFunctions.h>
+#include <ICLIO/TestImages.h>
+#include <ICLQuick/Common.h>
+#include <ICLFilter/BinaryArithmeticalOp.h>
+#include <ICLUtils/StackTimer.h>
 #include <numeric>
-#include <iclStackTimer.h>
+
 int main(){
 
   Img8u a(Size(1000,1000),formatRGB);

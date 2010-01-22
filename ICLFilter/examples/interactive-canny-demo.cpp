@@ -1,7 +1,6 @@
-#include <iclCommon.h>
-
-#include <iclCannyOp.h>
-#include <iclConvolutionOp.h>
+#include <ICLQuick/Common.h>
+#include <ICLFilter/CannyOp.h>
+#include <ICLFilter/ConvolutionOp.h>
 
 
 GUI gui("vsplit");

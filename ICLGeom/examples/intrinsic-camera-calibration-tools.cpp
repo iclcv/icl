@@ -1,6 +1,6 @@
 #include "intrinsic-camera-calibration-tools.h"
-#include <iclRandom.h>
-#include <iclStochasticOptimizer.h>
+#include <ICLCore/Random.h>
+#include <ICLUtils/StochasticOptimizer.h>
 
 namespace icl{
  

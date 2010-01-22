@@ -1,6 +1,5 @@
-#include <iclCommon.h>
-#include <iclCamera.h>
-#include <iclFixedVector.h>
+#include <ICLQuick/Common.h>
+#include <ICLGeom/Camera.h>
 #include <fstream>
 
 void get_angles(const FixedMatrix<float,3,3> &M, float &rx, float &ry, float &rz){

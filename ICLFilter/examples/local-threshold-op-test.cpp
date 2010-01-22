@@ -1,17 +1,11 @@
-#include <iclQuick.h>
-#include <iclGUI.h>
-#include <iclQt.h>
-#include <iclStringUtils.h>
-#include <iclGenericGrabber.h>
-#include <iclFileGrabber.h>
-#include <iclFileWriter.h>
-#include <iclLocalThresholdOp.h>
-#include <iclProgArg.h>
-#include <iclThread.h>
-#include <iclCCFunctions.h>
-#include <iclConfigFile.h>
+#include <ICLIO/FileGrabber.h>
+#include <ICLIO/FileWriter.h>
+#include <ICLFilter/LocalThresholdOp.h>
+#include <ICLCC/CCFunctions.h>
+#include <ICLUtils/ConfigFile.h>
+#include <ICLQuick/Common.h>
+
 #include <QInputDialog>
-#include <iclMutex.h>
 GUI gui("hbox");
 GUI zoomGUI;
 static Point zoomCenter(320,240);

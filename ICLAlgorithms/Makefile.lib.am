@@ -1,43 +1,35 @@
 # libtool libs
 lib_LTLIBRARIES=libICLAlgorithms.la
+libICLAlgorithms_la_CXXFLAGS=@ICLAlgorithms_CXXFLAGS@ @ICLAlgorithms_CXXCPP@
+libICLAlgorithms_la_LDFLAGS=@ICLAlgorithms_LDFLAGS@ @ICLAlgorithms_LIBS@
+includedir=${prefix}/include/ICL/ICLAlgorithms
 
 libICLAlgorithms_la_SOURCES= \
-../src/iclSOM.cpp \
-../src/iclHoughLine.cpp
+../src/SOM.cpp \
+../src/HoughLine.cpp
 
 include_HEADERS= \
-../src/iclSOM2D.h \
-../src/iclSOM.h \
-../src/iclHoughLine.h
-
-libICLAlgorithms_la_CXXFLAGS=${AM_CXXFLAGS} \
--I../../ICLCore/src \
--I../../ICLUtils/src \
--I../../ICLCC/src \
--I../../ICLIO/src \
--I../../ICLFilter/src \
--I../../ICLBlob/src \
--I../../ICLQuick/src \
--I../../ICLAlgorithms/src
+../../include/ICLAlgorithms/SOM2D.h \
+../../include/ICLAlgorithms/SOM.h \
+../../include/ICLAlgorithms/HoughLine.h
 
 if HAVE_IPP_COND
 libICLAlgorithms_la_SOURCES+= \
-../src/iclUsefulFunctions.cpp \
-../src/iclViewBasedTemplateMatcher.cpp \
-../src/iclHoughLineDetector.cpp
+../src/UsefulFunctions.cpp \
+../src/ViewBasedTemplateMatcher.cpp \
+../src/HoughLineDetector.cpp
 
 include_HEADERS+= \
-../src/iclUsefulFunctions.h \
-../src/iclViewBasedTemplateMatcher.h \
-../src/iclHoughLineDetector.h
+../../include/ICLAlgorithms/UsefulFunctions.h \
+../../include/ICLAlgorithms/ViewBasedTemplateMatcher.h \
+../../include/ICLAlgorithms/HoughLineDetector.h
 endif
 
 
 if HAVE_SVS_COND	
 libICLAlgorithms_la_SOURCES+= \
-../src/iclSVS.cpp 
+../src/SVS.cpp 
 
 include_HEADERS+= \
-../src/iclSVS.h
-
+../../include/ICLAlgorithms/SVS.h
 endif

@@ -1,6 +1,7 @@
-#include <iclCommon.h>
-#include <iclSimpleBlobSearcher.h>
-#include <iclFPSLimiter.h>
+#include <ICLQuick/Common.h>
+#include <ICLBlob/SimpleBlobSearcher.h>
+#include <ICLUtils/FPSLimiter.h>
+
 GUI gui;
 GenericGrabber *grabber;
 SimpleBlobSearcher S;

@@ -1,5 +1,5 @@
-#include <iclWienerOp.h>
-#include <iclQuick.h>
+#include <ICLFilter/WienerOp.h>
+#include <ICLQuick/Quick.h>
 
 int main(){
   ImgQ src = create("parrot");

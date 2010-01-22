@@ -1,6 +1,6 @@
-#include <iclCommon.h>
-#include <iclConfigFile.h>
-#include <iclConfigEntry.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/ConfigFile.h>
+#include <ICLQt/ConfigEntry.h>
 
 GUI gui("hbox");
 GenericGrabber *grabber = 0;

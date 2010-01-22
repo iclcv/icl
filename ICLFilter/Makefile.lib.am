@@ -1,101 +1,97 @@
 # libtool libs
 lib_LTLIBRARIES=libICLFilter.la
+libICLFilter_la_CXXFLAGS=@ICLFilter_CXXFLAGS@ @ICLFilter_CXXCPP@
+libICLFilter_la_LDFLAGS=@ICLFilter_LDFLAGS@ @ICLFilter_LIBS@
+includedir=${prefix}/include/ICL/ICLFilter
 
 libICLFilter_la_SOURCES= \
-../src/iclAffineOp.cpp \
-../src/iclBinaryArithmeticalOp.cpp \
-../src/iclBinaryCompareOp.cpp \
-../src/iclBinaryLogicalOp.cpp \
-../src/iclChamferOp.cpp \
-../src/iclConvolutionKernel.cpp \
-../src/iclConvolutionOp.cpp \
-../src/iclDynamicConvolutionOp.cpp \
-../src/iclGaborOp.cpp \
-../src/iclGradientImage.cpp \
-../src/iclImageSplitter.cpp \
-../src/iclInplaceArithmeticalOp.cpp \
-../src/iclInplaceLogicalOp.cpp \
-../src/iclIntegralImgOp.cpp \
-../src/iclLocalThresholdOp.cpp \
-../src/iclLUTOp3Channel.cpp \
-../src/iclLUTOp.cpp \
-../src/iclMedianOp.cpp \
-../src/iclMirrorOp.cpp \
-../src/iclMorphologicalOp.cpp \
-../src/iclNeighborhoodOp.cpp \
-../src/iclOpROIHandler.cpp \
-../src/iclProximityOp.cpp \
-../src/iclThresholdOp.cpp \
-../src/iclUnaryArithmeticalOp.cpp \
-../src/iclUnaryCompareOp.cpp \
-../src/iclUnaryLogicalOp.cpp \
-../src/iclUnaryOp.cpp \
-../src/iclBinaryOp.cpp \
-../src/iclUnaryOpPipe.cpp \
-../src/iclWeightChannelsOp.cpp \
-../src/iclWeightedSumOp.cpp \
-../src/iclWarpOp.cpp
+../src/AffineOp.cpp \
+../src/BinaryArithmeticalOp.cpp \
+../src/BinaryCompareOp.cpp \
+../src/BinaryLogicalOp.cpp \
+../src/ChamferOp.cpp \
+../src/ConvolutionKernel.cpp \
+../src/ConvolutionOp.cpp \
+../src/DynamicConvolutionOp.cpp \
+../src/GaborOp.cpp \
+../src/GradientImage.cpp \
+../src/ImageSplitter.cpp \
+../src/InplaceArithmeticalOp.cpp \
+../src/InplaceLogicalOp.cpp \
+../src/IntegralImgOp.cpp \
+../src/LocalThresholdOp.cpp \
+../src/LUTOp3Channel.cpp \
+../src/LUTOp.cpp \
+../src/MedianOp.cpp \
+../src/MirrorOp.cpp \
+../src/MorphologicalOp.cpp \
+../src/NeighborhoodOp.cpp \
+../src/OpROIHandler.cpp \
+../src/ProximityOp.cpp \
+../src/ThresholdOp.cpp \
+../src/UnaryArithmeticalOp.cpp \
+../src/UnaryCompareOp.cpp \
+../src/UnaryLogicalOp.cpp \
+../src/UnaryOp.cpp \
+../src/BinaryOp.cpp \
+../src/UnaryOpPipe.cpp \
+../src/WeightChannelsOp.cpp \
+../src/WeightedSumOp.cpp \
+../src/WarpOp.cpp
 
 
 include_HEADERS= \
-../src/iclAffineOp.h \
-../src/iclBaseAffineOp.h \
-../src/iclBinaryArithmeticalOp.h \
-../src/iclBinaryCompareOp.h \
-../src/iclBinaryLogicalOp.h \
-../src/iclBinaryOp.h \
-../src/iclChamferOp.h \
-../src/iclConvolutionKernel.h \
-../src/iclConvolutionOp.h \
-../src/iclDynamicConvolutionOp.h \
-../src/iclFilter.h \
-../src/iclGaborOp.h \
-../src/iclGradientImage.h \
-../src/iclImageSplitter.h \
-../src/iclInplaceArithmeticalOp.h \
-../src/iclInplaceLogicalOp.h \
-../src/iclInplaceOp.h \
-../src/iclIntegralImgOp.h \
-../src/iclLocalThresholdOp.h \
-../src/iclLUT2D.h \
-../src/iclLUTOp3Channel.h \
-../src/iclLUTOp.h \
-../src/iclMedianOp.h \
-../src/iclMirrorOp.h \
-../src/iclMorphologicalOp.h \
-../src/iclNeighborhoodOp.h \
-../src/iclOpROIHandler.h \
-../src/iclProximityOp.h \
-../src/iclRotateOp.h \
-../src/iclScaleOp.h \
-../src/iclThresholdOp.h \
-../src/iclTranslateOp.h \
-../src/iclUnaryArithmeticalOp.h \
-../src/iclUnaryCompareOp.h \
-../src/iclUnaryLogicalOp.h \
-../src/iclUnaryOp.h \
-../src/iclUnaryOpPipe.h \
-../src/iclUnaryOpWork.h \
-../src/iclWeightChannelsOp.h \
-../src/iclWeightedSumOp.h \
-../src/iclWarpOp.h
-
-
+../../include/ICLFilter/AffineOp.h \
+../../include/ICLFilter/BaseAffineOp.h \
+../../include/ICLFilter/BinaryArithmeticalOp.h \
+../../include/ICLFilter/BinaryCompareOp.h \
+../../include/ICLFilter/BinaryLogicalOp.h \
+../../include/ICLFilter/BinaryOp.h \
+../../include/ICLFilter/ChamferOp.h \
+../../include/ICLFilter/ConvolutionKernel.h \
+../../include/ICLFilter/ConvolutionOp.h \
+../../include/ICLFilter/DynamicConvolutionOp.h \
+../../include/ICLFilter/Filter.h \
+../../include/ICLFilter/GaborOp.h \
+../../include/ICLFilter/GradientImage.h \
+../../include/ICLFilter/ImageSplitter.h \
+../../include/ICLFilter/InplaceArithmeticalOp.h \
+../../include/ICLFilter/InplaceLogicalOp.h \
+../../include/ICLFilter/InplaceOp.h \
+../../include/ICLFilter/IntegralImgOp.h \
+../../include/ICLFilter/LocalThresholdOp.h \
+../../include/ICLFilter/LUT2D.h \
+../../include/ICLFilter/LUTOp3Channel.h \
+../../include/ICLFilter/LUTOp.h \
+../../include/ICLFilter/MedianOp.h \
+../../include/ICLFilter/MirrorOp.h \
+../../include/ICLFilter/MorphologicalOp.h \
+../../include/ICLFilter/NeighborhoodOp.h \
+../../include/ICLFilter/OpROIHandler.h \
+../../include/ICLFilter/ProximityOp.h \
+../../include/ICLFilter/RotateOp.h \
+../../include/ICLFilter/ScaleOp.h \
+../../include/ICLFilter/ThresholdOp.h \
+../../include/ICLFilter/TranslateOp.h \
+../../include/ICLFilter/UnaryArithmeticalOp.h \
+../../include/ICLFilter/UnaryCompareOp.h \
+../../include/ICLFilter/UnaryLogicalOp.h \
+../../include/ICLFilter/UnaryOp.h \
+../../include/ICLFilter/UnaryOpPipe.h \
+../../include/ICLFilter/UnaryOpWork.h \
+../../include/ICLFilter/WeightChannelsOp.h \
+../../include/ICLFilter/WeightedSumOp.h \
+../../include/ICLFilter/WarpOp.h
 
 if HAVE_IPP_COND
 
 libICLFilter_la_SOURCES+= \
-../src/iclWienerOp.cpp \
-../src/iclCannyOp.cpp
+../src/WienerOp.cpp \
+../src/CannyOp.cpp
 
 include_HEADERS+= \
-../src/iclWienerOp.h \
-../src/iclCannyOp.h
+../../include/ICLFilter/WienerOp.h \
+../../include/ICLFilter/CannyOp.h
 
 endif
 
-# include other packages here!
-libICLFilter_la_CXXFLAGS=${AM_CXXFLAGS} \
-	-I../../ICLUtils/src \
-	-I../../ICLCore/src \
-	-I../../ICLCC/src 

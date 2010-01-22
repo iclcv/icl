@@ -1,12 +1,12 @@
-#include <iclXCFPublisher.h>
-#include <iclXCFPublisherGrabber.h>
-#include <iclCommon.h>
-#include <iclFPSEstimator.h>
-#include <iclFPSLimiter.h>
-#include <iclIOFunctions.h>
+#include <ICLIO/XCFPublisher.h>
+#include <ICLIO/XCFPublisherGrabber.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/FPSEstimator.h>
+#include <ICLUtils/FPSLimiter.h>
+#include <ICLIO/IOFunctions.h>
 
-#include <iclMedianOp.h>
-#include <iclConvolutionOp.h>
+#include <ICLFilter/MedianOp.h>
+#include <ICLFilter/ConvolutionOp.h>
 
 std::string uri,stream;
 GUI gui("vbox");

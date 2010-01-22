@@ -1,5 +1,5 @@
-#include <iclStringUtils.h>
-#include <iclMacros.h>
+#include <ICLUtils/StringUtils.h>
+#include <ICLUtils/Macros.h>
 
 using namespace icl;
 

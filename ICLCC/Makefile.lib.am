@@ -1,26 +1,26 @@
 # libtool libs
 lib_LTLIBRARIES=libICLCC.la
+libICLCC_la_CXXFLAGS=@ICLCC_CXXFLAGS@ @ICLCC_CXXCPP@
+libICLCC_la_LDFLAGS=@ICLCC_LDFLAGS@ @ICLCC_LIBS@
+includedir=${prefix}/include/ICL/ICLCC
 
 libICLCC_la_SOURCES= \
-../src/iclBayer.cpp \
-../src/iclCCFunctions.cpp \
-../src/iclCCLUT.cpp \
-../src/iclColor.cpp \
-../src/iclConverter.cpp \
-../src/iclFixedConverter.cpp
+../src/Bayer.cpp \
+../src/CCFunctions.cpp \
+../src/CCLUT.cpp \
+../src/Color.cpp \
+../src/Converter.cpp \
+../src/FixedConverter.cpp
 
 include_HEADERS= \
-../src/iclBayer.h \
-../src/iclCC.h \
-../src/iclCCFunctions.h \
-../src/iclCCLUT.h \
-../src/iclChromaAndRGBClassifier.h \
-../src/iclChromaClassifier.h \
-../src/iclColor.h \
-../src/iclConverter.h \
-../src/iclFixedConverter.h \
-../src/iclParable.h
+../../include/ICLCC/Bayer.h \
+../../include/ICLCC/CC.h \
+../../include/ICLCC/CCFunctions.h \
+../../include/ICLCC/CCLUT.h \
+../../include/ICLCC/ChromaAndRGBClassifier.h \
+../../include/ICLCC/ChromaClassifier.h \
+../../include/ICLCC/Color.h \
+../../include/ICLCC/Converter.h \
+../../include/ICLCC/FixedConverter.h \
+../../include/ICLCC/Parable.h
 
-libICLCC_la_CXXFLAGS=${AM_CXXFLAGS} \
-	-I../../ICLCore/src \
-	-I../../ICLUtils/src 

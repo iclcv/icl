@@ -1,10 +1,9 @@
-#include "iclCCFunctions.h"
-#include "iclImg.h"
-#include "iclFileGrabber.h"
-#include "iclFileWriter.h"
-#include "iclBayer.h"
-#include "iclImg.h"
-#include "iclTimer.h"
+#include <ICLCC/CCFunctions.h>
+#include <ICLCore/Img.h>
+#include <ICLIO/FileGrabber.h>
+#include <ICLIO/FileWriter.h>
+#include <ICLCC/Bayer.h>
+#include <ICLUtils/Timer.h>
 
 using namespace icl;
 using namespace std;

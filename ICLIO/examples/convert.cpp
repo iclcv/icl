@@ -1,8 +1,8 @@
-#include <iclFileGrabber.h>
-#include <iclFileWriter.h>
-#include <iclFixedConverter.h>
-#include <iclCommon.h>
-#include <iclSize32f.h>
+#include <ICLIO/FileGrabber.h>
+#include <ICLIO/FileWriter.h>
+#include <ICLCC/FixedConverter.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/Size32f.h>
 
 int main(int n, char **ppc){
   pa_explain("-i","specify input file (type by filename extension)\n\t[also as 1st unspecified arg]");

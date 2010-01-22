@@ -1,0 +1,1 @@
+#include <ICLQt/CamThread.h>

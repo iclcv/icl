@@ -1,5 +1,5 @@
-#include <iclChromaGUI.h>
-#include <iclCommon.h>
+#include <ICLQt/ChromaGUI.h>
+#include <ICLQuick/Common.h>
 
 using namespace icl;
 using namespace std;

@@ -1,8 +1,8 @@
 #include <QApplication>
 #include <QTimer>
-#include <iclCamThread.h>
-#include <iclDCGrabber.h>
-#include <iclProgArg.h>
+#include <ICLQt/CamThread.h>
+#include <ICLIO/DCGrabber.h>
+#include <ICLUtils/ProgArg.h>
 
 using namespace std;
 

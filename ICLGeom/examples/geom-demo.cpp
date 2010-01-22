@@ -1,6 +1,6 @@
-#include <iclCommon.h>
-#include <iclGeom.h>
-#include <iclFPSLimiter.h>
+#include <ICLQuick/Common.h>
+#include <ICLGeom/Geom.h>
+#include <ICLUtils/FPSLimiter.h>
 
 GUI gui;
 Scene2 scene;

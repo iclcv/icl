@@ -1,39 +1,38 @@
 # libtool libs
 lib_LTLIBRARIES=libICLCore.la
+libICLCore_la_CXXFLAGS=@ICLCore_CXXFLAGS@ @ICLCore_CXXCPP@
+libICLCore_la_LDFLAGS=@ICLCore_LDFLAGS@ @ICLCore_LIBS@
+includedir=${prefix}/include/ICL/ICLCore
 
 libICLCore_la_SOURCES= \
-../src/iclCoreFunctions.cpp \
-../src/iclImgBase.cpp \
-../src/iclImgBorder.cpp \
-../src/iclImg.cpp \
-../src/iclImgParams.cpp \
-../src/iclLine32f.cpp \
-../src/iclLine.cpp \
-../src/iclMathematics.cpp \
-../src/iclRandom.cpp \
-../src/iclCornerDetectorCSS.cpp \
-../src/iclSampledLine.cpp \
-../src/iclLineSampler.cpp
+../src/CoreFunctions.cpp \
+../src/ImgBase.cpp \
+../src/ImgBorder.cpp \
+../src/Img.cpp \
+../src/ImgParams.cpp \
+../src/Line32f.cpp \
+../src/Line.cpp \
+../src/Mathematics.cpp \
+../src/Random.cpp \
+../src/CornerDetectorCSS.cpp \
+../src/SampledLine.cpp \
+../src/LineSampler.cpp
 
 include_HEADERS= \
-../src/iclCore.h \
-../src/iclCoreFunctions.h \
-../src/iclImgBase.h \
-../src/iclImgBorder.h \
-../src/iclChannel.h \
-../src/iclImg.h \
-../src/iclImgIterator.h \
-../src/iclImgParams.h \
-../src/iclLine32f.h \
-../src/iclLine.h \
-../src/iclMathematics.h \
-../src/iclTypes.h \
-../src/iclRandom.h \
-../src/iclPixelRef.h \
-../src/iclCornerDetectorCSS.h \
-../src/iclLineSampler.h \
-../src/iclSampledLine.h
-
-libICLCore_la_CXXFLAGS=${AM_CXXFLAGS} \
-	-I../../ICLUtils/src
-
+../../include/ICLCore/Core.h \
+../../include/ICLCore/CoreFunctions.h \
+../../include/ICLCore/ImgBase.h \
+../../include/ICLCore/ImgBorder.h \
+../../include/ICLCore/Channel.h \
+../../include/ICLCore/Img.h \
+../../include/ICLCore/ImgIterator.h \
+../../include/ICLCore/ImgParams.h \
+../../include/ICLCore/Line32f.h \
+../../include/ICLCore/Line.h \
+../../include/ICLCore/Mathematics.h \
+../../include/ICLCore/Types.h \
+../../include/ICLCore/Random.h \
+../../include/ICLCore/PixelRef.h \
+../../include/ICLCore/CornerDetectorCSS.h \
+../../include/ICLCore/LineSampler.h \
+../../include/ICLCore/SampledLine.h

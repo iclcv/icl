@@ -1,5 +1,5 @@
-#include <iclSampledLine.h>
-#include <iclRandom.h>
+#include <ICLCore/SampledLine.h>
+#include <ICLCore/Random.h>
 
 int main(){
   icl::randomSeed();

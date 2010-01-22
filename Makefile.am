@@ -39,7 +39,14 @@ install-data-local:
 	${INSTALL_DATA} doc/logo.jpg ${prefix}/doc/ICL
 	${MKDIR_P} ${prefix}/lib
 	${MKDIR_P} ${prefix}/lib/pkgconfig
-	if [ -e icl.pc ] ; then ${INSTALL_DATA} icl.pc ${prefix}/lib/pkgconfig ; fi
+	@for T in ${PACKAGES} icl ; do \
+		if [ -e $${T}.pc ] ; then \
+			${INSTALL_DATA} $${T}.pc ${prefix}/lib/pkgconfig ; \
+			echo installing $${T}.pc to ${prefix}/lib/pkgconfig/$${T}.pc ; \
+		else \
+			echo ERROR: $${T}.pc is missing ; \
+		fi \
+	done
 	${INSTALL_PROGRAM} scripts/icl-make ${prefix}/bin
 	${INSTALL_PROGRAM} scripts/icl-create-project ${prefix}/bin
 	sed -i "s|RESOURCE_DIR_PLACEHOLDER|${prefix}/etc|g" ${prefix}/bin/icl-create-project

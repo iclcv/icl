@@ -1,5 +1,5 @@
-#include <iclFixedMatrix.h>
-#include <iclStackTimer.h>
+#include <ICLUtils/FixedMatrix.h>
+#include <ICLUtils/StackTimer.h>
 using namespace icl;
 
 #define N 1000000

@@ -1,11 +1,9 @@
-#include <iclQuick.h>
-#include <iclGeom.h>
+#include <ICLGeom/Geom.h>
+#include <ICLGeom/Scene.h>
+#include <ICLGeom/Camera.h>
+#include <ICLGeom/CubeObject.h>
 
-#include <iclScene.h>
-#include <iclCamera.h>
-#include <iclCubeObject.h>
-
-#include <iclCommon.h>
+#include <ICLQuick/Common.h>
 
 GUI gui("hsplit");
 

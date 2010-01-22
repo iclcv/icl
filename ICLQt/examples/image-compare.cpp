@@ -1,6 +1,6 @@
-#include <iclCommon.h>
-#include <iclBinaryArithmeticalOp.h>
-#include <iclBinaryCompareOp.h>
+#include <ICLQuick/Common.h>
+#include <ICLFilter/BinaryArithmeticalOp.h>
+#include <ICLFilter/BinaryCompareOp.h>
 
 void usage_exit(){
   std::cout << "usage:\n\ticl-compare-images <1st image> <2nd image> [out-file-name]" << std::endl;

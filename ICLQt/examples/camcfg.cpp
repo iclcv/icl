@@ -1,6 +1,6 @@
-#include <iclCamCfgWidget.h>
+#include <ICLQt/CamCfgWidget.h>
 #include <QApplication>
-#include <iclProgArg.h>
+#include <ICLUtils/ProgArg.h>
 
 using namespace icl;
 using namespace std;

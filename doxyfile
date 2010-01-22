@@ -81,7 +81,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = ../src
+INPUT                  = ../../include/ICL_SUB_PACKAGE_PLACEHOLDER
 FILE_PATTERNS          = *.h
 RECURSIVE              = NO
 EXCLUDE                = 

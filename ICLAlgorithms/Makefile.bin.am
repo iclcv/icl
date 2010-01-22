@@ -1,26 +1,3 @@
-XLDFLAGS= ${LDFLAGS} \
-	-L../../ICLUtils/lib/ -lICLUtils \
-	-L../../ICLCore/lib/ -lICLCore \
-	-L../../ICLCC/lib/ -lICLCC \
-	-L../../ICLQuick/lib/ -lICLQuick \
-	-L../../ICLFilter/lib -lICLFilter \
-	-L../../ICLGeom/lib -lICLGeom \
-	-L../../ICLIO/lib -lICLIO \
-	-L../../ICLBlob/lib -lICLBlob \
-	-L../../ICLAlgorithms/lib -lICLAlgorithms
-
-
-XCXXFLAGS= ${CXXFLAGS} \
-	-I../../ICLUtils/src \
-	-I../../ICLGeom/src \
-	-I../../ICLCore/src \
-	-I../../ICLCC/src \
-	-I../../ICLQuick/src \
-	-I../../ICLFilter/src \
-	-I../../ICLIO/src \
-	-I../../ICLBlob/src \
-	-I../../ICLAlgorithms/src
-
 ###############################################################################
 ## Applications that depend on IPP ############################################
 ###############################################################################
@@ -32,8 +9,8 @@ bin_PROGRAMS+= \
 icl-template-matching-test
 
 icl_template_matching_test_SOURCES=../examples/template-matching-test.cpp
-icl_template_matching_test_LDFLAGS=${XLDFLAGS}
-icl_template_matching_test_CXXFLAGS=${XCXXFLAGS}
+icl_template_matching_test_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
+icl_template_matching_test_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
 
 ###############################################################################
 ## Applications that depend on IPP and QT #####################################
@@ -41,16 +18,16 @@ icl_template_matching_test_CXXFLAGS=${XCXXFLAGS}
 
 if HAVE_QT_COND
 
-XLDFLAGS += -L../../ICLQt/lib -lICLQt
+ICLAlgorithms_EXAMPLE_LDFLAGS += -L../../ICLQt/lib -lICLQt
 
-XCXXFLAGS += -I../../ICLQt/src
+ICLAlgorithms_EXAMPLE_CXXFLAGS += -I../../ICLQt/src
 
 bin_PROGRAMS+= \
 icl-interactive-template-matching-demo
 
 icl_interactive_template_matching_demo_SOURCES=../examples/interactive-template-matching-demo.cpp
-icl_interactive_template_matching_demo_LDFLAGS=${XLDFLAGS}
-icl_interactive_template_matching_demo_CXXFLAGS=${XCXXFLAGS}
+icl_interactive_template_matching_demo_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
+icl_interactive_template_matching_demo_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
 
 
 if HAVE_SVS_COND
@@ -59,8 +36,8 @@ bin_PROGRAMS+= \
 icl-svs-online-demo
 
 icl_svs_online_demo_SOURCES=../examples/svs-online-demo.cpp
-icl_svs_online_demo_LDFLAGS=${XLDFLAGS}
-icl_svs_online_demo_CXXFLAGS=${XCXXFLAGS}
+icl_svs_online_demo_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
+icl_svs_online_demo_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
 
 endif
 
@@ -77,11 +54,11 @@ icl-svs-test \
 icl-svs-create-ini-file
 
 icl_svs_test_SOURCES=../examples/svs-test.cpp
-icl_svs_test_LDFLAGS=${XLDFLAGS}
-icl_svs_test_CXXFLAGS=${XCXXFLAGS}
+icl_svs_test_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
+icl_svs_test_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
 
 icl_svs_create_ini_file_SOURCES=../examples/svs-create-ini-file.cpp
-icl_svs_create_ini_file_LDFLAGS=${XLDFLAGS}
-icl_svs_create_ini_file_CXXFLAGS=${XCXXFLAGS}
+icl_svs_create_ini_file_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
+icl_svs_create_ini_file_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
 
 endif

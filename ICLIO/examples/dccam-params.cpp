@@ -1,5 +1,5 @@
-#include <iclCommon.h>
-#include <iclGenericGrabber.h>
+#include <ICLQuick/Common.h>
+#include <ICLIO/GenericGrabber.h>
 
 namespace{
   void write_spaces(int n, char c=' '){

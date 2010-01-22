@@ -1,6 +1,4 @@
-#include <iclCommon.h>
-#include <iclGenericGrabber.h>
-#include <stdexcept>
+#include <ICLQuick/Common.h>
 
 #define DBG(X) if(pa_defined("-v")) std::cout << X << std::endl
 

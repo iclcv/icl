@@ -1,5 +1,6 @@
-#include <iclProgArg.h>
-#include <iclXCFMemoryListener.h>
+#include <ICLUtils/ProgArg.h>
+#include <ICLIO/XCFMemoryListener.h>
+
 using namespace icl;
 
 int main(int n, char **ppc){

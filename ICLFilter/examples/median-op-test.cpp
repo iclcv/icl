@@ -1,5 +1,5 @@
-#include <iclMedianOp.h>
-#include <iclCommon.h>
+#include <ICLFilter/MedianOp.h>
+#include <ICLQuick/Common.h>
 
 int main(){
   Img8u image = cvt8u(scale(create("parrot"),0.4));

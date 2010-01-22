@@ -1,21 +1,15 @@
 # libtool libs
-OBJDIR=./obj
 lib_LTLIBRARIES=libICLQuick.la
+libICLQuick_la_CXXFLAGS=@ICLQuick_CXXFLAGS@ @ICLQuick_CXXCPP@
+libICLQuick_la_LDFLAGS=@ICLQuick_LDFLAGS@ @ICLQuick_LIBS@
+includedir=${prefix}/include/ICL/ICLQuick
 
-libICLQuick_la_SOURCES=../src/iclQuick.cpp ../src/iclQuickRegions.cpp
+libICLQuick_la_SOURCES= \
+	../src/Quick.cpp \
+	../src/QuickRegions.cpp
 
 include_HEADERS= \
-	../src/iclQuick.h \
-	../src/iclQuickDocumentation.h \
-	../src/iclQuickRegions.h \
-	../src/iclCommon.h
-
-# include other packages here!
-libICLQuick_la_CXXFLAGS=${AM_CXXFLAGS} \
-	-I../../ICLUtils/src \
-	-I../../ICLCore/src \
-	-I../../ICLQt/src \
-	-I../../ICLCC/src \
-	-I../../ICLIO/src \
-	-I../../ICLBlob/src \
-	-I../../ICLFilter/src
+	../../include/ICLQuick/Quick.h \
+	../../include/ICLQuick/QuickDocumentation.h \
+	../../include/ICLQuick/QuickRegions.h \
+	../../include/ICLQuick/Common.h

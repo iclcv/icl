@@ -1,7 +1,7 @@
-#include <iclPositionTracker.h>
-#include <iclFPSEstimator.h>
-#include <iclRegionDetector.h>
-#include <iclCommon.h>
+#include <ICLBlob/PositionTracker.h>
+#include <ICLUtils/FPSEstimator.h>
+#include <ICLBlob/RegionDetector.h>
+#include <ICLQuick/Common.h>
 
 typedef std::vector<int> vec;
 

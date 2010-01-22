@@ -1,42 +1,34 @@
 # libtool libs
 lib_LTLIBRARIES=libICLGeom.la
+libICLGeom_la_CXXFLAGS=@ICLGeom_CXXFLAGS@ @ICLGeom_CXXCPP@
+libICLGeom_la_LDFLAGS=@ICLGeom_LDFLAGS@ @ICLGeom_LIBS@
+includedir=${prefix}/include/ICL/ICLGeom
 
 libICLGeom_la_SOURCES= \
-../src/iclBorderedObject.cpp \
-../src/iclCamera.cpp \
-../src/iclConvexHullMonotoneChain.cpp \
-../src/iclCubeObject.cpp \
-../src/iclObject.cpp \
-../src/iclScene.cpp \
-../src/iclObject2.cpp \
-../src/iclScene2.cpp \
-../src/iclExtrinsicCameraCalibrator.cpp \
-../src/iclPlaneEquation.cpp \
-../src/iclViewRay.cpp
+../src/BorderedObject.cpp \
+../src/Camera.cpp \
+../src/ConvexHullMonotoneChain.cpp \
+../src/CubeObject.cpp \
+../src/Object.cpp \
+../src/Scene.cpp \
+../src/Object2.cpp \
+../src/Scene2.cpp \
+../src/ExtrinsicCameraCalibrator.cpp \
+../src/PlaneEquation.cpp \
+../src/ViewRay.cpp
 
 include_HEADERS= \
-../src/iclBorderedObject.h \
-../src/iclCamera.h \
-../src/iclConvexHullMonotoneChain.h \
-../src/iclCubeObject.h \
-../src/iclGeomDefs.h \
-../src/iclGeom.h \
-../src/iclObject.h \
-../src/iclScene.h \
-../src/iclObject2.h \
-../src/iclScene2.h \
-../src/iclPrimitive.h \
-../src/iclExtrinsicCameraCalibrator.h \
-../src/iclPlaneEquation.h \
-../src/iclViewRay.h
-
-
-
-
-libICLGeom_la_CXXFLAGS=${AM_CXXFLAGS} \
-	-I../../ICLCore/src \
-	-I../../ICLUtils/src \
-	-I../../ICLCC/src \
-	-I../../ICLFilter/src \
-	-I../../ICLQt/src \
-	-I../../ICLQuick/src
+../../include/ICLGeom/BorderedObject.h \
+../../include/ICLGeom/Camera.h \
+../../include/ICLGeom/ConvexHullMonotoneChain.h \
+../../include/ICLGeom/CubeObject.h \
+../../include/ICLGeom/GeomDefs.h \
+../../include/ICLGeom/Geom.h \
+../../include/ICLGeom/Object.h \
+../../include/ICLGeom/Scene.h \
+../../include/ICLGeom/Object2.h \
+../../include/ICLGeom/Scene2.h \
+../../include/ICLGeom/Primitive.h \
+../../include/ICLGeom/ExtrinsicCameraCalibrator.h \
+../../include/ICLGeom/PlaneEquation.h \
+../../include/ICLGeom/ViewRay.h

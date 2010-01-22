@@ -1,49 +1,47 @@
 # libtool libs
 lib_LTLIBRARIES=libICLBlob.la
+libICLBlob_la_CXXFLAGS=@ICLBlob_CXXFLAGS@ @ICLBlob_CXXCPP@
+libICLBlob_la_LDFLAGS=@ICLBlob_LDFLAGS@ @ICLBlob_LIBS@
+includedir=${prefix}/include/ICL/ICLBlob
 
 libICLBlob_la_SOURCES= \
-../src/iclColorBlobSearcher.cpp \
-../src/iclDefaultColorBlobSearcher.cpp \
-../src/iclExtrapolator.cpp \
-../src/iclFMCreator.cpp \
-../src/iclHungarianAlgorithm.cpp \
-../src/iclPositionTracker.cpp \
-../src/iclVectorTracker.cpp \
-../src/iclRegionBasedBlobSearcher.cpp \
-../src/iclRegion.cpp \
-../src/iclRegionDetector.cpp \
-../src/iclRegionFilter.cpp \
-../src/iclRegionPCAInfo.cpp \
-../src/iclVQ2D.cpp \
-../src/iclSimpleBlobSearcher.cpp \
-../src/iclMeanShiftTracker.cpp
+../src/ColorBlobSearcher.cpp \
+../src/DefaultColorBlobSearcher.cpp \
+../src/Extrapolator.cpp \
+../src/FMCreator.cpp \
+../src/HungarianAlgorithm.cpp \
+../src/PositionTracker.cpp \
+../src/VectorTracker.cpp \
+../src/RegionBasedBlobSearcher.cpp \
+../src/Region.cpp \
+../src/RegionDetector.cpp \
+../src/RegionFilter.cpp \
+../src/RegionPCAInfo.cpp \
+../src/VQ2D.cpp \
+../src/SimpleBlobSearcher.cpp \
+../src/MeanShiftTracker.cpp
 
 include_HEADERS= \
-../src/iclBlob.h \
-../src/iclColorBlobSearcher.h \
-../src/iclDefaultColorBlobSearcher.h \
-../src/iclExtrapolator.h \
-../src/iclFMCreator.h \
-../src/iclFoundBlob.h \
-../src/iclHungarianAlgorithm.h \
-../src/iclPixelRatingGroup.h \
-../src/iclPixelRating.h \
-../src/iclVectorTracker.h \
-../src/iclRegionBasedBlobSearcher.h \
-../src/iclRegionDetector.h \
-../src/iclRegionFilter.h \
-../src/iclRegion.h \
-../src/iclRegionPart.h \
-../src/iclRegionPCAInfo.h \
-../src/iclScanLine.h \
-../src/iclVQ2D.h \
-../src/iclVQClusterInfo.h \
-../src/iclVQVectorSet.h \
-../src/iclSimpleBlobSearcher.h \
-../src/iclPositionTracker.h \
-../src/iclMeanShiftTracker.h
-
-libICLBlob_la_CXXFLAGS=${AM_CXXFLAGS} \
-	-I../../ICLCore/src \
-	-I../../ICLUtils/src \
-	-I../../ICLCC/src 
+../../include/ICLBlob/Blob.h \
+../../include/ICLBlob/ColorBlobSearcher.h \
+../../include/ICLBlob/DefaultColorBlobSearcher.h \
+../../include/ICLBlob/Extrapolator.h \
+../../include/ICLBlob/FMCreator.h \
+../../include/ICLBlob/FoundBlob.h \
+../../include/ICLBlob/HungarianAlgorithm.h \
+../../include/ICLBlob/PixelRatingGroup.h \
+../../include/ICLBlob/PixelRating.h \
+../../include/ICLBlob/VectorTracker.h \
+../../include/ICLBlob/RegionBasedBlobSearcher.h \
+../../include/ICLBlob/RegionDetector.h \
+../../include/ICLBlob/RegionFilter.h \
+../../include/ICLBlob/Region.h \
+../../include/ICLBlob/RegionPart.h \
+../../include/ICLBlob/RegionPCAInfo.h \
+../../include/ICLBlob/ScanLine.h \
+../../include/ICLBlob/VQ2D.h \
+../../include/ICLBlob/VQClusterInfo.h \
+../../include/ICLBlob/VQVectorSet.h \
+../../include/ICLBlob/SimpleBlobSearcher.h \
+../../include/ICLBlob/PositionTracker.h \
+../../include/ICLBlob/MeanShiftTracker.h

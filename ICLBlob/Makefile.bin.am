@@ -1,26 +1,3 @@
-XLDFLAGS= ${LDFLAGS} \
-	-L../../ICLUtils/lib/ -lICLUtils \
-	-L../../ICLCore/lib/ -lICLCore \
-	-L../../ICLCC/lib/ -lICLCC \
-	-L../../ICLQuick/lib/ -lICLQuick \
-	-L../../ICLFilter/lib -lICLFilter \
-	-L../../ICLIO/lib -lICLIO \
-	-L../../ICLBlob/lib -lICLBlob
-
-XCXXFLAGS= ${CXXFLAGS} \
-	-I../../ICLUtils/src \
-	-I../../ICLCore/src \
-	-I../../ICLCC/src \
-	-I../../ICLQuick/src \
-	-I../../ICLFilter/src \
-	-I../../ICLIO/src \
-	-I../../ICLBlob/src
-
-if HAVE_QT_COND
-XLDFLAGS+=-L../../ICLQt/lib/ -lICLQt
-XCXXFLAGS+=-I../../ICLQt/src
-endif
-
 #################################################################################
 ## Applications that depend on noting ###########################################
 #################################################################################
@@ -32,16 +9,16 @@ icl-region-detector-test
 
 # explicit sources, ldflags and cxxflags
 icl_blobtracker_benchmark_SOURCES=../examples/blobtracker-benchmark.cpp
-icl_blobtracker_benchmark_LDFLAGS=${XLDFLAGS}
-icl_blobtracker_benchmark_CXXFLAGS=${XCXXFLAGS}
+icl_blobtracker_benchmark_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_blobtracker_benchmark_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 icl_region_based_blob_finder_test_SOURCES=../examples/region-based-blob-finder-test.cpp
-icl_region_based_blob_finder_test_LDFLAGS=${XLDFLAGS}
-icl_region_based_blob_finder_test_CXXFLAGS=${XCXXFLAGS}
+icl_region_based_blob_finder_test_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_region_based_blob_finder_test_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 icl_region_detector_test_SOURCES=../examples/region-detector-test.cpp
-icl_region_detector_test_LDFLAGS=${XLDFLAGS}
-icl_region_detector_test_CXXFLAGS=${XCXXFLAGS}
+icl_region_detector_test_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_region_detector_test_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 
 if HAVE_QT_COND
@@ -58,41 +35,41 @@ icl-corner-detection-css-demo \
 icl-online-region-detection-demo
 
 icl_region_inspector_demo_SOURCES=../examples/region-inspector-demo.cpp
-icl_region_inspector_demo_LDFLAGS=${XLDFLAGS}
-icl_region_inspector_demo_CXXFLAGS=${XCXXFLAGS}
+icl_region_inspector_demo_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_region_inspector_demo_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 icl_online_region_detection_demo_SOURCES=../examples/online-region-detection-demo.cpp
-icl_online_region_detection_demo_LDFLAGS=${XLDFLAGS}
-icl_online_region_detection_demo_CXXFLAGS=${XCXXFLAGS}
+icl_online_region_detection_demo_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_online_region_detection_demo_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 
 icl_vector_tracker_demo_SOURCES=../examples/vector-tracker-demo.cpp
-icl_vector_tracker_demo_LDFLAGS=${XLDFLAGS}
-icl_vector_tracker_demo_CXXFLAGS=${XCXXFLAGS}
+icl_vector_tracker_demo_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_vector_tracker_demo_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 icl_interactive_vector_tracker_benchmark_SOURCES=../examples/interactive-vector-tracker-benchmark.cpp
-icl_interactive_vector_tracker_benchmark_LDFLAGS=${XLDFLAGS}
-icl_interactive_vector_tracker_benchmark_CXXFLAGS=${XCXXFLAGS}
+icl_interactive_vector_tracker_benchmark_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_interactive_vector_tracker_benchmark_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 icl_mean_shift_online_demo_SOURCES=../examples/mean-shift-online-demo.cpp
-icl_mean_shift_online_demo_LDFLAGS=${XLDFLAGS}
-icl_mean_shift_online_demo_CXXFLAGS=${XCXXFLAGS}
+icl_mean_shift_online_demo_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_mean_shift_online_demo_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 icl_simple_blob_searcher_test_SOURCES=../examples/simple-blob-searcher-test.cpp
-icl_simple_blob_searcher_test_LDFLAGS=${XLDFLAGS}
-icl_simple_blob_searcher_test_CXXFLAGS=${XCXXFLAGS}
+icl_simple_blob_searcher_test_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_simple_blob_searcher_test_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 icl_tangible_grains_benchmark_SOURCES=../examples/tangible-grains-benchmark.cpp
-icl_tangible_grains_benchmark_LDFLAGS=${XLDFLAGS}
-icl_tangible_grains_benchmark_CXXFLAGS=${XCXXFLAGS}
+icl_tangible_grains_benchmark_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_tangible_grains_benchmark_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 icl_tangible_grains_demo_SOURCES=../examples/tangible-grains-demo.cpp
-icl_tangible_grains_demo_LDFLAGS=${XLDFLAGS}
-icl_tangible_grains_demo_CXXFLAGS=${XCXXFLAGS}
+icl_tangible_grains_demo_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_tangible_grains_demo_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 icl_corner_detection_css_demo_SOURCES=../examples/corner-detection-css-demo.cpp
-icl_corner_detection_css_demo_LDFLAGS=${XLDFLAGS}
-icl_corner_detection_css_demo_CXXFLAGS=${XCXXFLAGS}
+icl_corner_detection_css_demo_LDFLAGS=${ICLBlob_EXAMPLE_LDFLAGS}
+icl_corner_detection_css_demo_CXXFLAGS=${ICLBlob_EXAMPLE_CXXFLAGS}
 
 
 endif

@@ -1,7 +1,7 @@
-#include <iclWeightedSumOp.h>
-#include <iclTestImages.h>
-#include <iclStackTimer.h>
-#include <iclMathematics.h>
+#include <ICLFilter/WeightedSumOp.h>
+#include <ICLIO/TestImages.h>
+#include <ICLUtils/StackTimer.h>
+#include <ICLCore/Mathematics.h>
 #include <vector>
 
 using namespace icl;

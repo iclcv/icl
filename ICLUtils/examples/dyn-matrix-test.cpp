@@ -1,7 +1,7 @@
-#include <iclDynMatrix.h>
-#include <iclFixedMatrixUtils.h>
-#include <iclProgArg.h>
-#include <iclStackTimer.h>
+#include <ICLUtils/DynMatrix.h>
+#include <ICLUtils/FixedMatrixUtils.h>
+#include <ICLUtils/ProgArg.h>
+#include <ICLUtils/StackTimer.h>
 
 using namespace icl;
 

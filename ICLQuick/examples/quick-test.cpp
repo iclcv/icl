@@ -1,11 +1,12 @@
-#include <iclQuick.h>
+#include <ICLQuick/Quick.h>
+#include <ICLBlob/RegionBasedBlobSearcher.h>
+#include <ICLBlob/FMCreator.h>
+#include <ICLBlob/RegionFilter.h>
+
+#include <vector>
 #include <QFont>
 #include <QFontMetrics>
 #include <QApplication>
-#include <iclRegionBasedBlobSearcher.h>
-#include <iclFMCreator.h>
-#include <iclRegionFilter.h>
-#include <vector>
 
 int main(int nargs, char **ppc){
 

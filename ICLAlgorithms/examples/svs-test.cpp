@@ -1,9 +1,9 @@
-#include <iclSVS.h>
-#include <iclCommon.h>
-#include <iclTimer.h>
+#include <ICLAlgorithms/SVS.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/Timer.h>
 #include <iterator>
 #include <fstream>
-#include <iclFile.h>
+#include <ICLIO/File.h>
 
 const char *inifile_light[] = {
   "# SVS Engine v 3.2 Stereo Camera Parameter File",

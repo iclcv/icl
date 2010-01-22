@@ -1,7 +1,7 @@
-#include <iclCommon.h>
-#include <iclDCGrabber.h>
-#include <iclTestImages.h>
-#include <iclFileWriter.h>
+#include <ICLQuick/Common.h>
+#include <ICLIO/DCGrabber.h>
+#include <ICLIO/TestImages.h>
+#include <ICLIO/FileWriter.h>
 
 using namespace icl;
 using namespace std;
