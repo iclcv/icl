@@ -21,10 +21,18 @@ namespace icl{
     return PointPolar(distance(Pos(0,0)),atan2(-v[0],v[1]));
   }
 
+  float StraightLine2D::signedDistance(const Pos &p2) const{
+    Pos p = p2-o;
+    Pos v = this->v/this->v.length();
+    float fac = (p[0]*v[0] + p[1]*v[1]);
+    float dist = ((v*fac)-p).length();
+    return (p[0] * v[1] - p[1] * v[0] > 0) ? dist : -dist;
+  }
+
   float StraightLine2D::distance(const Pos &p2) const{
     Pos p = p2-o;
     Pos v = this->v/this->v.length();
-    float fac = (p[0]*v[0] + p[1]*v[1])/(v[0]*v[0] + v[1]*v[1]);
+    float fac = (p[0]*v[0] + p[1]*v[1]); /*/(v[0]*v[0] + v[1]*v[1]);  = 1!!*/
     return ((v*fac)-p).length();
   }
 
