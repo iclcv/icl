@@ -23,11 +23,16 @@ ICLAlgorithms_EXAMPLE_LDFLAGS += -L../../ICLQt/lib -lICLQt
 ICLAlgorithms_EXAMPLE_CXXFLAGS += -I../../ICLQt/src
 
 bin_PROGRAMS+= \
-icl-interactive-template-matching-demo
+icl-interactive-template-matching-demo \
+icl-interactive-hough-line-demo
 
 icl_interactive_template_matching_demo_SOURCES=../examples/interactive-template-matching-demo.cpp
 icl_interactive_template_matching_demo_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
 icl_interactive_template_matching_demo_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
+
+icl_interactive_hough_line_demo_SOURCES=../examples/interactive-hough-line-demo.cpp
+icl_interactive_hough_line_demo_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
+icl_interactive_hough_line_demo_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
 
 
 if HAVE_SVS_COND
