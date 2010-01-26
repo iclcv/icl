@@ -36,6 +36,11 @@ namespace icl{
     /// computes closest distance to given 2D point
     float distance(const Pos &p) const;
     
+    /// computes closest distance to given 2D point
+    /* result is positive if p is left of this->v
+        and negative otherwise */
+    float signedDistance(const Pos &p) const;
+    
     /// computes intersection with given other straight line
     /** if lines are parallel, an ICLException is thrown */
     Pos intersect(const StraightLine2D &o) const throw(ICLException);
