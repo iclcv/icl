@@ -4,6 +4,7 @@
 #include <ICLQt/Widget.h>
 #include <QMutex>
 #include <ICLUtils/Point32f.h>
+#include <ICLUtils/Rect32f.h>
 
 namespace icl{
   /** \cond */
@@ -195,28 +196,58 @@ int main(int n, char **ppc){
     
     /// draws a line from point (x1,y1) to point (x2,y2)
     void line(float x1, float y1, float x2, float y2);
+    
+    /// convenience function for drawing lines between two points
+    void line(const Point32f &a, const Point32f &b);
 
+    /// draws an arrow from a to b (arrow cap is at b)
+    void arrow(float ax, float ay, float bx, float by, float capsize=10);
+    
+    /// draws an arrow from a to b (arrow cap is at b)
+    void arrow(const Point32f &a, const Point32f &b, float capsize=10);
+    
     /// draws a rect with given parameters
     void rect(float x, float y, float w, float h);
 
+    /// convenience function for drawing float rects
+    void rect(const Rect32f &r);
+
     /// draws a rect from a icl Rect structure
-    void rect(Rect r);
+    void rect(const Rect &r);
 
     /// draws a triangle defined by 3 points
     void triangle(float x1, float y1, float x2, float y2, float x3, float y3); 
     
+    /// draws a triangle defined by 3 points
+    void triangle(const Point32f &a, const Point32f &b, const Point32f &c);
+    
     /// draws a quad with given 4 points 
     void quad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4); 
 
+    /// draws a quad with given 4 points 
+    void quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d);
+
     /// draws an ellipse with given parameters (w==H --> circle)
     void ellipse(float x, float y, float w, float h);
+    
+    /// draws an ellipse into given rectangle
+    void ellipse(const Rect &r);
+    
+    /// draws an ellipse into given rectangle
+    void ellipse(const Rect32f &r);
+    
+    /// draws a circle with given center and radius
+    void circle(float cx, float cy, float r);
+    
+    /// draws a circle with given center and radius
+    void circle(const Point32f &center, float radius);
     
     /// draws a convex polygon
     void polygon(const std::vector<Point32f> &ps);
 
     /// draws a regular grid between given points
     void grid(const Point32f *points, int nx, int ny, bool rowMajor=true);
-    
+
     /// draws a predefined symbol at the given location
     /** The symbols size can be set using symsize */
     void sym(float x, float y, Sym s);

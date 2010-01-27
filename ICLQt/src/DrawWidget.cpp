@@ -118,6 +118,18 @@ namespace icl{
   };
 
   // }}}
+
+  class DrawCommand5F : public DrawCommand4F{
+    // {{{ open
+
+  public:
+    DrawCommand5F(float a, float b, float c, float d, float e):
+      DrawCommand4F(a,b,c,d),m_fE(e){}
+  protected:
+    float m_fE;
+  };
+
+  // }}}
  
   class DrawCommand6F : public DrawCommand4F{
     // {{{ open
@@ -316,6 +328,28 @@ namespace icl{
   };
 
   // }}}
+
+
+  class ArrowCommand : public IntelligentDrawCommand{
+    // {{{ open
+    Point32f a,b;
+    float c; // capsize
+  public:
+    ArrowCommand(float ax, float ay, float bx, float by, float capsize):
+      a(ax,ay),b(bx,by),c(capsize){
+    }
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      e->line(tP(a.x,a.y,s),tP(b.x,b.y,s));
+      Point32f v = b-a;
+      Point32f w(b.y-a.y,-(b.x-a.x));
+      w = w*(0.5*c/w.norm()); // normalized v2 to length capsize
+      v = v*(c/v.norm());
+      e->triangle(tP(b.x,b.y,s),tP(b.x+w.x-v.x,b.y+w.y-v.y,s),tP(b.x-w.x-v.x,b.y-w.y-v.y,s));
+    }
+  };
+
+  // }}}
+
 
   class RectCommand : public DrawCommand4F{
     // {{{ open
@@ -725,7 +759,15 @@ namespace icl{
   void ICLDrawWidget::line(float x1, float y1, float x2, float y2){
     m_vecCommands.push_back(new LineCommand(x1,y1,x2,y2));
   }
-
+  void ICLDrawWidget::line(const Point32f &a, const Point32f &b){
+    m_vecCommands.push_back(new LineCommand(a.x,a.y,b.x,b.y));
+  }
+  void ICLDrawWidget::arrow(float ax, float ay, float bx, float by, float capsize){
+    m_vecCommands.push_back(new ArrowCommand(ax,ay,bx,by,capsize));
+  }
+  void ICLDrawWidget::arrow(const Point32f &a, const Point32f &b, float capsize){
+    m_vecCommands.push_back(new ArrowCommand(a.x,a.y,b.x,b.y,capsize));
+  }
   void ICLDrawWidget::sym(float x, float y, Sym s){
     m_vecCommands.push_back(new SymCommand(x,y,s));
   }
@@ -740,7 +782,6 @@ namespace icl{
   void ICLDrawWidget::pointsize(float s){
     m_vecCommands.push_back(new PointSizeCommand(s));
   }
-
 
   void ICLDrawWidget::point(float x, float y){
     m_vecCommands.push_back(new PointCommand(x,y));
@@ -776,17 +817,39 @@ namespace icl{
   void ICLDrawWidget::rect(float x, float y, float w, float h){
     m_vecCommands.push_back(new RectCommand(x,y,w,h));
   }
-  void ICLDrawWidget::rect(Rect r){
+  void ICLDrawWidget::rect(const Rect &r){
+    m_vecCommands.push_back(new RectCommand(r.x,r.y,r.width,r.height));
+  }
+  void ICLDrawWidget::rect(const Rect32f &r){
     m_vecCommands.push_back(new RectCommand(r.x,r.y,r.width,r.height));
   }
   void ICLDrawWidget::triangle(float x1, float y1, float x2, float y2, float x3, float y3){
     m_vecCommands.push_back(new TriangleCommand(x1,y1,x2,y2,x3,y3));
   }
+  void ICLDrawWidget::triangle(const Point32f &a, const Point32f &b, const Point32f &c){
+    m_vecCommands.push_back(new TriangleCommand(a.x,a.y,b.x,b.y,c.x,c.y));
+  }
   void ICLDrawWidget::quad(float x1, float y1, float x2, float y2, float x3, float y3,float x4,float y4){
     m_vecCommands.push_back(new QuadCommand(x1,y1,x2,y2,x3,y3,x4,y4));
   }
+  void ICLDrawWidget::quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d){
+    m_vecCommands.push_back(new QuadCommand(a.x,a.y,b.x,b.y,c.x,c.y,d.x,d.y));
+  }
   void ICLDrawWidget::ellipse(float x, float y, float w, float h){
     m_vecCommands.push_back(new EllipseCommand(x,y,w,h));
+  }
+
+  void ICLDrawWidget::ellipse(const Rect &r){
+    m_vecCommands.push_back(new EllipseCommand(r.x,r.y,r.width,r.height));
+  }
+  void ICLDrawWidget::ellipse(const Rect32f &r){
+    m_vecCommands.push_back(new EllipseCommand(r.x,r.y,r.width,r.height));
+  }
+  void ICLDrawWidget::circle(float cx, float cy, float r){
+    m_vecCommands.push_back(new EllipseCommand(cx-r,cy-r,2*r,2*r));
+  }
+  void ICLDrawWidget::circle(const Point32f &center, float radius){
+    m_vecCommands.push_back(new EllipseCommand(center.x-radius,center.y-radius,2*radius,2*radius));
   }
   void ICLDrawWidget::color(int r, int g, int b, int alpha){
     m_vecCommands.push_back(new EdgeCommand(r,g,b,alpha));
