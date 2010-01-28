@@ -19,12 +19,13 @@ namespace icl{
 
   // }}}
   
-  void ICLDrawWidget3D::GLCallback::draw_extern(){
+  void ICLDrawWidget3D::GLCallback::draw_extern(ICLDrawWidget3D *widget){
     // {{{ open
     if(m_bFirst && m_bUseDisplayList){
       m_uiListHandle = glGenLists(1);
       glNewList(m_uiListHandle,GL_COMPILE_AND_EXECUTE);
       draw();
+      drawSpecial(widget);
       glEndList();
       m_bFirst = false;
 
@@ -443,23 +444,27 @@ namespace icl{
   // }}}
   struct Callback3DCommand : public ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
-
-    Callback3DCommand(ICLDrawWidget3D::GLCallback *cb):cb(cb){}
+    Callback3DCommand(ICLDrawWidget3D *widget,ICLDrawWidget3D::GLCallback *cb):
+      cb(cb),widget(widget){}
     virtual void execute(){
-      cb->draw_extern();
+      cb->draw_extern(widget);
     }
     ICLDrawWidget3D::GLCallback *cb;
+    ICLDrawWidget3D *widget;
+    
   };
 
   // }}}
   struct SmartCallback3DCommand : public ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
 
-    SmartCallback3DCommand(SmartPtr<ICLDrawWidget3D::GLCallback,PointerDelOp> &smartCB):m_spCB(smartCB){}
+    SmartCallback3DCommand(ICLDrawWidget3D *widget,SmartPtr<ICLDrawWidget3D::GLCallback,PointerDelOp> &smartCB):
+      m_spCB(smartCB),widget(widget){}
     virtual void execute(){
-      m_spCB->draw_extern();
+      m_spCB->draw_extern(widget);
     }
     SmartPtr<ICLDrawWidget3D::GLCallback,PointerDelOp> m_spCB;
+    ICLDrawWidget3D *widget;
   };
 
   // }}}
@@ -608,10 +613,10 @@ namespace icl{
     m_vecCommands3D.push_back(new CallbackFunc3DCommand(func,data));
   }
   void ICLDrawWidget3D::callback(ICLDrawWidget3D::GLCallback *cb){
-    m_vecCommands3D.push_back(new Callback3DCommand(cb));
+    m_vecCommands3D.push_back(new Callback3DCommand(this,cb));
   }
   void ICLDrawWidget3D::callback(SmartPtr<ICLDrawWidget3D::GLCallback,PointerDelOp> smartCB){
-    m_vecCommands3D.push_back(new SmartCallback3DCommand(smartCB));
+    m_vecCommands3D.push_back(new SmartCallback3DCommand(this,smartCB));
   }
 
 

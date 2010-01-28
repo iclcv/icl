@@ -26,8 +26,12 @@ namespace icl{
       /// pure virtual drawing function
       virtual void draw()=0;
 
+      /// 2nd draw functions that can access the parent draw-widget
+      virtual void drawSpecial(ICLDrawWidget3D *widget){}
+
       /// this function is called externally eventually using display list
-      void draw_extern();
+      void draw_extern(ICLDrawWidget3D *widget);
+
       private:
       bool m_bUseDisplayList;
       unsigned int m_uiListHandle;
