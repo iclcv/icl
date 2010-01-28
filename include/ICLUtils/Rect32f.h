@@ -211,6 +211,12 @@ namespace icl {
     /// returns the size of the rect
     Size32f getSize() const { return Size32f(width,height); }
 
+    /// returns the center point of the rect
+    Point32f center() const {
+      return Point32f(x+width/2,y+height/2);
+    }
+    
+    /// multiplies the rect's x and width by xfac and y and height by yfac
     Rect32f transform(double xfac, double yfac) const { 
       return Rect32f(x*xfac,y*yfac,width*xfac,height*yfac);
     }

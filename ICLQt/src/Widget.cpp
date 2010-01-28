@@ -748,6 +748,23 @@ namespace icl{
 
   // }}}
 
+  static Rect32f fixRectAR(const Rect32f &r, ICLWidget *w){
+    // {{{ open
+    // Adapt the rects aspect ratio to current image size
+    Size widgetSize = w->getSize();
+    Size imageSize = w->getImageSize(true);
+    float fracOrig = r.width*r.height;
+    float imAR = float(imageSize.width)/float(imageSize.height);
+    float widAR = float(widgetSize.width)/float(widgetSize.height);
+    
+    float relW = sqrt((widAR/imAR) * fracOrig);
+    float relH = fracOrig/relW;
+    
+    Point32f cOrig = r.center();
+    return Rect32f(cOrig.x-relW/2,cOrig.y-relH/2,relW,relH);
+  }
+  // }}}
+  
   struct ZoomAdjustmentWidget : public QWidget{
     // {{{ open
 
@@ -832,7 +849,7 @@ namespace icl{
       if(r.right() > 1) r.width = 1.0-r.x;
       if(r.bottom() > 1) r.height = 1.0-r.y;
     }
-
+   
     QPen pen(Edge e){
       return QPen((dragAll||edgesDragged[e])?QColor(255,0,0):QColor(50,50,50),edgesHovered[e] ? 2.5 : 0.5);
     }
@@ -900,6 +917,8 @@ namespace icl{
         edgesDragged[e] = false;
       }
       mode = NONE;
+      r = fixRectAR(r,reinterpret_cast<ICLWidget*>(parentICLWidget));
+      parentICLWidget->update();
     }
     
     void leftDrag(const QPointF &p){
@@ -1801,6 +1820,8 @@ namespace icl{
           nr.y = (r.y-ir.y)/float(ir.height);
           nr.width = r.width/ir.width;
           nr.height = r.height/ir.height;
+          nr = fixRectAR(nr,this);
+          // xxxxx
           /*
               m_data->zoomRect.x = r.x/wSize.width;
               m_data->zoomRect.y = r.y/wSize.height;
@@ -1904,7 +1925,12 @@ namespace icl{
     // {{{ open
     resizeGL(e->size().width(),e->size().height());
     m_data->adaptMenuSize(size());
-
+    if(m_data->embeddedZoomMode || m_data->fm == fmZoom){
+      m_data->zoomRect = fixRectAR(m_data->zoomRect,this);
+      if(m_data->fm == fmZoom){
+        if(m_data->zoomAdjuster) m_data->zoomAdjuster->update();
+      }
+    }
   }
   // }}}
 
