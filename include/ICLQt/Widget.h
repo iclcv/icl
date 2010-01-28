@@ -312,6 +312,7 @@ int main(int nArgs, char **ppcArg){
     virtual void enterEvent(QEvent *e);
     virtual void leaveEvent(QEvent *e);
     virtual void resizeEvent(QResizeEvent *e);
+    virtual void wheelEvent(QWheelEvent *event);
     
     
     public slots:

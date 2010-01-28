@@ -30,6 +30,7 @@
 #include <QSpinBox>
 #include <QMouseEvent>
 #include <QPaintEvent>
+#include <QWheelEvent>
 
 
 #include <ICLQt/GUI.h>
@@ -1714,6 +1715,7 @@ namespace icl{
 
   void ICLWidget::setImage(const ImgBase *image){ 
     // {{{ open
+
     LOCK_SECTION;
     if(!image){
       m_data->image->updateTextures(0); // in this case [null will be drawn]
@@ -1920,6 +1922,58 @@ namespace icl{
 
   // }}}
 
+  void ICLWidget::wheelEvent(QWheelEvent *e){
+    if(m_data->embeddedZoomMode && m_data->embeddedZoomModeJustEnabled){
+      return;
+    }
+
+    
+    // we need the original image rect with no zoom
+    //Rect ir = computeRect(m_data->image->getSize(),getSize(),fmHoldAR); here, the first step is already wrong
+    Rect ir = getImageRect(true);
+    float newRelX = float(e->x()-ir.x)/float(ir.width);
+    float newRelY = float(e->y()-ir.y)/float(ir.height);
+
+    SHOW(newRelX);
+    SHOW(newRelY);
+    if(newRelX > 1) newRelX = 1;
+    if(newRelY > 1) newRelY = 1;
+    if(newRelX < 0) newRelX = 0;
+    if(newRelX < 0) newRelY = 0;
+
+    float steps = e->delta()/120.0; // delta is wheelangle in 1/8 degree !
+    SHOW(steps);
+    Rect32f &zr = m_data->zoomRect;
+    if(zr.width == 0) zr.width = 1;
+    if(zr.height == 0) zr.height = 1;
+    static const float zoominfac = 0.9;
+    static const float zoomoutfac = 1.5;
+    if(steps > 0){
+      setFitMode(fmZoom);
+      float newW = zr.width*zoominfac;
+      float newH = zr.height*zoominfac;
+      float xcorr = (0.5-newRelX)/1.5;
+      float ycorr = (0.5-newRelY)/1.5;
+      zr = Rect32f(newRelX-newW/2+xcorr,newRelY-newH/2+ycorr,newW,newH);
+      zr = fixRectAR(zr,this);
+    }else{
+      float newW = zr.width*zoomoutfac;
+      float newH = zr.height*zoomoutfac;
+      zr = Rect32f(newRelX-newW/2,newRelY-newH/2,newW,newH);
+      if(zr.x < 0) zr.x = 0;
+      if(zr.y < 0) zr.y = 0;
+      if(zr.width >=1 || zr.height >= 1){
+        zr = Rect32f(0,0,1,1);
+        setFitMode(fmHoldAR);
+      }
+    }
+
+
+
+
+    update();
+    if(m_data->zoomAdjuster) m_data->zoomAdjuster->update();
+  }
 
   void ICLWidget::resizeEvent(QResizeEvent *e){
     // {{{ open
