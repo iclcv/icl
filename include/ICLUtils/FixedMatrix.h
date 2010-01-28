@@ -780,7 +780,7 @@ namespace icl{
         given init value.
     */
     template<unsigned int NEW_WIDTH,unsigned int NEW_HEIGHT>
-    inline FixedMatrix<T,NEW_WIDTH,NEW_HEIGHT> resize(const T &init=T(0)){
+    inline FixedMatrix<T,NEW_WIDTH,NEW_HEIGHT> resize(const T &init=T(0)) const {
       FixedMatrix<T,NEW_WIDTH,NEW_HEIGHT> M(init);
       for(unsigned int x=0;x<COLS && x < NEW_WIDTH; ++x){
         for(unsigned int y=0;y<ROWS && y < NEW_HEIGHT; ++y){
