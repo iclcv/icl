@@ -34,6 +34,7 @@ namespace icl{
       glCallList(m_uiListHandle);
     }else{
       draw();
+      drawSpecial(widget);
     }
   }
 
