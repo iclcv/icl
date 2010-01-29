@@ -1923,56 +1923,60 @@ namespace icl{
   // }}}
 
   void ICLWidget::wheelEvent(QWheelEvent *e){
+    QGLWidget::wheelEvent(e);
+#if 0
     if(m_data->embeddedZoomMode && m_data->embeddedZoomModeJustEnabled){
       return;
     }
 
-    
-    // we need the original image rect with no zoom
-    //Rect ir = computeRect(m_data->image->getSize(),getSize(),fmHoldAR); here, the first step is already wrong
-    Rect ir = getImageRect(true);
-    float newRelX = float(e->x()-ir.x)/float(ir.width);
-    float newRelY = float(e->y()-ir.y)/float(ir.height);
-
-    SHOW(newRelX);
-    SHOW(newRelY);
-    if(newRelX > 1) newRelX = 1;
-    if(newRelY > 1) newRelY = 1;
-    if(newRelX < 0) newRelX = 0;
-    if(newRelX < 0) newRelY = 0;
-
-    float steps = e->delta()/120.0; // delta is wheelangle in 1/8 degree !
-    SHOW(steps);
-    Rect32f &zr = m_data->zoomRect;
-    if(zr.width == 0) zr.width = 1;
-    if(zr.height == 0) zr.height = 1;
     static const float zoominfac = 0.9;
     static const float zoomoutfac = 1.5;
-    if(steps > 0){
-      setFitMode(fmZoom);
-      float newW = zr.width*zoominfac;
-      float newH = zr.height*zoominfac;
-      float xcorr = (0.5-newRelX)/1.5;
-      float ycorr = (0.5-newRelY)/1.5;
-      zr = Rect32f(newRelX-newW/2+xcorr,newRelY-newH/2+ycorr,newW,newH);
-      zr = fixRectAR(zr,this);
+    float steps = e->delta()/120.0; // delta is wheelangle in 1/8 degree !
+    float zoom = (steps>0) ? pow(zoominfac,steps) : pow(zoomoutfac,-steps);
+    Rect ir = getImageRect(true);
+    Size is = getImageSize(true);
+    Size ws = getSize(); // widget size
+    Rect32f &zr = m_data->zoomRect;
+    float relWidth=1, relHeight=1;
+    float ar = float(is.width) / float(is.height);
+    if (ar > 1){
+      relWidth = ar; 
     }else{
-      float newW = zr.width*zoomoutfac;
-      float newH = zr.height*zoomoutfac;
-      zr = Rect32f(newRelX-newW/2,newRelY-newH/2,newW,newH);
-      if(zr.x < 0) zr.x = 0;
-      if(zr.y < 0) zr.y = 0;
-      if(zr.width >=1 || zr.height >= 1){
-        zr = Rect32f(0,0,1,1);
-        setFitMode(fmHoldAR);
-      }
+      relHeight = 1.0/ar;
     }
-
-
-
+    //    if(zr == Rect32f(0,0,0,0)){
+    if(getFitMode() != fmZoom){
+      zr = Rect32f(-float(ir.x)/ws.width,-float(ir.y)/ws.height,relHeight,relWidth);
+      //zr = Rect32f(-float(ir.x)/ws.width,0,relHeight,relWidth);
+      zr = fixRectAR(zr,this);
+    }
+    // Compute current relative image position
+    float boxX = e->x() - ir.x;
+    float boxY = e->y() - ir.y;
+    int imageX = (int) rint((boxX*(is.width))/ir.width);
+    int imageY = (int) rint((boxY*(is.height))/ir.height);
+    float relImageX = float(imageX)/is.width;
+    float relImageY = float(imageY)/is.height;
+    
+    Rect32f newZR = zr;
+    newZR.width *= zoom;
+    newZR.height *= zoom;
+    
+    newZR.x = relImageX - zoom *(relImageX-zr.x);
+    newZR.y = relImageY - zoom *(relImageY-zr.y);
+    SHOW(newZR);
+    zr = newZR;
+    if(zr.width >=1 && zr.height >=1){
+      DEBUG_LOG("resetting fitmode");
+      setFitMode(fmHoldAR);
+      zr = Rect32f(0,0,0,0);
+    }else{
+      setFitMode(fmZoom);    
+    }
 
     update();
     if(m_data->zoomAdjuster) m_data->zoomAdjuster->update();
+#endif
   }
 
   void ICLWidget::resizeEvent(QResizeEvent *e){
