@@ -37,9 +37,14 @@ namespace icl{
     Size givenMinSize = def.minSize();
     Size givenMaxSize = def.maxSize();
         
+    m_preferredSize = Size(0,0); // default
+
     if(givenSize != Size::null){
-       setMinimumSize(QSize(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH));
-       setMaximumSize(QSize(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH));
+      m_preferredSize = Size(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH);
+      // setGeometry(QRect(QPoint(0,0),QSize(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH)));
+      // setMinimumSize(QSize(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH));
+      // setMaximumSize(QSize(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH));
+      //setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred));
     }else if(givenMinSize != Size::null || givenMaxSize != Size::null){
       if(givenMinSize != Size::null){
         setMinimumSize(QSize(givenMinSize.width*GUI::CELLW,givenMinSize.height*GUI::CELLH));
@@ -83,6 +88,14 @@ namespace icl{
     setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
     
     if(def.handle() != "") m_handle = new std::string(def.handle());
+  }
+
+  QSize GUIWidget::sizeHint () const{
+    if(m_preferredSize != Size(0,0)){
+      return QSize(m_preferredSize.width,m_preferredSize.height);
+    }else{
+      return QWidget::sizeHint();
+    }
   }
 
   GUIWidget::~GUIWidget(){

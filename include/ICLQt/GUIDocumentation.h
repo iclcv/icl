@@ -261,7 +261,9 @@
       with the following "@"-character or the closing angular bracket "]". The set of general params can 
       be subdivided into two parts:
       - <b>layouting parameters:</b> These parameters affect the layout and the appearance of the widget
-        which is created by that component (\@size=..., \@minsize=..., \@maxsize=.., \@label=...)
+        which is created by that component (\@size=..., \@minsize=..., \@maxsize=.., \@label=...).
+        \@minsize and \@maxsize affect the widgets size policy directly. The \@size parameter affects the widgets 
+        size hint, i.e., its preferred size. If \@size was given, \@minsize and \@maxsize have no effect.
       - <b>input and output interface definition:</b> (\@inp=.., \@out=...\@handle=...) As mentioned above, 
         each embedded GUI components current value(s) or can be accessed from outside by calling the 
         "getValue<T>()"-function template on the top level GUI object. 

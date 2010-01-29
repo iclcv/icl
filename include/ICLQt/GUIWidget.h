@@ -78,6 +78,9 @@ namespace icl{
         when registered callbacks should be executed
     */
     void cb();
+
+    /// returns the widgets preferres size 
+    virtual QSize sizeHint () const;
     
     private:
     /// initial layout managers
@@ -86,6 +89,7 @@ namespace icl{
     GUI *m_poGUI;
     std::string *m_handle;
     std::vector<GUI::CallbackPtr> m_vecCallbacks;
+    Size m_preferredSize;
   };
 }
 #endif

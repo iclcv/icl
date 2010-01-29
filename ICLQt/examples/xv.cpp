@@ -2,12 +2,24 @@
 #include <iterator>
 #include <ICLIO/FileGrabber.h>
 #include <ICLQuick/Common.h>
+#include <QDesktopWidget>
 
 //#include <QScreen>
 
 GUI gui;
 ICLDrawWidget *w=0;
 
+
+Size compute_image_size(const std::vector<ImgBase*> &is, QDesktopWidget *desktop){
+  Size s;
+  for(unsigned int i=0;i<is.size();++i){
+    s.width = iclMax(s.width,is[i]->getWidth());
+    s.height = iclMax(s.height,is[i]->getHeight());
+  }
+  QRect r = desktop->availableGeometry();
+  
+  return Size(iclMin(s.width,r.width()-20),iclMin(s.height,r.height()-20));
+}
 
 int main (int n, char **ppc){
   QApplication app(n,ppc);
@@ -71,7 +83,9 @@ int main (int n, char **ppc){
         std::cout << "(skipping!)" << std::endl;
       }
     }
-    gui << std::string("multidraw(")+imageList+",!all,!deepcopy)[@handle=image]";
+    Size size = compute_image_size(imageVec,QApplication::desktop());
+    SHOW(size);
+    gui << std::string("multidraw(")+imageList+",!all,!deepcopy)[@handle=image@size="+str(size/20)+"]";
     gui.show();
     
     MultiDrawHandle &h = gui.getValue<MultiDrawHandle>("image");
@@ -99,13 +113,13 @@ int main (int n, char **ppc){
     }
   }
   
-  if(image.getDim()){
-    w->setImage(&image);
-    Rect r = image.getImageRect();
-    // does not work    QScreen &screen = *QScreen::instance();
-    r = r & Rect(0,0,1024,768);
-    w->resize(QSize(r.width,r.height));
-  }
+  //if(image.getDim()){
+  //  w->setImage(&image);
+  //  Rect r = image.getImageRect();
+  // does not work    QScreen &screen = *QScreen::instance();
+  //  r = r & Rect(0,0,1024,768);
+  //  w->resize(QSize(r.width,r.height));
+  //}
   
-  app.exec();
+  return app.exec();
 }
