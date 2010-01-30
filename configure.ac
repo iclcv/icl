@@ -8,7 +8,7 @@
 
 AC_PREREQ(2.61)
 AC_INIT([ICL],[5.0.0],[nivision@techfak.uni-bielefeld.de])
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign nostdinc])
 
 echo -n "checking system architecture..."
 ARCH=`./config.guess | cut -f 3 -d '-' | tr [[:lower:]] [[:upper:]]`
@@ -67,7 +67,6 @@ ICL_CHECK_XCF()
 
 echo "LDFLAGS ARE: $LDFLAGS"
 echo "CXXFLAGS ARE: $CXXFLAGS"
-
 ###############################################################################
 # NEW ICLV5: create dedicated flags for all icl packages
 ###############################################################################
@@ -274,4 +273,3 @@ if [[ "$HAVE_OPENCV" = "TRUE" ]] ; then
 ICL_CONFIG_FILES_FOR_PACKAGE([ICLOpenCV])
 fi
 AC_OUTPUT
-
