@@ -200,13 +200,13 @@ void fixed_benchmark(const FixedMatrix<double,W,H> &M){
 
 
 int main(int n, char **ppc){
-  pa_init(n,ppc,"-no-pinv -no-bench -no-inv");
+  painit(n,ppc,"-no-pinv -no-bench -no-inv");
   for(int i=0;i<36;++i) iB[i]/=10.0;
 
   std::cout << "All matrices must be 0!" << std::endl;
   
   
-  if(!pa_defined("-no-inv")){
+  if(!pa("-no-inv")){
 #define IT(A)                                                           \
     DynMatrix<double> square##A(A##_DIM,A##_DIM,A);                     \
     std::cout << "det-difference: " << rnd3_2(square##A.det() - A##_DET) << std::endl; \
@@ -227,7 +227,7 @@ int main(int n, char **ppc){
   FixedMatrix<double,H,W> my_ifix##A = pinv(fix##A);        \
   SHOW(rnd3(ifix##A-my_ifix##A));
 
-  if(!pa_defined("-no-pinv")){
+  if(!pa("-no-pinv")){
     MM(A,4,6);
     MM(B,3,12);
     MM(C,3,12);
@@ -236,7 +236,7 @@ int main(int n, char **ppc){
     MM(F,8,4);
   }
   
-  if(!pa_defined("-no-bench")){
+  if(!pa("-no-bench")){
     std::cout << "starting benchmark (1000*10 operations on 4x6 source matrix)" << std::endl;
     DynMatrix<double> dyn(4,6,A);
     FixedMatrix<double,4,6> fix(A);

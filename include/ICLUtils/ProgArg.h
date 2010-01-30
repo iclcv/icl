@@ -1,198 +1,300 @@
-#ifndef PROG_ARG_H
-#define PROG_ARG_H
+#ifndef ICL_PROGARG_H
+#define ICL_PROGARG_H
 
-#include <string>
-#include <vector>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/Macros.h>
 
 namespace icl{
+
+  /// Programm argument environment exception type
+  struct ProgArgException : public ICLException{
+    ProgArgException(const std::string &func, const std::string &what):
+    ICLException(func+":"+what){}
+  };
+#define THROW_ProgArgException(X) throw ProgArgException(__FUNCTION__,(X))
   
-  /// initialization of the ProgArg-Environment \ingroup PA
-  /** The UCLUtils/ProgArg tool provides a more convenient access to
-      executables arguments, given via "nArgs" and "ppcArg" in the main
-      function.
-      <H1>What?</H1>
-      Consider a default main(int n, char **ppc) - application. If 
-      the programs arguments have to be evaluated to affect the
-      program flow, you have to take care about many things:
-      - define what arguments you will need / which are allowed
-      - parsing the list of arguments
-      - parsing sub-arguments as "-grabber pwc"
-      - converting the string-arguments in correct data types as in
-        "-size 640 480"
-      - printing error messages and usage if 
-         - denied arguments were given the program
-         - an argument go not the correct count of sub-arguments
-         - list and explain possible arguments
-         - ...
-      <H1>ProgArg - a more convenient approach!</H1>
-      The following example, also available in ICLUtils/examples/progargdemo,
-      shows the advantages of using the ProgArg environment:
+  /** \cond */
+  // internally used programm argument data type
+  class ProgArgData{
+    protected:
+    friend const std::string &pasubarg_internal(const ProgArgData &pa) throw (ProgArgException);
+    std::string id;
+    int subargidx;
+    bool danglingOnly;
+    inline ProgArgData(const std::string &id, int subargidx):
+      id(id),subargidx((int)subargidx){
+    }
+    inline ProgArgData(unsigned int idx, bool danglingOnly):
+      subargidx(idx),danglingOnly(danglingOnly){
+    }
+      
+  };
+  /** \endcond */
+  
+  /** \cond */
+  // internal function for program argument explanation
+  void paex_internal(const std::string &pa, const std::string &ex);
+  
+  // internal function that checks if a given arg was actually given
+  bool padefined_internal(const std::string &pa);
+
+  // internal sub-argument access function
+  const std::string &pasubarg_internal(const ProgArgData &pa) throw (ProgArgException);
+  /** \endcond */
+  
+  /// Programm argument utility class 
+  /** @see icl::pa(const std::string&,unsigned int) */
+  class ProgArg : public ProgArgData, public std::string{
+    /// private constructor
+    /** Use the functions icl::pa(const std::string&,unsigned int) and
+        icl::pa(unsigned int,bool) to create an instance of this 
+        class in order to access program arguments*/
+    inline ProgArg(const std::string &id, unsigned int subargidx):
+      ProgArgData(id,subargidx),std::string(pasubarg_internal(*this)){
+    }
+    
+    inline ProgArg(unsigned int idx, bool danglingOnly):
+      ProgArgData(idx,danglingOnly),std::string(pasubarg_internal(*this)){
+    }
+    
+    public:
+    /** \cond */
+    // undocumented friend
+    friend const ProgArg pa(const std::string &,unsigned int) throw (ProgArgException);
+    // undocumented friend
+    friend const ProgArg pa(unsigned int,bool);
+    /** \endcond */
+    
+    /// returns the count of actually given sub arguments
+    /** If this argument was not given, this function returns 0.*/
+    int n() const;
+    
+    /// this is the main conversion function. It returns the associated sub argument as given T
+    /** If T is bool, this operator returns whether the arg was given rather than
+        its value */
+    template<class T>
+    inline operator T() const throw (ProgArgException){
+      return parse<T>(*this);
+    }
+  };
+
+  /// just puts the referenced argument value as string into the lvalue-stream
+  //  std::ostream &operator<<(std::ostream &s,const ProgArg &pa){
+  //  std::string t = pa;
+  //  return s << t;
+  //}
+  
+  /** \cond */
+  // explicit specialization for bool types (returns whether the arg was actually given)
+  template<>
+  inline ProgArg::operator bool() const{
+    return padefined_internal(id);
+  }
+  /** \endcond */
+    
+
+  /// returns given program argument 
+  /** The pa-function is the main interface for extracting information 
+      about given program arguments and/or their default values at run-time.
+      
+      The returned icl::ProgArg instance is always automatically
+      parsed from its internal string representation into the expressions
+      lvalue-type (this can easily be implemented with a <em>templated</em>
+      version of the implicit cast operator of a class). Here are some 
+      examples:
+      
       \code
+      
+      painit(n,ppc,"-size|-s(Size=VGA) -index(int) -files(...)");
+      
+      // extract the first sub-argument of argument 
+      // '-index' and convert it into an int value
+      int i = pa("-index"); 
 
-#include <ICLUtils/ProgArg.h>
-using namespace icl;
-  
-int main(int n, char **ppc){
+      // extract the first sub-argument of argument '-size'
+      // if '-s' is the shortcut for '-size'
+      Size s = pa("-s); 
 
-  pa_explain("-size",
-             "image size\n"
-             "first param = width (one of 160, 320 or 640)\n"
-             "second param = height one of (120, 240 or 480)");
-  pa_explain("-format","image format\none of:\n- formatRGB\n- formatGray\n- formatHLS");
-  pa_explain("-channels","count of image channels\none of {1,2,3,4}");
-  pa_explain("-fast","enables the \"fast\"-mode which does everything\nmuch faster!");
+      // extract the 2nd sub-argument of argument '-input'
+      // if '-s' is the shortcut for '-size'
+      int = pa("-input",1); 
+      
+      // check if argument -size was actually given
+      if(pa("-size")){ ... }
+      
+      // read a list of files from the arbitrary sub-argument
+      // arg '-files'. Note: it is not recommended to use 
+      // pa("-files") within a loop, as internally the argument hash-
+      // map must always be searched
+      int nFiles = pa("-files").n();
+      for(int i=0;i<nFiles;++i){
+         std::cout << "file " << i << pa("-files",i) << std::endl;
+      }
 
-  pa_init(n,ppc,"-size(2) -format(1) -channels(1) -fast");
-  
-  printf("programs name is %s \n",pa_progname().c_str());
-  printf("argcount is %d \n",pa_argcount());
+      // list all given arguments and subarguments
+      std::cout << "all arguments " << std::endl;
+      for(unsigned int i=0;i<pacount(false);++i){
+        std::cout << pa(i,false) << std::endl;
+      }
 
-  if(pa_defined("-size")){
-    printf("given size was %d %d \n",pa_subarg<int>("-size",0),pa_subarg<int>("-size",1));  
-  }
-  if(pa_defined("-format")){
-    printf("given format was %s \n",pa_subarg<char*>("-format",0));
-  }
-  if(pa_defined("-fast")){
-    printf("enabling fast (whatever this will effect!?) \n");
-  }
-  
-  for(unsigned int i=0;i<pa_argcount();i++){
-    printf("arg %d was %s \n",i,pa_arg<char*>(i));
-  }
-  
-  return 0;
-}
-  \endcode
+      // in case of having dangling arguments allowed in 
+      // painit-call: list all dangling arguments
+      std::cout << "all dangling arguments " << std::endl;
+      for(unsigned int i=0;i<pacount();++i){
+        std::cout << pa(i) << std::endl;
+      }
 
-  The following outputs are possible. 
-  <pre>
-  gordonfreeman\@blackmesa:~/projects/ICL/ICLUtils/examples> ./progargdemo -size 640 480 -channels 3 -format rgb -fast
-  programs name is ./progargdemo
-  argcount is 8
-  given size was 640 480
-  given format was rgb
-  arg 0 was -size
-  arg 1 was 640
-  arg 2 was 480
-  arg 3 was -channels
-  arg 4 was 3
-  arg 5 was -format
-  arg 6 was rgb
-  arg 7 was -fast
-
-  but
- 
-  gordonfreeman\@blackmesa:~/projects/ICL/ICLUtils/examples> ./progargdemo -size 640 480 -slow
-  error: nothing known about arg -slow [index=3]
-  usage: progargdemo [ARGS] 
-        allowed ARGS are:
-        -channels(1) : count of image channels
-                       one of {1,2,3,4}
-        -fast : enables the "fast"-mode which does everything
-                much faster!
-        -format(1) : image format
-                     one of:
-                     - formatRGB
-                     - formatGray
-                     - formatHLS
-        -size(2) : image size
-                   first param = width (one of 160, 320 or 640)
-                   second param = height one of (120, 240 or 480)
-        --help : show this usage
-  </pre>
-  
-      <H1>pa_init</H1>
-      This function must be called before any other ProgArg function is available.
-      The function knows two different modes:
-      - if "allowedArgs" is given, actual program arguments are checked for
-        being compatible to the argument definition (given with "allowedArgs").
-      - if not, all params are valid, and the developer has to take care himself
-        about tackling params.
-      @param nArgs argument count received in the main function
-      @param ppcArg argument vector received in the main function
-      @param allowedArgs optional definition of the allowed arguments with the following
-                         syntax: [ARG<(\#SUBARGS)>]. E.g. "-size(2) -input-file(1) -fast".
-                         <em>More details in the example above!</em>  
-      @param skipUnknownArgs if set to true, unknown args are just skipped, otherwise, the
-             "usage" is shown, and the programm is aborted using exit(-1)
-  */
-  void pa_init(int nArgs, char **ppcArg, std::string allowedArgs="", bool skipUnknownArgs=false);
-  
-  /// returns the program name as it was written to start the program \ingroup PA
-  /** e.g. "./myprogram" */
-  const std::string &pa_progname();
-  
-  /// this function can be used to explain arguents  \ingroup PA
-  /** e.g. if you call pa_init(n,ppc,"-s(1)"), the "-s" arg is not explained enogh
-      propably. To do this, just call: 
-      \code
-      pa_explain("-s","sets up the current image size"); 
       \endcode
-      and the following usage will help to understand programm args better:
-      <pre>
-      usage: 
-      </pre>
-      <b>NOTE: pa_explain(..) must be called BEFORE pa_init() is called !!</b>
-      @param argname name of the argument to explain
-      @param explanation explanation for argname
+
+      @see icl::painit(int,char**,const std::string&,bool)
   */
-  void pa_explain(const std::string &argname, const std::string &explanation);
+  inline const ProgArg pa(const std::string &id, unsigned int subargidx=0) throw (ProgArgException){
+    if(!id.length()) THROW_ProgArgException("invalid programm argument id ''");
+    return ProgArg(id,subargidx);
+  }
+  
+  /// returns given program argument at given index
+  /** @see icl::pa(const std::string&,unsigned int) */
+  inline const ProgArg pa(unsigned int idx, bool danglingOnly=true){
+    return ProgArg(idx,danglingOnly);
+  }
+  
+  /// returns number of actually given args given
+  /** @see icl::pa(const std::string&,unsigned int) */
+  unsigned int pacount(bool danglingOnly=true);
 
-  /// returns the count of parameters actually given \ingroup PA
-  unsigned int pa_argcount();
-  
-  /// writes the error message followed by a usage definition \ingroup PA
-  /** the usage is only defined, if "allowedArgs" was set in pa_init */
-  void pa_usage(const std::string &errorMessage="");
-  
-  /// returns weather a certain argument was actually given \ingroup PA
-  bool pa_defined(const std::string &param);
+  /// returns application name (full command line)
+  /** @see icl::pa(const std::string&,unsigned int) */
+  const std::string &paprogname();
 
-  /// returns list of args not defined in pa_defined and not subargs of those
-  /** only available if pa_init was called with skipUnknownArgs*/
-  const std::vector<std::string> &pa_dangling_args();
+  /// shows current available programm arguments
+  void pausage(const std::string &msg="");
   
-  /// internal utility function
-  const std::string &pa_arg_internal(unsigned int index) throw (ICLException);
-
-  /// internal utility function
-  const std::string &pa_subarg_internal(const std::string &param, unsigned int idx) throw (ICLException);
+  /** \cond */
+  // utility class which allows the user to call the paex-function in a 'stacked' manner
+  struct PAEX{
+    PAEX operator()(const std::string &pa, const std::string &ex);
+  };
+  /** \endcond */
   
-  /// access to the actually given program arguments \ingroup PA
-  /** <b>Note:</b> Arguments are received as double and than parsed using the 
-      std::istream-operator-based icl::parse-template function.
-  */
-  template<class T> 
-  inline T pa_arg(unsigned int index) throw (ICLException){
-    return parse<T>(pa_arg_internal(index));
+  /// This function can be used to provide additional information for certain program arguments
+  /** Due to the use of a special but hidden utility structure called icl::PAEX, this
+      function can be called in a 'stacked' manner. This mean, that the function
+      can be called several times without repeating the function name. Example:
+      \code
+      paex("-size","defines the input image size")
+          ("-input","defines input device id and parameters")
+          ("-format","define input image format");
+      \endcode
+      @see icl::pa(const std::string&,unsigned int) */
+  inline PAEX paex(const std::string &pa, const std::string &ex){
+    paex_internal(pa,ex);
+    return PAEX();
   }
 
-  /// access to sub arguments with a given default value \ingroup PA
-  /** If the given argument "param" was not actually given, the default argument
-      is returned without an additional warning message.
-      Possible types T are: 
-      - string (std::string)
-      - int 
-      - uint 
-      - bool 
-      - char 
-      - uchar 
-      - float 
-      - double
-  */
-  template<class T> 
-  inline T pa_subarg(const std::string &param, unsigned int index, T defaultValue) throw (ICLException){
-      try{
-        return parse<T>(pa_subarg_internal(param,index));
-      }catch(...){}
-      return defaultValue;
-   }
-        
-  
+  /** \cond */
+  // deferred implementation of stacking operator
+  inline PAEX PAEX::operator()(const std::string &pa, const std::string &ex){
+    return paex(pa,ex);
+  }
+  /** \endcond */
 
+
+  /// initialization function for ICL's program argument evaluation framework
+  /** painit always receives your program's <tt>main</tt>-functions arguments
+      as <tt>n</tt> and <tt>ppc</tt>. The actual definition of the underlying
+      program argument evaluation framework is given by the <tt>init</tt>-
+      argument.\n
+      The following rules define the syntax for the <tt>init</tt>-string:\n
+      - The init string consists of space-separated tokens of single program
+        argument definitions. Necessary space-characters within these tokens
+        must be escaped using a back-slash character.
+      - Each single argument definition token consists of a pipe-separated
+        list of argument name alternatives (e.g. <tt>-size|-s</tt> followed
+        by an optional parameter list in round braces.
+      - Each argument is allowed to have 0, N or unlimited sub-arguments. 
+      - If the argument has no sub arguments it is a flag, which implicitly
+        has the value true if it was given and false otherwise. Zero sub-
+        arguments can be forced by using no parameter list, i.e., no round
+        braces, an empty parameter list <tt>()</tt> or a parameter list with a zero
+        argument count <tt>(0)</tt>.
+      - An arbitrary sub-argument count can be reached by using the special
+        parameter list <tt>(...)</tt>.
+      - Otherwise, the parameter-list is a comma separated list of type,
+        type=default-value, or argument-count tokens. Examples:
+        - <tt>(int,int)</tt> defines two integer sub-arguments
+        - <tt>(5)</tt> defines 5 sub-arguments with no type information
+        - <tt>(float,2,int) defines 4 sub-arguments of type float, any, any and int
+        - <tt>(int=4,Size=VGA) defines two sub-arguments of type int and Size
+          with given default values 4 and VGA
+        Note: if an int-type is used to define several arguments together,
+        no defaults can be given. If you don't want to define the type, but
+        only the default values, the special type string <tt>*</tt> should
+        be used e.g., <tt>(*=foo,*=bar)</tt>
+      
+      Furthermore, it is worth to mention, that the defined types are always 
+      just hints for the user. Internally all parameters are treated as strings.
+      
+      Here are some further complete example calls for painit.
+      \code
+      int main(int n, char **ppc){
+        painit(n,ppc,"-size|-s(Size=VGA) -format|-f(format-string)");
+      }
+      \endcode
+      \code
+      int main(int n, char **ppc){
+        painit(n,ppc,"-input|-i(device-type=dc,device-params=0)");
+      }
+      \endcode
+
+      
+      \section Dangling Arguments
+      Sometimes, certain arguments shall be used directly without defining
+      arguments and sub-arguments. E.g. if you have a converter application
+      that gets an input and an output file only (e.g., program call: 
+      <tt>myConvert image.ppm converted-image.ppm</tt> rather than something
+      like <tt>myConvert -i image.ppm -o converted-image.ppm</tt>).
+      Dangling arguments are these arguments that do not match defined
+      arguments or sub-arguments of these. Usually, given arguments that do not
+      match primary arguments or sub-arguments lead to a ProgArgException. 
+      You can explicitly allow these <em>dangling</em> arguments by setting
+      allowDanglingArgs to 'true'. \n
+      Dangling arguments can then be obtained simply using the functions
+      icl::pacount and icl::pa(unsigned int,bool).
+
+      To list all dangling arguments, the followed code can be used:
+      \code
+      for(unsigned int i=0;i<pacount();++i){
+        std::cout << pa(i) << std::endl;
+      }
+      \endcode
+
+      \section Optional and Mandatory Arguments
+
+      As default, all arguments are optional. If you want
+      to define an argument to be mandatory, simply prepend
+      a '[m]'-prefix to the argument name alternative list.
+      Example:
+      \code
+      // -size and -format are optional; -input or -i is mandatory
+      painit(n,ppc,"-size(Size=VGA) -format(format=RGB) "
+                  "[m]-input|-i(string,string)");
+      \endcode
+      
+      If mandatory arguments are not actually given to the program,
+      a ProgArgException is thrown. As it does not make sense to
+      define default values for mandatory arguments, a
+      ProgArgException is thrown in this case as well. Furthermore,
+      mandatory arguments must have sub-arguments (which is also
+      sensible if you think about it). 
+  */
+  void painit(int n,char **ppc,const std::string &init, bool allowDanglingArgs=false);
+
+
+  /// shows all given program arguments 
+  void pashow();
+  
 }
 
 #endif

@@ -5,39 +5,37 @@
 #include <ICLUtils/Size32f.h>
 
 int main(int n, char **ppc){
-  pa_explain("-i","specify input file (type by filename extension)\n\t[also as 1st unspecified arg]");
-  pa_explain("-o","specify output file (type by filename extension)\n\t[also as 2nd unspecified arg]");
-  pa_explain("-depth","define output file depth");
-  pa_explain("-format","define output file format");
-  pa_explain("-size","define output file size");
-  pa_explain("-scale","define size scaling factor");
-  pa_explain("-scalemode", "defines scalemode to use (one of NN, LIN, or RA)");
-  pa_init(n,ppc,"-i(1) -o(1) -depth(1) -format(1) -size(1) -scale(1) -scalemode(1)",true);
+  paex("-i","specify input file (type by filename extension)\n\t[also as 1st unspecified arg]")
+      ("-o","specify output file (type by filename extension)\n\t[also as 2nd unspecified arg]")
+      ("-depth","define output file depth")
+      ("-format","define output file format")
+      ("-size","define output file size")
+      ("-scale","define size scaling factor")
+      ("-scalemode", "defines scalemode to use (one of NN, LIN, or RA)");
+  painit(n,ppc,"-input|-i(filename) -output|-o(filename) -depth|-d(depth) -format|-f(format) -size|-s(Size) -scale(factor) -scalemode(scalemode)",true);
   
   std::string inFileName,outFileName;
-  std::vector<std::string> dargs = pa_dangling_args();
 
-  if(!pa_defined("-i")){
-    if(dargs.size()){
-      inFileName = dargs.front();
-      dargs.erase(dargs.begin());
+  if(!pa("-i")){
+    if(!pa(0)) { 
+      pausage("please define input filename"); 
+      exit(-1); 
     }else{
-      pa_usage("please define input format!");
-      exit(-1);
+      inFileName = pa(0);
     }
   }else{
-    inFileName = pa_subarg<std::string>("-i",0,"");
+    inFileName = pa("-i");
   }
-  if(!pa_defined("-o")){
-    if(dargs.size()){
-      outFileName = dargs.front();
-      dargs.erase(dargs.begin());
+
+  if(!pa("-o")){
+    if(!pa(1)) { 
+      pausage("please define output filename"); 
+      exit(-1); 
     }else{
-      pa_usage("please define input format!");
-      exit(-1);
+      outFileName = pa(1);
     }
   }else{
-    outFileName = pa_subarg<std::string>("-o",0,"");
+    outFileName = pa("-o");
   }
 
 
@@ -58,12 +56,12 @@ int main(int n, char **ppc){
 
   //ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null)
   
-  format fmt = pa_defined("-format") ? parse<format>(pa_subarg<std::string>("-format",0,"")) : image->getFormat();
+  format fmt = pa("-format") ? parse<format>(pa("-format")) : image->getFormat();
   int channels = image->getChannels();
-  Size size = pa_defined("-size") ? parse<Size>(pa_subarg<std::string>("-size",0,"")) : image->getSize();
-  if(pa_defined("-scale")){
+  Size size = pa("-size") ? parse<Size>(pa("-size")) : image->getSize();
+  if(pa("-scale")){
     Size32f s32(size.width,size.height);
-    s32 = s32 * pa_subarg<float>("-scale",0,1);
+    s32 = s32 * parse<float>(pa("-scale"));
     size.width = round(s32.width);
     size.height = round(s32.height);
     
@@ -71,11 +69,11 @@ int main(int n, char **ppc){
   ImgParams p(size,
               channels,
               fmt);
-  depth d = pa_defined("-depth") ? parse<depth>(pa_subarg<std::string>("-depth",0,"")) : image->getDepth();
+  depth d = pa("-depth") ? parse<depth>(pa("-depth")) : image->getDepth();
               
   FixedConverter conv(p,d);
-  if(pa_defined("-scalemode")){
-    std::string sm = pa_subarg<std::string>("-scalemode",0,"NN");
+  if(pa("-scalemode")){
+    std::string sm = pa("-scalemode");
     if(sm == "NN"){
       conv.setScaleMode(interpolateNN);
     }else if(sm == "LIN"){

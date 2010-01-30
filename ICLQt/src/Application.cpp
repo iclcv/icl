@@ -19,7 +19,7 @@ namespace icl{
     throw (SecondSingeltonException){
     if(s_app) throw SecondSingeltonException("only one instance is allowed!");
     if(paInitString != ""){
-      pa_init(n,ppc,paInitString);
+      painit(n,ppc,paInitString);
     }
     app = new QApplication(n,ppc);
     s_app = this;

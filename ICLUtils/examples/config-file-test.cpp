@@ -5,14 +5,9 @@
 using namespace icl;
 
 int main(int n, char **ppc){
-  pa_init(n,ppc,"-c(1)");
+  painit(n,ppc,"[m]-config|-c(filename)");
 
-  if(!pa_defined("-c")){
-    pa_usage("argument -c is mandatory");
-    exit(-1);
-  }
-  
-  ConfigFile f(pa_subarg<std::string>("-c",0,"??"));
+  ConfigFile f(pa("-c"));
   std::cout << "config file content:" << std::endl;
   f.listContents();
 

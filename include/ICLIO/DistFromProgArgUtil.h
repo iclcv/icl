@@ -10,13 +10,13 @@ namespace icl{
   /** example usage (using additional cpp-define DIST_FROM_PROGARG:
       \code
       GenerigGrabber g(...)
-      if(pa_defined("-dist")){
+      if(pa("-dist")){
          g.enableDistortion(DIST_FROM_PROGARG("-dist"),g.getDesiredSize());
       }
       
       
       int main(int n, char **ppc){
-        pa_init(n,ppc,"-dist(4) ...");
+        painit(n,ppc,"-dist(float,float,float,float) ...");
       }
       \endcode
   */
@@ -24,10 +24,10 @@ namespace icl{
     static double p[4];
     /// Construktor
     inline DistFromProgArgUtil(const std::string &s){
-      p[0] = pa_subarg<double>(s,0,0);
-      p[1] = pa_subarg<double>(s,1,0);
-      p[2] = pa_subarg<double>(s,2,0);
-      p[3] = pa_subarg<double>(s,3,0);
+      p[0] = pa(s,0);
+      p[1] = pa(s,1);
+      p[2] = pa(s,2);
+      p[3] = pa(s,3);
     }
     /// converts to double* (passable to Grabber::enableDistortion)
     operator double*(){
