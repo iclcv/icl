@@ -15,7 +15,7 @@ namespace icl{
   const Size Size::SVGA(800,600);
   const Size Size::QHD(960,540);
   const Size Size::DVGA(960,640);
-  const Size Size::XGA(1027,768);
+  const Size Size::XGA(1024,768);
   const Size Size::XGAP(1152,864);
   const Size Size::DSVGA(1200,800);
   const Size Size::HD720(1280,720);
