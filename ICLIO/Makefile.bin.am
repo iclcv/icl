@@ -37,13 +37,13 @@ if HAVE_LIBDC_COND
 bin_PROGRAMS+= \
 icl-dcclearisochannels \
 icl-dcdeviceinfo \
-icl-dccam-params
+icl-camera-param-io
 
 
 # explicit sources, ldflags and cxxflags
-icl_dccam_params_SOURCES=../examples/dccam-params.cpp
-icl_dccam_params_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
-icl_dccam_params_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
+icl_camera_param_io_SOURCES=../examples/camera-param-io.cpp
+icl_camera_param_io_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_camera_param_io_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_dcclearisochannels_SOURCES=../examples/dcclearisochannels.cpp
 icl_dcclearisochannels_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
@@ -55,21 +55,12 @@ icl_dcdeviceinfo_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 if HAVE_QT_COND
 bin_PROGRAMS+= \
-icl-dccam-setup \
-icl-dcmulticam-example \
-icl-dccam-grab-example
+icl-multi-cam-example
 
-icl_dccam_setup_SOURCES=../examples/dccam-setup.cpp
-icl_dccam_setup_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
-icl_dccam_setup_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
+icl_multi_cam_example_SOURCES=../examples/multi-cam-example.cpp
+icl_multi_cam_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_multi_cam_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
-icl_dcmulticam_example_SOURCES=../examples/dcmulticam-example.cpp
-icl_dcmulticam_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
-icl_dcmulticam_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
-
-icl_dccam_grab_example_SOURCES=../examples/dccam-grab-example.cpp
-icl_dccam_grab_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
-icl_dccam_grab_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 endif
 
 endif
@@ -93,8 +84,7 @@ icl_memory_listener_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 if HAVE_QT_COND
 bin_PROGRAMS+= \
-icl-xcf-publisher \
-icl-multicam-viewer-example
+icl-xcf-publisher
 
 icl_xcf_publisher_SOURCES=../examples/xcf-publisher.cpp
 icl_xcf_publisher_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
@@ -121,20 +111,11 @@ endif
 #################################################################################
 if HAVE_QT_COND
 bin_PROGRAMS+= \
-icl-camrecorder \
 icl-generic-grab-example
-
-icl_camrecorder_SOURCES=../examples/camrecorder.cpp
-icl_camrecorder_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
-icl_camrecorder_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 icl_generic_grab_example_SOURCES=../examples/generic-grab-example.cpp
 icl_generic_grab_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
 icl_generic_grab_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
-
-icl_multicam_viewer_example_SOURCES=../examples/multicam-viewer-example.cpp
-icl_multicam_viewer_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
-icl_multicam_viewer_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 endif
 

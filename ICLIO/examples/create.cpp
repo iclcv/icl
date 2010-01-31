@@ -6,64 +6,59 @@
 #include <ICLUtils/Size32f.h>
 
 int main(int n, char **ppc){
-  pa_init(n,ppc,"-o(1) -size(1) -depth(1) -format(1)",true);
-  
-  pa_explain("-p","specify image pattern to create\n"
-             "[also as 1st unspecified argument]\n\tone of:\n"
-             "\t- house\n"
-             "\t- tree\n"
-             "\t- parrot\n"
-             "\t- windows\n"
-             "\t- flowers");
-  pa_explain("-o","specify output file (type by filename extension)\n\t[also as 2nd unspecified arg]");
-  pa_explain("-depth","define output file depth");
-  pa_explain("-format","define output file format");
-  pa_explain("-size","define output file size");
-  pa_explain("-scale","define scale factor");
-  pa_init(n,ppc,"-i(1) -o(1) -depth(1) -format(1) -size(1) -scale(1)",true);
+  paex
+  ("-p","specifies image to create.\n"
+   "Also possible: first unspecified argument.\n"
+   "One of house,tree,parrot,windows, or flowers")
+  ("-o","specifies output image name (filetype be extension)\n"
+   "Also pssible: 2nd unspecified argmunet.\n")
+  ("-d","defines output image depth")
+  ("-f","defines output image format")
+  ("-s","defines output image size (incompatible to -scale)")
+  ("-sc","defines output scale factor (incompatibel to -size)");
+  painit(n,ppc,"-o|-output(filename) -pattern|-p(pattern=parrot) "
+         "-size|-s(Size) -depth|-d(depth=depth8u) -format|-f(format=rgb) "
+         "-scale|-sc(scalefactor=1.0)",true);
+
   
   std::string patternName,outFileName;
-  std::vector<std::string> dargs = pa_dangling_args();
 
-  if(!pa_defined("-p")){
-    if(dargs.size()){
-      patternName = dargs.front();
-      dargs.erase(dargs.begin());
-    }else{
-      pa_usage("please define input pattern!");
-      exit(-1);
-    }
-  }else{
-    patternName = pa_subarg<std::string>("-p",0,"");
+  if(pa("-p") && pacount()){
+    pausage("if patterns are defined using -p or -pattern, dangling arguments are not allowed");
+    exit(-1);
   }
+  patternName = pacount() ? pa(0) : pa("-p");
+
+  if(pacount() > 2){
+    pausage("only two dangling arguments are allowed");
+  }  
+  if(!pa("-o") && pacount() < 2){
+    pausage("-output or two dangling arguments are mandatory");
+    exit(-1);
+  }
+  if(pa("-o") && pacount() == 2){
+    pausage("if output filename is defined using -o, dangling arguments are not allowed");
+    exit(-1);
+  }
+  if(pa("-s") && pa("-sc")){
+    pausage("arguments -size and -scale cannot be combined");
+    exit(-1);
+  }
+  outFileName = pacount()<2 ? pa(1) : pa("-o");
   
-  if(!pa_defined("-o")){
-    if(dargs.size()){
-      outFileName = dargs.front();
-      dargs.erase(dargs.begin());
-    }else{
-      pa_usage("please define input format!");
-      exit(-1);
-    }
-  }else{
-    outFileName = pa_subarg<std::string>("-o",0,"");
-  }
-
   ImgBase *image = new ImgQ(create(patternName));
   
-  format fmt = pa_defined("-format") ? parse<format>(pa_subarg<std::string>("-format",0,"")) : image->getFormat();
+  format fmt = pa("-f");
   int channels = image->getChannels();
-  Size size = pa_defined("-size") ? parse<Size>(pa_subarg<std::string>("-size",0,"")) : image->getSize();
-  if(pa_defined("-scale")){
+  Size size = padef("-s",image->getSize());
+  if(pa("-sc")){
     Size32f s32(size.width,size.height);
-    s32 = s32 * pa_subarg<float>("-scale",0,1);
+    s32 = s32 * (float)pa("-sc");
     size.width = round(s32.width);
     size.height = round(s32.height);
   }
-  ImgParams p(size,
-              channels,
-              fmt);
-  depth d = pa_defined("-depth") ? parse<depth>(pa_subarg<std::string>("-depth",0,"")) : image->getDepth();
+  ImgParams p(size,channels,fmt);
+  depth d = padef("-d",image->getDepth());
               
   FixedConverter conv(p,d);
   

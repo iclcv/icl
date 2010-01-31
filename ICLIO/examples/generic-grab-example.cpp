@@ -31,7 +31,7 @@ void init(){
   
   gui.registerCallback(new GUI::Callback(change_grabber),"source");
 
-  if(pa_defined("-input")){
+  if(pa("-input")){
     grabber = new GenericGrabber(FROM_PROGARG("-input"));
   }
 }
@@ -48,5 +48,5 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"-input(2)",init,run).exec();
+  return ICLApplication(n,ppc,"-input|-i(device=unicap,device-params=*)",init,run).exec();
 }
