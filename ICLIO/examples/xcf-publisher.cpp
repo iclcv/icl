@@ -72,7 +72,7 @@ const ImgBase *grab_image(){
   if(!pa("-clip")){
     return img;
   }else{
-    if(pa("-clip")=="interactive"){
+    if(*pa("-clip")=="interactive"){
       throw ICLException("interactive clipmode is not yet implemented ...");
     }else{
       static Rect *r = 0;
@@ -171,7 +171,7 @@ void init_gui(){
     gui << "image[@handle=image@minsize=12x8]" 
         << ( GUI("hbox[@maxsize=100x4]") 
              << create_camcfg(FROM_PROGARG("-input"))
-             << ("spinner(1,100,"+pa("-fps")+")[@out=fpsLimit@label=max fps]")
+             << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
              << "fps(10)[@handle=fps]"
              << "togglebutton(off,!on)[@handle=_@out=pp-on@label=preprocessing@minsize=5x2]"
              );
@@ -181,7 +181,7 @@ void init_gui(){
     gui << "image[@handle=image@minsize=12x8]" 
         << ( GUI("hbox[@maxsize=100x4]") 
              << create_camcfg(FROM_PROGARG("-input"))
-             << ("spinner(1,100,"+pa("-fps")+")[@out=fpsLimit@label=max fps]")
+             << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
              << "fps(10)[@handle=fps]"
              );
     gui.show();
@@ -220,15 +220,15 @@ int main(int n, char **ppc){
    "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
   painit(n,ppc,"-stream|-s(streamname=stream) "
          "-flip|-f(string) -uri|-u(image-URI=IMAGE) -single-shot -input|-i(device,device-params) "
-         "-size|(Size) -no-gui|-n -pp(1) -dist|-d(float,float,float,float) -reset|-r "
+         "-size|(Size) -no-gui -pp(1) -dist|-d(float,float,float,float) -reset|-r "
          "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -normalize|-n");
 
   if(pa("-reset")){
     GenericGrabber::resetBus();
   }
   
-  uri = pa("-u");
-  stream = pa("-s");
+  uri = *pa("-u");
+  stream = *pa("-s");
 
   init_grabber();  
   if(!pa("-no-gui")){

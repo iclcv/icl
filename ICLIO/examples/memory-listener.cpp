@@ -17,11 +17,7 @@ int main(int n, char **ppc){
          "-print-time-stamps|-t "
          "-print-sub-locations-only|-p");
   
-  std::string memName = pa("-m");
-  std::string xpath = pa("-x");
-  std::string events = pa("-e");
-  
-  XCFMemoryListener l(pa("-m"),pa("-x"),pa("-e"));
+  XCFMemoryListener l(*pa("-m"),*pa("-x"),*pa("-e"));
   
   l.setPrintPretty(!pa("-n"));
   l.setPrintTimeStamps(pa("-t"));

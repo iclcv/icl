@@ -20,6 +20,9 @@ int main(int n, char **ppc){
   // number of all arguments
   SHOW(pacount(false));
   
+  SHOW(!!pa("-c"));
+
+  SHOW(!!pa("-f"));
   // number of dangling arguments
 
   Size s = pa("-s");

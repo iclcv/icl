@@ -7,7 +7,7 @@
 
 namespace icl{
 
-  /// Programm argument environment exception type
+  /// Programm argument environment exception type \ingroup PA \ingroup EXCEPT
   struct ProgArgException : public ICLException{
     ProgArgException(const std::string &func, const std::string &what):
     ICLException(func+":"+what){}
@@ -19,6 +19,7 @@ namespace icl{
   class ProgArgData{
     protected:
     friend const std::string &pasubarg_internal(const ProgArgData &pa) throw (ProgArgException);
+    friend bool padefined_internal(const ProgArgData &pa) throw (ProgArgException);
     std::string id;
     int subargidx;
     bool danglingOnly;
@@ -36,65 +37,151 @@ namespace icl{
   // internal function for program argument explanation
   void paex_internal(const std::string &pa, const std::string &ex);
   
-  // internal function that checks if a given arg was actually given
-  bool padefined_internal(const std::string &pa);
-
   // internal sub-argument access function
   const std::string &pasubarg_internal(const ProgArgData &pa) throw (ProgArgException);
+
+  // another internal helper function
+  bool padefined_internal(const ProgArgData &pa) throw (ProgArgException);
   /** \endcond */
   
-  /// Programm argument utility class 
+  /// Programm argument utility class \ingroup PA
   /** @see icl::pa(const std::string&,unsigned int) */
-  class ProgArg : public ProgArgData, public std::string{
+  class ProgArg : public ProgArgData{
     /// private constructor
     /** Use the functions icl::pa(const std::string&,unsigned int) and
         icl::pa(unsigned int,bool) to create an instance of this 
         class in order to access program arguments*/
     inline ProgArg(const std::string &id, unsigned int subargidx):
-      ProgArgData(id,subargidx),std::string(pasubarg_internal(*this)){
+      ProgArgData(id,subargidx){
     }
     
     inline ProgArg(unsigned int idx, bool danglingOnly):
-      ProgArgData(idx,danglingOnly),std::string(pasubarg_internal(*this)){
+      ProgArgData(idx,danglingOnly){
     }
-    
+
     public:
     /** \cond */
     // undocumented friend
     friend const ProgArg pa(const std::string &,unsigned int) throw (ProgArgException);
     // undocumented friend
     friend const ProgArg pa(unsigned int,bool);
+    // yet another one
+    friend bool padefined_internal(const ProgArgData &pa) throw (ProgArgException);
     /** \endcond */
     
     /// returns the count of actually given sub arguments
     /** If this argument was not given, this function returns 0.*/
-    int n() const;
-    
+    int n() const throw (ProgArgException);
+
     /// this is the main conversion function. It returns the associated sub argument as given T
     /** If T is bool, this operator returns whether the arg was given rather than
         its value */
     template<class T>
     inline operator T() const throw (ProgArgException){
-      return parse<T>(*this);
+      return parse<T>(pasubarg_internal(*this));
+    }
+
+    /// this template function can be used to explicitly cast a program argument into a given type
+    template<class T>
+    inline T as() const throw (ProgArgException){
+      return parse<T>(pasubarg_internal(*this));
+    }
+    
+    /// important convenience operator for using a ProgArg instance as string 
+    /** <tt>*pa("-x")</tt> is the same as <tt>pa("-x").as<std::string>()</tt>.
+        However, the first version is much shorter.*/
+    inline std::string operator*() const throw (ProgArgException){
+      return pasubarg_internal(*this);
     }
   };
 
   /// just puts the referenced argument value as string into the lvalue-stream
-  //  std::ostream &operator<<(std::ostream &s,const ProgArg &pa){
-  //  std::string t = pa;
-  //  return s << t;
-  //}
+  inline std::ostream &operator<<(std::ostream &s,const ProgArg &pa){
+    return s << pa.as<std::string>();
+  }
   
   /** \cond */
   // explicit specialization for bool types (returns whether the arg was actually given)
   template<>
   inline ProgArg::operator bool() const{
-    return padefined_internal(id);
+    return padefined_internal(*this);
   }
+
+  // explicit specialization for bool types (returns whether the arg was actually given)
+  template<>
+  inline bool ProgArg::as() const throw (ProgArgException){
+    return padefined_internal(*this);
+  }
+
   /** \endcond */
     
+  /// this allows to check if two progargs are defined \ingroup PA
+  /** this allows you to write:
+      \code
+      if(pa("-size") && pa("-scale")){
+        ...
+      }
+      \endcode
+  */
+  inline bool operator&&(const ProgArg &a, const ProgArg &b){
+    return a.as<bool>() && b.as<bool>();
+  }
 
-  /// returns given program argument 
+  /// allows to check more than two ProgArg instances at once \ingroup PA
+  /** Example:
+      \code
+      if(pa("-size") && pa("-scale") && pa("-format")){ ... }
+      \endcode
+  */
+  inline bool operator&&(const ProgArg &a, bool b){ 
+    return b && a.as<bool>();
+  }
+
+  /// allows to check more than two ProgArg instances at once \ingroup PA
+  /** Example:
+      \code
+      if(pa("-size") && pa("-scale") && pa("-format")){ ... }
+      \endcode
+  */
+  inline bool operator&&(bool &b, const ProgArg &a){ 
+    return b && a.as<bool>();
+  }
+
+  /// this allows to check if either of two progargs are defined \ingroup PA
+  /** this allows you to write:
+      \code
+      if(pa("-size") || pa("-scale")){
+        ...
+      }
+      \endcode
+  */
+  inline bool operator||(const ProgArg &a, const ProgArg &b){
+    return a.as<bool>() || b.as<bool>();
+  }
+  /// allows to check if either of more than two ProgArg instances is defined \ingroup PA
+  /** Example:
+      \code
+      if(pa("-size") || pa("-scale") || pa("-format")){ ... }
+      \endcode
+  */
+  inline bool operator||(const ProgArg &a, bool b){ 
+    return b || a.as<bool>();
+  }
+
+  /// allows to check if either of more than two ProgArg instances is defined \ingroup PA
+  /** Example:
+      \code
+      if(pa("-size") || pa("-scale") || pa("-format")){ ... }
+      \endcode
+  */
+  inline bool operator||(bool &b, const ProgArg &a){ 
+    return b || a.as<bool>();
+  }
+
+
+
+
+  /// returns given program argument \ingroup PA
   /** The pa-function is the main interface for extracting information 
       about given program arguments and/or their default values at run-time.
       
@@ -145,6 +232,23 @@ namespace icl{
         std::cout << pa(i) << std::endl;
       }
 
+      // using ProgArg instances as std::strings is sometimes
+      // a bit complicated as conversion to std::string is
+      // sometimes ambiguous 
+      struct Test{
+         Test(int i){...}
+         Test(const std::string &s){ .. }
+      };
+      ...
+      Test t(pa("-x")); // ambiguous -> int | std::string
+      Test t((std::string)pa("-x")); // also ambiguous 
+      // due to different available std::string constructors
+      
+      Test t(pa("-x").as<std::string>()); // works, but long code
+      
+      Test t(*pa("-x")); // much shorter, but only for using
+      // a program argument as std::string
+
       \endcode
 
       @see icl::painit(int,char**,const std::string&,bool)
@@ -154,21 +258,42 @@ namespace icl{
     return ProgArg(id,subargidx);
   }
   
-  /// returns given program argument at given index
+  /// returns given program argument at given index \ingroup PA
   /** @see icl::pa(const std::string&,unsigned int) */
   inline const ProgArg pa(unsigned int idx, bool danglingOnly=true){
     return ProgArg(idx,danglingOnly);
   }
   
-  /// returns number of actually given args given
+  
+  /// utility function that allows to use a default value, if given argument was not defined \ingroup PA
+  template<class T>
+  inline const T padef(const std::string &id, unsigned int subargidx, const T &def) throw (ProgArgException){
+    const ProgArg p = pa(id,subargidx);
+    return p ? parse<T>(p) : def;
+  }
+
+  /// utility function that allows to use a default value, if given argument was not defined \ingroup PA
+  template<class T>
+  inline const T padef(const std::string &id, const T &def) throw (ProgArgException){
+    return padef(id,0,def);
+  }
+
+
+  
+  /// returns number of actually given args given \ingroup PA
   /** @see icl::pa(const std::string&,unsigned int) */
   unsigned int pacount(bool danglingOnly=true);
 
   /// returns application name (full command line)
-  /** @see icl::pa(const std::string&,unsigned int) */
-  const std::string &paprogname();
+  /** @param fullpath if this is set to true, the complete
+             first argument of main is returned, which
+             may be something like <tt>/usr/bin/icl-create</tt>.
+             If fullpath is false, which is default, 
+             just the program name is returned.
+      @see icl::pa(const std::string&,unsigned int) */
+  const std::string &paprogname(bool fullpath=false);
 
-  /// shows current available programm arguments
+  /// shows current available programm arguments \ingroup PA
   void pausage(const std::string &msg="");
   
   /** \cond */
@@ -178,7 +303,7 @@ namespace icl{
   };
   /** \endcond */
   
-  /// This function can be used to provide additional information for certain program arguments
+  /// This function can be used to provide additional information for certain program arguments \ingroup PA
   /** Due to the use of a special but hidden utility structure called icl::PAEX, this
       function can be called in a 'stacked' manner. This mean, that the function
       can be called several times without repeating the function name. Example:
@@ -201,7 +326,7 @@ namespace icl{
   /** \endcond */
 
 
-  /// initialization function for ICL's program argument evaluation framework
+  /// initialization function for ICL's program argument evaluation framework \ingroup PA
   /** painit always receives your program's <tt>main</tt>-functions arguments
       as <tt>n</tt> and <tt>ppc</tt>. The actual definition of the underlying
       program argument evaluation framework is given by the <tt>init</tt>-
@@ -292,7 +417,7 @@ namespace icl{
   void painit(int n,char **ppc,const std::string &init, bool allowDanglingArgs=false);
 
 
-  /// shows all given program arguments 
+  /// shows all given program arguments \ingroup PA
   void pashow();
   
 }

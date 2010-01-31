@@ -7,7 +7,7 @@ using namespace icl;
 int main(int n, char **ppc){
   painit(n,ppc,"[m]-config|-c(filename)");
 
-  ConfigFile f(pa("-c"));
+  ConfigFile f(*pa("-c"));
   std::cout << "config file content:" << std::endl;
   f.listContents();
 

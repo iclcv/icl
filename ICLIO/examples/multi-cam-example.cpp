@@ -62,7 +62,7 @@ int main(int n, char **ppc){
   ("-input4","fourth possible input device and params");
   
   return ICLApp(n,ppc,"-size|-s(Size=QVGA) "
-                "-external-trigger|-t -input1|-1(device,device-params) -reset-bus|-r "
+                "-external-trigger|-t [m]-input1|-1(device,device-params) -reset-bus|-r "
                 "-input2|-2(device,device-params) -input3|-3(device,device-params) "
                 "-input4|-4(device,device-params)",init,run).exec();
   

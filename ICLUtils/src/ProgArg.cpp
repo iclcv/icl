@@ -148,7 +148,7 @@ namespace icl{
 
   struct ProgArgContext{
     std::vector<AllowedArgPtr> allowed;
-    std::map<std::string,std::string> explanations;
+    static std::map<std::string,std::string> explanations;
     std::string progname;
     std::string prognamelight;
     std::map<std::string,GivenArg*> given;
@@ -248,7 +248,7 @@ namespace icl{
 
   };
   ProgArgContext *ProgArgContext::s_context = 0;
- 
+  std::map<std::string,std::string> ProgArgContext::explanations;
 
   void painit_internal(const std::string &sIn, ProgArgContext &context) throw (ProgArgException){
     std::string s = sIn;
@@ -348,8 +348,7 @@ namespace icl{
   }
 
   void paex_internal(const std::string &pa, const std::string &ex){
-    ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
-    context.explanations[pa] = ex;
+    ProgArgContext::explanations[pa] = ex;
   }
 
   void pausage(const std::string &msg){
@@ -390,11 +389,8 @@ namespace icl{
                                " (only " + str(l.size()) + " arguments available in '"
                                + (pa.danglingOnly?"dangling":"all") + "' args list)");
       }
-      //return l[pa.subargidx];
-      return l.at(pa.subargidx);
+      return l[pa.subargidx];
     }
-    // std::string id;
-    // int subargidx;
     AllowedArg *a = context.findArg(pa.id);
     if(!a) THROW_ProgArgException("argument '" + pa.id + "' was not defined");
     if(a->subargcount > 0){
@@ -436,13 +432,21 @@ namespace icl{
     return dummy;
   }
 
-  bool padefined_internal(const std::string &pa){
-    return ProgArgContext::getInstance(__FUNCTION__)->findGivenArg(pa);
-  }
-
-  int ProgArg::n() const{
+  int ProgArg::n() const throw (ProgArgException){
     GivenArg *g = ProgArgContext::getInstance(__FUNCTION__)->findGivenArg(id);
     return g ? (int)g->subargs.size() : 0;
+  }
+
+  bool padefined_internal(const ProgArgData &pa) throw (ProgArgException){
+    ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
+    if(!pa.id.length()){
+      const std::vector<std::string> &l = pa.danglingOnly ? context.dangling : context.all;
+      return pa.subargidx < (int)l.size();
+    }else{
+      AllowedArg *g = context.findArg(pa.id);
+      if(!g) THROW_ProgArgException("undefined argument '" + pa.id +"'");
+      return g->given;
+    }
   }
 }
 

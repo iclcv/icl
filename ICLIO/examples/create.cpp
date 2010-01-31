@@ -20,14 +20,14 @@ int main(int n, char **ppc){
          "-size|-s(Size) -depth|-d(depth=depth8u) -format|-f(format=rgb) "
          "-scale|-sc(scalefactor=1.0)",true);
 
-  
   std::string patternName,outFileName;
 
-  if(pa("-p") && pacount()){
+  
+  if( pa("-p") && pacount()){
     pausage("if patterns are defined using -p or -pattern, dangling arguments are not allowed");
     exit(-1);
   }
-  patternName = pacount() ? pa(0) : pa("-p");
+  patternName = pacount() ? *pa(0) : *pa("-p");
 
   if(pacount() > 2){
     pausage("only two dangling arguments are allowed");
@@ -44,7 +44,7 @@ int main(int n, char **ppc){
     pausage("arguments -size and -scale cannot be combined");
     exit(-1);
   }
-  outFileName = pacount()<2 ? pa(1) : pa("-o");
+  outFileName = pacount()==2 ? *pa(1) : *pa("-o");
   
   ImgBase *image = new ImgQ(create(patternName));
   

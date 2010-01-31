@@ -21,10 +21,10 @@ int main(int n, char **ppc){
       pausage("please define input filename"); 
       exit(-1); 
     }else{
-      inFileName = pa(0);
+      inFileName = *pa(0);
     }
   }else{
-    inFileName = pa("-i");
+    inFileName = *pa("-i");
   }
 
   if(!pa("-o")){
@@ -32,10 +32,10 @@ int main(int n, char **ppc){
       pausage("please define output filename"); 
       exit(-1); 
     }else{
-      outFileName = pa(1);
+      outFileName = *pa(1);
     }
   }else{
-    outFileName = pa("-o");
+    outFileName = *pa("-o");
   }
 
 
