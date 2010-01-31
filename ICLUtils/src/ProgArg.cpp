@@ -147,26 +147,36 @@ namespace icl{
   typedef SmartPtr<AllowedArg,PointerDelOp> AllowedArgPtr;
 
   struct ProgArgContext{
-    bool inited;
     std::vector<AllowedArgPtr> allowed;
     std::map<std::string,std::string> explanations;
     std::string progname;
+    std::string prognamelight;
     std::map<std::string,GivenArg*> given;
     std::map<std::string,AllowedArgPtr> allowedMap;
     std::vector<std::string> dangling;
     std::vector<std::string> all;
     
-    ProgArgContext():
-      inited(false){
+    static ProgArgContext *s_context;
+    
+    ProgArgContext(){
       allowed.reserve(10);
     }
     ~ProgArgContext(){
     }
     
-    static ProgArgContext *getInstance(){
+    /// returns the static instance (must not be called before createInstace was called)
+    static ProgArgContext *getInstance(const char *function){
+      if(!s_context)throw ProgArgException(function,"this function is not available before 'painit' was called");
+      return s_context;
+    }
+    
+    /// creates the static instance (must not be called twice)
+    static ProgArgContext* createInstance(){
+      if(s_context) THROW_ProgArgException("painit must not be called twice!");
       static SmartPtr<ProgArgContext,PointerDelOp> instance;
-      if(!instance) instance = SmartPtr<ProgArgContext,PointerDelOp>(new ProgArgContext);
-      return instance.get();
+      s_context = new ProgArgContext;
+      instance = SmartPtr<ProgArgContext,PointerDelOp>(s_context);
+      return s_context;
     }
 
     /// check elsewhere if explanations are ambiguous
@@ -186,6 +196,7 @@ namespace icl{
       for(unsigned int i=0;i<allowed.size();++i){
         allowed[i]->showUsage(findExplanation(allowed[i]->names));
       }
+      std::cout << "-help         shows this help text" << std::endl;
     }
     void showGiven() const{
       for(std::map<std::string,GivenArg*>::const_iterator it= given.begin(); it != given.end();++it){
@@ -236,7 +247,7 @@ namespace icl{
     }
 
   };
-
+  ProgArgContext *ProgArgContext::s_context = 0;
  
 
   void painit_internal(const std::string &sIn, ProgArgContext &context) throw (ProgArgException){
@@ -288,9 +299,7 @@ namespace icl{
   }
   
   void painit(int n, char **ppc,const std::string &init, bool allowDanglingArgs){
-    ProgArgContext &context = *ProgArgContext::getInstance();
-    if(context.inited) WARNING_LOG("prog-arg environment called at least twice!");
-    context.inited = true;
+    ProgArgContext &context = *ProgArgContext::createInstance();
     
     StrTok tok(init," ",true,'\\');
     while(tok.hasMoreTokens()){
@@ -339,27 +348,28 @@ namespace icl{
   }
 
   void paex_internal(const std::string &pa, const std::string &ex){
-    ProgArgContext &context = *ProgArgContext::getInstance();
+    ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
     context.explanations[pa] = ex;
   }
 
   void pausage(const std::string &msg){
-    ProgArgContext &context = *ProgArgContext::getInstance();
-    if(!context.inited){
-      ERROR_LOG("Progarg context was not inited before");
-      return;
-    }
+    ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
     context.showUsage(msg);
   }
   
-  const std::string &paprogname(){
-    ProgArgContext &context = *ProgArgContext::getInstance();
-    if(!context.inited) THROW_ProgArgException("painit was not called yet!");
-    return context.progname;
+  const std::string &paprogname(bool fullpath){
+    ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
+
+    if(fullpath){
+      return context.progname;
+    }else{
+      context.prognamelight = tok(context.progname,"/").back();
+      return context.prognamelight;
+    }
   }
 
   void pashow(){
-    ProgArgContext &context = *ProgArgContext::getInstance();
+    ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
     std::cout << "allowed arguments (pausage()):" << std::endl;
     pausage();
     std::cout << std::endl << "given arguments:" << std::endl;
@@ -367,12 +377,12 @@ namespace icl{
   }
 
   unsigned int pacount(bool danglingOnly){
-    const ProgArgContext &context = *ProgArgContext::getInstance();
+    const ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
     return danglingOnly ? context.dangling.size() : context.all.size();
   }
 
   const std::string &pasubarg_internal(const ProgArgData &pa) throw (ProgArgException){
-    ProgArgContext &context = *ProgArgContext::getInstance();
+    ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
     if(!pa.id.length()){
       const std::vector<std::string> &l = pa.danglingOnly ? context.dangling : context.all;
       if(pa.subargidx >= (int)l.size()){
@@ -427,11 +437,11 @@ namespace icl{
   }
 
   bool padefined_internal(const std::string &pa){
-    return ProgArgContext::getInstance()->findGivenArg(pa);
+    return ProgArgContext::getInstance(__FUNCTION__)->findGivenArg(pa);
   }
 
   int ProgArg::n() const{
-    GivenArg *g = ProgArgContext::getInstance()->findGivenArg(id);
+    GivenArg *g = ProgArgContext::getInstance(__FUNCTION__)->findGivenArg(id);
     return g ? (int)g->subargs.size() : 0;
   }
 }
