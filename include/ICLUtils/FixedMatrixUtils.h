@@ -13,6 +13,7 @@ namespace icl{
   }
 
   /// computes the QR decomposition of a matrix \ingroup LINALG
+  /** implements the stabilized Gram-Schmidt orthonormalization. */
   template<class T, unsigned int WIDTH, unsigned int HEIGHT>
   inline void decompose_QR(FixedMatrix<T,WIDTH,HEIGHT> A, FixedMatrix<T,WIDTH,HEIGHT> &Q, FixedMatrix<T,WIDTH,WIDTH> &R){
     FixedColVector<T,HEIGHT> a,q;
@@ -31,6 +32,47 @@ namespace icl{
       }
     }
   }
+
+
+  /// computes the spare RQ decomposition of a matrix \ingroup LINALG
+  /** implements the stabilized Gram-Schmidt orthonormalization. */
+  template<class T, unsigned int WIDTH, unsigned int HEIGHT>
+  inline void decompose_RQ(FixedMatrix<T,WIDTH,HEIGHT> A, FixedMatrix<T,HEIGHT,HEIGHT> &R, FixedMatrix<T,WIDTH,HEIGHT> &Q){
+    // first reverse the rows of A and transpose it
+    FixedMatrix<T,HEIGHT,WIDTH> A_;
+    for (unsigned int i = 0; i<HEIGHT; i++)
+      for (unsigned int j = 0; j<WIDTH; j++)
+        A_(i,j) = A(j,HEIGHT-i-1);
+    
+    // get the QR-decomposition
+    FixedMatrix<T,HEIGHT,HEIGHT> R_;
+    FixedMatrix<T,HEIGHT,WIDTH> Q_;
+    decompose_QR(A_,Q_,R_);
+    
+    // get R by reflecting all entries on the second diagonal
+    for (unsigned int i = 0; i<HEIGHT; i++)
+      for (unsigned int j = 0; j<HEIGHT; j++)
+        R(i,j) = R_(HEIGHT-1-j,HEIGHT-1-i);
+    
+    // get Q by transposing Q_ and reversing all rows
+    for (unsigned int i = 0; i<WIDTH; i++) 
+      for (unsigned int j = 0; j<HEIGHT; j++)
+        Q(i,j) = Q_(HEIGHT-1-j,i);
+  }
+  
+#ifdef HAVE_IPP
+  template< class T, unsigned int WIDTH, unsigned int HEIGHT>
+  inline void svd_fixed(const FixedMatrix<T,WIDTH,HEIGHT> &A, 
+                        FixedMatrix<T,WIDTH,HEIGHT> &U, 
+                        FixedColVector<T,WIDTH> &s, 
+                        FixedMatrix<T,WIDTH,WIDTH> &V) {
+    DynMatrix<T> A_dyn(WIDTH,HEIGHT,const_cast<T*>(A.begin()),false);
+    DynMatrix<T> U_dyn(WIDTH,HEIGHT,U.begin(),false);
+    DynMatrix<T> V_dyn(WIDTH,WIDTH,V.begin(),false);
+    DynMatrix<T> s_dyn(1,WIDTH,s.begin(),false);
+    svd_dyn(A_dyn,U_dyn,s_dyn,V_dyn);
+  }
+#endif
   
   /// computes the pseudo-inverse of a matrix (using QR-decomposition based approach) \ingroup LINALG
   template<class T,unsigned  int WIDTH,unsigned  int HEIGHT>

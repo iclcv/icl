@@ -16,7 +16,7 @@ void init(){
 
   cam = Camera(*pa("-input",2));
   grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  grabber->setDesiredSize(cam.getViewPort().getSize());
+  grabber->setDesiredSize(cam.getRenderParams().viewport.getSize());
   
   Vec p(pa("-grid",0),
         pa("-grid",1),

@@ -2,11 +2,8 @@
 #define ICL_GEOM_H
 
 #include <ICLGeom/GeomDefs.h>
-#include <ICLGeom/BorderedObject.h>
-#include <ICLGeom/CubeObject.h>
 #include <ICLGeom/Scene.h>
-#include <ICLGeom/Scene2.h>
-#include <ICLGeom/Object2.h>
+#include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
 
 

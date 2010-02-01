@@ -6,9 +6,8 @@ if HAVE_QT_COND
 
 bin_PROGRAMS= \
 icl-geom-demo \
-icl-new-geom-3D-demo \
-icl-camera-test \
-icl-extrinsic-camera-calibration \
+icl-geom-demo-simple \
+icl-cam-calib \
 icl-show-extrinsic-calibration-grid \
 icl-swiss-ranger-demo
 
@@ -21,17 +20,14 @@ icl_geom_demo_SOURCES=../examples/geom-demo.cpp
 icl_geom_demo_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
 icl_geom_demo_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
-icl_new_geom_3D_demo_SOURCES=../examples/new-geom-3D-demo.cpp
-icl_new_geom_3D_demo_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
-icl_new_geom_3D_demo_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
-icl_camera_test_SOURCES=../examples/camera-test.cpp
-icl_camera_test_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
-icl_camera_test_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
+icl_geom_demo_simple_SOURCES=../examples/geom-demo-simple.cpp
+icl_geom_demo_simple_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
+icl_geom_demo_simple_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
-icl_extrinsic_camera_calibration_SOURCES=../examples/extrinsic-camera-calibration.cpp
-icl_extrinsic_camera_calibration_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
-icl_extrinsic_camera_calibration_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
+icl_cam_calib_SOURCES=../examples/cam-calib.cpp
+icl_cam_calib_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
+icl_cam_calib_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
 icl_show_extrinsic_calibration_grid_SOURCES=../examples/show-extrinsic-calibration-grid.cpp
 icl_show_extrinsic_calibration_grid_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}

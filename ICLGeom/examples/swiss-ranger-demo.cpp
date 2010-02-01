@@ -1,7 +1,7 @@
 #include <ICLQuick/Common.h>
 #include <ICLGeom/Camera.h>
 
-#include <ICLGeom/Scene2.h>
+#include <ICLGeom/Scene.h>
 #include <ICLFilter/MedianOp.h>
 #include <ICLCore/ImgBorder.h>
 
@@ -11,7 +11,7 @@ GUI gui("hsplit");
 Img32f IMAGE;
 Camera CAM;
 Point32f POS;
-Scene2 scene;
+Scene scene;
 enum VisMode{ SOLID,DEPTH,INTEN,CONFI};
 
 Vec estimate_3D_pos(const Point32f &p, const Img32f &image, const Camera &cam){
@@ -42,7 +42,7 @@ Vec estimate_3D_pos(const Point32f &p, float val, const Camera &cam){
 }
 
 
-struct ImageObj : public Object2{
+struct ImageObj : public SceneObject{
   Size size;
   Mutex mutex;
   Img8u image;
@@ -118,7 +118,7 @@ struct ImageObj : public Object2{
       m_vertices[size.getDim()+2] = estimate_3D_pos(Point(size.width,size.height),maxDepth,cam);
       m_vertices[size.getDim()+3] = estimate_3D_pos(Point(0,size.height),maxDepth,cam);
 
-      m_vertices[size.getDim()+4] = cam.getPos();
+      m_vertices[size.getDim()+4] = cam.getPosition();
     }
     
 
@@ -208,12 +208,12 @@ void init(){
   (*draw)->setRangeMode(ICLWidget::rmAuto);
 
   float data[] = {0,0,0,1000,1000,1000};
-  Object2 *o = new Object2("cuboid",data);
+  SceneObject *o = new SceneObject("cuboid",data);
   o->setVisible(Primitive::quad,false);
   o->setVisible(Primitive::triangle,false);
 
   scene.addObject(o);
-  grid = new ImageObj(CAM.getViewPort().getSize());
+  grid = new ImageObj(CAM.getRenderParams().viewport.getSize());
   scene.addObject(grid);
 
   scene.addCamera(CAM);

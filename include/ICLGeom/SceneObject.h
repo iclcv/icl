@@ -1,19 +1,22 @@
-#ifndef ICL_OBJECT_2_H
-#define ICL_OBJECT_2_H
+#ifndef ICL_SCENE_OBJECT_H
+#define ICL_SCENE_OBJECT_H
 
 #include <ICLGeom/Primitive.h>
 
 namespace icl{
+
+  /** \cond */
+  class Scene;
+  /** \endcond */
  
-  class Object2{
+  class SceneObject{
     public:
     
     /// scene2 is able to work directly with object's data
-    friend class Scene2;
-    friend class MyScene;
+    friend class Scene;
     
     /// create an object
-    Object2();
+    SceneObject();
     
     /// create by string:
     /** currently allowed:
@@ -21,10 +24,10 @@ namespace icl{
         "cuboid" params: [x,y,z,dx,dy,dz]
         "sphere" params: [x,y,z,radius,slices,steps]
     */
-    Object2(const std::string &type,const float *params);
+    SceneObject(const std::string &type,const float *params);
     
     /// Empty destructor (but virtual)
-    virtual ~Object2(){}
+    virtual ~SceneObject(){}
     
     /// returns object vertices
     std::vector<Vec> &getVertices();
@@ -79,7 +82,7 @@ namespace icl{
     virtual void unlock(){}
     
     /// performs a deep copy of this object
-    virtual Object2 *copy() const;
+    virtual SceneObject *copy() const;
 
     /// returns current z value estimation
     float getZ() const { return m_z; }

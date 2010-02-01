@@ -1,29 +1,29 @@
-#include <ICLGeom/Object2.h>
+#include <ICLGeom/SceneObject.h>
 
 namespace icl{
-  const std::vector<Vec> &Object2::getVertices() const { 
+  const std::vector<Vec> &SceneObject::getVertices() const { 
     return m_vertices; 
   }
-  std::vector<Vec> &Object2::getVertices() { 
+  std::vector<Vec> &SceneObject::getVertices() { 
     return m_vertices; 
   }
 
-  const std::vector<Primitive> &Object2::getPrimitives() const { 
+  const std::vector<Primitive> &SceneObject::getPrimitives() const { 
     return m_primitives; 
   }
-  std::vector<Primitive> &Object2::getPrimitives() { 
+  std::vector<Primitive> &SceneObject::getPrimitives() { 
     return m_primitives; 
   }
   
-  void Object2::setVisible(Primitive::Type t, bool visible) {
+  void SceneObject::setVisible(Primitive::Type t, bool visible) {
     m_visible[t] = visible;
   }
     
-  bool Object2::isVisible(Primitive::Type t) const {
+  bool SceneObject::isVisible(Primitive::Type t) const {
     return m_visible[t];
   }
   
-  Object2::Object2():
+  SceneObject::SceneObject():
     m_lineColorsFromVertices(false),
     m_triangleColorsFromVertices(false),
     m_quadColorsFromVertices(false),
@@ -34,32 +34,32 @@ namespace icl{
     std::fill(m_visible,m_visible+Primitive::PRIMITIVE_TYPE_COUNT,true);
   }
   
-  void Object2::addVertex(const Vec &p, const GeomColor &color){
+  void SceneObject::addVertex(const Vec &p, const GeomColor &color){
     m_vertices.push_back(p);
     m_vertexColors.push_back(color);
   }
   
-  void Object2::addLine(int a, int b, const GeomColor &color){
+  void SceneObject::addLine(int a, int b, const GeomColor &color){
     m_primitives.push_back(Primitive(a,b,color));
   }
     
-  void Object2::addTriangle(int a, int b, int c, const GeomColor &color){
+  void SceneObject::addTriangle(int a, int b, int c, const GeomColor &color){
     m_primitives.push_back(Primitive(a,b,c,color));
   }
   
-  void Object2::addQuad(int a, int b, int c, int d, const GeomColor &color){
+  void SceneObject::addQuad(int a, int b, int c, int d, const GeomColor &color){
     m_primitives.push_back(Primitive(a,b,c,d,color));
   }
 
-  void Object2::addTexture(int a, int b, int c, int d, const Img8u &texture,bool deepCopy){
+  void SceneObject::addTexture(int a, int b, int c, int d, const Img8u &texture,bool deepCopy){
     m_primitives.push_back(Primitive(a,b,c,d,texture,deepCopy));
   }
 
-  Object2 *Object2::copy() const{
-    return new Object2(*this);
+  SceneObject *SceneObject::copy() const{
+    return new SceneObject(*this);
   }
 
-  void Object2::updateZFromPrimitives(){
+  void SceneObject::updateZFromPrimitives(){
     m_z = 0;
     if(m_primitives.size()){
       for(unsigned int i=0;i<m_primitives.size();++i){
@@ -69,7 +69,7 @@ namespace icl{
     }
   }
 
-  void Object2::setColor(Primitive::Type t,const GeomColor &color){
+  void SceneObject::setColor(Primitive::Type t,const GeomColor &color){
     for(unsigned int i=0;i<m_primitives.size();++i){
       if(m_primitives[i].type == t){
         m_primitives[i].color = color;
@@ -77,7 +77,7 @@ namespace icl{
     }
   }
 
-  Object2::Object2(const std::string &type,const float *params):
+  SceneObject::SceneObject(const std::string &type,const float *params):
     m_lineColorsFromVertices(false),
     m_triangleColorsFromVertices(false),
     m_quadColorsFromVertices(false),
@@ -194,7 +194,7 @@ namespace icl{
     }
   }
 
-  void Object2::setColorsFromVertices(Primitive::Type t, bool on){
+  void SceneObject::setColorsFromVertices(Primitive::Type t, bool on){
     switch(t){
       case Primitive::line:
         m_lineColorsFromVertices = on;
