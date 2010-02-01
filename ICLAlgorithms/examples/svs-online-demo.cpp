@@ -48,7 +48,7 @@ void run(){
   }
   
   svs.load(lim,rim);
-  static std::string filename = pa_subarg<std::string>("-ini",0,"");
+  static std::string filename = pa("-i");
   svs.loadCalibration(filename.c_str());
   svs.printvars();
   svs.doStereo();
@@ -66,5 +66,6 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"-ini(1) -left-cam(2) -right-cam(2)",init,run).exec();
+  return ICLApp(n,ppc,"-ini-file|-i(filename) -left-cam|-l(device,device-params) "
+                "-right-cam|-r(device,device-prams)",init,run).exec();
 }

@@ -55,15 +55,10 @@ endif
 ###############################################################################
 if HAVE_SVS_COND
 bin_PROGRAMS+= \
-icl-svs-test \
-icl-svs-create-ini-file
+icl-svs-test
 
 icl_svs_test_SOURCES=../examples/svs-test.cpp
 icl_svs_test_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
 icl_svs_test_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
-
-icl_svs_create_ini_file_SOURCES=../examples/svs-create-ini-file.cpp
-icl_svs_create_ini_file_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
-icl_svs_create_ini_file_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
 
 endif
