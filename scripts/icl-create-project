@@ -28,7 +28,7 @@ echo "done"
 
 # Create folder lib dir
 echo -n "Creating sub folders doc lib src obj application... "
-for T in lib src obj application doc ; do
+for T in lib src obj application doc test ; do
     mkdir -p ./${PROJECT}/$T ;
 done
 echo "done"

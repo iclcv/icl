@@ -10,6 +10,7 @@ namespace icl{
     
     /// scene2 is able to work directly with object's data
     friend class Scene2;
+    friend class MyScene;
     
     /// create an object
     Object2();
