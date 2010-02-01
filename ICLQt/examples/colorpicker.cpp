@@ -105,10 +105,7 @@ void calc_mean(){
 }
 
 void init(){
-  if(!pa_defined("-input")){ pa_usage("please define input type"); exit(0); }
-  
-  std::string inp = pa_subarg<string>("-input",0,"./*.ppm");
-  grabber = new GenericGrabber(pa_subarg<string>("-input",0,""),pa_subarg<string>("-input",0,"")+"="+pa_subarg<string>("-input",1,""));
+  grabber = new GenericGrabber(FROM_PROGARG("-input"));
   
   gui = new GUI;
   (*gui) << "draw[@label=image@handle=image@size=32x24]";
@@ -149,6 +146,5 @@ void run(){
 
 
 int main(int n,char **ppc){
-  pa_explain("-input","input type pwc, dc, unicap or filepattern (madatory)\ne.g. -input dc 0 or -input file image.ppm");
-  return ICLApplication(n,ppc,"-input(2)",init,run).exec();
+  return ICLApplication(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }

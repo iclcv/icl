@@ -439,10 +439,10 @@ void create_pattern_gui(){
 void init(){
 
 
-  CALIB_DATA.nx = pa_subarg<int>("-nx",0,5);
-  CALIB_DATA.ny = pa_subarg<int>("-ny",0,4);
+  CALIB_DATA.nx = pa("-nx",0);
+  CALIB_DATA.ny = pa("-ny",0);
 
-  grabber = new GenericGrabber(FROM_PROGARG_DEF("-input","pwc","0"));
+  grabber = new GenericGrabber(FROM_PROGARG("-input"));
   grabber->setIgnoreDesiredParams(true);
   grabber->grab()->convert(&IMAGE);
 
@@ -450,15 +450,14 @@ void init(){
   create_empty_warp_map(MAN_WARP_MAP);
 
   
-  if(pa_defined("-init")){
+  if(pa("-init")){
     for(int i=0;i<4;++i){
-      DIST_FACTOR[0] = pa_subarg<float>("-init",i,0.0f);
-      MAN_DIST_FACTOR[0] = pa_subarg<float>("-init",i,0.0f);
+      MAN_DIST_FACTOR[i] = DIST_FACTOR[i] = pa("-init",i);
     }
     update_warp_map();
   }
   
-  if(pa_defined("-cp")){
+  if(pa("-cp")){
     create_pattern_gui();
   }
  
@@ -472,8 +471,8 @@ void init(){
   controls << "slider(10,10000,500)[@out=min-blob-size@label=min blob size]";
   controls << (GUI("vbox[@label=local threshold]") 
                << "slider(2,100,10)[@out=mask-size@label=mask size]"
-               << ("slider("+str(pa_subarg<int>("-thresh-range",0,-20))+","+
-                   str(pa_subarg<int>("-thresh-range",1,20))+",-10)[@out=thresh@label=threshold]") );
+               << ("slider("+*pa("-thresh-range",0)+","+
+                   *pa("-thresh-range",1)+",-10)[@out=thresh@label=threshold]") );
   controls << "togglebutton(!no,yes)[@out=useMorph@label=use morphed image]";
   controls << "button(add)[@handle=add]";
   controls << "togglebutton(no,yes)[@out=use-stochastic-opt@label=stochastic mode]";
@@ -550,20 +549,15 @@ void run(){
 
 
 int main(int n, char **ppc){
-  pa_explain("-nx","count of marker grid points in horizontal direction (5 by default)");
-  pa_explain("-ny","count of marker grid points in horizontal direction (4 by default)");
-  pa_explain("-input","define input device (e.g. -dc 0 or -file 'images/*.ppm'");
-  pa_explain("-init","defined 4 initial values for distortion factors");
-  pa_explain("-cp","create an extra widget that shows a calibration pattern");
-  pa_explain("-thresh-range","define min and max value for local threshold operators slider for threshold adjustment");
-  pa_init(n,ppc,"-nx(1) -ny(1) -input(2) -cp -init(4) -thresh-range(2)");
-  
-  ExecThread x(run);
-  QApplication app(n,ppc);
-  
-  init();
-
-  x.run();
-  
-  return app.exec();
+  paex
+  ("-nx","count of marker grid points in horizontal direction")
+  ("-ny","count of marker grid points in horizontal direction ")
+  ("-input","define input device (e.g. -dc 0 or -file 'images/*.ppm'")
+  ("-init","defined 4 initial values for distortion factors")
+  ("-cp","create an extra widget that shows a calibration pattern")
+  ("-thresh-range","define min and max value for\n"
+   "local threshold operators slider for threshold adjustment");
+  return ICLApp(n,ppc,"-nx(int=5) -ny(int=4) [m]-input|-i(device,device-params) "
+                "-cp -init(float=0,float=0,float=0,float=0) "
+                "-thresh-range(min=-20,max=20)",init,run).exec();
 }

@@ -66,12 +66,5 @@ void run(){
 
 
 int main(int n,char **ppc){
-  pa_init(n,ppc,"-input(2)");
-  
-  QApplication app(n,ppc);
-  ExecThread t(run);
-  init();
-  
-  t.run();
-  return app.exec();
+  return ICLApp(n,ppc,"-input|-i(device,device-params)",init,run).exec();
 }

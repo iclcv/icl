@@ -2,10 +2,10 @@
 #include <ICLUtils/ConfigFile.h>
 
 int main(int n, char **ppc){
-  pa_init(n,ppc,"-c(1)");
+  painit(n,ppc,"-config-file|-c(filename=config.xml)");
   QApplication app(n,ppc);
   
-  ConfigFile::loadConfig(pa_subarg<std::string>("-c",0,"config.xml"));
+  ConfigFile::loadConfig(*pa("-c"));
 
   ConfigFile::getConfig().listContents();
   GUI gui("vbox");

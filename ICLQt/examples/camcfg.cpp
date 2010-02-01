@@ -5,22 +5,24 @@
 using namespace icl;
 using namespace std;
 
-int main(int nArgs, char **ppcArg){
-  pa_explain("-r","resets the dc bus on startup");
-  pa_explain("-800","if this flag is set, application trys dc devices to setup\n"
-             "in ieee1394-B mode with 800MBit iso transfer rate");
-  pa_explain("-no-unicap","disable unicap support");
-  pa_explain("-no-dc","disable dc grabber support");
-  pa_explain("-no-pwc","disable pwc grabber support");
-  pa_init(nArgs,ppcArg,"-800 -r -no-unicap -no-dc -no-pwc -no-sr");
-  QApplication a(nArgs,ppcArg);
+int main(int n, char **ppc){
+  paex
+  ("-r","resets the dc bus on startup")
+  ("-800","if this flag is set, application trys dc devices to setup\n"
+   "in ieee1394-B mode with 800MBit iso transfer rate")
+  ("-no-unicap","disable unicap support")
+  ("-no-dc","disable dc grabber support")
+  ("-no-pwc","disable pwc grabber support");
   
-  CamCfgWidget::CreationFlags flags(pa_defined("-800")?800:400,
-                                    pa_defined("-r"),
-                                    pa_defined("-no-unicap"),
-                                    pa_defined("-no-dc"),
-                                    pa_defined("-no-pwc"),
-                                    pa_defined("-no-sr"));
+  painit(n,ppc,"-use-IEEE1394-B|-800 -reset-bus|-r -no-unicap|-u -no-dc|-d -no-pwc|-p -no-sr|-s");
+  QApplication a(n,ppc);
+  
+  CamCfgWidget::CreationFlags flags(pa("-800")?800:400,
+                                    pa("-r"),
+                                    pa("-no-unicap"),
+                                    pa("-no-dc"),
+                                    pa("-no-pwc"),
+                                    pa("-no-sr"));
   
   
   CamCfgWidget w(flags);

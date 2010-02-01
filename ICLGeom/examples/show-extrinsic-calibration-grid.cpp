@@ -9,32 +9,29 @@ GenericGrabber *grabber = 0;
 
 void init(){
   
-  if(!pa_defined("-input")){
-    pa_usage("-input arg is mandatory");
-    exit(-1);
-  }
+ 
   gui << "draw[@handle=draw@minsize=32x24]";
   gui.show();
 
 
-  cam = Camera(pa_subarg<std::string>("-input",2,""));
+  cam = Camera(*pa("-input",2));
   grabber = new GenericGrabber(FROM_PROGARG("-input"));
   grabber->setDesiredSize(cam.getViewPort().getSize());
   
-  Vec p(pa_subarg<float>("-grid",0,-600),
-        pa_subarg<float>("-grid",1,0),
-        pa_subarg<float>("-grid",2,0));
+  Vec p(pa("-grid",0),
+        pa("-grid",1),
+        pa("-grid",2));
   
-  Vec v1(pa_subarg<float>("-grid",3,100),
-         pa_subarg<float>("-grid",4,0),
-         pa_subarg<float>("-grid",5,0));
+  Vec v1(pa("-grid",3),
+         pa("-grid",4),
+         pa("-grid",5));
   
-  Vec v2(pa_subarg<float>("-grid",6,0),
-         pa_subarg<float>("-grid",7,100),
-         pa_subarg<float>("-grid",8,0));
+  Vec v2(pa("-grid",6),
+         pa("-grid",7),
+         pa("-grid",8));
   
-  Nx = pa_subarg<float>("-grid",9,12)+1;
-  Ny = pa_subarg<float>("-grid",10,8)+1;
+  Nx = pa("-grid",9).as<int>()+1;
+  Ny = pa("-grid",10).as<int>()+1;
 
 
   grid.resize(Nx*Ny);
@@ -65,17 +62,19 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  pa_explain("-input","like default ICL -input argument, but 3rd subargument: camera-calibrtion-xml file\n"
-             " which can be created with icl-extrinsic-camera-calibration tool");
-  pa_explain("-grid","receives a long list of numbers, syntax:\n"
-             "\t -grid Px Py Pz V1x V1y V1z V2x V2y V2z NXCells NYCells\n"
-             "\t all value in mm\n"
-             "\t P = plane's position vector (points to the center of the grid)\n"
-             "\t V1 first plane direction vector\n"
-             "\t V2 second plane direction vector\n"
-             "\t NXCells and NYCells grid cell count\n"
-             "\t CellW and CellH grid cell size\n"
-             "\t default args are [0 300 0 0 0 1 12 8 100 100]"
-             );
-  return ICLApplication(n,ppc,"-input(3) -grid(11)",init,run).exec();
+  paex
+  ("-input","like default ICL -input argument, but 3rd subargument: camera-calibrtion-xml file\n"
+   " which can be created with icl-extrinsic-camera-calibration tool")
+  ("-grid","receives a long list of numbers, syntax:\n"
+   "\t -grid Px Py Pz V1x V1y V1z V2x V2y V2z NXCells NYCells\n"
+   "\t all value in mm\n"
+   "\t P = plane's position vector (points to the center of the grid)\n"
+   "\t V1 first plane direction vector\n"
+   "\t V2 second plane direction vector\n"
+   "\t NXCells and NYCells grid cell count\n"
+   "\t CellW and CellH grid cell size\n"
+   "\t default args are [0 300 0 0 0 1 12 8 100 100]"
+   );
+  return ICLApplication(n,ppc,"-input|-i(device,device-prams,camera-xml-file) "
+                        "-grid|-g(Px,Py,Pz,V1x,V1y,V1z,V2x,V2y,V2z,NXCells,NYCells)",init,run).exec();
 }

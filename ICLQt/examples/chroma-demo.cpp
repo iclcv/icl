@@ -37,11 +37,7 @@ void run(){
   }
 }
 
-int main(int nArgs, char **ppcArgs){
-  ExecThread x(run);  
-  QApplication app(nArgs,ppcArgs);
-  pa_init(nArgs, ppcArgs,"-input(2)");
-  
+void init(){
   gui = new GUI("hbox");
   (*gui) << ( GUI("vbox")  
               << "image[@minsize=16x12@handle=image@label=Camera Image]" 
@@ -49,10 +45,11 @@ int main(int nArgs, char **ppcArgs){
   (*gui) << "hbox[@handle=box]";
   
   gui->show();
-
+  
   cg = new ChromaGUI(*gui->getValue<BoxHandle>("box"));
 
-  x.run();
-  
-  return app.exec();
+}
+
+int main(int n, char **ppc){
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }

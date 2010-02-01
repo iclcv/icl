@@ -5,14 +5,15 @@
 
 int main(int n, char **ppc){
   //  640x480@(5,10)
-  pa_explain("-roi","specify template roi like (X,Y)WIDTHxHEIGHT");
-  pa_explain("-s","specify significance level range [0,1]");
-  pa_init(n,ppc,"-roi(1) -s(1)");
+  paex
+  ("-roi|-r","specify template roi like (X,Y)WIDTHxHEIGHT")
+  ("-significance-level|-s","specify significance level range [0,1]");
+  painit(n,ppc,"-roi(Rect=(200,400)100x120) -s(float=0.9)");
   
   Img8u image = cvt8u(create("parrot"));
   image.scale(Size(640,480));
   
-  Rect roi = parse<Rect>(pa_subarg<string>("-roi",0,"(200,400)100x120"));
+  Rect roi = pa("-roi");
   roi &= image.getImageRect();
   
   image.setROI(roi);
@@ -20,7 +21,7 @@ int main(int n, char **ppc){
   image.setFullROI();
   
 
-  float s = pa_subarg<float>("-s",0,0.9);
+  float s = pa("-s");
   printf("using significance: %f \n",s);
   Img8u *buffer = new Img8u;
   RegionDetector rd;

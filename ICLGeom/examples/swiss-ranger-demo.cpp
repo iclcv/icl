@@ -193,15 +193,15 @@ void init(){
   grabber = new GenericGrabber(FROM_PROGARG("-input"));
   grabber->setIgnoreDesiredParams(true);
   
-  if(pa_defined("-dist")){
+  if(pa("-dist")){
     const ImgBase *image = grabber->grab();
     grabber->enableDistortion(DIST_FROM_PROGARG("-dist"),image->getSize());
   }
-  if(pa_defined("-props")){
-    grabber->loadProperties(pa_subarg<std::string>("-props",0,""));
+  if(pa("-props")){
+    grabber->loadProperties(pa("-props"));
   }
                             
-  CAM = Camera(pa_subarg<std::string>("-input",2,""));
+  CAM = Camera(*pa("-input",2));
 
   gui_DrawHandle(draw);
   gui_DrawHandle3D(draw3D);
@@ -296,5 +296,10 @@ void run(){
 
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"-input(3) -dist(4) -props(1)",init,run).exec();
+  paex
+  ("-i","for input device selection")
+  ("-d","given distortion parameters computed with icl-intrinsic-camera-calibration tool")
+  ("-p","optionally define property-xml-file for the used camera");
+  return ICLApplication(n,ppc,"[m]-input|-i(device,device-params,camera-xml-file) "
+                        "-dist|-d(float,float,float,float) -props|-p(filename)",init,run).exec();
 }

@@ -2,13 +2,11 @@
 #include <ICLFilter/BinaryArithmeticalOp.h>
 #include <ICLFilter/BinaryCompareOp.h>
 
-void usage_exit(){
-  std::cout << "usage:\n\ticl-compare-images <1st image> <2nd image> [out-file-name]" << std::endl;
-  exit(-1);
-}
-
 int main(int n, char **ppc){
-  pa_init(n,ppc,"-a(2) -b(2) -o(1) -ca(1) -cb(1)");
+  painit(n,ppc,"[m]-input-1|-1|-a(device,device-params) "
+         "[m]-input-2|-2|-b(device,device-params) "
+         "-seclect-channel-a|-ca(int) "
+         "-select-channel-b|-cb(int)");
   
   GenericGrabber ga(FROM_PROGARG("-a"));
   GenericGrabber gb(FROM_PROGARG("-b"));
@@ -19,16 +17,13 @@ int main(int n, char **ppc){
   const ImgBase *a = ga.grab();
   const ImgBase *b = gb.grab();
   
-  if(pa_defined("-ca")){
-    a = a->selectChannel(pa_subarg<int>("-ca",0,0));
-    std::cout << "using channel " << pa_subarg<int>("-ca",0,0) << " from image A" << std::endl;
+  if(pa("-ca")){
+    a = a->selectChannel(pa("-ca"));
   }
-  if(pa_defined("-cb")){
-    b = b->selectChannel(pa_subarg<int>("-cb",0,0));
-    std::cout << "using channel " << pa_subarg<int>("-cb",0,0) << " from image B" << std::endl;
+  if(pa("-cb")){
+    b = b->selectChannel(pa("-cb"));
   }
   
-
   bool canBeCompared = true;
   
 #define CHECK(X,MANDATORY)                                              \

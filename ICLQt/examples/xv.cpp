@@ -23,24 +23,20 @@ Size compute_image_size(const std::vector<ImgBase*> &is, QDesktopWidget *desktop
 
 int main (int n, char **ppc){
   QApplication app(n,ppc);
-  pa_explain("-input","define image to read");
-  pa_explain("-delete","delete image file after reading");
-  pa_explain("-roi","if set, image roi is visualized");
-  pa_init(n,ppc,"-input(1) -delete -roi",true);
-  
-  if(pa_defined("-input")){
+  paex
+  ("-input","define image to read")
+  ("-delete","delete image file after reading")
+  ("-roi","if set, image roi is visualized");
+  painit(n,ppc,"-input|-i(filename) -delete|-d -roi|-r",true);
+
+  ImgQ image;  
+  if(pa("-input")){
+    string imageName = pa("-input");
     w = new ICLDrawWidget;
     w->show();
-  }
-
-  
-  
-  ImgQ image;
-  if(pa_defined("-input")){
     try{
-      image = load(pa_subarg<string>("-input",0,"no image"));
-      if(pa_defined("-delete")){
-        string imageName = pa_subarg<string>("-input",0,"");
+      image = load(imageName);
+      if(pa("-delete")){
         if(imageName.length()){
           system((string("rm -rf ")+imageName).c_str());
         }
@@ -50,14 +46,11 @@ int main (int n, char **ppc){
       fontsize(15);  w->show();
       text(image, 90,90,"image not found!");
     }
-    if(pa_dangling_args().size()){
+    if(pacount()){
       std::cout << "Warning if called with -input, all extra given filenames are omitted!" << std::endl;
-      std::cout << "This are the filenames omitted:";
-      std::copy(pa_dangling_args().begin(),pa_dangling_args().end(),std::ostream_iterator<std::string>(std::cout,"\n\t"));
-      std::cout << "\n";
     }
-  }else if(pa_dangling_args().size()){
-    if(pa_defined("-delete")){
+  }else if(pacount()){
+    if(pa("-delete")){
       std::cout << "-delete flag is not supported when running in multi image mode" << std::endl;
       std::cout << "call iclxv -input ImageName -delete instead (for single images only)" << std::endl;
     }
@@ -65,8 +58,8 @@ int main (int n, char **ppc){
     std::vector<ImgBase*> imageVec;
     std::vector<std::string> imageVecStrs;
     Size maxSize;
-    for(unsigned int i=0;i<pa_dangling_args().size();++i){
-      std::string s = pa_dangling_args()[i];
+    for(unsigned int i=0;i<pacount();++i){
+      std::string s = pa(i);
       try{
         FileGrabber grabber(s,false,true);
         const ImgBase *image = grabber.grab();
@@ -99,8 +92,8 @@ int main (int n, char **ppc){
     text(image, 110,90,"no image set!");
   }
 
-  if(pa_defined("-roi")){
-    if(pa_defined("-input")){
+  if(pa("-roi")){
+    if(pa("-input")){
       w->lock();
       w->reset();
       w->color(255,0,0);

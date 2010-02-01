@@ -1,7 +1,5 @@
-#include <ICLQt/Qt.h>
+#include <ICLQuick/Common.h>
 #include <ICLAlgorithms/UsefulFunctions.h>
-#include <ICLQuick/Quick.h>
-#include <ICLIO/GenericGrabber.h>
 #include <ICLBlob/RegionDetector.h>
 #include <ICLAlgorithms/ViewBasedTemplateMatcher.h>
 
@@ -177,48 +175,6 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  pa_explain("-input","define input device (like -input dc 0 or -input file images/image.ppm)");
-  pa_init(n,ppc,"-input(2)");
-  ExecThread x(run);
-  QApplication app(n,ppc);
-  
-  init();
-  x.run();
-  
-  return app.exec();
-
+  return ICLApp(n,ppc,"-input(device,device-params)",init,run).exec();
 }
 
-
-#if 0
-  
-  ImgQ a = create("parrot");
-  a = scale(a,0.5);
-  a.setROI(Rect(110,70,50,20));
-  
-  ImgQ b = copyroi(a);
-  a.setROI(Rect(20,20,300,400));
-  
-
-  Img8u a8 = cvt8u(a);
-  Img8u b8 = cvt8u(b);
-  
-  Img8u ma = cvt8u(ones(a.getWidth(),a.getHeight(),1)*255);
-  Img8u mb = cvt8u(ones(b.getWidth(),b.getHeight(),1)*255);
-  
-  ma.setROI(a.getROI());
-
-  std::vector<Rect> rs = iclMatchTemplate(a8,&ma, b8, &mb, 0.95,0,0,0,false,0,false);
-  
-  for(unsigned int i=0;i<rs.size();++i){
-    color(255,255,0);
-    fill(0,0,0,0);
-    rect(a,rs[i]);
-  }
-
-  show(a);
-  show(scale(cvt(b8),5));
-  
-
-}
-#endif //0

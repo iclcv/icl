@@ -3,7 +3,6 @@
 #################################################################################
 bin_PROGRAMS= \
 icl-3D-demo \
-icl-3D-demo-2 \
 icl-camviewer \
 icl-chroma-demo \
 icl-colorpicker \
@@ -40,10 +39,6 @@ icl_datastore_test_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 icl_3D_demo_SOURCES=../examples/3D-demo.cpp
 icl_3D_demo_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
 icl_3D_demo_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
-
-icl_3D_demo_2_SOURCES=../examples/3D-demo-2.cpp
-icl_3D_demo_2_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
-icl_3D_demo_2_CXXFLAGS=${ICLQt_EXAMPLE_CXXFLAGS}
 
 icl_camcfg_SOURCES=../examples/camcfg.cpp
 icl_camcfg_LDFLAGS=${ICLQt_EXAMPLE_LDFLAGS}
