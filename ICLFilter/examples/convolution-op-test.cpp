@@ -111,24 +111,10 @@ void run(){
   fps.update();
   
   delete roiedImage;
-  //Thread::msleep(1);
-  //usleep(0);
-
 }
 
 int main(int n, char **ppc){
-  ExecThread x(run);
-  pa_init(n,ppc,"-input(2)");
-
-  QApplication app(n,ppc);
-  
-  init();
-
-  x.run();
-  
-  return app.exec();
-
-  
+  return ICLApp(n,ppc,"-input|-i(device,device-params)",init,run).exec();
 }
 
 /// there is an error when getting info from 16 bit image ???

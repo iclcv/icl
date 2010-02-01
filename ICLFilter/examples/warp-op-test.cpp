@@ -29,7 +29,7 @@ void run(){
   grabber.setDesiredDepth(parse<depth>(d));
 
   if(warp){
-    static WarpOp op(load(pa_subarg<std::string>("-w",0,"no-input-defined")));
+    static WarpOp op(icl::load(pa("-w")));
     
     static  ImgBase *dst = 0;
     op.setScaleMode(lin?interpolateLIN:interpolateNN);
@@ -49,16 +49,6 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  pa_init(n,ppc,"-w(1) -input(2)");
-
-  if(!pa_defined("-w") || !pa_defined("-input")){
-    pa_usage("please define -input and -w args");
-    exit(-1);
-  }
-  
-  QApplication app(n,ppc);
-  ExecThread t(run);  
-  init();
-  t.run();
-  return app.exec();
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
+                "[m]-warp-table|-w(filename)",init,run).exec();
 }

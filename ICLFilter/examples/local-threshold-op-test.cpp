@@ -7,23 +7,18 @@
 
 #include <QInputDialog>
 GUI gui("hbox");
-GUI zoomGUI;
-static Point zoomCenter(320,240);
 
 void init(){
   int masksize = 10;
   int thresh = 2;
-  int gamma = 0;
-  if(pa_defined("-config")){
-    std::string configFileName = pa_subarg<string>("-config",0,"");
-    if(configFileName == "") goto END;
-    ConfigFile f;
-    f.load(configFileName);
-    masksize = f.get<int>("config.masksize");
-    thresh = f.get<int>("config.threshold");
-    gamma = f.get<float>("config.gammaslope");
+  float gamma = 0;
+  if(pa("-config")){
+    ConfigFile f(*pa("-config"));
+    masksize = f["config.masksize"];
+    thresh = f["config.threshold"];
+    gamma = f["config.gammaslope"];
   }
-  END:
+
   
   gui << "image[@minsize=32x24@handle=orig@label=original]";
   gui << "image[@minsize=32x24@handle=prev@label=preview]";
@@ -38,17 +33,8 @@ void init(){
   
   
   gui.show();
-           
-
-  zoomGUI << "image[@minsize=32x24@handle=zoom@label=zoom]";
-  zoomGUI.show();
 }
 
-void mouse(const MouseEvent &event){
-  if(event.isPressEvent() || event.isDragEvent()){
-    zoomCenter = event.getPos();
-  }
-}
 void save(){
   static int &masksize = gui.getValue<int>("masksize");
   static int &thresh = gui.getValue<int>("threshold");
@@ -67,27 +53,9 @@ void save(){
   }
 }
 
-void update_zoom(Img8u &prevImage){
-  static ImageHandle &h= zoomGUI.getValue<ImageHandle>("zoom");
-  
-  Point p = zoomCenter;
-  
-  if(!prevImage.getImageRect().contains(p.x,p.y)) return;
-  static const Size zoomSize = parse<Size>(pa_subarg<string>("-zoomsize",0,"640x480"));
-  static Img8u zoomRegion(zoomSize,formatGray);
-  prevImage.setROI(Rect(p.x-zoomSize.width/2,p.y-zoomSize.height/2,zoomSize.width,zoomSize.height) & prevImage.getImageRect());
-
-  if(prevImage.getROISize() == zoomSize){
-    prevImage.deepCopyROI(&zoomRegion);
-  }
-  prevImage.setFullROI();
-  h = zoomRegion;
-  h.update();
-}
-
 void run(){
-  static GenericGrabber g(pa_subarg<string>("-input",0,"pwc,dc,file"),
-                          pa_subarg<string>("-input",1,"pwc=0,dc=0,file=images/*.ppm"));
+  static GenericGrabber g(FROM_PROGARG("-input"));
+
   if(g.getType() == "file"){
     g.setIgnoreDesiredParams(true);
   }else{
@@ -98,7 +66,6 @@ void run(){
 
   static ImageHandle &orig = gui.getValue<ImageHandle>("orig");
   static ImageHandle &prev = gui.getValue<ImageHandle>("prev");
-  (*prev)->install(new MouseHandler(mouse));
   static ButtonHandle &next = gui.getValue<ButtonHandle>("next");
   static bool &loop = gui.getValue<bool>("run");
   static int &masksize = gui.getValue<int>("masksize");
@@ -111,7 +78,6 @@ void run(){
   static int lastMaskSize=0;
   static int lastThresh=0;
   static float lastGamma=0;
-  static Point lastZoomCenter = zoomCenter;
   while(1){
     t.setMaskSize(masksize);
     t.setGlobalThreshold(thresh);
@@ -133,15 +99,10 @@ void run(){
     
     prev = dst;
     prev.update();
-
-
-    update_zoom(*dst->asImg<icl8u>());
-
     
     lastMaskSize = masksize;
     lastThresh = thresh;
     lastGamma = gamma;
-    lastZoomCenter = zoomCenter;
     while(!loop && !next.wasTriggered()){
       Thread::msleep(100);
       if(lastMaskSize != masksize || lastThresh != thresh || lastGamma != gamma){
@@ -159,13 +120,6 @@ void run(){
         
         prev = dst;
         prev.update();
-
-        update_zoom(*dst->asImg<icl8u>());
-        lastZoomCenter = zoomCenter;
-      }
-      else if(lastZoomCenter != zoomCenter){
-        update_zoom(*dst->asImg<icl8u>());
-        lastZoomCenter = zoomCenter;
       }
     }
     
@@ -174,44 +128,36 @@ void run(){
 }
 
 void batch_mode(){
-  if(pa_defined("-config")){
-    std::string configFileName = pa_subarg<string>("-config",0,"");
-    if(configFileName == ""){
-      ERROR_LOG("no config filename !");
-      return;
-    }
-    printf("filename = -%s- \n",configFileName.c_str());
-    ConfigFile f;
-    f.load(configFileName);
-    int masksize = f.get<int>("config.masksize");
-    int thresh = f.get<int>("config.threshold");
-    float gamma = f.get<float>("config.gammaslope");
-
-    if(!pa_defined("-output")){
+  if(pa("-config")){
+    ConfigFile f(*pa("-config"));
+    int masksize = f["config.masksize"];
+    int thresh = f["config.threshold"];
+    float gamma = f["config.gammaslope"];
+    if(!pa("-output")){
       printf("please specify output file pattern\n");
       return;
     }
-    if(!pa_defined("-input") || (pa_subarg<string>("-input",0,"") != "file")){
-      printf("please define args -input file filename!\n");
-      return;
+  
+    static GenericGrabber g(FROM_PROGARG("-input"));
+    FileList fl;
+    int maxSteps = -1;
+    if(g.getType() == "file"){
+      fl = FileList(*pa("-input",1));
+      maxSteps = fl.size();
     }
-    string inputFilePattern = pa_subarg<string>("-input",1,"images/*.ppm");
-    if(inputFilePattern.find("file=") == 0){
-      inputFilePattern = inputFilePattern.substr(5);
-    }
-    printf("input file pattern was %s \n",inputFilePattern.c_str());
-    static FileGrabber g(inputFilePattern);
     g.setIgnoreDesiredParams(true);
 
-    static FileWriter w(pa_subarg<string>("-output",0,"./local_threshold_image_######.jpg"));
+    static FileWriter w(*pa("-output"));
     static LocalThresholdOp t;
     t.setMaskSize(masksize);
     t.setGlobalThreshold(thresh);
     t.setGammaSlope(gamma);
   
-    int fileCount = g.getFileCount();
-    while(fileCount--){
-      printf("processing image %30s ......",g.getNextFileName().c_str());
+    int i=0;
+    while(maxSteps < 0 || maxSteps--){
+      if(maxSteps > 0){
+        printf("processing image %30s ......",fl[i++].c_str());
+      }
       const ImgBase *image = g.grab();
       if(image->getFormat() != formatGray){
         printf("...");
@@ -236,29 +182,22 @@ void batch_mode(){
   
 }
 
-
-/* Call e.g. 
-examples/local_threshold -nogui -input file 'file=/home/celbrech/Desktop/Bilder/ *jpg' -config ./local-threshold-params.xml -output './images/image_#####.ppm'    
-*/
 int main (int argc, char **argv) {
-  pa_explain("-input","generic-grabbers generic grabbers params");
-  pa_explain("-config","config file input");
-  pa_explain("-zoomsize","size of zoom preview image (e.g. -zoom 320x240)");
-  pa_explain("-nogui","start without gui");
-  pa_explain("-output","for no gui batchmode: define output-image pattern");
+  paex
+  ("-input","generic-grabbers generic grabbers params")
+  ("-config","config file input")
+  ("-nogui","start without gui")
+  ("-output","for no gui batchmode: define output-image pattern\n"
+   "use ##### for the image index in this pattern");
+
+  painit(argc,argv,"[m]-input|-i(device,device-params) "
+         "-output|-o(output-file-pattern) -config|-c(cfg-filename) "
+         " -nogui|-n");
   
-  pa_init(argc,argv,"-input(2) -output(1) -config(1) -zoomsize(1) -nogui");
   
-  if(pa_defined("-nogui")){
+  if(pa("-nogui")){
     batch_mode();    
   }else{
-    ExecThread x(run);
-    QApplication app(argc,argv);
-    
-    init();
-    
-    x.run();
-    
-    return app.exec();
+    return ICLApp(argc,argv,"",init,run).exec();
   }
 }

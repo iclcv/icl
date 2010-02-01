@@ -7,7 +7,6 @@ icl-champfer-op-test \
 icl-inplace-op-test \
 icl-median-op-test \
 icl-threshold-op-test \
-icl-unary-op-mt-test \
 icl-weight-channels-op-test \
 icl-weighted-sum-op-test \
 icl-morphological-op-test
@@ -32,10 +31,6 @@ icl_median_op_test_CXXFLAGS=${ICLFilter_EXAMPLE_CXXFLAGS}
 icl_threshold_op_test_SOURCES=../examples/threshold-op-test.cpp
 icl_threshold_op_test_LDFLAGS=${ICLFilter_EXAMPLE_LDFLAGS}
 icl_threshold_op_test_CXXFLAGS=${ICLFilter_EXAMPLE_CXXFLAGS}
-
-icl_unary_op_mt_test_SOURCES=../examples/unary-op-mt-test.cpp
-icl_unary_op_mt_test_LDFLAGS=${ICLFilter_EXAMPLE_LDFLAGS}
-icl_unary_op_mt_test_CXXFLAGS=${ICLFilter_EXAMPLE_CXXFLAGS}
 
 icl_weight_channels_op_test_SOURCES=../examples/weight-channels-op-test.cpp
 icl_weight_channels_op_test_LDFLAGS=${ICLFilter_EXAMPLE_LDFLAGS}

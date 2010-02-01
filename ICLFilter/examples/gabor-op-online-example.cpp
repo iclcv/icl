@@ -93,13 +93,5 @@ void run(){
 
 
 int main(int n, char **ppc){
-  ExecThread x(run);
-  QApplication app(n,ppc);
-  pa_explain("-input","define input device e.g. -input dc 0 or -input file image_*.ppm");
-  pa_init(n,ppc,"-input(2)");
-  init();
-  
-  x.run();
-
-  return app.exec();
+  return ICLApp(n,ppc,"-input|-i(device,device-params)",init,run).exec();
 }
