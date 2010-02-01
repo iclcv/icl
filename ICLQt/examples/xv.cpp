@@ -7,8 +7,6 @@
 //#include <QScreen>
 
 GUI gui;
-ICLDrawWidget *w=0;
-
 
 Size compute_image_size(const std::vector<ImgBase*> &is, QDesktopWidget *desktop){
   Size s;
@@ -32,10 +30,10 @@ int main (int n, char **ppc){
   ImgQ image;  
   if(pa("-input")){
     string imageName = pa("-input");
-    w = new ICLDrawWidget;
-    w->show();
+  
     try{
       image = load(imageName);
+      SHOW(image);
       if(pa("-delete")){
         if(imageName.length()){
           system((string("rm -rf ")+imageName).c_str());
@@ -43,12 +41,20 @@ int main (int n, char **ppc){
       }
     }catch(ICLException e){
       image = ones(320,240,1)*100;
-      fontsize(15);  w->show();
+      fontsize(15); 
       text(image, 90,90,"image not found!");
     }
     if(pacount()){
       std::cout << "Warning if called with -input, all extra given filenames are omitted!" << std::endl;
     }
+
+    Size size = compute_image_size(std::vector<ImgBase*>(1,&image),QApplication::desktop());
+    gui = GUI("image[@handle=draw@size="+str(size/20)+"]");
+    gui.show();
+    
+    gui["draw"] = image;
+    gui["draw"].update();
+  
   }else if(pacount()){
     if(pa("-delete")){
       std::cout << "-delete flag is not supported when running in multi image mode" << std::endl;
@@ -77,7 +83,6 @@ int main (int n, char **ppc){
       }
     }
     Size size = compute_image_size(imageVec,QApplication::desktop());
-    SHOW(size);
     gui << std::string("multidraw(")+imageList+",!all,!deepcopy)[@handle=image@size="+str(size/20)+"]";
     gui.show();
     
@@ -94,25 +99,18 @@ int main (int n, char **ppc){
 
   if(pa("-roi")){
     if(pa("-input")){
-      w->lock();
-      w->reset();
-      w->color(255,0,0);
-      w->fill(0,0,0,0);
+      gui_DrawHandle(draw);
+      draw->lock();
+      draw->reset();
+      draw->color(255,0,0);
+      draw->fill(0,0,0,0);
       
-      w->rect(image.getROI().x,image.getROI().y,image.getROI().width,image.getROI().height);
-      w->unlock();
+      draw->rect(image.getROI().x,image.getROI().y,image.getROI().width,image.getROI().height);
+      draw->unlock();
     }else{
       std::cout << "roi visualization is not supported in multi image mode!" << std::endl;
     }
   }
-  
-  //if(image.getDim()){
-  //  w->setImage(&image);
-  //  Rect r = image.getImageRect();
-  // does not work    QScreen &screen = *QScreen::instance();
-  //  r = r & Rect(0,0,1024,768);
-  //  w->resize(QSize(r.width,r.height));
-  //}
-  
+
   return app.exec();
 }
