@@ -5,7 +5,12 @@ GUI gui;
 FPSLimiter *fpsLimiter = 0;
 void run(){
   static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredSize(pa("-size"));
+  if(pa("-size")){
+    g.setDesiredSize(pa("-size"));
+    g.setIgnoreDesiredParams(false);
+  }else{
+    g.setIgnoreDesiredParams(true);
+  }
   if(pa("-dist")){
     g.enableDistortion(DIST_FROM_PROGARG("-dist"),g.getDesiredSize());
   }
@@ -42,6 +47,6 @@ int main(int n, char**ppc){
   ("-bci-auto","set visualization window to auto bci-mode (brightness-contrast-adaption)");
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
                 "-dist|-d(float=0,float=0,float=0,float=0) "
-                "-size|-s(Size?VGA) -showfps -maxfps(float=30) "
+                "-size|-s(Size) -showfps -maxfps(float=30) "
                 "-bci-auto",init,run).exec();
 }
