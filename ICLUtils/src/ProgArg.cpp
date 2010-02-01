@@ -299,51 +299,70 @@ namespace icl{
   }
   
   void painit(int n, char **ppc,const std::string &init, bool allowDanglingArgs){
-    ProgArgContext &context = *ProgArgContext::createInstance();
-    
-    StrTok tok(init," ",true,'\\');
-    while(tok.hasMoreTokens()){
-      const std::string &t = tok.nextToken();
-      painit_internal(t,context);
-    }
-
-    // processing actually given arguments 
-    context.progname = *ppc;
-    for(int i=1;i<n;){
-      if(std::string("--help") == ppc[i] ||
-         std::string("-help") == ppc[i]){
-        pausage();
-        ::exit(0);
+    try{
+      ProgArgContext &context = *ProgArgContext::createInstance();
+      
+      StrTok tok(init," ",true,'\\');
+      while(tok.hasMoreTokens()){
+        const std::string &t = tok.nextToken();
+        painit_internal(t,context);
       }
-      context.all.push_back(ppc[i]);
-      AllowedArg *a = context.findArg(ppc[i]);
-      if(!a){
-        if(allowDanglingArgs){
-          context.dangling.push_back(ppc[i]);
-          i++;
-          continue;
-        }else{
-          THROW_ProgArgException(str("unknown argument at index ") + str(i-1) + " '" +ppc[i]+"'"); // TODO show better usage!
+      
+      // processing actually given arguments 
+      context.progname = *ppc;
+      for(int i=1;i<n;){
+        if(std::string("--help") == ppc[i] ||
+           std::string("-help") == ppc[i]){
+          pausage();
+          ::exit(0);
+        }
+        context.all.push_back(ppc[i]);
+        AllowedArg *a = context.findArg(ppc[i]);
+        if(!a){
+          if(allowDanglingArgs){
+            context.dangling.push_back(ppc[i]);
+            i++;
+            continue;
+          }else{
+            THROW_ProgArgException(str("unknown argument at index ") + str(i-1) + " '" +ppc[i]+"'"); // TODO show better usage!
+          }
+        }
+        GivenArg *g = new GivenArg(a);
+        if(a->subargcount >= 0){ // fixed sub argument count
+          for(int j=1;j<=a->subargcount;++j){
+            if(i+j>=n) THROW_ProgArgException("argument '" +a->names[0]+"' expected " + str(a->subargcount) 
+                                              + " sub-arguments, but only " + str(n-i-1) + " were found!");
+            g->subargs.push_back(ppc[i+j]);
+          }
+          g->checkArgCountThrow();
+        }else{ // arbitrary arg count here
+          /// attach all args that are not an allowed args
+          for(int j=1;true;++j){
+            if(i+j>n) break;
+            else if(context.findArg(ppc[i+j])){ break; }
+            g->subargs.push_back(ppc[i+j]); // here, no types are possible
+          }  
+        }
+        i+=g->subargs.size()+1;
+        context.add(g);
+      }
+      
+      std::set<std::string> missing;
+      // ensure, that all mandatory args were actually given
+      for(std::map<std::string,AllowedArgPtr>::const_iterator it = context.allowedMap.begin();
+          it != context.allowedMap.end(); ++it){
+        const AllowedArgPtr &p = it->second;
+        if(p->mandatory && !p->given){
+          missing.insert(p->names[0]);
         }
       }
-      GivenArg *g = new GivenArg(a);
-      if(a->subargcount >= 0){ // fixed sub argument count
-        for(int j=1;j<=a->subargcount;++j){
-          if(i+j>=n) THROW_ProgArgException("argument '" +a->names[0]+"' expected " + str(a->subargcount) 
-                                            + " sub-arguments, but only " + str(n-i-1) + " were found!");
-          g->subargs.push_back(ppc[i+j]);
-        }
-        g->checkArgCountThrow();
-      }else{ // arbitrary arg count here
-        /// attach all args that are not an allowed args
-        for(int j=1;true;++j){
-          if(i+j>n) break;
-          else if(context.findArg(ppc[i+j])){ break; }
-          g->subargs.push_back(ppc[i+j]); // here, no types are possible
-        }  
+      if(missing.size()){
+        std::string m = cat(std::vector<std::string>(missing.begin(),missing.end()),",");
+        THROW_ProgArgException("the following mandatory arguments are missing: '" + m +"'");
       }
-      i+=g->subargs.size()+1;
-      context.add(g);
+    }catch(ProgArgException &e){
+      pausage(e.what());
+      ::exit(-1);
     }
   }
 

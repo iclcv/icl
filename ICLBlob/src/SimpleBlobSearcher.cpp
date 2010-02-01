@@ -41,7 +41,15 @@ namespace icl{
     delete m_data->rds[index];
     m_data->rds.erase(m_data->rds.begin()+index);
     m_data->ranges.erase(m_data->ranges.begin()+index);
-    
+  }
+
+  void SimpleBlobSearcher::adapt(int index, const Color &color, 
+                                 float thresh, const Range32s &sizeRange){
+    ICLASSERT_RETURN(index >= 0 && index < (int)m_data->colors.size());
+    m_data->colors[index] = color;
+    m_data->thresholds[index] = thresh;
+    m_data->rds.push_back(new RegionDetector);
+    m_data->ranges[index] = sizeRange;
   }
   
   void SimpleBlobSearcher::clear() {

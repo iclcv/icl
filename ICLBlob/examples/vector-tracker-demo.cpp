@@ -101,11 +101,11 @@ struct InputGrabber : public Grabber, public Lockable , public MouseHandler{
     setDesiredSize(Size(640,480));
     image.setSize(getDesiredSize());
 
-    mingap = pa_subarg<int>("-mingap",0,3);
-    minr = pa_subarg<int>("-minr",0,10);
-    maxr = pa_subarg<int>("-maxr",0,20);
-    maxv = pa_subarg<int>("-maxv",0,10);
-    maxdv = pa_subarg<int>("-maxdv",0,2);
+    mingap = pa("-mingap");
+    minr = pa("-minr");
+    maxr = pa("-maxr");
+    maxv = pa("-maxv");
+    maxdv = pa("-maxdv");
     maxtrys = 100;
     blobcolor[0] = 255;
     blobcolor[1] = 0;
@@ -324,12 +324,12 @@ static std::vector<std::vector<float> > getCentersAndSizes(const Img8u &image){
 
 
 void init(){
-    grabber = new InputGrabber(pa_subarg<int>("-nblobs",0,30));
+  grabber = new InputGrabber(pa("-n").as<int>());
     grabber->setDesiredSize(Size(640,480));
     grabber->setDesiredFormat(formatGray);
     gui << "draw[@handle=image@minsize=32x24]";
     gui << ( GUI("hbox") 
-             << string("slider(0,100,")+pa_subarg<string>("-sleeptime",0,"10") + ")[@handle=Hsl@out=Vsl@label=sleeptime]"
+             << string("slider(0,100,")+ *pa("-sleeptime") + ")[@handle=Hsl@out=Vsl@label=sleeptime]"
              << "togglebutton(off,!on)[@out=Vlo@label=Show labels]"
            );
     gui.show();
@@ -344,21 +344,7 @@ void run(){
 
   std::vector<std::vector<float> > vVT = getCentersAndSizes(*(image->asImg<icl8u>()));
 
-
-  /*
-      std::vector<std::vector<float> > vVT;
-      for(int i=0;i<v.size()/2;++i){
-      std::vector<float> el(3); 
-      el[0] = v[2*i]; 
-      el[1] = v[2*i+1];
-      
-      vVT.push_back(el);
-      }
-  */
-
   w->setImage(image);
-
-
   
   w->lock();       
   w->reset();
@@ -366,16 +352,16 @@ void run(){
   if(vVT.size()){
     
     std::vector<float> normFactors(3);
-    normFactors[0] = pa_subarg<float>("-norm",0,1.0);
-    normFactors[1] = pa_subarg<float>("-norm",1,1.0);
-    normFactors[2] = pa_subarg<float>("-norm",2,1000);
+    normFactors[0] = pa("-norm",0);
+    normFactors[1] = pa("-norm",1);
+    normFactors[2] = pa("-norm",2);
 
-    static VectorTracker vt(3,                               // dim (x,y,size)
-                            10000,                           // a large distance 
-                            normFactors,                     // weights,
-                            pa_subarg<std::string>("-iam",0,"new") == "new" ? VectorTracker::brandNew  : VectorTracker::firstFree,
-                            pa_subarg<int>("-thresh",0,2),   // threshold for optimized trivial assignment
-                            pa_defined("-thresh")            // whether to try trivial assignment                            
+    static VectorTracker vt(3,               // dim (x,y,size)
+                            10000,           // a large distance 
+                            normFactors,     // weights,
+                            *pa("-iam") == "new" ? VectorTracker::brandNew  : VectorTracker::firstFree,
+                            pa("-thresh"),   // threshold for optimized trivial assignment
+                            pa("-thresh")    // whether to try trivial assignment                            
                             );
 
     vt.pushData(vVT);
@@ -428,18 +414,20 @@ void run(){
 
 
 int main(int n, char  **ppc){
-  pa_explain("-nblobs","(int) number of blobs to use");
-  pa_explain("-sleeptime","(int) initial sleeptime value");
-  pa_explain("-mingap","(int) minimal distance between two blobs");
-  pa_explain("-minr","(int) minimal radius of blobs");
-  pa_explain("-maxr","(int) maxinal radius of blobs");
-  pa_explain("-maxv","(int) maxinal speed of blobs (in pixles per frame)");
-  pa_explain("-maxdv","(int) maximal acceleration of blobs");
-  pa_explain("-thresh","(int) position tracker threshold for trivial association step");
-  pa_explain("-iam","one of {new,or free}");
-  pa_explain("-norm","give norm factors for x and y distances and for the region size");
+  paex
+  ("-nblobs","number of blobs to use")
+  ("-sleeptime","initial sleeptime value")
+  ("-mingap","minimal distance between two blobs")
+  ("-minr","minimal radius of blobs")
+  ("-maxr","maxinal radius of blobs")
+  ("-maxv","maxinal speed of blobs (in pixles per frame)")
+  ("-maxdv","maximal acceleration of blobs")
+  ("-thresh","position tracker threshold for trivial association step")
+  ("-iam","one of {new,or free}")
+  ("-norm","give norm factors for x and y distances and for the region size");
 
-  return ICLApplication(n,ppc,"-norm(3) -iam(1) -nblobs(1) -sleeptime(1) "
-                        "-mingap(1) -minr(1) -maxr(1) -maxv(1) -maxdv(1) "
-                        "-thresh(1)",init,run).exec();
+  return ICLApplication(n,ppc,"-norm(x-norm=1,y-norm=1,size-norm=1000) -id-generation-mode|-iam(mode=free) -nblobs|-n(int=30) -sleeptime|-s(msec=20) "
+                        "-mingap(int=3) -minr(int=10) -maxr(int=20) -maxv(int=10) -maxdv(int=2) "
+                        "-thresh(int=5)",init,run).exec();
 }
+ 

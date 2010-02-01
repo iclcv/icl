@@ -5,48 +5,61 @@
 GUI gui;
 GenericGrabber *grabber;
 SimpleBlobSearcher S;
+Mutex mutex;
 
-void init(){
-  gui << "draw[@minsize=32x24@handle=image]";
-  gui.show();
-  
-  grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  
-  std::string args[3] = {"-a","-b","-c"};
-  for(int i=0;i<3;++i){
-    if(pa_defined(args[i])){
-      S.add(Color(pa_subarg<int>(args[i],0,0),
-                  pa_subarg<int>(args[i],1,0),
-                  pa_subarg<int>(args[i],2,0)),
-            pa_subarg<float>(args[i],3,0),
-            Range32s(pa_subarg<float>(args[i],4,0),
-                     pa_subarg<float>(args[i],5,0)));
-    }
+void mouse(const MouseEvent &e){
+  if(e.hitImage() && e.isPressEvent()){
+    gui_int(minSize);
+    gui_int(maxSize);
+    gui_float(thresh);
+    Mutex::Locker lock(mutex);
+    int idx = e.isMiddle() ? 1 : e.isRight() ? 2 : 0;
+    std::vector<double> color = e.getColor();
+    ICLASSERT_RETURN(color.size() == 3);
+    S.adapt(idx,Color(color[0],color[1],color[2]),thresh,Range32s(minSize,maxSize));
   }
 }
 
+
+void init(){
+  gui << "draw[@minsize=32x24@handle=draw]";
+  gui << ( GUI("hbox[@maxsize=100x3]") 
+           << "spinner(1,100000,100)[@out=minSize@label=min size]"
+           << "spinner(1,100000,1000)[@out=maxSize@label=max size]"
+           << "fslider(0,300,30)[@out=thresh@label=threshold]" );
+  gui.show();
+  
+  gui["draw"].install(new MouseHandler(mouse));
+  grabber = new GenericGrabber(FROM_PROGARG("-input"));
+  
+  S.add(Color(255,0,0),100,Range32s(100,100));
+  S.add(Color(0,255,0),100,Range32s(100,100));
+  S.add(Color(0,0,255),100,Range32s(100,100));
+}
+
 void run(){
-  static DrawHandle &h = gui.getValue<DrawHandle>("image");
+  gui_DrawHandle(draw);
   static FPSLimiter fps(20);
   
   const Img8u *image = grabber->grab()->asImg<icl8u>();
   
   const std::vector<SimpleBlobSearcher::Blob> &blobs = S.detect(*image);
   
-  h = image;
+  draw = image;
 
-  (*h)->lock();  
-  (*h)->reset();
+  draw->lock();  
+  draw->reset();
   for(unsigned int i=0;i<blobs.size();++i){
-    (*h)->color(blobs[i].refColor[0],blobs[i].refColor[1],blobs[i].refColor[2],255);
-    (*h)->linestrip(blobs[i].region->getBoundary());
-    (*h)->text(str(blobs[i].refColorIndex), blobs[i].region->getCOG().x,blobs[i].region->getCOG().y);
+    draw->color(255,255,255,255);
+    draw->linestrip(blobs[i].region->getBoundary());
+    draw->text(str(blobs[i].refColorIndex), blobs[i].region->getCOG().x,blobs[i].region->getCOG().y);
   }
-  (*h)->unlock();  
-  h.update();
+  draw->unlock();  
+  draw.update();
   fps.wait();
 }
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"-input(2) -a(6) -b(6) -c(6)",init,run).exec();
+  paex("-i","defines input device to use");
+  return ICLApplication(n,ppc,"-input(device,device-params)",init,run).exec();
 }

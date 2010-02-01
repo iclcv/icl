@@ -66,7 +66,11 @@ namespace icl{
     void add(const Color &color, 
              float thresh, 
              const Range32s &sizeRange);
-    
+
+    /// Updates data for given index
+    void adapt(int index, const Color &color, 
+               float thresh, const Range32s &sizeRange);
+
     /// removes reference color at given index
     void remove(int index);
     void clear();

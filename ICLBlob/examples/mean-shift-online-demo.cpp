@@ -39,7 +39,7 @@ void init(){
   grabber = new GenericGrabber(FROM_PROGARG("-input"));
   grabber->setDesiredDepth(depth32f);
   grabber->setDesiredFormat(formatRGB);
-  grabber->setDesiredSize(parse<Size>(pa_subarg<std::string>("-size",0,"VGA")));
+  grabber->setDesiredSize(pa("-size"));
   
   GUI controls;
   controls << "image[@handle=kernel@minsize=8x6@label=kernel image]"
@@ -127,5 +127,8 @@ void run(){
 
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"-input(2) -k(1) -size(1)",init,run).exec();
+  paex
+  ("-i","defines input device and params that should be used")
+  ("-s","defines image size");
+  return ICLApplication(n,ppc,"[m]-input|-i(device,device-params) -size|-s(Size=VGA)",init,run).exec();
 }

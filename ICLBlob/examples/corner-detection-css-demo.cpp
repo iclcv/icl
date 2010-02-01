@@ -28,6 +28,10 @@ class Mouse : public MouseHandler{
 } mouse;
 
 void init(){
+  if(pa("-r")){
+    GenericGrabber::resetBus();
+  }
+
   GUI controls("vbox");
   controls << ( GUI("hbox") 
            << "camcfg(pwc,dc)"
@@ -57,7 +61,7 @@ void init(){
   // grabber
   grabber = new GenericGrabber(FROM_PROGARG("-input"));
   grabber->setIgnoreDesiredParams(true);
-  grabber->setDesiredSize(parse<Size>(pa_subarg<std::string>("-size",0,"QVGA")));
+  grabber->setDesiredSize(pa("-size"));
   grabber->setDesiredDepth(depth8u);
 }
 
@@ -175,7 +179,7 @@ void drawStep2(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_
   }
 }
 
-void myrun(){
+void run(){
 	// draw handles
 	static DrawHandle &h = gui.getValue<DrawHandle>("img_in");
   static DrawHandle &h1 = gui.getValue<DrawHandle>("img1");
@@ -234,14 +238,9 @@ void myrun(){
 
 
 int main(int n, char **ppc){
-  GenericGrabber::resetBus();
-  pa_explain("-input","define input grabber e.g. -input dc 0 or -input file images/*.ppm");
-  pa_init(n,ppc,"-input(2) -size(1)");
-  QApplication app(n,ppc);
-  ExecThread x(myrun);
-
-  init();
-
-  x.run();
-  return app.exec();
+  paex
+  ("-i","defines input device and parameters")
+  ("-s","defines image size to use")
+  ("-r","if given, the dc-bus is resetted automatically before use");
+  return ICLApp(n,ppc,"[m]-input|-i(device|device-params) -size|-s(Size) -reset|-r",init,run).exec();
 }

@@ -51,12 +51,8 @@ struct RegionContainsPoint{
 };
 
 void run(){
-  string file;
-  for(unsigned int i=0;i<pa_argcount();++i){
-    file += pa_arg<string>(i) + " ";
-  }
   static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredSize(parse<Size>(pa_subarg<string>("-size",0,"640x480")));
+  g.setDesiredSize(Size::VGA);
   g.setIgnoreDesiredParams(false);
   g.setDesiredFormat(formatGray);
 
@@ -149,16 +145,6 @@ void run(){
 
 
 int main(int n, char **ppc){
-  ExecThread x(run);
-  QApplication app(n,ppc);
-  
-  pa_explain("-input","define device parameters (e.g. -d dc 0 or -d file image/*.ppm)");
-  pa_explain("-size","define image size (e.g. -size 640x480)");
-  pa_init(n,ppc,"-input(2) -size(1)");
-
-  init();
-  
-  x.run();
-  
-  return app.exec();
+  paex("-input","define device parameters (e.g. -d dc 0 or -d file image/*.ppm)");
+  return ICLApp(n,ppc,"-input|-i(device,device-params)",init,run).exec();
 }

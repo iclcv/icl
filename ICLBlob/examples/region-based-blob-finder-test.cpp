@@ -18,7 +18,6 @@ int main(){
   A = levels(A,5);
   A = filter(A,"median");
 
-  
   RegionBasedBlobSearcher R;
 
 
