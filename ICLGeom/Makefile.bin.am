@@ -5,7 +5,6 @@
 if HAVE_QT_COND
 
 bin_PROGRAMS= \
-icl-geom-3D-demo \
 icl-geom-demo \
 icl-new-geom-3D-demo \
 icl-camera-test \
@@ -17,10 +16,6 @@ icl-swiss-ranger-demo
 icl_swiss_ranger_demo_SOURCES=../examples/swiss-ranger-demo.cpp
 icl_swiss_ranger_demo_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
 icl_swiss_ranger_demo_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
-
-icl_geom_3D_demo_SOURCES=../examples/geom-3D-demo.cpp
-icl_geom_3D_demo_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}
-icl_geom_3D_demo_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS}
 
 icl_geom_demo_SOURCES=../examples/geom-demo.cpp
 icl_geom_demo_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS}

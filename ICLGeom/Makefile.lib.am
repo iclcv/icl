@@ -5,30 +5,20 @@ libICLGeom_la_LDFLAGS=@ICLGeom_LDFLAGS@ @ICLGeom_LIBS@
 includedir=${prefix}/include/ICL/ICLGeom
 
 libICLGeom_la_SOURCES= \
-../src/BorderedObject.cpp \
 ../src/Camera.cpp \
 ../src/ConvexHullMonotoneChain.cpp \
-../src/CubeObject.cpp \
-../src/Object.cpp \
 ../src/Scene.cpp \
-../src/Object2.cpp \
-../src/Scene2.cpp \
-../src/ExtrinsicCameraCalibrator.cpp \
+../src/SceneObject.cpp \
 ../src/PlaneEquation.cpp \
 ../src/ViewRay.cpp
 
 include_HEADERS= \
-../../include/ICLGeom/BorderedObject.h \
 ../../include/ICLGeom/Camera.h \
 ../../include/ICLGeom/ConvexHullMonotoneChain.h \
-../../include/ICLGeom/CubeObject.h \
 ../../include/ICLGeom/GeomDefs.h \
 ../../include/ICLGeom/Geom.h \
-../../include/ICLGeom/Object.h \
+../../include/ICLGeom/SceneObject.h \
 ../../include/ICLGeom/Scene.h \
-../../include/ICLGeom/Object2.h \
-../../include/ICLGeom/Scene2.h \
 ../../include/ICLGeom/Primitive.h \
-../../include/ICLGeom/ExtrinsicCameraCalibrator.h \
 ../../include/ICLGeom/PlaneEquation.h \
 ../../include/ICLGeom/ViewRay.h
