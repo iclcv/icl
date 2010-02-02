@@ -8,7 +8,15 @@ AC_ARG_WITH([MKL],
 
         HAVE_MKL=TRUE
         ICL_PUSH_FLAG_VARS
-        ICL_EXTEND_FLAG_VARS_TMP_FOR([MKL],[lib/32],[include])
+
+	MKL_LIB_POSTFIX=32
+	MKL_LIB_POSTFIX_2=
+	if [[ "$BITS" = "64" ]] ; then
+	   MKL_LIB_POSTFIX=em64t
+	   MKL_LIB_POSTFIX_2=_lp64
+	fi
+	
+        ICL_EXTEND_FLAG_VARS_TMP_FOR([MKL],[lib/$MKL_LIB_POSTFIX],[include])
         
         AC_CHECK_HEADER([mkl_types.h],[],[HAVE_MKL=FALSE],[])
         AC_CHECK_HEADER([mkl_cblas.h],[],[HAVE_MKL=FALSE],[])
@@ -19,12 +27,14 @@ AC_ARG_WITH([MKL],
 
         if test "$HAVE_MKL" = "TRUE" ; then
 
+
         ICL_DEF_VARS(
                 [MKL],
-                [-L$MKL_ROOT/lib/32 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -pthread],
-                [-Wl,-rpath=${MKL_ROOT}/lib/32],
+                [-L$MKL_ROOT/lib/$MKL_LIB_POSTFIX -lmkl_intel$MKL_LIB_POSTFIX_2 -lmkl_intel_thread -lmkl_core -liomp5 -pthread],
+                [-Wl,-rpath=${MKL_ROOT}/lib/$MKL_LIB_POSTFIX],
                 [-I$MKL_ROOT/include],
                 [-DHAVE_MKL])
+
         fi])
 AM_CONDITIONAL([HAVE_MKL_COND],[test x$HAVE_MKL = xTRUE])
 ])

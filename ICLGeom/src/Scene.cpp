@@ -517,9 +517,10 @@ namespace icl{
       
     };
   }
-  
-  void Scene::render(int camIndex, ICLDrawWidget3D *widget){
+#ifdef HAVE_QT
 #ifdef HAVE_OPENGL
+  void Scene::render(int camIndex, ICLDrawWidget3D *widget){
+
     Mutex::Locker l(this);
     ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
 
@@ -617,7 +618,6 @@ namespace icl{
             glEnd();
             break;
            }case Primitive::texture:{
-#ifdef HAVE_QT
               glColor4f(1,1,1,1);
               Vec &a = ps[p.a];
               Vec &b = ps[p.b];
@@ -628,10 +628,6 @@ namespace icl{
               GLTextureMapBaseImage tim(&p.tex);
               tim.drawTo3D(a.begin(),b.begin(),d.begin());
               break;
-
-#else
-            ERROR_LOG("texture mapping only supported with QT");
-#endif
           }
           default:
             ERROR_LOG("unsupported primitive type");
@@ -653,11 +649,11 @@ namespace icl{
         glDisable(flags[i]);
       }
     }
-#endif
+
   }
 
 
-#ifdef HAVE_QT
+
   MouseHandler *Scene::getMouseHandler(int camIndex){
     ICLASSERT_RETURN_VAL(camIndex >= 0 && camIndex < (int)m_cameras.size(),0);
     // search for already exsiting mouse handler for given camera
@@ -684,8 +680,9 @@ namespace icl{
     m_glCallbacks.push_back(new GLCallback(camIndex,this));
     return m_glCallbacks.back();
   }
-#endif
 
+#endif // QT
+#endif // GL
 
   void Scene::setLightSimulationEnabled(bool enabled){
     m_lightSimulationEnabled = enabled;

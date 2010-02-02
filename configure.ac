@@ -19,6 +19,13 @@ elif test "$ARCH" = "CYGWIN" ; then
 fi
 echo " $ARCH (adding -DSYSTEM_$ARCH to CXXFLAGS)"
 
+# checking system architecture 64 or 32 bit
+MACHINE=`uname -m`
+BITS=32
+if [[ "$MACHINE" = "x86_64" ]] ; then
+   BITS=64
+fi
+
 CXXFLAGS="$CXXFLAGS -DSYSTEM_${ARCH} -Wno-long-long -Wall -I../../include"
 #Workaround for missing pthread symbols on some systems ?!
 LDFLAGS="$LDFLAGS -pthread"
@@ -112,8 +119,8 @@ fi
 if [[ "$HAVE_QT" = "TRUE" ]] ; then
 ICL_USE_INTERNAL_PACKAGE_IN([ICLQuick],[ICLQt]) 
 else
-ICL_USE_INTERNAL_PACKAGE_IN([ICLQt],[ICLFilter]) 
-ICL_USE_INTERNAL_PACKAGE_IN([ICLQt],[ICLIO]) 
+ICL_USE_INTERNAL_PACKAGE_IN([ICLQuick],[ICLFilter]) 
+ICL_USE_INTERNAL_PACKAGE_IN([ICLQuick],[ICLIO]) 
 fi
 ICL_USE_INTERNAL_PACKAGE_IN([ICLQuick],[ICLBlob]) 
 

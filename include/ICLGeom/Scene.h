@@ -24,7 +24,9 @@ namespace icl{
     public:
     struct RenderPlugin;
 #ifdef HAVE_QT
+#ifdef HAVE_OPENGL
     struct SceneMouseHandler;
+#endif
 #endif
     struct GLCallback;
     
@@ -52,8 +54,10 @@ namespace icl{
     void clear(bool camerasToo=false);
     
 #ifdef HAVE_QT
+#ifdef HAVE_OPENGL
     MouseHandler *getMouseHandler(int camIndex=0);
     ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
+#endif
 #endif
 
     void setLightSimulationEnabled(bool enabled);
@@ -63,18 +67,23 @@ namespace icl{
     
     private:
     /// renders the scene into current OpenGL context
+#ifdef HAVE_QT
+#ifdef HAVE_OPENGL
     void render(int camIndex, ICLDrawWidget3D *widget);
-
+#endif
+#endif
     float getMaxSceneDim() const;
+
     void render(RenderPlugin &p, int camIndex);
-    
     std::vector<Camera> m_cameras;
     std::vector<SceneObject*> m_objects;
     std::vector<SceneObject*> m_cameraObjects;
     std::vector<std::vector<std::vector<Vec> > >m_projections;//[cam][obj][vertex]
     
 #ifdef HAVE_QT
+#ifdef HAVE_OPENGL
     std::vector<SceneMouseHandler*> m_mouseHandlers;
+#endif
 #endif
 
     std::vector<GLCallback*> m_glCallbacks;
