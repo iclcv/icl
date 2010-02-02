@@ -22,14 +22,18 @@ namespace icl{
   class RegionDetector{
     public:
 
-    RegionDetector(unsigned int minSize=0, unsigned int maxSize=2<<20, icl64f minVal=0, icl64f maxVal = 255);
+    RegionDetector(unsigned int minSize=0, unsigned int maxSize=2<<20, icl64f minVal=0, icl64f maxVal = 255, bool m_createTree=false);
+    ~RegionDetector();
     
     void setRestrictions(unsigned int minSize=0, unsigned int maxSize=2<<20, icl64f minVal=0, icl64f maxVal = 255);
     void setRestrictions(const Range<unsigned int> &sizeRange, const Range<icl64f> &valueRange);
+    void setCreateTree(bool on) { m_createTree = on; }
 
     const std::vector<Region> &detect(const ImgBase *image);
     
     private:
+    
+    void createTree(const ImgBase *image);
  
     template<class T, typename Compare>
     void detect_intern(const Img<T> &image, Compare cmp);
@@ -46,6 +50,9 @@ namespace icl{
     icl64f m_dMinVal;
     icl64f m_dMaxVal;
     
+    bool m_createTree;    
+    class Tree;
+    Tree *m_tree;
   };
 }
 

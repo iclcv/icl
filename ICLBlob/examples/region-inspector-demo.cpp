@@ -1,6 +1,8 @@
 #include <ICLQuick/Common.h>
 #include <ICLBlob/RegionDetector.h>
 
+using icl::Region;
+
 GUI gui("hsplit");
 RegionDetector rd;
 Mutex mutex;
@@ -25,11 +27,20 @@ void init(){
   labels << "label()[@label=Region Form Factor@handle=ff-handle@minsize=6x2]";
   labels << "label()[@label=Region EV-Ratio@handle=evratio-handle@minsize=6x2]";
   labels << "label()[@label=Region Boundary Length@handle=bl-handle@minsize=6x2]";
+  labels <<  ( GUI("hbox") 
+               << "checkbox(show sub regions,checked)[@out=showSubRegions]"
+               << "togglebutton(direct,all)[@out=showAllSubRegions]");
+ labels <<  ( GUI("hbox") 
+               << "checkbox(show sur. regions,checked)[@out=showSurRegions]"
+               << "togglebutton(direct,all)[@out=showAllSurRegions]");
+  labels << "checkbox(show neighbours,unchecked)[@out=showNeighbours]";
+  labels << "checkbox(show bounding rect,unchecked)[@out=showBB]";
+
   labels << ( GUI("hbox") 
-              << "togglebutton(stopped,grabbing)[@out=grabbing@handle=grab-handle@minsize=3x2]"
+              << "togglebutton(stopped,!grabbing)[@out=grabbing@handle=grab-handle@minsize=3x2]"
               << "button(grab next)[@handle=grab-next-handle@minsize=3x2]"
               );
-  labels << "slider(2,256,256)[@out=levels@label=reduce levels]";
+  labels << "slider(2,256,10)[@out=levels@label=reduce levels]";
   
   
   gui << labels;
@@ -59,6 +70,13 @@ void run(){
   static ICLDrawWidget &d = **gui.getValue<DrawHandle>("image");
   d.install(&mouseIO);
 
+  gui_bool(showSubRegions);
+  gui_bool(showAllSubRegions);
+  gui_bool(showSurRegions);
+  gui_bool(showAllSurRegions);
+  gui_bool(showNeighbours);
+  gui_bool(showBB);
+  
   static LabelHandle &valHandle = gui.getValue<LabelHandle>("val-handle");
   static LabelHandle &cogHandle = gui.getValue<LabelHandle>("cog-handle");
   static LabelHandle &sizeHandle = gui.getValue<LabelHandle>("size-handle");
@@ -86,6 +104,8 @@ void run(){
       }
       
       d.setImage(useImage);
+      rd.setCreateTree(showSubRegions || showNeighbours);
+      
       rs = &rd.detect(useImage);
     }else if(lastLevels != levels){
       if(levels != 256){
@@ -113,11 +133,41 @@ void run(){
         const std::vector<Point> &boundary = r.getBoundary();
         const Rect &bb = r.getBoundingBox();
         
-        d.color(255,0,0,255);
         d.nofill();
-        d.rect(bb);
         d.color(0,150,255,200);
         d.linestrip(boundary);
+        
+        if(showBB){
+          d.color(255,0,0,255);
+          d.rect(bb);
+        }
+
+        if(showSurRegions){
+          d.linewidth(4);
+          d.color(255,200,100,100);
+          const std::vector<icl::Region> &sur = r.getSurroundingRegions(!showAllSurRegions);
+          for(unsigned int i=0;i<sur.size();++i){
+            d.linestrip(sur[i].getBoundary());
+          }
+        }
+        d.linewidth(1);
+
+        if(showSubRegions){
+          d.color(0,155,0,255);
+          const std::vector<icl::Region> &sub = r.getSubRegions(!showAllSubRegions);
+          for(unsigned int i=0;i<sub.size();++i){
+            d.linestrip(sub[i].getBoundary());
+          }
+        }
+        if(showNeighbours){
+          d.color(255,0,0,255);
+          const std::vector<icl::Region> &ns = r.getNeighbours();
+          for(unsigned int i=0;i<ns.size();++i){
+            d.linestrip(ns[i].getBoundary());
+          }
+          
+        }
+
         
         valHandle = r.getVal();
         cogHandle = str(r.getCOG());

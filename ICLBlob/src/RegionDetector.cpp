@@ -1,17 +1,105 @@
 #include <ICLBlob/RegionDetector.h>
 #include <algorithm>
-
 namespace icl{
-  
-  namespace{
-    template<class T>
-    static inline bool eqfunc(const T &a,const T&b){
-      return a == b;
+
+  struct RegionImage{
+    Region **rs; 
+    int w;
+    RegionImage(Region **rs, int w):rs(rs),w(w){}
+    
+    Region *operator()(int x, int y){
+      return rs[x+w*y];
     }
+  };
+
+  
+  struct RegionDetector::Tree{
+    std::vector<Region*> region_image;
+  };
+  
+  void RegionDetector::createTree(const ImgBase *image){
+    const int w = image->getWidth();
+    const int h = image->getHeight();
+    if(w<2 || h<2) return;
+    // create region-image 
+    m_tree->region_image.resize(image->getDim());
+    Region **rim = m_tree->region_image.data();
+    for(unsigned int i=0;i<m_vecBlobData.size();++i){
+      Region *r = &m_vecBlobData[i];
+      const std::vector<ScanLine> &sls = m_vecBlobData[i].getScanLines();
+      for(unsigned int j=0;j<sls.size();++j){
+        const ScanLine &sl = sls[j];
+        int offs = sl.x+w*sl.y;
+        std::fill(rim+offs,rim+offs+sl.len,r);
+      }
+    }
+    
+    /// create neighbourhood tree
+    RegionImage r(rim,w);
+    // upper left
+    for(int x=1;x<w;++x){
+      r(0,0)->addNeighbour(0);
+    }
+    // upper right // needed for right column
+    for(int x=1;x<w;++x){
+      r(w-1,0)->addNeighbour(0);
+    }
+    // lower left // needed for bottom row
+    for(int x=1;x<w;++x){
+      r(0,h-1)->addNeighbour(0);
+    }
+
+    // top & bottom row
+    for(int x=1;x<w;++x){
+      if(r(x-1,0) != r(x,0)){
+        r(x,0)->addNeighbour(0);
+      }
+      if(r(x-1,h-1) != r(x,h-1)){
+        r(x,h-1)->addNeighbour(0);
+      }
+    }
+    // left & right columns
+    for(int y=1;y<h;++y){
+      if(r(0,y-1) != r(0,y)){
+        r(0,y)->addNeighbour(0);
+      }
+      if(r(w-1,y-1) != r(w-1,y)){
+        r(w-1,y)->addNeighbour(0);
+      }
+    }
+    // remaining
+    for(int x=1;x<w;++x){
+      for(int y=1;y<h;++y){
+        Region *c = r(x,y);
+        Region *l = r(x-1,y);
+        Region *u = r(x,y-1);
+        if(c != l){
+          c->addNeighbour(l);
+          l->addNeighbour(c);
+        }
+        if(c != u){
+          c->addNeighbour(u);
+          u->addNeighbour(c);
+        }
+      }
+    }
+    
+    
+    
   }
   
-  RegionDetector::RegionDetector(unsigned int minSize, unsigned int maxSize, icl64f minVal, icl64f maxVal):
-    m_uiMinSize(minSize),m_uiMaxSize(maxSize),m_dMinVal(minVal),m_dMaxVal(maxVal){
+  template<class T>
+  static inline bool eqfunc(const T &a,const T&b){
+    return a == b;
+  }
+  
+  
+  RegionDetector::RegionDetector(unsigned int minSize, unsigned int maxSize, icl64f minVal, icl64f maxVal, bool createTree):
+    m_uiMinSize(minSize),m_uiMaxSize(maxSize),m_dMinVal(minVal),m_dMaxVal(maxVal),m_createTree(createTree),
+    m_tree(createTree?new Tree:0){
+  }
+  RegionDetector::~RegionDetector(){
+    ICL_DELETE(m_tree);
   }
   void RegionDetector::setRestrictions(unsigned int minSize, unsigned int maxSize, icl64f minVal, icl64f maxVal){
     m_uiMinSize = minSize;
@@ -32,6 +120,11 @@ namespace icl{
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: detect_intern(*image->asImg<icl##D>(),eqfunc<icl##D>); break;
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
+    }
+    
+    if(m_createTree){
+      if(!m_tree) m_tree = new Tree;
+      createTree(image);
     }
     return m_vecBlobData;
   }
@@ -155,7 +248,7 @@ namespace icl{
       if(m_vecParts[i]->top){
         const T &val = image(m_vecParts[i]->scanlines[0].x,m_vecParts[i]->scanlines[0].y,0);
         if(val >= m_dMinVal && val <= m_dMaxVal){
-          m_vecBlobData.push_back(Region(m_vecParts[i],m_uiMaxSize,val,&image));
+          m_vecBlobData.push_back(Region(m_vecParts[i],m_uiMaxSize,val,&image,&m_vecBlobData));
           Region &b = m_vecBlobData.back();
           if((unsigned int)b.getSize() > m_uiMaxSize || (unsigned int)b.getSize() < m_uiMinSize){
             m_vecBlobData.pop_back();
@@ -164,4 +257,5 @@ namespace icl{
       }
     }
   }
+  
 }

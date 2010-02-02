@@ -2,16 +2,21 @@
 #include <ICLBlob/RegionDetector.h>
 #include <ICLUtils/Macros.h>
 #include <limits>
+#include <set>
 #include <algorithm>
 #include <ICLCore/CornerDetectorCSS.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{ 
 
   struct RegionImpl{
-    RegionImpl(icl64f val, const ImgBase *image):
+    RegionImpl(icl64f val, const ImgBase *image,const std::vector<Region> *allRegions):
       pixcount(0),val(val),image(image),bb(0),
       pcainfo(0),boundary(0),thinned_boundary(0),pixels(0),boundary_length(-1),
-      cornerDetector(0),accurateCenter(0){
+      cornerDetector(0),accurateCenter(0),allRegions(allRegions),
+      directSubRegions(0),allSubRegions(0),
+      directSurroundingRegions(0),allSurroundingRegions(0),publicNeighbours(0)
+    {
       scanlines.reserve(100);
     }
     ~RegionImpl(){
@@ -22,6 +27,11 @@ namespace icl{
       ICL_DELETE(pixels);
       ICL_DELETE(cornerDetector);
       ICL_DELETE(accurateCenter);
+      ICL_DELETE(directSubRegions);
+      ICL_DELETE(allSubRegions);
+      ICL_DELETE(directSurroundingRegions);
+      ICL_DELETE(allSurroundingRegions);
+      ICL_DELETE(publicNeighbours);
     }
     std::vector<ScanLine> scanlines;
     icl32s pixcount;
@@ -36,16 +46,28 @@ namespace icl{
     float boundary_length;
     CornerDetectorCSS *cornerDetector;
     Point32f *accurateCenter;
+
+    // TODO: these parameters can be combined in an extra structure, which is 0 if
+    // the parent region detector has no tree information
+    const std::vector<Region> *allRegions;
+    std::vector<Region> *directSubRegions;
+    std::vector<Region> *allSubRegions;
+    std::vector<Region> *directSurroundingRegions;
+    std::vector<Region> *allSurroundingRegions;
+    std::set<Region*> neighbours;
+    std::vector<Region> *publicNeighbours;
   };
 
   void RegionImplDelOp::delete_func( RegionImpl* impl){
     ICL_DELETE( impl );
   }
-  
 
-  Region::Region(RegionPart *p, int maxSize,icl64f val, const ImgBase *image):
+  inline Region::ID Region::id() const { return impl.get(); }
+
+  Region::Region(RegionPart *p, int maxSize,icl64f val, const ImgBase *image,
+                 const std::vector<Region> *allRegions):
     // {{{ open
-    ShallowCopyable<RegionImpl,RegionImplDelOp>(new RegionImpl(val,image)){
+    ShallowCopyable<RegionImpl,RegionImplDelOp>(new RegionImpl(val,image,allRegions)){
     collect(p,maxSize);
 
     impl->cog.x /= impl->pixcount;
@@ -527,6 +549,127 @@ namespace icl{
     return p;
   }
 
+  static inline bool contains_full(const Rect &a, const Rect &b) {
+    return a.x < b.x && 
+           a.y < b.y && 
+           a.right()  > b.right() && 
+           a.bottom() > b.bottom();
+  }
+
+
+  bool region_search_zero(std::set<Region::ID> &buf, // buf contains outer
+                          const Region *inner){
+    std::set<Region*> &inb = inner->getNeighbourSet();
+    if(*inb.begin() == 0) return true;
+    for(std::set<Region*>::iterator it = inb.begin();it != inb.end();++it){
+      if(!buf.count((*it)->id())){
+        buf.insert((*it)->id());
+        if(region_search_zero(buf, *it)){
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  bool is_region_contained(Region *outer, const Region *inner){
+    if(!inner) return false;
+    std::set<Region::ID> buf;
+    buf.insert(outer->id());
+    return !region_search_zero(buf,inner);
+  }
+
+
+  
+
+  void collect_subregions_recursive(std::set<Region::IDRegion> &all,Region *r){
+    const std::vector<Region> &ds = r->getSubRegions(true); 
+    for(unsigned int i=0;i<ds.size(); ++i){
+      Region::IDRegion id (ds[i].id(),const_cast<Region*>(&ds[i]));
+      if(!all.count(id)){
+        all.insert(id);
+        collect_subregions_recursive(all,id.r);
+      }
+    }
+  }
+  
+  const std::vector<Region> &Region::getSubRegions(bool directOnly) const{
+    if(directOnly && impl->directSubRegions) return *impl->directSubRegions;
+    if(!directOnly && impl->allSubRegions) return *impl->allSubRegions;
+    
+    if(!impl->directSubRegions){
+      const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->directSubRegions = new std::vector<Region>;
+      
+      for(std::set<Region*>::iterator it = impl->neighbours.begin(); it != impl->neighbours.end();++it){
+        if(is_region_contained(const_cast<Region*>(this),*it)){
+          impl->directSubRegions->push_back(*const_cast<Region*>(*it));
+        }
+      }
+    }
+    if(directOnly){
+      return *impl->directSubRegions;
+    }else{
+      std::set<IDRegion> all;
+      collect_subregions_recursive(all,const_cast<Region*>(this));
+      
+      const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->allSubRegions = new std::vector<Region>(all.size());
+      int i=0;
+      for(std::set<IDRegion>::iterator it = all.begin();it!=all.end();++it){
+        impl->allSubRegions->operator[](i++) = *it->r;
+      }
+      return *impl->allSubRegions;
+    }
+    
+
+
+  }
+
+  const std::vector<Region> &Region::getSurroundingRegions(bool directOnly) const{
+    if(!directOnly){
+      static std::vector<Region> dummy;
+      ERROR_LOG("this function is not yet implemented for directOnly=false mode (returning empty buffer)");
+      return dummy;
+      
+      /* here, we will again need a recursive collection function, which collects 
+         surrounding regions of surrounding regions and so on, into a sorted set. 
+         This can be implemented easily, fi it's needed*/
+    }
+    if(directOnly && impl->directSurroundingRegions) return *impl->directSurroundingRegions;
+    //    if(!directOnly && impl->allSurroundingRegions) return impl->allSurroundingRegions;
+    const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->directSurroundingRegions = new std::vector<Region>;
+    
+    for(std::set<Region*>::iterator it = impl->neighbours.begin(); it != impl->neighbours.end();++it){
+      if(!*it) continue;
+      const std::vector<Region> &itsub = (*it)->getSubRegions(true);
+      for(unsigned int j=0;j<itsub.size();++j){
+        if(itsub[j].id() == id()){
+          impl->directSurroundingRegions->push_back(**it);
+          break;
+        }
+      }
+    }
+    return *impl->directSurroundingRegions;
+  }
+
+  const std::vector<Region> &Region::getNeighbours(bool *isAtBorder) const{
+    if(impl->publicNeighbours) return *impl->publicNeighbours;
+    const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->publicNeighbours = new std::vector<Region>;
+    std::set<Region*>::const_iterator it = impl->neighbours.begin();
+    unsigned int n = impl->neighbours.size();
+    
+    if(n){
+      if(isAtBorder) *isAtBorder = !*it;
+      if(!*it){
+        it++;
+        n--;
+      }
+    }
+    impl->publicNeighbours->resize(n);
+    for(int i=0;it != impl->neighbours.end();++it,++i){
+      impl->publicNeighbours->operator[](i) = **it;
+    }
+    return *impl->publicNeighbours;
+  }
 
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
   template void Region::drawTo<icl##D>(Img<icl##D>&,icl##D)const;       \
@@ -534,4 +677,16 @@ namespace icl{
 
   ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
+
+
+  void Region::addNeighbour(Region *n){
+    impl->neighbours.insert(n);
+  }
+
+
+  std::set<Region*> &Region::getNeighbourSet() const{
+    return const_cast<std::set<Region*>&>(impl->neighbours);
+  }
+
+
 }

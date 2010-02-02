@@ -6,11 +6,12 @@
 #include <ICLUtils/Rect.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/ShallowCopyable.h>
-#include <vector>
 #include <ICLBlob/RegionPart.h>
 #include <ICLBlob/ScanLine.h>
 #include <ICLBlob/RegionPCAInfo.h>
 
+#include <vector>
+#include <set>
 
 namespace icl{
 
@@ -64,9 +65,22 @@ namespace icl{
   **/
   class Region : public ShallowCopyable<RegionImpl,RegionImplDelOp>{
     public:
+
+    /// Grant access to private functions and variables to Region Detector
+    friend class RegionDetector;
     
+    private:
     /// Default constructor called by the RegionDetector
-    Region(RegionPart *p, int maxSize, icl64f val, const ImgBase *image);
+    Region(RegionPart *p, int maxSize, icl64f val, const ImgBase *image, 
+           const std::vector<Region> *allRegions);
+    
+    public:
+ 
+    /// internally used region ID type
+    typedef const RegionImpl* ID;
+
+    /// Empty constructor (creates a null region)
+    Region(){}
     
     /// returns the pixel count of the Region
     int getSize() const;
@@ -160,13 +174,68 @@ namespace icl{
     const Point32f &getAccurateCOG(const Img<T> &grayImage, int bbMargin=2, 
                                    const T &minThreshold=50, const T &maxThreshold=200,
                                    bool darkBlob=true) const;
+    
+    
+    /// returns a list of all contained regions
+    /** this function is only available if the parent RegionDetector was
+        set up to create a region tree. Sub-regions are estimated using a
+        recursive region-graph search. To find a regions child-regions,
+        only it's neighbours are processed (which means, that only direct
+        neighbours of regions become sub-regions if directOnly is left
+        'true'). Outgoing from each neighbour-regions, the region-graph
+        is searched recursively for the null-region, which represents
+        the image border. If a null region can be reached without passing
+        the parent region, the originating neighbour-region is obviously 
+        not completely contained in the parent region.\n
+        If directOnly is set to false, all found neighbours contained regions
+        are also collected recursively.
+        @see RegionDetector::setCreateTree(bool)
+    */
+    const std::vector<Region> &getSubRegions(bool directOnly=true) const;
+    
+    
+    /// retuns all regions, by which this region is completely surrounded
+    /** This function uses getSubRegions to find out whether this region
+        is contained by one of it's neighbours.
+        @param directOnly If this flag is set to true, internally all
+        surrounding regions are also recursively searched for other
+        surrounding regions.
+        <b>Note: the indirect version is not implemented yet</b>
+        @see getSubRegions(bool) cosnt;
+    */
+    const std::vector<Region> &getSurroundingRegions(bool directOnly=true) const;
+    
+    
+    /// returns all adjacent regions of this region
+    /** <b>Note:</b>This feature does work if the 'createTree'-feature of the
+        pararent RegionDetector was activated!
+        @param isAtBorder if a non-null bool pointer is given, the
+        referenced bool will be set to true if this region is adjacent
+        to the image borders or to false, if not.
+    */
+    const std::vector<Region> &getNeighbours(bool *isAtBorder=0) const;
 
     /// draws this region scanline by scanline into a given image 
     /** ROI is not regarded, because the region detectors results are
         not relative to a ROI offset*/
     template<class T>
     void drawTo(Img<T> &image, T val) const;
+
+    /** \cond internal utility functions */
+    friend bool region_search_zero(std::set<Region::ID>&,const Region*);
+    friend bool is_region_contained(Region*,const Region*);
     
+    struct IDRegion{
+      Region::ID id;
+      Region *r;
+      IDRegion(Region::ID id,Region *r):id(id),r(r){}
+      IDRegion():id(0),r(0){}
+      bool operator<(const IDRegion &o) const { return id < o.id; }
+      bool operator==(const IDRegion &o) const { return id == o.id; }
+    };
+    friend void collect_subregions_recursive(std::set<IDRegion>&,Region*);
+    /** \endcond */
+
   private:
     /// internally used recursive function for RegionPart-tree traversal
     void collect(RegionPart *p, int maxSize);
@@ -178,6 +247,16 @@ namespace icl{
     /// internally computes the thinned boundary
     /** the unthinned (and closed!) boundary must be computed before. */
     void calculateThinnedBoundaryIntern() const;
+    
+    /// internally used for creation of the region tree
+    void addNeighbour(Region *n);
+
+    /// internal optimization in comparison to getNeighbours()
+    std::set<Region*> &getNeighbourSet() const;
+    
+    /// internal ID creator function
+    ID id() const;
+    
   };
 }
 
