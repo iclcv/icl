@@ -56,6 +56,10 @@ namespace icl {
       640x480, but it contains only x-values within the range 0-639 and y-values 
       within range 0-479.  
   */
+
+  /** \cond */
+  class Rect32f;
+  /** \endcond*/
   
   class Rect : public IppiRect{
     public:
@@ -86,6 +90,9 @@ namespace icl {
       this->width = r.width;
       this->height = r.height;
     }
+
+    /// creates a Rect from given Rect32f instance
+    Rect(const Rect32f &other);
 
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }

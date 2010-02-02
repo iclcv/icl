@@ -2,6 +2,7 @@
 #define ICL_SIZE_32F_H
 
 #include <iostream>
+#include <ICLUtils/Size.h>
 
 namespace icl{
   /// Size32f class of the ICL (float valued)
@@ -23,6 +24,9 @@ namespace icl{
     /// creates a specified size
     inline Size32f(float width,float height){ this->width = width; this->height = height; }
 
+    /// creates a float-size from given int size
+    inline Size32f(const Size &other):width(other.width),height(other.height){}
+    
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }
 

@@ -1,7 +1,7 @@
 #include <ICLUtils/Rect.h>
-
+#include <ICLUtils/Rect32f.h>
+#include <cmath>
 const icl::Rect icl::Rect::null(0,0,0,0);
-
 
 namespace icl{
   /// ostream operator (x,y)wxy
@@ -17,5 +17,10 @@ namespace icl{
     r = Rect(offs,size);
     return s;
   }
-
+  Rect::Rect(const Rect32f &other){
+    x = round(other.x);
+    y = round(other.y);
+    width = round(other.width);
+    height = round(other.height);
+  }
 }

@@ -13,10 +13,10 @@ namespace icl{
     State(){}
     bool aa;             // antializing on
     bool rel;            // relative or absolut coords
-    Rect rect;           // current image rect
-    Size size;           // current drawing widget size
-    Size imsize;         // current image size
-    unsigned char bg[4]; // background color
+    Rect32f rect;           // current image rect
+    Size32f size;           // current drawing widget size
+    Size32f imsize;         // current image size
+    //    unsigned char bg[4]; // background color
     QSizeF symsize;    
   };
 
@@ -39,28 +39,29 @@ namespace icl{
   class IntelligentDrawCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
   protected:
-    Point tP(float x, float y, ICLDrawWidget::State *s){
-      return Point(tX(x,s),tY(y,s));
+    Point32f tP(float x, float y, ICLDrawWidget::State *s){
+      return Point32f(tX(x,s),tY(y,s));
     } 
-    Point tP(const Point32f &p, ICLDrawWidget::State *s){
-      return Point(tX(p.x,s),tY(p.y,s));
+    Point32f tP(const Point32f &p, ICLDrawWidget::State *s){
+      return Point32f(tX(p.x,s),tY(p.y,s));
     }  
-    Rect tR(float x, float y, float w, float h, ICLDrawWidget::State *s){
-      Point a = tP(x,y,s);
-      Point b = tP(x+w,y+h,s);
-      return Rect(a,Size(b.x-a.x,b.y-a.y));
+    Rect32f tR(float x, float y, float w, float h, ICLDrawWidget::State *s){
+      Point32f a = tP(x,y,s);
+      Point32f b = tP(x+w,y+h,s);
+      return Rect32f(a,Size32f(b.x-a.x,b.y-a.y));
     }
-    Size tS(float w, float h, ICLDrawWidget::State *s){
+    Size32f tS(float w, float h, ICLDrawWidget::State *s){
       if(s->rel)
-        return Size((int)(w*s->rect.width),(int)(h*s->rect.height));
+        return Size32f(w*s->rect.width,h*s->rect.height);
       else
-        return Size((int)((w*s->rect.width)/s->imsize.width),(int)((h*s->rect.height)/s->imsize.height));
+        return Size32f((w*s->rect.width)/s->imsize.width,
+                       (h*s->rect.height)/s->imsize.height);
     }
-    int tX(float x, ICLDrawWidget::State *s){
-      return (int)tXF(x,s);
+    float tX(float x, ICLDrawWidget::State *s){
+      return tXF(x,s);
     }
-    int tY(float x, ICLDrawWidget::State *s){
-      return (int)tYF(x,s);
+    float tY(float x, ICLDrawWidget::State *s){
+      return tYF(x,s);
     }
     
     float tXF(float x, ICLDrawWidget::State *s){
@@ -179,7 +180,14 @@ namespace icl{
     public:
     PointsCommand(const std::vector<Point> &pts, int xfac, int yfac, bool connectPoints, bool closeLoop):
       pts(pts),xfac(xfac),yfac(yfac),connectPoints(connectPoints),closeLoop(closeLoop){}
-    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+
+    //PointsCommand(const std::vector<Point32f> &pts32f, int xfac, int yfac, bool connectPoints, bool closeLoop):
+    //  pts32f(pts32f),xfac(xfac),yfac(yfac),connectPoints(connectPoints),closeLoop(closeLoop){}
+
+    // This could be used for Point32f as well ...
+    
+    template<class Pt>
+    void exec_t(PaintEngine *e, ICLDrawWidget::State *s, const std::vector<Pt> &pts){
       if(!pts.size()) return;
       if(connectPoints){
         if(pts.size() == 2){
@@ -219,7 +227,13 @@ namespace icl{
         }
       }
     }
+
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      if(pts.size()) exec_t(e,s,pts);
+      else exec_t(e,s,pts32f);
+    }
     std::vector<Point> pts;
+    std::vector<Point32f> pts32f;
     int xfac;
     int yfac;
     bool connectPoints;
@@ -244,7 +258,7 @@ namespace icl{
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       if(pts.size()< 3) return;
       
-      int colorSave[4];
+      float colorSave[4];
       e->getColor(colorSave);
       e->color(0,0,0,0);
       
@@ -305,8 +319,6 @@ namespace icl{
       }
     }
     std::vector<Point32f> pts;
-    int xfac;
-    int yfac;
     bool connectPoints;
     bool closeLoop;
   };
@@ -429,22 +441,22 @@ namespace icl{
     void exec_t(PaintEngine *e, ICLDrawWidget::State *s,const Data &data){
       for(int x=0;x<nx-1;++x){
         for(int y=0;y<ny-1;++y){
-          Point a = tP(data(x,y),s);
-          Point b = tP(data(x+1,y),s);
-          Point c = tP(data(x,y+1),s);
+          Point32f a = tP(data(x,y),s);
+          Point32f b = tP(data(x+1,y),s);
+          Point32f c = tP(data(x,y+1),s);
           
           e->line(a,b);
           e->line(a,c);
         }
       }
       for(int x=0;x<nx-1;++x){
-        Point a = tP(data(x,ny-1),s);
-        Point b = tP(data(x+1,ny-1),s);
+        Point32f a = tP(data(x,ny-1),s);
+        Point32f b = tP(data(x+1,ny-1),s);
         e->line(a,b);
       }
       for(int y=0;y<ny-1;++y){
-        Point a = tP(data(nx-1,y),s);
-        Point b = tP(data(nx-1,y+1),s);
+        Point32f a = tP(data(nx-1,y),s);
+        Point32f b = tP(data(nx-1,y+1),s);
         e->line(a,b);
       }
     }
@@ -544,7 +556,7 @@ namespace icl{
     // {{{ open
 
   public:
-    TextCommand(std::string text, float x, float y, float w, float h, int fontsize):
+    TextCommand(std::string text, float x, float y, float w, float h, float fontsize):
       DrawCommand4F(x,y,w,h),text(text),fontsize(fontsize){
     }
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
@@ -573,7 +585,7 @@ namespace icl{
   class EdgeCommand : public DrawCommand4F{
     // {{{ open
   public:
-    EdgeCommand(int r, int g, int b, int alpha):
+    EdgeCommand(float r, float g, float b, float alpha):
       DrawCommand4F(r,g,b,alpha){}
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)s;
@@ -586,7 +598,7 @@ namespace icl{
   class FillCommand : public DrawCommand4F{
     // {{{ open
   public:
-    FillCommand(int r, int g, int b, int alpha):
+    FillCommand(float r, float g, float b, float alpha):
       DrawCommand4F(r,g,b,alpha){}
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)s;
@@ -644,16 +656,16 @@ namespace icl{
     // {{{ open
     
   public:
-    ClearCommand(int r, int g, int b, int alpha):
+    ClearCommand(float r, float g, float b, float alpha):
       DrawCommand4F(r,g,b,alpha){}
     
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-      int aiFill[4],aiLine[4];
+      float aiFill[4],aiLine[4];
       e->getFill(aiFill);
       e->getColor(aiLine);
-      e->fill((int)m_fA,(int)m_fB,(int)m_fC,(int)m_fD);
+      e->fill(m_fA,m_fB,m_fC,m_fD);
       e->color(0,0,0,0);
-      e->rect(Rect(0,0,s->size.width,s->size.height));
+      e->rect(Rect32f(0,0,s->size.width,s->size.height));
       e->fill(aiFill[0],aiFill[1],aiFill[2],aiFill[3]);
       e->color(aiLine[0],aiLine[1],aiLine[2],aiLine[3]);
     }
@@ -664,13 +676,13 @@ namespace icl{
   class SetImageSizeCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
   public:
-    SetImageSizeCommand(const Size &s):m_oSize(s){}
+    SetImageSizeCommand(const Size32f &s):m_oSize(s){}
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)e;
       s->imsize = m_oSize;
     }
   protected:
-    Size m_oSize;
+    Size32f m_oSize;
   };
 
   // }}}
@@ -734,7 +746,7 @@ namespace icl{
     m_poState->imsize = getImageSize();
     m_poState->symsize = QSizeF(5,5);
     
-    memset(m_poState->bg,0,4*sizeof(unsigned char));
+    //    memset(m_poState->bg,0,4*sizeof(unsigned char));
 
     setShowNoImageWarnings(false);
   }
@@ -851,10 +863,10 @@ namespace icl{
   void ICLDrawWidget::circle(const Point32f &center, float radius){
     m_vecCommands.push_back(new EllipseCommand(center.x-radius,center.y-radius,2*radius,2*radius));
   }
-  void ICLDrawWidget::color(int r, int g, int b, int alpha){
+  void ICLDrawWidget::color(float r, float g, float b, float alpha){
     m_vecCommands.push_back(new EdgeCommand(r,g,b,alpha));
   }
-  void ICLDrawWidget::fill(int r, int g, int b, int alpha){
+  void ICLDrawWidget::fill(float r, float g, float b, float alpha){
     m_vecCommands.push_back(new FillCommand(r,g,b,alpha));
   }
   void ICLDrawWidget::nocolor(){
@@ -866,7 +878,7 @@ namespace icl{
   void ICLDrawWidget::setPseudoImage(Size s){
     m_vecCommands.push_back(new SetImageSizeCommand(s));
   }
-  void ICLDrawWidget::clear(int r, int g, int b, int alpha){
+  void ICLDrawWidget::clear(float r, float g, float b, float alpha){
     m_vecCommands.push_back(new ClearCommand(r,g,b,alpha));
   }
   void ICLDrawWidget::reset(){
@@ -897,10 +909,10 @@ namespace icl{
     m_poState->aa = false;
     m_poState->rel = false;
     m_poState->rect = getImageRect(true);
-    m_poState->size = Size(width(),height());
+    m_poState->size = Size32f(width(),height());
     m_poState->imsize = getImageSize(true);
     m_poState->symsize = QSizeF(5,5);
-    memset(m_poState->bg,0,4*sizeof(unsigned char));
+    //    memset(m_poState->bg,0,4*sizeof(unsigned char));
     e->font("Arial",8,PaintEngine::DemiBold);
     e->color(255,255,255);
     e->fill(0,0,0);

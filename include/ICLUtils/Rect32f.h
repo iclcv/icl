@@ -3,14 +3,12 @@
 
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Size32f.h>
+#include <ICLUtils/Rect.h>
 #include <stdio.h>
 #include <algorithm>
 
 namespace icl {
   
-  /** \cond */
-  class Rect;
-  /** \endcond */
   
   /// Floating point precision implementation of the Rect class \ingroup TYPES
   class Rect32f{
@@ -50,7 +48,12 @@ namespace icl {
     }
     
     /// create a floating point rect from given int-valued rect
-    Rect32f(const Rect &rect);
+    Rect32f(const Rect &rect):
+      x((float)rect.x),
+      y((float)rect.y),
+      width((float)rect.width),
+      height((float)rect.height){
+    }
 
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }

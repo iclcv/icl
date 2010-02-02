@@ -20,33 +20,33 @@ namespace icl{
   
   GLTextureMapPaintEngine::~GLTextureMapPaintEngine(){}
   
-  void GLTextureMapPaintEngine::image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode){
+  void GLTextureMapPaintEngine::image(const Rect32f &r,ImgBase *image, PaintEngine::AlignMode mode){
     ICLASSERT_RETURN(image);
     glColor4f(1,1,1,1);
-    GLTextureMapBaseImage(image).drawTo(computeRect(r,image->getSize(),mode), Size(m_poWidget->width(),m_poWidget->height()));
+    GLTextureMapBaseImage(image).drawTo(computeRect(r,image->getSize(),mode), Size(m_widget->width(),m_widget->height()));
   }
-  void GLTextureMapPaintEngine::sharedImage(const Rect &r, PaintEngine::AlignMode mode){
+  void GLTextureMapPaintEngine::sharedImage(const Rect32f &r, PaintEngine::AlignMode mode){
     ICLASSERT_RETURN(m_bSharedImage);
     glColor4f(1,1,1,1);
 
-    Rect r2 = computeRect(r,m_bSharedImage->getSize(),mode);
-    Size s(m_poWidget->width(),m_poWidget->height());
+    Rect32f r2 = computeRect(r,m_bSharedImage->getSize(),mode);
+    Size32f s(m_widget->width(),m_widget->height());
     m_bSharedImage->drawTo(r2,s);
   }
   
-  Rect GLTextureMapPaintEngine::computeRect(const Rect &rect, const Size &imageSize, PaintEngine::AlignMode mode){
+  Rect32f GLTextureMapPaintEngine::computeRect(const Rect32f &rect, const Size32f &imageSize, PaintEngine::AlignMode mode){
     switch(mode){
-      case PaintEngine::NoAlign: return Rect(rect.x, rect.y, imageSize.width, imageSize.height);
+      case PaintEngine::NoAlign: return Rect32f(rect.x, rect.y, imageSize.width, imageSize.height);
       case PaintEngine::Centered: {
-        int cx  = rect.x+rect.width/2;
-        int cy  = rect.y+rect.height/2;
-        return Rect(cx-imageSize.width/2,cy-imageSize.height/2,imageSize.width,imageSize.height);
+        float cx  = rect.x+rect.width/2;
+        float cy  = rect.y+rect.height/2;
+        return Rect32f(cx-imageSize.width/2,cy-imageSize.height/2,imageSize.width,imageSize.height);
       }
       default:  return rect;
     }
   }
 
-  void GLTextureMapPaintEngine::image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode){
+  void GLTextureMapPaintEngine::image(const Rect32f &r,const QImage &image, PaintEngine::AlignMode mode){
     Img8u buf;    
     if(image.format()==QImage::Format_Indexed8){
       buf = Img8u(Size(image.width(),image.height()),formatGray);

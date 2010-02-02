@@ -26,17 +26,17 @@ namespace icl{
     virtual ~GLTextureMapPaintEngine();
 
     /// reimplementation of the image drawing function (using texture mapping)
-    virtual void image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify);
+    virtual void image(const Rect32f &r,ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify);
 
     /// reimplementation of the image drawing function (using texture mapping)
-    virtual void image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify);
+    virtual void image(const Rect32f &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify);
 
-    /// <b>additional</b> shared image drawing function (draws the internal share image)
-    void sharedImage(const Rect &r, PaintEngine::AlignMode mode = PaintEngine::Justify);
+    /// <b>additional</b> shared image drawing function (draws the internal shared image)
+    void sharedImage(const Rect32f &r, PaintEngine::AlignMode mode = PaintEngine::Justify);
 
     private:
     /// internal utility function which helps to calculate the current image rect
-    Rect computeRect(const Rect &rect, const Size &imageSize,PaintEngine::AlignMode mode );
+    Rect32f computeRect(const Rect32f &rect, const Size32f &imageSize,PaintEngine::AlignMode mode );
 
     /// wrapped shared image (or null)
     GLTextureMapBaseImage *m_bSharedImage;

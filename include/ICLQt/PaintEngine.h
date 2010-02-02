@@ -1,10 +1,10 @@
-#ifndef PAINT_ENGINE_H
-#define PAINT_ENGINE_H
+#ifndef ICL_PAINT_ENGINE_H
+#define ICL_PAINT_ENGINE_H
 
 #include <stdio.h>
-#include <ICLUtils/Point.h>
-#include <ICLUtils/Size.h>
-#include <ICLUtils/Rect.h>
+#include <ICLUtils/Point32f.h>
+#include <ICLUtils/Size32f.h>
+#include <ICLUtils/Rect32f.h>
 #include <ICLCore/Types.h>
 #include <string>
 #include <QImage>
@@ -23,31 +23,31 @@ namespace icl{
     enum TextWeight {Light, Normal, DemiBold, Bold, Black};
     enum TextStyle {StyleNormal, StyleItalic, StyleOblique };
 
-    virtual void color(int r, int g, int b, int a=255)=0;
-    virtual void fill(int r, int g, int b, int a=255)=0;
-    virtual void fontsize(int size)=0;
-    virtual void font(std::string name, int size = -1, TextWeight weight = Normal, TextStyle style = StyleNormal)=0;
+    virtual void color(float r, float g, float b, float a=255)=0;
+    virtual void fill(float r, float g, float b, float a=255)=0;
+    virtual void fontsize(float size)=0;
+    virtual void font(std::string name, float size = -1, TextWeight weight = Normal, TextStyle style = StyleNormal)=0;
 
     virtual void linewidth(float w)=0;
     virtual void pointsize(float s)=0;
-    virtual void line(const Point &a, const Point &b)=0;
-    virtual void point(const Point &p)=0;
-    virtual void image(const Rect &r,ImgBase *image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
-    virtual void image(const Rect &r,const QImage &image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
-    virtual void rect(const Rect &r)=0;
-    virtual void triangle(const Point &a, const Point &b, const Point &c)=0;
-    virtual void quad(const Point &a, const Point &b, const Point &c, const Point &d)=0;
-    virtual void ellipse(const Rect &r)=0;
-    virtual void text(const Rect &r, const std::string text, AlignMode mode = Centered)=0;
+    virtual void line(const Point32f &a, const Point32f &b)=0;
+    virtual void point(const Point32f &p)=0;
+    virtual void image(const Rect32f &r,ImgBase *image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
+    virtual void image(const Rect32f &r,const QImage &image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
+    virtual void rect(const Rect32f &r)=0;
+    virtual void triangle(const Point32f &a, const Point32f &b, const Point32f &c)=0;
+    virtual void quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d)=0;
+    virtual void ellipse(const Rect32f &r)=0;
+    virtual void text(const Rect32f &r, const std::string text, AlignMode mode = Centered)=0;
 
     /// brightness-constrast intensity adjustment (for images only)
-    virtual void bci(int brightness=0, int contrast=0, int intensity=0)=0;
+    virtual void bci(float brightness=0, float contrast=0, float floatensity=0)=0;
     virtual void bciAuto()=0;
     
-    virtual void getColor(int *piColor)=0;
-    virtual void getFill(int *piColor)=0;
+    virtual void getColor(float *piColor)=0;
+    virtual void getFill(float *piColor)=0;
     
-    virtual int getFontSize() const =0;
+    virtual float getFontSize() const =0;
 
   };
 }// namespace

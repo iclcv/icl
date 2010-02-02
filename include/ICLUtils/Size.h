@@ -22,6 +22,10 @@ namespace icl {
 #else
 #endif
   
+  /** \cond */
+  class Size32f;
+  /** \endcond */
+  
   /// Size class of the ICL
   class Size : public IppiSize{
     public:
@@ -132,7 +136,10 @@ namespace icl {
 
     /// creates a size from given string (e.g. VGA, CIF, or 1024x768)
     explicit Size(const std::string &name);
-
+    
+    /// creates a size from given float precision size (values are rounded)
+    Size(const Size32f &other);
+    
     /// checks wether the object instance is null, i.e. all elements are zero
     bool isNull() const { return (*this)==null; }
 

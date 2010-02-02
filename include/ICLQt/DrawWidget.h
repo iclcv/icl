@@ -266,14 +266,14 @@ int main(int n, char **ppc){
         and filled with the currently set "fill" 
         alpha values of 0 disables the edge drawing at all
     */    
-    void color(int r, int g, int b, int alpha = 255);
+    void color(float r, float g, float b, float alpha = 255);
     
     /// set the draw state machines "fill"-color buffer to a given value
     /** Primitives except images are drawn with the currently set "color"
         and filled with the currently set "fill" 
         alpha values of 0 disables the edge drawing at all
     */    
-    void fill(int r, int g, int b, int alpha = 255);
+    void fill(float r, float g, float b, float alpha = 255);
 
     /// disables drawing edges
     void nocolor();
@@ -282,7 +282,7 @@ int main(int n, char **ppc){
     void nofill();
     
     /// fills the whole image area with the given color
-    void clear(int r=0, int g=0, int b=0, int alpha = 255);
+    void clear(float r=0, float g=0, float b=0, float alpha = 255);
 
     /// clears the drawing command queue 
     /** When drawing in a real-time systems working thread, do not forget to

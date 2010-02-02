@@ -1,7 +1,9 @@
 #include <ICLUtils/Size.h>
-#include <map>
+#include <ICLUtils/Size32f.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Macros.h>
+#include <map>
+#include <cmath>
 
 namespace icl{
   const Size Size::null(0,0);
@@ -84,6 +86,10 @@ namespace icl{
   Size::Size(const std::string &name){
     *this = parse<Size>(name);
   }
-  
+
+  Size::Size(const Size32f &other){
+    width = round(other.width);
+    height = round(other.height);
+  }  
 
 }

@@ -7,12 +7,6 @@ namespace icl{
 
   const Rect32f Rect32f::null(0,0,0,0);
   
-  Rect32f::Rect32f(const Rect &rect):
-    x((float)rect.x),
-    y((float)rect.y),
-    width((float)rect.width),
-    height((float)rect.height){
-  }
   
   /// ostream operator (x,y)wxy
   std::ostream &operator<<(std::ostream &s, const Rect32f &r){

@@ -57,7 +57,6 @@ ${MOC_FILES} \
 ../src/MouseEvent.cpp \
 ../src/MultiDrawHandle.cpp \
 ../src/QImageConverter.cpp \
-../src/QtPaintEngine.cpp \
 ../src/SliderHandle.cpp \
 ../src/SpinnerHandle.cpp \
 ../src/StringHandle.cpp \
@@ -119,7 +118,6 @@ include_HEADERS= \
 ../../include/ICLQt/QImageConverter.h \
 ../../include/ICLQt/Qt.h \
 ../../include/ICLQt/QtMacros.h \
-../../include/ICLQt/QtPaintEngine.h \
 ../../include/ICLQt/SliderHandle.h \
 ../../include/ICLQt/SpinnerHandle.h \
 ../../include/ICLQt/StringHandle.h \

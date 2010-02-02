@@ -12,15 +12,15 @@ using std::string; using std::min;
 namespace icl{
 
   namespace{
-    Rect computeRect(const Rect &rect, const Size &imageSize, PaintEngine::AlignMode mode){
+    Rect32f computeRect(const Rect32f &rect, const Size &imageSize, PaintEngine::AlignMode mode){
       // {{{ open
 
       switch(mode){
-        case PaintEngine::NoAlign: return Rect(rect.x, rect.y, imageSize.width, imageSize.height);
+        case PaintEngine::NoAlign: return Rect32f(rect.x, rect.y, imageSize.width, imageSize.height);
         case PaintEngine::Centered: {
-          int cx  = rect.x+rect.width/2;
-          int cy  = rect.y+rect.height/2;
-          return Rect(cx-imageSize.width/2,cy-imageSize.height/2,imageSize.width,imageSize.height);
+          float cx  = rect.x+rect.width/2;
+          float cy  = rect.y+rect.height/2;
+          return Rect32f(cx-imageSize.width/2,cy-imageSize.height/2,imageSize.width,imageSize.height);
         }
         default:  return rect;
       }
@@ -34,11 +34,11 @@ namespace icl{
 
   GLPaintEngine::GLPaintEngine(QGLWidget *widget):
     // {{{ open
-    m_poWidget(widget),m_bBCIAutoFlag(false), m_oFont(QFont("Arial",30)),
-    m_poImageBufferForIncompatibleDepth(0){
+    m_widget(widget),m_bciauto(false), m_font(QFont("Arial",30)),
+    m_incompDepthBuf(0){
     
-    m_fLineWidth = 1;
-    m_fPointSize = 1;
+    m_linewidth = 1;
+    m_pointsize = 1;
 
     // widget->makeCurrent();
     
@@ -66,15 +66,15 @@ namespace icl{
     glPixelTransferf(GL_BLUE_BIAS,0);
 
     
-    memset(m_afFillColor,0,4*sizeof(float));
-    for(int i=0;i<4;m_afLineColor[i++]=255);
-    memset(m_aiBCI,0,3*sizeof(int));
+    std::fill(m_fillcolor,m_fillcolor+4,0);
+    std::fill(m_linecolor,m_linecolor+4,255);
+    std::fill(m_bci,m_bci+3,0);
   }
 
   // }}}
   GLPaintEngine::~GLPaintEngine(){
     // {{{ open
-    if(m_poImageBufferForIncompatibleDepth) delete m_poImageBufferForIncompatibleDepth;
+    ICL_DELETE(m_incompDepthBuf);
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
@@ -84,59 +84,59 @@ namespace icl{
 
   // }}}
   
- void GLPaintEngine::fontsize(int size){
+ void GLPaintEngine::fontsize(float size){
     // {{{ open
-    m_oFont.setPointSize(size);
+    m_font.setPointSize(size);
   }
 
   // }}}
-  void  GLPaintEngine::font(string name, int size, PaintEngine::TextWeight weight, PaintEngine::TextStyle style){
+  void  GLPaintEngine::font(string name, float size, PaintEngine::TextWeight weight, PaintEngine::TextStyle style){
     // {{{ open
-    m_oFont.setFamily(name.c_str());
-    m_oFont.setPointSize(size);
-    m_oFont.setStyle(style == PaintEngine::StyleNormal ? QFont::StyleNormal :
+    m_font.setFamily(name.c_str());
+    m_font.setPointSize(size);
+    m_font.setStyle(style == PaintEngine::StyleNormal ? QFont::StyleNormal :
                      style == PaintEngine::StyleItalic ? QFont::StyleItalic : QFont::StyleOblique);
-    m_oFont.setWeight(weight == PaintEngine::Light ? QFont::Light :
-                      weight == PaintEngine::Normal ? QFont::Normal :
-                      weight == PaintEngine::DemiBold ? QFont::DemiBold :
-                      weight == PaintEngine::Bold ? QFont::Bold : QFont::Black);
+    m_font.setWeight(weight == PaintEngine::Light ? QFont::Light :
+                     weight == PaintEngine::Normal ? QFont::Normal :
+                     weight == PaintEngine::DemiBold ? QFont::DemiBold :
+                     weight == PaintEngine::Bold ? QFont::Bold : QFont::Black);
   }
 
   // }}}
-  void GLPaintEngine::color(int r, int g, int b, int a){
+  void GLPaintEngine::color(float r, float g, float b, float a){
     // {{{ open
 
-    m_afLineColor[0] = (float)r/255.0;
-    m_afLineColor[1] = (float)g/255.0;
-    m_afLineColor[2] = (float)b/255.0;
-    m_afLineColor[3] = (float)a/255.0;
+    m_linecolor[0] = (float)r/255.0;
+    m_linecolor[1] = (float)g/255.0;
+    m_linecolor[2] = (float)b/255.0;
+    m_linecolor[3] = (float)a/255.0;
   }
 
   // }}}
-  void GLPaintEngine::fill(int r, int g, int b, int a){
+  void GLPaintEngine::fill(float r, float g, float b, float a){
     // {{{ open
 
-    m_afFillColor[0] = (float)r/255.0;
-    m_afFillColor[1] = (float)g/255.0;
-    m_afFillColor[2] = (float)b/255.0;
-    m_afFillColor[3] = (float)a/255.0;
+    m_fillcolor[0] = (float)r/255.0;
+    m_fillcolor[1] = (float)g/255.0;
+    m_fillcolor[2] = (float)b/255.0;
+    m_fillcolor[3] = (float)a/255.0;
   }
 
   void GLPaintEngine::linewidth(float w){
-    m_fLineWidth = w;
+    m_linewidth = w;
   }
 
   void GLPaintEngine::pointsize(float s){
-    m_fPointSize = s;
+    m_pointsize = s;
   }
 
 
   // }}}
-  void GLPaintEngine::line(const Point &a, const Point &b){
+  void GLPaintEngine::line(const Point32f &a, const Point32f &b){
     // {{{ open
     glEnable(GL_LINE_SMOOTH);
-    glLineWidth(m_fLineWidth);
-    glColor4fv(m_afLineColor);
+    glLineWidth(m_linewidth);
+    glColor4fv(m_linecolor);
     glBegin(GL_LINES);
     glVertex2f(a.x,a.y);
     glVertex2f(b.x,b.y);
@@ -145,11 +145,11 @@ namespace icl{
   }
 
   // }}}
-  void GLPaintEngine::point(const Point &p){
+  void GLPaintEngine::point(const Point32f &p){
     // {{{ open
 
-    glColor4fv(m_afLineColor);
-    glPointSize(m_fPointSize);
+    glColor4fv(m_linecolor);
+    glPointSize(m_pointsize);
     glBegin(GL_POINTS);
     glVertex2f((GLfloat)p.x,(GLfloat)p.y);
     glEnd();
@@ -157,7 +157,7 @@ namespace icl{
 
   // }}}
 
-  void GLPaintEngine::image(const Rect &r,const QImage &image, PaintEngine::AlignMode mode, scalemode sm){
+  void GLPaintEngine::image(const Rect32f &r,const QImage &image, PaintEngine::AlignMode mode, scalemode sm){
     // {{{ open
 
     Img8u buf;    
@@ -172,24 +172,24 @@ namespace icl{
 
   // }}}
 
-  void GLPaintEngine::image(const Rect &r,ImgBase *image, PaintEngine::AlignMode mode, scalemode sm){
+  void GLPaintEngine::image(const Rect32f &r,ImgBase *image, PaintEngine::AlignMode mode, scalemode sm){
     // {{{ open
     
     ICLASSERT_RETURN(image);
     glColor4f(1,1,1,1);
     GLTextureMapBaseImage texmapImage;
-    texmapImage.bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);
+    texmapImage.bci(m_bci[0],m_bci[1],m_bci[2]);
     texmapImage.updateTextures(image);
-    texmapImage.drawTo(computeRect(r,image->getSize(),mode), Size(m_poWidget->width(),m_poWidget->height()),sm);
+    texmapImage.drawTo(computeRect(r,image->getSize(),mode), Size(m_widget->width(),m_widget->height()),sm);
   }
 
   // }}}
 
-  void GLPaintEngine::rect(const Rect &r){
+  void GLPaintEngine::rect(const Rect32f &r){
     // {{{ open
 
-    glLineWidth(m_fLineWidth);
-    glColor4fv(m_afFillColor);
+    glLineWidth(m_linewidth);
+    glColor4fv(m_fillcolor);
     glBegin(GL_QUADS);
     glVertex2f((GLfloat)r.x,(GLfloat)r.y);
     glVertex2f((GLfloat)r.right(),(GLfloat)r.y);
@@ -197,7 +197,7 @@ namespace icl{
     glVertex2f((GLfloat)r.x,(GLfloat)r.bottom());
     glEnd();
     
-    glColor4fv(m_afLineColor);
+    glColor4fv(m_linecolor);
     glBegin(GL_LINE_LOOP);
     glVertex2f((GLfloat)r.x,(GLfloat)r.y);
     glVertex2f((GLfloat)r.right(),(GLfloat)r.y);
@@ -208,18 +208,18 @@ namespace icl{
     
     
   }
-  void GLPaintEngine::triangle(const Point &a, const Point &b, const Point &c){
+  void GLPaintEngine::triangle(const Point32f &a, const Point32f &b, const Point32f &c){
 
-    glColor4fv(m_afFillColor);
+    glColor4fv(m_fillcolor);
     glBegin(GL_TRIANGLES);
     glVertex2f((GLfloat)a.x,(GLfloat)a.y);
     glVertex2f((GLfloat)b.x,(GLfloat)b.y);
     glVertex2f((GLfloat)c.x,(GLfloat)c.y);
     glEnd();
 
-    glLineWidth(m_fLineWidth);
+    glLineWidth(m_linewidth);
     glEnable(GL_LINE_SMOOTH);    
-    glColor4fv(m_afLineColor);
+    glColor4fv(m_linecolor);
     glBegin(GL_LINE_LOOP);
     glVertex2f((GLfloat)a.x,(GLfloat)a.y);
     glVertex2f((GLfloat)b.x,(GLfloat)b.y);
@@ -229,10 +229,10 @@ namespace icl{
   }
   // }}}
  
-  void GLPaintEngine::quad(const Point &a, const Point &b, const Point &c, const Point &d){
+  void GLPaintEngine::quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d){
 
     glEnable(GL_LINE_SMOOTH);    
-    glColor4fv(m_afFillColor);
+    glColor4fv(m_fillcolor);
     glBegin(GL_QUADS);
     glVertex2f((GLfloat)a.x,(GLfloat)a.y);
     glVertex2f((GLfloat)b.x,(GLfloat)b.y);
@@ -240,7 +240,7 @@ namespace icl{
     glVertex2f((GLfloat)d.x,(GLfloat)d.y);
     glEnd();
 
-    glColor4fv(m_afLineColor);
+    glColor4fv(m_linecolor);
     glBegin(GL_LINE_LOOP);
     glVertex2f((GLfloat)a.x,(GLfloat)a.y);
     glVertex2f((GLfloat)b.x,(GLfloat)b.y);
@@ -252,11 +252,11 @@ namespace icl{
   // }}}
   
 
-  void GLPaintEngine::ellipse(const Rect &r){
+  void GLPaintEngine::ellipse(const Rect32f &r){
     // {{{ open
-    glLineWidth(m_fLineWidth);
+    glLineWidth(m_linewidth);
     glEnable(GL_LINE_SMOOTH);
-    glColor4fv(m_afFillColor);
+    glColor4fv(m_fillcolor);
     GLfloat w2 = 0.5*(r.width);
     GLfloat h2= 0.5*(r.height);
     GLfloat cx = r.x+w2;
@@ -270,7 +270,7 @@ namespace icl{
     }
     glEnd();
     
-    glColor4fv(m_afLineColor);
+    glColor4fv(m_linecolor);
     glBegin(GL_LINE_STRIP);
     for(int i=0;i<NSTEPS;i++){
       float arc = i*D_ARC;
@@ -282,20 +282,20 @@ namespace icl{
   }
 
   // }}}
-  void GLPaintEngine::text(const Rect &r, const string text, PaintEngine::AlignMode mode){
+  void GLPaintEngine::text(const Rect32f &r, const string text, PaintEngine::AlignMode mode){
     // {{{ open
-    QFontMetrics m(m_oFont);
-    QRect br = m.boundingRect(text.c_str());
+    QFontMetrics m(m_font);
+    QRectF br = m.boundingRect(text.c_str());
     QImage img(br.width()+2,br.height()+2,QImage::Format_ARGB32);
     img.fill(0);
     QPainter painter(&img);
-    painter.setFont(m_oFont);
-    painter.setPen(QColor( (int)(m_afLineColor[2]*255),
-                           (int)(m_afLineColor[1]*255),
-                           (int)(m_afLineColor[0]*255),
-                           min (254, (int)(m_afLineColor[3]*255)) ));
+    painter.setFont(m_font);
+    painter.setPen(QColor( (int)(m_linecolor[2]*255),
+                           (int)(m_linecolor[1]*255),
+                           (int)(m_linecolor[0]*255),
+                           min (254, (int)(m_linecolor[3]*255)) ));
    
-    painter.drawText(QPoint(1,img.height()-m.descent()-1),text.c_str());
+    painter.drawText(QPointF(1,img.height()-m.descent()-1),text.c_str());
     painter.end();
     
     image(r,img,mode,interpolateLIN);
@@ -315,12 +315,12 @@ namespace icl{
 
   // }}}
   
-  void GLPaintEngine::bci(int brightness, int contrast, int intensity){
+  void GLPaintEngine::bci(float brightness, float contrast, float intensity){
     // {{{ open
-    m_aiBCI[0]=brightness;
-    m_aiBCI[1]=contrast;
-    m_aiBCI[2]=intensity;
-    m_bBCIAutoFlag = false;
+    m_bci[0]=brightness;
+    m_bci[1]=contrast;
+    m_bci[2]=intensity;
+    m_bciauto = false;
   }
 
   // }}}
@@ -328,33 +328,33 @@ namespace icl{
   void GLPaintEngine::bciAuto(){
     // {{{ open
 
-    m_bBCIAutoFlag = true;
+    m_bciauto = true;
   }
 
   // }}}
 
-  void GLPaintEngine::getColor(int *piColor){
+  void GLPaintEngine::getColor(float *piColor){
     // {{{ open
 
     for(int i=0;i<4;i++){
-      piColor[i]=(int)(m_afLineColor[i]*255.0);
+      piColor[i]=(int)(m_linecolor[i]*255.0);
     }
   }
 
   // }}}
   
-  void GLPaintEngine::getFill(int *piColor){
+  void GLPaintEngine::getFill(float *piColor){
     // {{{ open
 
     for(int i=0;i<4;i++){
-      piColor[i]=(int)(m_afFillColor[i]*255.0);
+      piColor[i]=(int)(m_fillcolor[i]*255.0);
     }
   }
 
   // }}}
   
 
-  void GLPaintEngine::setupRasterEngine(const Rect& r, const Size &s, PaintEngine::AlignMode mode){
+  void GLPaintEngine::setupRasterEngine(const Rect32f& r, const Size32f &s, PaintEngine::AlignMode mode){
     // {{{ open
 
     switch(mode){
@@ -403,7 +403,7 @@ namespace icl{
   }
 
   // }}}
-  void GLPaintEngine::setupPixelTransfer(depth d, int brightness, int contrast, int intensity){
+  void GLPaintEngine::setupPixelTransfer(depth d, float brightness, float contrast, float intensity){
     // {{{ open
     (void)intensity;
     float fBiasRGB = (float)brightness/255.0;
