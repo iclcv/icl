@@ -40,6 +40,17 @@ AC_DEFUN([ICL_WITH_ROOT],
             [$1_ROOT=$2])
         ])
 
+# parameters $1 = package config file name
+AC_DEFUN([ICL_EXTEND_FLAG_VARS_TMP_FROM_PC_FOR],
+[ICL_EXTEND_FLAG_VARS(
+        [`pkg-config --libs-only-L $1`],
+        [`pkg-config --libs-only-other $1`],
+        [`pkg-config --cflags $1`],
+        [`pkg-config --cflags $1`],
+        [],
+        [])
+])
+
 AC_DEFUN([ICL_EXTEND_FLAG_VARS_TMP_FOR],
 [ICL_EXTEND_FLAG_VARS(
         [-L${$1_ROOT}/$2],

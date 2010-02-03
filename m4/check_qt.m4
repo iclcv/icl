@@ -8,7 +8,10 @@ AC_ARG_WITH([QT],
         
         HAVE_QT=TRUE
         ICL_PUSH_FLAG_VARS
-        ICL_EXTEND_FLAG_VARS_TMP_FOR(QT,lib/,include/qt4)                
+
+
+#       ICL_EXTEND_FLAG_VARS_TMP_FOR(QT,lib/,include/qt4)
+#       ICL_EXTEND_FLAG_VARS_TMP_FOR(QT,lib64/qt4,include/qt4)
 
         AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtCore.pc],[],[HAVE_QT=FALSE])
         AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtOpenGL.pc],[],[HAVE_QT=FALSE])
@@ -16,6 +19,7 @@ AC_ARG_WITH([QT],
         AC_CHECK_FILE([$QT_ROOT/lib/pkgconfig/QtXml.pc],[],[HAVE_QT=FALSE])
 
         QT_PACKAGES="QtCore QtOpenGL QtGui QtXml"
+	ICL_EXTEND_FLAG_VARS_TMP_FROM_PC_FOR($QT_PACKAGES)
 
         # todo check this extra -lGLU
         ICL_DEF_VARS_FROM_PC([QT],[$QT_PACKAGES])
