@@ -1,7 +1,6 @@
 #include <ICLQuick/Common.h>
 #include <ICLBlob/RegionDetector.h>
 #include <ICLUtils/Time.h>
-using icl::Region;
 
 GUI gui("hsplit");
 RegionDetector rd;
