@@ -22,7 +22,8 @@ namespace icl{
     const int h = image->getHeight();
     if(w<2 || h<2) return;
     // create region-image 
-    m_tree->region_image.resize(image->getDim(),0);
+    m_tree->region_image.resize(image->getDim());
+    std::fill(m_tree->region_image.begin(),m_tree->region_image.end(),(icl::Region*)0);
     Region **rim = m_tree->region_image.data();
     for(unsigned int i=0;i<m_vecBlobData.size();++i){
       Region *r = &m_vecBlobData[i];
@@ -46,7 +47,7 @@ namespace icl{
     }
     // lower left // needed for bottom row
     for(int x=1;x<w;++x){
-      if(r(h-1,0)) r(0,h-1)->addNeighbour(0);
+      if(r(0,h-1)) r(0,h-1)->addNeighbour(0);
     }
 
     // top & bottom row
@@ -60,17 +61,14 @@ namespace icl{
     }
     // left & right columns
     for(int y=1;y<h;++y){
-      if(r(0,y-1) && r(0,y)){
-        if(r(0,y-1) != r(0,y)){
-          r(0,y)->addNeighbour(0);
-        }
+      if(r(0,y-1) != r(0,y)){
+        if(r(0,y)) r(0,y)->addNeighbour(0);
       }
-      if(r(w-1,y-1) && r(w-1,y)){
-        if(r(w-1,y-1) != r(w-1,y)){
-          r(w-1,y)->addNeighbour(0);
-        }
+      if(r(w-1,y-1) != r(w-1,y)){
+        if(r(w-1,y)) r(w-1,y)->addNeighbour(0);
       }
     }
+
     // remaining
     for(int y=1;y<h;++y){ // force row-major chaching
       for(int x=1;x<w;++x){
@@ -88,9 +86,6 @@ namespace icl{
         }
       }
     }
-    
-    
-    
   }
   
   template<class T>
