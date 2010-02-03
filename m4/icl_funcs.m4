@@ -43,7 +43,7 @@ AC_DEFUN([ICL_WITH_ROOT],
 AC_DEFUN([ICL_EXTEND_FLAG_VARS_TMP_FOR],
 [ICL_EXTEND_FLAG_VARS(
         [-L${$1_ROOT}/$2],
-        [-Wl,-rpath=${$1_ROOT}/$2],
+        [-Wl,-rpath -Wl,${$1_ROOT}/$2],
         [-I${$1_ROOT}/$3],
         [-I${$1_ROOT}/$3],
         [-I${$1_ROOT}/$3],
@@ -221,7 +221,7 @@ ICL_PC_ENTRY_FOR([$1],[])
 ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -l$1 -Wl,-rpath -Wl,${libdir} ${$1_LIBS_PC} ${$1_LDFLAGS_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
 ICL_PC_ENTRY_FOR([$1],[Cflags: -I${includedir}/ICL ${$1_CXXFLAGS_PC} ${$1_CXXCPP_PC}])
-cat $1.pc | sed "s|\(-Wl,-rpath -Wl,.*\)|'\1'|g" > $1.pc
+cat $1.pc | sed "s|\(-Wl,-rpath -Wl,.*\)|'\1'|g" > $1.pc.tmp && mv $1.pc.tmp $1.pc
 fi
 ])
 
