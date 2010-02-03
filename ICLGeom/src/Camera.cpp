@@ -229,6 +229,10 @@ namespace icl {
                                std::vector<Point32f> xis,
                                float focalLength)
          throw (NotEnoughDataPointsException) {
+         
+#ifndef HAVE_MKL
+	return calibrate_pinv(Xws,xis,focalLength);
+#else
     // TODO: normalize points
     // TODO: check whether we have svd (IPP) available
     checkAndFixPoints(Xws,xis);
@@ -257,6 +261,7 @@ namespace icl {
       Q(i,j) = V(11,j*4+i);
     }
     return Camera::createFromProjectionMatrix(Q, focalLength);       
+#endif
   }
   
   void Camera::checkAndFixPoints(std::vector<Vec> &Xws, std::vector<Point32f> &xis) throw (NotEnoughDataPointsException) {

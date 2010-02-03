@@ -92,6 +92,8 @@ ICL_$1_CXXFLAGS_PC="$4 $5"
 ICL_$1_CXXCPP_PC="$5"
 ])
 
+
+
 # ICL_DEF_VARS_FROM_PC(package,pc-name)
 # extracts xcflags and libs from given package config
 # package name and create appropriate configuration
@@ -100,7 +102,7 @@ ICL_$1_CXXCPP_PC="$5"
 AC_DEFUN([ICL_DEF_VARS_FROM_PC],[
 export PKG_CONFIG_PATH="$$1_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
 ICL_$1_LIBS=`pkg-config --libs-only-L $2`
-ICL_$1_LDFLAGS=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath=|g"`
+ICL_$1_LDFLAGS=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath -Wl,|g"`
 ICL_$1_LIBS="$ICL_$1_LIBS `pkg-config --libs-only-l $2`"
 ICL_$1_CXXFLAGS=`pkg-config --cflags-only-I $2`
 ICL_$1_CXXCPP="`pkg-config --cflags-only-other $2` -DHAVE_$1"
@@ -146,14 +148,14 @@ AC_SUBST([$1_LIBS])
 AC_DEFUN([ICL_STRIP_FLAGS_FOR],[
 $1_LIBS=`echo ${$1_LIBS} | sed "s|-L/usr/lib | |g"`
 $1_LIBS=`echo ${$1_LIBS} | sed "s|-L/lib | |g"`
-$1_LDFLAGS=`echo ${$1_LDFLAGS} | sed "s|-Wl,-rpath=/usr/lib | |g"`
-$1_LDFLAGS=`echo ${$1_LDFLAGS} | sed "s|-Wl,-rpath=/lib | |g"`
+$1_LDFLAGS=`echo ${$1_LDFLAGS} | sed "s|-Wl,-rpath -Wl,/usr/lib | |g"`
+$1_LDFLAGS=`echo ${$1_LDFLAGS} | sed "s|-Wl,-rpath -Wl,/lib | |g"`
 $1_CXXFLAGS=`echo ${$1_CXXFLAGS} | sed "s|-I/usr/include | |g"`
 $1_CXXFLAGS=`echo ${$1_CXXFLAGS} | sed "s|-I/include | |g"`
 $1_LIBS_PC=`echo ${$1_LIBS_PC} | sed "s|-L/usr/lib | |g"`
 $1_LIBS_PC=`echo ${$1_LIBS_PC} | sed "s|-L/lib | |g"`
-$1_LDFLAGS_PC=`echo ${$1_LDFLAGS_PC} | sed "s|-Wl,-rpath=/usr/lib | |g"`
-$1_LDFLAGS_PC=`echo ${$1_LDFLAGS_PC} | sed "s|-Wl,-rpath=/lib | |g"`
+$1_LDFLAGS_PC=`echo ${$1_LDFLAGS_PC} | sed "s|-Wl,-rpath -Wl,/usr/lib | |g"`
+$1_LDFLAGS_PC=`echo ${$1_LDFLAGS_PC} | sed "s|-Wl,-rpath -Wl,/lib | |g"`
 $1_CXXFLAGS_PC=`echo ${$1_CXXFLAGS_PC} | sed "s|-I/usr/include | |g"`
 $1_CXXFLAGS_PC=`echo ${$1_CXXFLAGS_PC} | sed "s|-I/include | |g"`
 ])
@@ -216,7 +218,7 @@ ICL_PC_ENTRY_FOR([$1],[Version: $PACKAGE_VERSION])
 ICL_PC_ENTRY_FOR([$1],[])
 ICL_PC_ENTRY_FOR([$1],[Requires:${$1_REQUIRES_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
-ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -l$1 -Wl,-rpath=${libdir} ${$1_LIBS_PC} ${$1_LDFLAGS_PC}])
+ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -l$1 -Wl,-rpath -Wl,${libdir} ${$1_LIBS_PC} ${$1_LDFLAGS_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
 ICL_PC_ENTRY_FOR([$1],[Cflags: -I${includedir}/ICL ${$1_CXXFLAGS_PC} ${$1_CXXCPP_PC}])
 fi

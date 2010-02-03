@@ -20,7 +20,7 @@ AC_ARG_WITH([LIBMESASR],
            ICL_DEF_VARS(
                 [LIBMESASR],
                 [-L$LIBMESASR_ROOT/lib -lmesasr],
-                [-Wl,-rpath=$LIBMESASR_ROOT/lib],
+                [-Wl,-rpath -Wl,$LIBMESASR_ROOT/lib],
                 [-I$LIBMESASR_ROOT/include],
                 [-DHAVE_LIBMESASR])
         fi])

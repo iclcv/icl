@@ -21,7 +21,7 @@ AC_ARG_WITH([OPENGL],
            ICL_DEF_VARS(
                 [OPENGL],
                 [-L$OPENGL_ROOT/lib -lGL -lGLU],
-                [-Wl,-rpath=${OPENGL_ROOT}/lib],
+                [-Wl,-rpath -Wl,${OPENGL_ROOT}/lib],
                 [-I$OPENGL_ROOT/include],
                 [-DHAVE_OPENGL])
         fi])

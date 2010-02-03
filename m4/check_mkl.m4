@@ -31,7 +31,7 @@ AC_ARG_WITH([MKL],
         ICL_DEF_VARS(
                 [MKL],
                 [-L$MKL_ROOT/lib/$MKL_LIB_POSTFIX -lmkl_intel$MKL_LIB_POSTFIX_2 -lmkl_intel_thread -lmkl_core -liomp5 -pthread],
-                [-Wl,-rpath=${MKL_ROOT}/lib/$MKL_LIB_POSTFIX],
+                [-Wl,-rpath -Wl,${MKL_ROOT}/lib/$MKL_LIB_POSTFIX],
                 [-I$MKL_ROOT/include],
                 [-DHAVE_MKL])
 

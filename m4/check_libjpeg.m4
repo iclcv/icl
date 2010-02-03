@@ -20,7 +20,7 @@ AC_ARG_WITH([LIBJPEG],
            ICL_DEF_VARS(
                 [LIBJPEG],
                 [-L$LIBJPEG_ROOT/lib -ljpeg],
-                [-Wl,-rpath=$LIBJPEG_ROOT/lib],
+                [-Wl,-rpath -Wl,$LIBJPEG_ROOT/lib],
                 [-I$LIBJPEG_ROOT/include],
                 [-DHAVE_LIBJPEG])
         fi])

@@ -27,7 +27,7 @@ AC_ARG_WITH([IPP],
         ICL_DEF_VARS(
                 [IPP],
                 [-L$IPP_ROOT/sharedlib -lippcore -lippi -lipps -lippsr -lippcv -lippm -lippcc -lguide -pthread -liomp5],
-                [-Wl,-rpath=${IPP_ROOT}/sharedlib],
+                [-Wl,-rpath -Wl,${IPP_ROOT}/sharedlib],
                 [-I$IPP_ROOT/include],
                 [-DHAVE_IPP])
         fi])

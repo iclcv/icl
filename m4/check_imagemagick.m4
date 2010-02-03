@@ -20,7 +20,7 @@ AC_ARG_WITH([IMAGEMAGICK],
            ICL_DEF_VARS(
                 [IMAGEMAGICK],
                 [-L$IMAGEMAGICK_ROOT/lib -lMagick++],
-                [-Wl,-rpath=$IMAGEMGAGICK_ROOT/lib],
+                [-Wl,-rpath -Wl,$IMAGEMGAGICK_ROOT/lib],
                 [-I$IMAGEMAGICK_ROOT/include],
                 [-DHAVE_IMAGEMAGICK])
         fi])             

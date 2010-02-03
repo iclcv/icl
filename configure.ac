@@ -12,7 +12,7 @@ AM_INIT_AUTOMAKE([foreign nostdinc])
 
 echo -n "checking system architecture..."
 ARCH=`./config.guess | cut -f 3 -d '-' | tr [[:lower:]] [[:upper:]]`
-if test "$ARCH" = "DARWIN" ; then
+if [[ `echo $ARCH | grep -e '^DARWIN'` ]] ; then 
    ARCH=APPLE
 elif test "$ARCH" = "CYGWIN" ; then
    ARCH=LINUX

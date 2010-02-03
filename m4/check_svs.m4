@@ -20,7 +20,7 @@ AC_ARG_WITH([SVS],
            ICL_DEF_VARS(
                 [SVS],
                 [-L$SVS_ROOT/bin -lsvs -lsvscalc],
-                [-Wl,-rpath=$SVS_ROOT/bin],
+                [-Wl,-rpath -Wl,$SVS_ROOT/bin],
                 [-I$SVS_ROOT/src],
                 [-DHAVE_SVS])
         fi])

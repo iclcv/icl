@@ -20,7 +20,7 @@ AC_ARG_WITH([LIBZ],
            ICL_DEF_VARS(
                 [LIBZ],
                 [-L$LIBZ_ROOT/lib -lz],
-                [-Wl,-rpath=$LIBZ_ROOT/lib],
+                [-Wl,-rpath -Wl,$LIBZ_ROOT/lib],
                 [-I$LIBZ_ROOT/include],
                 [-DHAVE_LIBZ])
         fi])
