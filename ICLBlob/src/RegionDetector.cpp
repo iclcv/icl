@@ -22,7 +22,7 @@ namespace icl{
     const int h = image->getHeight();
     if(w<2 || h<2) return;
     // create region-image 
-    m_tree->region_image.resize(image->getDim());
+    m_tree->region_image.resize(image->getDim(),0);
     Region **rim = m_tree->region_image.data();
     for(unsigned int i=0;i<m_vecBlobData.size();++i){
       Region *r = &m_vecBlobData[i];
@@ -38,46 +38,51 @@ namespace icl{
     RegionImage r(rim,w);
     // upper left
     for(int x=1;x<w;++x){
-      r(0,0)->addNeighbour(0);
+      if(r(0,0)) r(0,0)->addNeighbour(0);
     }
     // upper right // needed for right column
     for(int x=1;x<w;++x){
-      r(w-1,0)->addNeighbour(0);
+      if(r(w-1,0)) r(w-1,0)->addNeighbour(0);
     }
     // lower left // needed for bottom row
     for(int x=1;x<w;++x){
-      r(0,h-1)->addNeighbour(0);
+      if(r(h-1,0)) r(0,h-1)->addNeighbour(0);
     }
 
     // top & bottom row
     for(int x=1;x<w;++x){
       if(r(x-1,0) != r(x,0)){
-        r(x,0)->addNeighbour(0);
+        if(r(x,0)) r(x,0)->addNeighbour(0);
       }
       if(r(x-1,h-1) != r(x,h-1)){
-        r(x,h-1)->addNeighbour(0);
+        if(r(x,h-1)) r(x,h-1)->addNeighbour(0);
       }
     }
     // left & right columns
     for(int y=1;y<h;++y){
-      if(r(0,y-1) != r(0,y)){
-        r(0,y)->addNeighbour(0);
+      if(r(0,y-1) && r(0,y)){
+        if(r(0,y-1) != r(0,y)){
+          r(0,y)->addNeighbour(0);
+        }
       }
-      if(r(w-1,y-1) != r(w-1,y)){
-        r(w-1,y)->addNeighbour(0);
+      if(r(w-1,y-1) && r(w-1,y)){
+        if(r(w-1,y-1) != r(w-1,y)){
+          r(w-1,y)->addNeighbour(0);
+        }
       }
     }
     // remaining
-    for(int x=1;x<w;++x){
-      for(int y=1;y<h;++y){
+    for(int y=1;y<h;++y){ // force row-major chaching
+      for(int x=1;x<w;++x){
         Region *c = r(x,y);
+        if(!c) continue;
         Region *l = r(x-1,y);
         Region *u = r(x,y-1);
-        if(c != l){
+        if(l && (c != l)){
           c->addNeighbour(l);
           l->addNeighbour(c);
         }
-        if(c != u){
+        if(u && (c != u)){
           c->addNeighbour(u);
           u->addNeighbour(c);
         }

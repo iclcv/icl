@@ -1,6 +1,6 @@
 #include <ICLQuick/Common.h>
 #include <ICLBlob/RegionDetector.h>
-
+#include <ICLUtils/Time.h>
 using icl::Region;
 
 GUI gui("hsplit");
@@ -11,6 +11,7 @@ struct MouseIO : public MouseHandler{
   int x,y;
   MouseIO():x(0),y(0){}
   virtual void process(const MouseEvent &evt){
+    Mutex::Locker l(mutex);
     x = evt.getX();
     y = evt.getY();
   }
@@ -27,6 +28,9 @@ void init(){
   labels << "label()[@label=Region Form Factor@handle=ff-handle@minsize=6x2]";
   labels << "label()[@label=Region EV-Ratio@handle=evratio-handle@minsize=6x2]";
   labels << "label()[@label=Region Boundary Length@handle=bl-handle@minsize=6x2]";
+ labels <<  ( GUI("hbox") 
+               << "checkbox(show boundary,checked)[@out=showBoundary]"
+               << "togglebutton(normal,!thinned)[@out=showThinnedBoundary]");
   labels <<  ( GUI("hbox") 
                << "checkbox(show sub regions,checked)[@out=showSubRegions]"
                << "togglebutton(direct,all)[@out=showAllSubRegions]");
@@ -41,6 +45,10 @@ void init(){
               << "button(grab next)[@handle=grab-next-handle@minsize=3x2]"
               );
   labels << "slider(2,256,10)[@out=levels@label=reduce levels]";
+  labels << "label(---)[@label=time for region detection@handle=timeRD]";
+  labels << "label(---)[@label=time for neighbour detection@handle=timeNB]";
+  labels << "label(---)[@label=time for sub region detection@handle=timeSR]";
+  labels << "label(---)[@label=time for sur. region detection@handle=timeSU]";
   
   
   gui << labels;
@@ -76,6 +84,13 @@ void run(){
   gui_bool(showAllSurRegions);
   gui_bool(showNeighbours);
   gui_bool(showBB);
+  gui_bool(showBoundary);
+  gui_bool(showThinnedBoundary);
+  
+  gui_LabelHandle(timeRD);
+  gui_LabelHandle(timeNB);
+  gui_LabelHandle(timeSR);
+  gui_LabelHandle(timeSU);
   
   static LabelHandle &valHandle = gui.getValue<LabelHandle>("val-handle");
   static LabelHandle &cogHandle = gui.getValue<LabelHandle>("cog-handle");
@@ -94,6 +109,8 @@ void run(){
   const Img8u *useImage = 0;
   const std::vector<icl::Region> *rs = 0;
   while(1){
+    mutex.lock();
+    bool rdUpdated = false;
     if(grabNextHandle.wasTriggered() || !useImage || grabButtonDown){
       grabbedImage = g.grab()->asImg<icl8u>();
       useImage = grabbedImage;
@@ -104,9 +121,12 @@ void run(){
       }
       
       d.setImage(useImage);
-      rd.setCreateTree(showSubRegions || showNeighbours);
       
+      Time t = Time::now();
+      rd.setCreateTree(showSubRegions || showNeighbours || showSurRegions);
       rs = &rd.detect(useImage);
+      timeRD = str((Time::now()-t).toMilliSeconds())+"ms";
+      rdUpdated = true;
     }else if(lastLevels != levels){
       if(levels != 256){
         reducedLevels = cvt8u(icl::levels(cvt(grabbedImage),levels));
@@ -114,15 +134,19 @@ void run(){
       }else{
         useImage = grabbedImage;
       }
+      if(!rdUpdated){
+        rd.setCreateTree(showSubRegions || showNeighbours || showSurRegions );
+        rs = &rd.detect(useImage);
+        rdUpdated = true;
+      }
+      d.setImage(useImage);
     }
     lastLevels = levels;
     
     d.lock();
     d.reset();
     
-    mutex.lock();
     Point m(mouseIO.x,mouseIO.y);
-    mutex.unlock();
   
     if(useImage->getImageRect().contains(m.x,m.y)){
       // find the region, that contains mouseX,mouseY
@@ -130,22 +154,25 @@ void run(){
       if(it != rs->end()){
         icl::Region r = *it;
         
-        const std::vector<Point> &boundary = r.getBoundary();
-        const Rect &bb = r.getBoundingBox();
-        
         d.nofill();
-        d.color(0,150,255,200);
-        d.linestrip(boundary);
+
+        if(showBoundary){
+          d.color(0,150,255,200);
+          d.linestrip(r.getBoundary(showThinnedBoundary));
+        }
         
         if(showBB){
           d.color(255,0,0,255);
-          d.rect(bb);
+          d.rect(r.getBoundingBox());
         }
 
         if(showSurRegions){
           d.linewidth(4);
           d.color(255,200,100,100);
+          Time t=Time::now();
+
           const std::vector<icl::Region> &sur = r.getSurroundingRegions(!showAllSurRegions);
+          timeSU = str((Time::now()-t).toMilliSeconds())+"ms";
           for(unsigned int i=0;i<sur.size();++i){
             d.linestrip(sur[i].getBoundary());
           }
@@ -154,14 +181,18 @@ void run(){
 
         if(showSubRegions){
           d.color(0,155,0,255);
+          Time t=Time::now();
           const std::vector<icl::Region> &sub = r.getSubRegions(!showAllSubRegions);
+          timeSR = str((Time::now()-t).toMilliSeconds())+"ms";
           for(unsigned int i=0;i<sub.size();++i){
             d.linestrip(sub[i].getBoundary());
           }
         }
         if(showNeighbours){
           d.color(255,0,0,255);
+          Time t=Time::now();
           const std::vector<icl::Region> &ns = r.getNeighbours();
+          timeNB = str((Time::now()-t).toMilliSeconds())+"ms";
           for(unsigned int i=0;i<ns.size();++i){
             d.linestrip(ns[i].getBoundary());
           }
@@ -188,7 +219,7 @@ void run(){
     
     d.unlock();
     d.updateFromOtherThread();
-    
+    mutex.unlock();
     Thread::msleep(10);
   }
 }
