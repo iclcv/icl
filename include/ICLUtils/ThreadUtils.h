@@ -14,21 +14,23 @@ namespace icl{
   struct ExecThreadImpl;
   /** \endcond */
   
-  /// Threading Util
+  /// Threading Util \ingroup THREAD
   /** <b>Please notice:</b> ExecThread instances should be created as first stack-object.
       By this means, C++ ensures, that the execution is stopped safely before any other
       data is released (the stack is released in top-down order)
       
       This is the replacement class for the former
 
-      exec_threaded function: 
+      \code
+      exec_threaded(function);
+      \endcode
       
       exec_threaded caused a lot of problems because its internal threads could not be
       stopped safely. 
       
       Use an exec Thread as follows:
       
-      <code>
+      \code 
       void run{
          // threaded function ...
       }
@@ -42,14 +44,14 @@ namespace icl{
       
          return app.exec();      
       }
-      </code>
+     \endcode
       
       \section AD Additional information
       Please note, that the given callback function is already executed in a loop
       by default. If you use some infinite loop in your passed callback function,
       the ExecThread's destructor might not be able to 'join' the underlying thread.
       Hence if your callback function looks like this:
-      <code>
+      \code
       void run(){
          int x = 43;
          float foo = 8
@@ -58,12 +60,12 @@ namespace icl{
             blub();
          }
       }
-      </code>
+      \endcode
       
       you have to add at least a 'Thread::usleep(0)' call to your infinite loop. If your run-
       callback is only used once at runtime, you can also use the static keyword for initializations
       (x and foo in the example above) and remove the while(true)-statement:
-       <code>
+      \code
       void run(){
          static int x = 43;
          static float foo = 8
@@ -71,8 +73,7 @@ namespace icl{
          bar();
          blub();
       }
-      </code>
-      
+      \endcode      
   */
   struct ExecThread : public Uncopyable{
     

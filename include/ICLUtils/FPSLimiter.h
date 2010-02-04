@@ -6,7 +6,7 @@
 namespace icl{
   
   
-  /// An fps limiter can be used to limit online applications FPS
+  /// An fps limiter can be used to limit online applications FPS \ingroup TIME
   class FPSLimiter : public FPSEstimator{
     float m_maxFPS;
     mutable Time m_lastTime;

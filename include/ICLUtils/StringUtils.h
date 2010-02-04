@@ -212,7 +212,7 @@ namespace icl{
   }
 
   
-  /// Utility structure for matching results
+  /// Utility structure for matching results \ingroup STRUTILS
   /** @see icl::match for more details */
   struct MatchResult{
     bool matched; //!< was the match successful 
@@ -228,7 +228,7 @@ namespace icl{
     operator bool()const{ return matched; }
   };
 
-  /// Applies a regular expression match on given text and regex pattern (internally using regex.h)
+  /// Applies a regular expression match on given text and regex pattern (internally using regex.h) \ingroup STRUTILS
   /** @param text source string 
       @param regex regular expression to search in text 
       @param numMatchesToList If 0 (which is default, result contains only an information
