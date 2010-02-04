@@ -76,5 +76,5 @@ int main(int n, char **ppc){
    "\t CellW and CellH grid cell size\n"
    );
   return ICLApplication(n,ppc,"-input|-i(device,device-prams,camera-xml-file) "
-                        "-grid|-g(Px=0,Py=300,Pz=0,V1x=1,V1y=0,V1z=0,V2x=0,V2y=1,V2z=0,NXCells=30,NYCells=30)",init,run).exec();
+                        "-grid|-g(Px=-800,Py=1600,Pz=0,V1x=50,V1y=0,V1z=0,V2x=0,V2y=-50,V2z=0,NXCells=32,NYCells=32)",init,run).exec();
 }
