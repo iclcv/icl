@@ -354,7 +354,7 @@ namespace icl {
 
   /// istream operator parses a camera from an XML-string
   std::istream &operator>>(std::istream &is, Camera &cam) throw (ParseException) {
-    cam = Camera(is);
+    cam = Camera(is,"config.");
     return is; 
   }
   
