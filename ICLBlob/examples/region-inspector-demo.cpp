@@ -21,25 +21,39 @@ void init(){
   gui << "draw[@minsize=32x24@label=image@handle=image]";
   
   GUI labels("vbox[@label=Region information]");
-  labels << "label()[@label=Region Size@handle=size-handle@minsize=6x2]";
-  labels << "label()[@label=Region COG@handle=cog-handle@minsize=6x2]";
-  labels << "label()[@label=Region Value@handle=val-handle@minsize=6x2]";
-  labels << "label()[@label=Region Form Factor@handle=ff-handle@minsize=6x2]";
-  labels << "label()[@label=Region EV-Ratio@handle=evratio-handle@minsize=6x2]";
-  labels << "label()[@label=Region Boundary Length@handle=bl-handle@minsize=6x2]";
- labels <<  ( GUI("hbox") 
-               << "checkbox(show boundary,checked)[@out=showBoundary]"
-               << "togglebutton(normal,!thinned)[@out=showThinnedBoundary]");
-  labels <<  ( GUI("hbox") 
-               << "checkbox(show sub regions,checked)[@out=showSubRegions]"
-               << "togglebutton(direct,all)[@out=showAllSubRegions]");
- labels <<  ( GUI("hbox") 
-               << "checkbox(show sur. regions,checked)[@out=showSurRegions]"
-               << "togglebutton(direct,all)[@out=showAllSurRegions]");
-  labels << "checkbox(show neighbours,unchecked)[@out=showNeighbours]";
-  labels << "checkbox(show bounding rect,unchecked)[@out=showBB]";
-
-  labels << ( GUI("hbox") 
+  labels << ( GUI("hbox")
+              << "label()[@label=Region Size@handle=size-handle@minsize=6x2]"
+              << "label()[@label=Region COG@handle=cog-handle@minsize=6x2]"
+              )
+         << ( GUI("hbox")
+              << "label()[@label=Region Value@handle=val-handle@minsize=6x2]"
+              << "label()[@label=Region Form Factor@handle=ff-handle@minsize=6x2]"
+              )
+         << ( GUI("hbox")
+              << "label()[@label=Region EV-Ratio@handle=evratio-handle@minsize=6x2]"
+              << "label()[@label=Region Boundary Length@handle=bl-handle@minsize=6x2]"
+              )
+         << ( GUI("hbox")
+              << "label()[@label=sub regions@handle=nSub@minsize=6x2]"
+              << "label()[@label=all sub regions@@handle=nAllSub@minsize=6x2]"
+              )
+         << ( GUI("hbox") 
+              << "checkbox(show boundary,checked)[@out=showBoundary]"
+              << "togglebutton(normal,!thinned)[@out=showThinnedBoundary]"
+              )
+         << ( GUI("hbox") 
+              << "checkbox(show sub regions,checked)[@out=showSubRegions]"
+              << "togglebutton(direct,all)[@out=showAllSubRegions]"
+              )
+         << ( GUI("hbox") 
+              << "checkbox(show sur. regions,checked)[@out=showSurRegions]"
+              << "togglebutton(direct,all)[@out=showAllSurRegions]"
+              )
+         << ( GUI("hbox") 
+              << "checkbox(show neighbours,unchecked)[@out=showNeighbours]"
+              << "checkbox(show bounding rect,unchecked)[@out=showBB]"
+              )
+         << ( GUI("hbox") 
               << "togglebutton(stopped,!grabbing)[@out=grabbing@handle=grab-handle@minsize=3x2]"
               << "button(grab next)[@handle=grab-next-handle@minsize=3x2]"
               );
@@ -90,6 +104,9 @@ void run(){
   gui_LabelHandle(timeNB);
   gui_LabelHandle(timeSR);
   gui_LabelHandle(timeSU);
+  
+  gui_LabelHandle(nSub);
+  gui_LabelHandle(nAllSub);
   
   static LabelHandle &valHandle = gui.getValue<LabelHandle>("val-handle");
   static LabelHandle &cogHandle = gui.getValue<LabelHandle>("cog-handle");
@@ -186,6 +203,12 @@ void run(){
           for(unsigned int i=0;i<sub.size();++i){
             d.linestrip(sub[i].getBoundary());
           }
+          if(showAllSubRegions){
+            nAllSub = (int)sub.size();
+          }else{
+            nSub = (int)sub.size();
+          }
+
         }
         if(showNeighbours){
           d.color(255,0,0,255);
