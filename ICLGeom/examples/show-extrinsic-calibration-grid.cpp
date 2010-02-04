@@ -63,8 +63,9 @@ void run(){
 
 int main(int n, char **ppc){
   paex
-  ("-input","like default ICL -input argument, but 3rd subargument: camera-calibrtion-xml file\n"
-   " which can be created with icl-extrinsic-camera-calibration tool")
+  ("-input","like default ICL -input argument,\n"
+   "but 3rd subargument is camera-calibration-xml file\n"
+   "which can be created with the icl-cam-calib tool")
   ("-grid","receives a long list of numbers, syntax:\n"
    "\t -grid Px Py Pz V1x V1y V1z V2x V2y V2z NXCells NYCells\n"
    "\t all value in mm\n"
@@ -73,8 +74,7 @@ int main(int n, char **ppc){
    "\t V2 second plane direction vector\n"
    "\t NXCells and NYCells grid cell count\n"
    "\t CellW and CellH grid cell size\n"
-   "\t default args are [0 300 0 0 0 1 12 8 100 100]"
    );
   return ICLApplication(n,ppc,"-input|-i(device,device-prams,camera-xml-file) "
-                        "-grid|-g(Px,Py,Pz,V1x,V1y,V1z,V2x,V2y,V2z,NXCells,NYCells)",init,run).exec();
+                        "-grid|-g(Px=0,Py=300,Pz=0,V1x=1,V1y=0,V1z=0,V2x=0,V2y=1,V2z=0,NXCells=30,NYCells=30)",init,run).exec();
 }
