@@ -8,7 +8,7 @@ doc:
 	@(cd doc ; if [ ! -f doxyfile -o -L doxyfile ] ; then \
 		rm -f doxyfile;\
 		cat ../../doxyfile | sed "s|ICL_SUB_PACKAGE_PLACEHOLDER|${subdir}|g" > doxyfile ; \
-	fi ; doxygen)
+	fi ; doxygen ; rm -f html/tab_*.gif ; cp ../../doc/tab_*.gif html/ )
 
 cleandoc:
 	@echo removing documentation
