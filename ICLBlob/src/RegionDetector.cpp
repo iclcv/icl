@@ -113,6 +113,7 @@ namespace icl{
   
   const std::vector<Region> &RegionDetector::detect(const ImgBase *image){
     m_vecBlobData.clear();
+    m_vecAllBlobData.clear();
     ICLASSERT_RETURN_VAL(image,m_vecBlobData);
     ICLASSERT_RETURN_VAL(image->getChannels()==1,m_vecBlobData);
     ICLASSERT_RETURN_VAL(image->getROISize().getDim(),m_vecBlobData);
@@ -248,8 +249,8 @@ namespace icl{
       for(unsigned int i=0;i<m_vecParts.size();i++){
         if(m_vecParts[i]->top){
           const T &val = image(m_vecParts[i]->scanlines[0].x,m_vecParts[i]->scanlines[0].y,0);
-          m_vecAllBlobData.push_back(Region(m_vecParts[i],m_uiMaxSize,val,&image,&m_vecBlobData));
-          unsigned int size = (unsigned int)m_vecBlobData.back().getSize();
+          m_vecAllBlobData.push_back(Region(m_vecParts[i],m_uiMaxSize,val,&image,&m_vecAllBlobData));
+          unsigned int size = (unsigned int)m_vecAllBlobData.back().getSize();
           if(val >= m_dMinVal && val <= m_dMaxVal && size <= m_uiMaxSize && size >= m_uiMinSize){
             m_vecBlobData.push_back(m_vecAllBlobData.back());
           }
