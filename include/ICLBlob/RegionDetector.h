@@ -42,6 +42,7 @@ namespace icl{
     RegionPart *newPart();
     
     std::vector<Region> m_vecBlobData;
+    std::vector<Region> m_vecAllBlobData;
     std::vector<RegionPart*> m_vecLIM;
     std::vector<RegionPart*> m_vecParts;
     

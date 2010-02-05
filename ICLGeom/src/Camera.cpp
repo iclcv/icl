@@ -94,6 +94,9 @@ namespace icl {
   Point32f Camera::project(const Vec &Xw) const {
     Mat T = getCSTransformationMatrix();
     Mat P = getProjectionMatrix();
+
+#warning "testing project fix here!"
+    P(1,0) *= -1; P(2,1) *= -1;
     
     Vec xi = homogenize(P*T*Xw);
 
@@ -105,6 +108,10 @@ namespace icl {
     dst.resize(Xws.size());
     Mat T = getCSTransformationMatrix();
     Mat P = getProjectionMatrix();
+
+#warning "testing project fix here!"
+    P(1,0) *= -1; P(2,1) *= -1;
+
     Mat M = P*T;
     for(unsigned int i=0;i<Xws.size();++i){
       Vec xi = homogenize(M*Xws[i]);

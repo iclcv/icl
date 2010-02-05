@@ -25,9 +25,9 @@ namespace icl{
     m_tree->region_image.resize(image->getDim());
     std::fill(m_tree->region_image.begin(),m_tree->region_image.end(),(icl::Region*)0);
     Region **rim = m_tree->region_image.data();
-    for(unsigned int i=0;i<m_vecBlobData.size();++i){
+    for(unsigned int i=0;i<m_vecAllBlobData.size();++i){
       Region *r = &m_vecBlobData[i];
-      const std::vector<ScanLine> &sls = m_vecBlobData[i].getScanLines();
+      const std::vector<ScanLine> &sls = m_vecAllBlobData[i].getScanLines();
       for(unsigned int j=0;j<sls.size();++j){
         const ScanLine &sl = sls[j];
         int offs = sl.x+w*sl.y;
@@ -244,15 +244,28 @@ namespace icl{
       limC[w-1]->add(ScanLine(slX+xOffs,y+yOffs,w-slX));
     }
 
-    for(unsigned int i=0;i<m_vecParts.size();i++){
-      if(m_vecParts[i]->top){
-        const T &val = image(m_vecParts[i]->scanlines[0].x,m_vecParts[i]->scanlines[0].y,0);
-        if(val >= m_dMinVal && val <= m_dMaxVal){
-          m_vecBlobData.push_back(Region(m_vecParts[i],m_uiMaxSize,val,&image,&m_vecBlobData));
-          Region &b = m_vecBlobData.back();
-          if((unsigned int)b.getSize() > m_uiMaxSize || (unsigned int)b.getSize() < m_uiMinSize){
-            m_vecBlobData.pop_back();
-          }      
+    if(m_createTree){
+      for(unsigned int i=0;i<m_vecParts.size();i++){
+        if(m_vecParts[i]->top){
+          const T &val = image(m_vecParts[i]->scanlines[0].x,m_vecParts[i]->scanlines[0].y,0);
+          m_vecAllBlobData.push_back(Region(m_vecParts[i],m_uiMaxSize,val,&image,&m_vecBlobData));
+          unsigned int size = (unsigned int)m_vecBlobData.back().getSize();
+          if(val >= m_dMinVal && val <= m_dMaxVal && size <= m_uiMaxSize && size >= m_uiMinSize){
+            m_vecBlobData.push_back(m_vecAllBlobData.back());
+          }
+        }
+      }
+    }else{
+      for(unsigned int i=0;i<m_vecParts.size();i++){
+        if(m_vecParts[i]->top){
+          const T &val = image(m_vecParts[i]->scanlines[0].x,m_vecParts[i]->scanlines[0].y,0);
+          if(val >= m_dMinVal && val <= m_dMaxVal){
+            m_vecBlobData.push_back(Region(m_vecParts[i],m_uiMaxSize,val,&image,&m_vecBlobData));
+            Region &b = m_vecBlobData.back();
+            if((unsigned int)b.getSize() > m_uiMaxSize || (unsigned int)b.getSize() < m_uiMinSize){
+              m_vecBlobData.pop_back();
+            }      
+          }
         }
       }
     }
