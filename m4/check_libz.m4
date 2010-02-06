@@ -1,4 +1,5 @@
-AC_DEFUN([ICL_CHECK_LIBZ],[
+
++AC_DEFUN([ICL_CHECK_LIBZ],[
 AC_ARG_WITH([LIBZ],
         [AS_HELP_STRING([--without-LIBZ],
                         [disable support for LIBZ])],

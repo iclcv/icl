@@ -21,7 +21,17 @@ namespace icl{
     if(paInitString != ""){
       painit(n,ppc,paInitString);
     }
+    
+#ifdef SYSTEM_APPLE
+  /* workaround for an obvious qt bug on mac. creation of a QApplicationn from
+     (n,ppc) leads to a seg-fault in QApplication::arguments() ... where qt trys
+     to read a string from address 0x00, which of course is not allowed :-) */
+    static int n2=1;
+    static char *args[]={*ppc,0};
+    app = new QApplication(n2,args);
+#else
     app = new QApplication(n,ppc);
+#endif
     s_app = this;
     if(init) addInit(init);
     

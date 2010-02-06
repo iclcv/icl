@@ -2,7 +2,7 @@
 #include <ICLFilter/ConvolutionOp.h>
 
 
-ICLDrawWidget *widget = 0;
+GUI gui;
 GenericGrabber *grabber = 0;
 int x,y;
 int r,g,b;
@@ -36,21 +36,23 @@ void mouse(const MouseEvent &event){
 }
 
 void run(){
+  gui_DrawHandle(draw);
+
   const ImgBase *grabbedImage = grabber->grab();
-  widget->setImage(grabbedImage);
+  draw = grabbedImage;
   
   if(x>0){ // else no mouse event has been recognized yet
-    widget->lock();
-    widget->reset();
+    draw->lock();
+    draw->reset();
     
     Rect roi(x-101,y-101,202,202);
     
     if(Rect(Point::null,grabbedImage->getSize()).contains(roi)){
       // drawing smooth dropshadow
-      widget->nocolor();
-      widget->fill(0,0,0,20);
+      draw->nocolor();
+      draw->fill(0,0,0,20);
       for(int d=0;d<5;d++){
-        widget->rect(x-95-d,y-95-d,200+2*d,200+2*d);
+        draw->rect(x-95-d,y-95-d,200+2*d,200+2*d);
       }
       // drawing filter result for the roi image
       const ImgBase *image = grabbedImage->shallowCopy(roi);
@@ -58,45 +60,45 @@ void run(){
       ImgBase *dst = 0;
       conv.apply(image,&dst);   
       dst->normalizeAllChannels(Range<icl64f>(0,255));
-      widget->image(dst,x-100,y-100,200,200);
+      draw->image(dst,x-100,y-100,200,200);
       
       if(dst) delete dst;
-      widget->nofill();
-      widget->color(0,0,0);
-      widget->rect(x-100,y-100,200,200);
+      draw->nofill();
+      draw->color(0,0,0);
+      draw->rect(x-100,y-100,200,200);
     }
     
     // drawing image info
-    widget->color(255,255,255);
-    widget->fill(r,g,b,200);
+    draw->color(255,255,255);
+    draw->fill(r,g,b,200);
     char ac[100];
     sprintf(ac,"color(%d,%d,%d)",r,g,b);
-    widget->text(ac,x-90,y+120,-1,-1,8);
+    draw->text(ac,x-90,y+120,-1,-1,8);
     sprintf(ac,"pos(%d,%d)",x,y);
-    widget->text(ac,x-90,y+110,-1,-1,8);
-    widget->text(sKernel,x-90,y+100,-1,-1,8);
-    widget->text("(click!)",x+60,y+120,-1,-1,8);
+    draw->text(ac,x-90,y+110,-1,-1,8);
+    draw->text(sKernel,x-90,y+100,-1,-1,8);
+    draw->text("(click!)",x+60,y+120,-1,-1,8);
     
-    widget->unlock();
+    draw->unlock();
   }
-  widget->update();
+  draw.update();
 }
 
 
 void init(){
-  widget = new ICLDrawWidget;
   grabber = new GenericGrabber(FROM_PROGARG("-input"));
+  grabber->setIgnoreDesiredParams(true);
   grabber->resetBus();
-  grabber->setDesiredSize(Size(640,480));
-  widget->setGeometry(200,200,640,480);
-  widget->show();
-  widget->install(new MouseHandler(mouse));
+
+  gui << "draw[@handle=draw@minsize=16x12]";
+  gui.show();
+  gui["draw"].install(new MouseHandler(mouse));
 }
 
 
 
 
 int main(int n, char **ppc){
-  ICLApplication app(n,ppc,"-input(2)",init,run);
+  ICLApplication app(n,ppc,"-input|-i(device,device-info)",init,run);
   return app.exec();
 }

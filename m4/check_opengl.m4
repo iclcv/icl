@@ -9,7 +9,27 @@ AC_ARG_WITH([OPENGL],
 
         ICL_PUSH_FLAG_VARS
 
+        if [[ "$ARCH" = "APPLE" ]] ; then
+        # on mac, we use -framework OpenGL
+        
+        AC_CHECK_FRAMEWORK([OpenGL],[main],[],[HAVE_OPENGL=FALSE])
+
+        if test "$HAVE_OPENGL" = "TRUE" ; then
+           ICL_DEF_VARS(
+                [OPENGL],
+                [-F$OPENGL_ROOT -framework OpenGL],
+                [],
+                [],
+                [-DHAVE_OPENGL])
+        fi
+
+        
+        LDFLAGS="$LDFLAGS -F$OPENGL_ROOT"
+
+        else
+
         ICL_EXTEND_FLAG_VARS_TMP_FOR(OPENGL,lib,include)
+        
         AC_CHECK_HEADER([GL/gl.h],[],[HAVE_OPENGL=FALSE])
         AC_CHECK_HEADER([GL/glu.h],[],[HAVE_OPENGL=FALSE])
         AC_CHECK_LIB([GL],[glBegin],[],[HAVE_OPENGL=FALSE])
@@ -24,6 +44,8 @@ AC_ARG_WITH([OPENGL],
                 [-Wl,-rpath -Wl,${OPENGL_ROOT}/lib],
                 [-I$OPENGL_ROOT/include],
                 [-DHAVE_OPENGL])
+        fi
+        
         fi])
-AM_CONDITIONAL([HAVE_OPENGL_COND],[test x$HAVE_OPEN = xTRUE])
+AM_CONDITIONAL([HAVE_OPENGL_COND],[test x$HAVE_OPENGL = xTRUE])
 ])

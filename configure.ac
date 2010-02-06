@@ -28,7 +28,11 @@ fi
 
 CXXFLAGS="$CXXFLAGS -DSYSTEM_${ARCH} -Wno-long-long -Wall -I../../include"
 #Workaround for missing pthread symbols on some systems ?!
+if [[ "$ARCH" = "APPLE" ]] ; then
+LDFLAGS="$LDFLAGS -lpthread"
+else
 LDFLAGS="$LDFLAGS -pthread"
+fi
 
 #TODO where is -lpthread missing?
 #LDFLAGS="$LDFLAGS -lpthread"

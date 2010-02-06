@@ -10,8 +10,15 @@
 #include <ICLUtils/StringUtils.h>
 
 #ifdef HAVE_OPENGL
+
+#ifdef SYSTEM_APPLE
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
 #include <GL/gl.h>
 #include <GL/glu.h>
+#endif
+
 #endif
 
 #include <set>

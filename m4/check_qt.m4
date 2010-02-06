@@ -18,11 +18,6 @@ AC_ARG_WITH([QT],
         QT_PACKAGES="QtCore QtOpenGL QtGui"
 	ICL_EXTEND_FLAG_VARS_TMP_FROM_PC_FOR($QT_PACKAGES,QT)
 
-	echo LDFLAGS are $LDFLAGS
-	echo LIBS are $LIBS
-	echo CXXFLAGS are $CXXFLAGS
-	echo CXXCPP are $CXXCPP
-
         # todo check this extra -lGLU
         ICL_DEF_VARS_FROM_PC([QT],[$QT_PACKAGES])
 	if [[ "$ARCH" != "APPLE" ]] ; then
@@ -42,14 +37,15 @@ AC_ARG_WITH([QT],
         AC_CHECK_HEADER([QtGui],[],[HAVE_QT=FALSE])
         AC_CHECK_HEADER([QtOpenGL],[],[HAVE_QT=FALSE])
         
-        if [[ "$ARCH" != "APPLE" ]] ; then
-        
+        if [[ "$ARCH" = "APPLE" ]] ; then
+	AC_CHECK_FRAMEWORK([QtCore],[main],[],[HAVE_QT=FALSE])
+	AC_CHECK_FRAMEWORK([QtGui],[main],[],[HAVE_QT=FALSE])
+	AC_CHECK_FRAMEWORK([QtOpenGL],[main],[],[HAVE_QT=FALSE])
         else
         AC_CHECK_LIB([QtCore],[main],[],[HAVE_QT=FALSE])
         AC_CHECK_LIB([QtGui],[main],[],[HAVE_QT=FALSE])
         AC_CHECK_LIB([QtOpenGL],[main],[],[HAVE_QT=FALSE])
-        AC_CHECK_LIB([QtXml],[main],[],[HAVE_QT=FALSE])
-        endif
+        fi
         
         ICL_POP_FLAG_VARS  
        ])
