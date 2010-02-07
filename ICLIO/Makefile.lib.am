@@ -8,8 +8,12 @@ libICLIO_la_SOURCES= \
 ../src/DemoImageFlowers.cpp \
 ../src/DemoImageMacaw.cpp \
 ../src/DemoImageWindows.cpp \
+../src/DemoImageLena.cpp \
+../src/DemoImageCameraMan.cpp \
+../src/DemoImageMandril.cpp \
 ../src/File.cpp \
 ../src/FileGrabber.cpp \
+../src/CreateGrabber.cpp \
 ../src/FileGrabberPluginCSV.cpp \
 ../src/FileGrabberPluginPNM.cpp \
 ../src/FileList.cpp \
@@ -34,6 +38,7 @@ include_HEADERS= \
 ../../include/ICLIO/Grabber.h \
 ../../include/ICLIO/GrabberHandle.h \
 ../../include/ICLIO/FileGrabber.h \
+../../include/ICLIO/CreateGrabber.h \
 ../../include/ICLIO/File.h \
 ../../include/ICLIO/FileList.h \
 ../../include/ICLIO/FilenameGenerator.h \

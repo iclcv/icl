@@ -49,7 +49,8 @@ namespace icl{
   
   /// create a test image (converted to destination format)
   /** @param name identifier for the image:
-                  names are: parrot, windows, flowers, women, house and tree 
+                  names are: parrot, lena, cameraman, mandril, 
+                  windows, flowers, women, house and tree 
       @param fmt image format to convert the result to
   **/
   ImgQ create(const std::string &name, format fmt=formatRGB);

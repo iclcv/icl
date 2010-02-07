@@ -13,7 +13,8 @@ void init(){
 void run(){
   gui_string(cs);
   static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredSize(Size::VGA);
+  g.setIgnoreDesiredParams(true);
+  g.setDesiredSize(g.grab()->getSize());
   g.setDesiredFormat(parse<format>(cs));
   g.setIgnoreDesiredParams(false);
   

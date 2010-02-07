@@ -1,5 +1,5 @@
-#ifndef TESTIMAGES_H
-#define TESTIMAGES_H
+#ifndef ICL_TESTIMAGES_H
+#define ICL_TESTIMAGES_H
 
 #include <ICLCore/Img.h>
 #include <string>
@@ -10,6 +10,9 @@ namespace icl{
     public:
     /// creates a new testimage instance
     /** possible values for name are
+        - lena
+        - cameraman
+        - mandril
         - women
         - house
         - tree
@@ -82,6 +85,21 @@ namespace icl{
   /// shortcurt function to create the "flowers"-image
   /** @return new image (ownership is passed to the caller!) */
   ImgBase *createImage_flowers();
+
+  /// shortcurt function to create the famous "lena"-image
+  /** @return new image (ownership is passed to the caller!) */
+  ImgBase *createImage_lena();
+
+  /// shortcurt function to create the famous "cameraman"-image
+  /** @return new image (ownership is passed to the caller!) */
+  ImgBase *createImage_cameraman();
+
+  /// shortcurt function to create the "mandril"-image
+  /** @return new image (ownership is passed to the caller!) */
+  ImgBase *createImage_mandril();
+
+
+
 }
 
 #endif

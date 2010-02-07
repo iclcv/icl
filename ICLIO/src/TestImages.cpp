@@ -492,6 +492,12 @@ namespace icl{
         return createImage_flowers()->asImg<icl8u>();
       }else if(name == "windows"){
         return createImage_windows()->asImg<icl8u>();
+      }else if(name == "lena"){
+        return createImage_lena()->asImg<icl8u>();
+      }else if(name == "cameraman"){
+        return createImage_cameraman()->asImg<icl8u>();
+      }else if(name == "mandril"){
+        return createImage_mandril()->asImg<icl8u>();
       }else{
         ERROR_LOG("TestImage "<< name << "not found!");
         return 0;

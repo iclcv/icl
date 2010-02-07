@@ -1,6 +1,7 @@
 #include <ICLIO/GenericGrabber.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLIO/FileGrabber.h>
+#include <ICLIO/CreateGrabber.h>
 #include <ICLIO/FileList.h>
 
 #ifdef SYSTEM_LINUX
@@ -59,7 +60,7 @@ namespace icl{
     std::vector<std::string> lP = tok(params,",");
     
     // todo optimize this code using a map or a table or ...
-    std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pXCF_P,pXCF_S,pXCF_M,pMV,pSR,pVideo;
+    std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pCreate,pXCF_P,pXCF_S,pXCF_M,pMV,pSR,pVideo;
 
 #define PARAM(D,PNAME)                                                  \
     if(lP[i].length() > strlen(D) && lP[i].substr(0,strlen(D)) == D){   \
@@ -74,6 +75,7 @@ namespace icl{
       PARAM("unicap",pUnicap); 
       PARAM("file",pFile);
       PARAM("demo",pDemo);
+      PARAM("create",pCreate);
       PARAM("xcfp",pXCF_P);
       PARAM("xcfs",pXCF_S);
       PARAM("xcfm",pXCF_M);
@@ -281,6 +283,12 @@ namespace icl{
         m_poGrabber = new DemoGrabber(to32s(pDemo));
         m_sType = "demo";
       }
+
+      if(l[i] == "create"){
+        m_poGrabber = new CreateGrabber(pCreate);
+        m_sType = "create";
+      }
+
     }
     if(!m_poGrabber && notifyErrors){
       std::string errMsg("generic grabber was not able to find any suitable device\ntried:");

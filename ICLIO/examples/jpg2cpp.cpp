@@ -68,8 +68,8 @@ int main(int n, char **ppc){
   string arrayName = string("aauc_Data_")+imageName;
   string extraArrayName = string("auc_ExtraData_")+imageName;
 
-  printf("#include \"ICLFileReader.h\"\n");
-  printf("#include \"ICLImg.h\"\n");
+  printf("#include <ICLIO/FileGrabber.h>\n");
+  printf("#include <ICLCore/Img.h>\n");
   
 
   //-------------------------------------------
@@ -120,7 +120,7 @@ int main(int n, char **ppc){
          "  fwrite(buf,1,DIM,f);\n"
          "  fclose(f);\n"
          "  delete [] buf;\n"
-         "  image = FileReader(\"./.tmp_image_buffer.jpg\").grab()->deepCopy();\n"
+         "  image = FileGrabber(\"./.tmp_image_buffer.jpg\",false,true).grab()->deepCopy();\n"
          "  remove(\"./.tmp_image_buffer.jpg\");\n"
          "  return image->deepCopy();\n"
          "}\n// }}}\n\n",arrayName.c_str(),extraArrayName.c_str());

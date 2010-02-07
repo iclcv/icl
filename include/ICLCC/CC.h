@@ -51,7 +51,7 @@ int main(int n, char **args){
 }
 \endcode
 </TD><TD>
-\image html colorspace-demo.jpg "icl-colorspace-demo GUI" width=5cm
+\image html color-space-demo.png "icl-colorspace-demo GUI" width=5cm
 </TD></TR></TABLE>
 
 \section secRanges Color Ranges

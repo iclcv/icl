@@ -43,6 +43,7 @@ namespace icl {
                                   - <b>unicap</b> unicap grabber 
                                   - <b>file</b> file grabber
                                   - <b>demo</b> demo grabber (moving red spot)
+                                  - <b>create</b> create grabber (create an image using ICL's create function)
                                   - <b>xcfp</b> xcf publisher grabber
                                   - <b>xcfs</b> xcf server grabber
                                   - <b>xcfm</b> xcf memory grabber
@@ -59,6 +60,7 @@ namespace icl {
                                   - file=pattern (string)
                                   - unicap=device pattern (string)
                                   - demo=anything (not regarded)
+                                  - create=image name (@see icl::TestImages::create)
                                   - xcfp=publisher's-stream-name (string)
                                   - xcfs=server-name (string) (currently method name is always "retreiveImage")
                                   - xcfm=memory-name (string) (currently image-xpath is always "//IMAGE")
