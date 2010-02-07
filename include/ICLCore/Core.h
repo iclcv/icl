@@ -20,15 +20,19 @@
 
     \mainpage Image Component Library (ICL) 
 
-    At its core, ICL is a C++ computer vision library. During the design and development process, the following main goals took center stage:
-    - Optimal Performace
+    ICL is a C++ image processing library, developed in the 
+    <a href="www.ni.www.techfak.uni-bielefeld.de"> Neuroinformatics Group</a> at the 
+    <a href="www.uni-bielefeld.de">University of Bielefeld in Germany</a>. 
+    ICL provides a large set of features for image acquisition, image processing and
+    image visualization. During the design and development process, the following main goals took center stage:
+    - Optimal Performace (ensured by internal use of Intel IPP, see \ref IPP_MKL)
     - Simple and easy to use C++-interface (see \ref EXAMPLE)
-    - Platform-Independence
+    - Platform-Independence (currently linux and MacOS-X are supported)
     - No compulsory software dependencies (see \ref EXTERNAL_DEPS)
 
-    ICL tutorials can be build independently from the ICL/tutorial folder, or downloaded from <b>TODO</b>
+    ICL provides all necessary building blocks for the development of complex computer-vision applications.
 
-    \section EXAMPLE Simple Viewer Application for Arbitrary Camera Source
+    \section EXAMPLE Simple Viewer Application for Arbitrary Camera Sources
 
     <TABLE border=0><TR><TD>
     \code
@@ -42,13 +46,14 @@
     }
 
     void run(){
-      static GenericGrabber g(FROM_PROGARG("-input"));
+      static GenericGrabber g(FROM_PROGARG("-i"));
       gui["image"] = g.grab();
       gui["image"].update();
     }
 
     int main(int n, char **args){
-      return ICLApplication(n,args,"-input(2)",init,run).exec();
+      return ICLApplication(n,args,"-input|-i(2)",
+                            init,run).exec();
     }
     \endcode
 
@@ -248,10 +253,10 @@
 
 
     \section IPP_MKL IPP/MKL-optimization
-    The Intel Integrated Performance Primitives (Intel IPP) and the Intel Math Kernel Library (Intel MKL) are assembler libraries that provides a C-interface 
+    The Intel Integrated Performance Primitives (Intel IPP) and the Intel Math Kernel Library (Intel MKL) are assembler libraries that provide a C-interface 
     to a large set of highly optimized and hardware accelerated functions for image processing, and 
     other numerical problems for all processors providing MMX and SSE instruction sets,
-    i.e. most new Intel and AMD processors.
+    i.e. most common Intel and AMD processors.
     As far as we know, Intel IPP and Intel MKL can be used freely for non-commercial use,<b> but not for research</b>. 
     Fortunately, IPP/MKL support is purely optional.
     Therefore you can simply develop your application with an ICL-build without IPP/MKL-optimization and re-link it against an optimized ICL-build lateron.
@@ -269,7 +274,7 @@
 
     \subsection MKL Intel MKL
 
-    In contrast to the matrix package IPPS of Intel IPP, which is optimized for small matrices (up to 6x6), Intel MKL is optimized for large matrices. 
+    In contrast to the matrix package for small matrices, which is optimized for matrices up to dimensions of 6x6, Intel MKL is optimized for larger matrices. 
     As under certain conditions, MKL is more then 100 times faster, we decided to add MKL support as well. However, MKL is currently only 
     used in the implementation of some DynMatrix multiplication functions in the ICLUtils package.
 

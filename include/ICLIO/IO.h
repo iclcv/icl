@@ -62,60 +62,47 @@
     \section GRABBERS Grabbers
     
     However, a large set of Grabber implementations is available, we recommend to use
-    instances of the icl::GenericGrabber class. The icl::GenericGrabber class internally wraps
-    one of the available Grabber implementation. The actual image acquisition and 
-    parameter setup back-end can be specified at run-time by string arguments. By this
-    means, you can simple write applications that is able to acquire image from
-    all available sources without having to check which of all possible backends are
-    actually available in your ICL build.
+    instances of the icl::GenericGrabber class. Instances of the GenericGrabber class can
+    wrap all other supported Grabber implementations internally. At construction time, 
+    the GenericGrabber is set up with a pair of string parameters that specify which
+    device has to be used internally. By this
+    means, you can simply write applications that are able to acquire images from
+    all available sources without having to check which of all possible back-ends manually.
+    furthermore, your application will also benefit from ICL-updates, which provide further
+    grabber-implementations automatically.
 
-    Here's a small example for a multi-source video grabber application
+    Here is a small example for a dynamic-source video grabber application
 
     <TABLE border=0><TR><TD>
     \code
 #include <ICLQuick/Common.h>
 
 GUI gui("vbox");
-GenericGrabber *grabber = 0;
+GenericGrabber gg;
 std::string params[] = {"","0","0","*","*.ppm",""};
 Mutex mutex;
 
-void change_grabber(){
-  Mutex::Locker l(mutex);
-  gui_ComboHandle(source);
-
-  std::string newType = source.getSelectedItem();
-  int idx = source.getSelectedIndex();
-
-  if(!grabber || grabber->getType() != newType){
-    ICL_DELETE( grabber );
-    try{
-      grabber = new GenericGrabber(newType,newType+"="+params[idx],false);
-    }catch(...){}
-    if(grabber->isNull()){
-      ICL_DELETE( grabber );
-    }
-  }
+void change_dev(){
+  Mutex::Locker lock(mutex);
+  gui_ComboHandle(dev);
+  try{
+    gg.init(dev,((std::string)dev)+'='+params[dev]);
+  }catch(...){}
 }
 
 void init(){
   gui << "image[@minsize=32x24@handle=image]" 
-      << "combo(null,pwc,dc,unicap,file,demo)[@label=source@out=_@handle=source]";
-  
+      << "combo(null,pwc,dc,unicap,file,!demo)"
+         "[@label=device@out=_@handle=dev]";
   gui.show();
-  
-  gui.registerCallback(new GUI::Callback(change_grabber),"source");
-
-  if(pa_defined("-input")){
-    grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  }
+  gui.registerCallback(change_dev,"dev");
+  change_dev();
 }
 
 void run(){
-  Mutex::Locker l(mutex);
-  
-  if(grabber){
-    gui["image"] = grabber->grab();
+  Mutex::Locker lock(mutex);
+  if(gg){
+    gui["image"] = gg.grab();
     gui["image"].update();
   }else{
     Thread::msleep(20);
@@ -123,12 +110,11 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"-input(2)",init,run).exec();
+  return ICLApplication(n,ppc,"",init,run).exec();
 }
-
-    \endcode
+   \endcode
     </TD><TD>
-    \image html generic-grabber.jpg "icl-generic-grab-example source code"
+    \image html generic-grabber.png "icl-generic-grab-example source code"
     </TD></TR></TABLE>
 
     \subsection GRABBER_BACKENDS Grabber Backends and Corresponding 3rd Party Libraries

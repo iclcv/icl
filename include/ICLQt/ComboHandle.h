@@ -51,6 +51,12 @@ namespace icl{
     
     /// sets the current item
     void setSelectedItem(const std::string &item);
+
+    /// convenience operator wrapping getSelectedIndex
+    inline operator int() const { return getSelectedIndex(); }
+
+    /// convenience operator wrapping getSelectedItem
+    inline operator std::string() const { return getSelectedItem(); }
     
     private:
     /// utility function (internally used)

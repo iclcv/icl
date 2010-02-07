@@ -41,12 +41,21 @@
 
 
 namespace icl{
-  
+
+
   GenericGrabber::GenericGrabber(const std::string &desiredAPIOrder, 
                                  const std::string &params, 
-                                 bool notifyErrors) throw(ICLException){
+                                 bool notifyErrors) throw(ICLException):m_poGrabber(0){
+    init(desiredAPIOrder,params,notifyErrors);
+  }
 
-    m_poGrabber = 0;
+  
+  void GenericGrabber::init(const std::string &desiredAPIOrder, 
+                                 const std::string &params, 
+                                 bool notifyErrors) throw(ICLException){
+    Mutex::Locker __lock(m_mutex);
+    ICL_DELETE(m_poGrabber);
+    m_sType = "";
     std::vector<std::string> lP = tok(params,",");
     
     // todo optimize this code using a map or a table or ...

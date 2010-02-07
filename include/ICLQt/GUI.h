@@ -113,17 +113,20 @@ namespace icl{
     
     
     /// Callback helper class: Default implementation calls a callback function 
-    class Callback{
+    struct Callback{
       /// typedef to wrapped function (only for default implementation)
       typedef void (*callback_function)(void);
 
       /// typedef to wrapped function (only used if exec(const std::string&) is not overloaded!)
       typedef void (*complex_callback_function)(const std::string&);
       
+    private:
       /// internally used default callback function
       callback_function m_func;
       
-      /// internally used comples  callback function
+      /// internally used complex  callback function
+      /** complex callback functions do always get the event-sources handle
+          name as argument*/
       complex_callback_function m_cfunc;
       
       protected:
@@ -144,7 +147,7 @@ namespace icl{
       
       /// virtual complex execution function
       /** the complex function is called with given component's handle name, 
-          so it can be */
+          so it can be used to handle events of different components */
       virtual void exec(const std::string &handle){
         if(m_cfunc) m_cfunc(handle);
       }
@@ -159,6 +162,23 @@ namespace icl{
         the smart pointers that are used...
     */
     void registerCallback(CallbackPtr cb, const std::string &handleNamesList);
+
+    /// convenience wrapper for registration of callback functions
+    /** internally this function creates and appropriate CallbackPtr 
+        in order to pass the given callback_function f 
+        to registerCallback(CallbackPtr,const std::string&)*/
+    void registerCallback(GUI::Callback::callback_function f, const std::string &handleNamesList){
+      registerCallback(new Callback(f),handleNamesList);
+    }
+
+    /// convenience wrapper for registration of complex callback functions
+    /** internally this function creates and appropriate CallbackPtr 
+        in order to pass the given complex_callback_function f 
+        to registerCallback(CallbackPtr,const std::string&)*/
+    void registerCallback(GUI::Callback::complex_callback_function f, const std::string &handleNamesList){
+      registerCallback(new Callback(f),handleNamesList);
+    }
+
 
     /// removes all callbacks from components
     void removeCallbacks(const std::string &handleNamesList);
