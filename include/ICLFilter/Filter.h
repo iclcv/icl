@@ -12,8 +12,26 @@
     
     \section OVERVIEW Overview
     
-    The ICLFilter package provides a large variety of image filtering classes. When talking about 
-    <em>image filters</em> some misapprehensions can arise. To prevent this, the following section
+    The ICLFilter package provides a large variety of image filtering classes. Here's is an incomplete list:
+    <table border=0><tr><td>
+    - Generic and fixed size convolution (see icl::ConvolutionOp)
+    - Median operator (see icl::MedianOp)
+    - Morphological operations (see icl::MorphologicalOp)
+    - Affine operation (see icl::AffineOp)
+    - General Gabor-filters (see icl::GaborOp)
+    - Image chamfering filters (see icl::ChamferOp)
+    - Threshold operations (see icl::ThresholdOp)
+    </td><td>
+    - Lookup-table filters (see icl::LUTOp)
+    - Arithmetical operations (see icl::UnaryArithmeticalOp)
+    - Logical operations (see icl::UnaryLogicalOp)
+    - Filters for combining image channels (see icl::WeightChannelsOp)
+    - Wiener filer (see icl::WienerOp)
+    - Local threshold operations (see icl::LocalThresholdOp)
+    - Image proximity measurement (see icl::ProximityOp)
+    </td></tr></table>
+
+    When talking about <em>image filters</em> some misapprehensions can arise. To prevent this, the following section
     will shortly introduce our understanding of image filters.
 
 
