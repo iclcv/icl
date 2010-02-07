@@ -15,7 +15,7 @@ doc:
 
 alldoc:
 	@echo "creating combined documentation for all packages"
-	@(cd alldoc ; doxygen doxyfile.all)
+	@(cd alldoc ; doxygen doxyfile.all ; cp ../doc/tab_*.gif html/)
 
 cleandoc:
 	@echo "cleaning documentation recursively..."
