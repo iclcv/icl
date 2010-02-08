@@ -23,64 +23,59 @@ namespace icl{
     if(w<2 || h<2) return;
     // create region-image 
     m_tree->region_image.resize(image->getDim());
-    std::fill(m_tree->region_image.begin(),m_tree->region_image.end(),(icl::Region*)0);
     Region **rim = m_tree->region_image.data();
     for(unsigned int i=0;i<m_vecAllBlobData.size();++i){
-      Region *r = &m_vecBlobData[i];
-      const std::vector<ScanLine> &sls = m_vecAllBlobData[i].getScanLines();
+      Region *r = &m_vecAllBlobData[i];
+      const std::vector<ScanLine> &sls = r->getScanLines();
       for(unsigned int j=0;j<sls.size();++j){
         const ScanLine &sl = sls[j];
         int offs = sl.x+w*sl.y;
         std::fill(rim+offs,rim+offs+sl.len,r);
       }
     }
-    
+
     /// create neighbourhood tree
     RegionImage r(rim,w);
-    // upper left
-    for(int x=1;x<w;++x){
-      if(r(0,0)) r(0,0)->addNeighbour(0);
-    }
-    // upper right // needed for right column
-    for(int x=1;x<w;++x){
-      if(r(w-1,0)) r(w-1,0)->addNeighbour(0);
-    }
-    // lower left // needed for bottom row
-    for(int x=1;x<w;++x){
-      if(r(0,h-1)) r(0,h-1)->addNeighbour(0);
-    }
 
+    // upper left
+    r(0,0)->addNeighbour(0);
+
+
+    // upper right // needed for right column
+    r(w-1,0)->addNeighbour(0);
+    
+    // lower left // needed for bottom row
+    r(0,h-1)->addNeighbour(0);
+    
     // top & bottom row
     for(int x=1;x<w;++x){
       if(r(x-1,0) != r(x,0)){
-        if(r(x,0)) r(x,0)->addNeighbour(0);
+        r(x,0)->addNeighbour(0);
       }
       if(r(x-1,h-1) != r(x,h-1)){
-        if(r(x,h-1)) r(x,h-1)->addNeighbour(0);
+        r(x,h-1)->addNeighbour(0);
       }
     }
     // left & right columns
     for(int y=1;y<h;++y){
       if(r(0,y-1) != r(0,y)){
-        if(r(0,y)) r(0,y)->addNeighbour(0);
+        r(0,y)->addNeighbour(0);
       }
       if(r(w-1,y-1) != r(w-1,y)){
-        if(r(w-1,y)) r(w-1,y)->addNeighbour(0);
+        r(w-1,y)->addNeighbour(0);
       }
     }
-
     // remaining
     for(int y=1;y<h;++y){ // force row-major chaching
       for(int x=1;x<w;++x){
         Region *c = r(x,y);
-        if(!c) continue;
         Region *l = r(x-1,y);
         Region *u = r(x,y-1);
-        if(l && (c != l)){
+        if(c != l){
           c->addNeighbour(l);
           l->addNeighbour(c);
         }
-        if(u && (c != u)){
+        if(c != u){
           c->addNeighbour(u);
           u->addNeighbour(c);
         }
@@ -249,7 +244,7 @@ namespace icl{
       for(unsigned int i=0;i<m_vecParts.size();i++){
         if(m_vecParts[i]->top){
           const T &val = image(m_vecParts[i]->scanlines[0].x,m_vecParts[i]->scanlines[0].y,0);
-          m_vecAllBlobData.push_back(Region(m_vecParts[i],m_uiMaxSize,val,&image,&m_vecAllBlobData));
+          m_vecAllBlobData.push_back(Region(m_vecParts[i],image.getDim(),val,&image,&m_vecAllBlobData));
           unsigned int size = (unsigned int)m_vecAllBlobData.back().getSize();
           if(val >= m_dMinVal && val <= m_dMaxVal && size <= m_uiMaxSize && size >= m_uiMinSize){
             m_vecBlobData.push_back(m_vecAllBlobData.back());
