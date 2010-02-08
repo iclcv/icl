@@ -49,7 +49,6 @@ void init_grabber(){
 }
 
 const ImgBase *grab_image(){
-  
   const ImgBase *img = 0;
   //  const ImgBase *image = grabber.grab();
   if(!pa("-flip")){
@@ -71,6 +70,7 @@ const ImgBase *grab_image(){
   
   if(!pa("-clip")){
     return img;
+    
   }else{
     if(*pa("-clip")=="interactive"){
       throw ICLException("interactive clipmode is not yet implemented ...");
@@ -108,9 +108,8 @@ void send_app(){
   }
  
   while(first || !pa("-single-shot")){
-
     const ImgBase *grabbedImage = grab_image();
-    
+
     const ImgBase *ppImage = 0;
     if(pa("-pp") && *ppEnabled){
       static UnaryOp *pp = 0;
@@ -134,7 +133,6 @@ void send_app(){
     }else{
       ppImage = grabbedImage;
     }
-
     const ImgBase *normImage = 0;
     if(pa("-normalize")){
       static ImgBase *buf = 0;
@@ -234,6 +232,8 @@ int main(int n, char **ppc){
   if(!pa("-no-gui")){
     return ICLApp(n,ppc,"",init_gui,send_app).exec();
   }else{
+    static bool alwaysTrue = 1;
+    ppEnabled = &alwaysTrue;
     init_grabber();
     send_app();
   }
