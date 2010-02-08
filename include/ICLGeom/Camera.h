@@ -229,8 +229,17 @@ namespace icl {
     void setSamplingResolution(float x, float y) { m_mx = x; m_my = y; }
     void setSkew(float value) { m_skew = value; }
     void setRenderParams(const RenderParams &rp) { m_renderParams = rp; }
-   
-    /** @} */
+
+
+    /** @} @{ @name 3D-position estimation */
+
+    /// computes the 3D position of a n view from n cameras 
+    static Vec estimate_3D(const std::vector<Camera*> cams, 
+                           const std::vector<Point32f> &UVs,
+                           bool removeInvalidPoints=true);
+    
+    /** @}*/
+
     protected:
     static Mat createTransformationMatrix(const Vec &norm, const Vec &up, const Vec &pos);
     

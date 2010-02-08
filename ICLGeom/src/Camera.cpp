@@ -403,4 +403,73 @@ namespace icl {
   Vec Camera::estimate3DPosition(const Point32f &pixel, const PlaneEquation &plane) const throw (ICLException) {
     return getIntersection(getViewRay(pixel),plane);
   }
+
+
+  static Point32f to_normalized_viewport(const Point32f &p, const Camera &cam){
+    // {{{ open
+    Vec uv = cam.getViewportMatrixGL().inv() * Vec(p.x,p.y,0,1);
+    return Point32f(-uv[0],-uv[1]);
+  }
+  // }}}
+
+  static Vec estimate_3D_internal(const std::vector<Camera*> cams, 
+                                  const std::vector<Point32f> &UVs,
+                                  bool normalizedViewPort){
+    // {{{ open
+    ICLASSERT_RETURN_VAL(cams.size() > 1, 0.0);
+    int N = (int)cams.size();
+    DynMatrix<float> A(3,N*2);
+    DynMatrix<float> B(1,N*2);
+    
+    for(int i=0;i<N;++i){
+      const Camera &cam = *cams[i];
+      float lambda = cam.getFocalLength();
+      Mat T = cam.getCSTransformationMatrix();
+      FixedRowVector<float,3> x = T.part<0,0,3,1>(),
+      y = T.part<0,1,3,1>(),
+      z = T.part<0,2,3,1>();
+      FixedColVector<float,3> t = T.part<3,0,1,3>();
+      
+      // UVs[i] is in screen coordinates, so we have to re-transform it into normalized viewport coordinates
+        
+      Point32f uv = normalizedViewPort ? UVs[i] : to_normalized_viewport(UVs[i],cam);
+      float u = uv.x;
+      float v = uv.y;
+      
+      A.row(2*i+0) = DynMatrix<float>(3,1,(x*lambda - z*u).data());
+      A.row(2*i+1) = DynMatrix<float>(3,1,(y*lambda - z*v).data());
+      
+      B[2*i+0] = t[2]*u - lambda*t[0];  
+      B[2*i+1] = t[2]*v - lambda*t[1];  
+    }
+    
+    DynMatrix<float> p = A.pinv() * B;
+    
+    return Vec(p.begin());
+  }
+
+  // }}}
+
+  Vec Camera::estimate_3D(const std::vector<Camera*> cams, 
+                          const std::vector<Point32f> &UVs,
+                          bool removeInvalidPoints){
+    // {{{ open
+    ICLASSERT_RETURN_VAL(cams.size() == UVs.size(),0.0);
+    if(removeInvalidPoints){
+      std::vector<Camera*> camsOk;
+      std::vector<Point32f> uvsOk;
+      for(unsigned int i=0;i<cams.size();++i){
+        const Rect32f &vp = cams[i]->getRenderParams().viewport;
+        if(vp.contains(UVs[i].x,UVs[i].y)){
+          camsOk.push_back(cams[i]);
+          uvsOk.push_back(UVs[i]);
+        }
+      }
+      return estimate_3D_internal(camsOk,uvsOk,false);
+    }else{
+      return estimate_3D_internal(cams,UVs,false);
+    }
+  }
+  // }}}
+
 }

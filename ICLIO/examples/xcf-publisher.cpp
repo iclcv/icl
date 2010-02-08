@@ -142,7 +142,6 @@ void send_app(){
     }else{
       normImage = ppImage;
     }
-    
 
     p.publish(normImage);
     if(!pa("-no-gui")){
