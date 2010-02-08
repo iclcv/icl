@@ -4,33 +4,20 @@
     <meta http-equiv="Content-Language" content="de">
     <meta http-equiv="Content-Type"
           content="text/html; charset=windows-1252">
+    <link href="style.css" rel="stylesheet" type="text/css"/>
     <title>Menu</title>
     <base target="Inhalt">
   </head>
   <body>
-    <div align="center">
+    <div id="packageMenu "align="center" class="contents">
       <table border="0" 
              width="100%" 
              id="table1" 
-             bgcolor="#C0C0C0" 
              cellspacing="1" 
              cellpadding="0">
-        <tr>
-          <td>
-            <div align="center">
-              <table border="0" 
-                     width="100%" 
-                     id="table2" 
-                     bgcolor="#C0C0C0" 
-                     cellspacing="4" 
-                     cellpadding="0">
-                <tr>
-                  <td>
-                    <p align="center"><font color="#000080"><u><b>Main menu</b></u>
-                  </td>
-                </tr>
-                <!-- ICL_PROJECT_ENTRIES -->
-              </table>
-              <br>
+        <tr> <td align="center">packages </td> </tr>
+          <!-- ICL_PROJECT_ENTRIES -->
+      </table>
+      <br>
   </body>
 </html>

@@ -1,0 +1,60 @@
+body, table, div, p, dl {
+    font-family: Lucida Grande, Verdana, Geneva, Arial, sans-serif;
+    font-size: 14px; /* 12px*/
+    color: #444444;
+}
+
+div.contents {
+    -moz-border-radius-bottomleft:8px;
+    -moz-border-radius-bottomright:8px;
+    -moz-border-radius-topleft:8px;
+    -moz-border-radius-topright:8px;
+    border:1px solid #84B0C7;
+    margin:0;
+    padding:7px;
+    white-space:nowrap;
+    font-size: 10px;
+    color: FF0000;
+}
+
+a {
+    color: #548097;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+.contents a:visited {
+	color: #C48097;
+}
+
+a:hover {
+    background-color: #548097;
+    color: white;
+}
+
+.contents a:visited:hover {
+	color: white;
+        background-color: #C48097;
+}
+
+#headLine {
+    background-color: #EEEEEE;
+    font-size: 200%;
+    padding: 0;
+}
+
+
+table headLogo {
+    color: #444444;
+    font-size: 8px; !important
+}
+
+/* works */
+/*
+body {
+	background: white;
+	color: black;
+	margin-right: 20px;
+	margin-left: 20px;
+}
+*/

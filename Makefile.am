@@ -36,7 +36,8 @@ install-data-local:
 	${MKDIR_P} ${prefix}/doc
 	${MKDIR_P} ${prefix}/doc/ICL
 	${INSTALL_DATA} doc/*.html ${prefix}/doc/ICL
-	${INSTALL_DATA} doc/logo.jpg ${prefix}/doc/ICL
+	${INSTALL_DATA} doc/menuStyle.css ${prefix}/doc/ICL/style.css
+	${INSTALL_DATA} doc/logo.png ${prefix}/doc/ICL
 	${MKDIR_P} ${prefix}/lib
 	${MKDIR_P} ${prefix}/lib/pkgconfig
 	@for T in ${PACKAGES} icl ; do \
