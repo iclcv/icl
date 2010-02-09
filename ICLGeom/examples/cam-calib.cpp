@@ -310,8 +310,11 @@ struct CalibGrid {
     if(!inputDataReady) return Range32f::limits().maxVal;
     // create appropriate point sets
     std::vector<Point32f> imgPts;
-    std::transform(A.img.begin(),A.img.end(),back_inserter(imgPts),flip_points_xy(imageParams.getSize()));
-    std::transform(B.img.begin(),B.img.end(),back_inserter(imgPts),flip_points_xy(imageParams.getSize()));
+    //std::transform(A.img.begin(),A.img.end(),back_inserter(imgPts),flip_points_xy(imageParams.getSize()));
+    //std::transform(B.img.begin(),B.img.end(),back_inserter(imgPts),flip_points_xy(imageParams.getSize()));
+    std::copy(A.img.begin(),A.img.end(),back_inserter(imgPts));
+    std::copy(B.img.begin(),B.img.end(),back_inserter(imgPts));
+
     std::vector<Vec> worldPts;
     std::transform(A.world.begin(),A.world.end(),back_inserter(worldPts),vec3to4);
     std::transform(B.world.begin(),B.world.end(),back_inserter(worldPts),vec3to4);

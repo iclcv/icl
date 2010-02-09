@@ -56,6 +56,18 @@ namespace icl {
     // for OpenGL, the camera looks in negative z direction
     return createTransformationMatrix(-m_norm, m_up, m_pos);
   }
+  
+  FixedMatrix<icl32f,4,3> Camera::getQMatrix() const {
+    Mat K = getProjectionMatrix();
+    Mat CS = getCSTransformationMatrix();
+    
+    FixedMatrix<icl32f,4,3> cs(CS.begin());
+    FixedMatrix<icl32f,3,3> k( K(0,0), K(1,0), K(2,0),
+                               K(0,1), K(1,1), K(2,1),
+                               K(0,3), K(1,3), K(2,3) );
+    return k*cs;
+  }
+  
 
   Mat Camera::getProjectionMatrix() const {
     return Mat(m_f * m_mx,   m_skew, m_px, 0,
@@ -73,8 +85,8 @@ namespace icl {
     // Because OpenGL will automatically flip the y-coordinates in the end,
     // we need switch the sign of the skew and py components of the matrix.
     // Also we need switch the sign back when doing the projection by hand.
-    return Mat( m_f*m_mx/w2,     -m_skew/w2,   (m_px-w2)/w2,  0,
-                          0,     m_f*m_my/h2, -(m_py-h2)/h2,  0,
+    return Mat( -m_f*m_mx/w2,     m_skew/w2,  -(m_px-w2)/w2,  0,
+                          0,     -m_f*m_my/h2, (m_py-h2)/h2,  0,
                           0,               0,             A,  B,
                           0,               0,            -1,  0);
   }
@@ -95,8 +107,8 @@ namespace icl {
     Mat T = getCSTransformationMatrix();
     Mat P = getProjectionMatrix();
 
-#warning "testing project fix here!"
-    P(1,0) *= -1; P(2,1) *= -1;
+    //#warning "testing project fix here!"
+    //P(1,0) *= -1; P(2,1) *= -1;
     
     Vec xi = homogenize(P*T*Xw);
 
@@ -109,8 +121,8 @@ namespace icl {
     Mat T = getCSTransformationMatrix();
     Mat P = getProjectionMatrix();
 
-#warning "testing project fix here!"
-    P(1,0) *= -1; P(2,1) *= -1;
+    //#warning "testing project fix here!"
+    //P(1,0) *= -1; P(2,1) *= -1;
 
     Mat M = P*T;
     for(unsigned int i=0;i<Xws.size();++i){
@@ -472,4 +484,86 @@ namespace icl {
   }
   // }}}
 
+  /// returns the tensor obtained by contraction of v with epsilon tensor.
+  static inline FixedMatrix<icl32f,3,3> contr_eps(const FixedMatrix<icl32f,1,3> &v){
+    return FixedMatrix<icl32f,3,3>(0, v[2], -v[1],
+                                   -v[2], 0, v[0],
+                                   v[1], -v[0], 0);
+  }
+  
+  template<class ForwardIterator>
+  static bool all_negative(ForwardIterator begin, ForwardIterator end){
+    while(begin != end){
+      if(*begin++ > 0) return false;
+    }
+    return true;
+  }
+  template<class ForwardIterator>
+  static bool all_positive(ForwardIterator begin, ForwardIterator end){
+    while(begin != end){
+      if(*begin++ < 0) return false;
+    }
+    return true;
+  }
+
+  /// multiview 3D point estimation using svd-based linear optimization 
+  Vec Camera::estimate_3D_svd(const std::vector<Camera*> cams, 
+                                const std::vector<Point32f> &UVs){
+    int K = (int)cams.size();
+    ICLASSERT_THROW(K>1,ICLException("estimate_3D_svd needs at least 2 views"));
+    ICLASSERT_THROW((int)UVs.size() == (int)cams.size(),
+                    ICLException("estimate_3D_svd got more or less cameras than points"));
+    
+    std::vector<FixedMatrix<icl32f,4,3> > P(K);
+    std::vector<FixedMatrix<icl32f,1,2> > u(K);
+
+    for(int i=0;i<K;++i) { 
+      P[i] = cams[i]->getQMatrix();
+      u[i] = FixedMatrix<icl32f,1,2>(UVs[i].x,UVs[i].y); 
+    }
+    
+#if 0
+    // this does not work for some reason!, however it works without!
+    for(int k=0;k<K;++k){
+      Mat33 H( 2.0/imageSizes[k].width,  0, -1,
+               0, 2.0/imageSizes[k].height, -1,
+               0, 0,                         1);
+      P[k] = H*P[k];
+      u[k] = Mat22(H.part<0,0,2,2>()) * u[k] + Vec2(H.part<2,2,1,2>());
+    }
+#endif
+    
+    DynMatrix<float> A(4,K*3);
+    for(int k=0;k<K;++k){
+      FixedMatrix<icl32f,4,3> m = contr_eps(FixedMatrix<icl32f,1,3>(u[k][0],u[k][1],1))*P[k];
+      for(unsigned int y=0;y<3;++y){
+        for(unsigned int x=0;x<4;++x){
+          A(x,k*3+y) = m(x,y);
+        }
+      }
+    }
+    
+    DynMatrix<float> _U,_s,V;
+    svd_dyn(A,_U,_s,V);
+    
+    // search eigenvector to lowest eigenvalue
+    DynMatrix<float> X(1,V.rows()); 
+    X = V.col(V.cols()-1);
+    
+    // create matrix with all 3rd rows of the camera matrices
+    DynMatrix<float> M(4,K);
+    for(int k=0;k<K;++k){
+      std::copy(P[k].row_begin(2),P[k].row_end(2),M.row_begin(k));
+    }
+    
+    DynMatrix<float> s = M*X;
+    if(all_negative(s.begin(),s.end())){
+      return homogenize(-Vec(X.begin()));
+    }else if(all_positive(s.begin(),s.end())){
+      return homogenize(Vec(X.begin()));
+    }else{
+      throw ICLException("estimate_3D_svd: Inconsistent orientation of point match"); 
+      return Vec(0,0,0,1);
+    }
+  }
 }
