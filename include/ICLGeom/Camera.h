@@ -1,5 +1,5 @@
-#ifndef ICL_CAMERA_H
-#define ICL_CAMERA_H
+#ifndef ICL_MY_CAMERA_H
+#define ICL_MY_CAMERA_H
 
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point32f.h>
@@ -192,6 +192,9 @@ namespace icl {
     /// get the projection matrix as expected by OpenGL
     Mat getProjectionMatrixGL() const;
     Mat getViewportMatrixGL() const;
+
+    /// returns the common 4x3 camera matrix
+    FixedMatrix<icl32f,4,3>  getQMatrix() const;
     
     /// translates the current position vector
     inline void translate(const Vec &d) { m_pos += d; }
@@ -237,6 +240,10 @@ namespace icl {
     static Vec estimate_3D(const std::vector<Camera*> cams, 
                            const std::vector<Point32f> &UVs,
                            bool removeInvalidPoints=true);
+
+    /// multiview 3D point estimation using svd-based linear optimization 
+    static Vec estimate_3D_svd(const std::vector<Camera*> cams, 
+                               const std::vector<Point32f> &UVs);
     
     /** @}*/
 
