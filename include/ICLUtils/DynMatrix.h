@@ -51,6 +51,13 @@ namespace icl{
   */
   template<class T>
   struct DynMatrix{
+
+    /** \cond */
+    class DynMatrixColumn;
+    /** \endcond*/
+    
+    /// creates a column matrix from given column of other matrix
+    DynMatrix(const DynMatrixColumn &column);
     
     /// Default empty constructor creates a null-matrix
     inline DynMatrix():m_rows(0),m_cols(0),m_data(0),m_ownData(true){}
@@ -854,6 +861,13 @@ namespace icl{
     T *m_data;
     bool m_ownData;
   };
+
+  /// creates a dyn-matrix from given matrix column
+  template<class T>
+  DynMatrix<T>::DynMatrix(const DynMatrix<T>::DynMatrixColumn &column):
+  m_rows(column.dim()),m_cols(1),m_data(new T[column.dim()]),m_ownData(true){
+    std::copy(column.begin(),column.end(),begin());
+  }
 
   /// ostream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
   template<class T>

@@ -433,52 +433,50 @@ namespace icl{
 
   /** @{ @name SVD functions (currently only with IPP-support)*/
 #ifdef HAVE_IPP
-  /** \cond */
-  // internal ipp wrapper template
-  inline void svd_ipp_64f(const DynMatrix<icl64f> &A, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &V) {
-    int niter = A.rows();
-    while (true) {
-      IppStatus status = ippsSVDSort_64f_D2(A.begin(), U.begin(), A.rows(), s.begin(), V.begin(), A.cols(), A.cols(), niter);
-      switch (status) {
-        case ippStsNoErr: // Indicates no error.
-          return;
-        case ippStsSVDCnvgErr: // indicates that the algorithm did not converge in niter steps.
-          niter *= 2;
-          DEBUG_LOG("SVD: Increasing step to " << niter);
-          break;
-        default: 
-          throw ICLException(ippGetStatusString(status));
-      }
-    }
-  }
-  /** \endcond */
+  /// IPP based svd implementation (only available if Intel IPP Support is enabled)
+  /** <b>don't use this function directly: please use icl::svd_dyn instead </b> */
+  void svd_ipp_64f(const DynMatrix<icl64f> &A, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &V) throw (ICLException);
+#endif
+
+  /// C++ fallback implementation for computing SVD
+  /** The sourcecode for the internal implementation was found here:
+      http://www.crbond.com/download/misc/svd.c \n
+      <b>don't use this function directly: please use icl::svd_dyn instead</b>
+  */
+  void svd_cpp_64f(const DynMatrix<icl64f> &M, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &Vt) throw (ICLException);
   
-  
-  /// SVD function - decomposes A into USV' (IPP only)
+  /// SVD function - decomposes A into USV'
   /** Internaly, this function will always use double values. Other types are converted internally.*/
   template<class T>
-  inline void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &s, DynMatrix<T> &V) {
+  inline void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &s, DynMatrix<T> &V) throw (ICLException){
     U.setBounds(A.cols(), A.rows());
     V.setBounds(A.cols(), A.cols());
     s.setBounds(1,A.cols());
     DynMatrix<icl64f> A64f(A.cols(),A.rows()),U64f(U.cols(),U.rows()),s64f(1,s.rows()),V64f(V.cols(),V.rows());
     std::copy(A.begin(),A.end(),A64f.begin());
+#ifdef HAVE_IPP
     svd_ipp_64f(A64f,U64f,s64f,V64f);
+#else
+    svd_cpp_64f(A64f,U64f,s64f,V64f);
+#endif
     std::copy(U64f.begin(),U64f.end(),U.begin());
     std::copy(V64f.begin(),V64f.end(),V.begin());
     std::copy(s64f.begin(),s64f.end(),s.begin());
   }
   
   /** \cond */
-  // SVD specialization for direct IPP call
+  // SVD specialization for direct call to 64f function in order to avoid unnecessary double to double conversion before hand
   template<> inline void svd_dyn<icl64f>(const DynMatrix<icl64f> &A, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &V) {
     U.setBounds(A.cols(), A.rows());
     V.setBounds(A.cols(), A.cols());
     s.setBounds(1,A.cols());
+#ifdef HAVE_IPP
     svd_ipp_64f(A,U,s,V);
+#else
+    svd_cpp_64f(A64f,U64f,s64f,V64f);
+#endif
   }
   /** \endcond */
-#endif
 
   /** @}*/
 
