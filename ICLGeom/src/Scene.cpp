@@ -30,22 +30,19 @@ namespace icl{
     int cameraIndex;
     std::vector<Vec> verticesPushed;
     
-    static const float *def_params(){
-      static float p[6]={0,0,-5,6,5,10};
-      return p;
-    }
-    
-    CameraObject(Scene *parent, int cameraIndex):
-      SceneObject("cuboid",def_params()),
+    CameraObject(Scene *parent, int cameraIndex, float camSize):
+      SceneObject("cuboid",FixedColVector<float,6>(0,0,-5*camSize,6*camSize,5*camSize,10*camSize).data()),
       scene(parent),cameraIndex(cameraIndex){
-
+      
+      float &S = camSize;
+      
       static float xs[8] = {-1,1,2,2,1,-1,-2,-2};
       static float ys[8] = {2,2,1,-1,-2,-2,-1,1};
       for(int i=0;i<8;++i){
-        addVertex(Vec(xs[i],ys[i],3,1));
+        addVertex(Vec(S*xs[i],S*ys[i],S*3,1));
       }
       for(int i=0;i<8;++i){
-        addVertex(Vec(xs[i]*0.6,ys[i]*0.6,0,1));
+        addVertex(Vec(S*xs[i]*0.6,S*ys[i]*0.6,0,1));
         addLine(i+8,i+16);
         if(i)addQuad(i+8,i+16,i+15,i+7);
         else addQuad(8,16,23,15);
@@ -54,8 +51,8 @@ namespace icl{
       setColor(Primitive::quad,GeomColor(255,0,0,255));
       
       addVertex(Vec(0,0,-0.1,1)); // center: 24
-      addVertex(Vec(4,0,-0.1,1)); // x-axis: 25
-      addVertex(Vec(0,4,-0.1,1)); // y-axis: 26
+      addVertex(Vec(S*5,0,-0.1,1)); // x-axis: 25
+      addVertex(Vec(0,S*5,-0.1,1)); // y-axis: 26
       
       addLine(24,25,GeomColor(255,0,0,255));
       addLine(24,26,GeomColor(0,255,0,255));
@@ -65,10 +62,10 @@ namespace icl{
 
       const std::string &name = parent->getCamera(cameraIndex).getName();
       if(name != ""){
-        addVertex(Vec(3.1, 1.5, -0.1 ,1));  // 27
-        addVertex(Vec(3.1, 1.5, -9.8 ,1));  // 28
-        addVertex(Vec(3.1,-1.5, -9.8 ,1));  // 29
-        addVertex(Vec(3.1,-1.5, -0.1 ,1));  // 30
+        addVertex(Vec(3.1, 1.5, -0.1 ,1/S)*S);  // 27
+        addVertex(Vec(3.1, 1.5, -9.8 ,1/S)*S);  // 28
+        addVertex(Vec(3.1,-1.5, -9.8 ,1/S)*S);  // 29
+        addVertex(Vec(3.1,-1.5, -0.1 ,1/S)*S);  // 30
 
         ImgQ image(Size(200,30),3);
         std::fill(image.begin(0),image.end(0),255);
@@ -277,9 +274,9 @@ namespace icl{
     return *this;
   }
   
-  void Scene::addCamera(const Camera &cam){
+  void Scene::addCamera(const Camera &cam, float visSize){
     m_cameras.push_back(cam);
-    m_cameraObjects.push_back(new CameraObject(this,m_cameraObjects.size()));
+    m_cameraObjects.push_back(new CameraObject(this,m_cameraObjects.size(), visSize));
   }
   void Scene::removeCamera(int index){
     ICLASSERT_RETURN(index > 0 && index <(int) m_cameras.size());
