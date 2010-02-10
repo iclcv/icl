@@ -37,8 +37,8 @@ if HAVE_LIBDC_COND
 bin_PROGRAMS+= \
 icl-dcclearisochannels \
 icl-dcdeviceinfo \
-icl-camera-param-io
-
+icl-camera-param-io \
+icl-reset-dc-bus
 
 # explicit sources, ldflags and cxxflags
 icl_camera_param_io_SOURCES=../examples/camera-param-io.cpp
@@ -52,6 +52,10 @@ icl_dcclearisochannels_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 icl_dcdeviceinfo_SOURCES=../examples/dcdeviceinfo.cpp
 icl_dcdeviceinfo_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
 icl_dcdeviceinfo_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
+
+icl_reset_dc_bus_SOURCES=../examples/reset-dc-bus.cpp
+icl_reset_dc_bus_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_reset_dc_bus_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 if HAVE_QT_COND
 bin_PROGRAMS+= \

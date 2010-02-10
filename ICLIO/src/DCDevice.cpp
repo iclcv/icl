@@ -240,29 +240,43 @@ namespace icl{
     d = dc1394_new ();
     err=dc1394_camera_enumerate (d, &list);
     DC1394_ERR(err,"Failed to enumerate cameras");
-    
-    if (list->num == 0) {
-      dc1394_log_error("No cameras found");
-      return;
-    }
-    
-    camera = dc1394_camera_new (d, list->ids[0].guid);
-    if (!camera) {
-      dc1394_log_error("Failed to initialize camera with guid %llx", list->ids[0].guid);
-      return;
-    }
-    dc1394_camera_free_list (list);
+    int num = list->num;
+    dc1394_camera_free_list (list);    
     
     if(verbose){
-      printf("Using camera with GUID %llx\n", camera->guid);
-      printf ("Reseting bus...\n");
+      std::cout << "found " << num << " cameras" << std::endl;
+}
+    
+    for(int i=0;i<num;++i){
+
+      err=dc1394_camera_enumerate (d, &list);
+      DC1394_ERR(err,"Failed to enumerate cameras");
+      
+      if (i >= (int)list->num) {
+        ERROR_LOG("cameras have disappeared during bus reset procedure");
+        return;
+      }
+      if(verbose){
+        std::cout << "resetting bus for camera " << i << " ... " << std::flush;
+      }
+
+      
+      camera = dc1394_camera_new (d, list->ids[i].guid);
+      if (!camera) {
+        dc1394_log_error("Failed to initialize camera with guid %llx", list->ids[0].guid);
+        return;
+      }
+      if(verbose){
+        std::cout << "(GUID " << camera->guid << ") ... done" << std::endl; 
+      }
+      ::dc1394_reset_bus (camera);
+      dc1394_camera_free (camera);
+      dc1394_camera_free_list (list);    
     }
     
-    ::dc1394_reset_bus (camera);
-    
-    dc1394_camera_free (camera);
+   
     dc1394_free (d);
-    
+
     Thread::msleep(1000);
   }
 
