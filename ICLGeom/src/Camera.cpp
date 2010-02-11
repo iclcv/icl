@@ -425,48 +425,49 @@ namespace icl {
   // }}}
 
   static Vec estimate_3D_internal(const std::vector<Camera*> cams, 
-                                  const std::vector<Point32f> &UVs,
-                                  bool normalizedViewPort){
+                                  const std::vector<Point32f> &ps) throw (ICLException){
     // {{{ open
-    ICLASSERT_RETURN_VAL(cams.size() > 1, 0.0);
-    int N = (int)cams.size();
-    DynMatrix<float> A(3,N*2);
-    DynMatrix<float> B(1,N*2);
+    int K = (int)cams.size();
+    ICLASSERT_THROW(K > 1,ICLException("Camera::estimate_3D_internal: 3D point estimation needs at least 2 views"));
+
+    DynMatrix<float> A(3,2*K), B(1,2*K);
     
-    for(int i=0;i<N;++i){
-      const Camera &cam = *cams[i];
-      float lambda = cam.getFocalLength();
-      Mat T = cam.getCSTransformationMatrix();
-      FixedRowVector<float,3> x = T.part<0,0,3,1>(),
-      y = T.part<0,1,3,1>(),
-      z = T.part<0,2,3,1>();
-      FixedColVector<float,3> t = T.part<3,0,1,3>();
+    for(int i=0;i<K;++i){
+      const float &u = ps[i].x;
+      const float &v = ps[i].y;
+      FixedMatrix<float,4,3> Q = cams[i]->getQMatrix();
+      FixedRowVector<float,3> x = Q.part<0,0,3,1>();
+      FixedRowVector<float,3> y = Q.part<0,1,3,1>();
+      FixedRowVector<float,3> z = Q.part<0,2,3,1>();
+      FixedColVector<float,3> t = Q.part<3,0,1,3>();
       
-      // UVs[i] is in screen coordinates, so we have to re-transform it into normalized viewport coordinates
-        
-      Point32f uv = normalizedViewPort ? UVs[i] : to_normalized_viewport(UVs[i],cam);
-      float u = uv.x;
-      float v = uv.y;
+      FixedRowVector<float,3> a1 = z*u - x;
+      FixedRowVector<float,3> a2 = z*v - y;
       
-      A.row(2*i+0) = DynMatrix<float>(3,1,(x*lambda - z*u).data());
-      A.row(2*i+1) = DynMatrix<float>(3,1,(y*lambda - z*v).data());
+      std::copy(a1.begin(),a1.end(),A.row_begin(2*i)); 
+      std::copy(a2.begin(),a2.end(),A.row_begin(2*i+1)); 
       
-      B[2*i+0] = t[2]*u - lambda*t[0];  
-      B[2*i+1] = t[2]*v - lambda*t[1];  
+      B[2*i]   = t[0]-u*t[2];
+      B[2*i+1] = t[1]-v*t[2];
     }
     
-    DynMatrix<float> p = A.pinv() * B;
+    try{
+      DynMatrix<float> pEst = A.pinv() * B;
+      return Vec(pEst[0],pEst[1],pEst[2],1);
+    }catch(const ICLException &ex){
+      throw ICLException(str("Camera::estimate_3D_internal: unable to solve linear equation (")+ex.what()+")");
+    }
     
-    return Vec(p.begin());
+    return Vec(0,0,0,1);
   }
 
   // }}}
 
   Vec Camera::estimate_3D(const std::vector<Camera*> cams, 
                           const std::vector<Point32f> &UVs,
-                          bool removeInvalidPoints){
+                          bool removeInvalidPoints) throw (ICLException){
     // {{{ open
-    ICLASSERT_RETURN_VAL(cams.size() == UVs.size(),0.0);
+    ICLASSERT_THROW(cams.size() == UVs.size(),ICLException("Camera::estimate_3D: given camera count and point count differs"));
     if(removeInvalidPoints){
       std::vector<Camera*> camsOk;
       std::vector<Point32f> uvsOk;
@@ -477,9 +478,9 @@ namespace icl {
           uvsOk.push_back(UVs[i]);
         }
       }
-      return estimate_3D_internal(camsOk,uvsOk,false);
+      return estimate_3D_internal(camsOk,uvsOk);
     }else{
-      return estimate_3D_internal(cams,UVs,false);
+      return estimate_3D_internal(cams,UVs);
     }
   }
   // }}}

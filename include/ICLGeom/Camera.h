@@ -237,11 +237,91 @@ namespace icl {
     /** @} @{ @name 3D-position estimation */
 
     /// computes the 3D position of a n view from n cameras 
+    /** @param cams list of cameras 
+        @param UVs list of image points (in image coordinates)
+        @param removeInvalidPoints if this flag is set to true,
+               all given points are checked to be within the cameras
+               viewport. If not, these points are removed internally.
+        
+        <h3> Method: </h3>
+        
+        This function uses a standard linear approach using a pseudo-inverse to
+        solve the problem in a "least-square"-manner:
+
+        The camera is essentially represented by the 3x4-Q-Matrix, which can be
+        obtained using icl::Camera::getQMatrix() const. Q is defined as follows:
+
+        <pre>
+                    | -- x --  tx |
+        Q = [R|t] = | -- y --  ty |
+                    | -- z --  tz |
+        </pre>
+        
+        The camera projection is trivial now. For a given projected point [u,v]'
+        (in image coordinates) and a position in the world Pw (homogeneous):
+
+        <pre>
+        [u,v,1*]' = hom( Q Pw )      
+        </pre>
+
+        Where '1*' becomes a real 1.0 just because of the homogenization step 
+        using hom(). Component-wise, this can be re-written as:
+        
+        <pre>
+        u  = x Pw + tx
+        v  = y Pw + ty
+        1* = z Pw + tz
+        </pre>
+        
+        In order to ensure, '1*' becomes a real 1.0, the upper two equations
+        have to be devided by (z Pw + tz), which provides us the following two
+        equations:
+        
+        <pre>
+        u = (x Pw + tx) / (z Pw + tz)
+        v = (y Pw + ty) / (z Pw + tz)
+        </pre>
+        
+        These equations have to be reorganized so that Pw can be factored out:
+
+        <pre>
+        (u z - x) Pw = tx - u tz
+        (v z - y) Pw = ty - v tz
+        </pre>
+
+        Now we can write this in matrix notation again:
+        
+        <pre>
+        A Pw = B      ,where
+    
+        
+        A = | u z - x |
+            | v z - y |
+
+        B = | tx - u tz |
+            | ty - v tz |
+        
+        </pre>
+
+        The obviously under-determined equation-system above uses only a single camera. If
+        we put the results from several views together into a single equation system, it
+        becomes unambigoulsly solvable using a pseudo-inverse approach:
+        
+        <pre>
+        | A1 |      | B1 |             | A1 |+ | B1 |
+        | A2 | Pw = | B2 |    => Pw =  | A2 |  | B2 |
+        |....|      |....|             |....|  |....|
+        </pre>
+        
+        where 'A+' means the pseudo-inverse of A
+    */
     static Vec estimate_3D(const std::vector<Camera*> cams, 
                            const std::vector<Point32f> &UVs,
-                           bool removeInvalidPoints=true);
+                           bool removeInvalidPoints=false) throw (ICLException);
 
-    /// multiview 3D point estimation using svd-based linear optimization 
+    /// multiview 3D point estimation using svd-based linear optimization (should not be used)
+    /** This functions seems to provide false results for more than 2 views:
+        use estimate_3D instead*/
     static Vec estimate_3D_svd(const std::vector<Camera*> cams, 
                                const std::vector<Point32f> &UVs);
     
