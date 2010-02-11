@@ -242,5 +242,5 @@ int main(int n, char **ppc){
   ("-i","defines input device and parameters")
   ("-s","defines image size to use")
   ("-r","if given, the dc-bus is resetted automatically before use");
-  return ICLApp(n,ppc,"[m]-input|-i(device|device-params) -size|-s(Size) -reset|-r",init,run).exec();
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params) -size|-s(Size=VGA) -reset|-r",init,run).exec();
 }
