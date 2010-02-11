@@ -64,8 +64,8 @@ namespace icl{
     FixedMatrix<T,4,4> m;
     get_3x3_rot_data<T,true>(rx,ry,rz,m.data());
     m(3,0) = dx;
-    m(3,1) = dx;
-    m(3,2) = dx;
+    m(3,1) = dy;
+    m(3,2) = dz;
     m(3,3) = 1;
     
     m(0,3) = v0;
