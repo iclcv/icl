@@ -1,5 +1,6 @@
 #include <ICLIO/VideoGrabber.h>
 
+#undef  HAVE_CONFIG_H // xineutils.h tries to include its own config.h
 #define XINE_ENABLE_EXPERIMENTAL_FEATURES
 #include <xine.h>
 #include <xine/xineutils.h>
@@ -10,6 +11,7 @@
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Mutex.h>
+
 namespace icl{
 
   struct VideoGrabber::XineHandle{
