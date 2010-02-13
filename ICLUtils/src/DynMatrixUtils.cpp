@@ -36,8 +36,6 @@
    ICLASSERT_THROW( m1.rows() == m2.rows(), IncompatibleMatrixDimensionException(__FUNCTION__) )
 
 
-// #undef HAVE_IPP oops
-
 namespace icl{
 
 #ifdef HAVE_IPP
@@ -1348,7 +1346,7 @@ template<class T, typename func>
     }
   }
 
-  void svd_dyn_cpp(const DynMatrix<double> &M, DynMatrix<double> &U, DynMatrix<double> &s, DynMatrix<double> &Vt) throw (ICLException){
+  void svd_cpp_64f(const DynMatrix<double> &M, DynMatrix<double> &U, DynMatrix<double> &s, DynMatrix<double> &Vt) throw (ICLException){
     U.setBounds(M.cols(),M.rows());
     Vt.setBounds(M.cols(),M.cols());
     s.setBounds(1,M.cols());
@@ -1381,6 +1379,7 @@ template<class T, typename func>
     delete [] _s;
   } 
 
+#ifdef HAVE_IPP
   void svd_ipp_64f(const DynMatrix<icl64f> &A, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &V) throw (ICLException){
     int niter = A.rows();
     while (true) {
@@ -1397,11 +1396,7 @@ template<class T, typename func>
       }
     }
   }
-
+#endif // HAVE_IPP
 
 
 }
-
-
-
-
