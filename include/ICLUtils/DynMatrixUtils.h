@@ -473,7 +473,7 @@ namespace icl{
 #ifdef HAVE_IPP
     svd_ipp_64f(A,U,s,V);
 #else
-    svd_cpp_64f(A64f,U64f,s64f,V64f);
+    svd_cpp_64f(A,U,s,V);
 #endif
   }
   /** \endcond */
