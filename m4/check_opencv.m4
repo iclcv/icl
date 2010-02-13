@@ -13,9 +13,9 @@ AC_ARG_WITH([OPENCV],
         AC_CHECK_HEADER([cv.h],[],[HAVE_OPENCV=FALSE])
         AC_CHECK_HEADER([cvaux.h],[],[HAVE_OPENCV=FALSE])
         AC_CHECK_HEADER([cxcore.h],[],[HAVE_OPENCV=FALSE])
-        AC_CHECK_LIB([cv],[cvSmooth],[],[HAVE_LIBDC=FALSE])
-        AC_CHECK_LIB([cvaux],[cvSegmentImage],[],[HAVE_LIBDC=FALSE])
-        AC_CHECK_LIB([cxcore],[cvAlloc],[],[HAVE_LIBDC=FALSE])
+        AC_CHECK_LIB([cv],[cvSmooth],[],[HAVE_OPENCV=FALSE])
+        AC_CHECK_LIB([cvaux],[cvSegmentImage],[],[HAVE_OPENCV=FALSE])
+        AC_CHECK_LIB([cxcore],[cvAlloc],[],[HAVE_OPENCV=FALSE])
 
         ICL_POP_FLAG_VARS
 
