@@ -84,7 +84,7 @@ struct RegionContainsPoint{
 
 void run(){
   static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredSize(Size::VGA);
+  g.setDesiredSize(pa("-s"));
   g.setIgnoreDesiredParams(false);
   g.setDesiredFormat(formatGray);
 
@@ -249,5 +249,6 @@ void run(){
 
 int main(int n, char **ppc){
   paex("-input","define device parameters (e.g. -d dc 0 or -d file image/*.ppm)");
-  return ICLApp(n,ppc,"-input|-i(device,device-params)",init,run).exec();
+  return ICLApp(n,ppc,"-size|-s(size=VGA) -input|-i(device,device-params)",
+                init,run).exec();
 }
