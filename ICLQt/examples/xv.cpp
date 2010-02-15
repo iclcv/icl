@@ -33,7 +33,6 @@ int main (int n, char **ppc){
   
     try{
       image = load(imageName);
-      SHOW(image);
       if(pa("-delete")){
         if(imageName.length()){
           system((string("rm -rf ")+imageName).c_str());
