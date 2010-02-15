@@ -18,21 +18,26 @@ namespace icl{
   };
   
   void RegionDetector::createTree(const ImgBase *image){
-    const int w = image->getWidth();
-    const int h = image->getHeight();
+    const Rect &roi = image->getROI();
+    const int w = roi.width;
+    const int h = roi.height;
+    const int rx = roi.x;
+    const int ry = roi.y;
+    
     if(w<2 || h<2) return;
     // create region-image 
-    m_tree->region_image.resize(image->getDim());
+    m_tree->region_image.resize(w*h);
     Region **rim = m_tree->region_image.data();
     for(unsigned int i=0;i<m_vecAllBlobData.size();++i){
       Region *r = &m_vecAllBlobData[i];
       const std::vector<ScanLine> &sls = r->getScanLines();
       for(unsigned int j=0;j<sls.size();++j){
         const ScanLine &sl = sls[j];
-        int offs = sl.x+w*sl.y;
+        int offs = sl.x-rx +w*(sl.y-ry);
         std::fill(rim+offs,rim+offs+sl.len,r);
       }
     }
+
 
     /// create neighbourhood tree
     RegionImage r(rim,w);
