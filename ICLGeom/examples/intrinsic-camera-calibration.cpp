@@ -87,7 +87,7 @@ void vis_som(SOM2D  &som, int gridW, int gridH){
   w.color(255,0,0,255);
   for(int x=0;x<gridW;++x){
     for(int y=0;y<gridH;++y){
-      float *p = som.getNeuron(x,y).prototype;
+      const float *p = som.getNeuron(x,y).prototype.get();
       ps(x,y,0) = p[0];
       ps(x,y,1) = p[1];
     }
@@ -124,7 +124,7 @@ std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW,
   SOM2D som(2,gridW,gridH,initBounds,0.5,0.5);
   for(int x=0;x<gridW;++x){
     for(int y=0;y<gridH;++y){
-      float *p = som.getNeuron(x,y).prototype;
+      float *p = const_cast<float*>(som.getNeuron(x,y).prototype.get());
       p[0] = mx * x + b;
       p[1] = my * y + b;
     }
@@ -156,7 +156,7 @@ std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW,
       const Point &p = points[i];
       buf[0] = p.x;
       buf[1] = p.y;
-      const float *g = som.getWinner(buf).gridpos;
+      const float *g = som.getWinner(buf).gridpos.get();
       int x = ::round(g[0]);
       int y = ::round(g[1]);
       int idx = x + gridW * y;
