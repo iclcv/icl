@@ -31,57 +31,13 @@ namespace icl{
 
   }
   
-  
-  SOM::Neuron::Neuron():
+ 
+  SOM::Neuron::Neuron(SOM::Neuron::vector_type gridpos,SOM::Neuron::vector_type prototype,unsigned int griddim, unsigned int datadim):
     // {{{ open
-
-    gridpos(0),prototype(0),griddim(0),datadim(0){}
-
-  // }}}
-  SOM::Neuron::Neuron(float *gridpos,float *prototype,unsigned int griddim, unsigned int datadim, bool deepCopyData):
-    // {{{ open
-      
-    gridpos(deepCopyData ? new float[griddim] : gridpos),
-    prototype(deepCopyData ? new float [datadim] :prototype),
-    griddim(griddim),datadim(datadim){
-    
-    if(deepCopyData){
-      memcpy(this->gridpos,gridpos,griddim*sizeof(float));
-      memcpy(this->prototype,prototype,datadim*sizeof(float));
-    }
+    gridpos(gridpos),prototype(prototype),griddim(griddim),datadim(datadim){
   }
 
   // }}}
-  SOM::Neuron::~Neuron(){
-    // {{{ open
-
-    ICL_DELETE_ARRAY( gridpos );
-    ICL_DELETE_ARRAY( prototype );
-  }
-
-  // }}}
-  SOM::Neuron::Neuron(const Neuron &other):gridpos(0),prototype(0){
-    // {{{ open
-
-    (*this)=other;
-  }
-
-  // }}}
-  SOM::Neuron &SOM::Neuron::operator=(const Neuron &other){
-    // {{{ open
-
-    griddim = other.griddim;
-    datadim = other.datadim;
-    gridpos = gridpos ? gridpos : new float[other.griddim];
-    prototype = prototype ? prototype : new float[other.datadim];
-    memcpy(gridpos,other.gridpos,griddim*sizeof(float));
-    memcpy(prototype,other.prototype,datadim*sizeof(float));
-    return *this;
-  }
-
-  // }}}
-  
-
 
   SOM::SOM(unsigned int dataDim, const std::vector<unsigned int> &dims,const std::vector<Range<float> > &prototypeBounds, float epsilon, float sigma){
     // {{{ open
@@ -136,7 +92,8 @@ namespace icl{
   }
 
   // }}}
-  SOM::~SOM(){
+ 
+    SOM::~SOM(){
     // {{{ open
 
     m_uiDataDim = 0;
@@ -154,7 +111,7 @@ namespace icl{
     for(unsigned int i=0;i<m_vecNeurons.size();++i){
       Neuron &r = m_vecNeurons[i];
       for(unsigned int d=0;d<m_uiDataDim;++d){
-        r.prototype[d] += m_fEpsilon * som::def_h_func(s.gridpos,r.gridpos,m_fSigma,m_uiSomDim) * ( input[d]-r.prototype[d] );
+        r.prototype.get()[d] += m_fEpsilon * som::def_h_func(s.gridpos.get(),r.gridpos.get(),m_fSigma,m_uiSomDim) * ( input[d]-r.prototype.get()[d] );
       }
     }
   }
@@ -182,10 +139,10 @@ namespace icl{
     ICLASSERT_RETURN_VAL(m_vecNeurons.size(),dummy);
     
     unsigned int minIdx = 0;
-    float minDist = som::distance2(m_vecNeurons[0].prototype,input,m_uiDataDim);
+    float minDist = som::distance2(m_vecNeurons[0].prototype.get(),input,m_uiDataDim);
     
     for(unsigned int i=0;i<m_vecNeurons.size();++i){
-      float dist = som::distance2(m_vecNeurons[i].prototype,input,m_uiDataDim);
+      float dist = som::distance2(m_vecNeurons[i].prototype.get(),input,m_uiDataDim);
       if(dist < minDist){
         minDist = dist;
         minIdx = i;

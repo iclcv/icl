@@ -3,6 +3,7 @@
 
 #include <ICLCore/Mathematics.h>
 #include <ICLUtils/Range.h>
+#include <ICLUtils/SmartPtr.h>
 #include <vector>
 
 namespace icl{
@@ -43,30 +44,22 @@ namespace icl{
         addition, each neuron has a void* meta, that can be used to associate some 
         meta-data with a certain neuron (Note,the pointer meta is not released automatically).*/
     struct Neuron{
-      /// create an empty neuron with 0 pointers and dimensions
-      Neuron();
+      typedef SmartPtr<float> vector_type;
       
+      /// create a null neuron
+      Neuron(){}
       /// create a new neurons with given pointers and dimensions
       /** If the deepCopyData flag is set to true, internally new prototype and gridpos pointers are allocated
           and filled with the given pointer's data. Otherwise, the ownership of the given pointers is passed to
           the this neuron.
       */
-      Neuron(float *gridpos,float *prototype,unsigned int griddim, unsigned int datadim, bool deepCopyData=false);
+      Neuron(vector_type gridpos,vector_type prototype,unsigned int griddim, unsigned int datadim);
 
-      /// Deep copy constructor
-      Neuron(const Neuron &other);
-      
-      /// Assignment operator (applies a deep copy of the neuron)
-      Neuron &operator=(const Neuron &other);
-      
-      /// Destructor
-      ~Neuron();
-      
       /// grid position vector of dim "griddim"
-      float *gridpos;
+      vector_type gridpos;
       
       /// prototype vector of dim "datadim"
-      float *prototype;
+      vector_type prototype;
 
       /// grid dimension
       unsigned int griddim;
@@ -76,6 +69,9 @@ namespace icl{
       
       /// meta-data storage pointer
       void *meta;
+      
+      /// returns whether this neuron is already initialized (i.e. has valid pointers)
+      inline bool isNull() const { return !!gridpos; }
     };
     
     /// create a new SOM with given data dimension and grid dimensions. 
