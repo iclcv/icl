@@ -11,7 +11,16 @@ Matrix and Vector algebra is very common in a lot of applications. The ICL provi
 
 \subsubsection{FixedMatrix Template Class\iclclassref{FixedMatrix}{Utils}}
 This class uses three template parameters \icode{template<class T, unsigned int COLS, unsigned} \icode{int ROWS>} to represent matrices of fixed size. FixedVectors are implemented as shallow inheriting wrappers of FixedMatrix class instances with \icode{COLS=1} (\icode{FixedColVector}) or \icode{ROWS=1} (\icode{FixedRowVector})\footnote{This cannot be implemented using typedefs, because C++ does not support templated typedefs}.
-By using \emph{templated} dimension parameters, matrix dimension is fixed at compilation time, which enables the compiler to apply a lot of optimizations. Most common vector and matrix algebra functionalities \footnote{As far as I can see, actually a super-set of BLAS-level 3}, including matrix mutliplication (scalar product is just a special case here), QR-Matrix decomposition and matrix inverse and pseudo-inverse\footnote{QR-decomposition-based} implementation. \icode{FixedMatrix} instances resign smart data handling to enable the compiler to apply special optimizations on fixed arrays. In particular, temporary instances (and their data) can be allocated on the stack, rather than having to allocate data on the heap.
+By using \emph{templated} dimension parameters, matrix dimension is fixed at compilation time, which enables the compiler to apply a lot of optimizations. Most common vector and matrix algebra functionalities \footnote{As far as I can see, actually a super-set of BLAS-level 3}, including
+\begin{itemize}
+\item matrix mutliplication (scalar product is just a special case here)
+\item RQ- and QR-Matrix decomposition
+\item matrix inverse 
+\item matrix pseudo-inverse\footnote{QR-decomposition-based} 
+\item singular value decomposition (SVD)
+\item etc...
+\end{itemize}.
+\icode{FixedMatrix} instances resign smart data handling to enable the compiler to apply special optimizations on fixed arrays. In particular, temporary instances (and their data) can be allocated on the stack, rather than having to allocate data on the heap.
 The \icode{FixedMatrix} class provides row- and column iterators, as well as extraction functions for rows, columns or rectangular sub-matrices.
 Here's a concise example:
 \codefile{fixed-matrix-demo-1.cpp}{Example for usage of the \icode{FixedMatrix}-template class}
@@ -21,8 +30,8 @@ Please note, that \icode{FixedMatrix}-pseudo inverse calculation is out-sourced 
 
 In contrast to the \icode{FixedMatrix} template class, the \icode{DynMatrix} template class uses a single template parameter which defines the actual datatype of the matrix elements. Matrix dimensions are dynamic at runtime, which enables us to provide e.g. a \icode{setBounds} member function. In addition, \icode{DynMatrix} instances can be assigned with \icode{DynMatrix} instances of another size. Dynamic sized data types need dynamic data handling\footnote{using \icode{new []} and \icode{delete []}}. This besides allows a more flexible mechanism: optional shallow data wrapping. \icode{DynMatrix} instances can be set up to handle their data autonomously (using \icode{new []} in the constructor and \icode{delete []} in the destructor), or to \emph{count on} external data handling. Most other functionalities such as matrix multiplication or matrix inverse are also available here. Actually, matrix inverse in the \icode{FixedMatrix} class is implemented by a shallow wrapping \icode{DynMatrix} function call.\\
 In addition to the actual \icode{DynMatrix}-class, we provide another header file that is called \iclheaderref{Utils}{DynMatrixUtils}. This contains a large set of arithmetical functions in different calling manners (source-destination, source-only). Additionally \icode{add}, \icode{sub} and \icode{mult} are provided multiple times to allow e.g. multiplication of two matrices A and B as $A^{\tau}B$ without the need to transpose A explicitly before.\\[10pt]
-The \icode{DynMatrix}-template class is very tightly integrated with the  \icode{Img<T>}-template class. The index operator (\icode{Img<T>::operator[](int channel)} returns an instance of \icode{DynMatrix<T>} that wraps the images channel data shallowly. This enables the programmer switch between image- and matrix notation very easily. Besides \icode{Img<T>} instances can be created as shallow wrappers of a set of \icode{DynMatrix<T>}-instances (one \icode{DynMatrix<T>}-instances corresponds to one image channel) by using an appropriate \icode{Img<T>}-constructor, that takes up to 5 \icode{DynMatrix<T>}-arguments.\\
-This also allows the user to apply arbitrary image processing functions on \icode{DynMatrix<T>} instances.
+The \icode{DynMatrix}-template class is very tightly integrated with the  \icode{Img<T>}-template class. The method (\icode{Img<T>::extractDynMatrix(int channel)} returns an instance of \icode{DynMatrix<T>} that wraps the images channel data shallowly. This enables the programmer to switch between image- and matrix notation very easily and without having to copy data deeply. Besides \icode{Img<T>} instances can be created as shallow wrappers of a set of \icode{DynMatrix<T>}-instances (one \icode{DynMatrix<T>}-instances corresponds to one image channel) by using an appropriate \icode{Img<T>}-constructor, that takes up to 5 \icode{DynMatrix<T>}-arguments.\\
+This also allows the user to apply arbitrary image processing functions on \icode{DynMatrix<T>} instances as well.
 
 
 
@@ -40,10 +49,7 @@ ICL provides some time and timer classes to facilitate handling of time values a
 The \icode{Thread}-class (\iclclassref{Utils}{Thread}) and the \icode{Mutex}-class (\iclclassref{Utils}{Mutex}) are simple object-oriented wrappers for the pthread library.
 
 \subsection{ProgArg-Environment} 
-As a lot of applications need to parse command line parameters, ICL provides a simple interface to define, explain, extract and parse command line arguments (\iclheaderref{Utils}{ProgArg}). Application arguments are always fixed and need to be accessible globally, so the program argument environment is  implemented as a set of global functions each having the \icode{pa_}-prefix. \icode{pa\_init()} can be used to define the list of allowed program arguments and their specific count of sub-arguments\footnote{E.g consider a program argument \icode{-size} could be implemented with a single sub-argument: the size.}. \icode{pa\_exmplain()} explains sub-arguments. \icode{pa\_defined()} and \icode{pa\_arg()} are used to obtain information of the actual given program arguments.  The \icode{pa\_subarg()} template function can be used to extract and parse given sub-arguments e.g. as \icode{int}:
-\displaycode{int c = pa\_subarg<int>("-channels",0,3);}
-or as \icode{std::string}
-\displaycode{Size size = translateSize(pa\_subarg<std::string>("-size",0,"VGA"));}. More information can be found in the documentation.
+As a lot of applications need to parse command line parameters, ICL provides a simple interface to define, explain, extract and parse command line arguments (\iclheaderref{Utils}{ProgArg}). Application arguments are always fixed and need to be accessible globally, so the program argument environment is  implemented as a set of global functions each beginning with the \icode{pa}-prefix. \icode{painit()} can be used to define the list of allowed program argument-names and name alternatives, their specific count of sub-arguments, default values and whether certain arguments are optional or mandatroy\footnote{E.g consider a program argument \icode{-size} could be implemented with a single sub-argument: the size.}. \icode{paex()} can be used to describe program arguments more detailed. The powerfull \icode{pa()}-function is used to find out wheter a certain argument was actually given and what sub-arguments were provided.
 
 \subsection{Utility Structures}
 Firstly, there are 3 main utility structures:
@@ -62,17 +68,16 @@ At last, there's a template class representing ranges: \iclstructref{Core}{Range
 
 \subsection{String-Utilities}
 To facilitate string processing (which is still a bit complicated in C++), the header \iclheaderref{Utils}{StringUtils} is provided in the ICLUtils package. It contains functions to parse \icode{std::strings} into given data types (template based, \icode{T parse<T>(const std::string&)} and to convert given data-types into strings (\icode{std::string str(const T&)}). Furthermore, there are variants of these functions, that work on \icode{std::vector} instances to convert or parse ranges at once.\\
-Moreover, ICL provides conversion functions to translate sizes, formats, depths etc. into strings and back. These functions are located in the \iclheaderref{Utils}{Utils} and their names are \icode{translateSize}, \icode{translateFormat} etc.
-
+\icode{str} and \icode{parse} work for all data types T, that implement C++'s default serialization operators \icode{ostream& operator<<(ostream &,const T&)} (for \icode{str}) and \icode{ostream& operator>>(ostream &, T&)} (for \icode{parse}). Moreover, the StringUtils-header contains are powerfull string-tokenizing function (\icode{tok}) which a regular-expression matcher \icode{match}.
 \subsection{Types}
 Types and enumerations have been presented and discussed in section \ref{sec:typedef-confusions}. Types are declared in \iclheaderref{Utils}{BasicTypes}.
 
 \subsection{XML-Parser}
-To be able to use xml-data and configuration files without getting an extra software-dependency, ICL uses it's own simple XML-Parser. This of course entails some issues on the complexity of XML-files, that can be parsed. Actually, some features (like namespaces or XML-schematics) are just not supported at all.\\
+In order to be able to use xml-data and configuration files without getting an extra software-dependency, ICL uses it's own simple XML-Parser. This of course entails some issues on the complexity of XML-files, that can be parsed. Actually, some features (like namespaces or XML-schematics) are just not supported at all.\\
 However, the XML-Parser works well for our purpose: It can be used to easily parse XML-documents or to query and filter nodes from the Documents tree structure. Furthermore, we use it successfully to create and to parse instances of the \icode{ConfigFile} class, that provides high convenience for using configuration files in applications (See \ref{subsec:config-file})
 
 \subsection{Configuration Files\label{subsec:config-file}}
-The \iclclassref{Utils}{ConfigFile}-class can be used to facility handling of dynamic configurable applications. Of course, one can make heavily use of program arguments, however this makes is difficult to save parameters or to distribute configuration parameters via revision control systems like e.g. subversion\footnote{\hrefn{http://de.wikipedia.org/wiki/Subversion\_(Software)}}. \icode{ConfigFile} instances can be created very easily in the C++ source code, and their contents can be obtains very simply. Most of the time, a simple one-line statement is sufficient to get a certain entry at runtime. On the other side, the configuration file itself uses a simple XML-subset which facilitates both, parsing of the document as well as referencing entries non-ambiguously. Here's a tiny example:
+The \iclclassref{Utils}{ConfigFile}-class can be used to facility handling of dynamic configurable applications. Of course, you can make heavily use of program arguments, but this makes is difficult to save parameters or to distribute configuration parameters via revision control systems like e.g. subversion\footnote{\hrefn{http://de.wikipedia.org/wiki/Subversion\_(Software)}}. \icode{ConfigFile} instances can be created very easily in the C++ source code, and their contents can be obtains very simply. Most of the time, a simple one-line statement is sufficient to get a certain entry at runtime. On the other side, the configuration file itself uses a simple XML-subset which facilitates both, parsing of the document as well as referencing entries non-ambiguously. Here's a tiny example:
 
 \codefile{config.xml}{config.xml}
 
@@ -87,7 +92,7 @@ And resulting configuration file:
 \subsection{ConfigEntry Utility class}
 The \icode{ConfigEntry}-template class \iclclassref{Qt}{ConfigEntry} provides a convenient access to data entries of a ConfigFile instance. \icode{ConfigEntry} instances are always \emph{templated} to their actual type: e.g. \icode{ConfigEntry<int>} or \icode{ConfigEntry<float>}. \icode{ConfigEntry} objects can be instantiated with a given key-value (which is the '.'-separated path to the referenced ConfigFile element), a default value (which is used, if the given key was not found) and the referenced ConfigFile (which is the singleton static ConfigFile instance by default). Furthermore, \icode{ConfigEntry}-instances can simply be used in the same way as their template parameter type, because they provide an implicit cast-operator for this type.\\
 Using ConfigEntry instances is useful if your application also uses the \icode{ConfigFileGUI} utility class \iclclassref{Qt}{ConfigFileGUI} which is presented in \ref{subsec:configfile-gui}.\\
-In addition, the header \iclheaderref{Qt}{ConfigEntry} provides some convenience macros to create local instances of the \iclclassref{ConfigEntry} class.
+In addition, the header \iclheaderref{Qt}{ConfigEntry} provides some convenience macros to create local instances of the \iclclassref{Qt}{ConfigEntry} class.
 
 \section{ICLCore}
 
@@ -257,7 +262,8 @@ The first part of the \iclpackageref{Blob}-package is the Color based Blob detec
 Within the color based blob detection framework, blobs are detected globally, so different blobs must have different colors.
 
 \subsection{Region detection / connected component analysis}
-Here, the \iclclassref{Blob}{RegionDetector} is the main class. The Region detector performs a fast connected component analysis on images and provides a list of all connected regions in an image (again using the 4-pixel neighbourhood). The \icode{Region} (see \iclclassref{Blob}{Region}) provides many function to compute region features like the center of gravity, the boundary or even local PCA\footnote{Principal Component Analysis (google)} information. Internally, the \icode{RegionDetector} uses an intermediate representation of \icode{Region}s: a list of so called \emph{scan lines}. These scan lines are horizontal image lines with a single identical gray value. Furthermore, they can efficiently be stored by a tuple $(x_{start},x_{end},y,value)$ and most region features can be calculated very efficiently on this lines (in comparison to calculate features on the image pixels). Currently there's no possibility to define certain criterions of homogeneity, than the most simple one which is currently used: all pixels within a certain region must have an identical gray value. 
+Here, the \iclclassref{Blob}{RegionDetector} is the main class. The Region detector performs a fast connected component analysis on images and provides a list of all connected regions in an image (again using the 4-pixel neighbourhood). The \icode{Region} (see \iclclassref{Blob}{Region}) provides many function to compute region features like the center of gravity, the boundary or even local PCA\footnote{Principal Component Analysis (google)} information. Internally, the \icode{RegionDetector} uses an intermediate representation of \icode{Region}s: a list of so called \emph{scan lines}\todo{line segments}. These scan lines are horizontal image lines with a single identical gray value. Furthermore, they can efficiently be stored by a tuple $(x_{start},x_{end},y,value)$ and most region features can be calculated very efficiently on this lines (in comparison to calculate features on the image pixels). Currently there's no possibility to define certain criterions of homogeneity. Onlythe most simple one is currently used: all pixels within a certain region must have an identical gray value. \\
+Furthermore, the \icode{RegionDetector} can be set up to create a region-graph internally. In this case, each region can be queried for its adjacent regions, its sub-regions (recursively or not) and its parent regions.
 
 \subsubsection{SimpleBlobSearcher}
 
@@ -543,95 +549,20 @@ The Region detection functions are located in the header \iclheaderref{Quick}{Qu
 [Documentation: \iclpackageref{Geom}]
 
 
-The Geom package contains classes for 3D geometry representation. In many applications, e.g. object detection, it is not sufficient to detect an objects (x,y)-coordinates in an image, but also to determine it's 3D position in the scene. The fundamental class of this package is the \icode{Camera}-class (see \iclclassref{Geom}{Camera}). In contrast to a grabber, a camera is represented by extrinsic and intrinsic camera parameters \todo{add camera main axis offset sometimes}. We implemented ICL's camera model close the OpenGL camera model, so currently, a \icode{Camera} is represented by
+The Geom package contains classes for 3D projective geometry representation. In many applications, e.g. object detection, it is not sufficient to detect an objects (x,y)-coordinates in an image only, but also to determine it's 3D position in the scene. The fundamental class of this package is the \icode{Camera}-class (see \iclclassref{Geom}{Camera}). 
+The \icode{Camera}-represents a geometric camera model, including intrinsic and extrinsic camera parameters. \icode{Camera}-instances can be used to model the behaviour of real cameras. The \icode{Camera} does not model lens distortion. We decided to provide and interface to conpensate real cameras lens distortion instead, which allows us to keep most computation s linear within the camera class. Lens distortion compensation can be set up in the \icode{Grabber}-interface (see \iclclassref{IO}{Grabber}).
+
+The camera class provides functions for:
 \begin{itemize}
-\item A position vector $\vec{p}$, which determines the camera's logical center in the world. for a pinhole camera, this would be the position of the pinhole.
-\item A norm vector $\vec{n}$, which determines the view direction of the camera (currently the normal vector intersects the virtual image plane always in it's center \todo{adapt this in the code first!}).
-\item An \emph{up}-vector $\vec{u}$ which defines the rotation of the image plane about the normal vector.
-\item A view port $v=(v_x,v_y,v_w,v_h)$ (where $v_x$ and $v_y$ are generally $0$). The viewport defines the transformation from logical image coordinates into pixel coordinates.
-\item The focal length $f$ of the camera (im mm).
-\item The near and far clipping plane $z_{far}$ and $z_{near}$ which are only used for OpenGL based visualization. 
+\item Extrinsic camera calibration using the \emph{Direct Linear Transform} (DLT) algorithm.
+\item 3D Pose estimation (given N>1 cameras and N corresponding (x,y)-pixel-locations)
+\item Projection of Worldpoints
+\item Access to all internal matrices (projection-matrix, coordinate-system-transformation, and OpenGL-Matrices for rendering)
+\item Direct integration of cameras into \icode{Scene}-instances (see \iclclassref{Geom}{Scene}), including OpenGL-based scene rendering and navigation.
+\item Creation of viewrays
 \end{itemize}
 
-The camera projection model transforms a world point $p^W=(p^W_x,p^W_y,p^W_z,1)$ (we use homogeneous coordinates) into image coordinates $p^I=(p^I_x,p^I_y)$ by a concatenation of homogeneous transformations. The first step transforms $p^w$ into the camera frame (not the image coordinate system, which is 2D only) where we call it $p^C$:
-
-\begin{equation}
-p^C = C p^w
-\end{equation}
-
-where $C$ is the camera matrix which is created as follows
-
-\begin{equation}
-C = \left(\begin{array}{cc}
-  R_C & d_C\\
-  0 & 1\\
-  \end{array}\right)
-\end{equation}
-
-
-with
-
-\begin{equation}
-R_C = \left(\begin{array}{ccc}
-  h_x & u_x & n_x \\
-  h_y & u_y & n_y \\
-  h_z & u_z & n_z \\
-  \end{array}\right)
-\end{equation}
-
-The horizontal vector $h$ can be computed by $h=u\times{}n$ and with $d_C=-R_C*p$.\\
-The next transformation is the perspective projection, which can also be expressed by using a homogeneous matrix P:
-
-\begin{equation}
-P = \left(\begin{array}{cccc}
-  f & 0 & p_x & 0\\
-  0 & f & p_y & 0\\
-  0 & 0 & A & B\\
-  0 & 0 & -1 & 0\\
-  \end{array}\right)
-\end{equation}
-
-where $A=(z_{far}+z_{near})/(z_{near}-z_{far})$ and $B = (2 \cdot{}z_{far} \cdot{}z_{near})/(z_{near}-z_{far})$ are used for scaling z values into the
-range between the near and the far clipping plane\footnote{$p=(p_x,p_y) is the offset between the image center and the principle point of the camera. This is not yet used!$}. $P$ is used to transform points from the camera frame into a normalized image plane:
-
-\begin{equation}
-p^N = P p^C
-\end{equation}
-
-In the next step, points $p^N$ have to be transformed by the view-port matrix $V$ into image coordinates.
-
-\begin{equation}
-p^I = \mbox{hom}(V p^N)
-\end{equation}
-
-where $\mbox{hom(x,y,z,h)=(x/h,y/h,z/h,1)}$ and
-
-%    float dx = (m_viewPort.left()+m_viewPort.right())/2;
-%    float dy = (m_viewPort.top()+m_viewPort.bottom())/2;
-%    float slope = iclMin(m_viewPort.width/2,m_viewPort.height/2);
-%    return  Mat ( slope , 0     , 0 , dx,
-%                  0     , slope , 0 , dy,
-%                  0     , 0     , 1 , 0 ,
-%                  0     , 0     , 0 , 1 );
-
-
-\begin{equation}
-V = \left(\begin{array}{cccc}
-  s_V & 0 & 0 & \Delta x_V\\
-  0 & s_V & 0 & \Delta y_V\\
-  0 & 0 & 1 & 0\\
-  0 & 0 & 0 & 1\\
-  \end{array}\right)
-\end{equation}
- 
-with $\Delta x_V= v_x+v_w/2$, $\Delta y_V= v_y+v_h/2$ and $s_V = \mbox{min}(v_w/2,v_h/2)$.\\
-The resulting transformation is 
-
-\begin{equation}
-p^I = \mbox{hom}(V P C p^W)
-\end{equation}
-
-Where only the first two components of $p^I$ are used. Once have defined the camera transformation model further functions like moving or rotating the camera, or creating view rays for image pixels can be implemented straight forward. Take a look at the \icode{Camera} reference for more details (see \iclclassref{Geom}{Camera}).
+The camera class is well documented in the doxygen documentation (see \iclclassref{Geom}{Camera}).\\
 
 
 \subsection{Camera Calibration Applications\label{subsec:icl-intrinsic-camera-calibration}}
@@ -639,9 +570,15 @@ Where only the first two components of $p^I$ are used. Once have defined the cam
 Currently, ICL provides two camera calibration tools:
 
 \begin{itemize}
-\item \icode{icl-intrinsic-camera-calibration}\\
+\item \icode{icl-intrinsic-camera-calibration} for lens undistortion
+\item \icode{icl-cam-calib} for 3D camera calibration
+\end{itemize}
 
-This tool allows to compute lens-(un)distortion parameters automatically. Currently only a single radial distortion model is provided\todo{implement more general distortion model}. The model was taken from the ARToolkit library\footnote{See \hrefn{http://www.hitl.washington.edu/artoolkit/}}. Given a distortion parameter vector $\vec{\Theta}=(x_0,y_0,f,s)$ the undistortion of a distorted point $(x,y)_{dist}$ works as follows:
+
+
+\subsubsection{icl-intrinsic-camera-calibration}
+
+This tool allows to compute lens-(un)distortion parameters automatically. Currently only a single radial distortion model is provided \todo{implement more general distortion model}. The model was taken from the ARToolkit library\footnote{See \hrefn{http://www.hitl.washington.edu/artoolkit/}}. Given a distortion parameter vector $\vec{\Theta}=(x_0,y_0,f,s)$ the undistortion of a distorted point $(x,y)_{dist}$ works as follows:
 
 
 \begin{equation*}
@@ -670,8 +607,13 @@ The resulting parameter vector can be passed to \icode{Grabber} instances as exp
 Internally, the calibration pattern is detected as follows. After converting the input image into a gray-level image, a local threshold operation is applied (see \iclclassref{Filter}{LocalThresholdOp} for details). The values of the GUI elements \emph{mask size} and \emph{threshold} are passed to the underlying \icode{LocalThresholdOp}-instance. Subsequently, a dilation (see \iclclassref{Filter}{MorphologicalOp}) is applied to the thresholded image in order to suppress single black pixels. The \emph{use morphed image}-toggle button can be used to enable this step (by default, is not activated). The resulting binary image is then used as input for a connected component analysis (see \iclclassref{Blob}{RegionDetector}, which is parameterized by the sliders labelled \emph{roundness} and \emph{min blob size} in order to filter out all regions, except those that are small and round enough. \\
 If the amount of matching regions meets the spot count from the calibration pattern\footnote{12 for the example above}, the display in the upper right GUI corner shows a green \emph{good}-string. Now, the user can press the \emph{add}-button to fit a grid into the detected points that is stored internally. The grid is fitted by using a SOM\footnote{see \hrefn{http://en.wikipedia.org/wiki/Self-organizing\_map}} which is implemented in the ICLAlgorithms package (see \iclclassref{Algorithms}{SOM}).\\
 Within the calibration process, all straight lines, i.e horizontal, vertical and diagonal ones, in all currently stored grids are use for calculating the calibration error. 
-\item \icode{icl-extrinsic-camera-calibration}\\
-\end{itemize}
+
+
+\subsubsection{icl-cam-calib}
+
+\todo{describe here}
+
+
 
 
 
