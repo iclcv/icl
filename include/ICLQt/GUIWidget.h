@@ -30,11 +30,16 @@ namespace icl{
     };
     
     /// create a new GUIWidget ( this constructor must be called by all subclasses )
+    /** @param def GUIDefinition instance
+        @param minParamCount minimum count of expected parameters
+        @param maxParamCount maximum count of expected parameters (if -1, this is also minParamCount)
+        @param lt layout-type to use
+        @param defMinSize default minimum size constraint for the widget
+    */
     GUIWidget(const GUIDefinition &def, 
+              int minParamCount, 
+              int maxParamCount=-1,
               layoutType lt=gridLayout, 
-              int ensureNumInputs=-1,
-              int ensureNumOutputs=-1,
-              int ensureNumParams=-1, 
               const Size &defMinSize=Size(0,0));
 
 

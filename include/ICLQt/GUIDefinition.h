@@ -68,9 +68,13 @@ namespace icl{
     float floatParam(unsigned int idx) const;
 
     /// returns an input name
+    /** if the given input index was actually not defined, a dummy input name is
+        created */
     const std::string &input(unsigned int idx) const;
     
     /// returns an output name
+    /** if the given output index was actually not defined, a dummy output name is
+        created */
     const std::string &output(unsigned int idx) const;
 
     /// returns the number of params

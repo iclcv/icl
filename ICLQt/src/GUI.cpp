@@ -99,7 +99,7 @@ namespace icl{
 
   struct CamCfgGUIWidget : public GUIWidget{
     // {{{ open
-    CamCfgGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,0){
+    CamCfgGUIWidget(const GUIDefinition &def):GUIWidget(def,0,2<<20){
       m_button = new QPushButton("camcfg",this);
       connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
       
@@ -119,7 +119,7 @@ namespace icl{
 
   struct ConfigFileGUIWidget : public GUIWidget{
     // {{{ open
-    ConfigFileGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,1){
+    ConfigFileGUIWidget(const GUIDefinition &def):GUIWidget(def,1){
       
       if(def.param(0) == "embedded"){
         m_button = 0;
@@ -148,7 +148,7 @@ namespace icl{
 
   struct HBoxGUIWidget : public GUIWidget{
     // {{{ open
-    HBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::hboxLayout,0,0,0){
+    HBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::hboxLayout){
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
 
       if(def.handle() != ""){
@@ -166,7 +166,7 @@ namespace icl{
   // }}}
   struct VBoxGUIWidget : public GUIWidget{
     // {{{ open
-    VBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::vboxLayout,0,0,0){
+    VBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::vboxLayout){
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
       if(def.handle() != ""){
         getGUI()->lockData();
@@ -184,7 +184,7 @@ namespace icl{
 
   struct SplitterGUIWidgetBase : public GUIWidget, public ProxyLayout{
     // {{{ open
-    SplitterGUIWidgetBase(const GUIDefinition &def, bool horz):GUIWidget(def,GUIWidget::noLayout,0,0){
+    SplitterGUIWidgetBase(const GUIDefinition &def, bool horz):GUIWidget(def,0,0,GUIWidget::noLayout){
       m_layout = new QGridLayout(this);
       m_splitter = new QSplitter(horz ? Qt::Horizontal:Qt::Vertical , this);
       m_layout->addWidget(m_splitter,0,0);
@@ -235,7 +235,7 @@ namespace icl{
 
   struct TabGUIWidget : public GUIWidget, public ProxyLayout{
     // {{{ open
-    TabGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::noLayout,0,0){
+    TabGUIWidget(const GUIDefinition &def):GUIWidget(def,0,2<<20,GUIWidget::noLayout){
       m_layout = new QGridLayout(this);
       m_tabWidget = new QTabWidget(this);
       m_layout->addWidget(m_tabWidget,0,0);
@@ -282,7 +282,7 @@ namespace icl{
   struct BorderGUIWidget : public GUIWidget{
     // {{{ open
 
-    BorderGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,1){ 
+    BorderGUIWidget(const GUIDefinition &def):GUIWidget(def,1){
       m_poGroupBox = new QGroupBox(def.param(0).c_str(),def.parentWidget());
       m_poGroupBox->setFlat(true);
       m_poLayout = new QVBoxLayout;
@@ -313,7 +313,7 @@ namespace icl{
   // }}}
   struct ButtonGUIWidget : public GUIWidget{
     // {{{ open
-    ButtonGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,1,Size(4,1)){
+    ButtonGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout,Size(4,1)){
       QPushButton *b = new QPushButton(def.param(0).c_str(),def.parentWidget());
       addToGrid(b);
       connect(b,SIGNAL(pressed()),this,SLOT(ioSlot()));
@@ -345,10 +345,8 @@ namespace icl{
     // {{{ open
 
     ButtonGroupGUIWidget(const GUIDefinition &def):
-      GUIWidget(def,GUIWidget::gridLayout,0,1,-1,Size(4,def.numParams())), m_uiInitialIndex(0){
+      GUIWidget(def,1,2<<20,GUIWidget::gridLayout,Size(4,def.numParams())), m_uiInitialIndex(0){
      
-      if(def.numParams() < 1) throw GUISyntaxErrorException(def.defString(),"at least one param here!a");
-
       for(unsigned int i=0;i<def.numParams();i++){
         string text = def.param(i);
         if(text.length() && text[0]=='!'){
@@ -404,7 +402,7 @@ namespace icl{
     // {{{ open
   public:
     ToggleButtonGUIWidget(const GUIDefinition &def):
-      GUIWidget(def,GUIWidget::gridLayout,0,1,2, Size(0,0)){
+      GUIWidget(def,2){
 
       bool initToggled = false;
       if(def.param(1).length() && def.param(1)[0] == '!'){
@@ -464,7 +462,7 @@ namespace icl{
     // {{{ open
   public:
     CheckBoxGUIWidget(const GUIDefinition &def):
-      GUIWidget(def,GUIWidget::gridLayout,0,1,2, Size(0,0)){
+      GUIWidget(def,2){
 
       bool initChecked = false;
       if(def.param(1)=="on" || def.param(1) == "yes" || def.param(1) == "checked"){
@@ -518,9 +516,7 @@ namespace icl{
 
   struct LabelGUIWidget : public GUIWidget{
     // {{{ open
-    LabelGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,-1,Size(4,1)){
-      if(def.numParams() > 1) throw GUISyntaxErrorException(def.defString(),"need max. 1 parameter here!");
-      if(def.numInputs() > 1) throw GUISyntaxErrorException(def.defString(),"need max. 1 input here!");
+    LabelGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,1)){
     
       m_poLabel = new CompabilityLabel(def.numParams()==1?def.param(0).c_str():"",def.parentWidget());
       
@@ -548,8 +544,7 @@ namespace icl{
 
   struct StateGUIWidget : public GUIWidget{
     // {{{ open
-    StateGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,-1,Size(4,1)){
-      if(def.numParams() > 1) throw GUISyntaxErrorException(def.defString(),"need max. 1 parameter here!");      
+    StateGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,1)){
       m_text = new ThreadedUpdatableTextView(def.parentWidget());
       m_text->setReadOnly(true);
 
@@ -581,11 +576,8 @@ namespace icl{
       return (def.numParams() == 4) ? (def.param(3)=="vertical") : false;
     }
     
-    SliderGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,-1,vertical(def)?Size(1,4):Size(4,1)){
-      
+    SliderGUIWidget(const GUIDefinition &def):GUIWidget(def,3,4,GUIWidget::gridLayout,vertical(def)?Size(1,4):Size(4,1)){
       /// param_order = min,max,curr,step=1,orientation=("horizontal")|"vertical"
-      if(def.numParams() < 3) throw GUISyntaxErrorException(def.defString(),"need at least 3 parameters here!");
-      if(def.numParams() > 4) throw GUISyntaxErrorException(def.defString(),"need max. 4 parameters here!");
       
       m_piValue = &getGUI()->allocValue<int>(def.output(0),def.intParam(2));
       
@@ -661,7 +653,7 @@ namespace icl{
       return (def.numParams() == 4) ? (def.param(3)=="vertical") : false;
     }
     
-    FloatSliderGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,-1,vertical(def)?Size(1,4):Size(4,1)){
+    FloatSliderGUIWidget(const GUIDefinition &def):GUIWidget(def,3,4,GUIWidget::gridLayout,vertical(def)?Size(1,4):Size(4,1)){
       //
       // y = mx+b
       // m =dy/dx = max-min/1000
@@ -670,8 +662,6 @@ namespace icl{
       //
       
       /// param_order = min,max,curr,orientation=("horizontal")|"vertical"
-      if(def.numParams() < 3) throw GUISyntaxErrorException(def.defString(),"need at least 3 parameters here!");
-      if(def.numParams() > 4) throw GUISyntaxErrorException(def.defString(),"need max. 4 parameters here!");
   
       getGUI()->lockData();
       m_pfValue = &getGUI()->allocValue<float>(def.output(0),def.floatParam(2));
@@ -746,7 +736,7 @@ namespace icl{
   struct IntGUIWidget : public GUIWidget{
     // {{{ open
 public:
-    IntGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,3){
+    IntGUIWidget(const GUIDefinition &def):GUIWidget(def,3){
       m_poLineEdit = new QLineEdit(def.parentWidget());
       m_poLineEdit->setValidator(new QIntValidator(def.intParam(0),def.intParam(1),0));
       m_poLineEdit->setText(QString::number(def.intParam(2)));
@@ -789,7 +779,7 @@ public:
   struct FloatGUIWidget : public GUIWidget{
     // {{{ open
 public:
-    FloatGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,3){
+    FloatGUIWidget(const GUIDefinition &def):GUIWidget(def,3){
       m_poLineEdit = new QLineEdit(def.parentWidget());
       m_poLineEdit->setValidator(new QDoubleValidator(def.floatParam(0),def.floatParam(1),20,0));
       m_poLineEdit->setText(QString::number(def.floatParam(2)));
@@ -844,7 +834,7 @@ public:
       int iMaxLen;
     };
     
-    StringGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,-1){
+    StringGUIWidget(const GUIDefinition &def):GUIWidget(def,1,2){
       m_poLineEdit = new QLineEdit(def.parentWidget());
       m_poLineEdit->setValidator(new StringLenValidator(def.numParams() == 2 ? def.intParam(1) : 100));
       m_poLineEdit->setText(def.numParams()>=1 ? def.param(0).c_str() : "");
@@ -893,7 +883,7 @@ public:
       return Size(nW,nH);
     }
     
-    DispGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,2,dim(def,2,1)){
+    DispGUIWidget(const GUIDefinition &def):GUIWidget(def,2,2,GUIWidget::gridLayout,dim(def,2,1)){
       
       Size size = dim(def);
       int nW = size.width;
@@ -931,7 +921,7 @@ public:
   // }}}
   struct ImageGUIWidget : public GUIWidget{
     // {{{ open
-    ImageGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,0){
+    ImageGUIWidget(const GUIDefinition &def):GUIWidget(def,0){
 
       m_poWidget = new ICLWidget(def.parentWidget());
       addToGrid(m_poWidget);
@@ -955,7 +945,7 @@ public:
   // }}}
   struct DrawGUIWidget : public GUIWidget{
     // {{{ open
-    DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,0){
+    DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,0){
       m_poWidget = new ICLDrawWidget(def.parentWidget());
       addToGrid(m_poWidget);
       
@@ -979,7 +969,7 @@ public:
 
   struct MultiDrawGUIWidget : public GUIWidget{
     // {{{ open
-    MultiDrawGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::vboxLayout,0,0,-1){
+    MultiDrawGUIWidget(const GUIDefinition &def):GUIWidget(def,1,2<<20,GUIWidget::vboxLayout){
       m_bAll = false;
       m_bDeep = true;
       
@@ -1050,7 +1040,7 @@ public:
 
   struct DrawGUIWidget3D : public GUIWidget{
     // {{{ open
-    DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,0){
+    DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,0){
       m_poWidget3D = new ICLDrawWidget3D(def.parentWidget());
       addToGrid(m_poWidget3D);
       
@@ -1072,7 +1062,7 @@ public:
   // }}}
   struct ComboGUIWidget : public GUIWidget{
     // {{{ open
-    ComboGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,-1, Size(4,1)){
+    ComboGUIWidget(const GUIDefinition &def):GUIWidget(def,1,2<<20,GUIWidget::gridLayout,Size(4,1)){
       if(def.numParams() < 1) throw GUISyntaxErrorException(def.defString(),"at least 1 param needed here!");
     
       m_poCombo = new QComboBox(def.parentWidget());
@@ -1126,7 +1116,7 @@ public:
   struct SpinnerGUIWidget : public GUIWidget{
     // {{{ open
 public:
-    SpinnerGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,1,3, Size(4,1)){
+    SpinnerGUIWidget(const GUIDefinition &def):GUIWidget(def,3,3,GUIWidget::gridLayout,Size(4,1)){
       m_poSpinBox = new QSpinBox(def.parentWidget());
       m_poSpinBox->setRange(def.intParam(0),def.intParam(1));
       m_poSpinBox->setValue(def.intParam(2));
@@ -1166,9 +1156,8 @@ public:
 
   struct FPSGUIWidget : public GUIWidget{
     // {{{ open
-    FPSGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::gridLayout,0,0,-1, Size(4,2)){
+    FPSGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,2)){
       int np = def.numParams();
-      if(np > 1) throw GUISyntaxErrorException(def.defString(),"need max. 1 parameter here!");
       int fpsEstimatorTimeWindow = np ? def.intParam(0) : 10;
       
       m_poLabel = new CompabilityLabel("fps...",def.parentWidget());

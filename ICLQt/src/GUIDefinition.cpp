@@ -6,6 +6,9 @@
 #include <ICLCore/CoreFunctions.h>
 #include <ICLQt/ProxyLayout.h>
 
+
+#include <list>
+
 using namespace std;
 
 namespace icl{
@@ -128,19 +131,24 @@ namespace icl{
   }
   
   // }}}
+  
+  static std::string &create_def_value(const std::string &base){
+    static std::list<std::string> store;
+    store.push_back("default-"+base+"-"+str(store.size()));
+    return store.back();
+  }
+  
   const std::string &GUIDefinition::output(unsigned int idx) const {
       // {{{ open
-
-      static const string DEF;
-      return idx < m_vecOutputs.size() ? m_vecOutputs[idx] : DEF;
+    
+      return idx < m_vecOutputs.size() ? m_vecOutputs[idx] : create_def_value("out");
     }
 
     // }}}
   const std::string &GUIDefinition::input(unsigned int idx) const {
     // {{{ open
     
-    static const string DEF;
-    return idx < m_vecInputs.size() ? m_vecInputs[idx] : DEF;
+     return idx < m_vecInputs.size() ? m_vecInputs[idx] : create_def_value("in");
   }
   
   // }}}

@@ -12,23 +12,22 @@
 #include <QString>
 
 #include <ICLQt/IconFactory.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
   
   GUIWidget::GUIWidget(const GUIDefinition &def, 
-                       GUIWidget::layoutType lt, 
-                       int ensureNumInputs,
-                       int ensureNumOutputs,
-                       int ensureNumParams,
+                       int minParamCount, 
+                       int maxParamCount,
+                       layoutType lt, 
                        const Size &defMinSize):m_handle(0){
-    if(ensureNumInputs > 0 && (int)def.numInputs() != ensureNumInputs){
-      throw GUISyntaxErrorException(def.defString(),(QString("input count must be ")+QString::number(ensureNumInputs)+" here").toLatin1().data());
-    } 
-    if(ensureNumOutputs > 0 && (int)def.numOutputs() != ensureNumOutputs){
-      throw GUISyntaxErrorException(def.defString(),(QString("output count must be ")+QString::number(ensureNumOutputs)+" here").toLatin1().data());
-    } 
-    if(ensureNumParams > 0 && (int)def.numParams() != ensureNumParams){
-      throw GUISyntaxErrorException(def.defString(),(QString("param count must be ")+QString::number(ensureNumParams)+" here").toLatin1().data());
+    int minPC = minParamCount;
+    int maxPC = maxParamCount == -1 ? minPC : maxParamCount;
+    
+    int nP = (int)def.numParams();
+    if(nP > maxPC || nP < minPC){
+      throw GUISyntaxErrorException(def.defString(),"invalid parameter count! found " + str(nP) + " expected [" +str(minPC) + "-"
+                                    + str(maxPC) + "] for component type " + def.type());
     } 
 
     m_poGridLayout = 0;
