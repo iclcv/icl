@@ -10,11 +10,11 @@
     \brief Simple but powerful GUI Toolkit for the ICL \ingroup COMMON 
 
     \section GUI_INTRO Introduction to the ICL GUI Toolkit
-      When working on computer-vision tasks, one whats to have some graphical user interface 
-      to show the current images. This can be achieved by the use of the ICLQt's ICLWidget and 
-      ICLDrawWidget classes. \n
-      However in many cases this GUI components are not enough, e.g.:
-      - a value shall be adjusted at run-time (using a slider, a spinbox or a simple textfield)
+      Simple creation of image visualization componets is one of the most mandatory convenience 
+      features of a computer-vision library. Therefore ICL provides a powerful image visualization 
+      component basing on the Qt-GUI-Library.\n
+      However in many cases this GUI components are not enough, e.g.,
+      - a value has to  be adjusted at run-time (using a slider, a spinbox or a simple textfield)
       - a mode shall be switched (using a radiobutton group or a combobox)
       - the application shall have a "pause"-button which stops the iteration thread temporarily
       - ...
@@ -125,8 +125,8 @@
       ...      
       \endcode
       
-      As the examples show, the TYPE part alone is mandatory; the other 2 parts can be omitted
-      in some cases:
+      As the examples demonstrates, only the TYPE part of the definition string is mandatory. 
+      The other 2 parts can be left out sometimes.
       
       \subsection TYPES The Type String
       The mandatory type string defines what type of widget should be created. The correct syntax 
@@ -226,7 +226,7 @@
         element.
       - <b>spinner(int MIN,int MAX,int CURRENT)</b>\n
         An integer valued Spin-Box with a given range {MIN,...,MAX} and a given initial value CURRENT.
-      - <b>fps(int TIME_WINDOW_SIZE)</b>\n
+      - <b>fps(int TIME_WINDOW_SIZE=10)</b>\n
         A Label component showing current frames per second averaged over last TIME_WINDOW_SIZE time steps.
       - <b>multidraw(string buffermode=!one, string buffermethod=!deepcopy, CommaSepListOfTabs)</b>\n
         Creates a tabbed widget containing an image widget on each tab to visualize multiple images 
@@ -244,9 +244,9 @@
         settings (buffermode=one). Otherwise, if application runs slowly (e.g. only 2Hz, this) it will become
         more responsive if buffermode is set to "all". If images displayed are held permanently, it will
         speed up performance if buffermethod is set to "shallowcopy" then.
-      - <b>camcfg(Comma-Separated-device-hint-list)</b>
+      - <b>camcfg(Comma-Separated-device-hint-list="")</b>
         See section \ref CAMCFG for more details
-      - <b>config</b>one of 'embedded' or 'popup' (whithout the '-ticks). If param is embedded, the
+      - <b>config(MODE)</b> MODE has to be either 'embedded' or 'popup' (whithout the '-ticks). If param is embedded, the
         ConfigFileGUI's tree-view (including some additional buttons for loading and saving configuration files)
         will be embedded directly where the component was put into the layout. Otherwise - if param is
         popup - only a single button labled 'config' is embedded. This button can be triggered to show
@@ -256,33 +256,38 @@
       The 3rd part of the GUI definition string is a list of so called general params. "General" means here,
       that these params are available for all components, whereas some of these parameters must be compatible
       to the corresponding component.\n
-      The list of general parameters is not comma separated because some of the parameter values are 
-      comma separated lists themselves. Instead, each entry must begin with the "@"-character and it ends
-      with the following "@"-character or the closing angular bracket "]". The set of general params can 
-      be subdivided into two parts:
-      - <b>layouting parameters:</b> These parameters affect the layout and the appearance of the widget
-        which is created by that component (\@size=..., \@minsize=..., \@maxsize=.., \@label=...).
-        \@minsize and \@maxsize affect the widgets size policy directly. The \@size parameter affects the widgets 
-        size hint, i.e., its preferred size. If \@size was given, \@minsize and \@maxsize have no effect.
-      - <b>input and output interface definition:</b> (\@inp=.., \@out=...\@handle=...) As mentioned above, 
-        each embedded GUI components current value(s) or can be accessed from outside by calling the 
-        "getValue<T>()"-function template on the top level GUI object. 
-        To decide which value/handle should be accessed by that call, each input/and output of a GUI 
-        component is associated internally with a string-identifier. In addition each component can be
-        controlled by a so called GUIHandle object which is implemented for each provided GUI component.
-        By default, a gui component "xyz" provides a Handle class "XyzHandle". This handle is also allocated
-        in the top-level GUI objects Data-Store, if the "@handle=NAME" token was defined in the definition
-        string. The handles "NAME" is used as string identifier for the GUI-DataStore. (see the next 
-        subsection for more details and some examples)
+      Each entry begins with the "@"-character and it ends
+      with the following "@"-character or the closing angular bracket "]" at the end. 
+      The parameters have the syntax PARAM_NAME=VALUE. Possible general parameters names are:
+      - <b>\@label=string</b> adds a (bordered) label to the component
+      - <b>\@out=output-ID</b> defines the ID which can be used to access the components output-value
+      - <b>\@inp=input-ID</b> currently not used
+      - <b>\@handle=handle-ID</b> defines the ID which can be used to access the component handle
+      - <b>\@minsize=size</b> defines the mininum size (in 20x20-cells) for this component 
+      - <b>\@maxsize=size</b> defines the maxinum size (in 20x20-cells) for this component
+      - <b>\@size=size</b> defines the initial size (in 20x20-cells) of this component
+      - <b>\@margin=int</b> defines the pixel margin around contained component (only for container 
+        components)
+      - <b>\@spacin=int</b> pixel-spacing between components (only for container components)
 
-      \subsection IO Input- and Output-Interface
-      Depend on the type of a GUI component, the top level GUI gets additional input and output "pins". 
-      In contrast to software frameworks like Neo/NST or TDI, no explicit connection must be established 
-      to access a GUI objects input/and output data. Instead, a component allocates a mutex-locked variable
-      (inside of an interal GUI data base which is always automatically created by its top level GUI component), 
-      and updates this
-      variable any time a Qt-GUI-Event on this components occurs. Let's have a look on a short example to
-      understand this better:
+    <tiny>
+    To decide which value/handle should be accessed by that call, each input/and output of a GUI 
+    component is associated internally with a string-identifier. In addition each component can be
+    controlled by a so called GUIHandle object which is implemented for each provided GUI component.
+    By default, a gui component "xyz" provides a Handle class "XyzHandle". This handle is also allocated
+    in the top-level GUI objects Data-Store, if the "@handle=NAME" token was defined in the definition
+    string. The handles "NAME" is used as string identifier for the GUI-DataStore. (see the next 
+    subsection for more details and some examples)
+    </tiny>
+
+    \subsection IO Output-Interface
+    Dependend on the type of a GUI component, the top-level GUI instance gets additional outputs.
+    If a gui-component is defined with an optinal parameters \@out=NAME, it automaticall creates a mutex-locked variable
+    (inside of an interal GUI data base which is always automatically created by its top level GUI component), 
+    and updates this variable each time a Qt-GUI-Event on this components occurs. The NAME of this output must
+    be unique for all components that have a common top-level GUI instance. It is used to reference the particular
+    output field in you applicaton. Consider the following example:
+
       \code
       #include <ICLQt/GUI.h>
       using namespace icl;
@@ -293,11 +298,12 @@
         // we name its output "the slider value"
         GUI g("slider(0,100,50)[@out=the slider value]");
 
-        // Yet, g is just a GUI-Definition - no QSlider was created internally and no
-        // no slider data can be accessed
+        // Now, g is just a GUI-Definition - no QSlider was created internally and no
+        // no slider data can be accessed, yet
 
         // make g visible, This will create all embedded Qt-Widgets internally and
-        // it will allocate data for each component in the GUIs internal DataStore.
+        // it will allocate data for each named components output in the GUIs 
+        // internal DataStore.
         g.show();
       
         // now a single integer value is allocated, which is assigned to the 
@@ -308,18 +314,16 @@
       
         // or
         int *pVal = &g.getValue<int>("the slider value");
+
         return app.exec();
       }
       \endcode
 
-      Yet, most componets provide only a single output pin, however the 
+      Currently, most componets provide a single output pin only, however the 
       GUI-definition syntax can be used to define components with N inputs and M outputs.\n
       As each GUI component has different semantics, the count and the type of it's
       in- and output pins must be regarded. The following list shows all GUI components
-      and explains their individual in- and output interface <b>(Please Note, that the definition of 
-      the input and output interface is mandatory, so if you want to create a slider, you have
-      at least to define its output pin name)</b>: 
-      
+      and explains their individual in- and output interface 
       
       <TABLE>
       <TR> <TD><b>type</b></TD>  <TD><b>handle</b></TD>     <TD><b>outputs</b></TD>     <TD><b>meaning</b></TD>                                      </TR>
@@ -329,26 +333,26 @@
       <TR> <TD>hsplit</TD>       <TD>SplitterHandle</TD>    <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>vsplit</TD>       <TD>SplitterHandle</TD>    <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>border</TD>       <TD>BorderHandle</TD>      <TD>0</TD>                  <TD>-</TD>                                                   </TR>
-      <TR> <TD>button</TD>       <TD>ButtonHandle</TD>      <TD>1 type GUIEvent</TD>    <TD>handle for this button (see below!)</TD>                 </TR>
+      <TR> <TD>button</TD>       <TD>ButtonHandle</TD>      <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>buttongroup</TD>  <TD>ButtonGroupHandle</TD> <TD>1 type int</TD>         <TD>index of the currently toggled radio button </TD>        </TR>
       <TR> <TD>togglebutton</TD> <TD>ButtonHandle</TD>      <TD>1 type bool</TD>        <TD>true=toggled, false=untoggled</TD>                       </TR>
       <TR> <TD>checkbox</TD>     <TD>CheckBoxHandle</TD>    <TD>1 type bool</TD>        <TD>true=checked, false=unchecked</TD>                       </TR>
-      <TR> <TD>label</TD>        <TD>LabelHandle</TD>       <TD>0</TD>                  <TD>handle for this label (see below!)</TD>                  </TR>
+      <TR> <TD>label</TD>        <TD>LabelHandle</TD>       <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>slider</TD>       <TD>SliderHandle</TD>      <TD>1 type int</TD>         <TD>current slider value</TD>                                </TR>
       <TR> <TD>fslider</TD>      <TD>FSliderHandle</TD>     <TD>1 type float</TD>       <TD>current slider value</TD>                                </TR>
       <TR> <TD>int</TD>          <TD>IntHandle</TD>         <TD>1 type int</TD>         <TD>current text input field content</TD>                    </TR>
       <TR> <TD>float</TD>        <TD>FloatHandle</TD>       <TD>1 type float</TD>       <TD>current text input field content</TD>                    </TR>
       <TR> <TD>string</TD>       <TD>StringHandle</TD>      <TD>1 type std::string</TD> <TD>current text input field content</TD>                    </TR>
-      <TR> <TD>disp</TD>         <TD>DispHandle</TD>        <TD>0</TD>                  <TD>handle for the label matrix (see below!) </TD>           </TR>
-      <TR> <TD>image</TD>        <TD>ImageHandle</TD>       <TD>0</TD>                  <TD>handle for the embedded ICLWidget</TD>                   </TR>
-      <TR> <TD>draw</TD>         <TD>DrawHandle</TD>        <TD>0</TD>                  <TD>handle for the embedded ICLDrawWidget</TD>               </TR>
-      <TR> <TD>draw3D</TD>       <TD>DrawHandle<3D/TD>      <TD>0</TD>                  <TD>handle for the embedded ICLDrawWidget3D</TD>             </TR>
-      <TR> <TD>combo</TD>        <TD>ComboHandle</TD>       <TD>1 type std::string</TD> <TD>current selected item</TD>                               </TR>
+      <TR> <TD>disp</TD>         <TD>DispHandle</TD>        <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>image</TD>        <TD>ImageHandle</TD>       <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>draw</TD>         <TD>DrawHandle</TD>        <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>draw3D</TD>       <TD>DrawHandle<3D/TD>      <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>combo</TD>        <TD>ComboHandle</TD>       <TD>1 type std::string</TD> <TD>current selected item <b>don't use this, use the handle instead!</b></TD></TR>
       <TR> <TD>spinner</TD>      <TD>SpinnerHandle</TD>     <TD>1 type int</TD>         <TD>current value</TD>                                       </TR>
       <TR> <TD>fps</TD>          <TD>FPSHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
-      <TR> <TD>multidraw</TD>    <TD>MultiDrawHandle</TD>   <TD>0</TD>                  <TD>handle of [string]-accessible ICLDrawWidgets</TD>        </TR>
-      <TR> <TD>camcfg</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>maybe we can add a handle to the parent  CamCfgW.</TD>   </TR>
-      <TR> <TD>config</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>maybe we can add a handle to the parent ConfigFi.</TD>   </TR>
+      <TR> <TD>multidraw</TD>    <TD>MultiDrawHandle</TD>   <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>camcfg</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>config</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       </TABLE>
       
       \section HVV Handles vs. Values
@@ -363,12 +367,13 @@
       (general params are inside angular brackets).\n
       All handle classes are derived from the GUIHandle<T> template class, which provides
       functionalities for storing a T-pointer (template parameter) and which offers functions
-      to access this pointer (the *operator). A ButtonHandle for example inherits
-      the GUIHandle<QPushButton>, so it wraps a QPushButton* internally. For a more
+      to access this pointer (the *operator and the '->' operator). A ButtonHandle for example inherits
+      the GUIHandle<QPushButton> i.e., it wraps a QPushButton* internally. For a more
       convenient use, each handle has some special functions that provide
       an abstracted direct access to the underlying class without knowing it. E.g. the image handle
       provides a 'setImage(ImgBase*)'-function and an 'update()'-function, which are sufficient to 
-      make the underlying widget display a new image.
+      make the underlying widget display a new image. All functions of the wrapped Qt-data type
+      can also be accessed directly using the operator '->'
       
       \code
       #include <ICLQuick/Common.h>
@@ -403,7 +408,11 @@
       
         // now the slider itself can be manipulated
         sl->setValue(7);
-      
+    
+        // the same as
+        // h->setValue(7);
+
+
         // enter qts event loop
         return app.exec();
       }
@@ -664,6 +673,67 @@ int main(int n, char **ppc){
   return ICLApplication(n,ppc,"",init).exec();
 }
       \endcode
+
+      \subsubsection INDEX_OP GUI instances and the []-index operator (Meta-Handles)
+    
+      For even more convenience the GUI's parent class DataStore does also provide an implementation of the 
+      index operator "[]". The index operator can be called with the entries string-ID in order to get a
+      so called <b>meta-handle</b> for this entry of type DataStore::Data. This class provides intelligent implicit-cast-  and
+      assignment-operators. These operators can be used to produce much prettier code:
+
+      \code
+      
+      GUI gui;
+      gui << "..." << "...";
+      gui.show();
+      // instead of writing
+      gui.getValue<ImageHandle>("image")->setImage(myImage);
+      gui.getValue<ImageHandle>("image")->updateFromOtherThread();
+    
+      // you can simply write
+      gui["image"] = myImage;
+      gui["image"].update();
+    
+    
+      // this:
+      int val = gui.getValue<float>("mySlider");
+    
+      // you can write this:
+      int val = gui["mySlider"]
+    
+      // or also 
+      ImageHandle h = gui["image"];
+    
+      \endcode
+    
+      This implicit cast/assignment mechanism works for many pairs of lvalue/rvalue types (note: "number values" are all
+      common float and integer data types).
+    
+      - all handles and values can be accessed directly using 
+        \code  type t = gui["id"]; \endcode
+      - combo-handles can be assigned to string values (extracts selected item)
+        and to number values (extracts current index) e.g.,  
+        \code  string mode = gui["mode"]; \endcode
+      - int- and float handles can be assigned to number-values and to strings e.g., 
+        \code  int threshold = gui["thresh"]; \endcode
+      - all image types and pointers of these can be assigned to image-, draw- and draw3D handles e.g., 
+        \code  gui["image"] = myImage; \endcode
+      - number-type = slider or spinner meta handle is supported and string = slider or spinner meta handle
+      - slider or spinner = Range8u|32s|32f sets the range of the underlying component
+      - button-group = number-type sets the current selected item of a button group
+      - number-type = button-group gets the current selected item of a button group
+      - label = string shows the string on the label
+      - label = image|image-pointer (shows an image description on the label)
+      - string = label extracts the current text of a label
+      - num-type = button extracts whether the button is currently toggled
+      - num-type|string = string-meta-handle extracts/parses the current input
+      - the function registerCallback can be called on all meta-handles in order to register a GUI::Callback*
+      - the function update() can be called on image-, draw- and draw3D meta handles. This function calls
+        the internal components updateFromOtherThread()-method
+      - the function install() can can also be called on these meta handles. It installs a MouseHandler*
+        (passed as anonymous void*)
+      - the function update() updates an fps-meta handle
+
 
       \subsubsection ABCDE Qt-Dialogs
 
