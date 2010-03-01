@@ -40,7 +40,7 @@ libICLUtils_la_SOURCES= \
 ../src/XMLDocument.cpp \
 ../src/XMLNode.cpp \
 ../src/XMLNodeIterator.cpp \
-../src/StraightLine2D.cpp \	
+../src/StraightLine2D.cpp \
 ../src/FFTUtils.cpp
 
 include_HEADERS= \
