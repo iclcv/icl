@@ -39,9 +39,9 @@ libICLUtils_la_SOURCES= \
 ../src/XMLNodeFilter.cpp \
 ../src/XMLDocument.cpp \
 ../src/XMLNode.cpp \
-../src/XMLNodeIterator.cpp\
-../src/StraightLine2D.cpp	
-
+../src/XMLNodeIterator.cpp \
+../src/StraightLine2D.cpp \	
+../src/FFTUtils.cpp
 
 include_HEADERS= \
 ../../include/ICLUtils/config.h \
@@ -99,4 +99,6 @@ include_HEADERS= \
 ../../include/ICLUtils/XMLNodeConstIterator.h \
 ../../include/ICLUtils/XMLNode.h \
 ../../include/ICLUtils/XMLNodeIterator.h \
-../../include/ICLUtils/StraightLine2D.h
+../../include/ICLUtils/StraightLine2D.h \
+../../include/ICLUtils/FFTUtils.h \
+../../include/ICLUtils/FFTException.h

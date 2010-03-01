@@ -37,8 +37,9 @@ libICLFilter_la_SOURCES= \
 ../src/UnaryOpPipe.cpp \
 ../src/WeightChannelsOp.cpp \
 ../src/WeightedSumOp.cpp \
-../src/WarpOp.cpp
-
+../src/WarpOp.cpp \
+../src/FFTOp.cpp \
+../src/IFFTOp.cpp
 
 include_HEADERS= \
 ../../include/ICLFilter/AffineOp.h \
@@ -81,7 +82,9 @@ include_HEADERS= \
 ../../include/ICLFilter/UnaryOpWork.h \
 ../../include/ICLFilter/WeightChannelsOp.h \
 ../../include/ICLFilter/WeightedSumOp.h \
-../../include/ICLFilter/WarpOp.h
+../../include/ICLFilter/WarpOp.h \
+../../include/ICLFilter/FFTOp.h \
+../../include/ICLFilter/IFFTOp.h 
 
 if HAVE_IPP_COND
 

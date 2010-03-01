@@ -9,12 +9,17 @@ icl-median-op-test \
 icl-threshold-op-test \
 icl-weight-channels-op-test \
 icl-weighted-sum-op-test \
-icl-morphological-op-test
+icl-morphological-op-test \
+icl-fft-demo
 
 # explicit sources, ldflags and cxxflags
 icl_arithmetical_op_test_SOURCES=../examples/arithmetical-op-test.cpp
 icl_arithmetical_op_test_LDFLAGS=${ICLFilter_EXAMPLE_LDFLAGS}
 icl_arithmetical_op_test_CXXFLAGS=${ICLFilter_EXAMPLE_CXXFLAGS}
+
+icl_fft_demo_SOURCES=../examples/icl-fft-demo.cpp
+icl_fft_demo_LDFLAGS=${ICLFilter_EXAMPLE_LDFLAGS}
+icl_fft_demo_CXXFLAGS=${ICLFilter_EXAMPLE_CXXFLAGS}
 
 icl_champfer_op_test_SOURCES=../examples/champfer-op-test.cpp
 icl_champfer_op_test_LDFLAGS=${ICLFilter_EXAMPLE_LDFLAGS}
