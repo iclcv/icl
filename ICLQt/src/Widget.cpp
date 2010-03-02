@@ -634,6 +634,7 @@ namespace icl{
         return false;
       }
       recording = true;
+      paused = false;
       return true;
     }
     bool setPaused(bool val){
@@ -668,6 +669,7 @@ namespace icl{
 
     void captureFrameBufferHook(){
       Mutex::Locker l(mutex);
+
       if(!recording || paused || (target != FRAME_BUFFER)) return;
       ICLASSERT_RETURN(fileWriter);
 
@@ -1592,7 +1594,10 @@ namespace icl{
 
     const Img8u &fb = grabFrameBufferICL();
     std::string filename = getImageCaptureFileName();
-    if(filename == "") return;
+    if(filename == ""){
+      ERROR_LOG("current capture filename is empty");
+      return;
+    } 
     
     try{
       FileWriter(filename).write(&fb);
