@@ -3,6 +3,7 @@
 
 #include <ICLUtils/MultiTypeMap.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/StringUtils.h>
 namespace icl{
   
   /// Extension of the associative container MultiTypeMap \ingroup UNCOMMON
@@ -133,6 +134,18 @@ namespace icl{
         \endcode
     */
     Data operator[](const std::string &key) throw (KeyNotFoundException);
+    
+    
+    /// convenience function that allows collecting data from different source entries
+    /** This function can e.g. be used to obtain data from an array of 'float' GUI
+        components */
+    template<class T>
+    std::vector<T> collect(const std::vector<std::string> &keys){
+      std::vector<T> v(keys.size());
+      for(unsigned int i=0;i<keys.size();++i) v[i] = operator[](keys[i]);
+      return v;
+    }
+    
   };
 }
 

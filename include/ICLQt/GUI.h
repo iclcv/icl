@@ -77,6 +77,12 @@ namespace icl{
       return m_oDataStore.operator[](key);
     }
     
+    /// collects data from different components at once
+    template<class T>
+    std::vector<T> collect(const std::vector<std::string> &keys){
+      return m_oDataStore.collect<T>(keys);
+    }
+    
     /// returns whether this gui is actually visible
     virtual bool isVisible() const;
     

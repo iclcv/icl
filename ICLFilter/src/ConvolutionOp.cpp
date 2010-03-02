@@ -237,8 +237,10 @@ namespace icl{
 
     if(src->getDepth() >= depth32f){
       m_kernel.toFloat();
-    }else{
-      m_kernel.toInt(false);
+    }else if(m_kernel.isFloat()){
+      WARNING_LOG("convolution of non-float images with float kernels is not supported\n"
+                  "use an int-kernel instead. For now, the kernel is casted to int-type");
+      m_kernel.toInt(true);
     }
 
     if(m_kernel.isFloat()){
