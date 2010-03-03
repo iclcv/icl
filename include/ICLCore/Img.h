@@ -46,7 +46,7 @@ namespace icl {
     /* {{{ open */
 
     /// internally used storage for the image channels
-    std::vector<SmartPtr<Type> > m_vecChannels;
+    std::vector<SmartArray<Type> > m_vecChannels;
     /// @}
 
     /* }}} */
@@ -58,7 +58,7 @@ namespace icl {
     /** if the give Type* ptDataToCopy is not NULL, the data addressed from it, 
         is copied deeply into the new created data pointer
         **/
-    SmartPtr<Type> createChannel(Type *ptDataToCopy=0) const;
+    SmartArray<Type> createChannel(Type *ptDataToCopy=0) const;
 
     /// returns the start index for a channel loop
     /** In some functions to cases must be regarded:

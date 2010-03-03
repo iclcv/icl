@@ -78,7 +78,7 @@ namespace icl {
   
     typename std::vector<Type*>::const_iterator it = vptData.begin();
     for(int i=0; i<getChannels(); ++i, ++it) {
-      m_vecChannels.push_back(SmartPtr<Type>(*it,passOwnerShip));
+      m_vecChannels.push_back(SmartArray<Type>(*it,passOwnerShip));
     }
   }
 
@@ -95,7 +95,7 @@ namespace icl {
   
     typename std::vector<Type*>::const_iterator it = vptData.begin();
     for(int i=0; i<getChannels(); ++i, ++it) {
-      m_vecChannels.push_back(SmartPtr<Type>(*it,passOwnerShip));
+      m_vecChannels.push_back(SmartArray<Type>(*it,passOwnerShip));
     }
   } 
 
@@ -111,7 +111,7 @@ namespace icl {
    
     typename std::vector<Type*>::const_iterator it = vptData.begin();
     for(int i=0; i<getChannels(); ++i, ++it) {
-      m_vecChannels.push_back(SmartPtr<Type>(*it,passOwnerShip));
+      m_vecChannels.push_back(SmartArray<Type>(*it,passOwnerShip));
     }
   } 
 
@@ -160,11 +160,11 @@ namespace icl {
     
     if(c1.isNull()) return;
     m_vecChannels.reserve(getChannels());
-    m_vecChannels.push_back(SmartPtr<Type>(const_cast<Type*>(c1.begin()),false));
+    m_vecChannels.push_back(SmartArray<Type>(const_cast<Type*>(c1.begin()),false));
 #define ADD_CHANNEL(i)                                                  \
     if(!c##i.isNull()){                                                 \
       ICLASSERT_THROW(c1.cols() == c##i.cols() && c1.rows() == c##i.rows(), InvalidMatrixDimensionException(__FUNCTION__)); \
-      m_vecChannels.push_back(SmartPtr<Type>(const_cast<Type*>(c##i.begin()),false)); \
+      m_vecChannels.push_back(SmartArray<Type>(const_cast<Type*>(c##i.begin()),false)); \
     }
     ADD_CHANNEL(2)    ADD_CHANNEL(3)    ADD_CHANNEL(4)    ADD_CHANNEL(5)
 #undef ADD_CHANNEL
@@ -1117,11 +1117,11 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     // {{{  Auxillary  functions 
 
     template<class Type>
-  SmartPtr<Type> Img<Type>::createChannel(Type *ptDataToCopy) const {
+  SmartArray<Type> Img<Type>::createChannel(Type *ptDataToCopy) const {
     // {{{ open
     FUNCTION_LOG("");
     int dim = getDim();
-    if(!dim) return SmartPtr<Type>();
+    if(!dim) return SmartArray<Type>();
 
     Type *ptNewData = new Type[dim];
     if(ptDataToCopy){
@@ -1129,7 +1129,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     }else{
       std::fill(ptNewData,ptNewData+dim,0);
     }
-    return SmartPtr<Type>(ptNewData);
+    return SmartArray<Type>(ptNewData);
   }
 
   // }}}

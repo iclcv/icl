@@ -41,7 +41,7 @@ namespace icl{
 
     /// single constructor to create a pixelref instance
     /** This should not be used manually. Rather you should use Img<T>'s operator()(int x, int y) */
-    inline PixelRef(int x, int y, int width, std::vector<SmartPtr<T> > &data):m_data(data.size()){
+    inline PixelRef(int x, int y, int width, std::vector<SmartArray<T> > &data):m_data(data.size()){
       int offs = x+width*y;
       for(unsigned int i=0;i<data.size();++i){
         this->m_data[i] = data[i].get()+offs;
