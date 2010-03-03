@@ -198,7 +198,7 @@ namespace icl{
                 gui.create();
                 
                 ComboHandle &ch = gui.getValue<ComboHandle>("h");
-                ch.registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
+                ch.registerCallback(SmartPtr<GUI::Callback>(this,false));
                 
                 int idx = (*ch)->findText(e);
                 if(idx!=-1){
@@ -221,7 +221,7 @@ namespace icl{
               std::string tr = bo ? "!true" : "true";
               gui = GUI("togglebutton(false,"+tr+")[@handle=b@out=v@minsize=5x1]");
               gui.create();
-              gui.getValue<ButtonHandle>("b").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
+              gui.getValue<ButtonHandle>("b").registerCallback(SmartPtr<GUI::Callback>(this,false));
               m_guis.back().id = es[i]->getRelID();
               m_guis.back().type = t.toLatin1().data();
               m_guis.back().item = n;
@@ -243,11 +243,11 @@ namespace icl{
                 if(t == "float"){
                   gui << str("fslider(")+str(r.minVal)+','+str(r.maxVal)+','+el+')'+p;
                   gui.create();
-                  gui.getValue<FSliderHandle>("h").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
+                  gui.getValue<FSliderHandle>("h").registerCallback(SmartPtr<GUI::Callback>(this,false));
                 }else if (t == "int"){
                   gui << str("slider(")+str((int)r.minVal)+','+str((int)r.maxVal)+','+el+')'+p;
                   gui.create();
-                  gui.getValue<SliderHandle>("h").registerCallback(SmartPtr<GUI::Callback,PointerDelOp>(this,false));
+                  gui.getValue<SliderHandle>("h").registerCallback(SmartPtr<GUI::Callback>(this,false));
                 }else{
                   ok = false;
                 }

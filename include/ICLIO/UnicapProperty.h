@@ -243,7 +243,7 @@ namespace icl{
     /** \endcond **/
 
     /// internal storage for the wrapped unicap_property_t pointer (SmartPointer)
-    SmartPtr<unicap_property_t,UnicapPropertyDelOp> m_oUnicapPropertyPtr;
+    SmartPtrBase<unicap_property_t,UnicapPropertyDelOp> m_oUnicapPropertyPtr;
     
     /// internal storage for the wrapped unicap_handle_t
     unicap_handle_t m_oUnicapHandle;

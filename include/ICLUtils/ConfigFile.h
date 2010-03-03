@@ -436,7 +436,7 @@ namespace icl{
       std::string id;           //!< entries key (config.foo.bar....)
       std::string value;        //!< entries value as string
       std::string rttiType;     //!< entries rtti type ID
-      SmartPtr<KeyRestriction,PointerDelOp> restr;  /// optional restriction pointer
+      SmartPtr<KeyRestriction> restr;  /// optional restriction pointer
 
       /// returns the written type name that is associated with rttiType internally
       const std::string &getTypeName() const { return s_typeMap[rttiType]; }
@@ -495,7 +495,7 @@ namespace icl{
     static void add_to_doc(XMLDocument &h,const std::string &id,const std::string &type, const std::string &value);
      
     /// shallow copyable smart pointer of the document handle
-    mutable SmartPtr<XMLDocument,XMLDocumentDelOp> m_doc;
+    mutable SmartPtrBase<XMLDocument,XMLDocumentDelOp> m_doc;
     
     /// global ConfigFile instance 
     static ConfigFile s_oConfig;

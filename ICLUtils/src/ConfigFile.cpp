@@ -243,7 +243,7 @@ namespace icl{
   void ConfigFile::setRestriction(const std::string &id, const ConfigFile::KeyRestriction &r) throw (EntryNotFoundException){
     // {{{ open
     // we need to add this restriction to the file ??
-    get_entry_internal(m_sDefaultPrefix+id).restr = SmartPtr<KeyRestriction,PointerDelOp>(new KeyRestriction(r));
+    get_entry_internal(m_sDefaultPrefix+id).restr = SmartPtr<KeyRestriction>(new KeyRestriction(r));
   }
 
   // }}}

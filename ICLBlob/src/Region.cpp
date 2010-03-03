@@ -306,7 +306,7 @@ namespace icl{
   
   // The function expects a closed boundary in *impl->boundary.
   void Region::calculateThinnedBoundaryIntern() const{
-    if (!impl->thinned_boundary) const_cast<SmartPtr<RegionImpl,RegionImplDelOp>&>(impl)->thinned_boundary = new std::vector<Point>;
+    if (!impl->thinned_boundary) const_cast<SmartPtrBase<RegionImpl,RegionImplDelOp>&>(impl)->thinned_boundary = new std::vector<Point>;
     else impl->thinned_boundary->clear();
     
     std::vector<Point> &boundary=*impl->boundary;
@@ -523,8 +523,8 @@ namespace icl{
                                          const T &minThreshold, const T &maxThreshold,
                                          bool darkBlob) const{
     if(impl->accurateCenter) return *impl->accurateCenter;
-    const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->accurateCenter = new Point32f(-1,-1);
-    Point32f &p = *const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->accurateCenter;
+    const_cast<SmartPtrBase<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->accurateCenter = new Point32f(-1,-1);
+    Point32f &p = *const_cast<SmartPtrBase<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->accurateCenter;
     ICLASSERT_RETURN_VAL(grayImage.getChannels(),p);
     Rect r = getBoundingBox().enlarged(bbMargin) & grayImage.getImageRect();
     const Channel<T> c = grayImage[0];
@@ -598,7 +598,7 @@ namespace icl{
     if(!directOnly && impl->allSubRegions) return *impl->allSubRegions;
     
     if(!impl->directSubRegions){
-      const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->directSubRegions = new std::vector<Region>;
+      const_cast<SmartPtrBase<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->directSubRegions = new std::vector<Region>;
       
       for(std::set<Region*>::iterator it = impl->neighbours.begin(); it != impl->neighbours.end();++it){
         if(is_region_contained(const_cast<Region*>(this),*it)){
@@ -612,7 +612,7 @@ namespace icl{
       std::set<IDRegion> all;
       collect_subregions_recursive(all,const_cast<Region*>(this));
       
-      const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->allSubRegions = new std::vector<Region>(all.size());
+      const_cast<SmartPtrBase<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->allSubRegions = new std::vector<Region>(all.size());
       int i=0;
       for(std::set<IDRegion>::iterator it = all.begin();it!=all.end();++it){
         impl->allSubRegions->operator[](i++) = *it->r;
@@ -636,7 +636,7 @@ namespace icl{
     }
     if(directOnly && impl->directSurroundingRegions) return *impl->directSurroundingRegions;
     //    if(!directOnly && impl->allSurroundingRegions) return impl->allSurroundingRegions;
-    const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->directSurroundingRegions = new std::vector<Region>;
+    const_cast<SmartPtrBase<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->directSurroundingRegions = new std::vector<Region>;
     
     for(std::set<Region*>::iterator it = impl->neighbours.begin(); it != impl->neighbours.end();++it){
       if(!*it) continue;
@@ -653,7 +653,7 @@ namespace icl{
 
   const std::vector<Region> &Region::getNeighbours(bool *isAtBorder) const{
     if(impl->publicNeighbours) return *impl->publicNeighbours;
-    const_cast<SmartPtr<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->publicNeighbours = new std::vector<Region>;
+    const_cast<SmartPtrBase<icl::RegionImpl, icl::RegionImplDelOp>&>(impl)->publicNeighbours = new std::vector<Region>;
     std::set<Region*>::const_iterator it = impl->neighbours.begin();
     unsigned int n = impl->neighbours.size();
     

@@ -251,10 +251,10 @@ namespace icl{
     typedef std::map<std::string,DataArray> DataMap;
 
     /// internal definition
-    typedef SmartPtr<DataMap,PointerDelOp> SmartDataMapPtr;
+    typedef SmartPtr<DataMap> SmartDataMapPtr;
     
     /// internal definition
-    typedef SmartPtr<Mutex,PointerDelOp> SmartMutexPtr;
+    typedef SmartPtr<Mutex> SmartMutexPtr;
  
     /// Smart-Pointer to the underlying data (allows shallow copies)
     mutable SmartDataMapPtr m_oDataMapPtr;

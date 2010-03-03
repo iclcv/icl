@@ -13,6 +13,7 @@ namespace icl{
       m_oConverter.apply(m_image,image);
       return image;
     }
+    return 0;
   }
 
   CreateGrabberImpl::CreateGrabberImpl(const std::string &what){

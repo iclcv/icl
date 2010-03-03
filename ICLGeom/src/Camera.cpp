@@ -417,12 +417,15 @@ namespace icl {
   }
 
 
-  static Point32f to_normalized_viewport(const Point32f &p, const Camera &cam){
-    // {{{ open
-    Vec uv = cam.getViewportMatrixGL().inv() * Vec(p.x,p.y,0,1);
-    return Point32f(-uv[0],-uv[1]);
-  }
-  // }}}
+  /*
+      static Point32f to_normalized_viewport(const Point32f &p, const Camera &cam){
+      // {{{ open
+      Vec uv = cam.getViewportMatrixGL().inv() * Vec(p.x,p.y,0,1);
+      return Point32f(-uv[0],-uv[1]);
+      }
+      // }}
+      }
+  */
 
   static Vec estimate_3D_internal(const std::vector<Camera*> cams, 
                                   const std::vector<Point32f> &ps) throw (ICLException){

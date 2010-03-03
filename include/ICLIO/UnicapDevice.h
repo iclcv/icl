@@ -232,7 +232,7 @@ namespace icl{
     /** \endcond **/
 
     /// internal storage for the wrapped unicap_device_t (shared pointer)
-    SmartPtr<unicap_device_t,UnicapDeviceDelOp> m_oUnicapDevicePtr;
+    SmartPtrBase<unicap_device_t,UnicapDeviceDelOp> m_oUnicapDevicePtr;
 
     /// storage of the unicap_handle_t that is associated with this device
     unicap_handle_t m_oUnicapHandle;

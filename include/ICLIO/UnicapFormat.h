@@ -138,7 +138,7 @@ namespace icl{
     /** \endcond **/
 
     /// internal storage for the wrapped unicap_format_t struct (SmartPtr)
-    SmartPtr<unicap_format_t, UnicapFormatDelOp> m_oUnicapFormatPtr;
+    SmartPtrBase<unicap_format_t, UnicapFormatDelOp> m_oUnicapFormatPtr;
     
     /// internal storage for the underlying unicap_handle_t
     unicap_handle_t m_oUnicapHandle;

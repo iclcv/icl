@@ -93,7 +93,7 @@ namespace icl{
 
     public:
 
-    typedef SmartPtr<GrabberHandleInstance<G>,PointerDelOp> InstancePtr;
+    typedef SmartPtr<GrabberHandleInstance<G> > InstancePtr;
     typedef std::map<std::string,InstancePtr> InstanceMap;
 
     protected:
@@ -279,7 +279,7 @@ namespace icl{
   };
 
   /** \cond */
-  template<class G> std::map<std::string,icl::SmartPtr<GrabberHandleInstance<G>,PointerDelOp> > GrabberHandle<G>::s_instances;
+  template<class G> std::map<std::string,icl::SmartPtr<GrabberHandleInstance<G> > > GrabberHandle<G>::s_instances;
   template<class G> Mutex GrabberHandle<G>::s_mutex; 
   /** \endcond */
 }

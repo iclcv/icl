@@ -1519,7 +1519,7 @@ namespace icl {
    */
   template<class T>
   static inline T p2o(T *ptr){
-    return *SmartPtr<T,PointerDelOp>(ptr);
+    return *SmartPtr<T>(ptr);
   }
 
   /// Combine several images using shallow copy. \ingroup IMAGE 

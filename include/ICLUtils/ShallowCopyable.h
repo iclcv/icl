@@ -109,7 +109,7 @@ namespace icl{
     ShallowCopyable(Impl *t=0):impl(t){}
 
     /// shared pointer for the classes implementation
-    SmartPtr<Impl,DelOp> impl;
+    SmartPtrBase<Impl,DelOp> impl;
   };
 }
 #endif

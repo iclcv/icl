@@ -1,6 +1,6 @@
 #include <vector>
-#ifndef ICLAUTOPTR_H
-#define ICLAUTOPTR_H
+#ifndef ICL_SMART_PTR
+#define ICL_SMART_PTR
 
 #include <stdlib.h>
 #include <ICLUtils/Macros.h>
@@ -19,31 +19,31 @@ namespace icl{
   /// C-Style delete operation class for the SmartPtr class \ingroup UTILS
   struct FreeDelOp : public DelOpBase{ static void delete_func(void *v){ free(v); } };
   
-  /// AutoPtr class used for channel management \ingroup UTILS
+  /// Base class for reference counting smart-pointers  \ingroup UTILS
   /** The operation of the SmartPtr class is copied from the 
       previously used boost/shared_ptr template class.
-      This re-implementation makes the ICLCore (and depending
-      packages) independent from the boost headers.
 
-      <b>Important:</b> The data of a SmartPtr is released
+      <b>Important:</b> The data of a SmartPtrBase is released
       using the second template class parameter delOp::delete_func.
       Predefined delOps are: 
       - PointerDelOp  (using delete []) 
       - ArrayDelOp  (using delete [])   [ default ]
       - FreeDelOp  (using free)
-      Take care, that shared data, which is given to a specific SmartPtr,
+      Take care, that shared data, which is given to a specific SmartPtrBase,
       is allocated using the correct allocation method (new, new[] or 
       malloc).
-  
-      <h2>How a SmartPtr works</h2>
+      <b>Use the derived classes SmartPtrBase and SmartArray in order to 
+      avoid misunderstandings </b>
+      
+      <h2>How a SmartPtrBase works</h2>
       In contrast with the auto pointers provided by the stdlib
-      an SmartPtr has an internal reference counter, which is
+      an SmartPtrBase has an internal reference counter, which is
       used to care about the deletion of the hold reference.
-      The following example shows how to use the SmartPtr class.
+      The following example shows how to use the SmartPtrBase class.
 
       <pre>
       class MyClass{...};
-      typedef SmartPtr<MyClass> aptr_t;
+      typedef SmartPtrBase<MyClass> aptr_t;
 
       //create an array of empty auto pointers
       aptr_t array[100];
@@ -69,9 +69,9 @@ namespace icl{
       </pre>
   */
   template<class T, class delOp = ArrayDelOp > 
-    class SmartPtr
+    class SmartPtrBase
     {
-      private:
+      protected:
       T   *e; /**< corresponding data element */
       int *c; /**< reference counters */
       bool d; /**< deletion flag (indicates if the hold data must be deleted) */
@@ -100,13 +100,13 @@ namespace icl{
       public:
   
       /// e and c will become NULL
-      SmartPtr(): e(0),c(0),d(0){}    
+      SmartPtrBase(): e(0),c(0),d(0){}    
       
       /// ptData is given, reference counter is set to 1
-      SmartPtr(T *ptData, bool bOwn=true): e(ptData), c(new int(1)),d(bOwn){}
+      SmartPtrBase(T *ptData, bool bOwn=true): e(ptData), c(new int(1)),d(bOwn){}
       
       /// e and c is copied from r, reference counter is increased by 1
-      SmartPtr(const SmartPtr<T,delOp>& r): e(r.e), c(r.c), d(r.d){ inc(); }
+      SmartPtrBase(const SmartPtrBase<T,delOp>& r): e(r.e), c(r.c), d(r.d){ inc(); }
       
       /// sets the pointer to hold another reference
       /** If the new reference r.e is identical to the current
@@ -117,7 +117,7 @@ namespace icl{
           copied from the given r. At the end, the copied reference
           counter is increased by 1.
       */
-      SmartPtr<T,delOp> &operator=(const SmartPtr<T,delOp>& r)
+      SmartPtrBase<T,delOp> &operator=(const SmartPtrBase<T,delOp>& r)
         {
           if(r.e == e) return *this;
           dec();
@@ -127,7 +127,7 @@ namespace icl{
         }
 
       /// decreases the reference counter (cleanup on demand)
-      ~SmartPtr() { dec(); }
+      ~SmartPtrBase() { dec(); }
         
       /// returns a reference of the currently hold element
       /** If the element pointer is null, an error will
@@ -174,6 +174,40 @@ namespace icl{
       /// current reference count
       int use_count() const { return c ? *c : 0; }
     };
+
+  
+  /// Specialization of the SmartPtrBase class for Pointers
+  /** If the internal reference counter becomes 0, the contained
+      data pointer is release using <tt>delete</tt> */
+  template<class T>
+  struct SmartPtr : public SmartPtrBase<T, PointerDelOp>{
+    // type definition for the parent class
+    typedef SmartPtrBase<T,PointerDelOp> super;
+    /// creates a null pointer
+    SmartPtr():super(){}
+    /// gets pointer, ownership is passed optionally
+    SmartPtr(T *ptData, bool bOwn=true):super(ptData,bOwn){}
+    /// reference counting copy constructor
+    SmartPtr(const SmartPtrBase<T,PointerDelOp>& r):super(r){}
+  };
+
+
+  /// Specialization of the SmartPtrBase class for Arrays
+  /** If the internal reference counter becomes 0, the contained
+      data pointer is release using <tt>delete []</tt>*/
+  template<class T>
+  struct SmartArray : public SmartPtrBase<T, ArrayDelOp>{
+    // type definition for the parent class
+    typedef SmartPtrBase<T,ArrayDelOp> super;
+    /// creates a null pointer
+    SmartArray():super(){}
+    /// gets pointer, ownership is passed optionally
+    SmartArray(T *ptData, bool bOwn=true):super(ptData,bOwn){}
+    /// reference counting copy constructor
+    SmartArray(const SmartPtrBase<T,ArrayDelOp>& r):super(r){}
+  };
+
+
 }
 
 #undef ICL_AUTO_PTR_ASSERT

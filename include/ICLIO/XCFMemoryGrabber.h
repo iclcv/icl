@@ -26,7 +26,7 @@ namespace icl{
    
     // TODO setIgnoreDesiredParams(bool) 
     // TODO const xmltio::TIODocment *getLastDocument() const;
-    SmartPtr<XCFMemoryGrabberImpl,XCFMemoryGrabberImplDelOp> impl;
+    SmartPtrBase<XCFMemoryGrabberImpl,XCFMemoryGrabberImplDelOp> impl;
   };
   
 }

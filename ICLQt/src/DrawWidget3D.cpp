@@ -459,12 +459,12 @@ namespace icl{
   struct SmartCallback3DCommand : public ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
 
-    SmartCallback3DCommand(ICLDrawWidget3D *widget,SmartPtr<ICLDrawWidget3D::GLCallback,PointerDelOp> &smartCB):
+    SmartCallback3DCommand(ICLDrawWidget3D *widget,SmartPtr<ICLDrawWidget3D::GLCallback> &smartCB):
       m_spCB(smartCB),widget(widget){}
     virtual void execute(){
       m_spCB->draw_extern(widget);
     }
-    SmartPtr<ICLDrawWidget3D::GLCallback,PointerDelOp> m_spCB;
+    SmartPtr<ICLDrawWidget3D::GLCallback> m_spCB;
     ICLDrawWidget3D *widget;
   };
 
@@ -616,7 +616,7 @@ namespace icl{
   void ICLDrawWidget3D::callback(ICLDrawWidget3D::GLCallback *cb){
     m_vecCommands3D.push_back(new Callback3DCommand(this,cb));
   }
-  void ICLDrawWidget3D::callback(SmartPtr<ICLDrawWidget3D::GLCallback,PointerDelOp> smartCB){
+  void ICLDrawWidget3D::callback(SmartPtr<ICLDrawWidget3D::GLCallback> smartCB){
     m_vecCommands3D.push_back(new SmartCallback3DCommand(this,smartCB));
   }
 

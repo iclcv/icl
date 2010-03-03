@@ -159,7 +159,7 @@ namespace icl{
       }
 
     };
-    typedef SmartPtr<Callback,PointerDelOp> CallbackPtr;
+    typedef SmartPtr<Callback> CallbackPtr;
     
     /// registers a callback function on each component 
     /** @param cb callback to execute 

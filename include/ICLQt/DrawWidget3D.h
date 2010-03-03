@@ -130,7 +130,7 @@ namespace icl{
         released objects, which leads to run-time errors, if Qt's GUI-threads tries to execute this
         callback objects asynchronously.
     */
-    void callback(SmartPtr<GLCallback,PointerDelOp> smartCB);
+    void callback(SmartPtr<GLCallback> smartCB);
 
     /// forward declaration of the internally used DrawCommandClass
     class DrawCommand3D;

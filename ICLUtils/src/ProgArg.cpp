@@ -144,7 +144,7 @@ namespace icl{
   };
 
 
-  typedef SmartPtr<AllowedArg,PointerDelOp> AllowedArgPtr;
+  typedef SmartPtr<AllowedArg> AllowedArgPtr;
 
   struct ProgArgContext{
     std::vector<AllowedArgPtr> allowed;
@@ -173,9 +173,9 @@ namespace icl{
     /// creates the static instance (must not be called twice)
     static ProgArgContext* createInstance(){
       if(s_context) THROW_ProgArgException("painit must not be called twice!");
-      static SmartPtr<ProgArgContext,PointerDelOp> instance;
+      static SmartPtr<ProgArgContext> instance;
       s_context = new ProgArgContext;
-      instance = SmartPtr<ProgArgContext,PointerDelOp>(s_context);
+      instance = SmartPtr<ProgArgContext>(s_context);
       return s_context;
     }
 

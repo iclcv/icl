@@ -54,13 +54,13 @@ namespace icl{
   /** \endcond */
 
   /// Internal Smart XMLNode pointer type \ingroup XML
-  typedef SmartPtr<XMLNode,XMLNodeDelOp> XMLNodePtr;
+  typedef SmartPtrBase<XMLNode,XMLNodeDelOp> XMLNodePtr;
 
   /// Internal attribute list/map type \ingroup XML
   typedef std::map<std::string,std::string> XMLAttMap;
   
   /// Internal attribute list/map smart pointer type \ingroup XML
-  typedef SmartPtr<XMLAttMap,PointerDelOp> XMLAttMapPtr;
+  typedef SmartPtr<XMLAttMap> XMLAttMapPtr;
 
 
   

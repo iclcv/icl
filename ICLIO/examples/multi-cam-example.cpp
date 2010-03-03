@@ -3,14 +3,14 @@
 
 GUI gui("vsplit");
 
-std::vector<SmartPtr<GenericGrabber,PointerDelOp> > gs;
+std::vector<SmartPtr<GenericGrabber> > gs;
 
 void init(){
   for(int i=1;i<=4;++i){
     std::string arg=str("-input")+str(i);
     if(pa(arg)){
       try{
-        gs.push_back(SmartPtr<GenericGrabber,PointerDelOp>(new GenericGrabber(FROM_PROGARG(arg))));
+        gs.push_back(SmartPtr<GenericGrabber>(new GenericGrabber(FROM_PROGARG(arg))));
         gs.back()->setDesiredSize(pa("-size"));
         if(pa("-t")){
           gs.back()->setProperty("trigger-power","on"); // or off?
