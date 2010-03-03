@@ -89,6 +89,8 @@ namespace icl {
         */
     Point32f applyMeanShiftStep(const Img32f &image, const Point32f &pos);
 
+    public:
+
     /// Generates an Epanechnikov Kernel
     /** 
         @param a kernel bandwidth
@@ -101,8 +103,6 @@ namespace icl {
         @param stdDev profiles the standard deviation.
         */
     static Img32f generateGauss(int bandwidth,float stdDev);
-    
-    public:
 
     /// Constructor with only the most needed parameters
     /** The basic constructor with only the most needed parameters.

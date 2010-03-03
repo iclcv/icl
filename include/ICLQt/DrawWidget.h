@@ -166,14 +166,32 @@ int main(int n, char **ppc){
         when the draw command is passed to the underlying PaintEngine. Otherwise, it would
         not be possible to ensure, that the set image data that is drawn is not changed
         elsewhere 
+        <b>note:</b> If image has four channels, the last channel is used as alpha channel
+        where a pixel value of 0 means invisible=100%transparent and 255 means no transparency
     */
     void image(ImgBase *image, float x, float y, float w, float h);
     
+    /// convenience function for image using an image rect 
+    inline void image(ImgBase *image, const Rect &r){
+      this->image(image,r.x,r.y,r.width,r.height);
+    }
+    
     /// draws a string into the given rect
-    void text(std::string text, float x, float y, float w=-1, float h=-1, int fontsize=15);
+    /** if w=-1 and h=-1, fontsize is used to determine the bitmap size */
+    void text(std::string text, float x, float y, float w, float h, int fontsize=15);
+
+    /// draws text at given x, y location with given fontsize
+    void text(const std::string &text, float x, float y, int fontsize=15){
+      this->text(text,x,y,-1,-1,fontsize);
+    }
 
     /// draws a point at the given location
     void point(float x, float y); 
+
+    /// convenience wrapper for point(float,float);
+    void point(const Point &p){
+      point(p.x,p.y);
+    }
 
     /// draws a set of points
     /** for relative Point coordinates the factors can be set
@@ -251,6 +269,39 @@ int main(int n, char **ppc){
     /// draws a predefined symbol at the given location
     /** The symbols size can be set using symsize */
     void sym(float x, float y, Sym s);
+
+    /// convenience wrapper for sym(float,float,Sym)
+    void sym(const Point32f &p, Sym s){
+      sym(p.x,p.y,s);
+    }
+    
+    /// this is a convenience function for sym(float,float,Sym)
+    /** possible values for sym are: 
+        - 'r' for rectangle
+        - '+' for plus 
+        - 'x' for cross
+        - 't' for triangle
+        - 'o' for circle 
+        
+        instead of writing 
+        \code draw->sym(x,y,ICLDrawWidget::symPlus) \endcode
+        you can simply write
+        \code draw->sym(x,y,'+') \endcode
+        
+        for all invalid chars, 'x' is used
+    */
+    void sym(float x, float y, char sym){
+      if(sym == 'r') this->sym(x,y,symRect);
+      else if(sym == '+') this->sym(x,y,symPlus);
+      else if(sym == 't') this->sym(x,y,symTriangle);
+      else if(sym == 'o') this->sym(x,y,symCircle);
+      else this->sym(x,y,symCross);
+    }
+
+    /// convenicence wrapper for sym(float,flota,char)
+    void sym(const Point32f &p, char sym){
+      this->sym(p.x,p.y,sym);
+    }
     
     /// sets the size for following "sym" draw commands
     void symsize(float w, float h=-1); // if h==-1, h = w;
