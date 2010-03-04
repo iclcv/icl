@@ -1,4 +1,4 @@
-#                                              -*- Autoconf -*-
+#                                             -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
 ####################################################################################
@@ -43,6 +43,7 @@ AM_CONDITIONAL([SYSTEM_APPLE_COND],[test x$ARCH = xAPPLE])
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADER([include/ICLUtils/config.h])       
+AC_LANG([C++])
 
 ####################################################################################
 # Checks for generic programs.
@@ -66,7 +67,7 @@ ICL_CHECK_LIBDC()
 ICL_CHECK_OPENCV()
 ICL_CHECK_OPENGL()
 ICL_CHECK_UNICAP()
-ICL_CHECK_IMAGEMAGICK()
+ICL_CHECK_LIBMAGICK()
 ICL_CHECK_LIBJPEG()
 ICL_CHECK_LIBZ()
 ICL_CHECK_LIBMESASR()
@@ -107,7 +108,7 @@ ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[LIBDC])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[XINE])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[UNICAP])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[LIBXINE])
-ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[IMAGEMAGICK])
+ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[LIBMAGICK])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[VIDEODEV])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLIO],[XCF])
 
@@ -181,7 +182,7 @@ ICL_NOTIFY_SUPPORT([LIBZ],         [libz     ])
 ICL_NOTIFY_SUPPORT([VIDEODEV],     [videodev ])
 ICL_NOTIFY_SUPPORT([SVS],          [SVS      ])
 ICL_NOTIFY_SUPPORT([XCF],          [XCF      ])
-ICL_NOTIFY_SUPPORT([IMAGEMAGICK],  [Magick++ ])
+ICL_NOTIFY_SUPPORT([LIBMAGICK],    [Magick++ ])
 ICL_NOTIFY_SUPPORT([LIBMESASR],    [libmesasr])
 ICL_NOTIFY_SUPPORT([OPENCV],       [OpenCV   ])
 AC_MSG_NOTICE([+---------------------------------------+])

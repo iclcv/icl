@@ -75,7 +75,7 @@ include_HEADERS+= \
 endif
 
 
-if HAVE_IMAGEMAGICK_COND
+if HAVE_LIBMAGICK_COND
 libICLIO_la_SOURCES+= \
 ../src/FileWriterPluginImageMagick.cpp \
 ../src/FileGrabberPluginImageMagick.cpp
