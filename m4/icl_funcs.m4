@@ -161,14 +161,14 @@ AC_SUBST([$1_LIBS])
 AC_DEFUN([ICL_STRIP_FLAGS_FOR],[
 $1_LIBS=`echo ${$1_LIBS} | sed "s|-L/usr/lib | |g"`
 $1_LIBS=`echo ${$1_LIBS} | sed "s|-L/lib | |g"`
-$1_LDFLAGS=`echo ${$1_LDFLAGS} | sed "s|-Wl,-rpath -Wl,/usr/lib | |g"`
-$1_LDFLAGS=`echo ${$1_LDFLAGS} | sed "s|-Wl,-rpath -Wl,/lib | |g"`
+$1_LDFLAGS=`echo ${$1_LDFLAGS} | sed "s|-Wl,-rpath -Wl,/usr/lib||g"`
+$1_LDFLAGS=`echo ${$1_LDFLAGS} | sed "s|-Wl,-rpath -Wl,/lib||g"`
 $1_CXXFLAGS=`echo ${$1_CXXFLAGS} | sed "s|-I/usr/include | |g"`
 $1_CXXFLAGS=`echo ${$1_CXXFLAGS} | sed "s|-I/include | |g"`
-$1_LIBS_PC=`echo ${$1_LIBS_PC} | sed "s|-L/usr/lib | |g"`
-$1_LIBS_PC=`echo ${$1_LIBS_PC} | sed "s|-L/lib | |g"`
-$1_LDFLAGS_PC=`echo ${$1_LDFLAGS_PC} | sed "s|-Wl,-rpath -Wl,/usr/lib | |g"`
-$1_LDFLAGS_PC=`echo ${$1_LDFLAGS_PC} | sed "s|-Wl,-rpath -Wl,/lib | |g"`
+$1_LIBS_PC=`echo ${$1_LIBS_PC} | sed "s|-L/usr/lib||g"`
+$1_LIBS_PC=`echo ${$1_LIBS_PC} | sed "s|-L/lib||g"`
+$1_LDFLAGS_PC=`echo ${$1_LDFLAGS_PC} | sed "s|-Wl,-rpath -Wl,/usr/lib||g"`
+$1_LDFLAGS_PC=`echo ${$1_LDFLAGS_PC} | sed "s|-Wl,-rpath -Wl,/lib||g"`
 $1_CXXFLAGS_PC=`echo ${$1_CXXFLAGS_PC} | sed "s|-I/usr/include | |g"`
 $1_CXXFLAGS_PC=`echo ${$1_CXXFLAGS_PC} | sed "s|-I/include | |g"`
 ])
