@@ -15,7 +15,11 @@ namespace icl{
     
     string time2str(Time::value_type x){
       char acBuf[30];
+#if __WORDSIZE == 64
+      sprintf(acBuf, "%ld",x);
+#else
       sprintf(acBuf, "%lld",x);
+#endif
       return acBuf;
     }
     string i2str(int i){

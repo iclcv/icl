@@ -252,7 +252,7 @@ namespace icl{
       ICLASSERT_RETURN( getType() == menu );
       vector<string> v = getMenu();
       if(find(v.begin(),v.end(),item) != v.end()){
-        sprintf(m_oUnicapPropertyPtr->menu_item,item.c_str());
+			sprintf(m_oUnicapPropertyPtr->menu_item,"%s",item.c_str());
          if(!SUCCESS (unicap_set_property(m_oUnicapHandle,m_oUnicapPropertyPtr.get()) )){
            ERROR_LOG("failed to set new property [code 1]");
          }

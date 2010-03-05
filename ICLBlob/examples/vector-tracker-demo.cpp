@@ -401,7 +401,7 @@ void run(){
   static FPSEstimator fps(10);
   w->color(255,255,255);
   char buf[400];
-  sprintf(buf,"blobs:%4d frames:%6d Error-frames:%4d Errors:%4d   ",vVT.size(),frame_counter,error_frames,error_counter);
+  sprintf(buf,"blobs:%4d frames:%6d Error-frames:%4d Errors:%4d   ",(unsigned int)vVT.size(),frame_counter,error_frames,error_counter);
   w->text(string(buf)+"   "+fps.getFPSString().c_str(),5,5,-1,-1,8); 
   
   w->unlock();

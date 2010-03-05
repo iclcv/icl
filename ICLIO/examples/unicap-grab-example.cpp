@@ -18,11 +18,11 @@ void grab_100_frames(UnicapGrabber &g){
 
 int main(){
   std::vector<UnicapDevice> l = UnicapGrabber::getDeviceList();
-  printf ("devices: %d\n", l.size());
+  printf ("devices: %d\n", (unsigned int)l.size());
   l = UnicapGrabber::getDeviceList();
-  printf ("devices: %d\n", l.size());
+  printf ("devices: %d\n", (unsigned int)l.size());
   l = UnicapGrabber::getDeviceList();
-  printf ("devices: %d\n", l.size());
+  printf ("devices: %d\n", (unsigned int)l.size());
   if(!l.size()) {
      ERROR_LOG("no devices were found !");
      exit(-1001);

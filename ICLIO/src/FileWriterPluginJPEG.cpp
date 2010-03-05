@@ -104,7 +104,11 @@ namespace icl{
     /* Step 5: Write comments */
     char acBuf[1024];
     // timestamp
+#if __WORDSIZE == 64
+    sprintf (acBuf, "TimeStamp %ld", poSrc->getTime().toMicroSeconds());
+#else
     sprintf (acBuf, "TimeStamp %lld", poSrc->getTime().toMicroSeconds());
+#endif
     jpeg_write_marker(&jpgCinfo, JPEG_COM, (JOCTET*) acBuf, strlen(acBuf));
     
     // ROI

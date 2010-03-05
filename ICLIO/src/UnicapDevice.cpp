@@ -294,7 +294,7 @@ namespace icl{
       if(m_oFormats[i].getID() == fmtID ){
         if(m_oFormats[i].checkSize(newSize)){
           UnicapFormat f = getCurrentUnicapFormat();
-          sprintf(f.getUnicapFormat()->identifier,fmtID.c_str());
+          sprintf(f.getUnicapFormat()->identifier,"%s",fmtID.c_str());
           f.getUnicapFormat()->size.width = newSize.width;
           f.getUnicapFormat()->size.width = newSize.height; 
           setFormat(f);

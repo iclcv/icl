@@ -41,7 +41,7 @@ namespace icl{
   void show_vec(const std::vector<int> &v, const std::string &s){
     // {{{ open
 
-    printf("%s[%d][ ",s.c_str(),v.size());
+	 printf("%s[%d][ ",s.c_str(),(unsigned int)v.size());
     for(unsigned int i=0;i<v.size();i++){
       printf("%d ",v[i]);
     }
