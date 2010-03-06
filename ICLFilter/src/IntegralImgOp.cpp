@@ -102,7 +102,7 @@ namespace icl{
     const T *src = image;
     I *dst = intImage;
   
-    // fist pixel
+    // first pixel
     *dst++ = clipped_cast<T,I>(*src++);
     
     // first row
@@ -120,10 +120,12 @@ namespace icl{
       *d = clipped_cast<T,I>( *dl + *s );
       ++s;
       ++d;
+      ++dl;
+
+#define STEP *d =  -*(dl-1) + *dl + *(d-1) + I(*s);  ++s; ++d; ++dl;
 
       // we use 16x loop-unrolling here. This is about 5% faster then 8x
       for(int n = ((int)(sEnd - s)) >> 4; n>0; --n){
-#define STEP *d = clipped_cast<T,I>( -*(dl-1) + *dl - *(d-1) + *s);  ++s; ++d;
         STEP STEP STEP STEP STEP STEP STEP STEP
         STEP STEP STEP STEP STEP STEP STEP STEP
       }
