@@ -1,7 +1,7 @@
 #include <ICLFilter/LocalThresholdOp.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Macros.h>
-
+#include <ICLUtils/StackTimer.h>
 namespace icl{
 
   void create_roi_size_image(const Size &s, int r, Img32s& dst){
@@ -173,7 +173,7 @@ namespace icl{
           xl = r_1;        // -r-1
           for(int idx=w*y,idxEnd=w*(y+1); idx<idxEnd ; ++idx,++xr,++xl){
             thresh = (I[xr+yl] - (I[xr+yu] + I[xl+yl]) + I[xl+yu]) / roiSizeImage[idx]; 
-            D[idx] = S[idx] < (thresh+globalThreshold) ? 0 : 255;
+            D[idx] = 255 * (S[idx] > (thresh+globalThreshold));
           }
         }
       }
@@ -213,7 +213,12 @@ namespace icl{
       case depth8u:{
         //        IntegralImg::create(src->asImg<icl8u>(), m_uiMaskSize+1, &m_oIntegralImage);
         ImgBase *ii = &m_oIntegralImage;
+        {
+          BENCHMARK_THIS_SECTION("II");
         IntegralImgOp(m_uiMaskSize+1, depth32s).apply(src, &ii);
+        }
+        {
+          BENCHMARK_THIS_SECTION("LT");
         local_threshold_algorithm<icl8u>(src->asImg<icl8u>(),
                                          (*dst)->asImg<icl8u>(),
                                          &m_oIntegralImage,
@@ -221,6 +226,7 @@ namespace icl{
                                          m_iGlobalThreshold,
                                          m_uiMaskSize,
                                          m_fGammaSlope);
+        }
         break;
       }
       case depth32f:{

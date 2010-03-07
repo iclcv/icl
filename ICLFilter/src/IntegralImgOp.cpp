@@ -109,18 +109,20 @@ namespace icl{
     for(const T *srcEnd=src+w-1;src<srcEnd;++src,++dst){
       *dst = clipped_cast<T,I>(*src) + *(dst-1);
     }
-    
+  
+
     // rest of the image up to last row
     for(int y=1;y<h;++y){
       const T *s = image+y*w;
       const T * const sEnd = s+w;
       I *d = intImage+y*w;
       I *dl = d-w;
-      
+
       *d = clipped_cast<T,I>( *dl + *s );
       ++s;
       ++d;
       ++dl;
+
 
 #define STEP *d =  -*(dl-1) + *dl + *(d-1) + I(*s);  ++s; ++d; ++dl;
 
@@ -131,14 +133,7 @@ namespace icl{
       }
       while(s < sEnd){ STEP; }
 #undef STEP
-        
-      #if 0
-      while(s < sEnd){
-        *d = clipped_cast<T,I>( -*(dl-1) + *dl - *(d-1) + *s);
-        ++s;
-        ++d;
-      }
-      #endif
+
     } 
   }
 
