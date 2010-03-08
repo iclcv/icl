@@ -136,7 +136,13 @@ namespace icl {
     ICLASSERT_RETURN( poSrc2 );
     ICLASSERT_RETURN( ppoDst );
 
-    if(!BinaryOp::check(poSrc1,poSrc2) || !BinaryOp::prepare(ppoDst,poSrc1)) return;
+    if(!BinaryOp::check(poSrc1,poSrc2)){
+      ERROR_LOG("source images are not compatible: src 1:" << *poSrc1 << " src 2:" << *poSrc2);
+    } 
+    if(!BinaryOp::prepare(ppoDst,poSrc1,depth8u)){
+      ERROR_LOG("unable to prepare the destintaion imaage to source image params and depth8u, src 1/2: " << *poSrc1);
+    }
+
     switch (poSrc1->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(T) case depth##T:                             \
                                  cmp(poSrc1->asImg<icl##T>(),               \
