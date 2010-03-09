@@ -258,6 +258,8 @@ ICL_DEF_EXAMPLE_FLAGS_FOR([ICLOpenCV],[ICLAlgorithms])
 ICL_DEF_EXAMPLE_FLAGS_FOR([ICLAlgorithms],[ICLAlgorithms])
 
 
+echo $IC
+
 ###############################################################################
 # Create makefiles ...
 ###############################################################################
