@@ -1,4 +1,5 @@
 #include <ICLUtils/FFTUtils.h>
+#include <limits>
 //#define FFT_DEBUG(X) std::cout << X << std::endl;
 #define FFT_DEBUG(X)
 namespace icl{
@@ -182,9 +183,10 @@ icl::DynMatrix<T>&  logpowerspectrum(const icl::DynMatrix<std::complex<T> > &src
 	std::complex<T> temp = (T)0.0;
 	const std::complex<T>* srcdata = src.data();
 	T* dstdata = dst.data();
+        T epsilon = std::numeric_limits<T>::min(); // 1.17549e-38 in order to avoid log(0)
 	for(unsigned int i=0;i<src.dim();++i){
 		temp = srcdata[i];
-		dstdata[i] = log2(temp.real()*temp.real()+temp.imag()*temp.imag());
+		dstdata[i] = log2(epsilon + temp.real()*temp.real()+temp.imag()*temp.imag());
 	}
 	return dst;
 }
