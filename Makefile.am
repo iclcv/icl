@@ -3,7 +3,7 @@ DOCDIRS = @ICL_BUILD_DOCDIRS@
 ACLOCAL_AMFLAGS = -I m4
 PACKAGES = @ICL_BUILD_PACKAGES@
 
-EXTRA_DIST=bootstrap.sh @ICL_DOC_MAKEFILES_DIST@ doxyfile doc scripts ICLQt/examples/calib-radial-distortion-tools.h VERSION.sh 
+EXTRA_DIST=bootstrap.sh @ICL_DOC_MAKEFILES_DIST@ doxyfile doc alldoc scripts VERSION.sh ICLGeom/examples/intrinsic-camera-calibration-tools.h
 MKDIR_P ?= mkdir -p
 
 
