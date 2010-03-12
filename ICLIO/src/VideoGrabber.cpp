@@ -89,6 +89,7 @@ namespace icl{
     std::string fileName;
     Size imageSize;
     Img8u imageBuffer;
+    ImgBase *outputBuffer;
 
     double frameDuration;
     double fps;
@@ -120,6 +121,11 @@ namespace icl{
       }
 
       isSeekable = xine_get_stream_info (xine->stream, XINE_STREAM_INFO_SEEKABLE);
+
+      outputBuffer = 0;
+    }
+    ~Data(){
+      ICL_DELETE(outputBuffer);
     }
   };
     
@@ -262,24 +268,41 @@ namespace icl{
     }
     
     m_params->currPos = f.pos_stream;
-    
-    Img8u &image = m_data->imageBuffer;
-    Size size(f.width,f.height);
-    
-    image.setSize(size);
-    m_data->imageSize = size;
+    Size size(f.width,f.height);    
 
-    convert_frame(f.data,Size(f.width,f.height),&image,m_xine->get_4cc());
-
+    Img8u *image = 0;
+    bool needConversion = false;
+    if(ppoDst){
+      if(getIgnoreDesiredParams()){
+        ensureCompatible(ppoDst,depth8u,size,formatRGB);
+        image = (*ppoDst)->asImg<icl8u>();
+      }else{
+        prepareOutput(ppoDst);
+        if(getDesiredDepth() == depth8u){
+          image = (*ppoDst)->asImg<icl8u>();
+        }else{
+          image = &m_data->imageBuffer;
+          image->setSize(size);
+          needConversion = true;
+        }
+      }
+    }else{
+      image = &m_data->imageBuffer;
+      image->setSize(size);
+      if(!getIgnoreDesiredParams()){
+        needConversion = true;
+      }
+    }
+    
+    convert_frame(f.data,size,image,m_xine->get_4cc());
     xine_free_video_frame (m_xine->vo_port,&f);
 
-    
-    if(getIgnoreDesiredParams()){
-      return &image;
+    if(needConversion){
+      ensureCompatible(&m_data->outputBuffer,getDesiredDepth(),getDesiredParams());
+      m_oConverter.apply(image,m_data->outputBuffer);
+      return m_data->outputBuffer;
     }else{
-      ImgBase *dst = prepareOutput (ppoDst);
-      m_oConverter.apply(&image,dst);
-      return dst;
+      return image;
     }
   }
   
