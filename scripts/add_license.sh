@@ -36,6 +36,7 @@
 #LICENSE_TEXT** http://www.gnu.org/copyleft/gpl.html.                           **
 #LICENSE_TEXT**                                                                 **
 #LICENSE_TEXT*********************************************************************/
+#LICENSE_TEXT
 
 function usage () {
     echo "usage: " ;
@@ -77,7 +78,7 @@ echo "adding this license text:"
 cat ./.license_text.txt
 
 ALL_NUM_FILES=0
-#for MODULE in ICLCore ; do
+#for MODULE in ICLUtils ; do
 for MODULE in ICLAlgorithms ICLBlob ICLCC ICLCore ICLFilter ICLGeom ICLIO ICLQt ICLQuick ICLUtils ICLOpenCV ; do
     MODULE_CHAR_COUNT=`echo $MODULE | wc -c`
     MODULE_SPACE_NUM=`echo 54-$MODULE_CHAR_COUNT | bc -l`
@@ -219,14 +220,30 @@ for MODULE in ICLAlgorithms ICLBlob ICLCC ICLCore ICLFilter ICLGeom ICLIO ICLQt 
                 echo "  mv ./.tmp_file.tmp $FILE " ;
             fi
         else # REMOVE is TRUE
+            if [ "$LINES" = "" ] ; then
+                echo "please define number of lines to remove from all files"
+                echo "(default is number of the lines of the current header)"
+                echo -n "lines: ";
+                read LINES
+
+                if [ "$LINES" = "" ] ; then
+                    LINES=`cat ./.license_text.txt | wc -l` ;
+                    echo "using default: $LINES lines" 
+                    # we need +1 for the tail command
+                    LINES=`echo "$LINES+1" | bc -l` ;
+                else
+                    echo "using input: $LINES lines" 
+                    LINES=`echo "$LINES+1" | bc -l` ;
+                fi
+            fi
+            
+            
             if [ "$DOIT" = "TRUE" ] ; then
                 echo "  removing license from $FILE"
                 ENSURE=`cat $FILE | grep 'GNU General Public License Usage'`
                 if [ "$ENSURE" = "" ] ; then
                     echo "  error missing token \"GNU General Public License Usage\" (skipping)" ;
                 else
-                    LINES=`cat ./.license_text.txt | wc -l` ;
-                    LINES=`echo "$LINES+1" | bc -l` ;
                     tail -n +$LINES $FILE > ./.tmp_file.tmp ;
                     mv ./.tmp_file.tmp $FILE ;
                 fi
