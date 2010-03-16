@@ -243,7 +243,9 @@ namespace icl{
         ImgBase *ii = &m_oIntegralImage;
         {
           BENCHMARK_THIS_SECTION("II");
-        IntegralImgOp(m_uiMaskSize+1, depth32s).apply(src, &ii);
+          TODO_LOG("adapt!!");
+          throw ICLException("LocalThresholdOp needs to be adapted!");
+        IntegralImgOp(depth32s).apply(src, &ii);
         }
         {
           BENCHMARK_THIS_SECTION("LT");
@@ -260,7 +262,7 @@ namespace icl{
       case depth32f:{
         //IntegralImg::create(src->asImg<icl32f>(), m_uiMaskSize+1, &m_oIntegralImageF);
         ImgBase *ii = &m_oIntegralImageF;
-        IntegralImgOp(m_uiMaskSize+1, depth32f).apply(src, &ii);
+        IntegralImgOp(depth32f).apply(src, &ii);
         local_threshold_algorithm<icl32f>(src->asImg<icl32f>(),
                                           (*dst)->asImg<icl32f>(),
                                           &m_oIntegralImageF,

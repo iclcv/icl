@@ -27,132 +27,76 @@
 *********************************************************************/
 
 #include <ICLFilter/IntegralImgOp.h>
-#include <cstring>
-using std::memset;
-using std::memcpy;
 
 namespace icl{
 
   
-  IntegralImgOp::IntegralImgOp(unsigned int borderSize, depth d):
+  IntegralImgOp::IntegralImgOp(depth d):
     // {{{ open
-
-    UnaryOp(),m_uiBorderSize(borderSize),m_eIntegralImageDepth(d){
+    m_integralImageDepth(d),m_buf(0){
   }
 
   // }}}
-  void IntegralImgOp::setBorderSize(unsigned int borderSize){
+
+  IntegralImgOp::~IntegralImgOp(){
     // {{{ open
-
-    m_uiBorderSize = borderSize;
+    ICL_DELETE(m_buf);
   }
-
-  // }}}
+  // }}} 
+ 
   void IntegralImgOp::setIntegralImageDepth(depth integralImageDepth){
     // {{{ open
 
-    m_eIntegralImageDepth = integralImageDepth;
-  }
-
-  // }}}
-  unsigned int IntegralImgOp::getBorderSize() const{
-    // {{{ open
-
-    return m_uiBorderSize;
+    m_integralImageDepth = integralImageDepth;
   }
 
   // }}}
   depth IntegralImgOp::getIntegralImageDepth() const{
     // {{{ open
 
-    return m_eIntegralImageDepth;
-  }
-
-  // }}}
-  
-  void IntegralImgOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
-    // {{{ open
-
-    ICLASSERT_RETURN( poSrc );
-    ICLASSERT_RETURN( poSrc );
-    ICLASSERT_RETURN( poSrc != *ppoDst );
-    
-    if(!prepare(ppoDst,  m_eIntegralImageDepth, poSrc->getSize()+Size(2*m_uiBorderSize,2*m_uiBorderSize),
-                formatMatrix, poSrc->getChannels(), Rect::null)) return;
-    
-    switch(m_eIntegralImageDepth){
-      case depth32s:
-        switch(poSrc->getDepth()){
-          case depth8u: *ppoDst = create(poSrc->asImg<icl8u>(),m_uiBorderSize,(*ppoDst)->asImg<icl32s>()); break;
-          case depth16s: *ppoDst = create(poSrc->asImg<icl16s>(),m_uiBorderSize,(*ppoDst)->asImg<icl32s>()); break;
-          case depth32s: *ppoDst = create(poSrc->asImg<icl32s>(),m_uiBorderSize,(*ppoDst)->asImg<icl32s>()); break;
-          case depth32f: *ppoDst = create(poSrc->asImg<icl32f>(),m_uiBorderSize,(*ppoDst)->asImg<icl32s>()); break;
-          case depth64f: *ppoDst = create(poSrc->asImg<icl64f>(),m_uiBorderSize,(*ppoDst)->asImg<icl32s>()); break;
-        }
-        break;
-      case depth32f:
-        switch(poSrc->getDepth()){
-          case depth8u: *ppoDst = create(poSrc->asImg<icl8u>(),m_uiBorderSize,(*ppoDst)->asImg<icl32f>()); break;
-          case depth16s: *ppoDst = create(poSrc->asImg<icl16s>(),m_uiBorderSize,(*ppoDst)->asImg<icl32f>()); break;
-          case depth32s: *ppoDst = create(poSrc->asImg<icl32s>(),m_uiBorderSize,(*ppoDst)->asImg<icl32f>()); break;
-          case depth32f: *ppoDst = create(poSrc->asImg<icl32f>(),m_uiBorderSize,(*ppoDst)->asImg<icl32f>()); break;
-          case depth64f: *ppoDst = create(poSrc->asImg<icl64f>(),m_uiBorderSize,(*ppoDst)->asImg<icl32f>()); break;
-        }
-        break;
-      case depth64f:
-        switch(poSrc->getDepth()){
-          case depth8u: *ppoDst = create(poSrc->asImg<icl8u>(),m_uiBorderSize,(*ppoDst)->asImg<icl64f>()); break;
-          case depth16s: *ppoDst = create(poSrc->asImg<icl16s>(),m_uiBorderSize,(*ppoDst)->asImg<icl64f>()); break;
-          case depth32s: *ppoDst = create(poSrc->asImg<icl32s>(),m_uiBorderSize,(*ppoDst)->asImg<icl64f>()); break;
-          case depth32f: *ppoDst = create(poSrc->asImg<icl32f>(),m_uiBorderSize,(*ppoDst)->asImg<icl64f>()); break;
-          case depth64f: *ppoDst = create(poSrc->asImg<icl64f>(),m_uiBorderSize,(*ppoDst)->asImg<icl64f>()); break;
-        }
-        break;
-      default: ICL_INVALID_DEPTH;
-    }
-    
+    return m_integralImageDepth;
   }
 
   // }}}
 
-  template<class T,class  I>
-  inline void create_integral_channel_no_border(const T *image,int w, int h, I *intImage){
+
+  template<class S,class  D>
+  static void create_integral_channel_cpp(const S *image,int w, int h, D *intImage){
     // {{{ open
-    FUNCTION_LOG("");
     /* algorithm: 
-    +++++..
-    +++CA..
-    +++BX..
-    .......
-    X = src(x) + A + B - C
+        +++++..
+        +++CA..
+        +++BX..
+        .......
+        X = src(x) + A + B - C
     */
        
-    const T *src = image;
-    I *dst = intImage;
+    const S *src = image;
+    D *dst = intImage;
   
     // first pixel
-    *dst++ = clipped_cast<T,I>(*src++);
+    *dst++ = D(*src++);
     
     // first row
-    for(const T *srcEnd=src+w-1;src<srcEnd;++src,++dst){
-      *dst = clipped_cast<T,I>(*src) + *(dst-1);
+    for(const S *srcEnd=src+w-1;src<srcEnd;++src,++dst){
+      *dst = D(*src) + *(dst-1);
     }
   
 
     // rest of the image up to last row
     for(int y=1;y<h;++y){
-      const T *s = image+y*w;
-      const T * const sEnd = s+w;
-      I *d = intImage+y*w;
-      I *dl = d-w;
-
-      *d = clipped_cast<T,I>( *dl + *s );
+      const S *s = image+y*w;
+      const S * const sEnd = s+w;
+      D *d = intImage+y*w;
+      D *dl = d-w;
+      
+      // first pix in row
+      *d = *dl + *s;
       ++s;
       ++d;
       ++dl;
 
-
-#define STEP *d =  -*(dl-1) + *dl + *(d-1) + I(*s);  ++s; ++d; ++dl;
+#define STEP *d =  -*(dl-1) + *dl + *(d-1) + D(*s);  ++s; ++d; ++dl;
 
       // we use 16x loop-unrolling here. This is about 5% faster then 8x
       for(int n = ((int)(sEnd - s)) >> 4; n>0; --n){
@@ -167,211 +111,104 @@ namespace icl{
 
   // }}}
 
-  template<class I>
-  void fill_integral_image_borders(I *intImage,int w, int h, int iw, int ih, int border){
+  template<class S, class D>
+  static void create_integral_image_sd(const Img<S> &src, Img<D> &dst, ImgBase**){
     // {{{ open
-
-    /*******************************
-    left and top: set to zero
-    right and bottom: "copy replicate border"
-    <----------------->
-    00000000000
-    00000000000
-    00xxxxxxAAA^
-    00xxxxxxBBB|
-    00xxxxxxFFF|
-    00abcdqrGGGV
-    00abcdprGGG
-    00abcdprGGG
-    ********************************/
- 
-    //top
-    intImage-=(border+iw*border);
-    memset(intImage,0,border*iw*sizeof(I));
- 
-
-    // left and right
-    int bw = border+w;
-    int bw1 =bw-1;
-    int bh = border+h;
-    I bufVal;
-    for(int y=border;y<bh;++y){
-      //left
-      for(int x=0;x<border;++x){
-        intImage[x+iw*y] = 0;
-      }
-      bufVal = intImage[y*iw+bw1];
-      //right
-      for(int x=bw;x<iw;++x){
-        intImage[x+iw*y] = bufVal;
-      }
-    }
-    
-    // bottom
-    I *srcLine = intImage+(bh-1)*iw;
-    for(int y=bh;y<ih;++y){
-      memcpy(intImage+y*iw,srcLine,iw*sizeof(I));
+    for(int c=src.getChannels()-1;c>=0;--c){
+      create_integral_channel_cpp(src.begin(c), src.getWidth(), src.getHeight(), dst.begin(c));
     }
   }
-  // }}}
-             
-  template<class T,class  I>
-  void create_integral_channel_with_border(const T *image,int w, int h, I *intImage, int border){
-    // {{{ open
-    TODO_LOG("this function must be checked");
-    FUNCTION_LOG("");
-    /* algorithm: 
-    +++++..
-    +++CA..
-    +++BX..
-    .......
-    X = src(x) + A + B - C
-    */
-
-    // integral image size
-    const int iw = w+2*border;
-    const int ih = h+2*border;
-
-    const int offs = border+iw*border;
-    //move to the first integral-image pixel
-    intImage+=offs;
-       
-    const T *src = image;
-    I *dst = intImage;
-  
-    // first pixel
-    *dst++ =  clipped_cast<T,I>(*src++);
-  
-  
-    // fist row
-    for(const T *srcEnd=src+w-1;src<srcEnd;++src,++dst){
-      *dst =  clipped_cast<T,I>(*src) + *(dst-1);
-    }
-  
-    
-    // first column
-    src = image+w;
-    dst = intImage+iw;
-    for(const T *srcEnd=src+w*(h-1);src<srcEnd;src+=w,dst+=iw){
-      *dst =  clipped_cast<T,I>(*src) + *(dst-iw);
-    }
-
-    
-    // rest of the image
-    src = image;
-    dst = intImage;
-
-
-    int idx;
-    for(int y=1;y<h;++y){
-      idx = y*iw+1;
-      for(int x=1;x<w;++x,++idx){
-        dst[idx] =  clipped_cast<T,I>(src[x+y*w]) + dst[idx-1] + dst[idx-iw] - dst[idx-iw-1];
-      }
-    } 
-    
-    fill_integral_image_borders(intImage,w,h,iw,ih,border);
-  }
-
-  // }}}
+  // }}} 
 
 #ifdef HAVE_IPP
-  template<>
-  void create_integral_channel_with_border<icl8u,Ipp32s>(const icl8u *image, int w, int h, Ipp32s *intImage, int border){
+
+  template<class S, class D, class B, class IPP_FUNC>
+  void create_integral_image_ipp(const Img<S> &src, Img<D> &dst, ImgBase **buf,  IPP_FUNC ippfunc){
     // {{{ open
 
-    FUNCTION_LOG("");
+    ensureCompatible(buf,getDepth<B>(), src.getSize()+Size(1,1), 1, formatMatrix, Rect::null);
+    Img<B> &dbuf = *(*buf)->asImg<B>();
     
-    // integral image size
-    int iw = w+2*border;
-    int ih = h+2*border;
-    int b1 = border-1;
-    ippiIntegral_8u32s_C1R(image,w*sizeof(icl8u),intImage+b1+b1*iw,iw*sizeof(Ipp32s), Size(w,h),0);
-    
-    intImage+=(border+iw*border);
-    fill_integral_image_borders(intImage,w,h,iw,ih,border);
+    for(int c=src.getChannels()-1;c>=0;--c){
+      IppStatus s = ippfunc(src.begin(c),src.getLineStep(),dbuf.begin(0),dbuf.getLineStep(), src.getSize(), 0);
+      if(s != ippStsNoErr) throw ICLException("error in ippiIntegral_8u32s_C1R in " +std::string(__FUNCTION__) + ":" +std::string(ippGetStatusString(s)));
+      dbuf.setROI(Rect(Point(1,1),src.getSize()));
+      dbuf.convertROI(&dst);
+      dbuf.setFullROI();
+    }
   }
 
   // }}}
 
-
-  template<>
-  void create_integral_channel_with_border<icl8u,Ipp32f>(const icl8u *image, int w, int h, Ipp32f *intImage, int border){
+  template<> void create_integral_image_sd<icl8u,icl32s>(const Img<icl8u> &src, Img<icl32s> &dst, ImgBase **buf){
     // {{{ open
 
-    FUNCTION_LOG("");
-    
-    // integral image size
-    int iw = w+2*border;
-    int ih = h+2*border;
-    int b1 = border-1;
-    ippiIntegral_8u32f_C1R(image,w*sizeof(icl8u),intImage+b1+b1*iw,iw*sizeof(Ipp32f), Size(w,h),0);
-    
-    intImage+=(border+iw*border);
-    fill_integral_image_borders(intImage,w,h,iw,ih,border);
+    create_integral_image_ipp<icl8u,icl32s,icl32s>(src,dst, buf, ippiIntegral_8u32s_C1R);
+  }
+
+  // }}}
+  template<> void create_integral_image_sd<icl8u,icl32f>(const Img<icl8u> &src, Img<icl32f> &dst, ImgBase **buf){
+    // {{{ open
+
+    create_integral_image_ipp<icl8u,icl32f,icl32f>(src,dst, buf, ippiIntegral_8u32f_C1R);
+  }
+
+  // }}}
+  template<> void create_integral_image_sd<icl8u,icl64f>(const Img<icl8u> &src, Img<icl64f> &dst, ImgBase **buf){
+    // {{{ open
+
+    create_integral_image_ipp<icl8u,icl64f,icl32f>(src,dst, buf, ippiIntegral_8u32f_C1R);
   }
 
   // }}}
 
-#if 0
-  // Intel IPP adds a 0-line and a 0-row at the left and top of the result image. As out implementation needs 
-  // approx. 2.1ms for 1000x1000 and IPP needs 1.9, we do not need IPP here!
-  template<>
-  void create_integral_channel_no_border<icl8u,Ipp32s>(const icl8u *image, int w, int h, Ipp32s *intImage){
-    // {{{ open
-    SHOW(w*sizeof(icl8u));
-    SHOW(w*sizeof(Ipp32s));
-    IppStatus s = ippiIntegral_8u32s_C1R(image,w*sizeof(icl8u),intImage,w*sizeof(Ipp32s), Size(w,h),0);
-    if(s != ippStsNoErr) throw ICLException("error in  ippiIntegral_8u32s_C1R:" +std::string(ippGetStatusString(s)));
-  }
-
-  // }}}
-
-
-  template<>
-  void create_integral_channel_no_border<icl8u,Ipp32f>(const icl8u *image, int w, int h, Ipp32f *intImage){
-    // {{{ open
-    IppStatus s = ippiIntegral_8u32f_C1R(image,w*sizeof(icl8u),intImage,w*sizeof(Ipp32f), Size(w,h),0);
-    if(s != ippStsNoErr) throw ICLException("error in  ippiIntegral_8u32s_C1R:" +std::string(ippGetStatusString(s)));
-
-  }
-
-  // }}}
 #endif
 
-#endif
+  template<class D>
+  static void create_integral_image_xd(const ImgBase *src, Img<D> &dst, ImgBase **buf){
+    // {{{ open
+
+    switch(src->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: create_integral_image_sd(*src->asImg<icl##D>(), dst, buf) ; break;
+      ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+    }
+  }
+
+  // }}}
   
-  template<class T, class I>
-  Img<I> *IntegralImgOp::create(const Img<T> *image,unsigned int border, Img<I> *intImage){
+  
+  void IntegralImgOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
     // {{{ open
 
-    ICLASSERT_RETURN_VAL(image, intImage);
-    ICLASSERT_RETURN_VAL(image->getDim(),intImage);
-    ICLASSERT_RETURN_VAL(image->getChannels(),intImage);
+    ICLASSERT_RETURN( poSrc );
+    ICLASSERT_RETURN( poSrc );
+    ICLASSERT_RETURN( poSrc != *ppoDst );
     
-    int w = image->getWidth();
-    int h = image->getHeight();
-    Size s(w+2*border,h+2*border);
-    int c = image->getChannels();
+    if(!prepare(ppoDst,  m_integralImageDepth, poSrc->getSize(),
+                formatMatrix, poSrc->getChannels(), Rect::null)){
+      ERROR_LOG("unable to prepare destination image");
+      return;
+    } 
     
-    if(!intImage){
-      intImage = new Img<I>(s,c);
-    }else{
-      intImage->setSize(s);
-      intImage->setChannels(c);
+    switch(m_integralImageDepth){
+      case depth32s:
+        create_integral_image_xd(poSrc, *(*ppoDst)->asImg<icl32s>(), &m_buf);
+        break;
+      case depth32f:
+        create_integral_image_xd(poSrc, *(*ppoDst)->asImg<icl32f>(), &m_buf);
+        break;
+      case depth64f:
+        create_integral_image_xd(poSrc, *(*ppoDst)->asImg<icl64f>(), &m_buf);
+        break;
+      default:
+        ERROR_LOG("integral image destination depth must be 32s, 32f, or 64f");
+        ICL_INVALID_DEPTH;
     }
-    if(!border){
-      for(int i=0;i<c;i++){
-        create_integral_channel_no_border<T,I>(image->getData(i),w,h,intImage->getData(i));
-      }    
-    }else{
-      for(int i=0;i<c;i++){
-        create_integral_channel_with_border<T,I>(image->getData(i),w,h,intImage->getData(i),border);
-      }    
-    }
-    return intImage;
+    
   }
 
   // }}}
-    
+
+
 }
