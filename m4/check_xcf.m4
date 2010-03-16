@@ -15,6 +15,7 @@ AC_ARG_WITH([XCF],
 
         XCF_PACKAGES="xcf xmltio Memory"
         ICL_EXTEND_FLAG_VARS_TMP_FROM_PC_FOR($XCF_PACKAGES,XCF)
+        ICL_DEF_VARS_FROM_PC([XCF],[$XCF_PACKAGES])
 
         AC_CHECK_HEADER([xcf/xcf.hpp],[],[HAVE_XCF=FALSE])
         AC_CHECK_HEADER([xmltio/xmltio.hpp],[],[HAVE_XCF=FALSE])

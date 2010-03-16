@@ -16,9 +16,9 @@ AC_ARG_WITH([QT],
 
         QT_PACKAGES="QtCore QtOpenGL QtGui"
 	      ICL_EXTEND_FLAG_VARS_TMP_FROM_PC_FOR($QT_PACKAGES,QT)
+        ICL_DEF_VARS_FROM_PC([QT],[$QT_PACKAGES])
 
         # todo check this extra -lGLU
-        ICL_DEF_VARS_FROM_PC([QT],[$QT_PACKAGES])
 	      if [[ "$ARCH" != "APPLE" ]] ; then
           ICL_QT_LIBS="$ICL_QT_LIBS -lGLU"
           CPPFLAGS="$CPPFLAGS $ICL_QT_CXXFLAGS"
