@@ -103,53 +103,36 @@ namespace icl{
   class IntegralImgOp : public UnaryOp{
     public:
     /// Constructor
-    /**
-      @param borderSize the border size
-      @param integralImageDepth the depth of the integralImage (depth8u etc)
+    /** @param borderSize the border size
+        @param integralImageDepth the depth of the integralImage (depth8u etc)
     */
-    IntegralImgOp(unsigned int borderSize=0, depth integralImageDepth=depth32f);
-    
-    /// sets the border size
-    /**
-      @param borderSize the border size
-    */
-    void setBorderSize(unsigned int borderSize);
+    IntegralImgOp(depth integralImageDepth=depth32s);
+
+    /// Destructor
+    ~IntegralImgOp();
     
     /// sets the depth of the integralImage (depth8u etc)
-    /**
-      @param integralImageDepth the depth of the integralImage (depth8u etc)
+    /** @param integralImageDepth the depth of the integralImage (depth8u etc)
     */
     void setIntegralImageDepth(depth integralImageDepth);
     
-    /// returns the border size
-    /** 
-      @return the border size
-    */
-    unsigned int getBorderSize() const;
-    
     /// returns the depth of the integralImage
-    /**
-      @return the depth of the integralImage
+    /** @return the depth of the integralImage
     */
     depth getIntegralImageDepth() const;
     
     /// applies the integralimage Operaor
-    /**
-      @param posrc The source image
+    /** @param posrc The source image
       @param ppoDst Pointer to the destination image
     */
-    void apply(const ImgBase *posrc, ImgBase **ppoDst); 
+    void apply(const ImgBase *src, ImgBase **dst); 
 
     /// Import unaryOps apply function without destination image
     UnaryOp::apply;
     
-    /// creates a set of integral image channels from a given image
-    template<class T,class  I>
-    static Img<I> *create(const Img<T> *image,unsigned int borderSize=0, Img<I> *integralImage=0);
-
     private:
-    unsigned int m_uiBorderSize;
-    depth m_eIntegralImageDepth;
+    depth m_integralImageDepth; //!< destination depth
+    ImgBase *m_buf; //!< used only if IPP is available
   };
 }
 
