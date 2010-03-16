@@ -36,10 +36,27 @@ namespace icl{
 
   LocalThresholdOp::LocalThresholdOp(unsigned int maskSize, float globalThreshold, float gammaSlope): 
     // {{{ open
-
     m_maskSize(maskSize),m_globalThreshold(globalThreshold),
-    m_gammaSlope(gammaSlope),m_roiBufSrc(0), m_roiBufDst(0),m_iiOp(new IntegralImgOp){
-    
+    m_gammaSlope(gammaSlope),m_roiBufSrc(0), m_roiBufDst(0),
+    m_iiOp(new IntegralImgOp),m_algorithm(regionMean){
+  }
+
+  // }}}
+
+  LocalThresholdOp::LocalThresholdOp(LocalThresholdOp::algorithm a, int maskSize, float globalThreshold, float gammaSlope):
+    // {{{ open
+    m_maskSize(maskSize),m_globalThreshold(globalThreshold),
+    m_gammaSlope(gammaSlope),m_roiBufSrc(0), m_roiBufDst(0),
+    m_iiOp(new IntegralImgOp),m_algorithm(a){
+  }
+    // }}}
+
+
+  LocalThresholdOp::~LocalThresholdOp(){
+    // {{{ open
+
+    ICL_DELETE(m_roiBufDst);
+    ICL_DELETE(m_iiOp);
   }
 
   // }}}
@@ -68,9 +85,63 @@ namespace icl{
 
   // }}}
 
+  unsigned int LocalThresholdOp::getMaskSize() const{
+    // {{{ open
+
+    return m_maskSize;
+  }
+
+  // }}}
+
+  float LocalThresholdOp::getGlobalThreshold() const{
+    // {{{ open
+
+      return m_globalThreshold;
+  }
+
+  // }}}
+
+  float LocalThresholdOp::getGammaSlope() const{
+    // {{{ open
+
+      return m_gammaSlope;
+  }
+
+  // }}}
+
+  void LocalThresholdOp::setup(unsigned int maskSize, float globalThreshold, LocalThresholdOp::algorithm a, float gammaSlope){
+    // {{{ open
+
+    setMaskSize(maskSize);
+    setGlobalThreshold(globalThreshold);
+    setGammaSlope(gammaSlope);
+    setAlgorithm(a);
+  }
+
+  // }}}
+
+  /// returns currently used algorithm type
+  LocalThresholdOp::algorithm LocalThresholdOp::getAlgorithms() const{
+    // {{{ open
+
+    return m_algorithm;
+  }
+
+  // }}}
+  
+  /// sets internally used algorithm
+  void LocalThresholdOp::setAlgorithm(algorithm a){
+    // {{{ open
+
+    m_algorithm = a;
+  }
+
+  // }}}
+
 
   template<class TS,  class TI, class TD, class TT, bool WITH_GAMMA>
   static void fast_lt(const Img<TS> &src, const Img<TI> &iim, Img<TD> &dst, int r, TT t, float gs, int channel){
+    // {{{ open
 
     const TI *ii = iim.begin(channel);
     
@@ -188,10 +259,13 @@ namespace icl{
 #undef COMPLEX_STEP
   }
 
-  
+  // }}}
+
   /// this template resolves the destination images depths and if a gamma slope is set or not
   template<class S, class I>
   void apply_local_threshold_six(const Img<S> &src,const Img<I> &ii, ImgBase *dst, float t, int m, float gs){
+    // {{{ open
+
     switch(dst->getDepth()){
       case depth8u:
         if(gs!=0.0f){
@@ -221,9 +295,13 @@ namespace icl{
     }
   }
 
+  // }}}
+
   /// this template resolves the integral image depths
   template<class S>
   void apply_local_threshold_sxx(const Img<S> &src,const ImgBase *ii, ImgBase *dst, float t,unsigned int m, float gs){
+    // {{{ open
+
     switch(ii->getDepth()){
       case depth32s:
         apply_local_threshold_six(src,*ii->asImg<icl32s>(),dst,t,m,gs);
@@ -240,22 +318,42 @@ namespace icl{
     }
   }
 
-  void LocalThresholdOp::apply(const ImgBase *src, ImgBase **dst){
+  // }}}
+
+
+  template<LocalThresholdOp::algorithm a>
+  void LocalThresholdOp::apply_a(const ImgBase*, ImgBase**){
     // {{{ open
-    ICLASSERT_RETURN( src );
-    ICLASSERT_RETURN( src->getSize() != Size::null );
-    ICLASSERT_RETURN( src->getChannels() );
-    ICLASSERT_RETURN( dst );
-    ICLASSERT_RETURN( src != *dst );
+    throw ICLException("this algorithm is not yet implemented for the LocalThresholdOp class");
+  }
+  // }}}
+
+  template<> void LocalThresholdOp::apply_a<LocalThresholdOp::tiledNN>(const ImgBase *src, ImgBase **dst){
+    // {{{ open
+    
+  }
+  // }}}
+
+  template<> void LocalThresholdOp::apply_a<LocalThresholdOp::tiledLIN>(const ImgBase *src, ImgBase **dst){
+    // {{{ open
+
+  }
+  // }}}
 
 
+  template<> void LocalThresholdOp::apply_a<LocalThresholdOp::regionMean>(const ImgBase *src, ImgBase **dst){
+    // {{{ open
+    const ImgBase *srcOrig = src;
     bool roi = false;
     // cut the roi of src if set
     if(!(src->hasFullROI())){
-      src->deepCopy(&m_roiBufSrc);
+      ensureCompatible(&m_roiBufSrc, src->getDepth(), src->getROISize(), src->getChannels(), src->getFormat());
+      src->deepCopyROI(&m_roiBufSrc);
       src = m_roiBufSrc;
       roi = true;
     }
+    ICLASSERT_RETURN(src->getWidth() > 2*(int)m_maskSize);
+    ICLASSERT_RETURN(src->getHeight() > 2*(int)m_maskSize);
     
     
     // prepare the destination image
@@ -277,112 +375,34 @@ namespace icl{
     }
     
     if(roi){
-      if(!prepare(dst, src, (*useDst)->getDepth())){
+      if(!prepare(dst, srcOrig, (*useDst)->getDepth())){
         ERROR_LOG("prepare failure [code 2]");
         return;
       }
       (*useDst)->deepCopyROI(dst);
     }
-  
-   
+  }
+  // }}}
+
+
+  void LocalThresholdOp::apply(const ImgBase *src, ImgBase **dst){
+    // {{{ open
+    ICLASSERT_RETURN( src );
+    ICLASSERT_RETURN( src->getSize() != Size::null );
+    ICLASSERT_RETURN( src->getChannels() );
+    ICLASSERT_RETURN( dst );
+    ICLASSERT_RETURN( src != *dst );
+
+    switch(m_algorithm){
+      case regionMean: apply_a<regionMean>(src,dst); break;
+      case tiledNN: apply_a<tiledNN>(src,dst); break;
+      case tiledLIN: apply_a<tiledLIN>(src,dst); break;
+      default:
+        throw ICLException(std::string(__FUNCTION__)+": invalid algorithm value");
+    }
   }  
 
   // }}}
 
-  unsigned int LocalThresholdOp::getMaskSize() const{
-    return m_maskSize;
-  }
-  float LocalThresholdOp::getGlobalThreshold() const{
-      return m_globalThreshold;
-  }
-  float LocalThresholdOp::getGammaSlope() const{
-      return m_gammaSlope;
-  }
-
-  void LocalThresholdOp::setup(unsigned int maskSize, float globalThreshold, float gammaSlope){
-    setMaskSize(maskSize);
-    setGlobalThreshold(globalThreshold);
-    setGammaSlope(gammaSlope);
-  }
   
-
-
-
-#if 0
-  template<class T,class T2>
-  void local_threshold_algorithm(const Img<T> *src, 
-                                 Img<T>* dst, 
-                                 Img<T2> *integralImage,
-                                 int *roiSizeImage,  
-                                 int globalThreshold,
-                                 int r,
-                                 float gammaSlope){
-    // {{{ open
-
-    /*********************************************************
-    ***  local Threshold algorithm  **************************
-    **********************************************************/
-    
-    /* r=2
-    .C....A...
-    ..+++++...
-    ..+++++...
-    ..++X++...
-    ..+++++...    
-    .B++++D...
-    ..........
-    |+| = D - A - B + C 
-    */
-    Size s = src->getSize();
-    const int w = s.width;
-    const int h = s.height;
-    const int r1 = r+1;
-    const int r_1 = -r-1;
-       
-    int yu, yl, xr, xl;
-    T2 thresh;
-    
-    int iw =w+2*(r1);
-    //    int ih =h+2*(r1);
-    for(int channel=0;channel<src->getChannels();++channel){
-      const T *S = src->getData(channel);
-      T *D = dst->getData(channel);
-      T2 *I = integralImage->getData(channel)+(r1+r1*iw);
-      if(gammaSlope){
-        /**
-         using function f(x) = m*x + b    (with clipping)
-         with m = gammaSlope
-              k = localThresh+globalThresh
-              f(k) = 128
-         
-         f(x) = clip( m(x-k)+128 , 0 , 255 )
-        */
-        for(int y=0;y<h;y++){
-          yu = (y-r1)*iw;  // (y-(r+1))*iw
-          yl = (y+r)*iw;   // (y+r)*iw 
-          xr = r;          // r
-          xl = r_1;        // -r-1
-          for(int idx=w*y,idxEnd=w*(y+1); idx<idxEnd ; ++idx,++xr,++xl){
-            thresh = (I[xr+yl] - (I[xr+yu] + I[xl+yl]) + I[xl+yu]) / roiSizeImage[idx]; 
-            D[idx] = (T2)clip( gammaSlope * (S[idx] - thresh+globalThreshold) + 128,float(0),float(255));
-          }
-        }
-      }else{
-        for(int y=0;y<h;y++){
-          yu = (y-r1)*iw;  // (y-(r+1))*iw
-          yl = (y+r)*iw;   // (y+r)*iw 
-          xr = r;          // r
-          xl = r_1;        // -r-1
-          for(int idx=w*y,idxEnd=w*(y+1); idx<idxEnd ; ++idx,++xr,++xl){
-            thresh = (I[xr+yl] - (I[xr+yu] + I[xl+yl]) + I[xl+yu]) / roiSizeImage[idx]; 
-            D[idx] = 255 * (S[idx] > (thresh+globalThreshold));
-          }
-        }
-      }
-    }
-  }
-
-  // }}}
-#endif
-    
 }

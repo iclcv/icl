@@ -509,7 +509,7 @@ namespace icl{
       imageInfoIndicatorEnabled(true),infoTabVisible(false),
       selectedTabIndex(0),embeddedZoomMode(false),
       embeddedZoomModeJustEnabled(false),embeddedZoomRect(0),
-      useLinInterpolation(false),nextButtonX(2)
+      useLinInterpolation(false),nextButtonX(2),lastMouseReleaseButton(0)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
@@ -569,6 +569,7 @@ namespace icl{
     bool useLinInterpolation;
     int nextButtonX;
     std::vector<MouseHandler*> callbacks;
+    int lastMouseReleaseButton;
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
@@ -1879,10 +1880,11 @@ namespace icl{
     }
 
     switch(e->button()){
-      case Qt::LeftButton: m_data->downMask[0]=false; break;
-      case Qt::RightButton: m_data->downMask[2]=false; break;
-      default: m_data->downMask[1] = false; break;
+      case Qt::LeftButton: m_data->downMask[0]=false; m_data->lastMouseReleaseButton = 0; break;
+      case Qt::RightButton: m_data->downMask[2]=false; m_data->lastMouseReleaseButton = 2; break;
+      default: m_data->downMask[1] = false; m_data->lastMouseReleaseButton = 1; break;
     }
+
     emit mouseEvent(createMouseEvent(MouseReleaseEvent));
     update();
   }
@@ -1956,11 +1958,14 @@ namespace icl{
   // }}}
 
   void ICLWidget::wheelEvent(QWheelEvent *e){
+    // {{{ open 
     QGLWidget::wheelEvent(e);
 #if 0
     if(m_data->embeddedZoomMode && m_data->embeddedZoomModeJustEnabled){
       return;
     }
+
+
 
     static const float zoominfac = 0.9;
     static const float zoomoutfac = 1.5;
@@ -2011,6 +2016,8 @@ namespace icl{
     if(m_data->zoomAdjuster) m_data->zoomAdjuster->update();
 #endif
   }
+  
+  // }}}
 
   void ICLWidget::resizeEvent(QResizeEvent *e){
     // {{{ open
@@ -2158,16 +2165,27 @@ namespace icl{
 
   const MouseEvent &ICLWidget::createMouseEvent(MouseEventType type){
     // {{{ open
+
+
     MouseEvent &evt = m_data->mouseEvent;
 
     LOCK_SECTION;
+
+    if(type == MouseReleaseEvent){
+      m_data->downMask[m_data->lastMouseReleaseButton] = true;
+    }
+
     if(!m_data->image || !m_data->image->hasImage()){
-      return evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
-                              Point(-1,-1),
-                              Point32f((float)m_data->mouseX/float(width()),(float)m_data->mouseY/float(height())),
-                              m_data->downMask,
-                              std::vector<double>(),
-                              type,this);
+      evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
+                       Point(-1,-1),
+                       Point32f((float)m_data->mouseX/float(width()),(float)m_data->mouseY/float(height())),
+                       m_data->downMask,
+                       std::vector<double>(),
+                       type,this);
+      if(type == MouseReleaseEvent){
+        m_data->downMask[m_data->lastMouseReleaseButton] = false;
+      }
+      return evt;
     
     }else{
       Rect r = getImageRect();
@@ -2183,12 +2201,17 @@ namespace icl{
       if(r.contains(m_data->mouseX,m_data->mouseY)){
         color = m_data->image->getColor(imageX,imageY);
       }
-      return evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
-                              Point(imageX,imageY),
-                              Point32f(relImageX,relImageY),
-                              m_data->downMask,
-                              color,
-                              type,this);
+      evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
+                       Point(imageX,imageY),
+                       Point32f(relImageX,relImageY),
+                       m_data->downMask,
+                       color,
+                       type,this);
+      if(type == MouseReleaseEvent){
+        m_data->downMask[m_data->lastMouseReleaseButton] = false;
+      }
+      return evt;
+
     }
   }
 

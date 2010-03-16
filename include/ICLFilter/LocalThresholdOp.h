@@ -138,6 +138,13 @@ namespace icl{
   class LocalThresholdOp : public UnaryOp, public Uncopyable{
     public:
     
+    /// Internally used algorithm 
+    enum algorithm{
+      regionMean, //!< uses default 
+      tiledNN,
+      tiledLIN
+    };
+    
     /// create a new LocalThreshold object with given mask-size and global threshold
     /** @param maskSize size of the mask to use for calculations, the image width and
                         height must each be larger than 2*maskSize.
@@ -146,6 +153,14 @@ namespace icl{
                           if set to 0 (default) the binary threshold is used
     */
     LocalThresholdOp(unsigned int maskSize=10, float globalThreshold=0, float gammaSlope=0);
+
+    
+    /// creates a LocalThresholdOp instance with given Algorithm-Type
+    LocalThresholdOp(algorithm a, int maskSize=10, float globalThreshold=0, float gammaSlope=0);
+
+    
+    /// Destructor
+    ~LocalThresholdOp();
     
     /// virtual apply function 
     /** roi support is realized by copying the current input image ROI into a 
@@ -166,7 +181,7 @@ namespace icl{
     void setGammaSlope(float gammaSlope);
     
     /// sets all parameters at once
-    void setup(unsigned int maskSize, float globalThreshold, float gammaSlope);
+    void setup(unsigned int maskSize, float globalThreshold, algorithm a=regionMean, float gammaSlope=0);
     
     /// returns the current mask size
     unsigned int getMaskSize() const;
@@ -176,8 +191,19 @@ namespace icl{
 
     /// returns the current gamma slope
     float getGammaSlope() const; 
+    
+    /// returns currently used algorithm type
+    algorithm getAlgorithms() const ;
+    
+    /// sets internally used algorithm
+    void setAlgorithm(algorithm a);
 
     private:
+
+    /// internal algorithm function
+    template<algorithm a>
+    void apply_a(const ImgBase *src, ImgBase **dst);
+    
     /// mask size 
     unsigned int m_maskSize;
 
@@ -192,6 +218,9 @@ namespace icl{
     ImgBase *m_roiBufDst;
     
     IntegralImgOp *m_iiOp;
+    
+    /// current algorithm
+    algorithm m_algorithm;
   };
   
 }  

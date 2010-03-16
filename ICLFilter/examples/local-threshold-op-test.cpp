@@ -35,32 +35,30 @@
 
 #include <QInputDialog>
 GUI gui("hbox");
+GenericGrabber grabber;
+LocalThresholdOp ltop;
+Mutex mutex;
+Rect selroi[3];
 
-void init(){
-  int masksize = 10;
-  int thresh = 2;
-  float gamma = 0;
-  if(pa("-config")){
-    ConfigFile f(*pa("-config"));
-    masksize = f["config.masksize"];
-    thresh = f["config.threshold"];
-    gamma = f["config.gammaslope"];
+void step();
+
+void mouse(const MouseEvent &e){
+  if(e.isRight()){
+    selroi[1] = selroi[2];
+    selroi[0] = Rect::null;
+    step();
+  }else if(e.isLeft()){
+    if(e.isPressEvent()){
+      selroi[0] = Rect(e.getPos(),Size(1,1));
+    }else if(e.isDragEvent()){
+      selroi[0].width = e.getX() - selroi[0].x;
+      selroi[0].height = e.getY() - selroi[0].y;
+    }else if(e.isReleaseEvent()){
+      selroi[1] = selroi[0].normalized();
+      selroi[0] = Rect::null;
+    }
+    step();
   }
-
-  
-  gui << "image[@minsize=32x24@handle=orig@label=original]";
-  gui << "image[@minsize=32x24@handle=prev@label=preview]";
-  gui << ( GUI("vbox[@label=controls]")
-           << string("slider(2,200,")+str(masksize)+")[@label=mask size@out=masksize@minsize=15x2]"
-           << string("slider(-30,40,")+str(thresh)+")[@label=threshold@out=threshold@minsize=15x2]"
-           << string("fslider(0,15,")+str(gamma)+")[@label=gamma slope@out=gamma@minsize=15x2]"
-           << "button(next image)[@handle=next]"
-           << "togglebutton(stopped,running)[@out=run]"
-           << "button(save params)[@handle=save]"
-         );
-  
-  
-  gui.show();
 }
 
 void save(){
@@ -81,79 +79,122 @@ void save(){
   }
 }
 
-void run(){
-  static GenericGrabber g(FROM_PROGARG("-input"));
+void step(){
+  Mutex::Locker lock(mutex);
+  gui_DrawHandle(orig);
+  gui_ImageHandle(prev);
+  gui_ButtonHandle(next);
+  gui_LabelHandle(time);
+  gui_ComboHandle(algorithm);
+  gui_FPSHandle(fps);
+  gui_bool(loop);
+  gui_bool(clipToROI);
+  gui_int(masksize);
+  gui_float(threshold);
+  gui_float(gamma);
+  gui["save"].registerCallback(new GUI::Callback(save));
 
-  if(g.getType() == "file"){
-    g.setIgnoreDesiredParams(true);
-  }else{
-    g.setIgnoreDesiredParams(false);
-    g.setDesiredSize(Size(640,480));
-    if(!pa("-color")){
-      g.setDesiredFormat(formatGray);
-    }else{
-      g.setDesiredFormat(formatRGB);
+  ltop.setClipToROI(clipToROI);
+  ltop.setup(masksize, threshold, (LocalThresholdOp::algorithm)(int)algorithm, gamma);
+
+  static const ImgBase *image = 0;
+  if(!image || loop || next.wasTriggered()){
+    bool init = !image;
+    image = grabber.grab();
+    if(init){
+      selroi[0]=selroi[2]=image->getImageRect();
     }
-    g.setDesiredDepth(depth8u);
   }
 
-  static ImageHandle &orig = gui.getValue<ImageHandle>("orig");
-  static ImageHandle &prev = gui.getValue<ImageHandle>("prev");
-  static ButtonHandle &next = gui.getValue<ButtonHandle>("next");
-  static bool &loop = gui.getValue<bool>("run");
-  static int &masksize = gui.getValue<int>("masksize");
-  static int &thresh = gui.getValue<int>("threshold");
-  static float &gamma = gui.getValue<float>("gamma");
-  gui.getValue<ButtonHandle>("save").registerCallback(new GUI::Callback(save));
-  
-  static LocalThresholdOp t;
-  
-  static int lastMaskSize=0;
-  static int lastThresh=0;
-  static float lastGamma=0;
-  while(1){
-    t.setMaskSize(masksize);
-    t.setGlobalThreshold(thresh);
-    t.setGammaSlope(gamma);
-    
-    const ImgBase *image = g.grab();
-  
-    static ImgBase *dst = 0;
-    
-    t.apply(image,&dst);
-
-    orig = image;
-    orig.update();
-    
-    prev = dst;
-    prev.update();
-    
-    lastMaskSize = masksize;
-    lastThresh = thresh;
-    lastGamma = gamma;
-    while(!loop && !next.wasTriggered()){
-      Thread::msleep(100);
-      if(lastMaskSize != masksize || lastThresh != thresh || lastGamma != gamma){
-        t.setMaskSize(masksize);
-        t.setGlobalThreshold(thresh);
-        t.setGammaSlope(gamma);
-        lastMaskSize = masksize;
-        lastThresh = thresh;
-        lastGamma = gamma;
-        
-
-        t.apply(image,&dst);
-        orig = image;
-        orig.update();
-        
-        prev = dst;
-        prev.update();
-      }
-    }
-    
-    Thread::msleep(20);
+  const ImgBase *useImage = image;
+  if(selroi[1] != image->getImageRect()){
+    useImage = useImage->shallowCopy(selroi[1]);
   }
+  Time last = Time::now();
+  const ImgBase *result = ltop.apply(useImage);
+  time = str((Time::now()-last).toMilliSeconds())+"ms";
+
+        
+  orig = image;
+  
+  if(image != useImage){
+    delete useImage;
+  }
+
+  
+  orig->lock();
+  orig->reset();
+  if(selroi[0] != Rect::null){
+    orig->color(0,100,255);
+    orig->fill(0,100,255,20);
+    orig->rect(selroi[0]);
+  }
+  
+  orig->color(255,0,0);
+  orig->nofill();
+  orig->rect(selroi[1]);
+
+  orig->unlock();
+  
+  
+  orig.update();
+    
+  prev = result;
+  prev.update();
+  fps.update();
 }
+
+void init(){
+  int masksize = 10;
+  int thresh = 2;
+  float gamma = 0;
+  if(pa("-config")){
+    ConfigFile f(*pa("-config"));
+    masksize = f["config.masksize"];
+    thresh = f["config.threshold"];
+    gamma = f["config.gammaslope"];
+  }
+
+  
+  gui << "draw[@minsize=32x24@handle=orig@label=original]";
+  gui << "image[@minsize=32x24@handle=prev@label=preview]";
+  gui << ( GUI("vbox[@label=controls]")
+           << string("slider(2,200,")+str(masksize)+")[@label=mask size@out=masksize@minsize=15x2@handle=a]"
+           << string("fslider(-30,40,")+str(thresh)+")[@label=threshold@out=threshold@minsize=15x2@handle=b]"
+           << string("fslider(0,15,")+str(gamma)+")[@label=gamma slope@out=gamma@minsize=15x2@handle=c]"
+           << "button(next image)[@handle=next]"
+           << "togglebutton(stopped,running)[@out=loop@handle=d]"
+           << "togglebutton(no clip,clip to roi)[@out=clipToROI@handle=e]"
+           << "button(save params)[@handle=save]"
+           << "combo(region mean,tiledNN,tiledLIN)[@handle=algorithm@label=algorithm]"
+           << ( GUI("hbox")
+                << "label(..ms)[@handle=time@label=apply time@minsize=2x3]"
+                << "fps(10)[@handle=fps@minsize=4x3@label=fps]")
+         );
+  
+  
+  gui.show();
+  
+  grabber.init(FROM_PROGARG("-input"));
+  if(grabber.getType() == "file"){
+    grabber.setIgnoreDesiredParams(true);
+  }else{
+    grabber.setIgnoreDesiredParams(false);
+    grabber.setDesiredSize(Size(640,480));
+    if(!pa("-color")){
+      grabber.setDesiredFormat(formatGray);
+    }else{
+      grabber.setDesiredFormat(formatRGB);
+    }
+    grabber.setDesiredDepth(depth8u);
+  }
+  
+  gui.registerCallback(new GUI::Callback(step),"a,b,c,d,e,next");
+  gui["orig"].install(new MouseHandler(mouse));
+  
+  step();
+}
+
 
 void batch_mode(){
   if(pa("-config")){
@@ -207,7 +248,12 @@ void batch_mode(){
     ERROR_LOG("please run with -config config-filename!");
     return;
   }
-  
+}
+
+void run(){
+  gui_bool(loop);
+  while(!loop) Thread::msleep(100);
+  step();
 }
 
 int main (int argc, char **argv) {
