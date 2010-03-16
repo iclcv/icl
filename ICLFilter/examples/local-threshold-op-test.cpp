@@ -87,8 +87,13 @@ void run(){
   if(g.getType() == "file"){
     g.setIgnoreDesiredParams(true);
   }else{
+    g.setIgnoreDesiredParams(false);
     g.setDesiredSize(Size(640,480));
-    g.setDesiredFormat(formatGray);
+    if(!pa("-color")){
+      g.setDesiredFormat(formatGray);
+    }else{
+      g.setDesiredFormat(formatRGB);
+    }
     g.setDesiredDepth(depth8u);
   }
 
@@ -112,12 +117,7 @@ void run(){
     t.setGammaSlope(gamma);
     
     const ImgBase *image = g.grab();
-    if(image->getFormat() != formatGray){
-      static ImgBase *grayImage = 0;
-      ensureCompatible(&grayImage,depth8u,image->getSize(),formatGray);
-      cc(image,grayImage);
-      image = grayImage;
-    }
+  
     static ImgBase *dst = 0;
     
     t.apply(image,&dst);
@@ -220,7 +220,7 @@ int main (int argc, char **argv) {
 
   painit(argc,argv,"[m]-input|-i(device,device-params) "
          "-output|-o(output-file-pattern) -config|-c(cfg-filename) "
-         " -nogui|-n");
+         " -nogui|-n -color");
   
   
   if(pa("-nogui")){

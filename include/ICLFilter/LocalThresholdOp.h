@@ -31,11 +31,14 @@
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLUtils/Size.h>
-#include <ICLFilter/IntegralImgOp.h>
 #include <vector>
 #include <ICLUtils/Uncopyable.h>
 
 namespace icl{
+
+  /** \cond */
+  class IntegralImgOp;
+  /** \endcond*/
   
   /// LocalThreshold Filter class \ingroup UNARY
   /** This implementation of a local threshold bases on the calculation of an integral image of
@@ -142,7 +145,7 @@ namespace icl{
         @param gammaSlope gammaSlope (Default=0) (*Experimental feature*)
                           if set to 0 (default) the binary threshold is used
     */
-    LocalThresholdOp(unsigned int maskSize=10, int globalThreshold=0, float gammaSlope=0);
+    LocalThresholdOp(unsigned int maskSize=10, float globalThreshold=0, float gammaSlope=0);
     
     /// virtual apply function 
     /** roi support is realized by copying the current input image ROI into a 
@@ -150,12 +153,6 @@ namespace icl{
     **/
     virtual void apply(const ImgBase *src, ImgBase **dst);
 
-    /// disables multi-threading for this UnaryOp implementation (writes an error message)
-    virtual void applyMT(const ImgBase *src, ImgBase **dst, int nThreads){
-      (void)src;(void)dst;(void)nThreads;
-      ERROR_LOG("multi threading is not yet supported for this class");
-    }
-    
     /// Import unaryOps apply function without destination image
     UnaryOp::apply;
     
@@ -163,44 +160,38 @@ namespace icl{
     void setMaskSize(unsigned int maskSize);
     
     /// sets a enw global threshold value to used
-    void setGlobalThreshold(int globalThreshold);
+    void setGlobalThreshold(float globalThreshold);
 
     /// sets a new gamma slope to used (if gammaSlope is 0), the binary threshold is used
     void setGammaSlope(float gammaSlope);
+    
+    /// sets all parameters at once
+    void setup(unsigned int maskSize, float globalThreshold, float gammaSlope);
     
     /// returns the current mask size
     unsigned int getMaskSize() const;
 
     /// returns the current global threshold value
-    int getGlobalThreshold() const;
+    float getGlobalThreshold() const;
 
     /// returns the current gamma slope
     float getGammaSlope() const; 
 
     private:
     /// mask size 
-    unsigned int m_uiMaskSize;
+    unsigned int m_maskSize;
 
     /// global threshold
-    int m_iGlobalThreshold;
+    float m_globalThreshold;
 
     /// gamma slope
-    float m_fGammaSlope;
+    float m_gammaSlope;
     
     /// ROI buffer image for ROI support
-    ImgBase *m_poROIImage;
-
-    /// mask size the corresponds to the current ROI size image
-    unsigned int m_uiROISizeImagesMaskSize;
-
-    /// ROI size image
-    Img32s m_oROISizeImage;
+    ImgBase *m_roiBufSrc;
+    ImgBase *m_roiBufDst;
     
-    /// internally used integral image buffer (int)
-    Img32s m_oIntegralImage;
-
-    /// internally used integral image buffer (float)
-    Img32f m_oIntegralImageF;
+    IntegralImgOp *m_iiOp;
   };
   
 }  

@@ -27,7 +27,6 @@
 *********************************************************************/
 
 #include <ICLFilter/IntegralImgOp.h>
-
 namespace icl{
 
   
@@ -120,7 +119,7 @@ namespace icl{
   }
   // }}} 
 
-#ifdef HAVE_IPP
+#ifdef HAVE_IPP_DEACTIVATED_BECAUSE_IT_IS_MUCH_SLOWER
 
   template<class S, class D, class B, class IPP_FUNC>
   void create_integral_image_ipp(const Img<S> &src, Img<D> &dst, ImgBase **buf,  IPP_FUNC ippfunc){
@@ -133,9 +132,14 @@ namespace icl{
       IppStatus s = ippfunc(src.begin(c),src.getLineStep(),dbuf.begin(0),dbuf.getLineStep(), src.getSize(), 0);
       if(s != ippStsNoErr) throw ICLException("error in ippiIntegral_8u32s_C1R in " +std::string(__FUNCTION__) + ":" +std::string(ippGetStatusString(s)));
       dbuf.setROI(Rect(Point(1,1),src.getSize()));
-      dbuf.convertROI(&dst);
+      TODO_LOG("this does not work in case of N>1 channel-images!!");
+      if(dst.getDepth() == dbuf.getDepth()){ // i really wonder why this lasts 2 msec??
+        dbuf.deepCopyROI(bpp(dst));
+      }else{
+        dbuf.convertROI(&dst);
+      }
       dbuf.setFullROI();
-    }
+    }    
   }
 
   // }}}
