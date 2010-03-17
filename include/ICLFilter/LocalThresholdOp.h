@@ -43,21 +43,24 @@ namespace icl{
   /** \endcond*/
   
   /// LocalThreshold Filter class \ingroup UNARY
-  /** This implementation of a local threshold bases on the calculation of an integral image of
-      the given input image.
-       \f[
-      A(i,j) = \sum\limits_{x=0}^i \sum\limits_{y=0}^j  a(i,j)
-      \f]
-      The integral image can be calculated incrementally using the following equation:
-      \f[
-      A(i,j) = a(i,j)+A(i-1,j)+A(i,j-1)-A(i-1,j-1)
-      \f]
+  /** The LocalThresholdOp implements a set of local threshold algorithms. Currently, 
+      three implementations are available:
+      - <b>regionMean:</b> In this case the actual mean of a surrounding region of a pixel
+        is used to determine its threshold
+      - <b>tiledNN:</b> Here, a very simple tiled threshold is used. The image is split
+        into square tiles with edge-size <tt>2*maskSize</tt>. The threshold of all pixels
+        within this tile is set relatively to the mean-value of the tile
+      - <b>tiledLIN:</b> This is comparable with tiledNN, except, the actual threshold of
+        a pixel is computed from a linear interpolation between its 4-nearest tiles mean-values
       
+      \section RM Region Mean Algorithm
+      
+      This is the most sophisticated algorithms. Its implementation  bases on the calculation 
+      of an integral image of the given input image (see icl::IntegralImgOp)\n
       Once having access to the integral image data, it is possible to calculate the mean of an
-      abritrary rectangular image region in constant time. Look at the following ASCII example:
+      arbitrary rectangular image region in constant time. Consider the following ASCII example.
+      A rectangular image region is always described by its four corner points A,B,C and D
       <pre>
-      considere the following rectangular image region decribed by 4 points A,B,C and D
-      
       .C....A...
       ..+++++...
       ..+++++...
@@ -65,23 +68,12 @@ namespace icl{
       ..+++++...    
       .B++++D...
       ..........
-      
-      
-      -the "mass" of pixels inside the rect can be obtained by calculating
-      
-      X = D - A - B + C
-      
-      
-      -the pixel count in the rogion is 
+      </pre>      
 
-      P = (A.x-C.x) * (B.y-C.y) 
+      The "mass" of pixels inside the rect can be obtained by calculating
+      \f[X = D - A - B + C\f] in the integral image. The pixel count in the region is 
+      \f[P = (A.x-C.x) * (B.y-C.y) \f], which directly leads to region-mean \f$X/P\f$.
 
-      
-      - so the region mean can be calculated by evaluating
-       
-      Mean = X/P
-      </pre>
-      
       \section T__ Threshold
       A local image threshold at an image location \f$p=(px,py)\f$ must factor in the local image intensity, which can be 
       approximated by the mean value \f$\mu_p\f$ of the square region centered at \f$p\f$ with a certain radius \f$r\f$. 
@@ -136,18 +128,48 @@ namespace icl{
          
          f(x) = m(x-k)+128     (clipped to [0,255])
       </pre>
+
+      \section RES Results
+      
+      The RegionMean algorithm clearly provides the best results of the three algorithms. The nearest neighbour
+      interpolation algorithm is not significantly faster than the linear version, however it's results are much
+      worse. Here is a set of results images. All images use a tile size of 30 and a global threshold of 3
+      
+      \image html threshold-region-mean.png "RegionMean" 
+      \image html threshold-tiled-lin.png "tiled-LIN" 
+      \image html threshold-tiled-nn.png "tiled-NN" 
+
+      \section BENCHMARKS Benchmarks
+      
+      All threshold implementations are fast and highly optimized. In particular, we spend a lot of time
+      for the optimization of the RegionMean algorithms, which provides the best results.
+      Benchmarks were performed on a 2GHz Intel Core2Duo Machine with 2GB Ram. Compiler g++ 4.3, optimization 
+      flags -O4 -march=native.
+      <table>
+      <tr> <td>MaskSize</td> <td>tiledNN</td> <td>tiledLIN</td> <td>RegionMean</td> </tr>
+      <tr> <td>200</td> <td>5</td> <td>5</td> <td>13ms</td> </tr>
+      <tr> <td>100</td> <td>5</td> <td>5</td> <td>11ms</td> </tr>
+      <tr> <td>40</td> <td>5</td> <td>5</td> <td>10ms</td> </tr>
+      <tr> <td>20</td> <td>5</td> <td>5</td> <td>9ms</td> </tr>
+      <tr> <td>10</td> <td>5</td> <td>5</td> <td>9ms</td> </tr>
+      <tr> <td>5</td> <td>6</td> <td>6</td> <td>9ms</td> </tr>
+      <tr> <td>2</td> <td>9</td> <td>9</td> <td>9ms</td> </tr>
+      </table>
+      
+      The experimental gamma-slope-computation is much more expensive: Here, the RegionMean algorithms
+      needs about 25ms.
   */
   class LocalThresholdOp : public UnaryOp, public Uncopyable{
     public:
     
     /// Internally used algorithm 
     enum algorithm{
-      regionMean, //!< uses default 
-      tiledNN,
-      tiledLIN
+      regionMean, //!< regionMean threshold calculation
+      tiledNN,    //!< tiled threshold with nearest neighbour interpolation
+      tiledLIN    //!< tiled threshold with linear interpolation
     };
     
-    /// create a new LocalThreshold object with given mask-size and global threshold
+    /// create a new LocalThreshold object with given mask-size and global threshold and RegionMean algorithm
     /** @param maskSize size of the mask to use for calculations, the image width and
                         height must each be larger than 2*maskSize.
         @param globalThreshold additive Threshold to the calculated reagions mean
@@ -215,17 +237,25 @@ namespace icl{
     /// gamma slope
     float m_gammaSlope;
     
-    /// ROI buffer image for ROI support
+    /// input ROI buffer image for ROI support
     ImgBase *m_roiBufSrc;
+
+    /// output ROI buffer image for ROI support
     ImgBase *m_roiBufDst;
     
+    /// IntegralImgOp for RegionMean algorithm
     IntegralImgOp *m_iiOp;
 
+    /// currently used algorithm
     algorithm m_algorithm;
 
+    /// BinaryCompareOp for tiledXXX algorithms
     BinaryCompareOp *m_cmp;
 
+    /// first buffer for tiledXXX algorithsm
     ImgBase *m_tiledBuf1;
+
+    /// second buffer for tiledXXX algorithsm
     ImgBase *m_tiledBuf2;
 
   };
