@@ -180,7 +180,7 @@ void init(){
     grabber.setIgnoreDesiredParams(true);
   }else{
     grabber.setIgnoreDesiredParams(false);
-    grabber.setDesiredSize(Size(640,480));
+    grabber.setDesiredSize(pa("-s"));
     if(!pa("-color")){
       grabber.setDesiredFormat(formatGray);
     }else{
@@ -189,7 +189,7 @@ void init(){
     grabber.setDesiredDepth(depth8u);
   }
   
-  gui.registerCallback(new GUI::Callback(step),"a,b,c,d,e,next");
+  gui.registerCallback(new GUI::Callback(step),"a,b,c,d,e,next,algorithm");
   gui["orig"].install(new MouseHandler(mouse));
   
   step();
@@ -260,13 +260,14 @@ int main (int argc, char **argv) {
   paex
   ("-input","generic-grabbers generic grabbers params")
   ("-config","config file input")
+  ("-size","grabbers desired image size")
   ("-nogui","start without gui")
   ("-output","for no gui batchmode: define output-image pattern\n"
    "use ##### for the image index in this pattern");
 
   painit(argc,argv,"[m]-input|-i(device,device-params) "
          "-output|-o(output-file-pattern) -config|-c(cfg-filename) "
-         " -nogui|-n -color");
+         " -nogui|-n -color -size|-s(size=VGA)");
   
   
   if(pa("-nogui")){

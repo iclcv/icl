@@ -38,6 +38,8 @@ namespace icl{
 
   /** \cond */
   class IntegralImgOp;
+  class UnaryCompareOp;
+  class BinaryCompareOp;
   /** \endcond*/
   
   /// LocalThreshold Filter class \ingroup UNARY
@@ -218,9 +220,14 @@ namespace icl{
     ImgBase *m_roiBufDst;
     
     IntegralImgOp *m_iiOp;
-    
-    /// current algorithm
+
     algorithm m_algorithm;
+
+    BinaryCompareOp *m_cmp;
+
+    ImgBase *m_tiledBuf1;
+    ImgBase *m_tiledBuf2;
+
   };
   
 }  

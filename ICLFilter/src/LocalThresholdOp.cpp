@@ -27,6 +27,7 @@
 *********************************************************************/
 
 #include <ICLFilter/LocalThresholdOp.h>
+#include <ICLFilter/BinaryCompareOp.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/StackTimer.h>
@@ -38,7 +39,9 @@ namespace icl{
     // {{{ open
     m_maskSize(maskSize),m_globalThreshold(globalThreshold),
     m_gammaSlope(gammaSlope),m_roiBufSrc(0), m_roiBufDst(0),
-    m_iiOp(new IntegralImgOp),m_algorithm(regionMean){
+    m_iiOp(new IntegralImgOp),m_algorithm(regionMean),
+    m_cmp(new BinaryCompareOp(BinaryCompareOp::gt)),
+    m_tiledBuf1(0),m_tiledBuf2(0){
   }
 
   // }}}
@@ -47,7 +50,9 @@ namespace icl{
     // {{{ open
     m_maskSize(maskSize),m_globalThreshold(globalThreshold),
     m_gammaSlope(gammaSlope),m_roiBufSrc(0), m_roiBufDst(0),
-    m_iiOp(new IntegralImgOp),m_algorithm(a){
+    m_iiOp(new IntegralImgOp),m_algorithm(a),
+    m_cmp(new BinaryCompareOp(BinaryCompareOp::gt)),
+    m_tiledBuf1(0),m_tiledBuf2(0){
   }
     // }}}
 
@@ -57,6 +62,9 @@ namespace icl{
 
     ICL_DELETE(m_roiBufDst);
     ICL_DELETE(m_iiOp);
+    ICL_DELETE(m_cmp);
+    ICL_DELETE(m_tiledBuf1);
+    ICL_DELETE(m_tiledBuf2);
   }
 
   // }}}
@@ -328,58 +336,108 @@ namespace icl{
   }
   // }}}
 
+  template<class T, class B>
+  struct CountPix{
+    mutable volatile B &t;
+    CountPix(volatile B &t):t(t){}
+    inline void operator()(const T &v) const{
+      t += v;
+    }
+  };
+  
+  template<class T>
+  inline T roi_mean(Img<T> &s, int dim){
+    volatile icl64f t = 0 ;
+    s.forEach(CountPix<T,icl64f>(t));
+    return T(t/dim);
+  }
+
+  template<> inline icl8u roi_mean(Img<icl8u> &s, int dim){
+    volatile unsigned int t = 0 ;
+    s.forEach(CountPix<icl8u,unsigned int>(t));
+    return icl8u(t/dim);
+  }
+  template<> inline icl16s roi_mean(Img<icl16s> &s, int dim){
+    volatile int64_t t = 0;
+    s.forEach(CountPix<icl16s,int64_t>(t));
+    return icl16s(t/dim);
+  }
+  template<> inline icl32s roi_mean(Img<icl32s> &s, int dim){
+    volatile int64_t t = 0 ;
+    s.forEach(CountPix<icl32s,int64_t>(t));
+    return icl32s(t/dim);
+  }
+
+  template<class S>
+  static void apply_tiled_thresh(Img<S> s, Img8u &dst, Img<S> &buf1, Img<S> &buf2, int ts, int threshold, BinaryCompareOp *cmp, bool lin){
+    S *pbuf1 = buf1.begin(0);
+    int w = s.getWidth();
+    int bw = w/ts;
+    int h = s.getHeight();
+    Size t(ts,ts);
+    int dim = ts*ts;
+    
+    int NX = w/ts;
+    int NY = h/ts;
+    Rect r(0,0,ts,ts);
+    
+    for(int c=s.getChannels()-1;c>=0;--c){
+      for(int y=0;y<NY;++y){
+        r.y = ts*y;
+        for(int x=0;x<NX;++x){
+          r.x = ts*x;
+          s.setROI(r);
+          pbuf1[x+bw*y] = roi_mean(s,dim)+threshold;
+        }
+      }
+    }
+    s.setFullROI();
+    buf1.scaledCopy(&buf2,lin?interpolateLIN:interpolateNN);
+    cmp->apply(&s,&buf2,bpp(dst));
+  }
+
   template<> void LocalThresholdOp::apply_a<LocalThresholdOp::tiledNN>(const ImgBase *src, ImgBase **dst){
     // {{{ open
     
+    int ts = 2*m_maskSize;
+    ICLASSERT_RETURN(ts>1);
+    Size size = src->getSize();
+    ensureCompatible(&m_tiledBuf1,src->getDepth(),size/ts, 1, formatMatrix);
+    ensureCompatible(&m_tiledBuf2,src->getDepth(),size,1,formatMatrix);
+
+    switch(src->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                           \
+      case depth##D:                                       \
+         apply_tiled_thresh(*src->asImg<icl##D>(),         \
+                            *(*dst)->asImg<icl8u>(),       \
+                            *m_tiledBuf1->asImg<icl##D>(), \
+                            *m_tiledBuf2->asImg<icl##D>(), \
+                            ts, m_globalThreshold, m_cmp,  \
+                            m_algorithm == tiledLIN);      \
+      break;
+      ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+    }
   }
   // }}}
 
   template<> void LocalThresholdOp::apply_a<LocalThresholdOp::tiledLIN>(const ImgBase *src, ImgBase **dst){
     // {{{ open
-
+    apply_a<tiledNN>(src,dst); // LIN vs NN is handled by a runtime-bool
   }
   // }}}
 
 
   template<> void LocalThresholdOp::apply_a<LocalThresholdOp::regionMean>(const ImgBase *src, ImgBase **dst){
     // {{{ open
-    const ImgBase *srcOrig = src;
-    bool roi = false;
-    // cut the roi of src if set
-    if(!(src->hasFullROI())){
-      ensureCompatible(&m_roiBufSrc, src->getDepth(), src->getROISize(), src->getChannels(), src->getFormat());
-      src->deepCopyROI(&m_roiBufSrc);
-      src = m_roiBufSrc;
-      roi = true;
-    }
-    ICLASSERT_RETURN(src->getWidth() > 2*(int)m_maskSize);
-    ICLASSERT_RETURN(src->getHeight() > 2*(int)m_maskSize);
-    
-    
-    // prepare the destination image
-    depth dstDepth = m_gammaSlope ? depth32f : depth8u;
-    depth iiDepth = (src->getDepth() == depth8u || src->getDepth() == depth16s) ? depth32s : src->getDepth();
-    ImgBase **useDst = roi ? &m_roiBufDst : dst;
-    if(!prepare(useDst, dstDepth, src->getSize(), formatMatrix, src->getChannels(), Rect::null)){
-      ERROR_LOG("prepare failure [code 1]");
-      return;
-    }
-    
-    m_iiOp->setIntegralImageDepth(iiDepth);
+  
+    m_iiOp->setIntegralImageDepth((src->getDepth() == depth8u || src->getDepth() == depth16s) ? depth32s : src->getDepth());
     const ImgBase *ii = m_iiOp->apply(src);
     
     switch(src->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: apply_local_threshold_sxx<icl##D>(*src->asImg<icl##D>(), ii, *useDst, m_globalThreshold, m_maskSize, m_gammaSlope); break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: apply_local_threshold_sxx<icl##D>(*src->asImg<icl##D>(), ii, *dst, m_globalThreshold, m_maskSize, m_gammaSlope); break;
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
-    }
-    
-    if(roi){
-      if(!prepare(dst, srcOrig, (*useDst)->getDepth())){
-        ERROR_LOG("prepare failure [code 2]");
-        return;
-      }
-      (*useDst)->deepCopyROI(dst);
     }
   }
   // }}}
@@ -393,12 +451,40 @@ namespace icl{
     ICLASSERT_RETURN( dst );
     ICLASSERT_RETURN( src != *dst );
 
+    const ImgBase *srcOrig = src;
+    bool roi = false;
+    // cut the roi of src if set
+    if(!(src->hasFullROI())){
+      ensureCompatible(&m_roiBufSrc, src->getDepth(), src->getROISize(), src->getChannels(), src->getFormat());
+      src->deepCopyROI(&m_roiBufSrc);
+      src = m_roiBufSrc;
+      roi = true;
+    }
+    ICLASSERT_RETURN(src->getWidth() > 2*(int)m_maskSize);
+    ICLASSERT_RETURN(src->getHeight() > 2*(int)m_maskSize);
+
+    // prepare the destination image
+    depth dstDepth = m_algorithm == regionMean ? (m_gammaSlope ? depth32f : depth8u) : depth8u;
+    ImgBase **useDst = roi ? &m_roiBufDst : dst;
+    if(!prepare(useDst, dstDepth, src->getSize(), formatMatrix, src->getChannels(), Rect::null)){
+      ERROR_LOG("prepare failure [code 1]");
+      return;
+    }
+
     switch(m_algorithm){
-      case regionMean: apply_a<regionMean>(src,dst); break;
-      case tiledNN: apply_a<tiledNN>(src,dst); break;
-      case tiledLIN: apply_a<tiledLIN>(src,dst); break;
+      case regionMean: apply_a<regionMean>(src,useDst); break;
+      case tiledNN: apply_a<tiledNN>(src,useDst); break;
+      case tiledLIN: apply_a<tiledLIN>(src,useDst); break;
       default:
         throw ICLException(std::string(__FUNCTION__)+": invalid algorithm value");
+    }
+
+    if(roi){
+      if(!prepare(dst, srcOrig, (*useDst)->getDepth())){
+        ERROR_LOG("prepare failure [code 2]");
+        return;
+      }
+      (*useDst)->deepCopyROI(dst);
     }
   }  
 
