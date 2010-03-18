@@ -29,8 +29,10 @@
 #ifndef ICL_OPEN_CV_H
 #define ICL_OPEN_CV_H
 
+#ifdef HAVE_OPENCV
 #include <cxcore.h>
-
+#include <ICLCC/CCFunctions.h>
+#include <ICLQuick/Common.h>
 
 /** CvMat type
     
@@ -67,6 +69,7 @@ namespace icl{
       std::copy(src,src+w,dst+w*y);
       src = icl_allign(src);
     }
+    return image;
   }
   
   ImgBase *deepCopyToImgBase(const CvMat *m){
@@ -74,22 +77,31 @@ namespace icl{
     switch(CV_MAT_DEPTH(m->type)){
       case CV_8S:
         WARNING_LOG("using icl8u to handle CV_8S data type!");
+	return 0;
       case CV_8U:
-        return deep_copy_to_img_base_t<icl8u>(m.ptr,m.cols,m.rows);
+        return deep_copy_to_img_base_t<icl8u>(m->data.ptr,m->cols,m->rows);
       case CV_16U:
         WARNING_LOG("using icl16s to handle CV_16U data type!");
+	return 0;
       case CV_16S:
-        return deep_copy_to_img_base_t<icl16s>(m.ptr,m.cols,m.rows);
+        return deep_copy_to_img_base_t<icl16s>(m->data.ptr,m->cols,m->rows);
       case CV_32S:
-        return deep_copy_to_img_base_t<icl32s>(m.ptr,m.cols,m.rows);
+        return deep_copy_to_img_base_t<icl32s>(m->data.ptr,m->cols,m->rows);
       case CV_32F:
-        return deep_copy_to_img_base_t<icl32f>(m.ptr,m.cols,m.rows);
+        return deep_copy_to_img_base_t<icl32f>(m->data.ptr,m->cols,m->rows);
       case CV_64F:
-        return deep_copy_to_img_base_t<icl64f>(m.ptr,m.cols,m.rows);
+        return deep_copy_to_img_base_t<icl64f>(m->data.ptr,m->cols,m->rows);
     }
     return 0;
   }
-  
-}
 
+
+enum DepthPreference{PREFERE_SRC_DEPTH,PREFERE_DST_DEPTH};
+
+ImgBase *ipl_to_img(CvArr *src,ImgBase **dst=0,DepthPreference e=PREFERE_SRC_DEPTH) throw (icl::ICLException);
+
+IplImage *img_to_ipl(const ImgBase *src, IplImage **dst=0,DepthPreference e=PREFERE_SRC_DEPTH)throw (icl::ICLException);
 #endif
+}
+#endif
+
