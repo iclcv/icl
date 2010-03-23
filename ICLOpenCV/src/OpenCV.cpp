@@ -32,16 +32,22 @@ namespace icl{
 
 IplImage *ensureCompatible(IplImage **dst, int depth,const CvSize& size,int channels){
 	if(!dst || !*dst){
-		*dst = cvCreateImage(cvSize(size.width,size.height),depth,channels);
+		*dst = cvCreateImage(size,depth,channels);
 		return *dst;
 	}
 	if((*dst)->depth !=  depth || (*dst)->nChannels != channels || size.height != (*dst)->height
 			|| size.width != (*dst)->width){
+		//oder einfach 
+		cvReleaseImage(dst);
+		*dst=cvCreateImage(size,depth,channels);
+
+		/*cvReleaseData(*dst);
 		(*dst)->depth = depth;
 		(*dst)->nChannels = channels;
 		(*dst)->height = size.height;
 		(*dst)->width = size.width;
 		(*dst)->origin = 0;
+		//TODO
 		(*dst)->widthStep = channels*size.width;
 		(*dst)->nSize = sizeof(IplImage);
 		(*dst)->ID = 0;
@@ -51,17 +57,131 @@ IplImage *ensureCompatible(IplImage **dst, int depth,const CvSize& size,int chan
 		(*dst)->imageId = 0;
 		(*dst)->tileInfo = 0;
 		(*dst)->imageSize = size.height*size.width*channels;
+		switch(depth){
+			case IPL_DEPTH_8U:{
+				(*dst)->imageData = new char[sizeof(icl8u)*size.width*size.height*channels];
+				break;}
+			case IPL_DEPTH_8S:{
+				//in this case we use icl16s
+				(*dst)->imageData = new char[sizeof(signed char)*size.width*size.height*channels];
+				break;}
+			case IPL_DEPTH_16S:{
+				(*dst)->imageData = new char[sizeof(icl16s)*size.width*size.height*channels];
+				break;}
+			case IPL_DEPTH_32S:{
+				(*dst)->imageData = new char[sizeof(icl32s)*size.width*size.height*channels];
+				break;}
+			case IPL_DEPTH_32F:{
+				(*dst)->imageData = new char[sizeof(icl32f)*size.width*size.height*channels];
+				break;}
+			case IPL_DEPTH_64F:{
+				(*dst)->imageData = new char[sizeof(icl64f)*size.width*size.height*channels];
+				break;}
+			default :{
+				//this should not happen
+				throw ICLException("Invalid source depth");
+			}
+		}
+		(*dst)->imageDataOrigin = (*dst)->imageData;*/
 	}
 	return *dst;
 }
 
+template<typename DST_T>
+inline Img<DST_T> *ipl_to_img_dstpref(CvArr *src,Img<DST_T> *dst){
+	IplImage imageHeader;
+	IplImage* image = cvGetImage(src, &imageHeader);
+	dst->setParams(ImgParams(Size(image->width,image->height),image->nChannels));
+	switch(image->depth){
+	case IPL_DEPTH_8U:{
+		interleavedToPlanar((icl8u*)image->imageData,dst,image->widthStep);
+		break;}
+	case IPL_DEPTH_8S:{
+		//in this case we use icl16s
+		interleavedToPlanar((signed char*)image->imageData,dst,image->widthStep);
+		break;}
+	case IPL_DEPTH_16S:{
+		interleavedToPlanar((icl16s*)image->imageData,dst,image->widthStep);
+		break;}
+	case IPL_DEPTH_32S:{
+		interleavedToPlanar((icl32s*)image->imageData,dst,image->widthStep);
+		break;}
+	case IPL_DEPTH_32F:{
+		interleavedToPlanar((icl32f*)image->imageData,dst,image->widthStep);
+		break;}
+	case IPL_DEPTH_64F:{
+		interleavedToPlanar((icl64f*)image->imageData,dst,image->widthStep);
+		break;}
+	default :{
+		//this should not happen
+		throw ICLException("Invalid source depth");
+	}
+	}
+	return dst;
+}
 
 template<typename SRC_T,typename DST_T>
-void img_to_ipl_srcpref(const ImgBase *src, IplImage **dst){
+inline void ipl_to_img_srcpref(IplImage *src, ImgBase **dst){
+	ensureCompatible(dst,getDepth<DST_T>(),Size(src->width,src->height),src->nChannels);
+	SRC_T *data = (SRC_T*) src->imageData;
+	interleavedToPlanar(data,(*dst)->asImg<DST_T>(),src->widthStep);
+}
+
+ImgBase *ipl_to_img(CvArr *src,ImgBase **dst,DepthPreference e) throw (icl::ICLException){
+	if(!src){
+		throw icl::ICLException("Source is NULL");
+	}
+	IplImage imageHeader;
+	IplImage* image = cvGetImage(src, &imageHeader);
+	if(dst && *dst && e==PREFERE_DST_DEPTH){
+		switch((*dst)->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                               \
+		case depth##D:{						                   \
+			ipl_to_img_dstpref<icl##D>(image,(*dst)->asImg<icl##D>());   \
+			break;}
+		ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+		}
+	} else if(e==PREFERE_DST_DEPTH){
+		throw icl::ICLException("Cannot determine depth of destinationimage");
+	} else { // DepthPreference == PREFERE_SRC_DEPTH
+		switch(image->depth){
+		case IPL_DEPTH_8U:{
+			ipl_to_img_srcpref<icl8u,icl8u>(image,dst);
+			break;}
+		case IPL_DEPTH_8S:{
+			//in this case we use icl16s
+			ipl_to_img_srcpref<signed char,icl16s>(image,dst);
+			break;}
+		case IPL_DEPTH_16S:{
+			ipl_to_img_srcpref<icl16s,icl16s>(image,dst);
+			break;}
+		case IPL_DEPTH_32S:{
+			ipl_to_img_srcpref<icl32s,icl32s>(image,dst);
+			break;}
+		case IPL_DEPTH_32F:{
+			ipl_to_img_srcpref<icl32f,icl32f>(image,dst);
+			break;}
+		case IPL_DEPTH_64F:{
+			ipl_to_img_srcpref<icl64f,icl64f>(image,dst);
+			break;}
+		default :{
+			//this should not happen
+			throw ICLException("Invalid source depth");
+		}
+		}
+	}
+	for(int i=0;i<(*dst)->getChannels()/2;++i){
+		(*dst)->swapChannels(i,(*dst)->getChannels()-1-i);
+	}
+	return *dst;
+}
+
+template<typename SRC_T,typename DST_T>
+inline void img_to_ipl_srcpref(const ImgBase *src, IplImage **dst){
 	switch(src->getDepth()){
 	case depth8u:{
 		ensureCompatible(dst,IPL_DEPTH_8U,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
-		*dst = cvCreateImage(cvSize(src->getWidth(),src->getHeight()),IPL_DEPTH_8U, src->getChannels());
 		break;}
 	case depth16s:{
 		ensureCompatible(dst,IPL_DEPTH_16S,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
@@ -84,13 +204,11 @@ void img_to_ipl_srcpref(const ImgBase *src, IplImage **dst){
 	for(int i=0;i<src->getChannels()/2;++i){
 		tmp.swapChannels(i,src->getChannels()-1-i);
 	}
-	planarToInterleaved(&tmp,(DST_T*)(*dst)->imageData);//,(*dst)->widthStep);
+	planarToInterleaved(&tmp,(DST_T*)(*dst)->imageData,(*dst)->widthStep);
 }
 
 template<typename SRC_T>
-CvArr *img_to_ipl_dstpref(Img<SRC_T> *src,CvArr *dst){
-	ICLASSERT(src);
-	ICLASSERT(dst);
+inline CvArr *img_to_ipl_dstpref(Img<SRC_T> *src,CvArr *dst){
 	IplImage imageHeader;
 	IplImage* image = cvGetImage(dst, &imageHeader);
 	for(int i=0;i<src->getChannels()/2;++i){
@@ -98,6 +216,8 @@ CvArr *img_to_ipl_dstpref(Img<SRC_T> *src,CvArr *dst){
 	}
 	switch(image->depth){
 	case IPL_DEPTH_8U:{
+		//TODO
+		dst=ensureCompatible(&image,IPL_DEPTH_8U,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
 		planarToInterleaved(src,(icl8u*)image->imageData);
 		break;}
 	case IPL_DEPTH_8S:{
@@ -105,7 +225,6 @@ CvArr *img_to_ipl_dstpref(Img<SRC_T> *src,CvArr *dst){
 		planarToInterleaved(src,(signed char*)image->imageData);
 		break;}
 	case IPL_DEPTH_16S:{
-		cout << src->getLineStep() << endl;
 		planarToInterleaved(src,(icl16s*)image->imageData);
 		break;}
 	case IPL_DEPTH_32S:{
@@ -154,32 +273,147 @@ IplImage *img_to_ipl(const ImgBase *src, IplImage **dst,DepthPreference e) throw
 	return *dst;
 }
 
-template<typename DST_T>
-Img<DST_T> *ipl_to_img_dstpref(CvArr *src,Img<DST_T> *dst){
-	ICLASSERT_RETURN_VAL(dst,dst);
-	IplImage imageHeader;
-	IplImage* image = cvGetImage(src, &imageHeader);
-	ImgBase *ib=dst;
-	ensureCompatible(&ib,dst->getDepth(),Size(image->width,image->height),image->nChannels);
-	switch(image->depth){
-	case IPL_DEPTH_8U:{
-		interleavedToPlanar((icl8u*)image->imageData,dst,image->nChannels*image->width);
+
+template<typename T>
+inline CvMat* img_2_cvmat(const Img<T> *src, CvMat *dst,int channel){
+	const T *srcdata = src->begin(channel);
+	int dim = src->getSize().width*src->getSize().height;
+	int ltype = int(dst->type & CV_MAT_DEPTH_MASK);
+	switch(ltype){
+	case CV_8UC1:{
+		for(int i=0;i<dim;++i){
+			dst->data.ptr[i]=(icl8u)srcdata[i];
+		}
+		break;
+	}
+	case CV_16SC1:{
+		for(int i=0;i<dim;++i){
+			dst->data.s[i]=(short)srcdata[i];
+		}
+		break;
+	}
+	case CV_32SC1:{
+		for(int i=0;i<dim;++i){
+			dst->data.i[i]=(int)srcdata[i];
+		}
+		break;
+	}
+	case CV_32FC1:{
+		for(int i=0;i<dim;++i){
+			dst->data.fl[i]=icl32f(srcdata[i]);
+		}
+		break;
+	}
+	case CV_64FC1:{
+		for(int i=0;i<dim;++i){
+			dst->data.db[i]=(icl64f)srcdata[i];
+		}
+		break;
+	}
+	default :{
+		throw ICLException("Unknown or not possible type of dst");
+	}
+	}
+	return dst;
+}
+
+CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst,int channel) throw (icl::ICLException){
+	if(!src){
+		throw ICLException("Source is NULL");
+	}
+	//channelcheck
+	if(channel<0 || channel>=src->getChannels()){
+		throw ICLException("Invalid channel");
+	}
+
+	if(!dst ||src->getWidth() != dst->width || src->getHeight() != dst->height){
+		if(!dst)
+			delete dst;
+		switch(src->getDepth()){
+		case depth8u: {
+			dst=cvCreateMat(src->getWidth(),src->getHeight(),CV_8UC1);
+			break;
+		}
+		case depth16s:{
+			dst=cvCreateMat(src->getWidth(),src->getHeight(),CV_16SC1);
+			break;
+		}
+		case depth32s :{
+			dst=cvCreateMat(src->getWidth(),src->getHeight(),CV_32SC1);
+			break;
+		}
+		case depth32f: {
+			dst=cvCreateMat(src->getWidth(),src->getHeight(),CV_32FC1);
+			break;
+		}
+		case depth64f: {
+			dst=cvCreateMat(src->getWidth(),src->getHeight(),CV_64FC1);
+			break;
+		}
+		default :{
+			throw ICLException("Invalid source depth");
+		}
+		}
+	}
+
+	switch(src->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                               \
+		case depth##D:{						                   \
+			img_2_cvmat(src->asImg<icl##D>(),dst,channel);     \
+			break;}
+	ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+	}
+	return dst;
+}
+
+
+CvMat *ensureCompatible(CvMat **dst, int depth,int rows, int cols){
+	if(!dst || !*dst){
+		*dst = cvCreateMat(rows,cols,depth);
+		return *dst;
+	}
+	int ltype = int(depth & CV_MAT_DEPTH_MASK);
+	if((*dst)->type !=  ltype || (*dst)->rows != rows
+			|| (*dst)->cols != cols){
+		cvReleaseMat(dst);
+		*dst = cvCreateMat(rows,cols,depth);
+	}
+	return *dst;
+}
+
+CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst) throw (ICLException){
+	if(!src){
+		throw icl::ICLException("Source is NULL");
+	}
+	if(src->getChannels()>1){
+		throw icl::ICLException("to many channels for shallow copy");
+	}
+	switch(src->getDepth()){
+	case depth8u:{
+		ensureCompatible(&dst, CV_8UC1,src->getHeight(),src->getHeight());
+		cvReleaseData(dst);
+		dst->data.ptr = (unsigned char*)((src->asImg<icl8u>())->begin(0));
 		break;}
-	case IPL_DEPTH_8S:{
-		//in this case we use icl16s
-		interleavedToPlanar((signed char*)image->imageData,dst,image->nChannels*image->width);
+	case depth16s:{
+		ensureCompatible(&dst, CV_16SC1,src->getHeight(),src->getHeight());
+		cvReleaseData(dst);
+		dst->data.s = (short*)((src->asImg<icl16s>())->begin(0));
 		break;}
-	case IPL_DEPTH_16S:{
-		interleavedToPlanar((icl16s*)image->imageData,dst,image->nChannels*image->width);
+	case depth32s:{
+		ensureCompatible(&dst, CV_32SC1,src->getHeight(),src->getHeight());
+		cvReleaseData(dst);
+		dst->data.i = (int*)((src->asImg<icl32s>())->begin(0));
 		break;}
-	case IPL_DEPTH_32S:{
-		interleavedToPlanar((icl32s*)image->imageData,dst,image->nChannels*image->width);
+	case depth32f:{
+		ensureCompatible(&dst, CV_32FC1,src->getHeight(),src->getHeight());
+		cvReleaseData(dst);
+		dst->data.fl = (float*)((src->asImg<icl32f>())->begin(0));
 		break;}
-	case IPL_DEPTH_32F:{
-		interleavedToPlanar((icl32f*)image->imageData,dst,image->nChannels*image->width);
-		break;}
-	case IPL_DEPTH_64F:{
-		interleavedToPlanar((icl64f*)image->imageData,dst,image->nChannels*image->width);
+	case depth64f:{
+		ensureCompatible(&dst, CV_64FC1,src->getHeight(),src->getHeight());
+		cvReleaseData(dst);
+		dst->data.db = (double*)((src->asImg<icl64f>())->begin(0));
 		break;}
 	default :{
 		//this should not happen
@@ -189,90 +423,49 @@ Img<DST_T> *ipl_to_img_dstpref(CvArr *src,Img<DST_T> *dst){
 	return dst;
 }
 
-template<typename SRC_T,typename DST_T>
-void ipl_to_img_srcpref(IplImage *src, ImgBase **dst){
-	ICLASSERT(src);
-	ICLASSERT(dst);
-	IplImage imageHeader;
-	IplImage* image = cvGetImage(src, &imageHeader);
-	switch(image->depth){
-	case IPL_DEPTH_8U:{
-		ensureCompatible(dst,depth8u,Size(image->width,image->height),image->nChannels);
+IplImage *img_to_ipl_shallow(ImgBase *src,IplImage *dst)throw (ICLException){
+	if(!src){
+		throw icl::ICLException("Source is NULL");
+	}
+	if(src->getChannels()>1){
+		throw icl::ICLException("to many channels for shallow copy");
+	}
+	switch(src->getDepth()){
+	case depth8u:{
+		ensureCompatible(&dst, IPL_DEPTH_8U,cvSize(src->getWidth(),src->getHeight()),1);
+		cvReleaseData(dst);
+		dst->imageData = (char*)((src->asImg<icl8u>())->begin(0));
 		break;}
-	case IPL_DEPTH_8S:{
-		//in this case we use icl16s
-		ensureCompatible(dst,depth16s,Size(image->width,image->height),image->nChannels);
+	case depth16s:{
+		ensureCompatible(&dst, IPL_DEPTH_16S,cvSize(src->getWidth(),src->getHeight()),1);
+		cvReleaseData(dst);
+		dst->imageData = (char*)((src->asImg<icl16s>())->begin(0));
 		break;}
-	case IPL_DEPTH_16S:{
-		ensureCompatible(dst,depth16s,Size(image->width,image->height),image->nChannels);
+	case depth32s:{
+		ensureCompatible(&dst, IPL_DEPTH_32S,cvSize(src->getWidth(),src->getHeight()),1);
+		cvReleaseData(dst);
+		dst->imageData = (char*)((src->asImg<icl32s>())->begin(0));
 		break;}
-	case IPL_DEPTH_32S:{
-		ensureCompatible(dst,depth32s,Size(image->width,image->height),image->nChannels);
+	case depth32f:{
+		ensureCompatible(&dst, IPL_DEPTH_32F,cvSize(src->getWidth(),src->getHeight()),1);
+		cvReleaseData(dst);
+		dst->imageData = (char*)((src->asImg<icl32f>())->begin(0));
 		break;}
-	case IPL_DEPTH_32F:{
-		ensureCompatible(dst,depth32f,Size(image->width,image->height),image->nChannels);
-		break;}
-	case IPL_DEPTH_64F:{
-		ensureCompatible(dst,depth64f,Size(image->width,image->height),image->nChannels);
+	case depth64f:{
+		ensureCompatible(&dst, IPL_DEPTH_64F,cvSize(src->getWidth(),src->getHeight()),1);
+		cvReleaseData(dst);
+		dst->imageData = (char*)((src->asImg<icl64f>())->begin(0));
 		break;}
 	default :{
 		//this should not happen
 		throw ICLException("Invalid source depth");
 	}
 	}
-	SRC_T *data = (SRC_T*) image->imageData;
-	interleavedToPlanar(data,(*dst)->asImg<DST_T>(),image->width*image->nChannels*sizeof(DST_T));
+	dst->imageDataOrigin = dst->imageData;
+	return dst;
 }
 
-ImgBase *ipl_to_img(CvArr *src,ImgBase **dst,DepthPreference e) throw (icl::ICLException){
-	if(!src){
-		throw icl::ICLException("Source is NULL");
-	}
-	IplImage imageHeader;
-	IplImage* image = cvGetImage(src, &imageHeader);
-	if(dst && *dst && e==PREFERE_DST_DEPTH){
-		switch((*dst)->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D)                               \
-		case depth##D:{						                   \
-			ipl_to_img_dstpref<icl##D>(src,(*dst)->asImg<icl##D>());   \
-			break;}
-		ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
-		}
-	} else if(e==PREFERE_DST_DEPTH){
-		throw icl::ICLException("Cannot determine depth of destinationimage");
-	} else { // DepthPreference == PREFERE_SRC_DEPTH
-		switch(image->depth){
-		case IPL_DEPTH_8U:{
-			ipl_to_img_srcpref<icl8u,icl8u>(image,dst);
-			break;}
-		case IPL_DEPTH_8S:{
-			//in this case we use icl16s
-			ipl_to_img_srcpref<signed char,icl16s>(image,dst);
-			break;}
-		case IPL_DEPTH_16S:{
-			ipl_to_img_srcpref<icl16s,icl16s>(image,dst);
-			break;}
-		case IPL_DEPTH_32S:{
-			ipl_to_img_srcpref<icl32s,icl32s>(image,dst);
-			break;}
-		case IPL_DEPTH_32F:{
-			ipl_to_img_srcpref<icl32f,icl32f>(image,dst);
-			break;}
-		case IPL_DEPTH_64F:{
-			ipl_to_img_srcpref<icl64f,icl64f>(image,dst);
-			break;}
-		default :{
-			//this should not happen
-			throw ICLException("Invalid source depth");
-		}
-		}
-	}
-	for(int i=0;i<(*dst)->getChannels()/2;++i){
-		(*dst)->swapChannels(i,(*dst)->getChannels()-1-i);
-	}
-	return *dst;
-}
 #endif
+
 }
 

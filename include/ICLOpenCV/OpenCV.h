@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : include/ICLOpenCV/OpenCV.h                             **
 ** Module : ICLOpenCV                                              **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Christian Groszewski              **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -95,13 +95,54 @@ namespace icl{
     return 0;
   }
 
+/// Modes which wether to prefer sourcedepth or destinationdepth
+enum DepthPreference{
+	PREFERE_SRC_DEPTH,//!< prefere sourcedepth
+	PREFERE_DST_DEPTH//!< prefere destinationdepth
+};
 
-enum DepthPreference{PREFERE_SRC_DEPTH,PREFERE_DST_DEPTH};
-
+///Convert OpenCV IplImage to ICLimage
+/**Converts IplImage to ICLimage. If dst is NULL, the sourceimagedepth
+will be used, else the destinationimagedepth will be used.
+@param *src pointer to sourceimage (IplImage)
+@param **dst pointer to pointer to destinationimage (ICLimage)
+@param e depthpreference*/
 ImgBase *ipl_to_img(CvArr *src,ImgBase **dst=0,DepthPreference e=PREFERE_SRC_DEPTH) throw (icl::ICLException);
 
+///Convert ICLimage to OpenCV IplImage 
+/**Converts ICLimage to IplImage. If dst is NULL, the sourceimagedepth
+will be used, else the destinationimagedepth will be used.
+@param *src pointer to sourceimage
+@param **dst pointer to pointer to destinationimage (IplImage)
+@param e depthpreference*/
 IplImage *img_to_ipl(const ImgBase *src, IplImage **dst=0,DepthPreference e=PREFERE_SRC_DEPTH)throw (icl::ICLException);
-#endif
+
+///Copy single ICLimage channel to OpenCV single channel CvMat 
+/**Copy single ICLimage channel to single channel CvMat. If dst is NULL, the sourceimagedepth
+will be used, else the destinationmatrixdepth will be used.
+@param *src pointer to sourceimage
+@param **dst pointer to pointer to destinationmatrix
+@param channel channel to use*/
+CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst=0,int channel=0) throw (icl::ICLException);
+
+///Convert single channel ICLimage to OpenCV IplImage 
+/**Converts single channel ICLimage to IplImage. Data is shared by source and destination.
+Using icl8u or icl16s the imagedata is not aligned, but OpenCV expects aligned data.
+In this case be careful using further OpenCV functions.
+Be careful when releasig (data)pointers.
+@param *src pointer to sourceimage
+@param *dst pointer to destinationimage (IplImage)*/
+IplImage *img_to_ipl_shallow(ImgBase *src,IplImage *dst=0)throw (ICLException);
+
+///Convert single channel ICLimage to OpenCV CvMat 
+/**Converts single channel ICLimage to a single channel CvMat. Data is shared by
+source and destination.
+Be careful when releasig (data)pointers.
+@param *src pointer to sourceimage
+@param *dst pointer to destinationmatrix (IplImage)*/
+CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst=0) throw (ICLException);
+
 }
+#endif
 #endif
 
