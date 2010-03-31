@@ -292,6 +292,11 @@ namespace icl {
        m_bIgnoreDesiredParams = flag;
      }
      
+     /// @see setIgnoreDesiredParams
+     virtual void setUseDesiredParams(bool flag){
+       setIgnoreDesiredParams(!flag);
+     }
+
      virtual bool getIgnoreDesiredParams() const {
        return m_bIgnoreDesiredParams;
      }
