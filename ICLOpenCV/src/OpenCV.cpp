@@ -25,10 +25,9 @@
 ** http://www.gnu.org/copyleft/gpl.html.                           **
 **                                                                 **
 *********************************************************************/
+#ifdef HAVE_OPENCV
 #include <ICLOpenCV/OpenCV.h>
 namespace icl{
-
-#ifdef HAVE_OPENCV
 
 IplImage *ensureCompatible(IplImage **dst, int depth,const CvSize& size,int channels){
 	if(!dst || !*dst){
@@ -464,8 +463,6 @@ IplImage *img_to_ipl_shallow(ImgBase *src,IplImage *dst)throw (ICLException){
 	dst->imageDataOrigin = dst->imageData;
 	return dst;
 }
-
-#endif
-
 }
+#endif
 

@@ -54,7 +54,7 @@ namespace icl{
 
   // p = 7
   // size is 1
-  template<class T>
+  /*template<class T>
   T* icl_allign(T *p, int n=4){
     return reinterpret_cast<T*>( ((size_t)p+n-1) & -n);
   }
@@ -93,7 +93,7 @@ namespace icl{
         return deep_copy_to_img_base_t<icl64f>(m->data.ptr,m->cols,m->rows);
     }
     return 0;
-  }
+  }*/
 
 /// Modes which wether to prefer sourcedepth or destinationdepth
 enum DepthPreference{

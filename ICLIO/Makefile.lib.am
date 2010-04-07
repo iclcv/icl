@@ -167,3 +167,14 @@ include_HEADERS+= \
 ../../include/ICLIO/XCFMemoryListener.h
 endif
 
+if HAVE_OPENCV_COND
+libICLIO_la_SOURCES+= \
+../src/OpenCVCamGrabber.cpp \
+../src/OpenCVVideoWriter.cpp \
+../src/OpenCVVideoGrabber.cpp
+
+include_HEADERS+= \
+../../include/ICLIO/OpenCVCamGrabber.h \
+../../include/ICLIO/OpenCVVideoWriter.h \
+../../include/ICLIO/OpenCVVideoGrabber.h
+endif
