@@ -64,6 +64,11 @@
 #include <ICLIO/VideoGrabber.h>
 #endif
 
+#ifdef HAVE_OPENCV
+#include <ICLIO/OpenCVVideoGrabber.h>
+#include <ICLIO/OpenCVCamGrabber.h>
+#endif
+
 #include <ICLIO/DemoGrabber.h>
 #include <ICLUtils/Exception.h>
 
@@ -87,58 +92,28 @@ namespace icl{
     m_sType = "";
     std::vector<std::string> lP = tok(params,",");
     
+    
     // todo optimize this code using a map or a table or ...
-    std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pCreate,pXCF_P,pXCF_S,pXCF_M,pMV,pSR,pVideo;
+    // std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pCreate,pXCF_P,pXCF_S,pXCF_M,pMV,pSR,pVideo;
+    std::map<std::string,std::string> pmap;
+    static const int NUM_PLUGINS = 15;
+    static const std::string plugins[NUM_PLUGINS] = { "pwc","dc","dc800","unicap","file","demo","create",
+                                                      "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
+                                                      "cvcam" };
 
-#define PARAM(D,PNAME)                                                  \
-    if(lP[i].length() > strlen(D) && lP[i].substr(0,strlen(D)) == D){   \
-      PNAME = lP[i].substr(strlen(D)+1);                                \
-    }  
     for(unsigned int i=0;i<lP.size();++i){
-      //      DEBUG_LOG("lP[" << i << "]" << lP[i]);
-      if(false){}
-      PARAM("pwc",pPWC); 
-      PARAM("dc",pDC); 
-      PARAM("dc800",pDC800);
-      PARAM("unicap",pUnicap); 
-      PARAM("file",pFile);
-      PARAM("demo",pDemo);
-      PARAM("create",pCreate);
-      PARAM("xcfp",pXCF_P);
-      PARAM("xcfs",pXCF_S);
-      PARAM("xcfm",pXCF_M);
-      PARAM("mv",pMV);
-      PARAM("sr",pSR);
-      PARAM("video",pVideo);
-#undef PARAM
-      /*
-          if(lP[i].length() > 4 && lP[i].substr(0,3) == "pwc"){
-          pPWC = lP[i].substr(4);
-          }else if(lP[i].length() > 3 && lP[i].substr(0,2) == "dc"){
-          pDC = lP[i].substr(3);
-          }else if(lP[i].length() > 6 && lP[i].substr(0,5) == "dc800"){
-          pDC800 = lP[i].substr(6);
-          }else if(lP[i].length() > 7 && lP[i].substr(0,6) == "unicap"){
-          pUnicap = lP[i].substr(7);
-          }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "file"){
-          pFile = lP[i].substr(5);
-          }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "demo"){
-          pDemo = lP[i].substr(5);
-          }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfp"){
-          pXCF_P = lP[i].substr(5);
-          }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfs"){
-          pXCF_S = lP[i].substr(5);
-          }else if(lP[i].length() > 5 && lP[i].substr(0,4) == "xcfm"){
-          pXCF_M = lP[i].substr(5);
-          }
-     */
-
+      for(int j=0;j<NUM_PLUGINS;++j){
+        const std::string &D = plugins[j];
+        if(lP[i].length() > D.length() && lP[i].substr(0,D.length()) == D){ \
+          pmap[D] = lP[i].substr(D.length()+1);                          \
+        }  
+      }
     }
 
     std::string errStr;
 
-#define ADD_ERR(X,A) errStr += errStr.size() ? std::string(",") : ""; \
-                     errStr += std::string(#X)+"("+A+")" 
+#define ADD_ERR(P) errStr += errStr.size() ? std::string(",") : ""; \
+                   errStr += std::string(P)+"("+pmap[P]+")" 
 
     std::vector<std::string> l = tok(desiredAPIOrder,",");
     
@@ -147,12 +122,12 @@ namespace icl{
 #ifdef HAVE_VIDEODEV
       if(l[i] == "pwc"){
         PWCGrabber *pwc = new PWCGrabber;
-        if(pwc->init(Size(640,480),24,to32s(pPWC),true)){
+        if(pwc->init(Size(640,480),24,to32s(pmap["pwc"]),true)){
           m_poGrabber = pwc;
           m_sType = "pwc";
           break;
         }else{
-          ADD_ERR(pwc,pPWC);
+          ADD_ERR("pwc");
           delete pwc;
           continue;
         }
@@ -163,15 +138,15 @@ namespace icl{
 #ifdef HAVE_LIBDC
       if(l[i] == "dc" || l[i] == "dc800"){
         std::vector<DCDevice> devs = DCGrabber::getDeviceList();
-        int idx = (l[i]=="dc") ? to32s(pDC) : to32s(pDC800);
+        int idx = (l[i]=="dc") ? to32s(pmap["dc"]) : to32s(pmap["dc800"]);
 
         //printf("index is %d devs size is %d \n",idx,devs.size());
         if(idx < 0) idx = 0;
         if(idx >= (int)devs.size()){
           if(l[i]=="dc"){
-            ADD_ERR(dc,pDC);
+            ADD_ERR("dc");
           }else{
-            ADD_ERR(dc800,pDC800);
+            ADD_ERR("dc800");
           }
           continue;
         }else{
@@ -184,13 +159,12 @@ namespace icl{
 
 #ifdef HAVE_LIBMESASR
       if(l[i] == "sr"){
-        std::vector<std::string> srts = tok(pSR,"c");
+        std::vector<std::string> srts = tok(pmap["sr"],"c");
         int device = 0;
         int channel = -1;
         if(srts.size() > 1){
           device = to32s(srts[0]);
           channel = to32s(srts[1]);
-          DEBUG_LOG("using pick channel channel");
         }else{
           device = to32s(srts[0]);
         }
@@ -198,7 +172,7 @@ namespace icl{
         try{
           m_poGrabber = new SwissRangerGrabber(device,depth32f,channel);
         }catch(ICLException &e){
-          ADD_ERR(sr,pSR);
+          ADD_ERR("sr");
           continue;
         }
         break;
@@ -208,9 +182,10 @@ namespace icl{
 #ifdef HAVE_XINE
       if(l[i] == "video"){
         try{
-          m_poGrabber = new VideoGrabber(pVideo);
+          m_poGrabber = new VideoGrabber(pmap["video"]);
+          m_sType = "video";
         }catch(ICLException &e){
-          ADD_ERR(video,pVideo);
+          ADD_ERR("video");
           continue;
         }
         break;
@@ -219,9 +194,9 @@ namespace icl{
 
 #ifdef HAVE_UNICAP
       if(l[i] == "unicap"){
-        static std::vector<UnicapDevice> devs = UnicapGrabber::getDeviceList(pUnicap);
+        static std::vector<UnicapDevice> devs = UnicapGrabber::getDeviceList(pmap["unicap"]);
         if(!devs.size()){
-          ADD_ERR(unicap,pUnicap);
+          ADD_ERR("unicap");
           continue;
         }else{
           m_poGrabber = new UnicapGrabber(devs[0]);
@@ -237,31 +212,31 @@ namespace icl{
         switch(l[i][3]){
           case 's':
             try{
-              m_poGrabber = new XCFServerGrabber(pXCF_S);
+              m_poGrabber = new XCFServerGrabber(pmap["xcfs"]);
             }catch(...){
               if(notifyErrors){
                 m_poGrabber = 0;
-                ADD_ERR(xcf-server,pXCF_S);
+                ADD_ERR("xcfs");
               }
             }
             break;
           case 'p':
             try{
-              m_poGrabber = new XCFPublisherGrabber(pXCF_P);
+              m_poGrabber = new XCFPublisherGrabber(pmap["xcfp"]);
             }catch(...){
               if(notifyErrors){
                 m_poGrabber = 0;
-                ADD_ERR(xcf-publisher,pXCF_P);
+                ADD_ERR("xcfp");
               }
             }
             break;
           case 'm':
             try{
-              m_poGrabber = new XCFMemoryGrabber(pXCF_M);
+              m_poGrabber = new XCFMemoryGrabber(pmap["xcfm"]);
             }catch(...){
               if(notifyErrors){
                 m_poGrabber = 0;
-                ADD_ERR(xcf-memory,pXCF_M);
+                ADD_ERR("xcfm");
               }
             }
             break;
@@ -278,42 +253,70 @@ namespace icl{
 #endif
 
 #ifdef HAVE_MV
+      // not yet supported, and maybe, already replaced by pylon grabber?
       if(l[i] == "mv") {
         std::vector<MVDevice> devs = MVGrabber::getDeviceList();
         
         if(!devs.size()) {
-          ADD_ERR(mv,pMV);
+          ADD_ERR("mv");
           continue;
         } else {
-          m_poGrabber = new MVGrabber();
+          m_poGrabber = new MVGrabber(pmap["mv"]);
           m_sType = "mv";
           break;
         }
       }
 #endif
+
+
+#ifdef HAVE_OPENCV
+      if(l[i] == "cvvideo") {
+        try{
+          m_poGrabber = new OpenCVVideoGrabber(pmap["cvvideo"]);
+          m_sType = "cvvideo";
+          break;
+        }catch(ICLException &e){
+          ADD_ERR("cvvideo");
+          continue;
+        }
+      }
+
+      if(l[i] == "cvcam") {
+        try{
+          m_poGrabber = new OpenCVCamGrabber(to32s(pmap["cvcam"]));
+          m_sType = "cvcam";
+          break;
+        }catch(ICLException &e){
+          ADD_ERR("cvcam");
+          continue;
+        }
+      }
+      
+      
+#endif
       
       if(l[i] == "file"){
         try{
-          if(FileList(pFile).size()){
-            m_poGrabber = new FileGrabber(pFile);
+          if(FileList(pmap["file"]).size()){
+            m_poGrabber = new FileGrabber(pmap["file"]);
             ((FileGrabber*)m_poGrabber)->setIgnoreDesiredParams(false);
             break;
           }else{
-            ADD_ERR(file,pFile);
+            ADD_ERR("file");
             continue;
           }
         }catch(icl::FileNotFoundException &ex){
-          ADD_ERR(file,pFile);
+          ADD_ERR("file");
           continue;
         }
       }
       if(l[i] == "demo"){
-        m_poGrabber = new DemoGrabber(to32s(pDemo));
+        m_poGrabber = new DemoGrabber(to32f(pmap["demo"]));
         m_sType = "demo";
       }
 
       if(l[i] == "create"){
-        m_poGrabber = new CreateGrabber(pCreate);
+        m_poGrabber = new CreateGrabber(pmap["create"]);
         m_sType = "create";
       }
 
