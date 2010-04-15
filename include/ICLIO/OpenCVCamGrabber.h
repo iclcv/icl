@@ -87,10 +87,19 @@ public:
 	/// Constructor creates a new OpenCVCamGrabber instance from a given device
 	/** @param device device to use
 	 */
-	OpenCVCamGrabber(int dev=0);
+	OpenCVCamGrabber(int dev=0) throw (ICLException);
 
 	/// Destructor
 	~OpenCVCamGrabber();
+        
+        
+        // returns a list of all valid device IDs
+        /** Internally, for each device index i=0,1,2,..., 
+            a grabber-instance is created. If any of these creation trys returns an error,
+            no further devices are tested. 
+            @param lastToTest if this params is a positive or zero integer, it defines the
+                              last device ID that is tried internally */
+        static std::vector<int> getDeviceList(int lastToTest=-1);
 };
 
 }

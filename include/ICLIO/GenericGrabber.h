@@ -78,6 +78,8 @@ namespace icl {
                                   - <b>mv</b> matrix vision grabber
                                   - <b>sr</b> SwissRanger camera (mesa-imaging)
                                   - <b>video</b> Xine based video grabber (grabbing videos frame by frame)
+                                  - <b>cvcam</b> OpenCV based camera grabber (supporting video 4 linux devices)
+                                  - <b>cvvideo</b> OpenCV based video grabber 
         
         @param params comma separated device depend parameter list: e.g.
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
@@ -98,6 +100,9 @@ namespace icl {
                                     sr=NcC where N is the device numer as above, c is the character 'c' and C is
                                     the channel index to pick (0: depth-map, 1: confidence map, 2: intensity image
                                   - video=video-filename (string)
+                                  - cvcam=camera index (0=first device,1=2nd device, ...)
+                                  - cvvideo=video-filename (string)
+
         @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
     **/
     void init(const std::string &devicePriorityList,
