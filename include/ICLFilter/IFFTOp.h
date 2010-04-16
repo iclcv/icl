@@ -28,7 +28,7 @@
 
 #ifndef ICL_IFFTOP_H_
 #define ICL_IFFTOP_H_
-#include <ICLQuick/Common.h>
+#include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 #include <ICLUtils/FFTUtils.h>
 #include <cmath>

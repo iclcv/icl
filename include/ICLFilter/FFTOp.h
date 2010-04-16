@@ -30,7 +30,7 @@
 #define ICL_FFTOP_H_
 #include <ICLUtils/FFTUtils.h>
 #include <ICLCore/ImgBase.h>
-#include <ICLQuick/Common.h>
+#include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 #include <cmath>
 
