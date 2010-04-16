@@ -33,6 +33,8 @@
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Exception.h>
 #include <highgui.h>
+#include <string>
+#include <ICLIO/File.h>
 namespace icl{
 
 class OpenCVVideoGrabber : public Grabber{
@@ -40,7 +42,7 @@ private:
 	/// Device struct
 	CvCapture *cvc;
 	///Filename of the file
-	string filename;
+	std::string filename;
 	///Ensures the desired framerate
 	FPSLimiter *fpslimiter;
 	///Buffer for scaling if necessary

@@ -32,8 +32,8 @@
 #ifdef HAVE_OPENCV
 #include <cxcore.h>
 #include <ICLCC/CCFunctions.h>
-#include <ICLQuick/Common.h>
-
+#include <ICLCore/Img.h>
+#include <ICLCore/ImgBase.h>
 /** CvMat type
     
 struct CvMat{

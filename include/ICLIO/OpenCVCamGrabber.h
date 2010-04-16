@@ -30,6 +30,7 @@
 #include <ICLOpenCV/OpenCV.h>
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/Mutex.h>
 #include <highgui.h>
 #include <cxcore.h>
 namespace icl{
