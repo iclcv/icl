@@ -1,0 +1,46 @@
+
+This is a short howto for the cmake build system.
+It will be updated as works goes on.
+
+TODOs:
+-build static libs
+-build examples
+-support for videodev
+-build docs
+-make better help
+-windows port (if possible)
+
+The cmake build system is an alternative way to build the ICL library.
+Currently it supports only the build of dynamic libraries without videodev support.
+All other libraries should be found, if installed correctly on your system.
+Paths to libraries are set for the ag-ni. If you installed  desired libs somewhere else or 
+would like to use other versions look at the Useage part of this document.
+
+Useage:
+Use the installed cmake-gui software on ag-ni system.
+If you are working on an other system make sure that cmake and cmake-gui is installed.
+
+After starting the cmake-gui enter the path to the ICL directory in the first line.
+As a second step you must enter a directory where everything is going to be build 
+(this is called "out of source build" (Note this directory can be inside of your ICL directory
+Example: ICL directory: /home/username/projects/ICL
+	 build directory: /home/username/projects/ICL/build
+)).
+
+Click on the Button "Configure". If the the build directory does not exist you will be asked
+if it should be created (you must answer "YES" else you cannot compile the ICL).
+Next you will be asked what Makefiles/Projectfiles you would like to generate with cmake.
+On linuxsystem select "Unix Makefiles" and click on "Finish".
+You can now see some output in the lower part
+of the cmake-gui. Make the desired changes in the upper part of the cmake-gui.
+
+Note 1: if the Button "Generate" is not enabled after clicking on the button "Configure"
+	click it again.
+
+Note 2: if some lines in the upper part of the cmake-gui are highlighted in red, this does
+	not mean an error but a change of settings.
+
+Next step is to click on the button "Generate".
+As the final step cd to your build dir and type "make".
+
+The compile time on a system with 3 GB RAM and 2GHz DualCore should take about ten minutes.
