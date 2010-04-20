@@ -49,13 +49,13 @@ set(LIB_SOURCES ${LIB_SOURCES}
 )
 endif()
 
-if (SYSTEM_LINUX_COND)
+#if (SYSTEM_LINUX_COND)
 if (HAVE_VIDEODEV_COND)
 set(LIB_SOURCES ${LIB_SOURCES}
 	"src/PWCGrabber.cpp"
 )
 endif()
-endif()
+#endif()
 
 if (HAVE_LIBDC_COND)
 set(LIB_SOURCES ${LIB_SOURCES}

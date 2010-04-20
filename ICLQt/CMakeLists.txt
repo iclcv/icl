@@ -129,7 +129,7 @@ if(HAVE_OPENGL_COND)
 target_link_libraries(${PROJECT_NAME} GL GLU)
 endif()
 if(HAVE_Qt_COND)
-#target_link_libraries(${PROJECT_NAME} QtCore QtGui QtOpenGL)
+target_link_libraries(${PROJECT_NAME} QtCore QtGui QtOpenGL)
 endif()
 
 target_link_libraries(${PROJECT_NAME} ICLIO ICLOpenCV ICLFilter ICLCC ICLCore ICLUtils)
