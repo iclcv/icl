@@ -51,7 +51,18 @@ set(LIB_SOURCES
 )
 
 SET( HWQ_Qt4_SRC
-	"${LIB_SOURCES}"
+	"../include/ICLQt/Widget.h"
+	"../include/ICLQt/MouseHandler.h"
+	"../include/ICLQt/DoubleSlider.h"
+	"../include/ICLQt/ImgParamWidget.h"
+	"../include/ICLQt/StringSignalButton.h"
+	"../include/ICLQt/CamThread.h"
+	"../include/ICLQt/GUIWidget.h"
+	"../include/ICLQt/ChromaGUI.h"
+	"../include/ICLQt/MultiDrawHandle.h"
+	"../include/ICLQt/CamCfgWidget.h"
+	"../include/ICLQt/ToggleButton.h"
+	"../include/ICLQt/ConfigFileGUI.h"
 )
 SET( HWQ_Qt4_UI)
 SET( HWQ_Qt4_RES)
@@ -69,8 +80,7 @@ SET( HWQ_SRC
 )
 
 SET( HWQ_LIB ${QT_LIBRARIES})
-
-#ADD_EXECUTABLE(HelloWorldQt ${HWQ_SRC} )
+#message(STATUS "qtlibs: ${QT_LIBRARIES}")
 add_library(${PROJECT_NAME} SHARED ${HWQ_SRC})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${HWQ_LIB} )
 #create lib
@@ -119,10 +129,10 @@ if(HAVE_OPENGL_COND)
 target_link_libraries(${PROJECT_NAME} GL GLU)
 endif()
 if(HAVE_Qt_COND)
-target_link_libraries(${PROJECT_NAME} QtCore QtGui QtOpenGL)
+#target_link_libraries(${PROJECT_NAME} QtCore QtGui QtOpenGL)
 endif()
 
-target_link_libraries(${PROJECT_NAME} ICLQt ICLBlob ICLIO ICLFilter ICLCC ICLCore ICLUtils)
+target_link_libraries(${PROJECT_NAME} ICLIO ICLOpenCV ICLFilter ICLCC ICLCore ICLUtils)
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 

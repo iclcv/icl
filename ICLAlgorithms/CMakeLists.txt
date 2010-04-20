@@ -18,6 +18,30 @@ set(LIB_SOURCES ${LIB_SOURCES}
 )
 endif()
 
+
+if (HAVE_IPP_COND)
+#add_executable(icl-template-matching-test examples/template-matching-test.cpp)
+#target_link_libraries(icl-template-matching-test ${PROJECT_NAME})
+
+if (HAVE_Qt_COND)
+#add_executable(icl-interactive-template-matching-demo examples/interactive-template-matching-demo.cpp)
+#target_link_libraries(icl-interactive-template-matching-demo ${PROJECT_NAME})
+
+#add_executable(icl-interactive-hough-line-demo examples/interactive-hough-line-demo.cpp)
+#target_link_libraries(icl-interactive-hough-line-demo ${PROJECT_NAME})
+if (HAVE_SVS_COND)
+#add_executable(icl-svs-online-demo examples/svs-online-demo.cpp)
+#target_link_libraries(icl-svs-online-demo ${PROJECT_NAME})
+endif()
+endif()
+endif()
+
+if (HAVE_SVS_COND)
+#add_executable(icl-svs-test examples/svs-test.cpp)
+#target_link_libraries(icl-svs-test ${PROJECT_NAME})
+endif()
+
+
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
@@ -81,4 +105,26 @@ set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 install (TARGETS ${PROJECT_NAME}  
 	 RUNTIME DESTINATION bin
  	 LIBRARY DESTINATION lib)
+
+if(HAVE_IPP_COND)
+install (TARGETS ${PROJECT_NAME}  
+	 RUNTIME DESTINATION bin
+ 	 LIBRARY DESTINATION lib)
+if(HAVE_Qt_COND)
+install (TARGETS #icl-interactive-template-matching-demo icl-interactive-hough-line-demo
+	 RUNTIME DESTINATION bin
+ 	 LIBRARY DESTINATION lib)
+if(HAVE_SVS_COND)
+install (TARGETS #icl-svs-online-demo
+	 RUNTIME DESTINATION bin
+ 	 LIBRARY DESTINATION lib)
+endif()
+endif()
+endif()
+
+if(HAVE_SVS_COND)
+install (TARGETS   
+	 RUNTIME DESTINATION bin
+ 	 LIBRARY DESTINATION lib)
+endif()
 

@@ -38,6 +38,13 @@ set(LIB_SOURCES
 	"src/FFTOp.cpp"
 	"src/IFFTOp.cpp"
 )
+
+if (HAVE_IPP_COND)
+set(LIB_SOURCES ${LIB_SOURCES}
+	"src/WienerOp.cpp"
+	"src/CannyOp.cpp"
+)
+endif()
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})

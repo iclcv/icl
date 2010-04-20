@@ -10,6 +10,29 @@ set(LIB_SOURCES
 	"src/ViewRay.cpp"
 )
 
+if (HAVE_Qt_COND)
+#add_executable(icl-geom-demo examples/geom-demo.cpp)
+#target_link_libraries(icl-geom-demo ${PROJECT_NAME} ICLQt)
+
+#add_executable(icl-geom-demo-simple examples/geom-demo-simple.cpp)
+#target_link_libraries(icl-geom-demo-simple ${PROJECT_NAME} ICLQt)
+
+#add_executable(icl-cam-calib examples/cam-calib.cpp)
+#target_link_libraries(icl-cam-calib ${PROJECT_NAME} ICLQt)
+
+#add_executable(icl-show-extrinsic-calibration-grid examples/show-extrinsic-calibration-grid.cpp)
+#target_link_libraries(icl-show-extrinsic-calibration-grid ${PROJECT_NAME} ICLQt)
+
+#add_executable(icl-swiss-ranger-demo examples/swiss-ranger-demo.cpp)
+#target_link_libraries(icl-swiss-ranger-demo ${PROJECT_NAME} ICLQt)
+
+if (HAVE_IPP_COND)
+#add_executable(icl-intrinsic-camera-calibration examples/intrinsic-camera-calibration.cpp)
+#target_link_libraries(icl-intrinsic-camera-calibration ${PROJECT_NAME} ICLQt)
+endif()
+endif()
+
+
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
@@ -68,4 +91,17 @@ set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 install (TARGETS ${PROJECT_NAME}  
 	 RUNTIME DESTINATION bin
  	 LIBRARY DESTINATION lib)
-
+if(HAVE_Qt_COND)
+install (TARGETS  #icl-geom-demo 
+#icl-geom-demo-simple 
+#icl-cam-calib 
+	#icl-show-extrinsic-calibration-grid 
+#icl-swiss-ranger-demo
+	 RUNTIME DESTINATION bin
+ 	 LIBRARY DESTINATION lib)
+if(HAVE_IPP_COND)
+install (TARGETS #icl-intrinsic-camera-calibration 
+	 RUNTIME DESTINATION bin
+ 	 LIBRARY DESTINATION lib)
+endif()
+endif()
