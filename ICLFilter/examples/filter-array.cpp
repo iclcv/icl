@@ -26,12 +26,12 @@
 **                                                                 **
 *********************************************************************/
 
-#include <iclCommon.h>
+#include <ICLQuick/Common.h>
 
-#include <iclUnaryOp.h>
-#include <iclConvolutionOp.h>
-#include <iclMedianOp.h>
-#include <iclMorphologicalOp.h>
+#include <ICLFilter/UnaryOp.h>
+#include <ICLFilter/ConvolutionOp.h>
+#include <ICLFilter/MedianOp.h>
+#include <ICLFilter/MorphologicalOp.h>
 #include <map>
 
 GUI gui("hsplit");

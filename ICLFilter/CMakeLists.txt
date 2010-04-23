@@ -97,7 +97,7 @@ add_executable(icl-interactive-affine-op-example examples/interactive-affine-op-
 target_link_libraries(icl-interactive-affine-op-example ${PROJECT_NAME} ICLQuick)
 
 #add_executable(icl-filter-array examples/filter-array.cpp)
-#target_link_libraries(icl-filter-array ${PROJECT_NAME})
+#target_link_libraries(icl-filter-array ${PROJECT_NAME} ICLQuick)
 
 add_executable(icl-fft-demo examples/fft-demo.cpp)
 target_link_libraries(icl-fft-demo ${PROJECT_NAME} ICLQuick)

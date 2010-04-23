@@ -18,8 +18,8 @@ add_executable(icl-converter-test examples/converter-test.cpp)
 target_link_libraries(icl-converter-test ${PROJECT_NAME} ICLQuick)
 
 if (HAVE_Qt_COND)
-add_executable(icl-colorspace-online-demo examples/colorspace-online-demo.cpp)
-target_link_libraries(icl-colorspace-online-demo ${PROJECT_NAME} ICLQuick)
+#add_executable(icl-colorspace-online-demo examples/colorspace-online-demo.cpp)
+#target_link_libraries(icl-colorspace-online-demo ${PROJECT_NAME} ICLQuick)
 endif()
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
@@ -48,7 +48,7 @@ install (TARGETS ${PROJECT_NAME}  icl-converter-test icl-bayer-benchmark
  	 LIBRARY DESTINATION lib)
 
 if(HAVE-Qt_COND)
-install (TARGETS icl-colorspace-online-demo  
+install (TARGETS #icl-colorspace-online-demo  
 	 RUNTIME DESTINATION bin
 )
 endif()
