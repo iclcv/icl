@@ -1,5 +1,56 @@
 project(ICLQt)
 
+add_executable(icl-3D-demo examples/3D-demo.cpp)
+target_link_libraries(icl-3D-demo ${PROJECT_NAME})
+
+add_executable(icl-camviewer examples/camviewer.cpp)
+target_link_libraries(icl-camviewer ${PROJECT_NAME})
+
+add_executable(icl-chroma-demo examples/chroma-demo.cpp)
+target_link_libraries(icl-chroma-demo ${PROJECT_NAME})
+
+add_executable(icl-colorpicker examples/colorpicker.cpp)
+target_link_libraries(icl-colorpicker ${PROJECT_NAME})
+
+add_executable(icl-gui-test examples/gui-test.cpp)
+target_link_libraries(icl-gui-test ${PROJECT_NAME} ICLQuick)
+
+add_executable(icl-gui-test-2 examples/gui-test-2.cpp)
+target_link_libraries(icl-gui-test-2 ${PROJECT_NAME} ICLQuick)
+
+add_executable(icl-gui-callback-test examples/gui-callback-test.cpp)
+target_link_libraries(icl-gui-callback-test ${PROJECT_NAME})
+
+add_executable(icl-interactive-filter-demo examples/interactive-filter-demo.cpp)
+target_link_libraries(icl-interactive-filter-demo ${PROJECT_NAME})
+
+add_executable(icl-mouse-interaction-demo examples/mouse-interaction-demo.cpp)
+target_link_libraries(icl-mouse-interaction-demo ${PROJECT_NAME})
+
+add_executable(icl-visualization-demo examples/visualization-demo.cpp)
+target_link_libraries(icl-visualization-demo ${PROJECT_NAME})
+
+add_executable(icl-xv examples/xv.cpp)
+target_link_libraries(icl-xv ${PROJECT_NAME} ICLQuick)
+
+add_executable(icl-camcfg examples/camcfg.cpp)
+target_link_libraries(icl-camcfg ${PROJECT_NAME})
+
+add_executable(icl-config-gui-example examples/config-gui-example.cpp)
+target_link_libraries(icl-config-gui-example ${PROJECT_NAME})
+
+add_executable(icl-datastore-test examples/datastore-test.cpp)
+target_link_libraries(icl-datastore-test ${PROJECT_NAME})
+
+add_executable(icl-special-button-demo examples/special-button-demo.cpp)
+target_link_libraries(icl-special-button-demo ${PROJECT_NAME} ICLQuick)
+
+add_executable(icl-complex-gui-callback-test examples/complex-gui-callback-test.cpp)
+target_link_libraries(icl-complex-gui-callback-test ${PROJECT_NAME})
+
+add_executable(icl-image-compare examples/image-compare.cpp)
+target_link_libraries(icl-image-compare ${PROJECT_NAME})
+
 #sources for lib
 set(LIB_SOURCES 
 	"src/BorderHandle.cpp"
@@ -80,12 +131,11 @@ SET( HWQ_SRC
 )
 
 SET( HWQ_LIB ${QT_LIBRARIES})
-#message(STATUS "qtlibs: ${QT_LIBRARIES}")
-add_library(${PROJECT_NAME} SHARED ${HWQ_SRC})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${HWQ_LIB} )
+message(STATUS "qtlibs: ${QT_LIBRARIES}")
 #create lib
-#add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
+add_library(${PROJECT_NAME} SHARED ${HWQ_SRC})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${HWQ_LIB} )
 
 set(LIBRARY_OUTPUT_PATH lib CACHE PATH "Output directory for libraries" )
 
@@ -131,14 +181,19 @@ endif()
 if(HAVE_Qt_COND)
 target_link_libraries(${PROJECT_NAME} QtCore QtGui QtOpenGL)
 endif()
-
-target_link_libraries(${PROJECT_NAME} ICLIO ICLOpenCV ICLFilter ICLCC ICLCore ICLUtils)
+if(HAVE_OPENCV_COND)
+target_link_libraries(${PROJECT_NAME} ICLOpenCV)
+endif()
+target_link_libraries(${PROJECT_NAME} ICLIO ICLFilter ICLCC ICLCore ICLUtils)
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
 set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 
-install (TARGETS ${PROJECT_NAME} #icl-dummy-app
+install (TARGETS ${PROJECT_NAME} icl-3D-demo icl-camviewer icl-chroma-demo icl-colorpicker
+		icl-gui-test icl-gui-test-2 icl-gui-callback-test icl-interactive-filter-demo
+		icl-mouse-interaction-demo icl-visualization-demo icl-xv icl-camcfg icl-config-gui-example
+		icl-datastore-test icl-special-button-demo icl-complex-gui-callback-test icl-image-compare
 	 RUNTIME DESTINATION bin
  	 LIBRARY DESTINATION lib
 )

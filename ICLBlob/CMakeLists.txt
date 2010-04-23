@@ -18,6 +18,39 @@ set(LIB_SOURCES
 	"src/SimpleBlobSearcher.cpp"
 	"src/MeanShiftTracker.cpp"
 )
+
+add_executable(icl-blobtracker-benchmark examples/blobtracker-benchmark.cpp)
+target_link_libraries(icl-blobtracker-benchmark ${PROJECT_NAME})
+
+add_executable(icl-region-based-blob-finder-test examples/region-based-blob-finder-test.cpp)
+target_link_libraries(icl-region-based-blob-finder-test ${PROJECT_NAME} ICLQuick)
+
+add_executable(icl-region-detector-test examples/region-detector-test.cpp)
+target_link_libraries(icl-region-detector-test ${PROJECT_NAME} ICLQuick)
+
+if (HAVE_QT_COND)
+add_executable(icl-region-inspector-demo examples/region-inspector-demo.cpp)
+target_link_libraries(icl-region-inspector-demo ${PROJECT_NAME})
+
+add_executable(icl-vector-tracker-demo examples/vector-tracker-demo.cpp)
+target_link_libraries(icl-vector-tracker-demo ${PROJECT_NAME})
+
+add_executable(icl-interactive-vector-tracker-benchmark examples/interactive-vector-tracker-benchmark.cpp)
+target_link_libraries(icl-interactive-vector-tracker-benchmark ${PROJECT_NAME})
+
+add_executable(icl-simple-blob-searcher-test examples/simple-blob-searcher-test.cpp)
+target_link_libraries(icl-simple-blob-searcher-test ${PROJECT_NAME})
+
+add_executable(icl-mean-shift-online-demo examples/mean-shift-online-demo.cpp)
+target_link_libraries(icl-mean-shift-online-demo ${PROJECT_NAME})
+
+add_executable(icl-corner-detection-css-demo examples/corner-detection-css-demo.cpp)
+target_link_libraries(icl-corner-detection-css-demo ${PROJECT_NAME})
+
+add_executable(icl-online-region-detection-demo examples/online-region-detection-demo.cpp)
+target_link_libraries(icl-online-region-detection-demo ${PROJECT_NAME})
+endif()
+
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
@@ -36,48 +69,16 @@ target_link_libraries(${PROJECT_NAME} ICLCC ICLCore ICLUtils)
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
-#add_executable(icl-blobtracker-benchmark examples/blobtracker-benchmark.cpp)
-#target_link_libraries(icl-blobtracker-benchmark ${PROJECT_NAME})
-
-#add_executable(icl-region-based-blob-finder-test examples/region-based-blob-finder-test.cpp)
-#target_link_libraries(icl-region-based-blob-finder-test ${PROJECT_NAME})
-
-#add_executable(icl-region-detector-test examples/region-detector-test.cpp)
-#target_link_libraries(icl-region-detector-test ${PROJECT_NAME})
-
-if(HAVE_QT_COND)
-#add_executable(icl-region-inspector-demo examples/region-inspector-demo.cpp)
-#target_link_libraries(icl-region-inspector-demo ${PROJECT_NAME})
-
-#add_executable(icl-vector-tracker-demo examples/vector-tracker-demo.cpp)
-#target_link_libraries(icl-vector-tracker-demo ${PROJECT_NAME})
-
-#add_executable(icl-interactive-vector-tracker-benchmark examples/interactive-vector-tracker-benchmark.cpp)
-#target_link_libraries(icl-interactive-vector-tracker-benchmark ${PROJECT_NAME})
-
-#add_executable(icl-simple-blob-searcher-test examples/simple-blob-searcher-test.cpp)
-#target_link_libraries(icl-simple-blob-searcher-test ${PROJECT_NAME})
-
-#add_executable(icl-mean-shift-online-demo/mean-shift-online-demo.cpp)
-#target_link_libraries(icl-mean-shift-online-demo ${PROJECT_NAME})
-
-#add_executable(icl-corner-detection-css-demo examples/corner-detection-css-demo.cpp)
-#target_link_libraries(icl-corner-detection-css-demo ${PROJECT_NAME})
-
-#add_executable(icl-online-region-detection-demo examples/online-region-detection-demo.cpp)
-#target_link_libraries(icl-online-region-detection-demo ${PROJECT_NAME})
-endif()
-
 set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 
-install (TARGETS ${PROJECT_NAME} #icl-blobtracker-benchmark icl-region-based-blob-finder-test 
-		#icl-region-detector-test
+install (TARGETS ${PROJECT_NAME} icl-blobtracker-benchmark icl-region-based-blob-finder-test 
+		icl-region-detector-test
 	 RUNTIME DESTINATION bin
  	 LIBRARY DESTINATION lib)
 if(HAVE_QT_COND)
-	install (TARGETS #icl-region-inspector-demo icl-vector-tracker-demo 
-		#icl-interactive-vector-tracker-benchmark icl-simple-blob-searcher-test 
-		#icl-mean-shift-online-demo icl-corner-detection-css-demo 
-		#icl-online-region-detection-demo
+	install (TARGETS icl-region-inspector-demo icl-vector-tracker-demo 
+		icl-interactive-vector-tracker-benchmark icl-simple-blob-searcher-test 
+		icl-mean-shift-online-demo icl-corner-detection-css-demo 
+		icl-online-region-detection-demo
 	 RUNTIME DESTINATION bin)
 endif()

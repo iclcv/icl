@@ -196,7 +196,7 @@ AC_MSG_NOTICE([+---------------------------------------+])
 ###############################################################################
 # Create list of packages to build (in correct order)
 ###############################################################################
-ICL_BUILD_PACKAGES="ICLUtils ICLCore ICLIO ICLCC ICLBlob ICLFilter ICLQuick ICLGeom ICLAlgorithms"
+ICL_BUILD_PACKAGES="ICLUtils ICLCore ICLIO ICLCC ICLBlob ICLFilter ICLOpenCV ICLQuick ICLGeom ICLAlgorithms"
 
 # Add optional packages
 ICL_ADD_PACKAGE_IF([ICLQt],["$HAVE_QT" = "TRUE"])

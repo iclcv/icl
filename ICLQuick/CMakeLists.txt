@@ -5,7 +5,13 @@ set(LIB_SOURCES
 	"src/Quick.cpp"
 	"src/QuickRegions.cpp"
 )
+if(HAVE_Qt_COND)
+add_executable(icl-quick-test examples/quick-test.cpp)
+target_link_libraries(icl-quick-test ${PROJECT_NAME})
 
+add_executable(icl-quick-benchmark examples/quick-benchmark.cpp)
+target_link_libraries(icl-quick-benchmark ${PROJECT_NAME}) 
+endif()
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
@@ -64,4 +70,9 @@ set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 install (TARGETS ${PROJECT_NAME}  
 	 RUNTIME DESTINATION bin
  	 LIBRARY DESTINATION lib)
+if(HAVE_Qt_COND)
+	install (TARGETS icl-quick-test icl-quick-benchmark 
+	 RUNTIME DESTINATION bin
+ 	 LIBRARY DESTINATION lib)
+endif()
 

@@ -4,6 +4,11 @@ project(ICLOpenCV)
 set(LIB_SOURCES 
 	"src/OpenCV.cpp"
 )
+
+add_executable(icl-dummy-app examples/dummy-app.cpp)
+#do not link dummy-apps!!!
+target_link_libraries(icl-dummy-app )#${PROJECT_NAME})
+
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
@@ -26,11 +31,8 @@ target_link_libraries(${PROJECT_NAME} ICLUtils)
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
-#add_executable(icl-dummy-app examples/dummy-app.cpp)
-#target_link_libraries(icl-dummy-app ${PROJECT_NAME})
-
 set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 
-install (TARGETS ${PROJECT_NAME} #icl-dummy-app
+install (TARGETS ${PROJECT_NAME} icl-dummy-app
 	 RUNTIME DESTINATION bin
  	 LIBRARY DESTINATION lib)

@@ -11,15 +11,16 @@ set(LIB_SOURCES
 
 )
 
-#add_executable(icl-bayer-benchmark examples/bayer-benchmark.cpp)
-#target_link_libraries(icl-bayer-benchmark ICLIO ICLOpenCV ICLFilter ${PROJECT_NAME} ICLCore ICLUtils)#ICLQuick ICLQt  
+add_executable(icl-bayer-benchmark examples/bayer-benchmark.cpp)
+target_link_libraries(icl-bayer-benchmark ${PROJECT_NAME} ICLCore ICLUtils ICLIO) 
 
-#add_executable(icl-converter-test examples/converter-test.cpp)
-#target_link_libraries(icl-converter-test  ICLQuick ICLQt ICLIO ${PROJECT_NAME} ICLFilter ICLUtils)
+add_executable(icl-converter-test examples/converter-test.cpp)
+target_link_libraries(icl-converter-test ${PROJECT_NAME} ICLQuick)
 
-#add_executable(icl-colorspace-online-demo examples/colorspace-online-demo.cpp)
-#target_link_libraries(icl-colorspace-online-demo ICLQuick ICLQt ICLIO ICLOpenCV ${PROJECT_NAME} ICLCore ICLUtils)
-
+if (HAVE_Qt_COND)
+add_executable(icl-colorspace-online-demo examples/colorspace-online-demo.cpp)
+target_link_libraries(icl-colorspace-online-demo ${PROJECT_NAME} ICLQuick)
+endif()
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
@@ -42,6 +43,12 @@ link_directories("${LIBRARY_OUTPUT_PATH}")
 
 set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 
-install (TARGETS ${PROJECT_NAME}  #icl-colorspace-online-demo #icl-converter-test icl-bayer-benchmark  
+install (TARGETS ${PROJECT_NAME}  icl-converter-test icl-bayer-benchmark  
 	 RUNTIME DESTINATION bin
  	 LIBRARY DESTINATION lib)
+
+if(HAVE-Qt_COND)
+install (TARGETS icl-colorspace-online-demo  
+	 RUNTIME DESTINATION bin
+)
+endif()

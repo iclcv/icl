@@ -49,13 +49,13 @@ set(LIB_SOURCES ${LIB_SOURCES}
 )
 endif()
 
-#if (SYSTEM_LINUX_COND)
+if (SYSTEM_LINUX_COND)
 if (HAVE_VIDEODEV_COND)
 set(LIB_SOURCES ${LIB_SOURCES}
 	"src/PWCGrabber.cpp"
 )
 endif()
-#endif()
+endif()
 
 if (HAVE_LIBDC_COND)
 set(LIB_SOURCES ${LIB_SOURCES}
@@ -107,6 +107,69 @@ set(LIB_SOURCES ${LIB_SOURCES}
 )
 endif()
 
+
+add_executable(icl-write-file-example examples/write-file-example.cpp)
+target_link_libraries(icl-write-file-example ${PROJECT_NAME} ICLQuick)
+
+add_executable(icl-testimages-example examples/testimages-example.cpp)
+target_link_libraries(icl-testimages-example ${PROJECT_NAME} ICLQuick)
+
+add_executable(icl-jpg2cpp examples/jpg2cpp.cpp)
+target_link_libraries(icl-jpg2cpp ${PROJECT_NAME})
+
+add_executable(icl-convert examples/convert.cpp)
+target_link_libraries(icl-convert ${PROJECT_NAME})
+
+add_executable(icl-create examples/create.cpp)
+target_link_libraries(icl-create ${PROJECT_NAME} ICLQuick)
+
+if (HAVE_LIBDC_COND)
+add_executable(icl-dcclearisochannels examples/dcclearisochannels.cpp)
+target_link_libraries(icl-dcclearisochannels ${PROJECT_NAME})
+
+add_executable(icl-dcdeviceinfo examples/dcdeviceinfo.cpp)
+target_link_libraries(icl-dcdeviceinfo ${PROJECT_NAME})
+
+#TODO IF OPENCV_COND
+add_executable(icl-camera-param-io examples/camera-param-io.cpp)
+target_link_libraries(icl-camera-param-io ${PROJECT_NAME})
+
+add_executable(icl-reset-dc-bus examples/reset-dc-bus.cpp)
+target_link_libraries(icl-reset-dc-bus ${PROJECT_NAME})
+endif()
+
+if (HAVE_QT_COND)
+add_executable(icl-multi-cam-example examples/multi-cam-example.cpp)
+target_link_libraries(icl-multi-cam-example ${PROJECT_NAME})
+endif()
+
+if (HAVE_XCF_COND)
+add_executable(icl-xcf-grabber-benchmark examples/xcf-grabber-benchmark.cpp)
+target_link_libraries(icl-xcf-grabber-benchmark ${PROJECT_NAME})
+
+add_executable(icl-memory-listener examples/memory-listener.cpp)
+target_link_libraries(icl-memory-listener ${PROJECT_NAME})
+if (HAVE_QT_COND)
+add_executable(icl-xcf-publisher examples/xcf-publisher.cpp)
+target_link_libraries(icl-xcf-publisher ${PROJECT_NAME})
+endif()
+endif()
+
+if (HAVE_UNICAP_COND)
+add_executable(icl-unicap-grab-example examples/unicap-grab-example.cpp)
+target_link_libraries(icl-unicap-grab-example ${PROJECT_NAME})
+endif()
+
+if (HAVE_QT_COND)
+add_executable(icl-generic-grab-example examples/generic-grab-example.cpp)
+target_link_libraries(icl-generic-grab-example ${PROJECT_NAME})
+endif()
+
+if (HAVE_XINE_COND)
+add_executable(icl-video-player examples/video-player.cpp)
+target_link_libraries(icl-video-player ${PROJECT_NAME} ICLQuick)
+endif()
+
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
@@ -149,16 +212,47 @@ target_link_libraries(${PROJECT_NAME} pthread)
 if(HAVE_MKL_COND)
 target_link_libraries(${PROJECT_NAME} mkl_intel mkl_intel_thread mkl_core iomp5)
 endif()
+if(HAVE_OPENCV_COND)
+target_link_libraries(${PROJECT_NAME} ICLOpenCV)
+endif()
 target_link_libraries(${PROJECT_NAME} ICLFilter ICLCC ICLCore ICLUtils)
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
-#add_executable(icl-dummy-app examples/dummy-app.cpp)
-#target_link_libraries(icl-dummy-app ${PROJECT_NAME})
-
 set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 
-install (TARGETS ${PROJECT_NAME} #icl-dummy-app
+install (TARGETS ${PROJECT_NAME} icl-write-file-example
+		icl-testimages-example icl-jpg2cpp icl-convert icl-create
 	 RUNTIME DESTINATION bin
  	 LIBRARY DESTINATION lib
 )
+
+if (HAVE_LIBDC_COND)
+install (TARGETS icl-dcclearisochannels icl-dcdeviceinfo
+		icl-camera-param-io 
+		icl-reset-dc-bus
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+)
+if (HAVE_QT_COND)
+install (TARGETS icl-multi-cam-example
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+)
+endif()
+endif()
+
+if (HAVE_XCF_COND)
+install (TARGETS icl-xcf-grabber-benchmark icl-memory-listener
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+)
+endif()
+
+if (HAVE_QT_COND)
+install (TARGETS icl-xcf-publisher
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+)
+endif()
+

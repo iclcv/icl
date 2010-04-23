@@ -16,6 +16,22 @@ set(LIB_SOURCES
 	"src/LineSampler.cpp"
 
 )
+
+add_executable(icl-img-example examples/img-example.cpp)
+target_link_libraries(icl-img-example ${PROJECT_NAME})
+
+add_executable(icl-copy-channel-roi-example examples/copy-channel-roi-example.cpp)
+target_link_libraries(icl-copy-channel-roi-example ${PROJECT_NAME})
+
+add_executable(icl-img-iterator-benchmark examples/img-iterator-benchmark.cpp)
+target_link_libraries(icl-img-iterator-benchmark ${PROJECT_NAME})
+
+add_executable(icl-reduce-channels-test examples/reduce-channels-test.cpp)
+target_link_libraries(icl-reduce-channels-test ${PROJECT_NAME})
+
+add_executable(icl-sampled-line-test examples/sampled-line-test.cpp)
+target_link_libraries(icl-sampled-line-test ${PROJECT_NAME})
+
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
@@ -34,24 +50,9 @@ target_link_libraries(${PROJECT_NAME} ICLUtils)
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
-#add_executable(icl-img-example examples/img-example.cpp)
-#target_link_libraries(icl-img-example ${PROJECT_NAME})
-
-#add_executable(icl-copy-channel-roi-example examples/copy-channel-roi-example.cpp)
-#target_link_libraries(icl-copy-channel-roi-example ${PROJECT_NAME})
-
-#add_executable(icl-img-iterator-benchmark examples/img-iterator-benchmark.cpp)
-#target_link_libraries(icl-img-iterator-benchmark ${PROJECT_NAME})
-
-#add_executable(icl-reduce-channels-test examples/reduce-channels-test.cpp)
-#target_link_libraries(icl-reduce-channels-test ${PROJECT_NAME})
-
-#add_executable(icl-sampled-line-test examples/sampled-line-test.cpp)
-#target_link_libraries(icl-sampled-line-test ${PROJECT_NAME})
-
 set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 
-install (TARGETS ${PROJECT_NAME} #icl-img-example icl-copy-channel-roi-example icl-img-iterator-benchmark icl-reduce-channels-test 
-	#icl-sampled-line-test
+install (TARGETS ${PROJECT_NAME} icl-img-example icl-copy-channel-roi-example 
+		icl-img-iterator-benchmark icl-reduce-channels-test icl-sampled-line-test
 	 RUNTIME DESTINATION bin
  	 LIBRARY DESTINATION lib)
