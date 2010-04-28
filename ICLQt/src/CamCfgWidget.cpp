@@ -48,6 +48,10 @@
 #include <ICLIO/SwissRangerGrabber.h>
 #endif
 
+#ifdef HAVE_OPENCV
+#include <ICLIO/OpenCVCamGrabber.h>
+#endif
+
 #include <ICLQt/Widget.h>
 #include <ICLQt/DoubleSlider.h>
 #include <ICLUtils/Thread.h>
@@ -315,7 +319,32 @@ namespace icl{
       }
     }
 #endif
-    
+
+#ifdef HAVE_OPENCV
+    if(!flags.disableOpenCV){
+      m_vecOpenCVDeviceList = OpenCVCamGrabber::getDeviceList();
+      for(unsigned int j=0;j<m_vecOpenCVDeviceList.size();j++){
+        if(useHintList && hints["cvcam"] != ""){
+          int dev = to32s(hints["cvcam"]);
+          if(dev != (int)j) continue;
+        }
+        QString name = QString("[OPENCV]")+"Supported Device "+QString::number(j);
+        m_poDeviceCombo->addItem(name);
+        QWidget *w = new QWidget(this);
+        QVBoxLayout *l = new QVBoxLayout(w);
+        QScrollArea *sa = new QScrollArea(this);
+        sa->setWidgetResizable(true);
+        OpenCVCamGrabber grabber(m_vecOpenCVDeviceList[j]);
+        fillLayout(l,&grabber,name.toLatin1().data());
+        sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+        w->setLayout(l);
+        sa->setWidget(w);      
+        m_poTabWidget->addTab(sa,name);
+        m_poTabWidget->setTabEnabled(jAll++,false);
+      }
+    }
+#endif
+
 #ifdef HAVE_VIDEODEV
     if(!flags.disablePWC){
       /// add philips webcam devices
@@ -419,6 +448,15 @@ namespace icl{
           break;
         }
       }
+#endif
+    }else if (prefix == "OPENCV"){
+#ifdef HAVE_OPENCV
+
+#ifdef HAVE_LIBDC
+      m_vecDCDeviceList.clear();
+      icl::dc::free_static_context();
+#endif
+      m_poGrabber = new OpenCVCamGrabber(text.section(" ",2).toInt());
 #endif
     }else if(prefix == "SR"){
 #ifdef HAVE_LIBMESASR

@@ -85,10 +85,12 @@ namespace icl{
                   bool disableDC=false,
                   bool disablePWC=false,
                   bool disableSR=false,
+                  bool disableOpenCV=false,
                   const std::string &deviceHintList=""):
         isoMBits(isoMBits),resetDCBus(resetDCBus),
         disableUnicap(disableUnicap),disableDC(disableDC),
           disablePWC(disablePWC),disableSR(disableSR),
+          disableOpenCV(disableOpenCV),
           deviceHintList(deviceHintList){}
       
       int isoMBits;
@@ -97,6 +99,7 @@ namespace icl{
       bool disableDC;
       bool disablePWC;
       bool disableSR;
+      bool disableOpenCV;
       std::string deviceHintList;
     };
     
@@ -233,6 +236,9 @@ namespace icl{
 #endif
 #ifdef HAVE_VIDEODEV
     std::vector<int> m_vecPWCDeviceList;         //!< PWCDevice list
+#endif
+#ifdef HAVE_OPENCV
+    std::vector<int> m_vecOpenCVDeviceList;      //!< OpenCV Device list
 #endif
     ImgParamWidget *m_poImgParamWidget;   //!< widget to ajust image params ( grabbers desired params)
     

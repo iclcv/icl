@@ -42,7 +42,7 @@ int main(int n, char **ppc){
   ("-no-dc","disable dc grabber support")
   ("-no-pwc","disable pwc grabber support");
   
-  painit(n,ppc,"-use-IEEE1394-B|-800 -reset-bus|-r -no-unicap|-u -no-dc|-d -no-pwc|-p -no-sr|-s");
+  painit(n,ppc,"-use-IEEE1394-B|-800 -reset-bus|-r -no-unicap|-u -no-dc|-d -no-pwc|-p -no-sr|-s -no-opencv|-o");
   QApplication a(n,ppc);
   
   CamCfgWidget::CreationFlags flags(pa("-800")?800:400,
@@ -50,7 +50,8 @@ int main(int n, char **ppc){
                                     pa("-no-unicap"),
                                     pa("-no-dc"),
                                     pa("-no-pwc"),
-                                    pa("-no-sr"));
+                                    pa("-no-sr"),
+                                    pa("-no-opencv"));
   
   
   CamCfgWidget w(flags);

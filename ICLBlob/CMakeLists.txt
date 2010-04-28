@@ -58,11 +58,11 @@ add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 set(LIBRARY_OUTPUT_PATH lib CACHE PATH "Output directory for libraries" )
 
 #linker
-if(${HAVE_IPP_COND})
+if(HAVE_IPP_COND)
 target_link_libraries(${PROJECT_NAME} ippcore ippi ipps ippsr ippcv ippm ippcc guide iomp5)
 endif()
 target_link_libraries(${PROJECT_NAME} pthread)
-if(${HAVE_MKL_COND})
+if(HAVE_MKL_COND)
 target_link_libraries(${PROJECT_NAME} mkl_intel mkl_intel_thread mkl_core iomp5)
 endif()
 target_link_libraries(${PROJECT_NAME} ICLCC ICLCore ICLUtils)
