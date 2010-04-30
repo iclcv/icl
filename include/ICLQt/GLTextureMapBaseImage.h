@@ -153,6 +153,9 @@ namespace icl{
 
     /// returns the current image statistics (which are automatically updated before)
     const ImageStatistics &getStatistics();
+    
+    /// sets whether a pixle-grid is also drawn
+    void setDrawGrid(bool enabled, float *color=0);
 
     private:
     /// creates an image with valid channel count 1 or 3

@@ -294,10 +294,10 @@ int main(int nArgs, char **ppcArg){
         @param id handle to reference the button lateron 
         
         @param untoggledIcon optional button icon(recommeded: use buttons from the
-               ICLQt::IconFactor class)
+               ICLQt::IconFactory class)
 
         @param toggledIcon optional button icon (recommeded: use buttons from the
-               ICLQt::IconFactor class)
+               ICLQt::IconFactory class)
 
         @param ICLWidgetSlot here you can direcly define a slot from ICLWidget
                class, the button is attached to. Note, if toggable is true,
@@ -368,6 +368,10 @@ int main(int nArgs, char **ppcArg){
     void setEmbeddedZoomModeEnabled(bool enabled);
     
     void setLinInterpolationEnabled(bool enabled);
+
+    void setShowPixelGridEnabled(bool enabled);
+
+    void setRangeModeNormalOrScaled(bool enabled);
     
     private:
     /// internally used, grabs the current framebuffer as Img8u 

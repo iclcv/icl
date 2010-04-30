@@ -298,7 +298,7 @@ namespace icl{
     // {{{ open
 
     enum IconType {Tool,Zoom,Lock, Unlock,RedZoom,RedCam,
-                   NNInter, LINInter, CustomIcon };
+                   NNInter, LINInter, CustomIcon, RangeNormal, RangeScaled};
     enum Event { Move, Press, Release, Enter, Leave,Draw};
 
     std::string id;
@@ -331,6 +331,8 @@ namespace icl{
         case RedCam: return IconFactory::create_image("red-camera");
         case NNInter: return IconFactory::create_image("inter-nn");
         case LINInter: return IconFactory::create_image("inter-lin");
+        case RangeNormal: return IconFactory::create_image("range-normal");
+        case RangeScaled: return IconFactory::create_image("range-scaled");
         case CustomIcon: return IconFactory::create_image("custom");
       }
       static Img8u undef(Size(32,32),4);
@@ -509,7 +511,8 @@ namespace icl{
       imageInfoIndicatorEnabled(true),infoTabVisible(false),
       selectedTabIndex(0),embeddedZoomMode(false),
       embeddedZoomModeJustEnabled(false),embeddedZoomRect(0),
-      useLinInterpolation(false),nextButtonX(2),lastMouseReleaseButton(0)
+      useLinInterpolation(false),nextButtonX(2),lastMouseReleaseButton(0),
+      drawgrid(false)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
@@ -570,11 +573,12 @@ namespace icl{
     int nextButtonX;
     std::vector<MouseHandler*> callbacks;
     int lastMouseReleaseButton;
+    bool drawgrid;
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
       for(unsigned int i=0;i<glbuttons.size();++i){
-        if(i == 4 && (evt == OSDGLButton::Enter || evt == OSDGLButton::Leave)){
+        if(i == 5 && (evt == OSDGLButton::Enter || evt == OSDGLButton::Leave)){
           continue;
         }
         any |= glbuttons[i]->event(x,y,evt,parent);
@@ -1239,6 +1243,8 @@ namespace icl{
     x+=GL_BUTTON_X_INC;
     m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Zoom,OSDGLButton::RedZoom,&ICLWidget::setEmbeddedZoomModeEnabled,false));
     x+=GL_BUTTON_X_INC;
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::RangeNormal,OSDGLButton::RangeScaled,&ICLWidget::setRangeModeNormalOrScaled,false));
+    x+=GL_BUTTON_X_INC;
     m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::RedCam,&ICLWidget::stopButtonClicked));
     x+=GL_BUTTON_X_INC;
 
@@ -1486,7 +1492,7 @@ namespace icl{
       QMutexLocker l(&m_data->menuMutex);
       (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
     }
-    m_data->glbuttons[3]->visible = false;
+    m_data->glbuttons[5]->visible = false;
     update();
   }
 
@@ -2092,6 +2098,21 @@ namespace icl{
   }
   // }}}
  
+  void ICLWidget::setShowPixelGridEnabled(bool enabled){
+    // {{{ open
+    m_data->drawgrid = enabled;
+  }
+  // }}}
+
+  void ICLWidget::setRangeModeNormalOrScaled(bool enabled){
+    // {{{ open
+    if(enabled) setRangeMode(rmAuto);
+    else setRangeMode(rmOff);
+    rebufferImageInternal();
+    // todo: maybe even adapt combobox in the range-mode tab!!
+  }
+  // }}}
+
   std::vector<std::string> ICLWidget::getImageInfo(){
     // {{{ open
     std::vector<string> info;

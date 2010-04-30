@@ -82,6 +82,12 @@ namespace icl{
       }
     }
     memset(m_aiBCI,0,3*sizeof(int));
+
+    m_drawGrid = false;
+    m_gridColor[0] = 1;
+    m_gridColor[1] = 1;
+    m_gridColor[2] = 1;
+    m_gridColor[3] = 1;
   }
   
   // }}}
@@ -528,6 +534,34 @@ namespace icl{
     if(!m_bUseSingleBuffer){
       glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());  
     }
+    if(m_drawGrid){
+      glColor4fv(m_gridColor);
+      //glLineWidth(1);
+      float dx = lX/m_iImageW;
+      float dy = lY/m_iImageH;
+      glBegin(GL_LINES);
+      for(int x=0;x<=m_iImageW;++x){
+        float xx = rectLeft+x*dx;
+        glVertex2f(xx,rectTop);
+        glVertex2f(xx,rectBottom);
+      }
+      for(int y=0;y<=m_iImageH;++y){
+        float yy = rectTop+y*dy;
+        glVertex2f(rectLeft,yy);
+        glVertex2f(rectRight,yy);
+      }
+      glEnd();
+      /*
+          float rectLeft = winToDraw(rect.x,winW);
+          float rectTop = winToDraw(rect.y,winH);
+          float rectRight = winToDraw(rect.x+rect.width,winW);
+          float rectBottom = winToDraw(rect.y+rect.height,winH);
+          float lX = rectRight - rectLeft;
+          float lY = rectBottom - rectTop;
+          m_iImageW, m_iImageH;
+       */
+    }
+    
     glColor4f(1,1,1,1);    
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
@@ -539,6 +573,14 @@ namespace icl{
 
   // }}}
   
+  template<class T>
+  void GLTextureMapImage<T>::setDrawGrid(bool enabled, float *color){
+    m_drawGrid = enabled;
+    if(color){
+      std::copy(color,color+4,m_gridColor);
+    }
+  }
+
   template<class T>
   void GLTextureMapImage<T>::drawTo3D(float *pCenter, float *pFirstAxis, float *pSecondAxis){
     if(!m_bUseSingleBuffer){

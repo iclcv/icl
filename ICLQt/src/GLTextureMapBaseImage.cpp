@@ -278,6 +278,14 @@ namespace icl{
     }
   }
 
+  void GLTextureMapBaseImage::setDrawGrid(bool enabled, float *color){
+    if(m_po8u){ m_po8u->setDrawGrid(enabled,color);  return;  }
+    if(m_po16s){ m_po16s->setDrawGrid(enabled,color);  return;  }
+    if(m_po32s){ m_po32s->setDrawGrid(enabled,color);  return;  }
+    if(m_po32f){ m_po32f->setDrawGrid(enabled,color);  return;  }
+  }
+
+
   const ImageStatistics &GLTextureMapBaseImage::getStatistics(){
     QMutexLocker l(&m_oImStatMutex);
 

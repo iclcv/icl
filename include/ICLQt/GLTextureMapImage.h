@@ -179,6 +179,10 @@ namespace icl{
 
     /// called from the top level GLTextureMapBaseImage
     const ImageStatistics &updateStatistics(ImageStatistics &s);
+
+    /// sets whether to visualize the pixel-grid or not
+    void setDrawGrid(bool enabled, float *color);
+    
     private:
 
     /// internally used for debugging (TODO remove and make glabal function)
@@ -231,6 +235,12 @@ namespace icl{
 
     /// holds brightness contrast and intensity values
     int m_aiBCI[3];
+    
+    /// holds state if the grid is currently visualized
+    bool m_drawGrid;
+    
+    /// holds the current grid color
+    float m_gridColor[4];
     
   };
 }
