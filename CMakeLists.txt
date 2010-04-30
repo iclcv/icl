@@ -4,7 +4,7 @@ cmake_policy(SET CMP0002 OLD)
 SET(CMAKE_BUILD_TYPE Release)
 SET(CMAKE_CXX_FLAGS "-Wall")
 #TODO
-set(CMAKE_INSTALL_PREFIX "/temp/ICL")
+set(CMAKE_INSTALL_PREFIX "/homes/cgroszew/ICL")
 message(STATUS "Install Path: ${CMAKE_INSTALL_PREFIX}")
 if(UNIX)
     add_definitions( -DSYSTEM_LINUX)
@@ -258,6 +258,9 @@ endif()
 message(STATUS "SVS detected: ${SVS_FOUND}")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
+
+include(UseDoxygen OPTIONAL)
+FIND_PACKAGE(Doxygen)
 
 #add subdirs
 add_subdirectory(ICLUtils)
