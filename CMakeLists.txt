@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(ICL)
-
+cmake_policy(SET CMP0002 OLD)
 SET(CMAKE_BUILD_TYPE Release)
 SET(CMAKE_CXX_FLAGS "-Wall")
 #TODO
@@ -18,6 +18,9 @@ if(WIN32)
     add_definitions( -DSYSTEM_WINDOWS)
     add_definitions( -DICL_SYSTEM_WINDOWS)
 endif()
+
+set(BUILD_EXAMPLES OFF CACHE BOOL "Build example applications")
+
 #check for IPP default check location /vol/nivision/IPP/6.1-ia32
 find_path(IPP_PATH "ipp.h" "/vol/nivision/IPP/6.1-ia32/include" DOC "The path to IPP")
 if(IPP_PATH)
@@ -268,3 +271,33 @@ add_subdirectory(ICLQt)
 add_subdirectory(ICLQuick)
 add_subdirectory(ICLGeom)
 add_subdirectory(ICLAlgorithms)
+
+install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+)
+
+if(DOXYGEN_FOUND)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
+)
+#cat doxyfile | sed "s|ICL_SUB_PACKAGE_PLACEHOLDER|${subdir}|g" > doxyfile)
+# prepare doxygen configuration file
+set(ICL_SUB_PACKAGE_PLACEHOLDER2 ICLUtils ICLCore ICLCC ICLFilter ICLBlob ICLOpenCV ICLIO ICLQt ICLQuick ICLGeom ICLAlgorithms)
+foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGE_PLACEHOLDER2})
+    configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/doxyfile @ONLY)
+    #copy pics
+	 file(COPY ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/
+		   ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/ 
+		   ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/ 
+		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/
+		FILES_MATCHING 
+			PATTERN "*.png" 
+			PATTERN "*.jpg")
+endforeach()
+
+# add doxygen as dependency to doc-target
+get_target_property(DOC_TARGET doc TYPE)
+if(NOT DOC_TARGET)
+	add_custom_target(doc)
+endif()
+endif()

@@ -17,6 +17,7 @@ set(LIB_SOURCES
 
 )
 
+if(BUILD_EXAMPLES)
 add_executable(icl-img-example examples/img-example.cpp)
 target_link_libraries(icl-img-example ${PROJECT_NAME})
 
@@ -31,6 +32,7 @@ target_link_libraries(icl-reduce-channels-test ${PROJECT_NAME})
 
 add_executable(icl-sampled-line-test examples/sampled-line-test.cpp)
 target_link_libraries(icl-sampled-line-test ${PROJECT_NAME})
+endif()
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
@@ -39,20 +41,32 @@ add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 set(LIBRARY_OUTPUT_PATH lib CACHE PATH "Output directory for libraries" )
 
 #linker
-if(HAVE_IPP_COND)
-target_link_libraries(${PROJECT_NAME} ippcore ippi ipps ippsr ippcv ippm ippcc guide iomp5)
-endif()
-target_link_libraries(${PROJECT_NAME} pthread)
-if(HAVE_MKL_COND)
-target_link_libraries(${PROJECT_NAME} mkl_intel mkl_intel_thread mkl_core iomp5)
-endif()
 target_link_libraries(${PROJECT_NAME} ICLUtils)
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
 set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 
-install (TARGETS ${PROJECT_NAME} icl-img-example icl-copy-channel-roi-example 
-		icl-img-iterator-benchmark icl-reduce-channels-test icl-sampled-line-test
+install (TARGETS ${PROJECT_NAME} 
+ 	 LIBRARY DESTINATION lib
+)
+install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+)
+if(BUILD_EXAMPLES)
+install(TARGETS icl-img-example icl-copy-channel-roi-example 
+	icl-img-iterator-benchmark icl-reduce-channels-test icl-sampled-line-test
 	 RUNTIME DESTINATION bin
- 	 LIBRARY DESTINATION lib)
+)
+endif()
+if(DOXYGEN_FOUND)
+add_custom_target(doc doxygen doc/doxyfile)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html/
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
+)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
+	PATTERN "doxyfile" EXCLUDE
+)
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES doc/html)
+endif()

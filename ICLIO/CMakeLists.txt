@@ -107,7 +107,7 @@ set(LIB_SOURCES ${LIB_SOURCES}
 )
 endif()
 
-
+if(BUILD_EXAMPLES)
 add_executable(icl-write-file-example examples/write-file-example.cpp)
 target_link_libraries(icl-write-file-example ${PROJECT_NAME} ICLQuick)
 
@@ -169,7 +169,7 @@ if (HAVE_XINE_COND)
 add_executable(icl-video-player examples/video-player.cpp)
 target_link_libraries(icl-video-player ${PROJECT_NAME} ICLQuick)
 endif()
-
+endif()
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
@@ -205,13 +205,6 @@ endif()
 if(HAVE_XCF_COND)
 target_link_libraries(${PROJECT_NAME} xcf xqilla log4cxx Memory xmltio Ice IceUtil xerces-c)
 endif()
-if(HAVE_IPP_COND)
-target_link_libraries(${PROJECT_NAME} ippcore ippi ipps ippsr ippcv ippm ippcc guide iomp5)
-endif()
-target_link_libraries(${PROJECT_NAME} pthread)
-if(HAVE_MKL_COND)
-target_link_libraries(${PROJECT_NAME} mkl_intel mkl_intel_thread mkl_core iomp5)
-endif()
 if(HAVE_OPENCV_COND)
 target_link_libraries(${PROJECT_NAME} ICLOpenCV)
 endif()
@@ -221,12 +214,17 @@ link_directories("${LIBRARY_OUTPUT_PATH}")
 
 set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 
-install (TARGETS ${PROJECT_NAME} icl-write-file-example
-		icl-testimages-example icl-jpg2cpp icl-convert icl-create
-	 RUNTIME DESTINATION bin
+install (TARGETS ${PROJECT_NAME}
  	 LIBRARY DESTINATION lib
 )
-
+install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+)
+if(BUILD_EXAMPLES)
+install(TARGETS icl-write-file-example
+		icl-testimages-example icl-jpg2cpp icl-convert icl-create
+	 RUNTIME DESTINATION bin
+)
 if (HAVE_LIBDC_COND)
 install (TARGETS icl-dcclearisochannels icl-dcdeviceinfo
 		icl-camera-param-io 
@@ -255,4 +253,15 @@ install (TARGETS icl-xcf-publisher
 	LIBRARY DESTINATION lib
 )
 endif()
-
+endif()
+if(DOXYGEN_FOUND)
+add_custom_target(doc doxygen doc/doxyfile)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html/
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
+)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
+	PATTERN "doxyfile" EXCLUDE
+)
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES doc/html)
+endif()

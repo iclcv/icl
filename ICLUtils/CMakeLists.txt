@@ -40,7 +40,7 @@ set(LIB_SOURCES
 	"src/StraightLine2D.cpp"
 	"src/FFTUtils.cpp"
 )
-
+if(BUILD_EXAMPLES)
 add_executable(icl-progargdemo examples/progargdemo.cpp)
 target_link_libraries(icl-progargdemo ${PROJECT_NAME})
 
@@ -64,6 +64,7 @@ target_link_libraries(icl-xml-parser-test ${PROJECT_NAME})
 
 add_executable(icl-config-file-test examples/config-file-test.cpp)
 target_link_libraries(icl-config-file-test ${PROJECT_NAME})
+endif()
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
@@ -84,9 +85,28 @@ link_directories("${LIBRARY_OUTPUT_PATH}")
 
 set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
 
-install (TARGETS ${PROJECT_NAME} icl-progargdemo icl-dyn-matrix-test 
+install (TARGETS ${PROJECT_NAME} 
+ 	 LIBRARY DESTINATION lib
+)
+install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+)
+if(BUILD_EXAMPLES)
+install(TARGETS icl-progargdemo icl-dyn-matrix-test 
 		icl-dyn-matrix-utils-test icl-fixed-matrix-test 
 		icl-matrix-stream-operator-test icl-regular-expression-test 
 		icl-xml-parser-test icl-config-file-test
 	 RUNTIME DESTINATION bin
- 	 LIBRARY DESTINATION lib)
+)
+endif()
+if(DOXYGEN_FOUND)
+add_custom_target(doc doxygen doc/doxyfile)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html/
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
+)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
+	PATTERN "doxyfile" EXCLUDE
+)
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES doc/html)
+endif()
