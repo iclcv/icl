@@ -511,13 +511,13 @@ namespace icl{
       imageInfoIndicatorEnabled(true),infoTabVisible(false),
       selectedTabIndex(0),embeddedZoomMode(false),
       embeddedZoomModeJustEnabled(false),embeddedZoomRect(0),
-      useLinInterpolation(false),nextButtonX(2),lastMouseReleaseButton(0),
-      drawgrid(false)
+      useLinInterpolation(false),nextButtonX(2),lastMouseReleaseButton(0)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
         downMask[i] = 0;
       }
+      gridColor[0]=gridColor[1]=gridColor[2]=gridColor[3]=1;
     }  
     ~Data(){
       ICL_DELETE(channelSelBuf);
@@ -573,7 +573,7 @@ namespace icl{
     int nextButtonX;
     std::vector<MouseHandler*> callbacks;
     int lastMouseReleaseButton;
-    bool drawgrid;
+    float gridColor[4];
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
@@ -1072,7 +1072,7 @@ namespace icl{
     QMutexLocker locker(&data->menuMutex);
 
     // OK, we need to extract default values for all gui elements if gui is already defined!
-    data->menu = GUI("tab(bci,scale,channel,capture,info)[@handle=root@minsize=5x7]",widget);
+    data->menu = GUI("tab(bci,scale,channel,capture,extra,info)[@handle=root@minsize=5x7]",widget);
 
     GUI bciGUI("vbox");
 
@@ -1127,6 +1127,21 @@ namespace icl{
                   );
     captureGUI << autoCapGUI;    
     
+    GUI extraGUI("vbox");
+    extraGUI << (GUI("hbox[@label=background color]")
+                 << "button(select color)[@handle=select-bg-color]"
+                 << "button(black)[@handle=bg-black]"
+                 << "button(white)[@handle=bg-white]"
+                 << "button(gray)[@handle=bg-gray]" )
+             << "togglebutton(off,on)[@handle=grid-on@label=show grid]"
+             << (GUI("hbox[@label=grid color]")
+                 << "button(select color)[@handle=select-grid-color]"
+                 << "button(black)[@handle=grid-black]"
+                 << "button(white)[@handle=grid-white]"
+                 << "button(gray)[@handle=grid-gray]" );
+
+    
+
     GUI infoGUI("vsplit[@handle=info-tab]");
     infoGUI << ( GUI("hbox")
                  << "combo(all ,channel #0, channel #1,channel #2, channel #3)[@handle=histo-channel@out=_15]"
@@ -1140,7 +1155,7 @@ namespace icl{
                   << "label[@label=params@handle=image-info-label]"
                 );
 
-    data->menu << bciGUI << scaleGUI << channelGUI << captureGUI << infoGUI;
+    data->menu << bciGUI << scaleGUI << channelGUI << captureGUI << extraGUI << infoGUI;
     
     data->menu.create();
 
@@ -1196,6 +1211,8 @@ namespace icl{
     QObject::connect(*data->menu.getValue<ButtonHandle>("log"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
     QObject::connect(*data->menu.getValue<ComboHandle>("histo-channel"),SIGNAL(currentIndexChanged(int)),widget,SLOT(histoPanelParamChanged()));
 
+
+    QObject::connect(*data->menu.getValue<ButtonHandle>("grid-on"),SIGNAL(toggled(bool)),widget,SLOT(setShowPixelGridEnabled(bool)));
   }
 
   // }}}
@@ -2100,16 +2117,20 @@ namespace icl{
  
   void ICLWidget::setShowPixelGridEnabled(bool enabled){
     // {{{ open
-    m_data->drawgrid = enabled;
+    m_data->image->setDrawGrid(enabled,m_data->gridColor);
+    updateFromOtherThread();
   }
   // }}}
 
   void ICLWidget::setRangeModeNormalOrScaled(bool enabled){
     // {{{ open
-    if(enabled) setRangeMode(rmAuto);
-    else setRangeMode(rmOff);
+    setRangeMode(enabled?rmAuto:rmOff);
     rebufferImageInternal();
-    // todo: maybe even adapt combobox in the range-mode tab!!
+    if(!m_data->menuptr){
+      create_menu(this,m_data);
+    }
+    ComboHandle ch = m_data->menu.getValue<ComboHandle>("bci-mode");
+    ch.setSelectedIndex(enabled?2:1);
   }
   // }}}
 
