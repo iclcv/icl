@@ -156,7 +156,12 @@ namespace icl{
     
     /// sets whether a pixle-grid is also drawn
     void setDrawGrid(bool enabled, float *color=0);
+    
+    /// sets the grid color
+    void setGridColor(float *color);
 
+    /// returns the current grid color
+    const float *getGridColor() const;
     private:
     /// creates an image with valid channel count 1 or 3
     /** - images with 0 channels are invalid

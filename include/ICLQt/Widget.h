@@ -373,6 +373,15 @@ int main(int nArgs, char **ppcArg){
 
     void setRangeModeNormalOrScaled(bool enabled);
     
+    void showBackgroundColorDialog();
+    void showGridColorDialog();
+    void setBackgroundBlack();
+    void setBackgroundWhite();
+    void setBackgroundGray();
+    void setGridBlack();
+    void setGridWhite();
+    void setGridGray();
+    
     private:
     /// internally used, grabs the current framebuffer as Img8u 
     const Img8u &grabFrameBufferICL();

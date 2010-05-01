@@ -284,6 +284,20 @@ namespace icl{
     if(m_po32s){ m_po32s->setDrawGrid(enabled,color);  return;  }
     if(m_po32f){ m_po32f->setDrawGrid(enabled,color);  return;  }
   }
+  
+  const float *GLTextureMapBaseImage::getGridColor() const{
+    if(m_po8u) { return m_po8u->getGridColor(); }
+    if(m_po16s) { return m_po16s->getGridColor(); }
+    if(m_po32s) { return m_po32s->getGridColor(); }
+    if(m_po32f) { return m_po32f->getGridColor(); }
+    return 0;
+  }
+  void GLTextureMapBaseImage::setGridColor(float *color){
+    if(m_po8u) { m_po8u->setGridColor(color); }
+    if(m_po16s) { m_po16s->setGridColor(color); }
+    if(m_po32s) { m_po32s->setGridColor(color); }
+    if(m_po32f) { m_po32f->setGridColor(color); }
+  }
 
 
   const ImageStatistics &GLTextureMapBaseImage::getStatistics(){

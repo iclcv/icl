@@ -59,6 +59,7 @@
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QWheelEvent>
+#include <QColorDialog>
 
 
 #include <ICLQt/GUI.h>
@@ -518,6 +519,7 @@ namespace icl{
         downMask[i] = 0;
       }
       gridColor[0]=gridColor[1]=gridColor[2]=gridColor[3]=1;
+      backgroundColor[0] = backgroundColor[1] = backgroundColor[2] = 0;
     }  
     ~Data(){
       ICL_DELETE(channelSelBuf);
@@ -574,6 +576,7 @@ namespace icl{
     std::vector<MouseHandler*> callbacks;
     int lastMouseReleaseButton;
     float gridColor[4];
+    float backgroundColor[3];
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
@@ -1213,6 +1216,17 @@ namespace icl{
 
 
     QObject::connect(*data->menu.getValue<ButtonHandle>("grid-on"),SIGNAL(toggled(bool)),widget,SLOT(setShowPixelGridEnabled(bool)));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("select-grid-color"),SIGNAL(clicked()),widget,SLOT(showGridColorDialog()));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("grid-black"),SIGNAL(clicked()),widget,SLOT(setGridBlack()));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("grid-white"),SIGNAL(clicked()),widget,SLOT(setGridWhite()));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("grid-gray"),SIGNAL(clicked()),widget,SLOT(setGridGray()));
+    
+
+    QObject::connect(*data->menu.getValue<ButtonHandle>("select-bg-color"),SIGNAL(clicked()),widget,SLOT(showBackgroundColorDialog()));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("bg-black"),SIGNAL(clicked()),widget,SLOT(setBackgroundBlack()));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("bg-white"),SIGNAL(clicked()),widget,SLOT(setBackgroundWhite()));
+    QObject::connect(*data->menu.getValue<ButtonHandle>("bg-gray"),SIGNAL(clicked()),widget,SLOT(setBackgroundGray()));
+    
   }
 
   // }}}
@@ -1715,7 +1729,8 @@ namespace icl{
     //    m_data->mutex.lock();
     
     LOCK_SECTION;
-    
+    glClearColor(m_data->backgroundColor[0],m_data->backgroundColor[1],
+                 m_data->backgroundColor[2],1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     GLPaintEngine *pe = 0;
     if(m_data->image && m_data->image->hasImage()){
@@ -2131,6 +2146,68 @@ namespace icl{
     }
     ComboHandle ch = m_data->menu.getValue<ComboHandle>("bci-mode");
     ch.setSelectedIndex(enabled?2:1);
+  }
+  // }}}
+
+  void ICLWidget::showBackgroundColorDialog(){
+    // {{{ open
+    float *o = m_data->backgroundColor;
+    QColor color = QColorDialog::getColor(QColor(o[0]*255,o[1]*255,o[2]*255),this,"select background color");
+    o[0] = float(color.red())/255;
+    o[1] = float(color.green())/255;
+    o[2] = float(color.blue())/255;
+    updateFromOtherThread();
+  }
+  // }}}
+  void ICLWidget::setBackgroundBlack(){
+    // {{{ open
+    std::fill(m_data->backgroundColor,m_data->backgroundColor+3,0);
+    updateFromOtherThread();
+  }
+  // }}}
+  
+  void ICLWidget::setBackgroundWhite(){
+    // {{{ open
+    std::fill(m_data->backgroundColor,m_data->backgroundColor+3,1);
+    updateFromOtherThread();
+  }
+  // }}}
+  void ICLWidget::setBackgroundGray(){
+    // {{{ open
+    std::fill(m_data->backgroundColor,m_data->backgroundColor+3,0.3);
+    updateFromOtherThread();
+  }
+  // }}}
+
+  void ICLWidget::showGridColorDialog(){
+    // {{{ open
+    const float *g = m_data->image->getGridColor();
+    QColor color = QColorDialog::getColor(QColor(g[0]*255,g[1]*255,g[2]*255,g[3]*255),this,"select background color", QColorDialog::ShowAlphaChannel);
+    float n[4] = { float(color.red())/255, float(color.green())/255, float(color.blue())/255, float(color.alpha())/255 };
+    m_data->image->setGridColor(n);
+    updateFromOtherThread();
+  }
+  // }}}
+  
+  void ICLWidget::setGridBlack(){
+    // {{{ open
+    float c[4] = {0,0,0,1};
+    m_data->image->setGridColor(c);
+    updateFromOtherThread();
+  }
+  // }}}
+  void ICLWidget::setGridWhite(){
+    // {{{ open
+    float c[4] = {1,1,1,1};
+    m_data->image->setGridColor(c);
+    updateFromOtherThread();
+  }
+  // }}}
+  void ICLWidget::setGridGray(){
+    // {{{ open
+    float c[4] = {0.3,0.3,0.3,1};
+    m_data->image->setGridColor(c);
+    updateFromOtherThread();
   }
   // }}}
 

@@ -181,8 +181,13 @@ namespace icl{
     const ImageStatistics &updateStatistics(ImageStatistics &s);
 
     /// sets whether to visualize the pixel-grid or not
-    void setDrawGrid(bool enabled, float *color);
-    
+    void setDrawGrid(bool enabled, float *color=0);
+
+    /// sets the grid color
+    void setGridColor(float *color);
+
+    /// returns the current grid color
+    const float *getGridColor() const;
     private:
 
     /// internally used for debugging (TODO remove and make glabal function)

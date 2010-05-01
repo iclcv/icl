@@ -582,6 +582,16 @@ namespace icl{
   }
 
   template<class T>
+  void GLTextureMapImage<T>::setGridColor(float *color){
+    std::copy(color,color+4,m_gridColor);
+  }
+
+  template<class T>
+  const float *GLTextureMapImage<T>::getGridColor() const{
+    return m_gridColor;
+  }
+
+  template<class T>
   void GLTextureMapImage<T>::drawTo3D(float *pCenter, float *pFirstAxis, float *pSecondAxis){
     if(!m_bUseSingleBuffer){
       
