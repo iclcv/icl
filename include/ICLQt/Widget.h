@@ -375,6 +375,7 @@ int main(int nArgs, char **ppcArg){
     
     void showBackgroundColorDialog();
     void showGridColorDialog();
+    void setGridAlpha(int alpha);
     void setBackgroundBlack();
     void setBackgroundWhite();
     void setBackgroundGray();

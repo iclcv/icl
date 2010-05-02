@@ -444,23 +444,34 @@ namespace icl{
 
   struct ImageInfoIndicator : public ThreadedUpdatableWidget{
     // {{{ open
+    ImgParams p;
+    icl::depth d;
+    Point mousePos;
+    
+    ImageInfoIndicator(QWidget *parent):
+      ThreadedUpdatableWidget(parent){
+      d = (icl::depth)(-2);
+      setBackgroundRole(QPalette::Window);
+      //#if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
+      //setAttribute(Qt::WA_TranslucentBackground);
+      //#endif
+    }
 
-   ImgParams p;
-   icl::depth d;
-   ImageInfoIndicator(QWidget *parent):ThreadedUpdatableWidget(parent){
-     d = (icl::depth)(-2);
-     setBackgroundRole(QPalette::Window);
-     //#if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
-     //setAttribute(Qt::WA_TranslucentBackground);
-     //#endif
+    void update(const ImgParams p, icl::depth d){
+      this->p = p;
+      this->d = d;
+      updateFromOtherThread();
+    }
+    
+    void updateMousePos(const Point &mousePos){
+      this->mousePos = mousePos;
+      updateFromOtherThread();
+    }
 
-   }
-
-   void update(const ImgParams p, icl::depth d){
-     this->p = p;
-     this->d = d;
-     updateFromOtherThread();
-   }
+    inline std::string posstr(){
+      return str(mousePos);
+    }
+    
    inline std::string dstr(){
      switch(d){
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return #D;
@@ -492,7 +503,7 @@ namespace icl{
      pa.drawRect(QRectF(0,0,width(),height()));
      static const char D[] = "-";
      
-     std::string info = dstr()+D+str(p.getSize())+D+rstr()+D+fstr();
+     std::string info = posstr()+" "+dstr()+D+str(p.getSize())+D+rstr()+D+fstr();
      pa.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,info.c_str());
    }
   };
@@ -518,7 +529,8 @@ namespace icl{
         bci[i] = 0;
         downMask[i] = 0;
       }
-      gridColor[0]=gridColor[1]=gridColor[2]=gridColor[3]=1;
+      gridColor[0]=gridColor[1]=gridColor[2]=1;
+      gridColor[3]=0.4;
       backgroundColor[0] = backgroundColor[1] = backgroundColor[2] = 0;
     }  
     ~Data(){
@@ -597,7 +609,8 @@ namespace icl{
     }
     
     void updateImageInfoIndicatorGeometry(const QSize &parentSize){
-      imageInfoIndicator->setGeometry(QRect(parentSize.width()-252,parentSize.height()-18,250,18));
+      static const int W = 290;
+      imageInfoIndicator->setGeometry(QRect(parentSize.width()-(W+2),parentSize.height()-18,W,18));
     }
     
 
@@ -1136,7 +1149,9 @@ namespace icl{
                  << "button(black)[@handle=bg-black]"
                  << "button(white)[@handle=bg-white]"
                  << "button(gray)[@handle=bg-gray]" )
-             << "togglebutton(off,on)[@handle=grid-on@label=show grid]"
+             << (GUI("hbox") 
+                 << "togglebutton(off,on)[@handle=grid-on@label=show grid]"
+                 << "slider(0,255,100)[@label=grid alpha@handle=grid-alpha]")
              << (GUI("hbox[@label=grid color]")
                  << "button(select color)[@handle=select-grid-color]"
                  << "button(black)[@handle=grid-black]"
@@ -1220,13 +1235,15 @@ namespace icl{
     QObject::connect(*data->menu.getValue<ButtonHandle>("grid-black"),SIGNAL(clicked()),widget,SLOT(setGridBlack()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("grid-white"),SIGNAL(clicked()),widget,SLOT(setGridWhite()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("grid-gray"),SIGNAL(clicked()),widget,SLOT(setGridGray()));
-    
+    QObject::connect(*data->menu.getValue<SliderHandle>("grid-alpha"),SIGNAL(sliderMoved(int)),widget,SLOT(setGridAlpha(int)));
 
     QObject::connect(*data->menu.getValue<ButtonHandle>("select-bg-color"),SIGNAL(clicked()),widget,SLOT(showBackgroundColorDialog()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("bg-black"),SIGNAL(clicked()),widget,SLOT(setBackgroundBlack()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("bg-white"),SIGNAL(clicked()),widget,SLOT(setBackgroundWhite()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("bg-gray"),SIGNAL(clicked()),widget,SLOT(setBackgroundGray()));
     
+                 
+                 
   }
 
   // }}}
@@ -1953,6 +1970,11 @@ namespace icl{
     }else{
       emit mouseEvent(createMouseEvent(MouseMoveEvent));
     }
+
+    if(m_data->imageInfoIndicatorEnabled){
+      m_data->imageInfoIndicator->updateMousePos(m_data->mouseEvent.getPos());
+    }
+
     update();
   }
 
@@ -2182,8 +2204,8 @@ namespace icl{
   void ICLWidget::showGridColorDialog(){
     // {{{ open
     const float *g = m_data->image->getGridColor();
-    QColor color = QColorDialog::getColor(QColor(g[0]*255,g[1]*255,g[2]*255,g[3]*255),this,"select background color", QColorDialog::ShowAlphaChannel);
-    float n[4] = { float(color.red())/255, float(color.green())/255, float(color.blue())/255, float(color.alpha())/255 };
+    QColor color = QColorDialog::getColor(QColor(g[0]*255,g[1]*255,g[2]*255),this,"select background color");
+    float n[4] = { float(color.red())/255, float(color.green())/255, float(color.blue())/255, g[3]};
     m_data->image->setGridColor(n);
     updateFromOtherThread();
   }
@@ -2211,6 +2233,15 @@ namespace icl{
   }
   // }}}
 
+  void ICLWidget::setGridAlpha(int alpha){
+    // {{{ open 
+    const float *c = m_data->image->getGridColor();
+    float n[4] = {c[0],c[1],c[2],float(alpha)/255};
+    m_data->image->setGridColor(n);
+    updateFromOtherThread();
+  }
+  // }}}
+  
   std::vector<std::string> ICLWidget::getImageInfo(){
     // {{{ open
     std::vector<string> info;
@@ -2310,8 +2341,8 @@ namespace icl{
       Rect r = getImageRect();
       float boxX = m_data->mouseX - r.x;
       float boxY = m_data->mouseY - r.y;
-      int imageX = (int) rint((boxX*(m_data->image->getSize().width))/r.width);
-      int imageY = (int) rint((boxY*(m_data->image->getSize().height))/r.height);
+      int imageX = (int) rint(-0.5+(boxX*(m_data->image->getSize().width))/r.width);
+      int imageY = (int) rint(-0.5+(boxY*(m_data->image->getSize().height))/r.height);
 
       float relImageX = float(imageX)/m_data->image->getSize().width;
       float relImageY = float(imageY)/m_data->image->getSize().height;

@@ -536,30 +536,55 @@ namespace icl{
     }
     if(m_drawGrid){
       glColor4fv(m_gridColor);
-      //glLineWidth(1);
+
+      //glLineWidth(1); dunno?
+
       float dx = lX/m_iImageW;
       float dy = lY/m_iImageH;
-      glBegin(GL_LINES);
-      for(int x=0;x<=m_iImageW;++x){
-        float xx = rectLeft+x*dx;
-        glVertex2f(xx,rectTop);
-        glVertex2f(xx,rectBottom);
+
+      float pixDX = (dx*winW)/2.0f;
+      float pixDY = (dy*winH)/2.0f;
+
+      // find appropriate x-Steps
+      float stepx = 1;
+      float stepy = 1;
+      while( (stepx*pixDX) < 10) stepx *= 2;
+      while( (stepy*pixDY) < 10) stepy *= 2;
+
+      if( (stepx != 1) || (stepy != 1) ){
+
+        float rx = stepx*dx/4.0;
+        float ry = stepy*dy/4.0;
+        float rr = iclMin(rx,ry);
+        
+        glBegin(GL_LINES);
+        for(int x=0;x<=m_iImageW;x+=stepx){
+          float xx = rectLeft+x*dx;
+          for(int y=0;y<=m_iImageH;y+=stepy){
+            float yy = rectTop+y*dy;
+            glVertex2f(xx-rr,yy);
+            glVertex2f(xx+rr,yy);
+
+            glVertex2f(xx,yy-rr);
+            glVertex2f(xx,yy+rr);
+          }
+        }
+        glEnd();
+      }else{
+        glBegin(GL_LINES);
+        for(int x=0;x<=m_iImageW;++x){
+          float xx = rectLeft+x*dx;
+          glVertex2f(xx,rectTop);
+          glVertex2f(xx,rectBottom);
+        }
+        for(int y=0;y<=m_iImageH;++y){
+          float yy = rectTop+y*dy;
+          glVertex2f(rectLeft,yy);
+          glVertex2f(rectRight,yy);
+        }
+        glEnd();
+        
       }
-      for(int y=0;y<=m_iImageH;++y){
-        float yy = rectTop+y*dy;
-        glVertex2f(rectLeft,yy);
-        glVertex2f(rectRight,yy);
-      }
-      glEnd();
-      /*
-          float rectLeft = winToDraw(rect.x,winW);
-          float rectTop = winToDraw(rect.y,winH);
-          float rectRight = winToDraw(rect.x+rect.width,winW);
-          float rectBottom = winToDraw(rect.y+rect.height,winH);
-          float lX = rectRight - rectLeft;
-          float lY = rectBottom - rectTop;
-          m_iImageW, m_iImageH;
-       */
     }
     
     glColor4f(1,1,1,1);    
