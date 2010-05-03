@@ -115,13 +115,17 @@ namespace icl{
 
   void OpenCVCamGrabber::setProperty(const std::string &name, const std::string &value){
     int i = 0;
+    int j = 0;
     Mutex::Locker lock(m_Mutex);
     if(name == "size"){
       cvReleaseCapture(&cvc);
       cvc = cvCaptureFromCAM(device);
       Size s(value);
       i = cvSetCaptureProperty(cvc,CV_CAP_PROP_FRAME_WIDTH,double(s.width));
-      i = cvSetCaptureProperty(cvc,CV_CAP_PROP_FRAME_HEIGHT,double(s.height));
+      j = cvSetCaptureProperty(cvc,CV_CAP_PROP_FRAME_HEIGHT,double(s.height));
+      m_bIgnoreDesiredParams = false;
+      if(i==0 || j==0)
+	setDesiredSize(s);
     }else if(name == "brightness"){
       i = cvSetCaptureProperty(cvc,CV_CAP_PROP_BRIGHTNESS,parse<double>(value));
     }else if(name == "contrast"){
