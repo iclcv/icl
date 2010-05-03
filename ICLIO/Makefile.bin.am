@@ -121,6 +121,15 @@ icl_generic_grab_example_SOURCES=../examples/generic-grab-example.cpp
 icl_generic_grab_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
 icl_generic_grab_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
+if HAVE_OPENCV_COND
+bin_PROGRAMS+= \
+icl-simple-opencv-camgrabber
+
+icl_simple_opencv_camgrabber_SOURCES=../examples/simple-opencv-camgrabber.cpp
+icl_simple_opencv_camgrabber_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_simple_opencv_camgrabber_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
+
+endif
 endif
 
 
