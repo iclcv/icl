@@ -136,11 +136,11 @@ target_link_libraries(icl-camera-param-io ${PROJECT_NAME})
 
 add_executable(icl-reset-dc-bus examples/reset-dc-bus.cpp)
 target_link_libraries(icl-reset-dc-bus ${PROJECT_NAME})
-endif()
 
 if (HAVE_QT_COND)
 add_executable(icl-multi-cam-example examples/multi-cam-example.cpp)
 target_link_libraries(icl-multi-cam-example ${PROJECT_NAME})
+endif()
 endif()
 
 if (HAVE_XCF_COND)
@@ -149,6 +149,7 @@ target_link_libraries(icl-xcf-grabber-benchmark ${PROJECT_NAME})
 
 add_executable(icl-memory-listener examples/memory-listener.cpp)
 target_link_libraries(icl-memory-listener ${PROJECT_NAME})
+
 if (HAVE_QT_COND)
 add_executable(icl-xcf-publisher examples/xcf-publisher.cpp)
 target_link_libraries(icl-xcf-publisher ${PROJECT_NAME})
@@ -163,6 +164,10 @@ endif()
 if (HAVE_QT_COND)
 add_executable(icl-generic-grab-example examples/generic-grab-example.cpp)
 target_link_libraries(icl-generic-grab-example ${PROJECT_NAME})
+if(HAVE_OPENCV_COND)
+add_executable(icl-simple-opencv-camgrabber examples/simple-opencv-camgrabber.cpp)
+target_link_libraries(icl-simple-opencv-camgrabber ${PROJECT_NAME} ICLUtils)
+endif()
 endif()
 
 if (HAVE_XINE_COND)
@@ -227,15 +232,12 @@ install(TARGETS icl-write-file-example
 )
 if (HAVE_LIBDC_COND)
 install (TARGETS icl-dcclearisochannels icl-dcdeviceinfo
-		icl-camera-param-io 
-		icl-reset-dc-bus
+		icl-camera-param-io icl-reset-dc-bus
 	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
 )
 if (HAVE_QT_COND)
 install (TARGETS icl-multi-cam-example
 	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
 )
 endif()
 endif()
@@ -243,14 +245,35 @@ endif()
 if (HAVE_XCF_COND)
 install (TARGETS icl-xcf-grabber-benchmark icl-memory-listener
 	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
 )
-endif()
 
 if (HAVE_QT_COND)
 install (TARGETS icl-xcf-publisher
 	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
+)
+endif()
+endif()
+
+if (HAVE_UNICAP_COND)
+install (TARGETS icl-unicap-grab-example
+	RUNTIME DESTINATION bin
+)
+endif()
+
+if (HAVE_QT_COND)
+install (TARGETS icl-generic-grab-example
+	RUNTIME DESTINATION bin
+)
+if (HAVE_OPENCV_COND)
+install (TARGETS icl-simple-opencv-camgrabber
+	RUNTIME DESTINATION bin
+)
+endif()
+endif()
+
+if (HAVE_XINE_COND)
+install (TARGETS icl-video-player
+	RUNTIME DESTINATION bin
 )
 endif()
 endif()
