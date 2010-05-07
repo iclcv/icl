@@ -1,19 +1,24 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(ICL)
-set(VERSION "5.0.2")
+#ubuntu version
+set(ICL_MAJOR "5")
+set(ICL_MINOR "0")
+set(ICL_PATCH "2")
+set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
 #SET(CMAKE_VERBOSE_MAKEFILE ON)
+
 SET(CMAKE_BUILD_TYPE "Release")
 if(${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "")
 SET(CMAKE_CXX_FLAGS "-O4 -funroll-loops -march=native")
 else()
 SET(CMAKE_CXX_FLAGS "-Wall -O0 -g3")
-
 SET(CMAKE_BUILD_TYPE "Debug")
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-#TODO
-set(CMAKE_INSTALL_PREFIX "/temp/ICL")
+
+set(ICL_INSTALL_PREFIX "/opt/ICL${VERSION}")
+set(CMAKE_INSTALL_PREFIX "${ICL_INSTALL_PREFIX}")
 message(STATUS "Install Path: ${CMAKE_INSTALL_PREFIX}")
 if(UNIX)
     add_definitions( -DSYSTEM_LINUX)
@@ -63,7 +68,6 @@ endif()
 message(STATUS "MKL detected: ${MKL_FOUND}")
 
 #check for OpenCV
-#find_path(OPENCV_PATH "cxtypes.h" "/vol/nivision/OpenCV2/include/opencv" DOC "The path to OpenCV")
 find_path(OPENCV_PATH "cxtypes.h" "/opt/OpenCV2/include/opencv" DOC "The path to OpenCV")
 if(OPENCV_PATH)
 set(OPENCV_FOUND TRUE)
@@ -197,7 +201,6 @@ endif()
 message(STATUS "Xine detected: ${XINE_FOUND}")
 
 #check for HAVE_XCF_COND
-#find_path(XCF_PATH "XCFBase.hpp" "/vol/xcf/include/xcf" DOC "The path to XCF")
 find_path(XCF_PATH "XCFBase.hpp" "/opt/xcf/include/xcf" DOC "The path to XCF")
 if(XCF_PATH)
 set(XCF_FOUND TRUE)
@@ -215,10 +218,13 @@ endif()
 message(STATUS "XCF detected: ${XCF_FOUND}")
 
 # QT4 Handling
-FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtOpenGL)
+if(QT_FOUND)
 add_definitions( -DHAVE_QT)
 INCLUDE(${QT_USE_FILE})
 set(HAVE_Qt_COND TRUE)
+endif()
+message(STATUS "Qt4 detected: ${QT_FOUND}")
 
 #OpenGL
 find_path(OPENGL_PATH "gl.h" "/usr/include/GL" DOC "The path to XCF")
@@ -500,3 +506,4 @@ endif()
 #SET(CPACK_SOURCE_STRIP_FILES "")
 #SET(CPACK_PACKAGE_EXECUTABLES "roof" "FTP client")
 #INCLUDE(CPack)
+
