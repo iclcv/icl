@@ -1,8 +1,15 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(ICL)
 cmake_policy(SET CMP0002 OLD)
-SET(CMAKE_BUILD_TYPE Release)
-SET(CMAKE_CXX_FLAGS "-Wall")
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+SET(CMAKE_BUILD_TYPE "Release")
+if(${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "")
+#SET(CMAKE_CXX_FLAGS "-O4 -funroll-loops -march=native")
+else()
+#SET(CMAKE_CXX_FLAGS "-Wall O0 -g3")
+SET(CMAKE_BUILD_TYPE "Debug")
+endif()
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 #TODO
 set(CMAKE_INSTALL_PREFIX "/homes/cgroszew/ICL")
 message(STATUS "Install Path: ${CMAKE_INSTALL_PREFIX}")
@@ -283,19 +290,29 @@ if(DOXYGEN_FOUND)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
          DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
 )
-#cat doxyfile | sed "s|ICL_SUB_PACKAGE_PLACEHOLDER|${subdir}|g" > doxyfile)
+# cat doxyfile | sed "s|ICL_SUB_PACKAGE_PLACEHOLDER|${subdir}|g" > doxyfile)
 # prepare doxygen configuration file
 set(ICL_SUB_PACKAGE_PLACEHOLDER2 ICLUtils ICLCore ICLCC ICLFilter ICLBlob ICLOpenCV ICLIO ICLQt ICLQuick ICLGeom ICLAlgorithms)
 foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGE_PLACEHOLDER2})
     configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/doxyfile @ONLY)
+
+
+configure_file(${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/ ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/ COPYONLY)
+
     #copy pics
-	 #file(COPY ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/
-		  # ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/ 
-		   #${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/ 
-		#DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/
-		#FILES_MATCHING 
-			#PATTERN "*.png" 
-			#PATTERN "*.jpg")
+	file(GLOB templateFiles RELATIVE ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/ ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/*)
+message(STATUS "files ${templateFiles} ${CMAKE_SOURCE_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/")
+		foreach(templateFile ${templateFiles})
+        		set(srcTemplatePath ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/${templateFile})
+ message(STATUS "file ${templateFile}")
+        if(NOT IS_DIRECTORY ${srcTemplatePath})
+            message(STATUS "Configuring file ${templateFile}")
+            configure_file(
+                    ${srcTemplatePath}
+                    ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/${templateFile}
+                    COPYONLY)
+        endif(NOT IS_DIRECTORY ${srcTemplatePath})
+    endforeach(templateFile)
 endforeach()
 
 # add doxygen as dependency to doc-target
