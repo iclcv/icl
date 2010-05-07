@@ -2173,13 +2173,15 @@ namespace icl{
 
   void ICLWidget::showBackgroundColorDialog(){
     // {{{ open
+
     float *o = m_data->backgroundColor;
-    QColor color = QColorDialog::getColor(QColor(o[0]*255,o[1]*255,o[2]*255),this,"select background color");
+    QColor color = QColorDialog::getColor(QColor(o[0]*255,o[1]*255,o[2]*255),this);
     o[0] = float(color.red())/255;
     o[1] = float(color.green())/255;
     o[2] = float(color.blue())/255;
     updateFromOtherThread();
   }
+
   // }}}
   void ICLWidget::setBackgroundBlack(){
     // {{{ open
@@ -2204,7 +2206,7 @@ namespace icl{
   void ICLWidget::showGridColorDialog(){
     // {{{ open
     const float *g = m_data->image->getGridColor();
-    QColor color = QColorDialog::getColor(QColor(g[0]*255,g[1]*255,g[2]*255),this,"select background color");
+    QColor color = QColorDialog::getColor(QColor(g[0]*255,g[1]*255,g[2]*255),this);
     float n[4] = { float(color.red())/255, float(color.green())/255, float(color.blue())/255, g[3]};
     m_data->image->setGridColor(n);
     updateFromOtherThread();
