@@ -4,19 +4,19 @@ It will be updated as works goes on.
 
 TODOs:
 -build static libs
--build examples
--support for videodev
--build docs
 -make better help
 -windows port (if possible)
+-make deb package
 
 The cmake build system is an alternative way to build the ICL library.
-Currently it supports only the build of dynamic libraries without videodev support.
-All other libraries should be found, if installed correctly on your system.
-Paths to libraries are set for the ag-ni. If you installed  desired libs somewhere else or 
-would like to use other versions look at the Useage part of this document.
+Currently it supports only the build of dynamic libraries and the example applications
+(no static libs). All libraries should be found, if installed correctly on your system.
+Paths to libraries are set for the ag-ni, or if you use CMakeLists.txt_ubuntu
+for standard ubuntu installation (to use remane CMakeLists.txt_ubuntu to CMakeLists.txt). 
+If you installed  desired libs somewhere else or would like to use other versions look 
+at the Usage part of this document.
 
-Useage:
+Usage:
 Use the installed cmake-gui software on ag-ni system.
 If you are working on an other system make sure that cmake and cmake-gui is installed.
 
@@ -34,6 +34,10 @@ On linuxsystem select "Unix Makefiles" and click on "Finish".
 You can now see some output in the lower part
 of the cmake-gui. Make the desired changes in the upper part of the cmake-gui.
 
+Note 0: If optional libs are found and selected, definitions are add to the build information.
+	cmake does not support a remove of these added definitions,so you should not deselect them
+	in order to build the icl correct.
+
 Note 1: if the Button "Generate" is not enabled after clicking on the button "Configure"
 	click it again.
 
@@ -41,6 +45,6 @@ Note 2: if some lines in the upper part of the cmake-gui are highlighted in red,
 	not mean an error but a change of settings.
 
 Next step is to click on the button "Generate".
-As the final step cd to your build dir and type "make".
-
+As the final steps cd to your build dir and type make.
+To build the documentation type make doc, to install type make install.
 The compile time on a system with 3 GB RAM and 2GHz DualCore should take about ten minutes.
