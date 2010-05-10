@@ -14,7 +14,6 @@ set(LIB_SOURCES
 	"src/CornerDetectorCSS.cpp"
 	"src/SampledLine.cpp"
 	"src/LineSampler.cpp"
-
 )
 
 if(BUILD_EXAMPLES)
@@ -36,20 +35,25 @@ endif()
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
-#add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
-
-set(LIBRARY_OUTPUT_PATH lib CACHE PATH "Output directory for libraries" )
-
 #linker
 target_link_libraries(${PROJECT_NAME} ICLUtils)
 
+if(BUILD_STATIC_LIBS)
+add_library("${PROJECT_NAME}_static" STATIC ${LIB_SOURCES})
+set_target_properties("${PROJECT_NAME}_static" PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+target_link_libraries("${PROJECT_NAME}_static" ICLUtils)
+endif()
+
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
-set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
-
 install (TARGETS ${PROJECT_NAME} 
- 	 LIBRARY DESTINATION lib
+ 	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"
 )
+if(BUILD_STATIC_LIBS)
+install(TARGETS "${PROJECT_NAME}_static"
+	ARCHIVE DESTINATION "${LIBRARY_OUTPUT_PATH}"
+)
+endif()
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
 )

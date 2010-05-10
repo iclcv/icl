@@ -8,11 +8,11 @@ set(LIB_SOURCES
 	"src/Color.cpp"
 	"src/Converter.cpp"
 	"src/FixedConverter.cpp"
-
 )
+
 if(BUILD_EXAMPLES)
 add_executable(icl-bayer-benchmark examples/bayer-benchmark.cpp)
-target_link_libraries(icl-bayer-benchmark ${PROJECT_NAME} ICLCore ICLUtils ICLIO) 
+target_link_libraries(icl-bayer-benchmark ${PROJECT_NAME} ICLIO ICLCore ICLUtils) 
 
 add_executable(icl-converter-test examples/converter-test.cpp)
 target_link_libraries(icl-converter-test ${PROJECT_NAME} ICLQuick)
@@ -25,20 +25,24 @@ endif()
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
-#add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
-
-set(LIBRARY_OUTPUT_PATH lib CACHE PATH "Output directory for libraries" )
-
 #linker
 target_link_libraries(${PROJECT_NAME} ICLCore ICLUtils)
+if(BUILD_STATIC_LIBS)
+add_library("${PROJECT_NAME}_static" STATIC ${LIB_SOURCES})
+set_target_properties("${PROJECT_NAME}_static" PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+target_link_libraries("${PROJECT_NAME}_static" ICLCore ICLUtils)
+endif()
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
-set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
-
 install (TARGETS ${PROJECT_NAME}
- 	 LIBRARY DESTINATION lib
+ 	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"
 )
+if(BUILD_STATIC_LIBS)
+install(TARGETS "${PROJECT_NAME}_static"
+	ARCHIVE DESTINATION "${LIBRARY_OUTPUT_PATH}"
+)
+endif()
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
 )

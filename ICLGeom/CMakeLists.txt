@@ -27,28 +27,34 @@ add_executable(icl-swiss-ranger-demo examples/swiss-ranger-demo.cpp)
 target_link_libraries(icl-swiss-ranger-demo ${PROJECT_NAME} ICLQt)
 
 if (HAVE_IPP_COND)
-#add_executable(icl-intrinsic-camera-calibration examples/intrinsic-camera-calibration.cpp 
-#		examples/intrinsic-camera-calibration-tools.cpp examples/intrinsic-camera-calibration-tools.h)
-#target_link_libraries(icl-intrinsic-camera-calibration ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils)
+add_executable(icl-intrinsic-camera-calibration examples/intrinsic-camera-calibration.cpp 
+		examples/intrinsic-camera-calibration-tools.cpp examples/intrinsic-camera-calibration-tools.h
+)
+target_link_libraries(icl-intrinsic-camera-calibration ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils)
 endif()
 endif()
 endif()
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
-#add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
-
-set(LIBRARY_OUTPUT_PATH lib CACHE PATH "Output directory for libraries" )
-
-#linker ICLQt
+#linker
 target_link_libraries(${PROJECT_NAME} ICLQuick  ICLBlob ICLIO ICLFilter ICLCC ICLCore ICLUtils)
+if(BUILD_STATIC_LIBS)
+add_library("${PROJECT_NAME}_static" STATIC ${LIB_SOURCES})
+set_target_properties("${PROJECT_NAME}_static" PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+target_link_libraries("${PROJECT_NAME}_static" ICLQuick ICLBlob ICLIO ICLFilter ICLCC ICLCore ICLUtils)
+endif()
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
-set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
-
 install (TARGETS ${PROJECT_NAME}
- 	 LIBRARY DESTINATION lib)
+ 	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"
+)
+if(BUILD_STATIC_LIBS)
+install(TARGETS "${PROJECT_NAME}_static"
+	ARCHIVE DESTINATION "${LIBRARY_OUTPUT_PATH}"
+)
+endif()
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
 )
@@ -59,7 +65,7 @@ install (TARGETS  icl-geom-demo icl-geom-demo-simple icl-cam-calib
 	 RUNTIME DESTINATION bin
 )
 if(HAVE_IPP_COND)
-install (TARGETS #icl-intrinsic-camera-calibration 
+install (TARGETS icl-intrinsic-camera-calibration 
 	 RUNTIME DESTINATION bin)
 endif()
 endif()

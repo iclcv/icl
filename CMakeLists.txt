@@ -34,6 +34,9 @@ if(WIN32)
 endif()
 
 set(BUILD_EXAMPLES OFF CACHE BOOL "Build example applications")
+set(BUILD_STATIC_LIBS OFF CACHE BOOL "Build also static libraries of each subpackage")
+set(LIBRARY_OUTPUT_PATH "lib")# CACHE PATH "Output directory for libraries" )
+set(EXECUTABLE_OUTPUT_PATH "bin")# CACHE PATH "Output directory for applications" )
 
 #check for IPP default check location /vol/nivision/IPP/6.1-ia32
 find_path(IPP_PATH "ipp.h" "/vol/nivision/IPP/6.1-ia32/include" DOC "The path to IPP")

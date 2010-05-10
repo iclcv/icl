@@ -68,9 +68,10 @@ endif()
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
-#add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
-
-set(LIBRARY_OUTPUT_PATH lib CACHE PATH "Output directory for libraries" )
+if(BUILD_STATIC_LIBS)
+add_library("${PROJECT_NAME}_static" STATIC ${LIB_SOURCES})
+set_target_properties("${PROJECT_NAME}_static" PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+endif()
 
 #linker
 if(HAVE_IPP_COND)
@@ -80,14 +81,26 @@ target_link_libraries(${PROJECT_NAME} pthread)
 if(HAVE_MKL_COND)
 target_link_libraries(${PROJECT_NAME} mkl_intel mkl_intel_thread mkl_core iomp5)
 endif()
+if(BUILD_STATIC_LIBS)
+if(HAVE_IPP_COND)
+target_link_libraries("${PROJECT_NAME}_static" ippcore ippi ipps ippsr ippcv ippm ippcc guide iomp5)
+endif()
+target_link_libraries("${PROJECT_NAME}_static" pthread)
+if(HAVE_MKL_COND)
+target_link_libraries("${PROJECT_NAME}_static" mkl_intel mkl_intel_thread mkl_core iomp5)
+endif()
+endif()
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
-set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
-
-install (TARGETS ${PROJECT_NAME} 
- 	 LIBRARY DESTINATION lib
+install (TARGETS ${PROJECT_NAME}
+ 	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"
 )
+if(BUILD_STATIC_LIBS)
+install(TARGETS "${PROJECT_NAME}_static"
+	ARCHIVE DESTINATION "${LIBRARY_OUTPUT_PATH}"
+)
+endif()
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
 )

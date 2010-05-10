@@ -101,7 +101,7 @@ set(LIB_SOURCES
 
 )
 
-SET( HWQ_Qt4_SRC
+SET(HWQ_Qt4_SRC
 	"../include/ICLQt/Widget.h"
 	"../include/ICLQt/MouseHandler.h"
 	"../include/ICLQt/DoubleSlider.h"
@@ -115,8 +115,8 @@ SET( HWQ_Qt4_SRC
 	"../include/ICLQt/ToggleButton.h"
 	"../include/ICLQt/ConfigFileGUI.h"
 )
-SET( HWQ_Qt4_UI)
-SET( HWQ_Qt4_RES)
+SET(HWQ_Qt4_UI "")
+SET(HWQ_Qt4_RES "")
 
 QT4_WRAP_CPP(HWQ_MOC_CPP ${HWQ_Qt4_SRC})
 QT4_WRAP_UI(HWQ_UI_CPP ${HWQ_Qt4_UI})
@@ -129,16 +129,12 @@ SET( HWQ_SRC
 	${HWQ_UI_CPP}
 	${HWQ_RES_H}
 )
-
+#message(STATUS "src: ${HWQ_SRC}")
 SET( HWQ_LIB ${QT_LIBRARIES})
 #message(STATUS "qtlibs: ${QT_LIBRARIES}")
 #create lib
 add_library(${PROJECT_NAME} SHARED ${HWQ_SRC})
-#add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${HWQ_LIB} )
-
-set(LIBRARY_OUTPUT_PATH lib CACHE PATH "Output directory for libraries" )
-
+target_link_libraries(${PROJECT_NAME} ${HWQ_LIB} )
 #linker
 if(HAVE_OPENGL_COND)
 target_link_libraries(${PROJECT_NAME} GL GLU)
@@ -150,14 +146,29 @@ if(HAVE_OPENCV_COND)
 #target_link_libraries(${PROJECT_NAME} ICLOpenCV)
 endif()
 target_link_libraries(${PROJECT_NAME} ICLIO ICLFilter ICLCC ICLCore ICLUtils)
+if(BUILD_STATIC_LIBS)
+add_library("${PROJECT_NAME}_static" STATIC ${HWQ_SRC})
+target_link_libraries("${PROJECT_NAME}_static" ${HWQ_LIB} )
+set_target_properties("${PROJECT_NAME}_static" PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+if(HAVE_OPENGL_COND)
+target_link_libraries("${PROJECT_NAME}_static" GL GLU)
+endif()
+if(HAVE_Qt_COND)
+target_link_libraries("${PROJECT_NAME}_static" QtCore QtGui QtOpenGL)
+endif()
+target_link_libraries("${PROJECT_NAME}_static" ICLIO ICLFilter ICLCC ICLCore ICLUtils)
+endif()
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
-set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Output directory for applications" )
-
 install (TARGETS ${PROJECT_NAME}
- 	 LIBRARY DESTINATION lib
+ 	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"
 )
+if(BUILD_STATIC_LIBS)
+install(TARGETS "${PROJECT_NAME}_static"
+	ARCHIVE DESTINATION "${LIBRARY_OUTPUT_PATH}"
+)
+endif()
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
 )
