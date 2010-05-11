@@ -124,7 +124,8 @@ icl_generic_grab_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 if HAVE_OPENCV_COND
 bin_PROGRAMS+= \
 icl-opencv-camgrabber-example \
-icl-opencv-videowriter-example
+icl-opencv-videowriter-example \
+icl-opencv-videograbber-example
 
 icl_opencv_camgrabber_SOURCES=../examples/opencv-camgrabber-example.cpp
 icl_opencv_camgrabber_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
@@ -133,6 +134,10 @@ icl_opencv_camgrabber_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 icl_opencv_videowriter_SOURCES=../examples/opencv-videowriter-example.cpp
 icl_opencv_videowriter_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
 icl_opencv_videowriter_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
+
+icl_opencv_videograbber_SOURCES=../examples/opencv-videograbber-example.cpp
+icl_opencv_videograbber_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_opencv_videograbber_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
 endif
 endif

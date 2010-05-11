@@ -159,7 +159,8 @@ void OpenCVVideoGrabber::setProperty(const std::string &name, const std::string 
 		i = cvSetCaptureProperty(cvc,CV_CAP_PROP_POS_AVI_RATIO,parse<double>(value));
 	}else if(name == "use_video_fps"){
 		use_video_fps = true;
-		fpslimiter->setMaxFPS(parse<float>(value));
+		float f = cvGetCaptureProperty(cvc,CV_CAP_PROP_FPS);
+		fpslimiter->setMaxFPS(f);//parse<float>(value));
 	}
 }
 }

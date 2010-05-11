@@ -169,6 +169,9 @@ target_link_libraries(icl-opencv-camgrabber-example ${PROJECT_NAME} ICLQuick ICL
 
 add_executable(icl-opencv-videowriter-example examples/opencv-videowriter-example.cpp)
 target_link_libraries(icl-opencv-videowriter-example ${PROJECT_NAME} ICLQuick ICLUtils)
+
+add_executable(icl-opencv-videograbber-example examples/opencv-videograbber-example.cpp)
+target_link_libraries(icl-opencv-videograbber-example ${PROJECT_NAME} ICLQuick ICLIO)
 endif()
 endif()
 
@@ -301,7 +304,8 @@ install (TARGETS icl-generic-grab-example
 	RUNTIME DESTINATION bin
 )
 if (HAVE_OPENCV_COND)
-install (TARGETS icl-opencv-camgrabber-example icl-opencv-videowriter-example
+install (TARGETS icl-opencv-camgrabber-example icl-opencv-videowriter-example 
+	icl-opencv-videograbber-example
 	RUNTIME DESTINATION bin
 )
 endif()

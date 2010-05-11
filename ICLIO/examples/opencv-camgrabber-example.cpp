@@ -6,9 +6,9 @@
 **                Contact: nivision@techfak.uni-bielefeld.de       **
 **                Website: www.iclcv.org                           **
 **                                                                 **
-** File   : ICLOpenCV/examples/simple-opencv-camgrabber.cpp        **
+** File   : ICLOpenCV/examples/opencv-camgrabber-example.cpp       **
 ** Module : ICLOpenCV                                              **
-** Authors: Christian Groszewski 					               **
+** Authors: Christian Groszewski 			           **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
