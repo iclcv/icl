@@ -121,9 +121,25 @@ icl_generic_grab_example_SOURCES=../examples/generic-grab-example.cpp
 icl_generic_grab_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
 icl_generic_grab_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 
+if HAVE_OPENCV_COND
+bin_PROGRAMS+= \
+icl-opencv-camgrabber-example \
+icl-opencv-videowriter-example \
+icl-opencv-videograbber-example
 
+icl_opencv_camgrabber_example_SOURCES=../examples/opencv-camgrabber-example.cpp
+icl_opencv_camgrabber_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_opencv_camgrabber_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
+
+icl_opencv_videowriter_example_SOURCES=../examples/opencv-videowriter-example.cpp
+icl_opencv_videowriter_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_opencv_videowriter_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
+
+icl_opencv_videograbber_example_SOURCES=../examples/opencv-videograbber-example.cpp
+icl_opencv_videograbber_example_LDFLAGS=${ICLIO_EXAMPLE_LDFLAGS}
+icl_opencv_videograbber_example_CXXFLAGS=${ICLIO_EXAMPLE_CXXFLAGS}
 endif
-
+endif
 
 if HAVE_XINE_COND
 
