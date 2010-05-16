@@ -2165,6 +2165,8 @@ namespace icl{
     rebufferImageInternal();
     if(!m_data->menuptr){
       create_menu(this,m_data);
+      showHideMenu();
+      showHideMenu();
     }
     ComboHandle ch = m_data->menu.getValue<ComboHandle>("bci-mode");
     ch.setSelectedIndex(enabled?2:1);
