@@ -1144,20 +1144,20 @@ namespace icl{
     captureGUI << autoCapGUI;    
     
     GUI extraGUI("vbox");
+
     extraGUI << (GUI("hbox[@label=background color]")
                  << "button(select color)[@handle=select-bg-color]"
                  << "button(black)[@handle=bg-black]"
                  << "button(white)[@handle=bg-white]"
                  << "button(gray)[@handle=bg-gray]" )
-             << (GUI("hbox") 
+                 << (GUI("hbox") 
                  << "togglebutton(off,on)[@handle=grid-on@label=show grid]"
-                 << "slider(0,255,100)[@label=grid alpha@handle=grid-alpha]")
+        << "slider(0,255,100)[@label=grid alpha@handle=grid-alpha]")
              << (GUI("hbox[@label=grid color]")
                  << "button(select color)[@handle=select-grid-color]"
                  << "button(black)[@handle=grid-black]"
                  << "button(white)[@handle=grid-white]"
                  << "button(gray)[@handle=grid-gray]" );
-
     
 
     GUI infoGUI("vsplit[@handle=info-tab]");
@@ -1229,7 +1229,7 @@ namespace icl{
     QObject::connect(*data->menu.getValue<ButtonHandle>("log"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
     QObject::connect(*data->menu.getValue<ComboHandle>("histo-channel"),SIGNAL(currentIndexChanged(int)),widget,SLOT(histoPanelParamChanged()));
 
-
+    /*
     QObject::connect(*data->menu.getValue<ButtonHandle>("grid-on"),SIGNAL(toggled(bool)),widget,SLOT(setShowPixelGridEnabled(bool)));
     QObject::connect(*data->menu.getValue<ButtonHandle>("select-grid-color"),SIGNAL(clicked()),widget,SLOT(showGridColorDialog()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("grid-black"),SIGNAL(clicked()),widget,SLOT(setGridBlack()));
@@ -1241,7 +1241,7 @@ namespace icl{
     QObject::connect(*data->menu.getValue<ButtonHandle>("bg-black"),SIGNAL(clicked()),widget,SLOT(setBackgroundBlack()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("bg-white"),SIGNAL(clicked()),widget,SLOT(setBackgroundWhite()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("bg-gray"),SIGNAL(clicked()),widget,SLOT(setBackgroundGray()));
-    
+        */
                  
                  
   }
@@ -1557,9 +1557,9 @@ namespace icl{
   // }}}
 
   void ICLWidget::menuTabChanged(int index){
-    // {{{ open
+      // {{{ open
     m_data->selectedTabIndex = index;
-    if(index == 4){
+    if(index == 5){
       m_data->infoTabVisible = true;
       updateInfoTab();
     }else{
@@ -1586,12 +1586,14 @@ namespace icl{
  
   void ICLWidget::updateInfoTab(){
     // {{{ open
-    QMutexLocker l(&m_data->menuMutex);
-    if(m_data->histoWidget && m_data->infoTabVisible){
-      m_data->histoWidget->update(getImageStatistics());
-      // xxx TODO
-      std::vector<string> s = getImageInfo();
-      m_data->menu.getValue<LabelHandle>("image-info-label") = cat(s,"\n");
+    if(m_data->menuMutex.tryLock()){
+      if(m_data->histoWidget && m_data->infoTabVisible){
+        m_data->histoWidget->update(getImageStatistics());
+        // xxx TODO
+        std::vector<string> s = getImageInfo();
+        m_data->menu.getValue<LabelHandle>("image-info-label") = cat(s,"\n");
+      }
+      m_data->menuMutex.unlock();
     }
 
   }
