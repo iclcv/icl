@@ -29,6 +29,7 @@
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/StrTok.h>
+#include <ICLUtils/config.h>
 #include <algorithm>
 #include <ctype.h>
 #include <map>
@@ -279,6 +280,8 @@ namespace icl{
   std::map<std::string,std::string> ProgArgContext::explanations;
 
   void painit_internal(const std::string &sIn, ProgArgContext &context) throw (ProgArgException){
+
+    
     std::string s = sIn;
     bool mandatory = false;
     if(s.size() >= 3 && s[0]=='[' && s[1]=='m' && s[2]==']'){
@@ -340,10 +343,27 @@ namespace icl{
       context.progname = *ppc;
       for(int i=1;i<n;){
         if(std::string("--help") == ppc[i] ||
-           std::string("-help") == ppc[i]){
+           std::string("-help") == ppc[i] ){
           pausage();
           ::exit(0);
         }
+        if(std::string("--version") == ppc[i] ||
+           std::string("-version") == ppc[i]){
+          std::cout << paprogname() << " " << VERSION << std::endl;
+          std::cout << std::endl;
+          std::cout << "\tPart of the Image Component Library (ICL)" << std::endl;
+          std::cout << "\t" << "ICL Version " << VERSION << std::endl;
+          std::cout << "\tCopyright (C) 2006-2010 Neuroinformatics, CITEC" << std::endl;
+          std::cout << "\t              University of Bielefeld" << std::endl;
+          std::cout << "\tContact: nivision@techfak.uni-bielefeld.de" << std::endl;
+          std::cout << "\tWebsite: www.iclcv.org" << std::endl;
+          std::cout << std::endl;
+          std::cout << "\tThis is free software; see the source for copying" << std::endl;
+          std::cout << "\tconditions.  There is NO warranty; not even for" << std::endl;
+          std::cout << "\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << std::endl;
+          ::exit(0);
+        }
+           
         context.all.push_back(ppc[i]);
         AllowedArg *a = context.findArg(ppc[i]);
         if(!a){
