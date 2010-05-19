@@ -4,7 +4,7 @@ AC_ARG_WITH([SVS],
                         [disable support for SVS])],
         [HAVE_SVS=FALSE],
         [ICL_NOTIFY_CHECK([SVS           ])
-        ICL_WITH_ROOT([SVS],[/usr])
+        ICL_WITH_ROOT([SVS],[/vol/nivision/SVS/4.2])
         HAVE_SVS=TRUE
 
         ICL_PUSH_FLAG_VARS
@@ -15,6 +15,7 @@ AC_ARG_WITH([SVS],
         AC_CHECK_LIB([svscalc],[main],[],[HAVE_SVS=FALSE],[-lsvs])
 
         ICL_POP_FLAG_VARS
+
 
         if test "$HAVE_SVS" = "TRUE" ; then
            ICL_DEF_VARS(

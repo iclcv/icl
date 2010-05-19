@@ -4,15 +4,15 @@ AC_ARG_WITH([OPENSURF],
                         [disable support for OPENSURF])],
         [HAVE_OPENSURF=FALSE],
         [ICL_NOTIFY_CHECK([OpenSURF        ])
-        ICL_WITH_ROOT([OPENSURF],[/vol/nivision/opensurf/OpenSURFcpp])
-        HAVE_OPENCV=TRUE
+        ICL_WITH_ROOT([OPENSURF],[/vol/nivision])
+        HAVE_OPENSURF=TRUE
 
         ICL_PUSH_FLAG_VARS
-        ICL_EXTEND_FLAG_VARS_TMP_FOR(OPENSURF,src,src)
+        ICL_EXTEND_FLAG_VARS_TMP_FOR(OPENSURF,lib,include/opensurf)
 
-        AC_CHECK_FILE([$OPENSURF_ROOT/src/pkgconfig/opensurf.pc],[],[HAVE_OPENSURF=FALSE])  
+        AC_CHECK_FILE([$OPENSURF_ROOT/lib/pkgconfig/opensurf.pc],[],[HAVE_OPENSURF=FALSE])  
 
-        AC_CHECK_HEADER([fasthessian.h],[],[HAVE_OPENSURF=FALSE])
+        #AC_CHECK_HEADER([fasthessian.h],[],[HAVE_OPENSURF=FALSE])
         #AC_CHECK_HEADER([integral.h],[],[HAVE_OPENSURF=FALSE])
         #AC_CHECK_HEADER([ipoint.h],[],[HAVE_OPENSURF=FALSE])
 	#AC_CHECK_HEADER([kmeans.h],[],[HAVE_OPENSURF=FALSE])
