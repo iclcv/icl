@@ -72,14 +72,16 @@ endif()
 message(STATUS "MKL detected: ${MKL_FOUND}")
 
 #check for OpenCV
-find_path(OPENCV_PATH "cxtypes.h" "/opt/OpenCV2/include/opencv" DOC "The path to OpenCV")
+#find_path(OPENCV_PATH "cxtypes.h" "/opt/OpenCV2/include/opencv" DOC "The path to OpenCV")
+find_path(OPENCV_PATH "cxtypes.h" "/usr/include/opencv" DOC "The path to OpenCV")
 if(OPENCV_PATH)
 set(OPENCV_FOUND TRUE)
 set(USE_OPENCV ON CACHE BOOL "Use OpenCV when available")
 set(HAVE_OPENCV_COND TRUE)
 add_definitions( -DHAVE_OPENCV)
 include_directories("${OPENCV_PATH}")
-link_directories("/opt/OpenCV2/lib")
+#link_directories("/opt/OpenCV2/lib")
+link_directories("/usr/lib")
 else()
 set(OPENCV_FOUND FALSE)
 set(HAVE_OPENCV_COND FALSE)
@@ -266,6 +268,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 include(UseDoxygen OPTIONAL)
 FIND_PACKAGE(Doxygen)
+
+configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h @ONLY)
+    
 
 #add subdirs
 add_subdirectory(ICLUtils)

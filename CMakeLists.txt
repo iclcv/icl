@@ -283,6 +283,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 include(UseDoxygen OPTIONAL)
 FIND_PACKAGE(Doxygen)
 
+configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h @ONLY)
+
 #add subdirs
 add_subdirectory(ICLUtils)
 add_subdirectory(ICLCore)
