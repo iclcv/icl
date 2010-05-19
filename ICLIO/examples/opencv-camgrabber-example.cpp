@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLOpenCV/examples/opencv-camgrabber-example.cpp       **
 ** Module : ICLOpenCV                                              **
-** Authors: Christian Groszewski 			           **
+** Authors: Christian Groszewski                                   **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -89,6 +89,12 @@ void run(){
 }
 
 void init(){
+	if(pa("-input")){
+		cg = new OpenCVCamGrabber(parse<int>(pa("-input")));
+	}else{
+		cg = new OpenCVCamGrabber();
+	}
+	cg->setIgnoreDesiredParams(true);
 	gui << (GUI("vbox")
 			<<	"image[@handle=image@minsize=20x20]"
 			<< "fps(10)[@handle=fps@maxsize=100x2@minsize=8x2]"
@@ -113,12 +119,6 @@ void init(){
 }
 
 int main(int n, char **args){
-	if (n==2){
-		cg = new OpenCVCamGrabber(parse<int>(args[1]));
-	} else {
-		cg = new OpenCVCamGrabber();
-	}
-	cg->setIgnoreDesiredParams(true);
-	return ICLApp(n,args,"",init,run).exec();
+	return ICLApp(n,args,"-input|-i(device)",init,run).exec();
 }
 
