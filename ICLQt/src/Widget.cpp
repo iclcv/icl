@@ -1229,7 +1229,7 @@ namespace icl{
     QObject::connect(*data->menu.getValue<ButtonHandle>("log"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
     QObject::connect(*data->menu.getValue<ComboHandle>("histo-channel"),SIGNAL(currentIndexChanged(int)),widget,SLOT(histoPanelParamChanged()));
 
-    /*
+    
     QObject::connect(*data->menu.getValue<ButtonHandle>("grid-on"),SIGNAL(toggled(bool)),widget,SLOT(setShowPixelGridEnabled(bool)));
     QObject::connect(*data->menu.getValue<ButtonHandle>("select-grid-color"),SIGNAL(clicked()),widget,SLOT(showGridColorDialog()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("grid-black"),SIGNAL(clicked()),widget,SLOT(setGridBlack()));
@@ -1241,7 +1241,6 @@ namespace icl{
     QObject::connect(*data->menu.getValue<ButtonHandle>("bg-black"),SIGNAL(clicked()),widget,SLOT(setBackgroundBlack()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("bg-white"),SIGNAL(clicked()),widget,SLOT(setBackgroundWhite()));
     QObject::connect(*data->menu.getValue<ButtonHandle>("bg-gray"),SIGNAL(clicked()),widget,SLOT(setBackgroundGray()));
-        */
                  
                  
   }
