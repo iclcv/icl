@@ -1,0 +1,46 @@
+#!/bin/bash
+
+if [ $# -ne 1 ] ; then
+  echo -e "usage:\n\ticl-create-project PROJECT_FOLDER_NAME"
+  echo -e "\t(e.g.) ./icl-create-project MyICLProject"
+  exit 1
+fi
+
+if [ -d $1 ] ; then
+    echo "error: foldername $1 already exists"
+    exit 1
+fi
+
+if [ -e $1 ] ; then
+    echo "error: file with name $1 already exists"
+    exit 1
+fi
+
+
+PROJECT=$1
+
+RESOURCE_DIR=RESOURCE_DIR_PLACEHOLDER
+
+# Create folder root dir
+echo -n "Creating folder ${PROJECT} ...                      "
+mkdir -p ./${PROJECT}
+echo "done"
+
+# Create folder lib dir
+echo -n "Creating sub folders doc lib src obj application... "
+for T in lib src obj application doc test ; do
+    mkdir -p ./${PROJECT}/$T ;
+done
+echo "done"
+
+echo -n "Copying custom makefile ...                         "
+cp ${RESOURCE_DIR}/Makefile.custom.template ./${PROJECT}/Makefile.custom
+echo "done"
+
+echo -n "Copying makefile ...                                "
+cp  ${RESOURCE_DIR}/Makefile.template ./${PROJECT}/Makefile
+echo "done"
+
+echo -n "Copying doxyfile ...                                "
+cp ${RESOURCE_DIR}/doxyfile.template ./${PROJECT}/doc/doxyfile
+echo "done"
