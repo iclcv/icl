@@ -44,3 +44,4 @@ echo "done"
 echo -n "Copying doxyfile ...                                "
 cp ${RESOURCE_DIR}/doxyfile.template ./${PROJECT}/doc/doxyfile
 echo "done"
+
