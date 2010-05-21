@@ -22,29 +22,38 @@ PROJECT=$1
 RESOURCE_DIR=RESOURCE_DIR_PLACEHOLDER
 
 # Create folder root dir
-echo -n "Creating folder ${PROJECT} ...                      "
+echo -n "Creating folder ${PROJECT} ... "
 mkdir -p ./${PROJECT}
 echo "done"
 
 # Create folder lib dir
-echo -n "Creating sub folders doc lib src obj application test... "
+echo -n "Creating sub folders ..."
 for T in lib src obj application doc test ; do
     mkdir -p ./${PROJECT}/$T ;
+    echo    "    $T"
 done
-echo "done"
+echo    "                            done"
 
-echo -n "Copying custom makefile ...                         "
+echo -n "Copying custom makefile ... "
 sed 's/\(^PC_DEPS=.*$\)/\1 gtest/g' ${RESOURCE_DIR}/Makefile.custom.template > ./${PROJECT}/Makefile.custom
 echo "done"
 
-echo -n "Copying sample test ...                         "
+echo -n "Copying sample test ...     "
 cp ${RESOURCE_DIR}/sample-test.cpp.template ./${PROJECT}/test/sample-test.cpp
 echo "done"
 
-echo -n "Copying makefile ...                                "
+echo -n "Copying makefile ...        "
 cp  ${RESOURCE_DIR}/Makefile-with-tests.template ./${PROJECT}/Makefile
 echo "done"
 
-echo -n "Copying doxyfile ...                                "
+echo -n "Copying doxyfile ...        "
 cp ${RESOURCE_DIR}/doxyfile.template ./${PROJECT}/doc/doxyfile
 echo "done"
+
+echo "All source files placed in src/ are build into lib${PROJECT}.so which"
+echo "is automatically linked against the programs build from all source"
+echo "files placed in application/ by calling"
+echo " >> make"
+echo " >> make install"
+echo "Any source files in the test/ are build and run by calling"
+echo " >> make test"
