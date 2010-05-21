@@ -27,18 +27,22 @@ mkdir -p ./${PROJECT}
 echo "done"
 
 # Create folder lib dir
-echo -n "Creating sub folders doc lib src obj application... "
-for T in lib src obj application doc ; do
+echo -n "Creating sub folders doc lib src obj application test... "
+for T in lib src obj application doc test ; do
     mkdir -p ./${PROJECT}/$T ;
 done
 echo "done"
 
 echo -n "Copying custom makefile ...                         "
-cp ${RESOURCE_DIR}/Makefile.custom.template ./${PROJECT}/Makefile.custom
+sed 's/\(^PC_DEPS=.*$\)/\1 gtest/g'${RESOURCE_DIR}/Makefile.custom.template ./${PROJECT}/Makefile.custom
+echo "done"
+
+echo -n "Copying sample test ...                         "
+cp ${RESOURCE_DIR}/sample-test.cpp.template ./${PROJECT}/test/sample-test.cpp
 echo "done"
 
 echo -n "Copying makefile ...                                "
-cp  ${RESOURCE_DIR}/Makefile.template ./${PROJECT}/Makefile
+cp  ${RESOURCE_DIR}/Makefile-with-testing.template ./${PROJECT}/Makefile
 echo "done"
 
 echo -n "Copying doxyfile ...                                "
