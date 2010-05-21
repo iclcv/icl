@@ -42,7 +42,7 @@ cp ${RESOURCE_DIR}/sample-test.cpp.template ./${PROJECT}/test/sample-test.cpp
 echo "done"
 
 echo -n "Copying makefile ...                                "
-cp  ${RESOURCE_DIR}/Makefile-with-testing.template ./${PROJECT}/Makefile
+cp  ${RESOURCE_DIR}/Makefile-with-tests.template ./${PROJECT}/Makefile
 echo "done"
 
 echo -n "Copying doxyfile ...                                "
