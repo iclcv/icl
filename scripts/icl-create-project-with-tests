@@ -34,7 +34,7 @@ done
 echo "done"
 
 echo -n "Copying custom makefile ...                         "
-sed 's/\(^PC_DEPS=.*$\)/\1 gtest/g'${RESOURCE_DIR}/Makefile.custom.template ./${PROJECT}/Makefile.custom
+sed 's/\(^PC_DEPS=.*$\)/\1 gtest/g' ${RESOURCE_DIR}/Makefile.custom.template ./${PROJECT}/Makefile.custom
 echo "done"
 
 echo -n "Copying sample test ...                         "
