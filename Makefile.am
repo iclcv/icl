@@ -50,7 +50,9 @@ install-data-local:
 	done
 	${INSTALL_PROGRAM} scripts/icl-make ${prefix}/bin
 	${INSTALL_PROGRAM} scripts/icl-create-project ${prefix}/bin
+	${INSTALL_PROGRAM} scripts/icl-create-project-with-tests ${prefix}/bin
 	sed -i "s|RESOURCE_DIR_PLACEHOLDER|${prefix}/etc|g" ${prefix}/bin/icl-create-project
+	sed -i "s|RESOURCE_DIR_PLACEHOLDER|${prefix}/etc|g" ${prefix}/bin/icl-create-project-with-tests
 	${MKDIR_P} ${prefix}/etc
 	${INSTALL_DATA} scripts/icl-create-project-data/*.template ${prefix}/etc
 
@@ -60,6 +62,7 @@ uninstall-local:
 	@rm -rf ${prefix}/lib/pkgconfig
 	@rm -rf ${prefix}/bin/icl-make
 	@rm -rf ${prefix}/bin/icl-create-project
+	@rm -rf ${prefix}/bin/icl-create-project-with-tests
 	@rm -rf ${prefix}/etc/Makefile.template
 	@rm -rf ${prefix}/etc/Makefile.custom.template
 	@rm -rf ${prefix}/etc/doxyfile.template
