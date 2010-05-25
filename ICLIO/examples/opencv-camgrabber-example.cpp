@@ -29,7 +29,6 @@
 #include <ICLIO/OpenCVCamGrabber.h>
 
 GUI gui("hsplit");
-ImgBase *image =0;
 Mutex mutex;
 SmartPtr<OpenCVCamGrabber> cg = 0;
 
@@ -81,8 +80,7 @@ void printAllProperties(){
 
 void run(){
 	Mutex::Locker lock(mutex);
-
-	gui["image"] = cg->grab(&image);
+	gui["image"] = cg->grab();
 	gui["image"].update();
 	gui_FPSHandle(fps);
 	fps.update();

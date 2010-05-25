@@ -1,59 +1,68 @@
 /********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2010 Neuroinformatics, CITEC                 **
-**                         University of Bielefeld                 **
-**                Contact: nivision@techfak.uni-bielefeld.de       **
-**                Website: www.iclcv.org                           **
-**                                                                 **
-** File   : ICLOpenCV/examples/opencv-videograbber-example.cpp     **
-** Module : ICLOpenCV                                              **
-** Authors: Christian Groszewski 			           			   **
-**                                                                 **
-**                                                                 **
-** Commercial License                                              **
-** ICL can be used commercially, please refer to our website       **
-** www.iclcv.org for more details.                                 **
-**                                                                 **
-** GNU General Public License Usage                                **
-** Alternatively, this file may be used under the terms of the     **
-** GNU General Public License version 3.0 as published by the      **
-** Free Software Foundation and appearing in the file LICENSE.GPL  **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the GNU General Public License  **
-** version 3.0 requirements will be met:                           **
-** http://www.gnu.org/copyleft/gpl.html.                           **
-**                                                                 **
-*********************************************************************/
+ **                Image Component Library (ICL)                    **
+ **                                                                 **
+ ** Copyright (C) 2006-2010 Neuroinformatics, CITEC                 **
+ **                         University of Bielefeld                 **
+ **                Contact: nivision@techfak.uni-bielefeld.de       **
+ **                Website: www.iclcv.org                           **
+ **                                                                 **
+ ** File   : ICLOpenCV/examples/opencv-videograbber-example.cpp     **
+ ** Module : ICLOpenCV                                              **
+ ** Authors: Christian Groszewski                                   **
+ **                                                                 **
+ **                                                                 **
+ ** Commercial License                                              **
+ ** ICL can be used commercially, please refer to our website       **
+ ** www.iclcv.org for more details.                                 **
+ **                                                                 **
+ ** GNU General Public License Usage                                **
+ ** Alternatively, this file may be used under the terms of the     **
+ ** GNU General Public License version 3.0 as published by the      **
+ ** Free Software Foundation and appearing in the file LICENSE.GPL  **
+ ** included in the packaging of this file.  Please review the      **
+ ** following information to ensure the GNU General Public License  **
+ ** version 3.0 requirements will be met:                           **
+ ** http://www.gnu.org/copyleft/gpl.html.                           **
+ **                                                                 **
+ *********************************************************************/
 #include <ICLQuick/Common.h>
 #include <ICLIO/OpenCVVideoGrabber.h>
+#include <QtGui/QFileDialog>
 
 GUI gui("hsplit");
-ImgBase *image=0;
 Mutex mutex;
 SmartPtr<OpenCVVideoGrabber> g=0;
-char *filename=0;
-
+std::string filename;
 bool play = false;
 
 double framecount = 0;
 
-///returns a timestamp
-std::string getTimestamp(std::string suffix){
-	Time t;
-	int64_t ms = (t.now()).toMilliSeconds();
-	ostringstream Str;
-	Str << ms << suffix;
-	return Str.str();
+void openFile(){
+	QString fnNew = QFileDialog::getOpenFileName(0,"open...","./","AVI-Files (*.avi)");
+	if(fnNew == ""){
+		return;
+	} else {
+		Mutex::Locker lock(mutex);
+		play = false;
+		filename = fnNew.toStdString();
+		g = new OpenCVVideoGrabber(filename.c_str());
+		g->setProperty("use_video_fps","");
+		g->setIgnoreDesiredParams(true);
+		framecount = parse<double>(g->getValue("frame_count"));
+	}
 }
 
 void startplaying(){
 	Mutex::Locker lock(mutex);
 	if(!g){
-		g = new OpenCVVideoGrabber(filename);
-		g->setProperty("use_video_fps","");
-		g->setIgnoreDesiredParams(true);
-		framecount = parse<double>(g->getValue("frame_count"));
+		if(filename==""){
+			return;
+		}else{
+			g = new OpenCVVideoGrabber(filename.c_str());
+			g->setProperty("use_video_fps","");
+			g->setIgnoreDesiredParams(true);
+			framecount = parse<double>(g->getValue("frame_count"));
+		}
 	}else{
 		g->setProperty("pos_msec","0.0");
 	}
@@ -62,13 +71,21 @@ void startplaying(){
 
 void wait(){
 	Mutex::Locker lock(mutex);
-	play = false;
+	if(play)
+		play = false;
+	else
+		play = true;
 }
 
 void stop(){
 	Mutex::Locker lock(mutex);
 	play = false;
 	g->setProperty("pos_msec","0.0");
+	//update the gui
+	ostringstream Str;
+	Str << g->getValue("pos_frames") <<"/"<<g->getValue("frame_count") << "   " << g->getValue("pos_msec") << "   "<< g->getValue("pos_avi_ratio");
+	gui["frames"]=Str.str();
+
 }
 
 void set_size(){
@@ -102,7 +119,7 @@ void printAllProperties(){
 void run(){
 	Mutex::Locker lock(mutex);
 	if(play && (parse<double>(g->getValue("pos_frames"))<framecount-1)){
-		gui["image"] = g->grab(&image);
+		gui["image"] = g->grab();
 		gui["image"].update();
 
 		ostringstream Str;
@@ -114,6 +131,9 @@ void run(){
 }
 
 void init(){
+	if(pa("-file")){
+		filename = pa("-file").as<std::string>();
+	}
 	gui << (GUI("vbox")
 			<<	"image[@handle=image@minsize=20x20]"
 			<< "fps(10)[@handle=fps@maxsize=100x2@minsize=8x2]"
@@ -121,7 +141,6 @@ void init(){
 	);
 
 	gui << (GUI("vbox[@minsize=20x1]")
-			<< "label("")[@out=fourcc@label=fourcc]"
 			<< "slider(0,1000,400)[@out=size@handle=hsize@label=size]"
 			<< "fslider(0,1000,400)[@out=height@handle=hheight@label=height]"
 			<< "fslider(0,1000,30)[@out=fps_@handle=hfps_@label=fps]"
@@ -130,6 +149,7 @@ void init(){
 					<< "button(play)[@out=play@handle=play_]"
 					<< "button(pause)[@out=pause@handle=pause_]"
 					<< "button(stop)[@out=stop@handle=stop_]"
+					<< "button(open file)[@out=openFile@handle=open_]"
 			)
 			<< "button(info)[@out=info@handle=info_@label=info]"
 	);
@@ -141,14 +161,11 @@ void init(){
 	gui["play_"].registerCallback(new GUI::Callback(startplaying));
 	gui["stop_"].registerCallback(new GUI::Callback(stop));
 	gui["pause_"].registerCallback(new GUI::Callback(wait));
+	gui["open_"].registerCallback(new GUI::Callback(openFile));
 
 }
 
 int main(int n, char **args){
-	if(n==2){
-		filename = args[1];
-	} else {
-		return 0;
-	}
-	return ICLApp(n,args,"",init,run).exec();
+	return ICLApp(n,args,"-file|-f(file_to_play)",init,run).exec();
 }
+

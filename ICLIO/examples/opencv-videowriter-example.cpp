@@ -1,34 +1,35 @@
 /********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2010 Neuroinformatics, CITEC                 **
-**                         University of Bielefeld                 **
-**                Contact: nivision@techfak.uni-bielefeld.de       **
-**                Website: www.iclcv.org                           **
-**                                                                 **
-** File   : ICLOpenCV/examples/opencv-videowriter-example.cpp      **
-** Module : ICLOpenCV                                              **
-** Authors: Christian Groszewski 			           **
-**                                                                 **
-**                                                                 **
-** Commercial License                                              **
-** ICL can be used commercially, please refer to our website       **
-** www.iclcv.org for more details.                                 **
-**                                                                 **
-** GNU General Public License Usage                                **
-** Alternatively, this file may be used under the terms of the     **
-** GNU General Public License version 3.0 as published by the      **
-** Free Software Foundation and appearing in the file LICENSE.GPL  **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the GNU General Public License  **
-** version 3.0 requirements will be met:                           **
-** http://www.gnu.org/copyleft/gpl.html.                           **
-**                                                                 **
-*********************************************************************/
+ **                Image Component Library (ICL)                    **
+ **                                                                 **
+ ** Copyright (C) 2006-2010 Neuroinformatics, CITEC                 **
+ **                         University of Bielefeld                 **
+ **                Contact: nivision@techfak.uni-bielefeld.de       **
+ **                Website: www.iclcv.org                           **
+ **                                                                 **
+ ** File   : ICLOpenCV/examples/opencv-videowriter-example.cpp      **
+ ** Module : ICLOpenCV                                              **
+ ** Authors: Christian Groszewski 			           			   **
+ **                                                                 **
+ **                                                                 **
+ ** Commercial License                                              **
+ ** ICL can be used commercially, please refer to our website       **
+ ** www.iclcv.org for more details.                                 **
+ **                                                                 **
+ ** GNU General Public License Usage                                **
+ ** Alternatively, this file may be used under the terms of the     **
+ ** GNU General Public License version 3.0 as published by the      **
+ ** Free Software Foundation and appearing in the file LICENSE.GPL  **
+ ** included in the packaging of this file.  Please review the      **
+ ** following information to ensure the GNU General Public License  **
+ ** version 3.0 requirements will be met:                           **
+ ** http://www.gnu.org/copyleft/gpl.html.                           **
+ **                                                                 **
+ *********************************************************************/
 #include <ICLQuick/Common.h>
 #include <ICLIO/OpenCVCamGrabber.h>
 #include <ICLIO/OpenCVVideoWriter.h>
 #include <ICLUtils/Time.h>
+#include <QtGui/QFileDialog>
 
 GUI gui("hsplit");
 
@@ -40,6 +41,14 @@ SmartPtr<OpenCVVideoWriter> vw = 0;
 std::string filename = "";
 
 bool cap = false;
+
+void saveAs(){
+	QString fnNew = QFileDialog::getSaveFileName(0,"save...","./","AVI-Files (*.avi)");
+	if(fnNew == "")
+		return;
+	else
+		filename = fnNew.toStdString();
+}
 
 void run(){
 	Mutex::Locker lock(mutex);
@@ -114,7 +123,9 @@ void startcap(){
 	Mutex::Locker lock(mutex);
 	if(!vw){
 		if(filename == "")
-			filename = getTimestamp(".avi");
+			saveAs();
+		gui_ComboHandle(Codec);
+		//filename = getTimestamp(".avi");
 		//CV_FOURCC('I', 'Y', 'U', 'V')
 		//CV_FOURCC('P','I','M','1')    = MPEG-1 codec
 		//CV_FOURCC('M','J','P','G')    = motion-jpeg codec (does not work well)
@@ -124,7 +135,11 @@ void startcap(){
 		//CV_FOURCC('U', '2', '6', '3') = H263 codec
 		//CV_FOURCC('I', '2', '6', '3') = H263I codec
 		//CV_FOURCC('F', 'L', 'V', '1') = FLV1 codec
-		vw = new OpenCVVideoWriter(filename ,OpenCVVideoWriter::MOTION_JPEG, 30.0, icl::Size(640,480), 1);
+		if(filename == "")
+			filename = getTimestamp(".avi");
+
+		vw = new OpenCVVideoWriter(filename ,(OpenCVVideoWriter::FOURCC) (int)Codec, 30.0, icl::Size(640,480), 1);
+
 	}
 	cap = true;
 }
@@ -143,8 +158,13 @@ void takeSnapshot(){
 	if(cg){
 		ImgBase *img=0;
 		cg->grab(&img);
-		FileWriter f(getTimestamp(".png"));
-		f.write(img);
+		QString fnNew = QFileDialog::getSaveFileName(0,"save...","./","PNG-Files (*.png)");
+		if(fnNew.toStdString() != ""){
+			ostringstream Str;
+			Str <<  fnNew.toStdString() << ".png";
+			FileWriter f(Str.str());
+			f.write(img);
+		}
 		delete img;
 	}
 }
@@ -162,6 +182,22 @@ void printAllProperties(){
 }
 
 void init(){
+	if(pa("-input")){
+		cg = new OpenCVCamGrabber(parse<int>(pa("-input")));
+	}else if(pa("-i")){
+		cg = new OpenCVCamGrabber(parse<int>(pa("-i")));
+	}else{
+		cg = new OpenCVCamGrabber();
+	}
+	cg->setIgnoreDesiredParams(true);
+
+	if(pa("-file")){
+		filename = parse<std::string>(pa("-file"));
+	} else if(pa("-f")){
+		filename = parse<std::string>(pa("-f"));
+	}else {
+		filename = getTimestamp(".avi");
+	}
 	gui << (GUI("vbox")
 			<<	"image[@handle=image@minsize=20x20]"
 			<< "fps(10)[@handle=fps@maxsize=100x2@minsize=8x2]"//)
@@ -173,6 +209,7 @@ void init(){
 			<< "fslider(0,1,0.1)[@out=cont@handle=hcont@label=contrast]"
 			<< "fslider(0,1,0.1)[@out=sat@handle=hsat@label=saturation]"
 			<< "fslider(0,1,0.1)[@out=hue@handle=hhue@label=hue]"
+			<< "combo(MPEG-1,MOTION-JPEG,MPEG-4.2,MPEG-4.3,MPEG-4,H263,H263I,FLV1)[@label=codec@handle=Codec@out=codec_]"
 			<< "button(start videocapture)[@out=startc@handle=startc_]"
 			<< "button(stop videocapture)[@out=stopc@handle=stopc_]"
 			<< "button(info)[@out=info@handle=info_]"
@@ -191,23 +228,7 @@ void init(){
 	gui["snapshot"].registerCallback(new GUI::Callback(takeSnapshot));
 }
 
-
-
 int main(int n, char **args){
-	if (n==3){
-		cout << "n==3\n";
-		cg = new OpenCVCamGrabber(parse<int>(args[1]));
-		cg->setIgnoreDesiredParams(true);
-		filename = str(args[2]);
-	} else if(n==2){
-		cout << "n==2\n";
-		cg = new OpenCVCamGrabber();
-		cg->setIgnoreDesiredParams(true);
-		filename = str(args[1]);
-	} else {
-		cg = new OpenCVCamGrabber();
-		cg->setIgnoreDesiredParams(true);
-		filename = getTimestamp(".avi");
-	}
-	return ICLApp(n,args,"",init,run).exec();
+	return ICLApp(n,args,"-input|-i(device) -file|-f(destinationfile)",init,run).exec();
 }
+
