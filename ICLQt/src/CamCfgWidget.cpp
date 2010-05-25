@@ -322,25 +322,35 @@ namespace icl{
 
 #ifdef HAVE_OPENCV
     if(!flags.disableOpenCV){
-      m_vecOpenCVDeviceList = OpenCVCamGrabber::getDeviceList();
-      for(unsigned int j=0;j<m_vecOpenCVDeviceList.size();j++){
+      for(int DEV = 0; true; ++DEV){
+        //m_vecOpenCVDeviceList = OpenCVCamGrabber::getDeviceList();
+
         if(useHintList && hints["cvcam"] != ""){
           int dev = to32s(hints["cvcam"]);
-          if(dev != (int)j) continue;
+          if(dev != DEV) continue;
         }
-        QString name = QString("[OPENCV]")+"Supported Device "+QString::number(j);
-        m_poDeviceCombo->addItem(name);
-        QWidget *w = new QWidget(this);
-        QVBoxLayout *l = new QVBoxLayout(w);
-        QScrollArea *sa = new QScrollArea(this);
-        sa->setWidgetResizable(true);
-        OpenCVCamGrabber grabber(m_vecOpenCVDeviceList[j]);
-        fillLayout(l,&grabber,name.toLatin1().data());
-        sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-        w->setLayout(l);
-        sa->setWidget(w);      
-        m_poTabWidget->addTab(sa,name);
-        m_poTabWidget->setTabEnabled(jAll++,false);
+        
+        try{          
+          OpenCVCamGrabber grabber(DEV);
+          m_vecOpenCVDeviceList.push_back(DEV);
+
+          QString name = QString("[OPENCV]")+"Supported Device "+QString::number(j);
+          m_poDeviceCombo->addItem(name);
+          QWidget *w = new QWidget(this);
+          QVBoxLayout *l = new QVBoxLayout(w);
+          QScrollArea *sa = new QScrollArea(this);
+          sa->setWidgetResizable(true);
+          
+          
+          fillLayout(l,&grabber,name.toLatin1().data());
+          sa->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+          w->setLayout(l);
+          sa->setWidget(w);      
+          m_poTabWidget->addTab(sa,name);
+          m_poTabWidget->setTabEnabled(jAll++,false);
+        }catch(const ICLException &ex){
+          break;
+        }
       }
     }
 #endif
@@ -456,7 +466,11 @@ namespace icl{
       m_vecDCDeviceList.clear();
       icl::dc::free_static_context();
 #endif
-      m_poGrabber = new OpenCVCamGrabber(text.section(" ",2).toInt());
+      try{
+        m_poGrabber = new OpenCVCamGrabber(text.section(" ",2).toInt());
+      }catch(const ICLException &ex){
+        ERROR_LOG("unable to instantiate OpenCV grabber");
+      }
 #endif
     }else if(prefix == "SR"){
 #ifdef HAVE_LIBMESASR

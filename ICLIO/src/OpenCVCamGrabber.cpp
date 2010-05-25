@@ -104,7 +104,7 @@ namespace icl{
   OpenCVCamGrabber::OpenCVCamGrabber(int dev)  throw (ICLException) :device(dev),scalebuffer(0){
     cvc = cvCaptureFromCAM(dev);
     if(!cvc){
-      throw ICLException("unable to crate OpenCVCamGrabber with device index " + str(dev) + ": invalid device ID");
+      throw ICLException("unable to create OpenCVCamGrabber with device index " + str(dev) + ": invalid device ID");
     }
   }
   
