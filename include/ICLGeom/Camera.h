@@ -211,6 +211,7 @@ namespace icl {
     void setRotation(const Mat3x3 &rot);
     /// set norm and up vectors according to the passed yaw, pitch and roll
     void setRotation(const Vec &rot);
+
     /// get world to image coordinate system transformation matrix
     Mat getCSTransformationMatrix() const;
     /// get world to image coordinate system transformation matrix
@@ -261,6 +262,21 @@ namespace icl {
     void setSkew(float value) { m_skew = value; }
     void setRenderParams(const RenderParams &rp) { m_renderParams = rp; }
 
+
+    /** @} @{ @name more complex manipulation functions */
+
+    /// Changes the camera resolution and adapts dependent values
+    /** Internally, this function also adapts the render parameters chipSize and viewport
+        Furthermore, the prinizipal-point-offset is automatically set to the center of 
+        the new screen 
+    */
+    void setResolution(const Size &newScreenSize);
+
+    /// Changes the camera resolution and adapts dependent values
+    /** Internally, this function also adapts the render parameters chipSize and viewport
+        Furthermore, the prinizipal-point-offset is set to the new given value
+    */
+    void setResolution(const Size &newScreenSize, const Point &newPrincipalPointOffset);
 
     /** @} @{ @name 3D-position estimation */
 

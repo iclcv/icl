@@ -598,4 +598,17 @@ namespace icl {
       return Vec(0,0,0,1);
     }
   }
+
+  void Camera::setResolution(const Size &newScreenSize){
+    getRenderParams().chipSize = newScreenSize;
+    getRenderParams().viewport = Rect(Point::null,newScreenSize);
+    setPrincipalPointOffset(newScreenSize.width/2,newScreenSize.height/2);
+  }
+  
+  void Camera::setResolution(const Size &newScreenSize, const Point &newPrincipalPointOffset){
+    getRenderParams().chipSize = newScreenSize;
+    getRenderParams().viewport = Rect(Point::null,newScreenSize);
+    setPrincipalPointOffset(newPrincipalPointOffset);
+  }
+
 }
