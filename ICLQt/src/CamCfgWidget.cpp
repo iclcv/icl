@@ -334,7 +334,7 @@ namespace icl{
           OpenCVCamGrabber grabber(DEV);
           m_vecOpenCVDeviceList.push_back(DEV);
 
-          QString name = QString("[OPENCV]")+"Supported Device "+QString::number(j);
+          QString name = QString("[OPENCV]")+"Supported Device "+QString::number(DEV);
           m_poDeviceCombo->addItem(name);
           QWidget *w = new QWidget(this);
           QVBoxLayout *l = new QVBoxLayout(w);
