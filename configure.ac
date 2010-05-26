@@ -7,7 +7,7 @@
 ####################################################################################
 
 AC_PREREQ(2.61)
-AC_INIT([ICL],[5.0.2],[nivision@techfak.uni-bielefeld.de])
+AC_INIT([ICL],[5.0.3],[nivision@techfak.uni-bielefeld.de])
 AM_INIT_AUTOMAKE([foreign nostdinc])
 
 echo -n "checking system architecture..."
