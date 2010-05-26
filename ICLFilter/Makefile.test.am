@@ -1,0 +1,13 @@
+#################################################################################
+## Tests ########################################################################
+#################################################################################
+check_PROGRAMS=icl-test-Filter
+TESTS=${check_PROGRAMS}
+
+icl_test_Filter_LDFLAGS=${ICLFilter_EXAMPLE_LDFLAGS} ${ICL_GTEST_LDFLAGS}
+icl_test_Filter_CXXFLAGS=${ICLFilter_EXAMPLE_CXXFLAGS} ${ICL_GTEST_CXXFLAGS}
+
+# explicit sources
+icl_test_Filter_SOURCES=../test/runner.cpp \
+	../test/test-template.cpp
+

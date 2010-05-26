@@ -77,6 +77,7 @@ ICL_CHECK_SVS()
 ICL_CHECK_XINE()
 ICL_CHECK_QT()
 ICL_CHECK_XCF()
+ICL_CHECK_GTEST()
 
 echo "LDFLAGS ARE: $LDFLAGS"
 echo "CXXFLAGS ARE: $CXXFLAGS"
@@ -87,6 +88,7 @@ echo "CXXFLAGS ARE: $CXXFLAGS"
 # ICLUtils
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLUtils],[IPP])
 ICL_USE_EXTERNAL_PACKAGE_IN([ICLUtils],[MKL])
+ICL_USE_EXTERNAL_PACKAGE_IN([ICLUtils],[GTEST])
 
 # ICLCore
 ICL_USE_INTERNAL_PACKAGE_IN([ICLCore],[ICLUtils])
@@ -192,13 +194,14 @@ ICL_NOTIFY_SUPPORT([LIBMAGICK],    [Magick++ ])
 ICL_NOTIFY_SUPPORT([LIBMESASR],    [libmesasr])
 ICL_NOTIFY_SUPPORT([OPENCV],       [OpenCV   ])
 ICL_NOTIFY_SUPPORT([OPENSURF],     [OpenSURF ])
+ICL_NOTIFY_SUPPORT([GTEST],        [GTest    ])
 AC_MSG_NOTICE([+---------------------------------------+])
 
 
 ###############################################################################
 # Create list of packages to build (in correct order)
 ###############################################################################
-ICL_BUILD_PACKAGES="ICLUtils ICLCore ICLIO ICLCC ICLBlob ICLFilter ICLOpenCV ICLQuick ICLGeom ICLAlgorithms"
+ICL_BUILD_PACKAGES="ICLUtils ICLCore ICLIO ICLCC ICLBlob ICLFilter ICLQuick ICLGeom ICLAlgorithms"
 
 # Add optional packages
 ICL_ADD_PACKAGE_IF([ICLQt],["$HAVE_QT" = "TRUE"])
@@ -213,6 +216,9 @@ done
 # Add all bin dirs after lib dirs
 for T in $ICL_BUILD_PACKAGES ; do
     ICL_BUILD_SUBDIRS="$ICL_BUILD_SUBDIRS $T/bin"
+    if test "$HAVE_GTEST" = "TRUE" ; then
+       ICL_BUILD_SUBDIRS="$ICL_BUILD_SUBDIRS $T/test" 
+    fi
 done
 
 # substituted variables become visible in Makefile.am's
@@ -275,7 +281,7 @@ echo $IC
 #       so all makefiles must be added here manually
 
 AC_DEFUN([ICL_CONFIG_FILES_FOR_PACKAGE],
-[AC_CONFIG_FILES([$1/Makefile $1/lib/Makefile:$1/Makefile.lib.in $1/bin/Makefile:$1/Makefile.bin.in])])
+[AC_CONFIG_FILES([$1/Makefile $1/lib/Makefile:$1/Makefile.lib.in $1/bin/Makefile:$1/Makefile.bin.in $1/test/Makefile:$1/Makefile.test.in])])
 
 AC_CONFIG_FILES([Makefile])
 ICL_CONFIG_FILES_FOR_PACKAGE([ICLUtils])

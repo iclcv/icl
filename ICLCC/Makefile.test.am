@@ -1,0 +1,13 @@
+#################################################################################
+## Tests ########################################################################
+#################################################################################
+check_PROGRAMS=icl-test-CC
+TESTS=${check_PROGRAMS}
+
+icl_test_CC_LDFLAGS=${ICLCC_EXAMPLE_LDFLAGS} ${ICL_GTEST_LDFLAGS}
+icl_test_CC_CXXFLAGS=${ICLCC_EXAMPLE_CXXFLAGS} ${ICL_GTEST_CXXFLAGS}
+
+# explicit sources
+icl_test_CC_SOURCES=../test/runner.cpp \
+	../test/test-template.cpp
+

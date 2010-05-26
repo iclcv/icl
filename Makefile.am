@@ -67,3 +67,6 @@ uninstall-local:
 	@rm -rf ${prefix}/etc/Makefile.custom.template
 	@rm -rf ${prefix}/etc/doxyfile.template
 
+
+run-check:
+	${MAKE} ${MAKE_FLAGS} -k check 2>&1 | grep -v -e '^make'

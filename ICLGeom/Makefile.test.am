@@ -1,0 +1,13 @@
+#################################################################################
+## Tests ########################################################################
+#################################################################################
+check_PROGRAMS=icl-test-Geom
+TESTS=${check_PROGRAMS}
+
+icl_test_Geom_LDFLAGS=${ICLGeom_EXAMPLE_LDFLAGS} ${ICL_GTEST_LDFLAGS}
+icl_test_Geom_CXXFLAGS=${ICLGeom_EXAMPLE_CXXFLAGS} ${ICL_GTEST_CXXFLAGS}
+
+# explicit sources
+icl_test_Geom_SOURCES=../test/runner.cpp \
+	../test/test-template.cpp
+

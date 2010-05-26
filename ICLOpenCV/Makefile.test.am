@@ -1,0 +1,13 @@
+#################################################################################
+## Tests ########################################################################
+#################################################################################
+check_PROGRAMS=icl-test-OpenCV
+TESTS=${check_PROGRAMS}
+
+icl_test_OpenCV_LDFLAGS=${ICLOpenCV_EXAMPLE_LDFLAGS} ${ICL_GTEST_LDFLAGS}
+icl_test_OpenCV_CXXFLAGS=${ICLOpenCV_EXAMPLE_CXXFLAGS} ${ICL_GTEST_CXXFLAGS}
+
+# explicit sources
+icl_test_OpenCV_SOURCES=../test/runner.cpp \
+	../test/test-template.cpp
+

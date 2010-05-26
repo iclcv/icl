@@ -1,6 +1,11 @@
+if HAVE_GTEST_COND 
+SUBDIRS=lib bin test
+else
 SUBDIRS=lib bin
+endif
+
 MKDIR_P ?= mkdir -p
-.PHONY:doc
+.PHONY:doc test
 
 doc:
 	@echo creating documentation
@@ -34,3 +39,4 @@ install-data-local:
 uninstall-local:
 	@echo uninstalling documentation
 	rm -rf ${prefix}/doc/${subdir}
+
