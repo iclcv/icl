@@ -70,7 +70,7 @@ class CameraTest : public Test {
     xs_correct.push_back(Point32f(331.3610,126.2544));
     xs_correct.push_back(Point32f(433.0986,175.7763));
     xs_correct.push_back(Point32f(422.9612,220.7864));
-    xs_correct.push_back(Point32f(9250.9546,228.8122));
+    xs_correct.push_back(Point32f(250.9546,228.8122));
   }
 
   // virtual void TearDown() {}
