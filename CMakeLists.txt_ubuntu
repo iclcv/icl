@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.1)
 PROJECT(ICL)
 #ubuntu version
 set(ICL_MAJOR "5")
@@ -8,12 +8,15 @@ set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
 #SET(CMAKE_VERBOSE_MAKEFILE ON)
 
-SET(CMAKE_BUILD_TYPE "Debug")#"Release")
-if(${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "")
-SET(CMAKE_CXX_FLAGS "-O4 -funroll-loops -march=native")
+set(ICL_DEBUG_MODE OFF CACHE BOOL "Compile with debug options")
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+
+if(ICL_DEBUG_MODE)
+set(CMAKE_CXX_FLAGS "-Wall O0 -g3")
+set(CMAKE_BUILD_TYPE "Debug")
 else()
-SET(CMAKE_CXX_FLAGS "-Wall -O0 -g3")
-SET(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_CXX_FLAGS "-O4 -funroll-loops -march=native")
+set(CMAKE_BUILD_TYPE "Release")
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
@@ -264,6 +267,22 @@ set(USE_SVS OFF CACHE BOOL "Use SVS when available")
 endif()
 message(STATUS "SVS detected: ${SVS_FOUND}")
 
+#opensurf
+find_path(OPENSURF_PATH "surf.h" "/vol/nivision/include/opensurf" DOC "The path to opensurf")
+if(OPENSURF_PATH)
+set(OPENSURF_FOUND TRUE)
+set(USE_OPENSURF ON CACHE BOOL "Use opensurf when available")
+set(HAVE_OPENSURF_COND TRUE)
+add_definitions( -DHAVE_OPENSURF)
+include_directories("/vol/nivision/include/opensurf")
+link_directories("/vol/nivision/lib")
+else()
+set(OPENSURF_FOUND FALSE)
+set(HAVE_OPENSURF_COND FALSE)
+set(USE_OPENSURF OFF CACHE BOOL "Use opensurf when available")
+endif()
+message(STATUS "opensurf detected: ${OPENSURF_FOUND}")
+
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 include(UseDoxygen OPTIONAL)
@@ -287,7 +306,8 @@ add_subdirectory(ICLAlgorithms)
 
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
-	FILES_MATCHING PATTERN "*.h"
+	 FILES_MATCHING PATTERN "*.h"
+	 
 )
 
 if(DOXYGEN_FOUND)

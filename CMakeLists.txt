@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.1)
 PROJECT(ICL)
 #agni version
 set(ICL_MAJOR "5")
@@ -6,20 +6,26 @@ set(ICL_MINOR "0")
 set(ICL_PATCH "3")
 set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
+cmake_policy(SET CMP0015 OLD)
+
+set(ICL_DEBUG_MODE OFF CACHE BOOL "Compile with debug options")
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
-SET(CMAKE_BUILD_TYPE "Release")
-if(${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "")
-#SET(CMAKE_CXX_FLAGS "-O4 -funroll-loops -march=native")
+if(ICL_DEBUG_MODE)
+set(CMAKE_CXX_FLAGS "-Wall -O0 -g3")
+set(CMAKE_BUILD_TYPE "Debug")
 else()
-#SET(CMAKE_CXX_FLAGS "-Wall O0 -g3")
-SET(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_CXX_FLAGS "-O4 -funroll-loops -march=native")
+set(CMAKE_BUILD_TYPE "Release")
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-set(ICL_INSTALL_PREFIX "/tmp/ICL${VERSION}")
+
+set(ICL_INSTALL_PREFIX "/homes/cgroszew/ICL${VERSION}" CACHE PATH "")
 set(CMAKE_INSTALL_PREFIX "${ICL_INSTALL_PREFIX}")
 message(STATUS "Install Path: ${CMAKE_INSTALL_PREFIX}")
+
+
 if(UNIX)
     add_definitions( -DSYSTEM_LINUX)
     add_definitions( -DICL_SYSTEM_LINUX)
@@ -33,20 +39,20 @@ if(WIN32)
     add_definitions( -DICL_SYSTEM_WINDOWS)
 endif()
 
-set(BUILD_EXAMPLES OFF CACHE BOOL "Build example applications")
+set(BUILD_EXAMPLES ON CACHE BOOL "Build example applications")
 set(BUILD_STATIC_LIBS OFF CACHE BOOL "Build also static libraries of each subpackage")
 set(LIBRARY_OUTPUT_PATH "lib")# CACHE PATH "Output directory for libraries" )
 set(EXECUTABLE_OUTPUT_PATH "bin")# CACHE PATH "Output directory for applications" )
 
 #check for IPP default check location /vol/nivision/IPP/6.1-ia32
-find_path(IPP_PATH "ipp.h" "/vol/nivision/IPP/6.1-ia32/include" DOC "The path to IPP")
+find_path(IPP_PATH "include/ipp.h" "/vol/nivision/IPP/6.1-ia32" DOC "The path to IPP")
 if(IPP_PATH)
 set(IPP_FOUND TRUE)
 set(HAVE_IPP_COND TRUE)
 add_definitions( -DHAVE_IPP)
 set(USE_IPP ON CACHE BOOL "Use IPP when available")
-include_directories("${IPP_PATH}")
-link_directories("/vol/nivision/IPP/6.1-ia32/sharedlib")
+include_directories("${IPP_PATH}/include")
+link_directories("${IPP_PATH}/sharedlib")
 else()
 set(IPP_FOUND FALSE)
 set(HAVE_IPP_COND FALSE)
@@ -55,14 +61,14 @@ endif()
 message(STATUS "IPP detected: ${IPP_FOUND}")
 
 #check for MKL
-find_path(MKL_PATH "mkl.h" "/vol/nivision/MKL/10.2/include" DOC "The path to MKL")
+find_path(MKL_PATH "include/mkl.h" "/vol/nivision/MKL/10.2" DOC "The path to MKL")
 if(MKL_PATH)
 set(MKL_FOUND TRUE)
 set(USE_MKL ON CACHE BOOL "Use MKL when available")
 set(HAVE_MKL_COND TRUE)
 add_definitions( -DHAVE_MKL)
-include_directories("${MKL_PATH}")
-link_directories("/vol/nivision/MKL/10.2/lib/32")
+include_directories("${MKL_PATH}/include")
+link_directories("${MKL_PATH}/lib/32")
 else()
 set(MKL_FOUND FALSE)
 set(HAVE_MKL_COND FALSE)
@@ -71,16 +77,16 @@ endif()
 message(STATUS "MKL detected: ${MKL_FOUND}")
 
 #check for OpenCV
-#find_path(OPENCV_PATH "cxtypes.h" "/vol/nivision/OpenCV2/include/opencv" DOC "The path to OpenCV")
-find_path(OPENCV_PATH "cxtypes.h" "/usr/include/opencv" DOC "The path to OpenCV")
+find_path(OPENCV_PATH "cxtypes.h" "/vol/nivision/OPENCV2/include/opencv" DOC "The path to OpenCV")
+#find_path(OPENCV_PATH "cxtypes.h" "/usr/include/opencv" DOC "The path to OpenCV")
 if(OPENCV_PATH)
 set(OPENCV_FOUND TRUE)
 set(USE_OPENCV ON CACHE BOOL "Use OpenCV when available")
 set(HAVE_OPENCV_COND TRUE)
 add_definitions( -DHAVE_OPENCV)
 include_directories("${OPENCV_PATH}")
-#link_directories("/vol/nivision/OpenCV2/lib")
-link_directories("/usr/lib")
+link_directories("/vol/nivision/OPENCV2/lib")
+#link_directories("/usr/lib")
 else()
 set(OPENCV_FOUND FALSE)
 set(HAVE_OPENCV_COND FALSE)
@@ -278,12 +284,28 @@ set(USE_SVS OFF CACHE BOOL "Use SVS when available")
 endif()
 message(STATUS "SVS detected: ${SVS_FOUND}")
 
+#opensurf
+find_path(OPENSURF_PATH "surf.h" "/vol/nivision/include/opensurf" DOC "The path to opensurf")
+if(OPENSURF_PATH)
+set(OPENSURF_FOUND TRUE)
+set(USE_OPENSURF ON CACHE BOOL "Use opensurf when available")
+set(HAVE_OPENSURF_COND TRUE)
+add_definitions( -DHAVE_OPENSURF)
+include_directories("/vol/nivision/include/opensurf")
+link_directories("/vol/nivision/lib")
+else()
+set(OPENSURF_FOUND FALSE)
+set(HAVE_OPENSURF_COND FALSE)
+set(USE_OPENSURF OFF CACHE BOOL "Use opensurf when available")
+endif()
+message(STATUS "opensurf detected: ${OPENSURF_FOUND}")
+
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 include(UseDoxygen OPTIONAL)
 FIND_PACKAGE(Doxygen)
 
-configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h @only)
 
 #add subdirs
 add_subdirectory(ICLUtils)
@@ -298,8 +320,13 @@ add_subdirectory(ICLQuick)
 add_subdirectory(ICLGeom)
 add_subdirectory(ICLAlgorithms)
 
+#install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
+#         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+#)
+
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
-         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+	FILES_MATCHING PATTERN "*.h"
 )
 
 if(DOXYGEN_FOUND)
@@ -311,10 +338,15 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
 # prepare doxygen configuration file
 set(ICL_SUB_PACKAGE_PLACEHOLDER2 ICLUtils ICLCore ICLCC ICLFilter ICLBlob ICLOpenCV ICLIO ICLQt ICLQuick ICLGeom ICLAlgorithms)
 foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGE_PLACEHOLDER2})
-    configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/doxyfile @ONLY)
-    #copy pics
-exec_program(cp ARGS "\"${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/*.png  ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc\"") 
-	exec_program(cp ARGS "\"${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/*.jpg  ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc\"") 
+    	configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/doxyfile @ONLY)
+    	#copy pics
+	file(COPY ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/
+		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc
+		FILES_MATCHING 
+		PATTERN "*.png" 
+		PATTERN "*.jpg")
+	#exec_program(cp ARGS "\"${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/*.png  ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc\"") 
+	#exec_program(cp ARGS "\"${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/*.jpg  ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc\"") 
 	exec_program(mkdir ARGS "\"${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html/\"")
 endforeach()
 
@@ -325,6 +357,7 @@ if(NOT DOC_TARGET)
 endif()
 endif()
 
+
 if(SYSTEM_LINUX_COND)
 #write pkg config files
 set(ICL_SUB_PACKAGE_PLACEHOLDER ICLUtils)
@@ -333,12 +366,12 @@ set(REQUIRE "")
 set(OPTIONAL_INCLUDES "")
 set(OPTIONAL_LIBS "")
 if(IPP_FOUND)
-set(OPTIONAL_INCLUDES "-I${IPP_PATH} -DHAVE_IPP")
-set(OPTIONAL_LIBS "-L${IPP_PATH}/../sharedlib -lippcore -lippi -lipps -lippsr -lippcv -lippm -lippcc -lguide -pthread -liomp5")
+set(OPTIONAL_INCLUDES "-I${IPP_PATH}/include -DHAVE_IPP")
+set(OPTIONAL_LIBS "-L${IPP_PATH}/sharedlib -lippcore -lippi -lipps -lippsr -lippcv -lippm -lippcc -lguide -pthread -liomp5")
 endif()
 if(MKL_FOUND)
-set(OPTIONAL_INCLUDES "${OPTIONAL_INCLUDES} -I${MKL_PATH} -DHAVE_MKL")
-set(OPTIONAL_LIBS "${OPTIONAL_LIBS} -L${MKL_PATH}/../lib/32 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -pthread -Wl,-rpath -Wl,${IPP_PATH}/../sharedlib -Wl,-rpath -Wl,${MKL_PATH}/../lib/32")
+set(OPTIONAL_INCLUDES "${OPTIONAL_INCLUDES} -I${MKL_PATH}/include -DHAVE_MKL")
+set(OPTIONAL_LIBS "${OPTIONAL_LIBS} -L${MKL_PATH}/lib/32 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -pthread -Wl,-rpath -Wl,${IPP_PATH}/sharedlib -Wl,-rpath -Wl,${MKL_PATH}/lib/32")
 endif()
 set(ICL_PACKAGE_DESCRIPTION "ICL's ${ICL_SUB_PACKAGE_PLACEHOLDER} package")
 set(LIBS "-L\${exec_prefix}/lib -l${ICL_SUB_PACKAGE_PLACEHOLDER} '-Wl,-rpath -Wl,\${exec_prefix}/lib ${OPTIONAL_LIBS}'")
