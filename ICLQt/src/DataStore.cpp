@@ -50,8 +50,9 @@
 #include <ICLQt/DrawHandle.h>
 #include <ICLQt/DrawHandle3D.h>
 #include <ICLQt/StringHandle.h>
+#include <ICLQt/CheckBoxHandle.h>
 
-
+#include <QCheckBox>
 #include <QComboBox>
 #include <QLineEdit>
 #include <QSpinBox>
@@ -281,6 +282,7 @@ INST_OTHER_TYPES
     INST_REGISTER_EVENT_FOR_HANDLE(FSlider);
     INST_REGISTER_EVENT_FOR_HANDLE(Combo);
     INST_REGISTER_EVENT_FOR_HANDLE(Spinner);
+    INST_REGISTER_EVENT_FOR_HANDLE(CheckBox);
     // maybe more ...
 
 
@@ -357,6 +359,9 @@ INST_OTHER_TYPES
 
     // ButtonHandle
     TO_NUM(ButtonHandle,dst=(*src)->isChecked());
+
+    // CheckBoxHandle
+    TO_NUM(CheckBoxHandle,dst=(*src)->isChecked());
     
     // StringHandle
     FROM_TO_NUM(StringHandle,dst=str(src),dst=parse<double>(src.getCurrentText()));
