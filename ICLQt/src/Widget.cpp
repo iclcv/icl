@@ -2398,7 +2398,7 @@ namespace icl{
     // {{{ open
 
     disconnect(this,SIGNAL(mouseEvent(const MouseEvent &)),
-               h,SLOT(handleEvent(const MouseEvent &e)));  
+               h,SLOT(handleEvent(const MouseEvent &)));  
   }
 
   // }}}
