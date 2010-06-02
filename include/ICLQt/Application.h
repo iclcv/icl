@@ -131,11 +131,15 @@ namespace icl{
     /** Initialization functions are called at the beginning of an ICLApplication::exec() call*/
     void addInit(callback cb);
     
+    /// adds a new finalization function
+    /** Finalization functions are called, when the singelton ICLApplication instance is deleted */
+    void addFinalization(callback cb);
+
     /// executes this ICLApplication
     /** callbacks are executed in the following order:
         * init functions, entry by entry in same order as their addition to this instance
         * threads functions, are started in a extra thead, entry by entry in same order as their addition to this instance
-        * QApplication is executed and it's return code is passed using 'return QApplication::exec();'
+        * QApplication is executed and it's return code is f passed using 'return QApplication::exec();'
     */
     int exec();
     
@@ -152,6 +156,9 @@ namespace icl{
     
     /// list of callback functions
     static std::vector<callback> s_callbacks;
+
+    /// list of finalization functions
+    static std::vector<callback> s_finalizes;
   };
 
   /// this is just a shortcut typedef

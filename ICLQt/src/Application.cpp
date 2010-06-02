@@ -38,6 +38,8 @@ namespace icl{
   std::vector<ExecThread*> ICLApplication::s_threads;
   std::vector<callback> ICLApplication::s_inits;
   std::vector<callback> ICLApplication::s_callbacks;
+  std::vector<callback> ICLApplication::s_finalizes;
+
   
   ICLApplication::ICLApplication(int n, char **ppc, 
                                  const std::string &paInitString,
@@ -79,8 +81,11 @@ namespace icl{
     s_inits.clear();
     s_callbacks.clear();
     delete app;
-    
-
+ 
+    for(unsigned int i=0;i<s_finalizes.size();++i){
+    	s_finalizes[i](); 
+    }   
+    s_finalizes.clear();
   }
   
   void ICLApplication::addThread(callback cb){
@@ -91,6 +96,12 @@ namespace icl{
     ICLASSERT_RETURN(cb);
     s_inits.push_back(cb);
   }
+
+  void ICLApplication::addFinalization(callback cb){
+    ICLASSERT_RETURN(cb);
+    s_finalizes.push_back(cb);
+  }
+
 
 
   
