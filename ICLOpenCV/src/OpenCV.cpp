@@ -120,10 +120,13 @@ inline Img<DST_T> *ipl_to_img_dstpref(CvArr *src,Img<DST_T> *dst){
 }
 
 template<typename SRC_T,typename DST_T>
-inline void ipl_to_img_srcpref(IplImage *src, ImgBase **dst){
-	ensureCompatible(dst,getDepth<DST_T>(),Size(src->width,src->height),src->nChannels);
+inline ImgBase *ipl_to_img_srcpref(IplImage *src, ImgBase **dst){
+	ImgBase *tmp = ensureCompatible(dst,getDepth<DST_T>(),Size(src->width,src->height),src->nChannels);
+	if(!dst)
+	    dst = &tmp;
 	SRC_T *data = (SRC_T*) src->imageData;
 	interleavedToPlanar(data,(*dst)->asImg<DST_T>(),src->widthStep);
+	return *dst;
 }
 
 ImgBase *ipl_to_img(CvArr *src,ImgBase **dst,DepthPreference e) throw (icl::ICLException){
@@ -144,31 +147,34 @@ ImgBase *ipl_to_img(CvArr *src,ImgBase **dst,DepthPreference e) throw (icl::ICLE
 	} else if(e==PREFERE_DST_DEPTH){
 		throw icl::ICLException("Cannot determine depth of destinationimage");
 	} else { // DepthPreference == PREFERE_SRC_DEPTH
+		ImgBase *temp=0;
 		switch(image->depth){
 		case IPL_DEPTH_8U:{
-			ipl_to_img_srcpref<icl8u,icl8u>(image,dst);
+			temp=ipl_to_img_srcpref<icl8u,icl8u>(image,dst);
 			break;}
 		case IPL_DEPTH_8S:{
 			//in this case we use icl16s
-			ipl_to_img_srcpref<signed char,icl16s>(image,dst);
+			temp = ipl_to_img_srcpref<signed char,icl16s>(image,dst);
 			break;}
 		case IPL_DEPTH_16S:{
-			ipl_to_img_srcpref<icl16s,icl16s>(image,dst);
+			temp = ipl_to_img_srcpref<icl16s,icl16s>(image,dst);
 			break;}
 		case IPL_DEPTH_32S:{
-			ipl_to_img_srcpref<icl32s,icl32s>(image,dst);
+			temp = ipl_to_img_srcpref<icl32s,icl32s>(image,dst);
 			break;}
 		case IPL_DEPTH_32F:{
-			ipl_to_img_srcpref<icl32f,icl32f>(image,dst);
+			temp = ipl_to_img_srcpref<icl32f,icl32f>(image,dst);
 			break;}
 		case IPL_DEPTH_64F:{
-			ipl_to_img_srcpref<icl64f,icl64f>(image,dst);
+			temp = ipl_to_img_srcpref<icl64f,icl64f>(image,dst);
 			break;}
 		default :{
 			//this should not happen
 			throw ICLException("Invalid source depth");
 		}
 		}
+		if(!dst)
+		    dst = &(temp);
 	}
 	for(int i=0;i<(*dst)->getChannels()/2;++i){
 		(*dst)->swapChannels(i,(*dst)->getChannels()-1-i);
