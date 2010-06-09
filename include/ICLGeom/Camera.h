@@ -49,11 +49,13 @@ namespace icl {
       The projection which describes the camera can be characterized by the
       following parameters.
       - External Parameters (position of camera in world space)
-        - <b>pos</b> the camera position vector
-        - <b>norm</b> which is the image planes normal vector (sometimes called the view-vector)
-          the norm vector is directed from the camera center to the scene
-        - <b>up</b> which defines the "roll"-angle of the camera. It points into the positive y-direction
-          of the image-plane and is perpendicular to the norm vector
+        - <b>pos</b> the camera position vector.
+        - <b>norm</b> the image plane's normal vector (sometimes called the view-vector)
+          the norm vector is directed from the camera center to the scene.
+        - <b>up</b> which defines the "roll"-angle of the camera. It points into
+          the positive y-direction of the image-plane (which means that it will
+          normally, despite its name, point from the center of the camera towards
+          its bottom side) and is perpendicular to the norm vector.
         - <b>horiz</b> the horizontal vector pointing to the positive x-direction of the
           image plane is computed based on norm and up vector. It forms a right-handed
           coordinate system together with them.
@@ -70,9 +72,7 @@ namespace icl {
           
       These parameters can also be estimated by using a number of point references
       between points with known position in the world coord. sys. and their
-      corresponding projections on the image plane. Note that in a real camera, the
-      image gets flipped horizontally and vertically. Therefore, the image points
-      must be flipped back by hand, before passing them to the algorithm.
+      corresponding projections on the image plane.
           
       Additionally to calculating the projection of points in the world coord. sys.
       onto the image plane and the back-projection of image points onto view rays

@@ -279,7 +279,7 @@ TEST(Camera, projectGL) {
 }
 
 TEST(Camera, 3D_position_estimation) {
-  // TODO: Understand this! Is Camera::estimate_3D_svd still broken as commented?
+  // TODO: Is Camera::estimate_3D_svd still broken as commented?
   randomSeed();
   static const int N=7;
   std::vector<Camera*> CAMS(N);
