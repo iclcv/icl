@@ -9,5 +9,5 @@ icl_test_Utils_CXXFLAGS=${ICLUtils_EXAMPLE_CXXFLAGS} ${ICL_GTEST_CXXFLAGS}
 
 # explicit sources
 icl_test_Utils_SOURCES=../test/runner.cpp \
-	../test/test-template.cpp
+	../test/test-matrix.cpp
 
