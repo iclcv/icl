@@ -87,7 +87,7 @@ endif
 REL_INC_INSTALL_PREFIX=$(patsubst ${INSTALL_PREFIX}/%,%,${INC_INSTALL_PREFIX})
 
 
-ECHO=@echo
+ECHO=@echo -e
 INSTALL=${AT}install
 
 # save flags from Makefile.custom
