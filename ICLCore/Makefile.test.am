@@ -9,5 +9,5 @@ icl_test_Core_CXXFLAGS=${ICLCore_EXAMPLE_CXXFLAGS} ${ICL_GTEST_CXXFLAGS}
 
 # explicit sources
 icl_test_Core_SOURCES=../test/runner.cpp \
-	../test/test-template.cpp
+	../test/test-image.cpp
 
