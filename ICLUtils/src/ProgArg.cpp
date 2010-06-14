@@ -226,6 +226,8 @@ namespace icl{
         allowed[i]->showUsage(findExplanation(allowed[i]->names));
       }
       std::cout << "-help         shows this help text" << std::endl;
+      std::cout << "-version      shows version and copyright" << std::endl;
+      std::cout << "              information" << std::endl;
     }
     void showGiven() const{
       for(std::map<std::string,GivenArg*>::const_iterator it= given.begin(); it != given.end();++it){
@@ -361,6 +363,12 @@ namespace icl{
           std::cout << "\tThis is free software; see the source for copying" << std::endl;
           std::cout << "\tconditions.  There is NO warranty; not even for" << std::endl;
           std::cout << "\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << std::endl;
+          std::cout << std::endl;
+          std::cout << "The development of this software was supported by the" << std::endl;
+          std::cout << "Excellence Cluster EXC 277 Cognitive Interaction" << std::endl;
+          std::cout << "Technology. The Excellence Cluster EXC 277 is a grant" << std::endl;
+          std::cout << "of the Deutsche Forschungsgemeinschaft (DFG) in the" << std::endl;
+          std::cout << "context of the German Excellence Initiative." << std::endl;
           ::exit(0);
         }
            
