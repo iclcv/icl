@@ -167,10 +167,30 @@ namespace icl{
     /// returns the number of matrix elements w*h
     inline int dim() const { return w()*h(); }
 
-    
+    /// returns the minumum element of the matrix (operator < must be defined on T)
     inline T min() const { return *std::min_element(data(),data()+dim()); }
+
+    /// returns the maximum element of the matrix (operator < must be defined on T)
     inline T max() const { return *std::max_element(data(),data()+dim()); }
 
+    /// iterator type used for begin() and end()
+    typedef T* iterator;
+
+    /// const iterator type used for begin() const and end() const
+    typedef T* const_iterator;
+    
+    /// returns an iterator to the first data element (note again: data layout is column major here)
+    iterator begin() { return data(); }
+
+    /// returns an iterator behind the last data element (note again: data layout is column major here)
+    iterator end() { return data()+dim(); }
+
+    /// returns an iterator to the first data element (note again: data layout is column major here) (const)
+    const_iterator begin() const { return data(); }
+
+    /// returns an iterator behind the last data element (note again: data layout is column major here) (const)
+    const_iterator end() const { return data()+dim(); }
+    
     private:
     /// Shared data pointer
     SmartPtr<T> m_oData;
