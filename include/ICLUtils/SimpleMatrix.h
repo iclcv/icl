@@ -177,7 +177,7 @@ namespace icl{
     typedef T* iterator;
 
     /// const iterator type used for begin() const and end() const
-    typedef T* const_iterator;
+    typedef const T* const_iterator;
     
     /// returns an iterator to the first data element (note again: data layout is column major here)
     iterator begin() { return data(); }
