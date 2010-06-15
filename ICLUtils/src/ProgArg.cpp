@@ -355,20 +355,22 @@ namespace icl{
           std::cout << std::endl;
           std::cout << "\tPart of the Image Component Library (ICL)" << std::endl;
           std::cout << "\t" << "ICL Version " << VERSION << std::endl;
-          std::cout << "\tCopyright (C) 2006-2010 Neuroinformatics, CITEC" << std::endl;
-          std::cout << "\t              University of Bielefeld" << std::endl;
+          std::cout << "\tCopyright (C) 2006-2010 CITEC, University of Bielefeld" << std::endl;
+          std::cout << "\t                        Neuroinformatics Group" << std::endl;
           std::cout << "\tContact: nivision@techfak.uni-bielefeld.de" << std::endl;
-          std::cout << "\tWebsite: www.iclcv.org" << std::endl;
+          std::cout << "\tWebsite: www.iclcv.org and" << std::endl;
+          std::cout << "\t         http://opensource.cit-ec.de/projects/icl" << std::endl;
+          std::cout << "\tSVN:     https://opensource.cit-ec.de/svn/icl/trunk" << std::endl;
           std::cout << std::endl;
           std::cout << "\tThis is free software; see the source for copying" << std::endl;
           std::cout << "\tconditions.  There is NO warranty; not even for" << std::endl;
           std::cout << "\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << std::endl;
           std::cout << std::endl;
-          std::cout << "The development of this software was supported by the" << std::endl;
-          std::cout << "Excellence Cluster EXC 277 Cognitive Interaction" << std::endl;
-          std::cout << "Technology. The Excellence Cluster EXC 277 is a grant" << std::endl;
-          std::cout << "of the Deutsche Forschungsgemeinschaft (DFG) in the" << std::endl;
-          std::cout << "context of the German Excellence Initiative." << std::endl;
+          std::cout << "\tThe development of this software was supported by the" << std::endl;
+          std::cout << "\tExcellence Cluster EXC 277 Cognitive Interaction" << std::endl;
+          std::cout << "\tTechnology. The Excellence Cluster EXC 277 is a grant" << std::endl;
+          std::cout << "\tof the Deutsche Forschungsgemeinschaft (DFG) in the" << std::endl;
+          std::cout << "\tcontext of the German Excellence Initiative." << std::endl;
           ::exit(0);
         }
            
