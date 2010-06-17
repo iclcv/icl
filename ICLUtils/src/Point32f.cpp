@@ -33,6 +33,7 @@
 *********************************************************************/
 
 #include <ICLUtils/Point32f.h>
+#include <ICLUtils/FixedMatrix.h>
 #include <math.h>
 namespace icl{
   const Point32f Point32f::null(0.0,0.0);
@@ -49,9 +50,13 @@ namespace icl{
     return s << "(" << p.x << ',' << p.y << ")";
   }
   
+
   std::istream &operator>>(std::istream &s, Point32f &p){
-    char c;
-    return s >> c >> p.x >> c >> p.y >> c;
+    FixedMatrix<float,2,1> m;
+    s >> m;
+    p.x = m[0]; 
+    p.y = m[1];
+    return s;
   }
 
 }
