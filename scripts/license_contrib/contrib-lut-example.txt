@@ -1,0 +1,663 @@
+./ICLGeom/examples/intrinsic-camera-calibration-tools.h celbrech 
+./include/ICLGeom/GeomDefs.h celbrech 
+./include/ICLGeom/Camera.h celbrech 
+./include/ICLGeom/Primitive.h celbrech 
+./include/ICLGeom/Scene.h celbrech 
+./include/ICLGeom/PlaneEquation.h celbrech 
+./include/ICLGeom/ConvexHullMonotoneChain.h celbrech 
+./include/ICLGeom/ViewRay.h celbrech 
+./include/ICLGeom/SceneObject.h celbrech 
+./include/ICLGeom/Geom.h celbrech 
+./include/ICLUtils/Lockable.h celbrech 
+./include/ICLUtils/Timer.h celbrech rhaschke 
+./include/ICLUtils/ProgArg.h celbrech ajustus 
+./include/ICLUtils/SteppingRange.h celbrech 
+./include/ICLUtils/Point.h celbrech 
+./include/ICLUtils/Thread.h celbrech 
+./include/ICLUtils/FPSLimiter.h celbrech 
+./include/ICLUtils/Range.h celbrech 
+./include/ICLUtils/UncopiedInstance.h celbrech 
+./include/ICLUtils/DynMatrixUtils.h celbrech 
+./include/ICLUtils/Time.h celbrech rhaschke 
+./include/ICLUtils/Mutex.h celbrech 
+./include/ICLUtils/XMLDocument.h celbrech 
+./include/ICLUtils/XMLAttribRef.h celbrech 
+./include/ICLUtils/FastMedianList.h celbrech 
+./include/ICLUtils/Point32f.h celbrech 
+./include/ICLUtils/StringUtils.h celbrech 
+./include/ICLUtils/MatrixSubRectIterator.h celbrech 
+./include/ICLUtils/CompatMacros.h celbrech 
+./include/ICLUtils/StrTok.h celbrech 
+./include/ICLUtils/XMLNodeIdx.h celbrech 
+./include/ICLUtils/ThreadUtils.h celbrech 
+./include/ICLUtils/Size.h celbrech rhaschke 
+./include/ICLUtils/Macros.h celbrech mgoettin rhaschke 
+./include/ICLUtils/SignalHandler.h celbrech 
+./include/ICLUtils/XMLNode.h celbrech 
+./include/ICLUtils/XMLNodeConstIterator.h celbrech 
+./include/ICLUtils/FixedMatrix.h celbrech 
+./include/ICLUtils/FixedVector.h celbrech 
+./include/ICLUtils/Uncopyable.h celbrech 
+./include/ICLUtils/DynVector.h celbrech 
+./include/ICLUtils/FPSEstimator.h celbrech 
+./include/ICLUtils/ConfigFile.h celbrech 
+./include/ICLUtils/ClippedCast.h celbrech 
+./include/ICLUtils/DynMatrix.h celbrech 
+./include/ICLUtils/Semaphore.h celbrech 
+./include/ICLUtils/Rect.h celbrech rhaschke 
+./include/ICLUtils/Rect32f.h celbrech 
+./include/ICLUtils/XMLNodeFilter.h celbrech 
+./include/ICLUtils/StochasticOptimizer.h celbrech 
+./include/ICLUtils/Size32f.h celbrech 
+./include/ICLUtils/ShallowCopyable.h celbrech 
+./include/ICLUtils/Exception.h celbrech mgoettin rhaschke 
+./include/ICLUtils/Utils.h celbrech 
+./include/ICLUtils/MultiTypeMap.h celbrech 
+./include/ICLUtils/SimpleMatrix.h celbrech 
+./include/ICLUtils/SmartPtr.h celbrech rhaschke 
+./include/ICLUtils/ConsoleProgress.h celbrech 
+./include/ICLUtils/StackTimer.h celbrech 
+./include/ICLUtils/BasicTypes.h celbrech 
+./include/ICLUtils/FixedMatrixUtils.h celbrech 
+./include/ICLUtils/XMLNodeIterator.h celbrech 
+./include/ICLUtils/FFTException.h celbrech 
+./include/ICLUtils/StraightLine2D.h celbrech 
+./include/ICLUtils/MultiThreader.h celbrech 
+./include/ICLUtils/FFTUtils.h celbrech 
+./include/ICLUtils/XML.h celbrech 
+./include/ICLQt/ButtonHandle.h celbrech 
+./include/ICLQt/LabelHandle.h celbrech 
+./include/ICLQt/DrawHandle.h celbrech 
+./include/ICLQt/ButtonGroupHandle.h celbrech 
+./include/ICLQt/SplitterHandle.h celbrech 
+./include/ICLQt/ImageStatistics.h celbrech 
+./include/ICLQt/GLTextureMapBaseImage.h celbrech 
+./include/ICLQt/QImageConverter.h celbrech rhaschke 
+./include/ICLQt/StringHandle.h celbrech 
+./include/ICLQt/ImgParamWidget.h celbrech 
+./include/ICLQt/DrawWidget3D.h celbrech 
+./include/ICLQt/WidgetCaptureMode.h celbrech 
+./include/ICLQt/DispHandle.h celbrech 
+./include/ICLQt/BorderHandle.h celbrech 
+./include/ICLQt/ThreadedUpdatableTextView.h celbrech 
+./include/ICLQt/ChromaClassifierIO.h celbrech 
+./include/ICLQt/ComboHandle.h celbrech 
+./include/ICLQt/CamCfgWidget.h celbrech 
+./include/ICLQt/CheckBoxHandle.h celbrech 
+./include/ICLQt/GUISyntaxErrorException.h celbrech 
+./include/ICLQt/GLTextureMapImage.h celbrech mgoettin 
+./include/ICLQt/ContainerHandle.h celbrech 
+./include/ICLQt/CompabilityLabel.h celbrech 
+./include/ICLQt/ThreadedUpdatableSlider.h celbrech 
+./include/ICLQt/DrawHandle3D.h celbrech 
+./include/ICLQt/Qt.h celbrech 
+./include/ICLQt/Widget.h celbrech 
+./include/ICLQt/SpinnerHandle.h celbrech 
+./include/ICLQt/MouseHandler.h celbrech 
+./include/ICLQt/GUIWidget.h celbrech 
+./include/ICLQt/PaintEngine.h celbrech 
+./include/ICLQt/BoxHandle.h celbrech 
+./include/ICLQt/ConfigFileGUI.h celbrech 
+./include/ICLQt/BorderBox.h celbrech 
+./include/ICLQt/QtMacros.h celbrech 
+./include/ICLQt/DrawWidget.h celbrech 
+./include/ICLQt/SliderUpdateEvent.h celbrech 
+./include/ICLQt/GLTextureMapPaintEngine.h celbrech 
+./include/ICLQt/MouseEvent.h celbrech 
+./include/ICLQt/ChromaGUI.h celbrech 
+./include/ICLQt/ConfigEntry.h celbrech 
+./include/ICLQt/Application.h celbrech 
+./include/ICLQt/ToggleButton.h celbrech 
+./include/ICLQt/DoubleSlider.h celbrech 
+./include/ICLQt/ProxyLayout.h celbrech 
+./include/ICLQt/GUI.h celbrech 
+./include/ICLQt/IconFactory.h celbrech 
+./include/ICLQt/GUIHandle.h celbrech 
+./include/ICLQt/PlotWidget.h celbrech 
+./include/ICLQt/DataStore.h celbrech 
+./include/ICLQt/StringSignalButton.h celbrech 
+./include/ICLQt/StateHandle.h celbrech 
+./include/ICLQt/ImageHandle.h celbrech 
+./include/ICLQt/FSliderHandle.h celbrech 
+./include/ICLQt/FPSHandle.h celbrech 
+./include/ICLQt/GUIDefinition.h celbrech 
+./include/ICLQt/IntHandle.h celbrech 
+./include/ICLQt/GLPaintEngine.h celbrech rhaschke 
+./include/ICLQt/ThreadedUpdatableWidget.h celbrech 
+./include/ICLQt/GUIHandleBase.h celbrech 
+./include/ICLQt/FloatHandle.h celbrech 
+./include/ICLQt/GUIDocumentation.h celbrech 
+./include/ICLQt/Dragger.h celbrech 
+./include/ICLQt/MultiDrawHandle.h celbrech 
+./include/ICLQt/CamThread.h celbrech 
+./include/ICLQt/TabHandle.h celbrech 
+./include/ICLQt/SliderHandle.h celbrech 
+./include/ICLBlob/PositionTracker.h celbrech 
+./include/ICLBlob/DefaultColorBlobSearcher.h celbrech rhaschke 
+./include/ICLBlob/RegionPart.h celbrech 
+./include/ICLBlob/FoundBlob.h celbrech 
+./include/ICLBlob/VectorTracker.h celbrech 
+./include/ICLBlob/RegionBasedBlobSearcher.h celbrech 
+./include/ICLBlob/ColorBlobSearcher.h celbrech rhaschke 
+./include/ICLBlob/FMCreator.h celbrech 
+./include/ICLBlob/SimpleBlobSearcher.h celbrech 
+./include/ICLBlob/VQ2D.h celbrech 
+./include/ICLBlob/VQClusterInfo.h celbrech 
+./include/ICLBlob/HungarianAlgorithm.h celbrech 
+./include/ICLBlob/Region.h celbrech 
+./include/ICLBlob/RegionDetector.h celbrech 
+./include/ICLBlob/PixelRatingGroup.h celbrech 
+./include/ICLBlob/VQVectorSet.h celbrech 
+./include/ICLBlob/Extrapolator.h celbrech 
+./include/ICLBlob/RegionFilter.h celbrech 
+./include/ICLBlob/Blob.h celbrech 
+./include/ICLBlob/RegionPCAInfo.h celbrech 
+./include/ICLBlob/ScanLine.h celbrech 
+./include/ICLBlob/MeanShiftTracker.h celbrech 
+./include/ICLBlob/PixelRating.h celbrech 
+./include/ICLQuick/QuickDocumentation.h celbrech 
+./include/ICLQuick/QuickRegions.h celbrech 
+./include/ICLQuick/Common.h celbrech 
+./include/ICLQuick/Quick.h celbrech 
+./include/ICLCC/ChromaAndRGBClassifier.h celbrech 
+./include/ICLCC/ChromaClassifier.h celbrech 
+./include/ICLCC/Bayer.h celbrech 
+./include/ICLCC/FixedConverter.h celbrech 
+./include/ICLCC/CCFunctions.h celbrech ajustus 
+./include/ICLCC/Converter.h celbrech 
+./include/ICLCC/Color.h celbrech 
+./include/ICLCC/CCLUT.h celbrech 
+./include/ICLCC/CC.h celbrech ajustus 
+./include/ICLCC/Parable.h celbrech 
+./include/ICLCore/Types.h celbrech rhaschke 
+./include/ICLCore/Core.h celbrech 
+./include/ICLCore/ImgBorder.h celbrech 
+./include/ICLCore/Line32f.h celbrech 
+./include/ICLCore/CoreFunctions.h celbrech mgoettin rhaschke ajustus 
+./include/ICLCore/Mathematics.h celbrech mgoettin rhaschke 
+./include/ICLCore/SampledLine.h celbrech 
+./include/ICLCore/ImgIterator.h celbrech mgoettin rhaschke 
+./include/ICLCore/Channel.h celbrech 
+./include/ICLCore/Random.h celbrech 
+./include/ICLCore/Line.h celbrech 
+./include/ICLCore/ImgBase.h celbrech mgoettin rhaschke ajustus 
+./include/ICLCore/PixelRef.h celbrech 
+./include/ICLCore/LineSampler.h celbrech 
+./include/ICLCore/Img.h celbrech mgoettin rhaschke ajustus 
+./include/ICLCore/CornerDetectorCSS.h celbrech 
+./include/ICLCore/ImgParams.h celbrech rhaschke 
+./include/ICLOpenCV/OpenCV.h celbrech 
+./include/ICLFilter/LUTOp3Channel.h celbrech 
+./include/ICLFilter/UnaryOp.h celbrech 
+./include/ICLFilter/ImageSplitter.h celbrech 
+./include/ICLFilter/LocalThresholdOp.h celbrech ajustus 
+./include/ICLFilter/NeighborhoodOp.h celbrech ajustus 
+./include/ICLFilter/RotateOp.h celbrech 
+./include/ICLFilter/MedianOp.h celbrech rhaschke ajustus 
+./include/ICLFilter/IntegralImgOp.h celbrech ajustus 
+./include/ICLFilter/InplaceArithmeticalOp.h celbrech 
+./include/ICLFilter/FFTOp.h celbrech 
+./include/ICLFilter/WienerOp.h celbrech rhaschke ajustus 
+./include/ICLFilter/BaseAffineOp.h celbrech 
+./include/ICLFilter/BinaryCompareOp.h celbrech 
+./include/ICLFilter/ScaleOp.h celbrech 
+./include/ICLFilter/SkinOp.h celbrech mgoettin rhaschke ajustus 
+./include/ICLFilter/OpROIHandler.h celbrech 
+./include/ICLFilter/UnaryLogicalOp.h celbrech ajustus 
+./include/ICLFilter/ConvolutionOp.h celbrech rhaschke ajustus 
+./include/ICLFilter/DynamicConvolutionOp.h celbrech 
+./include/ICLFilter/GradientImage.h celbrech 
+./include/ICLFilter/ThresholdOp.h celbrech rhaschke ajustus 
+./include/ICLFilter/UnaryOpWork.h celbrech 
+./include/ICLFilter/UnaryArithmeticalOp.h celbrech ajustus 
+./include/ICLFilter/GaborOp.h celbrech 
+./include/ICLFilter/AffineOp.h celbrech 
+./include/ICLFilter/BinaryArithmeticalOp.h celbrech ajustus 
+./include/ICLFilter/UnaryCompareOp.h celbrech 
+./include/ICLFilter/InplaceLogicalOp.h celbrech 
+./include/ICLFilter/LUT2D.h celbrech 
+./include/ICLFilter/IFFTOp.h celbrech 
+./include/ICLFilter/WarpOp.h celbrech 
+./include/ICLFilter/Filter.h celbrech 
+./include/ICLFilter/InplaceOp.h celbrech 
+./include/ICLFilter/ProximityOp.h celbrech ajustus 
+./include/ICLFilter/MorphologicalOp.h celbrech ajustus 
+./include/ICLFilter/MirrorOp.h celbrech ajustus 
+./include/ICLFilter/WeightedSumOp.h celbrech rhaschke ajustus 
+./include/ICLFilter/WeightChannelsOp.h celbrech 
+./include/ICLFilter/ChamferOp.h celbrech 
+./include/ICLFilter/ConvolutionKernel.h celbrech 
+./include/ICLFilter/BinaryLogicalOp.h celbrech ajustus 
+./include/ICLFilter/UnaryOpPipe.h celbrech 
+./include/ICLFilter/TranslateOp.h celbrech 
+./include/ICLFilter/BinaryOp.h celbrech ajustus 
+./include/ICLFilter/CannyOp.h celbrech ajustus 
+./include/ICLFilter/LUTOp.h celbrech ajustus 
+./include/ICLAlgorithms/SOM2D.h celbrech 
+./include/ICLAlgorithms/HoughLineDetector.h celbrech 
+./include/ICLAlgorithms/ViewBasedTemplateMatcher.h celbrech 
+./include/ICLAlgorithms/SVS.h celbrech ajustus 
+./include/ICLAlgorithms/SOM.h celbrech 
+./include/ICLAlgorithms/HoughLine.h celbrech 
+./include/ICLAlgorithms/UsefulFunctions.h celbrech 
+./include/ICLIO/FileGrabberPlugin.h celbrech 
+./include/ICLIO/JPEGHandle.h celbrech 
+./include/ICLIO/DCDeviceFeatures.h celbrech 
+./include/ICLIO/FileGrabberPluginCSV.h celbrech 
+./include/ICLIO/Grabber.h celbrech mgoettin rhaschke 
+./include/ICLIO/XCFPublisher.h celbrech 
+./include/ICLIO/DemoGrabber.h celbrech 
+./include/ICLIO/CreateGrabber.h celbrech 
+./include/ICLIO/TestImages.h celbrech rhaschke 
+./include/ICLIO/FileGrabberPluginPNM.h celbrech 
+./include/ICLIO/UnicapFormat.h celbrech 
+./include/ICLIO/FilenameGenerator.h celbrech 
+./include/ICLIO/IOUtils.h celbrech 
+./include/ICLIO/FileList.h celbrech 
+./include/ICLIO/XCFServerGrabber.h celbrech rhaschke 
+./include/ICLIO/DCDeviceOptions.h celbrech 
+./include/ICLIO/GenericGrabber.h celbrech 
+./include/ICLIO/FileWriter.h celbrech 
+./include/ICLIO/FileWriterPluginCSV.h celbrech 
+./include/ICLIO/XCFUtils.h celbrech 
+./include/ICLIO/FileWriterPluginJPEG.h celbrech 
+./include/ICLIO/SwissRangerGrabber.h celbrech 
+./include/ICLIO/UnicapGrabEngine.h celbrech 
+./include/ICLIO/DCDevice.h celbrech 
+./include/ICLIO/DCGrabber.h celbrech mgoettin 
+./include/ICLIO/FileGrabber.h celbrech 
+./include/ICLIO/PWCGrabber.h celbrech mgoettin rhaschke ajustus 
+./include/ICLIO/DCGrabberThread.h celbrech 
+./include/ICLIO/UnicapGrabber.h celbrech rhaschke ajustus 
+./include/ICLIO/XCFGrabberBase.h celbrech 
+./include/ICLIO/FileWriterPluginPNM.h celbrech 
+./include/ICLIO/SonyFwGrabber.h celbrech freinhar 
+./include/ICLIO/DefaultConvertEngine.h celbrech 
+./include/ICLIO/DCFrameQueue.h celbrech 
+./include/ICLIO/FileWriterPlugin.h celbrech 
+./include/ICLIO/XCFMemoryGrabber.h celbrech 
+./include/ICLIO/FileWriterPluginImageMagick.h celbrech 
+./include/ICLIO/IO.h celbrech mgoettin rhaschke 
+./include/ICLIO/IOFunctions.h celbrech mgoettin rhaschke 
+./include/ICLIO/JPEGDecoder.h celbrech 
+./include/ICLIO/UnicapDevice.h celbrech 
+./include/ICLIO/DistFromProgArgUtil.h celbrech 
+./include/ICLIO/GrabberHandle.h celbrech 
+./include/ICLIO/FileGrabberPluginJPEG.h celbrech 
+./include/ICLIO/VideoGrabber.h celbrech 
+./include/ICLIO/File.h celbrech 
+./include/ICLIO/FileGrabberPluginImageMagick.h celbrech 
+./include/ICLIO/UnicapProperty.h celbrech 
+./include/ICLIO/UnicapConvertEngine.h celbrech 
+./include/ICLIO/XCFMemoryListener.h celbrech 
+./include/ICLIO/XCFPublisherGrabber.h celbrech 
+./include/ICLIO/DC.h celbrech 
+./include/ICLIO/DefaultGrabEngine.h celbrech 
+./scripts/compile_checker/types.h celbrech 
+./scripts/compile_checker/show_arglists.h celbrech 
+./scripts/compile_checker/create_combinations.h celbrech 
+./scripts/compile_checker/config.h celbrech 
+./alldoc/allmainpage.h celbrech 
+./ICLGeom/src/Scene.cpp celbrech 
+./ICLGeom/src/SceneObject.cpp celbrech 
+./ICLGeom/src/ViewRay.cpp celbrech 
+./ICLGeom/src/ConvexHullMonotoneChain.cpp celbrech 
+./ICLGeom/src/Camera.cpp celbrech 
+./ICLGeom/src/PlaneEquation.cpp celbrech 
+./ICLGeom/examples/geom-demo.cpp celbrech 
+./ICLGeom/examples/swiss-ranger-demo.cpp celbrech 
+./ICLGeom/examples/show-extrinsic-calibration-grid.cpp celbrech 
+./ICLGeom/examples/intrinsic-camera-calibration-tools.cpp celbrech 
+./ICLGeom/examples/geom-demo-simple.cpp celbrech 
+./ICLGeom/examples/intrinsic-camera-calibration.cpp celbrech 
+./ICLGeom/examples/cam-calib.cpp celbrech 
+./tutorial/media/code/img-base-naive-depth-adaption.cpp celbrech 
+./tutorial/media/code/using-grabbed-images.cpp celbrech 
+./tutorial/media/code/using-a-grabber.cpp celbrech 
+./tutorial/media/code/templates-2.cpp celbrech 
+./tutorial/media/code/threshold-1b.cpp celbrech 
+./tutorial/media/code/generic-grabber-from-progarg.cpp celbrech 
+./tutorial/media/code/templates-1.cpp celbrech 
+./tutorial/media/code/threshold-7.cpp celbrech 
+./tutorial/media/code/ensure-depth-implementation.cpp celbrech 
+./tutorial/media/code/img-structure-with-params.cpp celbrech 
+./tutorial/media/code/unary-op-pipe-example.cpp celbrech 
+./tutorial/media/code/threshold-1.cpp celbrech 
+./tutorial/media/code/templates-4.cpp celbrech 
+./tutorial/media/code/channel-management.cpp celbrech 
+./tutorial/media/code/threshold-4.cpp celbrech 
+./tutorial/media/code/templates-3.cpp celbrech 
+./tutorial/media/code/threshold-3b.cpp celbrech 
+./tutorial/media/code/threshold-4b.cpp celbrech 
+./tutorial/media/code/pixel-access-check-list-pseudo-code.cpp celbrech 
+./tutorial/media/code/quick-copy-roi-example.cpp celbrech 
+./tutorial/media/code/config-file.cpp celbrech 
+./tutorial/media/code/threshold-2.cpp celbrech 
+./tutorial/media/code/threshold-3.cpp celbrech 
+./tutorial/media/code/cast-imgbase-to-img-threshold-example-macro.cpp celbrech 
+./tutorial/media/code/cast-imgbase-to-img-threshold-example-real.cpp celbrech 
+./tutorial/media/code/abs-diff-successive-ops.cpp celbrech 
+./tutorial/media/code/check-only-example.cpp celbrech 
+./tutorial/media/code/shallow-copied-imgs.cpp celbrech 
+./tutorial/media/code/cast-imgbase-to-img-threshold-example.cpp celbrech 
+./tutorial/media/code/icl-depth-enum.cpp celbrech 
+./tutorial/media/code/quick-drawing-example.cpp celbrech 
+./tutorial/media/code/img-D-typedefs.cpp celbrech 
+./tutorial/media/code/templates-5.cpp celbrech 
+./tutorial/media/code/unary-op-loop-example-no-dst.cpp celbrech 
+./tutorial/media/code/threshold-8.cpp celbrech 
+./tutorial/media/code/quick-cvt-example.cpp celbrech 
+./tutorial/media/code/threshold-5.cpp celbrech 
+./tutorial/media/code/image-class-scheme-1.cpp celbrech 
+./tutorial/media/code/threshold-6.cpp celbrech 
+./tutorial/media/code/fixed-matrix-demo-1.cpp celbrech 
+./tutorial/media/code/icl-D-typedefs.cpp celbrech 
+./tutorial/media/code/img-and-img-base-scheme.cpp celbrech 
+./tutorial/media/code/unary-op-loop-example.cpp celbrech 
+./scripts/compile_checker/create_combinations.cpp celbrech 
+./scripts/compile_checker/main.cpp celbrech 
+./scripts/compile_checker/show_arglists.cpp celbrech 
+./ICLUtils/src/StrTok.cpp celbrech 
+./ICLUtils/src/StraightLine2D.cpp celbrech 
+./ICLUtils/src/Point.cpp celbrech rhaschke 
+./ICLUtils/src/Size.cpp celbrech 
+./ICLUtils/src/StringUtils.cpp celbrech 
+./ICLUtils/src/ThreadUtils.cpp celbrech 
+./ICLUtils/src/SignalHandler.cpp celbrech 
+./ICLUtils/src/Size32f.cpp celbrech 
+./ICLUtils/src/MultiThreader.cpp celbrech 
+./ICLUtils/src/XMLNode.cpp celbrech 
+./ICLUtils/src/ConfigFile.cpp celbrech 
+./ICLUtils/src/SmartPtr.cpp celbrech 
+./ICLUtils/src/FPSEstimator.cpp celbrech 
+./ICLUtils/src/Rect.cpp celbrech 
+./ICLUtils/src/Time.cpp celbrech rhaschke 
+./ICLUtils/src/Mutex.cpp celbrech 
+./ICLUtils/src/XML.cpp celbrech 
+./ICLUtils/src/Rect32f.cpp celbrech 
+./ICLUtils/src/DynMatrix.cpp celbrech 
+./ICLUtils/src/FFTUtils.cpp celbrech 
+./ICLUtils/src/Point32f.cpp celbrech 
+./ICLUtils/src/XMLAttribRef.cpp celbrech 
+./ICLUtils/src/Range.cpp celbrech 
+./ICLUtils/src/DynMatrixUtils.cpp celbrech 
+./ICLUtils/src/XMLNodeFilter.cpp celbrech 
+./ICLUtils/src/ConsoleProgress.cpp celbrech 
+./ICLUtils/src/Exception.cpp celbrech mgoettin rhaschke 
+./ICLUtils/src/Semaphore.cpp celbrech 
+./ICLUtils/src/ProgArg.cpp celbrech rhaschke 
+./ICLUtils/src/Thread.cpp celbrech 
+./ICLUtils/src/FixedMatrix.cpp celbrech 
+./ICLUtils/src/FPSLimiter.cpp celbrech 
+./ICLUtils/src/Timer.cpp celbrech rhaschke 
+./ICLUtils/src/StochasticOptimizer.cpp celbrech 
+./ICLUtils/src/XMLNodeIterator.cpp celbrech 
+./ICLUtils/src/XMLDocument.cpp celbrech 
+./ICLUtils/src/MultiTypeMap.cpp celbrech 
+./ICLUtils/examples/progargdemo.cpp celbrech 
+./ICLUtils/examples/regular-expression-test.cpp celbrech 
+./ICLUtils/examples/matrix-stream-operator-test.cpp celbrech 
+./ICLUtils/examples/config-file-test.cpp celbrech 
+./ICLUtils/examples/fixed-matrix-test.cpp celbrech 
+./ICLUtils/examples/dyn-matrix-test.cpp celbrech 
+./ICLUtils/examples/xml-parser-test.cpp celbrech 
+./ICLUtils/examples/dyn-matrix-utils-test.cpp celbrech 
+./ICLQt/src/CheckBoxHandle.cpp celbrech 
+./ICLQt/src/MouseHandler.cpp celbrech 
+./ICLQt/src/PlotWidget.cpp celbrech 
+./ICLQt/src/DrawHandle.cpp celbrech 
+./ICLQt/src/DrawWidget3D.cpp celbrech 
+./ICLQt/src/SliderHandle.cpp celbrech 
+./ICLQt/src/Widget.cpp celbrech 
+./ICLQt/src/DrawWidget.cpp celbrech 
+./ICLQt/src/MouseEvent.cpp celbrech 
+./ICLQt/src/ComboHandle.cpp celbrech 
+./ICLQt/src/DataStore.cpp celbrech 
+./ICLQt/src/StringHandle.cpp celbrech 
+./ICLQt/src/CamThread.cpp celbrech 
+./ICLQt/src/ToggleButton.cpp celbrech 
+./ICLQt/src/ChromaGUI.cpp celbrech 
+./ICLQt/src/ChromaClassifierIO.cpp celbrech 
+./ICLQt/src/QImageConverter.cpp celbrech rhaschke 
+./ICLQt/src/ThreadedUpdatableTextView.cpp celbrech 
+./ICLQt/src/ImageHandle.cpp celbrech 
+./ICLQt/src/DoubleSlider.cpp celbrech 
+./ICLQt/src/ButtonHandle.cpp celbrech 
+./ICLQt/src/CompabilityLabel.cpp celbrech 
+./ICLQt/src/IntHandle.cpp celbrech 
+./ICLQt/src/ButtonGroupHandle.cpp celbrech 
+./ICLQt/src/SpinnerHandle.cpp celbrech 
+./ICLQt/src/LabelHandle.cpp celbrech 
+./ICLQt/src/DrawHandle3D.cpp celbrech 
+./ICLQt/src/CamCfgWidget.cpp celbrech 
+./ICLQt/src/Dragger.cpp celbrech 
+./ICLQt/src/GUIDefinition.cpp celbrech 
+./ICLQt/src/GLPaintEngine.cpp celbrech rhaschke 
+./ICLQt/src/Application.cpp celbrech 
+./ICLQt/src/FloatHandle.cpp celbrech 
+./ICLQt/src/MultiDrawHandle.cpp celbrech 
+./ICLQt/src/GUI.cpp celbrech 
+./ICLQt/src/ImgParamWidget.cpp celbrech 
+./ICLQt/src/IconFactory.cpp celbrech 
+./ICLQt/src/GUIWidget.cpp celbrech 
+./ICLQt/src/FSliderHandle.cpp celbrech 
+./ICLQt/src/BorderHandle.cpp celbrech 
+./ICLQt/src/GLTextureMapBaseImage.cpp celbrech 
+./ICLQt/src/StateHandle.cpp celbrech 
+./ICLQt/src/GLTextureMapPaintEngine.cpp celbrech 
+./ICLQt/src/GLTextureMapImage.cpp celbrech 
+./ICLQt/src/StringSignalButton.cpp celbrech 
+./ICLQt/src/ConfigFileGUI.cpp celbrech 
+./ICLQt/examples/xv.cpp celbrech 
+./ICLQt/examples/camcfg.cpp celbrech 
+./ICLQt/examples/interactive-filter-demo.cpp celbrech rhaschke 
+./ICLQt/examples/chroma-demo.cpp celbrech 
+./ICLQt/examples/mouse-interaction-demo.cpp celbrech 
+./ICLQt/examples/camviewer.cpp celbrech 
+./ICLQt/examples/gui-test-2.cpp celbrech 
+./ICLQt/examples/gui-test.cpp celbrech 
+./ICLQt/examples/visualization-demo.cpp celbrech 
+./ICLQt/examples/gui-callback-test.cpp celbrech 
+./ICLQt/examples/datastore-test.cpp celbrech 
+./ICLQt/examples/colorpicker.cpp celbrech 
+./ICLQt/examples/config-gui-example.cpp celbrech 
+./ICLQt/examples/3D-demo.cpp celbrech 
+./ICLQt/examples/image-compare.cpp celbrech 
+./ICLQt/examples/special-button-demo.cpp celbrech 
+./ICLQt/examples/complex-gui-callback-test.cpp celbrech 
+./ICLBlob/src/ColorBlobSearcher.cpp celbrech rhaschke 
+./ICLBlob/src/FMCreator.cpp celbrech 
+./ICLBlob/src/VectorTracker.cpp celbrech 
+./ICLBlob/src/Region.cpp celbrech 
+./ICLBlob/src/RegionBasedBlobSearcher.cpp celbrech 
+./ICLBlob/src/PositionTracker.cpp celbrech rhaschke 
+./ICLBlob/src/DefaultColorBlobSearcher.cpp celbrech rhaschke 
+./ICLBlob/src/MeanShiftTracker.cpp celbrech 
+./ICLBlob/src/HungarianAlgorithm.cpp celbrech mgoettin 
+./ICLBlob/src/VQ2D.cpp celbrech rhaschke 
+./ICLBlob/src/Extrapolator.cpp celbrech 
+./ICLBlob/src/RegionPCAInfo.cpp celbrech 
+./ICLBlob/src/SimpleBlobSearcher.cpp celbrech 
+./ICLBlob/src/RegionDetector.cpp celbrech 
+./ICLBlob/src/RegionFilter.cpp celbrech 
+./ICLBlob/examples/simple-blob-searcher-test.cpp celbrech 
+./ICLBlob/examples/region-based-blob-finder-test.cpp celbrech 
+./ICLBlob/examples/corner-detection-css-demo.cpp celbrech 
+./ICLBlob/examples/vector-tracker-demo.cpp celbrech 
+./ICLBlob/examples/blobtracker-benchmark.cpp celbrech 
+./ICLBlob/examples/mean-shift-online-demo.cpp celbrech 
+./ICLBlob/examples/interactive-vector-tracker-benchmark.cpp celbrech 
+./ICLBlob/examples/region-inspector-demo.cpp celbrech 
+./ICLBlob/examples/online-region-detection-demo.cpp celbrech 
+./ICLBlob/examples/region-detector-test.cpp celbrech 
+./ICLQuick/src/Quick.cpp celbrech mgoettin 
+./ICLQuick/src/QuickRegions.cpp celbrech 
+./ICLQuick/examples/quick-benchmark.cpp celbrech 
+./ICLQuick/examples/quick-test.cpp celbrech 
+./ICLCC/src/Color.cpp celbrech 
+./ICLCC/src/Converter.cpp celbrech rhaschke 
+./ICLCC/src/Bayer.cpp celbrech freinhar 
+./ICLCC/src/CCFunctions.cpp celbrech mgoettin rhaschke 
+./ICLCC/src/FixedConverter.cpp celbrech 
+./ICLCC/src/CCLUT.cpp celbrech 
+./ICLCC/examples/bayer-benchmark.cpp celbrech 
+./ICLCC/examples/converter-test.cpp celbrech 
+./ICLCC/examples/colorspace-online-demo.cpp celbrech 
+./ICLCore/src/Img.cpp celbrech mgoettin rhaschke 
+./ICLCore/src/ImgBase.cpp celbrech mgoettin rhaschke 
+./ICLCore/src/CornerDetectorCSS.cpp celbrech 
+./ICLCore/src/ImgBorder.cpp celbrech rhaschke 
+./ICLCore/src/Mathematics.cpp celbrech mgoettin rhaschke 
+./ICLCore/src/CoreFunctions.cpp celbrech mgoettin rhaschke 
+./ICLCore/src/ImgParams.cpp celbrech rhaschke 
+./ICLCore/src/Random.cpp celbrech 
+./ICLCore/src/SampledLine.cpp celbrech 
+./ICLCore/src/Line.cpp celbrech 
+./ICLCore/src/LineSampler.cpp celbrech 
+./ICLCore/src/Line32f.cpp celbrech 
+./ICLCore/examples/img-example.cpp celbrech 
+./ICLCore/examples/sampled-line-test.cpp celbrech 
+./ICLCore/examples/img-iterator-benchmark.cpp celbrech 
+./ICLCore/examples/reduce-channels-test.cpp celbrech 
+./ICLCore/examples/copy-channel-roi-example.cpp celbrech 
+./ICLOpenCV/src/OpenCV.cpp celbrech 
+./ICLOpenCV/examples/dummy-app.cpp celbrech 
+./doc/fix-doc-screen-shot-edges.cpp celbrech 
+./ICLFilter/src/GradientImage.cpp celbrech 
+./ICLFilter/src/NeighborhoodOp.cpp celbrech 
+./ICLFilter/src/MorphologicalOp.cpp celbrech ajustus 
+./ICLFilter/src/LocalThresholdOp.cpp celbrech 
+./ICLFilter/src/InplaceArithmeticalOp.cpp celbrech 
+./ICLFilter/src/ConvolutionKernel.cpp celbrech 
+./ICLFilter/src/BinaryCompareOp.cpp celbrech 
+./ICLFilter/src/UnaryArithmeticalOp.cpp celbrech 
+./ICLFilter/src/UnaryCompareOp.cpp celbrech 
+./ICLFilter/src/WarpOp.cpp celbrech 
+./ICLFilter/src/DynamicConvolutionOp.cpp celbrech 
+./ICLFilter/src/CannyOp.cpp celbrech ajustus 
+./ICLFilter/src/InplaceLogicalOp.cpp celbrech 
+./ICLFilter/src/ImageSplitter.cpp celbrech 
+./ICLFilter/src/WeightedSumOp.cpp celbrech rhaschke ajustus 
+./ICLFilter/src/AffineOp.cpp celbrech 
+./ICLFilter/src/LUTOp.cpp celbrech 
+./ICLFilter/src/LUTOp3Channel.cpp celbrech 
+./ICLFilter/src/FFTOp.cpp celbrech 
+./ICLFilter/src/ThresholdOp.cpp celbrech rhaschke ajustus 
+./ICLFilter/src/ConvolutionOp.cpp celbrech rhaschke ajustus 
+./ICLFilter/src/BinaryLogicalOp.cpp celbrech 
+./ICLFilter/src/SkinOp.cpp celbrech mgoettin rhaschke 
+./ICLFilter/src/UnaryOpPipe.cpp celbrech 
+./ICLFilter/src/WienerOp.cpp celbrech rhaschke 
+./ICLFilter/src/MirrorOp.cpp celbrech 
+./ICLFilter/src/MedianOp.cpp celbrech rhaschke ajustus 
+./ICLFilter/src/OpROIHandler.cpp celbrech 
+./ICLFilter/src/IntegralImgOp.cpp celbrech 
+./ICLFilter/src/UnaryLogicalOp.cpp celbrech 
+./ICLFilter/src/WeightChannelsOp.cpp celbrech 
+./ICLFilter/src/ProximityOp.cpp celbrech 
+./ICLFilter/src/UnaryOp.cpp celbrech 
+./ICLFilter/src/IFFTOp.cpp celbrech 
+./ICLFilter/src/BinaryArithmeticalOp.cpp celbrech 
+./ICLFilter/src/ChamferOp.cpp celbrech 
+./ICLFilter/src/BinaryOp.cpp celbrech 
+./ICLFilter/src/GaborOp.cpp celbrech 
+./ICLFilter/examples/warp-op-test.cpp celbrech 
+./ICLFilter/examples/weight-channels-op-test.cpp celbrech 
+./ICLFilter/examples/inplace-op-test.cpp celbrech 
+./ICLFilter/examples/median-op-test.cpp celbrech 
+./ICLFilter/examples/skin-op-test-no-build.cpp celbrech 
+./ICLFilter/examples/convolution-op-test.cpp celbrech 
+./ICLFilter/examples/wiener-op-test.cpp celbrech rhaschke 
+./ICLFilter/examples/morphological-op-test.cpp celbrech 
+./ICLFilter/examples/filter-array.cpp celbrech 
+./ICLFilter/examples/filter-demo-2.cpp celbrech 
+./ICLFilter/examples/local-threshold-op-test.cpp celbrech rhaschke 
+./ICLFilter/examples/interactive-affine-op-example.cpp celbrech 
+./ICLFilter/examples/weighted-sum-op-test.cpp celbrech ajustus 
+./ICLFilter/examples/gabor-op-online-example.cpp celbrech 
+./ICLFilter/examples/champfer-op-test.cpp celbrech 
+./ICLFilter/examples/arithmetical-op-test.cpp celbrech 
+./ICLFilter/examples/fft-demo.cpp celbrech mgoettin 
+./ICLFilter/examples/interactive-canny-demo.cpp celbrech 
+./ICLFilter/examples/threshold-op-test.cpp celbrech rhaschke 
+./ICLAlgorithms/src/SVS.cpp celbrech ajustus 
+./ICLAlgorithms/src/HoughLine.cpp celbrech 
+./ICLAlgorithms/src/HoughLineDetector.cpp celbrech 
+./ICLAlgorithms/src/ViewBasedTemplateMatcher.cpp celbrech 
+./ICLAlgorithms/src/UsefulFunctions.cpp celbrech 
+./ICLAlgorithms/src/SOM.cpp celbrech 
+./ICLAlgorithms/examples/template-matching-test.cpp celbrech 
+./ICLAlgorithms/examples/interactive-template-matching-demo.cpp celbrech 
+./ICLAlgorithms/examples/svs-online-demo.cpp celbrech 
+./ICLAlgorithms/examples/svs-test.cpp celbrech ajustus 
+./ICLAlgorithms/examples/interactive-hough-line-demo.cpp celbrech 
+./ICLIO/src/PWCGrabber.cpp celbrech mgoettin rhaschke freinhar 
+./ICLIO/src/UnicapDevice.cpp celbrech 
+./ICLIO/src/SwissRangerGrabber.cpp celbrech 
+./ICLIO/src/FileWriterPluginImageMagick.cpp celbrech 
+./ICLIO/src/JPEGHandle.cpp celbrech 
+./ICLIO/src/FileList.cpp celbrech 
+./ICLIO/src/FileGrabberPluginImageMagick.cpp celbrech 
+./ICLIO/src/Grabber.cpp celbrech 
+./ICLIO/src/XCFMemoryGrabber.cpp celbrech 
+./ICLIO/src/FileWriterPluginCSV.cpp celbrech 
+./ICLIO/src/SonyFwGrabber.cpp celbrech freinhar 
+./ICLIO/src/DemoImageWindows.cpp celbrech 
+./ICLIO/src/IOUtils.cpp celbrech 
+./ICLIO/src/FileGrabberPluginPNM.cpp celbrech 
+./ICLIO/src/FilenameGenerator.cpp celbrech 
+./ICLIO/src/FileWriterPluginPNM.cpp celbrech 
+./ICLIO/src/JPEGDecoder.cpp celbrech 
+./ICLIO/src/UnicapFormat.cpp celbrech 
+./ICLIO/src/DemoImageMandril.cpp celbrech 
+./ICLIO/src/FileGrabberPluginJPEG.cpp celbrech 
+./ICLIO/src/XCFUtils.cpp celbrech rhaschke 
+./ICLIO/src/FileGrabber.cpp celbrech 
+./ICLIO/src/DemoImageFlowers.cpp celbrech 
+./ICLIO/src/XCFGrabberBase.cpp celbrech 
+./ICLIO/src/UnicapConvertEngine.cpp celbrech 
+./ICLIO/src/UnicapGrabber.cpp celbrech rhaschke 
+./ICLIO/src/TestImages.cpp celbrech rhaschke 
+./ICLIO/src/File.cpp celbrech 
+./ICLIO/src/XCFServerGrabber.cpp celbrech rhaschke freinhar 
+./ICLIO/src/GenericGrabber.cpp celbrech 
+./ICLIO/src/UnicapProperty.cpp celbrech 
+./ICLIO/src/FileWriter.cpp celbrech 
+./ICLIO/src/DistFromProgArgUtil.cpp celbrech 
+./ICLIO/src/CreateGrabber.cpp celbrech 
+./ICLIO/src/DCGrabber.cpp celbrech 
+./ICLIO/src/XCFPublisher.cpp celbrech 
+./ICLIO/src/DCGrabberThread.cpp celbrech 
+./ICLIO/src/DCDevice.cpp celbrech 
+./ICLIO/src/DefaultConvertEngine.cpp celbrech 
+./ICLIO/src/DemoImageMacaw.cpp celbrech 
+./ICLIO/src/DCFrameQueue.cpp celbrech 
+./ICLIO/src/DemoImageLena.cpp celbrech 
+./ICLIO/src/XCFMemoryListener.cpp celbrech 
+./ICLIO/src/XCFPublisherGrabber.cpp celbrech 
+./ICLIO/src/FileGrabberPluginCSV.cpp celbrech 
+./ICLIO/src/DemoImageCameraMan.cpp celbrech 
+./ICLIO/src/IOFunctions.cpp celbrech mgoettin rhaschke 
+./ICLIO/src/DC.cpp celbrech 
+./ICLIO/src/DemoGrabber.cpp celbrech 
+./ICLIO/src/VideoGrabber.cpp celbrech 
+./ICLIO/src/DefaultGrabEngine.cpp celbrech 
+./ICLIO/src/FileWriterPluginJPEG.cpp celbrech 
+./ICLIO/src/DCDeviceFeatures.cpp celbrech 
+./ICLIO/examples/sonygrabber-not-built-example.cpp celbrech 
+./ICLIO/examples/unicap-grab-example.cpp celbrech rhaschke 
+./ICLIO/examples/convert.cpp celbrech 
+./ICLIO/examples/reset-dc-bus.cpp celbrech 
+./ICLIO/examples/multi-cam-example.cpp celbrech 
+./ICLIO/examples/write-file-example.cpp celbrech 
+./ICLIO/examples/xcf-publisher.cpp celbrech 
+./ICLIO/examples/camera-param-io.cpp celbrech 
+./ICLIO/examples/generic-grab-example.cpp celbrech 
+./ICLIO/examples/jpg2cpp.cpp celbrech 
+./ICLIO/examples/testimages-example.cpp celbrech 
+./ICLIO/examples/memory-listener.cpp celbrech 
+./ICLIO/examples/video-player.cpp celbrech 
+./ICLIO/examples/create.cpp celbrech 
+./ICLIO/examples/dcdeviceinfo.cpp celbrech 
+./ICLIO/examples/xcf-grabber-benchmark.cpp celbrech 
+./ICLIO/examples/dcclearisochannels.cpp celbrech 
