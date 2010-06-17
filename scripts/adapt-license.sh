@@ -9,7 +9,10 @@ TEXT=\
 ** Forschungsgemeinschaft (DFG) in the context of the German       **\
 ** Excellence Initiative.                                          **'
 
-for FILE in `find . -name *.cpp -name *.h` ; do 
+FILES="`find . -name *.h` `find . -name *.cpp`"
+
+
+for FILE in $FILES ; do 
 #for FILE in test.h ; do
     echo "processing file $FILE" ;
     sed -i "s/Neuroinformatics, CITEC                 \*\*/CITEC, University of Bielefeld          **/g" $FILE ;
