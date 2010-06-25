@@ -30,7 +30,10 @@ AC_DEFUN([ICL_EXTEND_FLAG_VARS],
         CXXFLAGS="$CXXFLAGS $3 $4"
         CXXCPP="$CXXCPP $4"
         CFLAGS="$CFLAGS $5"
-        CPPFLAGS="$CPPFLAGS $6"])
+        CPPFLAGS="$CPPFLAGS $6"
+        # this is a hack here, that allows to link dynamically against other libs 
+        LIBS=`echo $LIBS | sed 's|-L\(.*\) |-L\1 -Wl,-rpath=\1|g' | sed 's|-L\(.*\)$|-L\1 -Wl,-rpath=\1|g'`
+])
 
 AC_DEFUN([ICL_WITH_ROOT],
         [AC_ARG_WITH([$1-Root],
