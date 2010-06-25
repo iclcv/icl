@@ -401,9 +401,8 @@ namespace icl{
           g->checkArgCountThrow();
         }else{ // arbitrary arg count here
           /// attach all args that are not an allowed args
-          for(int j=1;true;++j){
-            if(i+j>n) break;
-            else if(context.findArg(ppc[i+j])){ break; }
+          for(int j=1;i+j<n;++j){
+            if(context.findArg(ppc[i+j])){ break; }
             g->subargs.push_back(ppc[i+j]); // here, no types are possible
           }  
         }
@@ -503,7 +502,7 @@ namespace icl{
         THROW_ProgArgException("unable to access subargidx index "+str(pa.subargidx) 
                                + " of argument '" + pa.id + "', which has a variable sub- "
                                "argument count and was not given");
-      }else if((int)a->given->subargs.size() >= pa.subargidx){
+      }else if((int)a->given->subargs.size() <= pa.subargidx){
         THROW_ProgArgException("unable to access subargidx index "+str(pa.subargidx) 
                                + " of argument '" + pa.id + "', which got only "
                                + str(a->given->subargs.size()) + " sub argument(s)");
