@@ -37,6 +37,7 @@
 #include <stdint.h>
 #include <complex>
 
+#include <ICLUtils/DynMatrixUtils.h>
 
 namespace icl{
 
@@ -177,8 +178,7 @@ namespace icl{
   }
 
   template<class T>
-  void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const throw (QRDecompException){
-    
+  void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const {
     DynMatrix<T> A = *this; // Working copy
     DynMatrix<T> a(1,rows()), q(1,rows());
     
@@ -190,8 +190,12 @@ namespace icl{
     for (unsigned int i=0;i<cols();i++) {
       a = A.col(i);
       R(i,i) = a.norm();
-      if(!R(i,i)) throw QRDecompException("Error in QR-decomposition");
-      q = a/R(i,i);   // Normalization.
+      if(!R(i,i)){
+        //throw QRDecompException("Error in QR-decomposition");
+        q = a;          // No Normalization in case of R(i,i)=0
+      }else{
+        q = a/R(i,i);   // Normalization.
+      }
      
       Q.col(i) = q;
       // remove components parallel to q(*,i)
@@ -202,16 +206,62 @@ namespace icl{
       }
     }
   }
+
+  template<class T>
+  void DynMatrix<T>::decompose_RQ(DynMatrix<T> &R, DynMatrix<T> &Q) const {
+   // first reverse the rows of A and transpose it
+    DynMatrix<T> A_(rows(),cols());
+    for (unsigned int i = 0; i<rows(); i++){
+      for (unsigned int j = 0; j<rows(); j++){
+        A_(i,j) = (*this)(j,rows()-i-1);
+      }
+    }
+    
+    // get the QR-decomposition
+    DynMatrix<T> R_(rows(),rows());
+    DynMatrix<T> Q_(rows(),rows());
+    A_.decompose_QR(Q_,R_);
+    
+    // get R by reflecting all entries on the second diagonal
+    for (unsigned int i = 0; i<rows(); i++){
+      for (unsigned int j = 0; j<rows(); j++){
+        R(i,j) = R_(rows()-1-j,rows()-1-i);
+      }
+    }
+      
+    // get Q by transposing Q_ and reversing all rows
+    for (unsigned int i = 0; i<rows(); i++){
+      for (unsigned int j = 0; j<rows(); j++){
+        Q(i,j) = Q_(rows()-1-j,i);
+      }
+    }
+  }
   
   template<class T> 
-  DynMatrix<T> DynMatrix<T>::pinv() const throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException){
-    DynMatrix<T> Q(1,1),R(1,1);
-    if(cols() > rows()){
-      transp().decompose_QR(Q,R);
-      return (R.inv() * Q.transp()).transp();
+  DynMatrix<T> DynMatrix<T>::pinv(bool useSVD, float zeroThreshold) const 
+    throw (InvalidMatrixDimensionException,SingularMatrixException, ICLException){
+    if(useSVD){
+      DynMatrix<T> U,s,V;
+      try{
+        svd_dyn(*this,U,s,V);
+      }catch(const ICLException &ex){
+        TODO_LOG("fix me!!");
+        throw ;
+      }
+      DynMatrix S(s.rows(),s.rows(),0.0f);
+      for(unsigned int i=0;i<s.rows();++i){
+        S(i,i) = (fabs(s[i]) > zeroThreshold) ? 1.0/s[i] : 0; 
+      }
+      return V * S * U.transp();
     }else{
-      decompose_QR(Q,R);
-      return R.inv() * Q.transp();
+      DynMatrix<T> Q(1,1),R(1,1);
+      if(cols() > rows()){
+        transp().decompose_QR(Q,R);
+        return (R.inv() * Q.transp()).transp();
+      }else{
+        decompose_QR(Q,R);
+        return R.inv() * Q.transp();
+      }
     }
   }
   
@@ -240,14 +290,20 @@ namespace icl{
   template double DynMatrix<double>::det()const throw (InvalidMatrixDimensionException);
 
   template void DynMatrix<float>::decompose_QR(DynMatrix<float> &Q, DynMatrix<float> &R) const 
-    throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException);
+    throw (InvalidMatrixDimensionException,SingularMatrixException);
   template void DynMatrix<double>::decompose_QR(DynMatrix<double> &Q, DynMatrix<double> &R) const 
-    throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException);
+    throw (InvalidMatrixDimensionException,SingularMatrixException);
+
+  template void DynMatrix<float>::decompose_RQ(DynMatrix<float> &R, DynMatrix<float> &Q) const
+    throw (InvalidMatrixDimensionException,SingularMatrixException);
+  template void DynMatrix<double>::decompose_RQ(DynMatrix<double> &R, DynMatrix<double> &Q) const 
+    throw (InvalidMatrixDimensionException,SingularMatrixException);
+
     
-  template DynMatrix<float> DynMatrix<float>::pinv() const 
-    throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException);
-  template DynMatrix<double> DynMatrix<double>::pinv() const 
-    throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException);
+  template DynMatrix<float> DynMatrix<float>::pinv(bool,float) const 
+    throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
+  template DynMatrix<double> DynMatrix<double>::pinv(bool,float) const 
+    throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
 
 
   template<class T>

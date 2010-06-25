@@ -44,21 +44,11 @@ namespace icl{
   /** implements the stabilized Gram-Schmidt orthonormalization. */
   template<class T, unsigned int WIDTH, unsigned int HEIGHT>
   inline void decompose_QR(FixedMatrix<T,WIDTH,HEIGHT> A, FixedMatrix<T,WIDTH,HEIGHT> &Q, FixedMatrix<T,WIDTH,WIDTH> &R){
-    FixedColVector<T,HEIGHT> a,q;
-    R = T(0.0);
-    for (unsigned int i=0;i<WIDTH;i++) {
-      a = A.col(i);
-      R(i,i) = a.length();
-      if(!R(i,i)) throw QRDecompException("Error in QR-decomposition");
-      q = a/R(i,i);   // Normalization.
-      Q.col(i) = q;
-      // remove components parallel to q(*,i)
-      for (unsigned int j=i+1;j<WIDTH;j++) {
-        a = A.col(j);
-        R(j,i) = inner_vector_product(q, a);
-        A.col(j) = a - q * R(j,i);
-      }
-    }
+    DynMatrix<T> D(WIDTH,HEIGHT,const_cast<T*>(A.begin()),false);
+    DynMatrix<T> dQ,dR;
+    D.decompose_QR(dQ,dR);
+    std::copy(dQ.begin(),dQ.end(),Q.begin());
+    std::copy(dR.begin(),dR.end(),R.begin());
   }
 
 
@@ -66,26 +56,11 @@ namespace icl{
   /** implements the stabilized Gram-Schmidt orthonormalization. */
   template<class T, unsigned int WIDTH, unsigned int HEIGHT>
   inline void decompose_RQ(FixedMatrix<T,WIDTH,HEIGHT> A, FixedMatrix<T,HEIGHT,HEIGHT> &R, FixedMatrix<T,WIDTH,HEIGHT> &Q){
-    // first reverse the rows of A and transpose it
-    FixedMatrix<T,HEIGHT,WIDTH> A_;
-    for (unsigned int i = 0; i<HEIGHT; i++)
-      for (unsigned int j = 0; j<WIDTH; j++)
-        A_(i,j) = A(j,HEIGHT-i-1);
-    
-    // get the QR-decomposition
-    FixedMatrix<T,HEIGHT,HEIGHT> R_;
-    FixedMatrix<T,HEIGHT,WIDTH> Q_;
-    decompose_QR(A_,Q_,R_);
-    
-    // get R by reflecting all entries on the second diagonal
-    for (unsigned int i = 0; i<HEIGHT; i++)
-      for (unsigned int j = 0; j<HEIGHT; j++)
-        R(i,j) = R_(HEIGHT-1-j,HEIGHT-1-i);
-    
-    // get Q by transposing Q_ and reversing all rows
-    for (unsigned int i = 0; i<WIDTH; i++) 
-      for (unsigned int j = 0; j<HEIGHT; j++)
-        Q(i,j) = Q_(HEIGHT-1-j,i);
+    DynMatrix<T> D(WIDTH,HEIGHT,const_cast<T*>(A.begin()),false);
+    DynMatrix<T> dR,dQ;
+    D.decompose_RQ(dR,dQ);
+    std::copy(dR.begin(),dR.end(),R.begin());
+    std::copy(dQ.begin(),dQ.end(),Q.begin());  
   }
   
 #ifdef HAVE_IPP
@@ -104,18 +79,12 @@ namespace icl{
   
   /// computes the pseudo-inverse of a matrix (using QR-decomposition based approach) \ingroup LINALG
   template<class T,unsigned  int WIDTH,unsigned  int HEIGHT>
-  inline FixedMatrix<T,HEIGHT,WIDTH> pinv(const FixedMatrix<T,WIDTH,HEIGHT> &M){
-    if(HEIGHT < WIDTH){
-      FixedMatrix<T,HEIGHT,WIDTH> Q;
-      FixedMatrix<T,HEIGHT,HEIGHT> R;
-      decompose_QR(M.transp(),Q,R);
-      return (R.inv() * Q.transp()).transp();
-    }else{
-      FixedMatrix<T,WIDTH,HEIGHT> Q;
-      FixedMatrix<T,WIDTH,WIDTH> R;
-      decompose_QR(M,Q,R);
-      return R.inv() * Q.transp();
-    }
+  inline FixedMatrix<T,HEIGHT,WIDTH> pinv(const FixedMatrix<T,WIDTH,HEIGHT> &M, bool useSVD=false, float zeroThreshold=0.00000000000000001){
+    DynMatrix<T> D(WIDTH,HEIGHT,const_cast<T*>(M.begin()),false);
+    DynMatrix<T> pinvD = D.pinv(useSVD,zeroThreshold);
+    FixedMatrix<T,HEIGHT,WIDTH> fM;
+    std::copy(pinvD.begin(),pinvD.end(),fM.begin());
+    return fM;
   }
 
   /// Vertical Matrix concatenation  \ingroup LINALG

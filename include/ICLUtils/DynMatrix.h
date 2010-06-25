@@ -66,12 +66,6 @@ namespace icl{
     SingularMatrixException(const std::string &msg):ICLException(msg){}
   };
 
-  /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-  struct QRDecompException : public ICLException{
-    QRDecompException(const std::string &msg):ICLException(msg){}
-  };
-  
-
   /// Highly flexible and optimized matrix class implementation  \ingroup LINALG
   /** In contrast to the FixedMatrix template class, the DynMatrix instances are dynamically sized at runtime
       The template class is instantiated for the common ICL types
@@ -784,22 +778,43 @@ namespace icl{
       return DynMatrixColumn(this,col);
     }
 
-    /// applies QR-decomposition (only for icl32f and icl64f)
-    void decompose_QR(DynMatrix &Q, DynMatrix &R) const throw (QRDecompException);
+    /// applies QR-decomposition using stabilized Gram-Schmidt orthonormalization (only for icl32f and icl64f)
+    void decompose_QR(DynMatrix &Q, DynMatrix &R) const;
+    
+    /// applies RQ-decomposition (by exploiting implemnetation of QR-decomposition) (only for icl32f, and icl64f)
+    void decompose_RQ(DynMatrix &R, DynMatrix &Q) const;
     
     /// invert the matrix (only for icl32f and icl64f)
     DynMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException);
     
-    /// calculates the Moore-Penrose pseudo-inverse (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
-    /** Internally, this functions uses a QR-decomposition based approach, which is much more stable than
-        the naiv approach pinv(X) * X*(X*X')^(-1)
+    /// calculates the Moore-Penrose pseudo-inverse (only implemented for icl32f and icl64f)
+    /** Internally, this functions can use either a QR-decomposition based approach, or it can use
+        SVD. 
+        QR-Decomposition is already much more stable than
+        the naiv approach pinv(X) = X*(X*X')^(-1)
         \code
         DynMatrix Q,R;
         decompose_QR(Q,R);
         return R.inv() * Q.transp();
         \endcode
+        The QR-decomposition based approach does not use the zeroThreshold variable.
+        
+        If useSVD is set to true, internally an SVD based approach is used:
+
+        <code>
+        DynMatrix S,v,D;
+        svd_dyn(*this,U,s,V);
+        
+        DynMatrix S(s.rows(),s.rows(),0.0f);
+        for(unsigned int i=0;i<s.rows();++i){
+          S(i,i) = (fabs(s[i]) > zeroThreshold) ? 1.0/s[i] : 0; 
+        }
+        return V * S * U.transp();
+        </code>
+        
     */
-    DynMatrix pinv() const throw (InvalidMatrixDimensionException,SingularMatrixException,QRDecompException);
+    DynMatrix pinv(bool useSVD=false, float zeroThreshold=0.00000000000000001) const 
+      throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
 
 
     /// matrix determinant (only for icl32f and icl64f)

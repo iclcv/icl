@@ -9,7 +9,9 @@ TEXT=\
 ** Forschungsgemeinschaft (DFG) in the context of the German       **\
 ** Excellence Initiative.                                          **'
 
-FILES="`find . -name *.h` `find . -name *.cpp`"
+FILES="`find . -name *.h`
+
+#`find . -name *.cpp`"
 
 
 for FILE in $FILES ; do 
