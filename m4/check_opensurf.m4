@@ -8,17 +8,19 @@ AC_ARG_WITH([OPENSURF],
         HAVE_OPENSURF=TRUE
 
         ICL_PUSH_FLAG_VARS
-        ICL_EXTEND_FLAG_VARS_TMP_FOR(OPENSURF,lib,include/opensurf)
+  	AC_CHECK_FILE([$OPENSURF_ROOT/lib/pkgconfig/opensurf.pc],[],[HAVE_OPENSURF=FALSE])
+	ICL_EXTEND_FLAG_VARS_TMP_FROM_PC_FOR(opensurf,OPENSURF)
 
-        AC_CHECK_FILE([$OPENSURF_ROOT/lib/pkgconfig/opensurf.pc],[],[HAVE_OPENSURF=FALSE])  
-
-        #AC_CHECK_HEADER([fasthessian.h],[],[HAVE_OPENSURF=FALSE])
-        #AC_CHECK_HEADER([integral.h],[],[HAVE_OPENSURF=FALSE])
-        #AC_CHECK_HEADER([ipoint.h],[],[HAVE_OPENSURF=FALSE])
-	#AC_CHECK_HEADER([kmeans.h],[],[HAVE_OPENSURF=FALSE])
-        #AC_CHECK_HEADER([surf.h],[],[HAVE_OPENSURF=FALSE])
-	#AC_CHECK_HEADER([surflib.h],[],[HAVE_OPENSURF=FALSE])
-	#AC_CHECK_HEADER([utils.h],[],[HAVE_OPENSURF=FALSE])
+        AC_CHECK_HEADER([opensurf/fasthessian.h],[],[HAVE_OPENSURF=FALSE])
+        AC_CHECK_HEADER([opensurf/integral.h],[],[HAVE_OPENSURF=FALSE])
+        AC_CHECK_HEADER([opensurf/surf.h],[],[HAVE_OPENSURF=FALSE])
+	AC_CHECK_HEADER([opensurf/surflib.h],[],[HAVE_OPENSURF=FALSE])
+	AC_CHECK_HEADER([opensurf/utils.h],[],[HAVE_OPENSURF=FALSE])
+        
+	# These two files are not self-contained, so we cannot check
+	# them here correctly. Maybe a later opensurf-release will fix this
+    	#AC_CHECK_HEADER([opensurf/ipoint.h],[],[HAVE_OPENSURF=FALSE]) 
+	#AC_CHECK_HEADER([opensurf/kmeans.h],[],[HAVE_OPENSURF=FALSE])
 
 	AC_CHECK_LIB([opensurf],[main],[],[HAVE_OPENSURF=FALSE])
 

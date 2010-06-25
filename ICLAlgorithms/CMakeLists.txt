@@ -17,7 +17,17 @@ set(LIB_SOURCES_SVS
 	"src/SVS.cpp" 
 )
 endif()
-set(LIB_SOURCES "${LIB_SOURCES};${LIB_SOURCES_IPP};${LIB_SOURCES_SVS}")
+
+if (HAVE_OPENCV_COND)
+if (HAVE_OPENSURF_COND)
+set (LIB_SOURCES_SURF
+	"src/OpenCVSurfDetector.cpp"
+	"src/OpenSurfDetector.cpp"
+	"src/GenericSurfDetector.cpp"
+)
+endif()
+endif()
+set(LIB_SOURCES "${LIB_SOURCES};${LIB_SOURCES_IPP};${LIB_SOURCES_SVS};${LIB_SOURCES_SURF}")
 
 if(BUILD_EXAMPLES)
 if (HAVE_IPP_COND)
@@ -52,6 +62,9 @@ endif()
 if(HAVE_OPENCV_COND)
 target_link_libraries(${PROJECT_NAME} ICLOpenCV)
 endif()
+if(HAVE_OPENSURF_COND)
+target_link_libraries(${PROJECT_NAME} opensurf)
+endif()
 target_link_libraries(${PROJECT_NAME} ICLGeom ICLQuick  ICLBlob ICLIO ICLFilter ICLCC ICLCore ICLUtils)
 
 if(BUILD_STATIC_LIBS)
@@ -60,6 +73,9 @@ set_target_properties("${PROJECT_NAME}_static" PROPERTIES OUTPUT_NAME ${PROJECT_
 target_link_libraries("${PROJECT_NAME}_static" ICLGeom ICLQuick ICLBlob ICLIO ICLFilter ICLCC ICLCore ICLUtils)
 if(HAVE_OPENCV_COND)
 target_link_libraries(${PROJECT_NAME} ICLOpenCV)
+endif()
+if(HAVE_OPENSURF_COND)
+target_link_libraries(${PROJECT_NAME} opensurf)
 endif()
 endif()
 

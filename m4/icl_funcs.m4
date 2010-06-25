@@ -116,6 +116,7 @@ AC_DEFUN([ICL_DEF_VARS_FROM_PC],[
 export PKG_CONFIG_PATH="$$1_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
 ICL_$1_LIBS=`pkg-config --libs-only-L $2`
 ICL_$1_LDFLAGS=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath -Wl,|g"`
+ICL_$1_LDFLAGS_PC=`echo $ICL_$1_LIBS | sed "s|-L|-Wl,-rpath -Wl,|g"`
 ICL_$1_LIBS="$ICL_$1_LIBS `pkg-config --libs-only-l $2`"
 ICL_$1_CXXFLAGS=`pkg-config --cflags-only-I $2`
 ICL_$1_CXXCPP="`pkg-config --cflags-only-other $2` -DHAVE_$1"
@@ -231,9 +232,9 @@ ICL_PC_ENTRY_FOR([$1],[Version: $PACKAGE_VERSION])
 ICL_PC_ENTRY_FOR([$1],[])
 ICL_PC_ENTRY_FOR([$1],[Requires:${$1_REQUIRES_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
-ICL_PC_ENTRY_FOR([$1],[Libs: -L${libdir} -l$1 -Wl,-rpath -Wl,${libdir} ${$1_LIBS_PC} ${$1_LDFLAGS_PC}])
+ICL_PC_ENTRY_FOR([$1],[Libs: -L\${libdir} -l$1 -Wl,-rpath -Wl,\${libdir} ${$1_LIBS_PC} ${$1_LDFLAGS_PC}])
 ICL_PC_ENTRY_FOR([$1],[])
-ICL_PC_ENTRY_FOR([$1],[Cflags: -I${includedir}/ICL ${$1_CXXFLAGS_PC} ${$1_CXXCPP_PC}])
+ICL_PC_ENTRY_FOR([$1],[Cflags: -I\${includedir}/ICL ${$1_CXXFLAGS_PC} ${$1_CXXCPP_PC}])
 cat $1.pc | sed "s|\(-Wl,-rpath -Wl,.*\)|'\1'|g" > $1.pc.tmp && mv $1.pc.tmp $1.pc
 fi
 ])
