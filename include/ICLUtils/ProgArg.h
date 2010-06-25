@@ -453,6 +453,14 @@ namespace icl{
 
   /// shows all given program arguments \ingroup PA
   void pashow();
+
+  /// Sets a license text, that is used when applications are run with --version or -v
+  /** The license text must be set before painit is called. The license text can 
+      have several lines. Each line should begin with a tab-character */
+  void pasetlic(const std::string &newLicenseText);
+  
+  /// returns the current license text
+  std::string pagetlic();
   
 }
 
