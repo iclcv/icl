@@ -19,15 +19,17 @@ set(LIB_SOURCES_SVS
 endif()
 
 if (HAVE_OPENCV_COND)
+set (LIB_SOURCES_CVSURF
+	"src/OpenCVSurfDetector.cpp"
+)
 if (HAVE_OPENSURF_COND)
 set (LIB_SOURCES_SURF
-	"src/OpenCVSurfDetector.cpp"
 	"src/OpenSurfDetector.cpp"
 	"src/GenericSurfDetector.cpp"
 )
 endif()
 endif()
-set(LIB_SOURCES "${LIB_SOURCES};${LIB_SOURCES_IPP};${LIB_SOURCES_SVS};${LIB_SOURCES_SURF}")
+set(LIB_SOURCES "${LIB_SOURCES};${LIB_SOURCES_IPP};${LIB_SOURCES_SVS};${LIB_SOURCES_CVSURF};${LIB_SOURCES_SURF}")
 
 if(BUILD_EXAMPLES)
 if (HAVE_IPP_COND)
