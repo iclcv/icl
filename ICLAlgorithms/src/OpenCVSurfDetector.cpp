@@ -1,30 +1,36 @@
 /********************************************************************
- **                Image Component Library (ICL)                    **
- **                                                                 **
- ** Copyright (C) 2006-2010 Neuroinformatics, CITEC                 **
- **                         University of Bielefeld                 **
- **                Contact: nivision@techfak.uni-bielefeld.de       **
- **                Website: www.iclcv.org                           **
- **                                                                 **
- ** File   : ICLFilter/src/OpenCVSurfDetector.cpp                   **
- ** Module : ICLFilter                                              **
- ** Authors: Christian Groszewski                                   **
- **                                                                 **
- **                                                                 **
- ** Commercial License                                              **
- ** ICL can be used commercially, please refer to our website       **
- ** www.iclcv.org for more details.                                 **
- **                                                                 **
- ** GNU General Public License Usage                                **
- ** Alternatively, this file may be used under the terms of the     **
- ** GNU General Public License version 3.0 as published by the      **
- ** Free Software Foundation and appearing in the file LICENSE.GPL  **
- ** included in the packaging of this file.  Please review the      **
- ** following information to ensure the GNU General Public License  **
- ** version 3.0 requirements will be met:                           **
- ** http://www.gnu.org/copyleft/gpl.html.                           **
- **                                                                 **
- *********************************************************************/
+**                Image Component Library (ICL)                    **
+**                                                                 **
+** Copyright (C) 2006-2010 CITEC, University of Bielefeld          **
+**                         Neuroinformatics Group                  **
+** Website: www.iclcv.org and                                      **
+**          http://opensource.cit-ec.de/projects/icl               **
+**                                                                 **
+** File   : ICLAlgorithms/src/OpenCVSurfDetector.cpp               **
+** Module : ICLAlgorithms                                          **
+** Authors: Christian Groszewski                                   **
+**                                                                 **
+**                                                                 **
+** Commercial License                                              **
+** ICL can be used commercially, please refer to our website       **
+** www.iclcv.org for more details.                                 **
+**                                                                 **
+** GNU General Public License Usage                                **
+** Alternatively, this file may be used under the terms of the     **
+** GNU General Public License version 3.0 as published by the      **
+** Free Software Foundation and appearing in the file LICENSE.GPL  **
+** included in the packaging of this file.  Please review the      **
+** following information to ensure the GNU General Public License  **
+** version 3.0 requirements will be met:                           **
+** http://www.gnu.org/copyleft/gpl.html.                           **
+**                                                                 **
+** The development of this software was supported by the           **
+** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
+** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
+** Forschungsgemeinschaft (DFG) in the context of the German       **
+** Excellence Initiative.                                          **
+**                                                                 **
+*********************************************************************/
 
 #include <ICLAlgorithms/OpenCVSurfDetector.h>
 using namespace icl;
@@ -310,7 +316,7 @@ const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &OpenCVSurfDetector::mat
 			if( nearest_neighbor >= 0 ){
 				om = (CvSURFPoint*)cvGetSeqElem((m_data->m_objectKeypoints),i);
 				im = (CvSURFPoint*)cvGetSeqElem((m_data->m_imageKeypoints), nearest_neighbor);
-				std::pair<CvSURFPoint,CvSURFPoint> p(*im,*om);
+				std::pair<CvSURFPoint,CvSURFPoint> p(*om,*im);
 				(m_data->m_matches).push_back(p);
 			}
 		}
@@ -342,8 +348,8 @@ void OpenCVSurfDetector::visualizeFeatures(ICLDrawWidget &w, const std::vector<C
 void OpenCVSurfDetector::visualizeMatches(ICLDrawWidget &w_object,ICLDrawWidget &w_result,
 		std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &matches){
 	for(unsigned int i=0;i<matches.size();++i){
-		visualizeFeature(w_object, matches[i].first);
-		visualizeFeature(w_result,matches[i].second);
+		visualizeFeature(w_object, matches[i].second);
+		visualizeFeature(w_result,matches[i].first);
 	}
 }
 #endif

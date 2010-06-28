@@ -1,36 +1,36 @@
 /********************************************************************
- **                Image Component Library (ICL)                    **
- **                                                                 **
- ** Copyright (C) 2006-2010 CITEC, University of Bielefeld          **
- **                         Neuroinformatics Group                  **
- ** Website: www.iclcv.org and                                      **
- **          http://opensource.cit-ec.de/projects/icl               **
- **                                                                 **
- ** File   : include/ICLFilter/OpenSurfDetector.h                   **
- ** Module : ICLFilter                                              **
- ** Authors: Christian Groszewski                                   **
- **                                                                 **
- **                                                                 **
- ** Commercial License                                              **
- ** ICL can be used commercially, please refer to our website       **
- ** www.iclcv.org for more details.                                 **
- **                                                                 **
- ** GNU General Public License Usage                                **
- ** Alternatively, this file may be used under the terms of the     **
- ** GNU General Public License version 3.0 as published by the      **
- ** Free Software Foundation and appearing in the file LICENSE.GPL  **
- ** included in the packaging of this file.  Please review the      **
- ** following information to ensure the GNU General Public License  **
- ** version 3.0 requirements will be met:                           **
- ** http://www.gnu.org/copyleft/gpl.html.                           **
+**                Image Component Library (ICL)                    **
+**                                                                 **
+** Copyright (C) 2006-2010 CITEC, University of Bielefeld          **
+**                         Neuroinformatics Group                  **
+** Website: www.iclcv.org and                                      **
+**          http://opensource.cit-ec.de/projects/icl               **
+**                                                                 **
+** File   : include/ICLAlgorithms/OpenSurfDetector.h               **
+** Module : ICLAlgorithms                                          **
+** Authors: Christian Groszewski                                   **
+**                                                                 **
+**                                                                 **
+** Commercial License                                              **
+** ICL can be used commercially, please refer to our website       **
+** www.iclcv.org for more details.                                 **
+**                                                                 **
+** GNU General Public License Usage                                **
+** Alternatively, this file may be used under the terms of the     **
+** GNU General Public License version 3.0 as published by the      **
+** Free Software Foundation and appearing in the file LICENSE.GPL  **
+** included in the packaging of this file.  Please review the      **
+** following information to ensure the GNU General Public License  **
+** version 3.0 requirements will be met:                           **
+** http://www.gnu.org/copyleft/gpl.html.                           **
 **                                                                 **
 ** The development of this software was supported by the           **
 ** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
 ** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
 ** Forschungsgemeinschaft (DFG) in the context of the German       **
 ** Excellence Initiative.                                          **
- **                                                                 **
- *********************************************************************/
+**                                                                 **
+*********************************************************************/
 
 #ifndef ICL_OPENSURFDETECTOR_H_
 #define ICL_OPENSURFDETECTOR_H_
@@ -60,7 +60,8 @@ private:
 	///internal match function
 	/**
 	 Finds matches between surf of object image and passed
-	 surf of given image.*/
+	 surf of given image.
+	 @param vector of surfpoints*/
 	void match(std::vector<Ipoint> *ipts);
 
 	///computes surf
@@ -164,7 +165,7 @@ public:
 	 Extracts surf from given image. If the image is null
 	 an empty vector is returned.
 	 @param src source image
-	 @return computed features*/
+	 @return vector of computed features*/
 	const std::vector<Ipoint> &extractFeatures(const ImgBase *src);
 
 	///computes matches between reference image and passed image.
@@ -172,16 +173,17 @@ public:
 	 If the passed image or the reference image is null an
 	 exception is thrown. First point of the pair is the point for the image,
 	 second for the reference image.
-	 @param images
-	 @return matches as std::pair in vector*/
+	 @param image
+	 @return matches vector of std::pair in vector*/
 	const std::vector<std::pair<Ipoint, Ipoint> > &match(const ImgBase *image) throw (ICLException);
 
 	///sets new newObjImage as new reference image and computes matches between passed reference image and passed image.
 	/**
 	 If one of the passed images null an exception is thrown.
 	 First point of the pair is the point for the image, second for the reference image.
-	 @param images
-	 @return matches as std::pair in vector*/
+	 @param image
+	 @param newObjImage the new reference Image
+	 @return matches vector of std::pair in vector*/
 	const std::vector<std::pair<Ipoint, Ipoint> > &match(const ImgBase *currentImage,
 			const ImgBase *newObjImage) throw (ICLException){
 		setObjectImg(newObjImage);
@@ -205,7 +207,7 @@ public:
 	/**
 	 @param w_object drawwidget for the reference image
 	 @param w_result drawwidget for image
-	 @param matches vector of matchesto be drawn*/
+	 @param matches vector of matches to be drawn*/
 	static void visualizeMatches(ICLDrawWidget &w_object,ICLDrawWidget &w_result, std::vector<std::pair<Ipoint, Ipoint> > &matches);
 #endif
 

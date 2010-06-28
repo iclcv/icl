@@ -35,14 +35,18 @@ include_HEADERS+= \
 endif
 
 if HAVE_OPENCV_COND
+libICLAlgorithms_la_SOURCES+= \
+../src/OpenCVSurfDetector.cpp
+
+include_HEADERS+= \
+../../include/ICLAlgorithms/OpenCVSurfDetector.h
+
 if HAVE_OPENSURF_COND
 libICLAlgorithms_la_SOURCES+= \
-../src/OpenCVSurfDetector.cpp \
 ../src/OpenSurfDetector.cpp \
 ../src/GenericSurfDetector.cpp
 
 include_HEADERS+= \
-../../include/ICLAlgorithms/OpenCVSurfDetector.h \
 ../../include/ICLAlgorithms/OpenSurfDetector.h \
 ../../include/ICLAlgorithms/GenericSurfDetector.h
 endif
