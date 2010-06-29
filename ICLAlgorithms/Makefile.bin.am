@@ -76,3 +76,4 @@ icl_generic_surf_demo_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
 icl_generic_surf_demo_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
 
 endif
+endif
