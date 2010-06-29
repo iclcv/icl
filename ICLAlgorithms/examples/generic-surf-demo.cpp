@@ -95,6 +95,7 @@ void set_os(){
 	Mutex::Locker lock(mutex);
 	gui_CheckBox(os_handle);
 	const ImgBase *im = surf->getObjectImg();
+	if(os_handle.isChecked()){
 		surf = new GenericSurfDetector(GenericSurfDetector::OPENSURF);
 	}else{
 		surf = new GenericSurfDetector(GenericSurfDetector::OPENCV);
