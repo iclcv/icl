@@ -316,7 +316,7 @@ const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &OpenCVSurfDetector::mat
 			if( nearest_neighbor >= 0 ){
 				om = (CvSURFPoint*)cvGetSeqElem((m_data->m_objectKeypoints),i);
 				im = (CvSURFPoint*)cvGetSeqElem((m_data->m_imageKeypoints), nearest_neighbor);
-				std::pair<CvSURFPoint,CvSURFPoint> p(*om,*im);
+				std::pair<CvSURFPoint,CvSURFPoint> p(*im,*om);
 				(m_data->m_matches).push_back(p);
 			}
 		}
