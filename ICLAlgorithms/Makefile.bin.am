@@ -62,3 +62,17 @@ icl_svs_test_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
 icl_svs_test_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
 
 endif
+
+###############################################################################
+## Applications that depend on OpenCV and OpenSurf ############################
+###############################################################################
+if HAVE_OPENCV_COND
+if HAVE_OPENSURF_COND
+bin_PROGRAMS+= \
+icl-generic-surf-demo
+
+icl_generic_surf_demo_SOURCES=../examples/generic-surf-demo.cpp
+icl_generic_surf_demo_LDFLAGS=${ICLAlgorithms_EXAMPLE_LDFLAGS}
+icl_generic_surf_demo_CXXFLAGS=${ICLAlgorithms_EXAMPLE_CXXFLAGS}
+
+endif

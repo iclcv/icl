@@ -42,10 +42,18 @@ target_link_libraries(icl-interactive-template-matching-demo ${PROJECT_NAME})
 
 add_executable(icl-interactive-hough-line-demo examples/interactive-hough-line-demo.cpp)
 target_link_libraries(icl-interactive-hough-line-demo ${PROJECT_NAME})
+
 if (HAVE_SVS_COND)
 add_executable(icl-svs-online-demo examples/svs-online-demo.cpp)
 target_link_libraries(icl-svs-online-demo ${PROJECT_NAME})
 endif()
+endif()
+endif()
+
+if(HAVE_OPENCV_COND)
+if(HAVE_OPENSURF_COND)
+add_executable(icl-generic-surf-demo examples/generic-surf-demo.cpp)
+target_link_libraries(icl-generic-surf-demo ${PROJECT_NAME})
 endif()
 endif()
 
@@ -107,7 +115,12 @@ install (TARGETS icl-svs-online-demo
 endif()
 endif()
 endif()
-
+if(HAVE_OPENCV_COND)
+if(HAVE_OPENSURF_COND)
+install (TARGETS icl-generic-surf-demo
+	 RUNTIME DESTINATION bin)
+endif()
+endif()
 if(HAVE_SVS_COND)
 install (TARGETS icl-svs-test  
 	 RUNTIME DESTINATION bin
