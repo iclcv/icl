@@ -251,6 +251,7 @@ const std::vector<CvSURFPoint> &OpenCVSurfDetector::extractFeatures(const ImgBas
 	return m_data->m_ipts;
 }
 
+//this is from opencv example (gpl)
 int OpenCVSurfDetector::nearestNeighbor(const float* vec, int laplacian,
 		const CvSeq* model_keypoints, const CvSeq* model_descriptors){
 	int length = (int)(model_descriptors->elem_size/sizeof(float));
@@ -310,9 +311,6 @@ const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &OpenCVSurfDetector::mat
 			CV_NEXT_SEQ_ELEM((m_data->m_objreader).seq->elem_size, (m_data->m_objreader));
 			CV_NEXT_SEQ_ELEM((m_data->m_imgreader).seq->elem_size, (m_data->m_imgreader));
 			nearest_neighbor = nearestNeighbor( descriptor, kp->laplacian, m_data->m_imageKeypoints, m_data->m_imageDescriptors );
-			//TODO copy implementation of naiveNearestNeighbor
-
-			//TODO end
 			if( nearest_neighbor >= 0 ){
 				om = (CvSURFPoint*)cvGetSeqElem((m_data->m_objectKeypoints),i);
 				im = (CvSURFPoint*)cvGetSeqElem((m_data->m_imageKeypoints), nearest_neighbor);
