@@ -101,11 +101,11 @@ namespace icl {
 
 /// Extended show command. Shows name and value of streamed variables on std::cout (with trailing file,function and line info)
 #define SHOWX(X) \
-  { std::cout << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << (#X) << ":" << X << std::endl; }
+  { std::cout << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << (#X) << ":\n" << X << std::endl; }
 
 /// Simple show command. Shows name and value of streamed variables on std::cout (_without_ trailing file,function and line info)
 #define SHOW(X) \
-  { std::cout << (#X) << ":" << X << std::endl; }
+  { std::cout << (#X) << ":\n" << X << std::endl; }
 
 
 /** critical log messages, that may cause application failure*/
