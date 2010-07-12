@@ -115,7 +115,28 @@ namespace icl{
     return M;
   }
 
-  
+  /// Extracts the matrix's eigenvalues and eigenvectors
+    /** This function only works on squared symmetric matrices. 
+        Resulting eigenvalues are ordered in descending order. The destination matrices' sizes are adapted automatically.
+
+        The function is only available for icl32f and icl64f and it is IPP-accelerated in case of having Intel-IPP-Support.
+        The Fallback implementation was basically taken from the Visualization Toolkit VTK (Version 5.6.0)
+
+        Note: There is no internal check if the matrix is really symmetric. If it is not symmetric, the behaviour of 
+              this function is not predictable
+        
+        @param eigenvectors contains the resulting eigenvectors in it's columns
+        @param eigenvalues becomes a N-dimensional column vector which ith element is the eigenvalue that corresponds
+                           to the ith column of eigenvectors 
+    */
+  template<class T, unsigned int WIDTH_AND_HEIGHT>
+  inline void eigen(const FixedMatrix<T,WIDTH_AND_HEIGHT,WIDTH_AND_HEIGHT> &A, 
+                    FixedMatrix<T,WIDTH_AND_HEIGHT,WIDTH_AND_HEIGHT> &eigenvectors, 
+                    FixedColVector<T,WIDTH_AND_HEIGHT> &eigenvalues) throw (ICLException){
+    DynMatrix<T> evecs(WIDTH_AND_HEIGHT,WIDTH_AND_HEIGHT,eigenvectors.begin(),false);
+    DynMatrix<T> evals(WIDTH_AND_HEIGHT,1,eigenvalues.begin(),false);
+    DynMatrix<T>(WIDTH_AND_HEIGHT,WIDTH_AND_HEIGHT,const_cast<T*>(A.begin()),false).eigen(evecs,evals);
+  }
 }
 
 

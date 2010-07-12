@@ -793,6 +793,32 @@ namespace icl{
     /// invert the matrix (only for icl32f and icl64f)
     DynMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException);
     
+    /// Extracts the matrix's eigenvalues and eigenvectors
+    /** This function only works on squared symmetric matrices. 
+        Resulting eigenvalues are ordered in descending order. The destination matrices' sizes are adapted automatically.
+
+        The function is only available for icl32f and icl64f and it is IPP-accelerated in case of having Intel-IPP-Support.
+        The Fallback implementation was basically taken from the Visualization Toolkit VTK (Version 5.6.0)
+
+        Note: There is no internal check if the matrix is really symmetric. If it is not symmetric, the behaviour of 
+              this function is not predictable
+        
+        @param eigenvectors contains the resulting eigenvectors in it's columns
+        @param eigenvalues becomes a N-dimensional column vector which ith element is the eigenvalue that corresponds
+                           to the ith column of eigenvectors 
+    */
+    void eigen(DynMatrix &eigenvectors, DynMatrix &eigenvalues) const throw(InvalidMatrixDimensionException, ICLException);
+    
+    /// Computes Singular Value Decomposition of a matrix - decomposes A into USV'
+    /** Internaly, this function will always use double values. Other types are converted internally. 
+        This funciton is only instantiated for icl32f and icl64f. 
+        @param U is filled column-wise with the eigenvectors of AA'
+        @param S is filled with the singular values of A (s is a ColumnVector and not diagonal matrix)
+        @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
+        @see icl::svd_dyn 
+    */
+    void svd(DynMatrix &U, DynMatrix &s,  DynMatrix &V) const throw (ICLException);
+
     /// calculates the Moore-Penrose pseudo-inverse (only implemented for icl32f and icl64f)
     /** Internally, this functions can use either a QR-decomposition based approach, or it can use
         SVD. 

@@ -480,7 +480,11 @@ namespace icl{
   void svd_cpp_64f(const DynMatrix<icl64f> &M, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &Vt) throw (ICLException);
   
   /// SVD function - decomposes A into USV'
-  /** Internaly, this function will always use double values. Other types are converted internally.*/
+  /** Internaly, this function will always use double values. Other types are converted internally.
+      @param U is filled column-wise with the eigenvectors of AA'
+      @param S is filled with the singular values of A (s is ColumnVector and not diagonal matrix)
+      @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
+  */
   template<class T>
   inline void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &s, DynMatrix<T> &V) throw (ICLException){
     U.setBounds(A.cols(), A.rows());
