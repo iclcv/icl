@@ -140,13 +140,13 @@ if(HAVE_IPP_COND)
 	 RUNTIME DESTINATION bin)
 
 if(HAVE_Qt_COND)
-install (TARGETS icl-interactive-canny-demo
+install (TARGETS icl-interactive-canny-demo icl-interactive-canny-demo
 	RUNTIME DESTINATION bin)
 endif()
 endif()
 
 if(HAVE_Qt_COND)
-	install (TARGETS  icl-interactive-canny-demo
+	install (TARGETS
 		icl-local-threshold-op-test icl-gabor-op-online-example icl-convolution-op-test 
 		icl-warp-op-test icl-interactive-affine-op-example #icl-filter-array 
 		icl-fft-demo
