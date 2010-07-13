@@ -1,12 +1,12 @@
-prefix=@prefix@
+prefix=@lprefix@
 exec_prefix=${prefix}
 bindir=${prefix}/bin
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
-package=@ICL_SUB_PACKAGE_PLACEHOLDER@
+package=@ICL_SUB_PACKAGE@
 
-Name: @ICL_SUB_PACKAGE_PLACEHOLDER@
+Name: @ICL_SUB_PACKAGE@
 Description: @ICL_PACKAGE_DESCRIPTION@
 Version: @VERSION@
 

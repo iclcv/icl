@@ -1,330 +1,134 @@
 project(ICLIO)
 
+set(CONDITIONLIST "")
 #sources for lib
-set(LIB_SOURCES 
-	"src/DemoImageFlowers.cpp"
-	"src/DemoImageMacaw.cpp"
-	"src/DemoImageWindows.cpp"
-	"src/DemoImageLena.cpp"
-	"src/DemoImageCameraMan.cpp"
-	"src/DemoImageMandril.cpp"
-	"src/File.cpp"
-	"src/FileGrabber.cpp"
-	"src/CreateGrabber.cpp"
-	"src/FileGrabberPluginCSV.cpp"
-	"src/FileGrabberPluginPNM.cpp"
-	"src/FileList.cpp"
-	"src/FilenameGenerator.cpp"
-	"src/FileWriter.cpp"
-	"src/FileWriterPluginCSV.cpp"
-	"src/FileWriterPluginPNM.cpp"
-	"src/GenericGrabber.cpp"
-	"src/Grabber.cpp"
-	"src/IOFunctions.cpp"
-	"src/IOUtils.cpp"
-	"src/TestImages.cpp"
-	"src/DemoGrabber.cpp"
-	"src/DistFromProgArgUtil.cpp"
-)
+set(LIB_SOURCES "")
+add_libsource (${PROJECT_NAME} "src/DemoImageFlowers.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DemoImageMacaw.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DemoImageWindows.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DemoImageLena.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DemoImageCameraMan.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DemoImageMandril.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/File.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/CreateGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileGrabberPluginCSV.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileGrabberPluginPNM.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileList.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FilenameGenerator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileWriter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileWriterPluginCSV.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileWriterPluginPNM.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/GenericGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/Grabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/IOFunctions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/IOUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/TestImages.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DemoGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DistFromProgArgUtil.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST "HAVE_LIBMESASR_COND")
+add_libsource (${PROJECT_NAME} "src/SwissRangerGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST "HAVE_LIBJPEG_COND")
+add_libsource (${PROJECT_NAME} "src/JPEGHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileGrabberPluginJPEG.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileWriterPluginJPEG.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/JPEGDecoder.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST "HAVE_IMAGEMAGICK_COND")
+add_libsource (${PROJECT_NAME} "src/FileWriterPluginImageMagick.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileGrabberPluginImageMagick.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST "SYSTEM_LINUX_COND" "HAVE_VIDEODEV_COND")
+add_libsource (${PROJECT_NAME} "src/PWCGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST "HAVE_LIBDC_COND")
+add_libsource (${PROJECT_NAME} "src/DC.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DCDevice.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DCDeviceFeatures.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DCFrameQueue.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DCGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DCGrabberThread.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST "HAVE_UNICAP_COND" "SYSTEM_LINUX_COND")
+add_libsource (${PROJECT_NAME} "src/UnicapConvertEngine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DefaultConvertEngine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DefaultGrabEngine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/UnicapDevice.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/UnicapFormat.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/UnicapGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/UnicapProperty.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST "HAVE_XINE_COND")
+add_libsource (${PROJECT_NAME} "src/VideoGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST "HAVE_XCF_COND")
+add_libsource (${PROJECT_NAME} "src/XCFGrabberBase.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/XCFMemoryGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/XCFPublisher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/XCFPublisherGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/XCFServerGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/XCFUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/XCFMemoryListener.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST "HAVE_OPENCV_COND")
+add_libsource (${PROJECT_NAME} "src/OpenCVCamGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/OpenCVVideoWriter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/OpenCVVideoGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-if (HAVE_LIBMESASR_COND)
-set(LIB_SOURCES_MESASR
-	"src/SwissRangerGrabber.cpp"
-)
-endif()
+set(CONDITIONLIST "BUILD_EXAMPLES")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME})
+add_example (${PROJECT_NAME} "jpg2cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "convert" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+add_example (${PROJECT_NAME} "write-file-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "testimages-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "create" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-if (HAVE_LIBJPEG_COND)
-set(LIB_SOURCES_JPEG
-	"src/JPEGHandle.cpp"
-	"src/FileGrabberPluginJPEG.cpp"
-	"src/FileWriterPluginJPEG.cpp"
-	"src/JPEGDecoder.cpp"
-)
-endif()
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_LIBDC_COND")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME})
+add_example (${PROJECT_NAME} "dcclearisochannels" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "dcdeviceinfo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "camera-param-io" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "reset-dc-bus" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-if (HAVE_IMAGEMAGICK_COND)
-set(LIB_SOURCES_MAGICK
-	"src/FileWriterPluginImageMagick.cpp"
-	"src/FileGrabberPluginImageMagick.cpp"
-)
-endif()
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_LIBDC_COND HAVE_Qt_COND")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+add_example (${PROJECT_NAME} "multi-cam-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-if (SYSTEM_LINUX_COND)
-if (HAVE_VIDEODEV_COND)
-set(LIB_SOURCES_VIDEODEV
-	"src/PWCGrabber.cpp"
-)
-endif()
-endif()
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_XCF_COND")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME})
+add_example (${PROJECT_NAME} "xcf-grabber-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "memory-listener" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-if (HAVE_LIBDC_COND)
-set(LIB_SOURCES_DC
-	"src/DC.cpp"
-	"src/DCDevice.cpp"
-	"src/DCDeviceFeatures.cpp"
-	"src/DCFrameQueue.cpp"
-	"src/DCGrabber.cpp"
-	"src/DCGrabberThread.cpp"
-)
-endif()
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_XCF_COND HAVE_Qt_COND")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLUtils ICLFilter)
+add_example (${PROJECT_NAME} "xcf-publisher" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-if (HAVE_UNICAP_COND)
-if (SYSTEM_LINUX_COND)
-set(LIB_SOURCES_UNICAP
-	"src/UnicapConvertEngine.cpp"
-	"src/DefaultConvertEngine.cpp"
-	"src/DefaultGrabEngine.cpp"
-	"src/UnicapDevice.cpp"
-	"src/UnicapFormat.cpp"
-	"src/UnicapGrabber.cpp"
-	"src/UnicapProperty.cpp"
-)
-endif()
-endif()
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_UNICAP_COND")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME})
+add_example (${PROJECT_NAME} "unicap-grab-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-if (HAVE_XINE_COND)
-set(LIB_SOURCES_XINE
-	"src/VideoGrabber.cpp"
-)
-endif()
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_Qt_COND")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+add_example (${PROJECT_NAME} "generic-grab-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-if (HAVE_XCF_COND)
-set(LIB_SOURCES_XCF
-	"src/XCFGrabberBase.cpp"
-	"src/XCFMemoryGrabber.cpp"
-	"src/XCFPublisher.cpp"
-	"src/XCFPublisherGrabber.cpp"
-	"src/XCFServerGrabber.cpp"
-	"src/XCFUtils.cpp"
-	"src/XCFMemoryListener.cpp"
-)
-endif()
-if (HAVE_OPENCV_COND)
-set(LIB_SOURCES_OPENCV
-	"src/OpenCVCamGrabber.cpp"
-	"src/OpenCVVideoWriter.cpp"
-	"src/OpenCVVideoGrabber.cpp"
-)
-endif()
-set(LIB_SOURCES "${LIB_SOURCES};${LIB_SOURCES_MESASR};${LIB_SOURCES_JPEG};${LIB_SOURCES_MAGICK};${LIB_SOURCES_VIDEODEV};${LIB_SOURCES_DC};${LIB_SOURCES_UNICAP};${LIB_SOURCES_XINE};${LIB_SOURCES_XCF};${LIB_SOURCES_OPENCV}")
-if(BUILD_EXAMPLES)
-add_executable(icl-write-file-example examples/write-file-example.cpp)
-target_link_libraries(icl-write-file-example ${PROJECT_NAME} ICLQuick)
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_Qt_COND HAVE_OPENCV_COND")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLUtils)
+add_example (${PROJECT_NAME} "opencv-camgrabber-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "opencv-videowriter-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLIO)
+add_example (${PROJECT_NAME} "opencv-videograbber-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-add_executable(icl-testimages-example examples/testimages-example.cpp)
-target_link_libraries(icl-testimages-example ${PROJECT_NAME} ICLQuick)
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_XINE_COND")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+add_example (${PROJECT_NAME} "video-player" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-add_executable(icl-jpg2cpp examples/jpg2cpp.cpp)
-target_link_libraries(icl-jpg2cpp ${PROJECT_NAME})
-
-add_executable(icl-convert examples/convert.cpp)
-target_link_libraries(icl-convert ${PROJECT_NAME})
-
-add_executable(icl-create examples/create.cpp)
-target_link_libraries(icl-create ${PROJECT_NAME} ICLQuick)
-
-if (HAVE_LIBDC_COND)
-add_executable(icl-dcclearisochannels examples/dcclearisochannels.cpp)
-target_link_libraries(icl-dcclearisochannels ${PROJECT_NAME})
-
-add_executable(icl-dcdeviceinfo examples/dcdeviceinfo.cpp)
-target_link_libraries(icl-dcdeviceinfo ${PROJECT_NAME})
-
-add_executable(icl-camera-param-io examples/camera-param-io.cpp)
-target_link_libraries(icl-camera-param-io ${PROJECT_NAME})
-
-add_executable(icl-reset-dc-bus examples/reset-dc-bus.cpp)
-target_link_libraries(icl-reset-dc-bus ${PROJECT_NAME})
-
-if (HAVE_Qt_COND)
-add_executable(icl-multi-cam-example examples/multi-cam-example.cpp)
-target_link_libraries(icl-multi-cam-example ${PROJECT_NAME} ICLQuick)
-endif()
-endif()
-
-if (HAVE_XCF_COND)
-add_executable(icl-xcf-grabber-benchmark examples/xcf-grabber-benchmark.cpp)
-target_link_libraries(icl-xcf-grabber-benchmark ${PROJECT_NAME})
-
-add_executable(icl-memory-listener examples/memory-listener.cpp)
-target_link_libraries(icl-memory-listener ${PROJECT_NAME})
-
-if (HAVE_Qt_COND)
-add_executable(icl-xcf-publisher examples/xcf-publisher.cpp)
-target_link_libraries(icl-xcf-publisher ${PROJECT_NAME} ICLQuick ICLUtils ICLFilter)
-endif()
-endif()
-
-if (HAVE_UNICAP_COND)
-add_executable(icl-unicap-grab-example examples/unicap-grab-example.cpp)
-target_link_libraries(icl-unicap-grab-example ${PROJECT_NAME})
-endif()
-
-if (HAVE_Qt_COND)
-add_executable(icl-generic-grab-example examples/generic-grab-example.cpp)
-target_link_libraries(icl-generic-grab-example ${PROJECT_NAME} ICLQuick)
-if(HAVE_OPENCV_COND)
-add_executable(icl-opencv-camgrabber-example examples/opencv-camgrabber-example.cpp)
-target_link_libraries(icl-opencv-camgrabber-example ${PROJECT_NAME} ICLQuick ICLUtils)
-
-add_executable(icl-opencv-videowriter-example examples/opencv-videowriter-example.cpp)
-target_link_libraries(icl-opencv-videowriter-example ${PROJECT_NAME} ICLQuick ICLUtils)
-
-add_executable(icl-opencv-videograbber-example examples/opencv-videograbber-example.cpp)
-target_link_libraries(icl-opencv-videograbber-example ${PROJECT_NAME} ICLQuick ICLIO)
-endif()
-endif()
-
-if (HAVE_XINE_COND)
-add_executable(icl-video-player examples/video-player.cpp)
-target_link_libraries(icl-video-player ${PROJECT_NAME} ICLQuick)
-endif()
-endif()
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #linker
-if(HAVE_LIBZ_COND)
-target_link_libraries(${PROJECT_NAME} z)
-endif()
-if(HAVE_LIBJPEG_COND)
-target_link_libraries(${PROJECT_NAME} jpeg)
-endif()
-if(HAVE_LIBMESASR_COND)
-target_link_libraries(${PROJECT_NAME} mesasr)
-endif()
-if(HAVE_IMAGEMAGICK_COND)
-target_link_libraries(${PROJECT_NAME} Magick++)
-endif()
-if(HAVE_VIDEODEV_COND)
-#already include in linuxkernel
-#target_link_libraries(${PROJECT_NAME} )
-endif()
-if(HAVE_LIBDC_COND)
-target_link_libraries(${PROJECT_NAME} dc1394)
-endif()
-if(HAVE_XINE_COND)
-target_link_libraries(${PROJECT_NAME} xine)
-endif()
-if(HAVE_UNICAP_COND)
-target_link_libraries(${PROJECT_NAME} unicap rt)
-endif()
-if(HAVE_XCF_COND)
-target_link_libraries(${PROJECT_NAME} xcf xqilla log4cxx Memory xmltio Ice IceUtil xerces-c)
-endif()
-if(HAVE_OPENCV_COND)
-target_link_libraries(${PROJECT_NAME} ICLOpenCV)
-endif()
-target_link_libraries(${PROJECT_NAME} ICLFilter ICLCC ICLCore ICLUtils)
-if(BUILD_STATIC_LIBS)
-add_library("${PROJECT_NAME}_static" STATIC ${LIB_SOURCES})
-set_target_properties("${PROJECT_NAME}_static" PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-if(HAVE_LIBZ_COND)
-target_link_libraries("${PROJECT_NAME}_static" z)
-endif()
-if(HAVE_LIBJPEG_COND)
-target_link_libraries(${PROJECT_NAME} jpeg)
-endif()
-if(HAVE_LIBMESASR_COND)
-target_link_libraries("${PROJECT_NAME}_static" mesasr)
-endif()
-if(HAVE_IMAGEMAGICK_COND)
-target_link_libraries("${PROJECT_NAME}_static" Magick++)
-endif()
-if(HAVE_VIDEODEV_COND)
-#already include in linuxkernel
-#target_link_libraries(${PROJECT_NAME} )
-endif()
-if(HAVE_LIBDC_COND)
-target_link_libraries("${PROJECT_NAME}_static" dc1394)
-endif()
-if(HAVE_XINE_COND)
-target_link_libraries("${PROJECT_NAME}_static" xine)
-endif()
-if(HAVE_UNICAP_COND)
-target_link_libraries("${PROJECT_NAME}_static" unicap rt)
-endif()
-if(HAVE_XCF_COND)
-target_link_libraries("${PROJECT_NAME}_static" xcf xqilla log4cxx Memory xmltio Ice IceUtil xerces-c)
-endif()
-if(HAVE_OPENCV_COND)
-target_link_libraries("${PROJECT_NAME}_static" ICLOpenCV)
-endif()
-target_link_libraries("${PROJECT_NAME}_static" ICLFilter ICLCC ICLCore ICLUtils)
-endif()
+target_link_libraries(${PROJECT_NAME} ${ICLIO_dependencies})
+
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
 install (TARGETS ${PROJECT_NAME}
  	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"
 )
-if(BUILD_STATIC_LIBS)
-install(TARGETS "${PROJECT_NAME}_static"
-	ARCHIVE DESTINATION "${LIBRARY_OUTPUT_PATH}"
-)
-endif()
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+	FILES_MATCHING PATTERN "*.h"
+	REGEX .svn* EXCLUDE
 )
-if(BUILD_EXAMPLES)
-install(TARGETS icl-write-file-example
-		icl-testimages-example icl-jpg2cpp icl-convert icl-create
-	 RUNTIME DESTINATION bin
-)
-if (HAVE_LIBDC_COND)
-install (TARGETS icl-dcclearisochannels icl-dcdeviceinfo
-		icl-camera-param-io icl-reset-dc-bus
-	RUNTIME DESTINATION bin
-)
-if (HAVE_Qt_COND)
-install (TARGETS icl-multi-cam-example
-	RUNTIME DESTINATION bin
-)
-endif()
-endif()
-
-if (HAVE_XCF_COND)
-install (TARGETS icl-xcf-grabber-benchmark icl-memory-listener
-	RUNTIME DESTINATION bin
-)
-
-if (HAVE_Qt_COND)
-install (TARGETS icl-xcf-publisher
-	RUNTIME DESTINATION bin
-)
-endif()
-endif()
-
-if (HAVE_UNICAP_COND)
-install (TARGETS icl-unicap-grab-example
-	RUNTIME DESTINATION bin
-)
-endif()
-
-if (HAVE_Qt_COND)
-install (TARGETS icl-generic-grab-example
-	RUNTIME DESTINATION bin
-)
-if (HAVE_OPENCV_COND)
-install (TARGETS icl-opencv-camgrabber-example icl-opencv-videowriter-example 
-	icl-opencv-videograbber-example
-	RUNTIME DESTINATION bin
-)
-endif()
-endif()
-
-if (HAVE_XINE_COND)
-install (TARGETS icl-video-player
-	RUNTIME DESTINATION bin
-)
-endif()
-endif()
-if(DOXYGEN_FOUND)
-add_custom_target(doc doxygen doc/doxyfile)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html/
-         DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
-)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
-	PATTERN "doxyfile" EXCLUDE
-)
-set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES doc/html)
-endif()
+add_doc_gen(${PROJECT_NAME})

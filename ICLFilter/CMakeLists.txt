@@ -1,166 +1,87 @@
 project(ICLFilter)
 
+set(CONDITIONLIST "")
 #sources for lib
-set(LIB_SOURCES 
-	"src/AffineOp.cpp"
-	"src/BinaryArithmeticalOp.cpp"
-	"src/BinaryCompareOp.cpp"
-	"src/BinaryLogicalOp.cpp"
-	"src/ChamferOp.cpp"
-	"src/ConvolutionKernel.cpp"
-	"src/ConvolutionOp.cpp"
-	"src/DynamicConvolutionOp.cpp"
-	"src/GaborOp.cpp"
-	"src/GradientImage.cpp"
-	"src/ImageSplitter.cpp"
-	"src/InplaceArithmeticalOp.cpp"
-	"src/InplaceLogicalOp.cpp"
-	"src/IntegralImgOp.cpp"
-	"src/LocalThresholdOp.cpp"
-	"src/LUTOp3Channel.cpp"
-	"src/LUTOp.cpp"
-	"src/MedianOp.cpp"
-	"src/MirrorOp.cpp"
-	"src/MorphologicalOp.cpp"
-	"src/NeighborhoodOp.cpp"
-	"src/OpROIHandler.cpp"
-	"src/ProximityOp.cpp"
-	"src/ThresholdOp.cpp"
-	"src/UnaryArithmeticalOp.cpp"
-	"src/UnaryCompareOp.cpp"
-	"src/UnaryLogicalOp.cpp"
-	"src/UnaryOp.cpp"
-	"src/BinaryOp.cpp"
-	"src/UnaryOpPipe.cpp"
-	"src/WeightChannelsOp.cpp"
-	"src/WeightedSumOp.cpp"
-	"src/WarpOp.cpp"
-	"src/FFTOp.cpp"
-	"src/IFFTOp.cpp"
-)
-if (HAVE_IPP_COND)
-set(LIB_SOURCES_IPP
-	"src/WienerOp.cpp"
-	"src/CannyOp.cpp"
-)
-endif()
-set(LIB_SOURCES "${LIB_SOURCES};${LIB_SOURCES_IPP}")
+set(LIB_SOURCES "")
+add_libsource (${PROJECT_NAME} "src/AffineOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/BinaryArithmeticalOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/BinaryCompareOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/BinaryLogicalOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ChamferOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ConvolutionKernel.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ConvolutionOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DynamicConvolutionOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/GaborOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/GradientImage.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ImageSplitter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/InplaceArithmeticalOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/InplaceLogicalOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/IntegralImgOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/LocalThresholdOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/LUTOp3Channel.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/LUTOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/MedianOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/MirrorOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/MorphologicalOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/NeighborhoodOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/OpROIHandler.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ProximityOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ThresholdOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/UnaryArithmeticalOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/UnaryCompareOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/UnaryLogicalOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/UnaryOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/BinaryOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/UnaryOpPipe.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/WeightChannelsOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/WeightedSumOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/WarpOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FFTOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/IFFTOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST "HAVE_IPP_COND")
+add_libsource (${PROJECT_NAME} "src/WienerOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/CannyOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-if(BUILD_EXAMPLES)
-add_executable(icl-arithmetical-op-test examples/arithmetical-op-test.cpp)
-target_link_libraries(icl-arithmetical-op-test ${PROJECT_NAME} ICLQuick)
+set(CONDITIONLIST "BUILD_EXAMPLES")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} )
+add_example (${PROJECT_NAME} "weighted-sum-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+add_example (${PROJECT_NAME} "arithmetical-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "champfer-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "inplace-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "median-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "threshold-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "weight-channels-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "morphological-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-add_executable(icl-champfer-op-test examples/champfer-op-test.cpp)
-target_link_libraries(icl-champfer-op-test ${PROJECT_NAME} ICLQuick)
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_IPP_COND")
+add_example (${PROJECT_NAME} "wiener-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-add_executable(icl-inplace-op-test examples/inplace-op-test.cpp)
-target_link_libraries(icl-inplace-op-test ${PROJECT_NAME} ICLQuick)
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_IPP_COND HAVE_Qt_COND")
+add_example (${PROJECT_NAME} "interactive-canny-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-add_executable(icl-median-op-test examples/median-op-test.cpp)
-target_link_libraries(icl-median-op-test ${PROJECT_NAME} ICLQuick)
-
-add_executable(icl-threshold-op-test examples/threshold-op-test.cpp)
-target_link_libraries(icl-threshold-op-test ${PROJECT_NAME} ICLQuick)
-
-add_executable(icl-weight-channels-op-test examples/weight-channels-op-test.cpp)
-target_link_libraries(icl-weight-channels-op-test ${PROJECT_NAME} ICLQuick)
-
-add_executable(icl-weighted-sum-op-test examples/weighted-sum-op-test.cpp)
-target_link_libraries(icl-weighted-sum-op-test ${PROJECT_NAME})
-
-add_executable(icl-morphological-op-test examples/morphological-op-test.cpp)
-target_link_libraries(icl-morphological-op-test ${PROJECT_NAME} ICLQuick)
-
-if(HAVE_IPP_COND)
-add_executable(icl-wiener-op-test examples/wiener-op-test.cpp)
-target_link_libraries(icl-wiener-op-test ${PROJECT_NAME} ICLQuick)
-
-if(HAVE_Qt_COND)
-add_executable(icl-interactive-canny-demo examples/interactive-canny-demo.cpp)
-target_link_libraries(icl-interactive-canny-demo ${PROJECT_NAME} ICLQuick)
-endif()
-endif()
-
-if(HAVE_Qt_COND)
-add_executable(icl-local-threshold-op-test examples/local-threshold-op-test.cpp)
-target_link_libraries(icl-local-threshold-op-test ${PROJECT_NAME} ICLQuick)
-
-add_executable(icl-gabor-op-online-example examples/gabor-op-online-example.cpp)
-target_link_libraries(icl-gabor-op-online-example ${PROJECT_NAME} ICLQuick)
-
-add_executable(icl-convolution-op-test examples/convolution-op-test.cpp)
-target_link_libraries(icl-convolution-op-test ${PROJECT_NAME} ICLQuick)
-
-add_executable(icl-warp-op-test examples/warp-op-test.cpp)
-target_link_libraries(icl-warp-op-test ${PROJECT_NAME} ICLQuick)
-
-add_executable(icl-interactive-affine-op-example examples/interactive-affine-op-example.cpp)
-target_link_libraries(icl-interactive-affine-op-example ${PROJECT_NAME} ICLQuick)
-
-#add_executable(icl-filter-array examples/filter-array.cpp)
-#target_link_libraries(icl-filter-array ${PROJECT_NAME} ICLQuick)
-
-add_executable(icl-fft-demo examples/fft-demo.cpp)
-target_link_libraries(icl-fft-demo ${PROJECT_NAME} ICLQuick)
-endif()
-endif()
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_Qt_COND")
+add_example (${PROJECT_NAME} "local-threshold-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "gabor-op-online-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "convolution-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "warp-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "interactive-affine-op-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_example (${PROJECT_NAME} "filter-array" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "fft-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #linker
-target_link_libraries(${PROJECT_NAME} ICLCC ICLCore ICLUtils)
-if(BUILD_STATIC_LIBS)
-add_library("${PROJECT_NAME}_static" STATIC ${LIB_SOURCES})
-set_target_properties("${PROJECT_NAME}_static" PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-target_link_libraries("${PROJECT_NAME}_static" ICLCC ICLCore ICLUtils)
-endif()
+target_link_libraries(${PROJECT_NAME} ${ICLFilter_dependencies})
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
 install (TARGETS ${PROJECT_NAME}
  	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"
 )
-if(BUILD_STATIC_LIBS)
-install(TARGETS "${PROJECT_NAME}_static"
-	ARCHIVE DESTINATION "${LIBRARY_OUTPUT_PATH}"
-)
-endif()
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+	FILES_MATCHING PATTERN "*.h"
+	REGEX .svn* EXCLUDE
 )
-if(BUILD_EXAMPLES)
-install(TARGETS icl-arithmetical-op-test icl-champfer-op-test 
-		icl-inplace-op-test icl-median-op-test icl-threshold-op-test 
-		icl-weight-channels-op-test icl-weighted-sum-op-test 
-		icl-morphological-op-test
-	 RUNTIME DESTINATION bin)
-
-if(HAVE_IPP_COND)
-	install (TARGETS icl-wiener-op-test
-	 RUNTIME DESTINATION bin)
-
-if(HAVE_Qt_COND)
-install (TARGETS icl-interactive-canny-demo icl-interactive-canny-demo
-	RUNTIME DESTINATION bin)
-endif()
-endif()
-
-if(HAVE_Qt_COND)
-	install (TARGETS
-		icl-local-threshold-op-test icl-gabor-op-online-example icl-convolution-op-test 
-		icl-warp-op-test icl-interactive-affine-op-example #icl-filter-array 
-		icl-fft-demo
-	 RUNTIME DESTINATION bin)
-endif()
-endif()
-if(DOXYGEN_FOUND)
-add_custom_target(doc doxygen doc/doxyfile)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html/
-         DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
-)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
-	PATTERN "doxyfile" EXCLUDE
-)
-set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES doc/html)
-endif()
+add_doc_gen(${PROJECT_NAME})

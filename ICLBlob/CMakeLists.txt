@@ -1,101 +1,54 @@
 project(ICLBlob)
 
+set(CONDITIONLIST "")
 #sources for lib
-set(LIB_SOURCES 
-	"src/ColorBlobSearcher.cpp"
-	"src/DefaultColorBlobSearcher.cpp"
-	"src/Extrapolator.cpp"
-	"src/FMCreator.cpp"
-	"src/HungarianAlgorithm.cpp"
-	"src/PositionTracker.cpp"
-	"src/VectorTracker.cpp"
-	"src/RegionBasedBlobSearcher.cpp"
-	"src/Region.cpp"
-	"src/RegionDetector.cpp"
-	"src/RegionFilter.cpp"
-	"src/RegionPCAInfo.cpp"
-	"src/VQ2D.cpp"
-	"src/SimpleBlobSearcher.cpp"
-	"src/MeanShiftTracker.cpp"
-)
+set(LIB_SOURCES "")
+add_libsource (${PROJECT_NAME} "src/ColorBlobSearcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DefaultColorBlobSearcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/Extrapolator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FMCreator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/HungarianAlgorithm.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/PositionTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/VectorTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/RegionBasedBlobSearcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/Region.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/RegionDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/RegionFilter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/RegionPCAInfo.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/VQ2D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/SimpleBlobSearcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/MeanShiftTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-if(BUILD_EXAMPLES)
-add_executable(icl-blobtracker-benchmark examples/blobtracker-benchmark.cpp)
-target_link_libraries(icl-blobtracker-benchmark ${PROJECT_NAME})
+set(CONDITIONLIST "BUILD_EXAMPLES")
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} )
+add_example (${PROJECT_NAME} "blobtracker-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-add_executable(icl-region-based-blob-finder-test examples/region-based-blob-finder-test.cpp)
-target_link_libraries(icl-region-based-blob-finder-test ${PROJECT_NAME} ICLQuick)
+set(CONDITIONLIST "BUILD_EXAMPLES HAVE_QT_COND")
+add_example (${PROJECT_NAME} "region-inspector-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "vector-tracker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "interactive-vector-tracker-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "simple-blob-searcher-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "mean-shift-online-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "corner-detection-css-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "online-region-detection-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-add_executable(icl-region-detector-test examples/region-detector-test.cpp)
-target_link_libraries(icl-region-detector-test ${PROJECT_NAME} ICLQuick)
-
-if (HAVE_QT_COND)
-add_executable(icl-region-inspector-demo examples/region-inspector-demo.cpp)
-target_link_libraries(icl-region-inspector-demo ${PROJECT_NAME})
-
-add_executable(icl-vector-tracker-demo examples/vector-tracker-demo.cpp)
-target_link_libraries(icl-vector-tracker-demo ${PROJECT_NAME})
-
-add_executable(icl-interactive-vector-tracker-benchmark examples/interactive-vector-tracker-benchmark.cpp)
-target_link_libraries(icl-interactive-vector-tracker-benchmark ${PROJECT_NAME})
-
-add_executable(icl-simple-blob-searcher-test examples/simple-blob-searcher-test.cpp)
-target_link_libraries(icl-simple-blob-searcher-test ${PROJECT_NAME})
-
-add_executable(icl-mean-shift-online-demo examples/mean-shift-online-demo.cpp)
-target_link_libraries(icl-mean-shift-online-demo ${PROJECT_NAME})
-
-add_executable(icl-corner-detection-css-demo examples/corner-detection-css-demo.cpp)
-target_link_libraries(icl-corner-detection-css-demo ${PROJECT_NAME})
-
-add_executable(icl-online-region-detection-demo examples/online-region-detection-demo.cpp)
-target_link_libraries(icl-online-region-detection-demo ${PROJECT_NAME})
-endif()
-endif()
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+add_example (${PROJECT_NAME} "region-based-blob-finder-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "region-detector-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #linker
-target_link_libraries(${PROJECT_NAME} ICLCC ICLCore ICLUtils)
-if(BUILD_STATIC_LIBS)
-add_library("${PROJECT_NAME}_static" STATIC ${LIB_SOURCES})
-set_target_properties("${PROJECT_NAME}_static" PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-target_link_libraries("${PROJECT_NAME}_static" ICLCC ICLCore ICLUtils)
-endif()
+target_link_libraries(${PROJECT_NAME} ${ICLBlob_dependencies})
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
 install (TARGETS ${PROJECT_NAME}
  	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"
 )
-if(BUILD_STATIC_LIBS)
-install(TARGETS "${PROJECT_NAME}_static"
-	ARCHIVE DESTINATION "${LIBRARY_OUTPUT_PATH}"
-)
-endif()
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+	FILES_MATCHING PATTERN "*.h"
+	REGEX .svn* EXCLUDE
 )
-if(BUILD_EXAMPLES)
-install (TARGETS icl-blobtracker-benchmark icl-region-based-blob-finder-test 
-		icl-region-detector-test
-	RUNTIME DESTINATION bin)
-if(HAVE_QT_COND)
-install (TARGETS icl-region-inspector-demo icl-vector-tracker-demo 
-		icl-interactive-vector-tracker-benchmark icl-simple-blob-searcher-test 
-		icl-mean-shift-online-demo icl-corner-detection-css-demo 
-		icl-online-region-detection-demo
-	 RUNTIME DESTINATION bin)
-endif()
-endif()
-if(DOXYGEN_FOUND)
-add_custom_target(doc doxygen doc/doxyfile)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html/
-         DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
-)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
-	PATTERN "doxyfile" EXCLUDE
-)
-set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES doc/html)
-endif()
+add_doc_gen(${PROJECT_NAME})
