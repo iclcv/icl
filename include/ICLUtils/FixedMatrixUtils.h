@@ -134,7 +134,7 @@ namespace icl{
                     FixedMatrix<T,WIDTH_AND_HEIGHT,WIDTH_AND_HEIGHT> &eigenvectors, 
                     FixedColVector<T,WIDTH_AND_HEIGHT> &eigenvalues) throw (ICLException){
     DynMatrix<T> evecs(WIDTH_AND_HEIGHT,WIDTH_AND_HEIGHT,eigenvectors.begin(),false);
-    DynMatrix<T> evals(WIDTH_AND_HEIGHT,1,eigenvalues.begin(),false);
+    DynMatrix<T> evals(1,WIDTH_AND_HEIGHT,eigenvalues.begin(),false);
     DynMatrix<T>(WIDTH_AND_HEIGHT,WIDTH_AND_HEIGHT,const_cast<T*>(A.begin()),false).eigen(evecs,evals);
   }
 }

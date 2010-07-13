@@ -163,8 +163,9 @@ namespace icl{
       }
       m_cols = cols;
       m_rows = rows;
-      ICL_DELETE(m_data);
+      if(m_data && m_ownData) delete [] m_data;
       m_data = M.begin();
+      m_ownData = true;
       M.set_data(0);
     }
   
