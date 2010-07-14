@@ -428,7 +428,7 @@ namespace icl{
 
 
   template<class T>
-  void find_eigenvectors(const DynMatrix<T> &a, DynMatrix<T> &eigenvalues, DynMatrix<T> &eigenvectors, T *buffer = 0){
+  void find_eigenvectors(const DynMatrix<T> &a, DynMatrix<T> &eigenvectors, DynMatrix<T> &eigenvalues, T *buffer = 0){
     const int n = a.cols();
     T ** pa = new T*[n], *pvalues=new T[n], **pvectors=new T*[n];
     for(int i=0;i<n;++i){
@@ -454,11 +454,13 @@ namespace icl{
 
 #ifdef HAVE_IPP
   template<>
-  void find_eigenvectors(const DynMatrix<icl32f> &a, DynMatrix<icl32f> &eigenvalues, DynMatrix<icl32f> &eigenvectors, icl32f* buffer){
-    icl32f * useBuffer = buffer ? buffer : new icl32f[a.cols()*a.cols()];
-    IppStatus sts = ippmEigenValuesVectorsSym_m_32f (a.begin(), sizeof(icl32f), sizeof(icl32f)*a.cols(), useBuffer,
-                                                     eigenvectors.begin(), sizeof(icl32f), sizeof(icl32f)*a.cols(),
-                                                     eigenvalues.begin(),a.cols());
+  void find_eigenvectors(const DynMatrix<icl32f> &a, DynMatrix<icl32f> &eigenvectors, DynMatrix<icl32f> &eigenvalues, icl32f* buffer){
+    const int n = a.cols();
+    
+    icl32f * useBuffer = buffer ? buffer : new icl32f[n*n];
+    IppStatus sts = ippmEigenValuesVectorsSym_m_32f (a.begin(), n*sizeof(icl32f), sizeof(icl32f), useBuffer,
+                                                     eigenvectors.begin(), n*sizeof(icl32f), sizeof(icl32f),
+                                                     eigenvalues.begin(),n);
     if(!buffer) delete [] useBuffer;
     
     if(sts != ippStsNoErr){
@@ -466,11 +468,12 @@ namespace icl{
     }
   }
   template<>
-  void find_eigenvectors(const DynMatrix<icl64f> &a, DynMatrix<icl64f> &eigenvalues, DynMatrix<icl64f> &eigenvectors, icl64f* buffer){
-    icl64f * useBuffer = buffer ? buffer : new icl64f[a.cols()*a.cols()];
-    IppStatus sts = ippmEigenValuesVectorsSym_m_64f (a.begin(), sizeof(icl64f), sizeof(icl64f)*a.cols(), useBuffer,
-                                                     eigenvectors.begin(), sizeof(icl64f), sizeof(icl64f)*a.cols(),
-                                                     eigenvalues.begin(),a.cols());
+  void find_eigenvectors(const DynMatrix<icl64f> &a, DynMatrix<icl64f> &eigenvectors, DynMatrix<icl64f> &eigenvalues, icl64f* buffer){
+    const int n = a.cols();
+    icl64f * useBuffer = buffer ? buffer : new icl64f[n*n];
+    IppStatus sts = ippmEigenValuesVectorsSym_m_64f (a.begin(), n*sizeof(icl64f), sizeof(icl64f), useBuffer,
+                                                     eigenvectors.begin(), n*sizeof(icl64f), sizeof(icl64f),
+                                                     eigenvalues.begin(),n);
     if(!buffer) delete [] useBuffer;
     
     if(sts != ippStsNoErr){
