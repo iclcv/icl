@@ -434,7 +434,7 @@ namespace icl{
     for(int i=0;i<n;++i){
       pa[i] = new T[n];
       for(int j=0;j<n;++j){
-        pa[i][j] = a(i,j); // maybe (j,i) !!
+        pa[i][j] = a(j,i); // maybe (j,i) !!
       }
       pvectors[i] = new T[n];
     }
@@ -442,7 +442,7 @@ namespace icl{
     
     for(int i=0;i<n;++i){
       for(int j=0;j<n;++j){
-        eigenvectors(i,j) = pvectors[i][j];
+        eigenvectors(j,i) = pvectors[i][j];
       }
       eigenvalues[i] = pvalues[i];
       
