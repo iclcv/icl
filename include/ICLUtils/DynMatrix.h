@@ -174,7 +174,7 @@ namespace icl{
       if(other.cols() != cols() || other.rows() != rows()) return false;
       for(unsigned int i=0;i<dim();++i){
         T diff = m_data[i] - other.m_data[i];
-        if((diff?diff:-diff) > tollerance) return false;
+        if((diff>0?diff:-diff) > tollerance) return false;
       }
       return true;
     }
@@ -866,9 +866,19 @@ namespace icl{
 
     /// inner product of data pointers (not matrix-mulitiplication)
     /** computes the inner-product of data vectors */
-    T inner_product(const DynMatrix<T> &other) const {
+    T element_wise_inner_product(const DynMatrix<T> &other) const {
       return std::inner_product(begin(),end(),other.begin(),T(0));
     }
+
+
+    /// returns the inner product of two matrices (i.e. dot-product)
+    /** A.dot(B) is equivalent to A.transp() * B 
+        TODO: optimize implementation (current implementation _is_ A.transp() * B)
+    */
+    DynMatrix<T> dot(const DynMatrix<T> &M) const throw(InvalidMatrixDimensionException){
+      return this->transp() * M;
+    }
+    
     
     /// returns diagonal-elements as column-vector
     DynMatrix<T> diag() const{

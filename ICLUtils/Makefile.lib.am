@@ -82,7 +82,6 @@ include_HEADERS= \
 ../../include/ICLUtils/Utils.h \
 ../../include/ICLUtils/ConsoleProgress.h \
 ../../include/ICLUtils/FPSLimiter.h \
-../../include/ICLUtils/FixedMatrixUtils.h \
 ../../include/ICLUtils/DynMatrixUtils.h \
 ../../include/ICLUtils/UncopiedInstance.h \
 ../../include/ICLUtils/Lockable.h \

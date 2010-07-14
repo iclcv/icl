@@ -201,7 +201,7 @@ namespace icl{
       // remove components parallel to q(*,i)
       for (unsigned int j=i+1;j<cols();j++) {
         a = A.col(j);
-        R(j,i) = dot(q, a);
+        R(j,i) = icl::dot(q, a);
         A.col(j) = a - q * R(j,i);
       }
     }

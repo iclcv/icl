@@ -172,7 +172,14 @@ namespace icl{
   template<class T,unsigned int COLS,unsigned int ROWS>
   class FixedMatrix : public FixedMatrixBase{
     public:
+    
+    /// creates a shallow copied DynMatrix instance wrapping this' data
+    /** Note: dyn() must be used imediatedly without a copy! TODO: check!!!!*/
+    DynMatrix<T> dyn() { return DynMatrix<T>(COLS,ROWS,m_data,false); }
 
+    /// creates a shallow copied DynMatrix instance wrapping this' data (const)
+    const DynMatrix<T> dyn() const { return DynMatrix<T>(COLS,ROWS,const_cast<T*>(m_data),false); }
+    
     /// returning a reference to a null matrix
     static const FixedMatrix &null(){
       static FixedMatrix null_matrix(T(0));
@@ -715,12 +722,7 @@ namespace icl{
         instead and use the non-member template function pinv() instead for pseudo-inverse calculation
     */
     FixedMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
-      DynMatrix<T> m(COLS,ROWS,const_cast<T*>(m_data),false);
-      DynMatrix<T> mi = m.inv();
-      m.set_data(0);
-      FixedMatrix r;
-      FixedMatrixBase::optimized_copy<T*,T*,DIM>(mi.begin(),mi.end(),r.begin());
-      return r;
+      return FixedMatrix(dyn().inv().data());
     }
     
     /// calculate matrix determinant (only implemented with IPP_OPTIMIZATION and only for icl32f and icl64f)
@@ -728,10 +730,7 @@ namespace icl{
         Additionally implemented (in closed form) for float and double for 2x2 3x3 and 4x4 matrices
     */
     T det() const throw(InvalidMatrixDimensionException){
-      DynMatrix<T> m(COLS,ROWS,const_cast<T*>(m_data),false);
-      T d = m.det();
-      m.set_data(0);
-      return d;
+      return dyn().det();
     }
   
     /// returns matrix's transposed
@@ -744,21 +743,21 @@ namespace icl{
       return d;
     }
 
-     /// inner product of data pointers (not matrix-mulitiplication)
-    /** computes the inner-product of data vectors */
+    /// inner product of data pointers (not matrix-mulitiplication)
+    /** computes the inner-product of internal data vectors */
     template<unsigned int OTHER_COLS>
-    T inner_product(const FixedMatrix<T,OTHER_COLS,DIM/OTHER_COLS> &other) const {
+    T element_wise_inner_product(const FixedMatrix<T,OTHER_COLS,DIM/OTHER_COLS> &other) const {
       return std::inner_product(begin(),end(),other.begin(),T(0));
     }
-    
-    /// returns diagonal-elements as column-vector
-    FixedMatrix<T,1,COLS> diag() const{
-      ICLASSERT_RETURN_VAL(COLS==ROWS,(FixedMatrix<T,1,COLS>()));
-      FixedMatrix<T,1,COLS> d;
-      for(int i=0;i<COLS;++i){
-        d[i] = (*this)(i,i);
-      }
-      return d;
+
+
+    /// returns the inner product of two matrices (i.e. dot-product)
+    /** A.dot(B) is equivalent to A.transp() * B 
+        TODO: optimize implementation (current implementation _is_ A.transp() * B)
+    */
+    template<unsigned int OTHER_COLS>
+    FixedMatrix<T,OTHER_COLS,COLS> dot(const FixedMatrix<T,OTHER_COLS,ROWS> &M) const{
+      return this->transp() * M;
     }
     
     /// computes the sum of all diagonal elements
@@ -770,8 +769,6 @@ namespace icl{
       }
       return accu;
     }
-   
-
 
     /// returns a matrix row-reference  iterator pair
     FixedMatrixPart<T,COLS,row_iterator> row(unsigned int idx){
@@ -870,11 +867,93 @@ namespace icl{
     template<class otherT>
     bool operator!=(const FixedMatrix<otherT,COLS,ROWS> &m) const{
       return !this->operator==(m);
-    }    
+    }   
 
+
+    /// returns a vector of the diagonal elements (only for squared matrices)
+    FixedMatrix<T,1,ROWS> diag() const throw (InvalidMatrixDimensionException){
+      if(ROWS != COLS) throw InvalidMatrixDimensionException("trace is only possible for sqaure matrices");
+      FixedMatrix<T,1,ROWS> t;
+      for(unsigned int i=0;i<ROWS;++i){
+        t[i] = (*this)(i,i);
+      }
+      return t;
+    }
+
+    /// computes the QR decomposition of a matrix
+    /** implements the stabilized Gram-Schmidt orthonormalization.  (Internally using DynMatrix wrappers */
+    void decompose_QR(FixedMatrix<T,COLS,ROWS> &Q, FixedMatrix<T,COLS,COLS> &R) const{
+      DynMatrix<T> Qd = Q.dyn(), Rd = R.dyn();
+      dyn().decompose_QR(Qd,Rd);
+    }
+    
+    /// computes the RQ decomposition of a matrix
+    /** implements the stabilized Gram-Schmidt orthonormalization.  (Internally using DynMatrix wrappers */
+    void decompose_RQ(FixedMatrix<T,ROWS,ROWS> &R, FixedMatrix<T,ROWS,ROWS> &Q) const{
+      DynMatrix<T> Rd = R.dyn(), Qd = Q.dyn();
+      dyn().decompose_RQ(Rd,Qd);
+    }
+    
+    /// computes Singular Value Decomposition of this Matrix A = U diag(s) V' 
+    /** internally a DynMatrix wrapper is used */
+    void svd(FixedMatrix<T,COLS,ROWS> &U, FixedMatrix<T,1,COLS> &s, FixedMatrix<T,COLS,COLS> &V) const{
+      DynMatrix<T> Ud = U.dyn(), sd = s.dyn(), Vd = V.dyn();
+      return dyn().svd(Ud,sd,Vd);
+    }
+    
+    /// Computes the Matrix's pseudo-inverse
+    /** internally a DynMatrix wrapper is used. If useSVD is false, a QR-decomposition based approach is used  */
+    FixedMatrix<T,ROWS,COLS> pinv(bool useSVD=0, float zeroThreshold=0.00000000000000001) const {
+      return dyn().pinv(useSVD,zeroThreshold);
+    }
+    
+    /// Extracts the matrix's eigenvalues and eigenvectors
+    /** Internally, a DynMatrix wrapper is used. This function only works on squared symmetric matrices. 
+        Resulting eigenvalues are ordered in descending order. The destination matrices' sizes are adapted automatically.
+
+        The function is only available for icl32f and icl64f and it is IPP-accelerated in case of having Intel-IPP-Support.
+        The Fallback implementation was basically taken from the Visualization Toolkit VTK (Version 5.6.0)
+
+        Note: There is no internal check if the matrix is really symmetric. If it is not symmetric, the behaviour of 
+              this function is not predictable
+        
+        @param eigenvectors contains the resulting eigenvectors in it's columns
+        @param eigenvalues becomes a N-dimensional column vector which ith element is the eigenvalue that corresponds
+                           to the ith column of eigenvectors 
+    */
+    void eigen(FixedMatrix &eigenvectors, FixedMatrix<T,1,COLS> &eigenvalues) const{
+      if(ROWS != COLS) throw InvalidMatrixDimensionException("eigenvalue decomposition is only possible for sqaure matrices (use svd instead!)");
+      DynMatrix<T> evecs = eigenvectors.dyn(), evals = eigenvalues.dyn();
+      return dyn().eigen(evecs,evals);
+    }
+    
+    
   };
 
+  /// Vertical Matrix concatenation  \ingroup LINALG
+  /** like ICLQuick image concatenation, dont forget the brackets sometimes */
+  template<class T,unsigned  int WIDTH,unsigned  int HEIGHT, unsigned int HEIGHT2>
+  inline FixedMatrix<T,WIDTH,HEIGHT+HEIGHT2> operator%(const FixedMatrix<T,WIDTH,HEIGHT> &a,
+                                                       const FixedMatrix<T,WIDTH,HEIGHT2> &b){
+    FixedMatrix<T,WIDTH,HEIGHT+HEIGHT2> M;
+    for(unsigned int i=0;i<HEIGHT;++i) M.row(i) = a.row(i);
+    for(unsigned int i=0;i<HEIGHT2;++i) M.row(i+HEIGHT) = b.row(i);
+    return M;
+  }
+
+  /// Horizontal Matrix concatenation  \ingroup LINALG
+  /** like ICLQuick image concatenation, dont forget the brackets sometimes */
+  template<class T,unsigned  int WIDTH,unsigned  int HEIGHT, unsigned int WIDTH2>
+  inline FixedMatrix<T,WIDTH+WIDTH2,HEIGHT> operator,(const FixedMatrix<T,WIDTH,HEIGHT> &a,
+                                                       const FixedMatrix<T,WIDTH2,HEIGHT> &b){
+    FixedMatrix<T,WIDTH+WIDTH2,HEIGHT> M;
+    for(unsigned int i=0;i<WIDTH;++i) M.col(i) = a.col(i);
+    for(unsigned int i=0;i<WIDTH2;++i) M.col(i+WIDTH) = b.col(i);
+    return M;
+  }
  
+
+
 
   /// Matrix multiplication (inplace)
   /** inplace matrix multiplication does only work for squared source and 
@@ -889,15 +968,15 @@ namespace icl{
   /** Internally, this function wraps a DynMatrix<T> shallowly around m*/
   template<class T, unsigned int COLS, unsigned int ROWS>
   inline std::ostream &operator<<(std::ostream &s,const FixedMatrix<T,COLS,ROWS> &m){
-    return s << DynMatrix<T>(COLS,ROWS,const_cast<T*>(m.begin()),false);
+    return s << m.dyn();
   }
 
   /// read matrix from std::istream (human readable) 
   /** Internally, this function wraps a DynMatrix<T> shallowly around m*/
   template<class T, unsigned int COLS, unsigned int ROWS>
   inline std::istream &operator>>(std::istream &s,FixedMatrix<T,COLS,ROWS> &m){
-    DynMatrix<T> dynM(COLS,ROWS,const_cast<T*>(m.begin()),false);
-    return s >> dynM;
+    DynMatrix<T> dyn = m.dyn();
+    return s >> dyn;
   }
 
 
@@ -945,17 +1024,7 @@ namespace icl{
     return m;
   }
 
-  /// calculate the trace of a square matrix
-  template<class T, unsigned int ROWS_AND_COLS>
-  FixedMatrix<T,1,ROWS_AND_COLS> trace(const FixedMatrix<T,ROWS_AND_COLS,ROWS_AND_COLS> &m){
-    FixedMatrix<T,1,ROWS_AND_COLS> t;
-    for(unsigned int i=0;i<ROWS_AND_COLS;++i){
-      t[i] = m(i,i);
-    }
-    return t;
-  }
-
-
+  
   /** \cond  declared and documented above */
   template<class T,unsigned int N, class Iterator> template<unsigned int COLS>
   inline FixedMatrixPart<T,N,Iterator>& FixedMatrixPart<T,N,Iterator>::operator=(const FixedMatrix<T,COLS,N/COLS> &m){

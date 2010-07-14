@@ -35,7 +35,6 @@
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/XMLDocument.h>
 #include <ICLUtils/DynMatrixUtils.h>
-#include <ICLUtils/FixedMatrixUtils.h>
 #include <ICLGeom/Camera.h>
 #include <fstream>
 
@@ -232,7 +231,7 @@ namespace icl {
     FixedMatrix<float,3,3> R; // extrinsic (rotation matrix)
     FixedMatrix<float,1,3> T; // extrinsic (tranlation vector)
     
-    decompose_RQ(M,K,R);
+    M.decompose_RQ(K,R);
     K = K/K(2,2); // normalize K
     T = -M.inv() * c4;
     Camera cam;
@@ -426,7 +425,7 @@ namespace icl {
     Mat M = P*T;
     FixedMatrix<icl32f,4,3> Q;
     Q.row(0) = M.row(0); Q.row(1) = M.row(1); Q.row(2) = M.row(3);
-    Vec dir = m_pos-homogenize(pinv(Q)*FixedColVector<icl32f,3>(pixel.x, pixel.y, 1));
+    Vec dir = m_pos-homogenize(Q.pinv()*FixedColVector<icl32f,3>(pixel.x, pixel.y, 1));
     dir[3] = 0; dir.normalize(); dir[3] = 1;
     return ViewRay(m_pos,dir);
   }
