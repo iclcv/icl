@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLUtils/DynMatrix.h>
-#include <ICLUtils/FixedMatrixUtils.h>
+#include <ICLUtils/FixedMatrix.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/StackTimer.h>
 
@@ -228,7 +228,7 @@ template<unsigned int W, unsigned int H>
 void fixed_benchmark(const FixedMatrix<double,W,H> &M){
   BENCHMARK_THIS_FUNCTION;
   for(int i=0;i<NUM;++i){
-    pinv(M);
+    M.pinv();
   }
 }
 
@@ -258,7 +258,7 @@ int main(int n, char **ppc){
   SHOW(rnd3(idyn##A-my_idyn##A));                           \
   FixedMatrix<double,W,H> fix##A(A);                        \
   FixedMatrix<double,H,W> ifix##A(i##A);                    \
-  FixedMatrix<double,H,W> my_ifix##A = pinv(fix##A);        \
+  FixedMatrix<double,H,W> my_ifix##A = fix##A.pinv();  \
   SHOW(rnd3(ifix##A-my_ifix##A));
 
   if(!pa("-no-pinv")){
