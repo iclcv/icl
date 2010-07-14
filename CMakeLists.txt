@@ -67,7 +67,9 @@ set(USE_OPENSURF OFF CACHE BOOL "Use OPENSURF when available")
 #opencv opensurf dc unicap libxine xcf qt
 #pkg_check_modules  gtest
 FIND_PACKAGE(PkgConfig)
-
+#message(STATUS "wichtig: ${CMAKE_PROGRAM_PATH} ${CMAKE_SYSTEM_PROGRAM_PATH}")
+#find_path(IPP_PATH "ipp.h" "/vol/nivision/IPPP/6.1-ia32/include" DOC "The path to IPP" NO_DEFAULT_PATH)
+#message(STATUS "${IPP_PATH}")
 icl_check_external_package(IPP ipp.h sharedlib include /vol/nivision/IPP/6.1-ia32 HAVE_IPP_COND)
 if(HAVE_IPP_COND)
     set(IPP_LIBS_l ippcore ippi ipps ippsr ippcv ippm ippcc guide iomp5)
@@ -105,7 +107,7 @@ if(HAVE_LIBJPEG_COND)
 	set(LIBJPEG_LIBS_l jpeg)
 endif()
 
-icl_check_external_package(IMAGEMAGICK Magick++.h lib include/GraphicsMagick /usr HAVE_IMAGEMAGICK_COND)
+#icl_check_external_package(IMAGEMAGICK Magick++.h lib include/GraphicsMagick /usr HAVE_IMAGEMAGICK_COND)
 if(HAVE_IMAGEMAGICK_COND)
 	set(LIBMAGICK_LIBS_l Magick++)
 endif()
