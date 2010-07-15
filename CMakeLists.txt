@@ -29,6 +29,20 @@ if(UNIX)
     add_definitions( -DICL_SYSTEM_LINUX)
     set(SYSTEM_LINUX_COND TRUE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+	# use, i.e. don't skip the full RPATH for the build tree
+	SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+
+	# when building, don't use the install RPATH already
+	# (but later on when installing)
+	SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+
+
+	# the RPATH to be used when installing
+	SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+	# add the automatically determined parts of the RPATH
+	# which point to directories outside the build tree to the install RPATH
+	SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 if(APPLE)
     add_definitions( -DSYSTEM_APPLE)
@@ -70,7 +84,7 @@ FIND_PACKAGE(PkgConfig)
 #message(STATUS "wichtig: ${CMAKE_PROGRAM_PATH} ${CMAKE_SYSTEM_PROGRAM_PATH}")
 #find_path(IPP_PATH "ipp.h" "/vol/nivision/IPPP/6.1-ia32/include" DOC "The path to IPP" NO_DEFAULT_PATH)
 #message(STATUS "${IPP_PATH}")
-icl_check_external_package(IPP ipp.h sharedlib include /vol/nivision/IPPP/6.1-ia32 HAVE_IPP_COND)
+icl_check_external_package(IPP ipp.h sharedlib include /vol/nivision/IPP/6.1-ia32 HAVE_IPP_COND)
 if(HAVE_IPP_COND)
     set(IPP_LIBS_l ippcore ippi ipps ippsr ippcv ippm ippcc guide iomp5)
 endif()

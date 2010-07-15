@@ -5,15 +5,18 @@ macro(icl_check_external_package ID FFILE REL_LIB_DIR REL_INC_DIR DEFAULT_PATH D
   set(${DEFINE_COND} FALSE)
   message(STATUS "-- checking package ${ID} --")
   message(STATUS "searching for ${FFILE}")# in ${DEFAULT_PATH}/${REL_INC_DIR}")# and ${${ID}_PATH}/${REL_INC_DIR}")
-  find_path(${ID}_PATH "${FFILE}" PATHS "${DEFAULT_PATH}/${REL_INC_DIR}" "${${ID}_PATH}/${REL_INC_DIR}"
-    DOC "The path to ${ID}" NO_DEFAULT_PATH)
+  find_path(${ID}_PATH "${REL_INC_DIR}" PATHS "${DEFAULT_PATH}" "${${ID}_PATH}" #PATH_SUFFIXES "${REL_INC_DIR}" 
+     DOC "The path to ${ID}" NO_DEFAULT_PATH)
 #message(STATUS "path: ${${ID}_PATH}")
-if(EXISTS ${${ID}_PATH})
+if(EXISTS ${${ID}_PATH}/${REL_INC_DIR})
 	message(STATUS "found path: ${${ID}_PATH}")    
-	if(EXISTS ${${ID}_PATH}/${FFILE})
+	if(EXISTS ${${ID}_PATH}/${REL_INC_DIR}/${FFILE})
 		message(STATUS "${ID} detected: TRUE")
-		 string(REPLACE "/${REL_INC_DIR}" "" ${ID}_PATH ${${ID}_PATH})
-		 #message(STATUS "check2: ${${ID}_PATH}")
+	
+		# string(REPLACE "/${REL_INC_DIR}" "" ${ID}_PATH ${${ID}_PATH})
+		
+		#message(STATUS "oo")
+		#message(STATUS "check2: ${${ID}_PATH}")
 		 #message(STATUS "passed")
       	 if(${USE_${ID}} OR ${ALL_ON})
         	set(${ID}_LIB_PATH "${${ID}_PATH}/${REL_LIB_DIR}")
