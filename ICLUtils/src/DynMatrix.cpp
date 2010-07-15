@@ -50,13 +50,13 @@ namespace icl{
 
 
     unsigned int wh = s.cols();    
-    DynMatrix<T> d(wh,wh);                                                                                                                  
+    DynMatrix<T> d(wh,wh,0.0);                                                                                                                  
     std::vector<T> buffer(wh*wh+wh);                                                                                                        
-                                       
+
     IppStatus st = ippFunc(s.data(),wh*sizeof(T),sizeof(T),                                                                                 
                            buffer.data(),                                                                                                   
                            d.data(),wh*sizeof(T),sizeof(T),                                                                                 
-                           wh);                                                                                                             
+                           wh);   
     if(st != ippStsNoErr){                                                                                                                  
       throw SingularMatrixException("matrix is too singular");                                                                              
     }                                                                                                                                       
@@ -258,7 +258,7 @@ namespace icl{
       }
       return V * S * U.transp();
     }else{
-      DynMatrix<T> Q(1,1),R(1,1);
+      DynMatrix<T> Q,R;
       if(cols() > rows()){
         transp().decompose_QR(Q,R);
         return (R.inv() * Q.transp()).transp();
