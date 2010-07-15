@@ -36,7 +36,7 @@
 #include <ICLCC/CCFunctions.h>
 
 #ifdef HAVE_IMAGEMAGICK  
-#include <Magick++.h>
+#include <GraphicsMagick/Magick++.h>
 #endif
 
 namespace icl{
