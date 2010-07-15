@@ -23,7 +23,7 @@ set(CONDITIONLIST "BUILD_EXAMPLES")
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} )
 add_example (${PROJECT_NAME} "blobtracker-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST "BUILD_EXAMPLES HAVE_QT_COND")
+set(CONDITIONLIST BUILD_EXAMPLES HAVE_QT_COND)
 add_example (${PROJECT_NAME} "region-inspector-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "vector-tracker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "interactive-vector-tracker-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

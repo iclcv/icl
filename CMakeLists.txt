@@ -298,6 +298,7 @@ add_external_dependencies(ICLAlgorithms_external_dependencies ICLAlgorithms_depe
 #add subdirs
 add_subdirectory(ICLUtils)
 add_subdirectory(ICLCore)
+#what about the dir located in ../examples
 add_subdirectory(ICLCC)
 add_subdirectory(ICLFilter)
 add_subdirectory(ICLBlob)

@@ -6,7 +6,7 @@ set(LIB_SOURCES "")
 add_libsource (${PROJECT_NAME} "src/Quick.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/QuickRegions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST "BUILD_EXAMPLES HAVE_Qt_COND")
+set(CONDITIONLIST BUILD_EXAMPLES HAVE_Qt_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "quick-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "quick-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -14,9 +14,9 @@ add_example (${PROJECT_NAME} "quick-benchmark" "${CONDITIONLIST}" ICLLibsToLinkA
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #linker
-if(HAVE_Qt_COND)
-target_link_libraries(${PROJECT_NAME} ICLQt)
-endif()
+#if(HAVE_Qt_COND)
+#target_link_libraries(${PROJECT_NAME} ICLQt)
+#endif()
 target_link_libraries(${PROJECT_NAME} ${ICLQuick_dependencies})
 
 link_directories("${LIBRARY_OUTPUT_PATH}")

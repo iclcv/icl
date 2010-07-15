@@ -17,7 +17,7 @@ add_example (${PROJECT_NAME} "bayer-benchmark" "${CONDITIONLIST}" ICLLibsToLinkA
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
 add_example (${PROJECT_NAME} "converter-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST "BUILD_EXAMPLES HAVE_Qt_COND")
+set(CONDITIONLIST BUILD_EXAMPLES HAVE_Qt_COND)
 add_example (${PROJECT_NAME} "colorspace-online-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib

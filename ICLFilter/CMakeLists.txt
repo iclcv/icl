@@ -54,13 +54,13 @@ add_example (${PROJECT_NAME} "threshold-op-test" "${CONDITIONLIST}" ICLLibsToLin
 add_example (${PROJECT_NAME} "weight-channels-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "morphological-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST "BUILD_EXAMPLES HAVE_IPP_COND")
+set(CONDITIONLIST BUILD_EXAMPLES HAVE_IPP_COND)
 add_example (${PROJECT_NAME} "wiener-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST "BUILD_EXAMPLES HAVE_IPP_COND HAVE_Qt_COND")
+set(CONDITIONLIST BUILD_EXAMPLES HAVE_IPP_COND HAVE_Qt_COND)
 add_example (${PROJECT_NAME} "interactive-canny-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST "BUILD_EXAMPLES HAVE_Qt_COND")
+set(CONDITIONLIST BUILD_EXAMPLES HAVE_Qt_COND)
 add_example (${PROJECT_NAME} "local-threshold-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "gabor-op-online-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "convolution-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
