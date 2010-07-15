@@ -10,7 +10,8 @@ libICLGeom_la_SOURCES= \
 ../src/Scene.cpp \
 ../src/SceneObject.cpp \
 ../src/PlaneEquation.cpp \
-../src/ViewRay.cpp
+../src/ViewRay.cpp \
+../src/PoseEstimator.cpp
 
 include_HEADERS= \
 ../../include/ICLGeom/Camera.h \
@@ -21,4 +22,5 @@ include_HEADERS= \
 ../../include/ICLGeom/Scene.h \
 ../../include/ICLGeom/Primitive.h \
 ../../include/ICLGeom/PlaneEquation.h \
-../../include/ICLGeom/ViewRay.h
+../../include/ICLGeom/ViewRay.h \
+../../include/ICLGeom/PoseEstimator.h
