@@ -1453,6 +1453,17 @@ public:
       throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
     }
 
+    if(definition.size() && definition[0] == '!'){
+      if(definition == "!show"){
+        show();
+        return *this;
+      }else if(definition == "!create"){
+        create();
+        return *this;
+      }
+      throw GUISyntaxErrorException(definition,"wrong !xxx command found in GUI::operator<< : allowed are \"!show\" and \"!create\")");
+    }
+    
     /**
         //#ifndef WIN32
         usleep(1000*100);

@@ -114,7 +114,10 @@
         // show the top level gui (this will create all components internally
         // and recursively. Before the top-level "show" function is called,
         // the gui data is inaccessible
+        // alternatively you can use gui << "!show". This is sometimes easier
+        // if you create you GUI in one multi-line streaming expression
         gui.show();
+
       
         // get the images drawing context (as an ImageHandle) and induce it 
         // to show a new image
@@ -193,7 +196,20 @@
       - <b>config</b> single button or embedded tree-view that enables 
         runtime adaption of configuration file parameters
 
+      \subsection CONTROL Special Control Sequences
+      Currently two further string control sequences can also be streamed into GUI instances. Streaming
+      "!show" into a GUI instances automatically calles the show() method. In the same way "!create"
+      is forwarded to call the create method of the GUI instance. Perhaps there will be other
+      control sequences in future.
       
+      \code
+      // create an empty GUI instance of type 'vbox'
+      GUI gui;
+      
+      // embed an 'image' and create and show the GUI.
+      gui << "image[@minsize=32x24]" << "!show";
+      \endcode
+    
         
       \subsection TYPEPARAMS Type Dependent Parameters
       The 2nd part of the GUI definition string is a comma separated list of type dependent parameters.
