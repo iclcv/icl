@@ -24,6 +24,13 @@ add_example (${PROJECT_NAME} "img-iterator-benchmark" "${CONDITIONLIST}" ICLLibs
 add_example (${PROJECT_NAME} "reduce-channels-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "sampled-line-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+set(CONDITIONLIST "HAVE_GTEST_COND")
+set(ICLLibsToLinkAgainst gtest)
+#add_gtest (${PROJECT_NAME} "runner" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_gtest (${PROJECT_NAME} "test-matrix" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_executable(icl-test-image test/test-image.cpp test/runner.cpp)
+target_link_libraries(icl-test-image ${ICLLibsToLinkAgainst})
+
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #linker

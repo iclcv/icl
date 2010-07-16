@@ -56,8 +56,8 @@ set(CONDITIONLIST "HAVE_GTEST_COND")
 set(ICLLibsToLinkAgainst gtest)
 #add_gtest (${PROJECT_NAME} "runner" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 #add_gtest (${PROJECT_NAME} "test-matrix" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-#add_executable(icl-runner test/runner.cpp test/test-matrix.cpp)
-    #target_link_libraries(icl-runner ${ICLLibsToLinkAgainst})
+#add_executable(icl-test-matrix test/test-matrix.cpp test/runner.cpp)
+#target_link_libraries(icl-test-matrix ${ICLLibsToLinkAgainst})
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
