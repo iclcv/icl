@@ -48,6 +48,7 @@ namespace icl{
       matrix Xs), and a set of the same size of points in frame B (called Ys, each point is one column
       of the matrix Ys, the map function will return the homogeneous 4x4-transform matrix that
       transforms points givne w.r.t. frame A into points in frame B.
+      If MapMode is 'Affine' map needs at least 4 points to solve the problem. 
 
       Internally, a MapMode variable is used to determine the algorithm to compute the mapping.
       
@@ -65,7 +66,7 @@ namespace icl{
       Translation,  //!< returns a transformation for the mean translation between the point-sets
       RigidBody,    //!< \textbf{most common} RigidBody mapping (using eigenvector analysis and quaternion representation)
       Similarity,   //!< as RigidBody, but with additional scaling
-      Affine        //!< affine mapping: (XX^-1 * XY)^T (not yet working precisely)
+      Affine        //!< affine mapping: (XX^-1 * XY)^T (here, at least 4 points are needed)
     }; 
       
     /// main mapping function, that is called by all other convenience wrappers (instantiated for T=icl32f and T=icl64f)

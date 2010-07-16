@@ -138,8 +138,9 @@ namespace icl{
   FixedMatrix<T,4,4> PoseEstimator::map(const DynMatrix<T> &Xs, const DynMatrix<T> &Ys, PoseEstimator::MapMode mode) throw (IncompatibleMatrixDimensionException){
     ICLASSERT_THROW(Xs.rows() == 3 || Xs.rows() == 4, IncompatibleMatrixDimensionException("PoseEstimator::map: Xs.rows must be 3 or 4 (for homogeneous coordinates)"));
     ICLASSERT_THROW(Ys.rows() == 3 || Ys.rows() == 4, IncompatibleMatrixDimensionException("PoseEstimator::map: Ys.rows must be 3 or 4 (for homogeneous coordinates)"));
-    ICLASSERT_THROW(Xs.cols() == Ys.cols(), IncompatibleMatrixDimensionException("compute_relative_transformation: Point count in Xs and Ys must be equal"));
-    ICLASSERT_THROW(Xs.cols() > 0, IncompatibleMatrixDimensionException("compute_relative_transformation: At least 1 point is needed for relative pose estimation"));
+    ICLASSERT_THROW(Xs.cols() == Ys.cols(), IncompatibleMatrixDimensionException("PoseEstimator::map: Point count in Xs and Ys must be equal"));
+    ICLASSERT_THROW(Xs.cols() > 0, IncompatibleMatrixDimensionException("PoseEstimator::map: At least 1 point is needed for relative pose estimation"));
+    ICLASSERT_THROW(Xs.cols() > 3 || mode !=Affine, IncompatibleMatrixDimensionException("PoseEstimator::map: for affine mapping, at least 4 points are needed!"));
   
     static const T eps = getDepth<T>() == getDepth<float>() ? -23 : -52; 
   
@@ -184,7 +185,7 @@ namespace icl{
     }  
 
     if (mode == Affine) {
-      M3 R =  XXt.inv() * M;
+      M3 R =  XXt.pinv() * M;
     
       // copy transposed
       for(int y=0;y<3;++y){
