@@ -632,14 +632,16 @@ namespace icl{
       @param y x-pos of the rect
       @param w width of the rect
       @param h height of the rect
+      @param rounding rounded corners (in pixels)
   **/
-  void rect(ImgQ &image, int x, int y, int w, int h);
+  void rect(ImgQ &image, int x, int y, int w, int h, int rounding=0);
 
   /// draws a rect into an image
   /** @param image destination image
       @param r rect to draw
+      @param rounding rounded corners (in pixels)
   **/
-  inline void rect(ImgQ &image, const Rect &r){ rect(image,r.x,r.y,r.width,r.height); }
+  inline void rect(ImgQ &image, const Rect &r, int rounding=0){ rect(image,r.x,r.y,r.width,r.height); }
   
   /// draws a triangle into an image
   /** given 3 points (x1,y1),(x2,y2),(x3,y3) */
