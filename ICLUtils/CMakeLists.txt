@@ -52,6 +52,13 @@ add_example (${PROJECT_NAME} "regular-expression-test" "${CONDITIONLIST}" ICLLib
 add_example (${PROJECT_NAME} "xml-parser-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "config-file-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+set(CONDITIONLIST "HAVE_GTEST_COND")
+set(ICLLibsToLinkAgainst gtest)
+#add_gtest (${PROJECT_NAME} "runner" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_gtest (${PROJECT_NAME} "test-matrix" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_executable(icl-runner test/runner.cpp test/test-matrix.cpp)
+    #target_link_libraries(icl-runner ${ICLLibsToLinkAgainst})
+
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 

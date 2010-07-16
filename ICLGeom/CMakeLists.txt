@@ -27,7 +27,8 @@ set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilt
 add_executable(icl-intrinsic-camera-calibration examples/intrinsic-camera-calibration.cpp 
 		examples/intrinsic-camera-calibration-tools.cpp examples/intrinsic-camera-calibration-tools.h
 )
-target_link_libraries(icl-intrinsic-camera-calibration ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils)
+#target_link_libraries(icl-intrinsic-camera-calibration ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils)
+target_link_libraries(icl-intrinsic-camera-calibration ${ICLLibsToLinkAgainst})
 endif()
 endif()
 
