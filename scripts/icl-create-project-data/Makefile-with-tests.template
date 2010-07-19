@@ -89,8 +89,14 @@ DOC_INSTALL_PREFIX=${INSTALL_PREFIX}/doc/${PROJECT_NAME}/${VERSION}
 endif
 REL_INC_INSTALL_PREFIX=$(patsubst ${INSTALL_PREFIX}/%,%,${INC_INSTALL_PREFIX})
 
+ECHO_TEST_RESULT=$(shell echo -e test > .testfile && cat .testfile && rm .testfile)
 
+ifeq  "${ECHO_TEST_RESULT}" "test" 
 ECHO=@echo -e
+else
+ECHO=@echo
+endif
+
 INSTALL=${AT}install
 
 # save flags from Makefile.custom
