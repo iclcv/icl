@@ -3,16 +3,15 @@ This is a short howto for the cmake build system.
 It will be updated as works goes on.
 
 TODOs:
--build static libs
+-gtest
 -make better help
 -windows port (if possible)
--make deb package
 
 The cmake build system is an alternative way to build the ICL library.
 Currently it supports only the build of dynamic libraries and the example applications
 (no static libs). All libraries should be found, if installed correctly on your system.
-Paths to libraries are set for the ag-ni, or if you use CMakeLists.txt_ubuntu
-for standard ubuntu installation (to use remane CMakeLists.txt_ubuntu to CMakeLists.txt). 
+If some libraries are not found just enter the path of it in the gui in the correct field.
+Paths to libraries are set for standard ubuntu installation. 
 If you installed  desired libs somewhere else or would like to use other versions look 
 at the Usage part of this document.
 
@@ -33,6 +32,11 @@ Next you will be asked what Makefiles/Projectfiles you would like to generate wi
 On linuxsystem select "Unix Makefiles" and click on "Finish".
 You can now see some output in the lower part
 of the cmake-gui. Make the desired changes in the upper part of the cmake-gui.
+By default all libraries are turned off, even if cmake found them.
+To Turn them on, just click on the desired checkbox.
+You can also turn on the checkbox called ALL_ON, this will add all available libraries to
+the current configuration. PKG_CONFIG_PATH is now also available for libraries supporting it.
+You should enter a new install path for the build libraries.
 
 Note 0: If optional libs are found and selected, definitions are add to the build information.
 	cmake does not support a remove of these added definitions,so you should not deselect them
