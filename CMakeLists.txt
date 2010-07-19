@@ -9,7 +9,7 @@ cmake_policy(SET CMP0002 OLD)
 #cmake_policy(SET CMP0015 OLD)
 
 set(ICL_DEBUG_MODE OFF CACHE BOOL "Compile with debug options")
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 if(ICL_DEBUG_MODE)
 set(CMAKE_CXX_FLAGS "-Wall -O0 -g3")
 set(CMAKE_BUILD_TYPE "Debug" CACHE INTERNAL "")
@@ -310,7 +310,7 @@ add_external_dependencies(ICLOpenCV_external_dependencies ICLOpenCV_dependencies
 add_external_dependencies(ICLIO_external_dependencies ICLIO_dependencies)
 add_external_dependencies(ICLQt_external_dependencies ICLQt_dependencies)
 add_external_dependencies(ICLAlgorithms_external_dependencies ICLAlgorithms_dependencies)
-
+message(STATUS "${ICLQuick_dependencies}")
 #add subdirs
 add_subdirectory(ICLUtils)
 add_subdirectory(ICLCore)
