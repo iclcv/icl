@@ -9,7 +9,6 @@ cmake_policy(SET CMP0002 OLD)
 #cmake_policy(SET CMP0015 OLD)
 
 set(ICL_DEBUG_MODE OFF CACHE BOOL "Compile with debug options")
-set(CMAKE_VERBOSE_MAKEFILE ON)
 if(ICL_DEBUG_MODE)
 set(CMAKE_CXX_FLAGS "-Wall -O0 -g3")
 set(CMAKE_BUILD_TYPE "Debug" CACHE INTERNAL "")
@@ -19,6 +18,13 @@ set(CMAKE_BUILD_TYPE "Release" CACHE INTERNAL "")
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
+set(ICL_VERBOSE_MAKEFILE OFF CACHE BOOL "Compile with more output")
+if(ICL_VERBOSE_MAKEFILE)
+	set(CMAKE_VERBOSE_MAKEFILE OFF)
+else()
+	set(CMAKE_VERBOSE_MAKEFILE ON)
+endif()
+message(STATUS "Verbose makefiles: ${CMAKE_VERBOSE_MAKEFILE}")
 
 set(ICL_INSTALL_PREFIX "/temp/testICL${VERSION}" CACHE PATH "")
 set(CMAKE_INSTALL_PREFIX "${ICL_INSTALL_PREFIX}" CACHE INTERNAL "")
@@ -310,7 +316,7 @@ add_external_dependencies(ICLOpenCV_external_dependencies ICLOpenCV_dependencies
 add_external_dependencies(ICLIO_external_dependencies ICLIO_dependencies)
 add_external_dependencies(ICLQt_external_dependencies ICLQt_dependencies)
 add_external_dependencies(ICLAlgorithms_external_dependencies ICLAlgorithms_dependencies)
-message(STATUS "${ICLQuick_dependencies}")
+
 #add subdirs
 add_subdirectory(ICLUtils)
 add_subdirectory(ICLCore)
@@ -332,6 +338,17 @@ add_subdirectory(ICLAlgorithms)
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
 	FILES_MATCHING PATTERN "*.h"
+	REGEX .svn* EXCLUDE
+)
+
+install(FILES ${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_SOURCE_DIR}/scripts/icl-make
+	PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/etc
+	FILES_MATCHING PATTERN "*.template"
 	REGEX .svn* EXCLUDE
 )
 
@@ -363,21 +380,21 @@ endif()
 
 if(SYSTEM_LINUX_COND)
 	set(lprefix      ${CMAKE_INSTALL_PREFIX})
-	icl_create_pkg_config_file2("ICLUtils" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
-	icl_create_pkg_config_file2("ICLCore" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
-	icl_create_pkg_config_file2("ICLCC" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
-	icl_create_pkg_config_file2("ICLFilter" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
-	icl_create_pkg_config_file2("ICLBlob" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
+	icl_create_pkg_config_file2("ICLUtils" "${ICLUtils_internal_dependencies}" "${ICLUtils_external_dependencies}")
+	icl_create_pkg_config_file2("ICLCore" "${ICLCore_internal_dependencies}" "${ICLCore_external_dependencies}")
+	icl_create_pkg_config_file2("ICLCC" "${ICLCC_internal_dependencies}" "${ICLCC_external_dependencies}")
+	icl_create_pkg_config_file2("ICLFilter" "${ICLFilter_internal_dependencies}" "${ICLFilter_external_dependencies}")
+	icl_create_pkg_config_file2("ICLBlob" "${ICLICLBlob_internal_dependencies}" "${ICLBlob_external_dependencies}")
 	if(${HAVE_OPENCV_COND})
-		icl_create_pkg_config_file2("ICLOpenCV" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
+		icl_create_pkg_config_file2("ICLOpenCV" "${ICLOpenCV_internal_dependencies}" "${ICLOpenCV_external_dependencies}")
 	endif()	
 	icl_create_pkg_config_file2("ICLIO" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
 	if(${HAVE_Qt_COND})
-		icl_create_pkg_config_file2("ICLQt" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
+		icl_create_pkg_config_file2("ICLQt" "${ICLQt_internal_dependencies}" "${ICLQt_external_dependencies}")
 	endif()
-	icl_create_pkg_config_file2("ICLQuick" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
-	icl_create_pkg_config_file2("ICLGeom" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
-	icl_create_pkg_config_file2("ICLAlgorithms" "${ICLIO_internal_dependencies}" "${ICLIO_external_dependencies}")
+	icl_create_pkg_config_file2("ICLQuick" "${ICLQuick_internal_dependencies}" "${ICLQuick_external_dependencies}")
+	icl_create_pkg_config_file2("ICLGeom" "${ICLGeom_internal_dependencies}" "${ICLGeom_external_dependencies}")
+	icl_create_pkg_config_file2("ICLAlgorithms" "${ICLAlgorithms_internal_dependencies}" "${ICLAlgorithms_external_dependencies}")
 
 	set(ICL_SUB_PACKAGE "ICL")
 	set(REQUIRE "ICLUtils ICLCore ICLIO ICLCC ICLBlob ICLFilter ICLOpenCV ICLQuick ICLGeom ICLAlgorithms ICLQt ICLOpenCV")
@@ -391,6 +408,7 @@ endif()
 set(CPACK_PACKAGE_DESCRIPTION "Do the example thingie")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A longer description about our example app.")
 set(CPACK_PACKAGE_NAME "ICL - Image Component Library")
+#xine qt libz libjpg graphicsmagick opengl
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.6), libgcc1 (>= 1:4.1)")
 
 set(CPACK_PACKAGE_CONTACT "wer auch immer")

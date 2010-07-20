@@ -12,20 +12,13 @@ if(EXISTS ${${ID}_PATH}/${REL_INC_DIR})
 	message(STATUS "found path: ${${ID}_PATH}")    
 	if(EXISTS ${${ID}_PATH}/${REL_INC_DIR}/${FFILE})
 		message(STATUS "${ID} detected: TRUE")
-	
-		# string(REPLACE "/${REL_INC_DIR}" "" ${ID}_PATH ${${ID}_PATH})
-		
-		#message(STATUS "oo")
-		#message(STATUS "check2: ${${ID}_PATH}")
-		 #message(STATUS "passed")
-      	 if(${USE_${ID}} OR ${ALL_ON})
+		if(${USE_${ID}} OR ${ALL_ON})
         	set(${ID}_LIB_PATH "${${ID}_PATH}/${REL_LIB_DIR}")
         	set(${ID}_INCLUDE_PATH "${${ID}_PATH}/${REL_INC_DIR}")		
         	set(USE_${ID} ON CACHE BOOL "Use ${ID} when available" FORCE)
         	set(${DEFINE_COND} TRUE)
         	add_definitions( -DHAVE_${ID})
-			message(STATUS "check3: ${${ID}_PATH}/${REL_INC_DIR} ${${ID}_PATH}/${REL_LIB_DIR}")
-        	include_directories(${${ID}_PATH}/${REL_INC_DIR})
+			include_directories(${${ID}_PATH}/${REL_INC_DIR})
         	link_directories(${${ID}_PATH}/${REL_LIB_DIR})
         	#include_directories(${DEFAULT_PATH}/${REL_INC_DIR})
         	#link_directories(${DEFAULT_PATH}/${REL_LIB_DIR})
@@ -33,8 +26,6 @@ if(EXISTS ${${ID}_PATH}/${REL_INC_DIR})
         	set(${DEFINE_COND} FALSE)
       	endif()
 	else()
-		#find_path(${ID}_PATH "${FFILE}" PATHS "${ID}_PATH-NOTFOUND" "${${ID}_PATH}/${REL_INC_DIR}"
-   		#DOC "The path to ${ID}" NO_DEFAULT_PATH)
 		message(STATUS "File ${FFILE} not found in ${${ID}_PATH}")
     endif()
 
@@ -116,6 +107,33 @@ macro(add_gtest PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
     endif()
   endforeach()
   if(${COND})
+message(STATUS "hoho: ${FILE}")
+#SET (LATEX_COMPILE latex)
+
+#SET(DOC_ROOT ${Test_SOURCE_DIR}/Documentation)
+
+ADD_CUSTOM_TARGET (check COMMAND 
+
+add_executable(icl-test-${PRJECT_N} ${FILE})
+target_link_libraries(icl-test-${PRJECT_N} ${ICLLibsToLinkAgainst})
+
+					WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PRJECT_N}/test
+                    
+#                    SOURCES ${FILE}
+)
+#ADD_CUSTOM_COMMAND(
+ #   SOURCE    ${DOC_ROOT}/junk.tex
+  #  COMMAND   ${LATEX_COMPILE}
+   # ARGS      ${DOC_ROOT}/junk.tex
+    #TARGET    LaTeXDocument
+    #OUTPUTS   ${Test_BINARY_DIR}/junk.dvi
+#)
+#ADD_CUSTOM_COMMAND(
+ #   SOURCE    LaTeXDocument
+  #  TARGET    LaTeXDocument
+   # DEPENDS   ${Test_BINARY_DIR}/junk.dvi
+#)
+
 	#message(STATUS "${PROJECT_N} ${FILE}")
     add_executable(icl-${FILE} test/${FILE}.cpp)
     target_link_libraries(icl-${FILE} ${${ICLLibsToLinkAgainst}})
@@ -133,6 +151,7 @@ macro(add_doc_gen PROJECT_NAME)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
       PATTERN "doxyfile" EXCLUDE
+	REGEX .svn* EXCLUDE
       )
     set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES doc/html)
   endif()
