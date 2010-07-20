@@ -147,3 +147,12 @@ macro(icl_create_pkg_config_file2 ICL_SUB_PACKAGE_PLACEHOLDER REQUIRE_INTERNAL R
   set(${OPTIONAL_LIBS} "")
 endmacro()
 
+
+macro(icl_create_pkg_config_file_if PACKAGE CONDITION)
+  if("${CONDITION}" STREQUAL  "TRUE")
+    message(STATUS "creating ${PACKAGE}.pc")
+    icl_create_pkg_config_file2("${PACKAGE}" "${${PACKAGE}_internal_dependencies}" "${${PACKAGE}_external_dependencies}")
+  else()
+    message(STATUS "skipped creation of ${PACKAGE}.pc")
+  endif()
+endmacro()
