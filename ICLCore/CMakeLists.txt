@@ -25,28 +25,10 @@ add_example (${PROJECT_NAME} "reduce-channels-test" "${CONDITIONLIST}" ICLLibsTo
 add_example (${PROJECT_NAME} "sampled-line-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST "HAVE_GTEST_COND")
-set(ICLLibsToLinkAgainst gtest)
-#add_gtest (${PROJECT_NAME} "runner" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-#add_gtest (${PROJECT_NAME} "test/test-image.cpp;test/runner.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-#ADD_CUSTOM_TARGET (check)
-#ADD_CUSTOM_TARGET (check
-#add_executable  test/icl-test-image test/test-image.cpp test/runner.cpp     
-#COMMAND target_link_libraries  icl-test-${PRJECT_N} ${ICLLibsToLinkAgainst}
-#SOURCES test/test-image.cpp test/runner.cpp
-#WORKING_DIRECTORY .
-#)
-#ADD_CUSTOM_COMMAND(TARGET    check
-#add_executable  test/icl-test-image test/test-image.cpp test/runner.cpp     
-#COMMAND target_link_libraries  icl-test-${PRJECT_N} ${ICLLibsToLinkAgainst}
-#)
-#TARGET target
- #                    PRE_BUILD | PRE_LINK | POST_BUILD
-  #                   COMMAND command1 [ARGS] [args1...]
-   #                  [COMMAND command2 [ARGS] [args2...] ...]
-    #                 [WORKING_DIRECTORY dir]
-     #                [COMMENT comment] [VERBATIM])
-#create lib
+set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
+add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+#create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #linker
 target_link_libraries(${PROJECT_NAME} ${ICLCore_dependencies})

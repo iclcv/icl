@@ -1,13 +1,11 @@
 include(CheckIncludeFile)
-
 message(STATUS "macros found")
+
 macro(icl_check_external_package ID FFILE REL_LIB_DIR REL_INC_DIR DEFAULT_PATH DEFINE_COND)
   set(${DEFINE_COND} FALSE)
   message(STATUS "-- checking package ${ID} --")
   message(STATUS "searching for ${FFILE}")# in ${DEFAULT_PATH}/${REL_INC_DIR}")# and ${${ID}_PATH}/${REL_INC_DIR}")
-  find_path(${ID}_PATH "${REL_INC_DIR}" PATHS "${DEFAULT_PATH}" "${${ID}_PATH}" #PATH_SUFFIXES "${REL_INC_DIR}" 
-     DOC "The path to ${ID}" NO_DEFAULT_PATH)
-#message(STATUS "path: ${${ID}_PATH}")
+  find_path(${ID}_PATH "${REL_INC_DIR}" PATHS "${DEFAULT_PATH}" "${${ID}_PATH}" DOC "The path to ${ID}" NO_DEFAULT_PATH)
 if(EXISTS ${${ID}_PATH}/${REL_INC_DIR})
 	message(STATUS "found path: ${${ID}_PATH}")    
 	if(EXISTS ${${ID}_PATH}/${REL_INC_DIR}/${FFILE})
@@ -20,8 +18,6 @@ if(EXISTS ${${ID}_PATH}/${REL_INC_DIR})
         	add_definitions( -DHAVE_${ID})
 			include_directories(${${ID}_PATH}/${REL_INC_DIR})
         	link_directories(${${ID}_PATH}/${REL_LIB_DIR})
-        	#include_directories(${DEFAULT_PATH}/${REL_INC_DIR})
-        	#link_directories(${DEFAULT_PATH}/${REL_LIB_DIR})
       	else()
         	set(${DEFINE_COND} FALSE)
       	endif()
@@ -42,28 +38,21 @@ endmacro()
 
 
 macro(add_internal_dependencies DEPLIST dependencies)
-  #message(STATUS "depp: ${${DEPLIST}}")
   foreach(DEPENDENCY ${${DEPLIST}})
-    #message(STATUS "look for ${DEPENDENCY}_internal_dependencies")		
     add_internal_dependencies(${DEPENDENCY}_internal_dependencies ${dependencies})	
   endforeach()
-  #message(STATUS "de: ${${dependencies}}")	
   foreach(DEPENDENCY ${${DEPLIST}})
     set(${dependencies} "${DEPENDENCY};${${dependencies}}")	
   endforeach()
-  #set(templist ${${dependencies}})
   list(LENGTH ${dependencies} listsize)
   if(${listsize} GREATER 1)
-    #message(STATUS "removing")	
     list(REMOVE_DUPLICATES ${dependencies})
   endif()
 endmacro()
 
 macro(add_external_dependencies DEPLIST dependencies)
-	#message(STATUS "${DEPLIST}")
   foreach(DEPENDENCY ${${DEPLIST}})
     if(HAVE_${DEPENDENCY}_COND)
-		#message(STATUS "adding dependeny ${DEPENDENCY}")
       set(${dependencies} "${${DEPENDENCY}_LIBS_l};${${dependencies}}")
     endif()
   endforeach()
@@ -77,10 +66,8 @@ macro(add_libsource PROJECT_NAME FILE CONDITIONLIST LIBSOURCES)
     endif()
   endforeach()
   if(${COND})
-    set(${LIBSOURCES} "${${LIBSOURCES}};${FILE}")
-    #message(STATUS "added ${FILE} to ${PROJECT_NAME} sources.")		
-  endif() 
-  #message(STATUS "ddd:${${LIBSOURCES}}")  
+    set(${LIBSOURCES} "${${LIBSOURCES}};${FILE}")	
+  endif()
 endmacro()
 
 macro(add_example PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
@@ -91,14 +78,13 @@ macro(add_example PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
     endif()
   endforeach()
   if(${COND})
-	#message(STATUS "${PROJECT_N} ${FILE}")
     add_executable(icl-${FILE} examples/${FILE}.cpp)
     target_link_libraries(icl-${FILE} ${${ICLLibsToLinkAgainst}})
     install (TARGETS icl-${FILE} RUNTIME DESTINATION bin)
-    #message(STATUS "added ${FILE} to ${PROJECT_NAME} examples.")
   endif()
 endmacro()
 
+#TODO irgendwas muss noch mit dem parameter FILE passieren
 macro(add_gtest PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
   set(COND TRUE)	
   foreach(CONDITION ${CONDITIONLIST})
@@ -107,38 +93,12 @@ macro(add_gtest PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
     endif()
   endforeach()
   if(${COND})
-message(STATUS "hoho: ${FILE}")
-#SET (LATEX_COMPILE latex)
-
-#SET(DOC_ROOT ${Test_SOURCE_DIR}/Documentation)
-
-ADD_CUSTOM_TARGET (check COMMAND 
-
-add_executable(icl-test-${PRJECT_N} ${FILE})
-target_link_libraries(icl-test-${PRJECT_N} ${ICLLibsToLinkAgainst})
-
-					WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PRJECT_N}/test
-                    
-#                    SOURCES ${FILE}
-)
-#ADD_CUSTOM_COMMAND(
- #   SOURCE    ${DOC_ROOT}/junk.tex
-  #  COMMAND   ${LATEX_COMPILE}
-   # ARGS      ${DOC_ROOT}/junk.tex
-    #TARGET    LaTeXDocument
-    #OUTPUTS   ${Test_BINARY_DIR}/junk.dvi
-#)
-#ADD_CUSTOM_COMMAND(
- #   SOURCE    LaTeXDocument
-  #  TARGET    LaTeXDocument
-   # DEPENDS   ${Test_BINARY_DIR}/junk.dvi
-#)
-
-	#message(STATUS "${PROJECT_N} ${FILE}")
-    add_executable(icl-${FILE} test/${FILE}.cpp)
-    target_link_libraries(icl-${FILE} ${${ICLLibsToLinkAgainst}})
-    #install (TARGETS icl-${FILE} RUNTIME DESTINATION bin)
-    #message(STATUS "added ${FILE} to ${PROJECT_NAME} examples.")
+	add_custom_target(check 
+		COMMAND 
+		g++ -O0 -L${GTEST_LIB_PATH} -l${${ICLLibsToLinkAgainst}} -I${GTEST_INCLUDE_PATH} "${FILE}" runner.cpp -o icl-test-${FILE}
+		COMMAND ./icl-test-${FILE}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${PROJECT_N}/test
+	)
   endif()
 endmacro()
 
@@ -157,17 +117,6 @@ macro(add_doc_gen PROJECT_NAME)
   endif()
 endmacro()
 
-#write pkg config files
-macro(icl_create_pkg_config_file ICL_SUB_PACKAGE_PLACEHOLDER REQUIRE OPTIONAL_INCLUDES OPTIONAL_LIBS)
-  set(ICL_PACKAGE_DESCRIPTION "ICL's ${ICL_SUB_PACKAGE_PLACEHOLDER} package")
-  set(LIBS "-L\${exec_prefix}/lib -l${ICL_SUB_PACKAGE_PLACEHOLDER} '-Wl,-rpath -Wl,\${exec_prefix}/lib ${${OPTIONAL_LIBS}}'")
-  set(INCLUDES "-I\${prefix}/include/ICL ${${OPTIONAL_INCLUDES}}")
-  configure_file(pkg.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}.pc @ONLY)
-  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}.pc" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/)
-  set(${OPTIONAL_INCLUDES} "")
-  set(${OPTIONAL_LIBS} "")
-endmacro()
-#
 
 macro(icl_create_pkg_config_file2 ICL_SUB_PACKAGE_PLACEHOLDER REQUIRE_INTERNAL REQUIRE_EXTERNAL)
   set(ICL_SUB_PACKAGE "${ICL_SUB_PACKAGE_PLACEHOLDER}")
@@ -198,12 +147,3 @@ macro(icl_create_pkg_config_file2 ICL_SUB_PACKAGE_PLACEHOLDER REQUIRE_INTERNAL R
   set(${OPTIONAL_LIBS} "")
 endmacro()
 
-
-macro(icl_create_pkg_config_file_if PACKAGE CONDITION)
-  if("${CONDITION}" STREQUAL  "TRUE")
-    message(STATUS "creating ${PACKAGE}.pc")
-    icl_create_pkg_config_file2("${PACKAGE}" "${${PACKAGE}_internal_dependencies}" "${${PACKAGE}_external_dependencies}")
-  else()
-    message(STATUS "skipped creation of ${PACKAGE}.pc")
-  endif()
-endmacro()

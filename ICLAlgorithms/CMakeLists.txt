@@ -34,6 +34,10 @@ add_example (${PROJECT_NAME} "generic-surf-demo" "${CONDITIONLIST}" ICLLibsToLin
 set(CONDITIONLIST BUILD_EXAMPLES HAVE_SVS_COND)
 add_example (${PROJECT_NAME} "svs-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+set(CONDITIONLIST "HAVE_GTEST_COND")
+set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
+#add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 #linker

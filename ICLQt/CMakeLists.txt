@@ -85,23 +85,19 @@ SET(HWQ_Qt4_SRC
 	"../include/ICLQt/ToggleButton.h"
 	"../include/ICLQt/ConfigFileGUI.h"
 )
-#SET(HWQ_Qt4_UI "")
-#SET(HWQ_Qt4_RES "")
 
 QT4_WRAP_CPP(HWQ_MOC_CPP ${HWQ_Qt4_SRC})
-#QT4_WRAP_UI(HWQ_UI_CPP ${HWQ_Qt4_UI})
-#QT4_ADD_RESOURCES(HWQ_RES_H ${HWQ_Qt4_RES})
 
 # General
 SET( HWQ_SRC
 	"${LIB_SOURCES}"
 	${HWQ_MOC_CPP}
-#	${HWQ_UI_CPP}
-#	${HWQ_RES_H}
 )
-#message(STATUS "src: ${HWQ_SRC}")
-#SET( HWQ_LIB ${QT_LIBRARIES})
-#message(STATUS "qtlibs: ${QT_LIBRARIES}")
+
+set(CONDITIONLIST "HAVE_GTEST_COND")
+set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
+#add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 #create lib
 add_library(${PROJECT_NAME} SHARED ${HWQ_SRC})
 #target_link_libraries(${PROJECT_NAME} ${HWQ_LIB} )

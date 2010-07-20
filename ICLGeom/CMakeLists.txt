@@ -23,14 +23,19 @@ if (HAVE_IPP_COND)
 set(CONDITIONLIST BUILD_EXAMPLES HAVE_Qt_COND HAVE_IPP_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils)
 #TODO liste von sourcefiles
-#add_example (${PROJECT_NAME} "quick-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_executable(icl-intrinsic-camera-calibration examples/intrinsic-camera-calibration.cpp 
-		examples/intrinsic-camera-calibration-tools.cpp examples/intrinsic-camera-calibration-tools.h
-)
+#add_example (${PROJECT_NAME} "icl-intrinsic-camera-calibration examples/intrinsic-camera-calibration.cpp 
+#		examples/intrinsic-camera-calibration-tools.cpp examples/intrinsic-camera-calibration-tools.h" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_executable(icl-intrinsic-camera-calibration examples/intrinsic-camera-calibration.cpp 
+#		examples/intrinsic-camera-calibration-tools.cpp examples/intrinsic-camera-calibration-tools.h
+#)
 #target_link_libraries(icl-intrinsic-camera-calibration ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils)
-target_link_libraries(icl-intrinsic-camera-calibration ${ICLLibsToLinkAgainst})
+#target_link_libraries(icl-intrinsic-camera-calibration ${ICLLibsToLinkAgainst})
 endif()
 endif()
+
+set(CONDITIONLIST "HAVE_GTEST_COND")
+set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
+add_gtest (${PROJECT_NAME} "test-camera.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
