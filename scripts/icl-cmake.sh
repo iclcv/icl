@@ -32,7 +32,7 @@ if [ -e CMakeCache.txt ] ; then
     exit -1;
 fi
 
-ICLVER=$(VERSION.sh)
+ICLVER=$(./VERSION.sh)
 
 mkdir -p build/${VERSION}
 cd build/${VERSION}
