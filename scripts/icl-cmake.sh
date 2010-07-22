@@ -32,7 +32,9 @@ if [ -e CMakeCache.txt ] ; then
     exit -1;
 fi
 
-INSTALL_PREFIX=/vol/nivision/ICL/${ICLVER}${VERSION_POSTSFIX}
+ICLVER=$(./VERSION.sh)
+
+INSTALL_PREFIX=/vol/nivision/ICL/${ICLVER}${VERSION_POSTFIX}
 IPP_PATH=/vol/nivision/share/IPP/6.0
 MKL_PATH=/vol/nivision/share/MKL/10.2
 LIBDC_PATH=/usr
@@ -51,7 +53,7 @@ if [ "$IP_PREFIX" = "129.70" ] ; then
    OPENCV_PATH=/vol/nivision
 fi
 
-ICLVER=$(./VERSION.sh)
+
 
 mkdir -p build/${VERSION}
 cd build/${VERSION}
