@@ -401,7 +401,7 @@ foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGE_PLACEHOLDER2})
 		FILES_MATCHING 
 		PATTERN "*.png" 
 		PATTERN "*.jpg")
-	exec_program(mkdir ARGS "\"${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html/\"")
+	exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html/\"")
 endforeach()
 
 # add doxygen as dependency to doc-target

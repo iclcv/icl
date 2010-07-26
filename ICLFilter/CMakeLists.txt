@@ -66,7 +66,7 @@ add_example (${PROJECT_NAME} "gabor-op-online-example" "${CONDITIONLIST}" ICLLib
 add_example (${PROJECT_NAME} "convolution-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "warp-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "interactive-affine-op-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-#add_example (${PROJECT_NAME} "filter-array" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "filter-array" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "fft-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST "HAVE_GTEST_COND")

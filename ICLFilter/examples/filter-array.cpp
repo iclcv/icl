@@ -63,7 +63,7 @@ GUI gui_col(int i){
 }
 
 void init(){
-  N = pa_subarg<int>("-n",0,3);
+  N = pa("-n");
   
   gui << ( GUI("vbox") 
            << "image[@handle=input@minsize=8x6]"
@@ -121,8 +121,8 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  pa_explain("-input","image source definition like -input dc 0");
-  pa_explain("-n","number of filter instances in a row (3 by default)");
+  paex("-input","image source definition like -input dc 0")
+      ("-n","number of filter instances in a row (3 by default)");
   
   return ICLApplication(n,ppc,"-input(2) -n(1)",init,run).exec();
 }
