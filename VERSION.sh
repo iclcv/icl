@@ -1,2 +1,6 @@
 #this  is just the version script
-echo 5.2.0
+MAJOR=$(cat CMakeLists.txt | grep ICL_MAJOR | grep -v VERSION| cut -d \" -f 2);
+MINOR=$(cat CMakeLists.txt | grep ICL_MINOR | grep -v VERSION| cut -d \" -f 2);
+PATCH=$(cat CMakeLists.txt | grep ICL_PATCH | grep -v VERSION| cut -d \" -f 2);
+
+echo ${MAJOR}.${MINOR}.${PATCH}
