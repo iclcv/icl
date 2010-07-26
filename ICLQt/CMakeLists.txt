@@ -93,9 +93,14 @@ execute_process(
    COMMAND pkg-config --variable moc_location QtCore 
    OUTPUT_VARIABLE QT_MOC_EXECUTABLE
    RESULT_VARIABLE moc_found)
+string(STRIP "${QT_MOC_EXECUTABLE}" QT_MOC_EXECUTABLE)
 SET(HWQ_SRC ${LIB_SOURCES})
 #message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
-set(QT_MOC_EXECUTABLE ${ICL_XDEP_QT_PATH}/bin/moc)
+
+# QT_MOC_E.. seems to contain the new line at end ..
+#set(QT_MOC_EXECUTABLE ${ICL_XDEP_QT_PATH}/bin/moc)
+
+
 if(NOT ${QT_MOC_EXECUTABLE} STREQUAL "")
 message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
 # QT4_GET_MOC_FLAGS(moc_flags)
@@ -160,6 +165,7 @@ ENDMACRO (QT4_MAKE_OUTPUT_FILE )
 
   SET(outfiles "")
 set(moc_options "")
+#set(_moc_flags "")
 
 QT4_EXTRACT_OPTIONS(moc_files moc_options ${HWQ_Qt4_SRC})
 #set(moc_files ${HWQ_Qt4_SRC})
