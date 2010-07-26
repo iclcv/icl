@@ -35,8 +35,8 @@
 #ifndef ICL_TAB_HANDLE_H
 #define ICL_TAB_HANDLE_H
 
-#include <QTabWidget>
-#include <QLayout>
+#include <QtGui/QTabWidget>
+#include <QtGui/QLayout>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ContainerHandle.h>
 namespace icl{

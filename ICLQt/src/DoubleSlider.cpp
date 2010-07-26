@@ -34,9 +34,9 @@
 
 #include <ICLQt/DoubleSlider.h>
 
-#include <QSlider>
-#include <QLabel>
-#include <QGridLayout>
+#include <QtGui/QSlider>
+#include <QtGui/QLabel>
+#include <QtGui/QGridLayout>
 #include <math.h>
 
 using namespace std;

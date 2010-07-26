@@ -45,28 +45,28 @@
 #include <ICLQt/Widget.h>
 #include <ICLIO/File.h>
 
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QGroupBox>
-#include <QRadioButton>
-#include <QWidget>
-#include <QLayout>
-#include <QPushButton>
-#include <QLabel>
-#include <QSlider>
-#include <QLCDNumber>
-#include <QLineEdit>
-#include <QIntValidator>
-#include <QDoubleValidator>
-#include <QComboBox>
-#include <QSpinBox>
-#include <QLabel>
-#include <QTabBar>
-#include <QMainWindow>
-#include <QDockWidget>
-#include <QTabWidget>
-#include <QApplication>
-#include <QSplitter>
+#include <QtGui/QHBoxLayout>
+#include <QtGui/QVBoxLayout>
+#include <QtGui/QGroupBox>
+#include <QtGui/QRadioButton>
+#include <QtGui/QWidget>
+#include <QtGui/QLayout>
+#include <QtGui/QPushButton>
+#include <QtGui/QLabel>
+#include <QtGui/QSlider>
+#include <QtGui/QLCDNumber>
+#include <QtGui/QLineEdit>
+#include <QtGui/QIntValidator>
+#include <QtGui/QDoubleValidator>
+#include <QtGui/QComboBox>
+#include <QtGui/QSpinBox>
+#include <QtGui/QLabel>
+#include <QtGui/QTabBar>
+#include <QtGui/QMainWindow>
+#include <QtGui/QDockWidget>
+#include <QtGui/QTabWidget>
+#include <QtGui/QApplication>
+#include <QtGui/QSplitter>
 
 #include <ICLQt/ProxyLayout.h>
 
@@ -92,7 +92,7 @@
 #include <ICLQt/CheckBoxHandle.h>
 #include <ICLQt/MultiDrawHandle.h>
 #include <ICLQt/SplitterHandle.h>
-#include <QCheckBox>
+#include <QtGui/QCheckBox>
 
 #include <ICLQt/ConfigFileGUI.h>
 #include <ICLQt/CamCfgWidget.h>

@@ -35,8 +35,8 @@
 #ifndef ICL_IMG_PARAM_WIDGET_H
 #define ICL_IMG_PARAM_WIDGET_H
 
-#include <QWidget>
-#include <QString>
+#include <QtGui/QWidget>
+#include <QtCore/QString>
 #include <ICLCore/Types.h>
 
 /** \cond **/

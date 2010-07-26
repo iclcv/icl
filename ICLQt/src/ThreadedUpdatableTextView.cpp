@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/ThreadedUpdatableTextView.h>
-#include <QApplication>
+#include <QtGui/QApplication>
 #include <ICLUtils/Macros.h>
 namespace icl{
   

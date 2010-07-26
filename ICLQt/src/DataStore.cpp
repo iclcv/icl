@@ -58,14 +58,14 @@
 #include <ICLQt/StringHandle.h>
 #include <ICLQt/CheckBoxHandle.h>
 
-#include <QCheckBox>
-#include <QComboBox>
-#include <QLineEdit>
-#include <QSpinBox>
-#include <QRadioButton>
-#include <QSlider>
+#include <QtGui/QCheckBox>
+#include <QtGui/QComboBox>
+#include <QtGui/QLineEdit>
+#include <QtGui/QSpinBox>
+#include <QtGui/QRadioButton>
+#include <QtGui/QSlider>
 #include <ICLQt/CompabilityLabel.h>
-#include <QPushButton>
+#include <QtGui/QPushButton>
 #include <ICLQt/Widget.h>
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/DrawWidget3D.h>

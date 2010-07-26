@@ -36,8 +36,8 @@
 #define ICL_GUI_FPS_H
 
 #include <string>
-#include <QString>
-#include <QWidget>
+#include <QtCore/QString>
+#include <QtGui/QWidget>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/CompabilityLabel.h>
 #include <ICLUtils/FPSEstimator.h>

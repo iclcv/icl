@@ -34,7 +34,7 @@
 
 #include <ICLQt/BorderHandle.h>
 
-#include <QGroupBox>
+#include <QtGui/QGroupBox>
 
 namespace icl{
   std::string BorderHandle::getTitle() const{

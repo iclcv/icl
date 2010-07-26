@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQuick/Common.h>
-#include <QProgressBar>
+#include <QtGui/QProgressBar>
 
 GUI gui;
 

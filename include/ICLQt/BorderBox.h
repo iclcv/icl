@@ -35,8 +35,8 @@
 #ifndef ICLBORDERBOX_H
 #define ICLBORDERBOX_H
 
-#include <QGroupBox>
-#include <QVBoxLayout>
+#include <QtGui/QGroupBox>
+#include <QtGui/QVBoxLayout>
 /// The icl namespace
 namespace icl{
   /// A simple utility class (QWidget with titled border) \ingroup UNCOMMON

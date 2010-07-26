@@ -35,8 +35,8 @@
 #ifndef ICL_ICON_FACTORY_H
 #define ICL_ICON_FACTORY_H
 
-#include <QPixmap>
-#include <QIcon>
+#include <QtGui/QPixmap>
+#include <QtGui/QIcon>
 #include <ICLCore/Img.h>
 
 namespace icl{

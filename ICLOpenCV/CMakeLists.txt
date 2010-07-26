@@ -5,7 +5,7 @@ set(CONDITIONLIST "")
 set(LIB_SOURCES "")
 add_libsource (${PROJECT_NAME} "src/OpenCV.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST "BUILD_EXAMPLES")
+set(CONDITIONLIST "ICL_VAR_BUILD_EXAMPLES")
 #do not link dummy-apps!!!
 set(ICLLibsToLinkAgainst "")
 #add_example (${PROJECT_NAME} "dummy-app" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

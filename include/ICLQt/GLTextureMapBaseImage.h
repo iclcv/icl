@@ -41,7 +41,7 @@
 #include <ICLCore/Types.h>
 #include <ICLQt/GLTextureMapImage.h>
 #include <ICLUtils/Mutex.h>
-#include <QMutex>
+#include <QtCore/QMutex>
 
 namespace icl{
   

@@ -34,7 +34,7 @@
 
 #include <ICLQt/FloatHandle.h>
 #include <string>
-#include <QLineEdit>
+#include <QtGui/QLineEdit>
 
 
 namespace icl{

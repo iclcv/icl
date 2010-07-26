@@ -35,8 +35,8 @@
 #ifndef ICL_THREADED_UPDATABLE_SLIDER_H
 #define ICL_THREADED_UPDATABLE_SLIDER_H
 
-#include <QSlider>
-#include <QApplication>
+#include <QtGui/QSlider>
+#include <QtGui/QApplication>
 #include <ICLQt/SliderUpdateEvent.h>
 #include <ICLUtils/Macros.h>
 

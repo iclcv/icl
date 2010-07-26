@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/CompabilityLabel.h>
-#include <QPainter>
+#include <QtGui/QPainter>
 
 namespace icl{
 

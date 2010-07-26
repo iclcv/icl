@@ -41,7 +41,7 @@ add_libsource (${PROJECT_NAME} "src/XMLNodeIterator.cpp" "${CONDITIONLIST}" LIB_
 add_libsource (${PROJECT_NAME} "src/StraightLine2D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FFTUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST "BUILD_EXAMPLES")
+set(CONDITIONLIST "ICL_VAR_BUILD_EXAMPLES")
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "progargdemo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "dyn-matrix-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

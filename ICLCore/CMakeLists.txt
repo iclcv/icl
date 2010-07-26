@@ -16,7 +16,7 @@ add_libsource (${PROJECT_NAME} "src/CornerDetectorCSS.cpp" "${CONDITIONLIST}" LI
 add_libsource (${PROJECT_NAME} "src/SampledLine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/LineSampler.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST "BUILD_EXAMPLES")
+set(CONDITIONLIST "ICL_VAR_BUILD_EXAMPLES")
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "img-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "copy-channel-roi-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

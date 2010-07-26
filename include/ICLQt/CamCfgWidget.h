@@ -38,8 +38,8 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <QString>
-#include <QWidget>
+#include <QtCore/QString>
+#include <QtGui/QWidget>
 #ifdef HAVE_UNICAP
 #include <ICLIO/UnicapDevice.h>
 #endif
@@ -48,8 +48,8 @@
 #endif
 
 #include <ICLCore/Types.h>
-#include <QMutex>
-#include <QSplitter>
+#include <QtCore/QMutex>
+#include <QtGui/QSplitter>
 #include <ICLQt/CompabilityLabel.h>
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLUtils/Size.h>

@@ -33,8 +33,8 @@
 *********************************************************************/
 
 #include <ICLQt/QImageConverter.h>
-#include <QImage>
-#include <QVector>
+#include <QtGui/QImage>
+#include <QtCore/QVector>
 #include <ICLCore/Img.h>
 #include <ICLCC/CCFunctions.h>
 

@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/GLTextureMapBaseImage.h>
-#include <QMutexLocker>
+#include <QtCore/QMutexLocker>
 
 namespace icl{
 

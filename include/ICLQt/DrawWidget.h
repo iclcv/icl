@@ -36,7 +36,7 @@
 #define ICL_DRAW_WIDGET_H
 
 #include <ICLQt/Widget.h>
-#include <QMutex>
+#include <QtCore/QMutex>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect32f.h>
 

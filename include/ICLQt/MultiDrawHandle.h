@@ -36,10 +36,10 @@
 #define ICL_MULTI_DRAW_HANDLE_H
 
 #include <ICLQt/GUIHandle.h>
-#include <QTabBar>
+#include <QtGui/QTabBar>
 #include <vector>
 #include <map>
-#include <QObject>
+#include <QtCore/QObject>
 
 namespace icl{
   

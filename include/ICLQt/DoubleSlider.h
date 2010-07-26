@@ -35,7 +35,7 @@
 #ifndef ICL_DOUBLE_SLIDER_H
 #define ICL_DOUBLE_SLIDER_H
 
-#include <QWidget>
+#include <QtGui/QWidget>
 #include <ICLUtils/CompatMacros.h>
 
 /** \cond */

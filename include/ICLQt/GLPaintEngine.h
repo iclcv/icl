@@ -38,7 +38,7 @@
 #define NOMINMAX // needed for Win32 in order to not define min, max as macros
 
 #include <ICLQt/PaintEngine.h>
-#include <QFont>
+#include <QtGui/QFont>
 
 // forward declaration of the parent class
 class QGLWidget;

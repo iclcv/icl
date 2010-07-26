@@ -44,30 +44,30 @@
 #include <ICLUtils/Time.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLQt/QImageConverter.h>
-#include <QImage>
+#include <QtGui/QImage>
 
 #include <ICLQt/IconFactory.h>
 
 #include <ICLIO/FileWriter.h>
 #include <ICLUtils/Thread.h>
 
-#include <QPainter>
-#include <QTimer>
-#include <QLabel>
-#include <QInputDialog>
-#include <QMutexLocker>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QComboBox>
-#include <QSlider>
-#include <QSizePolicy>
-#include <QFileDialog>
-#include <QSpinBox>
-#include <QMouseEvent>
-#include <QPaintEvent>
-#include <QWheelEvent>
-#include <QColorDialog>
-#include <QTextEdit>
+#include <QtGui/QPainter>
+#include <QtCore/QTimer>
+#include <QtGui/QLabel>
+#include <QtGui/QInputDialog>
+#include <QtCore/QMutexLocker>
+#include <QtGui/QPushButton>
+#include <QtGui/QHBoxLayout>
+#include <QtGui/QComboBox>
+#include <QtGui/QSlider>
+#include <QtGui/QSizePolicy>
+#include <QtGui/QFileDialog>
+#include <QtGui/QSpinBox>
+#include <QtGui/QMouseEvent>
+#include <QtGui/QPaintEvent>
+#include <QtGui/QWheelEvent>
+#include <QtGui/QColorDialog>
+#include <QtGui/QTextEdit>
 
 
 #include <ICLQt/GUI.h>

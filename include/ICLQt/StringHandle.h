@@ -36,7 +36,7 @@
 #define ICL_STRING_HANDLE_H
 
 #include <string>
-#include <QString>
+#include <QtCore/QString>
 #include <ICLQt/GUIHandle.h>
 
 /** \cond */

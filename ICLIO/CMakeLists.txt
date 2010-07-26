@@ -68,7 +68,7 @@ add_libsource (${PROJECT_NAME} "src/OpenCVCamGrabber.cpp" "${CONDITIONLIST}" LIB
 add_libsource (${PROJECT_NAME} "src/OpenCVVideoWriter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/OpenCVVideoGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST "BUILD_EXAMPLES")
+set(CONDITIONLIST "ICL_VAR_BUILD_EXAMPLES")
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "jpg2cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "convert" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -77,42 +77,42 @@ add_example (${PROJECT_NAME} "write-file-example" "${CONDITIONLIST}" ICLLibsToLi
 add_example (${PROJECT_NAME} "testimages-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "create" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_LIBDC_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_LIBDC_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "dcclearisochannels" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "dcdeviceinfo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "camera-param-io" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "reset-dc-bus" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_LIBDC_COND HAVE_Qt_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_LIBDC_COND HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
 add_example (${PROJECT_NAME} "multi-cam-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_XCF_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_XCF_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "xcf-grabber-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "memory-listener" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_XCF_COND HAVE_Qt_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_XCF_COND HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLUtils ICLFilter)
 add_example (${PROJECT_NAME} "xcf-publisher" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_UNICAP_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_UNICAP_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "unicap-grab-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_Qt_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
 add_example (${PROJECT_NAME} "generic-grab-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_Qt_COND HAVE_OPENCV_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENCV_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLUtils)
 add_example (${PROJECT_NAME} "opencv-camgrabber-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "opencv-videowriter-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLIO)
 add_example (${PROJECT_NAME} "opencv-videograbber-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_XINE_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_XINE_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
 add_example (${PROJECT_NAME} "video-player" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 

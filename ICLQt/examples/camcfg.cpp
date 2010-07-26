@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/CamCfgWidget.h>
-#include <QApplication>
+#include <QtGui/QApplication>
 #include <ICLUtils/ProgArg.h>
 
 using namespace icl;

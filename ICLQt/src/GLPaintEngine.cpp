@@ -33,10 +33,10 @@
 *********************************************************************/
 
 #include <ICLQt/GLPaintEngine.h>
-#include <QGLWidget>
+#include <QtOpenGL/QGLWidget>
 #include <ICLCore/Img.h>
-#include <QFontMetrics>
-#include <QPainter>
+#include <QtGui/QFontMetrics>
+#include <QtGui/QPainter>
 #include <ICLCore/Mathematics.h>
 #include <ICLCC/CCFunctions.h>
 #include <ICLQt/GLTextureMapBaseImage.h>

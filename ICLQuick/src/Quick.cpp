@@ -57,10 +57,10 @@
 
 #ifdef HAVE_QT
 #include <ICLQt/QImageConverter.h>
-#include <QPainter>
-#include <QImage>
-#include <QFont>
-#include <QApplication>
+#include <QtGui/QPainter>
+#include <QtGui/QImage>
+#include <QtGui/QFont>
+#include <QtGui/QApplication>
 #endif
 
 #include <ICLCore/Line.h>

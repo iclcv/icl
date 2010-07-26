@@ -35,9 +35,9 @@
 #ifndef ICL_THREADED_UPDATABLE_WIDGET_H
 #define ICL_THREADED_UPDATABLE_WIDGET_H
 
-#include <QWidget>
-#include <QApplication>
-#include <QEvent>
+#include <QtGui/QWidget>
+#include <QtGui/QApplication>
+#include <QtCore/QEvent>
 #include <ICLUtils/Macros.h>
 
 namespace icl{

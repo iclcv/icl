@@ -35,7 +35,7 @@
 #ifndef ICL_TOGGLE_BUTTON_H
 #define ICL_TOGGLE_BUTTON_H
 
-#include <QPushButton>
+#include <QtGui/QPushButton>
 
 namespace icl{
 

@@ -38,8 +38,8 @@
 #include <ICLUtils/Size.h>
 #include <ICLCore/CoreFunctions.h>
 
-#include <QComboBox>
-#include <QHBoxLayout>
+#include <QtGui/QComboBox>
+#include <QtGui/QHBoxLayout>
 #include <ICLUtils/StringUtils.h>
 
 namespace icl{

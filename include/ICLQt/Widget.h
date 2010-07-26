@@ -35,7 +35,7 @@
 #ifndef ICLWIDGET_H
 #define ICLWIDGET_H
 
-#include <QGLWidget>
+#include <QtOpenGL/QGLWidget>
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Types.h>
 #include <ICLQt/ImageStatistics.h>

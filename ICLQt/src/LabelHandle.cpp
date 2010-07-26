@@ -33,8 +33,8 @@
 *********************************************************************/
 
 #include <ICLQt/LabelHandle.h>
-#include <QPainter>
-#include <QLabel>
+#include <QtGui/QPainter>
+#include <QtGui/QLabel>
 
 namespace icl{
   void LabelHandle::operator=(const std::string &text){

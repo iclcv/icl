@@ -49,9 +49,9 @@
 #include <ICLCore/Mathematics.h>
 #include <ICLUtils/StraightLine2D.h>
 
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QPushButton>
+#include <QtGui/QMessageBox>
+#include <QtGui/QFileDialog>
+#include <QtGui/QPushButton>
 
 #include <fstream>
 

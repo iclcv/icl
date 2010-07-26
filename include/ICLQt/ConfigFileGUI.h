@@ -39,8 +39,8 @@
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/Exception.h>
 
-#include <QTreeWidget>
-#include <QTreeWidgetItem>
+#include <QtGui/QTreeWidget>
+#include <QtGui/QTreeWidgetItem>
 
 #include <list>
 

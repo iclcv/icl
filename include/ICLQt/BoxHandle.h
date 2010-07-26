@@ -35,8 +35,8 @@
 #ifndef ICL_BOX_HANDLE_H
 #define ICL_BOX_HANDLE_H
 
-#include <QWidget>
-#include <QLayout>
+#include <QtGui/QWidget>
+#include <QtGui/QLayout>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ContainerHandle.h>
 

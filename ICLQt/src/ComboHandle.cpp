@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/ComboHandle.h>
-#include <QComboBox>
+#include <QtGui/QComboBox>
 
 namespace icl{
 

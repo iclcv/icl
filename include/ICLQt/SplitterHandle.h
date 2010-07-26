@@ -35,7 +35,7 @@
 #ifndef ICL_SPLITTER_HANDLE_H
 #define ICL_SPLITTER_HANDLE_H
 
-#include <QSplitter>
+#include <QtGui/QSplitter>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ContainerHandle.h>
 

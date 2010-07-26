@@ -36,8 +36,8 @@
 #define ICL_CONTAINTER_HANDLE_H
 
 #include <ICLUtils/Macros.h>
-#include <QWidget>
-#include <QString>
+#include <QtGui/QWidget>
+#include <QtCore/QString>
 
 namespace icl{
   /// Base class for Container like GUI handles as Box- or Tab widgets

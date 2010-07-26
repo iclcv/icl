@@ -39,7 +39,7 @@
 #include <ICLUtils/ConfigFile.h>
 #include <ICLQuick/Common.h>
 
-#include <QInputDialog>
+#include <QtGui/QInputDialog>
 GUI gui("hbox");
 GenericGrabber grabber;
 LocalThresholdOp ltop;

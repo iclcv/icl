@@ -34,7 +34,7 @@
 
 #include <ICLQt/IntHandle.h>
 #include <string>
-#include <QLineEdit>
+#include <QtGui/QLineEdit>
 
 
 namespace icl{

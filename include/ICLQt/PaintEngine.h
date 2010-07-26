@@ -41,7 +41,7 @@
 #include <ICLUtils/Rect32f.h>
 #include <ICLCore/Types.h>
 #include <string>
-#include <QImage>
+#include <QtGui/QImage>
 
 namespace icl{
 

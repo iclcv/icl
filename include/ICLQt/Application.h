@@ -38,7 +38,7 @@
 #include <string>
 #include <vector>
 #include <ICLUtils/Exception.h>
-#include <QApplication>
+#include <QtGui/QApplication>
 
 namespace icl{
   /** \cond */

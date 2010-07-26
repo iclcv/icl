@@ -35,7 +35,7 @@
 #ifndef ICL_GUI_WIDGET_H
 #define ICL_GUI_WIDGET_H
 
-#include <QWidget>
+#include <QtGui/QWidget>
 #include <ICLUtils/Size.h>
 #include <ICLQt/GUI.h>
 #include <ICLUtils/Uncopyable.h>

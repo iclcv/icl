@@ -40,7 +40,7 @@
 using namespace std;
 #include <ICLQt/GLTextureMapPaintEngine.h>
 #include <ICLQt/GLTextureMapBaseImage.h>
-#include <QGLWidget>
+#include <QtOpenGL/QGLWidget>
 #include <ICLQt/QImageConverter.h>
 #include <ICLCC/CCFunctions.h>
 

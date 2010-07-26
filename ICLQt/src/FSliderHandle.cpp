@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/FSliderHandle.h>
-#include <QSlider>
+#include <QtGui/QSlider>
 
 namespace icl{
   FSliderHandle::FSliderHandle():

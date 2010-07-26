@@ -10,7 +10,7 @@ add_libsource (${PROJECT_NAME} "src/SceneObject.cpp" "${CONDITIONLIST}" LIB_SOUR
 add_libsource (${PROJECT_NAME} "src/PlaneEquation.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ViewRay.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_Qt_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
 add_example (${PROJECT_NAME} "geom-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "geom-demo-simple" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -18,9 +18,9 @@ add_example (${PROJECT_NAME} "cam-calib" "${CONDITIONLIST}" ICLLibsToLinkAgainst
 add_example (${PROJECT_NAME} "show-extrinsic-calibration-grid" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "swiss-ranger-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-if(BUILD_EXAMPLES)
+if(ICL_VAR_BUILD_EXAMPLES)
 if (HAVE_IPP_COND)
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_Qt_COND HAVE_IPP_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_IPP_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils)
 #TODO liste von sourcefiles
 #add_example (${PROJECT_NAME} "icl-intrinsic-camera-calibration examples/intrinsic-camera-calibration.cpp 

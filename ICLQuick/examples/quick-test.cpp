@@ -38,9 +38,9 @@
 #include <ICLBlob/RegionFilter.h>
 
 #include <vector>
-#include <QFont>
-#include <QFontMetrics>
-#include <QApplication>
+#include <QtGui/QFont>
+#include <QtGui/QFontMetrics>
+#include <QtGui/QApplication>
 
 int main(int nargs, char **ppc){
 

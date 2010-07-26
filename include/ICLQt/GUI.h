@@ -40,9 +40,9 @@
 #include <ICLUtils/SmartPtr.h>
 #include <ICLQt/DataStore.h>
 
-#include <QLayout>
-#include <QWidget>
-#include <QApplication>
+#include <QtGui/QLayout>
+#include <QtGui/QWidget>
+#include <QtGui/QApplication>
 
 /** \cond */
 class QLayout;

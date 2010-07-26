@@ -37,13 +37,13 @@
 #include <ICLQt/GUI.h>
 #include <ICLQt/ProxyLayout.h>
 
-#include <QLayout>
-#include <QGridLayout>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#include <QtGui/QLayout>
+#include <QtGui/QGridLayout>
+#include <QtGui/QHBoxLayout>
+#include <QtGui/QVBoxLayout>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLQt/GUISyntaxErrorException.h>
-#include <QString>
+#include <QtCore/QString>
 
 #include <ICLQt/IconFactory.h>
 #include <ICLUtils/StringUtils.h>

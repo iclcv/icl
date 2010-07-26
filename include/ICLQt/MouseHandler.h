@@ -35,7 +35,7 @@
 #ifndef MOUSE_HANDLER_H
 #define MOUSE_HANDLER_H
 
-#include <QObject>
+#include <QtCore/QObject>
 #include <ICLQt/MouseEvent.h>
 
 

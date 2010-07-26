@@ -6,7 +6,7 @@ set(LIB_SOURCES "")
 add_libsource (${PROJECT_NAME} "src/Quick.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/QuickRegions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST BUILD_EXAMPLES HAVE_Qt_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "quick-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "quick-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/SpinnerHandle.h>
-#include <QSpinBox>
+#include <QtGui/QSpinBox>
 
 namespace icl{
   

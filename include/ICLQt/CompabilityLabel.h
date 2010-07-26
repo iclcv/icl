@@ -36,8 +36,8 @@
 #define ICL_COMPABILITY_LABEL_H
 
 #include <ICLQt/ThreadedUpdatableWidget.h>
-#include <QString>
-#include <QMutex>
+#include <QtCore/QString>
+#include <QtCore/QMutex>
 
 namespace icl{
   

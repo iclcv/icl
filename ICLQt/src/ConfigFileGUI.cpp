@@ -35,7 +35,7 @@
 #include <ICLQt/ConfigFileGUI.h>
 #include <ICLUtils/StringUtils.h>
 
-#include <QTreeWidgetItem>
+#include <QtGui/QTreeWidgetItem>
 
 #include <ICLQt/ButtonHandle.h>
 #include <ICLQt/BoxHandle.h>
@@ -44,11 +44,11 @@
 #include <ICLQt/ComboHandle.h>
 #include <ICLQt/FSliderHandle.h>
 
-#include <QInputDialog>
-#include <QMessageBox>
-#include <QPushButton>
-#include <QFileDialog>
-#include <QComboBox>
+#include <QtGui/QInputDialog>
+#include <QtGui/QMessageBox>
+#include <QtGui/QPushButton>
+#include <QtGui/QFileDialog>
+#include <QtGui/QComboBox>
 
 
 #include <ICLUtils/Point.h>

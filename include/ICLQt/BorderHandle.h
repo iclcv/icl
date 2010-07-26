@@ -37,7 +37,7 @@
 
 #include <ICLQt/GUIHandle.h>
 #include <string>
-
+//#include <QtGui/QGroupBox>
 /** \cond */
 class QGroupBox;
 /** \endcond */

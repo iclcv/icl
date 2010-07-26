@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/CheckBoxHandle.h>
-#include <QCheckBox>
+#include <QtGui/QCheckBox>
 
 
 namespace icl{

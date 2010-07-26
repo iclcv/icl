@@ -66,17 +66,17 @@
 #include <ICLQt/StringSignalButton.h>
 #include <ICLUtils/StringUtils.h>
 
-#include <QHBoxLayout>
-#include <QComboBox>
-#include <QLabel>
-#include <QScrollArea>
-#include <QSizePolicy>
+#include <QtGui/QHBoxLayout>
+#include <QtGui/QComboBox>
+#include <QtGui/QLabel>
+#include <QtGui/QScrollArea>
+#include <QtGui/QSizePolicy>
 //#include <QTimer>
-#include <QPushButton>
-#include <QGroupBox>
+#include <QtGui/QPushButton>
+#include <QtGui/QGroupBox>
 
-#include <QMessageBox>
-#include <QFileDialog>
+#include <QtGui/QMessageBox>
+#include <QtGui/QFileDialog>
 
 #include <ICLUtils/Thread.h>
 

@@ -35,8 +35,8 @@
 #ifndef ICL_PLOT_WIDGET_H
 #define ICL_PLOT_WIDGET_H
 
-#include <QGLWidget>
-#include <QColor>
+#include <QtOpenGL/QGLWidget>
+#include <QtGui/QColor>
 #include <vector>
 
 #include <ICLUtils/Range.h>

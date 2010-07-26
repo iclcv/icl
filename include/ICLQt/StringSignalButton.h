@@ -35,7 +35,7 @@
 #ifndef ICL_STRING_SIGNAL_BUTTON_H
 #define ICL_STRING_SIGNAL_BUTTON_H
 
-#include <QPushButton>
+#include <QtGui/QPushButton>
 
 namespace icl{
   /// internally used button that emits a signal with its text \ingroup UNCOMMON

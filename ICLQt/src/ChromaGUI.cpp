@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/ChromaGUI.h>
-#include <QFileDialog>
+#include <QtGui/QFileDialog>
 #include <vector>
 
 #include <ICLCC/Parable.h>
@@ -41,11 +41,11 @@
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/MouseHandler.h>
 #include <ICLCore/Img.h>
-#include <QFile>
-#include <QTextStream>
+#include <QtCore/QFile>
+#include <QtCore/QTextStream>
 #include <ICLQt/BoxHandle.h>
 #include <ICLQt/ButtonHandle.h>
-#include <QPushButton>
+#include <QtGui/QPushButton>
 #include <ICLQt/ChromaClassifierIO.h>
 
 using namespace std;
