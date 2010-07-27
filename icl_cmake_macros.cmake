@@ -7,20 +7,18 @@ macro(icl_check_external_package ID FFILE REL_LIB_DIR REL_INC_DIR DEFAULT_PATH D
   message(STATUS "searching for ${FFILE}")# in ${DEFAULT_PATH}/${REL_INC_DIR}")# and ${${ID}_PATH}/${REL_INC_DIR}")
   find_path(ICL_XDEP_${ID}_PATH "${REL_INC_DIR}" PATHS "${DEFAULT_PATH}" "${${ID}_PATH}" DOC "The path to ${ID}" NO_DEFAULT_PATH)
 if(EXISTS ${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR})
-	#message(STATUS "found path: ${${ID}_PATH}")    
 	if(EXISTS ${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}/${FFILE})
-		message(STATUS "${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}/${FFILE}")
+		message(STATUS "found: ${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}/${FFILE}")
 		message(STATUS "${ID} detected: TRUE")
 		if(${ICL_XDEP_${ID}_ON} OR ${ICL_XDEP_ALL_ON})
 			
         	set(${ID}_LIB_PATH "${ICL_XDEP_${ID}_PATH}/${REL_LIB_DIR}")
         	set(${ID}_INCLUDE_PATH "${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}")		
-			message(STATUS "include: ${${ID}_INCLUDE_PATH}")        	
 			set(ICL_XDEP_${ID}_ON ON CACHE BOOL "Use ${ID} when available" FORCE)
         	set(${DEFINE_COND} TRUE)
         	add_definitions( -DHAVE_${ID})
-			message(STATUS "${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}")
-			message(STATUS "${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}")			
+			message(STATUS "${ID} include path:${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}")
+			message(STATUS "${ID} lib path:${ICL_XDEP_${ID}_PATH}/${REL_LIB_DIR}")			
 			include_directories(${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR})
         	link_directories(${ICL_XDEP_${ID}_PATH}/${REL_LIB_DIR})
       	else()
@@ -90,6 +88,7 @@ macro(add_example PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
 endmacro()
 
 #TODO irgendwas muss noch mit dem parameter FILE passieren
+# internal external deps
 macro(add_gtest PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
   set(COND TRUE)	
   foreach(CONDITION ${CONDITIONLIST})
@@ -98,12 +97,24 @@ macro(add_gtest PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
     endif()
   endforeach()
   if(${COND})
-	add_custom_target(check 
+  set(lINCLUDES "-I${CMAKE_SOURCE_DIR}/include -I${GTEST_INCLUDE_PATH}")
+  
+  set(lLIBS "-l${GTEST_LIBS_l}")
+  set(lLIBDIRS "-L${GTEST_LIB_PATH}")
+  foreach(l ${${ICLLibsToLinkAgainst}})
+	set(lLIBS "${lLIBS} -l${l}")
+    set(lLIBDIRS "${lLIBDIRS} -L${CMAKE_BINARY_DIR}/${l}")
+  endforeach()
+  add_custom_target(check 
 		COMMAND 
-		g++ -O0 -L${GTEST_LIB_PATH} -l${${ICLLibsToLinkAgainst}} -I${GTEST_INCLUDE_PATH} "${FILE}" runner.cpp -o icl-test-${FILE}
+		g++ -O0 ${lLIBDIRS} ${lLIBS} ${lINCLUDES} "${FILE}" runner.cpp -o icl-test-${FILE}
+#g++ -O0 -L${GTEST_LIB_PATH} -l${${ICLLibsToLinkAgainst}} -I${GTEST_INCLUDE_PATH} "${FILE}" runner.cpp -o icl-test-${FILE}
 		COMMAND ./icl-test-${FILE}
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${PROJECT_N}/test
 	)
+message(STATUS "${lLIBDIRS}")
+message(STATUS "${lLIBS}")
+message(STATUS "${lINCLUDES}")
   endif()
 endmacro()
 
