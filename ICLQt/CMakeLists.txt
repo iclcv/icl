@@ -70,7 +70,6 @@ add_libsource (${PROJECT_NAME} "src/IconFactory.cpp" "${CONDITIONLIST}" LIB_SOUR
 add_libsource (${PROJECT_NAME} "src/ThreadedUpdatableTextView.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DataStore.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-
 SET(HWQ_Qt4_SRC
 	"../include/ICLQt/Widget.h"
 	"../include/ICLQt/MouseHandler.h"
@@ -85,21 +84,19 @@ SET(HWQ_Qt4_SRC
 	"../include/ICLQt/ToggleButton.h"
 	"../include/ICLQt/ConfigFileGUI.h"
 )
+
 #pkg-config --variable moc_location QtCore /usr/bin/moc-qt4
 set(moc_found "")
 set(moc_path_ex "")
- set(QT_MOC_EXECUTABLE "")#${ICL_XDEP_QT_PATH}/bin/moc)#${moc_path_ex})
+set(QT_MOC_EXECUTABLE "")#${ICL_XDEP_QT_PATH}/bin/moc)
 execute_process(
    COMMAND pkg-config --variable moc_location QtCore 
    OUTPUT_VARIABLE QT_MOC_EXECUTABLE
    RESULT_VARIABLE moc_found)
 string(STRIP "${QT_MOC_EXECUTABLE}" QT_MOC_EXECUTABLE)
-SET(HWQ_SRC ${LIB_SOURCES})
 #message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
 
-# QT_MOC_E.. seems to contain the new line at end ..
-#set(QT_MOC_EXECUTABLE ${ICL_XDEP_QT_PATH}/bin/moc)
-
+#set(HWQ_SRC ${LIB_SOURCES})
 
 if(NOT ${QT_MOC_EXECUTABLE} STREQUAL "")
 message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
@@ -163,35 +160,32 @@ MACRO (QT4_MAKE_OUTPUT_FILE infile prefix ext outfile )
   SET(${outfile} ${outpath}/${prefix}${_outfile}.${ext})
 ENDMACRO (QT4_MAKE_OUTPUT_FILE )
 
-  SET(outfiles "")
+set(outfiles "")
 set(moc_options "")
-#set(_moc_flags "")
 
 QT4_EXTRACT_OPTIONS(moc_files moc_options ${HWQ_Qt4_SRC})
 #set(moc_files ${HWQ_Qt4_SRC})
-message(STATUS "add ${moc_files}")
+#message(STATUS "add ${moc_files}")
 foreach(it ${moc_files})
-#message(STATUS "addind${it}")
-GET_FILENAME_COMPONENT(it ${it} ABSOLUTE)
-    QT4_MAKE_OUTPUT_FILE(${it} moc_ cxx outfile)
-    #QT4_CREATE_MOC_COMMAND(${it} ${outfile} "${moc_flags}" "${moc_options}")
-    #SET(outfiles ${outfiles} ${outfile})
-#message(STATUS "${it} -o ${outfile}")#${_moc_flags} ${it} ${outfile}")
-ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
+  GET_FILENAME_COMPONENT(it ${it} ABSOLUTE)
+  QT4_MAKE_OUTPUT_FILE(${it} moc_ cxx outfile)
+  #SET(outfiles ${outfiles} ${outfile})
+  ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
                       COMMAND ${QT_MOC_EXECUTABLE}
                       ARGS ${_moc_flags} ${moc_options} -o ${outfile} ${it}
                       DEPENDS ${it})
-SET(outfiles ${outfiles} ${outfile})	
+  set(outfiles ${outfiles} ${outfile})	
 endforeach()
 endif()
+
+#old code
 #QT4_WRAP_CPP(HWQ_MOC_CPP ${HWQ_Qt4_SRC})
 #SET( HWQ_SRC
 #	"${LIB_SOURCES}"
 #	${HWQ_MOC_CPP}
 #)
-SET( HWQ_SRC
-	${LIB_SOURCES}
-	${outfiles})
+
+set(HWQ_SRC ${LIB_SOURCES} ${outfiles})
 set(CONDITIONLIST "HAVE_GTEST_COND")
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

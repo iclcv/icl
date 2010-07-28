@@ -25,7 +25,7 @@ add_example (${PROJECT_NAME} "reduce-channels-test" "${CONDITIONLIST}" ICLLibsTo
 add_example (${PROJECT_NAME} "sampled-line-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST "HAVE_GTEST_COND")
-set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
+set(ICLLibsToLinkAgainst "ICLCore")
 add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib

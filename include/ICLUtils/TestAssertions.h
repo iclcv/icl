@@ -44,7 +44,6 @@
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/FixedVector.h>
 #include <ICLUtils/DynMatrixUtils.h>
-#include <ICLUtils/FixedMatrixUtils.h>
 
 namespace icl {
 

@@ -53,9 +53,7 @@ add_example (${PROJECT_NAME} "xml-parser-test" "${CONDITIONLIST}" ICLLibsToLinkA
 add_example (${PROJECT_NAME} "config-file-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST "HAVE_GTEST_COND")
-set(ICLLibsToLinkAgainst gtest)
-set(CONDITIONLIST "HAVE_GTEST_COND")
-set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
+set(ICLLibsToLinkAgainst "ICLUtils")
 add_gtest (${PROJECT_NAME} "test-matrix.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib

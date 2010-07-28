@@ -37,7 +37,6 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLGeom/Camera.h>
 #include <ICLUtils/DynMatrixUtils.h>
-#include <ICLUtils/FixedMatrixUtils.h>
 #include <ICLCore/Random.h>
 #include <fstream>
 
