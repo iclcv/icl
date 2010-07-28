@@ -771,6 +771,7 @@ void run(){
 
   if(printCam.wasTriggered()){
     Camera c = scene.getCamera(CALIB_CAM);
+    c.setName(* pa("-i",0) + "-" + *pa("-i",1));
     std::cout << "------------------------------------------------------" << std::endl;
     DEBUG_LOG("estimated camera pos is:" << c.getPosition());
     //c.setPosition(c.getPosition()+worldOffset);
@@ -809,6 +810,8 @@ void run(){
         ERROR_LOG("Invalid calibration (nothing saved)");
       }else{
         Camera c = cams[idx];
+        c.setName(* pa("-i",0) + "-" + *pa("-i",1));
+        
         std::cout << "------------------------------------------------------" << std::endl;
         std::cout << "estimated camera pos is:" << c.getPosition().transp() <<std::endl;
         //std::cout << "worldOffset is:" << worldOffset.transp() << std::endl;
