@@ -1,3 +1,36 @@
+#*********************************************************************
+#**                Image Component Library (ICL)                    **
+#**                                                                 **
+#** Copyright (C) 2006-2010 CITEC, University of Bielefeld          **
+#**                         Neuroinformatics Group                  **
+#** Website: www.iclcv.org and                                      **
+#**          http://opensource.cit-ec.de/projects/icl               **
+#**                                                                 **
+#** File   : icl_cmake_macros.cmake                                 **
+#** Module :                                                        **
+#** Authors: Christian Groszewski, Christof Elbrechter              **
+#**                                                                 **
+#**                                                                 **
+#** Commercial License                                              **
+#** ICL can be used commercially, please refer to our website       **
+#** www.iclcv.org for more details.                                 **
+#**                                                                 **
+#** GNU General Public License Usage                                **
+#** Alternatively, this file may be used under the terms of the     **
+#** GNU General Public License version 3.0 as published by the      **
+#** Free Software Foundation and appearing in the file LICENSE.GPL  **
+#** included in the packaging of this file.  Please review the      **
+#** following information to ensure the GNU General Public License  **
+#** version 3.0 requirements will be met:                           **
+#** http://www.gnu.org/copyleft/gpl.html.                           **
+#**                                                                 **
+#** The development of this software was supported by the           **
+#** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
+#** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
+#** Forschungsgemeinschaft (DFG) in the context of the German       **
+#** Excellence Initiative.                                          **
+#**                                                                 **
+#*********************************************************************
 include(CheckIncludeFile)
 message(STATUS "macros found")
 
@@ -393,44 +426,4 @@ else()
 	message(STATUS "${ID} detected: FALSE")
 endif()
 endif()
-endmacro()
-
-
-######################
-macro(icl_define_variables_from_pkg_config PACKAGE PGK_CONFIG_LIST)
-   	set(ALL_FOUND TRUE)
-	set(PKG_ALL_LIBS_l "")
-	set(PKG_ALL_LIBS_L "")
-    set(PKG_ALL_LIBS_OTHER "")
-	set(PKG_ALL_CFLAGS_I "")
-	set(PKG_ALL_CFLAGS_OTHER "")
-
-	foreach(pkg ${PKG_CONFIG_LIST})
-        pkg_check_modules(${pkg}_PKG ${pkg})
-		if(NOT ${${pkg}_PKG_FOUND})
-    		set(ALL_FOUND FALSE)
-			set(HAVE_${PACKAGE}_COND FALSE)
-			message(STATUS "package config file ${pkg}.pc not found -> ICLPackage ${PACKAGE} disabled")
-			break()
-		else()
-			set(PKG_ALL_LIBS_l "${PKG_ALL_LIBS_l} ${${PACKAGE}_PKG_LIBRARIES}")
-            set(PKG_ALL_LIBS_L "${PKG_ALL_LIBS_L} ${${PACKAGE}_PKG_LIBRARY_DIRS}")
-            set(PKG_ALL_LIBS_OTHER "${PKG_ALL_LIBS_OTHER} ${${PACKAGE}_PKG_LDFLAGS_OTHER}")
-			set(PKG_ALL_CFLAGS_I "${PKG_ALL_CFLAGS_I} ${${PACKAGE}_PKG_INCLUDE_DIRS}")
-			set(PKG_ALL_CFLAGS_OTHER "${PKG_ALL_CFLAGS_OTHER} ${${PACKAGE}_PKG_CFLAGS_OTHER}")
-		endif()
-    endforeach()
-	if(${ALL_FOUND})
-		set(${PACKAGE}_LIBS_l "${PKG_ALL_LIBS_l}")
-		list(LENGTH ${PACKAGE}_LIBS_l listsize)
-		if(${listsize} GREATER 1)
-			list(REMOVE_DUPLICATES ${PACKAGE}_LIBS_l)
-			list(REMOVE_ITEM ${PACKAGE}_LIBS_l pthread)
-		endif()
-		set(${PACKAGE}_LIBS_L "${PKG_ALL_LIBS_L}")
-		set(${PACKAGE}_LIBS_l "${PKG_ALL_LIBS_l}")
-        set(${PACKAGE}_LIBS_OTHER "${PKG_ALL_LIBS_OTHER}")
-        set(${PACKAGE}_CFLAGS_I "${PKG_ALL_CFLAGS_I}")
-        set(${PACKAGE}_CFLAGS_OTHER "${PKG_ALL_CFLAGS_OTHER}")
-	endif()		
 endmacro()
