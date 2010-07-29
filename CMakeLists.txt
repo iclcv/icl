@@ -400,15 +400,18 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
 	REGEX .svn* EXCLUDE
 )
 
+#TODO exclude templates from installation
 if(DOXYGEN_FOUND)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
          DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
 )
-
+set(ENTRY "<tr><td> <a href=\"../ALL/index.html\" target=\"MainFrame\">All Packages</a></td>\n")
 # prepare doxygen configuration file
 set(ICL_SUB_PACKAGE_PLACEHOLDER2 ICLUtils ICLCore ICLCC ICLFilter ICLBlob ICLOpenCV ICLIO ICLQt ICLQuick ICLGeom ICLAlgorithms)
 foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGE_PLACEHOLDER2})
     	configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/doxyfile @ONLY)
+		set(ENTRY "${ENTRY}<tr><td> <a href=\"../${ICL_SUB_PACKAGE_PLACEHOLDER}/index.html\" target=\"MainFrame\">${ICL_SUB_PACKAGE_PLACEHOLDER}</a></td>\n")
+		
     	#copy pics
 	file(COPY ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/
 		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc
@@ -417,6 +420,7 @@ foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGE_PLACEHOLDER2})
 		PATTERN "*.jpg")
 	exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html/\"")
 endforeach()
+configure_file(doc/menu.htmltemplate ${CMAKE_SOURCE_DIR}/doc/menu.html @ONLY)
 
 # add doxygen as dependency to doc-target
 get_target_property(DOC_TARGET doc TYPE)
