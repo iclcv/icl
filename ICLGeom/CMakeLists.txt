@@ -54,15 +54,8 @@ add_example (${PROJECT_NAME} "swiss-ranger-demo" "${CONDITIONLIST}" ICLLibsToLin
 if(ICL_VAR_BUILD_EXAMPLES)
 if (HAVE_IPP_COND)
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_IPP_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils)
-#TODO liste von sourcefiles
-#add_example (${PROJECT_NAME} "icl-intrinsic-camera-calibration examples/intrinsic-camera-calibration.cpp 
-#		examples/intrinsic-camera-calibration-tools.cpp examples/intrinsic-camera-calibration-tools.h" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-#add_executable(icl-intrinsic-camera-calibration examples/intrinsic-camera-calibration.cpp 
-#		examples/intrinsic-camera-calibration-tools.cpp examples/intrinsic-camera-calibration-tools.h
-#)
-#target_link_libraries(icl-intrinsic-camera-calibration ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils)
-#target_link_libraries(icl-intrinsic-camera-calibration ${ICLLibsToLinkAgainst})
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils ${QT_LIBS_l})
+add_example_mult(${PROJECT_NAME} "intrinsic-camera-calibration" "examples/intrinsic-camera-calibration.cpp;examples/intrinsic-camera-calibration-tools.cpp;examples/intrinsic-camera-calibration-tools.h" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 endif()
 endif()
 

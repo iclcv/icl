@@ -46,9 +46,9 @@
 #include <ICLAlgorithms/SOM2D.h>
 #include <ICLCore/Mathematics.h>
 
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QPushButton>
+#include <QtGui/QMessageBox>
+#include <QtGui/QFileDialog>
+#include <QtGui/QPushButton>
 
 GUI gui("hsplit");
 GenericGrabber *grabber = 0;

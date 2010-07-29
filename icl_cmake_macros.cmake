@@ -171,6 +171,7 @@ macro(add_libsource PROJECT_NAME FILE CONDITIONLIST LIBSOURCES)
   endif()
 endmacro()
 
+#adds example to current build
 macro(add_example PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
   set(COND TRUE)	
   foreach(CONDITION ${CONDITIONLIST})
@@ -185,6 +186,22 @@ macro(add_example PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
   endif()
 endmacro()
 
+#adds example consisting of more than one file to current build
+macro(add_example_mult PROJECT_N EXAMPLE_NAME FILES CONDITIONLIST ICLLibsToLinkAgainst)
+  set(COND TRUE)	
+  foreach(CONDITION ${CONDITIONLIST})
+    if(NOT ${CONDITION})
+      set(COND FALSE)
+    endif()
+  endforeach()
+  if(${COND})
+    add_executable(icl-${EXAMPLE_NAME} ${FILES})
+    target_link_libraries(icl-${EXAMPLE_NAME} ${${ICLLibsToLinkAgainst}})
+    install (TARGETS icl-${EXAMPLE_NAME} RUNTIME DESTINATION bin)
+  endif()
+endmacro()
+
+#adds gtest to current build
 macro(add_gtest PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
   set(COND TRUE)	
   foreach(CONDITION ${CONDITIONLIST})
@@ -203,7 +220,7 @@ macro(add_gtest PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
   add_custom_target(check 
 		COMMAND 
 		g++ -O0 -DHAVE_GTEST ${lLIBDIRS} ${lLIBS} ${lINCLUDES} "${FILE}" runner.cpp -o icl-test-${FILE}
-		COMMAND ./icl-test-${FILE}
+		COMMAND ./icl-${FILE}
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${PROJECT_N}/test 
 		VERBATIM
 	)
@@ -273,34 +290,14 @@ set(${DEFINE_COND} FALSE)
 message(STATUS "-- checking package ${ID} --")
 pkg_check_modules(${ID}_PKG ${PKG_CONFIG_LIST})
 if(NOT ${ID}_PKG_FOUND)
-    		message(STATUS "package config file ${PKG_NAME}.pc not found")	
+    message(STATUS "package config file ${PKG_NAME}.pc not found")	
 else()
-			set(PKG_${ID}_VERSION "${${ID}_PKG_VERSION}")
-	message(STATUS "VERSION:${PKG_${ID}_VERSION}")
-
-			set(PKG_${ID}_LIBS_l "${${ID}_PKG_LIBRARIES}")
-	message(STATUS "LIBS_l:${PKG_${ID}_LIBS_l}")
-
-            set(PKG_${ID}_LIBS_L "${${ID}_PKG_LIBRARY_DIRS}")
-	message(STATUS "LIBS_L:${PKG_${ID}_LIBS_L}")
-
-            set(PKG_${ID}_LIBS_OTHER "${${ID}_PKG_LDFLAGS_OTHER}")
-	message(STATUS "LIBS_OTHER:${PKG_${ID}_LIBS_OTHER}")
-
-			set(PKG_${ID}_CFLAGS_I "${${ID}_PKG_INCLUDE_DIRS}")
-	message(STATUS "CFLAGS_I:${PKG_${ID}_CFLAGS_I}")
-
-			set(PKG_${ID}_CFLAGS_OTHER "${${ID}_PKG_CFLAGS_OTHER}")
-	message(STATUS "CFLAGS_OTHER:${PKG_${ID}_CFLAGS_OTHER}")
-
-			set(SPATH "")
-			set(pfound "")
-			execute_process(COMMAND pkg-config --variable prefix ${PKG_CONFIG_LIST} 
+	set(SPATH "")
+	set(pfound "")
+	execute_process(COMMAND pkg-config --variable prefix ${PKG_CONFIG_LIST} 
    				OUTPUT_VARIABLE SPATH RESULT_VARIABLE p_found)
 	string(STRIP "${SPATH}" SPATH)
-	message(STATUS "spath:${SPATH}")
-
-find_path(ICL_XDEP_${ID}_PATH "" PATHS "${SPATH}" "${ICL_XDEP_${ID}_PATH}" DOC "The path to ${ID}" NO_DEFAULT_PATH)
+	find_path(ICL_XDEP_${ID}_PATH "" PATHS "${SPATH}" "${ICL_XDEP_${ID}_PATH}" DOC "The path to ${ID}" NO_DEFAULT_PATH)
 endif()
 if(EXISTS ${SPATH})
 		message(STATUS "found: ${ICL_XDEP_${ID}_PATH}")
@@ -309,16 +306,14 @@ if(EXISTS ${SPATH})
 			string(STRIP "${${ID}_PKG_LIBRARY_DIRS}" ${ID}_PKG_LIBRARY_DIRS)
 			string(STRIP "${${ID}_PKG_INCLUDE_DIRS}" ${ID}_PKG_INCLUDE_DIRS)
 			if(NOT "${${ID}_PKG_LIBRARY_DIRS}" STREQUAL "")
-        	set(${ID}_LIB_PATH "${${ID}_PKG_LIBRARY_DIRS}")
+        		set(${ID}_LIB_PATH "${${ID}_PKG_LIBRARY_DIRS}")
 			else()
-				set(${ID}_LIB_PATH "/usr/lib")		
-				message(STATUS "by h:${${ID}_LIB_PATH}")
+				set(${ID}_LIB_PATH "/usr/lib")
 			endif()
 			if(NOT "${${ID}_PKG_INCLUDE_DIRS}" STREQUAL "")
-        	set(${ID}_INCLUDE_PATH "${${ID}_PKG_INCLUDE_DIRS}")
+        		set(${ID}_INCLUDE_PATH "${${ID}_PKG_INCLUDE_DIRS}")
 			else()
-				set(${ID}_INCLUDE_PATH "/usr/include")		
-				message(STATUS "by h:${${ID}_INCLUDE_PATH}")	
+				set(${ID}_INCLUDE_PATH "/usr/include")
 			endif()			
 			set(${ID}_LIBS_l "${${ID}_PKG_LIBRARIES}")
 			
@@ -343,15 +338,17 @@ else()
 endif()
 endmacro()
 ######################
-macro(icl_check_external_package_from_pkg_conf3 ID PKG_CONFIG_LIST DEFINE_COND)
+macro(icl_check_external_package_from_pkg_conf_mult ID DEFINE_COND)
 set(${DEFINE_COND} FALSE)
 set(${ID}_ALL_FOUND TRUE)
 message(STATUS "-- checking package ${ID} --")
 
+set(SPATH "")
+set(pfound "")
 set(${ID}_LIB_PATH_TMP "")
 set(${ID}_INCLUDE_PATH_TMP "")
 set(${ID}_LIBS_TMP "")
-foreach(item ${PKG_CONFIG_LIST})
+foreach(item ${ARGN})
 	pkg_check_modules(${item}_PKG ${item})
 	if(NOT ${item}_PKG_FOUND)
 		message(STATUS "package config file ${item}.pc not found")
@@ -360,21 +357,20 @@ foreach(item ${PKG_CONFIG_LIST})
 	else()
 		string(STRIP "${${item}_PKG_LIBRARY_DIRS}" ${item}_PKG_LIBRARY_DIRS)
 		string(STRIP "${${item}_PKG_INCLUDE_DIRS}" ${item}_PKG_INCLUDE_DIRS)
-			
+			execute_process(COMMAND pkg-config --variable prefix ${item} 
+   				OUTPUT_VARIABLE SPATH RESULT_VARIABLE p_found)
 			if(NOT "${${item}_PKG_LIBRARY_DIRS}" STREQUAL "")
-        		set(${ID}_LIB_PATH_TMP "${${ID}_LIB_PATH_TMP} ${${item}_PKG_LIBRARY_DIRS}")
+        		set(${ID}_LIB_PATH_TMP ${${ID}_LIB_PATH_TMP} ${${item}_PKG_LIBRARY_DIRS})
 			else()
-				set(${item}_LIB_PATH_TMP "${${ID}_LIB_PATH_TMP} /usr/lib")		
-				message(STATUS "by h:${${ID}_LIB_PATH_TMP}")
+				set(${item}_LIB_PATH_TMP ${${ID}_LIB_PATH_TMP} /usr/lib)
 			endif()
 
 			if(NOT "${${item}_PKG_INCLUDE_DIRS}" STREQUAL "")
-        	set(${ID}_INCLUDE_PATH_TMP "${${ID}_INCLUDE_PATH_TMP} ${${item}_PKG_INCLUDE_DIRS}")
+        	set(${ID}_INCLUDE_PATH_TMP ${${ID}_INCLUDE_PATH_TMP} ${${item}_PKG_INCLUDE_DIRS})
 			else()
-				set(${ID}_INCLUDE_PATH_TMP "${${ID}_INCLUDE_PATH_TMP} /usr/include")		
-				message(STATUS "by h:${${ID}_INCLUDE_PATH_TMP}")	
+				set(${ID}_INCLUDE_PATH_TMP ${${ID}_INCLUDE_PATH_TMP} /usr/include)
 			endif()
-		set(${ID}_LIBS_TMP "${${ID}_LIBS_TMP} ${${item}_PKG_LIBRARIES}")
+		set(${ID}_LIBS_TMP ${${ID}_LIBS_TMP} ${${item}_PKG_LIBRARIES})
 	endif()
 endforeach()
 #remove duplicates from temporary lists
@@ -382,29 +378,20 @@ list(REMOVE_DUPLICATES ${ID}_LIB_PATH_TMP)
 list(REMOVE_DUPLICATES ${ID}_INCLUDE_PATH_TMP)
 list(REMOVE_DUPLICATES ${ID}_LIBS_TMP)
 #remove pthread from libs
-list(REMOVE_ITEM  ${ID}_LIBS_TMP pthread)
-
-#use first element to find the root path
-set(FIRST "")
-message(STATUS "${PKG_CONFIG_LIST}")
-list(GET PKG_CONFIG_LIST 0 FIRST)
-message(STATUS "first element: ${FIRST}")
-			set(SPATH "")
-			set(pfound "")
-			execute_process(COMMAND pkg-config --variable prefix ${FIRST} 
-   				OUTPUT_VARIABLE SPATH RESULT_VARIABLE p_found)
-	string(STRIP "${SPATH}" SPATH)
-	message(STATUS "spath:${SPATH}")
+list(REMOVE_ITEM  ${ID}_LIBS_TMP pthread)			
+#searchpath for gui
+string(STRIP "${SPATH}" SPATH)
 
 find_path(ICL_XDEP_${ID}_PATH "" PATHS "${SPATH}" "${ICL_XDEP_${ID}_PATH}" DOC "The path to ${ID}" NO_DEFAULT_PATH)
 if(${ID}_ALL_FOUND)
 if(EXISTS ${SPATH})
 		message(STATUS "found: ${ICL_XDEP_${ID}_PATH}")
 		message(STATUS "${ID} detected: TRUE")
+		set(${ID}_PKG_FOUND TRUE)
 		if(${ICL_XDEP_${ID}_ON} OR ${ICL_XDEP_ALL_ON})
         	set(${ID}_LIB_PATH "${${ID}_LIB_PATH_TMP}")
 			set(${ID}_INCLUDE_PATH "${${ID}_INCLUDE_PATH_TMP}")
-			set(${ID}_LIBS_l "${${ID}_PKG_LIBRARIES}")
+			set(${ID}_LIBS_l "${${ID}_LIBS_TMP}")
 			
 			set(ICL_XDEP_${ID}_ON ON CACHE BOOL "Use ${ID} when available" FORCE)
         	set(${DEFINE_COND} TRUE)
@@ -418,7 +405,7 @@ if(EXISTS ${SPATH})
         	set(${DEFINE_COND} FALSE)
       	endif()
 else()
-	find_path(ICL_XDEP_${ID}_PATH "${FFILE}" PATHS "ICL_XDEP_${ID}_PATH-NOTFOUND" #"${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}"
+	find_path(ICL_XDEP_${ID}_PATH "include" PATHS "ICL_XDEP_${ID}_PATH-NOTFOUND"
     DOC "The path to ${ID}" NO_DEFAULT_PATH)
 	message(STATUS "Path ${ICL_XDEP_${ID}_PATH} not found")
 	set(${DEFINE_COND} FALSE)
@@ -426,4 +413,98 @@ else()
 	message(STATUS "${ID} detected: FALSE")
 endif()
 endif()
+endmacro()
+
+
+###QT MACROS####
+MACRO (QT4_EXTRACT_OPTIONS _qt4_files _qt4_options)
+SET(${_qt4_files})
+  SET(${_qt4_options})
+  SET(_QT4_DOING_OPTIONS FALSE)
+  FOREACH(_currentArg ${ARGN})
+    IF ("${_currentArg}" STREQUAL "OPTIONS")
+      SET(_QT4_DOING_OPTIONS TRUE)
+    ELSE ("${_currentArg}" STREQUAL "OPTIONS")
+      IF(_QT4_DOING_OPTIONS) 
+        LIST(APPEND ${_qt4_options} "${_currentArg}")
+      ELSE(_QT4_DOING_OPTIONS)
+        LIST(APPEND ${_qt4_files} "${_currentArg}")
+      ENDIF(_QT4_DOING_OPTIONS)
+    ENDIF ("${_currentArg}" STREQUAL "OPTIONS")
+  ENDFOREACH(_currentArg) 
+ENDMACRO (QT4_EXTRACT_OPTIONS)
+
+MACRO (QT4_MAKE_OUTPUT_FILE infile prefix ext outfile )
+  STRING(LENGTH ${CMAKE_CURRENT_BINARY_DIR} _binlength)
+  STRING(LENGTH ${infile} _infileLength)
+  SET(_checkinfile ${CMAKE_CURRENT_SOURCE_DIR})
+  IF(_infileLength GREATER _binlength)
+    STRING(SUBSTRING "${infile}" 0 ${_binlength} _checkinfile)
+    IF(_checkinfile STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+      FILE(RELATIVE_PATH rel ${CMAKE_CURRENT_BINARY_DIR} ${infile})
+    ELSE(_checkinfile STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+      FILE(RELATIVE_PATH rel ${CMAKE_CURRENT_SOURCE_DIR} ${infile})
+    ENDIF(_checkinfile STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+  ELSE(_infileLength GREATER _binlength)
+    FILE(RELATIVE_PATH rel ${CMAKE_CURRENT_SOURCE_DIR} ${infile})
+  ENDIF(_infileLength GREATER _binlength)
+  IF(WIN32 AND rel MATCHES "^[a-zA-Z]:") # absolute path 
+    STRING(REGEX REPLACE "^([a-zA-Z]):(.*)$" "\\1_\\2" rel "${rel}")
+  ENDIF(WIN32 AND rel MATCHES "^[a-zA-Z]:") 
+  SET(_outfile "${CMAKE_CURRENT_BINARY_DIR}/${rel}")
+  STRING(REPLACE ".." "__" _outfile ${_outfile})
+  GET_FILENAME_COMPONENT(outpath ${_outfile} PATH)
+  GET_FILENAME_COMPONENT(_outfile ${_outfile} NAME_WE)
+  FILE(MAKE_DIRECTORY ${outpath})
+  SET(${outfile} ${outpath}/${prefix}${_outfile}.${ext})
+ENDMACRO (QT4_MAKE_OUTPUT_FILE )
+
+
+
+macro(process_moc_files FILES outfiles)
+set(moc_found "")
+set(moc_path_ex "")
+set(QT_MOC_EXECUTABLE "")
+execute_process(
+   COMMAND pkg-config --variable moc_location QtCore 
+   OUTPUT_VARIABLE QT_MOC_EXECUTABLE
+   RESULT_VARIABLE moc_found)
+string(STRIP "${QT_MOC_EXECUTABLE}" QT_MOC_EXECUTABLE)
+
+if(NOT ${QT_MOC_EXECUTABLE} STREQUAL "")
+message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
+
+#if using apple we need to do this
+# QT4_GET_MOC_FLAGS(moc_flags)
+SET(_moc_flags "")
+  GET_DIRECTORY_PROPERTY(_inc_DIRS INCLUDE_DIRECTORIES)
+	set(framework_path ${QT_INCLUDE_PATH})
+  FOREACH(_current ${_inc_DIRS})
+    IF("${_current}" MATCHES ".framework/?$")
+      STRING(REGEX REPLACE "/[^/]+.framework" "" framework_path "${_current}")
+      SET(_moc_flags ${_moc_flags} "-F${framework_path}")
+    ELSE("${_current}" MATCHES ".framework/?$")
+      SET(_moc_flags ${_moc_flags} "-I${_current}")
+    ENDIF()
+  ENDFOREACH(_current ${_inc_DIRS})
+
+  GET_DIRECTORY_PROPERTY(_defines COMPILE_DEFINITIONS)
+  FOREACH(_current ${_defines})
+    SET(_moc_flags ${_moc_flags} "-D${_current}")
+  ENDFOREACH(_current ${_defines})
+  
+set(moc_options "")
+QT4_EXTRACT_OPTIONS(moc_files moc_options ${${FILES}})
+#message(STATUS "mf: ${moc_files}")
+foreach(it ${moc_files})
+  GET_FILENAME_COMPONENT(it ${it} ABSOLUTE)
+  QT4_MAKE_OUTPUT_FILE(${it} moc_ cxx outfile)
+  ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
+                      COMMAND ${QT_MOC_EXECUTABLE}
+                      ARGS ${_moc_flags} ${moc_options} -o ${outfile} ${it}
+                      DEPENDS ${it})
+  set(${outfiles} ${${outfiles}} ${outfile})	
+endforeach()
+endif()
+
 endmacro()
