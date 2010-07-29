@@ -219,7 +219,7 @@ macro(add_gtest PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
   endforeach()
   add_custom_target(check 
 		COMMAND 
-		g++ -O0 -DHAVE_GTEST ${lLIBDIRS} ${lLIBS} ${lINCLUDES} "${FILE}.cpp" runner.cpp -o icl-${FILE}
+		g++ -O0 -DHAVE_GTEST ${lLIBDIRS} ${lLIBS} -pthread ${lINCLUDES} "${FILE}.cpp" runner.cpp -o icl-${FILE}
 		COMMAND ./icl-${FILE}
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${PROJECT_N}/test 
 		VERBATIM
