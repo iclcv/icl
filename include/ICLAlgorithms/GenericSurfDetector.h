@@ -36,8 +36,8 @@
 
 #include <ICLCore/ImgBase.h>
 
-#include "OpenCVSurfDetector.h"
-#include "OpenSurfDetector.h"
+#include <ICLAlgorithms/OpenCVSurfDetector.h>
+#include <ICLAlgorithms/OpenSurfDetector.h>
 #ifdef HAVE_QT
 #include <ICLQt/DrawWidget.h>
 #endif
