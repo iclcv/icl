@@ -404,12 +404,24 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
 if(DOXYGEN_FOUND)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
          DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
+		#REGEX *template* EXCLUDE
 )
+#create dir for alldocs
+exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/alldoc/html\"")
+
+#the replace entry for menu.html
 set(ENTRY "<tr><td> <a href=\"../ALL/index.html\" target=\"MainFrame\">All Packages</a></td>\n")
+set(INPUT_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/alldoc")
 # prepare doxygen configuration file
 set(ICL_SUB_PACKAGE_PLACEHOLDER2 ICLUtils ICLCore ICLCC ICLFilter ICLBlob ICLOpenCV ICLIO ICLQt ICLQuick ICLGeom ICLAlgorithms)
 foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGE_PLACEHOLDER2})
-    	configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/doxyfile @ONLY)
+
+		set(INPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/${ICL_SUB_PACKAGE_PLACEHOLDER}")
+		set(INPUT_PATHS "${INPUT_PATHS} ${INPUT_PATH}")    	
+		set(OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html")
+
+		configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/doxyfile @ONLY)
+		
 		set(ENTRY "${ENTRY}<tr><td> <a href=\"../${ICL_SUB_PACKAGE_PLACEHOLDER}/index.html\" target=\"MainFrame\">${ICL_SUB_PACKAGE_PLACEHOLDER}</a></td>\n")
 		
     	#copy pics
@@ -421,8 +433,26 @@ foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGE_PLACEHOLDER2})
 	exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html/\"")
 endforeach()
 configure_file(doc/menu.htmltemplate ${CMAKE_SOURCE_DIR}/doc/menu.html @ONLY)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alldoc/
+		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/alldoc)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/doc/
+		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html
+		FILES_MATCHING 
+		PATTERN "*.gif")
 
-# add doxygen as dependency to doc-target
+set(OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/alldoc/html")
+set(INPUT_PATH "${INPUT_PATHS}")
+configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/alldoc/doxyfile @ONLY)
+
+#add custom target
+add_custom_target(alldoc doxygen alldoc/doxyfile)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html/
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ALL
+      PATTERN "doxyfile" EXCLUDE
+	REGEX .svn* EXCLUDE
+      )
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES alldoc/html/.)
+
 get_target_property(DOC_TARGET doc TYPE)
 if(NOT DOC_TARGET)
 	add_custom_target(doc)
@@ -453,7 +483,6 @@ if(SYSTEM_LINUX_COND)
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/icl.pc" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/)
 endif()
 
-
 #############################################
 set(CPACK_PACKAGE_DESCRIPTION "Do the example thingie")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A longer description about our example app.")
@@ -472,7 +501,3 @@ set(CPACK_GENERATOR "DEB")
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}-${CMAKE_SYSTEM_PROCESSOR}")
 
 include(CPack)
-
-
-
-
