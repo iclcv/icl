@@ -61,7 +61,7 @@ endif()
 
 set(CONDITIONLIST "HAVE_GTEST_COND")
 set(ICLLibsToLinkAgainst "ICLGeom;ICLUtils;ICLCore")
-add_gtest (${PROJECT_NAME} "test-camera.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_gtest (${PROJECT_NAME} "test-camera" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
