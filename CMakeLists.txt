@@ -313,12 +313,15 @@ endif()
 include_directories(${PROJECT_SOURCE_DIR}/include)
 #set(incl)
 #GET_DIRECTORY_PROPERTY(incl INCLUDE_DIRECTORIES)
-#message(STATUS "iiiii: ${incl}")
+#message(STATUS "i: ${incl}")
 include(UseDoxygen OPTIONAL)
 FIND_PACKAGE(Doxygen)
 
+#currently we just write the version number of the ICL to this header file
 configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h @only)
 
+#set the internal and external deps of the ICL
+#if a entry is not available, it will be empty
 set(ICLUtils_external_dependencies IPP MKL)
 set(ICLCore_internal_dependencies ICLUtils)
 set(ICLCC_internal_dependencies ICLCore)
@@ -342,9 +345,8 @@ else()
     set(ICLQuick_internal_dependencies ICLFilter ICLIO ICLBlob)
 endif()
 set(ICLGeom_internal_dependencies ICLQuick)
-
 set(ICLAlgorithms_external_dependencies OPENSURF SVS)
-
+#
 add_internal_dependencies(ICLCore_internal_dependencies ICLCore_dependencies)
 add_internal_dependencies(ICLCC_internal_dependencies ICLCC_dependencies)
 add_internal_dependencies(ICLFilter_internal_dependencies ICLFilter_dependencies)
@@ -355,7 +357,7 @@ add_internal_dependencies(ICLQt_internal_dependencies ICLQt_dependencies)
 add_internal_dependencies(ICLQuick_internal_dependencies ICLQuick_dependencies)
 add_internal_dependencies(ICLGeom_internal_dependencies ICLGeom_dependencies)
 add_internal_dependencies(ICLAlgorithms_internal_dependencies ICLAlgorithms_dependencies)
-
+#
 add_external_dependencies(ICLUtils_external_dependencies ICLUtils_dependencies)
 add_external_dependencies(ICLOpenCV_external_dependencies ICLOpenCV_dependencies)
 add_external_dependencies(ICLIO_external_dependencies ICLIO_dependencies)
@@ -380,32 +382,33 @@ add_subdirectory(ICLQuick)
 add_subdirectory(ICLGeom)
 add_subdirectory(ICLAlgorithms)
 
+#installs include files of the project on make install
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
 	FILES_MATCHING PATTERN "*.h"
 	REGEX .svn* EXCLUDE
 )
 
+#prepare files from scripts dir for installation
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/icl-create-project-with-tests @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/icl-create-project @ONLY)
-
+#installs files from scripts dir on make install with given permissions
 install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/icl-create-project ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_SOURCE_DIR}/scripts/icl-make
 	PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
 )
-
+#
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/etc
 	FILES_MATCHING PATTERN "*.template"
 	REGEX .svn* EXCLUDE
 )
 
-#TODO exclude templates from installation
 if(DOXYGEN_FOUND)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
-         DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
-		#REGEX *template* EXCLUDE
-)
+		DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
+		PATTERN "*template" EXCLUDE
+        REGEX .svn* EXCLUDE)
 #create dir for alldocs
 exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/alldoc/html\"")
 
@@ -413,44 +416,60 @@ exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/alldoc/html\"")
 set(ENTRY "<tr><td> <a href=\"../ALL/index.html\" target=\"MainFrame\">All Packages</a></td>\n")
 set(INPUT_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/alldoc")
 # prepare doxygen configuration file
-set(ICL_SUB_PACKAGE_PLACEHOLDER2 ICLUtils ICLCore ICLCC ICLFilter ICLBlob ICLOpenCV ICLIO ICLQt ICLQuick ICLGeom ICLAlgorithms)
-foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGE_PLACEHOLDER2})
-
-		set(INPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/${ICL_SUB_PACKAGE_PLACEHOLDER}")
-		set(INPUT_PATHS "${INPUT_PATHS} ${INPUT_PATH}")    	
-		set(OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html")
-
-		configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/doxyfile @ONLY)
-		
-		set(ENTRY "${ENTRY}<tr><td> <a href=\"../${ICL_SUB_PACKAGE_PLACEHOLDER}/index.html\" target=\"MainFrame\">${ICL_SUB_PACKAGE_PLACEHOLDER}</a></td>\n")
-		
-    	#copy pics
+set(ICL_SUB_PACKAGES ICLUtils ICLCore ICLCC ICLFilter ICLBlob ICLOpenCV ICLIO ICLQt ICLQuick ICLGeom ICLAlgorithms)
+foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGES})
+	#replacement in doxyfile, DO NOT EDIT
+	set(INPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/${ICL_SUB_PACKAGE_PLACEHOLDER}")
+	#replacement in doxyfile for alldoc
+	set(INPUT_PATHS "${INPUT_PATHS} ${INPUT_PATH}")    	
+	#replacement in doxyfile, DO NOT EDIT	
+	set(OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html")
+	#prepares doxyfile for doxygen
+	configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/doxyfile @ONLY)
+	#replacement for menu.html
+	set(ENTRY "${ENTRY}<tr><td> <a href=\"../${ICL_SUB_PACKAGE_PLACEHOLDER}/index.html\" target=\"MainFrame\">${ICL_SUB_PACKAGE_PLACEHOLDER}</a></td>\n")
+    #copy pics
 	file(COPY ${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/
 		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc
 		FILES_MATCHING 
 		PATTERN "*.png" 
 		PATTERN "*.jpg")
-	exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html/\"")
+	#create directories in each doc dir of each subproject
+    exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html/\"")
 endforeach()
+#configure file for the menu
 configure_file(doc/menu.htmltemplate ${CMAKE_SOURCE_DIR}/doc/menu.html @ONLY)
+
+#copy necessary files to build dir
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alldoc/
-		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/alldoc)
+		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html
+		FILES_MATCHING 
+		PATTERN "*.html")
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alldoc/
+		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html
+		FILES_MATCHING
+		PATTERN "*.png")
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/doc/
 		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html
 		FILES_MATCHING 
 		PATTERN "*.gif")
 
+#output path for generated files  on make alldoc
 set(OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/alldoc/html")
+#all pathes to all subdir of project
 set(INPUT_PATH "${INPUT_PATHS}")
+#prepares doxyfile for doxygen
 configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/alldoc/doxyfile @ONLY)
 
-#add custom target
+#adds custom target alldoc to makefile
 add_custom_target(alldoc doxygen alldoc/doxyfile)
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html/
+#installs content of alldoc/html on make install
+#excludes .svn dir and doxyfile from installation
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ALL
       PATTERN "doxyfile" EXCLUDE
-	REGEX .svn* EXCLUDE
-      )
+      REGEX .svn* EXCLUDE)
+#remove build docs from alldoc on make clean
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES alldoc/html/.)
 
 get_target_property(DOC_TARGET doc TYPE)
@@ -459,9 +478,10 @@ if(NOT DOC_TARGET)
 endif()
 endif()
 
-
+#prepare pkg-config files if we are on linux system
 if(SYSTEM_LINUX_COND)
   set(ALWAYS_TRUE TRUE)
+  #replacement in pkg.in DO NOT EDIT
   set(lprefix      ${CMAKE_INSTALL_PREFIX})
 
   icl_create_pkg_config_file_if(ICLUtils ALWAYS_TRUE)
@@ -476,7 +496,9 @@ if(SYSTEM_LINUX_COND)
   icl_create_pkg_config_file_if(ICLGeom ALWAYS_TRUE)
   icl_create_pkg_config_file_if(ICLAlgorithms ALWAYS_TRUE)
     
-  set(ICL_SUB_PACKAGE "ICL")
+  set(ICL_SUB_PACKAGE "icl")
+  set(LIBS "")
+  set(INCLUDES "")
   set(REQUIRE "ICLUtils ICLCore ICLIO ICLCC ICLBlob ICLFilter ICLOpenCV ICLQuick ICLGeom ICLAlgorithms ICLQt ICLOpenCV")
   set(ICL_PACKAGE_DESCRIPTION "Image Component Library (ICL)")
   configure_file(pkg.in ${CMAKE_CURRENT_BINARY_DIR}/icl.pc @ONLY)
@@ -484,6 +506,8 @@ if(SYSTEM_LINUX_COND)
 endif()
 
 #############################################
+#in shell type: cpack
+#to build automatically the deb package
 set(CPACK_PACKAGE_DESCRIPTION "Do the example thingie")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A longer description about our example app.")
 set(CPACK_PACKAGE_NAME "ICL - Image Component Library")
