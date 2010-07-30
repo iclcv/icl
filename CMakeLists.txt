@@ -39,8 +39,8 @@ set(ICL_MINOR "2")
 set(ICL_PATCH "1")
 set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
-#cmake_policy(SET CMP0015 OLD)
 
+#build type (Debug or Release)
 set(ICL_VAR_DEBUG_MODE OFF CACHE BOOL "Compile with debug options")
 if(ICL_VAR_DEBUG_MODE)
 set(CMAKE_CXX_FLAGS "-Wall -O0 -g3")
@@ -50,32 +50,32 @@ set(CMAKE_CXX_FLAGS "-O4 -funroll-loops -march=native")
 set(CMAKE_BUILD_TYPE "Release" CACHE INTERNAL "")
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+#build in verbos g++ mode
 set(CMAKE_VERBOSE_MAKEFILE OFF)
-#set(ICL_VERBOSE_MAKEFILE OFF CACHE BOOL "Compile with more output")
-#if(ICL_VERBOSE_MAKEFILE)
-#message(STATUS "blub")
-#	set(CMAKE_VERBOSE_MAKEFILE ON)
-#else()
-#	set(CMAKE_VERBOSE_MAKEFILE OFF)
-#endif()
+
 message(STATUS "Verbose makefiles: ${CMAKE_VERBOSE_MAKEFILE}")
 
+#where to install ICL
 set(ICL_VAR_INSTALL_PREFIX "/temp/testICL${VERSION}" CACHE PATH "")
 set(CMAKE_INSTALL_PREFIX "${ICL_VAR_INSTALL_PREFIX}" CACHE INTERNAL "")
 message(STATUS "Install Path: ${CMAKE_INSTALL_PREFIX}")
 
 if(UNIX)
+	#current def to indicate we are on linux
     add_definitions( -DSYSTEM_LINUX)
+	#in the future the above def will be replaced by this def to achieve compatibility with mingw
     add_definitions( -DICL_SYSTEM_LINUX)
     set(SYSTEM_LINUX_COND TRUE)
+	#pass -pthread directly to flags
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+
+	#runtimepath options
 	# use, i.e. don't skip the full RPATH for the build tree
 	SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
 
 	# when building, don't use the install RPATH already
 	# (but later on when installing)
 	SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
-
 
 	# the RPATH to be used when installing
 	SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
@@ -89,19 +89,26 @@ if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif()
 if(WIN32)
+	#current def to indicate we are on windows
     add_definitions( -DSYSTEM_WINDOWS)
+	#in the future the above def will be replaced by this def to achieve compatibility with mingw
     add_definitions( -DICL_SYSTEM_WINDOWS)
 endif()
 
 #include file with macros
 include(icl_cmake_macros.cmake)
 
+#if ON all found third party libs will be used
 set(ICL_XDEP_ALL_ON OFF CACHE BOOL "Use all available third party libs")
+#if ON pkg-config will be used where it is available
 set(ICL_VAR_USE_PKG_CONFIG OFF CACHE BOOL "Use all available pkgconfig")
+#if ON examples apps will be build and install
 set(ICL_VAR_BUILD_EXAMPLES ON CACHE BOOL "Build example applications")
-set(LIBRARY_OUTPUT_PATH "lib")# CACHE PATH "Output directory for libraries" )
-set(EXECUTABLE_OUTPUT_PATH "bin")# CACHE PATH "Output directory for applications" )
 
+set(LIBRARY_OUTPUT_PATH "lib")
+set(EXECUTABLE_OUTPUT_PATH "bin")
+
+#checkboxes to indicate a third party lib will be used
 set(ICL_XDEP_IPP_ON OFF CACHE BOOL "Use IPP when available")
 set(ICL_XDEP_MKL_ON OFF CACHE BOOL "Use MKL when available")
 set(ICL_XDEP_OPENCV_ON OFF CACHE BOOL "Use OPENCV when available")
@@ -121,6 +128,7 @@ set(ICL_XDEP_GTEST_ON OFF CACHE BOOL "Use GTest when available")
 
 FIND_PACKAGE(PkgConfig)
 
+#check if and what external third party libs are available
 icl_check_external_package(IPP ipp.h sharedlib include /vol/nivision/IPP/6.1-ia32 HAVE_IPP_COND)
 if(HAVE_IPP_COND)
     set(IPP_LIBS_l ippcore ippi ipps ippsr ippcv ippm ippcc guide iomp5)
@@ -175,7 +183,6 @@ endif()
 #	 	set(IMAGEMAGICK_LIBS_l Magick++)
 #endif()
 
-
 ####LIBDC####
 if(ICL_VAR_USE_PKG_CONFIG)
 	icl_check_external_package_from_pkg_conf(LIBDC "libdc1394-2" HAVE_LIBDC_COND)
@@ -224,64 +231,23 @@ if(NOT XCF_PKG_FOUND)
    endif()
 endif()
 
-#icl_check_external_package(XCF xcf/XCFBase.hpp lib include /opt/xcf HAVE_XCF_COND)
-#if(HAVE_XCF_COND)
-#	if(${ICL_VAR_USE_PKGCONF}_)
-#		icl_define_variables_from_pkg_config(XCF xcf;xmltio;Memory)
-#		pkg_check_modules(XCF_PKG xcf)		
-#		pkg_check_modules(XCF_XMLTIO_PKG xmltio)
-#		pkg_check_modules(XCF_MEMORY_PKG Memory)		
-#		if(${XCF_PKG_FOUND} AND ${XCF_MEMORY_PKG_FOUND} AND ${XCF_XMLTIO_PKG_FOUND})
-#			set(XCF_LIBS_l "${XCF_PKG_LIBRARIES};${XCF_MEMORY_PKG_LIBRARIES};${XCF_XMLTIO_PKG_LIBRARIES}")
-#			list(LENGTH XCF_LIBS_l listsize)
-#			if(${listsize} GREATER 1)
-#				list(REMOVE_DUPLICATES XCF_LIBS_l)
-#				list(REMOVE_ITEM XCF_LIBS_l pthread)
-#			endif()
-#		else()
-#			set(XCF_LIBS_l xcf xqilla log4cxx Memory xmltio Ice IceUtil xerces-c)
-#		endif()		
-#    else()
-#		set(XCF_LIBS_l xcf xqilla log4cxx Memory xmltio Ice IceUtil xerces-c)
-#              endif()
-	#additional include path
-	#include_directories("${XCF_PATH}/include")
-#endif()
 
 ####Qt####
+#first check if pkg-config shall be used
 if(ICL_VAR_USE_PKG_CONFIG)
 	icl_check_external_package_from_pkg_conf_mult(QT HAVE_QT_COND QtCore QtGui QtOpenGL)
 endif()
 if(NOT QT_PKG_FOUND)
   #check for special location of qt
   icl_check_external_package(QT QtGui/QApplication lib include /opt/qtsdk-2009.04/qt HAVE_QT_COND)
-	if(NOT HAVE_QT_COND)
-	  #check for standard location of qt
-      icl_check_external_package(QT QtGui/QApplication lib include/qt4 /usr HAVE_QT_COND)
-    endif()
+  if(NOT HAVE_QT_COND)
+	#check for standard location of qt
+    icl_check_external_package(QT QtGui/QApplication lib include/qt4 /usr HAVE_QT_COND)
+  endif()
   if(HAVE_QT_COND)
 	set(QT_LIBS_l QtCore QtGui QtOpenGL)
    endif()
 endif()
-
-#icl_check_external_package(QT QtGui/QApplication lib include /opt/qtsdk-2009.04/qt HAVE_QT_COND)
-#if(NOT HAVE_QT_COND)
-#  icl_check_external_package(QT QtGui/QApplication lib include/qt4 /usr HAVE_QT_COND)
-#endif()
-#if(HAVE_QT_COND)
-#	if(${ICL_VAR_USE_PKGCONF})
-#		pkg_check_modules(QtCore_PKG QtCore)
-#		pkg_check_modules(QtGui_PKG QtGui)
-#		pkg_check_modules(QtOpenGL_PKG QtOpenGL)
-#		if(${QtCore_PKG_FOUND} AND ${QtGui_PKG_FOUND} AND ${QtOpenGL_PKG_FOUND})
-#			set(QT_LIBS_l "${QtCore_PKG_LIBRARIES};${QtGui_PKG_LIBRARIES};${QtOpenGL_PKG_LIBRARIES}")
-#		else()
-#			set(QT_LIBS_l QtCore QtGui QtOpenGL)
-#		endif()
-#    else()
-#		set(QT_LIBS_l QtCore QtGui QtOpenGL)
-#    endif()
-#endif()
 
 icl_check_external_package(OPENGL gl.h lib include/GL /usr HAVE_OPENGL_COND)
 if(${HAVE_OPENGL_COND})
@@ -309,11 +275,14 @@ if(HAVE_GTEST_COND)
 	set(GTEST_LIBS_l gtest)
 endif()
 
-
+#add include directories of ICL
 include_directories(${PROJECT_SOURCE_DIR}/include)
+
 #set(incl)
 #GET_DIRECTORY_PROPERTY(incl INCLUDE_DIRECTORIES)
 #message(STATUS "i: ${incl}")
+
+#check for doxygen in order to build the documentation of ICL
 include(UseDoxygen OPTIONAL)
 FIND_PACKAGE(Doxygen)
 
@@ -321,7 +290,7 @@ FIND_PACKAGE(Doxygen)
 configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h @only)
 
 #set the internal and external deps of the ICL
-#if a entry is not available, it will be empty
+#if an entry is not available, it will be empty
 set(ICLUtils_external_dependencies IPP MKL)
 set(ICLCore_internal_dependencies ICLUtils)
 set(ICLCC_internal_dependencies ICLCore)
@@ -346,7 +315,7 @@ else()
 endif()
 set(ICLGeom_internal_dependencies ICLQuick)
 set(ICLAlgorithms_external_dependencies OPENSURF SVS)
-#
+#dissolve internal dependencies
 add_internal_dependencies(ICLCore_internal_dependencies ICLCore_dependencies)
 add_internal_dependencies(ICLCC_internal_dependencies ICLCC_dependencies)
 add_internal_dependencies(ICLFilter_internal_dependencies ICLFilter_dependencies)
@@ -357,7 +326,7 @@ add_internal_dependencies(ICLQt_internal_dependencies ICLQt_dependencies)
 add_internal_dependencies(ICLQuick_internal_dependencies ICLQuick_dependencies)
 add_internal_dependencies(ICLGeom_internal_dependencies ICLGeom_dependencies)
 add_internal_dependencies(ICLAlgorithms_internal_dependencies ICLAlgorithms_dependencies)
-#
+#dissolve external dependencies
 add_external_dependencies(ICLUtils_external_dependencies ICLUtils_dependencies)
 add_external_dependencies(ICLOpenCV_external_dependencies ICLOpenCV_dependencies)
 add_external_dependencies(ICLIO_external_dependencies ICLIO_dependencies)
