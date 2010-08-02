@@ -19,6 +19,7 @@ if [ -d "$ICL_TOP_DIR/cur" ] ; then
 	    cd $ICL_TOP_DIR
 	    rm cur
 	    ln -s $ICL_VER cur
+	    chmod g+w cur > /dev/null
 	    cd - > /dev/null
 	    echo "Soft link \"$ICL_TOP_DIR/cur\" updated to \"$ICL_TOP_DIR/$ICL_VER\""
 	else
@@ -29,6 +30,7 @@ if [ -d "$ICL_TOP_DIR/cur" ] ; then
 else
     cd $ICL_TOP_DIR
     ln -s $ICL_VER cur
+    chmod g+w cur > /dev/null
     cd - > /dev/null
     echo "Soft link \"$ICL_TOP_DIR/cur\" created. Links to \"$ICL_TOP_DIR/$ICL_VER\""
 fi
