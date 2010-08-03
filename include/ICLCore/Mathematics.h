@@ -86,7 +86,7 @@ namespace icl {
 
   /* {{{ mean  */
 
-  /// compute mean value of a data range \ingourp MATH
+  /// compute mean value of a data range \ingroup MATH
   /** @param begin start iterator 
       @param end end iterator*/
   template <class ForwardIterator>
