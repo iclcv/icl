@@ -1,0 +1,69 @@
+PROJECT_NAME=${FOLDER}
+
+##################################################
+# compilation ####################################
+##################################################
+
+# Add package configs to include here (also for ICLProjects)
+# e.g. PC_DEPS=icl xcf ICLARToolkit2
+PC_DEPS=icl
+
+# Qt specific header files, that need a moc call
+# without src/-prefix e.g. 
+# MOC_HEADERS=myA.h myB.h myC.h
+
+# optionally define C++-Compiler flags
+# CXXFLAGS=
+
+# optionally define C++-C-Pre-Processor flags
+# CXXCPP=
+# LDFLAGS=
+
+##################################################
+# configuration ##################################
+##################################################
+
+# build with debug flags
+DEBUG=TRUE
+
+# do not show actual compiler calls etc.
+QUIET=TRUE
+
+# use colored output (only for bash)
+ifeq "${TERM}" "xterm"
+COLORED=TRUE
+else
+COLORED=FALSE
+endif
+
+# show (approximate) progress
+SHOW_PROGRESS=TRUE
+
+##################################################
+# library information ############################
+##################################################
+
+# comment in to use version support (VERSION may
+# be an arbitrary string (1.0 etc. is recommended)
+#VERSION=1.0
+ICL_PROJECTS_INSTALL_ROOT?=/vol/nivision/ICLProjects
+INSTALL_PREFIX=${ICL_PROJECTS_INSTALL_ROOT}
+PACKAGE_DESCRIPTION=nothing special
+
+
+##################################################
+# additional build,install and clean rules #######
+##################################################
+# These rules are optional, but as they are also #
+# implemented in the main Makefile, they have    #
+# to be written in :: (Double-Colon)-Manner      #
+##################################################
+
+#custom-install-hook ::
+#	@echo installing custom targets here!
+
+#custom-build-hook ::
+#	@echo applying custom builds
+
+#custom-clean-hook ::
+#	@echo applying custom builds
