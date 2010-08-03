@@ -51,7 +51,7 @@ set(CMAKE_BUILD_TYPE "Release" CACHE INTERNAL "")
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 #build in verbos g++ mode
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+#set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 message(STATUS "Verbose makefiles: ${CMAKE_VERBOSE_MAKEFILE}")
 
@@ -359,14 +359,15 @@ install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
 )
 
 #prepare files from scripts dir for installation
-configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/icl-create-project-with-tests @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/icl-create-project @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project @ONLY)
+
 #installs files from scripts dir on make install with given permissions
-install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/icl-create-project ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_SOURCE_DIR}/scripts/icl-make
+install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_SOURCE_DIR}/scripts/icl-make
 	PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
 )
-#
+#install scripts/icl-create-project-data/ to etc
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/etc
 	FILES_MATCHING PATTERN "*.template"
@@ -374,10 +375,16 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
 )
 
 if(DOXYGEN_FOUND)
+# 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
 		DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
 		PATTERN "*template" EXCLUDE
-        REGEX .svn* EXCLUDE)
+        REGEX .svn* EXCLUDE
+		REGEX .css EXCLUDE)
+#rename menuStyle.css to style.css for menu with border
+install(FILES ${CMAKE_SOURCE_DIR}/doc/menuStyle.css
+		DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
+		RENAME style.css)
 #create dir for alldocs
 exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/alldoc/html\"")
 
@@ -423,7 +430,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/doc/
 		FILES_MATCHING 
 		PATTERN "*.gif")
 
-#output path for generated files  on make alldoc
+#output path for generated files on make alldoc
 set(OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/alldoc/html")
 #all pathes to all subdir of project
 set(INPUT_PATH "${INPUT_PATHS}")
