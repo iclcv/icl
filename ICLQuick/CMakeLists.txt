@@ -44,7 +44,7 @@ set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "quick-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "quick-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST "HAVE_GTEST_COND")
+set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 

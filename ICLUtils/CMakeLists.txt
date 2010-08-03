@@ -74,7 +74,7 @@ add_libsource (${PROJECT_NAME} "src/XMLNodeIterator.cpp" "${CONDITIONLIST}" LIB_
 add_libsource (${PROJECT_NAME} "src/StraightLine2D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FFTUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST "ICL_VAR_BUILD_EXAMPLES")
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "progargdemo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "dyn-matrix-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -85,8 +85,8 @@ add_example (${PROJECT_NAME} "regular-expression-test" "${CONDITIONLIST}" ICLLib
 add_example (${PROJECT_NAME} "xml-parser-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "config-file-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST "HAVE_GTEST_COND")
-set(ICLLibsToLinkAgainst "ICLUtils")
+set(CONDITIONLIST HAVE_GTEST_COND)
+set(ICLLibsToLinkAgainst ICLUtils)
 add_gtest (${PROJECT_NAME} "test-matrix.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib

@@ -52,7 +52,7 @@ add_libsource (${PROJECT_NAME} "src/VQ2D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/SimpleBlobSearcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/MeanShiftTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST "ICL_VAR_BUILD_EXAMPLES")
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "blobtracker-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
@@ -69,7 +69,7 @@ add_example (${PROJECT_NAME} "online-region-detection-demo" "${CONDITIONLIST}" I
 add_example (${PROJECT_NAME} "region-based-blob-finder-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "region-detector-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST "HAVE_GTEST_COND")
+set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 

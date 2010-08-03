@@ -71,11 +71,11 @@ add_libsource (${PROJECT_NAME} "src/WeightedSumOp.cpp" "${CONDITIONLIST}" LIB_SO
 add_libsource (${PROJECT_NAME} "src/WarpOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FFTOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/IFFTOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-set(CONDITIONLIST "HAVE_IPP_COND")
+set(CONDITIONLIST HAVE_IPP_COND)
 add_libsource (${PROJECT_NAME} "src/WienerOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/CannyOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST "BUILD_EXAMPLES")
+set(CONDITIONLIST BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} )
 add_example (${PROJECT_NAME} "weighted-sum-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
@@ -102,7 +102,7 @@ add_example (${PROJECT_NAME} "interactive-affine-op-example" "${CONDITIONLIST}" 
 add_example (${PROJECT_NAME} "filter-array" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "fft-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST "HAVE_GTEST_COND")
+set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 

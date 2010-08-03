@@ -51,16 +51,12 @@ add_example (${PROJECT_NAME} "cam-calib" "${CONDITIONLIST}" ICLLibsToLinkAgainst
 add_example (${PROJECT_NAME} "show-extrinsic-calibration-grid" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "swiss-ranger-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-if(ICL_VAR_BUILD_EXAMPLES)
-if (HAVE_IPP_COND)
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_IPP_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils ${QT_LIBS_l})
 add_example_mult(${PROJECT_NAME} "intrinsic-camera-calibration" "examples/intrinsic-camera-calibration.cpp;examples/intrinsic-camera-calibration-tools.cpp;examples/intrinsic-camera-calibration-tools.h" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-endif()
-endif()
 
 set(CONDITIONLIST "HAVE_GTEST_COND")
-set(ICLLibsToLinkAgainst "ICLGeom;ICLUtils;ICLCore")
+set(ICLLibsToLinkAgainst ICLGeom ICLUtils ICLCore)
 add_gtest (${PROJECT_NAME} "test-camera" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib

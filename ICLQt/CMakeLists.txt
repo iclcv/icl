@@ -33,7 +33,7 @@
 #*********************************************************************
 project(ICLQt)
 
-set(CONDITIONLIST "ICL_VAR_BUILD_EXAMPLES")
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} )
 add_example (${PROJECT_NAME} "3D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "camviewer" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

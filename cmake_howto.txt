@@ -3,7 +3,6 @@ This is a short howto for the cmake build system.
 It will be updated as works goes on.
 
 TODOs:
--gtest
 -make better help
 -windows port (if possible)
 
@@ -11,13 +10,12 @@ The cmake build system is an alternative way to build the ICL library.
 Currently it supports only the build of dynamic libraries and the example applications
 (no static libs). All libraries should be found, if installed correctly on your system.
 If some libraries are not found just enter the path of it in the gui in the correct field.
-Paths to libraries are set for standard ubuntu installation. 
+Paths to libraries are preset for standard ubuntu installation. 
 If you installed  desired libs somewhere else or would like to use other versions look 
 at the Usage part of this document.
 
 Usage:
-Use the installed cmake-gui software on ag-ni system.
-If you are working on an other system make sure that cmake and cmake-gui is installed.
+Make sure that cmake and cmake-gui is installed.
 
 After starting the cmake-gui enter the path to the ICL directory in the first line.
 As a second step you must enter a directory where everything is going to be build 
@@ -26,29 +24,28 @@ Example: ICL directory: /home/username/projects/ICL
 	 build directory: /home/username/projects/ICL/build
 )).
 
-Click on the Button "Configure". If the the build directory does not exist you will be asked
+Click on the Button "Configure". If the build directory does not exist you will be asked
 if it should be created (you must answer "YES" else you cannot compile the ICL).
 Next you will be asked what Makefiles/Projectfiles you would like to generate with cmake.
 On linuxsystem select "Unix Makefiles" and click on "Finish".
 You can now see some output in the lower part
 of the cmake-gui. Make the desired changes in the upper part of the cmake-gui.
 By default all libraries are turned off, even if cmake found them.
-To Turn them on, just click on the desired checkbox.
-You can also turn on the checkbox called ALL_ON, this will add all available libraries to
-the current configuration. PKG_CONFIG_PATH is now also available for libraries supporting it.
+To Turn them on, just click on the desired checkbox or click on ICL_XDEP_ALL_ON to use
+all available libraries for the build. PKG_CONFIG_PATH is now also available for libraries supporting it.
 You should enter a new install path for the build libraries.
 
 Note 0: If optional libs are found and selected, definitions are add to the build information.
-	cmake does not support a remove of these added definitions,so you should not deselect them
-	in order to build the icl correct.
+	Deselecting these libraries my cuase the buildsystem to fail. In this case go to the File menu,
+	delete the cache and configure again.
 
-Note 1: if the Button "Generate" is not enabled after clicking on the button "Configure"
+Note 1: If the Button "Generate" is not enabled after clicking on the button "Configure"
 	click it again.
 
-Note 2: if some lines in the upper part of the cmake-gui are highlighted in red, this does
+Note 2: If some lines in the upper part of the cmake-gui are highlighted in red, this does
 	not mean an error but a change of settings.
 
 Next step is to click on the button "Generate".
-As the final steps cd to your build dir and type make.
-To build the documentation type make doc, to install type make install.
+As the final steps cd to your build dir and type make or make -jn where n is the number of parallel building processes.
+To build the documentation type make doc and/or additionally make alldoc, to install type make install/strip.
 The compile time on a system with 3 GB RAM and 2GHz DualCore should take about ten minutes.
