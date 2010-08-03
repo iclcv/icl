@@ -488,13 +488,13 @@ set(CPACK_PACKAGE_DESCRIPTION "Do the example thingie")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A longer description about our example app.")
 set(CPACK_PACKAGE_NAME "ICL - Image Component Library")
 #xine qt libz libjpg graphicsmagick opengl
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.6), libgcc1 (>= 1:4.1)")
-
+#set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.6), libgcc1 (>= 1:4.1)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libdc1394-22, libunicap2, libxine1, libgraphicsmagick++3, zlib1g")
 set(CPACK_PACKAGE_CONTACT "wer auch immer")
 set(CPACK_PACKAGE_VENDOR "uni")
-set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "0")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_VERSION_MAJOR "${ICL_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${ICL_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${ICL_PATCH}")
 set(VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
 set(CPACK_GENERATOR "DEB")
