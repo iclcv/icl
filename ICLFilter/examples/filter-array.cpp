@@ -54,7 +54,7 @@ GUI gui_col(int i){
            << ("image[@handle=im"+str(i)+"@minsize=8x6]")
            << ( GUI("hbox[@maxsize=100x3]")
                 << ("combo("+get_filters()+")[@out=cb"+str(i)+"@maxsize=100x2@minsize=3x2@label=filter]") 
-                << ("string()[@label=params@handle=ps"+str(i)+"@maxsize=100x2@out=_"+str(i)+"@minsize=4x2]")
+                << ("string( )[@label=params@handle=ps"+str(i)+"@maxsize=100x2@out=_"+str(i)+"@minsize=4x2]")
                 << ("checkbox(vis,checked)[@maxsize=3x2@out=vis"+str(i)+"@minsize=3x2]"))
            << ( GUI("hbox[@maxsize=100x3]")
                 << ("label(ok)[@handle=err"+str(i)+"@maxsize=100x2@label=error@minsize=1x2]") 
@@ -124,6 +124,6 @@ int main(int n, char **ppc){
   paex("-input","image source definition like -input dc 0")
       ("-n","number of filter instances in a row (3 by default)");
   
-  return ICLApplication(n,ppc,"-input(2) -n(1)",init,run).exec();
+  return ICLApplication(n,ppc,"-input|-i(2) -num-filters|-n(int=3)",init,run).exec();
 }
 
