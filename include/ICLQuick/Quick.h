@@ -641,7 +641,7 @@ namespace icl{
       @param r rect to draw
       @param rounding rounded corners (in pixels)
   **/
-  inline void rect(ImgQ &image, const Rect &r, int rounding=0){ rect(image,r.x,r.y,r.width,r.height); }
+  inline void rect(ImgQ &image, const Rect &r, int rounding=0){ rect(image,r.x,r.y,r.width,r.height,rounding); }
   
   /// draws a triangle into an image
   /** given 3 points (x1,y1),(x2,y2),(x3,y3) */
