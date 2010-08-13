@@ -99,6 +99,7 @@ add_libsource (${PROJECT_NAME} "src/XCFMemoryListener.cpp" "${CONDITIONLIST}" LI
 set(CONDITIONLIST HAVE_OPENCV_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCVCamGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/OpenCVVideoWriter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST HAVE_OPENCV2_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCVVideoGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
@@ -142,7 +143,9 @@ set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENCV_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLUtils)
 add_example (${PROJECT_NAME} "opencv-camgrabber-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "opencv-videowriter-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLIO)
+
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENCV2_COND)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
 add_example (${PROJECT_NAME} "opencv-videograbber-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_XINE_COND)

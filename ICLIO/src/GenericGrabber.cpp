@@ -71,8 +71,11 @@
 #endif
 
 #ifdef HAVE_OPENCV
-#include <ICLIO/OpenCVVideoGrabber.h>
 #include <ICLIO/OpenCVCamGrabber.h>
+#endif
+
+#ifdef HAVE_OPENCV2
+#include <ICLIO/OpenCVVideoGrabber.h>
 #endif
 
 #include <ICLIO/DemoGrabber.h>
@@ -275,7 +278,7 @@ namespace icl{
 #endif
 
 
-#ifdef HAVE_OPENCV
+#ifdef HAVE_OPENCV2
       if(l[i] == "cvvideo") {
         try{
           m_poGrabber = new OpenCVVideoGrabber(pmap["cvvideo"]);
@@ -286,7 +289,8 @@ namespace icl{
           continue;
         }
       }
-
+#endif
+#ifdef HAVE_OPENCV
       if(l[i] == "cvcam") {
         try{
           m_poGrabber = new OpenCVCamGrabber(to32s(pmap["cvcam"]));

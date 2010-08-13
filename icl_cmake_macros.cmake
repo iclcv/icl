@@ -31,7 +31,7 @@
 #** Excellence Initiative.                                          **
 #**                                                                 **
 #*********************************************************************
-include(CheckIncludeFile)
+
 message(STATUS "macros found")
 
 #standard check for external dependency
@@ -121,7 +121,7 @@ macro(add_libsource PROJECT_NAME FILE CONDITIONLIST LIBSOURCES)
     endif()
   endforeach()
   if(${COND})
-	message(STATUS "adding ${FILE} to ${PROJECT_NAME}")
+	#message(STATUS "adding ${FILE} to ${PROJECT_NAME}")
     set(${LIBSOURCES} "${${LIBSOURCES}};${FILE}")	
   endif()
 endmacro()
