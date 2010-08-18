@@ -41,7 +41,11 @@
 #ifdef HAVE_QT
 #include <ICLQt/DrawWidget.h>
 #endif
+#ifdef HAVE_OPENCV211
+
+#else
 #include <cv.h>
+#endif
 #include <opensurf/surflib.h>
 namespace icl{
 /**

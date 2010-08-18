@@ -41,9 +41,14 @@
 #include <ICLQt/DrawWidget.h>
 #endif
 #include <ICLOpenCV/OpenCV.h>
+#ifdef HAVE_OPENCV211
+#include <opencv2/imgproc/types_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
+#include <opencv2/features2d/features2d.hpp>
+#else
 #include <ml.h>
 #include <cv.h>
-
+#endif
 namespace icl{
 /**
  This class is a wrapper for opencv surf.

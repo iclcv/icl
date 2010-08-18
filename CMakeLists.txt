@@ -39,7 +39,13 @@ set(ICL_MINOR "2")
 set(ICL_PATCH "1")
 set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
-cmake_policy(SET CMP0015 OLD)
+if(NOT ${CMAKE_PATCH_VERSION} STREQUAL "0")
+	cmake_policy(SET CMP0015 OLD)
+endif()
+#get_cmake_property(v VARIABLES)
+#foreach(vv ${v})
+#message(STATUS "${vv}")
+#endforeach()
 
 #build type (Debug or Release)
 set(ICL_VAR_DEBUG_MODE OFF CACHE BOOL "Compile with debug options")
@@ -52,7 +58,7 @@ set(CMAKE_BUILD_TYPE "Release" CACHE INTERNAL "")
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 #build in verbos g++ mode
-#set(CMAKE_VERBOSE_MAKEFILE OFF)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
 message(STATUS "Verbose makefiles: ${CMAKE_VERBOSE_MAKEFILE}")
 
@@ -156,36 +162,46 @@ include(CheckLibraryExists)
 ####OPENCV#### 
 if(ICL_VAR_USE_PKG_CONFIG)
 	icl_check_external_package_from_pkg_conf(OPENCV opencv HAVE_OPENCV_COND)
+	list(FIND OPENCV_LIBS_l "ml" ML_INDEX)
+	if(NOT ML_INDEX STREQUAL "-1")
+		set(HAVE_OPENCV2_COND TRUE)
+		add_definitions( -DHAVE_OPENCV2)
+	endif()
+	list(FIND OPENCV_LIBS_l "opencv_imgproc" IMGPROC_INDEX)
+	if(NOT IMGPROC_INDEX STREQUAL "-1")
+		set(HAVE_OPENCV2_COND TRUE)
+		add_definitions( -DHAVE_OPENCV2)
+	    add_definitions( -DHAVE_OPENCV211)
+	endif()
 endif()
 if(NOT OPENCV_PKG_FOUND)
-  icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux;cxcore;highgui;cv" lib include/opencv /opt/OpenCV2.1.0 HAVE_OPENCV_COND)
+  #check for opencv <= 2.1.0
+  icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux;cxcore;highgui;cv" lib include/opencv /oopt/OpenCV2.1.0 HAVE_OPENCV_COND)
   if(HAVE_OPENCV_COND)
 	set(OPENCV_LIBS_l cxcore cv highgui cvaux)
-  endif()
-endif()
-#check for version of opencv
-if(HAVE_OPENCV_COND)
+	#check for version of opencv	
 	set(CMAKE_REQUIRED_LIBRARIES ${OPENCV_LIBS_l})
 	set(CMAKE_REQUIRED_INCLUDES "${ICL_XDEP_OPENCV_PATH}/include/opencv")
 	#if libml.so is not found to link against, this check will fail => VERSION 1 of OpenCV
-	CHECK_LIBRARY_EXISTS (libml.so cvConvertMaps ${ICL_XDEP_OPENCV_PATH}/lib HAVE_OPENCV2_COND)
+	check_library_exists(libml.so cvConvertMaps ${ICL_XDEP_OPENCV_PATH}/lib HAVE_OPENCV2_COND)
 	if(HAVE_OPENCV2_COND)
 		set(OPENCV_LIBS_l cxcore cv highgui cvaux ml)
 		add_definitions( -DHAVE_OPENCV2)
-#TODO add definition -DHAVE_OPENCV2
 	endif()
+  else()
+    #check for opencv 2.1.1
+	icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h;ml.h" "opencv_core;opencv_highgui;opencv_ml;opencv_features2d;opencv_imgproc" lib include/opencv /opt/OpenCV2.1.1 HAVE_OPENCV_COND)
+    if(HAVE_OPENCV_COND)
+	  set(HAVE_OPENCV2_COND TRUE)
+	  include_directories(${ICL_XDEP_OPENCV_PATH}/include)
+	  set(OPENCV_INCLUDE_PATH "${OPENCV_INCLUDE_PATH};${ICL_XDEP_OPENCV_PATH}/include")
+	  message(STATUS "inc ${OPENCV_INCLUDE_PATH}")
+	  add_definitions( -DHAVE_OPENCV2)
+	  add_definitions( -DHAVE_OPENCV211)	
+	  set(OPENCV_LIBS_l opencv_core opencv_highgui opencv_ml opencv_features2d opencv_imgproc)
+  	endif()
+  endif()
 endif()
-#special check OpenCV2.1.1
-#if(ICL_VAR_USE_PKG_CONFIG)
-#	icl_check_external_package_from_pkg_conf(OPENCV opencv HAVE_OPENCV_COND)
-#endif()
-#if(NOT OPENCV_PKG_FOUND)
-#  icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h;ml.h" "opencv_core;opencv_highgui;opencv_ml" lib include/#opencv /opt/OpenCV2.1.1 HAVE_OPENCV_COND)
-#  if(HAVE_OPENCV_COND)
-#	set(HAVE_OPENCV2_COND TRUE)
-#	set(OPENCV_LIBS_l opencv_core opencv_highgui opencv_ml)
-#  endif()
-#endif()
 
 icl_check_external_package(LIBZ zlib.h z lib include /usr HAVE_LIBZ_COND)
 if(HAVE_LIBZ_COND)
@@ -301,12 +317,12 @@ if(ICL_VAR_USE_PKG_CONFIG)
 	icl_check_external_package_from_pkg_conf(OPENSURF opensurf HAVE_OPENSURF_COND)
 endif()
 if(NOT OPENSURF_PKG_FOUND)
-  icl_check_external_package(OPENSURF "opensurf/fasthessian.h;opensurf/integral.h;opensurf/surf.h;opensurf/surflib.h;opensurf/utils.h" opensurf lib include /vol/nivision HAVE_OPENSURF_COND)
+  icl_check_external_package(OPENSURF "opensurf/fasthessian.h;opensurf/integral.h;opensurf/surf.h;opensurf/surflib.h;opensurf/utils.h" opensurf lib include /vvol/nivision HAVE_OPENSURF_COND)
   if(HAVE_OPENSURF_COND)
 	set(OPENSURF_LIBS_l opensurf)
    endif()
 endif()
-
+message(STATUS "surflibs: ${OPENSURF_LIBS_l}")
 icl_check_external_package(GTEST gtest/gtest.h gtest lib include /vol/nivision/gtest HAVE_GTEST_COND)
 if(HAVE_GTEST_COND)
 	set(GTEST_LIBS_l gtest)
@@ -391,6 +407,7 @@ add_subdirectory(ICLAlgorithms)
 #installs include files of the project on make install
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+	COMPONENT hdrs	
 	FILES_MATCHING PATTERN "*.h"
 	REGEX .svn* EXCLUDE
 )
@@ -404,10 +421,12 @@ configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BI
 install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_SOURCE_DIR}/scripts/icl-make
 	PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+	COMPONENT filess
 )
 #install scripts/icl-create-project-data/ to etc
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/etc
+	COMPONENT filess
 	FILES_MATCHING PATTERN "*.template"
 	REGEX .svn* EXCLUDE
 )
@@ -416,12 +435,14 @@ if(DOXYGEN_FOUND)
 # 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
 		DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
+		COMPONENT docu
 		PATTERN "*template" EXCLUDE
         REGEX .svn* EXCLUDE
 		REGEX .css EXCLUDE)
 #rename menuStyle.css to style.css for menu with border
 install(FILES ${CMAKE_SOURCE_DIR}/doc/menuStyle.css
 		DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
+		COMPONENT docu
 		RENAME style.css)
 #create dir for alldocs
 exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/alldoc/html\"")
@@ -481,6 +502,7 @@ add_custom_target(alldoc doxygen alldoc/doxyfile)
 #excludes .svn dir and doxyfile from installation
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ALL
+	  COMPONENT docu
       PATTERN "doxyfile" EXCLUDE
       REGEX .svn* EXCLUDE)
 #remove build docs from alldoc on make clean
@@ -522,9 +544,9 @@ if(HAVE_QT_COND)
 endif()
   set(ICL_PACKAGE_DESCRIPTION "Image Component Library (ICL)")
   configure_file(pkg.in ${CMAKE_CURRENT_BINARY_DIR}/icl.pc @ONLY)
-  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/icl.pc" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/)
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/icl.pc" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/ COMPONENT filess)
 endif()
-
+#include(tp2.cmake)
 #############################################
 #in shell type: cpack
 #to build automatically the deb package
@@ -540,9 +562,23 @@ set(CPACK_PACKAGE_VERSION_MAJOR "${ICL_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${ICL_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${ICL_PATCH}")
 set(VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+set(CPACK_PACKAGE_EXECUTABLES "")
+#set(CPACK_COMPONENTS_ALL filess)
+set(CPACK_ALL_INSTALL_TYPES Full)
+set(CPACK_GENERATOR "DEB;TGZ")
+SET(CPACK_SET_DESTDIR "ON")
+#set(CPACK_INSTALL_CMAKE_PROJECTS "headers")
+#message(STATUS "ignore ${CPACK_SOURCE_IGNORE_FILES}")
+#set(CPACK_SOURCE_IGNORE_FILES "\\\\doxyfile$")
+#set(CPACK_INSTALLED_DIRECTORIES "")
+#foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGES})
+#TODO set ignore file for doxyfile and install doc dir
+#set(CPACK_INSTALLED_DIRECTORIES "${CPACK_INSTALLED_DIRECTORIES};${CMAKE_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html;${CMAKE_INSTALL_PREFIX}/doc/${ICL_SUB_PACKAGE_PLACEHOLDER}")
 
-set(CPACK_GENERATOR "DEB")
-set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}-${CMAKE_SYSTEM_PROCESSOR}")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "${ICL_VAR_INSTALL_PREFIX}")
+#endforeach()
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}-${CMAKE_SYSTEM_PROCESSOR}")
+#set(CPACK_PACKAGE_INSTALL_PREFIX "/")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
 set(CPACK_STRIP_FILES "ICLUtils/lib/ICLUtils.so" "ICLCore/lib/ICLCore.so" "ICLCC/lib/ICLCC.so" "ICLFilter/lib/ICLFilter.so" "ICLBlob/lib/ICLBlob.so" "ICLOpenCV/lib/ICLOpenCV.so" "ICLIO/lib/ICLIO.so" "ICLQt/lib/ICLQt.so" "ICLQuick/lib/ICLQuick.so" "ICLGeom/lib/ICLGeom.so" "ICLAlgorithms/lib/ICLAlgorithms.so")
+
 include(CPack)

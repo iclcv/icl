@@ -186,9 +186,11 @@ macro(add_doc_gen PROJECT_NAME)
   if(DOXYGEN_FOUND)
     add_custom_target(doc doxygen doc/doxyfile)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html/
-      DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME})
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
+	  COMPONENT docu)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
+	  COMPONENT docu
       PATTERN "doxyfile" EXCLUDE
 	  REGEX .svn* EXCLUDE)
     set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES doc/html/.)

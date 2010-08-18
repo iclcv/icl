@@ -36,9 +36,16 @@
 #define ICL_OPENCVVIDEOWRITER_H
 
 #include <string>
-#include <cxtypes.h>
+#ifdef HAVE_OPENCV211
+#include <opencv2/highgui/highgui_c.h>
+#else
 #include <highgui.h>
+#include <cxtypes.h>
+#endif
 #include <ICLCore/ImgBase.h>
+
+#define CV_FOURCCC(c1,c2,c3,c4)  \
+    (((c1)&255) + (((c2)&255)<<8) + (((c3)&255)<<16) + (((c4)&255)<<24))
 
 namespace icl{
 
@@ -50,16 +57,16 @@ public:
 	///Possible codecs(test if available on your system)
 	//on win32 the value can also be -1
 	enum FOURCC{
-		MPEG_1 = CV_FOURCC('P','I','M','1'),
-		MOTION_JPEG = CV_FOURCC('M','J','P','G'),
-		MPEG_4_2 = CV_FOURCC('M', 'P', '4', '2'),
-		MPEG_4_3 = CV_FOURCC('D', 'I', 'V', '3'),
-		MPEG_4 = CV_FOURCC('D', 'I', 'V', 'X'),
-		H263 = CV_FOURCC('U', '2', '6', '3'),
-		H263I = CV_FOURCC('I', '2', '6', '3'),
-		FLV1 = CV_FOURCC('F', 'L', 'V', '1')
+		MPEG_1 = CV_FOURCCC('P','I','M','1'),
+		MOTION_JPEG = CV_FOURCCC('M','J','P','G'),
+		MPEG_4_2 = CV_FOURCCC('M', 'P', '4', '2'),
+		MPEG_4_3 = CV_FOURCCC('D', 'I', 'V', '3'),
+		MPEG_4 = CV_FOURCCC('D', 'I', 'V', 'X'),
+		H263 = CV_FOURCCC('U', '2', '6', '3'),
+		H263I = CV_FOURCCC('I', '2', '6', '3'),
+		FLV1 = CV_FOURCCC('F', 'L', 'V', '1')
 #ifdef SYSTEM_LINUX
-		,IYUV = CV_FOURCC('I', 'Y', 'U', 'V')
+		,IYUV = CV_FOURCCC('I', 'Y', 'U', 'V')
 #endif
 #ifdef SYSTEM_WINDOWS
 		,OPEN_DIALOG= -1
