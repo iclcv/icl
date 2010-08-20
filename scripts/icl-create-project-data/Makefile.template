@@ -90,8 +90,10 @@ ECHO_TEST_RESULT=$(shell echo -e test > .testfile && cat .testfile && rm .testfi
 
 ifeq  "${ECHO_TEST_RESULT}" "test" 
 ECHO=@echo -e
+ECHO_NO_AT=echo -e
 else
 ECHO=@echo
+ECHO_NO_AT=echo
 endif
 
 INSTALL=${AT}install
@@ -225,7 +227,7 @@ obj/%.app.dep: application/%.cpp
 	${AT}${DEP} ${CXXFLAGS} ${CXXCPP} -MT `echo $< | sed "s|.cpp|${VERSION}|g"` $< -MM -o ${@}_tmp && mv ${@}_tmp $@
 
 doc:
-	${AT}(cd doc && doxygen 2>&1 | while read LINE ; do echo ${BPUR}[doxygen]${DEF} $${LINE} ; done)
+	${AT}(cd doc && doxygen 2>&1 | while read LINE ; do ${ECHO_NO_AT} ${BPUR}[doxygen]${DEF} $${LINE} ; done)
 
 clean: custom-clean-hook
 	${ECHO} ${PROGRESS} ${FBLA}${BYEL}[delete]${DEF} objects
@@ -287,11 +289,11 @@ create-install-dirs:
 
 installlink: all ${PC} uninstall create-install-dirs custom-install-hook
 	${AT}for T in `find src/ -name *.h` ; do \
-		echo ${PROGRESS} ${BBLU}[link]${DEF} $$T ; \
+		${ECHO_NO_AT} ${PROGRESS} ${BBLU}[link]${DEF} $$T ; \
 		ln -s `pwd`/$$T ${INC_INSTALL_PREFIX}/ ; \
 	done
 	${AT}for T in ${APPS} ; do \
-		echo ${PROGRESS} ${BBLU}[link]${DEF} $$T ; \
+		${ECHO_NO_AT} ${PROGRESS} ${BBLU}[link]${DEF} $$T ; \
 		ln -s `pwd`/$$T ${INSTALL_PREFIX}/bin ; 	\
 	done
 	${ECHO} ${PROGRESS} ${BBLU}[link]${DEF} ${LIB_FILE}
@@ -300,21 +302,21 @@ installlink: all ${PC} uninstall create-install-dirs custom-install-hook
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/pkgconfig/${PC}
 	${AT}ln -s `pwd`/${PC} ${LIB_INSTALL_PREFIX}/pkgconfig/
 	${AT}if [ -d doc/documentation ] ; then \
-		echo ${PROGRESS} ${BBLU}[link]${DEF} documentation ; \
+		${ECHO_NO_AT} ${PROGRESS} ${BBLU}[link]${DEF} documentation ; \
 		for T in doc/documentation/html/* ; do \
 			ln -s `pwd`/$$T ${DOC_INSTALL_PREFIX}/ ; \
 		done ; \
 	else \
-		echo ${PROGRESS} ${BBLU}[skip]${DEF} documentation ;	\
+		${ECHO_NO_AT} ${PROGRESS} ${BBLU}[skip]${DEF} documentation ;	\
 	fi
 
 install: all ${PC} create-install-dirs custom-install-hook
 	${AT}for T in `find src/ -name *.h` ; do \
-		echo ${PROGRESS} ${BYEL}[install]${DEF} $$T ; \
+		${ECHO_NO_AT} ${PROGRESS} ${BYEL}[install]${DEF} $$T ; \
 		install -D -p -m 664 `pwd`/$$T ${INC_INSTALL_PREFIX}/ ; \
 	done
 	${AT}for T in ${APPS} ; do \
-		echo ${PROGRESS} ${BYEL}[install]${DEF} $$T ; \
+		${ECHO_NO_AT} ${PROGRESS} ${BYEL}[install]${DEF} $$T ; \
 		install -D -p -m 775 `pwd`/$$T ${INSTALL_PREFIX}/bin ; 	\
 	done
 	${ECHO} ${PROGRESS} ${BYEL}[install]${DEF} ${LIB_FILE}
@@ -323,12 +325,12 @@ install: all ${PC} create-install-dirs custom-install-hook
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/pkgconfig/${PC}
 	${AT}install -D -p -m 664 `pwd`/${PC} ${LIB_INSTALL_PREFIX}/pkgconfig/
 	${AT}if [ -d doc/documentation ] ; then \
-		echo ${PROGRESS} ${BYEL}[install]${DEF} documentation ; \
+		${ECHO_NO_AT} ${PROGRESS} ${BYEL}[install]${DEF} documentation ; \
 		for T in doc/documentation/html/* ; do \
 			install -D -p -m 664 `pwd`/$$T ${DOC_INSTALL_PREFIX} ; \
 		done ; \
 	else \
-		echo ${PROGRESS} ${BYEL}[skip]${DEF} documentation ;	\
+		${ECHO_NO_AT} ${PROGRESS} ${BYEL}[skip]${DEF} documentation ;	\
 	fi
 
 uninstall:
