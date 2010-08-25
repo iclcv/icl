@@ -164,6 +164,10 @@ void send_app(){
       }
       pp->setClipToROI(false);
       ppImage  = pp->apply(grabbedImage);
+      static const bool ppp = pa("-ppp");
+      if(!ppp){
+        const_cast<ImgBase*>(ppImage)->setFullROI();
+      }
     }else{
       ppImage = grabbedImage;
     }
@@ -241,6 +245,7 @@ int main(int n, char **ppc){
    "\t- gauss5 5x5 gaussian blur\n"
    "\t- median 3x3 median filter\n"
    "\t- median5 5x5 median filter\n")
+  ("-ppp","if this flag is set, the image ROI, that results form preprocessing is actually sent")
   ("-dist","give 4 parameters for radial lens distortion.\n"
    "\tThis parameters can be obtained using ICL application\n"
    "\ticl-calib-radial-distortion")
@@ -253,7 +258,8 @@ int main(int n, char **ppc){
   painit(n,ppc,"-stream|-s(streamname=stream) "
          "-flip|-f(string) -uri|-u(image-URI=IMAGE) -single-shot -input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) -dist|-d(float,float,float,float) -reset|-r "
-         "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -normalize|-n");
+         "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -normalize|-n "
+         "-perserve-preprocessing-roi|-ppp");
 
   if(pa("-reset")){
     GenericGrabber::resetBus();
