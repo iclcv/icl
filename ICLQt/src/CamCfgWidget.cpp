@@ -248,8 +248,13 @@ namespace icl{
       }
       
       flags.disableUnicap = (hints.find("unicap") == hints.end());
-      flags.disableDC = (hints.find("dc") == hints.end());
+      flags.disableDC = (hints.find("dc") == hints.end()) && (hints.find("dc800") == hints.end());
       flags.disablePWC = (hints.find("pwc") == hints.end());
+      flags.disableSR = (hints.find("sr") == hints.end());
+      flags.disableOpenCV = (hints.find("cvcam") == hints.end());
+
+      flags.isoMBits = (hints.find("dc800") != hints.end()) ? 800 : 400;
+      
     }
 
     

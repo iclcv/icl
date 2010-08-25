@@ -216,6 +216,7 @@ void init_gui(){
              << "fps(10)[@handle=fps]"
              );
     gui.show();
+    ppEnabled = new bool(false);
   }
 }
 
