@@ -64,10 +64,11 @@ void run(){
   Img32f im = cvt(grabber.grab());
   Img32f cm = colormap(im,refcol[0],refcol[1],refcol[2]);
   Img32f bi = thresh(cm,240);
+  Img8u im8u = cvt8u(bi);
   
   // create a region detector
   static RegionDetector rd(100,1<<20,255,255);
-  const std::vector<ImageRegion> &rs = rd.detect(&bi);
+  const std::vector<ImageRegion> &rs = rd.detect(&im8u);
 
   gui_DrawHandle(draw);
 
