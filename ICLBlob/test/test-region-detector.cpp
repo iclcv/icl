@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <ICLQuick/Common.h>
-#include <RegionDetector2.h>
+#include <ICLBlob/RegionDetector.h>
 
 static const Img8u &create_image() {
   static const char *img[41] = {
@@ -63,7 +63,7 @@ static const Img8u &create_image() {
 
 
 TEST(RegionDetector, Global_Region_Count ) {
-  RegionDetector2 rd(true);
+  RegionDetector rd(true);
   const std::vector<ImageRegion> &rs = rd.detect(&create_image());
 
   ASSERT_EQ(rs.size(),30) << "number of detected regions is wrong";
@@ -71,7 +71,7 @@ TEST(RegionDetector, Global_Region_Count ) {
 }
 
 TEST(RegionDetector, Is_Border_Flag) {
-  RegionDetector2 rd(true);
+  RegionDetector rd(true);
   const std::vector<ImageRegion> &rs = rd.detect(&create_image());
 
   static const bool isBorder[30] = {1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -91,7 +91,7 @@ std::vector<int> ids(const std::vector<ImageRegion> &rs){
 }
 
 TEST(RegionDetector, Region_Neighbours) {
-  RegionDetector2 rd(true);
+  RegionDetector rd(true);
   const std::vector<ImageRegion> &rs = rd.detect(&create_image());
   
   
@@ -160,7 +160,7 @@ TEST(RegionDetector, Region_Neighbours) {
 
 
 TEST(RegionDetector, Region_Sizes_And_Boundaries) {
-  RegionDetector2 rd(true);
+  RegionDetector rd(true);
   const std::vector<ImageRegion> &rs = rd.detect(&create_image());
 
   int sizes[] = {485,598,145,86,99,23,26,3,4,22,6,2,8,12,10,1,12,10,10,14,12,10,10,9,12,10,10,12,10,10};
@@ -177,7 +177,7 @@ TEST(RegionDetector, Region_Sizes_And_Boundaries) {
 }
 
 TEST(RegionDetector, Sub_Regions) {
-  RegionDetector2 rd(true);
+  RegionDetector rd(true);
   const std::vector<ImageRegion> &rs = rd.detect(&create_image());
 
   std::map<int,std::vector<int> > desiredSubRegions;
@@ -219,7 +219,7 @@ TEST(RegionDetector, Sub_Regions) {
 
 
 TEST(RegionDetector, Recursive_Sub_Regions) {
-  RegionDetector2 rd(true);
+  RegionDetector rd(true);
   const std::vector<ImageRegion> &rs = rd.detect(&create_image());
 
   std::map<int,std::vector<int> > desiredRecSubRegions;
@@ -261,7 +261,7 @@ TEST(RegionDetector, Recursive_Sub_Regions) {
 
 
 TEST(RegionDetector, Region_Centers_Of_Gravity) {
-  RegionDetector2 rd(true);
+  RegionDetector rd(true);
   const std::vector<ImageRegion> &rs = rd.detect(&create_image());
  
   Point32f cogs[] = {Point32f(18.2577,21.2845),Point32f(21.1421,25.597),Point32f(19.6759,7.56552),
@@ -281,7 +281,7 @@ TEST(RegionDetector, Region_Centers_Of_Gravity) {
 }
 
 TEST(RegionDetector, Value_Constraints) {
-  RegionDetector2 rd(0,2<<28,0,0);
+  RegionDetector rd(0,2<<28,0,0);
   const std::vector<ImageRegion> *rs = &rd.detect(&create_image());
   
   ASSERT_EQ(rs->size(),21) << "value contraint for filtering regions does not work (used value range [0,0])";
@@ -293,7 +293,7 @@ TEST(RegionDetector, Value_Constraints) {
 }
 
 TEST(RegionDetector, Size_Constraints) {
-  RegionDetector2 rd(0,98,0,255);
+  RegionDetector rd(0,98,0,255);
   const std::vector<ImageRegion> *rs = &rd.detect(&create_image());
   
   ASSERT_EQ(rs->size(),26) << "size contraint for filtering regions does not work (used size range [0,98])";
@@ -311,7 +311,7 @@ TEST(RegionDetector, Size_Constraints) {
 }
 
 TEST(RegionDetector, Combined_Constraints) {
-  RegionDetector2 rd(1,10,128,255);
+  RegionDetector rd(1,10,128,255);
   const std::vector<ImageRegion> *rs = &rd.detect(&create_image());
   
   ASSERT_EQ(rs->size(),3) << "size contraint for filtering regions"

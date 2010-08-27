@@ -73,7 +73,7 @@ add_example (${PROJECT_NAME} "region-detector-test" "${CONDITIONLIST}" ICLLibsTo
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
-add_gtest (${PROJECT_NAME} "test-region-detector.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_gtest (${PROJECT_NAME} "test-region-detector" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
