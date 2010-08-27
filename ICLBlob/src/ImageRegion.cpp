@@ -1,17 +1,55 @@
-#include <ImageRegion.h>
-#include <ImageRegionData.h>
+/********************************************************************
+**                Image Component Library (ICL)                    **
+**                                                                 **
+** Copyright (C) 2006-2010 CITEC, University of Bielefeld          **
+**                         Neuroinformatics Group                  **
+** Website: www.iclcv.org and                                      **
+**          http://opensource.cit-ec.de/projects/icl               **
+**                                                                 **
+** File   : ICLBlob/src/ImageRegion.cpp                            **
+** Module : ICLBlob                                                **
+** Authors: Christof Elbrechter, Erik Weitnauer                    **
+**                                                                 **
+**                                                                 **
+** Commercial License                                              **
+** ICL can be used commercially, please refer to our website       **
+** www.iclcv.org for more details.                                 **
+**                                                                 **
+** GNU General Public License Usage                                **
+** Alternatively, this file may be used under the terms of the     **
+** GNU General Public License version 3.0 as published by the      **
+** Free Software Foundation and appearing in the file LICENSE.GPL  **
+** included in the packaging of this file.  Please review the      **
+** following information to ensure the GNU General Public License  **
+** version 3.0 requirements will be met:                           **
+** http://www.gnu.org/copyleft/gpl.html.                           **
+**                                                                 **
+** The development of this software was supported by the           **
+** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
+** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
+** Forschungsgemeinschaft (DFG) in the context of the German       **
+** Excellence Initiative.                                          **
+**                                                                 **
+*********************************************************************/
 
-#include <ICLQuick/Quick.h>
+
+#include <ICLBlob/ImageRegion.h>
+#include <ICLBlob/ImageRegionData.h>
+
 #include <ICLUtils/StringUtils.h>
+#include <ICLCore/Img.h>
+
+#include <vector>
 
 namespace icl{
   
   namespace{
+    template<class T>
     struct DrawLineSegment{
       // {{{ open
-      Channel32f &c;
-      icl8u val;
-      inline DrawLineSegment(Channel32f &c, icl8u val):c(c),val(val){}
+      Channel<T> &c;
+      T val;
+      inline DrawLineSegment(Channel<T> &c, T val):c(c),val(val){}
       inline void operator()(const LineSegment &sl){
         const icl16u &x = sl.x;
         const icl16u &y = sl.y;
@@ -22,9 +60,32 @@ namespace icl{
     };
   }
 
-  void ImageRegion::sample(Img32f &dst,Img32f *labelDst, int factor, const std::string &label) const{
-    // {{{ open
+  template<class T>
+  void sample_image_region(const std::vector<LineSegment> &ls, Img<T> &image, const std::vector<int> &cs){
+    for(int c=0;c<image.getChannels() && c<(int)cs.size();++c){
+      Channel<T> ch = image[c];
+      std::for_each(ls.begin(),ls.end(),DrawLineSegment<T>(ch,(T)cs[c]));
+    }
+  }
 
+  /// samples the region into a given image
+  void ImageRegion::sample(ImgBase *image, int color){
+    sample(image,std::vector<int>(1,color));
+  }
+  
+  /// samples the region into a given image
+  void ImageRegion::sample(ImgBase *image, const std::vector<int> &channelColors){
+    ICLASSERT_RETURN(image);
+    const std::vector<LineSegment> &ls = getLineSegments();
+    switch(image->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: sample_image_region<icl##D>(ls,*image->asImg<icl##D>(),channelColors); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+    }
+  }
+
+  /** older more complex function that need ICLQuick
+  void ImageRegion::sample(Img32f &dst,Img32f *labelDst, int factor, const std::string &label) const{
     Channel32f channel = dst[0];
     std::for_each(data()->segments.begin(),
                   data()->segments.end(),
@@ -41,9 +102,7 @@ namespace icl{
       }
     }
   }
-
-  // }}}
-
+  **/
   int ImageRegion::getSize() const{
     // {{{ open
 

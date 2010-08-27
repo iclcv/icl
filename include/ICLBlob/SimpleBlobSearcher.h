@@ -35,7 +35,7 @@
 #ifndef ICL_SIMPLE_BLOB_SEARCHER_H
 #define ICL_SIMPLE_BLOB_SEARCHER_H
 
-#include <ICLBlob/Region.h>
+#include <ICLBlob/ImageRegion.h>
 #include <ICLCC/Color.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Uncopyable.h>
@@ -78,10 +78,10 @@ namespace icl{
     /// Internal blob-result type
     struct Blob{
       Blob():region(0),refColorIndex(-1){}
-      Blob(const Region *region, const Color &refColor, int refColorIndex);
+      Blob(const ImageRegion *region, const Color &refColor, int refColorIndex);
       
       /// corresponding regions (provides access to region features)
-      const Region *region;
+      const ImageRegion *region;
       
       /// corresponding reference color
       Color refColor;

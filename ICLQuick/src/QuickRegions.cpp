@@ -68,8 +68,8 @@ namespace icl{
   vector<Point> centers(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
     // {{{ open
 
-    s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<Region> & bd = s_oRD.detect(&image);
+    s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
+    const vector<ImageRegion> & bd = s_oRD.detect(&image);
     vector<Point> result;
     for(unsigned int i=0;i<bd.size();++i){
       Point32f cog = bd[i].getCOG();
@@ -82,8 +82,8 @@ namespace icl{
   vector<Rect> boundingboxes(const ImgQ &image,int minSize, int maxSize, int minVal, int maxVal){
     // {{{ open
 
-    s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<Region> & bd = s_oRD.detect(&image);
+    s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
+    const vector<ImageRegion> & bd = s_oRD.detect(&image);
     vector<Rect> result;
     for(unsigned int i=0;i<bd.size();++i){
        result.push_back(bd[i].getBoundingBox());
@@ -95,8 +95,8 @@ namespace icl{
   vector<vector<Point> > boundaries(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
     // {{{ open
 
-    s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<Region> & bd = s_oRD.detect(&image);
+    s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
+    const vector<ImageRegion> & bd = s_oRD.detect(&image);
     vector<vector<Point> > result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getBoundary());
@@ -108,8 +108,8 @@ namespace icl{
   vector<int> boundarielengths(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
     // {{{ open
 
-    s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<Region> & bd = s_oRD.detect(&image);
+    s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
+    const vector<ImageRegion> & bd = s_oRD.detect(&image);
     vector<int> result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getBoundaryLength());
@@ -121,8 +121,8 @@ namespace icl{
   vector<RegionPCAInfo> pca(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
     // {{{ open
 
-    s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<Region> & bd = s_oRD.detect(&image);
+    s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
+    const vector<ImageRegion> & bd = s_oRD.detect(&image);
     vector<RegionPCAInfo> result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getPCAInfo());
@@ -135,8 +135,8 @@ namespace icl{
   vector<float> formfactors(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
     // {{{ open
 
-    s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<Region> & bd = s_oRD.detect(&image);
+    s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
+    const vector<ImageRegion> & bd = s_oRD.detect(&image);
     vector<float> result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getFormFactor());
@@ -148,8 +148,8 @@ namespace icl{
   vector<vector<Point> > pixels(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
     // {{{ open
 
-    s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<Region> & bd = s_oRD.detect(&image);
+    s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
+    const vector<ImageRegion> & bd = s_oRD.detect(&image);
     vector<vector<Point> >result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getPixels());
@@ -159,14 +159,14 @@ namespace icl{
   }
 
   // }}}
-  vector<vector<ScanLine> > scanlines(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
+  vector<vector<LineSegment> > linesegments(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
     // {{{ open
 
-    s_oRD.setRestrictions(minSize,maxSize,minVal,maxVal);
-    const vector<Region> & bd = s_oRD.detect(&image);
-    vector<vector<ScanLine> > result;
+    s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
+    const vector<ImageRegion> & bd = s_oRD.detect(&image);
+    vector<vector<LineSegment> > result;
     for(unsigned int i=0;i<bd.size();++i){
-      result.push_back(bd[i].getScanLines());
+      result.push_back(bd[i].getLineSegments());
     }
     return result;
     
@@ -205,15 +205,15 @@ namespace icl{
   }
 
   // }}}
-  void draw(ImgQ &image, const ScanLine &scanline){
+  void draw(ImgQ &image, const LineSegment &scanline){
     // {{{ open
 
-    line(image,scanline.x,scanline.y,scanline.x+scanline.len,scanline.y);
+    line(image,scanline.x,scanline.y,scanline.x+scanline.len(),scanline.y);
   }
 
   // }}}
 
-  void draw(ImgQ &image, const vector<ScanLine> &scanlines){
+  void draw(ImgQ &image, const vector<LineSegment> &scanlines){
     // {{{ open
 
     for(unsigned int i=0;i<scanlines.size();++i){
@@ -223,7 +223,7 @@ namespace icl{
 
   // }}}
 
-  void draw(ImgQ &image,const vector< vector<ScanLine> > &scanlines){
+  void draw(ImgQ &image,const vector< vector<LineSegment> > &scanlines){
     // {{{ open
 
     for(unsigned int i=0;i<scanlines.size();++i){

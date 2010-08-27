@@ -37,7 +37,7 @@
 
 #include <ICLUtils/Range.h>
 #include <ICLCore/Types.h>
-#include <ICLBlob/Region.h>
+#include <ICLBlob/ImageRegion.h>
 
 namespace icl{
    /// discrimimator for a found regions \ingroup G_RBBS
@@ -72,7 +72,7 @@ namespace icl{
         function can be specialized to validate blobs more dynamically.
         @param blobData blob data struct to validate 
     **/
-    virtual bool validate(const Region &blobData);
+    virtual bool validate(const ImageRegion &blobData);
     
     /// returns the valid value range for accepted regions
     /** This information is used during the blob detection procedure to

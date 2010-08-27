@@ -342,9 +342,9 @@ InputGrabber *grabber = 0;
 
 static std::vector<std::vector<float> > getCentersAndSizes(const Img8u &image){
   static RegionDetector rd;
-  rd.setRestrictions(10,100000,1,255);
+  rd.setConstraints(10,100000,1,255);
   
-  const std::vector<icl::Region> &bd = rd.detect(&image);
+  const std::vector<ImageRegion> &bd = rd.detect(&image);
   
   std::vector<std::vector<float> > v;
 

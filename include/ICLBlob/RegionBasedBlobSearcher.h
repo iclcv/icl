@@ -40,7 +40,7 @@
 #include <ICLUtils/Rect.h>
 #include <ICLCore/Types.h>
 #include <map>
-#include <ICLBlob/Region.h>
+#include <ICLBlob/ImageRegion.h>
 #include <ICLBlob/RegionPCAInfo.h>
 #include <ICLBlob/RegionFilter.h>
 #include <ICLBlob/FMCreator.h>
@@ -219,7 +219,7 @@ namespace icl{
     /** The returned blobdata can be used to access all blob available blob features 
         @return const array of internal used blob data Pointers
         */
-    const std::vector<Region*> &getRegions();
+    const std::vector<ImageRegion*> &getRegions();
 
     /// add new FMCreator and associated RegionFilter
     /** ownership is passed to the RegionBasedBlobSearcher
@@ -338,7 +338,7 @@ namespace icl{
     
     std::vector<float> m_oFormFactorsPOD;
 
-    std::vector<Region*> m_oInternalData;
+    std::vector<ImageRegion*> m_oInternalData;
 
     struct FF{
       FF(float f1=0, float f2=0): f1(f1),f2(f2){}

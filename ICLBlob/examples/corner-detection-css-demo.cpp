@@ -241,7 +241,7 @@ void run(){
 
 	// detect regions
   static RegionDetector d(100,200000,255,255);
-  const std::vector<icl::Region> &rs = d.detect(&threshedImage);
+  const std::vector<ImageRegion> &rs = d.detect(&threshedImage);
   setCSSParameters();
   // iterate over all regions and draw information onto the DrawWidgets
   for(unsigned int i=0;i<rs.size();++i) {

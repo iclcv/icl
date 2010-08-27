@@ -698,20 +698,18 @@ void run(){
   const Img8u &maskedImage = maskRect.applyMask(*ltIm->asImg<icl8u>());
 
   static RegionDetector rd(100,50000,0,0);
-  rd.setRestrictions(minBlobSize,maxBlobSize,0,0);
+  rd.setConstraints(minBlobSize,maxBlobSize,0,0);
 
-  const std::vector<icl::Region> &rsd = rd.detect(&maskedImage);
-  std::vector<icl::Region> rs;
+  const std::vector<ImageRegion> &rsd = rd.detect(&maskedImage);
+  std::vector<ImageRegion> rs;
   std::vector<Point32f> cogs;
   std::vector<Rect> bbs;
-  std::vector<Point32f> accurate_cogs;
   for(unsigned int i=0;i<rsd.size();++i){
     
     if(rsd[i].getFormFactor() <= minFF){
       rs.push_back(rsd[i]);
       cogs.push_back(rsd[i].getCOG());
       bbs.push_back(rsd[i].getBoundingBox());
-      accurate_cogs.push_back(rsd[i].getAccurateCOG(grayIm));
     }
   }
   
@@ -746,12 +744,11 @@ void run(){
     w.fill(255,0,0,50);
     w.symsize(10);
     for(unsigned int i=0;i<rs.size();++i){
-      const icl::Region &r = rs[i];
+      const ImageRegion &r = rs[i];
       w.color(255,0,0);
       w.rect(r.getBoundingBox());
       w.sym(cogs[i].x,cogs[i].y,ICLDrawWidget::symPlus);
       w.color(0,255,0);
-      w.sym(accurate_cogs[i].x,accurate_cogs[i].y,ICLDrawWidget::symCross);
     }
     
   }

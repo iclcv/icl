@@ -103,19 +103,6 @@ void init(){
   gui.show();
 }
 
-
-struct RegionContainsPoint{
-  inline RegionContainsPoint(const Point &p):p(p){}
-  Point p;
-  inline bool operator()(const ScanLine &sls) const{
-    return p.y == sls.y && p.x >= sls.x && p.x < sls.x+sls.len;
-  }
-  inline bool operator()(const icl::Region &rs) const{
-    const vector<ScanLine> &sls = rs.getScanLines();
-    return std::find_if(sls.begin(),sls.end(),*this) != sls.end();
-  }
-};
-
 void run(){
   static GenericGrabber g(FROM_PROGARG("-input"));
   g.setDesiredSize(pa("-s"));
@@ -157,7 +144,7 @@ void run(){
   static Img8u reducedLevels;  
 
   const Img8u *useImage = 0;
-  const std::vector<icl::Region> *rs = 0;
+  const std::vector<ImageRegion> *rs = 0;
   while(1){
     mutex.lock();
     bool rdUpdated = false;
@@ -172,8 +159,8 @@ void run(){
       
       d.setImage(useImage);
       
-      Time t = Time::now();
-      rd.setCreateTree(showSubRegions || showNeighbours || showSurRegions);
+       Time t = Time::now();
+      rd.setCreateGraph(showSubRegions || showNeighbours || showSurRegions);
       rs = &rd.detect(useImage);
       timeRD = str((Time::now()-t).toMilliSeconds())+"ms";
       rdUpdated = true;
@@ -185,7 +172,7 @@ void run(){
         useImage = grabbedImage;
       }
       if(!rdUpdated){
-        rd.setCreateTree(showSubRegions || showNeighbours || showSurRegions );
+        rd.setCreateGraph(showSubRegions || showNeighbours || showSurRegions );
         rs = &rd.detect(useImage);
         rdUpdated = true;
       }
@@ -200,17 +187,15 @@ void run(){
   
     if(useImage->getImageRect().contains(m.x,m.y)){
       // find the region, that contains mouseX,mouseY
-      std::vector<icl::Region>::const_iterator it = find_if(rs->begin(),rs->end(),RegionContainsPoint(m));
-      if(it != rs->end()){
-        icl::Region r = *it;
+      ImageRegion r = rd.click(m);
+      
+      if(r){
         
         d.nofill();
-
         if(showBoundary){
           d.color(0,150,255,200);
           d.linestrip(r.getBoundary(showThinnedBoundary));
         }
-        
         if(showBB){
           d.color(255,0,0,255);
           d.rect(r.getBoundingBox());
@@ -221,10 +206,14 @@ void run(){
           d.color(255,200,100,100);
           Time t=Time::now();
 
-          const std::vector<icl::Region> &sur = r.getSurroundingRegions(!showAllSurRegions);
+          std::vector<ImageRegion> sur = showAllSurRegions ? r.getParentTree() : 
+                                         std::vector<ImageRegion>(1,r.getParentRegion());
+
           timeSU = str((Time::now()-t).toMilliSeconds())+"ms";
           for(unsigned int i=0;i<sur.size();++i){
-            d.linestrip(sur[i].getBoundary());
+            if(sur[i]){
+              d.linestrip(sur[i].getBoundary());
+            }
           }
         }
         d.linewidth(1);
@@ -232,30 +221,32 @@ void run(){
         if(showSubRegions){
           d.color(0,155,0,255);
           Time t=Time::now();
-          const std::vector<icl::Region> &sub = r.getSubRegions(!showAllSubRegions);
+          const std::vector<ImageRegion> &sub = r.getSubRegions(!showAllSubRegions);
           timeSR = str((Time::now()-t).toMilliSeconds())+"ms";
+
           for(unsigned int i=0;i<sub.size();++i){
-            d.linestrip(sub[i].getBoundary());
+            if(!sub[i]) {
+              ERROR_LOG("sub-region is null??");
+            }else{
+              d.linestrip(sub[i].getBoundary());
+            }
           }
           if(showAllSubRegions){
             nAllSub = (int)sub.size();
           }else{
             nSub = (int)sub.size();
           }
-
         }
         if(showNeighbours){
           d.color(255,0,0,255);
           Time t=Time::now();
-          const std::vector<icl::Region> &ns = r.getNeighbours();
+          const std::vector<ImageRegion> &ns = r.getNeighbours();
           timeNB = str((Time::now()-t).toMilliSeconds())+"ms";
           for(unsigned int i=0;i<ns.size();++i){
             d.linestrip(ns[i].getBoundary());
           }
           
         }
-
-        
         valHandle = r.getVal();
         cogHandle = str(r.getCOG());
         sizeHandle = r.getSize();
@@ -263,6 +254,7 @@ void run(){
         evratioHandle = r.getPCAInfo().len2/r.getPCAInfo().len1;
         blHandle = r.getBoundaryLength();
       }else{
+        DEBUG_LOG("12");
         valHandle = "no region";
         cogHandle = "";
         sizeHandle = "";

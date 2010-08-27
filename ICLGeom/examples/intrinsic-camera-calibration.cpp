@@ -346,8 +346,8 @@ void detect_vis(bool add=false){
   
 
   static RegionDetector rd(100,50000,0,0);
-  rd.setRestrictions(gui.getValue<int>("min-blob-size"),50000,0,0);
-  const std::vector<icl::Region> &rs = rd.detect(useMorph ? moIm : ltIm);
+  rd.setConstraints(gui.getValue<int>("min-blob-size"),50000,0,0);
+  const std::vector<ImageRegion> &rs = rd.detect(useMorph ? moIm : ltIm);
   
   static std::string &vis = gui.getValue<std::string>("vis");
 

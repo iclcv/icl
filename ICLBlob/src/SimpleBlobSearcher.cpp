@@ -38,7 +38,7 @@
 namespace icl{
 
   
-  SimpleBlobSearcher::Blob::Blob(const Region *region, 
+  SimpleBlobSearcher::Blob::Blob(const ImageRegion *region, 
                                  const Color &refColor, 
                                  int refColorIndex):
     region(region),refColor(refColor),refColorIndex(refColorIndex){}
@@ -122,8 +122,8 @@ namespace icl{
 
     for(int j=0;j<N;++j){
       RegionDetector &rd = *m_data->rds[j];
-     rd.setRestrictions(m_data->ranges[j].minVal,m_data->ranges[j].maxVal,250,255);
-      const std::vector<Region> &rs = rd.detect(&m_data->buffers[j]);
+      rd.setConstraints(m_data->ranges[j].minVal,m_data->ranges[j].maxVal,250,255);
+      const std::vector<ImageRegion> &rs = rd.detect(&m_data->buffers[j]);
       for(unsigned int i=0;i<rs.size();++i){
         m_data->blobs.push_back(Blob(&rs[i],m_data->colors[j],j));
 

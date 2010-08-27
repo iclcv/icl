@@ -37,9 +37,9 @@
 
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/ImgBase.h>
-#include <vector>
+#include <ICLBlob/ImageRegion.h>
 
-#include <ImageRegion.h>
+#include <vector>
 
 namespace icl{
   

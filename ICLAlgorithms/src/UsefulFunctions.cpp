@@ -187,8 +187,8 @@ namespace icl{
     Img8u c0 = p2o(useBuffer->selectChannel(0));
 
     //    show(norm(cvt(c0)));
-    useRD->setRestrictions(0,2<<20,1,255);
-    const std::vector<Region> &blobData = useRD->detect(&c0);
+    useRD->setConstraints(0,2<<20,1,255);
+    const std::vector<ImageRegion> &blobData = useRD->detect(&c0);
     std::vector<Rect> resultVec(blobData.size());
     
     Point halfTemplROI(templ.getROISize().width/2,templ.getROISize().height/2);

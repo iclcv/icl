@@ -36,7 +36,7 @@
 #define ICLQUICK_REGIONS_H
 
 #include <ICLQuick/Quick.h>
-#include <ICLBlob/Region.h>
+#include <ICLBlob/ImageRegion.h>
 
 namespace icl{
   /// creates a color map of a 3-channel color image
@@ -62,14 +62,14 @@ namespace icl{
   vector<float> formfactors(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
   
   vector<vector<Point> > pixels(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
-  vector<vector<ScanLine> > scanlines(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
+  vector<vector<LineSegment> > linesegments(const ImgQ &image, int minSize=0, int maxSize=1000000000, int minVal=0, int maxVal=255);
 
 
   void draw(ImgQ &image,const RegionPCAInfo &pcainfo);
   void draw(ImgQ &image,const vector<RegionPCAInfo> &pcainfos);
-  void draw(ImgQ &image,const ScanLine &scanline);
-  void draw(ImgQ &image,const vector<ScanLine> &scanlines);
-  void draw(ImgQ &image,const vector< vector<ScanLine> > &scanlines);
+  void draw(ImgQ &image,const LineSegment &lineseg);
+  void draw(ImgQ &image,const vector<LineSegment> &linesegs);
+  void draw(ImgQ &image,const vector< vector<LineSegment> > &linesegs);
 }
 
 #endif

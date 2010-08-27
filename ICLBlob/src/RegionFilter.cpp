@@ -64,7 +64,7 @@ namespace icl{
 
   // }}}
 
-  bool RegionFilter::validate(const Region &d){
+  bool RegionFilter::validate(const ImageRegion &d){
     // {{{ open
     if(m_poValueRange && !m_poValueRange->contains(d.getVal())) return false;
     if(m_poSizeRange && ! m_poSizeRange->contains(d.getSize())) return false;

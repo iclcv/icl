@@ -338,7 +338,7 @@ namespace icl{
 
   // }}}
   
-  const std::vector<Region*> &RegionBasedBlobSearcher::getRegions(){
+  const std::vector<ImageRegion*> &RegionBasedBlobSearcher::getRegions(){
     // {{{ open
 
     return m_oInternalData;
@@ -431,12 +431,14 @@ namespace icl{
       RegionFilter &rf = *(m_oFMRF[i].rf);
       
       Range<unsigned int> sizeRange(rf.getSizeRange().minVal, rf.getSizeRange().maxVal);
-      m_poRD->setRestrictions(sizeRange,rf.getValueRange().castTo<icl64f>());
+      m_poRD->setConstraints(sizeRange.minVal,sizeRange.maxVal,
+                              rf.getValueRange().castTo<icl64f>().minVal,
+                              rf.getValueRange().castTo<icl64f>().maxVal);
       FF factor( (float)(ims.width)/fmc.getSize().width,(float)(ims.height)/fmc.getSize().height);
-      const vector<Region> &vecBD = m_poRD->detect(fmc.getFM(getImage(fmc.getSize(),fmc.getFormat(),image)));
+      const vector<ImageRegion> &vecBD = m_poRD->detect(fmc.getFM(getImage(fmc.getSize(),fmc.getFormat(),image)));
       for(unsigned int i=0;i<vecBD.size();++i){
         if(rf.validate(vecBD[i])){
-          m_oInternalData.push_back(const_cast<Region*>(&(vecBD[i])));        
+          m_oInternalData.push_back(const_cast<ImageRegion*>(&(vecBD[i])));        
           m_oScaleFactors.push_back(factor);
         }        
       }
