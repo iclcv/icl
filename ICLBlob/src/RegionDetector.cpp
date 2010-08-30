@@ -46,6 +46,7 @@
 
 #include <algorithm>
 
+#include <ICLUtils/StackTimer.h>
 
 namespace icl{
 
@@ -141,6 +142,7 @@ namespace icl{
   }
   
   void RegionDetector::analyseRegions(){
+    BENCHMARK_THIS_FUNCTION;
     int W = m_data->W, H = m_data->H;
     if((int)m_data->parts.size() != W*H){
       m_data->parts.resize(W*H);
@@ -188,6 +190,7 @@ namespace icl{
   }
 
   void RegionDetector::joinRegions(){
+    BENCHMARK_THIS_FUNCTION;
     /// clear former data regions and their data
     m_data->regions.clear();
     m_data->filteredRegions.clear();
@@ -214,6 +217,7 @@ namespace icl{
   }
   
   void RegionDetector::linkRegions(){
+    BENCHMARK_THIS_FUNCTION;
     RunLengthEncoder &rle = m_data->rle;
     const int W = m_data->W, H = m_data->H;
     for(WorkingLineSegment *s=rle.begin(0)+1; s < rle.end(0); ++s){
@@ -249,6 +253,7 @@ namespace icl{
 
 
   void RegionDetector::setUpBorders(){
+    BENCHMARK_THIS_FUNCTION;
     RunLengthEncoder &rle = m_data->rle;
     const int H = m_data->H;
     
@@ -286,6 +291,7 @@ namespace icl{
   };
   
   void RegionDetector::filterRegions(){
+    BENCHMARK_THIS_FUNCTION;
     m_data->filteredRegions.clear();
     copy_if(m_data->regions.begin(),m_data->regions.end(),
             std::back_inserter(m_data->filteredRegions),
@@ -293,6 +299,7 @@ namespace icl{
   }
   
   const std::vector<ImageRegion> &RegionDetector::detect(const ImgBase *image){
+    BENCHMARK_THIS_FUNCTION;
     image = prepareImage(image);
     m_data->W = image->getWidth();
     m_data->H = image->getHeight();

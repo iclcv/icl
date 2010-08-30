@@ -57,7 +57,8 @@ namespace icl{
     friend bool region_search_border(std::set<IRD*>&,IRD*); 
     friend void collect_subregions_recursive(std::set<IRD*>&,IRD*);
     friend bool is_region_contained(IRD*,IRD*);
-      
+    friend bool region_search_outer_bb(const Rect&,std::set<IRD*>&,IRD*);
+  
   private:
     /// image pixle value
     int  value; 

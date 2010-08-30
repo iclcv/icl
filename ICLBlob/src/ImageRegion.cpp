@@ -609,6 +609,42 @@ namespace icl{
     return !region_search_border(buf,inner);
   }
 
+  
+  bool is_rect_larger(const Rect &a, const Rect &b){
+    return a.x<b.x || a.y<b.y  || a.right() > b.right() || a.bottom() > b.bottom();
+  }
+  
+  // search for a thats bounding box is 'larger' than r without collecting regions from buf
+  bool region_search_outer_bb(const Rect &r,
+                              std::set<ImageRegionData*> &buf, // buf contains outer
+                              ImageRegionData *inner){
+    
+    if (inner->graph->isBorder || is_rect_larger(ImageRegion(inner).getBoundingBox(),r)) return true;
+    
+    // then: depth first
+    for(std::set<ImageRegionData*>::iterator it=inner->graph->neighbours.begin(), 
+        itEnd=inner->graph->neighbours.end() ; it != itEnd; ++it){
+      //      if((*it)->isBorder) return true; // we check all neighbours first
+      if(!buf.count(*it)){
+        if (inner->graph->isBorder || is_rect_larger(ImageRegion(*it).getBoundingBox(),r)) return true;
+        buf.insert(*it);
+        if(region_search_outer_bb(r,buf, *it)){
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+
+
+  bool is_region_contained_bb(ImageRegionData *outer, ImageRegionData *inner){
+    std::set<ImageRegionData*> buf;
+    buf.insert(outer);
+    return !region_search_outer_bb(ImageRegion(outer).getBoundingBox(),buf,inner);
+  }
+
+
   void collect_subregions_recursive(std::set<ImageRegionData*> &all, ImageRegionData *r){
     ImageRegion(r).getSubRegions();
     
@@ -637,7 +673,7 @@ namespace icl{
         for(std::set<ImageRegionData*>::iterator itn = nb.begin();itn != nb.end(); ++itn){
           ImageRegionData *n = *itn;
           if(!n->graph->isBorder){
-            if(n->graph->neighbours.size() == 1 || is_region_contained(r,n)){
+            if(n->graph->neighbours.size() == 1 || is_region_contained_bb(r,n)){
               r->addChild(n);
             }
           }
