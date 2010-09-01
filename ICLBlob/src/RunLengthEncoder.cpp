@@ -57,37 +57,68 @@ namespace icl{
   
   template<class T>
   void RunLengthEncoder::encode_internal(const Img<T> &image){
-    
-    const Rect &roi = image.getROI();
-  
-    // const int rx = roi.x;
-    const int ry = roi.y;
-    const int rw = roi.width;
-    const int rh = roi.height;
-  
-    WLS *sldata = m_data.data(), *sls = 0;
-    
-    const T *p = &*image.beginROI(0);
-    const T *pEnd(0),*pLast(0),*pBegin(0);
-    T curr(0);
-    
-    const int yEnd = ry+rh;
-    const int xStep = image.getWidth()-rw;
-    for(int y=ry;y<yEnd;++y){
-      pBegin = p;    // pixel pointer to current image line begin
-      pEnd = p+rw;   // pixel pointer to current image line end
-      curr = *p++;  
-      sls = sldata+rw*(y-ry);
-      pLast = p-1;
-      while(p<pEnd){
-        p = find_first_not(p,pEnd,curr);
-        sls->init((int)(pLast-pBegin), y,(int)(p-pBegin),curr); 
-        ++sls;
-        curr = *p; 
-        pLast = p;
+    if(image.hasFullROI()){
+      // optimized version form images without ROI
+      const int W = image.getWidth();
+      const int H = image.getHeight();
+      
+      WLS *sldata = m_data.data(), *sls = 0;
+      
+      const T *p = image.begin(0);
+      const T *pEnd(0),*pLast(0),*pBegin(0);
+      T curr(0);
+      
+      for(int y=0;y<H;++y){
+        pBegin = p;    // pixel pointer to current image line begin
+        pEnd = p+W;    // pixel pointer to current image line end
+        curr = *p++;  
+        sls = sldata+y*W;
+        pLast = p-1;
+        while(p<pEnd){
+          p = find_first_not(p,pEnd,curr);
+          sls->init((int)(pLast-pBegin), y,(int)(p-pBegin),curr); 
+          ++sls;
+          curr = *p; 
+          pLast = p;
+        }
+        m_ends[y] = sls;
       }
-      p += xStep;
-      m_ends[y-ry] = sls;
+
+
+    }else{
+      // ROI-version (slighly slower due to some overhead for roi-handling 
+      // and shifting of scanlines)
+      const Rect &roi = image.getROI();
+      
+      const int rx = roi.x;
+      const int ry = roi.y;
+      const int rw = roi.width;
+      const int rh = roi.height;
+      
+      WLS *sldata = m_data.data(), *sls = 0;
+      
+      const T *p = &*image.beginROI(0);
+      const T *pEnd(0),*pLast(0),*pBegin(0);
+      T curr(0);
+      
+      const int yEnd = ry+rh;
+      const int xStep = image.getWidth()-rw;
+      for(int y=ry;y<yEnd;++y){
+        pBegin = p;    // pixel pointer to current image line begin
+        pEnd = p+rw;   // pixel pointer to current image line end
+        curr = *p++;  
+        sls = sldata+rw*(y-ry);
+        pLast = p-1;
+        while(p<pEnd){
+          p = find_first_not(p,pEnd,curr);
+          sls->init(rx+(int)(pLast-pBegin), y,rx+(int)(p-pBegin),curr); 
+          ++sls;
+          curr = *p; 
+          pLast = p;
+        }
+        p += xStep;
+        m_ends[y-ry] = sls;
+      }
     }
   }
   

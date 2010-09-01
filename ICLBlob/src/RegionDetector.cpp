@@ -138,7 +138,7 @@ namespace icl{
   }
   
   void RegionDetector::analyseRegions(){
-    BENCHMARK_THIS_FUNCTION;
+    //BENCHMARK_THIS_FUNCTION;
     int W = m_data->roi.width, H = m_data->roi.height;
     if((int)m_data->parts.size() != W*H){
       m_data->parts.resize(W*H);
@@ -186,7 +186,7 @@ namespace icl{
   }
 
   void RegionDetector::joinRegions(){
-    BENCHMARK_THIS_FUNCTION;
+    //BENCHMARK_THIS_FUNCTION;
     /// clear former data regions and their data
     m_data->regions.clear();
     m_data->filteredRegions.clear();
@@ -207,7 +207,7 @@ namespace icl{
   }
   
   void RegionDetector::linkRegions(){
-    BENCHMARK_THIS_FUNCTION;
+    //BENCHMARK_THIS_FUNCTION;
     RunLengthEncoder &rle = m_data->rle;
     const int H = m_data->roi.height;
     
@@ -244,7 +244,7 @@ namespace icl{
 
 
   void RegionDetector::setUpBorders(){
-    BENCHMARK_THIS_FUNCTION;
+    //BENCHMARK_THIS_FUNCTION;
     RunLengthEncoder &rle = m_data->rle;
     const int H = m_data->roi.height;
     
@@ -282,7 +282,7 @@ namespace icl{
   };
   
   void RegionDetector::filterRegions(){
-    BENCHMARK_THIS_FUNCTION;
+    //BENCHMARK_THIS_FUNCTION;
     m_data->filteredRegions.clear();
     copy_if(m_data->regions.begin(),m_data->regions.end(),
             std::back_inserter(m_data->filteredRegions),
@@ -290,7 +290,7 @@ namespace icl{
   }
   
   const std::vector<ImageRegion> &RegionDetector::detect(const ImgBase *image){
-    BENCHMARK_THIS_FUNCTION;
+    //BENCHMARK_THIS_FUNCTION;
     useImage(image);
 
     // run length encoding

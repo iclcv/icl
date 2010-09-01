@@ -77,10 +77,27 @@ namespace icl {
       the RunLengthEncoder is <b>not</b> able to process icl32f and icl64f images
 
       \section ROI ROI Support
-      The RunLengthEncoder does not support image ROIs, as most of the time it might be easier to extract the
-      source images ROI beforehand. If the given image is acutally just a copy of another images ROI, the
-      2nd optional parameter of the RunLengthEncoder::encode(const ImgBase*, const Point&) can be set.
-      In this case, the give offset will be added automatically to the resulting scanline values
+      The RunLengthEncoder provides ROI support. The internal encoding function is implemented
+      twice (with and without ROI handling) because handling of an images ROI entails a few
+      extra computation steps (e.g. shifting of line segments by roi offset).
+      If an input image is used, that has a non-full ROI, the internal WorkingLineSegment
+      buffer is optimized for that ROI size. Furthermore, the buffer containing the
+      line end pointers will also be resizes to the inpute images ROI-height. Therefore
+      the given row-indices for the RunLengthEncoder::begin(int) and RunLengthEncoder::end(int)
+      functions is always relative to the input images roi-offset.
+
+      <pre>
+      image (size: 10x7, roi: (1,2)4x3)
+      ..........
+      ..........
+      .xxxxx.... <- begin(0) and end(0) refer to this line
+      .xxxxx....
+      .xxxxx.... <- begin(2) and end(2) refer to this line
+      ..........
+      ..........
+      </pre>
+      
+
       xstart, xend and y
   */
   class RunLengthEncoder{
@@ -89,41 +106,50 @@ namespace icl {
     
     /// internal data buffer
     std::vector<WLS> m_data;
+    
+    /// internal buffer for line ends
     std::vector<WLS*> m_ends;
+    
+    /// current image ROI, the RunLengthEncoder is optimized for (adatped automatically)
     Rect m_imageROI;
 
+    /// internal run-length-encoding template
     template<class T>
     void encode_internal(const Img<T> &image);
 
+    /// internal preparation function (automatically called)
     void prepare(const Rect &roi);
+    
+    /// resets all formerly used line segments (automatically called)
     void resetLineSegments();
 
-    inline int idx(int row, bool relToImageOffset) const {
-      if(relToImageOffset){
-        return (row-m_imageROI.y)*m_imageROI.width;
-      }else{
-        return row*m_imageROI.width;
-      }
-    }
     public:
     
+    /// main encoding function
     void encode(const ImgBase *image);
     
-    // all indices are relative to the image ROI's offset
-    inline WorkingLineSegment *begin(int row, bool relToImageOffset=false){ 
-      return &m_data[idx(row,relToImageOffset)];
+    /// Returns a begin()-pointer for the first encoded image line
+    /** row-indices are always relative to the image ROI's offset (see \ref ROI) */
+    inline WorkingLineSegment *begin(int row){
+      return &m_data[row*m_imageROI.width];
     }
     
-    inline const WorkingLineSegment *begin(int row, bool relToImageOffset=false) const { 
-      return &m_data[idx(row,relToImageOffset)];
+    /// Returns a begin()-pointer for the first encoded image line (const)
+    /** row-indices are always relative to the image ROI's offset (see \ref ROI) */
+    inline const WorkingLineSegment *begin(int row) const{
+      return &m_data[row*m_imageROI.width];
+    }
+    
+    /// Returns a end()-pointer for the first encoded image line
+    /** row-indices are always relative to the image ROI's offset (see \ref ROI) */
+    inline WorkingLineSegment *end(int row){
+      return m_ends[row]; 
     }
 
-    inline WorkingLineSegment *end(int row, bool relToImageOffset=false){ 
-      return m_ends[relToImageOffset ? row - m_imageROI.y : row]; 
-    }
-    
-    inline const WorkingLineSegment *end(int row, bool relToImageOffset=false) const { 
-      return m_ends[relToImageOffset ? row - m_imageROI.y : row]; 
+    /// Returns a end()-pointer for the first encoded image line (const)
+    /** row-indices are always relative to the image ROI's offset (see \ref ROI) */
+    inline const WorkingLineSegment *end(int row) const {
+      return m_ends[row]; 
     }
   };
 

@@ -61,19 +61,23 @@ namespace icl{
       only the channel with index 0 is used, all other remain untouched.
       
       \section ROI ROI Support
-      As the actual detection of image regions is much more expensive than a deep
-      image copy, ROI support is emulated internally by extracting the image ROI
-      from the source image beforehand. However all pixel positions are automatically 
-      shifter by the original ROI offset. By this means pixel locations are still 
-      relative to the given input images origin.
+      ROI support is provided by the internally used instance of class
+      RunLengthEncoder. The RunLengthEncoder has only a very small overhead for
+      ROI-images. If an image with set ROI is passed to the RegionDetectors detect-
+      function, only the images ROI is process internally. All other pixels will not
+      be processed at all. In this case, regions, that are adjacent to the image
+      ROI are set to be border-regions and image regions that intersect the ROI are
+      cut at the ROI-boundaries.
+      In other words, the detection behaves as if the image-ROI is extracted before
+      the detection step.
       
       \section OWNERSHIP Image Ownership
       The RegionDetector instance does not take ownership of the given input image.
       However, the input image needs to remain unchanged as long as the 
       result of the RegionDetector::detect-function is used. Currently, only the
       ImageRegions's ImageRegion::getBoundary() and variants of this method actually
-      demand the image to be unchanged, however, future implementations will not
-      guarantee this.
+      demand the image to be unchanged, however, future implementations of other 
+      feature functions of ImageRegion do not guarantee this.
       
       \section IMAGE_REGION The ImageRegion Structure
       The ImageRegion structure that is returned by the RegionDetector::detect-function
@@ -184,7 +188,7 @@ namespace icl{
     RegionDetector(bool createRegionGraph);
 
     /// 2nd constructor with given constraints and region-graph creation flag
-    RegionDetector(int minSize=1, int maxSize=2<<20, int minVal=0, int maxVal=255, bool createRegionGraph=false);
+    RegionDetector(int minSize=1, int maxSize=2<<28, int minVal=0, int maxVal=255, bool createRegionGraph=false);
 
     /// Destructor
     ~RegionDetector();
