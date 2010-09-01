@@ -69,12 +69,11 @@ namespace icl{
   using namespace region_detector_tools;
   
   struct RegionDetector::Data{
-    ImgBase *roiBuf;
     const ImgBase *image;
     Point roiOffset;
     int minVal,maxVal,minSize,maxSize;
     bool createRegionGraph;
-    int W,H;
+    Rect roi;
     RunLengthEncoder rle;
     
     std::vector<ImageRegionPart> parts;
@@ -86,10 +85,11 @@ namespace icl{
 
     std::vector<ImageRegionData*> regionData;
     
-    Data():roiBuf(0),image(0){}
+    Data():image(0){}
     ~Data(){
-      ICL_DELETE(roiBuf);
-      // image is just a pointer-copy
+      for(unsigned int i=0;i<regionData.size();++i){
+        delete regionData[i];
+      }
     }
   };
 
@@ -130,20 +130,16 @@ namespace icl{
     m_data->maxVal = maxVal;
   }
 
-  const ImgBase *RegionDetector::prepareImage(const ImgBase *image){
-    ICLASSERT_THROW(image->getDepth() != depth32f && image->getDepth() != depth64f, ICLException("RegionDetector::prepareImage: depth32f and depth64f are not supported"));
-    m_data->roiOffset = image->getROIOffset();
-    if(!image->hasFullROI()){
-      image->deepCopyROI(&m_data->roiBuf);
-      image = m_data->roiBuf;
-    }
+  void RegionDetector::useImage(const ImgBase *image) throw (ICLException){
+    ICLASSERT_THROW(image->getDepth() != depth32f && image->getDepth() != depth64f, 
+                    ICLException("RegionDetector::prepareImage: depth32f and depth64f are not supported"));
+    m_data->roi = image->getROI();
     m_data->image = image;
-    return image;
   }
   
   void RegionDetector::analyseRegions(){
     BENCHMARK_THIS_FUNCTION;
-    int W = m_data->W, H = m_data->H;
+    int W = m_data->roi.width, H = m_data->roi.height;
     if((int)m_data->parts.size() != W*H){
       m_data->parts.resize(W*H);
     }
@@ -158,7 +154,7 @@ namespace icl{
     }
 
     for(int y=1;y<H;++y){
-      WorkingLineSegment *l = rle.begin(y-1); //sldata+(y-1)*w;
+      WorkingLineSegment *l = rle.begin(y-1); 
       WorkingLineSegment *c = l+W;
       
       WorkingLineSegment *lEnd = rle.end(y-1);
@@ -199,13 +195,7 @@ namespace icl{
     }
     m_data->regionData.clear();
     
-    // count top-level regions // not neccessary if we link in each case
-    //    unsigned int nRegions = 0;
-    //for(Reg *r=regpool.data(); r != nextReg; ++r){
-    //  nRegions += r->is_top() & 0x1;
-    //}
-
-    int nextID = -1; // first used id is 1 -> 0 is used for border regions lateron
+    int nextID = -1;
     ImageRegionPart *parts = m_data->parts.data();
     ImageRegionPart *partsEnd = parts + m_data->nUsedParts;
     for(ImageRegionPart *p=parts; p != partsEnd; ++p){
@@ -219,7 +209,8 @@ namespace icl{
   void RegionDetector::linkRegions(){
     BENCHMARK_THIS_FUNCTION;
     RunLengthEncoder &rle = m_data->rle;
-    const int W = m_data->W, H = m_data->H;
+    const int H = m_data->roi.height;
+    
     for(WorkingLineSegment *s=rle.begin(0)+1; s < rle.end(0); ++s){
       s->ird->link(s[-1].ird);
     }
@@ -227,7 +218,7 @@ namespace icl{
     for(int y=1;y<H;++y){
       //    DEBUG_LOG("y:" << y << " num sl for y: " << (int)(slEnds[y] - (sldata + w*y) ));
       WorkingLineSegment *l = rle.begin(y-1);
-      WorkingLineSegment *c = l+W;
+      WorkingLineSegment *c = rle.begin(y);
       
       //    SL *lEnd = slEnds[y-1];
       WorkingLineSegment *cEnd = rle.end(y);
@@ -255,7 +246,7 @@ namespace icl{
   void RegionDetector::setUpBorders(){
     BENCHMARK_THIS_FUNCTION;
     RunLengthEncoder &rle = m_data->rle;
-    const int H = m_data->H;
+    const int H = m_data->roi.height;
     
       
     // first row
@@ -300,12 +291,10 @@ namespace icl{
   
   const std::vector<ImageRegion> &RegionDetector::detect(const ImgBase *image){
     BENCHMARK_THIS_FUNCTION;
-    image = prepareImage(image);
-    m_data->W = image->getWidth();
-    m_data->H = image->getHeight();
+    useImage(image);
 
     // run length encoding
-    m_data->rle.encode(image, m_data->roiOffset);
+    m_data->rle.encode(image);
 
     // find all image region parts
     analyseRegions();
