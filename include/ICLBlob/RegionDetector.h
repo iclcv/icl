@@ -207,7 +207,7 @@ namespace icl{
     private:
     
     /// Internally used utility function that extracts the input images ROI if necessary
-    const ImgBase *prepareImage(const ImgBase *image);
+    void useImage(const ImgBase *image) throw (ICLException);
     
     /// creates region-parts 
     /** see \ref RA */

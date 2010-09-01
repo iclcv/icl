@@ -83,33 +83,48 @@ namespace icl {
       In this case, the give offset will be added automatically to the resulting scanline values
       xstart, xend and y
   */
-  class RunLengthEncoder : public Uncopyable{
+  class RunLengthEncoder{
     /// internal typedef
     typedef WorkingLineSegment WLS;
     
     /// internal data buffer
     std::vector<WLS> m_data;
-    
     std::vector<WLS*> m_ends;
-    Size m_imageSize;
+    Rect m_imageROI;
 
-    template<class T, bool useOffset>
-    void encode_internal(const Img<T> &image, const Point &pointOffset);
-    
-    public:
-    RunLengthEncoder(const Size &sizeHint=Size::null);
-    
-    void prepareForImageSize(const Size &size);
-    
+    template<class T>
+    void encode_internal(const Img<T> &image);
+
+    void prepare(const Rect &roi);
     void resetLineSegments();
-    
-    void encode(const ImgBase *image, const Point &roiOffset=Point::null);
-    
-    inline WorkingLineSegment *begin(int row){ return &m_data[row*m_imageSize.width]; }
-    inline const WorkingLineSegment *begin(int row) const { return &m_data[row*m_imageSize.width]; }
 
-    inline WorkingLineSegment *end(int row){ return m_ends[row]; }
-    inline const WorkingLineSegment *end(int row) const { return m_ends[row]; }
+    inline int idx(int row, bool relToImageOffset) const {
+      if(relToImageOffset){
+        return (row-m_imageROI.y)*m_imageROI.width;
+      }else{
+        return row*m_imageROI.width;
+      }
+    }
+    public:
+    
+    void encode(const ImgBase *image);
+    
+    // all indices are relative to the image ROI's offset
+    inline WorkingLineSegment *begin(int row, bool relToImageOffset=false){ 
+      return &m_data[idx(row,relToImageOffset)];
+    }
+    
+    inline const WorkingLineSegment *begin(int row, bool relToImageOffset=false) const { 
+      return &m_data[idx(row,relToImageOffset)];
+    }
+
+    inline WorkingLineSegment *end(int row, bool relToImageOffset=false){ 
+      return m_ends[relToImageOffset ? row - m_imageROI.y : row]; 
+    }
+    
+    inline const WorkingLineSegment *end(int row, bool relToImageOffset=false) const { 
+      return m_ends[relToImageOffset ? row - m_imageROI.y : row]; 
+    }
   };
 
 }
