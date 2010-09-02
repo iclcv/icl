@@ -65,15 +65,14 @@
 
 #include <ICLCore/Line.h>
 #include <ICLUtils/Point32f.h>
+#include <ICLQuick/ImgBuffer.h>
 
-
-#define USE_TEMP_IMAGES
 
 
 namespace icl{
   namespace {
 
-#ifdef USE_TEMP_IMAGES
+
     static std::list<ImgQ> TEMP_IMAGES;
     
     ImgQ &get_temp_image(const ImgParams &params){
@@ -119,18 +118,6 @@ namespace icl{
 
 #define TEMP_IMG_PTR_P(params) new ImgQ(get_temp_image(params))
 #define TEMP_IMG_PTR_SC(size,channels) new ImgQ(get_temp_image(size,channels))
-
-#else
-
-#define TEMP_IMG_P(params) ImgQ(params)
-#define TEMP_IMG_SC(size,channels) ImgQ(size,channels)
-
-#define TEMP_IMG_PTR_P(params) new ImgQ(params)
-#define TEMP_IMG_PTR_SC(size,channels) new ImgQ(size,channels)
-
-#endif
-
-  
 
     
     struct Color{
@@ -297,23 +284,34 @@ namespace icl{
   }
 
   using namespace std;
-
-  ImgQ zeros(int width, int height, int channels){
+  
+  template <class T>
+  Img<T> zeros(int width, int height, int channels){
     // {{{ open
-    ImgQ i = TEMP_IMG_SC(Size(width,height),channels);
-    i.clear(-1,0.0,false);
-    return i;
+    Img<T> &image = *ImgBuffer::instance()->get<T>(Size(width,height),channels);
+    image.clear(-1,T(0),false);
+    return image;
   }
 
   // }}}
-  ImgQ ones(int width, int height, int channels){
+
+  template <class T>
+  Img<T> ones(int width, int height, int channels){
     // {{{ open
-    ImgQ i = TEMP_IMG_SC(Size(width,height),channels);
-    i.clear(-1,1.0,false);
-    return i;
+    Img<T> &image = *ImgBuffer::instance()->get<T>(Size(width,height),channels);
+    image.clear(-1,T(1),false);
+    return image;
   }
 
   // }}}
+
+
+#define ICL_INSTANTIATE_DEPTH(D)           \
+  template Img<icl##D> zeros(int,int,int); \
+  template Img<icl##D> ones(int,int,int);
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+
   
   ImgQ load(const string &filename){
     FileGrabber g(filename);

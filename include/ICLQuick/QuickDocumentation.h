@@ -84,6 +84,40 @@
     </td><td>
     \image html quick-example-1.png "Image concantenation using ICLQuick"
     </td></tr></table>
+
+    \section AFFINITY Template Functions with Affinity (to icl32f)
+    
+    Most ICLQuick functions are implemented twice -- as template and
+    as non-template with ImgQ parameters/return type. By this means,  
+    the template functions behave as if a default template parameter 
+    was given (which is not possible in the current C++-standard).
+    
+    Implementation example:
+    \code
+    #include <iostream>
+    #include <typeinfo>
+    
+    template<class T> std::string name(){ return "??"; }
+    template<> std::string name<int>(){ return "int"; }
+    template<> std::string name<float>(){ return "float"; }
+    
+    template<class T>
+    T foo(){
+       std::cout << "foo<T> T=" << name<T>() << std::endl;
+    }
+    
+    int foo(){
+      std::cout << "XX" ;
+      foo<int>();
+    }
+
+    int main(){
+      foo();
+      foo<float>();
+      foo<int>();
+    }
+    \endcode
+    
     \section sec3 Essential functions / features
     
     - <b>zeros, ones, load, create, grab, pwc and ieee</b>\n

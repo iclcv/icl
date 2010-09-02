@@ -60,14 +60,28 @@ namespace icl{
       @param height image height
       @param channels image channel count
   **/
-  ImgQ zeros(int width, int height, int channels=1);
+  template<class T>
+  Img<T> zeros(int width, int height, int channels=1);
   
-  /// create an ImgQ that is pre-initialized with ones
-  /** @param width image width
+  inline ImgQ zeros(int width, int height, int channels=1){ 
+    return zeros<ICL_QUICK_TYPE>(width,height,channels); 
+  }
+  
+  
+  /// create an ImgQ that is pre-initialized with ones (affinity for floats)
+  /** \see AFFINITY
+      @param width image width
       @param height image height
       @param channels image channel count      
   **/
-  ImgQ ones(int width, int height, int channels=1);
+  template<class T>
+  Img<T> ones(int width, int height, int channels=1);
+
+  /** \cond affinity version */
+  inline ImgQ ones(int width, int height, int channels=1){ 
+    return ones<ICL_QUICK_TYPE>(width,height,channels); 
+  }
+  /** \endcond */
   
   /// read file from HD 
   /** @param filename filename to read (*.jpg, *.ppm, *.pgm)
