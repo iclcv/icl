@@ -36,7 +36,7 @@
 #define ICL_QUICK_H
 
 #include <ICLCore/Img.h>
-#include <string>
+#include <ICLUtils/StringUtils.h>
 
 using namespace icl;
 
@@ -55,21 +55,23 @@ namespace icl{
 
   /** @{ @name creator functions **/
   /* {{{ open */
-  /// create an empty ImgQ
-  /** @param width image width
+  /// create an empty (black) ImgQ (affinity for floats)
+  /** see \ref AFFINITY
+      @param width image width
       @param height image height
       @param channels image channel count
   **/
   template<class T>
   Img<T> zeros(int width, int height, int channels=1);
   
+  /***/
   inline ImgQ zeros(int width, int height, int channels=1){ 
     return zeros<ICL_QUICK_TYPE>(width,height,channels); 
   }
   
   
   /// create an ImgQ that is pre-initialized with ones (affinity for floats)
-  /** \see AFFINITY
+  /** see \ref AFFINITY
       @param width image width
       @param height image height
       @param channels image channel count      
@@ -78,62 +80,87 @@ namespace icl{
   Img<T> ones(int width, int height, int channels=1);
 
   /** \cond affinity version */
-  inline ImgQ ones(int width, int height, int channels=1){ 
-    return ones<ICL_QUICK_TYPE>(width,height,channels); 
-  }
+  inline ImgQ ones(int width, int height, int channels=1){ return ones<ICL_QUICK_TYPE>(width,height,channels);  }
   /** \endcond */
   
-  /// read file from HD 
-  /** @param filename filename to read (*.jpg, *.ppm, *.pgm)
+  /// load an image file read file (affinity for floats) 
+  /** see \ref AFFINITY
+      @param filename filename/pattern to read 
   **/
-  ImgQ load(const std::string &filename);
+  template<class T>
+  Img<T> load(const std::string &filename);
 
-  /// read file from HD (converted to destination format)
-  /** @param filename filename to read (*.jpg, *.ppm, *.pgm)
+   /** \cond affinity version */
+  inline ImgQ load(const std::string &filename) { return load<ICL_QUICK_TYPE>(filename); }
+  /** \endcond */
+  
+  /// loads an image file and returns image in given format (affinity for floats)
+  /** see \ref AFFINITY
+      @param filename filename to read (*.jpg, *.ppm, *.pgm)
       @param fmt image format to convert the result to
   **/
-  ImgQ load(const std::string &filename, format fmt);
+  template<class T>
+  Img<T> load(const std::string &filename, format fmt);
 
+  /** \cond affinity version */
+  inline ImgQ load(const std::string &filename, format fmt) { return load<ICL_QUICK_TYPE>(filename,fmt); }
+  /** \endcond */
   
-  /// create a test image (converted to destination format)
-  /** @param name identifier for the image:
+  /// create a test image (converted to destination format) (affinity for floats)
+  /** see \ref AFFINITY
+      @param name identifier for the image:
                   names are: parrot, lena, cameraman, mandril, 
                   windows, flowers, women, house and tree 
       @param fmt image format to convert the result to
   **/
-  ImgQ create(const std::string &name, format fmt=formatRGB);
+  template<class T>
+  Img<T> create(const std::string &name, format fmt=formatRGB);
+
+  /** \cond affinity version */
+  inline ImgQ create(const std::string &name, format fmt=formatRGB) { return create<ICL_QUICK_TYPE>(name,fmt); }
+  /** \endcond */
   
-  /// read an image for pwc webcam with given size, and format
-  /** if releaseGrabber is set to 1, the internal used PWCGrabber is released after this call 
+  /// grabs a new image from given device (affinity for floats) 
+  /** see \ref AFFINITY
+      @param dev device driver type (see Generic Grabber for more details)
+      @param devSpec device specifier
+      @param size output image size (grabbers size if Size::null)
+      @param fmt output format
+      @param releaseGrabber if set to true, the 
+             correspondig grabbers are deleted 
+             immediately */
+  template<class T>
+  Img<T> grab(const std::string &dev, const std::string &devSpec, 
+              const Size &size=Size::null, format fmt=formatRGB,
+              bool releaseGrabber=false);
+
+  /** \cond affinity version */
+  inline ImgQ grab(const std::string &dev, const std::string &devSpec, 
+                   const Size &size=Size::null, format fmt=formatRGB,
+                   bool releaseGrabber=false){
+    return grab<ICL_QUICK_TYPE>(dev,devSpec,size,fmt,releaseGrabber);
+  }
+  /** \endcond */
+
+  /// read an image for pwc webcam with given size, and format (affinity for float)
+  /** see \ref AFFINITY
+      if releaseGrabber is set to 1, the internal used PWCGrabber is released after this call 
       @param device device for this grabbin call (0,1,2 or 3)
       @param size size of the returned image
       @param fmt format of the returned image
       @param releaseGrabber indicates whether the internal grabber object should be released
                             after this pwc call
   **/
-  ImgQ pwc(int device=0, const Size &size=Size(640,480), format fmt=formatRGB, bool releaseGrabber=false);
-
-  /// read an image for ieee1394 camera with given size, and format (TODO!!!)
-  /** if releaseGrabber is set to 1, the internal used FwGrabber is released after this call 
-      @param device device for this grabbin call (0,1,2 or 3)
-      @param size size of the returned image
-      @param fmt format of the returned image
-      @param releaseGrabber indicates whether the internal grabber object should be released
-                            after this ieee call
-  **/
-  ImgQ ieee(int device=0,const Size &size=Size(640,480), format fmt=formatRGB, bool releaseGrabber=false);
-
-  /// grabs a new image from given device
-  /** @param dev device driver type (see Generic Grabber for more details)
-      @param devSpec device specifier
-      @param size output image size (grabbers size if Size::null)
-      @param fmt output format
-      @param releaseGrabber if set to true, the 
-                            correspondig grabbers are deleted 
-                            immediately */
-  ImgQ grab(const std::string &dev, const std::string &devSpec, 
-            const Size &size=Size::null, format fmt=formatRGB,
-            bool releaseGrabber=false);
+  template<class T>
+  inline Img<T> pwc(int device=0, const Size &size=Size(640,480), format fmt=formatRGB, bool releaseGrabber=false){
+    return grab<T>("pwc",str(device),size,fmt,releaseGrabber);
+  }
+  
+  /** \cond affinity version */
+  inline ImgQ pwc(int device=0, const Size &size=Size(640,480), format fmt=formatRGB, bool releaseGrabber=false){
+    return grab<ICL_QUICK_TYPE>("pwc",str(device),size,fmt,releaseGrabber);
+  }
+  /** \endcond */
   
   /** @} **/
   /* }}} */

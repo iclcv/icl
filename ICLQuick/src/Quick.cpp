@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLQuick/src/Quick.cpp                                 **
 ** Module : ICLQuick                                               **
-** Authors: Christof Elbrechter, Michael Götting                  **
+** Authors: Christof Elbrechter, Michael Götting                   **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -306,14 +306,10 @@ namespace icl{
   // }}}
 
 
-#define ICL_INSTANTIATE_DEPTH(D)           \
-  template Img<icl##D> zeros(int,int,int); \
-  template Img<icl##D> ones(int,int,int);
-  ICL_INSTANTIATE_ALL_DEPTHS
-#undef ICL_INSTANTIATE_DEPTH
 
-  
-  ImgQ load(const string &filename){
+
+  template<class T>
+  Img<T> load(const string &filename){
     FileGrabber g(filename);
     g.setIgnoreDesiredParams(true);
     const ImgBase *grabbedImage = 0;
@@ -323,23 +319,17 @@ namespace icl{
       ERROR_LOG("exception: "  << ex.what());
     }
     if(!grabbedImage){
-      return ImgQ();
+      return Img<T>();
     }
-    ImgQ buf = TEMP_IMG_P(grabbedImage->getParams());
+    Img<T> buf = *ImgBuffer::instance()->get<T>(grabbedImage->getParams());
     grabbedImage->convert(&buf);
     return buf;
-    /*
-        ImgQ *image = g.grab()->convert<ICL_QUICK_TYPE>();
-        if(!image){
-        return ImgQ();
-        }
-        ImgQ ret = *image;
-        delete image;
-        return ret;
-    */
   }
+
+
   
-  ImgQ load(const string &filename, format fmt){
+  template<class T>
+  Img<T> load(const string &filename, format fmt){
     // {{{ open
 
     FileGrabber g(filename);
@@ -351,44 +341,36 @@ namespace icl{
       ERROR_LOG("exception: "  << ex.what());
     }
     if(!gi){
-      return ImgQ();
+      return Img<T>();
     }
-    ImgQ buf = TEMP_IMG_SC(gi->getSize(),getChannelsOfFormat(fmt));
+    Img<T> buf = *ImgBuffer::instance()->get<T>(gi->getSize(),getChannelsOfFormat(fmt));
+    buf.setFormat(fmt);
     cc(gi,&buf);
 
     return buf;
-    /*
-        FileGrabber g(filename);
-        g.setIgnoreDesiredParams(true);
-        
-        ImgQ *image = g.grab()->convert<ICL_QUICK_TYPE>();
-        if(!image){
-        return ImgQ();
-        }
-        
-        //ImgQ im(image->getSize(),fmt);
-        im.setTime(image->getTime());
-        cc(image,&im);
-        delete image;
-        return im;
-    */
-
   }
 
   // }}}
-  ImgQ create(const string &name, format fmt){
-    // {{{ open
+  
 
-    ImgQ *image = TestImages::create(name,fmt,depth32f)->asImg<ICL_QUICK_TYPE>();
+  template<class T>
+  Img<T> create(const string &name, format fmt){
+    // {{{ open
+    depth d = getDepth<T>();
+    Img<T> *image = TestImages::create(name,fmt,d)->asImg<T>();
     if(!image){
-      return ImgQ();
+      ERROR_LOG("unable to create test image: \"" << name << "\"");
+      return Img<T>();
     }
-    ImgQ im = *image;
+    Img<T> im = *image;
     delete image;
     return im;
   }
 
   // }}}
+
+
+
 
   Img8u cvt8u(const ImgQ &image){
     // {{{ open
@@ -510,45 +492,10 @@ namespace icl{
     return cvt(&image);
   }
 
-  ImgQ pwc(int device, const Size &size, format fmt, bool releaseGrabber){
-    // {{{ open
-#ifdef HAVE_VIDEODEV
-    if(device > 4){
-      ERROR_LOG("device must be in 1,2,3 or 4");
-      return ImgQ();
-    }
-    
-    if(!G[device]){
-      G[device] = new PWCGrabber(Size(640,480),device);
-    }
-    ImgQ *image = G[device]->grab()->convert<ICL_QUICK_TYPE>();
-    ImgQ im(size,fmt);
-    im.setTime(image->getTime());
-    cc(image,&im);
-    delete image;
-    if(releaseGrabber){
-      delete G[device];
-      G[device] = 0;
-    }
-    return im;
-#else
-    ImgQ im(size, fmt);
-    return label(im,"PWC not supported");
-#endif    
-  }
-
-  // }}}
-  ImgQ ieee(int device,const Size &size, format fmt, bool releaseGrabber){
-    // {{{ open
-
-    WARNING_LOG("this function is not yet implemented");
-    return ImgQ();
-  }
-
-  // }}}
 
 
-  ImgQ grab(const std::string &dev, const std::string &devSpec, 
+  template<class T>
+  Img<T> grab(const std::string &dev, const std::string &devSpec, 
             const Size &size, format fmt, bool releaseGrabber){
     static std::map<std::string,SmartPtr<GenericGrabber> > grabbers;
     
@@ -568,13 +515,13 @@ namespace icl{
         grabbers[id] = g;
       }
     }
-    ImgQ back;
+    Img<T> back;
     if(size != Size::null){
       g->setDesiredSize(size);
       g->setIgnoreDesiredParams(false);
       g->setDesiredFormat(fmt);
-      g->setDesiredDepth(depth32f);
-      back = *g->grab()->asImg<icl32f>();
+      g->setDesiredDepth(getDepth<T>());
+      back = *g->grab()->asImg<T>();
     }else{
       g->setIgnoreDesiredParams(true);
       const ImgBase *image = g->grab();
@@ -584,6 +531,18 @@ namespace icl{
     }
     return back;
   }
+
+  
+#define ICL_INSTANTIATE_DEPTH(D)                                   \
+  template Img<icl##D> zeros(int,int,int);                         \
+  template Img<icl##D> ones(int,int,int);                          \
+  template Img<icl##D> load(const std::string&);                   \
+  template Img<icl##D> load(const std::string&,format);            \
+  template Img<icl##D> create(const std::string&,format);          \
+  template Img<icl##D> grab(const std::string&,const std::string&, \
+                            const Size&,format,bool); 
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
   
   ImgQ filter(const ImgQ &image,const string &filter){
