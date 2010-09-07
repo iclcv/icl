@@ -38,6 +38,7 @@
 #ifdef HAVE_OPENCV211
 #include <opencv2/core/types_c.h>
 #include <opencv2/core/core_c.h>
+//TODO case: no opencv available
 #else
 #include <cxcore.h>
 #endif
@@ -46,7 +47,7 @@
 #include <ICLCore/Img.h>
 #include <ICLCore/ImgBase.h>
 /** CvMat type
-    
+
 struct CvMat{
     int type;
     int step;
@@ -60,7 +61,7 @@ struct CvMat{
 */
 
 namespace icl{
-  
+
   // TODO: everything !
 
   // p = 7
@@ -69,11 +70,11 @@ namespace icl{
   T* icl_allign(T *p, int n=4){
     return reinterpret_cast<T*>( ((size_t)p+n-1) & -n);
   }
-  
+
   template<class T>
   Img<T> *deep_copy_to_img_base_t(const void *data, int w, int h){
     Img<T> * image = new Img<T>(Size(w,h),1);
-    // rows a 4-byte alligned 
+    // rows a 4-byte alligned
     const T* src = reinterpret_cast<const T*>(data);
     T* dst = image->begin(0);
     for(int y=0;y<h;++y){
@@ -82,7 +83,7 @@ namespace icl{
     }
     return image;
   }
-  
+
   ImgBase *deepCopyToImgBase(const CvMat *m){
     ICLASSERT_RETURN_VAL(m,0);
     switch(CV_MAT_DEPTH(m->type)){
@@ -120,7 +121,7 @@ will be used, else the destinationimagedepth will be used.
 @param e depthpreference*/
 ImgBase *ipl_to_img(CvArr *src,ImgBase **dst=0,DepthPreference e=PREFERE_SRC_DEPTH) throw (icl::ICLException);
 
-///Convert ICLimage to OpenCV IplImage 
+///Convert ICLimage to OpenCV IplImage
 /**Converts ICLimage to IplImage. If dst is NULL, the sourceimagedepth
 will be used, else the destinationimagedepth will be used.
 @param *src pointer to sourceimage
@@ -128,7 +129,7 @@ will be used, else the destinationimagedepth will be used.
 @param e depthpreference*/
 IplImage *img_to_ipl(const ImgBase *src, IplImage **dst=0,DepthPreference e=PREFERE_SRC_DEPTH)throw (icl::ICLException);
 
-///Copy single ICLimage channel to OpenCV single channel CvMat 
+///Copy single ICLimage channel to OpenCV single channel CvMat
 /**Copy single ICLimage channel to single channel CvMat. If dst is NULL, the sourceimagedepth
 will be used, else the destinationmatrixdepth will be used.
 @param *src pointer to sourceimage
@@ -136,7 +137,7 @@ will be used, else the destinationmatrixdepth will be used.
 @param channel channel to use*/
 CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst=0,int channel=0) throw (icl::ICLException);
 
-///Convert single channel ICLimage to OpenCV IplImage 
+///Convert single channel ICLimage to OpenCV IplImage
 /**Converts single channel ICLimage to IplImage. Data is shared by source and destination.
 Using icl8u or icl16s the imagedata is not aligned, but OpenCV expects aligned data.
 In this case be careful using further OpenCV functions.
@@ -145,7 +146,7 @@ Be careful when releasig (data)pointers.
 @param *dst pointer to destinationimage (IplImage)*/
 IplImage *img_to_ipl_shallow(ImgBase *src,IplImage *dst=0)throw (ICLException);
 
-///Convert single channel ICLimage to OpenCV CvMat 
+///Convert single channel ICLimage to OpenCV CvMat
 /**Converts single channel ICLimage to a single channel CvMat. Data is shared by
 source and destination.
 Be careful when releasig (data)pointers.
@@ -156,4 +157,5 @@ CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst=0) throw (ICLException
 }
 #endif
 #endif
+
 

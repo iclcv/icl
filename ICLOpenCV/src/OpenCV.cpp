@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLOpenCV/src/OpenCV.cpp                               **
 ** Module : ICLOpenCV                                              **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Christian Groszewski              **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -37,57 +37,13 @@ namespace icl{
 
 IplImage *ensureCompatible(IplImage **dst, int depth,const CvSize& size,int channels){
 	if(!dst || !*dst){
-		*dst = cvCreateImage(size,depth,channels);
-		return *dst;
+		IplImage *ipldst = cvCreateImage(size,depth,channels);
+		return ipldst;
 	}
 	if((*dst)->depth !=  depth || (*dst)->nChannels != channels || size.height != (*dst)->height
 			|| size.width != (*dst)->width){
-		//oder einfach 
 		cvReleaseImage(dst);
 		*dst=cvCreateImage(size,depth,channels);
-
-		/*cvReleaseData(*dst);
-		(*dst)->depth = depth;
-		(*dst)->nChannels = channels;
-		(*dst)->height = size.height;
-		(*dst)->width = size.width;
-		(*dst)->origin = 0;
-		//TODO
-		(*dst)->widthStep = channels*size.width;
-		(*dst)->nSize = sizeof(IplImage);
-		(*dst)->ID = 0;
-		(*dst)->dataOrder = 0;
-		(*dst)->roi =0;
-		(*dst)->maskROI = 0;
-		(*dst)->imageId = 0;
-		(*dst)->tileInfo = 0;
-		(*dst)->imageSize = size.height*size.width*channels;
-		switch(depth){
-			case IPL_DEPTH_8U:{
-				(*dst)->imageData = new char[sizeof(icl8u)*size.width*size.height*channels];
-				break;}
-			case IPL_DEPTH_8S:{
-				//in this case we use icl16s
-				(*dst)->imageData = new char[sizeof(signed char)*size.width*size.height*channels];
-				break;}
-			case IPL_DEPTH_16S:{
-				(*dst)->imageData = new char[sizeof(icl16s)*size.width*size.height*channels];
-				break;}
-			case IPL_DEPTH_32S:{
-				(*dst)->imageData = new char[sizeof(icl32s)*size.width*size.height*channels];
-				break;}
-			case IPL_DEPTH_32F:{
-				(*dst)->imageData = new char[sizeof(icl32f)*size.width*size.height*channels];
-				break;}
-			case IPL_DEPTH_64F:{
-				(*dst)->imageData = new char[sizeof(icl64f)*size.width*size.height*channels];
-				break;}
-			default :{
-				//this should not happen
-				throw ICLException("Invalid source depth");
-			}
-		}
-		(*dst)->imageDataOrigin = (*dst)->imageData;*/
 	}
 	return *dst;
 }
@@ -189,33 +145,38 @@ ImgBase *ipl_to_img(CvArr *src,ImgBase **dst,DepthPreference e) throw (icl::ICLE
 }
 
 template<typename SRC_T,typename DST_T>
-inline void img_to_ipl_srcpref(const ImgBase *src, IplImage **dst){
+inline IplImage* img_to_ipl_srcpref(const ImgBase *src, IplImage **dst){
+	IplImage *tmpipl = 0;
 	switch(src->getDepth()){
 	case depth8u:{
-		ensureCompatible(dst,IPL_DEPTH_8U,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
+		tmpipl = ensureCompatible(dst,IPL_DEPTH_8U,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
 		break;}
 	case depth16s:{
-		ensureCompatible(dst,IPL_DEPTH_16S,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
+		tmpipl = ensureCompatible(dst,IPL_DEPTH_16S,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
 		break;}
 	case depth32s:{
-		ensureCompatible(dst,IPL_DEPTH_32S,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
+		tmpipl = ensureCompatible(dst,IPL_DEPTH_32S,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
 		break;}
 	case depth32f:{
-		ensureCompatible(dst,IPL_DEPTH_32F,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
+		tmpipl = ensureCompatible(dst,IPL_DEPTH_32F,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
 		break;}
 	case depth64f:{
-		ensureCompatible(dst,IPL_DEPTH_64F,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
+		tmpipl = ensureCompatible(dst,IPL_DEPTH_64F,cvSize(src->getWidth(),src->getHeight()),src->getChannels());
 		break;}
 	default :{
 		//this should not happen
 		throw ICLException("Invalid source depth");
 	}
 	}
+
 	Img<SRC_T> tmp = *src->asImg<SRC_T>();
 	for(int i=0;i<src->getChannels()/2;++i){
 		tmp.swapChannels(i,src->getChannels()-1-i);
 	}
+	if(!dst || !(*dst))
+		dst = &tmpipl;
 	planarToInterleaved(&tmp,(DST_T*)(*dst)->imageData,(*dst)->widthStep);
+	return *dst;
 }
 
 template<typename SRC_T>
@@ -272,14 +233,17 @@ IplImage *img_to_ipl(const ImgBase *src, IplImage **dst,DepthPreference e) throw
 	} else if(e==PREFERE_DST_DEPTH){
 		throw ICLException("Cannot determine depth of destinationimage");
 	} else { // DepthPreference == PREFERE_SRC_DEPTH
+		IplImage *tmpipl  = 0;
 		switch(src->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                               \
 		case depth##D:{						                   \
-			img_to_ipl_srcpref<icl##D,icl##D>(src,dst);   \
+			tmpipl = img_to_ipl_srcpref<icl##D,icl##D>(src,dst);   \
 			break;}
 		ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
 		}
+		if(!dst || !(*dst))
+			dst = &tmpipl;
 	}
 	return *dst;
 }
