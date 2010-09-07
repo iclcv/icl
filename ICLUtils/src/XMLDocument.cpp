@@ -184,79 +184,26 @@ namespace icl{
     }
     return SimpleNode::OpenTag;
   }
-#if 0  
-  static std::string cut_quotes(const std::string &s){
-    if(!s.size()) return "";
-    bool f = s[0] == '"';
-    bool b = s[s.length()-1] == '"';
-    if(f){
-      if(b)return s.substr(1,s.length()-2);
-      else return s.substr(1);
-    }
-    if (b) return s.substr(0,s.length()-1);
-    return s;
-  }
-
-
-  static XMLAttMapPtr split_tag_name_and_attribs(const std::string &tag_text, std::string &tag_name){
-    XMLAttMapPtr att = new std::map<std::string,std::string>;
-
-    std::istringstream is(tag_text);
-
-    is >> tag_name;
-    try{
-      while(true){
-        if(!is.good()) throw std::exception();
-        std::string a;
-        is >> a;
-        std::string::size_type eqpos = a.find('=',0);
-        if(eqpos != std::string::npos){
-          (*att.get())[a.substr(0,eqpos)] = cut_quotes(a.substr(eqpos+1));
-          continue;
-        }
-        std::string n;
-        is >> n;
-        if(!n.size()){
-          // no more tokens available (except some whitespaces)
-          // if(is.good()) throw 100;
-          // }else{
-          throw std::exception();
-        }
-        if(n[0] != '=') throw 101;
-        if(n.size() > 1){
-          (*att.get())[a] = cut_quotes(n.substr(1));
-          continue;
-        }
-        is >> n;
-        (*att.get())[a] = n;
-      }
-    }catch(std::exception &ex){
-      return att;
-    }catch(int i){
-      throw ParseException(str("Camera [Code ")+ str(i) +"]");
-    }
-  }
-#else
   
   static inline bool is_letter(char c){
-    return isalnum(c);
+    return isalnum(c) || c == '-' || c == '.' || c == ':' || c == '_';
   }
   
   static inline bool is_whitespace(char c){
     return isspace(c);
   }
-
-  
-  
-
   
   static XMLAttMapPtr split_tag_name_and_attribs(const std::string &tag_text, std::string &tag_name){
     XMLAttMapPtr att = new std::map<std::string,std::string>;
 
     std::istringstream is(tag_text);
     //#define XXX std::cout << "["<<c << "]int(" << (int)c << "){"<< __LINE__ <<"}"<< std::endl;
-#define XXX
+    #define XXX
     is >> tag_name;
+    
+    // std::cout << "processing tag '" << tag_text << std::endl; 
+    // std::cout << "tagname is " << tag_name << std::endl;
+    
     try{
       while(true){
         char c = is.get();
@@ -285,20 +232,24 @@ namespace icl{
           }
         }
         
-        while(c != '"'){
+        // search for any opening tick 
+        while(c != '"' && c!= '\''){
           c = is.get();
           XXX;
           if(c == -1) throw int(__LINE__);
-          if(!is_whitespace(c) && (c != '"')) throw int(__LINE__);
+          if(!is_whitespace(c) && (c != '"') && ( c!= '\'')) throw int(__LINE__);
         }
+        
+        char endTick = c;
+        
         std::string value;
         bool first = true;
-        while(first || c != '"'){
+        while(first || c != endTick){
           first = false;
           c = is.get();
           XXX;
           if(c == -1) throw int(__LINE__);
-          if(c != '"') value += c;
+          if(c != endTick) value += c;
         }
         (*att.get())[attrib] = value;
       }
@@ -307,7 +258,6 @@ namespace icl{
     }
   }
 
-#endif
   static void add_open_or_single_node(std::list<SimpleNode> &L,std::string tag_text, SimpleNode::Type t){
     std::string tag_name;
     XMLAttMapPtr att=split_tag_name_and_attribs(tag_text,tag_name);
@@ -360,13 +310,23 @@ namespace icl{
     
     // 2nd parse first node!
     switch(t){
-      case SimpleNode::OpenTag:
+      case SimpleNode::OpenTag:{
         if(contains_text(restStr)) throw ParseException("Text sections are not allowed outside root tag");
-        L.push_back(SimpleNode(tag,t));
+        
+        add_open_or_single_node(L,tag,t);
+      
+        // old: here, no root-node attributes were found
+        //        L.push_back(SimpleNode(tag,t));
         break;
+      }
       case SimpleNode::SingleTag:
         if(contains_text(restStr)) throw ParseException("Text sections are not allowed outside root tag");
-        L.push_back(SimpleNode(tag,t));
+        
+        add_open_or_single_node(L,tag,t);
+        
+        // old: here, no root-node attributes were found
+        //L.push_back(SimpleNode(tag,t));
+        
         level = 0;
         break;
       case SimpleNode::XMLVersionTag:
@@ -485,8 +445,12 @@ namespace icl{
         instance->m_attribs = n.att;
         instance->m_content = n.text;
         instance->m_type = XMLNode::NODE;
-        if(L.back().type != SimpleNode::CloseTag) throw ParseException("Root node's closing tag not found (found:" + str(L.back().text) +')');
-        if(L.back().text != n.text) throw ParseException("Root node's closing tag does not match");
+        if(L.back().type != SimpleNode::CloseTag) {
+          throw ParseException("Root node's closing tag not found (found:" + str(L.back().text) +')');
+        }
+        if(L.back().text != n.text){
+          throw ParseException("Root node's closing tag does not match (opening tag: " +str(n.text) + " found closing tag: " + str(L.back().text));
+        }
         L.pop_back();
         parse_it(instance,src,&L);
         /*        
