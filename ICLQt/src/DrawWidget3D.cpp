@@ -504,8 +504,97 @@ namespace icl{
 
   // }}}
   
+
+    /*
+        - property "diffuse" value "on|off" (default is on)
+        - property "ambient" value "on|off" (default is off)
+        - property "specular" value "on|off" (default is off)
+        - property: "light-X" value "on|off"
+        - property: "light-X-pos" value "{x,y,z,h}"
+        - property: "light-X-ambient" value "{r,g,b,factor}"
+        - property: "light-X-diffuse" value "{r,g,b,factor}"
+        - property: "light-X-specular" value "{r,g,b,factor}"
+    */
+
+  struct ICLDrawWidget3D::Properties{
+    struct Light{
+      Light():on(false){
+        std::fill(position,position+4,0);
+        std::fill(ambient,ambient+4,0);
+        std::fill(diffuse,diffuse+4,0);
+        std::fill(specular,specular+4,0);
+      }
+      bool on;
+      GLfloat position[4];
+      GLfloat ambient[4];
+      GLfloat diffuse[4];
+      GLfloat specular[4];
+    };
+    
+    Light lights[4];
+    
+    bool ambientOn;
+    bool diffuseOn;
+    bool specularOn;
+    bool lightingOn;
+    bool colorMaterialOn;
+    bool depthTestOn;
+    
+    Properties():ambientOn(false),diffuseOn(true),
+                 specularOn(false),lightingOn(true),
+                 colorMaterialOn(true),depthTestOn(true){
+      static const GLfloat d[] = {1.0, 1.0, 0.8, 1.0};  /* White diffuse light. */
+      static const GLfloat p[] = {1.0, 1.0, 1.0, 0.0};  /* Infinite light location. */
+
+      lights[0].on = true;
+      std::copy(d,d+4,lights[0].diffuse);
+      std::copy(p,p+4,lights[0].position);
+    }
+
+    void activate(bool b, GLenum e){
+      if(b) glEnable(e);
+      else glDisable(e);
+    }
+    
+    void initGL(){
+      activate(lightingOn,GL_LIGHTING);
+      activate(colorMaterialOn,GL_COLOR_MATERIAL);
+      activate(depthTestOn,GL_DEPTH_TEST);
+
+      static const GLenum ls[4]={
+        GL_LIGHT0,GL_LIGHT1,GL_LIGHT2,GL_LIGHT3
+      };
+      
+      for(int i=0;i<4;++i){
+        glLightfv(ls[i],GL_POSITION,lights[i].position);
+        static const GLfloat null[4] = {0,0,0,0};
+        if(lights[i].on){
+          glEnable(ls[i]);
+          if(diffuseOn){
+            glLightfv(ls[i],GL_DIFFUSE,lights[i].diffuse);
+          }else{
+            glLightfv(ls[i],GL_DIFFUSE,null);
+          }
+          
+          if(ambientOn){
+            glLightfv(ls[i],GL_AMBIENT,lights[i].ambient);
+          }else{
+            glLightfv(ls[i],GL_AMBIENT,null);
+          }
+
+          if(specularOn){
+            glLightfv(ls[i],GL_SPECULAR,lights[i].specular);
+          }else{
+            glLightfv(ls[i],GL_SPECULAR,null);
+          }
+        }else{
+          glDisable(ls[i]);
+        }
+      }
+    }
+  };
   
- ICLDrawWidget3D::ICLDrawWidget3D(QWidget *parent):ICLDrawWidget(parent){
+  ICLDrawWidget3D::ICLDrawWidget3D(QWidget *parent):ICLDrawWidget(parent),m_properties(new Properties){
     // {{{ open
 
   }
@@ -513,7 +602,7 @@ namespace icl{
   // }}}
   ICLDrawWidget3D::~ICLDrawWidget3D(){
     // {{{ open
-
+    delete m_properties;
   }
 
   // }}}
@@ -530,21 +619,24 @@ namespace icl{
     glPushMatrix();
     glLoadIdentity();
     
-    glEnable(GL_DEPTH_TEST);
-    GLfloat light_diffuse[] = {1.0, 1.0, 0.8, 1.0};  /* White diffuse light. */
-    GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};  /* Infinite light location. */
 
-    //    GLfloat light_ambient[] = {1.0, 1.0, 0.5, 0.2};  /* White diffuse light. */
-
-
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    // glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHTING);
-
-    glEnable(GL_COLOR_MATERIAL);
     
+    m_properties->initGL();
+    
+    //    glEnable(GL_DEPTH_TEST);    
+    // GLfloat light_diffuse[] = {1.0, 1.0, 0.8, 1.0};  /* White diffuse light. */
+    // GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};  /* Infinite light location. */
+
+    //glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    // glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    //glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    //glEnable(GL_LIGHT0);
+    
+    //glEnable(GL_LIGHTING);
+
+    //glEnable(GL_COLOR_MATERIAL);
+    //    
+
     glMatrixMode(GL_PROJECTION);
     gluPerspective( 45,  float(width())/height(), 0.1, 100);
     glMatrixMode(GL_MODELVIEW);
@@ -652,6 +744,98 @@ namespace icl{
   }
   void ICLDrawWidget3D::callback(SmartPtr<ICLDrawWidget3D::GLCallback> smartCB){
     m_vecCommands3D.push_back(new SmartCallback3DCommand(this,smartCB));
+  }
+
+  void ICLDrawWidget3D::setProperty(const std::string &property, const std::string &value){
+    if(property == "diffuse"){
+      if(value == "on"){
+        m_properties->diffuseOn = true;
+      }else if(value == "off"){
+        m_properties->diffuseOn = false;
+      }else{
+        ERROR_LOG("unable to set property diffuse to value " << value << "(value can be 'on' or 'off')");
+        return;
+      }
+    }else if(property == "ambient"){
+      if(value == "on"){
+        m_properties->ambientOn = true;
+      }else if(value == "off"){
+        m_properties->ambientOn = false;
+      }else{
+        ERROR_LOG("unable to set property ambient to value " << value << "(value can be 'on' or 'off')");
+        return;
+      }
+    }else if(property == "specular"){
+      if(value == "on"){
+        m_properties->specularOn = true;
+      }else if(value == "off"){
+        m_properties->specularOn = false;
+      }else{
+        ERROR_LOG("unable to set property specular to value " << value << "(value can be 'on' or 'off')");
+        return;
+      }
+    }else if(property == "lighting"){
+      if(value == "on"){
+        m_properties->lightingOn = true;
+      }else if(value == "off"){
+        m_properties->lightingOn = false;
+      }else{
+        ERROR_LOG("unable to set property lighting to value " << value << "(value can be 'on' or 'off')");
+        return;
+      }
+    }else if(property == "color-material"){
+      if(value == "on"){
+        m_properties->colorMaterialOn = true;
+      }else if(value == "off"){
+        m_properties->colorMaterialOn = false;
+      }else{
+        ERROR_LOG("unable to set property color-material to value " << value << "(value can be 'on' or 'off')");
+        return;
+      }
+    }else if(property.length() > 6 && property.substr(0,6) == "light-"){
+      std::vector<std::string> ts = tok(property.substr(6),"-");
+      if(!ts.size()){
+        ERROR_LOG("invalid property " << property);
+        return;
+      }
+      
+      int i = parse<int>(ts.front());
+      if(i < 0 || i> 4) {
+        ERROR_LOG("unable to set property " << property << " to value " << value << "(invalid light index)");
+        return;
+      }
+      Properties::Light &l = m_properties->lights[i];
+
+      if(ts.size() == 1){
+        if(value == "on"){
+          l.on = true;
+        }else if(value == "off"){
+          l.on = false;
+        }else{
+          ERROR_LOG("unable to set property light-" << i << " to value " << value << "(value can be 'on' or 'off')");
+          return;
+        }
+      }else if(ts.size() == 2){
+        float *dst = 0;
+        if(ts[1] == "ambient"){
+          dst = l.ambient;
+        }else if(ts[1] == "diffuse"){
+          dst = l.diffuse;
+        }else if(ts[1] == "specular"){
+          dst = l.specular;
+        }else if(ts[1] == "pos"){
+          dst = l.position;
+        }else{
+          ERROR_LOG("invalid property " << property);
+          return;
+        }
+        FixedMatrix<float,1,4> color = parse<FixedMatrix<float,1,4> >(value);
+        std::copy(color.begin(),color.end(),dst);
+      }else{
+        ERROR_LOG("invalid property: " << property);
+        return;
+      }
+    }
   }
 
 

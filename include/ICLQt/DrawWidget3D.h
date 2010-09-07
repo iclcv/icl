@@ -44,6 +44,12 @@ namespace icl{
   /// Extended ICLDrawWidget, able to draw 2D and 3D primitives using OpenGL
   /** TODO: Document*/
   class ICLDrawWidget3D : public ICLDrawWidget {
+    /// Internal structure for hidden data
+    struct Properties;
+
+    /// Internal structure for hidden data
+    Properties *m_properties;
+    
     public:
     /// internally used callback function type
     typedef void (*GLCallbackFunc)(void*);
@@ -168,6 +174,27 @@ namespace icl{
 
     /// forward declaration of the internally used DrawCommandClass
     class DrawCommand3D;
+
+    /// sets internal openGL rendering properties
+    /** Currently available: 
+        - property "diffuse" value "on|off" (default is on)
+        - property "ambient" value "on|off" (default is off)
+        - property "specular" value "on|off" (default is off) 
+        - property: "light-X" value "on|off"
+        - property: "light-X-pos" value "{x,y,z,h}"
+        - property: "light-X-ambient" value "{r,g,b,factor}"
+        - property: "light-X-diffuse" value "{r,g,b,factor}"
+        - property: "light-X-specular" value "{r,g,b,factor}"
+        - property: "lighting" value "on|off" (default on) 
+        - property: "color-material" value "on|off" (default on)
+        - property: "depth-test" value "on|off" (default on)
+        
+        Further properties will follow!
+        
+        Note: specular light is not working yet, maybe the object 
+        material has to be set up for specular light as well.
+    */
+    void setProperty(const std::string &property, const std::string &value);
 
     protected:    
 
