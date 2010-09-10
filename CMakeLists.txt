@@ -36,7 +36,7 @@ PROJECT(ICL)
 #ubuntu version
 set(ICL_MAJOR "5")
 set(ICL_MINOR "3")
-set(ICL_PATCH "0")
+set(ICL_PATCH "1")
 set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
 if(NOT ${CMAKE_PATCH_VERSION} STREQUAL "0")
