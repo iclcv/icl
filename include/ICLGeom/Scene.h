@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : include/ICLGeom/Scene.h                                **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Erik Weitnauer                    **
+** Authors: Christof Elbrechter, Erik Weitnauer, Daniel Dornbusch  **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -42,42 +42,38 @@
 #ifdef HAVE_QT
 #include <ICLQt/MouseHandler.h>
 #include <ICLQt/DrawWidget3D.h>
+#include <ICLGeom/SceneMouseHandler.h>
 #endif
 
 #include <ICLUtils/Lockable.h>
 
 namespace icl{
-  
+
   /** \cond */
   class ICLDrawWidget;
   /** \endcond */
 
-  
-  /// *NEW* Scene Implementation 
+
+  /// *NEW* Scene Implementation
   class Scene : public Lockable{
     public:
     struct RenderPlugin;
-#ifdef HAVE_QT
-#ifdef HAVE_OPENGL
-    struct SceneMouseHandler;
-#endif
-#endif
     struct GLCallback;
-    
+
     Scene();
     ~Scene();
     Scene(const Scene &scene);
     Scene &operator=(const Scene &scene);
-    
+
     /// Adds a new Camera to the scene
-    /** @param camera which is copied into the scene 
-        @param visSize this parameter determines the size of the 
+    /** @param camera which is copied into the scene
+        @param visSize this parameter determines the size of the
                3D visualized cameras in the scene. If visSize is
                1.0, cameras are visualized with size w=6, h=5 and l=10.
                Actually, the visSize you need depends on the unit
                you use for your scene in your application.
                The default visSize is quite appropriate if you work
-               with cm. If you e.g. use mm instead, visSize should 
+               with cm. If you e.g. use mm instead, visSize should
                be set to 10.
         */
     void addCamera(const Camera &cam, float visSize=1.0);
@@ -90,17 +86,18 @@ namespace icl{
     void render(ICLDrawWidget &widget, int camIndex = 0);
 
 
-    
+
     void addObject(SceneObject *object);
     void removeObject(int idx, bool deleteObject = true);
     void removeObjects(int startIndex, int endIndex=-1, bool deleteObjects=true);
     int getObjectCount() const { return m_objects.size(); }
-    
+
     void clear(bool camerasToo=false);
-    
+
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
     MouseHandler *getMouseHandler(int camIndex=0);
+    void setMouseHandler(SceneMouseHandler* sceneMouseHandler, int camIndex=0, bool deleteExistingMouseHandler=true);
     ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
 #endif
 #endif
@@ -109,7 +106,7 @@ namespace icl{
     bool getLightSimulationEnabled() const;
     void setDrawCamerasEnabled(bool enabled);
     bool getDrawCamerasEnabled() const;
-    
+
     private:
     /// renders the scene into current OpenGL context
 #ifdef HAVE_QT
@@ -124,7 +121,7 @@ namespace icl{
     std::vector<SceneObject*> m_objects;
     std::vector<SceneObject*> m_cameraObjects;
     std::vector<std::vector<std::vector<Vec> > >m_projections;//[cam][obj][vertex]
-    
+
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
     std::vector<SceneMouseHandler*> m_mouseHandlers;
@@ -132,7 +129,7 @@ namespace icl{
 #endif
 
     std::vector<GLCallback*> m_glCallbacks;
-    
+
     bool m_lightSimulationEnabled;
     bool m_drawCamerasEnabled;
   };

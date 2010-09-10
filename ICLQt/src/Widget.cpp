@@ -597,6 +597,7 @@ namespace icl{
     int lastMouseReleaseButton;
     float gridColor[4];
     float backgroundColor[3];
+    Point wheelDelta;
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
@@ -2040,7 +2041,18 @@ namespace icl{
 
   void ICLWidget::wheelEvent(QWheelEvent *e){
     // {{{ open 
-    QGLWidget::wheelEvent(e);
+    
+    // possibly adding a wheel base zooming if a certain keyboard modifier is pressed
+    
+    if(e->orientation() == Qt::Horizontal){
+      m_data->wheelDelta = Point(e->delta(),0);
+    }else{
+      m_data->wheelDelta = Point(0,e->delta());
+    }
+    
+    emit mouseEvent(createMouseEvent(MouseWheelEvent));
+    
+    //QGLWidget::wheelEvent(e);
 #if 0
     if(m_data->embeddedZoomMode && m_data->embeddedZoomModeJustEnabled){
       return;
@@ -2351,11 +2363,13 @@ namespace icl{
     }
 
     if(!m_data->image || !m_data->image->hasImage()){
+      const Point &wheelDelta = (type == MouseWheelEvent) ? m_data->wheelDelta : Point::null;
       evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
                        Point(-1,-1),
                        Point32f((float)m_data->mouseX/float(width()),(float)m_data->mouseY/float(height())),
                        m_data->downMask,
                        std::vector<double>(),
+		       wheelDelta,
                        type,this);
       if(type == MouseReleaseEvent){
         m_data->downMask[m_data->lastMouseReleaseButton] = false;
@@ -2376,11 +2390,14 @@ namespace icl{
       if(r.contains(m_data->mouseX,m_data->mouseY)){
         color = m_data->image->getColor(imageX,imageY);
       }
+      
+      const Point &wheelDelta = (type == MouseWheelEvent) ? m_data->wheelDelta : Point::null;
       evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
                        Point(imageX,imageY),
                        Point32f(relImageX,relImageY),
                        m_data->downMask,
                        color,
+                       wheelDelta,
                        type,this);
       if(type == MouseReleaseEvent){
         m_data->downMask[m_data->lastMouseReleaseButton] = false;

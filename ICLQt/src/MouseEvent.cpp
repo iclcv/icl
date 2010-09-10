@@ -33,6 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/MouseEvent.h>
+#include <QtGui/QApplication>
 
 namespace icl{
   
@@ -41,13 +42,15 @@ namespace icl{
                          const Point32f &relImagePos,
                          const bool downMask[3],
                          const std::vector<double> &color,
+			 const Point &wheelDelta,
                          MouseEventType type,
                          ICLWidget* widget):
-    m_widgetPos(widgetPos),m_imagePos(imagePos),
-    m_relImagePos(relImagePos),
-    m_color(color),m_widget(widget),m_type(type){
+    m_widgetPos(widgetPos),m_imagePos(imagePos),m_relImagePos(relImagePos),
+    m_wheelDelta(wheelDelta),m_color(color),m_widget(widget),m_type(type){
     
     std::copy(downMask,downMask+3,m_downMask);
+    
+    m_keyboardModifiers = (int)QApplication::keyboardModifiers();
   }
 
   MouseEvent::MouseEvent():

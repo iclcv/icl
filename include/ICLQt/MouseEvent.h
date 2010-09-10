@@ -36,6 +36,7 @@
 #define MOUSE_EVENT_H
 
 #include <vector>
+#include <QtCore/Qt>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Point32f.h>
@@ -48,23 +49,36 @@ namespace icl{
   
   /// list of supported mouse event types
   enum MouseEventType { 
-    MouseMoveEvent, 
-    MouseDragEvent, 
-    MousePressEvent, 
-    MouseReleaseEvent, 
-    MouseEnterEvent, 
-    MouseLeaveEvent
+    MouseMoveEvent    = 0,                           //!< mouse moved
+    MouseDragEvent    = 1,                           //!< mouse button pressed down and held
+    MousePressEvent   = 2,                           //!< mouse button pressed
+    MouseReleaseEvent = 3,                           //!< mouse button released
+    MouseEnterEvent   = 4,                           //!< mouse entered area
+    MouseLeaveEvent   = 5,                           //!< mouse left area
+    MouseWheelEvent   = 6,                           //!< mouse wheel
+    MAX_MOUSE_EVENT   = MouseWheelEvent              //!< highest enum value (enum value count = MAX_MOUSE_EVENT + 1)
   };
-  
+
   /// list of supported mouse buttons
   /** when ever you'll find a bool downmaks[3],
       buttons are arranged by this enum order*/
   enum MouseButton{
-    LeftMouseButton=0,
-    MiddleMouseButton=1,
-    RightMouseButton=2
+    LeftMouseButton   = 0,                           //!< left mouse button
+    MiddleMouseButton = 1,                           //!< middle mouse button
+    RightMouseButton  = 2,                           //!< right moouse button
+    MAX_MOUSE_BUTTON  = RightMouseButton             //!< highest enum value (enum value count = MAX_MOUSE_BUTTON + 1)
   };
-  
+
+  enum KeyboardModifier{
+      NoModifier = Qt::NoModifier,                   //!< No modifier key is pressed.
+      ShiftModifier = Qt::ShiftModifier,             //!< A Shift key on the keyboard is pressed.
+      ControlModifier = Qt::ControlModifier,         //!< A Ctrl key on the keyboard is pressed.
+      AltModifier = Qt::AltModifier,                 //!< An Alt key on the keyboard is pressed.
+      MetaModifier = Qt::MetaModifier,               //!< A Meta key on the keyboard is pressed.
+      KeypadModifier = Qt::KeypadModifier,           //!< A keypad button is pressed.
+      GroupSwitchModifier = Qt::GroupSwitchModifier  //!< X11 only. A Mode_switch key on the keyboard is pressed.
+  };
+
   /// Provided by interface MouseGrabber \ingroup COMMON
   /** Most commonly, mouse events are processed wrt. the current image coordinate frame
       of the ICLWidget where the mouse event occurs. So, getX(), getY() and getPos()
@@ -73,16 +87,19 @@ namespace icl{
       to the drawing functions of ICLDrawWidget's.
   */
   class MouseEvent{
-    // event location in widget coordinates
+    /// event location in widget coordinates
     Point m_widgetPos;
     
-    // event location in image coordinates (common)
+    /// event location in image coordinates (common)
     Point m_imagePos;
     
-    // relative image coordinates
+    /// relative image coordinates
     Point32f m_relImagePos;
     
-    // button downMask
+    /// wheel delta (x: horizontal wheel, y: vertical wheel)
+    Point m_wheelDelta;
+   
+    /// button downMask
     bool m_downMask[3];
     
     /// clicked color
@@ -94,14 +111,19 @@ namespace icl{
     /// Type of this event (press, release, move, ...)
     MouseEventType m_type;
     
+    /// ored list of active keyboard modifiers
+    int m_keyboardModifiers;
+    
+    
     /// private constructor, mouse events are created by the ICLWidget only
     MouseEvent(const Point &widgetPos,
                const Point &imagePos,
                const Point32f &relImagePos,
                const bool downMask[3],
                const std::vector<double> &color,
+	       const Point &wheelDelta,
                MouseEventType type,
-               ICLWidget *widget);
+	       ICLWidget *widget);
     
     public:
     /// Create an empty mouse event
@@ -127,6 +149,17 @@ namespace icl{
 
     /// returns event's location wrt. image frame
     inline const Point &getPos() const { return m_imagePos; }
+    
+    /// wheel delta (x: horizontal wheel, y: vertical wheel (common))
+    /** We use the unit of Qt's QWheelEvent's delta:
+    \code
+    MouseEvent event = ...;
+    int numDegrees = event.getWheelDelta().y / 8;
+    int numSteps = numDegrees / 15;
+    \endcode
+    A positive delta value means that the wheel was rotated forward (for y) 
+    and to the right (for x) */
+    inline const Point &getWheelDelta() const { return m_wheelDelta; }
     
     /// returns event's relative x coordinate wrt. image frame
     inline float getRelX() const { return m_relImagePos.x; }
@@ -167,26 +200,41 @@ namespace icl{
     /// returns the event type
     inline const MouseEventType getType() const { return m_type; }
     
-    /// conenience function for special event type
+    /// convenience function for special event type
     inline bool isMoveEvent() const { return m_type == MouseMoveEvent; }
 
-    /// conenience function for special event type
+    /// convenience function for special event type
     inline bool isDragEvent() const { return m_type == MouseDragEvent; }
 
-    /// conenience function for special event type
+    /// convenience function for special event type
     inline bool isPressEvent() const { return m_type == MousePressEvent; }
 
-    /// conenience function for special event type
+    /// convenience function for special event type
     inline bool isReleaseEvent() const { return m_type == MouseReleaseEvent; }
 
-    /// conenience function for special event type
+    /// convenience function for special event type
     inline bool isEnterEvent() const { return m_type == MouseEnterEvent; }
 
-    /// conenience function for special event type
+    /// convenience function for special event type
     inline bool isLeaveEvent() const { return m_type == MouseLeaveEvent; }
+    
+    /// convenience function for special event type
+    inline bool isWheelEvent() const { return m_type == MouseWheelEvent; }
     
     /// returns the ICLWidget, which produced this event
     inline ICLWidget *getWidget() const { return m_widget; }
+    
+    /// returns all active keyboard modifiers (ored)
+    /** A certain KeyboardModifier m can be checked for presence by 
+    \code
+    bool is_m_present = event.getKeyboardModifiers() & m;
+    \endcode
+    or by using the isModifierActive(KeyboardModifier) method directly.
+    */
+    inline int getKeyboardModifiers() const { return m_keyboardModifiers; }
+    
+    /// returns whether a certain modifier is currently active
+    inline bool isModifierActive(KeyboardModifier m) const { return m & m_keyboardModifiers; }
   };
 }
 
