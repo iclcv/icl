@@ -108,9 +108,29 @@ enum MouseSensitivitiesModifier
 };
 
 
+/// Class providing a mouse handler for class scene. Create your own mouse handler by inherting from this class and overloading function setMouseMappings().
 /**
-\class SceneMouseHandler SceneMouseHandler.h <SceneMouseHandler.h>
-\brief Class providing a mouse handler for class scene. Create your own mouse handler by inherting from this class and overloading function setMouseMappings().
+* Default mouse mappings for scene objects
+* - left mouse button: free view
+* - middle mouse button: strafe
+* - right mouse button: rotation around origin
+* - mouse wheel: roll and camera movement forward / backward
+* - left + right mouse button: same as mouse wheel
+*
+* Mouse sensitivity modifiers in combination with mouse actions
+* - Shift: low sensitivity
+* - Control: high sensitivity
+*
+* New mouse mappings
+* - inherit a mouse handler from SceneMouseHandler class
+* - if desired, define new static mouse action functions (like strafe)
+* - overload function setMouseMappings() to bind mouse action functions to mouse actions
+* - mouse action functions can be assigned to all combinations of
+*   - mouse events (mouse move, button pressed down and held, button pressed, button released, area entered, area left, mouse wheel)
+*   - mouse buttons (left, middle, right),
+*   - keyboard modifiers (shift, control, alt)
+* - mouse action functions will be called with an additional data pointer (void*)
+*   to grant access to all kind of desired data.
 */
 class SceneMouseHandler : public MouseHandler
 {
