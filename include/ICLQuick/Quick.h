@@ -246,14 +246,21 @@ namespace icl{
   /** @{ @name filtering function **/
   /* {{{ open */
 
-
-  /// applies a filter operation on the source image
-  /** @param image source image
+  /// applies a filter operation on the source image (affinity for float)
+  /** see \ref AFFINITY
+      @param image source image
       @param filter filter name, possible: sobelx, sobely, gauss, 
                     laplacs, median, dilation,erosion, opening and
                     closing 
   **/
-  ImgQ filter(const ImgQ &image, const std::string &filter);
+  template<class T>
+  Img<T> filter(const Img<T> &image, const std::string &filter);
+  
+  /** \cond affinity version */
+  inline ImgQ filter(const ImgQ &image, const std::string &filter){
+    return icl::filter<float>(image,filter);
+  }
+  /** \endcond */
   
   /// applies a color conversion
   /** @param image source image*
@@ -313,14 +320,17 @@ namespace icl{
  
   /// deep copy for an image
   /** @param image source image **/
-  ImgQ copy(const ImgQ &image);
+  template<class T>
+  Img<T> copy(const Img<T> &image);
   
   /// deep copy of an images roi
   /** @param image source image **/
-  ImgQ copyroi(const ImgQ &image);
+  template <class T>
+  Img<T> copyroi(const Img<T> &image);
   
   /// normalize an images range to [0,255]
   /** @param image source image **/
+  template<class T>
   ImgQ norm(const ImgQ &image);
   
   /// horizontal flip of an image
@@ -341,7 +351,8 @@ namespace icl{
   /** @param image source image
       @param filename filename to write the image to.
   **/
-  void save(const ImgQ &image, const std::string &filename);
+  template<class T>
+  void save(const Img<T> &image, const std::string &filename);
   
   /// shows an image using TestImages::show
   /** The image is wrote to disk into a temporary file. Then it
@@ -351,7 +362,8 @@ namespace icl{
       @param image image to show
       @see showSetput(const string&, const stirng&, int)
   **/
-  void show(const ImgQ &image);
+  template<class T>
+  void show(const Img<T> &image);
   
   
   /// setup image visualisation programm
@@ -370,7 +382,8 @@ namespace icl{
   
   /// print the images parameters to std::out
   /** @param image image to print to std::out **/
-  void print(const ImgQ &image);
+  template<class T>
+  void print(const Img<T> &image);
 
   /** @} **/
   /* }}} */

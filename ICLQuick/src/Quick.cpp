@@ -533,102 +533,84 @@ namespace icl{
   }
 
   
-#define ICL_INSTANTIATE_DEPTH(D)                                   \
-  template Img<icl##D> zeros(int,int,int);                         \
-  template Img<icl##D> ones(int,int,int);                          \
-  template Img<icl##D> load(const std::string&);                   \
-  template Img<icl##D> load(const std::string&,format);            \
-  template Img<icl##D> create(const std::string&,format);          \
-  template Img<icl##D> grab(const std::string&,const std::string&, \
-                            const Size&,format,bool); 
-  ICL_INSTANTIATE_ALL_DEPTHS
-#undef ICL_INSTANTIATE_DEPTH
+
 
   
-  ImgQ filter(const ImgQ &image,const string &filter){
+  template<class T>
+  Img<T> filter(const Img<T> &image,const string &filter){
     // {{{ open
 
     static map<string,UnaryOp*> M;
-    bool inited = false;
-    if(!inited){
-#ifdef HAVE_IPP
-      static icl8u mask[9] = {1,1,1,1,1,1,1,1,1};
-#endif
+    if(!M.size()){
       static Size s3x3(3,3);
-      M["sobely"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3));
-      M["sobelx"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelY3x3));
-      M["gauss"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3));
-      M["laplace"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::laplace3x3));
+      M["sobely"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3),true);
+      M["sobelx"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelY3x3),true);
+      M["gauss"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3),true);
+      M["laplace"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::laplace3x3),true);
       M["median"] = new MedianOp(Size(3,3));
-#ifdef HAVE_IPP
-      M["dilation"] = new MorphologicalOp(MorphologicalOp::dilate,s3x3,mask);
-      M["erosion"] = new MorphologicalOp(MorphologicalOp::erode,s3x3,mask);
-      M["opening"] = new MorphologicalOp(MorphologicalOp::openBorder,s3x3,mask);
-      M["closing"] = new MorphologicalOp(MorphologicalOp::closeBorder,s3x3,mask);
-#endif
+      M["dilation"] = new MorphologicalOp(MorphologicalOp::dilate);
+      M["erosion"] = new MorphologicalOp(MorphologicalOp::erode);
+      M["opening"] = new MorphologicalOp(MorphologicalOp::openBorder);
+      M["closing"] = new MorphologicalOp(MorphologicalOp::closeBorder);
+
     }    
     UnaryOp* u = M[filter];
     if(!u){
       WARNING_LOG("nothing known about filter type:" << filter);
-      return ImgQ();
+      return Img<T>();
     }
-    ImgBase *dst = 0;
-    u->apply(&image,&dst);
-    ImgQ *dstQ = dst->convert<ICL_QUICK_TYPE>();
-    delete dst;
-    ImgQ im = *dstQ;
-    delete dstQ;
-    return im;    
+    u->setClipToROI(true);
+    u->setCheckOnly(true);
+    
+    Img<T> &buf = *ImgBuffer::instance()->get<T>(image.getSize()-Size(2,2),image.getChannels());
+    buf.setFormat(image.getFormat());    
+    
+    u->apply(&image,bpp(buf));
+    return buf;
   } 
 
+
+
+
   // }}}
-  ImgQ copy(const ImgQ &image){
+
+  template<class T>
+  Img<T> copy(const Img<T> &image){
     // {{{ open
-    ImgQ im = TEMP_IMG_P(image.getParams());
-    image.deepCopy(&im);
-    return im;
-    /*
-        ImgQ *cpy = image.deepCopy()->asImg<ICL_QUICK_TYPE>();
-        ImgQ im = *cpy;
-        delete cpy;
-        return im;
-    */
+    Img<T> &cpy = *ImgBuffer::instance()->get<T>(image.getParams());
+    image.deepCopy(&cpy);
+    return cpy;
   }
 
   // }}}
-  ImgQ copyroi(const ImgQ &image){
+  template<class T>
+  Img<T> copyroi(const Img<T> &image){
     // {{{ open
-    ImgQ cpy = TEMP_IMG_SC(image.getROISize(),image.getChannels());
+    Img<T> &cpy = *ImgBuffer::instance()->get<T>(image.getROISize(),image.getChannels());
     cpy.setFormat(image.getFormat());
     cpy.setTime(image.getTime());
     image.deepCopyROI(&cpy);
     return cpy;
-    /*
-        ImgQ *cpy = image.deepCopyROI()->asImg<ICL_QUICK_TYPE>();
-        ImgQ im = *cpy;
-        delete cpy;
-        return im;
-    */
   }
 
+
+
+
   // }}}
-  ImgQ norm(const ImgQ &image){
+  template<class T>
+  Img<T> norm(const Img<T> &image){
     // {{{ open
 
-    ImgQ cpy = copy(image);
-    cpy.normalizeAllChannels(Range<ICL_QUICK_TYPE>(0,255));
+    Img<T> cpy = copy(image);
+    cpy.normalizeAllChannels(Range<T>(0,255));
     return cpy;
   }
 
   // }}}
   
-  void save(const ImgQ &image,const string &filename){
+  template<class T>
+  void save(const Img<T> &image,const string &filename){
     // {{{ open
-
-    //Img<float> bla = Img<float>(Size(5,5),5);
-    //    Img<float> blub = bla;
-    //    ImgQ roi = copyroi(image);
-    //    roi = copyroi(image);
     FileWriter(filename).write(&image);
   }
 
@@ -646,45 +628,74 @@ namespace icl{
     g_iMsecBeforeDelete = msecBeforeDelete;
   }  
   
-  void show(const ImgQ &image){
+  template<class T>
+  void show(const Img<T> &image){
     // {{{ open
+    
+    SHOW(image);
     if(image.hasFullROI()){
       if(image.getFormat()==formatMatrix && image.getChannels()==1){
-        ImgQ tmp = image;
+        Img<T> tmp = image;
         tmp.setFormat(formatGray);
         TestImages::show(&tmp,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
       }else if(image.getFormat() == formatMatrix && image.getChannels()==3){
-        ImgQ tmp = image;
+        Img<T> tmp = image;
         tmp.setFormat(formatRGB);
+
         TestImages::show(&tmp,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);       
       }else{
         TestImages::show(&image,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
       }
     }else{
-      ImgQ T = copy(image);
+      Img<T> Ti = copy(image);
       if(image.getFormat()==formatMatrix && image.getChannels()==1){
-        T.setFormat(formatGray);
+        Ti.setFormat(formatGray);
       }else if(image.getFormat()==formatMatrix && image.getChannels()==3){
-        T.setFormat(formatRGB);
+        Ti.setFormat(formatRGB);
       }
       saveColorAndFill();
       color(255,0,0);
       fill(0,0,0,0);
-      rect(T,T.getROI());
+#warning "unable to visualize ROI in show!"
+      //      rect(Ti,Ti.getROI());
       restoreColorAndFill();
-      T.setFullROI();
-      TestImages::show(&T,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
+      Ti.setFullROI();
+      
+      TestImages::show(&Ti,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
     }
   }
 
+
+
   // }}}
-  void print(const ImgQ &image){
+
+  template<class T>
+  void print(const Img<T> &image){
     // {{{ open
 
     image.print("image");
   }
 
   // }}}
+
+#define ICL_INSTANTIATE_DEPTH(D)                                   \
+  template Img<icl##D> zeros(int,int,int);                         \
+  template Img<icl##D> ones(int,int,int);                          \
+  template Img<icl##D> load(const std::string&);                   \
+  template Img<icl##D> load(const std::string&,format);            \
+  template Img<icl##D> create(const std::string&,format);          \
+  template Img<icl##D> grab(const std::string&,const std::string&, \
+                            const Size&,format,bool);              \
+  template Img<icl##D> filter(const Img<icl##D>&,                  \
+                              const std::string&);                 \
+  template Img<icl##D> copy(const Img<icl##D>&);                   \
+  template Img<icl##D> copyroi(const Img<icl##D>&);                \
+  template void show(const Img<icl##D>&);                          \
+  template void save(const Img<icl##D>&,const string&);            \
+  template void print(const Img<icl##D>&);                         \
+  template Img<icl##D> norm(const Img<icl##D>&);
+  ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
   ImgQ operator+(const ImgQ &a,const ImgQ &b){
     // {{{ open

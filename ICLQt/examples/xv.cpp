@@ -42,7 +42,7 @@
 
 GUI gui;
 
-Size compute_image_size(const std::vector<ImgBase*> &is, QDesktopWidget *desktop){
+Size compute_image_size(const std::vector<const ImgBase*> &is, QDesktopWidget *desktop){
   Size s;
   for(unsigned int i=0;i<is.size();++i){
     s.width = iclMax(s.width,is[i]->getWidth());
@@ -61,27 +61,30 @@ int main (int n, char **ppc){
   ("-roi","if set, image roi is visualized");
   painit(n,ppc,"-input|-i(filename) -delete|-d -roi|-r",true);
 
-  ImgQ image;  
+  const ImgBase *image = 0;  
   if(pa("-input")){
     string imageName = pa("-input");
   
     try{
-      image = load(imageName);
+      static FileGrabber w(imageName);
+      w.setIgnoreDesiredParams(true);
+      image = w.grab();
       if(pa("-delete")){
         if(imageName.length()){
           system((string("rm -rf ")+imageName).c_str());
         }
       }
     }catch(ICLException e){
-      image = ones(320,240,1)*100;
+      static ImgQ o = ones(320,240,1)*100;
       fontsize(15); 
-      text(image, 90,90,"image not found!");
+      text(o, 90,90,"image not found!");
+      image = &o;
     }
     if(pacount()){
       std::cout << "Warning if called with -input, all extra given filenames are omitted!" << std::endl;
     }
 
-    Size size = compute_image_size(std::vector<ImgBase*>(1,&image),QApplication::desktop());
+    Size size = compute_image_size(std::vector<const ImgBase*>(1,image),QApplication::desktop());
     gui = GUI("image[@handle=draw@size="+str(size/20)+"]");
     gui.show();
     
@@ -94,7 +97,7 @@ int main (int n, char **ppc){
       std::cout << "call iclxv -input ImageName -delete instead (for single images only)" << std::endl;
     }
     std::string imageList = "";
-    std::vector<ImgBase*> imageVec;
+    std::vector<const ImgBase*> imageVec;
     std::vector<std::string> imageVecStrs;
     Size maxSize;
     for(unsigned int i=0;i<pacount();++i){
@@ -125,9 +128,10 @@ int main (int n, char **ppc){
       ICL_DELETE(imageVec[i]);
     }    
   }else{
-    image = ones(320,240,1)*100;
+    static ImgQ o = ones(320,240,1)*100;
+    image = &o;
     fontsize(15);
-    text(image, 110,90,"no image set!");
+    text(o, 110,90,"no image set!");
   }
 
   if(pa("-roi")){
@@ -137,8 +141,7 @@ int main (int n, char **ppc){
       draw->reset();
       draw->color(255,0,0);
       draw->fill(0,0,0,0);
-      
-      draw->rect(image.getROI().x,image.getROI().y,image.getROI().width,image.getROI().height);
+      draw->rect(image->getROI().x,image->getROI().y,image->getROI().width,image->getROI().height);
       draw->unlock();
     }else{
       std::cout << "roi visualization is not supported in multi image mode!" << std::endl;
