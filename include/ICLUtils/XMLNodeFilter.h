@@ -81,7 +81,7 @@ namespace icl{
     virtual XMLNodeFilter *deepCopy() const{ return new XMLNodeFilterByType(nodeTypes); }
   };
 
-  /// Can be used to filter nodes by Types \ingroup XML
+  /// Can be used to filter nodes by Tag \ingroup XML
   class XMLNodeFilterByTag : public XMLNodeFilter{
     public:
     std::string tag; //<! internal tag variable
