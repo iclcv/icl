@@ -598,6 +598,7 @@ namespace icl{
     float gridColor[4];
     float backgroundColor[3];
     Point wheelDelta;
+    Size defaultImageSize;
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
@@ -1469,6 +1470,12 @@ namespace icl{
 
   // }}}
   
+  void ICLWidget::setDefaultImageSize(const Size &size){
+    // {{{ open
+    m_data->defaultImageSize = size;
+  }
+  // }}}
+
   void ICLWidget::showHideMenu(){
     // {{{ open
 
@@ -1606,6 +1613,7 @@ namespace icl{
  
   void ICLWidget::updateInfoTab(){
     // {{{ open
+
     if(m_data->menuMutex.tryLock()){
       if(m_data->histoWidget && m_data->infoTabVisible){
         m_data->histoWidget->update(getImageStatistics());
@@ -2041,7 +2049,7 @@ namespace icl{
 
   void ICLWidget::wheelEvent(QWheelEvent *e){
     // {{{ open 
-    
+
     // possibly adding a wheel base zooming if a certain keyboard modifier is pressed
     
     if(e->orientation() == Qt::Horizontal){
@@ -2109,7 +2117,7 @@ namespace icl{
     if(m_data->zoomAdjuster) m_data->zoomAdjuster->update();
 #endif
   }
-  
+
   // }}}
 
   void ICLWidget::resizeEvent(QResizeEvent *e){
@@ -2337,9 +2345,9 @@ namespace icl{
     Rect r;
     if(m_data->fm == fmZoom){
       QMutexLocker locker(&m_data->menuMutex);
-      r = computeRect(m_data->image->getSize(),getSize(),fmZoom,m_data->zoomRect);
+      r = computeRect(m_data->image->hasImage() ? m_data->image->getSize() : m_data->defaultImageSize, getSize(),fmZoom,m_data->zoomRect);
     }else{
-      r = computeRect(m_data->image->getSize(),getSize(),m_data->fm);
+      r = computeRect(m_data->image->hasImage() ? m_data->image->getSize() : m_data->defaultImageSize, getSize(),m_data->fm);
     }
     if(fromGUIThread){
       m_data->mutex.unlock();
@@ -2456,6 +2464,7 @@ namespace icl{
 
   void ICLWidget::registerCallback(GUI::CallbackPtr cb, const std::string &eventList){
     // {{{ open
+
     struct CallbackHandler : public MouseHandler{
       GUI::CallbackPtr cb;
       std::vector<MouseEventType> evts;
@@ -2501,6 +2510,7 @@ namespace icl{
     m_data->callbacks.push_back(cbh);
     install(cbh);
   }
+
   // }}}
   
   void ICLWidget::removeCallbacks(){

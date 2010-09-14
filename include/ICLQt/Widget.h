@@ -286,11 +286,19 @@ int main(int nArgs, char **ppcArg){
     /// returns current ImageStatistics struct (used by OSD)
     const ImageStatistics &getImageStatistics();
 
+    /// if the menu is disabled, there will be no menu button at the top left of the widget
     void setMenuEnabled(bool enabled);
     
+    /// This can be used in order to hide to label at the lower right image rect
     void setImageInfoIndicatorEnabled(bool enabled);
     
+    /// sets wheather to notify, that no image was set
     void setShowNoImageWarnings(bool showWarnings);
+    
+    /// set a default image size, which is used of setting up the viewport, if no image was set
+    /** if no image was set, then the OpenGL viewport is adapted as if there was an image with this size.
+        If the given size is Size::null (which it is by default), then the viewport is not adated */
+    void setDefaultImageSize(const Size &size);
 
     /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
     /** Special buttons can directly be attached to specific ICLWidget slots, 

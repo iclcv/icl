@@ -47,7 +47,8 @@ void init(){
   gui.show();
   
   // create scene background
-  gui["draw"] = zeros(640,480,0);
+  //  gui["draw"] = zeros(640,480,0);
+  (**gui.getValue<DrawHandle3D>("draw")).setDefaultImageSize(Size(640,480));
 
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-10), // position
