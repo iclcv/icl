@@ -107,15 +107,25 @@ set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib
+if(WIN32)
+add_library(${PROJECT_NAME} ${LIB_SOURCES})
+else()
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
+endif()
 #linker
 target_link_libraries(${PROJECT_NAME} ${ICLFilter_dependencies})
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
-
+if(WIN32)
 install (TARGETS ${PROJECT_NAME}
  	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"
-)
+	 #MINGW COMPATIBILITY 
+	ARCHIVE DESTINATION "${LIBRARY_OUTPUT_PATH}"
+	RUNTIME DESTINATION "${LIBRARY_OUTPUT_PATH}")
+else()
+install (TARGETS ${PROJECT_NAME}
+ 	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}")
+endif()
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
 	FILES_MATCHING PATTERN "*.h"

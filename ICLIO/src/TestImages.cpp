@@ -42,11 +42,14 @@
 #include <ICLIO/FileWriter.h>
 #include <stdlib.h>
 #include <ICLUtils/Time.h>
-#ifdef WIN32
-#include </Win32.h>
-#else
+#include <ICLUtils/Thread.h>
+
+//#ifdef WIN32
+//#ifdef ICL_SYSTEM_WINDOWS
+//#include </Win32.h>
+//#else
 #include <unistd.h>
-#endif
+//#endif
 
 using std::vector;
 using std::string;
@@ -616,7 +619,12 @@ namespace icl{
     system((string(showCommandStr)+" &").c_str());
 
     if(string(rmCommand).length()){
+	  #ifndef ICL_SYSTEM_WINDOWS
       usleep(1000*msec_to_rm_call);
+	  #else
+	  //TODO where is this function located
+	  //sleep(1000*msec_to_rm_call);
+	  #endif
       system((string(rmCommandStr)+" &").c_str());
     }
   }
@@ -639,7 +647,12 @@ void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
     }
 
     system(string("xv ").append(name).append(" &").c_str());
-    usleep(msec*10000);
+	//#ifndef ICL_SYSTEM_WINDOWS
+    Thread::msleep(msec);
+	//#else
+	//TODO where is this function located
+	//sleep(msec*10000);
+	//#endif
     system(string("rm -rf ").append(name).c_str());
   }
 

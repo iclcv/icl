@@ -37,7 +37,7 @@
 #include <ICLUtils/Macros.h>
 //#include <sched.h>
 #include <pthread.h>
-#ifdef SYSTEM_LINUX
+#ifndef ICL_SYSTEM_APPLE
 #include <unistd.h>
 #endif
 
@@ -72,14 +72,22 @@ namespace icl{
       ERROR_LOG("unable to start thread (it's still running)");
     }else{
       impl->on = true;
+	  #ifndef ICL_SYSTEM_WINDOWS
       pthread_create(&impl->thread,0,icl_thread_handler, (void*)this); 
+	  #else
+	  
+	  #endif
     }
   }
   void Thread::stop(){
     Mutex::Locker l(impl->mutex);
     if(impl->on){
+	  #ifndef ICL_SYSTEM_WINDOWS
       pthread_cancel(impl->thread);
       pthread_join(impl->thread,&impl->data);
+	  #else
+	  
+	  #endif
       impl->on = false;
       finalize();
     }
@@ -87,7 +95,11 @@ namespace icl{
   void Thread::wait(){
     Mutex::Locker l(impl->mutex);
     if(impl->on){
+	  #ifndef ICL_SYSTEM_WINDOWS
       pthread_join(impl->thread,&impl->data);
+	  #else
+	  
+	  #endif
       impl->on = false;
       finalize();
     }
@@ -100,11 +112,16 @@ namespace icl{
   }
   
   void Thread::usleep(unsigned int usec){
+	#ifndef ICL_SYSTEM_WINDOWS
     ::usleep(usec);
+	#else
+	//TODO is this really ok?
+	sleep(usec);
+	#endif
   }
 
   void Thread::msleep(unsigned int msecs){
-#ifndef SYSTEM_WINDOWS
+#ifndef ICL_SYSTEM_WINDOWS
     usleep(msecs*1000);
 #else
 	  //System::Threading::Thread::Sleep(msecs);
@@ -112,7 +129,7 @@ namespace icl{
 #endif
   }
   void Thread::sleep(float secs){
-#ifndef SYSTEM_WINDOWS
+#ifndef ICL_SYSTEM_WINDOWS
     ::usleep((long)secs*1000000);
 #else
     sleep(secs*1000);
@@ -129,15 +146,21 @@ namespace icl{
     Mutex::Locker l(impl->mutex);
     if(impl->on){
       impl->on = false;
+	  #ifndef ICL_SYSTEM_WINDOWS
       pthread_exit(impl->data);
+	  #else
+	  
+	  #endif
     }
   }
   
   void *icl_thread_handler(void *t){
     ((Thread*)t)->run();
+	#ifndef ICL_SYSTEM_WINDOWS
     pthread_exit(0);
+	#else
+	
+	#endif
     return 0;
   }
-
-
 }

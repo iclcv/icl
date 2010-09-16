@@ -34,6 +34,7 @@
 
 #include <ICLQuick/Common.h>
 #include <ICLCC/CCFunctions.h>
+#include <ICLUtils/Thread.h>
 
 GUI *gui;
 ICLDrawWidget *widget;
@@ -166,7 +167,8 @@ void init(){
 
 void run(){
   while(!(*running)){
-    usleep(100*1000);
+	Thread::msleep(100);
+    //usleep(100*1000);
   }
   const ImgBase *image = grabber->grab();
   if(!image){
@@ -175,7 +177,8 @@ void run(){
   }
   widget->setImage(image);
   widget->update();
-  usleep(1000*(*sleeptime));
+  Thread::msleep((unsigned int)sleeptime);
+  //usleep(1000*(*sleeptime));
 }
 
 

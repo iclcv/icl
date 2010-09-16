@@ -58,12 +58,17 @@ set(CMAKE_BUILD_TYPE "Release" CACHE INTERNAL "")
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 #build in verbos g++ mode
-#set(CMAKE_VERBOSE_MAKEFILE ON)
-
+if(WIN32)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+endif()
 message(STATUS "Verbose makefiles: ${CMAKE_VERBOSE_MAKEFILE}")
 
 #where to install ICL
+if(WIN32)
+set(ICL_VAR_INSTALL_PREFIX "C:/Users/lukas/temp/testICL${VERSION}" CACHE PATH "")
+else()
 set(ICL_VAR_INSTALL_PREFIX "/temp/testICL${VERSION}" CACHE PATH "")
+endif()
 set(CMAKE_INSTALL_PREFIX "${ICL_VAR_INSTALL_PREFIX}" CACHE INTERNAL "")
 message(STATUS "Install Path: ${CMAKE_INSTALL_PREFIX}")
 
@@ -97,9 +102,19 @@ if(APPLE)
 endif()
 if(WIN32)
 	#current def to indicate we are on windows
-    add_definitions( -DSYSTEM_WINDOWS)
+    #add_definitions( -DSYSTEM_WINDOWS)
 	#in the future the above def will be replaced by this def to achieve compatibility with mingw
     add_definitions( -DICL_SYSTEM_WINDOWS)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lpthread")# -static-libgcc ")
+	
+	include_directories("C:/Qt/2010.02.1/mingw/mingw32/include")
+	link_directories("C:/Qt/2010.02.1/mingw/mingw32/lib")
+	link_directories("C:/MinGW/lib")
+	
+	#include_directories("C:/Qt/2010.04/mingw/mingw32/include")
+	#link_directories("C:/Qt/2010.04/mingw/mingw32/lib")
+	#link_directories("C:/Qt/2010.04/mingw/lib")
+	#link_directories("C:/WINDOWS/system32")
 endif()
 
 #include file with macros
@@ -176,16 +191,32 @@ if(ICL_VAR_USE_PKG_CONFIG)
 endif()
 if(NOT OPENCV_PKG_FOUND)
   #check for opencv <= 2.1.0
+  if(WIN32)
+  icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux200.dll.a;cxcore200.dll.a;highgui200.dll.a;cv200.dll.a;ml200.dll.a" lib include/opencv "C:/Programme/OpenCV2.0" HAVE_OPENCV_COND)
+  else()
   icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux;cxcore;highgui;cv" lib include/opencv /oopt/OpenCV2.1.0 HAVE_OPENCV_COND)
+  endif()
   if(HAVE_OPENCV_COND)
+    if(WIN32)
+	set(OPENCV_LIBS_l cxcore200 cv200 highgui200 cvaux200)
+	else()
 	set(OPENCV_LIBS_l cxcore cv highgui cvaux)
+	endif()
 	#check for version of opencv	
 	set(CMAKE_REQUIRED_LIBRARIES ${OPENCV_LIBS_l})
 	set(CMAKE_REQUIRED_INCLUDES "${ICL_XDEP_OPENCV_PATH}/include/opencv")
 	#if libml.so is not found to link against, this check will fail => VERSION 1 of OpenCV
+	if(WIN32)
+	check_library_exists(libml200.dll.a cvConvertMaps ${ICL_XDEP_OPENCV_PATH}/lib HAVE_OPENCV2_COND)
+	else()
 	check_library_exists(libml.so cvConvertMaps ${ICL_XDEP_OPENCV_PATH}/lib HAVE_OPENCV2_COND)
+	endif()
 	if(HAVE_OPENCV2_COND)
+		if(WIN32)
+		set(OPENCV_LIBS_l cxcore200 cv200 highgui200 cvaux200 ml200)
+		else()
 		set(OPENCV_LIBS_l cxcore cv highgui cvaux ml)
+		endif()
 		add_definitions( -DHAVE_OPENCV2)
 	endif()
   else()
@@ -292,19 +323,35 @@ if(ICL_VAR_USE_PKG_CONFIG)
 endif()
 if(NOT QT_PKG_FOUND)
   #check for special location of qt
+  if(WIN32)
+  icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore4.a;QtGui4.a;QtOpenGL4.a" lib include C:/Qt/2010.02.1/qt HAVE_QT_COND)
+  else()
   icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include /opt/qtsdk-2009.04/qt HAVE_QT_COND)
+  endif()
   if(NOT HAVE_QT_COND)
 	#check for standard location of qt
     icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include/qt4 /usr HAVE_QT_COND)
   endif()
   if(HAVE_QT_COND)
+    if(WIN32)
+	set(QT_LIBS_l QtCore4 QtGui4 QtOpenGL4)
+	else()
 	set(QT_LIBS_l QtCore QtGui QtOpenGL)
+	endif()
    endif()
 endif()
 
+if(WIN32)
+icl_check_external_package(OPENGL "gl.h;glu.h" "glu32.a" lib include/GL C:/Qt/2010.02.1/mingw HAVE_OPENGL_COND)
+else()
 icl_check_external_package(OPENGL "gl.h;glu.h" "GL;GLU" lib include/GL /usr HAVE_OPENGL_COND)
+endif()
 if(${HAVE_OPENGL_COND})
+	if(WIN32)
+	set(OPENGL_LIBS_l glu32 opengl32)
+	else()
 	set(OPENGL_LIBS_l GL GLU)
+	endif()
 endif()
 
 icl_check_external_package(SVS svs.h "svs;svscalc" bin src /vol/nivision/SVS/4.2 HAVE_SVS_COND)
@@ -350,7 +397,7 @@ set(ICLCC_internal_dependencies ICLCore)
 set(ICLFilter_internal_dependencies ICLCC)
 set(ICLBlob_internal_dependencies ICLCC)
 if(${HAVE_OPENCV_COND})
-    set(ICLOpenCV_internal_dependencies ICLCore)
+    set(ICLOpenCV_internal_dependencies ICLCore ICLCC)
     set(ICLOpenCV_external_dependencies OPENCV)
     set(ICLIO_internal_dependencies ICLOpenCV ICLFilter)
     set(ICLAlgorithms_internal_dependencies ICLOpenCV ICLQuick ICLGeom)
@@ -468,7 +515,8 @@ foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGES})
 		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc
 		FILES_MATCHING 
 		PATTERN "*.png" 
-		PATTERN "*.jpg")
+		PATTERN "*.jpg"
+		PATTERN ".svn*" EXCLUDE)
 	#create directories in each doc dir of each subproject
     exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html/\"")
 endforeach()
@@ -479,15 +527,18 @@ configure_file(doc/menu.htmltemplate ${CMAKE_SOURCE_DIR}/doc/menu.html @ONLY)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alldoc/
 		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html
 		FILES_MATCHING 
-		PATTERN "*.html")
+		PATTERN "*.html"
+		PATTERN ".svn*" EXCLUDE)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alldoc/
 		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html
 		FILES_MATCHING
-		PATTERN "*.png")
+		PATTERN "*.png"
+		PATTERN ".svn*" EXCLUDE)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/doc/
 		DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html
 		FILES_MATCHING 
-		PATTERN "*.gif")
+		PATTERN "*.gif"
+		PATTERN ".svn*" EXCLUDE)
 
 #output path for generated files on make alldoc
 set(OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/alldoc/html")

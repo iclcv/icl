@@ -130,6 +130,9 @@ string(STRIP "${QT_MOC_EXECUTABLE}" QT_MOC_EXECUTABLE)
 #message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
 
 #set(HWQ_SRC ${LIB_SOURCES})
+if(WIN32)
+set(QT_MOC_EXECUTABLE "${ICL_XDEP_QT_PATH}/bin/moc.exe")
+endif()
 
 if(NOT ${QT_MOC_EXECUTABLE} STREQUAL "")
 message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
@@ -179,16 +182,27 @@ set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib
+if(WIN32)
+add_library(${PROJECT_NAME} ${HWQ_SRC})
+else()
 add_library(${PROJECT_NAME} SHARED ${HWQ_SRC})
+endif()
 #target_link_libraries(${PROJECT_NAME} ${HWQ_LIB} )
 #linker
 target_link_libraries(${PROJECT_NAME} ${ICLQt_dependencies})
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 
+if(WIN32)
 install (TARGETS ${PROJECT_NAME}
  	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"
-)
+	 #MINGW COMPATIBILITY 
+	ARCHIVE DESTINATION "${LIBRARY_OUTPUT_PATH}"
+	RUNTIME DESTINATION "${LIBRARY_OUTPUT_PATH}")
+else()
+install (TARGETS ${PROJECT_NAME}
+ 	 LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}")
+endif()
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
 	FILES_MATCHING PATTERN "*.h"

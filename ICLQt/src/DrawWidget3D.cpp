@@ -35,7 +35,7 @@
 #include <ICLQt/DrawWidget3D.h>
 #include <ICLQt/GLTextureMapBaseImage.h>
 
-#ifdef SYSTEM_APPLE
+#ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
 #else
 #include <GL/gl.h>
@@ -724,12 +724,30 @@ namespace icl{
   void ICLDrawWidget3D::projection(){
     m_vecCommands3D.push_back(new MatrixMode3DDrawCommand(true));
   }
+  
+   #ifdef ICL_SYSTEM_WINDOWS
+ // for some reason, MinGW does not want to use glPopMatrix as template parameter 
+  void glPopMatrix2(void){
+	glPopMatrix();
+  }
+  void glPushMatrix2(void){
+	glPushMatrix();
+  }
+  void ICLDrawWidget3D::pushMatrix(){
+    m_vecCommands3D.push_back(new FunctionCommand3D<glPushMatrix2>);
+  }
+  void ICLDrawWidget3D::popMatrix(){
+    m_vecCommands3D.push_back(new FunctionCommand3D<glPopMatrix2>);
+  }
+  #else
   void ICLDrawWidget3D::pushMatrix(){
     m_vecCommands3D.push_back(new FunctionCommand3D<glPushMatrix>);
   }
   void ICLDrawWidget3D::popMatrix(){
     m_vecCommands3D.push_back(new FunctionCommand3D<glPopMatrix>);
   }
+  #endif  
+  
   void ICLDrawWidget3D::perspective(float angle, float aspect, float nearVal, float farVal){
     m_vecCommands3D.push_back(new Perspective3DCommand(angle,aspect,nearVal,farVal));
   }

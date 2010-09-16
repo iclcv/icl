@@ -57,20 +57,36 @@ namespace icl{
     public:
     /// Create a mutex
     Mutex(){
-      pthread_mutex_init(&m,0);
+	  #ifndef ICL_SYSTEM_WINDOWS
+		pthread_mutex_init(&m,0);
+	  #else
+	  
+	  #endif
     }
     /// Destroys the mutex
     ~Mutex(){
-      pthread_mutex_destroy(&m);
+	  #ifndef ICL_SYSTEM_WINDOWS
+        pthread_mutex_destroy(&m);
+	  #else
+	  
+	  #endif
     }
     /// locks the mutex
     void lock(){
+	  #ifndef ICL_SYSTEM_WINDOWS
       pthread_mutex_lock(&m);
+	  #else
+	  
+	  #endif
     }
 
     /// unlocks the mutex
     void unlock(){
+	  #ifndef ICL_SYSTEM_WINDOWS
       pthread_mutex_unlock(&m);
+	  #else
+	  
+	  #endif
     }
     
     /// Locks a mutex on the stack (mutex is unlocked when the stack's section is released

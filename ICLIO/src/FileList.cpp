@@ -33,8 +33,8 @@
 *********************************************************************/
 
 #include <ICLIO/FileList.h>
-#ifndef SYSTEM_WINDOWS
-#ifndef SYSTEM_APPLE
+#ifndef ICL_SYSTEM_WINDOWS
+#ifndef ICL_SYSTEM_APPLE
 #include <wordexp.h>
 #else // wordexp not supported on osx
 #include <glob.h>
@@ -72,8 +72,8 @@ namespace icl{
       string sPattern = pattern;
       std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
 
-#ifndef SYSTEM_WINDOWS
-#ifndef SYSTEM_APPLE
+#ifndef ICL_SYSTEM_WINDOWS
+#ifndef ICL_SYSTEM_APPLE
       wordexp_t match;
       
       // search for file matching the pattern(s)

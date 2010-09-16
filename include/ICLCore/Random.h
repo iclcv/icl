@@ -46,7 +46,7 @@ namespace icl{
   /** @param seedval The seed value (e.g. time(0) ...)
   */
   inline void randomSeed(long int seedval) {
-#ifdef SYSTEM_WINDOWS
+#ifdef ICL_SYSTEM_WINDOWS
     srand(seedval);
 #else
     srand48(seedval);

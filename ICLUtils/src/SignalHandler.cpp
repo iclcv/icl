@@ -52,6 +52,17 @@ namespace icl{
   namespace {
     static Mutex SignalHandlerMutex;
     
+#ifdef ICL_SYSTEM_WINDOWS
+	struct sigaction {
+    int          sa_flags;
+    sigset_t     sa_mask;
+    __p_sig_fn_t sa_handler;   /* see mingw/include/signal.h about the type */
+};
+#define sigemptyset(pset)    (*(pset) = 0)
+int sigaction(int signum, const struct sigaction *act, struct sigaction *oact);
+int kill(pid_t pid, int signal);
+#endif
+
     typedef map<string,int> stringSignalMap;
     typedef map<int,string> signalStringMap;
     typedef map<int,SignalHandler*> shMap;
@@ -60,6 +71,7 @@ namespace icl{
     
     class StringSignalMap{
     public:
+	#ifndef ICL_SYSTEM_WINDOWS
       StringSignalMap(){
         ADD_SIGNAL(SIGABRT); ADD_SIGNAL(SIGALRM); ADD_SIGNAL(SIGBUS);
         ADD_SIGNAL(SIGCHLD); ADD_SIGNAL(SIGCONT); ADD_SIGNAL(SIGFPE);
@@ -72,6 +84,13 @@ namespace icl{
         ADD_SIGNAL(SIGURG);  ADD_SIGNAL(SIGVTALRM); ADD_SIGNAL(SIGXCPU);
         ADD_SIGNAL(SIGXFSZ);
       }
+	#else
+	  StringSignalMap(){
+        ADD_SIGNAL(SIGABRT); ADD_SIGNAL(SIGFPE);
+        ADD_SIGNAL(SIGILL);  ADD_SIGNAL(SIGINT);
+        ADD_SIGNAL(SIGSEGV); ADD_SIGNAL(SIGTERM);
+      }
+	#endif
       int getSignal(const string &s) const{
         stringSignalMap::const_iterator it = strsgn.find(s);
         if(it != strsgn.end()){
@@ -138,12 +157,17 @@ namespace icl{
       new_action.sa_handler = signal_handler_function;
       sigemptyset (&new_action.sa_mask);
       new_action.sa_flags = 0;
-      
+      #ifndef ICL_SYSTEM_WINDOWS
       sigaction (signal, NULL, old_action);
-
+	  #else
+	  
+	  #endif
       if (old_action->sa_handler != SIG_IGN){
+	    #ifndef ICL_SYSTEM_WINDOWS
         sigaction (signal, &new_action, NULL);
-        
+        #else
+		
+		#endif
         SHM[signal]=this;    
         SAM[signal]=old_action;
         m_vecAssocitatedSignals.push_back(signal);
@@ -162,7 +186,11 @@ namespace icl{
       SHM.erase(SHM.find(s));
       
       struct sigaction *old_action = SAM[s];
+	  #ifndef ICL_SYSTEM_WINDOWS
       sigaction (s, old_action, NULL);
+	  #else
+	  
+	  #endif
       delete old_action;
       SAM.erase(SAM.find(s));
     }
@@ -176,13 +204,19 @@ namespace icl{
 
     if( old_sigaction->sa_handler != SIG_DFL &&
         old_sigaction->sa_handler != SIG_ERR &&
+		#ifndef ICL_SYSTEM_WINDOWS
         old_sigaction->sa_handler != SIG_HOLD &&
+		#endif
         old_sigaction->sa_handler != SIG_IGN ){
       old_sigaction->sa_handler(s);
     }
   }
-
+		
   void SignalHandler::killCurrentProcess() {
+	#ifndef ICL_SYSTEM_WINDOWS
     kill(getpid(),1);
+	#else
+	
+	#endif
   }
 }

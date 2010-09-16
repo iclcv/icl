@@ -43,24 +43,44 @@ namespace icl{
   public:
     inline SemaphoreImpl(int n):n(n){
       ICLASSERT_RETURN(n>0);
+	  #ifndef ICL_SYSTEM_WINDOWS
       sem_init(&s,0,(unsigned int)n);
+	  #else
+	  
+	  #endif
     }
     inline ~SemaphoreImpl(){
+	  #ifndef ICL_SYSTEM_WINDOWS
       sem_destroy(&s);
+	  #else
+	  
+	  #endif
     }
     inline void inc(int n=1){
       for(int i=0;i<n;i++){
+	    #ifndef ICL_SYSTEM_WINDOWS
         sem_post(&s);
+		#else
+		
+		#endif
       }
     }
     inline void dec(int n=1){
       for(int i=0;i<n;i++){
-        sem_wait(&s);
+        #ifndef ICL_SYSTEM_WINDOWS
+		sem_wait(&s);
+		#else
+		
+		#endif
       }
     }
     inline int getValue(){
       int val = 0;
+	  #ifndef ICL_SYSTEM_WINDOWS
       sem_getvalue(&s,&val);
+	  #else
+	  
+	  #endif
       return val;
     }
     inline int getMaxValue(){
@@ -68,11 +88,19 @@ namespace icl{
     }
 
     inline bool tryAcquire(){
+	  #ifndef ICL_SYSTEM_WINDOWS
       int ret = sem_trywait(&s);
+	  #else
+	  int ret = 0;
+	  #endif
       return ret == 0;
     }
     inline bool tryRelease(){
+	  #ifndef ICL_SYSTEM_WINDOWS
       int ret = sem_post(&s);
+	  #else
+	  int ret = 0;
+	  #endif
       return ret == 0;
     }
   private:
@@ -119,5 +147,3 @@ namespace icl{
     return impl->getMaxValue();
   }
 }
-
-

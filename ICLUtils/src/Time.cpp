@@ -44,7 +44,7 @@
 // **********************************************************************
 
 
-#ifdef SYSTEM_WINDOWS
+#ifdef ICL_SYSTEM_WINDOWS
 #   include <time.h>
 #   include <sys/timeb.h>
 #else
@@ -63,7 +63,7 @@ namespace icl {
    Time
    Time::now()
    {
-#ifdef SYSTEM_WINDOWS
+#ifdef ICL_SYSTEM_WINDOWS
       struct timeb tb;
       ftime(&tb);
       return Time(tb.time * static_cast<value_type>(1000000) + tb.millitm * static_cast<value_type>(1000));
@@ -181,7 +181,7 @@ namespace icl {
     time_t time = static_cast<long>(m_usec / 1000000);
     
     struct tm* t;
-#ifdef SYSTEM_WINDOWS
+#ifdef ICL_SYSTEM_WINDOWS
     t = localtime(&time);
 #else
     struct tm tr;
