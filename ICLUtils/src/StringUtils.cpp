@@ -212,8 +212,8 @@ namespace icl{
   MatchResult match(const std::string &text, const std::string &regexIn, int num)
     throw (InvalidRegularExpressionException){
     string regexSave = regexIn;
-    #ifndef ICL_SYSTEM_WINDOWS
-	char *regex = const_cast<char*>(regexSave.c_str());
+#ifndef ICL_SYSTEM_WINDOWS
+    char *regex = const_cast<char*>(regexSave.c_str());
     regex_t    re;
     
     int cflags = num ? REG_EXTENDED : (REG_EXTENDED|REG_NOSUB);
@@ -230,9 +230,9 @@ namespace icl{
     // char buf[256];
     // regerror(status,&re,buf,256);
     //throw InvalidRegularExpressionException(regexIn + "[Error: " + str(buf) + "]");
-	#endif
+#endif
     MatchResult mr;
-	#ifndef ICL_SYSTEM_WINDOWS
+#ifndef ICL_SYSTEM_WINDOWS
     mr.matched = !status;
     for(int i=0;i<num;++i){
       int so = matchList[i].rm_so;
@@ -242,7 +242,7 @@ namespace icl{
       }
     }
     regfree(&re);
-	#endif
+#endif
     return mr;
   }
 }
