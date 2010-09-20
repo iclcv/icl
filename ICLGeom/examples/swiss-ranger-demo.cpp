@@ -255,6 +255,7 @@ void init(){
   
 
   (*draw3D)->install(scene.getMouseHandler(0));
+  (*draw3D)->setDefaultImageSize(Size(176,144));
 
 
 }
