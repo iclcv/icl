@@ -217,6 +217,7 @@ namespace icl{
     int pickChannel;
     IntensityImageMode iim;
     std::string depthMapUnit;
+    bool createXYZ;
   };
   
   SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel) throw (ICLException):Grabber(){
@@ -251,6 +252,8 @@ namespace icl{
     m_sr->pickChannel = pickChannel;
  
     m_sr->depthMapUnit = "16Bit";
+    
+    m_sr->createXYZ = true;
     
     SR_SetMode(m_sr->cam,AM_COR_FIX_PTRN|AM_CONV_GRAY|AM_DENOISE_ANF|AM_CONF_MAP);
   }
@@ -288,7 +291,7 @@ namespace icl{
     
     ImgEntry *imgs = 0;
     int num = SR_GetImageList(m_sr->cam,&imgs);
-    result.setChannels(m_sr->pickChannel<0 ? num : 1);
+    result.setChannels((m_sr->pickChannel<0) ? (num +(m_sr->createXYZ*3)) : 1);
 
     ImgEntry *im_DISTANCE = 0;
     int DISTANCE_idx = -1;
@@ -353,6 +356,16 @@ namespace icl{
       }
     }
     
+    if(m_sr->createXYZ && m_sr->pickChannel < 0){
+      if(result.getDepth() != depth32f){
+        ERROR_LOG("creation of xyz-channels is only supported if an icl32f buffer is used\nyou can specifiy this buffer depth in the SwissRanger constructor");
+      } else {
+        // result has depth of icl32f
+        for(int i=0;i<3;++i)
+          deepCopyChannel(&m_sr->buf, i, result.asImg<icl32f>(), num+i);
+      }
+    }
+    
     if(dst){
       if(!*dst) *dst = result.deepCopy();
       else result.deepCopy(dst);
@@ -381,7 +394,6 @@ namespace icl{
       else if(value == "zero") m_sr->iim = iimUnknownPixelsZero;
       else if(value == "unchanged") m_sr->iim = iimUnknownPixelsUnchanged;
       else ERROR_LOG("invalid value \"" << value << "\" for property \"" << property << "\"");
-      return;
     }else if(property == "modulation-frequency"){
       try{
         SR_SetModulationFrequency(m_sr->cam, translate_modulation_freq(value));
@@ -397,16 +409,22 @@ namespace icl{
       }else{
         m_sr->depthMapUnit = value;
       }
+    }else if(property == "create-xyz-channels"){
+      if(value == "on") m_sr->createXYZ = true;
+      else if(value == "off") m_sr->createXYZ = false;
+      else{
+         ERROR_LOG("undefined value for create-xyz-channels (allowed are on and off):" << value);
+      }
     }else if(!supportsProperty(property)){
       ERROR_LOG("nothing known about a property " << property ); return;
-    }
-
-    int curMode = SR_GetMode(m_sr->cam);
-    int id = prop(property);
-    if(value=="on"){
-      SR_SetMode(m_sr->cam, id | curMode);
-    }else{
-      SR_SetMode(m_sr->cam, curMode&~id);
+    } else {
+      int curMode = SR_GetMode(m_sr->cam);
+      int id = prop(property);
+      if(value=="on"){
+        SR_SetMode(m_sr->cam, id | curMode);
+      }else{
+        SR_SetMode(m_sr->cam, curMode&~id);
+      }
     }
   }
 
@@ -426,6 +444,7 @@ namespace icl{
     v.push_back("modulation-frequency");
     v.push_back("depth-map-unit");
     v.push_back("current-range");
+    v.push_back("create-xyz-channels");
     return v;
   }
   
@@ -479,6 +498,8 @@ namespace icl{
     }else if(name == "modulation-frequency"){
       ModulationFrq m =  SR_GetModulationFrequency(m_sr->cam);
       return translate_modulation_freq(m);
+    }else if(name == "create-xyz-channels"){
+      return m_sr->createXYZ ? "on" : "off";
     }else if(!supportsProperty(name)){
       ERROR_LOG("nothing known about a property " << name ); return "";
     }
