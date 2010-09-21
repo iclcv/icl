@@ -425,7 +425,12 @@ namespace icl {
     Mat M = P*T;
     FixedMatrix<icl32f,4,3> Q;
     Q.row(0) = M.row(0); Q.row(1) = M.row(1); Q.row(2) = M.row(3);
-    Vec dir = m_pos-homogenize(Q.pinv()*FixedColVector<icl32f,3>(pixel.x, pixel.y, 1));
+    Vec dir = Q.pinv()*FixedColVector<icl32f,3>(pixel.x, pixel.y, 1);
+    if ((m_pos[0]*m_pos[0] + m_pos[1]*m_pos[1] + m_pos[2]*m_pos[2]) < 1e-20) {
+      // Special case: the camera is very close to origin. The last component of
+      // 'dir' is about zero, so homogenize could fail. We can just skip this
+      // step, because we normalize 'dir' later, anyway.
+    } else dir = m_pos - homogenize(dir);
     dir[3] = 0; dir.normalize(); dir[3] = 1;
     return ViewRay(m_pos,dir);
   }
