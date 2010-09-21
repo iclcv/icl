@@ -98,8 +98,12 @@ endif()
 
 #linker
 target_link_libraries(${PROJECT_NAME} ${ICLUtils_dependencies})
+if(WIN32)
+target_link_libraries(${PROJECT_NAME} ${ICLUtils_dependencies} pthread)
+else()
+target_link_libraries(${PROJECT_NAME} ${ICLUtils_dependencies})
+endif()
 link_directories("${LIBRARY_OUTPUT_PATH}")
-
 if(WIN32)
 install (TARGETS ${PROJECT_NAME} 
 			LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}"

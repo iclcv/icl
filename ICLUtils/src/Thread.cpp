@@ -72,35 +72,23 @@ namespace icl{
       ERROR_LOG("unable to start thread (it's still running)");
     }else{
       impl->on = true;
-	  #ifndef ICL_SYSTEM_WINDOWS
-      pthread_create(&impl->thread,0,icl_thread_handler, (void*)this); 
-	  #else
-	  
-	  #endif
-    }
+	  pthread_create(&impl->thread,0,icl_thread_handler, (void*)this); 
+	}
   }
   void Thread::stop(){
     Mutex::Locker l(impl->mutex);
     if(impl->on){
-	  #ifndef ICL_SYSTEM_WINDOWS
       pthread_cancel(impl->thread);
       pthread_join(impl->thread,&impl->data);
-	  #else
-	  
-	  #endif
-      impl->on = false;
+	  impl->on = false;
       finalize();
     }
   }
   void Thread::wait(){
     Mutex::Locker l(impl->mutex);
     if(impl->on){
-	  #ifndef ICL_SYSTEM_WINDOWS
-      pthread_join(impl->thread,&impl->data);
-	  #else
-	  
-	  #endif
-      impl->on = false;
+	  pthread_join(impl->thread,&impl->data);
+	  impl->on = false;
       finalize();
     }
   }
@@ -112,7 +100,7 @@ namespace icl{
   }
   
   void Thread::usleep(unsigned int usec){
-	#ifndef ICL_SYSTEM_WINDOWS
+	#ifndef _ICL_SYSTEM_WINDOWS
     ::usleep(usec);
 	#else
 	//TODO is this really ok?
@@ -146,21 +134,13 @@ namespace icl{
     Mutex::Locker l(impl->mutex);
     if(impl->on){
       impl->on = false;
-	  #ifndef ICL_SYSTEM_WINDOWS
-      pthread_exit(impl->data);
-	  #else
-	  
-	  #endif
+	  pthread_exit(impl->data);
     }
   }
   
   void *icl_thread_handler(void *t){
     ((Thread*)t)->run();
-	#ifndef ICL_SYSTEM_WINDOWS
-    pthread_exit(0);
-	#else
-	
-	#endif
-    return 0;
+	pthread_exit(0);
+	return 0;
   }
 }
