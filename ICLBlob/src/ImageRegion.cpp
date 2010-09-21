@@ -490,6 +490,7 @@ namespace icl{
     if(!simple->css){
       simple->css = new CornerDetectorCSS(angle_thresh,rc_coeff,sigma,
                                           curvature_cutoff,straight_line_thresh);
+      needReDetection = true;
     }else{
 #define ONE_PARAM(Y,P)                              \
       if(simple->css->get##Y() != P){    \
