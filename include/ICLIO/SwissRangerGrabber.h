@@ -35,39 +35,50 @@
 #ifndef ICL_SWISSRANGER_GRABBER_H
 #define ICL_SWISSRANGER_GRABBER_H
 
-#include <ICLIO/Grabber.h>
+#include <ICLIO/GrabberHandle.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Mutex.h>
 
 namespace icl{
-  class SwissRangerGrabber : public Grabber{
+  
+  
+  /// Grabber-Implementation for the SwissRanger time-of-flight camera
+  class SwissRangerGrabberImpl : public Grabber{
     public:
+    /// Internally used data-class
     class SwissRanger;
     
     /// if serialNumber < 0 -> open device dialog box
     /// if 0 -> select any device
-    SwissRangerGrabber(int serialNumber=0, depth bufferDepth=depth32f, int pickChannel=-1) 
+    SwissRangerGrabberImpl(int serialNumber=0, depth bufferDepth=depth32f, int pickChannel=-1) 
     throw (ICLException);
 
-    ~SwissRangerGrabber();
+    /// Destructor
+    ~SwissRangerGrabberImpl();
     
     /// not yet supported ...
     static std::vector<int> getDeviceList();
-
+    
+    /// grab an undistorted image 
     const ImgBase *grabUD(ImgBase **dst=0);
 
+    /** Sets a property */
     virtual void setProperty(const std::string &property, const std::string &value);
      
     /// returns a list of properties, that can be set using setProperty
     /** @return list of supported property names **/
     virtual std::vector<std::string> getPropertyList();
 
+    /** returs the type of a property */
     virtual std::string getType(const std::string &name);
 
+    /** returs information for a property */
     virtual std::string getInfo(const std::string &name);
 
+    /** returs property value */
     virtual std::string getValue(const std::string &name);
     
+    /// Internally used utility function, that might be interesting elsewhere
     static float getMaxRangeMM(const std::string &modulationFreq) throw (ICLException);
 
 
@@ -75,8 +86,44 @@ namespace icl{
     /// utility function
     float getMaxRangeVal() const;
 
-    SwissRanger *m_sr;
+    /// Internal data
+    SwissRanger *m_sr; 
+    
+    /// Internally used mutex locks grabbing and setting of properties
     Mutex m_mutex;
+  };
+
+  
+  /// SwissRanger grabber using the libMesaSR library \ingroup GRABBER_G
+  /** for more details: @see PWCGrabberImpl */
+  class SwissRangerGrabber : public GrabberHandle<SwissRangerGrabberImpl>{
+
+    public:
+    /// ID-creation function for the GrabberHandles internal unique ID
+    static inline std::string create_id(int dev){
+      return std::string("device-")+str(dev);
+    }
+
+    /// Constructor 
+    /** see SwissRangerGrabberImpl::SwissRangerGrabberImpl for details */
+    SwissRangerGrabber(int serialNumber=0, depth bufferDepth=depth32f, int pickChannel=-1) throw (ICLException){
+      std::string id = create_id(serialNumber);
+      if(isNew(id)){
+        initialize(new SwissRangerGrabberImpl(serialNumber,bufferDepth,pickChannel),id);
+      }else{
+        initialize(id);
+      }
+    }
+    
+    /// not supported yet
+    static inline std::vector<int> getDeviceList(){
+      return SwissRangerGrabberImpl::getDeviceList();
+    }
+
+    /// Utility function
+    static inline float getMaxRangeMM(const std::string &modulationFreq) throw (ICLException){
+      return SwissRangerGrabberImpl::getMaxRangeMM(modulationFreq);
+    }
   };
   
 }

@@ -208,7 +208,7 @@ namespace icl{
     iimUnknownPixelsUnchanged
   };
   
-  struct SwissRangerGrabber::SwissRanger{
+  struct SwissRangerGrabberImpl::SwissRanger{
     SRCAM cam;
     Size size;
     Img32f buf;
@@ -220,7 +220,7 @@ namespace icl{
     bool createXYZ;
   };
   
-  SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel) throw (ICLException):Grabber(){
+  SwissRangerGrabberImpl::SwissRangerGrabberImpl(int serialNumber, depth bufferDepth, int pickChannel) throw (ICLException):Grabber(){
 
     SR_SetCallback(swiss_ranger_debug_callback);
 
@@ -259,18 +259,18 @@ namespace icl{
   }
   
 
-  SwissRangerGrabber::~SwissRangerGrabber(){
+  SwissRangerGrabberImpl::~SwissRangerGrabberImpl(){
     ICL_DELETE(m_sr->image);
     SR_Close(m_sr->cam);
     ICL_DELETE(m_sr);
   }
 
 
-  float SwissRangerGrabber::getMaxRangeMM(const std::string &modulationFreq) throw (ICLException){
+  float SwissRangerGrabberImpl::getMaxRangeMM(const std::string &modulationFreq) throw (ICLException){
     return get_max_range_mm(translate_modulation_freq(modulationFreq));
   }
   
-  float SwissRangerGrabber::getMaxRangeVal() const{
+  float SwissRangerGrabberImpl::getMaxRangeVal() const{
     const std::string &u = m_sr->depthMapUnit;
     if(u == "16Bit") return 65535;
     float unitFactor = (u=="mm")?1:(u=="cm")?0.1:0.001;
@@ -279,7 +279,7 @@ namespace icl{
     return unitFactor * maxRange;
   }
   
-  const ImgBase *SwissRangerGrabber::grabUD(ImgBase **dst){
+  const ImgBase *SwissRangerGrabberImpl::grabUD(ImgBase **dst){
     Mutex::Locker l(m_mutex);
     SR_Acquire(m_sr->cam);
     Time captureTime = Time::now();
@@ -379,13 +379,13 @@ namespace icl{
 
   }
 
-  std::vector<int> SwissRangerGrabber::getDeviceList(){
+  std::vector<int> SwissRangerGrabberImpl::getDeviceList(){
     std::vector<int> v;
     ERROR_LOG("not yet supported ..");
     return v;
   }
 
-  void SwissRangerGrabber::setProperty(const std::string &property, const std::string &value){
+  void SwissRangerGrabberImpl::setProperty(const std::string &property, const std::string &value){
     Mutex::Locker l(m_mutex);
     if(property == "current-range"){
       ERROR_LOG("unable to set info-properties");
@@ -430,7 +430,7 @@ namespace icl{
 
 
      
-  std::vector<std::string> SwissRangerGrabber::getPropertyList(){
+  std::vector<std::string> SwissRangerGrabberImpl::getPropertyList(){
     std::vector<std::string> v;
     v.push_back("AM_COR_FIX_PTRN");
     v.push_back("AM_MEDIAN");
@@ -448,7 +448,7 @@ namespace icl{
     return v;
   }
   
-  std::string SwissRangerGrabber::getType(const std::string &name){
+  std::string SwissRangerGrabberImpl::getType(const std::string &name){
     if(name ==  "current-range"){
       return "info";
     }else if(supportsProperty(name)){
@@ -458,7 +458,7 @@ namespace icl{
     }
   }
   
-  std::string SwissRangerGrabber::getInfo(const std::string &name){
+  std::string SwissRangerGrabberImpl::getInfo(const std::string &name){
     if(name == "current-range"){
       return "just an  info string";
     }else if(name == "intensity-image-mode"){
@@ -483,7 +483,7 @@ namespace icl{
   
 
 
-  std::string SwissRangerGrabber::getValue(const std::string &name){
+  std::string SwissRangerGrabberImpl::getValue(const std::string &name){
     Mutex::Locker l(m_mutex);
     if(name == "current-range"){
       ModulationFrq m =  SR_GetModulationFrequency(m_sr->cam);
