@@ -1,9 +1,9 @@
 prefix=@lprefix@
-icl_ver=icl-@VERSION@@ICL_DEBUG_POSTFIX@
+icl_ver=icl-@VERSION@@DEBUG_POSTFIX@
 exec_prefix=${prefix}
 bindir=${prefix}/bin/${icl_ver}
 libdir=${prefix}/lib/${icl_ver}
-includedir=${prefix}/include/ICL-@VERSION@
+includedir=${prefix}/include/${icl_ver}
 
 
 package=@ICL_SUB_PACKAGE@

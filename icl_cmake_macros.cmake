@@ -238,7 +238,7 @@ macro(icl_create_pkg_config_file2 PACKAGE_NAME ICL_SUB_PACKAGE_PLACEHOLDER REQUI
 
   set(ICL_PACKAGE_DESCRIPTION "ICL's ${ICL_SUB_PACKAGE_PLACEHOLDER} package")
   set(LIBS "-L\${libdir} -l${PACKAGE_NAME} '-Wl,-rpath -Wl,\${libdir}' ${OPTIONAL_LIBS} -pthread")
-  set(INCLUDES "-I\${includedir}/ICL-${VERSION}${DEBUG_POSTFIX} ${OPTIONAL_INCLUDES}")
+  set(INCLUDES "-I\${includedir} ${OPTIONAL_INCLUDES}")
   configure_file(pkg.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}.pc @ONLY)
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}.pc" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/)
   set(${OPTIONAL_INCLUDES} "")

@@ -94,7 +94,7 @@ if(UNIX)
 	SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 
 	# the RPATH to be used when installing
-	SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+	SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/icl-${VERSION}${DEBUG_POSTFIX}")
 
 	# add the automatically determined parts of the RPATH
 	# which point to directories outside the build tree to the install RPATH
@@ -480,7 +480,7 @@ install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
 	REGEX .svn* EXCLUDE
 )
 
-set(RESOURCE_DIR_PLACEHOLDER "${CMAKE_INSTALL_PREFIX}/etc")
+set(RESOURCE_DIR_PLACEHOLDER "${CMAKE_INSTALL_PREFIX}/etc/icl-${VERSION}${DEBUG_POSTFIX}")
 #prepare files from scripts dir for installation
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project @ONLY)
