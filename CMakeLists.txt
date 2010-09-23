@@ -35,8 +35,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0)
 PROJECT(ICL)
 #ubuntu version
 set(ICL_MAJOR "5")
-set(ICL_MINOR "4")
-set(ICL_PATCH "1")
+set(ICL_MINOR "5")
+set(ICL_PATCH "0")
 set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
 if(NOT ${CMAKE_PATCH_VERSION} STREQUAL "0")
@@ -52,9 +52,13 @@ set(ICL_VAR_DEBUG_MODE OFF CACHE BOOL "Compile with debug options")
 if(ICL_VAR_DEBUG_MODE)
 set(CMAKE_CXX_FLAGS "-Wall -O0 -g3")
 set(CMAKE_BUILD_TYPE "Debug" CACHE INTERNAL "")
+set(DEBUG_POSTFIX "-debug")
+set(PC_FILE_NAME "icl-${VERSION}-debug.pc")
 else()
 set(CMAKE_CXX_FLAGS "-O4 -funroll-loops -march=native")
 set(CMAKE_BUILD_TYPE "Release" CACHE INTERNAL "")
+set(DEBUG_POSTFIX "")
+set(PC_FILE_NAME "icl-${VERSION}.pc")
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 #build in verbos g++ mode
@@ -134,8 +138,10 @@ set(ICL_VAR_USE_PKG_CONFIG OFF CACHE BOOL "Use all available pkgconfig")
 #if ON examples apps will be build and install
 set(ICL_VAR_BUILD_EXAMPLES ON CACHE BOOL "Build example applications")
 
-set(LIBRARY_OUTPUT_PATH "lib")
-set(EXECUTABLE_OUTPUT_PATH "bin")
+set(LIBRARY_OUTPUT_PATH "lib/icl-${VERSION}${DEBUG_POSTFIX}")
+set(EXECUTABLE_OUTPUT_PATH "bin/icl-${VERSION}${DEBUG_POSTFIX}")
+set(DOC_DIR "doc/icl-${VERSION}")
+set(ETC_DIR "etc/icl-${VERSION}")
 
 #checkboxes to indicate a third party lib will be used
 set(ICL_XDEP_IPP_ON OFF CACHE BOOL "Use IPP when available")
@@ -487,7 +493,7 @@ install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests
 )
 #install scripts/icl-create-project-data/ to etc
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/etc
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/${ETC_DIR}
 	COMPONENT filess
 	FILES_MATCHING PATTERN "*.template"
 	REGEX .svn* EXCLUDE
@@ -496,14 +502,14 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
 if(DOXYGEN_FOUND)
 # 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
-		DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
+		DESTINATION ${CMAKE_INSTALL_PREFIX}/${DOC_DIR}/ICL
 		COMPONENT docu
 		PATTERN "*template" EXCLUDE
         REGEX .svn* EXCLUDE
 		REGEX .css EXCLUDE)
 #rename menuStyle.css to style.css for menu with border
 install(FILES ${CMAKE_SOURCE_DIR}/doc/menuStyle.css
-		DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ICL
+		DESTINATION ${CMAKE_INSTALL_PREFIX}/${DOC_DIR}/ICL
 		COMPONENT docu
 		RENAME style.css)
 #create dir for alldocs
@@ -567,7 +573,7 @@ add_custom_target(alldoc doxygen alldoc/doxyfile)
 #installs content of alldoc/html on make install
 #excludes .svn dir and doxyfile from installation
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html/
-      DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/ALL
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/${DOC_DIR}/ALL
 	  COMPONENT docu
       PATTERN "doxyfile" EXCLUDE
       REGEX .svn* EXCLUDE)
@@ -598,19 +604,19 @@ if(SYSTEM_LINUX_COND)
   icl_create_pkg_config_file_if(ICLGeom ALWAYS_TRUE)
   icl_create_pkg_config_file_if(ICLAlgorithms ALWAYS_TRUE)
     
-  set(ICL_SUB_PACKAGE "icl")
+  set(ICL_SUB_PACKAGE "icl-${VERSION}${DEBUG_POSTFIX}")
   set(LIBS "")
   set(INCLUDES "")
-  set(REQUIRE "ICLUtils ICLCore ICLIO ICLCC ICLBlob ICLFilter ICLQuick ICLGeom ICLAlgorithms")
+  set(REQUIRE "ICLUtils-${VERSION}${DEBUG_POSTFIX} ICLCore-${VERSION}${DEBUG_POSTFIX} ICLIO-${VERSION}${DEBUG_POSTFIX} ICLCC-${VERSION}${DEBUG_POSTFIX} ICLBlob-${VERSION}${DEBUG_POSTFIX} ICLFilter-${VERSION}${DEBUG_POSTFIX} ICLQuick-${VERSION}${DEBUG_POSTFIX} ICLGeom-${VERSION}${DEBUG_POSTFIX} ICLAlgorithms-${VERSION}${DEBUG_POSTFIX}")
 if(HAVE_OPENCV_COND)
-  set(REQUIRE "${REQUIRE} ICLOpenCV")
+  set(REQUIRE "${REQUIRE} ICLOpenCV-${VERSION}${DEBUG_POSTFIX}")
 endif()
 if(HAVE_QT_COND)
-  set(REQUIRE "${REQUIRE} ICLQt")
+  set(REQUIRE "${REQUIRE} ICLQt-${VERSION}${DEBUG_POSTFIX}")
 endif()
   set(ICL_PACKAGE_DESCRIPTION "Image Component Library (ICL)")
-  configure_file(pkg.in ${CMAKE_CURRENT_BINARY_DIR}/icl.pc @ONLY)
-  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/icl.pc" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/ COMPONENT filess)
+  configure_file(pkg.in ${CMAKE_CURRENT_BINARY_DIR}/${PC_FILE_NAME} @ONLY)
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PC_FILE_NAME}" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/ COMPONENT filess)
 endif()
 #include(tp2.cmake)
 #############################################

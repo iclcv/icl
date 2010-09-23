@@ -146,7 +146,7 @@ macro(add_example PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
   if(${COND})
     add_executable(icl-${FILE} examples/${FILE}.cpp)
     target_link_libraries(icl-${FILE} ${${ICLLibsToLinkAgainst}})
-    install (TARGETS icl-${FILE} RUNTIME DESTINATION bin COMPONENT applications)
+    install (TARGETS icl-${FILE} RUNTIME DESTINATION ${EXECUTABLE_OUTPUT_PATH} COMPONENT applications)
   endif()
 endmacro()
 
@@ -161,7 +161,7 @@ macro(add_example_mult PROJECT_N EXAMPLE_NAME FILES CONDITIONLIST ICLLibsToLinkA
   if(${COND})
     add_executable(icl-${EXAMPLE_NAME} ${FILES})
     target_link_libraries(icl-${EXAMPLE_NAME} ${${ICLLibsToLinkAgainst}})
-    install (TARGETS icl-${EXAMPLE_NAME} RUNTIME DESTINATION bin COMPONENT applications)
+    install (TARGETS icl-${EXAMPLE_NAME} RUNTIME DESTINATION ${EXECUTABLE_OUTPUT_PATH} COMPONENT applications)
   endif()
 endmacro()
 
@@ -195,10 +195,10 @@ macro(add_doc_gen PROJECT_NAME)
   if(DOXYGEN_FOUND)
     add_custom_target(doc doxygen doc/doxyfile)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html/
-      DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/${DOC_DIR}/${PROJECT_NAME}
 	  COMPONENT docu)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
-      DESTINATION ${CMAKE_INSTALL_PREFIX}/doc/${PROJECT_NAME}
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/${DOC_DIR}/${PROJECT_NAME}
 	  COMPONENT docu
       PATTERN "doxyfile" EXCLUDE
 	  REGEX .svn* EXCLUDE)
@@ -207,14 +207,14 @@ macro(add_doc_gen PROJECT_NAME)
 endmacro()
 
 #generates the pkg-config file for ICL_SUB_PACKAGE
-macro(icl_create_pkg_config_file2 ICL_SUB_PACKAGE_PLACEHOLDER REQUIRE_INTERNAL REQUIRE_EXTERNAL)
+macro(icl_create_pkg_config_file2 PACKAGE_NAME ICL_SUB_PACKAGE_PLACEHOLDER REQUIRE_INTERNAL REQUIRE_EXTERNAL)
   set(ICL_SUB_PACKAGE "${ICL_SUB_PACKAGE_PLACEHOLDER}")
   set(REQUIRE "")
   set(OPTIONAL_INCLUDES "") 
   set(OPTIONAL_LIBS "")
 
   foreach(TEMP ${REQUIRE_INTERNAL})
-    set(REQUIRE "${REQUIRE} ${TEMP}")
+    set(REQUIRE "${REQUIRE} ${TEMP}-${VERSION}${DEBUG_POSTFIX}")
   endforeach()
   foreach(REQ ${REQUIRE_EXTERNAL})
 	if(${HAVE_${REQ}_COND})
@@ -237,8 +237,8 @@ macro(icl_create_pkg_config_file2 ICL_SUB_PACKAGE_PLACEHOLDER REQUIRE_INTERNAL R
   endforeach()
 
   set(ICL_PACKAGE_DESCRIPTION "ICL's ${ICL_SUB_PACKAGE_PLACEHOLDER} package")
-  set(LIBS "-L\${libdir} -l${ICL_SUB_PACKAGE_PLACEHOLDER} '-Wl,-rpath -Wl,\${libdir}' ${OPTIONAL_LIBS} -pthread")
-  set(INCLUDES "-I\${includedir}/ICL ${OPTIONAL_INCLUDES}")
+  set(LIBS "-L\${libdir} -l${PACKAGE_NAME} '-Wl,-rpath -Wl,\${libdir}' ${OPTIONAL_LIBS} -pthread")
+  set(INCLUDES "-I\${includedir}/ICL-${VERSION}${DEBUG_POSTFIX} ${OPTIONAL_INCLUDES}")
   configure_file(pkg.in ${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}.pc @ONLY)
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}.pc" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/)
   set(${OPTIONAL_INCLUDES} "")
@@ -249,10 +249,10 @@ endmacro()
 macro(icl_create_pkg_config_file_if PACKAGE CONDITION)
   #if("${CONDITION}" STREQUAL  "TRUE")
   if(${CONDITION})
-    message(STATUS "creating ${PACKAGE}.pc")
-    icl_create_pkg_config_file2("${PACKAGE}" "${${PACKAGE}_internal_dependencies}" "${${PACKAGE}_external_dependencies}")
+    message(STATUS "creating ${PACKAGE}-${VERSION}${DEBUG_POSTFIX}.pc")
+    icl_create_pkg_config_file2("${PACKAGE}" "${PACKAGE}-${VERSION}${DEBUG_POSTFIX}" "${${PACKAGE}_internal_dependencies}" "${${PACKAGE}_external_dependencies}")
   else()
-    message(STATUS "skipped creation of ${PACKAGE}.pc")
+    message(STATUS "skipped creation of ${PACKAGE}-${VERSION}${DEBUG_POSTFIX}.pc")
   endif()
 endmacro()
 
