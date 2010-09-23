@@ -115,7 +115,11 @@ namespace icl{
     
     template<>
     inline const icl8u *find_first_not(const icl8u *first, const icl8u *last, icl8u val){
+#ifdef ICL_32BIT
       while( first < last && (int)first & 0x3 ){
+#else
+      while( first < last && (int64_t)first & 0x3 ){
+#endif
         if(*first != val){
           return first;
         }

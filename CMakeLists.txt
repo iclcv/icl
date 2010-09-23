@@ -47,6 +47,16 @@ endif()
 #message(STATUS "${vv}")
 #endforeach()
 
+# use void pointer size to check if we are building on 64bit
+if(CMAKE_SIZEOF_VOID_P MATCHES "8")
+    set(ICL_64BIT TRUE)
+    add_definitions( -DICL_64BIT)
+    message("Building for 64bit")
+else()
+    add_definitions( -DICL_32BIT)
+endif()
+
+
 #build type (Debug or Release)
 set(ICL_VAR_DEBUG_MODE OFF CACHE BOOL "Compile with debug options")
 if(ICL_VAR_DEBUG_MODE)
@@ -176,15 +186,32 @@ set(HAVE_VIDEODEV_COND FALSE)
 endif()
 
 #check if and what external third party libs are available
-icl_check_external_package(IPP ipp.h "ippcore;ippi;ipps;ippsr;ippcv;ippm;ippcc;guide;iomp5" sharedlib include /vol/nivision/IPP/6.1-ia32 HAVE_IPP_COND)
+if(ICL_64BIT)
+  icl_check_external_package(IPP ipp.h "ippcore;ippi;ipps;ippsr;ippcv;ippm;ippcc;guide;iomp5" em64t/sharedlib em64t/include /vol/nivision/IPP/6.1-ia32 HAVE_IPP_COND)
+else()
+  icl_check_external_package(IPP ipp.h "ippcore;ippi;ipps;ippsr;ippcv;ippm;ippcc;guide;iomp5" sharedlib include /vol/nivision/IPP/6.1-ia32 HAVE_IPP_COND)
+endif()
 if(HAVE_IPP_COND)
     set(IPP_LIBS_l ippcore ippi ipps ippsr ippcv ippm ippcc guide iomp5)
 endif()
 
-icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel;mkl_intel_thread;mkl_core;iomp5" lib/32 include /vol/nivision/MKL/10.2 HAVE_MKL_COND)
-if(HAVE_MKL_COND)
-    set(MKL_LIBS_l mkl_intel mkl_intel_thread mkl_core iomp5)
-endif()
+#icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel;mkl_intel_thread;mkl_core;iomp5" lib/32 include /vol/nivision/MKL/10.2 HAVE_MKL_COND)
+#if(HAVE_MKL_COND)
+#    set(MKL_LIBS_l mkl_intel mkl_intel_thread mkl_core iomp5)
+#endif()
+
+if(ICL_64BIT)
+  icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel_lp64;mkl_intel_thread;mkl_core;iomp5" lib/em64t include /vol/nivision/MKL/10.2 HAVE_MKL_COND)
+  if(HAVE_MKL_COND)
+    set(MKL_LIBS_l mkl_intel_lp64 mkl_intel_thread mkl_core iomp5)
+  endif()
+else()  
+  icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel;mkl_intel_thread;mkl_core;iomp5" lib/32 include /vol/nivision/MKL/10.2 HAVE_MKL_COND)
+  if(HAVE_MKL_COND)
+     set(MKL_LIBS_l mkl_intel mkl_intel_thread mkl_core iomp5)
+  endif()
+ endif()
+
 
 include(CheckLibraryExists)
 ####OPENCV#### 
@@ -347,7 +374,7 @@ if(NOT QT_PKG_FOUND)
   if(WIN32)
   icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore4.a;QtGui4.a;QtOpenGL4.a" lib include C:/Qt/2010.02.1/qt HAVE_QT_COND)
   else()
-  icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include /opt/qtsdk-2009.04/qt HAVE_QT_COND)
+  #icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include /opt/qtsdk-2009.04/qt HAVE_QT_COND)
   endif()
   if(NOT HAVE_QT_COND)
 	#check for standard location of qt

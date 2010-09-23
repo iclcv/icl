@@ -177,7 +177,11 @@ void run(){
   }
   widget->setImage(image);
   widget->update();
+#ifdef ICL_32BIT
   Thread::msleep((unsigned int)sleeptime);
+#else
+  Thread::msleep((uint64_t)sleeptime);
+#endif
   //usleep(1000*(*sleeptime));
 }
 
