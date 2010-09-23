@@ -80,9 +80,13 @@ LIB_INSTALL_PREFIX=${INSTALL_PREFIX}/lib
 ifeq "${VERSION}" "" 
 INC_INSTALL_PREFIX=${INSTALL_PREFIX}/include/${PROJECT_NAME}
 DOC_INSTALL_PREFIX=${INSTALL_PREFIX}/doc/${PROJECT_NAME}
+BIN_INSTALL_PREFIX=${INSTALL_PREFIX}/bin/${PROJECT_NAME}
+REL_BIN_INSTALL_PREFIX=bin/${PROJECT_NAME}
 else
 INC_INSTALL_PREFIX=${INSTALL_PREFIX}/include/${PROJECT_NAME}/${VERSION}
 DOC_INSTALL_PREFIX=${INSTALL_PREFIX}/doc/${PROJECT_NAME}/${VERSION}
+BIN_INSTALL_PREFIX=${INSTALL_PREFIX}/bin/${PROJECT_NAME}/${VERSION}
+REL_BIN_INSTALL_PREFIX=bin/${PROJECT_NAME}/${VERSION}
 endif
 REL_INC_INSTALL_PREFIX=$(patsubst ${INSTALL_PREFIX}/%,%,${INC_INSTALL_PREFIX})
 
@@ -255,10 +259,10 @@ ${PC}:
 	${AT}rm -rf $@
 	${ECHO} prefix=${INSTALL_PREFIX} >> $@
 	${ECHO} exec_prefix=$$\{prefix\} >> $@
-	${ECHO} bindir=$$\{prefix\}/bin >> $@
+	${ECHO} bindir=$$\{prefix\}/${REL_BIN_INSTALL_PREFIX} >> $@
 	${ECHO} libdir=$$\{prefix\}/lib >> $@
 	${ECHO} datadir$$\{prefix\}/data >> $@
-	${ECHO} includedir=$$\{prefix\}${REL_INC_INSTALL_PREFIX} >> $@
+	${ECHO} includedir=$$\{prefix\}/${REL_INC_INSTALL_PREFIX} >> $@
 	${ECHO} installation=${MAKECMDGOALS} >> $@
 	${ECHO} package=${LIB} >> $@
 	${ECHO} >> $@
@@ -278,7 +282,7 @@ create-install-dirs:
 		      ${INC_INSTALL_PREFIX} \
 		      ${DOC_INSTALL_PREFIX} \
 		      ${LIB_INSTALL_PREFIX}/pkgconfig \
-	              ${INSTALL_PREFIX}/bin \
+	              ${BIN_INSTALL_PREFIX} \
 		      ${INSTALL_PREFIX}/doc \
 		      ${INSTALL_PREFIX}/doc/html ; do \
 			if [ ! -d $$D ] ; then \
@@ -294,7 +298,7 @@ installlink: all ${PC} uninstall create-install-dirs custom-install-hook
 	done
 	${AT}for T in ${APPS} ; do \
 		${ECHO_NO_AT} ${PROGRESS} ${BBLU}[link]${DEF} $$T ; \
-		ln -s `pwd`/$$T ${INSTALL_PREFIX}/bin ; 	\
+		ln -s `pwd`/$$T ${BIN_INSTALL_PREFIX} ; 	\
 	done
 	${ECHO} ${PROGRESS} ${BBLU}[link]${DEF} ${LIB_FILE}
 	${AT}ln -s `pwd`/lib/${LIB_FILE} ${LIB_INSTALL_PREFIX}
@@ -317,7 +321,7 @@ install: all ${PC} create-install-dirs custom-install-hook
 	done
 	${AT}for T in ${APPS} ; do \
 		${ECHO_NO_AT} ${PROGRESS} ${BYEL}[install]${DEF} $$T ; \
-		install -D -p -m 775 `pwd`/$$T ${INSTALL_PREFIX}/bin ; 	\
+		install -D -p -m 775 `pwd`/$$T ${BIN_INSTALL_PREFIX} ; 	\
 	done
 	${ECHO} ${PROGRESS} ${BYEL}[install]${DEF} ${LIB_FILE}
 	${AT}install -D -p -m 664 `pwd`/lib/${LIB_FILE} ${LIB_INSTALL_PREFIX}
@@ -337,7 +341,7 @@ uninstall:
 	${ECHO} ${PROGRESS} ${BRED}[uninstall]${DEF} ${PFX}
 	${AT}rm -rf ${INC_INSTALL_PREFIX}
 	${AT}for T in ${APPS} ; do \
-		rm -rf `echo ${INSTALL_PREFIX}/bin/$$T | sed "s|application/||g"` ; \
+		rm -rf `echo ${BIN_INSTALL_PREFIX}/$$T | sed "s|application/||g"` ; \
 	done
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/${LIB_FILE}
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/pkgconfig/${PC}

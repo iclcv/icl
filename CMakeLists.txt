@@ -140,8 +140,8 @@ set(ICL_VAR_BUILD_EXAMPLES ON CACHE BOOL "Build example applications")
 
 set(LIBRARY_OUTPUT_PATH "lib/icl-${VERSION}${DEBUG_POSTFIX}")
 set(EXECUTABLE_OUTPUT_PATH "bin/icl-${VERSION}${DEBUG_POSTFIX}")
-set(DOC_DIR "doc/icl-${VERSION}")
-set(ETC_DIR "etc/icl-${VERSION}")
+set(DOC_DIR "doc/icl-${VERSION}${DEBUG_POSTFIX}")
+set(ETC_DIR "etc/icl-${VERSION}${DEBUG_POSTFIX}")
 
 #checkboxes to indicate a third party lib will be used
 set(ICL_XDEP_IPP_ON OFF CACHE BOOL "Use IPP when available")
@@ -481,9 +481,11 @@ install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
 )
 
 set(RESOURCE_DIR_PLACEHOLDER "${CMAKE_INSTALL_PREFIX}/etc/icl-${VERSION}${DEBUG_POSTFIX}")
+set(ICL_PGK_CFG_PLACEHOLDER "icl-${VERSION}${DEBUG_POSTFIX}")
 #prepare files from scripts dir for installation
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/Makefile.custom.template ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom.template @ONLY)
 
 #installs files from scripts dir on make install with given permissions
 install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_SOURCE_DIR}/scripts/icl-make
@@ -497,6 +499,12 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
 	COMPONENT filess
 	FILES_MATCHING PATTERN "*.template"
 	REGEX .svn* EXCLUDE
+)
+# this will overwrite the Makefile.custom.template with the configured one (where ICL_PGK_CFG_PLACEHOLDER is substituted)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom.template 
+        PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${ETC_DIR}/
+        COMPONENT filess
 )
 
 if(DOXYGEN_FOUND)

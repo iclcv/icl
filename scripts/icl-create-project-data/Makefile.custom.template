@@ -6,7 +6,7 @@ PROJECT_NAME=${FOLDER}
 
 # Add package configs to include here (also for ICLProjects)
 # e.g. PC_DEPS=icl xcf ICLARToolkit2
-PC_DEPS=icl
+PC_DEPS=@ICL_PGK_CFG_PLACEHOLDER@
 
 # Qt specific header files, that need a moc call
 # without src/-prefix e.g. 
@@ -45,8 +45,9 @@ SHOW_PROGRESS=TRUE
 
 # comment in to use version support (VERSION may
 # be an arbitrary string (1.0 etc. is recommended)
+# however the VERSION feature is not tested well
 #VERSION=1.0
-ICL_PROJECTS_INSTALL_ROOT?=/vol/nivision/ICLProjects
+ICL_PROJECTS_INSTALL_ROOT?=/vol/nivision
 INSTALL_PREFIX=${ICL_PROJECTS_INSTALL_ROOT}
 PACKAGE_DESCRIPTION=nothing special
 
