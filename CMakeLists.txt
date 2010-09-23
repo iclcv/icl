@@ -488,7 +488,7 @@ configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BI
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/Makefile.custom.template ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom.template @ONLY)
 
 #installs files from scripts dir on make install with given permissions
-install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_SOURCE_DIR}/scripts/icl-make
+install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project ${CMAKE_SOURCE_DIR}/scripts/icl-make
 	PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
 	COMPONENT filess
