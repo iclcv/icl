@@ -479,3 +479,4 @@ foreach(it ${moc_files})
 endforeach()
 endif()
 endmacro()
+
