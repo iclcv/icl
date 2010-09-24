@@ -234,7 +234,7 @@ if(NOT OPENCV_PKG_FOUND)
   if(WIN32)
   icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux200.dll.a;cxcore200.dll.a;highgui200.dll.a;cv200.dll.a;ml200.dll.a" lib include/opencv "C:/Programme/OpenCV2.0" HAVE_OPENCV_COND)
   else()
-  icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux;cxcore;highgui;cv" lib include/opencv /oopt/OpenCV2.1.0 HAVE_OPENCV_COND)
+  icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux;cxcore;highgui;cv" lib include/opencv /opt/OpenCV2.1.0 HAVE_OPENCV_COND)
   endif()
   if(HAVE_OPENCV_COND)
     if(WIN32)
@@ -370,23 +370,25 @@ if(ICL_VAR_USE_PKG_CONFIG)
 	icl_check_external_package_from_pkg_conf_mult(QT HAVE_QT_COND QtCore QtGui QtOpenGL)
 endif()
 if(NOT QT_PKG_FOUND)
-  #check for special location of qt
   if(WIN32)
   icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore4.a;QtGui4.a;QtOpenGL4.a" lib include C:/Qt/2010.02.1/qt HAVE_QT_COND)
   else()
-  #icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include /opt/qtsdk-2009.04/qt HAVE_QT_COND)
+    #temporary var
+    set(temp ${ICL_XDEP_QT_ON})
+    #check for special location of qt
+    icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include /opt/qtsdk-2009.04/qt HAVE_QT_COND)
+      if((NOT HAVE_QT_COND) OR temp)
+	     #check for standard location of qt
+         icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include/qt4 /usr HAVE_QT_COND)
+      endif()
   endif()
-  if(NOT HAVE_QT_COND)
-	#check for standard location of qt
-    icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include/qt4 /usr HAVE_QT_COND)
-  endif()
-  if(HAVE_QT_COND)
-    if(WIN32)
+if(HAVE_QT_COND)
+  if(WIN32)
 	set(QT_LIBS_l QtCore4 QtGui4 QtOpenGL4)
-	else()
+  else()
 	set(QT_LIBS_l QtCore QtGui QtOpenGL)
-	endif()
-   endif()
+  endif()
+endif()
 endif()
 
 if(WIN32)
@@ -501,7 +503,7 @@ add_subdirectory(ICLAlgorithms)
 
 #installs include files of the project on make install
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ICL
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/include/icl-${VERSION}${DEBUG_POSTFIX}
 	COMPONENT hdrs	
 	FILES_MATCHING PATTERN "*.h"
 	REGEX .svn* EXCLUDE
