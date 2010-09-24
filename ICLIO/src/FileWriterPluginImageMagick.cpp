@@ -35,7 +35,11 @@
 #include <ICLIO/FileWriterPluginImageMagick.h>
 
 #ifdef HAVE_IMAGEMAGICK
+#ifndef ICL_SYSTEM_WINDOWS
 #include <GraphicsMagick/Magick++.h>
+#else
+#include <Magick++.h>
+#endif
 #include <ICLCC/CCFunctions.h>
 #include <ICLCC/Converter.h>
 #include <ICLUtils/Exception.h>

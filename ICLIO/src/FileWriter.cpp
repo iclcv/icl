@@ -67,8 +67,8 @@ namespace icl{
       FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginJPEG;
       FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginJPEG;
 #elif HAVE_IMAGEMAGICK
-      FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginMagick;
-      FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginJMagick;
+      FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginImageMagick;
+      FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginImageMagick;
 #endif
 
 #ifdef HAVE_LIBZ
