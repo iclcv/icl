@@ -35,37 +35,46 @@
 #include <ICLQt/CamCfgWidget.h>
 #include <QtGui/QApplication>
 #include <ICLUtils/ProgArg.h>
+#include <ICLIO/GenericGrabber.h>
 
 using namespace icl;
 using namespace std;
 
 int main(int n, char **ppc){
   paex
-  ("-r","resets the dc bus on startup")
-  ("-800","if this flag is set, application trys dc devices to setup\n"
-   "in ieee1394-B mode with 800MBit iso transfer rate")
-  ("-no-unicap","disable unicap support")
-  ("-no-dc","disable dc grabber support")
-  ("-no-pwc","disable pwc grabber support");
-  
-  painit(n,ppc,"-use-IEEE1394-B|-800 -reset-bus|-r -no-unicap|-u -no-dc|-d -no-pwc|-p -no-sr|-s -no-opencv|-o");
+  ("r","resets the dc bus on startup")
+  ("8","scan for dc800 devices")
+  ("u","scan for unicap devices")
+  ("d","scan for dc devices")
+  ("s","scan for SwissRanger devices")
+  ("c","scan for OpenCV-based devices ")
+  ("-demo","add a DemoGrabber device")
+  ("-i","ICL's default device specification");
+  painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -pwc|p -sr|s -cvcam|c"
+         " -reset-bus|-r|r -input|-i(device-type,device-ID)");
   QApplication a(n,ppc);
   
-  CamCfgWidget::CreationFlags flags(pa("-800")?800:400,
-                                    pa("-r"),
-                                    pa("-no-unicap"),
-                                    pa("-no-dc"),
-                                    pa("-no-pwc"),
-                                    pa("-no-sr"),
-                                    pa("-no-opencv"));
+  std::ostringstream str;
+  if(pa("d")) str << ",dc";
+  if(pa("8")) str << ",dc800";
+  if(pa("-demo")) str << ",demo";
+  if(pa("u")) str << ",unicap";
+  if(pa("p"))str << ",pwc";
+  if(pa("c"))str << ",cvcam";
+  if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);
   
+  std::string devlist = str.str();
+  if(!devlist.length()){
+    pausage("no devices selected!");
+    exit(-1);
+  }
+  devlist = devlist.substr(1); // removes the trailing comma!
   
-  CamCfgWidget w(flags);
-
-  w.setGeometry(50,50,800,800);
-  w.setWindowTitle("camcfg (ICL Camera Configuration Tool)");
+  if(pa("r")) GenericGrabber::resetBus(devlist);
+  
+  CamCfgWidget w(devlist,0);
+  w.setGeometry(50,50,700,700);
+  w.setWindowTitle("icl-camcfg (ICL' Camera Configuration Tool)");
   w.show();
-
-  
   return a.exec();
 }

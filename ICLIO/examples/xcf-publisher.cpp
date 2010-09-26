@@ -196,16 +196,11 @@ void send_app(){
   }
 }
 
-std::string create_camcfg(const std::string&, const std::string &hint){
-  return str("camcfg(")+hint+")[@maxsize=5x2]";
-}
-
-
 void init_gui(){
   if(pa("-pp")){
     gui << "image[@handle=image@minsize=12x8]" 
         << ( GUI("hbox[@maxsize=100x4]") 
-             << create_camcfg(FROM_PROGARG("-input"))
+             << "camcfg("+ *pa("-i") + "," +*pa("-i",1) + ")[@maxsize=5x2]"
              << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
              << "fps(10)[@handle=fps]"
              << "togglebutton(off,!on)[@handle=_@out=pp-on@label=preprocessing@minsize=5x2]"
@@ -215,7 +210,7 @@ void init_gui(){
   }else{
     gui << "image[@handle=image@minsize=12x8]" 
         << ( GUI("hbox[@maxsize=100x4]") 
-             << create_camcfg(FROM_PROGARG("-input"))
+             << "camcfg()[@maxsize=5x2]"
              << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
              << "fps(10)[@handle=fps]"
              );
@@ -269,6 +264,7 @@ int main(int n, char **ppc){
   stream = *pa("-s");
 
   init_grabber();  
+
   if(!pa("-no-gui")){
     return ICLApp(n,ppc,"",init_gui,send_app).exec();
   }else{

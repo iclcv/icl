@@ -197,17 +197,18 @@ namespace icl{
     
     /// registers a callback function on each component 
     /** @param cb callback to execute 
-        @param handleNamesList comma-separated list of handle names 
+        @param handleNamesList 'listDelim'-separated list of handle names 
+        @param listDelim delimiter for the handle list
         ownership is passed to the childrens; deletion is performed by
         the smart pointers that are used...
     */
-    void registerCallback(CallbackPtr cb, const std::string &handleNamesList);
-
+    void registerCallback(CallbackPtr cb, const std::string &handleNamesList, char listDelim=',');
+    
     /// convenience wrapper for registration of callback functions
     /** internally this function creates and appropriate CallbackPtr 
         in order to pass the given callback_function f 
         to registerCallback(CallbackPtr,const std::string&)*/
-    void registerCallback(GUI::Callback::callback_function f, const std::string &handleNamesList){
+    void registerCallback(GUI::Callback::callback_function f, const std::string &handleNamesList, char listDelim=','){
       registerCallback(new Callback(f),handleNamesList);
     }
 
@@ -221,7 +222,7 @@ namespace icl{
 
 
     /// removes all callbacks from components
-    void removeCallbacks(const std::string &handleNamesList);
+    void removeCallbacks(const std::string &handleNamesList, char listDelim=',');
 
     private:
     void create(QLayout *parentLayout,ProxyLayout *proxy, QWidget *parentWidget, DataStore *ds);

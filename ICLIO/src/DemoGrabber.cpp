@@ -35,6 +35,8 @@
 #include <ICLIO/DemoGrabber.h>
 #include <ICLUtils/Thread.h>
 #include <ICLCore/Mathematics.h>
+#include <ICLUtils/StringUtils.h>
+#include <ICLCore/Random.h>
 
 namespace icl{
 
@@ -62,14 +64,30 @@ namespace icl{
     m_x = Point32f(0.5,0.5);
     m_v = Point32f(0.01, 0.01);
     m_color = Color(255,50,10);
-    m_size = Size32f(0.06,0.09);
+    m_size = Size32f(0.05,0.05);
     m_maxFPS = maxFPS;
     m_maxV = Point32f(0.2,0.2);
     m_lastTime = Time::now();
+    
+    m_drawBuffer = 0;
+    m_drawFormat = formatRGB;
+    m_drawSize = Size::VGA;
+    m_drawDepth = depth8u;
   }
+
+  DemoGrabberImpl::~DemoGrabberImpl(){
+    ICL_DELETE(m_drawBuffer);
+  }
+  
+  
+  template<class T>
+  void erode_buffer(Img<T> &t){
+    t.transform(std::bind2nd(std::multiplies<float>(),0.99),t);
+  }
+  
   const ImgBase* DemoGrabberImpl::grabUD(ImgBase **ppoDst){
-    ImgBase *image = prepareOutput(ppoDst);
-    image->clear();
+    Mutex::Locker __lock(m_mutex);
+    ensureCompatible(&m_drawBuffer,m_drawDepth,m_drawSize,m_drawFormat);
 
     m_v += Point32f(icl::random(-0.001, 0.001),icl::random(-0.001, 0.001));
 
@@ -94,19 +112,25 @@ namespace icl{
       }
 
     }
-    Size s = image->getSize();
+    Size s = m_drawBuffer->getSize();
     Rect r((int)((m_x.x-m_size.width)*s.width),
            (int)((m_x.y-m_size.height)*s.height),
            (int)(m_size.width*s.width),
            (int)(m_size.height*s.height));
-    r &= image->getImageRect();
+    r &= m_drawBuffer->getImageRect();
     
-    switch(image->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: rect(*image->asImg<icl##D>(),m_color,r); break;
-      ICL_INSTANTIATE_ALL_DEPTHS
-#undef ICL_INSTANTIATE_DEPTH
+    if(m_drawBuffer->getDepth() == depth8u){
+      rect(*m_drawBuffer->asImg<icl8u>(),m_color,r); 
+    }else{
+      rect(*m_drawBuffer->asImg<icl32f>(),m_color,r); 
     }
     
+    if(m_drawBuffer->getDepth() == depth8u){
+      erode_buffer(*m_drawBuffer->asImg<icl8u>());;
+    }else{
+      erode_buffer(*m_drawBuffer->asImg<icl32f>());;
+    }
+
     Time now = Time::now();
     Time neededInterval = Time(1000000)/m_maxFPS;
     if((now-m_lastTime) < neededInterval){
@@ -114,11 +138,144 @@ namespace icl{
       Thread::msleep(restSleepTime.toMilliSeconds());
     }
     
-    image->setTime(now);
+    m_drawBuffer->setTime(now);
     m_lastTime = now;
+
+    if(!getIgnoreDesiredParams()){
+      ImgBase *image = prepareOutput(ppoDst);
+      m_oConverter.apply(m_drawBuffer,image);
+      return image;
+    }else{
+      if(!ppoDst) return m_drawBuffer;
+      m_drawBuffer->deepCopy(ppoDst);
+      return *ppoDst;
+    }   
+  }
+
+
+  std::vector<std::string> DemoGrabberImpl::getPropertyList(){
+    std::vector<std::string> ps;
+    ps.push_back("blob-size");
+    ps.push_back("blob-red");
+    ps.push_back("blob-green");
+    ps.push_back("blob-blue");
+    ps.push_back("max-speed");
+    ps.push_back("set-to-center");
+    ps.push_back("current-pos");
+    ps.push_back("format");
+    ps.push_back("size");
+    return ps;
+  }
+
+  std::string DemoGrabberImpl::getInfo(const std::string &name){
+    if(name == "blob-size"){
+      return "{\"5% of image size\",\"10% of image size\",\"20% of image size\"}";
+    }else if(name == "format"){
+      return "{\"formatRGB-depth8u\",\"formatRGB-depth32f\",\"formatGray-depth8u\",\"formatGray-depth32f\",\"formatYUV-depth8u\"}";
+    }else if(name == "size"){
+      return "{\"VGA\",\"SVGA\",\"QVGA\"}";
+    }else if(name == "blob-red"){
+      return "[0,255]:1";
+    }else if(name == "blob-green"){
+      return "[0,255]:1";
+    }else if(name == "blob-blue"){
+      return "[0,255]:1";
+    }else if(name == "max-speed"){
+      return "{0.1,0.2,0.3,0.4}";
+    }else if(name == "set-to-center"){
+      return "command";
+    }else if(name == "current-pos"){
+      return "undefined";
+    }else{
+      return "undefined";
+    }
     
-    return image;
-    
+  }
+
+  int DemoGrabberImpl::isVolatile(const std::string &propertyName){
+    if(propertyName == "current-pos"){
+      return 100;
+    }else{
+      return 0;
+    }
+  }
+
+  
+  void DemoGrabberImpl::setProperty(const std::string &property, const std::string &value){
+    Mutex::Locker __lock(m_mutex);
+    if(property == "blob-size"){
+      int percent = parse<int>(value);
+      m_size = Size32f(percent/100.,percent/100.);
+    }else if(property == "format"){
+      std::vector<std::string> x = tok(value,"-");
+      if(x.size() != 2){
+        ERROR_LOG("invalid value for prorerty \"format\"" << value);
+      }else{
+        m_drawFormat = parse<format>(x[0]);
+        m_drawDepth = parse<depth>(x[1]);
+      }
+    }else if(property == "size"){
+      m_drawSize = parse<Size>(value);
+    }else if(property == "blob-red"){
+      m_color[0] = parse<int>(value);
+    }else if(property == "blob-green"){
+      m_color[1] = parse<int>(value);
+    }else if(property == "blob-blue"){
+      m_color[2] = parse<int>(value);
+    }else if(property == "max-speed"){
+      float m = parse<float>(value);
+      m_maxV.x = m_maxV.y = m;
+    }else if(property == "set-to-center"){
+      m_x.x = 0.5;
+      m_x.y = 0.5;
+    }else if(property == "current-pos"){
+      ERROR_LOG("property \"current-pos\" cannot be set!");
+    }
+  }
+  
+  std::string DemoGrabberImpl::getType(const std::string &name){
+    if(name == "blob-size" || name == "format" || name == "size") return "menu";
+    if(name == "blob-red" || name == "blob-green" || name == "blob-blue") return "range";
+    if(name == "max-speed") return  "value-list";
+    if(name == "set-to-center") return "command";
+    if(name == "current-pos") return "info";
+    DEBUG_LOG("nothing known about property \"" << name << "\"");
+    return "undefined";
+  }
+  
+
+  std::string DemoGrabberImpl::getValue(const std::string &name){
+    Mutex::Locker __lock(m_mutex);
+    if(name == "blob-size"){
+      if( fabs(m_size.width-0.05< 1E-5) ) return "5% of image size";
+      if( fabs(m_size.width-0.10< 1E-5) ) return "10% of image size";
+      if( fabs(m_size.width-0.20< 1E-5) ) return "20% of image size";
+      else {
+        ERROR_LOG("invalid value for property \"blob-size\" detected [this should not happen]");
+        return "undefined";
+      }
+    }else if(name == "format"){
+      return str(m_drawFormat) + "-" + str(m_drawDepth);
+    }else if(name == "size"){
+      if(m_drawSize == Size::QVGA) return "QVGA";
+      if(m_drawSize == Size::VGA) return "VGA";
+      if(m_drawSize == Size::SVGA) return "SVGA";
+      else{
+        ERROR_LOG("invalid value for property \"size\" detected [this should not happen]");
+        return "undefined";
+      }
+    }else if(name == "blob-red"){
+      return str(m_color[0]);
+    }else if(name == "blob-green"){
+      return str(m_color[1]);
+    }else if(name == "blob-blue"){
+      return str(m_color[2]);
+    }else if(name == "max-speed"){
+      return str(m_maxV.x);
+    }else if(name == "current-pos"){
+      return "x:" + str(m_x.x*m_drawSize.width) + " y:" + str(m_x.y*m_drawSize.height);
+    }
+    return "undefined";
   }
 
   

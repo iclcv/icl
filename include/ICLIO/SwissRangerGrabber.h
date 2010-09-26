@@ -56,8 +56,8 @@ namespace icl{
     /// Destructor
     ~SwissRangerGrabberImpl();
     
-    /// not yet supported ...
-    static std::vector<int> getDeviceList();
+    /// returns a list of all found devices
+    static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
     
     /// grab an undistorted image 
     const ImgBase *grabUD(ImgBase **dst=0);
@@ -115,9 +115,9 @@ namespace icl{
       }
     }
     
-    /// not supported yet
-    static inline std::vector<int> getDeviceList(){
-      return SwissRangerGrabberImpl::getDeviceList();
+    /// returns a list of all found devices
+    static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
+      return SwissRangerGrabberImpl::getDeviceList(rescan);
     }
 
     /// Utility function

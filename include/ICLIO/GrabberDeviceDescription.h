@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLIO/examples/dcdeviceinfo.cpp                        **
+** File   : include/ICLIO/GrabberDeviceDescription.h               **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,24 +32,40 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLIO/DCGrabber.h>
+#ifndef ICL_GRABBER_DEVICE_DESCRIPTION_H
+#define ICL_GRABBER_DEVICE_DESCRIPTION_H
 
-using namespace std;
-using namespace icl;
+#include <string>
+#include <iostream>
 
-
-int main(int n, char **ppc){
-  std::vector<DCDevice> devs = DCGrabber::getDCDeviceList();
-  printf("found %d cameras \n",(unsigned int)devs.size());
-
+namespace icl{ 
   
-  for(unsigned int i=0;i<devs.size();i++){
-    DCDevice &d = devs[i];
-    char acBuf[100];
-    sprintf(acBuf,"%2d",i);
-    d.show(acBuf);
+  /// defines and explains an available grabber device
+  struct GrabberDeviceDescription{
+    /// Constructor
+    GrabberDeviceDescription(const std::string &deviceType, const std::string &deviceID, const std::string &description):
+      type(deviceType),id(deviceID),description(description){}
+
+    /// Empty constructor
+    GrabberDeviceDescription(){}
+    
+    /// type of the device (e.g. dc, pwc, sr or dc800)
+    std::string type;
+    
+    /// ID of the device (e.g. 0 or 1)
+    std::string id;
+    
+    /// additional description of the device (obtained by calling getUniqueID)
+    std::string description;
+  };
+
+  /// ostream operator for GenericGrabber::FoundDevice instances
+  inline std::ostream &operator<<(std::ostream &s, const GrabberDeviceDescription &d){
+    return s << "FoundDevice(" << d.type << "," << d.id << "," << d.description << ")";
   }
-  
-  return 0;
+
 }
 
+
+
+#endif

@@ -41,11 +41,16 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Lockable.h>
 
+
 namespace icl {
 
   /// Common interface class for all grabbers \ingroup GRABBER_G
   /** The generic grabber provides an interface for a multi-platform
-      compatible grabber. */
+      compatible grabber.
+      Image processing applications should use this Grabber 
+      class. The GenericGrabber is also integrated with the 
+      "camcfg"-GUI component (see icl::GUI)
+  */
   class GenericGrabber: public Grabber{
     
     Grabber *m_poGrabber; //!< internally wrapped grabber instance
@@ -94,7 +99,7 @@ namespace icl {
                                   - dc=device-index (int)
                                   - dc800=device-index (int)
                                   - file=pattern (string)
-                                  - unicap=device pattern (string)
+                                  - unicap=device pattern (string) or device index (int)
                                   - demo=anything (not regarded)
                                   - create=image name (@see icl::TestImages::create)
                                   - xcfp=publisher's-stream-name (string)
@@ -106,7 +111,16 @@ namespace icl {
                                     sr=NcC where N is the device numer as above, c is the character 'c' and C is
                                     the channel index to pick (0: depth-map, 1: confidence map, 2: intensity image
                                   - video=video-filename (string)
-                                  - cvcam=camera index (0=first device,1=2nd device, ...)
+                                  - cvcam=camera index (0=first device,1=2nd device, ...) here, you can also use
+                                    opencv's so called 'domain offsets': current values are: 
+                                    - 100 MIL-drivers (proprietary)
+                                    - 200 V4L,V4L2 and VFW, 
+                                    - 300 Firewire, 
+                                    - 400 TXYZ (proprietary)
+                                    - 500 QuickTime
+                                    - 600 Unicap
+                                    - 700 Direct Show Video Input
+                                    (e.g. device ID 301 selects the 2nd firewire device)
                                   - cvvideo=video-filename (string)
 
         @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
@@ -114,7 +128,7 @@ namespace icl {
     void init(const std::string &devicePriorityList,
               const std::string &params,
               bool notifyErrors = true) throw (ICLException);
-        
+
     /// resets resource on given devices (e.g. firewire bus)
     static void resetBus(const std::string &deviceList="dc", bool verbose=false);
    
@@ -183,6 +197,13 @@ namespace icl {
       Mutex::Locker __lock(m_mutex);
       ICLASSERT_RETURN_VAL(!isNull(),"");
       return m_poGrabber->getValue(name);
+    }
+
+    /// returns volatileness of given property
+    virtual int isVolatile(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),0);
+      return m_poGrabber->isVolatile(propertyName);
     }
 
     /// returns wheter an underlying grabber could be created
@@ -259,9 +280,29 @@ namespace icl {
        return m_poGrabber->getIgnoreDesiredParams();
      }
      
+    
+
+     /// returns a list of all currently available devices (according to the filter-string)
+     /** The filter-string is a comma separated list of single filters like
+         <pre> dc=0,unicap </pre>
+         If a single token has the format deviceType=deviceID, then only not only the
+         device type but also a specific ID is used for the filtering operation. If, otherwise,
+         a token has the format deviceType, then all possible devices for this device type are
+         listed.
+     */
+     static const std::vector<GrabberDeviceDescription> &getDeviceList(const std::string &filter, bool rescan=true);
+     
+     /// initializes the grabber from given FoundDevice instance
+     /** calls 'init(dev.type,dev.type+"="+dev.id,false)' */
+     inline void init(const GrabberDeviceDescription &dev){
+       init(dev.type,dev.type+"="+dev.id,false);
+     }
+        
+    
   };
 
 #define FROM_PROGARG(ARG) pa(ARG),*pa(ARG)+"="+*pa(ARG,1)
+
  
 } 
 

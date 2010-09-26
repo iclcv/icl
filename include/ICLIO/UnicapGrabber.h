@@ -147,7 +147,7 @@ namespace icl{
           can be investigated by exploring all UnicapDevices returned by a call to getDeviceList()
           with no filter (filter="")
     **/
-    static std::vector<UnicapDevice> getDeviceList(const std::string &filter="");
+    static std::vector<UnicapDevice> getUnicapDeviceList(const std::string &filter="");
     
     /// filters a given device list with given filter
     /** @see getDeviceList(const string &) 
@@ -212,13 +212,26 @@ namespace icl{
     static inline std::string create_id(const UnicapDevice &dev){
       return dev.getID();
     }
-    
+
     public:
     
     /// returns Unicap device list
     /** @see UnicapGrabberImpl for more details */
-    static std::vector<UnicapDevice> getDeviceList(const std::string &filter=""){
-      return UnicapGrabberImpl::getDeviceList(filter);
+    static std::vector<UnicapDevice> getUnicapDeviceList(const std::string &filter=""){
+      return UnicapGrabberImpl::getUnicapDeviceList(filter);
+    }
+    
+    /// returns a list of valid device indices
+    static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan=true) {
+      static std::vector<GrabberDeviceDescription> deviceList;
+      if(rescan){
+        deviceList.clear();
+        std::vector<UnicapDevice> devs = getUnicapDeviceList("");
+        for(unsigned int i=0;i<devs.size();++i){
+          deviceList.push_back(GrabberDeviceDescription("unicap",str(i),create_id(devs[i])));
+        }
+      }
+      return deviceList;
     }
 
     /// filters unicap device list (not very common)
@@ -242,7 +255,7 @@ namespace icl{
     /// create unicap grabber from given deviceFilter
     /** @see UnicapGrabberImpl for more details */
     inline UnicapGrabber(const std::string &deviceFilter, unsigned int useIndex=0){
-      const std::vector<UnicapDevice> devList = getDeviceList(deviceFilter);
+      const std::vector<UnicapDevice> devList = getUnicapDeviceList(deviceFilter);
       if(devList.size() > useIndex){
         std::string id = create_id(devList[useIndex]);
         if(isNew(id)){

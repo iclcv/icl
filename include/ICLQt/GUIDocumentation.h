@@ -192,7 +192,7 @@
       - <b>spinner</b> a spin box (integer valued with given range)
       - <b>fps</b> label component showing current frames per second
       - <b>multidraw</b> tabbed widget of draw widget components accessible via string index
-      - <b>camcfg</b> single button, showing a camera configuration widget when clicked
+      - <b>camcfg</b> single button that pops up a camera configuration widget (see CamCfgWiget) if clicked
       - <b>config</b> single button or embedded tree-view that enables 
         runtime adaption of configuration file parameters
 
@@ -294,7 +294,8 @@
         settings (buffermode=one). Otherwise, if application runs slowly (e.g. only 2Hz, this) it will become
         more responsive if buffermode is set to "all". If images displayed are held permanently, it will
         speed up performance if buffermethod is set to "shallowcopy" then.
-      - <b>camcfg(Comma-Separated-device-hint-list="")</b>
+      - <b>camcfg(deviceType="",deviceID="")
+        You may use either two parameters (e.g. "camcfg(dc,0)" for the first dc-device) or no parameters.
         See section \ref CAMCFG for more details
       - <b>config(MODE)</b> MODE has to be either 'embedded' or 'popup' (whithout the '-ticks). If param is embedded, the
         ConfigFileGUI's tree-view (including some additional buttons for loading and saving configuration files)
@@ -952,24 +953,27 @@ int main(int n, char **ppc){
      \endcode
 
       \image html Image08_Tabs.jpg
-      
 
       \subsection CAMCFG Camera Configuration
       In some camera based applications it might be helpful or even necessary to adapt camera 
       parameters at run-time. In this case, the camcfg component can be used. Simply add an
-      embedded GUI component named camcfg, which gets a hint about which cameras should be 
+      embedded GUI component named camcfg, which gets a hint about which camera should be 
       configurable on that component. As the underlying CamCfgWidget's GUI is quite complex,
       it is shown in an extra window, therefore only a single button labeled "camcfg" is embedded
       into the GUI.\n
-      The hints, the camcfg GUI components obtains from the parameter list must be structured as
-      follows: The parameter list consists of comma-separated tokens quite similar to the parameter
-      list of a GenericGrabber. Some examples should be much better to explain it here:
-      - "dc" : just make dc devices configurable
-      - "dc,pwc,unicap" : enable configuration of dc, pwc and unicap devices
-      - "dc=0" : just dc device 0 is configurable
-      - "dc=1,pwc=0" : ok, now it becomes clearer: Enable configuration for dc device 1 and for
-                       pwc device 0 (not very common)
-      
+      You can pass either two or no parameters to the "camcfg()"-component. If two parameters are
+      used, these are passed directly to the init-method of the underlying GenericGrabber. Therefore
+      the parameters can be something like "camcfg(dc,0)" (e.g. for the first dc-device).  If you use
+      ICL's default camera input specifier (via program argument -input device-type devide-ID), 
+      you will have to the camcfg-component like "camcfg("+pa("-i",0)+","+pa("-i",1)+")". However, 
+      in most cases, it might be sufficient to create the "camcfg()" component with no parameters.
+      In this case, the component pop-up CamCfgWidget is set up for configuring all <b>already used</b>
+      camera devices. Devices are <em>already used</em>, if a GenericGrabber instance for this device
+      exists.
+    
+    \image html xcfpub.png "pop upped CamCfgWidget (demo application xcf-publisher)"
+    
+    
       \subsection CONFIG Embedded or Popup'ed ConfigFileGUI's
       Another recent component is the 'config' GUI component. It provides a mechanism to change
       configuration file entries at runtime. This functionality is encapsulated within the 

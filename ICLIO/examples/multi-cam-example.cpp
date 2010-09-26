@@ -63,8 +63,8 @@ void init(){
     gui << "image[@handle=image"+str(i)+"@minsize=12x8]";
   }
   gui << ( GUI ("hbox") 
-           << "fps(10)[@handle=fps@label=current fps@maxsize=100x3]" 
-           << "camcfg(dc,pwc)" );
+           << "fps(10)[@handle=fps@label=current fps@maxsize=100x3@minsize=5x3]" 
+           << "camcfg()" );
   gui.show();
 }
 

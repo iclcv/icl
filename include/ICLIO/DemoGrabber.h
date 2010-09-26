@@ -51,11 +51,14 @@ namespace icl{
 
     /// default grab function
     virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
+
+    /// Destructor
+    ~DemoGrabberImpl();
     
     private:
     /// Create a DemoGrabber with given max. fps count
     DemoGrabberImpl(float maxFPS=30);
-
+    
     /// Current rel. location of the rect
     Point32f m_x; 
     
@@ -76,7 +79,40 @@ namespace icl{
     
     /// time variable to ensure max. fpsCount
     Time m_lastTime;
+
+    /// extra buffer for the output image
+    ImgBase *m_drawBuffer;
     
+    /// current output format
+    format m_drawFormat;
+
+    /// current output depth
+    depth m_drawDepth;
+    
+    /// current output size
+    Size m_drawSize;
+    
+    /// mutex for locking properties and grabbing
+    Mutex m_mutex;
+    
+    public:
+    /// the demo-grabber provides some demo properties
+    virtual std::vector<std::string> getPropertyList();
+    
+    /// the demo-grabber provides some demo properties
+    virtual void setProperty(const std::string &property, const std::string &value);
+
+    /// the demo-grabber provides some demo properties
+    virtual std::string getType(const std::string &name);
+
+    /// the demo-grabber provides some demo properties
+    virtual std::string getInfo(const std::string &name);
+
+    /// the demo-grabber provides some demo properties
+    virtual std::string getValue(const std::string &name);
+
+    /// the demo-grabber provides some demo properties
+    virtual int isVolatile(const std::string &propertyName);
   };  
   /** \endcond */
 

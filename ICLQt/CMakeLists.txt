@@ -113,7 +113,6 @@ SET(HWQ_Qt4_SRC
 	"../include/ICLQt/GUIWidget.h"
 	"../include/ICLQt/ChromaGUI.h"
 	"../include/ICLQt/MultiDrawHandle.h"
-	"../include/ICLQt/CamCfgWidget.h"
 	"../include/ICLQt/ToggleButton.h"
 	"../include/ICLQt/ConfigFileGUI.h"
 )

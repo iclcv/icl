@@ -73,7 +73,7 @@ namespace icl{
     m_poConversionBuffer(0),m_poGrabEngine(0),
     m_poConvertEngine(0), m_bUseDMA(false),
     m_bProgressiveGrabMode(true){
-    const std::vector<UnicapDevice> &ds = getDeviceList(deviceFilter);
+    const std::vector<UnicapDevice> &ds = getUnicapDeviceList(deviceFilter);
     if(useIndex < ds.size()){
       m_oDevice = ds[useIndex];
     }else{
@@ -783,7 +783,7 @@ namespace icl{
         return match_string(d.getDevice(),str,mode);
       }
     };
-    
+
     // }}}
     struct ParamFilterFlags : public ParamFilter{
       // {{{ open
@@ -864,7 +864,7 @@ namespace icl{
 
   
   vector<UnicapDevice>
-  UnicapGrabberImpl::getDeviceList(const string &filter){
+  UnicapGrabberImpl::getUnicapDeviceList(const string &filter){
     // {{{ open
 
     static std::vector<UnicapDevice> vCurrentDevices;

@@ -379,10 +379,20 @@ namespace icl{
 
   }
 
-  std::vector<int> SwissRangerGrabberImpl::getDeviceList(){
-    std::vector<int> v;
-    ERROR_LOG("not yet supported ..");
-    return v;
+  const std::vector<GrabberDeviceDescription> &SwissRangerGrabberImpl::getDeviceList(bool rescan){
+    static std::vector<GrabberDeviceDescription> deviceList;
+    if(rescan){
+      SRCAM cams[100] = { 0 }; // 800.000 euros!
+      DWORD inAddr = 0; // what is this ?
+      DWORD inMask = 0; // how to use a mask here ?
+      int nFound = SR_OpenAll(cams,100,inAddr,inMask);
+      for(int i=0;i<nFound;++i){
+        int serial = SR_ReadSerial(cams[i]);
+        deviceList.push_back(GrabberDeviceDescription("sr",str(serial),"SwissRanger Device "+str(i)+" (serial "+str(serial)+")"));
+        SR_Close(cams[i]);
+      }
+    }
+    return deviceList;
   }
 
   void SwissRangerGrabberImpl::setProperty(const std::string &property, const std::string &value){

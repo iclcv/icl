@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : include/ICLIO/DCGrabber.h                              **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter, Michael Götting                  **
+** Authors: Christof Elbrechter, Michael Götting                   **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -156,7 +156,7 @@ namespace icl{
     virtual const ImgBase *grabUD (ImgBase **ppoDst=0);
     
     /// Returns a list of all connected DCDevices
-    static std::vector<DCDevice> getDeviceList(bool resetBusFirst=false);
+    static std::vector<DCDevice> getDCDeviceList(bool resetBusFirst=false);
 
     /// calls dc1394_reset_bus functions (see DCDevice)
     static void dc1394_reset_bus(bool verbose=false){
@@ -210,10 +210,23 @@ namespace icl{
         initialize(id);
       }
     }
-    /// Returns a list of all connected DCDevices
-    /** @see DCGrabberImpl for more details */
-    static inline std::vector<DCDevice> getDeviceList(bool resetBusFirst=false){
-      return DCGrabberImpl::getDeviceList(resetBusFirst);
+    
+    /// returns a vector of DCDevice instances
+    static std::vector<DCDevice> getDCDeviceList(bool resetBusFirst=false){
+      return DCGrabberImpl::getDCDeviceList(resetBusFirst);
+    }
+
+    /// Returns a list of all detected dc devices
+    static inline const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
+      static std::vector<GrabberDeviceDescription> deviceList;
+      if(rescan){
+        deviceList.clear();
+        std::vector<DCDevice> devs = getDCDeviceList(false);
+        for(unsigned int i=0;i<devs.size();++i){
+          deviceList.push_back(GrabberDeviceDescription("dc",str(i),devs[i].getUniqueStringIdentifier()));
+        }
+      }
+      return deviceList;
     }
 
     /// calls dc1394_reset_bus functions (see DCDevice)

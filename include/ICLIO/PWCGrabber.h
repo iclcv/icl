@@ -101,7 +101,7 @@ namespace icl{
         returned vector is {0}, just a single device was found
         at /dev/video0 
     **/
-    static std::vector<int> getDeviceList();
+    static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
 
     /// retrieve currently used device number
     int getDevice () const {return m_iDevice;}
@@ -249,8 +249,8 @@ namespace icl{
     public:
     /// returns a list of available pwc devices 
     /** @see PWCGrabberImpl for more details*/
-    static inline std::vector<int> getDeviceList(){
-      return PWCGrabberImpl::getDeviceList();
+    static inline const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
+      return PWCGrabberImpl::getDeviceList(rescan);
     }
     
     /// creates a new PWCGrabber instance
@@ -282,9 +282,7 @@ namespace icl{
         m_instance.get()->ptr->setGrabbingSize(s);
         return true;
       }
-
     }
-    
   };
   
 }

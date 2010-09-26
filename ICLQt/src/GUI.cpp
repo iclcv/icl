@@ -93,6 +93,7 @@
 #include <ICLQt/MultiDrawHandle.h>
 #include <ICLQt/SplitterHandle.h>
 #include <QtGui/QCheckBox>
+#include <QtGui/QCleanlooksStyle>
 
 #include <ICLQt/ConfigFileGUI.h>
 #include <ICLQt/CamCfgWidget.h>
@@ -133,22 +134,33 @@ namespace icl{
 
   struct CamCfgGUIWidget : public GUIWidget{
     // {{{ open
-    CamCfgGUIWidget(const GUIDefinition &def):GUIWidget(def,0,2<<20){
+    CamCfgGUIWidget(const GUIDefinition &def):GUIWidget(def,0,2){
+      if(def.numParams() == 2){
+        throw GUISyntaxErrorException(def.defString(),"camcfg can take 0 or 2 parameters");
+      }
       m_button = new QPushButton("camcfg",this);
       connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
       
-      m_cfg = new CamCfgWidget(icl::cat(def.allParams(),","));
+      if(def.numParams()){
+        devType = def.param(0);
+        devID = def.param(1);
+      }
+      m_cfg = 0;
 
       addToGrid(m_button);
     }
     virtual void processIO(){
+      if(!m_cfg){
+        m_cfg = new CamCfgWidget(devType,devID);
+      }
       m_cfg->show();
     }
     static string getSyntax(){
-      return string("camcfg(dev=hint-list)[general params]\n")+gen_params();
+      return string("camcfg(devType="",devID="")[general params]\n")+gen_params();
     }
     CamCfgWidget *m_cfg;
     QPushButton *m_button;
+    std::string devType,devID;
   };
 
   struct ConfigFileGUIWidget : public GUIWidget{
@@ -318,7 +330,9 @@ namespace icl{
 
     BorderGUIWidget(const GUIDefinition &def):GUIWidget(def,1){
       m_poGroupBox = new QGroupBox(def.param(0).c_str(),def.parentWidget());
-      m_poGroupBox->setFlat(true);
+      m_poGroupBox->setFlat(false);
+      //m_poGroupBox->setStyleSheet("QGroupBox{ border: 1px solid gray; border-radius: 3px;}");
+      m_poGroupBox->setStyle(new QCleanlooksStyle());
       m_poLayout = new QVBoxLayout;
       m_poLayout->setMargin(def.margin());
       m_poLayout->setSpacing(def.spacing());
@@ -1610,14 +1624,18 @@ public:
     }
   }
   
-  void GUI::registerCallback(CallbackPtr cb, const std::string &handleNamesList){
-    StrTok tok(handleNamesList,",");
+  void GUI::registerCallback(CallbackPtr cb, const std::string &handleNamesList, char delim){
+    std::string delims; delims+=delim;
+
+    StrTok tok(handleNamesList,delims);
     while(tok.hasMoreTokens()){
       getValue<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
     }
   }
-  void GUI::removeCallbacks(const std::string &handleNamesList){
-    StrTok tok(handleNamesList,",");
+  void GUI::removeCallbacks(const std::string &handleNamesList, char delim){
+    std::string delims; delims+=delim;
+
+    StrTok tok(handleNamesList,delims);
     while(tok.hasMoreTokens()){
       getValue<GUIHandleBase>(tok.nextToken(),false).removeCallbacks();
     }

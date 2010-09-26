@@ -2,7 +2,7 @@
 **                Image Component Library (ICL)                    **
 **                                                                 **
 ** Copyright (C) 2006-2010 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
+*                         Neuroinformatics Group                  **
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
@@ -43,14 +43,7 @@
 #include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLIO/DistFromProgArgUtil.h>
-/*
-  Grabber.h
-
-  Written by: Christof Elbrechter (2006)
-              University of Bielefeld
-              AG Neuroinformatik
-              celbrech@techfak.uni-bielefeld.de
-*/
+#include <ICLIO/GrabberDeviceDescription.h>
 
 namespace icl {
   /** \cond */
@@ -303,8 +296,14 @@ namespace icl {
        setIgnoreDesiredParams(!flag);
      }
 
+     /// returns wheterh desired params are ignored or used
      virtual bool getIgnoreDesiredParams() const {
        return m_bIgnoreDesiredParams;
+     }
+
+     /// returns wheterh desired params are used or ignored
+     virtual bool getUseDesiredParams() const {
+       return !m_bIgnoreDesiredParams;
      }
      
      /// @}

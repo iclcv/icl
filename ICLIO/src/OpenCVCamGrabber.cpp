@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLIO/src/OpenCVCamGrabber.cpp                         **
 ** Module : ICLIO                                                  **
-** Authors: Christian Groszewski                                   **
+** Authors: Christian Groszewski, Christof Elbrechter              **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -34,12 +34,12 @@
 #include <ICLIO/OpenCVCamGrabber.h>
 namespace icl{
 
-  std::vector<std::string> OpenCVCamGrabber::getPropertyList(){
+  std::vector<std::string> OpenCVCamGrabberImpl::getPropertyList(){
     static const std::string ps="size brightness contrast saturation hue format";
     return tok(ps," ");
   }
 
-  std::string OpenCVCamGrabber::getType(const std::string &name){
+  std::string OpenCVCamGrabberImpl::getType(const std::string &name){
     if(name == "size" || name == "format"){
       return "menu";
     } else if(name == "brightness" || name == "contrast"
@@ -49,7 +49,7 @@ namespace icl{
     return "undefined";
   }
 
-  std::string OpenCVCamGrabber::getInfo(const std::string &name){
+  std::string OpenCVCamGrabberImpl::getInfo(const std::string &name){
     if(name == "size"){
       return "{\"160x120\",\"320x200\",\"320x240\",\"480x320\",\"640x350\","
       "\"640x480\",\"800x480\",\"800x600\",\"960x540\",\"960x640\","
@@ -65,7 +65,7 @@ namespace icl{
     return "undefined";
   }
 
-  std::string OpenCVCamGrabber::getValue(const std::string &name){
+  std::string OpenCVCamGrabberImpl::getValue(const std::string &name){
     if(name == "size"){
       return str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_WIDTH))+"x"+str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_HEIGHT));
     }else if(name == "brightness"){
@@ -80,7 +80,7 @@ namespace icl{
     return "undefined";
   }
 
-  const ImgBase *OpenCVCamGrabber::grabUD (ImgBase **ppoDst){
+  const ImgBase *OpenCVCamGrabberImpl::grabUD (ImgBase **ppoDst){
     ICLASSERT_RETURN_VAL( !(cvc==0), 0);
     if(!ppoDst){
       ppoDst = &m_poImage;
@@ -107,19 +107,19 @@ namespace icl{
     }
   }
 
-  OpenCVCamGrabber::OpenCVCamGrabber(int dev)  throw (ICLException) :device(dev),scalebuffer(0){
+  OpenCVCamGrabberImpl::OpenCVCamGrabberImpl(int dev)  throw (ICLException) :device(dev),scalebuffer(0){
     cvc = cvCaptureFromCAM(dev);
     if(!cvc){
-      throw ICLException("unable to create OpenCVCamGrabber with device index " + str(dev) + ": invalid device ID");
+      throw ICLException("unable to create OpenCVCamGrabberImpl with device index " + str(dev) + ": invalid device ID");
     }
   }
   
-  OpenCVCamGrabber::~OpenCVCamGrabber(){
+  OpenCVCamGrabberImpl::~OpenCVCamGrabberImpl(){
     cvReleaseCapture(&cvc);
     ICL_DELETE(scalebuffer);
   }
 
-  void OpenCVCamGrabber::setProperty(const std::string &name, const std::string &value){
+  void OpenCVCamGrabberImpl::setProperty(const std::string &name, const std::string &value){
     int i = 0;
     int j = 0;
     Mutex::Locker lock(m_Mutex);
@@ -142,16 +142,21 @@ namespace icl{
       i = cvSetCaptureProperty(cvc,CV_CAP_PROP_HUE,parse<double>(value));
     }
   }
-  std::vector<int> OpenCVCamGrabber::getDeviceList(int lastToTest){
-    std::vector<int> valid;
-    for(int i=0;i<=lastToTest || lastToTest<0; ++i){
-      try{
-        OpenCVCamGrabber g(i);
-        valid.push_back(i);
-      }catch(ICLException &e){
-        break;
+  
+  
+  const std::vector<GrabberDeviceDescription> &OpenCVCamGrabber::getDeviceList(bool rescan){
+    static std::vector<GrabberDeviceDescription> deviceList;
+    if(rescan){
+      deviceList.clear();
+      for(int i=0;i<100;++i){
+        try{
+          OpenCVCamGrabberImpl g(i);
+          deviceList.push_back(GrabberDeviceDescription("cvcam",str(i),"OpenCV Grabber Device "+str(i)));
+        }catch(ICLException &e){
+          break;
+        }
       }
     }
-    return valid;
+    return deviceList;
   }
 }

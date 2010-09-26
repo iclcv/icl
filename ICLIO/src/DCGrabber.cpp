@@ -137,7 +137,7 @@ namespace icl{
   // }}}
 
   
-  std::vector<DCDevice> DCGrabberImpl::getDeviceList(bool resetBusFirst){
+  std::vector<DCDevice> DCGrabberImpl::getDCDeviceList(bool resetBusFirst){
     // {{{ open
     if(resetBusFirst){
       DCGrabberImpl::dc1394_reset_bus(false);

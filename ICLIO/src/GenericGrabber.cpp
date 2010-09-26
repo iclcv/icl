@@ -84,6 +84,7 @@
 
 
 namespace icl{
+  static std::vector<GrabberDeviceDescription> deviceList;
 
 
   GenericGrabber::GenericGrabber(const std::string &desiredAPIOrder, 
@@ -93,32 +94,54 @@ namespace icl{
   }
 
   
+  static std::map<std::string,std::string> create_param_map(const std::string &filter){
+    std::vector<std::string> lP = tok(filter,",");
+    
+    std::map<std::string,std::string> pmap;
+    static const int NUM_PLUGINS = 15;
+    static const std::string plugins[NUM_PLUGINS] = { "pwc","dc","dc800","unicap","file","demo","create",
+                                                      "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
+                                                      "cvcam" };
+    for(unsigned int i=0;i<lP.size();++i){
+      bool foundI = false;
+      for(int j=0;j<NUM_PLUGINS;++j){
+        const std::string &D = plugins[j];
+        if(lP[i].length() >= D.length() && lP[i].substr(0,D.length()) == D){
+          pmap[D] = "";
+          if(lP[i].length() > D.length()){
+            if(lP[i][D.length()] != '='){
+              ERROR_LOG("GenericGrabber: unable to process token '" << lP[i] << "' (expected '=' at position " << D.length() << ")");
+            }else if(lP[i].length() > D.length()+1){
+              pmap[D] = lP[i].substr(D.length()+1);     
+            }
+          }
+          foundI = true;
+          break;
+        }  
+      }
+      if(!foundI){
+        ERROR_LOG("GenericGrabber: unable to process token '" << lP[i] << "' (unsupported device specifier)");
+      }
+    }
+    
+    return pmap;
+  
+  }
+  
+  static bool is_int(const std::string &x){
+    int i = parse<int>(x);
+    return i>0 || x=="0";
+  }
+  
   void GenericGrabber::init(const std::string &desiredAPIOrder, 
                                  const std::string &params, 
                                  bool notifyErrors) throw(ICLException){
     Mutex::Locker __lock(m_mutex);
     ICL_DELETE(m_poGrabber);
     m_sType = "";
-    std::vector<std::string> lP = tok(params,",");
-    
-    
-    // todo optimize this code using a map or a table or ...
-    // std::string pPWC,pDC,pDC800,pUnicap,pFile,pDemo,pCreate,pXCF_P,pXCF_S,pXCF_M,pMV,pSR,pVideo;
-    std::map<std::string,std::string> pmap;
-    static const int NUM_PLUGINS = 15;
-    static const std::string plugins[NUM_PLUGINS] = { "pwc","dc","dc800","unicap","file","demo","create",
-                                                      "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
-                                                      "cvcam" };
 
-    for(unsigned int i=0;i<lP.size();++i){
-      for(int j=0;j<NUM_PLUGINS;++j){
-        const std::string &D = plugins[j];
-        if(lP[i].length() > D.length() && lP[i].substr(0,D.length()) == D){ \
-          pmap[D] = lP[i].substr(D.length()+1);                          \
-        }  
-      }
-    }
-
+    std::map<std::string,std::string> pmap = create_param_map(params);
+    
     std::string errStr;
 
 #define ADD_ERR(P) errStr += errStr.size() ? std::string(",") : ""; \
@@ -146,7 +169,7 @@ namespace icl{
       
 #ifdef HAVE_LIBDC
       if(l[i] == "dc" || l[i] == "dc800"){
-        std::vector<DCDevice> devs = DCGrabber::getDeviceList();
+        std::vector<DCDevice> devs = DCGrabber::getDCDeviceList(false);
         int idx = (l[i]=="dc") ? to32s(pmap["dc"]) : to32s(pmap["dc800"]);
 
         //printf("index is %d devs size is %d \n",idx,devs.size());
@@ -203,15 +226,29 @@ namespace icl{
 
 #ifdef HAVE_UNICAP
       if(l[i] == "unicap"){
-        static std::vector<UnicapDevice> devs = UnicapGrabber::getDeviceList(pmap["unicap"]);
-        if(!devs.size()){
-          ADD_ERR("unicap");
-          continue;
+        std::vector<UnicapDevice> devs;
+        if(is_int(pmap["unicap"])){
+          devs = UnicapGrabber::getUnicapDeviceList("");
+          int idx = parse<int>(pmap["unicap"]);
+          if((int)devs.size() > idx){
+            m_poGrabber = new UnicapGrabber(devs[idx]);
+            m_sType = "unicap";
+            break;
+          }else{
+            ADD_ERR("unicap");
+            continue;
+          }
         }else{
-          m_poGrabber = new UnicapGrabber(devs[0]);
-          m_sType = "unicap";
-          break;
-        }        
+          devs = UnicapGrabber::getUnicapDeviceList(pmap["unicap"]);
+          if(!devs.size()){
+            ADD_ERR("unicap");
+            continue;
+          }else{
+            m_poGrabber = new UnicapGrabber(devs[0]);
+            m_sType = "unicap";
+            break;
+          }        
+        }
       }
 #endif
 
@@ -301,13 +338,12 @@ namespace icl{
           continue;
         }
       }
-      
-      
 #endif
       
       if(l[i] == "file"){
         try{
           if(FileList(pmap["file"]).size()){
+            m_sType = "file";
             m_poGrabber = new FileGrabber(pmap["file"]);
             ((FileGrabber*)m_poGrabber)->setIgnoreDesiredParams(false);
             break;
@@ -334,6 +370,17 @@ namespace icl{
     if(!m_poGrabber && notifyErrors){
       std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
       throw ICLException(errMsg+errStr);
+    }else{
+      GrabberDeviceDescription d(m_sType,pmap[m_sType],"any device");
+
+      for(unsigned int i=0;i<deviceList.size();++i){
+        if(deviceList[i].type == d.type && deviceList[i].id == d.id) return;
+      }
+
+      //      std::cout << "added device " << d << " to global device list" << std::endl;
+
+
+      deviceList.push_back(d);
     }
   }  
   
@@ -351,5 +398,81 @@ namespace icl{
       // others are not supported yet
     }
   
+  }
+
+  static inline bool contains(const std::map<std::string,std::string> &m,const std::string &t){
+      return m.find(t) != m.end();
+  }
+
+  static const GrabberDeviceDescription *find_desciption(const std::vector<GrabberDeviceDescription> &ds, const std::string &id){
+    for(unsigned int i=0;i<ds.size();++i){
+      if(ds[i].id == id) return &ds[i];
+    }
+    return 0;
+  }
+
+  template<class T>
+  static void add_devices(std::vector<GrabberDeviceDescription> &all,
+                          const std::string &dev, 
+                          bool useFilter, 
+                          std::map<std::string,std::string> &pmap){
+    
+    if(!useFilter || contains(pmap,dev)){
+      
+      //DEBUG_LOG("searching for device type:" << dev);
+      const std::vector<GrabberDeviceDescription> &ds = T::getDeviceList(true);
+
+      //DEBUG_LOG("dev:" << dev << "  found " << ds.size() << " devices" << "[" << pmap[dev] << "]");
+      if(useFilter && pmap[dev].length()){
+        const GrabberDeviceDescription *d = find_desciption(ds,pmap[dev]);
+        //std::cout << "here" << std::endl;
+        if(d){
+          all.push_back(*d);
+        }    
+      }else{
+        std::copy(ds.begin(),ds.end(),std::back_inserter(all));
+      }
+    }
+  }
+  
+  const std::vector<GrabberDeviceDescription> &GenericGrabber::getDeviceList(const std::string &filter, bool rescan){
+
+    if(rescan){
+      deviceList.clear();
+      bool useFilter = filter.length();
+      std::map<std::string,std::string> pmap;
+      if(useFilter){
+        pmap = create_param_map(filter);
+      }
+      
+      if(useFilter && pmap.find("demo") != pmap.end()){
+        deviceList.push_back(GrabberDeviceDescription("demo","0","Demo Grabber Device"));
+      }
+      
+#ifdef SYSTEM_LINUX
+#ifdef HAVE_VIDEODEV
+      add_devices<PWCGrabber>(deviceList,"pwc",useFilter,pmap);
+#endif
+#endif
+      
+#ifdef HAVE_LIBDC
+      add_devices<DCGrabber>(deviceList,"dc",useFilter,pmap);
+      add_devices<DCGrabber>(deviceList,"dc800",useFilter,pmap);
+#endif
+      
+#ifdef HAVE_UNICAP
+      add_devices<UnicapGrabber>(deviceList,"unicap",useFilter,pmap);
+#endif
+      
+      
+#ifdef HAVE_LIBMESASR
+      add_devices<SwissRangerGrabber>(deviceList,"sr",useFilter,pmap);
+#endif
+      
+#ifdef HAVE_OPENCV
+      add_devices<OpenCVCamGrabber>(deviceList,"cvcam",useFilter,pmap);
+#endif
+    }
+    return deviceList;
   }
 }

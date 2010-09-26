@@ -44,7 +44,7 @@ typedef std::map<int,vector<dc1394camera_t*> > cammap;
 int main(int n, char **ppc){
   cammap m;
   
-  std::vector<DCDevice> devs = DCGrabber::getDeviceList();
+  std::vector<DCDevice> devs = DCGrabber::getDCDeviceList();
   printf("found %d cameras \n",(unsigned int)devs.size());
   
   

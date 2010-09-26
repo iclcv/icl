@@ -124,7 +124,7 @@ namespace icl{
         else if(!s.find("minsize",0)) m_oMinSize = parse<Size>(cutName(s));
         else if(!s.find("maxsize",0)) m_oMaxSize = parse<Size>(cutName(s));
         else if(!s.find("label",0)) m_sLabel = cutName(s);
-        else if(!s.find("handle",0)) m_sHandle = cutName(s);
+        else if(!s.find("handle",0)) m_sHandle = cutName(s); 
         else if(!s.find("margin",0)) m_iMargin = (int)abs(atoi(cutName(s).c_str()));
         else if(!s.find("spacing",0)) m_iSpacing = (int)abs(atoi(cutName(s).c_str()));
         else throw GUISyntaxErrorException(def,string("illegal optional parameter \"")+s+"\"");
