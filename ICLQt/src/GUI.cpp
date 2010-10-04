@@ -67,6 +67,7 @@
 #include <QtGui/QTabWidget>
 #include <QtGui/QApplication>
 #include <QtGui/QSplitter>
+#include <QtGui/QScrollArea>
 
 #include <ICLQt/ProxyLayout.h>
 
@@ -192,6 +193,64 @@ namespace icl{
   };
 
 
+  struct ScrollGUIWidgetBase : public GUIWidget, public ProxyLayout{
+    // {{{ open
+
+    ScrollGUIWidgetBase(const GUIDefinition &def, QBoxLayout::Direction d):
+      GUIWidget(def,0,-1,GUIWidget::noLayout){
+      setLayout(new QBoxLayout(d,this));
+      m_poScroll = new QScrollArea(this);
+      layout()->addWidget(m_poScroll);
+      layout()->setContentsMargins(0,0,0,0);
+      m_poScroll->setWidget(new QWidget(m_poScroll));
+      m_poScroll->setWidgetResizable(true);
+
+      m_poScroll->widget()->setLayout(new QBoxLayout(d,m_poScroll));
+      m_poScroll->widget()->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::MinimumExpanding));
+
+      m_poScroll->widget()->layout()->setMargin(def.margin());
+      m_poScroll->widget()->layout()->setSpacing(def.spacing());
+      
+      setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+      
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(d != QBoxLayout::LeftToRight,m_poScroll->widget(),this,m_poScroll));
+        getGUI()->unlockData();
+      }
+    }
+
+    virtual ProxyLayout *getProxyLayout() { return this; }
+
+    virtual void addWidget(GUIWidget *widget){
+      widget->setParent(m_poScroll->widget());
+      m_poScroll->widget()->layout()->addWidget(widget);
+    }
+
+    private:
+    QScrollArea *m_poScroll;
+  };
+
+  // }}}
+
+  struct HScrollGUIWidget : public ScrollGUIWidgetBase{
+    // {{{ open
+    HScrollGUIWidget(const GUIDefinition &def):ScrollGUIWidgetBase(def,QBoxLayout::LeftToRight){}
+    static string getSyntax(){
+      return string("hscroll()[general params]\n")+ gen_params();
+    }
+  };
+  // }}}
+
+  struct VScrollGUIWidget : public ScrollGUIWidgetBase{
+    // {{{ open
+    VScrollGUIWidget(const GUIDefinition &def):ScrollGUIWidgetBase(def,QBoxLayout::TopToBottom){}
+    static string getSyntax(){
+      return string("vscroll()[general params]\n")+ gen_params();
+    }
+  };
+  // }}}
+    
   struct HBoxGUIWidget : public GUIWidget{
     // {{{ open
     HBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::hboxLayout){
@@ -200,7 +259,7 @@ namespace icl{
       if(def.handle() != ""){
         getGUI()->lockData();
         //        DEBUG_LOG("allocating h box handle");
-        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(this,this));//def.parentWidget()));
+        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(true,this,this));//def.parentWidget()));
         getGUI()->unlockData();
       }
     }
@@ -210,6 +269,8 @@ namespace icl{
   };
   
   // }}}
+
+
   struct VBoxGUIWidget : public GUIWidget{
     // {{{ open
     VBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::vboxLayout){
@@ -217,7 +278,7 @@ namespace icl{
       if(def.handle() != ""){
         getGUI()->lockData();
         //DEBUG_LOG("allocating v box handle");
-        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(this,this));//def.parentWidget()));
+        getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(false,this,this));//def.parentWidget()));
         getGUI()->unlockData();
       }
     }
@@ -1306,6 +1367,8 @@ public:
       /// Fill the map with creator function ( use the template if possible )
       MAP_CREATOR_FUNCS["hbox"] = create_widget_template<HBoxGUIWidget>;
       MAP_CREATOR_FUNCS["vbox"] = create_widget_template<VBoxGUIWidget>;
+      MAP_CREATOR_FUNCS["hscroll"] = create_widget_template<HScrollGUIWidget>;
+      MAP_CREATOR_FUNCS["vscroll"] = create_widget_template<VScrollGUIWidget>;
       MAP_CREATOR_FUNCS["button"] = create_widget_template<ButtonGUIWidget>;
       MAP_CREATOR_FUNCS["border"] = create_widget_template<BorderGUIWidget>;
       MAP_CREATOR_FUNCS["buttongroup"] = create_widget_template<ButtonGroupGUIWidget>;     

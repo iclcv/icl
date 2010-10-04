@@ -143,6 +143,7 @@ namespace icl{
 
     virtual void quad(float x1, float y1, float x2, float y2,
                       float x3, float y3, float x4, float y4)=0;
+    virtual void poly(const std::vector<Point32f> &vertices) = 0;
 
   };
 
@@ -169,6 +170,13 @@ namespace icl{
       icl::triangle(image,x1,y1,x2,y2,x3,y3);
       icl::triangle(image,x3,y3,x4,y4,x1,y1);
     }
+    virtual void poly(const std::vector<Point32f> &vertices){
+      bool first = true;
+      if(first){
+        first = false;
+        ERROR_LOG("rendering polygons is not supported for rendering into images");
+      }
+    }
   };
 
 #ifdef HAVE_QT
@@ -194,6 +202,9 @@ namespace icl{
     virtual void quad(float x1, float y1, float x2, float y2,
                       float x3, float y3, float x4, float y4){
       w.quad(x1,y1,x2,y2,x3,y3,x4,y4);
+    }
+    virtual void poly(const std::vector<Point32f> &vertices){
+      w.polygon(vertices);
     }
   };
 #endif
@@ -424,7 +435,6 @@ namespace icl{
             renderer.line(ps[p.a][0],ps[p.a][1],ps[p.b][0],ps[p.b][1],o->m_lineWidth);
             break;
           case Primitive::triangle:{
-
             Vec &a = vx[p.a];
             Vec &b = vx[p.b];
             Vec &c = vx[p.c];
@@ -435,26 +445,31 @@ namespace icl{
 
             renderer.triangle(ps[p.a][0],ps[p.a][1],ps[p.b][0],ps[p.b][1],ps[p.c][0],ps[p.c][1]);
             break;
-          }case Primitive::quad:{
-
+          }
+          case Primitive::quad:{
             Vec &a = vx[p.a];
             Vec &b = vx[p.b];
             Vec &c = vx[p.c];
             //Vec &d = vx[p.c];
-
+            
             if(m_lightSimulationEnabled){
               renderer.color(adapt_color_by_light_simulation(a,b,c,p.color));
             }
-
+            
             renderer.quad(ps[p.a][0],ps[p.a][1],ps[p.b][0],ps[p.b][1],
                           ps[p.c][0],ps[p.c][1],ps[p.d][0],ps[p.d][1]);
             break;
-           }case Primitive::texture:{
-              // not yet supported
-           }
+          }
+          case Primitive::polygon:{
+            // not yet supported
             break;
-           default:
-             ERROR_LOG("unsupported primitive type");
+          }
+          case Primitive::texture:{
+            // not yet supported
+          }
+            break;
+          default:
+            ERROR_LOG("unsupported primitive type");
         }
       }
       if(o->isVisible(Primitive::vertex)){
@@ -522,7 +537,12 @@ namespace icl{
 
     for(unsigned int i=0;i<allObjects.size();++i){
       SceneObject *o = allObjects[i];
-
+      if(o->getSmoothShading()){
+        glShadeModel(GL_SMOOTH);
+      }else{
+        glShadeModel(GL_FLAT);
+      }
+   
       glPointSize(o->m_pointSize);
       glLineWidth(o->m_lineWidth);
 
@@ -559,13 +579,12 @@ namespace icl{
             glEnd();
             break;
           }case Primitive::quad:{
-
             glBegin(GL_QUADS);
             Vec &a = ps[p.a];
             Vec &b = ps[p.b];
             Vec &c = ps[p.c];
             Vec &d = ps[p.d];
-
+            
             glNormal3fv(normalize(cross(d-c,b-c)).data());
 
             if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
@@ -577,8 +596,22 @@ namespace icl{
             if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.d]/255).data());
             glVertex3fv(d.data());
             glEnd();
+
             break;
-           }case Primitive::texture:{
+          }
+          case Primitive::polygon:{
+            glBegin(GL_POLYGON);
+            for(int k=0;k<p.polyData.size();++k){
+              Vec &v = ps[p.polyData[k]];
+              // how to generate a normal here
+              // glNormal3fv(normalize(cross(d-c,b-c)).data());
+              if(o->m_polyColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
+              glVertex3fv(v.data());
+            }
+            glEnd();
+            break;
+          }
+          case Primitive::texture:{
               glColor4f(1,1,1,1);
               Vec &a = ps[p.a];
               Vec &b = ps[p.b];

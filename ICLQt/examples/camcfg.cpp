@@ -61,6 +61,7 @@ int main(int n, char **ppc){
   if(pa("u")) str << ",unicap";
   if(pa("p"))str << ",pwc";
   if(pa("c"))str << ",cvcam";
+  if(pa("s"))str << ",sr";
   if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);
   
   std::string devlist = str.str();

@@ -541,10 +541,13 @@ set(ICL_PGK_CFG_PLACEHOLDER "icl-${VERSION}${DEBUG_POSTFIX}")
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/Makefile.custom.template ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom.template @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-make ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-make @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-version ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-version @ONLY)
+
 
 #installs files from scripts dir on make install with given permissions
-install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project ${CMAKE_SOURCE_DIR}/scripts/icl-make
-	PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-make ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-version
+	PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
 	COMPONENT filess
 )
@@ -557,7 +560,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
 )
 # this will overwrite the Makefile.custom.template with the configured one (where ICL_PGK_CFG_PLACEHOLDER is substituted)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom.template 
-        PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${ETC_DIR}/
         COMPONENT filess
 )

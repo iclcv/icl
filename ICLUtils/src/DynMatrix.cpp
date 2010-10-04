@@ -240,9 +240,117 @@ namespace icl{
       }
     }
   }
+
+
+  template<class T>
+  static inline bool is_close_to_zero(const T &t){
+    //std::cout << "is close to zero (" << t << ") returns " << (fabs(t) < 1E-15 ? "true" : "false") << std::endl;
+    return fabs(t) < 1E-15;
+  }
+
+  template<class T>
+  static inline int find_non_zero_in_col(const DynMatrix<T> &U, int i, int m){
+    for(int j=i+1;j<m;++j){
+      if(!is_close_to_zero( U(i,j) )) return j;
+    }
+    return -1;
+  }
+  template<class Iterator>
+  static inline void swap_range(Iterator beginA, Iterator endA, Iterator beginB){
+    for(;beginA != endA; ++beginA, ++beginB) {
+      std::swap(*beginA, *beginB);
+    }
+  }
+
+
+  template<class T>
+  void DynMatrix<T>::decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold) const{
+    const DynMatrix &A = *this;
+    unsigned int m = A.rows();
+    unsigned int n = A.cols();
+    U = A;
+    L = DynMatrix<T>(m,m); 
+    for(unsigned int i=0;i<m;++i) L(i,i) = 1;
+    DynMatrix<T> p(1,m); 
+    for(unsigned int i=0;i<m;++i) p[i] = i;
+
+    for(int i=0;i<m-1;++i){
+      if(is_close_to_zero(U(i,i))){ // here, we need an epsilon
+        int k = find_non_zero_in_col(U,i,m);
+        if(k != -1){
+          //swap rows i and k 
+          std::swap(p[i],p[k]);
+          swap_range(U.row_begin(i),U.row_end(i),U.row_begin(k));
+          swap_range(L.row_begin(i),L.row_begin(i)+i,L.row_begin(k));
+        }
+      }else{
+        T pivot = U(i,i);
+        for(int k=i+1;k<m;++k){
+          T m = U(i,k)/pivot;
+          for(int j=0;j<n;++j){
+            U(j,k) += -m * U(j,i);
+          }
+          L(i,k) = m;
+        }
+      } 
+    }
+
+    DynMatrix<T> L2 = L;
+    for(int i=0;i<m;++i){
+      int j = p[i];
+      std::copy(L2.row_begin(i),L2.row_end(i),L.row_begin(j));
+    } 
+  }
+    
+  template<class T>
+  DynMatrix<T> DynMatrix<T>::solve_upper_triangular(const DynMatrix &b) const throw(InvalidMatrixDimensionException){
+    const DynMatrix &M = *this;
+    ICLASSERT_THROW(M.cols() == M.rows(), ICLException("solve_upper_triangular only works for squared matrices"));
+    int m = M.cols();
+    DynMatrix<T> x(1,m);
+    for(int i=m-1;i>=0;--i){
+      float r = b[i];
+      for(int j=m-1;j>i;--j) r -= M(j,i) * x[j];
+      x[i] = r/M(i,i);
+    }
+    return x;
+  }
+
+  template<class T>
+  DynMatrix<T> DynMatrix<T>::solve_lower_triangular(const DynMatrix &b) const throw(InvalidMatrixDimensionException){
+    const DynMatrix &M = *this;
+    ICLASSERT_THROW(M.cols() == M.rows(), ICLException("solve_lower_triangular: only works for squared matrices"));
+    int m = M.cols();
+    DynMatrix<T> x(1,m);
+    for(int i=0;i<m;++i){
+      float r = b[i];
+      for(int j=0;j<i;++j) r -= M(j,i) * x[j];
+      x[i] = r/M(i,i);
+    }
+    return x;
+  }
+    
+  template<class T>
+  DynMatrix<T> DynMatrix<T>::solve(const DynMatrix &b, const std::string &method ,T zeroThreshold) 
+    throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException){
+    ICLASSERT_THROW(cols() == rows(), InvalidMatrixDimensionException("DynMatrix::solve only works for squared matrices"));
+    if(method == "lu"){
+      DynMatrix<T> L,U;
+      decompose_LU(L,U);
+      return U.solve_upper_triangular(L.solve_lower_triangular(b));
+    }else if(method == "svd"){
+      return pinv(true) * b;
+    }else if(method == "qr"){
+      return pinv(false) * b;
+    }else if(method == "inv"){
+      return inv() * b;
+    }
+  }
+
+
   
   template<class T> 
-  DynMatrix<T> DynMatrix<T>::pinv(bool useSVD, float zeroThreshold) const 
+  DynMatrix<T> DynMatrix<T>::pinv(bool useSVD, T zeroThreshold) const 
     throw (InvalidMatrixDimensionException,SingularMatrixException, ICLException){
     if(useSVD){
       DynMatrix<T> U,s,V;
@@ -536,10 +644,28 @@ namespace icl{
   template void DynMatrix<double>::decompose_RQ(DynMatrix<double> &R, DynMatrix<double> &Q) const 
     throw (InvalidMatrixDimensionException,SingularMatrixException);
 
+  template void DynMatrix<float>::decompose_LU(DynMatrix<float> &L, DynMatrix<float> &U, float zeroThreshold) const;
+  template void DynMatrix<double>::decompose_LU(DynMatrix<double> &L, DynMatrix<double> &U, double zeroThreshold) const;
+  
+  template DynMatrix<float> DynMatrix<float>::solve_upper_triangular(const DynMatrix<float> &b) 
+    const throw(InvalidMatrixDimensionException);
+  template DynMatrix<double> DynMatrix<double>::solve_upper_triangular(const DynMatrix<double> &b) 
+    const throw(InvalidMatrixDimensionException);
+
+  template DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b) 
+    const throw(InvalidMatrixDimensionException);
+  template DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b) 
+    const throw(InvalidMatrixDimensionException);
+  
+  template DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, const std::string &method,float zeroThreshold) 
+    throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException);
+  template DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, const std::string &method,double zeroThreshold) 
+    throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException);
+  
     
   template DynMatrix<float> DynMatrix<float>::pinv(bool,float) const 
     throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
-  template DynMatrix<double> DynMatrix<double>::pinv(bool,float) const 
+  template DynMatrix<double> DynMatrix<double>::pinv(bool,double) const 
     throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
 
 

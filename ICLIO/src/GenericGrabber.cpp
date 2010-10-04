@@ -194,6 +194,7 @@ namespace icl{
         std::vector<std::string> srts = tok(pmap["sr"],"c");
         int device = 0;
         int channel = -1;
+        m_sType = "sr";
         if(srts.size() > 1){
           device = to32s(srts[0]);
           channel = to32s(srts[1]);

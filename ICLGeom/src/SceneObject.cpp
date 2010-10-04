@@ -33,6 +33,9 @@
 *********************************************************************/
 
 #include <ICLGeom/SceneObject.h>
+#include <fstream>
+#include <ICLIO/File.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
   const std::vector<Vec> &SceneObject::getVertices() const { 
@@ -85,6 +88,11 @@ namespace icl{
     m_primitives.push_back(Primitive(a,b,c,d,color));
   }
 
+  void SceneObject::addPolygon(const std::vector<int> &vertexIndices, 
+                               const GeomColor &color){
+    m_primitives.push_back(Primitive(vertexIndices,color));
+  }
+
   void SceneObject::addTexture(int a, int b, int c, int d, const Img8u &texture,bool deepCopy){
     m_primitives.push_back(Primitive(a,b,c,d,texture,deepCopy));
   }
@@ -115,6 +123,7 @@ namespace icl{
     m_lineColorsFromVertices(false),
     m_triangleColorsFromVertices(false),
     m_quadColorsFromVertices(false),
+    m_polyColorsFromVertices(false),
     m_pointSize(1),
     m_lineWidth(1)
   {
@@ -228,6 +237,168 @@ namespace icl{
     }
   }
 
+  int count_slashes(const std::string &s){
+    int n = 0;
+    for(unsigned int i=0;i<s.length();++i){
+      if(s[i] == '/') ++n;
+    }
+    return n;
+  }
+
+  // A: f v1 v2 v3 .. 
+  // B: f v1/vt1 v2/vt2 v3/vt3 .. with texture coordinate
+  // C: f v1/vt1/n1 ..            with texture and normal index
+  // D: f v1//n1 ..               with normal indices only
+  char get_format(const std::string &s, int lineForError){
+    int n = count_slashes(s);
+    switch(n){
+      case 0: return 'A';
+      case 1: return 'B';
+      case 2: return tok(s,"/").size() == 3 ? 'C' : 'D';
+      default:
+        throw ICLException(".obj parsing error in line " 
+                           + str(lineForError) 
+                           + " ( invalid face index: \"" + s +"\")");
+    }
+    return 'x';
+  }
+
+
+  bool SceneObject::getSmoothShading() const{
+    return m_useSmoothShading;
+  }
+
+  void  SceneObject::setSmoothShading(bool on){
+    m_useSmoothShading = on;
+  }
+  
+  SceneObject::SceneObject(const std::string &objFileName) throw (ICLException):
+    m_lineColorsFromVertices(false),
+    m_triangleColorsFromVertices(false),
+    m_quadColorsFromVertices(false),
+    m_polyColorsFromVertices(false),
+    m_pointSize(1),
+    m_lineWidth(1)
+  {
+    File file(objFileName,File::readText);
+    if(!file.exists()) throw ICLException("Error in SceneObject(objFilename): unable to open file " + objFileName);
+    
+    setSmoothShading(true);
+    
+    typedef FixedColVector<float,3> F3;
+    typedef FixedColVector<int,3> I3;
+    
+    int nSkippedVT = 0;
+    int nSkippedVN = 0;
+    int nSkippedO = 0;
+    int nSkippedG = 0;
+    int nSkippedS = 0;
+    int nSkippedMTLLIB = 0;
+    int nSkippedUSEMTL = 0;
+    
+    int lineNr=0;
+    
+    while(file.hasMoreLines()){
+      ++lineNr;
+      std::string line = file.readLine();
+      if(line.length()<2) continue;
+      
+      else if(line[0] == 'v'){ // most common: vertex
+        switch(line[1]){
+          case ' ':
+            m_vertices.push_back(parse<F3>(line.substr(2)).resize<1,4>(1));
+
+            break;
+          case 't': // texture coordinates u,v,[w] (w is optional)
+            ++nSkippedVT;
+            break;
+          case 'n': // normal for vertex x,y,z (might not be unit!)
+            ++nSkippedVN;
+            break;
+          default:
+            ERROR_LOG("skipping line " + str(lineNr) + ":\"" + line + "\" [unknown format]");
+            break;
+        }
+      }else if(line[0] == 'f'){ 
+        // A: f v1 v2 v3 .. 
+        // B: f v1/vt1 v2/vt2 v3/vt3 .. with texture coordinate
+        // C: f v1/vt1/n1 ..            with texture and normal index
+        // D: f v1//n1 ..               with normal indices only
+        const std::vector<std::string> x = tok(line.substr(2)," ");
+        if(!x.size()) {
+          ERROR_LOG("skipping line " + str(lineNr) + ":\"" + line + "\" [face definition expected]" );   
+          continue;
+        }
+        char C = get_format(x[0], lineNr); // we assume, that the format is the same here
+        int n = (int)x.size();
+        if( n < 3 ){
+          ERROR_LOG("skipping line " + str(lineNr) + ":\"" + line + "\" [unsupported number of face vertices]" );   
+          continue;
+        }
+        switch(C){
+          case 'A':
+            if(n == 3){
+              addTriangle(parse<int>(x[0])-1,parse<int>(x[1])-1,parse<int>(x[2])-1);
+            }else if(n==4){
+              addQuad(parse<int>(x[0])-1,parse<int>(x[1])-1,parse<int>(x[2])-1,parse<int>(x[3])-1);
+            }else{
+              std::vector<int> xx(x.size());
+              for(unsigned int i=0;i<x.size();++i){
+                xx[i] = parse<int>(x[i])-1;
+              }
+              addPolygon(xx);
+            }
+            break;
+          case 'B': // for now, this is simple, we simple dont use the 2nd and 3rd token;
+          case 'C':
+          case 'D':{
+            std::vector<int> is(n);
+            for(int i=0;i<n;++i){
+              is[i] = parseVecStr<int>(x[i],"/").at(0);
+            }
+            if(n == 3){
+              addTriangle(is[0]-1,is[1]-1,is[2]-1);
+            }else if (n == 4){
+              addQuad(is[0]-1,is[1]-1,is[2]-1,is[3]-1);
+            }else{
+              std::vector<int> xx(x.size());
+              for(unsigned int i=0;i<x.size();++i){
+                xx[i] = parse<int>(x[i])-1;
+              }
+              addPolygon(xx);
+            }
+          }
+        }
+      }else if(line[0] == '#') { 
+        continue;
+      }else if(line[0] == 's') { 
+        ++nSkippedS;
+        continue;
+      }else if(line[0] == 'o'){
+        ++nSkippedO;
+        continue;
+      }else if(line[0] == 'g'){
+        ++nSkippedG;
+        continue;
+      }else if(!line.find("#")) {
+        continue; // comment
+      }else if(!line.find("usemtl")) {
+        ++nSkippedUSEMTL;
+        continue; // todo try to load material description
+      }else if(!line.find("mtllib")){
+        ++nSkippedMTLLIB;
+        continue;
+      }else{
+        ERROR_LOG("skipping line " + str(lineNr) + ":\"" + line + "\" [unknown format]" );   
+        continue;
+      }
+    }
+    setVisible(Primitive::line,true);
+    setVisible(Primitive::triangle,true);
+    setVisible(Primitive::quad,true);
+    setVisible(Primitive::polygon,true);
+  }
+
   void SceneObject::setColorsFromVertices(Primitive::Type t, bool on){
     switch(t){
       case Primitive::line:
@@ -238,6 +409,9 @@ namespace icl{
         break;
       case Primitive::quad:
         m_quadColorsFromVertices = on;
+        break;
+      case Primitive::polygon:
+        m_polyColorsFromVertices = on;
         break;
       default:
         ERROR_LOG("this operations is only supported for line, triangle and quad primitive types");

@@ -169,7 +169,9 @@
       The mandatory type string defines what type of widget should be created. The correct syntax 
       of the TYPE_DEPENDEND_PARAMS list depends on this string. Possible type strings are:
       - <b>hbox</b> a horizontal layouted container 
+      - <b>hscroll</b> a horizontally layouted container but with scrollbars if contents does not fit into it 
       - <b>vbox</b> a vertical layouted container
+      - <b>hscroll</b> a vertically layouted container but with scrollbars if contents does not fit into it 
       - <b>tab</b> a tabbed contatiner widget 
       - <b>hsplit</b> a horizontal layouted containter (boundaries can be moved manually)
       - <b>vsplit</b> a vertical layouted containter (boundaries can be moved manually)
@@ -218,7 +220,11 @@
       following list shows all components introduced above with their individual parameter list syntax:
       - <b>hbox</b>\n
         No params here! 
+      - <b>hscroll</b>\n
+        No params here! 
       - <b>vbox</b>\n
+        No params here!
+      - <b>vscroll</b>\n
         No params here!
       - <b>tab(string TAB_LABEL_1, string TAB_LABEL_2,..)</b>\n
         If more components are added, than names were given, error messages are shown, and the 
@@ -380,6 +386,8 @@
       <TR> <TD><b>type</b></TD>  <TD><b>handle</b></TD>     <TD><b>outputs</b></TD>     <TD><b>meaning</b></TD>                                      </TR>
       <TR> <TD>vbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>hbox</TD>         <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>vscroll</TD>      <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>hscroll</TD>      <TD>BoxHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>tab</TD>          <TD>TabHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>hsplit</TD>       <TD>SplitterHandle</TD>    <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>vsplit</TD>       <TD>SplitterHandle</TD>    <TD>0</TD>                  <TD>-</TD>                                                   </TR>

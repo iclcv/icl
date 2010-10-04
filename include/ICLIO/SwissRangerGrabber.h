@@ -48,10 +48,13 @@ namespace icl{
     /// Internally used data-class
     class SwissRanger;
     
-    /// if serialNumber < 0 -> open device dialog box
-    /// if 0 -> select any device
+    /// Create interface to device with given serial number:
+    /** @param if 0 -> automatic select\n
+               if < 0 open selection dialog (windows)
+               if > 0 specify serial number of device
+    */
     SwissRangerGrabberImpl(int serialNumber=0, depth bufferDepth=depth32f, int pickChannel=-1) 
-    throw (ICLException);
+      throw (ICLException);
 
     /// Destructor
     ~SwissRangerGrabberImpl();
@@ -95,7 +98,7 @@ namespace icl{
 
   
   /// SwissRanger grabber using the libMesaSR library \ingroup GRABBER_G
-  /** for more details: @see PWCGrabberImpl */
+  /** for more details: @see SwissRangerGrabberImpl */
   class SwissRangerGrabber : public GrabberHandle<SwissRangerGrabberImpl>{
 
     public:

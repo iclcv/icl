@@ -59,6 +59,10 @@ namespace icl{
         "sphere" params: [x,y,z,radius,slices,steps]
     */
     SceneObject(const std::string &type,const float *params);
+
+
+    /// creates a scene object from given .obj file
+    SceneObject(const std::string &objFileName) throw (ICLException);
     
     /// Empty destructor (but virtual)
     virtual ~SceneObject(){}
@@ -92,6 +96,9 @@ namespace icl{
 
     /// adds a new triangle to this onject
     void addQuad(int a, int b, int c, int d, const GeomColor &color=GeomColor(0,100,250,255)); 
+
+    /// add a polygon to this object (note triangles and quads are slower here)
+    void addPolygon(const std::vector<int> &vertexIndices, const GeomColor &color=GeomColor(0,100,250,255)); 
     
     /// adds a textured quad to this object
     void addTexture(int a, int b, int c, int d, const Img8u &texture, bool deepCopy=false);
@@ -131,6 +138,12 @@ namespace icl{
     /// sets how 2D-geom colors are set 
     void setColorsFromVertices(Primitive::Type t, bool on);
     
+    /// returns wheather smooth shading is activated
+    bool getSmoothShading() const;
+    
+    /// sets whether to use smoothshading (default is false)
+    void setSmoothShading(bool on);
+    
     protected:
     std::vector<Vec> m_vertices;
     std::vector<GeomColor> m_vertexColors;
@@ -141,9 +154,12 @@ namespace icl{
     bool m_lineColorsFromVertices;
     bool m_triangleColorsFromVertices;
     bool m_quadColorsFromVertices;
+    bool m_polyColorsFromVertices;
 
     float m_pointSize;
     float m_lineWidth;
+    
+    bool m_useSmoothShading;
   };
 }
 

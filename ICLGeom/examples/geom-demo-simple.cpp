@@ -36,6 +36,7 @@
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
 
+
 GUI gui;
 Scene scene;
 
@@ -56,9 +57,13 @@ void init(){
              Vec(1,0,0));   // up-direction
   scene.addCamera(cam);
 
-  // add an object to the scene
-  float data[] = {0,0,0,7,3,2};
-  scene.addObject(new SceneObject("cuboid",data));
+  if(pa("-o")){
+    scene.addObject(new SceneObject(*pa("-o")));
+    // add an object to the scene
+  }else{
+    float data[] = {0,0,0,7,3,2};
+    scene.addObject(new SceneObject("cuboid",data));
+  }
 
   // use mouse events for camera movement
   gui["draw"].install(scene.getMouseHandler(0));
@@ -82,6 +87,6 @@ void run(){
 
 
 int main(int n, char**ppc){
-  return ICLApplication(n,ppc,"",init,run).exec();
+  return ICLApplication(n,ppc,"-obj|-o(.obj-filename)",init,run).exec();
 }
 

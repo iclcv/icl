@@ -42,7 +42,7 @@ namespace icl{
   
   struct Primitive{
     enum Type{
-      vertex,line,triangle,quad,texture,nothing,PRIMITIVE_TYPE_COUNT
+      vertex,line,triangle,quad,polygon,texture,nothing,PRIMITIVE_TYPE_COUNT
     };
 
     Primitive():
@@ -61,6 +61,8 @@ namespace icl{
       a(a),b(b),c(c),d(d),tex(tex),type(texture){
         if(deepCopy) this->tex.detach();
     }
+    Primitive(const std::vector<int> &polyData, const GeomColor &color=GeomColor()):
+      polyData(polyData),type(polygon){}
 
     /// not reverse ordering
     bool operator<(const Primitive &other) const{
@@ -68,6 +70,7 @@ namespace icl{
     }
     
     int a,b,c,d;
+    std::vector<int> polyData;
     GeomColor color;
     Img8u tex;
     Type type;

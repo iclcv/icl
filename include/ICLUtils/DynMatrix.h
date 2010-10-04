@@ -791,6 +791,67 @@ namespace icl{
     /// applies RQ-decomposition (by exploiting implemnetation of QR-decomposition) (only for icl32f, and icl64f)
     void decompose_RQ(DynMatrix &R, DynMatrix &Q) const;
     
+    /// applies LU-decomposition (without using partial pivoting) (only for icl32f and icl64f)
+    /** Even though, implementation also works for non-sqared matrices, it's not recommended to
+        apply this function on non-sqared matrices */
+    void decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold=1E-16) const;
+    
+    /// solves Mx=b for M=*this (only if M is a squared upper triangular matrix) (only for icl32f and icl64f)
+    DynMatrix solve_upper_triangular(const DynMatrix &b) const throw(InvalidMatrixDimensionException);
+
+    /// solves Mx=b for M=*this (only if M is a squared lower triangular matrix) (only for icl32f and icl64f)
+    DynMatrix solve_lower_triangular(const DynMatrix &b) const throw(InvalidMatrixDimensionException);
+    
+    /// solves Mx=b for M=*this (only for icl32f and icl64f)
+    /** solves Mx=b using one of the following algorithms
+        @param method "lu" (default) using LU-decomposition
+                      "svd" (using svd-based pseudo-inverse)
+                      "qr" (using QR-decomposition based pseudo-inverse)
+                      "inv" (using matrix inverse)
+        
+        \section BENCHM Benchmarks
+        While LU decomposition based solving provides the worst results, it is also
+        the fastest method in general. Only in case of having very small matrices (e.g. 4x4),
+        other methods are faster. A double precision random N by N system is solved up to 
+        an accuracy of about 10e-5 if LU decomposition is used. All other methods provide
+        accuracies of about 10e-14 in case of double precision.
+        
+        Here are some benchmarks for double precision:
+        * 10.000 times 4x4 matrix:
+          * inv 16.2 ms 
+          * lu 26.7 ms
+          * qr 105 ms
+          * svd 142 ms
+        * 10.000 times 5x5 matrix:
+          * inv 20.2 ms 
+          * lu 30.2 ms
+          * qr 148 ms
+          * svd 131 ms
+        * 10.000 times 6x6 matrix:
+          * inv 26.9 ms 
+          * lu 35.6 ms
+          * qr 206 ms
+          * svd 192 ms
+        * 10.000 times 4x4 matrix:
+          * inv 448 ms 
+          * lu 42 ms
+          * qr 642 ms
+          * svd 237 ms
+        * 10.000 times 10x10 matrix:
+          * inv 2200 ms 
+          * lu 75 ms
+          * qr 3000 ms
+          * svd 495 ms
+        * 10 times 50x50 matrix: <b>note: here we have inv and qr in seconds and only 10 trials!</b>
+          * inv 5.7 s
+          * lu 2.5 ms
+          * qr 4.6 s
+          * svd 23.4 ms
+    */
+    DynMatrix solve(const DynMatrix &b, const std::string &method="lu",T zeroThreshold=1E-16) 
+      throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException);
+    
+
     /// invert the matrix (only for icl32f and icl64f)
     DynMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException);
     
@@ -846,7 +907,7 @@ namespace icl{
         </code>
         
     */
-    DynMatrix pinv(bool useSVD=false, float zeroThreshold=0.00000000000000001) const 
+    DynMatrix pinv(bool useSVD=false, T zeroThreshold=1E-16) const 
       throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
 
 

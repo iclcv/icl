@@ -191,44 +191,51 @@ namespace icl{
     std::vector<std::string> dangling;
     std::vector<std::string> all;
     static std::string givenLicense;
-    std::string licenseText;
+    static std::string licenseText;
     
     static ProgArgContext *s_context;
     
+    static void setLicenseText(const std::string &newText){
+      givenLicense = newText;
+    }
+    
+    static const std::string &getLicenseText(){
+      if(givenLicense.length()){
+        return givenLicense;
+      }else{
+        if(!licenseText.length()){
+          std::ostringstream str;
+          
+          str << "\tPart of the Image Component Library (ICL)" << std::endl
+              << "\tICL Version " << VERSION << std::endl
+              << "\tCopyright (C) 2006-2010 CITEC, University of Bielefeld" << std::endl
+              << "\t                        Neuroinformatics Group" << std::endl
+              << "\tContact: nivision@techfak.uni-bielefeld.de" << std::endl
+              << "\tWebsite: www.iclcv.org and" << std::endl
+              << "\t         http://opensource.cit-ec.de/projects/icl" << std::endl
+              << "\tSVN:     https://opensource.cit-ec.de/svn/icl/trunk" << std::endl
+              << std::endl
+              << "\tThis is free software; see the source for copying" << std::endl
+              << "\tconditions.  There is NO warranty; not even for" << std::endl
+              << "\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << std::endl
+              << std::endl
+              << "\tThe development of this software was supported by the" << std::endl
+              << "\tExcellence Cluster EXC 277 Cognitive Interaction" << std::endl
+              << "\tTechnology. The Excellence Cluster EXC 277 is a grant" << std::endl
+              << "\tof the Deutsche Forschungsgemeinschaft (DFG) in the" << std::endl
+              << "\tcontext of the German Excellence Initiative.";
+          
+          licenseText = str.str();
+        }
+        return licenseText;
+      }
+    }
+    
     ProgArgContext(){
       allowed.reserve(10);
-      
-      if(givenLicense.length()){
-        licenseText = givenLicense;
-      }else{
-        std::ostringstream str;
-        
-        str << "\tPart of the Image Component Library (ICL)" << std::endl
-            << "\tICL Version " << VERSION << std::endl
-            << "\tCopyright (C) 2006-2010 CITEC, University of Bielefeld" << std::endl
-            << "\t                        Neuroinformatics Group" << std::endl
-            << "\tContact: nivision@techfak.uni-bielefeld.de" << std::endl
-            << "\tWebsite: www.iclcv.org and" << std::endl
-            << "\t         http://opensource.cit-ec.de/projects/icl" << std::endl
-            << "\tSVN:     https://opensource.cit-ec.de/svn/icl/trunk" << std::endl
-            << std::endl
-            << "\tThis is free software; see the source for copying" << std::endl
-            << "\tconditions.  There is NO warranty; not even for" << std::endl
-            << "\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << std::endl
-            << std::endl
-            << "\tThe development of this software was supported by the" << std::endl
-            << "\tExcellence Cluster EXC 277 Cognitive Interaction" << std::endl
-            << "\tTechnology. The Excellence Cluster EXC 277 is a grant" << std::endl
-            << "\tof the Deutsche Forschungsgemeinschaft (DFG) in the" << std::endl
-            << "\tcontext of the German Excellence Initiative.";
-        
-        licenseText = str.str();
-      }
     }
     ~ProgArgContext(){
     }
-    
-    
     
     /// returns the static instance (must not be called before createInstace was called)
     static ProgArgContext *getInstance(const char *function){
@@ -317,6 +324,8 @@ namespace icl{
   };
 
   std::string ProgArgContext::givenLicense;
+  std::string ProgArgContext::licenseText;
+
   ProgArgContext *ProgArgContext::s_context = 0;
   std::map<std::string,std::string> ProgArgContext::explanations;
 
@@ -371,13 +380,18 @@ namespace icl{
   }
   
   void pasetlic(const std::string &newLicenseText){
-    ProgArgContext::givenLicense = newLicenseText;
+    ProgArgContext::setLicenseText(newLicenseText);
   }
   
   std::string pagetlic(){
-    ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
     std::ostringstream str;
-    str << paprogname() << " " << VERSION << std::endl << std::endl << context.licenseText << std::endl;
+    std::string progname;
+    try{
+      progname = paprogname();
+    }catch(...){
+      progname = "program name is not available (painit was not called)";
+    }
+    str << progname << " " << VERSION << std::endl << std::endl << ProgArgContext::getLicenseText() << std::endl;
     return str.str();
   }
   

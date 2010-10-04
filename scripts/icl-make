@@ -1,3 +1,5 @@
+ICL_PC=@ICL_PGK_CFG_PLACEHOLDER@
+
 if [ ! "$1" ] ; then
     echo "$1 is the compilation target e.g. test for compiling test.cpp" ;
     exit -1 ;
@@ -5,13 +7,13 @@ fi
 
 if [ "$1" = "--help" ] ; then
     echo "icl-make applies the following command:" ;
-    echo 'CXXFLAGS="$CXXFLAGS $(pkg-config --cflags icl) -I." LDFLAGS="$LDFLAGS $(pkg-config --libs icl)" make $1' ;
+    echo 'CXXFLAGS="$CXXFLAGS $(pkg-config --cflags ${ICL_PC}) -I." LDFLAGS="$LDFLAGS $(pkg-config --libs ${ICL_PC})" make $1' ;
     exit 0 ;
 fi
 
-if [ "`pkg-config --exists icl && echo yes || echo no`" == "no" ] ; then
-    echo "icl.pc could not be found in your PKG_CONFIG_PATH" ;
+if [ "`pkg-config --exists ${ICL_PC} && echo yes || echo no`" == "no" ] ; then
+    echo "${ICL_PC}.pc could not be found in your PKG_CONFIG_PATH" ;
     exit -1 ;
 fi
 
-CXXFLAGS="$CXXFLAGS $(pkg-config --cflags icl) -I." LDFLAGS="$LDFLAGS $(pkg-config --libs icl)" make $1
+CXXFLAGS="$CXXFLAGS $(pkg-config --cflags ${ICL_PC}) -I." LDFLAGS="$LDFLAGS $(pkg-config --libs ${ICL_PC})" make $1

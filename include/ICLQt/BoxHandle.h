@@ -40,16 +40,24 @@
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ContainerHandle.h>
 
+/** \cond */
+class QScrollArea;
+/** \endcond */
+
 namespace icl{
   
-  /// A Handle for container GUI components (hbox and vbox) \ingroup HANDLES
+  /// A Handle for container GUI components (hbox, vbox, hscroll and vscroll) \ingroup HANDLES
   class BoxHandle : public GUIHandle<QWidget>, public ContainerHandle{
-    public:
-    /// create an empty handle
-    BoxHandle(): GUIHandle<QWidget>(){}
+    bool horizontal;    //!< internal property that indicate the underlying layout orientation
+    QScrollArea * scroll; //!< optional parent QScrollArea
     
-    /// create a difined handle
-    BoxHandle(QWidget *w, GUIWidget *guiw):GUIHandle<QWidget>(w,guiw){}
+    public:
+    /// empty base constructor
+    BoxHandle():horizontal(false),scroll(0){}
+    
+    /// create an empty handle
+    BoxHandle(bool isHorizontal, QWidget *w, GUIWidget *guiw, QScrollArea *scroll=0): 
+      GUIHandle<QWidget>(w,guiw),horizontal(isHorizontal),scroll(scroll){}
     
     /// returns the associated layout
     QLayout *getLayout() { return (**this)->layout(); }
@@ -60,6 +68,19 @@ namespace icl{
 
     /// this does not work here (calls add, idx and name is ignored)
     virtual void insert(int idx, QWidget *comp, const QString &name=""){add(comp,name); }
+
+    /// returns whether this handle has
+    bool hasScroll() const { return scroll; }
+    
+    /// returns the parent scroll area (which is null, if the component is hbox or vbox)
+    QScrollArea *getScroll() { return scroll; }
+
+    /// returns whether the layout orientation is horizontal
+    bool isHorizontal() const { return horizontal; }
+
+    /// returns whether the layout orientation is vertical
+    bool isVertical() const { return !horizontal; }
+
   };  
 }
 

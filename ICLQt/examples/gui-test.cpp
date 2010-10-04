@@ -36,6 +36,24 @@
 
 GUI gui;
 
+void init(){
+  gui = GUI("hscroll");
+  gui << "image[@handle=image1@label=image1@minsize=10x10]"
+      << "image[@handle=image2@label=image2@minsize=10x10]"
+      << "image[@handle=image3@label=image3@minsize=10x10]";
+  
+  GUI v("vbox[@maxsize=10x1000]");
+  v << "slider(-1000,1000,0)[@out=the-int1@maxsize=35x1@label=slider1@minsize=1x2]"
+    << "slider(-1000,1000,0)[@out=the-int2@maxsize=35x1@label=slider2@minsize=1x2]"
+    << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3@minsize=1x2]"
+    << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
+    << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
+    << "button(click me)[@handle=click]"
+    << "checkbox(hello,off)[@out=cb]";
+  gui << v << "!show";
+
+}
+
 void run(){
   Img8u image = cvt8u(scale(create("parrot"),0.2));
   ImageHandle *ws[3] = {
@@ -57,27 +75,5 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  ExecThread x(run);
-  QApplication app(n,ppc);
-  
-  gui = GUI("hbox");
-  gui << "image[@handle=image1@label=image1]"
-      << "image[@handle=image2@label=image2]"
-      << "image[@handle=image3@label=image3]";
-  
-  GUI v("vbox[@maxsize=10x1000]");
-  v << "slider(-1000,1000,0)[@out=the-int1@maxsize=35x1@label=slider1@minsize=1x2]"
-    << "slider(-1000,1000,0)[@out=the-int2@maxsize=35x1@label=slider2@minsize=1x2]"
-    << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3@minsize=1x2]"
-    << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
-    << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
-    << "button(click me)[@handle=click]"
-    << "checkbox(hello,off)[@out=cb]";
-  gui << v;
-
-  gui.show();
-
-  x.run();
-  
-  return app.exec();
+  return ICLApp(n,ppc,"",init,run).exec();
 }
