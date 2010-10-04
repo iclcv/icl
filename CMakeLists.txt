@@ -35,7 +35,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0)
 PROJECT(ICL)
 #ubuntu version
 set(ICL_MAJOR "5")
-set(ICL_MINOR "6")
+set(ICL_MINOR "7")
 set(ICL_PATCH "0")
 set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
@@ -538,7 +538,6 @@ install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
 set(RESOURCE_DIR_PLACEHOLDER "${CMAKE_INSTALL_PREFIX}/etc/icl-${VERSION}${DEBUG_POSTFIX}")
 set(ICL_PGK_CFG_PLACEHOLDER "icl-${VERSION}${DEBUG_POSTFIX}")
 #prepare files from scripts dir for installation
-configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/Makefile.custom.template ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom.template @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-make ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-make @ONLY)
@@ -546,9 +545,9 @@ configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-version ${CMAKE_CURRENT_BINARY_DI
 
 
 #installs files from scripts dir on make install with given permissions
-install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-with-tests ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-make ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-version
+install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-make ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-version
 	PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+	DESTINATION ${EXECUTABLE_OUTPUT_PATH}
 	COMPONENT filess
 )
 #install scripts/icl-create-project-data/ to etc

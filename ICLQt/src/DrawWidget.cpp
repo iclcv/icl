@@ -99,18 +99,21 @@ namespace icl{
     }
     
     float tXF(float x, ICLDrawWidget::State *s){
-      x+=0.5;
-      if(s->rel)
+
+      if(s->rel){
         return tmb(x,s->rect.width,s->rect.x);
-      else
+      }else{
+        x+=0.5;
         return t(x, s->imsize.width, s->rect.width, 0, s->rect.x);
+      }
     }
     float tYF(float y, ICLDrawWidget::State *s){
-      y+=0.5;
-      if(s->rel)
+      if(s->rel){
         return tmb(y,s->rect.height,s->rect.y);
-      else
+      } else {
+        y+=0.5;
         return t(y, s->imsize.height, s->rect.height, 0, s->rect.y);
+      }
     }
   private:
     inline float tmb(float x, float m, float b){

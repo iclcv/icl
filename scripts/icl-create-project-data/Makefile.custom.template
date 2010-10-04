@@ -1,12 +1,25 @@
+##################################################
+# general information ############################
+##################################################
+
+# This will influence the name of the library,
+# which is set to lib${PROJECT_NAME}.so
 PROJECT_NAME=${FOLDER}
+
+# where to install the project
+INSTALL_PREFIX=/vol/nivision
+
+# package description that is written into the
+# pkg-config file
+PACKAGE_DESCRIPTION=ICLProject ${PROJECT_NAME}
 
 ##################################################
 # compilation ####################################
 ##################################################
 
-# Add package configs to include here (also for ICLProjects)
-# e.g. PC_DEPS=icl xcf ICLARToolkit2
-PC_DEPS=@ICL_PGK_CFG_PLACEHOLDER@
+# Add package-configs packages that should be
+# included (e.g. PC_DEPS=icl-5.6.0-debug gtest)
+PC_DEPS=icl-5.6.0 gtest
 
 # Qt specific header files, that need a moc call
 # without src/-prefix e.g. 
@@ -24,33 +37,20 @@ PC_DEPS=@ICL_PGK_CFG_PLACEHOLDER@
 ##################################################
 
 # build with debug flags
-DEBUG=TRUE
+DEBUG?=TRUE
 
 # do not show actual compiler calls etc.
-QUIET=TRUE
+QUIET?=TRUE
 
 # use colored output (only for bash)
 ifeq "${TERM}" "xterm"
-COLORED=TRUE
+COLORED?=TRUE
 else
-COLORED=FALSE
+COLORED?=FALSE
 endif
 
 # show (approximate) progress
-SHOW_PROGRESS=TRUE
-
-##################################################
-# library information ############################
-##################################################
-
-# comment in to use version support (VERSION may
-# be an arbitrary string (1.0 etc. is recommended)
-# however the VERSION feature is not tested well
-#VERSION=1.0
-ICL_PROJECTS_INSTALL_ROOT?=/vol/nivision
-INSTALL_PREFIX=${ICL_PROJECTS_INSTALL_ROOT}
-PACKAGE_DESCRIPTION=nothing special
-
+SHOW_PROGRESS?=TRUE
 
 ##################################################
 # additional build,install and clean rules #######

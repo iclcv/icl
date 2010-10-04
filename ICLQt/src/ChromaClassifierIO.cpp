@@ -50,7 +50,7 @@ namespace icl{
   }
   
   void ChromaClassifierIO::save(const ChromaClassifier &cc,const  std::string &filename, const std::string &name){
-    ConfigFile f;
+    ConfigFile f(filename);
     const char cs[] = "abc";
     for(int p=0;p<2;++p){
       for(int c=0;c<3;++c){
@@ -61,7 +61,7 @@ namespace icl{
   }
   void ChromaClassifierIO::save(const ChromaAndRGBClassifier &carc,const std::string &filename){
     save(carc.c,filename,std::string("chroma-and-rgb-classifier"));
-    ConfigFile f;
+    ConfigFile f(filename);
     f.set("config.chroma-and-rgb-classifier.ref-color.red",carc.ref[0]);
     f.set("config.chroma-and-rgb-classifier.ref-color.green",carc.ref[1]);
     f.set("config.chroma-and-rgb-classifier.ref-color.blue",carc.ref[2]);

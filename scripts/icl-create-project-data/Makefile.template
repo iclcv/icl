@@ -1,6 +1,5 @@
 # general
 FOLDER:=$(notdir $(shell pwd))
-PROJECT_NAME=${FOLDER}
 
 CXX=g++
 LD=g++
@@ -15,13 +14,18 @@ ifeq "${OBJS}" ""
 	LIB_EMPTY_INDICATOR="(empty)"
 endif
 
-APP_SOURCES=$(wildcard application/*.cpp)
-APPS=$(patsubst %.cpp,%${VERSION},${APP_SOURCES})
+APP_SOURCES=$(wildcard app/*.cpp)
+APPS_NO_PATH=$(patsubst app/%.cpp,%${VERSION},${APP_SOURCES})
+APPS=$(patsubst app/%.cpp,bin/%${VERSION},${APP_SOURCES})
+
 
 DEP_FILES:=$(patsubst src/%.cpp,obj/%.src.dep,${SOURCES})
-APP_DEP_FILES:=$(patsubst application/%.cpp,obj/%.app.dep,${APP_SOURCES})
+APP_DEP_FILES:=$(patsubst app/%.cpp,obj/%.app.dep,${APP_SOURCES})
 
 DEP_FILES:=${DEP_FILES} ${APP_DEP_FILES}
+
+TEST=./test/runner
+TEST_SOURCES=$(wildcard test/*.cpp)
 
 # avoid single space in dep-files string!
 ifeq "${DEP_FILES}" " "
@@ -40,7 +44,7 @@ PC=$(patsubst %,%.pc,${LIB})
 
 
 # basic flags
-CXXFLAGS:=${CXXFLAGS} -Isrc -Iapplication -fPIC -Wall
+CXXFLAGS:=${CXXFLAGS} -Isrc -Iapp -fPIC -Wall
 #CXXCPP=
 #LDFLAGS=
 
@@ -104,7 +108,7 @@ INSTALL=${AT}install
 
 # save flags from Makefile.custom
 LDFLAGS_PC:=${LDFLAGS} -L${LIB_INSTALL_PREFIX} -l${LIB} -Wl,-rpath=${LIB_INSTALL_PREFIX}
-CXXFLAGS_PC:=$(filter-out -Isrc -Iapplication -fPIC -Wall,${CXXFLAGS})
+CXXFLAGS_PC:=$(filter-out -Isrc -Iapp -fPIC -Wall,${CXXFLAGS})
 CXXCPP_PC:=${CXXCPP} -I${INC_INSTALL_PREFIX}
 
 # parsing pkg-config files
@@ -160,16 +164,34 @@ endif
 
 endif
 
-
+DIRS=lib obj bin src app	
 # actually we want to build doc/documentation
-.PHONY: doc ${PC}
+.PHONY: doc ${PC} test
 
-all: ${MOC_SOURCES} lib/${LIB_FILE} ${APPS} ${PKG_CFG} custom-build-hook
+all: ${DIRS} ${MOC_SOURCES} lib/${LIB_FILE} ${APPS} ${PKG_CFG} custom-build-hook
+
+${DIRS}:
+	${ECHO} ${PROGRESS} ${BYEL}[mkdir]${DEF} creating directory $@
+	${AT}mkdir $@
+
+test: test/runner
+	./test/runner
+
+test/runner: test/runner.cpp lib/${LIB_FILE} ${TEST_SOURCES}
+	${ECHO} ${PROGRESS} ${BGRE}[tst]${DEF} building test
+	${AT}${CXX} ./test/*.cpp ${CXXFLAGS} ${CXXCPP} ${LIB_LNK} ${LDFLAGS} -o $@ -lgtest -L${HOME}/local/lib -lpthread -I${HOME}/local/include
+
+test/runner.cpp:
+	${ECHO} ${PROGRESS} ${BGRE}[tst]${DEF} generating main test code file
+	${AT}echo "#include <gtest/gtest.h>" > ./test/runner.cpp
+	${AT}echo "int main(int argc, char **argv) {" >> ./test/runner.cpp
+	${AT}echo "  ::testing::InitGoogleTest(&argc, argv);" >> ./test/runner.cpp
+	${AT}echo "  return RUN_ALL_TESTS();" >> ./test/runner.cpp
+	${AT}echo "}" >> ./test/runner.cpp
 
 # overwrite build rules with these from dependency file
 # if obj/dependencies is not found a submake is spawned
 # to create it (make rock's)
-
 
 ifeq "${FIRST_RUN}" "FALSE"
 ifneq "${MAKECMDGOALS}" "cleaner"
@@ -196,7 +218,7 @@ custom-clean-hook ::
 	${ECHO} ${PROGRESS} ${FCYA}${BBLA}[clean]${DEF} custom clean
 
 
-obj/dependencies: ${RECURSIVE_ICL_PROJECTS} ${DEP_FILES} 
+obj/dependencies: ${DIRS} ${RECURSIVE_ICL_PROJECTS} ${DEP_FILES} 
 	${AT}if [ "${DEP_FILES}" != "" ] ; then cat ${DEP_FILES} > $@ ; else touch $@ ; fi
 
 src/%${VERSION}_moc.cpp: src/%.h
@@ -213,7 +235,7 @@ obj/%${VERSION}.o: src/%.cpp
 	${AT}${CXX} -c ${CXXFLAGS} ${CXXCPP} $< -o $@
 
 
-application/%${VERSION}: application/%.cpp lib/${LIB_FILE}
+bin/%${VERSION}: app/%.cpp lib/${LIB_FILE}
 	${ECHO} ${PROGRESS} ${BGRE}[app]${DEF} $@
 	${AT}${CXX} $< ${CXXFLAGS} ${CXXCPP} ${LIB_LNK} ${LDFLAGS} -o $@
 
@@ -226,7 +248,7 @@ obj/%.src.dep: src/%.cpp
 	${ECHO} ${PROGRESS} ${BPUR}[dep]${DEF} $@
 	${AT}${DEP} ${CXXFLAGS} ${CXXCPP} -MT `echo $< | sed "s|src/|obj/|g" | sed "s|.cpp|${VERSION}.o|g"` $< -MM -o ${@}_tmp && mv ${@}_tmp $@
 
-obj/%.app.dep: application/%.cpp
+obj/%.app.dep: app/%.cpp
 	${ECHO} ${PROGRESS} ${BPUR}[dep]${DEF} $@
 	${AT}${DEP} ${CXXFLAGS} ${CXXCPP} -MT `echo $< | sed "s|.cpp|${VERSION}|g"` $< -MM -o ${@}_tmp && mv ${@}_tmp $@
 
@@ -244,10 +266,12 @@ clean: custom-clean-hook
 	${AT}rm -rf lib/${LIB_FILE}
 	${ECHO} ${PROGRESS} ${FBLA}${BYEL}[delete]${DEF} ${PC}
 	${AT}rm -rf ${PC}
+	${ECHO} ${PROGRESS} ${FBLA}${BYEL}[delete]${DEF} ${TEST}
+	${AT}rm -rf ${TEST}
 
 cleaner: clean
 	${ECHO} ${PROGRESS} ${FBLA}${BYEL}[delete]${DEF} temporary files
-	${AT}rm -rf *~ src/*~ application/*~
+	${AT}rm -rf *~ src/*~ app/*~
 	${ECHO} ${PROGRESS} ${FBLA}${BYEL}[delete]${DEF} dependency files
 	${AT}rm -rf obj/*.dep obj/dependencies
 	${ECHO} ${PROGRESS} ${FBLA}${BYEL}[delete]${DEF} documentation
@@ -340,9 +364,7 @@ install: all ${PC} create-install-dirs custom-install-hook
 uninstall:
 	${ECHO} ${PROGRESS} ${BRED}[uninstall]${DEF} ${PFX}
 	${AT}rm -rf ${INC_INSTALL_PREFIX}
-	${AT}for T in ${APPS} ; do \
-		rm -rf `echo ${BIN_INSTALL_PREFIX}/$$T | sed "s|application/||g"` ; \
-	done
+	${AT}rm -rf ${BIN_INSTALL_PREFIX}
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/${LIB_FILE}
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/pkgconfig/${PC}
 	${AT}rm -rf ${DOC_INSTALL_PREFIX}
@@ -382,3 +404,16 @@ info:
 	${ECHO}	${FPUR}${BBLA}[info]${DEF} "| "${BRED}CXXFLAGS${DEF}"    " ${CXXFLAGS}
 	${ECHO}	${FPUR}${BBLA}[info]${DEF} "| "${BRED}CXXCPP${DEF}"      " ${CXXCPP}
 	${ECHO}	${FPUR}${BBLA}[info]${DEF} "+----------------------------------------------"
+
+update-from-svn:
+	${ECHO} ${PROGRESS} ${BRED}[svn-update]${DEF} updating Makefile from svn at https://opensource.cit-ec.de/
+	${AT}svn export https://opensource.cit-ec.de/svn/icl/trunk/scripts/icl-create-project-data/Makefile.template > /dev/null
+	${ECHO} ${PROGRESS} ${BRED}[svn-update]${DEF} creating backup Makefile.old
+	${AT}cp Makefile Makefile.old
+	${AT}mv Makefile.template Makefile
+	${ECHO} ${PROGRESS} ${BRED}[svn-update]${DEF} updating Makefile.custom from svn at https://opensource.cit-ec.de/
+	${AT}svn export https://opensource.cit-ec.de/svn/icl/trunk/scripts/icl-create-project-data/Makefile.custom.template > /dev/null
+	${ECHO} ${PROGRESS} ${BRED}[svn-update]${DEF} creating backup Makefile.custom.old
+	${AT}cp Makefile.custom Makefile.custom.old
+	${AT}mv Makefile.custom.template Makefile.custom
+	${ECHO} ${PROGRESS} ${BGRE}[note:]${DEF} please transfer your custom changes from Makefile.custom.old to the new Makefile.custom

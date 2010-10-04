@@ -1,5 +1,7 @@
 #!/bin/bash
 
+RESOURCE_DIR=@RESOURCE_DIR_PLACEHOLDER@
+
 if [ $# -ne 1 ] ; then
   echo -e "usage:\n\ticl-create-project PROJECT_FOLDER_NAME"
   echo -e "\t(e.g.) ./icl-create-project MyICLProject"
@@ -17,30 +19,87 @@ if [ -e $1 ] ; then
 fi
 
 
+if [ "$1" = "--update" ] ; then
+    if [ ! -e Makefile ] ; then
+        echo "error: unable to find Makefile"
+        exit -1
+    fi
+    if [ ! -e Makefile.custom ] ; then
+        echo "error: unable to find Makefile.custom"
+        exit -1
+    fi
+
+    echo "# The following commands are suggested to"
+    echo "# update your project build structure:"
+    if [ -e "application" ] ; then
+        echo svn mv application app
+    fi
+    
+    if [ ! -e test ] ; then
+        echo "mkdir test"
+        echo "cp ${RESOURCE_DIR}/sample-test.cpp.template ./${PROJECT}/test/sample-test.cpp"
+        echo "svn add test"
+    fi
+
+    if [ ! "$(echo Makefile | grep update-from-svn)" ] ; then
+        echo "svn export https://opensource.cit-ec.de/svn/icl/trunk/scripts/icl-create-project-data/Makefile.template"
+	echo "cp Makefile Makefile.old"
+	echo "mv Makefile.template Makefile"
+        echo "svn export https://opensource.cit-ec.de/svn/icl/trunk/scripts/icl-create-project-data/Makefile.custom.template"
+	echo "cp Makefile.custom Makefile.custom.old"
+	echo "mv Makefile.custom.template Makefile.custom"
+        echo '#please transfer your custom changes from Makefile.custom.old to the new Makefile.custom'
+    else
+        echo "make update-from-svn"
+    fi
+    exit 0;
+fi
+echo TEST
+exit 0;
+
 PROJECT=$1
 
-RESOURCE_DIR=@RESOURCE_DIR_PLACEHOLDER@
-
 # Create folder root dir
-echo -n "Creating folder ${PROJECT} ...                      "
+echo -n "Creating folder ${PROJECT} ... "
 mkdir -p ./${PROJECT}
 echo "done"
 
 # Create folder lib dir
-echo -n "Creating sub folders doc lib src obj application... "
-for T in lib src obj application doc ; do
+echo -n "Creating sub folders ..."
+for T in src app doc test ; do
     mkdir -p ./${PROJECT}/$T ;
+    echo    "    $T"
 done
+echo    "                            done"
+
+echo -n "Copying custom makefile ... "
+sed 's/\(^PC_DEPS=.*$\)/\1 gtest/g' ${RESOURCE_DIR}/Makefile.custom.template > ./${PROJECT}/Makefile.custom
 echo "done"
 
-echo -n "Copying custom makefile ...                         "
-cp ${RESOURCE_DIR}/Makefile.custom.template ./${PROJECT}/Makefile.custom
+echo -n "Copying sample test ...     "
+cp ${RESOURCE_DIR}/sample-test.cpp.template ./${PROJECT}/test/sample-test.cpp
 echo "done"
 
-echo -n "Copying makefile ...                                "
-cp  ${RESOURCE_DIR}/Makefile.template ./${PROJECT}/Makefile
+echo -n "Copying makefile ...        "
+cp  ${RESOURCE_DIR}/Makefile-with-tests.template ./${PROJECT}/Makefile
 echo "done"
 
-echo -n "Copying doxyfile ...                                "
+echo -n "Copying doxyfile ...        "
 cp ${RESOURCE_DIR}/doxyfile.template ./${PROJECT}/doc/doxyfile
 echo "done"
+
+echo "All source files placed in src/ are build into lib${PROJECT}.so which"
+echo "is automatically linked against the programs build from all source"
+echo "files placed in app/ by calling"
+echo " >> make"
+echo " >> make install"
+echo "Any source files in the test/ are build and run by calling"
+echo " >> make test"
+echo ""
+echo "You can change the build configuration by editing Makefile.custom."
+echo "You can adapt the name of your library and you can add"
+echo "linker and compiler flags etc."
+echo "You can change the build configuration by editing Makefile.custom."
+echo ""
+echo "You can always update the created build-system by calling"
+echo " >> make update-from-svn"
