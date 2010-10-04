@@ -346,7 +346,6 @@ namespace icl{
           if(FileList(pmap["file"]).size()){
             m_sType = "file";
             m_poGrabber = new FileGrabber(pmap["file"]);
-            ((FileGrabber*)m_poGrabber)->setIgnoreDesiredParams(false);
             break;
           }else{
             ADD_ERR("file");

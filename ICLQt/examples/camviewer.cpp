@@ -36,39 +36,33 @@
 #include <ICLUtils/FPSLimiter.h>
 
 GUI gui;
-FPSLimiter *fpsLimiter = 0;
+GenericGrabber grabber;
+
 void run(){
-  static GenericGrabber g(FROM_PROGARG("-input"));
-  if(pa("-size")){
-    g.setDesiredSize(pa("-size"));
-    g.setIgnoreDesiredParams(false);
-  }else{
-    g.setIgnoreDesiredParams(true);
-  }
-  if(pa("-dist")){
-    g.enableDistortion(DIST_FROM_PROGARG("-dist"),g.getDesiredSize());
-  }
+  static FPSLimiter fps(pa("-maxfps"),10);
   while(true){
-    gui["image"] = g.grab();
+    gui["image"] = grabber.grab();
     gui["image"].update();
-    if(pa("-showfps")){
-      gui["fps"].update();
-    }
-    fpsLimiter->wait();
+    gui["fps"].update();
+    fps.wait();
   }
 }
 
 void init(){
   gui << "image()[@handle=image@minsize=16x12]";
-  if(pa("-showfps")){
-    gui << "fps(10)[@handle=fps@maxsize=100x2@minsize=5x2]";
+  gui << ( GUI("hbox[@maxsize=100x2]") 
+           << "fps(10)[@handle=fps@maxsize=100x2@minsize=5x2]"
+           << "camcfg()"
+          )
+      << "!show";
+  grabber.init(FROM_PROGARG("-input"));
+  grabber.setIgnoreDesiredParams(true);
+  if(pa("-size")){
+    grabber.setDesiredSize(pa("-size"));
+    grabber.setIgnoreDesiredParams(false);
   }
-  gui.show();
-  
-  fpsLimiter = new FPSLimiter(pa("-maxfps"),10);
-
-  if(pa("-bci-auto")){
-    (*gui.getValue<ImageHandle>("image"))->setRangeMode(ICLWidget::rmAuto);
+  if(pa("-dist")){
+    grabber.enableDistortion(DIST_FROM_PROGARG("-dist"),grabber.grab()->getSize());
   }
 }
 
@@ -77,10 +71,9 @@ int main(int n, char**ppc){
   ("-input","define input grabber parameters\ne.g. -dc 0 or -file *.ppm")
   ("-dist","define for parameters for radial distortion.\n"
    "parameters can be obained running 'icl-calib-radial-distortion'")
-  ("-size","desired image size of grabber")
-  ("-bci-auto","set visualization window to auto bci-mode (brightness-contrast-adaption)");
+  ("-size","desired image size of grabber");
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
                 "-dist|-d(float=0,float=0,float=0,float=0) "
-                "-size|-s(Size) -showfps -maxfps(float=30) "
-                "-bci-auto",init,run).exec();
+                "-size|-s(Size) -maxfps(float=30) ",
+                init,run).exec();
 }

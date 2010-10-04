@@ -39,7 +39,7 @@
 #include <map>
 #include <ICLIO/FileGrabberPlugin.h>
 #include <ICLIO/FileList.h>
-#include <ICLIO/Grabber.h>
+#include <ICLIO/GrabberHandle.h>
 
 namespace icl{
   
@@ -56,14 +56,14 @@ namespace icl{
       }
       \endcode
   **/
-  class FileGrabber : public Grabber{
+  class FileGrabberImpl : public Grabber{
     public:
     
     /// for the internal plugin concept
     friend class FileGrabberPluginMapInitializer;
 
     /// Create a NULL FileGrabber
-    FileGrabber();
+    FileGrabberImpl();
     
     /// Create a file grabber with given pattern and parameters
     /** \section BUF Buffering
@@ -91,11 +91,11 @@ namespace icl{
                                    "ignore desired params" flag is set to false by default.
 
         */
-    FileGrabber(const std::string &pattern, bool buffer=false, bool ignoreDesiredParams=false) 
+    FileGrabberImpl(const std::string &pattern, bool buffer=false, bool ignoreDesiredParams=false) 
       throw(FileNotFoundException);
 
     /// Destructor
-    virtual ~FileGrabber();
+    virtual ~FileGrabberImpl();
     
     /// grab implementation
     virtual const ImgBase *grabUD(ImgBase **ppoDst=0);
@@ -163,6 +163,29 @@ namespace icl{
     */
     void forcePluginType(const std::string &suffix);
     
+    
+    /// interface for the setter function for video device properties 
+    /** \copydoc icl::Grabber::setProperty(const std::string&,const std::string&) **/
+    virtual void setProperty(const std::string &property, const std::string &value);
+    
+    /// returns a list of properties, that can be set usingsetProperty
+    /** @return list of supported property names **/
+    virtual std::vector<std::string> getPropertyList();
+    
+    /// get type of property
+    /** \copydoc icl::Grabber::getType(const std::string &)*/
+    virtual std::string getType(const std::string &name);
+
+    /// get information of a property valid values
+    /** \copydoc icl::Grabber::getInfo(const std::string &)*/
+    virtual std::string getInfo(const std::string &name);
+
+    /// returns the current value of a property or a parameter
+    virtual std::string getValue(const std::string &name);
+
+    /// returns whether property is volatile
+    virtual int isVolatile(const std::string &propertyName);
+    
     private:
     /// internal file list
     FileList m_oFileList;
@@ -184,6 +207,68 @@ namespace icl{
     
     /// forced plugin name
     std::string m_forcedPluginType;
+  };
+  
+
+  /// FileGrabber class (see FileGrabberImpl)
+  class FileGrabber : public GrabberHandle<FileGrabberImpl>{
+    public:
+    /// Empty constructor
+    /** @see FileGrabberImpl::FileGrabberImpl() */
+    inline FileGrabber(){}
+
+    /// Empty constructor
+    /** @see FileGrabberImpl::FileGrabberImpl(const std::string&,bool,bool); */
+    inline FileGrabber(const std::string &pattern, bool buffer=false, bool ignoreDesiredParams=false){
+      if(isNew(pattern)){
+        initialize(new FileGrabberImpl(pattern,buffer,ignoreDesiredParams),pattern);
+      }else{
+        initialize(pattern);
+      }
+    }
+    
+    /// returns number of image files available
+    /** @see FileGrabberImpl::getFileCount */
+    inline unsigned int getFileCount() const{
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance.get()->ptr->getFileCount();
+    }
+
+    /// returns nextFileName that will be grabbed
+    /** @see FileGrabberImpl::getNextFileName */
+    inline const std::string &getNextFileName() const{
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance.get()->ptr->getNextFileName();
+    }
+
+    /// makes the grabber buffer all images internally
+    /** @see FileGrabberImpl::bufferImages(bool) */
+    inline const FileList &bufferImages(bool omitExceptions=true){
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance.get()->ptr->bufferImages(omitExceptions);
+    }
+
+    /// skips the next to-be-grabbed image
+    /** @see FileGrabberImpl::next() */
+    inline void next(){
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance.get()->ptr->next();
+    }
+
+    /// makes the grabber grab the last image again
+    /** @see FileGrabberImpl::prev() */
+    inline void prev(){
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance.get()->ptr->prev();  
+    }
+
+    /// forces a certain plugin type
+    /** @see FileGrabberImpl::forcePluginType(const std::string&)() */
+    inline void forcePluginType(const std::string &suffix){
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance.get()->ptr->forcePluginType(suffix); 
+    }
+
   };
   
 }
