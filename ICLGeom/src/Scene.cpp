@@ -451,11 +451,11 @@ namespace icl{
             Vec &b = vx[p.b];
             Vec &c = vx[p.c];
             //Vec &d = vx[p.c];
-            
+
             if(m_lightSimulationEnabled){
               renderer.color(adapt_color_by_light_simulation(a,b,c,p.color));
             }
-            
+
             renderer.quad(ps[p.a][0],ps[p.a][1],ps[p.b][0],ps[p.b][1],
                           ps[p.c][0],ps[p.c][1],ps[p.d][0],ps[p.d][1]);
             break;
@@ -542,7 +542,7 @@ namespace icl{
       }else{
         glShadeModel(GL_FLAT);
       }
-   
+
       glPointSize(o->m_pointSize);
       glLineWidth(o->m_lineWidth);
 
@@ -584,7 +584,7 @@ namespace icl{
             Vec &b = ps[p.b];
             Vec &c = ps[p.c];
             Vec &d = ps[p.d];
-            
+
             glNormal3fv(normalize(cross(d-c,b-c)).data());
 
             if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
@@ -601,7 +601,7 @@ namespace icl{
           }
           case Primitive::polygon:{
             glBegin(GL_POLYGON);
-            for(int k=0;k<p.polyData.size();++k){
+            for(unsigned int k=0;k<p.polyData.size();++k){
               Vec &v = ps[p.polyData[k]];
               // how to generate a normal here
               // glNormal3fv(normalize(cross(d-c,b-c)).data());

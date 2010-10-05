@@ -42,26 +42,26 @@
 namespace icl{
 
 #ifdef HAVE_IPP
- template<class T, IppStatus (*ippFunc)(const T*,int,int,T*,T*,int,int,int)>                                                               
- static DynMatrix<T> apply_dyn_matrix_inv(const DynMatrix<T> &s){                                                                                 
-    if(s.cols() != s.rows()){                                                                                                               
-      throw InvalidMatrixDimensionException("inverse matrix can only be calculated on square matrices");                                    
-    }    
+ template<class T, IppStatus (*ippFunc)(const T*,int,int,T*,T*,int,int,int)>
+ static DynMatrix<T> apply_dyn_matrix_inv(const DynMatrix<T> &s){
+    if(s.cols() != s.rows()){
+      throw InvalidMatrixDimensionException("inverse matrix can only be calculated on square matrices");
+    }
 
 
-    unsigned int wh = s.cols();    
-    DynMatrix<T> d(wh,wh,0.0);                                                                                                                  
-    std::vector<T> buffer(wh*wh+wh);                                                                                                        
+    unsigned int wh = s.cols();
+    DynMatrix<T> d(wh,wh,0.0);
+    std::vector<T> buffer(wh*wh+wh);
 
-    IppStatus st = ippFunc(s.data(),wh*sizeof(T),sizeof(T),                                                                                 
-                           buffer.data(),                                                                                                   
-                           d.data(),wh*sizeof(T),sizeof(T),                                                                                 
-                           wh);   
-    if(st != ippStsNoErr){                                                                                                                  
-      throw SingularMatrixException("matrix is too singular");                                                                              
-    }                                                                                                                                       
-    return d;                                                                                                                               
-  }             
+    IppStatus st = ippFunc(s.data(),wh*sizeof(T),sizeof(T),
+                           buffer.data(),
+                           d.data(),wh*sizeof(T),sizeof(T),
+                           wh);
+    if(st != ippStsNoErr){
+      throw SingularMatrixException("matrix is too singular");
+    }
+    return d;
+  }
 
   template<class T, IppStatus (*ippFunc)(const T*,int,int,int,T*,T*)>
   static T apply_dyn_matrix_det(const DynMatrix<T> &s){
@@ -70,7 +70,7 @@ namespace icl{
     }
     unsigned int wh = s.cols();
     std::vector<T> buffer(wh*wh+wh);
-    
+
     T det(0);
     IppStatus st = ippFunc(s.data(),wh*sizeof(T),sizeof(T),
                            wh,buffer.data(),&det);
@@ -80,7 +80,7 @@ namespace icl{
     return det;
   }
 #endif
-  
+
   template<class T>
   static double dot(const DynMatrix<T> &a, const DynMatrix<T> &b){
     ICLASSERT_RETURN_VAL(a.dim() == b.dim(),0.0);
@@ -97,23 +97,23 @@ namespace icl{
   template<class T>
   static void get_minor_matrix(const DynMatrix<T> &M,int col, int row, DynMatrix<T> &D){
     /// we assert M is squared here, and D has size M.size()-Size(1,1)
-    
+
     int nextCol=0,nextRow=0;
     const unsigned int dim = M.cols();
-    for(unsigned int i=0;i<dim;++i){  
-      if((int)i!=row){  
+    for(unsigned int i=0;i<dim;++i){
+      if((int)i!=row){
         nextCol = 0;
-        for(unsigned int j=0;j<dim;j++){  
+        for(unsigned int j=0;j<dim;j++){
           if((int)j!=col){
             D(nextCol++,nextRow) = M(j,i);
-          }  
-        }  
+          }
+        }
         nextRow++;
-      }  
-    }  
+      }
+    }
   }
 
-  
+
   template<class T>
   DynMatrix<T> DynMatrix<T>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
     double detVal = det();
@@ -121,19 +121,19 @@ namespace icl{
     detVal = 1.0/detVal;
 
     DynMatrix M(cols()-1,cols()-1),I(cols(),cols());
-  
-    for(unsigned int i=0;i<cols();i++){      
-      for(unsigned int j=0;j<cols();j++){  
+
+    for(unsigned int i=0;i<cols();i++){
+      for(unsigned int j=0;j<cols();j++){
         get_minor_matrix(*this,i,j,M);
         I(j,i) = detVal * M.det();
-        if((i+j)%2){  
+        if((i+j)%2){
           I(j,i) *= -1;
-        }  
-      }  
+        }
+      }
     }
     return I;
-  }  
-  
+  }
+
   template<class T>
   T DynMatrix<T>::det() const throw (InvalidMatrixDimensionException){
     unsigned int order = cols();
@@ -164,9 +164,9 @@ namespace icl{
         m01 * m10 * m23 * m32-m00 * m11 * m23 * m32-m02 * m11 * m20 * m33+m01 * m12 * m20 * m33+
         m02 * m10 * m21 * m33-m00 * m12 * m21 * m33-m01 * m10 * m22 * m33+m00 * m11 * m22 * m33;
       }
-      default:{  
-        // the determinant value  
-        T det = 0;  
+      default:{
+        // the determinant value
+        T det = 0;
         DynMatrix<T> D(order-1,order-1);
         for(unsigned int i=0;i<order;++i){
           get_minor_matrix(*this,i,0,D);
@@ -181,10 +181,10 @@ namespace icl{
   void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const {
     DynMatrix<T> A = *this; // Working copy
     DynMatrix<T> a(1,rows()), q(1,rows());
-    
+
     Q.setBounds(cols(),rows());
     R.setBounds(cols(),cols());
-    
+
     std::fill(R.begin(),R.end(),0.0);
 
     for (unsigned int i=0;i<cols();i++) {
@@ -196,7 +196,7 @@ namespace icl{
       }else{
         q = a/R(i,i);   // Normalization.
       }
-     
+
       Q.col(i) = q;
       // remove components parallel to q(*,i)
       for (unsigned int j=i+1;j<cols();j++) {
@@ -216,23 +216,23 @@ namespace icl{
         A_(i,j) = (*this)(j,rows()-i-1);
       }
     }
-    
+
     // get the QR-decomposition
     DynMatrix<T> R_(rows(),rows());
     DynMatrix<T> Q_(rows(),rows());
     A_.decompose_QR(Q_,R_);
-    
+
 
     R.setBounds(rows(),rows());
     Q.setBounds(rows(),rows());
-                
+
     // get R by reflecting all entries on the second diagonal
     for (unsigned int i = 0; i<rows(); i++){
       for (unsigned int j = 0; j<rows(); j++){
         R(i,j) = R_(rows()-1-j,rows()-1-i);
       }
     }
-      
+
     // get Q by transposing Q_ and reversing all rows
     for (unsigned int i = 0; i<rows(); i++){
       for (unsigned int j = 0; j<rows(); j++){
@@ -269,39 +269,39 @@ namespace icl{
     unsigned int m = A.rows();
     unsigned int n = A.cols();
     U = A;
-    L = DynMatrix<T>(m,m); 
+    L = DynMatrix<T>(m,m);
     for(unsigned int i=0;i<m;++i) L(i,i) = 1;
-    DynMatrix<T> p(1,m); 
+    DynMatrix<T> p(1,m);
     for(unsigned int i=0;i<m;++i) p[i] = i;
 
-    for(int i=0;i<m-1;++i){
+    for(unsigned int i=0;i<m-1;++i){
       if(is_close_to_zero(U(i,i))){ // here, we need an epsilon
         int k = find_non_zero_in_col(U,i,m);
         if(k != -1){
-          //swap rows i and k 
+          //swap rows i and k
           std::swap(p[i],p[k]);
           swap_range(U.row_begin(i),U.row_end(i),U.row_begin(k));
           swap_range(L.row_begin(i),L.row_begin(i)+i,L.row_begin(k));
         }
       }else{
         T pivot = U(i,i);
-        for(int k=i+1;k<m;++k){
+        for(unsigned int k=i+1;k<m;++k){
           T m = U(i,k)/pivot;
-          for(int j=0;j<n;++j){
+          for(unsigned int j=0;j<n;++j){
             U(j,k) += -m * U(j,i);
           }
           L(i,k) = m;
         }
-      } 
+      }
     }
 
     DynMatrix<T> L2 = L;
-    for(int i=0;i<m;++i){
+    for(unsigned int i=0;i<m;++i){
       int j = p[i];
       std::copy(L2.row_begin(i),L2.row_end(i),L.row_begin(j));
-    } 
+    }
   }
-    
+
   template<class T>
   DynMatrix<T> DynMatrix<T>::solve_upper_triangular(const DynMatrix &b) const throw(InvalidMatrixDimensionException){
     const DynMatrix &M = *this;
@@ -329,9 +329,9 @@ namespace icl{
     }
     return x;
   }
-    
+
   template<class T>
-  DynMatrix<T> DynMatrix<T>::solve(const DynMatrix &b, const std::string &method ,T zeroThreshold) 
+  DynMatrix<T> DynMatrix<T>::solve(const DynMatrix &b, const std::string &method ,T zeroThreshold)
     throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException){
     ICLASSERT_THROW(cols() == rows(), InvalidMatrixDimensionException("DynMatrix::solve only works for squared matrices"));
     if(method == "lu"){
@@ -345,12 +345,14 @@ namespace icl{
     }else if(method == "inv"){
       return inv() * b;
     }
+    throw ICLException("DynMatrix::solve: invalid solve-method");
+    return DynMatrix<T>(0,0);
   }
 
 
-  
-  template<class T> 
-  DynMatrix<T> DynMatrix<T>::pinv(bool useSVD, T zeroThreshold) const 
+
+  template<class T>
+  DynMatrix<T> DynMatrix<T>::pinv(bool useSVD, T zeroThreshold) const
     throw (InvalidMatrixDimensionException,SingularMatrixException, ICLException){
     if(useSVD){
       DynMatrix<T> U,s,V;
@@ -362,7 +364,7 @@ namespace icl{
       }
       DynMatrix S(s.rows(),s.rows(),0.0f);
       for(unsigned int i=0;i<s.rows();++i){
-        S(i,i) = (fabs(s[i]) > zeroThreshold) ? 1.0/s[i] : 0; 
+        S(i,i) = (fabs(s[i]) > zeroThreshold) ? 1.0/s[i] : 0;
       }
       return V * S * U.transp();
     }else{
@@ -376,7 +378,7 @@ namespace icl{
       }
     }
   }
-  
+
 
 
   // This function was taken from VTK Version 5.6.0
@@ -392,13 +394,13 @@ namespace icl{
     T bspace[4], zspace[4];
     T *b = bspace;
     T *z = zspace;
-    
+
     // only allocate memory if the matrix is large
     if (n > 4){
       b = new T[n];
-      z = new T[n]; 
+      z = new T[n];
     }
-    
+
     // initialize
     for (ip=0; ip<n; ip++){
       for (iq=0; iq<n; iq++){
@@ -410,9 +412,9 @@ namespace icl{
       b[ip] = w[ip] = a[ip][ip];
       z[ip] = 0.0;
     }
-    
+
     static const int MAX_ROTATIONS = 30;
-    
+
     // begin rotation sequence
     for (i=0; i<MAX_ROTATIONS; i++){
       sm = 0.0;
@@ -424,7 +426,7 @@ namespace icl{
       if (sm == 0.0){
         break;
       }
-      
+
       if (i < 3){                                // first 3 sweeps
         tresh = 0.2*sm/(n*n);
       }
@@ -457,10 +459,10 @@ namespace icl{
             w[ip] -= h;
             w[iq] += h;
             a[ip][iq]=0.0;
-            
+
 #define ROTATE(a,i,j,k,l) g=a[i][j];h=a[k][l];a[i][j]=g-s*(h+g*tau);    \
             a[k][l]=h+s*(g-h*tau)
-            
+
             // ip already shifted left by 1 unit
             for (j = 0;j <= ip-1;j++){
               ROTATE(a,j,ip,j,iq);
@@ -480,15 +482,15 @@ namespace icl{
           }
         }
       }
-      
+
       for (ip=0; ip<n; ip++) {
         b[ip] += z[ip];
         w[ip] = b[ip];
         z[ip] = 0.0;
       }
     }
-    
-    // sort eigenfunctions                 these changes do not affect accuracy 
+
+    // sort eigenfunctions                 these changes do not affect accuracy
     for (j=0; j<n-1; j++){                  // boundary incorrect
       k = j;
       tmp = w[k];
@@ -547,13 +549,13 @@ namespace icl{
       pvectors[i] = new T[n];
     }
     jacobi_iterate_vtk<T>(pa,n,pvalues,pvectors);
-    
+
     for(int i=0;i<n;++i){
       for(int j=0;j<n;++j){
         eigenvectors(j,i) = pvectors[i][j];
       }
       eigenvalues[i] = pvalues[i];
-      
+
       delete [] pa[i];
       delete [] pvectors[i];
     }
@@ -564,13 +566,13 @@ namespace icl{
   template<>
   void find_eigenvectors(const DynMatrix<icl32f> &a, DynMatrix<icl32f> &eigenvectors, DynMatrix<icl32f> &eigenvalues, icl32f* buffer){
     const int n = a.cols();
-    
+
     icl32f * useBuffer = buffer ? buffer : new icl32f[n*n];
     IppStatus sts = ippmEigenValuesVectorsSym_m_32f (a.begin(), n*sizeof(icl32f), sizeof(icl32f), useBuffer,
                                                      eigenvectors.begin(), n*sizeof(icl32f), sizeof(icl32f),
                                                      eigenvalues.begin(),n);
     if(!buffer) delete [] useBuffer;
-    
+
     if(sts != ippStsNoErr){
       throw ICLException(std::string("IPP-Error in ") + __FUNCTION__ + "\"" +ippGetStatusString(sts) +"\"");
     }
@@ -583,7 +585,7 @@ namespace icl{
                                                      eigenvectors.begin(), n*sizeof(icl64f), sizeof(icl64f),
                                                      eigenvalues.begin(),n);
     if(!buffer) delete [] useBuffer;
-    
+
     if(sts != ippStsNoErr){
       throw ICLException(std::string("IPP-Error in ") + __FUNCTION__ + "\"" +ippGetStatusString(sts) +"\"");
     }
@@ -596,10 +598,10 @@ namespace icl{
     const int n = cols();
     eigenvalues.setBounds(1,n);
     eigenvectors.setBounds(n,n);
-    
+
     find_eigenvectors<T>(*this,eigenvectors,eigenvalues,0);
   }
-  
+
   template<class T>
   void DynMatrix<T>::svd(DynMatrix &V, DynMatrix &s, DynMatrix &U) const throw (ICLException){
     svd_dyn<T>(*this,V,s,U);
@@ -620,52 +622,52 @@ namespace icl{
     return apply_dyn_matrix_det<double,ippmDet_m_64f>(*this);
   }
 #endif
-  
+
 
   template void DynMatrix<float>::svd(DynMatrix<float>&, DynMatrix<float>&,DynMatrix<float>&) const throw (ICLException);
   template void DynMatrix<double>::svd(DynMatrix<double>&, DynMatrix<double>&,DynMatrix<double>&) const throw (ICLException);
-  
+
   template void DynMatrix<float>::eigen(DynMatrix<float>&,DynMatrix<float>&) const throw(InvalidMatrixDimensionException,ICLException);
   template void DynMatrix<double>::eigen(DynMatrix<double>&,DynMatrix<double>&) const throw(InvalidMatrixDimensionException,ICLException);
 
   template DynMatrix<float> DynMatrix<float>::inv()const throw (InvalidMatrixDimensionException,SingularMatrixException);
   template DynMatrix<double> DynMatrix<double>::inv()const throw (InvalidMatrixDimensionException,SingularMatrixException);
-  
+
   template float DynMatrix<float>::det()const throw (InvalidMatrixDimensionException);
   template double DynMatrix<double>::det()const throw (InvalidMatrixDimensionException);
 
-  template void DynMatrix<float>::decompose_QR(DynMatrix<float> &Q, DynMatrix<float> &R) const 
+  template void DynMatrix<float>::decompose_QR(DynMatrix<float> &Q, DynMatrix<float> &R) const
     throw (InvalidMatrixDimensionException,SingularMatrixException);
-  template void DynMatrix<double>::decompose_QR(DynMatrix<double> &Q, DynMatrix<double> &R) const 
+  template void DynMatrix<double>::decompose_QR(DynMatrix<double> &Q, DynMatrix<double> &R) const
     throw (InvalidMatrixDimensionException,SingularMatrixException);
 
   template void DynMatrix<float>::decompose_RQ(DynMatrix<float> &R, DynMatrix<float> &Q) const
     throw (InvalidMatrixDimensionException,SingularMatrixException);
-  template void DynMatrix<double>::decompose_RQ(DynMatrix<double> &R, DynMatrix<double> &Q) const 
+  template void DynMatrix<double>::decompose_RQ(DynMatrix<double> &R, DynMatrix<double> &Q) const
     throw (InvalidMatrixDimensionException,SingularMatrixException);
 
   template void DynMatrix<float>::decompose_LU(DynMatrix<float> &L, DynMatrix<float> &U, float zeroThreshold) const;
   template void DynMatrix<double>::decompose_LU(DynMatrix<double> &L, DynMatrix<double> &U, double zeroThreshold) const;
-  
-  template DynMatrix<float> DynMatrix<float>::solve_upper_triangular(const DynMatrix<float> &b) 
+
+  template DynMatrix<float> DynMatrix<float>::solve_upper_triangular(const DynMatrix<float> &b)
     const throw(InvalidMatrixDimensionException);
-  template DynMatrix<double> DynMatrix<double>::solve_upper_triangular(const DynMatrix<double> &b) 
+  template DynMatrix<double> DynMatrix<double>::solve_upper_triangular(const DynMatrix<double> &b)
     const throw(InvalidMatrixDimensionException);
 
-  template DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b) 
+  template DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b)
     const throw(InvalidMatrixDimensionException);
-  template DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b) 
+  template DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b)
     const throw(InvalidMatrixDimensionException);
-  
-  template DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, const std::string &method,float zeroThreshold) 
+
+  template DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, const std::string &method,float zeroThreshold)
     throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException);
-  template DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, const std::string &method,double zeroThreshold) 
+  template DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, const std::string &method,double zeroThreshold)
     throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException);
-  
-    
-  template DynMatrix<float> DynMatrix<float>::pinv(bool,float) const 
+
+
+  template DynMatrix<float> DynMatrix<float>::pinv(bool,float) const
     throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
-  template DynMatrix<double> DynMatrix<double>::pinv(bool,double) const 
+  template DynMatrix<double> DynMatrix<double>::pinv(bool,double) const
     throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
 
 
@@ -678,11 +680,11 @@ namespace icl{
   static inline std::istream &icl_from_stream(std::istream &s, T &t){
     return s >> t;
   }
-  
+
   template<> inline std::ostream &icl_to_stream(std::ostream &s, uint8_t t){
     return s << (int)t;
   }
-  
+
   template<> inline std::istream &icl_from_stream(std::istream &s, uint8_t &t){
     int tmp;
     s >> tmp;
@@ -730,14 +732,14 @@ namespace icl{
 #define X(T)                                                            \
   template std::ostream &operator<<(std::ostream&,const DynMatrix<T >&); \
   template std::istream &operator>>(std::istream&,DynMatrix<T >&)
-  
+
   X(uint8_t);
   X(int16_t);
   X(int32_t);
   X(float);
   X(double);
-  
-  X(std::complex<float>); 
-  X(std::complex<double>); 
+
+  X(std::complex<float>);
+  X(std::complex<double>);
 }
 

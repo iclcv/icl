@@ -49,7 +49,7 @@ Size compute_image_size(const std::vector<const ImgBase*> &is, QDesktopWidget *d
     s.height = iclMax(s.height,is[i]->getHeight());
   }
   QRect r = desktop->availableGeometry();
-  
+
   return Size(iclMin(s.width,r.width()-20),iclMin(s.height,r.height()-20));
 }
 
@@ -61,22 +61,24 @@ int main (int n, char **ppc){
   ("-roi","if set, image roi is visualized");
   painit(n,ppc,"-input|-i(filename) -delete|-d -roi|-r",true);
 
-  const ImgBase *image = 0;  
+  const ImgBase *image = 0;
   if(pa("-input")){
     string imageName = pa("-input");
-  
+
     try{
       static FileGrabber w(imageName);
       w.setIgnoreDesiredParams(true);
       image = w.grab();
       if(pa("-delete")){
         if(imageName.length()){
-          system((string("rm -rf ")+imageName).c_str());
+          int errorCode = system((string("rm -rf ")+imageName).c_str());
+          if ( errorCode != 0 )
+            WARNING_LOG( "Error code of system call unequal 0!" );
         }
       }
     }catch(ICLException e){
       static ImgQ o = ones(320,240,1)*100;
-      fontsize(15); 
+      fontsize(15);
       text(o, 90,90,"image not found!");
       image = &o;
     }
@@ -87,10 +89,10 @@ int main (int n, char **ppc){
     Size size = compute_image_size(std::vector<const ImgBase*>(1,image),QApplication::desktop());
     gui = GUI("image[@handle=draw@size="+str(size/20)+"]");
     gui.show();
-    
+
     gui["draw"] = image;
     gui["draw"].update();
-  
+
   }else if(pacount()){
     if(pa("-delete")){
       std::cout << "-delete flag is not supported when running in multi image mode" << std::endl;
@@ -109,7 +111,7 @@ int main (int n, char **ppc){
         maxSize.width = iclMax(image->getWidth(),maxSize.width);
         maxSize.height = iclMax(image->getHeight(),maxSize.height);
         imageVec.push_back(image->deepCopy());
-        
+
         std::replace_if(s.begin(),s.end(),std::bind2nd(std::equal_to<char>(),','),'-');
         imageList += (imageList.length() ? ",": "") +s;
         imageVecStrs.push_back(s);
@@ -121,12 +123,12 @@ int main (int n, char **ppc){
     Size size = compute_image_size(imageVec,QApplication::desktop());
     gui << std::string("multidraw(")+imageList+",!all,!deepcopy)[@handle=image@size="+str(size/20)+"]";
     gui.show();
-    
+
     MultiDrawHandle &h = gui.getValue<MultiDrawHandle>("image");
     for(unsigned int i=0;i<imageVecStrs.size();++i){
       h[imageVecStrs[i]] = imageVec[i];
       ICL_DELETE(imageVec[i]);
-    }    
+    }
   }else{
     static ImgQ o = ones(320,240,1)*100;
     image = &o;

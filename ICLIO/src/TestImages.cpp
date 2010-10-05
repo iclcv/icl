@@ -57,7 +57,7 @@ using std::map;
 using namespace icl;
 
 namespace {
-  struct XPMColor{ 
+  struct XPMColor{
     // {{{ open
 
   XPMColor(int r=0, int g=0, int b=0):
@@ -66,14 +66,14 @@ namespace {
 };
 
 // }}}
-  
+
   typedef map<string,XPMColor> colormap;
   typedef map<char,int> charmap;
   typedef vector<string> strvec;
-  
+
   colormap g_mapXPMColors;
   charmap g_mapHexLut;
-  
+
   void initColorMap(){
     // {{{ open
 
@@ -102,7 +102,7 @@ namespace {
   g_mapXPMColors["yellow"]=XPMColor(255,255,0);
 
   g_mapXPMColors["lemonChiffon"]=XPMColor(255,250,205);
-  g_mapXPMColors["lightYellow"]=XPMColor(255,255,224); 
+  g_mapXPMColors["lightYellow"]=XPMColor(255,255,224);
   g_mapXPMColors["wheat"]=XPMColor(245,222,179);
   g_mapXPMColors["tan"]=XPMColor(210,180,140);
   g_mapXPMColors["khaki4"]=XPMColor(139,134,78);
@@ -113,13 +113,13 @@ namespace {
   g_mapXPMColors["chocolate"]=XPMColor(210,105,30);
   g_mapXPMColors["sienna"]=XPMColor(160,82,45);
 
-  g_mapXPMColors["lightSeaGreen"]=XPMColor(32,178,170);  
-  g_mapXPMColors["darkGreen"]=XPMColor(0,100,0);  
-  g_mapXPMColors["seaGreen"]=XPMColor(46,139,87);  
-  g_mapXPMColors["limeGreen"]=XPMColor(50,205,50);  
-  g_mapXPMColors["green"]=XPMColor(0,255,0);  
+  g_mapXPMColors["lightSeaGreen"]=XPMColor(32,178,170);
+  g_mapXPMColors["darkGreen"]=XPMColor(0,100,0);
+  g_mapXPMColors["seaGreen"]=XPMColor(46,139,87);
+  g_mapXPMColors["limeGreen"]=XPMColor(50,205,50);
+  g_mapXPMColors["green"]=XPMColor(0,255,0);
   g_mapXPMColors["paleGreen"]=XPMColor(152,251,152);
-  
+
   g_mapXPMColors["navyBlue"]=XPMColor(0,0,128);
   g_mapXPMColors["navy"]=XPMColor(0,0,128);
   g_mapXPMColors["blue"]=XPMColor(0,0,255);
@@ -130,7 +130,7 @@ namespace {
 }
 
 // }}}
-  
+
   void initHexLut(){
     // {{{ open
 
@@ -138,11 +138,11 @@ namespace {
   if(done)return;
   done = 1;
   char _c[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-  for(int i=0;i<16;i++) g_mapHexLut[_c[i]]=i;  
+  for(int i=0;i<16;i++) g_mapHexLut[_c[i]]=i;
 }
 
 // }}}
-  
+
   XPMColor getHexColor(string s,bool &ok){
     // {{{ open
     if(s.length()==6){
@@ -163,7 +163,7 @@ namespace {
 }
 
   // }}}
-  
+
   XPMColor getGrayColor(string s, bool &ok){
     // {{{ open
 
@@ -174,13 +174,13 @@ namespace {
         ok = 1;
         return XPMColor(g,g,g);
       }
-    }    
+    }
     ok = 0;
     return XPMColor();
   }
 
   // }}}
-  
+
   XPMColor getColor(string s){
     // {{{ open
 
@@ -188,7 +188,7 @@ namespace {
   initHexLut();
   bool ok;
   XPMColor c;
-  
+
   if(s.length() < 2) return XPMColor(0,0,0);
   if(s[0]=='#'){
     s=&(s[1]);
@@ -200,13 +200,13 @@ namespace {
   if(ok)return c;
   c = getGrayColor(s,ok);
   if(ok) return c;
- 
+
   printf("no color found for [%s] \n",s.c_str());
-  return XPMColor();    
+  return XPMColor();
 }
 
 // }}}
-  
+
   static const char *ppc_woman_xpm[] = {
     // {{{ open
 
@@ -288,7 +288,7 @@ namespace {
 };
 
 // }}}
-  
+
   static const char *ppc_tree_xpm[] = {
     // {{{ open
 
@@ -367,7 +367,7 @@ namespace {
 };
 
 // }}}
-  
+
   static const char *ppc_house_xpm[] = {
     // {{{ open
 
@@ -450,10 +450,10 @@ namespace {
 };
 
 // }}}
-  
+
   strvec tokenize(string s,string sDelims){
     // {{{ open
-    
+
     string::size_type iPos;
     string::size_type iLastPos = 0;
     vector<string> oTokens;
@@ -461,7 +461,7 @@ namespace {
     // we don't want empty tokens
     if (iPos != iLastPos)
       oTokens.push_back(s.substr(iLastPos,iPos-iLastPos));
-    
+
     while(iPos != string::npos){
       iLastPos = iPos;
       iPos = s.find_first_of( sDelims, iLastPos+1 );
@@ -470,7 +470,7 @@ namespace {
     return oTokens;
   }
   // }}}
-  
+
   Img8u *read_xpm(const char **p){
     // {{{ open
 
@@ -480,7 +480,7 @@ namespace {
   int h = atoi(headA[1].c_str());
   int colors = atoi(headA[2].c_str());
   int one = atoi(headA[3].c_str()); (void)one;
-  
+
   // parsing colors:
   XPMColor lut[256];
   for(int i=0;i<colors;i++){
@@ -488,7 +488,7 @@ namespace {
     if(line.length() < 5){
       printf ("error paring color line \"%s\" \n",line.c_str());
       continue;
-    }    
+    }
     lut[(int)line[0]] = getColor(&(line[4]));
   }
 
@@ -514,7 +514,7 @@ namespace {
 }
 
 namespace icl{
-  
+
   Img8u *TestImages::internalCreate(const string &name){
     try{
       if(name == "women"){
@@ -550,7 +550,7 @@ namespace icl{
 
     Img8u *src = internalCreate(name);
     if(!src) return 0;
-    
+
     if(src->getDepth() != d || src->getFormat() != f){
       ImgBase *dst = imgNew(d,src->getSize(),f);
       Converter(src,dst);
@@ -563,7 +563,7 @@ namespace icl{
 
   // }}}
 
-  
+
   ImgBase* TestImages::create(const string& name, const Size& size,format f, depth d){
     // {{{ open
 
@@ -581,22 +581,22 @@ namespace icl{
   }
 
   // }}}
-  
-  
-  void TestImages::show(const ImgBase *image, 
+
+
+  void TestImages::show(const ImgBase *image,
                         const std::string &showCommand,
                         long msec_to_rm_call,
                         const std::string &rmCommand){
 
     ICLASSERT_RETURN(image);
-    
+
     string timeStr = Time::now().toString();
     for(unsigned int i=0;i<timeStr.length();i++){
       if(timeStr[i]=='/') timeStr[i]='_';
       if(timeStr[i]==' ') timeStr[i]='_';
       if(timeStr[i]==':') timeStr[i]='_';
     }
-    
+
     string postfix = ".icl"; // NO-NO-NO! ppm is 8Bit only image->getChannels() == 3 ? ".ppm" : ".pgm";
     string name = string(".tmpImage.")+timeStr+postfix;
     try{
@@ -609,26 +609,30 @@ namespace icl{
       ERROR_LOG("unable to show image (image could not be written to a temporary file)");
       return;
     }
-    
+
     char showCommandStr[500];
     sprintf(showCommandStr,showCommand.c_str(),name.c_str());
-    
+
     char rmCommandStr[500];
     sprintf(rmCommandStr,rmCommand.c_str(),name.c_str());
-    
-    system((string(showCommandStr)+" &").c_str());
+
+    int errorCode = system((string(showCommandStr)+" &").c_str());
+    if ( errorCode != 0 )
+      WARNING_LOG( "Error code of system call unequal 0!" );
 
     if(string(rmCommand).length()){
-	  #ifndef ICL_SYSTEM_WINDOWS
+      #ifndef ICL_SYSTEM_WINDOWS
       usleep(1000*msec_to_rm_call);
-	  #else
-	  //TODO where is this function located
-	  //sleep(1000*msec_to_rm_call);
-	  #endif
-      system((string(rmCommandStr)+" &").c_str());
+      #else
+      //TODO where is this function located
+      //sleep(1000*msec_to_rm_call);
+      #endif
+      errorCode = system((string(rmCommandStr)+" &").c_str());
+      if ( errorCode != 0 )
+        WARNING_LOG( "Error code of system call unequal 0!" );
     }
   }
-  
+
 void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
     // {{{ open
     string name = nameIn;
@@ -646,16 +650,20 @@ void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
       return;
     }
 
-    system(string("xv ").append(name).append(" &").c_str());
-	//#ifndef ICL_SYSTEM_WINDOWS
+    int errorCode = system(string("xv ").append(name).append(" &").c_str());
+    if ( errorCode != 0 )
+      WARNING_LOG( "Error code of system call unequal 0!" );
+    //#ifndef ICL_SYSTEM_WINDOWS
     Thread::msleep(msec);
-	//#else
-	//TODO where is this function located
-	//sleep(msec*10000);
-	//#endif
-    system(string("rm -rf ").append(name).c_str());
+    //#else
+    //TODO where is this function located
+    //sleep(msec*10000);
+    //#endif
+    errorCode = system(string("rm -rf ").append(name).c_str());
+    if ( errorCode != 0 )
+      WARNING_LOG( "Error code of system call unequal 0!" );
   }
 
   // }}}
- 
+
 }
