@@ -167,13 +167,13 @@ namespace icl{
       carc.c.parables[0] = P[0];
       carc.c.parables[1] = P[1];
       std::copy(other.begin(),other.begin()+3,carc.ref);
-      std::copy(other.begin()+4,other.begin()+6,carc.thresh);
+      std::copy(other.begin()+3,other.begin()+6,carc.thresh);
       
-      printf("saving current state [XML]! \n");
       ChromaClassifierIO::save(carc,filename);
       
       // now reopen that file and add gui-informamtion
       ConfigFile f(filename);
+
       static std::string x[6] = {"xpos","ypos","dim","red","green","blue"};
       for(int i=0;i<6;i++){
         const Dragger &d = D[i];

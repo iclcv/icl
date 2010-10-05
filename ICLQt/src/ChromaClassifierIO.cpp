@@ -50,7 +50,10 @@ namespace icl{
   }
   
   void ChromaClassifierIO::save(const ChromaClassifier &cc,const  std::string &filename, const std::string &name){
-    ConfigFile f(filename);
+    ConfigFile f;
+    try{
+      f = ConfigFile(filename);
+    }catch(...){}
     const char cs[] = "abc";
     for(int p=0;p<2;++p){
       for(int c=0;c<3;++c){

@@ -198,6 +198,9 @@ namespace icl{
     
     /// flag whether to pre-buffer images or not
     bool m_bBufferImages;
+
+    /// indicates whether to jump to next frame automatically
+    bool m_bAutoNext;
     
     /// A special buffer image
     ImgBase *m_poBufferImage;

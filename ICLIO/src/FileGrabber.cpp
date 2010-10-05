@@ -120,7 +120,7 @@ namespace icl{
     static FileGrabberPluginMapInitializer i;
   }
   
-  FileGrabberImpl::FileGrabberImpl():m_iCurrIdx(0){
+  FileGrabberImpl::FileGrabberImpl():m_iCurrIdx(0),m_bAutoNext(true){
     init_filegrabber();
   }
   
@@ -132,6 +132,7 @@ namespace icl{
     m_oFileList(pattern),
     m_iCurrIdx(0),
     m_bBufferImages(false),
+    m_bAutoNext(true),
     m_poBufferImage(0){
     
     init_filegrabber();
@@ -240,18 +241,21 @@ namespace icl{
       ICLASSERT_RETURN_VAL(m_vecImageBuffer.size(),NULL);
       if(!m_bIgnoreDesiredParams){
         ImgBase* useDestImage = prepareOutput(ppoDst);
-        m_oConverter.apply(m_vecImageBuffer[m_iCurrIdx++],useDestImage);
+        m_oConverter.apply(m_vecImageBuffer[m_iCurrIdx],useDestImage);
+        if(m_bAutoNext) ++m_iCurrIdx;
         if(m_iCurrIdx >= (int)m_vecImageBuffer.size()) m_iCurrIdx = 0;
         return useDestImage;
       }else{
-        ImgBase *p = m_vecImageBuffer[m_iCurrIdx++];
+        ImgBase *p = m_vecImageBuffer[m_iCurrIdx];
+        if(m_bAutoNext) ++m_iCurrIdx;
         if(m_iCurrIdx >= (int)m_vecImageBuffer.size()) m_iCurrIdx = 0;
         return p;
       }
     }
     ICLASSERT_RETURN_VAL(!m_oFileList.isNull(),NULL);
     
-    File f(m_oFileList[m_iCurrIdx++]);
+    File f(m_oFileList[m_iCurrIdx]);
+    if(m_bAutoNext) ++m_iCurrIdx;
     if(!f.exists()) throw FileNotFoundException(f.getName());
     if(m_iCurrIdx >= m_oFileList.size()) m_iCurrIdx = 0;
     
@@ -319,16 +323,27 @@ namespace icl{
       prev();
     }else if(property == "jump-to-start"){
       m_iCurrIdx = 0;
+    }else if(property == "auto-next"){
+      if(value == "on"){
+        m_bAutoNext = true;
+      }else if(value == "off"){
+        m_bAutoNext = false;
+      }else{
+        ERROR_LOG("cannot set property \"auto-next\" to \"" 
+                  << value 
+                  << "\" (allowed values are  \"on\" and \"off\")");
+      }
     }else{
       ERROR_LOG("property \"" << property << "\" is not available of cannot be set");
     }
   }
   
   std::vector<std::string> FileGrabberImpl::getPropertyList(){
-    static const std::string ps[7] = {
-      "next","prev","next filename","current filename","jump-to-start","relative progress","absolute progress"
+    static const std::string ps[8] = {
+      "next","prev","next filename","current filename","jump-to-start",
+      "relative progress","absolute progress","auto-next"
     };
-    return std::vector<std::string>(ps,ps+7);
+    return std::vector<std::string>(ps,ps+8);
   }
   
   std::string FileGrabberImpl:: getType(const std::string &name){
@@ -337,6 +352,8 @@ namespace icl{
     }else if (name == "next filename" || name == "current filename" || name == "relative progress"
               || name == "absolute progress"){
       return "info";
+    }else if(name == "auto-next"){
+      return "menu";
     }else{
       ERROR_LOG("nothing known about property \"" << name << "\"");
       return "undefined";
@@ -344,6 +361,7 @@ namespace icl{
   }
   
   std::string FileGrabberImpl::getInfo(const std::string &name){
+    if(name == "auto-next") return "{\"on\",\"off\"}";
     ERROR_LOG("no info available for info \"" << name << "\"");
     return "undefined";
   }
@@ -357,6 +375,8 @@ namespace icl{
       return str((100* (m_iCurrIdx+1)) / float(m_oFileList.size()))+" %";
     }else if(name == "absolute progress"){
       return str(m_iCurrIdx+1) + " / " + str(m_oFileList.size());
+    }else if(name == "auto-next"){
+      return m_bAutoNext ? "on" : "off";
     }else{
       ERROR_LOG("no info available for property \"" << name << "\"");
       return "undefined";
@@ -364,7 +384,7 @@ namespace icl{
   }
 
   int FileGrabberImpl::isVolatile(const std::string &name){
-    if(name == "next" || name == "prev" || name == "jump-to-start"){
+    if(name == "next" || name == "prev" || name == "jump-to-start" || "auto-next"){
       return 0;
     }else if (name == "next filename" || name == "current filename" || name == "relative progress"
               || name == "absolute progress"){
