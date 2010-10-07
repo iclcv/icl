@@ -79,13 +79,17 @@ namespace icl{
     
 #ifdef HAVE_OPENCV2
     if(type == "video"){
-
-      std::vector<std::string> t = tok(d,",");
-      if(!t.size()) throw ICLException("unable to create OpenCVVideoWriter with empty destination filename");
-      std::string fourcc = t.size() > 1 ? t[1] : str("DIV3");
-      Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
-      double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
-      o = new OpenCVVideoWriter(t[0],fourcc,fps,size);
+      try{
+        std::vector<std::string> t = tok(d,",");
+        if(!t.size()) throw ICLException("unable to create OpenCVVideoWriter with empty destination filename");
+        std::string fourcc = t.size() > 1 ? t[1] : str("DIV3");
+        Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
+        double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
+        o = new OpenCVVideoWriter(t[0],fourcc,fps,size);
+      }catch(const std::exception &ex){
+        ERROR_LOG("Unable to create OpenCVVideoWriter with this parameters: " << d);
+      }
+      
     }
 #endif
     

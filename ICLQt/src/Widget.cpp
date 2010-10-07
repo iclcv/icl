@@ -38,7 +38,7 @@
 #include <ICLCore/Img.h>
 #include <ICLQt/GLTextureMapBaseImage.h>
 #include <ICLQt/GLPaintEngine.h>
-#include <ICLIO/FileWriter.h>
+#include <ICLIO/GenericImageOutput.h>
 #include <string>
 #include <vector>
 #include <ICLUtils/Time.h>
@@ -47,8 +47,6 @@
 #include <QtGui/QImage>
 
 #include <ICLQt/IconFactory.h>
-
-#include <ICLIO/FileWriter.h>
 #include <ICLUtils/Thread.h>
 
 #include <QtGui/QPainter>
@@ -67,6 +65,7 @@
 #include <QtGui/QPaintEvent>
 #include <QtGui/QWheelEvent>
 #include <QtGui/QColorDialog>
+#include <QtGui/QMessageBox>
 #include <QtGui/QTextEdit>
 
 
@@ -84,6 +83,8 @@
 #include <ICLQt/ThreadedUpdatableWidget.h>
 
 #include <ICLUtils/Rect32f.h>
+#include <ICLIO/File.h>
+#include <ICLIO/FileWriter.h>
 #include <ICLUtils/Range.h>
 #include <ICLCore/Types.h>
 #include <ICLQt/ThreadedUpdatableSlider.h>
@@ -657,22 +658,22 @@ namespace icl{
     enum CaptureTarget { SET_IMAGES, FRAME_BUFFER };
     CaptureTarget target;
     Mutex mutex;
-    FileWriter *fileWriter;
-    std::string filePattern;
+    GenericImageOutput imageOutput;
+    std::string deviceType;
+    std::string deviceInfo;
     int frameSkip;
     int frameIdx;
   public:
     OutputBufferCapturer(ICLWidget *parent, ICLWidget::Data *data):
-      parent(parent),data(data),target(SET_IMAGES),fileWriter(0),
+      parent(parent),data(data),target(SET_IMAGES),
       frameSkip(0),frameIdx(0){}
     
     ~OutputBufferCapturer(){
-      ICL_DELETE(fileWriter);
     }
 
     void ensureDirExists(const QString &dirName){
       if(!dirName.length()){
-        throw ICLException("empty file pattern");
+        return;
       }
       if(dirName[0] == '/'){
         QDir("/").mkpath(dirName);
@@ -680,17 +681,24 @@ namespace icl{
         QDir("./").mkpath(dirName);
       }
     }
-    bool startRecording(CaptureTarget t, const std::string &filePattern, int frameskip){
+    bool startRecording(CaptureTarget t, const std::string &device, const std::string &params, int frameSkip){
       Mutex::Locker l(mutex);
       target = t;
-      ICL_DELETE(fileWriter);
-      this->filePattern = filePattern;
-      try{
-        fileWriter = new FileWriter(filePattern);
-        ensureDirExists(File(filePattern).getDir().c_str());
-      }catch(ICLException &ex){
-        ERROR_LOG("unable to create filewriter with this pattern: " << filePattern << "\nerror:"<< ex.what());
+      this->frameSkip = frameSkip;
+      imageOutput.init(device,params);
+      if(imageOutput.isNull()){
+        QMessageBox::critical(0,"error","Unable to create image output device");
         return false;
+      }
+      deviceType = deviceType;
+      deviceInfo = params;
+
+      if(device == "file"){
+        ensureDirExists(File(params).getDir().c_str());        
+      }else if(device == "video"){
+        std::vector<std::string> ts = tok(params,",");
+        if(!ts.size()) throw ICLException(str(__FUNCTION__)+": Error 12345 (this should not happen)");
+        ensureDirExists(File(ts.front()).getDir().c_str());
       }
       recording = true;
       paused = false;
@@ -710,7 +718,7 @@ namespace icl{
     void captureImageHook(){
       Mutex::Locker l(mutex);
       if(!recording || paused || (target != SET_IMAGES) ) return;
-      ICLASSERT_RETURN(fileWriter);
+      ICLASSERT_RETURN(!imageOutput.isNull());
       if(frameIdx < frameSkip){
         frameIdx++;
         return;
@@ -719,7 +727,7 @@ namespace icl{
       }
       try{
         ImgBase *image = data->image->deepCopy();
-        fileWriter->write(image);
+        imageOutput.send(image);
         delete image;
       }catch(ICLException &ex){
         ERROR_LOG("unable to capture current image:" << ex.what());
@@ -730,7 +738,7 @@ namespace icl{
       Mutex::Locker l(mutex);
 
       if(!recording || paused || (target != FRAME_BUFFER)) return;
-      ICLASSERT_RETURN(fileWriter);
+      ICLASSERT_RETURN(!imageOutput.isNull());
 
       if(frameIdx < frameSkip){
         frameIdx++;
@@ -740,17 +748,9 @@ namespace icl{
       }
       try{
         const Img8u &fb = parent->grabFrameBufferICL();
-        fileWriter->write(&fb);
+        imageOutput.send(&fb);
       }catch(ICLException &ex){
         ERROR_LOG("unable to capture frame buffer:" << ex.what());
-      }
-    }
-    std::string getNextFileName(){
-      Mutex::Locker l(mutex);
-      if(fileWriter){
-        return fileWriter->getFilenameGenerator().showNext();
-      }else{
-        return "currently not recording...";
       }
     }
   };
@@ -1136,15 +1136,27 @@ namespace icl{
     
     bool autoCapFB = data->outputCap && data->outputCap->target==ICLWidget::OutputBufferCapturer::FRAME_BUFFER;
     int autoCapFS = data->outputCap ? (data->outputCap->frameSkip) : 0;
-    std::string autoCapFP = data->outputCap ? data->outputCap->filePattern : str("captured/image_####.ppm");
     bool autoCapRec = data->outputCap && data->outputCap->recording;
     bool autoCapPau = data->outputCap && data->outputCap->paused;
 
+    std::string FILE = "file";
+    std::string VIDEO = "video";
+    std::string XCFP = "xcfp";
+    std::string SM = "sm";
+    if(data->outputCap){
+      if(data->outputCap->deviceType == "file") FILE = "!"+FILE;
+      else if(data->outputCap->deviceType == "video") VIDEO = "!"+VIDEO;
+      else if(data->outputCap->deviceType == "xcfp") XCFP = "!"+XCFP;
+      else if(data->outputCap->deviceType == "sm") SM = "!"+SM;
+    }
+    std::string autoCapFP = data->outputCap ? data->outputCap->deviceInfo : "captured/image_####.ppm";
+    
     GUI autoCapGUI("vbox[@label=automatic]");
     autoCapGUI << ( GUI("hbox")
                     << str("combo(image,")+(autoCapFB?"!":"")+"frame buffer)[@label=mode@handle=auto-cap-mode@out=_6]"
                     << str("spinner(0,100,")+str(autoCapFS)+")[@label=frame skip@handle=auto-cap-frameskip@out=_10]"
-                    << str("string(")+autoCapFP+",100)[@label=file pattern@handle=auto-cap-filepattern@out=_7]"
+                    << str("combo(")+FILE+","+VIDEO+","+XCFP+","+SM+")[@label=dest.@handle=auto-cap-device]"
+                    << str("string(")+autoCapFP+",200)[@label=output params@handle=auto-cap-filepattern@out=_7]"
                   )
                << ( GUI("hbox")
                     << str("togglebutton(record,")+(autoCapRec?"!":"")+"record)[@handle=auto-cap-record@out=_8]"
@@ -1189,6 +1201,69 @@ namespace icl{
     
     data->menu.create();
 
+
+    (*data->menu.getValue<ComboHandle>("auto-cap-mode"))->setToolTip("== Choose What to Capture =="
+                                                                     "\n"
+                                                                     "= image =\n"
+                                                                     "Captures each image that is set via\n"
+                                                                     "setImage(..). In this case, only the\n"
+                                                                     "image in its real unscaled size is\n" 
+                                                                     "captured\n"
+                                                                     "\n"
+                                                                     "= frame buffer=\n"
+                                                                     "Captures each framebuffer, that is\n"
+                                                                     "displayed. In this case, the whole\n"
+                                                                     "Widget content is captured (including\n"
+                                                                     "2D and 3D overlay). The image will\n"
+                                                                     "be captured in it's visualized (scaled)\n"
+                                                                     "size. If you minimize the window, the\n"
+                                                                     "resulting images might become black");
+
+    (*data->menu.getValue<ComboHandle>("auto-cap-device"))->setToolTip("== Choose Output Device Type ==\n"
+                                                                       "\n"
+                                                                       "= file =\n"
+                                                                       "Captures each image as file to disk.\n"
+                                                                       "\n"
+                                                                       "= video =\n"
+                                                                       "Create a video output stream and encodes\n"
+                                                                       "each image online. (only possible if OpenCV2\n"
+                                                                       "is available)\n"
+                                                                       "\n"
+                                                                       "= xcfp =\n"
+                                                                       "Creates an xcf-publisher to publish images\n"
+                                                                       "via network (only possible if XCF is \n"
+                                                                       "is available)\n"
+                                                                       "\n"
+                                                                       "= sm =\n"
+                                                                       "Creates a SharedMemoryPublisher, that\n"
+                                                                       "publishs the image via QShareMemory"
+                                                                       );
+    (*data->menu.getValue<StringHandle>("auto-cap-filepattern"))->setToolTip("== Specify Parameters for Capturing\n"
+                                                                             "The allowed parameters depend on the\n"
+                                                                             "used device type.\n"
+                                                                             "\n"
+                                                                             "= file =\n"
+                                                                             "Filepattern like ./images/image_####.ppm\n"
+                                                                             "\n"
+                                                                             "= video =\n"
+                                                                             "Syntax FILENAME[,CODEC[,SIZE[,FPS]]]\n"
+                                                                             "like foo.avi,DIVX,24\n"
+                                                                             "or simply bla.avi\n"
+                                                                             "possible codes are: \n"
+                                                                             " * PIM1 (for mpeg 1)\n"
+                                                                             " * MJPG (for motion jepg)\n"
+                                                                             " * MP42 (for mpeg 4.2)\n"
+                                                                             " * DIV3 (for mpeg 4.3)\n"
+                                                                             " * DIVX (for mpeg 4)\n"
+                                                                             " * U263 (for H263 codec)\n"
+                                                                             " * I263 (for H263I codec)\n"
+                                                                             " * FLV1 (for FLV1 code)\n"
+                                                                             "\n"
+                                                                             "= xcfp =\n"
+                                                                             "XCF-stream name like 'stream'\n"
+                                                                             "\n"
+                                                                             "= sm =\n"
+                                                                             "Shared memory segment name like MySMEM");
 
 
     data->menuptr = data->menu.getRootWidget();
@@ -1531,9 +1606,10 @@ namespace icl{
       OutputBufferCapturer::CaptureTarget t = m_data->menu.getValue<ComboHandle>("auto-cap-mode").getSelectedIndex()?
                                               OutputBufferCapturer::FRAME_BUFFER :  OutputBufferCapturer::SET_IMAGES;
 
-      const std::string filePattern = m_data->menu.getValue<StringHandle>("auto-cap-filepattern").getCurrentText();
+      const std::string params = m_data->menu.getValue<StringHandle>("auto-cap-filepattern").getCurrentText();
+      const std::string device = m_data->menu.getValue<ComboHandle>("auto-cap-device").getSelectedItem();
       int frameSkip = m_data->menu.getValue<SpinnerHandle>("auto-cap-frameskip").getValue();
-      bool ok = m_data->outputCap->startRecording(t,filePattern,frameSkip);
+      bool ok = m_data->outputCap->startRecording(t,device,params,frameSkip);
       if(!ok){
         (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
       }else{
