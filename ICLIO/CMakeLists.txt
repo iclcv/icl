@@ -101,6 +101,9 @@ add_libsource (${PROJECT_NAME} "src/OpenCVCamGrabber.cpp" "${CONDITIONLIST}" LIB
 add_libsource (${PROJECT_NAME} "src/OpenCVVideoWriter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_OPENCV2_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCVVideoGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST HAVE_QT_COND)
+add_libsource (${PROJECT_NAME} "src/SharedMemoryGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
