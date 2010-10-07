@@ -59,6 +59,7 @@ add_libsource (${PROJECT_NAME} "src/IOUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/TestImages.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DemoGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DistFromProgArgUtil.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/GenericImageOutput.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_LIBMESASR_COND)
 add_libsource (${PROJECT_NAME} "src/SwissRangerGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_LIBJPEG_COND)
@@ -103,6 +104,7 @@ set(CONDITIONLIST HAVE_OPENCV2_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCVVideoGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_QT_COND)
 add_libsource (${PROJECT_NAME} "src/SharedMemoryGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/SharedMemoryPublisher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
@@ -130,9 +132,10 @@ set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "xcf-grabber-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "memory-listener" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_XCF_COND HAVE_QT_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLUtils ICLFilter)
-add_example (${PROJECT_NAME} "xcf-publisher" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "pipe" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+# Christian: How to make icl-pipe not be built but not link against Qt if this is not available
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_UNICAP_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})

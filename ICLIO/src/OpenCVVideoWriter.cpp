@@ -36,9 +36,13 @@
 #include <ICLIO/File.h>
 #include <ICLOpenCV/OpenCV.h>
 
+
+#define ICL_FOURCCC(c1,c2,c3,c4)  \
+    (((c1)&255) + (((c2)&255)<<8) + (((c3)&255)<<16) + (((c4)&255)<<24))
+
 namespace icl{
 
-OpenCVVideoWriter::OpenCVVideoWriter(const std::string &filename, FOURCC fourcc,
+  OpenCVVideoWriter::OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
 		double fps, Size frame_size, int frame_color) throw (ICLException){
 	if(File(filename).exists()){
 		throw ICLException("file already exists");
@@ -52,8 +56,13 @@ OpenCVVideoWriter::OpenCVVideoWriter(const std::string &filename, FOURCC fourcc,
 	/*if(0){
 		throw ICLException("frame color invalid");
 	}*/
+        
+        int FOURCC = -1;
+        if(fourcc.length() == 4){
+          FOURCC = ICL_FOURCCC(fourcc[0],fourcc[1],fourcc[2],fourcc[3]);
+        }
 
-	writer = cvCreateVideoWriter(filename.c_str(), fourcc, fps,
+	writer = cvCreateVideoWriter(filename.c_str(), FOURCC, fps,
 			cvSize(frame_size.width,frame_size.height)
 			, frame_color);
 

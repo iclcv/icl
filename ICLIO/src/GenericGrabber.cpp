@@ -78,6 +78,11 @@
 #include <ICLIO/OpenCVVideoGrabber.h>
 #endif
 
+#ifdef HAVE_QT
+#include <ICLIO/SharedMemoryGrabber.h>
+#endif
+
+
 #include <ICLIO/DemoGrabber.h>
 #include <ICLUtils/Exception.h>
 
@@ -98,10 +103,10 @@ namespace icl{
     std::vector<std::string> lP = tok(filter,",");
     
     std::map<std::string,std::string> pmap;
-    static const int NUM_PLUGINS = 15;
+    static const int NUM_PLUGINS = 16;
     static const std::string plugins[NUM_PLUGINS] = { "pwc","dc","dc800","unicap","file","demo","create",
                                                       "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
-                                                      "cvcam" };
+                                                      "cvcam","sm" };
     for(unsigned int i=0;i<lP.size();++i){
       bool foundI = false;
       for(int j=0;j<NUM_PLUGINS;++j){
@@ -340,6 +345,20 @@ namespace icl{
         }
       }
 #endif
+
+#ifdef HAVE_QT
+      if(l[i] == "sm") {
+        try{
+          m_poGrabber = new SharedMemoryGrabber(pmap["sm"]);
+          m_sType = "sm";
+          break;
+        }catch(ICLException &e){
+          ADD_ERR("sm");
+          continue;
+        }
+      }
+#endif
+
       
       if(l[i] == "file"){
         try{
@@ -471,6 +490,11 @@ namespace icl{
       
 #ifdef HAVE_OPENCV
       add_devices<OpenCVCamGrabber>(deviceList,"cvcam",useFilter,pmap);
+#endif
+
+      
+#ifdef HAVE_QT
+      add_devices<SharedMemoryGrabber>(deviceList,"sm",useFilter,pmap);
 #endif
     }
     return deviceList;

@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLIO/examples/xcf-publisher.cpp                       **
+** File   : ICLIO/examples/pipe.cpp                                **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLIO/XCFPublisher.h>
-#include <ICLIO/XCFPublisherGrabber.h>
+#include <ICLIO/GenericImageOutput.h>
 #include <ICLQuick/Common.h>
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLUtils/FPSLimiter.h>
@@ -42,8 +41,9 @@
 #include <ICLFilter/MedianOp.h>
 #include <ICLFilter/ConvolutionOp.h>
 
-std::string uri,stream;
+#ifdef HAVE_QT
 GUI gui("vbox");
+#endif
 
 bool first = true;
 bool *ppEnabled = 0;
@@ -133,13 +133,15 @@ const ImgBase *grab_image(){
 }
 
 void send_app(){
-  static XCFPublisher p(stream,uri);
+  static GenericImageOutput output(FROM_PROGARG("-o"));
+#ifdef HAVE_QT
   ImageHandle IH;
   FPSHandle FPS;
   if(!pa("-no-gui")){
     IH = gui.getValue<ImageHandle>("image");
     FPS= gui.getValue<FPSHandle>("fps");
   }
+#endif
  
   while(first || !pa("-single-shot")){
     const ImgBase *grabbedImage = grab_image();
@@ -181,26 +183,33 @@ void send_app(){
       normImage = ppImage;
     }
 
-    p.publish(normImage);
+    output.send(normImage);
+#ifdef HAVE_QT
     if(!pa("-no-gui")){
       IH = normImage;
       IH.update();
       FPS.update();
     }
+#endif
     first = false;
     
+#ifdef HAVE_QT
     gui_int(fpsLimit);
+#else
+    int fpsLimit = pa("fps");
+#endif
     static FPSLimiter limiter(15,10);
     if(limiter.getMaxFPS() != fpsLimit) limiter.setMaxFPS(fpsLimit);
     limiter.wait();
   }
 }
 
+#ifdef HAVE_QT
 void init_gui(){
   if(pa("-pp")){
     gui << "image[@handle=image@minsize=12x8]" 
         << ( GUI("hbox[@maxsize=100x4]") 
-             << "camcfg("+ *pa("-i") + "," +*pa("-i",1) + ")[@maxsize=5x2]"
+             << "camcfg()[@maxsize=5x2]"
              << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
              << "fps(10)[@handle=fps]"
              << "togglebutton(off,!on)[@handle=_@out=pp-on@label=preprocessing@minsize=5x2]"
@@ -218,20 +227,20 @@ void init_gui(){
     ppEnabled = new bool(false);
   }
 }
+#endif
 
 
 int main(int n, char **ppc){
   paex
   ("-input","for sender application only allowed ICL default\n"
-   " input specificationn e.g. -input pwc 0 or -input file bla/*.ppm")
-  ("-stream","stream name for sender and receiver application (by default: the-stream)")
-  ("-uri","URI for image packages (by default the-uri)")
+   " input specification e.g. -input pwc 0 or -input file bla/*.ppm")
   ("-single-shot","no loop application")
   ("-size","output image size (sending only, default: VGA)")
   ("-depth","output image size (sending only, default: depth8u)")
-
+  ("-o","analog to -input , this can be used to specify the output device and parameters\n"
+   " output specification e.g. -output file image_###.ppm or -o sm MySharedMem")
   ("-fps","initial max FPS count, further adjustable in the GUI")
-  ("-no-gui","dont display a GUI (sender app only)")
+  ("-no-gui","dont display a GUI (sender app only this is default if Qt is not available)")
   ("-flip","define axis to flip (allowed sub arguments are"
    " x, y or both")
   ("-clip","define clip-rect ala ((x,y)WxH) or string interactive (which is not yet supported)")
@@ -250,8 +259,8 @@ int main(int n, char **ppc){
    "with this parameters internally. Valid parameter files can be created with icl-camera-param-io or with "
    "the icl-camcfg tool. Please note: some grabber parameters might cause an internal grabber crash, "
    "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
-  painit(n,ppc,"-stream|-s(streamname=stream) "
-         "-flip|-f(string) -uri|-u(image-URI=IMAGE) -single-shot -input|-i(device,device-params) "
+  painit(n,ppc,"-output|-o(output-type-string,output-parameters) "
+         "-flip|-f(string) -single-shot -input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) -dist|-d(float,float,float,float) -reset|-r "
          "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -normalize|-n "
          "-perserve-preprocessing-roi|-ppp");
@@ -260,17 +269,20 @@ int main(int n, char **ppc){
     GenericGrabber::resetBus();
   }
   
-  uri = *pa("-u");
-  stream = *pa("-s");
-
+ 
   init_grabber();  
 
+#ifdef HAVE_QT
   if(!pa("-no-gui")){
     return ICLApp(n,ppc,"",init_gui,send_app).exec();
   }else{
     static bool alwaysTrue = 1;
     ppEnabled = &alwaysTrue;
-    init_grabber();
     send_app();
   }
+#else
+  static bool alwaysTrue = 1;
+  ppEnabled = &alwaysTrue;
+  send_app();
+#endif
 }

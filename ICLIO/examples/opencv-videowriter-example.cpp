@@ -130,21 +130,10 @@ void startcap(){
   if(!vw){
     if(filename == "")
       saveAs();
-    gui_ComboHandle(Codec);
-    //filename = getTimestamp(".avi");
-    //CV_FOURCC('I', 'Y', 'U', 'V')
-    //CV_FOURCC('P','I','M','1')    = MPEG-1 codec
-    //CV_FOURCC('M','J','P','G')    = motion-jpeg codec (does not work well)
-    //CV_FOURCC('M', 'P', '4', '2') = MPEG-4.2 codec
-    //CV_FOURCC('D', 'I', 'V', '3') = MPEG-4.3 codec
-    //CV_FOURCC('D', 'I', 'V', 'X') = MPEG-4 codec
-    //CV_FOURCC('U', '2', '6', '3') = H263 codec
-    //CV_FOURCC('I', '2', '6', '3') = H263I codec
-    //CV_FOURCC('F', 'L', 'V', '1') = FLV1 codec
     if(filename == "")
       filename = getTimestamp(".avi");
 
-    vw = new OpenCVVideoWriter(filename ,(OpenCVVideoWriter::FOURCC) (int)Codec, 30.0, icl::Size(640,480), 1);
+    vw = new OpenCVVideoWriter(filename ,gui["Codec"], 30.0, icl::Size(640,480), 1);
 
   }
   cap = true;
@@ -211,7 +200,7 @@ void init(){
           << "fslider(0,1,0.1)[@out=cont@handle=hcont@label=contrast]"
           << "fslider(0,1,0.1)[@out=sat@handle=hsat@label=saturation]"
           << "fslider(0,1,0.1)[@out=hue@handle=hhue@label=hue]"
-          << "combo(MPEG-1,MOTION-JPEG,MPEG-4.2,MPEG-4.3,MPEG-4,H263,H263I,FLV1)[@label=codec@handle=Codec@out=codec_]"
+          << "combo(PIM1,MJPG,MP42,DIV3,DIVX,U263,I263,FLV1)[@label=codec@handle=Codec@out=codec_]"
           << "button(start videocapture)[@out=startc@handle=startc_]"
           << "button(stop videocapture)[@out=stopc@handle=stopc_]"
           << "button(info)[@out=info@handle=info_]"

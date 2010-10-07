@@ -42,45 +42,39 @@
 #include <highgui.h>
 #include <cxtypes.h>
 #endif
-#include <ICLCore/ImgBase.h>
+#include <ICLIO/ImageOutput.h>
+#include <ICLUtils/Uncopyable.h>
 
-#define CV_FOURCCC(c1,c2,c3,c4)  \
-    (((c1)&255) + (((c2)&255)<<8) + (((c3)&255)<<16) + (((c4)&255)<<24))
+
 
 namespace icl{
 
-class OpenCVVideoWriter {
+  class OpenCVVideoWriter :public ImageOutput, public Uncopyable{
 private:
 	///OpenCV VideoWriter struct
 	CvVideoWriter *writer;
 public:
-	///Possible codecs(test if available on your system)
-	//on win32 the value can also be -1
-	enum FOURCC{
-		MPEG_1 = CV_FOURCCC('P','I','M','1'),
-		MOTION_JPEG = CV_FOURCCC('M','J','P','G'),
-		MPEG_4_2 = CV_FOURCCC('M', 'P', '4', '2'),
-		MPEG_4_3 = CV_FOURCCC('D', 'I', 'V', '3'),
-		MPEG_4 = CV_FOURCCC('D', 'I', 'V', 'X'),
-		H263 = CV_FOURCCC('U', '2', '6', '3'),
-		H263I = CV_FOURCCC('I', '2', '6', '3'),
-		FLV1 = CV_FOURCCC('F', 'L', 'V', '1')
-#ifdef SYSTEM_LINUX
-		,IYUV = CV_FOURCCC('I', 'Y', 'U', 'V')
-#endif
-#ifdef SYSTEM_WINDOWS
-		,OPEN_DIALOG= -1
-#endif
-	};
 
 	/// Creates a new videowriter with given filename
 	/** @param filename the filename to write to
-	    @param fourcc determinates which videocodec to use
+	    @param fourcc this is translated into an instance of FOURCC
+            possible is:
+            * PIM1 (for mpeg 1)
+            * MJPG (for motion jepg)
+            * MP42 (for mpeg 4.2)
+            * DIV3 (for mpeg 4.3)
+            * DIVX (for mpeg 4)
+            * U263 (for H263 codec)
+            * I263 (for H263I codec)
+            * FLV1 (for FLV1 code)
+            * on linux: IYUV for IYUV codec ??
+            * on windows: "" for open dialog
+
 	    @param fps frames per second
 	    @param frame_size size of the frames to be written out
 	    @param frame_color currently only supported on windows 0 for greyscale else color
 	 **/
-	OpenCVVideoWriter(const std::string &filename, FOURCC fourcc,
+	OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
 	          double fps, Size frame_size, int frame_color=1) throw (ICLException);
 
 	/// Destructor
@@ -88,6 +82,9 @@ public:
 
 	/// writes the next image
 	void write(const ImgBase *image);
+        
+        /// wraps write to implement ImageOutput interface
+        virtual void send(const ImgBase *image) { write(image); }
 
 	/// as write but in stream manner
 	OpenCVVideoWriter &operator<<(const ImgBase *image);

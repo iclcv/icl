@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/XCFPublisher.h                           **
+** File   : ICLIO/src/SharedMemoryPublisher.cpp                    **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,57 +32,72 @@
 **                                                                 **
 *********************************************************************/
 
-#ifdef HAVE_XCF
-
-#ifndef ICL_XCF_PUBLISHER_H
-#define ICL_XCF_PUBLISHER_H
-
-#include <ICLCore/ImgBase.h>
-#include <ICLIO/ImageOutput.h>
-#include <xcf/Publisher.hpp>
-#include <xcf/CTU.hpp>
-#include <xcf/TransportObject.hpp>
-
+#include <ICLIO/SharedMemoryPublisher.h>
+#include <QtCore/QSharedMemory>
+#include <ICLUtils/StringUtils.h>
+#include <ICLCore/ImageSerializer.h>
 
 namespace icl{
-  
-  /// ImageOutput, that sends images via XCF-publisher
-  class XCFPublisher : public ImageOutput{
-    public:
-    /// creates a null instance
-    XCFPublisher();
-    
-    /// creates an instance with given streamname and image URI
-    XCFPublisher(const std::string &streamName, const std::string &imageURI="IMAGE");
-    
-    /// Desstructor
-    ~XCFPublisher();
-    
-    /// deferred initialization function
-    void createPublisher(const std::string &streamName, 
-                         const std::string &imageURI="IMAGE");
-    
-    /// publishes next image via xcf
-    void publish(const ImgBase *image);
-    
-    /// wraps publish to implement ImageOutput interface
-    virtual void send(const ImgBase *image) { publish(image); }
-      
-    /// returns current image URI 
-    const std::string &getImageURI() const { return m_uri; }
-    
-    /// returns current stream name
-    const std::string &getStreamName() const { return m_streamName; }
-    
-    private:
-    XCF::PublisherPtr m_publisher;
-    XCF::Binary::TransportUnitPtr m_btu;
-    XCF::CTUPtr m_ctu;
-    std::string m_uri;
-    std::string m_streamName;
+
+  struct SharedMemoryPublisher::Data{
+    QSharedMemory mem;
+    QSharedMemory grabberListMem;
+    std::string name;
   };
+  
+  SharedMemoryPublisher::SharedMemoryPublisher(const std::string &memorySegmentName) throw (ICLException){
+    m_data = new Data;
+    m_data->name = memorySegmentName;
+  }
+  
+  
+  SharedMemoryPublisher::~SharedMemoryPublisher(){
+    delete m_data;
+  }
+    
+
+  void SharedMemoryPublisher::createPublisher(const std::string &memorySegmentName) throw (ICLException){
+    QSharedMemory &mem = m_data->mem;
+    mem.lock();
+    if(mem.isAttached()){
+      mem.detach();
+    }
+    m_data->name = memorySegmentName;
+    mem.unlock();
+  }
+    
+  void SharedMemoryPublisher::publish(const ImgBase *image){
+    QSharedMemory &mem = m_data->mem;
+
+    int imageSize = ImageSerializer::estimateSerializedSize(image);
+    
+    if(!mem.isAttached()){
+      if(!m_data->name.length()) throw ICLException(str(__FUNCTION__)+": no memory segment name was defined yet!");
+      mem.setKey(m_data->name.c_str());
+      mem.lock();
+      if(m_data->mem.attach(QSharedMemory::ReadWrite)){
+        WARNING_LOG(str(__FUNCTION__)+": memory segment did already exist before (using it)!");
+      }else{
+        mem.create(imageSize);
+      }
+      mem.unlock();
+    }
+    ICLASSERT_THROW(mem.isAttached(),ICLException(str(__FUNCTION__)+": QSharedMemory is still not attached (this should not happen)" ));
+
+    mem.lock();
+    if(mem.size() != imageSize){
+      mem.detach();
+      if(!mem.create(imageSize)){
+        throw ICLException(str(__FUNCTION__)+": unable to resize memory segment (it seems to be in use from somewhere else)");
+      }
+    }
+    
+    ImageSerializer::serialize(image,(icl8u*)mem.data());
+    mem.unlock();
+  }
+
+  std::string SharedMemoryPublisher::getMemorySegmentName() const throw (ICLException){
+    return m_data->name;
+  }
 }
 
-#endif
-
-#endif

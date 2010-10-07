@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/XCFPublisher.h                           **
+** File   : ICLIO/src/GenericImageOutput.cpp                       **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,57 +32,81 @@
 **                                                                 **
 *********************************************************************/
 
-#ifdef HAVE_XCF
+#include <ICLIO/GenericImageOutput.h>
 
-#ifndef ICL_XCF_PUBLISHER_H
-#define ICL_XCF_PUBLISHER_H
-
-#include <ICLCore/ImgBase.h>
 #include <ICLIO/ImageOutput.h>
-#include <xcf/Publisher.hpp>
-#include <xcf/CTU.hpp>
-#include <xcf/TransportObject.hpp>
 
+#ifdef HAVE_XCF
+#include <ICLIO/XCFPublisher.h>
+#endif
+
+#ifdef HAVE_QT
+#include <ICLIO/SharedMemoryPublisher.h>
+#endif
+
+#ifdef HAVE_OPENCV2
+#include <ICLIO/OpenCVVideoWriter.h>
+#endif
+
+#include <ICLIO/FileWriter.h>
+
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
   
-  /// ImageOutput, that sends images via XCF-publisher
-  class XCFPublisher : public ImageOutput{
-    public:
-    /// creates a null instance
-    XCFPublisher();
+  
+  GenericImageOutput::GenericImageOutput(const std::string &type, const std::string &description){
+    init(type,description);
+  }
+
+  void GenericImageOutput::init(const std::string &type, const std::string &description){
+    impl = SmartPtr<ImageOutput>();
+          
+    this->type = type;
+    this->description = description;
     
-    /// creates an instance with given streamname and image URI
-    XCFPublisher(const std::string &streamName, const std::string &imageURI="IMAGE");
+    ImageOutput *o = 0;
+
+    std::string d = description;
+    if(d.substr(0,type.length()+1) == type+"=") d = d.substr(type.length()+1);
+
     
-    /// Desstructor
-    ~XCFPublisher();
+#ifdef HAVE_XCF
+    if(type == "xcfp"){
+       o = new XCFPublisher(d);
+    }
+#endif
     
-    /// deferred initialization function
-    void createPublisher(const std::string &streamName, 
-                         const std::string &imageURI="IMAGE");
+#ifdef HAVE_OPENCV2
+    if(type == "video"){
+
+      std::vector<std::string> t = tok(d,",");
+      if(!t.size()) throw ICLException("unable to create OpenCVVideoWriter with empty destination filename");
+      std::string fourcc = t.size() > 1 ? t[1] : str("DIV3");
+      Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
+      double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
+      o = new OpenCVVideoWriter(t[0],fourcc,fps,size);
+    }
+#endif
     
-    /// publishes next image via xcf
-    void publish(const ImgBase *image);
+
+#ifdef HAVE_QT
+    if(type == "sm"){
+      o = new SharedMemoryPublisher(d);
+    }
+#endif
     
-    /// wraps publish to implement ImageOutput interface
-    virtual void send(const ImgBase *image) { publish(image); }
-      
-    /// returns current image URI 
-    const std::string &getImageURI() const { return m_uri; }
     
-    /// returns current stream name
-    const std::string &getStreamName() const { return m_streamName; }
+    if(type == "file"){
+      o = new FileWriter(d);
+    }
     
-    private:
-    XCF::PublisherPtr m_publisher;
-    XCF::Binary::TransportUnitPtr m_btu;
-    XCF::CTUPtr m_ctu;
-    std::string m_uri;
-    std::string m_streamName;
-  };
+    if(!o){
+      ERROR_LOG("unable to instantiate GenericImageOutput with type \"" << type << "\" and params \"" << d << "\"");
+    }else{
+      impl = SmartPtr<ImageOutput>(o);
+    }
+  }
 }
 
-#endif
 
-#endif

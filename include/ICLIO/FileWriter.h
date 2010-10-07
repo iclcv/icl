@@ -36,6 +36,7 @@
 #define ICL_FILE_WRITER2_H
 
 #include <ICLUtils/Uncopyable.h>
+#include <ICLIO/ImageOutput.h>
 #include <ICLIO/FilenameGenerator.h>
 #include <ICLIO/FileWriterPlugin.h>
 #include <ICLCore/Types.h>
@@ -117,7 +118,7 @@ namespace icl{
       }
       \endcode
   **/
-  class FileWriter : public Uncopyable{
+  class FileWriter : public ImageOutput, public Uncopyable{
     public:
     /// initializer class
     friend class FileWriterPluginMapInitializer;
@@ -143,6 +144,9 @@ namespace icl{
     /// writes the next image
     void write(const ImgBase *image);
 
+    /// wraps write to implement ImageOutput interface
+    virtual void send(const ImgBase *image) { write(image); }
+    
     /// as write but in stream manner
     FileWriter &operator<<(const ImgBase *image);
 

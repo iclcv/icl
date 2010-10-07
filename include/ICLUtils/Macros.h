@@ -217,4 +217,6 @@ namespace icl {
 
 #define ICL_DELETE_ARRAY(X) if((X)){ delete [] (X); (X)=0; }
 
+#define FROM_PROGARG(ARG) pa(ARG),*pa(ARG)+"="+*pa(ARG,1)
+
 #endif //ICLMACROS_H

@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/XCFPublisher.h                           **
+** File   : include/ICLIO/SharedMemoryPublisher.h                  **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,57 +32,46 @@
 **                                                                 **
 *********************************************************************/
 
-#ifdef HAVE_XCF
-
-#ifndef ICL_XCF_PUBLISHER_H
-#define ICL_XCF_PUBLISHER_H
+#ifndef ICL_SHARED_MEMORY_PUBLISHER_H
+#define ICL_SHARED_MEMORY_PUBLISHER_H
 
 #include <ICLCore/ImgBase.h>
 #include <ICLIO/ImageOutput.h>
-#include <xcf/Publisher.hpp>
-#include <xcf/CTU.hpp>
-#include <xcf/TransportObject.hpp>
-
+#include <ICLUtils/Uncopyable.h>
 
 namespace icl{
-  
-  /// ImageOutput, that sends images via XCF-publisher
-  class XCFPublisher : public ImageOutput{
+
+  /// Publisher, that can be used to publish images via Qt's QSharedMemory
+  /** The publisher automatically creates a 2nd memory segment named
+      'icl-shared-mem-grabbers' that is set up to contain a list of
+      all available ICL shared memory streams 
+      If two publishers are set up to publish to one memory, the result
+      is undetermined.
+  */
+  class SharedMemoryPublisher : public ImageOutput, public Uncopyable{
+    struct Data;  //!< intenal data
+    Data *m_data; //!< intenal data
+    
     public:
-    /// creates a null instance
-    XCFPublisher();
     
-    /// creates an instance with given streamname and image URI
-    XCFPublisher(const std::string &streamName, const std::string &imageURI="IMAGE");
+    /// Creates a new publisher instance
+    /** If memorySegmentName is "", no connection is performed */
+    SharedMemoryPublisher(const std::string &memorySegmentName="") throw (ICLException);
     
-    /// Desstructor
-    ~XCFPublisher();
+    /// Destructor
+    ~SharedMemoryPublisher();
     
-    /// deferred initialization function
-    void createPublisher(const std::string &streamName, 
-                         const std::string &imageURI="IMAGE");
+    /// sets the publisher to use a new segment
+    void createPublisher(const std::string &memorySegmentName="") throw (ICLException);
     
-    /// publishes next image via xcf
+    /// publishs given image
     void publish(const ImgBase *image);
     
     /// wraps publish to implement ImageOutput interface
     virtual void send(const ImgBase *image) { publish(image); }
-      
-    /// returns current image URI 
-    const std::string &getImageURI() const { return m_uri; }
-    
-    /// returns current stream name
-    const std::string &getStreamName() const { return m_streamName; }
-    
-    private:
-    XCF::PublisherPtr m_publisher;
-    XCF::Binary::TransportUnitPtr m_btu;
-    XCF::CTUPtr m_ctu;
-    std::string m_uri;
-    std::string m_streamName;
+
+    /// returns current memory segment name
+    std::string getMemorySegmentName() const throw (ICLException);
   };
 }
-
-#endif
-
 #endif

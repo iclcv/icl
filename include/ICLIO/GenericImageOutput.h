@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/XCFPublisher.h                           **
+** File   : include/ICLIO/GenericImageOutput.h                     **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,57 +32,58 @@
 **                                                                 **
 *********************************************************************/
 
-#ifdef HAVE_XCF
-
-#ifndef ICL_XCF_PUBLISHER_H
-#define ICL_XCF_PUBLISHER_H
+#ifndef ICL_GENERIC_IMAGE_OUTPUT_H
+#define ICL_GENERIC_IMAGE_OUTPUT_H
 
 #include <ICLCore/ImgBase.h>
 #include <ICLIO/ImageOutput.h>
-#include <xcf/Publisher.hpp>
-#include <xcf/CTU.hpp>
-#include <xcf/TransportObject.hpp>
-
+#include <ICLUtils/SmartPtr.h>
 
 namespace icl{
   
-  /// ImageOutput, that sends images via XCF-publisher
-  class XCFPublisher : public ImageOutput{
+  /// Generic Sink for images
+  class GenericImageOutput : public ImageOutput{
+    std::string type;
+    std::string description;
+    SmartPtr<ImageOutput> impl;
+
     public:
-    /// creates a null instance
-    XCFPublisher();
     
-    /// creates an instance with given streamname and image URI
-    XCFPublisher(const std::string &streamName, const std::string &imageURI="IMAGE");
+    /// Null constructor
+    GenericImageOutput(){}
     
-    /// Desstructor
-    ~XCFPublisher();
+    /// Create and initialize
+    /** @see init */
+    GenericImageOutput(const std::string &type, const std::string &description);
     
-    /// deferred initialization function
-    void createPublisher(const std::string &streamName, 
-                         const std::string &imageURI="IMAGE");
+    /// initialize this instance
+    /** Like the GenericGrabber, this 'generic tool' can also be set up by
+        two string specifiers 
+        Possible types are:
+        - "file" (description=filepattern)
+        - "video" (description=output-video-filename,CODEC-FOURCCC=DIV3,VideoSize=VGA,FPS=24)
+        - "sm" (SharedMemory output, description=memory-segment-ID)
+        - "xcfp" (XCF Publisher output, description=stream-name)
+    */
+    void init(const std::string &type, const std::string &description);
     
-    /// publishes next image via xcf
-    void publish(const ImgBase *image);
+    /// sends a new image
+    virtual void send(const ImgBase *image){
+      if(impl) impl->send(image);
+      else{
+        ERROR_LOG("unable to send image with a NULL output");
+      }
+    }
     
-    /// wraps publish to implement ImageOutput interface
-    virtual void send(const ImgBase *image) { publish(image); }
-      
-    /// returns current image URI 
-    const std::string &getImageURI() const { return m_uri; }
+    /// returns whether this instance was already initialized
+    inline bool isNull() const { return !impl; };
     
-    /// returns current stream name
-    const std::string &getStreamName() const { return m_streamName; }
-    
-    private:
-    XCF::PublisherPtr m_publisher;
-    XCF::Binary::TransportUnitPtr m_btu;
-    XCF::CTUPtr m_ctu;
-    std::string m_uri;
-    std::string m_streamName;
+    /// retusn current type string
+    inline const std::string &getType() const { return type; }
+
+    /// retusn current description string
+    inline const std::string &getDescription() const { return description; }
   };
 }
-
-#endif
 
 #endif

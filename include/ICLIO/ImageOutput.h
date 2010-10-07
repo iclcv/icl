@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/XCFPublisher.h                           **
+** File   : include/ICLIO/ImageOutput.h                            **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,57 +32,19 @@
 **                                                                 **
 *********************************************************************/
 
-#ifdef HAVE_XCF
-
-#ifndef ICL_XCF_PUBLISHER_H
-#define ICL_XCF_PUBLISHER_H
+#ifndef ICL_IMAGE_OUTPUT_H
+#define ICL_IMAGE_OUTPUT_H
 
 #include <ICLCore/ImgBase.h>
-#include <ICLIO/ImageOutput.h>
-#include <xcf/Publisher.hpp>
-#include <xcf/CTU.hpp>
-#include <xcf/TransportObject.hpp>
-
 
 namespace icl{
   
-  /// ImageOutput, that sends images via XCF-publisher
-  class XCFPublisher : public ImageOutput{
-    public:
-    /// creates a null instance
-    XCFPublisher();
+  /// Minimal interface for image output classes
+  struct ImageOutput{
     
-    /// creates an instance with given streamname and image URI
-    XCFPublisher(const std::string &streamName, const std::string &imageURI="IMAGE");
-    
-    /// Desstructor
-    ~XCFPublisher();
-    
-    /// deferred initialization function
-    void createPublisher(const std::string &streamName, 
-                         const std::string &imageURI="IMAGE");
-    
-    /// publishes next image via xcf
-    void publish(const ImgBase *image);
-    
-    /// wraps publish to implement ImageOutput interface
-    virtual void send(const ImgBase *image) { publish(image); }
-      
-    /// returns current image URI 
-    const std::string &getImageURI() const { return m_uri; }
-    
-    /// returns current stream name
-    const std::string &getStreamName() const { return m_streamName; }
-    
-    private:
-    XCF::PublisherPtr m_publisher;
-    XCF::Binary::TransportUnitPtr m_btu;
-    XCF::CTUPtr m_ctu;
-    std::string m_uri;
-    std::string m_streamName;
+    /// ImageOutput instances must implement this method
+    virtual void send(const ImgBase *image) = 0;
   };
 }
-
-#endif
 
 #endif
