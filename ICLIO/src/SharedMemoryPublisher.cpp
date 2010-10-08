@@ -36,22 +36,99 @@
 #include <QtCore/QSharedMemory>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/ImageSerializer.h>
+#include <ICLCore/Img.h>
 
 namespace icl{
+  
+  struct SharedMemoryLocker{
+    QSharedMemory &mem;
+    SharedMemoryLocker(QSharedMemory &mem):
+      mem(mem){
+      mem.lock();
+    }
+    ~SharedMemoryLocker(){ 
+      mem.unlock() ; 
+    }
+  };
+  
+  std::vector<std::string> extract_grabber_list(QSharedMemory &mem){
+    ICLASSERT_THROW(mem.size() >= (int)sizeof(icl32s),ICLException("unable to extract list of shared memory grabbers (code 1)"));
+    const char* data = (const char*)mem.constData();
+    std::vector<std::string> gs(*(icl32s*)data);
+    data += sizeof(icl32s);
+    for(unsigned int i=0;i<gs.size();++i){
+      gs[i] = data;
+      data += gs[i].length()+1;
+    }
+    return gs;
+  }
+  
+  void set_grabber_list(QSharedMemory &mem,const std::vector<std::string> &gs){
+    char *data = (char*)mem.data();
+    *(icl32s*)data = gs.size();
+    data += sizeof(icl32s);
+    for(unsigned int i=0;i<gs.size();++i){
+      std::copy(&gs[i][0],&gs[i][0]+gs[i].length(),data);
+      data+= gs[i].length();
+      *data++ = '\0';
+    }
+  }
 
+  static void register_grabber(QSharedMemory &mem,const std::string &s){
+    SharedMemoryLocker lock(mem);
+    if(!mem.attach(QSharedMemory::ReadWrite)){
+      if(!mem.create(100000)){
+        ERROR_LOG("unable to create or attach to shared memory segment 'icl-shared-mem-grabbers'");
+        return;
+      }
+    }
+    std::vector<std::string> grabbers = extract_grabber_list(mem);
+    
+    if(find(grabbers.begin(),grabbers.end(),s) != grabbers.end()){
+      ERROR_LOG("SharedMemoryGrabber with ID \"" << s << "\" was instantiated twice!");
+      return;
+    }
+    grabbers.push_back(s);
+
+    set_grabber_list(mem,grabbers);
+  }
+  
+  static void unregister_grabber(QSharedMemory &mem,const std::string &s){
+    SharedMemoryLocker lock(mem);
+    if(!mem.attach(QSharedMemory::ReadWrite)){
+      ERROR_LOG("unable remove shared memory grabber instance \"" << s << "\" from device list (no connection to memory segment, code 3))");
+      return;
+    }
+    std::vector<std::string> grabbers = extract_grabber_list(mem);
+    
+    std::vector<std::string>::iterator it = find(grabbers.begin(),grabbers.end(),s);
+    if(it == grabbers.end()){
+      ERROR_LOG("SharedMemoryGrabber with ID \"" << s << "\" was not found in the list (code 4)");
+      return;
+    }
+    grabbers.erase(it);
+
+    set_grabber_list(mem,grabbers);
+  }
+  
   struct SharedMemoryPublisher::Data{
     QSharedMemory mem;
-    QSharedMemory grabberListMem;
+    QSharedMemory listMem;
     std::string name;
   };
   
   SharedMemoryPublisher::SharedMemoryPublisher(const std::string &memorySegmentName) throw (ICLException){
     m_data = new Data;
     m_data->name = memorySegmentName;
+    m_data->listMem.setKey("icl-shared-mem-grabbers");
+    
+    Img8u image;
+    publish(&image);
   }
   
   
   SharedMemoryPublisher::~SharedMemoryPublisher(){
+    unregister_grabber(m_data->listMem,m_data->name);
     delete m_data;
   }
     
@@ -64,6 +141,9 @@ namespace icl{
     }
     m_data->name = memorySegmentName;
     mem.unlock();
+    
+    Img8u tmp;
+    publish(&tmp);
   }
     
   void SharedMemoryPublisher::publish(const ImgBase *image){
@@ -77,21 +157,25 @@ namespace icl{
       mem.lock();
       if(m_data->mem.attach(QSharedMemory::ReadWrite)){
         WARNING_LOG(str(__FUNCTION__)+": memory segment did already exist before (using it)!");
+        register_grabber(m_data->listMem,m_data->name);
       }else{
-        mem.create(imageSize);
+        if(mem.create(imageSize)){
+          register_grabber(m_data->listMem,m_data->name);
+        }
       }
       mem.unlock();
     }
     ICLASSERT_THROW(mem.isAttached(),ICLException(str(__FUNCTION__)+": QSharedMemory is still not attached (this should not happen)" ));
 
-    mem.lock();
+
     if(mem.size() != imageSize){
       mem.detach();
       if(!mem.create(imageSize)){
         throw ICLException(str(__FUNCTION__)+": unable to resize memory segment (it seems to be in use from somewhere else)");
       }
     }
-    
+
+    mem.lock();    
     ImageSerializer::serialize(image,(icl8u*)mem.data());
     mem.unlock();
   }

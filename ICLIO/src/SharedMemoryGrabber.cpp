@@ -89,17 +89,20 @@ namespace icl{
   
   const std::vector<GrabberDeviceDescription> &SharedMemoryGrabberImpl::getDeviceList(bool rescan){
     static std::vector<GrabberDeviceDescription> deviceList;
+      
     if(rescan){
       deviceList.clear();
       QSharedMemory mem("icl-shared-mem-grabbers");
-      if(!mem.attach(QSharedMemory::ReadOnly)) return deviceList;
+      if(!mem.attach(QSharedMemory::ReadOnly)) {
+        return deviceList;
+      }
       
       mem.lock();
       const char* list = (const char*)mem.constData();
       icl32s num = *(icl32s*)list;
       list +=sizeof(icl32s);
       for(icl32s i=0;i<num;++i){
-        deviceList.push_back(GrabberDeviceDescription("sm",list,""));
+        deviceList.push_back(GrabberDeviceDescription("sm",list,list));
         list += deviceList.back().id.length()+1;
       }
       mem.unlock();
@@ -140,6 +143,19 @@ namespace icl{
       return ppoDst ? *ppoDst : m_data->image;
     }
     return 0;
+  }
+
+  void SharedMemoryGrabber::resetBus(){
+    QSharedMemory mem("icl-shared-mem-grabbers");
+    if(mem.attach(QSharedMemory::ReadWrite)) {
+      mem.lock();
+      *(icl32s*)mem.data() = 0;
+      mem.unlock();
+      WARNING_LOG("Please note: only the shared-memory device list has been cleaned.\n"
+                  "Lost memory segments can currently not be accessed / released.");
+    }else{
+      WARNING_LOG("No shared memory segment named 'icl-shared-mem-grabbers' found");
+    }
   }
   
 }

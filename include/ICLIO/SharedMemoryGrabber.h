@@ -138,6 +138,9 @@ namespace icl{
         initialize(memorySegmentName);
       }
     }
+    
+    /// resets the internal list of 'shared-grabbers'
+    static void resetBus();
   };
 
 

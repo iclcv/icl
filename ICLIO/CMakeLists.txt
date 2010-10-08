@@ -145,6 +145,10 @@ set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
 add_example (${PROJECT_NAME} "generic-grab-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt ICLFilter ICLUtils)
+add_example (${PROJECT_NAME} "reset-sm-bus" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENCV_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLUtils)
 add_example (${PROJECT_NAME} "opencv-camgrabber-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

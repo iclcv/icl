@@ -414,6 +414,11 @@ namespace icl{
         DCGrabber::dc1394_reset_bus(verbose);
       }
 #endif
+#ifdef HAVE_QT
+      if( t == "sm" ){
+        SharedMemoryGrabber::resetBus();
+      }
+#endif
       // others are not supported yet
     }
   

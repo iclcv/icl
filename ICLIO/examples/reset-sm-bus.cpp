@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/examples/camcfg.cpp                              **
-** Module : ICLQt                                                  **
+** File   : ICLIO/examples/reset-sm-bus.cpp                        **
+** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,53 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQt/CamCfgWidget.h>
-#include <QtGui/QApplication>
-#include <ICLUtils/ProgArg.h>
-#include <ICLIO/GenericGrabber.h>
+#include <ICLIO/SharedMemoryGrabber.h>
 
-using namespace icl;
-using namespace std;
-
-int main(int n, char **ppc){
-  
-  paex
-  ("r","resets the dc bus on startup")
-  ("8","scan for dc800 devices")
-  ("u","scan for unicap devices")
-  ("d","scan for dc devices")
-  ("s","scan for SwissRanger devices")
-  ("m","scan for Shared Memory devices ")
-  ("c","scan for OpenCV-based devices ")
-  ("-demo","add a DemoGrabber device")
-  ("-i","ICL's default device specification");
-  painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -pwc|p -sr|s -cvcam|c -sm|m"
-         " -reset-bus|-r|r -input|-i(device-type,device-ID)");
-  QApplication a(n,ppc);
-  
-  std::ostringstream str;
-  if(pa("d")) str << ",dc";
-  if(pa("8")) str << ",dc800";
-  if(pa("-demo")) str << ",demo";
-  if(pa("u")) str << ",unicap";
-  if(pa("p"))str << ",pwc";
-  if(pa("c"))str << ",cvcam";
-  if(pa("s"))str << ",sr";
-  if(pa("m"))str << ",sm";
-  if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);
-  
-  std::string devlist = str.str();
-  if(!devlist.length()){
-    pausage("no devices selected!");
-    exit(-1);
-  }
-  devlist = devlist.substr(1); // removes the trailing comma!
-  
-  if(pa("r")) GenericGrabber::resetBus(devlist);
-  
-  CamCfgWidget w(devlist,0);
-  w.setGeometry(50,50,700,700);
-  w.setWindowTitle("icl-camcfg (ICL' Camera Configuration Tool)");
-  w.show();
-  return a.exec();
+int main(){
+  icl::SharedMemoryGrabber::resetBus();
 }
