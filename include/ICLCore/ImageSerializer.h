@@ -38,6 +38,7 @@
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/Time.h>
 #include <vector>
 
 namespace icl{
@@ -97,7 +98,8 @@ namespace icl{
     /// deserializes an image (and optionally also the meta-data) from given icl8u data block
     static void deserialize(const icl8u *data, ImgBase **dst, MetaData *dstMeta=0) throw (ICLException);
 
-
+    /// extracts only an images TimeStamp from it's serialized form
+    static Time deserializeTimeStamp(const icl8u *data) throw (ICLException);
 
   };
 }

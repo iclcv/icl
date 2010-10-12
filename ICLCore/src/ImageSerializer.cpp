@@ -171,4 +171,7 @@ namespace icl{
     return getHeaderSize() + estimateImageDataSize(image) + sizeof(icl32s) + meta.size();
   }
 
+  Time ImageSerializer::deserializeTimeStamp(const icl8u *data) throw (ICLException){
+    return Time(*(const int64_t*)(data+9*sizeof(icl32s)));
+  }
 }

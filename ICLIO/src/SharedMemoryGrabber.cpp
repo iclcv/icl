@@ -35,14 +35,36 @@
 #include <ICLIO/SharedMemoryGrabber.h>
 #include <QtCore/QSharedMemory>
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/Thread.h>
 #include <ICLCore/ImageSerializer.h>
+
 namespace icl{
-  
   
   struct SharedMemoryGrabberImpl::Data{
     QSharedMemory mem;
     ImgBase *image;
     ImgBase *converted_image;
+    bool omitDoubledFrames; // todo implement this feature!
+    Time lastImageTimeStamp;
+    
+    bool isNew(const Time &t){
+      if(t == Time::null){
+        WARNING_LOG("SharedMemoryGrabber received image with null-TimeStamp while \"omit-doubled-frames\" feature was activated. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
+        omitDoubledFrames = false;
+        return true;
+      }else if(lastImageTimeStamp == Time::null){
+        lastImageTimeStamp = t;
+        return true;
+      }else if(lastImageTimeStamp > t){
+        WARNING_LOG("SharedMemoryGrabber received an image with an older timestamp than the last one. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
+        return true;
+      }else if(lastImageTimeStamp == t){
+        return false;
+      }else{
+        lastImageTimeStamp = t;
+        return true;
+      }
+    }
   };
   
   SharedMemoryGrabberImpl::SharedMemoryGrabberImpl(const std::string &sharedMemorySegmentID) throw(ICLException):
@@ -50,6 +72,7 @@ namespace icl{
     
     m_data->image = 0;
     m_data->converted_image = 0;
+    m_data->omitDoubledFrames = true;
     
     if(sharedMemorySegmentID.length()){
       m_data->mem.setKey(sharedMemorySegmentID.c_str());
@@ -120,6 +143,12 @@ namespace icl{
       ImgBase **dst = &m_data->image;
       
       m_data->mem.lock();
+      while(m_data->omitDoubledFrames && // WAIT FOR NEW IMAGE LOOP
+            !m_data->isNew(ImageSerializer::deserializeTimeStamp((const icl8u*)m_data->mem.constData()))){
+        m_data->mem.unlock();
+        Thread::msleep(1);
+        m_data->mem.lock();
+      }
       ImageSerializer::deserialize((const icl8u*)m_data->mem.constData(),dst);
       m_data->mem.unlock();
       
@@ -138,6 +167,13 @@ namespace icl{
       }
     }else{
       m_data->mem.lock();
+      while(m_data->omitDoubledFrames && // WAIT FOR NEW IMAGE LOOP
+            !m_data->isNew(ImageSerializer::deserializeTimeStamp((const icl8u*)m_data->mem.constData()))){
+        m_data->mem.unlock();
+        Thread::msleep(1);
+        m_data->mem.lock();
+      }
+      // TODO extend deserialize to check for deserialized timestamp first
       ImageSerializer::deserialize((const icl8u*)m_data->mem.constData(),ppoDst ? ppoDst : &m_data->image);
       m_data->mem.unlock();
       return ppoDst ? *ppoDst : m_data->image;
@@ -157,6 +193,51 @@ namespace icl{
       WARNING_LOG("No shared memory segment named 'icl-shared-mem-grabbers' found");
     }
   }
+
+
+  void SharedMemoryGrabberImpl::setProperty(const std::string &property, const std::string &value){
+    if(property == "omit-doubled-frames"){
+      if(value == "on") m_data->omitDoubledFrames = true;
+      else if(value == "off") m_data->omitDoubledFrames = false;
+      else ERROR_LOG("unable to set property 'omit-doubled-frames' to " << value << " (allowed values are 'on' and 'off')");
+    }else{
+      ERROR_LOG("unable to set unsupported property " << property);
+    }
+  }
+  
+  std::vector<std::string> SharedMemoryGrabberImpl::getPropertyList(){
+    static const std::string ps[1] = {"omit-doubled-frames"};
+    return std::vector<std::string>(ps,ps+1);
+  }
+  
+  std::string SharedMemoryGrabberImpl::getType(const std::string &name){
+    if(name == "omit-doubled-frames") {
+      return "menu";
+    }else{
+      ERROR_LOG("invalid property name " << name);
+      return "undefined";
+    }
+  }
+  
+  std::string SharedMemoryGrabberImpl::getInfo(const std::string &name){
+    if(name == "omit-doubled-frames") {
+      return "{\"on\",\"off\"}";
+    }else{
+      ERROR_LOG("invalid property name " << name);
+      return "undefined";
+    }
+  }
+  
+  std::string SharedMemoryGrabberImpl::getValue(const std::string &name){
+    if(name == "omit-doubled-frames") {
+      return m_data->omitDoubledFrames ? "true" : "false";
+    }else{
+      ERROR_LOG("invalid property name " << name);
+      return "undefined";
+    }
+  
+  }
+  
   
 }
   

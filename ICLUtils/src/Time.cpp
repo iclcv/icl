@@ -61,8 +61,7 @@ namespace icl {
    }
 
    Time
-   Time::now()
-   {
+   Time::now(){
 #ifdef ICL_SYSTEM_WINDOWS
       struct timeb tb;
       ftime(&tb);
@@ -74,64 +73,45 @@ namespace icl {
 #endif
    }
 
-   Time
-   Time::seconds(value_type t)
-   {
-      return Time(t * static_cast<value_type>(1000000));
-   }
-
-   Time
-   Time::milliSeconds(value_type t)
-   {
-      return Time(t * static_cast<value_type>(1000));
-   }
-
-   Time
-   Time::microSeconds(value_type t)
-   {
-      return Time(t);
-   }
-
-   Time::value_type
-   Time::toSeconds() const
-   {
-      return m_usec / 1000000;
-   }
-
-   Time::value_type
-   Time::toMilliSeconds() const
-   {
-      return m_usec / 1000;
-   }
-
-   Time::value_type
-   Time::toMicroSeconds() const
-   {
-      return m_usec;
-   }
-
-   double
-   Time::toSecondsDouble() const
-   {
-      return m_usec / 1000000.0;
-   }
-
-   double
-   Time::toMilliSecondsDouble() const
-   {
-      return m_usec / 1000.0;
-   }
-
-   double
-   Time::toMicroSecondsDouble() const
-   {
-      return static_cast<double>(m_usec);
-   }
-
-   std::string
-   Time::toString() const{
-     return toStringFormated("%x %H:%M:%S:%#",32);
-   }
+  Time Time::seconds(value_type t) {
+    return Time(t * static_cast<value_type>(1000000));
+  }
+  
+  Time Time::milliSeconds(value_type t){
+    return Time(t * static_cast<value_type>(1000));
+  }
+  
+  Time Time::microSeconds(value_type t){
+    return Time(t);
+  }
+  
+  Time::value_type Time::toSeconds() const{
+    return m_usec / 1000000;
+  }
+  
+  Time::value_type Time::toMilliSeconds() const{
+    return m_usec / 1000;
+  }
+  
+  Time::value_type Time::toMicroSeconds() const{
+    return m_usec;
+  }
+  
+  double Time::toSecondsDouble() const{
+    return m_usec / 1000000.0;
+  }
+  
+  double Time::toMilliSecondsDouble() const{
+    return m_usec / 1000.0;
+  }
+  
+  double Time::toMicroSecondsDouble() const{
+    return static_cast<double>(m_usec);
+  }
+  
+  std::string Time::toString() const{
+    return toStringFormated("%x %H:%M:%S:%#",32);
+  }
   /*
       time_t time = static_cast<long>(m_usec / 1000000);
 
@@ -155,7 +135,6 @@ namespace icl {
      os << static_cast<long>(m_usec % 1000000 / 1000);
       return os.str();
       */
-  
   
   std::string Time::toStringFormated(const std::string &pattern,unsigned int bufferSize) const{
     
@@ -196,14 +175,12 @@ namespace icl {
     return s;
   }
   
-  Time::Time(value_type usec) :
-    m_usec(usec)
-  {}
+  Time::Time(value_type usec) : m_usec(usec) {}
 
-   std::ostream& operator<<(std::ostream& out, const Time& t){
-     return out << t.m_usec;
-   }
-
+  std::ostream& operator<<(std::ostream& out, const Time& t){
+    return out << t.m_usec;
+  }
+  
   std::istream& operator>>(std::istream& in, Time &t){
     return in >> t.m_usec;
   }

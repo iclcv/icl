@@ -79,8 +79,6 @@ namespace icl{
     virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
 
     /** @{ @name properties and parameters */
-#if 0
-    CURRENTLY, THIS GRABBER TYPE DOES NOT SUPPORT PROPERTIES
     
     /// interface for the setter function for video device properties 
     /** \copydoc icl::Grabber::setProperty(const std::string&,const std::string&) **/
@@ -101,7 +99,7 @@ namespace icl{
     /// returns the current value of a property or a parameter
     virtual std::string getValue(const std::string &name);
     /** @} */
-#endif
+
   };
 
 
