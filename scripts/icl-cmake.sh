@@ -55,8 +55,8 @@ ICL_XDEP_GTEST_PATH=/usr
 IP_PREFIX=$(ping -c 1 $HOSTNAME | grep PING | cut -d ' ' -f 3 | tr -d '()' | cut -d '.' -f 1-2)
 if [ "$IP_PREFIX" = "129.70" ] ; then
    ICL_XDEP_LIBMESASR_PATH=/vol/nivision
-   ICL_XDEP_LIBDC_PATH=/vol/nivision
-   ICL_XDEP_OPENCV_PATH=/vol/nivision
+#   ICL_XDEP_LIBDC_PATH=/vol/nivision
+#   ICL_XDEP_OPENCV_PATH=/vol/nivision
    ICL_XDEP_GTEST_PATH=/vol/nivision/share
 fi
 

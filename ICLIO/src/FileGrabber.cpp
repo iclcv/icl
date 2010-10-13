@@ -384,7 +384,7 @@ namespace icl{
   }
 
   int FileGrabberImpl::isVolatile(const std::string &name){
-    if(name == "next" || name == "prev" || name == "jump-to-start" || "auto-next"){
+    if(name == "next" || name == "prev" || name == "jump-to-start" || name == "auto-next"){
       return 0;
     }else if (name == "next filename" || name == "current filename" || name == "relative progress"
               || name == "absolute progress"){

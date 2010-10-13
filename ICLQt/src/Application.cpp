@@ -58,16 +58,30 @@ namespace icl{
       painit(n,ppc,paInitString);
     }
     
-#ifdef SYSTEM_APPLE
-  /* workaround for an obvious qt bug on mac. creation of a QApplicationn from
-     (n,ppc) leads to a seg-fault in QApplication::arguments() ... where qt trys
-     to read a string from address 0x00, which of course is not allowed :-) */
-    static int n2=1;
-    static char *args[]={*ppc,0};
-    app = new QApplication(n2,args);
-#else
+    /* QApplication uses argv and argc internally, both are passed via reference to
+       constructor and we must make sure those references stay valid for the entire
+       lifetime of the QApplication object.
+
+       Excerpt from the Qt documentation:
+       "Warning: The data referred to by argc and argv must stay valid for the entire
+       lifetime of the QApplication object. In addition, argc must be greater than
+       zero and argv must contain at least one valid character string."
+
+       We declare both as static variables before passing them to QApplication for
+       this reason. 
+   */
+#if 0
     app = new QApplication(n,ppc);
+#else
+    
+    // For some reason,  passing argv and argc to the QApplication leads
+    // to a seg-fault because of reading a NULL string internally ??
+    // Therefore we simply pass this static empty parameter list
+    static int static_n = 1;
+    static char *static_ppc[] = { ppc[0], NULL };
+    app = new QApplication(static_n, static_ppc);
 #endif
+
     s_app = this;
     if(init) addInit(init);
     
