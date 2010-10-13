@@ -32,297 +32,425 @@
 **                                                                 **
 *********************************************************************/
 
+#include <ICLUtils/StringUtils.h>
+
 #include <ICLAlgorithms/GenericSurfDetector.h>
-using namespace icl;
+
+#ifndef HAVE_OPENCV211
+#include <ICLAlgorithms/OpenCVSurfDetector.h>
+
+#include <ICLAlgorithms/OpenSurfDetector.h>
+#ifndef HAVE_OPENCV211
+#include <cv.h>
+#endif
+
+#include <opensurf/surflib.h>
+
+
 
 namespace icl{
+  
+#define THROW_GEN_SURF_EXC throw ICLException(str(__FUNCTION__)+": is not supported for backend '"+getBackend()+"'");
+  
+  float GenericSurfDetector::GenericPointImpl::getScale() const{
+    THROW_GEN_SURF_EXC; return 0;
+  }
+  const float* GenericSurfDetector::GenericPointImpl::getDescriptor() const{
+    THROW_GEN_SURF_EXC; return 0;
+  }
+  float GenericSurfDetector::GenericPointImpl::getDx() const{
+    THROW_GEN_SURF_EXC; return 0;
+  }
+  float GenericSurfDetector::GenericPointImpl::getDx() const{
+    THROW_GEN_SURF_EXC; return 0;
+  }
+  int GenericSurfDetector::GenericPointImpl::getClusterIndex() const{
+    THROW_GEN_SURF_EXC; return 0;
+  }
+  int GenericSurfDetector::GenericPointImpl::getSize() const{
+    THROW_GEN_SURF_EXC; return 0;
+  }
+  float GenericSurfDetector::GenericPointImpl::getHessian() const{
+    THROW_GEN_SURF_EXC; return 0;
+  }
 
-struct GenericSurfDetector::Data{
+  struct CVGenP : public GenericSurfDetector::GenericPointImpl{
+    const CvSURFPoint *p;
+    CVGenP(const CvSURFPoint *point):p(point){}    
+    ~CVGenP(){}    
+    virtual Point32f getCenter() const { return Point32f(p->pt.x,p->pt.y); }
+    virtual int getRadius() const {return int(p->size*1.2/9.*2);  }
+    virtual int getLaplacian() const {return p->laplacian;}
+    virtual float getDir() const {return p->dir;}
+    int getSize() const {return p->size;}
+    float getHessian() const {return p->hessian;}
+  };
 
-	IMPLEMENTATION m_impl;
+  struct SurfGenP : public GenericSurfDetector::GenericPointImpl{
+    const Ipoint *p;
+    SurfGenP(const Ipoint *point):p(point){}
+    ~SurfGenP(){}
+    virtual Point32f getCenter() const { return Point32f(p->x,p->y); }
+    virtual int getRadius() const { return int(2.5f * p->scale); }
+    virtual float getDir() const {return p->orientation;}
+    virtual int getLaplacian() const {return p->laplacian;}
+    float getScale() const {return p->scale;}
+    const float* getDescriptor() const {return p->descriptor;}
+    float getDx() const {return p->dx;}
+    float getDy() const {return p->dy;}
+    int getClusterIndex() const {return p->clusterIndex;}
+  };
+  
+  struct GenericSurfDetector::Data{
+    std::string impl;
+    std::vector<GenericPoint> points;
+    std::vector<GenericPoint> fpoints;
 
-	std::vector<GenericPoint> m_points;
+    //matches
+    std::vector<std::pair<GenericPoint, GenericPoint> > m_matches;
+#ifdef HAVE_OPENSURF
+    SmartPtr<OpenSurfDetector> opensurf;
+#endif
 
-	std::vector<GenericPoint> m_fpoints;
+#ifdef HAVE_OPENCV211
+    SmartPtr<OpenCVSurfDetector> opencv;
+#endif
 
-	//matches
-	std::vector<std::pair<GenericPoint, GenericPoint> > m_matches;
+    Data(const std::string &impl){
+      if(impl=="opencv"){
+#ifndef HAVE_OPENCV211
+        throw ICLException(str(__FUNCTION__)+": implementation 'opencv' is not available");
+#else
+        opencv = SmartPtr<OpenCVSurfDetector>(new OpenCVSurfDetector);
+#endif
+      }
+      if(impl == "opensurf"){
+#ifndef HAVE_OPENSURF
+        throw ICLException(str(__FUNCTION__)+": implementation 'opensurf' is not available");
+#else
+        opensurf = SmartPtr<OpenSurfDetector>(new OpenSurfDetector);
+#endif
+      }
+      this->impl = impl;
+    }
+    
+    //opencv
+    Data(const ImgBase *obj, double threshold, int extended, int octaves, int octavelayer){
+      impl = "opencv";
+#ifndef HAVE_OPENCV211
+      throw ICLException(str(__FUNCTION__)+": implementation 'opencv' is not available");
+#else
+      opencv = SmartPtr<OpenCVSurfDetector>(new OpenCVSurfDetector(obj, threshold,extended, octaves, octavelayer));
+    }
+    
+    //opensurf
+    Data(IMPLEMENTATION impl, const ImgBase *obj, bool upright, int octaves, int intervals, int init_samples, float thresh){
+      impl = "opensurf";
+#ifndef HAVE_OPENSURF
+      throw ICLException(str(__FUNCTION__)+": implementation 'opensurf' is not available");
+#else
+      opensurf = SmartPtr<OpenSurfDetector>(new OpenSurfDetector(obj,upright, octaves, intervals,init_samples, thresh));
+    }
+  };
 
-	OpenSurfDetector *m_opensurfDetector;
+  GenericSurfDetector::GenericSurfDetector(const ImgBase *obj,double threshold, int extended,
+                                           int octaves, int octavelayer):
+    m_data(new Data(obj,threshold, extended, octaves, octavelayer)){}
+  
+  GenericSurfDetector::GenericSurfDetector(const ImgBase *obj,  bool upright, int octaves,
+                                           int intervals, int init_samples, float thresh):
+    m_data(new Data(obj,upright, octaves, intervals, init_samples, thresh)){}
+  
+  GenericSurfDetector::GenericSurfDetector(const std::string &impl):
+    m_data(new Data(impl)){}
+  
+  GenericSurfDetector::~GenericSurfDetector(){
+    delete m_data;
+  }
+  
+  const std::string &GenericSurfDetector::getImpl(){
+    return m_data->impl;
+  }
+  
+#define ICL_ASSERT_THROW_OPENCV ICLASSERT_THROW(m_data->opencv,ICLException(str(__FUNCTION__)+": this set params function is only available for 'opencv' impl"))
 
-	OpenCVSurfDetector *m_opencvDetector;
+#define ICL_ASSERT_THROW_OPENSURF ICLASSERT_THROW(m_data->opensurf,ICLException(str(__FUNCTION__)+": this set params function is only available for 'opensurf' impl"))
+  
+  void GenericSurfDetector::setParams(double threshold, int extended,int octaves, int octavelayer){
+#ifndef HAVE_OPENCV211
+    throw ICLException(str(__FUNCTION__)+": this set params function is only available for 'opencv' impl");
+#else
+    ICLASSERT_THROW_OPENCV;
+    m_data->opencv->setParams(threshold,extended,octaves,octavelayer);
+#endif
+  }
 
-	Data(IMPLEMENTATION impl):m_impl(impl){
-		if(impl==GenericSurfDetector::OPENCV){
-			m_opensurfDetector = 0;
-			m_opencvDetector = new OpenCVSurfDetector();
-		}else{
-			m_opensurfDetector = new OpenSurfDetector();
-			m_opencvDetector = 0;
-		}
-	}
+  void GenericSurfDetector::setParams(bool upright, int octaves, int intervals, int init_samples,float thresh){
+#ifndef HAVE_OPENSURF
+    throw ICLException(str(__FUNCTION__)+": this set params function is only available for 'opensurf' impl");
+#else
+    ICLASSERT_THROW_OPENSURF;
+    m_data->opensurf->setParams(upright,octaves,intervals,init_samples,thresh);
+#endif
+  }
 
-	//opencv
-	Data(IMPLEMENTATION impl, const ImgBase *obj, double threshold=500,
-			int extended=1, int octaves=3, int octavelayer=4):
-				m_impl(impl),m_opensurfDetector(0),m_opencvDetector(new OpenCVSurfDetector(obj, threshold,
-						extended, octaves, octavelayer)){}
-
-	//opensurf
-	Data(IMPLEMENTATION impl, const ImgBase *obj, bool upright=false,
-			int octaves=4, int intervals=4, int init_samples=2, float thresh=0.004f):
-				m_impl(impl),m_opensurfDetector(new OpenSurfDetector(obj,upright, octaves, intervals,
-						init_samples, thresh)),m_opencvDetector(0){}
-	~Data(){
-		if(m_opencvDetector)
-			delete m_opencvDetector;
-		if(m_opensurfDetector)
-			delete m_opensurfDetector;
-	}
-};
-
-GenericSurfDetector::GenericSurfDetector(const ImgBase *obj,double threshold, int extended,
-		int octaves, int octavelayer):
-		m_data(new GenericSurfDetector::Data(GenericSurfDetector::OPENCV, obj,
-				threshold, extended, octaves, octavelayer)){}
-
-GenericSurfDetector::GenericSurfDetector(const ImgBase *obj,  bool upright, int octaves,
-		int intervals, int init_samples, float thresh):
-		m_data(new GenericSurfDetector::Data(GenericSurfDetector::OPENSURF, obj,
-				upright, octaves, intervals, init_samples, thresh)){}
-
-GenericSurfDetector::GenericSurfDetector(IMPLEMENTATION impl):
-		m_data(new GenericSurfDetector::Data(impl)){}
-
-GenericSurfDetector::~GenericSurfDetector(){
-	delete m_data;
-}
-
-int GenericSurfDetector::getImpl(){
-	return m_data->m_impl;
-}
-
-void GenericSurfDetector::setParams(double threshold, int extended,
-		int octaves, int octavelayer){
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		(m_data->m_opencvDetector)->setParams(threshold,extended,octaves,octavelayer);
-	}
-}
-
-void GenericSurfDetector::setParams(bool upright, int octaves, int intervals,
-		int init_samples,float thresh){
-	if(m_data->m_impl == GenericSurfDetector::OPENSURF){
-		(m_data->m_opensurfDetector)->setParams(upright,octaves,intervals,init_samples,thresh);
-	}
-}
-
-void GenericSurfDetector::setObjectImg(const ImgBase *objectImg) throw (ICLException){
-	if(!objectImg)
-		throw ICLException("object image is null");
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		return (m_data->m_opencvDetector)->setObjectImg(objectImg);
-	} else {
-		return (m_data->m_opensurfDetector)->setObjectImg(objectImg);
-	}
-}
+  void GenericSurfDetector::setObjectImg(const ImgBase *objectImg) throw (ICLException){
+    ICLASSERT_THROW(objectImg, ICLException(str(__FUNCTION__)+ ": object image is null"));
+    
+#ifdef HAVE_OPENCV211
+    if(m_data->opencv) m_data->opencv->setObjectImg(objectImg);
+#endif
+    
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf) m_data->opensurf->setObjectImg(objectImg);
+#endif
+  }
 
 ///returns back converted image
-const ImgBase *GenericSurfDetector::getObjectImg() throw (ICLException){
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		return (m_data->m_opencvDetector)->getObjectImg();
-	} else {
-		return (m_data->m_opensurfDetector)->getObjectImg();
-	}
+  const ImgBase *GenericSurfDetector::getObjectImg() throw (ICLException){
+#ifdef HAVE_OPENCV211
+    if(m_data->opencv) return m_data->opencv->getObjectImg();
+#endif
+    
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf) return m_data->opensurf->getObjectImg();
+#endif
+    return 0;
+  }
+  
+  const std::vector<GenericSurfDetector::GenericPoint> &GenericSurfDetector::getObjectImgFeatures(){
+    m_data->points.clear();
+    
+#ifdef HAVE_OPENCV211
+    if(m_data->opencv){
+      const std::vector<CvSURFPoint> &points = m_data->opencv->getObjectImgFeatures();
+
+      m_data->points.resize(points.size());
+      for(unsigned int i=0;i<points.size();++i){
+        m_data->points[i] = GenericPoint(new CVGenP(&(points[i])));
+      }
+    }
+#endif
+    
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf){
+      const std::vector<Ipoint> &points = m_data->opensurf->getObjectImgFeatures();
+      m_data->points.resize(points.size());
+      for(unsigned int i=0;i< points.size();++i){
+        m_data->points[i] = GenericPoint(new SurfGenP(&(points[i])));
+      }
+    }
+#endif
+    
+    return m_data->m_points;
 }
 
-const std::vector<GenericSurfDetector::GenericPoint> &GenericSurfDetector::getObjectImgFeatures(){
-	m_data->m_points.clear();
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		const std::vector<CvSURFPoint> &points = (m_data->m_opencvDetector)->getObjectImgFeatures();
-		m_data->m_points.reserve(points.size());
-		for(unsigned int i=0;i< points.size();++i){
-			m_data->m_points.push_back(GenericSurfDetector::GenericPoint(new OpenCVGenericPointImpl(&(points[i]))));
-		}
-	} else {
-		const std::vector<Ipoint> &points = (m_data->m_opensurfDetector)->getObjectImgFeatures();
-		m_data->m_points.reserve(points.size());
-		for(unsigned int i=0;i< points.size();++i){
-			m_data->m_points.push_back(GenericSurfDetector::GenericPoint(new OpenSurfGenericPointImpl(&(points[i]))));
-		}
-	}
-	return m_data->m_points;
-}
+  const std::vector<GenericSurfDetector::GenericPoint> &GenericSurfDetector::extractFeatures(const ImgBase *src) throw (ICLException){
+    ICLASSERT_THROW(src,ICLException(str(__FUNCTION__)+": source image was null"));
+    
+    m_data->m_fpoints.clear();
+    
+#ifdef HAVE_OPENCV
+    if(m_data->opencv){
+      const std::vector<CvSURFPoint> &points = m_data->opencv->extractFeatures(src);
+      m_data->fpoints.resize(points.size());
+      for(unsigned int i=0;i<points.size();++i){
+        m_data->fpoints[i] = GenericPoint(new CVGenP(&(points[i])));
+      }
+    }
+#endif
+    
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf){
+      const std::vector<Ipoint> &points = m_data->opensurf->extractFeatures(src);
+      m_data->fpoints.resize(points.size());
+      for(unsigned int i=0;i<points.size();++i){
+        m_data->fpoints[i] = GenericPoint(new SurfGenP(&(points[i])));
+      }
+    }
+#endif
+    return m_data->m_fpoints;
+  }
 
-const std::vector<GenericSurfDetector::GenericPoint> &GenericSurfDetector::extractFeatures(const ImgBase *src) throw (ICLException){
-	if(!src)
-		throw ICLException("src is null");
-	m_data->m_fpoints.clear();
-	if(m_data->m_impl == GenericSurfDetector::OPENSURF){
-		const std::vector<Ipoint> &points = (m_data->m_opensurfDetector)->extractFeatures(src);
-		m_data->m_fpoints.reserve(points.size());
-		for(unsigned int i=0;i<points.size();++i){
-			GenericSurfDetector::GenericPoint p(new OpenSurfGenericPointImpl(&(points[i])));
-			m_data->m_fpoints.push_back(p);
-		}
-	}else {
-		const std::vector<CvSURFPoint> &points = (m_data->m_opencvDetector)->extractFeatures(src);
-		m_data->m_fpoints.reserve(points.size());
-		for(unsigned int i=0;i<points.size();++i){
-			GenericSurfDetector::GenericPoint p(new OpenCVGenericPointImpl(&(points[i])));
-			m_data->m_fpoints.push_back(p);
-		}
-	}
-	return m_data->m_fpoints;
-}
+  const std::vector<std::pair<GenericSurfDetector::GenericPoint, GenericSurfDetector::GenericPoint> >&
+  GenericSurfDetector::match(const ImgBase *image) throw (ICLException){
+    ICLASSERT_THROW(src,ICLException(str(__FUNCTION__)+": source image was null"));
 
-const std::vector<std::pair<GenericSurfDetector::GenericPoint, GenericSurfDetector::GenericPoint> >
-&GenericSurfDetector::match(const ImgBase *image) throw (ICLException){
-	if(!image)
-		throw ICLException("image is null");
-	m_data->m_matches.clear();
-	if(m_data->m_impl == GenericSurfDetector::OPENSURF){
-		const std::vector<std::pair<Ipoint, Ipoint> > &matches = (m_data->m_opensurfDetector)->match(image);
-		(m_data->m_matches).reserve(matches.size());
-		for(unsigned int i=0;i<matches.size();++i){
-			GenericSurfDetector::GenericPoint fi(new OpenSurfGenericPointImpl(&(matches[i].first)));
-			GenericSurfDetector::GenericPoint se(new OpenSurfGenericPointImpl(&(matches[i].second)));
-			std::pair<GenericSurfDetector::GenericPoint,GenericSurfDetector::GenericPoint> pa(fi,se);
-			(m_data->m_matches).push_back(pa);
-		}
-	}else {
-		const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &matches = (m_data->m_opencvDetector)->match(image);
-		(m_data->m_matches).reserve(matches.size());
-		for(unsigned int i=0;i<matches.size();++i){
-			GenericSurfDetector::GenericPoint fi(new OpenCVGenericPointImpl(&(matches[i].first)));
-			GenericSurfDetector::GenericPoint se(new OpenCVGenericPointImpl(&(matches[i].second)));
-			std::pair<GenericSurfDetector::GenericPoint,GenericSurfDetector::GenericPoint> pa(fi,se);
-			(m_data->m_matches).push_back(pa);
-		}
-	}
-	return m_data->m_matches;
-}
+    m_data->matches.clear();
+    
+#ifdef HAVE_OPENCV211
+    if(m_data->opencv){
+      const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &matches = m_data->opencv->match(image);
+      m_data->matches.resize(matches.size());
+      for(unsigned int i=0;i<matches.size();++i){
+        m_data->matches[i] = std::make_pair(GenericPoint(new CVGenP(&(matches[i].first))),GenericPoint(new CVGenP(&(matches[i].second))));
+      }
+    }
+#endif
 
-void GenericSurfDetector::setRotationInvariant(bool upright) throw (ICLException){
-	if(m_data->m_impl == GenericSurfDetector::OPENSURF){
-		m_data->m_opensurfDetector->setRotationInvariant(upright);
-	}else{
-		throw ICLException("this is not for opencv");
-	}
-}
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf){
+      const std::vector<std::pair<Ipoint, Ipoint> > &matches = m_data->opensurf->match(image);
+      m_data->matches.resize(matches.size());
+      for(unsigned int i=0;i<matches.size();++i){
+        GenericSurfDetector::GenericPoint fi(new SurfGenP(&(matches[i].first)));
+        GenericSurfDetector::GenericPoint se(new SurfGenP(&(matches[i].second)));
+        std::pair<GenericSurfDetector::GenericPoint,GenericSurfDetector::GenericPoint> pa(fi,se);
+        m_data->matches[i] = std::make_pair(GenericPoint(new SurfGenP(&(matches[i].first))),GenericPoint(new SurfGenP(&(matches[i].second))));
+      }
+    }
+#endif
+    return m_data->matches;
+  }
 
-void GenericSurfDetector::setOctaves(int octaves){
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		m_data->m_opencvDetector->setOctaves(octaves);
-	}else{
-		m_data->m_opensurfDetector->setOctaves(octaves);
-	}
-}
+#ifdef HAVE_OPENSURF
+#define OPENSURF_SPECIFIC_FUNCTION(X,R)                                 \
+  if(m_data->opensurf){                                                 \
+    R m_data->opensurf->X;                                              \
+  }else{                                                                \
+    throw ICLException(str(__FUNCTION__)+": this function is only available for 'opensurf' impl"); \
+  }
+#else
+#define OPENSURF_SPECIFIC_FUNCTION(X,R)                                 \
+  throw ICLException(str(__FUNCTION__)+": this function is only available for 'opensurf' impl"); 
+#endif
+  
+#ifdef HAVE_OPENCV211
+#define OPENCV_SPECIFIC_FUNCTION(X,R)                                   \
+  if(m_data->opencv){                                                   \
+    R m_data->opencv->X;                                                \
+  }else{                                                                \
+    throw ICLException(str(__FUNCTION__)+": this function is only available for 'opencv' impl"); \
+  }
+#else
+#define OPENCV_SPECIFIC_FUNCTION(X,R)                                   \
+  throw ICLException(str(__FUNCTION__)+": this function is only available for 'opencv' impl"); 
+#endif
 
-void GenericSurfDetector::setOctavelayer(int octavelayer){
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		m_data->m_opencvDetector->setOctavelayer(octavelayer);
-	}else{
-		m_data->m_opensurfDetector->setIntervals(octavelayer);
-	}
-}
 
-void GenericSurfDetector::setInitSamples(int init_samples) throw (ICLException){
-	if(m_data->m_impl == GenericSurfDetector::OPENSURF
-			&& m_data->m_opensurfDetector != 0){
-		m_data->m_opensurfDetector->setInitSamples(init_samples);
-	}else{
-		throw ICLException("this is not for opencv");
-	}
-}
 
-void GenericSurfDetector::setThreshold(double threshold){
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		m_data->m_opencvDetector->setThreshold(threshold);
-	}else{
-		m_data->m_opensurfDetector->setRespThresh(threshold);
-	}
-}
+  void GenericSurfDetector::setRotationInvariant(bool upright) throw (ICLException){
+    OPENSURF_SPECIFIC_FUNCTION(setRotationInvariant(upright), );
+    /*
+        if(m_data->m_impl == GenericSurfDetector::OPENSURF){
+        m_data->m_opensurfDetector->setRotationInvariant(upright);
+        }else{
+        throw ICLException("this is not for opencv");
+        }
+    */
+  }
+  
+  void GenericSurfDetector::setOctaves(int octaves){
+#ifdef HAVE_OPENCV211
+    if(m_data->opencv) m_data->opencv->setOctaves(octaves);
+#endif
+    
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf) m_data->opensurf->setOctaves(octaves);
+#endif
+  }
+  
+  void GenericSurfDetector::setOctavelayer(int octavelayer){
 
-void GenericSurfDetector::setExtended(int extended) throw (ICLException){
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		m_data->m_opencvDetector->setExtended(extended);
-	}else{
-		throw ICLException("this not for opensurf");
-	}
-}
+#ifdef HAVE_OPENCV211
+    if(m_data->opencv) m_data->opencv->setOctavelayer(octavelayer);
+#endif
 
-bool GenericSurfDetector::getRotationInvariant() throw (ICLException){
-	if(m_data->m_impl == GenericSurfDetector::OPENSURF
-			&& m_data->m_opensurfDetector != 0){
-		return m_data->m_opensurfDetector->getRotationInvariant();
-	}else{
-		throw ICLException("this is not for opencv");
-	}
-}
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf) m_data->opensurf->setIntervals(octavelayer);
+#endif
+  }
 
-int GenericSurfDetector::getOctaves(){
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		return m_data->m_opencvDetector->getOctaves();
-	}else{
-		return m_data->m_opensurfDetector->getOctaves();
-	}
-}
+  void GenericSurfDetector::setInitSamples(int init_samples) throw (ICLException){
+    OPENSURF_SPECIFIC_FUNCTION(setInitSamples(init_samples), );
+  }
+  
+  void GenericSurfDetector::setThreshold(double threshold){
+#ifdef HAVE_OPENCV211
+    if(m_data->opencv) m_data->opencv->setThreshold(threshold);
+#endif
+    
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf) m_data->opensurf->setRespThresh(threshold);
+#endif
+  }
+  
+  void GenericSurfDetector::setExtended(int extended) throw (ICLException){
+    OPENCV_SPECIFIC_FUNCTION(setExtended(extended), );
+  }
+  
+  bool GenericSurfDetector::getRotationInvariant() throw (ICLException){
+    OPENSURF_SPECIFIC_FUNCTION(getRotationInvariant(),return);
+    return false;
+  }
+  
+  int GenericSurfDetector::getOctaves(){
+#ifdef HAVE_OPENCV211
+    if(m_data->opencv) return m_data->opencv->getOctaves();
+#endif
 
-int GenericSurfDetector::getOctavelayer(){
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		return m_data->m_opencvDetector->getOctavelayer();
-	}else{
-		return m_data->m_opensurfDetector->getIntervals();
-	}
-}
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf) return m_data->opensurf->getOctaves();
+#endif
+  }
+  
+  int GenericSurfDetector::getOctavelayer(){
+#ifdef HAVE_OPENCV211
+    if(m_data->opencv) return m_data->opencv->getOctavelayer();
+#endif
 
-int GenericSurfDetector::getInitSamples() throw (ICLException){
-	if(m_data->m_impl == GenericSurfDetector::OPENSURF){
-		return m_data->m_opensurfDetector->getInitSamples();
-	}else{
-		throw ICLException("This is not for opencvsurfdetector");
-	}
-}
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf) return m_data->opensurf->getIntervals();
+#endif
+  }
+  
+  int GenericSurfDetector::getInitSamples() throw (ICLException){
+    OPENSURF_SPECIFIC_FUNCTION(getInitSamples(),return);
+    return 0;
+  }
+  
+  double GenericSurfDetector::getThreshold(){
+#ifdef HAVE_OPENCV211
+    if(m_data->opencv) return m_data->opencv->getThreshold();
+#endif
 
-double GenericSurfDetector::getThreshold(){
-	if(m_data->m_impl == GenericSurfDetector::OPENCV){
-		return m_data->m_opencvDetector->getThreshold();
-	}else {
-		return m_data->m_opensurfDetector->getRespThresh();
-	}
-}
-
-int GenericSurfDetector::getExtended() throw (ICLException){
-	if(m_data->m_impl == GenericSurfDetector::OPENCV
-			&& m_data->m_opencvDetector != 0){
-		return m_data->m_opencvDetector->getExtended();
-	} else {
-		throw ICLException("this is not for opensurf");
-	}
-}
-
+#ifdef HAVE_OPENSURF
+    if(m_data->opensurf) return m_data->opensurf->getRespThresh();
+#endif
+  }
+  
+  int GenericSurfDetector::getExtended() throw (ICLException){
+    OPENCV_SPECIFIC_FUNCTION(getExtended(),return);
+    return 0;
+  }
+  
 
 #ifdef HAVE_QT
-void GenericSurfDetector::visualizeFeature(ICLDrawWidget &w,const GenericSurfDetector::GenericPoint &p){
-	const OpenCVGenericPointImpl *cvpoint = dynamic_cast<const OpenCVGenericPointImpl*> (p.impl.get());
-	if(cvpoint == 0){
-		const OpenSurfGenericPointImpl *surfpoint = dynamic_cast<const OpenSurfGenericPointImpl*> (p.impl.get());
-		OpenSurfDetector::visualizeFeature(w,*(surfpoint->p));
-	} else {
-		OpenCVSurfDetector::visualizeFeature(w,*(cvpoint->p));
-	}
-}
-void GenericSurfDetector::visualizeFeatures(ICLDrawWidget &w, const std::vector<GenericSurfDetector::GenericPoint> &features){
-	for(unsigned int i=0;i<features.size();++i)
-		visualizeFeature(w,features.at(i));
-}
-void GenericSurfDetector::visualizeMatches(ICLDrawWidget &w_object,ICLDrawWidget &w_result,
-		const std::vector<std::pair<GenericSurfDetector::GenericPoint, GenericSurfDetector::GenericPoint> > &matches){
-	for(unsigned int i=0;i<matches.size();++i){
-		visualizeFeature(w_object, matches[i].second);
-		visualizeFeature(w_result,matches[i].first);
-	}
-}
+  void GenericSurfDetector::visualizeFeature(ICLDrawWidget &w,const GenericSurfDetector::GenericPoint &p){
+    
+#ifdef HAVE_OPENCV211
+    const CVGenP *cvpoint = dynamic_cast<const CVGenP*>(p.impl.get());
+    if(cvpoint) OpenCVSurfDetector::visualizeFeature(w,*(cvpoint->p));
+#endif
+    
+#ifdef HAVE_OPENSURF
+    const SurfGenP *surfpoint = dynamic_cast<const SurfGenP*> (p.impl.get());
+    if(surfpoint) OpenSurfDetector::visualizeFeature(w,*(surfpoint->p));
+#endif
+    
+  }
+  void GenericSurfDetector::visualizeFeatures(ICLDrawWidget &w, const std::vector<GenericSurfDetector::GenericPoint> &features){
+    for(unsigned int i=0;i<features.size();++i){
+      visualizeFeature(w,features.at(i));
+    }
+  }
+  void GenericSurfDetector::visualizeMatches(ICLDrawWidget &w_object,ICLDrawWidget &w_result,
+                                             const std::vector<std::pair<GenericSurfDetector::GenericPoint, GenericSurfDetector::GenericPoint> > &matches){
+    for(unsigned int i=0;i<matches.size();++i){
+      visualizeFeature(w_object, matches[i].second);
+      visualizeFeature(w_result,matches[i].first);
+    }
+  }
 #endif
 
 }
