@@ -107,8 +107,6 @@ namespace icl{
     icl::img_to_ipl(objectImage,&(m_data->m_objectImg_org));
     icl::img_to_ipl(objectImage,&(m_data->m_objectImg));
   
-    SHOW(m_data->m_objectImg_org);
-    SHOW(m_data->m_objectImg);
     /*
         m_data->m_objectImg = cvCreateImage(cvGetSize(m_data->m_objectImg_org),
         m_data->m_objectImg_org->depth ,

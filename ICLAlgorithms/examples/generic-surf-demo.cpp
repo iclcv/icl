@@ -48,6 +48,7 @@ SmartPtr<GenericSurfDetector> surf = new GenericSurfDetector("opencv");
 #endif
 
 GUI gui("hsplit");
+static Rect r = Rect::null;
 
 void gui_cb(const std::string &handle){
   Mutex::Locker lock(mutex);
@@ -84,6 +85,39 @@ void gui_cb(const std::string &handle){
   }
 }
 
+void select_object(const MouseEvent &m){
+  if(m.isPressEvent() && m.isLeft()){
+    r = Rect(m.getX(),m.getY(),1,1);
+  }else if(m.isDragEvent()){
+    if(r != Rect::null){
+      r.width = m.getX()-r.x;
+      r.height = m.getY()-r.y;
+    }
+  }else{
+    if(r != Rect::null){
+      Rect r2 = r.normalized();
+      if(r2.width * r2.height > 4){
+        Mutex::Locker lock(mutex);
+        Img8u image = *grabber.grab()->asImg<icl8u>();
+        Rect r3 = r2 & image.getImageRect();
+        if(r3.width * r3.height > 4){
+          image.setROI(r3);
+          Img8u roi;
+          image.deepCopyROI(&roi);
+          surf->setObjectImg(&roi);
+          gui_DrawHandle(draw_object);
+          draw_object = &roi;
+          draw_object->lock();
+          draw_object->reset();
+          draw_object->unlock();
+          draw_object->update();
+        }
+      }
+      r = Rect::null;
+    }
+  }
+}
+
 void init(){
   grabber.init(FROM_PROGARG("-i"));
   grabber.setIgnoreDesiredParams(true);
@@ -91,6 +125,8 @@ void init(){
   if(pa("-f")){
     Img8u obj = load<icl8u>(pa("-f"));
     surf->setObjectImg(&obj);
+  }else{
+    surf->setObjectImg(grabber.grab());
   }
   
   gui << (GUI("vbox")
@@ -118,7 +154,9 @@ void init(){
   
   gui.registerCallback(new GUI::Callback(gui_cb),"os_handle,ri_handle,snap_handle,oct_handle,intervals_handle,sample_handle,thresh_handle");
   gui["draw_object"] =  surf->getObjectImg().get();
+  gui["draw_image"].install(new MouseHandler(select_object));
 }
+
 
 
 void run(){
@@ -150,6 +188,12 @@ void run(){
     const std::vector<std::pair<GenericSurfDetector::GenericPoint,
     GenericSurfDetector::GenericPoint> > &matches = surf->match(image);
     surf->visualizeMatches(**draw_object,**draw_result,matches);
+  }
+  
+  if(r != Rect::null){
+    draw_image->color(255,0,0,255);
+    draw_image->fill(255,0,0,20);
+    draw_image->rect(r.normalized());
   }
   
   draw_result->unlock();

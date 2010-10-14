@@ -129,6 +129,16 @@ namespace icl{
       return b; 
     }
   };
+
+#ifndef HAVE_OPENCV211
+#ifndef HAVE_OPENSURF
+#define THROW_NO_BACKEND throw ICLException(str(__FUNCTION__)+": no surf feature backend found!")
+#endif
+#endif
+
+#ifndef THROW_NO_BACKEND
+#define THROW_NO_BACKEND 
+#endif
   
   struct GenericSurfDetector::Data{
     std::string impl;
@@ -161,6 +171,8 @@ namespace icl{
 #endif
       }
       this->impl = impl;
+
+      THROW_NO_BACKEND;
     }
     
     //opencv
@@ -171,6 +183,8 @@ namespace icl{
 #else
       opencv = SmartPtr<OpenCVSurfDetector>(new OpenCVSurfDetector(obj, threshold,extended, octaves, octavelayer));
 #endif
+      
+      THROW_NO_BACKEND;
     }
     
     //opensurf
@@ -181,25 +195,33 @@ namespace icl{
 #else
       opensurf = SmartPtr<OpenSurfDetector>(new OpenSurfDetector(obj,upright, octaves, intervals,init_samples, thresh));
 #endif
+      THROW_NO_BACKEND;
     }
   };
 
   GenericSurfDetector::GenericSurfDetector(const ImgBase *obj,double threshold, int extended,
                                            int octaves, int octavelayer):
-    m_data(new Data(obj,threshold, extended, octaves, octavelayer)){}
+    m_data(new Data(obj,threshold, extended, octaves, octavelayer)){
+    THROW_NO_BACKEND;
+  }
   
   GenericSurfDetector::GenericSurfDetector(const ImgBase *obj,  bool upright, int octaves,
                                            int intervals, int init_samples, float thresh):
-    m_data(new Data(obj,upright, octaves, intervals, init_samples, thresh)){}
+    m_data(new Data(obj,upright, octaves, intervals, init_samples, thresh)){
+    THROW_NO_BACKEND;
+  }
   
   GenericSurfDetector::GenericSurfDetector(const std::string &impl):
-    m_data(new Data(impl)){}
+    m_data(new Data(impl)){
+    THROW_NO_BACKEND;
+  }
   
   GenericSurfDetector::~GenericSurfDetector(){
     delete m_data;
   }
   
   const std::string &GenericSurfDetector::getImpl(){
+    THROW_NO_BACKEND;
     return m_data->impl;
   }
   
@@ -207,7 +229,10 @@ namespace icl{
 
 #define ICLASSERT_THROW_OPENSURF ICLASSERT_THROW(m_data->opensurf,ICLException(str(__FUNCTION__)+": this set params function is only available for 'opensurf' impl"))
   
+
+
   void GenericSurfDetector::setParams(double threshold, int extended,int octaves, int octavelayer){
+    THROW_NO_BACKEND;
 #ifndef HAVE_OPENCV211
     throw ICLException(str(__FUNCTION__)+": this set params function is only available for 'opencv' impl");
 #else
@@ -217,6 +242,8 @@ namespace icl{
   }
 
   void GenericSurfDetector::setParams(bool upright, int octaves, int intervals, int init_samples,float thresh){
+    THROW_NO_BACKEND;
+    
 #ifndef HAVE_OPENSURF
     throw ICLException(str(__FUNCTION__)+": this set params function is only available for 'opensurf' impl");
 #else
@@ -226,6 +253,7 @@ namespace icl{
   }
 
   void GenericSurfDetector::setObjectImg(const ImgBase *objectImg) throw (ICLException){
+    THROW_NO_BACKEND;
     ICLASSERT_THROW(objectImg, ICLException(str(__FUNCTION__)+ ": object image is null"));
     
 #ifdef HAVE_OPENCV211
@@ -239,6 +267,7 @@ namespace icl{
 
 ///returns back converted image
   SmartPtr<ImgBase> GenericSurfDetector::getObjectImg() throw (ICLException){
+    THROW_NO_BACKEND;
 #ifdef HAVE_OPENCV211
     if(m_data->opencv) return (ImgBase*)m_data->opencv->getObjectImg();
 #endif
@@ -250,6 +279,7 @@ namespace icl{
   }
   
   const std::vector<GenericSurfDetector::GenericPoint> &GenericSurfDetector::getObjectImgFeatures(){
+    THROW_NO_BACKEND;
     m_data->points.clear();
     
 #ifdef HAVE_OPENCV211
@@ -272,11 +302,11 @@ namespace icl{
       }
     }
 #endif
-    
     return m_data->points;
-}
+  }
 
   const std::vector<GenericSurfDetector::GenericPoint> &GenericSurfDetector::extractFeatures(const ImgBase *src) throw (ICLException){
+    THROW_NO_BACKEND;
     ICLASSERT_THROW(src,ICLException(str(__FUNCTION__)+": source image was null"));
     
     m_data->fpoints.clear();
@@ -305,6 +335,7 @@ namespace icl{
 
   const std::vector<std::pair<GenericSurfDetector::GenericPoint, GenericSurfDetector::GenericPoint> >&
   GenericSurfDetector::match(const ImgBase *image) throw (ICLException){
+    THROW_NO_BACKEND;
     ICLASSERT_THROW(image,ICLException(str(__FUNCTION__)+": source image was null"));
 
     m_data->matches.clear();
@@ -361,6 +392,7 @@ namespace icl{
 
 
   void GenericSurfDetector::setRotationInvariant(bool upright) throw (ICLException){
+    THROW_NO_BACKEND;
     OPENSURF_SPECIFIC_FUNCTION(setRotationInvariant(upright), );
     /*
         if(m_data->m_impl == GenericSurfDetector::OPENSURF){
@@ -382,6 +414,7 @@ namespace icl{
   }
   
   void GenericSurfDetector::setOctavelayer(int octavelayer){
+    THROW_NO_BACKEND;
 
 #ifdef HAVE_OPENCV211
     if(m_data->opencv) m_data->opencv->setOctavelayer(octavelayer);
@@ -393,6 +426,7 @@ namespace icl{
   }
 
   void GenericSurfDetector::setInitSamples(int init_samples) throw (ICLException){
+    THROW_NO_BACKEND;
     OPENSURF_SPECIFIC_FUNCTION(setInitSamples(init_samples), );
   }
   
@@ -407,15 +441,18 @@ namespace icl{
   }
   
   void GenericSurfDetector::setExtended(int extended) throw (ICLException){
+    THROW_NO_BACKEND;
     OPENCV_SPECIFIC_FUNCTION(setExtended(extended), );
   }
   
   bool GenericSurfDetector::getRotationInvariant() throw (ICLException){
+    THROW_NO_BACKEND;
     OPENSURF_SPECIFIC_FUNCTION(getRotationInvariant(),return);
     return false;
   }
   
   int GenericSurfDetector::getOctaves(){
+    THROW_NO_BACKEND;
 #ifdef HAVE_OPENCV211
     if(m_data->opencv) return m_data->opencv->getOctaves();
 #endif
@@ -427,6 +464,7 @@ namespace icl{
   }
   
   int GenericSurfDetector::getOctavelayer(){
+    THROW_NO_BACKEND;
 #ifdef HAVE_OPENCV211
     if(m_data->opencv) return m_data->opencv->getOctavelayer();
 #endif
@@ -438,11 +476,13 @@ namespace icl{
   }
   
   int GenericSurfDetector::getInitSamples() throw (ICLException){
+    THROW_NO_BACKEND;
     OPENSURF_SPECIFIC_FUNCTION(getInitSamples(),return);
     return 0;
   }
   
   double GenericSurfDetector::getThreshold(){
+    THROW_NO_BACKEND;
 #ifdef HAVE_OPENCV211
     if(m_data->opencv) return m_data->opencv->getThreshold();
 #endif
@@ -454,6 +494,7 @@ namespace icl{
   }
   
   int GenericSurfDetector::getExtended() throw (ICLException){
+    THROW_NO_BACKEND;
     OPENCV_SPECIFIC_FUNCTION(getExtended(),return);
     return 0;
   }
@@ -461,6 +502,7 @@ namespace icl{
 
 #ifdef HAVE_QT
   void GenericSurfDetector::visualizeFeature(ICLDrawWidget &w,const GenericSurfDetector::GenericPoint &p){
+    THROW_NO_BACKEND;
     
 #ifdef HAVE_OPENCV211
     const CVGenP *cvpoint = dynamic_cast<const CVGenP*>(p.impl.get());
