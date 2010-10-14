@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLAlgorithms/src/GenericSurfDetector.cpp              **
 ** Module : ICLAlgorithms                                          **
-** Authors: Christian Groszewski                                   **
+** Authors: Christian Groszewski, Christof Elbrechter              **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -32,20 +32,21 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLUtils/StringUtils.h>
+
 
 #include <ICLAlgorithms/GenericSurfDetector.h>
 
-#ifndef HAVE_OPENCV211
+#ifdef HAVE_OPENCV211
 #include <ICLAlgorithms/OpenCVSurfDetector.h>
-
-#include <ICLAlgorithms/OpenSurfDetector.h>
-#ifndef HAVE_OPENCV211
 #include <cv.h>
 #endif
 
+#ifdef HAVE_OPENSURF
+#include <ICLAlgorithms/OpenSurfDetector.h>
 #include <opensurf/surflib.h>
+#endif
 
+#include <ICLUtils/StringUtils.h>
 
 
 namespace icl{
@@ -61,7 +62,7 @@ namespace icl{
   float GenericSurfDetector::GenericPointImpl::getDx() const{
     THROW_GEN_SURF_EXC; return 0;
   }
-  float GenericSurfDetector::GenericPointImpl::getDx() const{
+  float GenericSurfDetector::GenericPointImpl::getDy() const{
     THROW_GEN_SURF_EXC; return 0;
   }
   int GenericSurfDetector::GenericPointImpl::getClusterIndex() const{
@@ -71,6 +72,26 @@ namespace icl{
     THROW_GEN_SURF_EXC; return 0;
   }
   float GenericSurfDetector::GenericPointImpl::getHessian() const{
+    THROW_GEN_SURF_EXC; return 0;
+  }
+  GenericSurfDetector::GenericPointImpl::~GenericPointImpl(){}
+
+  const std::string &GenericSurfDetector::GenericPointImpl::getBackend() const{
+    static std::string s = "none!";
+    return s;
+  }
+  
+  Point32f GenericSurfDetector::GenericPointImpl::getCenter() const{
+    THROW_GEN_SURF_EXC; return Point32f::null;
+  }
+
+  int GenericSurfDetector::GenericPointImpl::getRadius() const{
+    THROW_GEN_SURF_EXC; return 0;
+  }
+  int GenericSurfDetector::GenericPointImpl::getLaplacian() const{
+    THROW_GEN_SURF_EXC; return 0;
+  }
+  float GenericSurfDetector::GenericPointImpl::getDir() const{
     THROW_GEN_SURF_EXC; return 0;
   }
 
@@ -84,6 +105,10 @@ namespace icl{
     virtual float getDir() const {return p->dir;}
     int getSize() const {return p->size;}
     float getHessian() const {return p->hessian;}
+    virtual const std::string &getBackend() const { 
+      static std::string b("opencv");
+      return b; 
+    }
   };
 
   struct SurfGenP : public GenericSurfDetector::GenericPointImpl{
@@ -99,6 +124,10 @@ namespace icl{
     float getDx() const {return p->dx;}
     float getDy() const {return p->dy;}
     int getClusterIndex() const {return p->clusterIndex;}
+    virtual const std::string &getBackend() const { 
+      static std::string b("opensurf");
+      return b; 
+    }
   };
   
   struct GenericSurfDetector::Data{
@@ -107,7 +136,7 @@ namespace icl{
     std::vector<GenericPoint> fpoints;
 
     //matches
-    std::vector<std::pair<GenericPoint, GenericPoint> > m_matches;
+    std::vector<std::pair<GenericPoint, GenericPoint> > matches;
 #ifdef HAVE_OPENSURF
     SmartPtr<OpenSurfDetector> opensurf;
 #endif
@@ -141,15 +170,17 @@ namespace icl{
       throw ICLException(str(__FUNCTION__)+": implementation 'opencv' is not available");
 #else
       opencv = SmartPtr<OpenCVSurfDetector>(new OpenCVSurfDetector(obj, threshold,extended, octaves, octavelayer));
+#endif
     }
     
     //opensurf
-    Data(IMPLEMENTATION impl, const ImgBase *obj, bool upright, int octaves, int intervals, int init_samples, float thresh){
+    Data(const ImgBase *obj, bool upright, int octaves, int intervals, int init_samples, float thresh){
       impl = "opensurf";
 #ifndef HAVE_OPENSURF
       throw ICLException(str(__FUNCTION__)+": implementation 'opensurf' is not available");
 #else
       opensurf = SmartPtr<OpenSurfDetector>(new OpenSurfDetector(obj,upright, octaves, intervals,init_samples, thresh));
+#endif
     }
   };
 
@@ -172,9 +203,9 @@ namespace icl{
     return m_data->impl;
   }
   
-#define ICL_ASSERT_THROW_OPENCV ICLASSERT_THROW(m_data->opencv,ICLException(str(__FUNCTION__)+": this set params function is only available for 'opencv' impl"))
+#define ICLASSERT_THROW_OPENCV ICLASSERT_THROW(m_data->opencv,ICLException(str(__FUNCTION__)+": this set params function is only available for 'opencv' impl"))
 
-#define ICL_ASSERT_THROW_OPENSURF ICLASSERT_THROW(m_data->opensurf,ICLException(str(__FUNCTION__)+": this set params function is only available for 'opensurf' impl"))
+#define ICLASSERT_THROW_OPENSURF ICLASSERT_THROW(m_data->opensurf,ICLException(str(__FUNCTION__)+": this set params function is only available for 'opensurf' impl"))
   
   void GenericSurfDetector::setParams(double threshold, int extended,int octaves, int octavelayer){
 #ifndef HAVE_OPENCV211
@@ -189,7 +220,7 @@ namespace icl{
 #ifndef HAVE_OPENSURF
     throw ICLException(str(__FUNCTION__)+": this set params function is only available for 'opensurf' impl");
 #else
-    ICLASSERT_THROW_OPENSURF;
+    ICLASSERT_THROW_OPENSURF
     m_data->opensurf->setParams(upright,octaves,intervals,init_samples,thresh);
 #endif
   }
@@ -207,15 +238,15 @@ namespace icl{
   }
 
 ///returns back converted image
-  const ImgBase *GenericSurfDetector::getObjectImg() throw (ICLException){
+  SmartPtr<ImgBase> GenericSurfDetector::getObjectImg() throw (ICLException){
 #ifdef HAVE_OPENCV211
-    if(m_data->opencv) return m_data->opencv->getObjectImg();
+    if(m_data->opencv) return (ImgBase*)m_data->opencv->getObjectImg();
 #endif
     
 #ifdef HAVE_OPENSURF
-    if(m_data->opensurf) return m_data->opensurf->getObjectImg();
+    if(m_data->opensurf) return (ImgBase*)m_data->opensurf->getObjectImg();
 #endif
-    return 0;
+    return SmartPtr<ImgBase>();
   }
   
   const std::vector<GenericSurfDetector::GenericPoint> &GenericSurfDetector::getObjectImgFeatures(){
@@ -242,15 +273,15 @@ namespace icl{
     }
 #endif
     
-    return m_data->m_points;
+    return m_data->points;
 }
 
   const std::vector<GenericSurfDetector::GenericPoint> &GenericSurfDetector::extractFeatures(const ImgBase *src) throw (ICLException){
     ICLASSERT_THROW(src,ICLException(str(__FUNCTION__)+": source image was null"));
     
-    m_data->m_fpoints.clear();
+    m_data->fpoints.clear();
     
-#ifdef HAVE_OPENCV
+#ifdef HAVE_OPENCV211
     if(m_data->opencv){
       const std::vector<CvSURFPoint> &points = m_data->opencv->extractFeatures(src);
       m_data->fpoints.resize(points.size());
@@ -269,12 +300,12 @@ namespace icl{
       }
     }
 #endif
-    return m_data->m_fpoints;
+    return m_data->fpoints;
   }
 
   const std::vector<std::pair<GenericSurfDetector::GenericPoint, GenericSurfDetector::GenericPoint> >&
   GenericSurfDetector::match(const ImgBase *image) throw (ICLException){
-    ICLASSERT_THROW(src,ICLException(str(__FUNCTION__)+": source image was null"));
+    ICLASSERT_THROW(image,ICLException(str(__FUNCTION__)+": source image was null"));
 
     m_data->matches.clear();
     
@@ -392,6 +423,7 @@ namespace icl{
 #ifdef HAVE_OPENSURF
     if(m_data->opensurf) return m_data->opensurf->getOctaves();
 #endif
+    return 0;
   }
   
   int GenericSurfDetector::getOctavelayer(){
@@ -402,6 +434,7 @@ namespace icl{
 #ifdef HAVE_OPENSURF
     if(m_data->opensurf) return m_data->opensurf->getIntervals();
 #endif
+    return 0;
   }
   
   int GenericSurfDetector::getInitSamples() throw (ICLException){
@@ -417,6 +450,7 @@ namespace icl{
 #ifdef HAVE_OPENSURF
     if(m_data->opensurf) return m_data->opensurf->getRespThresh();
 #endif
+    return 0;
   }
   
   int GenericSurfDetector::getExtended() throw (ICLException){

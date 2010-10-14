@@ -67,7 +67,8 @@ void gui_cb(const std::string &handle){
     const ImgBase *tmp = grabber.grab();
     surf->setObjectImg(tmp);
     gui_DrawHandle(draw_object);
-    draw_object = surf->getObjectImg();
+    SmartPtr<ImgBase> obj = surf->getObjectImg(); 
+    draw_object = obj.get();
     draw_object->lock();
     draw_object->reset();
     draw_object->unlock();
@@ -116,7 +117,7 @@ void init(){
   gui.show();
   
   gui.registerCallback(new GUI::Callback(gui_cb),"os_handle,ri_handle,snap_handle,oct_handle,intervals_handle,sample_handle,thresh_handle");
-  gui["draw_object"] =  surf->getObjectImg();
+  gui["draw_object"] =  surf->getObjectImg().get();
 }
 
 
@@ -129,7 +130,6 @@ void run(){
   gui_DrawHandle(draw_image);
   draw_result = image;
   draw_image = image;
-  draw_object = surf->getObjectImg();
   
   draw_result->lock();
   draw_object->lock();

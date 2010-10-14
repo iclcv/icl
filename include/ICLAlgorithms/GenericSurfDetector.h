@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : include/ICLAlgorithms/GenericSurfDetector.h            **
 ** Module : ICLAlgorithms                                          **
-** Authors: Christian Groszewski                                   **
+** Authors: Christian Groszewski, Christof Elbrechter              **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -88,28 +88,58 @@ public :
 	/** @return implementation */
 	const std::string &getImpl();
 
-	///pure virtual generic point struct to combine CvSURFPoint and Ipoint
+	///pure virtual generic point structure that generalizes CvSURFPoint and Ipoint
+        /** This structure is implemented for both underlying types opencv and opensurf.
+            The Impl class Itself is not used itself. Instead the GenericPoint hull-class
+            is used, which manages a shared pointer to the underlying Impl-instance.
+        */
 	struct GenericPointImpl{
-          virtual ~GenericPointImpl(){};
+          /// Destructor
+          virtual ~GenericPointImpl();
+          
+          /// Which backend was used (either "opencv" or "opensurf")
           virtual const std::string &getBackend() const;
-          virtual Point32f getCenter() const = 0;
-          virtual int getRadius() const = 0;
-          virtual int getLaplacian() const = 0;
-          virtual float getDir() const = 0;
+          
+          /// Feature center
+          virtual Point32f getCenter() const;
+          
+          /// Feature radius
+          virtual int getRadius() const;
+          
+          /// Feature laplacian
+          virtual int getLaplacian() const;
+          
+          /// Featur angle / direction
+          virtual float getDir() const;
 
-          /// opensurf specific features
+          /// feature scale (opensurf only)
           virtual float getScale() const;
+
+          /// feature descriptor vector (opensurf only)
           virtual const float* getDescriptor() const;
+
+          /// feature's dx (opensurf only)
           virtual float getDx() const;
+
+          /// feature's dy (opensurf only)
           virtual float getDy() const;
+
+          /// feature's cluster-index (opensurf only)
           virtual int getClusterIndex() const;
           
-          /// opencv specific features
+          /// feature size (opencv only)
           virtual int getSize() const;
+
+          /// feature's hessian (opencv only)
           virtual float getHessian() const;
 	};
 
-	///Point struct
+	///Generic Point structure, that is used for the GenericSurfDetector
+        /** Internally, the SmartPtr 'impl' is set up with either an OpenCV or
+            an OpenSurf specific GenericPointImpl implementation. Some of the
+            class methods are available for both implementations. However some
+            other methods (those that throw and ICLException) are only available
+            for either an opencv or an opensurf backend. */
 	struct GenericPoint{
           ///Smartpointer holding the implementation of the point
           SmartPtr<GenericPointImpl> impl;
@@ -182,13 +212,13 @@ public :
 	};
 
 
-	///Sets a new reference image
+	///Sets a new reference image (and automatically extract surf-features from that image internally)
 	/** @param objectImg the new reference image */
 	void setObjectImg(const ImgBase *objectImg) throw (ICLException);
 
-	///returns back converted image
+	/// returns back converted image. 
 	/** @return copy of reference image */
-	const ImgBase *getObjectImg() throw (ICLException);
+	SmartPtr<ImgBase> getObjectImg() throw (ICLException);
 
 	///Return the features of the reference image
 	/** If the reference image is not set, the returned vector is empty
