@@ -48,7 +48,8 @@ SmartPtr<GenericSurfDetector> surf = new GenericSurfDetector("opencv");
 #endif
 
 GUI gui("hsplit");
-static Rect r = Rect::null;
+Rect r = Rect::null;
+Rect objRect;
 
 void gui_cb(const std::string &handle){
   Mutex::Locker lock(mutex);
@@ -57,6 +58,7 @@ void gui_cb(const std::string &handle){
     const ImgBase *im = surf->getObjectImg()->deepCopy();
     surf = SmartPtr<GenericSurfDetector>(new GenericSurfDetector(os?"opensurf":"opencv"));
     surf->setObjectImg(im);
+    objRect = im->getImageRect();
   }else if(!handle.find("ri")){
     bool ri = gui["ri"];
     if(surf->getImpl() == "opensurf"){
@@ -105,6 +107,7 @@ void select_object(const MouseEvent &m){
           Img8u roi;
           image.deepCopyROI(&roi);
           surf->setObjectImg(&roi);
+          objRect = roi.getImageRect();
           gui_DrawHandle(draw_object);
           draw_object = &roi;
           draw_object->lock();
@@ -125,8 +128,11 @@ void init(){
   if(pa("-f")){
     Img8u obj = load<icl8u>(pa("-f"));
     surf->setObjectImg(&obj);
+    objRect = obj.getImageRect();
   }else{
-    surf->setObjectImg(grabber.grab());
+    const ImgBase *obj = grabber.grab();
+    surf->setObjectImg(obj);
+    objRect = obj->getImageRect();
   }
   
   gui << (GUI("vbox")
@@ -158,6 +164,56 @@ void init(){
 }
 
 
+typedef GenericSurfDetector::Match Match;
+
+std::vector<Point32f> get_transformed_rect(const Rect &r, const std::vector<Match> &matches){
+  std::vector<Point32f> v(4);
+  v[0] = r.ul(); 
+  v[1] = r.ur(); 
+  v[2] = r.lr(); 
+  v[3] = r.ll();
+
+  if(!matches.size()){
+    return v;
+  }
+  int N = matches.size();
+  // compute TA = B (A = m.first, B = m.second) -> T = B * A.pinv();
+  DynMatrix<float> A(N,3), B(N,3);
+  for(int i=0;i<N;++i){
+    Point32f a = matches[i].first.getCenter();
+    Point32f b = matches[i].second.getCenter();
+    A(i,0) = a.x;
+    A(i,1) = a.y;
+    A(i,2) = 1;
+    B(i,0) = b.x;
+    B(i,1) = b.y;
+    B(i,2) = 1;
+  }
+  try{
+    DynMatrix<float> T = A * B.pinv(true);
+    DynMatrix<float> x(1,3),y(1,3);
+
+    for(int i=0;i<4;++i){
+      x[0] = v[i].x;
+      x[1] = v[i].y;       
+      x[2] = 1; 
+
+      y = T * x;
+
+      if(!y[2]){
+        ERROR_LOG("y.h was 0");
+        return v;
+      }
+
+      v[i].x = y[0]/y[2];
+      v[i].y = y[1]/y[2];
+    }
+  }catch(...){
+    return v;
+  }
+  return v;
+}
+
 
 void run(){
   Mutex::Locker lock(mutex);
@@ -188,6 +244,11 @@ void run(){
     const std::vector<std::pair<GenericSurfDetector::GenericPoint,
     GenericSurfDetector::GenericPoint> > &matches = surf->match(image);
     surf->visualizeMatches(**draw_object,**draw_result,matches);
+
+    std::vector<Point32f> ps = get_transformed_rect(objRect, matches);
+    draw_image->color(0,100,255,255);
+    draw_image->fill(0,100,255,40);
+    draw_image->polygon(ps);
   }
   
   if(r != Rect::null){

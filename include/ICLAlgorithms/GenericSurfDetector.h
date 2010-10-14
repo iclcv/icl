@@ -308,24 +308,27 @@ public :
             @return vector of computed features */
 	const std::vector<GenericPoint> &extractFeatures(const ImgBase *src) throw (ICLException);
 
+        /// Match Data-Type (just a shortcut)
+        typedef std::pair<GenericPoint, GenericPoint> Match;
+
 	///computes matches between reference image and passed image.
 	/** If the passed image or the reference image is null an
             exception is thrown. First point of the pair is the point for the image,
             second for the reference image.
             @param image
             @return vector of std::pair */
-	const std::vector<std::pair<GenericPoint, GenericPoint> > &match(const ImgBase *image) throw (ICLException);
+	const std::vector<Match> &match(const ImgBase *image) throw (ICLException);
 
+        
 	///sets new newObjImage as new reference image and computes matches between passed reference image and passed image.
 	/** If one of the passed images null an exception is thrown.
 	  First point of the pair is the point for the image, second for the reference image.
 	  @param image
 	  @param newObjImage the new reference image
 	  @return matches as std::pair in vector */
-	const std::vector<std::pair<GenericPoint, GenericPoint> > &match(const ImgBase *currentImage,
-			const ImgBase *newObjImage) throw (ICLException){
-		setObjectImg(newObjImage);
-		return match(currentImage);
+	const std::vector<Match> &match(const ImgBase *currentImage,const ImgBase *newObjImage) throw (ICLException){
+          setObjectImg(newObjImage);
+          return match(currentImage);
 	}
 
 #ifdef HAVE_QT
