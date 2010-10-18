@@ -72,6 +72,7 @@ add_libsource (${PROJECT_NAME} "src/FileWriterPluginImageMagick.cpp" "${CONDITIO
 add_libsource (${PROJECT_NAME} "src/FileGrabberPluginImageMagick.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST SYSTEM_LINUX_COND HAVE_VIDEODEV_COND)
 add_libsource (${PROJECT_NAME} "src/PWCGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/MyrmexGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_LIBDC_COND)
 add_libsource (${PROJECT_NAME} "src/DC.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DCDevice.cpp" "${CONDITIONLIST}" LIB_SOURCES)
