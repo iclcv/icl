@@ -35,6 +35,7 @@
 #define ICL_GENERICSURFDETECTOR_H_
 
 #include <ICLCore/ImgBase.h>
+#include <ICLUtils/SmartPtr.h>
 #ifdef HAVE_QT
 #include <ICLQt/DrawWidget.h>
 #endif

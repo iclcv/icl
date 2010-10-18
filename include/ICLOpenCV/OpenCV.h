@@ -158,4 +158,3 @@ CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst=0) throw (ICLException
 #endif
 #endif
 
-

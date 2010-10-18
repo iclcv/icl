@@ -31,7 +31,6 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 *********************************************************************/
-
 #include <ICLOpenCV/OpenCV.h>
 namespace icl{
 
@@ -149,15 +148,17 @@ namespace icl{
   inline IplImage* img_to_ipl_srcpref(const ImgBase *src, IplImage **dst){
     static const int IPL_DEPTHS[] = {IPL_DEPTH_8U,IPL_DEPTH_16S,IPL_DEPTH_32S,IPL_DEPTH_32F,IPL_DEPTH_64F};
     CvSize s = cvSize(src->getWidth(),src->getHeight());
-    IplImage *ipl = ensureCompatible(dst,IPL_DEPTHS[(int)src->getDepth()],s,src->getChannels());;
+
+    IplImage *ipl = ensureCompatible(dst,IPL_DEPTHS[(int)src->getDepth()],s,src->getChannels());
 
     Img<SRC_T> tmp = *src->asImg<SRC_T>();
     for(int i=0;i<src->getChannels()/2;++i){
       tmp.swapChannels(i,src->getChannels()-1-i);
     }
-  
-    planarToInterleaved(&tmp,(DST_T*)ipl->imageData,(*dst)->widthStep);
-    return ipl;
+    planarToInterleaved(&tmp,(DST_T*)ipl->imageData,ipl->widthStep);
+    dst = &ipl;
+    return *dst;
+    //return ipl;
   }
 
   template<typename SRC_T>
@@ -210,7 +211,7 @@ namespace icl{
     } else if(e==PREFERE_DST_DEPTH){
       throw ICLException("Cannot determine depth of destinationimage");
     } else { // DepthPreference == PREFERE_SRC_DEPTH
-      
+
       switch(src->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) \
         case depth##D: return img_to_ipl_srcpref<icl##D,icl##D>(src,dst);
@@ -218,7 +219,7 @@ namespace icl{
 #undef ICL_INSTANTIATE_DEPTH
       }
     }
-    return 0;
+    return *dst;
   }
 
 
@@ -413,5 +414,4 @@ namespace icl{
     return dst;
   }
 }
-
 

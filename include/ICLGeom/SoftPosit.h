@@ -39,6 +39,7 @@
 #include <ICLUtils/FixedVector.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Thread.h>
+#include <ICLUtils/Point32f.h>
 #ifdef HAVE_QT
 #include<ICLQt/DrawWidget.h>
 #endif
@@ -68,9 +69,9 @@ private:
 	static const double betaUpdate = 1.05;
 
 	static const double betaZero = 0.0004;
-
+#ifdef HAVE_QT
 	ICLDrawWidget *dw;
-
+#endif
 	DynMatrix<double> iAdj;
 	DynMatrix<double> wAdj;
 
@@ -171,21 +172,21 @@ public:
 
 	void softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts, double beta0, int noiseStd,	DynMatrix<double> initRot,
 				DynMatrix<double> initTrans, double focalLength, DynMatrix<double> center = DynMatrix<double>(2,0), bool draw = true);
-
+#ifdef HAVE_QT
 	void softPosit(DynMatrix<double> imagePts, DynMatrix<double> imageAdj, DynMatrix<double> worldPts,
 			DynMatrix<double> worldAdj, double beta0, int noiseStd,	DynMatrix<double> initRot,
 			DynMatrix<double> initTrans, double focalLength, ICLDrawWidget &w,
 			DynMatrix<double> center = DynMatrix<double>(2,0), bool draw = true);
-
+#endif
 	void softPosit(std::vector<Point32f> imagePts, std::vector<FixedColVector<double,3> > worldPts,
 					double beta0, int noiseStd,	DynMatrix<double> initRot, DynMatrix<double> initTrans,
 					double focalLength, DynMatrix<double> center = DynMatrix<double>(2,0));
-
+#ifdef HAVE_QT
 	void softPosit(std::vector<Point32f> imagePts, DynMatrix<double> imageAdj, std::vector<FixedColVector<double,3> > worldPts,
 				DynMatrix<double> worldAdj, double beta0, int noiseStd,	DynMatrix<double> initRot,
 				DynMatrix<double> initTrans, double focalLength, ICLDrawWidget &w,
 				DynMatrix<double> center = DynMatrix<double>(2,0), bool draw=true);
-
+#endif
 	void proj3dto2d(DynMatrix<double> pts3d, DynMatrix<double> &rot, DynMatrix<double> &trans,
 				double flength, int objdim, DynMatrix<double> &center, DynMatrix<double> &pts2d);
 

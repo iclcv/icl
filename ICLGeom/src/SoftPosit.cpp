@@ -31,11 +31,12 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#include<ICLAlgorithms/SoftPosit.h>
+#include<ICLGeom/SoftPosit.h>
 
 using namespace icl;
 namespace icl{
 
+#ifdef HAVE_QT
 SoftPosit::SoftPosit():dw(0){
 	ROT.setBounds(3,3);
 	T.setBounds(1,3);
@@ -47,7 +48,19 @@ SoftPosit::SoftPosit():dw(0){
 	eye2_2.at(1,1) = 1.0;
 	draw = false;
 }
-
+#else
+SoftPosit::SoftPosit(){
+	ROT.setBounds(3,3);
+	T.setBounds(1,3);
+	R1.setBounds(1,3);
+	R2.setBounds(1,3);
+	R3.setBounds(1,3);
+	eye2_2.setBounds(2,2);
+	eye2_2.at(0,0) = 1.0;
+	eye2_2.at(1,1) = 1.0;
+	draw = false;
+}
+#endif
 SoftPosit::~SoftPosit(){}
 
 void SoftPosit::init(){
@@ -108,12 +121,14 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 	}
 	DynMatrix<double> wk = homogeneousWorldPts * temp;
 
+#ifdef HAVE_QT
 	//DynMatrix<double> projWorldPts = proj3dto2d(worldPts, rot, trans, focalLength, 1, center);
 	if(draw){
 		proj3dto2d(worldPts, ROT, T, focalLength,1,center,pts2d);
 		//visualize(w,imagePts, imageAdj,	pts2d, worldAdj);
 		visualize(imagePts, pts2d);
 	}
+#endif
 	//First two rows of the camera matrices (for both perspective and SOP).  Note:
 	//the scale factor is s = f/Tz = 1/Tz since f = 1.  These are column 4-vectors.
 	double t1[] = {ROT(0,0)/T.at(0,2),ROT(1,0)/T.at(0,2),ROT(2,0)/T.at(0,2), T.at(0,0)/T.at(0,2)};
@@ -312,17 +327,18 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 			foundPose = 1;
 		else
 			foundPose = 0;
-
+#ifdef HAVE_QT
 		if(draw){
 			proj3dto2d(worldPts, ROT, T, focalLength, 1, center,pts2d);
 			//visualize(w,imagePts, imageAdj,	pts2d, worldAdj);
 			visualize(imagePts,pts2d);
 		}
+#endif
 	}
-	SHOW(ROT);
-	SHOW(T);
+	//SHOW(ROT);
+	//SHOW(T);
 }
-
+#ifdef HAVE_QT
 void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> imageAdj, DynMatrix<double> worldPts,
 		DynMatrix<double> worldAdj, double beta0, int noiseStd,	DynMatrix<double> initRot,
 		DynMatrix<double> initTrans, double focalLength, ICLDrawWidget &w,
@@ -332,7 +348,7 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> imageAdj
 	wAdj = worldAdj;
 	softPosit(imagePts, worldPts, beta0, noiseStd, initRot, initTrans, focalLength, center);
 }
-
+#endif
 void SoftPosit::softPosit(std::vector<Point32f> imagePts, std::vector<FixedColVector<double,3> > worldPts,
 		double beta0, int noiseStd,	DynMatrix<double> initRot, DynMatrix<double> initTrans,
 		double focalLength, DynMatrix<double> center){
@@ -350,7 +366,7 @@ void SoftPosit::softPosit(std::vector<Point32f> imagePts, std::vector<FixedColVe
 
 	softPosit(imagePt, worldPt, beta0, noiseStd, initRot, initTrans, focalLength, center, draw);
 }
-
+#ifdef HAVE_QT
 void SoftPosit::softPosit(std::vector<Point32f> imagePts, DynMatrix<double> imageAdj, std::vector<FixedColVector<double,3> > worldPts,
 		DynMatrix<double> worldAdj, double beta0, int noiseStd,	DynMatrix<double> initRot,
 		DynMatrix<double> initTrans, double focalLength, ICLDrawWidget &w, DynMatrix<double> center,bool draw){
@@ -369,7 +385,7 @@ void SoftPosit::softPosit(std::vector<Point32f> imagePts, DynMatrix<double> imag
 
 	softPosit(imagePt, imageAdj, worldPt, worldAdj, beta0, noiseStd, initRot, initTrans, focalLength, w, center, draw);
 }
-
+#endif
 
 DynMatrix<double>& SoftPosit::cross(DynMatrix<double> &x, DynMatrix<double> &y, DynMatrix<double> &r){
 	if(x.cols()==1 && y.cols()==1 && x.rows()==3 && y.rows()==3){

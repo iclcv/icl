@@ -37,7 +37,7 @@
 #include <ICLQt/GUI.h>
 #include <ICLCore/Img.h>
 #include <ICLQt/DrawWidget.h>
-#include <ICLAlgorithms/SoftPosit.h>
+#include <ICLGeom/SoftPosit.h>
 using namespace icl;
 GUI gui("hsplit");
 Img<icl8u> image(Size(800,600),3);
