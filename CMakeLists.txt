@@ -401,7 +401,7 @@ if(NOT QT_PKG_FOUND)
     #temporary var
     set(temp ${ICL_XDEP_QT_ON})
     #check for special location of qt
-    icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include /oopt/qtsdk-2010.04/qt HAVE_QT_COND)
+    #icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include /oopt/qtsdk-2010.04/qt HAVE_QT_COND)
       if((NOT HAVE_QT_COND) OR temp)
 	     #check for standard location of qt
          icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include/qt4 /usr HAVE_QT_COND)

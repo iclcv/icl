@@ -36,7 +36,7 @@
 
 #include <ICLAlgorithms/GenericSurfDetector.h>
 
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
 #include <ICLAlgorithms/OpenCVSurfDetector.h>
 #include <cv.h>
 #endif
@@ -95,6 +95,7 @@ namespace icl{
     THROW_GEN_SURF_EXC; return 0;
   }
 
+#ifdef HAVE_OPENCV2
   struct CVGenP : public GenericSurfDetector::GenericPointImpl{
     const CvSURFPoint *p;
     CVGenP(const CvSURFPoint *point):p(point){}    
@@ -110,7 +111,8 @@ namespace icl{
       return b; 
     }
   };
-
+#endif
+#ifdef HAVE_OPENSURF
   struct SurfGenP : public GenericSurfDetector::GenericPointImpl{
     const Ipoint *p;
     SurfGenP(const Ipoint *point):p(point){}
@@ -129,8 +131,9 @@ namespace icl{
       return b; 
     }
   };
+#endif
 
-#ifndef HAVE_OPENCV211
+#ifndef HAVE_OPENCV2
 #ifndef HAVE_OPENSURF
 #define THROW_NO_BACKEND throw ICLException(str(__FUNCTION__)+": no surf feature backend found!")
 #endif
@@ -151,13 +154,13 @@ namespace icl{
     SmartPtr<OpenSurfDetector> opensurf;
 #endif
 
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     SmartPtr<OpenCVSurfDetector> opencv;
 #endif
 
     Data(const std::string &impl){
       if(impl=="opencv"){
-#ifndef HAVE_OPENCV211
+#ifndef HAVE_OPENCV2
         throw ICLException(str(__FUNCTION__)+": implementation 'opencv' is not available");
 #else
         opencv = SmartPtr<OpenCVSurfDetector>(new OpenCVSurfDetector);
@@ -178,7 +181,7 @@ namespace icl{
     //opencv
     Data(const ImgBase *obj, double threshold, int extended, int octaves, int octavelayer){
       impl = "opencv";
-#ifndef HAVE_OPENCV211
+#ifndef HAVE_OPENCV2
       throw ICLException(str(__FUNCTION__)+": implementation 'opencv' is not available");
 #else
       opencv = SmartPtr<OpenCVSurfDetector>(new OpenCVSurfDetector(obj, threshold,extended, octaves, octavelayer));
@@ -233,7 +236,7 @@ namespace icl{
 
   void GenericSurfDetector::setParams(double threshold, int extended,int octaves, int octavelayer){
     THROW_NO_BACKEND;
-#ifndef HAVE_OPENCV211
+#ifndef HAVE_OPENCV2
     throw ICLException(str(__FUNCTION__)+": this set params function is only available for 'opencv' impl");
 #else
     ICLASSERT_THROW_OPENCV;
@@ -256,7 +259,7 @@ namespace icl{
     THROW_NO_BACKEND;
     ICLASSERT_THROW(objectImg, ICLException(str(__FUNCTION__)+ ": object image is null"));
     
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv) m_data->opencv->setObjectImg(objectImg);
 #endif
     
@@ -268,7 +271,7 @@ namespace icl{
 ///returns back converted image
   SmartPtr<ImgBase> GenericSurfDetector::getObjectImg() throw (ICLException){
     THROW_NO_BACKEND;
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv) return (ImgBase*)m_data->opencv->getObjectImg();
 #endif
     
@@ -282,7 +285,7 @@ namespace icl{
     THROW_NO_BACKEND;
     m_data->points.clear();
     
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv){
       const std::vector<CvSURFPoint> &points = m_data->opencv->getObjectImgFeatures();
 
@@ -311,7 +314,7 @@ namespace icl{
     
     m_data->fpoints.clear();
     
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv){
       const std::vector<CvSURFPoint> &points = m_data->opencv->extractFeatures(src);
       m_data->fpoints.resize(points.size());
@@ -340,7 +343,7 @@ namespace icl{
 
     m_data->matches.clear();
     
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv){
       const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &matches = m_data->opencv->match(image);
       m_data->matches.resize(matches.size());
@@ -377,7 +380,7 @@ namespace icl{
   throw ICLException(str(__FUNCTION__)+": this function is only available for 'opensurf' impl"); 
 #endif
   
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
 #define OPENCV_SPECIFIC_FUNCTION(X,R)                                   \
   if(m_data->opencv){                                                   \
     R m_data->opencv->X;                                                \
@@ -404,7 +407,7 @@ namespace icl{
   }
   
   void GenericSurfDetector::setOctaves(int octaves){
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv) m_data->opencv->setOctaves(octaves);
 #endif
     
@@ -416,7 +419,7 @@ namespace icl{
   void GenericSurfDetector::setOctavelayer(int octavelayer){
     THROW_NO_BACKEND;
 
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv) m_data->opencv->setOctavelayer(octavelayer);
 #endif
 
@@ -431,7 +434,7 @@ namespace icl{
   }
   
   void GenericSurfDetector::setThreshold(double threshold){
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv) m_data->opencv->setThreshold(threshold);
 #endif
     
@@ -453,7 +456,7 @@ namespace icl{
   
   int GenericSurfDetector::getOctaves(){
     THROW_NO_BACKEND;
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv) return m_data->opencv->getOctaves();
 #endif
 
@@ -465,7 +468,7 @@ namespace icl{
   
   int GenericSurfDetector::getOctavelayer(){
     THROW_NO_BACKEND;
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv) return m_data->opencv->getOctavelayer();
 #endif
 
@@ -483,7 +486,7 @@ namespace icl{
   
   double GenericSurfDetector::getThreshold(){
     THROW_NO_BACKEND;
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     if(m_data->opencv) return m_data->opencv->getThreshold();
 #endif
 
@@ -504,7 +507,7 @@ namespace icl{
   void GenericSurfDetector::visualizeFeature(ICLDrawWidget &w,const GenericSurfDetector::GenericPoint &p){
     THROW_NO_BACKEND;
     
-#ifdef HAVE_OPENCV211
+#ifdef HAVE_OPENCV2
     const CVGenP *cvpoint = dynamic_cast<const CVGenP*>(p.impl.get());
     if(cvpoint) OpenCVSurfDetector::visualizeFeature(w,*(cvpoint->p));
 #endif
