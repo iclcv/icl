@@ -54,8 +54,6 @@ if [ "$1" = "--update" ] ; then
     fi
     exit 0;
 fi
-echo TEST
-exit 0;
 
 PROJECT=$1
 
@@ -81,7 +79,7 @@ cp ${RESOURCE_DIR}/sample-test.cpp.template ./${PROJECT}/test/sample-test.cpp
 echo "done"
 
 echo -n "Copying makefile ...        "
-cp  ${RESOURCE_DIR}/Makefile-with-tests.template ./${PROJECT}/Makefile
+cp  ${RESOURCE_DIR}/Makefile.template ./${PROJECT}/Makefile
 echo "done"
 
 echo -n "Copying doxyfile ...        "
