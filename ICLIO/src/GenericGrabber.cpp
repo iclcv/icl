@@ -100,6 +100,34 @@ namespace icl{
 
   
   static std::map<std::string,std::string> create_param_map(const std::string &filter){
+#if 1
+    std::vector<std::string> ts = tok(filter,",");
+    std::map<std::string,std::string> pmap;
+
+    static const char *plugins[] = { "pwc","dc","dc800","unicap","file","demo","create",
+                                     "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
+                                     "cvcam","sm"};
+    static const int NUM_PLUGINS=sizeof(plugins)/sizeof(char*);
+
+    for(unsigned int i=0;i<ts.size();++i){
+      std::vector<std::string> ab = tok(ts[i],"=");
+      unsigned int S = ab.size();
+      switch(S){
+        case 1: case 2:
+          if(std::find(plugins, plugins+NUM_PLUGINS, ab[0])){
+            pmap[ab[0]] = S==2 ? ab[1] : std::string("");
+          }else{
+            ERROR_LOG("GenericGrabber: unsupported device: ["<< ab[0] << "] (skipping)");
+          }
+          break;
+        default:
+          ERROR_LOG("GenericGrabber: invalid device filter token: [" << ts[i] << "] (skipping)"); 
+      }
+    }
+    return pmap;
+                                                      
+#else         
+    // older version: not only more complex and complicated, but also with some errors
     std::vector<std::string> lP = tok(filter,",");
     
     std::map<std::string,std::string> pmap;
@@ -128,9 +156,8 @@ namespace icl{
         ERROR_LOG("GenericGrabber: unable to process token '" << lP[i] << "' (unsupported device specifier)");
       }
     }
-    
     return pmap;
-  
+#endif
   }
   
   static bool is_int(const std::string &x){
