@@ -18,8 +18,8 @@ PACKAGE_DESCRIPTION=ICLProject ${PROJECT_NAME}
 ##################################################
 
 # Add package-configs packages that should be
-# included (e.g. PC_DEPS=icl-5.6.0-debug gtest)
-PC_DEPS=icl-5.6.0 gtest
+# included (e.g. PC_DEPS=@ICL_PGK_CFG_PLACEHOLDER@ gtest)
+PC_DEPS=@ICL_PGK_CFG_PLACEHOLDER@ gtest
 
 # Qt specific header files, that need a moc call
 # without src/-prefix e.g. 
