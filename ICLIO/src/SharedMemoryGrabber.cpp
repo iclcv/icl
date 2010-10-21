@@ -33,10 +33,12 @@
 *********************************************************************/
 
 #include <ICLIO/SharedMemoryGrabber.h>
-#include <QtCore/QSharedMemory>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Thread.h>
 #include <ICLCore/ImageSerializer.h>
+
+#include <QtCore/QSharedMemory>
+#include <QtCore/QProcess>
 
 namespace icl{
   
@@ -187,11 +189,37 @@ namespace icl{
       mem.lock();
       *(icl32s*)mem.data() = 0;
       mem.unlock();
-      WARNING_LOG("Please note: only the shared-memory device list has been cleaned.\n"
-                  "Lost memory segments can currently not be accessed / released.");
     }else{
       WARNING_LOG("No shared memory segment named 'icl-shared-mem-grabbers' found");
     }
+
+#ifdef SYSTEM_LINUX
+    static const std::string QT_SHARED_MEM_PREFIX = "0x51";
+  
+    QStringList l; l << "-m"; 
+    QProcess ipcs;
+    ipcs.start("ipcs",l);
+    bool ok = ipcs.waitForFinished();
+    if(!ok) throw icl::ICLException("unable to call ipcm -m");
+    QString stdout = ipcs.readAllStandardOutput();
+    
+    std::vector<std::string> lines = icl::tok(stdout.toLatin1().data(),"\n");
+    for(unsigned int i=0;i<lines.size();++i){
+      if(lines[i].substr(0,2) != "0x") continue;
+      
+      std::vector<std::string> ts = icl::tok(lines[i]," ");
+      
+      if(ts.size() > 3 && ts[3] == "666" && ts[0].substr(0,4) == QT_SHARED_MEM_PREFIX){
+        QProcess ipcrm;
+        QStringList l2; l2 << "-m" << ts[1].c_str(); 
+        std::cout << "releasing shared memory segment key:" << ts[0] << " shmid:" << ts[1] << std::endl;
+        ipcrm.start("ipcrm",l2);
+        bool ok = ipcrm.waitForFinished();
+        if(!ok) throw icl::ICLException("unable to call ipcrm -m");
+      }
+    }
+#endif
+
   }
 
 
