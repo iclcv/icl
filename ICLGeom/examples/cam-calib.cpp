@@ -616,9 +616,9 @@ void init(){
                 << "togglebutton(off,!on)[@out=calibOn@handle=calibrate-on@label=calibration]"
                 << "label()[@label=current error: @handle=currError]" );
   
-  controls << "fslider(0.6,2 .0,1.5)[@out=minFF@label=roundness]";
+  controls << "fslider(0.5,5.0,2.5)[@out=minFF@label=roundness]";
   controls << "slider(10,5000,90)[@out=minBlobSize@label=min blob size]";
-  controls << "slider(10,10000,1000)[@out=maxBlobSize@label=max blob size]";
+  controls << "slider(10,10000,1800)[@out=maxBlobSize@label=max blob size]";
   controls << (GUI("vbox[@label=local threshold]") 
                << "slider(2,100,10)[@out=ltMaskSize@label=mask size]"
                << "slider(-20,20,-10)[@out=ltThresh@label=threshold]");
