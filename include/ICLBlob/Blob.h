@@ -191,7 +191,7 @@ void run(){
   
   // create a region detector
   static RegionDetector rd(100,1<<20,255,255);
-  const std::vector<icl::Region> &rs = rd.detect(&bi);
+  const std::vector<ImageRegion> &rs = rd.detect(&bi);
 
   gui_DrawHandle(draw);
 
