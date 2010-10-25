@@ -48,21 +48,28 @@ namespace icl{
     ImgBase *converted_image;
     bool omitDoubledFrames; // todo implement this feature!
     Time lastImageTimeStamp;
+    Time lastValidImageGrabbed;
     
-    bool isNew(const Time &t){
+    bool isNew(const Time &t, Grabber &g){
       if(t == Time::null){
         WARNING_LOG("SharedMemoryGrabber received image with null-TimeStamp while \"omit-doubled-frames\" feature was activated. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
         omitDoubledFrames = false;
+        lastValidImageGrabbed = Time::now();
         return true;
       }else if(lastImageTimeStamp == Time::null){
         lastImageTimeStamp = t;
+        lastValidImageGrabbed = Time::now();
         return true;
       }else if(lastImageTimeStamp > t){
         WARNING_LOG("SharedMemoryGrabber received an image with an older timestamp than the last one. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
+        lastValidImageGrabbed = Time::now();
         return true;
-      }else if(lastImageTimeStamp == t){
+      }else if( (Time::now() - lastValidImageGrabbed).toSeconds() > 5){
+        WARNING_LOG("SharedMemoryGrabber alread waited 5 seconds for a new image which might be caused by an image source that does not provide usefull timestamps. Therefore the 'omit-doubled-frames'-property is deactivated automatically!");
+        g.setProperty("omit-doubled-frames","off");
         return false;
       }else{
+        lastValidImageGrabbed = Time::now();
         lastImageTimeStamp = t;
         return true;
       }
@@ -146,7 +153,7 @@ namespace icl{
       
       m_data->mem.lock();
       while(m_data->omitDoubledFrames && // WAIT FOR NEW IMAGE LOOP
-            !m_data->isNew(ImageSerializer::deserializeTimeStamp((const icl8u*)m_data->mem.constData()))){
+            !m_data->isNew(ImageSerializer::deserializeTimeStamp((const icl8u*)m_data->mem.constData()),*this)){
         m_data->mem.unlock();
         Thread::msleep(1);
         m_data->mem.lock();
@@ -170,7 +177,8 @@ namespace icl{
     }else{
       m_data->mem.lock();
       while(m_data->omitDoubledFrames && // WAIT FOR NEW IMAGE LOOP
-            !m_data->isNew(ImageSerializer::deserializeTimeStamp((const icl8u*)m_data->mem.constData()))){
+            !m_data->isNew(ImageSerializer::deserializeTimeStamp((const icl8u*)m_data->mem.constData()),*this)){
+
         m_data->mem.unlock();
         Thread::msleep(1);
         m_data->mem.lock();
@@ -178,6 +186,11 @@ namespace icl{
       // TODO extend deserialize to check for deserialized timestamp first
       ImageSerializer::deserialize((const icl8u*)m_data->mem.constData(),ppoDst ? ppoDst : &m_data->image);
       m_data->mem.unlock();
+      Thread::msleep(10);
+      
+      ImgBase *ret = ppoDst ? *ppoDst : m_data->image;
+      SHOW(*ret);
+      
       return ppoDst ? *ppoDst : m_data->image;
     }
     return 0;
