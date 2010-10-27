@@ -455,13 +455,18 @@ namespace icl{
   void pashow();
 
   /// Sets a license text, that is used when applications are run with --version or -v
-  /** The license text must be set before painit is called. The license text can 
-      have several lines. Each line should begin with a tab-character */
+  /** pasetlic has to be called before painit is called. Otherwise, only the default licese text is shown. */
   void pasetlic(const std::string &newLicenseText);
+  
+  /// Sets a applications help text that is used when applications are run with --help or with unknown arguments
+  /** pasethelp has to be called before painit is called. */
+  void pasethelp(const std::string &newHelpText);
   
   /// returns the current license text
   std::string pagetlic();
   
+  /// returns the current help text (which is empty, if it was not set)
+  std::string pagethelp();
 }
 
 #endif

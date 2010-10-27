@@ -35,6 +35,7 @@
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/StrTok.h>
+#include <ICLUtils/StringUtils.h>
 #include <ICLUtils/config.h>
 #include <algorithm>
 #include <ctype.h>
@@ -192,8 +193,17 @@ namespace icl{
     std::vector<std::string> all;
     static std::string givenLicense;
     static std::string licenseText;
-    
+    static std::string helpText;
     static ProgArgContext *s_context;
+    
+    
+    static void setHelpText(const std::string &newHelpText){
+      helpText = newHelpText;
+    }
+    
+    static const std::string &getHelpText(){
+      return helpText;
+    }
     
     static void setLicenseText(const std::string &newText){
       givenLicense = newText;
@@ -266,6 +276,17 @@ namespace icl{
     void showUsage(const std::string &msg){
       if(msg != "") std::cout << msg <<std::endl;
       std::cout << "usage:\n\t" << paprogname() << " [ARGS]" << std::endl;
+      
+      std::string help = getHelpText();
+      if(help.length()){
+        std::cout << std::endl;
+        std::vector<std::string> lines = tok(help,"\n");
+        for(unsigned int i=0;i<lines.size();++i){
+          std::cout << "\t" << lines[i] << std::endl;
+        }
+        std::cout << std::endl;
+      }
+      
       for(unsigned int i=0;i<allowed.size();++i){
         allowed[i]->showUsage(findExplanation(allowed[i]->names));
       }
@@ -325,6 +346,7 @@ namespace icl{
 
   std::string ProgArgContext::givenLicense;
   std::string ProgArgContext::licenseText;
+  std::string ProgArgContext::helpText;
 
   ProgArgContext *ProgArgContext::s_context = 0;
   std::map<std::string,std::string> ProgArgContext::explanations;
@@ -415,7 +437,7 @@ namespace icl{
         }
         if(std::string("--version") == ppc[i] ||
            std::string("-version") == ppc[i]){
-          std::cout << paprogname() << " " << VERSION << std::endl << std::endl << context.licenseText << std::endl;
+          std::cout << paprogname() << " " << VERSION << std::endl << std::endl << ProgArgContext::getLicenseText() << std::endl;
           ::exit(0);
         }
            
@@ -568,6 +590,14 @@ namespace icl{
       if(!g) THROW_ProgArgException("undefined argument '" + pa.id +"'");
       return g->given;
     }
+  }
+  
+  void pasethelp(const std::string &newHelpText){
+    ProgArgContext::setHelpText(newHelpText);
+  }
+  
+  std::string pagethelp(){
+    return ProgArgContext::getHelpText();
   }
 }
 

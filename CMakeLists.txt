@@ -634,7 +634,7 @@ set(INPUT_PATH "${INPUT_PATHS}")
 #prepares doxyfile for doxygen
 configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/alldoc/doxyfile @ONLY)
 
-#adds custom target alldoc to makefile
+#adds custom target alldoc to  makefile
 add_custom_target(alldoc doxygen alldoc/doxyfile)
 #installs content of alldoc/html on make install
 #excludes .svn dir and doxyfile from installation

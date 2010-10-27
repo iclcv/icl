@@ -54,6 +54,12 @@ Size compute_image_size(const std::vector<const ImgBase*> &is, QDesktopWidget *d
 }
 
 int main (int n, char **ppc){
+  pasethelp("icl-xv is ICL's simple image viewer.\n"
+            "It can display images of all supported file formats.\n"
+            "Furthermore, icl-xv is used for ICLQuick's\n"
+            "global icl::show(image) function. Here, the -delete\n"
+            "flag is used in order to delete a temporary image\n"
+            "after loading it.");
   QApplication app(n,ppc);
   paex
   ("-input","define image to read")
